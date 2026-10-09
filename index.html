@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261009-223711">
+<meta name="lowi-build" content="20261009-223956">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -6958,7 +6958,8 @@ async function doSignup(form){
     if (!x.state().live) await x.boot(); else { x.pushProfile(); x.backupNow(); }
     x.paint();
     hideGate();
-    setTimeout(() => R2.onboard(), 260);
+    if (s.setupDone && s.user.bday) { try { R2.close(); } catch(e){} R2.refreshMe(); R2.toast("Account created. Everything you had is saved."); }
+    else setTimeout(() => R2.onboard(), 260);
   } catch(e){ busy(form, false); showErr(form, errMsg(e)); }
 }
 

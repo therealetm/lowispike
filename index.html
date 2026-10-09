@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261009-180647">
+<meta name="lowi-build" content="20261009-181759">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -5879,7 +5879,7 @@ window.LowiFood = {homeHTML:fHomeHTML, meP, mounted(){}, shuffle:fShuffle, pool:
 .lc-newpill{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:30;padding:8px 14px;border-radius:999px;border:0;background:#fff;color:#000;font-weight:700;font-size:13px;box-shadow:0 6px 20px rgba(0,0,0,.4);cursor:pointer}
 </style>
 <script>
-window.LOWI_CFG = {"url": "", "key": ""};
+window.LOWI_CFG = {"url": "https://vnfwmifmsfecascwaody.supabase.co", "key": "sb_publishable_iVA3wCYxzfWu2q8SSgieWw_adXbx4Qd"};
 </script>
 <script>
 /* ===== LOWiSPIKE Cloud · round 1 · Oct 9 2026 =====
@@ -5899,6 +5899,7 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const H = () => window.LowiHost;
 const toast = (m, ms) => { const h = H(); if (h) h.toast(m, ms); };
+const PLATS = ["tiktok", "instagram", "youtube", "web"];
 const rid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 const myName = () => { try { return (S.user && S.user.name) || ""; } catch(e){ return ""; } };
 
@@ -5931,7 +5932,8 @@ const LANG_ROWS = [
   ["Shared with everyone", "Mit allen geteilt", "Compartido con todos"],
   ["Over 50 MB, so it stays on this phone. Shorter clips go to everyone.", "Über 50 MB, deshalb bleibt es auf diesem Handy. Kürzere Clips gehen an alle.", "Más de 50 MB, así que se queda en este móvil. Los clips más cortos llegan a todos."],
   ["Upload failed. It's still on this phone.", "Upload fehlgeschlagen. Es ist noch auf diesem Handy.", "Falló la subida. Sigue en este móvil."],
-  ["New posts", "Neue Posts", "Posts nuevos"],
+  ["↑ New posts", "↑ Neue Posts", "↑ Posts nuevos"],
+  [/^Signed in as (.+)$/, "Angemeldet als $1", "Sesión iniciada como $1"],
   ["Live", "Live", "En vivo"],
   ["Everyone in LOWiSPIKE sees it. Videos up to 50 MB.", "Alle in LOWiSPIKE sehen es. Videos bis 50 MB.", "Todos en LOWiSPIKE lo ven. Vídeos de hasta 50 MB."],
   ["For You and Chat are live: real members, shared.", "For You und Chat sind live: echte Mitglieder, geteilt.", "For You y Chat están en vivo: miembros reales, compartido."],
@@ -5942,7 +5944,6 @@ const LANG_ROWS = [
   ["Signed out on this phone.", "Auf diesem Handy abgemeldet.", "Sesión cerrada en este móvil."],
   ["Sign out on this phone? Your account stays. Sign in again with your email.", "Auf diesem Handy abmelden? Dein Konto bleibt. Melde dich wieder mit deiner E-Mail an.", "¿Cerrar sesión en este móvil? Tu cuenta se queda. Vuelve a entrar con tu email."],
   ["Signing in replaces what's on this phone with your account. Continue?", "Beim Anmelden wird der Inhalt dieses Handys durch dein Konto ersetzt. Weiter?", "Al entrar, lo de este móvil se cambia por tu cuenta. ¿Seguir?"],
-  ["Signed in as", "Angemeldet als", "Sesión iniciada como"],
   ["Synced", "Synchronisiert", "Sincronizado"],
   ["Be the first to say hi 👋", "Sag als Erste·r hallo 👋", "Sé el primero en saludar 👋"]
 ];
@@ -5952,7 +5953,7 @@ function addLang(){ if (window.LowiLang && LowiLang.add) LowiLang.add(LANG_ROWS)
 function ts(x){ const t = Date.parse(x); return isNaN(t) ? Date.now() : t; }
 function likeCount(id){ const s = LIKES[id]; return s ? s.size - (s.has(uid) ? 1 : 0) : 0; }
 function mapPost(r){
-  return {id:r.id, uid:r.user_id, me:r.user_id === uid, cloud:true, who:r.who || "Member", ts:ts(r.created_at), plat:r.plat || "", url:r.url || "", meta:r.meta || null,
+  return {id:r.id, uid:r.user_id, me:r.user_id === uid, cloud:true, who:r.who || "Member", ts:ts(r.created_at), plat:r.url ? (PLATS.indexOf(r.plat) >= 0 ? r.plat : "web") : "", url:r.url || "", meta:r.meta || null,
     cap:r.cap || "", photo:r.photo_url || "", vid:r.video_url ? 1 : 0, vurl:r.video_url || "", poster:r.poster || "", w:r.w || 0, h:r.h || 0, dur:r.dur || 0,
     rec:r.rec || "", mine:!!r.mine, art:r.art || ["✨", 40, 280], vis:"tribe", rank:r.lv ? "Lv " + r.lv : "", get likes(){ return likeCount(this.id); }};
 }
@@ -6190,7 +6191,7 @@ function a2hsHint(){ if (standalone() || location.protocol === "file:") return; 
   if (!/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) return; if ($("#lcA2hs")) return;
   const d = document.createElement("div"); d.id = "lcA2hs"; d.className = "lc-banner"; d.setAttribute("role", "status");
   d.innerHTML = '<span>Add LOWiSPIKE to your Home Screen so it remembers you.</span><button class="chip" data-cl="a2hs">How</button><button class="lc-x" data-cl="a2hs-x" aria-label="Close">×</button>';
-  document.body.appendChild(d); }
+  document.body.appendChild(d); setTimeout(() => { if (d.parentNode) d.remove(); }, 15000); }
 function persist(){ try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch(e){} }
 const BUILD = (document.querySelector('meta[name="lowi-build"]') || {}).content || "";
 let lastCheck = 0;

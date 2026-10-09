@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261009-230725">
+<meta name="lowi-build" content="20261009-234454">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -7876,6 +7876,1082 @@ R3.boot = function(){
 })();
 
 (function(){ try { window.LowiR3 && LowiR3.boot(); } catch(e){ console.error(e); } })();
+</script>
+<style id="p2css">
+/* ===== LOWiSPIKE round 2 · part 2: recipe screen, cook mode, one-shop basket, calm Scan, brand check, motion ===== */
+html{--p2-ok:#5fc27e;--p2-no:#ff7a6b;--p2-gold:#caa15a;--p2-card:rgba(255,255,255,.055);--p2-card2:rgba(255,255,255,.09)}
+html[data-theme=light]{--p2-ok:#2f8f4e;--p2-no:#d6453a;--p2-gold:#a8792e;--p2-card:rgba(22,28,46,.045);--p2-card2:rgba(22,28,46,.075)}
+@keyframes p2up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes p2pop{0%{opacity:0;transform:scale(.6)}70%{opacity:1;transform:scale(1.06)}100%{transform:scale(1)}}
+@keyframes p2fade{from{opacity:0}to{opacity:1}}
+.p2-up{animation:p2up .55s cubic-bezier(.2,.85,.25,1) both;animation-delay:calc(var(--d,0) * 55ms)}
+.p2-still .p2-up,.p2-still .p2-shop,.p2-still .p2-hero img{animation:none!important}
+.p2-lab{display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--r2-mut,#a19c90);margin:0 0 10px}
+.p2-lab.sm{font-size:10.5px;margin-bottom:6px}
+.p2-cnt{font-size:12px;letter-spacing:0;text-transform:none;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--p2-card2)}
+.p2-fine{font-size:12px;color:var(--r2-mut,#a19c90);margin-top:10px;text-align:center;line-height:1.4}
+.p2-sdot{width:12px;height:12px;border-radius:50%;flex:none;box-shadow:0 0 0 2px rgba(255,255,255,.12)}
+.p2-meter{display:inline-flex;gap:3px;align-items:flex-end;height:14px}
+.p2-meter i{width:5px;border-radius:2px;background:var(--p2-card2);height:6px}
+.p2-meter i:nth-child(2){height:10px}.p2-meter i:nth-child(3){height:14px}
+.p2-meter.l1 i:nth-child(1){background:var(--p2-ok)}
+.p2-meter.l2 i:nth-child(-n+2){background:var(--p2-ok)}
+.p2-meter.l3 i{background:var(--p2-gold)}
+
+/* ---------- recipe screen ---------- */
+.p2-recov .r2-sh,.p2-ckov .r2-sh{padding-top:0}
+.p2-recov .r2-x,.p2-ckov .r2-x{top:calc(env(safe-area-inset-top) + 12px);background:rgba(10,12,18,.45);color:#fff;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.p2-hero{position:relative;margin:0 -22px;height:min(46vh,340px);overflow:hidden;background:var(--r2-sheet2)}
+.p2-hero img{width:100%;height:100%;object-fit:cover;display:block;animation:p2ken 9s ease-out both}
+@keyframes p2ken{from{transform:scale(1.12)}to{transform:scale(1)}}
+.p2-hemo{display:flex;align-items:center;justify-content:center;height:100%;font-size:110px;animation:p2pop .7s cubic-bezier(.2,.9,.3,1.2) both}
+.p2-hfade{position:absolute;left:0;right:0;bottom:0;height:45%;background:linear-gradient(180deg,transparent,var(--r2-sheet))}
+.p2-rh{margin-top:-34px;position:relative}
+.p2-rn{margin-top:4px;line-height:1.15}
+.p2-facts{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 16px}
+.p2-fact{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:999px;background:var(--p2-card);border:1px solid var(--r2-line);font-size:13.5px}
+.p2-fact b{font-weight:650}
+.p2-start{margin-bottom:22px}
+.p2-start svg{margin-right:2px}
+.p2-sec{margin:0 0 22px}
+.p2-ings{display:flex;flex-direction:column;gap:8px}
+.p2-ing{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border-radius:16px;border:1px solid var(--r2-line);background:var(--p2-card);color:var(--r2-ink);font:inherit;text-align:left;cursor:pointer;transition:transform .15s,background .25s,opacity .2s}
+.p2-ing:active{transform:scale(.98)}
+.p2-ing.home{background:transparent;opacity:.82}
+.p2-ing.p2-flip{animation:p2flip .32s ease both}
+@keyframes p2flip{50%{transform:scale(.94);opacity:.4}}
+.p2-ie{font-size:22px;width:28px;text-align:center;flex:none}
+.p2-in{flex:1;min-width:0;display:flex;flex-direction:column}
+.p2-in b{font-weight:600;font-size:15px}
+.p2-in small{font-size:12.5px;color:var(--r2-mut)}
+.p2-ip{font-size:14px;font-weight:650;color:var(--r2-mut)}
+.p2-ok{width:24px;height:24px;border-radius:50%;background:var(--p2-ok);color:#fff;display:flex;align-items:center;justify-content:center;flex:none;animation:p2pop .35s both}
+.p2-hint{font-size:12.5px;color:var(--r2-mut);margin-top:8px}
+.p2-best{display:flex;align-items:center;gap:12px;padding:14px;border-radius:18px;background:linear-gradient(135deg,rgba(202,161,90,.16),rgba(202,161,90,.05));border:1px solid rgba(202,161,90,.35);color:var(--r2-ink,inherit);width:100%;font:inherit;box-sizing:border-box}
+.p2-best.tap{cursor:pointer;transition:transform .15s}
+.p2-best.tap:active{transform:scale(.98)}
+.p2-best .h3{margin-top:2px}
+.p2-shops{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.p2-shop{position:relative;display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:14px;border:1px solid var(--r2-line);background:var(--p2-card);color:var(--r2-ink);font:inherit;cursor:pointer;overflow:hidden;animation:p2up .45s cubic-bezier(.2,.85,.25,1) both;animation-delay:calc(var(--i) * 45ms + 250ms)}
+.p2-shop b{font-weight:600;font-size:14.5px;position:relative}
+.p2-shop.on{border-color:var(--p2-gold);box-shadow:0 0 0 1px var(--p2-gold) inset}
+.p2-st{margin-left:auto;font-weight:650;position:relative}
+.p2-pill{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--p2-ok);color:#fff;position:relative}
+.p2-bar{position:absolute;left:0;top:0;bottom:0;width:var(--w);background:var(--p2-card);transform-origin:left;animation:p2bar .8s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i) * 45ms + 350ms)}
+@keyframes p2bar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.p2-steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.p2-steps li{display:flex;gap:12px;font-size:15px;line-height:1.45}
+.p2-sn{width:26px;height:26px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;background:var(--p2-card2);color:var(--p2-gold)}
+.p2-more{display:flex;gap:8px}
+.p2-more .r2-btn{flex:1;font-size:14px;padding:0 10px}
+
+/* ---------- cook mode ---------- */
+.p2-ck{min-height:100%;display:flex;flex-direction:column;padding-top:calc(env(safe-area-inset-top) + 14px);box-sizing:border-box;min-height:calc(100vh - env(safe-area-inset-bottom) - 24px)}
+.p2-cktop{height:36px;display:flex;align-items:center;padding-right:48px}
+.p2-ckname{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.p2-ckbar{display:flex;gap:4px;margin:8px 0 6px}
+.p2-ckbar i{flex:1;height:4px;border-radius:2px;background:var(--p2-card2);position:relative;overflow:hidden}
+.p2-ckbar i.done{background:var(--p2-gold)}
+.p2-ckbar i.on::after{content:"";position:absolute;inset:0;background:var(--p2-gold);transform-origin:left;animation:p2bar .6s cubic-bezier(.2,.8,.2,1) both}
+.p2-ckbody{flex:1;display:flex;flex-direction:column;justify-content:center;padding:10px 0 18px}
+.p2-ckbody.from-r{animation:p2inr .45s cubic-bezier(.2,.85,.25,1) both}
+.p2-ckbody.from-l{animation:p2inl .45s cubic-bezier(.2,.85,.25,1) both}
+@keyframes p2inr{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+@keyframes p2inl{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}
+.p2-cktx{margin-top:6px;line-height:1.3;font-size:24px}
+.p2-cknav{display:flex;gap:10px;padding-bottom:6px}
+.p2-ckb{width:54px;height:54px;padding:0;border-radius:50%;flex:none}
+.p2-cknav .r2-btn.big{flex:1}
+.p2-timer{position:relative;overflow:hidden;margin-top:18px;align-self:flex-start;display:inline-flex;align-items:center;gap:8px;padding:11px 16px;border-radius:999px;border:1px solid var(--p2-gold);background:transparent;color:var(--p2-gold);font:inherit;font-weight:650;font-size:15px;cursor:pointer}
+.p2-timer::before{content:"";position:absolute;left:0;top:0;bottom:0;width:var(--p,0%);background:rgba(202,161,90,.18);transition:width 1s linear}
+.p2-timer>*{position:relative}
+.p2-timer.run span{font-variant-numeric:tabular-nums;min-width:44px}
+.p2-timer.rang{background:var(--p2-gold);color:#14100a;animation:p2pop .4s both}
+.p2-mise{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;margin-top:18px}
+.p2-m{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;padding:12px 6px;border-radius:18px;background:var(--p2-card);border:1px solid var(--r2-line);animation:p2pop .5s cubic-bezier(.2,.9,.3,1.2) both;animation-delay:calc(var(--i) * 70ms + 120ms)}
+.p2-m>span{font-size:30px}
+.p2-m b{font-size:13px;font-weight:600;line-height:1.2}
+.p2-m small{font-size:11.5px;color:var(--r2-mut)}
+.p2-m.home{opacity:.75}
+.p2-done{text-align:center;display:flex;flex-direction:column;align-items:center}
+
+/* scenes: transform + opacity only, so they stay smooth */
+.p2-scene{position:relative;width:230px;height:190px;margin:0 auto 22px;flex:none}
+.p2-glow{position:absolute;left:50%;top:52%;width:170px;height:170px;margin:-85px 0 0 -85px;border-radius:50%;background:radial-gradient(circle,rgba(202,161,90,.22),rgba(202,161,90,0) 70%);animation:p2breath 3.2s ease-in-out infinite}
+@keyframes p2breath{50%{transform:scale(1.08);opacity:.75}}
+.p2-scene>span{position:absolute;left:50%;line-height:1;display:block}
+.p2-vessel{font-size:92px;bottom:18px;transform:translateX(-50%)}
+.p2-item{font-size:44px;top:22px;margin-left:-22px;animation:p2drop 2.4s cubic-bezier(.3,.7,.3,1) infinite}
+@keyframes p2drop{0%{opacity:0;transform:translateY(-26px) scale(.8)}18%{opacity:1}55%{transform:translateY(46px) scale(1)}62%{transform:translateY(40px)}70%,100%{opacity:0;transform:translateY(52px) scale(.9)}}
+.p2-tool{font-size:54px;top:26px;margin-left:-27px}
+.sc-whisk .p2-tool,.sc-mix .p2-tool{animation:p2stir 1.3s linear infinite;transform-origin:50% 150%}
+@keyframes p2stir{from{transform:rotate(0) translateX(16px) rotate(0)}to{transform:rotate(360deg) translateX(16px) rotate(-360deg)}}
+.sc-whisk .p2-item,.sc-mix .p2-item{top:6px;margin-left:30px;font-size:34px}
+.p2-swirl{position:absolute;left:50%;bottom:62px;width:84px;height:30px;margin-left:-42px;border-radius:50%;border:3px dashed rgba(202,161,90,.55);animation:p2spin 1.6s linear infinite}
+@keyframes p2spin{to{transform:rotate(360deg)}}
+.sc-pan .p2-vessel{animation:p2shake .9s ease-in-out infinite}
+@keyframes p2shake{0%,100%{transform:translateX(-50%) rotate(0)}25%{transform:translateX(calc(-50% - 3px)) rotate(-2deg)}75%{transform:translateX(calc(-50% + 3px)) rotate(2deg)}}
+.p2-steam{position:absolute;left:50%;bottom:96px;width:14px;height:34px;border-radius:50%;background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.55));filter:blur(4px);opacity:0;animation:p2steam 2.4s ease-out infinite}
+html[data-theme=light] .p2-steam{background:linear-gradient(180deg,rgba(120,130,150,0),rgba(120,130,150,.45))}
+.p2-steam.s1{margin-left:-30px}.p2-steam.s2{margin-left:-6px;animation-delay:.8s}.p2-steam.s3{margin-left:18px;animation-delay:1.6s}
+@keyframes p2steam{0%{opacity:0;transform:translateY(10px) scaleY(.6)}30%{opacity:1}100%{opacity:0;transform:translateY(-60px) scaleY(1.3)}}
+.p2-bub{position:absolute;left:50%;bottom:70px;width:10px;height:10px;border-radius:50%;border:2px solid rgba(255,255,255,.6);opacity:0;animation:p2bub 1.8s ease-in infinite}
+.p2-bub.b1{margin-left:-24px}.p2-bub.b2{margin-left:4px;animation-delay:.6s}.p2-bub.b3{margin-left:22px;animation-delay:1.2s}
+@keyframes p2bub{0%{opacity:0;transform:translateY(0) scale(.5)}30%{opacity:1}100%{opacity:0;transform:translateY(-34px) scale(1.1)}}
+.sc-boil .p2-item,.sc-pan .p2-item{font-size:36px}
+.sc-chop .p2-item{top:auto;bottom:50px;font-size:62px;margin-left:-50px;animation:none}
+.sc-chop .p2-tool{top:auto;bottom:70px;margin-left:8px;animation:p2chop .7s ease-in-out infinite;transform-origin:20% 80%}
+@keyframes p2chop{0%,100%{transform:rotate(-28deg) translateY(-10px)}45%{transform:rotate(4deg) translateY(10px)}}
+.p2-board{position:absolute;left:30px;right:30px;bottom:34px;height:16px;border-radius:9px;background:linear-gradient(180deg,#b98a5a,#8c6239);box-shadow:0 6px 16px rgba(0,0,0,.25)}
+.p2-bit{font-size:22px;bottom:54px;opacity:0}
+.p2-bit.c1{margin-left:28px;animation:p2bit 1.4s ease-out infinite}
+.p2-bit.c2{margin-left:44px;animation:p2bit 1.4s ease-out .7s infinite}
+@keyframes p2bit{0%{opacity:0;transform:translateX(-12px) scale(.6)}25%{opacity:1}100%{opacity:0;transform:translateX(26px) scale(.9)}}
+.sc-pour .p2-vessel{font-size:84px}
+.sc-pour .p2-tool{top:6px;margin-left:-70px;animation:p2tilt 2.6s ease-in-out infinite;transform-origin:70% 70%}
+@keyframes p2tilt{0%,100%{transform:rotate(-10deg)}35%,70%{transform:rotate(-58deg)}}
+.sc-pour .p2-item{margin-left:34px;top:4px;font-size:32px}
+.p2-drop{position:absolute;left:50%;top:62px;width:7px;height:11px;margin-left:-14px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:#8fd0ff;opacity:0;animation:p2fall 1.3s ease-in infinite}
+.p2-drop.d2{animation-delay:.42s;margin-left:-10px}.p2-drop.d3{animation-delay:.85s;margin-left:-17px}
+@keyframes p2fall{0%,30%{opacity:0;transform:translateY(0)}40%{opacity:1}100%{opacity:0;transform:translateY(54px)}}
+.p2-oven{position:absolute;left:50%;bottom:18px;width:150px;height:118px;margin-left:-75px;border-radius:18px;background:linear-gradient(180deg,#3a3f4c,#262a33);box-shadow:0 10px 26px rgba(0,0,0,.3)}
+.p2-win{position:absolute;left:16px;right:16px;top:30px;bottom:16px;border-radius:10px;background:radial-gradient(circle at 50% 80%,#ffb347,#c2561c 70%,#5a2410);overflow:hidden;animation:p2warm 2.2s ease-in-out infinite}
+@keyframes p2warm{50%{filter:brightness(1.25)}}
+.p2-win .p2-item{position:absolute;left:50%;top:auto;bottom:6px;margin-left:-20px;font-size:40px;animation:none}
+.p2-knob{position:absolute;top:10px;left:22px;width:12px;height:12px;border-radius:50%;background:#9aa0ad}.p2-knob.k{left:42px}
+.sc-oven .p2-steam{bottom:132px}
+.sc-cold .p2-vessel{font-size:64px;bottom:40px;margin-left:44px}
+.sc-cold .p2-item{top:auto;bottom:44px;font-size:56px;margin-left:-60px;animation:p2float 3s ease-in-out infinite}
+@keyframes p2float{50%{transform:translateY(-8px)}}
+.sc-cold .p2-glow{background:radial-gradient(circle,rgba(143,208,255,.28),rgba(143,208,255,0) 70%)}
+.p2-flake{position:absolute;left:50%;top:0;font-size:20px;color:#bfe4ff;font-style:normal;opacity:0;animation:p2snow 3s linear infinite}
+.p2-flake.f1{margin-left:-70px}.p2-flake.f2{margin-left:10px;animation-delay:1s}.p2-flake.f3{margin-left:60px;animation-delay:2s}
+@keyframes p2snow{0%{opacity:0;transform:translateY(0) rotate(0)}20%{opacity:1}100%{opacity:0;transform:translateY(150px) rotate(180deg)}}
+.sc-wait .p2-vessel{font-size:84px;animation:p2hour 3s ease-in-out infinite}
+@keyframes p2hour{0%,40%{transform:translateX(-50%) rotate(0)}50%,90%{transform:translateX(-50%) rotate(180deg)}100%{transform:translateX(-50%) rotate(360deg)}}
+.sc-wait .p2-item{display:none}
+.p2-spark{position:absolute;left:50%;top:40%;width:8px;height:8px;border-radius:50%;background:var(--p2-gold);opacity:0;animation:p2spark 2.4s ease-out infinite}
+.p2-spark.k1{margin-left:-80px;animation-delay:.9s}.p2-spark.k2{margin-left:66px;margin-top:-20px;animation-delay:1.3s}.p2-spark.k3{margin-left:44px;margin-top:40px;animation-delay:1.7s}.p2-spark.k4{margin-left:-60px;margin-top:50px;animation-delay:2.1s}
+@keyframes p2spark{0%{opacity:0;transform:scale(.2)}20%{opacity:1;transform:scale(1.2)}60%,100%{opacity:0;transform:scale(.4)}}
+.sc-plate .p2-vessel{font-size:100px}
+.sc-done .p2-item{animation:p2settle .9s cubic-bezier(.2,.9,.3,1.25) both;top:46px;margin-left:-36px}
+.sc-done .p2-item img{width:72px;height:72px;border-radius:50%;object-fit:cover;box-shadow:0 8px 20px rgba(0,0,0,.3)}
+.sc-done .p2-item{font-size:60px}
+@keyframes p2settle{from{opacity:0;transform:translateY(-60px) scale(.7)}to{opacity:1;transform:none}}
+
+/* ---------- swap card ---------- */
+.p2-cookit{margin:14px 0 10px;position:relative;overflow:hidden}
+.p2-cookit::after{content:"";position:absolute;top:0;bottom:0;width:40%;left:-50%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-20deg);animation:p2shine 1.1s .6s ease-out 1 both}
+@keyframes p2shine{to{left:130%}}
+.p2-cmin{font-weight:600;opacity:.75;font-size:14px;margin-left:2px}
+.p2-minor .btn{height:40px;font-size:14px;opacity:.9}
+.p2-sbox{margin-top:14px;padding:16px;border-radius:22px;background:var(--p2-card);border:1px solid var(--line2,rgba(255,255,255,.12));animation:p2up .5s .15s cubic-bezier(.2,.85,.25,1) both}
+.p2-sings{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.p2-si{font-size:13px;padding:5px 10px;border-radius:999px;background:var(--p2-card2)}
+.p2-si.home{opacity:.55;text-decoration:line-through;text-decoration-color:rgba(160,160,160,.6)}
+#result .sh-shopbox{display:none!important}
+.swapcard{animation:p2glow 1.6s .2s ease-out 1 both}
+@keyframes p2glow{0%{box-shadow:0 0 0 0 rgba(202,161,90,0)}40%{box-shadow:0 0 0 6px rgba(202,161,90,.18)}100%{box-shadow:0 0 0 0 rgba(202,161,90,0)}}
+
+/* ---------- Scan ---------- */
+.p2-scan{display:flex;flex-direction:column;align-items:stretch;margin-top:18px}
+.p2-orb{position:relative;align-self:center;width:156px;height:156px;border-radius:50%;border:1px solid rgba(202,161,90,.45);background:radial-gradient(circle at 35% 30%,rgba(233,203,136,.35),rgba(185,141,69,.12) 55%,rgba(185,141,69,.05));color:var(--p2-gold);cursor:pointer;margin-top:18px;box-shadow:0 18px 50px rgba(202,161,90,.18),inset 0 1px 0 rgba(255,255,255,.25);transition:transform .2s;animation:p2pop .6s cubic-bezier(.2,.9,.3,1.2) both}
+.p2-orb:active{transform:scale(.95)}
+.p2-orbin{position:relative;z-index:1;display:flex;align-items:center;justify-content:center}
+.p2-orbin svg{width:46px;height:46px}
+.p2-ring{position:absolute;inset:-1px;border-radius:50%;border:1px solid rgba(202,161,90,.5);animation:p2ring 2.8s ease-out infinite;pointer-events:none}
+.p2-ring.r2{animation-delay:1.4s}
+@keyframes p2ring{0%{transform:scale(1);opacity:.8}100%{transform:scale(1.35);opacity:0}}
+.p2-orbt{text-align:center;font-weight:650;font-size:17px;margin:16px 0 22px}
+.p2-type{display:flex;gap:8px;align-items:center}
+.p2-type .input{flex:1}
+.p2-go{width:50px;height:50px;border-radius:16px;border:0;flex:none;background:linear-gradient(180deg,#e9cb88,#b98d45);color:#14100a;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .12s}
+.p2-go:active{transform:scale(.94)}
+.p2-quick{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -18px;padding:2px 18px 6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.p2-quick::-webkit-scrollbar{display:none}
+.p2-q{flex:none;width:92px;scroll-snap-align:start;display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:0;color:inherit;font:inherit;cursor:pointer;padding:0;transition:transform .15s}
+.p2-q:active{transform:scale(.95)}
+.p2-q img,.p2-qe{width:76px;height:76px;border-radius:22px;object-fit:cover;display:flex;align-items:center;justify-content:center;font-size:36px;background:var(--p2-card);box-shadow:0 6px 16px rgba(0,0,0,.18)}
+.p2-q b{font-size:12.5px;font-weight:600;line-height:1.2;text-align:center;max-width:92px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.p2-rows{margin-top:22px;border-radius:20px;overflow:hidden;border:1px solid var(--line2,rgba(255,255,255,.12));background:var(--p2-card)}
+.p2-row{display:flex;align-items:center;gap:12px;width:100%;padding:14px;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer;transition:background .2s}
+.p2-row+.p2-row{border-top:1px solid var(--line2,rgba(255,255,255,.1))}
+.p2-row:active{background:var(--p2-card2)}
+.p2-ric{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(202,161,90,.14);color:var(--p2-gold);flex:none}
+.p2-rt{flex:1;display:flex;flex-direction:column;min-width:0}
+.p2-rt b{font-weight:650;font-size:15.5px}
+.p2-rt small{font-size:12.5px;opacity:.65}
+.p2-row>svg{opacity:.45}
+.p2-shot{position:relative;width:100%;aspect-ratio:4/3;border-radius:24px;overflow:hidden;background:var(--p2-card)}
+.p2-shot img{width:100%;height:100%;object-fit:cover}
+.p2-scanl{position:absolute;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#e9cb88,transparent);box-shadow:0 0 18px #e9cb88;animation:p2scan 1.4s ease-in-out infinite alternate}
+@keyframes p2scan{from{top:6%}to{top:94%}}
+.p2-confirm{margin-top:14px;padding:16px;border-radius:22px;background:var(--p2-card);border:1px solid var(--line2,rgba(255,255,255,.12))}
+.p2-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.p2-confirm .r2-link{display:block;margin:8px auto 0;color:inherit;opacity:.6}
+/* sheets: classics + brands */
+.p2-tall .r2-sh{min-height:70vh}
+.p2-search{position:relative;margin:14px 0 6px}
+.p2-search svg{position:absolute;left:14px;top:16px;opacity:.5}
+.p2-search .input{padding-left:42px;background:var(--r2-field);border-color:var(--r2-line);color:var(--r2-ink)}
+.p2-ct{margin:16px 0 6px;text-transform:uppercase;letter-spacing:.08em}
+.p2-crow{display:flex;align-items:center;gap:12px;width:100%;padding:7px 0;border:0;background:none;color:var(--r2-ink);font:inherit;text-align:left;cursor:pointer}
+.p2-crow img,.p2-crow .p2-qe{width:44px;height:44px;border-radius:13px;object-fit:cover;font-size:22px;box-shadow:none}
+.p2-crow b{flex:1;font-weight:600;font-size:15px}
+.p2-crow svg{opacity:.4}
+.p2-how{display:flex;flex-direction:column;gap:6px;margin:12px 0 4px;font-size:14px;color:var(--r2-mut)}
+.p2-how span{display:flex;align-items:center;gap:10px}
+.p2-v{display:inline-flex;align-items:center;justify-content:center;min-width:62px;height:24px;padding:0 8px;border-radius:999px;font-size:12px;font-weight:750;color:#fff;box-sizing:border-box}
+.p2-v.ok{background:var(--p2-ok)}.p2-v.no{background:var(--p2-no)}.p2-v.miss{background:var(--r2-field);color:var(--r2-ink);border:1px solid var(--r2-line)}
+.p2-br{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:16px;background:var(--p2-card);border:1px solid var(--r2-line);margin-top:8px;animation:p2up .4s cubic-bezier(.2,.85,.25,1) both;animation-delay:calc(var(--i,0) * 35ms)}
+.p2-bre{font-size:24px;width:30px;text-align:center;flex:none}
+.p2-brt{flex:1;display:flex;flex-direction:column;min-width:0}
+.p2-brt b{font-weight:600;font-size:15px}
+.p2-brt small{font-size:12.5px;color:var(--r2-mut)}
+.p2-verd{font-size:12px;font-weight:750;padding:4px 10px;border-radius:999px;color:#fff;flex:none}
+.p2-br.ok .p2-verd{background:var(--p2-ok)}.p2-br.no .p2-verd{background:var(--p2-no)}
+.p2-br.miss{border-style:dashed}
+.p2-label{margin-top:10px;padding:14px;border-radius:16px;background:var(--r2-field)}
+.p2-label ol{margin:8px 0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+
+/* ---------- Cook shuffle pick ---------- */
+.p2-tapcard{cursor:pointer}
+.p2-pinfo{margin:12px 0 4px;animation:p2up .5s .1s cubic-bezier(.2,.85,.25,1) both}
+.p2-pease{display:flex;align-items:center;gap:8px;font-size:14px;margin-bottom:12px;flex-wrap:wrap}
+.p2-pease b{font-weight:650}
+.p2-pcols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.p2-pl{display:flex;flex-direction:column;gap:4px;font-size:13.5px}
+.p2-pshop{display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid var(--line2,rgba(255,255,255,.1))}
+.p2-pshop .p2-sdot{width:9px;height:9px}
+
+/* ---------- gentle motion around the app ---------- */
+.tab.p2-tabin>*{animation:p2up .5s cubic-bezier(.2,.85,.25,1) both}
+.tab.p2-tabin>*:nth-child(2){animation-delay:40ms}.tab.p2-tabin>*:nth-child(3){animation-delay:80ms}.tab.p2-tabin>*:nth-child(4){animation-delay:120ms}.tab.p2-tabin>*:nth-child(5){animation-delay:160ms}.tab.p2-tabin>*:nth-child(n+6){animation-delay:200ms}
+.card,.chip,.btn{-webkit-tap-highlight-color:transparent}
+.card:active{transition:transform .12s}
+@media (prefers-reduced-motion:reduce){
+  .p2-up,.p2-shop,.p2-bar,.p2-m,.p2-br,.p2-sbox,.p2-pinfo,.swapcard,.tab.p2-tabin>*,.p2-hero img,.p2-orb,.p2-ckbody{animation:none!important}
+  .p2-scene *,.p2-ring,.p2-cookit::after{animation-duration:0s!important;animation-iteration-count:1!important}
+}
+</style>
+<script id="p2js">
+/* ===== LOWiSPIKE round 2 · part 2 (Oct 9 2026): cook it, one-shop basket, calm Scan, brand check, recipe as the highlight =====
+   Own namespace (p2-*), own click handling (data-p2). Talks to the app through its globals (S, save, MEALS, RECIPE_BOOK, FOOD_IMG ...).
+   Prices are estimates: the same formula as the cart (discounter pack price x store level x small fixed spread), never live. */
+(function(){
+"use strict";
+const R2 = window.LowiR2 || {};
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const RM = () => !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+const st = () => (typeof S !== "undefined" ? S : null);
+const persist = () => { try { save(); } catch(e){} };
+const say = m => { try { toast(m); } catch(e){} };
+const IC = {
+  x:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  cam:'<svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5h3l1.8-2.8h6.4L17 8.5h3v10.5H4z"/><circle cx="12" cy="13.6" r="3.6"/></svg>',
+  chev:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>',
+  back:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>',
+  go:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+  check:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  clock:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>',
+  search:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg>',
+  book:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5h10a3 3 0 013 3v12H8a3 3 0 01-3-3z"/><path d="M5 16.5a3 3 0 013-3h10"/></svg>',
+  tag:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12.5V4.5h8l9 9-8 8z"/><circle cx="8" cy="9" r="1.4"/></svg>',
+  cart:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2.5l2.2 11h10.6l2-8H6.6"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/></svg>',
+  play:'<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>'
+};
+
+/* ---------- data: recipes for the 47 classic swaps that don't use a Recipe Book recipe ---------- */
+/* LOWiSPIKE round 2: real recipes for every swap (so "Cook it" and "Where to buy" match the dish).
+   R2_PR: key -> [emoji, name, estimated pack price EUR at a discounter, 1 = usually at home already]
+   R2_REC: meal id -> {m: minutes, i: ["key|amount"], s: [steps]}. Swaps that link to the recipe book (rb) use that recipe. */
+const R2_PR = {
+  eggs:["🥚","Eggs",2.99], spinach:["🥬","Baby spinach",1.49], frischkaese:["🧀","Frischkäse",1.19], avocado:["🥑","Avocado",1.29],
+  greekyog:["🥣","Greek yogurt",1.99], almonds:["🌰","Almonds",2.49], chia:["⚫","Chia seeds",2.29], berries:["🫐","Berries",2.49],
+  nuts:["🥜","Mixed nuts",2.49], seeds:["🌻","Sunflower & pumpkin seeds",1.79], cinnamon:["🟤","Cinnamon",0.99,1], turkey:["🦃","Turkey slices",1.99],
+  cucumber:["🥒","Cucumber",0.69], tomato:["🍅","Tomatoes",1.29], cottage:["🥛","Cottage cheese",0.99], vanilla:["🌼","Vanilla",1.49,1],
+  salmon:["🐟","Smoked salmon",2.99], dill:["🌿","Dill",0.99], lemon:["🍋","Lemon",0.49], mushrooms:["🍄","Mushrooms",1.49],
+  butter:["🧈","Butter",2.19,1], oil:["🫒","Olive oil",4.99,1], salt:["🧂","Salt & pepper",0.99,1], beef:["🥩","Minced beef",4.49],
+  zucchini:["🥒","Zucchini",0.99], shirataki:["🍜","Shirataki noodles",1.99], passata:["🍅","Passata, no added sugar",0.79],
+  onion:["🧅","Onion",0.29,1], garlic:["🧄","Garlic",0.49,1], parmesan:["🧀","Parmesan",2.29], mozzarella:["🧀","Mozzarella",0.89],
+  chicken:["🍗","Chicken breast",4.99], cauli:["🥦","Cauliflower",1.79], pesto:["🌿","Pesto",1.79], tamari:["🥢","Tamari or soy sauce",2.49,1],
+  prawns:["🦐","Prawns",4.49], sprouts:["🌱","Bean sprouts",0.99], lime:["🍋","Lime",0.39], peanuts:["🥜","Peanuts",1.49],
+  stock:["🍲","Stock",0.99,1], pakchoi:["🥬","Pak choi",1.29], groundalm:["🌰","Ground almonds",1.99], greenbeans:["🫛","Green beans",1.29],
+  celeriac:["🥔","Celeriac",1.29], mustard:["🟡","Mustard",0.69,1], herbs:["🌿","Fresh herbs",0.99], feta:["🧀","Feta",1.29],
+  parsley:["🌿","Parsley",0.79], mint:["🌿","Mint",0.99], pepper:["🫑","Bell pepper",0.89], fish:["🐟","White fish fillet",3.99],
+  gherkin:["🥒","Gherkins",1.19], lettuce:["🥬","Lettuce",0.99], salsa:["🍅","Salsa, no added sugar",1.49], cheese:["🧀","Grated cheese",1.49],
+  tzatziki:["🥣","Tzatziki",1.29], cabbage:["🥬","White cabbage",0.99], curry:["🟠","Curry powder",0.99,1], paprika:["🌶️","Paprika powder",0.99,1],
+  spices:["🌶️","Spices",0.99,1], sausage:["🌭","Beef sausages",2.99], sauerkraut:["🥬","Sauerkraut",0.99], camembert:["🧀","Camembert",1.29],
+  radish:["🔴","Radishes",0.79], walnuts:["🌰","Walnuts",2.29], almondbutter:["🥜","Almond butter",3.99], olives:["🫒","Olives",1.29],
+  water:["💧","Sparkling water",0.29], orange:["🍊","Orange",0.49], ice:["🧊","Ice cubes",0,1], coffee:["☕","Coffee",3.99,1],
+  milk:["🥛","Milk",1.09], tea:["🍵","Tea",1.29,1], cocoa:["🍫","Pure cocoa powder",2.29], cauliRice:["🥦","Cauliflower rice",1.49],
+  beefsteak:["🥩","Beef strips",4.99], tofu:["⬜","Tofu",1.69], broccoli:["🥦","Broccoli",1.29], kale:["🥬","Kale",1.49]
+};
+const R2_REC = {
+  croissant:{m:8, i:["eggs|3","spinach|1 handful","frischkaese|2 tbsp","avocado|½","butter|1 tsp","salt|a pinch"],
+    s:["Whisk the eggs with a pinch of salt and pepper.","Melt the butter in a pan over medium heat and pour in the eggs.","When the edges set, add the spinach and spoon the Frischkäse on one half.","Fold the omelette over and slide it onto a plate.","Slice the ½ avocado and serve it on the side."]},
+  cornflakes:{m:3, i:["greekyog|200 g","almonds|1 small handful","chia|1 tbsp","berries|a few"],
+    s:["Spoon the Greek yogurt into a bowl.","Chop the almonds roughly.","Top the yogurt with almonds, chia and a few berries."]},
+  granola:{m:5, i:["greekyog|200 g","nuts|1 small handful","seeds|1 tbsp","cinnamon|a pinch","berries|a few"],
+    s:["Chop the nuts roughly.","Toast nuts and seeds in a dry pan for 2–3 minutes until they smell nutty.","Spoon the Greek yogurt into a bowl.","Top with the warm crunch, cinnamon and a few berries."]},
+  broetchen:{m:10, i:["eggs|2","frischkaese|2 tbsp","turkey|4 slices","cucumber|½","tomato|1","salt|a pinch"],
+    s:["Boil the eggs for 7 minutes, then cool them in cold water.","Slice the cucumber and tomato.","Peel and halve the eggs and season with salt and pepper.","Arrange everything on a board with the Frischkäse and turkey for little bites."]},
+  pancakes:{m:12, i:["eggs|2","cottage|100 g","cinnamon|a pinch","vanilla|a drop","butter|1 tsp","greekyog|3 tbsp","berries|a few"],
+    s:["Whisk the eggs, cottage cheese, cinnamon and vanilla into a batter.","Melt the butter in a pan over medium-low heat.","Fry small pancakes, 2 minutes per side, and flip gently.","Serve with Greek yogurt and a few berries on top."]},
+  porridge:{m:5, i:["chia|3 tbsp","milk|150 ml","greekyog|3 tbsp","cinnamon|a pinch","berries|a few"],
+    s:["Stir the chia seeds into the milk.","Leave it in the fridge overnight, or at least 20 minutes.","Stir in the Greek yogurt and cinnamon.","Top with a few berries."]},
+  smoothie:{m:3, i:["greekyog|200 g","berries|1 small handful","chia|1 tbsp","cinnamon|a pinch"],
+    s:["Spoon the Greek yogurt into a bowl.","Mash half the berries and swirl them in.","Top with the rest of the berries, chia and cinnamon."]},
+  bagel:{m:5, i:["cucumber|1","frischkaese|3 tbsp","salmon|100 g","dill|a few sprigs","lemon|½"],
+    s:["Halve the cucumber lengthwise and scoop out the seeds with a spoon.","Fill the boats with Frischkäse.","Lay the smoked salmon on top.","Finish with dill and a squeeze of lemon."]},
+  eggtoast:{m:8, i:["eggs|3","spinach|1 handful","mushrooms|4","avocado|½","butter|1 tsp","salt|a pinch"],
+    s:["Slice the mushrooms.","Fry the mushrooms in butter for 3 minutes, then add the spinach until it wilts.","Whisk the eggs with salt and pepper, pour them in and stir gently until just set.","Serve with the sliced ½ avocado."]},
+  bolognese:{m:25, i:["beef|250 g","passata|1 jar","onion|1","garlic|1 clove","zucchini|2","parmesan|1 tbsp","oil|1 tbsp"],
+    s:["Chop the onion and garlic.","Fry the beef with onion and garlic in olive oil until brown.","Add the passata and simmer for 15 minutes. Season with salt and pepper.","Spiralise or peel the zucchini into noodles and warm them in a pan for 2 minutes.","Serve the sauce on the noodles with parmesan on top."]},
+  lasagne:{m:45, i:["beef|300 g","passata|1 jar","onion|1","zucchini|2","mozzarella|1 ball","parmesan|1 tbsp","oil|1 tbsp"],
+    s:["Chop the onion and slice the zucchini lengthwise, very thin.","Fry the beef and onion, add the passata and simmer for 10 minutes.","Layer zucchini and ragù in a baking dish, three times.","Top with torn mozzarella and parmesan.","Bake at 200 °C for 25 minutes. Serve with a green salad."]},
+  kaesespaetzle:{m:25, i:["shirataki|1 pack","chicken|1 breast","onion|2","cheese|80 g","butter|1 tsp","salt|a pinch"],
+    s:["Rinse the shirataki well and dry them in a hot pan.","Slice the onions and roast them slowly in butter until golden.","Slice the chicken and fry it until cooked through.","Mix shirataki, chicken and cheese in a dish and top with the onions.","Bake at 200 °C for 10 minutes until the cheese bubbles."]},
+  pesto:{m:15, i:["zucchini|2","pesto|2 tbsp","chicken|1 breast","spinach|1 handful","oil|1 tsp"],
+    s:["Slice the chicken into strips.","Fry the chicken in olive oil until golden and cooked through.","Spiralise the zucchini and add it to the pan with the spinach for 2 minutes.","Stir in the pesto and serve."]},
+  friedrice:{m:15, i:["cauliRice|400 g","eggs|2","chicken|1 breast","pepper|1","tamari|1 tbsp","oil|1 tbsp"],
+    s:["Dice the chicken and the pepper.","Fry the chicken in oil until cooked, then add the pepper.","Add the cauliflower rice and fry for 5 minutes.","Push it aside, scramble the eggs in the gap, then mix everything.","Season with a splash of tamari and serve."]},
+  padthai:{m:15, i:["zucchini|2","prawns|150 g","eggs|1","sprouts|1 handful","lime|1","tamari|1 tbsp","peanuts|1 tbsp","oil|1 tbsp"],
+    s:["Spiralise the zucchini.","Fry the prawns in oil for 2–3 minutes until pink.","Scramble the egg in the same pan.","Add zucchini, bean sprouts, tamari and lime juice and toss for 2 minutes.","Top with chopped peanuts and a lime wedge."]},
+  ramen:{m:15, i:["stock|500 ml","shirataki|1 pack","eggs|2","chicken|1 breast","pakchoi|1","tamari|1 tbsp"],
+    s:["Boil the eggs for 6½ minutes, then cool them in cold water.","Simmer the chicken in the stock for 10 minutes, then slice it.","Rinse the shirataki and add them with the pak choi for 2 minutes.","Season the broth with tamari.","Pour into a bowl, top with the chicken and halved jammy eggs."]},
+  schnitzel:{m:20, i:["chicken|1 breast","eggs|1","parmesan|30 g","groundalm|30 g","cucumber|1","greekyog|2 tbsp","oil|2 tbsp"],
+    s:["Flatten the chicken between baking paper.","Beat the egg. Mix parmesan and ground almonds on a plate.","Dip the chicken in egg, then press it into the crust.","Fry in oil for 4 minutes per side until golden.","Slice the cucumber, mix it with yogurt and salt, and serve on the side."]},
+  bratwurst:{m:30, i:["beef|300 g","eggs|1","onion|1","mustard|1 tsp","cauli|½","celeriac|¼","butter|1 tbsp"],
+    s:["Chop the cauliflower and celeriac and boil them for 15 minutes.","Mix the beef with egg, chopped onion, mustard, salt and pepper.","Shape small patties and fry them 4 minutes per side.","Mash the vegetables with butter and salt.","Serve the Frikadellen on the mash with the pan juices."]},
+  bakedpotato:{m:30, i:["cauli|1","salmon|1 fillet","greekyog|150 g","herbs|1 handful","lemon|½","oil|1 tbsp"],
+    s:["Cut the cauliflower into two thick steaks.","Brush with oil, season and roast at 220 °C for 25 minutes.","Chop the herbs and stir them into the yogurt with lemon and salt.","Pan-fry the salmon for 4 minutes per side.","Plate the steak, top with salmon and the herb dip."]},
+  risotto:{m:20, i:["cauli|1","mushrooms|200 g","onion|1","stock|150 ml","parmesan|2 tbsp","butter|1 tbsp"],
+    s:["Grate or finely chop the cauliflower and slice the mushrooms.","Fry the onion and mushrooms in butter for 5 minutes.","Add the cauliflower and the stock and cook until creamy, about 8 minutes.","Stir in the parmesan and season."]},
+  couscous:{m:10, i:["cauli|½","feta|100 g","cucumber|1","tomato|2","parsley|1 bunch","mint|a few leaves","lemon|1","oil|2 tbsp"],
+    s:["Grate the raw cauliflower into fine crumbs.","Chop the cucumber, tomatoes, parsley and mint.","Mix everything with lemon juice, olive oil and salt.","Crumble the feta on top."]},
+  chili:{m:30, i:["beef|300 g","pepper|2","onion|1","passata|1 jar","spices|chili & cumin","cauliRice|300 g","greekyog|3 tbsp","avocado|½"],
+    s:["Dice the onion and peppers.","Fry the beef with onion, then add peppers, chili and cumin.","Add the passata and simmer for 20 minutes.","Fry the cauliflower rice for 5 minutes.","Serve the chili on the rice with yogurt and sliced avocado."]},
+  fishchips:{m:15, i:["fish|2 fillets","greenbeans|200 g","greekyog|100 g","gherkin|2","herbs|1 handful","oil|1 tbsp"],
+    s:["Boil the green beans for 5 minutes.","Season the fish and pan-fry it in oil for 3 minutes per side.","Chop the gherkins and herbs and stir them into the yogurt for the tartar dip.","Plate fish, beans and the dip."]},
+  burrito:{m:20, i:["beef|250 g","spices|chili & cumin","cauliRice|300 g","lettuce|1","salsa|3 tbsp","avocado|1","cheese|30 g"],
+    s:["Fry the beef with chili and cumin until brown.","Fry the cauliflower rice for 5 minutes.","Mash the avocado with salt and a little lime or lemon.","Build the bowl: lettuce, cauliflower rice, beef, salsa, guacamole and cheese."]},
+  doener:{m:20, i:["chicken|2 breasts","spices|gyros spice","lettuce|1","tomato|2","onion|1","cabbage|¼","tzatziki|200 g","oil|1 tbsp"],
+    s:["Slice the chicken thin and mix it with gyros spice and oil.","Fry the chicken in a hot pan until crisp at the edges.","Shred the lettuce and cabbage, slice tomatoes and onion.","Pile the meat on the salad with plenty of tzatziki."]},
+  currywurst:{m:20, i:["chicken|2 breasts","passata|200 ml","curry|1 tbsp","cabbage|¼","greekyog|3 tbsp","oil|1 tbsp"],
+    s:["Slice the chicken into strips and fry them in oil until golden.","Warm the passata with curry powder for 5 minutes.","Shred the cabbage and mix it with yogurt, salt and pepper.","Pour the sauce over the chicken, dust with curry, serve with the slaw."]},
+  nuggets:{m:20, i:["chicken|2 breasts","paprika|1 tsp","greekyog|150 g","herbs|1 handful","cucumber|1","pepper|1","oil|1 tbsp"],
+    s:["Cut the chicken into strips and season with paprika and salt.","Grill or fry the strips for 4 minutes per side.","Chop the herbs and stir them into the yogurt.","Cut cucumber and pepper into sticks and serve with the dip."]},
+  falafel:{m:20, i:["chicken|2 breasts","spices|cumin & paprika","lettuce|1","tzatziki|150 g","cucumber|½","tomato|1","oil|1 tbsp"],
+    s:["Slice the chicken and toss it with cumin, paprika, salt and oil.","Grill or fry the chicken until cooked through.","Chop the cucumber and tomato.","Fill big lettuce leaves with chicken, vegetables and tzatziki and roll them up."]},
+  lahmacun:{m:30, i:["pepper|3","beef|250 g","onion|1","spices|paprika & cumin","parsley|1 bunch","lemon|1"],
+    s:["Halve the peppers and remove the seeds.","Mix the beef with chopped onion and spices.","Fill the pepper halves with the beef.","Bake at 200 °C for 20 minutes.","Top with parsley, onion and a squeeze of lemon."]},
+  fries:{m:25, i:["zucchini|2","parmesan|40 g","oil|1 tbsp","greekyog|100 g","herbs|1 handful","salt|a pinch"],
+    s:["Cut the zucchini into sticks.","Toss with oil, parmesan and salt.","Spread on a tray and bake at 220 °C for 20 minutes.","Stir chopped herbs into the yogurt for a dip."]},
+  hotdog:{m:10, i:["sausage|2","lettuce|1","onion|1","mustard|1 tsp","sauerkraut|3 tbsp"],
+    s:["Fry or grill the sausages for 8 minutes.","Slice the onion.","Wrap each sausage in crisp lettuce leaves.","Pile on onions, mustard and sauerkraut."]},
+  brezel:{m:10, i:["frischkaese|150 g","camembert|50 g","paprika|1 tsp","onion|½","radish|1 bunch","pepper|1","cucumber|½"],
+    s:["Mash the Camembert with a fork and mix it with the Frischkäse.","Stir in paprika and finely chopped onion.","Cut radishes, pepper and cucumber into sticks.","Serve the dip with the vegetables."]},
+  franzbroetchen:{m:3, i:["cottage|200 g","cinnamon|1 tsp","vanilla|a drop","walnuts|a few","berries|a few"],
+    s:["Stir cinnamon and vanilla into the cottage cheese.","Chop the walnuts.","Top with walnuts and a few berries."]},
+  cake:{m:55, i:["frischkaese|400 g","eggs|3","vanilla|1 tsp","lemon|1","berries|a few"],
+    s:["Whisk the Frischkäse, eggs, vanilla and grated lemon zest until smooth.","Pour into a lined baking tin.","Bake at 160 °C for 40 minutes.","Let it cool, then chill it in the fridge.","Top with a few berries and slice."]},
+  donut:{m:2, i:["greekyog|200 g","almondbutter|1 tsp","cinnamon|a pinch","berries|a few"],
+    s:["Spoon the yogurt into a bowl.","Swirl in the almond butter.","Top with cinnamon and a few berries."]},
+  muffin:{m:25, i:["eggs|6","spinach|1 handful","feta|100 g","salt|a pinch","oil|1 tsp"],
+    s:["Oil a muffin tin.","Chop the spinach and crumble the feta into the cups.","Whisk the eggs with salt and pepper and pour them over.","Bake at 180 °C for 20 minutes.","Keep the extras in the fridge for 3 days."]},
+  gummies:{m:5, i:["berries|200 g","greekyog|150 g"],
+    s:["Dip each berry in Greek yogurt.","Place them on baking paper.","Freeze for 2 hours, then eat a small handful at a time."]},
+  kaiserschmarrn:{m:12, i:["eggs|3","frischkaese|2 tbsp","butter|1 tsp","berries|a few","cinnamon|a pinch"],
+    s:["Whisk the eggs with the Frischkäse until fluffy.","Pour into a pan with melted butter and cook until the bottom sets.","Tear it into pieces with two forks and fry them until golden.","Serve with berries and cinnamon."]},
+  chips:{m:10, i:["parmesan|60 g","olives|1 handful","pepper|1","cucumber|½"],
+    s:["Grate the parmesan into small piles on baking paper.","Bake at 200 °C for 5–6 minutes until crisp.","Let them cool for a minute so they harden.","Or serve olives with pepper and cucumber sticks."]},
+  ricecakes:{m:5, i:["cucumber|1","frischkaese|3 tbsp","salmon|50 g","dill|a few sprigs"],
+    s:["Slice the cucumber into thick rounds.","Top each round with Frischkäse.","Add a little smoked salmon and dill."]},
+  banana:{m:2, i:["greekyog|150 g","berries|1 small handful"],
+    s:["Spoon the yogurt into a bowl.","Top with a small handful of berries."]},
+  driedfruit:{m:1, i:["berries|1 handful","almonds|1 small handful"],
+    s:["Put a handful of fresh berries in a small bowl.","Add a small handful of almonds."]},
+  oj:{m:2, i:["water|500 ml","orange|1","lime|1","ice|a few cubes"],
+    s:["Peel a strip of orange zest.","Fill a glass with ice and add the zest and a slice of lime.","Pour in the mineral water."]},
+  apfelschorle:{m:2, i:["water|500 ml","lime|1","mint|a few leaves","ice|a few cubes"],
+    s:["Slice the lime.","Fill a glass with ice, lime and mint.","Pour in the sparkling water and stir."]},
+  latte:{m:3, i:["coffee|1 shot","milk|200 ml","ice|a few cubes","cinnamon|a pinch"],
+    s:["Brew a shot of coffee.","Fill a glass with ice and milk.","Pour the coffee over it.","Dust with cinnamon."]},
+  bubbletea:{m:5, i:["tea|1 bag","milk|100 ml","ice|a few cubes","cinnamon|a pinch"],
+    s:["Brew strong black or green tea and let it cool.","Fill a glass with ice.","Pour in the tea and a splash of milk.","Add cinnamon or vanilla and stir."]},
+  hotchoc:{m:5, i:["milk|250 ml","cocoa|1 tbsp","cinnamon|a pinch","vanilla|a drop"],
+    s:["Warm the milk in a small pot.","Whisk in the cocoa powder until smooth.","Stir in cinnamon and vanilla.","Pour into a mug."]}
+};
+
+/* ---------- prices: same tables and formula as the cart ---------- */
+const LC_PR = {
+  "black coffee":["☕", 4.5], "bone broth":["🍲", 2.5], "green tea":["🍵", 1.5], "sparkling water":["🫧", .5], "unsweetened matcha":["🍵", 6],
+  "eggs":["🥚", 2.3], "almond butter":["🥜", 4], "almond flour":["🌰", 3.5], "almonds":["🌰", 2.5], "avocado":["🥑", 1.2], "chia seeds":["🌱", 2.5], "sesame seeds":["🌱", 1.5],
+  "cabbage":["🥬", 1.5], "cauliflower":["🥦", 2], "celery":["🥬", 1.3], "cucumber":["🥒", .8], "ginger":["🫚", 1], "konjak rice":["🍚", 2.5], "lemon zest":["🍋", .5],
+  "lime":["🍋‍🟩", .5], "mushrooms":["🍄", 1.8], "scallions":["🧅", .8], "shirataki noodles":["🍜", 2.5], "zucchini":["🥒", 1.2],
+  "lean beef mince":["🥩", 4.5], "turkey mince":["🍗", 4], "chicken":["🍗", 5], "salmon":["🐟", 4.5], "shrimp":["🦐", 4.5], "tuna":["🐟", 1.6],
+  "cheddar":["🧀", 2], "feta":["🧀", 1.6], "frischkäse":["🧀", 1.2], "halloumi":["🧀", 2.6], "mozzarella":["🧀", 1], "parmesan":["🧀", 2.5],
+  "cottage cheese":["🥛", 1.2], "greek yogurt":["🥛", 1.6], "plain greek yogurt":["🥛", 1.6], "bell pepper":["🫑", 1.5], "lettuce":["🥬", 1.1], "mint":["🌿", 1.2],
+  "nori":["🍙", 2.5], "nori sheets":["🍙", 2.5], "berries":["🫐", 2.5], "cacao nibs":["🍫", 3.5], "unsweetened cocoa":["🍫", 2.5],
+  "black pepper":["🧂", 1.2], "chili flakes":["🌶️", 1.2], "cinnamon":["🧂", 1.2], "hot sauce":["🌶️", 2], "mustard":["🟡", .9], "no-added-sugar tomato sauce":["🍅", 1.8],
+  "no-sugar pickles":["🥒", 1.8], "no-sugar salsa":["🍅", 2], "oregano":["🌿", 1], "paprika spice":["🧂", 1.2], "pickles":["🥒", 1.5], "smoked paprika":["🧂", 1.3],
+  "tamari":["🍶", 3], "vanilla":["🍦", 3]
+};
+const LC_G = {gemuese:["🥬", 1.5], salat:["🥬", 1.2], paprika:["🫑", 1.5], hack:["🥩", 4.5], huhn:["🍗", 5], milch:["🥛", 1.4], kaese:["🧀", 2], eier:["🥚", 2.3], fett:["🥑", 2.5], wuerze:["🧂", 1.3], snack:["🍫", 2.5], drink:["🥤", 1.5]};
+const STORES = [["lidl", "Lidl", "#0050aa", 1], ["aldi", "Aldi", "#1e3c8c", 1], ["penny", "Penny", "#cd1414", 1.02], ["netto", "Netto", "#ffd500", 1.02],
+  ["kaufland", "Kaufland", "#e10915", 1.05], ["rewe", "REWE", "#cc071e", 1.18], ["edeka", "EDEKA", "#f4c400", 1.2]];
+const FREE = ["cold water", "ice", "ice cubes"];
+/* things most kitchens already have: shown under "Probably at home" until you say otherwise */
+const STAPLE = /^(salt|black pepper|salt & pepper|olive oil|oil|butter|cinnamon|vanilla|oregano|chili flakes|paprika spice|paprika powder|smoked paprika|curry powder|spices|garlic|onion|mustard|tamari|tamari or soy sauce|black coffee|coffee|tea|green tea|hot sauce|stock|cold water|ice|ice cubes)$/;
+function hash(s){ let h = 2166136261; for (let n = 0; n < s.length; n++) { h ^= s.charCodeAt(n); h = Math.imul(h, 16777619); } return (h >>> 0) / 4294967295; }
+const rnd = x => Math.max(.29, Math.ceil(x * 10 - 1e-6) / 10 - .01);
+const px = (i, s) => rnd(i.p * s[3] * (.9 + .2 * hash(i.k + "|" + s[0])));
+const eur = n => "€" + (Math.round(n * 100) / 100).toFixed(2).replace(".", ",");
+
+/* ---------- one recipe shape for everything: {id, n, e, img, mins, extra, steps, ing:[{k,n,q,e,p}], book} ---------- */
+const img = k => (typeof FOOD_IMG !== "undefined" && k && FOOD_IMG[k]) || "";
+const book = () => (typeof RECIPE_BOOK !== "undefined" ? RECIPE_BOOK : []);
+const meals = () => (typeof MEALS !== "undefined" ? MEALS : []);
+function fromBook(r){ const mt = window.LOWI_COOK ? LOWI_COOK.min(r.id) : 0, mx = window.LOWI_COOK ? (LOWI_COOK.minTxt(r.id) || "").replace(/^\d+ min ?/, "") : "";
+  return {id:r.id, n:r.n, e:r.e || "🍽️", img:img(r.id), sub:r.sub || "", mins:mt, extra:mx, book:true, r:r.r || "ja",
+    steps:[].concat(r.prep || [], r.make || r.steps || []),
+    ing:(r.ing || []).map(i => { const n = typeof i === "string" ? i.split("|")[1] : i.n, g = typeof i === "string" ? i.split("|")[0] : i.g, k = String(n).toLowerCase();
+      const pr = LC_PR[k] || LC_G[g] || ["🛒", 2]; return {k, n, q:"", e:pr[0], p:FREE.indexOf(k) >= 0 ? 0 : pr[1]}; })}; }
+function fromMeal(m){ const sw = m.s || {};
+  if (sw.rb) { const b = book().find(x => x.n === sw.rb); if (b) { const r = fromBook(b); r.swapName = sw.n; return r; } }
+  const R = R2_REC[m.id]; if (!R) return null;
+  return {id:"m_" + m.id, n:sw.n || m.n, e:sw.e || m.e, img:img("m_" + m.id), sub:sw.keep || "", mins:R.m, extra:"", book:false, r:"ja", steps:R.s.slice(),
+    ing:R.i.map(x => { const k = x.split("|")[0], q = x.split("|")[1] || "", pr = R2_PR[k] || ["🛒", k, 2]; return {k:pr[1].toLowerCase(), n:pr[1], q, e:pr[0], p:pr[2], home0:!!pr[3]}; })}; }
+function fromText(name, extra){ const t = (name + " " + (extra || "")).toLowerCase(), ing = [];
+  Object.keys(R2_PR).forEach(k => { const pr = R2_PR[k], w = pr[1].toLowerCase().split(/[ ,]/)[0]; if (w.length > 2 && (t.indexOf(w) >= 0 || t.indexOf(k) >= 0) && !ing.some(i => i.n === pr[1])) ing.push({k:pr[1].toLowerCase(), n:pr[1], q:"", e:pr[0], p:pr[2], home0:!!pr[3]}); });
+  if (!ing.length) return null;
+  return {id:"t_" + t.replace(/[^a-z]+/g, "_").slice(0, 40), n:name, e:"🍽️", img:"", sub:"", mins:0, extra:"", book:false, r:"ja", steps:[], ing}; }
+const CACHE = {};
+function rec(id){ if (CACHE[id]) return CACHE[id]; let r = null;
+  if (/^rb_/.test(id)) { const b = book().find(x => x.id === id); r = b && fromBook(b); }
+  else if (/^m_/.test(id)) { const m = meals().find(x => x.id === id.slice(2)); r = m && fromMeal(m); }
+  if (r) CACHE[id] = r; return r; }
+
+/* at home: what you ticked in Today / the cart (S.td.have, same keys), plus kitchen staples unless you un-ticked them */
+function haveMap(){ const s = st(); if (!s) return {}; if (!s.td) s.td = {}; if (!s.td.have) s.td.have = {}; return s.td.have; }
+function isHome(i){ if (FREE.indexOf(i.k) >= 0) return true; const h = haveMap(); if (h[i.k] === true) return true; if (h[i.k] === false) return false; return !!i.home0 || STAPLE.test(i.k); }
+function setHome(i, v){ if (FREE.indexOf(i.k) >= 0) return; haveMap()[i.k] = !!v; persist(); }
+function storeId(){ const s = st(); return (s && s.cart && s.cart.store) || ""; }
+function setStore(id){ const s = st(); if (!s) return; if (!s.cart) s.cart = {}; s.cart.store = id; persist(); }
+function basket(r){ const buy = r.ing.filter(i => !isHome(i) && i.p > 0), home = r.ing.filter(i => isHome(i));
+  const tot = STORES.map(s => ({s, t:buy.reduce((a, i) => a + px(i, s), 0)})).sort((a, b) => a.t - b.t);
+  return {buy, home, tot, best:tot[0], worst:tot[tot.length - 1]}; }
+function ease(r){ const m = r.mins || 0, n = r.steps.length, heat = /bake|oven|fry|sear|boil|simmer|pan|grill|roast|melt|warm|toast|brew/i.test(r.steps.join(" "));
+  if ((m && m <= 5) || (!heat && n <= 4)) return {lv:1, t:"Very easy", h:heat ? "" : "No cooking"};
+  if (!m || m <= 15) return {lv:2, t:"Easy", h:heat ? "" : "No cooking"};
+  return {lv:3, t:"Takes a little time", h:""}; }
+function meter(lv){ return '<span class="p2-meter l' + lv + '"><i></i><i></i><i></i></span>'; }
+function minsLabel(r){ return r.mins ? r.mins + " min" + (r.extra ? " " + r.extra : "") : ""; }
+
+/* =====================================================================
+   1) The recipe: the highlight. Opens from the swap card, Cook shuffle, Today and the recipe list.
+   ===================================================================== */
+let OPEN = null;   // {r, ov}
+function recipeHTML(r){ const b = basket(r), e = ease(r), cur = storeId(), pick = b.tot.find(x => x.s[0] === cur) || b.best;
+  const pic = r.img ? '<img alt="" src="' + r.img + '">' : '<span class="p2-hemo">' + r.e + '</span>';
+  return '<div class="p2-hero">' + pic + '<i class="p2-hfade"></i></div>' +
+    '<div class="p2-rh p2-up" style="--d:0"><div class="tiny gold">' + (r.swapName ? "Your low-spike swap" : "Recipe") + '</div><div class="h1 p2-rn">' + esc(r.swapName || r.n) + '</div>' +
+      (r.swapName && r.swapName !== r.n ? '<div class="small muted">Recipe Book: ' + esc(r.n) + '</div>' : "") + '</div>' +
+    '<div class="p2-facts p2-up" style="--d:1">' + (r.mins ? '<span class="p2-fact">' + IC.clock + '<b>' + esc(minsLabel(r)) + '</b></span>' : "") +
+      '<span class="p2-fact">' + meter(e.lv) + '<b>' + e.t + '</b></span>' + (r.steps.length ? '<span class="p2-fact"><b>' + r.steps.length + ' steps</b></span>' : "") + (e.h ? '<span class="p2-fact"><b>' + e.h + '</b></span>' : "") + '</div>' +
+    (r.steps.length ? '<button class="r2-btn pri big p2-start p2-up" style="--d:2" data-p2="cook" id="p2Start">' + IC.play + '<span>Start cooking</span></button>' : "") +
+    '<div class="p2-sec p2-up" style="--d:3"><div class="p2-lab"><span>Probably at home</span><span class="p2-cnt">' + b.home.length + '</span></div>' +
+      '<div class="p2-ings" id="p2Home">' + (b.home.length ? b.home.map(i => ingChip(i, true)).join("") : '<span class="small muted">Nothing yet. Tap what you have below.</span>') + '</div></div>' +
+    '<div class="p2-sec p2-up" style="--d:4"><div class="p2-lab"><span>To buy</span><span class="p2-cnt">' + b.buy.length + '</span></div>' +
+      '<div class="p2-ings" id="p2Buy">' + (b.buy.length ? b.buy.map(i => ingChip(i, false, pick.s)).join("") : '<span class="small muted">You have everything. Start cooking.</span>') + '</div>' +
+      '<div class="p2-hint">Tap anything you already have.</div></div>' +
+    (b.buy.length ? shopsHTML(b, pick) : "") +
+    (r.steps.length ? '<div class="p2-sec p2-up" style="--d:6"><div class="p2-lab"><span>How it goes</span></div><ol class="p2-steps">' + r.steps.map((s, i) => '<li><span class="p2-sn">' + (i + 1) + '</span><span>' + esc(s) + '</span></li>').join("") + '</ol></div>' : "") +
+    '<div class="p2-more p2-up" style="--d:7">' + (r.book ? '<button class="r2-btn ghost" data-td="addtoday" data-id="' + esc(r.id) + '" data-p2close="1">Add to today</button><button class="r2-btn ghost" data-lc="open" data-id="' + esc(r.id) + '" data-p2close="1">' + IC.cart + '<span>Fill my cart</span></button>' : '<button class="r2-btn ghost" data-p2="copy">Copy shopping list</button>') + '</div>' +
+    '<div style="height:12px"></div>'; }
+function ingChip(i, home, s){ return '<button class="p2-ing' + (home ? " home" : "") + '" data-p2="ing" data-k="' + esc(i.k) + '"><span class="p2-ie">' + i.e + '</span><span class="p2-in"><b>' + esc(i.n) + '</b>' + (i.q ? '<small>' + esc(i.q) + '</small>' : "") + '</span>' +
+  (home ? '<span class="p2-ok">' + IC.check + '</span>' : (s ? '<span class="p2-ip num">' + eur(px(i, s)) + '</span>' : "")) + '</button>'; }
+function shopsHTML(b, pick){ const save = b.worst.t - b.best.t;
+  return '<div class="p2-sec p2-up" style="--d:5"><div class="p2-lab"><span>Everything in one shop</span></div>' +
+    '<div class="p2-best"><span class="p2-sdot" style="background:' + b.best.s[2] + '"></span><div style="flex:1;min-width:0"><div class="tiny gold">Recommended</div><div class="h3">' + b.best.s[1] + ' <span class="num">' + eur(b.best.t) + '</span></div>' +
+      (save >= .3 ? '<div class="small muted">' + eur(save) + ' less than ' + b.worst.s[1] + '</div>' : "") + '</div></div>' +
+    '<div class="p2-shops">' + b.tot.map((x, n) => '<button class="p2-shop' + (x.s[0] === pick.s[0] ? " on" : "") + '" data-p2="store" data-s="' + x.s[0] + '" style="--i:' + n + '"><span class="p2-sdot" style="background:' + x.s[2] + '"></span><b>' + x.s[1] + '</b>' + (n === 0 ? '<span class="p2-pill">Best</span>' : "") + '<span class="num p2-st">' + eur(x.t) + '</span><i class="p2-bar" style="--w:' + Math.round(x.t / b.worst.t * 100) + '%"></i></button>').join("") + '</div>' +
+    '<div class="p2-fine">Estimated basket for this dish, all from one shop. Not live prices.</div></div>'; }
+function openRecipe(id, opt){ const r = typeof id === "string" ? rec(id) : id; if (!r) return false;
+  if (OPEN && OPEN.ov && OPEN.ov.isConnected) { try { R2.close(OPEN.ov); } catch(e){} }
+  const ov = R2.sheet('<div class="p2-rec" id="p2Rec">' + recipeHTML(r) + '</div>', {full:true, cls:"p2-recov", onClose:() => { if (OPEN && OPEN.ov === ov) OPEN = null; }});
+  OPEN = {r, ov}; if (opt && opt.cook) setTimeout(() => cook(r), 250); return true; }
+function repaintRecipe(){ if (!OPEN || !OPEN.ov.isConnected) return; const box = $("#p2Rec", OPEN.ov), sh = OPEN.ov.querySelector(".r2-sh"), y = sh ? sh.scrollTop : 0;
+  box.innerHTML = recipeHTML(OPEN.r); box.classList.add("p2-still"); if (sh) sh.scrollTop = y; }
+
+/* =====================================================================
+   2) Cook mode: one step per screen, each with its own small animation.
+   ===================================================================== */
+const SCENES = [
+  ["cold", /\b(freez|chill|fridge|frozen|cool (it|them)|let (it|them) cool)/],
+  ["oven", /\b(bake|oven|roast)/],
+  ["boil", /\b(boil|simmer|brew|warm the|poach|bone broth)/],
+  ["pan", /\b(fry|fried|sear|pan\b|melt|saut|toast|grill|brown|heat)/],
+  ["whisk", /\b(whisk|beat)/],
+  ["chop", /\b(chop|slice|cut|dice|grate|shave|halve|peel|tear|zest|scoop|crumble)/],
+  ["pour", /\b(pour|fill|drizzle|top up|squeeze)/],
+  ["mix", /\b(stir|mix|combine|mash|swirl|blend|shake|toss|fold in|dip)/],
+  ["wait", /\b(overnight|leave it|rest|wait|at least \d+ min)/],
+  ["plate", /./]];
+function sceneOf(t){ t = t.toLowerCase(); let best = ["plate", 1e9];
+  SCENES.forEach(s => { const m = t.match(s[1]); if (m && m.index < best[1]) best = [s[0], m.index]; }); return best[0]; }
+function itemOf(t, r){ t = t.toLowerCase(); let hit = null, at = 1e9;
+  r.ing.forEach(i => { const w = i.n.toLowerCase().replace(/[^a-zäöüß ]/g, " ").split(" ").filter(x => x.length > 2); w.forEach(x => { const j = t.indexOf(x.replace(/s$/, "")); if (j >= 0 && j < at) { at = j; hit = i; } }); });
+  return hit ? hit.e : r.e; }
+const VESSEL = {whisk:"🥣", mix:"🥣", pan:"🍳", boil:"🍲", chop:"", pour:"🥛", oven:"", cold:"🧊", wait:"⏳", plate:"🍽️"};
+const TOOL = {whisk:"🥄", mix:"🥄", chop:"🔪", pour:"🫗"};
+function sceneHTML(kind, item){ const v = VESSEL[kind], tl = TOOL[kind] || "";
+  let fx = "";
+  if (kind === "pan" || kind === "boil" || kind === "oven") fx = '<i class="p2-steam s1"></i><i class="p2-steam s2"></i><i class="p2-steam s3"></i>';
+  if (kind === "boil") fx += '<i class="p2-bub b1"></i><i class="p2-bub b2"></i><i class="p2-bub b3"></i>';
+  if (kind === "pour") fx = '<i class="p2-drop d1"></i><i class="p2-drop d2"></i><i class="p2-drop d3"></i>';
+  if (kind === "cold") fx = '<i class="p2-flake f1">❄</i><i class="p2-flake f2">❄</i><i class="p2-flake f3">❄</i>';
+  if (kind === "mix" || kind === "whisk") fx = '<i class="p2-swirl"></i>';
+  if (kind === "chop") fx = '<span class="p2-bit c1">' + item + '</span><span class="p2-bit c2">' + item + '</span><i class="p2-board"></i>';
+  if (kind === "plate") fx = '<i class="p2-spark k1"></i><i class="p2-spark k2"></i><i class="p2-spark k3"></i>';
+  return '<div class="p2-scene sc-' + kind + '" aria-hidden="true"><i class="p2-glow"></i>' + (kind === "oven" ? '<span class="p2-oven"><i class="p2-win"><span class="p2-item">' + item + '</span></i><i class="p2-knob"></i><i class="p2-knob k"></i></span>' : "") +
+    (v ? '<span class="p2-vessel">' + v + '</span>' : "") + (kind !== "oven" && kind !== "wait" && kind !== "cold" ? '<span class="p2-item">' + item + '</span>' : "") +
+    (kind === "cold" ? '<span class="p2-item">' + item + '</span>' : "") + (tl ? '<span class="p2-tool">' + tl + '</span>' : "") + fx + '</div>'; }
+let CK = null;
+function cook(r){ if (!r || !r.steps.length) return;
+  CK = {r, i:-1, t:null, left:0, wake:null};
+  const ov = R2.sheet('<div class="p2-ck" id="p2Ck"></div>', {full:true, cls:"p2-ckov", onClose:() => { ckStopTimer(); try { CK && CK.wake && CK.wake.release(); } catch(e){} CK = null; }});
+  CK.ov = ov; try { if (navigator.wakeLock) navigator.wakeLock.request("screen").then(w => { if (CK) CK.wake = w; }).catch(() => {}); } catch(e){}
+  ckPaint(0); ckSwipe($("#p2Ck", ov)); }
+function ckMinutes(t){ const m = t.match(/(\d+)(?:\s*[–-]\s*(\d+))?\s*(min|minute)/i); if (m) return +(m[2] || m[1]); const h = t.match(/(\d+)\s*hour/i); return h ? +h[1] * 60 : 0; }
+function ckPaint(dir){ if (!CK) return; const r = CK.r, n = r.steps.length, i = CK.i, box = $("#p2Ck", CK.ov); if (!box) return; ckStopTimer();
+  const bar = '<div class="p2-ckbar">' + [-1].concat(r.steps.map((s, k) => k)).map(k => '<i class="' + (k < i ? "done" : k === i ? "on" : "") + '"></i>').join("") + '</div>';
+  let body;
+  if (i < 0) body = '<div class="tiny gold">Get ready</div><div class="h2 p2-cktx">Put these out first</div>' +
+      '<div class="p2-mise">' + r.ing.map((g, k) => '<span class="p2-m' + (isHome(g) ? " home" : "") + '" style="--i:' + k + '"><span>' + g.e + '</span><b>' + esc(g.n) + '</b>' + (g.q ? '<small>' + esc(g.q) + '</small>' : "") + '</span>').join("") + '</div>';
+  else if (i >= n) body = '<div class="p2-done"><div class="p2-scene sc-done" aria-hidden="true"><i class="p2-glow"></i><span class="p2-vessel">🍽️</span><span class="p2-item">' + (r.img ? '<img alt="" src="' + r.img + '">' : r.e) + '</span><i class="p2-spark k1"></i><i class="p2-spark k2"></i><i class="p2-spark k3"></i><i class="p2-spark k4"></i></div>' +
+      '<div class="tiny gold">Done</div><div class="h2 p2-cktx">Enjoy your ' + esc(r.swapName || r.n) + '</div><div class="small muted">Low spike, made by you.</div></div>';
+  else { const t = r.steps[i], kind = sceneOf(t), mm = ckMinutes(t);
+    body = sceneHTML(kind, itemOf(t, r)) + '<div class="tiny gold">Step ' + (i + 1) + ' of ' + n + '</div><div class="h2 p2-cktx">' + esc(t) + '</div>' +
+      (mm && mm <= 90 ? '<button class="p2-timer" data-p2="timer" data-m="' + mm + '" id="p2Timer">' + IC.clock + '<span>Start a ' + mm + ' min timer</span></button>' : ""); }
+  const nav = '<div class="p2-cknav">' + (i >= 0 ? '<button class="r2-btn ghost p2-ckb" data-p2="prev" aria-label="Back">' + IC.back + '</button>' : "") +
+    (i >= n ? (r.book ? '<button class="r2-btn pri big" data-td="addtoday" data-id="' + esc(r.id) + '" data-p2close="all">Add to today</button>' : '<button class="r2-btn pri big" data-p2="closeall">Close</button>')
+      : '<button class="r2-btn pri big" data-p2="next" id="p2Next"><span>' + (i < 0 ? "Let's go" : i === n - 1 ? "Finish" : "Next") + '</span>' + IC.go + '</button>') + '</div>';
+  box.innerHTML = '<div class="p2-cktop"><span class="small muted p2-ckname">' + esc(r.swapName || r.n) + '</span></div>' + bar + '<div class="p2-ckbody ' + (dir > 0 ? "from-r" : dir < 0 ? "from-l" : "") + '">' + body + '</div>' + nav;
+  if (i >= n) { try { navigator.vibrate && navigator.vibrate([12, 60, 20]); } catch(e){} } }
+function ckGo(d){ if (!CK) return; const n = CK.r.steps.length; const j = Math.max(-1, Math.min(n, CK.i + d)); if (j === CK.i) return; CK.i = j; ckPaint(d); try { navigator.vibrate && navigator.vibrate(8); } catch(e){} }
+function ckSwipe(el){ if (!el) return; let x0 = null, y0 = 0;
+  el.addEventListener("touchstart", e => { const t = e.touches[0]; x0 = t.clientX; y0 = t.clientY; }, {passive:true});
+  el.addEventListener("touchend", e => { if (x0 === null) return; const t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0; x0 = null; if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.4) ckGo(dx < 0 ? 1 : -1); }, {passive:true}); }
+function ckStopTimer(){ if (CK && CK.t) { clearInterval(CK.t); CK.t = null; } }
+function ckTimer(btn){ if (!CK) return; if (CK.t) { ckStopTimer(); btn.classList.remove("run"); btn.querySelector("span").textContent = "Timer stopped"; return; }
+  let s = (+btn.dataset.m || 1) * 60; btn.classList.add("run"); const lab = btn.querySelector("span");
+  const tick = () => { if (!btn.isConnected) { ckStopTimer(); return; } lab.textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); btn.style.setProperty("--p", (1 - s / ((+btn.dataset.m || 1) * 60)) * 100 + "%");
+    if (s <= 0) { ckStopTimer(); btn.classList.remove("run"); btn.classList.add("rang"); lab.textContent = "Time's up"; say("Time's up"); try { navigator.vibrate && navigator.vibrate([200, 100, 200]); } catch(e){} } s--; };
+  tick(); CK.t = setInterval(tick, 1000); }
+
+/* =====================================================================
+   3) Swap card: one clear "Cook it", and the basket for THIS dish per shop (replaces the member-finds box there).
+   ===================================================================== */
+function swapRecipe(){ const c = typeof CUR !== "undefined" ? CUR : null; if (!c || !c.swap) return null;
+  if (c.meal) return rec("m_" + c.meal.id);
+  const m = meals().find(x => x.s && x.s.n === c.swap.n); if (m) return rec("m_" + m.id);
+  if (c.swap.rb) { const b = book().find(x => x.n === c.swap.rb); if (b) { const r = rec(b.id); return r && Object.assign({}, r, {swapName:c.swap.n}); } }
+  return fromText(c.swap.n, (c.swap.keep || "") + " " + (c.change || []).join(" ")); }
+let SWAPR = null;
+function swapBox(r){ const b = basket(r), e = ease(r);
+  return '<div class="p2-sbox" data-p2box="1">' +
+    '<div class="p2-lab"><span>Basket for this dish</span><span class="p2-cnt">' + b.buy.length + ' to buy</span></div>' +
+    '<div class="p2-sings">' + r.ing.map(i => '<span class="p2-si' + (isHome(i) ? " home" : "") + '">' + i.e + ' ' + esc(i.n) + '</span>').join("") + '</div>' +
+    (b.buy.length ? '<button class="p2-best tap" data-p2="openswap"><span class="p2-sdot" style="background:' + b.best.s[2] + '"></span><div style="flex:1;min-width:0;text-align:left"><div class="tiny gold">Recommended shop</div><div class="h3">' + b.best.s[1] + ' <span class="num">' + eur(b.best.t) + '</span></div><div class="small muted">' +
+      b.tot.slice(1, 4).map(x => x.s[1] + " " + eur(x.t)).join(" · ") + '</div></div>' + IC.chev + '</button>' : '<div class="small muted">You have everything at home.</div>') +
+    '<div class="p2-fine" style="text-align:left">Estimated, all from one shop. ' + (b.home.length ? b.home.length + ' things you probably have are left out.' : "") + '</div></div>'; }
+function enhanceResult(){ const res = $("#result"); if (!res || !res.classList.contains("open")) return; const card = $(".swapcard", res); if (!card || card.dataset.p2) return;
+  const r = swapRecipe(); card.dataset.p2 = "1"; SWAPR = r; if (!r) return;
+  const row = $("#saveSwap", card) && $("#saveSwap", card).parentElement;
+  if (r.steps.length) { const b = document.createElement("button"); b.className = "r2-btn pri big p2-cookit"; b.dataset.p2 = "openswap"; b.id = "p2CookIt";
+    b.innerHTML = IC.play + '<span>Cook it</span>' + (r.mins ? '<span class="p2-cmin">' + esc(r.mins + " min") + '</span>' : ""); card.insertBefore(b, row || null); }
+  if (row) row.classList.add("p2-minor");
+  const box = document.createElement("div"); box.innerHTML = swapBox(r); card.parentElement.insertBefore(box.firstChild, card.nextSibling);
+  const rb = card.querySelector("[data-rb]"); if (rb) rb.classList.add("p2-rbline"); }
+
+/* =====================================================================
+   4) Scan: one big button, one line to type, a few quick picks. Everything else behind one tap.
+   ===================================================================== */
+const QUICK = ["pizza", "burger", "croissant", "sandwich", "bolognese", "doener", "cola", "chocolate"];
+function quickPicks(){ const s = st(), seen = [], out = [];
+  ((s && s.logs) || []).slice().reverse().forEach(l => { const m = meals().find(x => x.n === l.t); if (m && seen.indexOf(m.id) < 0) { seen.push(m.id); out.push(m); } });
+  QUICK.forEach(id => { const m = meals().find(x => x.id === id); if (m && seen.indexOf(id) < 0) { seen.push(id); out.push(m); } });
+  return out.slice(0, 8); }
+const cimg = id => (typeof CLASSIC_IMG !== "undefined" && CLASSIC_IMG[id]) || img("m_" + id) || "";
+function renderScan2(){ const tab = $("#tab-scan"); if (!tab) return; const SC = typeof SCAN !== "undefined" ? SCAN : {photo:"", stage:""};
+  let top;
+  if (SC.stage === "scanning" || SC.stage === "confirm") {
+    top = '<div class="p2-shot">' + (SC.photo ? '<img alt="" src="' + SC.photo + '">' : "") + (SC.stage === "scanning" ? '<i class="p2-scanl"></i>' : "") + '</div>' +
+      (SC.stage === "scanning" ? '<div class="small gold" style="text-align:center;margin-top:12px">Reading your plate…</div>' :
+      '<div class="p2-confirm p2-up" id="scanConfirm"><div class="h3">What\'s on the plate?</div><div class="small muted" style="margin:4px 0 12px">Say it in a few words. Photo recognition isn\'t connected yet.</div>' +
+        '<div class="p2-type"><input class="input" id="scanText" placeholder="e.g. chicken, rice and salad" enterkeyhint="go"><button class="p2-go" data-act="scango" id="scanGo" aria-label="Check it">' + IC.go + '</button></div>' +
+        '<div class="p2-chips">' + ["chicken, rice and salad", "pizza", "eggs and avocado", "pasta bolognese"].map(x => '<button class="chip" data-act="scanchip" data-v="' + x + '">' + x + '</button>').join("") + '</div>' +
+        '<button class="r2-link" data-p2="scancancel">Cancel</button></div>');
+  } else {
+    top = '<button class="p2-orb" data-act="camera" id="camZone" aria-label="Snap your plate"><span class="p2-orbin">' + IC.cam + '</span><i class="p2-ring"></i><i class="p2-ring r2"></i></button>' +
+      '<div class="p2-orbt">Snap your plate</div>' +
+      '<div class="p2-type p2-up" style="--d:1"><input class="input" id="scanType" placeholder="Or type it: two eggs and avocado" enterkeyhint="go"><button class="p2-go" data-act="scantype" aria-label="Check">' + IC.go + '</button></div>' +
+      '<div class="p2-lab p2-up" style="--d:2;margin-top:22px"><span>Quick picks</span></div>' +
+      '<div class="p2-quick p2-up" style="--d:3">' + quickPicks().map(m => '<button class="p2-q" data-act="meal" data-id="' + m.id + '">' + (cimg(m.id) ? '<img alt="" loading="lazy" src="' + cimg(m.id) + '">' : '<span class="p2-qe">' + m.e + '</span>') + '<b>' + esc(m.n) + '</b></button>').join("") + '</div>' +
+      '<div class="p2-rows p2-up" style="--d:4"><button class="p2-row" data-p2="classics" id="p2Classics"><span class="p2-ric">' + IC.book + '</span><span class="p2-rt"><b>All classics</b><small>' + meals().length + ' everyday foods, each with its swap</small></span>' + IC.chev + '</button>' +
+        '<button class="p2-row" data-p2="brands" id="p2Brands"><span class="p2-ric">' + IC.tag + '</span><span class="p2-rt"><b>Is this brand OK?</b><small>Check a product before you buy it</small></span>' + IC.chev + '</button></div>';
+  }
+  tab.innerHTML = '<div class="h1">Scan</div><div class="small muted" style="margin-top:4px">What are you about to eat?</div><div class="p2-scan">' + top + '</div><div style="height:28px"></div>';
+  const t = $("#scanType"); if (t) t.addEventListener("keydown", e => { if (e.key === "Enter") { try { runAnalyse(t.value); } catch(x){} } });
+  const c = $("#scanText"); if (c) c.addEventListener("keydown", e => { if (e.key === "Enter") { const g = $("#scanGo"); if (g) g.click(); } }); }
+function classicsSheet(){ const cats = {}; meals().forEach(m => (cats[m.c] = cats[m.c] || []).push(m));
+  const lab = c => { try { return catLabel(c); } catch(e){ return c; } };
+  const ov = R2.sheet('<div class="h2" style="margin:4px 44px 4px 0">All classics</div><div class="small muted">Tap one to see its low-spike swap.</div>' +
+    '<div class="p2-search">' + IC.search + '<input class="input" id="p2Cq" placeholder="Search, e.g. pizza" autocomplete="off"></div><div id="p2Cl">' +
+    Object.keys(cats).map(c => '<div class="p2-cat" data-c="' + c + '"><div class="tiny dim p2-ct">' + esc(lab(c)) + '</div>' + cats[c].map(m => '<button class="p2-crow" data-p2="meal" data-id="' + m.id + '" data-q="' + esc((m.n + " " + (m.k || "")).toLowerCase()) + '">' + (cimg(m.id) ? '<img alt="" loading="lazy" src="' + cimg(m.id) + '">' : '<span class="p2-qe">' + m.e + '</span>') + '<b>' + esc(m.n) + '</b>' + IC.chev + '</button>').join("") + '</div>').join("") +
+    '</div><div class="small muted" id="p2Cnone" style="display:none;margin-top:12px">Not in the list. Close this and type it on the Scan screen instead.</div>', {cls:"p2-tall"});
+  const q = $("#p2Cq", ov); q.addEventListener("input", () => { const v = q.value.trim().toLowerCase(); let any = 0;
+    $$(".p2-crow", ov).forEach(b => { const on = !v || b.dataset.q.indexOf(v) >= 0; b.style.display = on ? "" : "none"; if (on) any++; });
+    $$(".p2-cat", ov).forEach(c => { c.style.display = $$(".p2-crow", c).some(b => b.style.display !== "none") ? "" : "none"; });
+    $("#p2Cnone", ov).style.display = any ? "none" : ""; }); }
+
+/* =====================================================================
+   5) Is this brand OK?  No sponsors, ever. Plain yes / no / not checked yet.
+   ===================================================================== */
+const BR = [
+  {n:"Skyr, plain (Natur)", e:"🥛", ok:1, why:"No added sugar. Lots of protein.", k:"skyr natur quark milk dairy"},
+  {n:"Greek yogurt, plain", e:"🥣", ok:1, why:"Plain only. Fruit versions have added sugar.", k:"greek yogurt joghurt griechisch natur dairy"},
+  {n:"Eggs", e:"🥚", ok:1, why:"Just eggs.", k:"eggs eier free range bio"},
+  {n:"Frischkäse, plain", e:"🧀", ok:1, why:"Plain cream cheese is fine.", k:"frischkaese frischkäse cream cheese philadelphia"},
+  {n:"Coconut yogurt, unsweetened", e:"🥥", ok:1, why:"Only the unsweetened one.", k:"coconut kokos yogurt joghurt vegan"},
+  {n:"Sparkling mineral water", e:"💧", ok:1, why:"No sugar, no sweeteners.", k:"water wasser sprudel mineral sparkling"},
+  {n:"Protein bar", e:"🍫", ok:0, why:"Almost all contain sweeteners or sugar.", k:"protein bar riegel"},
+  {n:"Granola or Müsli", e:"🥣", ok:0, why:"Oats plus added sugar.", k:"granola muesli müsli oats hafer cereal cornflakes"},
+  {n:"Zero cola and diet drinks", e:"🥤", ok:0, why:"Sweeteners keep the sweet habit going.", k:"zero cola coke diet light pepsi fanta soda"},
+  {n:"Fruit yogurt", e:"🍓", ok:0, why:"Added sugar.", k:"fruit yogurt fruchtjoghurt"}];
+const norm = s => String(s || "").toLowerCase().replace(/[^a-z0-9äöüß]+/g, " ").trim();
+function brRow(b, k){ return '<div class="p2-br ' + (b.ok ? "ok" : "no") + '" style="--i:' + (k || 0) + '"><span class="p2-bre">' + b.e + '</span><span class="p2-brt"><b>' + esc(b.n) + '</b><small>' + esc(b.why) + '</small></span><span class="p2-verd">' + (b.ok ? "OK" : "Not OK") + '</span></div>'; }
+function brMissHTML(q){ return '<div class="p2-br miss"><span class="p2-bre">❔</span><span class="p2-brt"><b>Not checked yet</b><small>Until it\'s checked, treat it as a no.</small></span></div>' +
+  '<div class="p2-label"><div class="h3">Check the label yourself, in 10 seconds</div><ol><li><b>No sugar</b> in the ingredients (Zucker, Glukosesirup, Dextrose, Honig)</li><li><b>No sweeteners</b> (Sucralose, Aspartam, Stevia, Erythrit)</li><li><b>No flour, oats or rice</b></li></ol><div class="small muted">All three are fine? Then it\'s probably OK.</div></div>' +
+  '<button class="r2-btn ghost" style="width:100%;margin-top:10px" data-p2="suggest">Ask the community to check it</button>'; }
+function brandSheet(){ const ov = R2.sheet('<div class="h2" style="margin:4px 44px 4px 0">Is this brand OK?</div>' +
+    '<div class="p2-how"><span><b class="p2-v ok">OK</b> fits the LOWiSPIKE rules</span><span><b class="p2-v no">Not OK</b> doesn\'t fit</span><span><b class="p2-v miss">?</b> not checked yet = not recommended</span></div>' +
+    '<div class="p2-search">' + IC.search + '<input class="input" id="p2Bq" placeholder="Type a brand or product" autocomplete="off"></div><div id="p2Bout"></div>' +
+    '<div class="p2-lab" style="margin-top:18px"><span>Checked so far</span></div><div id="p2Blist">' + BR.map(brRow).join("") + '</div>', {cls:"p2-tall"});
+  const q = $("#p2Bq", ov), out = $("#p2Bout", ov);
+  q.addEventListener("input", () => { const v = norm(q.value); if (!v) { out.innerHTML = ""; return; }
+    const hits = BR.filter(b => norm(b.n + " " + b.k).split(" ").some(w => w.indexOf(v) === 0) || norm(b.n + " " + b.k).indexOf(v) >= 0);
+    out.innerHTML = '<div class="p2-bres">' + (hits.length ? hits.map(brRow).join("") : brMissHTML(v)) + '</div>'; }); }
+
+/* =====================================================================
+   6) Cook shuffle: the pick shows at once how easy it is, what's at home, what to buy. Tap anywhere on it for the recipe.
+   ===================================================================== */
+function enhancePick(card){ if (!card || card.dataset.p2) return; card.dataset.p2 = "1"; const r = rec(card.dataset.id || ""); if (!r) return;
+  const b = basket(r), e = ease(r), cur = storeId(), pick = b.tot.find(x => x.s[0] === cur) || b.best;
+  const info = document.createElement("div"); info.className = "p2-pinfo";
+  info.innerHTML = '<div class="p2-pease">' + meter(e.lv) + '<b>' + e.t + '</b>' + (r.mins ? '<span class="muted">' + esc(minsLabel(r)) + '</span>' : "") + (e.h ? '<span class="muted">' + e.h + '</span>' : "") + '</div>' +
+    '<div class="p2-pcols"><div><div class="p2-lab sm"><span>At home</span></div><div class="p2-pl">' + (b.home.length ? b.home.map(i => '<span>' + i.e + ' ' + esc(i.n) + '</span>').join("") : '<span class="muted">Nothing yet</span>') + '</div></div>' +
+    '<div><div class="p2-lab sm"><span>To buy</span></div><div class="p2-pl">' + (b.buy.length ? b.buy.map(i => '<span>' + i.e + ' ' + esc(i.n) + '</span>').join("") : '<span class="muted">Nothing</span>') + '</div>' +
+    (b.buy.length ? '<div class="small p2-pshop"><span class="p2-sdot" style="background:' + b.best.s[2] + '"></span><span>' + b.best.s[1] + '</span> <b class="num">' + eur(b.best.t) + '</b></div>' : "") + '</div></div>';
+  const lab = card.querySelector(".r5-lab"), ingl = card.querySelector(".r5-ingl"); if (lab) lab.remove(); if (ingl) ingl.remove();
+  const btns = card.querySelector(".r5-btns"); card.insertBefore(info, btns || null);
+  const cookB = card.querySelector("#r5Cook"); if (cookB) { cookB.innerHTML = IC.play + "<span>Cook it</span>"; cookB.removeAttribute("data-sh"); cookB.dataset.p2 = "recipe"; cookB.dataset.id = r.id; }
+  card.classList.add("p2-tapcard"); }
+
+/* =====================================================================
+   clicks (capture: recipe opens anywhere go to the new recipe screen)
+   ===================================================================== */
+document.addEventListener("click", e => {
+  const t = e.target; if (!t || !t.closest) return;
+  const rl = t.closest('[data-sh="recipe"][data-r], [data-sh="open-shelf"][data-sub="recipe"][data-r]');
+  if (rl && rec(rl.dataset.r)) { e.preventDefault(); e.stopPropagation(); openRecipe(rl.dataset.r); return; }
+  const pc = t.closest(".r5-card.p2-tapcard"); if (pc && !t.closest("button,a")) { e.preventDefault(); e.stopPropagation(); openRecipe(pc.dataset.id); return; }
+}, true);
+document.addEventListener("click", e => {
+  const t = e.target; if (!t || !t.closest) return;
+  const cl = t.closest("[data-p2close]"); if (cl) { setTimeout(() => { if (cl.dataset.p2close === "all") { try { R2.closeAll(); } catch(x){} } else { const ov = cl.closest(".r2-ov"); if (ov) R2.close(ov); } }, 30); }
+  const b = t.closest("[data-p2]"); if (!b) return; const a = b.dataset.p2;
+  switch (a) {
+    case "openswap": if (SWAPR) openRecipe(SWAPR); return;
+    case "recipe": openRecipe(b.dataset.id); return;
+    case "cook": if (OPEN) cook(OPEN.r); return;
+    case "ing": { if (!OPEN) return; const i = OPEN.r.ing.find(x => x.k === b.dataset.k); if (!i) return; setHome(i, !isHome(i)); b.classList.add("p2-flip"); setTimeout(repaintRecipe, 160); try { navigator.vibrate && navigator.vibrate(6); } catch(x){} return; }
+    case "store": setStore(b.dataset.s); repaintRecipe(); return;
+    case "copy": { if (!OPEN) return; const bk = basket(OPEN.r), txt = (OPEN.r.swapName || OPEN.r.n) + "\n" + bk.buy.map(i => "- " + i.n + (i.q ? " (" + i.q + ")" : "")).join("\n");
+      (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => say("Shopping list copied")).catch(() => say("Couldn't copy")); return; }
+    case "next": ckGo(1); return;
+    case "prev": ckGo(-1); return;
+    case "timer": ckTimer(b); return;
+    case "closeall": try { R2.closeAll(); } catch(x){} return;
+    case "classics": classicsSheet(); return;
+    case "brands": brandSheet(); return;
+    case "suggest": say("Thanks. We'll ask the community to check it."); b.disabled = true; return;
+    case "meal": { const ov = b.closest(".r2-ov"); if (ov) R2.close(ov); setTimeout(() => { try { openMeal(b.dataset.id); } catch(x){} }, 60); return; }
+    case "scancancel": try { SCAN.photo = ""; SCAN.stage = ""; renderScan2(); } catch(x){} return;
+  }
+});
+
+/* =====================================================================
+   gentle motion around the app: tab content rises in, the swap card glows once
+   ===================================================================== */
+function tabIn(){ const a = $(".tab.active"); if (!a || RM()) return; a.classList.remove("p2-tabin"); void a.offsetWidth; a.classList.add("p2-tabin"); }
+
+/* ---------- boot ---------- */
+function boot(){
+  // Scan: new screen, same actions (camera, type, meal) so the rest of the app keeps working
+  try { if (typeof RENDER !== "undefined") RENDER.scan = renderScan2; window.renderScan = renderScan2; } catch(e){}
+  try { renderScan = renderScan2; } catch(e){}   // onPhoto() calls renderScan by name
+  try { window.brandsHTML = () => ""; } catch(e){}
+  try { const g0 = window.goTab; if (typeof g0 === "function" && !g0.__p2) { const g1 = function(t){ const r = g0.apply(this, arguments); tabIn(); return r; }; g1.__p2 = 1; window.goTab = g1; try { goTab = g1; } catch(e){} } } catch(e){}
+  try { if (typeof TAB !== "undefined" && TAB === "scan") renderScan2(); } catch(e){}
+  const res = $("#result");
+  if (res) new MutationObserver(() => enhanceResult()).observe(res, {childList:true, subtree:true, attributes:true, attributeFilter:["class"]});
+  new MutationObserver(ms => { ms.forEach(m => m.addedNodes.forEach(n => { if (n.nodeType !== 1) return; if (n.classList && n.classList.contains("r5-card")) enhancePick(n); else if (n.querySelectorAll) n.querySelectorAll(".r5-card").forEach(enhancePick); })); })
+    .observe(document.body, {childList:true, subtree:true});
+  $$(".r5-card").forEach(enhancePick);
+}
+window.LowiP2 = {open:openRecipe, cook:id => { const r = rec(id); if (r) cook(r); }, rec, basket, sceneOf, renderScan:renderScan2, brandSheet, classicsSheet};
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
+})();
+
+/* ===== round 2 part 2: German + Spanish for the new screens (same text-node dictionary as the rest of the app) ===== */
+(function(){
+const ROWS = [
+  /* recipe screen */
+  ["Your low-spike swap", "Dein Low-Spike-Swap", "Tu cambio low-spike"],
+  ["Recipe", "Rezept", "Receta"],
+  ["Very easy", "Sehr einfach", "Muy fácil"],
+  ["Easy", "Einfach", "Fácil"],
+  ["Takes a little time", "Dauert etwas", "Lleva un poco de tiempo"],
+  ["No cooking", "Ohne Kochen", "Sin cocinar"],
+  ["Start cooking", "Jetzt kochen", "Empezar a cocinar"],
+  ["Probably at home", "Hast du wohl schon", "Seguramente ya lo tienes"],
+  ["To buy", "Einkaufen", "Para comprar"],
+  ["Nothing yet. Tap what you have below.", "Noch nichts. Tippe unten an, was du hast.", "Nada aún. Toca abajo lo que tienes."],
+  ["You have everything. Start cooking.", "Du hast alles. Los geht's.", "Lo tienes todo. A cocinar."],
+  ["Tap anything you already have.", "Tippe an, was du schon hast.", "Toca lo que ya tienes."],
+  ["Everything in one shop", "Alles in einem Laden", "Todo en una tienda"],
+  ["Recommended", "Empfohlen", "Recomendada"],
+  ["Best", "Günstigster", "La mejor"],
+  ["Estimated basket for this dish, all from one shop. Not live prices.", "Geschätzter Einkauf für dieses Gericht, alles aus einem Laden. Keine Live-Preise.", "Cesta estimada para este plato, todo de una tienda. No son precios en directo."],
+  ["How it goes", "So geht's", "Así se hace"],
+  ["Add to today", "Zu heute", "Añadir a hoy"],
+  ["Fill my cart", "Wagen füllen", "Llenar mi carrito"],
+  ["Copy shopping list", "Einkaufsliste kopieren", "Copiar lista de compras"],
+  ["Shopping list copied", "Einkaufsliste kopiert", "Lista de compras copiada"],
+  ["Couldn't copy", "Kopieren ging nicht", "No se pudo copiar"],
+  [/^Recipe Book: (.+)$/, "Rezeptbuch: $1", "Recetario: $1"],
+  [/^(\d+) steps$/, "$1 Schritte", "$1 pasos"],
+  [/^(€[\d,]+) less than (.+)$/, "$1 weniger als bei $2", "$1 menos que en $2"],
+  /* cook mode */
+  ["Get ready", "Vorbereiten", "Prepárate"],
+  ["Put these out first", "Stell das zuerst bereit", "Saca esto primero"],
+  ["Let's go", "Los geht's", "Vamos"],
+  ["Next", "Weiter", "Siguiente"],
+  ["Finish", "Fertig", "Terminar"],
+  ["Close", "Schließen", "Cerrar"],
+  ["Done", "Fertig", "Listo"],
+  ["Low spike, made by you.", "Low Spike, selbst gemacht.", "Low spike, hecho por ti."],
+  ["Timer stopped", "Timer gestoppt", "Temporizador parado"],
+  ["Time's up", "Zeit ist um", "Se acabó el tiempo"],
+  [/^Step (\d+) of (\d+)$/, "Schritt $1 von $2", "Paso $1 de $2"],
+  [/^Start a (\d+) min timer$/, "$1-Min-Timer starten", "Temporizador de $1 min"],
+  [/^Enjoy your (.+)$/, "Guten Appetit: $1", "Que aproveche: $1"],
+  /* swap card */
+  ["Cook it", "Jetzt kochen", "Cocinarlo"],
+  ["Basket for this dish", "Einkauf für dieses Gericht", "Cesta para este plato"],
+  ["Recommended shop", "Empfohlener Laden", "Tienda recomendada"],
+  ["You have everything at home.", "Du hast alles zu Hause.", "Lo tienes todo en casa."],
+  [/^(\d+) to buy$/, "$1 einkaufen", "$1 por comprar"],
+  [/^Estimated, all from one shop\. (\d+) things you probably have are left out\.$/, "Geschätzt, alles aus einem Laden. $1 Dinge, die du wohl hast, sind nicht mitgerechnet.", "Estimado, todo de una tienda. No cuenta $1 cosas que seguramente tienes."],
+  ["Estimated, all from one shop.", "Geschätzt, alles aus einem Laden.", "Estimado, todo de una tienda."],
+  /* Scan */
+  ["What are you about to eat?", "Was isst du gleich?", "¿Qué vas a comer?"],
+  ["Snap your plate", "Teller fotografieren", "Foto de tu plato"],
+  ["Or type it: two eggs and avocado", "Oder schreib's: zwei Eier und Avocado", "O escríbelo: dos huevos y aguacate"],
+  ["Quick picks", "Schnellauswahl", "Rápidos"],
+  ["All classics", "Alle Klassiker", "Todos los clásicos"],
+  [/^(\d+) everyday foods, each with its swap$/, "$1 Alltagsgerichte, jedes mit Swap", "$1 comidas de diario, cada una con su cambio"],
+  ["Is this brand OK?", "Ist die Marke okay?", "¿Esta marca está bien?"],
+  ["Check a product before you buy it", "Prüf ein Produkt vor dem Kauf", "Revisa un producto antes de comprarlo"],
+  ["Reading your plate…", "Lese deinen Teller…", "Leyendo tu plato…"],
+  ["What's on the plate?", "Was ist auf dem Teller?", "¿Qué hay en el plato?"],
+  ["Say it in a few words. Photo recognition isn't connected yet.", "Sag es in ein paar Worten. Die Foto-Erkennung ist noch nicht angeschlossen.", "Dilo en pocas palabras. El reconocimiento de fotos aún no está conectado."],
+  ["e.g. chicken, rice and salad", "z. B. Hähnchen, Reis und Salat", "p. ej. pollo, arroz y ensalada"],
+  ["Cancel", "Abbrechen", "Cancelar"],
+  ["Tap one to see its low-spike swap.", "Tippe eins an für den Low-Spike-Swap.", "Toca uno para ver su cambio low-spike."],
+  ["Search, e.g. pizza", "Suchen, z. B. Pizza", "Buscar, p. ej. pizza"],
+  ["Not in the list. Close this and type it on the Scan screen instead.", "Nicht in der Liste. Schließe das hier und schreib es im Scan-Bildschirm.", "No está en la lista. Cierra esto y escríbelo en la pantalla Escanear."],
+  /* brand check */
+  ["fits the LOWiSPIKE rules", "passt zu den LOWiSPIKE-Regeln", "cumple las reglas de LOWiSPIKE"],
+  ["doesn't fit", "passt nicht", "no las cumple"],
+  ["not checked yet = not recommended", "noch nicht geprüft = nicht empfohlen", "aún sin revisar = no recomendado"],
+  ["OK", "OK", "OK"],
+  ["Not OK", "Nicht OK", "No OK"],
+  ["Type a brand or product", "Marke oder Produkt eingeben", "Escribe una marca o producto"],
+  ["Checked so far", "Bisher geprüft", "Revisado hasta ahora"],
+  ["Not checked yet", "Noch nicht geprüft", "Aún sin revisar"],
+  ["Until it's checked, treat it as a no.", "Bis es geprüft ist: lieber nein.", "Hasta que se revise, toma la respuesta como no."],
+  ["Check the label yourself, in 10 seconds", "Prüf das Etikett selbst, in 10 Sekunden", "Revisa la etiqueta tú mismo, en 10 segundos"],
+  ["No sugar", "Kein Zucker", "Sin azúcar"],
+  ["in the ingredients (Zucker, Glukosesirup, Dextrose, Honig)", "in den Zutaten (Zucker, Glukosesirup, Dextrose, Honig)", "en los ingredientes (azúcar, jarabe de glucosa, dextrosa, miel)"],
+  ["No sweeteners", "Keine Süßstoffe", "Sin edulcorantes"],
+  ["(Sucralose, Aspartam, Stevia, Erythrit)", "(Sucralose, Aspartam, Stevia, Erythrit)", "(sucralosa, aspartamo, stevia, eritritol)"],
+  ["No flour, oats or rice", "Kein Mehl, Hafer oder Reis", "Sin harina, avena ni arroz"],
+  ["All three are fine? Then it's probably OK.", "Alle drei passen? Dann ist es wahrscheinlich okay.", "¿Las tres bien? Entonces seguramente está bien."],
+  ["Ask the community to check it", "Community um Prüfung bitten", "Pedir a la comunidad que lo revise"],
+  ["Thanks. We'll ask the community to check it.", "Danke. Wir bitten die Community, es zu prüfen.", "Gracias. Pediremos a la comunidad que lo revise."],
+  ["Skyr, plain (Natur)", "Skyr Natur", "Skyr natural"],
+  ["No added sugar. Lots of protein.", "Kein Zuckerzusatz. Viel Eiweiß.", "Sin azúcar añadido. Mucha proteína."],
+  ["Greek yogurt, plain", "Griechischer Joghurt, natur", "Yogur griego natural"],
+  ["Plain only. Fruit versions have added sugar.", "Nur natur. Frucht-Sorten haben Zuckerzusatz.", "Solo natural. Los de fruta llevan azúcar añadido."],
+  ["Eggs", "Eier", "Huevos"],
+  ["Just eggs.", "Einfach Eier.", "Solo huevos."],
+  ["Frischkäse, plain", "Frischkäse, natur", "Queso crema natural"],
+  ["Plain cream cheese is fine.", "Frischkäse natur passt.", "El queso crema natural está bien."],
+  ["Coconut yogurt, unsweetened", "Kokosjoghurt, ungesüßt", "Yogur de coco sin azúcar"],
+  ["Only the unsweetened one.", "Nur die ungesüßte Sorte.", "Solo el que no lleva azúcar."],
+  ["Sparkling mineral water", "Mineralwasser mit Kohlensäure", "Agua mineral con gas"],
+  ["No sugar, no sweeteners.", "Kein Zucker, keine Süßstoffe.", "Sin azúcar ni edulcorantes."],
+  ["Protein bar", "Proteinriegel", "Barrita de proteína"],
+  ["Almost all contain sweeteners or sugar.", "Fast alle enthalten Süßstoffe oder Zucker.", "Casi todas llevan edulcorantes o azúcar."],
+  ["Granola or Müsli", "Granola oder Müsli", "Granola o muesli"],
+  ["Oats plus added sugar.", "Hafer plus Zuckerzusatz.", "Avena más azúcar añadido."],
+  ["Zero cola and diet drinks", "Cola Zero und Light-Getränke", "Cola zero y bebidas light"],
+  ["Sweeteners keep the sweet habit going.", "Süßstoffe halten die Süßgewohnheit am Laufen.", "Los edulcorantes mantienen el hábito del dulce."],
+  ["Fruit yogurt", "Fruchtjoghurt", "Yogur de frutas"],
+  ["Added sugar.", "Zuckerzusatz.", "Azúcar añadido."],
+  /* Cook shuffle pick */
+  ["At home", "Zu Hause", "En casa"],
+  ["Nothing yet", "Noch nichts", "Nada aún"],
+  ["Nothing", "Nichts", "Nada"]
+,
+  /* part 1 screens: start, sign-in, setup, profile, account, look, chat delete */
+  ["Save your progress", "Sichere deinen Fortschritt", "Guarda tu progreso"],
+  ["Create a free account so your meals, streak and profile are kept safe. Everything you've done so far stays.", "Erstelle ein kostenloses Konto, damit deine Mahlzeiten, deine Serie und dein Profil sicher sind. Alles Bisherige bleibt.", "Crea una cuenta gratis para guardar tus comidas, tu racha y tu perfil. Todo lo que has hecho se queda."],
+  ["Eat what you love.", "Iss, was du liebst.", "Come lo que te gusta."],
+  ["Skip the spike.", "Ohne den Spike.", "Sin el pico."],
+  ["Make an account once. The app remembers you, on any phone.", "Einmal ein Konto anlegen. Die App erkennt dich auf jedem Handy.", "Crea una cuenta una vez. La app te recuerda en cualquier móvil."],
+  ["Create account", "Konto erstellen", "Crear cuenta"],
+  ["I already have an account", "Ich habe schon ein Konto", "Ya tengo una cuenta"],
+  ["Skip for now", "Erstmal überspringen", "Omitir por ahora"],
+  ["Create your account", "Erstelle dein Konto", "Crea tu cuenta"],
+  ["Welcome back", "Willkommen zurück", "Bienvenido de nuevo"],
+  ["Three fields. That's it.", "Drei Felder. Das war's.", "Tres campos. Eso es todo."],
+  ["Sign in to get all your stuff back.", "Melde dich an und hol dir alles zurück.", "Inicia sesión para recuperar todo."],
+  ["Name", "Name", "Nombre"],
+  ["Email", "E-Mail", "Correo"],
+  ["Password", "Passwort", "Contraseña"],
+  ["Your first name", "Dein Vorname", "Tu nombre"],
+  ["you@example.com", "du@beispiel.de", "tu@ejemplo.com"],
+  ["At least 8 characters", "Mindestens 8 Zeichen", "Al menos 8 caracteres"],
+  ["Your password", "Dein Passwort", "Tu contraseña"],
+  ["Show password", "Passwort zeigen", "Mostrar contraseña"],
+  ["Sign in", "Anmelden", "Iniciar sesión"],
+  ["Already have one?", "Schon eins?", "¿Ya tienes una?"],
+  ["New here?", "Neu hier?", "¿Eres nuevo?"],
+  ["Forgot your password? Ask Emmanuel and he'll reset it for you.", "Passwort vergessen? Frag Emmanuel, er setzt es für dich zurück.", "¿Olvidaste tu contraseña? Pídele a Emmanuel que la restablezca."],
+  ["You can make an account later in Profile. Nothing gets lost.", "Du kannst das Konto später im Profil anlegen. Nichts geht verloren.", "Puedes crear la cuenta luego en Perfil. No se pierde nada."],
+  ["You can save it later in Profile.", "Du kannst es später im Profil sichern.", "Puedes guardarlo luego en Perfil."],
+  ["Not now", "Nicht jetzt", "Ahora no"],
+  ["Creating your account…", "Konto wird erstellt…", "Creando tu cuenta…"],
+  ["Signing in…", "Melde an…", "Iniciando sesión…"],
+  ["Getting your stuff…", "Hole deine Sachen…", "Recuperando tus cosas…"],
+  ["Saving your stuff…", "Speichere deine Sachen…", "Guardando tus cosas…"],
+  ["One moment…", "Einen Moment…", "Un momento…"],
+  ["Saving…", "Speichern…", "Guardando…"],
+  ["Signed in", "Angemeldet", "Sesión iniciada"],
+  ["Account created. Everything you had is saved.", "Konto erstellt. Alles, was du hattest, ist gesichert.", "Cuenta creada. Todo lo que tenías está guardado."],
+  ["Add your name.", "Gib deinen Namen ein.", "Escribe tu nombre."],
+  ["Add your email and password.", "Gib E-Mail und Passwort ein.", "Escribe tu correo y contraseña."],
+  ["That email doesn't look right.", "Diese E-Mail sieht nicht richtig aus.", "Ese correo no parece correcto."],
+  ["Password needs at least 8 characters.", "Das Passwort braucht mindestens 8 Zeichen.", "La contraseña necesita al menos 8 caracteres."],
+  ["Email or password doesn't match. Try again.", "E-Mail oder Passwort passt nicht. Versuch es nochmal.", "El correo o la contraseña no coinciden. Inténtalo de nuevo."],
+  ["This email already has an account. Tap “Sign in” below.", "Mit dieser E-Mail gibt es schon ein Konto. Tippe unten auf „Anmelden“.", "Este correo ya tiene una cuenta. Toca «Iniciar sesión» abajo."],
+  ["Too many tries. Wait a minute and try again.", "Zu viele Versuche. Warte eine Minute und versuch es nochmal.", "Demasiados intentos. Espera un minuto e inténtalo de nuevo."],
+  ["No connection. Check your internet and try again.", "Keine Verbindung. Prüfe dein Internet und versuch es nochmal.", "Sin conexión. Revisa tu internet e inténtalo de nuevo."],
+  ["No connection. Try again when you're online.", "Keine Verbindung. Versuch es, wenn du online bist.", "Sin conexión. Inténtalo cuando estés en línea."],
+  ["Something went wrong. Try again.", "Etwas ist schiefgelaufen. Versuch es nochmal.", "Algo salió mal. Inténtalo de nuevo."],
+  ["Set up your profile", "Richte dein Profil ein", "Configura tu perfil"],
+  ["Nice to meet you", "Schön, dich kennenzulernen", "Encantado de conocerte"],
+  [/^Hi (.+)!$/, "Hi $1!", "¡Hola, $1!"],
+  ["When's your birthday?", "Wann hast du Geburtstag?", "¿Cuándo es tu cumpleaños?"],
+  ["Birthday", "Geburtstag", "Cumpleaños"],
+  ["Your star sign shows up here", "Hier erscheint dein Sternzeichen", "Aquí aparece tu signo"],
+  ["It sets the colour of your app.", "Es bestimmt die Farbe deiner App.", "Define el color de tu app."],
+  ["Your app takes on your sign's colour.", "Deine App nimmt die Farbe deines Zeichens an.", "Tu app toma el color de tu signo."],
+  ["Next", "Weiter", "Siguiente"],
+  ["Later", "Später", "Más tarde"],
+  ["Back", "Zurück", "Atrás"],
+  ["Add a photo", "Füge ein Foto hinzu", "Añade una foto"],
+  ["Add photo", "Foto hinzufügen", "Añadir foto"],
+  ["Change photo", "Foto ändern", "Cambiar foto"],
+  ["Change profile photo", "Profilfoto ändern", "Cambiar foto de perfil"],
+  ["Choose a photo", "Foto auswählen", "Elegir una foto"],
+  ["Remove photo", "Foto entfernen", "Quitar foto"],
+  ["Looks good", "Sieht gut aus", "Se ve bien"],
+  ["Change later", "Später ändern", "Cambiar luego"],
+  ["People in Community see it next to your messages.", "Leute in der Community sehen es neben deinen Nachrichten.", "La gente de la Comunidad la ve junto a tus mensajes."],
+  ["What do you want most?", "Was willst du am meisten?", "¿Qué quieres más?"],
+  ["Pick any. You can change it in Profile.", "Wähl beliebig aus. Du kannst es im Profil ändern.", "Elige las que quieras. Puedes cambiarlo en Perfil."],
+  ["Lose weight", "Abnehmen", "Bajar de peso"],
+  ["Steady energy", "Gleichmäßige Energie", "Energía estable"],
+  ["Less sugar cravings", "Weniger Heißhunger auf Zucker", "Menos antojos de azúcar"],
+  ["Eat healthier", "Gesünder essen", "Comer más sano"],
+  ["Feel better", "Mich besser fühlen", "Sentirme mejor"],
+  ["Add birthday for your star sign", "Geburtstag für dein Sternzeichen eintragen", "Añade tu cumpleaños para tu signo"],
+  ["Add your birthday to see your star sign", "Trag deinen Geburtstag ein, um dein Sternzeichen zu sehen", "Añade tu cumpleaños para ver tu signo"],
+  ["Edit profile", "Profil bearbeiten", "Editar perfil"],
+  ["Change password", "Passwort ändern", "Cambiar contraseña"],
+  ["Sign out", "Abmelden", "Cerrar sesión"],
+  ["Sign out?", "Abmelden?", "¿Cerrar sesión?"],
+  ["Saved and synced", "Gesichert und synchronisiert", "Guardado y sincronizado"],
+  ["Saved · syncs when you're online", "Gesichert · synchronisiert, wenn du online bist", "Guardado · se sincroniza cuando estés en línea"],
+  ["Saved to your account.", "In deinem Konto gesichert.", "Guardado en tu cuenta."],
+  ["Not saved yet", "Noch nicht gesichert", "Aún sin guardar"],
+  ["Not saved to an account yet", "Noch nicht in einem Konto gesichert", "Aún no guardado en una cuenta"],
+  ["Create an account so nothing gets lost and you can sign in on any phone.", "Erstelle ein Konto, damit nichts verloren geht und du dich auf jedem Handy anmelden kannst.", "Crea una cuenta para no perder nada y entrar desde cualquier móvil."],
+  ["Start fresh as a new user", "Neu starten als neuer Nutzer", "Empezar de cero como usuario nuevo"],
+  ["Goals", "Ziele", "Objetivos"],
+  ["Personality type", "Persönlichkeitstyp", "Tipo de personalidad"],
+  ["Not set", "Nicht festgelegt", "Sin definir"],
+  ["Save", "Speichern", "Guardar"],
+  ["New password", "Neues Passwort", "Nueva contraseña"],
+  ["Save new password", "Neues Passwort speichern", "Guardar nueva contraseña"],
+  [/^For (.+@.+)$/, "Für $1", "Para $1"],
+  ["Everything is saved to", "Alles ist gesichert unter", "Todo está guardado en"],
+  [". Sign in again any time to get it all back. This phone starts fresh, so you can also try the app as a new person.", ". Melde dich jederzeit wieder an, um alles zurückzubekommen. Dieses Handy startet neu, du kannst die App also auch als neue Person ausprobieren.", ". Inicia sesión cuando quieras para recuperarlo todo. Este móvil empieza de cero, así que también puedes probar la app como una persona nueva."],
+  ["Couldn't sync · sign out anyway", "Sync fehlgeschlagen · trotzdem abmelden", "No se pudo sincronizar · cerrar sesión igualmente"],
+  ["Start fresh?", "Neu starten?", "¿Empezar de cero?"],
+  ["Nothing on this phone is saved to an account yet. Starting fresh deletes it and opens the app like it's the first time.", "Auf diesem Handy ist noch nichts in einem Konto gesichert. Neu starten löscht alles und öffnet die App wie beim ersten Mal.", "Nada en este móvil está guardado en una cuenta. Empezar de cero lo borra y abre la app como la primera vez."],
+  ["Save it to an account first", "Erst in einem Konto sichern", "Guardarlo antes en una cuenta"],
+  ["Delete and start fresh", "Löschen und neu starten", "Borrar y empezar de cero"],
+  ["Couldn't read that photo", "Das Foto konnte nicht gelesen werden", "No se pudo leer esa foto"],
+  ["Photo updated", "Foto aktualisiert", "Foto actualizada"],
+  ["Password changed", "Passwort geändert", "Contraseña cambiada"],
+  ["Profile saved", "Profil gespeichert", "Perfil guardado"],
+  ["Look", "Aussehen", "Aspecto"],
+  ["Night or Cloud", "Night oder Cloud", "Night o Cloud"],
+  ["Dark glass or bright and airy", "Dunkles Glas oder hell und luftig", "Cristal oscuro o claro y ligero"],
+  ["Night mode on", "Night-Modus an", "Modo Night activado"],
+  ["Cloud mode on", "Cloud-Modus an", "Modo Cloud activado"],
+  ["Delete", "Löschen", "Borrar"],
+  ["Delete message", "Nachricht löschen", "Borrar mensaje"],
+  ["Tap again to delete", "Nochmal tippen zum Löschen", "Toca otra vez para borrar"],
+  ["Message deleted", "Nachricht gelöscht", "Mensaje borrado"],
+  ["Couldn't delete. Try again when online.", "Löschen ging nicht. Versuch es online nochmal.", "No se pudo borrar. Inténtalo cuando estés en línea."],
+  ["Aries", "Widder", "Aries"], ["Taurus", "Stier", "Tauro"], ["Gemini", "Zwillinge", "Géminis"], ["Cancer", "Krebs", "Cáncer"],
+  ["Leo", "Löwe", "Leo"], ["Virgo", "Jungfrau", "Virgo"], ["Libra", "Waage", "Libra"], ["Scorpio", "Skorpion", "Escorpio"],
+  ["Sagittarius", "Schütze", "Sagitario"], ["Capricorn", "Steinbock", "Capricornio"], ["Aquarius", "Wassermann", "Acuario"], ["Pisces", "Fische", "Piscis"]
+];
+function add(){ if (window.LowiLang && LowiLang.add) { LowiLang.add(ROWS); return true; } return false; }
+if (!add()) document.addEventListener("DOMContentLoaded", add);
+})();
+
+/* ===== round 2 part 2: German + Spanish for the profile, bubble, star sign, leaderboard and community-profile screens ===== */
+(function(){
+const SIGN = {Aries:["Widder","Aries"], Taurus:["Stier","Tauro"], Gemini:["Zwillinge","Géminis"], Cancer:["Krebs","Cáncer"], Leo:["Löwe","Leo"], Virgo:["Jungfrau","Virgo"],
+  Libra:["Waage","Libra"], Scorpio:["Skorpion","Escorpio"], Sagittarius:["Schütze","Sagitario"], Capricorn:["Steinbock","Capricornio"], Aquarius:["Wassermann","Acuario"], Pisces:["Fische","Piscis"]};
+const EL = {Fire:["Feuerzeichen","Signo de fuego"], Earth:["Erdzeichen","Signo de tierra"], Air:["Luftzeichen","Signo de aire"], Water:["Wasserzeichen","Signo de agua"]};
+const MON = {Jan:["Jan.","ene"], Feb:["Feb.","feb"], Mar:["März","mar"], Apr:["Apr.","abr"], May:["Mai","may"], Jun:["Juni","jun"], Jul:["Juli","jul"], Aug:["Aug.","ago"], Sep:["Sep.","sep"], Oct:["Okt.","oct"], Nov:["Nov.","nov"], Dec:["Dez.","dic"]};
+const COL = {"coral red":["Korallenrot","rojo coral"], "sage green":["Salbeigrün","verde salvia"], "lemon and sky":["Zitrone und Himmel","limón y cielo"], "moon silver":["Mondsilber","plata lunar"],
+  "sun gold":["Sonnengold","oro sol"], "mint":["Minze","menta"], "rose":["Rosé","rosa"], "magenta":["Magenta","magenta"], "violet":["Violett","violeta"], "jade":["Jade","jade"],
+  "electric blue":["Elektrisches Blau","azul eléctrico"], "seafoam":["Meeresschaum","espuma de mar"], "pearl":["Perle","perla"]};
+const MBTI = {Architect:["Architekt","Arquitecto"], Logician:["Logiker","Lógico"], Commander:["Kommandeur","Comandante"], Debater:["Debattierer","Innovador"], Advocate:["Advokat","Abogado"],
+  Mediator:["Mediator","Mediador"], Protagonist:["Protagonist","Protagonista"], Campaigner:["Aktivist","Activista"], Logistician:["Logistiker","Logístico"], Defender:["Verteidiger","Defensor"],
+  Executive:["Geschäftsführer","Ejecutivo"], Consul:["Konsul","Cónsul"], Virtuoso:["Virtuose","Virtuoso"], Adventurer:["Abenteurer","Aventurero"], Entrepreneur:["Unternehmer","Emprendedor"], Entertainer:["Entertainer","Animador"]};
+const TITLE = {Seed:["Samen","Semilla"], Sprout:["Spross","Brote"], Sapling:["Setzling","Arbolito"], Grower:["Grünling","Cultivador"], Steady:["Stabil","Constante"], Balanced:["Ausgeglichen","Equilibrado"],
+  Glider:["Gleiter","Planeador"], Flowstate:["Im Flow","En flujo"], Mastery:["Meister","Maestría"], Legend:["Legende","Leyenda"], Icon:["Ikone","Icono"]};
+const ABOUT = {
+  Aries:["Mutiger Starter, volle Energie. Widder gewinnt, wenn die Low-Spike-Wahl auch die schnelle ist: ein Protein-Frühstück, das fertig ist, bevor der Tag losgeht.", "Valiente y con toda la energía. Aries gana cuando la opción low-spike también es la rápida: un desayuno con proteína listo antes de que empiece el día."],
+  Taurus:["Gutem Essen und Gemütlichkeit treu. Stier hält den Heißhunger mit echtem Geschmack bei Laune: reichhaltige, langsame, sättigende Swaps statt strenger Regeln.", "Fiel a la buena comida y a la comodidad. Tauro mantiene contentos los antojos con sabor de verdad: cambios ricos, lentos y saciantes en vez de reglas estrictas."],
+  Gemini:["Neugierig und schnell, Routine langweilt. Zwillinge bleiben dran, indem sie Swaps abwechseln, so gibt es jede Woche etwas Neues.", "Curioso y rápido, la rutina le aburre. Géminis sigue el plan rotando cambios, así siempre hay algo nuevo que probar esta semana."],
+  Cancer:["Fürsorglich, häuslich, kocht für alle. Krebs fährt am besten mit gemütlichen, vorbereiteten Basics, damit die Abende ruhig und stabil bleiben.", "Cariñoso, hogareño, cocina para todos. Cáncer va mejor con básicos acogedores preparados con antelación, para que las noches sean tranquilas y estables."],
+  Leo:["Warm, stolz, liebt die Bühne. Löwe glänzt bei Serien und Levels und macht den bunten Teller, von dem alle ein Foto wollen.", "Cálido, orgulloso, le encanta ser el centro. Leo brilla con rachas y niveles, y prepara el plato colorido que todos quieren fotografiar."],
+  Virgo:["Genau und durchdacht, bemerkt jedes Detail. Jungfrau mag klare Zahlen und einfache Systeme und macht aus kleinen Erfolgen Gewohnheiten.", "Preciso y reflexivo, se fija en cada detalle. Virgo prefiere números claros y sistemas simples, y convierte pequeños logros en hábitos."],
+  Libra:["Ausgeglichen, gesellig, geborene Gastgeberin. Waage findet den Mittelweg: Das Leckerli bleibt, der Spike nicht, und geteilt schmeckt das Essen besser.", "Equilibrado, sociable, anfitrión nato. Libra encuentra el punto medio: el capricho se queda, el pico no, y la cena sabe mejor compartida."],
+  Scorpio:["Intensiv und entschlossen, alles oder nichts. Skorpion will wissen, warum ein Essen reinhaut, und wenn es klick macht, bleibt die Änderung.", "Intenso y decidido, todo o nada. Escorpio quiere saber por qué una comida pega fuerte, y cuando lo entiende, el cambio se queda."],
+  Sagittarius:["Freigeistig und abenteuerlustig, immer unterwegs. Schütze fährt am besten mit Snacks zum Mitnehmen und Rezepten aus der Ferne.", "Espíritu libre y aventurero, siempre en movimiento. Sagitario va mejor con snacks para llevar y recetas de lugares lejanos."],
+  Capricorn:["Beständig und ehrgeizig, denkt langfristig. Steinbock liebt einen Plan, eine Serie und Fortschritt, den man Woche für Woche messen kann.", "Constante y ambicioso, juega a largo plazo. Capricornio adora un plan, una racha y un progreso que se puede medir semana a semana."],
+  Aquarius:["Originell, ein bisschen rebellisch, experimentiert gern. Wassermann testet neue Swaps zuerst und erzählt der Community, was funktioniert hat.", "Original, algo rebelde, le encanta experimentar. Acuario prueba primero los cambios nuevos y cuenta a la comunidad qué funcionó."],
+  Pisces:["Verträumt, intuitiv und fühlt alles. Fische fahren am besten mit sanften Ritualen: ein warmer Tee, ein ruhiger Abend, Heißhunger mit Freundlichkeit begegnet.", "Soñador, intuitivo y lo siente todo. Piscis va mejor con rituales suaves: un té caliente, una noche tranquila, antojos atendidos con cariño."]};
+const ABOUT_EN = {
+  Aries:"Bold starter, all-in energy. Aries wins when the low-spike choice is also the fast one: a protein breakfast that's ready before the day takes off.",
+  Taurus:"Loyal to good food and comfort. Taurus keeps the cravings happy with real flavour: rich, slow, satisfying swaps instead of strict rules.",
+  Gemini:"Curious and quick, bored by routine. Gemini stays on track by rotating swaps, so there's always something new to try this week.",
+  Cancer:"Caring, home-loving, cooks for everyone. Cancer does best with cosy staples made ahead, so evenings stay calm and steady.",
+  Leo:"Warm, proud, loves a spotlight. Leo shines on streaks and levels, and makes the colourful plate everyone wants a photo of.",
+  Virgo:"Precise and thoughtful, notices every detail. Virgo likes clear numbers and simple systems, and turns small wins into habits.",
+  Libra:"Balanced, social, a natural host. Libra finds the middle path: the treat stays, the spike doesn't, and dinner is better shared.",
+  Scorpio:"Intense and determined, all or nothing. Scorpio wants to know why a food hits hard, and once it clicks, the change sticks.",
+  Sagittarius:"Free-spirited and adventurous, always on the move. Sagittarius does best with snacks that travel and recipes from far away.",
+  Capricorn:"Steady and ambitious, plays the long game. Capricorn loves a plan, a streak and progress you can measure week by week.",
+  Aquarius:"Original, a little rebellious, loves to experiment. Aquarius tests new swaps first and tells the community what worked.",
+  Pisces:"Dreamy, intuitive and feels everything. Pisces does best with gentle rituals: a warm tea, a calm evening, cravings met with kindness."};
+const pick = (map, k, c) => (map[k] ? map[k][c - 1] : k);
+const mon = (s, c) => s.replace(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})\b/g, (m, M, d) => c === 1 ? d + ". " + pick(MON, M, c) : d + " " + pick(MON, M, c));
+const SG = Object.keys(SIGN).join("|"), MB = Object.keys(MBTI).join("|"), TT = Object.keys(TITLE).join("|");
+function both(re, f){ return [re, (...a) => f(1, ...a), (...a) => f(2, ...a)]; }
+const ROWS = [
+  ["Add a profile photo", "Profilfoto hinzufügen", "Añade una foto de perfil"],
+  ["Add your name", "Namen eintragen", "Añade tu nombre"],
+  ["How others see you", "So sehen dich andere", "Así te ven los demás"],
+  ["Finish your profile", "Profil fertigstellen", "Completa tu perfil"],
+  [/^1 step left · a few seconds$/, "Noch 1 Schritt · ein paar Sekunden", "Falta 1 paso · unos segundos"],
+  [/^(\d+) steps left · a few seconds each$/, "Noch $1 Schritte · je ein paar Sekunden", "Faltan $1 pasos · unos segundos cada uno"],
+  ["It floats inside your bubble", "Es schwebt in deiner Blase", "Flota dentro de tu burbuja"],
+  ["Add your birthday", "Geburtstag eintragen", "Añade tu cumpleaños"],
+  ["Gives you your star sign, its colour and your age", "Ergibt dein Sternzeichen, seine Farbe und dein Alter", "Te da tu signo, su color y tu edad"],
+  ["Add your personality type", "Persönlichkeitstyp eintragen", "Añade tu tipo de personalidad"],
+  ["Optional · MBTI, like INTJ or ENFP", "Optional · MBTI, z. B. INTJ oder ENFP", "Opcional · MBTI, como INTJ o ENFP"],
+  ["In Community", "In der Community", "En la Comunidad"],
+  ["Next to your messages", "Neben deinen Nachrichten", "Junto a tus mensajes"],
+  ["You", "Du", "Tú"],
+  ["Add birthday and type to show more", "Geburtstag und Typ eintragen, um mehr zu zeigen", "Añade cumpleaños y tipo para mostrar más"],
+  ["Show my weight", "Mein Gewicht zeigen", "Mostrar mi peso"],
+  ["Off · add your weight first", "Aus · trag zuerst dein Gewicht ein", "Desactivado · añade primero tu peso"],
+  ["Leaderboard", "Bestenliste", "Clasificación"],
+  ["Earn XP this week to get on it", "Sammle diese Woche XP, um draufzukommen", "Gana XP esta semana para aparecer"],
+  ["Optional. Name, goals and foods that hit you. The app works without it.", "Optional. Name, Ziele und Essen, die dich treffen. Die App funktioniert auch ohne.", "Opcional. Nombre, objetivos y comidas que te afectan. La app funciona sin ello."],
+  ["Not set · helps people find you", "Nicht festgelegt · hilft anderen, dich zu finden", "Sin definir · ayuda a que te encuentren"],
+  ["Workouts are spoken out loud, short and well spaced. For eyes-free or low-vision use.", "Workouts werden laut angesagt, kurz und mit Pausen. Für Nutzung ohne Hinsehen oder bei Sehschwäche.", "Los entrenamientos se dicen en voz alta, cortos y espaciados. Para usar sin mirar o con baja visión."],
+  ["About", "Über", "Acerca de"],
+  ["Same sign in the community", "Gleiches Zeichen in der Community", "Mismo signo en la comunidad"],
+  [/^1 member$/, "1 Mitglied", "1 miembro"],
+  [/^(\d+) members$/, "$1 Mitglieder", "$1 miembros"],
+  ["See everyone", "Alle ansehen", "Ver a todos"],
+  ["XP from check-ins, meals and swaps. Real members.", "XP aus Check-ins, Mahlzeiten und Swaps. Echte Mitglieder.", "XP de check-ins, comidas y cambios. Miembros reales."],
+  ["This week", "Diese Woche", "Esta semana"],
+  ["This month", "Diesen Monat", "Este mes"],
+  ["All time", "Gesamt", "Siempre"],
+  ["Your birthday shows on your profile with your age and sign.", "Dein Geburtstag erscheint mit Alter und Zeichen in deinem Profil.", "Tu cumpleaños aparece en tu perfil con tu edad y signo."],
+  ["Show my weight in Community", "Mein Gewicht in der Community zeigen", "Mostrar mi peso en la Comunidad"],
+  ["Add your weight in Profile first", "Trag zuerst im Profil dein Gewicht ein", "Añade primero tu peso en Perfil"],
+  ["Your posts show up here.", "Hier erscheinen deine Beiträge.", "Aquí aparecen tus publicaciones."],
+  ["No posts yet.", "Noch keine Beiträge.", "Aún no hay publicaciones."],
+  ["Posts", "Beiträge", "Publicaciones"],
+  ["Member", "Mitglied", "Miembro"],
+  [/^(\d+) years$/, "$1 Jahre", "$1 años"],
+  [/^(\d+) years old$/, "$1 Jahre alt", "$1 años"],
+  [/^(\d+)-day streak$/, "$1-Tage-Serie", "Racha de $1 días"],
+  [/^(\d+) XP to Level (\d+)$/, "$1 XP bis Level $2", "$1 XP para nivel $2"],
+  both(new RegExp("^Level (\\d+) · (" + TT + ")$"), (c, m, n, t) => (c === 1 ? "Level " : "Nivel ") + n + " · " + pick(TITLE, t, c)),
+  both(new RegExp("^(" + TT + ")$"), (c, m, t) => pick(TITLE, t, c)),
+  both(new RegExp("^(\\S+) (" + SG + ")$"), (c, m, g, s) => g + " " + pick(SIGN, s, c)),
+  both(new RegExp("^(" + SG + ") · (.+)$"), (c, m, s, rest) => pick(SIGN, s, c) + " · " + rest),
+  both(/^(Fire|Earth|Air|Water) sign · (.+?) · colou?r: (.+)$/i, (c, m, e, d, col) => pick(EL, e[0].toUpperCase() + e.slice(1).toLowerCase(), c) + " · " + mon(d, c) + " · " + (c === 1 ? "Farbe: " : "color: ") + pick(COL, col.toLowerCase(), c)),
+  both(/^(Fire|Earth|Air|Water) sign$/, (c, m, e) => pick(EL, e, c)),
+  both(new RegExp("^([IE][NS][TF][JP]) · (" + MB + ")$"), (c, m, t, n) => t + " · " + pick(MBTI, n, c)),
+  both(new RegExp("^(" + MB + ")$"), (c, m, n) => pick(MBTI, n, c))
+].concat(Object.keys(ABOUT_EN).map(k => [ABOUT_EN[k], ABOUT[k][0], ABOUT[k][1]]));
+function add(){ if (window.LowiLang && LowiLang.add) { LowiLang.add(ROWS); return true; } return false; }
+if (!add()) document.addEventListener("DOMContentLoaded", add);
+})();
+
 </script>
 </body>
 </html>

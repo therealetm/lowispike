@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261009-223956">
+<meta name="lowi-build" content="20261009-230725">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1598,7 +1598,6 @@ html[data-lay=desktop] .fyv-bar{bottom:16px}
           <p class="muted" style="margin-top:12px;font-size:16px;line-height:1.45">Tell it what you ate. See how hard it probably hits, why, and the swap that keeps the craving happy. Made for women working on PCOS, cravings and metabolic health.</p>
           <div class="dots"><span class="on"></span><span></span><span></span></div>
           <button class="btn primary" data-ob="1">Let's go</button>
-          <button class="btn ghost" id="obSkip" style="margin-top:10px">Skip, take me in</button>
         </div>
       </section>
       <section class="ob-page">
@@ -5960,7 +5959,7 @@ function mapPost(r){
 }
 function mapMsg(r){ return {id:r.id, uid:r.user_id, by:r.who || "Member", t:r.body || "", ts:ts(r.created_at), re:r.reply_to || null, rx:rxOf(r.id)}; }
 function rxOf(mid){ const o = {}; (RX[mid] || []).forEach(x => { (o[x.emoji] = o[x.emoji] || []).push(x.who || "Member"); }); return o; }
-function mapPerson(r){ return {n:r.name, s:r.sign || "", t:r.mbti || "", lv:r.lv || 1, streak:r.streak || 0, bio:r.bio || "", avatar:r.avatar || "", uid:r.id}; }
+function mapPerson(r){ return {n:r.name, s:r.sign || "", t:r.mbti || "", lv:r.lv || 1, streak:r.streak || 0, bio:r.bio || "", avatar:r.avatar || "", uid:r.id, bday:r.bday || "", xp:r.xp || 0, xpw:r.xp_week || 0, wk:r.wk || "", xpm:r.xp_month || 0, mo:r.mo || "", w:r.weight || ""}; }
 
 /* ---------- boot ---------- */
 function loadLib(){ return new Promise((ok, no) => { if (window.supabase && window.supabase.createClient) return ok();
@@ -5987,7 +5986,7 @@ async function start(){
     sb.from("post_likes").select("post_id,user_id").limit(10000),
     sb.from("messages").select("*").order("created_at", {ascending:false}).limit(300),
     sb.from("reactions").select("message_id,user_id,who,emoji").limit(10000),
-    sb.from("profiles").select("id,name,sign,mbti,lv,streak,bio,avatar").neq("name", "").limit(2000)
+    sb.from("profiles").select("id,name,sign,mbti,lv,streak,bio,avatar,bday,xp,xp_week,wk,xp_month,mo,weight").neq("name", "").limit(2000)
   ]);
   const bad = q.find(r => r.error); if (bad) throw bad.error;
   LIKES = {}; q[1].data.forEach(r => (LIKES[r.post_id] = LIKES[r.post_id] || new Set()).add(r.user_id));
@@ -6114,6 +6113,7 @@ function pushProfile(){ clearTimeout(profT); profT = setTimeout(async () => { if
   let me = null; try { me = window.LowiFood && LowiFood.meP ? LowiFood.meP() : null; } catch(e){}
   let av = ""; try { av = S.user.avatarUrl || S.user.avatar || ""; } catch(e){} if (av.length > 120000) av = "";
   const row = {id:uid, name:myName(), sign:me ? me.s || "" : "", mbti:me ? me.t || "" : "", lv:me ? me.lv || 1 : 1, streak:me ? me.streak || 0 : 0, avatar:av};
+  try { if (window.LowiR3 && LowiR3.profileExtra) Object.assign(row, LowiR3.profileExtra()); } catch(e){}
   const j = JSON.stringify(row); if (j === lastProf) return; lastProf = j;
   const r = await sb.from("profiles").upsert(Object.assign({updated_at:new Date().toISOString()}, row)); if (r.error) lastProf = ""; }, 1500); }
 function snapshot(){ const o = {};
@@ -7311,6 +7311,571 @@ R2.chatBoot = hook;
 })();
 
 (function(){ const R2 = window.LowiR2; if (!R2) return; try { R2.boot(); } catch(e){ console.error(e); } try { R2.chatBoot(); } catch(e){ console.error(e); } try { R2.authBoot(); } catch(e){ console.error(e); } })();
+</script>
+<style id="r3css">
+/* ===== LOWiSPIKE round 3 (Oct 9, 2026) ===== */
+:root{--r3-ring:#0b0f19}
+html[data-theme="light"]{--r3-ring:#ffffff}
+
+/* ---------- XP toast: low on the screen above the tab bar, fades in and out; nothing under the notch ---------- */
+#toast,#shToast{top:auto!important;bottom:calc(env(safe-area-inset-bottom,0px) + 104px)!important;
+  transform:translate(-50%,14px)!important;opacity:0;pointer-events:none;max-width:min(86vw,360px);white-space:normal;text-align:center;
+  transition:opacity .28s ease,transform .38s cubic-bezier(.2,.9,.3,1.2)!important;z-index:9000}
+#toast.show,#shToast.show,#toast.on,#shToast.on{transform:translate(-50%,0)!important;opacity:1}
+
+/* ---------- profile tab: the header bubble becomes a close button ---------- */
+#pfBtn{background:none!important;border:0!important;box-shadow:none!important;overflow:visible!important;padding:0!important}
+#pfBtn .lb3{position:absolute;left:0;top:0;--sz:42px!important;width:42px;height:42px}
+#pfBtn.active,#main[data-r3tab="profile"] #pfBtn{opacity:0!important;pointer-events:none!important;visibility:hidden}
+#r3Back{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:16px;z-index:30;width:40px;height:40px;border-radius:50%;
+  display:none;align-items:center;justify-content:center;border:1px solid var(--r2-line,rgba(255,255,255,.14));background:var(--r2-field,rgba(255,255,255,.08));
+  color:var(--r2-ink,#fff);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);cursor:pointer}
+#r3Back svg{width:18px;height:18px}
+#main[data-r3tab="profile"] #r3Back{display:flex}
+
+/* ---------- the bubble ---------- */
+.lb3{position:relative;display:inline-block;flex:none;width:var(--sz);height:var(--sz);border-radius:50%;vertical-align:middle;line-height:0;
+  box-shadow:0 0 calc(var(--sz)*.22) rgba(var(--b1r),.32),0 calc(var(--sz)*.05) calc(var(--sz)*.16) rgba(0,0,0,.32)}
+.lb3-in{position:absolute;inset:0;border-radius:50%;overflow:hidden;isolation:isolate;transform:translateZ(0);-webkit-mask-image:-webkit-radial-gradient(white,black);
+  background:radial-gradient(circle at 50% 36%,rgba(var(--b2r),.55),rgba(var(--b1r),.38) 55%,#06121c 100%)}
+.lb3-ph{position:absolute;left:-6%;top:-6%;width:112%;height:112%;object-fit:cover;border-radius:50%;filter:saturate(1.08);
+  animation:lb3sway 7.5s ease-in-out infinite;animation-delay:var(--d)}
+.lb3-ini{display:flex;align-items:center;justify-content:center;font-weight:760;font-size:calc(var(--sz)*.4);line-height:1;color:#fff;letter-spacing:-.02em;
+  text-shadow:0 1px 0 rgba(255,255,255,.2),0 calc(var(--sz)*.03) calc(var(--sz)*.08) rgba(0,10,30,.45);
+  background:radial-gradient(circle at 40% 30%,rgba(var(--b2r),.9),rgba(var(--b1r),.8) 50%,rgba(8,22,40,.95) 100%)}
+/* water: colour deepens toward the glass, like looking into a water-filled ball */
+.lb3-w{position:absolute;inset:0;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle at 50% 44%,rgba(255,255,255,0) 46%,rgba(var(--b1r),.22) 66%,rgba(var(--b2r),.48) 86%,rgba(var(--b1r),.78) 100%),
+    linear-gradient(180deg,rgba(var(--b2r),.08),rgba(var(--b1r),.24))}
+/* light rippling through the water */
+.lb3-c{position:absolute;inset:-35%;pointer-events:none;opacity:.55;mix-blend-mode:soft-light;
+  background:radial-gradient(26% 16% at 30% 30%,rgba(255,255,255,.95),transparent 70%),radial-gradient(22% 13% at 68% 52%,rgba(255,255,255,.8),transparent 70%),
+    radial-gradient(30% 15% at 44% 78%,rgba(255,255,255,.65),transparent 70%),radial-gradient(18% 11% at 80% 22%,rgba(255,255,255,.65),transparent 70%);
+  animation:lb3caus 9s ease-in-out infinite alternate;animation-delay:var(--d)}
+/* glass: rim, inner shadow, highlight */
+.lb3-g{position:absolute;inset:0;border-radius:50%;pointer-events:none;
+  box-shadow:inset 0 0 0 max(1px,calc(var(--sz)*.022)) rgba(255,255,255,.4),inset 0 calc(var(--sz)*-.09) calc(var(--sz)*.16) rgba(var(--b1r),.55),
+    inset 0 calc(var(--sz)*.07) calc(var(--sz)*.12) rgba(255,255,255,.26),inset 0 0 calc(var(--sz)*.1) rgba(0,10,30,.32)}
+.lb3-g:before{content:"";position:absolute;left:13%;top:6%;width:54%;height:30%;border-radius:50%;transform:rotate(-24deg);opacity:.78;
+  background:linear-gradient(180deg,rgba(255,255,255,.88),rgba(255,255,255,.14) 68%,rgba(255,255,255,0))}
+.lb3-g:after{content:"";position:absolute;right:15%;bottom:11%;width:26%;height:11%;border-radius:50%;transform:rotate(-32deg);
+  background:radial-gradient(closest-side,rgba(255,255,255,.6),rgba(255,255,255,0))}
+/* air bubbles rising */
+.lb3-bb{position:absolute;inset:0;pointer-events:none}
+.lb3-bb b{position:absolute;bottom:-6%;left:28%;width:calc(var(--sz)*.065);height:calc(var(--sz)*.065);border-radius:50%;opacity:0;
+  background:radial-gradient(circle at 34% 30%,rgba(255,255,255,.95),rgba(255,255,255,.25) 45%,rgba(255,255,255,.04) 72%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.5);
+  animation:lb3rise 5.6s ease-in infinite}
+.lb3-bb b:nth-child(2){left:63%;width:calc(var(--sz)*.042);height:calc(var(--sz)*.042);animation-duration:4.3s;animation-delay:-1.6s}
+.lb3-bb b:nth-child(3){left:45%;width:calc(var(--sz)*.03);height:calc(var(--sz)*.03);animation-duration:3.7s;animation-delay:-2.9s}
+.lb3-bb b:nth-child(4){left:74%;width:calc(var(--sz)*.055);height:calc(var(--sz)*.055);animation-duration:6.4s;animation-delay:-4.1s}
+.lb3-bb b:nth-child(5){left:20%;width:calc(var(--sz)*.035);height:calc(var(--sz)*.035);animation-duration:4.9s;animation-delay:-.7s}
+/* star-sign symbol */
+.lb3-sg{position:absolute;right:-3%;bottom:-1%;width:max(15px,calc(var(--sz)*.33));height:max(15px,calc(var(--sz)*.33));border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:max(9px,calc(var(--sz)*.19));line-height:1;color:#0b1020;font-weight:700;font-family:"Apple Symbols","Segoe UI Symbol","Noto Sans Symbols 2",system-ui,sans-serif;
+  background:linear-gradient(140deg,var(--b1),var(--b2));box-shadow:0 0 0 max(2px,calc(var(--sz)*.022)) var(--r3-ring),0 2px 8px rgba(0,0,0,.3)}
+.lb3-sg[role="button"]{cursor:pointer}
+@keyframes lb3sway{0%,100%{transform:scale(1) translate3d(0,0,0) rotate(0)}33%{transform:scale(1.03) translate3d(1.4%,-1.1%,0) rotate(.7deg)}66%{transform:scale(1.012) translate3d(-1.1%,1.3%,0) rotate(-.6deg)}}
+@keyframes lb3caus{0%{transform:translate3d(-6%,-4%,0) rotate(0) scale(1)}100%{transform:translate3d(6%,5%,0) rotate(24deg) scale(1.12)}}
+@keyframes lb3rise{0%{transform:translate3d(0,0,0);opacity:0}12%{opacity:.9}78%{opacity:.7}100%{transform:translate3d(calc(var(--sz)*.07),calc(var(--sz)*-1.02),0);opacity:0}}
+.lb3.lite .lb3-ph,.lb3.lite .lb3-c{animation:none}
+html.r3-paused .lb3 *{animation-play-state:paused!important}
+@media (prefers-reduced-motion:reduce){.lb3 *,.lb3 *:before{animation:none!important}}
+
+/* ---------- profile ---------- */
+.r3-hero{display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:6px}
+.r3-hav{position:relative;border:0;background:none;padding:0;margin:4px 0 2px;cursor:pointer;-webkit-tap-highlight-color:transparent;border-radius:50%}
+.r3-hav:active{transform:scale(.97)}
+.r3-cam{position:absolute;left:-2px;bottom:6px;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:var(--r2-pri,#ecd08f);color:var(--r2-pri-ink,#141414);box-shadow:0 0 0 3px var(--r3-ring),0 4px 12px rgba(0,0,0,.3)}
+.r3-cam svg{width:18px;height:18px}
+.r3-plink{border:0;background:none;color:var(--r2-pri,#ecd08f);font:inherit;font-size:14px;font-weight:700;padding:8px 12px;cursor:pointer}
+.r3-det{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px 7px;font-size:14.5px;color:var(--r2-mut);margin-top:4px}
+.r3-det i{font-style:normal;opacity:.5}
+.r3-signchip{border:1px solid var(--r2-line);background:var(--r2-field);color:var(--r2-ink);font:inherit;font-weight:650;border-radius:14px;padding:3px 10px;cursor:pointer}
+.r3-hacts{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+.r3-hacts .r2-btn{width:auto;height:40px;padding:0 16px;font-size:14px}
+.r3-todo{padding:6px 6px 8px!important;margin-top:14px!important}
+.r3-todo-h{display:flex;flex-direction:column;gap:2px;padding:10px 12px 6px}
+.r3-todo-h b{font-size:16px}.r3-todo-h small{color:var(--r2-mut);font-size:12.5px}
+.r3-todo-r{position:relative;display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;background:none;color:var(--r2-ink);font:inherit;padding:11px 12px;border-radius:16px;cursor:pointer;min-height:58px}
+.r3-todo-r + .r3-todo-r{border-top:1px solid var(--r2-line)}
+.r3-todo-r:active{background:var(--r2-field)}
+.r3-todo-r.solo{border:1px solid var(--r2-line);background:var(--r2-field);margin-top:12px}
+.r3-todo-r>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.r3-todo-r b{font-size:15px}.r3-todo-r small{font-size:12.5px;color:var(--r2-mut)}
+.r3-ti{width:40px;height:40px;flex:none;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:20px;background:var(--r2-field);border:1px solid var(--r2-line)}
+.r3-ti svg{width:19px;height:19px}
+.r3-go{flex:none;height:32px;padding:0 14px;border-radius:16px;display:flex;align-items:center;font-size:13.5px;font-weight:750;background:var(--r2-pri,#ecd08f);color:var(--r2-pri-ink,#141414)}
+.r3-bdin{position:absolute;inset:0;width:100%;height:100%;opacity:.011;border:0;margin:0;padding:0;cursor:pointer;font-size:16px;-webkit-appearance:none;appearance:none;z-index:2}
+.r3-bdin::-webkit-calendar-picker-indicator{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.r3-sec{margin-top:18px}
+.r3-comm{padding:4px 14px!important}
+.r3-prev{padding:12px 0 12px;border-bottom:1px solid var(--r2-line)}
+.r3-prev>small{display:block;font-size:12px;color:var(--r2-mut);margin-bottom:8px}
+.r3-prevrow{display:flex;align-items:center;gap:10px}.r3-prevrow>div{display:flex;flex-direction:column;min-width:0}
+.r3-prevrow b{font-size:14.5px}.r3-prevrow span{font-size:12.5px;color:var(--r2-mut)}
+.r3-set{display:flex;align-items:center;gap:12px;padding:12px 0}
+.r3-set>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.r3-set b{font-size:15px}.r3-set small{font-size:12.5px;color:var(--r2-mut)}
+.r3-set .toggle{border:0;cursor:pointer}
+.r3-ewt{border-top:1px solid var(--r2-line);margin:6px 0 12px}
+.r3-bnote{font-size:12px;color:var(--r2-mut);margin:-4px 2px 10px}
+.r3-boardrow{display:flex;align-items:center;gap:12px;width:100%;border:0;border-top:1px solid var(--r2-line);background:none;color:var(--r2-ink);font:inherit;text-align:left;padding:12px 0;cursor:pointer}
+.r3-boardrow>div{flex:1;display:flex;flex-direction:column;gap:2px}.r3-boardrow b{font-size:15px}.r3-boardrow small{font-size:12.5px;color:var(--r2-mut)}
+.r3-boardrow>svg{width:16px;height:16px;opacity:.5}
+
+/* ---------- member profile ---------- */
+.r3-ov .r2-sh{max-height:calc(100% - env(safe-area-inset-top,0px) - 14px)}
+.r3-mp{display:flex;flex-direction:column;gap:12px;padding-bottom:8px}
+.r3-mph{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;padding:12px 0 4px}
+.r3-mpglow{position:absolute;left:50%;top:8px;width:240px;height:200px;transform:translateX(-50%);border-radius:50%;pointer-events:none;
+  background:radial-gradient(closest-side,rgba(var(--b1r),.28),rgba(var(--b1r),0));filter:blur(8px)}
+.r3-mph .lb3{margin-bottom:12px}
+.r3-mph h2{font-size:24px;font-weight:780;letter-spacing:-.02em;margin:0;display:flex;align-items:center;gap:8px}
+.r3-mbti{font-size:13px;color:var(--r2-mut);margin-top:3px}
+.r3-bio{font-size:14px;color:var(--r2-ink);opacity:.85;margin:8px 10px 0;line-height:1.4}
+.r3-mpacts{display:flex;gap:8px;margin-top:14px;width:100%}
+.r3-mpacts .r2-btn{flex:1;height:44px;font-size:14.5px}
+.r3-sup{display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:10px;font-size:11px;font-weight:750;letter-spacing:.02em;
+  background:linear-gradient(120deg,#ecd08f,#f2bccb,#c3b2ff);color:#1a1424;margin-left:6px;vertical-align:middle}
+.r3-lvcard,.r3-about,.r3-tile{background:var(--r2-field);border:1px solid var(--r2-line);border-radius:20px}
+.r3-lvcard{padding:14px 14px 6px}
+.r3-lvtop{display:flex;align-items:center;gap:9px}
+.r3-lvb{height:26px;padding:0 10px;border-radius:13px;display:inline-flex;align-items:center;font-size:13px;font-weight:800;background:linear-gradient(140deg,var(--b1),var(--b2));color:#0b1020}
+.r3-lvtop b{font-size:15px;flex:1}.r3-xp{font-size:14px;font-weight:700;color:var(--r2-mut)}
+.r3-bar{height:8px;border-radius:4px;background:rgba(127,127,127,.18);overflow:hidden;margin:12px 0 8px}
+.r3-bar i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--b1),var(--b2))}
+.r3-lvsub{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--r2-mut)}
+.r3-link{display:flex;align-items:center;gap:4px;border:0;background:none;color:var(--r2-ink);font:inherit;font-size:13.5px;font-weight:700;padding:10px 0 6px;cursor:pointer}
+.r3-link svg{width:14px;height:14px}
+.r3-g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.r3-tile{padding:12px 14px;display:flex;flex-direction:column;gap:3px}
+.r3-tile small{font-size:12px;color:var(--r2-mut)}.r3-tile b{font-size:15px}
+.r3-about{padding:14px}
+.r3-about.solo{border:0;background:none;padding:6px 0 0}
+.r3-abh{display:flex;align-items:center;gap:12px}
+.r3-abg{width:46px;height:46px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;color:#0b1020;
+  font-family:"Apple Symbols","Segoe UI Symbol","Noto Sans Symbols 2",system-ui,sans-serif;background:linear-gradient(140deg,var(--b1),var(--b2));box-shadow:0 0 18px rgba(var(--b1r),.4)}
+.r3-abg.big{width:64px;height:64px;font-size:34px}
+.r3-abh>div{display:flex;flex-direction:column;gap:1px}.r3-abh small{font-size:12px;color:var(--r2-mut)}.r3-abh b{font-size:18px}.r3-abh span{font-size:12.5px;color:var(--r2-mut)}
+.r3-about p{font-size:14.5px;line-height:1.45;margin:12px 0}
+.r3-same{display:flex;align-items:center;gap:10px;width:100%;border:1px solid var(--r2-line);background:var(--r2-sheet,rgba(0,0,0,.2));color:var(--r2-ink);font:inherit;text-align:left;padding:11px 12px;border-radius:15px;cursor:pointer}
+.r3-same>div{flex:1;display:flex;flex-direction:column;gap:2px}.r3-same b{font-size:14px}.r3-same small{font-size:12.5px;color:var(--r2-mut)}
+.r3-same>span{display:flex;align-items:center;gap:3px;font-size:13px;font-weight:700;white-space:nowrap}.r3-same svg{width:13px;height:13px}
+.r3-h3{font-size:15px;font-weight:750;margin:6px 2px 0}
+.r3-posts{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.r3-tile-p{position:relative;aspect-ratio:1;border-radius:14px;overflow:hidden;border:1px solid var(--r2-line);background:var(--r2-field);padding:0;cursor:pointer;color:var(--r2-ink)}
+.r3-tile-p img{width:100%;height:100%;object-fit:cover;display:block}
+.r3-tp-e{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:30px}
+.r3-tp-c{position:absolute;left:0;right:0;bottom:0;padding:14px 7px 6px;font-size:10.5px;line-height:1.25;text-align:left;color:#fff;background:linear-gradient(180deg,transparent,rgba(0,0,0,.6));
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.r3-tp-v{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;display:flex;align-items:center;justify-content:center}
+.r3-tp-v svg{width:11px;height:11px}
+.r3-empty{font-size:13.5px;color:var(--r2-mut);text-align:center;padding:16px 8px}
+.r3-list h2,.r3-lb h2{font-size:22px;font-weight:780;margin:4px 0 2px}
+.r3-prow,.r3-lbrow{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;color:var(--r2-ink);font:inherit;text-align:left;padding:9px 4px;border-radius:14px;cursor:pointer}
+.r3-prow:active,.r3-lbrow:active{background:var(--r2-field)}
+.r3-prow>div,.r3-lbm{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.r3-prow b,.r3-lbm b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r3-prow em,.r3-lbm em{font-style:normal;font-size:11px;font-weight:700;color:var(--r2-mut);margin-left:4px}
+.r3-prow small,.r3-lbm small{font-size:12.5px;color:var(--r2-mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r3-lvs{font-size:12.5px;font-weight:700;color:var(--r2-mut)}
+
+/* ---------- leaderboard ---------- */
+.r3-lbseg{margin:12px 0 8px}.r3-lbseg button{flex:1;justify-content:center}
+.r3-lbl{display:flex;flex-direction:column;gap:2px}
+.r3-rk{width:24px;flex:none;text-align:center;font-size:15px;font-weight:800;color:var(--r2-mut)}
+.r3-lbrow.t1 .r3-rk,.r3-lbrow.t2 .r3-rk,.r3-lbrow.t3 .r3-rk{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#16120a;font-size:13px}
+.r3-lbrow.t1 .r3-rk{background:linear-gradient(140deg,#f7e2a4,#d9b25b)}
+.r3-lbrow.t2 .r3-rk{background:linear-gradient(140deg,#eef1f6,#aab4c3)}
+.r3-lbrow.t3 .r3-rk{background:linear-gradient(140deg,#f2c9a5,#c48a5c)}
+.r3-lbrow.me{background:var(--r2-field);border:1px solid var(--r2-line)}
+.r3-lbx{display:flex;flex-direction:column;align-items:flex-end;font-size:15px;font-weight:800;line-height:1.1}
+.r3-lbx small{font-size:10.5px;font-weight:700;color:var(--r2-mut)}
+.r3-lbme{position:sticky;bottom:0;padding-top:8px;background:var(--r2-sheet)}
+
+/* ---------- community: leaderboard button + chat messages with bubble and details ---------- */
+.r3-h1{display:flex;align-items:center;gap:10px}
+.r3-topbtn{display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 11px;border-radius:15px;border:1px solid var(--r2-line,rgba(255,255,255,.14));
+  background:var(--r2-field,rgba(255,255,255,.08));color:var(--r2-ink,#fff);font:inherit;font-size:13px;font-weight:700;letter-spacing:0;cursor:pointer}
+.r3-topbtn span{font-size:14px}
+.cm-msg.r3m{align-items:flex-end;max-width:94%}
+.r3m-av{flex:none;cursor:pointer;border-radius:50%;line-height:0;margin-bottom:2px}
+.r3m-by{display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 7px;margin-bottom:3px;cursor:pointer;line-height:1.25}
+.r3m-by b{font-size:13px;font-weight:750}
+.r3m-d{font-size:11.5px;color:var(--r2-mut,rgba(255,255,255,.6))}
+.r3m-t{font-size:11px;color:var(--r2-mut,rgba(255,255,255,.5));opacity:.8}
+.cm-msg.r3m.mine .r3m-by{justify-content:flex-end}
+</style>
+<script id="r3js">
+/* ===== LOWiSPIKE round 3 (Oct 9, 2026) · water-bubble avatar everywhere, clearer profile, member profiles,
+   name + details on every chat message, leaderboard. Builds on round 2 part 1 (window.LowiR2). ===== */
+(function(){
+"use strict";
+const R2 = window.LowiR2; if (!R2) return;
+const $ = R2.$, $$ = R2.$$, esc = R2.esc;
+const R3 = window.LowiR3 = window.LowiR3 || {};
+const SITE = "https://therealetm.github.io/lowispike/";
+const reduce = !!R2.reduce;
+
+/* ---------- star signs ---------- */
+const GLYPH = {Aries:"♈", Taurus:"♉", Gemini:"♊", Cancer:"♋", Leo:"♌", Virgo:"♍", Libra:"♎", Scorpio:"♏", Sagittarius:"♐", Capricorn:"♑", Aquarius:"♒", Pisces:"♓"};
+const ABOUT = {
+  Aries:["Fire", "Mar 21 – Apr 19", "Bold starter, all-in energy. Aries wins when the low-spike choice is also the fast one: a protein breakfast that's ready before the day takes off."],
+  Taurus:["Earth", "Apr 20 – May 20", "Loyal to good food and comfort. Taurus keeps the cravings happy with real flavour: rich, slow, satisfying swaps instead of strict rules."],
+  Gemini:["Air", "May 21 – Jun 20", "Curious and quick, bored by routine. Gemini stays on track by rotating swaps, so there's always something new to try this week."],
+  Cancer:["Water", "Jun 21 – Jul 22", "Caring, home-loving, cooks for everyone. Cancer does best with cosy staples made ahead, so evenings stay calm and steady."],
+  Leo:["Fire", "Jul 23 – Aug 22", "Warm, proud, loves a spotlight. Leo shines on streaks and levels, and makes the colourful plate everyone wants a photo of."],
+  Virgo:["Earth", "Aug 23 – Sep 22", "Precise and thoughtful, notices every detail. Virgo likes clear numbers and simple systems, and turns small wins into habits."],
+  Libra:["Air", "Sep 23 – Oct 22", "Balanced, social, a natural host. Libra finds the middle path: the treat stays, the spike doesn't, and dinner is better shared."],
+  Scorpio:["Water", "Oct 23 – Nov 21", "Intense and determined, all or nothing. Scorpio wants to know why a food hits hard, and once it clicks, the change sticks."],
+  Sagittarius:["Fire", "Nov 22 – Dec 21", "Free-spirited and adventurous, always on the move. Sagittarius does best with snacks that travel and recipes from far away."],
+  Capricorn:["Earth", "Dec 22 – Jan 19", "Steady and ambitious, plays the long game. Capricorn loves a plan, a streak and progress you can measure week by week."],
+  Aquarius:["Air", "Jan 20 – Feb 18", "Original, a little rebellious, loves to experiment. Aquarius tests new swaps first and tells the community what worked."],
+  Pisces:["Water", "Feb 19 – Mar 20", "Dreamy, intuitive and feels everything. Pisces does best with gentle rituals: a warm tea, a calm evening, cravings met with kindness."]
+};
+const MBTI = {INTJ:"Architect", INTP:"Logician", ENTJ:"Commander", ENTP:"Debater", INFJ:"Advocate", INFP:"Mediator", ENFJ:"Protagonist", ENFP:"Campaigner",
+  ISTJ:"Logistician", ISFJ:"Defender", ESTJ:"Executive", ESFJ:"Consul", ISTP:"Virtuoso", ISFP:"Adventurer", ESTP:"Entrepreneur", ESFP:"Entertainer"};
+const gl = s => GLYPH[s] ? GLYPH[s] + "\uFE0E" : "";
+const signOf = bday => { try { const z = zodiac(bday); return z ? z.n : ""; } catch(e){ return ""; } };
+const pal = s => { try { return LowiGlass.palette(String(s || "none").toLowerCase()); } catch(e){ return ["#9fd8ff", "#d6b8ff", "pearl"]; } };
+const rgb = h => { h = String(h || "#9fd8ff").replace("#", ""); const n = parseInt(h, 16); return [n >> 16 & 255, n >> 8 & 255, n & 255].join(","); };
+const hash = s => { let h = 0; for (const c of String(s || "")) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
+const safeImg = u => (typeof u === "string" && /^(data:image\/|https:\/\/)/.test(u)) ? u : "";
+const fmtN = n => { try { return Number(n || 0).toLocaleString("en-US"); } catch(e){ return String(n || 0); } };
+function ageOf(b){ if (!b || !/^\d{4}-\d{2}-\d{2}$/.test(b)) return null; const p = b.split("-").map(Number), t = new Date();
+  let a = t.getFullYear() - p[0]; if (t.getMonth() + 1 < p[1] || (t.getMonth() + 1 === p[1] && t.getDate() < p[2])) a--; return a >= 5 && a < 120 ? a : null; }
+function daysToBday(b){ if (!b || !/^\d{4}-\d{2}-\d{2}$/.test(b)) return null; const p = b.split("-").map(Number), t = new Date(); t.setHours(0, 0, 0, 0);
+  let n = new Date(t.getFullYear(), p[1] - 1, p[2]); if (n < t) n = new Date(t.getFullYear() + 1, p[1] - 1, p[2]); return Math.round((n - t) / 864e5); }
+function bdayLong(b){ const p = b.split("-").map(Number); const M = ["January","February","March","April","May","June","July","August","September","October","November","December"]; return p[2] + " " + M[p[1] - 1] + " " + p[0]; }
+
+/* ---------- XP by period (for the weekly and monthly leaderboard) ---------- */
+const pad = n => String(n).padStart(2, "0");
+function weekStart(){ const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d; }
+const WK = () => { const d = weekStart(); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); };
+const MO = () => { const d = new Date(); return d.getFullYear() + "-" + pad(d.getMonth() + 1); };
+function periodXP(kind){ const S_ = R2.S(); if (!S_ || !Array.isArray(S_.ledger)) return 0;
+  const from = kind === "w" ? weekStart().getTime() : new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
+  return S_.ledger.reduce((t, e) => t + (e && e.ts >= from ? (+e.amt || 0) : 0), 0); }
+
+/* ---------- people ---------- */
+function myUid(){ try { const x = R2.X(); return (x && x.state().uid) || ""; } catch(e){ return ""; } }
+function me(){
+  const S_ = R2.S() || {}, u = S_.user || {}; let lv = 1, st = 0, mb = "";
+  try { lv = levelOf(S_.xp || 0).L; } catch(e){} try { st = streakNow(); } catch(e){} try { mb = (LowiFood.state() || {}).mbti || ""; } catch(e){}
+  const w = (u.showWeight && S_.health && S_.health.weight) ? String(S_.health.weight).slice(0, 8) : "";
+  return {n:u.name || "You", s:signOf(u.bday), t:mb, lv, xp:S_.xp || 0, streak:st, bday:u.bday || "", avatar:safeImg(u.avatar) || safeImg(u.avatarUrl), w,
+    me:true, uid:myUid(), xpw:periodXP("w"), xpm:periodXP("m"), wk:WK(), mo:MO(), supporter:false};
+}
+const live = () => { try { return !!(window.LOWI_CLOUD && LOWI_CLOUD.live()); } catch(e){ return false; } };
+function others(){ try { return live() ? LOWI_CLOUD.people() : (window.LowiPeople ? LowiPeople.people() : []); } catch(e){ return []; } }
+function everyone(){ const m = me(); return others().filter(p => !(p.uid && p.uid === m.uid) && !(!p.uid && p.n === m.n)).concat([m]); }
+function find(q){
+  q = q || {}; const m = me();
+  if (q.me || (q.uid && q.uid === m.uid) || q.name === "You") return m;
+  const all = others();
+  let p = q.uid ? all.find(x => x.uid === q.uid) : null;
+  if (!p && q.name) p = all.find(x => x.n === q.name);
+  if (!p && q.name && !q.uid && m.n === q.name) return m;
+  if (!p && q.name && window.LowiPeople) { try { p = LowiPeople.person(q.name); } catch(e){} }
+  return p || {n:q.name || "Member", s:"", t:"", lv:1, streak:0, uid:q.uid || ""};
+}
+const xpOf = p => p.xp || (function(){ try { return levelStart(p.lv || 1); } catch(e){ return 0; } })();
+function detailsBits(p, o){ o = o || {}; const b = [], a = ageOf(p.bday);
+  if (a != null) b.push(String(a)); if (p.s) b.push(o.signName ? gl(p.s) + " " + p.s : gl(p.s)); if (p.t) b.push(p.t); if (p.w) b.push(p.w + " kg"); return b; }
+const who = p => ' data-r5="profile" data-who="' + esc(p.n) + '"' + (p.uid ? ' data-uid="' + esc(p.uid) + '"' : "") + (p.me ? ' data-me="1"' : "");
+
+/* ---------- the bubble: photo under water, inside a glass ball ---------- */
+function bubble(p, size, o){
+  o = o || {}; p = p || {}; size = Math.round(size || 40);
+  const c = pal(p.s), g = gl(p.s), lite = size < 56, img = safeImg(p.avatar), d = ((hash(p.n) % 70) / 10).toFixed(1);
+  const st = "--sz:" + size + "px;--b1:" + c[0] + ";--b2:" + c[1] + ";--b1r:" + rgb(c[0]) + ";--b2r:" + rgb(c[1]) + ";--d:-" + d + "s";
+  const ph = img ? '<img class="lb3-ph" src="' + esc(img) + '" alt="" decoding="async" draggable="false">' : '<span class="lb3-ph lb3-ini">' + esc(String(p.n || "?").trim().charAt(0).toUpperCase() || "?") + '</span>';
+  const bb = lite ? "" : '<i class="lb3-bb" aria-hidden="true"><b></b><b></b><b></b><b></b><b></b></i>';
+  const sg = g && size >= 28 && o.badge !== false ? '<span class="lb3-sg"' + (o.signTap ? ' data-r3="sign" data-sign="' + esc(p.s) + '" role="button" tabindex="0" aria-label="About ' + esc(p.s) + '"' : ' aria-hidden="true"') + '>' + g + '</span>' : "";
+  return '<span class="lb3' + (lite ? " lite" : "") + (o.cls ? " " + o.cls : "") + '" style="' + st + '" role="img" aria-label="' + esc((p.n || "Member") + (p.s ? ", " + p.s : "")) + '">' +
+    '<span class="lb3-in">' + ph + '<i class="lb3-w"></i><i class="lb3-c"></i>' + bb + '<i class="lb3-g"></i></span>' + sg + '</span>';
+}
+R3.bubble = bubble; R3.me = me; R3.find = find; R3.details = detailsBits;
+
+/* every old avatar spot now draws the bubble */
+function hookAvatars(){
+  try {
+    avatar = function(size, u){ const S_ = R2.S(); u = u || (S_ && S_.user) || {}; const mine = S_ && u === S_.user;
+      return bubble(mine ? me() : {n:u.name, s:signOf(u.bday), avatar:u.avatar}, size); };
+  } catch(e){}
+  if (window.LowiPeople) { try { LowiPeople.bubbleHTML = (p, size) => bubble(p, size || 56); } catch(e){} }
+  if (window.LowiHost) LowiHost.avatar = function(size, name, img){ const S_ = R2.S(), u = (S_ && S_.user) || {};
+    if (img || name === u.name || name === "You") return bubble(me(), size); return bubble(find({name}), size); };
+}
+
+/* ---------- the XP toast: low on the screen, fades, never under the notch ---------- */
+/* (CSS does the moving; nothing else is needed here) */
+
+/* ---------- profile tab: header bubble swaps for a close control ---------- */
+let lastTab = "home";
+function hookTabs(){
+  if (typeof goTab !== "function" || goTab.__r3) return;
+  const _g = goTab;
+  const w = function(t){ const prev = typeof TAB !== "undefined" ? TAB : ""; if (prev && prev !== "profile") lastTab = prev;
+    const r = _g.apply(this, arguments); markTab(); return r; };
+  w.__r3 = true; goTab = w;
+}
+function markTab(){ const m = document.getElementById("main"); if (!m) return; let t = ""; try { t = TAB; } catch(e){} m.setAttribute("data-r3tab", t || ""); }
+function backBtn(){
+  const m = document.getElementById("main"); if (!m || document.getElementById("r3Back")) return;
+  const b = document.createElement("button"); b.id = "r3Back"; b.type = "button"; b.setAttribute("aria-label", "Close profile"); b.innerHTML = R2.ico.x;
+  b.addEventListener("click", () => { try { goTab(lastTab && lastTab !== "profile" ? lastTab : "home"); } catch(e){} });
+  m.appendChild(b);
+}
+
+/* ---------- profile: big bubble, obvious photo + birthday, community card ---------- */
+function heroHTML(){
+  const m = me(), S_ = R2.S(), u = S_.user || {}, bits = detailsBits(m, {signName:true}), hasPic = !!m.avatar;
+  return '<button class="r3-hav" data-r2p="photo" aria-label="' + (hasPic ? "Change profile photo" : "Add a profile photo") + '">' + bubble(m, 140) + '<span class="r3-cam">' + R2.ico.cam + '</span></button>' +
+    '<button class="r3-plink" data-r2p="photo">' + (hasPic ? "Change photo" : "Add a profile photo") + '</button>' +
+    '<div class="r2-hn">' + esc(u.name || "Add your name") + '</div>' +
+    (bits.length ? '<div class="r3-det">' + bits.map((b, i) => (m.s && b.indexOf(m.s) >= 0) ? '<button class="r3-signchip" data-r3="sign" data-sign="' + esc(m.s) + '">' + esc(b) + '</button>' : '<span>' + esc(b) + '</span>').join('<i>·</i>') + '</div>' : "") +
+    '<div class="r2-hs">' + (R2.email ? esc(R2.email() || "Not saved to an account yet") : "") + '</div>' +
+    '<div class="r3-hacts"><button class="r2-btn ghost" data-r2p="edit">Edit profile</button><button class="r2-btn ghost"' + who(m) + '>How others see you</button></div>';
+}
+function todoHTML(){
+  const m = me(), S_ = R2.S(), u = S_.user || {}, rows = [];
+  if (!m.avatar) rows.push('<button class="r3-todo-r" data-r2p="photo"><span class="r3-ti">' + R2.ico.cam + '</span><div><b>Add a profile photo</b><small>It floats inside your bubble</small></div><span class="r3-go">Add</span></button>');
+  if (!u.bday) rows.push('<div class="r3-todo-r r3-bdrow"><span class="r3-ti">🎂</span><div><b>Add your birthday</b><small>Gives you your star sign, its colour and your age</small></div><span class="r3-go">Add</span>' +
+    '<input type="date" id="r3Bday" class="r3-bdin" min="1920-01-01" max="' + new Date().toISOString().slice(0, 10) + '" aria-label="Add your birthday"></div>');
+  if (!m.t) rows.push('<button class="r3-todo-r" data-r5="mbti"><span class="r3-ti">🧩</span><div><b>Add your personality type</b><small>Optional · MBTI, like INTJ or ENFP</small></div><span class="r3-go">Add</span></button>');
+  if (!rows.length) return "";
+  return '<div class="card r3-todo"><div class="r3-todo-h"><b>Finish your profile</b><small>' + rows.length + (rows.length === 1 ? " step" : " steps") + ' left · a few seconds each</small></div>' + rows.join("") + '</div>';
+}
+function commHTML(){
+  const m = me(), S_ = R2.S(), u = S_.user || {}, hw = !!(S_.health && S_.health.weight), bits = detailsBits(m), rk = rankOf(m, "w");
+  return '<div class="sec r3-sec">In Community</div><div class="card r3-comm">' +
+    '<div class="r3-prev"><small>Next to your messages</small><div class="r3-prevrow">' + bubble(m, 36) + '<div><b>' + esc(m.n) + '</b><span>' + (bits.length ? esc(bits.join(" · ")) : "Add birthday and type to show more") + '</span></div></div></div>' +
+    '<div class="r3-set"><div><b>Show my weight</b><small>' + (hw ? (u.showWeight ? "On · others see " + esc(String(S_.health.weight)) + " kg next to your name" : "Off · only you see it") : "Off · add your weight first") + '</small></div>' +
+      '<button class="toggle' + (u.showWeight && hw ? " on" : "") + '" data-r3="showweight" role="switch" aria-checked="' + (u.showWeight && hw ? "true" : "false") + '" aria-label="Show my weight"></button></div>' +
+    '<button class="r3-boardrow" data-r3="board"><span class="r3-ti">🏆</span><div><b>Leaderboard</b><small>' + (rk ? "You're #" + rk + " this week" : "Earn XP this week to get on it") + '</small></div>' + R2.ico.chev + '</button></div>';
+}
+function decorate(){
+  const tab = document.getElementById("tab-profile"); if (!tab) return;
+  const hero = tab.querySelector(".r2-hero");
+  if (hero) { hero.classList.add("r3-hero"); hero.innerHTML = heroHTML(); }
+  $$(".r3-todo,.r3-comm,.r3-sec", tab).forEach(x => x.remove());
+  const anchor = hero || tab.firstElementChild; if (!anchor) return;
+  const wrap = document.createElement("div"); wrap.innerHTML = todoHTML() + commHTML();
+  let at = anchor; Array.from(wrap.children).forEach(n => { at.parentNode.insertBefore(n, at.nextSibling); at = n; });
+  // the old "Set up your profile" card and the old onboarding are gone: everything is edited in place
+  $$('[data-act="setupprofile"]', tab).forEach(b => { const c = b.closest(".card"); if (c && !c.classList.contains("r3-todo")) c.remove(); else b.remove(); });
+}
+function hookProfile(){
+  if (typeof RENDER === "undefined" || !RENDER.profile || RENDER.profile.__r3) return;
+  const _r = RENDER.profile;
+  const w = function(){ const r = _r.apply(this, arguments); try { decorate(); } catch(e){ console.error(e); } return r; };
+  w.__r3 = true; w.__r2 = true; RENDER.profile = w;
+  try { renderProfile = w; } catch(e){}
+}
+function rerender(){ try { if (typeof TAB !== "undefined" && TAB === "profile") RENDER.profile(); } catch(e){} }
+function pushSoon(){ try { const x = R2.X(); if (x) x.pushProfile(); } catch(e){} }
+function syncAll(){ try { const x = R2.X(); if (x) { x.pushProfile(); x.backupNow(); } } catch(e){} }
+let bdT = 0, bdPend = "";
+function commitBday(){
+  clearTimeout(bdT); const v = bdPend; bdPend = ""; if (!v || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return;
+  if (ageOf(v) == null) { R2.toast("Pick your birth year too"); return; }
+  const S_ = R2.S(); S_.user = S_.user || {}; S_.user.bday = v; R2.save();
+  try { LowiGlass.apply(); } catch(e){} try { R2.applyTheme(); } catch(e){}
+  syncAll(); R2.refreshMe ? R2.refreshMe() : rerender();
+  const s = signOf(v); R2.toast(s ? gl(s) + " " + s + " · your colour is " + pal(s)[2] : "Birthday saved");
+}
+function toggleWeight(){
+  const S_ = R2.S(); S_.user = S_.user || {};
+  if (!(S_.health && S_.health.weight)) { R2.toast("Add your weight first"); try { weightSheet(); } catch(e){} return; }
+  S_.user.showWeight = !S_.user.showWeight; R2.save(); pushSoon(); rerender();
+  R2.toast(S_.user.showWeight ? "Your weight now shows in Community" : "Your weight is private again");
+}
+
+/* ---------- member profile ---------- */
+function postsOf(p){
+  let L = [];
+  try { if (live()) L = LOWI_CLOUD.posts().filter(x => p.uid ? x.uid === p.uid : x.who === p.n); } catch(e){}
+  if (!L.length && p.me) { try { L = (TRIBE._t.state().posts || []).slice(); } catch(e){} }
+  if (!L.length && !live()) { try { L = (TRIBE._t.DEMO || []).filter(x => x.who === p.n); } catch(e){} }
+  return L.slice(0, 9);
+}
+function tileHTML(x){
+  const img = safeImg(x.photo) || safeImg(x.poster) || (x.meta && (safeImg(x.meta.img) || safeImg(x.meta.image) || safeImg(x.meta.thumb))) || "";
+  const cap = x.cap || (x.meta && x.meta.title) || "";
+  return '<button class="r3-tile-p" data-r3="post" data-id="' + esc(x.id) + '">' + (img ? '<img src="' + esc(img) + '" alt="" loading="lazy">' : '<span class="r3-tp-e">' + esc((x.art && x.art[0]) || "✨") + '</span>') +
+    (x.vid ? '<i class="r3-tp-v">' + R2.ico.play + '</i>' : "") + (cap ? '<span class="r3-tp-c">' + esc(cap.slice(0, 60)) + '</span>' : "") + '</button>';
+}
+function levelBlock(p){
+  const xp = xpOf(p); let L = p.lv || 1, pct = 0, left = 0, title = "";
+  try { const lv = levelOf(xp); L = Math.max(L, lv.L); pct = lv.pct; left = lv.left; title = titleOf(L); } catch(e){}
+  return '<div class="r3-lvcard"><div class="r3-lvtop"><span class="r3-lvb num">Lv ' + L + '</span><b>' + esc(title) + '</b><span class="r3-xp num">' + fmtN(xp) + ' XP</span></div>' +
+    '<div class="r3-bar"><i style="width:' + Math.round(Math.max(.03, Math.min(1, pct)) * 100) + '%"></i></div>' +
+    '<div class="r3-lvsub"><span>' + fmtN(left) + ' XP to Level ' + (L + 1) + '</span><span>🔥 ' + (p.streak || 0) + '-day streak</span></div>' +
+    '<button class="r3-link" data-r3="board">See leaderboard ' + R2.ico.chev + '</button></div>';
+}
+function sameSign(s){ return everyone().filter(x => x.s === s); }
+function memberHTML(p){
+  const bits = detailsBits(p, {signName:true}), a = ABOUT[p.s], d = daysToBday(p.bday), posts = postsOf(p), same = p.s ? sameSign(p.s).length : 0;
+  return '<div class="r3-mp" style="--b1:' + pal(p.s)[0] + ';--b2:' + pal(p.s)[1] + ';--b1r:' + rgb(pal(p.s)[0]) + '">' +
+    '<div class="r3-mph"><div class="r3-mpglow"></div>' + bubble(p, 150, {signTap:!!p.s}) +
+      '<h2>' + esc(p.n) + (p.supporter ? '<span class="r3-sup">Supporter</span>' : "") + '</h2>' +
+      (bits.length ? '<div class="r3-det">' + bits.map(b => '<span>' + esc(b) + '</span>').join("<i>·</i>") + '</div>' : "") +
+      (p.t && MBTI[p.t.slice(0, 4).toUpperCase()] ? '<div class="r3-mbti">' + esc(p.t) + ' · ' + MBTI[p.t.slice(0, 4).toUpperCase()] + '</div>' : "") +
+      (p.bio ? '<p class="r3-bio">' + esc(p.bio) + '</p>' : "") +
+      '<div class="r3-mpacts">' + (p.me ? '<button class="r2-btn ghost" data-r3="edit">Edit profile</button>' : '<button class="r2-btn pri" data-r3="dm" data-who="' + esc(p.n) + '">Message in chat</button>') +
+        '<button class="r2-btn ghost" data-r3="share"' + (p.uid ? ' data-uid="' + esc(p.uid) + '"' : "") + ' data-who="' + esc(p.n) + '">Share profile</button></div></div>' +
+    levelBlock(p) +
+    (p.bday && d != null ? '<div class="r3-g2"><div class="r3-tile"><small>Birthday</small><b>' + esc(bdayLong(p.bday)) + '</b></div><div class="r3-tile"><small>Next birthday</small><b>' + (d === 0 ? "Today 🎉" : d === 1 ? "Tomorrow" : "in " + d + " days") + '</b></div></div>' : "") +
+    (a ? '<div class="r3-about"><div class="r3-abh"><span class="r3-abg">' + gl(p.s) + '</span><div><small>About</small><b>' + esc(p.s) + '</b><span>' + a[0] + ' sign · ' + a[1] + '</span></div></div><p>' + esc(a[2]) + '</p>' +
+      '<button class="r3-same" data-r3="same" data-sign="' + esc(p.s) + '"><div><b>Same sign in the community</b><small>' + same + (same === 1 ? " member" : " members") + ' · ' + esc(p.s) + '</small></div><span>See everyone ' + R2.ico.chev + '</span></button></div>' :
+      (p.me ? '<button class="r3-todo-r solo" data-r3="edit"><span class="r3-ti">🎂</span><div><b>Add your birthday</b><small>Shows your sign, age and colour here</small></div><span class="r3-go">Add</span></button>' : "")) +
+    (posts.length ? '<div class="r3-h3">Posts</div><div class="r3-posts">' + posts.map(tileHTML).join("") + '</div>' : '<div class="r3-empty">' + (p.me ? "Your posts show up here." : "No posts yet.") + '</div>') +
+  '</div>';
+}
+function openMember(p){ if (!p) return; R2.sheet(memberHTML(p), {cls:"r3-ov"}); }
+R3.open = q => openMember(find(q));
+function sameHTML(s){
+  const L = sameSign(s).sort((a, b) => xpOf(b) - xpOf(a));
+  return '<div class="r3-list"><h2>' + gl(s) + ' ' + esc(s) + '</h2><p class="r2-p">' + L.length + (L.length === 1 ? " member" : " members") + ' with this sign</p>' + L.slice(0, 120).map(rowHTML).join("") + '</div>';
+}
+function rowHTML(p){ const bits = detailsBits(p);
+  return '<button class="r3-prow"' + who(p) + '>' + bubble(p, 44) + '<div><b>' + esc(p.n) + (p.me ? ' <em>you</em>' : "") + '</b><small>' + esc(bits.join(" · ") || "Member") + '</small></div><span class="r3-lvs num">Lv ' + (p.lv || 1) + '</span></button>'; }
+function aboutHTML(s){ const a = ABOUT[s]; if (!a) return ""; const n = sameSign(s).length;
+  return '<div class="r3-mp" style="--b1:' + pal(s)[0] + ';--b2:' + pal(s)[1] + ';--b1r:' + rgb(pal(s)[0]) + '"><div class="r3-about solo"><div class="r3-abh"><span class="r3-abg big">' + gl(s) + '</span><div><small>About</small><b>' + esc(s) + '</b><span>' + a[0] + ' sign · ' + a[1] + ' · colour: ' + esc(pal(s)[2]) + '</span></div></div><p>' + esc(a[2]) + '</p>' +
+    '<button class="r3-same" data-r3="same" data-sign="' + esc(s) + '"><div><b>Same sign in the community</b><small>' + n + (n === 1 ? " member" : " members") + '</small></div><span>See everyone ' + R2.ico.chev + '</span></button></div></div>'; }
+
+/* ---------- leaderboard ---------- */
+let LB = "w";
+function score(p, k){ if (k === "a") return xpOf(p);
+  if (p.me) return k === "w" ? p.xpw : p.xpm;
+  if (!live()) { const r = hash(p.n + (k === "w" ? WK() : MO())); return (r % 7 === 0) ? 0 : (r % (k === "w" ? 260 : 900)); }
+  return k === "w" ? (p.wk === WK() ? p.xpw || 0 : 0) : (p.mo === MO() ? p.xpm || 0 : 0); }
+function ranked(k){ return everyone().map(p => ({p, v:score(p, k)})).filter(x => x.v > 0 || (k === "a" && x.p.me)).sort((a, b) => b.v - a.v || (b.p.lv || 1) - (a.p.lv || 1)); }
+function rankOf(m, k){ const L = ranked(k); const i = L.findIndex(x => x.p.me); return i >= 0 && L[i].v > 0 ? i + 1 : 0; }
+function boardHTML(){
+  const L = ranked(LB), mi = L.findIndex(x => x.p.me), top = L.slice(0, 50);
+  const row = (x, i) => { const p = x.p, bits = detailsBits(p);
+    return '<button class="r3-lbrow' + (p.me ? " me" : "") + (i < 3 ? " t" + (i + 1) : "") + '"' + who(p) + '><span class="r3-rk num">' + (i + 1) + '</span>' + bubble(p, 42) +
+      '<div class="r3-lbm"><b>' + esc(p.n) + (p.me ? ' <em>you</em>' : "") + (p.supporter ? '<span class="r3-sup">Supporter</span>' : "") + '</b><small>' + esc(bits.join(" · ")) + (bits.length ? " · " : "") + 'Lv ' + (p.lv || 1) + ' · 🔥 ' + (p.streak || 0) + '</small></div>' +
+      '<span class="r3-lbx num">' + fmtN(x.v) + '<small>XP</small></span></button>'; };
+  return '<div class="r3-lb"><h2>Leaderboard</h2><p class="r2-p">XP from check-ins, meals and swaps. ' + (live() ? "Real members." : "Sample members until you're online.") + '</p>' +
+    '<div class="r2-seg r3-lbseg" role="tablist">' + [["w", "This week"], ["m", "This month"], ["a", "All time"]].map(o => '<button role="tab" data-r3lb="' + o[0] + '" class="' + (LB === o[0] ? "on" : "") + '">' + o[1] + '</button>').join("") + '</div>' +
+    '<div class="r3-lbl">' + (top.length ? top.map(row).join("") : '<div class="r3-empty">No XP yet ' + (LB === "w" ? "this week" : "this month") + '. Check in today and take the lead.</div>') + '</div>' +
+    (mi >= 50 ? '<div class="r3-lbme">' + row(L[mi], mi) + '</div>' : "") + '</div>';
+}
+function openBoard(){ R2.sheet(boardHTML(), {cls:"r3-ov r3-lbov"}); }
+R3.board = openBoard;
+
+/* ---------- share + deep link ---------- */
+async function share(uid, name){
+  const url = SITE + (uid ? "#u=" + encodeURIComponent(uid) : "#m=" + encodeURIComponent(name || ""));
+  const data = {title:(name || "Member") + " on LOWiSPIKE", text:"Have a look at " + (name || "this") + "'s profile on LOWiSPIKE", url};
+  try { if (navigator.share) { await navigator.share(data); return; } } catch(e){ if (e && e.name === "AbortError") return; }
+  try { await navigator.clipboard.writeText(url); R2.toast("Profile link copied"); } catch(e){ R2.toast(url); }
+}
+function deepLink(){
+  const h = location.hash || "", mu = h.match(/[#&]u=([^&]+)/), mm = h.match(/[#&]m=([^&]+)/); if (!mu && !mm) return;
+  const q = mu ? {uid:decodeURIComponent(mu[1])} : {name:decodeURIComponent(mm[1])};
+  let n = 0; const tick = () => { n++;
+    const ok = q.uid ? (q.uid === myUid() || others().some(p => p.uid === q.uid)) : others().some(p => p.n === q.name);
+    if (ok || n > 16) { if (ok) { openMember(find(q)); try { history.replaceState(null, "", location.pathname + location.search); } catch(e){} } return; }
+    setTimeout(tick, 500); };
+  setTimeout(tick, 900);
+}
+
+/* ---------- chat: bubble + name + details on every message, tap for the profile ---------- */
+function hookChat(){
+  if (typeof cmMsgHTML !== "function" || cmMsgHTML.__r3) return;
+  const prev = cmMsgHTML;
+  const w = function(m, all){
+    try {
+      all = all || []; const meNow = me();
+      const mine = m.uid ? !!(window.LOWI_CLOUD && LOWI_CLOUD.isMe(m.uid)) : (typeof cmMe === "function" && m.by === cmMe() && !m.demo);
+      const p = mine ? meNow : find({uid:m.uid, name:m.by});
+      if (!mine && m.by && p.n !== m.by && !p.uid) p.n = m.by;
+      const bits = detailsBits(p), re = m.re && all.find(x => x.id === m.re), cme = typeof cmMe === "function" ? cmMe() : "";
+      const ago = typeof cmAgo === "function" ? cmAgo(m.ts) : "", txt = typeof cmText === "function" ? cmText(m.t) : esc(m.t);
+      const pick = (typeof CMV !== "undefined" && CMV.pick === m.id && typeof CM_EMOJI !== "undefined") ? '<div class="cm-picker">' + CM_EMOJI.map(e => '<button data-cm="react" data-id="' + m.id + '" data-e="' + e + '">' + e + "</button>").join("") + "</div>" : "";
+      const del = mine && m.id != null ? '<button class="cm-mini r2-del" data-r2del="' + esc(m.id) + '" aria-label="Delete message">' + R2.ico.trash + '<span>Delete</span></button>' : "";
+      return '<div class="cm-msg r3m' + (mine ? " mine" : "") + '" id="cm-' + m.id + '">' +
+        '<span class="r3m-av"' + who(p) + ' role="button" tabindex="0" aria-label="' + esc(p.n) + ' profile">' + bubble(p, 36) + '</span>' +
+        '<div class="cm-bub"><div class="r3m-by"' + who(p) + ' role="button"><b>' + esc(mine ? meNow.n : (m.by || p.n)) + '</b>' + (bits.length ? '<span class="r3m-d">' + esc(bits.join(" · ")) + '</span>' : "") + '<span class="r3m-t">' + esc(ago) + '</span></div>' +
+        (re ? '<div class="cm-quote"><b>' + esc(re.by) + "</b> " + esc(String(re.t || "").slice(0, 70)) + (String(re.t || "").length > 70 ? "…" : "") + "</div>" : "") +
+        '<div class="cm-t">' + txt + "</div>" +
+        '<div class="cm-rx">' + Object.keys(m.rx || {}).filter(k => m.rx[k].length).map(k => '<button class="cm-chip' + (m.rx[k].indexOf(cme) >= 0 ? " on" : "") + '" data-cm="react" data-id="' + m.id + '" data-e="' + k + '">' + k + " " + m.rx[k].length + "</button>").join("") +
+        '<button class="cm-mini" data-cm="pick" data-id="' + m.id + '" aria-label="React">+🙂</button>' + del + '<button class="cm-mini" data-cm="reply" data-id="' + m.id + '">Reply</button></div>' + pick + "</div></div>";
+    } catch(e){ console.error(e); return prev.apply(this, arguments); }
+  };
+  w.__r3 = true; w.__r2 = true; cmMsgHTML = w;
+}
+function hookCommunity(){
+  if (typeof RENDER === "undefined" || !RENDER.foryou || RENDER.foryou.__r3) return;
+  const _r = RENDER.foryou;
+  const w = function(){ const r = _r.apply(this, arguments); try { topBtn(); } catch(e){} return r; };
+  w.__r3 = true; RENDER.foryou = w;
+  try { renderCommunity = w; } catch(e){}
+}
+function topBtn(){ const h = $("#tab-foryou .ls-phd .h1"); if (!h || h.querySelector(".r3-topbtn")) return;
+  h.classList.add("r3-h1"); h.insertAdjacentHTML("beforeend", '<button class="r3-topbtn" data-r3="board" aria-label="Leaderboard"><span>🏆</span>Top</button>'); }
+
+/* ---------- edit-profile sheet: show-my-weight switch next to the personality type ---------- */
+function decorateEdit(root){
+  const save = root.querySelector('[data-r2p="saveedit"]'); if (!save || root.querySelector(".r3-ewt")) return;
+  const S_ = R2.S(), u = S_.user || {}, hw = !!(S_.health && S_.health.weight);
+  const d = document.createElement("div"); d.className = "r3-set r3-ewt";
+  d.innerHTML = '<div><b>Show my weight in Community</b><small>' + (hw ? "Optional · off by default" : "Add your weight in Profile first") + '</small></div><button class="toggle' + (u.showWeight && hw ? " on" : "") + '" data-r3="showweight" role="switch" aria-label="Show my weight"></button>';
+  save.parentNode.insertBefore(d, save);
+  const n = root.querySelector("#r2eB"); if (n && !root.querySelector(".r3-bnote")) n.closest("label").insertAdjacentHTML("afterend", '<div class="r3-bnote">Your birthday shows on your profile with your age and sign.</div>');
+}
+
+/* ---------- clicks ---------- */
+function onClick(e){
+  const t = e.target;
+  const prof = t.closest('[data-r5="profile"]');
+  if (prof && !t.closest('[data-r3="sign"]')) { e.preventDefault(); e.stopPropagation();
+    openMember(find({me:prof.getAttribute("data-me") === "1", uid:prof.getAttribute("data-uid") || "", name:prof.getAttribute("data-who") || ""})); return; }
+  const sa = t.closest('[data-act="setupprofile"]');
+  if (sa) { e.preventDefault(); e.stopPropagation(); openEdit(); return; }
+  const b = t.closest("[data-r3]"); if (!b) { const lb = t.closest("[data-r3lb]"); if (lb) { LB = lb.getAttribute("data-r3lb"); const sh = lb.closest(".r2-shb"); if (sh) sh.innerHTML = boardHTML(); } return; }
+  const v = b.getAttribute("data-r3"); e.preventDefault(); e.stopPropagation();
+  if (v === "sign") { const s = b.getAttribute("data-sign"); if (ABOUT[s]) R2.sheet(aboutHTML(s), {cls:"r3-ov"}); return; }
+  if (v === "same") { R2.sheet(sameHTML(b.getAttribute("data-sign")), {cls:"r3-ov"}); return; }
+  if (v === "board") { openBoard(); return; }
+  if (v === "showweight") { toggleWeight(); const ov = b.closest(".r2-ov"); if (ov) { const S_ = R2.S(); b.classList.toggle("on", !!(S_.user.showWeight && S_.health && S_.health.weight)); } return; }
+  if (v === "share") { share(b.getAttribute("data-uid"), b.getAttribute("data-who")); return; }
+  if (v === "edit") { R2.closeAll(); setTimeout(openEdit, 250); return; }
+  if (v === "dm") { const n = b.getAttribute("data-who"); R2.closeAll(); setTimeout(() => dm(n), 250); return; }
+  if (v === "post") { const id = b.getAttribute("data-id"); R2.closeAll(); setTimeout(() => openPost(id), 250); return; }
+}
+function openEdit(){ try { if (typeof TAB !== "undefined" && TAB !== "profile") goTab("profile"); } catch(e){}
+  setTimeout(() => { const x = document.createElement("button"); x.setAttribute("data-r2p", "edit"); x.style.display = "none"; (document.getElementById("tab-profile") || document.body).appendChild(x); x.click(); x.remove(); }, 60); }
+function dm(name){ try { goTab("foryou"); } catch(e){}
+  setTimeout(() => { try { if (typeof cmSeg === "function") cmSeg("chat"); } catch(e){}
+    setTimeout(() => { const i = document.querySelector("#cmInput"); if (i) { i.value = "@" + String(name).split(" ")[0] + " "; i.focus(); try { i.dispatchEvent(new Event("input", {bubbles:true})); } catch(e){} } }, 350); }, 120); }
+function openPost(id){ try { goTab("foryou"); } catch(e){}
+  setTimeout(() => { try { if (typeof cmSeg === "function") cmSeg("feed"); } catch(e){} setTimeout(() => { const el = document.querySelector('#cmFeed [data-id="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]'); const sec = el && el.closest("section"); if (sec) sec.scrollIntoView({behavior:reduce ? "auto" : "smooth", block:"start"}); }, 300); }, 120); }
+
+/* ---------- boot ---------- */
+R3.profileExtra = function(){ const m = me(); return {bday:m.bday || "", xp:Math.max(0, Math.round(m.xp || 0)), xp_week:Math.max(0, Math.round(m.xpw)), wk:m.wk, xp_month:Math.max(0, Math.round(m.xpm)), mo:m.mo, weight:m.w || ""}; };
+function hookAward(){ if (typeof award !== "function" || award.__r3) return; const _a = award;
+  const w = function(){ const r = _a.apply(this, arguments); pushSoon(); return r; }; w.__r3 = true; award = w; }
+R3.boot = function(){
+  hookAvatars(); hookTabs(); hookProfile(); hookChat(); hookCommunity(); hookAward(); backBtn(); markTab();
+  document.addEventListener("click", onClick, true);
+  document.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.matches && e.target.matches('[data-r3="sign"],.r3m-av')) { e.preventDefault(); e.target.click(); } });
+  document.addEventListener("change", e => { if (e.target && e.target.id === "r3Bday") { bdPend = e.target.value; clearTimeout(bdT); bdT = setTimeout(() => { if (document.activeElement !== e.target) commitBday(); }, 500); } }, true);
+  document.addEventListener("blur", e => { if (e.target && e.target.id === "r3Bday" && bdPend) commitBday(); }, true);
+  new MutationObserver(ms => { ms.forEach(m => m.addedNodes.forEach(n => { if (n.nodeType === 1 && n.classList.contains("r2-ov")) decorateEdit(n); })); }).observe(document.body, {childList:true});
+  document.addEventListener("visibilitychange", () => { document.documentElement.classList.toggle("r3-paused", document.hidden); if (!document.hidden) pushSoon(); });
+  try { if (typeof TAB !== "undefined" && TAB === "profile") RENDER.profile(); } catch(e){}
+  try { if (typeof TAB !== "undefined" && TAB === "foryou") topBtn(); } catch(e){}
+  try { const pf = document.getElementById("pfBtn"); if (pf) pf.innerHTML = avatar(42); } catch(e){}
+  setTimeout(pushSoon, 4000);
+  deepLink();
+};
+})();
+
+(function(){ try { window.LowiR3 && LowiR3.boot(); } catch(e){ console.error(e); } })();
 </script>
 </body>
 </html>

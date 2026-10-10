@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261010-012613">
+<meta name="lowi-build" content="20261010-013427">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1582,7 +1582,7 @@ html[data-lay=desktop] .fyv-bar{bottom:16px}
 
 </script>
 <script>try{document.documentElement.setAttribute("data-theme",localStorage.getItem("lowi.theme")==="light"?"light":"dark")}catch(e){}</script>
-<style id="r3nCss">.td-herol{margin-top:4px;opacity:.88;text-wrap:balance}.td-herotx .h3{text-wrap:balance}#tab-home .td-extra .td-mtx>*{text-wrap:pretty}#tab-home .td-hero img{object-position:center 40%}</style></head>
+<style id="r3nCss">.td-herol{margin-top:4px;opacity:.88;text-wrap:balance}.td-herotx .h3{text-wrap:balance}#tab-home .td-extra .td-mtx>*{text-wrap:pretty}#tab-home .td-hero img{object-position:center 40%}</style><style id="r3xCss">#tab-home .td-extra{flex-wrap:wrap;row-gap:10px;align-items:center}#tab-home .td-extra>.td-mtx{flex:1 1 0;min-width:0}#tab-home .td-extra>.td-mtx>div:first-child{font-size:16px;line-height:1.25}#tab-home .td-extra>.td-mtx .small{margin-top:3px;line-height:1.35}#tab-home .td-extra>.go{flex:none;align-self:center}#tab-home .td-extra>.r3a-hb{flex:0 0 100%;margin:0;padding-top:10px;border-top:1px solid var(--edge,rgba(255,255,255,.12));display:flex;flex-wrap:wrap;gap:8px;align-items:center}#tab-home .td-extra>.r3a-hb .r3a-hbt{flex:1 1 auto;text-align:center;white-space:nowrap}#tab-home .td-extra>.r3a-hb .r3a-cart{flex:0 0 auto;white-space:nowrap;border-color:rgba(var(--acc-rgb,212,175,55),.6)}</style></head>
 <body>
 <div id="app">
 
@@ -9571,7 +9571,7 @@ dict([
   ["Added", "Hinzugefügt", "Añadido"], ["Add to today's plan", "Zum heutigen Plan hinzufügen", "Añadir al plan de hoy"],
   ["When? (optional)", "Wann? (freiwillig)", "¿Cuándo? (opcional)"], ["Add", "Hinzufügen", "Añadir"], ["Cancel", "Abbrechen", "Cancelar"],
   ["Planned your day", "Tag geplant", "Día planeado"],
-  ["{a} at home · {b} to buy", "{a} zu Hause · {b} kaufen", "{a} en casa · {b} por comprar"],
+  ["{a} at home · {b} to buy", "{a} zu Hause · {b} kaufen", "{a} en casa · {b} por comprar"],["{b} to buy", "{b} zu kaufen", "{b} por comprar"],
   ["All at home", "Alles zu Hause", "Todo en casa"], ["To cart", "In den Einkaufswagen", "Al carrito"],
   ["Filled your cart", "Einkaufswagen gefüllt", "Carrito lleno"],
   ["At home", "Zu Hause", "En casa"], ["To buy", "Kaufen", "Por comprar"], ["Tap an item to move it.", "Tippe auf etwas, um es zu verschieben.", "Toca un producto para moverlo."],
@@ -9762,7 +9762,7 @@ function picksFor(i){ const sn = pool("snack"), dr = pool("drink"), seed = new D
   return {snack: sn.length ? sn[(seed + i * 2) % sn.length] : null, drink: drinks.length ? drinks[(seed + i) % drinks.length] : null}; }
 function haveSplit(r){ const items = (r && r.ing || []).map(g => ({k: String(g.n).toLowerCase(), n: g.n, q: g.q, g: g.g})); let a = 0, b = 0; items.forEach(it => { let h = false; try { h = tdHave(it); } catch(e){} if (h) a++; else b++; }); return {a, b, items}; }
 function hbLine(id){ const r = recById(id); if (!r) return ""; const s = haveSplit(r);
-  return '<div class="r3a-hb" data-noi18n><button class="r3a-hbt" data-r3a="hb" data-id="' + esc(id) + '">' + (s.b ? '✓ ' + esc(T("{a} at home · {b} to buy", {a: s.a, b: s.b})) : '✓ ' + esc(T("All at home"))) + '</button>' + (s.b ? '<button class="r3a-cart" data-r3a="tocart" data-id="' + esc(id) + '">🛒 ' + esc(T("To cart")) + '</button>' : "") + '</div>'; }
+  return '<div class="r3a-hb" data-noi18n><button class="r3a-hbt" data-r3a="hb" data-id="' + esc(id) + '">' + (s.b ? (s.a ? esc(T("{a} at home · {b} to buy", {a: s.a, b: s.b})) : esc(T("{b} to buy", {b: s.b}))) : '✓ ' + esc(T("All at home"))) + '</button>' + (s.b ? '<button class="r3a-cart" data-r3a="tocart" data-id="' + esc(id) + '">🛒 ' + esc(T("To cart")) + '</button>' : "") + '</div>'; }
 function decoratePlan(th){
   const d = tdEnsure(); if (!d) return;
   $$(".td-meal", th).forEach((card, i) => {
@@ -9773,7 +9773,7 @@ function decoratePlan(th){
     const chip = (r, kind) => r ? '<button class="r3a-gp' + (ex.indexOf(r.id) >= 0 ? " on" : "") + '" data-r3a="pick" data-id="' + esc(r.id) + '"><span class="r3a-gpi">' + (typeof foodPic === "function" ? foodPic(r.id, "r3a-gpimg") : "") + '</span><span class="r3a-gpt"><small>' + esc(T(kind)) + '</small><b>' + esc(recName(r)) + '</b></span><i>' + (ex.indexOf(r.id) >= 0 ? "✓" : "+") + '</i></button>' : "";
     card.insertAdjacentHTML("afterend", '<div class="r3a-goes" data-noi18n><div class="tiny muted">' + esc(T("Goes with it")) + '</div><div class="r3a-gps">' + chip(p.snack, "Snack") + chip(p.drink, "Drink") + '</div></div>');
   });
-  $$(".td-extra", th).forEach(card => { const j = +card.getAttribute("data-j"); const id = (d.extra || [])[isNaN(j) ? -1 : j]; if (!id) return; $$(".r3a-hb,.r3a-time", card).forEach(x => x.remove());
+  $$(".td-extra", th).forEach(card => { const j = +card.getAttribute("data-j"); const id = card.hasAttribute("data-j") ? (d.extra || [])[j] : card.getAttribute("data-r"); if (!id) return; $$(".r3a-hb,.r3a-time", card).forEach(x => x.remove());
     const tm = (r3().times || {})[id]; if (tm) { const tt = card.querySelector(".tiny"); if (tt) tt.insertAdjacentHTML("afterbegin", '<span class="r3a-time">🕒 ' + esc(tm) + ' · </span>'); }
     card.insertAdjacentHTML("beforeend", hbLine(id)); });
 }

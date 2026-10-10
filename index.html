@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261010-013633">
+<meta name="lowi-build" content="20261010-013857">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -6336,17 +6336,18 @@ function persist(){ try { if (navigator.storage && navigator.storage.persist) na
 const BUILD = (document.querySelector('meta[name="lowi-build"]') || {}).content || "";
 let lastCheck = 0;
 async function checkUpdate(){ if (!BUILD || location.protocol === "file:" || Date.now() - lastCheck < 60000) return; lastCheck = Date.now();
-  try { const r = await fetch("version.json?t=" + Date.now(), {cache:"no-store"}); if (!r.ok) return; const v = await r.json(); if (!v.build || v.build === BUILD) return;
+  try { const r = await fetch("version.json?t=" + Date.now(), {cache:"no-store"}); if (!r.ok) return; const v = await r.json(); if (!v.build || !/^\d{8}-\d{6}$/.test(v.build) || v.build <= BUILD) return;
     const a = document.activeElement, typing = a && (a.tagName === "INPUT" || a.tagName === "TEXTAREA") && a.value;
     const sheetOpen = ($("#sheetwrap") || {classList:{contains:() => false}}).classList.contains("open");
-    if (!typing && !sheetOpen && document.visibilityState === "visible") { location.reload(); return; }
-    if (!$("#lcUpd")) { const d = document.createElement("button"); d.id = "lcUpd"; d.className = "lc-banner lc-upd"; d.setAttribute("data-cl", "update"); d.textContent = "New version ready. Tap to update."; document.body.appendChild(d); }
+    /* Updates are always opt-in: never interrupt a workout, cooking or typing. */
+    if (!$("#lcUpd")) { const d = document.createElement("button"); d.id = "lcUpd"; d.className = "lc-banner lc-upd"; d.setAttribute("data-cl", "update"); const l = document.documentElement.lang || 'en'; d.textContent = l.startsWith('de') ? 'Update verfügbar — hier tippen zum Aktualisieren' : l.startsWith('es') ? 'Actualización disponible — toca aquí para actualizar' : 'New update available — click here to refresh'; d.setAttribute('aria-live','polite'); document.body.appendChild(d); }
   } catch(e){} }
 function sw(){ if (!("serviceWorker" in navigator) || location.protocol !== "https:") return;
   navigator.serviceWorker.register("sw.js", {scope:"./"}).then(reg => { try { reg.update(); } catch(e){} }).catch(() => {}); }
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") { checkUpdate(); if (!live && !booting) boot(); } });
 window.addEventListener("online", () => { if (!live) boot(); });
-setInterval(checkUpdate, 30 * 60000);
+setInterval(() => { if(document.visibilityState === 'visible') checkUpdate(); }, 60000);
+setTimeout(checkUpdate, 2000);
 
 
 /* ---------- round 2: accounts ---------- */

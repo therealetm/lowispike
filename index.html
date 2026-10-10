@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261010-193944">
+<meta name="lowi-build" content="20261010-200907">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2108,7 +2108,7 @@ html[data-theme=light] #lcUpd.g1-upd .g1-usay{background:rgba(255,255,255,.2)}
 (function(){
 "use strict";
 if (window.LowiG1) return;
-const NEWS_RAW = {"id": "f3-quest", "go": {"tab": "home", "sel": "#f3Board"}, "text": {"en": "Today now starts with your Daily Quest: six small missions, from check-in to one post. The next one glows with a button that takes you there. +10 XP each, +50 XP when you clear all six.", "de": "Heute startet jetzt mit deiner Täglichen Quest: sechs kleine Missionen, vom Einchecken bis zu einem Post. Die nächste leuchtet, mit einem Knopf, der dich direkt hinbringt. +10 XP pro Quest, +50 XP, wenn du alle sechs schaffst.", "es": "Hoy ahora empieza con tu Misión diaria: seis pequeñas misiones, desde registrarte hasta una publicación. La siguiente brilla con un botón que te lleva allí. +10 XP cada una, +50 XP al completar las seis."}};
+const NEWS_RAW = {"id": "g2-move", "go": {"tab": "move", "sel": "#mv-screen .g2-tiles"}, "text": {"en": "Move fits on one screen now, no scrolling: tap Start, or tap one of the four sessions. Your gear, audiobook, this week and history are tiles that open with one tap.", "de": "Bewegen passt jetzt auf einen Bildschirm, ohne Scrollen: Tipp auf Start oder auf eine der vier Einheiten. Ausrüstung, Hörbuch, diese Woche und Verlauf sind Kacheln, die sich mit einem Tipp öffnen.", "es": "Moverse ahora cabe en una sola pantalla, sin desplazarte: toca Empezar o una de las cuatro sesiones. Tu equipo, el audiolibro, esta semana y el historial son fichas que se abren con un toque."}};
 const NEWS = (NEWS_RAW && typeof NEWS_RAW === "object") ? NEWS_RAW : null;
 const KEY = "lowi.g1", GO = "lowi.g1.go";
 const H = document.documentElement;
@@ -15918,5 +15918,198 @@ html:not([data-lay=phone]) #k9Out{display:grid;grid-template-columns:repeat(auto
 html:not([data-lay=phone]) #k9Out > *{grid-column:1 / -1;min-width:0}
 html:not([data-lay=phone]) #k9Out > .k9-res{grid-column:auto;margin-bottom:0}
 </style>
+<style id="g2css">
+/* G2 part 1: Move as one game screen, no scrolling */
+#mv-screen > .stack.g2 > *+*{margin-top:10px}
+#mv-screen.tabmode > .stack.g2 > *{padding-right:0}
+#mv-screen.tabmode > .stack.g2 > .mv-head{padding-right:54px;margin-bottom:0}
+.stack.g2 .mv-head .h1{line-height:1.15}
+.g2-safe{flex:none;display:flex;align-items:center;gap:6px;height:36px;padding:0 12px 0 10px;border-radius:999px;border:1px solid var(--line2);background:rgba(255,255,255,.06);color:var(--text);font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.g2-safe svg{width:18px;height:18px;color:var(--gold2)}
+.stack.g2 .g2-hero{padding:14px}
+.stack.g2 .g2-hero .mv-go{margin-top:12px;min-height:56px}
+.stack.g2 .g2-hero .mv-mins{margin-top:10px;gap:6px}
+.stack.g2 .g2-hero .mv-mins .chip{padding-left:0;padding-right:0;min-width:0}
+.stack.g2 .g2-hero .mv-hero-sub{display:none}
+.stack.g2 .mv-quick{padding:0}
+.stack.g2 .mv-quick-h{margin:0 2px}
+.stack.g2 .mv-fmts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:8px}
+.stack.g2 .mv-fmt{position:relative;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:8px;min-height:0;height:96px;padding:12px;border-radius:20px;width:100%;min-width:0;text-align:left}
+.stack.g2 .mv-fmt .mv-ic{width:36px;height:36px;border-radius:12px}
+.stack.g2 .mv-fmt .mv-ic svg{width:20px;height:20px}
+.stack.g2 .mv-fmt > span:nth-child(2){flex:none!important;width:100%;padding-right:0}
+.stack.g2 .mv-fmt > span:nth-child(2) b{display:block;font-size:14.5px;line-height:1.2;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.stack.g2 .mv-fmt > span:nth-child(2) .small{display:none!important}
+.stack.g2 .mv-fmt .mv-fmt-go{position:absolute;top:12px;right:12px;width:34px;height:34px}
+.g2-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.g2-tile{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:3px;min-width:0;height:96px;padding:10px 4px 8px;border-radius:20px;border:1px solid var(--line2);background:rgba(255,255,255,.05);color:var(--text);font:inherit;text-align:center;cursor:pointer;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+.g2-tile:active,.g2-meal:active,.g2-safe:active{transform:scale(.97)}
+.g2-tic{width:34px;height:34px;flex:none;border-radius:12px;display:grid;place-items:center;background:rgba(var(--acc-rgb,159,216,255),.14);color:var(--acc,#9fd8ff)}
+.g2-tic svg{width:19px;height:19px}
+.g2-tile b{font-size:12px;font-weight:650;line-height:1.15;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px}
+.g2-tile small{font-size:11px;line-height:1.15;color:var(--muted);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.g2-bar{position:absolute;left:12px;right:12px;bottom:7px;height:3px;border-radius:2px;background:rgba(255,255,255,.12);overflow:hidden}
+.g2-bar > i{display:block;height:100%;background:var(--gold2);border-radius:2px}
+.g2-meal{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;padding:8px 12px;border-radius:18px;border:1px solid var(--gold);background:linear-gradient(135deg,rgba(202,161,90,.18),rgba(202,161,90,.05));color:var(--text);font:inherit;text-align:left;cursor:pointer}
+.g2-meal b{flex:1;min-width:0;font-size:14px;font-weight:650}
+.g2-meal > svg{width:18px;height:18px;flex:none;color:var(--gold2)}
+.g2-meal .g2-tic{background:rgba(202,161,90,.18);color:var(--gold2)}
+.g2-hold{display:none!important}
+.g2-ov .g2-pt{margin:2px 48px 12px 0}
+.g2-ov .g2-pb > *+*{margin-top:12px}
+.g2-ov .g2-pb .card{width:100%}
+.g2-ov .g2-pb .r3w-recb[hidden]{display:block!important}
+.g2-ov .g2-pb .r3w-rech .r3w-chev{display:none}
+.g2-ov .g2-pb .foot{margin:0;font-size:14px;line-height:1.5}
+.g2-ov .g2-pb .mv-kit{margin-top:0}
+.g2-ov .g2-pb .mv-kit-h .tiny{display:none}
+/* big screens: one centered column instead of the old 2-column grid */
+html:not([data-lay=phone]) #mv-screen.tabmode > .stack.g2{display:flex;flex-direction:column;align-items:stretch;max-width:640px;margin-left:auto;margin-right:auto}
+html:not([data-lay=phone]) #mv-screen.tabmode > .stack.g2 > *{grid-column:auto;width:100%;margin-top:0}
+html:not([data-lay=phone]) #mv-screen.tabmode > .stack.g2 > *+*{margin-top:12px}
+html:not([data-lay=phone]) .stack.g2 .mv-fmt{height:108px}
+html:not([data-lay=phone]) .g2-tile{height:104px}
+/* Cloud (light) */
+html[data-theme=light] .g2-tile,html[data-theme=light] .g2-safe{background:rgba(22,28,46,.045);border-color:rgba(22,28,46,.12)}
+html[data-theme=light] .g2-tile small{color:rgba(17,19,24,.62)}
+html[data-theme=light] .g2-bar{background:rgba(22,28,46,.12)}
+html[data-theme=light] .g2-bar > i{background:#a8782c}
+html[data-theme=light] .g2-safe svg,html[data-theme=light] .g2-meal > svg{color:#9a6c22}
+html[data-theme=light] .g2-meal{background:linear-gradient(135deg,rgba(202,161,90,.2),rgba(202,161,90,.06))}
+html[data-theme=light] .g2-meal .g2-tic{color:#8a5f1a}
+</style>
+<script id="g2js">
+/* ===== LOWiSPIKE G2 part 1 (Oct 10, 2026): Move is one game screen, no scrolling =====
+   Top: Start hero (one tap). Middle: the other sessions as a 2x2 tile grid (tap = start).
+   Bottom: four tiles that open as sheets: Your gear, Audiobook, This week (rings + steps), History.
+   Safety sits as a shield button in the header. Everything that was on the page is still there, one tap away.
+   Works on top of renderScreen(): after every render the stack is rearranged; an open sheet is refilled. */
+(function(){
+"use strict";
+const L = [
+  ["Your gear", "Ausrüstung", "Tu equipo"],
+  ["Audiobook", "Hörbuch", "Audiolibro"],
+  ["This week", "Diese Woche", "Esta semana"],
+  ["History", "Verlauf", "Historial"],
+  ["Body only", "Nur Körper", "Solo cuerpo"],
+  ["Optional", "Optional", "Opcional"],
+  ["None yet", "Noch keine", "Aún ninguna"],
+  ["Safety", "Sicherheit", "Seguridad"],
+  ["Safety first", "Sicherheit zuerst", "La seguridad primero"],
+  ["Just ate? 10-minute move", "Gerade gegessen? 10 Minuten bewegen", "¿Acabas de comer? 10 minutos de movimiento"],
+  ["No sessions yet. Tap Start and your first one shows up here.", "Noch keine Einheiten. Tipp auf Start, dann erscheint deine erste hier.", "Aún no hay sesiones. Toca Empezar y la primera aparecerá aquí."],
+  [/^(\d+) picked$/, "$1 gewählt", "$1 elegidos"],
+  [/^(\d+)\/(\d+) min$/, "$1/$2 Min", "$1/$2 min"],
+  [/^(\d+) done$/, "$1 geschafft", "$1 hechas"]
+];
+let lAdded = false;
+function addL(){ if (lAdded) return; try { if (window.LowiLang && LowiLang.add) { LowiLang.add(L); lAdded = true; } } catch(e){} }
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const sv = p => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>';
+const IC = {
+  kit: sv('<path d="M6 8v8M3.5 10v4M18 8v8M20.5 10v4M6 12h12"/>'),
+  book: sv('<path d="M4 13a8 8 0 0116 0"/><rect x="3" y="13" width="4.5" height="7" rx="1.6"/><rect x="16.5" y="13" width="4.5" height="7" rx="1.6"/>'),
+  prog: sv('<circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 018.5 8.5"/><circle cx="12" cy="12" r="4"/>'),
+  hist: sv('<path d="M3.5 12a8.5 8.5 0 102.5-6"/><path d="M3.5 4v4h4M12 8v4.5l3 2"/>'),
+  safe: sv('<path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.2 2.2 4.2-4.4"/>'),
+  meal: sv('<path d="M7 3v8M5 3v4a2 2 0 004 0V3M7 11v10M16 3c-2 1.5-3 4-3 7h3v11"/>'),
+  chev: sv('<path d="M9 6l6 6-6 6"/>')
+};
+const TITLES = {kit:"Your gear", book:"Audiobook", prog:"This week", hist:"History", safe:"Safety first", meal:"Just ate? 10-minute move"};
+let openKey = null, ov = null;
+const q = (r, s) => r.querySelector(s);
+function parts(stack){
+  const kids = [...stack.children].filter(e => e.classList), P = {};
+  P.head = kids.find(e => e.classList.contains("mv-head"));
+  P.hero = kids.find(e => e.classList.contains("mv-hero"));
+  P.quick = kids.find(e => e.classList.contains("mv-quick"));
+  P.kit = kids.find(e => e.classList.contains("mv-kit"));
+  P.book = kids.find(e => e.id === "r3w-row");
+  P.meal = kids.find(e => e.classList.contains("card") && e !== P.hero && q(e, '[data-mv="quick"]'));
+  P.rings = kids.find(e => e.classList.contains("card") && q(e, ".mv-leg"));
+  P.steps = kids.find(e => e.classList.contains("card") && q(e, "#mv-steps"));
+  P.recent = kids.find(e => e.classList.contains("card") && q(e, ".r3w-rech"));
+  P.foot = kids.find(e => e.classList.contains("foot"));
+  return P;
+}
+function groups(P){ return {kit:[P.kit], book:[P.book], prog:[P.rings, P.steps], hist:[P.recent], safe:[P.foot], meal:[P.meal]}; }
+function tile(k, sub, extra){ return '<button class="g2-tile" data-g2="' + k + '"><span class="g2-tic">' + IC[k] + '</span><b>' + esc(TITLES[k]) + '</b><small>' + esc(sub) + '</small>' + (extra || "") + '</button>'; }
+function rearrange(stack){
+  if (!stack || stack.dataset.g2) return;
+  const P = parts(stack); if (!P.hero || !P.quick) return;
+  addL();
+  stack.dataset.g2 = "1"; stack.classList.add("g2");
+  P.hero.classList.add("g2-hero");
+  /* tile summaries */
+  const on = P.kit ? [...P.kit.querySelectorAll(".mv-kitrow.on")].filter(b => b.dataset.k !== "none") : [];
+  const kitSub = on.length ? on.length + " picked" : "Body only";
+  let mm = 0, goal = 10;
+  const num = P.rings && q(P.rings, ".mv-leg b.num"); if (num) { const m = num.textContent.match(/(\d+)\s*\/\s*(\d+)/); if (m) { mm = +m[1]; goal = +m[2] || 10; } }
+  const pct = Math.max(0, Math.min(100, Math.round(mm / goal * 100)));
+  const nRec = P.recent ? P.recent.querySelectorAll(".mv-hist").length : 0;
+  const tiles = document.createElement("div"); tiles.className = "g2-tiles";
+  tiles.innerHTML = tile("kit", kitSub) + tile("book", "Optional") + tile("prog", mm + "/" + goal + " min", '<i class="g2-bar"><i style="width:' + pct + '%"></i></i>') + tile("hist", nRec ? nRec + " done" : "None yet");
+  /* safety: shield button in the header */
+  if (P.head && P.foot && !q(P.head, ".g2-safe")) P.head.insertAdjacentHTML("beforeend", '<button class="g2-safe" data-g2="safe" aria-label="Safety">' + IC.safe + '<span>Safety</span></button>');
+  /* just ate: one slim strip under the header */
+  let strip = null;
+  if (P.meal) { strip = document.createElement("button"); strip.className = "g2-meal"; strip.dataset.g2 = "meal"; strip.innerHTML = '<span class="g2-tic">' + IC.meal + '</span><b>' + esc(TITLES.meal) + '</b>' + IC.chev; }
+  const hold = document.createElement("div"); hold.className = "g2-hold"; hold.hidden = true;
+  [P.kit, P.book, P.meal, P.rings, P.steps, P.recent, P.foot].forEach(e => { if (e) hold.appendChild(e); });
+  if (strip) P.hero.before(strip);
+  P.quick.after(tiles); tiles.after(hold);
+  if (openKey && ov && ov.isConnected) fill(stack);
+}
+function kindOf(e){
+  const P = parts({children:[e]}); for (const k in P) if (P[k]) return k; return "";
+}
+function pool(stack){
+  /* fresh nodes live in the hold; a node still in a sheet is only taken when the hold has none of its kind */
+  const box = document.createElement("div"), have = {};
+  const hold = q(stack, ".g2-hold");
+  if (hold) [...hold.children].forEach(e => { have[kindOf(e)] = 1; box.appendChild(e); });
+  document.querySelectorAll(".g2-pb").forEach(s => [...s.children].forEach(e => { const k = kindOf(e); if (k && !have[k]) { have[k] = 1; box.appendChild(e); } }));
+  return box;
+}
+function fill(stack){
+  const body = ov && q(ov, ".g2-pb"); if (!body || !openKey) return;
+  const box = pool(stack), P = parts(box), g = (groups(P)[openKey] || []).filter(Boolean);
+  const hold = q(stack, ".g2-hold");
+  [...box.children].forEach(e => { if (g.indexOf(e) < 0 && hold) hold.appendChild(e); });
+  body.innerHTML = "";
+  if (!g.length) { body.innerHTML = openKey === "hist" ? '<div class="p dim g2-empty">No sessions yet. Tap Start and your first one shows up here.</div>' : ""; return; }
+  g.forEach(e => body.appendChild(e));
+}
+function openPanel(k){
+  const R2 = window.LowiR2; if (!R2 || !R2.sheet) return;
+  addL();
+  try { if (ov) R2.close(ov); } catch(e){}
+  openKey = k;
+  const me = ov = R2.sheet('<div class="h2 g2-pt">' + esc(TITLES[k]) + '</div><div class="g2-pb g2-pb-' + k + '"></div>', {cls:"g2-ov", onClose:() => { if (ov === me) { ov = null; openKey = null; } setTimeout(() => { const st = document.querySelector("#mv-screen > .stack"), hold = st && q(st, ".g2-hold"), b = q(me, ".g2-pb"); if (hold && b && !ov) { const have = {}; [...hold.children].forEach(e => { have[kindOf(e)] = 1; }); [...b.children].forEach(e => { const k = kindOf(e); if (k && !have[k]) hold.appendChild(e); }); } }, 340); }});
+  const st = document.querySelector("#mv-screen > .stack"); if (st) fill(st);
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest && e.target.closest("[data-g2]"); if (!b) return;
+  e.preventDefault(); openPanel(b.dataset.g2);
+});
+/* a session start from inside a sheet closes the sheet */
+document.addEventListener("click", e => {
+  const b = e.target.closest && e.target.closest('[data-mv="quick"],[data-mv="start"],[data-mv="go-fmt"]');
+  if (b && ov) { try { window.LowiR2.close(ov); } catch(x){} }
+}, true);
+let mo = null, watched = null;
+function hook(){
+  const s = document.getElementById("mv-screen");
+  if (!s || s === watched) return;
+  watched = s; if (mo) mo.disconnect();
+  mo = new MutationObserver(() => rearrange(q(s, ":scope > .stack")));
+  mo.observe(s, {childList:true});
+  rearrange(q(s, ":scope > .stack"));
+}
+setInterval(hook, 400);
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", hook); else hook();
+window.LowiG2 = {open:openPanel, key:() => openKey};
+})();
+</script>
 </body>
 </html>

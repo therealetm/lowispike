@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261010-131018">
+<meta name="lowi-build" content="20261010-131821">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2105,7 +2105,7 @@ html[data-theme=light] #lcUpd.g1-upd .g1-usay{background:rgba(255,255,255,.2)}
 (function(){
 "use strict";
 if (window.LowiG1) return;
-const NEWS_RAW = {"id": "g1", "go": {"tour": true}, "text": {"en": "The glowing scan ball is now your guide. It shows you around the app and can read everything out loud.", "de": "Die leuchtende Scan-Kugel ist jetzt dein Guide. Sie zeigt dir die App und kann dir alles vorlesen.", "es": "La bola brillante del escáner ahora es tu guía. Te enseña la app y puede leerte todo en voz alta."}};
+const NEWS_RAW = {"id": "g1-home", "go": {"tab": "home", "sel": "#tab-home .g1-lead"}, "text": {"en": "Today is easier now. Every step tells you what to tap, and the extras are under “Show more”.", "de": "Heute ist jetzt einfacher. Jeder Schritt sagt dir, worauf du tippen sollst, und die Extras findest du unter „Mehr zeigen“.", "es": "Hoy ahora es más fácil. Cada paso te dice qué tocar, y los extras están en “Ver más”."}};
 const NEWS = (NEWS_RAW && typeof NEWS_RAW === "object") ? NEWS_RAW : null;
 const KEY = "lowi.g1", GO = "lowi.g1.go";
 const H = document.documentElement;

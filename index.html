@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261010-115158">
+<meta name="lowi-build" content="20261010-131018">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1967,6 +1967,508 @@ const bigBtn = cls => '<button type="button" class="btn primary fst-btn' + (cls 
 const LV = {en:"Level {n} \u00b7 you're a {t} now", de:"Level {n} \u00b7 du bist jetzt {t}", es:"Nivel {n} \u00b7 ahora eres {t}"};
 const lvl = (n, t) => LV[lang()].replace("{n}", n).replace("{t}", t);
 window.LowiFastStop = {lvl, open, end, mealTicked, points, startOf, stopPill, bigBtn, histHTML, reward, _st:st, w};
+})();
+</script>
+<style id="g1css">
+/* ===== G1: the scan orb fairy ===== */
+/* the fairy: a live copy of the scan orb with a face and little wings */
+#g1Z{position:fixed;left:0;top:0;width:60px;height:60px;z-index:2147483100;pointer-events:none;opacity:0;transform-origin:50% 50%;
+  transition:transform .74s cubic-bezier(.34,1.42,.56,1),opacity .18s;will-change:transform}
+#g1Z.on{opacity:1;pointer-events:auto;cursor:pointer}
+html:not(.g1-touring) #g1Z.on{pointer-events:none}
+#g1Z.home{transition:transform .62s cubic-bezier(.55,0,.35,1.15),opacity .2s}
+#g1Z.bye{opacity:0;transition:transform .26s ease-in,opacity .26s ease-in}
+#g1Z.bye .g1z-bob{transform:scale(.6)}
+.g1z-bob{position:absolute;inset:0;animation:g1Bob 2.6s ease-in-out infinite;transition:transform .26s}
+#g1Z:not(.alive) .g1z-bob{animation:none}
+.g1z-body,.g1-uorb .g1z-body{position:absolute;inset:0;display:block}
+html .g1z-body .g1-fb{position:absolute;inset:0;display:block;color:#0a0d16}
+html .g1z-body .g1-fb .orb{position:absolute!important;left:0!important;top:0!important;width:100%!important;height:100%!important;transform:none!important;display:block}
+html .g1z-body .g1-fb .ring svg{transition:opacity .25s,transform .25s}
+.g1-face{position:absolute;left:0;right:0;top:0;bottom:0;z-index:5;opacity:0;transition:opacity .25s .05s;pointer-events:none;font-style:normal}
+.g1-face b{position:absolute;top:40%;width:13%;height:17%;border-radius:50%;background:#0a0d16;box-shadow:inset 0 -1px 0 rgba(255,255,255,.25);animation:g1Blink 4.2s infinite}
+.g1-face b:nth-child(1){left:31%}.g1-face b:nth-child(2){right:31%}
+.g1-face u{position:absolute;left:39%;width:22%;top:60%;height:11%;border:2.5px solid #0a0d16;border-top:0;border-radius:0 0 20px 20px;text-decoration:none}
+#g1Z.alive .g1-fb .ring svg,.g1-uorb .g1-fb .ring svg{opacity:0;transform:scale(.5)}
+#g1Z.alive .g1-face,.g1-uorb .g1-face{opacity:1}
+html.g1-talking #g1Z .g1-face u{animation:g1Talk .28s ease-in-out infinite alternate}
+/* wings */
+.g1z-wing{position:absolute;top:8%;width:46%;height:52%;border-radius:60% 60% 50% 50%;opacity:0;transition:opacity .25s;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 70%,rgba(255,255,255,.85),rgba(var(--acc-rgb,159,216,255),.45) 55%,rgba(var(--acc-rgb,159,216,255),0) 75%);filter:blur(.3px)}
+.g1z-wing.l{left:-30%;transform-origin:100% 80%;transform:rotate(-24deg)}
+.g1z-wing.r{right:-30%;transform-origin:0 80%;transform:rotate(24deg)}
+#g1Z.alive .g1z-wing{opacity:.95}
+#g1Z.alive .g1z-wing.l{animation:g1WingL .32s ease-in-out infinite alternate}
+#g1Z.alive .g1z-wing.r{animation:g1WingR .32s ease-in-out infinite alternate}
+/* sparkles trailing */
+.g1z-spark{position:absolute;width:6px;height:6px;border-radius:50%;background:#fff;box-shadow:0 0 8px 2px rgba(var(--acc-rgb,159,216,255),.9);opacity:0;pointer-events:none}
+#g1Z.alive .g1z-spark{animation:g1Spark 1.8s ease-out infinite}
+.g1z-spark.s1{left:8%;bottom:-6%}.g1z-spark.s2{right:6%;bottom:2%;animation-delay:.6s!important}.g1z-spark.s3{left:46%;bottom:-14%;animation-delay:1.2s!important}
+.g1z-bob.g1z-pop{animation:g1PopOut .62s cubic-bezier(.3,1.6,.5,1) both}
+.g1z-bob.g1z-land{animation:g1Land .5s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes g1Bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes g1PopOut{0%{transform:scale(1,1)}18%{transform:scale(1.28,.72)}42%{transform:scale(.8,1.25) translateY(-14px)}64%{transform:scale(1.12,.9)}82%{transform:scale(.96,1.05)}100%{transform:scale(1)}}
+@keyframes g1Land{0%{transform:scale(1)}30%{transform:scale(1.16,.86)}60%{transform:scale(.94,1.08)}100%{transform:scale(1)}}
+@keyframes g1WingL{from{transform:rotate(-12deg) scaleX(1)}to{transform:rotate(-38deg) scaleX(.8)}}
+@keyframes g1WingR{from{transform:rotate(12deg) scaleX(1)}to{transform:rotate(38deg) scaleX(.8)}}
+@keyframes g1Spark{0%{opacity:0;transform:translateY(0) scale(.4)}20%{opacity:1}100%{opacity:0;transform:translateY(22px) scale(.1)}}
+@keyframes g1Blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+@keyframes g1Talk{from{height:6%}to{height:16%}}
+
+/* overlay: dim with a spotlight hole, and the speech bubble */
+#g1Tour{position:fixed;inset:0;z-index:2147483000;-webkit-tap-highlight-color:transparent;animation:g1Fade .25s ease-out}
+#g1Tour.out{opacity:0;transition:opacity .25s;pointer-events:none}
+#g1Tour .g1-dim{position:absolute;inset:0}
+#g1Tour .g1-spot{position:fixed;border-radius:22px;box-shadow:0 0 0 9999px rgba(4,6,12,.72),0 0 0 3px rgba(var(--acc-rgb,159,216,255),.95),0 0 26px 6px rgba(var(--acc-rgb,159,216,255),.55);
+  transition:left .45s cubic-bezier(.3,1.2,.5,1),top .45s cubic-bezier(.3,1.2,.5,1),width .45s cubic-bezier(.3,1.2,.5,1),height .45s cubic-bezier(.3,1.2,.5,1),border-radius .3s;pointer-events:none;animation:g1Ring 1.8s ease-in-out infinite}
+#g1Tour.nospot .g1-spot{left:50%;top:40%;width:0;height:0;box-shadow:0 0 0 9999px rgba(4,6,12,.72);animation:none}
+@keyframes g1Ring{0%,100%{outline:0 solid rgba(var(--acc-rgb,159,216,255),0)}50%{outline:6px solid rgba(var(--acc-rgb,159,216,255),.18)}}
+@keyframes g1Fade{from{opacity:0}to{opacity:1}}
+#g1Tour .g1-card{position:fixed;box-sizing:border-box;padding:18px 18px 14px;border-radius:24px;color:#0d1220;
+  background:linear-gradient(180deg,#ffffff,#f1f5ff);box-shadow:0 18px 50px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.6);
+  opacity:0;transform:scale(.86) translateY(6px);transition:opacity .2s,transform .2s;pointer-events:none}
+#g1Tour .g1-card.in{opacity:1;transform:none;transition:opacity .28s,transform .42s cubic-bezier(.3,1.5,.5,1);pointer-events:auto}
+#g1Tour .g1-card[data-side=below]{transform-origin:50% 0}
+#g1Tour .g1-card[data-side=above]{transform-origin:50% 100%}
+#g1Tour .g1-tail{position:absolute;width:18px;height:18px;background:inherit;transform:rotate(45deg);border-radius:4px;pointer-events:none}
+#g1Tour .g1-card[data-side=below] .g1-tail,#g1Tour .g1-card[data-side=over] .g1-tail{top:-7px;background:#fff}
+#g1Tour .g1-card[data-side=above] .g1-tail{bottom:-7px;background:#f1f5ff}
+#g1Tour .g1-p{margin:2px 0 12px;font-size:19px;line-height:1.38;font-weight:650;letter-spacing:-.005em}
+#g1Tour .g1-count{display:flex;gap:5px;margin:0 0 10px}
+#g1Tour .g1-count i{width:7px;height:7px;border-radius:50%;background:rgba(13,18,32,.18)}
+#g1Tour .g1-count i.was{background:rgba(13,18,32,.45)}
+#g1Tour .g1-count i.on{width:22px;border-radius:5px;background:linear-gradient(90deg,#2a6fc0,#7a5cd6)}
+#g1Tour .g1-tag{display:inline-block;margin:0 0 8px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:linear-gradient(90deg,#2a6fc0,#7a5cd6)}
+#g1Tour .g1-btns{display:flex;align-items:center;gap:8px;margin-top:12px}
+#g1Tour .g1-sp{flex:1}
+#g1Tour .g1-btn{font:inherit;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent;min-height:48px;border-radius:16px;padding:0 16px;font-size:16px;font-weight:750}
+#g1Tour .g1-btn:active{transform:scale(.95)}
+#g1Tour .g1-next{color:#fff;background:linear-gradient(135deg,#2a6fc0,#7a5cd6);box-shadow:0 6px 18px rgba(60,80,200,.35);padding:0 22px;min-width:112px}
+#g1Tour .g1-skip{background:transparent;color:#4a5068;padding:0 10px}
+#g1Tour .g1-back{background:rgba(13,18,32,.07);color:#0d1220;min-width:48px;padding:0;font-size:24px}
+#g1Tour .g1-say{display:flex;align-items:center;gap:10px;width:100%;justify-content:center;background:rgba(42,111,192,.1);color:#1d4f96;border:1.5px solid rgba(42,111,192,.35)}
+#g1Tour .g1-say .g1-sayi{display:inline-flex;width:24px;height:24px}
+#g1Tour .g1-say svg{width:24px;height:24px}
+#g1Tour .g1-say.on{background:#1d4f96;color:#fff;border-color:#1d4f96}
+#g1Tour .g1-btn:focus-visible{outline:3px solid #7a5cd6;outline-offset:2px}
+/* Void (dark): a dark glass bubble */
+html:not([data-theme=light]) #g1Tour .g1-card{color:#f4f6fb;background:linear-gradient(180deg,#1d2336,#141a29);box-shadow:0 18px 50px rgba(0,0,0,.6),0 0 0 1px rgba(var(--acc-rgb,159,216,255),.45),0 0 30px rgba(var(--acc-rgb,159,216,255),.18)}
+html:not([data-theme=light]) #g1Tour .g1-card[data-side=below] .g1-tail,html:not([data-theme=light]) #g1Tour .g1-card[data-side=over] .g1-tail{background:#1d2336;box-shadow:-1px -1px 0 rgba(var(--acc-rgb,159,216,255),.45)}
+html:not([data-theme=light]) #g1Tour .g1-card[data-side=above] .g1-tail{background:#141a29;box-shadow:1px 1px 0 rgba(var(--acc-rgb,159,216,255),.45)}
+html:not([data-theme=light]) #g1Tour .g1-count i{background:rgba(255,255,255,.2)}
+html:not([data-theme=light]) #g1Tour .g1-count i.was{background:rgba(255,255,255,.5)}
+html:not([data-theme=light]) #g1Tour .g1-count i.on{background:linear-gradient(90deg,var(--acc,#9fd8ff),#d6b8ff)}
+html:not([data-theme=light]) #g1Tour .g1-next{color:#0a0d16;background:linear-gradient(135deg,var(--acc,#9fd8ff),#d6b8ff);box-shadow:0 6px 20px rgba(var(--acc-rgb,159,216,255),.35)}
+html:not([data-theme=light]) #g1Tour .g1-skip{color:rgba(244,246,251,.78)}
+html:not([data-theme=light]) #g1Tour .g1-back{background:rgba(255,255,255,.1);color:#f4f6fb}
+html:not([data-theme=light]) #g1Tour .g1-say{background:rgba(var(--acc-rgb,159,216,255),.12);color:var(--acc,#9fd8ff);border-color:rgba(var(--acc-rgb,159,216,255),.45)}
+html:not([data-theme=light]) #g1Tour .g1-say.on{background:var(--acc,#9fd8ff);color:#0a0d16}
+html:not([data-theme=light]) #g1Tour .g1-tag{color:#0a0d16;background:linear-gradient(90deg,var(--acc,#9fd8ff),#d6b8ff)}
+
+/* the replay "?" sitting on the scan orb's shoulder (Today only) */
+#g1Help{position:fixed;width:26px;height:26px;margin:0;padding:0;border-radius:50%;display:none;align-items:center;justify-content:center;font:inherit;font-size:15px;font-weight:800;line-height:1;cursor:pointer;
+  color:#0a0d16;background:linear-gradient(160deg,#ffffff,#dfe8ff);border:0;box-shadow:0 2px 8px rgba(0,0,0,.35),0 0 0 2px rgba(var(--acc-rgb,159,216,255),.6);-webkit-tap-highlight-color:transparent}
+#g1Help::after{content:"";position:absolute;inset:-10px;border-radius:50%}
+#g1Help.on{display:flex;animation:g1HelpIn .4s cubic-bezier(.3,1.6,.5,1)}
+#g1Help:active{transform:scale(.9)}
+html[data-theme=light] #g1Help{color:#fff;background:linear-gradient(160deg,#2a6fc0,#7a5cd6);box-shadow:0 2px 8px rgba(40,50,90,.3),0 0 0 2px #fff}
+@keyframes g1HelpIn{from{transform:scale(0)}to{transform:scale(1)}}
+#tabbar .tb.scan{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+
+/* updates: the Q1 banner becomes the fairy's speech bubble (same element, same tap, same refresh) */
+#lcUpd.g1-upd{display:flex;align-items:center;gap:12px;text-align:left;justify-content:flex-start;padding:10px 12px 10px 10px;min-height:64px;border-radius:22px}
+#lcUpd.g1-upd .g1-uorb{position:relative;flex:none;width:44px;height:44px;opacity:0;transform:scale(.4);transition:opacity .2s,transform .4s cubic-bezier(.3,1.6,.5,1)}
+#lcUpd.g1-upd.g1-landed .g1-uorb{opacity:1;transform:none;animation:g1Bob 2.6s ease-in-out infinite}
+#lcUpd.g1-upd .g1-uorb .halo{inset:-8px!important}
+#lcUpd.g1-upd .g1-uorb .wave{display:none}
+#lcUpd.g1-upd .g1-utx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;line-height:1.25}
+#lcUpd.g1-upd .g1-uh{font-size:15px;font-weight:800}
+#lcUpd.g1-upd .g1-un{font-style:normal;font-size:13.5px;font-weight:600;opacity:.9}
+#lcUpd.g1-upd .g1-upill{align-self:flex-start;margin-top:5px;padding:5px 12px;border-radius:999px;font-size:13px;font-weight:800;background:rgba(10,13,22,.88);color:#fff}
+html[data-theme=light] #lcUpd.g1-upd .g1-upill{background:#fff;color:#1d2a66}
+#lcUpd.g1-upd .g1-usay{flex:none;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:rgba(10,13,22,.12)}
+#lcUpd.g1-upd .g1-usay svg{width:22px;height:22px}
+html[data-theme=light] #lcUpd.g1-upd .g1-usay{background:rgba(255,255,255,.2)}
+
+@media (prefers-reduced-motion:reduce){#g1Z,#g1Tour .g1-spot,#g1Tour .g1-card{transition:none!important}.g1z-bob,#g1Z .g1z-wing,#g1Z .g1z-spark,#lcUpd.g1-upd.g1-landed .g1-uorb,#g1Tour .g1-spot{animation:none!important}}
+</style>
+<script id="g1js">
+/* ===== LOWiSPIKE G1 (Oct 10, 2026): the scan orb comes alive and becomes your guide =====
+   - A glowing copy of the scan orb pops out of the bottom bar (the real Scan button stays put and keeps working),
+     floats to each thing it explains, spotlights it, talks in a speech bubble beside it, then floats back into the bar.
+   - First time on Today (Home): a step-by-step tour. One short line per step, Next / Back / Skip.
+   - "Tap to listen" reads each step out loud (speechSynthesis, app language). Once on, the next steps read themselves.
+   - Remembers where you are and that you finished. Replay: the small "?" next to the scan orb, or hold the orb down.
+   - Updates: the Q1 version check stays the engine. When a newer build is live the orb flies up into the banner (#lcUpd,
+     same tap, same refresh) and says what's new. After the refresh it pops out again and takes you to the new thing.
+   Everything lives on <html> like the update banner, so sheets and the sign-in screen can't remove it. */
+(function(){
+"use strict";
+if (window.LowiG1) return;
+const NEWS_RAW = {"id": "g1", "go": {"tour": true}, "text": {"en": "The glowing scan ball is now your guide. It shows you around the app and can read everything out loud.", "de": "Die leuchtende Scan-Kugel ist jetzt dein Guide. Sie zeigt dir die App und kann dir alles vorlesen.", "es": "La bola brillante del escáner ahora es tu guía. Te enseña la app y puede leerte todo en voz alta."}};
+const NEWS = (NEWS_RAW && typeof NEWS_RAW === "object") ? NEWS_RAW : null;
+const KEY = "lowi.g1", GO = "lowi.g1.go";
+const H = document.documentElement;
+const $ = (s, r) => (r || document).querySelector(s);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const LANG = () => { let l = "en"; try { l = (window.LowiLang && LowiLang.get && LowiLang.get()) || localStorage.getItem("lowispike.lang") || H.lang || "en"; } catch(e){} l = String(l).slice(0, 2); return l === "de" || l === "es" ? l : "en"; };
+const reduce = (() => { try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch(e){ return false; } })();
+const sfx = n => { try { if (window.LowiAudio && LowiAudio.play) LowiAudio.play(n); } catch(e){} };
+
+/* ---------- words (EN, DE, ES) ---------- */
+const ROWS = [
+  ["intro", "Hi! I'm the glowing scan ball. I'm also your guide. Let me show you around. It takes one minute.", "Hallo! Ich bin die leuchtende Scan-Kugel. Ich bin auch dein Guide. Ich zeig dir alles. Dauert eine Minute.", "¡Hola! Soy la bola brillante del escáner. También soy tu guía. Te enseño todo. Tarda un minuto."],
+  ["morning", "These are today's check-ins. Four small things. Tap one to do it and earn points.", "Das sind deine Check-ins für heute. Vier kleine Dinge. Tipp auf eins, mach es und sammle Punkte.", "Estos son tus registros de hoy. Cuatro cosas pequeñas. Toca una, hazla y gana puntos."],
+  ["fast", "This is your fasting clock. It counts the hours since you last ate. Tap it when you eat.", "Das ist deine Fasten-Uhr. Sie zählt die Stunden seit deinem letzten Essen. Tipp drauf, wenn du isst.", "Este es tu reloj de ayuno. Cuenta las horas desde que comiste. Tócalo cuando comas."],
+  ["meals", "Choose how many meals you want today. Then tap the time you eat first.", "Wähl, wie viele Mahlzeiten du heute willst. Dann tipp auf die Uhrzeit, wann du zuerst isst.", "Elige cuántas comidas quieres hoy. Luego toca la hora a la que comes primero."],
+  ["plan", "This is your food for today. Tap \u201cRecipe\u201d to cook it. Tap \u201cAte it\u201d when you're done.", "Das ist dein Essen für heute. Tipp auf \u201eRezept\u201c zum Kochen. Tipp auf \u201eGegessen\u201c, wenn du fertig bist.", "Esta es tu comida de hoy. Toca \u201cReceta\u201d para cocinarla. Toca \u201cComido\u201d cuando termines."],
+  ["nofood", "No meals planned today. Here are drinks that keep your fast.", "Heute keine Mahlzeiten geplant. Hier sind Getränke, die dein Fasten nicht brechen.", "Hoy no hay comidas planeadas. Aquí tienes bebidas que no rompen tu ayuno."],
+  ["meds", "Do you take medicine or vitamins? Add them here and tick them off each day.", "Nimmst du Medikamente oder Vitamine? Trag sie hier ein und hak sie jeden Tag ab.", "¿Tomas medicinas o vitaminas? Añádelas aquí y márcalas cada día."],
+  ["have", "Your shopping list. Tick what you already have at home. The rest is what you buy.", "Deine Einkaufsliste. Hak ab, was du schon zu Hause hast. Den Rest kaufst du.", "Tu lista de compra. Marca lo que ya tienes en casa. El resto es lo que compras."],
+  ["eat", "Ate something else? Type it or take a photo. You'll see if it's a good choice.", "Etwas anderes gegessen? Tipp es ein oder mach ein Foto. Du siehst, ob es eine gute Wahl ist.", "¿Comiste otra cosa? Escríbela o hazle una foto. Verás si es buena elección."],
+  ["nav", "Down here are the other parts of the app. Tap one to go there. The house brings you back here.", "Hier unten sind die anderen Bereiche der App. Tipp drauf, um hinzugehen. Das Haus bringt dich hierher zurück.", "Aquí abajo están las otras partes de la app. Toca una para ir. La casa te trae de vuelta aquí."],
+  ["scan", "And this is my home. Tap me here to scan: point the camera at a barcode or at your plate.", "Und hier wohne ich. Tipp mich hier an zum Scannen: Halt die Kamera auf einen Barcode oder deinen Teller.", "Y aquí vivo yo. Tócame aquí para escanear: apunta la cámara a un código de barras o a tu plato."],
+  ["end", "That's it! Want to see this again? Tap the little question mark next to me, or hold me down.", "Das war's! Nochmal sehen? Tipp auf das kleine Fragezeichen neben mir oder halt mich gedrückt.", "¡Listo! ¿Quieres verlo otra vez? Toca el pequeño signo de interrogación a mi lado o mantenme pulsado."],
+  ["Next", "Next", "Weiter", "Siguiente"],
+  ["Skip", "Skip", "Überspringen", "Saltar"],
+  ["Done", "Done", "Fertig", "Listo"],
+  ["Got it", "Got it", "Verstanden", "Entendido"],
+  ["Back", "Back", "Zurück", "Atrás"],
+  ["Listen", "Tap to listen", "Zum Anhören tippen", "Toca para escuchar"],
+  ["Stop", "Stop", "Stopp", "Parar"],
+  ["of", "of", "von", "de"],
+  ["help", "Show me around again", "Nochmal alles zeigen", "Enséñamelo otra vez"],
+  ["news", "I've got something new for you!", "Ich hab was Neues für dich!", "¡Tengo algo nuevo para ti!"],
+  ["newsfb", "A new update is ready.", "Ein neues Update ist da.", "Hay una actualización nueva."],
+  ["newin", "New in this update", "Neu in diesem Update", "Nuevo en esta versión"],
+  ["Show me", "Show me", "Zeig's mir", "Enséñamelo"],
+  ["Later", "Later", "Später", "Luego"],
+  ["guide", "Your guide", "Dein Guide", "Tu guía"]
+];
+const D = {}; ROWS.forEach(r => { D[r[0]] = {en:r[1], de:r[2], es:r[3]}; });
+const T = k => { const r = D[k]; if (!r) return k; return r[LANG()] || r.en; };
+const NT = o => { if (!o) return ""; if (typeof o === "string") return o; return o[LANG()] || o.en || ""; };
+
+/* ---------- memory ---------- */
+function mem(){ try { return JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch(e){ return {}; } }
+function remember(p){ const m = Object.assign(mem(), p); try { localStorage.setItem(KEY, JSON.stringify(m)); } catch(e){} return m; }
+
+/* ---------- the orb look: a live copy of the scan orb's own styles ---------- */
+function cloneOrbCss(){ if ($("#g1OrbCss")) return; let out = "";
+  const conv = sel => sel.split(",").map(s => s.trim()).filter(s => /\.tb\.scan/.test(s) && !/:active|:hover|r3a-edit|data-lay|data-input/.test(s))
+    .map(s => s.replace(/#tabbar\s*\.tb\.scan/g, "@@").replace(/\.tb\.scan/g, "@@")).map(s => s.split("@@").join("#g1Z .g1-fb") + "," + s.split("@@").join("#g1Z2 .g1-fb")).join(",");
+  const walk = (rules, wrap) => { for (const r of rules) { try {
+    if (r.type === 1 && r.selectorText && r.selectorText.indexOf(".tb.scan") >= 0) { const s = conv(r.selectorText); if (s) { const body = r.cssText.slice(r.cssText.indexOf("{")); out += wrap ? wrap + "{" + s + body + "}\n" : s + body + "\n"; } }
+    else if (r.type === 4 && r.cssRules) walk(r.cssRules, "@media " + r.media.mediaText);
+  } catch(e){} } };
+  for (const sh of document.styleSheets) { let rules; try { rules = sh.cssRules; } catch(e){ continue; } if (rules) walk(rules, ""); }
+  const st = document.createElement("style"); st.id = "g1OrbCss"; st.textContent = out; (document.head || H).appendChild(st); }
+function orbHTML(){ const o = $("#tabbar .tb.scan .orb"); let inner = o ? o.innerHTML : '<i class="halo"></i><span class="ring"><i class="liq"></i><i class="gloss"></i></span><i class="splash"></i>';
+  return '<span class="g1-fb active"><span class="orb">' + inner + '</span></span><i class="g1-face" aria-hidden="true"><b></b><b></b><u></u></i>'; }
+const realOrb = () => $("#tabbar .tb.scan .orb");
+function popReal(){ const o = realOrb(); if (!o || reduce) return; o.classList.remove("pop"); void o.offsetWidth; o.classList.add("pop"); }
+
+/* ---------- speaking ---------- */
+const SS = ("speechSynthesis" in window) && typeof window.SpeechSynthesisUtterance === "function";
+const SPK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>';
+const STP = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6.5" y="6.5" width="11" height="11" rx="2.5"/></svg>';
+let speaking = false, voices = [];
+function loadVoices(){ try { voices = speechSynthesis.getVoices() || []; } catch(e){ voices = []; } }
+if (SS) { loadVoices(); try { speechSynthesis.addEventListener("voiceschanged", loadVoices); } catch(e){} }
+function voiceFor(tag){ if (!voices.length) loadVoices(); const l = tag.slice(0, 2).toLowerCase(), norm = v => String(v.lang || "").replace("_", "-").toLowerCase();
+  const same = voices.filter(v => norm(v).indexOf(l) === 0);
+  return same.find(v => norm(v) === tag.toLowerCase() && /enhanced|premium|natural|siri/i.test(v.name)) || same.find(v => norm(v) === tag.toLowerCase()) || same[0] || null; }
+function say(text, onEnd){ if (!SS || !text) return false;
+  try { const s = window.speechSynthesis; if (s.speaking || s.pending) s.cancel();
+    const u = new SpeechSynthesisUtterance(String(text).replace(/[\u201c\u201d\u201e]/g, '"')); const tag = {de:"de-DE", es:"es-ES"}[LANG()] || "en-US";
+    u.lang = tag; const v = voiceFor(tag); if (v) u.voice = v; u.rate = 0.94; u.pitch = 1.08;
+    const fin = () => { speaking = false; H.classList.remove("g1-talking"); paintListen(); if (onEnd) onEnd(); };
+    u.onend = fin; u.onerror = fin; speaking = true; H.classList.add("g1-talking"); s.speak(u); try { if (s.paused) s.resume(); } catch(e){}
+    window.__g1said = text; paintListen(); return true; } catch(e){ speaking = false; H.classList.remove("g1-talking"); return false; } }
+function hush(){ speaking = false; H.classList.remove("g1-talking"); if (SS) try { speechSynthesis.cancel(); } catch(e){} paintListen(); }
+function paintListen(){ document.querySelectorAll(".g1-say").forEach(b => { b.classList.toggle("on", speaking); b.setAttribute("aria-pressed", speaking ? "true" : "false");
+  const l = b.querySelector(".g1-sayl"); if (l) l.textContent = speaking ? T("Stop") : T("Listen"); const i = b.querySelector(".g1-sayi"); if (i) i.innerHTML = speaking ? STP : SPK; }); }
+
+/* ---------- where things are ---------- */
+const vis = el => { if (!el || !el.isConnected) return false; const r = el.getBoundingClientRect(); if (r.width < 4 || r.height < 4) return false; const cs = getComputedStyle(el); return cs.display !== "none" && cs.visibility !== "hidden"; };
+function appFree(){ /* the main app is showing, nothing on top of it */
+  if (H.classList.contains("gate-up") || H.classList.contains("gate-boot")) return false;
+  const tb = $("#tabbar"); if (!vis(tb)) return false; const act = $(".tab.active"); if (!act) return false;
+  const ob = $("#r2ob"); if (ob && vis(ob)) return false;
+  const x = innerWidth / 2, ys = [innerHeight * 0.3, innerHeight * 0.55];
+  for (const y of ys) { const e = document.elementFromPoint(x, y); if (!e) return false; if (e.closest("#g1Z,#lcUpd,#lcUpdOk,#g1Tour,#g1Help")) continue; if (!e.closest(".tab.active")) return false; }
+  return true; }
+const onHome = () => { const t = $("#tab-home"); return !!(t && t.classList.contains("active")); };
+function goTabBtn(tab){ const b = $('#tabbar .tb[data-tab="' + tab + '"]'); if (b) b.click(); }
+function goHome(){ if (!onHome()) goTabBtn("home"); }
+function scroller(el){ let p = el && el.parentElement; while (p && p !== document.body && p !== H) { const cs = getComputedStyle(p); if (/(auto|scroll)/.test(cs.overflowY) && p.scrollHeight > p.clientHeight + 2) return p; p = p.parentElement; } return document.scrollingElement || H; }
+
+/* ---------- tour steps (Home) ---------- */
+const firstCard = (sel) => { const e = $(sel); return e ? (e.closest(".card") || e) : null; };
+const fastTile = () => { const v = $("#tab-home #r3aFastV"); if (v) return v.closest("button,.r3a-mt") || v; const t = [...document.querySelectorAll("#tab-home #r3aMorn .r3a-mt")].find(b => /⏳|fast|fasten|ayun/i.test(b.textContent)); return t || null; };
+const STEPS = [
+  {k:"intro"},
+  {k:"morning", el:() => $("#tab-home #r3aMorn")},
+  {k:"fast", el:fastTile},
+  {k:"meals", el:() => firstCard("#tab-home #tdMeals")},
+  {k:"plan", el:() => $("#tab-home #tdPlan .td-meal")},
+  {k:"nofood", el:() => $("#tab-home #tdPlan .td-meal") ? null : $("#tab-home #tdPlan")},
+  {k:"meds", el:() => $("#tab-home #tdMeds")},
+  {k:"have", el:() => $("#tab-home #tdHave")},
+  {k:"eat", el:() => firstCard("#tab-home #analyseBtn")},
+  {k:"nav", el:() => $("#tabbar"), fixed:true},
+  {k:"scan", el:() => realOrb(), fixed:true, round:true},
+  {k:"end", el:() => $("#g1Help") && vis($("#g1Help")) ? $("#g1Help") : realOrb(), fixed:true, round:true}
+];
+
+/* ---------- the fairy ---------- */
+const FS = 60; /* fairy size in px */
+let fz = null, fzHome = true, fzPos = null;
+function fairy(){ if (fz && fz.isConnected) return fz; cloneOrbCss();
+  fz = document.createElement("div"); fz.id = "g1Z"; fz.setAttribute("data-noi18n", ""); fz.setAttribute("aria-hidden", "true");
+  fz.innerHTML = '<div class="g1z-bob"><i class="g1z-wing l"></i><i class="g1z-wing r"></i><div class="g1z-body">' + orbHTML() + '</div><i class="g1z-spark s1"></i><i class="g1z-spark s2"></i><i class="g1z-spark s3"></i></div>';
+  fz.addEventListener("click", e => { e.stopPropagation(); if (!TOUR) return; const s = TOUR.steps[TOUR.i]; if (speaking) hush(); else { remember({v:1}); say(textOf(s)); } });
+  H.appendChild(fz); return fz; }
+function orbRect(){ const o = realOrb(); if (o && vis(o)) return o.getBoundingClientRect(); return {left:innerWidth / 2 - 31, top:innerHeight - 100, width:62, height:62}; }
+function fzMove(x, y, s, instant){ const f = fairy(); fzPos = {x, y, s:s || 1};
+  if (instant || reduce) { f.style.transition = "none"; f.style.transform = "translate3d(" + x + "px," + y + "px,0) scale(" + (s || 1) + ")"; void f.offsetWidth; f.style.transition = ""; }
+  else f.style.transform = "translate3d(" + x + "px," + y + "px,0) scale(" + (s || 1) + ")"; }
+function fzBounce(cls){ const b = fz && fz.querySelector(".g1z-bob"); if (!b || reduce) return; b.classList.remove("g1z-pop", "g1z-land"); void b.offsetWidth; b.classList.add(cls || "g1z-pop"); }
+/* pop out of the bar: start exactly on the real orb, squash, jump */
+function fairyOut(){ const f = fairy(); if (!fzHome && f.classList.contains("on")) return; const r = orbRect(), sc = r.width / FS;
+  fzMove(r.left + r.width / 2 - FS / 2, r.top + r.height / 2 - FS / 2, sc, true);
+  f.classList.remove("home", "bye"); f.classList.add("on"); fzHome = false; popReal(); sfx("open");
+  fzBounce("g1z-pop"); setTimeout(() => f.classList.add("alive"), reduce ? 0 : 220); }
+/* float back into the bar and melt into the real orb */
+function fairyHome(done){ const f = fz; if (!f || fzHome) { if (done) done(); return; } fzHome = true; const r = orbRect(), sc = r.width / FS;
+  f.classList.remove("alive"); f.classList.add("home"); fzMove(r.left + r.width / 2 - FS / 2, r.top + r.height / 2 - FS / 2, sc);
+  setTimeout(() => { f.classList.add("bye"); popReal(); sfx("tap"); setTimeout(() => { f.classList.remove("on", "bye", "home"); if (done) done(); }, reduce ? 0 : 260); }, reduce ? 0 : 640); }
+
+/* ---------- overlay: dim, spotlight, speech bubble ---------- */
+let TOUR = null; /* {steps:[...], i, kind:"tour"|"offer"|"show"} */
+function root(){ let r = $("#g1Tour"); if (!r) { r = document.createElement("div"); r.id = "g1Tour"; r.setAttribute("data-noi18n", ""); r.setAttribute("role", "dialog"); r.setAttribute("aria-modal", "true"); r.setAttribute("aria-label", T("guide"));
+    r.innerHTML = '<div class="g1-dim"></div><div class="g1-spot"></div><div class="g1-card" role="document"></div>';
+    try { r.style.fontFamily = getComputedStyle(document.body).fontFamily; } catch(e){}
+    r.addEventListener("click", onTourClick); H.appendChild(r); }
+  return r; }
+function stepList(){ return STEPS.filter(s => !s.el || s.k === "end" || vis(s.el())); }
+function begin(t){ TOUR = t; H.classList.add("g1-touring"); root(); fairyOut(); setTimeout(show, reduce ? 0 : 160); }
+function start(from){ if (TOUR) close("restart", true); hush(); goHome();
+  const m = mem(); remember({t:"", n:NEWS && NEWS.id ? NEWS.id : m.n});
+  setTimeout(() => { const steps = stepList(); let i = typeof from === "number" ? from : 0; if (i >= steps.length - 1) i = 0;
+    begin({steps, i, kind:"tour"}); }, onHome() ? 60 : 420); }
+function startNews(){ if (!NEWS) return; hush(); remember({n:NEWS.id});
+  const go = NEWS.go || {}; if (go.tour || !mem().t) { start(0); return; }
+  if (go.tab && !(go.tab === "home" && onHome())) goTabBtn(go.tab);
+  setTimeout(() => begin({steps:[{k:"news", text:NT(NEWS.text), el:() => go.sel ? $(go.sel) : null}], i:0, kind:"show"}), 450); }
+function offerNews(){ if (!NEWS || TOUR) return; hush(); begin({steps:[{k:"offer", text:NT(NEWS.text)}], i:0, kind:"offer"}); }
+function close(how, quick){ hush(); const t = TOUR; TOUR = null; clearInterval(placeT); cancelAnimationFrame(follow.raf);
+  const r = $("#g1Tour"); if (r) { r.classList.add("out"); setTimeout(() => { if (r.parentNode && !TOUR) r.remove(); else if (r.parentNode && TOUR) r.classList.remove("out"); }, quick ? 0 : 260); }
+  H.classList.remove("g1-touring");
+  if (t && t.kind === "tour") remember({t:how === "skip" ? "skip" : "done", s:0});
+  if (!quick) fairyHome(); }
+function textOf(s){ return s.text || T(s.k); }
+function show(){ if (!TOUR) return; const r = root(), s = TOUR.steps[TOUR.i], n = TOUR.steps.length, last = TOUR.i === n - 1;
+  const card = r.querySelector(".g1-card"); r.dataset.step = s.k; r.dataset.kind = TOUR.kind;
+  if (TOUR.kind === "tour") remember({s:TOUR.i});
+  const listen = SS ? '<button type="button" class="g1-btn g1-say" data-g1="say" aria-pressed="false"><span class="g1-sayi">' + SPK + '</span><span class="g1-sayl">' + esc(T("Listen")) + '</span></button>' : "";
+  let head = "", btns = "";
+  if (TOUR.kind === "tour") {
+    head = '<div class="g1-count" aria-label="' + (TOUR.i + 1) + " " + esc(T("of")) + " " + n + '">' + TOUR.steps.map((_, j) => '<i class="' + (j === TOUR.i ? "on" : j < TOUR.i ? "was" : "") + '"></i>').join("") + '</div>';
+    btns = (last ? "" : '<button type="button" class="g1-btn g1-skip" data-g1="skip">' + esc(T("Skip")) + '</button>') + '<span class="g1-sp"></span>' +
+      (TOUR.i > 0 && !last ? '<button type="button" class="g1-btn g1-back" data-g1="back" aria-label="' + esc(T("Back")) + '">‹</button>' : "") +
+      '<button type="button" class="g1-btn g1-next" data-g1="next">' + esc(last ? T("Done") : T("Next")) + (last ? "" : " ›") + '</button>';
+  } else if (TOUR.kind === "offer") {
+    head = '<div class="g1-tag">' + esc(T("newin")) + '</div>';
+    btns = '<button type="button" class="g1-btn g1-skip" data-g1="later">' + esc(T("Later")) + '</button><span class="g1-sp"></span><button type="button" class="g1-btn g1-next" data-g1="showme">' + esc(T("Show me")) + ' ›</button>';
+  } else {
+    head = '<div class="g1-tag">' + esc(T("newin")) + '</div>';
+    btns = '<span class="g1-sp"></span><button type="button" class="g1-btn g1-next" data-g1="done">' + esc(T("Got it")) + '</button>';
+  }
+  card.classList.remove("in");
+  card.innerHTML = head + '<p class="g1-p" aria-live="polite">' + esc(textOf(s)) + '</p>' + listen + '<div class="g1-btns">' + btns + '</div><i class="g1-tail"></i>';
+  paintListen(); place(true);
+  clearTimeout(show.t); show.t = setTimeout(() => { if (!TOUR) return; place(false); card.classList.add("in"); fzBounce("g1z-land"); const nb = card.querySelector(".g1-next"); if (nb) try { nb.focus({preventScroll:true}); } catch(e){} }, reduce ? 0 : 520);
+}
+/* positions: the spotlight on the thing, the fairy right beside it, the bubble attached to the fairy */
+let placeT = 0;
+function follow(ms){ cancelAnimationFrame(follow.raf); const end = Date.now() + ms; const f = () => { place(false); if (Date.now() < end && TOUR) follow.raf = requestAnimationFrame(f); }; follow.raf = requestAnimationFrame(f); }
+function place(scroll){ if (!TOUR) return; const r = $("#g1Tour"); if (!r) return; const s = TOUR.steps[TOUR.i], el = s.el ? s.el() : null;
+  const spot = r.querySelector(".g1-spot"), card = r.querySelector(".g1-card"), tail = card.querySelector(".g1-tail");
+  const vw = innerWidth, vh = innerHeight, TOPM = 44, BOTM = 12, OV = 16;
+  const BW = Math.min(vw - 24, 380), BX = Math.round((vw - BW) / 2); card.style.width = BW + "px"; card.style.left = BX + "px";
+  const BH = card.offsetHeight || 190, need = FS - OV + BH + 10;
+  if (!el || !vis(el)) { r.classList.add("nospot"); spot.style.cssText = "";
+    const top = Math.max(TOPM + FS, Math.round(vh * 0.36 - BH / 2)); card.style.top = top + "px"; card.dataset.side = "below";
+    fzMove(vw / 2 - FS / 2, top - FS + OV, 1.15); if (tail) tail.style.left = (BW / 2 - 9) + "px"; return; }
+  r.classList.remove("nospot");
+  if (scroll && !s.fixed) { const sc = scroller(el), b0 = el.getBoundingClientRect();
+    const want = b0.height + need + 30 <= vh - TOPM - BOTM ? Math.max(TOPM + 26, Math.round((vh - (b0.height + need)) / 2) - 20) : TOPM + 26;
+    const delta = b0.top - want; if (Math.abs(delta) > 4) { try { (sc === document.scrollingElement || sc === H ? window : sc).scrollBy({top:delta, behavior:reduce ? "auto" : "smooth"}); } catch(e){ try { sc.scrollTop += delta; } catch(e2){} } }
+    follow(900); }
+  const b = el.getBoundingClientRect(), pad = s.round ? 8 : 6;
+  const top = Math.max(b.top - pad, 4), bot = Math.min(b.bottom + pad, vh - 4), L = Math.max(b.left - pad, 4), R = Math.min(b.right + pad, vw - 4);
+  spot.style.cssText = "left:" + L + "px;top:" + top + "px;width:" + Math.max(R - L, 10) + "px;height:" + Math.max(bot - top, 10) + "px" + (s.round ? ";border-radius:999px" : "");
+  /* fairy x: near the right or left end of the thing (alternating), always over the bubble */
+  const prefer = (R - L) < 140 ? (L + R) / 2 : (TOUR.i % 2 ? L + (R - L) * 0.22 : L + (R - L) * 0.8);
+  const cx = Math.min(Math.max(prefer, BX + FS / 2 + 8), BX + BW - FS / 2 - 8), fx = cx - FS / 2;
+  let fy, by, side;
+  if (vh - bot - BOTM >= need) { side = "below"; fy = bot + 4; by = fy + FS - OV; }
+  else if (top - TOPM >= need) { side = "above"; fy = top - 4 - FS; by = fy + OV - BH; }
+  else { side = "over"; by = vh - BOTM - BH - (s.fixed ? 0 : 0); fy = by - FS + OV; }
+  card.style.top = Math.round(by) + "px"; card.dataset.side = side; if (tail) tail.style.left = Math.round(cx - BX - 9) + "px";
+  fzMove(fx, fy, 1); }
+function next(){ if (!TOUR) return; if (TOUR.i >= TOUR.steps.length - 1) { close("done"); return; }
+  TOUR.i++; /* steps that vanished since (a card closed) are skipped */
+  while (TOUR.i < TOUR.steps.length - 1 && TOUR.steps[TOUR.i].el && !vis(TOUR.steps[TOUR.i].el())) TOUR.i++;
+  show(); if (mem().v) say(textOf(TOUR.steps[TOUR.i])); else hush(); }
+function back(){ if (!TOUR || TOUR.i === 0) return; TOUR.i--; show(); if (mem().v) say(textOf(TOUR.steps[TOUR.i])); else hush(); }
+function onTourClick(e){ const b = e.target.closest && e.target.closest("[data-g1]"); e.stopPropagation(); if (!b) return; const a = b.getAttribute("data-g1");
+  sfx("tap");
+  if (a === "next") next(); else if (a === "back") back(); else if (a === "skip") close("skip");
+  else if (a === "say") { if (speaking) { hush(); remember({v:0}); } else { remember({v:1}); const s = TOUR && TOUR.steps[TOUR.i]; if (s) say(textOf(s)); } }
+  else if (a === "later") close("later"); else if (a === "showme") { close("show", true); fzHome = true; if (fz) fz.classList.remove("on", "alive"); startNews(); } else if (a === "done") close("done"); }
+addEventListener("resize", () => { place(false); helpPlace(); });
+document.addEventListener("scroll", () => { if (TOUR) { cancelAnimationFrame(place.raf); place.raf = requestAnimationFrame(() => place(false)); } }, true);
+document.addEventListener("keydown", e => { if (!TOUR) return; if (e.key === "Escape") close("skip"); else if (e.key === "ArrowRight") next(); else if (e.key === "ArrowLeft") back(); });
+
+/* ---------- replay: a small "?" next to the scan orb (Today), or hold the orb down ---------- */
+function helpBtn(){ let b = $("#g1Help"); if (b) return b; b = document.createElement("button"); b.id = "g1Help"; b.type = "button"; b.setAttribute("data-noi18n", ""); b.textContent = "?";
+  b.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); sfx("tap"); start(0); }); H.appendChild(b); return b; }
+function helpPlace(){ const b = helpBtn(); const o = realOrb(); const show = !TOUR && fzHome && onHome() && o && vis(o) && appFree();
+  b.classList.toggle("on", !!show); b.setAttribute("aria-label", T("help")); b.title = T("help"); if (!show) return;
+  const r = o.getBoundingClientRect(); let x = r.right - 4, y = r.top - 6;
+  const ban = $("#lcA2hs"); if (ban && vis(ban)) { const q = ban.getBoundingClientRect(); if (q.bottom > y && q.top < y + 26) { x = r.right + 2; y = Math.max(q.bottom + 2, r.top + r.height * 0.5 - 13); } }
+  b.style.left = Math.round(x) + "px"; b.style.top = Math.round(y) + "px"; b.style.zIndex = 61; }
+document.addEventListener("click", () => { setTimeout(helpPlace, 60); setTimeout(helpPlace, 380); }, true);
+let lpT = 0, lpX = 0, lpY = 0, lpSwallow = 0;
+addEventListener("pointerdown", e => { const s = e.target.closest && e.target.closest("#tabbar .tb.scan"); if (!s || $("#tabbar.r3a-edit")) return;
+  lpX = e.clientX; lpY = e.clientY; clearTimeout(lpT);
+  lpT = setTimeout(() => { lpT = 0; lpSwallow = Date.now();
+    try { document.dispatchEvent(new Event("pointercancel", {bubbles:true})); } catch(x){} /* the bar's own long-press (move icons) stands down */
+    try { if (navigator.vibrate) navigator.vibrate(18); } catch(x){} start(0); }, 520); }, true);
+addEventListener("pointermove", e => { if (lpT && (Math.abs(e.clientX - lpX) > 10 || Math.abs(e.clientY - lpY) > 10)) { clearTimeout(lpT); lpT = 0; } }, true);
+const lpEnd = () => { clearTimeout(lpT); lpT = 0; };
+addEventListener("pointerup", lpEnd, true); addEventListener("pointercancel", e => { if (e.isTrusted) lpEnd(); }, true);
+addEventListener("click", e => { if (lpSwallow && Date.now() - lpSwallow < 1500 && e.target.closest && e.target.closest("#tabbar .tb.scan")) { e.preventDefault(); e.stopPropagation(); lpSwallow = 0; } }, true);
+
+/* ---------- updates: the orb flies up into the Q1 banner and says what's new ---------- */
+let upNews = null, upBuild = "", flownFor = "";
+async function fetchNews(build){ if (upBuild === build && upNews !== null) return upNews; upBuild = build; upNews = "";
+  try { const r = await fetch("version.json?g1=" + Date.now(), {cache:"no-store"}); if (r.ok) { const v = await r.json(); if (v && v.news && (!v.build || v.build === build || !build)) upNews = v.news; } } catch(e){}
+  return upNews; }
+function flyInto(d){ const slot = d.querySelector(".g1-uorb"); if (!slot) return; const o = realOrb();
+  if (reduce || TOUR || !o || !vis(o) || !fzHome) { d.classList.add("g1-landed"); return; }
+  d.classList.remove("g1-landed"); fairyOut();
+  setTimeout(() => { const x = $("#lcUpd .g1-uorb"); if (!x) { fairyHome(); return; } const r = x.getBoundingClientRect(); fzMove(r.left + r.width / 2 - FS / 2, r.top + r.height / 2 - FS / 2, r.width / FS);
+    setTimeout(() => { const y = $("#lcUpd"); if (y) y.classList.add("g1-landed"); if (fz) fz.classList.remove("on", "alive"); fzHome = true; }, 720); }, 480); }
+function decorate(){ const d = $("#lcUpd"); if (!d) return; d.classList.add("g1-upd");
+  if (!d.querySelector(".g1-uorb")) { cloneOrbCss(); d.insertAdjacentHTML("afterbegin", '<span class="g1-uorb" id="g1Z2" aria-hidden="true"><span class="g1z-body">' + orbHTML() + '</span></span>'); }
+  let t = d.querySelector(".g1-utx"); if (!t) { t = document.createElement("span"); t.className = "g1-utx"; d.insertBefore(t, d.querySelector(".g1-uorb").nextSibling); }
+  const pill = [...d.children].find(c => c.tagName === "SPAN" && !c.classList.length); if (pill) { pill.classList.add("g1-upill"); t.appendChild(pill); }
+  const dot = d.querySelector(":scope > .lc-ud"); if (dot) dot.remove();
+  const n = upNews && typeof upNews === "object" ? NT(upNews.text) : "";
+  let h = t.querySelector(".g1-uh"); if (!h) { h = document.createElement("b"); h.className = "g1-uh"; t.insertBefore(h, t.firstChild); }
+  let p = t.querySelector(".g1-un"); if (!p) { p = document.createElement("i"); p.className = "g1-un"; t.insertBefore(p, h.nextSibling); }
+  if (h.textContent !== T("news")) h.textContent = T("news"); const line = n || T("newsfb"); if (p.textContent !== line) p.textContent = line;
+  if (SS && !d.querySelector(".g1-usay")) { const s = document.createElement("span"); s.className = "g1-usay"; s.setAttribute("role", "button"); s.setAttribute("tabindex", "0"); s.innerHTML = SPK;
+    s.setAttribute("aria-label", T("Listen"));
+    const act = e => { e.preventDefault(); e.stopPropagation(); if (speaking) { hush(); return; } const x = $("#lcUpd"); say(T("news") + " " + ((x && x.querySelector(".g1-un") || {}).textContent || "") + " " + (((x && x.querySelector(".g1-upill")) || {}).textContent || "")); };
+    s.addEventListener("click", act); s.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") act(e); }); d.appendChild(s); }
+  const b = d.dataset.build || "";
+  if (flownFor !== b) { flownFor = b; flyInto(d); }
+  if (upBuild !== b || upNews === null) fetchNews(b).then(() => { const x = $("#lcUpd"); if (x) { const pp = x.querySelector(".g1-un"), nn = upNews && typeof upNews === "object" ? NT(upNews.text) : ""; if (pp && nn && pp.textContent !== nn) pp.textContent = nn; } });
+}
+/* a tap on the banner refreshes (Q1, unchanged); remember it so the fairy shows the new thing right after */
+addEventListener("click", e => { if (e.target.closest && e.target.closest("#lcUpd") && !e.target.closest(".g1-usay")) { hush(); try { sessionStorage.setItem(GO, "1"); } catch(x){} } }, true);
+let decoQ = 0; const redeco = () => { if (decoQ) return; decoQ = requestAnimationFrame(() => { decoQ = 0; try { decorate(); } catch(e){ console.warn(e); } }); };
+
+/* ---------- when to start on its own ---------- */
+const AUTO = () => { try { if (localStorage.getItem("lowi.g1.auto") === "1") return true; } catch(e){} return !navigator.webdriver; };
+let freeSince = 0;
+function tick(){ helpPlace(); if (TOUR) return; if (!AUTO()) return;
+  if (!appFree()) { freeSince = 0; return; } if (!freeSince) { freeSince = Date.now(); return; } if (Date.now() - freeSince < 1200) return;
+  let go = ""; try { go = sessionStorage.getItem(GO) || ""; } catch(e){}
+  if (go) { try { sessionStorage.removeItem(GO); } catch(e){} if (NEWS) { startNews(); return; } }
+  if (!onHome()) return; const m = mem();
+  if (!m.t) { start(typeof m.s === "number" ? m.s : 0); return; }
+  if (NEWS && NEWS.id && m.n !== NEWS.id) { offerNews(); return; } }
+
+function init(){ H.classList.add("g1"); helpBtn(); helpPlace(); decorate();
+  const watch = () => { const d = $("#lcUpd"); if (d) { redeco(); if (!d.__g1) { d.__g1 = 1; new MutationObserver(redeco).observe(d, {childList:true}); } } };
+  new MutationObserver(watch).observe(H, {childList:true}); watch();
+  setInterval(tick, 600);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState !== "visible") hush(); }); }
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
+
+window.LowiG1 = {start, close, next, back, news:NEWS, startNews, offerNews, say, hush, mem, reset:() => { try { localStorage.removeItem(KEY); } catch(e){} }, T, canSpeak:SS,
+  state:() => TOUR ? {kind:TOUR.kind, i:TOUR.i, n:TOUR.steps.length, k:TOUR.steps[TOUR.i].k} : null, fairy:() => fz ? {on:fz.classList.contains("on"), home:fzHome, pos:fzPos} : null};
+})();
+</script>
+<style id="homecss">
+/* ===== G1 part 2: simpler Today ===== */
+#tab-home .g1-lead{margin-top:6px;font-size:15px;line-height:1.35;font-weight:600;color:var(--muted,rgba(255,255,255,.72))}
+#tab-home .g1-hint{margin:-4px 2px 12px 34px;font-size:15px;line-height:1.38;font-weight:550;color:var(--muted,rgba(255,255,255,.72))}
+html[data-theme=light] #tab-home .g1-lead,html[data-theme=light] #tab-home .g1-hint{color:#3c4258}
+html:not(.g1-more-open) #tab-home .g1-fold{display:none!important}
+#tab-home .g1-more{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;padding:0 16px;border-radius:18px;font:inherit;font-size:16px;font-weight:700;cursor:pointer;
+  color:inherit;background:rgba(255,255,255,.06);border:1px dashed rgba(255,255,255,.28);-webkit-tap-highlight-color:transparent}
+#tab-home .g1-more i{font-style:normal;font-size:14px;opacity:.8}
+html[data-theme=light] #tab-home .g1-more{background:rgba(20,24,38,.04);border-color:rgba(20,24,38,.28);color:#141826}
+#tab-home .g1-more:focus-visible{outline:3px solid #9fd8ff;outline-offset:2px}
+</style>
+<script id="homejs">
+/* ===== LOWiSPIKE G1 part 2 (Oct 10, 2026): a simpler Today (Home) =====
+   Nothing removed. Every numbered step gets one plain line saying what to tap, the top says how to read the page,
+   and the extras (streak, movement, weekly glow, quests) fold behind one "Show more" button that remembers its state. */
+(function(){
+"use strict";
+if (window.LowiHome) return;
+const H = document.documentElement, KEY = "lowi.home.more";
+const LANG = () => { let l = "en"; try { l = (window.LowiLang && LowiLang.get && LowiLang.get()) || localStorage.getItem("lowispike.lang") || "en"; } catch(e){} l = String(l).slice(0, 2); return l === "de" || l === "es" ? l : "en"; };
+const W = {
+  lead: ["Go from top to bottom. Each step says what to tap.", "Geh von oben nach unten. Jeder Schritt sagt dir, was du tippen sollst.", "Ve de arriba abajo. Cada paso te dice qué tocar."],
+  s1: ["Tap a number. Then tap the time you eat first.", "Tipp auf eine Zahl. Dann auf die Uhrzeit, wann du zuerst isst.", "Toca un número. Luego la hora a la que comes primero."],
+  s2: ["Tap \u201cRecipe\u201d to cook it. Tap \u201cAte it\u201d when you're done.", "Tipp auf \u201eRezept\u201c zum Kochen. Tipp auf \u201eGegessen\u201c, wenn du fertig bist.", "Toca \u201cReceta\u201d para cocinar. Toca \u201cComido\u201d cuando termines."],
+  s2f: ["No meals today. These drinks keep your fast.", "Heute keine Mahlzeiten. Diese Getränke brechen dein Fasten nicht.", "Hoy no hay comidas. Estas bebidas no rompen tu ayuno."],
+  s3: ["Tap \u201c+ Add a reminder\u201d for each pill or vitamin. Tick it off every day.", "Tipp auf \u201e+ Erinnerung hinzuf\u00fcgen\u201c f\u00fcr jede Tablette oder jedes Vitamin. Hak es jeden Tag ab.", "Toca \u201c+ A\u00f1adir recordatorio\u201d por cada pastilla o vitamina. M\u00e1rcala cada d\u00eda."],
+  s4: ["Tick what you already have at home. The rest goes on your shopping list.", "Hak ab, was du schon zu Hause hast. Der Rest kommt auf deine Einkaufsliste.", "Marca lo que ya tienes en casa. El resto va a tu lista de la compra."],
+  more: ["Show more: streak, movement, quests", "Mehr zeigen: Serie, Bewegung, Quests", "Ver más: racha, movimiento, misiones"],
+  less: ["Show less", "Weniger zeigen", "Ver menos"]
+};
+const T = k => { const r = W[k]; return r ? r[{en:0, de:1, es:2}[LANG()]] : k; };
+const open = () => { try { return localStorage.getItem(KEY) === "1"; } catch(e){ return false; } };
+function line(after, cls, text){ let n = after.nextElementSibling; if (n && n.classList.contains(cls)) { if (n.textContent !== text) n.textContent = text; return n; }
+  n = document.createElement("div"); n.className = cls; n.setAttribute("data-noi18n", ""); n.textContent = text; after.insertAdjacentElement("afterend", n); return n; }
+function tidy(){ const home = document.getElementById("tab-home"); if (!home) return;
+  const date = home.querySelector(".td-top .td-date"); if (date) line(date, "g1-lead", T("lead"));
+  home.querySelectorAll(".td-step").forEach(st => { const n = (st.querySelector(".td-n") || {}).textContent || ""; const sec = st.parentElement;
+    let k = "";
+    if (n === "1") k = "s1";
+    else if (n === "2") k = sec && sec.querySelector("#tdPlan .td-meal") ? "s2" : (sec && sec.querySelector(".td-plan,.r3d-fast,.td-fastday") ? "s2f" : "");
+    else if (n === "3") k = sec && sec.querySelector("#tdMeds") ? "s3" : "";
+    else if (n === "4") k = sec && sec.querySelector("#tdHave") ? "s4" : "";
+    if (k) line(st, "g1-hint", T(k)); else { const x = st.nextElementSibling; if (x && x.classList.contains("g1-hint")) x.remove(); } });
+  const wide = home.querySelector(".rs-wide .stack") || home.querySelector(".stack"); if (wide) {
+    const kids = [...wide.children].filter(c => !c.classList.contains("g1-more"));
+    const keep = kids.findIndex(c => c.id === "sosBtn"); const cut = keep >= 0 ? keep + 1 : 2;
+    kids.forEach((c, i) => c.classList.toggle("g1-fold", i >= cut));
+    let btn = wide.querySelector(":scope > .g1-more");
+    if (kids.length > cut) {
+      if (!btn) { btn = document.createElement("button"); btn.type = "button"; btn.className = "g1-more"; btn.setAttribute("data-noi18n", ""); btn.setAttribute("data-sfx", "tap");
+        btn.addEventListener("click", e => { e.stopPropagation(); const o = !open(); try { localStorage.setItem(KEY, o ? "1" : "0"); } catch(x){} paint(); if (o) { const f = document.querySelector("#tab-home .g1-fold"); if (f) try { f.scrollIntoView({block:"nearest", behavior:"smooth"}); } catch(x){} } }); }
+      if (btn.previousElementSibling !== kids[cut - 1]) kids[cut - 1].insertAdjacentElement("afterend", btn);
+    } else if (btn) btn.remove();
+  }
+  paint(); }
+function paint(){ const o = open(); H.classList.toggle("g1-more-open", o); document.querySelectorAll("#tab-home .g1-more").forEach(b => { const t = o ? T("less") : T("more");
+  const html = '<span>' + t.replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])) + '</span><i aria-hidden="true">' + (o ? "▴" : "▾") + '</i>'; if (b.innerHTML !== html) b.innerHTML = html; b.setAttribute("aria-expanded", o ? "true" : "false"); }); }
+let q = 0; const run = () => { if (q) return; q = requestAnimationFrame(() => { q = 0; try { mo.disconnect(); tidy(); } catch(e){ console.warn(e); } watch(); }); };
+const mo = new MutationObserver(run);
+function watch(){ const h = document.getElementById("tab-home"); if (h) mo.observe(h, {childList:true, subtree:true}); }
+function init(){ H.classList.add("g1-home"); tidy(); watch(); setInterval(() => { const h = document.getElementById("tab-home"); if (h && !h.querySelector(".g1-lead") && h.querySelector(".td-date")) run(); }, 1500); }
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
+window.LowiHome = {tidy, T};
 })();
 </script>
 </head>

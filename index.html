@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261009-234731">
+<meta name="lowi-build" content="20261010-001122">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -3750,7 +3750,7 @@ const NOTES = {
   "Pre-diabetes": "This may be relevant for you: building most meals on protein and vegetables instead of bread, rice or pasta is the habit LOWiSPIKE is made for.",
   "Insulin resistance": "Based on what you told the app, this risk area is relevant for you: sugar, flour, rice and pasta are where to be most careful, and protein plus vegetables is your base.",
   "PCOS": "This may be relevant for you: steady, protein-first meals like this one are a sensible everyday base.",
-  "Cravings": "If one food keeps pulling you back, tap \"This food gets me\" below. LOWiSPIKE will treat it as NEIN FÜR DICH.",
+  "Cravings": "If you always eat too much of one food, tap \"I always eat too much of this\" below. LOWiSPIKE will then treat it as a NO for you.",
   "Energy": "Protein and fibre-rich vegetables can help you stay full for longer.",
   "Weight": "Oil, cheese, nuts and avocado are good but easy to overdo, so stick to the amounts shown."
 };
@@ -3764,7 +3764,7 @@ function openMeal(id, photo){ const m = MEALS.find(x => x.id === id); if (!m) re
 function classicExtras(r){ const m = r.meal; if (!m) return "";
   const notes = (S.user.tags || []).filter(t => NOTES[t]).slice(0, 2);
   return (m.dr ? '<div class="blk"><div class="tiny">Drink with it</div><div style="font-size:14.5px;line-height:1.45">' + esc(m.dr) + '</div></div>' : "") +
-    (r.trigHit ? '<div class="blk"><div class="tiny">This one gets you</div><div style="font-size:14.5px;line-height:1.45">You said this food is hard to stop once you start. So no "just have a little" here: the rebuild is your move.</div></div>'
+    (r.trigHit ? '<div class="blk"><div class="tiny">You always eat too much of this</div><div style="font-size:14.5px;line-height:1.45">You said that once you start eating this, it is hard to stop. So no "just have a little" here: the rebuild is your move.</div></div>'
       : (m.t && m.t.length ? '<div class="blk"><div class="tiny">Eating the original anyway? No guilt. Try this:</div><ul>' + m.t.map(k => '<li>' + esc(TIPS[k]) + '</li>').join("") + '</ul></div>' : "")) +
     (notes.length ? '<div class="blk"><div class="tiny">🔒 Just for you</div>' + notes.map(t => '<div style="font-size:14.5px;line-height:1.45;margin-top:4px">' + esc(NOTES[t]) + '</div>').join("") + '</div>' : ""); }
 function runAnalyse(text, photo){ text = (text || "").trim(); if (!text) { toast("Type what you ate first"); return; }
@@ -3773,7 +3773,7 @@ function runAnalyse(text, photo){ text = (text || "").trim(); if (!text) { toast
   r.photo = photo || ""; CUR = r; renderResult(r); $("#result").scrollTop = 0; $("#result").classList.add("open"); }
 function renderResult(r){ const sw = r.swap, lvlTxt = {low:"LOW", medium:"MEDIUM", high:"HIGH"}[r.lvl];
   const pol = (r.lvl === "low" && r.rawR === "nein") ? '<div class="lockline" style="margin-top:12px">ℹ️<span>Low spike estimate, but still NEIN: this one is a LOWiSPIKE food rule, not a spike claim.</span></div>' : "";
-  const mine = r.trigHit ? '<div class="lockline" style="margin-top:12px">💫<span>You marked this as a food that gets you, so it\'s NEIN FÜR DICH, whatever the general rating says.</span></div>' : "";
+  const mine = r.trigHit ? '<div class="lockline" style="margin-top:12px">💫<span>You said you always eat too much of this. So for you it\'s a NO, whatever the general rating says.</span></div>' : "";
   const saved = sw && S.saved.some(x => x.n === sw.n);
   $("#result").innerHTML = '<div class="ovhead"><button class="xbtn" data-act="closeresult">' + ICO.x + '</button><span class="tiny gold">Your plate</span></div>' +
     '<div class="plate"><div class="pic">' + (r.photo ? '<img src="' + r.photo + '" alt="">' : r.emoji) + '</div><div style="flex:1;min-width:0"><div class="h2" style="font-size:19px">' + esc(r.title) + '</div><div style="margin-top:6px">' + badge(r.r) + '</div></div></div>' +
@@ -3791,13 +3791,13 @@ function renderResult(r){ const sw = r.swap, lvlTxt = {low:"LOW", medium:"MEDIUM
     classicExtras(r) +
     (window.MOVE && r.r !== "ja" ? MOVE.mealPromptHTML(r.trigHit ? "mine" : r.r) : "") +
     (S.user.tags.indexOf("PCOS") >= 0 ? '<div class="small dim" style="margin-top:12px">General food guidance, not medical advice. For PCOS treatment, talk to your doctor.</div>' : "") +
-    '<button class="btn ghost sm" style="margin-top:16px" data-act="trig" id="trigBtn">' + (r.trigHit ? "Remove from foods that get me" : "This food gets me") + '</button>' +
+    '<button class="btn ghost sm" style="margin-top:16px" data-act="trig" id="trigBtn">' + (r.trigHit ? "Undo: I can handle this food" : "I always eat too much of this") + '</button>' +
     '<button class="btn primary" style="margin-top:10px" data-act="logdone" id="logDone">Done · log it</button>'; }
 function logDone(){ const r = CUR; if (!r) return; const n = S.logs.filter(l => l.day === today()).length;
   S.logs.push({ts:Date.now(), day:today(), t:r.title, lvl:r.lvl, r:r.r, e:r.emoji}); save();
   if (n < 5) award(15, "Meal checked"); questDone("eat"); $("#result").classList.remove("open"); renderAll(); }
 function toggleTrig(){ const r = CUR; const ids = r.ids; if (r.trigHit) S.trig = S.trig.filter(x => ids.indexOf(x) < 0); else ids.forEach(x => { if (S.trig.indexOf(x) < 0) S.trig.push(x); });
-  save(); if (r.meal) openMeal(r.meal.id, r.photo); else runAnalyse(r.text, r.photo); toast(r.trigHit ? "Removed from your list" : "Marked: NEIN FÜR DICH"); }
+  save(); if (r.meal) openMeal(r.meal.id, r.photo); else runAnalyse(r.text, r.photo); toast(r.trigHit ? "Removed from your list" : "Saved: this food is a NO for you"); }
 
 /* Scan tab: photo (simulated) or type, plus the meal library */
 let SCAN = {photo:"", stage:""};
@@ -3868,7 +3868,7 @@ function renderProfile(){ const lv = levelOf(S.xp), z = zodiac(S.user.bday), h =
       '<div class="small gold" style="margin-top:10px" id="cyclePhase">' + (c.on ? "Today: " + esc(c.label) : "No phase set: you get the general tip.") + '</div><div class="small dim" style="margin-top:6px">Only changes tips. Not medical advice, and it can\'t predict your cycle or fertility.</div></div>' : "") +
     '<div class="setrow"><div class="t"><b>Body weight</b><div class="small muted" id="weightVal">' + (h.weight ? (weightShown ? esc(h.weight) + " kg" : "•••• hidden") : "Not set") + ' · private, never in For You</div></div>' + (h.weight ? '<button class="chip" data-act="showweight" id="showWeight">' + (weightShown ? "Hide" : "Show") + '</button>' : "") + '<button class="chip" data-act="setweight">' + (h.weight ? "Edit" : "Add") + '</button></div>' +
     '<div class="setrow"><div class="t"><b>Goals</b><div class="small muted">' + esc(S.user.tags.join(", ") || "None picked") + '</div></div><button class="chip" data-act="editgoals">Edit</button></div>' +
-    '<div class="setrow"><div class="t"><b>Foods that get me</b><div class="small muted">' + (S.trig.length ? S.trig.length + " marked as NEIN FÜR DICH" : "None yet. Mark one from any result.") + '</div></div>' + (S.trig.length ? '<button class="chip" data-act="cleartrig">Clear</button>' : "") + '</div></div>' +
+    '<div class="setrow"><div class="t"><b>Foods I always eat too much of</b><div class="small muted">' + (S.trig.length ? S.trig.length + " marked as a NO for you" : "None yet. Mark one from any result.") + '</div></div>' + (S.trig.length ? '<button class="chip" data-act="cleartrig">Clear</button>' : "") + '</div></div>' +
     (S.autoSkipped && !S.user.name ? '<div class="card" style="margin-top:16px"><div class="h3" style="font-size:16px">Set up your profile</div><div class="small muted" style="margin:4px 0 12px">Optional. Name, goals and foods that hit you. The app works without it.</div><button class="btn ghost sm" data-act="setupprofile" id="setupProfile">Set up now</button></div>' : "") +
     (STORAGE_OK ? "" : '<div class="card" style="margin-top:12px;border-color:var(--line)"><div class="tiny gold">This viewer forgets</div><div class="small" style="margin-top:6px;line-height:1.45">This window doesn\'t keep data between opens, so your plan resets. Open LOWiSPIKE in Safari and add it to your Home Screen to keep it.</div></div>') +
     (window.LOWI_CLOUD ? LOWI_CLOUD.cardHTML() : '') + '<div class="sec"><span class="h3">App</span></div><div class="card"><div class="setrow" style="border-top:0"><div class="t"><b>Name</b><div class="small muted">' + esc(S.user.name || "Not set") + '</div></div><button class="chip" data-act="editname">Edit</button></div>' +
@@ -7001,7 +7001,7 @@ let ob = null;
 R2.onboard = function(opts){
   opts = opts || {};
   const s = R2.S(); s.user = s.user || {};
-  ob = { step: 0, bday: s.user.bday || "", avatar: s.user.avatar || "", tags: (s.user.tags || []).slice(), name: s.user.name || "", askName: !s.user.name || opts.askName };
+  ob = { step: 0, bday: s.user.bday || "", avatar: s.user.avatar || "", tags: (s.user.tags || []).slice(), name: s.user.name || "", gender: s.user.gender || "", pcos: !!(s.health && s.health.pcos), askName: !s.user.name || opts.askName };
   const ov = R2.sheet('<div class="r2-ob" id="r2ob"></div>', { full: true, noClose: true, cls: "r2-obov" });
   paintOb();
   return ov;
@@ -7028,6 +7028,10 @@ function paintOb(){
       '<div class="r2-obacts"><button class="r2-btn pri big" data-r2o="' + (ob.avatar ? "next" : "photo") + '">' + (ob.avatar ? "Looks good" : "Choose a photo") + '</button><button class="r2-link" data-r2o="skipstep">' + (ob.avatar ? "Change later" : "Later") + '</button></div>';
   } else {
     h = dots() + '<div class="r2-obt">What do you want most?</div><div class="r2-obs">Pick any. You can change it in Profile.</div>' +
+      /* round 3A: gender, and PCOS for women (tailors tips; stays on this phone) */
+      '<div class="r2-obsub">I am</div><div class="r2-chips r2-gender">' + [["f", "A woman"], ["m", "A man"], ["x", "Prefer not to say"]].map(g => '<button class="r2-chip' + (ob.gender === g[0] ? " on" : "") + '" data-r2g="' + g[0] + '">' + g[1] + '</button>').join("") + '</div>' +
+      (ob.gender === "f" ? '<button class="r2-pcos' + (ob.pcos ? " on" : "") + '" data-r2pcos="1"><i></i><span><b>I have PCOS, or think I might</b><small>Tips for steadier blood sugar. Only on this phone.</small></span></button>' : "") +
+      '<div class="r2-obsub">I want</div>' +
       '<div class="r2-chips">' + tags().map(t => '<button class="r2-chip' + (ob.tags.includes(t) ? " on" : "") + '" data-r2tag="' + esc(t) + '">' + esc(t) + '</button>').join("") + '</div>' +
       '<div class="r2-obacts"><button class="r2-btn pri big" data-r2o="finish">Let\'s go</button></div>';
   }
@@ -7041,6 +7045,8 @@ function saveOb(final){
   s.user.bday = ob.bday || s.user.bday || "";
   if (ob.avatar && ob.avatar !== s.user.avatar) { s.user.avatar = ob.avatar; delete s.user.avatarUrl; }
   s.user.tags = ob.tags.slice();
+  if (ob.gender) s.user.gender = ob.gender;
+  s.health = s.health || {}; s.health.pcos = ob.gender === "f" && !!ob.pcos;
   if (final) { s.setupDone = true; s.onboarded = true; delete s.autoSkipped; }
   R2.save();
   try { window.LowiGlass && LowiGlass.apply(); } catch(e){}
@@ -7226,6 +7232,10 @@ document.addEventListener("click", e => {
       saveOb(false); ob.step++; paintOb(); return; }
     if (v === "finish") return finishOb();
   }
+  const gg = e.target.closest("[data-r2g]");
+  if (gg && ob) { ob.gender = gg.getAttribute("data-r2g"); if (ob.gender !== "f") ob.pcos = false; const sc = ($("#r2ob .r2-obpane") || {}).scrollTop || 0; paintOb(); const pn = $("#r2ob .r2-obpane"); if (pn) pn.scrollTop = sc; return; }
+  const pc = e.target.closest("[data-r2pcos]");
+  if (pc && ob) { ob.pcos = !ob.pcos; pc.classList.toggle("on", ob.pcos); return; }
   const tg = e.target.closest("[data-r2tag]");
   if (tg && ob) { const t = tg.getAttribute("data-r2tag"); const i = ob.tags.indexOf(t); if (i >= 0) ob.tags.splice(i, 1); else ob.tags.push(t); tg.classList.toggle("on"); return; }
   const et = e.target.closest("[data-r2etag]"); if (et) { et.classList.toggle("on"); return; }
@@ -7591,8 +7601,11 @@ function bubble(p, size, o){
   const ph = img ? '<img class="lb3-ph" src="' + esc(img) + '" alt="" decoding="async" draggable="false">' : '<span class="lb3-ph lb3-ini">' + esc(String(p.n || "?").trim().charAt(0).toUpperCase() || "?") + '</span>';
   const bb = lite ? "" : '<i class="lb3-bb" aria-hidden="true"><b></b><b></b><b></b><b></b><b></b></i>';
   const sg = g && size >= 28 && o.badge !== false ? '<span class="lb3-sg"' + (o.signTap ? ' data-r3="sign" data-sign="' + esc(p.s) + '" role="button" tabindex="0" aria-label="About ' + esc(p.s) + '"' : ' aria-hidden="true"') + '>' + g + '</span>' : "";
-  return '<span class="lb3' + (lite ? " lite" : "") + (o.cls ? " " + o.cls : "") + '" style="' + st + '" role="img" aria-label="' + esc((p.n || "Member") + (p.s ? ", " + p.s : "")) + '">' +
-    '<span class="lb3-in">' + ph + '<i class="lb3-w"></i><i class="lb3-c"></i>' + bb + '<i class="lb3-g"></i></span>' + sg + '</span>';
+  /* Oct 9 (round 3A): the water inside shows level progress: fuller = closer to the next level */
+  let lvl = 0.15, lvN = 1; try { const lo = levelOf(xpOf(p)); lvN = Math.max(lo.L, p.lv || 1); lvl = 0.16 + 0.74 * Math.max(0, Math.min(1, lo.pct || 0)); } catch(e){}
+  const lvPct = Math.round(lvl * 100), lvTxt = (p.n || "Member") + (p.s ? ", " + p.s : "") + ", level " + lvN;
+  return '<span class="lb3 lb3-glow' + (lite ? " lite" : "") + (o.cls ? " " + o.cls : "") + '" style="' + st + ';--lvl:' + lvPct + '%" role="img" aria-label="' + esc(lvTxt) + '">' +
+    '<span class="lb3-in">' + ph + '<i class="lb3-w"></i><i class="lb3-lvl" aria-hidden="true"><i class="lb3-wave"></i><i class="lb3-wave w2"></i></i><i class="lb3-c"></i>' + bb + '<i class="lb3-g"></i></span>' + sg + '</span>';
 }
 R3.bubble = bubble; R3.me = me; R3.find = find; R3.details = detailsBits;
 
@@ -8950,6 +8963,142 @@ const ROWS = [
 ].concat(Object.keys(ABOUT_EN).map(k => [ABOUT_EN[k], ABOUT[k][0], ABOUT[k][1]]));
 function add(){ if (window.LowiLang && LowiLang.add) { LowiLang.add(ROWS); return true; } return false; }
 if (!add()) document.addEventListener("DOMContentLoaded", add);
+})();
+
+</script>
+<style id="r3acss">
+/* ===== Round 3A (Oct 9, 2026) ===== */
+/* bubble: water level = level progress, glow in the star-sign colour */
+.lb3.lb3-glow{box-shadow:0 0 calc(var(--sz)*.30) rgba(var(--b1r),.55),0 0 calc(var(--sz)*.08) rgba(var(--b2r),.55),0 calc(var(--sz)*.05) calc(var(--sz)*.16) rgba(0,0,0,.30);animation:r3aGlow 3.6s ease-in-out infinite alternate}
+@keyframes r3aGlow{from{box-shadow:0 0 calc(var(--sz)*.22) rgba(var(--b1r),.42),0 0 calc(var(--sz)*.06) rgba(var(--b2r),.45),0 calc(var(--sz)*.05) calc(var(--sz)*.16) rgba(0,0,0,.30)}to{box-shadow:0 0 calc(var(--sz)*.38) rgba(var(--b1r),.7),0 0 calc(var(--sz)*.1) rgba(var(--b2r),.65),0 calc(var(--sz)*.05) calc(var(--sz)*.16) rgba(0,0,0,.30)}}
+.lb3-lvl{position:absolute;left:0;right:0;bottom:0;height:var(--lvl,20%);pointer-events:none;z-index:2;background:linear-gradient(180deg,rgba(var(--b1r),.34),rgba(var(--b2r),.55));box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
+.lb3-wave{position:absolute;left:0;bottom:100%;width:200%;height:max(3px,calc(var(--sz)*.07));background:radial-gradient(ellipse at 50% 100%,rgba(var(--b1r),.34) 68%,transparent 70%) 0 100%/25% 100% repeat-x;animation:r3aWave 3.2s linear infinite}
+.lb3-wave.w2{opacity:.6;animation-duration:5.1s;animation-direction:reverse;height:max(2px,calc(var(--sz)*.05))}
+@keyframes r3aWave{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.lb3.lite .lb3-wave.w2{display:none}
+@media (prefers-reduced-motion:reduce){.lb3.lb3-glow,.lb3-wave{animation:none!important}}
+
+/* overflow hardening: nothing may push a screen sideways */
+#result,.overlay,#sheet,.sheet{overflow-x:hidden}
+.sh-findbtns{flex-wrap:wrap}
+.sh-findbtns .btn{flex:1 1 auto;width:auto;min-width:0;max-width:100%;white-space:normal;height:auto;min-height:40px;padding:8px 14px;line-height:1.25}
+#result .btn,#result .chip,.td-acts .td-act,.r3a-sw .savedrow{max-width:100%}
+#result .btn{white-space:normal;height:auto;min-height:44px;line-height:1.25}
+#result img{max-width:100%}
+.td-addrow,.td-acts,.chips,.td-times{flex-wrap:wrap}
+
+/* saved swaps: swipe left or tap x to delete */
+.r3a-sw{position:relative;overflow:hidden;border-radius:14px}
+.r3a-sw + .r3a-sw{border-top:1px solid var(--line2,rgba(255,255,255,.07))}
+.r3a-swdel{position:absolute;right:0;top:0;bottom:0;width:96px;background:#d9443a;color:#fff;font-weight:700;font-size:14px;border:0;opacity:0;transition:opacity .15s}
+.r3a-sw.sw .r3a-swdel{opacity:1}
+.r3a-swfront{position:relative;display:flex;align-items:center;background:var(--panel2);transition:transform .22s ease;touch-action:pan-y}
+.r3a-swfront.drag{transition:none}
+.r3a-swfront .savedrow{flex:1;min-width:0;border:0}
+.r3a-x{flex:none;width:40px;height:40px;margin-right:2px;border-radius:50%;border:1px solid var(--line,rgba(255,255,255,.14));color:var(--muted,#aab);font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;background:transparent}
+.r3a-hint{margin-left:auto}
+.r3a-undo{position:fixed;left:50%;bottom:calc(var(--sab,0px) + 96px);transform:translateX(-50%);z-index:9999;display:flex;gap:14px;align-items:center;padding:10px 16px;border-radius:22px;background:rgba(20,24,34,.96);color:#fff;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.4);max-width:calc(100vw - 32px)}
+.r3a-undo button{color:#f3c97a;font-weight:700;background:none;border:0;font-size:14px}
+</style>
+<script id="r3ajs">
+/* ===== LOWiSPIKE round 3A (Oct 9, 2026): saved-swap delete, clearer wording, layout fixes ===== */
+(function(){
+"use strict";
+const $ = (s, r) => (r || document).querySelector(s), $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const LANG = () => { try { return (window.LowiLang && LowiLang.get()) || "en"; } catch(e){ return "en"; } };
+const D = {};
+function dict(rows){ rows.forEach(r => { D[r[0]] = [r[1], r[2]]; }); }
+function T(en, v){ let s = en; const l = LANG(); if (l !== "en" && D[en]) s = D[en][l === "de" ? 0 : 1] || en; if (v) Object.keys(v).forEach(k => { s = s.split("{" + k + "}").join(v[k]); }); return s; }
+const R3A = window.LowiR3A = {T, dict, D};
+
+dict([
+  ["Saved swaps", "Gespeicherte Swaps", "Cambios guardados"],
+  ["Swipe left or tap × to delete", "Nach links wischen oder × tippen zum Löschen", "Desliza a la izquierda o toca × para borrar"],
+  ["Save a swap from any result and it lands here.", "Speichere einen Swap aus einem Ergebnis, dann landet er hier.", "Guarda un cambio desde cualquier resultado y aparecerá aquí."],
+  ["Delete", "Löschen", "Borrar"],
+  ["Delete saved swap", "Gespeicherten Swap löschen", "Borrar cambio guardado"],
+  ["Swap deleted", "Swap gelöscht", "Cambio borrado"],
+  ["Undo", "Rückgängig", "Deshacer"]
+]);
+
+/* ---------- saved swaps: swipe left or tap x ---------- */
+function savedHTMLNew(){
+  const list = (S.saved || []).map((s, k) => ({s, k})).reverse();
+  return '<div class="sec"><span class="h3" data-noi18n>' + T("Saved swaps") + '</span>' + (list.length ? '<span class="small muted r3a-hint" data-noi18n>' + T("Swipe left or tap × to delete") + '</span>' : "") + '</div><div class="card r3a-saved">' +
+    (list.length ? list.map(o => { const s = o.s;
+      return '<div class="r3a-sw" data-k="' + o.k + '"><button class="r3a-swdel" data-r3a="delsaved" data-k="' + o.k + '" tabindex="-1" data-noi18n>' + T("Delete") + '</button>' +
+        '<div class="r3a-swfront"><button class="row savedrow" data-act="opensaved" data-v="' + esc(s.from || "") + '"><span style="font-size:22px">' + (s.e || "") + '</span><span class="small" style="flex:1;text-align:left;min-width:0">' + esc(s.n) + '</span>' + (typeof badge === "function" ? badge(s.r) : "") + '</button>' +
+        '<button class="r3a-x" data-r3a="delsaved" data-k="' + o.k + '" aria-label="' + esc(T("Delete saved swap")) + '">×</button></div></div>'; }).join("")
+      : '<div class="small muted" data-noi18n>' + T("Save a swap from any result and it lands here.") + '</div>') + '</div>';
+}
+try { window.savedHTML = savedHTMLNew; } catch(e){}
+
+let undoT = 0;
+function undoBar(msg, fn){
+  let el = $("#r3aUndo"); if (el) el.remove();
+  el = document.createElement("div"); el.id = "r3aUndo"; el.className = "r3a-undo"; el.setAttribute("data-noi18n", "");
+  el.innerHTML = '<span>' + esc(msg) + '</span><button type="button">' + esc(T("Undo")) + '</button>';
+  document.body.appendChild(el);
+  el.querySelector("button").addEventListener("click", () => { clearTimeout(undoT); el.remove(); fn(); });
+  clearTimeout(undoT); undoT = setTimeout(() => el.remove(), 4500);
+}
+function rerenderProfile(){ try { if (typeof TAB !== "undefined" && TAB === "profile") renderAll(); else if (typeof renderProfile === "function" && $("#tab-profile")) { /* profile is a sheet/tab elsewhere */ renderProfile(); } } catch(e){ console.error(e); } }
+function delSaved(k){
+  k = +k; if (!S.saved || !S.saved[k]) return;
+  const item = S.saved[k]; S.saved.splice(k, 1); save();
+  const sc = ($("#tab-profile") || {}).scrollTop || 0;
+  rerenderProfile(); const tp = $("#tab-profile"); if (tp) tp.scrollTop = sc;
+  undoBar(T("Swap deleted"), () => { S.saved.splice(Math.min(k, S.saved.length), 0, item); save(); rerenderProfile(); const t2 = $("#tab-profile"); if (t2) t2.scrollTop = sc; });
+}
+R3A.delSaved = delSaved;
+
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-r3a]"); if (!b) return;
+  const a = b.getAttribute("data-r3a");
+  if (a === "delsaved") { e.preventDefault(); e.stopPropagation(); delSaved(b.getAttribute("data-k")); return; }
+  const h = R3A.handlers && R3A.handlers[a]; if (h) { e.preventDefault(); h(b, e); }
+}, true);
+
+/* swipe: drag the row left. Past 70px it stays open showing Delete; past half the width it deletes. */
+(function swipe(){
+  let f = null, x0 = 0, y0 = 0, dx = 0, dir = "", base = 0, moved = false;
+  document.addEventListener("pointerdown", e => { const fr = e.target.closest(".r3a-swfront"); if (!fr || e.target.closest(".r3a-x")) return;
+    $$(".r3a-swfront.open").forEach(o => { if (o !== fr) { o.classList.remove("open"); o.style.transform = ""; o.parentElement.classList.remove("sw"); } });
+    f = fr; x0 = e.clientX; y0 = e.clientY; dx = 0; dir = ""; moved = false; base = fr.classList.contains("open") ? -96 : 0; }, true);
+  document.addEventListener("pointermove", e => { if (!f) return; const mx = e.clientX - x0, my = e.clientY - y0;
+    if (!dir) { if (Math.abs(mx) < 8 && Math.abs(my) < 8) return; dir = Math.abs(mx) > Math.abs(my) * 1.2 ? "x" : "y"; if (dir === "x") { f.classList.add("drag"); f.parentElement.classList.add("sw"); } }
+    if (dir !== "x") return; moved = true; dx = Math.min(0, base + mx); f.style.transform = "translateX(" + dx + "px)"; }, true);
+  const end = () => { if (!f) return; const fr = f; f = null; fr.classList.remove("drag"); if (dir !== "x") return;
+    const w = fr.offsetWidth || 300;
+    if (dx < -w * 0.5) { const k = fr.parentElement.getAttribute("data-k"); fr.style.transform = "translateX(-100%)"; setTimeout(() => delSaved(k), 180); }
+    else if (dx < -60) { fr.classList.add("open"); fr.style.transform = "translateX(-96px)"; }
+    else { fr.classList.remove("open"); fr.style.transform = ""; fr.parentElement.classList.remove("sw"); }
+    if (moved) { const stop = ev => { ev.stopPropagation(); ev.preventDefault(); }; document.addEventListener("click", stop, {capture:true, once:true}); setTimeout(() => document.removeEventListener("click", stop, true), 350); } };
+  document.addEventListener("pointerup", end, true); document.addEventListener("pointercancel", end, true);
+})();
+
+/* register static strings with the app's translator too (labels passed to toasts etc.) */
+R3A.register = function(){ try { if (window.LowiLang && LowiLang.add) LowiLang.add(Object.keys(D).filter(k => k.indexOf("{") < 0).map(k => [k, D[k][0], D[k][1]])); } catch(e){} };
+R3A.handlers = R3A.handlers || {};
+})();
+
+/* round 3A translations */
+(function(){
+  if (!window.LowiLang || !LowiLang.add) return;
+  LowiLang.add([
+    ["I always eat too much of this", "Davon esse ich immer zu viel", "De esto siempre como demasiado"],
+    ["Undo: I can handle this food", "Zurücknehmen: Das hab ich im Griff", "Deshacer: esto lo controlo"],
+    ["You always eat too much of this", "Davon isst du immer zu viel", "De esto siempre comes demasiado"],
+    ["You said that once you start eating this, it is hard to stop.", "Du hast gesagt: Wenn du damit anfängst, kannst du nicht aufhören.", "Dijiste que cuando empiezas a comer esto, no puedes parar."],
+    ["You said you always eat too much of this. So for you it's a NO, whatever the general rating says.", "Du hast gesagt, davon isst du immer zu viel. Für dich heißt es also NEIN, egal was die allgemeine Bewertung sagt.", "Dijiste que de esto siempre comes demasiado. Así que para ti es un NO, diga lo que diga la valoración general."],
+    ["Saved: this food is a NO for you", "Gespeichert: Das ist ein NEIN für dich", "Guardado: esto es un NO para ti"],
+    ["Removed from your list", "Von deiner Liste entfernt", "Quitado de tu lista"],
+    ["Foods I always eat too much of", "Foods, von denen ich immer zu viel esse", "Comidas de las que siempre como demasiado"],
+    [/^(\d+) marked as a NO for you$/, "$1 als NEIN für dich markiert", "$1 marcadas como NO para ti"],
+    ["If you always eat too much of one food, tap \"I always eat too much of this\" below. LOWiSPIKE will then treat it as a NO for you.", "Wenn du von einem Food immer zu viel isst, tippe unten auf \"Davon esse ich immer zu viel\". LOWiSPIKE behandelt es dann als NEIN für dich.", "Si de una comida siempre comes demasiado, toca abajo \"De esto siempre como demasiado\". LOWiSPIKE la tratará como un NO para ti."]
+  ]);
+  try { window.LowiR3A && LowiR3A.register(); } catch(e){}
 })();
 
 </script>

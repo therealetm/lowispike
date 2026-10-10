@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261010-220138">
+<meta name="lowi-build" content="20261010-224145">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2813,6 +2813,58 @@ html.g2c-on.g2c-t6 #shelf.tabmode #shBody .r5-shuf .r5-go{margin-top:12px;min-he
 .g2c-pb-all .gpt-card{display:none!important}
 .g2c-pb #r3kSwipe,.g2c-pb #r3kAll,.g2c-pb #r5Pick,.g2c-pb #r3kYes,.g2c-pb #k9Box,.g2c-pb .gpt-card{margin-top:0;max-width:none}
 .g2c-pb #r3kSwipe .r3k-head{justify-content:flex-end;min-height:0}
+</style>
+<style id="g2dCss">/* G2 part 4: Community Leaderboard is one game screen on a phone (podium + places that fit + tiles) */
+#g2dTiles{display:none}
+html.g2d-on #cmPaneBoard{overflow:hidden;overscroll-behavior:contain;padding-top:6px;padding-bottom:0}
+html.g2d-on #cmPaneBoard .r3f-board .r3-lb > .r2-p{display:none}
+html.g2d-on #cmPaneBoard .r3m-lbme{margin:0 0 10px}
+html.g2d-on #cmPaneBoard .r3m-lbp{margin-bottom:0}
+html.g2d-on #cmPaneBoard .r3m-tcs3{display:none}
+html.g2d-on #cmPaneBoard .r3-lbseg{position:static;margin-bottom:12px}
+html.g2d-on #cmPaneBoard .r3-lbseg button{min-height:40px}
+html.g2d-on #cmPaneBoard .g2d-hid{display:none!important}
+/* podium: 2nd, 1st, 3rd side by side, then the places after that as rows */
+html.g2d-on #cmPaneBoard .r3-lbl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 8px;align-items:end}
+html.g2d-on #cmPaneBoard .r3-lbl > *{grid-column:1/-1;order:5}
+html.g2d-on #cmPaneBoard .r3-lbrow{padding:6px 4px}
+html.g2d-on #cmPaneBoard .r3-lbrow.g2d-pin{order:9}
+html.g2d-on #cmPaneBoard .r3-lbrow.t1,html.g2d-on #cmPaneBoard .r3-lbrow.t2,html.g2d-on #cmPaneBoard .r3-lbrow.t3{grid-column:auto;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;min-width:0;padding:10px 6px 8px;margin-bottom:8px;position:relative;text-align:center;border-radius:18px;background:var(--r2-field);border:1px solid var(--r2-line)}
+html.g2d-on #cmPaneBoard .r3-lbrow.t1{order:2;padding-top:14px;border-color:rgba(217,178,91,.55);box-shadow:0 0 0 1px rgba(217,178,91,.18),0 8px 22px rgba(217,178,91,.14)}
+html.g2d-on #cmPaneBoard .r3-lbrow.t2{order:1}
+html.g2d-on #cmPaneBoard .r3-lbrow.t3{order:3}
+html.g2d-on #cmPaneBoard .r3-lbrow.t1 .r3-lbm,html.g2d-on #cmPaneBoard .r3-lbrow.t2 .r3-lbm,html.g2d-on #cmPaneBoard .r3-lbrow.t3 .r3-lbm{width:100%;min-width:0}
+html.g2d-on #cmPaneBoard .r3-lbrow.t1 .r3-lbm b,html.g2d-on #cmPaneBoard .r3-lbrow.t2 .r3-lbm b,html.g2d-on #cmPaneBoard .r3-lbrow.t3 .r3-lbm b{display:block;max-width:100%;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.g2d-on #cmPaneBoard .r3-lbrow.t1 .r3-lbm small,html.g2d-on #cmPaneBoard .r3-lbrow.t2 .r3-lbm small,html.g2d-on #cmPaneBoard .r3-lbrow.t3 .r3-lbm small,html.g2d-on #cmPaneBoard .r3-lbrow.t1 .r3-sup,html.g2d-on #cmPaneBoard .r3-lbrow.t2 .r3-sup,html.g2d-on #cmPaneBoard .r3-lbrow.t3 .r3-sup{display:none}
+html.g2d-on #cmPaneBoard .r3-lbrow.t1 .r3-lbx,html.g2d-on #cmPaneBoard .r3-lbrow.t2 .r3-lbx,html.g2d-on #cmPaneBoard .r3-lbrow.t3 .r3-lbx{margin:0;font-size:13px}
+html.g2d-on #cmPaneBoard .r3-lbrow:is(.t1,.t2,.t3) .r3-rk{position:absolute;top:6px;left:6px;width:22px;height:22px;font-size:12px;z-index:1}
+html.g2d-on #cmPaneBoard .r3-lbrow.t1 .r3-rk{width:24px;height:24px}
+html.g2d-on #cmPaneBoard .r3-lbrow.t1 .lb3{--sz:52px!important}
+#cmPaneBoard .r3-lb > .r3-lbme.g2d-pin{margin-top:0}
+/* the tiles */
+html.g2d-on #cmPaneBoard #g2dTiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+html.g2d-on #cmPaneBoard #g2dTiles.g2d-one .g2d-tile{grid-column:span 2}
+.g2d-tile{min-height:0}
+html.g2d-on #cmPaneBoard .g2d-tile{display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto;align-items:center;column-gap:10px;row-gap:1px;min-height:58px;padding:9px 12px}
+html.g2d-on #cmPaneBoard .g2d-tile .g2h-ic{grid-row:1/span 2;margin:0}
+html.g2d-on #cmPaneBoard .g2d-tile b{margin:0;align-self:end}
+html.g2d-on #cmPaneBoard .g2d-tile small{align-self:start}
+html.g2d-on #cmPaneBoard .g2d-tile small:empty{display:none}
+html.g2d-on #cmPaneBoard .g2d-tile:has(small:empty) b{grid-row:1/span 2;align-self:center}
+/* tighten when space is short */
+html.g2d-on.g2d-t1 #cmPaneBoard .r3-lbseg{margin-bottom:8px}
+html.g2d-on.g2d-t1 #cmPaneBoard .r3m-lbme{margin-bottom:8px}
+html.g2d-on.g2d-t1 #cmPaneBoard .g2d-tile{min-height:48px;padding:7px 10px}
+html.g2d-on.g2d-t1 .g2d-tile .g2h-ic{width:22px;height:22px;border-radius:8px}
+html.g2d-on.g2d-t1 .g2d-tile .g2h-ic svg{width:15px;height:15px}
+html.g2d-on.g2d-t2 #cmPaneBoard .g2d-tile small{display:none}
+html.g2d-on.g2d-t2 #cmPaneBoard .g2d-tile b{grid-row:1/span 2;align-self:center}
+html.g2d-on.g2d-t2 #cmPaneBoard .r3-lbrow.t1{padding-top:12px}
+/* the sheets */
+.g2d-ov .g2d-pt{margin:0 0 4px;padding-right:44px}
+.g2d-ov .g2d-ps{margin:0 0 14px}
+.g2d-ov .g2d-unlb{margin:0}
+.g2d-ov .g2d-unlb .r3m-tc{min-height:150px}
 </style>
 </head>
 <body>
@@ -16620,6 +16672,146 @@ function boot(){
   setInterval(() => { hook(); wrapDeck(); }, 2000);
 }
 window.LowiG2C = {open:openPanel, close:() => closePanel(false), groups:() => groups(body()), fit:() => fit(body()), state:() => ({on:on(), open:openKey, level:LV.filter(c => H.classList.contains(c)).length})};
+if (D.readyState === "loading") D.addEventListener("DOMContentLoaded", boot); else boot();
+})();
+</script>
+<script id="g2dJs">/* ===== LOWiSPIKE G2 part 4 (Oct 11, 2026): Community Leaderboard is one game screen, no scrolling (phone) =====
+   On a phone the Leaderboard tab shows: your progress card, This week / This month / All time, a podium for the
+   top 3, as many places after that as fit, and two tiles: Full ranking (all 50 in a sheet, with the period switch)
+   and Unlocks (the VIP channel, courses and mentoring cards in a sheet). If you are ranked but not on screen, your
+   own row takes the last place. Chat already fits: header, message list (scrolls inside), composer above the tab bar.
+   The For You feed stays a scroll feed. iPad and desktop keep their layout. html.g2d-full shows the full board (tests). */
+(function(){
+"use strict";
+if (window.LowiG2D) return;
+const D = document, H = D.documentElement;
+const L = [
+  ["Full ranking", "Rangliste", "Ranking"],
+  ["Unlocks", "Belohnungen", "Desbloqueos"],
+  ["VIP, courses, 1:1", "VIP, Kurse, 1:1", "VIP, cursos, 1:1"],
+  ["Levels and what they unlock", "Level und was sie freischalten", "Niveles y lo que desbloquean"],
+  [/^Top (\d+)$/, "Top $1", "Top $1"]
+];
+let lAdded = false;
+function addL(){ if (lAdded) return; try { if (window.LowiLang && LowiLang.add) { LowiLang.add(L); lAdded = true; } } catch(e){} }
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const sv = p => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>';
+const IC = {
+  all: sv('<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0z"/><path d="M7 6H4v1.5A3.5 3.5 0 007.3 11M17 6h3v1.5a3.5 3.5 0 01-3.3 3.5"/>'),
+  unl: sv('<rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 017.6-1.7"/><circle cx="12" cy="15.5" r="1.4"/>')
+};
+const q = (r, s) => r ? r.querySelector(s) : null;
+const qa = (r, s) => r ? Array.from(r.querySelectorAll(s)) : [];
+const pane = () => D.getElementById("cmPaneBoard");
+const phone = () => H.getAttribute("data-lay") === "phone" || (!H.getAttribute("data-lay") && innerWidth < 700);
+const on = () => H.classList.contains("g2d-on");
+function cmShown(){ try { return !window.LowiHost || !LowiHost.tab || LowiHost.tab() === "foryou"; } catch(e){ return true; } }
+
+/* ---- tiles ---- */
+function tilesHTML(p){
+  const n = qa(p, ".r3-lbl .r3-lbrow").length, unl = true;
+  let h = '<button type="button" class="g2h-tile g2d-tile g2d-all" data-g2d-open="all" data-sfx="open"><span class="g2h-ic">' + IC.all + '</span><b>Full ranking</b><small>' + (n ? "Top " + n : "") + '</small></button>';
+  if (unl) h += '<button type="button" class="g2h-tile g2d-tile g2d-unl" data-g2d-open="unl" data-sfx="open"><span class="g2h-ic">' + IC.unl + '</span><b>Unlocks</b><small>VIP, courses, 1:1</small></button>';
+  return h;
+}
+
+/* ---- sheets ---- */
+let ov = null, openKey = null;
+function openPanel(k){
+  const R2 = window.LowiR2, R3 = window.LowiR3, p = pane(); if (!R2 || !R2.sheet || !p) return;
+  addL(); closePanel();
+  let html = "", cls = "g2d-ov";
+  if (k === "all") { try { html = R3 && R3.boardHTML ? R3.boardHTML() : ""; } catch(e){ console.error(e); } if (!html) return; cls += " r3-ov r3-lbov g2d-ov-all"; }
+  else if (k === "unl") {
+    const c = q(p, ".r3m-tcs3"); if (!c) { const m = q(p, ".r3m-lbp"); if (m) m.click(); return; }
+    const x = c.cloneNode(true); x.classList.remove("sm");
+    html = '<div class="h2 g2h-pt g2d-pt">Unlocks</div><p class="r2-p g2d-ps">Levels and what they unlock</p><div class="r3m-lbme g2d-unlb">' + x.outerHTML + '</div>';
+    cls += " g2d-ov-unl";
+  } else return;
+  openKey = k;
+  const me = ov = R2.sheet(html, {cls, onClose:() => { if (ov === me) { ov = null; openKey = null; } try { if (k === "all" && window.LowiR3F && LowiR3F.paintBoard) LowiR3F.paintBoard(); } catch(e){} schedule(); setTimeout(schedule, 450); }});
+  /* a tap on a row or an unlock card opens its own sheet on top; this one stays underneath */
+}
+function closePanel(){ if (!ov) return; const o = ov; ov = null; openKey = null; try { window.LowiR2.close(o); } catch(e){} }
+D.addEventListener("click", e => {
+  const b = e.target && e.target.closest && e.target.closest("[data-g2d-open]"); if (!b) return;
+  e.preventDefault(); openPanel(b.dataset.g2dOpen);
+});
+
+/* ---- fit: podium + as many places as fit above the tiles ---- */
+let lim = 0, limW = 0, limH = 0;
+function bottomLimit(){
+  const tb = D.getElementById("tabbar"), r = tb && tb.getBoundingClientRect();
+  const sheet = D.querySelector(".r2-ov.on:not(.off)"), good = r && r.height > 20 && r.top < innerHeight - 20 && !sheet;
+  if (good) { lim = r.top - 8; limW = innerWidth; limH = innerHeight; return lim; }
+  if (lim && limW === innerWidth && limH === innerHeight) return lim;
+  return r && r.height > 20 ? r.top - 8 : innerHeight - 96;
+}
+function lastBottom(p){ let m = 0; Array.from(p.querySelectorAll(".r3f-board .r3-lb > *, .r3-lbl > .r3-lbrow, #g2dTiles")).forEach(e => { if (!e.offsetHeight) return; const b = e.getBoundingClientRect().bottom; if (b > m) m = b; }); return m; }
+function fits(p){ return lastBottom(p) <= bottomLimit() + .5; }
+function fit(p){
+  const rows = qa(p, ".r3-lbl > .r3-lbrow"), meOut = q(p, ".r3-lb > .r3-lbme");
+  rows.forEach(r => r.classList.remove("g2d-hid", "g2d-pin"));
+  if (meOut) meOut.classList.remove("g2d-hid");
+  if (!on() || !p.offsetHeight) { H.classList.remove("g2d-t1", "g2d-t2"); return; }
+  H.classList.remove("g2d-t1", "g2d-t2");
+  const rest = rows.slice(3), meIn = rows.find(r => r.classList.contains("me"));
+  rest.forEach(r => r.classList.add("g2d-hid"));
+  const pinMe = meIn && rows.indexOf(meIn) >= 3 ? meIn : null;
+  if (meOut) meOut.classList.add("g2d-hid");
+  /* tighten first if even the podium does not fit */
+  if (!fits(p)) H.classList.add("g2d-t1");
+  if (!fits(p)) H.classList.add("g2d-t2");
+  /* show places 4, 5, ... while they fit; keep room for your own row if you are further down */
+  const mine = pinMe || meOut;
+  if (mine) { mine.classList.remove("g2d-hid"); mine.classList.add("g2d-pin"); if (!fits(p)) { mine.classList.add("g2d-hid"); mine.classList.remove("g2d-pin"); } }
+  for (const r of rest) {
+    if (r === pinMe) continue;
+    r.classList.remove("g2d-hid");
+    if (!fits(p)) { r.classList.add("g2d-hid"); break; }
+  }
+}
+
+/* ---- the pass ---- */
+let raf = 0, busy = false, moP = null, moT = null, moR = null, hookedP = null, hookedT = null;
+function schedule(){ if (raf || busy) return; raf = requestAnimationFrame(() => { raf = 0; pass(); }); }
+function pass(){
+  busy = true;
+  try {
+    addL(); hook();
+    const p = pane(), want = !!p && phone() && cmShown() && !H.classList.contains("g2d-full");
+    if (want !== on()) H.classList.toggle("g2d-on", want);
+    if (!p) return;
+    let t = D.getElementById("g2dTiles");
+    if (want && q(p, ".r3-lb")) {
+      if (!t || t.parentNode !== p) { if (t) t.remove(); t = D.createElement("div"); t.id = "g2dTiles"; t.className = "g2d-tiles"; t.__h = ""; p.appendChild(t); }
+      else if (t !== p.lastElementChild) p.appendChild(t);
+      const html = tilesHTML(p); if (t.__h !== html) { t.__h = html; t.innerHTML = html; t.classList.toggle("g2d-one", t.children.length === 1); }
+      if (p.scrollTop) p.scrollTop = 0;
+    } else if (t) t.remove();
+    fit(p);
+  } catch(e){ console.error(e); }
+  finally { [moP, moT, moR].forEach(m => { if (m) m.takeRecords(); }); busy = false; }
+}
+function hook(){
+  const t = D.getElementById("tab-foryou");
+  if (t && t !== hookedT) { hookedT = t; if (moT) moT.disconnect(); moT = new MutationObserver(() => { if (!busy) schedule(); }); moT.observe(t, {childList:true}); }
+  const p = pane();
+  if (p && p !== hookedP) { hookedP = p; if (moP) moP.disconnect(); moP = new MutationObserver(() => { if (!busy) schedule(); }); moP.observe(p, {childList:true, subtree:true}); }
+}
+function boot(){
+  hook();
+  moR = new MutationObserver(() => { if (!busy) schedule(); });
+  moR.observe(H, {attributes:true, attributeFilter:["data-lay", "lang", "data-lang", "data-theme", "style", "class"]});
+  addEventListener("resize", schedule);
+  D.addEventListener("click", () => { setTimeout(schedule, 60); setTimeout(schedule, 420); }, true);
+  D.addEventListener("touchend", () => { setTimeout(schedule, 120); setTimeout(schedule, 520); }, {capture:true, passive:true});
+  setInterval(() => { hook(); if (cmShown() !== on() && phone()) schedule(); }, 1500);
+  schedule();
+}
+window.LowiG2D = {open:openPanel, close:closePanel, fit:() => { const p = pane(); if (p) fit(p); }, refresh:schedule,
+  state:() => { const p = pane(); return {on:on(), open:openKey, level:["g2d-t1", "g2d-t2"].filter(c => H.classList.contains(c)).length,
+    shown:p ? qa(p, ".r3-lbl > .r3-lbrow").filter(r => r.offsetHeight).length : 0}; }};
 if (D.readyState === "loading") D.addEventListener("DOMContentLoaded", boot); else boot();
 })();
 </script>

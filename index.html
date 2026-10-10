@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261010-181613">
+<meta name="lowi-build" content="20261010-185704">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -15860,5 +15860,43 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
 window.LowiF3B = {lead, tidy, w};
 })();
 </script>
+<style id="t1css">
+/* LOWiSPIKE T1 part 1 (Oct 10, 2026): big screens. Welcome, sign-up and sign-in laid out for iPad and desktop, popups as centered dialogs. Phone untouched (everything is behind html:not([data-lay=phone])). */
+html:not([data-lay=phone]) .r2-gate{display:flex;flex-direction:column}
+/* sign-up / sign-in / setup: a centered panel */
+html:not([data-lay=phone]) .r2-gate .r2-start:not(.a2){width:calc(100% - 64px);max-width:560px;min-height:0;margin:auto;flex:0 0 auto;padding:44px 48px 36px;border-radius:32px;border:1px solid var(--r2-line);background:var(--r2-sheet);box-shadow:0 30px 90px rgba(0,0,0,.45);overflow:hidden;gap:22px}
+html[data-theme=light]:not([data-lay=phone]) .r2-gate .r2-start:not(.a2){background:#fff;box-shadow:0 30px 80px rgba(60,72,110,.16)}
+html:not([data-lay=phone]) .r2-gate .r2-start:not(.a2):not(.form){min-height:min(640px,calc(100% - 64px))}
+html:not([data-lay=phone]) .r2-gate .r2-start:not(.a2) h1{font-size:40px}
+html:not([data-lay=phone]) .r2-gate .r2-start.form h1{font-size:32px}
+html:not([data-lay=phone]) .r2-gate .r2-start:not(.a2) p{font-size:17px}
+html:not([data-lay=phone]) .r2-gate .r2-start:not(.a2) .r2-logo{margin-bottom:34px}
+/* swipe welcome: bigger stage */
+html:not([data-lay=phone]) .r2-gate .r2-start.a2{width:100%;max-width:880px;flex:1 0 auto;height:auto;min-height:100%;margin:0 auto;padding-top:calc(env(safe-area-inset-top) + 28px);padding-bottom:calc(env(safe-area-inset-bottom) + 32px)}
+html:not([data-lay=phone]) .a2-top{padding:0 40px}
+html:not([data-lay=phone]) .a2-logo{margin:22px 48px 0!important;font-size:17px}
+html:not([data-lay=phone]) .a2-card{padding:10px 72px 0}
+html:not([data-lay=phone]) .a2-prev{height:min(380px,36vh);border-radius:32px;padding:28px;font-size:17px}
+html:not([data-lay=phone]) .a2-prev > *{transform:scale(1.18);transform-origin:center;max-width:84%}
+html:not([data-lay=phone]) .a2-card h1{font-size:44px!important;margin:30px 0 12px!important}
+html:not([data-lay=phone]) .a2-card p{font-size:19px!important;max-width:620px}
+html:not([data-lay=phone]) .a2-dots{margin:24px 0 6px}
+html:not([data-lay=phone]) .a2-acts{width:100%;max-width:440px;margin:10px auto 0!important;box-sizing:border-box}
+/* wide and landscape: preview left, words right */
+@media (min-width:1000px) and (min-aspect-ratio:1/1){
+  html:not([data-lay=phone]) .r2-gate .r2-start.a2{max-width:1180px}
+  html:not([data-lay=phone]) .a2-card{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);grid-template-rows:1fr auto auto 1fr;column-gap:64px;align-content:center;padding:0 72px}
+  html:not([data-lay=phone]) .a2-card .a2-prev{grid-column:1;grid-row:1 / span 4;align-self:center;height:min(420px,48vh)}
+  html:not([data-lay=phone]) .a2-card h1{grid-column:2;grid-row:2;margin:0 0 14px!important;font-size:48px!important}
+  html:not([data-lay=phone]) .a2-card p{grid-column:2;grid-row:3}
+}
+/* popups: centered dialogs instead of phone sheets */
+html:not([data-lay=phone]) .r2-ov{align-items:center;padding:24px;box-sizing:border-box}
+html:not([data-lay=phone]) .r2-ov .r2-sh{max-width:600px;border-radius:28px;max-height:min(88vh,980px);padding-bottom:26px;transform:translateY(40px) scale(.98);opacity:0;transition:transform .38s cubic-bezier(.2,.9,.25,1.05),opacity .28s ease}
+html:not([data-lay=phone]) .r2-ov.on .r2-sh{transform:none;opacity:1}
+html:not([data-lay=phone]) .r2-ov.off .r2-sh{transform:translateY(40px) scale(.98);opacity:0;transition-duration:.24s}
+html:not([data-lay=phone]) .r2-ov.full .r2-sh,html:not([data-lay=phone]) .r2-ov.p2-ckov .r2-sh{max-width:760px;height:min(90vh,980px);max-height:none;border-radius:28px;padding-top:18px}
+html:not([data-lay=phone]) .r2-ov .r2-sh .r2-grab{display:none}
+</style>
 </body>
 </html>

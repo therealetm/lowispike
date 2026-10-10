@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261010-084135">
+<meta name="lowi-build" content="20261010-100450">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1690,6 +1690,51 @@ document.addEventListener("click", e => { const b = e.target.closest("[data-fe]"
 document.addEventListener("input", e => { if (e.target && e.target.id === "r3aLast") { const wrap = document.querySelector(".fe-wrap"); if (wrap) repaint(wrap); } });
 document.addEventListener("change", e => { if (e.target && e.target.id === "r3aLast") { const wrap = document.querySelector(".fe-wrap"); if (wrap) repaint(wrap); } });
 window.LowiFE = {OPTS, target, at, atTxt, chooser, goalLine, short, w, _st: st};
+})();
+</script>
+<style id="gatecss">
+/* mandatory account: the gate sits above everything, nothing behind it can be tapped */
+.r2-gate{z-index:2147483000!important}
+.r2-gate.on{pointer-events:auto}
+html.gate-up,html.gate-up body{overflow:hidden!important}
+#r2ob .r2-err{min-height:20px;margin:6px 0 0;text-align:center}
+#r2ob .r2-obacts .r2-btn.ghost{margin-top:10px}
+html.gate-boot body > :not(#r2gate):not(script):not(style){visibility:hidden!important}
+html.gate-boot .r2-gate{opacity:1!important;transition:none!important}
+</style>
+<script id="gatejs">
+/* ===== LOWiSPIKE: mandatory account (Oct 10, 2026) =====
+   - No skip, no guest mode: the start screen only has Create account and Sign in (see r2 auth: needsGate).
+   - Guests already using the app see "Save your progress"; signing up upgrades their guest account (same id), so their data stays.
+   - LowiAccess: the hook for future paid locks. Nothing is locked today.
+     Use: if (!LowiAccess.can("feature-name")) return LowiAccess.ask("feature-name");
+     To lock something later, add its name to PAID and fill in plan(). */
+(function(){
+"use strict";
+/* before first paint: no account on this phone means the app stays hidden until the sign-in screen is up */
+try { const j = JSON.parse(localStorage.getItem("lowi.auth") || "null"), u = j && j.user; if (!(u && !u.is_anonymous && u.email)) document.documentElement.classList.add("gate-boot"); } catch(e){ document.documentElement.classList.add("gate-boot"); }
+setTimeout(() => { if (!document.getElementById("r2gate")) document.documentElement.classList.remove("gate-boot"); }, 6000);
+const PAID = [];   // e.g. ["plate-scan", "recipe-gpt"] once the subscription exists
+function signedIn(){ try { return !!(window.LowiAuth && LowiAuth.signedIn && LowiAuth.signedIn()); } catch(e){ return false; } }
+function plan(){ return "free"; }   // later: read the subscription from the account
+window.LowiAccess = {
+  plan,
+  paid: PAID,
+  can(feature){ if (!signedIn()) return false; return PAID.indexOf(feature) < 0 || plan() !== "free"; },
+  ask(feature){ try { if (!signedIn() && window.LowiR2 && LowiR2.showGate) return LowiR2.showGate("signup"); } catch(e){} return false; }
+};
+function addLang(){ if (!window.LowiLang || !LowiLang.add) return setTimeout(addLang, 300); LowiLang.add([
+  ["LOWiSPIKE now works with a free account. Create one and everything you've done so far moves into it.", "LOWiSPIKE funktioniert jetzt mit einem kostenlosen Konto. Erstelle eins, und alles Bisherige wandert mit hinein.", "LOWiSPIKE ahora funciona con una cuenta gratis. Créala y todo lo que hiciste hasta ahora pasa a ella."],
+  ["Create your free account to start. The app remembers you, on any phone.", "Erstelle dein kostenloses Konto, um loszulegen. Die App erkennt dich auf jedem Handy.", "Crea tu cuenta gratis para empezar. La app te recuerda en cualquier móvil."],
+  ["Your meals, streak and profile stay on this phone and move into your account.", "Deine Mahlzeiten, deine Serie und dein Profil bleiben auf dem Handy und wandern in dein Konto.", "Tus comidas, tu racha y tu perfil se quedan en el móvil y pasan a tu cuenta."],
+  ["Free. Takes 20 seconds.", "Kostenlos. Dauert 20 Sekunden.", "Gratis. Tarda 20 segundos."],
+  ["Add your birthday to go on.", "Gib deinen Geburtstag ein, um weiterzumachen.", "Añade tu cumpleaños para seguir."],
+  ["Check your birthday.", "Prüfe deinen Geburtstag.", "Revisa tu cumpleaños."],
+  ["Use my initial", "Meinen Anfangsbuchstaben nehmen", "Usar mi inicial"],
+  ["Choose another", "Anderes wählen", "Elegir otra"],
+  [". Sign in again any time to get it all back. This phone goes back to the sign-in screen.", ". Melde dich jederzeit wieder an, um alles zurückzubekommen. Dieses Handy geht zurück zum Anmeldebildschirm.", ". Vuelve a entrar cuando quieras para recuperarlo todo. Este móvil vuelve a la pantalla de inicio de sesión."]
+]); }
+addLang();
 })();
 </script>
 </head>
@@ -7259,13 +7304,10 @@ function hasLocalStuff(){ const s = R2.S(); if (!s) return false; return !!((s.u
 R2.isAccount = isAccount;
 R2.email = () => { const x = R2.X(); const st = x && x.state(); if (st && st.email) return st.email; const s = session(); return s && s.user && s.user.email || ""; };
 
-window.LowiAuth = { allowAnon: () => localStorage.getItem(GATE) === "skip" || !!session() };
+window.LowiAuth = { allowAnon: () => !!session(), required: true, signedIn: () => isAccount() };
 
-function needsGate(){
-  if (isAccount()) return false;
-  const g = localStorage.getItem(GATE);
-  return g !== "skip" && g !== "done";
-}
+function needsGate(){ return !isAccount(); }   /* gate-required: an account is required, there is no guest mode */
+R2.needsGate = needsGate;
 
 /* ---------- start screen ---------- */
 function startHTML(){
@@ -7273,13 +7315,12 @@ function startHTML(){
   return '<div class="r2-start">' +
     '<div class="r2-orbs" aria-hidden="true"><i></i><i></i><i></i></div>' +
     '<div class="r2-st-top"><div class="r2-logo">LOW<span>i</span>SPIKE</div>' +
-    (back ? '<h1>Save your progress</h1><p>Create a free account so your meals, streak and profile are kept safe. Everything you\'ve done so far stays.</p>'
-          : '<h1>Eat what you love.<br>Skip the spike.</h1><p>Make an account once. The app remembers you, on any phone.</p>') +
+    (back ? '<h1>Save your progress</h1><p>LOWiSPIKE now works with a free account. Create one and everything you\'ve done so far moves into it.</p>'
+          : '<h1>Eat what you love.<br>Skip the spike.</h1><p>Create your free account to start. The app remembers you, on any phone.</p>') +
     '</div><div class="r2-st-acts">' +
     '<button class="r2-btn pri big" data-r2a="signup">Create account</button>' +
     '<button class="r2-btn ghost big" data-r2a="signin">I already have an account</button>' +
-    '<button class="r2-link" data-r2a="skip">' + (back ? "Not now" : "Skip for now") + '</button>' +
-    '<div class="r2-fine">' + (back ? "You can save it later in Profile." : "You can make an account later in Profile. Nothing gets lost.") + '</div>' +
+    '<div class="r2-fine">' + (back ? "Your meals, streak and profile stay on this phone and move into your account." : "Free. Takes 20 seconds.") + '</div>' +
     '</div></div>';
 }
 function formHTML(mode){
@@ -7304,14 +7345,18 @@ let gateEl = null;
 function showGate(view){
   if (!gateEl) {
     gateEl = document.createElement("div"); gateEl.id = "r2gate"; gateEl.className = "r2-gate";
-    document.body.appendChild(gateEl);
+    gateEl.setAttribute("role", "dialog"); gateEl.setAttribute("aria-modal", "true");
+    document.body.appendChild(gateEl); lockApp(true);
     requestAnimationFrame(() => gateEl.classList.add("on"));
   }
   gateEl.innerHTML = view === "signup" || view === "signin" ? formHTML(view) : startHTML();
   gateEl.firstChild.classList.add("r2-swap");
   if (view === "signup" || view === "signin") setTimeout(() => { const i = gateEl.querySelector("input"); if (i && !i.value) i.focus(); }, 380);
 }
-function hideGate(){ if (!gateEl) return; const g = gateEl; gateEl = null; g.classList.remove("on"); g.classList.add("off"); setTimeout(() => g.remove(), 450); }
+function lockApp(on){ Array.prototype.forEach.call(document.body.children, el => { if (el.id === "r2gate" || el.tagName === "SCRIPT" || el.tagName === "STYLE") return; if (on) { if (!el.inert) { el.inert = true; el.setAttribute("data-gate-inert", ""); } } else if (el.hasAttribute("data-gate-inert")) { el.inert = false; el.removeAttribute("data-gate-inert"); } }); document.documentElement.classList.toggle("gate-up", !!on); if (!on) document.documentElement.classList.remove("gate-boot");
+  if (on && !lockApp.mo) { lockApp.mo = new MutationObserver(() => { if (gateEl) lockApp(true); }); lockApp.mo.observe(document.body, {childList:true}); } }
+function hideGate(force){ if (!gateEl) return; if (!force && needsGate()) return; const g = gateEl; gateEl = null; lockApp(false); g.classList.remove("on"); g.classList.add("off"); setTimeout(() => g.remove(), 450); }
+R2.gateUp = () => !!gateEl;
 R2.showGate = showGate;
 
 function errMsg(e){
@@ -7355,7 +7400,7 @@ async function doSignup(form){
     const s = R2.S(); s.user = s.user || {}; s.user.name = name; R2.save();
     if (!x.state().live) await x.boot(); else { x.pushProfile(); x.backupNow(); }
     x.paint();
-    hideGate();
+    hideGate(true);
     if (s.setupDone && s.user.bday) { try { R2.close(); } catch(e){} R2.refreshMe(); R2.toast("Account created. Everything you had is saved."); }
     else setTimeout(() => R2.onboard(), 260);
   } catch(e){ busy(form, false); showErr(form, errMsg(e)); }
@@ -7419,11 +7464,11 @@ function paintOb(){
       (ob.askName ? '<label class="r2-fl"><span>Name</span><input id="r2obName" maxlength="40" placeholder="Your first name" value="' + esc(ob.name) + '"></label>' : "") +
       '<label class="r2-fl date"><span>Birthday</span><input id="r2obB" type="date" max="' + todayISO() + '" min="1920-01-01" value="' + esc(ob.bday) + '"></label>' +
       '<div id="r2obSign">' + signReveal() + '</div>' +
-      '<div class="r2-obacts"><button class="r2-btn pri big" data-r2o="next">Next</button><button class="r2-link" data-r2o="skipstep">Later</button></div>';
+      '<div class="r2-err" id="r2obErr" role="alert"></div><div class="r2-obacts"><button class="r2-btn pri big" data-r2o="next">Next</button></div>';
   } else if (ob.step === 1) {
     h = dots() + '<div class="r2-obt">Add a photo</div><div class="r2-obs">People in Community see it next to your messages.</div>' +
       '<button class="r2-bigav" data-r2o="photo" aria-label="Add photo">' + (ob.avatar ? '<img src="' + ob.avatar + '" alt="">' : '<span>' + esc((ob.name || "?").charAt(0).toUpperCase()) + '</span>') + '<b>' + R2.ico.cam + '</b></button>' +
-      '<div class="r2-obacts"><button class="r2-btn pri big" data-r2o="' + (ob.avatar ? "next" : "photo") + '">' + (ob.avatar ? "Looks good" : "Choose a photo") + '</button><button class="r2-link" data-r2o="skipstep">' + (ob.avatar ? "Change later" : "Later") + '</button></div>';
+      '<div class="r2-obacts"><button class="r2-btn pri big" data-r2o="' + (ob.avatar ? "next" : "photo") + '">' + (ob.avatar ? "Looks good" : "Choose a photo") + '</button><button class="r2-btn ghost big" data-r2o="' + (ob.avatar ? "photo" : "initial") + '">' + (ob.avatar ? "Choose another" : "Use my initial") + '</button></div>';
   } else {
     h = dots() + '<div class="r2-obt">What do you want most?</div><div class="r2-obs">Pick any. You can change it in Profile.</div>' +
       /* round 3A: gender, and PCOS for women (tailors tips; stays on this phone) */
@@ -7537,7 +7582,7 @@ function pwHTML(){
     '<div class="r2-err" role="alert"></div><button class="r2-btn pri big" type="submit">Save new password</button></form></div>';
 }
 function confirmHTML(kind){
-  if (kind === "signout") return '<div class="r2-edit"><h2>Sign out?</h2><p class="r2-p">Everything is saved to <b>' + esc(R2.email()) + '</b>. Sign in again any time to get it all back. This phone starts fresh, so you can also try the app as a new person.</p>' +
+  if (kind === "signout") return '<div class="r2-edit"><h2>Sign out?</h2><p class="r2-p">Everything is saved to <b>' + esc(R2.email()) + '</b>. Sign in again any time to get it all back. This phone goes back to the sign-in screen.</p>' +
     '<button class="r2-btn pri big danger" data-r2p="dosignout">Sign out</button><button class="r2-btn ghost big" data-r2="close">Cancel</button></div>';
   return '<div class="r2-edit"><h2>Start fresh?</h2><p class="r2-p">Nothing on this phone is saved to an account yet. Starting fresh deletes it and opens the app like it\'s the first time.</p>' +
     '<button class="r2-btn pri big" data-r2p="create">Save it to an account first</button><button class="r2-btn ghost big danger" data-r2p="dofresh">Delete and start fresh</button></div>';
@@ -7619,14 +7664,17 @@ document.addEventListener("click", e => {
   const a = e.target.closest("[data-r2a]");
   if (a) { const v = a.getAttribute("data-r2a");
     if (v === "eye") { const i = a.parentNode.querySelector("input"); i.type = i.type === "password" ? "text" : "password"; a.classList.toggle("on"); return; }
-    if (v === "skip") { const fresh = !hasLocalStuff(); localStorage.setItem(GATE, "skip"); hideGate(); const x = R2.X(); if (x && !x.state().live) x.boot();
-      const s = R2.S(); if (fresh && !s.setupDone) setTimeout(() => R2.onboard({ askName: !s.user || !s.user.name }), 300); return; }
+    if (v === "skip") { showGate("signup"); return; }   /* no guest mode any more */
     if (R2.top() && (v === "signup" || v === "signin")) R2.closeAll();
     showGate(v); return; }
   const o = e.target.closest("[data-r2o]");
   if (o && ob) { const v = o.getAttribute("data-r2o");
     if (v === "photo") return pickPhoto(url => { ob.avatar = url; saveOb(false); paintOb(); });
-    if (v === "next" || v === "skipstep") { if (ob.step === 0) { const n = $("#r2obName"); if (n) ob.name = n.value.trim(); if (v === "next" && ob.askName && !ob.name) { n.focus(); n.classList.add("shake"); return; } }
+    if (v === "next" || v === "initial") { if (ob.step === 0) { const n = $("#r2obName"), b = $("#r2obB"), er = $("#r2obErr"); if (n) ob.name = n.value.trim(); if (b) ob.bday = b.value;
+        const bad = (m, el) => { if (er) { er.textContent = m; er.classList.remove("shake"); void er.offsetWidth; er.classList.add("shake"); } if (el) el.focus(); };
+        if (ob.askName && !ob.name) return bad("Add your name.", n);
+        if (!ob.bday || !signOf(ob.bday)) return bad("Add your birthday to go on.", b);
+        const ag = age(ob.bday); if (ag == null || ag < 1 || ag > 119) return bad("Check your birthday.", b); }
       saveOb(false); ob.step++; paintOb(); return; }
     if (v === "finish") return finishOb();
   }
@@ -7661,6 +7709,11 @@ R2.authBoot = function(){
   if (w) { sessionStorage.removeItem("r2.welcome"); const s = R2.S();
     setTimeout(() => { if (!s.setupDone && !(s.user && s.user.bday)) R2.onboard(); else R2.toast(w === "back" ? "Welcome back" + (s.user && s.user.name ? ", " + s.user.name : "") : "Signed in"); }, 600); }
   else if (isAccount()) { const s = R2.S(); if (s && !s.setupDone && !(s.user && s.user.bday)) setTimeout(() => R2.onboard(), 900); }
+  /* an open app whose account went away (signed out elsewhere, session gone) goes back to the gate */
+  const recheck = () => { if (needsGate() && !gateEl) { try { R2.closeAll(); } catch(e){} showGate("home"); } };
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) recheck(); });
+  window.addEventListener("storage", e => { if (e.key === "lowi.auth") recheck(); });
+  setInterval(recheck, 20000);
 };
 })();
 

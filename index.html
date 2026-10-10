@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261010-082820">
+<meta name="lowi-build" content="20261010-084135">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -13959,5 +13959,21 @@ window.LowiPF = {fixR2, fixSheet, fixRs};
   const w = document.getElementById("sheetwrap"); if (w) new MutationObserver(fix).observe(w, {attributes:true, attributeFilter:["class"]});
 })();
 </script>
+<style id="lrcss">
+/* light-mode readability pass 2 (Oct 10 2026): darker muted/dim, readable gold text, tab labels, chips */
+html[data-theme=light]{--muted:#454f68!important;--dim:#4d5772!important;--r2-mut:#4a5167!important}
+html[data-theme=light] .gold:not(svg):not(.wordmark),html[data-theme=light] .tiny.gold,html[data-theme=light] small.gold,html[data-theme=light] button.gold,html[data-theme=light] .badge.demo{color:#7a5512!important}
+html[data-theme=light] .p2-sn{color:#7a5512!important}
+html[data-theme=light] #tabbar .tb:not(.active),html[data-theme=light] #tabbar .tb:not(.active) span{color:rgba(17,19,24,.8)!important;opacity:1!important}
+html[data-theme=light] .ls-seg button{color:rgba(17,19,24,.82)!important}
+html[data-theme=light] .ls-seg button.on{color:#111318!important}
+html[data-theme=light] .lb3-ph.lb3-ini{color:#1c2236!important;text-shadow:0 1px 0 rgba(255,255,255,.5)}
+html[data-theme=light] .r3m-t{opacity:1!important}
+html[data-theme=light] .fs-card .tiny.muted,html[data-theme=light] .fs-card .muted{opacity:1!important;color:#454f68!important}
+html[data-theme=light] .lockline svg{color:#8a6420!important}
+html[data-theme=light] .lc-note,html[data-theme=light] .lc-shelf .dim,html[data-theme=light] .small.dim,html[data-theme=light] .tiny.dim{color:#4d5772!important}
+html[data-theme=light] .r3m-tcn{filter:brightness(.72) saturate(1.2)}
+html[data-theme=light] .fs-card .fs-tx{opacity:1!important}
+</style>
 </body>
 </html>

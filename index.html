@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261010-161159">
+<meta name="lowi-build" content="20261010-165915">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2108,7 +2108,7 @@ html[data-theme=light] #lcUpd.g1-upd .g1-usay{background:rgba(255,255,255,.2)}
 (function(){
 "use strict";
 if (window.LowiG1) return;
-const NEWS_RAW = {"id": "f2-ate", "go": {"tab": "home", "sel": "#tab-home [data-r3a=\"m-fast\"]"}, "text": {"en": "After “I just ate”, I now ask what you ate: snap it, scan the barcode or type it. You see the spike, get XP, and can share the photo to For You.", "de": "Nach „Gerade gegessen“ frage ich jetzt, was du gegessen hast: Foto, Barcode oder eintippen. Du siehst den Spike, bekommst XP und kannst das Foto auf For You teilen.", "es": "Después de “Acabo de comer”, ahora te pregunto qué comiste: foto, código de barras o escríbelo. Ves el pico, ganas XP y puedes compartir la foto en For You."}};
+const NEWS_RAW = {"id": "k9-ingredient", "go": {"tab": "shelf", "sel": "#k9Box"}, "text": {"en": "New on Cook: type an ingredient like chicken, steak or salmon and see every meal you can make with it, plus what to buy with pictures, store and price.", "de": "Neu in Kochen: Tipp eine Zutat wie Hähnchen, Steak oder Lachs ein und sieh alle Gerichte damit, plus was du kaufen musst, mit Bild, Markt und Preis.", "es": "Nuevo en Cocinar: escribe un ingrediente como pollo, filete o salmón y mira todos los platos que puedes hacer, y qué comprar con foto, tienda y precio."}};
 const NEWS = (NEWS_RAW && typeof NEWS_RAW === "object") ? NEWS_RAW : null;
 const KEY = "lowi.g1", GO = "lowi.g1.go";
 const H = document.documentElement;
@@ -2475,6 +2475,236 @@ function watch(){ const h = document.getElementById("tab-home"); if (h) mo.obser
 function init(){ H.classList.add("g1-home"); tidy(); watch(); setInterval(() => { const h = document.getElementById("tab-home"); if (h && !h.querySelector(".g1-lead") && h.querySelector(".td-date")) run(); }, 1500); }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 window.LowiHome = {tidy, T};
+})();
+</script>
+<style id="k9css">
+.k9-box{margin:12px 0 16px}
+.k9-h{font-weight:700;font-size:19px;line-height:1.25}
+.k9-sub{margin-top:3px;line-height:1.35}
+.k9-in{position:relative;margin-top:10px}
+.k9-in .k9-q{width:100%;box-sizing:border-box;padding-left:42px;padding-right:44px;font-size:16px;-webkit-appearance:none;appearance:none}
+.k9-in .k9-q::-webkit-search-cancel-button{display:none}
+.k9-sic{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:20px;height:20px;opacity:.7;pointer-events:none;display:grid}
+.k9-sic svg,.k9-eic svg{width:100%;height:100%}
+.k9-x{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:40px;height:40px;border:0;background:none;color:inherit;font-size:24px;line-height:1;opacity:0;pointer-events:none;border-radius:50%}
+.k9-x.on{opacity:.65;pointer-events:auto}
+.k9-chips{display:flex;gap:8px;overflow-x:auto;padding:10px 0 2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.k9-chips::-webkit-scrollbar{display:none}
+.k9-chip{flex:none;white-space:nowrap}
+.k9-count{font-weight:700;margin:14px 2px 8px;font-size:15px}
+.k9-none{margin:12px 2px;line-height:1.4}
+.k9-res{display:block;padding:12px;margin-bottom:10px;overflow:hidden}
+.k9-top{display:flex;align-items:center;gap:12px;width:100%;padding:0;border:0;background:none;color:inherit;text-align:left;font:inherit;cursor:pointer}
+.k9-rimg{width:64px;height:64px;border-radius:16px;object-fit:cover;flex:none;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.k9-rem{display:grid;place-items:center;font-size:34px;background:rgba(255,255,255,.06)}
+.k9-rtx{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.k9-rn{font-weight:650;font-size:15.5px;line-height:1.25}
+.k9-meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.k9-spk{font-size:12px;font-weight:700;padding:3px 8px;border-radius:999px;background:rgba(226,194,126,.18);color:#e2c27e}
+.k9-spk.warn{background:rgba(230,140,80,.16);color:#f0a46c}
+.k9-min{font-size:12.5px;opacity:.75}
+.k9-go{flex:none;font-size:13px;font-weight:650;color:#e2c27e;white-space:nowrap}
+.k9-buyh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:12px 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;opacity:.8}
+.k9-tot{text-transform:none;letter-spacing:0;font-size:12.5px}
+.k9-buy{display:flex;gap:8px;overflow-x:auto;margin:0 -12px;padding:0 12px 2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.k9-buy::-webkit-scrollbar{display:none}
+.k9-p{flex:none;width:88px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;padding:8px 6px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);box-sizing:border-box}
+.k9-p.hit{border-color:rgba(226,194,126,.75);background:rgba(226,194,126,.12)}
+.k9-pimg{width:52px;height:52px;border-radius:12px;object-fit:cover;background:#fff}
+.k9-pem{display:grid;place-items:center;font-size:28px;background:rgba(255,255,255,.08)}
+.k9-pn{font-size:12px;line-height:1.2;font-weight:600;max-height:2.4em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-top:3px}
+.k9-pp{font-size:13px;font-weight:700}
+.k9-ps{font-size:11px;opacity:.7}
+.k9-more,.k9-note{margin:6px 2px 4px;line-height:1.35}
+.k9-entry{display:flex;align-items:center;gap:12px;width:100%;margin:0 0 12px;text-align:left;color:inherit;font:inherit;cursor:pointer;border-color:rgba(226,194,126,.45)}
+.k9-eic{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;padding:9px;box-sizing:border-box;background:linear-gradient(180deg,#e2c27e,#b98d45);color:#14100a}
+.k9-etx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+html[data-theme=light] .k9-spk{background:rgba(160,120,40,.14);color:#6e5114}
+html[data-theme=light] .k9-spk.warn{background:rgba(200,100,40,.13);color:#8a3f12}
+html[data-theme=light] .k9-go{color:#7a5a16}
+html[data-theme=light] .k9-p{background:rgba(20,30,60,.04);border-color:rgba(20,30,60,.1)}
+html[data-theme=light] .k9-p.hit{border-color:rgba(150,110,30,.7);background:rgba(200,160,70,.13)}
+html[data-theme=light] .k9-rem,html[data-theme=light] .k9-pem{background:rgba(20,30,60,.06)}
+html[data-theme=light] .k9-rimg{box-shadow:0 4px 14px rgba(60,72,110,.13)}
+</style>
+<script id="k9js">
+/* ===== LOWiSPIKE K9 (Oct 10, 2026): search by ingredient =====
+   Type "chicken" (or Hähnchen, pollo, steak, Rind...) on Cook and see every meal you can make with it,
+   each with photo, spike rating and time, and under it what to buy: picture, store and price.
+   Also reachable from the Shelf ("Search by ingredient"). EN/DE/ES. */
+(function(){
+"use strict";
+if (window.LowiK9) return;
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const LANG = () => { try { return (window.LowiLang && LowiLang.get()) || "en"; } catch(e){ return "en"; } };
+const L = (en, de, es) => { const l = LANG(); return l === "de" ? de : l === "es" ? es : en; };
+const tr = s => { try { return window.LowiLang && LowiLang.t ? LowiLang.t(s) : s; } catch(e){ return s; } };
+const fold = s => String(s || "").toLowerCase().replace(/ß/g, "ss").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+
+/* canonical ingredient: words people type (en/de/es, folded) -> words to look for in the English recipe text */
+const CANON = [
+  ["chicken", "chicken chicken breast poultry hahnchen haehnchen hahnchenbrust huhn huhnchen huehnchen huhnerbrust huehnerbrust hahnchenschenkel geflugel gefluegel pollo pechuga", "chicken"],
+  ["turkey", "turkey pute puten putenbrust truthahn pavo", "turkey"],
+  ["beef", "beef steak steaks rind rinder rindfleisch rinderhack hack hackfleisch mince minced ground beef patty patties ternera carne picada carne de res res filete bistec chuleton", "beef|steak"],
+  ["salmon", "salmon lachs salmon", "salmon"],
+  ["tuna", "tuna thunfisch atun", "tuna"],
+  ["fish", "fish fisch pescado seafood meeresfruchte marisco", "salmon|tuna|shrimp|fish"],
+  ["shrimp", "shrimp shrimps prawn prawns garnele garnelen krabben scampi gamba gambas camaron camarones langostino", "shrimp|prawn"],
+  ["egg", "egg eggs ei eier huevo huevos", "egg|omelette"],
+  ["cheese", "cheese kase kaese queso", "cheese|cheddar|mozzarella|parmesan|feta|halloumi|frischkase"],
+  ["halloumi", "halloumi grillkase grillkaese", "halloumi"],
+  ["feta", "feta schafskase schafskaese", "feta"],
+  ["mozzarella", "mozzarella", "mozzarella"],
+  ["parmesan", "parmesan parmigiano", "parmesan"],
+  ["cheddar", "cheddar", "cheddar"],
+  ["cream cheese", "cream cheese frischkase frischkaese queso crema philadelphia", "frischkase|cream cheese"],
+  ["cottage cheese", "cottage cheese huttenkase huettenkaese korniger frischkase requeson", "cottage cheese"],
+  ["yogurt", "yogurt yoghurt joghurt jogurt yogur skyr quark griechischer", "yogurt|yoghurt|skyr|quark"],
+  ["avocado", "avocado aguacate palta", "avocado"],
+  ["zucchini", "zucchini courgette zucchetti calabacin", "zucchini"],
+  ["cauliflower", "cauliflower blumenkohl coliflor", "cauliflower"],
+  ["cabbage", "cabbage kohl weisskohl spitzkohl repollo col", "cabbage"],
+  ["cucumber", "cucumber gurke gurken salatgurke pepino", "cucumber"],
+  ["pepper", "pepper peppers bell pepper paprika paprikaschote pimiento pimientos", "bell pepper|peppers|pepper melt|pepper pizza|pepper pan|pepper half|pepper halves"],
+  ["mushrooms", "mushroom mushrooms pilze pilz champignons champignon champinon champinones setas", "mushroom"],
+  ["lettuce", "lettuce salad salat kopfsalat lechuga ensalada greens", "lettuce|salad|greens"],
+  ["spinach", "spinach spinat espinaca espinacas", "spinach"],
+  ["almonds", "almond almonds mandel mandeln almendra almendras", "almond"],
+  ["berries", "berries berry beeren heidelbeeren blaubeeren himbeeren erdbeeren frutos rojos bayas arandanos fresas", "berr"],
+  ["nori", "nori seaweed algen alga algas sushi", "nori|sushi"],
+  ["coffee", "coffee kaffee cafe", "coffee"],
+  ["tea", "tea tee te matcha", "tea|matcha"],
+  ["ginger", "ginger ingwer jengibre", "ginger"],
+  ["lime", "lime limette limetten lima limon lemon zitrone", "lime|lemon"],
+  ["mint", "mint minze menta", "mint"],
+  ["cocoa", "cocoa chocolate kakao schokolade cacao chocolate", "cocoa|cacao|chocolate"],
+  ["cinnamon", "cinnamon zimt canela", "cinnamon"],
+  ["chia", "chia chiasamen", "chia"],
+  ["broth", "broth bone broth bruhe bruehe knochenbruhe caldo", "broth"],
+  ["noodles", "noodles nudeln pasta fideos konjak shirataki rice reis arroz", "shirataki|konjak|noodle|carbonara"],
+  ["tomato", "tomato tomatoes tomate tomaten salsa", "tomato|salsa"],
+  ["celery", "celery sellerie staudensellerie apio", "celery"]
+].map(c => ({k:c[0], syn:c[1].split(" "), phr:c[1], hit:c[2].split("|")}));
+
+function hitsFor(q){
+  const f = fold(q), toks = f.split(" ").filter(Boolean), hits = [], canon = [];
+  if (!f) return {hits, canon, toks};
+  CANON.forEach(c => {
+    const syn = c.syn;
+    const on = (f.length >= 3 && (" " + c.phr + " ").indexOf(" " + f + " ") >= 0) ||
+      toks.some(t => syn.some(w => w === t || (t.length >= 3 && w.length >= 3 && (w.indexOf(t) === 0 || t.indexOf(w) === 0))));
+    if (on) { canon.push(c.k); c.hit.forEach(h => { if (hits.indexOf(h) < 0) hits.push(h); }); }
+  });
+  return {hits, canon, toks};
+}
+const has = (hay, term) => (" " + hay).indexOf(" " + term) >= 0;
+
+function recs(){ try { return window.LowiAllRecipes ? LowiAllRecipes() : (typeof RECIPE_BOOK !== "undefined" ? RECIPE_BOOK : []); } catch(e){ return []; } }
+function ingText(r){ return (r.ing || []).map(i => i.n).join(" "); }
+function search(q){
+  const H = hitsFor(q), f = fold(q), out = [];
+  if (!f || f.length < 2) return {list:out, H};
+  const direct = f.length >= 3 ? f : "";
+  recs().forEach(r => {
+    if (!r || r.r === "nein") return;
+    const ingE = fold(r.meal ? "" : ingText(r)), nameE = fold(r.n + " " + (r.meal ? (r.sub || "") + " " + (r.steps || []).join(" ") : ""));
+    const ingL = LANG() === "en" ? "" : fold((r.ing || []).map(i => tr(i.n)).join(" ")), nameL = LANG() === "en" ? "" : fold(tr(r.n));
+    let score = 0;
+    if (H.hits.some(h => has(ingE, h))) score = 3;
+    else if (H.hits.some(h => has(nameE, h))) score = 2;
+    else if (direct && (has(ingE, direct) || has(ingL, direct))) score = 3;
+    else if (direct && (has(nameE, direct) || has(nameL, direct))) score = 2;
+    if (!score) return;
+    if (score === 3 && (H.hits.some(h => has(nameE, h)) || (direct && (has(nameE, direct) || has(nameL, direct))))) score += 0.5;
+    out.push({r, score: score + (r.book ? 2 : r.meal ? 0 : 1), H, direct});
+  });
+  out.sort((a, b) => b.score - a.score);
+  return {list:out, H};
+}
+function matchedItem(i, H, direct){
+  const e = fold(i.n), l = LANG() === "en" ? "" : fold(tr(i.n));
+  return H.hits.some(h => has(e, h)) || (direct && (has(e, direct) || has(l, direct)));
+}
+
+const SL = () => window.LowiStoreList || null;
+function buyList(r, H, direct){
+  const sl = SL(); if (!sl || !sl.items) return {items:[], sid:"", total:0};
+  let items = []; try { items = sl.items(r).filter(i => !i.free); } catch(e){ items = []; }
+  items.forEach(i => { i.hit = matchedItem(i, H, direct); });
+  items.sort((a, b) => (b.hit ? 1 : 0) - (a.hit ? 1 : 0));
+  let sid = ""; try { sid = sl.storeFor ? sl.storeFor(r) : sl.store(); } catch(e){ sid = "lidl"; }
+  let total = 0; items.forEach(i => { try { i.px = sl.price(i, sid); } catch(e){ i.px = i.p || 0; } total += i.px; });
+  return {items, sid, total};
+}
+const eur = n => { const sl = SL(); try { if (sl && sl.eur) return sl.eur(n); } catch(e){} return "€" + (Math.round(n * 100) / 100).toFixed(2).replace(".", ","); };
+const sname = id => { const sl = SL(); try { if (sl && sl.storeName) return sl.storeName(id); } catch(e){} return id; };
+function pic(i){ const sl = SL(); let src = ""; try { src = sl && sl.pic ? sl.pic(i) : ""; } catch(e){}
+  return src ? '<img class="k9-pimg" alt="" draggable="false" loading="lazy" src="' + src + '">' : '<span class="k9-pimg k9-pem">' + esc(i.e || "🛒") + "</span>"; }
+function fimg(r){ try { if (typeof FOOD_IMG !== "undefined" && FOOD_IMG[r.id]) return FOOD_IMG[r.id]; if (r.meal && typeof FOOD_IMG !== "undefined" && FOOD_IMG["m_" + r.meal]) return FOOD_IMG["m_" + r.meal]; } catch(e){} return ""; }
+function mins(r){ try { return window.LOWI_COOK && r.book ? LOWI_COOK.minTxt(r.id) : ""; } catch(e){ return ""; } }
+const SPK = r => r.r === "selten" ? '<span class="k9-spk warn">' + esc(L("Now and then", "Ab und zu", "De vez en cuando")) + "</span>" : '<span class="k9-spk">' + esc(L("Low spike", "Niedriger Spike", "Pico bajo")) + "</span>";
+
+function rowHTML(m){
+  const r = m.r, b = buyList(r, m.H, m.direct), src = fimg(r), mt = mins(r);
+  return '<div class="card k9-res" data-k9r="' + esc(r.id) + '">' +
+    '<button class="k9-top" data-sh="recipe" data-r="' + esc(r.id) + '" data-sfx="open">' +
+      (src ? '<img class="k9-rimg" alt="" loading="lazy" src="' + src + '">' : '<span class="k9-rimg k9-rem">' + esc(r.e || "🍽️") + "</span>") +
+      '<span class="k9-rtx"><span class="k9-rn">' + esc(r.n) + '</span><span class="k9-meta">' + SPK(r) + (mt ? '<span class="k9-min">' + esc(mt) + "</span>" : "") + "</span></span>" +
+      '<span class="k9-go">' + esc(L("Recipe", "Rezept", "Receta")) + " ›</span></button>" +
+    (b.items.length ? '<div class="k9-buyh"><span>' + esc(L("What to buy", "Das kaufst du", "Qué comprar")) + '</span><span class="k9-tot">' + esc(L("all ≈ ", "alles ≈ ", "todo ≈ ")) + '<b>' + esc(eur(b.total)) + "</b> · " + esc(sname(b.sid)) + "</span></div>" +
+      '<div class="k9-buy">' + b.items.map(i => '<div class="k9-p' + (i.hit ? " hit" : "") + '">' + pic(i) + '<span class="k9-pn">' + esc(i.n) + '</span><span class="k9-pp">' + esc(eur(i.px)) + '</span><span class="k9-ps">' + esc(sname(b.sid)) + "</span></div>").join("") + "</div>" : "") +
+  "</div>";
+}
+
+let Q = "";
+const CHIPS = () => [["Chicken", "Hähnchen", "Pollo"], ["Steak", "Steak", "Ternera"], ["Salmon", "Lachs", "Salmón"], ["Eggs", "Eier", "Huevos"], ["Halloumi", "Halloumi", "Halloumi"], ["Shrimp", "Garnelen", "Gambas"], ["Avocado", "Avocado", "Aguacate"]].map(c => L(c[0], c[1], c[2]));
+function outHTML(){
+  const q = Q.trim(); if (fold(q).length < 2) return "";
+  const res = search(q), list = res.list, n = list.length, show = list.slice(0, 12);
+  if (!n) return '<div class="k9-none small">' + esc(L("Nothing with “" + q + "” yet. Try chicken, beef, salmon, eggs or cheese.", "Noch nichts mit „" + q + "“. Probier Hähnchen, Rind, Lachs, Eier oder Käse.", "Todavía nada con «" + q + "». Prueba pollo, ternera, salmón, huevos o queso.")) + "</div>";
+  return '<div class="k9-count">' + esc(n === 1 ? L("1 meal with “" + q + "”", "1 Gericht mit „" + q + "“", "1 plato con «" + q + "»") : L(n + " meals with “" + q + "”", n + " Gerichte mit „" + q + "“", n + " platos con «" + q + "»")) + "</div>" +
+    show.map(rowHTML).join("") +
+    (n > show.length ? '<div class="k9-more small muted">' + esc(L("Showing 12 of " + n + ". Type more to narrow it down.", "12 von " + n + ". Tipp mehr ein, um einzugrenzen.", "12 de " + n + ". Escribe más para afinar.")) + "</div>" : "") +
+    '<div class="k9-note small muted">' + esc(L("Prices are estimates for the cheapest store, not live prices.", "Preise sind Schätzungen für den günstigsten Markt, keine Live-Preise.", "Los precios son estimaciones para la tienda más barata, no precios en directo.")) + "</div>";
+}
+const SEARCH_IC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>';
+function box(){
+  return '<div class="k9-box" id="k9Box">' +
+    '<div class="k9-h">' + esc(L("What's in your hand?", "Was hast du in der Hand?", "¿Qué tienes en la mano?")) + "</div>" +
+    '<div class="k9-sub small muted">' + esc(L("Type an ingredient and see every meal you can make with it, plus what to buy.", "Tipp eine Zutat ein und sieh alle Gerichte damit, plus was du kaufen musst.", "Escribe un ingrediente y mira todos los platos que puedes hacer, y qué comprar.")) + "</div>" +
+    '<div class="k9-in"><span class="k9-sic">' + SEARCH_IC + '</span><input class="input k9-q" id="k9Q" type="search" enterkeyhint="search" autocomplete="off" placeholder="' + esc(L("Chicken, steak, salmon…", "Hähnchen, Steak, Lachs…", "Pollo, filete, salmón…")) + '" value="' + esc(Q) + '">' +
+      '<button class="k9-x' + (Q ? " on" : "") + '" data-k9="clear" aria-label="' + esc(L("Clear", "Löschen", "Borrar")) + '">×</button></div>' +
+    '<div class="k9-chips">' + CHIPS().map(c => '<button class="chip k9-chip' + (fold(c) === fold(Q) ? " on" : "") + '" data-k9="chip" data-q="' + esc(c) + '">' + esc(c) + "</button>").join("") + "</div>" +
+    '<div class="k9-out" id="k9Out">' + outHTML() + "</div></div>";
+}
+function entry(){
+  return '<button class="card k9-entry" data-k9="go" data-sfx="open"><span class="k9-eic">' + SEARCH_IC + '</span><span class="k9-etx"><b>' + esc(L("Search by ingredient", "Nach Zutat suchen", "Buscar por ingrediente")) + '</b><span class="small muted">' + esc(L("Type chicken, see meals and what to buy", "Hähnchen eintippen, Gerichte und Einkauf sehen", "Escribe pollo y mira platos y qué comprar")) + '</span></span><span class="k9-go">›</span></button>';
+}
+function paint(){ const o = document.getElementById("k9Out"); if (o) o.innerHTML = outHTML();
+  const x = document.querySelector(".k9-x"); if (x) x.classList.toggle("on", !!Q);
+  document.querySelectorAll(".k9-chip").forEach(c => c.classList.toggle("on", fold(c.dataset.q) === fold(Q))); }
+function set(q, focus){ Q = String(q || ""); const i = document.getElementById("k9Q"); if (i && i.value !== Q) i.value = Q; paint(); if (focus && i) { try { i.focus({preventScroll:true}); } catch(e){ i.focus(); } } }
+let tmr = 0;
+document.addEventListener("input", e => { if (e.target && e.target.id === "k9Q") { Q = e.target.value; clearTimeout(tmr); tmr = setTimeout(paint, 120); } });
+document.addEventListener("keydown", e => { if (e.target && e.target.id === "k9Q" && e.key === "Enter") { e.preventDefault(); clearTimeout(tmr); paint(); try { e.target.blur(); } catch(_){} } });
+function goCook(){
+  try { if (window.LowiCart && LowiCart.state && LowiCart.state()) LowiCart.close(); } catch(e){}
+  try { if (window.LowiR2) LowiR2.closeAll(); } catch(e){}
+  setTimeout(() => {
+    const t = document.createElement("button"); t.dataset.sh = "open-shelf"; t.dataset.t = "kochen"; t.style.display = "none";
+    document.body.appendChild(t); try { t.click(); } catch(e){} t.remove();
+    let n = 0; (function f(){ const b = document.getElementById("k9Box"); if (b && b.offsetParent !== null) { try { b.scrollIntoView({block:"start"}); } catch(e){} const i = document.getElementById("k9Q"); if (i) try { i.focus({preventScroll:true}); } catch(e){} return; } if (n++ < 30) setTimeout(f, 60); })();
+  }, 60);
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest && e.target.closest("[data-k9]"); if (!b) return;
+  const a = b.dataset.k9;
+  if (a === "clear") { e.preventDefault(); set("", true); }
+  else if (a === "chip") { e.preventDefault(); set(fold(b.dataset.q) === fold(Q) ? "" : b.dataset.q, false); }
+  else if (a === "go") { e.preventDefault(); goCook(); }
+});
+try { if (window.LowiLang && LowiLang.set) { const s0 = LowiLang.set; LowiLang.set = function(l){ const r = s0.apply(this, arguments); setTimeout(() => { const b = document.getElementById("k9Box"); if (b) b.outerHTML = box(); }, 0); return r; }; } } catch(e){}
+window.LowiK9 = {box, entry, search, hitsFor, set, get:() => Q, goCook};
 })();
 </script>
 </head>
@@ -5594,6 +5824,7 @@ function allRecipes(){
   });
   return out;
 }
+window.LowiAllRecipes = allRecipes; /* k9-all */
 const TMP_RECS = {};
 const recipeById = id => TMP_RECS[id] || allRecipes().find(r => r.id === id);
 function recipeForMeal(mealId){ return allRecipes().find(r => r.meal === mealId); }
@@ -5706,7 +5937,7 @@ function regalHTML(){
   const used = STORES.filter(s => SH.products.some(p => isLive(p) && p.sg.some(x => x.s === s.id)));
   const nq = pending().length;
   return (nq ? '<button class="card sh-entry sh-pend" data-sh="tab" data-t="pruefen"><span class="ic">👀</span><span class="tx"><span class="h3" style="display:block">' + nq + (nq === 1 ? " new find needs" : " new finds need") + ' a quick check</span><span class="live" style="display:block">Does it fit the rules? One tap, +5 XP</span></span><span class="go">›</span></button>' : "") +
-    '<input class="input" id="shQ" placeholder="Search the shelf: skyr, hack, paprika…" value="' + esc(V.q) + '">' +
+    (window.LowiK9 ? LowiK9.entry() : "") + /* k9-entry */ '<input class="input" id="shQ" placeholder="Search the shelf: skyr, hack, paprika…" value="' + esc(V.q) + '">' +
     '<div class="sh-chips">' + '<button class="chip ' + (!V.store ? "on" : "") + '" data-sh="store" data-s="">All stores</button>' + used.map(s => '<button class="chip ' + (V.store === s.id ? "on" : "") + '" data-sh="store" data-s="' + s.id + '"><span class="sh-dot" style="display:inline-block;margin-right:6px;background:' + s.c + '"></span>' + esc(s.n) + "</button>").join("") + "</div>" +
     '<div class="sh-chips">' + '<button class="chip ' + (!V.group ? "on" : "") + '" data-sh="group" data-g="">Everything</button>' + Object.keys(GROUPS).map(g => '<button class="chip ' + (V.group === g ? "on" : "") + '" data-sh="group" data-g="' + g + '">' + GROUPS[g].e + " " + esc(GROUPS[g].n) + "</button>").join("") + "</div>" +
     (ps.length ? '<div class="sh-grid">' + ps.map(tile).join("") + "</div>" : '<div class="sh-empty">Nothing on this shelf yet.<br>Be the first to add one.</div>') +
@@ -5731,7 +5962,7 @@ function kochenHTML(){
   const lib = all.filter(r => !r.feat && (!q || norm(r.n + " " + r.sub).indexOf(q) >= 0));
   if (V.cat === "quick" && window.LOWI_COOK) book.sort((a, b) => (LOWI_COOK.min(a.id) || 999) - (LOWI_COOK.min(b.id) || 999));   /* r3k-quick: fastest first */
   const cats = window.LOWI_COOK ? LOWI_COOK.chips() : [{id:"", n:"All 25"}].concat(typeof BOOK_CATS !== "undefined" ? BOOK_CATS : []);  // Oct 8: one row of quick chips (Fastic steal)
-  return (V.tab === "kochen" ? '<div class="r3k-allh"><span class="r3k-hic">' + ICON_R3K_BOOK + '</span><span class="r3k-ht">All recipes</span></div>' : "") + /* r3k-allh */ (window.LowiGPT ? LowiGPT.card() : "") + /* gpt-card */ '<div class="h3" style="margin-top:4px">What are you cooking?</div><p class="small muted" style="margin-top:4px">Real recipes from the LOWiSPIKE Recipe Book. Tap one for what you need and how to make it.</p>' +
+  return (V.tab === "kochen" ? '<div class="r3k-allh"><span class="r3k-hic">' + ICON_R3K_BOOK + '</span><span class="r3k-ht">All recipes</span></div>' : "") + /* r3k-allh */ (window.LowiK9 ? LowiK9.box() : "") + /* k9-box */ (window.LowiGPT ? LowiGPT.card() : "") + /* gpt-card */ '<div class="h3" style="margin-top:4px">What are you cooking?</div><p class="small muted" style="margin-top:4px">Real recipes from the LOWiSPIKE Recipe Book. Tap one for what you need and how to make it.</p>' +
     (book.length || V.cat ? '<div class="sh-chips sh-cats" style="margin-top:12px">' + cats.map(c => '<button class="chip' + (V.cat === c.id ? " on" : "") + '" data-sh="cat" data-c="' + c.id + '">' + esc(c.n) + "</button>").join("") + "</div>" + book.map(recRow).join("") : "") +
     '<div class="sh-sep small">Quick ones</div>' + feat.map(recRow).join("") + (all.length > feat.length ? '<div class="sh-sep small">LOWiSPIKE rebuilds</div><input class="input" id="shQ" placeholder="Search rebuilds…" value="' + esc(V.q) + '">' + lib.slice(0, 40).map(recRow).join("") : "");
 }
@@ -6098,7 +6329,7 @@ function lcRender0(){ const el = $("#lsCart"); if (!el || !LC) return; const st 
   const aisle = g => typeof tdAisle === "function" ? tdAisle(g) : "Other";
   const sorted = inC.slice().sort((a, b) => aisle(a.g) < aisle(b.g) ? -1 : aisle(a.g) > aisle(b.g) ? 1 : 0);
   el.innerHTML = '<div class="lc-hd"><button class="td-x big" data-lc="close" aria-label="Close">' + ICO.x + '</button><div style="flex:1;min-width:0"><div class="h2">Your cart</div><div class="small muted">Pick the store, then the meals</div></div><span class="badge demo">Estimates</span></div>' +
-    '<div class="lc-body">' +
+    '<div class="lc-body">' + (window.LowiK9 ? LowiK9.entry() : "") + /* k9-cart */
     // 1 store
     '<div class="lc-lab">Where are you shopping?</div><div class="hscroll lc-stores">' + tots.map(t => { const s = t[0];
       return '<button class="lc-st' + (s[0] === cur[0] ? " on" : "") + '" data-lc="store" data-s="' + s[0] + '"><span class="lc-dot" style="background:' + s[2] + '"></span><b>' + s[1] + '</b><span class="num lc-stp">≈ ' + lcEur(t[1]) + "</span>" + (inC.length && s[0] === cheap[0][0] ? '<span class="lc-cheap">cheapest</span>' : "") + "</button>"; }).join("") + "</div>" +
@@ -6212,7 +6443,7 @@ function rsOpen(html){ let w = $("#rsSheet"); if (!w) { w = document.createEleme
 function rsClose(){ const w = $("#rsSheet"); if (w) w.classList.remove("open"); }
 function rsText(){ const items = rsItems(RS.rec), buy = rsBuy(items).filter(lcIn), sid = rsStore(items), cur = lcStore(sid);
   return "LOWiSPIKE · " + RS.rec.n + " · " + cur[1] + "\n" + buy.map(i => { const at = lcAt(i, sid); return "- " + i.n + "  " + lcEur(lcPx(i, at)) + (at !== sid ? " (" + lcStore(at)[1] + ")" : ""); }).join("\n") + "\n\n≈ " + lcEur(lcTotal(buy, sid)) + " (estimate)"; }
-window.LowiStoreList = {html:rsHTML, items:rsItems, store:() => RS ? rsStore(rsItems(RS.rec)) : lcState().store, best:() => RS ? rsBest(rsItems(RS.rec))[0][0] : "", price:lcPx, total:sid => RS ? lcTotal(rsBuy(rsItems(RS.rec)), sid || rsStore(rsItems(RS.rec))) : 0, text:() => RS ? rsText() : ""};
+window.LowiStoreList = {pic:lcPic, storeFor:r => rsStore(rsItems(r)), storeName:id => lcStore(id)[1], eur:lcEur, /* k9-sl */ html:rsHTML, items:rsItems, store:() => RS ? rsStore(rsItems(RS.rec)) : lcState().store, best:() => RS ? rsBest(rsItems(RS.rec))[0][0] : "", price:lcPx, total:sid => RS ? lcTotal(rsBuy(rsItems(RS.rec)), sid || rsStore(rsItems(RS.rec))) : 0, text:() => RS ? rsText() : ""};
 window.LowiCart = {open:openCart, close:closeCart, items:() => LC ? lcItems() : [], total:sid => LC ? lcTotal(lcItems(), sid || lcState().store) : 0, stores:LC_STORES, state:() => LC};
 
 })();
@@ -6612,7 +6843,7 @@ function bootLang(){
   paintPickers();
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bootLang); else bootLang();
-window.LowiLang = {set:setLang, get:() => LANG, add(rows){ (rows || []).forEach(r => { if (r[0] instanceof RegExp) P.push(r); else { DICT.de[r[0]] = r[1]; DICT.es[r[0]] = r[2]; } }); if (LANG !== "en" && document.body) doNode(document.body); }};
+window.LowiLang = {t:s => (LANG !== "en" && DICT[LANG] && DICT[LANG][s]) || s, /* k9-t */ set:setLang, get:() => LANG, add(rows){ (rows || []).forEach(r => { if (r[0] instanceof RegExp) P.push(r); else { DICT.de[r[0]] = r[1]; DICT.es[r[0]] = r[2]; } }); if (LANG !== "en" && document.body) doNode(document.body); }};
 
 })();
 </script>

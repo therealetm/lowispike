@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261010-205908">
+<meta name="lowi-build" content="20261010-220138">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2108,7 +2108,7 @@ html[data-theme=light] #lcUpd.g1-upd .g1-usay{background:rgba(255,255,255,.2)}
 (function(){
 "use strict";
 if (window.LowiG1) return;
-const NEWS_RAW = {"id": "g2-today", "go": {"tab": "home", "sel": "#g2hTiles"}, "text": {"en": "Today fits on one screen now: your Daily Quest, the fasting ring and six tiles. Check-ins, meals, your plate, medicine, shopping and extras each open with one tap.", "de": "Heute passt jetzt auf einen Bildschirm: deine Tagesquest, der Fastenring und sechs Kacheln. Check-ins, Mahlzeiten, dein Teller, Medizin, Einkaufen und Extras öffnen sich mit einem Tipp.", "es": "Hoy ahora cabe en una sola pantalla: tu misión diaria, el anillo de ayuno y seis fichas. Registros, comidas, tu plato, medicinas, compras y extras se abren con un toque."}};
+const NEWS_RAW = {"id": "g2-cook", "go": {"tab": "shelf", "sel": "#g2cTiles"}, "text": {"en": "Cook fits on one screen now: the food shuffle on top and tiles below. Swipe foods, all recipes, search by ingredient and the LOWiSPIKE GPT each open with one tap. After a shuffle, your pick pops up.", "de": "Kochen passt jetzt auf einen Bildschirm: oben der Essens-Shuffle, darunter Kacheln. Essen wischen, alle Rezepte, Suche nach Zutat und das LOWiSPIKE GPT öffnen sich mit einem Tipp. Nach dem Shuffle springt dein Treffer auf.", "es": "Cocinar ahora cabe en una sola pantalla: arriba el shuffle de comida y debajo fichas. Desliza comidas, todas las recetas, búsqueda por ingrediente y el LOWiSPIKE GPT se abren con un toque. Tras el shuffle, aparece tu elección."}};
 const NEWS = (NEWS_RAW && typeof NEWS_RAW === "object") ? NEWS_RAW : null;
 const KEY = "lowi.g1", GO = "lowi.g1.go";
 const H = document.documentElement;
@@ -2778,6 +2778,41 @@ html.g2h-on.g2h-t7:not(.g2h-tour) #tab-home #fsCard #fsStage{font-size:16px}
 .g2h-pb .card + .td-extra,.g2h-pb .td-hero + .card{margin-top:12px}
 .g2h-pb .td-hero{margin-bottom:12px}
 .g2h-pb .td-extra{margin-top:10px}
+</style>
+<style id="g2cCss">/* G2 part 3: Cook is one game screen on a phone (shuffle machine + tiles) */
+#g2cTiles{display:none}
+html.g2c-on #shelf.tabmode #shBody{display:flex;flex-direction:column;gap:14px;padding-bottom:14px;overscroll-behavior:contain}
+html.g2c-on #shelf.tabmode #shBody > *{flex:0 0 auto;margin-top:0;margin-bottom:0}
+html.g2c-on #shelf.tabmode #shBody [data-g2c]{display:none!important}
+html.g2c-on #shelf.tabmode #shBody #g2cTiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;width:100%;max-width:560px;margin:0 auto}
+html.g2c-on #g2cTiles.g2c-odd .g2c-tile:last-child{grid-column:span 2}
+html.g2c-on #shelf.tabmode #shBody .r5-shuf{padding-top:22px;width:100%}
+html.g2c-on #shelf.tabmode #shBody .r5-stage{width:min(58vw,232px)}
+html.g2c-on #shelf.tabmode #shBody .r5-shuf .r5-go{margin-top:26px}
+html.g2c-on #shelf.tabmode #shBody .r5-hint{margin-top:6px}
+.g2c-tile{min-height:76px}
+/* tighten step by step until it fits */
+html.g2c-on.g2c-t1 #shelf.tabmode #shBody{gap:10px}
+html.g2c-on.g2c-t1 #shelf.tabmode #shBody .r5-shuf .r5-go{margin-top:16px}
+html.g2c-on.g2c-t2 #shelf.tabmode #shBody .r5-stage{width:min(50vw,196px)}
+html.g2c-on.g2c-t3 #shelf.tabmode #shBody .r5-hint{display:none}
+html.g2c-on.g2c-t4 #shelf.tabmode #shBody #g2cTiles{gap:8px}
+html.g2c-on.g2c-t4 .g2c-tile{min-height:62px;padding:8px 10px}
+html.g2c-on.g2c-t4 .g2c-tile .g2h-ic{width:22px;height:22px;border-radius:8px}
+html.g2c-on.g2c-t4 .g2c-tile .g2h-ic svg{width:15px;height:15px}
+html.g2c-on.g2c-t4 .g2c-tile b{margin-top:2px;font-size:12.5px}
+html.g2c-on.g2c-t5 .g2c-tile small{display:none}
+html.g2c-on.g2c-t5 #shelf.tabmode #shBody .r5-stage{width:min(42vw,164px)}
+html.g2c-on.g2c-t6 #shelf.tabmode #shBody .r5-stage{width:min(34vw,132px)}
+html.g2c-on.g2c-t6 #shelf.tabmode #shBody .r5-shuf .r5-go{margin-top:12px;min-height:46px}
+/* the sheets */
+.g2c-ov .g2c-pt{margin:0 0 12px;padding-right:44px}
+.g2c-pb > *{margin-top:0;margin-bottom:0}
+.g2c-pb > * + *{margin-top:12px}
+.g2c-pb .r3k-allh,.g2c-pb #r3kSwipe .r3k-head .r3k-ht,.g2c-pb #r3kSwipe .r3k-head .r3k-hic,.g2c-pb .r5-yh .tiny{display:none!important}
+.g2c-pb-all .gpt-card{display:none!important}
+.g2c-pb #r3kSwipe,.g2c-pb #r3kAll,.g2c-pb #r5Pick,.g2c-pb #r3kYes,.g2c-pb #k9Box,.g2c-pb .gpt-card{margin-top:0;max-width:none}
+.g2c-pb #r3kSwipe .r3k-head{justify-content:flex-end;min-height:0}
 </style>
 </head>
 <body>
@@ -16393,6 +16428,198 @@ function boot(){
   setInterval(() => { hook(); }, 2000);
 }
 window.LowiG2H = {open:openPanel, close:() => closePanel(false), groups:() => { const h = home(); return h ? groups(h) : {}; }, fit:() => { const h = home(); if (h) fit(h); }, state:() => ({on:on(), open:openKey, level:LV.filter(c => H.classList.contains(c)).length})};
+if (D.readyState === "loading") D.addEventListener("DOMContentLoaded", boot); else boot();
+})();
+</script>
+<script id="g2cJs">/* ===== LOWiSPIKE G2 part 3 (Oct 10, 2026): Cook is one game screen, no scrolling (phone) =====
+   On a phone, Cook shows: the header, the food shuffle machine and tiles: Swipe foods, All recipes,
+   By ingredient, LOWiSPIKE GPT, plus Your pick and Your yes pile once they have something.
+   Each tile opens its part of the page in a sheet (the original nodes are moved in and put back on
+   close; a re-render while a sheet is open refills it). After a shuffle the pick pops up as a sheet.
+   A recipe opened from a sheet comes back to that sheet. iPad and desktop keep their layout. html.g2c-full shows the full page (tests). */
+(function(){
+"use strict";
+if (window.LowiG2C) return;
+const D = document, H = D.documentElement;
+const L = [
+  ["By ingredient", "Nach Zutat", "Por ingrediente"],
+  ["Chicken, steak, salmon", "Hähnchen, Steak, Lachs", "Pollo, filete, salmón"],
+  ["Meal photo to recipe", "Essensfoto zum Rezept", "De foto a receta"],
+  ["LOWiSPIKE GPT", "LOWiSPIKE GPT", "LOWiSPIKE GPT"],
+  ["Tap to see it again", "Tippen zum Ansehen", "Toca para verla"],
+  [/^(\d+) recipes$/, "$1 Rezepte", "$1 recetas"],
+  [/^(\d+) foods$/, "$1 Essen", "$1 comidas"],
+  [/^1 food$/, "1 Essen", "1 comida"]
+];
+let lAdded = false;
+function addL(){ if (lAdded) return; try { if (window.LowiLang && LowiLang.add) { LowiLang.add(L); lAdded = true; } } catch(e){} }
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const sv = p => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>';
+const IC = {
+  pick: sv('<path d="M12 3l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.8z"/>'),
+  swipe: sv('<rect x="7" y="3.5" width="11" height="15" rx="2.5" transform="rotate(8 12 11)"/><path d="M5.5 7.5l-1 .3a2 2 0 00-1.4 2.4l2.3 8.7a2 2 0 002.4 1.4l5.2-1.4"/>'),
+  all: sv('<path d="M4 5.5A1.5 1.5 0 015.5 4H11v16H5.5A1.5 1.5 0 014 18.5zM20 5.5A1.5 1.5 0 0018.5 4H13v16h5.5a1.5 1.5 0 001.5-1.5z"/>'),
+  find: sv('<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/>'),
+  gpt: sv('<rect x="3" y="6" width="18" height="14" rx="3"/><circle cx="12" cy="13" r="3.6"/><path d="M8.5 6l1.4-2.5h4.2L15.5 6"/>'),
+  yes: sv('<path d="M12 20s-7.5-4.4-7.5-10A4.3 4.3 0 0112 7.4 4.3 4.3 0 0119.5 10c0 5.6-7.5 10-7.5 10z"/>')
+};
+const ORDER = ["swipe", "all", "find", "gpt", "pick", "yes"];
+const NAME = {pick:"Your pick", swipe:"Swipe foods", all:"All recipes", find:"By ingredient", gpt:"LOWiSPIKE GPT", yes:"Your yes pile"};
+const q = (r, s) => r ? r.querySelector(s) : null;
+const body = () => D.getElementById("shBody");
+const phone = () => H.getAttribute("data-lay") === "phone" || (!H.getAttribute("data-lay") && innerWidth < 700);
+const on = () => H.classList.contains("g2c-on");
+const txt = el => el ? (el.textContent || "").replace(/\s+/g, " ").trim() : "";
+function cookMain(b){ return !!(b && q(b, "#r5Shuf") && b.parentNode && b.parentNode.classList.contains("tabmode")); }
+
+/* ---- the parts of Cook ---- */
+function groups(b){
+  const g = {}, D2 = D;
+  const sw = q(D2, "#r3kSwipe"); if (sw) g.swipe = [sw];
+  const all = q(D2, "#r3kAll"); if (all) g.all = [all];
+  const k9 = q(D2, "#k9Box"); if (k9) g.find = [k9];
+  const gp = q(D2, ".gpt-card"); if (gp) g.gpt = [gp];
+  const pk = q(D2, "#r5Pick"); if (pk && q(pk, ".r5-card")) g.pick = [pk];
+  const ys = q(D2, "#r3kYes"); if (ys && q(ys, ".r5-yes")) g.yes = [ys];
+  /* only the nodes that belong to Cook (in the page or in our sheet) */
+  Object.keys(g).forEach(k => { g[k] = g[k].filter(n => (b && b.contains(n)) || (ov && ov.contains(n))); if (!g[k].length) delete g[k]; });
+  return g;
+}
+function subOf(k){
+  if (k === "swipe") return txt(q(D, "#r5DkN"));
+  if (k === "all") { const n = D.querySelectorAll("#r3kAll .sh-rec").length; return n ? n + " recipes" : ""; }
+  if (k === "find") return "Chicken, steak, salmon";
+  if (k === "gpt") return "Meal photo to recipe";
+  if (k === "pick") return txt(q(D, "#r5Pick .r5-cn")) || "Tap to see it again";
+  if (k === "yes") { const n = D.querySelectorAll("#r3kYes .r5-yi").length; return n === 1 ? "1 food" : n + " foods"; }
+  return "";
+}
+function tilesHTML(g){
+  return ORDER.filter(k => g[k]).map(k => '<button type="button" class="g2h-tile g2c-tile g2c-' + k + '" data-g2c-open="' + k + '" data-sfx="open"><span class="g2h-ic">' + IC[k] + '</span><b>' + esc(NAME[k]) + '</b><small' + (k === "pick" ? ' data-noi18n' : '') + '>' + esc(subOf(k)) + '</small></button>').join("");
+}
+
+/* ---- sheet ---- */
+let ov = null, openKey = null, held = null, back = null, backSeen = false;
+function take(k, nodes){
+  const pb = ov && q(ov, ".g2c-pb"); if (!pb) return;
+  if (held && held.length === nodes.length && held.every((x, i) => x.node === nodes[i] && pb.contains(x.node))) return;
+  const old = held || [];
+  held = nodes.map((n, i) => {
+    const o = old[i];
+    if (pb.contains(n) && o && o.ph.isConnected) { o.keep = true; return {node:n, ph:o.ph}; }  /* replaced in place inside the sheet */
+    const ph = D.createComment("g2c"); n.replaceWith(ph); pb.appendChild(n); return {node:n, ph};
+  });
+  old.forEach(x => { try { if (!nodes.includes(x.node)) x.node.remove(); if (!x.keep) x.ph.remove(); } catch(e){} });
+  if (k === "swipe") { const st = q(pb, "#r5Stack"); if (st) st.setAttribute("data-nodismiss", ""); }
+}
+function giveBack(){
+  if (!held) return;
+  held.forEach(x => { if (x.ph.isConnected) x.ph.replaceWith(x.node); else { x.ph.remove(); x.node.remove(); } });
+  held = null;
+}
+function openPanel(k){
+  const R2 = window.LowiR2, b = body(); if (!R2 || !R2.sheet || !cookMain(b)) return;
+  addL();
+  closePanel(true);
+  const g = groups(b); if (!g[k]) return;
+  openKey = k;
+  const me = ov = R2.sheet('<div class="h2 g2h-pt g2c-pt">' + esc(NAME[k]) + '</div><div class="g2c-pb g2c-pb-' + k + '"></div>', {cls:"g2h-ov g2c-ov", onClose:() => { if (ov !== me) return; setTimeout(() => { if (ov === me) { giveBack(); ov = null; openKey = null; schedule(); } }, 300); }});
+  const app = D.getElementById("app"); if (me && app && me.parentNode !== app) app.appendChild(me);
+  take(k, g[k]);
+  schedule();
+}
+function closePanel(now){
+  if (!ov) return; const o = ov;
+  if (now) { giveBack(); ov = null; openKey = null; }
+  try { window.LowiR2.close(o); } catch(e){}
+}
+D.addEventListener("click", e => {
+  const b = e.target && e.target.closest && e.target.closest("[data-g2c-open]"); if (!b) return;
+  e.preventDefault(); openPanel(b.dataset.g2cOpen);
+});
+/* leaving a sheet for a full-screen flow: close it first. A recipe opens on top; a recipe page in Cook comes back to the sheet */
+D.addEventListener("click", e => {
+  if (!ov) return; const t = e.target; if (!t || !t.closest || !t.closest(".g2c-pb")) return;
+  if (t.closest('[data-r5="deck-shuffle"],[data-r5="pick"],[data-sh="tab"],[data-tab],[data-act="camera"],[data-r5="profile"]')) setTimeout(() => { if (ov && openKey !== "pick") closePanel(false); }, 0);
+}, true);
+
+/* "Search by ingredient" in the cart lands in the By ingredient sheet */
+let findAsk = 0, deckAsk = 0;
+/* "Swipe" from elsewhere (LowiFood.openDeck) lands in the Swipe foods sheet */
+function wrapDeck(){
+  const F = window.LowiFood; if (!F || typeof F.openDeck !== "function" || F.openDeck.__g2c) return;
+  const o = F.openDeck; F.openDeck = function(){
+    if (!phone() || H.classList.contains("g2c-full")) return o.apply(this, arguments);
+    deckAsk = Date.now();
+    if (!shelfShown()) { try { const t = D.querySelector('#tabbar .tb[data-tab="shelf"]'); if (t) t.click(); } catch(e){} }
+    else { try { const k = D.querySelector('#shTop [data-sh="tab"][data-t="kochen"]'); if (k && !cookMain(body())) k.click(); } catch(e){} }
+    schedule(); setTimeout(schedule, 520); return undefined;
+  }; F.openDeck.__g2c = true;
+}
+D.addEventListener("click", e => { const t = e.target; if (t && t.closest && t.closest('[data-k9="go"]')) findAsk = Date.now(); }, true);
+
+/* ---- fit: tighten step by step until Cook fits ---- */
+const LV = ["g2c-t1", "g2c-t2", "g2c-t3", "g2c-t4", "g2c-t5", "g2c-t6"];
+function over(b){ return b.scrollHeight - b.clientHeight > 1; }
+function fit(b){
+  LV.forEach(c => H.classList.remove(c));
+  if (!on() || !b || !b.offsetHeight) return;
+  let lv = 0; while (over(b) && lv < LV.length) { H.classList.add(LV[lv]); lv++; }
+}
+
+/* ---- the pass ---- */
+let raf = 0, busy = false, moS = null, moR = null, hooked = null, lastCard = null, popT = 0;
+function schedule(){ if (raf || busy) return; raf = requestAnimationFrame(() => { raf = 0; pass(); }); }
+function shelfShown(){ try { return !window.LowiHost || !LowiHost.tab || LowiHost.tab() === "shelf"; } catch(e){ return true; } }
+function pass(){
+  const b = body();
+  busy = true;
+  try {
+    addL();
+    const main = cookMain(b), want = phone() && main && !H.classList.contains("g2c-full");
+    if (want !== on()) H.classList.toggle("g2c-on", want);
+    if (!shelfShown()) back = null;
+    if (!want) { LV.forEach(c => H.classList.remove(c)); if (ov) { if (b && !main && phone()) { back = openKey; backSeen = true; } closePanel(true); } return; }
+    const g = groups(b);
+    if (ov && openKey) { if (g[openKey]) take(openKey, g[openKey]); else closePanel(true); }
+    Object.keys(g).forEach(k => g[k].forEach(n => { if (n.getAttribute("data-g2c") !== k) n.setAttribute("data-g2c", k); }));
+    let t = D.getElementById("g2cTiles");
+    const sh = q(b, "#r5Shuf");
+    if (sh) {
+      if (!t || !b.contains(t)) { t = D.createElement("div"); t.id = "g2cTiles"; t.className = "g2c-tiles"; t.__h = ""; }
+      if (t.previousElementSibling !== sh) sh.insertAdjacentElement("afterend", t);
+      const html = tilesHTML(g); if (t.__h !== html) { t.__h = html; t.innerHTML = html; t.classList.toggle("g2c-odd", t.children.length % 2 === 1); }
+    }
+    /* a fresh shuffle result pops up as a sheet */
+    const card = q(D, "#r5Pick .r5-card");
+    if (card && card !== lastCard) { lastCard = card;
+      if (card.classList.contains("in") && openKey !== "pick") { clearTimeout(popT); popT = setTimeout(() => { if (on() && q(D, "#r5Pick .r5-card") === card) openPanel("pick"); }, 650); } }
+    if (findAsk && Date.now() - findAsk < 4000 && g.find && openKey !== "find" && shelfShown()) { findAsk = 0; openPanel("find"); setTimeout(() => { const i = q(ov, "#k9Q"); if (i) try { i.focus({preventScroll:true}); } catch(e){} }, 120); }
+    else if (findAsk && Date.now() - findAsk >= 4000) findAsk = 0;
+    if (deckAsk && Date.now() - deckAsk < 4000 && g.swipe && openKey !== "swipe" && shelfShown()) { deckAsk = 0; openPanel("swipe"); }
+    else if (deckAsk && Date.now() - deckAsk >= 4000) deckAsk = 0;
+    /* back from a recipe opened in a sheet */
+    if (back && backSeen && !ov) { const k = back; back = null; backSeen = false; if (g[k]) setTimeout(() => openPanel(k), 30); }
+    fit(b);
+  } catch(e){ console.error(e); }
+  finally { if (moS) moS.takeRecords(); if (moR) moR.takeRecords(); busy = false; }
+}
+function hook(){
+  const s = D.getElementById("shelf"); if (!s || s === hooked) return;
+  hooked = s; if (moS) moS.disconnect();
+  moS = new MutationObserver(() => { if (!busy) schedule(); });
+  moS.observe(s, {childList:true, subtree:true, characterData:true});
+  schedule();
+}
+function boot(){
+  hook(); wrapDeck();
+  moR = new MutationObserver(() => { if (!busy) schedule(); });
+  moR.observe(H, {attributes:true, attributeFilter:["data-lay", "lang", "data-lang", "data-theme", "style", "class"]});
+  addEventListener("resize", schedule);
+  D.addEventListener("click", () => setTimeout(() => { hook(); schedule(); }, 60), true);
+  setInterval(() => { hook(); wrapDeck(); }, 2000);
+}
+window.LowiG2C = {open:openPanel, close:() => closePanel(false), groups:() => groups(body()), fit:() => fit(body()), state:() => ({on:on(), open:openKey, level:LV.filter(c => H.classList.contains(c)).length})};
 if (D.readyState === "loading") D.addEventListener("DOMContentLoaded", boot); else boot();
 })();
 </script>

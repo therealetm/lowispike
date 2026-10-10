@@ -1,14 +1,15 @@
 /* LOWiSPIKE service worker · round 1 · Oct 9 2026
    The app page is always fetched fresh from the network (so every update lands on the same link) and only falls back
    to the saved copy when the phone is offline. Static files with a version in their name are cached. */
+/* r3g: step pictures live in their own cache (lowispike-steps) */
 const CACHE = "lowispike-r1";
-const STATIC = ["vendor/supabase-2.117.3.js", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png"];
+const STATIC = ["vendor/supabase-2.117.3.js", "vendor/zxing-0.21.3.min.js", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png"];
 self.addEventListener("install", e => {
   self.skipWaiting();
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(STATIC).catch(() => {})));
 });
 self.addEventListener("activate", e => {
-  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k.indexOf("lowispike-steps") !== 0).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
 const scopePath = new URL(self.registration.scope).pathname;
 function isPage(req, url){ return req.mode === "navigate" || url.pathname === scopePath || url.pathname === scopePath + "index.html"; }

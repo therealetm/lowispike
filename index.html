@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261010-004829">
+<meta name="lowi-build" content="20261010-011442">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -4607,7 +4607,7 @@ function listCount(){ return SH.list.filter(i => !i.done).length; }
 function render(){
   const top = $("#shTop"), body = $("#shBody"), fab = $("#shFab");
   if (V.sub) {
-    if (!render.r3kSub) { const c = body.querySelector(".sh-cats"); render.r3kKeep = {tab:V.tab, y:body.scrollTop, x:c ? c.scrollLeft : 0}; render.r3kSub = true; } /* r3k-sub */
+    if (!render.r3kSub) { const c = body.querySelector(".sh-cats"); render.r3kKeep = {tab:V.tab, y:body.scrollTop, x:c ? c.scrollLeft : 0, a:r3kAnchor(body)}; render.r3kSub = true; } /* r3k-sub */
     const rec = recipeById(V.rec);
     top.innerHTML = '<div class="sh-row"><button class="sh-back" data-sh="up">' + ICON.back + '</button><div style="flex:1;min-width:0"><div class="small muted">' + "Recipe" + '</div><div class="sh-title" style="font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(rec ? rec.n : "") + "</div></div>" +
       "</div>";
@@ -4627,10 +4627,10 @@ function render(){
     '<div class="sh-row"><div><div class="small muted">Don\'t know what to eat?</div><div class="sh-title">Cook</div></div></div>';
   /* Oct 8 (round 5): Cook opens on the food shuffle. The full recipe list moved one tap away ("alle"). */
   /* r3k-render (Oct 10): Cook is one scroll (shuffle, swipe foods, all recipes). Re-renders keep the page and the filter row where they were. */
-  const r3kK = render.r3kKeep, r3kSame = render.r3kTab === V.tab && !render.r3kSub, r3kY = body.scrollTop, r3kC = body.querySelector(".sh-cats"), r3kX = r3kC ? r3kC.scrollLeft : 0;
+  const r3kK = render.r3kKeep, r3kSame = render.r3kTab === V.tab && !render.r3kSub, r3kY = body.scrollTop, r3kC = body.querySelector(".sh-cats"), r3kX = r3kC ? r3kC.scrollLeft : 0, r3kA = r3kAnchor(body);
   body.innerHTML = ({regal:regalHTML, kochen:() => window.LowiFood ? LowiFood.homeHTML() + '<section class="r3k-all" id="r3kAll" aria-label="All recipes">' + kochenHTML() + '</section>' : kochenHTML(), alle:kochenHTML, liste:listeHTML})[V.tab]();
-  { const c = body.querySelector(".sh-cats"); if (r3kSame) { body.scrollTop = r3kY; if (c) c.scrollLeft = r3kX; } else if (render.r3kSub && r3kK && r3kK.tab === V.tab) { body.scrollTop = r3kK.y; if (c) c.scrollLeft = r3kK.x; } else body.scrollTop = 0;
-    if (c && V.cat) { const on = c.querySelector(".chip.on"); if (on && (on.offsetLeft < c.scrollLeft || on.offsetLeft + on.offsetWidth > c.scrollLeft + c.clientWidth)) c.scrollLeft = Math.max(0, on.offsetLeft - 16); } }
+  { const c = body.querySelector(".sh-cats"); if (r3kSame) { body.scrollTop = r3kY; if (c) c.scrollLeft = r3kX; r3kHold(body, r3kA, r3kX); } else if (render.r3kSub && r3kK && r3kK.tab === V.tab) { body.scrollTop = r3kK.y; if (c) c.scrollLeft = r3kK.x; r3kHold(body, r3kK.a, r3kK.x); } else body.scrollTop = 0;
+    if (c && V.cat) { const on = c.querySelector(".chip.on"); if (on) { const r = on.getBoundingClientRect(), cr = c.getBoundingClientRect(); if (r.left < cr.left) c.scrollLeft -= cr.left - r.left + 16; else if (r.right > cr.right) c.scrollLeft += r.right - cr.right + 16; } } }
   render.r3kTab = V.tab; render.r3kSub = false;
   if (V.tab === "kochen" && window.LowiFood) LowiFood.mounted();
   fab.innerHTML = V.tab === "regal" ? '<button class="btn primary" data-sh="add">' + ICON.cam.replace("<svg", '<svg style="width:20px;height:20px;margin-right:8px"') + "Add a find</button>" :
@@ -4659,6 +4659,14 @@ function recRow(r){
   const n = matchesFor(r).length;
   return '<button class="sh-rec ' + (r.feat ? "feat" : "") + '" data-sh="recipe" data-r="' + esc(r.id) + '">' + (typeof FOOD_IMG !== "undefined" && FOOD_IMG[r.id] ? '<img class="sh-recimg" alt="" loading="lazy" src="' + FOOD_IMG[r.id] + '">' : '<div class="e">' + esc(r.e || "🍽️") + '</div>') + '<div style="flex:1;min-width:0"><div style="font-weight:650">' + esc(r.n) + '</div><div class="small muted" style="margin-top:2px">' + (r.book ? (window.LOWI_COOK && LOWI_COOK.minTxt(r.id) ? '<b class="sh-min">' + esc(LOWI_COOK.minTxt(r.id)) + "</b> · " : "") + (r.r !== "ja" ? rBadge(r.r) + " " : "") + esc(r.sub || "") : esc(r.sub || "") + " · " + n + " find" + (n === 1 ? "" : "s")) + '</div></div><span class="sh-entry" style="width:auto;margin:0"><span class="go">›</span></span></button>';
 }
+/* r3k-anchor: keep the section you are looking at in the same spot across re-renders, even when cards above it grow a moment later */
+function r3kAnchor(body){ const br = body.getBoundingClientRect(), mid = br.top + br.height * 0.35; let best = null;
+  [".sh-cats", "#r3kAll", "#r3kYes", "#r3kSwipe", "#r5Pick"].forEach(sel => { const e = body.querySelector(sel); if (!e) return; const t = e.getBoundingClientRect().top; if (t <= mid && (!best || t > best.top)) best = {sel, top:t}; });
+  return best; }
+function r3kHold(body, a, x){ let set = null, setX = null; const fix = () => {
+    const c = body.querySelector(".sh-cats"); if (c && x != null && (setX == null || Math.abs(c.scrollLeft - setX) <= 2)) { if (Math.abs(c.scrollLeft - x) > 1) c.scrollLeft = x; setX = c.scrollLeft; }
+    if (!a) return; const e = body.querySelector(a.sel); if (!e) return; if (set != null && Math.abs(body.scrollTop - set) > 2) return; const d = e.getBoundingClientRect().top - a.top; if (Math.abs(d) > 1) body.scrollTop += d; set = body.scrollTop; };
+  fix(); requestAnimationFrame(fix); setTimeout(fix, 30); setTimeout(fix, 60); setTimeout(fix, 90); setTimeout(fix, 260); setTimeout(fix, 600); }
 const ICON_R3K_BOOK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5a2 2 0 0 1 2-2h14v16H6.5A2.5 2.5 0 0 0 4 21.5"/><path d="M20 19v3H6.5"/></svg>'; /* r3k-bookicon */
 function kochenHTML(){
   const all = allRecipes(), book = all.filter(r => r.book && (!V.cat || (window.LOWI_COOK ? LOWI_COOK.match(r, V.cat) : r.c === V.cat))), feat = all.filter(r => r.feat && !r.book), q = norm(V.q);
@@ -4830,7 +4838,7 @@ function onAct(el, e){
   switch (a) {
     case "open-shelf": e.stopPropagation(); return openShelf(el.dataset.t || "regal", el.dataset.sub || "", el.dataset.r || "", "host");
     case "close": return closeShelf();
-    case "up": V.sub = ""; V.tab = V.tab === "alle" ? "alle" : "kochen"; render(); return void ($("#shBody").scrollTop = 0);
+    case "up": V.sub = ""; V.tab = V.tab === "alle" ? "alle" : "kochen"; render(); return; /* r3k-up: render puts you back where you were */
     case "tab": V.sub = ""; V.tab = el.dataset.t; V.q = ""; render(); return void ($("#shBody").scrollTop = 0);
     case "store": V.store = el.dataset.s; return render();
     case "cat": V.cat = el.dataset.c || ""; return render();
@@ -9388,11 +9396,14 @@ const TAB_NAME = {home:"Today", foryou:"Community", scan:"Scan", shelf:"Cook", m
 const valid = (a, def) => Array.isArray(a) && a.length === def.length && def.every(x => a.indexOf(x) >= 0);
 function st(){ if (!S.r3a || typeof S.r3a !== "object") S.r3a = {}; const r = S.r3a; if (!valid(r.tabs, TAB_DEF)) r.tabs = TAB_DEF.slice(); if (!valid(r.cm, CM_DEF)) r.cm = CM_DEF.slice(); return r; }
 R3A.st = st;
+/* round 3R: Scan always sits in the middle of the bottom bar */
+const lockScan = a => { const i = a.indexOf("scan"); if (i >= 0 && i !== 2) { a.splice(i, 1); a.splice(Math.min(2, a.length), 0, "scan"); } return a; };
+R3A.lockScan = lockScan;
 function xp(src, amt, label, perDay){ try { const d = today(); const n = (S.ledger || []).filter(l => l.src === src && l.day === d).length; if (n >= (perDay || 1)) return false; award(amt, T(label), null, src); return true; } catch(e){ console.error(e); return false; } }
 R3A.xp = xp;
 
 /* ---------- tab bar order (CSS order, so nothing else in the app changes) ---------- */
-function applyTabs(){ const o = st().tabs; $$("#tabbar .tb").forEach(b => { const i = o.indexOf(b.getAttribute("data-tab")); b.style.order = i < 0 ? 9 : i * 2; }); const sp = $("#tabbar .tbsp"); if (sp) sp.style.order = 99; }
+function applyTabs(){ const o = lockScan(st().tabs); $$("#tabbar .tb").forEach(b => { const i = o.indexOf(b.getAttribute("data-tab")); b.style.order = i < 0 ? 9 : i * 2; }); const sp = $("#tabbar .tbsp"); if (sp) sp.style.order = 99; }
 R3A.applyTabs = applyTabs;
 
 /* ---------- community order: Chat, For You, Post by default ---------- */
@@ -9422,14 +9433,14 @@ function editBar(on){
   editing = on; const tb = $("#tabbar"); if (!tb) return; tb.classList.toggle("r3a-edit", on);
   let bar = $("#r3aEditBar");
   if (on) { if (!bar) { bar = document.createElement("div"); bar.id = "r3aEditBar"; bar.className = "r3a-editbar"; bar.setAttribute("data-noi18n", ""); document.body.appendChild(bar); }
-    bar.innerHTML = '<span>' + esc(T("Drag the icons. Tap Done when you're happy.")) + '</span><button type="button" data-r3a="tabsdone">' + esc(T("Done")) + '</button>'; try { navigator.vibrate && navigator.vibrate(12); } catch(e){} }
+    bar.innerHTML = '<span>' + esc(T("Drag the icons. Scan stays in the middle. Tap Done when you're happy.")) + '</span><button type="button" data-r3a="tabsdone">' + esc(T("Done")) + '</button>'; try { navigator.vibrate && navigator.vibrate(12); } catch(e){} }
   else if (bar) bar.remove();
 }
 H.tabsdone = () => { editBar(false); save(); toast(T("Saved. The app opens on {x}.", {x: T(TAB_NAME[st().tabs[0]])})); if (typeof TAB !== "undefined" && TAB === "profile") paintProfile(); };
 function visualOrder(){ return $$("#tabbar .tb").sort((a, b) => a.getBoundingClientRect().left - b.getBoundingClientRect().left); }
 document.addEventListener("pointerdown", e => {
   const tb = e.target.closest("#tabbar"); if (!tb) return;
-  const btn = e.target.closest(".tb");
+  const btn = e.target.closest(".tb:not(.scan)");
   if (editing) { if (btn) { drag = btn; btn.classList.add("r3a-drag"); try { btn.setPointerCapture(e.pointerId); } catch(_){} } return; }
   lpX = e.clientX; lpY = e.clientY; clearTimeout(lpT);
   lpT = setTimeout(() => { swallow = true; editBar(true); if (btn) { drag = btn; btn.classList.add("r3a-drag"); } }, 550);
@@ -9439,7 +9450,7 @@ document.addEventListener("pointermove", e => {
   if (!editing || !drag) return;
   const vis = visualOrder(), others = vis.filter(b => b !== drag);
   let idx = others.findIndex(b => { const r = b.getBoundingClientRect(); return e.clientX < r.left + r.width / 2; }); if (idx < 0) idx = others.length;
-  const ids = others.map(b => b.getAttribute("data-tab")); ids.splice(idx, 0, drag.getAttribute("data-tab"));
+  const ids = others.map(b => b.getAttribute("data-tab")); ids.splice(idx, 0, drag.getAttribute("data-tab")); lockScan(ids);
   if (ids.join() !== st().tabs.join()) { st().tabs = ids; applyTabs(); }
 }, true);
 const lpEnd = () => { clearTimeout(lpT); lpT = 0; if (drag) { drag.classList.remove("r3a-drag"); drag = null; save(); } };
@@ -9450,11 +9461,11 @@ document.addEventListener("contextmenu", e => { if (e.target.closest("#tabbar"))
 /* ---------- Profile: your order, about you (gender + PCOS), blood pressure switch ---------- */
 function orderList(kind){
   const o = kind === "tabs" ? st().tabs : st().cm, nm = kind === "tabs" ? TAB_NAME : CM_NAME;
-  return '<div class="r3a-ord" data-kind="' + kind + '">' + o.map((v, i) => '<div class="r3a-orow"><span class="r3a-onum">' + (i + 1) + '</span><span class="r3a-oname">' + esc(T(nm[v])) + (i === 0 ? ' <small class="gold">' + esc(T("Opens first")) + '</small>' : "") + '</span>' +
-    '<button class="r3a-obtn" data-r3a="ord" data-kind="' + kind + '" data-i="' + i + '" data-d="-1" aria-label="' + esc(T("Move up") + ": " + T(nm[v])) + '"' + (i === 0 ? " disabled" : "") + '>↑</button>' +
-    '<button class="r3a-obtn" data-r3a="ord" data-kind="' + kind + '" data-i="' + i + '" data-d="1" aria-label="' + esc(T("Move down") + ": " + T(nm[v])) + '"' + (i === o.length - 1 ? " disabled" : "") + '>↓</button></div>').join("") + '</div>';
+  return '<div class="r3a-ord" data-kind="' + kind + '">' + o.map((v, i) => '<div class="r3a-orow"><span class="r3a-onum">' + (i + 1) + '</span><span class="r3a-oname">' + esc(T(nm[v])) + (i === 0 ? ' <small class="gold">' + esc(T("Opens first")) + '</small>' : "") + (kind === "tabs" && v === "scan" ? ' <small class="muted">' + esc(T("Always in the middle")) + '</small>' : "") + '</span>' +
+    '<button class="r3a-obtn" data-r3a="ord" data-kind="' + kind + '" data-i="' + i + '" data-d="-1" aria-label="' + esc(T("Move up") + ": " + T(nm[v])) + '"' + (i === 0 || (kind === "tabs" && v === "scan") ? " disabled" : "") + '>↑</button>' +
+    '<button class="r3a-obtn" data-r3a="ord" data-kind="' + kind + '" data-i="' + i + '" data-d="1" aria-label="' + esc(T("Move down") + ": " + T(nm[v])) + '"' + (i === o.length - 1 || (kind === "tabs" && v === "scan") ? " disabled" : "") + '>↓</button></div>').join("") + '</div>';
 }
-H.ord = b => { const kind = b.getAttribute("data-kind"), i = +b.getAttribute("data-i"), d = +b.getAttribute("data-d"), r = st(), a = kind === "tabs" ? r.tabs : r.cm, j = i + d; if (j < 0 || j >= a.length) return;
+H.ord = b => { const kind = b.getAttribute("data-kind"), i = +b.getAttribute("data-i"), d = +b.getAttribute("data-d"), r = st(), a = kind === "tabs" ? lockScan(r.tabs) : r.cm, j = i + d + (kind === "tabs" && a[i + d] === "scan" ? d : 0); if (j < 0 || j >= a.length || (kind === "tabs" && a[i] === "scan")) return;
   const t = a[i]; a[i] = a[j]; a[j] = t; save(); if (kind === "tabs") applyTabs(); else { applyCmOrder(); CMV.view = r.cm[0]; } paintProfile(); };
 H.ordreset = () => { const r = st(); r.tabs = TAB_DEF.slice(); r.cm = CM_DEF.slice(); save(); applyTabs(); applyCmOrder(); paintProfile(); };
 H.gender = b => { S.user.gender = b.getAttribute("data-v"); if (S.user.gender !== "f") S.health.pcos = false; save(); paintProfile(); try { renderHome(); } catch(e){} };
@@ -9470,7 +9481,7 @@ function profileCards(){
     '<div class="sec"><span class="h3">' + esc(T("Your order")) + '</span><button class="small muted r3a-link" data-r3a="ordreset">' + esc(T("Reset")) + '</button></div><div class="card">' +
       '<div class="small"><b>' + esc(T("Tab bar")) + '</b> · <span class="muted">' + esc(T("The app opens on the first one.")) + '</span></div>' + orderList("tabs") +
       '<div class="small" style="margin-top:14px"><b>' + esc(T("Community")) + '</b> · <span class="muted">' + esc(T("Community opens on the first one.")) + '</span></div>' + orderList("cm") +
-      '<div class="tiny muted" style="margin-top:10px">' + esc(T("Tip: press and hold the bar at the bottom to move the icons.")) + '</div></div></div>';
+      '<div class="tiny muted" style="margin-top:10px">' + esc(T("Tip: press and hold an icon in the bottom bar, or a section at the top of Community, and drag it.")) + '</div></div></div>';
 }
 function paintProfile(){ const tp = $("#tab-profile"); if (!tp) return; const old = $(".r3a-pf", tp); const html = profileCards();
   if (old) { old.outerHTML = html; } else { const hc = $("#health", tp); const anchor = hc ? hc.previousElementSibling : null; const wrap = document.createElement("div"); wrap.innerHTML = html; const el = wrap.firstElementChild; if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(el, anchor); else tp.appendChild(el); }
@@ -10498,219 +10509,6 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
 })();
 
 </script>
-<style id="r3kcss">
-/* ===== LOWiSPIKE round 3, Cook inline swipe (Oct 10, 2026) =====
-   Cook is one scroll: shuffle on top, the swipe deck under it, then the whole recipe book with its filters.
-   Four-way swipe: up today (gold), right soon (green), left not today (slate), down never (red). Labels and icons centred. */
-#shBody{overflow-x:hidden}
-/* centred Cook header and pick card */
-#tab-shelf #shTop .sh-row:only-child>div:only-child{flex:1;text-align:center}
-.r5-ct{flex-direction:column;align-items:center;text-align:center;gap:6px}
-.r5-ct>div{flex:none!important;width:100%}
-.r5-lab{text-align:center}
-.r5-ingl{justify-content:center}
-.r5-mini button{display:inline-flex;align-items:center;justify-content:center;gap:6px;text-align:center}
-.r5-btns .btn,.r5-dk-end .btn{display:inline-flex;align-items:center;justify-content:center;text-align:center}
-.r5-yh{align-items:center}
-.r5-yi{text-align:center;align-items:center}
-.r5-shuf,#r5Pick,.r3k-sec,.r3k-all,.r5-yes{max-width:560px;margin-left:auto;margin-right:auto}
-
-/* swipe section */
-.r3k-sec{margin-top:26px;text-align:center;border-radius:28px;padding:18px 0 16px;position:relative}
-.r3k-sec::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;background:radial-gradient(60% 50% at 50% 45%,var(--r3k-c,#FFB020) 0%,transparent 70%)}
-.r3k-sec.r3k-flash-up{--r3k-c:rgba(255,176,32,.32)}.r3k-sec.r3k-flash-right{--r3k-c:rgba(61,220,132,.28)}.r3k-sec.r3k-flash-left{--r3k-c:rgba(143,163,184,.26)}.r3k-sec.r3k-flash-down{--r3k-c:rgba(255,90,95,.26)}
-.r3k-sec[class*="r3k-flash-"]::before{animation:r3kglow .7s ease-out}
-@keyframes r3kglow{0%{opacity:0}25%{opacity:1}100%{opacity:0}}
-.r3k-head{display:flex;align-items:center;justify-content:center;gap:8px}
-.r3k-hic{display:inline-grid;place-items:center;width:22px;height:22px;color:var(--gold,#caa15a)}
-.r3k-hic svg{width:22px;height:22px}
-.r3k-ht{font-size:20px;font-weight:800;letter-spacing:-.01em}
-.r3k-n{font-size:13px;opacity:.6;min-width:0}
-.r3k-n:empty{display:none}
-.r3k-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:10px auto 0;padding:0 8px}
-.r3k-legend span{display:inline-flex;align-items:center;justify-content:center;gap:5px;font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1)}
-.r3k-legend b{font-size:14px;line-height:1}
-.r3k-legend .lt b{color:#FFB020}.r3k-legend .lr b{color:#3DDC84}.r3k-legend .ll b{color:#9FB2C6}.r3k-legend .ld b{color:#FF5A5F}
-.r3k-sec .r3k-stack{flex:none;width:min(100% - 64px,320px);height:min(54vh,420px);min-height:330px;margin:16px auto 0}
-.r3k-sec .r5-dc{touch-action:none;overscroll-behavior:contain}
-.r3k-sec .r5-dc:focus-visible{outline:3px solid var(--gold,#caa15a);outline-offset:3px}
-.r3k-sec .r5-dci{align-items:center;text-align:center}
-.r3k-sec.r3k-empty .r3k-stack{height:auto;min-height:250px}
-.r3k-sec .r5-dk-end{position:relative;inset:auto;min-height:250px}
-/* stamps */
-.r3k-st{position:absolute;font-style:normal;font-weight:900;font-size:26px;letter-spacing:.06em;padding:4px 12px;border-radius:12px;border:3px solid;opacity:0;pointer-events:none;white-space:nowrap;background:rgba(0,0,0,.25)}
-.r3k-st.up{left:50%;bottom:44%;transform:translateX(-50%);color:#FFB020;opacity:var(--up,0)}
-.r3k-st.right{left:16px;top:22px;transform:rotate(-12deg);color:#3DDC84;opacity:var(--right,0)}
-.r3k-st.left{right:16px;top:22px;transform:rotate(12deg);color:#C9D6E3;opacity:var(--left,0);font-size:22px}
-.r3k-st.down{left:50%;top:22px;transform:translateX(-50%);color:#FF5A5F;opacity:var(--down,0)}
-.r5-dc.top{box-shadow:0 20px 50px rgba(0,0,0,.5),0 0 0 calc(var(--up,0) * 3px) #FFB020,0 0 0 calc(var(--right,0) * 3px) #3DDC84,0 0 0 calc(var(--down,0) * 3px) #FF5A5F}
-.r5-dc.go-down{filter:grayscale(1) brightness(.7)}
-.r5-dc.go-up{filter:brightness(1.15) saturate(1.2)}
-/* action burst */
-.r3k-fx{position:absolute;left:50%;top:50%;z-index:20;display:flex;flex-direction:column;align-items:center;gap:6px;transform:translate(-50%,-50%) scale(.6);opacity:0;pointer-events:none;animation:r3kfx .9s cubic-bezier(.2,1.4,.4,1) forwards}
-.r3k-fx .r3k-fxi{width:84px;height:84px;border-radius:50%;display:grid;place-items:center;color:#fff;box-shadow:0 12px 40px rgba(0,0,0,.35)}
-.r3k-fx .r3k-fxi svg{width:44px;height:44px}
-.r3k-fx b{font-size:17px;font-weight:900;padding:4px 12px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff}
-.r3k-fx.up .r3k-fxi{background:linear-gradient(135deg,#FFC94A,#FF8A00)}
-.r3k-fx.right .r3k-fxi{background:linear-gradient(135deg,#5FF2A0,#18B864)}
-.r3k-fx.left .r3k-fxi{background:linear-gradient(135deg,#B8C6D4,#6F8193)}
-.r3k-fx.down .r3k-fxi{background:linear-gradient(135deg,#FF7A7E,#D2232A)}
-@keyframes r3kfx{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}25%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}70%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-62%) scale(.96)}}
-.r3k-fx.down{animation-name:r3kfxd}
-@keyframes r3kfxd{0%{opacity:0;transform:translate(-50%,-50%) scale(.5) rotate(0)}25%{opacity:1;transform:translate(-50%,-50%) scale(1.05) rotate(-6deg)}45%{transform:translate(-50%,-50%) scale(.96) rotate(5deg)}70%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0)}100%{opacity:0;transform:translate(-50%,-30%) scale(.8)}}
-/* buttons */
-.r3k-btns{display:flex;justify-content:center;align-items:flex-start;gap:6px;margin:18px auto 0;padding:0 4px;max-width:380px}
-.r3k-b{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.r3k-bi{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);transition:transform .15s}
-.r3k-b:active .r3k-bi{transform:scale(.9)}
-.r3k-bi svg{width:24px;height:24px}
-.r3k-bl{font-size:11.5px;font-weight:700;line-height:1.15;text-align:center;opacity:.85}
-.r3k-b.today .r3k-bi{width:60px;height:60px;color:#FFB020;border-color:rgba(255,176,32,.55);background:rgba(255,176,32,.12)}
-.r3k-b.soon .r3k-bi{width:60px;height:60px;color:#3DDC84;border-color:rgba(61,220,132,.5);background:rgba(61,220,132,.12)}
-.r3k-b.skip .r3k-bi{color:#C9D6E3}
-.r3k-b.never .r3k-bi{color:#FF5A5F;border-color:rgba(255,90,95,.45)}
-.r3k-b.undo .r3k-bi{width:44px;height:44px;margin-top:5px;opacity:.85}
-.r3k-b.undo .r3k-bi svg{width:20px;height:20px}
-.r3k-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 12px;margin-top:12px;padding:0 12px;text-align:center}
-.r3k-link{background:none;border:0;padding:6px 4px;min-height:32px;color:var(--gold,#caa15a);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
-.r5-yi{position:relative}
-.r3k-tdb{position:absolute;top:6px;left:50%;transform:translateX(-50%);font-style:normal;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:999px;background:#FFB020;color:#1a1200}
-.r5-yi.r3k-td img{box-shadow:0 0 0 2px #FFB020}
-/* all recipes, inline */
-.r3k-all{margin-top:30px;padding-top:4px}
-.r3k-allh{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:2px}
-.r3k-all .r3k-allh+.h3,.r3k-all>.h3:first-child{text-align:center}
-.r3k-all>p.small{text-align:center}
-.r3k-all .sh-sep{text-align:center}
-.sh-cats{overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scroll-padding-inline:16px;touch-action:pan-x pan-y}
-@media (prefers-reduced-motion:reduce){.r3k-fx,.r3k-sec::before{animation-duration:.01s!important}}
-
-/* Cloud (light) */
-html[data-theme=light] .r3k-legend span{background:rgba(22,28,46,.05);border-color:rgba(22,28,46,.12)}
-html[data-theme=light] .r3k-legend .lt b{color:#B86E00}html[data-theme=light] .r3k-legend .lr b{color:#0A8F48}html[data-theme=light] .r3k-legend .ll b{color:#4F6275}html[data-theme=light] .r3k-legend .ld b{color:#C4161C}
-html[data-theme=light] .r3k-bi{border-color:rgba(22,28,46,.2);background:rgba(22,28,46,.06)}
-html[data-theme=light] .r3k-b.today .r3k-bi{color:#A86200;border-color:rgba(184,110,0,.55);background:rgba(255,176,32,.16)}
-html[data-theme=light] .r3k-b.soon .r3k-bi{color:#0A8F48;border-color:rgba(10,143,72,.5);background:rgba(61,220,132,.14)}
-html[data-theme=light] .r3k-b.skip .r3k-bi{color:#4F6275}
-html[data-theme=light] .r3k-b.never .r3k-bi{color:#C4161C;border-color:rgba(196,22,28,.4)}
-html[data-theme=light] .r3k-st{background:rgba(255,255,255,.75)}
-html[data-theme=light] .r3k-st.up{color:#A86200}html[data-theme=light] .r3k-st.right{color:#0A8F48}html[data-theme=light] .r3k-st.left{color:#4F6275}html[data-theme=light] .r3k-st.down{color:#C4161C}
-html[data-theme=light] .r3k-link{color:#8A6420}
-html[data-theme=light] .r3k-hic{color:#9A7230}
-html[data-theme=light] .r3k-tdb{background:#E89A00;color:#1a1200}
-</style>
-<script id="r3kjs">
-/* ===== LOWiSPIKE round 3, Cook swipe sounds (Oct 10, 2026) =====
-   One reward sound per swipe direction, built from the same palette as the part E kit (glass bells, plucks, water blips, airy noise,
-   same compressor and small room) and following its settings: localStorage "lowi_sfx" {on, vol}, read through LowiSFX when it is there.
-   up = Cook today: rising sparkle arpeggio. right = Cook soon: warm two-note bell. left = Not today: soft airy whoosh.
-   down = Never again: a real-feeling paper crunch, balled up and tossed. If LowiSFX ever gains extend(), it takes these over. */
-(function(){
-"use strict";
-const AC = window.AudioContext || window.webkitAudioContext;
-let ac = null, master = null, verbIn = null, noiseBuf = null, unlocked = false;
-function S(){ try { if (window.LowiSFX && LowiSFX.on) return {on:LowiSFX.on(), vol:LowiSFX.vol()}; const j = JSON.parse(localStorage.getItem("lowi_sfx") || "null"); if (j) return {on:j.on !== false, vol:typeof j.vol === "number" ? j.vol : 0.7}; } catch(e){} return {on:true, vol:0.7}; }
-function vol(){ const s = S(); return s.on ? Math.pow(Math.max(0, Math.min(1, s.vol)), 1.6) * 0.9 : 0; }
-function ctx(){
-  if (ac || !AC) return ac;
-  try {
-    ac = new AC({latencyHint:"interactive"});
-    const comp = ac.createDynamicsCompressor(); comp.threshold.value = -14; comp.knee.value = 10; comp.ratio.value = 4; comp.attack.value = 0.003; comp.release.value = 0.18;
-    master = ac.createGain(); master.gain.value = vol(); master.connect(comp); comp.connect(ac.destination);
-    verbIn = ac.createGain(); verbIn.gain.value = 0.22; const verb = ac.createConvolver();
-    const n = Math.floor(ac.sampleRate * 1.3), b = ac.createBuffer(2, n, ac.sampleRate);
-    for (let c = 0; c < 2; c++) { const d = b.getChannelData(c); for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2.6); }
-    verb.buffer = b; verbIn.connect(verb); verb.connect(master);
-    noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-  } catch(e){ ac = null; }
-  return ac;
-}
-function unlock(){ if (!ctx()) return; try { if (navigator.audioSession) navigator.audioSession.type = "ambient"; } catch(e){}
-  if (ac.state !== "running") { try { ac.resume(); } catch(e){} }
-  if (!unlocked) { try { const b = ac.createBuffer(1, 1, 22050), s = ac.createBufferSource(); s.buffer = b; s.connect(ac.destination); s.start(0); } catch(e){} unlocked = true; } }
-// only wake audio for touches on the swipe deck, so this never competes with the main kit elsewhere
-["pointerdown", "touchend"].forEach(t => document.addEventListener(t, e => { if (e.target && e.target.closest && e.target.closest("#r3kSwipe")) unlock(); }, {capture:true, passive:true}));
-document.addEventListener("visibilitychange", () => { if (!ac) return; if (document.hidden) { try { ac.suspend(); } catch(e){} } else if (unlocked) { try { ac.resume(); } catch(e){} } });
-
-function note(f, t, d, o){ o = o || {}; const n = ac.currentTime + (t || 0), osc = ac.createOscillator(), g = ac.createGain();
-  osc.type = o.w || "sine"; osc.frequency.setValueAtTime(f, n); if (o.to) osc.frequency.exponentialRampToValueAtTime(o.to, n + (o.slide || d));
-  const pk = o.g == null ? 0.25 : o.g, a = o.a || 0.004; g.gain.setValueAtTime(0.0001, n); g.gain.exponentialRampToValueAtTime(pk, n + a); g.gain.exponentialRampToValueAtTime(0.0001, n + d);
-  let out = g; if (o.lp) { const fl = ac.createBiquadFilter(); fl.type = "lowpass"; fl.frequency.value = o.lp; g.connect(fl); out = fl; }
-  osc.connect(g); out.connect(master); if (o.rv) { const s = ac.createGain(); s.gain.value = o.rv; out.connect(s); s.connect(verbIn); }
-  osc.start(n); osc.stop(n + d + 0.05); }
-function bell(f, t, d, g, rv){ g = g == null ? 0.22 : g; rv = rv == null ? 0.5 : rv; note(f, t, d, {g, rv}); note(f * 2.756, t, d * 0.45, {g:g * 0.32, rv}); note(f * 5.404, t, d * 0.22, {g:g * 0.12, rv}); }
-function pluck(f, t, d, g){ note(f, t, d, {w:"triangle", g:g == null ? 0.2 : g, lp:3200, rv:0.25}); note(f * 2, t, d * 0.5, {g:(g || 0.2) * 0.25}); }
-function noise(t, d, o){ o = o || {}; const n = ac.currentTime + (t || 0), s = ac.createBufferSource(), fl = ac.createBiquadFilter(), g = ac.createGain();
-  s.buffer = noiseBuf; fl.type = o.type || "bandpass"; fl.frequency.setValueAtTime(o.f || 2000, n); if (o.to) fl.frequency.exponentialRampToValueAtTime(o.to, n + d); fl.Q.value = o.q || 1;
-  const pk = o.g == null ? 0.15 : o.g; g.gain.setValueAtTime(0.0001, n); g.gain.exponentialRampToValueAtTime(pk, n + (o.a || 0.003)); g.gain.exponentialRampToValueAtTime(0.0001, n + d);
-  s.connect(fl); fl.connect(g); g.connect(master); if (o.rv) { const sv = ac.createGain(); sv.gain.value = o.rv; g.connect(sv); sv.connect(verbIn); }
-  s.start(n, Math.random() * 0.8); s.stop(n + d + 0.05); }
-function blip(f, t, g){ note(f, t, 0.09, {g:g == null ? 0.18 : g, to:f * 2.3, slide:0.06, a:0.002, rv:0.3}); }
-
-const KIT = {
-  // Cook today: whoosh up into a bright C major sparkle, the biggest reward of the four
-  up(){ noise(0, 0.22, {f:700, to:5200, q:0.9, g:0.07, a:0.06, rv:0.3});
-    [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => pluck(f, 0.05 + i * 0.055, 0.32, 0.17));
-    bell(1567.98, 0.3, 0.9, 0.12, 0.7); bell(2093, 0.36, 0.7, 0.07, 0.8); blip(1318.5, 0.27, 0.06); },
-  // Cook soon: warm, happy two-note glass bell with a little water blip
-  right(){ noise(0, 0.14, {f:1600, to:3800, q:1.2, g:0.045, a:0.03}); bell(783.99, 0.03, 0.55, 0.17, 0.45); bell(1174.66, 0.12, 0.7, 0.15, 0.55); blip(880, 0.02, 0.07); },
-  // Not today: soft, neutral airy swish and one low pluck. Not a punishment, just a pass.
-  left(){ noise(0, 0.26, {f:3200, to:700, q:0.8, g:0.06, a:0.04, rv:0.2}); pluck(392, 0.06, 0.22, 0.09); },
-  // Never again: paper crunch. Dense random crinkle grains (bright, narrow bandpass), a second scrunch, then a soft toss thud.
-  down(){
-    const grains = (t0, len, n, lvl) => { for (let i = 0; i < n; i++) { const t = t0 + Math.pow(Math.random(), 0.8) * len, f = 1800 + Math.random() * 5200;
-      noise(t, 0.012 + Math.random() * 0.03, {f, q:2 + Math.random() * 5, g:lvl * (0.5 + Math.random() * 0.8), a:0.001}); } };
-    noise(0, 0.32, {f:2600, q:0.7, g:0.035, a:0.02});       // body of the paper
-    grains(0, 0.30, 34, 0.16);                                // first scrunch
-    noise(0.34, 0.2, {f:2200, q:0.7, g:0.03, a:0.01});
-    grains(0.34, 0.2, 20, 0.13);                              // second, tighter scrunch
-    noise(0.6, 0.12, {type:"lowpass", f:420, q:0.7, g:0.12, a:0.004}); note(150, 0.6, 0.12, {g:0.09, to:90, slide:0.1}); },  // ball lands
-  undo(){ blip(660, 0, 0.08); blip(990, 0.06, 0.06); }
-};
-const last = {};
-function play(dir){
-  try { if (window.LowiSFX && LowiSFX.extend && LowiSFX.has && LowiSFX.has("swipe-" + dir)) return LowiSFX.play("swipe-" + dir); } catch(e){}
-  const fn = KIT[dir]; if (!fn) return; const now = performance.now(); if (last[dir] && now - last[dir] < 120) return; last[dir] = now;
-  if (vol() <= 0 || !ctx()) return; if (ac.state === "suspended") { try { ac.resume(); } catch(e){} }
-  try { master.gain.setValueAtTime(vol(), ac.currentTime); } catch(e){}
-  try { fn(); } catch(e){}
-  try { if (window.LowiSFX && LowiSFX.log) { LowiSFX.log.push("swipe-" + dir); if (LowiSFX.log.length > 80) LowiSFX.log.shift(); } } catch(e){}
-}
-window.LowiSwipeSFX = {play, kit:Object.keys(KIT), state:() => ({ctx:ac ? ac.state : "none", unlocked, vol:vol()})};
-})();
-
-/* r3k strings, German and Spanish */
-(function(){ if (!window.LowiLang || !LowiLang.add) return; LowiLang.add([
-["Swipe foods", "Essen swipen", "Desliza comidas"],
-["Today", "Heute", "Hoy"],
-["Soon", "Bald", "Pronto"],
-["Not today", "Heute nicht", "Hoy no"],
-["Never", "Nie", "Nunca"],
-["Cook today", "Heute kochen", "Cocinar hoy"],
-["Cook soon", "Bald kochen", "Cocinar pronto"],
-["Never again", "Nie wieder", "Nunca más"],
-["Undo", "Zurück", "Deshacer"],
-["TODAY", "HEUTE", "HOY"],
-["SOON", "BALD", "PRONTO"],
-["NOT TODAY", "HEUTE NICHT", "HOY NO"],
-["NEVER", "NIE", "NUNCA"],
-["All recipes", "Alle Rezepte", "Todas las recetas"],
-["Your yes pile", "Dein Ja-Stapel", "Tu pila de sí"],
-["That's all of them", "Das waren alle", "Eso es todo"],
-["Shuffle my yes pile", "Meinen Ja-Stapel mischen", "Mezclar mi pila de sí"],
-["Start over", "Von vorn", "Empezar de nuevo"],
-["Add community foods with + Swipe in For You", "Community-Essen fügst du in Für dich mit + Swipe hinzu", "Añade comidas de la comunidad con + Swipe en Para ti"],
-[/^(\d+) from the community$/, "$1 aus der Community", "$1 de la comunidad"],
-[/^(\d+) hidden · Show again$/, "$1 versteckt · Wieder zeigen", "$1 ocultas · Mostrar otra vez"],
-[/^(\d+) foods to cook soon\. The shuffle picks those more often\. Not-today ones come back tomorrow\.$/, "$1 Gerichte zum bald Kochen. Der Shuffle nimmt die öfter. Heute-nicht-Karten kommen morgen wieder.", "$1 comidas para cocinar pronto. El shuffle las elige más a menudo. Las de hoy no vuelven mañana."],
-[/^(\d+) foods to cook soon\. The shuffle picks those more often\.$/, "$1 Gerichte zum bald Kochen. Der Shuffle nimmt die öfter.", "$1 comidas para cocinar pronto. El shuffle las elige más a menudo."],
-[/^(.+) is on for today$/, "$1 steht heute an", "$1 está para hoy"],
-[/^Picks something you can eat, from (\d+) foods, community ones too\.$/, "Sucht dir etwas aus, das du essen kannst, aus $1 Gerichten, auch aus der Community.", "Elige algo que puedes comer, entre $1 comidas, también de la comunidad."]
-]); })();
-
-/* community swipe foods: refresh a few seconds after start and every 3 minutes while open */
-(function(){ const go = () => { try { if (window.LowiFood && LowiFood.swPull && !document.hidden) LowiFood.swPull(); } catch(e){} }; setTimeout(go, 4000); setTimeout(go, 15000); setInterval(go, 180000); document.addEventListener("visibilitychange", () => { if (!document.hidden) setTimeout(go, 800); }); })();
-</script>
 <style id="r3bcss">
 /* LOWiSPIKE round 3 part B: Scan as supermarket Pokédex (b3-*) */
 html{--b3-ok:#5fc27e;--b3-mid:#e8b44f;--b3-no:#ff7a6b;--b3-leg:#c79bff;--b3-rare:#5fb6ff}
@@ -11663,6 +11461,356 @@ function boot(){
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => setTimeout(boot, 0)); else setTimeout(boot, 0);
 window.LowiDex = {open:openDex, scan:openScanner, reveal, rate, rateName, validCode, render:renderTab, state:() => D, load:loadComm, lookup:byBarcode};
+})();
+</script>
+<style id="r3kcss">
+/* ===== LOWiSPIKE round 3, Cook inline swipe (Oct 10, 2026) =====
+   Cook is one scroll: shuffle on top, the swipe deck under it, then the whole recipe book with its filters.
+   Four-way swipe: up today (gold), right soon (green), left not today (slate), down never (red). Labels and icons centred. */
+#shBody{overflow-x:hidden}
+/* centred Cook header and pick card */
+#tab-shelf #shTop .sh-row:only-child>div:only-child{flex:1;text-align:center}
+.r5-ct{flex-direction:column;align-items:center;text-align:center;gap:6px}
+.r5-ct>div{flex:none!important;width:100%}
+.r5-lab{text-align:center}
+.r5-ingl{justify-content:center}
+.r5-mini button{display:inline-flex;align-items:center;justify-content:center;gap:6px;text-align:center}
+.r5-btns .btn,.r5-dk-end .btn{display:inline-flex;align-items:center;justify-content:center;text-align:center}
+.r5-yh{align-items:center}
+.r5-yi{text-align:center;align-items:center}
+.r5-shuf,#r5Pick,.r3k-sec,.r3k-all,.r5-yes{max-width:560px;margin-left:auto;margin-right:auto}
+
+/* swipe section */
+.r3k-sec{margin-top:26px;text-align:center;border-radius:28px;padding:18px 0 16px;position:relative}
+.r3k-sec::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;background:radial-gradient(60% 50% at 50% 45%,var(--r3k-c,#FFB020) 0%,transparent 70%)}
+.r3k-sec.r3k-flash-up{--r3k-c:rgba(255,176,32,.32)}.r3k-sec.r3k-flash-right{--r3k-c:rgba(61,220,132,.28)}.r3k-sec.r3k-flash-left{--r3k-c:rgba(143,163,184,.26)}.r3k-sec.r3k-flash-down{--r3k-c:rgba(255,90,95,.26)}
+.r3k-sec[class*="r3k-flash-"]::before{animation:r3kglow .7s ease-out}
+@keyframes r3kglow{0%{opacity:0}25%{opacity:1}100%{opacity:0}}
+.r3k-head{display:flex;align-items:center;justify-content:center;gap:8px}
+.r3k-hic{display:inline-grid;place-items:center;width:22px;height:22px;color:var(--gold,#caa15a)}
+.r3k-hic svg{width:22px;height:22px}
+.r3k-ht{font-size:20px;font-weight:800;letter-spacing:-.01em}
+.r3k-n{font-size:13px;opacity:.6;min-width:0}
+.r3k-n:empty{display:none}
+.r3k-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:10px auto 0;padding:0 8px}
+.r3k-legend span{display:inline-flex;align-items:center;justify-content:center;gap:5px;font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1)}
+.r3k-legend b{font-size:14px;line-height:1}
+.r3k-legend .lt b{color:#FFB020}.r3k-legend .lr b{color:#3DDC84}.r3k-legend .ll b{color:#9FB2C6}.r3k-legend .ld b{color:#FF5A5F}
+.r3k-sec .r3k-stack{flex:none;width:min(100% - 64px,320px);height:min(54vh,420px);min-height:330px;margin:16px auto 0}
+.r3k-sec .r5-dc{touch-action:none;overscroll-behavior:contain}
+.r3k-sec .r5-dc:focus-visible{outline:3px solid var(--gold,#caa15a);outline-offset:3px}
+.r3k-sec .r5-dci{align-items:center;text-align:center}
+.r3k-sec.r3k-empty .r3k-stack{height:auto;min-height:250px}
+.r3k-sec .r5-dk-end{position:relative;inset:auto;min-height:250px}
+/* stamps */
+.r3k-st{position:absolute;font-style:normal;font-weight:900;font-size:26px;letter-spacing:.06em;padding:4px 12px;border-radius:12px;border:3px solid;opacity:0;pointer-events:none;white-space:nowrap;background:rgba(0,0,0,.25)}
+.r3k-st.up{left:50%;bottom:44%;transform:translateX(-50%);color:#FFB020;opacity:var(--up,0)}
+.r3k-st.right{left:16px;top:22px;transform:rotate(-12deg);color:#3DDC84;opacity:var(--right,0)}
+.r3k-st.left{right:16px;top:22px;transform:rotate(12deg);color:#C9D6E3;opacity:var(--left,0);font-size:22px}
+.r3k-st.down{left:50%;top:22px;transform:translateX(-50%);color:#FF5A5F;opacity:var(--down,0)}
+.r5-dc.top{box-shadow:0 20px 50px rgba(0,0,0,.5),0 0 0 calc(var(--up,0) * 3px) #FFB020,0 0 0 calc(var(--right,0) * 3px) #3DDC84,0 0 0 calc(var(--down,0) * 3px) #FF5A5F}
+.r5-dc.go-down{filter:grayscale(1) brightness(.7)}
+.r5-dc.go-up{filter:brightness(1.15) saturate(1.2)}
+/* action burst */
+.r3k-fx{position:absolute;left:50%;top:50%;z-index:20;display:flex;flex-direction:column;align-items:center;gap:6px;transform:translate(-50%,-50%) scale(.6);opacity:0;pointer-events:none;animation:r3kfx .9s cubic-bezier(.2,1.4,.4,1) forwards}
+.r3k-fx .r3k-fxi{width:84px;height:84px;border-radius:50%;display:grid;place-items:center;color:#fff;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+.r3k-fx .r3k-fxi svg{width:44px;height:44px}
+.r3k-fx b{font-size:17px;font-weight:900;padding:4px 12px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff}
+.r3k-fx.up .r3k-fxi{background:linear-gradient(135deg,#FFC94A,#FF8A00)}
+.r3k-fx.right .r3k-fxi{background:linear-gradient(135deg,#5FF2A0,#18B864)}
+.r3k-fx.left .r3k-fxi{background:linear-gradient(135deg,#B8C6D4,#6F8193)}
+.r3k-fx.down .r3k-fxi{background:linear-gradient(135deg,#FF7A7E,#D2232A)}
+@keyframes r3kfx{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}25%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}70%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-62%) scale(.96)}}
+.r3k-fx.down{animation-name:r3kfxd}
+@keyframes r3kfxd{0%{opacity:0;transform:translate(-50%,-50%) scale(.5) rotate(0)}25%{opacity:1;transform:translate(-50%,-50%) scale(1.05) rotate(-6deg)}45%{transform:translate(-50%,-50%) scale(.96) rotate(5deg)}70%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0)}100%{opacity:0;transform:translate(-50%,-30%) scale(.8)}}
+/* buttons */
+.r3k-btns{display:flex;justify-content:center;align-items:flex-start;gap:6px;margin:18px auto 0;padding:0 4px;max-width:380px}
+.r3k-b{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:none;border:0;padding:0;color:inherit;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.r3k-bi{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);transition:transform .15s}
+.r3k-b:active .r3k-bi{transform:scale(.9)}
+.r3k-bi svg{width:24px;height:24px}
+.r3k-bl{font-size:11.5px;font-weight:700;line-height:1.15;text-align:center;opacity:.85}
+.r3k-b.today .r3k-bi{width:60px;height:60px;color:#FFB020;border-color:rgba(255,176,32,.55);background:rgba(255,176,32,.12)}
+.r3k-b.soon .r3k-bi{width:60px;height:60px;color:#3DDC84;border-color:rgba(61,220,132,.5);background:rgba(61,220,132,.12)}
+.r3k-b.skip .r3k-bi{color:#C9D6E3}
+.r3k-b.never .r3k-bi{color:#FF5A5F;border-color:rgba(255,90,95,.45)}
+.r3k-b.undo .r3k-bi{width:44px;height:44px;margin-top:5px;opacity:.85}
+.r3k-b.undo .r3k-bi svg{width:20px;height:20px}
+.r3k-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 12px;margin-top:12px;padding:0 12px;text-align:center}
+.r3k-link{background:none;border:0;padding:6px 4px;min-height:32px;color:var(--gold,#caa15a);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.r5-yi{position:relative}
+.r3k-tdb{position:absolute;top:6px;left:50%;transform:translateX(-50%);font-style:normal;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:999px;background:#FFB020;color:#1a1200}
+.r5-yi.r3k-td img{box-shadow:0 0 0 2px #FFB020}
+/* all recipes, inline */
+.r3k-all{margin-top:30px;padding-top:4px}
+.r3k-allh{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:2px}
+.r3k-all .r3k-allh+.h3,.r3k-all>.h3:first-child{text-align:center}
+.r3k-all>p.small{text-align:center}
+.r3k-all .sh-sep{text-align:center}
+.sh-cats{overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scroll-padding-inline:16px;touch-action:pan-x pan-y}
+@media (prefers-reduced-motion:reduce){.r3k-fx,.r3k-sec::before{animation-duration:.01s!important}}
+
+/* Cloud (light) */
+html[data-theme=light] .r3k-legend span{background:rgba(22,28,46,.05);border-color:rgba(22,28,46,.12)}
+html[data-theme=light] .r3k-legend .lt b{color:#B86E00}html[data-theme=light] .r3k-legend .lr b{color:#0A8F48}html[data-theme=light] .r3k-legend .ll b{color:#4F6275}html[data-theme=light] .r3k-legend .ld b{color:#C4161C}
+html[data-theme=light] .r3k-bi{border-color:rgba(22,28,46,.2);background:rgba(22,28,46,.06)}
+html[data-theme=light] .r3k-b.today .r3k-bi{color:#A86200;border-color:rgba(184,110,0,.55);background:rgba(255,176,32,.16)}
+html[data-theme=light] .r3k-b.soon .r3k-bi{color:#0A8F48;border-color:rgba(10,143,72,.5);background:rgba(61,220,132,.14)}
+html[data-theme=light] .r3k-b.skip .r3k-bi{color:#4F6275}
+html[data-theme=light] .r3k-b.never .r3k-bi{color:#C4161C;border-color:rgba(196,22,28,.4)}
+html[data-theme=light] .r3k-st{background:rgba(255,255,255,.75)}
+html[data-theme=light] .r3k-st.up{color:#A86200}html[data-theme=light] .r3k-st.right{color:#0A8F48}html[data-theme=light] .r3k-st.left{color:#4F6275}html[data-theme=light] .r3k-st.down{color:#C4161C}
+html[data-theme=light] .r3k-link{color:#8A6420}
+html[data-theme=light] .r3k-hic{color:#9A7230}
+html[data-theme=light] .r3k-tdb{background:#E89A00;color:#1a1200}
+</style>
+<script id="r3kjs">
+/* ===== LOWiSPIKE round 3, Cook swipe sounds (Oct 10, 2026) =====
+   One reward sound per swipe direction, built from the same palette as the part E kit (glass bells, plucks, water blips, airy noise,
+   same compressor and small room) and following its settings: localStorage "lowi_sfx" {on, vol}, read through LowiSFX when it is there.
+   up = Cook today: rising sparkle arpeggio. right = Cook soon: warm two-note bell. left = Not today: soft airy whoosh.
+   down = Never again: a real-feeling paper crunch, balled up and tossed. If LowiSFX ever gains extend(), it takes these over. */
+(function(){
+"use strict";
+const AC = window.AudioContext || window.webkitAudioContext;
+let ac = null, master = null, verbIn = null, noiseBuf = null, unlocked = false;
+function S(){ try { if (window.LowiSFX && LowiSFX.on) return {on:LowiSFX.on(), vol:LowiSFX.vol()}; const j = JSON.parse(localStorage.getItem("lowi_sfx") || "null"); if (j) return {on:j.on !== false, vol:typeof j.vol === "number" ? j.vol : 0.7}; } catch(e){} return {on:true, vol:0.7}; }
+function vol(){ const s = S(); return s.on ? Math.pow(Math.max(0, Math.min(1, s.vol)), 1.6) * 0.9 : 0; }
+function ctx(){
+  if (ac || !AC) return ac;
+  try {
+    ac = new AC({latencyHint:"interactive"});
+    const comp = ac.createDynamicsCompressor(); comp.threshold.value = -14; comp.knee.value = 10; comp.ratio.value = 4; comp.attack.value = 0.003; comp.release.value = 0.18;
+    master = ac.createGain(); master.gain.value = vol(); master.connect(comp); comp.connect(ac.destination);
+    verbIn = ac.createGain(); verbIn.gain.value = 0.22; const verb = ac.createConvolver();
+    const n = Math.floor(ac.sampleRate * 1.3), b = ac.createBuffer(2, n, ac.sampleRate);
+    for (let c = 0; c < 2; c++) { const d = b.getChannelData(c); for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2.6); }
+    verb.buffer = b; verbIn.connect(verb); verb.connect(master);
+    noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  } catch(e){ ac = null; }
+  return ac;
+}
+function unlock(){ if (!ctx()) return; try { if (navigator.audioSession) navigator.audioSession.type = "ambient"; } catch(e){}
+  if (ac.state !== "running") { try { ac.resume(); } catch(e){} }
+  if (!unlocked) { try { const b = ac.createBuffer(1, 1, 22050), s = ac.createBufferSource(); s.buffer = b; s.connect(ac.destination); s.start(0); } catch(e){} unlocked = true; } }
+// only wake audio for touches on the swipe deck, so this never competes with the main kit elsewhere
+["pointerdown", "touchend"].forEach(t => document.addEventListener(t, e => { if (e.target && e.target.closest && e.target.closest("#r3kSwipe")) unlock(); }, {capture:true, passive:true}));
+document.addEventListener("visibilitychange", () => { if (!ac) return; if (document.hidden) { try { ac.suspend(); } catch(e){} } else if (unlocked) { try { ac.resume(); } catch(e){} } });
+
+function note(f, t, d, o){ o = o || {}; const n = ac.currentTime + (t || 0), osc = ac.createOscillator(), g = ac.createGain();
+  osc.type = o.w || "sine"; osc.frequency.setValueAtTime(f, n); if (o.to) osc.frequency.exponentialRampToValueAtTime(o.to, n + (o.slide || d));
+  const pk = o.g == null ? 0.25 : o.g, a = o.a || 0.004; g.gain.setValueAtTime(0.0001, n); g.gain.exponentialRampToValueAtTime(pk, n + a); g.gain.exponentialRampToValueAtTime(0.0001, n + d);
+  let out = g; if (o.lp) { const fl = ac.createBiquadFilter(); fl.type = "lowpass"; fl.frequency.value = o.lp; g.connect(fl); out = fl; }
+  osc.connect(g); out.connect(master); if (o.rv) { const s = ac.createGain(); s.gain.value = o.rv; out.connect(s); s.connect(verbIn); }
+  osc.start(n); osc.stop(n + d + 0.05); }
+function bell(f, t, d, g, rv){ g = g == null ? 0.22 : g; rv = rv == null ? 0.5 : rv; note(f, t, d, {g, rv}); note(f * 2.756, t, d * 0.45, {g:g * 0.32, rv}); note(f * 5.404, t, d * 0.22, {g:g * 0.12, rv}); }
+function pluck(f, t, d, g){ note(f, t, d, {w:"triangle", g:g == null ? 0.2 : g, lp:3200, rv:0.25}); note(f * 2, t, d * 0.5, {g:(g || 0.2) * 0.25}); }
+function noise(t, d, o){ o = o || {}; const n = ac.currentTime + (t || 0), s = ac.createBufferSource(), fl = ac.createBiquadFilter(), g = ac.createGain();
+  s.buffer = noiseBuf; fl.type = o.type || "bandpass"; fl.frequency.setValueAtTime(o.f || 2000, n); if (o.to) fl.frequency.exponentialRampToValueAtTime(o.to, n + d); fl.Q.value = o.q || 1;
+  const pk = o.g == null ? 0.15 : o.g; g.gain.setValueAtTime(0.0001, n); g.gain.exponentialRampToValueAtTime(pk, n + (o.a || 0.003)); g.gain.exponentialRampToValueAtTime(0.0001, n + d);
+  s.connect(fl); fl.connect(g); g.connect(master); if (o.rv) { const sv = ac.createGain(); sv.gain.value = o.rv; g.connect(sv); sv.connect(verbIn); }
+  s.start(n, Math.random() * 0.8); s.stop(n + d + 0.05); }
+function blip(f, t, g){ note(f, t, 0.09, {g:g == null ? 0.18 : g, to:f * 2.3, slide:0.06, a:0.002, rv:0.3}); }
+
+const KIT = {
+  // Cook today: whoosh up into a bright C major sparkle, the biggest reward of the four
+  up(){ noise(0, 0.22, {f:700, to:5200, q:0.9, g:0.07, a:0.06, rv:0.3});
+    [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => pluck(f, 0.05 + i * 0.055, 0.32, 0.17));
+    bell(1567.98, 0.3, 0.9, 0.12, 0.7); bell(2093, 0.36, 0.7, 0.07, 0.8); blip(1318.5, 0.27, 0.06); },
+  // Cook soon: warm, happy two-note glass bell with a little water blip
+  right(){ noise(0, 0.14, {f:1600, to:3800, q:1.2, g:0.045, a:0.03}); bell(783.99, 0.03, 0.55, 0.17, 0.45); bell(1174.66, 0.12, 0.7, 0.15, 0.55); blip(880, 0.02, 0.07); },
+  // Not today: soft, neutral airy swish and one low pluck. Not a punishment, just a pass.
+  left(){ noise(0, 0.26, {f:3200, to:700, q:0.8, g:0.06, a:0.04, rv:0.2}); pluck(392, 0.06, 0.22, 0.09); },
+  // Never again: paper crunch. Dense random crinkle grains (bright, narrow bandpass), a second scrunch, then a soft toss thud.
+  down(){
+    const grains = (t0, len, n, lvl) => { for (let i = 0; i < n; i++) { const t = t0 + Math.pow(Math.random(), 0.8) * len, f = 1800 + Math.random() * 5200;
+      noise(t, 0.012 + Math.random() * 0.03, {f, q:2 + Math.random() * 5, g:lvl * (0.5 + Math.random() * 0.8), a:0.001}); } };
+    noise(0, 0.32, {f:2600, q:0.7, g:0.035, a:0.02});       // body of the paper
+    grains(0, 0.30, 34, 0.16);                                // first scrunch
+    noise(0.34, 0.2, {f:2200, q:0.7, g:0.03, a:0.01});
+    grains(0.34, 0.2, 20, 0.13);                              // second, tighter scrunch
+    noise(0.6, 0.12, {type:"lowpass", f:420, q:0.7, g:0.12, a:0.004}); note(150, 0.6, 0.12, {g:0.09, to:90, slide:0.1}); },  // ball lands
+  undo(){ blip(660, 0, 0.08); blip(990, 0.06, 0.06); }
+};
+const last = {};
+function play(dir){
+  try { if (window.LowiSFX && LowiSFX.extend && LowiSFX.has && LowiSFX.has("swipe-" + dir)) return LowiSFX.play("swipe-" + dir); } catch(e){}
+  const fn = KIT[dir]; if (!fn) return; const now = performance.now(); if (last[dir] && now - last[dir] < 120) return; last[dir] = now;
+  if (vol() <= 0 || !ctx()) return; if (ac.state === "suspended") { try { ac.resume(); } catch(e){} }
+  try { master.gain.setValueAtTime(vol(), ac.currentTime); } catch(e){}
+  try { fn(); } catch(e){}
+  try { if (window.LowiSFX && LowiSFX.log) { LowiSFX.log.push("swipe-" + dir); if (LowiSFX.log.length > 80) LowiSFX.log.shift(); } } catch(e){}
+}
+window.LowiSwipeSFX = {play, kit:Object.keys(KIT), state:() => ({ctx:ac ? ac.state : "none", unlocked, vol:vol()})};
+})();
+
+/* r3k strings, German and Spanish */
+(function(){ if (!window.LowiLang || !LowiLang.add) return; LowiLang.add([
+["Swipe foods", "Essen swipen", "Desliza comidas"],
+["Today", "Heute", "Hoy"],
+["Soon", "Bald", "Pronto"],
+["Not today", "Heute nicht", "Hoy no"],
+["Never", "Nie", "Nunca"],
+["Cook today", "Heute kochen", "Cocinar hoy"],
+["Cook soon", "Bald kochen", "Cocinar pronto"],
+["Never again", "Nie wieder", "Nunca más"],
+["Undo", "Zurück", "Deshacer"],
+["TODAY", "HEUTE", "HOY"],
+["SOON", "BALD", "PRONTO"],
+["NOT TODAY", "HEUTE NICHT", "HOY NO"],
+["NEVER", "NIE", "NUNCA"],
+["All recipes", "Alle Rezepte", "Todas las recetas"],
+["Your yes pile", "Dein Ja-Stapel", "Tu pila de sí"],
+["That's all of them", "Das waren alle", "Eso es todo"],
+["Shuffle my yes pile", "Meinen Ja-Stapel mischen", "Mezclar mi pila de sí"],
+["Start over", "Von vorn", "Empezar de nuevo"],
+["Add community foods with + Swipe in For You", "Community-Essen fügst du in Für dich mit + Swipe hinzu", "Añade comidas de la comunidad con + Swipe en Para ti"],
+[/^(\d+) from the community$/, "$1 aus der Community", "$1 de la comunidad"],
+[/^(\d+) hidden · Show again$/, "$1 versteckt · Wieder zeigen", "$1 ocultas · Mostrar otra vez"],
+[/^(\d+) foods to cook soon\. The shuffle picks those more often\. Not-today ones come back tomorrow\.$/, "$1 Gerichte zum bald Kochen. Der Shuffle nimmt die öfter. Heute-nicht-Karten kommen morgen wieder.", "$1 comidas para cocinar pronto. El shuffle las elige más a menudo. Las de hoy no vuelven mañana."],
+[/^(\d+) foods to cook soon\. The shuffle picks those more often\.$/, "$1 Gerichte zum bald Kochen. Der Shuffle nimmt die öfter.", "$1 comidas para cocinar pronto. El shuffle las elige más a menudo."],
+[/^(.+) is on for today$/, "$1 steht heute an", "$1 está para hoy"],
+[/^Picks something you can eat, from (\d+) foods, community ones too\.$/, "Sucht dir etwas aus, das du essen kannst, aus $1 Gerichten, auch aus der Community.", "Elige algo que puedes comer, entre $1 comidas, también de la comunidad."]
+]); })();
+
+/* community swipe foods: refresh a few seconds after start and every 3 minutes while open */
+(function(){ const go = () => { try { if (window.LowiFood && LowiFood.swPull && !document.hidden) LowiFood.swPull(); } catch(e){} }; setTimeout(go, 4000); setTimeout(go, 15000); setInterval(go, 180000); document.addEventListener("visibilitychange", () => { if (!document.hidden) setTimeout(go, 800); }); })();
+</script>
+<style id="r3rcss">
+/* round 3R: hold-and-drag Community sections; Scan locked in the middle of the bottom bar */
+#cmSeg{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#cmSeg > button{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#cmSeg.r3r-edit{outline:1.5px dashed rgba(var(--acc-rgb,227,194,126),.75);outline-offset:3px}
+#cmSeg.r3r-edit > button{animation:r3rJiggle .26s ease-in-out infinite alternate;cursor:grab}
+#cmSeg.r3r-edit > button:nth-of-type(even){animation-delay:-.13s}
+#cmSeg.r3r-edit > button.r3r-drag{animation:none;z-index:3;cursor:grabbing;transition:none;background:rgba(255,255,255,.16);box-shadow:0 8px 22px rgba(0,0,0,.35);border-radius:16px}
+html[data-theme=light] #cmSeg.r3r-edit > button.r3r-drag{background:rgba(255,255,255,.92);box-shadow:0 8px 22px rgba(40,50,80,.22)}
+@keyframes r3rJiggle{from{transform:rotate(-1.6deg)}to{transform:rotate(1.6deg)}}
+.r3r-editbar{position:fixed;left:12px;right:12px;bottom:calc(var(--tabh,84px) + env(safe-area-inset-bottom,0px) + 16px);z-index:9998;display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:rgba(20,24,34,.96);color:#fff;font-size:14px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.r3r-editbar span{flex:1;min-width:0}
+.r3r-editbar button{flex:none;padding:8px 16px;border-radius:12px;border:0;background:#f3c97a;color:#1a1408;font-weight:700}
+#tabbar.r3a-edit .tb.scan{animation:none!important;opacity:.55}
+@media (prefers-reduced-motion:reduce){#cmSeg.r3r-edit > button{animation:none}}
+</style>
+<script id="r3rjs">
+/* ===== LOWiSPIKE round 3R (Oct 10, 2026): move Community's sections right where they are =====
+   Press and hold Chat, For You or Leaderboard (or Post, before round 3F) at the top of Community, then drag it left or right.
+   Same saved order as Profile > Your order > Community (S.r3a.cm), so both always agree. Community opens on the first one
+   whenever you come to it from the bottom bar. Scan's lock in the middle of the bottom bar lives in round3a/r3a_more.js. */
+(function(){
+"use strict";
+const R3A = window.LowiR3A; if (!R3A || !R3A.st) return;
+const T = R3A.T;
+const $ = (s, r) => (r || document).querySelector(s), $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const ROWS = [
+  ["Drag the icons. Scan stays in the middle. Tap Done when you're happy.", "Zieh die Symbole. Scannen bleibt in der Mitte. Tippe auf Fertig, wenn es passt.", "Arrastra los iconos. Escanear se queda en el centro. Toca Listo cuando te guste."],
+  ["Always in the middle", "Immer in der Mitte", "Siempre en el centro"],
+  ["Tip: press and hold an icon in the bottom bar, or a section at the top of Community, and drag it.", "Tipp: Halte ein Symbol in der Leiste unten oder einen Bereich oben in der Community gedrückt und zieh ihn.", "Consejo: mantén pulsado un icono de la barra de abajo, o una sección arriba en Comunidad, y arrástralo."],
+  ["Drag left or right. The first one opens first. Tap Done when you're happy.", "Nach links oder rechts ziehen. Das erste öffnet zuerst. Tippe auf Fertig, wenn es passt.", "Arrastra a la izquierda o a la derecha. El primero se abre primero. Toca Listo cuando te guste."],
+  ["Saved. Community opens on {x}.", "Gespeichert. Die Community öffnet mit {x}.", "Guardado. La comunidad se abre en {x}."],
+  ["Leaderboard", "Bestenliste", "Clasificación"]
+];
+try { R3A.dict(ROWS); } catch(e){}
+try { if (window.LowiLang && LowiLang.add) LowiLang.add(ROWS.filter(r => r[0].indexOf("{") < 0)); } catch(e){}
+const NAME = {feed:"For You", chat:"Chat", post:"Post", board:"Leaderboard"};
+const st = () => R3A.st();
+
+/* the saved order -> the live pager */
+function apply(){
+  const o = st().cm;
+  try { CM_SEGS.splice(0, CM_SEGS.length, ...o); } catch(e){}
+  try { R3A.fixCm && R3A.fixCm(); } catch(e){ console.error(e); }
+}
+function syncProfile(){ try { if ($("#tab-profile .r3a-pf") && R3A.paintProfile) R3A.paintProfile(); } catch(e){} }
+function persist(){ try { save(); } catch(e){} syncProfile(); }
+
+/* ---------- edit mode ---------- */
+let editing = false, lpT = 0, x0 = 0, y0 = 0, swallow = false, drag = null, dx0 = 0, pid = null;
+const seg = () => $("#cmSeg");
+function bar(on){
+  let b = $("#r3rEditBar");
+  if (!on) { if (b) b.remove(); return; }
+  if (!b) { b = document.createElement("div"); b.id = "r3rEditBar"; b.className = "r3r-editbar"; b.setAttribute("data-noi18n", ""); document.body.appendChild(b); }
+  b.innerHTML = '<span>' + esc(T("Drag left or right. The first one opens first. Tap Done when you're happy.")) + '</span><button type="button" data-r3r="done">' + esc(T("Done")) + '</button>';
+}
+function edit(on){
+  editing = on; const s = seg(); if (s) s.classList.toggle("r3r-edit", on);
+  bar(on);
+  if (on) { try { navigator.vibrate && navigator.vibrate(12); } catch(e){} }
+}
+function done(quiet){
+  if (!editing) return; endDrag(); edit(false); persist();
+  const first = st().cm[0];
+  /* show the one that now opens first, so what you see matches what you set */
+  try { if (typeof CMV !== "undefined" && CMV.view !== first && typeof cmSeg === "function") cmSeg(first); } catch(e){}
+  if (!quiet) { try { toast(T("Saved. Community opens on {x}.", {x: T(NAME[first] || first)})); } catch(e){} }
+}
+R3A.cmEditDone = done;
+function lift(btn, e){
+  drag = btn; pid = e ? e.pointerId : null; dx0 = e ? e.clientX : 0; btn.classList.add("r3r-drag");
+  try { if (e) btn.setPointerCapture(e.pointerId); } catch(_){}
+}
+function endDrag(){ if (!drag) return; drag.style.transform = ""; drag.classList.remove("r3r-drag"); drag = null; pid = null; persist(); }
+
+window.addEventListener("pointerdown", e => {
+  const s = seg(); if (!s || !e.target.closest) return;
+  const btn = e.target.closest("#cmSeg > button");
+  if (editing) {
+    if (btn) { e.preventDefault(); lift(btn, e); return; }
+    if (e.target.closest("#tabbar")) { done(true); return; }
+    if (!e.target.closest("#r3rEditBar")) { swallow = true; done(); }
+    return;
+  }
+  if (!btn || e.button > 0) return;
+  x0 = e.clientX; y0 = e.clientY; clearTimeout(lpT);
+  lpT = setTimeout(() => { lpT = 0; swallow = true; edit(true); lift(btn, null); dx0 = x0; }, 450);
+}, true);
+
+window.addEventListener("pointermove", e => {
+  if (lpT && (Math.abs(e.clientX - x0) > 10 || Math.abs(e.clientY - y0) > 10)) { clearTimeout(lpT); lpT = 0; }
+  if (!editing || !drag) return;
+  e.preventDefault();
+  const s = seg(); if (!s) return;
+  drag.style.transform = "translateX(" + (e.clientX - dx0) + "px) scale(1.06)";
+  const btns = $$("#cmSeg > button"), others = btns.filter(b => b !== drag);
+  let idx = others.findIndex(b => { const r = b.getBoundingClientRect(); return e.clientX < r.left + r.width / 2; }); if (idx < 0) idx = others.length;
+  const ids = others.map(b => b.getAttribute("data-v")); ids.splice(idx, 0, drag.getAttribute("data-v"));
+  const cur = st().cm;
+  if (ids.length === cur.length && ids.every(v => cur.indexOf(v) >= 0) && ids.join() !== cur.join()) {
+    const before = drag.getBoundingClientRect().left - (e.clientX - dx0);
+    st().cm = ids; apply();
+    /* keep the lifted button under the finger after it jumped to its new slot */
+    const after = drag.getBoundingClientRect().left - (e.clientX - dx0);
+    dx0 += after - before;
+    drag.style.transform = "translateX(" + (e.clientX - dx0) + "px) scale(1.06)";
+    try { navigator.vibrate && navigator.vibrate(6); } catch(_){}
+  }
+}, {capture:true, passive:false});
+
+const up = () => { clearTimeout(lpT); lpT = 0; if (drag) endDrag(); };
+window.addEventListener("pointerup", up, true); window.addEventListener("pointercancel", up, true);
+
+window.addEventListener("click", e => {
+  if (!e.target.closest) return;
+  if (e.target.closest('[data-r3r="done"]')) { e.preventDefault(); e.stopPropagation(); swallow = false; done(); return; }
+  if (swallow) { swallow = false; e.preventDefault(); e.stopPropagation(); return; }
+  if (editing && e.target.closest("#cmSeg")) { e.preventDefault(); e.stopPropagation(); return; }
+  /* Community from the bottom bar opens on the section you put first */
+  const tb = e.target.closest('#tabbar .tb[data-tab="foryou"]');
+  if (tb && !$("#tabbar.r3a-edit")) {
+    try { if (typeof TAB !== "undefined" && TAB !== "foryou" && typeof CMV !== "undefined") { apply(); CMV.view = st().cm[0]; } } catch(_){}
+  }
+}, true);
+window.addEventListener("contextmenu", e => { if (e.target.closest && e.target.closest("#cmSeg")) e.preventDefault(); }, true);
+/* leaving the app ends editing and keeps what you set */
+document.addEventListener("visibilitychange", () => { if (document.hidden && editing) done(true); });
+/* Community re-rendered (language, new posts): keep edit look if still editing */
+function watch(){ const tf = $("#tab-foryou"); if (!tf || tf.__r3r) return; tf.__r3r = true;
+  new MutationObserver(() => { const s = seg(); if (s && editing && !s.classList.contains("r3r-edit")) s.classList.add("r3r-edit"); if (!s && editing) { drag = null; edit(false); persist(); } }).observe(tf, {childList:true}); }
+function boot(){ watch(); }
+R3A.r3rBoot = boot;
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => setTimeout(boot, 0)); else setTimeout(boot, 0);
 })();
 </script>
 </body>

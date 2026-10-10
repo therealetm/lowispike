@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261010-185704">
+<meta name="lowi-build" content="20261010-193944">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -15897,6 +15897,26 @@ html:not([data-lay=phone]) .r2-ov.on .r2-sh{transform:none;opacity:1}
 html:not([data-lay=phone]) .r2-ov.off .r2-sh{transform:translateY(40px) scale(.98);opacity:0;transition-duration:.24s}
 html:not([data-lay=phone]) .r2-ov.full .r2-sh,html:not([data-lay=phone]) .r2-ov.p2-ckov .r2-sh{max-width:760px;height:min(90vh,980px);max-height:none;border-radius:28px;padding-top:18px}
 html:not([data-lay=phone]) .r2-ov .r2-sh .r2-grab{display:none}
+</style>
+<style id="t2css">
+/* LOWiSPIKE T1 part 2 (Oct 10, 2026): newer screens on big screens. Classic sheets (Fasting, "What did you eat?", stage info) and the cart sheet become centered dialogs; Cook's recipe list and ingredient search results use the width as a card grid. Phone untouched (everything is behind html:not([data-lay=phone])). */
+html:not([data-lay=phone]) #sheetwrap{display:flex;align-items:center;justify-content:center;padding:24px 24px 24px calc(var(--side,0px) + 24px);box-sizing:border-box}
+html:not([data-lay=phone]) #sheet{position:relative;left:auto;right:auto;bottom:auto;flex:0 1 auto;width:100%;max-width:620px;max-height:min(88vh,980px);box-sizing:border-box;border-radius:28px;border:1px solid rgba(255,255,255,.16);padding-bottom:26px;box-shadow:0 30px 90px rgba(0,0,0,.5);transform:translateY(40px) scale(.98);opacity:0;transition:transform .38s cubic-bezier(.2,.9,.25,1.05),opacity .28s ease}
+html:not([data-lay=phone]) #sheetwrap.open #sheet{transform:none;opacity:1}
+html:not([data-lay=phone]) #sheet > .grab{display:none}
+html[data-theme=light]:not([data-lay=phone]) #sheet{border:1px solid rgba(22,28,46,.16);box-shadow:0 30px 80px rgba(60,72,110,.18)}
+html:not([data-lay=phone]) #rsSheet .rs-sh{left:calc(var(--side,0px) + max(24px,(100vw - var(--side,0px) - 620px) / 2));right:max(24px,(100vw - var(--side,0px) - 620px) / 2);top:0;bottom:0;margin:auto 0;height:-webkit-fit-content;height:fit-content;max-height:min(88vh,980px);box-sizing:border-box;border-radius:28px;border:1px solid rgba(255,255,255,.16);padding-bottom:26px;transform:translateY(40px) scale(.98);opacity:0;transition:transform .38s cubic-bezier(.2,.9,.25,1.05),opacity .28s ease}
+html:not([data-lay=phone]) #rsSheet.open .rs-sh{transform:none;opacity:1}
+html[data-theme=light]:not([data-lay=phone]) #rsSheet .rs-sh{border:1px solid rgba(22,28,46,.16)}
+/* Cook: recipes and ingredient search as a card grid */
+html:not([data-lay=phone]) .r3k-all{max-width:980px;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));column-gap:14px;align-items:start}
+html:not([data-lay=phone]) .r3k-all > *{grid-column:1 / -1;min-width:0}
+html:not([data-lay=phone]) .r3k-all > .sh-rec{grid-column:auto}
+html:not([data-lay=phone]) .r3k-all > .gpt-card{max-width:640px;justify-self:start;width:100%;box-sizing:border-box}
+html:not([data-lay=phone]) .k9-in{max-width:640px}
+html:not([data-lay=phone]) #k9Out{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;align-items:start}
+html:not([data-lay=phone]) #k9Out > *{grid-column:1 / -1;min-width:0}
+html:not([data-lay=phone]) #k9Out > .k9-res{grid-column:auto;margin-bottom:0}
 </style>
 </body>
 </html>

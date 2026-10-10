@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261010-200907">
+<meta name="lowi-build" content="20261010-205908">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2108,7 +2108,7 @@ html[data-theme=light] #lcUpd.g1-upd .g1-usay{background:rgba(255,255,255,.2)}
 (function(){
 "use strict";
 if (window.LowiG1) return;
-const NEWS_RAW = {"id": "g2-move", "go": {"tab": "move", "sel": "#mv-screen .g2-tiles"}, "text": {"en": "Move fits on one screen now, no scrolling: tap Start, or tap one of the four sessions. Your gear, audiobook, this week and history are tiles that open with one tap.", "de": "Bewegen passt jetzt auf einen Bildschirm, ohne Scrollen: Tipp auf Start oder auf eine der vier Einheiten. Ausrüstung, Hörbuch, diese Woche und Verlauf sind Kacheln, die sich mit einem Tipp öffnen.", "es": "Moverse ahora cabe en una sola pantalla, sin desplazarte: toca Empezar o una de las cuatro sesiones. Tu equipo, el audiolibro, esta semana y el historial son fichas que se abren con un toque."}};
+const NEWS_RAW = {"id": "g2-today", "go": {"tab": "home", "sel": "#g2hTiles"}, "text": {"en": "Today fits on one screen now: your Daily Quest, the fasting ring and six tiles. Check-ins, meals, your plate, medicine, shopping and extras each open with one tap.", "de": "Heute passt jetzt auf einen Bildschirm: deine Tagesquest, der Fastenring und sechs Kacheln. Check-ins, Mahlzeiten, dein Teller, Medizin, Einkaufen und Extras öffnen sich mit einem Tipp.", "es": "Hoy ahora cabe en una sola pantalla: tu misión diaria, el anillo de ayuno y seis fichas. Registros, comidas, tu plato, medicinas, compras y extras se abren con un toque."}};
 const NEWS = (NEWS_RAW && typeof NEWS_RAW === "object") ? NEWS_RAW : null;
 const KEY = "lowi.g1", GO = "lowi.g1.go";
 const H = document.documentElement;
@@ -2256,7 +2256,7 @@ function root(){ let r = $("#g1Tour"); if (!r) { r = document.createElement("div
   return r; }
 function stepList(){ return STEPS.filter(s => !s.el || s.k === "end" || vis(s.el())); }
 function begin(t){ TOUR = t; H.classList.add("g1-touring"); root(); fairyOut(); setTimeout(show, reduce ? 0 : 160); }
-function start(from){ if (TOUR) close("restart", true); hush(); goHome();
+function start(from){ if (TOUR) close("restart", true); hush(); goHome(); H.classList.add("g2h-tour");
   const m = mem(); remember({t:"", n:NEWS && NEWS.id ? NEWS.id : m.n});
   setTimeout(() => { const steps = stepList(); let i = typeof from === "number" ? from : 0; if (i >= steps.length - 1) i = 0;
     begin({steps, i, kind:"tour"}); }, onHome() ? 60 : 420); }
@@ -2267,7 +2267,7 @@ function startNews(){ if (!NEWS) return; hush(); remember({n:NEWS.id});
 function offerNews(){ if (!NEWS || TOUR) return; hush(); begin({steps:[{k:"offer", text:NT(NEWS.text)}], i:0, kind:"offer"}); }
 function close(how, quick){ hush(); const t = TOUR; TOUR = null; clearInterval(placeT); cancelAnimationFrame(follow.raf);
   const r = $("#g1Tour"); if (r) { r.classList.add("out"); setTimeout(() => { if (r.parentNode && !TOUR) r.remove(); else if (r.parentNode && TOUR) r.classList.remove("out"); }, quick ? 0 : 260); }
-  H.classList.remove("g1-touring");
+  H.classList.remove("g1-touring"); H.classList.remove("g2h-tour");
   if (t && t.kind === "tour") remember({t:how === "skip" ? "skip" : "done", s:0});
   if (!quick) fairyHome(); }
 function textOf(s){ return s.text || T(s.k); }
@@ -2707,6 +2707,78 @@ try { if (window.LowiLang && LowiLang.set) { const s0 = LowiLang.set; LowiLang.s
 window.LowiK9 = {box, entry, search, hitsFor, set, get:() => Q, goCook};
 })();
 </script>
+
+<style id="g2hCss">/* G2 part 2: Today is one game screen on a phone (header, Daily Quest, fasting ring, six tiles) */
+#g2hTiles{display:none}
+html.g2h-on:not(.g2h-tour) #tab-home{display:flex;flex-direction:column;gap:9px;padding-bottom:calc(var(--sab) + 84px)}
+html.g2h-on:not(.g2h-tour) #tab-home > *:not(.rs-sec):not(.rs-cols),html.g2h-on:not(.g2h-tour) #tab-home .rs-sec > *{order:5;margin-top:0;margin-bottom:0;flex:0 0 auto}
+html.g2h-on:not(.g2h-tour) #tab-home [data-g2h]{display:none!important}
+html.g2h-on:not(.g2h-tour) #tab-home .td-top{order:1}
+html.g2h-on:not(.g2h-tour) #tab-home #f3Board{order:2}
+html.g2h-on:not(.g2h-tour) #tab-home #fsCard{order:3}
+html.g2h-on:not(.g2h-tour) #tab-home #g2hTiles{order:4;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+html.g2h-on:not(.g2h-tour) #tab-home .g1-lead{display:none}
+html.g2h-on:not(.g2h-tour) #tab-home .td-date{font-size:23px}
+#g2hTiles.g2h-n5 .g2h-tile:last-child{grid-column:span 2}
+.g2h-tile{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:2px;min-width:0;min-height:78px;padding:10px 11px;border-radius:18px;background:var(--panel);border:1px solid var(--line2,rgba(255,255,255,.14));color:inherit;font:inherit;text-align:left;cursor:pointer;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);transition:transform .12s;-webkit-tap-highlight-color:transparent}
+.g2h-tile:active{transform:scale(.96)}
+.g2h-tile .g2h-ic{flex:0 0 auto;width:28px;height:28px;margin-bottom:auto;border-radius:10px;display:grid;place-items:center;background:rgba(202,161,90,.14);color:var(--gold,#caa15a)}
+.g2h-tile .g2h-ic svg{width:17px;height:17px}
+.g2h-tile b{display:block;max-width:100%;margin-top:6px;font-size:13.5px;font-weight:700;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g2h-tile small{display:block;max-width:100%;font-size:11.5px;line-height:1.2;opacity:.68;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g2h-tile small:empty{display:none}
+html[data-theme=light] .g2h-tile{background:rgba(255,255,255,.86);border-color:rgba(13,18,32,.12);color:#151a2b}
+html[data-theme=light] .g2h-tile .g2h-ic{background:rgba(160,112,30,.12);color:#8a5d12}
+html[data-theme=light] .g2h-tile small{opacity:.78}
+/* tighten step by step until it fits */
+html.g2h-on.g2h-t1:not(.g2h-tour) #tab-home #fsCard .bt-line{display:none}
+html.g2h-on.g2h-t2:not(.g2h-tour) #tab-home .f3-sub,html.g2h-on.g2h-t2:not(.g2h-tour) #tab-home #fsCard .fs-tx > .tiny:first-child{display:none}
+html.g2h-on.g2h-t3:not(.g2h-tour) #tab-home .td-wm{display:none}
+html.g2h-on.g2h-t3:not(.g2h-tour) #tab-home #fsCard .fs-ring{flex-basis:92px;width:92px;height:92px}
+html.g2h-on.g2h-t3:not(.g2h-tour) #tab-home .td-date{font-size:21px}
+html.g2h-on.g2h-t4:not(.g2h-tour) #tab-home{gap:7px}
+html.g2h-on.g2h-t4:not(.g2h-tour) .g2h-tile{min-height:64px;padding:8px 10px}
+html.g2h-on.g2h-t4:not(.g2h-tour) .g2h-tile .g2h-ic{width:22px;height:22px;border-radius:8px}
+html.g2h-on.g2h-t4:not(.g2h-tour) .g2h-tile .g2h-ic svg{width:15px;height:15px}
+html.g2h-on.g2h-t4:not(.g2h-tour) .g2h-tile b{margin-top:2px;font-size:12.5px}
+html.g2h-on.g2h-t5:not(.g2h-tour) .g2h-tile small{display:none}
+html.g2h-on.g2h-t5:not(.g2h-tour) #tab-home .f3-tog{min-height:34px;margin-top:4px}
+html.g2h-on.g2h-t6:not(.g2h-tour) #tab-home #fsCard .fs-top{display:grid;grid-template-columns:92px minmax(0,1fr);column-gap:14px;row-gap:4px;align-items:start}
+html.g2h-on.g2h-t6:not(.g2h-tour) #tab-home #fsCard .fst-rc{grid-column:1;grid-row:1 / span 3;flex:none}
+html.g2h-on.g2h-t6:not(.g2h-tour) #tab-home #fsCard .fs-tx{display:contents}
+html.g2h-on.g2h-t6:not(.g2h-tour) #tab-home #fsCard .fs-tx > *{grid-column:2;margin-top:0}
+html.g2h-on.g2h-t6:not(.g2h-tour) #tab-home #fsCard .fs-tx > .fs-row{grid-column:1 / -1;grid-row:4;margin-top:6px;flex-wrap:nowrap}
+html.g2h-on.g2h-t6:not(.g2h-tour) #tab-home #fsCard .fst-btn{min-height:42px;margin-top:10px}
+html.g2h-on.g2h-t6:not(.g2h-tour) #tab-home .f3-cs{display:none}
+html.g2h-on.g2h-t7:not(.g2h-tour) #tab-home #fsCard #fsNext{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+html.g2h-on.g2h-t7:not(.g2h-tour) #tab-home #fsCard #fsStage{font-size:16px}
+/* the sheets: just under the app sheets (30+), so a sheet opened from inside comes on top */
+.r2-ov.g2h-ov{z-index:29}
+.r2-ov.g2h-qov{z-index:29}
+.g2h-ov .g2h-pt{margin:0 0 12px;padding-right:44px}
+.g2h-pb > * + *{margin-top:12px}
+.g2h-pb .td-step,.g2h-pb > .sec,.g2h-pb .f3b-tog,.g2h-pb .g1-more,.g2h-pb #quests,.g2h-pb .sec:has(+ #quests){display:none!important}
+.g2h-pb .td-step + *{margin-top:0}
+.g2h-pb #r3aMorn .r3a-mhd{margin-bottom:10px}
+.g2h-pb .stack{display:flex;flex-direction:column;gap:12px}
+.g2h-pb .stack > *{margin:0}
+.g2h-qov .g2h-ql{margin:0;padding:6px}
+.g2h-qov .g2h-ql .f3-list{display:flex!important;flex-direction:column;gap:6px;margin:0}
+/* sheet copies of the Today card rules */
+.g2h-pb .td-extra .td-mtx>*{text-wrap:pretty}
+.g2h-pb .td-hero img{object-position:center 40%}
+.g2h-pb .td-extra{flex-wrap:wrap;row-gap:10px;align-items:center}
+.g2h-pb .td-extra>.td-mtx{flex:1 1 0;min-width:0}
+.g2h-pb .td-extra>.td-mtx>div:first-child{font-size:16px;line-height:1.25}
+.g2h-pb .td-extra>.td-mtx .small{margin-top:3px;line-height:1.35}
+.g2h-pb .td-extra>.go{flex:none;align-self:center}
+.g2h-pb .td-extra>.r3a-hb{flex:0 0 100%;margin:0;padding-top:10px;border-top:1px solid var(--edge,rgba(255,255,255,.12));display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.g2h-pb .td-extra>.r3a-hb .r3a-hbt{flex:1 1 auto;text-align:center;white-space:nowrap}
+.g2h-pb .td-extra>.r3a-hb .r3a-cart{flex:0 0 auto;white-space:nowrap;border-color:rgba(var(--acc-rgb,212,175,55),.6)}
+.g2h-pb .card + .td-extra,.g2h-pb .td-hero + .card{margin-top:12px}
+.g2h-pb .td-hero{margin-bottom:12px}
+.g2h-pb .td-extra{margin-top:10px}
+</style>
 </head>
 <body>
 <div id="app">
@@ -16109,6 +16181,219 @@ function hook(){
 setInterval(hook, 400);
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", hook); else hook();
 window.LowiG2 = {open:openPanel, key:() => openKey};
+})();
+</script>
+
+<script id="g2hJs">/* ===== LOWiSPIKE G2 part 2 (Oct 10, 2026): Today is one game screen, no scrolling (phone) =====
+   On a phone, Today shows: the header, the Daily Quest board, the fasting ring card (when it is on)
+   and six tiles: Check-ins, Meals, Your plate, Medicine, Shopping, Extras. Each tile opens its
+   part of the page in a sheet, so everything that was on Today is still one tap away.
+   The original nodes are moved into the sheet and put back on close; a re-render while a sheet
+   is open refills it. "All quests" opens as a sheet. The guided tour shows the full page.
+   iPad and desktop keep their column layout. */
+(function(){
+"use strict";
+if (window.LowiG2H) return;
+const D = document, H = D.documentElement;
+const L = [
+  ["Check-ins", "Check-ins", "Registros"],
+  ["Meals", "Mahlzeiten", "Comidas"],
+  ["Your plate", "Dein Teller", "Tu plato"],
+  ["Medicine", "Medizin", "Medicinas"],
+  ["Shopping", "Einkaufen", "Compras"],
+  ["Extras", "Extras", "Extras"],
+  ["Fasting day", "Fastentag", "Día de ayuno"],
+  ["Add a reminder", "Erinnerung anlegen", "Añadir recordatorio"],
+  ["Shopping list", "Einkaufsliste", "Lista de compras"],
+  ["SOS · streak", "SOS · Serie", "SOS · racha"],
+  ["All at home", "Alles zu Hause", "Todo en casa"],
+  ["Today's quests", "Heutige Quests", "Misiones de hoy"],
+  [/^(\d+) meals$/, "$1 Mahlzeiten", "$1 comidas"],
+  [/^1 meal$/, "1 Mahlzeit", "1 comida"],
+  [/^(\d+)\/(\d+) eaten$/, "$1/$2 gegessen", "$1/$2 comidas"],
+  [/^(\d+)\/(\d+) taken$/, "$1/$2 genommen", "$1/$2 tomadas"],
+  [/^(\d+) to buy$/, "$1 zu kaufen", "$1 por comprar"]
+];
+let lAdded = false;
+function addL(){ if (lAdded) return; try { if (window.LowiLang && LowiLang.add) { LowiLang.add(L); lAdded = true; } } catch(e){} }
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const sv = p => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>';
+const IC = {
+  morn: sv('<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/>'),
+  meals: sv('<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.6 1.8M9.5 2.5h5"/>'),
+  plan: sv('<path d="M3.5 12h17a8.5 8.5 0 01-17 0z"/><path d="M8 8.5c0-1.6 1.2-2 1.2-3.5M12 8.5c0-1.6 1.2-2 1.2-3.5M16 8.5c0-1.6 1.2-2 1.2-3.5"/>'),
+  meds: sv('<rect x="3" y="8.5" width="18" height="7" rx="3.5" transform="rotate(-35 12 12)"/><path d="M9.2 8l5.6 8"/>'),
+  have: sv('<path d="M3 4h2.2l2.2 11h10.4l2.2-8H6.4"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/>'),
+  more: sv('<path d="M12 3.5l2 5.5 5.5 2-5.5 2-2 5.5-2-5.5-5.5-2 5.5-2z"/><path d="M19 15.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>')
+};
+const ORDER = ["morn", "meals", "plan", "meds", "have", "more"];
+const NAME = {morn:"Check-ins", meals:"Meals", plan:"Your plate", meds:"Medicine", have:"Shopping", more:"Extras"};
+const q = (r, s) => r ? r.querySelector(s) : null;
+const home = () => D.getElementById("tab-home");
+const phone = () => H.getAttribute("data-lay") === "phone" || (!H.getAttribute("data-lay") && innerWidth < 700);
+const on = () => H.classList.contains("g2h-on") && !H.classList.contains("g2h-tour");
+
+/* ---- find the parts of Today ---- */
+function kindOfStep(nodes){
+  for (const n of nodes) {
+    if (n.id === "tdMeds" || q(n, "#tdMeds")) return "meds";
+    if (n.id === "tdHave" || q(n, "#tdHave")) return "have";
+    if (q(n, "#tdMeals")) return "meals";
+    if (n.matches(".td-plan,.td-hero,.r3d-fast,.td-fastday,.td-meal") || q(n, ".td-plan,.td-meal,.r3d-fast,.td-fastday,.td-hero")) return "plan";
+  }
+  return null;
+}
+const stop = n => !n || n.classList.contains("td-step") || n.classList.contains("sec") || n.classList.contains("rs-sec") || n.classList.contains("rs-cols") || n.id === "g2hTiles" || n.id === "f3Board" || n.classList.contains("td-top");
+function groups(h){
+  const g = {};
+  const m = q(h, "#r3aMorn"); if (m) g.morn = [m];
+  h.querySelectorAll(".td-step").forEach(st => {
+    const nodes = [st]; let n = st.nextElementSibling;
+    while (!stop(n)) { if (n.id !== "fsCard" && n.id !== "r3aMorn") nodes.push(n); n = n.nextElementSibling; }
+    const k = kindOfStep(nodes); if (k && !g[k]) g[k] = nodes;
+  });
+  const sec = q(h, ".sec");
+  if (sec) { const nodes = [sec]; let n = sec.nextElementSibling; while (n && n.id !== "g2hTiles" && !n.classList.contains("td-step")) { if (n.id !== "fsCard") nodes.push(n); n = n.nextElementSibling; } g.more = nodes; }
+  return g;
+}
+
+/* ---- tiles ---- */
+const txt = el => el ? (el.textContent || "").replace(/\s+/g, " ").trim() : "";
+function subOf(k){ const h = D;
+  if (k === "morn") { const s = txt(q(h, "#r3aMorn .r3a-msum")); return s.split(" · ")[0]; }
+  if (k === "meals") { const b = q(h, "#tdMeals .on"); if (!b) return ""; const v = +b.dataset.v; return v === 0 ? txt(b) : v === 1 ? "1 meal" : v + " meals"; }
+  if (k === "plan") { const ms = h.querySelectorAll("#tdPlan .td-meal"); if (!ms.length) return "Fasting day"; return h.querySelectorAll("#tdPlan .td-meal.ate").length + "/" + ms.length + " eaten"; }
+  if (k === "meds") { const all = h.querySelectorAll("#tdMeds .td-med"); if (!all.length) return "Add a reminder"; return h.querySelectorAll("#tdMeds .td-med.on").length + "/" + all.length + " taken"; }
+  if (k === "have") { const s = txt(q(h, "#tdHaveSum")); const p = s.split(" · "); return p.length > 1 ? p[p.length - 1] : (s || "Shopping list"); }
+  if (k === "more") return "SOS · streak";
+  return "";
+}
+function tilesHTML(g, h){
+  return ORDER.filter(k => g[k] || (held && openKey === k)).map(k => '<button type="button" class="g2h-tile g2h-' + k + '" data-g2h-open="' + k + '" data-sfx="open"><span class="g2h-ic">' + IC[k] + '</span><b>' + esc(NAME[k]) + '</b><small>' + esc(subOf(k) || "") + '</small></button>').join("");
+}
+
+/* ---- sheet ---- */
+let ov = null, openKey = null, held = null; /* held: [{node, ph}] */
+function titleOf(k, nodes){
+  if (k === "morn") return "Today's check-ins";
+  const st = nodes && nodes.find(n => n.classList && (n.classList.contains("td-step") || n.classList.contains("sec")));
+  if (st) { const c = st.cloneNode(true); c.querySelectorAll(".td-n,.small,.tiny").forEach(e => e.remove()); const t = txt(c); if (t) return t; }
+  return NAME[k];
+}
+function take(k, nodes){
+  const body = ov && q(ov, ".g2h-pb"); if (!body) return;
+  if (held) held.forEach(x => { try { x.node.remove(); x.ph.remove(); } catch(e){} });
+  held = nodes.map(n => { const ph = D.createComment("g2h"); n.replaceWith(ph); body.appendChild(n); return {node:n, ph}; });
+  const t = q(ov, ".g2h-pt"), tt = titleOf(k, nodes); if (t && t.__t !== tt) { t.__t = tt; t.textContent = tt; }
+}
+function giveBack(){
+  if (!held) return;
+  const h = home(), fresh = h && openKey ? groups(h)[openKey] : null;
+  held.forEach(x => { if (x.ph.isConnected && !fresh) x.ph.replaceWith(x.node); else { x.ph.remove(); } });
+  held = null;
+}
+function openPanel(k){
+  const R2 = window.LowiR2, h = home(); if (!R2 || !R2.sheet || !h) return;
+  addL();
+  const g = groups(h); if (!g[k]) return;
+  closePanel(true);
+  openKey = k;
+  const me = ov = R2.sheet('<div class="h2 g2h-pt"></div><div class="g2h-pb g2h-pb-' + k + '"></div>', {cls:"g2h-ov", onClose:() => { if (ov !== me) return; setTimeout(() => { if (ov === me) { giveBack(); ov = null; openKey = null; schedule(); } }, 300); }});
+  inApp(me);
+  take(k, g[k]);
+  schedule();
+}
+function closePanel(now){
+  if (!ov) return; const o = ov;
+  if (now) { giveBack(); ov = null; openKey = null; }
+  try { window.LowiR2.close(o); } catch(e){}
+}
+/* #app is its own layer: inside it, the sheet sits above the tab bar and under the app's own sheets */
+function inApp(o){ const app = D.getElementById("app"); if (o && app && o.parentNode !== app) app.appendChild(o); }
+/* all quests as a sheet */
+let qov = null;
+function questSheet(){
+  const R2 = window.LowiR2, F = window.LowiF3, b = D.getElementById("f3Board"), l = b && q(b, ".f3-list"); if (!R2 || !R2.sheet || !l) return false;
+  const c = l.cloneNode(true); c.hidden = false; c.removeAttribute("hidden");
+  c.querySelectorAll("[data-f3]").forEach(x => { x.setAttribute("data-g2hq", x.dataset.q || ""); x.removeAttribute("data-f3"); });
+  const ttl = F && F.w ? F.w("all") : "All quests";
+  try { if (qov) R2.close(qov); } catch(e){}
+  const me = qov = R2.sheet('<div class="h2 g2h-pt" data-noi18n>' + esc(ttl) + '</div><div class="f3-board g2h-ql" data-noi18n>' + c.outerHTML + '</div>', {cls:"g2h-ov g2h-qov", onClose:() => { if (qov === me) qov = null; }});
+  inApp(me);
+  return true;
+}
+window.addEventListener("click", e => {
+  const t = e.target; if (!t || !t.closest) return;
+  if (on() && t.closest('#f3Board [data-f3="tog"]')) { if (questSheet()) { e.preventDefault(); e.stopPropagation(); } return; }
+  const r = t.closest("[data-g2hq]");
+  if (r) { e.preventDefault(); e.stopPropagation(); const id = r.dataset.g2hq; try { if (qov) window.LowiR2.close(qov); } catch(x){} setTimeout(() => { const b = D.querySelector('#f3Board [data-f3="go"][data-q="' + id + '"]'); if (b) b.click(); else if (window.LowiF3 && LowiF3.go) LowiF3.go(id); }, 120); return; }
+  if (on() && t.closest('#f3Board [data-f3="go"][data-q="fast"]')) {
+    const fs = D.getElementById("fsCard"); if (!fs || !fs.offsetHeight) setTimeout(() => openPanel("morn"), 60);
+  }
+}, true);
+D.addEventListener("click", e => {
+  const b = e.target && e.target.closest && e.target.closest("[data-g2h-open]"); if (!b) return;
+  e.preventDefault(); openPanel(b.dataset.g2hOpen);
+});
+/* the full-screen flows started from a sheet close it first: scan, camera, "I just ate" */
+D.addEventListener("click", e => {
+  if (!ov) return; const t = e.target; if (!t || !t.closest || !t.closest(".g2h-pb")) return;
+  if (t.closest('[data-act="camera"],[data-act="analyse"],[data-act="sos"],[data-sh="tab"],[data-tab],[data-r3a="m-move"]')) setTimeout(() => closePanel(false), 0);
+}, true);
+
+/* ---- fit: tighten step by step until Today fits ---- */
+const LV = ["g2h-t1", "g2h-t2", "g2h-t3", "g2h-t4", "g2h-t5", "g2h-t6", "g2h-t7"];
+function over(h){ return h.scrollHeight - h.clientHeight > 1; }
+function fit(h){
+  let lv = 0; LV.forEach(c => H.classList.remove(c));
+  if (!on() || !h.offsetHeight) return;
+  while (over(h) && lv < LV.length) { H.classList.add(LV[lv]); lv++; }
+}
+
+/* ---- the pass ---- */
+let raf = 0, busy = false, moH = null, moR = null, hooked = null;
+function schedule(){ if (raf || busy) return; raf = requestAnimationFrame(() => { raf = 0; pass(); }); }
+function pass(){
+  const h = home(); if (!h) return;
+  busy = true;
+  try {
+    addL();
+    const want = phone() && !!h.children.length;
+    if (want !== H.classList.contains("g2h-on")) H.classList.toggle("g2h-on", want);
+    if (!want) { LV.forEach(c => H.classList.remove(c)); if (ov) closePanel(true); return; }
+    const g = groups(h);
+    if (ov && openKey && g[openKey]) take(openKey, g[openKey]);
+    Object.keys(g).forEach(k => g[k].forEach(n => { if (n.getAttribute("data-g2h") !== k) n.setAttribute("data-g2h", k); }));
+    let t = D.getElementById("g2hTiles");
+    const board = D.getElementById("f3Board"), top = q(h, ".td-top");
+    const anchor = (board && h.contains(board)) ? board : top;
+    if (anchor) {
+      if (!t || !h.contains(t)) { t = D.createElement("div"); t.id = "g2hTiles"; t.className = "g2h-tiles"; t.__h = ""; }
+      if (t.previousElementSibling !== anchor) anchor.insertAdjacentElement("afterend", t);
+      const html = tilesHTML(g, h); if (t.__h !== html) { t.__h = html; t.innerHTML = html; t.classList.toggle("g2h-n5", t.children.length === 5); }
+    }
+    fit(h);
+  } catch(e){ console.error(e); }
+  finally { if (moH) moH.takeRecords(); if (moR) moR.takeRecords(); busy = false; }
+}
+function hook(){
+  const h = home(); if (!h || h === hooked) return;
+  hooked = h; if (moH) moH.disconnect();
+  moH = new MutationObserver(() => { if (!busy) schedule(); });
+  moH.observe(h, {childList:true, subtree:true, characterData:true});
+  schedule();
+}
+function boot(){
+  hook();
+  moR = new MutationObserver(ms => { if (busy) return; if (ms.some(m => m.attributeName !== "class" || /g2h-tour|g1-touring/.test((m.oldValue || "") + " " + H.className))) schedule(); else schedule(); });
+  moR.observe(H, {attributes:true, attributeFilter:["data-lay", "lang", "data-lang", "data-theme", "class", "style"], attributeOldValue:true});
+  addEventListener("resize", schedule);
+  /* the tour and the sheet: a tour shows the whole page */
+  new MutationObserver(() => { if (H.classList.contains("g2h-tour") && ov) closePanel(true); }).observe(H, {attributes:true, attributeFilter:["class"]});
+  setInterval(() => { hook(); }, 2000);
+}
+window.LowiG2H = {open:openPanel, close:() => closePanel(false), groups:() => { const h = home(); return h ? groups(h) : {}; }, fit:() => { const h = home(); if (h) fit(h); }, state:() => ({on:on(), open:openKey, level:LV.filter(c => H.classList.contains(c)).length})};
+if (D.readyState === "loading") D.addEventListener("DOMContentLoaded", boot); else boot();
 })();
 </script>
 </body>

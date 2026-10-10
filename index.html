@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261010-224145">
+<meta name="lowi-build" content="20261010-232133">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2108,7 +2108,7 @@ html[data-theme=light] #lcUpd.g1-upd .g1-usay{background:rgba(255,255,255,.2)}
 (function(){
 "use strict";
 if (window.LowiG1) return;
-const NEWS_RAW = {"id": "g2-cook", "go": {"tab": "shelf", "sel": "#g2cTiles"}, "text": {"en": "Cook fits on one screen now: the food shuffle on top and tiles below. Swipe foods, all recipes, search by ingredient and the LOWiSPIKE GPT each open with one tap. After a shuffle, your pick pops up.", "de": "Kochen passt jetzt auf einen Bildschirm: oben der Essens-Shuffle, darunter Kacheln. Essen wischen, alle Rezepte, Suche nach Zutat und das LOWiSPIKE GPT öffnen sich mit einem Tipp. Nach dem Shuffle springt dein Treffer auf.", "es": "Cocinar ahora cabe en una sola pantalla: arriba el shuffle de comida y debajo fichas. Desliza comidas, todas las recetas, búsqueda por ingrediente y el LOWiSPIKE GPT se abren con un toque. Tras el shuffle, aparece tu elección."}};
+const NEWS_RAW = {"id": "g2-profile", "go": {"tab": "profile", "sel": "#g2eTiles"}, "text": {"en": "Profile fits on one screen now: your bubble, level and streak on top, tiles below. Community, health, account, look and settings each open with one tap, and Back brings you home.", "de": "Dein Profil passt jetzt auf einen Bildschirm: oben Bubble, Level und Serie, darunter Kacheln. Community, Gesundheit, Konto, Look und Einstellungen öffnen sich mit einem Tipp, Zurück bringt dich wieder hin.", "es": "Tu perfil ahora cabe en una sola pantalla: arriba tu burbuja, nivel y racha, debajo fichas. Comunidad, salud, cuenta, aspecto y ajustes se abren con un toque, y Atrás te devuelve."}};
 const NEWS = (NEWS_RAW && typeof NEWS_RAW === "object") ? NEWS_RAW : null;
 const KEY = "lowi.g1", GO = "lowi.g1.go";
 const H = document.documentElement;
@@ -2865,6 +2865,63 @@ html.g2d-on.g2d-t2 #cmPaneBoard .r3-lbrow.t1{padding-top:12px}
 .g2d-ov .g2d-ps{margin:0 0 14px}
 .g2d-ov .g2d-unlb{margin:0}
 .g2d-ov .g2d-unlb .r3m-tc{min-height:150px}
+</style>
+<style id="g2eCss">/* G2 part 5: Profile is one game screen on a phone (hero + level + streak + tiles; each tile opens its part with Back) */
+#g2eTiles,#g2eHead{display:none}
+html.g2e-on:not(.g2e-open) #tab-profile{overflow:hidden;overscroll-behavior:contain;padding-bottom:0}
+html.g2e-on:not(.g2e-open) #tab-profile > :not([data-g2e="home"]):not(#g2eTiles){display:none!important}
+html.g2e-on:not(.g2e-open) #tab-profile > *{margin-top:0!important;margin-bottom:12px!important}
+html.g2e-on:not(.g2e-open) #tab-profile #g2eTiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%;margin-bottom:0!important}
+html.g2e-on #g2eTiles .g2h-tile:last-child{grid-column:auto}
+html.g2e-on #g2eTiles[data-n="8"] .g2h-tile:nth-last-child(-n+2){grid-column:span 1}
+html.g2e-on #g2eTiles[data-n="8"]{grid-template-columns:repeat(6,minmax(0,1fr))}
+html.g2e-on #g2eTiles[data-n="8"] .g2h-tile{grid-column:span 2}
+html.g2e-on #g2eTiles[data-n="8"] .g2h-tile:nth-last-child(-n+2){grid-column:span 3}
+#g2eTiles .g2e-tile{min-height:72px;padding:8px 10px}
+#g2eTiles .g2e-tile .g2h-ic{width:26px;height:26px}
+#g2eTiles .g2e-tile b{margin-top:4px}
+#g2eTiles .g2e-tile b{font-size:13px}
+#g2eTiles .g2e-tile small{font-size:11px}
+/* hero: bubble on the left, name, sign and buttons on the right */
+html.g2e-on:not(.g2e-open) #tab-profile > .r2-hero{display:grid!important;grid-template-columns:auto minmax(0,1fr);grid-auto-rows:auto;column-gap:14px;row-gap:4px;align-items:center;text-align:left;padding:12px 14px}
+html.g2e-on:not(.g2e-open) #tab-profile > .r2-hero > *{grid-column:2;margin:0!important;justify-content:flex-start;text-align:left}
+html.g2e-on:not(.g2e-open) #tab-profile > .r2-hero > .r3-hav{grid-column:1;grid-row:1 / span 4;align-self:center}
+html.g2e-on:not(.g2e-open) #tab-profile > .r2-hero .lb3{--sz:92px!important}
+html.g2e-on:not(.g2e-open) #tab-profile > .r2-hero > .r3-plink,html.g2e-on:not(.g2e-open) #tab-profile > .r2-hero > .r2-hs{display:none!important}
+html.g2e-on:not(.g2e-open) #tab-profile > .r2-hero > .r2-hn{font-size:22px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.g2e-on:not(.g2e-open) #tab-profile > .r2-hero > .r3-hacts{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px!important}
+html.g2e-on:not(.g2e-open) #tab-profile > .r2-hero > .r3-hacts .r2-btn{min-height:40px;padding:0 10px;font-size:12.5px;margin:0;white-space:nowrap}
+html.g2e-on:not(.g2e-open) #tab-profile > #lvCard{padding:12px 14px}
+html.g2e-on:not(.g2e-open) #tab-profile > .row .stat{padding-top:8px;padding-bottom:8px}
+/* a part opened from a tile: Back header + only that part */
+.g2e-head{align-items:center;gap:10px;position:sticky;top:calc(var(--sat,0px) + 4px);z-index:5;margin:0 0 12px;padding:6px 0;background:transparent}
+.g2e-back{display:inline-flex;align-items:center;gap:4px;min-height:44px;min-width:44px;padding:0 14px 0 8px;border-radius:22px;border:1px solid var(--line2,rgba(255,255,255,.14));background:var(--panel);color:inherit;font:inherit;font-size:14px;font-weight:600;cursor:pointer;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.g2e-back svg{width:20px;height:20px}
+.g2e-ht{margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.g2e-on.g2e-open #tab-profile > #g2eHead{display:flex}
+html.g2e-on.g2e-open #tab-profile > #g2eHead + *{margin-top:0}
+html.g2e-on.g2e-open[data-g2e-k="todo"] #tab-profile > :not([data-g2e="todo"]):not(#g2eHead),
+html.g2e-on.g2e-open[data-g2e-k="comm"] #tab-profile > :not([data-g2e="comm"]):not(#g2eHead),
+html.g2e-on.g2e-open[data-g2e-k="swaps"] #tab-profile > :not([data-g2e="swaps"]):not(#g2eHead),
+html.g2e-on.g2e-open[data-g2e-k="glow"] #tab-profile > :not([data-g2e="glow"]):not(#g2eHead),
+html.g2e-on.g2e-open[data-g2e-k="about"] #tab-profile > :not([data-g2e="about"]):not(#g2eHead),
+html.g2e-on.g2e-open[data-g2e-k="health"] #tab-profile > :not([data-g2e="health"]):not(#g2eHead),
+html.g2e-on.g2e-open[data-g2e-k="acct"] #tab-profile > :not([data-g2e="acct"]):not(#g2eHead),
+html.g2e-on.g2e-open[data-g2e-k="look"] #tab-profile > :not([data-g2e="look"]):not(#g2eHead),
+html.g2e-on.g2e-open[data-g2e-k="app"] #tab-profile > :not([data-g2e="app"]):not(#g2eHead){display:none!important}
+/* tighten step by step until it fits */
+html.g2e-on.g2e-t1:not(.g2e-open) #tab-profile > *{margin-bottom:9px!important}
+html.g2e-on.g2e-t1 #g2eTiles .g2e-tile{min-height:64px}
+html.g2e-on.g2e-t2:not(.g2e-open) #tab-profile > .r2-hero .lb3{--sz:72px!important}
+html.g2e-on.g2e-t2:not(.g2e-open) #tab-profile > #lvCard .r3m-hint{display:none}
+html.g2e-on.g2e-t3:not(.g2e-open) #tab-profile > .row .stat{padding-top:5px;padding-bottom:5px}
+html.g2e-on.g2e-t3:not(.g2e-open) #tab-profile > .row .stat .num{font-size:18px}
+html.g2e-on.g2e-t4 #g2eTiles .g2e-tile small{display:none}
+html.g2e-on.g2e-t4 #g2eTiles .g2e-tile{min-height:56px;padding:7px 9px}
+html.g2e-on.g2e-t4 #g2eTiles .g2e-tile .g2h-ic{width:22px;height:22px;border-radius:8px}
+html.g2e-on.g2e-t5:not(.g2e-open) #tab-profile > .r2-hero{padding:8px 12px}
+html.g2e-on.g2e-t5:not(.g2e-open) #tab-profile > .r2-hero .lb3{--sz:60px!important}
+html.g2e-on.g2e-t5:not(.g2e-open) #tab-profile > #lvCard{padding:9px 12px}
 </style>
 </head>
 <body>
@@ -16812,6 +16869,173 @@ function boot(){
 window.LowiG2D = {open:openPanel, close:closePanel, fit:() => { const p = pane(); if (p) fit(p); }, refresh:schedule,
   state:() => { const p = pane(); return {on:on(), open:openKey, level:["g2d-t1", "g2d-t2"].filter(c => H.classList.contains(c)).length,
     shown:p ? qa(p, ".r3-lbl > .r3-lbrow").filter(r => r.offsetHeight).length : 0}; }};
+if (D.readyState === "loading") D.addEventListener("DOMContentLoaded", boot); else boot();
+})();
+</script>
+<script id="g2eJs">/* ===== LOWiSPIKE G2 part 5 (Oct 11, 2026): Profile is one game screen, no scrolling (phone) =====
+   On a phone, Profile shows your bubble, name and sign with Edit profile, your level card, your streak row and
+   tiles: Finish profile (while steps are left), Community, Saved swaps, Your glow, About you, Health, Account,
+   Look & sound and Settings. A tile opens its part of the page as its own screen with a Back button. Nothing is
+   moved: every part stays in #tab-profile and is only shown or hidden, so every button keeps working.
+   iPad and desktop keep their layout. html.g2e-full shows the full page (tests). */
+(function(){
+"use strict";
+if (window.LowiG2E) return;
+const D = document, H = D.documentElement;
+const L = [
+  ["Finish profile", "Profil fertig", "Completar"],
+  ["My swaps", "Meine Swaps", "Mis cambios"],
+  ["Your glow", "Dein Glow", "Tu glow"],
+  ["About you", "Über dich", "Sobre ti"],
+  ["Health", "Gesundheit", "Salud"],
+  ["Account", "Konto", "Cuenta"],
+  ["Look & sound", "Look & Ton", "Aspecto"],
+  ["Settings", "Einstellungen", "Ajustes"],
+  ["Posts, ranking", "Posts, Rangliste", "Posts, ranking"],
+  ["Your favourites", "Deine Favoriten", "Tus favoritos"],
+  ["Daily check-in", "Täglicher Check", "Registro diario"],
+  ["Blood pressure", "Blutdruck", "Presión"],
+  ["Only on this phone", "Nur lokal, privat", "Solo en este móvil"],
+  ["Email, password", "E-Mail, Passwort", "Correo, clave"],
+  ["Theme, sounds", "Design, Töne", "Tema, sonidos"],
+  ["Name, language", "Name, Sprache", "Nombre, idioma"],
+  ["Back", "Zurück", "Atrás"]
+];
+let lAdded = false;
+function addL(){ if (lAdded) return; try { if (window.LowiLang && LowiLang.add) { LowiLang.add(L); lAdded = true; } } catch(e){} }
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const sv = p => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>';
+const IC = {
+  todo: sv('<path d="M5 12.5l4.2 4.2L19 7"/>'),
+  comm: sv('<path d="M4 5.5h12a1.5 1.5 0 011.5 1.5v7a1.5 1.5 0 01-1.5 1.5H9l-4 3.5V7A1.5 1.5 0 014 5.5z"/><path d="M17.5 9H20a1 1 0 011 1v9.5L18 17h-6.5"/>'),
+  swaps: sv('<path d="M7 4h10a1 1 0 011 1v15l-6-4-6 4V5a1 1 0 011-1z"/>'),
+  glow: sv('<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/>'),
+  about: sv('<circle cx="12" cy="8" r="3.8"/><path d="M4.5 20.5a7.5 7.5 0 0115 0"/>'),
+  health: sv('<path d="M12 20s-7.5-4.4-7.5-10A4.3 4.3 0 0112 7.4 4.3 4.3 0 0119.5 10c0 5.6-7.5 10-7.5 10z"/><path d="M8 12h2l1.2-2 1.8 4 1.2-2H16"/>'),
+  acct: sv('<rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 018 0v3"/>'),
+  look: sv('<path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/>'),
+  app: sv('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-1.8-.3 1.6 1.6 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.6 1.6 0 00-1-1.5 1.6 1.6 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.6 1.6 0 00.3-1.8 1.6 1.6 0 00-1.5-1H3a2 2 0 110-4h.1a1.6 1.6 0 001.5-1 1.6 1.6 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.6 1.6 0 001.8.3H9a1.6 1.6 0 001-1.5V3a2 2 0 114 0v.1a1.6 1.6 0 001 1.5 1.6 1.6 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 00-.3 1.8V9a1.6 1.6 0 001.5 1H21a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z"/>'),
+  back: sv('<path d="M15 5l-7 7 7 7"/>')
+};
+const ORDER = ["todo", "comm", "swaps", "glow", "about", "health", "acct", "look", "app"];
+const NAME = {todo:"Finish profile", comm:"Community", swaps:"My swaps", glow:"Your glow", about:"About you", health:"Health", acct:"Account", look:"Look & sound", app:"Settings"};
+const SUB = {comm:"Posts, ranking", swaps:"Your favourites", glow:"Daily check-in", about:"Blood pressure", health:"Only on this phone", acct:"Email, password", look:"Theme, sounds", app:"Name, language"};
+const q = (r, s) => r ? r.querySelector(s) : null;
+const tab = () => D.getElementById("tab-profile");
+const phone = () => H.getAttribute("data-lay") === "phone" || (!H.getAttribute("data-lay") && innerWidth < 700);
+const on = () => H.classList.contains("g2e-on");
+function shown(t){ if (!t || !t.classList.contains("active")) return false; try { return !window.LowiHost || !LowiHost.tab || LowiHost.tab() === "profile"; } catch(e){ return true; } }
+
+/* ---- which part of Profile each block belongs to ---- */
+function idOf(e){
+  if (e.id === "g2eHead" || e.id === "g2eTiles") return "";
+  const c = e.classList;
+  if (c.contains("r2-hero") || e.id === "lvCard" || (c.contains("row") && q(e, ":scope > .stat"))) return "home";
+  if (c.contains("r3-todo")) return "todo";
+  if (c.contains("r3-comm") || c.contains("fy-prof")) return "comm";
+  if (c.contains("r3a-saved")) return "swaps";
+  if (q(e, '[data-act="glow"]')) return "glow";
+  if (c.contains("r3a-pf")) return "about";
+  if (e.id === "health") return "health";
+  if (e.id === "lcAcct") return "acct";
+  if (c.contains("r2-look") || c.contains("sfx-card") || c.contains("sfx-sec")) return "look";
+  if (q(e, '[data-act="editname"]') || e.matches('[data-act="reset"]') || q(e, "[data-act=install]")) return "app";
+  return null;
+}
+function tag(t){
+  const kids = Array.from(t.children), ids = kids.map(idOf);
+  /* a heading belongs to the block after it; anything unknown stays with the block before it */
+  for (let i = kids.length - 1, next = "app"; i >= 0; i--) { if (ids[i] === "") continue; if (ids[i] === null && kids[i].classList.contains("sec")) ids[i] = "@" + next; else if (ids[i]) next = ids[i]; }
+  let prev = "app";
+  kids.forEach((k, i) => { let g = ids[i]; if (g === "") return; if (g === null) g = prev; else if (g[0] === "@") g = g.slice(1); else prev = g; if (k.getAttribute("data-g2e") !== g) k.setAttribute("data-g2e", g); });
+  const have = {}; kids.forEach(k => { const g = k.getAttribute("data-g2e"); if (g && g !== "home") have[g] = true; });
+  return have;
+}
+function subOf(k, t){
+  if (k === "todo") { const s = q(t, ".r3-todo .r3-todo-h small"); return s ? (s.textContent || "").split("·")[0].trim() : ""; }
+  return SUB[k] || "";
+}
+function tilesHTML(have, t){
+  return ORDER.filter(k => have[k]).map(k => '<button type="button" class="g2h-tile g2e-tile g2e-' + k + '" data-g2e-open="' + k + '" data-sfx="open"><span class="g2h-ic">' + IC[k] + '</span><b>' + esc(NAME[k]) + '</b><small' + (k === "todo" ? " data-noi18n" : "") + '>' + esc(subOf(k, t)) + '</small></button>').join("");
+}
+
+/* ---- open a part as its own screen ---- */
+function openPanel(k){
+  const t = tab(); if (!on() || !t || !ORDER.includes(k)) return;
+  addL(); H.setAttribute("data-g2e-k", k); H.classList.add("g2e-open");
+  pass(); t.scrollTop = 0;
+}
+function closePanel(){
+  if (!H.classList.contains("g2e-open")) return;
+  H.classList.remove("g2e-open"); H.removeAttribute("data-g2e-k");
+  const t = tab(); if (t) t.scrollTop = 0; schedule();
+}
+D.addEventListener("click", e => {
+  const t = e.target; if (!t || !t.closest) return;
+  const b = t.closest("[data-g2e-open]"); if (b) { e.preventDefault(); openPanel(b.dataset.g2eOpen); return; }
+  if (t.closest("[data-g2e-back]")) { e.preventDefault(); closePanel(); return; }
+  /* the profile button or another tab: back to the main Profile screen */
+  if (H.classList.contains("g2e-open") && t.closest("#tabbar .tb, #pfBtn")) closePanel();
+});
+D.addEventListener("keydown", e => { if (e.key === "Escape" && H.classList.contains("g2e-open") && !D.querySelector(".r2-ov.on:not(.off)")) closePanel(); });
+
+/* ---- fit: tighten step by step until the main screen fits above the tab bar ---- */
+const LV = ["g2e-t1", "g2e-t2", "g2e-t3", "g2e-t4", "g2e-t5"];
+function limit(){ const tb = D.getElementById("tabbar"); const r = tb && tb.offsetHeight ? tb.getBoundingClientRect().top : innerHeight; return r - 6; }
+function bottom(t){ let m = 0; Array.from(t.children).forEach(k => { if (k.offsetHeight) m = Math.max(m, k.getBoundingClientRect().bottom); }); return m; }
+function fit(t){
+  LV.forEach(c => H.classList.remove(c));
+  if (!on() || H.classList.contains("g2e-open") || !t || !t.offsetHeight) return;
+  t.scrollTop = 0; const lim = limit();
+  let lv = 0; while (bottom(t) > lim && lv < LV.length) { H.classList.add(LV[lv]); lv++; }
+}
+
+/* ---- the pass ---- */
+let raf = 0, busy = false, moT = null, moR = null, hooked = null;
+function schedule(){ if (raf || busy) return; raf = requestAnimationFrame(() => { raf = 0; pass(); }); }
+function pass(){
+  const t = tab();
+  busy = true;
+  try {
+    addL();
+    const want = !!t && phone() && shown(t) && !H.classList.contains("g2e-full") && !!q(t, ":scope > .r2-hero");
+    if (want !== on()) H.classList.toggle("g2e-on", want);
+    if (!want) { LV.forEach(c => H.classList.remove(c)); if (H.classList.contains("g2e-open") && !(t && shown(t))) { H.classList.remove("g2e-open"); H.removeAttribute("data-g2e-k"); } return; }
+    const have = tag(t), hero = q(t, ":scope > .r2-hero");
+    if (H.classList.contains("g2e-open") && !have[H.getAttribute("data-g2e-k")]) { H.classList.remove("g2e-open"); H.removeAttribute("data-g2e-k"); }
+    /* the Back header sits right after the hero (the hero is hidden while a part is open) */
+    let hd = D.getElementById("g2eHead");
+    if (!hd || !t.contains(hd)) { hd = D.createElement("div"); hd.id = "g2eHead"; hd.className = "g2e-head"; hd.__k = null; }
+    if (hd.previousElementSibling !== hero) hero.insertAdjacentElement("afterend", hd);
+    const k = H.getAttribute("data-g2e-k") || "";
+    if (hd.__k !== k) { hd.__k = k; hd.innerHTML = '<button type="button" class="g2e-back" data-g2e-back data-sfx="close" aria-label="Back">' + IC.back + '<span>Back</span></button><div class="h2 g2e-ht">' + esc(NAME[k] || "") + '</div>'; }
+    /* tiles after the streak row (or the level card) */
+    let ti = D.getElementById("g2eTiles");
+    if (!ti || !t.contains(ti)) { ti = D.createElement("div"); ti.id = "g2eTiles"; ti.className = "g2e-tiles"; ti.__h = ""; }
+    const homes = Array.from(t.children).filter(x => x.getAttribute("data-g2e") === "home"), last = homes[homes.length - 1] || hd;
+    if (ti.previousElementSibling !== last) last.insertAdjacentElement("afterend", ti);
+    const html = tilesHTML(have, t); if (ti.__h !== html) { ti.__h = html; ti.innerHTML = html; }
+    ti.setAttribute("data-n", String(ti.children.length));
+    fit(t);
+  } catch(e){ console.error(e); }
+  finally { if (moT) moT.takeRecords(); if (moR) moR.takeRecords(); busy = false; }
+}
+function hook(){
+  const t = tab(); if (!t || t === hooked) return;
+  hooked = t; if (moT) moT.disconnect();
+  moT = new MutationObserver(() => { if (!busy) schedule(); });
+  moT.observe(t, {childList:true, subtree:true, characterData:true, attributes:true, attributeFilter:["class"]});
+  schedule();
+}
+function boot(){
+  hook();
+  moR = new MutationObserver(() => { if (!busy) schedule(); });
+  moR.observe(H, {attributes:true, attributeFilter:["data-lay", "lang", "data-lang", "data-theme", "style", "class"]});
+  addEventListener("resize", schedule);
+  D.addEventListener("click", () => setTimeout(() => { hook(); schedule(); }, 60), true);
+  setInterval(() => { hook(); schedule(); }, 2000);
+}
+window.LowiG2E = {open:openPanel, close:closePanel, fit:() => fit(tab()), state:() => ({on:on(), open:H.getAttribute("data-g2e-k") || null, level:LV.filter(c => H.classList.contains(c)).length, tiles:Array.from(D.querySelectorAll("#g2eTiles [data-g2e-open]")).map(b => b.dataset.g2eOpen)})};
 if (D.readyState === "loading") D.addEventListener("DOMContentLoaded", boot); else boot();
 })();
 </script>

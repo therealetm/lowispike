@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261010-134236">
+<meta name="lowi-build" content="20261010-140910">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1837,19 +1837,19 @@ const W = {
     when:"When did you eat?", hint:"Ate earlier? Tap a time, or tap the clock to pick your own.", now:"Just now", agoM:"{n} min ago", agoH:"{n} h ago", other:"Other time",
     goalOk:"Goal {h} h reached", goalLeft:"Goal {h} h · {d} to go", earn:"You get +{x} XP", next:"Your next fast starts from this meal.",
     short:"Under 4 hours, so no points this time. Your clock restarts from this meal.", recent:"Your recent fasts", done:"Fast done!", badge:"Goal reached",
-    without:"{d} without food", enjoy:"Enjoy your meal", label:"Fast done: {h} h", partial:"Every hour counts. The goal is next.", perH:"{h} h × 2 XP", ms:"Milestones", gb:"Goal bonus",
+    without:"{d} without food", enjoy:"Enjoy your meal", chain:"What did you eat? ›", label:"Fast done: {h} h", partial:"Every hour counts. The goal is next.", perH:"{h} h × 2 XP", ms:"Milestones", gb:"Goal bonus",
     restart:"Clock restarted from {t}.", before:"That's before your fast started.", today:"today", yesterday:"yesterday", h:"h", m:"min"},
   de: {stop:"Stopp", stopAria:"Fasten stoppen: Ich habe gerade gegessen", btnNow:"Gerade gegessen · Fasten beenden", btnAt:"Um {t} gegessen · Fasten beenden", title:"Fasten beenden", fasted:"Du hast gefastet", since:"seit {t}",
     when:"Wann hast du gegessen?", hint:"Früher gegessen? Tipp auf eine Zeit oder auf die Uhr, um deine eigene zu wählen.", now:"Gerade eben", agoM:"vor {n} min", agoH:"vor {n} h", other:"Andere Zeit",
     goalOk:"Ziel {h} h erreicht", goalLeft:"Ziel {h} h · noch {d}", earn:"Du bekommst +{x} XP", next:"Dein nächstes Fasten startet ab dieser Mahlzeit.",
     short:"Unter 4 Stunden, deshalb diesmal keine Punkte. Deine Uhr startet ab dieser Mahlzeit neu.", recent:"Deine letzten Fastenzeiten", done:"Fasten geschafft!", badge:"Ziel erreicht",
-    without:"{d} ohne Essen", enjoy:"Guten Appetit", label:"Fasten geschafft: {h} h", partial:"Jede Stunde zählt. Als Nächstes das Ziel.", perH:"{h} h × 2 XP", ms:"Meilensteine", gb:"Ziel-Bonus",
+    without:"{d} ohne Essen", enjoy:"Guten Appetit", chain:"Was hast du gegessen? ›", label:"Fasten geschafft: {h} h", partial:"Jede Stunde zählt. Als Nächstes das Ziel.", perH:"{h} h × 2 XP", ms:"Meilensteine", gb:"Ziel-Bonus",
     restart:"Uhr läuft neu ab {t}.", before:"Das ist vor dem Start deines Fastens.", today:"heute", yesterday:"gestern", h:"h", m:"min"},
   es: {stop:"Parar", stopAria:"Parar el ayuno: acabo de comer", btnNow:"Acabo de comer · terminar ayuno", btnAt:"Comí a las {t} · terminar ayuno", title:"Terminar el ayuno", fasted:"Has ayunado", since:"desde las {t}",
     when:"¿Cuándo comiste?", hint:"¿Comiste antes? Toca una hora, o toca el reloj para elegir la tuya.", now:"Ahora mismo", agoM:"hace {n} min", agoH:"hace {n} h", other:"Otra hora",
     goalOk:"Meta de {h} h lograda", goalLeft:"Meta {h} h · faltan {d}", earn:"Recibes +{x} XP", next:"Tu próximo ayuno empieza desde esta comida.",
     short:"Menos de 4 horas, así que esta vez no hay puntos. Tu reloj empieza de nuevo desde esta comida.", recent:"Tus últimos ayunos", done:"¡Ayuno completado!", badge:"Meta lograda",
-    without:"{d} sin comer", enjoy:"Buen provecho", label:"Ayuno hecho: {h} h", partial:"Cada hora cuenta. La meta, la próxima vez.", perH:"{h} h × 2 XP", ms:"Hitos", gb:"Bonus de meta",
+    without:"{d} sin comer", enjoy:"Buen provecho", chain:"¿Qué comiste? ›", label:"Ayuno hecho: {h} h", partial:"Cada hora cuenta. La meta, la próxima vez.", perH:"{h} h × 2 XP", ms:"Hitos", gb:"Bonus de meta",
     restart:"El reloj empieza de nuevo a las {t}.", before:"Eso es antes de que empezara tu ayuno.", today:"hoy", yesterday:"ayer", h:"h", m:"min"}
 };
 const lang = () => { try { const l = (window.LowiLang && LowiLang.get ? LowiLang.get() : localStorage.getItem("lowispike.lang")) || "en"; return W[l.slice(0, 2)] ? l.slice(0, 2) : "en"; } catch(e){ return "en"; } };
@@ -1914,7 +1914,8 @@ function end(ateAt, o){ o = o || {}; const s = st(), now = Date.now(); ateAt = M
   try { if (typeof closeSheet === "function") closeSheet(); } catch(e){}
   try { if (window.LowiR2 && LowiR2.closeAll) LowiR2.closeAll(); } catch(e){}
   repaintAll();
-  if (rec && o.reward !== false) reward(rec, p); else if (!o.quiet) { try { if (typeof toast === "function") toast(w("restart", {t:hm(ateAt)}) + (hours < MIN_H ? "" : "")); } catch(e){} }
+  CH = o.chain && window.LowiF2 ? {rec, x:p.x, hours, at:ateAt} : null; /* f2-chain */
+  if (rec && o.reward !== false) reward(rec, p); else { if (CH) { const c = CH; CH = null; setTimeout(() => LowiF2.start(c), 380); } if (!o.quiet) { try { if (typeof toast === "function") toast(w("restart", {t:hm(ateAt)}) + (hours < MIN_H ? "" : "")); } catch(e){} } }
   return {rec, x:p.x, ok:p.ok, hours}; }
 function repaintAll(){ try { if (window.LowiFast && LowiFast.refresh) LowiFast.refresh(); } catch(e){}
   try { if (window.R3A && R3A.paintMorning) R3A.paintMorning(); } catch(e){}
@@ -1936,7 +1937,7 @@ function reward(rec, p){ const old = document.getElementById("fstRw"); if (old) 
     (p.ok ? '<div class="fst-badge">✓ ' + esc(w("badge")) + '</div>' : '<div class="fst-part">' + esc(w("partial")) + '</div>') +
     '<div class="fst-xp">+<b id="fstXp" data-x="' + p.x + '">' + (RM ? p.x : 0) + '</b> XP</div>' +
     '<div class="fst-brk">' + esc(w("perH", {h:p.full})) + ' <b>+' + p.base + '</b>' + (p.msx ? '<br>' + esc(w("ms")) + ' (' + p.ms.length + ') <b>+' + p.msx + '</b>' : "") + (p.ok ? '<br>' + esc(w("gb")) + ' <b>+' + GOAL_X + '</b>' : "") + '</div>' +
-    '<button class="btn primary fst-ok-b" data-fst="rw-close">' + esc(w("enjoy")) + '</button><p class="tiny muted fst-next">' + esc(w("next")) + '</p></div>';
+    '<button class="btn primary fst-ok-b" data-fst="rw-close">' + esc(CH ? w("chain") : w("enjoy")) + '</button><p class="tiny muted fst-next">' + esc(w("next")) + '</p></div>';
   document.body.appendChild(d);
   requestAnimationFrame(() => requestAnimationFrame(() => d.classList.add("on")));
   setTimeout(() => sfx(p.ok ? "workoutDone" : "levelup"), 250);
@@ -1944,7 +1945,9 @@ function reward(rec, p){ const old = document.getElementById("fstRw"); if (old) 
   if (!RM) { const el = d.querySelector("#fstXp"), n = p.x, t0 = performance.now(), D = 900;
     const step = now => { const k = Math.min(1, (now - t0) / D); el.textContent = Math.round(n * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step); };
     setTimeout(() => requestAnimationFrame(step), 300); } }
-function closeRw(){ const d = document.getElementById("fstRw"); if (!d) return; d.classList.remove("on"); setTimeout(() => d.remove(), 300); }
+let CH = null; /* F2: after the reward the app carries on to "What did you eat?" */
+function closeRw(){ const d = document.getElementById("fstRw"); if (!d) return; d.classList.remove("on"); setTimeout(() => d.remove(), 300);
+  if (CH && window.LowiF2) { const c = CH; CH = null; setTimeout(() => LowiF2.start(c), 320); } }
 
 /* ---------- clicks ---------- */
 document.addEventListener("click", e => {
@@ -1953,7 +1956,7 @@ document.addEventListener("click", e => {
   if (k === "open") { e.preventDefault(); e.stopPropagation(); open(); }
   else if (k === "pick") { SEL = +a.dataset.t || 0; paint(); sfx("tap"); }
   else if (k === "clock") { const i = document.getElementById("fstIn"); if (i && e.target !== i) { try { if (i.showPicker) { i.showPicker(); e.preventDefault(); } } catch(x){} } }
-  else if (k === "end") { const r = end(SEL || Date.now()); if (r && r.err) { try { toast(w("before")); } catch(x){} } }
+  else if (k === "end") { const r = end(SEL || Date.now(), {chain:true}); if (r && r.err) { try { toast(w("before")); } catch(x){} } }
 }, true);
 function fromInput(i){ const t = new Date(i.value).getTime(); if (!t) return; const start = startOf(); SEL = Math.min(Date.now(), Math.max(start + 60000, t)); if (Date.now() - SEL < 30000) SEL = 0; paint(); }
 document.addEventListener("change", e => { if (e.target && e.target.id === "fstIn") fromInput(e.target); });
@@ -2105,7 +2108,7 @@ html[data-theme=light] #lcUpd.g1-upd .g1-usay{background:rgba(255,255,255,.2)}
 (function(){
 "use strict";
 if (window.LowiG1) return;
-const NEWS_RAW = {"id": "g1-home", "go": {"tab": "home", "sel": "#tab-home .g1-lead"}, "text": {"en": "Today is easier now. Every step tells you what to tap, and the extras are under “Show more”.", "de": "Heute ist jetzt einfacher. Jeder Schritt sagt dir, worauf du tippen sollst, und die Extras findest du unter „Mehr zeigen“.", "es": "Hoy ahora es más fácil. Cada paso te dice qué tocar, y los extras están en “Ver más”."}};
+const NEWS_RAW = {"id": "f2-ate", "go": {"tab": "home", "sel": "#tab-home [data-r3a=\"m-fast\"]"}, "text": {"en": "After “I just ate”, I now ask what you ate: snap it, scan the barcode or type it. You see the spike, get XP, and can share the photo to For You.", "de": "Nach „Gerade gegessen“ frage ich jetzt, was du gegessen hast: Foto, Barcode oder eintippen. Du siehst den Spike, bekommst XP und kannst das Foto auf For You teilen.", "es": "Después de “Acabo de comer”, ahora te pregunto qué comiste: foto, código de barras o escríbelo. Ves el pico, ganas XP y puedes compartir la foto en For You."}};
 const NEWS = (NEWS_RAW && typeof NEWS_RAW === "object") ? NEWS_RAW : null;
 const KEY = "lowi.g1", GO = "lowi.g1.go";
 const H = document.documentElement;
@@ -2282,7 +2285,7 @@ function show(){ if (!TOUR) return; const r = root(), s = TOUR.steps[TOUR.i], n 
     head = '<div class="g1-tag">' + esc(T("newin")) + '</div>';
     btns = '<button type="button" class="g1-btn g1-skip" data-g1="later">' + esc(T("Later")) + '</button><span class="g1-sp"></span><button type="button" class="g1-btn g1-next" data-g1="showme">' + esc(T("Show me")) + ' ›</button>';
   } else {
-    head = '<div class="g1-tag">' + esc(T("newin")) + '</div>';
+    head = '<div class="g1-tag">' + esc(s.tag || T("newin")) + '</div>';
     btns = '<span class="g1-sp"></span><button type="button" class="g1-btn g1-next" data-g1="done">' + esc(T("Got it")) + '</button>';
   }
   card.classList.remove("in");
@@ -2402,7 +2405,9 @@ function init(){ H.classList.add("g1"); helpBtn(); helpPlace(); decorate();
   document.addEventListener("visibilitychange", () => { if (document.visibilityState !== "visible") hush(); }); }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 
-window.LowiG1 = {start, close, next, back, news:NEWS, startNews, offerNews, say, hush, mem, reset:() => { try { localStorage.removeItem(KEY); } catch(e){} }, T, canSpeak:SS,
+/* F2: one line from the fairy, pointing at something on screen (used at the start of the "I just ate" chain) */
+function line(text, el, tag){ if (TOUR) close("x", true); begin({steps:[{k:"f2", text, tag, el}], i:0, kind:"line"}); }
+window.LowiG1 = {start, close, line, next, back, news:NEWS, startNews, offerNews, say, hush, mem, reset:() => { try { localStorage.removeItem(KEY); } catch(e){} }, T, canSpeak:SS,
   state:() => TOUR ? {kind:TOUR.kind, i:TOUR.i, n:TOUR.steps.length, k:TOUR.steps[TOUR.i].k} : null, fairy:() => fz ? {on:fz.classList.contains("on"), home:fzHome, pos:fzPos} : null};
 })();
 </script>
@@ -3332,7 +3337,7 @@ if (document.body) defs(); else document.addEventListener("DOMContentLoaded", de
 window.addEventListener("hashchange", checkShareHash);
 
 window.TRIBE = {
-  renderForYou, compose, composeInto,
+  renderForYou, compose, composeInto, setPhoto:ph => { if (C) { C.photo = ph || ""; paintRest(); } } /* f2-photo */,
   addPost:p => { load(); T.posts.unshift(p); while (T.posts.length > 80) { const x = T.posts.pop(); if (x && x.vid && window.FYV) FYV.remove(x.id); } try { localStorage.setItem(KEY, JSON.stringify(T)); return true; } catch(e){ T.posts.shift(); const h = H(); if (h) h.toast("Storage is full on this phone."); return false; } }, checkShareHash, profileHTML,
   post:id => T.posts.map(x => Object.assign({me:true}, x)).find(x => x.id === id) || DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)), imgKey:id => FY_IMG[id] || "", demoNames:() => DEMO.map(x => x.who),
   reset:() => { localStorage.removeItem(KEY); },
@@ -12159,7 +12164,7 @@ function boot(){
   try { if (curTab() === "scan") renderTab(); } catch(e){}
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => setTimeout(boot, 0)); else setTimeout(boot, 0);
-window.LowiDex = {open:openDex, scan:openScanner, reveal, rate, rateName, validCode, render:renderTab, state:() => D, load:loadComm, lookup:byBarcode};
+window.LowiDex = {open:openDex, scan:openScanner, reveal, rate, rateName, validCode, render:renderTab, state:() => D, load:loadComm, lookup:byBarcode, cur:() => CUR} /* f2-cur */;
 })();
 </script>
 <style id="r3kcss">
@@ -14843,5 +14848,339 @@ html[data-theme=light] .p2-pill{background:#21703b!important;color:#fff!importan
 html[data-theme=light] small.gold,html[data-theme=light] .gold small,html[data-theme=light] .r3m-hint span{color:#6a4a0c!important;opacity:1!important}
 html[data-theme=light] .lockline span{color:#55462a!important;opacity:1!important}
 </style>
+<style id="f2css">
+/* LOWiSPIKE F2: after "I just ate" */
+.f2{padding-top:4px}
+.f2-x svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.f2-tag{display:flex;margin:0 0 8px}
+.f2-tag span{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:999px;font-size:11.5px;font-weight:750;letter-spacing:.4px;text-transform:uppercase;color:var(--gold2,#ecd08f);background:rgba(255,211,110,.12);border:1px solid rgba(255,211,110,.38)}
+.f2-t{margin:0 44px 4px 0;font-size:24px;line-height:1.15}
+.f2-sub{margin:0 0 14px;font-size:14px;line-height:1.4}
+.f2-opts{display:flex;flex-direction:column;gap:10px}
+.f2-opt,.f2-pick{position:relative;display:flex;align-items:center;gap:14px;width:100%;min-height:78px;padding:12px 14px;border-radius:20px;text-align:left;color:inherit;font:inherit;cursor:pointer;
+  background:linear-gradient(135deg,rgba(255,255,255,.075),rgba(255,255,255,.025));border:1px solid rgba(255,255,255,.13);transition:transform .15s ease,border-color .15s ease}
+.f2-opt:active,.f2-pick:active,.f2-tile:active{transform:scale(.975)}
+.f2-orb{flex:0 0 54px;width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.f2-orb svg,.f2-pi svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.f2-opt.snap .f2-orb{color:#0b1830;background:radial-gradient(circle at 35% 30%,#ffffff,#cfe9ff 55%,#8fc6ff);box-shadow:0 0 22px rgba(159,216,255,.45)}
+.f2-opt.bc .f2-orb{color:#e9dcff;background:radial-gradient(circle at 35% 30%,#4a3a78,#1a1330 70%);border:1.5px solid rgba(196,155,255,.75);box-shadow:0 0 22px rgba(160,110,255,.4)}
+.f2-opt.type .f2-orb{color:#2a1c02;background:radial-gradient(circle at 35% 30%,#fff1c6,#ecc463 60%,#c9952a);box-shadow:0 0 22px rgba(255,211,110,.38)}
+.f2-ot{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.f2-ot b{font-size:17px;font-weight:750;line-height:1.2}
+.f2-ot small{font-size:13px;opacity:.75;line-height:1.3}
+.f2-xpp{flex:none;padding:3px 8px;border-radius:999px;font-size:11.5px;font-weight:800;color:var(--gold2,#ecd08f);background:rgba(255,211,110,.12);border:1px solid rgba(255,211,110,.35);white-space:nowrap}
+.f2-chev{flex:none;font-style:normal;font-size:24px;line-height:1;opacity:.55;margin-left:-4px}
+.f2-pick{margin-top:14px;min-height:64px;background:transparent;border:1.5px dashed rgba(255,255,255,.22)}
+.f2-pick .f2-ot b{font-size:16px}
+.f2-pi{flex:0 0 40px;width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(var(--acc-rgb,159,216,255),.14);color:var(--acc,#9fd8ff)}
+.f2-later{display:block;width:100%;min-height:46px;margin-top:10px;padding:10px;border:0;background:none;color:inherit;font:inherit;font-size:14px;font-weight:600;opacity:.75;text-align:center;cursor:pointer}
+.f2-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px}
+.f2-back{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:inherit;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.f2-back svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8}
+.f2-form{display:flex;flex-direction:column}
+.f2-in{font-size:16px;min-height:50px}
+.f2-err{min-height:0;margin:6px 2px 0;font-size:13px;font-weight:600;color:var(--hi,#f0a08a)}
+.f2-err:empty{display:none}
+.f2-ch-l{margin:12px 0 6px}
+.f2-chips{display:flex;flex-wrap:wrap;gap:8px}
+.f2-chip{min-height:38px;max-width:100%;overflow:hidden;text-overflow:ellipsis;color:inherit;font:inherit;font-size:13.5px;cursor:pointer}
+.f2-go{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;min-height:52px;margin-top:16px;font-size:16px;font-weight:750;text-align:center;line-height:1.2}
+.f2-go[disabled]{opacity:.45}
+.f2-go small{font-size:12px;font-weight:550;opacity:.85;margin-top:2px}
+.f2-shot{position:relative;height:190px;margin:0 0 12px;border-radius:20px;overflow:hidden;background:#000;border:1px solid rgba(255,255,255,.14)}
+.f2-shot img{width:100%;height:100%;object-fit:cover;display:block}
+.f2-scanl,.f2-scant{display:none}
+.f2-shot.scan .f2-scanl{display:block;position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,transparent,var(--acc,#9fd8ff),transparent);box-shadow:0 0 18px var(--acc,#9fd8ff);animation:f2Scan 1.2s ease-in-out infinite alternate}
+.f2-shot.scan .f2-scant{display:block;position:absolute;left:10px;bottom:10px;padding:5px 11px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;font-size:12.5px;font-weight:650}
+@keyframes f2Scan{from{top:0}to{top:calc(100% - 3px)}}
+.f2-tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.f2-tile{display:flex;flex-direction:column;align-items:center;gap:8px;min-height:176px;padding:16px 10px;border-radius:22px;text-align:center;color:inherit;font:inherit;cursor:pointer;background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.13);transition:transform .15s ease}
+.f2-tile .f2-orb{color:#0b1830;background:radial-gradient(circle at 35% 30%,#ffffff,#cfe9ff 55%,#8fc6ff);box-shadow:0 0 22px rgba(159,216,255,.4)}
+.f2-tile:last-child .f2-orb{color:#e9dcff;background:radial-gradient(circle at 35% 30%,#4a3a78,#1a1330 70%);border:1.5px solid rgba(196,155,255,.75);box-shadow:0 0 22px rgba(160,110,255,.35)}
+.f2-tile b{font-size:17px;font-weight:750}
+.f2-tile small{font-size:12.5px;opacity:.78;line-height:1.35}
+/* logged */
+.f2-done{position:relative;text-align:center;padding-top:6px}
+.f2-res{position:relative;width:112px;height:112px;margin:0 auto 14px;border-radius:50%;padding:4px;background:conic-gradient(var(--lv) 0 var(--deg),rgba(255,255,255,.12) var(--deg) 360deg);box-shadow:0 0 30px var(--lvg)}
+.f2-res img,.f2-reg{width:100%;height:100%;border-radius:50%;object-fit:cover;display:flex;align-items:center;justify-content:center;font-size:46px;background:rgba(14,17,26,.95)}
+.f2-lvb{position:absolute;left:50%;bottom:-10px;transform:translateX(-50%);padding:4px 11px;border-radius:999px;font-size:12px;font-weight:800;white-space:nowrap;color:#10131a;background:var(--lv)}
+.lv-low{--lv:#a9dcb2;--lvg:rgba(169,220,178,.45);--deg:120deg}
+.lv-medium{--lv:#e6c98a;--lvg:rgba(230,201,138,.45);--deg:220deg}
+.lv-high{--lv:#f0a08a;--lvg:rgba(240,160,138,.45);--deg:330deg}
+.f2-dt{font-size:23px;font-weight:800;margin-top:6px}
+.f2-meal{font-size:15px;font-weight:650;margin-top:4px;opacity:.92;overflow-wrap:anywhere}
+.f2-line{font-size:13.5px;opacity:.8;margin-top:4px}
+.f2-xp{margin-top:12px;font-size:34px;font-weight:800;color:var(--gold2,#ecd08f)}
+.f2-xls{display:flex;flex-direction:column;gap:4px;margin:6px auto 4px;max-width:320px}
+.f2-xl{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:6px 12px;border-radius:12px;background:rgba(255,255,255,.05);text-align:left}
+.f2-xl b{color:var(--gold2,#ecd08f)}
+.f2-xl.none{justify-content:center;text-align:center;opacity:.8}
+.f2-nf{margin:8px 0 0}
+.f2-conf{position:absolute;left:50%;top:60px;width:0;height:0;pointer-events:none}
+.f2-conf i{position:absolute;left:0;top:0;width:var(--s);height:var(--s);border-radius:50%;background:var(--c);opacity:0;animation:f2Conf var(--t) ease-out .1s forwards}
+@keyframes f2Conf{0%{opacity:1;transform:rotate(var(--a)) translateY(0) scale(.6)}80%{opacity:1}100%{opacity:0;transform:rotate(var(--a)) translateY(calc(-1 * var(--d))) scale(1)}}
+/* barcode reveal: log it */
+.f2-bcbar{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+.f2-bcbar .r2-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;font-size:15.5px;font-weight:750}
+.f2-bcbar .f2-xpp{color:#5a3d00;background:rgba(255,236,180,.9);border-color:rgba(184,128,16,.5)}
+@media (prefers-reduced-motion: reduce){.f2-conf{display:none}.f2-shot.scan .f2-scanl{animation:none}.f2-opt,.f2-tile{transition:none}}
+/* Cloud (light) */
+html[data-theme=light] .f2-tag span{color:#7a5200;background:rgba(214,150,20,.12);border-color:rgba(184,128,16,.45)}
+html[data-theme=light] .f2-opt,html[data-theme=light] .f2-tile{background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(240,243,250,.9));border-color:rgba(22,28,46,.13);box-shadow:0 4px 16px rgba(60,72,110,.08);color:#111318}
+html[data-theme=light] .f2-pick{border-color:rgba(22,28,46,.25);color:#111318}
+html[data-theme=light] .f2-pi{background:rgba(40,110,190,.1);color:#1f5fa8}
+html[data-theme=light] .f2-ot small,html[data-theme=light] .f2-tile small{opacity:1;color:#4a556f}
+html[data-theme=light] .f2-xpp{color:#7a5200;background:rgba(214,150,20,.12);border-color:rgba(184,128,16,.45)}
+html[data-theme=light] .f2-opt.snap .f2-orb,html[data-theme=light] .f2-tile .f2-orb{background:radial-gradient(circle at 35% 30%,#ffffff,#d6ebff 50%,#7fb6f2);box-shadow:0 0 0 1.5px rgba(40,110,190,.35),0 4px 14px rgba(40,110,190,.25)}
+html[data-theme=light] .f2-opt.bc .f2-orb,html[data-theme=light] .f2-tile:last-child .f2-orb{box-shadow:0 4px 14px rgba(90,60,170,.3)}
+html[data-theme=light] .f2-opt.type .f2-orb{box-shadow:0 4px 14px rgba(184,128,16,.3)}
+html[data-theme=light] .f2-later{color:#2b3550;opacity:1}
+html[data-theme=light] .f2-back{background:rgba(22,28,46,.04);border-color:rgba(22,28,46,.16);color:#111318}
+html[data-theme=light] .f2-err{color:#b23a1c}
+html[data-theme=light] .f2-shot{border-color:rgba(22,28,46,.14)}
+html[data-theme=light] .f2-res{background:conic-gradient(var(--lvd) 0 var(--deg),rgba(22,28,46,.1) var(--deg) 360deg);box-shadow:0 6px 24px var(--lvg)}
+html[data-theme=light] .f2-res img,html[data-theme=light] .f2-reg{background:#fff}
+html[data-theme=light] .lv-low{--lvd:#2f9a52;--lvg:rgba(47,154,82,.25)}
+html[data-theme=light] .lv-medium{--lvd:#c28a12;--lvg:rgba(194,138,18,.25)}
+html[data-theme=light] .lv-high{--lvd:#d0532f;--lvg:rgba(208,83,47,.25)}
+html[data-theme=light] .f2-lvb{background:var(--lvd);color:#fff}
+html[data-theme=light] .f2-xp{color:#8a5d00}
+html[data-theme=light] .f2-xl{background:rgba(22,28,46,.05);color:#1c2333}
+html[data-theme=light] .f2-xl b{color:#8a5d00}
+html[data-theme=light] .f2-line,html[data-theme=light] .f2-meal{opacity:1;color:#2b3550}
+</style>
+<script id="f2js">
+/* LOWiSPIKE F2 (Oct 10, 2026): after "I just ate" the app carries on.
+   Fast reward -> "What did you eat?" with Snap it / Scan barcode / Type it, or "Not eaten yet? Help me pick" (Shuffle or Swipe in Cook).
+   Logging shows the spike result and the XP (meal XP as before, +10 once per fast for logging the meal that broke it).
+   After a photo log: optional "Share to For You" with the photo already in the post. Every step ends back on Today.
+   The scan-orb fairy says one line the first time. Other parts can start it: LowiF2.start({}) (the F3 daily loop),
+   and listen to the "lowi:meal-logged" event. EN / DE / ES. */
+(function(){
+"use strict";
+const SEEN = "lowi.f2.v1", BONUS = 10;
+const W = {
+  en: {tag:"Next up", quest:"Log your meal", title:"What did you eat?", sub:"Log it while it's fresh. A photo, a barcode or a few words all count.",
+    snap:"Snap it", snapS:"Photo of your plate", bc:"Scan barcode", bcS:"Packaged food", type:"Type it", typeS:"Already eaten? No photo needed",
+    pickQ:"Not eaten yet?", pick:"Help me pick", later:"Skip for now · back to Today", close:"Close", back:"Back",
+    fairy:"Nice! Now tell me what you ate. Photo, barcode or a few words, each one gets you XP.", guide:"Your guide",
+    typeT:"What was it?", typeSub:"A few words is enough. I'll work out the spike.", ph:"e.g. salmon, broccoli and rice", recent:"Tap one or type your own", check:"Check the spike",
+    bad:"I couldn't read that one. Try simple words, like chicken, rice and salad.", photoT:"Nice shot. What's on the plate?", photoSub:"Name the main things so I can work out the spike.",
+    retake:"New photo", scanning:"Looking at your plate…",
+    pickT:"Let's find your meal", pickSub:"Two quick ways to pick something low-spike.", shuf:"Shuffle", shufS:"The slot machine picks a meal for you", swipe:"Swipe", swipeS:"Swipe through meals, keep the ones you like",
+    doneT:"Meal logged!", low:"Low spike", medium:"Medium spike", high:"High spike",
+    lowL:"Clean refuel. Steady energy ahead.", mediumL:"Solid. A short walk after it helps.", highL:"Big spike. A 10-minute walk now softens it.",
+    xpBreak:"Logged the meal that broke your fast", xpNone:"No meal XP: 5 meals a day is the max.", share:"Share to For You", shareS:"Show the community what you ate",
+    skipShare:"Skip · back to Today", today:"Back to Today", nextFast:"Your next fast is running since {t}.", cap:"Just ate: {m}",
+    ate:"I ate this · log it", other:"Something else", typeIt:"Can't rate it? Type it instead", meal:"Meal checked"},
+  de: {tag:"Als Nächstes", quest:"Mahlzeit eintragen", title:"Was hast du gegessen?", sub:"Trag es ein, solange du es noch weißt. Foto, Barcode oder ein paar Worte, alles zählt.",
+    snap:"Foto machen", snapS:"Foto von deinem Teller", bc:"Barcode scannen", bcS:"Verpacktes Essen", type:"Eintippen", typeS:"Schon gegessen? Kein Foto nötig",
+    pickQ:"Noch nicht gegessen?", pick:"Hilf mir beim Aussuchen", later:"Später · zurück zu Heute", close:"Schließen", back:"Zurück",
+    fairy:"Stark! Jetzt sag mir, was du gegessen hast. Foto, Barcode oder ein paar Worte, alles bringt dir XP.", guide:"Dein Guide",
+    typeT:"Was war es?", typeSub:"Ein paar Worte reichen. Den Spike rechne ich aus.", ph:"z. B. Lachs, Brokkoli und Reis", recent:"Tipp eins an oder schreib selbst", check:"Spike prüfen",
+    bad:"Das konnte ich nicht lesen. Versuch einfache Wörter, wie Hähnchen, Reis und Salat.", photoT:"Schönes Foto. Was ist auf dem Teller?", photoSub:"Nenn die Hauptsachen, dann rechne ich den Spike aus.",
+    retake:"Neues Foto", scanning:"Ich schaue mir deinen Teller an…",
+    pickT:"Lass uns dein Essen finden", pickSub:"Zwei schnelle Wege zu etwas mit wenig Spike.", shuf:"Shuffle", shufS:"Der Spielautomat sucht dir ein Essen aus", swipe:"Swipen", swipeS:"Wisch durch Gerichte, behalte, was dir gefällt",
+    doneT:"Mahlzeit eingetragen!", low:"Niedriger Spike", medium:"Mittlerer Spike", high:"Hoher Spike",
+    lowL:"Sauber getankt. Ruhige Energie voraus.", mediumL:"Solide. Ein kurzer Spaziergang danach hilft.", highL:"Großer Spike. 10 Minuten gehen jetzt dämpft ihn.",
+    xpBreak:"Die Mahlzeit nach dem Fasten eingetragen", xpNone:"Keine Mahlzeit-XP: 5 Mahlzeiten am Tag sind das Maximum.", share:"Auf For You teilen", shareS:"Zeig der Community, was du gegessen hast",
+    skipShare:"Überspringen · zurück zu Heute", today:"Zurück zu Heute", nextFast:"Dein nächstes Fasten läuft seit {t}.", cap:"Gerade gegessen: {m}",
+    ate:"Hab ich gegessen · eintragen", other:"Etwas anderes", typeIt:"Keine Bewertung? Dann tipp es ein", meal:"Mahlzeit geprüft"},
+  es: {tag:"Lo siguiente", quest:"Registra tu comida", title:"¿Qué comiste?", sub:"Regístralo ahora que lo recuerdas. Una foto, un código de barras o unas palabras, todo cuenta.",
+    snap:"Hazle una foto", snapS:"Foto de tu plato", bc:"Escanear código", bcS:"Comida envasada", type:"Escríbelo", typeS:"¿Ya comiste? Sin foto",
+    pickQ:"¿Aún no has comido?", pick:"Ayúdame a elegir", later:"Ahora no · volver a Hoy", close:"Cerrar", back:"Atrás",
+    fairy:"¡Genial! Ahora dime qué comiste. Foto, código o unas palabras, todo te da XP.", guide:"Tu guía",
+    typeT:"¿Qué era?", typeSub:"Con unas palabras basta. Yo calculo el pico.", ph:"p. ej. salmón, ensalada y huevos", recent:"Toca uno o escribe el tuyo", check:"Ver el pico",
+    bad:"No pude leer eso. Prueba con palabras sencillas, como pollo, arroz y ensalada.", photoT:"Buena foto. ¿Qué hay en el plato?", photoSub:"Di lo principal y calculo el pico.",
+    retake:"Otra foto", scanning:"Mirando tu plato…",
+    pickT:"Busquemos tu comida", pickSub:"Dos formas rápidas de elegir algo con poco pico.", shuf:"Shuffle", shufS:"La tragaperras elige una comida por ti", swipe:"Deslizar", swipeS:"Desliza platos y quédate con los que te gusten",
+    doneT:"¡Comida registrada!", low:"Pico bajo", medium:"Pico medio", high:"Pico alto",
+    lowL:"Recarga limpia. Energía estable por delante.", mediumL:"Bien. Un paseo corto después ayuda.", highL:"Pico alto. Caminar 10 minutos ahora lo suaviza.",
+    xpBreak:"Registraste la comida que rompió tu ayuno", xpNone:"Sin XP de comida: 5 comidas al día es el máximo.", share:"Compartir en For You", shareS:"Muestra a la comunidad lo que comiste",
+    skipShare:"Saltar · volver a Hoy", today:"Volver a Hoy", nextFast:"Tu próximo ayuno corre desde las {t}.", cap:"Acabo de comer: {m}",
+    ate:"Me lo comí · registrar", other:"Otra cosa", typeIt:"¿Sin valoración? Escríbelo", meal:"Comida revisada"}
+};
+/* Spanish words the meal checker doesn't know yet */
+const ES = {pollo:"chicken", pechuga:"chicken", verduras:"vegetables", verdura:"vegetables", huevos:"eggs", huevo:"egg", aguacate:"avocado", arroz:"rice", "brócoli":"broccoli", brocoli:"broccoli",
+  ensalada:"salad", pan:"bread", tostada:"toast", patatas:"potatoes", papas:"potatoes", fritas:"fries", carne:"beef", ternera:"beef", cerdo:"pork", queso:"cheese", yogur:"yogurt", fruta:"fruit",
+  manzana:"apple", "plátano":"banana", platano:"banana", "atún":"tuna", atun:"tuna", pescado:"fish", leche:"milk", avena:"oats", espinacas:"spinach", tomate:"tomato", tomates:"tomatoes",
+  frijoles:"beans", alubias:"beans", lentejas:"lentils", garbanzos:"chickpeas", nueces:"nuts", almendras:"almonds", galletas:"cookies", hamburguesa:"burger", "salmón":"salmon", salmon:"salmon",
+  pasta:"pasta", fideos:"noodles", sopa:"soup", pepino:"cucumber", zanahoria:"carrot", zanahorias:"carrots", cebolla:"onion", pimiento:"pepper", setas:"mushrooms", champiñones:"mushrooms",
+  mantequilla:"butter", aceite:"oil", miel:"honey", "azúcar":"sugar", zumo:"juice", jugo:"juice", refresco:"soda", cerveza:"beer", vino:"wine", "café":"coffee", "té":"tea", bocadillo:"sandwich",
+  pizza:"pizza", chocolate:"chocolate", helado:"ice cream", tarta:"cake", pastel:"cake", croissant:"croissant", cereales:"cereal", gambas:"shrimp", tofu:"tofu", con:"with", y:"and", de:"", el:"", la:"", los:"", las:"", un:"", una:""};
+const lang = () => { try { const l = (window.LowiLang && LowiLang.get ? LowiLang.get() : localStorage.getItem("lowispike.lang")) || "en"; return W[l.slice(0, 2)] ? l.slice(0, 2) : "en"; } catch(e){ return "en"; } };
+const w = (k, o) => { let s = W[lang()][k]; if (s == null) s = W.en[k]; if (o) Object.keys(o).forEach(x => { s = s.split("{" + x + "}").join(o[x]); }); return s; };
+const e_ = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;"})[c]);
+const q = s => document.querySelector(s);
+const sfx = n => { try { window.LowiSFX && LowiSFX.play(n); } catch(e){} };
+const buzz = p => { try { navigator.vibrate && navigator.vibrate(p); } catch(e){} };
+const RM = () => !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+const p2 = n => (n < 10 ? "0" : "") + n;
+const hm = t => { const d = new Date(t); return p2(d.getHours()) + ":" + p2(d.getMinutes()); };
+const tr = s => { try { return window.LowiLang && LowiLang.t ? LowiLang.t(s) : s; } catch(e){ return s; } };
+const G = () => { try { return S; } catch(e){ return null; } };
+const dayKey = () => { try { return today(); } catch(e){ return new Date().toISOString().slice(0, 10); } };
+const logsToday = () => { const s = G(); return s && Array.isArray(s.logs) ? s.logs.filter(l => l.day === dayKey()).length : 0; };
+
+const IC = {
+  cam:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.7l1.3-2h5l1.3 2h1.7A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12.5" r="3.6"/></svg>',
+  bc:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7V5h3M17 5h3v2M20 17v2h-3M7 19H4v-2"/><path d="M7.5 8.5v7M10 8.5v7M12.5 8.5v7M15 8.5v7M16.8 8.5v7"/></svg>',
+  pen:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19l1-4L15.5 5.5a2.1 2.1 0 0 1 3 3L9 18z"/><path d="M13.5 7.5l3 3M5 19h14"/></svg>',
+  dice:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="9" cy="9" r="1.2"/><circle cx="15" cy="15" r="1.2"/><circle cx="15" cy="9" r="1.2"/><circle cx="9" cy="15" r="1.2"/></svg>',
+  slot:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="15" height="13" rx="3"/><path d="M7 10v5M10.5 10v5M14 10v5M18 10h2V6"/><circle cx="20" cy="5" r="1.5"/></svg>',
+  cards:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="4" width="11" height="15" rx="2.5" transform="rotate(10 12 12)"/><rect x="5" y="5" width="11" height="15" rx="2.5"/></svg>',
+  x:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+};
+
+/* ---------- state ---------- */
+let F = {on:false, step:"", fast:null, photo:"", text:"", mode:"", err:"", seen:0, last:null};
+let POLL = 0;
+function xpbase(){ const s = G(); return s ? {xp:s.xp || 0, led:(s.ledger || []).length} : {xp:0, led:0}; }
+
+/* ---------- the sheet ---------- */
+function shell(inner, cls){ return '<button class="xbtn f2-x" data-act="close-sheet" data-f2="finish" aria-label="' + e_(w("close")) + '">' + IC.x + '</button><div class="sheetbody f2' + (cls ? " " + cls : "") + '" id="f2Sheet" data-noi18n data-step="' + F.step + '">' + inner + '</div>'; }
+function put(html, cls){ try { sheet(shell(html, cls)); } catch(e){ console.error(e); return; } const sh = q("#sheet"); if (sh) { sh.scrollTop = 0; sh.classList.add("f2-on"); } }
+function head(t, sub, tag){ return (tag ? '<div class="f2-tag"><span>' + e_(tag) + '</span></div>' : "") + '<div class="h2 f2-t">' + e_(t) + '</div>' + (sub ? '<div class="small muted f2-sub">' + e_(sub) + '</div>' : ""); }
+const backBtn = to => '<button type="button" class="f2-back" data-f2="go" data-to="' + to + '">‹ ' + e_(w("back")) + '</button>';
+const laterBtn = () => '<button type="button" class="f2-later" data-f2="finish">' + e_(w("later")) + '</button>';
+const xpPill = n => '<span class="f2-xpp">+' + n + ' XP</span>';
+function mealXP(){ return logsToday() < 5 ? 15 : 0; }
+function bonusOpen(){ return !!(F.fast && F.fast.s && !bonusDone(F.fast.s)); }
+function bonusDone(s){ try { return (JSON.parse(localStorage.getItem(SEEN) || "{}").b || []).indexOf(s) >= 0; } catch(e){ return false; } }
+function mem(){ try { return JSON.parse(localStorage.getItem(SEEN) || "{}") || {}; } catch(e){ return {}; } }
+function remember(o){ try { localStorage.setItem(SEEN, JSON.stringify(Object.assign(mem(), o))); } catch(e){} }
+
+function stepEat(){ F.step = "eat"; F.mode = ""; const x = mealXP() + (bonusOpen() ? BONUS : 0);
+  const opt = (k, ic, t, s, cls) => '<button type="button" class="f2-opt ' + cls + '" data-f2="' + k + '"><span class="f2-orb">' + ic + '</span><span class="f2-ot"><b>' + e_(t) + '</b><small>' + e_(s) + '</small></span>' + (x ? xpPill(x) : "") + '<i class="f2-chev" aria-hidden="true">›</i></button>';
+  put(head(w("title"), w("sub"), w("tag") + " · " + w("quest")) +
+    '<div class="f2-opts">' + opt("snap", IC.cam, w("snap"), w("snapS"), "snap") + opt("bc", IC.bc, w("bc"), w("bcS"), "bc") + opt("type", IC.pen, w("type"), w("typeS"), "type") + '</div>' +
+    '<button type="button" class="f2-pick" data-f2="go" data-to="pick"><span class="f2-pi">' + IC.dice + '</span><span class="f2-ot"><small>' + e_(w("pickQ")) + '</small><b>' + e_(w("pick")) + '</b></span><i class="f2-chev" aria-hidden="true">›</i></button>' +
+    laterBtn());
+  fairyOnce(); }
+
+function chipsHTML(){ const s = G(), seen = {}, out = [];
+  (s && s.logs ? s.logs.slice().reverse() : []).forEach(l => { const t = (l.t || "").trim(); const k = t.toLowerCase(); if (t && t.length < 40 && !seen[k] && out.length < 3) { seen[k] = 1; out.push(t); } });
+  const def = {en:["Salmon, broccoli and rice", "Eggs and avocado", "Chicken salad", "Pizza"], de:["Lachs, Brokkoli und Reis", "Eier mit Avocado", "Hähnchen-Salat", "Pizza"], es:["Salmón con ensalada", "Huevos con aguacate", "Ensalada de pollo", "Pizza"]}[lang()];
+  def.forEach(t => { if (out.length < 5 && !seen[t.toLowerCase()]) { seen[t.toLowerCase()] = 1; out.push(t); } });
+  return '<div class="small muted f2-ch-l">' + e_(w("recent")) + '</div><div class="f2-chips">' + out.map(t => '<button type="button" class="chip f2-chip" data-f2="chip" data-v="' + e_(t) + '">' + e_(t) + '</button>').join("") + '</div>'; }
+function inputHTML(){ return '<form class="f2-form" id="f2Form" autocomplete="off"><input class="input f2-in" id="f2In" maxlength="120" enterkeyhint="done" placeholder="' + e_(w("ph")) + '" value="' + e_(F.text) + '">' +
+  '<div class="f2-err" id="f2Err" role="alert">' + e_(F.err) + '</div>' + chipsHTML() +
+  '<button class="btn primary f2-go" id="f2Go" type="submit"' + (F.text.trim().length < 2 ? " disabled" : "") + '>' + e_(w("check")) + '</button></form>'; }
+function stepType(){ F.step = "type"; F.photo = ""; put(head(w("typeT"), w("typeSub"), w("tag") + " · " + w("quest")) + inputHTML() + '<div class="f2-foot">' + backBtn("eat") + '</div>');
+  setTimeout(() => { const i = q("#f2In"); if (i && !navigator.webdriver) try { i.focus({preventScroll:true}); } catch(e){} }, 380); }
+function stepPhoto(scan){ F.step = "photo";
+  put(head(w("photoT"), w("photoSub"), w("tag") + " · " + w("quest")) +
+    '<div class="f2-shot' + (scan ? " scan" : "") + '"><img src="' + F.photo + '" alt=""><i class="f2-scanl"></i><span class="f2-scant">' + e_(w("scanning")) + '</span></div>' +
+    inputHTML() + '<div class="f2-foot">' + backBtn("eat") + '<button type="button" class="f2-back" data-f2="snap">' + IC.cam + e_(w("retake")) + '</button></div>');
+  if (scan) { sfx("open"); setTimeout(() => { const s = q("#f2Sheet .f2-shot"); if (s) s.classList.remove("scan"); if (s) sfx("check"); }, RM() ? 0 : 1300); } }
+function stepPick(){ F.step = "pick";
+  const t = (k, ic, a, b) => '<button type="button" class="f2-tile" data-f2="' + k + '"><span class="f2-orb">' + ic + '</span><b>' + e_(a) + '</b><small>' + e_(b) + '</small></button>';
+  put(head(w("pickT"), w("pickSub"), w("pickQ")) + '<div class="f2-tiles">' + t("shuffle", IC.slot, w("shuf"), w("shufS")) + t("swipe", IC.cards, w("swipe"), w("swipeS")) + '</div>' +
+    '<div class="f2-foot">' + backBtn("eat") + '</div>' + laterBtn()); }
+
+/* ---------- logged: the spike result + XP ---------- */
+function stepDone(o){ F.step = "done"; F.mode = ""; const lv = o.lvl in {low:1, medium:1, high:1} ? o.lvl : "medium";
+  const s = G(), led = s && s.ledger ? s.ledger.slice(o.base.led) : [], x = Math.max(0, (s ? s.xp : 0) - o.base.xp);
+  const lines = led.map(l => '<div class="f2-xl"><span>' + e_(tr(l.label)) + '</span><b>+' + l.amt + '</b></div>').join("") || '<div class="f2-xl none"><span>' + e_(w("xpNone")) + '</span></div>';
+  let conf = ""; if (!RM()) { const cols = ["var(--acc,#9fd8ff)", "#ffd36e", "#b6f5a8", "#c49bff", "#7ef0ff"]; for (let i = 0; i < 16; i++) { const a = Math.random() * 360, d = 80 + Math.random() * 80, z = 4 + Math.random() * 5; conf += '<i style="--a:' + a.toFixed(0) + 'deg;--d:' + d.toFixed(0) + 'px;--s:' + z.toFixed(1) + 'px;--c:' + cols[i % cols.length] + ';--t:' + (0.8 + Math.random() * 0.5).toFixed(2) + 's"></i>'; } }
+  const fs = (() => { try { return window.LowiFastStop ? LowiFastStop.startOf() : 0; } catch(e){ return 0; } })();
+  const btns = o.photo ? '<button class="btn primary f2-go f2-share" data-f2="share"><span>' + e_(w("share")) + '</span><small>' + e_(w("shareS")) + '</small></button><button type="button" class="f2-later" data-f2="finish">' + e_(w("skipShare")) + '</button>'
+    : '<button class="btn primary f2-go" data-f2="finish">' + e_(w("today")) + '</button>';
+  put('<div class="f2-done lv-' + lv + '"><i class="f2-conf" aria-hidden="true">' + conf + '</i>' +
+    '<div class="f2-res">' + (o.photo ? '<img src="' + o.photo + '" alt="">' : '<span class="f2-reg">' + e_(o.emoji || "🍽️") + '</span>') + '<span class="f2-lvb">' + e_(w(lv)) + '</span></div>' +
+    '<div class="f2-dt">' + e_(w("doneT")) + '</div><div class="f2-meal">' + e_(o.title) + '</div><div class="f2-line">' + e_(w(lv + "L")) + '</div>' +
+    '<div class="f2-xp">+<b id="f2Xp" data-x="' + x + '">' + (RM() ? x : 0) + '</b> XP</div><div class="f2-xls">' + lines + '</div>' + btns +
+    (fs ? '<p class="small muted f2-nf">' + e_(w("nextFast", {t:hm(fs)})) + '</p>' : "") + '</div>', "f2-dsh");
+  F.last = {title:o.title, lvl:lv, photo:o.photo || "", via:o.via, xp:x};
+  setTimeout(() => sfx(x > 0 ? "levelup" : "check"), 200); buzz(x > 0 ? [30, 50, 40] : 20);
+  if (!RM()) { const el = q("#f2Xp"), t0 = performance.now(), D = 800; const st = now => { if (!el.isConnected) return; const k = Math.min(1, (now - t0) / D); el.textContent = Math.round(x * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(st); }; setTimeout(() => requestAnimationFrame(st), 250); }
+  try { document.dispatchEvent(new CustomEvent("lowi:meal-logged", {detail:{lvl:lv, via:o.via, photo:!!o.photo, xp:x, title:o.title}})); } catch(e){} }
+function giveBonus(){ if (!bonusOpen()) return; const b = mem().b || []; b.push(F.fast.s); while (b.length > 30) b.shift(); remember({b});
+  try { award(BONUS, w("xpBreak"), null, "f2_break"); } catch(e){ console.error(e); } }
+
+/* ---------- checking a typed or photographed meal ---------- */
+function esText(t){ if (lang() !== "es") return t; return t.toLowerCase().split(/(\s+|,)/).map(x => { const k = x.trim(); return k && ES[k] != null ? ES[k] : x; }).join("").replace(/\s+/g, " ").replace(/\s+,/g, ",").trim(); }
+function known(t){ try { if (MEALS.find(m => normName(m.n) === normName(t))) return true; } catch(e){} try { return !!analyseMeal(t, {trig:S.trig}).ok; } catch(e){ return true; } }
+function check(){ const i = q("#f2In"); const orig = ((i && i.value) || F.text || "").trim(); F.text = orig; if (orig.length < 2) return;
+  let t = orig; if (!known(t)) { const t2 = esText(t); if (t2 && known(t2)) t = t2; else { F.err = w("bad"); const er = q("#f2Err"); if (er) er.textContent = F.err; sfx("error"); buzz(30); return; } }
+  F.err = ""; F.mode = "result"; F.base = null; try { closeSheet(); } catch(e){}
+  try { runAnalyse(t, F.photo || ""); } catch(e){ console.error(e); }
+  try { if (t !== orig && CUR && !CUR.meal) { CUR.title = orig.charAt(0).toUpperCase() + orig.slice(1); renderResult(CUR); } } catch(e){}
+  watch(); }
+
+/* ---------- barcode ---------- */
+const LV = {ok:["low", "ja"], better:["medium", "selten"], spike:["high", "nein"]};
+function bcInject(){ const ov = [...document.querySelectorAll(".r2-ov.b3-ov")].pop(); if (!ov) return false; const rev = ov.querySelector(".b3-rev"); if (!rev) return true; if (rev.querySelector(".f2-bcbar")) return true;
+  const p = (window.LowiDex && LowiDex.cur) ? LowiDex.cur() : null; const bar = document.createElement("div"); bar.className = "f2-bcbar"; bar.setAttribute("data-noi18n", "");
+  if (p && !p.notFound && LV[p.verdict]) { bar.innerHTML = '<button type="button" class="r2-btn pri f2-bcate" data-f2="bc-ate">' + e_(w("ate")) + xpPill(mealXP() + (bonusOpen() ? BONUS : 0)) + '</button><button type="button" class="r2-btn ghost" data-f2="bc-else">' + e_(w("other")) + '</button>';
+    const card = rev.querySelector("#b3Card"); if (card && card.parentNode) card.parentNode.insertBefore(bar, card.nextSibling); else rev.prepend(bar); }
+  else { bar.innerHTML = '<button type="button" class="r2-btn pri" data-f2="bc-type">' + e_(w("typeIt")) + '</button><button type="button" class="r2-btn ghost" data-f2="bc-else">' + e_(w("other")) + '</button>'; rev.prepend(bar); }
+  return true; }
+function bcAte(){ const p = window.LowiDex && LowiDex.cur ? LowiDex.cur() : null; if (!p || !LV[p.verdict]) return; const base = xpbase(), n = logsToday(), m = LV[p.verdict];
+  const title = (p.name || "").trim() + (p.brand && (p.name || "").indexOf(p.brand) < 0 ? " · " + p.brand : "");
+  try { S.logs.push({ts:Date.now(), day:dayKey(), t:title, lvl:m[0], r:m[1], e:"🏷️", via:"barcode"}); save(); if (n < 5) award(15, tr("Meal checked")); questDone("eat"); } catch(e){ console.error(e); }
+  giveBonus(); F.mode = ""; try { LowiR2.closeAll(); } catch(e){} try { renderAll(); } catch(e){}
+  setTimeout(() => stepDone({lvl:m[0], title, photo:"", emoji:"🏷️", via:"barcode", base}), 300); }
+
+/* ---------- watching the screens that aren't ours ---------- */
+function watch(){ clearInterval(POLL); let gone = 0; POLL = setInterval(() => {
+  if (!F.on) { clearInterval(POLL); return; }
+  if (F.mode === "result") { const r = q("#result"); if (r && r.classList.contains("open")) { gone = 0; return; } if (++gone < 2) return; clearInterval(POLL); F.mode = ""; if (F.step !== "done") stepEat(); return; }
+  if (F.mode === "bc") { const cam = q("#b3Cam"), ov = bcInject(); if (cam || ov) { gone = 0; return; } if (++gone < 3) return; clearInterval(POLL); F.mode = ""; if (F.step !== "done") stepEat(); return; }
+  clearInterval(POLL); }, 250); }
+
+/* ---------- the fairy, once ---------- */
+function fairyOnce(){ if (mem().f || !window.LowiG1 || !LowiG1.line) return; try { if (LowiG1.state && LowiG1.state()) return; } catch(e){}
+  remember({f:1}); setTimeout(() => { if (F.step !== "eat" || !q("#f2Sheet .f2-opts")) return; try { LowiG1.line(w("fairy"), () => q("#f2Sheet .f2-opts"), w("guide")); } catch(e){ console.error(e); } }, 650); }
+function fairyCheck(){ try { const s = window.LowiG1 && LowiG1.state ? LowiG1.state() : null; if (s && s.kind === "line" && s.k === "f2" && !(F.step === "eat" && q("#sheetwrap.open #f2Sheet .f2-opts"))) LowiG1.close("x"); } catch(e){} }
+setInterval(fairyCheck, 400);
+
+/* ---------- start / finish ---------- */
+function start(o){ o = o || {}; F = {on:true, step:"", fast:o.rec || o.fast || null, photo:"", text:"", mode:"", err:"", last:null};
+  try { if (window.LowiR2 && LowiR2.closeAll) LowiR2.closeAll(); } catch(e){}
+  stepEat(); sfx("open"); }
+function finish(toToday){ F.on = false; F.mode = ""; clearInterval(POLL); try { closeSheet(); } catch(e){}
+  if (toToday !== false) setTimeout(() => { try { if (typeof TAB === "undefined" || TAB !== "home") goTab("home"); else renderAll(); } catch(e){} try { window.scrollTo(0, 0); } catch(e){} }, 220); }
+function share(){ const l = F.last; if (!l || !l.photo) return finish(); const cap = w("cap", {m:l.title});
+  F.on = false; try { closeSheet(); } catch(e){}
+  setTimeout(() => { try { if (window.LowiR3F && LowiR3F.postSheet) { LowiR3F.postSheet("", cap); if (window.TRIBE && TRIBE.setPhoto) TRIBE.setPhoto(l.photo); } } catch(e){ console.error(e); } }, 260); }
+function cook(then){ F.on = false; try { closeSheet(); } catch(e){}
+  try { const t = document.querySelector('#tabbar .tb[data-tab="shelf"]'); if (t) t.click(); else goTab("shelf"); } catch(e){}
+  setTimeout(() => { try { if (window.LOWI_SHELF) LOWI_SHELF.open("kochen"); } catch(e){} }, 120);
+  setTimeout(then, 520); }
+
+let fileIn = null;
+function snap(){ if (!fileIn) { fileIn = document.createElement("input"); fileIn.type = "file"; fileIn.accept = "image/*"; fileIn.setAttribute("capture", "environment"); fileIn.id = "f2File"; fileIn.style.display = "none"; document.body.appendChild(fileIn);
+    fileIn.addEventListener("change", async () => { const f = fileIn.files && fileIn.files[0]; fileIn.value = ""; if (!f || !F.on) return; let src = ""; try { src = await resizeImage(f, 900); } catch(e){ console.error(e); } if (!src) return; F.photo = src; F.text = ""; F.err = ""; stepPhoto(true); }); }
+  fileIn.click(); }
+
+/* ---------- clicks ---------- */
+document.addEventListener("click", e => {
+  // "Done · log it" on the result screen, while the chain runs: let it log, then show ours
+  const ld = e.target.closest && e.target.closest('#result [data-act="logdone"]');
+  if (ld && F.on && F.mode === "result") { const base = xpbase(), r = CUR; F.mode = "logging"; clearInterval(POLL);
+    setTimeout(() => { giveBonus(); const ph = (r && r.photo) || F.photo || ""; stepDone({lvl:r ? r.lvl : "medium", title:r ? (r.title || (r.meal && r.meal.n) || F.text) : F.text, photo:ph, emoji:r && r.emoji, via:ph ? "photo" : "type", base}); }, 80); return; }
+  const b = e.target.closest && e.target.closest("[data-f2]"); if (!b) return; const k = b.dataset.f2;
+  if (k === "finish") { e.preventDefault(); sfx("close"); finish(); }
+  else if (k === "go") { e.preventDefault(); sfx("tap"); const to = b.dataset.to; F.err = ""; if (to === "pick") stepPick(); else if (to === "type") stepType(); else stepEat(); }
+  else if (k === "type") { sfx("tap"); F.text = ""; F.err = ""; stepType(); }
+  else if (k === "snap") { sfx("tap"); snap(); }
+  else if (k === "bc") { sfx("tap"); F.mode = "bc"; try { closeSheet(); } catch(x){} setTimeout(() => { try { LowiDex.scan("cam"); } catch(x){ console.error(x); } watch(); }, 180); }
+  else if (k === "chip") { const i = q("#f2In"); if (i) { i.value = b.dataset.v; F.text = i.value; F.err = ""; const er = q("#f2Err"); if (er) er.textContent = ""; const g = q("#f2Go"); if (g) g.disabled = false; } sfx("tap"); }
+  else if (k === "shuffle") { sfx("tap"); cook(() => { const s = q("#r5Stage"); if (s) s.scrollIntoView({block:"center"}); setTimeout(() => { try { LowiFood.shuffle(); } catch(x){} }, 250); }); }
+  else if (k === "swipe") { sfx("tap"); cook(() => { try { LowiFood.openDeck(); } catch(x){} }); }
+  else if (k === "share") { sfx("open"); share(); }
+  else if (k === "bc-ate") { e.preventDefault(); e.stopPropagation(); bcAte(); }
+  else if (k === "bc-else") { e.preventDefault(); e.stopPropagation(); sfx("tap"); F.mode = ""; clearInterval(POLL); try { LowiR2.closeAll(); } catch(x){} setTimeout(stepEat, 280); }
+  else if (k === "bc-type") { e.preventDefault(); e.stopPropagation(); const n = q("#b3MName"); F.mode = ""; clearInterval(POLL); F.text = (n && n.value) || ""; try { LowiR2.closeAll(); } catch(x){} setTimeout(() => { F.photo = ""; F.step = "type"; put(head(w("typeT"), w("typeSub"), w("tag") + " · " + w("quest")) + inputHTML() + '<div class="f2-foot">' + backBtn("eat") + '</div>'); }, 280); }
+}, true);
+document.addEventListener("submit", e => { if (e.target && e.target.id === "f2Form") { e.preventDefault(); check(); } }, true);
+document.addEventListener("input", e => { if (e.target && e.target.id === "f2In") { F.text = e.target.value; const g = q("#f2Go"); if (g) g.disabled = F.text.trim().length < 2; if (F.err) { F.err = ""; const er = q("#f2Err"); if (er) er.textContent = ""; } } });
+// the chain ends when its sheet is closed some other way (swipe down, another sheet)
+setInterval(() => { if (!F.on || F.mode) return; const sw = q("#sheetwrap"); if (F.step && F.step !== "" && !(sw && sw.classList.contains("open") && q("#f2Sheet"))) { F.on = false; } }, 700);
+
+window.LowiF2 = {start, finish, state:() => ({on:F.on, step:F.step, mode:F.mode, fast:F.fast, last:F.last, photo:!!F.photo}), w, _mem:mem, _reset:() => { try { localStorage.removeItem(SEEN); } catch(e){} }};
+})();
+</script>
 </body>
 </html>

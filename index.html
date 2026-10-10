@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261010-140910">
+<meta name="lowi-build" content="20261010-161159">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -4332,7 +4332,7 @@ function goal(d, sl){ const h = hrs(); /* fe-target */ const tg = +st().target; 
   return h < 16 ? 16 : 24; }
 function shows(d, sl){ if (!d) return false; if (!d.meals) return true;
   if (d.ate && Object.keys(d.ate).some(k => d.ate[k])) return false;
-  const n = new Date(), now = n.getHours() + n.getMinutes() / 60; return !!(sl && sl.length && now < sl[0].h); }
+  const n = new Date(), now = n.getHours() + n.getMinutes() / 60; return !!(sl && sl.length && now < sl[0].h) || hrs() >= 4; } /* fb-show */
 
 function fillAt(h){ /* fe-fillfn */ const n = STAGES.length - 1; if (h >= STAGES[n].h) return 1; for (let j = 0; j < n; j++) { const a = STAGES[j].h, b = STAGES[j + 1].h; if (h < b) return (j + Math.max(0, h - a) / (b - a)) / n; } return 1; }
 const feAt = (hh, c) => (window.LowiFE ? LowiFE.atTxt(st().last, hh, c) : "");
@@ -4365,7 +4365,7 @@ function editSheet(){ if (typeof sheet !== "function") return; const n = new Dat
     opts.map(o => '<button class="chip" data-fs="set" data-t="' + o[0] + '">' + o[1] + "</button>").join("") + "</div>" + (window.LowiFE ? LowiFE.chooser(st().last, st().target) : "") /* fe-edit */ + "</div>"); }
 
 window.LowiFast = {refresh: () => refresh(), stages: () => { fsLoc(); return STAGES.map(x => ({h:x.h, n:x.n})); }, goal: () => { try { return goal(S.td, typeof tdSlots === "function" ? tdSlots() : []); } catch(e){ return 0; } }}; /* fe-expose */ /* fst-expose */
-function refresh(){ const el = document.getElementById("fsCard"); if (!el) return;
+function refresh(){ const el = document.getElementById("fsCard"); if (!el) { /* fb-mount */ try { const st2 = document.querySelectorAll("#tab-home .td-step"), html = st2[1] ? cardHTML(S.td, typeof tdSlots === "function" ? tdSlots() : []) : ""; if (html) { const t = document.createElement("div"); t.innerHTML = html; st2[1].before(t.firstChild); } } catch(e){} return; }
   try { const d = S.td, sl = typeof tdSlots === "function" ? tdSlots() : []; const html = cardHTML(d, sl);
     if (!html) { el.remove(); return; } const t = document.createElement("div"); t.innerHTML = html; el.replaceWith(t.firstChild); } catch(e){} }
 

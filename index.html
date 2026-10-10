@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261010-131821">
+<meta name="lowi-build" content="20261010-134236">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2128,7 +2128,7 @@ const ROWS = [
   ["eat", "Ate something else? Type it or take a photo. You'll see if it's a good choice.", "Etwas anderes gegessen? Tipp es ein oder mach ein Foto. Du siehst, ob es eine gute Wahl ist.", "¿Comiste otra cosa? Escríbela o hazle una foto. Verás si es buena elección."],
   ["nav", "Down here are the other parts of the app. Tap one to go there. The house brings you back here.", "Hier unten sind die anderen Bereiche der App. Tipp drauf, um hinzugehen. Das Haus bringt dich hierher zurück.", "Aquí abajo están las otras partes de la app. Toca una para ir. La casa te trae de vuelta aquí."],
   ["scan", "And this is my home. Tap me here to scan: point the camera at a barcode or at your plate.", "Und hier wohne ich. Tipp mich hier an zum Scannen: Halt die Kamera auf einen Barcode oder deinen Teller.", "Y aquí vivo yo. Tócame aquí para escanear: apunta la cámara a un código de barras o a tu plato."],
-  ["end", "That's it! Want to see this again? Tap the little question mark next to me, or hold me down.", "Das war's! Nochmal sehen? Tipp auf das kleine Fragezeichen neben mir oder halt mich gedrückt.", "¡Listo! ¿Quieres verlo otra vez? Toca el pequeño signo de interrogación a mi lado o mantenme pulsado."],
+  ["end", "That's it! Want to see this again? Just hold me down.", "Das war's! Nochmal sehen? Halt mich einfach gedrückt.", "¡Listo! ¿Quieres verlo otra vez? Solo mantenme pulsado."],
   ["Next", "Next", "Weiter", "Siguiente"],
   ["Skip", "Skip", "Überspringen", "Saltar"],
   ["Done", "Done", "Fertig", "Listo"],
@@ -2218,7 +2218,7 @@ const STEPS = [
   {k:"eat", el:() => firstCard("#tab-home #analyseBtn")},
   {k:"nav", el:() => $("#tabbar"), fixed:true},
   {k:"scan", el:() => realOrb(), fixed:true, round:true},
-  {k:"end", el:() => $("#g1Help") && vis($("#g1Help")) ? $("#g1Help") : realOrb(), fixed:true, round:true}
+  {k:"end", el:() => realOrb(), fixed:true, round:true}
 ];
 
 /* ---------- the fairy ---------- */
@@ -2335,7 +2335,8 @@ document.addEventListener("keydown", e => { if (!TOUR) return; if (e.key === "Es
 /* ---------- replay: a small "?" next to the scan orb (Today), or hold the orb down ---------- */
 function helpBtn(){ let b = $("#g1Help"); if (b) return b; b = document.createElement("button"); b.id = "g1Help"; b.type = "button"; b.setAttribute("data-noi18n", ""); b.textContent = "?";
   b.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); sfx("tap"); start(0); }); H.appendChild(b); return b; }
-function helpPlace(){ const b = helpBtn(); const o = realOrb(); const show = !TOUR && fzHome && onHome() && o && vis(o) && appFree();
+function helpPlace(){ const b = helpBtn(); const o = realOrb(); const fin = (() => { const t = mem().t; return t === "done" || t === "skip"; })(); /* Oct 10: no floating "?" once the tour is finished or skipped; hold the orb to replay */
+  const show = !fin && !TOUR && fzHome && onHome() && o && vis(o) && appFree();
   b.classList.toggle("on", !!show); b.setAttribute("aria-label", T("help")); b.title = T("help"); if (!show) return;
   const r = o.getBoundingClientRect(); let x = r.right - 4, y = r.top - 6;
   const ban = $("#lcA2hs"); if (ban && vis(ban)) { const q = ban.getBoundingClientRect(); if (q.bottom > y && q.top < y + 26) { x = r.right + 2; y = Math.max(q.bottom + 2, r.top + r.height * 0.5 - 13); } }

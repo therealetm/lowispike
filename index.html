@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261010-173104">
+<meta name="lowi-build" content="20261010-175230">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2439,7 +2439,7 @@ const W = {
   s2f: ["No meals today. These drinks keep your fast.", "Heute keine Mahlzeiten. Diese Getränke brechen dein Fasten nicht.", "Hoy no hay comidas. Estas bebidas no rompen tu ayuno."],
   s3: ["Tap \u201c+ Add a reminder\u201d for each pill or vitamin. Tick it off every day.", "Tipp auf \u201e+ Erinnerung hinzuf\u00fcgen\u201c f\u00fcr jede Tablette oder jedes Vitamin. Hak es jeden Tag ab.", "Toca \u201c+ A\u00f1adir recordatorio\u201d por cada pastilla o vitamina. M\u00e1rcala cada d\u00eda."],
   s4: ["Tick what you already have at home. The rest goes on your shopping list.", "Hak ab, was du schon zu Hause hast. Der Rest kommt auf deine Einkaufsliste.", "Marca lo que ya tienes en casa. El resto va a tu lista de la compra."],
-  more: ["Show more: streak, movement, quests", "Mehr zeigen: Serie, Bewegung, Quests", "Ver más: racha, movimiento, misiones"],
+  more: ["Show more: streak, movement, weekly glow", "Mehr zeigen: Serie, Bewegung, Wochen-Check", "Ver más: racha, movimiento, chequeo semanal"],
   less: ["Show less", "Weniger zeigen", "Ver menos"]
 };
 const T = k => { const r = W[k]; return r ? r[{en:0, de:1, es:2}[LANG()]] : k; };
@@ -2447,7 +2447,7 @@ const open = () => { try { return localStorage.getItem(KEY) === "1"; } catch(e){
 function line(after, cls, text){ let n = after.nextElementSibling; if (n && n.classList.contains(cls)) { if (n.textContent !== text) n.textContent = text; return n; }
   n = document.createElement("div"); n.className = cls; n.setAttribute("data-noi18n", ""); n.textContent = text; after.insertAdjacentElement("afterend", n); return n; }
 function tidy(){ const home = document.getElementById("tab-home"); if (!home) return;
-  const date = home.querySelector(".td-top .td-date"); if (date) line(date, "g1-lead", T("lead"));
+  const date = home.querySelector(".td-top .td-date"); if (date) line(date, "g1-lead", (window.LowiF3B && LowiF3B.lead()) || T("lead"));
   home.querySelectorAll(".td-step").forEach(st => { const n = (st.querySelector(".td-n") || {}).textContent || ""; const sec = st.parentElement;
     let k = "";
     if (n === "1") k = "s1";
@@ -15581,6 +15581,68 @@ function init(){ paint(); watch(); setInterval(() => { const h = document.getEle
   document.addEventListener("visibilitychange", () => { if (!document.hidden) run(); }); }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else setTimeout(init, 0);
 window.LowiF3 = {paint, state, go, w};
+})();
+</script>
+<style id="f3bcss">
+/* F3 part 2: Home around the Daily Quest */
+#tab-home #r3aMorn.f3b-fold .r3a-mhd{cursor:pointer;align-items:center;margin-bottom:0}
+#tab-home #r3aMorn.f3b-fold.f3b-open .r3a-mhd{margin-bottom:10px}
+#tab-home #r3aMorn.f3b-fold:not(.f3b-open) .r3a-mgrid{display:none}
+#tab-home #r3aMorn.f3b-fold:not(.f3b-open){padding-top:12px;padding-bottom:12px}
+html:has(#g1Tour) #tab-home #r3aMorn.f3b-fold .r3a-mgrid{display:grid!important}
+html:has(#g1Tour) #tab-home #r3aMorn.f3b-fold .r3a-mhd{margin-bottom:10px}
+#tab-home #r3aMorn.f3b-fold .r3a-mhd{display:grid;grid-template-columns:1fr auto;column-gap:10px;row-gap:3px}
+#tab-home #r3aMorn.f3b-fold .r3a-mhd > div:first-child{grid-column:1;grid-row:1}
+#tab-home #r3aMorn.f3b-fold .r3a-msum{grid-column:1;grid-row:2;min-width:0;text-align:left}
+#tab-home #r3aMorn.f3b-fold .f3b-tog{grid-column:2;grid-row:1 / span 2;align-self:center}
+#tab-home .f3b-tog{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:6px 12px;border-radius:999px;border:1px solid var(--line2,rgba(255,255,255,.16));background:rgba(255,255,255,.06);color:inherit;font:600 13px/1 inherit;font-family:inherit;cursor:pointer}
+#tab-home .f3b-tog i{font-style:normal;font-size:11px;opacity:.8}
+html[data-theme=light] #tab-home .f3b-tog{background:rgba(13,18,32,.05);border-color:rgba(13,18,32,.16);color:#1b2135}
+/* the board replaces the old list at the bottom */
+#tab-home #quests,#tab-home .sec:has(+ #quests){display:none!important}
+</style>
+<script id="f3bjs">
+/* ===== LOWiSPIKE F3 part 2 (Oct 10, 2026): Home built around the Daily Quest =====
+   - The guide line under the date now narrates the quest: "Start with your Daily Quest. Next up: Check in."
+   - "Today's check-ins" (fasting, blood pressure, lazy move, food) repeats the quest board, so it folds to one line under it. Tap to open. Opens by itself during the guided tour.
+   - The old "Today's quests" list at the bottom is gone (the board replaces it). EN / DE / ES, Void + Cloud. */
+(function(){
+"use strict";
+if (window.LowiF3B) return;
+const KEY = "lowi.f3.morn";
+const W = {
+  en: {lead:"Start with your Daily Quest. Next up: {q}.", leadDone:"Daily Quest cleared. Plan the rest of your day below.", show:"Show", hide:"Hide"},
+  de: {lead:"Starte mit deiner Täglichen Quest. Als Nächstes: {q}.", leadDone:"Tägliche Quest erfüllt. Unten planst du den Rest deines Tages.", show:"Zeigen", hide:"Ausblenden"},
+  es: {lead:"Empieza por tu Misión diaria. Lo siguiente: {q}.", leadDone:"Misión diaria completa. Abajo planeas el resto de tu día.", show:"Ver", hide:"Ocultar"}
+};
+const lang = () => { let l = "en"; try { l = (window.LowiLang && LowiLang.get && LowiLang.get()) || localStorage.getItem("lowispike.lang") || "en"; } catch(e){} l = String(l).slice(0, 2); return W[l] ? l : "en"; };
+const w = k => W[lang()][k] || W.en[k];
+const isOpen = () => { try { return localStorage.getItem(KEY) === "1"; } catch(e){ return false; } };
+const sfx = n => { try { window.LowiSFX && LowiSFX.play(n); } catch(e){} };
+
+function lead(){ try { if (!window.LowiF3 || !LowiF3.state) return ""; const L = LowiF3.state(), cur = L.find(q => !q.done);
+  return cur ? w("lead").split("{q}").join(cur.t) : w("leadDone"); } catch(e){ return ""; } }
+
+function tidy(){ const home = document.getElementById("tab-home"); if (!home) return;
+  const ld = home.querySelector(".td-top .g1-lead"), t = lead(); if (ld && t && ld.textContent !== t) ld.textContent = t;
+  const m = home.querySelector("#r3aMorn"); if (!m) return; const o = isOpen();
+  if (m.classList.contains("f3b-open") !== o) m.classList.toggle("f3b-open", o);
+  if (!m.classList.contains("f3b-fold")) m.classList.add("f3b-fold");
+  const hd = m.querySelector(".r3a-mhd"); if (!hd) return;
+  let b = hd.querySelector(".f3b-tog"); const html = '<span>' + (o ? w("hide") : w("show")) + '</span><i aria-hidden="true">' + (o ? "▴" : "▾") + "</i>";
+  if (!b) { b = document.createElement("button"); b.type = "button"; b.className = "f3b-tog"; b.setAttribute("data-f3b", "tog"); b.setAttribute("data-noi18n", ""); hd.appendChild(b); }
+  if (b.innerHTML !== html) b.innerHTML = html; const ex = o ? "true" : "false"; if (b.getAttribute("aria-expanded") !== ex) b.setAttribute("aria-expanded", ex); }
+
+document.addEventListener("click", e => { const t = e.target; if (!t || !t.closest) return;
+  const a = t.closest("#r3aMorn .f3b-tog") || (t.closest("#r3aMorn .r3a-mhd") && !t.closest("button:not(.f3b-tog)") ? t.closest("#r3aMorn .r3a-mhd") : null); if (!a) return;
+  e.preventDefault(); e.stopPropagation(); try { localStorage.setItem(KEY, isOpen() ? "0" : "1"); } catch(x){} sfx("tap"); run(); }, true);
+
+let raf = 0; const run = () => { if (raf) return; raf = requestAnimationFrame(() => { raf = 0; try { mo.disconnect(); tidy(); } catch(e){ console.warn(e); } watch(); }); };
+const mo = new MutationObserver(run);
+function watch(){ const h = document.getElementById("tab-home"); if (h) mo.observe(h, {childList:true, subtree:true, characterData:true}); }
+function init(){ tidy(); watch(); setInterval(() => { if (!document.hidden) run(); }, 3000); }
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else setTimeout(init, 0);
+window.LowiF3B = {lead, tidy, w};
 })();
 </script>
 </body>

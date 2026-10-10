@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261010-001122">
+<meta name="lowi-build" content="20261010-001952">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2298,6 +2298,7 @@ function listSheet(kind){ const h = H(); load(); const all = DEMO.concat(T.posts
   const list = (kind === "mine" ? all.filter(p => p.me) : all.filter(p => (T.saved || {})[p.id])).sort((a, b) => b.ts - a.ts);
   h.openSheet('<div class="h2" style="margin-bottom:10px">' + (kind === "mine" ? "My posts" : "Saved") + '</div>' + (list.length ? list.map(p => { const d = describe(p.meta), cap = p.cap || d.line || PLAT[p.plat || "web"].n;
     return '<div class="fy-lrow"><div class="fy-lth">' + fyBg(p, true) + '</div><div style="flex:1;min-width:0"><div class="small fy-lcap">' + esc(cap) + '</div><div class="tiny dim">' + (p.me ? (p.vid ? "Video · " : "") + (p.vis === "tribe" ? "In For You" : "Only you") : esc(p.who)) + " · " + ago(p.ts) + '</div></div>' +
+      (kind === "mine" && p.vis !== "tribe" ? '<button class="chip" data-tr="restore-vis" data-id="' + p.id + '" style="flex:none">Put back</button>' : '') +
       (kind === "mine" ? '<button class="fy-lbtn" data-tr="post-menu" data-id="' + p.id + '" aria-label="More">' + IC.more + '</button>' : '<button class="fy-lbtn" data-tr="save" data-id="' + p.id + '" aria-label="Remove">' + FIC.save + '</button>') + '</div>'; }).join("")
     : '<div class="small muted">' + (kind === "mine" ? "Nothing yet. Your posts show up here." : "Tap Save on any post in For You.") + '</div>')); }
 
@@ -2384,7 +2385,8 @@ function postMenu(id){
   const h = H(), p = T.posts.map(x => Object.assign({me:true}, x)).find(x => x.id === id) || DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)); if (!p || !h) return;
   let b = '<button class="xbtn" data-act="close-sheet">' + h.icon.x + '</button><div class="sheetbody"><div class="tiny dim" style="margin-bottom:12px">' + (p.me ? "Your post" : esc(p.who) + "'s post") + '</div><div class="actions">';
   if (p.me) {
-    b += '<button class="actbtn" data-tr="toggle-vis" data-id="' + id + '">' + (p.vis === "tribe" ? "Only show it to me" : "Show it in For You") + '</button>';
+    /* Oct 10: no more 'Only show it to me' here. It hid posts by accident. A post that is already private can only be put back. */
+    if (p.vis !== "tribe") b += '<button class="actbtn" data-tr="restore-vis" data-id="' + id + '">Put it back in For You</button>';
     if (p.url && PLAT[p.plat].mine) b += '<button class="actbtn" data-tr="toggle-mine" data-id="' + id + '">' + (p.mine ? "Remove the Tribe Original mark" : "Mark as my own video") + '</button>';
     b += '<button class="actbtn red" data-tr="del" data-id="' + id + '">' + (p.vid ? "Delete video" : "Delete post") + '</button>';
   } else {
@@ -2415,7 +2417,7 @@ document.addEventListener("click", e => {
     case "like": { if (T.likes[id]) delete T.likes[id]; else T.likes[id] = 1; save(); const p = DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || T.posts.find(x => x.id === id); b.classList.toggle("on", !!T.likes[id]); b.querySelector("span").textContent = ((p && p.likes) || 0) + (T.likes[id] ? 1 : 0); if (T.likes[id]) { b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop"); } if (window.LOWI_CLOUD) LOWI_CLOUD.like(id, !!T.likes[id]); break; }
     case "open": { const p = DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || T.posts.find(x => x.id === id); if (!p || !p.url) break; if (p.demo) { h.toast("Sample post. Real links open in " + PLAT[p.plat].n + "."); break; } window.open(p.url, "_blank", "noopener"); break; }
     case "post-menu": postMenu(id); break;
-    case "toggle-vis": { const p = T.posts.find(x => x.id === id); if (p) { p.vis = p.vis === "tribe" ? "me" : "tribe"; save(); h.toast(p.vis === "tribe" ? "Now in For You" : "Now only visible to you"); if (window.LOWI_CLOUD) { if (p.vis === "tribe") LOWI_CLOUD.publish(p); else LOWI_CLOUD.unpublish(p.id); } } h.closeSheet(); rerender(); break; }
+    case "restore-vis": { const fromList = !!b.closest(".fy-lrow"), p = T.posts.find(x => x.id === id); if (p && p.vis !== "tribe") { p.vis = "tribe"; save(); h.toast("Back in For You"); if (window.LOWI_CLOUD) LOWI_CLOUD.publish(p); } if (fromList) listSheet("mine"); else h.closeSheet(); rerender(); break; }
     case "toggle-mine": { const p = T.posts.find(x => x.id === id); if (p) { p.mine = !p.mine; save(); if (window.LOWI_CLOUD && p.vis === "tribe") LOWI_CLOUD.publish(p); } h.closeSheet(); rerender(); break; }
     case "del": { const gone = T.posts.find(x => x.id === id); T.posts = T.posts.filter(x => x.id !== id); save(); if (window.LOWI_CLOUD) LOWI_CLOUD.unpublish(id); if (gone && gone.vid && window.FYV) FYV.remove(id); h.closeSheet(); rerender(); if (gone && gone.vid) h.toast("Video deleted from this phone"); break; }
     case "hide": T.hidden.push(id); save(); h.closeSheet(); rerender(); h.toast("Hidden for you"); break;
@@ -5345,6 +5347,7 @@ const T = [
   ["For You and Chat show sample members until launch.", "Für dich und Chat zeigen bis zum Start Beispiel-Mitglieder.", "Para ti y Chat muestran miembros de ejemplo hasta el lanzamiento."],
   ["Nothing yet. Your posts show up here.", "Noch nichts. Deine Posts erscheinen hier.", "Nada aún. Tus posts aparecen aquí."], ["Tap Save on any post in For You.", "Tippe bei einem Post in Für dich auf Merken.", "Toca Guardar en cualquier post de Para ti."],
   ["New here?", "Neu hier?", "¿Nuevo aquí?"], ["Say hi", "Sag hallo", "Saluda"], ["In For You", "In Für dich", "En Para ti"], ["Only you", "Nur du", "Solo tú"],
+  ["Put it back in For You", "Zurück in Für dich", "Volver a Para ti"], ["Put back", "Zurück", "Devolver"], ["Back in For You", "Wieder in Für dich", "De vuelta en Para ti"],
   ["Post", "Posten", "Publicar"],
   ["Share to For You", "Teilen in Für dich", "Compartir en Para ti"],
   ["Paste a TikTok, Reel or YouTube link. No link? Just write below.", "Füg einen TikTok-, Reel- oder YouTube-Link ein. Kein Link? Schreib einfach unten.", "Pega un enlace de TikTok, Reel o YouTube. ¿Sin enlace? Escribe abajo."],
@@ -8999,6 +9002,11 @@ if (!add()) document.addEventListener("DOMContentLoaded", add);
 .r3a-hint{margin-left:auto}
 .r3a-undo{position:fixed;left:50%;bottom:calc(var(--sab,0px) + 96px);transform:translateX(-50%);z-index:9999;display:flex;gap:14px;align-items:center;padding:10px 16px;border-radius:22px;background:rgba(20,24,34,.96);color:#fff;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.4);max-width:calc(100vw - 32px)}
 .r3a-undo button{color:#f3c97a;font-weight:700;background:none;border:0;font-size:14px}
+
+/* cards on Today must never touch (e.g. "How many meals" card and the fasting card) */
+#tab-home .fs-card{margin-top:12px}
+#tab-home .card + .td-extra,#tab-home .td-hero + .card{margin-top:12px}
+#tab-home .td-hero{margin-bottom:12px}#tab-home .td-extra{margin-top:10px}
 </style>
 <script id="r3ajs">
 /* ===== LOWiSPIKE round 3A (Oct 9, 2026): saved-swap delete, clearer wording, layout fixes ===== */

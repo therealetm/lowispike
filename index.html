@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261011-150600">
+<meta name="lowi-build" content="20261011-214733">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="updates.css">
+
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -2114,7 +2114,7 @@ html[data-theme=light] #lcUpd.g1-upd .g1-usay{background:rgba(255,255,255,.2)}
 (function(){
 "use strict";
 if (window.LowiG1) return;
-const NEWS_RAW = {"id": "raised-navigation", "go": {"tab": "move"}, "text": {"en": "New: The phone menu sits visibly higher with more room above the guide orb. Failed chat deletions keep the message visible so you can retry.", "de": "Neu: Die Handy-Menüleiste sitzt deutlich höher, mit mehr Platz oberhalb der Guide-Kugel. Bei fehlgeschlagenem Löschen bleibt die Chatnachricht sichtbar, damit du es erneut versuchen kannst.", "es": "Nuevo: El menú del móvil está más alto y deja más espacio sobre la bola guía. Si falla el borrado de un mensaje, permanece visible para volver a intentarlo."}};
+const NEWS_RAW = {"id": "appearance-chat-ui", "go": {"tab": "foryou"}, "text": {"en": "New: Scan label restored, cleaner profile and chat bubbles. Appearance controls beside your profile: time, weather look and mood. Chat and leaderboard now share the same simulated members.", "de": "Neu: Scan-Beschriftung sichtbar, klareres Profil und verbundene Chatblasen. Aussehen direkt neben dem Profil: Tageszeit, Wetteroptik und Stimmung. Chat und Rangliste zeigen dieselben simulierten Mitglieder.", "es": "Nuevo: Etiqueta Scan visible, perfil más limpio y burbujas de chat conectadas. Apariencia junto al perfil: hora, aspecto del clima y ánimo. Chat y clasificación comparten los mismos miembros simulados."}};
 const NEWS = (NEWS_RAW && typeof NEWS_RAW === "object") ? NEWS_RAW : null;
 const KEY = "lowi.g1", GO = "lowi.g1.go";
 const H = document.documentElement;
@@ -3317,9 +3317,10 @@ window.LowiB2 = {emptyHTML, fixDom};
 #n1B .g1-mini .g1-face u{animation:none}
 html.n1-talk #n1B .g1-mini .g1-face u{animation:g1Talk .28s ease-in-out 4 alternate}
 #n1B.b3-stay{box-shadow:0 16px 44px rgba(0,0,0,.42),0 0 0 2px rgba(var(--acc-rgb,159,216,255),.7)}
-#tab-profile .g2e-tile.g2e-app{box-shadow:inset 0 0 0 1.5px rgba(var(--acc-rgb,159,216,255),.75),0 0 18px rgba(var(--acc-rgb,159,216,255),.18)}
-#tab-profile .g2e-tile.g2e-app .g2h-ic{color:var(--acc,#9fd8ff)}
+
+
 </style>
+<link rel="stylesheet" href="updates.css">
 </head>
 <body>
 <div id="app">
@@ -6066,8 +6067,7 @@ function cmMsgHTML(m, all){ const mem = cmMem(m.by), mine = m.uid ? !!(window.LO
 function cmRoomHost(){ return $("#cmPaneChat") || $("#tab-foryou"); }
 function cmRoom(el, keep){ if (!el) return; const r = CM_ROOMS[0], ms = (window.lowiBotsMerge ? lowiBotsMerge(CM.msgs.all) : CM.msgs.all), re = CMV.reply && ms.find(m => m.id === CMV.reply);
   const draft = ($("#cmInput") || {}).value || "", ol = $("#cmList"), y = ol ? ol.scrollTop : 0;
-  el.innerHTML = '<div class="cm-onehd"><span class="cm-live"></span><b>Everyone</b><span class="tiny muted">one room, newest at the bottom</span>' + (window.LOWI_CLOUD && LOWI_CLOUD.live() ? '<span class="cm-demotag lc-live">Live</span>' : '<span class="cm-demotag">Demo</span>') + (window.lowiBotsToggle ? lowiBotsToggle() : "") + '</div>' +
-    '<div class="cm-list" id="cmList">' + ms.map(m => cmMsgHTML(m, ms)).join("") + "</div>" +
+  el.innerHTML =     '<div class="cm-list" id="cmList">' + ms.map(m => cmMsgHTML(m, ms)).join("") + "</div>" +
     '<div class="cm-compose">' + (re ? '<div class="cm-replybar"><span>Replying to <b>' + esc(re.by) + '</b></span><button data-cm="noreply" aria-label="Cancel reply">×</button></div>' : "") +
     (!CM.intro && !re ? '<button class="cm-introline" data-cm="intro" id="cmIntro">👋 New here? <b>Say hi</b></button>' : "") +
     '<div class="cm-mention" id="cmMention"></div><div class="cm-inrow"><input class="input" id="cmInput" placeholder="Message everyone" autocomplete="off"><button class="cm-send" data-cm="send" id="cmSend" aria-label="Send"><svg viewBox="0 0 24 24" fill="currentColor" style="width:20px;height:20px"><path d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12 2-12 2z"/></svg></button></div></div>';
@@ -11364,7 +11364,7 @@ function xp(src, amt, label, perDay){ try { const d = today(); const n = (S.ledg
 R3A.xp = xp;
 
 /* ---------- tab bar order (CSS order, so nothing else in the app changes) ---------- */
-function applyTabs(){ const o = lockScan(st().tabs); $$("#tabbar .tb").forEach(b => { const i = o.indexOf(b.getAttribute("data-tab")); b.style.order = i < 0 ? 9 : i * 2; }); const sp = $("#tabbar .tbsp"); if (sp) sp.style.order = 99; }
+function applyTabs(){ const o = lockScan(st().tabs); $$("#tabbar .tb").forEach(b => { const i = o.indexOf(b.getAttribute("data-tab")); b.style.order = i < 0 ? 9 : i * 2; }); const sp = $("#tabbar .tbsp"); if (sp) sp.style.order = 0; }
 R3A.applyTabs = applyTabs;
 
 /* ---------- community order: For You, Chat, Leaderboard by default (round 3F) ---------- */
@@ -12625,13 +12625,11 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
     ["Mila", "Saving that. Level 7 today, my bubble is finally filling up.", 6]];
   const K0 = "lowi.demobots.t0", KOFF = "lowi.demobots.off";
   const t0 = () => { let t = +localStorage.getItem(K0); if (!t) { t = Date.now(); try { localStorage.setItem(K0, String(t)); } catch(e){} } return t; };
-  const off = () => { try { return localStorage.getItem(KOFF) === "1"; } catch(e){ return false; } };
+  const off = () => false;
   let cache = null;
   const msgs = () => { if (cache) return cache; const t = t0(); return (cache = SAY.map((m, i) => ({id:"zbot" + i, by:m[0], t:m[1], ts:t - m[2] * 60000, rx:m[3] || {}, re:m[4] == null ? null : "zbot" + m[4], demo:true, bot:true}))); };
   window.lowiBotsMerge = function(real){ if (off()) return real; return (real || []).filter(m => !m.bot).concat(msgs()).sort((a, b) => a.ts - b.ts); };
-  window.lowiBotsToggle = function(){ return '<button class="cm-demotag r3z-tog" data-r3z="bots" aria-pressed="' + (off() ? "false" : "true") + '">' + (off() ? "Bots: off" : "Bots: on") + '</button>'; };
-  document.addEventListener("click", e => { const b = e.target.closest('[data-r3z="bots"]'); if (!b) return; e.stopPropagation();
-    try { localStorage.setItem(KOFF, off() ? "0" : "1"); } catch(er){} try { cmRoom(cmRoomHost(), true); } catch(er){ console.error(er); } }, true);
+  window.lowiBotsToggle = () => "";
 })();
 </script><style id="r3bcss">
 /* LOWiSPIKE round 3 part B: Scan as supermarket Pokédex (b3-*) */
@@ -14059,7 +14057,17 @@ function me(){
     me:true, uid:myUid(), xpw:periodXP("w"), xpm:periodXP("m"), wk:WK(), mo:MO(), supporter:false};
 }
 const live = () => { try { return !!(window.LOWI_CLOUD && LOWI_CLOUD.live()); } catch(e){ return false; } };
-function others(){ try { return live() ? LOWI_CLOUD.people() : (window.LowiPeople ? LowiPeople.people() : []); } catch(e){ return []; } }
+function others(){
+  const real = live() ? LOWI_CLOUD.people() : [];
+  const samples = (window.LOWI_BOTS || []).slice();
+  try { const messages = typeof cmLoad === "function" ? cmLoad().msgs.all : [];
+    messages.filter(m => m.demo).forEach(m => { if (!samples.some(p => p.n === m.by)) {
+      const p = window.LowiPeople && LowiPeople.person(m.by);
+      if (p) samples.push(Object.assign({}, p, {demo:true}));
+    } });
+  } catch(e){}
+  return real.concat(samples);
+}
 function everyone(){ const m = me(); return others().filter(p => !(p.uid && p.uid === m.uid) && !(!p.uid && p.n === m.n)).concat([m]); }
 function find(q){
   q = q || {}; const m = me();
@@ -14126,7 +14134,7 @@ function backBtn(){
 /* ---------- profile: big bubble, obvious photo + birthday, community card ---------- */
 function heroHTML(){
   const m = me(), S_ = R2.S(), u = S_.user || {}, bits = detailsBits(m, {signName:true}), hasPic = !!m.avatar;
-  return '<button class="r3-hav" data-r2p="photo" aria-label="' + (hasPic ? "Change profile photo" : "Add a profile photo") + '">' + bubble(m, 140) + '<span class="r3-cam">' + R2.ico.cam + '</span></button>' +
+  return '<button class="r3-hav" data-r2p="photo" aria-label="' + (hasPic ? "Change profile photo" : "Add a profile photo") + '">' + bubble(m, 140) + '</button>' +
     '<button class="r3-plink" data-r2p="photo">' + (hasPic ? "Change photo" : "Add a profile photo") + '</button>' +
     '<div class="r2-hn">' + esc(u.name || "Add your name") + '</div>' +
     (bits.length ? '<div class="r3-det">' + bits.map((b, i) => (m.s && b.indexOf(m.s) >= 0) ? '<button class="r3-signchip" data-r3="sign" data-sign="' + esc(m.s) + '">' + esc(b) + '</button>' : '<span>' + esc(b) + '</span>').join('<i>·</i>') + '</div>' : "") +
@@ -14228,7 +14236,7 @@ function memberHTML(p){
     (posts.length ? '<div class="r3-h3">Posts</div><div class="r3-posts">' + posts.map(tileHTML).join("") + '</div>' : '<div class="r3-empty">' + (p.me ? "Your posts show up here." : "No posts yet.") + '</div>') +
   '</div>';
 }
-function openMember(p){ if (!p) return; R2.sheet((p.bot ? '<div class="r3z-botbar"><span class="cm-tag r3z-bot">demo bot</span><span>Demo bot. Not a real member, only here to preview the chat.</span></div>' : "") + memberHTML(p), {cls:"r3-ov"}); }
+function openMember(p){ if (!p) return; R2.sheet(memberHTML(p), {cls:"r3-ov"}); }
 R3.open = q => openMember(find(q));
 function sameHTML(s){
   const L = sameSign(s).sort((a, b) => xpOf(b) - xpOf(a));
@@ -14244,7 +14252,7 @@ function aboutHTML(s){ const a = ABOUT[s]; if (!a) return ""; const n = sameSign
 let LB = "w";
 function score(p, k){ if (k === "a") return xpOf(p);
   if (p.me) return k === "w" ? p.xpw : p.xpm;
-  if (!live()) { const r = hash(p.n + (k === "w" ? WK() : MO())); return (r % 7 === 0) ? 0 : (r % (k === "w" ? 260 : 900)); }
+  if (!live() || p.bot || p.demo) { const r = hash(p.n + (k === "w" ? WK() : MO())); return 20 + (r % (k === "w" ? 260 : 900)); }
   return k === "w" ? (p.wk === WK() ? p.xpw || 0 : 0) : (p.mo === MO() ? p.xpm || 0 : 0); }
 function ranked(k){ return everyone().map(p => ({p, v:score(p, k)})).filter(x => x.v > 0 || (k === "a" && x.p.me)).sort((a, b) => b.v - a.v || (b.p.lv || 1) - (a.p.lv || 1)); }
 function rankOf(m, k){ const L = ranked(k); const i = L.findIndex(x => x.p.me); return i >= 0 && L[i].v > 0 ? i + 1 : 0; }
@@ -14254,7 +14262,7 @@ function boardHTML(){
     return '<button class="r3-lbrow' + (p.me ? " me" : "") + (i < 3 ? " t" + (i + 1) : "") + '"' + who(p) + '><span class="r3-rk num">' + (i + 1) + '</span>' + bubble(p, 42) +
       '<div class="r3-lbm"><b>' + esc(p.n) + (p.me ? ' <em>you</em>' : "") + (p.supporter ? '<span class="r3-sup">Supporter</span>' : "") + '</b><small>' + esc(bits.join(" · ")) + (bits.length ? " · " : "") + 'Lv ' + (p.lv || 1) + ' · 🔥 ' + (p.streak || 0) + '</small></div>' +
       '<span class="r3-lbx num">' + fmtN(x.v) + '<small>XP</small></span></button>'; };
-  return '<div class="r3-lb"><h2>Leaderboard</h2><p class="r2-p">XP from check-ins, meals and swaps. ' + (live() ? "Real members." : "Sample members until you're online.") + '</p>' +
+  return '<div class="r3-lb"><h2>Leaderboard</h2><p class="r2-p">XP from check-ins, meals and swaps.</p>' +
     '<div class="r2-seg r3-lbseg" role="tablist">' + [["w", "This week"], ["m", "This month"], ["a", "All time"]].map(o => '<button role="tab" data-r3lb="' + o[0] + '" class="' + (LB === o[0] ? "on" : "") + '">' + o[1] + '</button>').join("") + '</div>' +
     '<div class="r3-lbl">' + (top.length ? top.map(row).join("") : '<div class="r3-empty">No XP yet ' + (LB === "w" ? "this week" : "this month") + '. Check in today and take the lead.</div>') + '</div>' +
     (mi >= 50 ? '<div class="r3-lbme">' + row(L[mi], mi) + '</div>' : "") + '</div>';
@@ -14287,13 +14295,13 @@ function hookChat(){
     try {
       all = all || []; const meNow = me();
       const mine = m.uid ? !!(window.LOWI_CLOUD && LOWI_CLOUD.isMe(m.uid)) : (typeof cmMe === "function" && m.by === cmMe() && !m.demo);
-      const p = mine ? meNow : find({uid:m.uid, name:m.by});
+      const p = mine ? meNow : (m.bot ? (window.LOWI_BOTS || []).find(p => p.n === m.by) : null) || find({uid:m.uid, name:m.by});
       if (!mine && m.by && p.n !== m.by && !p.uid) p.n = m.by;
       const bits = detailsBits(p), re = m.re && all.find(x => x.id === m.re), cme = typeof cmMe === "function" ? cmMe() : "";
       const ago = typeof cmAgo === "function" ? cmAgo(m.ts) : "", txt = typeof cmText === "function" ? cmText(m.t) : esc(m.t);
       const pick = (typeof CMV !== "undefined" && CMV.pick === m.id && typeof CM_EMOJI !== "undefined") ? '<div class="cm-picker">' + CM_EMOJI.map(e => '<button data-cm="react" data-id="' + m.id + '" data-e="' + e + '">' + e + "</button>").join("") + "</div>" : "";
       const del = mine && m.id != null ? '<button class="cm-mini r2-del" data-r2del="' + esc(m.id) + '" aria-label="Delete message">' + R2.ico.trash + '<span>Delete</span></button>' : "";
-      return '<div class="cm-msg r3m' + (mine ? " mine" : "") + '" id="cm-' + m.id + '">' +
+      return '<div class="cm-msg r3m' + (mine ? " mine" : "") + '" id="cm-' + m.id + '" style="--chat-rgb:' + rgb(pal(p.s)[0]) + ';--chat-color:' + pal(p.s)[0] + '">' +
         '<span class="r3m-av"' + who(p) + ' role="button" tabindex="0" aria-label="' + esc(p.n) + ' profile">' + bubble(p, 36) + '</span>' +
         '<div class="cm-bub"><div class="r3m-by"' + who(p) + ' role="button"><b>' + esc(mine ? meNow.n : (m.by || p.n)) + '</b>' + (bits.length ? '<span class="r3m-d">' + esc(bits.join(" · ")) + '</span>' : "") + '<span class="r3m-t">' + esc(ago) + '</span></div>' +
         (re ? '<div class="cm-quote"><b>' + esc(re.by) + "</b> " + esc(String(re.t || "").slice(0, 70)) + (String(re.t || "").length > 70 ? "…" : "") + "</div>" : "") +
@@ -18554,5 +18562,6 @@ html.q4b-off #lcA2hs{display:none!important}
 })();
 </script>
 <script src="recipe-book.js"></script>
+<script src="appearance.js"></script>
 </body>
 </html>

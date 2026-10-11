@@ -33,8 +33,8 @@ jobs:
           assert 'const ING_ART = {' in html
           assert 'function ingKind(i)' in html and 'function ingArt(i)' in html
           assert 'g:g || ""' in html
-          assert "'<span class=\"p2-ie\">' + ingArt(i)" in html
-          assert "+ ingArt(g) + '<b>'" in html
+          assert re.search(r'function ingChip\(i, home, s\).*?ingArt\(i\)', html)
+          assert re.search(r'p2-mise.*?ingArt\(g\)', html)
           assert html.count("<svg viewBox=\"0 0 32 32\"") >= 18
 
           # All 25 built-in recipe-book ingredient entries must resolve to a specific illustration kind.

@@ -29,3 +29,24 @@ self.addEventListener("fetch", e => {
     return res;
   })));
 });
+/* n1p: phone notifications (N1 part 2, Oct 11 2026). Shows the nudge the n1-push edge function sends and opens the
+   right place when it is tapped. */
+const N1P_FN = "https://vnfwmifmsfecascwaody.supabase.co/functions/v1/n1-push";
+const N1P_PUB = "BLNmn2O2yRpMS7JukbXrgnYu157fNv317XnjgtVWzEyLuWMBupmX4Q1a0wid-4r6p0uGk8sVI0gMdl2uzlAREsA";
+self.addEventListener("push", e => {
+  let d = {}; try { d = e.data ? e.data.json() : {}; } catch(x){ d = {b: e.data ? e.data.text() : ""}; }
+  e.waitUntil(self.registration.showNotification(d.t || "LOWiSPIKE", {body: d.b || "", icon: "icon-192.png", badge: "icon-192.png", tag: d.tag || "lowi", data: {q: d.q || ""}}));
+});
+self.addEventListener("notificationclick", e => {
+  e.notification.close(); const q = (e.notification.data && e.notification.data.q) || "";
+  e.waitUntil(self.clients.matchAll({type: "window", includeUncontrolled: true}).then(cs => {
+    for (const c of cs) { if (c.url.indexOf(self.registration.scope) === 0 && "focus" in c) { try { c.postMessage({n1go: q}); } catch(x){} return c.focus(); } }
+    return self.clients.openWindow(self.registration.scope + "?n1go=" + encodeURIComponent(q));
+  }));
+});
+self.addEventListener("pushsubscriptionchange", e => {
+  const k = N1P_PUB.replace(/-/g, "+").replace(/_/g, "/"), r = atob(k + "=".repeat((4 - k.length % 4) % 4)), key = new Uint8Array(r.length); for (let i = 0; i < r.length; i++) key[i] = r.charCodeAt(i);
+  e.waitUntil(self.registration.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: key}).then(sub =>
+    fetch(N1P_FN, {method: "POST", headers: {"Content-Type": "text/plain;charset=UTF-8"}, body: JSON.stringify({a: "save", sub: sub.toJSON(), st: {}})})).catch(() => {}));
+});
+/* /n1p */

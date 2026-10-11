@@ -1,0 +1,87 @@
+name: Store compare apply
+
+on:
+  push:
+    branches: [store-compare-everywhere]
+    paths:
+      - tools/store-compare.patch
+      - .github/workflows/store-compare-apply.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: store-compare-everywhere
+          fetch-depth: 0
+      - name: Apply exact store comparison patch
+        run: patch -p1 < tools/store-compare.patch
+      - name: Focused store comparison checks
+        run: |
+          python3 - <<'PY'
+          import json, re, subprocess, tempfile
+          from pathlib import Path
+          html=Path('index.html').read_text()
+          version=json.loads(Path('version.json').read_text())
+          meta=re.search(r'<meta name="lowi-build" content="([^"]+)">',html)
+          assert meta and meta.group(1)==version['build']=='20261011-133201'
+          assert version['news']['id']=='store-compare-everywhere'
+          required=[
+            'function priceCompareRows(p)',
+            'function priceCompareHTML(p, compact)',
+            'priceCompareHTML:(name, ean, compact) => priceCompareFor(name, ean, compact)',
+            'priceCompareHTML(p, false)',
+            'LOWI_SHELF.priceCompareHTML(p.name, p.barcode, true)',
+            '[/^Seen today(.*)$/, "Heute gesehen$1", "Visto hoy$1"]'
+          ]
+          for n in required: assert n in html,n
+          assert html.count('priceCompareHTML:(name, ean, compact)')==1
+          assert '["seen"' not in html.lower()
+          # Four existing demo products genuinely contain sightings at 2+ different stores.
+          block=html[html.index('const SEED = ['):html.index('];',html.index('const SEED = ['))+2]
+          for pid in ('s1','s3','s6','s12'):
+            m=re.search(r'\{id:"'+pid+r'".*?sg:\[(.*?)\]\}',block,re.S)
+            assert m,pid
+            stores=set(re.findall(r'\{s:"([^"]+)"',m.group(1)))
+            assert len(stores)>=2,(pid,stores)
+          scripts=re.findall(r'<script(?![^>]*\bsrc=)[^>]*>(.*?)</script>',html,re.S|re.I)
+          assert len(scripts)>=50,len(scripts)
+          with tempfile.TemporaryDirectory() as td:
+            for i,s in enumerate(scripts):
+              p=Path(td)/f'{i}.js';p.write_text(s)
+              subprocess.run(['node','--check',str(p)],check=True,stdout=subprocess.DEVNULL)
+          print(f'static/syntax PASS: 4 multi-store seeds, {len(scripts)} inline scripts')
+          PY
+          node <<'NODE'
+          const fs=require('fs'),vm=require('vm');
+          const html=fs.readFileSync('index.html','utf8');
+          const a=html.indexOf('function priceCompareRows(p){'),b=html.indexOf('function detail(id){',a);
+          if(a<0||b<0) throw new Error('helpers missing');
+          const now=Date.now(),DAY=86400000;
+          const stores={lidl:{n:'Lidl',c:'#1'},aldi:{n:'Aldi',c:'#2'},rewe:{n:'REWE',c:'#3'},edeka:{n:'EDEKA',c:'#4'}};
+          const ctx={Date,Object,liveSightings:p=>p.sg.filter(x=>!x.gone),priceState:s=>{if(s.p==null||s.p==='')return 'none';if(s.until&&s.until<now)return 'hidden';let d=Math.max(0,Math.floor((now-s.at)/DAY));return d<14?'fresh':d<45?'check':d<90?'old':'hidden';},storeById:id=>stores[id]||{n:id,c:'#0'},ageLabel:t=>{let d=Math.max(0,Math.floor((now-t)/DAY));return d===0?'today':d===1?'yesterday':d<14?d+' days ago':d<60?Math.round(d/7)+' weeks ago':Math.round(d/30)+' months ago';},esc:s=>String(s),eur:n=>'€'+n.toFixed(2),findDup:()=>null,isLive:()=>true};
+          vm.createContext(ctx);vm.runInContext(html.slice(a,b),ctx);
+          const sg=[{s:'lidl',p:2.49,at:now-DAY,br:'A',u:'500 g'},{s:'lidl',p:1.99,at:now-2*DAY,br:'B',u:'500 g'},{s:'aldi',p:2.09,at:now-DAY,br:'C',u:'500 g'},{s:'rewe',p:1.89,at:now-50*DAY,br:'old',u:'500 g'},{s:'edeka',p:1.79,at:now-DAY,until:now-DAY,br:'expired',u:'500 g'},{s:'rewe',p:3.19,at:now-DAY,gone:true,br:'gone',u:'500 g'}];
+          const rows=ctx.priceCompareRows({sg});
+          if(rows.length!==2||rows[0].s!=='lidl'||rows[0].p!==1.99||rows[1].s!=='aldi') throw new Error('dedupe/sort failed '+JSON.stringify(rows));
+          const out=ctx.priceCompareHTML({sg},true);
+          if(!out.includes('Lidl')||!out.includes('Aldi')||out.includes('old')||out.includes('expired')||out.includes('gone')||!out.includes('cheapest')) throw new Error('HTML filtering failed');
+          if(ctx.priceCompareHTML({sg:[sg[0]]},false)!=='') throw new Error('one-store comparison must stay hidden');
+          console.log('comparison logic PASS');
+          NODE
+          git diff --check
+      - name: Commit generated app files only
+        run: |
+          rm tools/store-compare.patch .github/workflows/store-compare-apply.yml
+          rmdir tools 2>/dev/null || true
+          git config user.name "LOWiSPIKE deploy"
+          git config user.email "therealetm@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          test "$(git diff origin/main --name-only | sort | tr '\n' ' ')" = "index.html version.json "
+          git commit -m "Store comparison on products and scans"
+          git push origin HEAD:store-compare-everywhere

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261011-130930">
+<meta name="lowi-build" content="20261011-131814">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2109,7 +2109,7 @@ html[data-theme=light] #lcUpd.g1-upd .g1-usay{background:rgba(255,255,255,.2)}
 (function(){
 "use strict";
 if (window.LowiG1) return;
-const NEWS_RAW = {"id": "ingredient-illustrations", "go": {"tab": "shelf"}, "text": {"en": "New: Recipe ingredients now use clear LOWiSPIKE illustrations instead of emoji, including the get-ready screen in Cook mode.", "de": "Neu: Rezept-Zutaten haben jetzt klare LOWiSPIKE-Zeichnungen statt Emojis – auch beim Bereitlegen im Kochmodus.", "es": "Nuevo: Los ingredientes de las recetas ahora tienen ilustraciones claras de LOWiSPIKE en lugar de emojis, también al preparar todo en modo Cocinar."}};
+const NEWS_RAW = {"id": "community-recipes", "go": {"tab": "foryou"}, "text": {"en": "New: Share a Recipe Book recipe straight to Community, or link a recipe to any post. Recipe cards open right back into Cook.", "de": "Neu: Teile ein Rezept aus dem Rezeptbuch direkt in die Community oder verknüpfe ein Rezept mit jedem Post. Rezeptkarten öffnen direkt wieder Kochen.", "es": "Nuevo: Comparte una receta del recetario directamente en Comunidad o enlaza una receta a cualquier publicación. Las tarjetas abren la receta en Cocinar."}};
 const NEWS = (NEWS_RAW && typeof NEWS_RAW === "object") ? NEWS_RAW : null;
 const KEY = "lowi.g1", GO = "lowi.g1.go";
 const H = document.documentElement;
@@ -3988,6 +3988,7 @@ const FIC = {
 function fyBg(p, thumb){
   if (p.vid && window.FYV) return FYV.bgHTML(p, thumb);
   if (p.photo) return '<img class="fy-bg" src="' + p.photo + '" alt="">';
+  if (p.rec && typeof FOOD_IMG !== "undefined" && FOOD_IMG[p.rec]) return '<img class="fy-bg" src="' + FOOD_IMG[p.rec] + '" alt="" decoding="async">';
   const k = FY_IMG[p.id];
   if (k && k.indexOf("i-") === 0) return '<div class="fy-bg mv-ms-img ' + k + '"></div>';
   if (k && typeof FOOD_IMG !== "undefined" && FOOD_IMG[k]) return '<img class="fy-bg" src="' + FOOD_IMG[k] + '" alt="" decoding="async">';
@@ -3996,7 +3997,7 @@ function fyBg(p, thumb){
 }
 function slideHTML(p){
   const h = H(), u = h.user(), d = describe(p.meta), liked = !!T.likes[p.id], saved = !!(T.saved || {})[p.id], n = (p.likes || 0) + (liked ? 1 : 0), pl = PLAT[p.plat] || PLAT.web;
-  const name = p.me ? (u.name || "You") : p.who, cap = p.cap || d.line || "", textOnly = !p.url && !p.photo && !p.vid && !FY_IMG[p.id];
+  const name = p.me ? (u.name || "You") : p.who, cap = p.cap || d.line || "", textOnly = !p.url && !p.photo && !p.vid && !p.rec && !FY_IMG[p.id];
   return '<section class="fy-slide' + (textOnly ? " fy-text" : "") + (p.vid ? " fyv-slide" : "") + '" data-id="' + p.id + '">' + fyBg(p) + '<div class="fy-shade"></div>' +
     (textOnly ? '<div class="fy-big">' + esc(cap) + '</div>' : "") +
     (p.url && p.plat !== "web" ? '<button class="fy-play" data-tr="open" data-id="' + p.id + '" aria-label="' + pl.open + '">' + IC.play + '</button>' : "") +
@@ -4009,7 +4010,7 @@ function slideHTML(p){
       '<button class="fy-act fy-more" data-tr="post-menu" data-id="' + p.id + '" aria-label="More">' + IC.more + '</button></div>' +
     '<div class="fy-meta"><div class="fy-by" data-r5="profile" data-who="' + esc(p.me ? (u.name || "You") : p.who) + '"' + (p.me ? ' data-me="1"' : "") + ' role="button" tabindex="0">' + (p.me ? h.avatar(30, u.name, u.avatar) : h.avatar(30, p.who)) + '<b>' + esc(name) + '</b><span>· ' + ago(p.ts) + '</span>' + (p.mine ? '<span class="fy-orig">' + IC.gem + '</span>' : "") + '</div>' +
       (cap && !textOnly ? '<div class="fy-cap">' + esc(cap) + '</div>' : "") +
-      (p.vid && p.rec && window.FYV ? FYV.recChip(p) : "") +
+      (p.rec && window.FYV ? FYV.recChip(p) : "") +
       (p.url ? '<button class="fy-src" data-tr="open" data-id="' + p.id + '">' + PICON[p.plat || "web"] + '<span>' + esc(byline(p.meta, p.plat || "web")) + '</span></button>' : "") +
     '</div></section>';
 }
@@ -4029,26 +4030,26 @@ function profileHTML(){ load(); const mine = T.posts.length, sv = Object.keys(T.
     '<div class="tiny dim" style="margin-top:6px">' + (window.LOWI_CLOUD && LOWI_CLOUD.live() ? 'For You and Chat are live: real members, shared.' : 'For You and Chat show sample members until launch.') + '</div></div>'; }
 function listSheet(kind){ const h = H(); load(); const all = DEMO.concat(T.posts.map(p => Object.assign({me:true}, p)));
   const list = (kind === "mine" ? all.filter(p => p.me) : all.filter(p => (T.saved || {})[p.id])).sort((a, b) => b.ts - a.ts);
-  h.openSheet('<div class="h2" style="margin-bottom:10px">' + (kind === "mine" ? "My posts" : "Saved") + '</div>' + (list.length ? list.map(p => { const d = describe(p.meta), cap = p.cap || d.line || PLAT[p.plat || "web"].n;
+  h.openSheet('<div class="h2" style="margin-bottom:10px">' + (kind === "mine" ? "My posts" : "Saved") + '</div>' + (list.length ? list.map(p => { const d = describe(p.meta), rr = p.rec && postRecipe(p.rec), cap = p.cap || d.line || (rr && rr.n) || PLAT[p.plat || "web"].n;
     return '<div class="fy-lrow"><div class="fy-lth">' + fyBg(p, true) + '</div><div style="flex:1;min-width:0"><div class="small fy-lcap">' + esc(cap) + '</div><div class="tiny dim">' + (p.me ? (p.vid ? "Video · " : "") + (p.vis === "tribe" ? "In For You" : "Only you") : esc(p.who)) + " · " + ago(p.ts) + '</div></div>' +
       (kind === "mine" ? '<button class="fy-lbtn" data-tr="post-menu" data-id="' + p.id + '" aria-label="More">' + IC.more + '</button>' : '<button class="fy-lbtn" data-tr="save" data-id="' + p.id + '" aria-label="Remove">' + FIC.save + '</button>') + '</div>'; }).join("")
     : '<div class="small muted">' + (kind === "mine" ? "Nothing yet. Your posts show up here." : "Tap Save on any post in For You.") + '</div>')); }
 
 /* ---------- composer ---------- */
 let C = null, fetchTok = 0, debT;
-function compose(prefill, text){
+function compose(prefill, text, rec){
   const h = H(); if (!h) return;
-  if (window.LowiR3F && LowiR3F.postSheet) { LowiR3F.postSheet(prefill, text); return; }
+  if (window.LowiR3F && LowiR3F.postSheet) { LowiR3F.postSheet(prefill, text, rec); return; }
   if (h.tab() !== "foryou") { if (window.cmSetView) cmSetView("feed"); h.go("foryou"); }
-  C = {raw:"", p:null, meta:null, loading:false, cap:text || "", vis:"tribe", mine:false, photo:""};
+  C = {raw:"", p:null, meta:null, loading:false, cap:text || "", vis:"tribe", mine:false, photo:"", rec:rec || ""};
   h.openSheet('<button class="xbtn" data-act="close-sheet">' + h.icon.x + '</button><div class="sheetbody" id="trCompose"><div class="h2" style="margin:4px 40px 4px 0">Share to For You</div><div class="small muted">Paste a link from TikTok, Instagram, YouTube or anywhere else. No link? Just write below.</div>' +
     '<div class="tr-urlrow"><input class="input" id="trUrl" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://www.tiktok.com/@…"><button class="tr-paste" data-tr="paste">' + IC.paste + 'Paste</button></div>' +
     '<div id="trPrev"></div><div id="trRest"></div></div><div class="sheetfoot"><button class="btn ghost" data-act="close-sheet" style="flex:1">Cancel</button><button class="btn primary" id="trPost" data-tr="post" style="flex:1.4" disabled>Post</button></div>');
   if (prefill) { $("#trUrl").value = prefill; onUrl(prefill, true); } else { paintRest(); if (!text) setTimeout(() => { const i = $("#trUrl"); if (i) i.focus(); }, 380); }
 }
 /* Oct 8: the composer as its own pane (Community > Post), no pop-up. */
-function composeInto(el, prefill, text){
-  if (!el) return; C = {raw:"", p:null, meta:null, loading:false, cap:text || "", vis:"tribe", mine:false, photo:"", inline:true};
+function composeInto(el, prefill, text, rec){
+  if (!el) return; C = {raw:"", p:null, meta:null, loading:false, cap:text || "", vis:"tribe", mine:false, photo:"", rec:rec || "", inline:true};
   el.innerHTML = (window.FYV ? FYV.postCardHTML() : "") + '<div class="card" id="trCompose"><div class="h3">Share to For You</div><div class="small muted" style="margin-top:4px">Paste a TikTok, Reel or YouTube link. No link? Just write below.</div>' +
     '<div class="tr-urlrow"><input class="input" id="trUrl" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://www.tiktok.com/@…"><button class="tr-paste" data-tr="paste">' + IC.paste + 'Paste</button></div>' +
     '<div id="trPrev"></div><div id="trRest"></div><div class="ls-postfoot"><button class="btn primary" id="trPost" data-tr="post" disabled>Post</button></div></div>' +
@@ -4079,6 +4080,18 @@ function paintPrev(state){
   el.innerHTML = '<div class="tr-prev fadein' + (C.mine ? " orig" : "") + '">' + (C.mine ? '<span class="tr-badge">' + IC.gem + 'Tribe Original</span>' : '') + mediaHTML(fake) + '<div class="tr-lk"><div class="tiny dim">' + esc(byline(m, p.plat)) + '</div>' + (d.line ? '<div class="tr-ttl">' + esc(d.line) + '</div>' + (d.tags.length ? '<div class="tr-tags">' + d.tags.map(t => '<span>' + esc(t) + '</span>').join("") + '</div>' : '') : '<div class="small muted" style="margin-top:2px">' + esc(p.host) + '</div>') + '</div></div>' +
     (d.line ? '<div class="tr-auto small"><span class="gold">' + IC.gem + '</span><span>Written from the link\'s own title' + (m.author || m.handle ? " and creator name" : "") + '. Nothing added.</span></div>' : '<div class="tr-auto small warn"><span>' + pl.n + ' didn\'t give us a title for this one, so add one line about it below. We don\'t make one up.</span></div>');
 }
+function postRecipes(){ try { return typeof RECIPE_BOOK !== "undefined" ? RECIPE_BOOK : []; } catch(e){ return []; } }
+function postRecipe(id){ return postRecipes().find(r => r.id === id); }
+function postRecOptions(){
+  const cats = typeof BOOK_CATS !== "undefined" ? BOOK_CATS : [{id:"", n:"Recipes"}], pick = C && C.rec || "";
+  return '<option value="">No recipe</option>' + cats.map(c => { const list = postRecipes().filter(r => !c.id || r.c === c.id); return list.length ? '<optgroup label="' + esc(c.n) + '">' + list.map(r => '<option value="' + esc(r.id) + '"' + (pick === r.id ? " selected" : "") + '>' + esc(r.n) + '</option>').join("") + '</optgroup>' : ""; }).join("");
+}
+function postRecField(){ if (!C || !postRecipes().length) return ""; const r = postRecipe(C.rec);
+  return '<div class="field"><label for="trRec">Link a recipe (optional)</label><select class="input fyv-sel" id="trRec">' + postRecOptions() + '</select>' +
+    (r ? '<button class="fyv-tp on" type="button" data-sh="open-shelf" data-t="kochen" data-sub="recipe" data-r="' + esc(r.id) + '" style="margin-top:8px">' + (typeof FOOD_IMG !== "undefined" && FOOD_IMG[r.id] ? '<img src="' + FOOD_IMG[r.id] + '" alt="">' : '') + '<span><small>Recipe linked</small>' + esc(r.n) + '</span><i>Open</i></button>' : '') + '</div>'; }
+function shareRecipe(id){ const r = postRecipe(id), h = H(); if (!r) { if (h) h.toast("Recipe not found."); return; }
+  if (window.LowiR3F && LowiR3F.postSheet) LowiR3F.postSheet("", "", r.id); else compose("", "", r.id);
+}
 function paintRest(){
   const el = $("#trRest"); if (!el) return;
   if (C.loading || (!C.p && C.raw.trim())) { el.innerHTML = ""; updPost(); return; }
@@ -4086,6 +4099,7 @@ function paintRest(){
   el.innerHTML = (link ? '<div class="field"><label for="trCap">' + (need ? "One line about it (needed)" : "Add your take (optional)") + '</label><input class="input" id="trCap" maxlength="' + CAPTION_MAX + '" placeholder="' + (need ? "What is it and why is it good?" : "Why you're sharing it") + '" value="' + esc(C.cap) + '"></div>'
       : '<div class="field"><label for="trCap">Or just write a post</label><textarea class="input" id="trCap" rows="3" maxlength="' + TEXT_MAX + '" placeholder="A swap, a win, a question…" style="height:84px;padding:12px 14px;resize:none">' + esc(C.cap) + '</textarea></div>' +
         '<div class="tr-row" style="margin-top:10px;gap:10px"><button class="chip" data-tr="photo">' + (C.photo ? "Change photo" : "Add a photo") + '</button>' + (C.photo ? '<img class="tr-thumbsm" src="' + C.photo + '" alt=""><button class="small dim" data-tr="nophoto">Remove</button>' : '') + '</div>') +
+    postRecField() +
     '<div class="card" style="margin-top:14px;padding:4px 14px">' +
       '<div class="trow" style="padding:10px 0"><span><span style="display:block;font-weight:600">Show it in For You</span><span class="small muted">' + (C.vis === "tribe" ? "The whole tribe can see it." : "Only you. It stays on your phone.") + '</span></span><button class="toggle' + (C.vis === "tribe" ? " on" : "") + '" data-tr="vis" aria-label="Visible to the tribe"></button></div>' +
       (link && pl.mine ? '<div class="trow" style="padding:10px 0;border-top:1px solid var(--line2)"><span><span style="display:block;font-weight:600">This is my own video</span><span class="small muted">It gets the <span class="tr-holo-t" style="font-weight:700">Tribe Original</span> highlight.</span></span><button class="toggle holo' + (C.mine ? " on" : "") + '" data-tr="mine" aria-label="This is my own video"></button></div>' : '') +
@@ -4093,17 +4107,17 @@ function paintRest(){
   updPost();
 }
 function updPost(){ const b = $("#trPost"); if (!b || !C) return; const need = !(C.meta && C.meta.title), cap = C.cap.trim();
-  b.disabled = C.loading || (C.p ? need && !cap : (C.raw.trim() || (!cap && !C.photo))); b.textContent = C.vis === "tribe" ? "Post" : "Save for me"; }
+  b.disabled = C.loading || (C.p ? need && !cap : (C.raw.trim() || (!cap && !C.photo && !C.rec))); b.textContent = C.vis === "tribe" ? "Post" : "Save for me"; }
 function doPost(btn){
   const h = H(); if (!h || !C || (!C.p && C.raw.trim())) return;
   let p;
   if (C.p) {
     const m = C.meta || {}; if (!m.title && !C.cap.trim()) return;
     const meta = (m.title || m.author || m.thumb) ? {title:m.title || "", author:m.author || "", handle:m.handle || "", thumb:m.thumb || ""} : null;
-    p = {id:"t" + uid(), ts:Date.now(), plat:C.p.plat, url:C.p.url, meta, cap:C.cap.trim().slice(0, CAPTION_MAX), vis:C.vis, mine:!!(C.mine && PLAT[C.p.plat].mine), art:["✨", 40, 280]};
+    p = {id:"t" + uid(), ts:Date.now(), plat:C.p.plat, url:C.p.url, meta, cap:C.cap.trim().slice(0, CAPTION_MAX), rec:C.rec || "", vis:C.vis, mine:!!(C.mine && PLAT[C.p.plat].mine), art:["✨", 40, 280]};
   } else {
-    if (!C.cap.trim() && !C.photo) return;
-    p = {id:"t" + uid(), ts:Date.now(), plat:"", url:"", meta:null, cap:C.cap.trim().slice(0, TEXT_MAX), photo:C.photo || "", vis:C.vis, mine:false};
+    if (!C.cap.trim() && !C.photo && !C.rec) return;
+    p = {id:"t" + uid(), ts:Date.now(), plat:"", url:"", meta:null, cap:C.cap.trim().slice(0, TEXT_MAX), photo:C.photo || "", rec:C.rec || "", vis:C.vis, mine:false};
   }
   T.posts.unshift(p); if (T.posts.length > 80) T.posts.length = 80;
   if (p.vis !== "tribe") T.filter = "mine"; else if (T.filter === "orig" && !p.mine) T.filter = "all";
@@ -4136,12 +4150,13 @@ document.addEventListener("click", e => {
     case "vis": if (C) { C.vis = C.vis === "tribe" ? "me" : "tribe"; paintRest(); } break;
     case "mine": if (C) { C.mine = !C.mine; b.classList.toggle("on", C.mine); paintPrev(); updPost(); } break;
     case "post": doPost(b); break;
+    case "share-recipe": shareRecipe(b.dataset.r); break;
     case "filter": T.filter = b.dataset.f; save(); rerender(); break;
     case "save": { T.saved = T.saved || {}; if (T.saved[id]) delete T.saved[id]; else T.saved[id] = 1; save(); const on = !!T.saved[id];
       $$('[data-tr="save"][data-id="' + id + '"]').forEach(x => { x.classList.toggle("on", on); const sp = x.querySelector("span"); if (sp) sp.textContent = on ? "Saved" : "Save"; });
       if (b.classList.contains("fy-lbtn")) { const r = b.closest(".fy-lrow"); if (r) r.remove(); } else h.toast(on ? "Saved to Profile" : "Removed from Saved"); break; }
     case "comment": { const p = DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || T.posts.find(x => x.id === id); if (window.cmComment) window.cmComment(p && !p.me ? p.who : ""); break; }
-    case "share": { const p = DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || T.posts.find(x => x.id === id); if (!p) break; const txt = (p.cap || describe(p.meta).line || "LOWiSPIKE") + (p.url ? " " + p.url : "");
+    case "share": { const p = DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || T.posts.find(x => x.id === id); if (!p) break; const rr = p.rec && postRecipe(p.rec); const txt = (p.cap || describe(p.meta).line || (rr && rr.n) || "LOWiSPIKE") + (p.url ? " " + p.url : "");
       if (navigator.share && !p.demo) { navigator.share({text:txt}).catch(() => {}); } else { try { navigator.clipboard.writeText(txt).then(() => h.toast("Copied to share"), () => h.toast("Copied to share")); } catch(err){ h.toast("Copied to share"); } } break; }
     case "list-mine": listSheet("mine"); break;
     case "list-saved": listSheet("saved"); break;
@@ -4160,6 +4175,7 @@ document.addEventListener("click", e => {
     case "nophoto": if (C) { C.photo = ""; paintRest(); } break;
   }
 });
+document.addEventListener("change", e => { if (!C || e.target.id !== "trRec") return; C.rec = e.target.value || ""; paintRest(); });
 document.addEventListener("input", e => {
   if (!C) return;
   if (e.target.id === "trUrl") onUrl(e.target.value);
@@ -4176,7 +4192,7 @@ window.addEventListener("hashchange", checkShareHash);
 
 window.TRIBE = {
   renderForYou, compose, composeInto, setPhoto:ph => { if (C) { C.photo = ph || ""; paintRest(); } } /* f2-photo */,
-  addPost:p => { load(); T.posts.unshift(p); while (T.posts.length > 80) { const x = T.posts.pop(); if (x && x.vid && window.FYV) FYV.remove(x.id); } try { localStorage.setItem(KEY, JSON.stringify(T)); return true; } catch(e){ T.posts.shift(); const h = H(); if (h) h.toast("Storage is full on this phone."); return false; } }, checkShareHash, profileHTML,
+  addPost:p => { load(); T.posts.unshift(p); while (T.posts.length > 80) { const x = T.posts.pop(); if (x && x.vid && window.FYV) FYV.remove(x.id); } try { localStorage.setItem(KEY, JSON.stringify(T)); return true; } catch(e){ T.posts.shift(); const h = H(); if (h) h.toast("Storage is full on this phone."); return false; } }, checkShareHash, profileHTML, shareRecipe,
   post:id => T.posts.map(x => Object.assign({me:true}, x)).find(x => x.id === id) || DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)), imgKey:id => FY_IMG[id] || "", demoNames:() => DEMO.map(x => x.who),
   reset:() => { localStorage.removeItem(KEY); },
   _t:{describe, parseUrl, fetchMeta, feed, state:() => T, reload:load, DEMO}
@@ -6578,6 +6594,7 @@ function recipeHTML(r){
   if (!r) return '<div class="sh-empty">Recipe not found.</div>';
   const ms = matchesFor(r);
   return (typeof FOOD_IMG !== "undefined" && FOOD_IMG[r.id] ? '<img class="sh-hero" alt="" src="' + FOOD_IMG[r.id] + '">' : "") + '<div class="card" style="display:flex;gap:14px;align-items:center">' + (typeof FOOD_IMG !== "undefined" && FOOD_IMG[r.id] ? "" : '<div style="font-size:46px">' + esc(r.e || "🍽️") + '</div>') + '<div>' + (r.book ? '<div class="tiny gold sh-bookmark">LOWiSPIKE Recipe Book</div>' : "") + '<div class="h3">' + esc(r.n) + '</div><div class="small muted" style="margin-top:3px">' + esc(r.sub || "") + '</div><div style="margin-top:8px">' + rBadge(r.r) + "</div></div></div>" +
+    (r.book ? '<button class="btn ghost" style="width:100%;margin-top:10px" data-tr="share-recipe" data-r="' + esc(r.id) + '">Share to For You</button>' : "") +
     (r.note ? '<div class="sh-heads"><b>Heads-up</b><span>' + esc(r.note) + "</span></div>" : "") +
     /* Oct 8 (late): one store per list. The cart module prices it (window.LowiStoreList); the old per-store split is only a fallback. */
     (window.LowiStoreList ? window.LowiStoreList.html(r) : (
@@ -7277,6 +7294,8 @@ const T = [
   ["New here?", "Neu hier?", "¿Nuevo aquí?"], ["Say hi", "Sag hallo", "Saluda"], ["In For You", "In Für dich", "En Para ti"], ["Only you", "Nur du", "Solo tú"],
   ["Post", "Posten", "Publicar"],
   ["Share to For You", "Teilen in Für dich", "Compartir en Para ti"],
+  ["Link a recipe (optional)", "Rezept verknüpfen (optional)", "Enlazar una receta (opcional)"], ["No recipe", "Kein Rezept", "Sin receta"],
+  ["Recipe linked", "Rezept verknüpft", "Receta enlazada"], ["Open", "Öffnen", "Abrir"],
   ["Paste a TikTok, Reel or YouTube link. No link? Just write below.", "Füg einen TikTok-, Reel- oder YouTube-Link ein. Kein Link? Schreib einfach unten.", "Pega un enlace de TikTok, Reel o YouTube. ¿Sin enlace? Escribe abajo."],
   ["It lands at the top of For You. Newest first, no algorithm.", "Landet ganz oben in Für dich. Neueste zuerst, kein Algorithmus.", "Aparece arriba en Para ti. Lo más nuevo primero, sin algoritmo."],
   ["You haven't shared anything yet. Swipe to Post to share your first link.", "Du hast noch nichts geteilt. Wisch zu Posten und teil deinen ersten Link.", "Aún no has compartido nada. Desliza a Publicar para compartir tu primer enlace."],
@@ -9974,7 +9993,8 @@ html[data-theme=light] .p2-ia{background:linear-gradient(145deg,color-mix(in srg
 .p2-steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
 .p2-steps li{display:flex;gap:12px;font-size:15px;line-height:1.45}
 .p2-sn{width:26px;height:26px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;background:var(--p2-card2);color:var(--p2-gold)}
-.p2-more{display:flex;gap:8px}
+.p2-more{display:flex;gap:8px;flex-wrap:wrap}
+.p2-more .p2-share{flex-basis:100%}
 .p2-more .r2-btn{flex:1;font-size:14px;padding:0 10px}
 
 /* ---------- cook mode ---------- */
@@ -10432,7 +10452,7 @@ function recipeHTML(r){ const b = basket(r), e = ease(r), cur = storeId(), pick 
       '<div class="p2-hint">Tap anything you already have.</div></div>' +
     (b.buy.length ? shopsHTML(b, pick) : "") +
     (r.steps.length ? '<div class="p2-sec p2-up" style="--d:6"><div class="p2-lab"><span>How it goes</span></div><ol class="p2-steps">' + r.steps.map((s, i) => '<li><span class="p2-sn">' + (i + 1) + '</span><span>' + esc(s) + '</span></li>').join("") + '</ol></div>' : "") +
-    '<div class="p2-more p2-up" style="--d:7">' + (r.book ? '<button class="r2-btn ghost" data-td="addtoday" data-id="' + esc(r.id) + '" data-p2close="1">Add to today</button><button class="r2-btn ghost" data-lc="open" data-id="' + esc(r.id) + '" data-p2close="1">' + IC.cart + '<span>Fill my cart</span></button>' : '<button class="r2-btn ghost" data-p2="copy">Copy shopping list</button>') + '</div>' +
+    '<div class="p2-more p2-up" style="--d:7">' + (r.book ? '<button class="r2-btn ghost" data-td="addtoday" data-id="' + esc(r.id) + '" data-p2close="1">Add to today</button><button class="r2-btn ghost" data-lc="open" data-id="' + esc(r.id) + '" data-p2close="1">' + IC.cart + '<span>Fill my cart</span></button><button class="r2-btn ghost p2-share" data-tr="share-recipe" data-r="' + esc(r.id) + '" data-p2close="1">Share to For You</button>' : '<button class="r2-btn ghost" data-p2="copy">Copy shopping list</button>') + '</div>' +
     '<div style="height:12px"></div>'; }
 function ingChip(i, home, s){ return '<button class="p2-ing' + (home ? " home" : "") + '" data-p2="ing" data-k="' + esc(i.k) + '"><span class="p2-ie">' + ingArt(i) + '</span><span class="p2-in"><b>' + esc(i.n) + '</b>' + (i.q ? '<small>' + esc(i.q) + '</small>' : "") + '</span>' +
   (home ? '<span class="p2-ok">' + IC.check + '</span>' : (s ? '<span class="p2-ip num">' + eur(px(i, s)) + '</span>' : "")) + '</button>'; }
@@ -14767,7 +14787,7 @@ R3F.openBoardTab = openBoardTab;
 /* ---------- "+ Post": the whole posting flow in one sheet ---------- */
 function fabHTML(){ return '<button class="fyv-fab r3f-fab" data-r3f="post" data-sfx="open" aria-label="' + esc(T("New post")) + '" data-noi18n>' + PLUS + '<span>' + esc(T("Post")) + '</span></button>'; }
 R3F.fabHTML = fabHTML;
-function postSheet(prefill, text){
+function postSheet(prefill, text, rec){
   if (!window.TRIBE || !TRIBE.composeInto) return;
   try { if (typeof TAB !== "undefined" && TAB !== "foryou") { if (window.cmSetView) cmSetView("feed"); goTab("foryou"); } } catch(e){}
   const html = '<button class="xbtn" data-act="close-sheet" aria-label="' + esc(T("Close")) + '">' + XI + '</button>' +
@@ -14775,7 +14795,7 @@ function postSheet(prefill, text){
     '<div class="ls-post" id="r3fCompose"></div></div>';
   try { sheet(html); } catch(e){ console.error(e); return; }
   const sh = $("#sheet"); if (sh) { sh.classList.add("r3f-sheet"); sh.scrollTop = 0; }
-  TRIBE.composeInto($("#r3fCompose"), prefill || "", text || "");
+  TRIBE.composeInto($("#r3fCompose"), prefill || "", text || "", rec || "");
   if (prefill || text) return;
 }
 R3F.postSheet = postSheet;

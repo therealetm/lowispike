@@ -1,0 +1,95 @@
+--- a/index.html
++++ b/index.html
+@@ -4,7 +4,7 @@
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+ <meta name="theme-color" content="#03050a">
+-<meta name="lowi-build" content="20261011-131814">
++<meta name="lowi-build" content="20261011-133201">
+ <link rel="manifest" href="manifest.webmanifest">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+ <meta name="mobile-web-app-capable" content="yes">
+@@ -655,6 +655,10 @@
+ .sh-sight{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line2)}
+ .sh-sight:last-child{border-bottom:0}
+ .sh-sight .pp{margin-left:auto;text-align:right}
++.sh-cmp{margin-top:12px;padding:10px 12px;border-radius:16px;border:1px solid var(--line2);background:linear-gradient(145deg,rgba(var(--acc-rgb),.08),rgba(255,255,255,.025))}
++.sh-cmp-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:5px}.sh-cmp-h b{font-size:13px}.sh-cmp-h span{font-size:11px;color:var(--muted)}
++.sh-cmp-r{display:grid;grid-template-columns:10px minmax(0,1fr) auto;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--line2)}.sh-cmp-r:first-of-type{border-top:0}.sh-cmp-r .sh-dot{width:8px;height:8px}.sh-cmp-n{min-width:0}.sh-cmp-n b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sh-cmp-n small{display:block;font-size:10.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sh-cmp-p{text-align:right}.sh-cmp-p b{display:block;font-size:13px;color:var(--gold2)}.sh-cmp-p small{display:block;font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
++.b3-card .sh-cmp{margin:12px 0 2px;text-align:left}.b3-card .sh-cmp-r{grid-template-columns:10px minmax(0,1fr) auto}
+ .sh-acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+ .sh-acts .btn{height:46px;font-size:14px}
+ .sh-qcard{margin-top:12px}
+@@ -2109,7 +2113,7 @@
+ (function(){
+ "use strict";
+ if (window.LowiG1) return;
+-const NEWS_RAW = {"id": "community-recipes", "go": {"tab": "foryou"}, "text": {"en": "New: Share a Recipe Book recipe straight to Community, or link a recipe to any post. Recipe cards open right back into Cook.", "de": "Neu: Teile ein Rezept aus dem Rezeptbuch direkt in die Community oder verknüpfe ein Rezept mit jedem Post. Rezeptkarten öffnen direkt wieder Kochen.", "es": "Nuevo: Comparte una receta del recetario directamente en Comunidad o enlaza una receta a cualquier publicación. Las tarjetas abren la receta en Cocinar."}};
++const NEWS_RAW = {"id": "store-compare-everywhere", "go": {"tab": "scan"}, "text": {"en": "New: Store comparison now follows individual products too. Community finds show the cheapest reported current price, and matching scans show the same comparison in the Pokédex card.", "de": "Neu: Der Supermarkt-Vergleich folgt jetzt auch einzelnen Produkten. Community-Funde zeigen den günstigsten aktuell gemeldeten Preis, und passende Scans zeigen denselben Vergleich direkt in der Pokédex-Karte.", "es": "Nuevo: La comparación de supermercados ahora también acompaña a los productos individuales. Los hallazgos muestran el precio actual más barato reportado y los escaneos coincidentes muestran la misma comparación en la tarjeta Pokédex."}};
+ const NEWS = (NEWS_RAW && typeof NEWS_RAW === "object") ? NEWS_RAW : null;
+ const KEY = "lowi.g1", GO = "lowi.g1.go";
+ const H = document.documentElement;
+@@ -6647,6 +6651,17 @@
+ /* ---------- modal: detail, add, report, price ---------- */
+ function modal(body, foot){ $("#shPanel").innerHTML = '<div class="mb">' + body + "</div>" + (foot ? '<div class="mf">' + foot + "</div>" : ""); $("#shModal").classList.add("on"); }
+ function closeModal(){ const m = $("#shModal"); if (m) m.classList.remove("on"); }
++function priceCompareRows(p){
++  const by = {};
++  liveSightings(p).forEach(s => { if (["fresh","check"].indexOf(priceState(s)) < 0 || !(s.p > 0)) return; const old = by[s.s]; if (!old || s.p < old.p || (s.p === old.p && s.at > old.at)) by[s.s] = s; });
++  return Object.keys(by).map(k => by[k]).sort((a, b) => a.p - b.p || b.at - a.at);
++}
++function priceCompareHTML(p, compact){
++  const rows = p && priceCompareRows(p); if (!rows || rows.length < 2) return "";
++  return '<div class="sh-cmp' + (compact ? ' compact' : '') + '"><div class="sh-cmp-h"><b>Same item at other stores</b><span>cheapest first</span></div>' +
++    rows.map((r, i) => { const st = storeById(r.s); return '<div class="sh-cmp-r"><span class="sh-dot" style="background:' + st.c + '"></span><span class="sh-cmp-n"><b>' + esc(st.n) + '</b><small>' + (r.br ? esc(r.br) + ' · ' : '') + 'Seen ' + ageLabel(r.at) + (r.u ? ' · ' + esc(r.u) : '') + '</small></span><span class="sh-cmp-p"><b>' + eur(r.p) + '</b>' + (i === 0 ? '<small>cheapest</small>' : '') + '</span></div>'; }).join('') + '</div>';
++}
++function priceCompareFor(name, ean, compact){ const p = findDup(name, ean); return p && isLive(p) ? priceCompareHTML(p, compact) : ""; }
+ function detail(id){
+   const p = SH.products.find(x => x.id === id); if (!p) return;
+   const live = liveSightings(p), gone = p.sg.filter(sgGone);
+@@ -6655,6 +6670,7 @@
+     '<div class="sh-wrap" style="margin-top:10px">' + p.why.map(w => '<span class="chip on">' + esc(w) + "</span>").join("") + p.g.map(g => '<span class="chip">' + GROUPS[g].e + " " + esc(GROUPS[g].n) + "</span>").join("") + "</div>" +
+     (p.note ? '<div class="sh-ok">' + esc(p.note) + "</div>" : "") +
+     '<div class="small muted" style="margin-top:10px">Community find · added by ' + esc(p.anon ? "a member" : p.by) + " · " + ageLabel(p.at) + " · " + trustHTML(p) + "</div>" +
++    priceCompareHTML(p, false) +
+     '<div class="sh-lab" style="margin-top:16px"><span>Where members saw it</span><span>still there?</span></div><div class="card" style="padding:2px 14px">' +
+     live.map(s => { const st = storeById(s.s), v = voted(p.id, s.id), ps = priceState(s);
+       return '<div class="sh-sight"><span class="sh-dot" style="background:' + st.c + '"></span><div style="min-width:0"><div style="font-weight:600">' + esc(st.n) + (s.br ? ' <span class="muted small">' + esc(s.br) + "</span>" : "") + '</div><div class="sh-age ' + ageCls(s.at) + '">Seen ' + ageLabel(s.at) + " · " + s.y + " yes" + (s.no ? " · " + s.no + " gone" : "") + (s.until && s.until > Date.now() ? " · offer until " + new Date(s.until).toLocaleDateString("de-DE") : "") + "</div></div>" +
+@@ -6855,6 +6871,7 @@
+   injectAll();
+   mountInTab();
+   window.LOWI_SHELF = {open:openShelf, showTab, state:() => SH, rules:SH_RULES, reset:() => { SH = shFresh(); shSave(); render(); },
++    priceCompareHTML:(name, ean, compact) => priceCompareFor(name, ean, compact),
+     /* Oct 8: Today's shopping list and shop mode read member finds and the extra list from here */
+     findsFor:(g, name) => { const ws = words(name).filter(w => w.length > 3);
+       return SH.products.filter(p => isLive(p) && p.g.indexOf(g) >= 0 && (!ws.length || ws.some(w => norm(p.n).indexOf(w) >= 0))).sort((a, b) => lastSeen(b) - lastSeen(a))
+@@ -7383,6 +7400,7 @@
+   [/^🛡 (\d+) shields?$/, "🛡 $1 Schild", "🛡 $1 escudo"],
+   [/^(\d+) XP to Level (\d+)$/, "$1 XP bis Level $2", "$1 XP para el nivel $2"],
+   [/^(\d+) meals$/, "$1 Gerichte", "$1 platos"],
++  [/^Seen today(.*)$/, "Heute gesehen$1", "Visto hoy$1"],
+   [/^Seen yesterday(.*)$/, "Gestern gesehen$1", "Visto ayer$1"],
+   [/^Seen (\d+) days ago(.*)$/, "Vor $1 Tagen gesehen$2", "Visto hace $1 días$2"],
+   [/^Seen (\d+) weeks ago(.*)$/, "Vor $1 Wochen gesehen$2", "Visto hace $1 semanas$2"],
+@@ -13436,6 +13454,7 @@
+     '<div class="tiny dim b3-sh">' + esc(t("betterRule")) + '</div><div class="b3-chips">' + rule.map(x => '<span class="b3-chip">' + esc(x) + '</span>').join("") + '</div></div>'; }
+ function cardHTML(p, anim){
+   const v = p.verdict || "unknown", r = rarity(p.catches), mine = isMine(p), m = mine ? D.mine[pkey(p)] : null;
++  let storeCmp = ""; try { storeCmp = window.LOWI_SHELF && LOWI_SHELF.priceCompareHTML ? LOWI_SHELF.priceCompareHTML(p.name, p.barcode, true) : ""; } catch(e){}
+   const why = (p.why || []).map(whyText).filter(Boolean);
+   const by = p.byName ? (m && m.first ? t("firstByYou") : t("firstBy", p.byName)) : (m && m.first ? t("firstByYou") : "");
+   return '<div class="b3-card v-' + v + (anim ? " anim" : "") + '" id="b3Card">' +
+@@ -13444,7 +13463,7 @@
+     '<div class="b3-name">' + esc(p.name) + '</div>' + (p.brand ? '<div class="small muted">' + esc(p.brand) + (p.facts && p.facts.q ? " · " + esc(p.facts.q) : "") + '</div>' : "") +
+     '<div class="b3-verd"><span class="b3-vb v-' + v + '">' + esc(t("vl_" + v)) + '</span><span class="small">' + esc(t("vs_" + v)) + '</span></div>' +
+     (v !== "unknown" ? meterHTML(p.score != null ? p.score : (p.facts && p.facts.score) || rate(p).score, p.est || (p.facts && p.facts.est)) : "") +
+-    (why.length ? '<ul class="b3-why">' + why.map(w => '<li>' + esc(w) + '</li>').join("") + '</ul>' : "") + factsHTML(p.facts) +
++    (why.length ? '<ul class="b3-why">' + why.map(w => '<li>' + esc(w) + '</li>').join("") + '</ul>' : "") + factsHTML(p.facts) + storeCmp +
+     '<div class="tiny dim b3-meta">' + [by, p.id ? (p.catches > 1 ? t("catches", p.catches) : t("catches1")) : "", p.barcode ? t("bcFound", p.barcode) : "", p.source === "off" ? t("r_off") : ""].filter(Boolean).map(esc).join(" · ") + '</div></div>'; }
+ function actsHTML(p){ const mine = isMine(p);
+   if (p.verdict === "unknown") return "";
+--- a/version.json
++++ b/version.json
+@@ -1 +1 @@
+-{"build":"20261011-131814","news":{"id":"community-recipes","go":{"tab":"foryou"},"text":{"en":"New: Share a Recipe Book recipe straight to Community, or link a recipe to any post. Recipe cards open right back into Cook.","de":"Neu: Teile ein Rezept aus dem Rezeptbuch direkt in die Community oder verknüpfe ein Rezept mit jedem Post. Rezeptkarten öffnen direkt wieder Kochen.","es":"Nuevo: Comparte una receta del recetario directamente en Comunidad o enlaza una receta a cualquier publicación. Las tarjetas abren la receta en Cocinar."}}}
++{"build":"20261011-133201","news":{"id":"store-compare-everywhere","go":{"tab":"scan"},"text":{"en":"New: Store comparison now follows individual products too. Community finds show the cheapest reported current price, and matching scans show the same comparison in the Pokédex card.","de":"Neu: Der Supermarkt-Vergleich folgt jetzt auch einzelnen Produkten. Community-Funde zeigen den günstigsten aktuell gemeldeten Preis, und passende Scans zeigen denselben Vergleich direkt in der Pokédex-Karte.","es":"Nuevo: La comparación de supermercados ahora también acompaña a los productos individuales. Los hallazgos muestran el precio actual más barato reportado y los escaneos coincidentes muestran la misma comparación en la tarjeta Pokédex."}}}

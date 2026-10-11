@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261011-045107">
+<meta name="lowi-build" content="20261011-050151">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2108,7 +2108,7 @@ html[data-theme=light] #lcUpd.g1-upd .g1-usay{background:rgba(255,255,255,.2)}
 (function(){
 "use strict";
 if (window.LowiG1) return;
-const NEWS_RAW = {"id": "e1-bedtime-push", "go": {"tab": "home"}, "text": {"en": "New: with phone notifications on, LOWiSPIKE now reminds you around bedtime to close your day, even when the app is closed. Once a day, only if your day isn't closed yet, never in your quiet hours. Tap it and your day recap opens.", "de": "Neu: Mit Handy-Benachrichtigungen erinnert dich LOWiSPIKE jetzt zur Schlafenszeit an deinen Tagesabschluss, auch wenn die App zu ist. Einmal am Tag, nur wenn dein Tag noch offen ist, nie in deiner Ruhezeit. Antippen öffnet deinen Tagesrückblick.", "es": "Nuevo: con las notificaciones del móvil activadas, LOWiSPIKE te recuerda a la hora de dormir que cierres tu día, también con la app cerrada. Una vez al día, solo si tu día sigue abierto, nunca en tus horas de silencio. Tócala y se abre el resumen de tu día."}};
+const NEWS_RAW = {"id": "q6-light-read", "go": {"tab": "foryou"}, "text": {"en": "New: Cloud (light mode) is easier to read. For You keeps the video look with white words on a dark fade, the tab bar stays clear on top, and the fasting stage name on Today is darker.", "de": "Neu: Cloud (heller Modus) ist besser lesbar. Für dich behält den Video-Look mit weißer Schrift auf dunklem Verlauf, die Leiste unten bleibt klar lesbar und der Fastenschritt auf Heute ist dunkler.", "es": "Nuevo: Cloud (modo claro) se lee mejor. Para ti mantiene el estilo de vídeo con letras blancas sobre un degradado oscuro, la barra de abajo se lee bien y el nombre de la fase de ayuno en Hoy es más oscuro."}};
 const NEWS = (NEWS_RAW && typeof NEWS_RAW === "object") ? NEWS_RAW : null;
 const KEY = "lowi.g1", GO = "lowi.g1.go";
 const H = document.documentElement;
@@ -18203,8 +18203,10 @@ window.LowiN1P = {e1day, mode, supported, standalone, enable, disable, test, syn
 /* ===== LOWiSPIKE Q6 part 3 (Oct 11, 2026): light mode readability =====
    For You plays videos and photos, so in Cloud it keeps the video look: white words and icons on the same dark fade as Void, like TikTok.
    Today: the wordmark, the fasting stage name and the Stop button are darker in Cloud. */
-html[data-theme=light] .fy-shade{background:linear-gradient(180deg,rgba(0,0,0,.28) 0,rgba(0,0,0,0) 22%,rgba(0,0,0,.08) 44%,rgba(0,0,0,.8) 100%)}
+html[data-theme=light] .fy-shade{background:linear-gradient(180deg,rgba(0,0,0,.28) 0,rgba(0,0,0,0) 22%,rgba(0,0,0,.2) 42%,rgba(0,0,0,.55) 68%,rgba(0,0,0,.84) 100%)}
 html[data-theme=light] .fy-text .fy-shade{background:rgba(0,0,0,.18)}
+html[data-theme=light] .fy-slide{background:#05070c}
+html[data-theme=light] .fyv-missing::after{color:#fff}
 html[data-theme=light] .fy-meta{color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.55)}
 html[data-theme=light] .fy-by span{opacity:.92}
 html[data-theme=light] .fy-by .lb3,html[data-theme=light] .fy-by .lb3 span{opacity:1}

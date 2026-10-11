@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261011-034728">
+<meta name="lowi-build" content="20261011-041307">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -7477,6 +7477,278 @@ function addLang(){ if (!window.LowiLang || !LowiLang.add) return setTimeout(add
 addLang();
 })();
 </script>
+<style id="a1css">
+/* LOWiSPIKE A1 (Oct 11, 2026): Add to Home Screen guide before sign-up */
+.r2-gate:has(.a1){overflow:hidden}
+html.gate-up #lcA2hs{display:none!important}
+.r2-start.a1{justify-content:flex-start;height:100%;min-height:100%;overflow:hidden;padding:calc(env(safe-area-inset-top) + 12px) 22px calc(env(safe-area-inset-bottom) + 14px);width:100%}
+.a1.a1-in{animation:a1In .3s ease}
+@keyframes a1In{from{opacity:0;transform:translateY(6px)}}
+.a1-top{display:flex;align-items:center;justify-content:space-between;gap:8px;position:relative;z-index:2}
+.a1-back{width:44px;height:44px;flex:0 0 44px;border-radius:50%;border:1px solid var(--r2-line);background:var(--r2-field);color:var(--r2-ink);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.a1-back svg{width:20px;height:20px}
+.a1-sp{width:44px;flex:0 0 44px}
+.a1 .a2-langs{margin:0}
+/* phone mockup */
+.a1-stage{flex:1 1 auto;min-height:150px;max-height:300px;display:flex;align-items:center;justify-content:center;margin:10px 0 4px;position:relative;z-index:1}
+.a1-phone{height:100%;max-height:290px;aspect-ratio:9/16.5;border-radius:30px;padding:7px;box-sizing:border-box;background:linear-gradient(160deg,#2a2f3d,#0b0d13);box-shadow:0 20px 50px rgba(0,0,0,.45),inset 0 0 0 1.5px rgba(255,255,255,.14)}
+html[data-theme=light] .a1-phone{background:linear-gradient(160deg,#3a4154,#1b1f2b);box-shadow:0 18px 44px rgba(60,72,110,.25),inset 0 0 0 1.5px rgba(255,255,255,.2)}
+.a1-scr{position:relative;width:100%;height:100%;border-radius:24px;overflow:hidden;background:#0c0f18}
+html[data-theme=light] .a1-scr{background:#f4f6fb}
+.a1-scr::before{content:"";position:absolute;top:6px;left:50%;width:34%;height:12px;margin-left:-17%;border-radius:8px;background:#000;z-index:3}
+.a1-f{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;transform:scale(.97);transition:opacity .45s,transform .45s}
+.a1-s0 .a1-f0,.a1-s1 .a1-f1,.a1-s2 .a1-f2{opacity:1;transform:none}
+.a1-pagebody{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:opacity .3s}
+.a1-pagebody.dim{opacity:.35}
+.a1-icon{width:30%;max-width:60px;height:auto;aspect-ratio:1;border-radius:22%;box-shadow:0 6px 18px rgba(0,0,0,.35);display:block}
+.a1-mini{font-size:11px;letter-spacing:.06em;color:#f8f5ed;font-weight:760}
+html[data-theme=light] .a1-mini{color:#161c2e}
+.a1-bar,.a1-iab{display:flex;align-items:center;justify-content:space-around;gap:6px;padding:7px 8px 9px;background:rgba(255,255,255,.08);color:#9fd8ff;font-size:13px}
+html[data-theme=light] .a1-bar,html[data-theme=light] .a1-iab{background:rgba(22,28,46,.06);color:#1f6fd1}
+.a1-iab{padding-top:22px;justify-content:space-between;color:#e8e6df}
+html[data-theme=light] .a1-iab{color:#161c2e}
+.a1-x{font-size:16px;width:20px;text-align:center}
+.a1-url{font-size:9.5px;opacity:.75;flex:1;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.a1-bar svg,.a1-iab svg,.a1-srow svg,.a1-mrow svg{width:17px;height:17px;display:block}
+.a1-hit{position:relative;display:inline-flex;align-items:center;gap:6px;border-radius:9px}
+.a1-hit::after{content:"";position:absolute;inset:-5px;border-radius:12px;border:2px solid #e2c27e;box-shadow:0 0 14px rgba(226,194,126,.7);animation:a1Ring 1.4s ease-in-out infinite}
+@keyframes a1Ring{50%{transform:scale(1.12);opacity:.55}}
+.a1-sheet,.a1-menu{margin-top:auto;padding:8px 8px 12px;background:#1b2030;border-radius:16px 16px 0 0;display:flex;flex-direction:column;gap:6px;color:#f1efe8}
+.a1-menu{margin:4px 6px auto auto;width:78%;border-radius:12px;padding:6px}
+html[data-theme=light] .a1-sheet,html[data-theme=light] .a1-menu{background:#fff;color:#161c2e;box-shadow:0 -6px 20px rgba(60,72,110,.15)}
+.a1-srow,.a1-mrow{display:flex;align-items:center;gap:8px;padding:8px 9px;border-radius:10px;background:rgba(255,255,255,.06);font-size:10.5px;font-weight:650}
+html[data-theme=light] .a1-srow,html[data-theme=light] .a1-mrow{background:rgba(22,28,46,.05)}
+.a1-home{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:9% 10%;padding:30px 11% 12px;align-content:start;background:radial-gradient(circle at 30% 20%,rgba(120,90,220,.45),transparent 60%),radial-gradient(circle at 80% 85%,rgba(60,170,220,.35),transparent 55%)}
+.a1-app{aspect-ratio:1;border-radius:24%;background:rgba(255,255,255,.16)}
+.a1-app1{background:rgba(255,160,120,.35)}.a1-app2{background:rgba(120,220,160,.3)}.a1-app3{background:rgba(255,255,255,.22)}.a1-app4{background:rgba(160,180,255,.32)}.a1-app5{background:rgba(255,220,120,.3)}
+.a1-mine{display:flex;flex-direction:column;align-items:center;gap:3px;position:relative}
+.a1-mine .a1-icon{width:100%;max-width:none;border-radius:24%;box-shadow:0 0 0 2px #e2c27e,0 0 18px rgba(226,194,126,.8);animation:a1Pop 1.6s ease-in-out infinite}
+.a1-mine em{font-style:normal;font-size:7px;color:#fff;font-weight:700;white-space:nowrap}
+@keyframes a1Pop{50%{transform:scale(1.08)}}
+/* text */
+.a1-h{font-size:25px!important;line-height:1.12!important;margin:8px 0 6px!important;position:relative;z-index:1}
+.a1-why{font-size:14.5px!important;line-height:1.4!important;margin:0 0 10px!important;position:relative;z-index:1}
+.a1-steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;position:relative;z-index:1}
+.a1-step{width:100%;min-height:52px;display:flex;align-items:center;gap:11px;padding:7px 12px;border-radius:16px;border:1px solid var(--r2-line);background:var(--r2-field);color:var(--r2-ink);font:inherit;text-align:left;cursor:pointer;transition:border-color .25s,background .25s,transform .25s;-webkit-tap-highlight-color:transparent;box-sizing:border-box}
+.a1-step.on{border-color:#c9a45e;background:rgba(226,194,126,.13)}
+html[data-theme=light] .a1-step.on{background:rgba(185,141,69,.1);border-color:#b98d45}
+.a1-n{width:24px;height:24px;flex:0 0 24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:780;background:var(--r2-line)}
+.a1-step.on .a1-n{background:var(--r2-pri);color:var(--r2-pri-ink)}
+.a1-si{width:24px;height:24px;flex:0 0 24px;display:flex;align-items:center;justify-content:center;color:var(--r2-ink)}
+.a1-si svg{width:22px;height:22px}
+.a1-si .a1-icon{width:24px;height:24px;border-radius:6px;box-shadow:none}
+.a1-st{display:flex;flex-direction:column;min-width:0;gap:1px}
+.a1-st b{font-size:15px;font-weight:720;line-height:1.2}
+.a1-st small{font-size:12.5px;color:var(--r2-mut);line-height:1.25}
+.a1-acts{margin-top:auto;padding-top:12px;display:flex;flex-direction:column;align-items:stretch;gap:4px;position:relative;z-index:1}
+.a1-acts .r2-btn{width:100%}
+.a1-ghost{min-height:46px;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:999px;border:1px solid var(--r2-line);background:var(--r2-field);color:var(--r2-ink);font:inherit;font-size:15px;font-weight:680;cursor:pointer;margin-top:4px}
+.a1-ghost svg{width:18px;height:18px}
+.a1-cont{min-height:44px;border:0;background:transparent;color:var(--r2-mut);font:inherit;font-size:14.5px;font-weight:650;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.a1-toast{position:absolute;left:22px;right:22px;bottom:calc(env(safe-area-inset-bottom) + 128px);padding:11px 14px;border-radius:14px;background:#1b2030;color:#f8f5ed;font-size:14px;font-weight:600;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.4);opacity:0;transform:translateY(8px);transition:opacity .25s,transform .25s;pointer-events:none;z-index:5}
+html[data-theme=light] .a1-toast{background:#161c2e}
+.a1-toast.on{opacity:1;transform:none}
+/* done */
+.a1-dstage{flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-height:160px;position:relative;z-index:1}
+.a1-glow .a1-icon{width:108px;max-width:none;border-radius:24px;box-shadow:0 0 0 3px #e2c27e,0 0 46px rgba(226,194,126,.6);animation:a1Pop 1.8s ease-in-out infinite}
+.a1-dname{font-size:13px;font-weight:760;letter-spacing:.08em}
+.a1-done .a1-h,.a1-done .a1-why{text-align:center}
+/* small phones (375x667) and short home-screen viewports */
+@media (max-height:740px){
+  .a1-stage{min-height:120px;margin:6px 0 2px}
+  .a1-h{font-size:21px!important;margin:4px 0 4px!important}
+  .a1-why{font-size:13px!important;margin-bottom:7px!important}
+  .a1-steps{gap:5px}
+  .a1-step{min-height:46px;padding:5px 10px}
+  .a1-st b{font-size:14px}
+  .a1-st small{font-size:12px}
+  .a1-acts{padding-top:8px}
+  .a1-cont{min-height:40px}
+}
+@media (max-height:620px){ .a1-why{display:none} }
+/* iPad and wider: centred column */
+@media (min-width:700px){ .r2-start.a1{max-width:460px} .a1-stage{max-height:340px} .a1-phone{max-height:330px} }
+@media (prefers-reduced-motion:reduce){ .a1-hit::after,.a1-mine .a1-icon,.a1-glow .a1-icon{animation:none} .a1-f{transition:none} }
+</style>
+<script id="a1js">
+/* ===== LOWiSPIKE A1 (Oct 11, 2026): Add to Home Screen before sign-up =====
+   - Why: on iPhone, Safari and the Home Screen app keep separate storage, so people who sign up in Safari and add the app
+     afterwards have to sign in again. So "Create account" in a phone browser first shows this guide, then sign-up happens
+     inside the Home Screen app.
+   - iPhone / iPad Safari (and Chrome/Firefox on iOS): phone mockup that plays the 3 steps (Share, Add to Home Screen, open it),
+     tap a step to see it. "I added it" -> "Now open it from your Home Screen". "Continue in the browser" always works.
+   - TikTok / Instagram / Facebook / Snapchat in-app browsers: first "Open in Safari" (or Chrome), since they can't add to home.
+     Button tries to open the real browser, plus the manual steps and Copy link.
+   - Android Chrome: the native install prompt (beforeinstallprompt) when the phone offers it, else the menu steps.
+   - Skipped: opened from the Home Screen (standalone), desktop, returning guests with data in this browser, or once the person
+     chose "Continue in the browser" in this session. EN/DE/ES, dark and light, fits 390x844 and 375x667 without scrolling. */
+(function(){
+"use strict";
+const UA = navigator.userAgent || "";
+const SKIP = "lowi.a1.skip";
+let bip = null, installed = false, view = "guide", step = 0, timer = 0;
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); bip = e; paintBip(); });
+window.addEventListener("appinstalled", () => { installed = true; bip = null; if (live()) { view = "done"; repaint(); } });
+function standalone(){ try { return !!(navigator.standalone || (window.matchMedia && matchMedia("(display-mode: standalone)").matches)); } catch(e){ return false; } }
+function ios(){ return /iPhone|iPad|iPod/.test(UA) || (/Macintosh/.test(UA) && (navigator.maxTouchPoints || 0) > 1); }
+function android(){ return /Android/i.test(UA); }
+function inapp(){ return /Instagram|FBAN|FBAV|FB_IAB|FBIOS|TikTok|musical_ly|Bytedance|BytedanceWebview|trill_|Snapchat|LinkedInApp|Pinterest|Line\//i.test(UA); }
+function kind(){
+  if (standalone()) return "";
+  if (!(ios() || android())) return "";
+  if (inapp()) return "inapp";
+  return ios() ? "ios" : "android";
+}
+function localData(){ try { const s = window.LowiR2 && LowiR2.S && LowiR2.S(); return !!(s && ((s.user && s.user.name) || (s.logs && s.logs.length) || (s.saved && s.saved.length) || s.setupDone)); } catch(e){ return false; } }
+function skipped(){ try { return sessionStorage.getItem(SKIP) === "1"; } catch(e){ return false; } }
+function want(){ return !!kind() && !skipped() && !localData(); }
+const T = s => s;   /* English in the markup; LowiLang translates the DOM (and back on a language switch) */
+function live(){ return !!document.querySelector("#r2gate .a1"); }
+const IC = {
+  share:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 10H6.5A1.5 1.5 0 0 0 5 11.5v8A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5v-8a1.5 1.5 0 0 0-1.5-1.5H16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  add:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 8.5v7M8.5 12h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  dots:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.5" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="18.5" cy="12" r="1.8" fill="currentColor"/></svg>',
+  kebab:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5.5" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="18.5" r="1.8" fill="currentColor"/></svg>',
+  compass:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="m15.5 8.5-2 5-5 2 2-5z" fill="currentColor"/></svg>',
+  home:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 12 4l8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
+  link:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  back:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+};
+const ICON = '<img class="a1-icon" src="icon-180.png" alt="" width="60" height="60">';
+function phone(k){
+  const apps = n => Array.from({length:n}, (_, i) => '<i class="a1-app a1-app' + (i % 6) + '"></i>').join("");
+  if (k === "inapp") return '<div class="a1-phone" aria-hidden="true"><div class="a1-scr">' +
+    '<div class="a1-f a1-f0"><div class="a1-iab"><span class="a1-x">×</span><span class="a1-url">therealetm.github.io</span><span class="a1-hit">' + IC.dots + '</span></div><div class="a1-pagebody">' + ICON + '<b class="a1-mini">LOWiSPIKE</b></div></div>' +
+    '<div class="a1-f a1-f1"><div class="a1-iab"><span class="a1-x">×</span><span class="a1-url">therealetm.github.io</span><span>' + IC.dots + '</span></div><div class="a1-menu"><div class="a1-mrow a1-hit">' + IC.compass + '<span>' + T(android() ? "Open in browser" : "Open in Safari") + '</span></div><div class="a1-mrow">' + IC.link + '<span>' + T("Copy link") + '</span></div></div></div>' +
+    '<div class="a1-f a1-f2"><div class="a1-pagebody">' + ICON + '<b class="a1-mini">LOWiSPIKE</b></div><div class="a1-bar"><span class="a1-hit">' + (android() ? IC.kebab : IC.share) + '</span></div></div>' +
+    '</div></div>';
+  return '<div class="a1-phone" aria-hidden="true"><div class="a1-scr">' +
+    '<div class="a1-f a1-f0"><div class="a1-pagebody">' + ICON + '<b class="a1-mini">LOWiSPIKE</b></div><div class="a1-bar">' + (k === "android" ? '<span class="a1-url">therealetm.github.io</span><span class="a1-hit">' + IC.kebab + '</span>' : '<span>‹</span><span class="a1-hit">' + IC.share + '</span><span>' + IC.dots + '</span>') + '</div></div>' +
+    '<div class="a1-f a1-f1"><div class="a1-pagebody dim">' + ICON + '</div><div class="a1-sheet"><div class="a1-srow">' + IC.link + '<span>' + T("Copy") + '</span></div><div class="a1-srow a1-hit">' + (k === "android" ? IC.home : IC.add) + '<span>' + T(k === "android" ? "Install app" : "Add to Home Screen") + '</span></div></div></div>' +
+    '<div class="a1-f a1-f2"><div class="a1-home">' + apps(7) + '<span class="a1-mine">' + ICON + '<em>LOWiSPIKE</em></span>' + apps(4) + '</div></div>' +
+    '</div></div>';
+}
+function steps(k){
+  if (k === "inapp") return [
+    [IC.dots, "Tap the three dots", "top right of this screen"],
+    [IC.compass, android() ? "Tap Open in browser" : "Tap Open in Safari", "this app's browser can't add it"],
+    [android() ? IC.kebab : IC.share, "Add it to your Home Screen", "then sign up in the app"]];
+  if (k === "android") return [
+    [IC.kebab, "Tap the menu", "three dots, top right"],
+    [IC.home, "Tap Install app", "or Add to Home screen"],
+    [ICON, "Open LOWiSPIKE", "sign up there, you stay signed in"]];
+  return [
+    [IC.share, "Tap Share", "bottom of Safari, or behind ⋯"],
+    [IC.add, "Tap Add to Home Screen", "scroll down if you don't see it"],
+    [ICON, "Open LOWiSPIKE", "sign up there, you stay signed in"]];
+}
+const HEAD = {ios:["Put LOWiSPIKE on your Home Screen", "Sign up in the app and you stay signed in. In Safari you'd have to sign in again later."],
+  android:["Install LOWiSPIKE on your phone", "Full screen like an app, with reminders. Sign up in the app and you stay signed in."],
+  inapp:["Open LOWiSPIKE in your browser", "This app's browser can't keep you signed in or add LOWiSPIKE to your Home Screen."]};
+function top(){ return '<div class="a1-top"><button type="button" class="a1-back" data-a1="back" aria-label="' + T("Back") + '">' + IC.back + '</button>' + (window.LowiA2 && LowiA2.picker ? LowiA2.picker() : '') + '<span class="a1-sp"></span></div>'; }
+function guideHTML(k){
+  const st = steps(k), hd = HEAD[k];
+  let pri;
+  if (k === "inapp") pri = '<button type="button" class="r2-btn pri big" data-a1="open">' + T(android() ? "Open in browser" : "Open in Safari") + '</button><button type="button" class="a1-ghost" data-a1="copy">' + IC.link + '<span>' + T("Copy link") + '</span></button>';
+  else if (k === "android") pri = '<button type="button" class="r2-btn pri big" data-a1="' + (bip ? "install" : "added") + '">' + T(bip ? "Install app" : "I added it") + '</button>';
+  else pri = '<button type="button" class="r2-btn pri big" data-a1="added">' + T("I added it") + '</button>';
+  return '<div class="r2-start a1 a1-' + k + ' a1-s' + step + '" data-k="' + k + '">' +
+    '<div class="r2-orbs" aria-hidden="true"><i></i><i></i><i></i></div>' + top() +
+    '<div class="a1-stage">' + phone(k) + '</div>' +
+    '<h1 class="a1-h">' + T(hd[0]) + '</h1><p class="a1-why">' + T(hd[1]) + '</p>' +
+    '<ol class="a1-steps">' + st.map((s, i) => '<li><button type="button" class="a1-step' + (i === step ? " on" : "") + '" data-a1="step" data-i="' + i + '"><span class="a1-n">' + (i + 1) + '</span><span class="a1-si">' + s[0] + '</span><span class="a1-st"><b>' + T(s[1]) + '</b><small>' + T(s[2]) + '</small></span></button></li>').join("") + '</ol>' +
+    '<div class="a1-acts">' + pri + '<button type="button" class="a1-cont" data-a1="continue">' + T("Continue in the browser") + '</button></div>' +
+    '<div class="a1-toast" role="status" aria-live="polite"></div>' +
+    '</div>';
+}
+function doneHTML(k){
+  return '<div class="r2-start a1 a1-done a1-' + k + '" data-k="' + k + '">' +
+    '<div class="r2-orbs" aria-hidden="true"><i></i><i></i><i></i></div>' + top() +
+    '<div class="a1-dstage"><div class="a1-glow">' + ICON + '</div><div class="a1-dname">LOWiSPIKE</div></div>' +
+    '<h1 class="a1-h">' + T("Now open it from your Home Screen") + '</h1>' +
+    '<p class="a1-why">' + T("Tap the LOWiSPIKE icon and create your account there. You can close this browser tab.") + '</p>' +
+    '<div class="a1-acts"><button type="button" class="a1-ghost" data-a1="guide">' + T("Show the steps again") + '</button><button type="button" class="a1-cont" data-a1="continue">' + T("Continue in the browser") + '</button></div>' +
+    '</div>';
+}
+function html(){ const k = kind() || "ios"; tick(); return view === "done" ? doneHTML(k) : guideHTML(k); }
+function repaint(){ const g = document.getElementById("r2gate"); if (!g || !live()) return; const was = g.querySelector(".a1"); g.innerHTML = html(); if (was && g.firstChild) g.firstChild.classList.add("a1-in"); }
+function setStep(i, user){ step = (i + 3) % 3; const r = document.querySelector("#r2gate .a1"); if (!r) return;
+  r.classList.remove("a1-s0", "a1-s1", "a1-s2"); r.classList.add("a1-s" + step);
+  r.querySelectorAll(".a1-step").forEach(b => b.classList.toggle("on", +b.dataset.i === step));
+  if (user) { clearInterval(timer); timer = setInterval(auto, 5200); } }
+function auto(){ if (!live()) { clearInterval(timer); timer = 0; return; } if (document.hidden) return; setStep(step + 1); }
+function tick(){ clearInterval(timer); timer = setInterval(auto, 2600); }
+function paintBip(){ const b = document.querySelector('#r2gate .a1-android [data-a1="added"]'); if (b && bip) { b.dataset.a1 = "install"; b.textContent = T("Install app"); } }
+function toast(t){ const el = document.querySelector("#r2gate .a1-toast"); if (!el) return; el.textContent = t; el.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("on"), 2200); }
+function url(){ return location.origin + location.pathname; }
+async function copy(){ const u = url(); let okk = false;
+  try { if (navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText(u); okk = true; } } catch(e){}
+  if (!okk) { try { const t = document.createElement("textarea"); t.value = u; t.setAttribute("readonly", ""); t.style.position = "fixed"; t.style.opacity = "0"; document.body.appendChild(t); t.select(); okk = document.execCommand("copy"); t.remove(); } catch(e){} }
+  toast(okk ? (android() ? "Link copied. Paste it in Chrome." : "Link copied. Paste it in Safari.") : "Copy failed. Use the three dots instead."); }
+function openOut(){ const u = url();
+  if (android()) { location.href = "intent://" + u.replace(/^https?:\/\//, "") + "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" + encodeURIComponent(u) + ";end"; }
+  else { location.href = "x-safari-" + u; }
+  setTimeout(() => { if (!document.hidden) { setStep(0, true); toast(android() ? "Didn't open? Tap the three dots, then Open in browser." : "Didn't open? Tap the three dots, then Open in Safari."); } }, 1600); }
+function gate(v){ try { if (window.LowiR2 && LowiR2.showGate) LowiR2.showGate(v); } catch(e){ console.error(e); } }
+document.addEventListener("click", e => {
+  const a = e.target.closest && e.target.closest("[data-a1]"); if (!a || !a.closest("#r2gate")) return;
+  const v = a.dataset.a1;
+  if (v === "step") setStep(+a.dataset.i, true);
+  else if (v === "back") { view = "guide"; step = 0; gate("start"); }
+  else if (v === "continue") { try { sessionStorage.setItem(SKIP, "1"); } catch(x){} view = "guide"; gate("signup"); }
+  else if (v === "added") { view = "done"; repaint(); }
+  else if (v === "guide") { view = "guide"; step = 0; repaint(); }
+  else if (v === "copy") copy();
+  else if (v === "open") openOut();
+  else if (v === "install") { const p = bip; if (!p) { view = "done"; repaint(); return; }
+    try { p.prompt(); Promise.resolve(p.userChoice).then(c => { bip = null; if (c && c.outcome === "accepted") { view = "done"; repaint(); } else { repaint(); } }).catch(() => {}); } catch(x){ view = "done"; repaint(); } }
+});
+window.LowiA1 = { want, kind, html, setStep, step: () => step, view: () => view, reset(){ view = "guide"; step = 0; try { sessionStorage.removeItem(SKIP); } catch(e){} }, hasPrompt: () => !!bip };
+function addLang(){ if (!window.LowiLang || !LowiLang.add) return setTimeout(addLang, 200); LowiLang.add([
+  ["Put LOWiSPIKE on your Home Screen", "Hol dir LOWiSPIKE auf den Home-Bildschirm", "Pon LOWiSPIKE en tu pantalla de inicio"],
+  ["Sign up in the app and you stay signed in. In Safari you'd have to sign in again later.", "Registrier dich in der App und du bleibst angemeldet. In Safari müsstest du dich später neu anmelden.", "Regístrate en la app y seguirás con la sesión abierta. En Safari tendrías que volver a entrar después."],
+  ["Install LOWiSPIKE on your phone", "Installiere LOWiSPIKE auf deinem Handy", "Instala LOWiSPIKE en tu móvil"],
+  ["Full screen like an app, with reminders. Sign up in the app and you stay signed in.", "Vollbild wie eine App, mit Erinnerungen. Registrier dich in der App und du bleibst angemeldet.", "Pantalla completa como una app, con recordatorios. Regístrate en la app y seguirás con la sesión abierta."],
+  ["Open LOWiSPIKE in your browser", "Öffne LOWiSPIKE in deinem Browser", "Abre LOWiSPIKE en tu navegador"],
+  ["This app's browser can't keep you signed in or add LOWiSPIKE to your Home Screen.", "Der Browser dieser App hält dich nicht angemeldet und kann LOWiSPIKE nicht auf den Home-Bildschirm legen.", "El navegador de esta app no mantiene tu sesión ni puede añadir LOWiSPIKE a tu pantalla de inicio."],
+  ["Tap Share", "Tippe auf Teilen", "Toca Compartir"],
+  ["bottom of Safari, or behind ⋯", "unten in Safari oder hinter ⋯", "abajo en Safari o tras ⋯"],
+  ["Tap Add to Home Screen", "Tippe auf Zum Home-Bildschirm", "Toca Añadir a pantalla de inicio"],
+  ["scroll down if you don't see it", "runterscrollen, falls du es nicht siehst", "desliza hacia abajo si no lo ves"],
+  ["Open LOWiSPIKE", "Öffne LOWiSPIKE", "Abre LOWiSPIKE"],
+  ["sign up there, you stay signed in", "dort registrieren, du bleibst angemeldet", "regístrate ahí y seguirás dentro"],
+  ["Tap the menu", "Tippe auf das Menü", "Toca el menú"],
+  ["three dots, top right", "drei Punkte, oben rechts", "tres puntos, arriba a la derecha"],
+  ["Tap Install app", "Tippe auf App installieren", "Toca Instalar app"],
+  ["or Add to Home screen", "oder Zum Startbildschirm hinzufügen", "o Añadir a pantalla de inicio"],
+  ["Tap the three dots", "Tippe auf die drei Punkte", "Toca los tres puntos"],
+  ["top right of this screen", "oben rechts auf diesem Bildschirm", "arriba a la derecha de esta pantalla"],
+  ["Tap Open in Safari", "Tippe auf In Safari öffnen", "Toca Abrir en Safari"],
+  ["Tap Open in browser", "Tippe auf Im Browser öffnen", "Toca Abrir en el navegador"],
+  ["this app's browser can't add it", "der Browser dieser App kann das nicht", "el navegador de esta app no puede"],
+  ["Add it to your Home Screen", "Leg es auf deinen Home-Bildschirm", "Añádelo a tu pantalla de inicio"],
+  ["then sign up in the app", "dann in der App registrieren", "luego regístrate en la app"],
+  ["Open in Safari", "In Safari öffnen", "Abrir en Safari"],
+  ["Open in browser", "Im Browser öffnen", "Abrir en el navegador"],
+  ["Copy link", "Link kopieren", "Copiar enlace"],
+  ["Copy", "Kopieren", "Copiar"],
+  ["Add to Home Screen", "Zum Home-Bildschirm", "Añadir a inicio"],
+  ["Install app", "App installieren", "Instalar app"],
+  ["I added it", "Hab ich hinzugefügt", "Ya lo añadí"],
+  ["Continue in the browser", "Im Browser weitermachen", "Seguir en el navegador"],
+  ["Now open it from your Home Screen", "Jetzt vom Home-Bildschirm öffnen", "Ahora ábrelo desde tu pantalla de inicio"],
+  ["Tap the LOWiSPIKE icon and create your account there. You can close this browser tab.", "Tippe auf das LOWiSPIKE-Symbol und erstelle dort dein Konto. Diesen Browser-Tab kannst du schließen.", "Toca el icono de LOWiSPIKE y crea tu cuenta ahí. Puedes cerrar esta pestaña."],
+  ["Show the steps again", "Schritte nochmal zeigen", "Ver los pasos otra vez"],
+  ["Back", "Zurück", "Atrás"],
+  ["Link copied. Paste it in Safari.", "Link kopiert. Füg ihn in Safari ein.", "Enlace copiado. Pégalo en Safari."],
+  ["Link copied. Paste it in Chrome.", "Link kopiert. Füg ihn in Chrome ein.", "Enlace copiado. Pégalo en Chrome."],
+  ["Copy failed. Use the three dots instead.", "Kopieren ging nicht. Nimm die drei Punkte.", "No se pudo copiar. Usa los tres puntos."],
+  ["Didn't open? Tap the three dots, then Open in browser.", "Nicht geöffnet? Tippe auf die drei Punkte, dann Im Browser öffnen.", "¿No se abrió? Toca los tres puntos y luego Abrir en el navegador."],
+  ["Didn't open? Tap the three dots, then Open in Safari.", "Nicht geöffnet? Tippe auf die drei Punkte, dann In Safari öffnen.", "¿No se abrió? Toca los tres puntos y luego Abrir en Safari."]
+]); }
+addLang();
+})();
+</script>
 <script>
 (function(){
 "use strict";
@@ -8999,9 +9271,10 @@ function showGate(view){
     document.body.appendChild(gateEl); lockApp(true);
     requestAnimationFrame(() => gateEl.classList.add("on"));
   }
-  gateEl.innerHTML = view === "signup" || view === "signin" ? formHTML(view) : startHTML();
+  const a1 = view === "signup" && window.LowiA1 && LowiA1.want();   /* a1-hook: Add to Home Screen first */
+  gateEl.innerHTML = a1 ? LowiA1.html() : view === "signup" || view === "signin" ? formHTML(view) : startHTML();
   gateEl.firstChild.classList.add("r2-swap");
-  if (view === "signup" || view === "signin") setTimeout(() => { const i = gateEl.querySelector("input"); if (i && !i.value) i.focus(); }, 380);
+  if (!a1 && (view === "signup" || view === "signin")) setTimeout(() => { const i = gateEl.querySelector("input"); if (i && !i.value) i.focus(); }, 380);
 }
 function lockApp(on){ Array.prototype.forEach.call(document.body.children, el => { if (el.id === "r2gate" || el.tagName === "SCRIPT" || el.tagName === "STYLE") return; if (on) { if (!el.inert) { el.inert = true; el.setAttribute("data-gate-inert", ""); } } else if (el.hasAttribute("data-gate-inert")) { el.inert = false; el.removeAttribute("data-gate-inert"); } }); document.documentElement.classList.toggle("gate-up", !!on); if (!on) document.documentElement.classList.remove("gate-boot");
   if (on && !lockApp.mo) { lockApp.mo = new MutationObserver(() => { if (gateEl) lockApp(true); }); lockApp.mo.observe(document.body, {childList:true}); } }

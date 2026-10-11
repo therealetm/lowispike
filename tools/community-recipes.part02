@@ -1,0 +1,59 @@
+     const meta = (m.title || m.author || m.thumb) ? {title:m.title || "", author:m.author || "", handle:m.handle || "", thumb:m.thumb || ""} : null;
+-    p = {id:"t" + uid(), ts:Date.now(), plat:C.p.plat, url:C.p.url, meta, cap:C.cap.trim().slice(0, CAPTION_MAX), vis:C.vis, mine:!!(C.mine && PLAT[C.p.plat].mine), art:["✨", 40, 280]};
++    p = {id:"t" + uid(), ts:Date.now(), plat:C.p.plat, url:C.p.url, meta, cap:C.cap.trim().slice(0, CAPTION_MAX), rec:C.rec || "", vis:C.vis, mine:!!(C.mine && PLAT[C.p.plat].mine), art:["✨", 40, 280]};
+   } else {
+-    if (!C.cap.trim() && !C.photo) return;
+-    p = {id:"t" + uid(), ts:Date.now(), plat:"", url:"", meta:null, cap:C.cap.trim().slice(0, TEXT_MAX), photo:C.photo || "", vis:C.vis, mine:false};
++    if (!C.cap.trim() && !C.photo && !C.rec) return;
++    p = {id:"t" + uid(), ts:Date.now(), plat:"", url:"", meta:null, cap:C.cap.trim().slice(0, TEXT_MAX), photo:C.photo || "", rec:C.rec || "", vis:C.vis, mine:false};
+   }
+   T.posts.unshift(p); if (T.posts.length > 80) T.posts.length = 80;
+   if (p.vis !== "tribe") T.filter = "mine"; else if (T.filter === "orig" && !p.mine) T.filter = "all";
+@@ -4136,12 +4150,13 @@
+     case "vis": if (C) { C.vis = C.vis === "tribe" ? "me" : "tribe"; paintRest(); } break;
+     case "mine": if (C) { C.mine = !C.mine; b.classList.toggle("on", C.mine); paintPrev(); updPost(); } break;
+     case "post": doPost(b); break;
++    case "share-recipe": shareRecipe(b.dataset.r); break;
+     case "filter": T.filter = b.dataset.f; save(); rerender(); break;
+     case "save": { T.saved = T.saved || {}; if (T.saved[id]) delete T.saved[id]; else T.saved[id] = 1; save(); const on = !!T.saved[id];
+       $$('[data-tr="save"][data-id="' + id + '"]').forEach(x => { x.classList.toggle("on", on); const sp = x.querySelector("span"); if (sp) sp.textContent = on ? "Saved" : "Save"; });
+       if (b.classList.contains("fy-lbtn")) { const r = b.closest(".fy-lrow"); if (r) r.remove(); } else h.toast(on ? "Saved to Profile" : "Removed from Saved"); break; }
+     case "comment": { const p = DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || T.posts.find(x => x.id === id); if (window.cmComment) window.cmComment(p && !p.me ? p.who : ""); break; }
+-    case "share": { const p = DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || T.posts.find(x => x.id === id); if (!p) break; const txt = (p.cap || describe(p.meta).line || "LOWiSPIKE") + (p.url ? " " + p.url : "");
++    case "share": { const p = DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || T.posts.find(x => x.id === id); if (!p) break; const rr = p.rec && postRecipe(p.rec); const txt = (p.cap || describe(p.meta).line || (rr && rr.n) || "LOWiSPIKE") + (p.url ? " " + p.url : "");
+       if (navigator.share && !p.demo) { navigator.share({text:txt}).catch(() => {}); } else { try { navigator.clipboard.writeText(txt).then(() => h.toast("Copied to share"), () => h.toast("Copied to share")); } catch(err){ h.toast("Copied to share"); } } break; }
+     case "list-mine": listSheet("mine"); break;
+     case "list-saved": listSheet("saved"); break;
+@@ -4160,6 +4175,7 @@
+     case "nophoto": if (C) { C.photo = ""; paintRest(); } break;
+   }
+ });
++document.addEventListener("change", e => { if (!C || e.target.id !== "trRec") return; C.rec = e.target.value || ""; paintRest(); });
+ document.addEventListener("input", e => {
+   if (!C) return;
+   if (e.target.id === "trUrl") onUrl(e.target.value);
+@@ -4176,7 +4192,7 @@
+ 
+ window.TRIBE = {
+   renderForYou, compose, composeInto, setPhoto:ph => { if (C) { C.photo = ph || ""; paintRest(); } } /* f2-photo */,
+-  addPost:p => { load(); T.posts.unshift(p); while (T.posts.length > 80) { const x = T.posts.pop(); if (x && x.vid && window.FYV) FYV.remove(x.id); } try { localStorage.setItem(KEY, JSON.stringify(T)); return true; } catch(e){ T.posts.shift(); const h = H(); if (h) h.toast("Storage is full on this phone."); return false; } }, checkShareHash, profileHTML,
++  addPost:p => { load(); T.posts.unshift(p); while (T.posts.length > 80) { const x = T.posts.pop(); if (x && x.vid && window.FYV) FYV.remove(x.id); } try { localStorage.setItem(KEY, JSON.stringify(T)); return true; } catch(e){ T.posts.shift(); const h = H(); if (h) h.toast("Storage is full on this phone."); return false; } }, checkShareHash, profileHTML, shareRecipe,
+   post:id => T.posts.map(x => Object.assign({me:true}, x)).find(x => x.id === id) || DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)), imgKey:id => FY_IMG[id] || "", demoNames:() => DEMO.map(x => x.who),
+   reset:() => { localStorage.removeItem(KEY); },
+   _t:{describe, parseUrl, fetchMeta, feed, state:() => T, reload:load, DEMO}
+@@ -6578,6 +6594,7 @@
+   if (!r) return '<div class="sh-empty">Recipe not found.</div>';
+   const ms = matchesFor(r);
+   return (typeof FOOD_IMG !== "undefined" && FOOD_IMG[r.id] ? '<img class="sh-hero" alt="" src="' + FOOD_IMG[r.id] + '">' : "") + '<div class="card" style="display:flex;gap:14px;align-items:center">' + (typeof FOOD_IMG !== "undefined" && FOOD_IMG[r.id] ? "" : '<div style="font-size:46px">' + esc(r.e || "🍽️") + '</div>') + '<div>' + (r.book ? '<div class="tiny gold sh-bookmark">LOWiSPIKE Recipe Book</div>' : "") + '<div class="h3">' + esc(r.n) + '</div><div class="small muted" style="margin-top:3px">' + esc(r.sub || "") + '</div><div style="margin-top:8px">' + rBadge(r.r) + "</div></div></div>" +
++    (r.book ? '<button class="btn ghost" style="width:100%;margin-top:10px" data-tr="share-recipe" data-r="' + esc(r.id) + '">Share to For You</button>' : "") +
+     (r.note ? '<div class="sh-heads"><b>Heads-up</b><span>' + esc(r.note) + "</span></div>" : "") +
+     /* Oct 8 (late): one store per list. The cart module prices it (window.LowiStoreList); the old per-store split is only a fallback. */
+     (window.LowiStoreList ? window.LowiStoreList.html(r) : (
+@@ -7277,6 +7294,8 @@
+   ["New here?", "Neu hier?", "¿Nuevo aquí?"], ["Say hi", "Sag hallo", "Saluda"], ["In For You", "In Für dich", "En Para ti"], ["Only you", "Nur du", "Solo tú"],
+   ["Post", "Posten", "Publicar"],
+   ["Share to For You", "Teilen in Für dich", "Compartir en Para ti"],
++  ["Link a recipe (optional)", "Rezept verknüpfen (optional)", "Enlazar una receta (opcional)"], ["No recipe", "Kein Rezept", "Sin receta"],
++  ["Recipe linked", "Rezept verknüpft", "Receta enlazada"], ["Open", "Öffnen", "Abrir"],
+   ["Paste a TikTok, Reel or YouTube link. No link? Just write below.", "Füg einen TikTok-, Reel- oder YouTube-Link ein. Kein Link? Schreib einfach unten.", "Pega un enlace de TikTok, Reel o YouTube. ¿Sin enlace? Escribe abajo."],
+   ["It lands at the top of For You. Newest first, no algorithm.", "Landet ganz oben in Für dich. Neueste zuerst, kein Algorithmus.", "Aparece arriba en Para ti. Lo más nuevo primero, sin algoritmo."],

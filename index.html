@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261011-052832">
+<meta name="lowi-build" content="20261011-054949">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -18235,13 +18235,27 @@ html[data-theme=light] .fy-by .lb3-ph.lb3-ini{color:#10131f!important}
 #lcA2hs .chip{flex:none;padding:6px 12px;min-height:32px}
 #lcA2hs .lc-x{flex:none;min-width:36px;min-height:36px;padding:0}
 @keyframes q4bIn{from{opacity:0;transform:translate(-50%,-10px)}to{opacity:1;transform:translate(-50%,0)}}
-html:not(:has(#tab-home.active)) #lcA2hs,
-html:has(.r2-ov.on:not(.off)) #lcA2hs,
-html:has(#sheetwrap.open) #lcA2hs,
-html:has(#rsSheet.open) #lcA2hs,
-html:has(#lcUpd) #lcA2hs,
-html.g2e-open #lcA2hs{display:none!important}
+html.q4b-off #lcA2hs{display:none!important}
 @media (min-width:700px){#lcA2hs{width:min(480px, calc(100vw - 48px))}}
 </style>
+<script id="q4bjs">
+/* Q4b: hide the Add to Home Screen pill off Today, while a popup / sheet / sign-in is up, or while the new-version banner shows.
+   Done in JS (not CSS :has) so Safari updates it right away. Only runs while the pill exists. */
+(function(){
+  const SEL = ".r2-ov.on:not(.off), #sheetwrap.open, #rsSheet.open, #lcUpd";
+  function sync(){
+    const d = document.getElementById("lcA2hs"); const h = document.documentElement;
+    if (!d) { h.classList.remove("q4b-off"); return; }
+    const home = document.querySelector("#tab-home.active");
+    const off = !home || !!document.querySelector(SEL) || h.classList.contains("g2e-open");
+    h.classList.toggle("q4b-off", off);
+  }
+  let t = null;
+  function loop(){ sync(); t = document.getElementById("lcA2hs") ? setTimeout(loop, 250) : null; }
+  new MutationObserver(() => { sync(); if (!t && document.getElementById("lcA2hs")) loop(); }).observe(document.body, {childList: true});
+  document.addEventListener("click", () => setTimeout(sync, 0), true);
+  window.LowiQ4b = {sync};
+})();
+</script>
 </body>
 </html>

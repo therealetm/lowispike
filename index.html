@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261011-005739">
+<meta name="lowi-build" content="20261011-012803">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2108,7 +2108,7 @@ html[data-theme=light] #lcUpd.g1-upd .g1-usay{background:rgba(255,255,255,.2)}
 (function(){
 "use strict";
 if (window.LowiG1) return;
-const NEWS_RAW = {"id": "g2-fix", "go": {"tab": "home", "sel": "#g2hTiles"}, "text": {"en": "Fits your iPhone now: no black band under the tab bar, every Today tile sits above the tab bar and the scan orb, Move fills the screen and all 5 to 60 min chips fit.", "de": "Passt jetzt auf dein iPhone: kein schwarzer Streifen mehr unter der Leiste, alle Heute-Kacheln liegen über Leiste und Scan-Kugel, Bewegen füllt den Bildschirm und alle 5- bis 60-Minuten-Chips passen.", "es": "Ahora encaja en tu iPhone: sin franja negra bajo la barra, todas las fichas de Hoy quedan sobre la barra y el orbe, Moverse llena la pantalla y caben todas las opciones de 5 a 60 min."}};
+const NEWS_RAW = {"id": "n1-bubble", "go": {"tab": "home"}, "text": {"en": "Your bubble now reminds you through the day: a morning hello with your first quest, water, when your fast ends, meals, moving, and a streak saver in the evening. Turn it off or set quiet hours with the gear in the bubble or in Profile, Settings.", "de": "Deine Blase erinnert dich jetzt über den Tag: ein Guten-Morgen mit deiner ersten Quest, Wasser, wann dein Fasten endet, Mahlzeiten, Bewegung und abends ein Serien-Retter. Ausschalten oder Ruhezeit einstellen geht über das Zahnrad in der Blase oder unter Profil, Einstellungen.", "es": "Tu burbuja ahora te recuerda cosas durante el día: un buenos días con tu primera misión, agua, cuándo termina tu ayuno, comidas, moverte y por la noche un salvavidas de racha. Apágala o pon horas de silencio con el engranaje de la burbuja o en Perfil, Ajustes."}};
 const NEWS = (NEWS_RAW && typeof NEWS_RAW === "object") ? NEWS_RAW : null;
 const KEY = "lowi.g1", GO = "lowi.g1.go";
 const H = document.documentElement;
@@ -5576,7 +5576,7 @@ function renderProfile(){ const lv = levelOf(S.xp), z = zodiac(S.user.bday), h =
     (S.autoSkipped && !S.user.name ? '<div class="card" style="margin-top:16px"><div class="h3" style="font-size:16px">Set up your profile</div><div class="small muted" style="margin:4px 0 12px">Optional. Name, goals and foods that hit you. The app works without it.</div><button class="btn ghost sm" data-act="setupprofile" id="setupProfile">Set up now</button></div>' : "") +
     (STORAGE_OK ? "" : '<div class="card" style="margin-top:12px;border-color:var(--line)"><div class="tiny gold">This viewer forgets</div><div class="small" style="margin-top:6px;line-height:1.45">This window doesn\'t keep data between opens, so your plan resets. Open LOWiSPIKE in Safari and add it to your Home Screen to keep it.</div></div>') +
     (window.LOWI_CLOUD ? LOWI_CLOUD.cardHTML() : '') + '<div class="sec"><span class="h3">App</span></div><div class="card"><div class="setrow" style="border-top:0"><div class="t"><b>Name</b><div class="small muted">' + esc(S.user.name || "Not set") + '</div></div><button class="chip" data-act="editname">Edit</button></div>' +
-    (window.LowiPeople ? LowiPeople.profileRowHTML() : "") + (window.LowiAudio ? LowiAudio.profileRowsHTML() : "") +
+    (window.LowiPeople ? LowiPeople.profileRowHTML() : "") + (window.LowiAudio ? LowiAudio.profileRowsHTML() : "") + (window.LowiN1 ? LowiN1.profileRowHTML() : "") +
     '<div class="setrow"><div class="t"><b>Put it on your Home Screen</b><div class="small muted">Opens like a normal app</div></div><button class="chip" data-act="install">How</button></div></div>' +
     '<button class="btn ghost sm" style="margin-top:20px" data-act="reset">Reset demo data</button><div class="small dim" style="text-align:center;margin-top:12px">LOWiSPIKE prototype · general food guidance, not medical advice</div>';
   const lp = $("#lastPeriod"), cl = $("#cycleLen");
@@ -17245,6 +17245,255 @@ function boot(){
 }
 window.LowiG2E = {open:openPanel, close:closePanel, fit:() => fit(tab()), state:() => ({on:on(), open:H.getAttribute("data-g2e-k") || null, level:LV.filter(c => H.classList.contains(c)).length, tiles:Array.from(D.querySelectorAll("#g2eTiles [data-g2e-open]")).map(b => b.dataset.g2eOpen)})};
 if (D.readyState === "loading") D.addEventListener("DOMContentLoaded", boot); else boot();
+})();
+</script>
+<style id="n1Css">/* LOWiSPIKE N1 part 1 (Oct 11, 2026): the bubble's reminders */
+#n1B{position:fixed;z-index:9400;box-sizing:border-box;padding:12px 14px 12px;border-radius:22px;color:#0d1220;background:linear-gradient(180deg,#ffffff,#f1f5ff);
+  box-shadow:0 16px 44px rgba(0,0,0,.42),0 0 0 1px rgba(120,140,220,.28);opacity:0;transform:scale(.9) translateY(10px);transform-origin:50% 100%;
+  transition:opacity .2s,transform .2s;font-family:inherit}
+#n1B.in{opacity:1;transform:none;transition:opacity .26s,transform .4s cubic-bezier(.3,1.5,.5,1)}
+#n1B.out{opacity:0;transform:scale(.94) translateY(8px)}
+#n1B .n1-top{display:flex;align-items:center;gap:4px;margin:-2px -4px 4px 0}
+#n1B .n1-tag{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:linear-gradient(90deg,#2a6fc0,#7a5cd6)}
+#n1B .n1-dot{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor;animation:n1dot 1.6s ease-in-out infinite}
+@keyframes n1dot{50%{opacity:.4}}
+#n1B .n1-sp{flex:1}
+#n1B .n1-ic{width:40px;height:40px;display:grid;place-items:center;border:0;border-radius:50%;background:transparent;color:inherit;opacity:.62;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:0}
+#n1B .n1-ic svg{width:19px;height:19px}
+#n1B .n1-ic:active{opacity:1;background:rgba(127,127,127,.15)}
+#n1B .n1-p{margin:0 0 10px;font-size:16.5px;line-height:1.36;font-weight:650;letter-spacing:-.005em}
+#n1B .n1-btns{display:flex;gap:8px;justify-content:flex-end}
+#n1B .n1-btn{font:inherit;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent;min-height:44px;border-radius:15px;padding:0 16px;font-size:15.5px;font-weight:750;white-space:nowrap}
+#n1B .n1-later{background:rgba(20,30,60,.07);color:inherit}
+#n1B .n1-go{color:#fff;background:linear-gradient(135deg,#2a6fc0,#7a5cd6);box-shadow:0 6px 18px rgba(60,80,200,.32);min-width:110px}
+#n1B .n1-tail{position:absolute;bottom:-7px;width:16px;height:16px;margin-left:-8px;transform:rotate(45deg);background:#f1f5ff;border-radius:3px}
+html:not([data-theme=light]) #n1B{color:#f4f6fb;background:linear-gradient(180deg,#1d2336,#141a29);box-shadow:0 16px 44px rgba(0,0,0,.6),0 0 0 1px rgba(var(--acc-rgb,159,216,255),.45),0 0 28px rgba(var(--acc-rgb,159,216,255),.16)}
+html:not([data-theme=light]) #n1B .n1-tail{background:#141a29;box-shadow:1px 1px 0 rgba(var(--acc-rgb,159,216,255),.45)}
+html:not([data-theme=light]) #n1B .n1-tag{color:#0a0d16;background:linear-gradient(90deg,var(--acc,#9fd8ff),#d6b8ff)}
+html:not([data-theme=light]) #n1B .n1-go{color:#0a0d16;background:linear-gradient(135deg,var(--acc,#9fd8ff),#d6b8ff);box-shadow:0 6px 20px rgba(var(--acc-rgb,159,216,255),.3)}
+html:not([data-theme=light]) #n1B .n1-later{background:rgba(255,255,255,.08)}
+html.n1-talk #tabbar .tb.scan{animation:n1ping 1.8s ease-in-out infinite}
+@keyframes n1ping{0%,100%{filter:none}50%{filter:drop-shadow(0 0 14px rgba(var(--acc-rgb,159,216,255),.9)) brightness(1.12)}}
+/* settings sheet */
+.n1-sheet .n1-row{padding:12px 0;border-top:1px solid var(--line2,rgba(127,127,127,.2))}
+.n1-sheet .n1-row>b{display:block;margin:0 0 8px;font-size:15px}
+.n1-sheet .n1-opts{display:flex;gap:8px;flex-wrap:wrap}
+.n1-sheet .n1-opt{min-height:44px;padding:6px 16px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15}
+.n1-sheet .n1-freq .n1-opt{flex:1 1 0;min-width:0}
+.n1-sheet .n1-opt small{display:block;font-size:11.5px;opacity:.7;font-weight:600;margin-top:2px}
+.n1-sheet .n1-opt.on{color:#0a0d16;background:linear-gradient(135deg,var(--acc,#9fd8ff),#d6b8ff);border-color:transparent}
+html[data-theme=light] .n1-sheet .n1-opt.on{color:#fff;background:linear-gradient(135deg,#2a6fc0,#7a5cd6)}
+.n1-sheet .n1-q{display:flex;align-items:center;gap:10px}
+.n1-sheet .n1-sel{width:auto;min-width:96px;min-height:44px;padding:0 12px}
+.n1-sheet .n1-dim.dis{opacity:.42;pointer-events:none}
+.n1-foot{display:flex;gap:10px}
+.n1-foot .btn{flex:1}
+@media (prefers-reduced-motion:reduce){#n1B,#n1B.in{transition:none}html.n1-talk #tabbar .tb.scan,#n1B .n1-dot{animation:none}}
+</style>
+<script id="n1Js">/* ===== LOWiSPIKE N1 part 1 (Oct 11, 2026): reminders and nudges from the bubble =====
+   The scan orb speaks up now and then while the app is open: a morning hello with your first quest, water, your fast
+   with the clock time it ends, logging a meal, moving, posting, and a streak saver in the evening while quests are open.
+   Greets with the next quest when the app opens or comes back. One small bubble above the scan orb, one button that
+   takes you there, Later, and a gear for the settings: on/off, how often, quiet hours. Never during the tour, a sheet,
+   the sign-in screen or the update banner. Reads the app's own data (LowiF3 quests, lowi_fast_v1). EN / DE / ES. */
+(function(){
+"use strict";
+if (window.LowiN1) return;
+const D = document, H = D.documentElement, KEY = "lowi.n1", LOG = "lowi.n1.log";
+const GAP = {few:4, normal:2, more:1};
+const DEF = {on:true, freq:"normal", qs:22, qe:7};
+const LANG = () => { let l = "en"; try { l = (window.LowiLang && LowiLang.get && LowiLang.get()) || localStorage.getItem("lowispike.lang") || H.lang || "en"; } catch(e){} l = String(l).slice(0, 2); return l === "de" || l === "es" ? l : "en"; };
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const js = k => { try { return JSON.parse(localStorage.getItem(k) || "{}") || {}; } catch(e){ return {}; } };
+const put = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} };
+const sfx = n => { try { if (window.LowiAudio && LowiAudio.play) LowiAudio.play(n); } catch(e){} };
+const dk = d => { d = d || new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+
+/* ---------- words ---------- */
+const W = {
+  en: {tag:"Your bubble", later:"Later", set:"Reminder settings", close:"Close",
+    morning:"Good morning! Before any feed: your first quest is \u201c{q}\u201d. Two minutes and you're on the board.",
+    hello:"Welcome back. Next quest: \u201c{q}\u201d. {n} left today.",
+    water:"Sip time. One glass of water now. {g} of {w} today.",
+    fastOn:"Your {h} h fast ends at {t}. {r} to go. Water, tea and black coffee keep it going.",
+    fastDone:"You made it: {h} h fasted at {t}. Break it gently and log the meal for points.",
+    eat:"Ate something? Log it with a photo or a few words. +10 XP.",
+    move:"Ten minutes on your feet. A short walk counts and softens the next spike.",
+    post:"Show the Tribe your day. One post clears a quest.",
+    checkin:"How do you feel today? One tap to check in.",
+    evening:"{n} quests still open. Clear one before bed and keep your streak alive.",
+    eveningS:"{n} quests still open. Clear one before bed and keep your {d}-day streak alive.",
+    clear:"All 6 quests done today. That's how it's done. See you tomorrow morning.",
+    goCheckin:"Check in", goWater:"+1 glass", goFast:"See my fast", goEat:"Log a meal", goMove:"Start moving", goPost:"Post", goQuest:"Let's go", goOk:"Nice",
+    h:"Reminders from your bubble", sub:"Small nudges for your daily quests while LOWiSPIKE is open, plus a hello with your next quest when you open it.",
+    onL:"Reminders", on:"On", off:"Off", freqL:"How often", few:"Rarely", fewS:"every 4 h", normal:"Normal", normalS:"every 2 h", more:"Often", moreS:"every hour",
+    quietL:"Quiet hours", from:"From", to:"to", try:"Try it now", done:"Done",
+    row:"Bubble reminders", rowOn:"On · {f} · quiet {a}\u2013{b}", rowOff:"Off", edit:"Edit",
+    today:"today", tomorrow:"tomorrow", hm:"{h} h {m} min", m:"{m} min"},
+  de: {tag:"Deine Blase", later:"Später", set:"Erinnerungen einstellen", close:"Schließen",
+    morning:"Guten Morgen! Vor jedem Feed: deine erste Quest ist \u201e{q}\u201c. Zwei Minuten und du bist dabei.",
+    hello:"Schön, dass du da bist. Nächste Quest: \u201e{q}\u201c. Heute noch {n}.",
+    water:"Zeit für einen Schluck. Ein Glas Wasser jetzt. {g} von {w} heute.",
+    fastOn:"Dein {h}-Std.-Fasten endet um {t}. Noch {r}. Wasser, Tee und schwarzer Kaffee halten es am Laufen.",
+    fastDone:"Geschafft: {h} Std. gefastet um {t}. Brich sanft und trag die Mahlzeit für Punkte ein.",
+    eat:"Was gegessen? Trag es mit Foto oder ein paar Worten ein. +10 XP.",
+    move:"Zehn Minuten auf den Beinen. Ein kurzer Spaziergang zählt und dämpft den nächsten Spike.",
+    post:"Zeig dem Tribe deinen Tag. Ein Post erfüllt eine Quest.",
+    checkin:"Wie fühlst du dich heute? Ein Tipp zum Einchecken.",
+    evening:"Noch {n} Quests offen. Schaff eine vor dem Schlafen und halte deine Serie.",
+    eveningS:"Noch {n} Quests offen. Schaff eine vor dem Schlafen und halte deine {d}-Tage-Serie.",
+    clear:"Alle 6 Quests heute geschafft. Genau so. Bis morgen früh.",
+    goCheckin:"Einchecken", goWater:"+1 Glas", goFast:"Mein Fasten", goEat:"Eintragen", goMove:"Los bewegen", goPost:"Posten", goQuest:"Los geht's", goOk:"Super",
+    h:"Erinnerungen von deiner Blase", sub:"Kleine Stupser für deine täglichen Quests, solange LOWiSPIKE offen ist, und ein Hallo mit deiner nächsten Quest beim Öffnen.",
+    onL:"Erinnerungen", on:"An", off:"Aus", freqL:"Wie oft", few:"Selten", fewS:"alle 4 Std.", normal:"Normal", normalS:"alle 2 Std.", more:"Oft", moreS:"jede Stunde",
+    quietL:"Ruhezeit", from:"Von", to:"bis", try:"Jetzt testen", done:"Fertig",
+    row:"Erinnerungen der Blase", rowOn:"An · {f} · Ruhe {a}\u2013{b}", rowOff:"Aus", edit:"Ändern",
+    today:"heute", tomorrow:"morgen", hm:"{h} Std. {m} Min.", m:"{m} Min."},
+  es: {tag:"Tu burbuja", later:"Luego", set:"Ajustes de avisos", close:"Cerrar",
+    morning:"¡Buenos días! Antes de cualquier feed: tu primera misión es \u201c{q}\u201d. Dos minutos y ya estás dentro.",
+    hello:"Qué bien verte. Siguiente misión: \u201c{q}\u201d. Te quedan {n} hoy.",
+    water:"Hora de un sorbo. Un vaso de agua ahora. {g} de {w} hoy.",
+    fastOn:"Tu ayuno de {h} h termina a las {t}. Faltan {r}. Agua, té y café solo lo mantienen.",
+    fastDone:"Lo lograste: {h} h de ayuno a las {t}. Rómpelo suave y registra la comida para ganar puntos.",
+    eat:"¿Comiste algo? Regístralo con una foto o unas palabras. +10 XP.",
+    move:"Diez minutos de pie. Un paseo corto cuenta y suaviza el próximo pico.",
+    post:"Enséñale tu día a la Tribu. Un post completa una misión.",
+    checkin:"¿Cómo te sientes hoy? Un toque para registrarte.",
+    evening:"Te quedan {n} misiones. Completa una antes de dormir y mantén tu racha.",
+    eveningS:"Te quedan {n} misiones. Completa una antes de dormir y mantén tu racha de {d} días.",
+    clear:"Las 6 misiones hechas hoy. Así se hace. Hasta mañana temprano.",
+    goCheckin:"Registrarme", goWater:"+1 vaso", goFast:"Ver mi ayuno", goEat:"Registrar", goMove:"A moverse", goPost:"Publicar", goQuest:"Vamos", goOk:"Genial",
+    h:"Avisos de tu burbuja", sub:"Pequeños empujones para tus misiones diarias mientras LOWiSPIKE está abierta, y un hola con tu siguiente misión al abrirla.",
+    onL:"Avisos", on:"Sí", off:"No", freqL:"Con qué frecuencia", few:"Poco", fewS:"cada 4 h", normal:"Normal", normalS:"cada 2 h", more:"Mucho", moreS:"cada hora",
+    quietL:"Horas de silencio", from:"De", to:"a", try:"Probar ahora", done:"Listo",
+    row:"Avisos de la burbuja", rowOn:"Sí · {f} · silencio {a}\u2013{b}", rowOff:"No", edit:"Cambiar",
+    today:"hoy", tomorrow:"mañana", hm:"{h} h {m} min", m:"{m} min"}
+};
+function w(k, v){ let s = (W[LANG()] && W[LANG()][k]) || W.en[k] || k; if (v) Object.keys(v).forEach(x => { s = s.split("{" + x + "}").join(v[x]); }); return s; }
+const GO = {checkin:"goCheckin", water:"goWater", fast:"goFast", eat:"goEat", move:"goMove", post:"goPost"};
+
+/* ---------- settings ---------- */
+function get(){ const s = Object.assign({}, DEF, js(KEY)); if (!GAP[s.freq]) s.freq = "normal"; s.qs = +s.qs; s.qe = +s.qe; if (!(s.qs >= 0 && s.qs <= 24)) s.qs = DEF.qs; if (!(s.qe >= 0 && s.qe <= 23)) s.qe = DEF.qe; s.on = s.on !== false; return s; }
+function set(p){ const s = Object.assign(get(), p || {}); put(KEY, s); paintRow(); return s; }
+function quiet(now, s){ s = s || get(); const h = now.getHours() + now.getMinutes() / 60, a = s.qs % 24, b = s.qe;
+  if (a === b) return false; return a < b ? (h >= a && h < b) : (h >= a || h < b); }
+const hh = n => String(n % 24).padStart(2, "0") + ":00";
+
+/* ---------- what to say ---------- */
+function clock(ts, now){ const d = new Date(ts); let t; try { t = d.toLocaleTimeString({de:"de-DE", es:"es-ES"}[LANG()] || "en-GB", {hour:"2-digit", minute:"2-digit"}); } catch(e){ t = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); }
+  if (LANG() === "de") t += " Uhr"; if (dk(d) !== dk(now)) t = (dk(d) === dk(new Date(now.getTime() + 864e5)) ? w("tomorrow") + " " : "") + t; return t; }
+function dur(ms){ const m = Math.max(1, Math.round(ms / 6e4)), h = Math.floor(m / 60); return h ? w("hm", {h, m:m % 60}) : w("m", {m}); }
+function quests(){ try { return window.LowiF3 && LowiF3.state ? LowiF3.state() : []; } catch(e){ return []; } }
+function streakDays(){ try { const S = window.LowiR2 && LowiR2.S ? LowiR2.S() : null; return S && S.streak ? +S.streak.days || 0 : 0; } catch(e){ return 0; } }
+function fastInfo(now){ const f = js("lowi_fast_v1"); const last = +f.last || 0; if (!last || last > now.getTime()) return null;
+  const h = +f.target || 16, end = last + h * 36e5; return {h, last, end, done:now.getTime() >= end}; }
+/* one nudge for this moment, or null. Each kind at most once a day. */
+function pick(now, opts){ now = now || new Date(); opts = opts || {}; const L = quests(); if (!L.length) return null;
+  const lg = log(now), seen = id => lg.ids.indexOf(id) >= 0 && !opts.any;
+  const open = L.filter(q => !q.done), hr = now.getHours(), nx = open[0];
+  const mk = (id, text, go, q) => ({id, text, go, q});
+  if (!open.length) return seen("clear") ? null : mk("clear", w("clear"), null);
+  const fi = fastInfo(now); const fq = L.find(q => q.id === "fast");
+  if (hr < 11 && !seen("morning")) return mk("morning", w("morning", {q:nx.t}), GO[nx.id], nx.id);
+  if (fi && fi.done && now.getTime() - fi.end < 3 * 36e5 && !seen("fastDone")) return mk("fastDone", w("fastDone", {h:fi.h, t:clock(fi.end, now)}), "goEat", "eat");
+  if (hr >= 19 && !seen("evening")) { const d = streakDays(); return mk("evening", w(d > 1 ? "eveningS" : "evening", {n:open.length, d}), GO[nx.id], nx.id); }
+  if (opts.open && !seen("hello")) return mk("hello", w("hello", {q:nx.t, n:open.length}), GO[nx.id], nx.id);
+  if (fi && !fi.done && fq && !seen("fastOn")) return mk("fastOn", w("fastOn", {h:fi.h, t:clock(fi.end, now), r:dur(fi.end - now.getTime())}), "goFast", "fast");
+  for (const q of open) { if (q.id === "fast") continue; if (!seen(q.id)) {
+    if (q.id === "water") { const p = q.p || [0, 2]; return mk("water", w("water", {g:p[0], w:p[1]}), "goWater", "water"); }
+    return mk(q.id, w(q.id), GO[q.id], q.id); } }
+  return null; }
+function log(now){ const l = js(LOG), t = dk(now || new Date()); return {day:t, last:+l.last || 0, ids:l.day === t && Array.isArray(l.ids) ? l.ids : []}; }
+function mark(id, now){ const l = log(now); if (l.ids.indexOf(id) < 0) l.ids.push(id); l.last = (now || new Date()).getTime(); put(LOG, l); }
+
+/* ---------- when it may speak ---------- */
+const vis = el => { if (!el || !el.isConnected) return false; const r = el.getBoundingClientRect(); if (r.width < 4 || r.height < 4) return false; const cs = getComputedStyle(el); return cs.display !== "none" && cs.visibility !== "hidden"; };
+function appFree(){
+  if (H.classList.contains("gate-up") || H.classList.contains("gate-boot") || H.classList.contains("g1-touring")) return false;
+  try { if (window.LowiG1 && LowiG1.state && LowiG1.state()) return false; } catch(e){}
+  const tb = D.getElementById("tabbar"); if (!vis(tb)) return false; if (!D.querySelector(".tab.active")) return false;
+  if (vis(D.getElementById("r2ob")) || vis(D.getElementById("lcUpd")) || D.querySelector("#sheetwrap.open, .r2-ov.on:not(.off), #rsSheet.open, #result.open")) return false;
+  const x = innerWidth / 2; for (const y of [innerHeight * 0.3, innerHeight * 0.55]) { const e = D.elementFromPoint(x, y); if (!e) return false; if (e.closest("#n1B,#g1Z,#g1Help")) continue; if (!e.closest(".tab.active")) return false; }
+  return true; }
+function tourSeen(){ try { return !window.LowiG1 || !LowiG1.mem || !!LowiG1.mem().t; } catch(e){ return true; } }
+/* check now: shows a nudge when allowed. opts.open = app just opened or came back; opts.force = ignore gap/quiet (preview) */
+function check(opts){ opts = opts || {}; const now = opts.now ? new Date(opts.now) : new Date(), s = get();
+  if (cur) return null;
+  if (!opts.force) { if (!s.on || quiet(now, s) || !tourSeen() || !appFree()) return null;
+    const lg = log(now); if (lg.last && now.getTime() - lg.last < GAP[s.freq] * 36e5) return null; }
+  else if (!appFree() && !opts.anywhere) return null;
+  const n = pick(now, {open:opts.open, any:opts.force}); if (!n) return null;
+  if (!opts.force) mark(n.id, now); show(n); return n; }
+
+/* ---------- the bubble ---------- */
+let cur = null, hideT = 0;
+const GEAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-1.8-.3 1.6 1.6 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.6 1.6 0 00-1-1.5 1.6 1.6 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.6 1.6 0 00.3-1.8 1.6 1.6 0 00-1.5-1H3a2 2 0 110-4h.1a1.6 1.6 0 001.5-1 1.6 1.6 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.6 1.6 0 001.8.3H9a1.6 1.6 0 001-1.5V3a2 2 0 114 0v.1a1.6 1.6 0 001 1.5 1.6 1.6 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 00-.3 1.8V9a1.6 1.6 0 001.5 1H21a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z"/></svg>';
+const XI = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+function orb(){ const o = D.querySelector("#tabbar .tb.scan"); return vis(o) ? o : null; }
+function place(){ const b = D.getElementById("n1B"); if (!b) return; const o = orb(), m = 12, W0 = Math.min(360, innerWidth - 2 * m);
+  b.style.width = W0 + "px"; let bottom, cx;
+  if (o) { const r = o.getBoundingClientRect(); const tb = D.getElementById("tabbar"); const top = Math.min(r.top, tb ? tb.getBoundingClientRect().top + 0 : r.top);
+    bottom = innerHeight - Math.min(r.top, top) + 12; cx = r.left + r.width / 2; }
+  else { const tb = D.getElementById("tabbar"); bottom = innerHeight - (tb ? tb.getBoundingClientRect().top : innerHeight - 90) + 12; cx = innerWidth / 2; }
+  let left = Math.round(Math.max(m, Math.min(innerWidth - m - W0, cx - W0 / 2)));
+  b.style.left = left + "px"; b.style.bottom = Math.round(bottom) + "px";
+  const tail = b.querySelector(".n1-tail"); if (tail) tail.style.left = Math.round(Math.max(22, Math.min(W0 - 22, cx - left))) + "px"; }
+function show(n){ hide(true); cur = n; const b = D.createElement("div"); b.id = "n1B"; b.setAttribute("role", "status"); b.setAttribute("data-noi18n", ""); b.dataset.n = n.id;
+  b.innerHTML = '<div class="n1-top"><span class="n1-tag"><i class="n1-dot"></i>' + esc(w("tag")) + '</span><span class="n1-sp"></span>' +
+    '<button type="button" class="n1-ic" data-n1="set" aria-label="' + esc(w("set")) + '">' + GEAR + '</button><button type="button" class="n1-ic" data-n1="x" aria-label="' + esc(w("close")) + '">' + XI + '</button></div>' +
+    '<p class="n1-p">' + esc(n.text) + '</p><div class="n1-btns">' +
+    (n.go ? '<button type="button" class="n1-btn n1-later" data-n1="later">' + esc(w("later")) + '</button><button type="button" class="n1-btn n1-go" data-n1="go">' + esc(w(n.go)) + ' \u203a</button>'
+          : '<button type="button" class="n1-btn n1-go" data-n1="x">' + esc(w("goOk")) + '</button>') + '</div><i class="n1-tail"></i>';
+  D.body.appendChild(b); place(); H.classList.add("n1-talk"); sfx("pop");
+  requestAnimationFrame(() => requestAnimationFrame(() => b.classList.add("in")));
+  clearTimeout(hideT); hideT = setTimeout(() => hide(), 20000); }
+function hide(quick){ clearTimeout(hideT); const b = D.getElementById("n1B"); cur = null; H.classList.remove("n1-talk"); if (!b) return;
+  if (quick) { b.remove(); return; } b.classList.remove("in"); b.classList.add("out"); setTimeout(() => b.remove(), 240); }
+function act(q){ if (!q) return; try {
+  if (q === "fast") { const t = D.querySelector('#tabbar .tb[data-tab="home"]'); if (t && !D.getElementById("tab-home").classList.contains("active")) t.click(); setTimeout(() => { try { LowiF3.go("fast"); } catch(e){} }, 300); return; }
+  if (window.LowiF3 && LowiF3.go) LowiF3.go(q); } catch(e){} }
+
+/* ---------- settings sheet + Profile row ---------- */
+function opt(v, l, on){ return '<button type="button" class="chip n1-opt' + (on ? " on" : "") + '" data-n1v="' + esc(v) + '" aria-pressed="' + (on ? "true" : "false") + '">' + l + '</button>'; }
+function sel(k, a, b, v){ let o = ""; for (let i = a; i <= b; i++) o += '<option value="' + i + '"' + (i === v ? " selected" : "") + '>' + hh(i) + '</option>'; return '<select class="input n1-sel" data-n1s="' + k + '">' + o + '</select>'; }
+function sheetHTML(){ const s = get();
+  return '<button class="xbtn" data-act="close-sheet" aria-label="Close">' + XI + '</button><div class="sheetbody n1-sheet" data-noi18n><div class="h2" style="margin:4px 40px 6px 0">' + esc(w("h")) + '</div>' +
+    '<div class="small muted" style="margin:0 0 14px">' + esc(w("sub")) + '</div>' +
+    '<div class="n1-row"><b>' + esc(w("onL")) + '</b><div class="n1-opts" data-n1g="on">' + opt("1", esc(w("on")), s.on) + opt("0", esc(w("off")), !s.on) + '</div></div>' +
+    '<div class="n1-row n1-dim' + (s.on ? "" : " dis") + '"><b>' + esc(w("freqL")) + '</b><div class="n1-opts n1-freq" data-n1g="freq">' + ["few", "normal", "more"].map(k => opt(k, esc(w(k)) + '<small>' + esc(w(k + "S")) + '</small>', s.freq === k)).join("") + '</div></div>' +
+    '<div class="n1-row n1-dim' + (s.on ? "" : " dis") + '"><b>' + esc(w("quietL")) + '</b><div class="n1-q"><span>' + esc(w("from")) + '</span>' + sel("qs", 18, 24, s.qs) + '<span>' + esc(w("to")) + '</span>' + sel("qe", 4, 11, s.qe) + '</div></div>' +
+    '</div><div class="sheetfoot n1-foot"><button class="btn ghost" data-n1="try">' + esc(w("try")) + '</button><button class="btn primary" data-act="close-sheet">' + esc(w("done")) + '</button></div>'; }
+function openSet(){ hide(true); try { if (window.LowiHost && LowiHost.openSheet) LowiHost.openSheet(sheetHTML()); } catch(e){} }
+function repaintSheet(){ const sh = D.querySelector(".n1-sheet"); if (!sh) return; const t = D.createElement("div"); t.innerHTML = sheetHTML(); const nb = t.querySelector(".n1-sheet"); sh.innerHTML = nb.innerHTML; }
+function rowText(){ const s = get(); return s.on ? w("rowOn", {f:w(s.freq + "S"), a:String(s.qs % 24).padStart(2, "0"), b:String(s.qe).padStart(2, "0")}) : w("rowOff"); }
+function profileRowHTML(){ return '<div class="setrow n1-prow" data-noi18n><div class="t"><b>' + esc(w("row")) + '</b><div class="small muted n1-prs">' + esc(rowText()) + '</div></div><button class="chip" data-n1="set">' + esc(w("edit")) + '</button></div>'; }
+function paintRow(){ D.querySelectorAll(".n1-prs").forEach(e => { e.textContent = rowText(); }); }
+
+D.addEventListener("click", e => { const t = e.target; if (!t || !t.closest) return;
+  const a = t.closest("[data-n1]");
+  if (a) { e.preventDefault(); e.stopPropagation(); const k = a.dataset.n1, c = cur;
+    if (k === "go") { hide(); sfx("tap"); act(c && c.q); }
+    else if (k === "later" || k === "x") { hide(); const l = log(); l.last = Date.now(); put(LOG, l); }
+    else if (k === "set") { sfx("open"); openSet(); }
+    else if (k === "try") { try { LowiHost.closeSheet(); } catch(x){} setTimeout(() => { const n = check({force:true}); if (!n) show({id:"try", text:w("water", {g:0, w:2}), go:"goWater", q:"water"}); }, 380); }
+    return; }
+  const o = t.closest("[data-n1v]");
+  if (o && o.closest(".n1-sheet")) { e.preventDefault(); const g = o.closest("[data-n1g]").dataset.n1g, v = o.dataset.n1v; sfx("tap");
+    if (g === "on") set({on:v === "1"}); else if (g === "freq") set({freq:v}); repaintSheet(); return; }
+  if (cur && !t.closest("#n1B") && !t.closest("#tabbar")) hide(); }, true);
+D.addEventListener("change", e => { const s = e.target && e.target.closest && e.target.closest("[data-n1s]"); if (!s) return; const p = {}; p[s.dataset.n1s] = +s.value; set(p); });
+addEventListener("resize", () => { if (cur) place(); });
+
+/* ---------- timing: on open, on coming back, then once a minute ---------- */
+let hidAt = 0;
+function init(){
+  setTimeout(() => check({open:true}), 6000);
+  setInterval(() => { if (!D.hidden) check({}); }, 60000);
+  D.addEventListener("visibilitychange", () => { if (D.hidden) { hidAt = Date.now(); if (cur) hide(true); return; }
+    if (hidAt && Date.now() - hidAt > 10 * 6e4) setTimeout(() => check({open:true}), 1500); });
+}
+if (D.readyState === "loading") D.addEventListener("DOMContentLoaded", init); else setTimeout(init, 0);
+window.LowiN1 = {check, pick, show, hide, get, set, quiet, openSet, profileRowHTML, cur:() => cur, log, w, appFree};
 })();
 </script>
 </body>

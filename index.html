@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261010-232133">
+<meta name="lowi-build" content="20261011-005425">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2923,6 +2923,206 @@ html.g2e-on.g2e-t5:not(.g2e-open) #tab-profile > .r2-hero{padding:8px 12px}
 html.g2e-on.g2e-t5:not(.g2e-open) #tab-profile > .r2-hero .lb3{--sz:60px!important}
 html.g2e-on.g2e-t5:not(.g2e-open) #tab-profile > #lvCard{padding:9px 12px}
 </style>
+<style id="g2fCss">/* ===== LOWiSPIKE G2-FIX (Oct 11, 2026): real iPhone fit ===== */
+/* the iOS home-screen band: stretch everything that covers the screen down to the real bottom */
+html.g2f-gap #app,html.g2f-gap .b3-cam,html.g2f-gap .fst-rw,html.g2f-gap #g1Tour,html.g2f-gap .r2-gate,html.g2f-gap .r2-ov,html.g2f-gap .r3a-pl{bottom:calc(-1 * var(--g2fGap,0px))}
+html.g2f-gap,html.g2f-gap body{background:#03050a}
+html.g2f-gap[data-theme=light],html.g2f-gap[data-theme=light] body{background:#f6f8fc}
+/* safety net: a screen that still does not fit scrolls far enough to bring its last row above the orb */
+html.g2f-snh.g2h-on #tab-home{overflow-y:auto!important;padding-bottom:0!important}
+html.g2f-snh.g2h-on #tab-home::after{content:"";display:block;flex:none;order:99;height:var(--g2fSp,calc(var(--sab) + 124px))}
+html.g2f-snc.g2c-on #shelf.tabmode #shBody{overflow-y:auto!important}
+html.g2f-snc.g2c-on #shelf.tabmode #shBody::after{content:"";display:block;flex:none;order:99;height:var(--g2fSp,calc(var(--sab) + 124px))}
+html.g2f-sne.g2e-on:not(.g2e-open) #tab-profile{overflow-y:auto!important}
+html.g2f-sne.g2e-on:not(.g2e-open) #tab-profile::after{content:"";display:block;flex:none;order:99;height:var(--g2fSp,calc(var(--sab) + 124px))}
+html.g2f-snd.g2d-on #cmPaneBoard{overflow-y:auto!important}
+html.g2f-snd.g2d-on #cmPaneBoard::after{content:"";display:block;flex:none;order:99;height:var(--g2fSp,calc(var(--sab) + 124px))}
+html.g2f-snm #mv-screen.tabmode{padding-bottom:0!important}
+html.g2f-snm #mv-screen.tabmode > .stack.g2::after{content:"";display:block;height:var(--g2fSp,calc(var(--sab) + 124px))}
+/* Move: the free height goes to the session tiles, the quick tiles, the start button and the gaps */
+html[data-lay=phone] #mv-screen.tabmode .stack.g2 .mv-fmt{height:calc(96px + var(--g2fFmt,0px))}
+html[data-lay=phone] #mv-screen.tabmode .stack.g2 .g2-tile{height:calc(96px + var(--g2fTile,0px))}
+html[data-lay=phone] #mv-screen.tabmode .stack.g2 .g2-hero .mv-go{min-height:calc(56px + var(--g2fGo,0px))}
+html[data-lay=phone] #mv-screen.tabmode > .stack.g2 > *+*{margin-top:calc(10px + var(--g2fGapM,0px))}
+/* the 5-60 min chips: the card keeps its right padding, so 60 min never touches the edge */
+html[data-lay=phone] #mv-screen.tabmode .stack.g2 .g2-hero{padding-right:14px}
+/* the 5-60 min chips: always readable, and they scroll with a fade when the row is too narrow */
+.stack.g2 .g2-hero .mv-mins{gap:5px;flex-wrap:nowrap}
+.stack.g2 .g2-hero .mv-mins .chip{white-space:nowrap;font-size:13px;letter-spacing:-.2px;overflow:visible}
+.stack.g2 .g2-hero .mv-mins.g2f-ms{overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;margin-right:-14px;padding-right:14px}
+.stack.g2 .g2-hero .mv-mins.g2f-ms::-webkit-scrollbar{display:none}
+.stack.g2 .g2-hero .mv-mins.g2f-ms .chip{flex:0 0 auto;padding-left:12px;padding-right:12px;scroll-snap-align:start}
+.stack.g2 .g2-hero .mv-mins.g2f-msf{-webkit-mask-image:linear-gradient(90deg,#000 80%,transparent);mask-image:linear-gradient(90deg,#000 80%,transparent)}
+/* Today, one more step for small phones: gaps tighter, tiles become one row (icon beside the label) */
+html.g2h-on.g2h-t8:not(.g2h-tour) #tab-home{gap:6px}
+html.g2h-on.g2h-t8:not(.g2h-tour) #tab-home #g2hTiles{gap:6px}
+html.g2h-on.g2h-t8:not(.g2h-tour) #tab-home .g2h-tile{min-height:48px;height:auto;flex-direction:row;align-items:center;justify-content:flex-start;gap:8px;padding:6px 10px}
+html.g2h-on.g2h-t8:not(.g2h-tour) #tab-home .g2h-tile .g2h-ic{margin:0;flex:none}
+html.g2h-on.g2h-t8:not(.g2h-tour) #tab-home .g2h-tile b{margin:0;min-width:0}
+/* Chat: the message box sits above the scan orb, not behind it */
+html[data-lay=phone] #tab-foryou #cmPaneChat.ls-pane{padding-bottom:calc(var(--sab) + 118px)!important}
+/* measuring Move: no transitions, so the free height is read at rest */
+#mv-screen.g2f-meas,#mv-screen.g2f-meas *{transition:none!important}
+</style>
+<script id="g2fJs">/* ===== LOWiSPIKE G2-FIX (Oct 11, 2026): real iPhone fit =====
+   1. iOS home-screen app: the page box can end above the screen bottom by the status-bar height
+      (black band under the tab bar, tab bar sitting too high). Measure it and stretch the app down.
+   2. LowiFit: the real free space ends above the tab bar AND the scan orb. Screens fit against
+      measured boxes, not scrollHeight (WebKit leaves the bottom padding out of it).
+   3. Move: spread the content over the free height; the 5-60 min chips always fit or scroll. */
+(function(){
+"use strict";
+if (window.LowiFit) return;
+const D = document, H = D.documentElement;
+function px(v){ const n = parseFloat(v); return isFinite(n) ? n : 0; }
+function sab(){ return px(getComputedStyle(H).getPropertyValue("--sab")) || 0; }
+function ios(){ const u = navigator.userAgent || ""; return /iPhone|iPad|iPod/.test(u) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); }
+function standalone(){ try { return navigator.standalone === true || matchMedia("(display-mode: standalone)").matches; } catch(e){ return false; } }
+
+/* ---- 1. the band under the tab bar ---- */
+let probe = null, gapNow = 0;
+function icb(){
+  if (!probe) { probe = D.createElement("div"); probe.setAttribute("aria-hidden", "true"); probe.style.cssText = "position:fixed;left:0;top:0;bottom:0;width:1px;visibility:hidden;pointer-events:none;z-index:-1"; }
+  if (!probe.parentNode) (D.body || H).appendChild(probe);
+  return probe.getBoundingClientRect().height;
+}
+function gapCheck(){
+  let g = 0;
+  try {
+    if (ios() && standalone()) {
+      const portrait = innerHeight >= innerWidth;
+      const sw = portrait ? Math.min(screen.width, screen.height) : Math.max(screen.width, screen.height);
+      const sh = portrait ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
+      const h = icb();
+      if (Math.abs(innerWidth - sw) < 3 && h > 0) { const d = Math.round(sh - h); if (d >= 16 && d <= 70) g = d; }
+    }
+  } catch(e){ g = 0; }
+  if (g !== gapNow) {
+    gapNow = g;
+    if (g) { H.style.setProperty("--g2fGap", g + "px"); H.classList.add("g2f-gap"); }
+    else { H.style.removeProperty("--g2fGap"); H.classList.remove("g2f-gap"); }
+    try { dispatchEvent(new Event("resize")); } catch(e){}
+  }
+  return g;
+}
+
+/* ---- 2. the real free space ---- */
+function vis(e){ return !!(e && e.offsetHeight && e.offsetWidth); }
+function limit(){
+  const tb = D.getElementById("tabbar");
+  if (vis(tb)) {
+    const r = tb.getBoundingClientRect();
+    if (r.height > 20 && r.top < innerHeight + gapNow - 10) {
+      let top = r.top;
+      const orb = tb.querySelector(".tb.scan .orb") || tb.querySelector(".tb.scan");
+      if (vis(orb)) top = Math.min(top, orb.getBoundingClientRect().top);
+      return top - 8;
+    }
+  }
+  return innerHeight + gapNow - sab() - 8;
+}
+function deep(el, depth){
+  let m = 0;
+  for (const k of el.children) {
+    if (k.id === "g2fEnd" || k.tagName === "SCRIPT" || k.tagName === "STYLE") continue;
+    const cs = getComputedStyle(k);
+    if (cs.display === "contents") { m = Math.max(m, deep(k, depth)); continue; }
+    if (!k.offsetHeight || cs.position === "absolute" || cs.position === "fixed" || cs.visibility === "hidden") continue;
+    const r = k.getBoundingClientRect(); if (r.height < 1) continue;
+    m = Math.max(m, r.bottom);
+    if (depth > 0 && cs.overflowY === "visible" && cs.overflowX === "visible") m = Math.max(m, deep(k, depth - 1));
+  }
+  return m;
+}
+/* a screen that is still sliding in is measured where it will come to rest */
+function shift(el){
+  let d = 0;
+  for (let n = el; n && n !== D.body && n.id !== "app"; n = n.parentElement) {
+    const t = getComputedStyle(n).transform;
+    if (!t || t === "none") continue;
+    const op = n.offsetParent; if (!op) continue;
+    const r = n.getBoundingClientRect(), o = op.getBoundingClientRect();
+    d += r.top - (o.top + op.clientTop + n.offsetTop - op.scrollTop);
+  }
+  return Math.abs(d) < 400 ? d : 0;
+}
+function bottom(el){ if (!el) return 0; const b = deep(el, 2); return b ? b + (el.scrollTop || 0) - shift(el) : 0; }
+function over(el){ return bottom(el) > limit() + .5; }
+/* the safety-net scroll room: from the bottom of the scroll box up to the free space */
+function sp(el){ if (!el) return; const r = el.getBoundingClientRect(); el.style.setProperty("--g2fSp", Math.max(12, Math.round(r.bottom - limit() + 8)) + "px"); }
+window.LowiFit = {limit, bottom, over, sp, gap: () => gapNow, check: gapCheck};
+
+/* ---- 3. Move ---- */
+const VARS = ["--g2fFmt", "--g2fTile", "--g2fGo", "--g2fGapM"];
+function mv(){ const m = D.getElementById("mv-screen"); return m && m.classList.contains("tabmode") && H.getAttribute("data-lay") === "phone" && vis(m) && m.querySelector(".stack.g2") ? m : null; }
+function setV(o){ VARS.forEach(k => { const v = o[k] || 0; if (v) H.style.setProperty(k, v.toFixed(1) + "px"); else H.style.removeProperty(k); }); }
+function chips(m){
+  const row = m.querySelector(".g2-hero .mv-mins"); if (!row) return;
+  row.classList.remove("g2f-ms", "g2f-msf");
+  const cut = Array.from(row.children).some(c => c.scrollWidth > c.clientWidth + 1) || row.scrollWidth > row.clientWidth + 1;
+  if (cut) {
+    row.classList.add("g2f-ms");
+    const end = () => row.classList.toggle("g2f-msf", row.scrollLeft + row.clientWidth < row.scrollWidth - 4);
+    end(); if (!row.__g2f) { row.__g2f = true; row.addEventListener("scroll", end, {passive:true}); }
+  }
+}
+function fitMove(){
+  const m = mv();
+  if (!m) { H.classList.remove("g2f-snm"); return; }
+  m.classList.add("g2f-meas");
+  setV({}); H.classList.remove("g2f-snm");
+  const st = m.scrollTop; m.scrollTop = 0;
+  chips(m);
+  const s = m.querySelector(".stack.g2");
+  const rows = Math.ceil(s.querySelectorAll(".mv-fmts > .mv-fmt").length / 2) || 0;
+  const tiles = s.querySelector(".g2-tiles") ? 1 : 0, gaps = Math.max(1, Array.from(s.children).filter(vis).length - 1);
+  const lim = limit();
+  let free = lim - bottom(s) - 4;
+  const v = {};
+  if (free > 2) {
+    let a = free;
+    const f = rows ? Math.min(56, a * .24) : 0; v["--g2fFmt"] = f; a -= f * rows;
+    const t = tiles ? Math.min(40, a * .3) : 0; v["--g2fTile"] = t; a -= t;
+    const g = Math.min(16, a * .25); v["--g2fGo"] = g; a -= g;
+    v["--g2fGapM"] = Math.max(0, Math.min(24, a / gaps));
+  } else if (free < 0) {
+    let d = -free;
+    v["--g2fGapM"] = -Math.min(4, d / gaps); d -= Math.min(4 * gaps, d);
+    if (d > 0 && rows) { const f = Math.min(18, d / rows); v["--g2fFmt"] = -f; d -= f * rows; }
+    if (d > 0 && tiles) { const t = Math.min(14, d); v["--g2fTile"] = -t; d -= t; }
+  }
+  setV(v);
+  /* never cut: if it still overflows, trim the growth, then let it scroll */
+  for (let i = 0; i < 6 && bottom(s) > lim + .5 && free > 0; i++) { Object.keys(v).forEach(k => v[k] *= .7); setV(v); }
+  if (bottom(s) > lim + .5) { H.classList.add("g2f-snm"); sp(m); }
+  m.scrollTop = st;
+  void m.offsetHeight; m.classList.remove("g2f-meas");
+}
+
+/* ---- the pass ---- */
+let raf = 0, busy = false, moM = null, hooked = null;
+function schedule(){ if (raf || busy) return; raf = requestAnimationFrame(() => { raf = 0; pass(); }); }
+function pass(){
+  busy = true;
+  try {
+    gapCheck();
+    const m = D.getElementById("mv-screen");
+    if (m && hooked !== m) { hooked = m; if (moM) moM.disconnect(); moM = new MutationObserver(schedule); moM.observe(m, {childList:true, subtree:true, attributes:true, attributeFilter:["class"]}); }
+    if (typeof window.goTab === "function" && !window.goTab.__g2f) { const g = window.goTab; window.goTab = function(){ const r = g.apply(this, arguments); [60, 400, 900, 1500].forEach(t => setTimeout(schedule, t)); return r; }; window.goTab.__g2f = true; }
+    fitMove();
+  } catch(e){ console.error(e); }
+  setTimeout(() => { busy = false; }, 0);
+}
+addEventListener("resize", schedule);
+["animationend", "transitionend"].forEach(n => D.addEventListener(n, e => { if (e.target && e.target.closest && e.target.closest("#mv-screen")) schedule(); }, true)); addEventListener("orientationchange", () => { setTimeout(schedule, 120); setTimeout(schedule, 600); });
+D.addEventListener("visibilitychange", () => { if (!D.hidden) setTimeout(schedule, 80); });
+D.addEventListener("click", () => { [60, 420, 1000].forEach(t => setTimeout(schedule, t)); }, true);
+try { new MutationObserver(schedule).observe(H, {attributes:true, attributeFilter:["data-lay", "lang", "data-theme"]}); } catch(e){}
+if (D.fonts && D.fonts.ready) D.fonts.ready.then(schedule);
+if (D.readyState === "loading") D.addEventListener("DOMContentLoaded", () => { gapCheck(); schedule(); }); else { gapCheck(); schedule(); }
+setTimeout(schedule, 900); setTimeout(schedule, 2500);
+})();
+</script>
 </head>
 <body>
 <div id="app">
@@ -16486,12 +16686,15 @@ D.addEventListener("click", e => {
 }, true);
 
 /* ---- fit: tighten step by step until Today fits ---- */
-const LV = ["g2h-t1", "g2h-t2", "g2h-t3", "g2h-t4", "g2h-t5", "g2h-t6", "g2h-t7"];
-function over(h){ return h.scrollHeight - h.clientHeight > 1; }
+const LV = ["g2h-t1", "g2h-t2", "g2h-t3", "g2h-t4", "g2h-t5", "g2h-t6", "g2h-t7", "g2h-t8"];
+function over(h){ return window.LowiFit ? LowiFit.over(h) : h.scrollHeight - h.clientHeight > 1; }
 function fit(h){
-  let lv = 0; LV.forEach(c => H.classList.remove(c));
+  let lv = 0; LV.forEach(c => H.classList.remove(c)); H.classList.remove("g2f-snh");
   if (!on() || !h.offsetHeight) return;
+  const st = h.scrollTop; h.scrollTop = 0;
   while (over(h) && lv < LV.length) { H.classList.add(LV[lv]); lv++; }
+  if (over(h)) { H.classList.add("g2f-snh"); if (window.LowiFit) LowiFit.sp(h); }
+  h.scrollTop = st;
 }
 
 /* ---- the pass ---- */
@@ -16669,11 +16872,14 @@ D.addEventListener("click", e => { const t = e.target; if (t && t.closest && t.c
 
 /* ---- fit: tighten step by step until Cook fits ---- */
 const LV = ["g2c-t1", "g2c-t2", "g2c-t3", "g2c-t4", "g2c-t5", "g2c-t6"];
-function over(b){ return b.scrollHeight - b.clientHeight > 1; }
+function over(b){ return window.LowiFit ? LowiFit.over(b) : b.scrollHeight - b.clientHeight > 1; }
 function fit(b){
-  LV.forEach(c => H.classList.remove(c));
+  LV.forEach(c => H.classList.remove(c)); H.classList.remove("g2f-snc");
   if (!on() || !b || !b.offsetHeight) return;
+  const st = b.scrollTop; b.scrollTop = 0;
   let lv = 0; while (over(b) && lv < LV.length) { H.classList.add(LV[lv]); lv++; }
+  if (over(b)) { H.classList.add("g2f-snc"); if (window.LowiFit) LowiFit.sp(b); }
+  b.scrollTop = st;
 }
 
 /* ---- the pass ---- */
@@ -16800,7 +17006,7 @@ let lim = 0, limW = 0, limH = 0;
 function bottomLimit(){
   const tb = D.getElementById("tabbar"), r = tb && tb.getBoundingClientRect();
   const sheet = D.querySelector(".r2-ov.on:not(.off)"), good = r && r.height > 20 && r.top < innerHeight - 20 && !sheet;
-  if (good) { lim = r.top - 8; limW = innerWidth; limH = innerHeight; return lim; }
+  if (good) { lim = window.LowiFit ? LowiFit.limit() : r.top - 8; limW = innerWidth; limH = innerHeight; return lim; }
   if (lim && limW === innerWidth && limH === innerHeight) return lim;
   return r && r.height > 20 ? r.top - 8 : innerHeight - 96;
 }
@@ -16810,7 +17016,7 @@ function fit(p){
   const rows = qa(p, ".r3-lbl > .r3-lbrow"), meOut = q(p, ".r3-lb > .r3-lbme");
   rows.forEach(r => r.classList.remove("g2d-hid", "g2d-pin"));
   if (meOut) meOut.classList.remove("g2d-hid");
-  if (!on() || !p.offsetHeight) { H.classList.remove("g2d-t1", "g2d-t2"); return; }
+  if (!on() || !p.offsetHeight) { H.classList.remove("g2d-t1", "g2d-t2", "g2f-snd"); return; }
   H.classList.remove("g2d-t1", "g2d-t2");
   const rest = rows.slice(3), meIn = rows.find(r => r.classList.contains("me"));
   rest.forEach(r => r.classList.add("g2d-hid"));
@@ -16821,12 +17027,13 @@ function fit(p){
   if (!fits(p)) H.classList.add("g2d-t2");
   /* show places 4, 5, ... while they fit; keep room for your own row if you are further down */
   const mine = pinMe || meOut;
-  if (mine) { mine.classList.remove("g2d-hid"); mine.classList.add("g2d-pin"); if (!fits(p)) { mine.classList.add("g2d-hid"); mine.classList.remove("g2d-pin"); } }
+  if (mine) { mine.classList.remove("g2d-hid"); mine.classList.add("g2d-pin"); /* G2-FIX: your own row stays; the board scrolls a little if it must */ }
   for (const r of rest) {
     if (r === pinMe) continue;
     r.classList.remove("g2d-hid");
     if (!fits(p)) { r.classList.add("g2d-hid"); break; }
   }
+  H.classList.toggle("g2f-snd", !fits(p)); if (!fits(p) && window.LowiFit) LowiFit.sp(p);
 }
 
 /* ---- the pass ---- */
@@ -16981,13 +17188,14 @@ D.addEventListener("keydown", e => { if (e.key === "Escape" && H.classList.conta
 
 /* ---- fit: tighten step by step until the main screen fits above the tab bar ---- */
 const LV = ["g2e-t1", "g2e-t2", "g2e-t3", "g2e-t4", "g2e-t5"];
-function limit(){ const tb = D.getElementById("tabbar"); const r = tb && tb.offsetHeight ? tb.getBoundingClientRect().top : innerHeight; return r - 6; }
+function limit(){ if (window.LowiFit) return LowiFit.limit(); const tb = D.getElementById("tabbar"); const r = tb && tb.offsetHeight ? tb.getBoundingClientRect().top : innerHeight; return r - 6; }
 function bottom(t){ let m = 0; Array.from(t.children).forEach(k => { if (k.offsetHeight) m = Math.max(m, k.getBoundingClientRect().bottom); }); return m; }
 function fit(t){
-  LV.forEach(c => H.classList.remove(c));
+  LV.forEach(c => H.classList.remove(c)); H.classList.remove("g2f-sne");
   if (!on() || H.classList.contains("g2e-open") || !t || !t.offsetHeight) return;
   t.scrollTop = 0; const lim = limit();
   let lv = 0; while (bottom(t) > lim && lv < LV.length) { H.classList.add(LV[lv]); lv++; }
+  if (bottom(t) > lim + .5) { H.classList.add("g2f-sne"); if (window.LowiFit) LowiFit.sp(t); }
 }
 
 /* ---- the pass ---- */

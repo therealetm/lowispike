@@ -5,3 +5,11 @@
 .mybook-recipe img{width:56px;height:56px;object-fit:cover;border-radius:14px;flex:none}
 .mybook-recipe>span{font-size:28px}.mybook-recipe b{overflow-wrap:anywhere}
 .mybook-ov #myBookRows{margin:12px 0}.mybook-ov .h2{padding-right:34px}
+/* A visible lift above the iPhone home area, with room for the floating orb. */
+html[data-lay=phone] #tabbar{bottom:calc(var(--sab,0px) + 32px)}
+html[data-lay=phone] .tab{padding-bottom:calc(var(--sab,0px) + 126px)}
+html[data-lay=phone] #tab-shelf{bottom:calc(var(--sab,0px) + 106px)}
+html[data-lay=phone] #mv-screen.tabmode{padding-bottom:calc(var(--sab,0px) + 126px)}
+html[data-lay=phone] .fy-rail,html[data-lay=phone] .fy-meta{bottom:calc(var(--sab,0px) + 118px)}
+html[data-lay=phone] .fyv-bar{bottom:calc(var(--sab,0px) + 106px)}
+html[data-lay=phone] #tab-foryou #cmPaneChat.ls-pane{padding-bottom:calc(var(--sab,0px) + 140px)!important}

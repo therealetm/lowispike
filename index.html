@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261011-143419">
+<meta name="lowi-build" content="20261011-150600">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="updates.css">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2114,7 +2114,7 @@ html[data-theme=light] #lcUpd.g1-upd .g1-usay{background:rgba(255,255,255,.2)}
 (function(){
 "use strict";
 if (window.LowiG1) return;
-const NEWS_RAW = {"id": "my-recipe-book", "go": {"tab": "shelf"}, "text": {"en": "New: My Recipe Book in Cook. Save recipes, remove them and search your personal collection. Stored on this device for your account.", "de": "Neu: Mein Rezeptbuch in Kochen. Rezepte speichern, entfernen und deine Sammlung durchsuchen. Auf diesem Gerät für dein Konto gespeichert.", "es": "Nuevo: Mi recetario en Cocinar. Guarda y quita recetas, y busca en tu colección. Guardado en este dispositivo para tu cuenta."}};
+const NEWS_RAW = {"id": "raised-navigation", "go": {"tab": "move"}, "text": {"en": "New: The phone menu sits visibly higher with more room above the guide orb. Failed chat deletions keep the message visible so you can retry.", "de": "Neu: Die Handy-Menüleiste sitzt deutlich höher, mit mehr Platz oberhalb der Guide-Kugel. Bei fehlgeschlagenem Löschen bleibt die Chatnachricht sichtbar, damit du es erneut versuchen kannst.", "es": "Nuevo: El menú del móvil está más alto y deja más espacio sobre la bola guía. Si falla el borrado de un mensaje, permanece visible para volver a intentarlo."}};
 const NEWS = (NEWS_RAW && typeof NEWS_RAW === "object") ? NEWS_RAW : null;
 const KEY = "lowi.g1", GO = "lowi.g1.go";
 const H = document.documentElement;
@@ -3042,7 +3042,7 @@ function limit(){
       let top = r.top;
       const orb = tb.querySelector(".tb.scan .orb") || tb.querySelector(".tb.scan");
       if (vis(orb)) top = Math.min(top, orb.getBoundingClientRect().top);
-      return top - 8;
+      return top - 18;
     }
   }
   return innerHeight + gapNow - sab() - 8;
@@ -9920,9 +9920,12 @@ let armed = null, armT = 0;
 function disarm(){ if (armed) { armed.classList.remove("armed"); const sp = armed.querySelector("span"); if (sp) sp.textContent = "Delete"; } armed = null; clearTimeout(armT); }
 async function del(id, btn){
   const row = btn.closest(".cm-msg") || btn.closest("[data-mid]") || btn.parentNode;
-  if (row) { row.classList.add("r2-gone"); setTimeout(() => row.remove(), 280); }
-  try { const x = R2.X(); if (x && x.delMsg) await x.delMsg(id); else localDel(id); R2.toast("Message deleted"); }
-  catch(e){ R2.toast("Couldn't delete. Try again when online."); if (row) { row.classList.remove("r2-gone"); } }
+  btn.disabled = true; btn.setAttribute("aria-busy", "true");
+  try { const x = R2.X(); if (x && x.delMsg) await x.delMsg(id); else localDel(id);
+    if (row && row.isConnected) { row.classList.add("r2-gone"); setTimeout(() => row.remove(), 280); }
+    R2.toast("Message deleted"); }
+  catch(e){ R2.toast("Couldn't delete. Try again when online."); }
+  finally { btn.disabled = false; btn.removeAttribute("aria-busy"); }
 }
 function localDel(id){
   try { const st = cmLoad(); const arr = st.msgs && (st.msgs.all || st.msgs); const list = Array.isArray(arr) ? arr : null;

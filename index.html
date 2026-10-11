@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261011-083053">
+<meta name="lowi-build" content="20261011-112636">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1020,7 +1020,7 @@ ol.steps{margin:14px 0 0 20px;line-height:1.7;font-size:15px}
 /* floating glass tab bar. Content scrolls under it, so you see the glass work. */
 .tab{bottom:0;padding-bottom:calc(var(--sab) + 104px)}
 #tab-shelf{bottom:calc(var(--sab) + 84px)}
-#tabbar{left:10px;right:10px;bottom:calc(var(--sab) + 8px);height:68px;padding:0 4px;border-radius:34px;border:1px solid rgba(255,255,255,.17);background:linear-gradient(160deg,rgba(255,255,255,.13),rgba(255,255,255,.04) 45%,rgba(var(--acc-rgb),.08));box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(255,255,255,.05),0 18px 40px rgba(0,0,0,.5);-webkit-backdrop-filter:blur(28px) saturate(190%) brightness(1.08);backdrop-filter:blur(28px) saturate(190%) brightness(1.08);overflow:visible}
+#tabbar{left:10px;right:10px;bottom:calc(var(--sab) + 14px);height:68px;padding:0 4px;border-radius:34px;border:1px solid rgba(255,255,255,.17);background:linear-gradient(160deg,rgba(255,255,255,.13),rgba(255,255,255,.04) 45%,rgba(var(--acc-rgb),.08));box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(255,255,255,.05),0 18px 40px rgba(0,0,0,.5);-webkit-backdrop-filter:blur(28px) saturate(190%) brightness(1.08);backdrop-filter:blur(28px) saturate(190%) brightness(1.08);overflow:visible}
 #tabbar:before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(115deg,transparent 30%,rgba(var(--acc-rgb),.16) 45%,rgba(255,255,255,.12) 50%,transparent 62%);background-size:260% 100%;animation:lsBar 9s ease-in-out infinite}
 @keyframes lsBar{0%{background-position:120% 0}100%{background-position:-120% 0}}
 .tb{width:auto;flex:1;min-width:0;color:rgba(255,255,255,.55);position:relative;z-index:1;height:56px;justify-content:center;border-radius:28px;transition:color .2s,background .25s}
@@ -1072,7 +1072,8 @@ ol.steps{margin:14px 0 0 20px;line-height:1.7;font-size:15px}
 /* Scan: the hero. Same column as the others, so its label sits on the same line; the orb floats above it. */
 #tabbar .tb.scan{margin-top:0;overflow:visible;color:rgba(255,255,255,.8)}
 #tabbar .tb.scan.active{color:#fff}
-#tabbar .tb.scan .orb{position:absolute;width:62px;height:62px;left:calc(50% - 31px);top:-34px;display:block;transition:transform .32s cubic-bezier(.34,1.56,.64,1);will-change:transform}
+#tabbar .tb.scan .orb{position:absolute;width:62px;height:62px;left:calc(50% - 31px);top:-34px;display:block;transition:transform .32s cubic-bezier(.34,1.56,.64,1),opacity .18s ease;will-change:transform,opacity}
+#tabbar .tb.scan .orb.g1-away{opacity:0;transform:scale(.72);pointer-events:none}
 #tabbar .tb.scan:active .orb{transform:scale(.88);transition-duration:.12s}
 #tabbar .tb.scan .orb > i{position:absolute;border-radius:50%;pointer-events:none;display:block}
 #tabbar .tb.scan .halo{inset:-16px;background:radial-gradient(circle,rgba(var(--acc-rgb),.6),rgba(var(--acc-rgb),.18) 45%,rgba(var(--acc-rgb),0) 68%);animation:lsHalo 2.8s ease-in-out infinite alternate}
@@ -2097,8 +2098,8 @@ html[data-theme=light] #lcUpd.g1-upd .g1-usay{background:rgba(255,255,255,.2)}
 </style>
 <script id="g1js">
 /* ===== LOWiSPIKE G1 (Oct 10, 2026): the scan orb comes alive and becomes your guide =====
-   - A glowing copy of the scan orb pops out of the bottom bar (the real Scan button stays put and keeps working),
-     floats to each thing it explains, spotlights it, talks in a speech bubble beside it, then floats back into the bar.
+   - The scan orb visibly leaves the bottom bar as its guide copy flies to each thing it explains,
+     spotlights it, talks in a speech bubble beside it, then returns to the same place in the bar.
    - First time on Today (Home): a step-by-step tour. One short line per step, Next / Back / Skip.
    - "Tap to listen" reads each step out loud (speechSynthesis, app language). Once on, the next steps read themselves.
    - Remembers where you are and that you finished. Replay: the small "?" next to the scan orb, or hold the orb down.
@@ -2108,7 +2109,7 @@ html[data-theme=light] #lcUpd.g1-upd .g1-usay{background:rgba(255,255,255,.2)}
 (function(){
 "use strict";
 if (window.LowiG1) return;
-const NEWS_RAW = {"id": "b3-guide", "go": {"tab": "home", "sel": "#tabbar .tb.scan"}, "text": {"en": "New: The scan ball's tour now takes you through every tab, each part once, never the same line twice. Reminders show the same guide, the notifications question waits for your answer, and Settings is the first tile in Profile.", "de": "Neu: Die Tour der Scan-Kugel führt dich jetzt durch jeden Tab, jeden Teil einmal, nie zweimal derselbe Satz. Erinnerungen zeigen denselben Guide, die Frage nach Benachrichtigungen wartet auf deine Antwort, und Einstellungen ist die erste Kachel im Profil.", "es": "Nuevo: El recorrido de la bola del escáner te lleva por cada pestaña, cada parte una vez, sin repetir frases. Los avisos muestran la misma guía, la pregunta de notificaciones espera tu respuesta y Ajustes es la primera casilla del perfil."}};
+const NEWS_RAW = {"id": "b3-guide-flight", "go": {"tab": "home", "sel": "#tabbar .tb.scan"}, "text": {"en": "B3 part 2: The guide orb now visibly leaves the Scan button and returns when it is done. The bottom bar sits higher, and the Scan orb is now icon-free.", "de": "B3 Teil 2: Die Guide-Kugel verlässt jetzt sichtbar den Scan-Button und kehrt danach zurück. Die Menüleiste sitzt höher, und die Scan-Kugel ist jetzt ohne Kamera-Symbol.", "es": "B3 parte 2: La bola guía ahora sale visiblemente del botón Escanear y vuelve al terminar. La barra inferior está más alta y la bola de Escanear ya no tiene icono de cámara."}};
 const NEWS = (NEWS_RAW && typeof NEWS_RAW === "object") ? NEWS_RAW : null;
 const KEY = "lowi.g1", GO = "lowi.g1.go";
 const H = document.documentElement;
@@ -2177,6 +2178,11 @@ function orbHTML(){ const o = $("#tabbar .tb.scan .orb"); let inner = o ? o.inne
   return '<span class="g1-fb active"><span class="orb">' + inner + '</span></span><i class="g1-face" aria-hidden="true"><b></b><b></b><u></u></i>'; }
 const realOrb = () => $("#tabbar .tb.scan .orb");
 function popReal(){ const o = realOrb(); if (!o || reduce) return; o.classList.remove("pop"); void o.offsetWidth; o.classList.add("pop"); }
+function realAway(on){ const o = realOrb(); if (o) o.classList.toggle("g1-away", !!on); }
+let fairyRun = 0, fairyTimers = [];
+function fairyCancel(){ fairyRun++; while (fairyTimers.length) clearTimeout(fairyTimers.pop()); }
+function fairyLater(fn, ms){ const run = fairyRun; const id = setTimeout(() => { const i = fairyTimers.indexOf(id); if (i >= 0) fairyTimers.splice(i, 1); if (run === fairyRun) fn(); }, ms); fairyTimers.push(id); return id; }
+function fairyReset(){ fairyCancel(); if (fz) fz.classList.remove("on", "alive", "home", "bye"); fzHome = true; realAway(false); }
 
 /* ---------- speaking ---------- */
 const SS = ("speechSynthesis" in window) && typeof window.SpeechSynthesisUtterance === "function";
@@ -2244,14 +2250,14 @@ function fzMove(x, y, s, instant){ const f = fairy(); fzPos = {x, y, s:s || 1};
   else f.style.transform = "translate3d(" + x + "px," + y + "px,0) scale(" + (s || 1) + ")"; }
 function fzBounce(cls){ const b = fz && fz.querySelector(".g1z-bob"); if (!b || reduce) return; b.classList.remove("g1z-pop", "g1z-land"); void b.offsetWidth; b.classList.add(cls || "g1z-pop"); }
 /* pop out of the bar: start exactly on the real orb, squash, jump */
-function fairyOut(){ const f = fairy(); if (!fzHome && f.classList.contains("on")) return; const r = orbRect(), sc = r.width / FS;
+function fairyOut(){ const f = fairy(); if (!fzHome && f.classList.contains("on")) return; fairyCancel(); const r = orbRect(), sc = r.width / FS;
   fzMove(r.left + r.width / 2 - FS / 2, r.top + r.height / 2 - FS / 2, sc, true);
-  f.classList.remove("home", "bye"); f.classList.add("on"); fzHome = false; popReal(); sfx("open");
-  fzBounce("g1z-pop"); setTimeout(() => f.classList.add("alive"), reduce ? 0 : 220); }
+  f.classList.remove("home", "bye"); f.classList.add("on"); fzHome = false; popReal(); realAway(true); sfx("open");
+  fzBounce("g1z-pop"); fairyLater(() => f.classList.add("alive"), reduce ? 0 : 220); }
 /* float back into the bar and melt into the real orb */
-function fairyHome(done){ const f = fz; if (!f || fzHome) { if (done) done(); return; } fzHome = true; const r = orbRect(), sc = r.width / FS;
+function fairyHome(done){ const f = fz; if (!f || fzHome) { realAway(false); if (done) done(); return; } fairyCancel(); fzHome = true; const r = orbRect(), sc = r.width / FS;
   f.classList.remove("alive"); f.classList.add("home"); fzMove(r.left + r.width / 2 - FS / 2, r.top + r.height / 2 - FS / 2, sc);
-  setTimeout(() => { f.classList.add("bye"); popReal(); sfx("tap"); setTimeout(() => { f.classList.remove("on", "bye", "home"); if (done) done(); }, reduce ? 0 : 260); }, reduce ? 0 : 640); }
+  fairyLater(() => { f.classList.add("bye"); fairyLater(() => { f.classList.remove("on", "bye", "home"); realAway(false); popReal(); sfx("tap"); if (done) done(); }, reduce ? 0 : 260); }, reduce ? 0 : 640); }
 
 /* ---------- overlay: dim, spotlight, speech bubble ---------- */
 let TOUR = null; /* {steps:[...], i, kind:"tour"|"offer"|"show"} */
@@ -2264,7 +2270,7 @@ function stepList(){ const els = [], words = []; return STEPS.filter(s => { if (
   const w = T(s.k); if (words.indexOf(w) >= 0) return false; if (e && els.indexOf(e) >= 0 && !s.end) return false; words.push(w); if (e) els.push(e); return true; }); }
 const tabNow = () => { const a = $(".tab.active"); return a ? a.id.replace(/^tab-/, "") : ""; };
 function toTab(t){ if (!t || tabNow() === t) return false; if (H.classList.contains("g2e-open")) try { LowiG2E && LowiG2E.close && LowiG2E.close(); } catch(e){} goTabBtn(t); return true; }
-function begin(t){ TOUR = t; H.classList.add("g1-touring"); root(); fairyOut(); setTimeout(show, reduce ? 0 : 160); }
+function begin(t){ updateFlight++; if (!fzHome) fairyReset(); TOUR = t; H.classList.add("g1-touring"); root(); fairyOut(); setTimeout(show, reduce ? 0 : 160); }
 function start(from){ if (TOUR) close("restart", true); hush(); goHome();
   const m = mem(); remember({t:"", n:NEWS && NEWS.id ? NEWS.id : m.n});
   setTimeout(() => { const steps = stepList(); let i = typeof from === "number" ? from : 0; if (i >= steps.length - 1) i = 0;
@@ -2282,7 +2288,7 @@ function close(how, quick){ hush(); const t = TOUR; TOUR = null; clearInterval(p
   const r = $("#g1Tour"); if (r) { r.classList.add("out"); setTimeout(() => { if (r.parentNode && !TOUR) r.remove(); else if (r.parentNode && TOUR) r.classList.remove("out"); }, quick ? 0 : 260); }
   H.classList.remove("g1-touring"); H.classList.remove("g2h-tour");
   if (t && t.kind === "tour") { remember({t:how === "skip" ? "skip" : "done", s:0}); if (how !== "restart") setTimeout(() => { if (!TOUR) goHome(); }, 0); }
-  if (!quick) fairyHome(); }
+  if (!quick) fairyHome(); else fairyReset(); }
 function textOf(s){ return s.text || T(s.k); }
 function show(){ if (!TOUR) return; const r = root(), s = TOUR.steps[TOUR.i], n = TOUR.steps.length, last = TOUR.i === n - 1;
   const card = r.querySelector(".g1-card"); r.dataset.step = s.k; r.dataset.kind = TOUR.kind;
@@ -2370,15 +2376,15 @@ addEventListener("pointerup", lpEnd, true); addEventListener("pointercancel", e 
 addEventListener("click", e => { if (lpSwallow && Date.now() - lpSwallow < 1500 && e.target.closest && e.target.closest("#tabbar .tb.scan")) { e.preventDefault(); e.stopPropagation(); lpSwallow = 0; } }, true);
 
 /* ---------- updates: the orb flies up into the Q1 banner and says what's new ---------- */
-let upNews = null, upBuild = "", flownFor = "";
+let upNews = null, upBuild = "", flownFor = "", updateFlight = 0;
 async function fetchNews(build){ if (upBuild === build && upNews !== null) return upNews; upBuild = build; upNews = "";
   try { const r = await fetch("version.json?g1=" + Date.now(), {cache:"no-store"}); if (r.ok) { const v = await r.json(); if (v && v.news && (!v.build || v.build === build || !build)) upNews = v.news; } } catch(e){}
   return upNews; }
 function flyInto(d){ const slot = d.querySelector(".g1-uorb"); if (!slot) return; const o = realOrb();
   if (reduce || TOUR || !o || !vis(o) || !fzHome) { d.classList.add("g1-landed"); return; }
-  d.classList.remove("g1-landed"); fairyOut();
-  setTimeout(() => { const x = $("#lcUpd .g1-uorb"); if (!x) { fairyHome(); return; } const r = x.getBoundingClientRect(); fzMove(r.left + r.width / 2 - FS / 2, r.top + r.height / 2 - FS / 2, r.width / FS);
-    setTimeout(() => { const y = $("#lcUpd"); if (y) y.classList.add("g1-landed"); if (fz) fz.classList.remove("on", "alive"); fzHome = true; }, 720); }, 480); }
+  const flight = ++updateFlight; d.classList.remove("g1-landed"); fairyOut();
+  setTimeout(() => { if (flight !== updateFlight || TOUR) return; const x = $("#lcUpd .g1-uorb"); if (!x) { fairyHome(); return; } const r = x.getBoundingClientRect(); fzMove(r.left + r.width / 2 - FS / 2, r.top + r.height / 2 - FS / 2, r.width / FS);
+    setTimeout(() => { if (flight !== updateFlight || TOUR) return; const y = $("#lcUpd"); if (y) y.classList.add("g1-landed"); if (fz) fz.classList.remove("on", "alive"); fzHome = true; realAway(false); }, 720); }, 480); }
 function decorate(){ const d = $("#lcUpd"); if (!d) return; d.classList.add("g1-upd");
   if (!d.querySelector(".g1-uorb")) { cloneOrbCss(); d.insertAdjacentHTML("afterbegin", '<span class="g1-uorb" id="g1Z2" aria-hidden="true"><span class="g1z-body">' + orbHTML() + '</span></span>'); }
   let t = d.querySelector(".g1-utx"); if (!t) { t = document.createElement("span"); t.className = "g1-utx"; d.insertBefore(t, d.querySelector(".g1-uorb").nextSibling); }
@@ -3366,7 +3372,7 @@ html.n1-talk #n1B .g1-mini .g1-face u{animation:g1Talk .28s ease-in-out 4 altern
     <nav id="tabbar">
       <button class="tb" data-tab="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z"/></svg>Today</button>
       <button class="tb" data-tab="foryou"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M4 5.5h12a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H9l-4 3.5V7A1.5 1.5 0 0 1 4 5.5z"/><path d="M17.5 9H20a1 1 0 0 1 1 1v9.5L18 17h-6.5"/></svg>Community</button>
-      <button class="tb scan" data-tab="scan" aria-label="Scan"><span class="orb" aria-hidden="true"><i class="halo"></i><i class="wave"></i><i class="wave w2"></i><span class="ring"><i class="liq"></i><i class="liq l2"></i><i class="gloss"></i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3.4"/></svg></span><i class="splash"></i></span><span class="tbsp"></span><span class="tbl">Scan</span></button>
+      <button class="tb scan" data-tab="scan" aria-label="Scan"><span class="orb" aria-hidden="true"><i class="halo"></i><i class="wave"></i><i class="wave w2"></i><span class="ring"><i class="liq"></i><i class="liq l2"></i><i class="gloss"></i></span><i class="splash"></i></span><span class="tbsp"></span><span class="tbl">Scan</span></button>
       <button class="tb" data-tab="shelf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 11h14v2a7 7 0 0 1-14 0z"/><path d="M3 11h18M9 4.5c0 1.5-1 1.5-1 3M13 4.5c0 1.5-1 1.5-1 3M17 4.5c0 1.5-1 1.5-1 3"/></svg>Cook</button>
       <button class="tb" data-tab="move"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="14.5" cy="4.6" r="2"/><path d="M8 21l3-6 3 2v4"/><path d="M6.5 11.5 9 8.5l4 1 2.5 3.5H19"/><path d="M11 15l2-5"/></svg><span>Move</span></button>
     </nav>

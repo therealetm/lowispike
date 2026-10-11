@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261011-064121">
+<meta name="lowi-build" content="20261011-072529">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2108,7 +2108,7 @@ html[data-theme=light] #lcUpd.g1-upd .g1-usay{background:rgba(255,255,255,.2)}
 (function(){
 "use strict";
 if (window.LowiG1) return;
-const NEWS_RAW = {"id": "k1-browse", "go": {"tab": "shelf"}, "text": {"en": "New: All recipes in Cook is easier to browse. Meals, Snacks, Sweet and Drinks each have their own section, the quickest recipes come first, and every filter shows how many recipes it has.", "de": "Neu: Alle Rezepte in Kochen sind übersichtlicher. Mahlzeiten, Snacks, Süß und Getränke haben je einen eigenen Bereich, die schnellsten Rezepte stehen oben, und jeder Filter zeigt, wie viele Rezepte er hat.", "es": "Nuevo: Todas las recetas en Cocinar es más fácil de explorar. Comidas, Snacks, Dulces y Bebidas tienen cada uno su sección, las recetas más rápidas van primero y cada filtro muestra cuántas recetas tiene."}};
+const NEWS_RAW = {"id": "b2-profile", "go": {"tab": "profile", "sel": "#g2eTiles"}, "text": {"en": "New: Profile is tidy on iPhone. All menu tiles are the same size, the Back button no longer covers anything, and My swaps shows how to save your first swap.", "de": "Neu: Das Profil ist auf dem iPhone aufgeräumt. Alle Kacheln sind gleich groß, der Zurück-Button verdeckt nichts mehr, und Meine Swaps zeigt, wie du deinen ersten Swap speicherst.", "es": "Nuevo: El perfil está ordenado en iPhone. Todas las fichas tienen el mismo tamaño, el botón Atrás ya no tapa nada y Mis cambios muestra cómo guardar tu primer cambio."}};
 const NEWS = (NEWS_RAW && typeof NEWS_RAW === "object") ? NEWS_RAW : null;
 const KEY = "lowi.g1", GO = "lowi.g1.go";
 const H = document.documentElement;
@@ -2264,6 +2264,10 @@ function startNews(){ if (!NEWS) return; hush(); remember({n:NEWS.id});
   const go = NEWS.go || {}; if (go.tour || !mem().t) { start(0); return; }
   if (go.tab && !(go.tab === "home" && onHome())) goTabBtn(go.tab);
   setTimeout(() => begin({steps:[{k:"news", text:NT(NEWS.text), el:() => go.sel ? $(go.sel) : null}], i:0, kind:"show"}), 450); }
+function bnSeen(){ try { return !!(NEWS && NEWS.id && localStorage.getItem("lowi.g1.bn") === NEWS.id); } catch(e){ return false; } } /* b2-once */
+function b2Tab(t){ const b = $("#tabbar .tb[data-tab=" + t + "]") || $(".tb[data-tab=" + t + "]"); if (b) b.click(); else if (typeof window.goTab === "function") window.goTab(t); }
+function pointNews(){ if (!NEWS) return; hush(); remember({n:NEWS.id}); const go = NEWS.go || {}; if (go.tab && !(go.tab === "home" && onHome())) b2Tab(go.tab); if (go.tour || !mem().t || !go.sel) return;
+  setTimeout(() => begin({steps:[{k:"news", text:NT({en:"Here it is.", de:"Hier ist es.", es:"Aquí está."}), el:() => $(go.sel)}], i:0, kind:"show"}), 450); }
 function offerNews(){ if (!NEWS || TOUR) return; hush(); begin({steps:[{k:"offer", text:NT(NEWS.text)}], i:0, kind:"offer"}); }
 function close(how, quick){ hush(); const t = TOUR; TOUR = null; clearInterval(placeT); cancelAnimationFrame(follow.raf);
   const r = $("#g1Tour"); if (r) { r.classList.add("out"); setTimeout(() => { if (r.parentNode && !TOUR) r.remove(); else if (r.parentNode && TOUR) r.classList.remove("out"); }, quick ? 0 : 260); }
@@ -2375,6 +2379,7 @@ function decorate(){ const d = $("#lcUpd"); if (!d) return; d.classList.add("g1-
   let h = t.querySelector(".g1-uh"); if (!h) { h = document.createElement("b"); h.className = "g1-uh"; t.insertBefore(h, t.firstChild); }
   let p = t.querySelector(".g1-un"); if (!p) { p = document.createElement("i"); p.className = "g1-un"; t.insertBefore(p, h.nextSibling); }
   if (h.textContent !== T("news")) h.textContent = T("news"); const line = n || T("newsfb"); if (p.textContent !== line) p.textContent = line;
+  if (n && upNews && upNews.id) { try { if (localStorage.getItem("lowi.g1.bn") !== upNews.id) localStorage.setItem("lowi.g1.bn", upNews.id); } catch(e){} } /* b2-bn */
   if (SS && !d.querySelector(".g1-usay")) { const s = document.createElement("span"); s.className = "g1-usay"; s.setAttribute("role", "button"); s.setAttribute("tabindex", "0"); s.innerHTML = SPK;
     s.setAttribute("aria-label", T("Listen"));
     const act = e => { e.preventDefault(); e.stopPropagation(); if (speaking) { hush(); return; } const x = $("#lcUpd"); say(T("news") + " " + ((x && x.querySelector(".g1-un") || {}).textContent || "") + " " + (((x && x.querySelector(".g1-upill")) || {}).textContent || "")); };
@@ -2393,10 +2398,10 @@ let freeSince = 0;
 function tick(){ helpPlace(); if (TOUR) return; if (!AUTO()) return;
   if (!appFree()) { freeSince = 0; return; } if (!freeSince) { freeSince = Date.now(); return; } if (Date.now() - freeSince < 1200) return;
   let go = ""; try { go = sessionStorage.getItem(GO) || ""; } catch(e){}
-  if (go) { try { sessionStorage.removeItem(GO); } catch(e){} if (NEWS) { startNews(); return; } }
+  if (go) { try { sessionStorage.removeItem(GO); } catch(e){} if (NEWS) { if (bnSeen() && mem().t) { pointNews(); return; } startNews(); return; } } /* b2-go */
   if (!onHome()) return; const m = mem();
   if (!m.t) { start(typeof m.s === "number" ? m.s : 0); return; }
-  if (NEWS && NEWS.id && m.n !== NEWS.id) { offerNews(); return; } }
+  if (NEWS && NEWS.id && m.n !== NEWS.id) { if (bnSeen()) { remember({n:NEWS.id}); return; } offerNews(); return; } } /* b2-offer */
 
 function init(){ H.classList.add("g1"); helpBtn(); helpPlace(); decorate();
   const watch = () => { const d = $("#lcUpd"); if (d) { redeco(); if (!d.__g1) { d.__g1 = 1; new MutationObserver(redeco).observe(d, {childList:true}); } } };
@@ -3202,6 +3207,82 @@ function list(book, cur, row){
     sort(g[k]).map(row).join("") + '</section>').join("");
 }
 window.LowiK1 = {chips, list, sort, words:W};
+})();
+</script>
+<style id="b2css">
+/* ===== LOWiSPIKE B2 (Oct 11, 2026): iPhone fixes on Profile =====
+   1. Menu tiles: always the same size, three per row, a short last row sits in the middle. No half or double tiles.
+   2. A part opened from a tile: the Back bar sits above the content, never on top of it, and stays solid when you scroll.
+   3. My swaps: a real empty state with a way to start. */
+html.g2e-on:not(.g2e-open) #tab-profile #g2eTiles,
+html.g2e-on:not(.g2e-open) #tab-profile #g2eTiles[data-n]{display:flex!important;flex-wrap:wrap;justify-content:center;gap:8px;grid-template-columns:none!important;width:100%!important;max-width:none!important;grid-column:1 / -1!important;box-sizing:border-box;float:none!important}
+html.g2e-on #g2eTiles .g2e-tile,
+html.g2e-on #g2eTiles[data-n] .g2e-tile,
+html.g2e-on #g2eTiles .g2e-tile:last-child,
+html.g2e-on #g2eTiles[data-n] .g2e-tile:nth-last-child(-n+2){flex:0 0 calc((100% - 16px) / 3);width:calc((100% - 16px) / 3);max-width:calc((100% - 16px) / 3);min-width:0;grid-column:auto!important;box-sizing:border-box}
+html.g2e-on #g2eTiles .g2e-tile b,html.g2e-on #g2eTiles .g2e-tile small{display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.g2e-on.g2e-t4 #g2eTiles .g2e-tile small{display:none}
+/* Back bar: sticks at the top of the page area (the page padding already clears the status bar) */
+html.g2e-on.g2e-open #tab-profile > #g2eHead{position:sticky;top:0;z-index:6;margin:0 -18px 12px;padding:6px 18px 8px;background:var(--bg);box-shadow:0 10px 14px -12px rgba(0,0,0,.55)}
+html.g2e-on.g2e-open #tab-profile > #g2eHead::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:calc(var(--sat,0px) + 24px);background:var(--bg);pointer-events:none}
+html[data-theme=light].g2e-on.g2e-open #tab-profile > #g2eHead{box-shadow:0 10px 14px -12px rgba(20,30,60,.25)}
+html.g2e-on.g2e-open #tab-profile > #g2eHead .g2e-ht{flex:1;min-width:0}
+/* the part's own heading repeats the title in the Back bar: hide it when it has nothing to tap */
+html.g2e-on.g2e-open #tab-profile > .sec.b2-dup{display:none!important}
+/* My swaps empty state */
+.b2-empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:22px 12px 18px}
+.b2-empty .b2-eic{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;background:rgba(var(--acc-rgb,110,170,255),.16);border:1px solid rgba(var(--acc-rgb,110,170,255),.35)}
+.b2-empty .b2-eic svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.b2-empty b{font-size:17px}
+.b2-empty p{margin:0;font-size:14px;line-height:1.4;opacity:.75;max-width:280px}
+.b2-empty .r2-btn{margin-top:6px;min-height:44px;padding:0 18px}
+</style>
+<script id="b2js">
+/* ===== LOWiSPIKE B2 (Oct 11, 2026): iPhone fixes on Profile, see b2.css ===== */
+(function(){
+"use strict";
+if (window.LowiB2) return;
+const D = document, H = D.documentElement;
+const LANG = () => { let l = "en"; try { l = (window.LowiLang && LowiLang.get && LowiLang.get()) || localStorage.getItem("lowispike.lang") || H.lang || "en"; } catch(e){} l = String(l).slice(0, 2); return l === "de" || l === "es" ? l : "en"; };
+const W = {
+  t: {en:"No swaps saved yet", de:"Noch keine Swaps gespeichert", es:"Aún no has guardado cambios"},
+  p: {en:"Scan a product. When it shows a better swap, tap Save and it lands here.", de:"Scanne ein Produkt. Zeigt es einen besseren Swap, tipp auf Speichern und er landet hier.", es:"Escanea un producto. Si muestra un cambio mejor, toca Guardar y aparecerá aquí."},
+  b: {en:"Scan a product", de:"Produkt scannen", es:"Escanear un producto"}
+};
+const w = k => W[k][LANG()] || W[k].en;
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10a1 1 0 011 1v15l-6-4-6 4V5a1 1 0 011-1z"/><path d="M12 8v5M9.5 10.5h5"/></svg>';
+function emptyHTML(){ return '<div class="b2-empty" data-noi18n><span class="b2-eic">' + ICON + '</span><b>' + esc(w("t")) + '</b><p>' + esc(w("p")) + '</p><button type="button" class="r2-btn primary" data-b3="scan" data-sfx="open">' + esc(w("b")) + '</button></div>'; }
+/* My swaps: wrap the saved-swaps renderer and swap the one-line hint for the empty state */
+function wrapSaved(){
+  const f = window.savedHTML; if (typeof f !== "function" || f.__b2) return !!(f && f.__b2);
+  const g = function(){ let h = f.apply(this, arguments); try {
+    h = h.replace(/<div class="small muted"( data-noi18n)?>[^<]*<\/div><\/div>\s*$/, emptyHTML() + '</div>'); } catch(e){} return h; };
+  g.__b2 = true; window.savedHTML = g; return true;
+}
+/* fallback for a page that was drawn before the wrap: fix it in place */
+function fixDom(){
+  const t = D.getElementById("tab-profile"); if (!t) return;
+  const c = t.querySelector(".r3a-saved");
+  if (c && !c.querySelector(".r3a-sw, .savedrow, .b2-empty")) { const m = c.querySelector(":scope > .small.muted"); if (m) m.outerHTML = emptyHTML(); }
+  /* a part's own heading that only repeats the Back bar title */
+  const k = H.getAttribute("data-g2e-k") || "";
+  t.querySelectorAll(":scope > .sec.b2-dup").forEach(s => { if (!H.classList.contains("g2e-open") || s.getAttribute("data-g2e") !== k) s.classList.remove("b2-dup"); });
+  if (H.classList.contains("g2e-open") && k) {
+    const first = Array.from(t.children).find(e => e.getAttribute("data-g2e") === k);
+    if (first && first.classList.contains("sec") && first.children.length <= 1 && !first.querySelector("button, a, input, select, [role=button]")) first.classList.add("b2-dup");
+  }
+}
+let q = 0; const sched = () => { if (q) return; q = requestAnimationFrame(() => { q = 0; try { wrapSaved(); fixDom(); } catch(e){ console.warn(e); } }); };
+function boot(){
+  wrapSaved(); fixDom();
+  try { new MutationObserver(sched).observe(H, {attributes:true, attributeFilter:["class", "data-g2e-k", "lang"]}); } catch(e){}
+  const hook = () => { const t = D.getElementById("tab-profile"); if (t && !t.__b2) { t.__b2 = true; try { new MutationObserver(sched).observe(t, {childList:true, subtree:true}); } catch(e){} } };
+  hook(); setInterval(() => { hook(); sched(); }, 1500);
+  D.addEventListener("click", () => setTimeout(sched, 80), true);
+}
+if (D.readyState === "loading") D.addEventListener("DOMContentLoaded", boot); else boot();
+window.LowiB2 = {emptyHTML, fixDom};
 })();
 </script>
 </head>

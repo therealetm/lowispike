@@ -1,0 +1,103 @@
+--- a/index.html
++++ b/index.html
+@@ -4,7 +4,7 @@
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+ <meta name="theme-color" content="#03050a">
+-<meta name="lowi-build" content="20261011-113559">
++<meta name="lowi-build" content="20261011-130930">
+ <link rel="manifest" href="manifest.webmanifest">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+ <meta name="mobile-web-app-capable" content="yes">
+@@ -2109,7 +2109,7 @@
+ (function(){
+ "use strict";
+ if (window.LowiG1) return;
+-const NEWS_RAW = {"id": "sunrise-mode", "go": {"tab": "home", "sel": "#pfBtn"}, "text": {"en": "New: Sunrise Mode switches LOWiSPIKE between bright Cloud by day and Night after dark. Choose Sunrise under Look in Profile.", "de": "Neu: Sunrise Mode wechselt LOWiSPIKE tagsüber zu hellem Cloud und nach Einbruch der Dunkelheit zu Night. Wähle Sunrise unter Aussehen im Profil.", "es": "Nuevo: Sunrise Mode cambia LOWiSPIKE a Cloud claro de día y a Night cuando oscurece. Elige Sunrise en Aspecto dentro de Perfil."}};
++const NEWS_RAW = {"id": "ingredient-illustrations", "go": {"tab": "shelf"}, "text": {"en": "New: Recipe ingredients now use clear LOWiSPIKE illustrations instead of emoji, including the get-ready screen in Cook mode.", "de": "Neu: Rezept-Zutaten haben jetzt klare LOWiSPIKE-Zeichnungen statt Emojis – auch beim Bereitlegen im Kochmodus.", "es": "Nuevo: Los ingredientes de las recetas ahora tienen ilustraciones claras de LOWiSPIKE en lugar de emojis, también al preparar todo en modo Cocinar."}};
+ const NEWS = (NEWS_RAW && typeof NEWS_RAW === "object") ? NEWS_RAW : null;
+ const KEY = "lowi.g1", GO = "lowi.g1.go";
+ const H = document.documentElement;
+@@ -9947,7 +9947,12 @@
+ .p2-ing.home{background:transparent;opacity:.82}
+ .p2-ing.p2-flip{animation:p2flip .32s ease both}
+ @keyframes p2flip{50%{transform:scale(.94);opacity:.4}}
+-.p2-ie{font-size:22px;width:28px;text-align:center;flex:none}
++.p2-ie{width:40px;height:40px;display:grid;place-items:center;flex:none}
++.p2-ia{--ia:var(--acc,#9fd8ff);width:38px;height:38px;border-radius:12px;display:grid;place-items:center;color:var(--ia);background:linear-gradient(145deg,color-mix(in srgb,var(--ia) 20%,transparent),rgba(255,255,255,.035));border:1px solid color-mix(in srgb,var(--ia) 38%,transparent);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 7px 18px rgba(0,0,0,.16)}
++.p2-ia svg{width:29px;height:29px;display:block;fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}.p2-ia svg .fill{fill:currentColor;fill-opacity:.13;stroke:none}.p2-ia svg .dot{fill:currentColor;stroke:none}
++.p2-ia.ia-leaf,.p2-ia.ia-cucumber,.p2-ia.ia-mushroom{--ia:#8fd9a2}.p2-ia.ia-pepper{--ia:#f09b79}.p2-ia.ia-meat,.p2-ia.ia-poultry,.p2-ia.ia-fish{--ia:#ef9c93}.p2-ia.ia-dairy{--ia:#a9d9ff}.p2-ia.ia-cheese,.p2-ia.ia-egg{--ia:#e5c267}.p2-ia.ia-avocado,.p2-ia.ia-seed,.p2-ia.ia-oil{--ia:#a9dcb2}.p2-ia.ia-spice{--ia:#e8b0ce}.p2-ia.ia-berry,.p2-ia.ia-cocoa{--ia:#c9b2ff}.p2-ia.ia-citrus{--ia:#b8dc72}.p2-ia.ia-drink{--ia:#8fd4ef}.p2-ia.ia-default{--ia:#d4c7a8}
++.p2-ia .p2-emoji{font-size:21px;line-height:1}.p2-m .p2-ia{width:48px;height:48px;border-radius:15px;margin-bottom:3px}.p2-m .p2-ia svg{width:35px;height:35px}
++html[data-theme=light] .p2-ia{background:linear-gradient(145deg,color-mix(in srgb,var(--ia) 16%,#fff),rgba(255,255,255,.76));border-color:color-mix(in srgb,var(--ia) 42%,rgba(22,28,46,.16));box-shadow:inset 0 1px 0 #fff,0 7px 18px rgba(60,72,110,.08)}
+ .p2-in{flex:1;min-width:0;display:flex;flex-direction:column}
+ .p2-in b{font-weight:600;font-size:15px}
+ .p2-in small{font-size:12.5px;color:var(--r2-mut)}
+@@ -10338,6 +10343,36 @@
+ const px = (i, s) => rnd(i.p * s[3] * (.9 + .2 * hash(i.k + "|" + s[0])));
+ const eur = n => "€" + (Math.round(n * 100) / 100).toFixed(2).replace(".", ",");
+ 
++/* Ingredient illustrations: lightweight inline line art, no network requests; emoji stays as the fallback. */
++const ING_ART = {
++ leaf:'<svg viewBox="0 0 32 32" aria-hidden="true"><path class="fill" d="M7 25C5 14 11 6 25 6c1 13-7 20-18 19Z"/><path d="M7 25C5 14 11 6 25 6c1 13-7 20-18 19Z"/><path d="M8 24c5-7 9-10 16-16"/><path d="M13 18c-1-3-1-5 0-7M17 14c2 0 4 1 6 2"/></svg>',
++ cucumber:'<svg viewBox="0 0 32 32" aria-hidden="true"><ellipse class="fill" cx="16" cy="16" rx="11" ry="8" transform="rotate(-18 16 16)"/><ellipse cx="16" cy="16" rx="11" ry="8" transform="rotate(-18 16 16)"/><circle class="dot" cx="12" cy="14" r="1.2"/><circle class="dot" cx="17" cy="12" r="1.2"/><circle class="dot" cx="20" cy="17" r="1.2"/><circle class="dot" cx="14" cy="19" r="1.2"/></svg>',
++ mushroom:'<svg viewBox="0 0 32 32" aria-hidden="true"><path class="fill" d="M6 15c1-7 5-10 10-10s9 3 10 10H6Z"/><path d="M6 15c1-7 5-10 10-10s9 3 10 10H6ZM13 15v9c0 2 1 3 3 3s3-1 3-3v-9"/><path d="M10 11h1M20 10h1"/></svg>',
++ pepper:'<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 8c0-3 2-5 5-5"/><path class="fill" d="M16 8c6-3 11 2 9 9-1 5-5 10-9 10S8 22 7 17C5 10 10 5 16 8Z"/><path d="M16 8c6-3 11 2 9 9-1 5-5 10-9 10S8 22 7 17C5 10 10 5 16 8Z"/><path d="M16 9v17M12 9c-2 5-1 12 1 16M20 9c2 5 1 12-1 16"/></svg>',
++ meat:'<svg viewBox="0 0 32 32" aria-hidden="true"><path class="fill" d="M6 18c0-7 7-13 14-11 6 1 8 7 5 12-4 7-12 9-17 5-1-2-2-4-2-6Z"/><path d="M6 18c0-7 7-13 14-11 6 1 8 7 5 12-4 7-12 9-17 5-1-2-2-4-2-6Z"/><ellipse cx="18.5" cy="15" rx="4.5" ry="3.4"/></svg>',
++ poultry:'<svg viewBox="0 0 32 32" aria-hidden="true"><path class="fill" d="M10 21c-4-5-2-12 3-15 5-3 11 0 12 5 1 6-5 12-11 11"/><path d="M10 21c-4-5-2-12 3-15 5-3 11 0 12 5 1 6-5 12-11 11l-4-1Z"/><path d="M10 21 6 25M7 24l-2-1M7 24l1 3"/></svg>',
++ fish:'<svg viewBox="0 0 32 32" aria-hidden="true"><path class="fill" d="M6 16c5-7 12-8 19-2l3-4v12l-3-4c-7 6-14 5-19-2Z"/><path d="M6 16c5-7 12-8 19-2l3-4v12l-3-4c-7 6-14 5-19-2Z"/><circle class="dot" cx="11" cy="14" r="1"/><path d="M17 11c-1 3-1 7 0 10"/></svg>',
++ dairy:'<svg viewBox="0 0 32 32" aria-hidden="true"><path class="fill" d="M9 9h14l-2 17H11L9 9Z"/><path d="M9 9h14l-2 17H11L9 9ZM8 7h16"/><path d="M12 14c3-2 5 2 8 0"/></svg>',
++ cheese:'<svg viewBox="0 0 32 32" aria-hidden="true"><path class="fill" d="m6 23 4-12 15-4v16H6Z"/><path d="m6 23 4-12 15-4v16H6ZM10 11l15 4"/><circle cx="14" cy="18" r="1.5"/><circle cx="21" cy="20" r="1.2"/></svg>',
++ egg:'<svg viewBox="0 0 32 32" aria-hidden="true"><path class="fill" d="M16 5c5 0 9 9 9 14 0 5-4 8-9 8s-9-3-9-8c0-5 4-14 9-14Z"/><path d="M16 5c5 0 9 9 9 14 0 5-4 8-9 8s-9-3-9-8c0-5 4-14 9-14Z"/><circle cx="16" cy="19" r="4"/></svg>',
++ avocado:'<svg viewBox="0 0 32 32" aria-hidden="true"><path class="fill" d="M17 4c4 0 9 11 9 16 0 5-4 8-10 8S6 25 6 20c0-5 6-16 11-16Z"/><path d="M17 4c4 0 9 11 9 16 0 5-4 8-10 8S6 25 6 20c0-5 6-16 11-16Z"/><circle cx="16" cy="20" r="4.2"/></svg>',
++ seed:'<svg viewBox="0 0 32 32" aria-hidden="true"><path class="fill" d="M7 18c2-7 8-11 14-10 1 6-3 12-10 14"/><path d="M7 18c2-7 8-11 14-10 1 6-3 12-10 14M11 22c3-1 6-1 9 1"/><circle class="dot" cx="8" cy="24" r="1.4"/><circle class="dot" cx="13" cy="26" r="1.2"/><circle class="dot" cx="19" cy="26" r="1.4"/><circle class="dot" cx="24" cy="23" r="1.2"/></svg>',
++ oil:'<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M13 5h6M14 5v5M18 5v5"/><path class="fill" d="M11 10h10l2 4v12H9V14l2-4Z"/><path d="M11 10h10l2 4v12H9V14l2-4ZM11 18h10"/></svg>',
++ spice:'<svg viewBox="0 0 32 32" aria-hidden="true"><path class="fill" d="M11 11h10l2 15H9l2-15Z"/><path d="M11 11h10l2 15H9l2-15ZM10 8h12v3H10Z"/><circle class="dot" cx="14" cy="6" r=".8"/><circle class="dot" cx="18" cy="6" r=".8"/><circle class="dot" cx="21" cy="7" r=".8"/></svg>',
++ berry:'<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 9c0-3 2-5 5-6M16 9c-2-3-5-4-8-3"/><circle class="fill" cx="13" cy="15" r="5"/><circle class="fill" cx="20" cy="15" r="5"/><circle class="fill" cx="16.5" cy="21" r="5"/><circle cx="13" cy="15" r="5"/><circle cx="20" cy="15" r="5"/><circle cx="16.5" cy="21" r="5"/></svg>',
++ cocoa:'<svg viewBox="0 0 32 32" aria-hidden="true"><path class="fill" d="M7 18c0-6 5-11 11-11 4 0 7 3 7 7 0 7-7 12-13 11-3-1-5-3-5-7Z"/><path d="M7 18c0-6 5-11 11-11 4 0 7 3 7 7 0 7-7 12-13 11-3-1-5-3-5-7Z"/><path d="M11 21c3-4 6-7 11-10M14 23c0-5 1-9 4-14"/></svg>',
++ citrus:'<svg viewBox="0 0 32 32" aria-hidden="true"><circle class="fill" cx="16" cy="17" r="10"/><circle cx="16" cy="17" r="10"/><circle cx="16" cy="17" r="2"/><path d="M16 7v8M16 19v8M6 17h8M18 17h8M9 10l6 6M17 18l6 6M23 10l-6 6M15 18l-6 6"/></svg>',
++ drink:'<svg viewBox="0 0 32 32" aria-hidden="true"><path class="fill" d="M9 9h14l-2 17H11L9 9Z"/><path d="M9 9h14l-2 17H11L9 9ZM12 6h8M19 6l4-3M11 18c3-2 7 2 10 0"/></svg>',
++ default:'<svg viewBox="0 0 32 32" aria-hidden="true"><path class="fill" d="M8 11h16l-1 15H9L8 11Z"/><path d="M8 11h16l-1 15H9L8 11ZM12 11c0-4 2-6 4-6s4 2 4 6"/><path d="M12 17h8"/></svg>'
++};
++function ingKind(i){ const n=String((i&&i.n)||"").toLowerCase(), g=String((i&&i.g)||"").toLowerCase();
++ if (/egg/.test(n)||g==="eier") return "egg"; if (/avocado/.test(n)) return "avocado"; if (/almond|chia|sesame|seed|walnut|nut/.test(n)) return "seed"; if (/oil|butter/.test(n)) return "oil"; if (/lime|lemon/.test(n)) return "citrus";
++ if (/mushroom/.test(n)) return "mushroom"; if (/cucumber|zucchini|pickle|konjak|shirataki/.test(n)) return "cucumber"; if (/salmon|tuna|shrimp|fish/.test(n)) return "fish"; if (/chicken|turkey/.test(n)) return "poultry"; if (/beef|mince|steak|burger/.test(n)||g==="hack") return "meat";
++ if (/cheddar|feta|frisch|halloumi|mozzarella|parmesan|cheese/.test(n)||g==="kaese") return "cheese"; if (/yogurt|yoghurt|cottage|skyr|milk|cream/.test(n)||g==="milch") return "dairy"; if (/berry|berries/.test(n)) return "berry"; if (/cacao|cocoa|chocolate/.test(n)) return "cocoa";
++ if (g==="drink"||/coffee|tea|water|broth|matcha|ice/.test(n)) return "drink"; if (g==="paprika"||/bell pepper/.test(n)) return "pepper"; if (g==="wuerze"||/pepper|paprika|oregano|cinnamon|vanilla|mustard|sauce|salsa|tamari|chili/.test(n)) return "spice";
++ if (g==="snack") return "cocoa"; if (g==="gemuese"||g==="salat"||/lettuce|cabbage|cauliflower|celery|scallion|mint|ginger|nori/.test(n)) return "leaf"; if (g==="fett") return "avocado"; return "default"; }
++function ingArt(i){ const k=ingKind(i), art=ING_ART[k]; return '<span class="p2-ia ia-'+k+'" aria-hidden="true">'+(art||'<span class="p2-emoji">'+String((i&&i.e)||"•")+'</span>')+'</span>'; }
++
+ /* ---------- one recipe shape for everything: {id, n, e, img, mins, extra, steps, ing:[{k,n,q,e,p}], book} ---------- */
+ const img = k => (typeof FOOD_IMG !== "undefined" && k && FOOD_IMG[k]) || "";
+ const book = () => (typeof RECIPE_BOOK !== "undefined" ? RECIPE_BOOK : []);
+@@ -10346,7 +10381,7 @@
+   return {id:r.id, n:r.n, e:r.e || "🍽️", img:img(r.id), sub:r.sub || "", mins:mt, extra:mx, book:true, r:r.r || "ja",
+     steps:[].concat(r.prep || [], r.make || r.steps || []),
+     ing:(r.ing || []).map(i => { const n = typeof i === "string" ? i.split("|")[1] : i.n, g = typeof i === "string" ? i.split("|")[0] : i.g, k = String(n).toLowerCase();
+-      const pr = LC_PR[k] || LC_G[g] || ["🛒", 2]; return {k, n, q:"", e:pr[0], p:FREE.indexOf(k) >= 0 ? 0 : pr[1]}; })}; }
++      const pr = LC_PR[k] || LC_G[g] || ["🛒", 2]; return {k, n, q:"", g:g || "", e:pr[0], p:FREE.indexOf(k) >= 0 ? 0 : pr[1]}; })}; }
+ function fromMeal(m){ const sw = m.s || {};
+   if (sw.rb) { const b = book().find(x => x.n === sw.rb); if (b) { const r = fromBook(b); r.swapName = sw.n; return r; } }
+   const R = R2_REC[m.id]; if (!R) return null;
+@@ -10399,7 +10434,7 @@
+     (r.steps.length ? '<div class="p2-sec p2-up" style="--d:6"><div class="p2-lab"><span>How it goes</span></div><ol class="p2-steps">' + r.steps.map((s, i) => '<li><span class="p2-sn">' + (i + 1) + '</span><span>' + esc(s) + '</span></li>').join("") + '</ol></div>' : "") +
+     '<div class="p2-more p2-up" style="--d:7">' + (r.book ? '<button class="r2-btn ghost" data-td="addtoday" data-id="' + esc(r.id) + '" data-p2close="1">Add to today</button><button class="r2-btn ghost" data-lc="open" data-id="' + esc(r.id) + '" data-p2close="1">' + IC.cart + '<span>Fill my cart</span></button>' : '<button class="r2-btn ghost" data-p2="copy">Copy shopping list</button>') + '</div>' +
+     '<div style="height:12px"></div>'; }
+-function ingChip(i, home, s){ return '<button class="p2-ing' + (home ? " home" : "") + '" data-p2="ing" data-k="' + esc(i.k) + '"><span class="p2-ie">' + i.e + '</span><span class="p2-in"><b>' + esc(i.n) + '</b>' + (i.q ? '<small>' + esc(i.q) + '</small>' : "") + '</span>' +
++function ingChip(i, home, s){ return '<button class="p2-ing' + (home ? " home" : "") + '" data-p2="ing" data-k="' + esc(i.k) + '"><span class="p2-ie">' + ingArt(i) + '</span><span class="p2-in"><b>' + esc(i.n) + '</b>' + (i.q ? '<small>' + esc(i.q) + '</small>' : "") + '</span>' +
+   (home ? '<span class="p2-ok">' + IC.check + '</span>' : (s ? '<span class="p2-ip num">' + eur(px(i, s)) + '</span>' : "")) + '</button>'; }
+ function shopsHTML(b, pick){ const save = b.worst.t - b.best.t;
+   return '<div class="p2-sec p2-up" style="--d:5"><div class="p2-lab"><span>Everything in one shop</span></div>' +
+@@ -10458,7 +10493,7 @@
+   const bar = '<div class="p2-ckbar">' + [-1].concat(r.steps.map((s, k) => k)).map(k => '<i class="' + (k < i ? "done" : k === i ? "on" : "") + '"></i>').join("") + '</div>';
+   let body;
+   if (i < 0) body = '<div class="tiny gold">Get ready</div><div class="h2 p2-cktx">Put these out first</div>' +
+-      '<div class="p2-mise">' + r.ing.map((g, k) => '<span class="p2-m' + (isHome(g) ? " home" : "") + '" style="--i:' + k + '"><span>' + g.e + '</span><b>' + esc(g.n) + '</b>' + (g.q ? '<small>' + esc(g.q) + '</small>' : "") + '</span>').join("") + '</div>';
++      '<div class="p2-mise">' + r.ing.map((g, k) => '<span class="p2-m' + (isHome(g) ? " home" : "") + '" style="--i:' + k + '">' + ingArt(g) + '<b>' + esc(g.n) + '</b>' + (g.q ? '<small>' + esc(g.q) + '</small>' : "") + '</span>').join("") + '</div>';
+   else if (i >= n) body = '<div class="p2-done"><div class="p2-scene sc-done" aria-hidden="true"><i class="p2-glow"></i><span class="p2-vessel">🍽️</span><span class="p2-item">' + (r.img ? '<img alt="" src="' + r.img + '">' : r.e) + '</span><i class="p2-spark k1"></i><i class="p2-spark k2"></i><i class="p2-spark k3"></i><i class="p2-spark k4"></i></div>' +
+       '<div class="tiny gold">Done</div><div class="h2 p2-cktx">Enjoy your ' + esc(r.swapName || r.n) + '</div><div class="small muted">Low spike, made by you.</div></div>';
+   else { const t = r.steps[i], kind = sceneOf(t), mm = ckMinutes(t);
+--- a/version.json
++++ b/version.json
+@@ -1 +1 @@
+-{"build": "20261011-113559", "news": {"id": "sunrise-mode", "go": {"tab": "home", "sel": "#pfBtn"}, "text": {"en": "New: Sunrise Mode switches LOWiSPIKE between bright Cloud by day and Night after dark. Choose Sunrise under Look in Profile.", "de": "Neu: Sunrise Mode wechselt LOWiSPIKE tagsüber zu hellem Cloud und nach Einbruch der Dunkelheit zu Night. Wähle Sunrise unter Aussehen im Profil.", "es": "Nuevo: Sunrise Mode cambia LOWiSPIKE a Cloud claro de día y a Night cuando oscurece. Elige Sunrise en Aspecto dentro de Perfil."}}}
++{"build": "20261011-130930", "news": {"id": "ingredient-illustrations", "go": {"tab": "shelf"}, "text": {"en": "New: Recipe ingredients now use clear LOWiSPIKE illustrations instead of emoji, including the get-ready screen in Cook mode.", "de": "Neu: Rezept-Zutaten haben jetzt klare LOWiSPIKE-Zeichnungen statt Emojis – auch beim Bereitlegen im Kochmodus.", "es": "Nuevo: Los ingredientes de las recetas ahora tienen ilustraciones claras de LOWiSPIKE en lugar de emojis, también al preparar todo en modo Cocinar."}}}

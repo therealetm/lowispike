@@ -1,4 +1,3 @@
-     '<div class="tr-urlrow"><input class="input" id="trUrl" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://www.tiktok.com/@…"><button class="tr-paste" data-tr="paste">' + IC.paste + 'Paste</button></div>' +
      '<div id="trPrev"></div><div id="trRest"></div></div><div class="sheetfoot"><button class="btn ghost" data-act="close-sheet" style="flex:1">Cancel</button><button class="btn primary" id="trPost" data-tr="post" style="flex:1.4" disabled>Post</button></div>');
    if (prefill) { $("#trUrl").value = prefill; onUrl(prefill, true); } else { paintRest(); if (!text) setTimeout(() => { const i = $("#trUrl"); if (i) i.focus(); }, 380); }
  }

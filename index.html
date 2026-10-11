@@ -4,8 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261011-133201">
+<meta name="lowi-build" content="20261011-143419">
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="updates.css">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -2113,7 +2114,7 @@ html[data-theme=light] #lcUpd.g1-upd .g1-usay{background:rgba(255,255,255,.2)}
 (function(){
 "use strict";
 if (window.LowiG1) return;
-const NEWS_RAW = {"id": "store-compare-everywhere", "go": {"tab": "scan"}, "text": {"en": "New: Store comparison now follows individual products too. Community finds show the cheapest reported current price, and matching scans show the same comparison in the Pokédex card.", "de": "Neu: Der Supermarkt-Vergleich folgt jetzt auch einzelnen Produkten. Community-Funde zeigen den günstigsten aktuell gemeldeten Preis, und passende Scans zeigen denselben Vergleich direkt in der Pokédex-Karte.", "es": "Nuevo: La comparación de supermercados ahora también acompaña a los productos individuales. Los hallazgos muestran el precio actual más barato reportado y los escaneos coincidentes muestran la misma comparación en la tarjeta Pokédex."}};
+const NEWS_RAW = {"id": "my-recipe-book", "go": {"tab": "shelf"}, "text": {"en": "New: My Recipe Book in Cook. Save recipes, remove them and search your personal collection. Stored on this device for your account.", "de": "Neu: Mein Rezeptbuch in Kochen. Rezepte speichern, entfernen und deine Sammlung durchsuchen. Auf diesem Gerät für dein Konto gespeichert.", "es": "Nuevo: Mi recetario en Cocinar. Guarda y quita recetas, y busca en tu colección. Guardado en este dispositivo para tu cuenta."}};
 const NEWS = (NEWS_RAW && typeof NEWS_RAW === "object") ? NEWS_RAW : null;
 const KEY = "lowi.g1", GO = "lowi.g1.go";
 const H = document.documentElement;
@@ -6590,14 +6591,14 @@ function kochenHTML(){
   const lib = all.filter(r => !r.feat && (!q || norm(r.n + " " + r.sub).indexOf(q) >= 0));
   if (V.cat === "quick" && window.LOWI_COOK) book.sort((a, b) => (LOWI_COOK.min(a.id) || 999) - (LOWI_COOK.min(b.id) || 999));   /* r3k-quick: fastest first */
   const cats = window.LOWI_COOK ? LOWI_COOK.chips() : [{id:"", n:"All 25"}].concat(typeof BOOK_CATS !== "undefined" ? BOOK_CATS : []);  // Oct 8: one row of quick chips (Fastic steal)
-  return (V.tab === "kochen" ? '<div class="r3k-allh"><span class="r3k-hic">' + ICON_R3K_BOOK + '</span><span class="r3k-ht">All recipes</span></div>' : "") + /* r3k-allh */ (window.LowiK9 ? LowiK9.box() : "") + /* k9-box */ (window.LowiGPT ? LowiGPT.card() : "") + /* gpt-card */ '<div class="h3" style="margin-top:4px">What are you cooking?</div><p class="small muted" style="margin-top:4px">Real recipes from the LOWiSPIKE Recipe Book. Tap one for what you need and how to make it.</p>' +
+  return (window.LowiBook ? LowiBook.entry() : "") + (V.tab === "kochen" ? '<div class="r3k-allh"><span class="r3k-hic">' + ICON_R3K_BOOK + '</span><span class="r3k-ht">All recipes</span></div>' : "") + /* r3k-allh */ (window.LowiK9 ? LowiK9.box() : "") + /* k9-box */ (window.LowiGPT ? LowiGPT.card() : "") + /* gpt-card */ '<div class="h3" style="margin-top:4px">What are you cooking?</div><p class="small muted" style="margin-top:4px">Real recipes from the LOWiSPIKE Recipe Book. Tap one for what you need and how to make it.</p>' +
     (book.length || V.cat ? (window.LowiK1 ? LowiK1.chips(cats, V.cat, all.filter(r => r.book)) + LowiK1.list(book, V.cat, recRow) : '<div class="sh-chips sh-cats" style="margin-top:12px">' + cats.map(c => '<button class="chip' + (V.cat === c.id ? " on" : "") + '" data-sh="cat" data-c="' + c.id + '">' + esc(c.n) + "</button>").join("") + "</div>" + book.map(recRow).join("")) /* k1-list */ : "") +
     '<div class="sh-sep small">Quick ones</div>' + feat.map(recRow).join("") + (all.length > feat.length ? '<div class="sh-sep small">LOWiSPIKE rebuilds</div><input class="input" id="shQ" placeholder="Search rebuilds…" value="' + esc(V.q) + '">' + lib.slice(0, 40).map(recRow).join("") : "");
 }
 function recipeHTML(r){
   if (!r) return '<div class="sh-empty">Recipe not found.</div>';
   const ms = matchesFor(r);
-  return (typeof FOOD_IMG !== "undefined" && FOOD_IMG[r.id] ? '<img class="sh-hero" alt="" src="' + FOOD_IMG[r.id] + '">' : "") + '<div class="card" style="display:flex;gap:14px;align-items:center">' + (typeof FOOD_IMG !== "undefined" && FOOD_IMG[r.id] ? "" : '<div style="font-size:46px">' + esc(r.e || "🍽️") + '</div>') + '<div>' + (r.book ? '<div class="tiny gold sh-bookmark">LOWiSPIKE Recipe Book</div>' : "") + '<div class="h3">' + esc(r.n) + '</div><div class="small muted" style="margin-top:3px">' + esc(r.sub || "") + '</div><div style="margin-top:8px">' + rBadge(r.r) + "</div></div></div>" +
+  return (window.LowiBook ? LowiBook.button(r) : "") + (typeof FOOD_IMG !== "undefined" && FOOD_IMG[r.id] ? '<img class="sh-hero" alt="" src="' + FOOD_IMG[r.id] + '">' : "") + '<div class="card" style="display:flex;gap:14px;align-items:center">' + (typeof FOOD_IMG !== "undefined" && FOOD_IMG[r.id] ? "" : '<div style="font-size:46px">' + esc(r.e || "🍽️") + '</div>') + '<div>' + (r.book ? '<div class="tiny gold sh-bookmark">LOWiSPIKE Recipe Book</div>' : "") + '<div class="h3">' + esc(r.n) + '</div><div class="small muted" style="margin-top:3px">' + esc(r.sub || "") + '</div><div style="margin-top:8px">' + rBadge(r.r) + "</div></div></div>" +
     (r.book ? '<button class="btn ghost" style="width:100%;margin-top:10px" data-tr="share-recipe" data-r="' + esc(r.id) + '">Share to For You</button>' : "") +
     (r.note ? '<div class="sh-heads"><b>Heads-up</b><span>' + esc(r.note) + "</span></div>" : "") +
     /* Oct 8 (late): one store per list. The cart module prices it (window.LowiStoreList); the old per-store split is only a fallback. */
@@ -10457,7 +10458,7 @@ function minsLabel(r){ return r.mins ? r.mins + " min" + (r.extra ? " " + r.extr
 let OPEN = null;   // {r, ov}
 function recipeHTML(r){ const b = basket(r), e = ease(r), cur = storeId(), pick = b.tot.find(x => x.s[0] === cur) || b.best;
   const pic = r.img ? '<img alt="" src="' + r.img + '">' : '<span class="p2-hemo">' + r.e + '</span>';
-  return '<div class="p2-hero">' + pic + '<i class="p2-hfade"></i></div>' +
+  return (window.LowiBook ? LowiBook.button(r) : "") + '<div class="p2-hero">' + pic + '<i class="p2-hfade"></i></div>' +
     '<div class="p2-rh p2-up" style="--d:0"><div class="tiny gold">' + (r.swapName ? "Your low-spike swap" : "Recipe") + '</div><div class="h1 p2-rn">' + esc(r.swapName || r.n) + '</div>' +
       (r.swapName && r.swapName !== r.n ? '<div class="small muted">Recipe Book: ' + esc(r.n) + '</div>' : "") + '</div>' +
     '<div class="p2-facts p2-up" style="--d:1">' + (r.mins ? '<span class="p2-fact">' + IC.clock + '<b>' + esc(minsLabel(r)) + '</b></span>' : "") +
@@ -17162,7 +17163,8 @@ function groups(h){
 
 /* ---- tiles ---- */
 const txt = el => el ? (el.textContent || "").replace(/\s+/g, " ").trim() : "";
-function subOf(k){ const h = D;
+function subOf(k){
+  if (k === "book") return window.LowiBook ? LowiBook.list().length + " recipes" : ""; const h = D;
   if (k === "morn") { const s = txt(q(h, "#r3aMorn .r3a-msum")); return s.split(" · ")[0]; }
   if (k === "meals") { const b = q(h, "#tdMeals .on"); if (!b) return ""; const v = +b.dataset.v; return v === 0 ? txt(b) : v === 1 ? "1 meal" : v + " meals"; }
   if (k === "plan") { const ms = h.querySelectorAll("#tdPlan .td-meal"); if (!ms.length) return "Fasting day"; return h.querySelectorAll("#tdPlan .td-meal.ate").length + "/" + ms.length + " eaten"; }
@@ -17317,6 +17319,7 @@ const L = [
   ["Chicken, steak, salmon", "Hähnchen, Steak, Lachs", "Pollo, filete, salmón"],
   ["Meal photo to recipe", "Essensfoto zum Rezept", "De foto a receta"],
   ["LOWiSPIKE GPT", "LOWiSPIKE GPT", "LOWiSPIKE GPT"],
+  ["My Recipe Book", "Mein Rezeptbuch", "Mi recetario"],
   ["Tap to see it again", "Tippen zum Ansehen", "Toca para verla"],
   [/^(\d+) recipes$/, "$1 Rezepte", "$1 recetas"],
   [/^(\d+) foods$/, "$1 Essen", "$1 comidas"],
@@ -17334,8 +17337,9 @@ const IC = {
   gpt: sv('<rect x="3" y="6" width="18" height="14" rx="3"/><circle cx="12" cy="13" r="3.6"/><path d="M8.5 6l1.4-2.5h4.2L15.5 6"/>'),
   yes: sv('<path d="M12 20s-7.5-4.4-7.5-10A4.3 4.3 0 0112 7.4 4.3 4.3 0 0119.5 10c0 5.6-7.5 10-7.5 10z"/>')
 };
-const ORDER = ["swipe", "all", "find", "gpt", "pick", "yes"];
-const NAME = {pick:"Your pick", swipe:"Swipe foods", all:"All recipes", find:"By ingredient", gpt:"LOWiSPIKE GPT", yes:"Your yes pile"};
+IC.book = IC.all;
+const ORDER = ["swipe", "all", "book", "find", "gpt", "pick", "yes"];
+const NAME = {book:"My Recipe Book", pick:"Your pick", swipe:"Swipe foods", all:"All recipes", find:"By ingredient", gpt:"LOWiSPIKE GPT", yes:"Your yes pile"};
 const q = (r, s) => r ? r.querySelector(s) : null;
 const body = () => D.getElementById("shBody");
 const phone = () => H.getAttribute("data-lay") === "phone" || (!H.getAttribute("data-lay") && innerWidth < 700);
@@ -17346,6 +17350,7 @@ function cookMain(b){ return !!(b && q(b, "#r5Shuf") && b.parentNode && b.parent
 /* ---- the parts of Cook ---- */
 function groups(b){
   const g = {}, D2 = D;
+  const bk = q(D2, "#myBookEntry"); if (bk) g.book = [bk];
   const sw = q(D2, "#r3kSwipe"); if (sw) g.swipe = [sw];
   const all = q(D2, "#r3kAll"); if (all) g.all = [all];
   const k9 = q(D2, "#k9Box"); if (k9) g.find = [k9];
@@ -17389,6 +17394,7 @@ function giveBack(){
   held = null;
 }
 function openPanel(k){
+  if (k === "book" && window.LowiBook) { closePanel(true); LowiBook.open(); return; }
   const R2 = window.LowiR2, b = body(); if (!R2 || !R2.sheet || !cookMain(b)) return;
   addL();
   closePanel(true);
@@ -18544,5 +18550,6 @@ html.q4b-off #lcA2hs{display:none!important}
   window.LowiQ4b = {sync};
 })();
 </script>
+<script src="recipe-book.js"></script>
 </body>
 </html>

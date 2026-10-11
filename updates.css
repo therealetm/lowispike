@@ -1,0 +1,7 @@
+.mybook-save{width:100%;margin:10px 0;min-height:44px}
+.mybook-save[aria-pressed=true]{border-color:var(--acc);color:var(--acc)}
+.mybook-row{display:flex;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line2)}
+.mybook-recipe{display:flex;gap:12px;align-items:center;flex:1;min-width:0;min-height:56px;text-align:left;border:0;background:none;color:inherit;font:inherit;cursor:pointer}
+.mybook-recipe img{width:56px;height:56px;object-fit:cover;border-radius:14px;flex:none}
+.mybook-recipe>span{font-size:28px}.mybook-recipe b{overflow-wrap:anywhere}
+.mybook-ov #myBookRows{margin:12px 0}.mybook-ov .h2{padding-right:34px}

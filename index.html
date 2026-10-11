@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261011-022433">
+<meta name="lowi-build" content="20261011-031513">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -17659,6 +17659,266 @@ function init(){
 }
 if (D.readyState === "loading") D.addEventListener("DOMContentLoaded", init); else setTimeout(init, 0);
 window.LowiN1P = {mode, supported, standalone, enable, disable, test, sync, kick, snapshot, askable, maybeAsk, rowHTML, go, w, st, save};
+})();
+</script>
+<style id="e1Css">/* LOWiSPIKE E1 part 1 (Oct 11, 2026): Tagesabschluss, a night "system window" in both themes */
+#e1Ov{position:fixed;left:0;right:0;top:0;bottom:0;z-index:9300;display:flex;justify-content:center;color:#e8f4ff;
+  background:radial-gradient(120% 70% at 50% 0%,rgba(60,70,160,.55),transparent 60%),linear-gradient(180deg,#0a1230 0%,#050916 100%);
+  opacity:0;transform:translateY(18px);transition:opacity .22s,transform .3s cubic-bezier(.2,.9,.3,1);font-family:inherit;-webkit-tap-highlight-color:transparent}
+html.g2f-gap #e1Ov{bottom:calc(-1 * var(--g2fGap,0px))}
+#e1Ov.in{opacity:1;transform:none}
+#e1Ov.out{opacity:0;transform:translateY(14px)}
+#e1Ov::before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.022) 0 1px,transparent 1px 4px)}
+#e1Ov .e1-in{position:relative;box-sizing:border-box;width:100%;max-width:520px;height:100%;display:flex;flex-direction:column;gap:var(--e1g,12px);
+  padding:calc(var(--sat,0px) + 10px) 16px calc(var(--sab,0px) + 14px);overflow:hidden}
+#e1Ov.e1-scroll .e1-in{overflow-y:auto;-webkit-overflow-scrolling:touch}
+#e1Ov .num{font-variant-numeric:tabular-nums}
+.e1-top{display:flex;align-items:center;justify-content:space-between;min-height:44px}
+.e1-tag{font-size:12.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#9fd8ff;text-shadow:0 0 10px rgba(110,190,255,.6)}
+.e1-tag::before{content:"\25C6  ";font-size:10px}
+.e1-x{width:44px;height:44px;border-radius:50%;border:1px solid rgba(159,216,255,.35);background:rgba(110,190,255,.1);color:#e8f4ff;font:inherit;font-size:17px;cursor:pointer;display:grid;place-items:center}
+.e1-hd{display:flex;align-items:center;gap:12px}
+.e1-moon{font-size:var(--e1moon,40px);line-height:1;filter:drop-shadow(0 0 14px rgba(255,220,120,.55))}
+.e1-h{margin:0;font-size:var(--e1h,26px);line-height:1.15;font-weight:850;letter-spacing:-.01em;color:#fff}
+.e1-date{font-size:13.5px;color:#b9cdf0;margin-top:2px}
+.e1-lv{padding:var(--e1p,12px) 14px;border-radius:16px;background:rgba(110,190,255,.09);border:1px solid rgba(110,190,255,.35);box-shadow:0 0 18px rgba(70,160,255,.15)}
+.e1-lvt{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.e1-lvt b{font-size:16px;color:#fff}
+.e1-lvt span{font-size:12.5px;color:#c6defa}
+.e1-bar{height:9px;border-radius:5px;background:rgba(159,216,255,.16);margin-top:8px;overflow:hidden}
+.e1-bar i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,#6ec0ff,#c9b6ff);box-shadow:0 0 10px rgba(140,180,255,.8);min-width:6px}
+.e1-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.e1-st{display:flex;flex-direction:column;align-items:center;gap:2px;padding:var(--e1p,12px) 4px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(159,216,255,.22)}
+.e1-st b{font-size:var(--e1n,22px);font-weight:850;color:#fff;line-height:1.1;white-space:nowrap}
+.e1-st span{font-size:12px;font-weight:700;letter-spacing:.04em;color:#a9c4ea;text-align:center}
+.e1-st[data-k=xp] b{color:#ffe08a;text-shadow:0 0 12px rgba(255,210,90,.45)}
+.e1-qs{display:flex;gap:6px}
+.e1-qs i{flex:1;height:var(--e1q,30px);border-radius:9px;display:grid;place-items:center;font-style:normal;font-size:14px;background:rgba(159,216,255,.1);border:1px solid rgba(159,216,255,.2)}
+.e1-qs i.on{background:linear-gradient(180deg,#8fd0ff,#5aa8f0);border-color:#9fd8ff;color:#04121f;font-weight:900;box-shadow:0 0 8px rgba(110,190,255,.6)}
+.e1-card{padding:var(--e1p,12px) 14px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(159,216,255,.22)}
+.e1-ch{font-size:11.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9fd8ff;margin-bottom:6px}
+.e1-fs{display:flex;flex-direction:column;gap:2px}
+.e1-fl{font-size:15.5px;font-weight:750;color:#fff;line-height:1.3}
+.e1-fl em{font-style:normal;font-weight:600;color:#c6defa;font-size:13.5px}
+.e1-fm{font-size:13.5px;color:#c6defa;line-height:1.35}
+.e1-fg{color:#ffe08a}
+.e1-fgo{margin-top:9px;width:100%;min-height:46px;border:0;border-radius:13px;font:inherit;font-size:15px;font-weight:800;cursor:pointer;color:#04121f;background:linear-gradient(180deg,#bfe6ff,#6ec0ff);box-shadow:0 0 14px rgba(110,190,255,.5)}
+.e1-fre{margin-top:6px;min-height:40px;padding:0 12px;border-radius:11px;border:1px solid rgba(159,216,255,.4);background:transparent;color:#cfe6ff;font:inherit;font-size:13.5px;font-weight:700;cursor:pointer}
+.e1-fast.e1-pop{animation:e1pop .5s ease}
+@keyframes e1pop{40%{transform:scale(1.025);box-shadow:0 0 22px rgba(110,190,255,.6)}}
+.e1-ms{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.e1-m{display:flex;flex-direction:column;align-items:center;gap:1px;min-height:var(--e1m,58px);justify-content:center;padding:4px 0;border-radius:12px;border:1px solid rgba(159,216,255,.22);background:rgba(255,255,255,.04);color:#e8f4ff;font:inherit;cursor:pointer}
+.e1-m span{font-size:var(--e1me,24px);line-height:1.1}
+.e1-m small{font-size:11px;font-weight:700;color:#b9cdf0;white-space:nowrap}
+.e1-m.on{background:rgba(110,190,255,.22);border-color:#9fd8ff;box-shadow:0 0 12px rgba(110,190,255,.5)}
+.e1-m.on small{color:#fff}
+.e1-tmr{display:flex;align-items:center;gap:12px}
+.e1-ti{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-size:20px;background:rgba(255,210,90,.14)}
+.e1-tt{flex:1;min-width:0;display:flex;flex-direction:column}
+.e1-tt small{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9fd8ff}
+.e1-tt b{font-size:15.5px;color:#fff}
+.e1-txp{font-size:13px;font-weight:800;color:#ffe08a;white-space:nowrap}
+.e1-foot{margin-top:auto;display:flex;flex-direction:column;gap:6px}
+.e1-go{width:100%;min-height:54px;border:0;border-radius:16px;font:inherit;font-size:17px;font-weight:850;cursor:pointer;color:#1d1400;background:linear-gradient(180deg,#ffe9a6,#f5c04a);box-shadow:0 0 22px rgba(245,192,74,.45),0 8px 22px rgba(0,0,0,.35)}
+.e1-later{min-height:44px;border:0;background:transparent;color:#b9cdf0;font:inherit;font-size:14.5px;font-weight:700;cursor:pointer}
+.e1-done{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0 4px;text-align:center}
+.e1-done b{font-size:16px;letter-spacing:.12em;text-transform:uppercase;color:#ffe08a;text-shadow:0 0 14px rgba(255,210,90,.8)}
+.e1-done span{font-size:14px;color:#d6e9ff}
+#e1Ov.e1-win .e1-done{animation:e1win .9s ease}
+@keyframes e1win{0%{transform:scale(.7);opacity:0}55%{transform:scale(1.08);opacity:1}100%{transform:none}}
+/* tighter steps for small screens */
+#e1Ov[data-l="1"]{--e1g:9px;--e1p:10px;--e1moon:34px;--e1h:23px;--e1n:20px;--e1q:26px;--e1m:52px}
+#e1Ov[data-l="2"]{--e1g:7px;--e1p:8px;--e1moon:30px;--e1h:21px;--e1n:19px;--e1q:22px;--e1m:46px;--e1me:21px}
+#e1Ov[data-l="2"] .e1-later,#e1Ov[data-l="3"] .e1-later,#e1Ov[data-l="4"] .e1-later{min-height:40px}
+#e1Ov[data-l="3"],#e1Ov[data-l="4"]{--e1g:6px;--e1p:7px;--e1moon:26px;--e1h:20px;--e1n:18px;--e1q:20px;--e1m:42px;--e1me:19px}
+#e1Ov[data-l="3"] .e1-date,#e1Ov[data-l="4"] .e1-date{display:none}
+#e1Ov[data-l="3"] .e1-go,#e1Ov[data-l="4"] .e1-go{min-height:48px}
+#e1Ov[data-l="4"] .e1-qs{display:none}
+#e1Ov[data-l="4"] .e1-m small{display:none}
+#e1Ov[data-l="4"] .e1-top{position:absolute;top:calc(var(--sat,0px) + 6px);right:12px;min-height:0;z-index:2}
+#e1Ov[data-l="4"] .e1-tag,#e1Ov[data-l="4"] .e1-moon,#e1Ov[data-l="4"] .e1-later,#e1Ov[data-l="4"] .e1-fast .e1-ch{display:none}
+#e1Ov[data-l="4"] .e1-hd{min-height:44px;padding-right:56px}
+#e1Ov[data-l="4"] .e1-bar{height:6px;margin-top:5px}
+#e1Ov[data-l="4"] .e1-st{padding:5px 4px}
+#e1Ov[data-l="4"] .e1-ch{margin-bottom:3px}
+#e1Ov[data-l="4"] .e1-ti{width:30px;height:30px;font-size:17px}
+#e1Ov[data-l="4"] .e1-fre{margin-top:4px}
+/* the moon button on the Daily Quest board */
+.e1-pill{flex:none;min-height:34px;padding:0 11px;border-radius:999px;border:1px solid rgba(255,220,130,.55);background:rgba(255,210,90,.12);color:#ffe9b0;font:inherit;font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;position:relative;z-index:1}
+.e1-pill.done{border-color:rgba(159,216,255,.4);background:rgba(110,190,255,.1);color:#bfe6ff}
+@media (prefers-reduced-motion: reduce){#e1Ov,#e1Ov.in{transition:none}.e1-fast.e1-pop,#e1Ov.e1-win .e1-done{animation:none}}
+@media (min-width:700px){#e1Ov .e1-in{padding-top:calc(var(--sat,0px) + 28px);padding-bottom:calc(var(--sab,0px) + 28px)}}
+#e1Ov[data-l="4"] .e1-done{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:4px 10px;padding:0}
+#e1Ov[data-l="4"] .e1-done b{font-size:14px}
+#e1Ov[data-l="4"] .e1-done span{font-size:13px}
+</style>
+<script id="e1Js">/* ===== LOWiSPIKE E1 part 1 (Oct 11, 2026): Tagesabschluss, the end-of-day ritual =====
+   Around bedtime the scan-orb bubble invites you to close the day (from 1.5 h before your quiet hours start until 1 h after).
+   A moon button on the Daily Quest board opens it any evening. One game-style screen, no scrolling: quests cleared,
+   XP today, level progress, streak, tonight's fast (since when, next milestone and goal with clock times, one tap to start it),
+   a mood tap, tomorrow's first quest and +15 XP for closing the day (once a day). EN / DE / ES. Data: lowi.e1. */
+(function(){
+"use strict";
+if (window.LowiE1) return;
+const D = document, H = D.documentElement, KEY = "lowi.e1", BONUS = 15, ICON = {checkin:"\u2600\uFE0F", water:"\uD83D\uDCA7", fast:"\u23F3", eat:"\uD83C\uDF7D\uFE0F", move:"\uD83C\uDFC3", post:"\uD83D\uDCE3"};
+const MOODS = ["\uD83D\uDE2B", "\uD83D\uDE15", "\uD83D\uDE10", "\uD83D\uDE42", "\uD83E\uDD29"];
+const W = {
+  en: {tag:"End of day", title:"Close your day", quests:"Quests", xpT:"XP today", streak:"Streak", day1:"1 day", days:"{n} days",
+    lvl:"Level {l} \u00b7 {t}", toNext:"{n} XP to level {l}", fastH:"Tonight's fast", fastOn:"Fasting since {t}", fastFor:"{d} so far", fastNone:"No fast running yet",
+    next:"Next: {n} at {t}", goal:"Goal {h} h at {t}", goalOk:"Goal {h} h reached at {t}", start:"Start my fast now", startS:"Done eating? One tap starts the clock.", restart:"Ate since? Restart now",
+    started:"Fast started at {t}", moodQ:"How was today?", moods:["Rough", "Meh", "Okay", "Good", "Great"], tmr:"Tomorrow's first quest",
+    close:"Close the day \u00b7 +{x} XP", closed:"Day closed", closedS:"+{x} XP \u00b7 see you tomorrow", closedS0:"See you tomorrow", night:"Good night", later:"Later", x:"Close",
+    invite:"Bedtime soon. {n} of 6 quests done, +{xp} XP today. Close your day for +{b} XP?", inviteGo:"Close my day", pill:"Close day", pillDone:"Day closed", xpLabel:"Day closed",
+    hm:"{h} h {m} min", m:"{m} min"},
+  de: {tag:"Tagesabschluss", title:"Schlie\u00df deinen Tag ab", quests:"Quests", xpT:"XP heute", streak:"Serie", day1:"1 Tag", days:"{n} Tage",
+    lvl:"Level {l} \u00b7 {t}", toNext:"Noch {n} XP bis Level {l}", fastH:"Fasten heute Nacht", fastOn:"Fasten l\u00e4uft seit {t}", fastFor:"{d} bisher", fastNone:"Noch kein Fasten aktiv",
+    next:"Als N\u00e4chstes: {n} um {t}", goal:"Ziel {h} Std. um {t}", goalOk:"Ziel {h} Std. erreicht um {t}", start:"Fasten jetzt starten", startS:"Fertig gegessen? Ein Tipp startet die Uhr.", restart:"Danach gegessen? Neu starten",
+    started:"Fasten gestartet um {t}", moodQ:"Wie war dein Tag?", moods:["Mies", "Naja", "Okay", "Gut", "Super"], tmr:"Erste Quest morgen",
+    close:"Tag abschlie\u00dfen \u00b7 +{x} XP", closed:"Tag abgeschlossen", closedS:"+{x} XP \u00b7 bis morgen", closedS0:"Bis morgen", night:"Gute Nacht", later:"Sp\u00e4ter", x:"Schlie\u00dfen",
+    invite:"Bald Schlafenszeit. {n} von 6 Quests geschafft, +{xp} XP heute. Tag abschlie\u00dfen f\u00fcr +{b} XP?", inviteGo:"Tag abschlie\u00dfen", pill:"Abschluss", pillDone:"Erledigt", xpLabel:"Tag abgeschlossen",
+    hm:"{h} Std. {m} Min.", m:"{m} Min."},
+  es: {tag:"Cierre del d\u00eda", title:"Cierra tu d\u00eda", quests:"Misiones", xpT:"XP hoy", streak:"Racha", day1:"1 d\u00eda", days:"{n} d\u00edas",
+    lvl:"Nivel {l} \u00b7 {t}", toNext:"{n} XP para el nivel {l}", fastH:"Ayuno de esta noche", fastOn:"Ayunando desde las {t}", fastFor:"{d} hasta ahora", fastNone:"A\u00fan sin ayuno en marcha",
+    next:"Siguiente: {n} a las {t}", goal:"Meta {h} h a las {t}", goalOk:"Meta {h} h lograda a las {t}", start:"Empezar mi ayuno ya", startS:"\u00bfTerminaste de comer? Un toque inicia el reloj.", restart:"\u00bfComiste despu\u00e9s? Reiniciar",
+    started:"Ayuno iniciado a las {t}", moodQ:"\u00bfQu\u00e9 tal hoy?", moods:["Mal", "Regular", "Bien", "Muy bien", "Genial"], tmr:"Primera misi\u00f3n de ma\u00f1ana",
+    close:"Cerrar el d\u00eda \u00b7 +{x} XP", closed:"D\u00eda cerrado", closedS:"+{x} XP \u00b7 hasta ma\u00f1ana", closedS0:"Hasta ma\u00f1ana", night:"Buenas noches", later:"Luego", x:"Cerrar",
+    invite:"Casi hora de dormir. {n} de 6 misiones hechas, +{xp} XP hoy. \u00bfCierras tu d\u00eda por +{b} XP?", inviteGo:"Cerrar mi d\u00eda", pill:"Cierre", pillDone:"Cerrado", xpLabel:"D\u00eda cerrado",
+    hm:"{h} h {m} min", m:"{m} min"}
+};
+const LANG = () => { let l = "en"; try { l = (window.LowiLang && LowiLang.get && LowiLang.get()) || localStorage.getItem("lowispike.lang") || H.lang || "en"; } catch(e){} l = String(l).slice(0, 2); return W[l] ? l : "en"; };
+function w(k, v){ let s = W[LANG()][k]; if (s == null) s = W.en[k]; if (s == null) s = k; if (v && typeof s === "string") Object.keys(v).forEach(x => { s = s.split("{" + x + "}").join(v[x]); }); return s; }
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const p2 = n => String(n).padStart(2, "0");
+const dk = d => p2(d.getFullYear()) + "-" + p2(d.getMonth() + 1) + "-" + p2(d.getDate());
+const sfx = n => { try { window.LowiSFX && LowiSFX.play(n); } catch(e){} };
+const js = k => { try { return JSON.parse(localStorage.getItem(k) || "{}") || {}; } catch(e){ return {}; } };
+const put = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} };
+const nowD = () => new Date(T0 ? T0 : Date.now());
+let T0 = 0;   /* tests: fixed "now" */
+/* the game day: until 4 am it still counts as the evening before */
+function gday(now){ return dk(new Date((now || nowD()).getTime() - 4 * 36e5)); }
+function mem(){ const m = js(KEY); if (!m.days || typeof m.days !== "object") m.days = {}; return m; }
+function dayRec(d){ return mem().days[d || gday()] || {}; }
+function setDay(p, d){ const m = mem(), k = d || gday(); m.days[k] = Object.assign({}, m.days[k] || {}, p);
+  const ks = Object.keys(m.days).sort(); while (ks.length > 60) delete m.days[ks.shift()]; put(KEY, m); }
+
+/* ---------- the day, read from the app's own data ---------- */
+function core(){ try { return typeof S !== "undefined" && S ? S : js("lowispike.v2"); } catch(e){ return js("lowispike.v2"); } }
+function quests(){ try { return window.LowiF3 && LowiF3.state ? LowiF3.state() : []; } catch(e){ return []; } }
+function xpDay(now){ const c = core(), d = dk(now || nowD()), g = gday(now); let n = 0;
+  (Array.isArray(c.ledger) ? c.ledger : []).forEach(e => { if (e && (e.day === g || (g !== d && e.day === d))) n += +e.amt || 0; }); return n; }
+function level(){ const c = core(), xp = +c.xp || 0; try { const o = levelOf(xp); let t = ""; try { t = titleOf(o.L); t = window.LowiLang && LowiLang.t ? LowiLang.t(t) : t; } catch(e){} return {L:o.L, pct:Math.max(0, Math.min(1, o.pct)), left:o.left, t}; } catch(e){ return {L:1, pct:0, left:0, t:""}; } }
+function streak(){ try { if (window.LowiN1 && LowiN1.streakDays) { const d = LowiN1.streakDays(); if (d) return d; } } catch(e){} const c = core(); return c.streak ? +c.streak.days || 0 : 0; }
+function fstart(){ try { if (window.LowiFastStop && LowiFastStop.startOf) return +LowiFastStop.startOf() || 0; } catch(e){} return +js("lowi_fast_v1").last || 0; }
+function goalH(){ try { if (window.LowiFE && LowiFE.target) return +LowiFE.target() || 16; } catch(e){} return +js("lowi_fast_v1").target || 16; }
+function stages(){ try { if (window.LowiFast && LowiFast.stages) return LowiFast.stages(); } catch(e){} return [{h:3, n:"Blood sugar settles"}, {h:8, n:"Liver takes over"}, {h:12, n:"Fat burning ramps up"}, {h:14, n:"Ketones start to rise"}, {h:16, n:"Cell cleanup, maybe"}]; }
+function clk(ts){ try { if (window.LowiFE && LowiFE.at) return LowiFE.at(ts, 0); } catch(e){} const d = new Date(ts); return p2(d.getHours()) + ":" + p2(d.getMinutes()); }
+function dur(ms){ const m = Math.max(0, Math.round(ms / 6e4)), h = Math.floor(m / 60); return h ? w("hm", {h, m:m % 60}) : w("m", {m}); }
+const hTxt = h => { const m = Math.round(h * 60); return m % 60 ? Math.floor(m / 60) + ":" + p2(m % 60) : String(m / 60); };
+/* tonight's fast: running = started within the last 36 h. fresh = started in the last 6 h (a real overnight fast). */
+function fast(now){ now = now || nowD(); const t = now.getTime(), s = fstart(), g = goalH();
+  if (!s || s > t || t - s > 36 * 36e5) return {run:false, g};
+  const el = (t - s) / 36e5, nx = stages().filter(x => x.h > el && x.h > 0)[0] || null;
+  return {run:true, s, g, el, fresh:el <= 6, nx:nx ? {n:nx.n, t:clk(s + nx.h * 36e5)} : null, gt:clk(s + g * 36e5), gok:el >= g}; }
+function data(now){ now = now || nowD(); const L = quests(), done = L.filter(q => q.done).length, r = dayRec(gday(now));
+  return {L, done, n:L.length || 6, xp:xpDay(now), lv:level(), st:streak(), f:fast(now), mood:r.mood, closed:!!r.closed, cx:+r.xp || 0}; }
+
+/* ---------- the screen ---------- */
+function fastHTML(f){
+  if (!f.run) return '<div class="e1-fs"><span class="e1-fl">' + esc(w("fastNone")) + '</span><span class="e1-fm">' + esc(w("startS")) + '</span></div>' +
+    '<button type="button" class="e1-fgo" data-e1="fast">\u23F3 ' + esc(w("start")) + '</button>';
+  const just = Date.now() - f.s < 2 * 6e4 || (T0 && T0 - f.s < 2 * 6e4);
+  let h = '<div class="e1-fs"><span class="e1-fl">' + esc(just ? w("started", {t:clk(f.s)}) : w("fastOn", {t:clk(f.s)})) + (just ? "" : ' <em class="num">\u00b7 ' + esc(w("fastFor", {d:dur(f.el * 36e5)})) + '</em>') + '</span>' +
+    (f.nx ? '<span class="e1-fm">' + esc(w("next", {n:f.nx.n, t:f.nx.t})) + '</span>' : "") +
+    '<span class="e1-fm e1-fg">' + esc(w(f.gok ? "goalOk" : "goal", {h:hTxt(f.g), t:f.gt})) + '</span></div>';
+  if (f.fresh) h += just ? "" : '<button type="button" class="e1-fre" data-e1="fast">' + esc(w("restart")) + '</button>';
+  else h += '<button type="button" class="e1-fgo" data-e1="fast">\u23F3 ' + esc(w("start")) + '</button>';
+  return h; }
+function tmrQuest(){ let t = "Check in", s = ""; try { if (window.LowiF3 && LowiF3.w) { t = LowiF3.w("checkin"); s = LowiF3.w("checkinS"); } } catch(e){} return {t, s}; }
+function html(){ const d = data(), now = nowD(), q = tmrQuest(), cur = d.L.find(x => !x.done);
+  let date = ""; try { date = now.toLocaleDateString({de:"de-DE", es:"es-ES"}[LANG()] || "en-GB", {weekday:"long", day:"numeric", month:"long"}); } catch(e){}
+  return '<div class="e1-in" role="dialog" aria-modal="true" aria-labelledby="e1T">' +
+    '<div class="e1-top"><span class="e1-tag">' + esc(w("tag")) + '</span><button type="button" class="e1-x" data-e1="x" aria-label="' + esc(w("x")) + '">\u2715</button></div>' +
+    '<div class="e1-hd"><span class="e1-moon" aria-hidden="true">\uD83C\uDF19</span><div><h2 id="e1T" class="e1-h">' + esc(d.closed ? w("closed") : w("title")) + '</h2><div class="e1-date">' + esc(date) + '</div></div></div>' +
+    '<div class="e1-lv"><div class="e1-lvt"><b>' + esc(w("lvl", {l:d.lv.L, t:d.lv.t})) + '</b><span class="num">' + esc(w("toNext", {n:Math.max(0, Math.round(d.lv.left)), l:d.lv.L + 1})) + '</span></div>' +
+      '<div class="e1-bar"><i style="width:' + Math.round(d.lv.pct * 100) + '%"></i></div></div>' +
+    '<div class="e1-stats">' +
+      '<div class="e1-st" data-k="q"><b class="num">' + d.done + '/' + d.n + '</b><span>' + esc(w("quests")) + '</span></div>' +
+      '<div class="e1-st" data-k="xp"><b class="num">+' + d.xp + '</b><span>' + esc(w("xpT")) + '</span></div>' +
+      '<div class="e1-st" data-k="s"><b class="num">\uD83D\uDD25 ' + d.st + '</b><span>' + esc(w("streak")) + '</span></div></div>' +
+    '<div class="e1-qs" aria-hidden="true">' + d.L.map(x => '<i class="' + (x.done ? "on" : "") + '">' + (x.done ? "\u2713" : ICON[x.id] || "\u2022") + '</i>').join("") + '</div>' +
+    '<div class="e1-card e1-fast"><div class="e1-ch">' + esc(w("fastH")) + '</div>' + fastHTML(d.f) + '</div>' +
+    '<div class="e1-card e1-mood"><div class="e1-ch">' + esc(w("moodQ")) + '</div><div class="e1-ms" role="group" aria-label="' + esc(w("moodQ")) + '">' +
+      MOODS.map((m, i) => '<button type="button" class="e1-m' + (d.mood === i + 1 ? " on" : "") + '" data-e1="mood" data-v="' + (i + 1) + '" aria-pressed="' + (d.mood === i + 1) + '"><span aria-hidden="true">' + m + '</span><small>' + esc(w("moods")[i]) + '</small></button>').join("") + '</div></div>' +
+    '<div class="e1-card e1-tmr"><span class="e1-ti" aria-hidden="true">' + ICON.checkin + '</span><span class="e1-tt"><small>' + esc(w("tmr")) + '</small><b>' + esc(q.t) + '</b></span><span class="e1-txp num">+10 XP</span></div>' +
+    '<div class="e1-foot">' + (d.closed
+      ? '<div class="e1-done"><b>\u2713 ' + esc(w("closed")) + '</b><span>' + esc(d.cx ? w("closedS", {x:d.cx}) : w("closedS0")) + '</span></div><button type="button" class="e1-go" data-e1="x">' + esc(w("night")) + ' \uD83C\uDF19</button>'
+      : '<button type="button" class="e1-go" data-e1="close">' + esc(w("close", {x:BONUS})) + '</button><button type="button" class="e1-later" data-e1="x">' + esc(w("later")) + '</button>') +
+    '</div></div>'; }
+function isOpen(){ return !!D.getElementById("e1Ov"); }
+function paint(){ const ov = D.getElementById("e1Ov"); if (!ov) return; const sc = ov.querySelector(".e1-in"); ov.innerHTML = html(); fit(); }
+function open(){ try { if (window.LowiN1 && LowiN1.hide) LowiN1.hide(true); } catch(e){} try { if (typeof closeSheet === "function") closeSheet(); } catch(e){}
+  let ov = D.getElementById("e1Ov"); if (!ov) { ov = D.createElement("div"); ov.id = "e1Ov"; ov.setAttribute("data-noi18n", ""); D.body.appendChild(ov); }
+  ov.innerHTML = html(); H.classList.add("e1-up"); fit(); sfx("open");
+  requestAnimationFrame(() => requestAnimationFrame(() => { ov.classList.add("in"); fit(); }));
+  setTimeout(fit, 400); const b = ov.querySelector(".e1-go"); try { b && b.focus({preventScroll:true}); } catch(e){} }
+function close(){ const ov = D.getElementById("e1Ov"); H.classList.remove("e1-up"); if (!ov) return; ov.classList.remove("in"); ov.classList.add("out"); setTimeout(() => ov.remove(), 260); paintPill(); }
+/* one screen: tighten in steps until the content ends above the bottom edge; a little scroll only as a safety net */
+function fit(){ const ov = D.getElementById("e1Ov"); if (!ov) return; const box = ov.querySelector(".e1-in"); if (!box) return;
+  const room = () => { const r = box.getBoundingClientRect(), pb = parseFloat(getComputedStyle(box).paddingBottom) || 0; return r.bottom - pb; };
+  const end = () => { try { if (window.LowiFit && LowiFit.bottom) return LowiFit.bottom(box); } catch(e){} const f = box.querySelector(".e1-foot"); return f ? f.getBoundingClientRect().bottom : 0; };
+  ov.classList.remove("e1-scroll"); box.scrollTop = 0; let l = 0;
+  for (; l <= 4; l++) { ov.setAttribute("data-l", l); if (end() <= room() + .5) break; }
+  if (l > 4) { ov.setAttribute("data-l", 4); ov.classList.add("e1-scroll"); } }
+addEventListener("resize", () => { if (isOpen()) fit(); });
+
+/* ---------- actions ---------- */
+function startFast(){ const now = Date.now();
+  try { if (window.LowiFastStop && LowiFastStop.end) { const r = LowiFastStop.end(now, {reward:false, quiet:true}); if (r && r.err) throw 0; } else throw 0; }
+  catch(e){ const f = js("lowi_fast_v1"); f.last = now; put("lowi_fast_v1", f); }
+  setDay({fast:now}); sfx("check"); paint();
+  const b = D.querySelector("#e1Ov .e1-fast"); if (b) { b.classList.remove("e1-pop"); void b.offsetWidth; b.classList.add("e1-pop"); } }
+function closeDay(){ const g = gday(), c = core(); let x = 0;
+  const paidAlready = Array.isArray(c.ledger) && c.ledger.some(e => e && e.src === "e1:" + g);
+  if (!paidAlready && typeof award === "function") { try { x = award(BONUS, w("xpLabel"), null, "e1:" + g) || BONUS; } catch(e){ x = 0; } }
+  setDay({closed:Date.now(), xp:x || dayRec(g).xp || 0}); sfx("levelup"); paint(); paintPill();
+  const ov = D.getElementById("e1Ov"); if (ov) { ov.classList.remove("e1-win"); void ov.offsetWidth; ov.classList.add("e1-win"); } }
+D.addEventListener("click", e => { const t = e.target; if (!t || !t.closest) return;
+  const a = t.closest("[data-e1]"); if (!a) return; e.preventDefault(); e.stopPropagation(); const k = a.dataset.e1;
+  if (k === "open") open(); else if (k === "x") { sfx("tap"); close(); }
+  else if (k === "fast") startFast(); else if (k === "close") closeDay();
+  else if (k === "mood") { setDay({mood:+a.dataset.v}); sfx("tap"); D.querySelectorAll("#e1Ov .e1-m").forEach(b => { const on = b === a; b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on)); }); } }, true);
+D.addEventListener("keydown", e => { if (e.key === "Escape" && isOpen()) close(); });
+
+/* ---------- the moon button on the Daily Quest board (evenings, 17:00 to 4:00) ---------- */
+function evening(now){ const h = (now || nowD()).getHours(); return h >= 17 || h < 4; }
+function paintPill(){ const b = D.getElementById("f3Board"); if (!b) return; const hd = b.querySelector(".f3-hd"); let p = b.querySelector(".e1-pill");
+  if (!evening() || !hd) { if (p) p.remove(); return; }
+  const done = !!dayRec().closed, txt = (done ? "\u2713 " + w("pillDone") : "\uD83C\uDF19 " + w("pill"));
+  if (!p) { p = D.createElement("button"); p.type = "button"; p.className = "e1-pill"; p.dataset.e1 = "open"; hd.appendChild(p); }
+  if (p.textContent !== txt) p.textContent = txt; p.classList.toggle("done", done); p.setAttribute("aria-label", w("title")); }
+let mo = null;
+function watch(){ const b = D.getElementById("f3Board"); if (!b) return; if (mo && mo.__b === b) return; if (mo) mo.disconnect();
+  mo = new MutationObserver(() => { if (!b.querySelector(".e1-pill") && evening()) paintPill(); }); mo.__b = b; mo.observe(b, {childList:true, subtree:true}); paintPill(); }
+
+/* ---------- the bubble's bedtime invite ---------- */
+function bed(){ try { return window.LowiN1 ? +LowiN1.get().qs % 24 || 24 : 22; } catch(e){ return 22; } }
+function inWindow(now){ now = now || nowD(); let h = now.getHours() + now.getMinutes() / 60; const b = bed(); if (h < 4) h += 24; return h >= b - 1.5 && h < b + 1; }
+function invite(o){ o = o || {}; const now = o.now ? new Date(o.now) : nowD();
+  if (isOpen()) return null;
+  try { const N = window.LowiN1; if (!N) return null;
+    if (!o.force) { const s = N.get(); if (!s.on || !inWindow(now) || (N.tourSeen && !N.tourSeen()) || !N.appFree() || (N.cur && N.cur())) return null;
+      const r = dayRec(gday(now)); if (r.closed || r.inv) return null; }
+    const d = data(now); setDay({inv:now.getTime()}, gday(now));
+    N.show({id:"e1", text:w("invite", {n:d.done, xp:d.xp, b:BONUS}), label:w("inviteGo"), laterLabel:w("later"), fn:open});
+    return "e1"; } catch(e){ console.warn(e); return null; } }
+function tick(){ watch(); paintPill(); if (!D.hidden) invite(); }
+function init(){ setTimeout(tick, 9000); setInterval(tick, 60000); setTimeout(watch, 1500);
+  D.addEventListener("visibilitychange", () => { if (!D.hidden) setTimeout(tick, 2500); });
+  try { const u = new URL(location.href); if (u.searchParams.get("e1") === "1" || u.searchParams.get("n1go") === "close") { u.searchParams.delete("e1"); if (u.searchParams.get("n1go") === "close") u.searchParams.delete("n1go"); history.replaceState(history.state, "", u.pathname + (u.search || "") + u.hash); setTimeout(open, 1600); } } catch(e){}
+  try { navigator.serviceWorker && navigator.serviceWorker.addEventListener("message", e => { const d = e.data || {}; if (d.n1go === "close") setTimeout(open, 300); }); } catch(e){} }
+if (D.readyState === "loading") D.addEventListener("DOMContentLoaded", init); else setTimeout(init, 0);
+window.LowiE1 = {open, close, paint, fit, data, invite, inWindow, paintPill, watch, closeDay, startFast, gday, mem, w, now:t => { T0 = +t || 0; }};
 })();
 </script>
 </body>

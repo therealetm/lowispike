@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261011-054949">
+<meta name="lowi-build" content="20261011-064121">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2108,7 +2108,7 @@ html[data-theme=light] #lcUpd.g1-upd .g1-usay{background:rgba(255,255,255,.2)}
 (function(){
 "use strict";
 if (window.LowiG1) return;
-const NEWS_RAW = {"id": "q4b-a2hs-top", "go": {"tab": "home"}, "text": {"en": "New: the Add to Home Screen tip no longer covers your screen. It shows as a slim pill at the top of Today only, and never over For You, popups or the tab bar.", "de": "Neu: Der Tipp zum Home-Bildschirm verdeckt nichts mehr. Er erscheint nur auf Heute als schmale Leiste oben und nie über Für dich, Popups oder der Leiste unten.", "es": "Nuevo: el consejo de añadir a la pantalla de inicio ya no tapa la pantalla. Sale como una barra fina arriba solo en Hoy, y nunca sobre Para ti, las ventanas o la barra de abajo."}};
+const NEWS_RAW = {"id": "k1-browse", "go": {"tab": "shelf"}, "text": {"en": "New: All recipes in Cook is easier to browse. Meals, Snacks, Sweet and Drinks each have their own section, the quickest recipes come first, and every filter shows how many recipes it has.", "de": "Neu: Alle Rezepte in Kochen sind übersichtlicher. Mahlzeiten, Snacks, Süß und Getränke haben je einen eigenen Bereich, die schnellsten Rezepte stehen oben, und jeder Filter zeigt, wie viele Rezepte er hat.", "es": "Nuevo: Todas las recetas en Cocinar es más fácil de explorar. Comidas, Snacks, Dulces y Bebidas tienen cada uno su sección, las recetas más rápidas van primero y cada filtro muestra cuántas recetas tiene."}};
 const NEWS = (NEWS_RAW && typeof NEWS_RAW === "object") ? NEWS_RAW : null;
 const KEY = "lowi.g1", GO = "lowi.g1.go";
 const H = document.documentElement;
@@ -3121,6 +3121,87 @@ try { new MutationObserver(schedule).observe(H, {attributes:true, attributeFilte
 if (D.fonts && D.fonts.ready) D.fonts.ready.then(schedule);
 if (D.readyState === "loading") D.addEventListener("DOMContentLoaded", () => { gapCheck(); schedule(); }); else { gapCheck(); schedule(); }
 setTimeout(schedule, 900); setTimeout(schedule, 2500);
+})();
+</script>
+<style id="k1css">
+/* K1: clearer recipe browsing */
+.k1-chips .chip{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.k1-n{font-size:11px;font-weight:700;line-height:1;padding:3px 6px;border-radius:999px;background:rgba(255,255,255,.12);opacity:.9}
+.k1-chips .chip.on .k1-n{background:rgba(0,0,0,.2)}
+.k1-sort{display:flex;align-items:center;gap:6px;margin:10px 2px 2px;color:var(--dim)}
+.k1-sort svg{width:14px;height:14px;flex:none}
+.k1-grp{margin-top:14px}
+.k1-grp + .k1-grp{margin-top:20px}
+.k1-gh{display:flex;align-items:center;gap:8px;margin:0 2px 8px;padding-bottom:8px;border-bottom:1px solid var(--line2,rgba(255,255,255,.12))}
+.k1-ge{font-size:18px;line-height:1}
+.k1-gt{font-size:16px;font-weight:750}
+.k1-gc{font-size:11px;font-weight:700;padding:3px 7px;border-radius:999px;background:rgba(var(--acc-rgb,159,216,255),.16);color:var(--acc,inherit)}
+.k1-gr{margin-left:auto;color:var(--dim)}
+.k1-list{margin-top:8px}
+#r3kAll .sh-min{display:inline-block;padding:1px 7px;margin-right:2px;border-radius:999px;background:rgba(var(--acc-rgb,159,216,255),.14);font-weight:700}
+#r3kAll .sh-sep{margin-top:26px;padding-top:16px;border-top:1px solid var(--line2,rgba(255,255,255,.12));font-weight:700;color:var(--text,inherit);font-size:14px}
+html[data-theme=light] .k1-n{background:rgba(0,0,0,.08)}
+html[data-theme=light] .k1-chips .chip.on .k1-n{background:rgba(255,255,255,.35)}
+html[data-theme=light] .k1-gh,html[data-theme=light] #r3kAll .sh-sep{border-color:rgba(0,0,0,.1)}
+html[data-theme=light] .k1-gc{background:rgba(20,60,120,.1);color:#1d3f73}
+html[data-theme=light] #r3kAll .sh-min{background:rgba(20,60,120,.1);color:#1d3f73}
+html[data-theme=light] .k1-sort,html[data-theme=light] .k1-gr{color:#4a5568}
+html:not([data-lay=phone]) .k1-grp,html:not([data-lay=phone]) .k1-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));column-gap:14px;align-items:start}
+html:not([data-lay=phone]) .k1-grp > .k1-gh{grid-column:1 / -1}
+html:not([data-lay=phone]) .k1-grp > .sh-rec,html:not([data-lay=phone]) .k1-list > .sh-rec{min-width:0}
+.k1-gr{text-transform:none;letter-spacing:0;font-size:12px}
+</style>
+<script id="k1js">
+/* ===== LOWiSPIKE K1 (Oct 11, 2026): clearer recipe browsing in Cook =====
+   All recipes: quickest first everywhere. With "All" the Recipe Book is split into Meals, Snacks, Sweet and Drinks,
+   each with its own header, count and time range. Every chip shows how many recipes it has. EN/DE/ES. */
+(function(){
+"use strict";
+if (window.LowiK1) return;
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const LANG = () => { try { return (window.LowiLang && LowiLang.get()) || "en"; } catch(e){ return "en"; } };
+const L = o => o[LANG()] || o.en;
+const W = {
+  all:{en:"All", de:"Alle", es:"Todas"},
+  quick:{en:"Quick", de:"Schnell", es:"R\u00e1pidas"},
+  protein:{en:"High protein", de:"Viel Protein", es:"Mucha prote\u00edna"},
+  nocook:{en:"No cook", de:"Ohne Kochen", es:"Sin cocinar"},
+  meal:{en:"Meals", de:"Mahlzeiten", es:"Comidas"},
+  snack:{en:"Snacks", de:"Snacks", es:"Snacks"},
+  dessert:{en:"Sweet", de:"S\u00fc\u00df", es:"Dulces"},
+  drink:{en:"Drinks", de:"Getr\u00e4nke", es:"Bebidas"},
+  other:{en:"More", de:"Mehr", es:"M\u00e1s"},
+  sort:{en:"Quickest first", de:"Schnellste zuerst", es:"Las m\u00e1s r\u00e1pidas primero"},
+  none:{en:"Nothing here yet.", de:"Hier ist noch nichts.", es:"Aqu\u00ed a\u00fan no hay nada."}
+};
+const ORDER = ["meal", "snack", "dessert", "drink"];
+const ICO = {meal:"\ud83c\udf7d\ufe0f", snack:"\ud83e\udd52", dessert:"\ud83c\udf6e", drink:"\ud83e\udd64", other:"\u2728"};
+const C = () => window.LOWI_COOK || null;
+const min = r => { const c = C(); return c ? (c.min(r.id) || 0) : 0; };
+const waits = r => { const c = C(); if (!c) return false; const t = c.minTxt(r.id) || ""; return t.indexOf("+") >= 0; };
+function sort(list){
+  return list.slice().sort((a, b) => (min(a) || 999) - (min(b) || 999) || (waits(a) - waits(b)) || String(a.n).localeCompare(String(b.n)));
+}
+function range(list){ const m = list.map(min).filter(Boolean); if (!m.length) return ""; const lo = Math.min.apply(null, m), hi = Math.max.apply(null, m); return lo === hi ? lo + " min" : lo + "\u2013" + hi + " min"; }
+function chipLabel(c, n){ const k = c.id || "all"; return '<span class="k1-cl">' + esc(W[k] ? L(W[k]) : c.n) + '</span><span class="k1-n num">' + n + '</span>'; }
+/* chips with counts; allBook = every Recipe Book recipe (ignoring the chip that is on) */
+function chips(cats, cur, allBook){
+  const c = C();
+  return '<div class="sh-chips sh-cats k1-chips" style="margin-top:12px">' + cats.map(ch => {
+    const n = allBook.filter(r => !ch.id || (c ? c.match(r, ch.id) : r.c === ch.id)).length;
+    return '<button class="chip' + (cur === ch.id ? " on" : "") + '" data-sh="cat" data-c="' + esc(ch.id) + '" data-k1n="' + n + '">' + chipLabel(ch, n) + '</button>'; }).join("") + '</div>';
+}
+function sortLine(){ return '<div class="k1-sort tiny"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg><span>' + esc(L(W.sort)) + '</span></div>'; }
+/* the list: grouped by kind when no chip is on, else one list; quickest first either way */
+function list(book, cur, row){
+  if (!book.length) return sortLine() + '<div class="sh-empty k1-empty">' + esc(L(W.none)) + '</div>';
+  if (cur) return sortLine() + '<div class="k1-list" data-k1="' + esc(cur) + '">' + sort(book).map(row).join("") + '</div>';
+  const g = {}; book.forEach(r => { const k = ORDER.indexOf(r.c) >= 0 ? r.c : "other"; (g[k] = g[k] || []).push(r); });
+  return sortLine() + ORDER.concat(["other"]).filter(k => g[k] && g[k].length).map(k =>
+    '<section class="k1-grp" data-k1g="' + k + '"><div class="k1-gh"><span class="k1-ge" aria-hidden="true">' + ICO[k] + '</span><b class="k1-gt">' + esc(L(W[k])) + '</b><span class="k1-gc num">' + g[k].length + '</span><span class="k1-gr tiny">' + esc(range(g[k])) + '</span></div>' +
+    sort(g[k]).map(row).join("") + '</section>').join("");
+}
+window.LowiK1 = {chips, list, sort, words:W};
 })();
 </script>
 </head>
@@ -6379,7 +6460,7 @@ function kochenHTML(){
   if (V.cat === "quick" && window.LOWI_COOK) book.sort((a, b) => (LOWI_COOK.min(a.id) || 999) - (LOWI_COOK.min(b.id) || 999));   /* r3k-quick: fastest first */
   const cats = window.LOWI_COOK ? LOWI_COOK.chips() : [{id:"", n:"All 25"}].concat(typeof BOOK_CATS !== "undefined" ? BOOK_CATS : []);  // Oct 8: one row of quick chips (Fastic steal)
   return (V.tab === "kochen" ? '<div class="r3k-allh"><span class="r3k-hic">' + ICON_R3K_BOOK + '</span><span class="r3k-ht">All recipes</span></div>' : "") + /* r3k-allh */ (window.LowiK9 ? LowiK9.box() : "") + /* k9-box */ (window.LowiGPT ? LowiGPT.card() : "") + /* gpt-card */ '<div class="h3" style="margin-top:4px">What are you cooking?</div><p class="small muted" style="margin-top:4px">Real recipes from the LOWiSPIKE Recipe Book. Tap one for what you need and how to make it.</p>' +
-    (book.length || V.cat ? '<div class="sh-chips sh-cats" style="margin-top:12px">' + cats.map(c => '<button class="chip' + (V.cat === c.id ? " on" : "") + '" data-sh="cat" data-c="' + c.id + '">' + esc(c.n) + "</button>").join("") + "</div>" + book.map(recRow).join("") : "") +
+    (book.length || V.cat ? (window.LowiK1 ? LowiK1.chips(cats, V.cat, all.filter(r => r.book)) + LowiK1.list(book, V.cat, recRow) : '<div class="sh-chips sh-cats" style="margin-top:12px">' + cats.map(c => '<button class="chip' + (V.cat === c.id ? " on" : "") + '" data-sh="cat" data-c="' + c.id + '">' + esc(c.n) + "</button>").join("") + "</div>" + book.map(recRow).join("")) /* k1-list */ : "") +
     '<div class="sh-sep small">Quick ones</div>' + feat.map(recRow).join("") + (all.length > feat.length ? '<div class="sh-sep small">LOWiSPIKE rebuilds</div><input class="input" id="shQ" placeholder="Search rebuilds…" value="' + esc(V.q) + '">' + lib.slice(0, 40).map(recRow).join("") : "");
 }
 function recipeHTML(r){

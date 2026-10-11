@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261011-050151">
+<meta name="lowi-build" content="20261011-052832">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2108,7 +2108,7 @@ html[data-theme=light] #lcUpd.g1-upd .g1-usay{background:rgba(255,255,255,.2)}
 (function(){
 "use strict";
 if (window.LowiG1) return;
-const NEWS_RAW = {"id": "q6-light-read", "go": {"tab": "foryou"}, "text": {"en": "New: Cloud (light mode) is easier to read. For You keeps the video look with white words on a dark fade, the tab bar stays clear on top, and the fasting stage name on Today is darker.", "de": "Neu: Cloud (heller Modus) ist besser lesbar. Für dich behält den Video-Look mit weißer Schrift auf dunklem Verlauf, die Leiste unten bleibt klar lesbar und der Fastenschritt auf Heute ist dunkler.", "es": "Nuevo: Cloud (modo claro) se lee mejor. Para ti mantiene el estilo de vídeo con letras blancas sobre un degradado oscuro, la barra de abajo se lee bien y el nombre de la fase de ayuno en Hoy es más oscuro."}};
+const NEWS_RAW = {"id": "q4b-a2hs-top", "go": {"tab": "home"}, "text": {"en": "New: the Add to Home Screen tip no longer covers your screen. It shows as a slim pill at the top of Today only, and never over For You, popups or the tab bar.", "de": "Neu: Der Tipp zum Home-Bildschirm verdeckt nichts mehr. Er erscheint nur auf Heute als schmale Leiste oben und nie über Für dich, Popups oder der Leiste unten.", "es": "Nuevo: el consejo de añadir a la pantalla de inicio ya no tapa la pantalla. Sale como una barra fina arriba solo en Hoy, y nunca sobre Para ti, las ventanas o la barra de abajo."}};
 const NEWS = (NEWS_RAW && typeof NEWS_RAW === "object") ? NEWS_RAW : null;
 const KEY = "lowi.g1", GO = "lowi.g1.go";
 const H = document.documentElement;
@@ -18224,6 +18224,24 @@ html[data-theme=light] .td-wm{opacity:1}
 html[data-theme=light] .fs-stage{color:color-mix(in srgb,var(--acc2,#2a2f4a) 52%,#000)}
 html[data-theme=light] .fst-stop{background:rgba(40,110,190,.06)}
 html[data-theme=light] .fy-by .lb3-ph.lb3-ini{color:#10131f!important}
+</style>
+<style id="q4bcss">
+/* ===== Q4b (Oct 11, 2026): the "Add to Home Screen" hint no longer covers screens =====
+   It sat at the bottom over the For You caption and over the bottom of the no-scroll screens (Today tiles, chat field).
+   Now: only on Today, as a slim pill at the top under the status bar; hidden on every other tab, while a popup or the
+   sign-in screen is up, and while the new-version banner shows. */
+#lcA2hs{top:calc(env(safe-area-inset-top, 0px) + 8px);bottom:auto;left:50%;right:auto;transform:translateX(-50%);width:min(366px, calc(100vw - 24px));box-sizing:border-box;padding:7px 8px 7px 14px;border-radius:999px;font-size:12.5px;z-index:70;animation:q4bIn .35s cubic-bezier(.2,.8,.2,1) both}
+#lcA2hs span{white-space:normal;line-height:1.25}
+#lcA2hs .chip{flex:none;padding:6px 12px;min-height:32px}
+#lcA2hs .lc-x{flex:none;min-width:36px;min-height:36px;padding:0}
+@keyframes q4bIn{from{opacity:0;transform:translate(-50%,-10px)}to{opacity:1;transform:translate(-50%,0)}}
+html:not(:has(#tab-home.active)) #lcA2hs,
+html:has(.r2-ov.on:not(.off)) #lcA2hs,
+html:has(#sheetwrap.open) #lcA2hs,
+html:has(#rsSheet.open) #lcA2hs,
+html:has(#lcUpd) #lcA2hs,
+html.g2e-open #lcA2hs{display:none!important}
+@media (min-width:700px){#lcA2hs{width:min(480px, calc(100vw - 48px))}}
 </style>
 </body>
 </html>

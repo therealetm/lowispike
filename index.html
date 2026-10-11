@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261011-072529">
+<meta name="lowi-build" content="20261011-083053">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2108,7 +2108,7 @@ html[data-theme=light] #lcUpd.g1-upd .g1-usay{background:rgba(255,255,255,.2)}
 (function(){
 "use strict";
 if (window.LowiG1) return;
-const NEWS_RAW = {"id": "b2-profile", "go": {"tab": "profile", "sel": "#g2eTiles"}, "text": {"en": "New: Profile is tidy on iPhone. All menu tiles are the same size, the Back button no longer covers anything, and My swaps shows how to save your first swap.", "de": "Neu: Das Profil ist auf dem iPhone aufgeräumt. Alle Kacheln sind gleich groß, der Zurück-Button verdeckt nichts mehr, und Meine Swaps zeigt, wie du deinen ersten Swap speicherst.", "es": "Nuevo: El perfil está ordenado en iPhone. Todas las fichas tienen el mismo tamaño, el botón Atrás ya no tapa nada y Mis cambios muestra cómo guardar tu primer cambio."}};
+const NEWS_RAW = {"id": "b3-guide", "go": {"tab": "home", "sel": "#tabbar .tb.scan"}, "text": {"en": "New: The scan ball's tour now takes you through every tab, each part once, never the same line twice. Reminders show the same guide, the notifications question waits for your answer, and Settings is the first tile in Profile.", "de": "Neu: Die Tour der Scan-Kugel führt dich jetzt durch jeden Tab, jeden Teil einmal, nie zweimal derselbe Satz. Erinnerungen zeigen denselben Guide, die Frage nach Benachrichtigungen wartet auf deine Antwort, und Einstellungen ist die erste Kachel im Profil.", "es": "Nuevo: El recorrido de la bola del escáner te lleva por cada pestaña, cada parte una vez, sin repetir frases. Los avisos muestran la misma guía, la pregunta de notificaciones espera tu respuesta y Ajustes es la primera casilla del perfil."}};
 const NEWS = (NEWS_RAW && typeof NEWS_RAW === "object") ? NEWS_RAW : null;
 const KEY = "lowi.g1", GO = "lowi.g1.go";
 const H = document.documentElement;
@@ -2130,8 +2130,15 @@ const ROWS = [
   ["have", "Your shopping list. Tick what you already have at home. The rest is what you buy.", "Deine Einkaufsliste. Hak ab, was du schon zu Hause hast. Den Rest kaufst du.", "Tu lista de compra. Marca lo que ya tienes en casa. El resto es lo que compras."],
   ["eat", "Ate something else? Type it or take a photo. You'll see if it's a good choice.", "Etwas anderes gegessen? Tipp es ein oder mach ein Foto. Du siehst, ob es eine gute Wahl ist.", "¿Comiste otra cosa? Escríbela o hazle una foto. Verás si es buena elección."],
   ["nav", "Down here are the other parts of the app. Tap one to go there. The house brings you back here.", "Hier unten sind die anderen Bereiche der App. Tipp drauf, um hinzugehen. Das Haus bringt dich hierher zurück.", "Aquí abajo están las otras partes de la app. Toca una para ir. La casa te trae de vuelta aquí."],
-  ["scan", "And this is my home. Tap me here to scan: point the camera at a barcode or at your plate.", "Und hier wohne ich. Tipp mich hier an zum Scannen: Halt die Kamera auf einen Barcode oder deinen Teller.", "Y aquí vivo yo. Tócame aquí para escanear: apunta la cámara a un código de barras o a tu plato."],
+  ["scan", "I live down here in the bar. Tap me to scan: point the camera at a barcode or at your plate.", "Ich wohne hier unten in der Leiste. Tipp mich an zum Scannen: Halt die Kamera auf einen Barcode oder deinen Teller.", "Vivo aquí abajo, en la barra. Tócame para escanear: apunta la cámara a un código de barras o a tu plato."],
   ["end", "That's it! Want to see this again? Just hold me down.", "Das war's! Nochmal sehen? Halt mich einfach gedrückt.", "¡Listo! ¿Quieres verlo otra vez? Solo mantenme pulsado."],
+  ["quest", "This is your daily quest. Do the next small thing and earn XP. Clear all six for a bonus.", "Das ist deine Tagesquest. Mach die n\u00e4chste kleine Sache und sammle XP. Schaffst du alle sechs, gibt's einen Bonus.", "Esta es tu misi\u00f3n diaria. Haz lo siguiente y gana XP. Completa las seis y ganas un extra."],
+  ["ring", "Your fasting ring. It shows how long since you last ate and what your body is doing now. Tap \u201cI just ate\u201d when you eat.", "Dein Fastenring. Er zeigt, wie lange du nichts gegessen hast und was dein K\u00f6rper gerade macht. Tipp auf \u201eGerade gegessen\u201c, wenn du isst.", "Tu anillo de ayuno. Muestra cu\u00e1nto hace que comiste y qu\u00e9 hace tu cuerpo ahora. Toca \u201cAcabo de comer\u201d cuando comas."],
+  ["tiles", "Everything else for today: check-ins, meals, your plate, medicine, shopping and extras. Tap a tile to open it.", "Alles andere f\u00fcr heute: Check-ins, Mahlzeiten, dein Teller, Medizin, Einkauf und Extras. Tipp auf eine Kachel, um sie zu \u00f6ffnen.", "Todo lo dem\u00e1s de hoy: registros, comidas, tu plato, medicinas, compra y extras. Toca una casilla para abrirla."],
+  ["prof", "Tap your bubble up here for your profile. Settings, reminders and language are the first tile there.", "Tipp oben auf deine Blase f\u00fcr dein Profil. Einstellungen, Erinnerungen und Sprache sind dort die erste Kachel.", "Toca tu burbuja aqu\u00ed arriba para ver tu perfil. Ajustes, avisos e idioma est\u00e1n en la primera casilla."],
+  ["comm", "This is Community. Watch posts, chat with members and climb the leaderboard.", "Das ist die Community. Schau Posts, chatte mit anderen und klettere in der Bestenliste.", "Esta es la Comunidad. Mira publicaciones, chatea con otros y sube en la clasificaci\u00f3n."],
+  ["cook", "This is Cook. Low-spike recipes, foods to swipe, and the LOWiSPIKE GPT turns any meal into a recipe.", "Das ist Kochen. Rezepte ohne Zuckerspitze, Lebensmittel zum Wischen, und der LOWiSPIKE-GPT macht aus jedem Essen ein Rezept.", "Esto es Cocinar. Recetas sin picos, alimentos para deslizar, y el GPT de LOWiSPIKE convierte cualquier comida en receta."],
+  ["move", "This is Move. Short workouts and walks. They count for your quests and points.", "Das ist Bewegen. Kurze Workouts und Spazierg\u00e4nge. Sie z\u00e4hlen f\u00fcr deine Quests und Punkte.", "Esto es Moverse. Entrenos cortos y paseos. Cuentan para tus misiones y puntos."],
   ["Next", "Next", "Weiter", "Siguiente"],
   ["Skip", "Skip", "Überspringen", "Saltar"],
   ["Done", "Done", "Fertig", "Listo"],
@@ -2159,7 +2166,7 @@ function remember(p){ const m = Object.assign(mem(), p); try { localStorage.setI
 /* ---------- the orb look: a live copy of the scan orb's own styles ---------- */
 function cloneOrbCss(){ if ($("#g1OrbCss")) return; let out = "";
   const conv = sel => sel.split(",").map(s => s.trim()).filter(s => /\.tb\.scan/.test(s) && !/:active|:hover|r3a-edit|data-lay|data-input/.test(s))
-    .map(s => s.replace(/#tabbar\s*\.tb\.scan/g, "@@").replace(/\.tb\.scan/g, "@@")).map(s => s.split("@@").join("#g1Z .g1-fb") + "," + s.split("@@").join("#g1Z2 .g1-fb")).join(",");
+    .map(s => s.replace(/#tabbar\s*\.tb\.scan/g, "@@").replace(/\.tb\.scan/g, "@@")).map(s => s.split("@@").join("#g1Z .g1-fb") + "," + s.split("@@").join("#g1Z2 .g1-fb") + "," + s.split("@@").join("#n1B .g1-mini .g1-fb")).join(",");
   const walk = (rules, wrap) => { for (const r of rules) { try {
     if (r.type === 1 && r.selectorText && r.selectorText.indexOf(".tb.scan") >= 0) { const s = conv(r.selectorText); if (s) { const body = r.cssText.slice(r.cssText.indexOf("{")); out += wrap ? wrap + "{" + s + body + "}\n" : s + body + "\n"; } }
     else if (r.type === 4 && r.cssRules) walk(r.cssRules, "@media " + r.media.mediaText);
@@ -2209,19 +2216,18 @@ function scroller(el){ let p = el && el.parentElement; while (p && p !== documen
 /* ---------- tour steps (Home) ---------- */
 const firstCard = (sel) => { const e = $(sel); return e ? (e.closest(".card") || e) : null; };
 const fastTile = () => { const v = $("#tab-home #r3aFastV"); if (v) return v.closest("button,.r3a-mt") || v; const t = [...document.querySelectorAll("#tab-home #r3aMorn .r3a-mt")].find(b => /⏳|fast|fasten|ayun/i.test(b.textContent)); return t || null; };
-const STEPS = [
-  {k:"intro"},
-  {k:"morning", el:() => $("#tab-home #r3aMorn")},
-  {k:"fast", el:fastTile},
-  {k:"meals", el:() => firstCard("#tab-home #tdMeals")},
-  {k:"plan", el:() => $("#tab-home #tdPlan .td-meal")},
-  {k:"nofood", el:() => $("#tab-home #tdPlan .td-meal") ? null : $("#tab-home #tdPlan")},
-  {k:"meds", el:() => $("#tab-home #tdMeds")},
-  {k:"have", el:() => $("#tab-home #tdHave")},
-  {k:"eat", el:() => firstCard("#tab-home #analyseBtn")},
-  {k:"nav", el:() => $("#tabbar"), fixed:true},
-  {k:"scan", el:() => realOrb(), fixed:true, round:true},
-  {k:"end", el:() => realOrb(), fixed:true, round:true}
+const tabBtn = t => $('#tabbar .tb[data-tab="' + t + '"]');
+const STEPS = [ /* b3: the app as it is now, each part once, through every tab */
+  {k:"intro", tab:"home"},
+  {k:"scan", tab:"home", el:() => realOrb(), fixed:true, round:true},
+  {k:"quest", tab:"home", el:() => $("#tab-home #f3Board")},
+  {k:"ring", tab:"home", el:() => $("#tab-home #fsCard")},
+  {k:"tiles", tab:"home", el:() => $("#tab-home #g2hTiles")},
+  {k:"prof", tab:"home", el:() => $("#pfBtn"), fixed:true, round:true},
+  {k:"comm", tab:"foryou", el:() => tabBtn("foryou"), fixed:true},
+  {k:"cook", tab:"shelf", el:() => tabBtn("shelf"), fixed:true},
+  {k:"move", tab:"move", el:() => tabBtn("move"), fixed:true},
+  {k:"end", tab:"home", end:true, el:() => realOrb(), fixed:true, round:true}
 ];
 
 /* ---------- the fairy ---------- */
@@ -2254,9 +2260,12 @@ function root(){ let r = $("#g1Tour"); if (!r) { r = document.createElement("div
     try { r.style.fontFamily = getComputedStyle(document.body).fontFamily; } catch(e){}
     r.addEventListener("click", onTourClick); H.appendChild(r); }
   return r; }
-function stepList(){ return STEPS.filter(s => !s.el || s.k === "end" || vis(s.el())); }
+function stepList(){ const els = [], words = []; return STEPS.filter(s => { if (s.tab && s.tab !== "home" && !tabBtn(s.tab)) return false; const e = s.el ? s.el() : null; if (s.el && !s.end && !vis(e)) return false;
+  const w = T(s.k); if (words.indexOf(w) >= 0) return false; if (e && els.indexOf(e) >= 0 && !s.end) return false; words.push(w); if (e) els.push(e); return true; }); }
+const tabNow = () => { const a = $(".tab.active"); return a ? a.id.replace(/^tab-/, "") : ""; };
+function toTab(t){ if (!t || tabNow() === t) return false; if (H.classList.contains("g2e-open")) try { LowiG2E && LowiG2E.close && LowiG2E.close(); } catch(e){} goTabBtn(t); return true; }
 function begin(t){ TOUR = t; H.classList.add("g1-touring"); root(); fairyOut(); setTimeout(show, reduce ? 0 : 160); }
-function start(from){ if (TOUR) close("restart", true); hush(); goHome(); H.classList.add("g2h-tour");
+function start(from){ if (TOUR) close("restart", true); hush(); goHome();
   const m = mem(); remember({t:"", n:NEWS && NEWS.id ? NEWS.id : m.n});
   setTimeout(() => { const steps = stepList(); let i = typeof from === "number" ? from : 0; if (i >= steps.length - 1) i = 0;
     begin({steps, i, kind:"tour"}); }, onHome() ? 60 : 420); }
@@ -2272,7 +2281,7 @@ function offerNews(){ if (!NEWS || TOUR) return; hush(); begin({steps:[{k:"offer
 function close(how, quick){ hush(); const t = TOUR; TOUR = null; clearInterval(placeT); cancelAnimationFrame(follow.raf);
   const r = $("#g1Tour"); if (r) { r.classList.add("out"); setTimeout(() => { if (r.parentNode && !TOUR) r.remove(); else if (r.parentNode && TOUR) r.classList.remove("out"); }, quick ? 0 : 260); }
   H.classList.remove("g1-touring"); H.classList.remove("g2h-tour");
-  if (t && t.kind === "tour") remember({t:how === "skip" ? "skip" : "done", s:0});
+  if (t && t.kind === "tour") { remember({t:how === "skip" ? "skip" : "done", s:0}); if (how !== "restart") setTimeout(() => { if (!TOUR) goHome(); }, 0); }
   if (!quick) fairyHome(); }
 function textOf(s){ return s.text || T(s.k); }
 function show(){ if (!TOUR) return; const r = root(), s = TOUR.steps[TOUR.i], n = TOUR.steps.length, last = TOUR.i === n - 1;
@@ -2294,8 +2303,8 @@ function show(){ if (!TOUR) return; const r = root(), s = TOUR.steps[TOUR.i], n 
   }
   card.classList.remove("in");
   card.innerHTML = head + '<p class="g1-p" aria-live="polite">' + esc(textOf(s)) + '</p>' + listen + '<div class="g1-btns">' + btns + '</div><i class="g1-tail"></i>';
-  paintListen(); place(true);
-  clearTimeout(show.t); show.t = setTimeout(() => { if (!TOUR) return; place(false); card.classList.add("in"); fzBounce("g1z-land"); const nb = card.querySelector(".g1-next"); if (nb) try { nb.focus({preventScroll:true}); } catch(e){} }, reduce ? 0 : 520);
+  paintListen(); if (TOUR.kind === "tour" && toTab(s.tab)) { r.classList.add("nospot"); setTimeout(() => { if (TOUR && TOUR.steps[TOUR.i] === s) place(true); }, 260); } else place(true);
+  clearTimeout(show.t); show.t = setTimeout(() => { if (!TOUR) return; place(false); r.dataset.b3k = s.k; card.classList.add("in"); fzBounce("g1z-land"); const nb = card.querySelector(".g1-next"); if (nb) try { nb.focus({preventScroll:true}); } catch(e){} }, reduce ? 0 : 520);
 }
 /* positions: the spotlight on the thing, the fairy right beside it, the bubble attached to the fairy */
 let placeT = 0;
@@ -2325,9 +2334,9 @@ function place(scroll){ if (!TOUR) return; const r = $("#g1Tour"); if (!r) retur
   else { side = "over"; by = vh - BOTM - BH - (s.fixed ? 0 : 0); fy = by - FS + OV; }
   card.style.top = Math.round(by) + "px"; card.dataset.side = side; if (tail) tail.style.left = Math.round(cx - BX - 9) + "px";
   fzMove(fx, fy, 1); }
-function next(){ if (!TOUR) return; if (TOUR.i >= TOUR.steps.length - 1) { close("done"); return; }
+function next(){ if (!TOUR) return; const now = Date.now(); if (now - (next.t || 0) < 320) return; next.t = now; if (TOUR.i >= TOUR.steps.length - 1) { close("done"); return; }
   TOUR.i++; /* steps that vanished since (a card closed) are skipped */
-  while (TOUR.i < TOUR.steps.length - 1 && TOUR.steps[TOUR.i].el && !vis(TOUR.steps[TOUR.i].el())) TOUR.i++;
+  while (TOUR.i < TOUR.steps.length - 1 && TOUR.steps[TOUR.i].el && !TOUR.steps[TOUR.i].tab && !vis(TOUR.steps[TOUR.i].el())) TOUR.i++;
   show(); if (mem().v) say(textOf(TOUR.steps[TOUR.i])); else hush(); }
 function back(){ if (!TOUR || TOUR.i === 0) return; TOUR.i--; show(); if (mem().v) say(textOf(TOUR.steps[TOUR.i])); else hush(); }
 function onTourClick(e){ const b = e.target.closest && e.target.closest("[data-g1]"); e.stopPropagation(); if (!b) return; const a = b.getAttribute("data-g1");
@@ -2412,7 +2421,8 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
 
 /* F2: one line from the fairy, pointing at something on screen (used at the start of the "I just ate" chain) */
 function line(text, el, tag){ if (TOUR) close("x", true); begin({steps:[{k:"f2", text, tag, el}], i:0, kind:"line"}); }
-window.LowiG1 = {start, close, line, next, back, news:NEWS, startNews, offerNews, say, hush, mem, reset:() => { try { localStorage.removeItem(KEY); } catch(e){} }, T, canSpeak:SS,
+function mini(){ cloneOrbCss(); return '<span class="g1-uorb g1-mini" aria-hidden="true"><span class="g1z-body">' + orbHTML() + '</span></span>'; }
+window.LowiG1 = {mini, steps:() => stepList().map(x => x.k), start, close, line, next, back, news:NEWS, startNews, offerNews, say, hush, mem, reset:() => { try { localStorage.removeItem(KEY); } catch(e){} }, T, canSpeak:SS,
   state:() => TOUR ? {kind:TOUR.kind, i:TOUR.i, n:TOUR.steps.length, k:TOUR.steps[TOUR.i].k} : null, fairy:() => fz ? {on:fz.classList.contains("on"), home:fzHome, pos:fzPos} : null};
 })();
 </script>
@@ -3285,6 +3295,20 @@ if (D.readyState === "loading") D.addEventListener("DOMContentLoaded", boot); el
 window.LowiB2 = {emptyHTML, fixDom};
 })();
 </script>
+<style id="b3css">
+/* LOWiSPIKE B3 part 1 (Oct 11, 2026): one companion everywhere, sticky permission ask, Settings first in Profile */
+#n1B .n1-tag.b3-tag{padding:3px 10px 3px 4px;gap:7px}
+#n1B .n1-tag.b3-tag .n1-dot{display:none}
+#n1B .g1-mini{position:relative;flex:none;width:26px;height:26px;display:inline-block;margin:-6px 0 -6px -2px}
+#n1B .g1-mini .halo{inset:-5px!important}
+#n1B .g1-mini .wave,#n1B .g1-mini .splash{display:none!important}
+#n1B .g1-mini .g1-face{opacity:1}
+#n1B .g1-mini .g1-face u{animation:none}
+html.n1-talk #n1B .g1-mini .g1-face u{animation:g1Talk .28s ease-in-out 4 alternate}
+#n1B.b3-stay{box-shadow:0 16px 44px rgba(0,0,0,.42),0 0 0 2px rgba(var(--acc-rgb,159,216,255),.7)}
+#tab-profile .g2e-tile.g2e-app{box-shadow:inset 0 0 0 1.5px rgba(var(--acc-rgb,159,216,255),.75),0 0 18px rgba(var(--acc-rgb,159,216,255),.18)}
+#tab-profile .g2e-tile.g2e-app .g2h-ic{color:var(--acc,#9fd8ff)}
+</style>
 </head>
 <body>
 <div id="app">
@@ -17541,6 +17565,7 @@ const L = [
   ["Email, password", "E-Mail, Passwort", "Correo, clave"],
   ["Theme, sounds", "Design, Töne", "Tema, sonidos"],
   ["Name, language", "Name, Sprache", "Nombre, idioma"],
+  ["Reminders", "Erinnerungen", "Avisos"],
   ["Back", "Zurück", "Atrás"]
 ];
 let lAdded = false;
@@ -17559,9 +17584,9 @@ const IC = {
   app: sv('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-1.8-.3 1.6 1.6 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.6 1.6 0 00-1-1.5 1.6 1.6 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.6 1.6 0 00.3-1.8 1.6 1.6 0 00-1.5-1H3a2 2 0 110-4h.1a1.6 1.6 0 001.5-1 1.6 1.6 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.6 1.6 0 001.8.3H9a1.6 1.6 0 001-1.5V3a2 2 0 114 0v.1a1.6 1.6 0 001 1.5 1.6 1.6 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 00-.3 1.8V9a1.6 1.6 0 001.5 1H21a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z"/>'),
   back: sv('<path d="M15 5l-7 7 7 7"/>')
 };
-const ORDER = ["todo", "comm", "swaps", "glow", "about", "health", "acct", "look", "app"];
+const ORDER = ["app", "todo", "comm", "swaps", "glow", "about", "health", "acct", "look"];
 const NAME = {todo:"Finish profile", comm:"Community", swaps:"My swaps", glow:"Your glow", about:"About you", health:"Health", acct:"Account", look:"Look & sound", app:"Settings"};
-const SUB = {comm:"Posts, ranking", swaps:"Your favourites", glow:"Daily check-in", about:"Blood pressure", health:"Only on this phone", acct:"Email, password", look:"Theme, sounds", app:"Name, language"};
+const SUB = {comm:"Posts, ranking", swaps:"Your favourites", glow:"Daily check-in", about:"Blood pressure", health:"Only on this phone", acct:"Email, password", look:"Theme, sounds", app:"Reminders"};
 const q = (r, s) => r ? r.querySelector(s) : null;
 const tab = () => D.getElementById("tab-profile");
 const phone = () => H.getAttribute("data-lay") === "phone" || (!H.getAttribute("data-lay") && innerWidth < 700);
@@ -18133,15 +18158,15 @@ function place(){ const b = D.getElementById("n1B"); if (!b) return; const o = o
   let left = Math.round(Math.max(m, Math.min(innerWidth - m - W0, cx - W0 / 2)));
   b.style.left = left + "px"; b.style.bottom = Math.round(bottom) + "px";
   const tail = b.querySelector(".n1-tail"); if (tail) tail.style.left = Math.round(Math.max(22, Math.min(W0 - 22, cx - left))) + "px"; }
-function show(n){ hide(true); cur = n; const b = D.createElement("div"); b.id = "n1B"; b.setAttribute("role", "status"); b.setAttribute("data-noi18n", ""); b.dataset.n = n.id;
-  b.innerHTML = '<div class="n1-top"><span class="n1-tag"><i class="n1-dot"></i>' + esc(w("tag")) + '</span><span class="n1-sp"></span>' +
+function show(n){ if (cur && cur.stay && !n.stay && cur.id !== n.id && D.getElementById("n1B")) return false; hide(true); cur = n; const b = D.createElement("div"); b.id = "n1B"; b.setAttribute("role", "status"); b.setAttribute("data-noi18n", ""); b.dataset.n = n.id;
+  b.innerHTML = '<div class="n1-top"><span class="n1-tag b3-tag">' + (window.LowiG1 && LowiG1.mini ? LowiG1.mini() : '') + '<i class="n1-dot"></i>' + esc(w("tag")) + '</span><span class="n1-sp"></span>' +
     '<button type="button" class="n1-ic" data-n1="set" aria-label="' + esc(w("set")) + '">' + GEAR + '</button><button type="button" class="n1-ic" data-n1="x" aria-label="' + esc(w("close")) + '">' + XI + '</button></div>' +
     '<p class="n1-p">' + esc(n.text) + '</p><div class="n1-btns">' +
     (n.go || n.label ? '<button type="button" class="n1-btn n1-later" data-n1="later">' + esc(n.laterLabel || w("later")) + '</button><button type="button" class="n1-btn n1-go" data-n1="go">' + esc(n.label || w(n.go)) + ' \u203a</button>'
           : '<button type="button" class="n1-btn n1-go" data-n1="x">' + esc(w("goOk")) + '</button>') + '</div><i class="n1-tail"></i>';
   D.body.appendChild(b); place(); H.classList.add("n1-talk"); sfx("pop");
   requestAnimationFrame(() => requestAnimationFrame(() => b.classList.add("in")));
-  clearTimeout(hideT); hideT = setTimeout(() => hide(), 20000); }
+  clearTimeout(hideT); if (n.stay) b.classList.add("b3-stay"); else hideT = setTimeout(() => hide(), 20000); return true; }
 function hide(quick){ clearTimeout(hideT); const b = D.getElementById("n1B"); cur = null; H.classList.remove("n1-talk"); if (!b) return;
   if (quick) { b.remove(); return; } b.classList.remove("in"); b.classList.add("out"); setTimeout(() => b.remove(), 240); }
 function act(q){ if (!q) return; try {
@@ -18176,7 +18201,7 @@ D.addEventListener("click", e => { const t = e.target; if (!t || !t.closest) ret
   const o = t.closest("[data-n1v]");
   if (o && o.closest(".n1-sheet")) { e.preventDefault(); const g = o.closest("[data-n1g]").dataset.n1g, v = o.dataset.n1v; sfx("tap");
     if (g === "on") set({on:v === "1"}); else if (g === "freq") set({freq:v}); repaintSheet(); return; }
-  if (cur && !t.closest("#n1B") && !t.closest("#tabbar")) hide(); }, true);
+  if (cur && !cur.stay && !t.closest("#n1B") && !t.closest("#tabbar")) hide(); }, true);
 D.addEventListener("change", e => { const s = e.target && e.target.closest && e.target.closest("[data-n1s]"); if (!s) return; const p = {}; p[s.dataset.n1s] = +s.value; set(p); });
 addEventListener("resize", () => { if (cur) place(); });
 
@@ -18185,7 +18210,7 @@ let hidAt = 0;
 function init(){
   setTimeout(() => check({open:true}), 6000);
   setInterval(() => { if (!D.hidden) check({}); }, 60000);
-  D.addEventListener("visibilitychange", () => { if (D.hidden) { hidAt = Date.now(); if (cur) hide(true); return; }
+  D.addEventListener("visibilitychange", () => { if (D.hidden) { hidAt = Date.now(); if (cur && !cur.stay) hide(true); return; }
     if (hidAt && Date.now() - hidAt > 10 * 6e4) setTimeout(() => check({open:true}), 1500); });
 }
 if (D.readyState === "loading") D.addEventListener("DOMContentLoaded", init); else setTimeout(init, 0);
@@ -18320,7 +18345,7 @@ function maybeAsk(opts){ opts = opts || {}; const n = N(); if (!n) return false;
   if (!opts.force) { if (!askable() || !n.tourSeen() || !n.appFree() || n.cur()) return false;
     const lg = n.log(); if (lg.last && Date.now() - lg.last < 3 * 6e4) return false; }
   save({asked:Date.now()});
-  n.show({id:"pushAsk", text:w("ask"), label:w("yes"), laterLabel:w("no"),
+  n.show({id:"pushAsk", stay:true, text:w("ask"), label:w("yes"), laterLabel:w("no"),
     fn: () => { enable().then(m => { if (m === "on") setTimeout(() => { const x = N(); if (!x) return; if (x.cur()) x.hide(true); x.show({id:"pushOk", text:w("ok")}); }, 450); }); },
     laterFn: () => { const s = st(); save({no:(s.no || 0) + 1}); }});
   return true; }

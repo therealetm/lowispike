@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261012-041400">
+<meta name="lowi-build" content="20261012-181121">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2114,7 +2114,7 @@ html[data-theme=light] #lcUpd.g1-upd .g1-usay{background:rgba(255,255,255,.2)}
 (function(){
 "use strict";
 if (window.LowiG1) return;
-const NEWS_RAW = {"id": "speed-weather-safety", "go": {"tab": "move"}, "text": {"en": "New: Faster tab switching and taps, a clear Safety button, and weather choices that visibly change the whole app. The interface is calmer, more consistent and easier to use.", "de": "Neu: Schnellere Tabs und Berührungen, ein frei sichtbarer Safety-Button und Wetteroptionen, die die ganze App sichtbar verändern. Die Oberfläche ist ruhiger, einheitlicher und leichter zu bedienen.", "es": "Nuevo: Cambios de pestaña y toques más rápidos, el botón Safety sin obstáculos y opciones de clima que cambian visiblemente toda la app. La interfaz es más clara, coherente y fácil de usar."}};
+const NEWS_RAW = {"id": "discovery-v1", "go": {"tab": "scan"}, "text": {"en": "New: Discovery field guide, label evidence, transparent provisional categories and separate reported concerns. Current price reports earn capped local points. Scans earn no discovery XP; community rewards and review remain pending.", "de": "Neu: Entdecker-Feldbuch, Etikettbelege, transparente vorläufige Kategorien und getrennte gemeldete Anliegen. Aktuelle Preismeldungen verdienen begrenzte lokale Punkte. Scans bringen keine Entdecker-XP; Community-Belohnungen und Prüfung stehen noch aus.", "es": "Nuevo: Guía de descubrimientos, pruebas de etiqueta, categorías provisionales transparentes e informes separados. Los precios actuales ganan puntos locales limitados. Escanear no da XP de descubrimiento; recompensas y revisión comunitaria quedan pendientes."}};
 const NEWS = (NEWS_RAW && typeof NEWS_RAW === "object") ? NEWS_RAW : null;
 const KEY = "lowi.g1", GO = "lowi.g1.go";
 const H = document.documentElement;
@@ -5878,6 +5878,7 @@ function renderHome(){ const d = tdEnsure(), sl = tdSlots(), needs = tdNeeds(), 
   const listN = window.LOWI_SHELF && LOWI_SHELF.listOpen ? LOWI_SHELF.listOpen().length : 0;
   $("#tab-home").innerHTML =
     '<div class="td-top"><div><div class="wordmark td-wm">LOW<i>i</i>SPIKE</div><div class="small muted">' + greet() + (S.user.name ? ", " + esc(S.user.name) : "") + '</div><div class="h1 td-date">' + esc(dateTxt) + '</div></div></div>' +
+    (window.LowiDiscovery ? LowiDiscovery.homeHTML() : '') +
     // 1 meals
     step(1, "How many meals today?") +
     '<div class="card td-card"><div class="td-seg" id="tdMeals">' + [[0, "Fasting"], [1, "1"], [2, "2"], [3, "3"]].map(o => '<button data-td="meals" data-v="' + o[0] + '" class="' + (d.meals === o[0] ? "on" : "") + '">' + o[1] + "</button>").join("") + "</div>" +
@@ -6889,6 +6890,7 @@ function shBoot(){
   mountInTab();
   window.LOWI_SHELF = {open:openShelf, showTab, state:() => SH, rules:SH_RULES, reset:() => { SH = shFresh(); shSave(); render(); },
     priceCompareHTML:(name, ean, compact) => priceCompareFor(name, ean, compact),
+    priceReports:(name, ean) => { const p = findDup(name, ean); return p && isLive(p) ? liveSightings(p).filter(s => s.p > 0 && s.at).map(s => ({amount:Number(s.p),currency:"EUR",store:storeById(s.s).n,area:s.br || "",date:new Date(s.at).toISOString(),expires:s.until || 0,source:"community-shelf",reporterStatus:"user-reported"})) : []; },
     /* Oct 8: Today's shopping list and shop mode read member finds and the extra list from here */
     findsFor:(g, name) => { const ws = words(name).filter(w => w.length > 3);
       return SH.products.filter(p => isLive(p) && p.g.indexOf(g) >= 0 && (!ws.length || ws.some(w => norm(p.n).indexOf(w) >= 0))).sort((a, b) => lastSeen(b) - lastSeen(a))
@@ -13108,10 +13110,11 @@ Object.assign(B3_TX, {
 
 /* ===== LOWiSPIKE round 3, part B (Oct 10, 2026): Scan as a supermarket Pokédex =====
    Scan a barcode (live camera, a photo of it, or type the number) or type a product name. The product is looked up
-   (shared dex in Supabase, then Open Food Facts), rated for blood sugar / insulin impact with the LOWiSPIKE rules,
-   revealed like a catch, and added to a collectible dex that everyone's scans fill. High-spike finds get swaps.
+   (shared dex in Supabase, then Open Food Facts). The discovery add-on distinguishes missing evidence,
+   provisional label categories and independent review; it makes no individual glucose/insulin predictions.
    Camera: BarcodeDetector where the phone has it, else ZXing (vendor/zxing-0.21.3.min.js, loaded on first scan, cached offline).
-   Local copy in localStorage "lowi.dex.v1", so the dex opens offline and catches made offline sync later. */
+   Local copy in localStorage "lowi.dex.v1". Existing catches can sync; new discovery drafts do not publish
+   without an acceptance service. Scans and catches themselves award no discovery points. */
 (function(){
 "use strict";
 const R2 = window.LowiR2 || {};
@@ -13177,6 +13180,7 @@ function spikeScore(f, drink){
 }
 /* returns {verdict:'ok'|'better'|'spike'|'unknown', why:[[key,...args]], score, est} */
 function rate(p){
+  if (window.LowiDiscovery) { const a = LowiDiscovery.assess(p); return {verdict:{fits:'ok',caution:'better',outside:'spike',insufficient:'unknown'}[a.category], why:[], score:null, est:true}; }
   const f = p.facts || {}, why = [], drink = p.cat === "drink" || !!f.drink; let v = "ok", lvl = 0;
   const up = (k, nv, args) => { why.push([k].concat(args || [])); const r = {ok:0, better:1, spike:2}[nv]; if (r > lvl) { lvl = r; v = nv; } };
   const L = ingList(p.ingredients), hasI = L.length > 0, hasN = f.c != null || f.s != null;
@@ -13222,7 +13226,7 @@ const NAMES = [
   ["n_flour", "spike", /brot|bread|toast|brötchen|nudeln|pasta|spaghetti|pizza|cracker|brezel|wrap|baguette|pan\b|bagel/],
   ["n_ok", "ok", /skyr|quark|\beier?\b|\beggs?\b|käse|kase|cheese|nüsse|nuss|nuts|avocado|wasser|water|butter|oliven|olive|lachs|salmon|thunfisch|tuna|hähnchen|chicken|gemüse|brokkoli|broccoli|spinat|salat|frischkäse|joghurt natur|griechisch|kaffee|coffee|tee\b|tea\b|huevo|queso/]
 ];
-function rateName(name){ const k = nkey(name) + " " + String(name || "").toLowerCase();
+function rateName(name){ if (window.LowiDiscovery) return null; const k = nkey(name) + " " + String(name || "").toLowerCase();
   for (const [why, v, rx] of NAMES) if (rx.test(k)) return {verdict:v, why:[[why], ["w_name"]], score:{ok:14, better:45, spike:74}[v], est:true};
   return null; }
 function whyText(w){ const k = w[0]; if (!B3_TX[k]) return ""; return t.apply(null, [k].concat(w.slice(1).map(x => typeof x === "number" ? String(x).replace(".", LI() ? "," : ".") : String(x).charAt(0).toUpperCase() + String(x).slice(1)))); }
@@ -13241,7 +13245,7 @@ function catOf(tags, name){ const s = (tags || []).join(" ") + " " + nkey(name);
   return "other"; }
 
 /* ---------- rarity + levels ---------- */
-function rarity(c){ c = c || 1; return c <= 1 ? ["leg", t("rar_leg")] : c <= 3 ? ["rare", t("rar_rare")] : c <= 9 ? ["unc", t("rar_unc")] : ["com", t("rar_com")]; }
+function rarity(p){ return window.LowiDiscovery ? LowiDiscovery.tier(p) : ["pending", "Tier pending"]; }
 const LV = [0, 5, 15, 30, 60, 120];
 function level(n){ let i = 0; while (i + 1 < LV.length && n >= LV[i + 1]) i++; const nx = LV[i + 1];
   return {i, name:t("lv" + i), next:nx || 0, nextName:nx ? t("lv" + (i + 1)) : "", pct:nx ? Math.round((n - LV[i]) / (nx - LV[i]) * 100) : 100}; }
@@ -13261,9 +13265,11 @@ async function loadComm(force){
     D.comm.forEach(p => { const m = D.mine[pkey(p)]; if (m) { m.id = p.id; m.dex = p.dex; m.catches = p.catches; } });
     save(); await syncPending(c); return true;
   } catch(e){ console.info("[LOWiSPIKE] dex offline:", e && (e.message || e)); return false; } finally { commBusy = false; } }
-function slim(p){ return {id:p.id || "", dex:p.dex || 0, barcode:p.barcode || "", name:p.name, brand:p.brand || "", cat:p.cat || "other", verdict:p.verdict, why:p.why || [], facts:p.facts || {}, img:p.img || "", catches:p.catches || 1, byName:p.byName || "", ts:p.ts || Date.now(), ingredients:(p.ingredients || "").slice(0, 600), source:p.source || ""}; }
+function slim(p){ return {id:p.id || "", dex:p.dex || 0, barcode:p.barcode || "", name:p.name, brand:p.brand || "", cat:p.cat || "other", verdict:p.verdict, why:p.why || [], facts:p.facts || {}, img:p.img || "", catches:p.catches || 1, byName:p.byName || "", ts:p.ts || Date.now(), ingredients:(p.ingredients || "").slice(0, 3000), source:p.source || "", country:p.country || "", quantity:p.quantity || "", variant:p.variant || "", labelPhoto:p.labelPhoto || "", labelSource:p.labelSource || "", documentedAt:p.documentedAt || 0}; }
 async function byBarcode(code){
-  const loc = D.comm.find(p => p.barcode === code) || D.mine["b" + code]; const c = await sb();
+  const loc = D.comm.find(p => p.barcode === code || window.LowiDiscoveryCore && LowiDiscoveryCore.barcode(code) && LowiDiscoveryCore.barcode(p.barcode) === LowiDiscoveryCore.barcode(code)) || D.mine["b" + code];
+  if (loc && loc.id) return loc;
+  const c = await sb();
   if (c) { try { const r = await c.from("products").select(COLS).eq("barcode", code).limit(1); if (!r.error && r.data && r.data[0]) return fromRow(r.data[0]); } catch(e){} }
   if (loc && loc.verdict && loc.verdict !== "unknown") return loc;
   const off = await offProduct(code); return off || (loc || null); }
@@ -13290,6 +13296,7 @@ async function searchName(q){ const k = nkey(q); if (k.length < 2) return [];
 /* catch: local first, then the shared dex. Returns {first, pending} */
 async function doCatch(p){
   const k = pkey(p); const was = D.mine[k];
+  if (!p.id) { D.mine[k] = Object.assign(slim(p), {ts:Date.now(), pending:false, localDraft:true, first:false}); save(); return {pending:true, first:false}; }
   D.mine[k] = Object.assign(slim(p), {ts:Date.now(), pending:true, first:false}); save();
   const c = await sb(); if (!c) return {pending:true, first:false};
   try { const r = await pushOne(c, p); D.mine[k] = Object.assign(D.mine[k], r.p ? slim(r.p) : {}, {pending:false, first:r.first, ts:Date.now()}); save(); return {pending:false, first:r.first}; }
@@ -13299,30 +13306,25 @@ async function pushOne(c, p){
   if (p.id) row = {id:p.id};
   else if (p.barcode) { const r = await c.from("products").select("id").eq("barcode", p.barcode).limit(1); if (r.data && r.data[0]) row = r.data[0]; }
   else { const r = await c.from("products").select("id").eq("name_key", nkey(p.name)).eq("barcode", "").eq("store_key", "").limit(1); if (r.data && r.data[0]) row = r.data[0]; }
-  if (!row) {
-    const ins = {barcode:p.barcode || "", name:String(p.name).slice(0, 80), name_key:nkey(p.name) || "product", brand:(p.brand || "").slice(0, 60), cat:p.cat || "other", verdict:p.verdict,
-      reason:packWhy(p.why), facts:Object.assign({}, p.facts || {}, {score:p.score || null, est:p.est ? 1 : 0}), ingredients:(p.ingredients || "").slice(0, 3000), front_url:p.img || "", source:p.source || "manual", caught_by_name:myName().slice(0, 40)};
-    const r = await c.from("products").insert(ins).select(COLS).single();
-    if (r.error) { const r2 = p.barcode ? await c.from("products").select("id").eq("barcode", p.barcode).limit(1) : {data:null}; if (r2.data && r2.data[0]) row = r2.data[0]; else throw r.error; }
-    else { row = r.data; first = true; }
-  }
+  // New records require an acceptance service. Never publish unreviewed local claims directly.
+  if (!row) throw new Error("Product acceptance is not connected; saved as a local draft.");
   const cr = await c.from("product_catches").insert({product_id:row.id, first});
   if (cr.error && !/duplicate|23505/.test(cr.error.message + cr.error.code)) throw cr.error;
   const full = await c.from("products").select(COLS).eq("id", row.id).limit(1);
   const fp = full.data && full.data[0] ? fromRow(full.data[0]) : null; if (fp) { const i = D.comm.findIndex(x => x.id === fp.id); if (i >= 0) D.comm[i] = fp; else D.comm.unshift(fp); }
   return {first, p:fp}; }
-async function syncPending(c){ const list = Object.values(D.mine).filter(m => m.pending); for (const m of list) { try { const r = await pushOne(c, m); Object.assign(m, r.p ? slim(r.p) : {}, {pending:false, first:r.first}); } catch(e){ break; } } if (list.length) save(); }
+async function syncPending(c){ const list = Object.values(D.mine).filter(m => m.pending && m.id); for (const m of list) { try { const r = await pushOne(c, m); Object.assign(m, r.p ? slim(r.p) : {}, {pending:false, first:false}); } catch(e){ break; } } if (list.length) save(); }
 
 /* =====================================================================
    Scan tab
    ===================================================================== */
 let P2RENDER = null;
 function stats(){ const mine = mineList(), comm = D.comm.length, ids = new Set(D.comm.map(p => p.id)); mineList().forEach(m => { if (!m.id) ids.add(pkey(m)); });
-  return {mine:mine.length, firsts:mine.filter(m => m.first).length, comm:Math.max(ids.size, comm)}; }
-function cardMini(p){ const r = rarity(p.catches), mine = isMine(p);
-  return '<button class="b3-mini v-' + esc(p.verdict) + (mine ? "" : " seen") + '" data-b3="show" data-k="' + esc(pkey(p)) + '">' +
+  return {mine:mine.length, firsts:window.LowiDiscovery ? 0 : mine.filter(m => m.first).length, comm:Math.max(ids.size, comm)}; }
+function cardMini(p){ const r = rarity(p), mine = isMine(p), v = window.LowiDiscovery ? rate(p).verdict : p.verdict;
+  return '<button class="b3-mini v-' + esc(v) + (mine ? "" : " seen") + '" data-b3="show" data-k="' + esc(pkey(p)) + '">' +
     '<span class="b3-mimg">' + (p.img ? '<img alt="" loading="lazy" referrerpolicy="no-referrer" src="' + esc(p.img) + '">' : '<i>' + (CAT_E[p.cat] || CAT_E.other) + '</i>') + '</span>' +
-    '<span class="b3-mno">#' + String(p.dex || "–").padStart(3, "0") + '</span><b>' + esc(p.name) + '</b><span class="b3-rar r-' + r[0] + '">' + esc(r[1]) + '</span></button>'; }
+    '<span class="b3-mno">#' + String(p.dex || "–").padStart(3, "0") + '</span><b>' + esc(p.name) + '</b><span class="b3-rar r-' + r[0] + '">' + esc(r[1]) + '</span>' + (window.LowiDiscovery ? LowiDiscovery.ethicsBadge(p) : '') + '</button>'; }
 function renderTab(){
   const tab = $("#tab-scan"); if (!tab) return;
   try { const SC = typeof SCAN !== "undefined" ? SCAN : null; if (SC && (SC.stage === "scanning" || SC.stage === "confirm") && P2RENDER) return P2RENDER(); } catch(e){}
@@ -13354,11 +13356,12 @@ const curTab = () => { try { return typeof TAB !== "undefined" ? TAB : ""; } cat
 /* typed product name */
 async function nameSearch(q){ q = String(q || "").trim(); const out = $("#b3NameOut"); if (!out) return; if (q.length < 2) { out.innerHTML = ""; return; }
   out.innerHTML = '<div class="small muted b3-sr">' + esc(t("searching")) + '</div>';
-  const found = await searchName(q), est = rateName(q);
+  const found = await searchName(q), est = window.LowiDiscovery ? null : rateName(q);
   let h = "";
   if (found.length) h += '<div class="tiny dim b3-sh">' + esc(t("t_comm")) + '</div><div class="b3-strip">' + found.map(cardMini).join("") + '</div>';
   if (est) h += '<div class="b3-est v-' + est.verdict + '"><span class="b3-vb v-' + est.verdict + '">' + esc(t("vl_" + est.verdict)) + '</span><div><div class="tiny dim">' + esc(t("t_est")) + '</div><b>' + esc(q) + '</b><div class="small">' + esc(whyText(est.why[0])) + '</div><div class="tiny dim">' + esc(t("w_name")) + '</div></div></div>';
   if (!found.length && !est) h += '<div class="small muted b3-sr">' + esc(t("t_none")) + '</div>';
+  if (window.LowiDiscovery) h += '<button class="r2-btn ghost" data-dg="new">' + esc(["Document a product label", "Produktetikett dokumentieren", "Documentar etiqueta"][LI()]) + '</button>';
   h += '<div class="b3-two"><button class="b3-pill" data-b3="scan">' + IC.bc + '<span>' + esc(t("scanIt")) + '</span></button><button class="b3-pill" data-b3="asmeal" data-q="' + esc(q) + '">' + IC.plate + '<span>' + esc(t("t_meal_go")) + '</span></button></div>';
   out.innerHTML = h; }
 
@@ -13471,7 +13474,8 @@ function swapsHTML(p){ if (p.verdict === "ok") return "";
     (comm.length ? '<div class="tiny dim b3-sh">' + esc(t("betterComm")) + '</div><div class="b3-strip">' + comm.map(cardMini).join("") + '</div>' : "") +
     '<div class="tiny dim b3-sh">' + esc(t("betterRule")) + '</div><div class="b3-chips">' + rule.map(x => '<span class="b3-chip">' + esc(x) + '</span>').join("") + '</div></div>'; }
 function cardHTML(p, anim){
-  const v = p.verdict || "unknown", r = rarity(p.catches), mine = isMine(p), m = mine ? D.mine[pkey(p)] : null;
+  if (window.LowiDiscovery) return LowiDiscovery.productHTML(p);
+  const v = p.verdict || "unknown", r = rarity(p), mine = isMine(p), m = mine ? D.mine[pkey(p)] : null;
   let storeCmp = ""; try { storeCmp = window.LOWI_SHELF && LOWI_SHELF.priceCompareHTML ? LOWI_SHELF.priceCompareHTML(p.name, p.barcode, true) : ""; } catch(e){}
   const why = (p.why || []).map(whyText).filter(Boolean);
   const by = p.byName ? (m && m.first ? t("firstByYou") : t("firstBy", p.byName)) : (m && m.first ? t("firstByYou") : "");
@@ -13498,6 +13502,7 @@ function manualHTML(p){
     '<button class="r2-btn pri big b3-catch" data-b3="mcatch" id="b3MCatch" disabled><span class="b3-pb" aria-hidden="true"></span>' + esc(t("catch")) + '</button><button class="r2-link b3-skip" data-b3="close">' + esc(t("dontSave")) + '</button></div>'; }
 let REV = null;
 function reveal(p, quiet){
+  if (window.LowiDiscovery) { CUR = p; return LowiDiscovery.openProduct(p); }
   if (REV) { try { R2.close(REV); } catch(e){} REV = null; }
   if (p && !p.notFound && !p.verdict) { p = Object.assign({}, p); }
   if (p && !p.notFound && (!p.verdict || p.verdict === "unknown" || !p.why)) { const r = rate(p); p.verdict = p.verdict && p.verdict !== "unknown" ? p.verdict : r.verdict; p.why = p.why && p.why.length ? p.why : r.why; if (p.score == null) p.score = r.score; if (p.est == null) p.est = r.est; }
@@ -13513,7 +13518,7 @@ async function catchCur(btn, p){
   if (!p || btn.disabled) return; btn.disabled = true; btn.classList.add("throw"); sfx("tap");
   const res = await doCatch(p);
   const first = res.first, k = pkey(p), m = D.mine[k] || p;
-  try { const amt = first ? 25 : 10; window.LowiHost && LowiHost.award("dex:" + k, btn, {amt, label:first ? t("xpFirst") : t("xpCatch")}); } catch(e){}
+  // Collection/scanning itself earns no points. Accepted contributions have their own ledger.
   sfx(first ? "catchFirst" : "catch"); buzz(first ? [30, 60, 30, 60, 80] : [30, 50, 40]);
   const acts = btn.closest(".b3-acts, .b3-man"); const card = REV && $("#b3Card", REV);
   const burst = '<div class="b3-caught' + (first ? " first" : "") + '"><div class="b3-cbig">' + esc(first ? t("firstCatch") : t("caught")) + '</div><div class="small">' + esc(first ? t("firstCatchSub") : res.pending ? t("pending") : m.byName && m.byName !== myName() ? t("addedSub", m.byName) : t("inYours")) + '</div>' +
@@ -13531,12 +13536,13 @@ function dexItems(){ const all = D.comm.slice(); mineList().forEach(m => { if (!
   all.sort((a, b) => (a.dex || 1e9) - (b.dex || 1e9));
   const q = nkey(DEXF.q);
   return all.filter(p => (DEXF.f === "all" || (DEXF.f === "mine" && isMine(p)) || (DEXF.f === "ok" && p.verdict === "ok") || (DEXF.f === "spike" && p.verdict === "spike")) && (!q || nkey(p.name + " " + p.brand).indexOf(q) >= 0)); }
-function dexGrid(){ const it = dexItems(); return it.length ? '<div class="b3-grid">' + it.map(p => { const mine = isMine(p), r = rarity(p.catches);
+function dexGrid(){ const it = dexItems(); return it.length ? '<div class="b3-grid">' + it.map(p => { const mine = isMine(p), r = rarity(p);
     return '<button class="b3-cell v-' + esc(p.verdict) + (mine ? " mine" : " seen") + '" data-b3="show" data-k="' + esc(pkey(p)) + '"><span class="b3-cno">#' + String(p.dex || "–").padStart(3, "0") + '</span>' +
       '<span class="b3-cimg">' + (p.img ? '<img alt="" loading="lazy" referrerpolicy="no-referrer" src="' + esc(p.img) + '">' : '<i>' + (CAT_E[p.cat] || CAT_E.other) + '</i>') + '</span>' +
       '<b>' + esc(p.name) + '</b><span class="b3-cv"><i class="b3-dot v-' + esc(p.verdict) + '"></i>' + esc(mine ? r[1] : t("notMine")) + '</span></button>'; }).join("") + '</div>'
     : '<div class="small muted b3-empty">' + esc(D.commTs || mineList().length ? t("dexEmpty") : (navigator.onLine ? t("dexLoading") : t("dexEmpty"))) + '</div>'; }
 function openDex(){
+  if (window.LowiDiscovery) return LowiDiscovery.openGuide();
   if (REV) { try { R2.close(REV); } catch(e){} }
   const st = stats(), lv = level(st.mine);
   DEXOV = R2.sheet('<div class="b3-dex"><div class="h2" style="margin:4px 44px 2px 0">' + esc(t("dexTitle")) + '</div><div class="small muted">' + esc(t("dexStats", st.mine, st.firsts, st.comm)) + '</div>' +
@@ -13603,7 +13609,7 @@ function boot(){
   try { if (curTab() === "scan") renderTab(); } catch(e){}
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => setTimeout(boot, 0)); else setTimeout(boot, 0);
-window.LowiDex = {open:openDex, scan:openScanner, reveal, rate, rateName, validCode, render:renderTab, state:() => D, load:loadComm, lookup:byBarcode, cur:() => CUR} /* f2-cur */;
+window.LowiDex = {open:openDex, scan:openScanner, reveal, rate, rateName, validCode, render:renderTab, state:() => D, load:loadComm, lookup:byBarcode, collect:doCatch, items:() => D.comm.concat(mineList()), cur:() => window.LowiDiscovery ? LowiDiscovery.cur() : CUR} /* f2-cur */;
 })();
 </script>
 <style id="r3kcss">
@@ -18581,5 +18587,9 @@ html.q4b-off #lcA2hs{display:none!important}
 <script src="appearance.js"></script>
 <link rel="stylesheet" href="apple-ui.css">
 <script src="apple-ui.js"></script>
+<link rel="stylesheet" href="discovery.css">
+<script src="discovery-config.js"></script>
+<script src="discovery-core.js"></script>
+<script src="discovery.js"></script>
 </body>
 </html>

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261011-214733">
+<meta name="lowi-build" content="20261012-041400">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2114,7 +2114,7 @@ html[data-theme=light] #lcUpd.g1-upd .g1-usay{background:rgba(255,255,255,.2)}
 (function(){
 "use strict";
 if (window.LowiG1) return;
-const NEWS_RAW = {"id": "appearance-chat-ui", "go": {"tab": "foryou"}, "text": {"en": "New: Scan label restored, cleaner profile and chat bubbles. Appearance controls beside your profile: time, weather look and mood. Chat and leaderboard now share the same simulated members.", "de": "Neu: Scan-Beschriftung sichtbar, klareres Profil und verbundene Chatblasen. Aussehen direkt neben dem Profil: Tageszeit, Wetteroptik und Stimmung. Chat und Rangliste zeigen dieselben simulierten Mitglieder.", "es": "Nuevo: Etiqueta Scan visible, perfil más limpio y burbujas de chat conectadas. Apariencia junto al perfil: hora, aspecto del clima y ánimo. Chat y clasificación comparten los mismos miembros simulados."}};
+const NEWS_RAW = {"id": "speed-weather-safety", "go": {"tab": "move"}, "text": {"en": "New: Faster tab switching and taps, a clear Safety button, and weather choices that visibly change the whole app. The interface is calmer, more consistent and easier to use.", "de": "Neu: Schnellere Tabs und Berührungen, ein frei sichtbarer Safety-Button und Wetteroptionen, die die ganze App sichtbar verändern. Die Oberfläche ist ruhiger, einheitlicher und leichter zu bedienen.", "es": "Nuevo: Cambios de pestaña y toques más rápidos, el botón Safety sin obstáculos y opciones de clima que cambian visiblemente toda la app. La interfaz es más clara, coherente y fácil de usar."}};
 const NEWS = (NEWS_RAW && typeof NEWS_RAW === "object") ? NEWS_RAW : null;
 const KEY = "lowi.g1", GO = "lowi.g1.go";
 const H = document.documentElement;
@@ -2415,7 +2415,7 @@ let decoQ = 0; const redeco = () => { if (decoQ) return; decoQ = requestAnimatio
 /* ---------- when to start on its own ---------- */
 const AUTO = () => { try { if (localStorage.getItem("lowi.g1.auto") === "1") return true; } catch(e){} return !navigator.webdriver; };
 let freeSince = 0;
-function tick(){ helpPlace(); if (TOUR) return; if (!AUTO()) return;
+function tick(){ if (document.hidden) return; if (TOUR) { helpPlace(); return; } if (!AUTO()) return;
   if (!appFree()) { freeSince = 0; return; } if (!freeSince) { freeSince = Date.now(); return; } if (Date.now() - freeSince < 1200) return;
   let go = ""; try { go = sessionStorage.getItem(GO) || ""; } catch(e){}
   if (go) { try { sessionStorage.removeItem(GO); } catch(e){} if (NEWS) { if (bnSeen() && mem().t) { pointNews(); return; } startNews(); return; } } /* b2-go */
@@ -2426,7 +2426,7 @@ function tick(){ helpPlace(); if (TOUR) return; if (!AUTO()) return;
 function init(){ H.classList.add("g1"); helpBtn(); helpPlace(); decorate();
   const watch = () => { const d = $("#lcUpd"); if (d) { redeco(); if (!d.__g1) { d.__g1 = 1; new MutationObserver(redeco).observe(d, {childList:true}); } } };
   new MutationObserver(watch).observe(H, {childList:true}); watch();
-  setInterval(tick, 600);
+  setInterval(tick, 1500);
   document.addEventListener("visibilitychange", () => { if (document.visibilityState !== "visible") hush(); }); }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 
@@ -6100,10 +6100,26 @@ document.addEventListener("click", e => { const a = e.target.closest("[data-cm]"
 /* Navigation, onboarding, events, init */
 let TAB = "home";
 const RENDER = {home:renderHome, foryou:renderCommunity, scan:renderScan, shelf:renderShelf, move:renderMoveTab, profile:renderProfile};
+let tabRefresh = 0, tabRefreshIdle = false;
+function cancelTabRefresh(){ if (!tabRefresh) return; if (tabRefreshIdle && window.cancelIdleCallback) cancelIdleCallback(tabRefresh); else clearTimeout(tabRefresh); tabRefresh = 0; }
+function markRendered(t){ const el = $("#tab-" + t); if (el) el.dataset.navRendered = "1"; }
+function refreshCachedTab(t){
+  cancelTabRefresh();
+  const run = () => { tabRefresh = 0; if (TAB !== t || document.hidden) return; RENDER[t](); markRendered(t); };
+  if (window.requestIdleCallback) { tabRefreshIdle = true; tabRefresh = requestIdleCallback(run, {timeout:350}); }
+  else { tabRefreshIdle = false; tabRefresh = setTimeout(run, 90); }
+}
 /* Oct 8: fitness has its own tab. Move used to hide behind a card on Today. */
 function renderMoveTab(){ if (window.MOVE && MOVE.showTab) MOVE.showTab(); }
-function goTab(t){ if (!RENDER[t]) t = "home"; TAB = t; closeSheet(); ["result", "sos"].forEach(id => { const o = $("#" + id); if (o) o.classList.remove("open"); }); if (window.MOVE && MOVE.close) MOVE.close(); $$(".tab").forEach(x => x.classList.toggle("active", x.id === "tab-" + t)); $$(".tb").forEach(b => b.classList.toggle("active", b.dataset.tab === t)); RENDER[t](); $("#tab-" + t).scrollTop = 0; }
-function renderAll(){ RENDER[TAB](); }
+function goTab(t){
+  if (!RENDER[t]) t = "home";
+  const root = $("#tab-" + t), cached = !!(root && root.dataset.navRendered === "1" && root.childElementCount);
+  TAB = t; closeSheet(); ["result", "sos"].forEach(id => { const o = $("#" + id); if (o) o.classList.remove("open"); }); if (window.MOVE && MOVE.close) MOVE.close();
+  $$(".tab").forEach(x => x.classList.toggle("active", x.id === "tab-" + t)); $$(".tb").forEach(b => b.classList.toggle("active", b.dataset.tab === t));
+  if (root) root.scrollTop = 0;
+  if (cached) refreshCachedTab(t); else { cancelTabRefresh(); RENDER[t](); markRendered(t); }
+}
+function renderAll(){ cancelTabRefresh(); RENDER[TAB](); markRendered(TAB); }
 
 const TAGS = ["PCOS", "Insulin resistance", "Cravings", "Energy", "Skin", "Weight", "Pre-diabetes", "Just eat better"];
 let OB = {name:"", bday:"", avatar:"", tags:[]};
@@ -9378,7 +9394,7 @@ R2.close = function(ov){
   if (i < 0) return;
   const it = ovStack.splice(i, 1)[0];
   it.ov.classList.remove("on"); it.ov.classList.add("off");
-  setTimeout(() => it.ov.remove(), 320);
+  if (!R2.motionClose || !R2.motionClose(it.ov, () => it.ov.remove())) setTimeout(() => it.ov.remove(), 320);
   try { it.onClose && it.onClose(); } catch(e){}
 };
 R2.closeAll = () => { while (ovStack.length) R2.close(); };
@@ -13709,11 +13725,9 @@ function ctx(){
     ac = new AC({latencyHint:"interactive"});
     const comp = ac.createDynamicsCompressor(); comp.threshold.value = -14; comp.knee.value = 10; comp.ratio.value = 4; comp.attack.value = 0.003; comp.release.value = 0.18;
     master = ac.createGain(); master.gain.value = vol(); master.connect(comp); comp.connect(ac.destination);
-    verbIn = ac.createGain(); verbIn.gain.value = 0.22; const verb = ac.createConvolver();
-    const n = Math.floor(ac.sampleRate * 1.3), b = ac.createBuffer(2, n, ac.sampleRate);
-    for (let c = 0; c < 2; c++) { const d = b.getChannelData(c); for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2.6); }
-    verb.buffer = b; verbIn.connect(verb); verb.connect(master);
-    noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    // This kit is created only on a Cook swipe. Keep that gesture light as well:
+    // route ambience directly and build the short noise source only if it is used.
+    verbIn = master; noiseBuf = null;
   } catch(e){ ac = null; }
   return ac;
 }
@@ -13732,11 +13746,13 @@ function note(f, t, d, o){ o = o || {}; const n = ac.currentTime + (t || 0), osc
   osc.start(n); osc.stop(n + d + 0.05); }
 function bell(f, t, d, g, rv){ g = g == null ? 0.22 : g; rv = rv == null ? 0.5 : rv; note(f, t, d, {g, rv}); note(f * 2.756, t, d * 0.45, {g:g * 0.32, rv}); note(f * 5.404, t, d * 0.22, {g:g * 0.12, rv}); }
 function pluck(f, t, d, g){ note(f, t, d, {w:"triangle", g:g == null ? 0.2 : g, lp:3200, rv:0.25}); note(f * 2, t, d * 0.5, {g:(g || 0.2) * 0.25}); }
-function noise(t, d, o){ o = o || {}; const n = ac.currentTime + (t || 0), s = ac.createBufferSource(), fl = ac.createBiquadFilter(), g = ac.createGain();
+function noise(t, d, o){ o = o || {};
+  if (!noiseBuf) { const len = Math.max(1, Math.floor(ac.sampleRate * .9)); noiseBuf = ac.createBuffer(1, len, ac.sampleRate); const data = noiseBuf.getChannelData(0); for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1; }
+  const n = ac.currentTime + (t || 0), s = ac.createBufferSource(), fl = ac.createBiquadFilter(), g = ac.createGain();
   s.buffer = noiseBuf; fl.type = o.type || "bandpass"; fl.frequency.setValueAtTime(o.f || 2000, n); if (o.to) fl.frequency.exponentialRampToValueAtTime(o.to, n + d); fl.Q.value = o.q || 1;
   const pk = o.g == null ? 0.15 : o.g; g.gain.setValueAtTime(0.0001, n); g.gain.exponentialRampToValueAtTime(pk, n + (o.a || 0.003)); g.gain.exponentialRampToValueAtTime(0.0001, n + d);
   s.connect(fl); fl.connect(g); g.connect(master); if (o.rv) { const sv = ac.createGain(); sv.gain.value = o.rv; g.connect(sv); sv.connect(verbIn); }
-  s.start(n, Math.random() * 0.8); s.stop(n + d + 0.05); }
+  s.start(n, Math.random() * 0.5); s.stop(n + d + 0.05); }
 function blip(f, t, g){ note(f, t, 0.09, {g:g == null ? 0.18 : g, to:f * 2.3, slide:0.06, a:0.002, rv:0.3}); }
 
 const KIT = {
@@ -14452,11 +14468,9 @@ function ctx(){
     comp = ac.createDynamicsCompressor(); comp.threshold.value = -14; comp.knee.value = 10; comp.ratio.value = 4; comp.attack.value = 0.003; comp.release.value = 0.18;
     master = ac.createGain(); master.gain.value = vol();
     master.connect(comp); comp.connect(ac.destination);
-    // small airy room so chimes sound like glass, not a phone beep
-    verbIn = ac.createGain(); verbIn.gain.value = 0.22;
-    verb = ac.createConvolver(); verb.buffer = impulse(1.3, 2.6);
-    verbIn.connect(verb); verb.connect(master);
-    noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    // Keep first-touch work tiny. The old convolution impulse generated hundreds of thousands
+    // of random samples during pointer-down and made the first tap visibly stall on iPhones.
+    verbIn = master; verb = null; noiseBuf = null;
   } catch(e){ ac = null; }
   return ac;
 }
@@ -14472,7 +14486,7 @@ function unlock(){
   if (ac.state !== "running") { try { ac.resume(); } catch(e){} }
   if (!unlocked) { try { const b = ac.createBuffer(1, 1, 22050), s = ac.createBufferSource(); s.buffer = b; s.connect(ac.destination); s.start(0); } catch(e){} unlocked = true; }
 }
-["pointerdown", "touchend", "keydown", "click"].forEach(t => document.addEventListener(t, unlock, {capture:true, passive:true}));
+["pointerdown", "keydown"].forEach(t => document.addEventListener(t, unlock, {capture:true, passive:true, once:true}));
 document.addEventListener("visibilitychange", () => { if (!ac) return; if (document.hidden) { try { ac.suspend(); } catch(e){} } else if (unlocked) { try { ac.resume(); } catch(e){} } });
 
 function ready(){ if (!S.on || S.vol <= 0) return false; if (!ctx()) return false; if (ac.state === "suspended") { try { ac.resume(); } catch(e){} } return ac.state !== "closed"; }
@@ -14496,7 +14510,9 @@ function bell(f, t, d, g, rv){ g = g == null ? 0.22 : g; rv = rv == null ? 0.5 :
   note(f, t, d, {g:g, rv:rv}); note(f * 2.756, t, d * 0.45, {g:g * 0.32, rv:rv}); note(f * 5.404, t, d * 0.22, {g:g * 0.12, rv:rv}); }
 function pluck(f, t, d, g){ note(f, t, d, {w:"triangle", g:g == null ? 0.2 : g, lp:3200, rv:0.25}); note(f * 2, t, d * 0.5, {g:(g || 0.2) * 0.25}); }
 function noise(t, d, o){
-  o = o || {}; const n = ac.currentTime + (t || 0), s = ac.createBufferSource(), fl = ac.createBiquadFilter(), g = ac.createGain();
+  o = o || {};
+  if (!noiseBuf) { const len = Math.max(1, Math.floor(ac.sampleRate * .6)); noiseBuf = ac.createBuffer(1, len, ac.sampleRate); const data = noiseBuf.getChannelData(0); for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1; }
+  const n = ac.currentTime + (t || 0), s = ac.createBufferSource(), fl = ac.createBiquadFilter(), g = ac.createGain();
   s.buffer = noiseBuf; fl.type = o.type || "bandpass"; fl.frequency.setValueAtTime(o.f || 2000, n); if (o.to) fl.frequency.exponentialRampToValueAtTime(o.to, n + d); fl.Q.value = o.q || 1;
   const pk = o.g == null ? 0.15 : o.g; g.gain.setValueAtTime(0.0001, n); g.gain.exponentialRampToValueAtTime(pk, n + (o.a || 0.003)); g.gain.exponentialRampToValueAtTime(0.0001, n + d);
   s.connect(fl); fl.connect(g); g.connect(master); if (o.rv) { const sv = ac.createGain(); sv.gain.value = o.rv; g.connect(sv); sv.connect(verbIn); }
@@ -16565,8 +16581,8 @@ function watch(){ clearInterval(POLL); let gone = 0; POLL = setInterval(() => {
 /* ---------- the fairy, once ---------- */
 function fairyOnce(){ if (mem().f || !window.LowiG1 || !LowiG1.line) return; try { if (LowiG1.state && LowiG1.state()) return; } catch(e){}
   remember({f:1}); setTimeout(() => { if (F.step !== "eat" || !q("#f2Sheet .f2-opts")) return; try { LowiG1.line(w("fairy"), () => q("#f2Sheet .f2-opts"), w("guide")); } catch(e){ console.error(e); } }, 650); }
-function fairyCheck(){ try { const s = window.LowiG1 && LowiG1.state ? LowiG1.state() : null; if (s && s.kind === "line" && s.k === "f2" && !(F.step === "eat" && q("#sheetwrap.open #f2Sheet .f2-opts"))) LowiG1.close("x"); } catch(e){} }
-setInterval(fairyCheck, 400);
+function fairyCheck(){ if (!F.on || document.hidden) return; try { const s = window.LowiG1 && LowiG1.state ? LowiG1.state() : null; if (s && s.kind === "line" && s.k === "f2" && !(F.step === "eat" && q("#sheetwrap.open #f2Sheet .f2-opts"))) LowiG1.close("x"); } catch(e){} }
+setInterval(fairyCheck, 1200);
 
 /* ---------- start / finish ---------- */
 function start(o){ o = o || {}; F = {on:true, step:"", fast:o.rec || o.fast || null, photo:"", text:"", mode:"", err:"", last:null};
@@ -17093,7 +17109,7 @@ function hook(){
   mo.observe(s, {childList:true});
   rearrange(q(s, ":scope > .stack"));
 }
-setInterval(hook, 400);
+setInterval(() => { if (!document.hidden && (typeof TAB === "undefined" || TAB === "move")) hook(); }, 1600);
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", hook); else hook();
 window.LowiG2 = {open:openPanel, key:() => openKey};
 })();
@@ -18563,5 +18579,7 @@ html.q4b-off #lcA2hs{display:none!important}
 </script>
 <script src="recipe-book.js"></script>
 <script src="appearance.js"></script>
+<link rel="stylesheet" href="apple-ui.css">
+<script src="apple-ui.js"></script>
 </body>
 </html>

@@ -1,0 +1,86 @@
+/* Interruptible sheet motion and keyboard access; no external animation dependency. */
+(function(){
+'use strict';
+const D=document,H=D.documentElement,R2=window.LowiR2;
+H.classList.add('apple-ui');
+if(!R2 || !R2.sheet) return;
+const states=new WeakMap(), reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+let sequence=0;
+function render(s){s.sh.style.setProperty('transform','translate3d(0,'+s.y+'px,0)','important');}
+function stop(s){cancelAnimationFrame(s.raf);s.raf=0;s.last=0;}
+function settle(s,target,velocity,done){
+  stop(s);s.target=target;s.v=Number.isFinite(velocity)?velocity:s.v;s.done=done;
+  if(reduced()){s.y=target;s.v=0;render(s);if(done)done();return;}
+  const tick=time=>{
+    const dt=s.last?Math.min((time-s.last)/1000,.025):1/60;s.last=time;
+    const stiffness=360,damping=s.release?32:38;
+    s.v+=(-stiffness*(s.y-s.target)-damping*s.v)*dt;s.y+=s.v*dt;render(s);
+    if(Math.abs(s.y-s.target)<.5&&Math.abs(s.v)<3){s.y=s.target;s.v=0;render(s);s.raf=0;s.last=0;if(s.done){const cb=s.done;s.done=null;cb();}}else s.raf=requestAnimationFrame(tick);
+  };
+  s.raf=requestAnimationFrame(tick);
+}
+const sheet=R2.sheet;
+R2.sheet=function(html,opts){
+  opts=opts||{};const trigger=D.activeElement,ov=sheet.apply(this,arguments),sh=ov&&ov.querySelector('.r2-sh');
+  if(!sh||opts.noClose) return ov;
+  const s={ov,sh,y:sh.getBoundingClientRect().height+30,v:0,target:0,raf:0,last:0,closing:false,trigger};
+  states.set(ov,s);ov.classList.add('au-physics');
+  const heading=sh.querySelector('h1,h2,.h1,.h2');if(heading){if(!heading.id)heading.id='au-sheet-title-'+(++sequence);sh.setAttribute('aria-labelledby',heading.id);}
+  sh.tabIndex=-1;render(s);settle(s,0,0);
+  requestAnimationFrame(()=>{if(R2.top()===ov&&!sh.contains(D.activeElement))sh.focus({preventScroll:true});});
+  const grab=sh.querySelector('.r2-grab');
+  if(grab&&!opts.full){
+    let drag=null;
+    grab.addEventListener('pointerdown',e=>{
+      if(e.button!==0||s.closing)return;stop(s);drag={id:e.pointerId,start:e.clientY,base:s.y,lastY:e.clientY,lastTime:e.timeStamp,velocity:s.v};
+      grab.setPointerCapture(e.pointerId);ov.classList.add('au-drag');e.preventDefault();
+    });
+    grab.addEventListener('pointermove',e=>{
+      if(!drag||e.pointerId!==drag.id)return;
+      const raw=drag.base+e.clientY-drag.start;
+      s.y=raw>=0?raw:(raw*200*.55)/(200+.55*Math.abs(raw));
+      const dt=Math.max(1,e.timeStamp-drag.lastTime);drag.velocity=.6*drag.velocity+.4*((e.clientY-drag.lastY)/dt*1000);drag.lastY=e.clientY;drag.lastTime=e.timeStamp;render(s);
+    });
+    const end=(e,cancelled)=>{
+      if(!drag||e.pointerId!==drag.id)return;
+      const v=e.timeStamp-drag.lastTime>100?0:drag.velocity;
+      const projected=s.y+(v/1000)*.99/(1-.99),threshold=Math.min(160,sh.getBoundingClientRect().height*.3);
+      drag=null;ov.classList.remove('au-drag');s.release=true;
+      if(!cancelled&&s.y>10&&projected>threshold){s.v=v;R2.close(ov);}else settle(s,0,v);
+    };
+    grab.addEventListener('pointerup',e=>end(e,false));grab.addEventListener('pointercancel',e=>end(e,true));
+  }
+  ov.addEventListener('keydown',e=>{
+    if(R2.top()!==ov)return;
+    if(e.key==='Escape'){e.preventDefault();e.stopPropagation();R2.close(ov);}
+    if(e.key==='Tab'){
+      const nodes=Array.from(sh.querySelectorAll('button:not(:disabled),a[href],input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex="0"]')).filter(n=>!n.hidden&&n.getClientRects().length);
+      if(!nodes.length){e.preventDefault();return;}
+      const first=nodes[0],last=nodes[nodes.length-1];
+      if(e.shiftKey&&(D.activeElement===first||D.activeElement===sh)){e.preventDefault();last.focus();}else if(!e.shiftKey&&(D.activeElement===last||D.activeElement===sh)){e.preventDefault();first.focus();}
+    }
+  });
+  return ov;
+};
+R2.motionClose=function(ov,remove){
+  const s=states.get(ov);if(!s)return false;s.closing=true;
+  settle(s,s.sh.getBoundingClientRect().height+40,s.v,()=>{remove();states.delete(ov);if(!R2.top()&&s.trigger&&s.trigger.isConnected)s.trigger.focus({preventScroll:true});});return true;
+};
+/* Announce completed actions without taking focus away from the task. */
+const toast=D.getElementById('toast');if(toast){toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');toast.setAttribute('aria-atomic','true');}
+/* Navigation labels share one baseline and expose the active destination. */
+const nav=D.getElementById('tabbar');
+if(nav){
+  nav.setAttribute('aria-label','Main navigation');
+  for(const b of nav.querySelectorAll('.tb')){
+    if(!b.querySelector('.tbl')){
+      const label=D.createElement('span');label.className='tbl';
+      const textNodes=Array.from(b.childNodes).filter(n=>n.nodeType===3&&n.textContent.trim());
+      if(textNodes.length){label.textContent=textNodes.map(n=>n.textContent.trim()).join(' ');textNodes.forEach(n=>n.replaceWith(label));}
+      else{const old=Array.from(b.children).find(n=>n.tagName==='SPAN'&&!n.className);if(old){old.classList.add('tbl');}}
+    }
+  }
+  const current=()=>nav.querySelectorAll('.tb').forEach(b=>{if(b.classList.contains('active'))b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
+  current();new MutationObserver(current).observe(nav,{subtree:true,attributes:true,attributeFilter:['class']});
+}
+})();

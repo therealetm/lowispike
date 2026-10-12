@@ -24,7 +24,13 @@
     H.style.setProperty('--orb-speed',m === 'energy' ? '5s' : m === 'focus' ? '9s' : '15s');
     H.style.setProperty('--orb-time',String(.6 + Math.sin(prefs.hour / 24 * Math.PI) * .4));
     H.dataset.weatherLook = w; H.dataset.moodLook = m;
-    if (button) { button.textContent = light ? '☀' : '☾'; button.title = t()[0]; button.setAttribute('aria-label',t()[0]); }
+    const W=t(), wi={clear:7,cloud:8,rain:9}[w], mi={calm:10,focus:11,energy:12}[m];
+    if (button) {
+      const weather={clear:'☀',cloud:'☁',rain:'☂'}[w];
+      button.innerHTML='<span class="ap-day" aria-hidden="true">'+(light?'☀':'☾')+'</span><span class="ap-weather" aria-hidden="true">'+weather+'</span>';
+      button.title=W[0]+': '+W[wi]+' · '+W[mi];
+      button.setAttribute('aria-label',button.title);
+    }
     if (panel && !panel.hidden) sync();
   }
   function sync(){
@@ -32,12 +38,18 @@
     panel.querySelector('output').textContent = String(prefs.hour).padStart(2,'0') + ':00';
     panel.querySelectorAll('[data-ap-mode]').forEach(b => b.setAttribute('aria-pressed',String(b.dataset.apMode === R2.theme())));
     ['weather','mood'].forEach(key => panel.querySelectorAll('[data-ap-'+key+']').forEach(b => b.setAttribute('aria-pressed',String(b.dataset['ap'+key[0].toUpperCase()+key.slice(1)] === prefs[key]))));
+    const preview=panel.querySelector('.ap-preview'), W=t();
+    if(preview){
+      preview.dataset.weather=prefs.weather; preview.dataset.mood=prefs.mood;
+      preview.querySelector('b').textContent=W[{clear:7,cloud:8,rain:9}[prefs.weather]];
+      preview.querySelector('small').textContent=W[{calm:10,focus:11,energy:12}[prefs.mood]]+' · '+String(prefs.hour).padStart(2,'0')+':00';
+    }
   }
   function close(){ panel.hidden = true; button.setAttribute('aria-expanded','false'); button.focus(); }
   function open(){
     const W = t();
     const choices = (key,items) => '<div class="ap-wheel" role="group" aria-label="'+W[key === 'weather' ? 2 : 3]+'">'+items.map(([value,label]) => '<button type="button" data-ap-'+key+'="'+value+'" aria-pressed="false">'+label+'</button>').join('')+'</div>';
-    panel.innerHTML = '<section class="ap-sheet" role="dialog" aria-modal="true" aria-labelledby="apTitle"><button class="ap-close" aria-label="'+W[14]+'">×</button><h2 id="apTitle">'+W[0]+'</h2><p>'+W[13]+'</p><div class="ap-wheel ap-modes">'+[['dark',W[4]],['light',W[5]],['sunrise',W[6]]].map(([v,label])=>'<button data-ap-mode="'+v+'" aria-pressed="false">'+label+'</button>').join('')+'</div><label class="ap-time">'+W[1]+' <output></output><input data-ap-hour type="range" min="0" max="23" step="1" aria-label="'+W[1]+'"><span>00:00 <i>12:00</i> 23:00</span></label><h3>'+W[2]+'</h3>'+choices('weather',[['clear','☀ '+W[7]],['cloud','☁ '+W[8]],['rain','☂ '+W[9]]])+'<h3>'+W[3]+'</h3>'+choices('mood',[['calm',W[10]],['focus',W[11]],['energy',W[12]]])+'</section>';
+    panel.innerHTML = '<section class="ap-sheet" role="dialog" aria-modal="true" aria-labelledby="apTitle"><button class="ap-close" aria-label="'+W[14]+'">×</button><h2 id="apTitle">'+W[0]+'</h2><p>'+W[13]+'</p><div class="ap-preview" aria-live="polite"><i aria-hidden="true"></i><span><b></b><small></small></span></div><div class="ap-wheel ap-modes">'+[['dark',W[4]],['light',W[5]],['sunrise',W[6]]].map(([v,label])=>'<button data-ap-mode="'+v+'" aria-pressed="false">'+label+'</button>').join('')+'</div><label class="ap-time">'+W[1]+' <output></output><input data-ap-hour type="range" min="0" max="23" step="1" aria-label="'+W[1]+'"><span>00:00 <i>12:00</i> 23:00</span></label><h3>'+W[2]+'</h3>'+choices('weather',[['clear','☀ '+W[7]],['cloud','☁ '+W[8]],['rain','☂ '+W[9]]])+'<h3>'+W[3]+'</h3>'+choices('mood',[['calm',W[10]],['focus',W[11]],['energy',W[12]]])+'</section>';
     panel.hidden = false; button.setAttribute('aria-expanded','true'); sync(); panel.querySelector('.ap-close').focus();
   }
   function boot(){

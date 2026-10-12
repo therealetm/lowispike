@@ -1,0 +1,20 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path'),K=require('../swaflo-core.js');
+const catalog=[{id:'m_friedrice',n:'Cauliflower fried rice',mins:15,ing:[{n:'Cauliflower rice',q:'400 g'},{n:'Chicken',q:'1 breast'}],steps:['Fry the cauliflower rice.']},{id:'m_bolognese',n:'Konjac noodles with bolognese',mins:20,ing:[{n:'Konjac noodles'}],steps:['Rinse the noodles.']},{id:'m_ramen',n:'Ramen',mins:15,ing:[{n:'Shirataki noodles'}],steps:['Make the soup.']}];
+const products=[{id:'1',name:'Plain yogurt',brand:'Actual brand',cat:'dairy',assessmentCategory:'fits'},{id:'2',name:'Protein bar',brand:'Another',cat:'snack',assessmentCategory:'insufficient'},{id:'3',name:'Sugary bar',cat:'snack',assessmentCategory:'outside'},{id:'4',name:'Raw chicken',cat:'other',assessmentCategory:'fits'},{id:'5',name:'Konjac rice',cat:'staple',brand:'Known brand',facts:{q:'250 g'},assessmentCategory:'insufficient'}];
+let r=K.resolve('I want fried rice with chicken',catalog,products,{});assert.equal(r.recipe.id,'sf_friedrice');assert.equal(r.recipe.ing[0].n,'Konjac rice');assert.equal(r.recipe.ing[1].n,'Chicken');assert(!r.recipe.steps[0].includes('cauliflower'));assert.equal(catalog[0].ing[0].n,'Cauliflower rice');
+r=K.resolve('Noodles',catalog,products,{});assert.equal(r.recipe.id,'sf_noodles');assert.equal(r.swaps[0].to,'konjac noodles');assert.equal(r.recipe.ing[0].n,'Konjac noodles');
+r=K.resolve('Ramen noodles',catalog,products,{});assert.equal(r.recipe.id,'m_ramen');
+r=K.resolve('I want to make fufu',catalog,products,{});assert.equal(r.recipe.id,'sf_fufu');assert(r.recipe.provisional);assert(r.swaps[0].note.includes('Not a claim of traditional equivalence'));
+r=K.resolve('Jollof rice',catalog,products,{});assert.equal(r.status,'unsupported');assert.equal(r.recipe,null);assert.equal(r.requested,'Jollof rice');
+r=K.resolve('Vegetarian fried rice',catalog,products,{});assert.equal(r.status,'unsupported');assert.equal(r.recipe,null);
+r=K.resolve('Something sweet, fast',catalog,products,{});assert(r.snack);assert.equal(r.recipe.id,'sf_cocoa_yogurt');assert(r.recipe.mins<=10);
+r=K.resolve('Something sweet, fast',catalog,products,{mode:'buy'});assert.equal(r.mode,'buy');assert.equal(r.recipe,null);assert.deepEqual(r.products.map(p=>p.id),['1','2']);
+const food=[{id:'meal',book:true,c:'meal',mins:20},{id:'quick',book:true,c:'dessert',mins:3},{id:'frozen',book:true,c:'dessert',mins:5,extra:'+ freeze'},{id:'post',com:true,c:'meal'}];
+assert.deepEqual(K.shufflePool(food,products,{}).map(x=>x.id),['meal','quick','frozen']);assert.deepEqual(K.shufflePool(food,products,{mode:'cook',snack:true}).map(x=>x.id),['quick']);assert.deepEqual(K.shufflePool(food,products,{mode:'buy',snack:true}).map(x=>x.id),['1','2']);
+assert.deepEqual(K.preferences({mode:'bad',snack:'true'}),{mode:'cook',snack:false});
+const shopping=K.shopping({ing:[{n:'Konjac rice',q:'400 g'},{n:'Fresh basil'}]},products);assert.equal(shopping[0].matches[0].brand,'Known brand');assert.equal(shopping[0].matches[0].facts.q,'250 g');assert.equal(shopping[1].matches.length,0);assert.equal(shopping[1].term,'Fresh basil');assert(!('price' in shopping[1]));
+const root=path.resolve(__dirname,'..'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');for(const m of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)){if(/src=|application\//i.test(m[1]))continue;new vm.Script(m[2]);}
+for(const f of ['swaflo-config.js','swaflo-core.js','swaflo.js','sw.js'])new vm.Script(fs.readFileSync(path.join(root,f),'utf8'));
+assert(html.includes('LowiSwaflo.toolbarHTML()'));assert(html.includes('LowiSwaflo.saveBuy(f.id)'));assert(html.includes('searchIngredients:term'));assert(html.includes('LowiHost.award("swaflo-save:"'));
+console.log('Swaflo focused checks passed: fried rice, noodles, cultural dish preservation, experimental fufu, quick sweet lane, Cook/Buy filtering, generic shopping fallback, no invented prices, immutable source recipes, safe defaults and script syntax.');

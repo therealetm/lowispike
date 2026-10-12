@@ -1,0 +1,8 @@
+/* Provisional culinary defaults, not nutrition scores or glucose predictions. */
+(function(root){const C={version:'swaflo-1',defaultMode:'cook',defaultServings:2,quickMinutes:10,
+  provisional:['Default serving count when the source recipe has none','Konjac substitution quantities and texture','New quick-snack quantities/time','Experimental fufu-style quantities/time/texture'],
+  konjacRiceQuantity:'400 g',konjacNoodleQuantity:'1 pack · follow package instructions',
+  quick:{id:'sf_cocoa_yogurt',n:'Quick cocoa yogurt',mins:3,servings:1,c:'snack',provisional:true,ing:[{n:'Plain Greek yogurt',q:'150 g',g:'milch'},{n:'Unsweetened cocoa',q:'1 tsp',g:'snack'},{n:'Cinnamon',q:'a pinch',g:'wuerze'}],steps:['Stir the cocoa into the yogurt until smooth.','Add cinnamon and serve. Unsweetened cocoa tastes less sweet; do not add a sweetener automatically.']},
+  fufu:{id:'sf_fufu',n:'Fufu-style adaptation · experimental',mins:25,servings:2,c:'meal',provisional:true,ing:[{n:'Cauliflower',q:'500 g',g:'gemuese'},{n:'Psyllium husk powder',q:'1 tsp',g:'wuerze'},{n:'Water',q:'as needed',g:'drink'}],steps:['Steam the cauliflower until very soft, then drain and squeeze out excess moisture.','Blend into a smooth puree. Stir in the psyllium and a little water.','Cook over low heat, folding continuously until cohesive; add water a spoonful at a time if needed.','Let it rest briefly, shape and serve with your usual soup or stew. Texture is different from cassava/yam fufu; this adaptation is not kitchen-validated.']}};
+  if(typeof module==='object'&&module.exports)module.exports=C;else root.LOWI_SWAFLO_CONFIG=C;
+})(typeof window==='undefined'?globalThis:window);

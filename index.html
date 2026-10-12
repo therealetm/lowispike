@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261012-181121">
+<meta name="lowi-build" content="20261012-233911">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2114,7 +2114,7 @@ html[data-theme=light] #lcUpd.g1-upd .g1-usay{background:rgba(255,255,255,.2)}
 (function(){
 "use strict";
 if (window.LowiG1) return;
-const NEWS_RAW = {"id": "discovery-v1", "go": {"tab": "scan"}, "text": {"en": "New: Discovery field guide, label evidence, transparent provisional categories and separate reported concerns. Current price reports earn capped local points. Scans earn no discovery XP; community rewards and review remain pending.", "de": "Neu: Entdecker-Feldbuch, Etikettbelege, transparente vorläufige Kategorien und getrennte gemeldete Anliegen. Aktuelle Preismeldungen verdienen begrenzte lokale Punkte. Scans bringen keine Entdecker-XP; Community-Belohnungen und Prüfung stehen noch aus.", "es": "Nuevo: Guía de descubrimientos, pruebas de etiqueta, categorías provisionales transparentes e informes separados. Los precios actuales ganan puntos locales limitados. Escanear no da XP de descubrimiento; recompensas y revisión comunitaria quedan pendientes."}};
+const NEWS_RAW = {"id": "swaflo-v1", "go": {"tab": "shelf"}, "text": {"en": "New: Swaflo rebuilds supported dishes with ingredient swaps, recipes and real-data shopping fallbacks. The existing shuffle now has Cook / Bake, Buy and a sweet-snack lane. Save results to Meine Swaps and use the existing cooking flow. Experimental culinary defaults are marked.", "de": "Neu: Swaflo passt unterstützte Gerichte mit Zutatentausch, Rezepten und Einkaufsdaten an. Der bestehende Shuffle bietet Kochen / Backen, Kaufen und eine süße Snack-Spur. Ergebnisse in Meine Swaps speichern und den bestehenden Kochablauf nutzen. Experimentelle Küchenwerte sind markiert.", "es": "Nuevo: Swaflo adapta platos compatibles con cambios de ingredientes, recetas y datos reales para comprar. El shuffle existente incluye Cocinar / Hornear, Comprar y snacks dulces. Guarda en Mis cambios y usa el flujo de cocina existente. Los valores culinarios experimentales están indicados."}};
 const NEWS = (NEWS_RAW && typeof NEWS_RAW === "object") ? NEWS_RAW : null;
 const KEY = "lowi.g1", GO = "lowi.g1.go";
 const H = document.documentElement;
@@ -6891,6 +6891,8 @@ function shBoot(){
   window.LOWI_SHELF = {open:openShelf, showTab, state:() => SH, rules:SH_RULES, reset:() => { SH = shFresh(); shSave(); render(); },
     priceCompareHTML:(name, ean, compact) => priceCompareFor(name, ean, compact),
     priceReports:(name, ean) => { const p = findDup(name, ean); return p && isLive(p) ? liveSightings(p).filter(s => s.p > 0 && s.at).map(s => ({amount:Number(s.p),currency:"EUR",store:storeById(s.s).n,area:s.br || "",date:new Date(s.at).toISOString(),expires:s.until || 0,source:"community-shelf",reporterStatus:"user-reported"})) : []; },
+    addIngredients:(items, title) => { const before = SH.list.length; items.forEach(i => { const p = findDup(i.n, i.barcode || ""); if (p && isLive(p)) addToList(p, null, title); else addPlain(i.n + (i.q ? " · " + i.q : ""), title); }); return SH.list.length - before; },
+    searchIngredients:term => { openShelf("regal"); V.q = String(term || "").slice(0, 100); V.sub = ""; render(); },
     /* Oct 8: Today's shopping list and shop mode read member finds and the extra list from here */
     findsFor:(g, name) => { const ws = words(name).filter(w => w.length > 3);
       return SH.products.filter(p => isLive(p) && p.g.indexOf(g) >= 0 && (!ws.length || ws.some(w => norm(p.n).indexOf(w) >= 0))).sort((a, b) => lastSeen(b) - lastSeen(a))
@@ -8114,19 +8116,21 @@ function fPool(){
   const mine = new Set(com.map(x => x.id)), shared = (typeof SW !== "undefined" ? SW : []).filter(t => !mine.has(t.id) && (t.photo || fimg(t.k))).map(t => ({id:t.id, n:t.n, img:t.photo || fimg(t.k), sub:t.cap && t.cap !== t.n ? t.cap : "Shared in the community", who:t.who, post:t.post, r:"ja", ing:[], com:true, shared:true}));
   return book.concat(com, shared);
 }
-const fById = id => fPool().find(x => x.id === id);
+const fById = id => fPool().find(x => x.id === id) || (window.LowiSwaflo && LowiSwaflo.productById(id));
 const FCAT = {meal:"Meal", snack:"Snack", dessert:"Sweet", drink:"Drink"};
 function fMeta(f){ const m = window.LOWI_COOK && f.book ? LOWI_COOK.minTxt(f.id) : "";
   return [f.com ? "From " + f.who : FCAT[f.c] || "", m].filter(Boolean).join(" · "); }
 function fBadge(f){ return '<span class="sh-pk ' + (f.r === "selten" ? "warn" : "gold") + '">' + (f.r === "selten" ? "SELTEN" : "JA") + "</span>"; }
 function fPick(){
-  dkNorm(); /* r3k-pick */ const P = fPool().filter(f => f.id !== R5.last && R5.never.indexOf(f.id) < 0); if (!P.length) return null;
+  if (window.LowiSwaflo) { const f = LowiSwaflo.pick(fPool().filter(f => R5.never.indexOf(f.id) < 0)); if (f !== undefined) return f; }
+  dkNorm(); /* r3k-pick */ const P = (window.LowiSwaflo ? LowiSwaflo.pool(fPool()) : fPool()).filter(f => f.id !== R5.last && R5.never.indexOf(f.id) < 0); if (!P.length) return null;
   const w = P.map(f => R5.liked.indexOf(f.id) >= 0 ? 3 : R5.skipped.indexOf(f.id) >= 0 ? 0.3 : f.com ? 1.5 : 1), sum = w.reduce((a, b) => a + b, 0);
   let x = Math.random() * sum; for (let i = 0; i < P.length; i++) { x -= w[i]; if (x <= 0) return P[i]; } return P[P.length - 1];
 }
 function fHomeHTML(){
-  const pool = fPool(), liked = R5.liked.map(fById).filter(Boolean), last = R5.last && fById(R5.last), left = pool.filter(f => R5.liked.indexOf(f.id) < 0 && R5.skipped.indexOf(f.id) < 0).length;
+  const pool = fPool(), liked = R5.liked.map(fById).filter(Boolean), oldLast = R5.last && fById(R5.last), last = window.LowiSwaflo ? LowiSwaflo.currentLast(oldLast) : oldLast, left = pool.filter(f => R5.liked.indexOf(f.id) < 0 && R5.skipped.indexOf(f.id) < 0).length;
   return '<div class="r5-shuf" id="r5Shuf">' +
+    (window.LowiSwaflo ? LowiSwaflo.toolbarHTML() : '') +
     '<div class="r5-stage' + (last ? " has" : "") + '" id="r5Stage" data-r5="shuffle" role="button" aria-label="Shuffle a food"><i class="r5-ring"></i><i class="r5-ring r2"></i><i class="r5-grid"></i>' +
       '<div class="r5-win"><div class="r5-strip" id="r5Strip">' + (last ? '<div class="r5-cell">' + (last.img ? '<img alt="" src="' + last.img + '">' : '<span>🍽️</span>') + '</div>' : '<div class="r5-cell r5-idle"><span class="r5-q">?</span></div>') + '</div></div>' +
       '<i class="r5-scan"></i><i class="r5-flash"></i></div>' +
@@ -8137,6 +8141,7 @@ function fHomeHTML(){
     '<div id="r3kYes">' + fYesHTML() + '</div>';
 }
 function fRevealHTML(f, anim){
+  if (window.LowiSwaflo) { const h = LowiSwaflo.revealHTML(f); if (h) return h; }
   const ing = f.ing.slice(0, 8), more = f.ing.length - ing.length;
   return '<div class="r5-card' + (anim ? " in" : "") + '" data-id="' + esc(f.id) + '"><div class="r5-ct"><div style="flex:1;min-width:0"><div class="tiny gold">' + (f.com ? "Community pick" : "Your pick") + '</div><div class="h2 r5-cn">' + esc(f.n) + '</div><div class="small muted">' + esc(fMeta(f)) + '</div></div>' + fBadge(f) + '</div>' +
     (f.book ? '<div class="r5-lab">You need</div><div class="r5-ingl">' + ing.map(n => '<span>' + esc(n) + '</span>').join("") + (more > 0 ? '<span class="dim">+' + more + '</span>' : "") + '</div>' +
@@ -8146,25 +8151,26 @@ function fRevealHTML(f, anim){
 }
 let fSpinning = false;
 function fShuffle(instant){
-  if (fSpinning) return; const f = fPick(); if (!f) return; const strip = r5$("#r5Strip"), stage = r5$("#r5Stage"), pick = r5$("#r5Pick");
-  R5.last = f.id; r5save();
+  if (fSpinning) return; const f = fPick(); if (!f) { if (window.LowiSwaflo) LowiSwaflo.emptyPick(); return; } const strip = r5$("#r5Strip"), stage = r5$("#r5Stage"), pick = r5$("#r5Pick");
+  if (f.buy && window.LowiSwaflo) LowiSwaflo.saveBuy(f.id); else { R5.last = f.id; r5save(); }
   if (!strip || !stage) return;
-  const reduce = instant || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
-  const P = fPool().filter(x => x.img), cells = []; for (let i = 0; i < 22; i++) cells.push(P[Math.floor(Math.random() * P.length)]); cells.push(f);
+  const selectionAtPick = window.LowiSwaflo ? JSON.stringify(LowiSwaflo.prefs()) : "";
+  const reduce = instant || f.buy || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+  const P = (window.LowiSwaflo ? LowiSwaflo.pool(fPool()) : fPool()).filter(x => x.img), cells = []; for (let i = 0; i < 22; i++) cells.push(P[Math.floor(Math.random() * P.length)]); cells.push(f);
   strip.style.transition = "none"; strip.style.transform = "translateY(0)";
   strip.innerHTML = cells.map(c => '<div class="r5-cell">' + (c && c.img ? '<img alt="" decoding="async" src="' + c.img + '">' : '<span>🍽️</span>') + '</div>').join("");
   if (pick) pick.innerHTML = ""; stage.classList.remove("hit"); stage.classList.add("has");
   const go = r5$("#r5Go span"); if (go) go.textContent = "Shuffle again";
   const done = () => { if (!fSpinning) return; fSpinning = false; stage.classList.remove("spin"); void stage.offsetWidth; stage.classList.add("hit");
     try { if (navigator.vibrate) navigator.vibrate([10, 40, 18]); } catch(e){}
-    const pk = r5$("#r5Pick"); if (pk) pk.innerHTML = fRevealHTML(f, true);
+    const pk = r5$("#r5Pick"); if (window.LowiSwaflo && selectionAtPick !== JSON.stringify(LowiSwaflo.prefs())) return; if (pk) pk.innerHTML = fRevealHTML(f, true);
     if (R5.audio && !R5.mute) auSpeak("Your pick: " + f.n, {queue:false}); };
   fSpinning = true;
   if (reduce) { strip.style.transform = "translateY(-" + ((cells.length - 1) / cells.length * 100) + "%)"; done(); return; }
   stage.classList.add("spin"); void strip.offsetWidth;
-  strip.style.transition = "transform 2.6s cubic-bezier(.12,.72,.16,1)";
+  strip.style.transition = "transform .45s cubic-bezier(.12,.72,.16,1)";
   strip.style.transform = "translateY(-" + ((cells.length - 1) / cells.length * 100) + "%)";
-  strip.addEventListener("transitionend", done, {once:true}); setTimeout(done, 2900);
+  strip.addEventListener("transitionend", done, {once:true}); setTimeout(done, 550);
 }
 function fShowPick(id){ const f = fById(id); if (!f) return; R5.last = id; r5save(); const st = r5$("#r5Strip"), pk = r5$("#r5Pick");
   if (st) { st.style.transition = "none"; st.style.transform = "translateY(0)"; st.innerHTML = '<div class="r5-cell">' + (f.img ? '<img alt="" src="' + f.img + '">' : '<span>🍽️</span>') + '</div>'; }
@@ -8319,7 +8325,7 @@ async function swPush(t, quiet){ const X = swCloud(); if (!X || !t) return; cons
     await sb.from("swipe_foods").upsert({post_id:String(t.post).slice(0, 80), user_id:u, who:String(t.who || "Member").slice(0, 40), name:String(t.n || "Community food").slice(0, 60), cap:String(t.cap || "").slice(0, 400), photo_url:ph, k:String(k).slice(0, 60)}, {onConflict:"post_id,user_id"});
     if (!quiet) swPull(true); } catch(e){} }
 async function swDrop(postId){ const X = swCloud(); if (!X) return; try { const sb = await X.client(), u = X.state().uid; if (!u) return; await sb.from("swipe_foods").delete().eq("post_id", postId).eq("user_id", u); swPull(true); } catch(e){} }
-function fHintTxt(){ const cm = fPool().filter(f => f.com).length; return "Picks something you can eat, from " + fPool().length + " foods" + (cm ? ", community ones too" : "") + "."; }
+function fHintTxt(){ if (window.LowiSwaflo) return LowiSwaflo.hint(fPool()); const cm = fPool().filter(f => f.com).length; return "Picks something you can eat, from " + fPool().length + " foods" + (cm ? ", community ones too" : "") + "."; }
 
 /* ---------- community posts go into the mix ---------- */
 function isFoodPost(p, k){ return !!(p && (p.me || p.photo || /^(rb_|m_)/.test(k || ""))); }
@@ -10737,7 +10743,7 @@ function boot(){
     .observe(document.body, {childList:true, subtree:true});
   $$(".r5-card").forEach(enhancePick);
 }
-window.LowiP2 = {open:openRecipe, cook:id => { const r = rec(id); if (r) cook(r); }, rec, basket, sceneOf, renderScan:renderScan2, brandSheet, classicsSheet};
+window.LowiP2 = {open:openRecipe, cook:id => { const r = rec(id); if (r) cook(r); }, register:r => { if (r && r.id && Array.isArray(r.ing) && Array.isArray(r.steps)) CACHE[r.id] = r; }, rec, basket, sceneOf, renderScan:renderScan2, brandSheet, classicsSheet};
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
 })();
 
@@ -11280,10 +11286,10 @@ dict([
 /* ---------- saved swaps: swipe left or tap x ---------- */
 function savedHTMLNew(){
   const list = (S.saved || []).map((s, k) => ({s, k})).reverse();
-  return '<div class="sec"><span class="h3" data-noi18n>' + T("Saved swaps") + '</span>' + (list.length ? '<span class="small muted r3a-hint" data-noi18n>' + T("Swipe left or tap × to delete") + '</span>' : "") + '</div><div class="card r3a-saved">' +
+  return '<div class="sec"><span class="h3" data-noi18n>' + T("Saved swaps") + '</span>' + (list.length ? '<span class="small muted r3a-hint" data-noi18n>' + T("Swipe left or tap × to delete") + '</span>' : "") + '</div><button class="r2-btn ghost" data-sf="open">Swaflo ›</button><div class="card r3a-saved">' +
     (list.length ? list.map(o => { const s = o.s;
       return '<div class="r3a-sw" data-k="' + o.k + '"><button class="r3a-swdel" data-r3a="delsaved" data-k="' + o.k + '" tabindex="-1" data-noi18n>' + T("Delete") + '</button>' +
-        '<div class="r3a-swfront"><button class="row savedrow" data-act="opensaved" data-v="' + esc(s.from || "") + '"><span style="font-size:22px">' + (s.e || "") + '</span><span class="small" style="flex:1;text-align:left;min-width:0">' + esc(s.n) + '</span>' + (typeof badge === "function" ? badge(s.r) : "") + '</button>' +
+        '<div class="r3a-swfront"><button class="row savedrow" ' + (s.swaflo ? 'data-sf="saved" data-id="' + esc(s.swaflo.recipe.id) + '"' : 'data-act="opensaved" data-v="' + esc(s.from || "") + '"') + '><span style="font-size:22px">' + (s.e || "") + '</span><span class="small" style="flex:1;text-align:left;min-width:0">' + esc(s.n) + '</span>' + (s.swaflo ? '<span class="small muted">Swaflo</span>' : typeof badge === "function" ? badge(s.r) : "") + '</button>' +
         '<button class="r3a-x" data-r3a="delsaved" data-k="' + o.k + '" aria-label="' + esc(T("Delete saved swap")) + '">×</button></div></div>'; }).join("")
       : '<div class="small muted" data-noi18n>' + T("Save a swap from any result and it lands here.") + '</div>') + '</div>';
 }
@@ -18591,5 +18597,21 @@ html.q4b-off #lcA2hs{display:none!important}
 <script src="discovery-config.js"></script>
 <script src="discovery-core.js"></script>
 <script src="discovery.js"></script>
+<script>
+/* Bridges into the existing library/storage; no separate swaps or shopping database. */
+window.LowiSwafloBridge = {
+  catalog:() => RECIPE_BOOK.map(r => LowiP2.rec(r.id)).concat(MEALS.map(m => { const r = LowiP2.rec("m_" + m.id); return r && Object.assign({},r,{requestName:m.n,changes:m.s && m.s.ch || []}); })).filter(r => r && r.steps && r.steps.length),
+  register:r => LowiP2.register(Object.assign({},r,{e:r.e || "🍽️",img:r.img || "",ing:r.ing.map(i => Object.assign({},i,{k:i.k || String(i.n).toLowerCase(),e:i.e || "🛒"}))})), saved:() => S.saved,
+  saveSwap:result => { const r = result.recipe; if (!r || S.saved.some(s => s.n === r.n || s.swaflo && s.swaflo.recipe.id === r.id)) return false;
+    S.saved.push({n:r.n,e:r.e || "🍽️",r:r.r || "unknown",from:result.requested,swaflo:JSON.parse(JSON.stringify(result))}); save();
+    // Reuse the existing 10-XP saved-swap action, with the host's once-per-source protection.
+    LowiHost.award("swaflo-save:" + r.id,null,{amt:10,label:"Swap saved"}); if (TAB === "profile") renderProfile(); return true;
+  }
+};
+</script>
+<link rel="stylesheet" href="swaflo.css">
+<script src="swaflo-config.js"></script>
+<script src="swaflo-core.js"></script>
+<script src="swaflo.js"></script>
 </body>
 </html>

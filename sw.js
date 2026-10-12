@@ -3,7 +3,7 @@
    to the saved copy when the phone is offline. Static files with a version in their name are cached. */
 /* r3g: step pictures live in their own cache (lowispike-steps) */
 const CACHE = "lowispike-r1";
-const STATIC = ["discovery-config.js", "discovery-core.js", "discovery.js", "discovery.css", "apple-ui.js", "apple-ui.css", "appearance.js", "recipe-book.js", "updates.css", "vendor/supabase-2.117.3.js", "vendor/zxing-0.21.3.min.js", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png"];
+const STATIC = ["swaflo-config.js", "swaflo-core.js", "swaflo.js", "swaflo.css", "discovery-config.js", "discovery-core.js", "discovery.js", "discovery.css", "apple-ui.js", "apple-ui.css", "appearance.js", "recipe-book.js", "updates.css", "vendor/supabase-2.117.3.js", "vendor/zxing-0.21.3.min.js", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png"];
 self.addEventListener("install", e => {
   self.skipWaiting();
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(STATIC).catch(() => {})));
@@ -17,7 +17,7 @@ self.addEventListener("fetch", e => {
   const req = e.request; if (req.method !== "GET") return;
   const url = new URL(req.url); if (url.origin !== self.location.origin) return;     // Supabase etc. go straight to the network
   if (url.pathname.endsWith("/version.json") || url.pathname.endsWith("/sw.js")) return;
-  if (["discovery-config.js", "discovery-core.js", "discovery.js", "discovery.css", "apple-ui.js", "apple-ui.css", "appearance.js", "recipe-book.js", "updates.css"].some(s => url.pathname.endsWith("/" + s))) {
+  if (["swaflo-config.js", "swaflo-core.js", "swaflo.js", "swaflo.css", "discovery-config.js", "discovery-core.js", "discovery.js", "discovery.css", "apple-ui.js", "apple-ui.css", "appearance.js", "recipe-book.js", "updates.css"].some(s => url.pathname.endsWith("/" + s))) {
     e.respondWith(fetch(req, {cache:"no-cache"}).then(res => { if (res.ok) { const cp = res.clone(); caches.open(CACHE).then(c => c.put(req, cp)); } return res; }).catch(() => caches.match(req).then(r => r || Response.error())));
     return;
   }

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261012-233911">
+<meta name="lowi-build" content="20261013-203600">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -8792,30 +8792,43 @@ function a2hsHint(){ if (standalone() || location.protocol === "file:") return; 
   document.body.appendChild(d); setTimeout(() => { if (d.parentNode) d.remove(); }, 15000); }
 function persist(){ try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch(e){} }
 const BUILD = (document.querySelector('meta[name="lowi-build"]') || {}).content || "";
-let lastCheck = 0, newBuild = ""; /* q1-v2: shows itself to everyone when a newer build is live */
+let lastCheck = 0, newBuild = "", checking = false, updating = false, failedBuild = "";
+const validBuild = b => /^\d{8}-\d{6}$/.test(String(b || ""));
+const FAIL_KEY = "lowi.upd.failed", RETRY_WAIT = 15 * 60 * 1000;
+function failedRecently(build){
+  if (failedBuild === build) return true;
+  try { const f = JSON.parse(localStorage.getItem(FAIL_KEY) || "null"); return !!(f && f.build === build && Date.now() - f.at < RETRY_WAIT); } catch(e){ return false; }
+}
+function clearUpd(){ newBuild = ""; const d = $("#lcUpd"); if (d) d.remove(); }
 const updTxt = () => { let l = "en"; try { l = (window.LowiLang && LowiLang.get && LowiLang.get()) || localStorage.getItem("lowispike.lang") || document.documentElement.lang || "en"; } catch(e){} l = String(l).slice(0, 2);
-  return l === "de" ? ["Neue Version · tippen zum Aktualisieren", "Aktualisiert · du hast die neueste Version"] : l === "es" ? ["Nueva versión · toca para actualizar", "Actualizado · tienes la versión más nueva"] : ["New version · tap to refresh", "Updated · you're on the newest version"]; };
+  return l === "de" ? ["Neue Version · tippen zum Aktualisieren", "Aktualisierung geladen", "Aktualisierung noch nicht geladen. Versuche es später erneut."] : l === "es" ? ["Nueva versión · toca para actualizar", "Actualización cargada", "La actualización aún no se ha cargado. Inténtalo más tarde."] : ["New version · tap to refresh", "Update loaded", "The update hasn't loaded yet. Try again later."]; };
 function showUpd(){ if (!document.body) return; /* on <html>, not <body>: sheets and the sign-in screen change <body> */ let d = $("#lcUpd"); if (!d) { d = document.createElement("button"); d.id = "lcUpd"; d.type = "button"; d.className = "lc-banner lc-upd"; d.setAttribute("data-cl", "update"); d.setAttribute("role", "status"); d.setAttribute("aria-live", "polite"); d.setAttribute("data-noi18n", ""); d.setAttribute("data-sfx", "none"); try { d.style.fontFamily = getComputedStyle(document.body).fontFamily; } catch(e){} document.documentElement.appendChild(d); }
+  const ok = $("#lcUpdOk"); if (ok) ok.remove();
   d.dataset.build = newBuild; const t = updTxt()[0]; if (d.dataset.t !== t) { d.dataset.t = t; d.innerHTML = '<i class="lc-ud" aria-hidden="true"></i><span>' + t + '</span>'; } }
-async function checkUpdate(force){ if (!BUILD || location.protocol === "file:") return; if (force !== true && Date.now() - lastCheck < 10000) return; lastCheck = Date.now();
+async function checkUpdate(force){ if (!validBuild(BUILD) || location.protocol === "file:" || checking || updating) return; if (force !== true && Date.now() - lastCheck < 10000) return; lastCheck = Date.now(); checking = true;
   try { const r = await fetch("version.json?t=" + Date.now(), {cache:"no-store"}); if (!r.ok) return; const v = await r.json();
-    if (!v.build || !/^\d{8}-\d{6}$/.test(v.build) || v.build <= BUILD) { const o = $("#lcUpd"); if (o && !o.classList.contains("busy")) o.remove(); return; }
-    newBuild = v.build; showUpd(); } catch(e){} }
+    if (!validBuild(v.build)) return;
+    if (v.build <= BUILD || failedRecently(v.build)) { clearUpd(); return; }
+    newBuild = v.build; showUpd(); } catch(e){} finally { checking = false; } }
 /* tap: everything is already saved on the phone; ask the service worker to update, then load the new build past every cache */
-async function doUpdate(){ const d = $("#lcUpd"); if (d) d.classList.add("busy"); const b = newBuild || (d && d.dataset.build) || "";
+async function doUpdate(){ if (updating) return; const d = $("#lcUpd"), b = newBuild || (d && d.dataset.build) || ""; if (!validBuild(b)) return; updating = true; if (d) d.classList.add("busy");
   try { sessionStorage.setItem("lowi.upd", b || "1"); } catch(e){}
   try { if ("serviceWorker" in navigator && navigator.serviceWorker.getRegistration) { const reg = await navigator.serviceWorker.getRegistration(); if (reg) await Promise.race([reg.update(), new Promise(r => setTimeout(r, 1500))]); } } catch(e){}
-  location.replace(location.pathname + "?v=" + encodeURIComponent(b || String(Date.now())) + location.hash); }
+  const u = new URL(location.href); u.searchParams.set("v", b); u.searchParams.set("r", String(Date.now()));
+  location.replace(u.pathname + u.search + u.hash); }
 function updNote(t){ const go = () => { if (!document.body || $("#lcUpdOk")) return; const d = document.createElement("div"); d.id = "lcUpdOk"; d.className = "lc-banner"; d.setAttribute("role", "status"); d.setAttribute("data-noi18n", ""); d.textContent = "✓ " + t; try { d.style.fontFamily = getComputedStyle(document.body).fontFamily; } catch(e){} document.documentElement.appendChild(d); setTimeout(() => d.remove(), 4500); };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => setTimeout(go, 900)); else setTimeout(go, 900); }
 function afterUpdate(){ let want = ""; try { want = sessionStorage.getItem("lowi.upd") || ""; } catch(e){}
-  if (/[?&]v=/.test(location.search)) { try { history.replaceState(history.state, "", location.pathname + location.hash); } catch(e){} }
-  if (want) {
-    if (/^\d{8}-\d{6}$/.test(want) && BUILD && BUILD < want) { let n = 0; try { n = +sessionStorage.getItem("lowi.updn") || 0; sessionStorage.setItem("lowi.updn", String(n + 1)); } catch(e){}
-      if (n < 2) { location.replace(location.pathname + "?v=" + want + "&r=" + Date.now() + location.hash); return; } }
-    try { sessionStorage.removeItem("lowi.upd"); sessionStorage.removeItem("lowi.updn"); } catch(e){}
-    updNote(updTxt()[1]);
-  } else { let seen = ""; try { seen = localStorage.getItem("lowi.build") || ""; } catch(e){} if (seen && BUILD && seen < BUILD) updNote(updTxt()[1]); }
+  const u = new URL(location.href);
+  if (!validBuild(want) && validBuild(u.searchParams.get("v"))) want = u.searchParams.get("v");
+  if (u.searchParams.has("v")) { u.searchParams.delete("v"); u.searchParams.delete("r"); try { history.replaceState(history.state, "", u.pathname + u.search + u.hash); } catch(e){} }
+  // A manual refresh gets one attempt. Never reload automatically or claim success while old HTML remains.
+  try { sessionStorage.removeItem("lowi.upd"); sessionStorage.removeItem("lowi.updn"); } catch(e){}
+  if (validBuild(want)) {
+    clearUpd();
+    if (validBuild(BUILD) && BUILD >= want) { try { localStorage.removeItem(FAIL_KEY); } catch(e){} updNote(updTxt()[1]); }
+    else { failedBuild = want; try { localStorage.setItem(FAIL_KEY, JSON.stringify({build:want,at:Date.now()})); } catch(e){} updNote(updTxt()[2]); }
+  } else { let seen = ""; try { seen = localStorage.getItem("lowi.build") || ""; } catch(e){} if (validBuild(seen) && validBuild(BUILD) && seen < BUILD) updNote(updTxt()[1]); }
   try { if (BUILD) localStorage.setItem("lowi.build", BUILD); } catch(e){} }
 function sw(){ if (!("serviceWorker" in navigator) || location.protocol !== "https:") return;
   navigator.serviceWorker.register("sw.js", {scope:"./", updateViaCache:"none"}).then(reg => { try { reg.update(); } catch(e){} }).catch(() => {}); }

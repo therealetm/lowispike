@@ -1,6 +1,6 @@
 /* LOWiSPIKE service worker · network-first app shell with offline static fallback. */
-const SHELL_BUILD = "20261013-165500";
-const CACHE = "lowispike-r1-herb-tmg-20261013-165500";
+const SHELL_BUILD = "20261013-203600";
+const CACHE = "lowispike-updates-20261013-203600";
 const STATIC = ["herb-config.js", "herb-core.js", "herb-tamagotchi-core.js", "herb-tamagotchi.js", "herb-tamagotchi-polish.js", "herb-tamagotchi-mount-fix.js", "herb-tamagotchi.css", "body-core.js", "body-companion.js", "body-companion.css", "swaflo-config.js", "swaflo-core.js", "swaflo.js", "swaflo.css", "discovery-config.js", "discovery-core.js", "discovery.js", "discovery.css", "apple-ui.js", "apple-ui.css", "appearance.js", "recipe-book.js", "updates.css", "vendor/supabase-2.117.3.js", "vendor/zxing-0.21.3.min.js", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png"];
 self.addEventListener("install", e => {
   self.skipWaiting();
@@ -12,16 +12,8 @@ self.addEventListener("activate", e => {
 const scopePath = new URL(self.registration.scope).pathname;
 function isPage(req, url){ return req.mode === "navigate" || url.pathname === scopePath || url.pathname === scopePath + "index.html"; }
 async function stampPage(res){
-  if (!res || !res.ok) return res;
-  const type = res.headers.get("content-type") || "";
-  if (type && type.indexOf("text/html") < 0) return res;
-  try {
-    const html = await res.clone().text();
-    const stamped = html.replace(/(<meta\s+name=["']lowi-build["']\s+content=["'])\d{8}-\d{6}(["']\s*\/?\s*>)/i, "$1" + SHELL_BUILD + "$2");
-    if (stamped === html) return res;
-    const headers = new Headers(res.headers); headers.delete("content-length");
-    return new Response(stamped, {status: res.status, statusText: res.statusText, headers});
-  } catch(e) { return res; }
+  // The loaded HTML is authoritative; never relabel stale HTML as a new app build.
+  return res;
 }
 self.addEventListener("fetch", e => {
   const req = e.request; if (req.method !== "GET") return;
@@ -52,7 +44,7 @@ self.addEventListener("push", e => {
 self.addEventListener("notificationclick", e => {
   e.notification.close(); const q = (e.notification.data && e.notification.data.q) || "";
   e.waitUntil(self.clients.matchAll({type: "window", includeUncontrolled: true}).then(cs => {
-    for (const c of cs) { if (c.url.indexOf(self.registration.scope) === 0 && "focus" in c) { try { c.postMessage({n1go: q}); } catch(x){} return c.focus(); }
+    for (const c of cs) { if (c.url.indexOf(self.registration.scope) === 0 && "focus" in c) { try { c.postMessage({n1go: q}); } catch(x){} return c.focus(); } }
     return self.clients.openWindow(self.registration.scope + "?n1go=" + encodeURIComponent(q));
   }));
 });

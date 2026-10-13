@@ -1,9 +1,6 @@
-/* LOWiSPIKE service worker · round 1 · Oct 9 2026
-   The app page is always fetched fresh from the network (so every update lands on the same link) and only falls back
-   to the saved copy when the phone is offline. Static files with a version in their name are cached. */
-/* r3g: step pictures live in their own cache (lowispike-steps) */
-const CACHE = "lowispike-r1";
-const STATIC = ["herb-config.js", "herb-core.js", "body-core.js", "body-companion.js", "body-companion.css", "swaflo-config.js", "swaflo-core.js", "swaflo.js", "swaflo.css", "discovery-config.js", "discovery-core.js", "discovery.js", "discovery.css", "apple-ui.js", "apple-ui.css", "appearance.js", "recipe-book.js", "updates.css", "vendor/supabase-2.117.3.js", "vendor/zxing-0.21.3.min.js", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png"];
+/* LOWiSPIKE service worker · network-first app shell with offline static fallback. */
+const CACHE = "lowispike-r1-herb-tmg-20261013";
+const STATIC = ["herb-config.js", "herb-core.js", "herb-tamagotchi-core.js", "herb-tamagotchi.js", "herb-tamagotchi.css", "body-core.js", "body-companion.js", "body-companion.css", "swaflo-config.js", "swaflo-core.js", "swaflo.js", "swaflo.css", "discovery-config.js", "discovery-core.js", "discovery.js", "discovery.css", "apple-ui.js", "apple-ui.css", "appearance.js", "recipe-book.js", "updates.css", "vendor/supabase-2.117.3.js", "vendor/zxing-0.21.3.min.js", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png"];
 self.addEventListener("install", e => {
   self.skipWaiting();
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(STATIC).catch(() => {})));
@@ -15,9 +12,9 @@ const scopePath = new URL(self.registration.scope).pathname;
 function isPage(req, url){ return req.mode === "navigate" || url.pathname === scopePath || url.pathname === scopePath + "index.html"; }
 self.addEventListener("fetch", e => {
   const req = e.request; if (req.method !== "GET") return;
-  const url = new URL(req.url); if (url.origin !== self.location.origin) return;     // Supabase etc. go straight to the network
+  const url = new URL(req.url); if (url.origin !== self.location.origin) return;
   if (url.pathname.endsWith("/version.json") || url.pathname.endsWith("/sw.js")) return;
-  if (["herb-config.js", "herb-core.js", "body-core.js", "body-companion.js", "body-companion.css", "swaflo-config.js", "swaflo-core.js", "swaflo.js", "swaflo.css", "discovery-config.js", "discovery-core.js", "discovery.js", "discovery.css", "apple-ui.js", "apple-ui.css", "appearance.js", "recipe-book.js", "updates.css"].some(s => url.pathname.endsWith("/" + s))) {
+  if (["herb-config.js", "herb-core.js", "herb-tamagotchi-core.js", "herb-tamagotchi.js", "herb-tamagotchi.css", "body-core.js", "body-companion.js", "body-companion.css", "swaflo-config.js", "swaflo-core.js", "swaflo.js", "swaflo.css", "discovery-config.js", "discovery-core.js", "discovery.js", "discovery.css", "apple-ui.js", "apple-ui.css", "appearance.js", "recipe-book.js", "updates.css"].some(s => url.pathname.endsWith("/" + s))) {
     e.respondWith(fetch(req, {cache:"no-cache"}).then(res => { if (res.ok) { const cp = res.clone(); caches.open(CACHE).then(c => c.put(req, cp)); } return res; }).catch(() => caches.match(req).then(r => r || Response.error())));
     return;
   }
@@ -33,8 +30,6 @@ self.addEventListener("fetch", e => {
     return res;
   })));
 });
-/* n1p: phone notifications (N1 part 2, Oct 11 2026). Shows the nudge the n1-push edge function sends and opens the
-   right place when it is tapped. */
 const N1P_FN = "https://vnfwmifmsfecascwaody.supabase.co/functions/v1/n1-push";
 const N1P_PUB = "BLNmn2O2yRpMS7JukbXrgnYu157fNv317XnjgtVWzEyLuWMBupmX4Q1a0wid-4r6p0uGk8sVI0gMdl2uzlAREsA";
 self.addEventListener("push", e => {
@@ -53,4 +48,3 @@ self.addEventListener("pushsubscriptionchange", e => {
   e.waitUntil(self.registration.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: key}).then(sub =>
     fetch(N1P_FN, {method: "POST", headers: {"Content-Type": "text/plain;charset=UTF-8"}, body: JSON.stringify({a: "save", sub: sub.toJSON(), st: {}})})).catch(() => {}));
 });
-/* /n1p */

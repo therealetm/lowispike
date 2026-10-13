@@ -29,17 +29,20 @@ function renderCard(card,m,api){
   const sign=m.profile&&m.profile.sign?`${m.profile.sign.symbol||'✦'} ${m.profile.sign.name||''}`.trim():tr('star');
   const xp=Math.floor(Number(m.xp)||0),left=Math.floor(Number(m.left)||0);
   const xpText=m.next?`${xp} XP · ${left} XP ${tr('next')}`:`${xp} XP · ${tr('max')}`;
+  const sig=[m.index,xp,left,pct,m.dim?1:0,sign,stageName(m)].join('|');
+  if(card.dataset.tmgSig===sig)return;
   let line='';try{line=api.lineFor('home',m)||'';}catch(e){}
   card.style.setProperty('--tmg-a',m.profile&&m.profile.palette?m.profile.palette.a:'#69a96b');
   card.style.setProperty('--tmg-b',m.profile&&m.profile.palette?m.profile.palette.b:'#d9b86c');
   card.innerHTML=`<div class="tmg-mini">${api.plantHTML(m)}</div><div class="tmg-copy"><div class="tmg-title"><b>${stageName(m)}</b><span class="tmg-level">${tr('level')} ${(m.index||0)+1}</span></div></div><span class="tmg-badge">${sign}</span><div class="tmg-line">${line}</div><div class="tmg-xprow"><span class="tmg-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><i style="width:${pct}%"></i></span><span class="tmg-xptxt">${xpText}</span></div>`;
+  card.dataset.tmgSig=sig;
 }
 function ensure(){
   const api=window.LowiHerbTamagotchi;if(!api||!api.current||!api.plantHTML)return false;
   const host=homeHost();if(!host)return false;
   let card=D.getElementById('tmgHomeCard');
   if(!card){card=D.createElement('button');card.type='button';card.id='tmgHomeCard';card.className='tmg-home-card rs-cols';card.setAttribute('data-noi18n','');card.addEventListener('click',()=>api.open());}
-  if(card.parentElement!==host)host.prepend(card);
+  if(card.parentElement!==host){host.prepend(card);card.dataset.tmgSig='';}
   card.hidden=false;card.setAttribute('aria-label',tr('open'));
   try{renderCard(card,api.current().m,api);}catch(e){return false;}
   return true;
@@ -49,7 +52,7 @@ function boot(){
   tick();
   D.addEventListener('click',e=>{if(e.target.closest('#tabbar .tb,[data-tab],[data-page]'))setTimeout(tick,100);},true);
   D.addEventListener('visibilitychange',()=>{if(!D.hidden)tick();});
-  if(window.MutationObserver)new MutationObserver(()=>tick()).observe(D.body,{childList:true,subtree:true});
+  if(window.MutationObserver)new MutationObserver(()=>{const c=D.getElementById('tmgHomeCard');if(!c||!c.isConnected)setTimeout(tick,0);}).observe(D.body,{childList:true,subtree:true});
   setInterval(tick,1500);
 }
 if(D.readyState==='loading')D.addEventListener('DOMContentLoaded',boot,{once:true});else boot();

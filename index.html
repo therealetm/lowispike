@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261013-203600">
+<meta name="lowi-build" content="20261013-232000">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -11299,7 +11299,7 @@ dict([
 /* ---------- saved swaps: swipe left or tap x ---------- */
 function savedHTMLNew(){
   const list = (S.saved || []).map((s, k) => ({s, k})).reverse();
-  return '<div class="sec"><span class="h3" data-noi18n>' + T("Saved swaps") + '</span>' + (list.length ? '<span class="small muted r3a-hint" data-noi18n>' + T("Swipe left or tap × to delete") + '</span>' : "") + '</div><button class="r2-btn ghost" data-sf="open">Swaflo ›</button><div class="card r3a-saved">' +
+  return '<div class="sec"><span class="h3" data-noi18n>' + T("Saved swaps") + '</span>' + (list.length ? '<span class="small muted r3a-hint" data-noi18n>' + T("Swipe left or tap × to delete") + '</span>' : "") + '</div><div class="card r3a-saved">' +
     (list.length ? list.map(o => { const s = o.s;
       return '<div class="r3a-sw" data-k="' + o.k + '"><button class="r3a-swdel" data-r3a="delsaved" data-k="' + o.k + '" tabindex="-1" data-noi18n>' + T("Delete") + '</button>' +
         '<div class="r3a-swfront"><button class="row savedrow" ' + (s.swaflo ? 'data-sf="saved" data-id="' + esc(s.swaflo.recipe.id) + '"' : 'data-act="opensaved" data-v="' + esc(s.from || "") + '"') + '><span style="font-size:22px">' + (s.e || "") + '</span><span class="small" style="flex:1;text-align:left;min-width:0">' + esc(s.n) + '</span>' + (s.swaflo ? '<span class="small muted">Swaflo</span>' : typeof badge === "function" ? badge(s.r) : "") + '</button>' +
@@ -18628,3 +18628,4 @@ window.LowiSwafloBridge = {
 <script src="swaflo.js"></script>
 </body>
 </html>
+

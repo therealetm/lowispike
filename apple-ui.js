@@ -3,13 +3,15 @@
 'use strict';
 const D=document,H=D.documentElement,R2=window.LowiR2;
 /* Herb Tamagotchi is loaded from this already-live shell file so the 3.2 MB app entry point stays untouched. */
-(function loadHerb(){
-  if(window.__LOWI_HERB_LOADING)return;window.__LOWI_HERB_LOADING=true;
+(function loadHerb(attempt){
+  if(window.__LOWI_HERB_READY)return;
+  if(!window.LowiR2){if((attempt||0)<120)setTimeout(()=>loadHerb((attempt||0)+1),50);return;}
+  if(window.__LOWI_HERB_LOADING)return;window.__LOWI_HERB_LOADING=true;window.__LOWI_HERB_READY=true;
   const v='20261013-1506';
   if(!D.getElementById('tmgCss')){const l=D.createElement('link');l.id='tmgCss';l.rel='stylesheet';l.href='herb-tamagotchi.css?v='+v;D.head.appendChild(l);}
   const files=['herb-config.js','herb-core.js','herb-tamagotchi-core.js','herb-tamagotchi.js','herb-tamagotchi-polish.js'];
   let i=0;const next=()=>{if(i>=files.length)return;const f=files[i++],id='tmg-'+f.replace(/\W/g,'-');if(D.getElementById(id)){next();return;}const s=D.createElement('script');s.id=id;s.src=f+'?v='+v;s.async=false;s.onload=next;s.onerror=()=>{console.warn('Herb companion could not load',f);next();};D.head.appendChild(s);};next();
-})();
+})(0);
 H.classList.add('apple-ui');
 if(!R2 || !R2.sheet) return;
 const states=new WeakMap(), reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;

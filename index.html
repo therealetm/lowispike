@@ -2114,9 +2114,10 @@ html[data-theme=light] #lcUpd.g1-upd .g1-usay{background:rgba(255,255,255,.2)}
 (function(){
 "use strict";
 if (window.LowiG1) return;
-const NEWS_RAW = {"id": "swaflo-v1", "go": {"tab": "shelf"}, "text": {"en": "New: Swaflo rebuilds supported dishes with ingredient swaps, recipes and real-data shopping fallbacks. The existing shuffle now has Cook / Bake, Buy and a sweet-snack lane. Save results to Meine Swaps and use the existing cooking flow. Experimental culinary defaults are marked.", "de": "Neu: Swaflo passt unterstützte Gerichte mit Zutatentausch, Rezepten und Einkaufsdaten an. Der bestehende Shuffle bietet Kochen / Backen, Kaufen und eine süße Snack-Spur. Ergebnisse in Meine Swaps speichern und den bestehenden Kochablauf nutzen. Experimentelle Küchenwerte sind markiert.", "es": "Nuevo: Swaflo adapta platos compatibles con cambios de ingredientes, recetas y datos reales para comprar. El shuffle existente incluye Cocinar / Hornear, Comprar y snacks dulces. Guarda en Mis cambios y usa el flujo de cocina existente. Los valores culinarios experimentales están indicados."}};
-const NEWS = (NEWS_RAW && typeof NEWS_RAW === "object") ? NEWS_RAW : null;
-const KEY = "lowi.g1", GO = "lowi.g1.go";
+/* Oct 14: the old embedded note (Swaflo) is gone. It came back after every update tap. News = version.json news of the build that is running, shown once. */
+let NEWS = null;
+const KEY = "lowi.g1", GO = "lowi.g1.go", SEEN = "lowi.news.seen";
+const BUILD_NOW = (document.querySelector('meta[name="lowi-build"]') || {}).content || "";
 const H = document.documentElement;
 const $ = (s, r) => (r || document).querySelector(s);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -2168,6 +2169,12 @@ const NT = o => { if (!o) return ""; if (typeof o === "string") return o; return
 /* ---------- memory ---------- */
 function mem(){ try { return JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch(e){ return {}; } }
 function remember(p){ const m = Object.assign(mem(), p); try { localStorage.setItem(KEY, JSON.stringify(m)); } catch(e){} return m; }
+/* news seen-state: an id is shown once, in the banner OR in one bubble, never again (relaunch, tabs, Later) */
+function seenList(){ try { const a = JSON.parse(localStorage.getItem(SEEN) || "[]"); return Array.isArray(a) ? a : []; } catch(e){ return []; } }
+function newsSeen(id){ if (!id) return true; if (seenList().indexOf(id) >= 0) return true; try { if (localStorage.getItem("lowi.g1.bn") === id) return true; } catch(e){} return mem().n === id; }
+function markSeen(id){ if (!id) return; const a = seenList().filter(x => x !== id); a.push(id); try { localStorage.setItem(SEEN, JSON.stringify(a.slice(-40))); } catch(e){} if (mem().n !== id) remember({n:id}); }
+let newsLoaded = false;
+async function loadNews(){ try { const r = await fetch("version.json?g1n=" + Date.now(), {cache:"no-store"}); if (r.ok) { const v = await r.json(); if (v && v.news && v.news.id && v.news.text && v.build && v.build === BUILD_NOW) NEWS = v.news; } } catch(e){} newsLoaded = true; return NEWS; }
 
 /* ---------- the orb look: a live copy of the scan orb's own styles ---------- */
 function cloneOrbCss(){ if ($("#g1OrbCss")) return; let out = "";
@@ -2280,15 +2287,15 @@ function start(from){ if (TOUR) close("restart", true); hush(); goHome();
   const m = mem(); remember({t:"", n:NEWS && NEWS.id ? NEWS.id : m.n});
   setTimeout(() => { const steps = stepList(); let i = typeof from === "number" ? from : 0; if (i >= steps.length - 1) i = 0;
     begin({steps, i, kind:"tour"}); }, onHome() ? 60 : 420); }
-function startNews(){ if (!NEWS) return; hush(); remember({n:NEWS.id});
-  const go = NEWS.go || {}; if (go.tour || !mem().t) { start(0); return; }
-  if (go.tab && !(go.tab === "home" && onHome())) goTabBtn(go.tab);
-  setTimeout(() => begin({steps:[{k:"news", text:NT(NEWS.text), el:() => go.sel ? $(go.sel) : null}], i:0, kind:"show"}), 450); }
-function bnSeen(){ try { return !!(NEWS && NEWS.id && localStorage.getItem("lowi.g1.bn") === NEWS.id); } catch(e){ return false; } } /* b2-once */
+function newsGo(){ const go = (NEWS && NEWS.go) || {}; if (go.tour) return "tour"; if (go.sel) return "sel"; if (go.tab && go.tab !== tabNow()) return "tab"; return ""; }
+/* "Show me": go to the new thing. It never repeats the text it just showed; with a target on screen it says "Here it is." */
+function startNews(){ if (!NEWS) return; hush(); markSeen(NEWS.id); const go = NEWS.go || {};
+  if (go.tour) { start(0); return; } if (go.tab && go.tab !== tabNow()) b2Tab(go.tab); if (!go.sel) return;
+  setTimeout(() => { const el = $(go.sel); if (!el || !vis(el)) return; begin({steps:[{k:"news", text:NT({en:"Here it is.", de:"Hier ist es.", es:"Aquí está."}), el:() => $(go.sel)}], i:0, kind:"show"}); }, 450); }
+function bnSeen(){ return !!(NEWS && NEWS.id && newsSeen(NEWS.id)); } /* b2-once */
 function b2Tab(t){ const b = $("#tabbar .tb[data-tab=" + t + "]") || $(".tb[data-tab=" + t + "]"); if (b) b.click(); else if (typeof window.goTab === "function") window.goTab(t); }
-function pointNews(){ if (!NEWS) return; hush(); remember({n:NEWS.id}); const go = NEWS.go || {}; if (go.tab && !(go.tab === "home" && onHome())) b2Tab(go.tab); if (go.tour || !mem().t || !go.sel) return;
-  setTimeout(() => begin({steps:[{k:"news", text:NT({en:"Here it is.", de:"Hier ist es.", es:"Aquí está."}), el:() => $(go.sel)}], i:0, kind:"show"}), 450); }
-function offerNews(){ if (!NEWS || TOUR) return; hush(); begin({steps:[{k:"offer", text:NT(NEWS.text)}], i:0, kind:"offer"}); }
+/* the one news bubble: text once, then "Got it" (and "Show me" only when there is somewhere to go). Marked seen as it opens. */
+function offerNews(){ if (!NEWS || TOUR || newsSeen(NEWS.id)) return; hush(); markSeen(NEWS.id); begin({steps:[{k:"offer", text:NT(NEWS.text)}], i:0, kind:"offer"}); }
 function close(how, quick){ hush(); const t = TOUR; TOUR = null; clearInterval(placeT); cancelAnimationFrame(follow.raf);
   const r = $("#g1Tour"); if (r) { r.classList.add("out"); setTimeout(() => { if (r.parentNode && !TOUR) r.remove(); else if (r.parentNode && TOUR) r.classList.remove("out"); }, quick ? 0 : 260); }
   H.classList.remove("g1-touring"); H.classList.remove("g2h-tour");
@@ -2307,7 +2314,8 @@ function show(){ if (!TOUR) return; const r = root(), s = TOUR.steps[TOUR.i], n 
       '<button type="button" class="g1-btn g1-next" data-g1="next">' + esc(last ? T("Done") : T("Next")) + (last ? "" : " ›") + '</button>';
   } else if (TOUR.kind === "offer") {
     head = '<div class="g1-tag">' + esc(T("newin")) + '</div>';
-    btns = '<button type="button" class="g1-btn g1-skip" data-g1="later">' + esc(T("Later")) + '</button><span class="g1-sp"></span><button type="button" class="g1-btn g1-next" data-g1="showme">' + esc(T("Show me")) + ' ›</button>';
+    btns = newsGo() ? '<button type="button" class="g1-btn g1-skip" data-g1="later">' + esc(T("Got it")) + '</button><span class="g1-sp"></span><button type="button" class="g1-btn g1-next" data-g1="showme">' + esc(T("Show me")) + ' ›</button>'
+      : '<span class="g1-sp"></span><button type="button" class="g1-btn g1-next" data-g1="done">' + esc(T("Got it")) + '</button>';
   } else {
     head = '<div class="g1-tag">' + esc(s.tag || T("newin")) + '</div>';
     btns = '<span class="g1-sp"></span><button type="button" class="g1-btn g1-next" data-g1="done">' + esc(T("Got it")) + '</button>';
@@ -2399,14 +2407,14 @@ function decorate(){ const d = $("#lcUpd"); if (!d) return; d.classList.add("g1-
   let h = t.querySelector(".g1-uh"); if (!h) { h = document.createElement("b"); h.className = "g1-uh"; t.insertBefore(h, t.firstChild); }
   let p = t.querySelector(".g1-un"); if (!p) { p = document.createElement("i"); p.className = "g1-un"; t.insertBefore(p, h.nextSibling); }
   if (h.textContent !== T("news")) h.textContent = T("news"); const line = n || T("newsfb"); if (p.textContent !== line) p.textContent = line;
-  if (n && upNews && upNews.id) { try { if (localStorage.getItem("lowi.g1.bn") !== upNews.id) localStorage.setItem("lowi.g1.bn", upNews.id); } catch(e){} } /* b2-bn */
+  if (n && upNews && upNews.id) { try { if (localStorage.getItem("lowi.g1.bn") !== upNews.id) localStorage.setItem("lowi.g1.bn", upNews.id); } catch(e){} markSeen(upNews.id); } /* b2-bn */
   if (SS && !d.querySelector(".g1-usay")) { const s = document.createElement("span"); s.className = "g1-usay"; s.setAttribute("role", "button"); s.setAttribute("tabindex", "0"); s.innerHTML = SPK;
     s.setAttribute("aria-label", T("Listen"));
     const act = e => { e.preventDefault(); e.stopPropagation(); if (speaking) { hush(); return; } const x = $("#lcUpd"); say(T("news") + " " + ((x && x.querySelector(".g1-un") || {}).textContent || "") + " " + (((x && x.querySelector(".g1-upill")) || {}).textContent || "")); };
     s.addEventListener("click", act); s.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") act(e); }); d.appendChild(s); }
   const b = d.dataset.build || "";
   if (flownFor !== b) { flownFor = b; flyInto(d); }
-  if (upBuild !== b || upNews === null) fetchNews(b).then(() => { const x = $("#lcUpd"); if (x) { const pp = x.querySelector(".g1-un"), nn = upNews && typeof upNews === "object" ? NT(upNews.text) : ""; if (pp && nn && pp.textContent !== nn) pp.textContent = nn; } });
+  if (upBuild !== b || upNews === null) fetchNews(b).then(() => { const x = $("#lcUpd"); if (x) { const pp = x.querySelector(".g1-un"), nn = upNews && typeof upNews === "object" ? NT(upNews.text) : ""; if (pp && nn && pp.textContent !== nn) pp.textContent = nn; if (nn && upNews.id) { try { localStorage.setItem("lowi.g1.bn", upNews.id); } catch(e){} markSeen(upNews.id); } } });
 }
 /* a tap on the banner refreshes (Q1, unchanged); remember it so the fairy shows the new thing right after */
 addEventListener("click", e => { if (e.target.closest && e.target.closest("#lcUpd") && !e.target.closest(".g1-usay")) { hush(); try { sessionStorage.setItem(GO, "1"); } catch(x){} } }, true);
@@ -2418,12 +2426,13 @@ let freeSince = 0;
 function tick(){ if (document.hidden) return; if (TOUR) { helpPlace(); return; } if (!AUTO()) return;
   if (!appFree()) { freeSince = 0; return; } if (!freeSince) { freeSince = Date.now(); return; } if (Date.now() - freeSince < 1200) return;
   let go = ""; try { go = sessionStorage.getItem(GO) || ""; } catch(e){}
-  if (go) { try { sessionStorage.removeItem(GO); } catch(e){} if (NEWS) { if (bnSeen() && mem().t) { pointNews(); return; } startNews(); return; } } /* b2-go */
+  if (go) { try { sessionStorage.removeItem(GO); } catch(e){} } /* b2-go: the banner already said what's new; after the refresh nothing repeats it */
+  if (!newsLoaded) return;
   if (!onHome()) return; const m = mem();
   if (!m.t) { start(typeof m.s === "number" ? m.s : 0); return; }
-  if (NEWS && NEWS.id && m.n !== NEWS.id) { if (bnSeen()) { remember({n:NEWS.id}); return; } offerNews(); return; } } /* b2-offer */
+  if (NEWS && NEWS.id && !newsSeen(NEWS.id)) { offerNews(); return; } } /* b2-offer: once per news id */
 
-function init(){ H.classList.add("g1"); helpBtn(); helpPlace(); decorate();
+function init(){ H.classList.add("g1"); helpBtn(); helpPlace(); decorate(); loadNews();
   const watch = () => { const d = $("#lcUpd"); if (d) { redeco(); if (!d.__g1) { d.__g1 = 1; new MutationObserver(redeco).observe(d, {childList:true}); } } };
   new MutationObserver(watch).observe(H, {childList:true}); watch();
   setInterval(tick, 1500);
@@ -2433,7 +2442,7 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
 /* F2: one line from the fairy, pointing at something on screen (used at the start of the "I just ate" chain) */
 function line(text, el, tag){ if (TOUR) close("x", true); begin({steps:[{k:"f2", text, tag, el}], i:0, kind:"line"}); }
 function mini(){ cloneOrbCss(); return '<span class="g1-uorb g1-mini" aria-hidden="true"><span class="g1z-body">' + orbHTML() + '</span></span>'; }
-window.LowiG1 = {mini, steps:() => stepList().map(x => x.k), start, close, line, next, back, news:NEWS, startNews, offerNews, say, hush, mem, reset:() => { try { localStorage.removeItem(KEY); } catch(e){} }, T, canSpeak:SS,
+window.LowiG1 = {mini, steps:() => stepList().map(x => x.k), start, close, line, next, back, get news(){ return NEWS; }, newsSeen, startNews, offerNews, say, hush, mem, reset:() => { try { localStorage.removeItem(KEY); } catch(e){} }, T, canSpeak:SS,
   state:() => TOUR ? {kind:TOUR.kind, i:TOUR.i, n:TOUR.steps.length, k:TOUR.steps[TOUR.i].k} : null, fairy:() => fz ? {on:fz.classList.contains("on"), home:fzHome, pos:fzPos} : null};
 })();
 </script>
@@ -5868,7 +5877,31 @@ function weightSheet(){ sheet('<div class="h2">Body weight</div><div class="fiel
 
 function nameSheet(){ sheet('<div class="h2">Your name</div><div class="field"><label>Shown on your posts</label><input class="input" id="nameIn" maxlength="24" value="' + esc(S.user.name) + '"></div><button class="btn primary" style="margin-top:14px" data-act="savename">Save</button>'); }
 function goalsSheet(){ sheet('<div class="h2">Your goals</div><div class="small muted" style="margin-top:4px">Private. They only change your tips and notes.</div><div class="chips" style="margin-top:14px">' + TAGS.map(t => '<button class="chip' + (S.user.tags.indexOf(t) >= 0 ? " on" : "") + '" data-act="goaltag" data-v="' + t + '">' + t + '</button>').join("") + '</div><button class="btn primary" style="margin-top:18px" data-act="closesheet">Done</button>'); }
-function installSheet(){ sheet('<div class="h2">Put LOWiSPIKE on your Home Screen</div><ol class="steps"><li>Open this page in <b>Safari</b> on your iPhone.</li><li>Tap the <b>Share</b> button (the square with the arrow).</li><li>Scroll down and tap <b>Add to Home Screen</b>.</li><li>Tap <b>Add</b>. It now opens full screen, like an app.</li></ol><button class="btn primary" style="margin-top:16px" data-act="closesheet">Got it</button>'); }
+/* Oct 14: Add to Home Screen steps in the app language, for the browser the person is in (iPhone Safari, other iPhone browsers, in-app browsers, Android) */
+function a2Lang(){ let l = "en"; try { l = (window.LowiLang && LowiLang.get && LowiLang.get()) || localStorage.getItem("lowispike.lang") || document.documentElement.lang || "en"; } catch(e){} l = String(l).slice(0, 2); return l === "de" || l === "es" ? l : "en"; }
+function a2Kind(){ const u = navigator.userAgent || ""; if (/Instagram|FBAN|FBAV|FB_IAB|TikTok|musical_ly|Bytedance|Snapchat|Line\//i.test(u)) return "inapp"; if (/Android/i.test(u)) return "android";
+  if (/iPhone|iPad|iPod/.test(u) || (/Macintosh/.test(u) && (navigator.maxTouchPoints || 0) > 1)) return /CriOS|FxiOS|EdgiOS|OPiOS/.test(u) ? "iosother" : "ios"; return "desktop"; }
+const A2T = {
+  en:{h:"Put LOWiSPIKE on your Home Screen", why:"Then it opens full screen like an app and keeps you signed in.", ok:"Got it",
+    ios:["Tap the <b>Share</b> button (square with the arrow) in Safari.", "Scroll down and tap <b>Add to Home Screen</b>.", "Tap <b>Add</b>, then open LOWiSPIKE from your Home Screen."],
+    iosother:["Tap the <b>Share</b> button in this browser (or open the page in <b>Safari</b>).", "Tap <b>Add to Home Screen</b>.", "Tap <b>Add</b>, then open LOWiSPIKE from your Home Screen."],
+    android:["Tap the <b>⋮</b> menu in Chrome.", "Tap <b>Add to Home screen</b> or <b>Install app</b>.", "Open LOWiSPIKE from your Home Screen."],
+    inapp:["Tap <b>⋯</b> and choose <b>Open in browser</b> (Safari or Chrome).", "There, tap <b>Share</b> (iPhone) or <b>⋮</b> (Android).", "Tap <b>Add to Home Screen</b>, then open it from there."],
+    desktop:["Open this page on your phone.", "iPhone: Share, then <b>Add to Home Screen</b>.", "Android: ⋮ menu, then <b>Add to Home screen</b>."]},
+  de:{h:"Leg LOWiSPIKE auf deinen Home-Bildschirm", why:"Dann öffnet es sich im Vollbild wie eine App und du bleibst angemeldet.", ok:"Verstanden",
+    ios:["Tippe in Safari auf <b>Teilen</b> (Quadrat mit Pfeil).", "Scroll nach unten und tippe auf <b>Zum Home-Bildschirm</b>.", "Tippe auf <b>Hinzufügen</b> und öffne LOWiSPIKE dann vom Home-Bildschirm."],
+    iosother:["Tippe in diesem Browser auf <b>Teilen</b> (oder öffne die Seite in <b>Safari</b>).", "Tippe auf <b>Zum Home-Bildschirm</b>.", "Tippe auf <b>Hinzufügen</b> und öffne LOWiSPIKE dann vom Home-Bildschirm."],
+    android:["Tippe in Chrome auf das Menü <b>⋮</b>.", "Tippe auf <b>Zum Startbildschirm hinzufügen</b> oder <b>App installieren</b>.", "Öffne LOWiSPIKE dann vom Startbildschirm."],
+    inapp:["Tippe auf <b>⋯</b> und wähle <b>Im Browser öffnen</b> (Safari oder Chrome).", "Dort auf <b>Teilen</b> (iPhone) oder <b>⋮</b> (Android) tippen.", "<b>Zum Home-Bildschirm</b> tippen und LOWiSPIKE von dort öffnen."],
+    desktop:["Öffne diese Seite auf deinem Handy.", "iPhone: Teilen, dann <b>Zum Home-Bildschirm</b>.", "Android: Menü ⋮, dann <b>Zum Startbildschirm hinzufügen</b>."]},
+  es:{h:"Pon LOWiSPIKE en tu pantalla de inicio", why:"Así se abre a pantalla completa como una app y mantienes la sesión.", ok:"Entendido",
+    ios:["Toca <b>Compartir</b> (el cuadrado con la flecha) en Safari.", "Desplázate y toca <b>Añadir a pantalla de inicio</b>.", "Toca <b>Añadir</b> y abre LOWiSPIKE desde tu pantalla de inicio."],
+    iosother:["Toca <b>Compartir</b> en este navegador (o abre la página en <b>Safari</b>).", "Toca <b>Añadir a pantalla de inicio</b>.", "Toca <b>Añadir</b> y abre LOWiSPIKE desde tu pantalla de inicio."],
+    android:["Toca el menú <b>⋮</b> de Chrome.", "Toca <b>Añadir a pantalla de inicio</b> o <b>Instalar app</b>.", "Abre LOWiSPIKE desde tu pantalla de inicio."],
+    inapp:["Toca <b>⋯</b> y elige <b>Abrir en el navegador</b> (Safari o Chrome).", "Allí toca <b>Compartir</b> (iPhone) o <b>⋮</b> (Android).", "Toca <b>Añadir a pantalla de inicio</b> y ábrela desde allí."],
+    desktop:["Abre esta página en tu móvil.", "iPhone: Compartir y luego <b>Añadir a pantalla de inicio</b>.", "Android: menú ⋮ y luego <b>Añadir a pantalla de inicio</b>."]}};
+function installSheet(){ const t = A2T[a2Lang()], steps = t[a2Kind()] || t.ios;
+  sheet('<div data-noi18n><div class="h2">' + t.h + '</div><p class="small muted" style="margin:6px 0 10px;line-height:1.45">' + t.why + '</p><ol class="steps">' + steps.map(x => '<li>' + x + '</li>').join("") + '</ol><button class="btn primary" style="margin-top:16px" data-act="closesheet">' + t.ok + '</button></div>'); }
 
 /* ===== Today (Oct 8, 2026): Home rebuilt as the morning flow.
    1 How many meals today (fasting and late eating included) -> 2 what's on the plate (from the 25 Recipe Book recipes)
@@ -8973,7 +9006,7 @@ document.addEventListener("click", e => { const b = e.target.closest && e.target
     case "signout": doSignout(); break;
     case "newposts": b.remove(); if (window.TRIBE) { TRIBE.renderForYou($("#cmFeed")); const f = $("#fyFeed"); if (f) f.scrollTop = 0; } break;
     case "a2hs": try { installSheet(); } catch(x){} break;
-    case "a2hs-x": try { localStorage.setItem("lowi.a2hs", "1"); } catch(x){} const w = $("#lcA2hs"); if (w) w.remove(); break;
+    case "a2hs-x": try { sessionStorage.setItem("lowi.a2hs.x", "1"); } catch(x){} const w = $("#lcA2hs"); if (w) w.remove(); break;
     case "update": doUpdate(); break; /* q1-go */
   }
 });
@@ -8988,11 +9021,29 @@ function refreshUI(){ try { const h = H(); if (!h) return; const tab = h.tab(); 
 
 /* ---------- Home Screen hint, storage, updates ---------- */
 const standalone = () => window.matchMedia && matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
-function a2hsHint(){ if (standalone() || location.protocol === "file:") return; let seen = ""; try { seen = localStorage.getItem("lowi.a2hs"); } catch(e){} if (seen) return;
-  if (!/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) return; if ($("#lcA2hs")) return;
-  const d = document.createElement("div"); d.id = "lcA2hs"; d.className = "lc-banner"; d.setAttribute("role", "status");
-  d.innerHTML = '<span>Add LOWiSPIKE to your Home Screen so it remembers you.</span><button class="chip" data-cl="a2hs">How</button><button class="lc-x" data-cl="a2hs-x" aria-label="Close">×</button>';
-  document.body.appendChild(d); setTimeout(() => { if (d.parentNode) d.remove(); }, 15000); }
+/* Oct 14: opened in a browser (not from the Home Screen) -> a slim "Add to Home Screen" note on Today. It stays until it is closed
+   (no 15 s auto-remove, so it is not gone before the sign-in screen or a popup lets it show); × hides it for this visit only,
+   and it comes back the next time the app is opened in the browser. Never inside the Home Screen app. */
+const A2HS_X = "lowi.a2hs.x";
+function a2hsHint(){ if (standalone() || location.protocol === "file:") { const w = $("#lcA2hs"); if (w) w.remove(); return; }
+  let x = ""; try { x = sessionStorage.getItem(A2HS_X) || ""; } catch(e){} if (x) return;
+  if (!/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && !(/Macintosh/.test(navigator.userAgent) && (navigator.maxTouchPoints || 0) > 1)) return; if ($("#lcA2hs")) return;
+  const L = (typeof a2Lang === "function" ? a2Lang() : "en"), W = {en:["Add LOWiSPIKE to your Home Screen so it opens like an app and remembers you.", "How", "Close"], de:["Leg LOWiSPIKE auf deinen Home-Bildschirm, dann öffnet es sich wie eine App und vergisst dich nicht.", "So geht's", "Schließen"], es:["Añade LOWiSPIKE a tu pantalla de inicio: se abre como una app y te recuerda.", "Cómo", "Cerrar"]}[L];
+  const d = document.createElement("div"); d.id = "lcA2hs"; d.className = "lc-banner"; d.setAttribute("role", "status"); d.setAttribute("data-noi18n", "");
+  d.innerHTML = '<span>' + W[0] + '</span><button class="chip" data-cl="a2hs">' + W[1] + '</button><button class="lc-x" data-cl="a2hs-x" aria-label="' + W[2] + '">×</button>';
+  document.body.appendChild(d); a2Place(); }
+/* where: in the free space on Today between the last card and the scan orb, so it covers no button (weather, profile, herb); top only if there is no room */
+function a2Bottom(root){ let m = 0; const walk = (el, depth) => { for (const k of el.children) { if (k.id === "lcA2hs" || /^(SCRIPT|STYLE)$/.test(k.tagName)) continue; const cs = getComputedStyle(k);
+    if (cs.display === "none" || cs.visibility === "hidden" || cs.position === "fixed") continue; const r = k.getBoundingClientRect(); if (r.height >= 2 && r.width >= 2 && r.bottom > m && r.top < innerHeight) m = r.bottom; if (depth > 0) walk(k, depth - 1); } };
+  walk(root, 4); return m; }
+function a2Place(){ const d = $("#lcA2hs"); if (!d) return; const tb = $("#tabbar"), home = $("#tab-home.active"), orb = $("#lhDock") || $("#tabbar .tb.scan .orb");
+  let top = "";
+  try { if (tb && home && tb.offsetHeight && home.offsetHeight) { const h = d.offsetHeight || 64, low = Math.min(tb.getBoundingClientRect().top, orb && orb.offsetHeight ? orb.getBoundingClientRect().top : 1e9) - 12, high = a2Bottom(home) + 10;
+    if (low - high >= h) top = Math.round(low - h) + "px"; } } catch(e){}
+  if (d.style.top !== top) d.style.top = top; d.classList.toggle("a2-low", !!top);
+  /* short screens: no free space, so at the top it would sit over the weather and profile buttons; there it steps aside after 12 s for this visit */
+  if (!top && !document.documentElement.classList.contains("q4b-off")) { d.__topMs = (d.__topMs || 0) + 700; if (d.__topMs > 12000) { try { sessionStorage.setItem(A2HS_X, "1"); } catch(e){} d.remove(); } } }
+setInterval(() => { if ($("#lcA2hs")) a2Place(); }, 700); addEventListener("resize", () => a2Place());
 function persist(){ try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch(e){} }
 const BUILD = (document.querySelector('meta[name="lowi-build"]') || {}).content || "";
 let lastCheck = 0, newBuild = "", checking = false, updating = false, failedBuild = "";
@@ -9071,7 +9122,7 @@ window.LOWI_CLOUD = {
   publish, unpublish, like, cardHTML, boot
 };
 addLang(); persist(); sw();
-setTimeout(a2hsHint, 2500);
+setTimeout(a2hsHint, 2500); setInterval(() => { if (document.visibilityState === "visible") a2hsHint(); }, 5000); /* re-adds it if a screen change removed it */
 boot();
 })();
 </script>

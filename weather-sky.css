@@ -136,3 +136,45 @@ html:has(#spWorld.sp-capture) #wxSky { visibility: hidden }
     #wxSky > i { animation: none !important; transition: none }
     html[data-wx-wet="1"] .wx-f2 { opacity: 0 }
 }
+
+/* ---------- Oct 14: weather you can actually see, also around and through the Home cards ---------- */
+#wxSky {
+    --wx-drop: rgba(190, 216, 255, .72);
+    --wx-flake: rgba(246, 249, 255, .9);
+    --wx-cloud: rgba(166, 180, 210, .36);
+}
+html[data-theme=light] #wxSky {
+    --wx-drop: rgba(40, 92, 156, .5);
+    --wx-flake: rgba(104, 136, 182, .8);
+    --wx-cloud: rgba(108, 126, 158, .34);
+}
+html[data-wx-cond=storm] #wxSky { --wx-cloud: rgba(84, 92, 120, .5) }
+/* clouds also drift lower down the screen, not only along the top */
+.wx-c2 { top: 34%; height: 62% }
+/* overcast, rain and snow: a grey veil over the whole sky */
+html:is([data-wx-cond=cloudy], [data-wx-cond=drizzle], [data-wx-cond=rain], [data-wx-cond=storm], [data-wx-cond=snow]) .wx-fog {
+    opacity: 1;
+    background: linear-gradient(180deg, rgba(150, 160, 182, .2), rgba(110, 120, 140, .1) 55%, rgba(110, 120, 140, .14));
+    animation: none;
+}
+html[data-theme=light]:is([data-wx-cond=cloudy], [data-wx-cond=drizzle], [data-wx-cond=rain], [data-wx-cond=storm], [data-wx-cond=snow]) .wx-fog {
+    background: linear-gradient(180deg, rgba(120, 130, 150, .24), rgba(140, 150, 168, .12) 55%, rgba(140, 150, 168, .16));
+}
+/* sun: a warmer, larger glow; night: a deeper sky */
+html[data-wx-day=day]:is([data-wx-cond=clear], [data-wx-cond=partly]) .wx-orb {
+    background: radial-gradient(closest-side at 72% 38%, rgba(255, 216, 120, .66), rgba(255, 190, 90, .24) 45%, transparent 78%);
+}
+html[data-wx-phase=night] .wx-tint { background: linear-gradient(180deg, rgba(24, 36, 92, .7), rgba(10, 14, 40, .42) 60%, rgba(6, 8, 24, .3)) }
+.wx-stars { bottom: 22% }
+/* cold: frost creeps in from the edges */
+.wx-frost { background: radial-gradient(130% 85% at 50% 45%, transparent 55%, rgba(170, 214, 255, .24) 80%, rgba(220, 240, 255, .46)) }
+html[data-wx-temp=cold] .wx-frost { opacity: .75 }
+/* Home cards let the sky show through, text stays on a dark (or light) glass */
+html[data-wx-src=weather].spirit-app #spHome :is(.sp-status, .sp-log),
+html[data-wx-src=weather] #tab-home .f3-board {
+    background: color-mix(in srgb, var(--b-solid, #0b0e16) 66%, transparent);
+    -webkit-backdrop-filter: blur(1.5px) saturate(1.1);
+    backdrop-filter: blur(1.5px) saturate(1.1);
+}
+html[data-wx-src=weather] #tab-home .f3-board { background: linear-gradient(160deg, rgba(14, 32, 62, .66), rgba(6, 14, 32, .7)) }
+html[data-theme=light][data-wx-src=weather] #tab-home .f3-board { background: linear-gradient(160deg, rgba(243, 249, 255, .74), rgba(227, 240, 255, .74)) }

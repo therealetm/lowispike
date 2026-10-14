@@ -5718,10 +5718,11 @@ function renderResult(r){ const sw = r.swap, lvlTxt = {low:"LOW", medium:"MEDIUM
     '<button class="btn ghost sm" style="margin-top:16px" data-act="trig" id="trigBtn">' + (r.trigHit ? "Undo: I can handle this food" : "I always eat too much of this") + '</button>' +
     '<button class="btn primary" style="margin-top:10px" data-act="logdone" id="logDone">Done · log it</button>'; }
 function logDone(){ const r = CUR; if (!r) return; const eventId = r._mealEventId || (r._mealEventId = "meal:" + uid());
-  if (S.logs.some(l => l.eventId === eventId)) return; const n = S.logs.filter(l => l.day === today()).length;
+  if (S.logs.some(l => l.eventId === eventId)) return; const n = S.logs.filter(l => l.day === today()).length; const VB = window.LowiVitalsBridge;
+  if (VB && VB.mealDup && VB.mealDup({t:r.title})) { toast(VB.mealReason("dup")); $("#result").classList.remove("open"); return; }
   S.logs.push({id:eventId,eventId,ts:Date.now(),day:today(),t:r.title,lvl:r.lvl,r:r.r,e:r.emoji}); save();
-  if (n < 5) award(15, "Meal checked", null, eventId, eventId);
-  else try { window.dispatchEvent(new CustomEvent("lowi:care",{detail:{kind:"water",id:eventId}})); } catch(e){}
+  if (n < (VB && VB.MEAL_CAP || 8)) award(15, "Meal checked", null, eventId, eventId);
+  else { if (VB) toast(VB.mealReason("cap")); try { window.dispatchEvent(new CustomEvent("lowi:care",{detail:{kind:"water",reaction:"eat",id:eventId}})); } catch(e){} }
   questDone("eat"); $("#result").classList.remove("open"); renderAll(); }
 function toggleTrig(){ const r = CUR; const ids = r.ids; if (r.trigHit) S.trig = S.trig.filter(x => ids.indexOf(x) < 0); else ids.forEach(x => { if (S.trig.indexOf(x) < 0) S.trig.push(x); });
   save(); if (r.meal) openMeal(r.meal.id, r.photo); else runAnalyse(r.text, r.photo); toast(r.trigHit ? "Removed from your list" : "Saved: this food is a NO for you"); }
@@ -13724,8 +13725,10 @@ function herbHTML(v){
 }
 function eatHTML(p){
   if (!p || p.notFound || !LV_B3[p.verdict]) return "";
-  const xp = window.LowiVitalsBridge && LowiVitalsBridge.mealXp ? LowiVitalsBridge.mealXp() : 15;
-  return '<div class="b3-eat"><button type="button" class="r2-btn pri b3-eatgo" data-b3="eat">' + esc(["Ate it, log it", "Gegessen, eintragen", "Lo comí, registrar"][LI()]) + (xp ? ' <small class="b3-eatxp">+' + xp + ' XP</small>' : "") + '</button><button type="button" class="r2-btn ghost b3-eatskip" data-b3="skip">' + esc(["Skip", "Überspringen", "Saltar"][LI()]) + '</button></div>';
+  const V = window.LowiVitalsBridge, q = {code:p.code || "", t:p.name || p.brand || ""};
+  const xp = V && V.mealXp ? V.mealXp(q) : 15, why = V && V.mealWhy ? V.mealWhy(q) : "";
+  const tag = xp ? ' <small class="b3-eatxp">+' + xp + ' XP</small>' : why ? ' <small class="b3-eatxp b3-eatwhy">' + esc(why === "dup" ? ["already logged today", "heute schon eingetragen", "ya registrado hoy"][LI()] : ["no XP today", "heute keine XP mehr", "sin XP hoy"][LI()]) + '</small>' : "";
+  return '<div class="b3-eat"><button type="button" class="r2-btn pri b3-eatgo" data-b3="eat">' + esc(["Ate it, log it", "Gegessen, eintragen", "Lo comí, registrar"][LI()]) + tag + '</button><button type="button" class="r2-btn ghost b3-eatskip" data-b3="skip">' + esc(["Skip", "Überspringen", "Saltar"][LI()]) + '</button></div>';
 }
 const LV_B3 = {ok:["low", 2], better:["mid", 4], spike:["high", 7]};
 function fillHerb(root){
@@ -13737,11 +13740,14 @@ function fillHerb(root){
 function eatCur(btn){
   const p = CUR; if (!p || !window.LowiVitalsBridge || btn.disabled) return; btn.disabled = true;
   const meta = LV_B3[p.verdict] || ["", 0];
-  const res = LowiVitalsBridge.logMeal({id:"bc:" + (p.code || "x") + ":" + Date.now(), t:p.name || p.brand || "Produkt", macros:null, via:"barcode"});
-  if (res && res.log) { res.log.lvl = meta[0]; res.log.r = meta[1]; res.log.code = p.code || ""; try { LowiVitalsBridge.save(); } catch(e){} }
-  buzz(12); sfx("soft");
-  toast(["Logged", "Eingetragen", "Registrado"][LI()] + (res && res.xp ? " · +" + res.xp + " XP" : ""));
+  const res = LowiVitalsBridge.logMeal({id:"bc:" + (p.code || "x") + ":" + Date.now(), t:p.name || p.brand || "Produkt", macros:null, via:"barcode", code:p.code || ""});
+  if (res && res.log && !res.dup) { res.log.lvl = meta[0]; res.log.r = meta[1]; res.log.code = p.code || ""; try { LowiVitalsBridge.save(); } catch(e){} }
+  buzz(12); sfx(res && res.dup ? "tap" : "soft");
+  const text = res && res.dup ? res.reason : ["Logged", "Eingetragen", "Registrado"][LI()] + (res && !res.xp && res.reason ? " · " + res.reason.split(" · ").slice(1).join(" · ") : "");
   if (REV) { try { R2.close(REV); } catch(e){} }
+  /* Oct 14: the herb world closes on its own after a scan log; a small XP pop on Home instead */
+  if (window.LowiSpirit && LowiSpirit.afterScan) LowiSpirit.afterScan(res && res.xp || 0, text, res && res.dup ? "curious" : "eat");
+  else toast(text + (res && res.xp ? " · +" + res.xp + " XP" : ""));
 }
 function reveal(p, quiet){
   if (REV) { try { R2.close(REV); } catch(e){} REV = null; }
@@ -13820,7 +13826,7 @@ document.addEventListener("click", e => {
     case "catch": if (CUR) catchCur(b, CUR); break;
     case "label": if (CUR && window.LowiDiscovery) LowiDiscovery.openProduct(CUR); break;
     case "eat": eatCur(b); break;
-    case "skip": if (REV) { try { R2.close(REV); } catch(e){} } break;
+    case "skip": if (REV) { try { R2.close(REV); } catch(e){} } if (window.LowiSpirit && LowiSpirit.afterScan) LowiSpirit.afterScan(0, "", ""); break;
     case "tick": { const k = b.dataset.k, on = b.getAttribute("aria-pressed") !== "true"; const all = $$(".b3-tick", REV);
       if (k === "none" && on) all.forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false")); else { b.setAttribute("aria-pressed", on ? "true" : "false"); if (on) all.filter(x => x.dataset.k === "none").forEach(x => x.setAttribute("aria-pressed", "false")); }
       sfx(on ? "check" : "uncheck"); manualReady(); break; }
@@ -16749,7 +16755,7 @@ function head(t, sub, tag){ return (tag ? '<div class="f2-tag"><span>' + e_(tag)
 const backBtn = to => '<button type="button" class="f2-back" data-f2="go" data-to="' + to + '">‹ ' + e_(w("back")) + '</button>';
 const laterBtn = () => '<button type="button" class="f2-later" data-f2="finish">' + e_(w("later")) + '</button>';
 const xpPill = n => '<span class="f2-xpp">+' + n + ' XP</span>';
-function mealXP(){ return logsToday() < 5 ? 15 : 0; }
+function mealXP(){ const VB = window.LowiVitalsBridge, p = window.LowiDex && LowiDex.cur ? LowiDex.cur() : null; if (VB && VB.mealXp) return VB.mealXp(F.mode === "bc" && p ? {code:p.code || "", t:p.name || p.brand || ""} : null); return logsToday() < 8 ? 15 : 0; }
 function bonusOpen(){ return !!(F.fast && F.fast.s && !bonusDone(F.fast.s)); }
 function bonusDone(s){ try { return (JSON.parse(localStorage.getItem(SEEN) || "{}").b || []).indexOf(s) >= 0; } catch(e){ return false; } }
 function mem(){ try { return JSON.parse(localStorage.getItem(SEEN) || "{}") || {}; } catch(e){ return {}; } }
@@ -16824,8 +16830,14 @@ function bcInject(){ const ov = [...document.querySelectorAll(".r2-ov.b3-ov")].p
   return true; }
 function bcAte(){ const p = window.LowiDex && LowiDex.cur ? LowiDex.cur() : null; if (!p || !LV[p.verdict]) return; const base = xpbase(), n = logsToday(), m = LV[p.verdict];
   const title = (p.name || "").trim() + (p.brand && (p.name || "").indexOf(p.brand) < 0 ? " · " + p.brand : "");
-  try { S.logs.push({ts:Date.now(), day:dayKey(), t:title, lvl:m[0], r:m[1], e:"🏷️", via:"barcode"}); save(); if (n < 5) award(15, tr("Meal checked")); questDone("eat"); } catch(e){ console.error(e); }
-  giveBonus(); F.mode = ""; try { LowiR2.closeAll(); } catch(e){} try { renderAll(); } catch(e){}
+  /* Oct 14: one meal path for every log (duplicate rule, daily cap, reason when 0 XP) */
+  const VB = window.LowiVitalsBridge;
+  if (VB && VB.logMeal) { const res = VB.logMeal({id:"bc:" + (p.code || "x") + ":" + Date.now(), t:title, macros:null, via:"barcode", code:p.code || ""});
+    if (res && res.dup) { F.mode = ""; try { LowiR2.closeAll(); } catch(e){} if (window.LowiSpirit && LowiSpirit.afterScan) LowiSpirit.afterScan(0, res.reason, "curious"); else toast(res.reason); return; }
+    if (res && res.log) { res.log.lvl = m[0]; res.log.r = m[1]; res.log.e = "🏷️"; try { VB.save(); } catch(e){} }
+    if (res && !res.xp && res.reason) toast(res.reason); }
+  else try { S.logs.push({ts:Date.now(), day:dayKey(), t:title, lvl:m[0], r:m[1], e:"🏷️", via:"barcode", code:p.code || ""}); save(); if (n < 8) award(15, tr("Meal checked")); questDone("eat"); } catch(e){ console.error(e); }
+  giveBonus(); F.mode = ""; try { LowiR2.closeAll(); } catch(e){} try { if (window.LowiSpirit && LowiSpirit.isOpen && LowiSpirit.isOpen()) LowiSpirit.close(); } catch(e){} try { renderAll(); } catch(e){}
   setTimeout(() => stepDone({lvl:m[0], title, photo:"", emoji:"🏷️", via:"barcode", base}), 300); }
 
 /* ---------- watching the screens that aren't ours ---------- */
@@ -18842,15 +18854,25 @@ html.q4b-off #lcA2hs{display:none!important}
 /* Companion bridge: native state, single XP ledger, stable IDs for completed actions. */
 window.LowiVitalsBridge = {
   state:() => S, profile:() => S.user, save:() => save(), cookRecipe:id=>LowiP2.cook(id),
-  mealXp:() => S.logs.filter(l=>l.day===today()).length<5?15:0,
+  /* meal points: 15 XP for each of the first MEAL_CAP different meals a day; the same product (barcode) or the same meal title twice a day is blocked (no second log, no XP) */
+  MEAL_CAP:8,
+  mealKey:t=>String(t||"").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g,"").split(/\s+[\u00b7|-]\s+/)[0].replace(/[^a-z0-9\u00df]+/g,""),
+  mealDup(data){data=data||{};const day=today(),code=String(data.code||"").trim(),k=this.mealKey(data.t);
+    return S.logs.find(l=>l.day===day&&((code&&String(l.code||"")===code)||(k&&this.mealKey(l.t)===k)))||null;},
+  mealWhy(data){if(data&&this.mealDup(data))return"dup";return S.logs.filter(l=>l.day===today()).length<this.MEAL_CAP?"":"cap";},
+  mealXp(data){return this.mealWhy(data)?0:15;},
+  mealReason(why){const L=(document.documentElement.lang||"en").slice(0,2),i=L==="de"?1:L==="es"?2:0;
+    return why==="dup"?["Already logged today · no XP","Heute schon eingetragen · keine XP","Ya registrado hoy · sin XP"][i]:why==="cap"?["Logged · daily XP limit ("+this.MEAL_CAP+" meals) reached","Eingetragen · Tageslimit ("+this.MEAL_CAP+" Mahlzeiten) erreicht, keine XP","Registrado · límite diario ("+this.MEAL_CAP+" comidas), sin XP"][i]:"";},
   gpt:"https://chatgpt.com/g/g-69481a874bf08191b8118f8d88c9c90e-lowispike",
   logMeal(data){
-    const id="meal:"+data.id, found=S.logs.find(l=>l.eventId===id);if(found)return {log:found,xp:0};
+    const id="meal:"+data.id, found=S.logs.find(l=>l.eventId===id);if(found)return {log:found,xp:0,why:"dup",reason:this.mealReason("dup"),dup:true};
+    const twin=this.mealDup(data);if(twin)return {log:null,xp:0,why:"dup",reason:this.mealReason("dup"),dup:true,twin};
     const n=S.logs.filter(l=>l.day===today()).length,log={id:data.id,eventId:id,ts:Date.now(),day:today(),t:data.t,macros:data.macros,photo:data.photo||"",via:data.via||"spirit",r:"unknown",e:"",lvl:""};
+    if(data.code)log.code=String(data.code);
     S.logs.push(log);if(!save()){S.logs.pop();return false;}
-    const xp=n<5?award(15,"Meal logged",null,"meal:spirit",id):0;
-    if(!xp)window.dispatchEvent(new CustomEvent("lowi:care",{detail:{kind:"water",id}}));
-    questDone("eat",true);window.dispatchEvent(new CustomEvent("lowi:meal-logged",{detail:{id,title:log.t,macros:log.macros,xp,via:log.via,photo:!!log.photo}}));return{log,xp};
+    const xp=n<this.MEAL_CAP?award(15,"Meal logged",null,"meal:spirit",id):0,why=xp?"":"cap";
+    if(!xp)window.dispatchEvent(new CustomEvent("lowi:care",{detail:{kind:"water",reaction:"eat",id}}));
+    questDone("eat",true);window.dispatchEvent(new CustomEvent("lowi:meal-logged",{detail:{id,title:log.t,macros:log.macros,xp,via:log.via,photo:!!log.photo}}));return{log,xp,why,reason:this.mealReason(why)};
   },
   editMeal(data){const log=S.logs.find(l=>l.id===data.id||l.eventId===data.id||String(l.ts)===data.id);if(!log)return false;const previous={t:log.t,macros:log.macros};log.t=data.t;log.macros=data.macros;if(!save()){Object.assign(log,previous);return false;}return{log,xp:0};},
   bonus(id,amt,label){return award(amt,label,null,"macro-goal",id);},

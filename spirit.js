@@ -93,6 +93,9 @@
         cook: ['Cook it', 'Kochen', 'Cocinar'],
         logPick: ['I ate this', 'Hab ich gegessen', 'Lo he comido'],
         herbTip: ['Your herb suggests', 'Dein Kraut schlägt vor', 'Tu hierba sugiere'],
+        doneToday: ['Logged today', 'Heute eingetragen', 'Registrado hoy'],
+        scanAgain: ['Scanned today already, no new XP', 'Heute schon gescannt, keine neuen XP', 'Ya escaneado hoy, sin XP nuevos'],
+        scanCap: ['Scan XP for today is full', 'Scan-XP für heute voll', 'XP de escaneo de hoy completos'],
         why_protein: ['lots of protein for your goal', 'viel Protein für dein Ziel', 'mucha proteína para tu meta'],
         why_lowSugar: ['almost no sugar', 'kaum Zucker', 'casi sin azúcar'],
         why_fiber: ['fibre feeds your gut', 'Ballaststoffe für deinen Darm', 'fibra para tu intestino'],
@@ -296,6 +299,8 @@
             home.setAttribute('data-noi18n', '');
             home.innerHTML = '<header class="sp-top"><div class="sp-greeting"><span></span><small></small></div><button type="button" class="sp-weather" data-sp="weather"></button></header><div class="sp-heroes"><button id="spBubble" class="sp-bubble" data-sp="open" aria-label="' + esc(tr('world')) + '"><span class="sp-bubble-water"></span><span class="sp-home-herb"></span><span class="sp-bubble-name"></span></button><button id="spFast" class="sp-fast" data-sp="fast"><span class="sp-fast-water"></span><span class="sp-fast-copy"></span></button></div><div class="sp-status"><i class="sp-status-dot" aria-hidden="true"></i><div><b></b><span></span></div><button type="button" class="sp-next" data-sp="water"></button></div><section class="sp-log"><header><b></b><div class="sp-habits" aria-label="Habit tracker"></div></header><div class="sp-log-rows"></div></section>';
             tab.prepend(home);
+            /* Oct 14: a rebuilt Home (after Community etc.) paints the weather pill from the cached reading right away */
+            paintCachedWeather();
         }
         if (!world) {
             world = D.createElement('section');
@@ -711,7 +716,12 @@
         // Herb reaction follows the LOWiSPIKE likely-spike estimate (the same verdict the result card shows).
         let verdict = p && p.verdict && p.verdict !== 'unknown' ? p.verdict : 'unknown';
         try { if (verdict === 'unknown' && !p.notFound && LowiDex.rate) verdict = LowiDex.rate(p).verdict || 'unknown'; } catch (e) {}
-        feedback(verdict === 'spike' ? 'wilt' : verdict === 'better' ? 'curious' : verdict === 'ok' ? 'bloom' : 'curious', tr(verdict === 'spike' ? 'scanSpike' : verdict === 'better' ? 'scanBetter' : verdict === 'ok' ? 'scanOk' : 'unknown'), gained);
+        let zero = '';
+        if (!gained) {
+            const today = new Date().toDateString();
+            zero = ' ' + tr((V.state().ledger || []).some(e => String(e.eventId || '').endsWith(':' + id) && new Date(+e.ts).toDateString() === today) ? 'scanAgain' : 'scanCap') + '.';
+        }
+        feedback(verdict === 'spike' ? 'wilt' : verdict === 'better' ? 'curious' : verdict === 'ok' ? 'bloom' : 'curious', tr(verdict === 'spike' ? 'scanSpike' : verdict === 'better' ? 'scanBetter' : verdict === 'ok' ? 'scanOk' : 'unknown') + zero, gained);
         LowiDex.reveal(p);
         const ov = R.top && R.top();
         if (ov) {
@@ -743,6 +753,13 @@
         return out;
     }
 
+    /* a log that earns 0 XP always says why (daily limit); a blocked duplicate never gets here */
+    function whyNote(result) {
+        if (!result || result.xp || !result.reason) return '';
+        const parts = String(result.reason).split(' · ');
+        return ' · ' + (parts.length > 1 ? parts.slice(1).join(' · ') : parts[0]);
+    }
+
     function quickMeal(i) {
         const src = recentMeals()[+i];
         if (!src) return;
@@ -762,7 +779,11 @@
             R.close(ownedSheet);
             ownedSheet = null;
         }
-        feedback('eat', tr('saved') + ' · ' + seed.t, result.xp);
+        if (result.dup) {
+            feedback('curious', result.reason, 0);
+            return;
+        }
+        feedback('eat', tr('saved') + ' · ' + seed.t + whyNote(result), result.xp);
         mealNotice(result.log || seed, result.xp);
         checkBonuses(false);
         refresh();
@@ -782,7 +803,7 @@
             const fields = '<label>' + esc(tr('title')) + '<input name="title" required maxlength="100" autocomplete="off"></label><small>' + esc(tr('portion')) + '</small><div class="sp-form-macros">' + Object.keys(values).map(k => '<label>' + esc(tr(k)) + '<input name="' + k + '" inputmode="decimal" type="number" min="0" max="10000" step="0.1" placeholder="—"></label>').join('') + '</div><p class="sp-note">' + esc(tr('macroOptional')) + '</p><button class="r2-btn pri" type="submit">' + esc(tr('save')) + '</button>';
             const pk = herbPick(),
                 tip = pk ? '<button type="button" class="sp-herb-tip" data-sp="herbPick">' + (pk.recipe.img ? '<img src="' + esc(pk.recipe.img) + '" alt="">' : icon('plate')) + '<span><small>' + esc(tr('herbTip')) + '</small><b>' + esc(recipeName(pk.recipe)) + '</b><i>' + esc(whyLine(pk.why.slice(0, 2), null) || tr('whyText')) + '</i></span>' + icon('arrow') + '</button>' : '';
-            const html = '<h2>' + esc(tr('meal')) + '</h2><div class="sp-quick-log">' + tip + '<div class="sp-quick-cap">' + button('photo', 'camera', 'photo') + button('scan', 'scan', 'scan') + '</div>' + (recent.length ? '<small class="sp-quick-h">' + esc(tr('recent')) + '</small><div class="sp-quick-list">' + recent.map((l, i) => '<button type="button" class="sp-quick-item" data-sp="quickMeal" data-q="' + i + '">' + icon('plate') + '<span><b>' + esc(l.t || l.n) + '</b><small>' + esc(kc(l) || tr('oneTap')) + '</small></span><em>+</em></button>').join('') + '</div>' : '<p class="sp-note">' + esc(tr('recentEmpty')) + '</p>') + '<details class="sp-manual"><summary>' + esc(tr('manual')) + '</summary><form id="spMeal" data-id="' + esc(lastMealId) + '">' + fields + '</form></details></div>';
+            const html = '<h2>' + esc(tr('meal')) + '</h2><div class="sp-quick-log"><div class="sp-quick-cap">' + button('photo', 'camera', 'photo') + button('scan', 'scan', 'scan') + '</div>' + (recent.length ? '<small class="sp-quick-h">' + esc(tr('recent')) + '</small><div class="sp-quick-list">' + recent.map((l, i) => { const done = V.mealDup && V.mealDup({t: l.t || l.n, code: l.code}); return '<button type="button" class="sp-quick-item' + (done ? ' done' : '') + '" data-sp="quickMeal" data-q="' + i + '">' + icon('plate') + '<span><b>' + esc(l.t || l.n) + '</b><small>' + esc(done ? tr('doneToday') : (kc(l) || tr('oneTap'))) + '</small></span><em>' + (done ? '\u2713' : '+') + '</em></button>'; }).join('') + '</div>' : '<p class="sp-note">' + esc(tr('recentEmpty')) + '</p>') + tip + '<details class="sp-manual"><summary>' + esc(tr('manual')) + '</summary><form id="spMeal" data-id="' + esc(lastMealId) + '">' + fields + '</form></details></div>';
             showSheet(html);
             return;
         }
@@ -805,16 +826,25 @@
             R.toast(tr('storage'));
             return;
         }
+        if (result.dup) {
+            if (ownedSheet) {
+                R.close(ownedSheet);
+                ownedSheet = null;
+            }
+            photoURL = '';
+            feedback('curious', result.reason, 0);
+            return;
+        }
         photoURL = '';
         if (ownedSheet) {
             R.close(ownedSheet);
             ownedSheet = null;
         }
         await flight(seed.photo);
-        feedback('eat', tr('saved'), result.xp);
+        feedback('eat', tr('saved') + whyNote(result), result.xp);
         checkBonuses(false);
         const log = result.log;
-        showSheet('<h2>' + esc(tr('saved')) + '</h2><p>' + esc(log.t) + '</p>' + macroHTML(log) + '<p class="sp-earned">+' + result.xp + ' XP</p>' + gptHTML());
+        showSheet('<h2>' + esc(tr('saved')) + '</h2><p>' + esc(log.t) + '</p>' + macroHTML(log) + '<p class="sp-earned">' + (result.xp ? '+' + result.xp + ' XP' : esc(result.reason || (form.dataset.edit ? '' : '0 XP'))) + '</p>' + gptHTML());
     }
 
     function checkBonuses(closed) {
@@ -1377,7 +1407,15 @@
         };
         const result = V.logMeal(seed);
         R.close();
-        feedback('eat', tr('saved') + ' · ' + seed.t, result.xp);
+        if (!result) {
+            R.toast(tr('storage'));
+            return;
+        }
+        if (result.dup) {
+            feedback('curious', result.reason, 0);
+            return;
+        }
+        feedback('eat', tr('saved') + ' · ' + seed.t + whyNote(result), result.xp);
         mealNotice(result.log || seed, result.xp);
         checkBonuses(false);
         refresh();
@@ -1766,12 +1804,25 @@
             }));
         } catch (e) {}
     }
-    function weather(ask) {
+    function cachedWeather() {
+        try {
+            return JSON.parse(localStorage.getItem('lowi.weather.v1') || 'null');
+        } catch (e) {
+            return null;
+        }
+    }
+    function paintCachedWeather() {
+        try {
+            const w = cachedWeather();
+            paintWeather(w && Number.isFinite(+w.temp) ? w : null);
+        } catch (e) {}
+    }
+    function weather(ask, launch) {
         let cached = null;
         try {
             cached = JSON.parse(localStorage.getItem(WEATHER_KEY) || 'null');
         } catch (e) {}
-        if (cached && Date.now() - cached.ts < 30 * 60000 && !ask) return paintWeather(cached);
+        if (cached && Date.now() - cached.ts < (launch ? 10 : 30) * 60000 && !ask) return paintWeather(cached);
         paintWeather(cached);
         if (!navigator.geolocation) return;
         const go = () => navigator.geolocation.getCurrentPosition(async pos => {
@@ -1791,13 +1842,22 @@
                 };
                 try {
                     localStorage.setItem(WEATHER_KEY, JSON.stringify(w));
+                    localStorage.setItem(WEATHER_KEY + '.optin', '1');
+                    localStorage.removeItem(WEATHER_KEY + '.off');
                 } catch (e) {}
                 paintWeather(w);
             } catch (e) {}
         }, err => {
+            if (err && err.code === 1 && !ask) {
+                try {
+                    localStorage.setItem(WEATHER_KEY + '.optin', '0');
+                } catch (e) {}
+                return;
+            }
             if (err && err.code === 1 && ask) {
                 try {
                     localStorage.setItem(WEATHER_KEY + '.off', '1');
+                    localStorage.removeItem(WEATHER_KEY + '.optin');
                 } catch (e) {}
                 paintWeather(null);
             }
@@ -1806,16 +1866,35 @@
             timeout: 8000
         });
         if (ask) return go();
-        if (!navigator.permissions) return;
+        /* iOS home-screen apps often report 'prompt' even after the user allowed location, so the
+           user's own opt-in (a reading we fetched before) also counts. 'denied' always wins. */
+        let optin = false;
+        try {
+            const o = localStorage.getItem(WEATHER_KEY + '.optin');
+            optin = o === '1' || (o === null && !!cached && localStorage.getItem(WEATHER_KEY + '.off') !== '1');
+        } catch (e) {}
+        if (!navigator.permissions) {
+            if (optin) go();
+            return;
+        }
         navigator.permissions.query({
             name: 'geolocation'
         }).then(p => {
-            if (p.state === 'granted') go();
-        }).catch(() => {});
+            if (p.state === 'granted' || (optin && p.state !== 'denied')) go();
+        }).catch(() => {
+            if (optin) go();
+        });
+    }
+    /* after "Ate it" / "Skip" on a scan: the full-screen herb world closes by itself, a small XP pop instead */
+    function afterScan(xp, text, kind) {
+        if (opened || (world && !world.hidden)) close();
+        if (!text && !xp) return;
+        setTimeout(() => feedback(kind || 'eat', text, xp), 80);
     }
     window.LowiSpirit = {
         open,
         close,
+        afterScan,
         refresh,
         isOpen: () => opened,
         target: () => opened ? world : home,
@@ -1842,7 +1921,7 @@
         childList: true,
         subtree: true
     });
-    weather();
+    weather(false, true);
     /* keep the reading current while the app stays open (cached 30 min, never prompts) */
     setInterval(() => {
         if (!D.hidden) weather();

@@ -58,3 +58,6 @@ When adding a ticket, include:
 - **Acceptance criteria** that can be observed or tested
 - **Evidence required**: automated, visual, browser, simulator, physical device, or live deployment
 
+## 2026-10-14 - Sign-in handoff follow-up
+
+- [ ] Physical iPhone: sign in in Safari, tap "So geht's", add to Home Screen, open it, tap "Anmeldung einfügen" -> signed in as the same account. Note whether it signs in by itself (CacheStorage shared) on this iOS version.

@@ -179,3 +179,7 @@ The app accumulated chronological inline patches. Several modules wrap or rearra
 ## Spirit integration
 
 `spirit-core.js` is pure logic for macros, local-day bonuses, gentle vitality, generated names, feed merging and elliptical physics. `spirit.js` owns one DOM creature moved between Home and the world, camera hosting, in-world sheets, meal forms, four-tap personality setup, generated SVG symbols and star-sign color presentation. The ordered herb loader loads herb config/core, Spirit core, herb model/UI and finally Spirit UI. `LowiVitalsBridge` owns native meal logging/editing, water logging, bonuses and the existing GPT URL. Level 1–6 now follows the herb milestones; legacy course/community unlock services remain a separate backend capability.
+
+## Sign-in handoff module (`#hofjs`, end of index.html)
+
+Self-contained IIFE, `window.LowiHandoff`. Hooks: R2 `startHTML()` (Paste block on the Home Screen start screen; also injected if the gate rendered first), R2 `signOut()`/`startFresh()` (revoke before sign-out), and it adapts the browser note `#lcA2hs` (owned by the update-notes module) for signed-in iPhone accounts. Backend: `supabase/functions/auth-handoff`. Tests: `tests/handoff.test.cjs` (offline), `tests/handoff-live.cjs` (backend, needs a service key in env).

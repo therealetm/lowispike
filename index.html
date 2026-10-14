@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261014-231000">
+<meta name="lowi-build" content="20261014-232000">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -9784,6 +9784,7 @@ function startHTML(){
     '</div><div class="r2-st-acts">' +
     '<button class="r2-btn pri big" data-r2a="signup">Create account</button>' +
     '<button class="r2-btn ghost big" data-r2a="signin">I already have an account</button>' +
+    (window.LowiHandoff && LowiHandoff.startHTML ? LowiHandoff.startHTML() : '') +   /* hof-hook: carry the sign-in over from Safari */
     '<div class="r2-fine">' + (back ? "Your meals, streak and profile stay on this phone and move into your account." : "Free. Takes 20 seconds.") + '</div>' +
     '</div></div>';
 }
@@ -10079,10 +10080,12 @@ async function signOut(){
   try { if (x) ok = await Promise.race([x.backupNow(), new Promise(r => setTimeout(() => r(false), 6000))]); } catch(e){ ok = false; }
   if (!ok && btn && !btn.dataset.force) { btn.disabled = false; btn.dataset.force = "1"; btn.textContent = "Couldn't sync · sign out anyway"; return; }
   try { const st = x && x.state(); const v = JSON.parse(localStorage.getItem("lowispike.v2") || "{}"); if (st && st.uid && v.health) localStorage.setItem("lowi.health." + st.uid, JSON.stringify(v.health)); } catch(e){}
+  try { if (window.LowiHandoff) await LowiHandoff.revoke(); } catch(e){}   /* hof-hook: kill open sign-in codes */
   try { if (x) { const sb = await x.client(); await sb.auth.signOut({ scope: "local" }); } } catch(e){}
   wipeAndReload();
 }
 async function startFresh(){
+  try { if (window.LowiHandoff) await LowiHandoff.revoke(); } catch(e){}   /* hof-hook */
   try { const x = R2.X(); if (x) { const sb = await x.client(); await sb.auth.signOut({ scope: "local" }); } } catch(e){}
   wipeAndReload();
 }
@@ -19068,6 +19071,231 @@ window.LowiSwafloBridge = {
 <script src="swaflo-config.js"></script>
 <script src="swaflo-core.js"></script>
 <script src="swaflo.js"></script>
+<style id="hofcss">
+/* LOWiSPIKE HOF (Oct 14, 2026): carry the sign-in from Safari into the Home Screen app */
+#hofSheet{position:fixed;inset:0;z-index:320;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55)}
+#hofSheet .hof-card{width:100%;max-width:520px;box-sizing:border-box;margin:0 auto;padding:22px 20px calc(18px + env(safe-area-inset-bottom));border-radius:26px 26px 0 0;background:#11141c;color:#fff;border-top:1px solid rgba(255,255,255,.12)}
+#hofSheet h3{margin:0 0 6px;font-size:21px;line-height:1.2}
+#hofSheet .hof-ok{display:flex;gap:10px;align-items:center;padding:11px 12px;border-radius:14px;background:rgba(80,200,120,.14);color:#c9f5d6;font-size:14px;font-weight:600;margin:12px 0}
+#hofSheet .hof-ok.no{background:rgba(245,200,76,.14);color:#f6e2a6}
+#hofSheet ol{margin:6px 0 10px;padding-left:22px;font-size:15px;line-height:1.5;color:#dfe3ee}
+#hofSheet ol li{margin:4px 0}
+#hofSheet .hof-code{font:700 17px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;text-align:center;padding:10px;border-radius:12px;background:rgba(255,255,255,.06);user-select:all;-webkit-user-select:all}
+#hofSheet .hof-fine{font-size:12px;color:#9aa2b5;text-align:center;margin:8px 0 12px}
+#hofSheet .hof-done{width:100%;height:50px;border:0;border-radius:16px;background:#fff;color:#000;font:inherit;font-size:16px;font-weight:700;cursor:pointer}
+.hof-in{width:100%;max-width:360px;display:flex;flex-direction:column;gap:8px;align-items:stretch;padding:12px 14px;border-radius:18px;border:1px solid var(--r2-line,rgba(255,255,255,.14));background:var(--r2-field,rgba(255,255,255,.05));box-sizing:border-box}
+.hof-in .hof-q{font-size:14px;color:var(--r2-mut,#aab);text-align:center}
+.hof-in form{display:flex;flex-direction:column;gap:8px}
+.hof-in form[hidden]{display:none}
+.hof-in input{height:48px;border-radius:14px;border:1px solid var(--r2-line,rgba(255,255,255,.14));background:transparent;color:var(--r2-ink,#fff);font:600 16px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.05em;text-align:center;text-transform:uppercase}
+.hof-in .r2-err{text-align:center}
+.hof-in .r2-err:empty{min-height:0}
+</style>
+<script id="hofjs">
+/* ===== LOWiSPIKE HOF (Oct 14, 2026): stay signed in when you add the app to the Home Screen =====
+   Why: on iPhone, Safari and the Home Screen app keep separate storage (localStorage, cookies, IndexedDB), so a sign-in made
+   in Safari is not there in the Home Screen app. Nothing in the browser can copy the session across, so we carry it with a
+   one-time code from the `auth-handoff` edge function (supabase/functions/auth-handoff):
+   - Safari, signed in, iPhone/iPad: the "Add to Home Screen" note (#lcA2hs) says "...and stay signed in"; its button copies a
+     one-time code (30 min, single use) and shows the 3 steps. While the page is open the code is renewed (never once copied), and also kept in CacheStorage,
+     which some iOS versions share with the Home Screen app (then sign-in there is automatic).
+   - Home Screen app, not signed in: start screen offers "Paste sign-in" (reads the clipboard, iOS shows its Paste bubble),
+     or type the code. The code is traded for a Supabase magic-link token hash -> auth.verifyOtp -> normal session.
+   - Never: tokens in URLs, the manifest, or logs. Guests (no email) can't issue. Sign out revokes open codes.
+   EN/DE/ES. */
+(function(){
+"use strict";
+const CFG = window.LOWI_CFG || {};
+const FN = (CFG.url || "") + "/functions/v1/auth-handoff";
+const CACHE = "lowi-handoff", CKEY = "./__lowi_handoff__";
+const UA = navigator.userAgent || "";
+let cur = null, inflight = null, pinned = 0, failAt = 0, putP = Promise.resolve();
+
+function standalone(){ try { return !!(navigator.standalone || (window.matchMedia && matchMedia("(display-mode: standalone)").matches)); } catch(e){ return false; } }
+function ios(){ return /iPhone|iPad|iPod/.test(UA) || (/Macintosh/.test(UA) && (navigator.maxTouchPoints || 0) > 1); }
+function inapp(){ return /Instagram|FBAN|FBAV|FB_IAB|FBIOS|TikTok|musical_ly|Bytedance|trill_|Snapchat|LinkedInApp|Pinterest|Line\//i.test(UA); }
+function account(){ try { return !!(window.LowiR2 && LowiR2.isAccount && LowiR2.isAccount()); } catch(e){ return false; } }
+function lang(){ try { return (window.LowiLang && LowiLang.get && LowiLang.get()) || "en"; } catch(e){ return "en"; } }
+function T(en, de, es){ const l = lang(); return l === "de" ? de : l === "es" ? es : en; }
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]); }
+function pretty(c){ return "LOWI-" + c.slice(0, 4) + "-" + c.slice(4, 8) + "-" + c.slice(8, 12); }
+function clipText(c){ return T("LOWiSPIKE sign-in (one-time, 30 min): ", "LOWiSPIKE-Anmeldung (einmalig, 30 Min): ", "Acceso LOWiSPIKE (un uso, 30 min): ") + pretty(c); }
+/* same rules as the edge function: LOWI-XXXX-XXXX-XXXX anywhere in a text, or the 12 characters alone */
+function parse(t){
+  const u = String(t || "").toUpperCase().slice(0, 400);
+  const m = u.match(/LOWI[-\s]*([2-9A-HJKMNP-Z]{4})[-\s]*([2-9A-HJKMNP-Z]{4})[-\s]*([2-9A-HJKMNP-Z]{4})(?![0-9A-Z])/);
+  if (m) return m[1] + m[2] + m[3];
+  const s = u.replace(/[^0-9A-Z]/g, "");
+  return /^[2-9A-HJKMNP-Z]{12}$/.test(s) ? s : "";
+}
+async function sbc(){ const x = window.LOWI_CLOUD_X; if (!x) throw new Error("offline"); return x.client(); }
+async function call(body, tok){
+  const h = { apikey: CFG.key, "Content-Type": "application/json" }; if (tok) h.Authorization = "Bearer " + tok;
+  const r = await fetch(FN, { method: "POST", headers: h, body: JSON.stringify(body), cache: "no-store" });
+  let j = {}; try { j = await r.json(); } catch(e){}
+  return { status: r.status, body: j };
+}
+async function token(){ const sb = await sbc(); const s = (await sb.auth.getSession()).data.session; return s && s.user && !s.user.is_anonymous && s.user.email ? s.access_token : ""; }
+
+/* ---------- Safari side ---------- */
+async function cachePut(c, exp){ try { if (!window.caches) return; const k = await caches.open(CACHE); await k.put(CKEY, new Response(JSON.stringify({ c, exp }), { headers: { "Content-Type": "application/json" } })); } catch(e){} }
+async function cacheDrop(){ try { if (window.caches) await caches.delete(CACHE); } catch(e){} }
+function fresh(){ return cur && cur.exp - Date.now() > 18 * 60 * 1000 ? cur : null; }
+/* a copied code is never replaced before it expires (a new code retires the old one on the server) */
+function issue(){
+  if (fresh() || (cur && pinned > Date.now() + 15000)) return Promise.resolve(cur.c);
+  if (inflight) return inflight;
+  if (Date.now() - failAt < 60000) return Promise.resolve("");
+  inflight = (async () => {
+    try {
+      const tok = await token(); if (!tok) return "";
+      const r = await call({ action: "issue" }, tok);
+      if (r.status !== 200 || !r.body.code) { failAt = Date.now(); return ""; }
+      cur = { c: r.body.code, exp: Date.now() + (r.body.expires_in || 1800) * 1000 }; pinned = 0;
+      putP = cachePut(cur.c, cur.exp);
+      return cur.c;
+    } catch(e){ failAt = Date.now(); return ""; } finally { inflight = null; }
+  })();
+  return inflight;
+}
+function want(){ return !standalone() && ios() && !inapp() && account() && location.protocol !== "file:"; }
+async function copy(){
+  /* must stay inside the tap: with a ready code write it at once, else hand Safari a promise (ClipboardItem) */
+  let ok = false, c = fresh() ? cur.c : "";
+  try {
+    if (c) { await navigator.clipboard.writeText(clipText(c)); ok = true; }
+    else if (window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
+      const p = issue().then(x => { if (!x) throw new Error("no code"); c = x; return new Blob([clipText(x)], { type: "text/plain" }); });
+      await navigator.clipboard.write([new ClipboardItem({ "text/plain": p })]); ok = true;
+    } else { c = await issue(); if (c) { await navigator.clipboard.writeText(clipText(c)); ok = true; } }
+  } catch(e){ ok = false; }
+  if (!c) c = await issue();
+  if (c && cur && cur.c === c) pinned = cur.exp;
+  return { ok: ok && !!c, code: c };
+}
+/* the browser's "Add to Home Screen" note (#lcA2hs, placed and dismissed by its own code) gets the sign-in step for accounts */
+function bar(){
+  if (!want()) return;
+  if (document.visibilityState === "visible") issue();
+  const d = document.getElementById("lcA2hs"); if (!d || d.getAttribute("data-hofd") === "1") return;
+  const sp = d.querySelector("span"), go = d.querySelector('[data-cl="a2hs"]'); if (!sp || !go) return;
+  sp.textContent = T("Add LOWiSPIKE to your Home Screen and stay signed in.", "Leg LOWiSPIKE auf deinen Home-Bildschirm, du bleibst angemeldet.", "A\u00f1ade LOWiSPIKE a tu pantalla de inicio y sigue con tu sesi\u00f3n.");
+  go.removeAttribute("data-cl"); go.setAttribute("data-hof", "go"); d.setAttribute("data-hofd", "1");
+}
+function sheet(r){
+  const old = document.getElementById("hofSheet"); if (old) old.remove();
+  const d = document.createElement("div"); d.id = "hofSheet"; d.setAttribute("role", "dialog"); d.setAttribute("aria-modal", "true"); d.setAttribute("data-noi18n", "");
+  const okLine = r.code ? (r.ok ? '<div class="hof-ok">✓ ' + T("Your sign-in is copied. Valid for 30 minutes.", "Deine Anmeldung ist kopiert. 30 Minuten gültig.", "Tu acceso está copiado. Vale 30 minutos.") + '</div>'
+                                 : '<div class="hof-ok no">' + T("Couldn't copy. Use this code in the app:", "Kopieren ging nicht. Nimm diesen Code in der App:", "No se pudo copiar. Usa este código en la app:") + '</div>')
+                        : '<div class="hof-ok no">' + T("No connection right now. You can sign in again in the app.", "Gerade keine Verbindung. In der App kannst du dich normal anmelden.", "Sin conexión ahora. En la app puedes entrar de nuevo.") + '</div>';
+  d.innerHTML = '<div class="hof-card"><h3>' + T("Open it as an app", "Als App öffnen", "Ábrela como app") + '</h3>' + okLine +
+    (r.code ? '<div class="hof-code">' + esc(pretty(r.code)) + '</div>' : '') +
+    '<ol><li>' + T("Tap <b>Share</b> in Safari's bar.", "Tippe in Safari auf <b>Teilen</b>.", "Toca <b>Compartir</b> en Safari.") + '</li>' +
+    '<li>' + T("Tap <b>Add to Home Screen</b>, then <b>Add</b>.", "Tippe auf <b>Zum Home-Bildschirm</b>, dann <b>Hinzufügen</b>.", "Toca <b>Añadir a pantalla de inicio</b> y <b>Añadir</b>.") + '</li>' +
+    '<li>' + T("Open LOWiSPIKE from your Home Screen and tap <b>Paste sign-in</b>.", "Öffne LOWiSPIKE vom Home-Bildschirm und tippe <b>Anmeldung einfügen</b>.", "Abre LOWiSPIKE desde inicio y toca <b>Pegar acceso</b>.") + '</li></ol>' +
+    '<div class="hof-fine">' + T("The code works once and only for you. Don't share it.", "Der Code geht nur einmal und nur für dich. Nicht teilen.", "El código sirve una vez y solo para ti. No lo compartas.") + '</div>' +
+    '<button class="hof-done" data-hof="done">' + T("Got it", "Alles klar", "Entendido") + '</button></div>';
+  document.body.appendChild(d);
+}
+async function revoke(){
+  cur = null; pinned = 0; try { await putP; } catch(e){} await cacheDrop();
+  try { const tok = await token(); if (tok) await Promise.race([call({ action: "revoke" }, tok), new Promise(r => setTimeout(r, 2500))]); } catch(e){}
+}
+
+/* ---------- Home Screen app side ---------- */
+function startHTML(){
+  if (!standalone()) return "";
+  return '<div class="hof-in" data-noi18n><div class="hof-q">' + T("Already signed in in Safari?", "Schon in Safari angemeldet?", "¿Ya entraste en Safari?") + '</div>' +
+    '<button class="r2-btn ghost big" type="button" data-hof="paste">' + T("Paste sign-in", "Anmeldung einfügen", "Pegar acceso") + '</button>' +
+    '<form data-hofform hidden novalidate><input name="code" autocomplete="one-time-code" autocapitalize="characters" autocorrect="off" spellcheck="false" maxlength="80" placeholder="LOWI-XXXX-XXXX-XXXX" aria-label="' + T("Sign-in code", "Anmeldecode", "Código de acceso") + '">' +
+    '<button class="r2-btn pri big" type="submit">' + T("Continue", "Weiter", "Continuar") + '</button></form><div class="r2-err" role="alert"></div></div>';
+}
+function box(){ return document.querySelector(".hof-in"); }
+function err(m){ const b = box(), e = b && b.querySelector(".r2-err"); if (e) { e.textContent = m; e.classList.remove("shake"); void e.offsetWidth; e.classList.add("shake"); } }
+function showForm(){ const b = box(); if (!b) return; const f = b.querySelector("form[data-hofform]"); if (f) { f.hidden = false; const i = f.querySelector("input"); if (i) setTimeout(() => i.focus(), 60); } }
+function busy(on){ const b = box(); if (!b) return; b.querySelectorAll("button").forEach(x => { x.disabled = on; x.classList.toggle("busy", on); }); const p = b.querySelector('[data-hof="paste"]'); if (p) { if (on) { p.dataset.t = p.textContent; p.textContent = T("Signing you in…", "Du wirst angemeldet…", "Entrando…"); } else if (p.dataset.t) p.textContent = p.dataset.t; } }
+let redeeming = false;
+async function redeem(code, quiet){
+  if (redeeming) return false; redeeming = true; if (!quiet) busy(true);
+  try {
+    if (navigator.onLine === false) throw new Error("net");
+    const r = await call({ action: "redeem", code });
+    if (r.status === 410 || r.status === 400) throw new Error("expired");
+    if (r.status !== 200 || !r.body.token_hash) throw new Error("server");
+    const sb = await sbc(), x = window.LOWI_CLOUD_X;
+    const v = await sb.auth.verifyOtp({ token_hash: r.body.token_hash, type: "magiclink" });
+    if (v.error || !v.data || !v.data.user) throw new Error("server");
+    cacheDrop();
+    x.setUser(v.data.user);
+    let got = false; try { got = await x.restore(); } catch(e){}
+    try { localStorage.setItem("lowi.gate", "done"); sessionStorage.setItem("r2.welcome", got ? "back" : "in"); } catch(e){}
+    location.reload();
+    return true;
+  } catch(e){
+    redeeming = false; busy(false);
+    if (!quiet) {
+      const m = String(e && e.message || "");
+      err(m === "expired" ? T("That code expired or was used. In Safari, tap “How” again for a new one.", "Der Code ist abgelaufen oder schon benutzt. Tippe in Safari nochmal auf „So geht's“.", "El código caducó o ya se usó. En Safari toca “Cómo” otra vez.")
+        : m === "net" ? T("No connection. Check your internet and try again.", "Keine Verbindung. Prüfe dein Internet und versuch es nochmal.", "Sin conexión. Revisa internet e inténtalo otra vez.")
+        : T("Something went wrong. Try again or sign in with your password.", "Etwas ging schief. Versuch es nochmal oder melde dich mit Passwort an.", "Algo salió mal. Inténtalo otra vez o entra con tu contraseña."));
+      showForm();
+    }
+    return false;
+  }
+}
+async function paste(){
+  let t = "";
+  try { if (navigator.clipboard && navigator.clipboard.readText) t = await navigator.clipboard.readText(); } catch(e){ t = ""; }
+  const c = parse(t);
+  if (c) return redeem(c);
+  showForm();
+  err(t ? T("No sign-in code on the clipboard. Type the code from Safari.", "Kein Anmeldecode in der Zwischenablage. Tipp den Code aus Safari ein.", "No hay código en el portapapeles. Escribe el código de Safari.")
+        : T("Paste or type the code from Safari.", "Füge den Code aus Safari ein oder tipp ihn ein.", "Pega o escribe el código de Safari."));
+}
+/* automatic path: if this iOS version shares CacheStorage with Safari, the fresh code is already here */
+let autoTried = false;
+async function auto(){
+  if (autoTried || !standalone() || account() || !window.caches) return; autoTried = true;
+  try {
+    const k = await caches.open(CACHE), r = await k.match(CKEY); if (!r) return;
+    const j = await r.json(); await caches.delete(CACHE);
+    if (!j || !j.c || !(j.exp > Date.now() + 15000)) return;
+    const c = parse(j.c); if (c) redeem(c, !box());
+  } catch(e){}
+}
+
+/* ---------- wiring ---------- */
+document.addEventListener("click", ev => {
+  const b = ev.target.closest && ev.target.closest("[data-hof]"); if (!b) return;
+  const a = b.getAttribute("data-hof");
+  if (a === "go") { ev.preventDefault(); copy().then(sheet); }
+  else if (a === "done") { const d = document.getElementById("hofSheet"); if (d) d.remove(); }
+  else if (a === "paste") { ev.preventDefault(); paste(); }
+}, true);
+document.addEventListener("click", ev => { const s = document.getElementById("hofSheet"); if (s && ev.target === s) s.remove(); });
+document.addEventListener("submit", ev => {
+  const f = ev.target; if (!f || !f.matches || !f.matches("form[data-hofform]")) return;
+  ev.preventDefault(); ev.stopPropagation();
+  const c = parse(f.code.value);
+  if (!c) return err(T("That doesn't look like a LOWiSPIKE code (LOWI-XXXX-XXXX-XXXX).", "Das sieht nicht wie ein LOWiSPIKE-Code aus (LOWI-XXXX-XXXX-XXXX).", "Eso no parece un código LOWiSPIKE (LOWI-XXXX-XXXX-XXXX)."));
+  redeem(c);
+}, true);
+/* the gate can render before this script runs: add the Paste block to a start screen that lacks it */
+function inject(){
+  if (!standalone() || account() || box()) return;
+  const acts = document.querySelector("#r2gate .r2-st-acts"); if (!acts) return;
+  const after = acts.querySelector('[data-r2a="signin"]');
+  if (after) after.insertAdjacentHTML("afterend", startHTML()); else acts.insertAdjacentHTML("beforeend", startHTML());
+}
+function tick(){ try { inject(); bar(); auto(); } catch(e){} }
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") tick(); });
+window.addEventListener("storage", e => { if (e.key === "lowi.auth") tick(); });
+try { inject(); } catch(e){}
+setTimeout(tick, 1800); setInterval(tick, 1500);
+
+window.LowiHandoff = { want, copy, issue, revoke, startHTML, parse, redeem, _state: () => ({ has: !!cur, exp: cur ? cur.exp : 0, pinned }) };
+})();
+</script>
 </body>
 </html>
 

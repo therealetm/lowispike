@@ -1390,7 +1390,7 @@
                 preview: WC.previewEquip(WC.BASE_EQUIPMENT, c.id, m.xp),
                 crop: c.kind,
                 hidden: true
-            }) + (c.status === 'locked' || c.status === 'premium' ? '<span class="wd-lock" aria-hidden="true">' + (c.status === 'premium' ? '✦' : icon('lock')) + '</span>' : c.status === 'equipped' ? '<span class="wd-check" aria-hidden="true">' + icon('check') + '</span>' : '') + '</span><b>' + esc(wname(c)) + '</b><small>' + esc(wdStatus(c)) + '</small></button>').join('') + '</div>' +
+            }) + (c.status === 'locked' || c.status === 'premium' ? '<span class="wd-lock" aria-hidden="true">' + (c.status === 'premium' ? (icon('sparkle') || '✦') : icon('lock')) + '</span>' : c.status === 'equipped' ? '<span class="wd-check" aria-hidden="true">' + icon('check') + '</span>' : '') + '</span><b>' + esc(wname(c)) + '</b><small>' + esc(wdStatus(c)) + '</small></button>').join('') + '</div>' +
             '<footer class="wd-foot"><span>' + esc(next ? wl('Next: ' + wname(next) + ' in ' + Math.ceil(next.xp - m.xp) + ' XP', 'Als Nächstes: ' + wname(next) + ' in ' + Math.ceil(next.xp - m.xp) + ' XP', 'Siguiente: ' + wname(next) + ' en ' + Math.ceil(next.xp - m.xp) + ' XP') : wl('Everything unlocked', 'Alles freigespielt', 'Todo desbloqueado')) + '</span>' + (worn ? '<button type="button" class="wd-reset" data-sp="wdReset">' + esc(wl('Take all off', 'Alles ablegen', 'Quitar todo')) + '</button>' : '') + '</footer></div>';
     }
 

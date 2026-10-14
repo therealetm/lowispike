@@ -1525,7 +1525,7 @@ html[data-lay=desktop] .fyv-bar{bottom:16px}
   function compute(){
     var w = window.innerWidth || de.clientWidth || 390, h = window.innerHeight || de.clientHeight || 844;
     var mouse = mq("(hover: hover) and (pointer: fine)");
-    var lay = w < 700 ? "phone" : w < 1200 ? "tablet" : "desktop";
+    var lay = w < 700 ? "phone" : (w >= 1200 || (w >= 1000 && w > h)) ? "desktop" : "tablet";   // Oct 14, 2026: a wide landscape screen (iPad on its side) gets the desktop layout
     if (!mouse && Math.min(w, h) < 500) lay = "phone";          // a phone turned sideways stays a phone
     de.setAttribute("data-lay", lay);
     de.setAttribute("data-orient", w > h ? "land" : "port");
@@ -3047,6 +3047,8 @@ function gapCheck(){
 /* ---- 2. the real free space ---- */
 function vis(e){ return !!(e && e.offsetHeight && e.offsetWidth); }
 function limit(){
+  /* Oct 14, 2026: only a phone squeezes its screens to fit. iPad and laptop scroll instead (wide-layout.css) */
+  const lay = H.getAttribute("data-lay"); if (lay && lay !== "phone") return 1e6;
   const tb = D.getElementById("tabbar");
   if (vis(tb)) {
     const r = tb.getBoundingClientRect();
@@ -17579,7 +17581,7 @@ const ORDER = ["morn", "meals", "plan", "meds", "have", "more"];
 const NAME = {morn:"Check-ins", meals:"Meals", plan:"Your plate", meds:"Medicine", have:"Shopping", more:"Extras"};
 const q = (r, s) => r ? r.querySelector(s) : null;
 const home = () => D.getElementById("tab-home");
-const phone = () => H.getAttribute("data-lay") === "phone" || (!H.getAttribute("data-lay") && innerWidth < 700);
+const phone = () => true; /* Oct 14, 2026: the game screens run on every size (iPad, laptop too); wide-layout.css arranges them, LowiFit never squeezes them there */
 const on = () => H.classList.contains("g2h-on") && !H.classList.contains("g2h-tour");
 
 /* ---- find the parts of Today ---- */
@@ -17787,7 +17789,7 @@ const ORDER = ["swipe", "all", "book", "find", "gpt", "pick", "yes"];
 const NAME = {book:"My Recipe Book", pick:"Your pick", swipe:"Swipe foods", all:"All recipes", find:"By ingredient", gpt:"LOWiSPIKE GPT", yes:"Your yes pile"};
 const q = (r, s) => r ? r.querySelector(s) : null;
 const body = () => D.getElementById("shBody");
-const phone = () => H.getAttribute("data-lay") === "phone" || (!H.getAttribute("data-lay") && innerWidth < 700);
+const phone = () => true; /* Oct 14, 2026: the game screens run on every size (iPad, laptop too); wide-layout.css arranges them, LowiFit never squeezes them there */
 const on = () => H.classList.contains("g2c-on");
 const txt = el => el ? (el.textContent || "").replace(/\s+/g, " ").trim() : "";
 function cookMain(b){ return !!(b && q(b, "#r5Shuf") && b.parentNode && b.parentNode.classList.contains("tabmode")); }
@@ -17977,7 +17979,7 @@ const IC = {
 const q = (r, s) => r ? r.querySelector(s) : null;
 const qa = (r, s) => r ? Array.from(r.querySelectorAll(s)) : [];
 const pane = () => D.getElementById("cmPaneBoard");
-const phone = () => H.getAttribute("data-lay") === "phone" || (!H.getAttribute("data-lay") && innerWidth < 700);
+const phone = () => true; /* Oct 14, 2026: the game screens run on every size (iPad, laptop too); wide-layout.css arranges them, LowiFit never squeezes them there */
 const on = () => H.classList.contains("g2d-on");
 function cmShown(){ try { return !window.LowiHost || !LowiHost.tab || LowiHost.tab() === "foryou"; } catch(e){ return true; } }
 
@@ -18141,7 +18143,7 @@ const NAME = {todo:"Finish profile", comm:"Community", swaps:"My swaps", glow:"Y
 const SUB = {comm:"Posts, ranking", swaps:"Your favourites", glow:"Daily check-in", about:"Blood pressure", health:"Only on this phone", acct:"Email, password", look:"Theme, sounds", app:"Reminders"};
 const q = (r, s) => r ? r.querySelector(s) : null;
 const tab = () => D.getElementById("tab-profile");
-const phone = () => H.getAttribute("data-lay") === "phone" || (!H.getAttribute("data-lay") && innerWidth < 700);
+const phone = () => true; /* Oct 14, 2026: the game screens run on every size (iPad, laptop too); wide-layout.css arranges them, LowiFit never squeezes them there */
 const on = () => H.classList.contains("g2e-on");
 function shown(t){ if (!t || !t.classList.contains("active")) return false; try { return !window.LowiHost || !LowiHost.tab || LowiHost.tab() === "profile"; } catch(e){ return true; } }
 

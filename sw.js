@@ -1,7 +1,7 @@
 /* LOWiSPIKE service worker · network-first app shell with offline static fallback. */
 const SHELL_BUILD = "20261014-232000";
 const CACHE = "lowispike-updates-20261014-232000";
-const STATIC = ["spirit-core.js", "spirit.js", "spirit.css", "herb-config.js", "herb-core.js", "herb-tamagotchi-core.js", "herb-tamagotchi.js", "herb-tamagotchi-polish.js", "herb-tamagotchi-mount-fix.js", "herb-tamagotchi.css", "body-core.js", "body-companion.js", "body-companion.css", "swaflo-config.js", "swaflo-core.js", "swaflo.js", "swaflo.css", "discovery-config.js", "discovery-core.js", "discovery.js", "discovery.css", "apple-ui.js", "apple-ui.css", "appearance.js", "recipe-book.js", "updates.css", "weather-sky-core.js", "weather-sky.js", "weather-sky.css", "vendor/supabase-2.117.3.js", "vendor/zxing-0.21.3.min.js", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png"];
+const STATIC = ["spirit-core.js", "spirit.js", "spirit.css", "herb-config.js", "herb-core.js", "herb-tamagotchi-core.js", "herb-tamagotchi.js", "herb-tamagotchi-polish.js", "herb-tamagotchi-mount-fix.js", "herb-tamagotchi.css", "body-core.js", "body-companion.js", "body-companion.css", "swaflo-config.js", "swaflo-core.js", "swaflo.js", "swaflo.css", "discovery-config.js", "discovery-core.js", "discovery.js", "discovery.css", "apple-ui.js", "apple-ui.css", "appearance.js", "recipe-book.js", "updates.css", "weather-sky-core.js", "weather-sky.js", "weather-sky.css", "wide-layout.css", "vendor/supabase-2.117.3.js", "vendor/zxing-0.21.3.min.js", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png"];
 self.addEventListener("install", e => {
   self.skipWaiting();
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(STATIC).catch(() => {})));
@@ -19,7 +19,7 @@ self.addEventListener("fetch", e => {
   const req = e.request; if (req.method !== "GET") return;
   const url = new URL(req.url); if (url.origin !== self.location.origin) return;
   if (url.pathname.endsWith("/version.json") || url.pathname.endsWith("/sw.js")) return;
-  if (["spirit-core.js", "spirit.js", "spirit.css", "herb-config.js", "herb-core.js", "herb-tamagotchi-core.js", "herb-tamagotchi.js", "herb-tamagotchi-polish.js", "herb-tamagotchi-mount-fix.js", "herb-tamagotchi.css", "body-core.js", "body-companion.js", "body-companion.css", "swaflo-config.js", "swaflo-core.js", "swaflo.js", "swaflo.css", "discovery-config.js", "discovery-core.js", "discovery.js", "discovery.css", "apple-ui.js", "apple-ui.css", "appearance.js", "recipe-book.js", "updates.css", "weather-sky-core.js", "weather-sky.js", "weather-sky.css"].some(s => url.pathname.endsWith("/" + s))) {
+  if (["spirit-core.js", "spirit.js", "spirit.css", "herb-config.js", "herb-core.js", "herb-tamagotchi-core.js", "herb-tamagotchi.js", "herb-tamagotchi-polish.js", "herb-tamagotchi-mount-fix.js", "herb-tamagotchi.css", "body-core.js", "body-companion.js", "body-companion.css", "swaflo-config.js", "swaflo-core.js", "swaflo.js", "swaflo.css", "discovery-config.js", "discovery-core.js", "discovery.js", "discovery.css", "apple-ui.js", "apple-ui.css", "appearance.js", "recipe-book.js", "updates.css", "weather-sky-core.js", "weather-sky.js", "weather-sky.css", "wide-layout.css"].some(s => url.pathname.endsWith("/" + s))) {
     e.respondWith(fetch(req, {cache:"no-cache"}).then(res => { if (res.ok) { const cp = res.clone(); caches.open(CACHE).then(c => c.put(req, cp)); } return res; }).catch(() => caches.match(req).then(r => r || Response.error())));
     return;
   }

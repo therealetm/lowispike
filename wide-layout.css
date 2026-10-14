@@ -1,0 +1,82 @@
+/* LOWiSPIKE wide layout (Oct 14, 2026): iPad and laptop.
+   data-lay on <html> comes from the head script in index.html: phone < 700px, desktop for 1200px+ or any landscape screen 1000px+ (iPad on its side), tablet in between.
+   Phones are untouched: every rule here sits behind html[data-lay=tablet] or html[data-lay=desktop].
+   The game screens (Home, Cook, Community board, Profile) run on every size; here they get room instead of being squeezed. Loaded last. */
+
+/* ---------- every wide screen: a page can scroll when it is taller than the screen, nothing is cut off ---------- */
+html.spirit-app:is([data-lay=tablet],[data-lay=desktop]) .tab.active,
+html.spirit-app:is([data-lay=tablet],[data-lay=desktop]) #tab-home#tab-home,
+html.spirit-app:is([data-lay=tablet],[data-lay=desktop]) #tab-profile#tab-profile{overflow-y:auto!important;overscroll-behavior:contain}
+
+/* ---------- Home ---------- */
+/* sections whose content g2h moved into sheets stay as empty boxes: drop them so nothing floats */
+html.spirit-app.g2h-on:is([data-lay=tablet],[data-lay=desktop]) #tab-home#tab-home>section.rs-sec:not(.rs-head):not(#spHome){display:none!important}
+html.spirit-app.g2h-on:is([data-lay=tablet],[data-lay=desktop]) #tab-home#tab-home>.rs-cols:not(#spHome){display:none!important}
+/* roomier tiles with their second line */
+html.spirit-app:is([data-lay=tablet],[data-lay=desktop]) #tab-home #g2hTiles.g2h-tiles{gap:10px!important}
+html.spirit-app:is([data-lay=tablet],[data-lay=desktop]) #tab-home #g2hTiles .g2h-tile{min-height:68px!important;padding:12px 14px!important;grid-template-columns:30px 1fr!important;column-gap:12px;border-radius:18px!important}
+html.spirit-app:is([data-lay=tablet],[data-lay=desktop]) #tab-home #g2hTiles .g2h-ic{width:30px!important;height:30px!important}
+html.spirit-app:is([data-lay=tablet],[data-lay=desktop]) #tab-home #g2hTiles b{font-size:14.5px!important}
+html.spirit-app:is([data-lay=tablet],[data-lay=desktop]) #tab-home #g2hTiles small{display:block!important;font-size:12px!important}
+html.spirit-app:is([data-lay=tablet],[data-lay=desktop]) #tab-home #f3Board{padding:12px 14px!important}
+
+/* iPad upright (tablet): one calm centered column, a bigger herb */
+html.spirit-app.g2h-on[data-lay=tablet] #tab-home#tab-home{max-width:680px!important;margin:0 auto!important;padding:calc(env(safe-area-inset-top,0px) + 28px) 24px calc(env(safe-area-inset-bottom,0px) + 110px)!important;justify-content:safe center!important;gap:16px!important}
+html.spirit-app[data-lay=tablet] #tab-home #spHome{max-width:none!important;width:100%!important}
+html.spirit-app[data-lay=tablet] #spHome .sp-bubble{width:210px!important;height:210px!important}
+html.spirit-app[data-lay=tablet] #spHome .sp-fast{width:170px!important;height:170px!important}
+html.spirit-app[data-lay=tablet] #spHome .sp-heroes{gap:28px!important}
+
+/* iPad on its side and laptop (desktop): herb on the left, quest and tiles on the right */
+html.spirit-app.g2h-on[data-lay=desktop] #tab-home#tab-home{display:grid!important;grid-template-columns:minmax(0,1.15fr) minmax(320px,1fr)!important;grid-auto-rows:min-content;align-content:center;column-gap:28px!important;row-gap:14px!important;max-width:1120px!important;margin:0 auto!important;padding:24px 32px!important}
+html.spirit-app[data-lay=desktop] #tab-home #spHome{grid-column:1!important;grid-row:1 / span 2!important;max-width:none!important;width:100%!important;align-self:center;margin:0!important}
+html.spirit-app.g2h-on[data-lay=desktop] #tab-home#tab-home>.rs-head{grid-column:2!important;grid-row:1!important;align-self:center;display:flex!important;flex-direction:column;gap:14px;margin:0!important;padding:0!important;min-width:0}
+html.spirit-app[data-lay=desktop] #tab-home #f3Board{order:1!important}
+html.spirit-app[data-lay=desktop] #tab-home #g2hTiles{order:2!important;grid-template-columns:repeat(2,minmax(0,1fr))!important}
+html.spirit-app[data-lay=desktop] #spHome .sp-bubble{width:230px!important;height:230px!important}
+html.spirit-app[data-lay=desktop] #spHome .sp-fast{width:180px!important;height:180px!important}
+html.spirit-app[data-lay=desktop] #spHome .sp-heroes{gap:28px!important;justify-content:center!important}
+@media (max-height:700px){
+  html.spirit-app[data-lay=desktop] #spHome .sp-bubble{width:190px!important;height:190px!important}
+  html.spirit-app[data-lay=desktop] #spHome .sp-fast{width:150px!important;height:150px!important}
+}
+
+/* ---------- Cook ---------- */
+/* the tile row never cuts its last tiles off: a real grid */
+html.spirit-app.g2c-on:is([data-lay=tablet],[data-lay=desktop]) #shelf #g2cTiles.g2c-tiles{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:10px!important;overflow:visible!important;width:100%!important;max-width:none!important}
+html.spirit-app.g2c-on:is([data-lay=tablet],[data-lay=desktop]) #shelf #g2cTiles .g2c-tile{width:auto!important;min-width:0!important;max-width:none!important;flex:none!important;min-height:76px!important}
+html.spirit-app.g2c-on[data-lay=tablet] #shelf #shBody{max-width:720px;margin:0 auto;width:100%;box-sizing:border-box;padding-left:24px!important;padding-right:24px!important;justify-content:safe center;padding-bottom:110px!important}
+html.spirit-app.g2c-on[data-lay=tablet] #shelf #shBody>*{width:100%!important;max-width:none!important;margin-left:0!important;margin-right:0!important;box-sizing:border-box}
+/* desktop: shuffle on the left, the tiles as a 2-column panel on the right */
+html.spirit-app.g2c-on[data-lay=desktop] #shelf #shBody{display:grid!important;grid-template-columns:minmax(0,1.25fr) minmax(280px,1fr)!important;grid-auto-rows:min-content;align-content:safe center;column-gap:28px;row-gap:18px;max-width:1080px;width:100%;margin:0 auto;box-sizing:border-box;padding:16px 32px 24px!important}
+html.spirit-app.g2c-on[data-lay=desktop] #shelf #shBody>*{grid-column:1 / -1!important;width:100%!important;max-width:none!important;margin-left:0!important;margin-right:0!important;box-sizing:border-box;min-width:0}
+html.spirit-app.g2c-on[data-lay=desktop] #shelf #shBody>#r5Shuf{grid-column:1!important}
+html.spirit-app.g2c-on[data-lay=desktop] #shelf #shBody>#g2cTiles{grid-column:2!important;align-self:center;grid-template-columns:repeat(2,minmax(0,1fr))!important}
+html.spirit-app.g2c-on[data-lay=desktop] #shelf #g2cTiles .g2c-tile:last-child:nth-child(odd){grid-column:1 / -1!important}
+
+/* ---------- Move ---------- */
+html.spirit-app:is([data-lay=tablet],[data-lay=desktop]) #mv-screen>.stack.g2{padding-top:calc(env(safe-area-inset-top,0px) + 20px)!important}
+html.spirit-app[data-lay=tablet] #mv-screen>.stack.g2{max-width:680px!important;padding-bottom:110px!important}
+html.spirit-app[data-lay=desktop] #mv-screen>.stack.g2{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;grid-auto-rows:min-content;align-content:safe center;column-gap:24px!important;row-gap:16px!important;max-width:1040px!important;width:100%!important;min-height:100%;box-sizing:border-box;margin:0 auto!important;padding:20px 32px 24px!important}
+html.spirit-app[data-lay=desktop] #mv-screen>.stack.g2>*{grid-column:1 / -1!important;margin:0!important;min-width:0}
+html.spirit-app[data-lay=desktop] #mv-screen>.stack.g2>.mv-hero{grid-column:1!important}
+html.spirit-app[data-lay=desktop] #mv-screen>.stack.g2>.mv-quick{grid-column:2!important}
+
+/* ---------- Profile ---------- */
+html.spirit-app.g2e-on[data-lay=tablet] #tab-profile#tab-profile{max-width:720px!important;margin:0 auto!important;padding:calc(env(safe-area-inset-top,0px) + 24px) 24px calc(env(safe-area-inset-bottom,0px) + 110px)!important}
+html.spirit-app.g2e-on[data-lay=tablet] #tab-profile>*{max-width:none!important}
+/* desktop: who you are on the left, everything you can open on the right */
+html.spirit-app.g2e-on:not(.g2e-open)[data-lay=desktop] #tab-profile#tab-profile{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)!important;grid-auto-rows:min-content;align-content:safe center;column-gap:28px!important;row-gap:14px!important;max-width:1120px!important;margin:0 auto!important;padding:24px 32px!important}
+html.spirit-app.g2e-on:not(.g2e-open)[data-lay=desktop] #tab-profile>*{grid-column:1!important;margin:0!important;max-width:none!important;min-width:0}
+html.spirit-app.g2e-on:not(.g2e-open)[data-lay=desktop] #tab-profile>#g2eTiles{grid-column:2!important;grid-row:1 / span 6!important;align-self:center}
+/* an opened profile part (Konto, Einstellungen …): one readable column that scrolls to its last control */
+html.spirit-app.g2e-on.g2e-open:is([data-lay=tablet],[data-lay=desktop]) #tab-profile#tab-profile{max-width:760px!important;margin:0 auto!important;padding:calc(env(safe-area-inset-top,0px) + 20px) 24px calc(env(safe-area-inset-bottom,0px) + 120px)!important;overflow-y:auto!important}
+html.spirit-app.g2e-on.g2e-open[data-lay=desktop] #tab-profile#tab-profile{padding-bottom:40px!important}
+
+/* ---------- side navigation (desktop / iPad on its side): Scan reads like every other item ---------- */
+/* it used to be a tall centered block left over from the old 88px orb, so the camera floated away from its word */
+html[data-lay=desktop] #tabbar .tb.scan{height:50px!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;gap:14px!important;padding:0 16px!important;margin:0!important;font-size:15px!important;letter-spacing:normal!important;border-radius:16px!important;text-transform:none!important}
+html[data-lay=desktop] #tabbar .tb.scan .tbsp{display:grid!important;place-items:center;flex:0 0 22px;width:22px!important;height:22px!important;margin:0!important;padding:0!important;background:none!important;box-shadow:none!important;border:0!important;transform:none!important;position:static!important}
+html[data-lay=desktop] #tabbar .tb.scan .tbsp svg{width:22px!important;height:22px!important;color:inherit}
+html[data-lay=desktop] #tabbar .tb.scan .orb,html[data-lay=desktop] #tabbar .tb.scan .ring{display:none!important}
+html[data-lay=desktop] #tabbar .tb.scan .tbl{font:inherit!important;font-size:15px!important;font-weight:600!important;letter-spacing:normal!important;text-transform:none!important;margin:0!important;position:static!important;transform:none!important}

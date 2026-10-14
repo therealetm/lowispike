@@ -1374,7 +1374,7 @@
             } else action = '<button type="button" class="wd-act wd-on" data-sp="equip" data-item="' + sel.id + '">' + esc(wl('Put on', 'Anziehen', 'Ponérselo')) + '</button>';
         }
         const worn = WC.SLOTS.filter(s => eq[s.kind] && eq[s.kind] !== WC.BASE_EQUIPMENT[s.kind]).length;
-        return '<div class="wd" id="spWd"><header class="wd-head"><h2>' + esc(tr('wardrobe')) + '</h2><span class="wd-xp">' + esc(m.xp + ' XP') + '</span></header>' +
+        return '<div class="wd" id="spWd"><header class="wd-head"><h2>' + esc(tr('wardrobe')) + '</h2>' + (window.LowiHerbShop ? LowiHerbShop.entryHTML() : '') + '<span class="wd-xp">' + esc(m.xp + ' XP') + '</span></header>' +
             '<div class="wd-stage' + (trying ? ' trying' : '') + '"><span class="wd-tag">' + esc(trying ? wl('Trying on', 'Anprobe', 'Probando') : wl('Your look', 'Dein Look', 'Tu look')) + '</span>' +
             T.plantHTML(model, 'preview', p, {
                 preview: look,

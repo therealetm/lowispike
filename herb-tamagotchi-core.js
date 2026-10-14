@@ -59,14 +59,19 @@ const SLOTS=[
  {kind:'effect',names:['Magic','Zauber','Magia']}
 ];
 const BASE_EQUIPMENT={pot:'ceramic',hat:'',neck:'',face:'',glow:'',effect:''};
-function cosmetic(id){return COSMETICS.find(c=>c.id===id)||PREMIUM.find(c=>c.id===id)||null;}
+/* Shop (Oct 15): extra pieces (seasonal drops) are registered by herb-shop-core.js and only count once owned; a gifted piece is owned before its XP. */
+const EXTRAS=[];let OWNED=new Set();
+function registerExtras(list){(list||[]).forEach(c=>{if(c&&c.id&&!EXTRAS.some(x=>x.id===c.id)&&!COSMETICS.some(x=>x.id===c.id))EXTRAS.push(c);});return EXTRAS;}
+function cosmetic(id){return COSMETICS.find(c=>c.id===id)||PREMIUM.find(c=>c.id===id)||EXTRAS.find(c=>c.id===id)||null;}
+function setOwned(ids){OWNED=new Set((ids||[]).filter(id=>{const c=cosmetic(id);return c&&!c.premium;}));return[...OWNED];}
+function owns(id,xp){const c=cosmetic(id);if(!c||c.premium)return false;if(OWNED.has(id))return true;return!c.claim&&+xp>=c.xp;}
 /* Only earned, non-premium items survive; an empty or unknown pot falls back to the free Moon ceramic. */
 function cleanEquipment(eq,xp){eq=eq&&typeof eq==='object'?eq:{};const out={...BASE_EQUIPMENT};
- SLOTS.forEach(({kind})=>{const c=COSMETICS.find(x=>x.id===eq[kind]);if(c&&c.kind===kind&&+xp>=c.xp)out[kind]=c.id;});return out;}
-function itemStatus(id,xp,eq){const c=cosmetic(id);if(!c)return'missing';if(c.premium)return'premium';if(+xp<c.xp)return'locked';return cleanEquipment(eq,xp)[c.kind]===c.id?'equipped':'ready';}
-function wardrobeItems(xp,eq){return COSMETICS.concat(PREMIUM).map(c=>({...c,status:itemStatus(c.id,xp,eq),left:Math.max(0,Math.ceil(c.xp-(+xp||0)))}));}
+ SLOTS.forEach(({kind})=>{const c=eq[kind]?cosmetic(eq[kind]):null;if(c&&c.kind===kind&&owns(c.id,xp))out[kind]=c.id;});return out;}
+function itemStatus(id,xp,eq){const c=cosmetic(id);if(!c)return'missing';if(c.premium)return'premium';if(!owns(id,xp))return'locked';return cleanEquipment(eq,xp)[c.kind]===c.id?'equipped':'ready';}
+function wardrobeItems(xp,eq){return COSMETICS.concat(EXTRAS.filter(c=>OWNED.has(c.id)),PREMIUM).map(c=>{const st=itemStatus(c.id,xp,eq);return{...c,status:st,left:st==='locked'?Math.max(0,Math.ceil(c.xp-(+xp||0))):0};});}
 /* Equip or take off. Returns the new equipment, or null when the item is locked, premium or unknown. */
-function toggleEquip(eq,id,xp){const c=cosmetic(id);if(!c||c.premium||+xp<c.xp)return null;const out=cleanEquipment(eq,xp);
+function toggleEquip(eq,id,xp){const c=cosmetic(id);if(!c||!owns(id,xp))return null;const out=cleanEquipment(eq,xp);
  out[c.kind]=out[c.kind]===c.id?BASE_EQUIPMENT[c.kind]:c.id;return out;}
 function previewEquip(eq,id,xp){const out=cleanEquipment(eq,xp),c=cosmetic(id);if(c)out[c.kind]=c.id;return out;}
 function period(now){const h=new Date(now||Date.now()).getHours();return h>=23||h<5?'night':h<11?'morning':h<17?'day':'evening';}
@@ -137,13 +142,13 @@ function tapReaction(count,times,now){const fast=(times||[]).filter(t=>now-t<180
 function unlocked(xp){return COSMETICS.filter(x=>+xp>=x.xp);}
 function nextUnlock(xp){return COSMETICS.find(x=>+xp<x.xp)||null;}
 function nextInSlot(kind,xp){return COSMETICS.find(x=>x.kind===kind&&+xp<x.xp)||null;}
-function cosmeticAllowed(id,xp){return COSMETICS.some(c=>c.id===id&&+xp>=c.xp);}
+function cosmeticAllowed(id,xp){return owns(id,xp);}
 function reminderWindow(now,tz,lastDay){let parts;try{parts=new Intl.DateTimeFormat('en-CA',{timeZone:tz||undefined,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',hourCycle:'h23'}).formatToParts(new Date(now));}catch(e){return{allowed:false};}
  const v=Object.fromEntries(parts.map(p=>[p.type,p.value])),day=v.year+'-'+v.month+'-'+v.day,hour=+v.hour;return{day,hour,allowed:hour>=8&&hour<21&&lastDay!==day};}
 function reminder(config){const sign=config.sign,action=config.need||'water',lang=config.lang||'en';
  const msg={en:{water:'One meal log and I get my tiny watering dance. Come say hi?',sunlight:'Psst, pick one ingredient swap. I saved us a sunbeam.',dance:'A little movement? I will do the leaf dance with you.',vitamin:'One label to explore? My detective leaves are ready.',bloom:'Fancy finishing a recipe? I brought the tiny flowers.',cheer:'One little check-in? Your sunny spot is waiting.'},de:{water:'Ein Essenseintrag und ich tanze im Regen. Kommst du kurz vorbei?',sunlight:'Psst, ein Zutatentausch? Unser Sonnenplatz ist frei.',dance:'Ein bisschen Bewegung? Ich tanze mit meinen Blättern mit.',vitamin:'Ein Etikett entdecken? Meine Detektivblätter sind bereit.',bloom:'Ein Rezept fertig kochen? Die Blümchen sind schon bereit.',cheer:'Ein kleiner Check-in? Dein Sonnenplatz wartet.'},es:{water:'¿Registras una comida? Mi baile bajo la lluvia está listo.',sunlight:'¿Un cambio de ingredientes? Nos guardé un rayo de sol.',dance:'¿Un poco de movimiento? Bailaré contigo.',vitamin:'¿Exploramos una etiqueta? Mis hojas detectives están listas.',bloom:'¿Terminas una receta? Traje las florecitas.',cheer:'¿Un pequeño registro? Tu rincón soleado te espera.'}};
  const prefix=lang==='en'?(sign==='Aries'?'Let us go! ':sign==='Pisces'?'A tiny daydream: ':''):'';return prefix+(msg[lang]||msg.en)[action];}
-const api={model,profile,recentXP,latestHealthy,nextLine,lines,wiltLines,ZODIAC,MBTI,LOOKS,CONSTELLATIONS,COSMETICS,PREMIUM,SLOTS,BASE_EQUIPMENT,cosmetic,cleanEquipment,itemStatus,wardrobeItems,toggleEquip,previewEquip,nextInSlot,period,careKind,need,tapReaction,unlocked,nextUnlock,cosmeticAllowed,reminderWindow,reminder};
+const api={model,profile,recentXP,latestHealthy,nextLine,lines,wiltLines,ZODIAC,MBTI,LOOKS,CONSTELLATIONS,COSMETICS,PREMIUM,SLOTS,BASE_EQUIPMENT,cosmetic,cleanEquipment,EXTRAS,registerExtras,setOwned,owns,itemStatus,wardrobeItems,toggleEquip,previewEquip,nextInSlot,period,careKind,need,tapReaction,unlocked,nextUnlock,cosmeticAllowed,reminderWindow,reminder};
 if(typeof module==='object'&&module.exports)module.exports=api;else root.LowiHerbTamagotchiCore=api;
 })(typeof window!=='undefined'?window:globalThis);
 

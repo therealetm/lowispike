@@ -1,0 +1,153 @@
+/* Herb touch feel (herb-touch.js). Faces reuse the herb's own eyes/mouth parts. */
+
+/* Faces while held / poked: in the herb world (.sp-body) and in the Home bubble (#spBubble). */
+#spWorld .sp-body[data-touchface] .lh-eyes,
+#spWorld .sp-body[data-touchface] .lh-sleep-eyes,
+#spWorld .sp-body[data-touchface] .lh-dizzy-eyes,
+#spWorld .sp-body[data-touchface] .lh-ooh,
+#spBubble[data-touchface] .lh-eyes,
+#spBubble[data-touchface] .lh-sleep-eyes,
+#spBubble[data-touchface] .lh-dizzy-eyes,
+#spBubble[data-touchface] .lh-ooh {
+    display: none !important
+}
+
+#spWorld .sp-body[data-touchface] .lh-smile,
+#spBubble[data-touchface] .lh-smile {
+    display: block !important
+}
+
+/* surprised: eyes wide open (even at night or when droopy) + little "oh" mouth */
+#spWorld .sp-body[data-touchface="surprised"] .lh-eyes,
+#spBubble[data-touchface="surprised"] .lh-eyes {
+    display: block !important;
+    transform: scale(1.14) !important;
+    animation: none !important
+}
+
+#spWorld .sp-body[data-touchface="surprised"] .lh-ooh,
+#spBubble[data-touchface="surprised"] .lh-ooh,
+#spWorld .sp-body[data-touchface="dizzy"] .lh-ooh,
+#spBubble[data-touchface="dizzy"] .lh-ooh {
+    display: block !important
+}
+
+#spWorld .sp-body[data-touchface="surprised"] .lh-smile,
+#spBubble[data-touchface="surprised"] .lh-smile,
+#spWorld .sp-body[data-touchface="dizzy"] .lh-smile,
+#spBubble[data-touchface="dizzy"] .lh-smile {
+    display: none !important
+}
+
+/* squint: happy closed eyes, rosier cheeks */
+#spWorld .sp-body[data-touchface="squint"] .lh-sleep-eyes,
+#spBubble[data-touchface="squint"] .lh-sleep-eyes {
+    display: block !important
+}
+
+#spWorld .sp-body[data-touchface="squint"] .lh-blush,
+#spBubble[data-touchface="squint"] .lh-blush {
+    opacity: .95 !important
+}
+
+/* dizzy: spiral eyes */
+#spWorld .sp-body[data-touchface="dizzy"] .lh-dizzy-eyes,
+#spBubble[data-touchface="dizzy"] .lh-dizzy-eyes {
+    display: block !important
+}
+
+/* Pokes by zone */
+#spWorld .sp-body[data-poke="leaves"] .lh-leaf {
+    animation: htRustle .2s ease-in-out 3 !important
+}
+
+#spWorld .sp-body[data-poke="face"] .lh-creature {
+    animation: htBoop .55s cubic-bezier(.3, 1.6, .5, 1) !important
+}
+
+#spWorld .sp-body[data-poke="left"] .lh-creature {
+    animation: htLeanRight .75s cubic-bezier(.3, 1.5, .5, 1) !important
+}
+
+#spWorld .sp-body[data-poke="right"] .lh-creature {
+    animation: htLeanLeft .75s cubic-bezier(.3, 1.5, .5, 1) !important
+}
+
+#spWorld .sp-body[data-poke="pot"] .lh-creature {
+    animation: htHop .6s cubic-bezier(.3, 1.5, .5, 1) !important
+}
+
+@keyframes htRustle {
+    0%, 100% { transform: rotate(0) }
+    33% { transform: rotate(-9deg) }
+    66% { transform: rotate(9deg) }
+}
+
+@keyframes htBoop {
+    0% { transform: scale(1) }
+    25% { transform: scale(1.1, .86) }
+    60% { transform: scale(.95, 1.06) }
+    100% { transform: scale(1) }
+}
+
+@keyframes htLeanRight {
+    0% { transform: rotate(0) }
+    30% { transform: rotate(11deg) }
+    65% { transform: rotate(-4deg) }
+    100% { transform: rotate(0) }
+}
+
+@keyframes htLeanLeft {
+    0% { transform: rotate(0) }
+    30% { transform: rotate(-11deg) }
+    65% { transform: rotate(4deg) }
+    100% { transform: rotate(0) }
+}
+
+@keyframes htHop {
+    0% { transform: scale(1) }
+    20% { transform: scale(1.12, .84) }
+    50% { transform: scale(.92, 1.1) }
+    100% { transform: scale(1) }
+}
+
+/* Home bubble press feedback: squish on press, springy pop back, herb jiggles. */
+#spBubble {
+    -webkit-tap-highlight-color: transparent;
+    transition: scale .5s cubic-bezier(.34, 1.9, .5, 1), filter .25s ease
+}
+
+#spBubble[data-pressed] {
+    scale: .92;
+    filter: brightness(1.1);
+    transition: scale .12s ease-out, filter .12s ease-out
+}
+
+#spBubble[data-pop] .sp-home-herb {
+    animation: htJiggle .45s cubic-bezier(.3, 1.5, .5, 1)
+}
+
+@keyframes htJiggle {
+    0% { transform: scale(1) }
+    30% { transform: scale(1.08, .92) }
+    65% { transform: scale(.96, 1.05) }
+    100% { transform: scale(1) }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #spBubble,
+    #spBubble[data-pressed] {
+        scale: none;
+        transition: filter .01ms
+    }
+
+    #spBubble[data-pressed] {
+        filter: brightness(1.14)
+    }
+
+    #spBubble[data-pop] .sp-home-herb,
+    #spWorld .sp-body[data-poke] .lh-creature,
+    #spWorld .sp-body[data-poke] .lh-leaf {
+        animation: none !important
+    }
+}

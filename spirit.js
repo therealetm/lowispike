@@ -990,8 +990,12 @@
                 signal: controller.signal
             },
             points = new Map(),
-            timers = new Set();
+            timers = new Set(),
+            H = window.LowiHerbTouch || null;
         let raf = 0,
+            faceTimer = 0,
+            pokeTimer = 0,
+            pokes = 0,
             last = 0,
             body = {
                 x: 0,
@@ -1017,7 +1021,16 @@
             const dt = last ? Math.min(.025, (time - last) / 1000) : 1 / 60;
             last = time;
             const b = bounds();
-            if (thrown && !points.size && !reduced()) K.step(body, dt, b.x, b.y);
+            let settled = false;
+            if (thrown && !points.size) {
+                if (H) {
+                    if (reduced()) {
+                        body.x = body.y = body.vx = body.vy = 0;
+                        settled = true;
+                    } else settled = H.spring(body, dt, b.x, b.y, K.bound);
+                    if (settled) thrown = false;
+                } else if (!reduced()) K.step(body, dt, b.x, b.y);
+            }
             vsx += (-420 * (sx - tx) - 28 * vsx) * dt;
             vsy += (-420 * (sy - ty) - 28 * vsy) * dt;
             sx += vsx * dt;
@@ -1028,7 +1041,7 @@
                 vsx = vsy = 0;
             }
             draw();
-            if ((thrown && (Math.abs(body.vx) > 2 || Math.abs(body.vy) > 6 || body.y < b.y - 3)) || Math.abs(sx - tx) + Math.abs(sy - ty) > .003 || Math.abs(vsx) + Math.abs(vsy) > .02) raf = requestAnimationFrame(tick);
+            if ((thrown && (H ? !settled : (Math.abs(body.vx) > 2 || Math.abs(body.vy) > 6 || body.y < b.y - 3))) || Math.abs(sx - tx) + Math.abs(sy - ty) > .003 || Math.abs(vsx) + Math.abs(vsy) > .02) raf = requestAnimationFrame(tick);
             else {
                 raf = 0;
                 last = 0;
@@ -1039,6 +1052,52 @@
             if (!raf) {
                 last = 0;
                 raf = requestAnimationFrame(tick);
+            }
+        }
+
+        // Face while held / after a poke (herb-touch.js). Clears itself after ms when given.
+        function face(name, ms) {
+            if (!H) return;
+            clearTimeout(faceTimer);
+            H.setFace(el, name);
+            if (name && ms) faceTimer = later(() => H.setFace(el, null), ms);
+        }
+
+        function heldFace() {
+            if (!H || !gesture) return;
+            const now = performance.now();
+            face(H.heldFace({
+                hold: gesture.hold,
+                moved: gesture.moved,
+                stretch: Math.max(tx, ty),
+                speed: gesture.hold ? 0 : H.speedOf(gesture.samples, now),
+                shakes: H.shakes(gesture.trail, now)
+            }));
+        }
+
+        function poke(g) {
+            const kind = T.pet();
+            if (!H) return;
+            if (kind === 'dizzy') {
+                face('dizzy', 1600);
+                return;
+            }
+            const p = H.poke(H.zone({
+                x: g.startX,
+                y: g.startY
+            }, H.rectsOf(el)), H.lang(), pokes++);
+            clearTimeout(pokeTimer);
+            delete el.dataset.poke;
+            void el.offsetWidth;
+            el.dataset.poke = p.zone;
+            pokeTimer = later(() => delete el.dataset.poke, 800);
+            face(p.face, 750);
+            const speech = world.querySelector('.sp-speech');
+            if (speech && p.line) speech.textContent = p.line;
+            if (!reduced() && (p.vx || p.vy)) {
+                body.vx += p.vx;
+                body.vy += p.vy;
+                thrown = true;
             }
         }
 
@@ -1112,8 +1171,10 @@
                         x: e.clientX,
                         y: e.clientY,
                         t: performance.now()
-                    }]
+                    }],
+                    trail: []
                 };
+                face('surprised');
                 tx = 1.1;
                 ty = .9;
                 later(() => {
@@ -1121,6 +1182,7 @@
                         gesture.hold = true;
                         tx = 1.28;
                         ty = .76;
+                        heldFace();
                         run();
                     }
                 }, 300);
@@ -1171,7 +1233,14 @@
                     t: now
                 });
                 gesture.samples = gesture.samples.filter(s => now - s.t < 120);
+                gesture.trail.push({
+                    x: e.clientX,
+                    y: e.clientY,
+                    t: now
+                });
+                gesture.trail = gesture.trail.filter(s => now - s.t < 700);
             }
+            heldFace();
             run();
             e.preventDefault();
         }, options);
@@ -1183,9 +1252,17 @@
             gesture = null;
             tx = ty = 1;
             if (!cancelled && g.moved && !g.hold) {
-                Object.assign(body, K.release(g.samples, performance.now()));
-                thrown = !reduced();
-            } else if (!cancelled && !g.moved && !g.hold) T.pet();
+                const now = performance.now();
+                Object.assign(body, K.release(g.samples, now));
+                thrown = H ? true : !reduced();
+                if (H) {
+                    const f = H.releaseFace(el.dataset.touchface === 'dizzy' || H.shakes(g.trail, now) >= 4 ? 9999 : Math.hypot(body.vx, body.vy));
+                    face(f.face, f.ms);
+                }
+            } else if (!cancelled && !g.moved && !g.hold) poke(g);
+            else if (H) face(cancelled ? null : 'squint', cancelled ? 0 : 520);
+            // Always spring back to the resting spot after letting go.
+            if (H && !H.atRest(body)) thrown = true;
             run();
         };
         el.addEventListener('pointerup', e => finish(e, false), options);
@@ -1193,7 +1270,8 @@
         el.addEventListener('keydown', e => {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                T.pet();
+                const kind = T.pet();
+                face(kind === 'dizzy' ? 'dizzy' : 'squint', kind === 'dizzy' ? 1600 : 600);
             }
         }, options);
         draw();
@@ -1204,6 +1282,8 @@
                 timers.forEach(clearTimeout);
                 creature.querySelectorAll('.lh-leaf').forEach(n => n.style.opacity = '');
                 el.style.transform = '';
+                delete el.dataset.touchface;
+                delete el.dataset.poke;
                 world.querySelectorAll('.sp-fallen').forEach(n => n.remove());
             }
         };

@@ -318,7 +318,7 @@
             world.setAttribute('aria-modal', 'true');
             world.setAttribute('aria-label', tr('world'));
             world.setAttribute('data-noi18n', '');
-            world.innerHTML = '<header class="sp-world-head"><div><small><span class="sp-head-world">' + esc(tr('world')) + '</span><span class="sp-head-scan">' + esc(tr('scanHead')) + '</span></small><h1></h1></div>' + button('close', 'close', 'close') + '</header><div class="sp-world-xp"></div><div class="sp-stage"><div class="sp-constellation"></div><div class="sp-scanner-host"></div><div class="sp-body" tabindex="0" role="button" aria-label="' + esc(tr('leafHelp')) + '"></div><p class="sp-speech" role="status" aria-live="polite"></p><span class="sp-xp-pop" aria-hidden="true"></span></div><p class="sp-play-hint">' + esc(tr('leafHelp')) + '</p><div class="sp-actions">' + button('scan', 'scan', 'scan') + button('photo', 'camera', 'photo') + button('meal', 'plate', 'meal') + button('water', 'water', 'water') + '</div><a class="sp-gpt" target="_blank" rel="noopener" href="' + esc(V.gpt) + '">' + icon('star') + '<span>' + esc(tr('gpt')) + '<small>' + esc(tr('gptSub')) + '</small></span>' + icon('arrow') + '</a><footer class="sp-world-tools">' + button('wardrobe', 'hat', 'wardrobe') + button('collection', 'book', 'collection') + button('profile', 'leaf', 'profile') + button('evolution', 'mystery', 'path') + '</footer>';
+            world.innerHTML = '<header class="sp-world-head"><div><small><span class="sp-head-world">' + esc(tr('world')) + '</span><span class="sp-head-scan">' + esc(tr('scanHead')) + '</span></small><h1></h1></div>' + button('close', 'close', 'close') + '</header><div class="sp-world-xp"></div><div class="sp-stage"><div class="sp-constellation"></div><div class="sp-scanner-host"></div><div class="sp-body" tabindex="0" role="button" aria-label="' + esc(tr('leafHelp')) + '"></div><p class="sp-speech" role="status" aria-live="polite"></p><span class="sp-xp-pop" aria-hidden="true"></span></div><p class="sp-play-hint">' + esc(tr('leafHelp')) + '</p><footer class="sp-world-tools">' + button('wardrobe', 'hat', 'wardrobe') + button('collection', 'book', 'collection') + button('profile', 'leaf', 'profile') + button('evolution', 'mystery', 'path') + '</footer>';
             D.body.append(world);
         }
         if (!creature) {
@@ -2098,6 +2098,11 @@
         isOpen: () => opened,
         target: () => opened ? world : home,
         scannerHost,
+        /* Oct 15: the capture actions live in the Scan bottom bar now; the herb world is only the game */
+        scan,
+        photo,
+        meal: () => mealForm(),
+        water,
         captureProduct,
         pathHTML,
         showPick,

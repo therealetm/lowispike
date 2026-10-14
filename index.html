@@ -13186,6 +13186,25 @@ html.b3-camon,html.b3-camon body{overflow:hidden}
 .b3-ctype .input::placeholder{color:rgba(255,255,255,.55);letter-spacing:0}
 .b3-cam .b3-pill{color:#fff;background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2)}
 .b3-cam .b3-pill svg{color:#e9cb88}
+/* Oct 15: scanner bottom bar: actions, Back (thumb), Deep analyze */
+.b3-cam .b3-cbot{gap:8px}
+.b3-cacts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.b3-cact{min-height:54px;padding:7px 3px 6px;border-radius:14px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.12);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:inherit;font-size:12px;font-weight:650;line-height:1.15;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent;min-width:0}
+.b3-cact svg{width:22px;height:22px;color:#e9cb88;flex:none}
+.b3-cact span{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.b3-cact[aria-pressed=true]{background:rgba(233,203,136,.22);border-color:rgba(233,203,136,.75)}
+.b3-cact:active,.b3-cback:active,.b3-deep:active{transform:scale(.97)}
+.b3-cback{min-height:50px;width:100%;border-radius:16px;border:0;background:#fff;color:#14100a;font:inherit;font-size:16px;font-weight:750;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.b3-cback svg{width:20px;height:20px}
+.b3-deep{min-height:46px;border-radius:16px;border:1px solid rgba(233,203,136,.55);background:rgba(233,203,136,.12);color:#fff;text-decoration:none;display:flex;align-items:center;gap:10px;padding:6px 12px 6px 14px;-webkit-tap-highlight-color:transparent}
+.b3-deep>svg{width:20px;height:20px;color:#e9cb88;flex:none}
+.b3-deep>svg:last-child{width:16px;height:16px;opacity:.7}
+.b3-deep span{flex:1;display:flex;flex-direction:column;line-height:1.2;min-width:0;text-align:left}
+.b3-deep b{font-size:15px;font-weight:750}
+.b3-deep small{font-size:12px;opacity:.78;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.b3-cam .b3-cmsg{bottom:calc(env(safe-area-inset-bottom,0px) + 300px)}
+@media (max-height:720px){.b3-cam .b3-frame{top:21%;height:min(20vh,140px)}.b3-cam .b3-cbot{padding-top:16px}.b3-cact{min-height:50px}.b3-cam .b3-cmsg{top:calc(env(safe-area-inset-top,0px) + 58px);bottom:calc(env(safe-area-inset-bottom,0px) + 290px)}}
+@media (prefers-reduced-motion:reduce){.b3-cact:active,.b3-cback:active,.b3-deep:active{transform:none}}
 /* reveal */
 .b3-ov .r2-sh{max-height:calc(100% - env(safe-area-inset-top,0px) - 14px)}
 .b3-tall .r2-sh{min-height:78vh}
@@ -13516,9 +13535,22 @@ Object.assign(B3_TX, {
   camAskS: ["Only to read barcodes. Nothing is recorded or saved.", "Nur zum Lesen von Barcodes. Nichts wird aufgenommen oder gespeichert.", "Solo para leer códigos. No se graba ni se guarda nada."],
   camAllow: ["Allow camera", "Kamera erlauben", "Permitir cámara"],
   camDenied: ["Camera is blocked", "Kamera ist blockiert", "La cámara está bloqueada"],
-  camDeniedS: ["On iPhone: Settings > Safari > Camera > Allow, then come back. Or use a photo or type the number below.", "Auf dem iPhone: Einstellungen > Safari > Kamera > Erlauben, dann zurückkommen. Oder unten ein Foto nehmen oder die Nummer eintippen.", "En iPhone: Ajustes > Safari > Cámara > Permitir y vuelve. O usa una foto o escribe el número abajo."],
+  camDeniedS: ["On iPhone: Settings > Safari > Camera > Allow, then come back. Or type the number below.", "Auf dem iPhone: Einstellungen > Safari > Kamera > Erlauben, dann zurückkommen. Oder unten die Nummer eintippen.", "En iPhone: Ajustes > Safari > Cámara > Permitir y vuelve. O escribe el número abajo."],
   camNo: ["No live camera here", "Hier gibt es keine Live-Kamera", "Aquí no hay cámara en directo"],
-  camNoS: ["Take a photo of the barcode or type the number below.", "Mach ein Foto vom Barcode oder tipp die Nummer unten ein.", "Haz una foto del código o escribe el número abajo."],
+  camNoS: ["Type the number under the barcode lines below.", "Tipp unten die Nummer unter den Barcode-Strichen ein.", "Escribe abajo el número bajo las barras del código."],
+  /* Oct 15: scanner bottom bar = all capture actions + Back + Deep analyze (the Home orb is only the herb game now) */
+  camBack: ["Back", "Zurück", "Atrás"],
+  deep: ["Deep analyze", "Deep analyze", "Deep analyze"],
+  deepS: ["Your custom GPT · swaps & content", "Dein Custom GPT · Swaps & Inhalte", "Tu GPT personalizado · cambios y contenido"],
+  actsL: ["What do you want to do?", "Was möchtest du machen?", "¿Qué quieres hacer?"],
+  actScan: ["Barcode", "Barcode", "Código"],
+  actScanL: ["Scan a product", "Produkt scannen", "Escanear producto"],
+  actPhoto: ["Snap food", "Essen-Foto", "Foto comida"],
+  actPhotoL: ["Snap food", "Essen fotografieren", "Fotografiar comida"],
+  actMeal: ["Log meal", "Mahlzeit", "Comida"],
+  actMealL: ["Log a meal", "Mahlzeit eintragen", "Registrar comida"],
+  actWater: ["Water +1", "Wasser +1", "Agua +1"],
+  actWaterL: ["Log water", "Wasser eintragen", "Registrar agua"],
   camTry: ["Try again", "Nochmal versuchen", "Intentar de nuevo"],
   aim: ["Hold the barcode inside the frame", "Halte den Barcode in den Rahmen", "Pon el código dentro del marco"],
   starting: ["Starting the camera…", "Kamera startet…", "Abriendo la cámara…"],
@@ -13832,6 +13864,27 @@ async function nativeDetector(){ try { if (!("BarcodeDetector" in window)) retur
 function validCode(c){ c = String(c || "").replace(/\D/g, ""); if (!/^(\d{8}|\d{12}|\d{13}|\d{14})$/.test(c)) return "";
   const d = c.split("").map(Number), chk = d.pop(); let s = 0; d.reverse().forEach((x, i) => { s += x * (i % 2 === 0 ? 3 : 1); }); return (10 - s % 10) % 10 === chk ? (c.length === 12 ? "0" + c : c) : ""; }
 const CAMOK = "lowi.camok";
+/* Oct 15: the one link to the user's custom GPT ("Deep analyze"), same GPT as the herb's meal photo flow */
+const DEEP_GPT = "https://chatgpt.com/g/g-69481a874bf08191b8118f8d88c9c90e-lowispike";
+const deepURL = () => { try { const g = window.LowiVitalsBridge && LowiVitalsBridge.gpt; if (g && /^https:\/\/chatgpt\.com\/g\//.test(g)) return g; } catch(e){} return DEEP_GPT; };
+const IC_DROP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5c3.2 4 5.5 7.1 5.5 10a5.5 5.5 0 0 1-11 0c0-2.9 2.3-6 5.5-10z"/></svg>';
+const IC_BACK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>';
+const IC_SPARK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.6L19.5 10.5l-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9z"/><path d="M19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg>';
+/* bottom of the scanner: every capture action (was the Home orb menu), then Back for the thumb, then Deep analyze below it */
+function camBar(){
+  const act = (k, ic, on) => '<button type="button" class="b3-cact" data-b3="camact" data-act="' + k + '" aria-pressed="' + (on ? "true" : "false") + '" aria-label="' + esc(t("act" + k[0].toUpperCase() + k.slice(1) + "L")) + '">' + ic + '<span>' + esc(t("act" + k[0].toUpperCase() + k.slice(1))) + '</span></button>';
+  return '<div class="b3-cacts" role="group" aria-label="' + esc(t("actsL")) + '">' + act("scan", IC.bc, true) + act("photo", IC.cam) + act("meal", IC.plate) + act("water", IC_DROP) + '</div>' +
+    '<button type="button" class="b3-cback" data-b3="camclose" id="b3Back">' + IC_BACK + '<span>' + esc(t("camBack")) + '</span></button>' +
+    '<a class="b3-deep" id="b3Deep" href="' + esc(deepURL()) + '" target="_blank" rel="noopener">' + IC_SPARK + '<span><b>' + esc(t("deep")) + '</b><small>' + esc(t("deepS")) + '</small></span>' + IC.chev + '</a>'; }
+function camAct(act){
+  if (!CAM) return;
+  if (act === "scan") { sfx("tap"); const el = CAM.el; if (!el.classList.contains("typing") && CAM.stream) return;
+    el.classList.remove("typing"); if (CAM.stream) return; if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { msgState("nocam"); return; }
+    if (window.LowiSpirit || localStorage.getItem(CAMOK) === "1") startCam(); else msgState("ask"); return; }
+  const S = window.LowiSpirit, fn = S && S[act], inWorld = !!CAM.el.closest("#spWorld");
+  sfx("tap"); closeScanner(true);
+  if (inWorld && act !== "photo" && S && S.close) try { S.close(true); } catch(e){}
+  if (typeof fn === "function") setTimeout(() => { try { fn(); } catch(e){ console.warn(e); } }, 40); }
 function openScanner(mode){
   closeScanner(true);
   const el = document.createElement("div"); el.className = "b3-cam"; el.id = "b3Cam"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true");
@@ -13841,7 +13894,7 @@ function openScanner(mode){
     '<div class="b3-cmsg" id="b3CMsg"></div>' +
     '<div class="b3-cbot"><div class="b3-chint" id="b3Hint">' + esc(t("aim")) + '</div>' +
       '<form class="b3-type b3-ctype" id="b3BcF" autocomplete="off"><input class="input" id="b3Bc" inputmode="numeric" pattern="[0-9]*" maxlength="14" placeholder="' + esc(t("bcPh")) + '" enterkeyhint="go"><button class="b3-go" aria-label="' + esc(t("check")) + '">' + IC.go + '</button></form>' +
-      '<button class="b3-pill wide" data-b3="photo">' + IC.cam + '<span>' + esc(t("photoBc")) + '</span></button></div>';
+      camBar() + '</div>';
   if(window.LowiSpirit){LowiSpirit.scannerHost().appendChild(el);el.removeAttribute("aria-modal");}else document.body.appendChild(el); document.documentElement.classList.add("b3-camon");
   CAM = {el, stream:null, raf:0, det:null, reader:null, done:false, last:0};
   $("#b3BcF", el).addEventListener("submit", e => { e.preventDefault(); const v = $("#b3Bc", el).value, c = validCode(v); if (!c) { msg(t("bcBad"), "warn"); sfx("error"); return; } found(c); });
@@ -14085,6 +14138,7 @@ document.addEventListener("click", e => {
     case "camallow": startCam(); break;
     case "mode": captureMode = b.dataset.mode === "meal" ? "meal" : "barcode"; renderTab(); break;
     case "camclose": closeScanner(); break;
+    case "camact": camAct(b.dataset.act); break;
     case "torch": torch(); break;
     case "dex": sfx("open"); openDex(); break;
     case "filt": DEXF.f = b.dataset.f; if (DEXOV) { $$(".b3-filt .chip", DEXOV).forEach(c => c.classList.toggle("on", c === b)); $("#b3DexG", DEXOV).innerHTML = dexGrid(); } break;

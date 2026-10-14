@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261015-003500">
+<meta name="lowi-build" content="20261015-004000">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14670,7 +14670,7 @@ function heroHTML(){
   return '<button class="r3-hav" data-r2p="photo" aria-label="' + (hasPic ? "Change profile photo" : "Add a profile photo") + '">' + bubble(m, 140) + '</button>' +
     '<button class="r3-plink" data-r2p="photo">' + (hasPic ? "Change photo" : "Add a profile photo") + '</button>' +
     '<div class="r2-hn">' + esc(u.name || "Add your name") + '</div>' +
-    (bits.length ? '<div class="r3-det">' + bits.map((b, i) => (m.s && b.indexOf(m.s) >= 0) ? '<button class="r3-signchip" data-r3="sign" data-sign="' + esc(m.s) + '">' + esc(b) + '</button>' : '<span>' + esc(b) + '</span>').join('<i>·</i>') + '</div>' : "") +
+    (bits.length ? '<div class="r3-det">' + bits.map((b, i) => (m.s && b.indexOf(m.s) >= 0) ? '<button class="r3-signchip" data-r3="sign" data-sign="' + esc(m.s) + '">' + esc(window.LowiHerbIdentity ? LowiHerbIdentity.signLabel(m.s) : b) + '</button>' : '<span>' + esc(b) + '</span>').join('<i>·</i>') + '</div>' : "") +
     '<div class="r2-hs">' + (R2.email ? esc(R2.email() || "Not saved to an account yet") : "") + '</div>' +
     '<div class="r3-hacts"><button class="r2-btn ghost" data-r2p="edit">Edit profile</button><button class="r2-btn ghost"' + who(m) + '>How others see you</button></div>';
 }

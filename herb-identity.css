@@ -1,0 +1,128 @@
+/* Herb identity: sign symbol beside the herb's name, and the identity card in the herb profile sheet. */
+html.hi-signed .sp-bubble-name::before,
+html.hi-signed #spWorld .sp-world-head h1::before {
+    content: "";
+    display: inline-block;
+    width: .82em;
+    height: .82em;
+    margin-right: .28em;
+    vertical-align: -.06em;
+    background: var(--hi-a, currentColor);
+    -webkit-mask: var(--hi-sigil) center/contain no-repeat;
+    mask: var(--hi-sigil) center/contain no-repeat;
+    opacity: .95
+}
+
+html.hi-signed #spWorld .sp-world-head h1::before {
+    width: .7em;
+    height: .7em;
+    vertical-align: .02em
+}
+
+.hi-card {
+    --hi-a: #7fe0e0;
+    --hi-b: #b8a6ff;
+    position: relative;
+    text-align: center;
+    padding: 4px 2px 10px
+}
+
+.hi-mark {
+    width: 52px;
+    height: 52px;
+    margin: 2px auto 6px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: #0b1418;
+    background: linear-gradient(140deg, var(--hi-a), var(--hi-b));
+    box-shadow: 0 6px 22px color-mix(in srgb, var(--hi-a) 35%, transparent)
+}
+
+.hi-mark .hi-sigil {
+    width: 28px;
+    height: 28px;
+    stroke-width: 1.9
+}
+
+.hi-mark-leaf {
+    width: 22px;
+    height: 22px;
+    border-radius: 2px 60% 2px 60%;
+    background: #0b141899
+}
+
+.sp-sheet .hi-card h2.hi-name {
+    margin: 0 0 2px;
+    font-size: 24px
+}
+
+.hi-how {
+    margin: 0 0 10px;
+    font-size: 12px;
+    line-height: 1.35;
+    color: var(--muted, #adbbd2)
+}
+
+.hi-chips {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    text-align: left
+}
+
+.hi-chip {
+    min-width: 0;
+    padding: 7px 10px;
+    border-radius: 14px;
+    border: 1px solid color-mix(in srgb, var(--hi-a) 45%, transparent);
+    background: color-mix(in srgb, var(--hi-a) 12%, transparent)
+}
+
+.hi-chip small {
+    display: block;
+    font-size: 10px;
+    letter-spacing: .4px;
+    color: var(--muted, #adbbd2)
+}
+
+.hi-chip b {
+    display: block;
+    font-size: 13.5px;
+    font-weight: 650;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis
+}
+
+.hi-chip.off {
+    border-style: dashed;
+    background: none
+}
+
+.hi-chip.off b {
+    font-weight: 500;
+    color: var(--muted, #adbbd2)
+}
+
+.hi-voice {
+    margin: 9px 0 3px;
+    font-size: 12.5px;
+    line-height: 1.4
+}
+
+.hi-fun {
+    display: block;
+    font-size: 10.5px;
+    line-height: 1.35;
+    color: var(--muted, #adbbd2)
+}
+
+.sp-sheet .hi-reset {
+    margin-top: 6px
+}
+
+html[data-theme=light] .hi-mark,
+html.light .hi-mark {
+    color: #0b1418
+}

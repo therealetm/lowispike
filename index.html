@@ -5882,19 +5882,19 @@ function a2Lang(){ let l = "en"; try { l = (window.LowiLang && LowiLang.get && L
 function a2Kind(){ const u = navigator.userAgent || ""; if (/Instagram|FBAN|FBAV|FB_IAB|TikTok|musical_ly|Bytedance|Snapchat|Line\//i.test(u)) return "inapp"; if (/Android/i.test(u)) return "android";
   if (/iPhone|iPad|iPod/.test(u) || (/Macintosh/.test(u) && (navigator.maxTouchPoints || 0) > 1)) return /CriOS|FxiOS|EdgiOS|OPiOS/.test(u) ? "iosother" : "ios"; return "desktop"; }
 const A2T = {
-  en:{h:"Put LOWiSPIKE on your Home Screen", why:"Then it opens full screen like an app and keeps you signed in.", ok:"Got it",
+  en:{h:"Put LOWiSPIKE on your Home Screen", why:"Then it opens full screen like an app, without the browser bar.", ok:"Got it",
     ios:["Tap the <b>Share</b> button (square with the arrow) in Safari.", "Scroll down and tap <b>Add to Home Screen</b>.", "Tap <b>Add</b>, then open LOWiSPIKE from your Home Screen."],
     iosother:["Tap the <b>Share</b> button in this browser (or open the page in <b>Safari</b>).", "Tap <b>Add to Home Screen</b>.", "Tap <b>Add</b>, then open LOWiSPIKE from your Home Screen."],
     android:["Tap the <b>⋮</b> menu in Chrome.", "Tap <b>Add to Home screen</b> or <b>Install app</b>.", "Open LOWiSPIKE from your Home Screen."],
     inapp:["Tap <b>⋯</b> and choose <b>Open in browser</b> (Safari or Chrome).", "There, tap <b>Share</b> (iPhone) or <b>⋮</b> (Android).", "Tap <b>Add to Home Screen</b>, then open it from there."],
     desktop:["Open this page on your phone.", "iPhone: Share, then <b>Add to Home Screen</b>.", "Android: ⋮ menu, then <b>Add to Home screen</b>."]},
-  de:{h:"Leg LOWiSPIKE auf deinen Home-Bildschirm", why:"Dann öffnet es sich im Vollbild wie eine App und du bleibst angemeldet.", ok:"Verstanden",
+  de:{h:"Leg LOWiSPIKE auf deinen Home-Bildschirm", why:"Dann öffnet es sich im Vollbild wie eine App, ohne Browserleiste.", ok:"Verstanden",
     ios:["Tippe in Safari auf <b>Teilen</b> (Quadrat mit Pfeil).", "Scroll nach unten und tippe auf <b>Zum Home-Bildschirm</b>.", "Tippe auf <b>Hinzufügen</b> und öffne LOWiSPIKE dann vom Home-Bildschirm."],
     iosother:["Tippe in diesem Browser auf <b>Teilen</b> (oder öffne die Seite in <b>Safari</b>).", "Tippe auf <b>Zum Home-Bildschirm</b>.", "Tippe auf <b>Hinzufügen</b> und öffne LOWiSPIKE dann vom Home-Bildschirm."],
     android:["Tippe in Chrome auf das Menü <b>⋮</b>.", "Tippe auf <b>Zum Startbildschirm hinzufügen</b> oder <b>App installieren</b>.", "Öffne LOWiSPIKE dann vom Startbildschirm."],
     inapp:["Tippe auf <b>⋯</b> und wähle <b>Im Browser öffnen</b> (Safari oder Chrome).", "Dort auf <b>Teilen</b> (iPhone) oder <b>⋮</b> (Android) tippen.", "<b>Zum Home-Bildschirm</b> tippen und LOWiSPIKE von dort öffnen."],
     desktop:["Öffne diese Seite auf deinem Handy.", "iPhone: Teilen, dann <b>Zum Home-Bildschirm</b>.", "Android: Menü ⋮, dann <b>Zum Startbildschirm hinzufügen</b>."]},
-  es:{h:"Pon LOWiSPIKE en tu pantalla de inicio", why:"Así se abre a pantalla completa como una app y mantienes la sesión.", ok:"Entendido",
+  es:{h:"Pon LOWiSPIKE en tu pantalla de inicio", why:"Así se abre a pantalla completa como una app, sin la barra del navegador.", ok:"Entendido",
     ios:["Toca <b>Compartir</b> (el cuadrado con la flecha) en Safari.", "Desplázate y toca <b>Añadir a pantalla de inicio</b>.", "Toca <b>Añadir</b> y abre LOWiSPIKE desde tu pantalla de inicio."],
     iosother:["Toca <b>Compartir</b> en este navegador (o abre la página en <b>Safari</b>).", "Toca <b>Añadir a pantalla de inicio</b>.", "Toca <b>Añadir</b> y abre LOWiSPIKE desde tu pantalla de inicio."],
     android:["Toca el menú <b>⋮</b> de Chrome.", "Toca <b>Añadir a pantalla de inicio</b> o <b>Instalar app</b>.", "Abre LOWiSPIKE desde tu pantalla de inicio."],
@@ -9028,7 +9028,7 @@ const A2HS_X = "lowi.a2hs.x";
 function a2hsHint(){ if (standalone() || location.protocol === "file:") { const w = $("#lcA2hs"); if (w) w.remove(); return; }
   let x = ""; try { x = sessionStorage.getItem(A2HS_X) || ""; } catch(e){} if (x) return;
   if (!/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && !(/Macintosh/.test(navigator.userAgent) && (navigator.maxTouchPoints || 0) > 1)) return; if ($("#lcA2hs")) return;
-  const L = (typeof a2Lang === "function" ? a2Lang() : "en"), W = {en:["Add LOWiSPIKE to your Home Screen so it opens like an app and remembers you.", "How", "Close"], de:["Leg LOWiSPIKE auf deinen Home-Bildschirm, dann öffnet es sich wie eine App und vergisst dich nicht.", "So geht's", "Schließen"], es:["Añade LOWiSPIKE a tu pantalla de inicio: se abre como una app y te recuerda.", "Cómo", "Cerrar"]}[L];
+  const L = (typeof a2Lang === "function" ? a2Lang() : "en"), W = {en:["Add LOWiSPIKE to your Home Screen so it opens full screen like an app.", "How", "Close"], de:["Leg LOWiSPIKE auf deinen Home-Bildschirm, dann öffnet es sich im Vollbild wie eine App.", "So geht's", "Schließen"], es:["Añade LOWiSPIKE a tu pantalla de inicio: se abre a pantalla completa como una app.", "Cómo", "Cerrar"]}[L];
   const d = document.createElement("div"); d.id = "lcA2hs"; d.className = "lc-banner"; d.setAttribute("role", "status"); d.setAttribute("data-noi18n", "");
   d.innerHTML = '<span>' + W[0] + '</span><button class="chip" data-cl="a2hs">' + W[1] + '</button><button class="lc-x" data-cl="a2hs-x" aria-label="' + W[2] + '">×</button>';
   document.body.appendChild(d); a2Place(); }

@@ -1,0 +1,59 @@
+# LOWiSPIKE ordered work queue
+
+This is a handoff queue, not permission to start every item. An agent takes one ticket at a time unless the user explicitly authorizes parallel work. Before starting, confirm it is still relevant against the current app and remote `main`.
+
+Status values: `proposed`, `ready`, `in progress`, `blocked`, `done`.
+
+## LS-001 — Complete the screen and state inventory
+
+- **Status:** proposed
+- **Order:** 1
+- **Depends on:** none
+- **Scope:** Document every primary screen and its default, empty, loading, error, sheet, and reduced-motion states. Capture the intended hierarchy at 390x844 and identify the owning source files.
+- **Acceptance:** Today, Community, Scan, Cook, Move, profile, herb home, evolution, and update flows are covered; each state has a reference image or precise layout description; no implementation changes are bundled.
+
+## LS-002 — Run a real iPhone/PWA regression pass
+
+- **Status:** proposed
+- **Order:** 2
+- **Depends on:** LS-001
+- **Scope:** Test the installed PWA and browser experience on physical iPhone hardware, including 390x844, 375x812, and the smallest supported viewport available.
+- **Acceptance:** Home, Scan, Cook, and Move show their essential controls without accidental page scroll or bottom-nav collision; safe areas, camera permissions, keyboard, offline launch, update behavior, and reduced motion are recorded with actual results and screenshots.
+
+## LS-003 — Verify companion care end to end while signed in
+
+- **Status:** proposed
+- **Order:** 3
+- **Depends on:** LS-002
+- **Scope:** Exercise all five real care events using production-shaped data and verify the shared XP ledger.
+- **Acceptance:** Meal, swap, movement, scan, and recipe completion each play the correct animation and award XP once; replay/navigation awards zero; wilting recovers after one action; 100 XP triggers Sprout evolution; a multi-stage jump produces one combined reveal.
+
+## LS-004 — Validate herb reminders on an installed PWA
+
+- **Status:** proposed
+- **Order:** 4
+- **Depends on:** LS-002
+- **Scope:** Confirm reminder scheduling, copy, limits, quiet hours, permission denial, and tap destination using supported production notification behavior.
+- **Acceptance:** At most one reminder is delivered per day, none is delivered at night, copy offers one easy action in the herb's voice, and tapping opens the herb experience. Denied permission produces no repeated prompt.
+
+## LS-005 — Reduce `index.html` risk incrementally
+
+- **Status:** proposed
+- **Order:** 5
+- **Depends on:** LS-001, LS-003
+- **Scope:** Extract one well-tested boundary at a time from the large inline app, beginning with the Scan capture controller, Move pre-paint compaction, or Cook shuffle orchestration. Do not redesign behavior during extraction.
+- **Acceptance:** One source of truth remains for each extracted feature; all existing tests pass; new boundary tests cover initialization and duplicate mounting; no visual or storage migration regression; the change is shipped separately from feature work.
+
+## Ticket template
+
+When adding a ticket, include:
+
+- **Status** and **order**
+- **Depends on**
+- **User-visible outcome**
+- **Files or subsystem in scope**
+- **Explicitly out of scope**
+- **Step-by-step implementation notes** only where order matters
+- **Acceptance criteria** that can be observed or tested
+- **Evidence required**: automated, visual, browser, simulator, physical device, or live deployment
+

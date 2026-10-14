@@ -1,3 +1,4 @@
+window.LOWI_HERB_FIXTURE=true;
 /* Isolated visual fixture; actual app award/bridge functions follow below. */
 var RealDate=Date,fixtureNow=RealDate.now();var fixtureClock=new RealDate(fixtureNow);fixtureClock.setHours(12,0,0,0);fixtureNow=fixtureClock.getTime();
 window.Date=class extends RealDate{constructor(...a){super(...(a.length?a:[fixtureNow]));}static now(){return fixtureNow;}};

@@ -29,6 +29,7 @@ html.spirit-app[data-lay=tablet] #spHome .sp-heroes{gap:28px!important}
 
 /* iPad on its side and laptop (desktop): herb on the left, quest and tiles on the right */
 html.spirit-app.g2h-on[data-lay=desktop] #tab-home#tab-home{display:grid!important;grid-template-columns:minmax(0,1.15fr) minmax(320px,1fr)!important;grid-auto-rows:min-content;align-content:center;column-gap:28px!important;row-gap:14px!important;max-width:1120px!important;margin:0 auto!important;padding:24px 32px!important}
+html.spirit-app.g2h-on[data-lay=desktop] #tab-home#tab-home>*:not(#spHome):not(.rs-head){grid-column:1 / -1!important;min-width:0}
 html.spirit-app[data-lay=desktop] #tab-home #spHome{grid-column:1!important;grid-row:1 / span 2!important;max-width:none!important;width:100%!important;align-self:center;margin:0!important}
 html.spirit-app.g2h-on[data-lay=desktop] #tab-home#tab-home>.rs-head{grid-column:2!important;grid-row:1!important;align-self:center;display:flex!important;flex-direction:column;gap:14px;margin:0!important;padding:0!important;min-width:0}
 html.spirit-app[data-lay=desktop] #tab-home #f3Board{order:1!important}

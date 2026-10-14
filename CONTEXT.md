@@ -18,6 +18,16 @@ People who want clearer, gentler support for food and movement choices without s
 - Be playful and personal without becoming noisy, childish, or preachy.
 - Treat accessibility and low-mobility options as core product behavior.
 
+## Product vocabulary
+
+- **Today** is the home/game-status screen.
+- **Community** contains Chat, For You, and Leaderboard.
+- **Scan** is the unified barcode or meal-photo capture destination.
+- **Cook** is the user-facing name for code that may still call itself Shelf.
+- **Swaflo** is an internal food-adaptation engine name. Never present “Swaflo” alone as a button or destination; describe the outcome, such as “Find products” or “Adapt this meal.”
+- **Herb** means the one living companion. Orb/bubble refers only to its compact navigation presence, not another character.
+- **Level** is account XP progression; **herb stage** is the six-form companion evolution derived from that same XP total.
+
 ## Experience direction
 
 The target is Tamagotchi care, Pokémon-like evolution clarity, Japanese convenience-store cuteness, and a distinctive premium holographic living-core aesthetic. The herb breathes, sways, blinks, reacts, and visibly changes across six stages. Bio-organic materials, constellation light, depth, and restrained glow are appropriate; generic RPG chrome and dense dashboard cards are not.
@@ -62,6 +72,8 @@ LOWiSPIKE is a static GitHub Pages PWA. Most legacy application logic lives in `
 The live source is `therealetm/lowispike` on `main`; the public app is `https://therealetm.github.io/lowispike/`. GitHub Pages deployment is the authoritative proof that a release is live.
 
 Because `index.html` is large, edits should be narrow and protected by regression tests. New code should strengthen module boundaries rather than add another parallel implementation. Do not perform a wholesale rewrite while fixing a user-visible issue.
+
+See `ARCHITECTURE.md`, `SCREEN_MAP.md`, and `DATA_CONTRACTS.md` for the complete application map. Those files are part of the product contract and must change alongside architecture, navigation, persistence, or integration changes.
 
 ## Current shipped baseline
 

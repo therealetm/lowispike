@@ -2,6 +2,26 @@
 
 This file is append-only. Add decisions with a date, status, context, decision, and consequences. Never silently rewrite a settled decision; supersede it with a newer entry.
 
+## 2026-10-14 — Repository documentation is a release contract
+
+**Status:** Accepted
+
+**Context:** The application spans a large ordered HTML file, external feature modules, browser storage, Supabase, a service worker, and overlapping presentation layers. Partial context caused agents to fix one surface while breaking another.
+
+**Decision:** Root documentation maps the entire application: product context, architecture, screens, data/events, testing, release behavior, decisions, and ordered work. Every AI begins with the same reading order in `README.md` and `AGENTS.md`. A change that alters a documented contract updates the corresponding document in the same commit.
+
+**Consequences:** Documentation-only claims are not proof; tests and the live app remain authoritative evidence. Conversely, undocumented new globals, storage keys, events, screens, or release steps are incomplete work.
+
+## 2026-10-14 — Internal code names do not become unexplained UI labels
+
+**Status:** Accepted
+
+**Context:** Legacy names such as Shelf and Swaflo describe implementation history but confused users when exposed directly.
+
+**Decision:** User-facing actions describe the outcome in plain language. The Shelf subsystem is presented as Cook. Swaflo remains an internal adaptation engine and cannot appear alone as a CTA.
+
+**Consequences:** Engineers may preserve internal identifiers for compatibility, but new copy and accessibility labels use product vocabulary documented in `CONTEXT.md`.
+
 ## 2026-10-14 — The herb owns the companion role
 
 **Status:** Accepted

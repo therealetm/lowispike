@@ -6,11 +6,12 @@ Status values: `proposed`, `ready`, `in progress`, `blocked`, `done`.
 
 ## LS-001 — Complete the screen and state inventory
 
-- **Status:** proposed
+- **Status:** done
 - **Order:** 1
 - **Depends on:** none
 - **Scope:** Document every primary screen and its default, empty, loading, error, sheet, and reduced-motion states. Capture the intended hierarchy at 390x844 and identify the owning source files.
 - **Acceptance:** Today, Community, Scan, Cook, Move, profile, herb home, evolution, and update flows are covered; each state has a reference image or precise layout description; no implementation changes are bundled.
+- **Evidence:** `SCREEN_MAP.md`, `ARCHITECTURE.md`, `DATA_CONTRACTS.md`, `TESTING.md`, and `RELEASE.md` added on 2026-10-14.
 
 ## LS-002 — Run a real iPhone/PWA regression pass
 

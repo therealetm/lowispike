@@ -1,6 +1,23 @@
 # LOWiSPIKE agent guide
 
-This is the operational source of truth for any AI or engineer changing LOWiSPIKE. Read `CONTEXT.md` and `DECISIONS.md` before editing. Check `TICKETS.md` only after understanding the product and current behavior.
+This is the operational source of truth for any AI or engineer changing LOWiSPIKE. It governs the entire application, not only the latest feature.
+
+## Required startup sequence
+
+Before inspecting implementation details or proposing a change, read:
+
+1. `CONTEXT.md`
+2. `ARCHITECTURE.md`
+3. `SCREEN_MAP.md`
+4. `DATA_CONTRACTS.md`
+5. `TESTING.md`
+6. `RELEASE.md`
+7. `DECISIONS.md`
+8. The relevant approved item in `TICKETS.md`, if one exists
+
+For gesture-driven UI, spring animation, swipe/sheet behavior, translucency, or motion, also read `.agents/skills/apple-design/SKILL.md` in full before acting.
+
+Then inspect the current remote `main` SHA, working-tree status, owning source module, its bridge/event/storage contracts, and its tests. Do not start from a screenshot alone or from assumptions about a framework; this app is a plain-JavaScript PWA with a large ordered `index.html`.
 
 ## Non-negotiable product rules
 
@@ -29,6 +46,21 @@ This is the operational source of truth for any AI or engineer changing LOWiSPIK
 | Tests and fixtures | `tests/*.test.cjs`, `tests/herb-visual-qa.html`, `tests/mobile-layout-qa.html` | Node regression suite and mobile visual fixtures. |
 | Third-party code | `vendor/` | Do not hand-edit. |
 | User/project assets | `assets/` | Do not delete or overwrite unrelated assets. |
+
+The complete inline-module, screen, persistence, backend, asset, and test inventories live in the dedicated root documents. Update the relevant document whenever a change alters ownership or a contract.
+
+## Whole-app engineering constraints
+
+- `index.html` script order is an API. Never broadly reformat, reorder, minify, or replace it during a feature fix.
+- Initialization must be idempotent. Tabs re-render, DOM nodes move into sheets, and external modules may load after the core.
+- Preserve node identity when existing listeners depend on it; do not copy interactive markup into a second active surface.
+- Internal names such as `shelf`, `R5`, `G2`, or `Swaflo` are implementation vocabulary, not automatically user-facing copy.
+- Health state is private by default. General cloud backup removes `health`; optional cycle sync stays explicit and separate.
+- Client-side visibility is not authorization. Supabase policies/edge validation protect cloud writes.
+- Do not edit vendored Supabase/ZXing bundles, generated recipe images, icons, or unrelated assets as part of ordinary feature work.
+- Do not add secrets. The existing browser publishable key and VAPID public key are public client identifiers; service-role credentials never belong here.
+- The supported languages are English, German, and Spanish. New persistent UI copy needs all three or an explicit, documented temporary fallback.
+- Keep medical boundaries: qualitative education only; no invented glucose numbers, diagnosis, treatment promises, fertility claims, or causal conclusions from self-reported data.
 
 ## Current interaction contracts
 
@@ -66,6 +98,7 @@ This is the operational source of truth for any AI or engineer changing LOWiSPIK
 - Automated tests pass and the changed screen has been visually checked.
 - Any new durable product decision is appended to `DECISIONS.md`; architecture/context changes update `CONTEXT.md`; remaining work becomes a scoped entry in `TICKETS.md`.
 - The final handoff names the exact commit/build and distinguishes automated, browser, simulator, and physical-device results.
+- `ARCHITECTURE.md`, `SCREEN_MAP.md`, `DATA_CONTRACTS.md`, `TESTING.md`, and `RELEASE.md` still describe reality after the change.
 
 ## Release lessons
 

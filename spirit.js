@@ -1922,6 +1922,8 @@
         refresh();
         if (e.detail?.entry) setTimeout(() => legacyMeal(e.detail.entry), 0);
     });
+    /* every meal log (also plan meals and logs past the daily XP cap, which fire no reward) checks the macro bonus; once per day per goal via the ledger eventId */
+    window.addEventListener('lowi:meal-logged', () => setTimeout(() => checkBonuses(false), 0));
     window.addEventListener('lowi:state', refresh);
     window.addEventListener('resize', refresh);
     D.addEventListener('visibilitychange', () => {

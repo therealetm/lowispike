@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261015-005000">
+<meta name="lowi-build" content="20261015-010000">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -19146,11 +19146,13 @@ window.LowiVitalsBridge = {
     const td=S.td;if(!td||!td.plan||!td.plan[index])return false;td.ate=td.ate||{};td.ate[index]=!!on;
     if(on){const id="plan-meal:"+td.day+":"+index+":"+td.plan[index];
       if(!S.logs.some(l=>l.eventId===id)){const r=recById(td.plan[index]);if(!r){save();return false;}
+        /* macro bonus check: same daily cap (MEAL_CAP) and duplicate block as every other meal log, so a plan meal cannot count twice */
+        if(this.mealDup({t:r.n})){save();return true;}
         const n=S.logs.filter(l=>l.day===today()).length;
-        S.logs.push({id,eventId:id,ts:Date.now(),day:td.day,t:r.n,r:r.r,e:r.e||"🍽️",macros:window.LowiSpiritCore?LowiSpiritCore.macros(r):undefined});save();
-        if(n<5)award(15,"Meal logged",null,"meal:plan",id);
-        else try{window.dispatchEvent(new CustomEvent("lowi:care",{detail:{kind:"water",id}}));}catch(e){}
-        questDone("eat",true);
+        const log={id,eventId:id,ts:Date.now(),day:td.day,t:r.n,r:r.r,e:r.e||"🍽️",macros:window.LowiSpiritCore?LowiSpiritCore.macros(r):undefined};S.logs.push(log);save();
+        const xp=n<this.MEAL_CAP?award(15,"Meal logged",null,"meal:plan",id):0;
+        if(!xp)try{window.dispatchEvent(new CustomEvent("lowi:care",{detail:{kind:"water",id}}));}catch(e){}
+        questDone("eat",true);try{window.dispatchEvent(new CustomEvent("lowi:meal-logged",{detail:{id,title:log.t,macros:log.macros,xp,via:"plan",photo:false}}));}catch(e){}
       }
     }save();return true;
   }

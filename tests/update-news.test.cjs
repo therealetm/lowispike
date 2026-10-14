@@ -19,7 +19,7 @@ function world(o = {}) {
     document: { hidden: false, querySelector: s => s.includes('lowi-build') ? { content: o.build || 'B2' } : null },
     fetch: async () => ({ ok: true, json: async () => version }) });
   vm.runInContext(g1 + '\n' + helpers + '\n' + `
-    let TOUR = null, freeSince = 1, TAB = 'home';
+    let TOUR = null, OB = null, freeSince = 1, TAB = 'home';
     const $ = () => null, vis = () => false, hush = () => {}, helpPlace = () => {}, AUTO = () => true, appFree = () => true, onHome = () => TAB === 'home';
     const tabNow = () => TAB, NT = t => (t && (t.de || t.en)) || t, T = x => x;
     function begin(t){ TOUR = t; shown.push({ kind: t.kind, text: t.steps[0].text }); }
@@ -99,14 +99,15 @@ test('news written for another build (stale HTML) is never shown as this build\'
 test('the banner marks its news as seen both when it opens and when the text arrives late', () => {
   const b = cut('function decorate(){', '/* b2-bn */');
   assert(b.includes('markSeen(upNews.id)'));
-  const late = cut('if (pp && nn && pp.textContent !== nn) pp.textContent = nn;', '} });');
+  const late = cut('/* b2-bn */', '/* late text: seen too */');
   assert(late.includes('markSeen(upNews.id)'));
 });
 
 test('a news bubble with nowhere to go has a single "Got it" and no Next-style button', () => {
-  const b = cut('} else if (TOUR.kind === "offer") {', "head = '<div class=\"g1-tag\">' + esc(s.tag");
+  const b = cut('function obButtons(){', '\nlet obT = 0;');
   assert(b.includes('newsGo()'));
-  assert(b.includes('data-g1="done">\' + esc(T("Got it"))'));
+  assert(b.includes(': b("done", "g1ob-1", esc(T("Got it"))))'));
+  assert(!/Next|Weiter/.test(b));
 });
 
 /* Add to Home Screen note */

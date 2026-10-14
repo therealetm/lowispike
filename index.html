@@ -2099,6 +2099,46 @@ html[data-theme=light] #lcUpd.g1-upd .g1-upill{background:#fff;color:#1d2a66}
 #lcUpd.g1-upd .g1-usay svg{width:22px;height:22px}
 html[data-theme=light] #lcUpd.g1-upd .g1-usay{background:rgba(255,255,255,.2)}
 
+/* Oct 14: update news = your orb + a speech bubble (the old banner stays hidden as the engine) */
+#lcUpd.g1-ob{display:none!important}
+#g1Ob{position:fixed;inset:0;z-index:2147483600;pointer-events:none;padding-top:env(safe-area-inset-top,0px);box-sizing:border-box;--ob-bg:rgba(20,26,40,.97);--ob-fg:#f6f7fb;--ob-mu:rgba(246,247,251,.78);--ob-ln:rgba(255,255,255,.16);--ob-ac:var(--accent,#7ad97a)}
+html[data-theme="light"] #g1Ob{--ob-bg:rgba(255,255,255,.98);--ob-fg:#17202e;--ob-mu:rgba(23,32,46,.74);--ob-ln:rgba(23,32,46,.12)}
+#g1Ob .g1ob-orb{position:fixed;left:12px;top:12px;width:64px;height:64px;border-radius:50%;display:none;overflow:hidden;pointer-events:none;background:radial-gradient(circle at 33% 22%,rgba(255,255,255,.62),rgba(255,255,255,.08) 18%,transparent 33%),radial-gradient(circle at 50% 72%,color-mix(in srgb,var(--tmg-a,#62c98b) 34%,transparent),rgba(5,18,13,.16) 65%),linear-gradient(145deg,color-mix(in srgb,var(--tmg-a,#62c98b) 32%,rgba(14,24,22,.92)),color-mix(in srgb,var(--tmg-b,#c8f2a0) 20%,rgba(12,24,20,.94)));border:1px solid rgba(255,255,255,.34);box-shadow:inset 0 0 0 4px rgba(255,255,255,.07),inset 0 -12px 18px rgba(0,0,0,.18),0 10px 26px rgba(0,0,0,.30),0 0 22px color-mix(in srgb,var(--tmg-a,#62c98b) 30%,transparent)}
+#g1Ob[data-mode="own"] .g1ob-orb{display:block}
+#g1Ob .g1ob-water{position:absolute;left:0;right:0;bottom:0;height:22%;background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.04));border-top:1px solid rgba(255,255,255,.22)}
+#g1Ob .g1ob-herb{position:absolute;inset:3% 8% 12%;display:flex;align-items:flex-end;justify-content:center}
+#g1Ob .g1ob-herb svg{display:block;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;overflow:visible}
+#g1Ob .g1ob-glow{position:absolute;inset:26%;border-radius:50%;background:radial-gradient(circle,#fff,var(--tmg-b,#c8f2a0) 45%,transparent 72%)}
+#g1Ob .g1ob-bub{position:fixed;left:12px;top:12px;width:min(360px,calc(100vw - 24px));box-sizing:border-box;pointer-events:auto;background:var(--ob-bg);color:var(--ob-fg);border:1px solid var(--ob-ln);border-radius:20px;padding:13px 14px 10px;box-shadow:0 14px 36px rgba(0,0,0,.34),0 2px 8px rgba(0,0,0,.18);text-align:left;font-size:15px;line-height:1.38;-webkit-font-smoothing:antialiased}
+#g1Ob .g1ob-tail{position:absolute;width:16px;height:16px;background:var(--ob-bg);border:1px solid var(--ob-ln);transform:rotate(45deg);pointer-events:none}
+#g1Ob[data-side="below"] .g1ob-tail{top:-9px;left:calc(var(--tx,40px) - 8px);border-right:0;border-bottom:0;border-radius:4px 0 0 0}
+#g1Ob[data-side="above"] .g1ob-tail{bottom:-9px;left:calc(var(--tx,40px) - 8px);border-left:0;border-top:0;border-radius:0 0 4px 0}
+#g1Ob[data-side="right"] .g1ob-tail{left:-9px;top:calc(var(--ty,30px) - 8px);border-top:0;border-right:0;border-radius:0 0 0 4px}
+#g1Ob .g1ob-h{display:block;font-weight:800;font-size:16px;line-height:1.25;margin:0 0 4px;letter-spacing:-.01em}
+#g1Ob .g1ob-p{margin:0;color:var(--ob-mu);font-size:15px;max-height:min(34vh,220px);overflow:auto;overscroll-behavior:contain}
+#g1Ob .g1ob-btns{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:9px}
+#g1Ob .g1ob-sp{flex:1}
+#g1Ob .g1ob-btn{appearance:none;-webkit-appearance:none;font:inherit;font-size:15px;font-weight:700;min-height:44px;padding:0 15px;border-radius:999px;border:1px solid var(--ob-ln);background:transparent;color:var(--ob-fg);cursor:pointer;touch-action:manipulation}
+#g1Ob .g1ob-1{background:var(--ob-ac);border-color:transparent;color:#0d1a12}
+#g1Ob .g1ob-say{width:44px;padding:0;display:inline-flex;align-items:center;justify-content:center}
+#g1Ob .g1ob-say svg{width:20px;height:20px}
+#g1Ob .g1ob-say.on{background:color-mix(in srgb,var(--ob-ac) 26%,transparent)}
+#g1Ob .g1ob-btn:focus-visible{outline:3px solid var(--ob-ac);outline-offset:2px}
+#g1Ob.busy .g1ob-1{opacity:.6}
+#g1Ob .g1ob-bub,#g1Ob .g1ob-orb{opacity:0;transition:opacity .22s ease,transform .34s cubic-bezier(.3,1.4,.5,1)}
+#g1Ob .g1ob-bub{transform:scale(.86)}
+#g1Ob .g1ob-orb{transform:scale(.4) translateY(10px)}
+#g1Ob[data-side="below"] .g1ob-bub{transform-origin:var(--tx,40px) 0}
+#g1Ob[data-side="above"] .g1ob-bub{transform-origin:var(--tx,40px) 100%}
+#g1Ob[data-side="right"] .g1ob-bub{transform-origin:0 var(--ty,30px)}
+#g1Ob.in .g1ob-orb{opacity:1;transform:none;animation:g1obFloat 3.2s ease-in-out .4s infinite}
+#g1Ob.in .g1ob-bub{opacity:1;transform:none;transition-delay:.08s}
+#g1Ob.out .g1ob-bub,#g1Ob.out .g1ob-orb{opacity:0;transform:scale(.9);transition-duration:.2s;transition-delay:0s}
+#spBubble.g1ob-talk{animation:g1obHop .7s cubic-bezier(.3,1.6,.5,1) 1}
+@keyframes g1obHop{0%{transform:none}35%{transform:translateY(-9px) scale(1.04)}70%{transform:translateY(2px) scale(.99)}100%{transform:none}}
+@keyframes g1obFloat{0%,100%{transform:none}50%{transform:translateY(-3px)}}
+@media (prefers-reduced-motion:reduce){#g1Ob .g1ob-bub,#g1Ob .g1ob-orb{transition:none!important;transform:none!important;animation:none!important}#spBubble.g1ob-talk{animation:none!important}}
+@media (prefers-contrast:more){#g1Ob .g1ob-bub,#g1Ob .g1ob-tail{border:2px solid var(--ob-fg)}#g1Ob .g1ob-p{color:var(--ob-fg)}}
 @media (prefers-reduced-motion:reduce){#g1Z,#g1Tour .g1-spot,#g1Tour .g1-card{transition:none!important}.g1z-bob,#g1Z .g1z-wing,#g1Z .g1z-spark,#lcUpd.g1-upd.g1-landed .g1-uorb,#g1Tour .g1-spot{animation:none!important}}
 </style>
 <script id="g1js">
@@ -2160,6 +2200,7 @@ const ROWS = [
   ["newin", "New in this update", "Neu in diesem Update", "Nuevo en esta versión"],
   ["Show me", "Show me", "Zeig's mir", "Enséñamelo"],
   ["Later", "Later", "Später", "Luego"],
+  ["Update now", "Update", "Aktualisieren", "Actualizar"],
   ["guide", "Your guide", "Dein Guide", "Tu guía"]
 ];
 const D = {}; ROWS.forEach(r => { D[r[0]] = {en:r[1], de:r[2], es:r[3]}; });
@@ -2282,7 +2323,7 @@ function stepList(){ const els = [], words = []; return STEPS.filter(s => { if (
   const w = T(s.k); if (words.indexOf(w) >= 0) return false; if (e && els.indexOf(e) >= 0 && !s.end) return false; words.push(w); if (e) els.push(e); return true; }); }
 const tabNow = () => { const a = $(".tab.active"); return a ? a.id.replace(/^tab-/, "") : ""; };
 function toTab(t){ if (!t || tabNow() === t) return false; if (H.classList.contains("g2e-open")) try { LowiG2E && LowiG2E.close && LowiG2E.close(); } catch(e){} goTabBtn(t); return true; }
-function begin(t){ updateFlight++; if (!fzHome) fairyReset(); TOUR = t; H.classList.add("g1-touring"); root(); fairyOut(); setTimeout(show, reduce ? 0 : 160); }
+function begin(t){ if (t && t.kind === "offer" && t.steps && t.steps[0]) { obShow({kind:"offer", build:"", head:T("newin"), text:t.steps[0].text}); return; } updateFlight++; if (!fzHome) fairyReset(); TOUR = t; H.classList.add("g1-touring"); root(); fairyOut(); setTimeout(show, reduce ? 0 : 160); }
 function start(from){ if (TOUR) close("restart", true); hush(); goHome();
   const m = mem(); remember({t:"", n:NEWS && NEWS.id ? NEWS.id : m.n});
   setTimeout(() => { const steps = stepList(); let i = typeof from === "number" ? from : 0; if (i >= steps.length - 1) i = 0;
@@ -2393,28 +2434,90 @@ let upNews = null, upBuild = "", flownFor = "", updateFlight = 0;
 async function fetchNews(build){ if (upBuild === build && upNews !== null) return upNews; upBuild = build; upNews = "";
   try { const r = await fetch("version.json?g1=" + Date.now(), {cache:"no-store"}); if (r.ok) { const v = await r.json(); if (v && v.news && (!v.build || v.build === build || !build)) upNews = v.news; } } catch(e){}
   return upNews; }
-function flyInto(d){ const slot = d.querySelector(".g1-uorb"); if (!slot) return; const o = realOrb();
-  if (reduce || TOUR || !o || !vis(o) || !fzHome) { d.classList.add("g1-landed"); return; }
-  const flight = ++updateFlight; d.classList.remove("g1-landed"); fairyOut();
-  setTimeout(() => { if (flight !== updateFlight || TOUR) return; const x = $("#lcUpd .g1-uorb"); if (!x) { fairyHome(); return; } const r = x.getBoundingClientRect(); fzMove(r.left + r.width / 2 - FS / 2, r.top + r.height / 2 - FS / 2, r.width / FS);
-    setTimeout(() => { if (flight !== updateFlight || TOUR) return; const y = $("#lcUpd"); if (y) y.classList.add("g1-landed"); if (fz) fz.classList.remove("on", "alive"); fzHome = true; realAway(false); }, 720); }, 480); }
-function decorate(){ const d = $("#lcUpd"); if (!d) return; d.classList.add("g1-upd");
-  if (!d.querySelector(".g1-uorb")) { cloneOrbCss(); d.insertAdjacentHTML("afterbegin", '<span class="g1-uorb" id="g1Z2" aria-hidden="true"><span class="g1z-body">' + orbHTML() + '</span></span>'); }
-  let t = d.querySelector(".g1-utx"); if (!t) { t = document.createElement("span"); t.className = "g1-utx"; d.insertBefore(t, d.querySelector(".g1-uorb").nextSibling); }
-  const pill = [...d.children].find(c => c.tagName === "SPAN" && !c.classList.length); if (pill) { pill.classList.add("g1-upill"); t.appendChild(pill); }
-  const dot = d.querySelector(":scope > .lc-ud"); if (dot) dot.remove();
-  const n = upNews && typeof upNews === "object" ? NT(upNews.text) : "";
-  let h = t.querySelector(".g1-uh"); if (!h) { h = document.createElement("b"); h.className = "g1-uh"; t.insertBefore(h, t.firstChild); }
-  let p = t.querySelector(".g1-un"); if (!p) { p = document.createElement("i"); p.className = "g1-un"; t.insertBefore(p, h.nextSibling); }
-  if (h.textContent !== T("news")) h.textContent = T("news"); const line = n || T("newsfb"); if (p.textContent !== line) p.textContent = line;
+/* ---------- Oct 14: update news comes from your own orb (the herb bubble), in a speech bubble ----------
+   No more generic banner: the Q1 banner (#lcUpd) stays the engine (same build check, same refresh) but is hidden.
+   On Today the bubble points at the real orb, which hops; anywhere else a small copy of the orb appears at the top.
+   "Update" refreshes, "Later" (or Esc) hides it for that build, news text is marked seen as before (once per id). */
+let OB = null; /* {kind:"update"|"offer", build, head, text} */
+const LATER = "lowi.upd.later";
+function laterFor(b){ try { return !!b && localStorage.getItem(LATER) === b; } catch(e){ return false; } }
+const clampN = (v, a, b) => Math.max(a, Math.min(b, v));
+function obHerb(){ let inner = ""; const c = $("#spBubble .sp-creature");
+  if (c && c.querySelector("svg")) inner = c.innerHTML;
+  else if (window.LowiHerbTamagotchi) { try { const h = LowiHerbTamagotchi; inner = h.plantHTML(h.current().m, "hero"); } catch(e){} }
+  if (!inner) return '<i class="g1ob-glow"></i>';
+  /* own ids, so the copy never depends on the original's gradients (hidden tabs) */
+  const ids = []; inner.replace(/\sid="([^"]+)"/g, (m, id) => { ids.push(id); return m; });
+  ids.forEach(id => { const q = id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); inner = inner.replace(new RegExp('id="' + q + '"', "g"), 'id="' + id + '-ob"').replace(new RegExp("#" + q + "([)\"'])", "g"), "#" + id + "-ob$1"); });
+  return inner; }
+function obPalette(r){ const src = $("#spBubble") || $("#spHome"); if (!src) return; const cs = getComputedStyle(src);
+  ["--tmg-a", "--tmg-b"].forEach(k => { const v = (cs.getPropertyValue(k) || "").trim(); if (v) r.style.setProperty(k, v); }); }
+function obButtons(){ const b = (k, cls, label, extra) => '<button type="button" class="g1ob-btn ' + cls + '" data-ob="' + k + '"' + (extra || "") + '>' + label + '</button>';
+  const listen = SS ? b("say", "g1ob-say g1-say", '<span class="g1-sayi">' + SPK + '</span>', ' aria-pressed="false" aria-label="' + esc(T("Listen")) + '"') : "";
+  if (OB.kind === "update") return listen + '<span class="g1ob-sp"></span>' + b("later", "g1ob-2", esc(T("Later"))) + b("update", "g1ob-1", esc(T("Update now")));
+  return listen + '<span class="g1ob-sp"></span>' + (newsGo() ? b("done", "g1ob-2", esc(T("Got it"))) + b("showme", "g1ob-1", esc(T("Show me")) + " \u203a") : b("done", "g1ob-1", esc(T("Got it")))); }
+let obT = 0;
+function obShow(o){ let r = $("#g1Ob"); const fresh = !r || !OB || OB.kind !== o.kind || OB.build !== o.build || r.classList.contains("out");
+  OB = Object.assign({}, o);
+  if (!r) { r = document.createElement("div"); r.id = "g1Ob"; r.setAttribute("data-noi18n", ""); r.setAttribute("role", "dialog"); r.setAttribute("aria-modal", "false");
+    r.setAttribute("aria-labelledby", "g1ObH"); r.setAttribute("aria-describedby", "g1ObP");
+    r.innerHTML = '<div class="g1ob-orb" aria-hidden="true"><span class="g1ob-water"></span><span class="g1ob-herb"></span></div><div class="g1ob-bub"><i class="g1ob-tail" aria-hidden="true"></i><b class="g1ob-h" id="g1ObH"></b><p class="g1ob-p" id="g1ObP" aria-live="polite"></p><div class="g1ob-btns"></div></div>';
+    try { r.style.fontFamily = getComputedStyle(document.body).fontFamily; } catch(e){}
+    r.addEventListener("click", obClick); H.appendChild(r); }
+  const h = r.querySelector(".g1ob-h"), p = r.querySelector(".g1ob-p");
+  if (h.textContent !== o.head) h.textContent = o.head; if (p.textContent !== o.text) p.textContent = o.text;
+  r.dataset.kind = o.kind;
+  if (fresh) { clearTimeout(obT); r.classList.remove("in", "out", "busy"); obPalette(r); r.querySelector(".g1ob-herb").innerHTML = obHerb(); r.querySelector(".g1ob-btns").innerHTML = obButtons(); paintListen();
+    obPlace(); void r.offsetWidth; if (reduce) r.classList.add("in"); else requestAnimationFrame(() => requestAnimationFrame(() => { if (OB && r.isConnected) r.classList.add("in"); })); sfx("open"); }
+  else obPlace();
+  if (!obLoop.t) obLoop.t = setInterval(obLoop, 500); }
+function obLoop(){ if (!OB || !$("#g1Ob")) { clearInterval(obLoop.t); obLoop.t = 0; return; } obPlace(); }
+function obClose(quick){ const r = $("#g1Ob"); OB = null; clearInterval(obLoop.t); obLoop.t = 0; hush(); const sp = $("#spBubble"); if (sp) sp.classList.remove("g1ob-talk");
+  if (!r) return; const had = r.contains(document.activeElement); r.classList.remove("in"); r.classList.add("out"); clearTimeout(obT);
+  obT = setTimeout(() => { if (!OB && r.parentNode) r.remove(); }, quick || reduce ? 0 : 240); if (had) try { document.activeElement.blur(); } catch(e){} }
+function obLater(){ if (!OB) return; if (OB.kind === "update") { try { localStorage.setItem(LATER, OB.build || ""); } catch(e){} if (upNews && upNews.id) markSeen(upNews.id); const d = $("#lcUpd"); if (d) d.remove(); } obClose(); }
+function obClick(e){ const b = e.target.closest && e.target.closest("[data-ob]"); if (!b || !OB) return; e.preventDefault(); e.stopPropagation(); const k = b.dataset.ob;
+  if (k === "say") { if (speaking) hush(); else say(OB.head + " " + OB.text); return; }
+  if (k === "update") { hush(); const d = $("#lcUpd"), r = $("#g1Ob"); if (r) r.classList.add("busy"); b.disabled = true; if (d) d.click(); else obClose(); return; }
+  if (k === "later") { obLater(); return; }
+  if (k === "done") { obClose(); return; }
+  if (k === "showme") { obClose(true); startNews(); } }
+addEventListener("keydown", e => { if (e.key === "Escape" && OB && !TOUR) { e.preventDefault(); if (OB.kind === "update") obLater(); else obClose(); } });
+/* where: on Today next to the real orb, else a small copy of the orb at the top */
+function obAnchor(){ if (!onHome()) return null; const a = $("#spBubble"); if (!a || !vis(a)) return null; const b = a.getBoundingClientRect();
+  if (b.width < 60 || b.top < 0 || b.left < 0 || b.bottom > innerHeight || b.right > innerWidth) return null;
+  let hit = null; try { hit = document.elementsFromPoint(b.left + b.width / 2, b.top + b.height / 2).find(x => !x.closest("#g1Ob")); } catch(e){}
+  return hit && hit.closest("#spBubble") ? b : null; }
+function obPlace(){ const r = $("#g1Ob"); if (!r || !OB) return; const bub = r.querySelector(".g1ob-bub"), orb = r.querySelector(".g1ob-orb");
+  const vw = innerWidth, vh = innerHeight, M = 12, GAP = 14, OS = 64, st = parseFloat(getComputedStyle(r).paddingTop) || 0;
+  const tb = $("#tabbar"), tr = tb && vis(tb) ? tb.getBoundingClientRect() : null; let lim = vh - M;
+  if (tr && tr.top > vh * 0.5 && tr.width > vw * 0.4) lim = tr.top - 8;
+  const setW = w => { w = Math.round(w); if (bub.style.width !== w + "px") bub.style.width = w + "px"; return bub.offsetHeight; };
+  const a = obAnchor(); let mode = a ? "real" : "own", side = "", L = M, Tp = M, W = Math.min(360, vw - 2 * M), Hh = 0, tx = 0, ty = 0;
+  if (a) { const cx = a.left + a.width / 2, cy = a.top + a.height / 2; Hh = setW(W);
+    if (a.bottom + GAP + Hh <= lim) { side = "below"; Tp = a.bottom + GAP; L = clampN(cx - W / 2, M, vw - W - M); tx = cx - L; }
+    else if (vw - a.right - GAP - M >= 230) { W = Math.min(360, vw - a.right - GAP - M); Hh = setW(W); side = "right"; L = a.right + GAP; Tp = clampN(cy - Hh / 2, st + M, Math.max(st + M, lim - Hh)); ty = cy - Tp; }
+    else if (a.top - GAP - Hh >= st + M) { side = "above"; Tp = a.top - GAP - Hh; L = clampN(cx - W / 2, M, vw - W - M); tx = cx - L; }
+    else mode = "own"; }
+  if (mode === "own") { let ox = M, oy = st + 10;
+    if (tr && tr.left < ox + OS && tr.right > ox && tr.top < oy + OS && tr.bottom > oy) ox = Math.round(tr.right + M);
+    if (orb.style.left !== ox + "px") orb.style.left = ox + "px"; if (orb.style.top !== oy + "px") orb.style.top = oy + "px";
+    const room = vw - (ox + OS + GAP) - M;
+    if (room >= 300) { W = Math.min(360, room); Hh = setW(W); side = "right"; L = ox + OS + GAP; Tp = Math.max(st + 6, Math.min(oy - 4, lim - Hh)); ty = oy + OS / 2 - Tp; }
+    else { W = Math.min(360, vw - 2 * M); Hh = setW(W); side = "below"; Tp = oy + OS + GAP; L = M; tx = ox + OS / 2 - L; } }
+  tx = clampN(tx, 24, W - 24); ty = clampN(ty, 22, Math.max(22, Hh - 22));
+  const css = Math.round(L) + "px|" + Math.round(Tp) + "px"; if (bub.dataset.at !== css) { bub.dataset.at = css; bub.style.left = Math.round(L) + "px"; bub.style.top = Math.round(Tp) + "px"; }
+  bub.style.setProperty("--tx", Math.round(tx) + "px"); bub.style.setProperty("--ty", Math.round(ty) + "px");
+  if (r.dataset.mode !== mode) r.dataset.mode = mode; if (r.dataset.side !== side) r.dataset.side = side;
+  const sp = $("#spBubble"); if (sp) sp.classList.toggle("g1ob-talk", mode === "real" && !r.classList.contains("out")); }
+addEventListener("resize", () => { if (OB) obPlace(); });
+function decorate(){ const d = $("#lcUpd"); if (!d) { if (OB && OB.kind === "update") obClose(); return; }
+  d.classList.add("g1-upd", "g1-ob"); d.setAttribute("aria-hidden", "true"); d.tabIndex = -1;
+  const b = d.dataset.build || ""; if (laterFor(b)) { d.remove(); if (OB && OB.kind === "update") obClose(true); return; }
+  const n = upNews && typeof upNews === "object" && upBuild === b ? NT(upNews.text) : "";
+  obShow({kind:"update", build:b, head:T("news"), text:n || T("newsfb")});
   if (n && upNews && upNews.id) { try { if (localStorage.getItem("lowi.g1.bn") !== upNews.id) localStorage.setItem("lowi.g1.bn", upNews.id); } catch(e){} markSeen(upNews.id); } /* b2-bn */
-  if (SS && !d.querySelector(".g1-usay")) { const s = document.createElement("span"); s.className = "g1-usay"; s.setAttribute("role", "button"); s.setAttribute("tabindex", "0"); s.innerHTML = SPK;
-    s.setAttribute("aria-label", T("Listen"));
-    const act = e => { e.preventDefault(); e.stopPropagation(); if (speaking) { hush(); return; } const x = $("#lcUpd"); say(T("news") + " " + ((x && x.querySelector(".g1-un") || {}).textContent || "") + " " + (((x && x.querySelector(".g1-upill")) || {}).textContent || "")); };
-    s.addEventListener("click", act); s.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") act(e); }); d.appendChild(s); }
-  const b = d.dataset.build || "";
-  if (flownFor !== b) { flownFor = b; flyInto(d); }
-  if (upBuild !== b || upNews === null) fetchNews(b).then(() => { const x = $("#lcUpd"); if (x) { const pp = x.querySelector(".g1-un"), nn = upNews && typeof upNews === "object" ? NT(upNews.text) : ""; if (pp && nn && pp.textContent !== nn) pp.textContent = nn; if (nn && upNews.id) { try { localStorage.setItem("lowi.g1.bn", upNews.id); } catch(e){} markSeen(upNews.id); } } });
+  if (upBuild !== b || upNews === null) fetchNews(b).then(() => { if (upNews && typeof upNews === "object" && upNews.id) { try { localStorage.setItem("lowi.g1.bn", upNews.id); } catch(e){} markSeen(upNews.id); } redeco(); }); /* late text: seen too */
 }
 /* a tap on the banner refreshes (Q1, unchanged); remember it so the fairy shows the new thing right after */
 addEventListener("click", e => { if (e.target.closest && e.target.closest("#lcUpd") && !e.target.closest(".g1-usay")) { hush(); try { sessionStorage.setItem(GO, "1"); } catch(x){} } }, true);
@@ -2423,7 +2526,7 @@ let decoQ = 0; const redeco = () => { if (decoQ) return; decoQ = requestAnimatio
 /* ---------- when to start on its own ---------- */
 const AUTO = () => { try { if (localStorage.getItem("lowi.g1.auto") === "1") return true; } catch(e){} return !navigator.webdriver; };
 let freeSince = 0;
-function tick(){ if (document.hidden) return; if (TOUR) { helpPlace(); return; } if (!AUTO()) return;
+function tick(){ if (document.hidden) return; if (TOUR) { helpPlace(); return; } if (OB) return; if (!AUTO()) return;
   if (!appFree()) { freeSince = 0; return; } if (!freeSince) { freeSince = Date.now(); return; } if (Date.now() - freeSince < 1200) return;
   let go = ""; try { go = sessionStorage.getItem(GO) || ""; } catch(e){}
   if (go) { try { sessionStorage.removeItem(GO); } catch(e){} fromBanner = true; } /* b2-go: the banner already said what's new; after the refresh nothing repeats it */
@@ -2433,7 +2536,7 @@ function tick(){ if (document.hidden) return; if (TOUR) { helpPlace(); return; }
   if (NEWS && NEWS.id && !newsSeen(NEWS.id)) { offerNews(); return; } } /* b2-offer: once per news id */
 
 function init(){ H.classList.add("g1"); helpBtn(); helpPlace(); decorate(); loadNews();
-  const watch = () => { const d = $("#lcUpd"); if (d) { redeco(); if (!d.__g1) { d.__g1 = 1; new MutationObserver(redeco).observe(d, {childList:true}); } } };
+  const watch = () => { const d = $("#lcUpd"); if (d) { redeco(); if (!d.__g1) { d.__g1 = 1; new MutationObserver(redeco).observe(d, {childList:true}); } } else if (OB && OB.kind === "update") redeco(); };
   new MutationObserver(watch).observe(H, {childList:true}); watch();
   setInterval(tick, 1500);
   document.addEventListener("visibilitychange", () => { if (document.visibilityState !== "visible") hush(); }); }
@@ -2443,7 +2546,7 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
 function line(text, el, tag){ if (TOUR) close("x", true); begin({steps:[{k:"f2", text, tag, el}], i:0, kind:"line"}); }
 function mini(){ cloneOrbCss(); return '<span class="g1-uorb g1-mini" aria-hidden="true"><span class="g1z-body">' + orbHTML() + '</span></span>'; }
 window.LowiG1 = {mini, steps:() => stepList().map(x => x.k), start, close, line, next, back, get news(){ return NEWS; }, newsSeen, startNews, offerNews, say, hush, mem, reset:() => { try { localStorage.removeItem(KEY); } catch(e){} }, T, canSpeak:SS,
-  state:() => TOUR ? {kind:TOUR.kind, i:TOUR.i, n:TOUR.steps.length, k:TOUR.steps[TOUR.i].k} : null, fairy:() => fz ? {on:fz.classList.contains("on"), home:fzHome, pos:fzPos} : null};
+  state:() => TOUR ? {kind:TOUR.kind, i:TOUR.i, n:TOUR.steps.length, k:TOUR.steps[TOUR.i].k} : (OB ? {kind:"ob", k:OB.kind, i:0, n:1} : null), orbNews:() => OB ? {kind:OB.kind, build:OB.build || "", mode:($("#g1Ob") || {dataset:{}}).dataset.mode || ""} : null, fairy:() => fz ? {on:fz.classList.contains("on"), home:fzHome, pos:fzPos} : null};
 })();
 </script>
 <style id="homecss">
@@ -9065,6 +9168,7 @@ async function checkUpdate(force){ if (!validBuild(BUILD) || location.protocol =
   try { const r = await fetch("version.json?t=" + Date.now(), {cache:"no-store"}); if (!r.ok) return; const v = await r.json();
     if (!validBuild(v.build)) return;
     if (v.build <= BUILD || failedRecently(v.build)) { clearUpd(); return; }
+    try { if (localStorage.getItem("lowi.upd.later") === v.build) { clearUpd(); return; } } catch(e){} /* "Later" on the orb's bubble: not again for this build */
     newBuild = v.build; showUpd(); } catch(e){} finally { checking = false; } }
 /* tap: everything is already saved on the phone; ask the service worker to update, then load the new build past every cache */
 async function doUpdate(){ if (updating) return; const d = $("#lcUpd"), b = newBuild || (d && d.dataset.build) || ""; if (!validBuild(b)) return; updating = true; if (d) d.classList.add("busy");
@@ -18983,7 +19087,7 @@ html.q4b-off #lcA2hs{display:none!important}
 /* Q4b: hide the Add to Home Screen pill off Today, while a popup / sheet / sign-in is up, or while the new-version banner shows.
    Done in JS (not CSS :has) so Safari updates it right away. Only runs while the pill exists. */
 (function(){
-  const SEL = ".r2-ov.on:not(.off), #sheetwrap.open, #rsSheet.open, #lcUpd";
+  const SEL = ".r2-ov.on:not(.off), #sheetwrap.open, #rsSheet.open, #lcUpd, #g1Ob";
   function sync(){
     const d = document.getElementById("lcA2hs"); const h = document.documentElement;
     if (!d) { h.classList.remove("q4b-off"); return; }

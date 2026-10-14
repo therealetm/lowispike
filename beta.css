@@ -948,6 +948,59 @@ html[data-theme="light"] .rs-ov .rs-scrim {
     overflow: hidden !important;
 }
 
+/* ---------- Cook source + game switch (ck-src, Oct 14) ---------- */
+#tab-shelf .ck-bar { display: grid; gap: 8px; margin: 0 0 10px; }
+#tab-shelf .ck-src { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 16px; background: var(--b-solid, rgba(255,255,255,.05)); border: 1px solid var(--b-edge, rgba(255,255,255,.1)); }
+#tab-shelf .ck-b { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 10px; border: 0; border-radius: 12px; background: none; color: var(--muted, #9aa6b2); font: 600 14px/1.1 inherit; -webkit-tap-highlight-color: transparent; transition: background .18s, color .18s, transform .12s; }
+#tab-shelf .ck-b:active { transform: scale(.96); }
+#tab-shelf .ck-b.on { background: color-mix(in srgb, var(--tmg-a, #9de6b8) 22%, transparent); color: var(--text, #eef3f0); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tmg-a, #9de6b8) 55%, transparent); }
+#tab-shelf .ck-b svg { width: 17px; height: 17px; flex: none; }
+#tab-shelf .ck-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+#tab-shelf .ck-cats { display: flex; flex: 1 1 auto; gap: 4px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+#tab-shelf .ck-cats::-webkit-scrollbar { display: none; }
+#tab-shelf .ck-cats .ck-b { flex: none; min-height: 40px; padding: 0 10px; font-size: 13px; border-radius: 20px; border: 1px solid var(--b-edge, rgba(255,255,255,.1)); }
+#tab-shelf .ck-note { flex: 1; font-size: 12px; line-height: 1.25; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+#tab-shelf .ck-view { display: flex; flex: none; gap: 4px; padding: 3px; border-radius: 22px; background: var(--b-solid, rgba(255,255,255,.05)); border: 1px solid var(--b-edge, rgba(255,255,255,.1)); }
+#tab-shelf .ck-view .ck-b { min-height: 40px; border-radius: 18px; padding: 0 12px; font-size: 13.5px; }
+#tab-shelf .ck-view .ck-b svg { display: none; }
+@media (min-width: 420px) { #tab-shelf .ck-view .ck-b svg { display: block; } }
+#tab-shelf .ck-view .ck-b.on { background: var(--tmg-a, #9de6b8); color: #0b1410; box-shadow: none; }
+html[data-ckview="swipe"] #tab-shelf #r5Shuf { display: none !important; }
+html[data-ckview="shuffle"] #tab-shelf #r3kSwipe { display: none !important; }
+html[data-ckview="swipe"] #tab-shelf #r3kSwipe { display: block !important; margin-top: 0 !important; animation: ck-in .22s ease-out; }
+@keyframes ck-in { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+#tab-shelf .ck-ph, .r5-dcph.ck-ph { position: relative; display: grid; place-items: center; width: 100%; height: 100%; color: var(--tmg-a, #9de6b8); }
+#tab-shelf .ck-ph svg { width: 58%; height: 58%; opacity: .55; }
+#tab-shelf .ck-ph b { position: absolute; font: 700 26px/1 inherit; color: var(--text, #eef3f0); }
+/* tools sit in one swipeable row so the game keeps the room */
+#tab-shelf #g2cTiles { display: flex !important; gap: 8px !important; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
+#tab-shelf #g2cTiles::-webkit-scrollbar { display: none; }
+#tab-shelf #g2cTiles .g2c-tile { flex: 0 0 calc((100% - 16px) / 3.3); min-height: 64px !important; scroll-snap-align: start; }
+html[data-ckview="swipe"] #tab-shelf #g2cTiles { display: none !important; }
+html[data-ckview="swipe"] #tab-shelf #r3kSwipe .r3k-head, html[data-ckview="swipe"] #tab-shelf #r3kSwipe .r3k-foot { display: none !important; }
+html[data-ckview="swipe"] #tab-shelf #r3kSwipe .r3k-legend { margin-top: 0 !important; }
+html[data-ckview="swipe"] #tab-shelf #r3kSwipe .r3k-stack { margin-top: 10px !important; min-height: 0 !important; }
+html[data-ckview="swipe"] #tab-shelf #r3kSwipe .r3k-btns { margin-top: 12px !important; }
+/* the swap sheet no longer carries its own Cook / Buy switch: the source on Cook decides */
+.b-body .sf-toolbar > .sf-toggle:first-of-type { display: none !important; }
+/* short phones (iPhone SE / mini): same controls, less air */
+@media (max-height: 740px) {
+  html.g2c-on #shTop .small.muted { display: none !important; }
+  #tab-shelf .ck-bar { gap: 6px; margin-bottom: 6px; }
+  #tab-shelf .ck-src { padding: 3px; }
+  #tab-shelf .ck-src .ck-b { min-height: 40px; }
+  #tab-shelf #g2cTiles .g2c-tile { min-height: 50px !important; padding: 6px 9px !important; }
+  #tab-shelf #g2cTiles .g2c-tile small, #tab-shelf #g2cTiles .g2c-tile .g2c-sub { display: none !important; }
+  #tab-shelf #r5Go { min-height: 44px !important; height: 44px !important; margin-top: 6px !important; }
+  #tab-shelf .ck-bar { margin-bottom: 4px; }
+  html[data-ckview="swipe"] #tab-shelf #r3kSwipe .r3k-bl { display: none !important; }
+  html[data-ckview="swipe"] #tab-shelf #r3kSwipe .r3k-bi { width: 50px !important; height: 50px !important; }
+  html[data-ckview="swipe"] #tab-shelf #r3kSwipe .r3k-legend { display: none !important; }
+  html[data-ckview="swipe"] #tab-shelf #r3kSwipe .r3k-stack { margin-top: 4px !important; }
+  html[data-ckview="swipe"] #tab-shelf #r3kSwipe .r3k-btns { margin-top: 8px !important; }
+}
+@media (prefers-reduced-motion: reduce) { html[data-ckview="swipe"] #tab-shelf #r3kSwipe { animation: none; } #tab-shelf .ck-b { transition: none; } }
+
 /* ---------- One-tap meal log ---------- */
 .sp-quick-log { display: grid; gap: 10px; }
 .sp-quick-cap { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }

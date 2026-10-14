@@ -8121,6 +8121,61 @@ window.LowiAudio = {on:() => !!R5.audio, muted:() => !!R5.mute, setMute(v){ R5.m
    ===================================================================== */
 const ingName = i => typeof i === "string" ? (i.split("|")[1] || i) : (i && i.n) || "";
 const fimg = k => (typeof FOOD_IMG !== "undefined" && k && FOOD_IMG[k]) || "";
+/* ck-src (Oct 14, 2026): the shuffle and the swipe deck draw from one source the user picks on Cook:
+   the eBook recipes (default, with their drawings), Community meals that have a photo, or caught Products
+   that won't spike (same verdict rule as the Buy shuffle). Meals / Sweet narrows the eBook. */
+const CKK = {src:"lowi.cook.src", cat:"lowi.cook.cat", view:"lowi.cook.view"};
+const ckGet = (k, d, ok) => { try { const v = localStorage.getItem(k); return ok.indexOf(v) >= 0 ? v : d; } catch(e){ return d; } };
+const ckSet = (k, v) => { try { localStorage.setItem(k, v); } catch(e){} };
+const fSrc = () => ckGet(CKK.src, "book", ["book", "community", "products"]);
+const fCatSel = () => ckGet(CKK.cat, "all", ["all", "meal", "sweet"]);
+const fView = () => ckGet(CKK.view, "shuffle", ["shuffle", "swipe"]);
+const ckLang = () => { try { return (window.LowiLang && LowiLang.get()) || localStorage.getItem("lowi.lang") || "de"; } catch(e){ return "de"; } };
+const ckT = (en, de, es) => { const l = ckLang(); return l === "de" ? de : l === "es" ? (es || en) : en; };
+const CKPLATE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.6"/></svg>';
+function ckSyncSwaflo(){ /* the swap tool follows the chosen source: Products = buy, eBook / Community = cook */
+  try { const p = JSON.parse(localStorage.getItem("lowi.swaflo.prefs") || "{}"), mode = fSrc() === "products" ? "buy" : "cook", snack = fSrc() === "book" && fCatSel() === "sweet";
+    if (p.mode !== mode || !!p.snack !== snack) localStorage.setItem("lowi.swaflo.prefs", JSON.stringify(Object.assign({}, p, {mode, snack}))); } catch(e){} }
+function fProducts(){
+  let all = []; try { all = window.LowiDiscovery ? LowiDiscovery.all() : []; } catch(e){}
+  const seen = new Set(), out = [];
+  all.forEach(p => { try {
+    if (!p || !p.name || p.verdict === "spike") return; const a = LowiDiscovery.assess(p).category; if (a === "outside" || a === "caution") return;
+    const key = window.LowiDiscoveryCore ? LowiDiscoveryCore.identity(p) : String(p.barcode || p.name); if (seen.has(key)) return; seen.add(key);
+    const q = Object.assign({}, p, {assessmentCategory:a});
+    out.push(Object.assign({}, q, {id:"sf-buy:" + key, product:q, n:p.name, img:p.img || "", sub:p.brand || "", r:"ja", ing:[], buy:true, book:false}));
+  } catch(e){} });
+  return out;
+}
+function fSrcPool(src){
+  src = src || fSrc();
+  if (src === "products") return fProducts();
+  const all = fPool();
+  if (src === "community") return all.filter(f => f.com && f.img);
+  const c = fCatSel();
+  return all.filter(f => f.book && (c === "all" || (c === "meal" ? f.c === "meal" : f.c === "snack" || f.c === "dessert")));
+}
+const ckLastKey = () => CKK.src + ".last." + fSrc() + (fSrc() === "book" ? "." + fCatSel() : "");
+function fLast(){ let id = ""; try { id = localStorage.getItem(ckLastKey()) || ""; } catch(e){} if (!id && fSrc() === "book" && fCatSel() === "all") id = R5.last || "";
+  return id ? fSrcPool().find(x => x.id === id) || null : null; }
+function fSaveLast(f){ ckSet(ckLastKey(), f.id); if (f.book) { R5.last = f.id; r5save(); } if (f.buy && window.LowiSwaflo) try { LowiSwaflo.saveBuy(f.id); } catch(e){} }
+function fCell(c){ return '<div class="r5-cell">' + (c && c.img ? '<img alt="" decoding="async" src="' + c.img + '">' : '<span class="ck-ph">' + CKPLATE + '<b>' + esc(String((c && c.n) || "?").trim().charAt(0).toUpperCase()) + '</b></span>') + '</div>'; }
+function ckBarHTML(){
+  const s = fSrc(), c = fCatSel(), v = fView();
+  const seg = (k, val, lab, on, ic) => '<button type="button" class="ck-b' + (on ? " on" : "") + '" data-ck="' + k + '" data-v="' + val + '" aria-pressed="' + on + '">' + (ic || "") + '<span>' + lab + '</span></button>';
+  return '<div class="ck-bar" id="ckBar" data-noi18n>' +
+    '<div class="ck-src" role="group" aria-label="' + ckT("Shuffle from", "Mischen aus", "Mezclar de") + '">' +
+      seg("src", "book", ckT("eBook", "E-Book", "eBook"), s === "book") + seg("src", "community", "Community", s === "community") + seg("src", "products", ckT("Products", "Produkte", "Productos"), s === "products") + '</div>' +
+    '<div class="ck-row">' +
+      (s === "book" ? '<div class="ck-cats" role="group" aria-label="' + ckT("Kind", "Art", "Tipo") + '">' + seg("cat", "all", ckT("All", "Alle", "Todo"), c === "all") + seg("cat", "meal", ckT("Savory", "Herzhaft", "Salado"), c === "meal") + seg("cat", "sweet", ckT("Sweet", "Süß", "Dulce"), c === "sweet") + '</div>' : '<div class="ck-cats ck-note small muted">' + (s === "community" ? ckT("Meals people shared with a photo", "Geteilte Gerichte mit Foto", "Platos compartidos con foto") : ckT("Products people caught", "Gefangene Produkte", "Productos atrapados")) + '</div>') +
+      '<div class="ck-view" role="tablist" aria-label="' + ckT("Game", "Spiel", "Juego") + '">' + seg("view", "shuffle", ckT("Shuffle", "Mischen", "Mezclar"), v === "shuffle", R5IC.shuffle) + seg("view", "swipe", ckT("Swipe", "Swipen", "Deslizar"), v === "swipe", R5IC.cards) + '</div>' +
+    '</div></div>';
+}
+function ckEmptyHTML(){
+  const s = fSrc();
+  if (s === "products" && window.LowiSwaflo) return null;
+  return '<div class="r5-card in" role="status" data-noi18n><div class="small">' + (s === "community" ? ckT("No community meals with a photo yet. Share one with + Swipe in the community.", "Noch keine Community-Gerichte mit Foto. Teile eins mit + Swipe in der Community.", "Aún no hay platos con foto.") : ckT("Nothing here yet. Try All.", "Hier ist noch nichts. Probier Alle.", "Nada aquí. Prueba Todo.")) + '</div></div>';
+}
 function fPool(){
   const book = (typeof RECIPE_BOOK !== "undefined" ? RECIPE_BOOK : []).filter(r => r.r !== "nein").map(r => ({id:r.id, n:r.n, img:fimg(r.id), sub:r.sub || "", c:r.c, r:r.r || "ja", ing:(r.ing || []).map(ingName), book:true}));
   const com = R5.tinder.map(t => ({id:t.id, n:t.n, img:t.photo || fimg(t.k), sub:t.cap && t.cap !== t.n ? t.cap : "Shared in the community", who:t.who, post:t.post, r:"ja", ing:[], com:true}));
@@ -8128,32 +8183,34 @@ function fPool(){
   const mine = new Set(com.map(x => x.id)), shared = (typeof SW !== "undefined" ? SW : []).filter(t => !mine.has(t.id) && (t.photo || fimg(t.k))).map(t => ({id:t.id, n:t.n, img:t.photo || fimg(t.k), sub:t.cap && t.cap !== t.n ? t.cap : "Shared in the community", who:t.who, post:t.post, r:"ja", ing:[], com:true, shared:true}));
   return book.concat(com, shared);
 }
-const fById = id => fPool().find(x => x.id === id) || (window.LowiSwaflo && LowiSwaflo.productById(id));
+const fById = id => fPool().find(x => x.id === id) || (String(id).indexOf("sf-buy:") === 0 && fProducts().find(x => x.id === id)) || (window.LowiSwaflo && LowiSwaflo.productById(id));
 const FCAT = {meal:"Meal", snack:"Snack", dessert:"Sweet", drink:"Drink"};
 function fMeta(f){ const m = window.LOWI_COOK && f.book ? LOWI_COOK.minTxt(f.id) : "";
   return [f.com ? "From " + f.who : FCAT[f.c] || "", m].filter(Boolean).join(" · "); }
 function fBadge(f){ return '<span class="sh-pk ' + (f.r === "selten" ? "warn" : "gold") + '">' + (f.r === "selten" ? "SELTEN" : "JA") + "</span>"; }
 function fPick(){
-  if (window.LowiSwaflo) { const f = LowiSwaflo.pick(fPool().filter(f => R5.never.indexOf(f.id) < 0)); if (f !== undefined) return f; }
-  dkNorm(); /* r3k-pick */ const P = (window.LowiSwaflo ? LowiSwaflo.pool(fPool()) : fPool()).filter(f => f.id !== R5.last && R5.never.indexOf(f.id) < 0); if (!P.length) return null;
+  dkNorm(); /* r3k-pick, ck-src: from the chosen source only */ const lf = fLast(), A = fSrcPool().filter(f => R5.never.indexOf(f.id) < 0), P = A.length > 1 && lf ? A.filter(f => f.id !== lf.id) : A; if (!P.length) return null;
   const w = P.map(f => R5.liked.indexOf(f.id) >= 0 ? 3 : R5.skipped.indexOf(f.id) >= 0 ? 0.3 : f.com ? 1.5 : 1), sum = w.reduce((a, b) => a + b, 0);
   let x = Math.random() * sum; for (let i = 0; i < P.length; i++) { x -= w[i]; if (x <= 0) return P[i]; } return P[P.length - 1];
 }
 function fHomeHTML(){
-  const pool = fPool(), liked = R5.liked.map(fById).filter(Boolean), oldLast = R5.last && fById(R5.last), last = window.LowiSwaflo ? LowiSwaflo.currentLast(oldLast) : oldLast, left = pool.filter(f => R5.liked.indexOf(f.id) < 0 && R5.skipped.indexOf(f.id) < 0).length;
-  return '<div class="r5-shuf" id="r5Shuf">' +
+  ckSyncSwaflo(); try { document.documentElement.setAttribute("data-ckview", fView()); } catch(e){}
+  const last = fLast();
+  return ckBarHTML() + '<div class="r5-shuf" id="r5Shuf">' +
     (window.LowiSwaflo ? LowiSwaflo.toolbarHTML() : '') +
     '<div class="r5-stage' + (last ? " has" : "") + '" id="r5Stage" data-r5="shuffle" role="button" aria-label="Shuffle a food"><i class="r5-ring"></i><i class="r5-ring r2"></i><i class="r5-grid"></i>' +
-      '<div class="r5-win"><div class="r5-strip" id="r5Strip">' + (last ? '<div class="r5-cell">' + (last.img ? '<img alt="" src="' + last.img + '">' : '<span>🍽️</span>') + '</div>' : '<div class="r5-cell r5-idle"><span class="r5-q">?</span></div>') + '</div></div>' +
+      '<div class="r5-win"><div class="r5-strip" id="r5Strip">' + (last ? fCell(last) : '<div class="r5-cell r5-idle"><span class="r5-q">?</span></div>') + '</div></div>' +
       '<i class="r5-scan"></i><i class="r5-flash"></i></div>' +
     '<button class="btn primary r5-go" data-r5="shuffle" id="r5Go">' + R5IC.shuffle.replace("<svg", '<svg width="20" height="20"') + '<span>' + (last ? "Shuffle again" : "Shuffle my food") + '</span></button>' +
-    '<div class="small muted r5-hint">' + /* r3k-hint */ fHintTxt() + '</div>' +
+    '<div class="small muted r5-hint" data-noi18n>' + /* r3k-hint */ fHintTxt() + '</div>' +
     '<div id="r5Pick">' + (last ? fRevealHTML(last, false) : "") + '</div></div>' +
     /* r3k-home */ dkSectionHTML() +
     '<div id="r3kYes">' + fYesHTML() + '</div>';
 }
 function fRevealHTML(f, anim){
-  if (window.LowiSwaflo) { const h = LowiSwaflo.revealHTML(f); if (h) return h; }
+  if (window.LowiSwaflo) { let h = LowiSwaflo.revealHTML(f); if (h) { /* ck-src: a caught product says so, and pops up like any pick */
+    if (f.buy) h = h.replace(/<div class="tiny gold">[^<]*<\/div>/, '<div class="tiny gold">' + esc(ckT("Caught product", "Gefangenes Produkt", "Producto atrapado") + (f.byName ? " · " + ckT("caught by ", "gefangen von ", "atrapado por ") + f.byName : "")) + '</div>');
+    if (anim) h = h.replace('class="r5-card"', 'class="r5-card in"'); return h; } }
   const ing = f.ing.slice(0, 8), more = f.ing.length - ing.length;
   return '<div class="r5-card' + (anim ? " in" : "") + '" data-id="' + esc(f.id) + '"><div class="r5-ct"><div style="flex:1;min-width:0"><div class="tiny gold">' + (f.com ? "Community pick" : "Your pick") + '</div><div class="h2 r5-cn">' + esc(f.n) + '</div><div class="small muted">' + esc(fMeta(f)) + '</div></div>' + fBadge(f) + '</div>' +
     (f.book ? '<div class="r5-lab">You need</div><div class="r5-ingl">' + ing.map(n => '<span>' + esc(n) + '</span>').join("") + (more > 0 ? '<span class="dim">+' + more + '</span>' : "") + '</div>' +
@@ -8163,23 +8220,23 @@ function fRevealHTML(f, anim){
 }
 let fSpinning = false;
 function fShuffle(instant){
-  if (fSpinning) return; const f = fPick(); if (!f) { if (window.LowiSwaflo) LowiSwaflo.emptyPick(); return; } const strip = r5$("#r5Strip"), stage = r5$("#r5Stage"), pick = r5$("#r5Pick");
-  if (f.buy && window.LowiSwaflo) LowiSwaflo.saveBuy(f.id); else { R5.last = f.id; r5save(); }
+  if (fSpinning) return; const f = fPick(); if (!f) { const eh = ckEmptyHTML(), pk0 = r5$("#r5Pick"); if (eh === null) LowiSwaflo.emptyPick(); else if (pk0) pk0.innerHTML = eh; return; } const strip = r5$("#r5Strip"), stage = r5$("#r5Stage"), pick = r5$("#r5Pick");
+  fSaveLast(f);
   if (!strip || !stage) return;
-  const selectionAtPick = window.LowiSwaflo ? JSON.stringify(LowiSwaflo.prefs()) : "";
+  const selectionAtPick = fSrc() + "|" + fCatSel();
   const reduce = instant || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
-  const P = (window.LowiSwaflo ? LowiSwaflo.pool(fPool()) : fPool()), cells = [];
+  const P = fSrcPool(), cells = [];
   /* Even two candidates visibly cycle, then settle on the selected item. */
   const start = Math.floor(Math.random() * Math.max(1, P.length));
   for (let i = 0; i < 12; i++) cells.push(P.length ? P[(start + i) % P.length] : f); cells.push(f);
   strip.style.transition = "none"; strip.style.transform = "translateY(0)";
-  strip.innerHTML = cells.map(c => '<div class="r5-cell">' + (c && c.img ? '<img alt="" decoding="async" src="' + c.img + '">' : '<span>🍽️</span>') + '</div>').join("");
+  strip.innerHTML = cells.map(fCell).join("");
   if (pick) pick.innerHTML = ""; stage.classList.remove("hit"); stage.classList.add("has");
   const go = r5$("#r5Go span"); if (go) go.textContent = "Shuffle again";
   let settled = false;
   const done = () => { if (settled || !fSpinning) return; settled = true; fSpinning = false; stage.classList.remove("spin"); void stage.offsetWidth; stage.classList.add("hit");
     try { if (navigator.vibrate) navigator.vibrate([10, 40, 18]); } catch(e){}
-    const pk = r5$("#r5Pick"); if (window.LowiSwaflo && selectionAtPick !== JSON.stringify(LowiSwaflo.prefs())) return; if (pk) pk.innerHTML = fRevealHTML(f, true);
+    const pk = r5$("#r5Pick"); if (selectionAtPick !== fSrc() + "|" + fCatSel()) return; if (pk) pk.innerHTML = fRevealHTML(f, true);
     if (R5.audio && !R5.mute) auSpeak("Your pick: " + f.n, {queue:false}); };
   fSpinning = true;
   if (reduce) { strip.style.transform = "translateY(-" + ((cells.length - 1) / cells.length * 100) + "%)"; done(); return; }
@@ -8219,19 +8276,20 @@ function dkNorm(){
   if (ch) r5save();
 }
 const dkDone = id => R5.liked.indexOf(id) >= 0 || R5.skipped.indexOf(id) >= 0 || R5.never.indexOf(id) >= 0;
-function dkFresh(){ dkNorm(); return fPool().filter(f => !dkDone(f.id)); }
+const dkSig = () => dkDay() + "|" + fSrc() + "|" + (fSrc() === "book" ? fCatSel() : "");
+function dkFresh(){ dkNorm(); return fSrcPool().filter(f => !dkDone(f.id)); }
 function dkBuild(){
   let rest = dkFresh();
   for (let i = rest.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [rest[i], rest[j]] = [rest[j], rest[i]]; }
   rest.sort((a, b) => (b.com ? 1 : 0) - (a.com ? 1 : 0));   // fresh community foods first
-  DK.order = rest.map(f => f.id); DK.i = 0; DK.hist = []; DK.sig = dkDay();
+  DK.order = rest.map(f => f.id); DK.i = 0; DK.hist = []; DK.sig = dkSig();
 }
 // keep the deck where it was across re-renders; drop gone foods, slot new community foods in right behind the top card
 function dkSync(){
-  dkNorm(); if (!DK.order.length || DK.sig !== dkDay()) return dkBuild();
-  const have = new Set(fPool().map(f => f.id));
+  dkNorm(); if (!DK.order.length || DK.sig !== dkSig()) return dkBuild();
+  const have = new Set(fSrcPool().map(f => f.id));
   const done = DK.order.slice(0, DK.i).filter(id => have.has(id)), ahead = DK.order.slice(DK.i).filter(id => have.has(id) && !dkDone(id));
-  const known = new Set(DK.order), nu = fPool().filter(f => !known.has(f.id) && !dkDone(f.id)).map(f => f.id);
+  const known = new Set(DK.order), nu = fSrcPool().filter(f => !known.has(f.id) && !dkDone(f.id)).map(f => f.id);
   DK.hist = DK.hist.filter(id => have.has(id));
   DK.order = done.concat(ahead.slice(0, 1), nu, ahead.slice(1)); DK.i = done.length;
 }
@@ -8256,7 +8314,7 @@ function dkOpen(){
     setTimeout(() => { const s = r5$("#r3kSwipe"); if (s) s.scrollIntoView({behavior:"smooth", block:"start"}); }, 450); }
 }
 function dkClose(){ const el = r5$("#r5Deck"); if (el) el.classList.remove("on"); }
-function dkCard(f, k){ return '<div class="r5-dc' + (k === 0 ? " top" : "") + '" data-id="' + esc(f.id) + '" style="--k:' + k + '">' + (f.img ? '<img alt="" src="' + f.img + '" draggable="false">' : '<div class="r5-dcph">🍽️</div>') +
+function dkCard(f, k){ return '<div class="r5-dc' + (k === 0 ? " top" : "") + '" data-id="' + esc(f.id) + '" style="--k:' + k + '">' + (f.img ? '<img alt="" src="' + f.img + '" draggable="false">' : '<div class="r5-dcph ck-ph">' + CKPLATE + '<b>' + esc(String(f.n || "?").charAt(0).toUpperCase()) + '</b></div>') +
   '<i class="r3k-st up">TODAY</i><i class="r3k-st right">SOON</i><i class="r3k-st left">NOT TODAY</i><i class="r3k-st down">NEVER</i><div class="r5-dci">' + fBadge(f) + '<div class="h2">' + esc(f.n) + '</div><div class="small">' + esc(fMeta(f)) + '</div>' + (f.com ? '<div class="small r5-dcc">' + esc(f.sub) + '</div>' : "") + '</div></div>'; }
 function dkPaint(){
   const st = r5$("#r5Stack"); if (!st) return; const ids = DK.order.slice(DK.i, DK.i + 3).filter(id => fById(id)), n = r5$("#r5DkN"), sec = r5$("#r3kSwipe");
@@ -8341,7 +8399,8 @@ async function swPush(t, quiet){ const X = swCloud(); if (!X || !t) return; cons
     await sb.from("swipe_foods").upsert({post_id:String(t.post).slice(0, 80), user_id:u, who:String(t.who || "Member").slice(0, 40), name:String(t.n || "Community food").slice(0, 60), cap:String(t.cap || "").slice(0, 400), photo_url:ph, k:String(k).slice(0, 60)}, {onConflict:"post_id,user_id"});
     if (!quiet) swPull(true); } catch(e){} }
 async function swDrop(postId){ const X = swCloud(); if (!X) return; try { const sb = await X.client(), u = X.state().uid; if (!u) return; await sb.from("swipe_foods").delete().eq("post_id", postId).eq("user_id", u); swPull(true); } catch(e){} }
-function fHintTxt(){ if (window.LowiSwaflo) return LowiSwaflo.hint(fPool()); const cm = fPool().filter(f => f.com).length; return "Picks something you can eat, from " + fPool().length + " foods" + (cm ? ", community ones too" : "") + "."; }
+function fHintTxt(){ /* ck-src */ { const n = fSrcPool().length, s = fSrc();
+  return s === "products" ? ckT(n + " caught products that won't spike", n + " gefangene Produkte, die nicht spiken", n + " productos atrapados") : s === "community" ? ckT(n + " community meals", n + " Community-Gerichte", n + " platos de la comunidad") : ckT(n + " eBook recipes", n + " E-Book-Rezepte", n + " recetas del eBook"); } const cm = fPool().filter(f => f.com).length; return "Picks something you can eat, from " + fPool().length + " foods" + (cm ? ", community ones too" : "") + "."; }
 
 /* ---------- community posts go into the mix ---------- */
 function isFoodPost(p, k){ return !!(p && (p.me || p.photo || /^(rb_|m_)/.test(k || ""))); }
@@ -8474,7 +8533,25 @@ document.addEventListener("click", e => {
 /* the sheet closes: stop the audiobook */
 (function(){ const w = document.getElementById("sheetwrap"); if (!w) return; new MutationObserver(() => { if (!w.classList.contains("open") && AU.book && AU.book.on) auBookPause(); }).observe(w, {attributes:true, attributeFilter:["class"]}); })();
 document.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.matches && e.target.matches('[data-r5="profile"][role="button"]')) { e.preventDefault(); e.target.click(); } });
-window.LowiFood = {homeHTML:fHomeHTML, meP, mounted(){ /* r3k-mounted */ dkPaint(); swPull(); }, dk:() => ({order:DK.order.slice(), i:DK.i, never:R5.never.slice(), today:R5.today.slice(), liked:R5.liked.slice(), skipped:R5.skipped.slice(), shared:SW.length}), swPull:() => swPull(true), shuffle:fShuffle, pool:fPool, pick:fShowPick, openDeck:dkOpen, isFoodPost, railBtn, state:() => R5, reset(){ R5 = r5fresh(); r5save(); }};
+/* ck-src: switching source re-renders Cook; switching the game is instant */
+function ckView(v){ if (v !== "shuffle" && v !== "swipe") return; ckSet(CKK.view, v); try { document.documentElement.setAttribute("data-ckview", v); } catch(e){}
+  r5$$('#ckBar [data-ck="view"]').forEach(b => { const on = b.dataset.v === v; b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on)); });
+  if (v === "swipe") { dkSync(); dkPaint(); } ckFitDeck(); try { if (window.LowiG2C) setTimeout(() => LowiG2C.fit(), 30); } catch(e){} }
+function ckRerender(){ try { if (window.LowiG2C) LowiG2C.close(); } catch(e){} DK.order = []; ckSyncSwaflo();
+  try { if (window.LOWI_SHELF && LOWI_SHELF.showTab && (!window.LowiHost || !LowiHost.tab || LowiHost.tab() === "shelf")) { LOWI_SHELF.showTab(); return; } } catch(e){}
+  const bar = r5$("#ckBar"); if (bar) bar.outerHTML = ckBarHTML(); }
+function ckSource(v){ if (["book", "community", "products"].indexOf(v) < 0) return; ckSet(CKK.src, v); ckRerender(); }
+function ckCat(v){ if (["all", "meal", "sweet"].indexOf(v) < 0) return; ckSet(CKK.cat, v); ckRerender(); }
+document.addEventListener("click", e => { const b = e.target && e.target.closest && e.target.closest("#ckBar [data-ck]"); if (!b) return; e.preventDefault();
+  const k = b.dataset.ck, v = b.dataset.v; try { if (navigator.vibrate) navigator.vibrate(8); } catch(x){}
+  if (k === "view") ckView(v); else if (k === "src") { if (v !== fSrc()) ckSource(v); } else if (k === "cat") { if (v !== fCatSel()) ckCat(v); } });
+/* ck-src: in Swipe the card stack takes exactly the room that is left, so Cook never scrolls */
+function ckFitDeck(b){ b = b || document.getElementById("shBody"); const st = r5$("#r5Stack"); if (!b || !st || !st.offsetHeight || fView() !== "swipe") return;
+  if (!document.documentElement.classList.contains("g2c-on")) { st.style.height = ""; return; } /* only the phone Cook is a fixed screen */
+  st.style.height = ""; st.style.minHeight = "0"; const over = b.scrollHeight - b.clientHeight;
+  if (over > 0) st.style.height = Math.max(150, st.offsetHeight - over - 4) + "px"; }
+window.LowiFood = {fitDeck:ckFitDeck, source:fSrc, setSource:ckSource, category:fCatSel, setCategory:ckCat, view:fView, setView:ckView, srcPool:fSrcPool,
+  homeHTML:fHomeHTML, meP, mounted(){ /* r3k-mounted */ dkPaint(); swPull(); }, dk:() => ({order:DK.order.slice(), i:DK.i, never:R5.never.slice(), today:R5.today.slice(), liked:R5.liked.slice(), skipped:R5.skipped.slice(), shared:SW.length}), swPull:() => swPull(true), shuffle:fShuffle, pool:fPool, pick:fShowPick, openDeck:dkOpen, isFoodPost, railBtn, state:() => R5, reset(){ R5 = r5fresh(); r5save(); }};
 
 })();
 </script>
@@ -17489,7 +17566,7 @@ function cookMain(b){ return !!(b && q(b, "#r5Shuf") && b.parentNode && b.parent
 function groups(b){
   const g = {}, D2 = D;
   const bk = q(D2, "#myBookEntry"); if (bk) g.book = [bk];
-  const sw = q(D2, "#r3kSwipe"); if (sw) g.swipe = [sw];
+  /* ck-src: Swipe foods stays on the Cook screen itself (Shuffle / Swipe switch), never in a sheet */
   const all = q(D2, "#r3kAll"); if (all) g.all = [all];
   const k9 = q(D2, "#k9Box"); if (k9) g.find = [k9];
   const gp = q(D2, ".gpt-card"); if (gp) g.gpt = [gp];
@@ -17579,6 +17656,7 @@ function over(b){ return window.LowiFit ? LowiFit.over(b) : b.scrollHeight - b.c
 function fit(b){
   LV.forEach(c => H.classList.remove(c)); H.classList.remove("g2f-snc");
   if (!on() || !b || !b.offsetHeight) return;
+  try { if (H.getAttribute("data-ckview") === "swipe" && window.LowiFood && LowiFood.fitDeck) LowiFood.fitDeck(b); } catch(e){}
   const st = b.scrollTop; b.scrollTop = 0;
   let lv = 0; while (over(b) && lv < LV.length) { H.classList.add(LV[lv]); lv++; }
   if (over(b)) { H.classList.add("g2f-snc"); if (window.LowiFit) LowiFit.sp(b); }
@@ -17614,7 +17692,7 @@ function pass(){
       if (card.classList.contains("in") && openKey !== "pick") { clearTimeout(popT); popT = setTimeout(() => { if (on() && q(D, "#r5Pick .r5-card") === card) openPanel("pick"); }, 650); } }
     if (findAsk && Date.now() - findAsk < 4000 && g.find && openKey !== "find" && shelfShown()) { findAsk = 0; openPanel("find"); setTimeout(() => { const i = q(ov, "#k9Q"); if (i) try { i.focus({preventScroll:true}); } catch(e){} }, 120); }
     else if (findAsk && Date.now() - findAsk >= 4000) findAsk = 0;
-    if (deckAsk && Date.now() - deckAsk < 4000 && g.swipe && openKey !== "swipe" && shelfShown()) { deckAsk = 0; openPanel("swipe"); }
+    if (deckAsk && Date.now() - deckAsk < 4000 && q(b, "#r3kSwipe") && shelfShown()) { deckAsk = 0; try { window.LowiFood.setView("swipe"); } catch(e){} }
     else if (deckAsk && Date.now() - deckAsk >= 4000) deckAsk = 0;
     /* back from a recipe opened in a sheet */
     if (back && backSeen && !ov) { const k = back; back = null; backSeen = false; if (g[k]) setTimeout(() => openPanel(k), 30); }

@@ -1,1 +1,14 @@
-{"build": "20261015-012500", "news": {"id": "scene-tint-vibes-20261015-012500", "go": {"tab": "foryou"}, "text": {"en": "Each tab now glows in its own colour: Today sun, Cook green, Move coral, Community violet, Scan cyan. Small hints sit right next to new controls and vanish once you have used them. And in Community, tap Milestones to see who levelled up or kept a streak and send them good vibes. Quiet hours keep it silent at night.", "de": "Jeder Tab leuchtet jetzt in seiner eigenen Farbe: Heute Sonne, Kochen Grün, Bewegen Koralle, Community Violett, Scan Cyan. Kleine Hinweise stehen direkt neben neuen Knöpfen und verschwinden, sobald du sie benutzt hast. Und in der Community zeigt dir Meilensteine, wer ein Level geschafft oder eine Serie gehalten hat, und du kannst gute Vibes senden. Die Ruhezeit hält nachts alles still.", "es": "Cada pestaña brilla ahora con su propio color: Hoy sol, Cocinar verde, Moverse coral, Comunidad violeta, Escanear cian. Pequeñas pistas aparecen junto a los controles nuevos y desaparecen en cuanto los usas. Y en Comunidad, toca Logros para ver quién subió de nivel o mantuvo una racha y enviarle buenas vibras. Las horas de silencio lo mantienen todo tranquilo de noche."}}}
+{
+  "build": "20261015-013500",
+  "news": {
+    "id": "herb-shop-20261015-013500",
+    "go": {
+      "tab": "foryou"
+    },
+    "text": {
+      "en": "Your herb has a shop now. Open the wardrobe and tap Shop: Kometa brings one free piece every day, a new shelf three times a day, and the Mist Moon drop with three autumn pieces. Every piece shows how to earn it, XP is never spent, and nothing is for sale. Pay what you want is only a preview.",
+      "de": "Dein Kraut hat jetzt einen Laden. Öffne den Kleiderschrank und tipp auf Laden: Kometa bringt jeden Tag ein Gratis-Teil, dreimal am Tag ein neues Regal und den Herbstnebel-Drop mit drei Herbst-Teilen. Bei jedem Teil steht, wie du es bekommst, XP werden nie ausgegeben, und nichts ist zu kaufen. Zahl, was du willst ist nur eine Vorschau.",
+      "es": "Tu hierba ya tiene tienda. Abre el armario y toca Tienda: Kometa trae una pieza gratis cada día, una estantería nueva tres veces al día y el drop Niebla de otoño con tres piezas. Cada pieza dice cómo conseguirla, los XP nunca se gastan y nada está a la venta. Paga lo que quieras es solo una vista previa."
+    }
+  }
+}

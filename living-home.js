@@ -9,7 +9,7 @@
     const W = typeof window !== 'undefined' ? window : globalThis, D = W.document, WATER_GOAL = 8;
     if (W.LowiLiving) return;
     const lang = () => {
-        try { return (LowiLang.get() || 'de').slice(0, 2); } catch (e) { return (D.documentElement.lang || 'de').slice(0, 2); }
+        try { return (W.LowiLang.get() || 'de').slice(0, 2); } catch (e) { return ((D && D.documentElement.lang) || 'de').slice(0, 2); }
     };
     const copy = {
         level: ['Level', 'Level', 'Nivel'],
@@ -28,6 +28,7 @@
         logIt: ['Log a meal', 'Essen eintragen', 'Registrar'],
         macros: ['Macros', 'Makros', 'Macros'],
         setGoals: ['Set goals', 'Ziele setzen', 'Fijar metas'],
+        perGoal: ['per goal', 'pro Ziel', 'por meta'],
         noValues: ['no values yet', 'noch keine Werte', 'sin valores'],
         unknownN: ['without values', 'ohne Werte', 'sin valores'],
         P: ['P', 'P', 'P'], F: ['F', 'B', 'F'], S: ['S', 'Z', 'A'],
@@ -131,7 +132,7 @@
         let macro;
         if (!v.hasGoals) {
             macro = '<button type="button" class="lv-tile lv-macro empty" data-sp="goals" data-lv-k="macros" aria-label="' + esc(tr('macros') + ', ' + tr('setGoals')) + '">' +
-                '<span class="lv-vis"><i data-lv-ico="star">' + icon('star') + '</i></span><span class="lv-tx"><small>' + esc(tr('macros')) + '</small><b>' + esc(tr('setGoals')) + '</b><em>' + esc(tr('protein')) + ' · ' + esc(tr('fiber')) + '</em></span></button>';
+                '<span class="lv-vis"><i data-lv-ico="star">' + icon('star') + '</i></span><span class="lv-tx"><small>' + esc(tr('macros')) + '</small><b>' + esc(tr('setGoals')) + '</b><em>+20 XP ' + esc(tr('perGoal')) + '</em></span></button>';
         } else {
             const label = { protein: 'P', fiber: 'F', sugar: 'S' };
             const bars = v.macros.map(x => '<span class="lv-bar' + (x.earned ? ' earned' : '') + (x.over ? ' over' : '') + '" data-k="' + x.k + '"><i style="--lv-r:' + x.ratio.toFixed(3) + '"></i><u>' + esc(tr(label[x.k])) + '</u><s class="num">' + (x.known ? Math.round(x.value) : '–') + '/' + Math.round(x.goal) + '</s></span>').join('');
@@ -219,10 +220,22 @@
         e.preventDefault();
         directScan('cam');
     });
+    /* "Produkt scannen" outside the herb world (meal sheet) opens the same camera layer; inside the world, scanning stays the world's game */
+    D.addEventListener('click', e => {
+        const b = e.target.closest && e.target.closest('[data-sp="scan"]');
+        const world = D.getElementById('spWorld');
+        if (!b || b.closest('#spWorld') || (world && !world.hidden) || !W.LowiDex) return;
+        e.preventDefault();
+        e.stopPropagation();
+        try { LowiR2.closeAll(); } catch (x) {}
+        setTimeout(() => directScan('cam'), 60);
+    }, true);
 
     /* ---------- wiring ---------- */
     ['lowi:reward', 'lowi:state', 'lowi:weather', 'lowi:care', 'lowi:lang', 'lowi:fast', 'lowi:water', 'lowi:meal', 'visibilitychange', 'focus', 'storage'].forEach(n => (n === 'focus' || n === 'storage' ? W : D).addEventListener(n, schedule));
-    D.addEventListener('click', e => { if (e.target.closest && e.target.closest('[data-sp],[data-b3],[data-f3],.tb')) setTimeout(schedule, 350); }, true);
+    const soon = () => { setTimeout(schedule, 350); setTimeout(schedule, 1600); };
+    D.addEventListener('click', soon, true);
+    D.addEventListener('submit', soon, true);
     function boot() {
         hookSpirit();
         if (!D.getElementById('lvCss')) {

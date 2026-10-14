@@ -1908,6 +1908,8 @@
         paintWeather(cached);
         if (!navigator.geolocation) return;
         const go = () => navigator.geolocation.getCurrentPosition(async pos => {
+            /* iOS home-screen apps often report 'prompt' at launch: remember the yes as soon as a position arrives, even if the weather fetch then fails offline */
+            try { localStorage.setItem(WEATHER_KEY + '.optin', '1'); } catch (e) {}
             try {
                 const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + pos.coords.latitude.toFixed(2) + '&longitude=' + pos.coords.longitude.toFixed(2) + '&current=temperature_2m,weather_code,is_day&daily=sunrise,sunset&forecast_days=1&timezone=auto';
                 const response = await fetch(url, {

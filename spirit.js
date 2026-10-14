@@ -1573,8 +1573,8 @@
             });
         }
     }
-    const emoji = /(?:\p{Extended_Pictographic}|\p{Emoji_Presentation})(?:\uFE0F|\uFE0E)?(?:\u200D(?:\p{Extended_Pictographic}|\p{Emoji_Presentation})(?:\uFE0F|\uFE0E)?)*|[\u2648-\u2653]|[0-9#*]\uFE0F?\u20E3/gu;
-    const symbolKind = s => /[💧🥤🚰]/u.test(s) ? 'water' : /[📷📸🤳]/u.test(s) ? 'camera' : /[🍽🥗🥣🍳🍎🍲🍱]/u.test(s) ? 'plate' : /[👑🎩🎀]/u.test(s) ? 'hat' : /[⭐🌟✨💫]/u.test(s) ? 'star' : /[🌞☀]/u.test(s) ? 'sun' : /[🌙🌚🌜]/u.test(s) ? 'moon' : /[🛒🛍]/u.test(s) ? 'bag' : /[💊]/u.test(s) ? 'medicine' : /[❤️💜💙💕]/u.test(s) ? 'heart' : 'leaf';
+    const emoji = /(?:\p{Extended_Pictographic}|\p{Emoji_Presentation})(?:\uFE0F|\uFE0E)?\p{Emoji_Modifier}?(?:\u200D(?:\p{Extended_Pictographic}|\p{Emoji_Presentation})(?:\uFE0F|\uFE0E)?\p{Emoji_Modifier}?)*|[\u2648-\u2653]\uFE0F?|[0-9#*]\uFE0F?\u20E3/gu;
+    const symbolKind = s => window.LowiIcons ? LowiIcons.kind(s) : (/[💧🥤🚰]/u.test(s) ? 'water' : /[📷📸🤳]/u.test(s) ? 'camera' : /[🍽🥗🥣🍳🍎🍲🍱]/u.test(s) ? 'plate' : /[👑🎩🎀]/u.test(s) ? 'hat' : /[⭐🌟✨💫]/u.test(s) ? 'star' : /[🌞☀]/u.test(s) ? 'sun' : /[🌙🌚🌜]/u.test(s) ? 'moon' : /[🛒🛍]/u.test(s) ? 'bag' : /[💊]/u.test(s) ? 'medicine' : /[❤️💜💙💕]/u.test(s) ? 'heart' : 'leaf');
 
     function symbols(node) {
         if (!node || !node.isConnected) return;
@@ -1585,12 +1585,20 @@
                 p = n.parentElement;
             if (!p || p.closest('script,style,svg,input,textarea,option,code,pre,.cm-t,.cm-quote,.fy-cap,.fy-caption,.tr-cap,.sp-profile-sign,[contenteditable]')) continue;
             emoji.lastIndex = 0;
-            if (emoji.test(n.data) || /\b(Pisces|Fische|Piscis)\b/.test(n.data)) nodes.push(n);
+            if ((emoji.lastIndex = 0, emoji.test(n.data)) || (!window.LowiIcons && /\b(Pisces|Fische|Piscis)\b/.test(n.data))) nodes.push(n);
         }
         for (const n of nodes) {
             const fragment = D.createElement('span');
             fragment.className = 'sp-ui-copy';
-            fragment.innerHTML = esc(n.data).replace(emoji, s => icon(symbolKind(s))).replace(/\b(Pisces|Fische|Piscis)\b/g, icon('Pisces'));
+            if (window.LowiIcons) {
+              /* shared custom set (lowi-icons.js): the right icon per emoji, words stay; an emoji that was the slot's only text gets a label */
+              let raw = n.data;
+              /* translate the whole line first: some translations are keyed with their emoji ("🥩 Mince & patties") */
+              try { const k = raw.trim(), tt = window.LowiLang && LowiLang.t(k); if (tt && tt !== k) raw = raw.replace(k, tt); } catch (e) {}
+              const alone = !raw.replace(emoji, '').trim(),
+                named = alone && n.parentElement && n.parentElement.closest('[aria-label],[title],[aria-hidden="true"]');
+              fragment.innerHTML = esc(raw).replace(emoji, s => /^[\u00A9\u00AE\u2122]/.test(s) ? s : LowiIcons.fromEmoji(s, { alone: alone && !named }));
+            } else fragment.innerHTML = esc(n.data).replace(emoji, s => icon(symbolKind(s))).replace(/\b(Pisces|Fische|Piscis)\b/g, icon('Pisces'));
             n.replaceWith(fragment);
         }
     }
@@ -1823,6 +1831,7 @@
         for (const m of ms)
             for (const n of m.addedNodes)
                 if (n.nodeType === 1 && !n.matches('svg,.sp-symbol,.sp-ui-copy')) pendingNodes.add(n);
+                else if (n.nodeType === 3 && window.LowiIcons && n.parentElement && !n.parentElement.closest('svg') && (emoji.lastIndex = 0, emoji.test(n.data))) pendingNodes.add(n.parentElement);
         if (observerQueued || !pendingNodes.size) return;
         observerQueued = true;
         requestAnimationFrame(() => {

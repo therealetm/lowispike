@@ -1,0 +1,38 @@
+/* LOWiSPIKE custom icon set (lowi-icons.js). Sizes come from the slot (.sp-symbol, tab bar, chips);
+   this file only sets how the shared set draws, so phone layout, the wide sidebar Scan row
+   and the orb update bubble keep their own geometry. */
+.sp-symbol.li {
+    overflow: visible;
+    stroke: currentColor;
+    pointer-events: none
+}
+
+.sp-symbol.li path,
+.sp-symbol.li circle {
+    vector-effect: non-scaling-stroke
+}
+
+/* an icon that replaced a lone emoji keeps the emoji's footprint so rows don't shift */
+.sp-ui-copy>.sp-symbol.li[role=img] {
+    width: 1.25em;
+    height: 1.25em;
+    vertical-align: -.2em
+}
+
+/* zodiac sigils read thinner than the rest of the set */
+.sp-symbol.li-Aries, .sp-symbol.li-Taurus, .sp-symbol.li-Gemini, .sp-symbol.li-Cancer,
+.sp-symbol.li-Leo, .sp-symbol.li-Virgo, .sp-symbol.li-Libra, .sp-symbol.li-Scorpio,
+.sp-symbol.li-Sagittarius, .sp-symbol.li-Capricorn, .sp-symbol.li-Aquarius, .sp-symbol.li-Pisces {
+    stroke-width: 1.5
+}
+
+/* the orb bubble and the tab bar size their own icons; never let the set enlarge them */
+#g1Ob .sp-symbol.li,
+#tabbar .tb .sp-symbol.li {
+    max-width: 24px;
+    max-height: 24px
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sp-symbol.li { transition: none !important; animation: none !important }
+}

@@ -1,0 +1,138 @@
+/* LOWiSPIKE weather sky (weather-sky.js): the app background mirrors the real weather outside.
+   One layer, first child of #app, behind every screen. Transforms and opacity only; nothing takes touches. */
+#wxSky {
+    --wx-drop: rgba(178, 208, 255, .42);
+    --wx-flake: rgba(240, 246, 255, .62);
+    --wx-star: rgba(236, 240, 255, .78);
+    --wx-cloud: rgba(150, 166, 196, .16);
+    --wx-rain1: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='130' height='200'%3E%3Cline x1='24' y1='149' x2='20' y2='171' stroke='%23000' stroke-opacity='0.87' stroke-width='1.1' stroke-linecap='round'/%3E%3Cline x1='38' y1='87' x2='34' y2='109' stroke='%23000' stroke-opacity='0.70' stroke-width='1.1' stroke-linecap='round'/%3E%3Cline x1='85' y1='139' x2='81' y2='161' stroke='%23000' stroke-opacity='0.50' stroke-width='1.1' stroke-linecap='round'/%3E%3Cline x1='11' y1='147' x2='7' y2='169' stroke='%23000' stroke-opacity='0.69' stroke-width='1.1' stroke-linecap='round'/%3E%3Cline x1='98' y1='0' x2='94' y2='22' stroke='%23000' stroke-opacity='0.69' stroke-width='1.1' stroke-linecap='round'/%3E%3Cline x1='93' y1='40' x2='89' y2='62' stroke='%23000' stroke-opacity='0.97' stroke-width='1.1' stroke-linecap='round'/%3E%3Cline x1='114' y1='5' x2='110' y2='27' stroke='%23000' stroke-opacity='0.46' stroke-width='1.1' stroke-linecap='round'/%3E%3Cline x1='72' y1='165' x2='68' y2='187' stroke='%23000' stroke-opacity='0.66' stroke-width='1.1' stroke-linecap='round'/%3E%3Cline x1='34' y1='74' x2='30' y2='96' stroke='%23000' stroke-opacity='0.47' stroke-width='1.1' stroke-linecap='round'/%3E%3C/svg%3E");
+    --wx-rain2: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='170' height='240'%3E%3Cline x1='159' y1='197' x2='154' y2='227' stroke='%23000' stroke-opacity='0.48' stroke-width='1.4' stroke-linecap='round'/%3E%3Cline x1='21' y1='174' x2='16' y2='204' stroke='%23000' stroke-opacity='0.85' stroke-width='1.4' stroke-linecap='round'/%3E%3Cline x1='114' y1='64' x2='108' y2='94' stroke='%23000' stroke-opacity='0.78' stroke-width='1.4' stroke-linecap='round'/%3E%3Cline x1='104' y1='121' x2='98' y2='151' stroke='%23000' stroke-opacity='0.54' stroke-width='1.4' stroke-linecap='round'/%3E%3Cline x1='76' y1='82' x2='71' y2='112' stroke='%23000' stroke-opacity='0.85' stroke-width='1.4' stroke-linecap='round'/%3E%3Cline x1='165' y1='197' x2='160' y2='227' stroke='%23000' stroke-opacity='0.75' stroke-width='1.4' stroke-linecap='round'/%3E%3Cline x1='78' y1='56' x2='73' y2='86' stroke='%23000' stroke-opacity='0.47' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E");
+    --wx-snow1: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='200'%3E%3Ccircle cx='37' cy='109' r='1.7' fill='%23000' fill-opacity='0.76'/%3E%3Ccircle cx='93' cy='16' r='1.3' fill='%23000' fill-opacity='0.90'/%3E%3Ccircle cx='40' cy='48' r='2.4' fill='%23000' fill-opacity='0.68'/%3E%3Ccircle cx='123' cy='95' r='2.0' fill='%23000' fill-opacity='0.49'/%3E%3Ccircle cx='94' cy='171' r='1.9' fill='%23000' fill-opacity='0.84'/%3E%3Ccircle cx='100' cy='15' r='2.1' fill='%23000' fill-opacity='0.75'/%3E%3Ccircle cx='46' cy='9' r='2.3' fill='%23000' fill-opacity='0.68'/%3E%3Ccircle cx='107' cy='173' r='2.1' fill='%23000' fill-opacity='0.95'/%3E%3Ccircle cx='60' cy='158' r='1.8' fill='%23000' fill-opacity='0.96'/%3E%3C/svg%3E");
+    --wx-snow2: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='210' height='260'%3E%3Ccircle cx='51' cy='29' r='2.7' fill='%23000' fill-opacity='0.49'/%3E%3Ccircle cx='17' cy='105' r='3.3' fill='%23000' fill-opacity='0.88'/%3E%3Ccircle cx='159' cy='59' r='2.8' fill='%23000' fill-opacity='0.57'/%3E%3Ccircle cx='38' cy='30' r='2.5' fill='%23000' fill-opacity='0.96'/%3E%3Ccircle cx='172' cy='208' r='3.2' fill='%23000' fill-opacity='0.52'/%3E%3Ccircle cx='66' cy='162' r='3.1' fill='%23000' fill-opacity='0.91'/%3E%3Ccircle cx='183' cy='25' r='2.9' fill='%23000' fill-opacity='0.80'/%3E%3C/svg%3E");
+    --wx-stars: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='190' height='230'%3E%3Ccircle cx='118' cy='169' r='1.1' fill='%23000' fill-opacity='0.97'/%3E%3Ccircle cx='139' cy='210' r='0.5' fill='%23000' fill-opacity='0.68'/%3E%3Ccircle cx='177' cy='148' r='1.1' fill='%23000' fill-opacity='0.47'/%3E%3Ccircle cx='89' cy='58' r='0.9' fill='%23000' fill-opacity='0.74'/%3E%3Ccircle cx='5' cy='52' r='0.7' fill='%23000' fill-opacity='0.95'/%3E%3Ccircle cx='144' cy='39' r='1.1' fill='%23000' fill-opacity='0.48'/%3E%3Ccircle cx='117' cy='31' r='0.5' fill='%23000' fill-opacity='0.92'/%3E%3Ccircle cx='42' cy='51' r='1.2' fill='%23000' fill-opacity='0.92'/%3E%3Ccircle cx='56' cy='218' r='0.9' fill='%23000' fill-opacity='0.81'/%3E%3Ccircle cx='41' cy='214' r='1.0' fill='%23000' fill-opacity='0.98'/%3E%3Ccircle cx='167' cy='70' r='0.8' fill='%23000' fill-opacity='0.50'/%3E%3Ccircle cx='30' cy='18' r='0.7' fill='%23000' fill-opacity='0.76'/%3E%3Ccircle cx='4' cy='155' r='0.7' fill='%23000' fill-opacity='0.59'/%3E%3Ccircle cx='154' cy='111' r='0.7' fill='%23000' fill-opacity='0.69'/%3E%3C/svg%3E");
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    contain: strict;
+}
+
+#wxSky[hidden] { display: none }
+
+html[data-theme=light] #wxSky {
+    --wx-drop: rgba(46, 98, 160, .26);
+    --wx-flake: rgba(118, 146, 186, .55);
+    --wx-star: rgba(90, 104, 150, .4);
+    --wx-cloud: rgba(122, 140, 168, .2);
+}
+
+/* zero-specificity base so every weather rule below can override it */
+:where(#wxSky) > i {
+    position: absolute;
+    inset: 0;
+    display: block;
+    opacity: 0;
+    transition: opacity 1.6s ease;
+    will-change: auto;
+}
+
+/* ---------- light: day / dawn / dusk / night ---------- */
+.wx-tint { background: none }
+html[data-wx-phase=day] .wx-tint { opacity: 1; background: linear-gradient(180deg, rgba(92, 160, 230, .2), transparent 55%) }
+html[data-theme=light][data-wx-phase=day] .wx-tint { background: linear-gradient(180deg, rgba(120, 186, 245, .34), transparent 60%) }
+html[data-wx-phase=dawn] .wx-tint { opacity: 1; background: radial-gradient(120% 60% at 10% 0, rgba(255, 170, 140, .26), transparent 65%), linear-gradient(180deg, rgba(150, 140, 220, .16), transparent 55%) }
+html[data-wx-phase=dusk] .wx-tint { opacity: 1; background: radial-gradient(120% 60% at 90% 0, rgba(255, 140, 90, .26), transparent 65%), linear-gradient(180deg, rgba(120, 90, 190, .2), transparent 58%) }
+html[data-wx-phase=night] .wx-tint { opacity: 1; background: linear-gradient(180deg, rgba(20, 30, 74, .55), rgba(6, 8, 20, .25) 60%, transparent) }
+html[data-theme=light][data-wx-phase=night] .wx-tint { background: linear-gradient(180deg, rgba(60, 70, 130, .28), transparent 60%) }
+
+/* sun by day, moon by night, only when the sky is open */
+.wx-orb { inset: -30% -30% auto auto; width: 120%; height: 70% }
+html[data-wx-day=day]:is([data-wx-cond=clear], [data-wx-cond=partly]) .wx-orb {
+    opacity: 1;
+    background: radial-gradient(closest-side at 72% 38%, rgba(255, 214, 120, .5), rgba(255, 190, 90, .16) 45%, transparent 75%);
+    animation: wxGlow 9s ease-in-out infinite alternate;
+}
+html[data-wx-day=day][data-wx-cond=partly] .wx-orb { opacity: .6 }
+html[data-wx-day=night]:is([data-wx-cond=clear], [data-wx-cond=partly]) .wx-orb {
+    opacity: .8;
+    background: radial-gradient(closest-side at 72% 40%, rgba(225, 232, 255, .3), rgba(190, 200, 255, .08) 40%, transparent 70%);
+}
+html[data-wx-phase=dawn]:is([data-wx-cond=clear], [data-wx-cond=partly]) .wx-orb { inset: auto auto 30% -30%; background: radial-gradient(closest-side at 30% 70%, rgba(255, 176, 120, .42), transparent 70%) }
+html[data-wx-phase=dusk]:is([data-wx-cond=clear], [data-wx-cond=partly]) .wx-orb { inset: auto -30% 30% auto; background: radial-gradient(closest-side at 70% 70%, rgba(255, 140, 80, .42), transparent 70%) }
+
+/* stars: open night sky (also the clock-only fallback at night) */
+.wx-stars { background: var(--wx-star); -webkit-mask: var(--wx-stars) 0 0 / 190px 230px repeat; mask: var(--wx-stars) 0 0 / 190px 230px repeat; bottom: 40% }
+html[data-wx-stars="1"] .wx-stars { opacity: .9; animation: wxTwinkle 6s ease-in-out infinite alternate }
+html[data-wx-stars="1"][data-wx-cond=partly] .wx-stars { opacity: .45 }
+
+/* ---------- clouds ---------- */
+.wx-cloud { inset: -10% -40% auto -40%; height: 55% }
+.wx-c1 { background: radial-gradient(40% 32% at 30% 40%, var(--wx-cloud), transparent 70%), radial-gradient(34% 26% at 70% 25%, var(--wx-cloud), transparent 70%) }
+.wx-c2 { top: 18%; background: radial-gradient(38% 30% at 60% 50%, var(--wx-cloud), transparent 70%), radial-gradient(30% 22% at 15% 30%, var(--wx-cloud), transparent 70%) }
+html[data-wx-cond=partly] .wx-c1 { opacity: .8; animation: wxDrift 80s linear infinite alternate }
+html:is([data-wx-cond=cloudy], [data-wx-cond=drizzle], [data-wx-cond=rain], [data-wx-cond=snow], [data-wx-cond=storm]) :is(.wx-c1, .wx-c2) { opacity: 1; animation: wxDrift 90s linear infinite alternate }
+html:is([data-wx-cond=cloudy], [data-wx-cond=drizzle], [data-wx-cond=rain], [data-wx-cond=snow], [data-wx-cond=storm]) .wx-c2 { animation-duration: 120s; animation-direction: alternate-reverse }
+html[data-wx-cond=storm] #wxSky { --wx-cloud: rgba(70, 76, 100, .32) }
+html[data-theme=light][data-wx-cond=storm] #wxSky { --wx-cloud: rgba(80, 90, 116, .28) }
+/* overcast mutes the light */
+html:is([data-wx-cond=cloudy], [data-wx-cond=rain], [data-wx-cond=storm], [data-wx-cond=fog]) .wx-tint { filter: saturate(.45) }
+
+/* ---------- fog ---------- */
+.wx-fog { inset: 0 -50%; background: linear-gradient(180deg, transparent 8%, rgba(190, 198, 210, .14) 26%, transparent 42%, rgba(190, 198, 210, .18) 62%, transparent 80%) }
+html[data-theme=light] .wx-fog { background: linear-gradient(180deg, transparent 8%, rgba(255, 255, 255, .5) 26%, transparent 42%, rgba(255, 255, 255, .55) 62%, transparent 80%) }
+html[data-wx-cond=fog] .wx-fog { opacity: 1; animation: wxDrift 70s ease-in-out infinite alternate }
+
+/* ---------- rain, drizzle, storm, snow: masked tiles that slide one tile per loop ---------- */
+.wx-fall { inset: -260px 0 0 0 }
+html[data-wx-wet="1"] .wx-f1 { opacity: 1; background: var(--wx-drop); -webkit-mask: var(--wx-rain1) 0 0 / 130px 200px repeat; mask: var(--wx-rain1) 0 0 / 130px 200px repeat; animation: wxFall1 .9s linear infinite }
+html[data-wx-wet="1"] .wx-f2 { opacity: .75; background: var(--wx-drop); -webkit-mask: var(--wx-rain2) 0 0 / 170px 240px repeat; mask: var(--wx-rain2) 0 0 / 170px 240px repeat; animation: wxFall2 .65s linear infinite }
+html[data-wx-cond=drizzle] .wx-f1 { opacity: .55; animation-duration: 1.6s }
+html[data-wx-cond=drizzle] .wx-f2 { opacity: 0 }
+html[data-wx-cond=storm] .wx-f1 { animation-duration: .6s }
+html[data-wx-cond=storm] .wx-f2 { opacity: 1; animation-duration: .45s }
+html[data-wx-cond=snow] .wx-f1 { opacity: 1; background: var(--wx-flake); -webkit-mask: var(--wx-snow1) 0 0 / 150px 200px repeat; mask: var(--wx-snow1) 0 0 / 150px 200px repeat; animation: wxSnow1 11s linear infinite }
+html[data-wx-cond=snow] .wx-f2 { opacity: .8; background: var(--wx-flake); -webkit-mask: var(--wx-snow2) 0 0 / 210px 260px repeat; mask: var(--wx-snow2) 0 0 / 210px 260px repeat; animation: wxSnow2 16s linear infinite }
+
+/* a rare, faint flash in a thunderstorm (never a strobe) */
+.wx-flash { background: radial-gradient(90% 60% at 50% 0, rgba(220, 230, 255, .5), transparent 70%) }
+html[data-wx-cond=storm] .wx-flash { transition: none; animation: wxFlash 14s linear infinite }
+
+/* ---------- temperature: frost when cold, haze when hot ---------- */
+.wx-frost { background: radial-gradient(130% 85% at 50% 45%, transparent 62%, rgba(170, 214, 255, .16) 84%, rgba(214, 236, 255, .3)) }
+html[data-theme=light] .wx-frost { background: radial-gradient(130% 85% at 50% 45%, transparent 62%, rgba(120, 176, 230, .16) 84%, rgba(160, 205, 245, .3)) }
+html[data-wx-temp=cold] .wx-frost { opacity: .55 }
+html[data-wx-temp=freezing] .wx-frost { opacity: 1 }
+.wx-heat { background: linear-gradient(0deg, rgba(255, 150, 70, .16), transparent 45%) }
+html[data-wx-temp=warm] .wx-heat { opacity: .45 }
+html[data-wx-temp=hot] .wx-heat { opacity: 1; animation: wxGlow 7s ease-in-out infinite alternate }
+
+@keyframes wxGlow { from { transform: scale(1) } to { transform: scale(1.06) } }
+@keyframes wxTwinkle { from { opacity: .55 } to { opacity: .95 } }
+@keyframes wxDrift { from { transform: translate3d(-6%, 0, 0) } to { transform: translate3d(6%, 0, 0) } }
+/* each loop moves exactly one tile (x by 0 or a whole tile width), so the pattern never jumps */
+@keyframes wxFall1 { from { transform: translate3d(0, 0, 0) } to { transform: translate3d(0, 200px, 0) } }
+@keyframes wxFall2 { from { transform: translate3d(0, 0, 0) } to { transform: translate3d(0, 240px, 0) } }
+@keyframes wxSnow1 { from { transform: translate3d(0, 0, 0) } to { transform: translate3d(0, 200px, 0) } }
+@keyframes wxSnow2 { from { transform: translate3d(0, 0, 0) } to { transform: translate3d(-210px, 260px, 0) } }
+@keyframes wxFlash { 0%, 91%, 93.5%, 100% { opacity: 0 } 92% { opacity: .55 } 92.6% { opacity: .1 } 93% { opacity: .35 } }
+
+/* the second snow layer drifts one tile sideways per loop: keep it wide enough */
+.wx-f2 { left: 0; right: -220px }
+
+/* Appearance sheet switch */
+.wx-toggle { display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 12px; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--line2, rgba(255, 255, 255, .12)); background: transparent; color: var(--text, inherit); text-align: left; font: inherit; cursor: pointer }
+.wx-toggle span { flex: 1; display: grid; gap: 2px }
+.wx-toggle small { opacity: .7; font-size: 12px }
+.wx-toggle i { position: relative; flex: none; width: 42px; height: 26px; border-radius: 13px; background: rgba(127, 127, 127, .35); transition: background .2s }
+.wx-toggle i::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: transform .2s }
+.wx-toggle[aria-pressed=true] i { background: var(--acc, #7cc8a0) }
+.wx-toggle[aria-pressed=true] i::after { transform: translateX(16px) }
+
+/* camera open, app in background, or reduced motion: hold still */
+html:has(#spWorld.sp-capture) #wxSky > i { animation-play-state: paused }
+html:has(#spWorld.sp-capture) #wxSky { visibility: hidden }
+@media (prefers-reduced-motion: reduce) {
+    #wxSky > i { animation: none !important; transition: none }
+    html[data-wx-wet="1"] .wx-f2 { opacity: 0 }
+}

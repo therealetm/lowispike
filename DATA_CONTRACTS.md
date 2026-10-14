@@ -67,6 +67,8 @@ Do not change the meaning of an existing `src` or `eventId` prefix without migra
 | `lowi.herb.tamagotchi.v2:<scope>` | Herb UI | Name, star sign/personality overrides, care history, highest/last-seen stage, equipment, and last action. |
 | `lowi.health.<uid>` | Health migration/private state | Account-scoped health state on this device. Excluded from general cloud backup. |
 | `lowi.appearance` | Appearance | Selected hour, weather look, and mood look. |
+| `lowi.weather.v1` | `spirit.js` weather chip | Last Open-Meteo reading `{temp, code, ts, isDay?, sunrise?, sunset?}`; sunrise/sunset are epoch ms for the reading's location. Reused for 30 minutes; the weather sky ignores the condition after 6 hours. Only written when location permission is already granted or the user tapped the chip. |
+| `lowi.sky.off` | Weather sky | `'1'` when the user switched the live weather sky off in Appearance; absent means on. |
 | `lowi.theme` | UI | `dark`, `light`, or `sunrise`. |
 | `lowispike.lang` | i18n | `en`, `de`, or `es`. |
 | `lowi_sfx` | Audio | `{on, vol}` shared by reward and swipe sound systems. |
@@ -100,6 +102,8 @@ Do not move large media into `localStorage`. Do not expose one account scope's i
 | `lowi:state` | Feature-defined refresh signal | Host/state modules | Herb/body refresh. It must not itself award XP. |
 | `lowi:meal-logged` | `{lvl, via, photo, xp, title}` | Meal continuation/logging | Quest/follow-up surfaces. No raw photo bytes in the event. |
 | `lowi:layout` | `{lay}` | `LowiLayout` | Responsive modules. It communicates layout state only. |
+| `lowi:weather` | The painted reading (`lowi.weather.v1` shape) | `spirit.js` `paintWeather()` | Weather sky repaints at once. Read-only; no XP. |
+| `lowi:sky` | `LowiSkyCore.sky()` result `{src, cond, temp, day, phase, lightSrc, wet, stars}` | `weather-sky.js` when the look changes | Optional listeners. Read-only; no XP. |
 
 If a new cross-module event is necessary, document its exact payload here and add a replay/idempotence test.
 

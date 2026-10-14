@@ -1649,13 +1649,21 @@
             el.setAttribute('aria-label', tr('weatherOn'));
             return;
         }
-        const night = (new Date().getHours() >= 20 || new Date().getHours() < 6);
+        let night = (new Date().getHours() >= 20 || new Date().getHours() < 6);
+        try {
+            if (window.LowiSky) night = !LowiSky.isDay();
+        } catch (e) {}
         el.hidden = false;
         el.classList.remove('ask');
         el.dataset.code = w.code;
         el.innerHTML = icon(weatherIcon(w.code, night)) + '<span>' + Math.round(w.temp) + '\u00b0</span>';
         el.setAttribute('aria-label', weatherWord(w.code) + ', ' + Math.round(w.temp) + '\u00b0');
         el.title = weatherWord(w.code);
+        try {
+            D.dispatchEvent(new CustomEvent('lowi:weather', {
+                detail: w
+            }));
+        } catch (e) {}
     }
     function weather(ask) {
         let cached = null;
@@ -1667,14 +1675,15 @@
         if (!navigator.geolocation) return;
         const go = () => navigator.geolocation.getCurrentPosition(async pos => {
             try {
-                const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + pos.coords.latitude.toFixed(2) + '&longitude=' + pos.coords.longitude.toFixed(2) + '&current=temperature_2m,weather_code&timezone=auto';
+                const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + pos.coords.latitude.toFixed(2) + '&longitude=' + pos.coords.longitude.toFixed(2) + '&current=temperature_2m,weather_code,is_day&daily=sunrise,sunset&forecast_days=1&timezone=auto';
                 const response = await fetch(url, {
                     signal: AbortSignal.timeout ? AbortSignal.timeout(7000) : undefined
                 });
                 if (!response.ok) return;
                 const data = await response.json();
                 if (!Number.isFinite(data.current?.temperature_2m)) return;
-                const w = {
+                /* weather-sky-core adds is_day + real sunrise/sunset so the app sky follows outside */
+                const w = (window.LowiSkyCore && LowiSkyCore.fromOpenMeteo(data, Date.now())) || {
                     temp: data.current.temperature_2m,
                     code: +data.current.weather_code || 0,
                     ts: Date.now()
@@ -1733,6 +1742,13 @@
         subtree: true
     });
     weather();
+    /* keep the reading current while the app stays open (cached 30 min, never prompts) */
+    setInterval(() => {
+        if (!D.hidden) weather();
+    }, 10 * 60000);
+    D.addEventListener('visibilitychange', () => {
+        if (!D.hidden) weather();
+    });
     clearInterval(refreshTimer);
     refreshTimer = setInterval(() => {
         if (!D.hidden) refresh();

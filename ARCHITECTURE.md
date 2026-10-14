@@ -152,6 +152,7 @@ Most legacy modules are IIFEs or ordered script blocks inside `index.html`. Sear
 | `recipe-book.js` | Per-account local recipe favorites and recipe-book sheet. |
 | `apple-ui.js`, `apple-ui.css` | Sheet physics, focus management, accessibility polish, responsive nav, and herb asset loader. |
 | `appearance.js` | Atmosphere/theme UI. |
+| `weather-sky-core.js`, `weather-sky.js`, `weather-sky.css` | Live weather sky. Pure rules turn the Open-Meteo reading that `spirit.js` already caches (`lowi.weather.v1`) into condition, temperature band and real day/night (sunrise/sunset first, fresh `is_day` next, local clock last). One `#wxSky` layer, first child of `#app`, z-index 0, `pointer-events: none`, hidden while the scan camera is open, still under reduced motion. Sunrise theme mode follows the real sun through a wrapper on `LowiR2.themeEffective`; Night and Cloud stay as chosen. Loaded by the `apple-ui.js` herb loader before `spirit.js`. Never requests location itself. |
 | `updates.css` | Install/update banners and related shell styling. |
 
 ## Assets and vendored code

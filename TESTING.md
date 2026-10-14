@@ -22,6 +22,7 @@ The suite uses Node's built-in test runner and VM/static checks. There is no ins
 | `tests/mobile-shell.test.cjs` | Multi-image shuffle/deceleration, stale spin cancellation, reduced motion, Move pre-paint compaction, unified Scan capture, silent navigation, and inline-script syntax. |
 | `tests/swaflo.test.cjs` | Recipe preservation, food adaptation, sweet lane, Cook/Buy filtering, shopping fallback, price integrity, immutable source recipes, and safe defaults. |
 | `tests/swaflo-ui.test.cjs` | Clear food actions, explicit mode/category selection, legacy Cook entry, EN/DE/ES copy, saved-swap access, and profile cleanliness. |
+| `tests/weather-sky.test.cjs` | Live weather sky: rain/drizzle/storm, sun/clouds/fog/snow codes, real sunrise/sunset day-night with dawn/dusk, rain at night without stars, cold/freezing/hot bands, missing and stale reading fall back to the clock, fresh-only `is_day`, Open-Meteo parsing, layer first in `#app`, no location request from the sky, event repaint, Night/Cloud preserved and Sunrise following the real sun, off/on switch, loader/offline-cache/reduced-motion wiring. |
 | `tests/update.test.cjs` | No false update prompt, explicit refresh semantics, retry cooldown, build verification, URL preservation, in-flight dedupe, notice exclusivity, and version alignment. |
 
 When changing a module, run the whole suite. The app's global ordering means an apparently isolated edit can invalidate another screen.
@@ -84,6 +85,13 @@ Check both `prefers-reduced-motion: reduce` and the default. If translucent UI c
 - Build notice appears only when served HTML is truly older than `version.json`.
 - Notification permission denial is respected; no repeated prompt.
 - Herb reminder is at most daily and not at night; tapping focuses/opens the herb.
+
+### Weather sky
+
+- With location allowed, the background matches outside: rain, snow, fog, clouds, sun or stars; frost edges when cold.
+- After real sunset, Sunrise mode turns dark even before 19:00; Night and Cloud never change on their own.
+- With location denied or offline, no weather is shown, day/night follows the clock, and no prompt repeats.
+- The sky never covers text or takes touches; it is hidden while the scan camera is open and holds still under Reduce Motion.
 
 ## Evidence language
 

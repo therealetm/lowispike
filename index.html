@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261014-213800">
+<meta name="lowi-build" content="20261014-220000">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13725,10 +13725,11 @@ function herbHTML(v){
 }
 function eatHTML(p){
   if (!p || p.notFound || !LV_B3[p.verdict]) return "";
-  const V = window.LowiVitalsBridge, q = {code:p.code || "", t:p.name || p.brand || ""};
+  const V = window.LowiVitalsBridge, q = {code:p.code || p.barcode || "", t:p.name || p.brand || ""};
   const xp = V && V.mealXp ? V.mealXp(q) : 15, why = V && V.mealWhy ? V.mealWhy(q) : "";
-  const tag = xp ? ' <small class="b3-eatxp">+' + xp + ' XP</small>' : why ? ' <small class="b3-eatxp b3-eatwhy">' + esc(why === "dup" ? ["already logged today", "heute schon eingetragen", "ya registrado hoy"][LI()] : ["no XP today", "heute keine XP mehr", "sin XP hoy"][LI()]) + '</small>' : "";
-  return '<div class="b3-eat"><button type="button" class="r2-btn pri b3-eatgo" data-b3="eat">' + esc(["Ate it, log it", "Gegessen, eintragen", "Lo comí, registrar"][LI()]) + tag + '</button><button type="button" class="r2-btn ghost b3-eatskip" data-b3="skip">' + esc(["Skip", "Überspringen", "Saltar"][LI()]) + '</button></div>';
+  const label = why === "dup" ? ["Already logged today", "Heute schon eingetragen", "Ya registrado hoy"][LI()] : ["Ate it, log it", "Gegessen, eintragen", "Lo comí, registrar"][LI()];
+  const tag = xp ? ' <small class="b3-eatxp">+' + xp + ' XP</small>' : ' <small class="b3-eatxp b3-eatwhy">' + esc(why === "cap" ? ["daily limit, no XP", "Tageslimit, keine XP", "límite diario, sin XP"][LI()] : ["no XP", "keine XP", "sin XP"][LI()]) + '</small>';
+  return '<div class="b3-eat"><button type="button" class="r2-btn ' + (why === "dup" ? "ghost b3-eatdone" : "pri") + ' b3-eatgo" data-b3="eat">' + esc(label) + tag + '</button><button type="button" class="r2-btn ghost b3-eatskip" data-b3="skip">' + esc(["Skip", "Überspringen", "Saltar"][LI()]) + '</button></div>';
 }
 const LV_B3 = {ok:["low", 2], better:["mid", 4], spike:["high", 7]};
 function fillHerb(root){
@@ -13740,8 +13741,9 @@ function fillHerb(root){
 function eatCur(btn){
   const p = CUR; if (!p || !window.LowiVitalsBridge || btn.disabled) return; btn.disabled = true;
   const meta = LV_B3[p.verdict] || ["", 0];
-  const res = LowiVitalsBridge.logMeal({id:"bc:" + (p.code || "x") + ":" + Date.now(), t:p.name || p.brand || "Produkt", macros:null, via:"barcode", code:p.code || ""});
-  if (res && res.log && !res.dup) { res.log.lvl = meta[0]; res.log.r = meta[1]; res.log.code = p.code || ""; try { LowiVitalsBridge.save(); } catch(e){} }
+  const code = String(p.code || p.barcode || "");
+  const res = LowiVitalsBridge.logMeal({id:"bc:" + (code || "x") + ":" + Date.now(), t:p.name || p.brand || "Produkt", macros:null, via:"barcode", code});
+  if (res && res.log && !res.dup) { res.log.lvl = meta[0]; res.log.r = meta[1]; res.log.code = code; try { LowiVitalsBridge.save(); } catch(e){} }
   buzz(12); sfx(res && res.dup ? "tap" : "soft");
   const text = res && res.dup ? res.reason : ["Logged", "Eingetragen", "Registrado"][LI()] + (res && !res.xp && res.reason ? " · " + res.reason.split(" · ").slice(1).join(" · ") : "");
   if (REV) { try { R2.close(REV); } catch(e){} }
@@ -16755,7 +16757,7 @@ function head(t, sub, tag){ return (tag ? '<div class="f2-tag"><span>' + e_(tag)
 const backBtn = to => '<button type="button" class="f2-back" data-f2="go" data-to="' + to + '">‹ ' + e_(w("back")) + '</button>';
 const laterBtn = () => '<button type="button" class="f2-later" data-f2="finish">' + e_(w("later")) + '</button>';
 const xpPill = n => '<span class="f2-xpp">+' + n + ' XP</span>';
-function mealXP(){ const VB = window.LowiVitalsBridge, p = window.LowiDex && LowiDex.cur ? LowiDex.cur() : null; if (VB && VB.mealXp) return VB.mealXp(F.mode === "bc" && p ? {code:p.code || "", t:p.name || p.brand || ""} : null); return logsToday() < 8 ? 15 : 0; }
+function mealXP(){ const VB = window.LowiVitalsBridge, p = window.LowiDex && LowiDex.cur ? LowiDex.cur() : null; if (VB && VB.mealXp) return VB.mealXp(F.mode === "bc" && p ? {code:p.code || p.barcode || "", t:p.name || p.brand || ""} : null); return logsToday() < 8 ? 15 : 0; }
 function bonusOpen(){ return !!(F.fast && F.fast.s && !bonusDone(F.fast.s)); }
 function bonusDone(s){ try { return (JSON.parse(localStorage.getItem(SEEN) || "{}").b || []).indexOf(s) >= 0; } catch(e){ return false; } }
 function mem(){ try { return JSON.parse(localStorage.getItem(SEEN) || "{}") || {}; } catch(e){ return {}; } }
@@ -16824,7 +16826,8 @@ const LV = {ok:["low", "ja"], better:["medium", "selten"], spike:["high", "nein"
 function bcInject(){ const ov = [...document.querySelectorAll(".r2-ov.b3-ov")].pop(); if (!ov) return false; const rev = ov.querySelector(".b3-rev"); if (!rev) return true; if (rev.querySelector(".f2-bcbar")) return true;
   rev.querySelectorAll(".b3-eat").forEach(x => x.remove());
   const p = (window.LowiDex && LowiDex.cur) ? LowiDex.cur() : null; const bar = document.createElement("div"); bar.className = "f2-bcbar"; bar.setAttribute("data-noi18n", "");
-  if (p && !p.notFound && LV[p.verdict]) { bar.innerHTML = '<button type="button" class="r2-btn pri f2-bcate" data-f2="bc-ate">' + e_(w("ate")) + xpPill(mealXP() + (bonusOpen() ? BONUS : 0)) + '</button><button type="button" class="r2-btn ghost" data-f2="bc-else">' + e_(w("other")) + '</button>';
+  if (p && !p.notFound && LV[p.verdict]) { const VB = window.LowiVitalsBridge, why = VB && VB.mealWhy ? VB.mealWhy({code:p.code || p.barcode || "", t:p.name || p.brand || ""}) : "", L3 = Math.max(0, ["en","de","es"].indexOf((document.documentElement.lang || "en").slice(0,2)));
+    bar.innerHTML = '<button type="button" class="r2-btn ' + (why === "dup" ? "ghost" : "pri") + ' f2-bcate" data-f2="bc-ate">' + e_(why === "dup" ? ["Already logged today", "Heute schon eingetragen", "Ya registrado hoy"][L3] : w("ate")) + (why ? ' <small class="b3-eatxp b3-eatwhy">' + e_(why === "dup" ? ["no XP", "keine XP", "sin XP"][L3] : ["daily limit, no XP", "Tageslimit, keine XP", "límite diario, sin XP"][L3]) + '</small>' : xpPill(mealXP() + (bonusOpen() ? BONUS : 0))) + '</button><button type="button" class="r2-btn ghost" data-f2="bc-else">' + e_(w("other")) + '</button>';
     const card = rev.querySelector("#b3Card"); if (card && card.parentNode) card.parentNode.insertBefore(bar, card.nextSibling); else rev.prepend(bar); }
   else { bar.innerHTML = '<button type="button" class="r2-btn pri" data-f2="bc-type">' + e_(w("typeIt")) + '</button><button type="button" class="r2-btn ghost" data-f2="bc-else">' + e_(w("other")) + '</button>'; rev.prepend(bar); }
   return true; }
@@ -16832,11 +16835,11 @@ function bcAte(){ const p = window.LowiDex && LowiDex.cur ? LowiDex.cur() : null
   const title = (p.name || "").trim() + (p.brand && (p.name || "").indexOf(p.brand) < 0 ? " · " + p.brand : "");
   /* Oct 14: one meal path for every log (duplicate rule, daily cap, reason when 0 XP) */
   const VB = window.LowiVitalsBridge;
-  if (VB && VB.logMeal) { const res = VB.logMeal({id:"bc:" + (p.code || "x") + ":" + Date.now(), t:title, macros:null, via:"barcode", code:p.code || ""});
+  if (VB && VB.logMeal) { const bcode = String(p.code || p.barcode || ""); const res = VB.logMeal({id:"bc:" + (bcode || "x") + ":" + Date.now(), t:title, macros:null, via:"barcode", code:bcode});
     if (res && res.dup) { F.mode = ""; try { LowiR2.closeAll(); } catch(e){} if (window.LowiSpirit && LowiSpirit.afterScan) LowiSpirit.afterScan(0, res.reason, "curious"); else toast(res.reason); return; }
     if (res && res.log) { res.log.lvl = m[0]; res.log.r = m[1]; res.log.e = "🏷️"; try { VB.save(); } catch(e){} }
     if (res && !res.xp && res.reason) toast(res.reason); }
-  else try { S.logs.push({ts:Date.now(), day:dayKey(), t:title, lvl:m[0], r:m[1], e:"🏷️", via:"barcode", code:p.code || ""}); save(); if (n < 8) award(15, tr("Meal checked")); questDone("eat"); } catch(e){ console.error(e); }
+  else try { S.logs.push({ts:Date.now(), day:dayKey(), t:title, lvl:m[0], r:m[1], e:"🏷️", via:"barcode", code:String(p.code || p.barcode || "")}); save(); if (n < 8) award(15, tr("Meal checked")); questDone("eat"); } catch(e){ console.error(e); }
   giveBonus(); F.mode = ""; try { LowiR2.closeAll(); } catch(e){} try { if (window.LowiSpirit && LowiSpirit.isOpen && LowiSpirit.isOpen()) LowiSpirit.close(); } catch(e){} try { renderAll(); } catch(e){}
   setTimeout(() => stepDone({lvl:m[0], title, photo:"", emoji:"🏷️", via:"barcode", base}), 300); }
 
@@ -18861,7 +18864,7 @@ window.LowiVitalsBridge = {
     return S.logs.find(l=>l.day===day&&((code&&String(l.code||"")===code)||(k&&this.mealKey(l.t)===k)))||null;},
   mealWhy(data){if(data&&this.mealDup(data))return"dup";return S.logs.filter(l=>l.day===today()).length<this.MEAL_CAP?"":"cap";},
   mealXp(data){return this.mealWhy(data)?0:15;},
-  mealReason(why){const L=(document.documentElement.lang||"en").slice(0,2),i=L==="de"?1:L==="es"?2:0;
+  mealReason(why){const L=((typeof document!=="undefined"&&document.documentElement.lang)||"en").slice(0,2),i=L==="de"?1:L==="es"?2:0;
     return why==="dup"?["Already logged today · no XP","Heute schon eingetragen · keine XP","Ya registrado hoy · sin XP"][i]:why==="cap"?["Logged · daily XP limit ("+this.MEAL_CAP+" meals) reached","Eingetragen · Tageslimit ("+this.MEAL_CAP+" Mahlzeiten) erreicht, keine XP","Registrado · límite diario ("+this.MEAL_CAP+" comidas), sin XP"][i]:"";},
   gpt:"https://chatgpt.com/g/g-69481a874bf08191b8118f8d88c9c90e-lowispike",
   logMeal(data){

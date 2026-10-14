@@ -46,6 +46,7 @@
         future: ['Choose tomorrow’s meal.', 'Wähle dein Essen für morgen.', 'Elige la comida de mañana.'],
         start: ['A fresh start', 'Ein neuer Anfang', 'Un nuevo comienzo'],
         meals: ['meals logged', 'Mahlzeiten eingetragen', 'comidas registradas'],
+        meal1: ['meal logged', 'Mahlzeit eingetragen', 'comida registrada'],
         drink: ['Glass logged. I drink with you!', 'Glas eingetragen. Ich trinke mit!', 'Vaso registrado. ¡Bebo contigo!'],
         waterSaved: ['Water logged', 'Wasser eingetragen', 'Agua registrada'],
         captured: ['Caught for your herb', 'Für dein Kraut eingefangen', 'Capturado para tu hierba'],
@@ -409,7 +410,8 @@
         const s = V.state(),
             today = K.day(),
             tile = D.querySelector('#g2hTiles [data-g2h-open="plan"] small');
-        setText(tile, (s.logs || []).filter(l => (l.day || K.day(l.ts)) === today).length + ' ' + tr('meals'));
+        const nMeals = (s.logs || []).filter(l => (l.day || K.day(l.ts)) === today).length;
+        setText(tile, nMeals + ' ' + tr(nMeals === 1 ? 'meal1' : 'meals'));
     }
 
     function fastModel() {

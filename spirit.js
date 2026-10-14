@@ -156,6 +156,13 @@
     const icon = K.icon,
         get = () => T.current(),
         uid = () => crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2);
+    if (!D.getElementById('wdCss')) {
+        const l = D.createElement('link');
+        l.id = 'wdCss';
+        l.rel = 'stylesheet';
+        l.href = 'wardrobe.css?v=' + encodeURIComponent((D.querySelector('meta[name=lowi-build]') || {}).content || '1');
+        D.head.append(l);
+    }
     let home = null,
         world = null,
         creature = null,
@@ -1298,49 +1305,126 @@
             es: 2
         } [lang()] || 0]) + '</b><small>' + s.xp + ' XP</small></div>').join('') + '</div><p class="sp-note">' + esc(tr('mystery')) + '</p>';
     }
-    const premium = [{
-        id: 'tidal',
+    /* Wardrobe (Oct 14): preview any item on the real herb, equip/take off what XP has unlocked.
+       Premium items are preview-only: there is no purchase flow, so nothing is sold or charged here. */
+    const WC = window.LowiHerbTamagotchiCore,
+        wl = (en, de, es) => ({
+            de,
+            es
+        } [lang()] || en),
+        wix = () => ({
+            de: 1,
+            es: 2
+        } [lang()] || 0),
+        wname = c => c ? (c.names || [c.name])[wix()] || c.name : '';
+    const wd = {
         kind: 'pot',
-        name: ['Tidal glass', 'Gezeitenglas', 'Cristal de marea']
-    }, {
-        id: 'mushroom',
-        kind: 'hat',
-        name: ['Forest cap', 'Waldhut', 'Sombrero del bosque']
-    }, {
-        id: 'opal',
-        kind: 'glow',
-        name: ['Opal glow', 'Opalglanz', 'Brillo de ópalo']
-    }, {
-        id: 'comet',
-        kind: 'effect',
-        name: ['Comet orbit', 'Kometenbahn', 'Órbita de cometa']
-    }];
-    const outfitNames = {
-        ceramic: ['Moon ceramic', 'Mondkeramik', 'Cerámica lunar'],
-        glass: ['Dewdrop glass', 'Tautropfenglas', 'Cristal de rocío'],
-        bow: ['Leaf bow', 'Blätterschleife', 'Lazo de hojas'],
-        sunset: ['Peach sunset', 'Pfirsichabend', 'Atardecer melocotón'],
-        crown: ['Sprout crown', 'Sprossenkrone', 'Corona de brote'],
-        stars: ['Stardust trail', 'Sternenstaub', 'Estela de estrellas'],
-        porcelain: ['Blossom porcelain', 'Blütenporzellan', 'Porcelana floral'],
-        aurora: ['Aurora glow', 'Polarlicht', 'Brillo de aurora'],
-        halo: ['Celestial halo', 'Sternenhalo', 'Halo celeste']
+        sel: ''
     };
 
-    function wardrobe() {
+    function wdItems() {
         const {
             m,
             p
-        } = get(), items = LowiHerbTamagotchiCore.COSMETICS.concat(premium.map(p => ({
-            ...p,
-            premium: true,
-            xp: 0
-        })));
-        showSheet('<h2>' + esc(tr('wardrobe')) + '</h2><div class="sp-outfits">' + items.map(c => '<button data-sp="equip" data-item="' + c.id + '" ' + (c.premium || m.xp < c.xp ? 'disabled' : '') + '>' + icon(c.kind === 'effect' ? 'star' : c.kind === 'glow' ? 'sun' : c.kind) + '<b>' + esc((outfitNames[c.id] || c.name)[{
-            de: 1,
-            es: 2
-        } [lang()] || 0]) + '</b><small>' + esc(c.premium ? tr('premium') : m.xp < c.xp ? c.xp + ' XP' : p.equipment[c.kind] === c.id ? tr('equipped') : '✓') + '</small></button>').join('') + '</div>');
-        paginate(ownedSheet.querySelector('.r2-sh'));
+        } = get();
+        return {
+            m,
+            p,
+            eq: WC.cleanEquipment(p.equipment, m.xp),
+            items: WC.wardrobeItems(m.xp, p.equipment)
+        };
+    }
+
+    function wdStatus(c) {
+        return c.status === 'equipped' ? wl('Wearing', 'Angezogen', 'Puesto') : c.status === 'ready' ? wl('Ready', 'Bereit', 'Listo') : c.status === 'locked' ? wl(c.left + ' XP to go', 'noch ' + c.left + ' XP', 'faltan ' + c.left + ' XP') : wl('Premium · soon', 'Premium · bald', 'Premium · pronto');
+    }
+
+    function wdHTML() {
+        const {
+            m,
+            p,
+            eq,
+            items
+        } = wdItems();
+        if (!WC.SLOTS.some(s => s.kind === wd.kind)) wd.kind = 'pot';
+        let sel = items.find(c => c.id === wd.sel && c.kind === wd.kind);
+        if (!sel) sel = items.find(c => c.kind === wd.kind && c.id === eq[wd.kind]) || items.find(c => c.kind === wd.kind);
+        wd.sel = sel ? sel.id : '';
+        const trying = sel && sel.status !== 'equipped' && !(sel.kind === 'pot' && sel.id === 'ceramic' && eq.pot === 'ceramic'),
+            look = trying ? WC.previewEquip(eq, sel.id, m.xp) : eq,
+            model = {
+                ...m,
+                dim: false,
+                mood: 'happy'
+            };
+        const next = WC.nextUnlock(m.xp),
+            lockedSel = sel && sel.status === 'locked',
+            pct = lockedSel ? Math.max(4, Math.min(100, Math.round(m.xp / sel.xp * 100))) : 0;
+        let action = '',
+            note = '';
+        if (sel) {
+            if (sel.status === 'premium') {
+                action = '<button type="button" class="wd-act" disabled>' + esc(wl('Premium · not available yet', 'Premium · noch nicht verfügbar', 'Premium · aún no disponible')) + '</button>';
+                note = wl('Preview only. Premium items can’t be bought yet.', 'Nur zur Vorschau. Premium-Teile kann man noch nicht kaufen.', 'Solo vista previa. Los artículos premium aún no se pueden comprar.');
+            } else if (sel.status === 'locked') {
+                action = '<button type="button" class="wd-act" disabled>' + esc(wl('Unlocks at ' + sel.xp + ' XP', 'Ab ' + sel.xp + ' XP', 'Desde ' + sel.xp + ' XP')) + '</button>';
+                note = wl(sel.left + ' XP to go. Log meals, drink water, scan.', 'Noch ' + sel.left + ' XP. Essen eintragen, Wasser, Scannen.', 'Faltan ' + sel.left + ' XP. Registra comidas, agua, escanea.');
+            } else if (sel.status === 'equipped') {
+                action = sel.id === WC.BASE_EQUIPMENT[sel.kind] ? '<button type="button" class="wd-act" disabled>' + esc(wl('Starter pot · always yours', 'Start-Topf · immer deins', 'Maceta inicial · siempre tuya')) + '</button>' : '<button type="button" class="wd-act wd-off" data-sp="equip" data-item="' + sel.id + '">' + esc(wl('Take off', 'Ablegen', 'Quitárselo')) + '</button>';
+            } else action = '<button type="button" class="wd-act wd-on" data-sp="equip" data-item="' + sel.id + '">' + esc(wl('Put on', 'Anziehen', 'Ponérselo')) + '</button>';
+        }
+        const worn = WC.SLOTS.filter(s => eq[s.kind] && eq[s.kind] !== WC.BASE_EQUIPMENT[s.kind]).length;
+        return '<div class="wd" id="spWd"><header class="wd-head"><h2>' + esc(tr('wardrobe')) + '</h2><span class="wd-xp">' + esc(m.xp + ' XP') + '</span></header>' +
+            '<div class="wd-stage' + (trying ? ' trying' : '') + '"><span class="wd-tag">' + esc(trying ? wl('Trying on', 'Anprobe', 'Probando') : wl('Your look', 'Dein Look', 'Tu look')) + '</span>' +
+            T.plantHTML(model, 'preview', p, {
+                preview: look,
+                label: name() + ' · ' + (sel ? wname(sel) : '')
+            }) +
+            '<div class="wd-info" aria-live="polite"><b>' + esc(sel ? wname(sel) : '') + '</b><small>' + esc(sel ? wdStatus(sel) : '') + '</small>' + (lockedSel ? '<i class="wd-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '"><i style="width:' + pct + '%"></i></i>' : '') + action + (note ? '<p class="wd-note">' + esc(note) + '</p>' : '') + '</div></div>' +
+            '<div class="wd-tabs" role="tablist" aria-label="' + esc(tr('wardrobe')) + '">' + WC.SLOTS.map(s => {
+                const own = items.filter(c => c.kind === s.kind && (c.status === 'ready' || c.status === 'equipped')).length,
+                    all = items.filter(c => c.kind === s.kind && !c.premium).length;
+                return '<button type="button" role="tab" data-sp="wdTab" data-kind="' + s.kind + '" aria-selected="' + (s.kind === wd.kind) + '"' + (eq[s.kind] && eq[s.kind] !== WC.BASE_EQUIPMENT[s.kind] ? ' data-worn=""' : '') + '>' + esc(s.names[wix()]) + '<small>' + own + '/' + all + '</small></button>';
+            }).join('') + '</div>' +
+            '<div class="wd-grid" role="tabpanel">' + items.filter(c => c.kind === wd.kind).map(c => '<button type="button" class="wd-item wd-' + c.status + '" data-sp="wdPick" data-item="' + c.id + '" aria-pressed="' + (c.id === wd.sel) + '" aria-label="' + esc(wname(c) + ', ' + wdStatus(c)) + '"><span class="wd-thumb">' + T.plantHTML(model, 'node', p, {
+                preview: WC.previewEquip(WC.BASE_EQUIPMENT, c.id, m.xp),
+                crop: c.kind,
+                hidden: true
+            }) + (c.status === 'locked' || c.status === 'premium' ? '<span class="wd-lock" aria-hidden="true">' + (c.status === 'premium' ? '✦' : icon('lock')) + '</span>' : c.status === 'equipped' ? '<span class="wd-check" aria-hidden="true">' + icon('check') + '</span>' : '') + '</span><b>' + esc(wname(c)) + '</b><small>' + esc(wdStatus(c)) + '</small></button>').join('') + '</div>' +
+            '<footer class="wd-foot"><span>' + esc(next ? wl('Next: ' + wname(next) + ' in ' + Math.ceil(next.xp - m.xp) + ' XP', 'Als Nächstes: ' + wname(next) + ' in ' + Math.ceil(next.xp - m.xp) + ' XP', 'Siguiente: ' + wname(next) + ' en ' + Math.ceil(next.xp - m.xp) + ' XP') : wl('Everything unlocked', 'Alles freigespielt', 'Todo desbloqueado')) + '</span>' + (worn ? '<button type="button" class="wd-reset" data-sp="wdReset">' + esc(wl('Take all off', 'Alles ablegen', 'Quitar todo')) + '</button>' : '') + '</footer></div>';
+    }
+
+    function wdPaint(focus) {
+        const cur = D.getElementById('spWd');
+        if (!cur || !ownedSheet || !ownedSheet.contains(cur)) return wardrobe();
+        const tmp = D.createElement('div');
+        tmp.innerHTML = wdHTML();
+        cur.replaceWith(tmp.firstChild);
+        if (focus) D.querySelector('#spWd ' + focus)?.focus({
+            preventScroll: true
+        });
+    }
+
+    function wardrobe(kind) {
+        if (kind) wd.kind = kind;
+        wd.sel = '';
+        showSheet(wdHTML(), {
+            cls: 'sp-sheet wd-sheet'
+        });
+    }
+
+    function wdEquip(id) {
+        const {
+            p,
+            m
+        } = get(), c = WC.cosmetic(id), eq = WC.toggleEquip(p.equipment, id, m.xp);
+        if (!eq || !c) return false;
+        const on = eq[c.kind] === c.id;
+        T.setEquipment(p, eq);
+        signature = '';
+        refresh();
+        R.toast(on ? wl('Wearing ' + wname(c), wname(c) + ' angezogen', 'Lleva ' + wname(c)) : wl(wname(c) + ' taken off', wname(c) + ' abgelegt', wname(c) + ' quitado'));
+        return true;
     }
 
     function collection() {
@@ -1711,17 +1795,27 @@
             if (ownedSheet) R.close(ownedSheet);
         } else if (a === 'pick') showPick();
         else if (a === 'equip') {
-            const {
-                p,
-                m
-            } = get(), item = LowiHerbTamagotchiCore.COSMETICS.find(c => c.id === b.dataset.item);
-            if (item && LowiHerbTamagotchiCore.cosmeticAllowed(item.id, m.xp)) {
-                p.equipment[item.kind] = p.equipment[item.kind] === item.id ? '' : item.id;
-                T.savePrefs(p);
-                signature = '';
-                refresh();
-                wardrobe();
+            if (wdEquip(b.dataset.item)) {
+                wd.sel = b.dataset.item;
+                wdPaint('.wd-act');
             }
+        } else if (a === 'wdPick') {
+            wd.sel = b.dataset.item;
+            wdPaint('[data-item="' + b.dataset.item + '"]');
+        } else if (a === 'wdTab') {
+            wd.kind = b.dataset.kind;
+            wd.sel = '';
+            wdPaint('[data-kind="' + b.dataset.kind + '"]');
+        } else if (a === 'wdReset') {
+            const {
+                p
+            } = get();
+            T.setEquipment(p, {
+                ...WC.BASE_EQUIPMENT
+            });
+            signature = '';
+            refresh();
+            wdPaint('.wd-tabs [aria-selected=true]');
         } else if (a === 'product') {
             const item = Object.values(LowiDex.state().mine || {}).find(p => String(p.barcode || p.id || p.name) === b.dataset.key);
             if (item) LowiDex.reveal(item);

@@ -1,0 +1,48 @@
+/* LOWiSPIKE herb wardrobe (Oct 14). Loaded by spirit.js. Owner: premium wardrobe task. */
+.wd{display:flex;flex-direction:column;gap:10px;color:var(--text,#effcff)}
+.wd-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.wd-head h2{margin:2px 0 0!important}
+.wd-xp{font-size:13px;font-weight:700;padding:4px 10px;border-radius:999px;background:linear-gradient(135deg,#ffe6a233,#c8b0ff33);border:1px solid #ffe6a24d;font-variant-numeric:tabular-nums}
+.wd-stage{position:relative;display:grid;grid-template-columns:minmax(0,46%) minmax(0,1fr);align-items:center;gap:8px;padding:10px 12px 10px 4px;border-radius:22px;background:radial-gradient(circle at 26% 46%,#ffffff1f,transparent 62%),linear-gradient(160deg,#2b4a5866,#1b2a3a66);border:1px solid var(--line2,#abc6d329);min-height:0}
+.wd-stage.trying{border-color:#ffe6a266;box-shadow:inset 0 0 0 1px #ffe6a226}
+.wd-stage .lh-sprite{display:block;width:100%;height:auto;max-height:clamp(120px,24dvh,210px);margin:0 auto;overflow:visible}
+.wd-tag{position:absolute;left:12px;top:10px;z-index:1;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:#0000002e;color:var(--muted,#c7d6e4)}
+.wd-stage.trying .wd-tag{background:#ffe6a2;color:#3a2a00}
+.wd-info{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-width:0}
+.wd-info b{font-size:17px;line-height:1.2;letter-spacing:-.2px}
+.wd-info small{font-size:12px;color:var(--muted,#adbbd2)}
+.wd-bar{display:block;width:100%;height:6px;border-radius:9px;background:#ffffff1f;overflow:hidden}
+.wd-bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#8ceaca,#ffe6a2)}
+.wd-act{appearance:none;border:0;min-height:44px;width:100%;padding:10px 14px;border-radius:14px;font:inherit;font-size:15px;font-weight:700;color:#10241c;background:linear-gradient(135deg,#a9f0c9,#ffe6a2);cursor:pointer;touch-action:manipulation}
+.wd-act.wd-off{background:#ffffff1f;color:var(--text,#effcff);border:1px solid var(--line2,#abc6d329)}
+.wd-act:disabled{background:#ffffff14;color:var(--muted,#adbbd2);cursor:default;font-weight:600;font-size:13px}
+.wd-note{margin:0;font-size:11px;line-height:1.4;color:var(--muted,#adbbd2)}
+.wd-tabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;padding:3px;border-radius:14px;background:#00000024}
+.wd-tabs button{position:relative;appearance:none;border:0;min-height:44px;padding:4px 2px;border-radius:11px;background:transparent;color:var(--muted,#c7d6e4);font:inherit;font-size:12px;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;cursor:pointer;touch-action:manipulation}
+.wd-tabs button small{font-size:10px;font-weight:500;opacity:.75;font-variant-numeric:tabular-nums}
+.wd-tabs button[aria-selected=true]{background:#ffffff26;color:var(--text,#effcff)}
+.wd-tabs button[data-worn]::after{content:"";position:absolute;top:5px;right:6px;width:6px;height:6px;border-radius:50%;background:#8ceaca}
+.wd-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.wd-item{position:relative;appearance:none;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;padding:6px 4px 8px;border-radius:16px;border:1px solid var(--line2,#abc6d329);background:var(--panel,#263b453b);color:var(--text,#effcff);font:inherit;text-align:center;cursor:pointer;touch-action:manipulation}
+.wd-item[aria-pressed=true]{border-color:#ffe6a2;box-shadow:0 0 0 2px #ffe6a24d}
+.wd-item b{font-size:11.5px;line-height:1.15;font-weight:650;max-width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere;hyphens:auto;min-height:2.3em}
+.wd-item small{font-size:10px;color:var(--muted,#adbbd2);white-space:nowrap}
+.wd-item.wd-equipped small{color:#8ceaca;font-weight:700}
+.wd-item.wd-premium small{color:#e7c9ff}
+.wd-thumb{position:relative;display:block;width:100%;aspect-ratio:1;max-height:72px;border-radius:12px;background:radial-gradient(circle,#ffffff1a,transparent 70%);overflow:hidden}
+.wd-thumb .lh-sprite{display:block;width:100%;height:100%}
+.wd-locked .wd-thumb .lh-sprite{filter:grayscale(.55) brightness(.8);opacity:.75}
+.wd-premium .wd-thumb{background:radial-gradient(circle,#c8b0ff33,transparent 70%)}
+.wd-lock,.wd-check{position:absolute;right:4px;top:4px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:11px;background:#0000005c;color:#fff}
+.wd-lock svg,.wd-check svg{width:12px;height:12px}
+.wd-premium .wd-lock{background:linear-gradient(135deg,#c8b0ff,#8ceaca);color:#1d1440}
+.wd-check{background:#8ceaca;color:#0d2a1f}
+.wd-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px;color:var(--muted,#adbbd2)}
+.wd-reset{appearance:none;border:0;background:none;color:var(--text,#effcff);font:inherit;font-size:12px;font-weight:600;text-decoration:underline;padding:10px 4px;min-height:44px;cursor:pointer}
+.wd-tabs button:focus-visible,.wd-item:focus-visible,.wd-act:focus-visible,.wd-reset:focus-visible{outline:2px solid #ffe6a2;outline-offset:2px}
+@media (max-height:700px){.wd{gap:7px}.wd-stage .lh-sprite{max-height:clamp(96px,20dvh,150px)}.wd-thumb{max-height:52px}.wd-item{padding:4px 3px 6px}.wd-act{min-height:40px;padding:8px 10px}.wd-note{display:none}}
+@media (min-width:700px){.wd-sheet .r2-sh{max-width:560px;margin-inline:auto}.wd-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.wd-thumb{max-height:88px}}
+@media (prefers-reduced-motion:reduce){.wd *{transition:none!important;animation:none!important}}
+/* Premium pot look for the preview (same selector pattern as the earned pots in herb-tamagotchi.css). */
+.lh-pot-tidal .lh-pot>path{fill:#2fa7bd;stroke:#bdf3ff;stroke-width:2}
+.lh-pot-tidal .lh-pot>text{fill:#e3fdff}

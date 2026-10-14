@@ -26,17 +26,49 @@ const CONSTELLATIONS={
  Aquarius:[[34,63],[72,39],[114,71],[141,46],[114,71],[157,112],[214,145],[191,169]],
  Pisces:[[24,73],[44,48],[75,63],[69,99],[37,102],[24,73],[107,116],[148,141],[174,93],[207,80],[224,104],[213,129],[183,130],[174,93]]
 };
+/* Wardrobe (Oct 14): every item is earned with the app's own XP ledger, sorted by XP (nextUnlock relies on the order).
+   PREMIUM items can be previewed only: there is no purchase flow, so they can never be equipped. */
 const COSMETICS=[
- {id:'ceramic',kind:'pot',xp:0,name:'Moon ceramic',icon:'◡'},
- {id:'glass',kind:'pot',xp:100,name:'Dewdrop glass',icon:'◇'},
- {id:'bow',kind:'hat',xp:300,name:'Little leaf bow',icon:'⋈'},
- {id:'sunset',kind:'glow',xp:500,name:'Peach sunset',icon:'☀'},
- {id:'crown',kind:'hat',xp:700,name:'Sprout crown',icon:'♛'},
- {id:'stars',kind:'effect',xp:1000,name:'Stardust trail',icon:'✧'},
- {id:'porcelain',kind:'pot',xp:1500,name:'Blossom porcelain',icon:'✿'},
- {id:'aurora',kind:'glow',xp:2200,name:'Aurora glow',icon:'☄'},
- {id:'halo',kind:'effect',xp:3000,name:'Celestial halo',icon:'◎'}
+ {id:'ceramic',kind:'pot',xp:0,name:'Moon ceramic',names:['Moon ceramic','Mondkeramik','Cerámica lunar'],icon:'◡'},
+ {id:'glass',kind:'pot',xp:100,name:'Dewdrop glass',names:['Dewdrop glass','Tautropfenglas','Cristal de rocío'],icon:'◇'},
+ {id:'daisy',kind:'hat',xp:150,name:'Daisy clip',names:['Daisy clip','Gänseblümchen-Spange','Pinza de margarita'],icon:'✿'},
+ {id:'bow',kind:'hat',xp:300,name:'Little leaf bow',names:['Leaf bow','Blätterschleife','Lazo de hojas'],icon:'⋈'},
+ {id:'scarf',kind:'neck',xp:400,name:'Moss scarf',names:['Moss scarf','Moosschal','Bufanda de musgo'],icon:'≈'},
+ {id:'sunset',kind:'glow',xp:500,name:'Peach sunset',names:['Peach sunset','Pfirsichabend','Atardecer melocotón'],icon:'☀'},
+ {id:'crown',kind:'hat',xp:700,name:'Sprout crown',names:['Sprout crown','Sprossenkrone','Corona de brote'],icon:'♛'},
+ {id:'beanie',kind:'hat',xp:850,name:'Cosy beanie',names:['Cosy beanie','Kuschelmütze','Gorro calentito'],icon:'◠'},
+ {id:'stars',kind:'effect',xp:1000,name:'Stardust trail',names:['Stardust trail','Sternenstaub','Estela de estrellas'],icon:'✧'},
+ {id:'pearls',kind:'neck',xp:1200,name:'Dew pearls',names:['Dew pearls','Tauperlen','Perlas de rocío'],icon:'∘'},
+ {id:'porcelain',kind:'pot',xp:1500,name:'Blossom porcelain',names:['Blossom porcelain','Blütenporzellan','Porcelana floral'],icon:'✿'},
+ {id:'glasses',kind:'face',xp:1800,name:'Star glasses',names:['Star glasses','Sternenbrille','Gafas de estrella'],icon:'∞'},
+ {id:'aurora',kind:'glow',xp:2200,name:'Aurora glow',names:['Aurora glow','Polarlicht','Brillo de aurora'],icon:'☄'},
+ {id:'halo',kind:'effect',xp:3000,name:'Celestial halo',names:['Celestial halo','Sternenhalo','Halo celeste'],icon:'◎'}
 ];
+const PREMIUM=[
+ {id:'tidal',kind:'pot',xp:0,premium:true,name:'Tidal glass',names:['Tidal glass','Gezeitenglas','Cristal de marea'],icon:'≋'},
+ {id:'mushroom',kind:'hat',xp:0,premium:true,name:'Forest cap',names:['Forest cap','Waldhut','Sombrero del bosque'],icon:'⌓'},
+ {id:'opal',kind:'glow',xp:0,premium:true,name:'Opal glow',names:['Opal glow','Opalglanz','Brillo de ópalo'],icon:'◍'},
+ {id:'comet',kind:'effect',xp:0,premium:true,name:'Comet orbit',names:['Comet orbit','Kometenbahn','Órbita de cometa'],icon:'☄'}
+];
+const SLOTS=[
+ {kind:'pot',names:['Pot','Topf','Maceta']},
+ {kind:'hat',names:['Head','Kopf','Cabeza']},
+ {kind:'neck',names:['Neck','Hals','Cuello']},
+ {kind:'face',names:['Face','Gesicht','Cara']},
+ {kind:'glow',names:['Glow','Glanz','Brillo']},
+ {kind:'effect',names:['Magic','Zauber','Magia']}
+];
+const BASE_EQUIPMENT={pot:'ceramic',hat:'',neck:'',face:'',glow:'',effect:''};
+function cosmetic(id){return COSMETICS.find(c=>c.id===id)||PREMIUM.find(c=>c.id===id)||null;}
+/* Only earned, non-premium items survive; an empty or unknown pot falls back to the free Moon ceramic. */
+function cleanEquipment(eq,xp){eq=eq&&typeof eq==='object'?eq:{};const out={...BASE_EQUIPMENT};
+ SLOTS.forEach(({kind})=>{const c=COSMETICS.find(x=>x.id===eq[kind]);if(c&&c.kind===kind&&+xp>=c.xp)out[kind]=c.id;});return out;}
+function itemStatus(id,xp,eq){const c=cosmetic(id);if(!c)return'missing';if(c.premium)return'premium';if(+xp<c.xp)return'locked';return cleanEquipment(eq,xp)[c.kind]===c.id?'equipped':'ready';}
+function wardrobeItems(xp,eq){return COSMETICS.concat(PREMIUM).map(c=>({...c,status:itemStatus(c.id,xp,eq),left:Math.max(0,Math.ceil(c.xp-(+xp||0)))}));}
+/* Equip or take off. Returns the new equipment, or null when the item is locked, premium or unknown. */
+function toggleEquip(eq,id,xp){const c=cosmetic(id);if(!c||c.premium||+xp<c.xp)return null;const out=cleanEquipment(eq,xp);
+ out[c.kind]=out[c.kind]===c.id?BASE_EQUIPMENT[c.kind]:c.id;return out;}
+function previewEquip(eq,id,xp){const out=cleanEquipment(eq,xp),c=cosmetic(id);if(c)out[c.kind]=c.id;return out;}
 function period(now){const h=new Date(now||Date.now()).getHours();return h>=23||h<5?'night':h<11?'morning':h<17?'day':'evening';}
 function careKind(e){const s=String(e&&((e.src||'')+' '+(e.label||''))||'').toLowerCase();
  if(/recipe|cook|gekocht/.test(s))return'bloom';if(/swap|swaflo|tausch/.test(s))return'sunlight';
@@ -104,13 +136,14 @@ function nextLine(page,used,opts){used=used||[];opts=opts||{};const m=opts.model
 function tapReaction(count,times,now){const fast=(times||[]).filter(t=>now-t<1800);return fast.length>=8?'dizzy':['giggle','wave','sparkle','curious','proud','bounce'][Math.max(0,count-1)%6];}
 function unlocked(xp){return COSMETICS.filter(x=>+xp>=x.xp);}
 function nextUnlock(xp){return COSMETICS.find(x=>+xp<x.xp)||null;}
+function nextInSlot(kind,xp){return COSMETICS.find(x=>x.kind===kind&&+xp<x.xp)||null;}
 function cosmeticAllowed(id,xp){return COSMETICS.some(c=>c.id===id&&+xp>=c.xp);}
 function reminderWindow(now,tz,lastDay){let parts;try{parts=new Intl.DateTimeFormat('en-CA',{timeZone:tz||undefined,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',hourCycle:'h23'}).formatToParts(new Date(now));}catch(e){return{allowed:false};}
  const v=Object.fromEntries(parts.map(p=>[p.type,p.value])),day=v.year+'-'+v.month+'-'+v.day,hour=+v.hour;return{day,hour,allowed:hour>=8&&hour<21&&lastDay!==day};}
 function reminder(config){const sign=config.sign,action=config.need||'water',lang=config.lang||'en';
  const msg={en:{water:'One meal log and I get my tiny watering dance. Come say hi?',sunlight:'Psst, pick one ingredient swap. I saved us a sunbeam.',dance:'A little movement? I will do the leaf dance with you.',vitamin:'One label to explore? My detective leaves are ready.',bloom:'Fancy finishing a recipe? I brought the tiny flowers.',cheer:'One little check-in? Your sunny spot is waiting.'},de:{water:'Ein Essenseintrag und ich tanze im Regen. Kommst du kurz vorbei?',sunlight:'Psst, ein Zutatentausch? Unser Sonnenplatz ist frei.',dance:'Ein bisschen Bewegung? Ich tanze mit meinen Blättern mit.',vitamin:'Ein Etikett entdecken? Meine Detektivblätter sind bereit.',bloom:'Ein Rezept fertig kochen? Die Blümchen sind schon bereit.',cheer:'Ein kleiner Check-in? Dein Sonnenplatz wartet.'},es:{water:'¿Registras una comida? Mi baile bajo la lluvia está listo.',sunlight:'¿Un cambio de ingredientes? Nos guardé un rayo de sol.',dance:'¿Un poco de movimiento? Bailaré contigo.',vitamin:'¿Exploramos una etiqueta? Mis hojas detectives están listas.',bloom:'¿Terminas una receta? Traje las florecitas.',cheer:'¿Un pequeño registro? Tu rincón soleado te espera.'}};
  const prefix=lang==='en'?(sign==='Aries'?'Let us go! ':sign==='Pisces'?'A tiny daydream: ':''):'';return prefix+(msg[lang]||msg.en)[action];}
-const api={model,profile,recentXP,latestHealthy,nextLine,lines,wiltLines,ZODIAC,MBTI,LOOKS,CONSTELLATIONS,COSMETICS,period,careKind,need,tapReaction,unlocked,nextUnlock,cosmeticAllowed,reminderWindow,reminder};
+const api={model,profile,recentXP,latestHealthy,nextLine,lines,wiltLines,ZODIAC,MBTI,LOOKS,CONSTELLATIONS,COSMETICS,PREMIUM,SLOTS,BASE_EQUIPMENT,cosmetic,cleanEquipment,itemStatus,wardrobeItems,toggleEquip,previewEquip,nextInSlot,period,careKind,need,tapReaction,unlocked,nextUnlock,cosmeticAllowed,reminderWindow,reminder};
 if(typeof module==='object'&&module.exports)module.exports=api;else root.LowiHerbTamagotchiCore=api;
 })(typeof window!=='undefined'?window:globalThis);
 

@@ -45,7 +45,7 @@ test('voice does not repeat across pages, moods, time periods and reactions',()=
 });
 test('cosmetic locks use earned XP and do not change the score',()=>{
  assert.equal(T.cosmeticAllowed('glass',95),false);assert.equal(T.cosmeticAllowed('glass',100),true);assert.equal(T.cosmeticAllowed('crown',699),false);
- assert.equal(T.nextUnlock(100).id,'bow');assert.equal(T.unlocked(3000).length,9);assert.equal(K.stage(100).xp,100);
+ assert.equal(T.nextUnlock(100).id,'daisy');assert.equal(T.unlocked(3000).length,14);assert.equal(K.stage(100).xp,100);
 });
 test('reminders are capped per local day, reject night and honor the local timezone',()=>{
  const t=h=>Date.UTC(2026,9,14,h);

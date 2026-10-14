@@ -1,4 +1,4 @@
-/* Local visual atmosphere controls. No location or weather service is used. */
+/* Local visual atmosphere controls (theme, time of day, mood). Real weather is on Home via Open-Meteo. */
 (function(){
   'use strict';
   const H = document.documentElement, K = 'lowi.appearance', R2 = window.LowiR2;
@@ -10,7 +10,7 @@
   let prefs = {hour:12, weather:'clear', mood:'calm'}, panel, button;
   try { const saved = JSON.parse(localStorage.getItem(K) || '{}');
     if (Number.isFinite(saved.hour) && saved.hour >= 0 && saved.hour <= 23) prefs.hour = saved.hour;
-    if (['clear','cloud','rain'].includes(saved.weather)) prefs.weather = saved.weather;
+    /* real weather lives on Home (Open-Meteo); the old manual weather look is retired */
     if (['calm','focus','energy'].includes(saved.mood)) prefs.mood = saved.mood;
   } catch(e){}
   const t = () => words[(H.lang || 'en').slice(0,2)] || words.en;
@@ -26,9 +26,9 @@
     H.dataset.weatherLook = w; H.dataset.moodLook = m;
     const W=t(), wi={clear:7,cloud:8,rain:9}[w], mi={calm:10,focus:11,energy:12}[m];
     if (button) {
-      const weather={clear:'☀',cloud:'☁',rain:'☂'}[w];
-      button.innerHTML='<span class="ap-day" aria-hidden="true">'+(light?'☀':'☾')+'</span><span class="ap-weather" aria-hidden="true">'+weather+'</span>';
-      button.title=W[0]+': '+W[wi]+' · '+W[mi];
+      const ic=light?'<path d="M12 7a5 5 0 1 0 0 10a5 5 0 0 0 0-10ZM12 2v2M12 20v2M2 12h2M20 12h2M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>':'<path d="M18 18A9 9 0 0 1 6 6C5 13 11 20 18 18Z"/>';
+      button.innerHTML='<span class="ap-day" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+ic+'</svg></span>';
+      button.title=W[0]+' · '+W[mi];
       button.setAttribute('aria-label',button.title);
     }
     if (panel && !panel.hidden) sync();
@@ -41,7 +41,7 @@
     const preview=panel.querySelector('.ap-preview'), W=t();
     if(preview){
       preview.dataset.weather=prefs.weather; preview.dataset.mood=prefs.mood;
-      preview.querySelector('b').textContent=W[{clear:7,cloud:8,rain:9}[prefs.weather]];
+      preview.querySelector('b').textContent=W[0];
       preview.querySelector('small').textContent=W[{calm:10,focus:11,energy:12}[prefs.mood]]+' · '+String(prefs.hour).padStart(2,'0')+':00';
     }
   }
@@ -49,7 +49,7 @@
   function open(){
     const W = t();
     const choices = (key,items) => '<div class="ap-wheel" role="group" aria-label="'+W[key === 'weather' ? 2 : 3]+'">'+items.map(([value,label]) => '<button type="button" data-ap-'+key+'="'+value+'" aria-pressed="false">'+label+'</button>').join('')+'</div>';
-    panel.innerHTML = '<section class="ap-sheet" role="dialog" aria-modal="true" aria-labelledby="apTitle"><button class="ap-close" aria-label="'+W[14]+'">×</button><h2 id="apTitle">'+W[0]+'</h2><p>'+W[13]+'</p><div class="ap-preview" aria-live="polite"><i aria-hidden="true"></i><span><b></b><small></small></span></div><div class="ap-wheel ap-modes">'+[['dark',W[4]],['light',W[5]],['sunrise',W[6]]].map(([v,label])=>'<button data-ap-mode="'+v+'" aria-pressed="false">'+label+'</button>').join('')+'</div><label class="ap-time">'+W[1]+' <output></output><input data-ap-hour type="range" min="0" max="23" step="1" aria-label="'+W[1]+'"><span>00:00 <i>12:00</i> 23:00</span></label><h3>'+W[2]+'</h3>'+choices('weather',[['clear','☀ '+W[7]],['cloud','☁ '+W[8]],['rain','☂ '+W[9]]])+'<h3>'+W[3]+'</h3>'+choices('mood',[['calm',W[10]],['focus',W[11]],['energy',W[12]]])+'</section>';
+    panel.innerHTML = '<section class="ap-sheet" role="dialog" aria-modal="true" aria-labelledby="apTitle"><button class="ap-close" aria-label="'+W[14]+'">×</button><h2 id="apTitle">'+W[0]+'</h2><p>'+W[13]+'</p><div class="ap-preview" aria-live="polite"><i aria-hidden="true"></i><span><b></b><small></small></span></div><div class="ap-wheel ap-modes">'+[['dark',W[4]],['light',W[5]],['sunrise',W[6]]].map(([v,label])=>'<button data-ap-mode="'+v+'" aria-pressed="false">'+label+'</button>').join('')+'</div><label class="ap-time">'+W[1]+' <output></output><input data-ap-hour type="range" min="0" max="23" step="1" aria-label="'+W[1]+'"><span>00:00 <i>12:00</i> 23:00</span></label><h3>'+W[3]+'</h3>'+choices('mood',[['calm',W[10]],['focus',W[11]],['energy',W[12]]])+'</section>';
     panel.hidden = false; button.setAttribute('aria-expanded','true'); sync(); panel.querySelector('.ap-close').focus();
   }
   function boot(){
@@ -67,7 +67,7 @@
     panel.addEventListener('click',e=>{
       if(e.target === panel || e.target.closest('.ap-close')) return close();
       const mode=e.target.closest('[data-ap-mode]'); if(mode) return R2.applyTheme(mode.dataset.apMode);
-      for(const key of ['weather','mood']) { const b=e.target.closest('[data-ap-'+key+']'); if(b){ prefs[key]=b.dataset['ap'+key[0].toUpperCase()+key.slice(1)]; save(); paint(); } }
+      for(const key of ['mood']) { const b=e.target.closest('[data-ap-'+key+']'); if(b){ prefs[key]=b.dataset['ap'+key[0].toUpperCase()+key.slice(1)]; save(); paint(); } }
     });
     panel.addEventListener('input',e=>{if(e.target.matches('[data-ap-hour]')){ prefs.hour=Number(e.target.value); R2.applyTheme(prefs.hour>=7 && prefs.hour<19 ? 'light':'dark'); }});
     panel.addEventListener('keydown',e=>{

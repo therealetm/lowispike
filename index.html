@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261014-162100">
+<meta name="lowi-build" content="20261014-175900">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -5190,9 +5190,7 @@ const lastTxt = () => { const d = new Date(st().last); return p2(d.getHours()) +
 const img = id => (typeof FAST_IMG !== "undefined" && FAST_IMG[id]) ? FAST_IMG[id] : "";
 
 // goal: until the first planned meal, or 16 h (then 24 h) on a fasting day
-function goal(d, sl){ const h = hrs(); /* fe-target */ const tg = +st().target; if (tg) return tg;
-  if (d && d.meals && sl && sl.length) { const f = new Date(); f.setHours(Math.floor(sl[0].h), Math.round((sl[0].h % 1) * 60), 0, 0); const g = (f.getTime() - st().last) / 36e5; if (g > h) return g; }
-  return h < 16 ? 16 : 24; }
+function goal(d, sl){ /* fe-target: one goal everywhere (Home bubble, end sheet, stages) */ const tg = +st().target; return tg || 16; }
 function shows(d, sl){ if (!d) return false; if (!d.meals) return true;
   if (d.ate && Object.keys(d.ate).some(k => d.ate[k])) return false;
   const n = new Date(), now = n.getHours() + n.getMinutes() / 60; return !!(sl && sl.length && now < sl[0].h) || hrs() >= 4; } /* fb-show */
@@ -6125,7 +6123,7 @@ function refreshCachedTab(t){
 function renderMoveTab(){ if (window.MOVE && MOVE.showTab) MOVE.showTab(); }
 function goTab(t){
   if (t === "scan" && window.LowiSpirit) { LowiSpirit.open({capture:true}); return; }
-  if (window.LowiSpirit && LowiSpirit.isOpen()) LowiSpirit.close();
+  if (window.LowiSpirit) LowiSpirit.close(true);
   if (!RENDER[t]) t = "home";
   const root = $("#tab-" + t), cached = !!(root && root.dataset.navRendered === "1" && root.childElementCount);
   TAB = t; closeSheet(); ["result", "sos"].forEach(id => { const o = $("#" + id); if (o) o.classList.remove("open"); }); if (window.MOVE && MOVE.close) MOVE.close();

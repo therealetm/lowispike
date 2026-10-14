@@ -83,3 +83,7 @@ Pages: <success and served-build verification>
 Known limitations: <none or exact list>
 ```
 
+
+## Spirit build 20261014-162100
+
+The Spirit assets (`spirit-core.js`, `spirit.js`, `spirit.css`) are part of the ordered loader and network-first/offline asset lists. The 50-test suite and whitespace checks pass. Publishing uses Git data API blobs/tree/commit plus a leased `main` ref when shell Git has no write credentials. Each blob SHA is checked against the local `git hash-object` result before moving the ref. Premium checkout and physical-device/production-account checks are explicitly unverified.

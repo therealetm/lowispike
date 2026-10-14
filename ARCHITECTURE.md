@@ -174,3 +174,7 @@ The public Supabase browser key and VAPID public key are expected client-side pu
 
 The app accumulated chronological inline patches. Several modules wrap or rearrange earlier DOM rather than replacing it. That makes initialization order, idempotence, node identity, and event delegation critical. When extracting code from `index.html`, move one boundary without changing behavior, preserve its global API, add tests first, and ship extraction separately from a visual redesign.
 
+
+## Spirit integration
+
+`spirit-core.js` is pure logic for macros, local-day bonuses, gentle vitality, generated names, feed merging and elliptical physics. `spirit.js` owns one DOM creature moved between Home and the world, camera hosting, in-world sheets, meal forms, four-tap personality setup, generated SVG symbols and star-sign color presentation. The ordered herb loader loads herb config/core, Spirit core, herb model/UI and finally Spirit UI. `LowiVitalsBridge` owns native meal logging/editing, water logging, bonuses and the existing GPT URL. Level 1–6 now follows the herb milestones; legacy course/community unlock services remain a separate backend capability.

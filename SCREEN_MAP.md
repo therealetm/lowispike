@@ -158,3 +158,7 @@ Community → New Post → video/photo/link/text → validate/preview → publis
 
 Local state may precede account creation. Auth through Supabase preserves the session in `lowi.auth`; cloud restore/backup must retain local-private health exclusions and must not overwrite newer work silently.
 
+
+## Spirit surfaces (supersedes compact-strip and separate-room descriptions)
+
+Home uses the herb and fasting water bubbles, a clear status/action, Yesterday/Today/Tomorrow strip, habit dots and existing quest/live tiles. Opening Home’s herb bubble expands the same creature into `spWorld`. Scan opens that world in capture mode, with the native scanner inside its stage. The former `tmgScreen` and floating duplicate dock are removed after Spirit loads. Four capture actions are Scan, Food photo, Meal and Water. Wardrobe, collection, profile and sealed evolution use internal sheets. Food picks expose ingredient, macro and rationale views with Cook/Log actions. Physical iPhone camera and production signed-in feed verification remain required.

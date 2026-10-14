@@ -88,3 +88,7 @@ As of build `20261014-002000` at commit `bc68a96ddf0062e1a791c60639b08e399e37679
 
 Treat this as historical baseline, not a substitute for checking the current remote SHA before work.
 
+
+## Spirit release, 2026-10-14
+
+Home now presents the single herb in a water bubble. Home and Scan open the same world; the native scanner is embedded in it. Profile levels use the same six thresholds as the herb. `spirit-core.js` and `spirit.js` add portion macros, once-daily goal rewards, water logs, personality setup, and touch physics. Unknown nutrition stays unknown. Premium wardrobe items are previews because no checkout exists.

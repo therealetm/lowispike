@@ -157,3 +157,9 @@ Server authorization depends on Supabase Row Level Security and edge-function va
 4. Migrate account-scoped keys explicitly when a local user signs in; never merge one UID's private records into another.
 5. Test a missing-field state, current state, malformed JSON, blocked storage, and duplicate-event replay.
 
+
+## Spirit contracts
+
+`LowiVitalsBridge.logMeal({id,t,macros,photo,via})` adds one canonical log with `eventId=meal:<id>`, awards existing 15-XP meal care at most five times daily and returns `{log,xp}`. Retrying returns the original log and zero XP. Editing macros awards zero meal XP. Missing macro values are `null`, never zero. `user.macroGoals` stores optional protein/fiber/sugar goals. Bonus IDs are `macro-goal:<local-day>:<field>` and award 20 XP once; sugar needs explicit day completion and sugar values for every logged meal.
+
+Water retains `lowi_fast_v1.water` and adds stable `waterEvents`; the existing ledger awards 2 XP at most eight times daily. A replay does not increment glasses. Photos and unknown state fields are retained if storage fails; saves report failure instead of clearing images. Meal events add `{id,title,macros,xp,via,photo}`; `photo` is a boolean in events, not bytes. Spirit core merges remote and local feed IDs without discarding fallback media. No backend post deletion or storage migration is performed.

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261014-002000">
+<meta name="lowi-build" content="20261014-162100">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -3957,13 +3957,14 @@ const DEMO = (() => {
 })();
 
 function feed(){
-  const hidden = new Set(T.hidden.concat(T.reported)), blocked = new Set(T.blocked);
+  const hidden = T.hidden.concat(T.reported), blocked = T.blocked;
   const me = T.posts.map(p => Object.assign({me:true}, p));
-  const CL = window.LOWI_CLOUD, on = !!(CL && CL.live()), mineIds = new Set(T.posts.map(p => p.id));
-  const src = on ? CL.posts().filter(p => !mineIds.has(p.id)) : DEMO;
-  const mine = me.filter(p => p.vis === "tribe").map(p => { const c = on && CL.post(p.id); return c ? Object.assign({}, p, {likes:c.likes}) : p; });
-  const list = src.filter(p => !hidden.has(p.id) && !blocked.has(p.who)).concat(mine);
-  return list.sort((a, b) => b.ts - a.ts); // the whole algorithm: newest first
+  const CL = window.LOWI_CLOUD, on = !!(CL && CL.live());
+  const remote = on ? CL.posts() : DEMO;
+  if (window.LowiSpiritCore) return LowiSpiritCore.mergeFeed(remote,me,hidden,blocked);
+  const merged = new Map(remote.map(p=>[p.id,p]));
+  me.filter(p=>p.vis!=="me").forEach(p=>{const r=merged.get(p.id);merged.set(p.id,Object.assign({},p,r,{me:true,photo:r&&r.photo||p.photo||"",vurl:r&&r.vurl||p.vurl||"",poster:r&&r.poster||p.poster||""}));});
+  return Array.from(merged.values()).filter(p=>!hidden.includes(p.id)&&!blocked.includes(p.who)).sort((a,b)=>b.ts-a.ts);
 }
 function ago(ts){ const m = Math.max(0, Math.round((Date.now() - ts) / 60000)); if (m < 1) return "now"; if (m < 60) return m + " min"; const h = Math.round(m / 60); if (h < 24) return h + " h"; const d = Math.round(h / 24); return d === 1 ? "yesterday" : d + " days"; }
 function art(p){ const a = p.art || ["✨", 40, 280]; return '<div class="tr-art" style="--h1:' + a[1] + ';--h2:' + a[2] + '"><span>' + a[0] + '</span></div>'; }
@@ -4014,7 +4015,7 @@ function slideHTML(p){
       '<button class="fy-act" data-tr="share" data-id="' + p.id + '" aria-label="Share">' + FIC.share + '<span>Share</span></button>' +
       (window.LowiFood && LowiFood.isFoodPost(p, FY_IMG[p.id]) ? LowiFood.railBtn(p.id) : "") +
       '<button class="fy-act fy-more" data-tr="post-menu" data-id="' + p.id + '" aria-label="More">' + IC.more + '</button></div>' +
-    '<div class="fy-meta"><div class="fy-by" data-r5="profile" data-who="' + esc(p.me ? (u.name || "You") : p.who) + '"' + (p.me ? ' data-me="1"' : "") + ' role="button" tabindex="0">' + (p.me ? h.avatar(30, u.name, u.avatar) : h.avatar(30, p.who)) + '<b>' + esc(name) + '</b><span>· ' + ago(p.ts) + '</span>' + (p.mine ? '<span class="fy-orig">' + IC.gem + '</span>' : "") + '</div>' +
+    '<div class="fy-meta"><div class="fy-by" data-r5="profile" data-who="' + esc(p.me ? (u.name || "You") : p.who) + '"' + (p.me ? ' data-me="1"' : "") + ' role="button" tabindex="0">' + (p.me ? h.avatar(30, u.name, u.avatar) : h.avatar(30, p.who, p.avatar)) + '<b>' + esc(name) + '</b><span>· ' + ago(p.ts) + '</span>' + (p.mine ? '<span class="fy-orig">' + IC.gem + '</span>' : "") + '</div>' +
       (cap && !textOnly ? '<div class="fy-cap">' + esc(cap) + '</div>' : "") +
       (p.rec && window.FYV ? FYV.recChip(p) : "") +
       (p.url ? '<button class="fy-src" data-tr="open" data-id="' + p.id + '">' + PICON[p.plat || "web"] + '<span>' + esc(byline(p.meta, p.plat || "web")) + '</span></button>' : "") +
@@ -5352,15 +5353,16 @@ function load(){ try { S = JSON.parse(localStorage.getItem(KEY)) || fresh(); } c
   const f = fresh(); for (const k in f) if (S[k] === undefined) S[k] = f[k];
   for (const k in f.health) if (S.health[k] === undefined) S.health[k] = f.health[k];
   if (S.streak.shields === undefined) S.streak.shields = 1; delete S.streak.freezeWeek; }
-function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){ S.posts.forEach(p => p.photo = ""); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e2){} } }
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); window.LOWI_STORAGE_ERROR=false; return true; } catch(e){ window.LOWI_STORAGE_ERROR=true; console.warn("LOWiSPIKE could not save state; existing photos and records were retained."); return false; } }
 
-/* XP curve. v1 live app: Level 6 needed 1,418 XP but Level 8 needed 21,204, a 15x cliff.
-   v2: XP to go from level L to L+1 = round(100 * L^1.5 / 10) * 10. Smooth, each step only a bit bigger. */
-const stepXP = L => Math.round(100 * Math.pow(L, 1.5) / 10) * 10;
-const levelStart = L => { let t = 0; for (let i = 1; i < L; i++) t += stepXP(i); return t; };
-function levelOf(xp){ let L = 1; while (xp >= levelStart(L + 1)) L++; const a = levelStart(L), b = levelStart(L + 1); return {L, into: xp - a, need: b - a, left: b - xp, pct: (xp - a) / (b - a)}; }
-const TITLES = [[1,"Seed"],[3,"Sprout"],[5,"Root"],[8,"Bloom"],[12,"Glow"],[17,"Golden"],[23,"Radiant"],[30,"Sun"]];
-const titleOf = L => { let t = TITLES[0][1]; TITLES.forEach(x => { if (L >= x[0]) t = x[1]; }); return t; };
+/* The profile and herb share the original six stages and exact XP thresholds. */
+const HERB_XP = [0,100,300,700,1500,3000];
+const HERB_TITLES = ["Seed","Sprout","Young Herb","Flourishing Herb","Radiant Herb","Legendary Bloom"];
+const levelStart = L => HERB_XP[Math.max(0,Math.min(5,L-1))];
+const stepXP = L => L < 6 ? HERB_XP[L] - HERB_XP[L-1] : 0;
+function levelOf(xp){xp=Math.max(0,+xp||0);let i=0;while(i<5&&xp>=HERB_XP[i+1])i++;const a=HERB_XP[i],b=HERB_XP[i+1];return {L:i+1,into:xp-a,need:b?b-a:0,left:b?Math.max(0,b-xp):0,pct:b?Math.max(0,Math.min(1,(xp-a)/(b-a))):1};}
+const TITLES = HERB_TITLES.map((name,i)=>[i+1,name]);
+const titleOf = L => HERB_TITLES[Math.max(0,Math.min(5,L-1))];
 
 function award(amt, label, el, src, eventId){
   if (!Number.isFinite(+amt) || +amt <= 0 || eventId && S.ledger.some(e => e.eventId === eventId)) return 0;
@@ -5783,7 +5785,7 @@ function savedHTML(){ return '<div class="sec"><span class="h3">Saved swaps</spa
 let weightShown = false;
 function renderProfile(){ const lv = levelOf(S.xp), z = zodiac(S.user.bday), h = S.health, c = cycleInfo();
   $("#tab-profile").innerHTML = '<div style="text-align:center"><div style="display:flex;justify-content:center">' + avatar(88) + '</div><div class="h2" style="margin-top:10px">' + esc(S.user.name) + '</div>' + (z ? '<div class="small gold" style="margin-top:4px">' + z.g + " " + z.n + " · " + z.el + ' sign</div>' : "") + '<div style="margin-top:8px"><span class="ls-signpill"><i></i>' + (z ? "Glass accent from your sign" : "Add your birthday for your sign colour") + '</span></div></div>' +
-    '<div class="card goldline" style="margin-top:16px" id="lvCard"><div class="row"><div><div class="tiny gold">Level ' + lv.L + ' · ' + titleOf(lv.L) + '</div><div class="h2 num" style="margin-top:4px">' + fmt(S.xp) + ' XP</div></div><div class="small muted num" style="margin-left:auto;text-align:right" id="xpToNext">' + fmt(lv.left) + ' XP to Level ' + (lv.L + 1) + '</div></div><div class="mbar"><b style="width:' + Math.round(lv.pct * 100) + '%"></b></div></div>' +
+    '<div class="card goldline" style="margin-top:16px" id="lvCard"><div class="row"><div><div class="tiny gold">Level ' + lv.L + ' · ' + titleOf(lv.L) + '</div><div class="h2 num" style="margin-top:4px">' + fmt(S.xp) + ' XP</div></div><div class="small muted num" style="margin-left:auto;text-align:right" id="xpToNext">' + (lv.L<6?fmt(lv.left):0) + ' XP · ' + (lv.L<6?'Level '+(lv.L+1):'Legendary Bloom') + '</div></div><div class="mbar"><b style="width:' + Math.round(lv.pct * 100) + '%"></b></div></div>' +
     '<div class="row" style="margin-top:14px"><div class="stat"><b class="num">' + streakNow() + '</b><span>day streak</span></div><div class="stat"><b class="num">' + S.streak.shields + '</b><span>shields</span></div><div class="stat"><b class="num">' + S.logs.length + '</b><span>meals checked</span></div></div>' +
     savedHTML() + (window.TRIBE && TRIBE.profileHTML ? TRIBE.profileHTML() : "") +
     '<div class="sec"><span class="h3">Your glow</span><button class="small gold" data-act="glow">Check in</button></div><div class="card">' + glowSummary() + '</div>' +
@@ -6068,7 +6070,7 @@ function cmSwipe(t){ if (!t) return; let x0 = 0, y0 = 0, dx = 0, on = false, dir
     if (moved) { const stop = ev => { ev.stopPropagation(); ev.preventDefault(); }; t.addEventListener("click", stop, {capture:true, once:true}); setTimeout(() => t.removeEventListener("click", stop, {capture:true}), 60); } };
   t.addEventListener("pointerup", end); t.addEventListener("pointercancel", end); t.addEventListener("pointerleave", end); }
 function cmMsgHTML(m, all){ const mem = cmMem(m.by), mine = m.uid ? !!(window.LOWI_CLOUD && LOWI_CLOUD.isMe(m.uid)) : (m.by === cmMe() && !m.demo), re = m.re && all.find(x => x.id === m.re);
-  return '<div class="cm-msg' + (mine ? " mine" : "") + '" id="cm-' + m.id + '">' + (mine ? "" : '<span class="cm-av" data-r5="profile" data-who="' + esc(m.by) + '" role="button" style="background:' + mem.c + '">' + esc(m.by[0]) + "</span>") +
+  return '<div class="cm-msg' + (mine ? " mine" : "") + '" id="cm-' + m.id + '" data-who="'+esc(m.by)+'">' + (mine ? "" : '<span class="cm-av" data-r5="profile" data-who="' + esc(m.by) + '" role="button" style="background:' + mem.c + '">' + esc(m.by[0]) + "</span>") +
     '<div class="cm-bub">' + (mine ? "" : '<div class="cm-by"><span class="cm-byn" data-r5="profile" data-who="' + esc(m.by) + '" role="button">' + esc(m.by) + '</span>' + (mem.tag ? ' <span class="cm-tag">' + mem.tag + "</span>" : "") + ' <span class="tiny dim">' + cmAgo(m.ts) + "</span></div>") +
     (re ? '<div class="cm-quote"><b>' + esc(re.by) + "</b> " + esc(re.t.slice(0, 70)) + (re.t.length > 70 ? "…" : "") + "</div>" : "") + '<div class="cm-t">' + cmText(m.t) + "</div>" +
     '<div class="cm-rx">' + Object.keys(m.rx || {}).filter(k => m.rx[k].length).map(k => '<button class="cm-chip' + (m.rx[k].indexOf(cmMe()) >= 0 ? " on" : "") + '" data-cm="react" data-id="' + m.id + '" data-e="' + k + '">' + k + " " + m.rx[k].length + "</button>").join("") +
@@ -6122,6 +6124,8 @@ function refreshCachedTab(t){
 /* Oct 8: fitness has its own tab. Move used to hide behind a card on Today. */
 function renderMoveTab(){ if (window.MOVE && MOVE.showTab) MOVE.showTab(); }
 function goTab(t){
+  if (t === "scan" && window.LowiSpirit) { LowiSpirit.open({capture:true}); return; }
+  if (window.LowiSpirit && LowiSpirit.isOpen()) LowiSpirit.close();
   if (!RENDER[t]) t = "home";
   const root = $("#tab-" + t), cached = !!(root && root.dataset.navRendered === "1" && root.childElementCount);
   TAB = t; closeSheet(); ["result", "sos"].forEach(id => { const o = $("#" + id); if (o) o.classList.remove("open"); }); if (window.MOVE && MOVE.close) MOVE.close();
@@ -6212,7 +6216,7 @@ window.LowiHost = {
   refresh(){ if (TAB === "home") renderHome(); },
   user:() => S.user, level:() => levelOf(S.xp).L, tab:() => TAB, go:t => goTab(t === "swap" ? "scan" : t === "room" ? "foryou" : t === "moveScreen" ? "move" : t),
   onboarded:() => !!S.onboarded,
-  avatar(size, name, img){ return avatar(size, img || name === S.user.name ? S.user : {name, bday:"", avatar:""}); },
+  avatar(size, name, img){ return avatar(size, name === S.user.name ? S.user : {name, bday:"", avatar:img||""}); },
   resizeImage
 };
 
@@ -8564,12 +8568,12 @@ function ts(x){ const t = Date.parse(x); return isNaN(t) ? Date.now() : t; }
 function likeCount(id){ const s = LIKES[id]; return s ? s.size - (s.has(uid) ? 1 : 0) : 0; }
 function mapPost(r){
   return {id:r.id, uid:r.user_id, me:r.user_id === uid, cloud:true, who:r.who || "Member", ts:ts(r.created_at), plat:r.url ? (PLATS.indexOf(r.plat) >= 0 ? r.plat : "web") : "", url:r.url || "", meta:r.meta || null,
-    cap:r.cap || "", photo:r.photo_url || "", vid:r.video_url ? 1 : 0, vurl:r.video_url || "", poster:r.poster || "", w:r.w || 0, h:r.h || 0, dur:r.dur || 0,
+    cap:r.cap || "", photo:r.photo_url || r.photo || "", avatar:r.avatar_url || r.avatar || "", vid:r.video_url ? 1 : 0, vurl:r.video_url || "", poster:r.poster || "", w:r.w || 0, h:r.h || 0, dur:r.dur || 0,
     rec:r.rec || "", mine:!!r.mine, art:r.art || ["✨", 40, 280], vis:"tribe", rank:r.lv ? "Lv " + r.lv : "", get likes(){ return likeCount(this.id); }};
 }
-function mapMsg(r){ return {id:r.id, uid:r.user_id, by:r.who || "Member", t:r.body || "", ts:ts(r.created_at), re:r.reply_to || null, rx:rxOf(r.id)}; }
+function mapMsg(r){ return {id:r.id, uid:r.user_id, sign:r.sign || "", bday:r.bday || "", by:r.who || "Member", t:r.body || "", ts:ts(r.created_at), re:r.reply_to || null, rx:rxOf(r.id)}; }
 function rxOf(mid){ const o = {}; (RX[mid] || []).forEach(x => { (o[x.emoji] = o[x.emoji] || []).push(x.who || "Member"); }); return o; }
-function mapPerson(r){ return {n:r.name, s:r.sign || "", t:r.mbti || "", lv:r.lv || 1, streak:r.streak || 0, bio:r.bio || "", avatar:r.avatar || "", uid:r.id, bday:r.bday || "", xp:r.xp || 0, xpw:r.xp_week || 0, wk:r.wk || "", xpm:r.xp_month || 0, mo:r.mo || "", w:r.weight || ""}; }
+function mapPerson(r){ return {n:r.name, s:r.sign || "", t:r.mbti || "", lv:r.lv || 1, streak:r.streak || 0, bio:r.bio || "", avatar:r.avatar_url || r.avatar || "", uid:r.id, bday:r.bday || "", xp:r.xp || 0, xpw:r.xp_week || 0, wk:r.wk || "", xpm:r.xp_month || 0, mo:r.mo || "", w:r.weight || ""}; }
 
 /* ---------- boot ---------- */
 function loadLib(){ return new Promise((ok, no) => { if (window.supabase && window.supabase.createClient) return ok();
@@ -8601,7 +8605,8 @@ async function start(){
   const bad = q.find(r => r.error); if (bad) throw bad.error;
   LIKES = {}; q[1].data.forEach(r => (LIKES[r.post_id] = LIKES[r.post_id] || new Set()).add(r.user_id));
   RX = {}; q[3].data.forEach(r => (RX[r.message_id] = RX[r.message_id] || []).push(r));
-  POSTS = q[0].data.map(mapPost);
+  PEOPLE = (q[4].data || []).filter(r => r.id !== uid).map(mapPerson);
+  POSTS = (q[0].data || []).map(mapPost);
   MSGS.length = 0; q[2].data.slice().reverse().map(mapMsg).forEach(m => MSGS.push(m));
   PEOPLE = q[4].data.filter(r => r.id !== uid).map(mapPerson);
   live = true;
@@ -13417,13 +13422,13 @@ function openScanner(mode){
     '<div class="b3-cbot"><div class="b3-chint" id="b3Hint">' + esc(t("aim")) + '</div>' +
       '<form class="b3-type b3-ctype" id="b3BcF" autocomplete="off"><input class="input" id="b3Bc" inputmode="numeric" pattern="[0-9]*" maxlength="14" placeholder="' + esc(t("bcPh")) + '" enterkeyhint="go"><button class="b3-go" aria-label="' + esc(t("check")) + '">' + IC.go + '</button></form>' +
       '<button class="b3-pill wide" data-b3="photo">' + IC.cam + '<span>' + esc(t("photoBc")) + '</span></button></div>';
-  document.body.appendChild(el); document.documentElement.classList.add("b3-camon");
+  if(window.LowiSpirit){LowiSpirit.scannerHost().appendChild(el);el.removeAttribute("aria-modal");}else document.body.appendChild(el); document.documentElement.classList.add("b3-camon");
   CAM = {el, stream:null, raf:0, det:null, reader:null, done:false, last:0};
   $("#b3BcF", el).addEventListener("submit", e => { e.preventDefault(); const v = $("#b3Bc", el).value, c = validCode(v); if (!c) { msg(t("bcBad"), "warn"); sfx("error"); return; } found(c); });
   requestAnimationFrame(() => el.classList.add("on"));
   if (mode === "type") { el.classList.add("typing"); setTimeout(() => { const i = $("#b3Bc", el); if (i) i.focus(); }, 120); msgState("type"); return; }
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { msgState("nocam"); return; }
-  if (localStorage.getItem(CAMOK) === "1") startCam(); else msgState("ask");
+  if (window.LowiSpirit || localStorage.getItem(CAMOK) === "1") startCam(); else msgState("ask");
 }
 function msg(text, kind){ const m = CAM && $("#b3Hint", CAM.el); if (m) { m.textContent = text; m.className = "b3-chint" + (kind ? " " + kind : ""); } }
 function msgState(s){ if (!CAM) return; const m = $("#b3CMsg", CAM.el); CAM.el.dataset.st = s;
@@ -13463,6 +13468,7 @@ async function torch(){ try { const tr = CAM.stream.getVideoTracks()[0]; CAM.tor
 async function found(code){ if (!CAM) return; CAM.done = true; stopStream(); buzz(30); sfx("check");
   CAM.el.classList.add("got"); msgState("lookup"); msg(t("bcFound", code));
   let p = null; try { p = await byBarcode(code); } catch(e){}
+  if (p && !p.notFound && window.LowiSpirit) { closeScanner(true); await LowiSpirit.captureProduct(p); return; }
   if (p && !p.notFound && window.LowiVitalsBridge) LowiVitalsBridge.complete("vitamin","scan:"+code,{amt:5,perDay:5,label:"Product scanned"});
   closeScanner(); reveal(p || {barcode:code, notFound:true, offline:!navigator.onLine}); }
 /* photo of a barcode */
@@ -13638,7 +13644,7 @@ function boot(){
   try { if (curTab() === "scan") renderTab(); } catch(e){}
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => setTimeout(boot, 0)); else setTimeout(boot, 0);
-window.LowiDex = {open:openDex, scan:openScanner, reveal, rate, rateName, validCode, render:renderTab, state:() => D, load:loadComm, lookup:byBarcode, collect:doCatch, items:() => D.comm.concat(mineList()), cur:() => window.LowiDiscovery ? LowiDiscovery.cur() : CUR} /* f2-cur */;
+window.LowiDex = {open:openDex, scan:openScanner, reveal, rate, rateName, validCode, render:renderTab, state:() => D, stop:() => closeScanner(true), load:loadComm, lookup:byBarcode, collect:doCatch, items:() => D.comm.concat(mineList()), cur:() => window.LowiDiscovery ? LowiDiscovery.cur() : CUR} /* f2-cur */;
 })();
 </script>
 <style id="r3kcss">
@@ -14159,7 +14165,7 @@ function hookAvatars(){
   } catch(e){}
   if (window.LowiPeople) { try { LowiPeople.bubbleHTML = (p, size) => bubble(p, size || 56); } catch(e){} }
   if (window.LowiHost) LowiHost.avatar = function(size, name, img){ const S_ = R2.S(), u = (S_ && S_.user) || {};
-    if (img || name === u.name || name === "You") return bubble(me(), size); return bubble(find({name}), size); };
+    if (name === u.name || name === "You") return bubble(me(), size); const p=find({name});return bubble(img?Object.assign({},p,{avatar:img}):p,size); };
 }
 
 /* ---------- the XP toast: low on the screen, fades, never under the notch ---------- */
@@ -18618,7 +18624,19 @@ html.q4b-off #lcA2hs{display:none!important}
 <script>
 /* Companion bridge: native state, single XP ledger, stable IDs for completed actions. */
 window.LowiVitalsBridge = {
-  state:() => S, profile:() => S.user, save:() => save(),
+  state:() => S, profile:() => S.user, save:() => save(), cookRecipe:id=>LowiP2.cook(id),
+  gpt:"https://chatgpt.com/g/g-69481a874bf08191b8118f8d88c9c90e-lowispike",
+  logMeal(data){
+    const id="meal:"+data.id, found=S.logs.find(l=>l.eventId===id);if(found)return {log:found,xp:0};
+    const n=S.logs.filter(l=>l.day===today()).length,log={id:data.id,eventId:id,ts:Date.now(),day:today(),t:data.t,macros:data.macros,photo:data.photo||"",via:data.via||"spirit",r:"unknown"};
+    S.logs.push(log);if(!save()){S.logs.pop();return false;}
+    const xp=n<5?award(15,"Meal logged",null,"meal:spirit",id):0;
+    if(!xp)window.dispatchEvent(new CustomEvent("lowi:care",{detail:{kind:"water",id}}));
+    questDone("eat",true);window.dispatchEvent(new CustomEvent("lowi:meal-logged",{detail:{id,title:log.t,macros:log.macros,xp,via:log.via,photo:!!log.photo}}));return{log,xp};
+  },
+  editMeal(data){const log=S.logs.find(l=>l.id===data.id||l.eventId===data.id||String(l.ts)===data.id);if(!log)return false;const previous={t:log.t,macros:log.macros};log.t=data.t;log.macros=data.macros;if(!save()){Object.assign(log,previous);return false;}return{log,xp:0};},
+  bonus(id,amt,label){return award(amt,label,null,"macro-goal",id);},
+  water(id){let f={};try{f=JSON.parse(localStorage.getItem("lowi_fast_v1")||"{}");}catch(e){}f.waterEvents=f.waterEvents||{};if(f.waterEvents[id])return 0;f.waterEvents[id]=Date.now();f.water=f.water||{};f.water[today()]=(+f.water[today()]||0)+1;try{localStorage.setItem("lowi_fast_v1",JSON.stringify(f));}catch(e){return 0;}return this.complete("water","water:"+id,{amt:2,perDay:8,src:"water",label:"Water logged"});},
   initialize(){ if (window.LowiHerbCore) { LowiHerbCore.sync(S); save(); } },
   openMeal(){ LowiHost.go("home"); const b=document.querySelector('[data-g2h-open="plan"]'); if(b)b.click(); },
   complete(kind,id,options){
@@ -18633,7 +18651,7 @@ window.LowiVitalsBridge = {
     if(on){const id="plan-meal:"+td.day+":"+index+":"+td.plan[index];
       if(!S.logs.some(l=>l.eventId===id)){const r=recById(td.plan[index]);if(!r){save();return false;}
         const n=S.logs.filter(l=>l.day===today()).length;
-        S.logs.push({id,eventId:id,ts:Date.now(),day:td.day,t:r.n,r:r.r,e:r.e||"🍽️"});save();
+        S.logs.push({id,eventId:id,ts:Date.now(),day:td.day,t:r.n,r:r.r,e:r.e||"🍽️",macros:window.LowiSpiritCore?LowiSpiritCore.macros(r):undefined});save();
         if(n<5)award(15,"Meal logged",null,"meal:plan",id);
         else try{window.dispatchEvent(new CustomEvent("lowi:care",{detail:{kind:"water",id}}));}catch(e){}
         questDone("eat",true);
@@ -18642,6 +18660,7 @@ window.LowiVitalsBridge = {
   }
 };
 </script>
+<script>window.LowiSpiritHost={recipeImage:id=>typeof FOOD_IMG!=="undefined"?FOOD_IMG[id]||"":"",recipe:id=>window.LowiP2?LowiP2.rec(id):null,cook:id=>window.LowiP2&&LowiP2.cook?LowiP2.cook(id):null};</script>
 <script src="apple-ui.js"></script>
 <link rel="stylesheet" href="discovery.css">
 <script src="discovery-config.js"></script>

@@ -50,6 +50,15 @@
         waterSaved: ['Water logged', 'Wasser eingetragen', 'Agua registrada'],
         captured: ['Caught for your herb', 'Für dein Kraut eingefangen', 'Capturado para tu hierba'],
         glow: ['Caught! My leaves are glowing.', 'Eingefangen! Meine Blätter leuchten.', '¡Capturado! Mis hojas brillan.'],
+        scanOk: ['Yes, I like this one! Likely only a small spike.', 'Ja, das mag ich! Wahrscheinlich nur ein kleiner Spike.', '¡Sí, me gusta! Probablemente solo un pico pequeño.'],
+        scanBetter: ['Hmm, okay now and then. Pair it with protein or fiber.', 'Hmm, ab und zu okay. Am besten mit Eiweiß oder Ballaststoffen.', 'Hmm, de vez en cuando. Mejor con proteína o fibra.'],
+        scanSpike: ['Oof, my leaves droop. Likely a big spike, check the swaps.', 'Uff, meine Blätter hängen. Wahrscheinlich ein großer Spike, schau dir die Tauschideen an.', 'Uf, mis hojas caen. Probablemente un pico grande, mira los cambios.'],
+        photoTitle: ['Your photo', 'Dein Foto', 'Tu foto'],
+        savePhoto: ['Save photo', 'Foto speichern', 'Guardar foto'],
+        photoSaved: ['Photo ready', 'Foto bereit', 'Foto lista'],
+        photoGptHint: ['Save it, then upload it in the LOWiSPIKE GPT for a deeper analysis or to create content.', 'Speichere es und lade es dann im LOWiSPIKE GPT hoch, für eine tiefere Analyse oder für Inhalte.', 'Guárdala y súbela al GPT de LOWiSPIKE para un análisis más profundo o para crear contenido.'],
+        photoLog: ['Log as meal', 'Als Mahlzeit eintragen', 'Registrar comida'],
+        photoName: ['What is it?', 'Was ist das?', '¿Qué es?'],
         funny: ['My leaves raised an eyebrow. Fancy a swap?', 'Meine Blätter ziehen eine Augenbraue hoch. Lust auf einen Tausch?', 'Mis hojas alzaron una ceja. ¿Probamos un cambio?'],
         unknown: ['Let’s take a closer look at the label.', 'Schauen wir uns das Etikett genauer an.', 'Veamos la etiqueta de cerca.'],
         gpt: ['Deeper analysis & create content', 'Tiefer analysieren & Inhalte erstellen', 'Analizar más y crear contenido'],
@@ -473,6 +482,45 @@
             finish();
             return;
         }
+        if (!target && world.animate) {
+            // Fast, compositor-only close: show Home underneath right away, then fade + shrink the world
+            // uniformly toward the bubble (no per-frame JS, no stretched non-uniform scale, no late pop-in).
+            const r = motion.origin || { left: innerWidth * .3, top: innerHeight * .3, width: innerWidth * .4, height: innerHeight * .4 },
+                cx = r.left + r.width / 2,
+                cy = r.top + r.height / 2,
+                sc = Math.max(.12, Math.min(.6, r.width / innerWidth));
+            D.documentElement.classList.remove('herb-room', 'sp-open', 'sp-capturing');
+            try {
+                ensure();
+                home.querySelector('.sp-home-herb').append(creature);
+            } catch (e) {}
+            world.classList.add('sp-closing');
+            world.style.transform = '';
+            world.style.transformOrigin = cx + 'px ' + cy + 'px';
+            world.style.willChange = 'transform, opacity';
+            let done = false;
+            const end = () => {
+                if (done) return;
+                done = true;
+                clearTimeout(motion.guard);
+                if (motion.target !== target) return;
+                finish();
+                world.classList.remove('sp-closing');
+                world.style.transformOrigin = '';
+                world.style.willChange = '';
+                try { motion.anim && motion.anim.cancel(); } catch (e) {}
+                motion.anim = null;
+            };
+            try { motion.anim && motion.anim.cancel(); } catch (e) {}
+            motion.anim = world.animate([{ transform: 'scale(1)', opacity: 1 }, { transform: 'scale(' + sc + ')', opacity: 0 }], { duration: 230, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards' });
+            motion.anim.onfinish = end;
+            motion.guard = setTimeout(end, 450);
+            return;
+        }
+        try { motion.anim && motion.anim.cancel(); } catch (e) {}
+        motion.anim = null;
+        world.classList.remove('sp-closing');
+        world.style.transformOrigin = '';
         // Safety net: whatever happens to animation frames, the world never stays half-visible.
         motion.guard = setTimeout(() => {
             if (motion.target === target) finish();
@@ -660,9 +708,10 @@
         } catch (e) {
             R.toast(tr('storage'));
         }
-        const assessment = window.LowiDiscovery && LowiDiscovery.assess ? LowiDiscovery.assess(p) : null,
-            category = assessment && assessment.category;
-        feedback(category === 'outside' || category === 'caution' ? 'curious' : 'vitamin', tr(category === 'outside' || category === 'caution' ? 'funny' : category === 'insufficient' ? 'unknown' : 'glow'), gained);
+        // Herb reaction follows the LOWiSPIKE likely-spike estimate (the same verdict the result card shows).
+        let verdict = p && p.verdict && p.verdict !== 'unknown' ? p.verdict : 'unknown';
+        try { if (verdict === 'unknown' && !p.notFound && LowiDex.rate) verdict = LowiDex.rate(p).verdict || 'unknown'; } catch (e) {}
+        feedback(verdict === 'spike' ? 'wilt' : verdict === 'better' ? 'curious' : verdict === 'ok' ? 'bloom' : 'curious', tr(verdict === 'spike' ? 'scanSpike' : verdict === 'better' ? 'scanBetter' : verdict === 'ok' ? 'scanOk' : 'unknown'), gained);
         LowiDex.reveal(p);
         const ov = R.top && R.top();
         if (ov) {
@@ -743,7 +792,7 @@
     async function finishMeal(form) {
         const data = new FormData(form),
             values = {};
-        for (const k of Object.keys(K.macros({}))) values[k] = data.get(k) === '' ? null : +data.get(k);
+        for (const k of Object.keys(K.macros({}))) values[k] = data.get(k) == null || data.get(k) === '' ? null : +data.get(k);
         const seed = {
             id: form.dataset.id,
             t: String(data.get('title')).trim(),
@@ -786,7 +835,7 @@
         });
         cancelCapture();
         const h = scannerHost();
-        h.innerHTML = '<div class="sp-food-camera"><video autoplay muted playsinline></video><p role="status"></p><div>' + button('camera', 'camera', 'shutter') + button('upload', 'camera', 'upload') + button('cancel', 'close', 'cancelCapture') + '</div></div>';
+        h.innerHTML = '<div class="sp-food-camera"><video autoplay muted playsinline></video><p role="status"></p><div>' + button('camera', 'camera', 'shutter') + '<label class="sp-action sp-upload-label">' + icon('camera') + '<span>' + esc(tr('upload')) + '</span><input type="file" accept="image/*" class="sp-file-in"></label>' + button('cancel', 'close', 'cancelCapture') + '</div></div>';
         if (!navigator.mediaDevices?.getUserMedia) {
             setText(h.querySelector('p'), tr('noCamera'));
             return;
@@ -827,9 +876,67 @@
         cv.height = Math.round(v.videoHeight * scale);
         cv.getContext('2d').drawImage(v, 0, 0, cv.width, cv.height);
         photoURL = cv.toDataURL('image/jpeg', .65);
+        photoFile = null;
+        try {
+            const big = D.createElement('canvas'), s2 = Math.min(1, 1600 / v.videoWidth);
+            big.width = Math.round(v.videoWidth * s2);
+            big.height = Math.round(v.videoHeight * s2);
+            big.getContext('2d').drawImage(v, 0, 0, big.width, big.height);
+            big.toBlob(b => { if (b) photoFile = new File([b], 'lowispike-' + Date.now() + '.jpg', { type: 'image/jpeg' }); }, 'image/jpeg', .9);
+        } catch (e) {}
         cancelCapture();
-        flight(photoURL).then(() => mealForm());
+        flight(photoURL).then(() => photoSheet());
     }
+    let photoFile = null;
+    function photoSheet() {
+        if (!photoURL) return mealForm();
+        lastMealId = uid();
+        showSheet('<h2>' + esc(tr('photoTitle')) + '</h2><img class="sp-photo-prev" alt="" src="' + esc(photoURL) + '"><div class="sp-photo-acts">' + button('savePhoto', 'arrow', 'savePhoto') + gptHTML() + '</div><p class="sp-note small">' + esc(tr('photoGptHint')) + '</p><form id="spMeal" class="sp-photo-form" data-id="' + esc(lastMealId) + '"><label>' + esc(tr('photoName')) + '<input name="title" required maxlength="100" autocomplete="off"></label><button type="submit" class="sp-action sp-primary">' + icon('plate') + '<span>' + esc(tr('photoLog')) + '</span></button></form>');
+    }
+    function photoAsFile() {
+        if (photoFile) return photoFile;
+        if (!photoURL) return null;
+        const bin = atob(photoURL.split(',')[1] || ''), arr = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+        return new File([arr], 'lowispike-' + Date.now() + '.jpg', { type: 'image/jpeg' });
+    }
+    async function savePhoto() {
+        const f = photoAsFile();
+        if (!f) return;
+        if (navigator.canShare && navigator.share) {
+            let ok = false;
+            try { ok = navigator.canShare({ files: [f] }); } catch (e) {}
+            if (ok) {
+                try { await navigator.share({ files: [f] }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
+            }
+        }
+        const a = D.createElement('a');
+        a.href = URL.createObjectURL(f);
+        a.download = f.name;
+        D.body.append(a);
+        a.click();
+        setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+        R.toast(tr('photoSaved'));
+    }
+    async function onPhotoFile(file) {
+        if (!file) return;
+        try {
+            photoFile = file;
+            photoURL = await LowiHost.resizeImage(file, 640, .65);
+            cancelCapture();
+            await flight(photoURL);
+            photoSheet();
+        } catch (e) {
+            R.toast(tr('noCamera'));
+        }
+    }
+    D.addEventListener('change', e => {
+        if (e.target && e.target.classList && e.target.classList.contains('sp-file-in')) {
+            const f = e.target.files && e.target.files[0];
+            e.target.value = '';
+            onPhotoFile(f);
+        }
+    });
     const photoInput = D.createElement('input');
     photoInput.type = 'file';
     photoInput.accept = 'image/*';
@@ -839,14 +946,7 @@
         const file = photoInput.files?.[0];
         photoInput.value = '';
         if (!file) return;
-        try {
-            photoURL = await LowiHost.resizeImage(file, 640, .65);
-            cancelCapture();
-            await flight(photoURL);
-            mealForm();
-        } catch (e) {
-            R.toast(tr('noCamera'));
-        }
+        onPhotoFile(file);
     });
 
     function physics() {
@@ -1462,6 +1562,7 @@
         } else if (a === 'cancelCapture') cancelCapture();
         else if (a === 'shutter') shutter();
         else if (a === 'upload') photoInput.click();
+        else if (a === 'savePhoto') savePhoto();
         else if (a === 'wardrobe') wardrobe();
         else if (a === 'collection') collection();
         else if (a === 'profile') profile();

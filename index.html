@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261015-010500">
+<meta name="lowi-build" content="20261015-011500">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -439,6 +439,10 @@ input[type=date].input{display:flex;align-items:center;color-scheme:dark}
 .mv-play svg{width:32px;height:32px}
 .mv-confirm{position:absolute;inset:0;display:flex;align-items:flex-end;padding:18px 18px calc(var(--sab) + 24px);background:rgba(3,5,10,.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .mv-confirm .card{width:100%}
+/* Oct 15: the end sheet sits above the player controls (.mv-ctrl is a flex item with z-index:20, so it painted over the sheet and ate its taps). Controls hide while it is open; both buttons are 44 px+. */
+#mv-player .mv-confirm{z-index:60}
+#mv-player.mv-asking .mv-ctrl{visibility:hidden}
+.mv-safe button{position:relative}.mv-safe button::after{content:"";position:absolute;inset:-10px}
 .mv-done{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 6px}
 .mv-badge{width:110px;height:110px;border-radius:50%;display:grid;place-items:center;font-size:54px;background:radial-gradient(circle,rgba(226,194,126,.3),rgba(202,161,90,.06));border:1px solid var(--gold);animation:mvpop .6s cubic-bezier(.2,1.4,.4,1)}
 @keyframes mvpop{0%{transform:scale(.4);opacity:0}100%{transform:scale(1);opacity:1}}
@@ -5134,7 +5138,7 @@ function start(fmt, mins, opts){
   const postMeal = !!(meal && Date.now() - meal.ts <= MEAL_WINDOW);
   P = {plan, name:fmtName(fmt), fmt, mins, elapsed:-3, moved:0, paused:false, last:performance.now(), idx:-1, postMeal, mealName:postMeal ? meal.name : "", raf:0, beeped:{}, done:false, confirm:false, steps:0, reps:0, sol:0, ms:-1, msWhen:{}, msTimer:0};
   let el = $("#mv-player"); if (!el) { el = document.createElement("div"); el.id = "mv-player"; ($("#app") || document.body).appendChild(el); }
-  el.innerHTML = playerHTML(); el.classList.add("on");
+  el.innerHTML = playerHTML(); el.classList.remove("mv-asking"); el.classList.add("on"); mvGuard();
   P.fig = new Figure($("#mv-fig"));
   lockScreen(true);
   if (!M.safetySeen) { M.safetySeen = true; save(); }
@@ -5211,8 +5215,15 @@ function extendSession(){
 }
 function togglePause(){ if (!P) return; P.paused = !P.paused; $("#mv-pp").innerHTML = P.paused ? IC.play : IC.pause; if (P.paused && window.speechSynthesis) speechSynthesis.cancel(); }
 function skip(){ if (!P || P.elapsed < 0) { if (P) P.elapsed = 0; return; } const i = blockAt(P.elapsed), b = P.plan.blocks[i]; if (b) P.elapsed = b.start + b.dur + 0.001; }
-function endAsk(){ if (!P) return; P.confirm = true; const m = Math.floor(P.moved / 60); $("#mv-confirm-t").textContent = m >= 3 ? "You've moved " + m + " min. That still counts." : "Under 3 minutes moved, so no XP yet. Even 3 minutes counts."; $("#mv-confirm").classList.remove("hidden"); }
-function endKeep(){ if (!P) return; P.confirm = false; P.last = performance.now(); $("#mv-confirm").classList.add("hidden"); }
+function endAsk(){ if (!P) return; P.confirm = true; { const pl = $("#mv-player"); if (pl) pl.classList.add("mv-asking"); } const m = Math.floor(P.moved / 60); $("#mv-confirm-t").textContent = m >= 3 ? "You've moved " + m + " min. That still counts." : "Under 3 minutes moved, so no XP yet. Even 3 minutes counts."; $("#mv-confirm").classList.remove("hidden"); }
+function endKeep(){ if (!P) return; P.confirm = false; P.last = performance.now(); $("#mv-confirm").classList.add("hidden"); const pl = $("#mv-player"); if (pl) pl.classList.remove("mv-asking"); }
+/* Oct 15: back (Safari edge swipe, Android back, Esc) never strands you in a session. Back opens the end sheet, back again ends and saves, back on the done screen closes. */
+let mvSkipPop = false;
+function mvGuard(){ try { if (!(history.state && history.state.lowiMv)) history.pushState({lowiMv:1}, ""); } catch(e){} }
+function mvUnguard(){ try { if (history.state && history.state.lowiMv) { mvSkipPop = true; history.back(); setTimeout(() => { mvSkipPop = false; }, 600); } } catch(e){} }
+function mvBack(){ if (!$("#mv-player.on")) return false; if (P && !P.done) { if (P.confirm) finish(false); else endAsk(); } else closePlayer(); return true; }
+addEventListener("popstate", () => { if (mvSkipPop) { mvSkipPop = false; return; } if (mvBack() && $("#mv-player.on")) mvGuard(); });
+document.addEventListener("keydown", e => { if (e.key !== "Escape" || !$("#mv-player.on")) return; e.preventDefault(); if (P && P.confirm) endKeep(); else mvBack(); });
 
 function finish(complete){
   if (window.R3W) R3W.stop();
@@ -5230,7 +5241,7 @@ function finish(complete){
   }
   sess.xp = xp; save();
   const sk = moveStreak();
-  const el = $("#mv-player"); clearTimeout(P.msTimer);
+  const el = $("#mv-player"); clearTimeout(P.msTimer); el.classList.remove("mv-asking");
   el.innerHTML = '<div class="mv-done"><div class="mv-badge">' + (min >= 3 ? IC.flame : IC.sprout) + '</div><div class="h1" style="margin-top:14px">' + (min >= 3 ? (complete ? "Session done" : "Nice work") : "Saved") + '</div>' +
     '<div class="p muted" style="margin-top:6px">' + (min >= 3 ? min + " min moved" + (sess.postMeal ? ", right after " + esc(P.mealName) + "." : ".") : "Under 3 minutes this time. Next one counts.") + '</div>' +
     (lines.length ? '<div class="mv-xp">' + lines.map(l => '<div>' + esc(l) + '</div>').join("") + '</div>' : '') +
@@ -5240,7 +5251,7 @@ function finish(complete){
   if (window.LowiSFX) { if (M.sound) try{window.LowiSFX&&LowiSFX.play("workoutDone")}catch(_){}; } else { beep(880, .18); setTimeout(() => beep(1320, .3), 160); }/*r3e*/
   P = null;
 }
-function closePlayer(){ const el = $("#mv-player"); if (el) { el.classList.remove("on"); setTimeout(() => { if (!P) el.innerHTML = ""; }, 400); } if ($("#mv-screen.on")) renderScreen(); const h = H(); if (h && h.refresh) h.refresh(); }
+function closePlayer(){ mvUnguard(); const el = $("#mv-player"); if (el) { el.classList.remove("on", "mv-asking"); setTimeout(() => { if (!P) el.innerHTML = ""; }, 400); } if ($("#mv-screen.on")) renderScreen(); const h = H(); if (h && h.refresh) h.refresh(); }
 
 /* ---------- steps ---------- */
 function setSteps(v){
@@ -19088,7 +19099,7 @@ html.q4b-off #lcA2hs{display:none!important}
 /* Q4b: hide the Add to Home Screen pill off Today, while a popup / sheet / sign-in is up, or while the new-version banner shows.
    Done in JS (not CSS :has) so Safari updates it right away. Only runs while the pill exists. */
 (function(){
-  const SEL = ".r2-ov.on:not(.off), #sheetwrap.open, #rsSheet.open, #lcUpd, #g1Ob";
+  const SEL = ".r2-ov.on:not(.off), #sheetwrap.open, #rsSheet.open, #mv-player.on, #lcUpd, #g1Ob";
   function sync(){
     const d = document.getElementById("lcA2hs"); const h = document.documentElement;
     if (!d) { h.classList.remove("q4b-off"); return; }

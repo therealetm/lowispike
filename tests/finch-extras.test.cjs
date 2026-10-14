@@ -74,7 +74,7 @@ test('quiet hours wrap past midnight and hold incoming vibes until morning', () 
 });
 
 test('wired into the app shell, offline cache and build', () => {
-  assert.match(read('apple-ui.js'), /'finch-extras\.js'\]/);
+  assert.match(read('apple-ui.js'), /'finch-extras\.js'[,\]]/);
   const sw = read('sw.js'); assert.match(sw, /"finch-extras\.js", "finch-extras\.css"/);
   const b = JSON.parse(read('version.json')).build;
   assert.match(sw, new RegExp('SHELL_BUILD = "' + b + '"')); assert.match(sw, new RegExp('CACHE = "lowispike-updates-' + b + '"'));

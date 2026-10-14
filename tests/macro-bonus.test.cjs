@@ -91,3 +91,8 @@ test('spirit.js checks the bonus after every meal log event', () => {
   const src = fs.readFileSync(path.join(__dirname, '../spirit.js'), 'utf8');
   assert.match(src, /addEventListener\('lowi:meal-logged',[^\n]*checkBonuses\(false\)/);
 });
+
+test('the living Home macro tile refreshes on window events (award and bonus fire on window)', () => {
+  const src = fs.readFileSync(path.join(__dirname, '../living-home.js'), 'utf8');
+  assert.match(src, /'lowi:reward'[^\n]*'lowi:meal-logged'\]\.forEach\(n => \{ W\.addEventListener\(n, schedule\)/);
+});

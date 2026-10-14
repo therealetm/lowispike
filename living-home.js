@@ -232,7 +232,10 @@
     }, true);
 
     /* ---------- wiring ---------- */
-    ['lowi:reward', 'lowi:state', 'lowi:weather', 'lowi:care', 'lowi:lang', 'lowi:fast', 'lowi:water', 'lowi:meal', 'visibilitychange', 'focus', 'storage'].forEach(n => (n === 'focus' || n === 'storage' ? W : D).addEventListener(n, schedule));
+    /* the app fires its lowi:* events on window (award, meal log, macro bonus), a few on document: listen on both so a tile updates without a tap */
+    ['lowi:reward', 'lowi:state', 'lowi:weather', 'lowi:care', 'lowi:lang', 'lowi:fast', 'lowi:water', 'lowi:meal', 'lowi:meal-logged'].forEach(n => { W.addEventListener(n, schedule); D.addEventListener(n, schedule); });
+    D.addEventListener('visibilitychange', schedule);
+    ['focus', 'storage'].forEach(n => W.addEventListener(n, schedule));
     const soon = () => { setTimeout(schedule, 350); setTimeout(schedule, 1600); };
     D.addEventListener('click', soon, true);
     D.addEventListener('submit', soon, true);

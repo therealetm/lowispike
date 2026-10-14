@@ -1380,7 +1380,7 @@
                 preview: look,
                 label: name() + ' · ' + (sel ? wname(sel) : '')
             }) +
-            '<div class="wd-info" aria-live="polite"><b>' + esc(sel ? wname(sel) : '') + '</b><small>' + esc(sel ? wdStatus(sel) : '') + '</small>' + (lockedSel ? '<i class="wd-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '"><i style="width:' + pct + '%"></i></i>' : '') + action + (note ? '<p class="wd-note">' + esc(note) + '</p>' : '') + '</div></div>' +
+            '<div class="wd-info" aria-live="polite"><b>' + esc(sel ? wname(sel) : '') + '</b><small>' + esc(sel ? wdStatus(sel) : '') + '</small>' + (lockedSel ? '<i class="wd-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '"><i style="width:' + pct + '%"></i></i>' : '') + action + (note ? '<p class="wd-note' + (sel.status === 'premium' ? ' wd-must' : '') + '">' + esc(note) + '</p>' : '') + '</div></div>' +
             '<div class="wd-tabs" role="tablist" aria-label="' + esc(tr('wardrobe')) + '">' + WC.SLOTS.map(s => {
                 const own = items.filter(c => c.kind === s.kind && (c.status === 'ready' || c.status === 'equipped')).length,
                     all = items.filter(c => c.kind === s.kind && !c.premium).length;

@@ -1,0 +1,164 @@
+/* ===== Water bubble fasting timer (Oct 14, 2026), see fast-bubble.js =====
+   Only styles the inside of #spFast once the script has attached (.fb-on). Size and place stay with spirit.css / beta.css. */
+#spFast.fb-on .sp-fast-water,
+html.spirit-app #spHome #spFast.fb-on .sp-fast-water {
+    display: none !important
+}
+
+#spFast.fb-on {
+    isolation: isolate;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform .35s cubic-bezier(.2, .9, .3, 1.3), box-shadow .4s ease
+}
+
+#spFast.fb-on.fb-touch {
+    transform: scale(.975)
+}
+
+#spFast .fb-cv {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    pointer-events: none;
+    z-index: 0;
+    border-radius: 50%
+}
+
+/* the glass highlight stays above the water */
+#spFast.fb-on:before {
+    z-index: 3
+}
+
+#spFast.fb-on .sp-fast-copy {
+    z-index: 4;
+    text-shadow: 0 1px 2px rgba(4, 10, 28, .6), 0 0 10px rgba(4, 18, 40, .45)
+}
+
+#spFast.fb-on .sp-fast-copy b {
+    font-variant-numeric: tabular-nums
+}
+
+#spFast .fb-marks {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2
+}
+
+#spFast .fb-tick {
+    position: absolute;
+    height: 1.5px;
+    margin-top: -.75px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, .42);
+    box-shadow: 0 0 2px rgba(4, 10, 28, .35)
+}
+
+#spFast .fb-tick.past {
+    background: rgba(255, 255, 255, .9)
+}
+
+#spFast .fb-tick.next {
+    height: 2px;
+    margin-top: -1px;
+    background: #fff;
+    box-shadow: 0 0 6px rgba(190, 245, 255, .95), 0 0 2px rgba(4, 10, 28, .4);
+    animation: fbNext 2.6s ease-in-out infinite
+}
+
+#spFast .fb-lab {
+    position: absolute;
+    height: 12px;
+    font: 650 9px/12px system-ui, -apple-system, "SF Pro Text", sans-serif;
+    letter-spacing: .1px;
+    text-align: right;
+    white-space: nowrap;
+    color: rgba(255, 255, 255, .62);
+    text-shadow: 0 1px 2px rgba(4, 10, 28, .7)
+}
+
+#spFast .fb-lab.past {
+    color: rgba(255, 255, 255, .92)
+}
+
+#spFast .fb-lab.next {
+    color: #fff
+}
+
+#spFast .fb-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0
+}
+
+#spFast.fb-on.done {
+    animation: fbGlow 3.2s ease-in-out infinite
+}
+
+@keyframes fbNext {
+    0%, 100% { opacity: .75 }
+    50% { opacity: 1 }
+}
+
+@keyframes fbGlow {
+    0%, 100% { box-shadow: 0 0 18px rgba(150, 240, 214, .32), inset 0 3px 6px #ffffffaa }
+    50% { box-shadow: 0 0 30px rgba(150, 240, 214, .55), inset 0 3px 6px #ffffffaa }
+}
+
+/* light look: dark text keeps a white halo so it reads on the water */
+html[data-theme=light] #spFast.fb-on .sp-fast-copy {
+    text-shadow: 0 0 2px rgba(255, 255, 255, .95), 0 0 8px rgba(255, 255, 255, .8)
+}
+
+html[data-theme=light] #spFast .fb-tick {
+    background: rgba(17, 35, 63, .35);
+    box-shadow: none
+}
+
+html[data-theme=light] #spFast .fb-tick.past,
+html[data-theme=light] #spFast .fb-tick.next {
+    background: #11233f
+}
+
+html[data-theme=light] #spFast .fb-lab {
+    color: rgba(17, 35, 63, .6);
+    text-shadow: 0 0 3px rgba(255, 255, 255, .95)
+}
+
+html[data-theme=light] #spFast .fb-lab.past,
+html[data-theme=light] #spFast .fb-lab.next {
+    color: #11233f
+}
+
+@media (prefers-contrast: more) {
+    #spFast.fb-on .sp-fast-copy {
+        text-shadow: 0 0 3px #000, 0 0 3px #000
+    }
+    html[data-theme=light] #spFast.fb-on .sp-fast-copy {
+        text-shadow: 0 0 3px #fff, 0 0 3px #fff
+    }
+    #spFast .fb-tick, #spFast .fb-lab {
+        opacity: 1
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #spFast.fb-on,
+    #spFast.fb-on.done,
+    #spFast .fb-tick.next {
+        animation: none !important;
+        transition: none !important
+    }
+    #spFast.fb-on.fb-touch {
+        transform: none
+    }
+}

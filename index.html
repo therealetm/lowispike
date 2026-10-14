@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261014-211000">
+<meta name="lowi-build" content="20261014-213500">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -8207,7 +8207,31 @@ function fHomeHTML(){
     /* r3k-home */ dkSectionHTML() +
     '<div id="r3kYes">' + fYesHTML() + '</div>';
 }
+/* prod-verdict (Oct 14, 2026): a caught product pick shows its spike verdict right on Cook and opens the scan verdict card
+   (reveal animation, herb, meter, why), with missing label facts filled from Open Food Facts. No label-evidence detour. */
+const PV = {};
+function fProdCardHTML(f, anim){
+  const D3 = window.LowiDex, q = PV[f.id] || f.product || {}; let v = q.verdict, why = q.why;
+  if (!v || v === "unknown" || !why || !why.length) { try { const r = D3.rate(q); if (!v || v === "unknown") v = r.verdict; if (!why || !why.length) why = r.why; } catch(e){} }
+  v = v || "unknown"; const vt = D3.vtext(v), w1 = (why || []).map(D3.whyText).filter(Boolean)[0] || "", by = q.byName || f.byName, sub = [q.brand, (q.facts && q.facts.q) || q.quantity].filter(Boolean).join(" · ");
+  if (!PV[f.id]) setTimeout(() => fProdVerdict(f, false), 0);
+  /* no "in": on phones that class pops the plain "Your pick" sheet; the verdict card opens instead */
+  return '<div class="r5-card ck-pv" data-id="' + esc(f.id) + '" data-noi18n>' +
+    '<div class="tiny gold">' + esc(ckT("Caught product", "Gefangenes Produkt", "Producto atrapado") + (by ? " · " + ckT("caught by ", "gefangen von ", "atrapado por ") + by : "")) + '</div>' +
+    '<button type="button" class="ck-pv-row" data-r5="pverdict" data-id="' + esc(f.id) + '">' + (q.img ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(q.img) + '">' : '<span class="ck-pv-ph">' + CKPLATE + '</span>') +
+      '<span class="ck-pv-t"><b class="r5-cn">' + esc(q.name || f.n) + '</b>' + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</span><span class="b3-vb v-' + esc(v) + '">' + esc(vt[0]) + '</span></button>' +
+    '<div class="small ck-pv-why">' + esc(w1 || vt[1]) + '</div>' +
+    '<div class="r5-btns"><button class="btn primary" data-r5="pverdict" data-id="' + esc(f.id) + '">' + esc(ckT("Open spike check", "Spike-Check öffnen", "Ver chequeo de pico")) + '</button></div></div>';
+}
+function fProdVerdict(f, open){
+  if (!f || !f.buy || !window.LowiDex || !LowiDex.enrich) return null;
+  return LowiDex.enrich(f.product).then(q => { const had = PV[f.id]; PV[f.id] = q;
+      const pk = r5$("#r5Pick"), c = pk && [...pk.querySelectorAll(".ck-pv")].find(x => x.dataset.id === f.id); if (c && !had) c.outerHTML = fProdCardHTML(f, false);
+      if (open) LowiDex.reveal(q); return q; },
+    () => { PV[f.id] = f.product; if (open) LowiDex.reveal(f.product); return f.product; });
+}
 function fRevealHTML(f, anim){
+  if (f.buy && window.LowiDex && LowiDex.enrich) return fProdCardHTML(f, anim);
   if (window.LowiSwaflo) { let h = LowiSwaflo.revealHTML(f); if (h) { /* ck-src: a caught product says so, and pops up like any pick */
     if (f.buy) h = h.replace(/<div class="tiny gold">[^<]*<\/div>/, '<div class="tiny gold">' + esc(ckT("Caught product", "Gefangenes Produkt", "Producto atrapado") + (f.byName ? " · " + ckT("caught by ", "gefangen von ", "atrapado por ") + f.byName : "")) + '</div>');
     if (anim) h = h.replace('class="r5-card"', 'class="r5-card in"'); return h; } }
@@ -8221,7 +8245,7 @@ function fRevealHTML(f, anim){
 let fSpinning = false;
 function fShuffle(instant){
   if (fSpinning) return; const f = fPick(); if (!f) { const eh = ckEmptyHTML(), pk0 = r5$("#r5Pick"); if (eh === null) LowiSwaflo.emptyPick(); else if (pk0) pk0.innerHTML = eh; return; } const strip = r5$("#r5Strip"), stage = r5$("#r5Stage"), pick = r5$("#r5Pick");
-  fSaveLast(f);
+  fSaveLast(f); if (f.buy && window.LowiDex && LowiDex.enrich) LowiDex.enrich(f.product).catch(() => {}); /* prod-verdict: fetch while it spins */
   if (!strip || !stage) return;
   const selectionAtPick = fSrc() + "|" + fCatSel();
   const reduce = instant || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
@@ -8236,7 +8260,7 @@ function fShuffle(instant){
   let settled = false;
   const done = () => { if (settled || !fSpinning) return; settled = true; fSpinning = false; stage.classList.remove("spin"); void stage.offsetWidth; stage.classList.add("hit");
     try { if (navigator.vibrate) navigator.vibrate([10, 40, 18]); } catch(e){}
-    const pk = r5$("#r5Pick"); if (selectionAtPick !== fSrc() + "|" + fCatSel()) return; if (pk) pk.innerHTML = fRevealHTML(f, true);
+    const pk = r5$("#r5Pick"); if (selectionAtPick !== fSrc() + "|" + fCatSel()) return; if (pk) pk.innerHTML = fRevealHTML(f, true); if (f.buy && window.LowiDex) fProdVerdict(f, true);
     if (R5.audio && !R5.mute) auSpeak("Your pick: " + f.n, {queue:false}); };
   fSpinning = true;
   if (reduce) { strip.style.transform = "translateY(-" + ((cells.length - 1) / cells.length * 100) + "%)"; done(); return; }
@@ -8247,7 +8271,7 @@ function fShuffle(instant){
 }
 function fShowPick(id){ const f = fById(id); if (!f) return; R5.last = id; r5save(); const st = r5$("#r5Strip"), pk = r5$("#r5Pick");
   if (st) { st.style.transition = "none"; st.style.transform = "translateY(0)"; st.innerHTML = '<div class="r5-cell">' + (f.img ? '<img alt="" src="' + f.img + '">' : '<span>🍽️</span>') + '</div>'; }
-  if (pk) { pk.innerHTML = fRevealHTML(f, true); const sb = r5$("#shBody"); const s = r5$("#r5Stage"); if (sb && s) sb.scrollTo({top:Math.max(0, s.offsetTop - 10), behavior:"smooth"}); } }
+  if (pk) { pk.innerHTML = fRevealHTML(f, true); if (f.buy && window.LowiDex) fProdVerdict(f, true); const sb = r5$("#shBody"); const s = r5$("#r5Stage"); if (sb && s) sb.scrollTo({top:Math.max(0, s.offsetTop - 10), behavior:"smooth"}); } }
 
 /* ---------- food swipe deck ---------- */
 /* r3k (Oct 10, 2026): the deck lives inline on Cook, under the shuffle. Four ways:
@@ -8505,6 +8529,7 @@ document.addEventListener("click", e => {
   switch (a) {
     case "shuffle": e.preventDefault(); fShuffle(false); break;
     case "pick": fShowPick(b.dataset.id); break;
+    case "pverdict": { e.preventDefault(); const f = fById(b.dataset.id); if (f && f.buy) { if (PV[f.id]) LowiDex.reveal(PV[f.id]); else fProdVerdict(f, true); } break; } /* prod-verdict */
     case "swipe": dkOpen(); break;
     case "deck-close": dkClose(); break;
     case "swipe-yes": case "swipe-right": dkDecide("right"); break;   /* r3k-cases */
@@ -13632,7 +13657,7 @@ function cardHTML(p, anim){
     '<div class="b3-name">' + esc(p.name) + '</div>' + (p.brand ? '<div class="small muted">' + esc(p.brand) + (p.facts && p.facts.q ? " · " + esc(p.facts.q) : "") + '</div>' : "") +
     '<div class="b3-verd"><span class="b3-vb v-' + v + '">' + esc(t("vl_" + v)) + '</span><span class="small">' + esc(t("vs_" + v)) + '</span></div>' + herbHTML(v) + eatHTML(p) +
     (v !== "unknown" ? meterHTML(p.score != null ? p.score : (p.facts && p.facts.score) || rate(p).score, p.est || (p.facts && p.facts.est)) : "") +
-    (why.length ? '<ul class="b3-why">' + why.map(w => '<li>' + esc(w) + '</li>').join("") + '</ul>' : "") + factsHTML(p.facts) + storeCmp +
+    (why.length ? '<ul class="b3-why">' + why.map(w => '<li>' + esc(w) + '</li>').join("") + '</ul>' : "") + factsHTML(p.facts) + fillNoteHTML(p) + storeCmp +
     '<div class="tiny dim b3-meta">' + [by, p.id ? (p.catches > 1 ? t("catches", p.catches) : t("catches1")) : "", p.barcode ? t("bcFound", p.barcode) : "", p.source === "off" ? t("r_off") : ""].filter(Boolean).map(esc).join(" · ") + '</div></div>'; }
 function actsHTML(p){ const mine = isMine(p);
   if (p.verdict === "unknown") return "";
@@ -13647,6 +13672,30 @@ function manualHTML(p){
     '<input class="input" id="b3MBrand" maxlength="60" style="margin-top:8px" placeholder="' + esc(t("brandPh")) + '" value="' + esc(p.brand || "") + '">' +
     '<div class="small b3-mq">' + esc(t("manualQ")) + '</div><div class="b3-ticks">' + ["sugar", "sweet", "carb", "none"].map(k => '<button class="b3-tick" data-b3="tick" data-k="' + k + '" aria-pressed="false">' + esc(t("m_" + k)) + '</button>').join("") + '</div>' +
     '<button class="r2-btn pri big b3-catch" data-b3="mcatch" id="b3MCatch" disabled><span class="b3-pb" aria-hidden="true"></span>' + esc(t("catch")) + '</button><button class="r2-link b3-skip" data-b3="close">' + esc(t("dontSave")) + '</button></div>'; }
+/* prod-verdict (Oct 14, 2026): a product picked anywhere (Cook > Products shuffle) opens this same verdict card.
+   Label facts it is missing are filled from Open Food Facts by exact barcode only, never guessed; what stays missing is said plainly. */
+const ENR = {}, FILLK = ["c", "s", "f", "p"];
+function fillGaps(p){ const f = p.facts || {}; return FILLK.filter(k => f[k] == null).concat(p.ingredients ? [] : ["ing"]); }
+function enrich(p){
+  if (!p) return Promise.resolve(p);
+  const q = Object.assign({}, p, {facts:Object.assign({}, p.facts || {})}), code = validCode(q.barcode);
+  if (!fillGaps(q).length) return Promise.resolve(q);
+  if (!code) { q.fillTried = "nocode"; return Promise.resolve(q); }
+  if (!ENR[code]) ENR[code] = offProduct(code).then(o => { if (!o) delete ENR[code]; return o; }, () => { delete ENR[code]; return null; });
+  return ENR[code].then(o => {
+    q.fillTried = !o ? "offline" : o.notFound ? "notfound" : "off";
+    if (o && !o.notFound) { const added = [];
+      Object.keys(o.facts || {}).forEach(k => { if (q.facts[k] == null && o.facts[k] != null) { q.facts[k] = o.facts[k]; if (FILLK.indexOf(k) >= 0 || k === "drink") added.push(k); } });
+      if (!q.ingredients && o.ingredients) { q.ingredients = o.ingredients; added.push("ing"); }
+      if (!q.img && o.img) q.img = o.img;
+      if (added.length) { const r = rate(q); if (r.verdict !== "unknown") { q.verdict = r.verdict; q.why = r.why; q.score = r.score; q.est = r.est; } q.filled = added; } }
+    return q; }); }
+function showProduct(p, quiet){ return enrich(p).then(q => { reveal(q, quiet); return q; }, () => { reveal(p, quiet); return p; }); }
+const FILLN = {c:["carbs", "Kohlenhydrate", "carbohidratos"], s:["sugar", "Zucker", "azúcar"], f:["fiber", "Ballaststoffe", "fibra"], p:["protein", "Eiweiß", "proteína"], ing:["ingredients", "Zutaten", "ingredientes"], drink:["drink", "Getränk", "bebida"]};
+function fillNoteHTML(p){ if (!p || !p.fillTried) return ""; const L = LI(), lab = k => (FILLN[k] || [k])[L] || FILLN[k][0], gaps = fillGaps(p), parts = [];
+  if (p.filled && p.filled.length) parts.push(["Filled in from Open Food Facts: ", "Aus Open Food Facts ergänzt: ", "Completado con Open Food Facts: "][L] + p.filled.map(lab).join(", ") + ".");
+  if (gaps.length) parts.push((p.fillTried === "offline" ? ["Open Food Facts can't be reached right now. Still unknown: ", "Open Food Facts gerade nicht erreichbar. Noch unbekannt: ", "Open Food Facts no responde ahora. Aún sin datos: "] : p.fillTried === "nocode" ? ["No barcode to look up. Unknown: ", "Kein Barcode zum Nachschlagen. Unbekannt: ", "Sin código de barras. Sin datos: "] : ["Not listed for this product, not even in Open Food Facts: ", "Für dieses Produkt nirgends angegeben, auch nicht in Open Food Facts: ", "No figura para este producto, ni en Open Food Facts: "])[L] + gaps.map(lab).join(", ") + ". " + ["The verdict uses what is known.", "Das Urteil nutzt, was bekannt ist.", "El veredicto usa lo que se sabe."][L]);
+  return parts.length ? '<div class="small b3-fill">' + parts.map(esc).join("<br>") + '</div>' : ""; }
 let REV = null;
 const HERB_SAY = {
   ok: ["Yes, I like this one! Likely only a small spike.", "Ja, das mag ich! Wahrscheinlich nur ein kleiner Spike.", "¡Sí, me gusta! Probablemente solo un pico pequeño."],
@@ -13790,7 +13839,7 @@ function boot(){
   try { if (curTab() === "scan") renderTab(); } catch(e){}
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => setTimeout(boot, 0)); else setTimeout(boot, 0);
-window.LowiDex = {open:openDex, scan:openScanner, reveal, rate, rateName, validCode, render:renderTab, state:() => D, stop:() => closeScanner(true), load:loadComm, lookup:byBarcode, collect:doCatch, items:() => D.comm.concat(mineList()), cur:() => CUR || (window.LowiDiscovery ? LowiDiscovery.cur() : null)} /* f2-cur */;
+window.LowiDex = {open:openDex, scan:openScanner, reveal, rate, rateName, validCode, enrich, showProduct, vtext:v => [t("vl_" + v), t("vs_" + v)], whyText, /* prod-verdict */ render:renderTab, state:() => D, stop:() => closeScanner(true), load:loadComm, lookup:byBarcode, collect:doCatch, items:() => D.comm.concat(mineList()), cur:() => CUR || (window.LowiDiscovery ? LowiDiscovery.cur() : null)} /* f2-cur */;
 })();
 </script>
 <style id="r3kcss">

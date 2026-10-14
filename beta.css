@@ -981,6 +981,16 @@ html[data-ckview="swipe"] #tab-shelf #r3kSwipe .r3k-head, html[data-ckview="swip
 html[data-ckview="swipe"] #tab-shelf #r3kSwipe .r3k-legend { margin-top: 0 !important; }
 html[data-ckview="swipe"] #tab-shelf #r3kSwipe .r3k-stack { margin-top: 10px !important; min-height: 0 !important; }
 html[data-ckview="swipe"] #tab-shelf #r3kSwipe .r3k-btns { margin-top: 12px !important; }
+/* prod-verdict (Oct 14): a caught product pick shows its spike verdict and opens the scan verdict card */
+#tab-shelf .ck-pv-row { display: flex; align-items: center; gap: 12px; width: 100%; margin: 8px 0 0; padding: 0; background: none; border: 0; color: inherit; text-align: left; font: inherit; cursor: pointer; }
+#tab-shelf .ck-pv-row img, #tab-shelf .ck-pv-ph { flex: none; width: 52px; height: 52px; border-radius: 14px; object-fit: cover; background: rgba(255,255,255,.08); display: grid; place-items: center; color: var(--tmg-a, #9de6b8); }
+#tab-shelf .ck-pv-ph svg { width: 60%; height: 60%; opacity: .6; }
+#tab-shelf .ck-pv-t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+#tab-shelf .ck-pv-t b { font-size: 16px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#tab-shelf .ck-pv-t small { font-size: 12.5px; opacity: .7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#tab-shelf .ck-pv-why { margin-top: 8px; opacity: .85; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#tab-shelf .ck-pv .r5-btns { margin-top: 10px; }
+.b3-fill { margin-top: 10px; font-size: 12.5px; line-height: 1.4; opacity: .75; text-transform: none; letter-spacing: 0; }
 /* the swap sheet no longer carries its own Cook / Buy switch: the source on Cook decides */
 .b-body .sf-toolbar > .sf-toggle:first-of-type { display: none !important; }
 /* short phones (iPhone SE / mini): same controls, less air */

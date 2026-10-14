@@ -45,6 +45,14 @@ test('after tapping the update banner, nothing repeats the text the banner alrea
   assert(!w.session.has('lowi.g1.go'));
 });
 
+test('the update tap from an older build (banner text arrived late, no seen mark) still does not replay the text', async () => {
+  const w = world({ local: returning, session: { 'lowi.g1.go': '1' } });
+  await w.api.loadNews();
+  for (let i = 0; i < 4; i++) w.api.tick();
+  assert.equal(w.shown.length, 0);
+  assert(w.api.newsSeen('n2'));
+});
+
 test('a new update that arrived without the banner is shown once, marked seen as it opens', async () => {
   const w = world({ local: returning });
   await w.api.loadNews();

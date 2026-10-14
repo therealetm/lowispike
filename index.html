@@ -2173,7 +2173,7 @@ function remember(p){ const m = Object.assign(mem(), p); try { localStorage.setI
 function seenList(){ try { const a = JSON.parse(localStorage.getItem(SEEN) || "[]"); return Array.isArray(a) ? a : []; } catch(e){ return []; } }
 function newsSeen(id){ if (!id) return true; if (seenList().indexOf(id) >= 0) return true; try { if (localStorage.getItem("lowi.g1.bn") === id) return true; } catch(e){} return mem().n === id; }
 function markSeen(id){ if (!id) return; const a = seenList().filter(x => x !== id); a.push(id); try { localStorage.setItem(SEEN, JSON.stringify(a.slice(-40))); } catch(e){} if (mem().n !== id) remember({n:id}); }
-let newsLoaded = false;
+let newsLoaded = false, fromBanner = false;
 async function loadNews(){ try { const r = await fetch("version.json?g1n=" + Date.now(), {cache:"no-store"}); if (r.ok) { const v = await r.json(); if (v && v.news && v.news.id && v.news.text && v.build && v.build === BUILD_NOW) NEWS = v.news; } } catch(e){} newsLoaded = true; return NEWS; }
 
 /* ---------- the orb look: a live copy of the scan orb's own styles ---------- */
@@ -2426,8 +2426,8 @@ let freeSince = 0;
 function tick(){ if (document.hidden) return; if (TOUR) { helpPlace(); return; } if (!AUTO()) return;
   if (!appFree()) { freeSince = 0; return; } if (!freeSince) { freeSince = Date.now(); return; } if (Date.now() - freeSince < 1200) return;
   let go = ""; try { go = sessionStorage.getItem(GO) || ""; } catch(e){}
-  if (go) { try { sessionStorage.removeItem(GO); } catch(e){} } /* b2-go: the banner already said what's new; after the refresh nothing repeats it */
-  if (!newsLoaded) return;
+  if (go) { try { sessionStorage.removeItem(GO); } catch(e){} fromBanner = true; } /* b2-go: the banner already said what's new; after the refresh nothing repeats it */
+  if (!newsLoaded) return; if (fromBanner) { fromBanner = false; if (NEWS) markSeen(NEWS.id); }
   if (!onHome()) return; const m = mem();
   if (!m.t) { start(typeof m.s === "number" ? m.s : 0); return; }
   if (NEWS && NEWS.id && !newsSeen(NEWS.id)) { offerNews(); return; } } /* b2-offer: once per news id */

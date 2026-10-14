@@ -1,0 +1,94 @@
+/* LOWiSPIKE sun meter (sun-meter.js) + praise toast (praise.js). Prefix .ls- / .lp-. Dark space style, warm gold sun. */
+.ls-sun {
+    --ls-a: #ffcf6b;
+    --ls-b: #ff9f5a;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 34px;
+    margin: 0 0 6px;
+    padding: 4px 10px 4px 8px;
+    box-sizing: border-box;
+    border: 1px solid color-mix(in srgb, var(--ls-a) 22%, transparent);
+    border-radius: 13px;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--ls-a) 9%, transparent), color-mix(in srgb, var(--text, #fff) 3%, transparent));
+    color: var(--text, #fff);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    overflow: visible;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform .16s ease, border-color .3s ease, box-shadow .4s ease;
+}
+.ls-sun:active { transform: scale(.98); }
+.ls-sun:focus-visible { outline: 2px solid var(--ls-a); outline-offset: 2px; }
+.ls-ico { flex: none; width: 22px; height: 22px; color: var(--ls-a); overflow: visible; }
+.ls-ico circle { fill: currentColor; filter: drop-shadow(0 0 4px color-mix(in srgb, var(--ls-a) 70%, transparent)); }
+.ls-ico line { stroke: currentColor; stroke-width: 2; stroke-linecap: round; transition: opacity .4s ease; }
+.ls-name { flex: none; font-size: 12.5px; font-weight: 700; letter-spacing: .1px; white-space: nowrap; }
+.ls-track { position: relative; flex: 1 1 auto; min-width: 40px; height: 8px; border-radius: 99px; background: color-mix(in srgb, var(--ls-a) 14%, rgba(255, 255, 255, .04)); overflow: hidden; }
+.ls-fill { position: absolute; inset: 0 auto 0 0; width: calc(var(--ls-fill, 0) * 100%); border-radius: inherit; background: linear-gradient(90deg, var(--ls-b), var(--ls-a)); box-shadow: 0 0 10px color-mix(in srgb, var(--ls-a) 60%, transparent); transition: width .7s cubic-bezier(.2, .8, .2, 1); }
+.ls-num { flex: none; font-size: 12px; font-weight: 700; color: color-mix(in srgb, var(--ls-a) 85%, var(--text, #fff)); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ls-sun.full { border-color: color-mix(in srgb, var(--ls-a) 55%, transparent); box-shadow: 0 0 18px -6px var(--ls-a); }
+.ls-sun.away { --ls-a: #9fe3b4; --ls-b: #6fc6a0; }
+.ls-sun.ls-bump .ls-ico { animation: lsBump .5s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes lsBump { 40% { transform: scale(1.3) rotate(20deg); } }
+.ls-pop { position: absolute; right: 12px; top: -4px; font-size: 13px; font-weight: 800; color: var(--ls-a); text-shadow: 0 0 8px color-mix(in srgb, var(--ls-a) 70%, transparent); pointer-events: none; animation: lsPop 1.2s ease-out forwards; }
+.ls-pop.rm { animation: lsFade 1.2s ease-out forwards; }
+@keyframes lsPop { 0% { opacity: 0; transform: translateY(6px) scale(.8); } 20% { opacity: 1; transform: translateY(-4px) scale(1.1); } 100% { opacity: 0; transform: translateY(-22px) scale(1); } }
+@keyframes lsFade { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+
+/* herb out in the garden: the bubble shows where it is and when it's back */
+#spHome[data-sun-away] #spBubble .sp-home-herb { opacity: 0; transform: translateY(10px) scale(.7); transition: opacity .5s ease, transform .5s ease; }
+#spBubble .ls-away { position: absolute; inset: 14% 10% 26%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; color: var(--text, #fff); pointer-events: none; text-align: center; line-height: 1.1; z-index: 3; }
+#spBubble .ls-away-ico { display: block; width: 22px; height: 22px; color: #9fe3b4; font-style: normal; animation: lsDrift 3s ease-in-out infinite; }
+#spBubble .ls-away-ico .ls-ico { width: 22px; height: 22px; color: #9fe3b4; }
+#spBubble .ls-away b { font-size: 11px; font-weight: 750; white-space: nowrap; }
+#spBubble .ls-away small { font-size: 15px; font-weight: 800; color: #c8f5d6; font-variant-numeric: tabular-nums; }
+@keyframes lsDrift { 50% { transform: translateY(-3px) rotate(8deg); } }
+
+/* sheets */
+.ls-sheet { text-align: center; padding: 4px 4px 2px; }
+.ls-sheet h2 { margin: 6px 0 6px; font-size: 22px; line-height: 1.2; }
+.ls-sheet h3 { margin: 16px 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted, #9aa); text-align: left; }
+.ls-big { display: grid; place-items: center; margin: 4px auto 2px; width: 92px; height: 92px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 207, 107, .22), transparent 70%); }
+.ls-big .ls-ico { width: 64px; height: 64px; animation: lsSpin 12s linear infinite; }
+.ls-big .ls-find { width: 64px; height: 64px; }
+@keyframes lsSpin { to { transform: rotate(360deg); } }
+.ls-say { margin: 0 auto 8px; max-width: 34ch; font-size: 15px; line-height: 1.4; color: var(--text, #fff); }
+.ls-bonus { margin: 0 0 4px; font-size: 18px; font-weight: 800; color: #ffcf6b; }
+.ls-item { margin: 0 0 12px; font-size: 19px; font-weight: 800; color: #ffe2a0; }
+.ls-note { margin: 10px 0 0; font-size: 12.5px; color: var(--muted, #9aa); text-align: center; }
+.ls-info .ls-note { text-align: left; margin-top: 0; }
+.ls-parts { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.ls-parts li { display: flex; justify-content: space-between; align-items: center; padding: 7px 12px; border-radius: 11px; background: rgba(255, 255, 255, .05); font-size: 14px; }
+.ls-parts li b { color: #ffcf6b; }
+.ls-parts.how { margin-top: 8px; grid-template-columns: 1fr 1fr; }
+.ls-cta { display: block; width: 100%; margin: 16px 0 0; min-height: 48px; border: 0; border-radius: 15px; background: linear-gradient(90deg, #ff9f5a, #ffcf6b); color: #1a1206; font: inherit; font-size: 16px; font-weight: 800; cursor: pointer; }
+.ls-head { display: flex; align-items: center; gap: 12px; text-align: left; }
+.ls-head .ls-ico { width: 44px; height: 44px; }
+.ls-head h2 { margin: 0; }
+.ls-head p { margin: 2px 0 0; color: #ffcf6b; font-weight: 700; }
+.ls-track.big { display: block; height: 12px; margin: 12px 0 10px; }
+.ls-finds { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
+.ls-finds li { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px; border-radius: 12px; background: rgba(255, 255, 255, .05); font-size: 12px; text-align: center; }
+.ls-find { width: 36px; height: 36px; }
+.ls-find-bg { fill: hsl(var(--h, 48) 70% 60% / .18); stroke: hsl(var(--h, 48) 80% 70% / .5); stroke-width: 1.2; }
+.ls-find-fg { fill: hsl(var(--h, 48) 85% 72%); filter: drop-shadow(0 0 4px hsl(var(--h, 48) 85% 65% / .8)); }
+
+/* praise toast: short, top centre, never takes taps */
+.lp-praise { position: fixed; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 52px); z-index: 400; display: flex; align-items: center; gap: 8px; max-width: min(92vw, 420px); box-sizing: border-box; padding: 9px 14px 9px 10px; border-radius: 999px; background: rgba(16, 20, 34, .92); border: 1px solid rgba(159, 227, 216, .28); box-shadow: 0 10px 30px -10px rgba(0, 0, 0, .7), 0 0 20px -8px rgba(159, 227, 216, .5); color: #fff; font-size: 14px; font-weight: 650; line-height: 1.25; pointer-events: none; opacity: 0; transform: translate(-50%, -12px) scale(.96); transition: opacity .22s ease, transform .3s cubic-bezier(.2, .9, .3, 1.2); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+.lp-praise.on { opacity: 1; transform: translate(-50%, 0) scale(1); }
+.lp-dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: #9fe3d8; box-shadow: 0 0 8px #9fe3d8; }
+.lp-tx { min-width: 0; }
+.lp-tag { flex: none; padding: 3px 8px; border-radius: 99px; background: linear-gradient(90deg, #ff9f5a, #ffcf6b); color: #1a1206; font-size: 11px; font-weight: 800; letter-spacing: .02em; white-space: nowrap; }
+html[data-theme=light] .lp-praise { background: rgba(255, 255, 255, .95); color: #10131f; border-color: rgba(40, 110, 120, .25); }
+html[data-theme=light] .ls-sun { color: #10131f; }
+
+@media (prefers-reduced-motion: reduce) {
+    .ls-sun, .ls-fill, .ls-ico line, #spHome[data-sun-away] #spBubble .sp-home-herb { transition: none !important; }
+    .ls-sun.ls-bump .ls-ico, #spBubble .ls-away-ico, .ls-big .ls-ico { animation: none !important; }
+    .lp-praise { transform: translate(-50%, 0) !important; transition: opacity .15s linear; }
+}

@@ -1,6 +1,6 @@
 /* LOWiSPIKE service worker · network-first app shell with offline static fallback. */
-const SHELL_BUILD = "20261013-232000";
-const CACHE = "lowispike-updates-20261013-232000";
+const SHELL_BUILD = "20261014-001000";
+const CACHE = "lowispike-updates-20261014-001000";
 const STATIC = ["herb-config.js", "herb-core.js", "herb-tamagotchi-core.js", "herb-tamagotchi.js", "herb-tamagotchi-polish.js", "herb-tamagotchi-mount-fix.js", "herb-tamagotchi.css", "body-core.js", "body-companion.js", "body-companion.css", "swaflo-config.js", "swaflo-core.js", "swaflo.js", "swaflo.css", "discovery-config.js", "discovery-core.js", "discovery.js", "discovery.css", "apple-ui.js", "apple-ui.css", "appearance.js", "recipe-book.js", "updates.css", "vendor/supabase-2.117.3.js", "vendor/zxing-0.21.3.min.js", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png"];
 self.addEventListener("install", e => {
   self.skipWaiting();
@@ -37,15 +37,33 @@ self.addEventListener("fetch", e => {
 });
 const N1P_FN = "https://vnfwmifmsfecascwaody.supabase.co/functions/v1/n1-push";
 const N1P_PUB = "BLNmn2O2yRpMS7JukbXrgnYu157fNv317XnjgtVWzEyLuWMBupmX4Q1a0wid-4r6p0uGk8sVI0gMdl2uzlAREsA";
+if(typeof importScripts==="function")importScripts("herb-config.js","herb-core.js","herb-tamagotchi-core.js");
+function herbReminderClaim(now){
+  return new Promise(resolve=>{
+    if(typeof indexedDB==="undefined"){resolve(null);return;}
+    const request=indexedDB.open("lowi-herb-reminders",1);
+    request.onupgradeneeded=()=>request.result.createObjectStore("state");
+    request.onerror=()=>resolve(null);
+    request.onsuccess=()=>{
+      const db=request.result,tx=db.transaction("state","readwrite"),store=tx.objectStore("state"),c=store.get("config");let delivery=null;
+      c.onsuccess=()=>{const config=c.result;if(!config||!config.tz||!self.LowiHerbTamagotchiCore)return;
+        const r=store.get("delivered");r.onsuccess=()=>{const window=self.LowiHerbTamagotchiCore.reminderWindow(now,config.tz,r.result);
+          if(window.allowed){store.put(window.day,"delivered");delivery=config;}};};
+      tx.oncomplete=()=>{db.close();resolve(delivery);};tx.onerror=()=>{db.close();resolve(null);};tx.onabort=()=>resolve(null);
+    };
+  });
+}
 self.addEventListener("push", e => {
-  let d = {}; try { d = e.data ? e.data.json() : {}; } catch(x){ d = {b: e.data ? e.data.text() : ""}; }
-  e.waitUntil(self.registration.showNotification(d.t || "LOWiSPIKE", {body: d.b || "", icon: "icon-192.png", badge: "icon-192.png", tag: d.tag || "lowi", data: {q: d.q || ""}}));
+  e.waitUntil(herbReminderClaim(Date.now()).then(config=>{
+    if(!config)return;
+    return self.registration.showNotification(config.name||"Your herb",{body:self.LowiHerbTamagotchiCore.reminder(config),icon:"icon-192.png",badge:"icon-192.png",tag:"lowi-herb-daily",data:{q:"",herbHome:true}});
+  }));
 });
 self.addEventListener("notificationclick", e => {
   e.notification.close(); const q = (e.notification.data && e.notification.data.q) || "";
   e.waitUntil(self.clients.matchAll({type: "window", includeUncontrolled: true}).then(cs => {
-    for (const c of cs) { if (c.url.indexOf(self.registration.scope) === 0 && "focus" in c) { try { c.postMessage({n1go: q}); } catch(x){} return c.focus(); } }
-    return self.clients.openWindow(self.registration.scope + "?n1go=" + encodeURIComponent(q));
+    for (const c of cs) { if (c.url.indexOf(self.registration.scope) === 0 && "focus" in c) { try { c.postMessage({n1go: q,herbHome:true}); } catch(x){} return c.focus(); } }
+    return self.clients.openWindow(self.registration.scope + "?herb=1");
   }));
 });
 self.addEventListener("pushsubscriptionchange", e => {

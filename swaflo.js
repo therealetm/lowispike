@@ -33,7 +33,7 @@ function showResult(result){selected=result;const r=result.recipe;let h='<header
   }
   const ov=LowiR2.sheet('<div class="sf-result" data-noi18n>'+h+'</div>',{cls:'sf-ov'});ov.__sfResult=result;return ov;
 }
-function request(q){const p=prefs(),r=K.resolve(q,catalog(),products(),p);if(r.snack&&!p.snack){setPrefs({...p,snack:true});}if(r.recipe){r.recipe.book=false;B().register(r.recipe);}return showResult(r);}
+function request(q){const p=prefs(),r=K.resolve(q,catalog(),products(),p);if(r.snack&&!p.snack){setPrefs({...p,snack:true});}if(r.recipe){r.recipe.book=false;B().register(r.recipe);if(window.LowiVitalsBridge)LowiVitalsBridge.complete('sunlight','swap:'+r.recipe.id,{src:'swaflo-save:'+r.recipe.id,amt:10,label:'Swap chosen'});}return showResult(r);}
 function refreshToolbar(){D.querySelectorAll('.sf-toolbar').forEach(n=>{const x=D.createElement('div');x.innerHTML=toolbarHTML();n.replaceWith(x.firstElementChild);});const pk=D.getElementById('r5Pick');if(pk)pk.innerHTML='';const strips=D.getElementById('r5Strip');if(strips){strips.style.transition='none';strips.style.transform='';strips.innerHTML='<div class="r5-cell"><span>?</span></div>';}}
 D.addEventListener('submit',e=>{if(!e.target.matches('.sf-form'))return;e.preventDefault();const i=e.target.querySelector('input');try{request(i.value);}catch(ex){LowiR2.toast(ex.message);}});
 D.addEventListener('click',e=>{const b=e.target.closest('[data-sf]');if(!b)return;e.preventDefault();const result=b.closest('.r2-ov')&&b.closest('.r2-ov').__sfResult||selected;try{switch(b.dataset.sf){

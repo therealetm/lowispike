@@ -37,6 +37,7 @@
     return {...g,flavor:flavor(s.user,s.herb.personalize),name:String(s.herb.name||'').slice(0,24),dim:!!actionAt&&now-actionAt>C.gentleDimAfterHours*3600000,evolved:initialized&&g.index>(+prior||0)};
   }
   function hasReward(ledger,eventId){return !!eventId&&(ledger||[]).some(e=>e.eventId===eventId);}
-  const api={stage,zodiac,flavor,sync,meaningful,hasReward};
+  const api={stage,zodiac,flavor,sync,meaningful,hasReward,palettes};
   if(typeof module==='object'&&module.exports)module.exports=api;else root.LowiHerbCore=api;
 })(typeof window!=='undefined'?window:globalThis);
+

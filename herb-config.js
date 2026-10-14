@@ -2,9 +2,9 @@
 (function(root){
   'use strict';
   const config = {
-    version: 'herb-tamagotchi-20261013-1506',
+    version: 'herb-living-20261014-0010',
     stages: [
-      {id:'seedling',xp:0,name:['Seedling','Keimling','Plántula']},
+      {id:'seedling',xp:0,name:['Seed','Samen','Semilla']},
       {id:'sprout',xp:100,name:['Sprout','Spross','Brote']},
       {id:'young',xp:300,name:['Young Herb','Junges Kraut','Hierba joven']},
       {id:'flourishing',xp:700,name:['Flourishing Herb','Blühendes Kraut','Hierba floreciente']},
@@ -32,3 +32,4 @@
   if(typeof module==='object'&&module.exports)module.exports=config;
   else root.LOWI_HERB_CONFIG=config;
 })(typeof window!=='undefined'?window:globalThis);
+

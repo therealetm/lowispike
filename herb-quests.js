@@ -209,7 +209,7 @@
         if (a === 'claimStep') claimStep(id);
         else if (a === 'claimMission') claimMission(id);
         else if (a === 'claimDaily') { if (W.LowiF3 && LowiF3.claim) LowiF3.claim('all'); }
-        else if (a === 'pickMission') pickMission(id);
+        else if (a === 'pickMission') { pickMission(id); const x = S(); chooser = !!(x && x.herbWeek && (x.herbWeek.picks || []).length < C.MAX_MISSIONS); }
         else if (a === 'chooser') chooser = !chooser;
         else if (a === 'hint') openHint = openHint === id ? '' : id;
         else if (a === 'all') showAll = !showAll;

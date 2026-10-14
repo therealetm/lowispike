@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261014-220000">
+<meta name="lowi-build" content="20261014-224500">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2960,6 +2960,9 @@ html.g2f-snh.g2h-on #tab-home::after{content:"";display:block;flex:none;order:99
 html.g2f-snc.g2c-on #shelf.tabmode #shBody{overflow-y:auto!important}
 html.g2f-snc.g2c-on #shelf.tabmode #shBody::after{content:"";display:block;flex:none;order:99;height:var(--g2fSp,calc(var(--sab) + 124px))}
 html.g2f-sne.g2e-on:not(.g2e-open) #tab-profile{overflow-y:auto!important}
+/* an opened Profile part (Settings, About you, Health, Account…) can be taller than the screen: it scrolls, and its last row clears the orb */
+html.g2e-on.g2e-open #tab-profile{overflow-y:auto!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+html.g2e-on.g2e-open #tab-profile::after{content:"";display:block;flex:none;order:99;height:var(--g2fSp,calc(var(--sab) + 124px))}
 html.g2f-sne.g2e-on:not(.g2e-open) #tab-profile::after{content:"";display:block;flex:none;order:99;height:var(--g2fSp,calc(var(--sab) + 124px))}
 html.g2f-snd.g2d-on #cmPaneBoard{overflow-y:auto!important}
 html.g2f-snd.g2d-on #cmPaneBoard::after{content:"";display:block;flex:none;order:99;height:var(--g2fSp,calc(var(--sab) + 124px))}
@@ -9481,6 +9484,10 @@ html[data-theme=light] .r2-bigav>span{color:#a8792e}
 .r2-acts2{display:flex;gap:8px;margin-top:14px}
 .r2-acts2 .r2-btn{flex:1;height:42px;font-size:14px;padding:0 10px}
 .r2-acct .r2-link{display:block;margin:10px auto 0}
+.r2-pwsheet .r2-p + .r2-p{margin-top:8px}
+.r2-pwsheet .r2-pwtip{font-size:13.5px;margin-top:10px}
+.r2-pwsheet .r2-form{margin-top:16px}
+.r2-pwuser{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important;border:0!important;padding:0!important;margin:0!important;overflow:hidden}
 .r2-lookrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .r2-lookrow>div{flex:1 1 150px;min-width:0}
 .r2-lookrow b{display:block;font-size:15px}.r2-lookrow small{display:block;font-size:13px;color:var(--r2-mut);margin-top:2px}
@@ -9527,6 +9534,7 @@ R2.ico = {
   x:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
   cam:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
   eye:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+  eyeOff:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12s3.5-7 10-7c2 0 3.7.7 5.1 1.6M22 12s-3.5 7-10 7c-2 0-3.7-.7-5.1-1.6"/><path d="M9.9 9.9a3 3 0 004.2 4.2"/><path d="M3 3l18 18"/></svg>',
   play:'<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>',
   pause:'<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6.5" y="5" width="4" height="14" rx="1.2"/><rect x="13.5" y="5" width="4" height="14" rx="1.2"/></svg>',
   trash:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 12.5h9l1-12.5"/></svg>',
@@ -9711,6 +9719,8 @@ function errMsg(e){
   const m = String(e && (e.message || e.error_description || e) || "");
   if (/already (been )?registered|already exists|email_exists|user_already_exists/i.test(m)) return "This email already has an account. Tap “Sign in” below.";
   if (/invalid login|invalid credentials|invalid_grant/i.test(m)) return "Email or password doesn't match. Try again.";
+  if (/same_password|should be different/i.test(m)) return "That's already your password. Pick a new one.";
+  if (/reauthenticat/i.test(m)) return "For safety, sign out and sign in again once, then set the new password.";
   if (/password/i.test(m) && /(6|8|short|weak|least)/i.test(m)) return "Password needs at least 8 characters.";
   if (/email/i.test(m) && /invalid|valid/i.test(m)) return "That email doesn't look right.";
   if (/rate|too many/i.test(m)) return "Too many tries. Wait a minute and try again.";
@@ -9905,7 +9915,8 @@ R2.accountHTML = function(){
   const x = R2.X(), st = x ? x.state() : {}, em = R2.email();
   if (em) return '<div class="card r2-acct" id="lcAcct">' +
     '<div class="r2-row"><span class="r2-ri">✉️</span><div><b>' + esc(em) + '</b><small>' + (st.live ? "Saved and synced" : "Saved · syncs when you're online") + '</small></div></div>' +
-    '<div class="r2-acts2"><button class="r2-btn ghost" data-r2p="password">Change password</button><button class="r2-btn ghost danger" data-r2p="signout">Sign out</button></div></div>';
+    '<div class="r2-acts2"><button class="r2-btn ghost" data-r2p="password">Change password</button><button class="r2-btn ghost danger" data-r2p="signout">Sign out</button></div>' +
+    '<button class="r2-link small" data-r2p="pwforgot">Forgot your password?</button></div>';
   return '<div class="card r2-acct" id="lcAcct">' +
     '<div class="r2-row"><span class="r2-ri">🛡️</span><div><b>Not saved yet</b><small>Create an account so nothing gets lost and you can sign in on any phone.</small></div></div>' +
     '<div class="r2-acts2"><button class="r2-btn pri" data-r2p="create">Create account</button><button class="r2-btn ghost" data-r2p="signin">Sign in</button></div>' +
@@ -9924,9 +9935,21 @@ function editHTML(){
     '<button class="r2-row tap" data-r2p="mbti"><span class="r2-ri">🧩</span><div><b>Personality type</b><small>' + (mb ? esc(mb) : "Not set") + '</small></div>' + R2.ico.chev + '</button>' +
     '<button class="r2-btn pri big" data-r2p="saveedit">Save</button></div>';
 }
-function pwHTML(){
-  return '<div class="r2-edit"><h2>Change password</h2><p class="r2-p">For ' + esc(R2.email()) + '</p>' +
-    '<form class="r2-form" data-r2form="pw" novalidate><label class="r2-fl pw"><span>New password</span><input name="password" type="password" autocomplete="new-password" placeholder="At least 8 characters" minlength="8"><button type="button" class="r2-eye" data-r2a="eye" aria-label="Show password">' + R2.ico.eye + '</button></label>' +
+/* A password can never be shown again: Supabase keeps only a one-way hash of it, and the app never stores it.
+   "Forgot your password?" says so and lets a signed-in user set a new one (no old password, no email needed). */
+function pwHTML(forgot){
+  const em = R2.email();
+  return '<div class="r2-edit r2-pwsheet"><h2>' + (forgot ? "Forgot your password?" : "Change password") + '</h2>' +
+    (forgot
+      ? '<p class="r2-p">Your password can\'t be shown, not even by LOWiSPIKE.</p>' +
+        '<p class="r2-p">It is only stored as a scrambled code that can\'t be turned back into your password.</p>' +
+        '<p class="r2-p">You\'re signed in, so you don\'t need the old one. Set a new password here. Your account and everything in it stay.</p>' +
+        '<p class="r2-p r2-pwtip">Saved it on your iPhone? Look in the Passwords app.</p>'
+      : '<p class="r2-p">For ' + esc(em) + '</p>' +
+        '<p class="r2-p r2-pwtip">Your current password can\'t be shown. Just set a new one.</p>') +
+    '<form class="r2-form" data-r2form="pw" novalidate>' +
+    '<input class="r2-pwuser" type="email" name="username" autocomplete="username" value="' + esc(em) + '" tabindex="-1" aria-hidden="true" readonly>' +
+    '<label class="r2-fl pw"><span>New password</span><input name="password" type="password" autocomplete="new-password" placeholder="At least 8 characters" minlength="8"><button type="button" class="r2-eye" data-r2a="eye" aria-label="Show password" aria-pressed="false">' + R2.ico.eye + '</button></label>' +
     '<div class="r2-err" role="alert"></div><button class="r2-btn pri big" type="submit">Save new password</button></form></div>';
 }
 function confirmHTML(kind){
@@ -10011,7 +10034,8 @@ document.addEventListener("submit", e => {
 document.addEventListener("click", e => {
   const a = e.target.closest("[data-r2a]");
   if (a) { const v = a.getAttribute("data-r2a");
-    if (v === "eye") { const i = a.parentNode.querySelector("input"); i.type = i.type === "password" ? "text" : "password"; a.classList.toggle("on"); return; }
+    if (v === "eye") { const i = a.parentNode.querySelector("input"); const show = i.type === "password"; i.type = show ? "text" : "password"; a.classList.toggle("on", show);
+      a.setAttribute("aria-pressed", show ? "true" : "false"); const lab = show ? "Hide password" : "Show password"; a.setAttribute("aria-label", window.LowiLang && LowiLang.t ? LowiLang.t(lab) : lab); a.innerHTML = show ? (R2.ico.eyeOff || R2.ico.eye) : R2.ico.eye; return; }
     if (v === "skip") { showGate("signup"); return; }   /* no guest mode any more */
     if (R2.top() && (v === "signup" || v === "signin")) R2.closeAll();
     showGate(v); return; }
@@ -10040,7 +10064,8 @@ document.addEventListener("click", e => {
     if (v === "edit") { R2.sheet(editHTML()); const b = $("#r2eB"); if (b) b.addEventListener("input", () => { const z = signOf(b.value); $("#r2eSign").innerHTML = z ? '<span class="pop">' + z.g + "</span> " + esc(z.n) : "Add your birthday to see your star sign"; }); return; }
     if (v === "saveedit") return saveEdit();
     if (v === "mbti") { R2.close(); setTimeout(() => { const t = document.createElement("button"); t.setAttribute("data-r5", "mbti"); t.style.display = "none"; document.body.appendChild(t); t.click(); t.remove(); }, 200); return; }
-    if (v === "password") return void R2.sheet(pwHTML());
+    if (v === "password") return void R2.sheet(pwHTML(false));
+    if (v === "pwforgot") return void R2.sheet(pwHTML(true));
     if (v === "signout") return void R2.sheet(confirmHTML("signout"));
     if (v === "dosignout") return void signOut();
     if (v === "fresh") return void R2.sheet(confirmHTML("fresh"));
@@ -11117,6 +11142,15 @@ const ROWS = [
   ["Couldn't read that photo", "Das Foto konnte nicht gelesen werden", "No se pudo leer esa foto"],
   ["Photo updated", "Foto aktualisiert", "Foto actualizada"],
   ["Password changed", "Passwort geändert", "Contraseña cambiada"],
+  ["Forgot your password?", "Passwort vergessen?", "¿Olvidaste tu contraseña?"],
+  ["Your password can't be shown, not even by LOWiSPIKE.", "Dein Passwort kann nicht angezeigt werden, auch nicht von LOWiSPIKE.", "Tu contraseña no se puede mostrar, ni siquiera LOWiSPIKE puede."],
+  ["It is only stored as a scrambled code that can't be turned back into your password.", "Es wird nur als verschlüsselter Code gespeichert, aus dem sich dein Passwort nicht zurückholen lässt.", "Solo se guarda como un código cifrado que no se puede convertir de nuevo en tu contraseña."],
+  ["You're signed in, so you don't need the old one. Set a new password here. Your account and everything in it stay.", "Du bist angemeldet, das alte brauchst du also nicht. Leg hier ein neues Passwort fest. Dein Konto und alles darin bleibt.", "Has iniciado sesión, así que no necesitas la antigua. Pon una contraseña nueva aquí. Tu cuenta y todo lo que tiene se quedan."],
+  ["Saved it on your iPhone? Look in the Passwords app.", "Auf dem iPhone gespeichert? Schau in der App „Passwörter“ nach.", "¿La guardaste en tu iPhone? Mira en la app Contraseñas."],
+  ["Your current password can't be shown. Just set a new one.", "Dein aktuelles Passwort kann nicht angezeigt werden. Leg einfach ein neues fest.", "Tu contraseña actual no se puede mostrar. Pon una nueva."],
+  ["Hide password", "Passwort verbergen", "Ocultar contraseña"],
+  ["That's already your password. Pick a new one.", "Das ist schon dein Passwort. Nimm ein neues.", "Esa ya es tu contraseña. Elige una nueva."],
+  ["For safety, sign out and sign in again once, then set the new password.", "Zur Sicherheit einmal ab- und wieder anmelden, dann das neue Passwort festlegen.", "Por seguridad, cierra sesión y vuelve a entrar una vez, y luego pon la nueva contraseña."],
   ["Profile saved", "Profil gespeichert", "Perfil guardado"],
   ["Look", "Aussehen", "Aspecto"],
   ["Night, Cloud or Sunrise", "Night, Cloud oder Sunrise", "Night, Cloud o Sunrise"],

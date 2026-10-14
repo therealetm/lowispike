@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261014-175900">
+<meta name="lowi-build" content="20261014-183700">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -5605,7 +5605,7 @@ function homeExtrasHTML(){ const c = cycleInfo(), qs = curQuests(), glowDue = !S
     (glowDue ? '<button class="card goldline" style="width:100%;text-align:left" data-act="glow" id="glowBtn"><div class="row"><span style="font-size:26px">✨</span><div><div class="h3">Weekly glow check-in</div><div class="small muted">Energy, cravings, sleep and skin. 30 seconds, +50 XP.</div></div></div></button>' : "") +
     '<div class="sec"><span class="h3">Today\'s quests</span><span class="small muted num">' + qs.filter(q => S.quests.done[q.id]).length + '/' + qs.length + '</span></div><div class="card" id="quests">' +
     qs.map(q => '<button class="quest' + (S.quests.done[q.id] ? " done" : "") + '" data-act="quest" data-id="' + q.id + '"><span class="qcheck">' + ICO.chk + '</span><span><span class="qt">' + esc(q.t) + '</span><br><span class="small dim">' + esc(q.sub) + '</span></span><span class="xpp">' + (q.xp ? "+" + q.xp : "🔥") + '</span></button>').join("") + '</div>' +
-    (recent.length ? '<div class="sec"><span class="h3">Recently checked</span></div><div class="card">' + recent.map(l => '<div class="row" style="padding:8px 0"><span style="font-size:22px">' + l.e + '</span><span style="flex:1" class="small">' + esc(l.t) + '</span><span class="lvl ' + l.lvl + '" style="opacity:1;transform:none;animation:none;font-size:11px;padding:4px 9px">' + l.lvl.toUpperCase() + '</span></div>').join("") + '</div>' : "") +
+    (recent.length ? '<div class="sec"><span class="h3">Recently checked</span></div><div class="card">' + recent.map(l => '<div class="row" style="padding:8px 0"><span style="font-size:22px">' + l.e + '</span><span style="flex:1" class="small">' + esc(l.t) + '</span><span class="lvl ' + l.lvl + '" style="opacity:1;transform:none;animation:none;font-size:11px;padding:4px 9px">' + String(l.lvl || "").toUpperCase() + '</span></div>').join("") + '</div>' : "") +
     '</div>';
   }
 function bindHomeExtras(){ const ta = $("#eatText"); if (ta) ta.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); runAnalyse(ta.value); } });
@@ -8564,9 +8564,12 @@ function addLang(){ if (window.LowiLang && LowiLang.add) LowiLang.add(LANG_ROWS)
 /* ---------- mapping ---------- */
 function ts(x){ const t = Date.parse(x); return isNaN(t) ? Date.now() : t; }
 function likeCount(id){ const s = LIKES[id]; return s ? s.size - (s.has(uid) ? 1 : 0) : 0; }
+/* posts carry no avatar column: the author's profile picture comes from their profile row */
+let AVATARS = {};
+function avatarOf(id){ if (!id) return ""; if (id === uid) { try { return (S.user.avatarUrl || (/^https?:/.test(S.user.avatar || "") ? S.user.avatar : "")) || AVATARS[id] || ""; } catch(e){} } return AVATARS[id] || ""; }
 function mapPost(r){
   return {id:r.id, uid:r.user_id, me:r.user_id === uid, cloud:true, who:r.who || "Member", ts:ts(r.created_at), plat:r.url ? (PLATS.indexOf(r.plat) >= 0 ? r.plat : "web") : "", url:r.url || "", meta:r.meta || null,
-    cap:r.cap || "", photo:r.photo_url || r.photo || "", avatar:r.avatar_url || r.avatar || "", vid:r.video_url ? 1 : 0, vurl:r.video_url || "", poster:r.poster || "", w:r.w || 0, h:r.h || 0, dur:r.dur || 0,
+    cap:r.cap || "", photo:r.photo_url || r.photo || "", avatar:r.avatar_url || r.avatar || avatarOf(r.user_id), vid:r.video_url ? 1 : 0, vurl:r.video_url || "", poster:r.poster || "", w:r.w || 0, h:r.h || 0, dur:r.dur || 0,
     rec:r.rec || "", mine:!!r.mine, art:r.art || ["✨", 40, 280], vis:"tribe", rank:r.lv ? "Lv " + r.lv : "", get likes(){ return likeCount(this.id); }};
 }
 function mapMsg(r){ return {id:r.id, uid:r.user_id, sign:r.sign || "", bday:r.bday || "", by:r.who || "Member", t:r.body || "", ts:ts(r.created_at), re:r.reply_to || null, rx:rxOf(r.id)}; }
@@ -8603,6 +8606,7 @@ async function start(){
   const bad = q.find(r => r.error); if (bad) throw bad.error;
   LIKES = {}; q[1].data.forEach(r => (LIKES[r.post_id] = LIKES[r.post_id] || new Set()).add(r.user_id));
   RX = {}; q[3].data.forEach(r => (RX[r.message_id] = RX[r.message_id] || []).push(r));
+  AVATARS = {}; (q[4].data || []).forEach(r => { if (r.avatar) AVATARS[r.id] = r.avatar; });
   PEOPLE = (q[4].data || []).filter(r => r.id !== uid).map(mapPerson);
   POSTS = (q[0].data || []).map(mapPost);
   MSGS.length = 0; q[2].data.slice().reverse().map(mapMsg).forEach(m => MSGS.push(m));
@@ -8611,6 +8615,8 @@ async function start(){
   applyChat(); applyMembers(); syncMyLikes();
   subscribe(); pushProfile(); backupSoon(800);
   refreshUI();
+  /* a photo picked before the cloud existed never left the phone: upload it once so others see it */
+  setTimeout(() => { try { if (S.user && /^data:image\//.test(S.user.avatar || "") && !S.user.avatarUrl && window.LowiR2 && LowiR2.syncAvatar) LowiR2.syncAvatar(); } catch(e){} }, 2500);
 }
 
 /* ---------- realtime ---------- */
@@ -17123,7 +17129,7 @@ function fill(stack){
   g.forEach(e => body.appendChild(e));
 }
 function openPanel(k){
-  const R2 = window.LowiR2; if (!R2 || !R2.sheet) return;
+  const R2 = window.LowiR2; if (!R2 || !R2.sheet || !TITLES[k]) return;
   addL();
   try { if (ov) R2.close(ov); } catch(e){}
   openKey = k;
@@ -17131,7 +17137,7 @@ function openPanel(k){
   const st = document.querySelector("#mv-screen > .stack"); if (st) fill(st);
 }
 document.addEventListener("click", e => {
-  const b = e.target.closest && e.target.closest("[data-g2]"); if (!b) return;
+  const b = e.target.closest && e.target.closest("[data-g2]"); if (!b || !TITLES[b.dataset.g2]) return; /* the stack itself carries data-g2="1"; only real panel keys open a sheet */
   e.preventDefault(); openPanel(b.dataset.g2);
 });
 /* a session start from inside a sheet closes the sheet */
@@ -18626,7 +18632,7 @@ window.LowiVitalsBridge = {
   gpt:"https://chatgpt.com/g/g-69481a874bf08191b8118f8d88c9c90e-lowispike",
   logMeal(data){
     const id="meal:"+data.id, found=S.logs.find(l=>l.eventId===id);if(found)return {log:found,xp:0};
-    const n=S.logs.filter(l=>l.day===today()).length,log={id:data.id,eventId:id,ts:Date.now(),day:today(),t:data.t,macros:data.macros,photo:data.photo||"",via:data.via||"spirit",r:"unknown"};
+    const n=S.logs.filter(l=>l.day===today()).length,log={id:data.id,eventId:id,ts:Date.now(),day:today(),t:data.t,macros:data.macros,photo:data.photo||"",via:data.via||"spirit",r:"unknown",e:"",lvl:""};
     S.logs.push(log);if(!save()){S.logs.pop();return false;}
     const xp=n<5?award(15,"Meal logged",null,"meal:spirit",id):0;
     if(!xp)window.dispatchEvent(new CustomEvent("lowi:care",{detail:{kind:"water",id}}));

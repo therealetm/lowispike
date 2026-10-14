@@ -23,6 +23,7 @@
     };
     const copy = {
         world: ['Your herb’s world', 'Die Welt deines Krauts', 'El mundo de tu hierba'],
+        scanHead: ['Scan · your herb is watching', 'Scannen · dein Kraut schaut zu', 'Escanear · tu hierba mira'],
         close: ['Close', 'Schließen', 'Cerrar'],
         scan: ['Scan a product', 'Produkt scannen', 'Escanear producto'],
         photo: ['Snap food', 'Essen fotografieren', 'Fotografiar comida'],
@@ -82,6 +83,13 @@
         whyText: ['A recipe from your current food picks. Check the ingredients and portion to make it yours.', 'Ein Rezept aus deinen aktuellen Essensideen. Prüfe Zutaten und Portion für dich.', 'Una receta de tus ideas actuales. Revisa los ingredientes y la porción.'],
         cook: ['Cook it', 'Kochen', 'Cocinar'],
         logPick: ['I ate this', 'Hab ich gegessen', 'Lo he comido'],
+        herbTip: ['Your herb suggests', 'Dein Kraut schlägt vor', 'Tu hierba sugiere'],
+        why_protein: ['lots of protein for your goal', 'viel Protein für dein Ziel', 'mucha proteína para tu meta'],
+        why_lowSugar: ['almost no sugar', 'kaum Zucker', 'casi sin azúcar'],
+        why_fiber: ['fibre feeds your gut', 'Ballaststoffe für deinen Darm', 'fibra para tu intestino'],
+        why_quick: ['quick to make', 'schnell gemacht', 'rápido de hacer'],
+        minutes: ['min', 'Min.', 'min'],
+        estimated: ['Estimated per portion from the ingredients.', 'Pro Portion aus den Zutaten geschätzt.', 'Estimado por porción a partir de los ingredientes.'],
         prev: ['Back', 'Zurück', 'Atrás'],
         forward: ['Next', 'Weiter', 'Siguiente'],
         mystery: ['Sealed until you evolve', 'Versiegelt bis zur Entwicklung', 'Sellada hasta la evolución'],
@@ -288,7 +296,7 @@
             world.setAttribute('aria-modal', 'true');
             world.setAttribute('aria-label', tr('world'));
             world.setAttribute('data-noi18n', '');
-            world.innerHTML = '<header class="sp-world-head"><div><small>' + esc(tr('world')) + '</small><h1></h1></div>' + button('close', 'close', 'close') + '</header><div class="sp-world-xp"></div><div class="sp-stage"><div class="sp-constellation"></div><div class="sp-scanner-host"></div><div class="sp-body" tabindex="0" role="button" aria-label="' + esc(tr('leafHelp')) + '"></div><p class="sp-speech" role="status" aria-live="polite"></p><span class="sp-xp-pop" aria-hidden="true"></span></div><p class="sp-play-hint">' + esc(tr('leafHelp')) + '</p><div class="sp-actions">' + button('scan', 'scan', 'scan') + button('photo', 'camera', 'photo') + button('meal', 'plate', 'meal') + button('water', 'water', 'water') + '</div><a class="sp-gpt" target="_blank" rel="noopener" href="' + esc(V.gpt) + '">' + icon('star') + '<span>' + esc(tr('gpt')) + '<small>' + esc(tr('gptSub')) + '</small></span>' + icon('arrow') + '</a><footer class="sp-world-tools">' + button('wardrobe', 'hat', 'wardrobe') + button('collection', 'book', 'collection') + button('profile', 'leaf', 'profile') + button('evolution', 'mystery', 'path') + '</footer>';
+            world.innerHTML = '<header class="sp-world-head"><div><small><span class="sp-head-world">' + esc(tr('world')) + '</span><span class="sp-head-scan">' + esc(tr('scanHead')) + '</span></small><h1></h1></div>' + button('close', 'close', 'close') + '</header><div class="sp-world-xp"></div><div class="sp-stage"><div class="sp-constellation"></div><div class="sp-scanner-host"></div><div class="sp-body" tabindex="0" role="button" aria-label="' + esc(tr('leafHelp')) + '"></div><p class="sp-speech" role="status" aria-live="polite"></p><span class="sp-xp-pop" aria-hidden="true"></span></div><p class="sp-play-hint">' + esc(tr('leafHelp')) + '</p><div class="sp-actions">' + button('scan', 'scan', 'scan') + button('photo', 'camera', 'photo') + button('meal', 'plate', 'meal') + button('water', 'water', 'water') + '</div><a class="sp-gpt" target="_blank" rel="noopener" href="' + esc(V.gpt) + '">' + icon('star') + '<span>' + esc(tr('gpt')) + '<small>' + esc(tr('gptSub')) + '</small></span>' + icon('arrow') + '</a><footer class="sp-world-tools">' + button('wardrobe', 'hat', 'wardrobe') + button('collection', 'book', 'collection') + button('profile', 'leaf', 'profile') + button('evolution', 'mystery', 'path') + '</footer>';
             D.body.append(world);
         }
         if (!creature) {
@@ -578,6 +586,19 @@
         setText(world.querySelector('.sp-speech'), text);
         const pop = world.querySelector('.sp-xp-pop');
         setText(pop, xp ? '+' + xp + ' XP' : '');
+        if (!opened && home) {
+            let hp = home.querySelector('.sp-home-pop');
+            if (!hp) {
+                hp = D.createElement('span');
+                hp.className = 'sp-home-pop';
+                hp.setAttribute('aria-hidden', 'true');
+                home.querySelector('.sp-bubble')?.append(hp);
+            }
+            hp.textContent = xp ? '+' + xp + ' XP' : '';
+            hp.classList.remove('on');
+            void hp.offsetWidth;
+            if (xp) hp.classList.add('on');
+        }
         if (!opened) R.toast(text + (xp ? ' · +' + xp + ' XP' : ''));
         feedbackTimer = setTimeout(() => {
             delete target.dataset.reaction;
@@ -692,7 +713,8 @@
             R.close(ownedSheet);
             ownedSheet = null;
         }
-        feedback('water', tr('saved') + ' · ' + seed.t, result.xp);
+        feedback('eat', tr('saved') + ' · ' + seed.t, result.xp);
+        mealNotice(result.log || seed, result.xp);
         checkBonuses(false);
         refresh();
     }
@@ -709,7 +731,9 @@
                     return m.kcal != null ? Math.round(m.kcal) + ' kcal' : m.protein != null ? Math.round(m.protein) + ' g ' + tr('protein') : '';
                 };
             const fields = '<label>' + esc(tr('title')) + '<input name="title" required maxlength="100" autocomplete="off"></label><small>' + esc(tr('portion')) + '</small><div class="sp-form-macros">' + Object.keys(values).map(k => '<label>' + esc(tr(k)) + '<input name="' + k + '" inputmode="decimal" type="number" min="0" max="10000" step="0.1" placeholder="—"></label>').join('') + '</div><p class="sp-note">' + esc(tr('macroOptional')) + '</p><button class="r2-btn pri" type="submit">' + esc(tr('save')) + '</button>';
-            const html = '<h2>' + esc(tr('meal')) + '</h2><div class="sp-quick-log"><div class="sp-quick-cap">' + button('photo', 'camera', 'photo') + button('scan', 'scan', 'scan') + '</div>' + (recent.length ? '<small class="sp-quick-h">' + esc(tr('recent')) + '</small><div class="sp-quick-list">' + recent.map((l, i) => '<button type="button" class="sp-quick-item" data-sp="quickMeal" data-q="' + i + '">' + icon('plate') + '<span><b>' + esc(l.t || l.n) + '</b><small>' + esc(kc(l) || tr('oneTap')) + '</small></span><em>+</em></button>').join('') + '</div>' : '<p class="sp-note">' + esc(tr('recentEmpty')) + '</p>') + '<details class="sp-manual"><summary>' + esc(tr('manual')) + '</summary><form id="spMeal" data-id="' + esc(lastMealId) + '">' + fields + '</form></details></div>';
+            const pk = herbPick(),
+                tip = pk ? '<button type="button" class="sp-herb-tip" data-sp="herbPick">' + (pk.recipe.img ? '<img src="' + esc(pk.recipe.img) + '" alt="">' : icon('plate')) + '<span><small>' + esc(tr('herbTip')) + '</small><b>' + esc(recipeName(pk.recipe)) + '</b><i>' + esc(whyLine(pk.why.slice(0, 2), null) || tr('whyText')) + '</i></span>' + icon('arrow') + '</button>' : '';
+            const html = '<h2>' + esc(tr('meal')) + '</h2><div class="sp-quick-log">' + tip + '<div class="sp-quick-cap">' + button('photo', 'camera', 'photo') + button('scan', 'scan', 'scan') + '</div>' + (recent.length ? '<small class="sp-quick-h">' + esc(tr('recent')) + '</small><div class="sp-quick-list">' + recent.map((l, i) => '<button type="button" class="sp-quick-item" data-sp="quickMeal" data-q="' + i + '">' + icon('plate') + '<span><b>' + esc(l.t || l.n) + '</b><small>' + esc(kc(l) || tr('oneTap')) + '</small></span><em>+</em></button>').join('') + '</div>' : '<p class="sp-note">' + esc(tr('recentEmpty')) + '</p>') + '<details class="sp-manual"><summary>' + esc(tr('manual')) + '</summary><form id="spMeal" data-id="' + esc(lastMealId) + '">' + fields + '</form></details></div>';
             showSheet(html);
             return;
         }
@@ -738,7 +762,7 @@
             ownedSheet = null;
         }
         await flight(seed.photo);
-        feedback('water', tr('saved'), result.xp);
+        feedback('eat', tr('saved'), result.xp);
         checkBonuses(false);
         const log = result.log;
         showSheet('<h2>' + esc(tr('saved')) + '</h2><p>' + esc(log.t) + '</p>' + macroHTML(log) + '<p class="sp-earned">+' + result.xp + ' XP</p>' + gptHTML());
@@ -1192,14 +1216,71 @@
         showSheet('<h2>' + esc(tr('goals')) + '</h2><form id="spGoals">' + ['protein', 'fiber', 'sugar'].map(k => '<label>' + esc(tr(k)) + ' (g)<input name="' + k + '" type="number" min="1" max="1000" value="' + esc(g[k] || '') + '" placeholder="—"></label>').join('') + '<p class="sp-note">' + esc(tr('sugarNote')) + '</p><button class="r2-btn pri">' + esc(tr('setGoals')) + '</button></form>');
     }
 
-    function showPick(recipe, why) {
+    const normName = v => String(v || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+
+    function findRecipe(recipe) {
         const catalog = window.LowiSwafloBridge ? LowiSwafloBridge.catalog() : [];
-        const r = typeof recipe === 'string' ? catalog.find(r => r.id === recipe || r.n === recipe) : recipe || catalog[0];
+        if (recipe && typeof recipe === 'object') return recipe;
+        if (!recipe) return catalog[0] || null;
+        const key = normName(recipe);
+        return catalog.find(r => r.id === recipe) || catalog.find(r => [r.n, r.e, r.de, r.name].some(x => x && normName(x) === key)) || catalog.find(r => [r.n, r.e, r.de].some(x => x && key.length > 5 && (normName(x).includes(key) || key.includes(normName(x))))) || null;
+    }
+
+    function recipeName(r) {
+        const n = r.n || r.name || '';
+        try {
+            if (window.LowiLang && LowiLang.t) return LowiLang.t(n) || n;
+        } catch (e) {}
+        return n;
+    }
+
+    function pickMacros(r) {
+        if (r.macros && Object.values(K.macros(r)).some(v => v !== null)) return K.macros(r);
+        return K.estimate(r.ing || r.ingredients || []) || K.macros({});
+    }
+
+    function whyLine(reasons, r) {
+        const parts = (reasons || []).map(k => tr('why_' + k)).filter(Boolean);
+        if (r && r.mins) parts.push(r.mins + ' ' + tr('minutes'));
+        return parts.length ? parts.join(' · ') : '';
+    }
+
+    /* the herb's own food idea for right now (protein high, sugar low) */
+    function herbPick() {
+        const catalog = window.LowiSwafloBridge ? LowiSwafloBridge.catalog() : [];
+        return K.pickFor(catalog.filter(r => !r.drink && (r.ing || []).length), Date.now());
+    }
+
+    function showPick(recipe, why) {
+        const r = findRecipe(recipe);
         if (!r) return;
         const image = r.img || r.photo || (window.LowiSpiritHost && LowiSpiritHost.recipeImage && LowiSpiritHost.recipeImage(r.id)) || '';
         const ing = (r.ing || r.ingredients || []).map(i => typeof i === 'string' ? i : [i.q || i.quantity, i.n || i.name].filter(Boolean).join(' '));
-        const ov = showSheet('<article class="sp-pick"><small>' + esc(tr('yourPick')) + '</small><h2>' + esc(r.n || r.name) + '</h2>' + (image ? '<img class="sp-pick-photo" src="' + esc(image) + '" alt="">' : '') + '<div class="sp-pick-tabs">' + button('why', 'leaf', 'pickPage', 'data-page="overview"') + button('ingredients', 'bag', 'pickPage', 'data-page="ingredients"') + button('macro', 'plate', 'pickPage', 'data-page="macros"') + '</div><section data-pick-page="overview"><p>' + esc(why || tr('whyText')) + '</p></section><section data-pick-page="ingredients" hidden><ul>' + ing.map(i => '<li>' + esc(i) + '</li>').join('') + '</ul></section><section data-pick-page="macros" hidden>' + macroHTML(r) + '</section><div class="sp-pick-actions">' + button('cook', 'leaf', 'cookPick') + button('logPick', 'plate', 'logPick') + '</div></article>');
+        const m = pickMacros(r);
+        const reasons = Array.isArray(why) ? why : null;
+        const whyText = reasons ? whyLine(reasons, r) : (why || '');
+        const name = recipeName(r);
+        const mini = ['protein', 'fiber', 'sugar'].map(k => '<span class="sp-pick-m"><b>' + (m[k] === null || m[k] === undefined ? '—' : Math.round(m[k]) + ' g') + '</b><small>' + esc(tr(k)) + '</small></span>').join('');
+        const ov = showSheet('<article class="sp-pick"><small>' + esc(tr('yourPick')) + '</small><h2>' + esc(name) + '</h2>' + (image ? '<img class="sp-pick-photo" src="' + esc(image) + '" alt="">' : '') + '<div class="sp-pick-mini">' + mini + '</div><div class="sp-pick-tabs">' + button('why', 'leaf', 'pickPage', 'data-page="overview"') + button('ingredients', 'bag', 'pickPage', 'data-page="ingredients"') + button('macro', 'plate', 'pickPage', 'data-page="macros"') + '</div><section data-pick-page="overview"><p>' + esc(whyText || tr('whyText')) + '</p></section><section data-pick-page="ingredients" hidden><ul>' + ing.map(i => '<li>' + esc(i) + '</li>').join('') + '</ul></section><section data-pick-page="macros" hidden>' + macroHTML({ macros: m }) + (m.estimated ? '<p class="sp-note">' + esc(tr('estimated')) + '</p>' : '') + '</section><div class="sp-pick-actions">' + button('cook', 'leaf', 'cookPick') + button('logPick', 'plate', 'logPick') + '</div></article>');
         ov.__recipe = r;
+        ov.__macros = m;
+        ov.__name = name;
+        return ov;
+    }
+
+    function logPick(r, m, name) {
+        const seed = {
+            id: uid(),
+            t: name || recipeName(r),
+            macros: Object.fromEntries(Object.keys(K.macros({})).map(k => [k, m && m[k] !== undefined ? m[k] : null])),
+            via: 'pick'
+        };
+        const result = V.logMeal(seed);
+        R.close();
+        feedback('eat', tr('saved') + ' · ' + seed.t, result.xp);
+        mealNotice(result.log || seed, result.xp);
+        checkBonuses(false);
+        refresh();
     }
 
     function paginate(sh) {
@@ -1300,9 +1381,26 @@
         pick.__spPick = true;
         pick.addEventListener('click', e => {
             if (e.target.closest('button,a,input')) return;
-            const title = pick.querySelector('h2,.h2,h3,.h3,.r5-name,.r5-n');
-            if (title) showPick(title.textContent.trim());
+            /* Cook's pick card already opens Cook's own full recipe view; never stack a second sheet on it */
+            return;
         });
+    }
+
+    /* every meal log shows what it was worth: macros + XP, right on Home, while the herb eats */
+    function mealNotice(log, xp) {
+        if (!log || !home) return;
+        const notice = D.getElementById('spMealNotice') || D.createElement('button');
+        notice.id = 'spMealNotice';
+        notice.type = 'button';
+        notice.dataset.sp = 'editMeal';
+        notice.dataset.id = log.id || log.eventId || String(log.ts);
+        const m = K.macros(log);
+        notice.innerHTML = '<b>' + esc(log.t) + (xp ? ' · <em>+' + xp + ' XP</em>' : '') + '</b><span>' + ['protein', 'fiber', 'sugar'].map(k => '<i class="sp-chip sp-chip-' + k + '">' + esc(tr(k)) + ' ' + (m[k] === null ? '—' : Math.round(m[k]) + ' g') + '</i>').join('') + '</span>';
+        notice.classList.remove('on');
+        home.querySelector('.sp-heroes').append(notice);
+        requestAnimationFrame(() => notice.classList.add('on'));
+        clearTimeout(mealNotice.t);
+        mealNotice.t = setTimeout(() => notice.remove(), 6500);
     }
 
     function legacyMeal(entry) {
@@ -1310,13 +1408,11 @@
         const s = V.state(),
             log = s.logs[s.logs.length - 1];
         if (!log) return;
-        const notice = D.getElementById('spMealNotice') || D.createElement('button');
-        notice.id = 'spMealNotice';
-        notice.dataset.sp = 'editMeal';
-        notice.dataset.id = log.id || log.eventId || String(log.ts);
-        notice.innerHTML = '<b>' + esc(log.t) + ' · +' + entry.amt + ' XP</b><span>' + ['protein', 'fiber', 'sugar'].map(k => esc(tr(k)) + ' ' + (K.macros(log)[k] === null ? '—' : K.macros(log)[k] + ' g')).join(' · ') + '</span>';
-        home.querySelector('.sp-heroes').append(notice);
-        setTimeout(() => notice.remove(), 6500);
+        mealNotice(log, entry.amt);
+        if (!opened && home) {
+            home.dataset.reaction = 'eat';
+            setTimeout(() => { if (home.dataset.reaction === 'eat') delete home.dataset.reaction; }, 2400);
+        }
         checkBonuses(false);
     }
     const sheetBase = R.sheet;
@@ -1424,7 +1520,10 @@
             }
         } else if (a === 'logPick') {
             const r = ownedSheet?.__recipe;
-            if (r) mealForm(r);
+            if (r) logPick(r, ownedSheet.__macros, ownedSheet.__name);
+        } else if (a === 'herbPick') {
+            const pk = herbPick();
+            if (pk) showPick(pk.recipe, pk.why);
         } else if (a === 'pageNext' || a === 'pageBack') {
             const pager = b.closest('.sp-pager'),
                 pages = pager.__pages;

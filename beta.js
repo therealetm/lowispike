@@ -130,3 +130,67 @@
     });
     run();
 })();
+
+/* ===== Beta part 2a: For You shows every post again =====
+   TikTok/YouTube thumbnails are signed links that expire after a few days, so older posts went blank.
+   Each link post gets a fresh thumbnail from oEmbed (cached per post), and authors show their profile photo. */
+(function () {
+    'use strict';
+    const KEY = 'lowispike.thumbs.v1';
+    let cache = {};
+    try { cache = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { cache = {}; }
+    const pending = {};
+    const expires = u => { const m = /x-expires=(\d+)/.exec(u || ''); return m ? +m[1] * 1000 : 0; };
+    const fresh = u => !!u && (!expires(u) || expires(u) > Date.now() + 5 * 60e3);
+    const OE = {
+        tiktok: u => 'https://www.tiktok.com/oembed?url=' + encodeURIComponent(u),
+        youtube: u => 'https://www.youtube.com/oembed?format=json&url=' + encodeURIComponent(u)
+    };
+    function save() { try { localStorage.setItem(KEY, JSON.stringify(cache)); } catch (e) {} }
+    function postOf(id) {
+        try { return (window.TRIBE && TRIBE.post && TRIBE.post(id)) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || null; } catch (e) { return null; }
+    }
+    function refresh(p) {
+        if (pending[p.id]) return pending[p.id];
+        const plat = /tiktok/.test(p.url) ? 'tiktok' : /youtu/.test(p.url) ? 'youtube' : p.plat;
+        if (!OE[plat]) return Promise.resolve('');
+        pending[p.id] = fetch(OE[plat](p.url)).then(r => r.ok ? r.json() : null).then(j => {
+            const u = j && j.thumbnail_url || '';
+            if (u) { cache[p.id] = u; save(); }
+            return u;
+        }).catch(() => '').finally(() => { setTimeout(() => delete pending[p.id], 60e3); });
+        return pending[p.id];
+    }
+    function paint(slide, url) {
+        const art = slide.querySelector('.fy-bg.fy-art');
+        if (!art || !url) return;
+        let img = art.querySelector('img');
+        if (img && img.getAttribute('src') === url) return;
+        if (!img) { img = document.createElement('img'); img.alt = ''; img.referrerPolicy = 'no-referrer'; art.append(img); }
+        img.onerror = () => img.remove();
+        img.src = url;
+    }
+    function fixThumbs() {
+        document.querySelectorAll('#fyFeed .fy-slide[data-id]:not([data-thumb])').forEach(slide => {
+            slide.dataset.thumb = '1';
+            if (!slide.querySelector('.fy-bg.fy-art')) return;
+            const p = postOf(slide.dataset.id);
+            if (!p || !p.url) return;
+            const own = p.meta && p.meta.thumb;
+            if (fresh(own)) return;
+            if (fresh(cache[p.id])) {
+                if (p.meta) p.meta.thumb = cache[p.id];
+                paint(slide, cache[p.id]);
+                return;
+            }
+            refresh(p).then(u => {
+                if (!u) return;
+                if (p.meta) p.meta.thumb = u;
+                document.querySelectorAll('#fyFeed .fy-slide[data-id="' + p.id + '"]').forEach(s => paint(s, u));
+            });
+        });
+    }
+    function add() { if (window.LowiBeta) LowiBeta.add(fixThumbs); else setTimeout(add, 300); }
+    add();
+    window.LowiFeedThumbs = { fresh, expires, fixThumbs, cache: () => cache };
+})();

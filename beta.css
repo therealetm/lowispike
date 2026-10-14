@@ -664,24 +664,26 @@ html.spirit-app #tab-home #g2hTiles .g2h-tile {
     inset: 56px 10px 150px !important;
 }
 
-/* Misty rides along, small and whole, never sliced by the frame */
+/* Misty rides along, small and whole, in the camera's top corner: never on the scan controls */
 #spWorld.sp-capture .sp-body {
-    width: 60px !important;
-    height: 76px !important;
+    width: 40px !important;
+    height: 50px !important;
     left: auto !important;
-    right: 14px !important;
-    top: auto !important;
-    bottom: 168px !important;
+    right: 12px !important;
+    top: 12px !important;
+    bottom: auto !important;
     transform: none !important;
+    z-index: 4;
 }
 
 #spWorld.sp-capture .sp-speech {
-    top: auto !important;
-    bottom: 176px !important;
-    left: 14px !important;
-    right: 84px !important;
-    padding: 8px 10px !important;
-    border-radius: 14px 14px 4px 14px !important;
+    top: 66px !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: 12px !important;
+    max-width: 62% !important;
+    padding: 7px 10px !important;
+    border-radius: 14px 4px 14px 14px !important;
     background: #0b0e16e0 !important;
     color: #f3f7f7 !important;
     text-align: left !important;
@@ -690,7 +692,13 @@ html.spirit-app #tab-home #g2hTiles .g2h-tile {
     text-shadow: none !important;
     max-height: 4.2em;
     overflow: hidden;
+    z-index: 4;
 }
+
+#spWorld.sp-capture .b3-ctop { padding-right: 56px !important; }
+#spWorld.sp-capture .sp-world-head .sp-head-scan { display: inline; }
+#spWorld .sp-world-head .sp-head-scan { display: none; }
+#spWorld.sp-capture .sp-world-head .sp-head-world { display: none; }
 
 #spWorld.sp-capture .sp-speech:empty {
     display: none;
@@ -724,12 +732,15 @@ html.spirit-app #tab-home #g2hTiles .g2h-tile {
 
 #spWorld.sp-capture .sp-food-camera~.sp-body,
 #spWorld.sp-capture .sp-stage:has(.sp-food-camera) .sp-body {
-    bottom: 76px !important;
+    top: 12px !important;
+    bottom: auto !important;
 }
 
 #spWorld.sp-capture .sp-stage:has(.sp-food-camera) .sp-speech {
-    bottom: 84px !important;
+    top: 66px !important;
+    bottom: auto !important;
 }
+#spWorld.sp-capture .sp-food-camera>p { right: 60px !important; }
 
 /* ---------- Tab bar: Scan has its own icon ---------- */
 #tabbar .tb.scan .orb {
@@ -957,3 +968,64 @@ html[data-theme="light"] .rs-ov .rs-scrim {
 .sp-manual summary::before { content: ""; width: 7px; height: 7px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg); transition: transform .2s; }
 .sp-manual[open] summary::before { transform: rotate(45deg); }
 .sp-manual form { display: grid; gap: 8px; }
+
+/* ===== Beta part 2a: workout player fits one iPhone screen, pause fully in frame ===== */
+#mv-player { overflow: hidden; }
+#mv-player > * { flex: none; }
+#mv-player .mv-stage { flex: 1 1 0; min-height: 96px; overflow: hidden; }
+#mv-player .mv-stage #mv-fig { height: 100%; max-height: 100%; width: auto; max-width: 100%; }
+#mv-player .mv-info { margin-top: 2px; }
+#mv-player .mv-big { font-size: 44px; line-height: 1.05; }
+#mv-player .mv-bodywrap { margin-top: 6px; }
+#mv-player .mv-body { min-height: 0; padding-top: 6px; padding-bottom: 6px; }
+#mv-player .mv-next { order: 0; margin-top: 6px; }
+#mv-player .mv-ctrl { position: static !important; inset: auto !important; margin-top: 8px; padding-bottom: 2px; }
+
+/* ===== Beta part 2a: Home herb reacts to every log ===== */
+#spHome .sp-bubble { position: relative; }
+#spHome .sp-home-pop { position: absolute; left: 50%; top: 18%; transform: translate(-50%, 0); font: 800 16px/1 system-ui, sans-serif; color: var(--tmg-a, #9de6b8); text-shadow: 0 0 10px var(--tmg-a, #9de6b8); opacity: 0; pointer-events: none; z-index: 6; }
+#spHome .sp-home-pop.on { animation: bXpPop 1.6s ease-out forwards; }
+@keyframes bXpPop { 0% { opacity: 0; transform: translate(-50%, 14px) scale(.7); } 20% { opacity: 1; transform: translate(-50%, 0) scale(1.1); } 70% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -26px) scale(1); } }
+#spHome[data-reaction] .sp-home-herb > * { animation: bHerbHop .7s cubic-bezier(.3, 1.6, .5, 1) 2; transform-origin: 50% 90%; }
+#spHome[data-reaction="eat"] .sp-home-herb > * { animation: bHerbChomp .5s ease-in-out 3; }
+#spHome[data-reaction="water"] .sp-home-herb > * { animation: bHerbDrink 1.1s ease-in-out 2; }
+#spHome[data-reaction="bloom"] .sp-home-herb > * { animation: bHerbBloom 1.2s ease-in-out 2; }
+#spHome[data-reaction] .sp-bubble { box-shadow: 0 0 0 2px var(--tmg-a, #9de6b8), 0 0 34px -4px var(--tmg-a, #9de6b8); transition: box-shadow .3s; }
+#spHome[data-reaction="water"] .sp-bubble-water { animation: bDrinkFill 1.4s ease-out; }
+@keyframes bHerbHop { 0%, 100% { transform: none; } 40% { transform: translateY(-14px) scale(1.05, .95); } 70% { transform: translateY(0) scale(.94, 1.06); } }
+@keyframes bHerbChomp { 0%, 100% { transform: none; } 30% { transform: scale(1.08, .9); } 60% { transform: scale(.95, 1.06) rotate(-3deg); } }
+@keyframes bHerbDrink { 0%, 100% { transform: none; filter: none; } 35% { transform: rotate(-8deg) translateY(-4px); filter: saturate(1.5) brightness(1.15); } 70% { transform: rotate(4deg); filter: saturate(1.4); } }
+@keyframes bHerbBloom { 0%, 100% { transform: none; filter: none; } 50% { transform: scale(1.14) rotate(6deg); filter: drop-shadow(0 0 14px var(--tmg-a, #9de6b8)) brightness(1.3); } }
+@keyframes bDrinkFill { 0% { transform: translateY(18%); } 60% { transform: translateY(-6%); } 100% { transform: none; } }
+#spMealNotice { opacity: 0; transform: translateY(8px); transition: opacity .25s, transform .25s; font-size: 13px; }
+#spMealNotice.on { opacity: 1; transform: none; }
+#spMealNotice b em { font-style: normal; color: var(--tmg-a, #9de6b8); }
+#spMealNotice span { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; font-size: 11px; }
+#spMealNotice .sp-chip { font-style: normal; padding: 2px 7px; border-radius: 99px; background: #ffffff12; border: 1px solid #ffffff1f; }
+@media (prefers-reduced-motion: reduce) { #spHome[data-reaction] .sp-home-herb > *, #spHome .sp-home-pop.on, #spHome[data-reaction] .sp-bubble-water { animation: none !important; } #spHome .sp-home-pop.on { opacity: 1; } }
+
+/* ===== Beta part 2a: the herb's food idea + "Dein Treffer" ===== */
+.sp-herb-tip { display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px 12px 8px 8px; border-radius: 18px; border: 1px solid color-mix(in srgb, var(--tmg-a, #9de6b8) 55%, transparent); background: linear-gradient(120deg, color-mix(in srgb, var(--tmg-a, #9de6b8) 20%, var(--b-solid2, #161a22)), var(--b-solid2, #161a22)); color: var(--text, #eef3f0); text-align: left; font: inherit; }
+.sp-herb-tip img, .sp-herb-tip > svg:first-child { width: 58px; height: 58px; flex: none; border-radius: 14px; object-fit: cover; }
+.sp-herb-tip span { display: grid; gap: 1px; min-width: 0; flex: 1; }
+.sp-herb-tip small { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--tmg-a, #9de6b8); }
+.sp-herb-tip b { font-size: 15px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sp-herb-tip i { font-style: normal; font-size: 12px; opacity: .75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sp-herb-tip > svg:last-child { width: 18px; height: 18px; flex: none; opacity: .7; }
+.sp-pick-mini { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 8px 0; }
+.sp-pick-m { display: grid; justify-items: center; padding: 6px 4px; border-radius: 14px; background: #ffffff0d; border: 1px solid #ffffff17; }
+.sp-pick-m b { font-size: 16px; }
+.sp-pick-m small { font-size: 11px; opacity: .7; }
+#spWorld[data-reaction="eat"] .sp-body > * { animation: bHerbChomp .5s ease-in-out 3; transform-origin: 50% 90%; }
+#spWorld[data-reaction="water"] .sp-body > * { animation: bHerbDrink 1.1s ease-in-out 2; transform-origin: 50% 90%; }
+#spWorld[data-reaction="bloom"] .sp-body > * { animation: bHerbBloom 1.2s ease-in-out 2; transform-origin: 50% 70%; }
+#spWorld[data-reaction] .sp-xp-pop:not(:empty) { animation: bWorldXp 1.8s ease-out both; }
+@keyframes bWorldXp { 0% { opacity: 0; transform: translateY(12px) scale(.7); } 20% { opacity: 1; transform: none; } 80% { opacity: 1; } 100% { opacity: 0; transform: translateY(-22px); } }
+@media (prefers-reduced-motion: reduce) { #spWorld[data-reaction] .sp-body > *, #spWorld[data-reaction] .sp-xp-pop { animation: none !important; } }
+/* thirsty herb: leaves curl in and brown a little; one healthy action brings it back */
+.lh-droopy .lh-leaf { transform-box: fill-box; transform-origin: 50% 100%; transform: scaleX(.62) skewY(-10deg); transition: transform .8s ease; }
+.lh-droopy .lh-foliage { filter: sepia(.35) saturate(.7); }
+/* the next form stays a secret: a sealed, softly glowing seed — no outline of what comes next */
+.sp-path .sealed .sp-symbol { color: var(--tmg-a, #9de6b8); filter: drop-shadow(0 0 6px var(--tmg-a, #9de6b8)); animation: bSealGlow 2.6s ease-in-out infinite; }
+@keyframes bSealGlow { 0%, 100% { opacity: .55; transform: scale(.94); } 50% { opacity: 1; transform: scale(1.06); } }
+@media (prefers-reduced-motion: reduce) { .sp-path .sealed .sp-symbol { animation: none; } }

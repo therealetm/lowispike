@@ -51,7 +51,7 @@ test('toast is under 2 s, never takes taps, skips the sun bonus and is loaded', 
     const css = fs.readFileSync(path.join(root, 'sun-meter.css'), 'utf8');
     assert.match(css, /\.lp-praise \{[^}]*pointer-events: none/);
     const src = fs.readFileSync(path.join(root, 'praise.js'), 'utf8');
-    assert.match(src, /if \(type === 'sun'\) return;/);
+    assert.match(src, /if \(type === 'sun' \|\| type === 'quest'\) return;/);
     assert.match(src, /aria-live/);
     new Function(src);
 });

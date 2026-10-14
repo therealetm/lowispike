@@ -9,7 +9,9 @@
     const W = typeof window !== 'undefined' ? window : globalThis, D = W.document;
     if (W.LowiSun) return;
     const GOAL = 12, AWAY_MS = 60 * 60000, BONUS = 10;
-    const PTS = { meal: 3, scan: 3, move: 4, fast: 3, macro: 2, water: 1, other: 1, sun: 0 };
+    const PTS = { meal: 3, scan: 3, move: 4, fast: 3, macro: 2, water: 1, other: 1, sun: 0, quest: 0 };
+    /* per-type ceiling: no single habit fills the sun alone, a mix of Today/Scan/Cook/Move does */
+    const CAP = { meal: 9, scan: 6, move: 8, fast: 6, macro: 4, water: 4, other: 3 };
     const pad = n => String(n).padStart(2, '0');
     const dayKey = t => { const d = new Date(t); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
 
@@ -18,6 +20,8 @@
         if (!e) return 'other';
         const src = String(e.src || ''), id = String(e.eventId || ''), txt = (src + ' ' + (e.label || '')).toLowerCase();
         if (/^sun-full/.test(src) || /^sun-full:/.test(id)) return 'sun';
+        /* quest, streak and board bonuses reward actions that already counted: no second sunbeam */
+        if (!src || /^f\d|^f3all|^f2_break|^e1:/.test(src)) return 'quest';
         if (/^meal/.test(src) || /^meal:|^plan-meal:/.test(id)) return 'meal';
         if (/^macro-goal/.test(src) || /^macro-goal/.test(id)) return 'macro';
         if (/scan|capture|product|dex/.test(txt)) return 'scan';
@@ -38,7 +42,8 @@
             if (!p) continue;
             const k = classify(e);
             parts[k] = parts[k] || { n: 0, pts: 0 };
-            parts[k].n++; parts[k].pts += p; raw += p;
+            const add = Math.max(0, Math.min(p, (CAP[k] || 99) - parts[k].pts));
+            parts[k].n++; parts[k].pts += add; raw += add;
         }
         const fullDone = (input.ledger || []).some(e => e && e.eventId === 'sun-full:' + key);
         const trip = input.garden && input.garden.trips && input.garden.trips[key] || null;
@@ -72,7 +77,7 @@
         const m = Math.max(1, Math.ceil(Math.max(0, +ms || 0) / 60000));
         return Math.floor(m / 60) + ':' + pad(m % 60);
     }
-    const core = { GOAL, AWAY_MS, BONUS, PTS, ITEMS, classify, points, model, pickItem, fmtLeft, dayKey };
+    const core = { GOAL, AWAY_MS, BONUS, PTS, CAP, ITEMS, classify, points, model, pickItem, fmtLeft, dayKey };
     if (!D) {
         if (typeof module !== 'undefined' && module.exports) module.exports = core;
         return;
@@ -98,7 +103,7 @@
         finds: ['Garden finds', 'Garten-Funde', 'Hallazgos del jardín'],
         none: ['Fill your sun and I’ll bring the first one.', 'Füll deine Sonne, dann bring ich den ersten mit.', 'Llena tu sol y te traigo el primero.'],
         how: ['How the sun fills', 'So füllt sich die Sonne', 'Cómo se llena el sol'],
-        howTx: ['Every counted action is a sunbeam for me. Repeats and meals over the daily limit don’t count.', 'Jede gezählte Aktion ist ein Sonnenstrahl für mich. Doppeltes und Essen über dem Tageslimit zählt nicht.', 'Cada acción contada es un rayo de sol para mí. Repeticiones y comidas sobre el límite diario no cuentan.'],
+        howTx: ['Every counted action is a sunbeam for me, up to a daily limit per kind, so a mix fills me fastest. Repeats and meals over the daily limit don’t count.', 'Jede gezählte Aktion ist ein Sonnenstrahl für mich, pro Art bis zu einer Grenze. Eine Mischung füllt mich am schnellsten. Doppeltes und Essen über dem Tageslimit zählt nicht.', 'Cada acción contada es un rayo de sol para mí, con un límite por tipo, así que una mezcla me llena antes. Repeticiones y comidas sobre el límite diario no cuentan.'],
         awayTap: ['I’m out in the garden! Back in', 'Ich bin im Garten! Zurück in', '¡Estoy en el jardín! Vuelvo en'],
         meal: ['Meal', 'Mahlzeit', 'Comida'], scan: ['Scan', 'Scan', 'Escaneo'], move: ['Move', 'Bewegung', 'Movimiento'], fast: ['Fasting milestone', 'Fasten-Etappe', 'Etapa de ayuno'],
         macro: ['Macro goal', 'Makro-Ziel', 'Meta de macros'], water: ['Glass of water', 'Glas Wasser', 'Vaso de agua'], other: ['Other action', 'Andere Aktion', 'Otra acción']
@@ -150,7 +155,9 @@
         row.classList.toggle('away', away);
         row.style.setProperty('--ls-fill', v.ratio.toFixed(3));
         row.setAttribute('aria-label', label + ', ' + right);
+        const pops = [...row.querySelectorAll('.ls-pop')];
         row.innerHTML = sunSvg(v.ratio) + '<span class="ls-name">' + esc(label) + '</span><span class="ls-track" aria-hidden="true"><i class="ls-fill"></i></span><span class="ls-num num">' + esc(right) + '</span>';
+        pops.forEach(p => row.appendChild(p));
     }
     function awayBadge(v) {
         const bub = D.getElementById('spBubble');
@@ -199,7 +206,7 @@
     function infoSheet() {
         if (!R() || !R().sheet) return;
         const v = live(), g = garden();
-        const how = ['meal', 'scan', 'move', 'fast', 'macro', 'water'].map(k => '<li><span>' + esc(tr(k)) + '</span><b class="num">+' + PTS[k] + '</b></li>').join('');
+        const how = ['meal', 'scan', 'move', 'fast', 'macro', 'water'].map(k => '<li><span>' + esc(tr(k)) + '</span><b class="num">+' + PTS[k] + ' <small>/ ' + CAP[k] + '</small></b></li>').join('');
         const finds = g.items.length ? '<ul class="ls-finds">' + g.items.slice(-12).reverse().map(i => '<li>' + itemSvg(i.id) + '<span>' + esc(itemName(i.id)) + '</span></li>').join('') + '</ul>' : '<p class="ls-note">' + esc(tr('none')) + '</p>';
         R().sheet('<div class="ls-sheet ls-info"><div class="ls-head">' + sunSvg(v.ratio) + '<div><h2>' + esc(v.away ? tr('away') : v.full ? tr('full') : tr('sun')) + '</h2><p class="num">' + (v.away ? esc(tr('back')) + ' ' + fmtLeft(v.left) : v.points + '/' + v.goal) + '</p></div></div>' +
             '<div class="ls-track big" style="--ls-fill:' + v.ratio.toFixed(3) + '"><i class="ls-fill"></i></div>' + partsHtml(v) +
@@ -211,12 +218,13 @@
     let busy = false;
     function check(e) {
         const v = live();
-        if (e && e.detail && e.detail.entry && !v.fullDone) {
-            const n = points(e.detail.entry);
-            const before = v.raw - n;
-            if (n && before < GOAL) pop(Math.min(n, GOAL - before));
-        } else if (e && e.detail && e.detail.entry && points(e.detail.entry) && !v.full) pop(points(e.detail.entry));
         render();
+        const en = e && e.detail && e.detail.entry;
+        if (en && points(en)) {
+            const s = S(), before = model({ now: Date.now(), ledger: (s.ledger || []).filter(x => x !== en), garden: s.garden });
+            const n = Math.min(v.points, GOAL) - Math.min(before.raw, GOAL);
+            if (n > 0) pop(n);
+        }
         if (v.full && !v.fullDone && !busy) { busy = true; setTimeout(fill, 700); }
     }
     function fill() {

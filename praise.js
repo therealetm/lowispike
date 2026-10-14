@@ -67,7 +67,7 @@
             if (!entry || !(+entry.amt > 0)) return;
             const C = W.LowiSun;
             const type = C ? C.classify(entry) : 'other';
-            if (type === 'sun') return;
+            if (type === 'sun' || type === 'quest') return;
             const S = W.LowiVitalsBridge ? LowiVitalsBridge.state() : {};
             S.praise = S.praise || {};
             S.praise.first = S.praise.first || {};

@@ -14,6 +14,23 @@ test('classifies the app\'s real ledger sources', () => {
     assert.equal(SUN.classify({ src: 'scan:product', label: 'Product scanned' }), 'scan');
     assert.equal(SUN.classify({ src: 'fast:16', label: 'Fasting milestone' }), 'fast');
     assert.equal(SUN.classify({ src: 'sun-full', eventId: 'sun-full:' + day }), 'sun');
+    assert.equal(SUN.classify({ src: 'r3a_fast', label: '16 h fasted' }), 'fast');
+    assert.equal(SUN.classify({ src: 'move:steps', label: 'Steps · 4,000' }), 'move');
+    assert.equal(SUN.classify({ src: '', label: 'Log a meal' }), 'quest', 'quest bonus on top of a meal');
+    assert.equal(SUN.classify({ src: 'f3:2026-10-15:x', label: 'XP' }), 'quest');
+    assert.equal(SUN.points({ src: '', label: 'Log a meal', amt: 10 }), 0);
+});
+
+test('one habit alone cannot fill the sun: per-type ceilings', () => {
+    const many = Array.from({ length: 10 }, (_, i) => e('move:steps', 5, { label: 'Steps', ts: now - i }));
+    let v = SUN.model({ now, ledger: many });
+    assert.equal(v.raw, SUN.CAP.move);
+    assert.equal(v.full, false);
+    const water = Array.from({ length: 9 }, () => e('water', 2));
+    v = SUN.model({ now, ledger: many.concat(water) });
+    assert.equal(v.raw, SUN.CAP.move + SUN.CAP.water);
+    assert.equal(v.full, true);
+    assert.equal(v.parts.water.n, 9, 'all actions are listed, only points are capped');
 });
 
 test('counted actions add points, the sun-full bonus and other days add nothing', () => {

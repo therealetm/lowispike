@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261014-225000">
+<meta name="lowi-build" content="20261014-231000">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -9759,7 +9759,7 @@ R2.boot = function(){
 "use strict";
 const R2 = window.LowiR2, $ = R2.$, $$ = R2.$$, esc = R2.esc;
 const GATE = "lowi.gate";            // "done" (has account) | "skip" (chose to try without) — per device
-const KEEP = k => k === "lowi.theme" || k === "lowi.a2hs" || k === "lowispike.lang" || k.indexOf("lowi.health.") === 0 || k === "lowi.t";
+const KEEP = k => k === "lowi.theme" || k === "lowi.a2hs" || k === "lowi.news.seen" || k === "lowispike.lang" || k.indexOf("lowi.health.") === 0 || k === "lowi.t";
 
 function session(){ try { const j = JSON.parse(localStorage.getItem("lowi.auth") || "null"); return j && j.user ? j : null; } catch(e){ return null; } }
 function isAccount(){ const s = session(); return !!(s && s.user && !s.user.is_anonymous && s.user.email); }

@@ -61,6 +61,18 @@
     animation: htRustle .2s ease-in-out 3 !important
 }
 
+#spWorld .sp-body[data-poke="leaves"] .lh-foliage {
+    transform-origin: 130px 240px;
+    animation: htSway .6s cubic-bezier(.3, 1.5, .5, 1) !important
+}
+
+@keyframes htSway {
+    0%, 100% { transform: rotate(0) }
+    25% { transform: rotate(-6deg) }
+    55% { transform: rotate(5deg) }
+    80% { transform: rotate(-2deg) }
+}
+
 #spWorld .sp-body[data-poke="face"] .lh-creature {
     animation: htBoop .55s cubic-bezier(.3, 1.6, .5, 1) !important
 }
@@ -147,7 +159,8 @@
 
     #spBubble[data-pop] .sp-home-herb,
     #spWorld .sp-body[data-poke] .lh-creature,
-    #spWorld .sp-body[data-poke] .lh-leaf {
+    #spWorld .sp-body[data-poke] .lh-leaf,
+    #spWorld .sp-body[data-poke] .lh-foliage {
         animation: none !important
     }
 }

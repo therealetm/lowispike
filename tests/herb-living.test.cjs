@@ -40,8 +40,8 @@ test('voice does not repeat across pages, moods, time periods and reactions',()=
   const x=T.nextLine(page,used,{model:m,moment});if(x){assert(!used.includes(x));used.push(x);}
  }
  assert(used.length>=60);
- assert.match(T.nextLine('home',[],{model:{...m,profile:T.profile({}, {starSign:'Aries'})}}),/Let us go/);
- assert.match(T.nextLine('home',[],{model:m}),/Floating/);
+ assert(T.nextLine('home',[],{model:{...m,profile:T.profile({}, {starSign:'Aries'})}}).length<100);
+ assert.doesNotMatch(T.nextLine('home',[],{model:m}),/Floating in our little sunbeam/);
 });
 test('cosmetic locks use earned XP and do not change the score',()=>{
  assert.equal(T.cosmeticAllowed('glass',95),false);assert.equal(T.cosmeticAllowed('glass',100),true);assert.equal(T.cosmeticAllowed('crown',699),false);

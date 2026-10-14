@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261014-001001">
+<meta name="lowi-build" content="20261014-002000">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2179,9 +2179,9 @@ function cloneOrbCss(){ if ($("#g1OrbCss")) return; let out = "";
   } catch(e){} } };
   for (const sh of document.styleSheets) { let rules; try { rules = sh.cssRules; } catch(e){ continue; } if (rules) walk(rules, ""); }
   const st = document.createElement("style"); st.id = "g1OrbCss"; st.textContent = out; (document.head || H).appendChild(st); }
-function orbHTML(){ const o = $("#tabbar .tb.scan .orb"); let inner = o ? o.innerHTML : '<i class="halo"></i><span class="ring"><i class="liq"></i><i class="gloss"></i></span><i class="splash"></i>';
+function orbHTML(){ if(window.LowiHerbTamagotchi){const h=LowiHerbTamagotchi;return '<span class="lh-guide-herb">'+h.plantHTML(h.current().m,"dock")+'</span>';} const o = $("#tabbar .tb.scan .orb"); let inner = o ? o.innerHTML : '<i class="halo"></i><span class="ring"><i class="liq"></i><i class="gloss"></i></span><i class="splash"></i>';
   return '<span class="g1-fb active"><span class="orb">' + inner + '</span></span><i class="g1-face" aria-hidden="true"><b></b><b></b><u></u></i>'; }
-const realOrb = () => $("#tabbar .tb.scan .orb");
+const realOrb = () => $("#lhDock") || $("#tabbar .tb.scan .orb");
 function popReal(){ const o = realOrb(); if (!o || reduce) return; o.classList.remove("pop"); void o.offsetWidth; o.classList.add("pop"); }
 function realAway(on){ const o = realOrb(); if (o) o.classList.toggle("g1-away", !!on); }
 let fairyRun = 0, fairyTimers = [];
@@ -3040,7 +3040,7 @@ function limit(){
     const r = tb.getBoundingClientRect();
     if (r.height > 20 && r.top < innerHeight + gapNow - 10) {
       let top = r.top;
-      const orb = tb.querySelector(".tb.scan .orb") || tb.querySelector(".tb.scan");
+      const orb = tb.querySelector("#lhDock") || tb.querySelector(".tb.scan .orb") || tb.querySelector(".tb.scan");
       if (vis(orb)) top = Math.min(top, orb.getBoundingClientRect().top);
       return top - 18;
     }
@@ -4699,6 +4699,8 @@ function renderScreen(){
   if (recent.length) h += '<div class="card"><button class="r3w-rech" data-mv="recent" aria-expanded="' + !!M.recentOpen + '"><span><span class="h3" style="display:inline">Recent</span><small>' + recent.length + (recent.length === 1 ? " session" : " sessions") + '</small></span><svg class="r3w-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>' + (M.recentOpen ? '<div class="r3w-recb">' : '<div class="r3w-recb" hidden>') + recent.map(x => '<div class="mv-hist"><div style="flex:1"><b>' + esc(x.name === "Eman\'s Walk & Lift" ? "Walk and Lift" : x.name) + '</b><div class="small muted">' + Math.round(x.moved / 60) + ' min' + (x.postMeal ? " · after a meal" : "") + ' · ' + (x.day === today() ? "today " : x.day.slice(5) + " ") + pad(new Date(x.ts).getHours()) + ':' + pad(new Date(x.ts).getMinutes()) + '</div></div><div class="small gold num">' + (x.xp ? "+" + x.xp + " XP" : "") + '</div></div>').join("") + '</div></div>';
   h += '<p class="foot">Beginner moves. Stop if anything hurts or you feel dizzy or short of breath. <button class="gold" data-mv="safety" style="font-size:inherit;text-decoration:underline">Safety notes</button>. Your movement data stays on this phone and is never posted to the room. General fitness ideas, not medical advice.</p>';
   s.innerHTML = '<div class="stack">' + h + '</div>';
+  /* Prepare the compact screen before the browser can paint the old layout. */
+  if (window.LowiG2 && LowiG2.prepare) LowiG2.prepare(s);
 }
 
 const SAFETY = '<ul class="ul">' + [
@@ -8163,22 +8165,26 @@ function fShuffle(instant){
   if (f.buy && window.LowiSwaflo) LowiSwaflo.saveBuy(f.id); else { R5.last = f.id; r5save(); }
   if (!strip || !stage) return;
   const selectionAtPick = window.LowiSwaflo ? JSON.stringify(LowiSwaflo.prefs()) : "";
-  const reduce = instant || f.buy || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
-  const P = (window.LowiSwaflo ? LowiSwaflo.pool(fPool()) : fPool()).filter(x => x.img), cells = []; for (let i = 0; i < 22; i++) cells.push(P[Math.floor(Math.random() * P.length)]); cells.push(f);
+  const reduce = instant || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+  const P = (window.LowiSwaflo ? LowiSwaflo.pool(fPool()) : fPool()), cells = [];
+  /* Even two candidates visibly cycle, then settle on the selected item. */
+  const start = Math.floor(Math.random() * Math.max(1, P.length));
+  for (let i = 0; i < 12; i++) cells.push(P.length ? P[(start + i) % P.length] : f); cells.push(f);
   strip.style.transition = "none"; strip.style.transform = "translateY(0)";
   strip.innerHTML = cells.map(c => '<div class="r5-cell">' + (c && c.img ? '<img alt="" decoding="async" src="' + c.img + '">' : '<span>🍽️</span>') + '</div>').join("");
   if (pick) pick.innerHTML = ""; stage.classList.remove("hit"); stage.classList.add("has");
   const go = r5$("#r5Go span"); if (go) go.textContent = "Shuffle again";
-  const done = () => { if (!fSpinning) return; fSpinning = false; stage.classList.remove("spin"); void stage.offsetWidth; stage.classList.add("hit");
+  let settled = false;
+  const done = () => { if (settled || !fSpinning) return; settled = true; fSpinning = false; stage.classList.remove("spin"); void stage.offsetWidth; stage.classList.add("hit");
     try { if (navigator.vibrate) navigator.vibrate([10, 40, 18]); } catch(e){}
     const pk = r5$("#r5Pick"); if (window.LowiSwaflo && selectionAtPick !== JSON.stringify(LowiSwaflo.prefs())) return; if (pk) pk.innerHTML = fRevealHTML(f, true);
     if (R5.audio && !R5.mute) auSpeak("Your pick: " + f.n, {queue:false}); };
   fSpinning = true;
   if (reduce) { strip.style.transform = "translateY(-" + ((cells.length - 1) / cells.length * 100) + "%)"; done(); return; }
   stage.classList.add("spin"); void strip.offsetWidth;
-  strip.style.transition = "transform .45s cubic-bezier(.12,.72,.16,1)";
+  strip.style.transition = "transform 1.35s cubic-bezier(.12,.55,.18,1)";
   strip.style.transform = "translateY(-" + ((cells.length - 1) / cells.length * 100) + "%)";
-  strip.addEventListener("transitionend", done, {once:true}); setTimeout(done, 550);
+  strip.addEventListener("transitionend", done, {once:true}); setTimeout(done, 1450);
 }
 function fShowPick(id){ const f = fById(id); if (!f) return; R5.last = id; r5save(); const st = r5$("#r5Strip"), pk = r5$("#r5Pick");
   if (st) { st.style.transition = "none"; st.style.transform = "translateY(0)"; st.innerHTML = '<div class="r5-cell">' + (f.img ? '<img alt="" src="' + f.img + '">' : '<span>🍽️</span>') + '</div>'; }
@@ -13352,32 +13358,26 @@ function cardMini(p){ const r = rarity(p), mine = isMine(p), v = window.LowiDisc
   return '<button class="b3-mini v-' + esc(v) + (mine ? "" : " seen") + '" data-b3="show" data-k="' + esc(pkey(p)) + '">' +
     '<span class="b3-mimg">' + (p.img ? '<img alt="" loading="lazy" referrerpolicy="no-referrer" src="' + esc(p.img) + '">' : '<i>' + (CAT_E[p.cat] || CAT_E.other) + '</i>') + '</span>' +
     '<span class="b3-mno">#' + String(p.dex || "–").padStart(3, "0") + '</span><b>' + esc(p.name) + '</b><span class="b3-rar r-' + r[0] + '">' + esc(r[1]) + '</span>' + (window.LowiDiscovery ? LowiDiscovery.ethicsBadge(p) : '') + '</button>'; }
+let captureMode = 'barcode';
 function renderTab(){
   const tab = $("#tab-scan"); if (!tab) return;
   try { const SC = typeof SCAN !== "undefined" ? SCAN : null; if (SC && (SC.stage === "scanning" || SC.stage === "confirm") && P2RENDER) return P2RENDER(); } catch(e){}
-  const st = stats(), lv = level(st.mine);
-  const recent = D.comm.slice(0, 10);
-  tab.innerHTML = '<div class="h1">' + esc(t("title")) + '</div><div class="small muted" style="margin-top:4px">' + esc(t("sub2")) + '</div>' +
-    '<div class="b3-scan">' +
-    '<button class="b3-prog" data-b3="dex" id="b3Prog"><span class="b3-ball" aria-hidden="true">' + IC.dex + '</span><span class="b3-pt"><span class="tiny gold">' + esc(t("dexTitle")) + ' · ' + esc(lv.name) + '</span>' +
-      '<b>' + esc(lv.next ? t("progress", st.mine, lv.next - st.mine, lv.nextName) : t("progressMax", st.mine)) + '</b><span class="b3-bar"><i style="width:' + lv.pct + '%"></i></span>' +
-      '<small>' + esc(t("seen", st.comm)) + (st.firsts ? " · " + esc(t("firstCatch")).replace("!", "") + " " + st.firsts : "") + '</small></span>' + IC.chev + '</button>' +
-    '<div class="b3-duo"><div class="b3-dcol"><button class="b3-orb b3-void" data-b3="scan" id="b3ScanBtn" aria-label="' + esc(t("scanBig")) + '"><span class="b3-orbin">' + IC.bc + '</span><i class="b3-ring"></i><i class="b3-ring r2"></i></button>' +
-    '<div class="b3-orbt">' + esc(t("scanBig")) + '</div><div class="b3-orbs">' + esc(t("scanBigS")) + '</div></div>' +
-    '<div class="b3-dcol"><button class="b3-orb b3-cloud" data-b3="plate" id="b3PlateBtn" aria-label="' + esc(t("plateBig")) + '"><span class="b3-orbin">' + IC.plate + '</span><i class="b3-ring"></i><i class="b3-ring r2"></i></button>' +
-    '<div class="b3-orbt">' + esc(t("plateBig")) + '</div><div class="b3-orbs">' + esc(t("plateBigS")) + '</div></div></div>' +
-    '<div class="b3-two"><button class="b3-pill" data-b3="photo" id="b3PhotoBtn">' + IC.cam + '<span>' + esc(t("photoBc")) + '</span></button><button class="b3-pill" data-b3="typebc" id="b3TypeBtn">' + IC.key + '<span>' + esc(t("typeBc")) + '</span></button></div>' +
-    '<form class="b3-type" id="b3NameF" autocomplete="off"><input class="input" id="b3Name" placeholder="' + esc(t("typePh")) + '" enterkeyhint="search" maxlength="80"><button class="b3-go" aria-label="' + esc(t("check")) + '">' + IC.go + '</button></form>' +
-    '<div id="b3NameOut"></div>' +
-    '<div class="b3-lab"><span>' + esc(t("recent")) + '</span></div>' +
-    (recent.length ? '<div class="b3-strip">' + recent.map(cardMini).join("") + '</div>' : '<div class="small muted b3-empty">' + esc(t("recentNone")) + '</div>') +
-    '<div class="b3-lab"><span>' + esc(t("more")) + '</span></div>' +
-    '<div class="b3-rows"><button class="b3-row" data-b3="classics"><span class="b3-ric">' + IC.book + '</span><span class="b3-rt"><b>' + esc(t("classics")) + '</b><small>' + esc(t("classicsS")) + '</small></span>' + IC.chev + '</button>' +
-    '<button class="b3-row" data-b3="brands"><span class="b3-ric">' + IC.tag + '</span><span class="b3-rt"><b>' + esc(t("brandsT")) + '</b><small>' + esc(t("brandsS")) + '</small></span>' + IC.chev + '</button></div>' +
-    '<div class="tiny dim b3-legal">' + esc(t("legal")) + '</div></div><div style="height:28px"></div>';
-  const f = $("#b3NameF"); f.addEventListener("submit", e => { e.preventDefault(); nameSearch($("#b3Name").value); });
+  const st = stats(), lv = level(st.mine), meal = captureMode === 'meal';
+  const modeLabel = (en,de,es) => [en,de,es][LI()];
+  tab.innerHTML = '<div class="h1">'+esc(t("title"))+'</div><p class="small muted b3-intro">'+esc(modeLabel('A barcode or a meal. One place to scan.','Barcode oder Mahlzeit. Alles an einem Ort.','Un código o una comida. Todo en un lugar.'))+'</p>'+
+    '<div class="b3-scan b3-compact"><section class="b3-capture" aria-label="'+esc(t('title'))+'">'+
+    '<div class="b3-modes" role="group" aria-label="'+esc(modeLabel('Scan type','Scan-Art','Tipo de escaneo'))+'">'+
+    '<button type="button" data-b3="mode" data-mode="barcode" aria-pressed="'+!meal+'">'+esc(modeLabel('Barcode','Barcode','Código'))+'</button>'+
+    '<button type="button" data-b3="mode" data-mode="meal" aria-pressed="'+meal+'">'+esc(modeLabel('Meal photo','Essensfoto','Foto de comida'))+'</button></div>'+
+    '<button class="b3-capture-go" data-b3="'+(meal?'plate':'scan')+'" id="b3ScanBtn"><span class="b3-capture-icon">'+(meal?IC.plate:IC.bc)+'</span><b>'+esc(t(meal?'plateBig':'scanBig'))+'</b><small>'+esc(t(meal?'plateBigS':'scanBigS'))+'</small></button>'+
+    (!meal?'<div class="b3-two"><button class="b3-pill" data-b3="photo" id="b3PhotoBtn">'+IC.cam+'<span>'+esc(t('photoBc'))+'</span></button><button class="b3-pill" data-b3="typebc" id="b3TypeBtn">'+IC.key+'<span>'+esc(t('typeBc'))+'</span></button></div>':'<p class="b3-meal-hint small">'+esc(modeLabel('Use your camera or choose a photo.','Kamera öffnen oder Foto auswählen.','Usa la cámara o elige una foto.'))+'</p>')+'</section>'+
+    '<form class="b3-type" id="b3NameF" autocomplete="off"><input class="input" id="b3Name" aria-label="'+esc(modeLabel('Find a product','Produkt suchen','Buscar producto'))+'" placeholder="'+esc(modeLabel('Or find a product…','Oder Produkt suchen…','O busca un producto…'))+'" enterkeyhint="search" maxlength="80"><button class="b3-go" aria-label="'+esc(t('check'))+'">'+IC.go+'</button></form><div id="b3NameOut" role="status"></div>'+
+    '<button class="b3-prog" data-b3="dex" id="b3Prog"><span class="b3-ball" aria-hidden="true">'+IC.dex+'</span><span class="b3-pt"><span class="tiny gold">'+esc(t('dexTitle'))+'</span><b>'+esc(modeLabel('Open field guide','Feldführer öffnen','Abrir guía'))+'</b><small>'+st.mine+' '+esc(modeLabel('caught','entdeckt','descubiertos'))+' · '+st.comm+' '+esc(modeLabel('in the community','in der Community','en la comunidad'))+'</small></span>'+IC.chev+'</button>'+
+    '<div class="b3-library"><button class="b3-pill" data-b3="classics">'+IC.book+'<span>'+esc(t('classics'))+'</span></button><button class="b3-pill" data-b3="brands">'+IC.tag+'<span>'+esc(t('brandsT'))+'</span></button></div></div>';
+  $("#b3NameF").addEventListener("submit", e => { e.preventDefault(); nameSearch($("#b3Name").value); });
   if (!renderTab.loading) { renderTab.loading = 1; loadComm(false).then(ch => { renderTab.loading = 0; if (ch && curTab() === "scan" && !document.activeElement.closest("#tab-scan")) renderTab(); }); }
 }
+
 const curTab = () => { try { return typeof TAB !== "undefined" ? TAB : ""; } catch(e){ return ""; } };
 
 /* typed product name */
@@ -13390,7 +13390,7 @@ async function nameSearch(q){ q = String(q || "").trim(); const out = $("#b3Name
   if (!found.length && !est) h += '<div class="small muted b3-sr">' + esc(t("t_none")) + '</div>';
   if (window.LowiDiscovery) h += '<button class="r2-btn ghost" data-dg="new">' + esc(["Document a product label", "Produktetikett dokumentieren", "Documentar etiqueta"][LI()]) + '</button>';
   h += '<div class="b3-two"><button class="b3-pill" data-b3="scan">' + IC.bc + '<span>' + esc(t("scanIt")) + '</span></button><button class="b3-pill" data-b3="asmeal" data-q="' + esc(q) + '">' + IC.plate + '<span>' + esc(t("t_meal_go")) + '</span></button></div>';
-  out.innerHTML = h; }
+  out.innerHTML = ""; R2.sheet('<div class="h2">'+esc(q)+'</div><div class="b3-search-results">'+h+'</div>', {cls:"b3-search-ov"}); }
 
 /* =====================================================================
    Scanner: own full-screen layer, camera permission flow, photo + typed fallbacks
@@ -13597,6 +13597,7 @@ document.addEventListener("click", e => {
     case "typebc": openScanner("type"); break;
     case "photo": pickPhoto(); break;
     case "camallow": startCam(); break;
+    case "mode": captureMode = b.dataset.mode === "meal" ? "meal" : "barcode"; renderTab(); break;
     case "camclose": closeScanner(); break;
     case "torch": torch(); break;
     case "dex": sfx("open"); openDex(); break;
@@ -17145,7 +17146,7 @@ function hook(){
 }
 setInterval(() => { if (!document.hidden && (typeof TAB === "undefined" || TAB === "move")) hook(); }, 1600);
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", hook); else hook();
-window.LowiG2 = {open:openPanel, key:() => openKey};
+window.LowiG2 = {open:openPanel, key:() => openKey, prepare:s => { hook(); rearrange(q(s, ":scope > .stack")); }};
 })();
 </script>
 

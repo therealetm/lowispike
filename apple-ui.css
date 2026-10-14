@@ -137,3 +137,55 @@ html.apple-ui[data-mood-look=energy] :is(.card,.g2-tile,.g2e-tile){border-color:
   html.apple-ui[data-theme=light]{--au-sheet:#fafcff;--au-chrome:#f8faff;--au-surface:#fff}
 }
 @media(prefers-reduced-motion:reduce){.apple-ui :is(#app,.card,.g2e-tile,.r2-sh,.ap-sheet){transition:none!important}}
+
+
+/* Compact landing screens. Detail sheets retain their normal scrolling. */
+.b3-capture{border:1px solid var(--au-border);border-radius:26px;padding:8px 12px 12px;background:var(--au-surface);box-shadow:var(--au-shadow)}
+.b3-modes{display:grid;grid-template-columns:1fr 1fr;gap:4px;border-radius:16px;background:var(--au-raised);padding:4px}
+.b3-modes button{min-height:40px;font:inherit;font-size:14px;font-weight:650;border:0;border-radius:12px;background:transparent;color:var(--au-secondary)}
+.b3-modes [aria-pressed=true]{background:var(--au-surface);color:var(--text);box-shadow:0 2px 7px #0001}
+.b3-capture-go{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:100%;min-height:145px;padding:14px 8px;border:0;background:none;color:var(--text);font:inherit;cursor:pointer}
+.b3-capture-icon{width:55px;height:55px;display:grid;place-items:center;border:1px solid #cba45e70;border-radius:19px;background:linear-gradient(145deg,#f3dfaa,#cfac69);color:#302612;box-shadow:0 6px 16px #ab803125}
+.b3-capture-icon svg{width:30px;height:30px}.b3-capture-go b{font-size:18px}.b3-capture-go small{font-size:12px;color:var(--au-secondary)}
+.b3-capture .b3-two{margin:0;gap:8px}.b3-capture .b3-pill{font-size:12px;min-height:44px;padding:8px}.b3-meal-hint{text-align:center;min-height:44px;display:grid;place-content:center;margin:0;font-size:12px}
+.b3-compact{gap:12px;margin-top:14px}.b3-compact .b3-prog{padding:11px 12px}.b3-compact .b3-prog .tiny{font-size:9px}.b3-compact .b3-pt b{font-size:14px}.b3-compact .b3-pt small{font-size:11px}
+.b3-library{display:flex;gap:8px}.b3-library .b3-pill{font-size:12px;min-height:44px}.b3-intro{font-size:13px;margin:5px 0 0}
+.b3-compact #b3NameOut:empty{display:none}.b3-compact .b3-type .input{height:46px;min-height:46px}.b3-compact .b3-go{height:46px;width:46px}
+.b3-cam .b3-cbot{bottom:max(16px,env(safe-area-inset-bottom));padding-bottom:8px}.b3-cam .b3-cbot .b3-pill{min-height:48px}
+.b3-search-results .b3-strip{margin-bottom:14px}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home{gap:8px;padding-bottom:calc(var(--sab) + 126px)!important}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home::after{display:none!important}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home .td-top{order:0!important;min-height:46px;margin:0!important}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home .td-date{font-size:20px;line-height:1.15;margin-top:4px}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home .td-top .small{font-size:11px}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home .dg-home-compact{display:none}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home #f3Board{padding:10px 12px;border-radius:19px}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home .f3-bar{margin-top:6px;height:4px}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home .f3-cur{margin-top:8px;padding:7px;gap:7px;min-height:48px}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home .f3-ic{width:30px;height:30px;font-size:18px}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home .f3-ct b{font-size:13px}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home .f3-nx{font-size:9px}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home .f3-go{font-size:12px;padding:0 10px;min-height:44px}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home .f3-tog{margin-top:0;min-height:34px;font-size:12px}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home #fsCard{padding:11px 12px;border-radius:19px}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home #fsCard .fs-top{display:grid;grid-template-columns:75px minmax(0,1fr);gap:8px;align-items:center}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home #fsCard .fst-rc{width:75px;grid-row:auto;grid-column:auto}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home #fsCard .fs-ring{width:75px;height:75px;flex-basis:75px}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home #fsCard .fs-tx{display:flex;flex-direction:column;gap:4px}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home #fsCard .fs-in b{font-size:21px}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home #fsCard .fs-in span{font-size:9px}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home #fsStage{font-size:15px}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home #fsNext{font-size:11px;line-height:1.25}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home #fsCard .fs-row{grid-column:auto;grid-row:auto;margin:0;gap:6px;flex-wrap:nowrap}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home #fsCard .fs-row button{font-size:10px;min-height:36px;padding:6px 8px}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home #fsCard .fst-stop{display:none}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home #fsCard .fst-btn{margin-top:8px;min-height:44px;padding:8px 12px;font-size:13px}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home #fsCard .fe-goal{font-size:11px;margin:0}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home #g2hTiles{gap:6px}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home .g2h-tile{min-height:44px;height:44px;flex-direction:row;align-items:center;justify-content:flex-start;gap:6px;padding:6px 8px;border-radius:15px}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home .g2h-tile .g2h-ic{width:23px;height:23px;margin:0;flex:none}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home .g2h-tile .g2h-ic svg{width:15px;height:15px}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home .g2h-tile b{margin:0;font-size:11px;line-height:1.15}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home .g2h-tile small{display:none}
+html[data-lay=phone].apple-ui #tab-scan:has(.b3-compact){padding-bottom:calc(var(--sab) + 126px)}
+@media(max-height:740px){html[data-lay=phone].apple-ui #tab-scan .b3-capture-go{min-height:118px;padding:8px}html[data-lay=phone].apple-ui #tab-scan .b3-compact{gap:8px;margin-top:10px}html[data-lay=phone].apple-ui #tab-scan .b3-capture-icon{width:42px;height:42px}html[data-lay=phone].apple-ui.g2h-on #tab-home .td-top .small{display:none}html[data-lay=phone].apple-ui.g2h-on #tab-home .td-top{min-height:36px}html[data-lay=phone].apple-ui.g2h-on #tab-home{gap:6px}}

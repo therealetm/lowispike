@@ -88,9 +88,9 @@ const MOMENTS={
 const PREFIX={Aries:['Let us go!','Big sprout energy.'],Taurus:['Soft leaves, comfy pot.','A cozy little win.'],Gemini:['Plot twist: leaves.','I have two new ideas.'],Cancer:['Your little cozy corner is ready.','I kept our spot warm.'],Leo:['Ta-da, human.','Spotlight on these leaves.'],Virgo:['Tiny plan, lovely leaves.','A neat little win.'],Libra:['We look lovely together.','A little balance, a little sparkle.'],Scorpio:['Secret leaf magic.','Our little glow stays between us.'],Sagittarius:['Adventure leaves, ready.','Where to next, human?'],Capricorn:['One little step, one lovely leaf.','Steady sprout energy.'],Aquarius:['Unusual herb idea incoming.','Space leaves, reporting in.'],Pisces:['Floating in our little sunbeam.','A tiny daydream for us.']};
 function nextLine(page,used,opts){used=used||[];opts=opts||{};const m=opts.model||{},pr=m.profile||opts.profile||{},p=opts.period||m.period||'day';
  let base=opts.dim||m.dim?wiltLines:opts.moment?MOMENTS[opts.moment]||MOMENTS.cheer:(page==='home'||page==='room')?MOMENTS[p]:lines[page]||lines.home;
- const candidates=base.slice();if(page==='home'&&m.next&&p!=='night'&&!m.dim)candidates.unshift(Math.ceil(m.left)+' XP until '+m.next.name[0]+'. I can almost feel the new leaves.');
+ const candidates=base.slice();if(page==='home'&&m.next&&p!=='night'&&!m.dim)candidates.push(Math.ceil(m.left)+' XP until '+m.next.name[0]+'. I can almost feel the new leaves.');
  const prefixes=PREFIX[pr.sign&&pr.sign.name]||['Tiny leaf, big feelings.','A little glow for us.'];
- if(pr.sign)candidates.unshift(...base.map(b=>prefixes[0]+' '+b));
+ // Keep the first response short; sign-specific variants are available on request.
  for(const prefix of prefixes)for(const b of base)candidates.push(prefix+' '+b);
  if(pr.voice==='practical')for(const b of base)candidates.push('One small step. '+b);
  return candidates.find(x=>!used.includes(x))||null;}

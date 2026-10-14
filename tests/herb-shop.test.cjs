@@ -111,7 +111,7 @@ test('wiring + honesty: loader, offline list, wardrobe entry, no urgency, no fak
  const all=ui+core;
  assert.ok(!/one[- ]time offer|einmaliges angebot|expires when|<s>|<del>|line-through|% off|rabatt\s*-?\d|\d+\s*%\s*(off|rabatt)/i.test(all+css),'no urgency, no struck prices');
  assert.ok(!/fetch\(|stripe|checkout|paymentrequest/i.test(ui),'no payment wiring');
- assert.match(ui,/class="hs-act hs-cta" disabled/);assert.match(ui,/Noch nicht verfügbar/);assert.match(ui,/es wird nichts berechnet/);
+ assert.match(ui,/target="_blank" rel="noopener" data-shop="kofi"/);assert.match(ui,/es wird nichts berechnet/);assert.match(ui,/Unterstützen schaltet nichts frei/);
  assert.ok(!/sad|traurig|vermisst dich|misses you|will wilt/i.test(all),'no emotional pressure from the herb');
  assert.match(css,/prefers-reduced-motion:reduce/);
 });

@@ -33,10 +33,10 @@ function shelfWindow(now){const s=startOfDay(now),k=Math.min(2,Math.floor((now-s
 function hash(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
 function rng(seed){let a=seed>>>0;return()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};}
 function shuffle(list,seed){const r=rng(seed),a=list.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-function blank(){return{v:1,owned:[],free:null,offer:null,remind:true,notify:false,pwyw:5,ts:0};}
+function blank(){return{v:1,owned:[],free:null,offer:null,remind:true,notify:false,pwyw:5,support:'free',ts:0};}
 function clean(s){const b=blank();if(!s||typeof s!=='object')return b;const ok=id=>typeof id==='string'&&/^[a-z]{2,20}$/.test(id);
  return{v:1,owned:Array.isArray(s.owned)?[...new Set(s.owned.filter(ok))]:[],free:s.free&&ok(s.free.id)&&typeof s.free.day==='string'?{day:s.free.day,id:s.free.id}:null,offer:s.offer&&ok(s.offer.id)&&typeof s.offer.day==='string'?{day:s.offer.day,id:s.offer.id}:null,
-  remind:s.remind!==false,notify:s.notify===true,pwyw:PWYW.amounts.includes(+s.pwyw)?+s.pwyw:b.pwyw,ts:+s.ts||0};}
+  remind:s.remind!==false,notify:s.notify===true,pwyw:PWYW.amounts.includes(+s.pwyw)?+s.pwyw:b.pwyw,support:KOFI.modes.includes(s.support)?s.support:b.support,ts:+s.ts||0};}
 /* Catalog helpers need the wardrobe core (LowiHerbTamagotchiCore). */
 function owns(core,state,id,xp){return core.owns?core.owns(id,xp):false;}
 function ownedBy(core,state,xp){return id=>state.owned.includes(id)||owns(core,state,id,xp);}
@@ -63,7 +63,14 @@ function when(t,now,li){li=li||0;const loc=['en-GB','de-DE','es-ES'][li],d=new D
  const clock=()=>{try{return d.toLocaleTimeString(loc,{hour:'2-digit',minute:'2-digit'});}catch(e){return pad(d.getHours())+':'+pad(d.getMinutes());}};
  const date=()=>{try{return d.toLocaleDateString(loc,{day:'numeric',month:'short'});}catch(e){return d.getDate()+'.'+(d.getMonth()+1)+'.';}};
  if(day===n)return['at ','um ','a las '][li]+clock();if(day===startOfDay(n+DAY+36e5*3))return['tomorrow','morgen','ma\u00f1ana'][li];return['on ','am ','el '][li]+date();}
-/* Pay what you want (preview only, nothing is charged; there is no payment in the app). */
+/* Pay what you want = a voluntary tip to the creator on Ko-fi (Oct 15). The app never handles payment, sees no payment data
+   and unlocks nothing for paying: no XP, no pieces. 0 € ('free') is a real choice. The Ko-fi page offers one-time and monthly;
+   the amount is chosen on Ko-fi. Ko-fi's hosted card checkout (Stripe) and PayPal pages redirect the whole frame and Safari blocks
+   third-party cookies in frames, so payment cannot finish inside an iframe on iOS: the app opens Ko-fi over itself with target=_blank
+   (an in-app Safari sheet in the Home Screen app, a new tab in the browser) and welcomes the user back when they return. */
+const KOFI={handle:'lowispike',url:'https://ko-fi.com/lowispike',modes:['free','once','month']};
+function kofiUrl(){return KOFI.url;}
+/* Legacy pay-what-you-want preview model (kept for stored state + tests; the screen no longer shows tiers, trials or perks). */
 const PWYW={amounts:[0,3,5,8,12],trialDays:7,remindBefore:2,
  tiers:[
   {min:0,names:['Everything that matters: scan, log, fasting, your herb, the XP wardrobe, the shop and the daily gift','Alles Wichtige: Scan, Loggen, Fasten, dein Kraut, der XP-Kleiderschrank, der Laden und das Tagesgeschenk','Todo lo importante: escanear, registrar, ayuno, tu hierba, el armario con XP, la tienda y el regalo diario']},
@@ -96,7 +103,7 @@ const SHOPKEEPER={name:'Kometa',lines:{
  given:[['Gift delivered. A new one comes tomorrow.','Geschenk übergeben. Morgen bring ich ein neues.','Regalo entregado. Mañana traigo otro.']],
  drop:[['The season brought three new pieces. They return next year if you miss them.','Die Saison hat drei neue Teile gebracht. Verpasst du sie, kommen sie nächstes Jahr wieder.','La temporada trajo tres piezas nuevas. Si te las pierdes, vuelven el año que viene.']]}};
 function line(kind,li,seed){const l=SHOPKEEPER.lines[kind]||SHOPKEEPER.lines.hello,x=l[Math.abs(seed|0)%l.length];return x[li||0];}
-const api={SKEY,DROPS,SEASONAL,PWYW,ART,SHOPKEEPER,dayKey,dropWindow,activeDrop,nextDrop,shelfWindow,hash,shuffle,blank,clean,freeOffer,freeClaimed,claimFree,canClaim,claim,shelf,when,perks,timeline,line};
+const api={KOFI,kofiUrl,SKEY,DROPS,SEASONAL,PWYW,ART,SHOPKEEPER,dayKey,dropWindow,activeDrop,nextDrop,shelfWindow,hash,shuffle,blank,clean,freeOffer,freeClaimed,claimFree,canClaim,claim,shelf,when,perks,timeline,line};
 if(typeof module==='object'&&module.exports){module.exports=api;return;}
 root.LowiHerbShopCore=api;root.LowiShopArt=ART;
 /* Hydrate ownership into the wardrobe core before the first herb paint. */

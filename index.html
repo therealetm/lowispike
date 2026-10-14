@@ -3179,6 +3179,31 @@ html:not([data-lay=phone]) .k1-grp,html:not([data-lay=phone]) .k1-list{display:g
 html:not([data-lay=phone]) .k1-grp > .k1-gh{grid-column:1 / -1}
 html:not([data-lay=phone]) .k1-grp > .sh-rec,html:not([data-lay=phone]) .k1-list > .sh-rec{min-width:0}
 .k1-gr{text-transform:none;letter-spacing:0;font-size:12px}
+/* k1-acc (Oct 14): closed group headers, one open at a time */
+.k1-acc + .k1-acc{margin-top:8px}
+.k1-acc{margin-top:10px}
+#r3kAll .k1-sort + .k1-acc,.k1-sort + .k1-acc{margin-top:12px}
+.k1-ah{display:flex;width:100%;min-height:52px;margin:0;padding:10px 14px;gap:10px;align-items:center;text-align:left;font:inherit;color:inherit;background:var(--panel,rgba(255,255,255,.04));border:1px solid var(--line2,rgba(255,255,255,.12));border-radius:16px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.k1-ah .k1-gr{margin-left:auto}
+.k1-ah .k1-chev{width:20px;height:20px;flex:none;color:var(--dim);transition:transform .2s ease}
+.k1-ah .k1-gr + .k1-chev{margin-left:4px}
+.k1-ah .k1-gr:empty + .k1-chev{margin-left:auto}
+.k1-acc.open > .k1-ah{border-color:rgba(var(--acc-rgb,159,216,255),.45);background:rgba(var(--acc-rgb,159,216,255),.08)}
+.k1-acc.open > .k1-ah .k1-chev{transform:rotate(180deg)}
+.k1-ah:focus-visible{outline:2px solid var(--acc,#9fd8ff);outline-offset:2px}
+.k1-panel{padding:0 0 4px}
+.k1-panel[hidden]{display:none!important}
+.k1-acc.open > .k1-panel{animation:k1in .2s ease-out}
+.k1-panel > .k1-q{margin-top:10px}
+@keyframes k1in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.k1-acc.open > .k1-panel{animation:none}.k1-ah .k1-chev{transition:none}}
+html[data-theme=light] .k1-ah{background:rgba(255,255,255,.7);border-color:rgba(0,0,0,.1)}
+html[data-theme=light] .k1-acc.open > .k1-ah{background:rgba(20,60,120,.06);border-color:rgba(20,60,120,.3)}
+html[data-theme=light] .k1-ah .k1-chev{color:#4a5568}
+html:not([data-lay=phone]) .k1-grp.k1-acc{display:block}
+html:not([data-lay=phone]) .k1-acc > .k1-panel:not([hidden]){display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));column-gap:14px;align-items:start}
+html:not([data-lay=phone]) .k1-acc > .k1-panel > *{min-width:0}
+html:not([data-lay=phone]) .k1-acc > .k1-panel > .k1-q{grid-column:1 / -1}
 </style>
 <script id="k1js">
 /* ===== LOWiSPIKE K1 (Oct 11, 2026): clearer recipe browsing in Cook =====
@@ -3201,7 +3226,9 @@ const W = {
   drink:{en:"Drinks", de:"Getr\u00e4nke", es:"Bebidas"},
   other:{en:"More", de:"Mehr", es:"M\u00e1s"},
   sort:{en:"Quickest first", de:"Schnellste zuerst", es:"Las m\u00e1s r\u00e1pidas primero"},
-  none:{en:"Nothing here yet.", de:"Hier ist noch nichts.", es:"Aqu\u00ed a\u00fan no hay nada."}
+  none:{en:"Nothing here yet.", de:"Hier ist noch nichts.", es:"Aqu\u00ed a\u00fan no hay nada."},
+  quickones:{en:"Quick ones", de:"Schnelle", es:"R\u00e1pidas"},
+  rebuilds:{en:"LOWiSPIKE rebuilds", de:"LOWiSPIKE-Rebuilds", es:"Versiones LOWiSPIKE"}
 };
 const ORDER = ["meal", "snack", "dessert", "drink"];
 const ICO = {meal:"\ud83c\udf7d\ufe0f", snack:"\ud83e\udd52", dessert:"\ud83c\udf6e", drink:"\ud83e\udd64", other:"\u2728"};
@@ -3227,10 +3254,38 @@ function list(book, cur, row){
   if (cur) return sortLine() + '<div class="k1-list" data-k1="' + esc(cur) + '">' + sort(book).map(row).join("") + '</div>';
   const g = {}; book.forEach(r => { const k = ORDER.indexOf(r.c) >= 0 ? r.c : "other"; (g[k] = g[k] || []).push(r); });
   return sortLine() + ORDER.concat(["other"]).filter(k => g[k] && g[k].length).map(k =>
-    '<section class="k1-grp" data-k1g="' + k + '"><div class="k1-gh"><span class="k1-ge" aria-hidden="true">' + ICO[k] + '</span><b class="k1-gt">' + esc(L(W[k])) + '</b><span class="k1-gc num">' + g[k].length + '</span><span class="k1-gr tiny">' + esc(range(g[k])) + '</span></div>' +
-    sort(g[k]).map(row).join("") + '</section>').join("");
+    acc(k, ICO[k], L(W[k]), g[k].length, range(g[k]), sort(g[k]).map(row).join(""))).join("");
 }
-window.LowiK1 = {chips, list, sort, words:W};
+/* ===== K1 accordions (Oct 14, 2026): every recipe group in Cook is a closed header (one tap opens it, one open at a time).
+   Meals, Snacks, Sweet, Drinks, Quick ones, LOWiSPIKE rebuilds. The open one lives in memory only, so Cook opens calm
+   after every app start, but a re-render (search typing, coming back from a recipe) keeps it open. ===== */
+let OPEN = null;
+const CHEV = '<svg class="k1-chev" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+function acc(key, ico, title, n, sub, inner){
+  const o = OPEN === key, id = "k1p-" + key;
+  return '<section class="k1-grp k1-acc' + (o ? " open" : "") + '" data-k1g="' + esc(key) + '">' +
+    '<button type="button" class="k1-gh k1-ah" data-k1acc="' + esc(key) + '" aria-expanded="' + o + '" aria-controls="' + id + '" id="k1h-' + esc(key) + '">' +
+      (ico ? '<span class="k1-ge" aria-hidden="true">' + ico + '</span>' : "") + '<b class="k1-gt">' + esc(title) + '</b>' + (n != null ? '<span class="k1-gc num">' + n + '</span>' : "") +
+      '<span class="k1-gr tiny">' + esc(sub || "") + '</span>' + CHEV + '</button>' +
+    '<div class="k1-panel" id="' + id + '" role="region" aria-labelledby="k1h-' + esc(key) + '"' + (o ? "" : " hidden") + '>' + inner + '</div></section>';
+}
+function scroller(el){ let e = el && el.parentElement; while (e && e !== document.body) { const oy = getComputedStyle(e).overflowY; if ((oy === "auto" || oy === "scroll") && e.scrollHeight > e.clientHeight + 1) return e; e = e.parentElement; } return document.scrollingElement || document.documentElement; }
+function setOpen(sec, o){ const b = sec.querySelector(":scope > .k1-ah"), p = sec.querySelector(":scope > .k1-panel"); sec.classList.toggle("open", o); if (b) b.setAttribute("aria-expanded", String(o)); if (p) { if (o) p.removeAttribute("hidden"); else p.setAttribute("hidden", ""); } }
+function toggle(btn){
+  const sec = btn.closest(".k1-acc"); if (!sec) return;
+  const root = btn.closest("#r3kAll") || btn.closest(".sh-body") || sec.parentElement || document;
+  const y0 = btn.getBoundingClientRect().top, open = btn.getAttribute("aria-expanded") !== "true";
+  root.querySelectorAll(".k1-acc").forEach(s => { if (s !== sec) setOpen(s, false); });
+  setOpen(sec, open); OPEN = open ? sec.dataset.k1g : null;
+  const sc = scroller(sec); /* measured after the change: a sheet that did not scroll while closed may scroll now */
+  /* the header you tapped stays under your finger, even when an open group above it closes */
+  const d = btn.getBoundingClientRect().top - y0; if (sc && Math.abs(d) > 1) sc.scrollTop += d;
+  if (open && sc) { const sr = sc === document.scrollingElement || sc === document.documentElement ? {top:0, bottom:innerHeight} : sc.getBoundingClientRect(), br = btn.getBoundingClientRect();
+    /* low on the screen: lift the header up so the recipes show */
+    if (br.bottom > sr.top + (sr.bottom - sr.top) * 0.62) { const reduce = matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches; try { sc.scrollTo({top:sc.scrollTop + (br.top - sr.top) - 10, behavior:reduce ? "auto" : "smooth"}); } catch(e){ sc.scrollTop += br.top - sr.top - 10; } } }
+}
+document.addEventListener("click", e => { const b = e.target && e.target.closest && e.target.closest("[data-k1acc]"); if (!b) return; e.preventDefault(); e.stopPropagation(); toggle(b); });
+window.LowiK1 = {chips, list, sort, words:W, acc, open:k => { OPEN = k || null; }, opened:() => OPEN};
 })();
 </script>
 <style id="b2css">
@@ -6639,7 +6694,10 @@ function kochenHTML(){
   const cats = window.LOWI_COOK ? LOWI_COOK.chips() : [{id:"", n:"All 25"}].concat(typeof BOOK_CATS !== "undefined" ? BOOK_CATS : []);  // Oct 8: one row of quick chips (Fastic steal)
   return (window.LowiBook ? LowiBook.entry() : "") + (V.tab === "kochen" ? '<div class="r3k-allh"><span class="r3k-hic">' + ICON_R3K_BOOK + '</span><span class="r3k-ht">All recipes</span></div>' : "") + /* r3k-allh */ (window.LowiK9 ? LowiK9.box() : "") + /* k9-box */ (window.LowiGPT ? LowiGPT.card() : "") + /* gpt-card */ '<div class="h3" style="margin-top:4px">What are you cooking?</div><p class="small muted" style="margin-top:4px">Real recipes from the LOWiSPIKE Recipe Book. Tap one for what you need and how to make it.</p>' +
     (book.length || V.cat ? (window.LowiK1 ? LowiK1.chips(cats, V.cat, all.filter(r => r.book)) + LowiK1.list(book, V.cat, recRow) : '<div class="sh-chips sh-cats" style="margin-top:12px">' + cats.map(c => '<button class="chip' + (V.cat === c.id ? " on" : "") + '" data-sh="cat" data-c="' + c.id + '">' + esc(c.n) + "</button>").join("") + "</div>" + book.map(recRow).join("")) /* k1-list */ : "") +
-    '<div class="sh-sep small">Quick ones</div>' + feat.map(recRow).join("") + (all.length > feat.length ? '<div class="sh-sep small">LOWiSPIKE rebuilds</div><input class="input" id="shQ" placeholder="Search rebuilds…" value="' + esc(V.q) + '">' + lib.slice(0, 40).map(recRow).join("") : "");
+    (window.LowiK1 && LowiK1.acc ? /* k1-acc: Quick ones and rebuilds are closed headers too */
+      (feat.length ? LowiK1.acc("quickones", "\u26a1", LowiK1.words.quickones ? (LowiK1.words.quickones[(window.LowiLang && LowiLang.get && LowiLang.get()) || "en"] || LowiK1.words.quickones.en) : "Quick ones", feat.length, "", feat.map(recRow).join("")) : "") +
+      (all.length > feat.length ? LowiK1.acc("rebuilds", "\ud83d\udd01", LowiK1.words.rebuilds ? (LowiK1.words.rebuilds[(window.LowiLang && LowiLang.get && LowiLang.get()) || "en"] || LowiK1.words.rebuilds.en) : "LOWiSPIKE rebuilds", Math.min(40, lib.length), "", '<input class="input k1-q" id="shQ" placeholder="Search rebuilds…" value="' + esc(V.q) + '">' + lib.slice(0, 40).map(recRow).join("")) : "") :
+    '<div class="sh-sep small">Quick ones</div>' + feat.map(recRow).join("") + (all.length > feat.length ? '<div class="sh-sep small">LOWiSPIKE rebuilds</div><input class="input" id="shQ" placeholder="Search rebuilds…" value="' + esc(V.q) + '">' + lib.slice(0, 40).map(recRow).join("") : ""));
 }
 function recipeHTML(r){
   if (!r) return '<div class="sh-empty">Recipe not found.</div>';

@@ -5971,18 +5971,31 @@ document.addEventListener("click", e => {
     case "start": td.start = d.v; save(); renderHome(); break;
     case "swap": { const i = +d.i, sl = tdSlots(), pool = sl[i].h < 11 ? TD_BREAKFAST : TD_MAIN, cur = pool.indexOf(td.plan[i]);
       for (let k = 1; k <= pool.length; k++) { const n = pool[(cur + k) % pool.length]; if (td.plan.indexOf(n) < 0) { td.plan[i] = n; break; } }
-      delete td.ate[i]; save(); renderHome(); break; }
+      delete td.ate[i]; if (td.picked) delete td.picked[i]; save(); renderHome(); break; }
     case "pick": tdPickSheet(+d.i); break;
-    case "pickslot": td.plan[+d.i] = d.id; save(); closeSheet(); renderHome(); break;
+    case "pickslot": td.plan[+d.i] = d.id; if (!td.picked || typeof td.picked !== "object") td.picked = {}; td.picked[+d.i] = d.id; save(); closeSheet(); renderHome(); break;
     case "addcat": tdPickSheet(0, d.c); break;
     case "pickextra": if (td.extra.indexOf(d.id) < 0) td.extra.push(d.id); save(); closeSheet(); renderHome(); break;
     case "rmextra": td.extra.splice(+d.j, 1); save(); renderHome(); break;
     case "ate": if (window.LowiVitalsBridge) LowiVitalsBridge.planMeal(+d.i,!td.ate[d.i]); else { td.ate[d.i] = !td.ate[d.i]; save(); } renderHome(); break;
-    case "addtoday": { const r = recById(d.id); if (!r) break; const sl = tdSlots();
-      if (r.c === "meal" && sl.length) { const free = sl.findIndex((s, i) => !td.ate[i]); td.plan[free < 0 ? sl.length - 1 : free] = r.id; }
-      else if (r.c === "meal") { td.meals = 1; tdEnsure(); td.plan[0] = r.id; }
-      else if (td.extra.indexOf(r.id) < 0) td.extra.push(r.id);
-      save(); toast("On today's plan. Ingredients are on your list."); break; }
+    case "addtoday": { const r = recById(d.id); if (!r) break; let sl = tdSlots();
+      /* swipe-today (Oct 14, 2026): every pick gets its own slot. td.picked remembers which slots the user filled today,
+         so a second "today" never overwrites the first one, and a recipe that is already planned is not added twice. */
+      const L3 = a => { let l = "en"; try { l = String((window.LowiLang && LowiLang.get && LowiLang.get()) || localStorage.getItem("lowispike.lang") || "en").slice(0, 2); } catch(e){} return a[{en:0, de:1, es:2}[l] || 0]; };
+      const MSG_ADD = ["On today's plan. Ingredients are on your list.", "Für heute geplant. Die Zutaten stehen auf deiner Liste.", "En tu plan de hoy. Los ingredientes están en tu lista."];
+      const MSG_HAVE = ["Already on today's plan.", "Steht schon auf deinem Plan für heute.", "Ya está en tu plan de hoy."];
+      if (!td.picked || typeof td.picked !== "object") td.picked = {};
+      if (r.c === "meal") {
+        const at = td.plan.findIndex((id, i) => id === r.id && i < sl.length && !td.ate[i]);
+        if (at >= 0 || td.extra.indexOf(r.id) >= 0) { if (at >= 0) td.picked[at] = r.id; save(); toast(L3(MSG_HAVE)); break; }
+        if (!sl.length) { td.meals = 1; tdEnsure(); sl = tdSlots(); }
+        let free = sl.findIndex((s, i) => !td.ate[i] && !td.picked[i]);
+        if (free < 0 && td.meals < 3) { td.meals++; tdEnsure(); sl = tdSlots(); free = sl.findIndex((s, i) => !td.ate[i] && !td.picked[i]); }
+        if (free < 0) td.extra.push(r.id); else { td.plan[free] = r.id; td.picked[free] = r.id; }
+      }
+      else if (td.extra.indexOf(r.id) >= 0) { toast(L3(MSG_HAVE)); break; }
+      else td.extra.push(r.id);
+      save(); toast(L3(MSG_ADD)); break; }
     case "med": { const m = S.medsDone[td.day] = S.medsDone[td.day] || {}; m[d.id] = !m[d.id]; save(); renderHome(); break; }
     case "rmmed": S.meds = S.meds.filter(m => m.id !== d.id); save(); renderHome(); break;
     case "addmed": tdMedSheet(); break;
@@ -8363,7 +8376,10 @@ function dkCookToday(id){
   if (f.book && !document.querySelector("#r3kTd")) {   // same path as the "Add to today" button: puts it on today's plan
     const t = document.createElement("button"); t.id = "r3kTd"; t.hidden = true; t.dataset.td = "addtoday"; t.dataset.id = id; t.dataset.sfx = "none";
     (r5$("#shBody") || document.body).appendChild(t); try { t.click(); } catch(e){} t.remove();
-  } else r5toast(f.n + " is on for today");
+  } else if (!f.book) r5toast(f.n + " is on for today");
+  /* swipe-today (Oct 14, 2026): swiping up means "I'm making it now", so open the same reveal the Shuffle opens
+     (book: Jetzt kochen / Wagen füllen / Zu heute; community and caught products: their own pick card). */
+  setTimeout(() => { try { if (fById(id)) fShowPick(id); } catch(e){} }, 420);
 }
 function dkDecide(dir){
   if (dir === true) dir = "right"; if (dir === false) dir = "left";

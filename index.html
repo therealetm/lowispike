@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261015-014500">
+<meta name="lowi-build" content="20261015-015500">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -17242,13 +17242,13 @@ const OPEN = "lowi.f3.open", QXP = 10, BONUS = 50, WATER = 2, FASTH = 12, MOVEMI
 const W = {
   en: {tag:"Daily quest", sub:"Clear all 6 today for a +{b} XP bonus.", next:"Next", all:"All quests", less:"Hide quests", clear:"Quest complete", clearSub:"All 6 done. +{b} XP bonus is yours. See you tomorrow.", left:"{n} left",
     checkin:"Check in", checkinS:"How do you feel? One tap.", water:"Drink {n} glasses of water", waterS:"Tap once per glass.", fast:"Fast {n} hours", fastS:"Counted from your last meal.", eat:"Log what you ate", eatS:"Photo, barcode or a few words.", move:"Move {n} minutes", moveS:"A walk counts. Any pace.", post:"Share one post", postS:"Show the Tribe your day.",
-    goCheckin:"Check in", goWater:"+1 glass", goFast:"See my fast", goEat:"Log a meal", goMove:"Start moving", goPost:"Post", done:"Done", xp:"Daily quest", xpAll:"Daily quest complete"},
+    goCheckin:"Check in", goWater:"+1 glass", goFast:"See my fast", goEat:"Log a meal", goMove:"Start moving", goPost:"Post", done:"Done", xp:"Daily quest", xpAll:"Daily quest complete", claim:"Claim", reset:"New in {t}"},
   de: {tag:"Tägliche Quest", sub:"Schaff heute alle 6 für +{b} XP Bonus.", next:"Als Nächstes", all:"Alle Quests", less:"Quests ausblenden", clear:"Quest erfüllt", clearSub:"Alle 6 geschafft. +{b} XP Bonus gehören dir. Bis morgen.", left:"noch {n}",
     checkin:"Einchecken", checkinS:"Wie fühlst du dich? Ein Tipp.", water:"Trink {n} Gläser Wasser", waterS:"Tipp einmal pro Glas.", fast:"{n} Stunden fasten", fastS:"Gezählt ab deiner letzten Mahlzeit.", eat:"Trag ein, was du gegessen hast", eatS:"Foto, Barcode oder ein paar Worte.", move:"{n} Minuten bewegen", moveS:"Ein Spaziergang zählt. Jedes Tempo.", post:"Teile einen Post", postS:"Zeig dem Tribe deinen Tag.",
-    goCheckin:"Einchecken", goWater:"+1 Glas", goFast:"Mein Fasten", goEat:"Mahlzeit eintragen", goMove:"Los bewegen", goPost:"Posten", done:"Erledigt", xp:"Tägliche Quest", xpAll:"Tägliche Quest erfüllt"},
+    goCheckin:"Einchecken", goWater:"+1 Glas", goFast:"Mein Fasten", goEat:"Mahlzeit eintragen", goMove:"Los bewegen", goPost:"Posten", done:"Erledigt", xp:"Tägliche Quest", xpAll:"Tägliche Quest erfüllt", claim:"Abholen", reset:"Neu in {t}"},
   es: {tag:"Misión diaria", sub:"Completa las 6 hoy y gana +{b} XP extra.", next:"Siguiente", all:"Todas las misiones", less:"Ocultar misiones", clear:"Misión completa", clearSub:"Las 6 hechas. +{b} XP extra para ti. Hasta mañana.", left:"faltan {n}",
     checkin:"Registrarte", checkinS:"¿Cómo te sientes? Un toque.", water:"Bebe {n} vasos de agua", waterS:"Toca una vez por vaso.", fast:"Ayuna {n} horas", fastS:"Desde tu última comida.", eat:"Registra lo que comiste", eatS:"Foto, código de barras o unas palabras.", move:"Muévete {n} minutos", moveS:"Caminar cuenta. A cualquier ritmo.", post:"Comparte una publicación", postS:"Enseña tu día a la Tribu.",
-    goCheckin:"Registrarme", goWater:"+1 vaso", goFast:"Ver mi ayuno", goEat:"Registrar comida", goMove:"A moverse", goPost:"Publicar", done:"Hecho", xp:"Misión diaria", xpAll:"Misión diaria completa"}
+    goCheckin:"Registrarme", goWater:"+1 vaso", goFast:"Ver mi ayuno", goEat:"Registrar comida", goMove:"A moverse", goPost:"Publicar", done:"Hecho", xp:"Misión diaria", xpAll:"Misión diaria completa", claim:"Reclamar", reset:"Nuevas en {t}"}
 };
 const lang = () => { let l = "en"; try { l = (window.LowiLang && LowiLang.get && LowiLang.get()) || localStorage.getItem("lowispike.lang") || "en"; } catch(e){} l = String(l).slice(0, 2); return W[l] ? l : "en"; };
 const w = (k, o) => { let s = W[lang()][k] || W.en[k] || k; if (o) for (const x in o) s = s.split("{" + x + "}").join(o[x]); return s; };
@@ -17281,24 +17281,37 @@ function state(){ const t = dk(), c = core(), q = (c.quests && c.quests.day === 
 /* ---------- XP: +10 per quest, +50 for all six, each once a day ---------- */
 const PAID = "lowi.f3.paid";
 function paid(){ const t = dk(), p = js(PAID); return p.day === t && Array.isArray(p.ids) ? p : {day:t, ids:[]}; }
-function pay(L){ if (typeof award !== "function") return; const p = paid();
-  const fresh = L.filter(q => q.done && p.ids.indexOf(q.id) < 0); const win = L.every(q => q.done) && p.ids.indexOf("all") < 0;
-  if (!fresh.length && !win) return;
+/* Claim (Oct 15, Finch-style): a finished quest waits for a tap on Claim; nothing is paid by itself.
+   Same eventIds and the same paid list as before, so a quest can never pay twice. Unclaimed quests reset at midnight. */
+function claimable(L){ const p = paid(); return L.filter(q => q.done && p.ids.indexOf(q.id) < 0); }
+function bonusOpen(L){ return L.every(q => q.done) && paid().ids.indexOf("all") < 0; }
+function claimXP(L){ return claimable(L).length * QXP + (bonusOpen(L) ? BONUS : 0); }
+function claim(id){ if (typeof award !== "function") return 0; const L = state(), p = paid();
+  const fresh = claimable(L).filter(q => !id || id === "all" || q.id === id); const win = (!id || id === "all" || L.filter(q => q.id !== id).every(q => p.ids.indexOf(q.id) >= 0)) && bonusOpen(L);
+  if (!fresh.length && !win) return 0; let got = 0;
   fresh.forEach(q => p.ids.push(q.id)); if (win) p.ids.push("all"); try { localStorage.setItem(PAID, JSON.stringify(p)); } catch(e){}
-  if (fresh.length) { const last = fresh[fresh.length - 1]; award(QXP * fresh.length, w("xp") + (fresh.length > 1 ? " ×" + fresh.length : " · " + last.t), null, "f3:" + p.day + ":" + last.id); sfx("check"); }
-  if (win) setTimeout(() => { award(BONUS, w("xpAll"), null, "f3all:" + p.day); sfx("levelup"); const b = document.getElementById("f3Board"); if (b) { b.classList.remove("f3-win"); void b.offsetWidth; b.classList.add("f3-win"); } }, 900); }
+  fresh.forEach(q => { got += award(QXP, w("xp") + " · " + q.t, null, "f3", "f3:" + p.day + ":" + q.id) || 0; });
+  if (fresh.length) sfx("check");
+  if (win) { got += award(BONUS, w("xpAll"), null, "f3", "f3all:" + p.day) || 0; sfx("levelup"); const b = document.getElementById("f3Board"); if (b) { b.classList.remove("f3-win"); void b.offsetWidth; b.classList.add("f3-win"); } }
+  try { window.dispatchEvent(new CustomEvent("lowi:quest-claimed", {detail:{ids:fresh.map(q => q.id), bonus:win, xp:got}})); } catch(e){}
+  paint(); return got; }
+function resetIn(now){ now = now || new Date(); const m = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1) - now; const h = Math.floor(m / 36e5), mi = Math.floor(m % 36e5 / 6e4); return h + ":" + pad(mi); }
 
 /* ---------- the board ---------- */
 const isOpen = () => { try { return localStorage.getItem(OPEN) === "1"; } catch(e){ return false; } };
 function prog(q){ return q.p ? '<span class="f3-pr num">' + q.p[0] + "/" + q.p[1] + (q.p[2] ? " " + q.p[2] : "") + "</span>" : ""; }
 function html(){ const L = state(), n = L.filter(q => q.done).length, cur = L.find(q => !q.done), o = isOpen();
-  let h = '<div class="f3-hd"><span class="f3-tag">' + esc(w("tag")) + '</span><span class="f3-cnt num">' + n + "/" + L.length + "</span></div>" +
+  const cx = claimXP(L), cl = claimable(L);
+  let h = '<div class="f3-hd"><span class="f3-tag">' + esc(w("tag")) + '</span><span class="f3-cnt num">' + n + "/" + L.length + '</span><span class="f3-reset num" title="' + esc(w("reset", {t:resetIn()})) + '">' + esc(w("reset", {t:resetIn()})) + "</span></div>" +
     '<div class="f3-bar" aria-hidden="true">' + L.map(q => '<i class="' + (q.done ? "on" : cur && q.id === cur.id ? "cur" : "") + '"></i>').join("") + "</div>";
-  if (cur) h += '<div class="f3-sub">' + esc(w("sub", {b:BONUS})) + "</div>" +
+  const cbtn = '<button type="button" class="f3-go f3-claim" data-f3="claim" data-q="all">' + esc(w("claim")) + ' <b class="num">+' + cx + "</b></button>";
+  if (cx && (!cur || cl.length)) { const q = cl[0] || L[L.length - 1]; h += '<div class="f3-sub">' + esc(w("sub", {b:BONUS})) + "</div>" +
+    '<div class="f3-cur f3-cur-claim" data-f3q="' + q.id + '"><span class="f3-ic" aria-hidden="true">✓</span><span class="f3-ct"><span class="f3-nx">' + esc(w("done")) + '</span><b>' + esc(cl.length > 1 ? cl.map(x => x.t).join(" · ") : cl.length ? q.t : w("clear")) + "</b>" + '<span class="f3-cs">' + esc(w("sub", {b:BONUS})) + "</span></span>" + cbtn + "</div>"; }
+  else if (cur) h += '<div class="f3-sub">' + esc(w("sub", {b:BONUS})) + "</div>" +
     '<div class="f3-cur" data-f3q="' + cur.id + '"><span class="f3-ic" aria-hidden="true">' + ICON[cur.id] + '</span><span class="f3-ct"><span class="f3-nx">' + esc(w("next")) + " · +" + QXP + ' XP</span><b>' + esc(cur.t) + "</b>" + '<span class="f3-cs">' + esc(cur.s) + " " + prog(cur) + "</span></span>" +
       '<button type="button" class="f3-go" data-f3="go" data-q="' + cur.id + '">' + esc(cur.go) + ' <i aria-hidden="true">›</i></button></div>';
   else h += '<div class="f3-done"><b>' + esc(w("clear")) + '</b><span>' + esc(w("clearSub", {b:BONUS})) + "</span></div>";
-  h += '<div class="f3-list"' + (o ? "" : " hidden") + ">" + L.map(q => '<button type="button" class="f3-row' + (q.done ? " done" : "") + (cur && q.id === cur.id ? " cur" : "") + '" data-f3="go" data-q="' + q.id + '"><span class="f3-ck" aria-hidden="true">' + (q.done ? "✓" : ICON[q.id]) + '</span><span class="f3-rt">' + esc(q.t) + "</span>" + (q.done ? '<span class="f3-ok">' + esc(w("done")) + "</span>" : prog(q) || '<span class="f3-xp">+' + QXP + "</span>") + "</button>").join("") + "</div>" +
+  h += '<div class="f3-list"' + (o ? "" : " hidden") + ">" + L.map(q => { const c = cl.indexOf(q) >= 0; return '<button type="button" class="f3-row' + (q.done ? " done" : "") + (c ? " claim" : "") + (cur && q.id === cur.id ? " cur" : "") + '" data-f3="' + (c ? "claim" : "go") + '" data-q="' + q.id + '"><span class="f3-ck" aria-hidden="true">' + (q.done ? "✓" : ICON[q.id]) + '</span><span class="f3-rt">' + esc(q.t) + "</span>" + (c ? '<span class="f3-ok f3-cl">' + esc(w("claim")) + " +" + QXP + "</span>" : q.done ? '<span class="f3-ok">' + esc(w("done")) + "</span>" : prog(q) || '<span class="f3-xp">+' + QXP + "</span>") + "</button>"; }).join("") + "</div>" +
     '<button type="button" class="f3-tog" data-f3="tog" aria-expanded="' + (o ? "true" : "false") + '">' + esc(o ? w("less") : w("all") + (cur ? " · " + w("left", {n:L.length - n}) : "")) + ' <i aria-hidden="true">' + (o ? "▴" : "▾") + "</i></button>";
   return {h, L, n}; }
 let lastH = "";
@@ -17307,7 +17320,7 @@ function mount(){ const home = document.getElementById("tab-home"); if (!home) r
   if (!b || !home.contains(b)) { b = document.createElement("section"); b.id = "f3Board"; b.className = "f3-board"; b.setAttribute("data-noi18n", ""); b.setAttribute("aria-label", w("tag")); lastH = ""; }
   if (b.previousElementSibling !== top) top.insertAdjacentElement("afterend", b);
   return b; }
-function paint(){ let r; try { r = html(); } catch(e){ console.warn(e); return; } pay(r.L);
+function paint(){ let r; try { r = html(); } catch(e){ console.warn(e); return; }
   const b = mount(); if (!b) return; const h = r.h; if (h !== lastH || b.innerHTML !== h) { b.innerHTML = h; lastH = h; }
   b.classList.toggle("f3-all", r.n === r.L.length); b.setAttribute("aria-label", w("tag")); }
 
@@ -17326,6 +17339,7 @@ function go(id){ sfx("tap");
 document.addEventListener("click", e => { const a = e.target && e.target.closest && e.target.closest("#f3Board [data-f3]"); if (!a) { setTimeout(paint, 600); return; }
   e.preventDefault(); e.stopPropagation();
   if (a.dataset.f3 === "tog") { try { localStorage.setItem(OPEN, isOpen() ? "0" : "1"); } catch(x){} sfx("tap"); paint(); return; }
+  if (a.dataset.f3 === "claim") { claim(a.dataset.q); return; }
   if (a.dataset.f3 === "go") go(a.dataset.q); }, true);
 
 let raf = 0; const run = () => { if (raf) return; raf = requestAnimationFrame(() => { raf = 0; try { mo.disconnect(); paint(); } catch(e){ console.warn(e); } watch(); }); };
@@ -17334,7 +17348,7 @@ function watch(){ const h = document.getElementById("tab-home"); if (h) mo.obser
 function init(){ paint(); watch(); setInterval(() => { const h = document.getElementById("tab-home"); if (h && !document.hidden) run(); }, 5000);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) run(); }); }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else setTimeout(init, 0);
-window.LowiF3 = {paint, state, go, w};
+window.LowiF3 = {paint, state, go, w, claim, claimable:() => claimable(state()), claimXP:() => claimXP(state()), resetIn};
 })();
 </script>
 <style id="f3bcss">

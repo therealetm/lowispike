@@ -1429,7 +1429,8 @@
 
     function collection() {
         const items = Object.values(LowiDex.state().mine || {});
-        showSheet('<h2>' + esc(tr('collection')) + '</h2><div class="sp-collection">' + (items.length ? items.map(p => '<button data-sp="product" data-key="' + esc(p.barcode || p.id || p.name) + '">' + (p.img ? '<img alt="" src="' + esc(p.img) + '">' : icon('leaf')) + '<b>' + esc(p.name || p.barcode) + '</b></button>').join('') : '<p>' + esc(tr('emptyCollection')) + '</p>' + button('scan', 'scan', 'scan')) + '</div>');
+        const HQ = window.LowiHerbQuests;
+        showSheet('<h2>' + esc(tr('collection')) + '</h2>' + (HQ ? HQ.collectionHTML() + '<h3 class="hq-prodh">' + esc(tr('collection')) + ' \u00b7 ' + items.length + '</h3>' : '') + '<div class="sp-collection">' + (items.length ? items.map(p => '<button data-sp="product" data-key="' + esc(p.barcode || p.id || p.name) + '">' + (p.img ? '<img alt="" src="' + esc(p.img) + '">' : icon('leaf')) + '<b>' + esc(p.name || p.barcode) + '</b></button>').join('') : '<p>' + esc(tr('emptyCollection')) + '</p>' + button('scan', 'scan', 'scan')) + '</div>');
         paginate(ownedSheet.querySelector('.r2-sh'));
     }
 
@@ -1441,7 +1442,7 @@
         const H = window.LowiHerbIdentity;
         if (H) {
             const id = H.current();
-            showSheet(H.cardHTML() + '<form id="spProfile"><label>' + esc(tr('name')) + '<input name="name" maxlength="24" value="' + esc(id.name) + '"></label><label>' + esc(tr('birthday')) + '<input name="birthday" type="date" value="' + esc(s.user.bday || '') + '"></label><button type="submit" class="r2-btn pri">' + esc(tr('rename')) + '</button></form>' + (id.custom ? '<button class="r2-btn ghost hi-reset" data-sp="resetName"><span>' + esc(H.copy('resetName')) + '</span></button>' : '') + '<button class="r2-btn ghost" data-sp="quiz">' + icon('star') + '<span>' + esc(H.copy(id.type ? 'quizAgain' : 'quiz')) + '</span></button>' + button('goals', 'plate', 'goals') + button('completeDay', 'moon', 'completeDay'));
+            showSheet(H.cardHTML() + (window.LowiHerbQuests ? LowiHerbQuests.evoHTML(true) : '') + '<form id="spProfile"><label>' + esc(tr('name')) + '<input name="name" maxlength="24" value="' + esc(id.name) + '"></label><label>' + esc(tr('birthday')) + '<input name="birthday" type="date" value="' + esc(s.user.bday || '') + '"></label><button type="submit" class="r2-btn pri">' + esc(tr('rename')) + '</button></form>' + (id.custom ? '<button class="r2-btn ghost hi-reset" data-sp="resetName"><span>' + esc(H.copy('resetName')) + '</span></button>' : '') + '<button class="r2-btn ghost" data-sp="quiz">' + icon('star') + '<span>' + esc(H.copy(id.type ? 'quizAgain' : 'quiz')) + '</span></button>' + button('goals', 'plate', 'goals') + button('completeDay', 'moon', 'completeDay'));
             return;
         }
         showSheet('<h2>' + esc(name()) + '</h2><p class="sp-profile-sign">' + icon(m.profile.sign?.name || 'star') + esc(tr('sign')) + ': ' + esc(m.profile.sign?.name || tr('missing')) + '</p><form id="spProfile"><label>' + esc(tr('name')) + '<input name="name" maxlength="24" value="' + esc(name()) + '"></label><label>' + esc(tr('birthday')) + '<input name="birthday" type="date" value="' + esc(s.user.bday || '') + '"></label><button type="submit" class="r2-btn pri">' + esc(tr('rename')) + '</button></form><p>' + esc(tr('personality')) + ': ' + esc(type || tr('missing')) + '</p>' + button('setup', 'star', 'quiz') + button('goals', 'plate', 'goals') + button('completeDay', 'moon', 'completeDay'));
@@ -1785,7 +1786,7 @@
         else if (a === 'wardrobe') wardrobe();
         else if (a === 'collection') collection();
         else if (a === 'profile') profile();
-        else if (a === 'path') showSheet('<h2>' + esc(tr('evolution')) + '</h2>' + pathHTML());
+        else if (a === 'path') { if (window.LowiHerbQuests) { LowiHerbQuests.reset(); showSheet(LowiHerbQuests.pathHTML() + '<h3 class="hq-prodh">' + esc(tr('evolution')) + '</h3>' + pathHTML()); } else showSheet('<h2>' + esc(tr('evolution')) + '</h2>' + pathHTML()); }
         else if (a === 'quiz' || a === 'setup') quiz(true);
         else if (a === 'resetName' && window.LowiHerbIdentity) { LowiHerbIdentity.resetName(); profile(); }
         else if (a === 'quizAnswer') answer(b.dataset.value);

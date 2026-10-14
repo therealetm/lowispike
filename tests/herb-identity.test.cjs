@@ -98,3 +98,9 @@ test('spirit.js quiz answer saves through the identity and the files are wired i
     assert(ui.indexOf('herb-identity.js') < ui.indexOf("'spirit.js'"));
     for (const f of ['herb-identity-core.js', 'herb-identity.js', 'herb-identity.css']) assert(sw.includes('"' + f + '"'), f + ' cached');
 });
+
+test('the mini-test button in the herb profile actually opens the quiz', () => {
+    const sp = read('spirit.js');
+    assert.match(sp, /data-sp="quiz">' \+ icon\('star'\)/);
+    assert.match(sp, /a === 'quiz' \|\| a === 'setup'\) quiz\(true\)/);
+});

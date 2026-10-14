@@ -1,6 +1,6 @@
 /* LOWiSPIKE service worker · network-first app shell with offline static fallback. */
-const SHELL_BUILD = "20261014-213500";
-const CACHE = "lowispike-updates-20261014-213500";
+const SHELL_BUILD = "20261014-213800";
+const CACHE = "lowispike-updates-20261014-213800";
 const STATIC = ["spirit-core.js", "spirit.js", "spirit.css", "herb-config.js", "herb-core.js", "herb-tamagotchi-core.js", "herb-tamagotchi.js", "herb-tamagotchi-polish.js", "herb-tamagotchi-mount-fix.js", "herb-tamagotchi.css", "body-core.js", "body-companion.js", "body-companion.css", "swaflo-config.js", "swaflo-core.js", "swaflo.js", "swaflo.css", "discovery-config.js", "discovery-core.js", "discovery.js", "discovery.css", "apple-ui.js", "apple-ui.css", "appearance.js", "recipe-book.js", "updates.css", "weather-sky-core.js", "weather-sky.js", "weather-sky.css", "vendor/supabase-2.117.3.js", "vendor/zxing-0.21.3.min.js", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png"];
 self.addEventListener("install", e => {
   self.skipWaiting();

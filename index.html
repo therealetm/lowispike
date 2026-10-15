@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261015-224500">
+<meta name="lowi-build" content="20261015-231500">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -6212,6 +6212,9 @@ function renderHome(){ const d = tdEnsure(), sl = tdSlots(), needs = tdNeeds(), 
   const dateTxt = new Date().toLocaleDateString("en-GB", {weekday:"long", day:"numeric", month:"long"});
   const step = (n, t, right) => '<div class="td-step"><span class="td-n">' + n + '</span><span class="h3">' + t + "</span>" + (right ? '<span class="td-right">' + right + "</span>" : "") + "</div>";
   const listN = window.LOWI_SHELF && LOWI_SHELF.listOpen ? LOWI_SHELF.listOpen().length : 0;
+  /* Oct 15 (old-Home flash): the world Home (#spHome) survives this re-render. Rebuilding #tab-home used to throw it away, so every
+     tap back to Today painted a blank tab, then the old flat Home, then the world again. The same node goes straight back in. */
+  const keepSp = document.getElementById("spHome");
   $("#tab-home").innerHTML =
     '<div class="td-top"><div><div class="wordmark td-wm">LOW<i>i</i>SPIKE</div><div class="small muted">' + greet() + (S.user.name ? ", " + esc(S.user.name) : "") + '</div><div class="h1 td-date">' + esc(dateTxt) + '</div></div></div>' +
     (window.LowiDiscovery ? LowiDiscovery.homeHTML() : '') +
@@ -6248,6 +6251,7 @@ function renderHome(){ const d = tdEnsure(), sl = tdSlots(), needs = tdNeeds(), 
         (listN ? '<div class="small muted" style="margin-top:10px">+ ' + listN + " more on your list from scans and recipes</div>" : "") +
         '</div><div class="td-buy"><button class="btn primary" data-td="shop" id="tdShopBtn"' + (toBuy.length + listN ? "" : " disabled") + ">" + (toBuy.length + listN ? "Go shopping" : "You have everything") + '</button><button class="btn ghost" data-lc="open" id="tdCartBtn">' + (toBuy.length ? "Cart · " + toBuy.length : "Cart") + '</button></div></div>' : "") +
     '<div class="sec" style="margin-top:28px"><span class="h3">Check-in & extras</span><span class="small muted">optional</span></div>' + homeExtrasHTML();
+  if (keepSp && !keepSp.isConnected) { const th = $("#tab-home"); if (th) { th.prepend(keepSp); try { if (window.LowiSpirit && LowiSpirit.refresh) LowiSpirit.refresh(); } catch(e){} } }
   bindHomeExtras();
 }
 

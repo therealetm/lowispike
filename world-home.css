@@ -170,3 +170,8 @@ html.wh-home:not(.wh-today-open) .wh-today, html.wh-home:not(.wh-today-open) .wh
 /* iPad upright: the wide layout centres #tab-home as a column, which pushed the top bar and the quest card into the middle,
    right across Misty (she could not be tapped). On the world Home they sit at the top, like on the phone. */
 html.spirit-app.wh-on.wh-home[data-lay=tablet] #tab-home#tab-home { justify-content: flex-start !important; }
+/* Oct 15 (old-Home flash): the first frames on Today show the resting world straight away, nothing slides or fades in */
+html.wh-snap .wh-today, html.wh-snap .wh-today *, html.wh-snap .wh-hud, html.wh-snap .wh-hud > button, html.wh-snap .wh-x, html.wh-snap .wh-scrim, html.wh-snap #spHome .sp-heroes, html.wh-snap #spHome #spBubble, html.wh-snap #spHome #spFast { transition: none !important; }
+/* Today appears at once: no cross-fade with the tab you came from, no slide-up of the world */
+html.wh-home #tab-home.active, html.wh-home .tab:not(.active) { transition: none !important; }
+html.wh-home #tab-home.p2-tabin > * { animation: none !important; }

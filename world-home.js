@@ -472,6 +472,8 @@
         ensureToday(); ensureHud(); ensureX(); applyAura();
         const act = homeActive();
         if (act !== st.lastHome) {
+            /* Oct 15: arriving on Today shows the world in its resting state at once (no sheet sliding away, no HUD fading in) */
+            if (act) { H.classList.add('wh-snap'); clearTimeout(st.snapT); st.snapT = setTimeout(() => requestAnimationFrame(() => requestAnimationFrame(() => H.classList.remove('wh-snap'))), 80); }
             st.lastHome = act; H.classList.toggle('wh-home', act);
             if (!act && st.today) openToday(false);
             /* back on Home: make sure the world is running again (it pauses on other tabs) */
@@ -488,7 +490,15 @@
         W.addEventListener('resize', layout);
         const mo = new MutationObserver(() => { clearTimeout(st.mt); st.mt = setTimeout(tick, 60); });
         mo.observe(D.body, { childList: true });
-        const tabs = () => { const t = D.getElementById('tab-home'); if (t && !t.dataset.whObs) { t.dataset.whObs = '1'; new MutationObserver(tick).observe(t, { attributes: true, attributeFilter: ['class'] }); }
+        /* Oct 15 (old-Home flash): when Home's nodes are (re)built, adopt them in the same frame. Observer callbacks run before the
+           browser paints, so the old flat Home (loose status + log, no HUD) is never on screen; the 700 ms tick below stays as a safety net. */
+        const adopt = () => { if (st.adopting) return; st.adopting = true; try { watchHome(); tick(); } catch (e) { } st.adopting = false; };
+        const homeMo = new MutationObserver(adopt);
+        const watchHome = () => { const t = D.getElementById('tab-home'), h = home();
+            if (t && t !== st.obsTab) { st.obsTab = t; homeMo.observe(t, { childList: true }); }
+            if (h && h !== st.obsHome) { st.obsHome = h; homeMo.observe(h, { childList: true }); } };
+        new MutationObserver(watchHome).observe(D.body, { childList: true, subtree: false });
+        const tabs = () => { watchHome(); const t = D.getElementById('tab-home'); if (t && !t.dataset.whObs) { t.dataset.whObs = '1'; new MutationObserver(tick).observe(t, { attributes: true, attributeFilter: ['class'] }); }
             const sw = D.getElementById('sheetwrap'); if (sw && !sw.dataset.whObs) { sw.dataset.whObs = '1'; new MutationObserver(syncX).observe(sw, { attributes: true, attributeFilter: ['class'] }); } };
         setInterval(() => { tabs(); tick(); }, 700);
         tabs(); tick();

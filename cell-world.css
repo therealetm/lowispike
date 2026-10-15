@@ -1,0 +1,263 @@
+/* LOWiSPIKE living cell + metabolic world (cell-world.js). State lives on <html data-cell="..."> with --cw-* numbers,
+   so every cell in the app (Home bubble, herb world, shop try-on) mirrors the same world. Only transforms and opacity animate. */
+:root {
+    --cw-speed: 9s;
+    --cw-plasma1: #0b102a;
+    --cw-plasma2: #081f52;
+    --cw-glow: #1cf7f9;
+    --cw-a: #9e5e73;
+    --cw-spike: 0;
+    --cw-energy: 0;
+    --cw-clear: 0;
+    --cw-tired: 0;
+}
+/* one dominant glow hue per state, backgrounds stay in the navy / indigo / plum family (visual brief) */
+html[data-cell=clear] { --cw-plasma1: #08112e; --cw-plasma2: #081f52; --cw-glow: #2ef8b6; --cw-a: #9e5e73; }
+html[data-cell=calm] { --cw-plasma1: #0b102a; --cw-plasma2: #081f52; --cw-glow: #1cf7f9; --cw-a: #9e5e73; }
+html[data-cell=active] { --cw-plasma1: #1d0b4f; --cw-plasma2: #081f52; --cw-glow: #f14770; --cw-a: #d0566f; }
+html[data-cell=spiked] { --cw-plasma1: #1d0b4f; --cw-plasma2: #2c0b3e; --cw-glow: #f8ea40; --cw-a: #8b414f; }
+html[data-cell=night] { --cw-plasma1: #010039; --cw-plasma2: #0b102a; --cw-glow: #6c78b8; --cw-a: #5e4a5e; }
+html[data-cell=tired] { --cw-plasma1: #0b102a; --cw-plasma2: #141a3a; --cw-glow: #74aad3; --cw-a: #7d5a68; }
+html[data-cell=unwell] { --cw-plasma1: #0b102a; --cw-plasma2: #1d0b4f; --cw-glow: #9e5e73; --cw-a: #7d5a68; }
+.cw-cell .cw-wall { stroke: var(--cw-glow); }
+.cw-cell .cw-cilia { stroke: var(--cw-glow); }
+html[data-theme=light] .cw-cell .cw-wall { stroke: #2e71a9; }
+
+/* ---------- the world layer behind the cell ---------- */
+.cw-env {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: -1;
+    background:
+        radial-gradient(ellipse at 50% 55%, color-mix(in srgb, var(--cw-glow) 22%, transparent), transparent 62%),
+        linear-gradient(160deg, var(--cw-plasma1), var(--cw-plasma2));
+    opacity: .92;
+    transition: background .8s ease, opacity .8s ease;
+}
+.cw-env-home { opacity: .78; }
+/* the layer sits behind everything else in the bubble and the stage, without touching their positions */
+.sp-stage, #spBubble { isolation: isolate; }
+.sp-stage { overflow: hidden; }
+.cw-env i { position: absolute; display: block; pointer-events: none; }
+.cw-glow {
+    inset: 15% 12%;
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--cw-glow) 30%, transparent), transparent 70%);
+    animation: cwPulse calc(var(--cw-speed) * .5) ease-in-out infinite;
+}
+/* red blood cells: concave discs flowing left to right */
+.cw-rbc {
+    left: -14%;
+    top: var(--y);
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--cw-a) 55%, #000) 0 28%, var(--cw-a) 46%, color-mix(in srgb, var(--cw-a) 70%, #fff) 72%, transparent 74%);
+    opacity: .62;
+    transform: translateX(0) scale(var(--s));
+    animation: cwFlow var(--cw-speed) linear infinite;
+    animation-delay: calc(var(--k) * var(--cw-speed) / -5.5);
+}
+.cw-env-home .cw-rbc { width: 16px; height: 16px; }
+.cw-dot {
+    left: -6%;
+    top: var(--y);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--cw-glow) 80%, #fff);
+    opacity: .55;
+    animation: cwFlow calc(var(--cw-speed) * .8) linear infinite;
+    animation-delay: calc(var(--k) * var(--cw-speed) / -4.3);
+}
+.cw-stream {
+    left: -40%;
+    top: var(--y);
+    width: 40%;
+    height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--cw-glow) 70%, #fff), transparent);
+    opacity: calc(.12 + var(--cw-energy) * .55);
+    animation: cwFlow calc(var(--cw-speed) * .6) linear infinite;
+    animation-delay: calc(var(--k) * var(--cw-speed) / -3.1);
+}
+/* sugar crystals: only when the world is spiked */
+.cw-sugar {
+    left: var(--x);
+    top: var(--y);
+    width: 9px;
+    height: 9px;
+    background: linear-gradient(135deg, #fff9fd, #ffc2dd 60%, #ffd98a);
+    clip-path: polygon(50% 0, 100% 30%, 100% 70%, 50% 100%, 0 70%, 0 30%);
+    opacity: calc(var(--cw-spike) * .9);
+    animation: cwSugar 6s ease-in-out infinite;
+    animation-delay: calc(var(--k) * -1.1s);
+}
+.cw-zz {
+    right: 22%;
+    top: 18%;
+    font: 700 13px/1 system-ui, sans-serif;
+    font-style: normal;
+    color: #c9d2ff;
+    opacity: 0;
+}
+.cw-zz2 { right: 15%; top: 10%; font-size: 10px; }
+html[data-cell=night] .cw-zz { opacity: .75; animation: cwZz 3.8s ease-in-out infinite; }
+html[data-cell=night] .cw-zz2 { animation-delay: -1.9s; }
+html[data-cell=night] .cw-env { opacity: .82; }
+html[data-cell=spiked] .cw-env { background:
+        radial-gradient(ellipse at 50% 55%, #ffcf6e33, transparent 62%),
+        radial-gradient(circle at 20% 80%, #ff5fa233, transparent 45%),
+        linear-gradient(160deg, var(--cw-plasma1), var(--cw-plasma2)); }
+
+/* ---------- the cell itself ---------- */
+.cw-cell { overflow: visible; }
+.cw-cell .cw-float { animation: cwFloat calc(var(--cw-speed) * .55 + 2.4s) ease-in-out infinite; transform-box: view-box; transform-origin: 130px 160px; }
+.cw-cell .cw-membrane { animation: cwBreathe calc(var(--cw-speed) * .35 + 2.2s) ease-in-out infinite; transform-box: view-box; }
+.cw-cell .cw-org { animation: cwDrift 7s ease-in-out infinite; animation-delay: calc(var(--k) * -1.3s); transform-box: fill-box; transform-origin: center; }
+.cw-cell .cw-nucleus { animation: cwNuc 9s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.cw-cell .cw-cilia path { animation: cwCilia 1.6s ease-in-out infinite alternate; animation-delay: calc(var(--k) * -.12s); transform-box: view-box; transform-origin: 130px 158px; }
+.cw-cell .cw-xtals { opacity: calc(var(--cw-spike) * 1); transition: opacity .8s; }
+.cw-cell .cw-aura { opacity: calc(.55 + var(--cw-clear) * .45 - var(--cw-tired) * .35); transition: opacity .8s; }
+.cw-cell .cw-wall { transition: fill-opacity .8s; }
+.cw-cell .lh-reflection { opacity: .14; }
+
+html[data-cell=active] .cw-cell .cw-membrane { animation-name: cwPump; animation-duration: .7s; }
+html[data-cell=active] .cw-cell .cw-org { animation-duration: 2.2s; }
+html[data-cell=active] .cw-cell .cw-cilia path { animation-duration: .45s; }
+html[data-cell=spiked] .cw-cell .cw-inside { opacity: .78; }
+html[data-cell=spiked] .cw-cell .cw-float { animation-duration: 9s; }
+html[data-cell=spiked] .cw-cell .cw-org { animation-duration: 14s; }
+html[data-cell=night] .cw-cell .cw-membrane, html[data-cell=tired] .cw-cell .cw-membrane, html[data-cell=unwell] .cw-cell .cw-membrane { opacity: .72; }
+html[data-cell=night] .cw-cell .cw-aura { opacity: .25; }
+html[data-cell=night] .cw-cell .cw-face .lh-eyes, html[data-cell=tired] .cw-cell .cw-face .lh-eyes { transform: scaleY(.38); transform-box: fill-box; transform-origin: center 70%; }
+html[data-cell=night] .cw-cell .cw-float { animation-name: cwSag; animation-duration: 6s; }
+html[data-cell=night] .cw-cell .cw-org, html[data-cell=tired] .cw-cell .cw-org, html[data-cell=unwell] .cw-cell .cw-org { animation-duration: 16s; }
+html[data-cell=night] .cw-cell .cw-cilia path, html[data-cell=tired] .cw-cell .cw-cilia path { animation: none; opacity: .5; }
+html[data-cell=unwell] .cw-cell .cw-membrane { animation-name: cwCurl; animation-duration: 5s; }
+html[data-cell=clear] .cw-cell .cw-aura { opacity: 1; }
+
+/* journey: the sun meter's garden trip, shown as the cell travelling through the body */
+html.cw-away #spWorld .sp-body .cw-cell { animation: cwJourney 14s ease-in-out infinite; transform-origin: 50% 50%; }
+html.cw-away .cw-env .cw-rbc { animation-duration: calc(var(--cw-speed) * .6); }
+
+/* ---------- Home pill + world panel ---------- */
+.cw-pill {
+    position: absolute;
+    z-index: 2;
+    top: 9px;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 76%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 2px 8px;
+    border-radius: 99px;
+    font: 700 9.5px/1.45 system-ui, -apple-system, sans-serif;
+    letter-spacing: .2px;
+    color: #fff;
+    background: color-mix(in srgb, var(--cw-plasma1) 70%, #0008);
+    border: 1px solid color-mix(in srgb, var(--cw-glow) 45%, transparent);
+    pointer-events: none;
+}
+html.cw-on .sp-home[data-sun-away] .cw-pill, #spBubble:has(.ls-away) .cw-pill { display: none; }
+.cw-panel {
+    display: grid;
+    gap: 6px;
+    padding: 8px 10px;
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--cw-plasma1) 38%, var(--panel, #10282c));
+    border: 1px solid color-mix(in srgb, var(--cw-glow) 30%, transparent);
+    font-size: 12px;
+    min-width: 0;
+}
+.cw-tag {
+    position: absolute;
+    z-index: 3;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    display: grid;
+    gap: 4px;
+    justify-items: center;
+    pointer-events: none;
+    text-align: center;
+}
+.cw-head { display: flex; align-items: center; gap: 6px; min-width: 0; max-width: 100%; padding: 3px 10px; border-radius: 99px; background: color-mix(in srgb, var(--cw-plasma1) 72%, #0009); border: 1px solid color-mix(in srgb, var(--cw-glow) 40%, transparent); color: #fff; }
+.cw-head b { font-size: 12px; letter-spacing: -.1px; white-space: nowrap; }
+.cw-head span { color: #ffffffbf; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.cw-dotstate { width: 9px; height: 9px; flex: none; border-radius: 50%; background: var(--cw-glow); box-shadow: 0 0 8px var(--cw-glow); }
+.cw-whys { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; max-height: 40px; overflow: hidden; }
+.cw-whys:empty { display: none; }
+.cw-why { padding: 1px 7px; border-radius: 99px; font-size: 10px; color: #fff; background: #0006; border: 1px solid #ffffff26; white-space: nowrap; }
+.cw-why-spike { background: #ffb34a24; border-color: #ffcf6e55; }
+.cw-why-move { background: #ff6e7e22; border-color: #ff8a8a55; }
+.cw-why-night { background: #6c78b833; }
+.cw-feel { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.cw-feel small { font-size: 10.5px; color: var(--muted, #a5b4c9); flex: none; max-width: 34%; line-height: 1.15; }
+.cw-feel div { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; flex: 1; min-width: 0; }
+.cw-mood {
+    min-height: 36px;
+    min-width: 0;
+    padding: 3px 2px;
+    border-radius: 12px;
+    border: 1px solid #ffffff22;
+    background: #ffffff0d;
+    color: inherit;
+    font: 650 11px/1.1 system-ui, -apple-system, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.cw-mood i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.cw-mood-good i { background: #8ff3c1; }
+.cw-mood-okay i { background: #b7c8ff; }
+.cw-mood-tired i { background: #9aa6c8; }
+.cw-mood-unwell i { background: #d9a3b0; }
+.cw-mood[aria-pressed=true] { background: color-mix(in srgb, var(--cw-glow) 26%, transparent); border-color: var(--cw-glow); }
+.cw-mood:focus-visible { outline: 2px solid var(--cw-glow); outline-offset: 2px; }
+.cw-hint { margin: 0; font-size: 9.5px; color: var(--muted, #a5b4c9); opacity: .8; }
+@media (max-height: 760px) {
+    .cw-panel { padding: 5px 8px; gap: 3px; }
+    .cw-hint { display: none; }
+    .cw-whys { display: none; }
+    .cw-mood { min-height: 34px; }
+}
+html[data-theme=light] .cw-panel { background: color-mix(in srgb, var(--cw-glow) 14%, #fff); }
+
+@keyframes cwFlow { from { transform: translateX(0) scale(var(--s, 1)); } to { transform: translateX(var(--cw-run, 900%)) scale(var(--s, 1)); } }
+.cw-env-home .cw-rbc { --cw-run: 1150%; }
+.cw-env-world .cw-rbc { --cw-run: 2600%; }
+.cw-env-world .cw-dot { --cw-run: 14000%; }
+.cw-env-home .cw-dot { --cw-run: 5200%; }
+.cw-stream { --cw-run: 360%; }
+@keyframes cwPulse { 0%, 100% { transform: scale(.94); opacity: .75; } 50% { transform: scale(1.05); opacity: 1; } }
+@keyframes cwSugar { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-5px) rotate(25deg); } }
+@keyframes cwZz { 0% { transform: translate(0, 6px); opacity: 0; } 30% { opacity: .8; } 100% { transform: translate(6px, -12px); opacity: 0; } }
+@keyframes cwFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes cwSag { 0%, 100% { transform: translateY(5px) rotate(-2deg); } 50% { transform: translateY(8px) rotate(2deg); } }
+@keyframes cwBreathe { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.025, .975); } }
+@keyframes cwPump { 0%, 100% { transform: scale(1); } 30% { transform: scale(1.06, .95); } 55% { transform: scale(.97, 1.03); } }
+@keyframes cwCurl { 0%, 100% { transform: scale(.96, .94); } 50% { transform: scale(.98, .95); } }
+@keyframes cwDrift { 0%, 100% { transform: translate(0, 0) rotate(0); } 33% { transform: translate(4px, -3px) rotate(12deg); } 66% { transform: translate(-3px, 3px) rotate(-8deg); } }
+@keyframes cwNuc { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-3px, 2px); } }
+@keyframes cwCilia { from { transform: rotate(-3deg); } to { transform: rotate(3deg); } }
+@keyframes cwJourney { 0%, 100% { transform: translate(0, 0) scale(.82); } 25% { transform: translate(-18%, -6%) scale(.78); } 50% { transform: translate(4%, 4%) scale(.84); } 75% { transform: translate(18%, -4%) scale(.78); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .cw-env i, .cw-cell *, .cw-cell, html.cw-away #spWorld .sp-body .cw-cell { animation: none !important; transition: none !important; }
+    .cw-rbc { transform: translateX(calc(var(--k) * 140%)) scale(var(--s, 1)); left: 4%; }
+    .cw-dot { transform: translateX(calc(var(--k) * 900%)); left: 6%; }
+    .cw-stream { left: 10%; }
+    html[data-cell=night] .cw-zz { opacity: .7; }
+}
+#spBubble .sp-home-herb .cw-cell { transform: translateY(3%) scale(1.12); transform-origin: 50% 50%; }

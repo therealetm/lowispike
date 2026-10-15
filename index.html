@@ -2221,7 +2221,9 @@ html[data-theme="light"] #g1Ob{--ob-bg:rgba(255,255,255,.98);--ob-fg:#17202e;--o
 #g1Ob .g1ob-say svg{width:20px;height:20px}
 #g1Ob .g1ob-say.on{background:color-mix(in srgb,var(--ob-ac) 26%,transparent)}
 #g1Ob .g1ob-btn:focus-visible{outline:3px solid var(--ob-ac);outline-offset:2px}
-#g1Ob.busy .g1ob-1{opacity:.6}
+#g1Ob.busy .g1ob-1{opacity:.85;cursor:progress;animation:g1obBusy 1.1s ease-in-out infinite}
+@keyframes g1obBusy{50%{opacity:.5}}
+@media (prefers-reduced-motion:reduce){html #g1Ob.busy .g1ob-1{animation:none;opacity:.7}}
 #g1Ob .g1ob-bub,#g1Ob .g1ob-orb{opacity:0;transition:opacity .22s ease,transform .34s cubic-bezier(.3,1.4,.5,1)}
 #g1Ob .g1ob-bub{transform:scale(.86)}
 #g1Ob .g1ob-orb{transform:scale(.4) translateY(10px)}
@@ -2298,6 +2300,10 @@ const ROWS = [
   ["Show me", "Show me", "Zeig's mir", "Enséñamelo"],
   ["Later", "Later", "Später", "Luego"],
   ["Update now", "Update", "Aktualisieren", "Actualizar"],
+  ["Updating", "Updating\u2026", "Wird aktualisiert\u2026", "Actualizando\u2026"],
+  ["Try again", "Try again", "Nochmal", "Reintentar"],
+  ["updslow", "This is taking a while. Tap \u201cTry again\u201d. Still stuck? Close LOWiSPIKE completely (swipe it away in the app switcher) and open it again.", "Das dauert gerade. Tipp auf \u201eNochmal\u201c. H\u00e4ngt es weiter? Schlie\u00df LOWiSPIKE ganz (im App-Umschalter wegwischen) und \u00f6ffne es neu.", "Esto tarda un poco. Toca \u201cReintentar\u201d. \u00bfSigue igual? Cierra LOWiSPIKE del todo (desl\u00edzala en el selector de apps) y vuelve a abrirla."],
+  ["updoff", "You're offline right now. The update loads as soon as you're back online.", "Du bist gerade offline. Das Update l\u00e4dt, sobald du wieder online bist.", "Ahora est\u00e1s sin conexi\u00f3n. La actualizaci\u00f3n se carga en cuanto vuelvas a tener internet."],
   ["guide", "Your guide", "Dein Guide", "Tu guía"]
 ];
 const D = {}; ROWS.forEach(r => { D[r[0]] = {en:r[1], de:r[2], es:r[3]}; });
@@ -2555,12 +2561,14 @@ function obButtons(){ const b = (k, cls, label, extra) => '<button type="button"
   return listen + '<span class="g1ob-sp"></span>' + (newsGo() ? b("done", "g1ob-2", esc(T("Got it"))) + b("showme", "g1ob-1", esc(T("Show me")) + " \u203a") : b("done", "g1ob-1", esc(T("Got it")))); }
 let obT = 0;
 function obShow(o){ let r = $("#g1Ob"); const fresh = !r || !OB || OB.kind !== o.kind || OB.build !== o.build || r.classList.contains("out");
+  if (!fresh && o.kind === "update" && r.dataset.upd === "stalled" && OB.text) o = Object.assign({}, o, {text:OB.text}); /* keep the "taking long" hint */
   OB = Object.assign({}, o);
   if (!r) { r = document.createElement("div"); r.id = "g1Ob"; r.setAttribute("data-noi18n", ""); r.setAttribute("role", "dialog"); r.setAttribute("aria-modal", "false");
     r.setAttribute("aria-labelledby", "g1ObH"); r.setAttribute("aria-describedby", "g1ObP");
     r.innerHTML = '<div class="g1ob-orb" aria-hidden="true"><span class="g1ob-water"></span><span class="g1ob-herb"></span></div><div class="g1ob-bub"><i class="g1ob-tail" aria-hidden="true"></i><b class="g1ob-h" id="g1ObH"></b><p class="g1ob-p" id="g1ObP" aria-live="polite"></p><div class="g1ob-btns"></div></div>';
     try { r.style.fontFamily = getComputedStyle(document.body).fontFamily; } catch(e){}
     r.addEventListener("click", obClick); H.appendChild(r); }
+  if (fresh) delete r.dataset.upd;
   const h = r.querySelector(".g1ob-h"), p = r.querySelector(".g1ob-p");
   if (h.textContent !== o.head) h.textContent = o.head; if (p.textContent !== o.text) p.textContent = o.text;
   r.dataset.kind = o.kind;
@@ -2573,9 +2581,19 @@ function obClose(quick){ const r = $("#g1Ob"); OB = null; clearInterval(obLoop.t
   if (!r) return; const had = r.contains(document.activeElement); r.classList.remove("in"); r.classList.add("out"); clearTimeout(obT);
   obT = setTimeout(() => { if (!OB && r.parentNode) r.remove(); }, quick || reduce ? 0 : 240); if (had) try { document.activeElement.blur(); } catch(e){} }
 function obLater(){ if (!OB) return; if (OB.kind === "update") { try { localStorage.setItem(LATER, OB.build || ""); } catch(e){} if (upNews && upNews.id) markSeen(upNews.id); const d = $("#lcUpd"); if (d) d.remove(); } obClose(); }
+/* Oct 15: the bubble shows what the update is doing: busy (button says "Updating…"), stalled (slow or offline:
+   the text says why, the button says "Try again" and works again), idle (back to normal). */
+function obUpd(s, why){ const r = $("#g1Ob"); if (!r || !OB || OB.kind !== "update") return; const btn = r.querySelector('[data-ob="update"]'), p = r.querySelector(".g1ob-p");
+  r.dataset.upd = s;
+  if (s === "busy") { r.classList.add("busy"); if (btn) { btn.disabled = true; btn.setAttribute("aria-busy", "true"); btn.textContent = T("Updating"); } return; }
+  r.classList.remove("busy"); if (btn) { btn.disabled = false; btn.removeAttribute("aria-busy"); btn.textContent = T(s === "stalled" ? "Try again" : "Update now"); }
+  if (p && s === "stalled") { const t = T(why === "offline" ? "updoff" : "updslow"); OB.text = t; p.textContent = t; } }
+document.addEventListener("lowi:upd", e => { const d = e.detail || {}; obUpd(d.state, d.why); });
 function obClick(e){ const b = e.target.closest && e.target.closest("[data-ob]"); if (!b || !OB) return; e.preventDefault(); e.stopPropagation(); const k = b.dataset.ob;
   if (k === "say") { if (speaking) hush(); else say(OB.head + " " + OB.text); return; }
-  if (k === "update") { hush(); const d = $("#lcUpd"), r = $("#g1Ob"); if (r) r.classList.add("busy"); b.disabled = true; if (d) d.click(); else obClose(); return; }
+  if (k === "update") { hush(); try { sessionStorage.setItem(GO, "1"); } catch(x){} obUpd("busy");
+    /* straight to the engine with this bubble's build (it never depends on the hidden banner still being there) */
+    if (window.LowiUpd && LowiUpd.go) LowiUpd.go(OB.build); else { const d = $("#lcUpd"); if (d) d.click(); else obClose(); } return; }
   if (k === "later") { obLater(); return; }
   if (k === "done") { obClose(); return; }
   if (k === "showme") { obClose(true); startNews(); } }
@@ -9265,7 +9283,7 @@ function failedRecently(build){
 }
 function clearUpd(){ newBuild = ""; const d = $("#lcUpd"); if (d) d.remove(); }
 const updTxt = () => { let l = "en"; try { l = (window.LowiLang && LowiLang.get && LowiLang.get()) || localStorage.getItem("lowispike.lang") || document.documentElement.lang || "en"; } catch(e){} l = String(l).slice(0, 2);
-  return l === "de" ? ["Neue Version · tippen zum Aktualisieren", "Aktualisierung geladen", "Aktualisierung noch nicht geladen. Versuche es später erneut."] : l === "es" ? ["Nueva versión · toca para actualizar", "Actualización cargada", "La actualización aún no se ha cargado. Inténtalo más tarde."] : ["New version · tap to refresh", "Update loaded", "The update hasn't loaded yet. Try again later."]; };
+  return l === "de" ? ["Neue Version · tippen zum Aktualisieren", "Aktualisierung geladen", "Update noch nicht geladen. Schließ LOWiSPIKE ganz und öffne es neu."] : l === "es" ? ["Nueva versión · toca para actualizar", "Actualización cargada", "La actualización aún no se ha cargado. Cierra LOWiSPIKE del todo y vuelve a abrirla."] : ["New version · tap to refresh", "Update loaded", "The update hasn't loaded yet. Close LOWiSPIKE completely and open it again."]; };
 function showUpd(){ if (!document.body) return; /* on <html>, not <body>: sheets and the sign-in screen change <body> */ let d = $("#lcUpd"); if (!d) { d = document.createElement("button"); d.id = "lcUpd"; d.type = "button"; d.className = "lc-banner lc-upd"; d.setAttribute("data-cl", "update"); d.setAttribute("role", "status"); d.setAttribute("aria-live", "polite"); d.setAttribute("data-noi18n", ""); d.setAttribute("data-sfx", "none"); try { d.style.fontFamily = getComputedStyle(document.body).fontFamily; } catch(e){} document.documentElement.appendChild(d); }
   const ok = $("#lcUpdOk"); if (ok) ok.remove();
   d.dataset.build = newBuild; const t = updTxt()[0]; if (d.dataset.t !== t) { d.dataset.t = t; d.innerHTML = '<i class="lc-ud" aria-hidden="true"></i><span>' + t + '</span>'; } }
@@ -9275,13 +9293,27 @@ async function checkUpdate(force){ if (!validBuild(BUILD) || location.protocol =
     if (v.build <= BUILD || failedRecently(v.build)) { clearUpd(); return; }
     try { if (localStorage.getItem("lowi.upd.later") === v.build) { clearUpd(); return; } } catch(e){} /* "Later" on the orb's bubble: not again for this build */
     newBuild = v.build; showUpd(); } catch(e){} finally { checking = false; } }
-/* tap: everything is already saved on the phone; ask the service worker to update, then load the new build past every cache */
-async function doUpdate(){ if (updating) return; const d = $("#lcUpd"), b = newBuild || (d && d.dataset.build) || ""; if (!validBuild(b)) return; updating = true; if (d) d.classList.add("busy");
-  try { sessionStorage.setItem("lowi.upd", b || "1"); } catch(e){}
-  try { if ("serviceWorker" in navigator && navigator.serviceWorker.getRegistration) { const reg = await navigator.serviceWorker.getRegistration(); if (reg) await Promise.race([reg.update(), new Promise(r => setTimeout(r, 1500))]); } } catch(e){}
+/* tap: everything is already saved on the phone, so load the new build past every cache right away.
+   Oct 15 (frozen update fix): the tap no longer waits on the service worker. On some iPhones its promises never settle,
+   which left "Update" greyed out forever. Now the tap shows progress at once and navigates; if this page is still here
+   after UPD_WAIT (slow network, a stalled load), it says so, lets you tap again, and names the restart as the fallback.
+   Offline taps do not navigate (that would only load the old copy). The new page brings its own service worker. */
+const UPD_WAIT = 12000; let updWatch = 0, updTries = 0;
+function updState(s, why){ const d = $("#lcUpd"); if (d) { d.dataset.state = s; if (s === "busy") d.classList.add("busy"); else if (d.classList.remove) d.classList.remove("busy"); }
+  try { document.dispatchEvent(new CustomEvent("lowi:upd", {detail:{state:s, why:why || "", build:newBuild}})); } catch(e){} }
+function updStall(why){ clearTimeout(updWatch); updWatch = 0; if (!updating) return; updating = false; try { sessionStorage.removeItem("lowi.upd"); } catch(e){} updState("stalled", why || "slow"); }
+function doUpdate(build){ if (updating) return; const d = $("#lcUpd"), b = (validBuild(build) && build) || newBuild || (d && d.dataset.build) || "";
+  if (!validBuild(b)) { updState("idle"); return; }
+  if (navigator.onLine === false) { updState("stalled", "offline"); return; }
+  updating = true; updTries++; updState("busy");
+  try { sessionStorage.setItem("lowi.upd", b); } catch(e){}
   const u = new URL(location.href); u.searchParams.set("v", b); u.searchParams.set("r", String(Date.now()));
-  location.replace(u.pathname + u.search + u.hash); }
-function updNote(t){ const go = () => { if (!document.body || $("#lcUpdOk")) return; const d = document.createElement("div"); d.id = "lcUpdOk"; d.className = "lc-banner"; d.setAttribute("role", "status"); d.setAttribute("data-noi18n", ""); d.textContent = "✓ " + t; try { d.style.fontFamily = getComputedStyle(document.body).fontFamily; } catch(e){} document.documentElement.appendChild(d); setTimeout(() => d.remove(), 4500); };
+  const arm = () => { clearTimeout(updWatch); updWatch = setTimeout(() => { if (!updating) return; if (document.visibilityState === "hidden") { arm(); return; } updStall("slow"); }, UPD_WAIT); };
+  arm();
+  try { location.replace(u.pathname + u.search + u.hash); } catch(e){ updStall("slow"); } }
+/* back from the app switcher or the back/forward cache while a load was pending: never stay stuck "busy" */
+window.addEventListener("pageshow", e => { if (e && e.persisted && updating) { clearTimeout(updWatch); updWatch = 0; updating = false; updState("idle"); } });
+function updNote(t, ms){ const go = () => { if (!document.body || $("#lcUpdOk")) return; const d = document.createElement("div"); d.id = "lcUpdOk"; d.className = "lc-banner"; d.setAttribute("role", "status"); d.setAttribute("data-noi18n", ""); d.textContent = "✓ " + t; try { d.style.fontFamily = getComputedStyle(document.body).fontFamily; } catch(e){} document.documentElement.appendChild(d); setTimeout(() => d.remove(), ms || 4500); };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => setTimeout(go, 900)); else setTimeout(go, 900); }
 function afterUpdate(){ let want = ""; try { want = sessionStorage.getItem("lowi.upd") || ""; } catch(e){}
   const u = new URL(location.href);
@@ -9292,7 +9324,7 @@ function afterUpdate(){ let want = ""; try { want = sessionStorage.getItem("lowi
   if (validBuild(want)) {
     clearUpd();
     if (validBuild(BUILD) && BUILD >= want) { try { localStorage.removeItem(FAIL_KEY); } catch(e){} updNote(updTxt()[1]); }
-    else { failedBuild = want; try { localStorage.setItem(FAIL_KEY, JSON.stringify({build:want,at:Date.now()})); } catch(e){} updNote(updTxt()[2]); }
+    else { failedBuild = want; try { localStorage.setItem(FAIL_KEY, JSON.stringify({build:want,at:Date.now()})); } catch(e){} updNote(updTxt()[2], 9000); }
   } else { let seen = ""; try { seen = localStorage.getItem("lowi.build") || ""; } catch(e){} if (validBuild(seen) && validBuild(BUILD) && seen < BUILD) updNote(updTxt()[1]); }
   try { if (BUILD) localStorage.setItem("lowi.build", BUILD); } catch(e){} }
 function sw(){ if (!("serviceWorker" in navigator) || location.protocol !== "https:") return;

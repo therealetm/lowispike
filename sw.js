@@ -8,7 +8,10 @@ const STATIC = ["finch-extras.js", "finch-extras.css", "spirit-core.js", "lowi-i
 const OWN = STATIC.filter(f => /\.(js|css)$/.test(f) && f.indexOf("vendor/") !== 0), PLAIN = STATIC.filter(f => OWN.indexOf(f) < 0);
 self.addEventListener("install", e => {
   self.skipWaiting();
-  e.waitUntil(caches.open(CACHE).then(c => Promise.all([c.addAll(PLAIN).catch(() => {})].concat(OWN.map(f => {
+  /* Oct 15: the page itself goes into this build's cache too, so an offline launch right after an update
+     still opens the app (activate deletes the old cache that held the last page). */
+  e.waitUntil(caches.open(CACHE).then(c => Promise.all([c.addAll(PLAIN).catch(() => {}),
+    fetch(scopePath, {cache:"no-cache", credentials:"same-origin"}).then(r => r && r.ok ? c.put(scopePath, r) : null).catch(() => {})].concat(OWN.map(f => {
     const u = f + "?v=" + SHELL_BUILD;
     return fetch(u, {cache:"no-cache"}).then(r => r && r.ok ? Promise.all([c.put(u, r.clone()), c.put(f, r)]) : null).catch(() => {});
   })))));

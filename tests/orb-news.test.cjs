@@ -40,6 +40,10 @@ test('real buttons with names, 44 px targets, and Update goes through the same r
   assert(html.includes('min-height:44px'));
   const c = cut('function obClick(e){', 'addEventListener("keydown"');
   assert(c.includes('const d = $("#lcUpd")') && c.includes('d.click()'));
+  assert(c.includes('LowiUpd.go(OB.build)') && c.includes('sessionStorage.setItem(GO, "1")'), 'Update calls the same engine directly with the bubble build');
+  const u = cut('function obUpd(s, why){', 'function obClick(e){');
+  assert(u.includes('btn.disabled = false') && u.includes('"Try again"') && u.includes('"updslow"') && u.includes('"updoff"'), 'a stalled update hands the button back');
+  assert(html.includes('document.addEventListener("lowi:upd"'));
   assert(html.includes('["Update now", "Update", "Aktualisieren", "Actualizar"]'));
 });
 

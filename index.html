@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261015-184500">
+<meta name="lowi-build" content="20261015-190000">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13366,9 +13366,12 @@ html.b3-camon,html.b3-camon body{overflow:hidden}
 /* Oct 15 (scan X only): in the iPhone home-screen app the page can end above the real screen bottom (g2f-gap). The full-screen scanner is NOT stretched into that band
    (iOS clipped it there and cut Deep analyze off): it ends where the page ends, and the home bar sits in the band, so only the rest of the safe area is added */
 html.g2f-gap body>.b3-cam{bottom:0}
-html.g2f-gap body>.b3-cam .b3-cbot{padding-bottom:calc(max(0px, env(safe-area-inset-bottom,0px) - var(--g2fGap,0px)) + 14px)}
+html.g2f-gap body>.b3-cam .b3-cbot{bottom:0;padding-bottom:calc(max(0px, env(safe-area-inset-bottom,0px) - var(--g2fGap,0px)) + 14px)}
 html.g2f-gap.b3-camon,html.g2f-gap.b3-camon body{background:#000}
 .b3-deep{flex:none}
+/* while scanning inside the herb world, the floating microbe buddies step aside so they never sit on the capture buttons */
+#spWorld.sp-capture .mbd-orbit{display:none}
+@media (max-width:360px){.b3-cacts{gap:6px}.b3-cact{font-size:11.5px;padding:6px 2px 5px}.b3-cact span{white-space:normal;overflow:visible;line-height:1.1;overflow-wrap:normal;hyphens:none}}
 @media (max-height:720px){.b3-cam .b3-frame{top:21%;height:min(20vh,140px)}.b3-cam .b3-cbot{padding-top:16px}.b3-cact{min-height:50px}.b3-cam .b3-cmsg{top:calc(env(safe-area-inset-top,0px) + 58px);bottom:calc(env(safe-area-inset-bottom,0px) + 236px)}}
 @media (prefers-reduced-motion:reduce){.b3-cact:active,.b3-deep:active{transform:none}}
 /* reveal */

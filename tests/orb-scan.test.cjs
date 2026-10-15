@@ -75,7 +75,7 @@ test('update note for the new Scan bar in de, en and es', () => {
 
 test('home-screen app band: the full-screen scanner ends where the page ends, so Deep analyze is never cut off', () => {
   assert.ok(html.includes('html.g2f-gap body>.b3-cam{bottom:0}'));
-  assert.ok(html.includes('html.g2f-gap body>.b3-cam .b3-cbot{padding-bottom:calc(max(0px, env(safe-area-inset-bottom,0px) - var(--g2fGap,0px)) + 14px)}'));
+  assert.ok(html.includes('html.g2f-gap body>.b3-cam .b3-cbot{bottom:0;padding-bottom:calc(max(0px, env(safe-area-inset-bottom,0px) - var(--g2fGap,0px)) + 14px)}'));
 });
 
 test('camera opens reliably: inline video, fallback constraints, single start, restart after background, watchdog', () => {

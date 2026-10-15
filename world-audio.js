@@ -2,8 +2,10 @@
    - A "Klang" pill sits in the world's top bar next to the X. It opens a small panel: on/off switch, volume, warp sounds.
    - Sound is opt-in: the AudioContext is created and resumed only inside a tap (iOS rule). Nothing turns sound on by itself;
      only the volume and the warp switch are stored (lowi.worldAudio), so a reload is always silent.
-   - Ambient: low-passed noise that breathes slowly (fluid movement), a soft current, a gentle low pulse and a quiet warm pad,
-     through a capped master and a limiter. Slow fade in, short fade out, no beeps, nothing bright.
+   - Ambient (Oct 15 rework): LIGHT by default: soft airy pink noise (high-passed, no rumble), a quiet open pad and sparse
+     soft pentatonic glints (sine, slow attack). The old low layer (rumble, low pulse, low drone) is UNEASY: silent until the
+     shared game-world mood (world-mood.js, LowiWorldMood.level) turns stormy, then it fades in slowly and the light layer
+     dips; a calmer world fades it out again. Capped master, limiter at 3 kHz low-pass, no beeps, nothing piercing.
    - Warp: window 'lowi:world-warp' {phase:'start'|'dive'|'arrive'|'cancel'} from body-world-regions.js (the real glide/dive/
      settle), plus the cell ride's 'lowi:ride-start'/'lowi:ride-arrive'. One warp voice at a time, duplicate phases ignored.
    - Lifecycle: world closes -> fade out, sources stopped, context suspended. App hidden -> suspended. Reopening the world with a
@@ -59,48 +61,109 @@
         try { o.start(ctx.currentTime + (phase || 0)); } catch (e) { o.start(); }
         return [o, g];
     }
+    /* pink-ish noise for the light air layer (softer than white: less hiss) */
+    let pinkBuf = null;
+    function pink(ctx) {
+        if (pinkBuf && pinkBuf.sampleRate === ctx.sampleRate) return pinkBuf;
+        const len = Math.floor(ctx.sampleRate * 6), b = ctx.createBuffer(1, len, ctx.sampleRate), d = b.getChannelData(0);
+        let s = 7654321, b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+        for (let i = 0; i < len; i++) {
+            s = (s * 1103515245 + 12345) & 0x7fffffff; const w = (s / 0x3fffffff) - 1;
+            b0 = 0.99886 * b0 + w * 0.0555179; b1 = 0.99332 * b1 + w * 0.0750759; b2 = 0.969 * b2 + w * 0.153852; b3 = 0.8665 * b3 + w * 0.3104856;
+            b4 = 0.55 * b4 + w * 0.5329522; b5 = -0.7616 * b5 - w * 0.016898; d[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362) * 0.11; b6 = w * 0.115926;
+        }
+        pinkBuf = b; return b;
+    }
+    const moodLevel = () => { try { return W.LowiWorldMood ? +W.LowiWorldMood.level || 0 : 0; } catch (e) { return 0; } };
     function startAmbient() {
         const ctx = st.ctx; if (!ctx || st.amb) return;
-        const M = C.MIX, nodes = [], srcs = [], now = ctx.currentTime;
-        /* flow: two deep noise streams drifting left/right, each breathing on its own slow cycle */
-        M.flow.lfo.forEach((rate, i) => {
-            const s = ctx.createBufferSource(); s.buffer = noise(ctx); s.loop = true; s.loopStart = 0; s.loopEnd = s.buffer.duration;
-            const f1 = ctx.createBiquadFilter(); f1.type = 'lowpass'; f1.frequency.value = M.flow.lp; f1.Q.value = 0.3;
-            const f2 = ctx.createBiquadFilter(); f2.type = 'lowpass'; f2.frequency.value = M.flow.lp * 1.4; f2.Q.value = 0.2;
-            const g = ctx.createGain(); g.gain.value = M.flow.gain;
-            const lf = lfo(ctx, rate, M.flow.gain * M.flow.depth, g.gain, i * 3);
+        const M = C.MIX, U = C.UNEASY, nodes = [], srcs = [], now = ctx.currentTime;
+        const lightBus = ctx.createGain(); lightBus.gain.value = 1; lightBus.connect(st.ambBus);
+        const uneasyBus = ctx.createGain(); uneasyBus.gain.value = 0; uneasyBus.connect(st.ambBus);
+        nodes.push(lightBus, uneasyBus);
+        /* LIGHT. air: two soft breezes (pink noise, high-passed so nothing rumbles), drifting left/right, breathing slowly */
+        M.air.lfo.forEach((rate, i) => {
+            const s = ctx.createBufferSource(); s.buffer = pink(ctx); s.loop = true;
+            const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = M.air.hp; hp.Q.value = 0.5;
+            const hp2 = ctx.createBiquadFilter(); hp2.type = 'highpass'; hp2.frequency.value = M.air.hp; hp2.Q.value = 0.5;
+            const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = M.air.lp * (i ? 0.8 : 1); lp.Q.value = 0.3;
+            const g = ctx.createGain(); g.gain.value = M.air.gain;
+            const lf = lfo(ctx, rate, M.air.gain * M.air.depth, g.gain, i * 3);
             let out = g;
-            if (ctx.createStereoPanner) { const p = ctx.createStereoPanner(); p.pan.value = i ? 0.35 : -0.35; const pl = lfo(ctx, rate * 0.6, 0.25, p.pan, i * 5); g.connect(p); out = p; nodes.push(p, pl[1]); srcs.push(pl[0]); }
-            s.connect(f1); f1.connect(f2); f2.connect(g); out.connect(st.ambBus);
-            s.start(now, (i * 2.7) % 6); srcs.push(s, lf[0]); nodes.push(f1, f2, g, lf[1]);
+            if (ctx.createStereoPanner) { const p = ctx.createStereoPanner(); p.pan.value = i ? 0.4 : -0.4; const pl = lfo(ctx, rate * 0.6, 0.3, p.pan, i * 5); g.connect(p); out = p; nodes.push(p, pl[1]); srcs.push(pl[0]); }
+            s.connect(hp); hp.connect(hp2); hp2.connect(lp); lp.connect(g); out.connect(lightBus);
+            s.start(now, (i * 2.7) % 6); srcs.push(s, lf[0]); nodes.push(hp, hp2, lp, g, lf[1]);
         });
-        /* swish: a soft current moving past (band-passed noise, centre slowly wandering) */
-        {
-            const s = ctx.createBufferSource(); s.buffer = noise(ctx); s.loop = true;
-            const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = M.swish.bp; bp.Q.value = M.swish.q;
-            const g = ctx.createGain(); g.gain.value = M.swish.gain;
-            const lf = lfo(ctx, M.swish.lfo, M.swish.sweep, bp.frequency, 1), lg = lfo(ctx, M.swish.lfo * 1.7, M.swish.gain * 0.6, g.gain, 2);
-            s.connect(bp); bp.connect(g); g.connect(st.ambBus); s.start(now, 3.1);
-            srcs.push(s, lf[0], lg[0]); nodes.push(bp, g, lf[1], lg[1]);
-        }
-        /* pad: warm quiet drone, slowly breathing, low-passed */
+        /* pad: open and quiet, an octave above the old drone, sine only */
         {
             const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = M.pad.lp; lp.Q.value = 0.4;
-            const g = ctx.createGain(); g.gain.value = M.pad.gain; lp.connect(g); g.connect(st.ambBus);
+            const g = ctx.createGain(); g.gain.value = M.pad.gain; lp.connect(g); g.connect(lightBus);
             const lg = lfo(ctx, M.pad.lfo, M.pad.gain * 0.5, g.gain, 0);
-            M.pad.notes.forEach((hz, i) => { const o = ctx.createOscillator(); o.type = i === 1 ? 'triangle' : 'sine'; o.frequency.value = hz; o.detune.value = (i - 1) * 4; o.connect(lp); o.start(now); srcs.push(o); });
+            M.pad.notes.forEach((hz, i) => { const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = hz; o.detune.value = (i - 1) * 4; o.connect(lp); o.start(now); srcs.push(o); });
             srcs.push(lg[0]); nodes.push(lp, g, lg[1]);
         }
-        const pulseBus = ctx.createGain(); pulseBus.gain.value = M.pulse.gain;
-        const plp = ctx.createBiquadFilter(); plp.type = 'lowpass'; plp.frequency.value = 220; pulseBus.connect(plp); plp.connect(st.ambBus); nodes.push(pulseBus, plp);
-        st.amb = { srcs, nodes, pulseBus };
-        st.pulseT = now + 1.2; st.pulseN = 0;
-        clearInterval(st.timer); st.timer = setInterval(schedulePulses, 250); schedulePulses();
+        const glintBus = ctx.createGain(); glintBus.gain.value = M.glint.gain;
+        const glp = ctx.createBiquadFilter(); glp.type = 'lowpass'; glp.frequency.value = M.glint.lp; glintBus.connect(glp); glp.connect(lightBus); nodes.push(glintBus, glp);
+        /* UNEASY (the old low layer): deep rumble, soft current, low drone, low pulse. Silent until the game world turns stormy */
+        U.flow.lfo.forEach((rate, i) => {
+            const s = ctx.createBufferSource(); s.buffer = noise(ctx); s.loop = true;
+            const f1 = ctx.createBiquadFilter(); f1.type = 'lowpass'; f1.frequency.value = U.flow.lp; f1.Q.value = 0.3;
+            const f2 = ctx.createBiquadFilter(); f2.type = 'lowpass'; f2.frequency.value = U.flow.lp * 1.4; f2.Q.value = 0.2;
+            const g = ctx.createGain(); g.gain.value = U.flow.gain;
+            const lf = lfo(ctx, rate, U.flow.gain * U.flow.depth, g.gain, i * 3);
+            let out = g;
+            if (ctx.createStereoPanner) { const p = ctx.createStereoPanner(); p.pan.value = i ? 0.35 : -0.35; g.connect(p); out = p; nodes.push(p); }
+            s.connect(f1); f1.connect(f2); f2.connect(g); out.connect(uneasyBus);
+            s.start(now, (i * 2.7) % 6); srcs.push(s, lf[0]); nodes.push(f1, f2, g, lf[1]);
+        });
+        {
+            const s = ctx.createBufferSource(); s.buffer = noise(ctx); s.loop = true;
+            const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = U.swish.bp; bp.Q.value = U.swish.q;
+            const g = ctx.createGain(); g.gain.value = U.swish.gain;
+            const lf = lfo(ctx, U.swish.lfo, U.swish.sweep, bp.frequency, 1);
+            s.connect(bp); bp.connect(g); g.connect(uneasyBus); s.start(now, 3.1);
+            srcs.push(s, lf[0]); nodes.push(bp, g, lf[1]);
+        }
+        {
+            const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = U.pad.lp; lp.Q.value = 0.4;
+            const g = ctx.createGain(); g.gain.value = U.pad.gain; lp.connect(g); g.connect(uneasyBus);
+            U.pad.notes.forEach((hz, i) => { const o = ctx.createOscillator(); o.type = i === 1 ? 'triangle' : 'sine'; o.frequency.value = hz; o.detune.value = (i - 1) * 4; o.connect(lp); o.start(now); srcs.push(o); });
+            nodes.push(lp, g);
+        }
+        const pulseBus = ctx.createGain(); pulseBus.gain.value = U.pulse.gain;
+        const plp = ctx.createBiquadFilter(); plp.type = 'lowpass'; plp.frequency.value = 220; pulseBus.connect(plp); plp.connect(uneasyBus); nodes.push(pulseBus, plp);
+        st.amb = { srcs, nodes, pulseBus, glintBus, lightBus, uneasyBus, level: -1 };
+        st.pulseT = now + 1.2; st.pulseN = 0; st.glintT = now + 1.5; st.glintN = 0;
+        setMood(true);
+        clearInterval(st.timer); st.timer = setInterval(schedule, 250); schedule();
     }
-    /* gentle low pulse: soft attack, long decay, two low sines; scheduled a little ahead */
-    function schedulePulses() {
+    /* follow the shared game-world mood: the low layer fades in/out slowly (about 5 s), the light layer dips a little */
+    function setMood(now) {
+        const a = st.amb, ctx = st.ctx; if (!a || !ctx) return;
+        const lv = moodLevel(); if (lv === a.level) return; a.level = lv;
+        const tc = now ? 0.05 : C.UNEASY.tc;
+        ramp(a.uneasyBus.gain, lv * C.UNEASY.gain, tc);
+        ramp(a.lightBus.gain, 1 - (1 - C.MIX.lightDuck) * lv, tc);
+    }
+    function schedule() {
         const ctx = st.ctx, a = st.amb; if (!ctx || !a || ctx.state !== 'running') return;
-        const P = C.MIX.pulse, until = ctx.currentTime + 0.8;
+        setMood(false);
+        const until = ctx.currentTime + 0.8;
+        /* glints: sparse soft high notes from one pentatonic scale */
+        const G = C.MIX.glint;
+        if (st.glintT < ctx.currentTime) st.glintT = ctx.currentTime + 0.2;
+        while (st.glintT < until) {
+            const t = st.glintT, n = C.glints(0, 100, st.glintN)[0] || { hz: G.notes[0], pan: 0, t: 5 };
+            const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = n.hz;
+            const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(1, t + G.attack); g.gain.setTargetAtTime(0.0001, t + G.attack, G.decay / 3);
+            let out = g; if (ctx.createStereoPanner) { const p = ctx.createStereoPanner(); p.pan.value = n.pan; g.connect(p); out = p; }
+            o.connect(g); out.connect(a.glintBus); o.start(t); o.stop(t + G.attack + G.decay * 1.6);
+            o.onended = () => { try { g.disconnect(); out.disconnect(); } catch (e) { } };
+            st.glintN++; st.glintT = t + (n.gap || 5);
+        }
+        /* low pulse: only scheduled while the low layer is audible */
+        if ((a.level || 0) <= 0.01) { st.pulseT = until; return; }
+        const P = C.UNEASY.pulse;
         if (st.pulseT < ctx.currentTime) st.pulseT = ctx.currentTime + 0.1;
         const times = [st.pulseT].concat(C.pulses(st.pulseT, until, st.pulseN)).filter(t => t < until);
         times.forEach(t => {
@@ -206,6 +269,7 @@
         else if (phase === 'dive') warpDive(id);
         else if (phase === 'arrive') { if (st.warp && st.warp.phase === 'start') killWarp(0.5); bloom(id === 'hub' ? 'home' : 'arrive'); }
     }
+    W.addEventListener('lowi:world-mood', () => setMood(false));
     W.addEventListener('lowi:world-warp', e => { const d = e && e.detail || {}; onWarp(d.phase, d.id); });
     W.addEventListener('lowi:ride-start', e => { if (!st.ctx || !warpOk()) return; const id = 'ride:' + ((e.detail && e.detail.place) || ''); onWarp('start', id); st.plays.ride++; const v = st.warp; if (v) { clearTimeout(v.t); v.t = setTimeout(() => { if (st.warp === v) killWarp(1.2); }, 1600); } });
     W.addEventListener('lowi:ride-arrive', e => { if (!st.ctx || !warpOk()) return; onWarp('arrive', 'ride:' + ((e.detail && e.detail.place) || '')); });
@@ -307,7 +371,7 @@
     sync();
 
     W.LowiWorldAudio = {
-        get on() { return st.on; }, get state() { return st.ctx ? st.ctx.state : 'none'; }, get ambient() { return !!st.amb; }, get warp() { return st.warp ? st.warp.phase : null; },
+        get on() { return st.on; }, get state() { return st.ctx ? st.ctx.state : 'none'; }, get ambient() { return !!st.amb; }, get uneasy() { return st.amb ? +st.amb.uneasyBus.gain.value.toFixed(4) : 0; }, get light() { return st.amb ? +st.amb.lightBus.gain.value.toFixed(4) : 0; }, get mood() { return st.amb ? st.amb.level : null; }, get warp() { return st.warp ? st.warp.phase : null; },
         get plays() { return Object.assign({}, st.plays); }, get gain() { return st.master ? st.master.gain.value : 0; }, prefs: () => Object.assign({}, prefs),
         setOn, open: () => togglePanel(true), close: () => togglePanel(false)
     };

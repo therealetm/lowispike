@@ -31,7 +31,7 @@ test('comfortable mix: nothing bright, slow fades, a limiter, no beeps', () => {
     assert.ok(C.MIX.limiter.ratio >= 8 && C.MIX.limiter.threshold <= -12);
     assert.ok(js.includes('createDynamicsCompressor'));
     assert.ok(!/type = 'square'|type = 'sawtooth'/.test(js), 'no harsh waveforms');
-    assert.ok(C.MIX.pulse.attack >= 0.05, 'the pulse has a soft attack');
+    assert.ok(C.UNEASY.pulse.attack >= 0.05, 'the pulse has a soft attack');
     const ts = C.pulses(0, 30); assert.ok(ts.length >= 18 && ts.length <= 30, 'about 40-55 soft pulses a minute');
     for (let i = 1; i < ts.length; i++) assert.ok(ts[i] - ts[i - 1] > 1);
 });
@@ -92,7 +92,29 @@ test('loader and service worker', () => {
     const files = loader.match(/const files=\[([^\]]*)\]/)[1];
     assert.ok(files.indexOf("'world-audio-core.js'") >= 0 && files.indexOf("'world-audio-core.js'") < files.indexOf("'world-audio.js'"));
     const lines = sw.split('\n').filter(l => l.includes('"xp-tap.css"'));
+    for (const l of lines) for (const f of ['world-mood-core.js', 'world-mood.js', 'world-mood.css']) assert.ok(l.includes('"' + f + '"'), f);
+    assert.ok(files.indexOf("'world-mood-core.js'") >= 0 && files.indexOf("'world-mood-core.js'") < files.indexOf("'world-mood.js'") && files.indexOf("'world-audio-core.js'") < files.indexOf("'world-mood.js'"));
     assert.strictEqual(lines.length, 2);
     for (const l of lines) for (const f of ['world-audio-core.js', 'world-audio.js', 'world-audio.css']) assert.ok(l.includes('"' + f + '"'), f);
     assert.ok(!/award\(|addXp|LowiXp/.test(js + core), 'no XP from sound');
+});
+
+test('light by default: no rumble in the normal layer, light accents stay soft', () => {
+    for (const hz of C.lightHz()) assert.ok(hz >= 250, 'light layer has no low rumble: ' + hz);
+    assert.ok(C.MIX.air.hp >= 250 && C.MIX.air.lp <= 2600, 'air is a band, not a hiss');
+    for (const hz of C.MIX.glint.notes) assert.ok(hz >= 800 && hz <= 1600, 'glints are light, never piercing: ' + hz);
+    assert.ok(C.MIX.glint.attack >= 0.25 && C.MIX.glint.decay >= 2, 'glints swell and fade, no beeps');
+    assert.ok(C.MIX.glint.gain <= 0.06 && C.MIX.pad.gain <= 0.04, 'accents stay quiet');
+    const g = C.glints(0, 120); assert.ok(g.length >= 15 && g.length <= 35, 'sparse: ' + g.length);
+    for (let i = 1; i < g.length; i++) { assert.ok(g[i].t - g[i - 1].t >= C.MIX.glint.gap[0] - 1e-6); assert.notStrictEqual(g[i].hz, g[i - 1].hz); }
+    assert.ok(C.MIX.tone <= C.MAX_HZ && C.MAX_HZ <= 3000);
+});
+
+test('the old low layer only plays as the stormy-world cue', () => {
+    assert.ok(js.includes('uneasyBus.gain.value = 0'), 'silent by default');
+    assert.ok(js.includes("addEventListener('lowi:world-mood'") && js.includes('W.LowiWorldMood'), 'follows the shared game-world mood');
+    assert.ok(js.includes('if ((a.level || 0) <= 0.01) { st.pulseT = until; return; }'), 'no low pulse in a clear world');
+    assert.ok(C.UNEASY.tc >= 1, 'fades in and out slowly');
+    for (const k of ['flow', 'pulse', 'pad']) assert.ok(C.UNEASY[k], k);
+    assert.ok(!C.MIX.flow && !C.MIX.pulse, 'not part of the normal mix any more');
 });

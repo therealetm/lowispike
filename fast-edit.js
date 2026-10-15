@@ -9,6 +9,7 @@
    - Cancel, the scrim or Escape change nothing.
    API window.LowiFastEdit {open(), close(), isOpen(), chip(), sinceRow(text), save(t)} for other surfaces
    (e.g. the world-first Home's fasting cell: call LowiFastEdit.open() or LowiFastStop.open()).
+   No tap XP (data-xtp="off"): fixing a start is not an achievement, the fast pays once when it ends.
    Event out on window: lowi:fast-start {from, to} after a save. EN / DE / ES. */
 (function () {
     'use strict';
@@ -67,7 +68,7 @@
     css();
 
     /* ---------- pieces the fasting sheet drops in ---------- */
-    function chip() { const s = curStart(); return '<button type="button" class="fe-chip" data-fse="open" aria-label="' + esc(w('aria')) + '"><i aria-hidden="true">\u270E</i>' + esc(w(s ? 'edit' : 'set')) + '</button>'; }
+    function chip() { const s = curStart(); return '<button type="button" class="fe-chip" data-fse="open" data-xtp="off" aria-label="' + esc(w('aria')) + '"><i aria-hidden="true">\u270E</i>' + esc(w(s ? 'edit' : 'set')) + '</button>'; }
     function sinceRow(text) { return '<span class="fe-srow"><span class="fst-since">' + esc(text) + '</span>' + chip() + '</span>'; }
 
     /* ---------- the edit card ---------- */
@@ -114,7 +115,7 @@
         if (!C()) return false;
         if (isOpen()) return true;
         lastFocus = D.activeElement;
-        ov = D.createElement('div'); ov.id = 'feOv'; ov.className = 'fe-ov'; ov.setAttribute('data-noi18n', '');
+        ov = D.createElement('div'); ov.id = 'feOv'; ov.className = 'fe-ov'; ov.setAttribute('data-noi18n', ''); ov.setAttribute('data-xtp', 'off');
         ov.innerHTML = html();
         D.body.appendChild(ov);
         D.documentElement.classList.add('fe-up');
@@ -244,7 +245,7 @@
             if (pill) pill.remove();
             pill = D.createElement('button');
             pill.type = 'button'; pill.className = 'fe-bub'; pill.id = 'feBub';
-            pill.setAttribute('data-fse', 'open'); pill.setAttribute('data-noi18n', '');
+            pill.setAttribute('data-fse', 'open'); pill.setAttribute('data-noi18n', ''); pill.setAttribute('data-xtp', 'off');
             if (getComputedStyle(f.parentElement).position === 'static') f.parentElement.style.position = 'relative';
             f.insertAdjacentElement('afterend', pill);
             pillKey = '';

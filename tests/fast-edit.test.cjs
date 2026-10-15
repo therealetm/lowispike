@@ -91,3 +91,8 @@ test('Home: a real button on the water bubble rim opens the same card; the bubbl
     assert.ok(css.includes('.fe-bub') && css.includes('.fe-bub.fe-tiny'));
     for (const l of ["startAt: 'Start {t}'", "since: 'seit {t}'", "since: 'desde {t}'"]) assert.ok(js.includes(l), l);
 });
+
+test('tap XP is off for the edit button, the Home pill and the card', () => {
+    assert.ok(js.includes(`class="fe-chip" data-fse="open" data-xtp="off"`));
+    assert.ok(js.includes("pill.setAttribute('data-xtp', 'off')") && js.includes("ov.setAttribute('data-xtp', 'off')"));
+});

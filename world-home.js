@@ -1,0 +1,463 @@
+/* LOWiSPIKE world-first Home (Oct 15, Pokémon GO / Finch).
+   The living 3D world IS the Home: full-bleed behind everything, Misty in her cell in the middle, the fasting cell and the
+   water cell floating next to her. Everything else (today's log, tiles, quests) lives in a see-through sheet that slides
+   over the still-running world. Every sheet closes with the same round X at the bottom centre (one thumb).
+   A bottom-right button zooms out to the whole world and back in. Tapping Misty opens her own sheet over the world:
+   Auras (a cell wears light, not clothes), Growth and Discovered, all in one calm, fixed layout.
+   In the 3D world: arriving in a region turns you towards its prettiest part, and Misty floats inside her cell in the hub.
+   Moves existing Home nodes (.sp-status, .sp-log) into one wrapper inside #spHome (node identity is kept, every
+   module that looks them up via #spHome still finds them). Loads world-home.css itself. */
+(function () {
+    'use strict';
+    const W = window, D = document, H = D.documentElement, C = W.LowiWorldHomeCore;
+    if (!C || W.LowiWorldHome) return;
+    const AKEY = 'lowi.aura';
+    const lang = () => { try { return ((W.LowiLang && W.LowiLang.get && W.LowiLang.get()) || H.lang || 'de').slice(0, 2); } catch (e) { return 'de'; } };
+    const T = (en, de, es) => ({ de, es })[lang()] || en;
+    const P = arr => C.pick(arr, lang());
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+    const reduced = () => { try { return W.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
+    const w3 = () => W.LowiWorld3D || null;
+    if (!D.getElementById('whCss')) {
+        const me = D.currentScript || D.querySelector('script[src*="world-home.js"]'), l = D.createElement('link'); l.id = 'whCss'; l.rel = 'stylesheet';
+        l.href = me && me.getAttribute('src') ? me.getAttribute('src').replace('world-home.js', 'world-home.css') : 'world-home.css';
+        D.head.appendChild(l);
+    }
+    const ICO = {
+        x: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+        out: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><circle cx="12" cy="12" r="8.6" stroke-dasharray="2.4 2.6"/><path d="M3 3l3.2 3.2M21 3l-3.2 3.2M3 21l3.2-3.2M21 21l-3.2-3.2"/></svg>',
+        inn: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M4 4l4 4M20 4l-4 4M4 20l4-4M20 20l-4-4M8 4.6V8H4.6M16 4.6V8h3.4M8 19.4V16H4.6M16 19.4V16h3.4"/></svg>',
+        today: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4M8 14h3M8 17h6"/></svg>',
+        aura: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="8.5" opacity=".55"/></svg>',
+        home: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-6.5 8 6.5V20H4z"/><path d="M10 20v-5h4v5"/></svg>',
+        lock: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2.4"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>',
+        check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'
+    };
+    const st = { today: false, x: null, hud: null, zoomAnim: null, heroAnim: null, off: null, misty: null, mistyKey: '', sheetTab: 'aura', wired: false, lastHome: null };
+
+    /* ---------- herb/cell state ---------- */
+    function cur() { try { return W.LowiHerbTamagotchi && W.LowiHerbTamagotchi.current ? W.LowiHerbTamagotchi.current() : null; } catch (e) { return null; } }
+    function xpNow() { const c = cur(); return c && c.m ? +c.m.xp || 0 : 0; }
+    function mistyName() { const c = cur(); try { return c ? String(W.LowiHerbTamagotchi.name(c.p, c.m) || 'Misty') : 'Misty'; } catch (e) { return 'Misty'; } }
+    function auraId() { let v = ''; try { v = localStorage.getItem(AKEY) || ''; } catch (e) { } return C.cleanAura(v, xpNow()); }
+    function applyAura() {
+        const a = C.aura(auraId());
+        H.style.setProperty('--wh-aura-a', a.a); H.style.setProperty('--wh-aura-b', a.b);
+        H.dataset.whAura = a.id;
+    }
+
+    /* ---------- Home: wrap today's log into the sheet, build the HUD ---------- */
+    function home() { return D.getElementById('spHome'); }
+    function homeActive() { const t = D.getElementById('tab-home'); return !!(t && t.classList.contains('active')); }
+    function ensureToday() {
+        const h = home(); if (!h) return null;
+        let box = D.getElementById('whToday');
+        if (box && box.parentNode !== h) { box.remove(); box = null; }
+        const status = h.querySelector(':scope > .sp-status'), log = h.querySelector(':scope > .sp-log');
+        if (!box) {
+            box = D.createElement('div'); box.id = 'whToday'; box.className = 'wh-today';
+            box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'false'); box.setAttribute('aria-hidden', 'true');
+            box.setAttribute('aria-label', T('Today', 'Heute', 'Hoy'));
+            box.innerHTML = '<div class="wh-today-grab" aria-hidden="true"></div>';
+            h.appendChild(box);
+        }
+        if (status && status.parentNode !== box) box.appendChild(status);
+        if (log && log.parentNode !== box) box.appendChild(log);
+        if (box.querySelector('.sp-status') && box.querySelector('.sp-log') && box.querySelector('.sp-status').compareDocumentPosition(box.querySelector('.sp-log')) & Node.DOCUMENT_POSITION_PRECEDING) box.insertBefore(box.querySelector('.sp-status'), box.querySelector('.sp-log'));
+        return box;
+    }
+    function btn(cls, label, html, attrs) {
+        const b = D.createElement('button'); b.type = 'button'; b.className = cls; b.setAttribute('aria-label', label); b.setAttribute('data-noi18n', '');
+        Object.keys(attrs || {}).forEach(k => b.setAttribute(k, attrs[k])); b.innerHTML = html; return b;
+    }
+    function ensureHud() {
+        const tab = D.getElementById('tab-home'); if (!tab) return null;
+        let hud = D.getElementById('whHud');
+        if (hud && hud.isConnected) return hud;
+        hud = D.createElement('div'); hud.id = 'whHud'; hud.className = 'wh-hud';
+        const name = btn('wh-name', T('Misty, level and aura', 'Misty, Stufe und Aura', 'Misty, nivel y aura'), '<span class="wh-name-dot" aria-hidden="true"></span><span class="wh-name-tx"><b></b><small></small></span><i class="wh-name-bar" aria-hidden="true"><i></i></i>', { 'data-wh': 'misty' });
+        const water = btn('wh-cell wh-water', T('Water, add a glass', 'Wasser, ein Glas dazu', 'Agua, un vaso más'), '<span class="wh-cell-fill" aria-hidden="true"></span><span class="wh-cell-tx"><small></small><b></b></span>', { 'data-sp': 'water' });
+        const today = btn('wh-todaybtn', T('Open today', 'Heute öffnen', 'Abrir hoy'), ICO.today + '<span><b></b><small></small></span>', { 'data-wh': 'today', 'aria-expanded': 'false', 'aria-controls': 'whToday' });
+        const zoom = btn('wh-zoom', T('Show the whole world', 'Ganze Welt zeigen', 'Ver todo el mundo'), ICO.out, { 'data-wh': 'zoom' });
+        hud.append(name, water, today, zoom);
+        tab.appendChild(hud);
+        return hud;
+    }
+    function paintHud() {
+        const hud = D.getElementById('whHud'); if (!hud) return;
+        const xp = xpNow(), s = C.stage(xp), l = lang();
+        const nb = hud.querySelector('.wh-name b'), ns = hud.querySelector('.wh-name small'), bar = hud.querySelector('.wh-name-bar > i');
+        const nm = mistyName();
+        if (nb && nb.textContent !== nm) nb.textContent = nm;
+        const sub = P(s.cur.n) + ' · ' + xp + ' XP';
+        if (ns && ns.textContent !== sub) ns.textContent = sub;
+        if (bar) bar.style.width = Math.round(s.pct * 100) + '%';
+        hud.querySelector('.wh-name').setAttribute('aria-label', nm + ', ' + sub + (s.next ? ', ' + T(s.left + ' XP to ' + P(s.next.n), 'noch ' + s.left + ' XP bis ' + P(s.next.n), 'faltan ' + s.left + ' XP para ' + P(s.next.n)) : ''));
+        /* the water cell mirrors the water tile (same data, same +1 glass action) */
+        const tile = D.querySelector('#lvDash .lv-water'), wc = hud.querySelector('.wh-water');
+        if (tile && wc) {
+            const f = parseFloat(tile.style.getPropertyValue('--lv-fill')) || 0;
+            wc.style.setProperty('--wh-fill', String(Math.max(0, Math.min(1, f))));
+            const lab = tile.getAttribute('aria-label') || '', m = lab.match(/(\d+)\s*\/\s*(\d+)/);
+            const small = wc.querySelector('small'), b = wc.querySelector('b');
+            const sm = T('Water', 'Wasser', 'Agua'), bv = m ? m[1] + '/' + m[2] : '+1';
+            if (small.textContent !== sm) small.textContent = sm;
+            if (b.textContent !== bv) b.textContent = bv;
+            wc.setAttribute('aria-label', (lab || sm) + '');
+        }
+        const tb = hud.querySelector('.wh-todaybtn b'), ts = hud.querySelector('.wh-todaybtn small');
+        const head = D.querySelector('#whToday .sp-status b'), tt = T('Today', 'Heute', 'Hoy');
+        if (tb && tb.textContent !== tt) tb.textContent = tt;
+        const hint = head ? (head.textContent || '').trim() : '';
+        if (ts && ts.textContent !== hint) ts.textContent = hint;
+        void l;
+    }
+    /* ---------- the today sheet ---------- */
+    function openToday(on) {
+        const box = ensureToday(); if (!box) return;
+        st.today = !!on;
+        H.classList.toggle('wh-today-open', st.today);
+        box.setAttribute('aria-hidden', st.today ? 'false' : 'true');
+        const b = D.querySelector('#whHud .wh-todaybtn'); b && b.setAttribute('aria-expanded', String(st.today));
+        if (st.today) { box.scrollTop = 0; setTimeout(() => { try { box.focus({ preventScroll: true }); } catch (e) { } }, 30); }
+        syncX();
+    }
+    /* ---------- one bottom-centre X for every sheet ---------- */
+    function topR2() { try { const t = W.LowiR2 && W.LowiR2.top && W.LowiR2.top(); return t && t.isConnected && !t.classList.contains('full') && t.querySelector('.r2-x') ? t : null; } catch (e) { return null; } }
+    function topWorld() { return D.querySelector('.sp-world.on'); }
+    function ensureX() {
+        let x = D.getElementById('whX');
+        if (x && x.isConnected) return x;
+        x = btn('wh-x', T('Close', 'Schließen', 'Cerrar'), ICO.x, { id: 'whX' });
+        x.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); closeTop(); });
+        D.body.appendChild(x);
+        return x;
+    }
+    function closeTop() {
+        const r = topR2();
+        if (r) { try { W.LowiR2.close(r); } catch (e) { const b = r.querySelector('.r2-x'); b && b.click(); } setTimeout(syncX, 30); return true; }
+        if (st.today) { openToday(false); return true; }
+        const w = topWorld(); if (w) { const b = w.querySelector('[data-sp="close"]'); b && b.click(); setTimeout(syncX, 30); return true; }
+        return false;
+    }
+    function glassSheet(ov) {
+        if (!ov || ov.dataset.whGlass) return;
+        const sh = ov.querySelector('.r2-sh'); if (!sh) return;
+        ov.dataset.whGlass = '1';
+        const bg = getComputedStyle(sh).backgroundColor || '', m = bg.match(/rgba?\(([^)]+)\)/);
+        if (m) { const p = m[1].split(',').map(s => s.trim()); if (p.length >= 3) sh.style.setProperty('--wh-sheet-bg', 'rgba(' + p[0] + ',' + p[1] + ',' + p[2] + ',0.86)'); }
+    }
+    function syncX() {
+        const x = ensureX(), r = topR2(), w = topWorld();
+        const on = !!(r || st.today || w);
+        H.classList.toggle('wh-x-on', on);
+        H.classList.toggle('wh-r2-on', !!r);
+        if (r) glassSheet(r);
+        x.hidden = !on;
+    }
+
+    /* ---------- zoom: whole world <-> back in ---------- */
+    function rig() { const a = w3(); return a && a.rig ? a.rig : null; }
+    function animateDist(to, pitch) {
+        const a = w3(), r = rig(); if (!a || !r) return;
+        hook();
+        if (reduced()) { r.dist = to; if (pitch != null) r.pitch = pitch; st.zoomAnim = null; return; }
+        st.zoomAnim = { to, pitch, t: 0 };
+        r.idle = 0;
+    }
+    function zoomState() {
+        const r = rig(); if (!r || r.mode !== 'full') return null;
+        return C.zoomTarget(r.dist, r.minD, r.maxD, 6.5);
+    }
+    function inRegion() { try { const R = W.LowiWorldRegions; return !!(R && R.current && R.current() !== 'hub'); } catch (e) { return false; } }
+    function zoomOutWhole() {
+        const a = w3(); if (!a || a.state === 'fallback' || !a.open) return;
+        if (!a.isOpen || !a.isOpen()) a.open();
+        let n = 0;
+        const go = () => {
+            const r = rig();
+            if (!r || r.mode !== 'full' || r.fly) { if (++n < 40) return setTimeout(go, 80); return; }
+            if (inRegion()) { try { W.LowiWorldRegions.travel('hub'); } catch (e) { } setTimeout(() => animateDist(r.maxD, 0.42), 1500); }
+            else animateDist(r.maxD, 0.42);
+            paintZoom();
+        };
+        setTimeout(go, 120);
+    }
+    function toggleZoom() {
+        const z = zoomState();
+        if (!z || inRegion()) return zoomOutWhole();
+        const r = rig();
+        if (z.out) animateDist(r.maxD, 0.42); else animateDist(6.5, 0.12);
+        setTimeout(paintZoom, 50);
+    }
+    function paintZoom() {
+        const b = D.querySelector('.bw3-full .wh-zoom'); if (!b) return;
+        const r = rig(), target = st.zoomAnim ? st.zoomAnim.to : r ? r.dist : 6.5;
+        const isOut = r && !inRegion() && target > (6.5 + (r.maxD || 13)) / 2;
+        b.innerHTML = isOut ? ICO.inn : ICO.out;
+        b.setAttribute('aria-label', isOut ? T('Zoom back in', 'Wieder reinzoomen', 'Volver a acercar') : T('Show the whole world', 'Ganze Welt zeigen', 'Ver todo el mundo'));
+        b.classList.toggle('is-out', !!isOut);
+    }
+    function ensureFullZoom() {
+        const host = D.querySelector('.bw3-full'); if (!host) return;
+        if (host.querySelector('.wh-zoom')) return;
+        const b = btn('wh-zoom wh-zoom-full', T('Show the whole world', 'Ganze Welt zeigen', 'Ver todo el mundo'), ICO.out, { 'data-wh': 'zoomfull' });
+        ['pointerdown', 'touchstart'].forEach(n => b.addEventListener(n, e => e.stopPropagation(), { passive: true }));
+        b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); toggleZoom(); });
+        host.appendChild(b); paintZoom();
+    }
+
+    /* ---------- hero view on arrival in a region ---------- */
+    function regionGroup(id) {
+        const a = w3(); if (!a || !a.scene) return null;
+        return a.scene.children.find(c => c.name === 'region:' + id) || null;
+    }
+    function samplesOf(g) {
+        const a = w3(), THREE = a.THREE, out = [], m4 = new THREE.Matrix4(), v = new THREE.Vector3();
+        g.updateMatrixWorld(true);
+        const inv = new THREE.Matrix4().copy(g.matrixWorld).invert();
+        g.traverse(o => {
+            if (o === g || !o.visible) return;
+            const rel = new THREE.Matrix4().multiplyMatrices(inv, o.matrixWorld);
+            if (o.isInstancedMesh) {
+                const n = Math.min(o.count, 400), step = Math.max(1, Math.floor(o.count / n));
+                for (let i = 0; i < o.count; i += step) { o.getMatrixAt(i, m4); v.setFromMatrixPosition(m4).applyMatrix4(rel); out.push([v.x, v.y, v.z, 1.2]); }
+            } else if (o.isPoints && o.geometry && o.geometry.attributes.position) {
+                const p = o.geometry.attributes.position, size = o.material && o.material.size || 1, w = size >= 1.5 ? 0.9 : size >= 0.5 ? 0.35 : 0.1;
+                const step = Math.max(1, Math.floor(p.count / 300));
+                for (let i = 0; i < p.count; i += step) { v.fromBufferAttribute(p, i).applyMatrix4(rel); out.push([v.x, v.y, v.z, w]); }
+            } else if (o.isMesh && o.geometry && o.geometry.attributes.position) {
+                const p = o.geometry.attributes.position, step = Math.max(1, Math.floor(p.count / 260));
+                for (let i = 0; i < p.count; i += step) { v.fromBufferAttribute(p, i).applyMatrix4(rel); out.push([v.x, v.y, v.z, 0.6]); }
+            }
+        });
+        return out;
+    }
+    function heroTurn(id) {
+        const a = w3(), r = rig(); if (!a || !r || !a.THREE || id === 'hub') return;
+        const g = regionGroup(id); if (!g) return;
+        let hv = null;
+        try { hv = C.heroView(samplesOf(g), { camDist: r.dist, want: 5.2 }); } catch (e) { hv = null; }
+        if (!hv) return;
+        const ang = C.rigAngles(hv.dir, Math.min(0.5, r.pMax || 1.2));
+        const toT = g.position.clone().add(new a.THREE.Vector3(hv.dir[0], hv.dir[1], hv.dir[2]).multiplyScalar(hv.shift));
+        const q = { id, t: 0, dur: reduced() ? 0 : 1.25, fromT: r.target.clone(), toT, fromY: r.yaw, toY: C.nearAngle(r.yaw, ang.yaw), fromP: r.pitch, toP: ang.pitch };
+        st.lastHero = { id, dir: hv.dir, shift: hv.shift, score: hv.score, yaw: q.toY, pitch: q.toP };
+        if (!q.dur) { r.target.copy(toT); r.yaw = q.toY; r.pitch = q.toP; r.vy = r.vp = 0; return; }
+        st.heroAnim = q; hook();
+    }
+    function onRegion(e) {
+        const id = e && e.detail && e.detail.id; if (!id || id === 'hub') { st.heroAnim = null; return; }
+        /* wait for the warp to settle (regions: dive -> settle 640 ms), then glide the view to the pretty side */
+        let n = 0;
+        const go = () => {
+            const R = W.LowiWorldRegions, busy = R && R.state && (R.state.warp || R.state.busy);
+            if (busy && ++n < 30) return setTimeout(go, 90);
+            if (R && R.current && R.current() !== id) return;
+            heroTurn(id);
+        };
+        setTimeout(go, reduced() ? 0 : 120);
+    }
+
+    /* ---------- Misty inside her cell in the 3D hub ---------- */
+    function mistySvg() {
+        const s = D.querySelector('#spBubble .tmg-plant') || D.querySelector('.sp-home-herb svg');
+        if (!s) return null;
+        const c = s.cloneNode(true);
+        c.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+        c.removeAttribute('class'); c.setAttribute('width', '260'); c.setAttribute('height', '310');
+        c.querySelectorAll('.lh-acc,.lh-pot-fx,.lh-constellation').forEach(n => n.remove());
+        const sty = s.getAttribute('style') || '';
+        let txt = new XMLSerializer().serializeToString(c);
+        /* CSS variables do not resolve inside an <img>: inline the two herb colours */
+        const va = (sty.match(/--tmg-a:\s*([^;]+)/) || [])[1], vb = (sty.match(/--tmg-b:\s*([^;]+)/) || [])[1];
+        if (va) txt = txt.split('var(--tmg-a)').join(va.trim());
+        if (vb) txt = txt.split('var(--tmg-b)').join(vb.trim());
+        return txt;
+    }
+    function ensureMisty3D() {
+        const a = w3(); if (!a || !a.ready || !a.THREE || !a.hub) return;
+        const txt = mistySvg(); if (!txt) return;
+        const key = txt.length + ':' + auraId();
+        if (st.misty && st.misty.parent === a.hub && st.mistyKey === key) return;
+        const THREE = a.THREE;
+        if (!st.misty || st.misty.parent !== a.hub) {
+            if (st.misty && st.misty.parent) st.misty.parent.remove(st.misty);
+            const mat = new THREE.SpriteMaterial({ transparent: true, depthWrite: false, depthTest: false, fog: false, opacity: 0.98 });
+            st.misty = new THREE.Sprite(mat); st.misty.name = 'wh-misty'; st.misty.renderOrder = 60; st.misty.scale.set(1.25, 1.25 * 310 / 260, 1);
+            st.misty.userData.wh = true; st.misty.visible = false; a.hub.add(st.misty);
+        }
+        st.mistyKey = key;
+        const img = new Image(), url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(txt), sp = st.misty;
+        img.onload = () => {
+            try {
+                const cv = D.createElement('canvas'); cv.width = 260; cv.height = 310; const x = cv.getContext('2d');
+                const au = C.aura(auraId()), g = x.createRadialGradient(130, 150, 10, 130, 150, 128);
+                g.addColorStop(0, au.a + '55'); g.addColorStop(1, au.a + '00'); x.fillStyle = g; x.fillRect(0, 0, 260, 310);
+                x.drawImage(img, 0, 0, 260, 310);
+                const old = sp.material.map; sp.material.map = new THREE.CanvasTexture(cv); sp.material.needsUpdate = true; if (old) old.dispose();
+            } catch (e) { }
+        };
+        img.src = url;
+    }
+
+    /* ---------- per-frame: zoom glide, hero turn, Misty visibility ---------- */
+    function hook() {
+        if (st.off) return true;
+        const a = w3(); if (!a || !a.onFrame) return false;
+        st.off = a.onFrame(dt => frame(Math.max(1 / 240, Math.min(0.05, dt || 0.016))));
+        return true;
+    }
+    function frame(dt) {
+        const r = rig(); if (!r) return;
+        if (st.zoomAnim) {
+            const z = st.zoomAnim; z.t += dt;
+            if (r.mode !== 'full' || Math.abs(r.vy) > 0.02 || z.t > 3) st.zoomAnim = null;
+            else {
+                const k = Math.min(1, dt * 3.2);
+                r.dist += (z.to - r.dist) * k; if (z.pitch != null) r.pitch += (z.pitch - r.pitch) * k; r.idle = 0;
+                if (Math.abs(z.to - r.dist) < 0.02) { r.dist = z.to; st.zoomAnim = null; paintZoom(); }
+            }
+        }
+        if (st.heroAnim) {
+            const q = st.heroAnim; q.t += dt;
+            const k = Math.min(1, q.t / q.dur), e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+            if (r.fly || r.mode !== 'full') st.heroAnim = null;
+            else {
+                r.target.lerpVectors(q.fromT, q.toT, e); r.yaw = q.fromY + (q.toY - q.fromY) * e; r.pitch = q.fromP + (q.toP - q.fromP) * e;
+                r.vy = r.vp = 0; r.idle = 0;
+                if (k >= 1) st.heroAnim = null;
+            }
+        }
+        if (st.misty) {
+            const show = r.mode === 'full' && !inRegion();
+            if (st.misty.visible !== show) st.misty.visible = show;
+            if (show && !reduced()) { const t = performance.now() / 1000; st.misty.position.set(0, Math.sin(t * 1.3) * 0.06, 0); }
+        }
+    }
+
+    /* ---------- Misty's sheet: Aura / Growth / Discovered ---------- */
+    function mistyArt() {
+        const c = cur();
+        try { if (c && W.LowiHerbTamagotchi.plantHTML) return W.LowiHerbTamagotchi.plantHTML(c.m, 'preview', c.p, { label: mistyName() }); } catch (e) { }
+        const s = D.querySelector('#spBubble .tmg-plant'); return s ? s.outerHTML : '';
+    }
+    function dexItems() { try { return Object.values((W.LowiDex && W.LowiDex.state && W.LowiDex.state().mine) || {}); } catch (e) { return []; } }
+    function panelAura(xp) {
+        const items = C.auraItems(xp, auraId());
+        return '<p class="wh-ms-lead">' + esc(T('A cell doesn\u2019t wear clothes. It wears light. Pick the glow of your membrane.', 'Eine Zelle tr\u00e4gt keine Kleidung. Sie tr\u00e4gt Licht. W\u00e4hl das Leuchten deiner Membran.', 'Una c\u00e9lula no lleva ropa. Lleva luz. Elige el brillo de tu membrana.')) + '</p>' +
+            '<div class="wh-auras" role="radiogroup" aria-label="' + esc(T('Aura', 'Aura', 'Aura')) + '">' + items.map(a => '<button type="button" role="radio" class="wh-aura wh-aura-' + a.status + '" data-wh="aura" data-id="' + a.id + '" aria-checked="' + (a.status === 'on') + '"' + (a.status === 'locked' ? ' aria-disabled="true"' : '') + ' style="--a:' + a.a + ';--b:' + a.b + '" aria-label="' + esc(P(a.n) + ', ' + (a.status === 'locked' ? T('from ' + a.xp + ' XP', 'ab ' + a.xp + ' XP', 'desde ' + a.xp + ' XP') : a.status === 'on' ? T('active', 'aktiv', 'activa') : T('ready', 'bereit', 'lista'))) + '"><span class="wh-aura-orb" aria-hidden="true">' + (a.status === 'locked' ? ICO.lock : a.status === 'on' ? ICO.check : '') + '</span><b>' + esc(P(a.n)) + '</b><small>' + esc(a.status === 'locked' ? a.xp + ' XP' : a.status === 'on' ? T('Active', 'Aktiv', 'Activa') : T('Ready', 'Bereit', 'Lista')) + '</small></button>').join('') + '</div>' +
+            (W.LowiCellRoom && W.LowiCellRoom.openRoom ? '<button type="button" class="wh-ms-room" data-wh="room">' + ICO.home + '<span><b>' + esc(T('Misty\u2019s home', 'Mistys Zuhause', 'La casa de Misty')) + '</b><small>' + esc(T('Decorate her room in your bloodstream', 'Ihr Zimmer in deinem Blutkreislauf einrichten', 'Decora su cuarto en tu sangre')) + '</small></span></button>' : '');
+    }
+    function panelGrowth(xp) {
+        const s = C.stage(xp);
+        return '<p class="wh-ms-lead">' + esc(T('Misty grows with what you do: log a meal, drink water, scan, move. Each one gives XP.', 'Misty w\u00e4chst mit dem, was du tust: Essen eintragen, Wasser trinken, scannen, bewegen. Jedes gibt XP.', 'Misty crece con lo que haces: registrar comida, beber agua, escanear, moverte. Todo da XP.')) + '</p>' +
+            '<ol class="wh-steps">' + C.STAGES.map((g, i) => '<li class="' + (i < s.index ? 'done' : i === s.index ? 'now' : 'next') + '"><i aria-hidden="true"></i><span><b>' + esc(P(g.n)) + (i === s.index ? ' \u00b7 ' + esc(T('you are here', 'du bist hier', 'est\u00e1s aqu\u00ed')) : '') + '</b><small>' + esc(g.xp + ' XP \u00b7 ' + P(g.d)) + '</small></span></li>').join('') + '</ol>';
+    }
+    function panelFound() {
+        const items = dexItems(), n = items.length;
+        return '<p class="wh-ms-lead">' + esc(T('Everything you have scanned so far. Every new product is a new discovery for Misty.', 'Alles, was du bisher gescannt hast. Jedes neue Produkt ist eine neue Entdeckung f\u00fcr Misty.', 'Todo lo que has escaneado. Cada producto nuevo es un descubrimiento para Misty.')) + '</p>' +
+            '<div class="wh-found"><b class="wh-found-n">' + n + '</b><span>' + esc(n === 1 ? T('discovery', 'Entdeckung', 'descubrimiento') : T('discoveries', 'Entdeckungen', 'descubrimientos')) + '</span></div>' +
+            (n ? '<div class="wh-found-row">' + items.slice(-6).reverse().map(p => '<span class="wh-found-it">' + (p.img ? '<img alt="" src="' + esc(p.img) + '">' : '<i aria-hidden="true"></i>') + '<small>' + esc(String(p.name || p.barcode || '').slice(0, 18)) + '</small></span>').join('') + '</div>' : '') +
+            '<div class="wh-ms-acts">' + (n ? '<button type="button" class="wh-ms-btn" data-sp="collection">' + esc(T('See all', 'Alle ansehen', 'Ver todo')) + '</button>' : '') + '<button type="button" class="wh-ms-btn wh-ms-pri" data-wh="scan">' + esc(T('Scan something', 'Etwas scannen', 'Escanear algo')) + '</button></div>';
+    }
+    function mistyHTML(tab, preview) {
+        const xp = xpNow(), s = C.stage(xp), a = C.aura(preview || auraId());
+        const tabs = [['aura', T('Aura', 'Aura', 'Aura')], ['grow', T('Growth', 'Wachstum', 'Crecimiento')], ['found', T('Discovered', 'Entdeckt', 'Descubierto')]];
+        return '<div class="wh-ms" id="whMs">' +
+            '<div class="wh-ms-stage" style="--a:' + a.a + ';--b:' + a.b + '"><span class="wh-ms-glow" aria-hidden="true"></span><div class="wh-ms-art">' + mistyArt() + '</div></div>' +
+            '<div class="wh-ms-id"><h2>' + esc(mistyName()) + '</h2><small>' + esc(P(s.cur.n) + ' \u00b7 ' + xp + ' XP') + '</small>' +
+            '<i class="wh-ms-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.round(s.pct * 100) + '" aria-label="' + esc(T('Progress to the next stage', 'Fortschritt zur n\u00e4chsten Stufe', 'Progreso a la siguiente etapa')) + '"><i style="width:' + Math.round(s.pct * 100) + '%"></i></i>' +
+            '<small class="wh-ms-next">' + esc(s.next ? T(s.left + ' XP to ' + P(s.next.n), 'Noch ' + s.left + ' XP bis ' + P(s.next.n), 'Faltan ' + s.left + ' XP para ' + P(s.next.n)) : T('Top stage reached', 'H\u00f6chste Stufe erreicht', 'Etapa m\u00e1xima alcanzada')) + '</small></div>' +
+            '<div class="wh-ms-tabs" role="tablist">' + tabs.map(t => '<button type="button" role="tab" data-wh="mstab" data-tab="' + t[0] + '" aria-selected="' + (t[0] === tab) + '">' + esc(t[1]) + '</button>').join('') + '</div>' +
+            '<div class="wh-ms-panel" role="tabpanel">' + (tab === 'grow' ? panelGrowth(xp) : tab === 'found' ? panelFound() : panelAura(xp)) + '</div></div>';
+    }
+    function openMisty(tab) {
+        st.sheetTab = tab || 'aura';
+        const R2 = W.LowiR2; if (!R2 || !R2.sheet) return false;
+        const ex = D.getElementById('whMs'); if (ex) { repaintMisty(); return true; }
+        R2.sheet(mistyHTML(st.sheetTab), { cls: 'wh-ms-ov' });
+        setTimeout(syncX, 20);
+        return true;
+    }
+    function repaintMisty(preview) {
+        const ex = D.getElementById('whMs'); if (!ex) return;
+        const t = D.createElement('div'); t.innerHTML = mistyHTML(st.sheetTab, preview);
+        ex.replaceWith(t.firstChild);
+    }
+    function pickAura(id) {
+        const xp = xpNow(), a = C.AURAS.find(x => x.id === id); if (!a) return;
+        if (xp < a.xp) {
+            repaintMisty(id);
+            try { W.LowiR2.toast(T(P(a.n) + ' unlocks at ' + a.xp + ' XP', P(a.n) + ' gibt es ab ' + a.xp + ' XP', P(a.n) + ' se desbloquea con ' + a.xp + ' XP')); } catch (e) { }
+            return;
+        }
+        try { localStorage.setItem(AKEY, id); } catch (e) { }
+        applyAura(); repaintMisty(); st.mistyKey = '';
+        try { W.LowiR2.toast(T('Misty glows in ' + P(a.n), 'Misty leuchtet jetzt in ' + P(a.n), 'Misty brilla en ' + P(a.n))); } catch (e) { }
+    }
+
+    /* ---------- clicks ---------- */
+    function onClick(e) {
+        const t = e.target;
+        if (!H.classList.contains('wh-on')) return;
+        const b = t.closest && t.closest('[data-wh]');
+        /* Misty herself, the wardrobe and the old evolution path all open Misty's sheet over the world now */
+        const sp = t.closest && t.closest('[data-sp]');
+        if (!b && sp) {
+            const a = sp.dataset.sp;
+            if ((a === 'open' && sp.id === 'spBubble') || a === 'wardrobe' || a === 'path') {
+                e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+                openMisty(a === 'path' ? 'grow' : 'aura'); return;
+            }
+            return;
+        }
+        if (!b) return;
+        const k = b.dataset.wh;
+        if (k === 'misty') { e.preventDefault(); openMisty('aura'); }
+        else if (k === 'today') { e.preventDefault(); openToday(!st.today); }
+        else if (k === 'zoom') { e.preventDefault(); if (st.today) openToday(false); zoomOutWhole(); }
+        else if (k === 'mstab') { e.preventDefault(); st.sheetTab = b.dataset.tab; repaintMisty(); const nb = D.querySelector('#whMs [data-tab="' + st.sheetTab + '"]'); nb && nb.focus({ preventScroll: true }); }
+        else if (k === 'aura') { e.preventDefault(); pickAura(b.dataset.id); }
+        else if (k === 'room') { e.preventDefault(); try { W.LowiR2.close(W.LowiR2.top()); } catch (x) { } setTimeout(() => { try { W.LowiCellRoom.openRoom(); } catch (x) { } }, 200); }
+        else if (k === 'scan') { e.preventDefault(); try { W.LowiR2.closeAll(); } catch (x) { } const s = D.querySelector('#tabbar [data-tab="scan"]'); s && s.click(); }
+    }
+    function onKey(e) {
+        if (e.key !== 'Escape' || !H.classList.contains('wh-on')) return;
+        if (st.today && !topR2()) { e.preventDefault(); openToday(false); }
+    }
+
+    /* ---------- layout + lifecycle ---------- */
+    function layout() {
+        const tb = D.getElementById('tabbar');
+        if (tb) { const r = tb.getBoundingClientRect(); if (r.height) H.style.setProperty('--wh-tb', Math.max(0, Math.round(W.innerHeight - r.top)) + 'px'); }
+    }
+    function tick() {
+        const h = home(); if (!h || !h.querySelector('.sp-heroes')) return;
+        if (!H.classList.contains('wh-on')) H.classList.add('wh-on');
+        ensureToday(); ensureHud(); ensureX(); applyAura();
+        const act = homeActive();
+        if (act !== st.lastHome) {
+            st.lastHome = act; H.classList.toggle('wh-home', act);
+            if (!act && st.today) openToday(false);
+            /* back on Home: make sure the world is running again (it pauses on other tabs) */
+            if (act) { const a = w3(); try { if (a && a.state !== 'fallback' && a.mountHome) a.mountHome(); } catch (e) { } W.dispatchEvent(new Event('resize')); }
+        }
+        layout(); paintHud(); syncX();
+        if (D.querySelector('.bw3-full')) { ensureFullZoom(); hook(); ensureMisty3D(); }
+    }
+    function boot() {
+        if (st.wired) return; st.wired = true;
+        D.addEventListener('click', onClick, true);
+        D.addEventListener('keydown', onKey);
+        W.addEventListener('lowi:world-region', onRegion);
+        W.addEventListener('resize', layout);
+        const mo = new MutationObserver(() => { clearTimeout(st.mt); st.mt = setTimeout(tick, 60); });
+        mo.observe(D.body, { childList: true });
+        const tabs = () => { const t = D.getElementById('tab-home'); if (t && !t.dataset.whObs) { t.dataset.whObs = '1'; new MutationObserver(tick).observe(t, { attributes: true, attributeFilter: ['class'] }); } };
+        setInterval(() => { tabs(); tick(); }, 700);
+        tabs(); tick();
+    }
+    W.LowiWorldHome = { openToday, openMisty, toggleZoom, zoomOutWhole, closeTop, heroTurn, state: st, auraId, syncX };
+    if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
+})();

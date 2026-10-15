@@ -392,6 +392,7 @@
             '<div class="wh-ms-id"><h2>' + esc(mistyName()) + '</h2><small>' + esc(P(s.cur.n) + ' \u00b7 ' + xp + ' XP') + '</small>' +
             '<i class="wh-ms-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.round(s.pct * 100) + '" aria-label="' + esc(T('Progress to the next stage', 'Fortschritt zur n\u00e4chsten Stufe', 'Progreso a la siguiente etapa')) + '"><i style="width:' + Math.round(s.pct * 100) + '%"></i></i>' +
             '<small class="wh-ms-next">' + esc(s.next ? T(s.left + ' XP to ' + P(s.next.n), 'Noch ' + s.left + ' XP bis ' + P(s.next.n), 'Faltan ' + s.left + ' XP para ' + P(s.next.n)) : T('Top stage reached', 'H\u00f6chste Stufe erreicht', 'Etapa m\u00e1xima alcanzada')) + '</small></div>' +
+            (W.LowiCompanion ? '<button type="button" class="cf-entry wh-ms-forms" data-cf="open"><span><b>' + esc(T('Your companion\u2019s forms', 'Formen deines Begleiters', 'Formas de tu compa\u00f1ero')) + '</b></span></button>' : '') +
             '<div class="wh-ms-tabs" role="tablist">' + tabs.map(t => '<button type="button" role="tab" data-wh="mstab" data-tab="' + t[0] + '" aria-selected="' + (t[0] === tab) + '">' + esc(t[1]) + '</button>').join('') + '</div>' +
             '<div class="wh-ms-panel" role="tabpanel">' + (tab === 'grow' ? panelGrowth(xp) : tab === 'found' ? panelFound() : panelAura(xp)) + '</div></div>';
     }

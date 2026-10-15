@@ -165,3 +165,5 @@ html.wh-on.wh-home:not([data-lay=phone]) #tab-home#tab-home { align-content: sta
 html.wh-on.wh-home:not([data-lay=phone]) #tab-home#tab-home > #spHome { align-self: start !important; grid-row: 1 !important; margin-top: calc(var(--sat, env(safe-area-inset-top, 0px)) + 16px) !important; }
 /* while Today slides away it is already closed: taps go to the world and Misty under it */
 html.wh-home:not(.wh-today-open) .wh-today, html.wh-home:not(.wh-today-open) .wh-today * { pointer-events: none !important; }
+/* the companion forms (companion.js) stay one tap away from Misty's sheet */
+.wh-ms-forms { display: flex; margin: 10px auto 4px; }

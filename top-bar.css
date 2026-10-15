@@ -27,7 +27,7 @@ html[data-input=mouse] #tbTheme:hover{transform:scale(1.06)}
 #tbTheme::after{content:"";position:absolute;inset:-4px;border-radius:50%}
 
 /* 3 · weather sheet */
-#tbWx{position:fixed;inset:0;z-index:9200;display:flex;align-items:flex-end;justify-content:center;font-family:inherit;-webkit-tap-highlight-color:transparent}
+#tbWx{position:fixed;inset:0;z-index:9500;display:flex;align-items:flex-end;justify-content:center;font-family:inherit;-webkit-tap-highlight-color:transparent}
 #tbWx .tbw-bg{position:absolute;inset:0;background:rgba(2,4,10,.5);opacity:0;transition:opacity .22s}
 #tbWx.in .tbw-bg{opacity:1}
 #tbWx .tbw-sheet{position:relative;box-sizing:border-box;width:100%;max-width:560px;max-height:calc(100% - var(--sat,0px) - 24px);display:flex;flex-direction:column;

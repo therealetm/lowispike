@@ -14205,6 +14205,7 @@ function reveal(p, quiet){
   if (p && !p.notFound && (!p.verdict || p.verdict === "unknown" || !p.why)) { const r = rate(p); p.verdict = p.verdict && p.verdict !== "unknown" ? p.verdict : r.verdict; p.why = p.why && p.why.length ? p.why : r.why; if (p.score == null) p.score = r.score; if (p.est == null) p.est = r.est; }
   if (p && p.notFound) { if (p.partial) { p.name = ""; } }
   CUR = p; const anim = !quiet && !RM();
+  if (!quiet && p && !p.notFound && p.verdict && p.verdict !== "unknown") { try { window.dispatchEvent(new CustomEvent("lowi:scan-verdict", { detail: { verdict: p.verdict } })); } catch(e){} }
   const body = p.notFound || p.verdict === "unknown" ? manualHTML(p) : '<div class="b3-stage' + (anim ? " hide" : "") + '">' + (anim ? '<div class="b3-sil"><span class="b3-q">?</span><div class="small gold">' + esc(t("wild")) + '</div></div>' : "") + cardHTML(p, anim) + actsHTML(p) + swapsHTML(p) + '<div class="tiny dim b3-legal">' + esc(t("legal")) + '</div>' + (window.LowiDiscovery ? '<button type="button" class="r2-link b3-label" data-b3="label">' + esc(["Label details & evidence", "Etikett-Details & Belege", "Detalles de la etiqueta"][LI()]) + '</button>' : "") + '</div>';
   REV = R2.sheet('<div class="b3-rev">' + body + '</div>', {cls:"b3-ov", onClose:() => { REV = null; CUR = null; }});
   fillHerb(REV); if (!anim) { const h = $(".b3-herb", REV); h && h.classList.add("go"); }

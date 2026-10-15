@@ -390,7 +390,7 @@
             const glideOver = flying === null ? el > WARP.glide + 80 : (q.saw ? !flying : el > 320);
             if (el > 90 && glideOver) {
                 if (q.id === 'hub') { finish(); return; }
-                q.phase = 'dive'; q.tp = now; veil(0, q.css); q.reach = Math.max(0.6, base.distanceTo(q.B) - 0.2);
+                q.phase = 'dive'; q.tp = now; veil(0, q.css); warpEv('dive', q.id, q.from); q.reach = Math.max(0.6, base.distanceTo(q.B) - 0.2);
             }
         }
         if (q.phase === 'dive') {
@@ -417,11 +417,13 @@
         if (Math.abs(cam.fov - fov) > 0.01) { cam.fov = fov; cam.updateProjectionMatrix(); }
         veil(veilO);
     }
+    /* Oct 15: the fly-to's real phases go out as window 'lowi:world-warp' {phase:'start'|'dive'|'arrive'|'cancel', id, from} (world-audio.js plays its warp sounds on them) */
+    function warpEv(phase, id, from) { try { W.dispatchEvent(new CustomEvent('lowi:world-warp', { detail: { phase, id, from: from || null } })); } catch (e) { } }
     function finish() {
         const q = st.warp; if (!q) return;
         st.warp = null; clean(q);
         if (q.id === 'hub' && st.cur !== 'hub') enter('hub');
-        lungCard();
+        lungCard(); warpEv('arrive', q.id, q.from);
         q.done && q.done();
     }
     function clean(q) {
@@ -493,6 +495,7 @@
         q.portal = portalFor(THREE, hue); w.scene.add(q.portal.sprite);
         if (h) h.classList.add('bwr-warp');
         st.warp = q;
+        warpEv('start', id, q.from = from ? from.id : st.cur);
         return true;
     }
     function openJourney(id) {
@@ -514,7 +517,7 @@
         const x = m.querySelector('[data-x]'); x && x.focus && x.focus({ preventScroll: true });
     }
     function reset() {
-        if (st.warp) { const q = st.warp; st.warp = null; clean(q); }
+        if (st.warp) { const q = st.warp; st.warp = null; clean(q); warpEv('cancel', q.id, q.from); }
         if (st.region) { st.region.dispose(); st.region = null; }
         setLook(null); setHubVisible(true);
         if (st.host) st.host.classList.remove('bwr-on', 'bwr-in', 'bwr-warp');

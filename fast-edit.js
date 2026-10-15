@@ -18,19 +18,19 @@
     const C = () => W.LowiFastEditCore;
     const KEY = 'lowi_fast_v1';
     const T = {
-        en: { startAt: 'Start {t}', since: 'since {t}', bubAria: 'Edit when your fast started, now since {t}', edit: 'Edit start', set: 'Set start', title: 'When did your fast start?', sub: 'Your last meal. Fix it if the clock started at the wrong time.',
+        en: { editHome: 'Edit', startAt: 'Start {t}', since: 'since {t}', bubAria: 'Edit when your fast started, now since {t}', edit: 'Edit start', set: 'Set start', title: 'When did your fast start?', sub: 'Your last meal. Fix it if the clock started at the wrong time.',
             saved: 'Saved now: {t}', date: 'Date', time: 'Time', makes: 'That makes {d} of fasting so far.', tz: 'Times in your phone\u2019s time zone ({z}).',
             future: 'That\u2019s in the future. Pick a time that has passed.', overlap: 'Your last fast ended at {t}. This one can\u2019t start earlier.',
             old: 'You can go back up to 7 days.', invalid: 'Pick a date and a time.', same: 'That\u2019s already your start.',
             keep: 'Your fast keeps running. Points come when you end it.', save: 'Save start', cancel: 'Cancel', done: 'Fast start set to {t}.',
             yesterday: 'yesterday', h: 'h', m: 'min', aria: 'Edit when your fast started' },
-        de: { startAt: 'Start {t}', since: 'seit {t}', bubAria: '\u00c4ndern, wann dein Fasten begonnen hat, gerade seit {t}', edit: 'Start \u00e4ndern', set: 'Start setzen', title: 'Wann hat dein Fasten begonnen?', sub: 'Deine letzte Mahlzeit. Korrigier sie, wenn die Uhr zur falschen Zeit gestartet ist.',
+        de: { editHome: '\u00c4ndern', startAt: 'Start {t}', since: 'seit {t}', bubAria: '\u00c4ndern, wann dein Fasten begonnen hat, gerade seit {t}', edit: 'Start \u00e4ndern', set: 'Start setzen', title: 'Wann hat dein Fasten begonnen?', sub: 'Deine letzte Mahlzeit. Korrigier sie, wenn die Uhr zur falschen Zeit gestartet ist.',
             saved: 'Gespeichert: {t}', date: 'Datum', time: 'Uhrzeit', makes: 'Damit fastest du schon {d}.', tz: 'Zeiten in der Zeitzone deines Handys ({z}).',
             future: 'Das liegt in der Zukunft. W\u00e4hl eine Zeit, die schon vorbei ist.', overlap: 'Dein letztes Fasten endete um {t}. Dieses kann nicht fr\u00fcher beginnen.',
             old: 'Du kannst bis zu 7 Tage zur\u00fcckgehen.', invalid: 'W\u00e4hl Datum und Uhrzeit.', same: 'Das ist schon dein Start.',
             keep: 'Dein Fasten l\u00e4uft weiter. Punkte gibt es, wenn du es beendest.', save: 'Start speichern', cancel: 'Abbrechen', done: 'Fasten-Start auf {t} gesetzt.',
             yesterday: 'gestern', h: 'h', m: 'min', aria: '\u00c4ndern, wann dein Fasten begonnen hat' },
-        es: { startAt: 'Inicio {t}', since: 'desde {t}', bubAria: 'Cambiar cu\u00e1ndo empez\u00f3 tu ayuno, ahora desde {t}', edit: 'Cambiar inicio', set: 'Poner inicio', title: '\u00bfCu\u00e1ndo empez\u00f3 tu ayuno?', sub: 'Tu \u00faltima comida. C\u00e1mbiala si el reloj empez\u00f3 a la hora equivocada.',
+        es: { editHome: 'Editar', startAt: 'Inicio {t}', since: 'desde {t}', bubAria: 'Cambiar cu\u00e1ndo empez\u00f3 tu ayuno, ahora desde {t}', edit: 'Cambiar inicio', set: 'Poner inicio', title: '\u00bfCu\u00e1ndo empez\u00f3 tu ayuno?', sub: 'Tu \u00faltima comida. C\u00e1mbiala si el reloj empez\u00f3 a la hora equivocada.',
             saved: 'Guardado: {t}', date: 'Fecha', time: 'Hora', makes: 'As\u00ed llevas {d} de ayuno.', tz: 'Horas en la zona horaria de tu m\u00f3vil ({z}).',
             future: 'Eso est\u00e1 en el futuro. Elige una hora que ya pas\u00f3.', overlap: 'Tu \u00faltimo ayuno termin\u00f3 a las {t}. Este no puede empezar antes.',
             old: 'Puedes volver hasta 7 d\u00edas atr\u00e1s.', invalid: 'Elige fecha y hora.', same: 'Ese ya es tu inicio.',
@@ -204,7 +204,7 @@
        Hidden when no fast is running. */
     let pill = null, pillKey = '', ro = null, roEl = null;
     function bubble() { const f = D.getElementById('spFast'); return f && f.parentElement ? f : null; }
-    function pillHTML() { return '<span class="fe-el">' + esc(w('edit')) + '</span>'; }
+    function pillHTML() { return '<span class="fe-el">' + esc(w('editHome')) + '</span>'; } /* Oct 16: just "Edit" on Home, no squeezed "Edit start" */
     function place() {
         const f = bubble();
         if (!pill || !f || pill.parentElement !== f.parentElement) return;

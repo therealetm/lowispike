@@ -34,3 +34,19 @@ test('the world is silvery dark blue, not red; light mode is a lighter blue, not
     assert.match(ss, /lerp\(new a\.THREE\.Color\(th === 'light' \? '#8ea3c2' : '#1a2846'\), 0\.85\)/);
     assert.doesNotMatch(ride, /#7a1c3c|#e0384f/);
 });
+
+test('every bubble is Misty\'s glass: fasting, water, VR, World map, Sound, Today, Daily Quest, menu bar', () => {
+    const css = read('world-home.css');
+    assert.match(css, /--wh-glass-bg: radial-gradient\(circle at 32% 24%, rgba\(255,255,255,\.34\)/);
+    assert.match(css, /html\.wh-home #spHome #spFast, html\.wh-home #whHud \.wh-water \{\n    border: 1\.5px solid var\(--wh-glass-rim\) !important; background: var\(--wh-glass-bg\) !important;/);
+    assert.match(css, /html\.wh-home #tab-home #f3Board \{\n    background: var\(--wh-glass-wide\) !important;/);
+    assert.match(css, /html\.wh-home #tabbar, html\.wh-home\.apple-ui #tabbar/);
+    assert.match(css, /html\.wh-home \.wh-hud \.wh-todaybtn, html\.wh-home \.hs-gift,/);
+});
+
+test('fasting bubble: "Edit" sits above the bubble, stage numbers do not run into the text on Home', () => {
+    const css = read('world-home.css'), fe = read('fast-edit.js');
+    assert.match(css, /html\.wh-home #spHome \.fe-bub \{ left: calc\(50% - var\(--wh-sx\)\) !important; top: calc\(var\(--wh-cy\) \+ var\(--wh-sy\) - var\(--wh-fs\) \/ 2 - 8px\) !important;/);
+    assert.match(css, /html\.wh-home #spHome #spFast \.fb-lab \{ display: none !important; \}/);
+    assert.match(fe, /en: \{ editHome: 'Edit',/);
+});

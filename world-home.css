@@ -283,3 +283,57 @@ html.wh-home .wh-tiles .g2h-ic svg { width: 18px; height: 18px; }
 html.wh-home .wh-tiles b { font-size: 12.5px; line-height: 1.15; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 html.wh-home .wh-tiles small { font-size: 10.5px; opacity: .75; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 html.wh-home .wh-tiles .g2h-tile:active { transform: scale(.97); }
+
+/* ---------- Oct 16 (iPad screenshots 23:53): every bubble IS Misty's bubble ----------
+   E-man: "EVERY bubble should look like the Misty bubble" — the misty blue glass. One shell for the fasting and water bubbles,
+   VR, World map, Sound, the Today pill, the Daily Quest panel, the Today shortcuts, Misty's speech bubble and the menu bar.
+   Only the shape changes (circle, oval, panel); what's inside (water level, ticks, icons) stays. */
+:root {
+    --wh-glass-rim: rgba(160,220,255,.55);
+    --wh-glass-bg: radial-gradient(circle at 32% 24%, rgba(255,255,255,.34), rgba(255,255,255,0) 34%), radial-gradient(closest-side, rgba(80,170,255,.10), rgba(28,74,150,.36));
+    --wh-glass-wide: radial-gradient(120% 90% at 18% 0%, rgba(255,255,255,.18), rgba(255,255,255,0) 52%), linear-gradient(160deg, rgba(80,170,255,.14), rgba(28,74,150,.34));
+    --wh-glass-sh: inset 0 0 18px rgba(140,210,255,.32), 0 8px 26px -12px rgba(40,120,255,.5);
+    --wh-glass-ink: #fff;
+}
+html[data-theme="light"] {
+    --wh-glass-rim: rgba(40,80,140,.30);
+    --wh-glass-bg: radial-gradient(circle at 32% 24%, rgba(255,255,255,.62), rgba(255,255,255,0) 36%), radial-gradient(closest-side, rgba(140,180,230,.16), rgba(70,110,170,.34));
+    --wh-glass-wide: radial-gradient(120% 90% at 18% 0%, rgba(255,255,255,.5), rgba(255,255,255,0) 52%), linear-gradient(160deg, rgba(160,195,235,.32), rgba(80,120,180,.32));
+    --wh-glass-sh: inset 0 0 16px rgba(255,255,255,.4), 0 8px 24px -12px rgba(30,60,120,.38);
+    --wh-glass-ink: #0b1d3f;
+}
+/* circles and the oval: VR, World map, Sound, Today (light mode too: one rule, the variables carry the theme) */
+html.wh-home .wh-hud .wh-zoom:not(.is-out), html.wh-home .wh-hud .wh-vr:not([data-state="on"]), html.wh-home .wh-hud .wa-btn.wa-home:not([data-on="1"]),
+html.wh-home .wh-hud .wh-todaybtn, html.wh-home .hs-gift,
+html[data-theme="light"].wh-home .wh-hud .wh-zoom:not(.is-out), html[data-theme="light"].wh-home .wh-hud .wh-vr:not([data-state="on"]),
+html[data-theme="light"].wh-home .wh-hud .wa-btn.wa-home:not([data-on="1"]), html[data-theme="light"].wh-home .wh-hud .wh-todaybtn {
+    border: 1.5px solid var(--wh-glass-rim) !important; background: var(--wh-glass-bg) !important; box-shadow: var(--wh-glass-sh) !important; color: var(--wh-glass-ink) !important;
+    backdrop-filter: blur(10px) saturate(1.4); -webkit-backdrop-filter: blur(10px) saturate(1.4); }
+html[data-theme="light"].wh-home .wh-hud .wh-todaybtn, html[data-theme="light"].wh-home .wh-hud .wh-zoom, html[data-theme="light"].wh-home .wh-hud .wh-vr { text-shadow: none; }
+/* the fasting bubble and the water bubble: the same shell as Misty's (their water stays inside) */
+html.wh-home #spHome #spFast, html.wh-home #whHud .wh-water {
+    border: 1.5px solid var(--wh-glass-rim) !important; background: var(--wh-glass-bg) !important; box-shadow: var(--wh-glass-sh) !important; }
+html.wh-home #spHome #spFast.fb-on.done { animation: wh-float 6s ease-in-out infinite; }
+/* the Daily Quest panel: a big see-through glass panel, wherever the app parks it (#tab-home, #spHome) */
+html.wh-home #tab-home #f3Board {
+    background: var(--wh-glass-wide) !important; border: 1.5px solid var(--wh-glass-rim) !important; border-radius: 26px !important; box-shadow: var(--wh-glass-sh) !important;
+    color: var(--wh-glass-ink); backdrop-filter: blur(8px) saturate(1.3); -webkit-backdrop-filter: blur(8px) saturate(1.3); }
+html.wh-home #tab-home #f3Board::before { display: none !important; }
+html.wh-home:not([data-theme="light"]) #tab-home #f3Board { text-shadow: 0 1px 4px rgba(0,20,60,.4); }
+/* Misty's speech bubble and the Today shortcuts */
+.wh-hint.wh-say, html[data-theme="light"] .wh-hint.wh-say { border: 1.5px solid var(--wh-glass-rim); background: var(--wh-glass-wide); background-color: transparent; box-shadow: var(--wh-glass-sh); color: var(--wh-glass-ink); }
+html.wh-home .wh-tiles .g2h-tile { background: var(--wh-glass-wide); border-color: var(--wh-glass-rim); color: var(--wh-glass-ink); }
+/* the menu bar (bottom on phone, left rail on iPad/desktop) */
+html.wh-home #tabbar, html.wh-home.apple-ui #tabbar, html.wh-home .apple-ui #tabbar {
+    background: var(--wh-glass-wide) !important; border: 1.5px solid var(--wh-glass-rim) !important; box-shadow: var(--wh-glass-sh) !important;
+    backdrop-filter: blur(14px) saturate(1.4) !important; -webkit-backdrop-filter: blur(14px) saturate(1.4) !important; }
+
+/* ---------- Oct 16: the fasting bubble's text has room ----------
+   "Edit" sits just above the bubble (not squeezed against its top rim) and the 14h/12h/8h stage numbers are left out on Home,
+   where they ran into "Fasting" and the time. The stage ticks on the rim stay. */
+html.wh-home #spHome .fe-bub { left: calc(50% - var(--wh-sx)) !important; top: calc(var(--wh-cy) + var(--wh-sy) - var(--wh-fs) / 2 - 8px) !important;
+    transform: translate(-50%, -100%); height: 24px; padding: 0 10px; border-radius: 999px; text-decoration: none;
+    border: 1.5px solid var(--wh-glass-rim); background: var(--wh-glass-wide); box-shadow: var(--wh-glass-sh); color: var(--wh-glass-ink); line-height: 21px;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+html.wh-home #spHome .fe-bub:active { transform: translate(-50%, -100%) scale(.94); }
+html.wh-home #spHome #spFast .fb-lab { display: none !important; }

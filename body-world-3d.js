@@ -172,7 +172,7 @@
             if (pts.size !== 1) return;
             const dx = e.clientX - lastX, dy = e.clientY - lastY, dt = Math.max(1, e.timeStamp - lastT);
             moved += Math.abs(dx) + Math.abs(dy);
-            world.drag(dx, mode === 'home' ? dy * 0.4 : dy);
+            world.drag(dx, dy);
             vx = 0.7 * vx + 0.3 * (dx / dt * 16); vy = 0.7 * vy + 0.3 * (dy / dt * 16);
             lastX = e.clientX; lastY = e.clientY; lastT = e.timeStamp;
         });
@@ -181,7 +181,7 @@
             pts.delete(e.pointerId);
             if (pts.size === 0 && start) {
                 if (moved < 10 && e.type === 'pointerup' && e.timeStamp - start.t < 450) { const r = el.getBoundingClientRect(); onTap(e.clientX - r.left, e.clientY - r.top); }
-                else if (world && e.timeStamp - lastT < 90) world.release(vx, mode === 'home' ? vy * 0.4 : vy);
+                else if (world && e.timeStamp - lastT < 90) world.release(vx, vy);
                 start = null;
             }
         };
@@ -234,7 +234,8 @@
             els.heroes.insertBefore(stage, els.heroes.firstChild);
             els.heroes.classList.add('bw3-on'); els.home.classList.add('bw3-home');
             [...els.heroes.children].forEach(c => { if (c !== stage && getComputedStyle(c).position === 'static') c.style.position = 'relative'; });
-            bindGestures(stage, () => open(), false);
+            /* Home is the world itself: drag orbits, two fingers zoom, tapping a glowing place warps there; tapping empty space does nothing */
+            bindGestures(stage, (x, y) => { if (!world) return; const id = world.pick(x, y); if (id === 'cell') { try { W.dispatchEvent(new CustomEvent('lowi:misty-open')); } catch (e) {} } else if (id) api.flyTo(id); }, true);
             if (io) io.disconnect();
             if ('IntersectionObserver' in W) { io = new IntersectionObserver(es => { visibleHome = es.some(x => x.isIntersecting); }, { threshold: 0.01 }); io.observe(stage); }
             if (mode === 'home' && canvas) stage.insertBefore(canvas, stage.firstChild);
@@ -256,9 +257,9 @@
         if (key !== lastLay) { stage.style.top = topOff + 'px'; stage.style.left = left + 'px'; stage.style.right = right + 'px'; stage.style.bottom = '-6px'; lastLay = key; }
         placeOpenBtn(els);
         if (!world || mode !== 'home') return;
-        const sr = stage.getBoundingClientRect(), b = els.bubble && els.bubble.getBoundingClientRect();
+        const sr = stage.getBoundingClientRect(), b = els.bubble && els.bubble.getBoundingClientRect(), bw = els.bubble ? (els.bubble.offsetWidth || 0) : 0;
         world.resize(sr.width, sr.height);
-        if (b && b.width) { world.setFocus({ x: b.left + b.width / 2 - sr.left, y: b.top + b.height / 2 - sr.top }); world.setMode('home', { radiusPx: Math.min(sr.height * 0.48, b.width * 0.62) }); }
+        if (b && b.width) { world.setFocus({ x: b.left + b.width / 2 - sr.left, y: b.top + b.height / 2 - sr.top }); world.setMode('home', { radiusPx: Math.min(sr.height * 0.48, (bw || b.width) * 0.54) }); }
         else { world.setFocus(null); world.setMode('home', { radiusPx: sr.height * 0.36 }); }
     }
     /* keep the 3D button clear of the avatar ring / theme switch (phones): float it to the nearest free spot of the window */

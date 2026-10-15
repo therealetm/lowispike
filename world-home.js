@@ -34,7 +34,7 @@
         sun: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>',
         check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'
     };
-    const st = { today: false, x: null, hud: null, zoomAnim: null, heroAnim: null, off: null, misty: null, mistyKey: '', sheetTab: 'aura', wired: false, lastHome: null };
+    const st = { today: false, x: null, hud: null, zoomAnim: null, heroAnim: null, off: null, misty: null, mistyKey: '', sheetTab: 'aura', wired: false, lastHome: null, zf: 0, mz: '', hintUntil: 0 };
 
     /* ---------- herb/cell state ---------- */
     function cur() { try { return W.LowiHerbTamagotchi && W.LowiHerbTamagotchi.current ? W.LowiHerbTamagotchi.current() : null; } catch (e) { return null; } }
@@ -76,25 +76,24 @@
         let hud = D.getElementById('whHud');
         if (hud && hud.isConnected) return hud;
         hud = D.createElement('div'); hud.id = 'whHud'; hud.className = 'wh-hud';
-        const name = btn('wh-name', T('Misty, level and aura', 'Misty, Stufe und Aura', 'Misty, nivel y aura'), '<span class="wh-name-dot" aria-hidden="true"></span><span class="wh-name-tx"><b></b><small></small></span><i class="wh-name-bar" aria-hidden="true"><i></i></i>', { 'data-wh': 'misty' });
         const water = btn('wh-cell wh-water', T('Water, add a glass', 'Wasser, ein Glas dazu', 'Agua, un vaso más'), '<span class="wh-cell-fill" aria-hidden="true"></span><span class="wh-cell-tx"><small></small><b></b></span>', { 'data-sp': 'water' });
         const today = btn('wh-todaybtn', T('Open today', 'Heute öffnen', 'Abrir hoy'), ICO.today + '<span><b></b><small></small></span>', { 'data-wh': 'today', 'aria-expanded': 'false', 'aria-controls': 'whToday' });
-        const zoom = btn('wh-zoom', T('Show the whole world', 'Ganze Welt zeigen', 'Ver todo el mundo'), ICO.out, { 'data-wh': 'zoom' });
+        const zoom = btn('wh-zoom', T('World map: show the whole world', 'Weltkarte: ganze Welt zeigen', 'Mapa del mundo: ver todo el mundo'), ICO.out + '<span class="wh-zoom-tx"></span>', { 'data-wh': 'zoom' });
+        /* the gesture / world map hint has its own line above the thumb row, never under the Weltkarte button */
+        const hint = D.createElement('p'); hint.className = 'wh-hint'; hint.id = 'whHint'; hint.setAttribute('aria-live', 'polite'); hint.setAttribute('data-noi18n', '');
+        ['pointerdown', 'touchstart'].forEach(n => hint.addEventListener(n, e => e.stopPropagation(), { passive: true }));
         const scrim = D.createElement('div'); scrim.className = 'wh-scrim'; scrim.setAttribute('data-wh', 'scrim'); scrim.setAttribute('aria-hidden', 'true');
-        hud.append(scrim, name, water, today, zoom);
+        hud.append(scrim, water, today, zoom, hint);
         tab.appendChild(hud);
         return hud;
     }
     function paintHud() {
         const hud = D.getElementById('whHud'); if (!hud) return;
         const xp = xpNow(), s = C.stage(xp), l = lang();
-        const nb = hud.querySelector('.wh-name b'), ns = hud.querySelector('.wh-name small'), bar = hud.querySelector('.wh-name-bar > i');
-        const nm = mistyName();
-        if (nb && nb.textContent !== nm) nb.textContent = nm;
-        const sub = P(s.cur.n) + ' · ' + xp + ' XP';
-        if (ns && ns.textContent !== sub) ns.textContent = sub;
-        if (bar) bar.style.width = Math.round(s.pct * 100) + '%';
-        hud.querySelector('.wh-name').setAttribute('aria-label', nm + ', ' + sub + (s.next ? ', ' + T(s.left + ' XP to ' + P(s.next.n), 'noch ' + s.left + ' XP bis ' + P(s.next.n), 'faltan ' + s.left + ' XP para ' + P(s.next.n)) : ''));
+        void xp; void s;
+        /* Misty's bubble itself is her name card: no second "Misty · stage · XP" pill on Home */
+        const oldName = hud.querySelector('.wh-name'); if (oldName) oldName.remove();
+        paintZoom(); paintHint();
         /* the water cell mirrors the water tile (same data, same +1 glass action) */
         const tile = D.querySelector('#lvDash .lv-water'), wc = hud.querySelector('.wh-water');
         if (tile && wc) {
@@ -175,13 +174,16 @@
         st.zoomAnim = { to, pitch, t: 0 };
         r.idle = 0;
     }
+    function baseDist(r) { return r && r.mode === 'home' ? (r.homeDist || 3.2) : 6.5; }
+    function homeWorld() { const r = rig(); return !!(r && r.mode === 'home' && homeActive() && !D.querySelector('.bw3-full')); }
     function zoomState() {
-        const r = rig(); if (!r || r.mode !== 'full') return null;
-        return C.zoomTarget(r.dist, r.minD, r.maxD, 6.5);
+        const r = rig(); if (!r || (r.mode !== 'full' && r.mode !== 'home')) return null;
+        return C.zoomTarget(r.dist, r.minD, r.maxD, baseDist(r));
     }
     function inRegion() { try { const R = W.LowiWorldRegions; return !!(R && R.current && R.current() !== 'hub'); } catch (e) { return false; } }
     function zoomOutWhole() {
         const a = w3(); if (!a || a.state === 'fallback' || !a.open) return;
+        if (homeWorld()) { const r = rig(); animateDist(r.maxD, 0.42); st.hintUntil = Date.now() + 7000; setTimeout(() => { paintZoom(); paintHint(); }, 50); return; }
         if (!a.isOpen || !a.isOpen()) a.open();
         let n = 0;
         const go = () => {
@@ -197,16 +199,56 @@
         const z = zoomState();
         if (!z || inRegion()) return zoomOutWhole();
         const r = rig();
-        if (z.out) animateDist(r.maxD, 0.42); else animateDist(6.5, 0.12);
-        setTimeout(paintZoom, 50);
+        if (z.out) animateDist(r.maxD, 0.42); else animateDist(baseDist(r), 0.12);
+        if (r.mode === 'home') st.hintUntil = Date.now() + 7000;
+        setTimeout(() => { paintZoom(); paintHint(); }, 50);
+    }
+    function isZoomedOut() {
+        const r = rig(); if (!r) return false;
+        const target = st.zoomAnim ? st.zoomAnim.to : r.dist;
+        return !inRegion() && target > (baseDist(r) + (r.maxD || 13)) / 2;
     }
     function paintZoom() {
-        const b = D.querySelector('.bw3-full .wh-zoom'); if (!b) return;
-        const r = rig(), target = st.zoomAnim ? st.zoomAnim.to : r ? r.dist : 6.5;
-        const isOut = r && !inRegion() && target > (6.5 + (r.maxD || 13)) / 2;
-        b.innerHTML = isOut ? ICO.inn : ICO.out;
-        b.setAttribute('aria-label', isOut ? T('Zoom back in', 'Wieder reinzoomen', 'Volver a acercar') : T('Show the whole world', 'Ganze Welt zeigen', 'Ver todo el mundo'));
-        b.classList.toggle('is-out', !!isOut);
+        const isOut = isZoomedOut();
+        const b = D.querySelector('.bw3-full .wh-zoom');
+        if (b && b.classList.contains('is-out') !== !!isOut || b && !b.dataset.p) {
+            b.dataset.p = '1'; b.innerHTML = isOut ? ICO.inn : ICO.out;
+            b.setAttribute('aria-label', isOut ? T('Zoom back in', 'Wieder reinzoomen', 'Volver a acercar') : T('Show the whole world', 'Ganze Welt zeigen', 'Ver todo el mundo'));
+            b.classList.toggle('is-out', !!isOut);
+        }
+        const hb = D.querySelector('#whHud .wh-zoom'); if (!hb) return;
+        const out = homeWorld() && isOut, tx = out ? 'Misty' : T('World map', 'Weltkarte', 'Mapa');
+        const key = (out ? 'o' : 'i') + tx;
+        if (hb.dataset.k !== key) {
+            hb.dataset.k = key; hb.innerHTML = (out ? ICO.inn : ICO.out) + '<span class="wh-zoom-tx">' + tx + '</span>';
+            hb.setAttribute('aria-label', out ? T('Back to Misty', 'Zurück zu Misty', 'Volver a Misty') : T('World map: show the whole world', 'Weltkarte: ganze Welt zeigen', 'Mapa del mundo: ver todo el mundo'));
+            hb.classList.toggle('is-out', out);
+        }
+    }
+    /* one short hint line with its own spot; shown when Home opens and right after the world map zooms */
+    function paintHint() {
+        const h = D.getElementById('whHint'); if (!h) return;
+        const live = H.classList.contains('wh-world-live') && homeWorld();
+        const tx = isZoomedOut()
+            ? T('Tap a glowing place to travel there', 'Tippe auf ein Leuchten, um hinzureisen', 'Toca un brillo para viajar allí')
+            : T('Drag to look around · two fingers to zoom', 'Ziehen zum Umsehen · zwei Finger zum Zoomen', 'Arrastra para mirar · dos dedos para hacer zoom');
+        if (h.textContent !== tx) h.textContent = tx;
+        const on = live && !st.today && (Date.now() < (st.hintUntil || 0) || isZoomedOut()); /* on the world map it stays: tap a glow to travel */
+        if (h.classList.contains('on') !== on) h.classList.toggle('on', on);
+        /* never on top of Misty's water / fasting cells or the start pill: on tight screens it simply stays out */
+        let blk = false;
+        if (on) {
+            /* its own spot: in the open sky between the header / quest card and Misty, far from the thumb row buttons */
+            let top = 0;
+            D.querySelectorAll('#spHome .sp-top, #spHome .f3-board').forEach(el => { const r = el.getBoundingClientRect(); if (r.width && r.height && getComputedStyle(el).visibility !== 'hidden') top = Math.max(top, r.bottom); });
+            const tv = Math.round(Math.max(top + 10, 70)) + 'px'; if (h.style.top !== tv) h.style.top = tv;
+            const hr = h.getBoundingClientRect();
+            D.querySelectorAll('#spFast, #whHud .wh-water, #whHud .wh-zoom, #whHud .wa-btn, #whHud .wh-todaybtn, .fe-bub, #spHome .sp-top, #spHome .f3-board, #spBubble, #tabbar').forEach(el => {
+                const r = el.getBoundingClientRect(); if (!r.width) return;
+                if (r.left < hr.right - 1 && r.right > hr.left + 1 && r.top < hr.bottom - 1 && r.bottom > hr.top + 1) blk = true;
+            });
+        }
+        if (h.classList.contains('blk') !== blk) h.classList.toggle('blk', blk);
     }
     function ensureFullZoom() {
         const host = D.querySelector('.bw3-full'); if (!host) return;
@@ -215,6 +257,11 @@
         ['pointerdown', 'touchstart'].forEach(n => b.addEventListener(n, e => e.stopPropagation(), { passive: true }));
         b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); toggleZoom(); });
         host.appendChild(b); paintZoom();
+        /* the drag / zoom hint gets its own spot (it used to sit in the header, under the Weltkarte button) */
+        const sm = host.querySelector('.bw3-top small'), fh = D.createElement('p'); fh.className = 'wh-fhint'; fh.setAttribute('data-noi18n', '');
+        const fs = D.createElement('span'); fs.textContent = (sm && sm.textContent.trim()) || T('Drag to look around · two fingers to zoom', 'Ziehen zum Umsehen · zwei Finger zum Zoomen', 'Arrastra para mirar · dos dedos para hacer zoom');
+        fh.appendChild(fs); host.appendChild(fh);
+        setTimeout(() => fh.classList.add('off'), 9000);
         /* the day & night slider (atmosphere.js mounts its card into any .r2-look) right here in the world */
         if (W.LowiAtmos) {
             const ab = btn('wh-atmbtn', T('Day & night', 'Tag & Nacht', 'D\u00eda y noche'), ICO.sun, { 'data-wh': 'atm', 'aria-expanded': 'false' });
@@ -335,7 +382,8 @@
         const r = rig(); if (!r) return;
         if (st.zoomAnim) {
             const z = st.zoomAnim; z.t += dt;
-            if (r.mode !== 'full' || Math.abs(r.vy) > 0.02 || z.t > 3) st.zoomAnim = null;
+            if ((r.mode !== 'full' && r.mode !== 'home') || Math.abs(r.vy) > 0.02) st.zoomAnim = null;
+            else if (z.t > 2.5) { r.dist = z.to; if (z.pitch != null) r.pitch = z.pitch; st.zoomAnim = null; paintZoom(); }
             else {
                 const k = Math.min(1, dt * 3.2);
                 r.dist += (z.to - r.dist) * k; if (z.pitch != null) r.pitch += (z.pitch - r.pitch) * k; r.idle = 0;
@@ -351,6 +399,11 @@
                 r.vy = r.vp = 0; r.idle = 0;
                 if (k >= 1) st.heroAnim = null;
             }
+        }
+        if (r.mode === 'home') {
+            const k = Math.max(0.12, Math.min(1.4, (r.homeDist || 3.2) / Math.max(0.1, r.dist))), kv = k.toFixed(3);
+            if (kv !== st.mz) { st.mz = kv; const b = D.getElementById('spBubble'); if (b) b.style.setProperty('--wh-mz', kv); H.classList.toggle('wh-mapview', k < 0.6); }
+            if (++st.zf % 20 === 0) { paintZoom(); paintHint(); }
         }
         if (st.misty) {
             const show = r.mode === 'full' && !inRegion();
@@ -443,7 +496,7 @@
         if (k === 'misty') { e.preventDefault(); openMisty('aura'); }
         else if (k === 'today') { e.preventDefault(); openToday(!st.today); }
         else if (k === 'scrim') { e.preventDefault(); openToday(false); }
-        else if (k === 'zoom') { e.preventDefault(); if (st.today) openToday(false); zoomOutWhole(); }
+        else if (k === 'zoom') { e.preventDefault(); if (st.today) openToday(false); if (homeWorld()) toggleZoom(); else zoomOutWhole(); }
         else if (k === 'mstab') { e.preventDefault(); st.sheetTab = b.dataset.tab; repaintMisty(); const nb = D.querySelector('#whMs [data-tab="' + st.sheetTab + '"]'); nb && nb.focus({ preventScroll: true }); }
         else if (k === 'aura') { e.preventDefault(); pickAura(b.dataset.id); }
         else if (k === 'room') { e.preventDefault(); try { W.LowiR2.close(W.LowiR2.top()); } catch (x) { } setTimeout(() => { try { W.LowiCellRoom.openRoom(); } catch (x) { } }, 200); }
@@ -456,6 +509,9 @@
 
     /* ---------- layout + lifecycle ---------- */
     function layout() {
+        /* iPad landscape: the tab bar is a side rail, so left-hand Home buttons start where Home starts */
+        const th = D.getElementById('tab-home'), lv = (th ? Math.max(0, Math.round(th.getBoundingClientRect().left)) : 0) + 'px';
+        if (st.wl !== lv) { st.wl = lv; H.style.setProperty('--wh-l', lv); }
         const tb = D.getElementById('tabbar');
         let top = W.innerHeight;
         /* only a bar along the bottom (phone) lifts the thumb row; the iPad side rail does not */
@@ -477,9 +533,12 @@
             st.lastHome = act; H.classList.toggle('wh-home', act);
             if (!act && st.today) openToday(false);
             /* back on Home: make sure the world is running again (it pauses on other tabs) */
-            if (act) { const a = w3(); try { if (a && a.state !== 'fallback' && a.mountHome) a.mountHome(); } catch (e) { } W.dispatchEvent(new Event('resize')); }
+            if (act) { st.hintUntil = Date.now() + 8000; const a = w3(); try { if (a && a.state !== 'fallback' && a.mountHome) a.mountHome(); } catch (e) { } W.dispatchEvent(new Event('resize')); }
         }
         layout(); paintHud(); syncX();
+        const a3 = w3(), live = !!(a3 && a3.state === 'ready' && D.querySelector('#spHome .bw3-stage.bw3-live'));
+        if (H.classList.contains('wh-world-live') !== live) { H.classList.toggle('wh-world-live', live); if (live) st.hintUntil = Date.now() + 8000; }
+        if (live) hook();
         if (D.querySelector('.bw3-full')) { ensureFullZoom(); hook(); ensureMisty3D(); }
     }
     function boot() {
@@ -487,6 +546,7 @@
         D.addEventListener('click', onClick, true);
         D.addEventListener('keydown', onKey);
         W.addEventListener('lowi:world-region', onRegion);
+        W.addEventListener('lowi:misty-open', () => { if (homeActive()) openMisty('aura'); });
         W.addEventListener('resize', layout);
         const mo = new MutationObserver(() => { clearTimeout(st.mt); st.mt = setTimeout(tick, 60); });
         mo.observe(D.body, { childList: true });

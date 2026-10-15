@@ -181,9 +181,17 @@ export function createWorld(THREE, canvas, opts) {
     function setFocus(f) { focus = f; applyView(); }
     function homeDistFor(px) { return CR / ((px / (H / 2)) * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))); }
     function setMode(m, o) {
-        rig.mode = m; o = o || {};
-        if (m === 'home') { rig.homeDist = homeDistFor(o.radiusPx || 100); rig.dist = rig.homeDist; rig.minD = rig.homeDist * 0.85; rig.maxD = rig.homeDist * 1.6; rig.pMax = 0.45; rig.fly = null; rig.target.set(0, 0, 0); inner.visible = false; }
-        else { rig.minD = 2.4; rig.maxD = 13; rig.pMax = 1.2; if (rig.dist < 4) rig.dist = 6.5; inner.visible = true; }
+        o = o || {};
+        if (m === 'home') {
+            /* Home IS the world: drag orbits freely, two fingers zoom from Misty close-up out to the whole world.
+               A re-layout keeps the current zoom (scaled to the new size) instead of snapping back to Misty. */
+            const was = rig.mode === 'home' && rig.homeDist > 0 && rig.lastHome ? rig.dist / rig.homeDist : 1;
+            rig.homeDist = homeDistFor(o.radiusPx || 100); rig.lastHome = true;
+            rig.minD = rig.homeDist * 0.72; rig.maxD = Math.max(14, rig.homeDist * 2.5); rig.pMax = 1.1;
+            rig.dist = Math.min(rig.maxD, Math.max(rig.minD, rig.homeDist * was)); rig.fly = null; rig.target.set(0, 0, 0);
+            rig.mode = m; inner.visible = false; halo.visible = false; /* one bubble: Misty's own cell, no extra glow shell */
+        }
+        else { rig.mode = m; rig.lastHome = false; rig.minD = 2.4; rig.maxD = 13; rig.pMax = 1.2; if (rig.dist < 4) rig.dist = 6.5; inner.visible = true; halo.visible = true; }
         Object.values(beacons).forEach(b => { b.g.visible = true; });
         applyView();
     }

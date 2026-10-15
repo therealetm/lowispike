@@ -30,7 +30,10 @@
 
     /* ---------- audio engine ---------- */
     const st = { on: false, idleT: 0, ctx: null, master: null, ambBus: null, fxBus: null, amb: null, warp: null, last: null, plays: { start: 0, dive: 0, arrive: 0, ride: 0 }, pulseT: 0, pulseN: 0, timer: 0, stopT: 0 };
-    const isOpen = () => H.classList.contains('bw3-full-open') && !!D.querySelector('.bw3-full');
+    /* the world is "open" as the full window, or as the living Home background (Home is the world now) */
+    const homeLive = () => H.classList.contains('wh-world-live') && H.classList.contains('wh-home') && !H.classList.contains('bw3-full-open') && !!D.getElementById('whHud');
+    const isOpen = () => (H.classList.contains('bw3-full-open') && !!D.querySelector('.bw3-full')) || homeLive();
+    const uiHost = () => D.querySelector('.bw3-full') || (homeLive() ? D.getElementById('whHud') : null);
     const running = () => !!(st.ctx && st.ctx.state === 'running');
     let noiseBuf = null;
     function noise(ctx) {
@@ -279,14 +282,14 @@
     const ICON_OFF = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z" fill="currentColor" stroke="none"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>';
     const stop = el => ['pointerdown', 'touchstart', 'wheel', 'mousedown'].forEach(n => el.addEventListener(n, e => e.stopPropagation(), { passive: true }));
     function ensureUi() {
-        const host = D.querySelector('.bw3-full'); if (!host) return null;
+        const host = uiHost(); if (!host) return null;
         let btn = host.querySelector('.wa-btn'); if (btn) return btn;
         btn = D.createElement('button'); btn.type = 'button'; btn.className = 'wa-btn'; btn.id = 'waBtn';
         btn.setAttribute('aria-haspopup', 'dialog'); btn.setAttribute('aria-expanded', 'false');
         btn.addEventListener('click', e => { e.stopPropagation(); togglePanel(); });
         stop(btn);
         const top = host.querySelector('.bw3-top'), x = top && top.querySelector('.bw3-x');
-        if (x) top.insertBefore(btn, x); else { btn.classList.add('wa-float'); host.appendChild(btn); }
+        if (x) top.insertBefore(btn, x); else { btn.classList.add('wa-float'); if (host.id === 'whHud') btn.classList.add('wa-home'); host.appendChild(btn); }
         paint(); return btn;
     }
     function panelHtml() {
@@ -296,7 +299,7 @@
             '<p>' + tr('note') + '</p><p class="wa-quiet">' + tr('quiet') + '</p>';
     }
     function togglePanel(force) {
-        const host = D.querySelector('.bw3-full'); if (!host) return;
+        const host = uiHost(); if (!host) return;
         let p = host.querySelector('.wa-panel'); const want = force == null ? !p : !!force;
         if (!want) { if (p) p.remove(); paint(); return; }
         if (p) return;
@@ -315,7 +318,7 @@
         const sw = p.querySelector('[data-wa=on]'); sw && sw.focus && sw.focus({ preventScroll: true });
     }
     function paint() {
-        const host = D.querySelector('.bw3-full'); if (!host) return;
+        const host = uiHost(); if (!host) return;
         const btn = host.querySelector('.wa-btn'), p = host.querySelector('.wa-panel'), on = st.on;
         if (btn) {
             const sig = (on ? 1 : 0) + lang() + (p ? 1 : 0);

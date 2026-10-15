@@ -10,10 +10,10 @@ html.wh-home #spHome .sp-heroes > .bw3-stage { position: absolute !important; in
 html.wh-home #spHome .sp-top { position: relative; z-index: 2; }
 html.wh-home #spHome .bw3-open { display: none !important; }
 /* Misty in the middle of her world */
-html.wh-home #spHome #spBubble { position: absolute !important; left: 50% !important; top: var(--wh-cy) !important; width: var(--wh-bs) !important; height: var(--wh-bs) !important; max-width: none !important; margin: 0 !important; transform: translate(-50%, -50%) !important; z-index: 2; pointer-events: auto;
-    border-color: color-mix(in srgb, var(--wh-aura-a) 55%, rgba(255,255,255,.4)) !important;
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--wh-aura-a) 30%, transparent), 0 0 46px -8px var(--wh-aura-a), inset 0 0 34px -10px var(--wh-aura-b) !important; }
-html.wh-home #spBubble .tmg-plant { filter: drop-shadow(0 0 12px color-mix(in srgb, var(--wh-aura-a) 70%, transparent)); }
+html.wh-home #spHome #spBubble { position: absolute !important; left: 50% !important; top: var(--wh-cy) !important; width: var(--wh-bs) !important; height: var(--wh-bs) !important; max-width: none !important; margin: 0 !important; transform: translate(-50%, -50%) scale(var(--wh-mz, 1)) !important; z-index: 2; pointer-events: auto;
+    /* one simple bubble (no 3D yet / reduced motion): a thin clear rim, no glow shells */
+    border: 1.5px solid rgba(225,248,255,.42) !important; background: radial-gradient(circle at 30% 22%, rgba(255,255,255,.16), transparent 42%) !important; box-shadow: none !important; }
+html.wh-home #spBubble .tmg-plant { filter: drop-shadow(0 6px 12px rgba(0,0,0,.22)); }
 /* the fasting cell floats next to Misty (same node, same tap: the fasting sheet) */
 html.wh-home #spHome #spFast { position: absolute !important; width: var(--wh-fs) !important; height: var(--wh-fs) !important; margin: 0 !important;
     left: calc(50% - var(--wh-bs) / 2 - var(--wh-fs) * .3) !important; top: calc(var(--wh-cy) + var(--wh-bs) * .42) !important; transform: translate(-50%, -50%) !important; z-index: 2; pointer-events: auto; }
@@ -175,3 +175,47 @@ html.wh-snap .wh-today, html.wh-snap .wh-today *, html.wh-snap .wh-hud, html.wh-
 /* Today appears at once: no cross-fade with the tab you came from, no slide-up of the world */
 html.wh-home #tab-home.active, html.wh-home .tab:not(.active) { transition: none !important; }
 html.wh-home #tab-home.p2-tabin > * { animation: none !important; }
+
+/* ---------- Home IS the world: Misty chills in ONE bubble (her 3D cell), no rings, no extra glows ---------- */
+html.wh-home #spHome .sp-heroes > .bw3-stage { touch-action: none; }
+html.wh-home.wh-world-live #spHome #spBubble { border-color: transparent !important; background: none !important; }
+html.wh-home #spBubble .cw-env, html.wh-home #spBubble .sp-bubble-water, html.wh-home #spBubble .cw-pill,
+html.wh-home #spBubble .cw-aura, html.wh-home #spBubble .cf-calm { display: none !important; }
+html.wh-home #spBubble .cw-wall { stroke: rgba(232,250,255,.62) !important; }
+html.wh-home #spBubble .cw-cilia { stroke: rgba(232,250,255,.4) !important; }
+html.wh-home[data-theme="light"] #spBubble .cw-wall { stroke: rgba(22,64,84,.42) !important; }
+html.wh-home[data-theme="light"] #spBubble .cw-cilia { stroke: rgba(22,64,84,.28) !important; }
+html.wh-home[data-theme="light"] #spHome #spBubble { border-color: rgba(22,64,84,.26) !important; }
+html.wh-home[data-theme="light"].wh-world-live #spHome #spBubble { border-color: transparent !important; }
+html.wh-home.wh-mapview #spBubble .sp-bubble-name { opacity: 0; }
+/* world map button: icon + its name, so it is clear what it does */
+.wh-hud .wh-zoom { width: 58px; height: 58px; border-radius: 20px; flex-direction: column; gap: 2px; }
+.wh-hud .wh-zoom svg { width: 21px; height: 21px; }
+.wh-zoom-tx { font-size: 9.5px; font-weight: 700; line-height: 1; letter-spacing: .01em; max-width: 54px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wh-hud .wh-zoom.is-out { background: rgba(255,255,255,.92); color: #0b1d3f; }
+/* the hint line: its own spot above the thumb row, centred, never under the Weltkarte (or Klang) button */
+.wh-hint { position: absolute; left: 50%; top: 120px; bottom: auto; transform: translateX(-50%); margin: 0; max-width: calc(100vw - 32px); width: max-content; box-sizing: border-box;
+    padding: 6px 12px; border-radius: 14px; font-size: 12.5px; line-height: 1.3; text-align: center; color: #fff; background: rgba(8,14,40,.46); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    opacity: 0; pointer-events: none; transition: opacity .5s ease; }
+.wh-hint.on { opacity: 1; }
+.wh-hint.blk { visibility: hidden; }
+html[data-theme="light"] .wh-hint { background: rgba(255,255,255,.78); color: #0b1d3f; }
+html.wh-today-open .wh-hint { opacity: 0; }
+/* Klang (world sound) right on Home: bottom-left, mirroring the world map button */
+.wh-hud .wa-btn.wa-home { top: auto; right: auto; left: calc(var(--wh-l, 0px) + max(16px, env(safe-area-inset-left))); bottom: calc(var(--wh-tb) + 12px); width: 58px; height: 58px; min-height: 0; padding: 0; border-radius: 20px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 9.5px; font-weight: 700; line-height: 1; }
+.wh-hud .wa-btn.wa-home svg { width: 21px; height: 21px; }
+.wh-hud .wa-panel { pointer-events: auto; top: auto; right: auto; left: calc(var(--wh-l, 0px) + max(16px, env(safe-area-inset-left))); bottom: calc(var(--wh-tb) + 80px); }
+@media (prefers-reduced-motion: reduce) { .wh-hint { transition: none; } }
+html[data-theme="light"] .wh-hud .wa-btn.wa-home { color: #0b1d3f; }
+html[data-theme="light"] .wh-hud .wa-btn.wa-home[data-on="1"] { color: #8a5a0c; }
+/* full world window: the drag/zoom hint leaves the header (where the Weltkarte button sat on it) for its own line at the bottom */
+.bw3-full .bw3-top small { display: none !important; }
+.wh-fhint { position: absolute; z-index: 29; left: max(16px, env(safe-area-inset-left)); right: calc(max(16px, env(safe-area-inset-right)) + 66px); bottom: calc(env(safe-area-inset-bottom) + 96px); margin: 0;
+    display: flex; justify-content: center; pointer-events: none; transition: opacity .4s ease; }
+.wh-fhint span { padding: 6px 12px; border-radius: 14px; font-size: 12.5px; line-height: 1.3; text-align: center; color: #fff; background: rgba(8,14,40,.46); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+html[data-theme="light"] .wh-fhint span { background: rgba(255,255,255,.8); color: #0b1d3f; }
+.wh-fhint.off { opacity: 0; }
+/* small phones: Misty and her two cells sit a touch higher and closer, so nothing meets the Today button or the screen edge */
+@media (max-height: 700px) { :root { --wh-cy: 42%; } }
+@media (max-width: 340px) { :root { --wh-bs: 176px; --wh-fs: 80px; } }

@@ -1932,7 +1932,7 @@ html[data-theme=light] #lcUpd.lc-upd .lc-ud{background:#fff}
 (function(){
 "use strict";
 const KEY = "lowi_fast_v1";
-const PER_H = 2, CAP_H = 36, GOAL_X = 20, MIN_H = 4, MEAL_MIN_H = 8;
+const PER_H = 2, CAP_H = 16, /* xpm: hourly fast points stop at 16 h, longer fasts earn nothing extra */ GOAL_X = 20, MIN_H = 4, MEAL_MIN_H = 8;
 const MS = [{h:8, x:5, i:2}, {h:12, x:5, i:3}, {h:14, x:5, i:4}, {h:16, x:10, i:5}];
 const MS_EN = {8:"Liver takes over", 12:"Fat burning ramps up", 14:"Ketones start to rise", 16:"Cell cleanup, maybe"};
 const W = {
@@ -5908,7 +5908,7 @@ function glowSheet(){ glowDraft = {}; sheet('<div class="h2">Weekly glow check-i
   '<button class="btn primary" style="margin-top:16px" data-act="glowsave" id="glowSave" disabled>Save my week</button>'); }
 function glowPick(g, v){ glowDraft[g] = +v; $$('.scale[data-g="' + g + '"] button').forEach(b => b.classList.toggle("on", b.dataset.v === v)); $("#glowSave").disabled = GLOW.some(x => !glowDraft[x[0]]); }
 function glowSave(){ const w = ($("#glowWeight").value || "").trim().replace(",", "."); const e = Object.assign({week:weekStart(today()), day:today()}, glowDraft);
-  S.glow = S.glow.filter(x => x.week !== e.week); S.glow.push(e); if (w && !isNaN(+w)) S.health.weight = w; save(); closeSheet(); award(50, "Weekly glow check-in"); renderAll(); }
+  S.glow = S.glow.filter(x => x.week !== e.week); S.glow.push(e); if (w && !isNaN(+w)) S.health.weight = w; save(); closeSheet(); award(50, "Weekly glow check-in", null, "", "glow:" + e.week); /* xpm: once a week */ renderAll(); }
 function glowSummary(){ if (!S.glow.length) return '<div class="small muted">No glow check-in yet. Your first one sets the baseline.</div>';
   const last = S.glow[S.glow.length - 1], prev = S.glow[S.glow.length - 2];
   return '<div class="gbars">' + GLOW.map(g => '<div class="gbar"><div class="col"><b style="height:' + (last[g[0]] * 20) + '%"></b>' + (prev ? '<s style="bottom:' + (prev[g[0]] * 20) + '%"></s>' : "") + '</div>' + g[1].split(" ")[0] + '<br><span class="gold num">' + last[g[0]] + '/5' + (prev ? (last[g[0]] > prev[g[0]] ? " ↑" : last[g[0]] < prev[g[0]] ? " ↓" : "") : "") + '</span></div>').join("") + '</div>' + (prev ? '<div class="small dim" style="margin-top:8px">White line = last week.</div>' : ""); }
@@ -6483,7 +6483,7 @@ document.addEventListener("click", e => {
     case "sos": openSOS(d.c); break;
     case "closesos": clearInterval(sosT); $("#sos").classList.remove("open"); break;
     case "sostimer": sosTimer(); a.textContent = "Timer running"; break;
-    case "sosbeat": clearInterval(sosT); $("#sos").classList.remove("open"); award(20, "Craving handled"); renderAll(); break;
+    case "sosbeat": { clearInterval(sosT); $("#sos").classList.remove("open"); const sosN = S.ledger.filter(e => e.day === today() && e.label === "Craving handled").length; if (sosN < 3) award(20, "Craving handled", null, "", "sos:" + today() + ":" + sosN); /* xpm: max 3 a day */ renderAll(); break; }
     case "sosgave": clearInterval(sosT); $("#sos").classList.remove("open"); goTab("home"); setTimeout(() => { const t = $("#eatText"); if (t) { t.focus(); t.placeholder = "What did you have? No judgement."; } }, 300); break;
     case "glow": glowSheet(); break;
     case "glowpick": glowPick(d.g, d.v); break;

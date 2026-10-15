@@ -1,5 +1,5 @@
 'use strict';
-/* Universal interaction XP, healthy streak bonus, tiered feedback (xp-tap-core.js, xp-tap.js, xp-tap.css). */
+/* XP for completed actions only (taps and navigation pay nothing), healthy streak bonus, tiered feedback (xp-tap-core.js, xp-tap.js, xp-tap.css). */
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
@@ -13,73 +13,66 @@ const NOW = new Date(2026, 9, 15, 12, 0, 0).getTime();
 const DAY = K.dayKey(NOW);
 const H = 3600e3;
 
-test('tap tier: first tap on a control earns 1 XP, explore tier earns 3', () => {
-    let s = K.fresh(DAY);
-    let r = K.decide(s, { key: 'home:btn-a', tier: 'tap', now: NOW }); assert.equal(r.outcome, 'earn'); assert.equal(r.amt, 1); s = r.store;
-    r = K.decide(s, { key: 'tab:move', tier: 'explore', now: NOW + 1000 }); assert.equal(r.outcome, 'earn'); assert.equal(r.amt, 3); s = r.store;
-    assert.equal(s.xp, 4); assert.equal(s.pend, 4); assert.equal(s.pendN, 2);
+test('no tap, tab or navigation XP exists: the old tap and explore tiers are gone from the rules', () => {
+    for (const k of ['decide', 'flush', 'keyFor', 'norm', 'fresh', 'TAP_XP', 'EXPLORE_XP', 'DAY_CAP']) assert.equal(K[k], undefined, k);
+    const js = read('xp-tap.js');
+    assert.ok(!/\b(W|D|window|document)\.addEventListener\(\s*'(click|pointerdown|pointerup|touchstart|touchend|change|keydown)'/.test(js), 'no tap, key or change listener');
+    for (const ev of ['lowi:world3d-place', 'lowi:ride-arrive', 'lowi:arrival', 'lowi:cellroom', 'lowi:buddies', 'lowi:shop', 'lowi:tab'])
+        assert.ok(!js.includes("'" + ev + "'"), 'never pays for ' + ev);
+    assert.ok(!/'explore'/.test(js), 'nothing is labelled explore');
+    assert.ok(js.includes("function grant() { return 'none'; }"), 'old callers get nothing');
+    assert.ok(js.includes('localStorage.removeItem(KEY)'), 'pending tap points from the old build are dropped, never paid');
 });
 
-test('broad coverage: navigation, exploration, companion, customization, scan, cook, community, Move, fasting and learning keys all earn once', () => {
-    const keys = ['tab:home', 'tab:scan', 'tab:cook', 'tab:move', 'tab:foryou', 'tab:profile', 'region:liver', 'learn:liver', 'room:cellroom', 'room:buddies',
-        K.keyFor('home', 'herb-touch'), K.keyFor('profile/r2-ov', 'set-atmos'), K.keyFor('scan', 'act-scanbarcode'), K.keyFor('cook', 'recipe-open-avocado toast'),
-        K.keyFor('foryou', 'Like'), K.keyFor('move', 'Start session'), K.keyFor('home', 'fast-edit-start')];
-    let s = K.fresh(DAY), t = NOW;
-    for (const k of keys) { const r = K.decide(s, { key: k, tier: /^(tab|region|learn|room):/.test(k) ? 'explore' : 'tap', now: (t += 1000) }); assert.equal(r.outcome, 'earn', k); s = r.store; }
-    assert.equal(new Set(keys).size, keys.length);
+test('completed actions: amounts, own category, once ever or capped per day', () => {
+    const NOWT = NOW, led = [];
+    const take = a => { led.push({ ts: NOWT, day: DAY, amt: a.amt, src: a.src, eventId: a.eventId, label: a.kind }); return a; };
+    let a = take(K.action('discover', 'region-liver', led, NOWT));
+    assert.deepEqual([a.amt, a.src, a.eventId], [5, 'discover', 'discover:region-liver']);
+    assert.equal(K.action('discover', 'region-liver', led, NOWT + 864e5 * 3), null, 'a region is discovered once, ever');
+    assert.ok(K.action('discover', 'region-heart', led, NOWT));
+    a = take(K.action('buddy', 'bifido', led, NOWT));
+    assert.deepEqual([a.amt, a.eventId], [5, 'buddy-add:bifido']);
+    assert.equal(K.action('buddy', 'bifido', led, NOWT + 864e5), null, 'drop and re-add the same microbe pays nothing');
+    for (let i = 0; i < 3; i++) { a = take(K.action('care', 'care', led, NOWT + i)); assert.equal(a.eventId, 'care-sent:' + DAY + ':' + i); }
+    assert.equal(K.action('care', 'care', led, NOWT + 10), null, 'care: max 3 a day');
+    assert.ok(K.action('care', 'care', led, NOWT + 864e5), 'next day counts again');
+    take(K.action('fastedit', 'fast', led, NOWT));
+    assert.equal(K.action('fastedit', 'fast', led, NOWT + 60000), null, 'fast edit: max 1 a day');
+    assert.equal(K.action('tap', 'x', led, NOWT), null); assert.equal(K.action('explore', 'tab-move', led, NOWT), null); assert.equal(K.action('discover', '', led, NOWT), null);
+    for (const e of led) assert.equal(K.healthyKind(e), '', 'bonus actions never feed the healthy streak: ' + e.src);
 });
 
-test('repeats of the same control earn nothing the same day and are reported as repeat, not points', () => {
-    let s = K.decide(K.fresh(DAY), { key: 'k', tier: 'tap', now: NOW }).store;
-    const r = K.decide(s, { key: 'k', tier: 'tap', now: NOW + 5000 });
-    assert.equal(r.outcome, 'repeat'); assert.equal(r.amt, 0); assert.equal(r.store.xp, 1);
+test('categories: every action gets its own label; Move is always move, never explore', () => {
+    const C = (src, label) => K.category({ src, label, amt: 5 });
+    assert.equal(C('move:session', 'Move session \u00b7 12 min'), 'move');
+    assert.equal(C('move:meal', 'Moved after a meal'), 'move');
+    assert.equal(C('move:steps', 'Steps \u00b7 4,000'), 'move');
+    assert.equal(C('r3a_move', 'Lazy morning session'), 'move');
+    assert.equal(C('meal:spirit', 'Meal logged'), 'meal');
+    assert.equal(C('meal:abc', 'Meal checked'), 'meal');
+    assert.equal(C('r3a_fast', 'Fast done: 16 h'), 'fast');
+    assert.equal(C('fast-edit', 'Fasting start updated'), 'fast');
+    assert.equal(C('body-trip', 'Body trip \u00b7 Liver'), 'journey');
+    assert.equal(C('buddy-add', 'New buddy \u00b7 Bifido'), 'buddy');
+    assert.equal(C('buddy-bond:lacto:2', 'Buddy \u00b7 Lacto'), 'buddy');
+    assert.equal(C('care-sent', 'Care sent to a friend'), 'care');
+    assert.equal(C('discover', 'First discovery \u00b7 Liver'), 'discover');
+    assert.equal(C('combo', 'Healthy streak \u00d73'), 'streak');
+    assert.equal(C('', 'Day 4 check-in'), 'checkin');
+    assert.equal(C('herb-care:water', 'Water'), 'water');
+    assert.equal(C('tap', 'Curiosity \u00b7 3 taps'), 'legacy-tap');
+    for (const src of ['move:session', 'move:meal', 'move:steps', 'r3a_move']) assert.notEqual(C(src, 'Explore'), 'explore');
 });
 
-test('rapid-fire taps on different controls are rate limited (no farming by mashing)', () => {
-    let s = K.decide(K.fresh(DAY), { key: 'a', tier: 'tap', now: NOW }).store;
-    const r = K.decide(s, { key: 'b', tier: 'tap', now: NOW + 100 });
-    assert.equal(r.outcome, 'spam'); assert.equal(r.store.xp, 1); assert.ok(!r.store.keys.b);
-    assert.equal(K.decide(r.store, { key: 'b', tier: 'tap', now: NOW + K.MIN_GAP_MS + 1 }).outcome, 'earn');
-});
-
-test('daily cap: taps and visits stop at DAY_CAP XP; the last award is trimmed, never exceeded', () => {
-    let s = K.fresh(DAY), t = NOW, total = 0;
-    for (let i = 0; i < 200; i++) { const r = K.decide(s, { key: 'k' + i, tier: i % 3 ? 'tap' : 'explore', now: (t += 1000) }); s = r.store; total += r.amt; }
-    assert.equal(total, K.DAY_CAP); assert.equal(s.xp, K.DAY_CAP);
-    assert.equal(K.decide(s, { key: 'new', tier: 'tap', now: t + 1000 }).outcome, 'cap');
-});
-
-test('close, cancel, back, delete, sign out and similar never earn (en/de/es + glyphs)', () => {
-    for (const w of ['Close', 'Cancel', 'Back', 'Delete meal', 'Remove', 'Sign out', 'Log out', 'Reset', 'Undo', 'Skip', 'Not now', 'Schlie\u00dfen', 'Abbrechen', 'Zur\u00fcck', 'L\u00f6schen', 'Abmelden', 'Cerrar', 'Cancelar', 'Volver', 'Borrar', 'Eliminar', '\u00d7', '\u2715', '\u2190'])
-        assert.ok(K.negative(w), w);
-    for (const w of ['Start session', 'Open map', 'Liver', 'Send a hug', 'Scan', 'Kochen', 'Recetas', 'Backofen-Rezept', 'Feedback'])
-        assert.ok(!K.negative(w), w);
-});
-
-test('keys are stable: digits fold, accents fold, empty ident gives no key', () => {
-    assert.equal(K.keyFor('cook', 'Recipe 12'), K.keyFor('cook', 'Recipe 7'));
-    assert.equal(K.keyFor('Home', 'K\u00fcche'), 'home:kuche');
-    assert.equal(K.keyFor('home', ''), '');
-});
-
-test('flush: pending taps become one ledger award with a unique id per day; nothing pending, nothing awarded', () => {
-    let s = K.fresh(DAY);
-    for (let i = 0; i < 4; i++) s = K.decide(s, { key: 'k' + i, tier: 'tap', now: NOW + i * 1000 }).store;
-    let f = K.flush(s); assert.deepEqual(f.award, { amt: 4, n: 4, eventId: 'tap:' + DAY + ':0' }); s = f.store;
-    assert.equal(s.pend, 0); assert.equal(s.seq, 1); assert.equal(K.flush(s).award, null);
-    s = K.decide(s, { key: 'x', tier: 'explore', now: NOW + 9000 }).store;
-    assert.equal(K.flush(s).award.eventId, 'tap:' + DAY + ':1');
-});
-
-test('persistence: same day keeps keys; a new day starts clean; seq skips ids already in the ledger (reload / crash safe)', () => {
-    let s = K.decide(K.fresh(DAY), { key: 'k', tier: 'tap', now: NOW }).store;
-    const raw = JSON.parse(JSON.stringify(s));
-    assert.equal(K.norm(raw, DAY, []).keys.k, 1);
-    assert.deepEqual(K.norm(raw, '2026-10-16', []).keys, {});
-    const ledger = [{ eventId: 'tap:' + DAY + ':0' }, { eventId: 'tap:' + DAY + ':3' }, { eventId: 'tap:2026-10-14:9' }];
-    assert.equal(K.norm(raw, DAY, ledger).seq, 4);
-    assert.equal(K.norm(null, DAY, []).seq, 0);
-    assert.equal(K.norm({ v: 9, day: DAY, keys: { a: 1 } }, DAY, []).keys.a, undefined);
+test('no reward pushes longer fasts or more exercise than is healthy', () => {
+    const src = read('index.html');
+    assert.ok(/const PER_H = 2, CAP_H = 16,/.test(src), 'hourly fast points stop at 16 h');
+    assert.ok(src.includes('perDay:3, label:"Move session'), 'Move sessions capped at 3 a day');
+    assert.ok(src.includes('amt:Math.min(30, 2 * min)'), 'one session tops out at 30 XP');
+    assert.ok(src.includes('if (sosN < 3) award(20, "Craving handled", null, "", "sos:" + today() + ":" + sosN);'), 'craving handled max 3 a day');
+    assert.ok(src.includes('award(50, "Weekly glow check-in", null, "", "glow:" + e.week);'), 'weekly glow once a week');
+    assert.equal(K.ACTIONS.fastedit.perDay, 1);
 });
 
 /* the canonical award(), run from index.html itself */
@@ -205,18 +198,16 @@ test('tap XP and the streak bonus are minor everywhere: no sunbeams, no herb pra
     assert.ok(/type === 'sun' \|\| type === 'quest'\) return;/.test(read('praise.js')), 'praise skips quest-class rewards');
 });
 
-test('xp-tap.js: trusted gestures only, drags and long presses ignored, bigger reward replaces the tap, quiet awards, batched flush', () => {
+test('xp-tap.js: pays only completed actions through award() with eventIds; quiet streak awards; no WebGL, no companion speech', () => {
     const js = read('xp-tap.js');
-    assert.ok(js.includes('if (!e.isTrusted) return;'));
-    assert.ok(js.includes('moved > 12 || held > 1200'));
-    assert.ok(js.includes("if (exploredIn === g) return; grant(key, 'tap', x, y);"));
-    assert.ok(js.includes("W.award(r.award.amt, label, null, 'tap', r.award.eventId, { quiet: true })"));
+    assert.ok(js.includes("W.award(a.amt, LAB[kind](name || a.id), null, a.src, a.eventId)"));
     assert.ok(js.includes("W.award(m.xp, label, null, 'combo', m.eventId, { quiet: true })"));
-    assert.ok(js.includes('if (!id || Date.now() - lastUser > 2500) return;'), 'events from code on boot never pay');
-    assert.ok(js.includes("D.addEventListener('visibilitychange', () => { if (D.hidden) flush(true); });"));
-    assert.ok(js.includes('store = r.store; persist(); /* the id is spent before the award'));
+    for (const ev of ['lowi:world-region', 'lowi:buddy-added', 'lowi:care-sent', 'lowi:fast-start']) assert.ok(js.includes("'" + ev + "'"), ev);
+    assert.ok(js.includes("if (REG[id]) act('discover'"), 'only the 7 real regions, never the hub');
+    assert.ok(js.includes('if (d.id && !d.starter)'), 'the starter buddy is not a discovery');
+    assert.ok(read('microbe-buddies.js').includes("new CustomEvent('lowi:buddy-added', { detail: { id, name: name(c) } })"));
     assert.ok(!/getContext|WebGLRenderer|three\./i.test(js + read('xp-tap-core.js')), 'no WebGL');
-    assert.ok(!/LowiSpeak|speak\(|say\(/.test(js), 'the companion never talks on taps');
+    assert.ok(!/LowiSpeak|speak\(|say\(/.test(js), 'the companion never talks for XP');
 });
 
 test('feedback tiers exist and respect reduced motion; only transform and opacity animate', () => {
@@ -239,8 +230,9 @@ test('wiring: loader after fast edit, both service-worker lists, stylesheet next
     assert.ok(read('xp-tap.js').includes("replace('xp-tap.js', 'xp-tap.css')"));
 });
 
-test('editing a fast start gives no XP, and fasting never feeds tap or streak rewards twice', () => {
+test('the fast-edit module itself still awards nothing; the one small fast-edit XP comes from xp-tap.js, once a day', () => {
     for (const f of ['fast-edit.js', 'fast-edit-core.js']) assert.ok(!/\baward\s*\(/.test(read(f)), f);
-    let s = K.decide(K.fresh(DAY), { key: K.keyFor('home/fst-ov', 'Edit start'), tier: 'tap', now: NOW }).store;
-    assert.equal(K.decide(s, { key: K.keyFor('home/fst-ov', 'Edit start'), tier: 'tap', now: NOW + 60000 }).outcome, 'repeat');
+    const led = [];
+    const a = K.action('fastedit', 'fast', led, NOW); led.push({ ts: NOW, day: DAY, amt: a.amt, src: a.src, eventId: a.eventId });
+    assert.equal(K.action('fastedit', 'fast', led, NOW + 3600e3), null);
 });

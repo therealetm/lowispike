@@ -1,58 +1,71 @@
-/* LOWiSPIKE universal interaction XP, pure rules (Oct 15, 2026). No DOM, no storage: xp-tap.js wires it to the app.
-   The user asked for points on every purposeful tap, a streak bonus for healthy actions in a row, and tiered feedback.
-   - Tap tier: the first tap on each distinct control per day earns 1 XP ("Curiosity"). Explore tier: the first visit to a
-     place (a tab, a body region, a learned fact, a room) per day earns 3 XP. Together they stop at DAY_CAP XP a day, so
-     points can't be farmed by tapping; real actions (meals, water, Move, scans, cooking ...) keep their own rewards.
-   - Repeats of the same control the same day earn nothing and are shown as "already counted", never as points.
-   - Close, cancel, back, delete, sign out and similar controls never earn (no reward for undoing or leaving).
+/* LOWiSPIKE XP for meaningful actions only, pure rules (Oct 15, 2026; replaces the 14:15 "every tap earns" rule after user feedback).
+   No DOM, no storage: xp-tap.js wires it to the app.
+   - Taps, tab switches, opening sheets, scrolling and plain navigation earn NOTHING. There is no click listener that pays.
+   - XP comes from completed actions only. The app's own actions keep their own rewards and caps (meals, water, Move sessions,
+     steps, fasts, body journeys, scans, swaps, cooking, check-ins, quests). This file adds the few completed actions that had
+     no reward yet, each with its own category, a fixed amount and a cap so they can't be farmed:
+       discover  first time ever you reach a body region            5 XP, once per region, ever
+       buddy     a microbe joins your crew for the first time       5 XP, once per microbe, ever
+       care      care sent to a friend (costs care points)          5 XP, max 3 a day
+       fastedit  fasting start corrected                            3 XP, max 1 a day (honest logging, never a reward for longer fasts)
+   - category(entry) names the category of any ledger entry from its src first, so a Move entry is always 'move', never explore.
    - Healthy streak ("combo"): low-spike meals, water (max 3), Move, scans, swaps, cooking and the daily check-in, in a row
      today with no high-spike meal in between. 3 in a row +10 XP, 5 +20 XP, 8 +40 XP (fanfare). Fasting never counts.
-   - Every XP goes through the app's one award(); ids are tap:<day>:<seq> (batched taps) and combo:<day>:<n>. */
+   - Every XP goes through the app's one award() with an eventId; old tap entries (src 'tap') stay in the ledger, XP is kept. */
 (function (root) {
     'use strict';
-    const TAP_XP = 1, EXPLORE_XP = 3, DAY_CAP = 40, MIN_GAP_MS = 350, WATER_MAX = 3;
+    const WATER_MAX = 3;
     const COMBO = [{ n: 3, xp: 10, tier: 'pop' }, { n: 5, xp: 20, tier: 'big' }, { n: 8, xp: 40, tier: 'fanfare' }];
+    const ACTIONS = {
+        discover: { amt: 5, once: true, src: 'discover' },
+        buddy: { amt: 5, once: true, src: 'buddy-add' },
+        care: { amt: 5, perDay: 3, src: 'care-sent' },
+        fastedit: { amt: 3, perDay: 1, src: 'fast-edit' }
+    };
     const pad = n => String(n).padStart(2, '0');
     const dayKey = ts => { const d = new Date(+ts || Date.now()); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
-    /* controls that close, cancel, go back, undo or destroy: no reward (en / de / es) */
-    const NEG = /(^|[^a-z])(close|dismiss|cancel|abort|back|undo|delete|remove|reset|clear|sign ?out|log ?out|logout|leave|block|report|skip|later|not now|no thanks|schlie(ß|ss)en|abbrechen|zur(ü|u)ck|l(ö|o)schen|entfernen|zur(ü|u)cksetzen|abmelden|verlassen|blockieren|melden|(ü|u)berspringen|sp(ä|a)ter|nicht jetzt|cerrar|cancelar|volver|atr(á|a)s|borrar|eliminar|quitar|restablecer|cerrar sesi(ó|o)n|salir|bloquear|denunciar|omitir|m(á|a)s tarde)([^a-z]|$)/i;
-    const NEG_GLYPH = /^\s*(×|✕|✖|x|←|‹|<|⟵|−)\s*$/i;
-    function negative(text) { const t = String(text || '').trim(); return !!t && (NEG_GLYPH.test(t) || NEG.test(t)); }
-    /* a stable key for a control: area + its id / data hook / label, digits folded so list rows don't explode the key space */
-    function keyFor(area, ident) {
-        const clean = s => String(s || '').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/\d+/g, '#').replace(/[^a-z#\u00df]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
-        const a = clean(area) || 'app', i = clean(ident);
-        return i ? a + ':' + i : '';
+    const cleanId = id => String(id == null ? '' : id).toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 32);
+    /* one completed action -> the award to make, or null when it isn't a known action, already paid, or capped today */
+    function action(kind, id, ledger, now) {
+        const rule = ACTIONS[kind]; if (!rule) return null;
+        const day = dayKey(now), cid = cleanId(id);
+        if (rule.once && !cid) return null;
+        const L = Array.isArray(ledger) ? ledger : [];
+        let eventId;
+        if (rule.once) eventId = rule.src + ':' + cid;
+        else {
+            const n = L.filter(e => e && e.src === rule.src && (e.day ? e.day === day : dayKey(e.ts) === day)).length;
+            if (n >= rule.perDay) return null;
+            eventId = rule.src + ':' + day + ':' + n;
+        }
+        if (L.some(e => e && e.eventId === eventId)) return null;
+        return { kind, amt: rule.amt, src: rule.src, eventId, id: cid };
     }
-    function fresh(day) { return { v: 1, day, keys: {}, xp: 0, seq: 0, pend: 0, pendN: 0, last: 0, capSaid: 0 }; }
-    /* read the stored state for today; a new day starts clean; seq never reuses an id that is already in the ledger */
-    function norm(raw, day, ledger) {
-        let s = raw && typeof raw === 'object' && raw.v === 1 && raw.day === day ? Object.assign(fresh(day), raw) : fresh(day);
-        if (!s.keys || typeof s.keys !== 'object') s.keys = {};
-        const pre = 'tap:' + day + ':';
-        let used = -1;
-        for (const e of ledger || []) { const id = String(e && e.eventId || ''); if (id.indexOf(pre) === 0) { const n = parseInt(id.slice(pre.length), 10); if (n > used) used = n; } }
-        if (s.seq <= used) s.seq = used + 1;
-        return s;
-    }
-    /* one tap or visit: earn / repeat / cap / spam. Pure: returns a new store. */
-    function decide(store, ev) {
-        ev = ev || {};
-        const s = Object.assign({}, store, { keys: Object.assign({}, store.keys) });
-        const now = +ev.now || Date.now(), tier = ev.tier === 'explore' ? 'explore' : 'tap', key = String(ev.key || '');
-        if (!key) return { store: s, outcome: 'none', amt: 0 };
-        if (s.keys[key]) return { store: s, outcome: 'repeat', amt: 0 };
-        if (tier === 'tap' && s.last && now - s.last < MIN_GAP_MS) return { store: s, outcome: 'spam', amt: 0 };
-        const want = tier === 'explore' ? EXPLORE_XP : TAP_XP, room = Math.max(0, DAY_CAP - s.xp), amt = Math.min(want, room);
-        if (!amt) return { store: s, outcome: 'cap', amt: 0 };
-        s.keys[key] = tier === 'explore' ? 2 : 1; s.xp += amt; s.pend += amt; s.pendN += 1; s.last = now;
-        return { store: s, outcome: 'earn', amt, tier };
-    }
-    /* the pending points go into the ledger as one entry; ids stay unique per day */
-    function flush(store) {
-        if (!(store.pend > 0)) return { store, award: null };
-        const award = { amt: store.pend, n: store.pendN, eventId: 'tap:' + store.day + ':' + store.seq };
-        return { store: Object.assign({}, store, { pend: 0, pendN: 0, seq: store.seq + 1 }), award };
+    /* the category a ledger entry belongs to; src decides first, the label only for plain awards */
+    function category(e) {
+        if (!e) return '';
+        const src = String(e.src || ''), lab = String(e.label || '').toLowerCase();
+        if (src === 'tap') return 'legacy-tap';
+        if (src === 'combo') return 'streak';
+        if (src === 'discover') return 'discover';
+        if (/^buddy/.test(src)) return 'buddy';
+        if (src === 'care-sent' || /^care/.test(src)) return 'care';
+        if (src === 'fast-edit' || /^r3a_fast|^f2_break|fast/.test(src)) return 'fast';
+        if (/^move|^r3a_move/.test(src)) return 'move';
+        if (/^meal|^plan-meal/.test(src)) return 'meal';
+        if (/^body-trip/.test(src)) return 'journey';
+        if (/^herb-care:water/.test(src)) return 'water';
+        if (/^herb-quest|^hq|^quest|^f3|^rhythm|^sun-full|^e1:/.test(src)) return 'quest';
+        if (/^swaflo|swap/.test(src)) return 'swap';
+        if (/^tribe|^shelf/.test(src)) return 'community';
+        if (/^macro/.test(src)) return 'meal';
+        if (/check.?in/.test(lab)) return 'checkin';
+        if (/streak badge/.test(lab)) return 'streak';
+        if (/meal|essen|comida/.test(lab)) return 'meal';
+        if (/swap|craving/.test(lab)) return 'swap';
+        if (/water|wasser|agua/.test(lab)) return 'water';
+        if (/move|walk|session/.test(lab)) return 'move';
+        return 'action';
     }
     const isMinor = e => !!e && /^(tap|combo)$/.test(String(e.src || ''));
     /* healthy kinds that a real action leaves in the ledger (meals come from the logs, so a low-spike verdict decides) */
@@ -66,7 +79,7 @@
             if (/^(swap saved|craving handled)$/.test(lab)) return 'swap';
             return '';
         }
-        if (/^f\d|^f3all|^f2_break|^e1:|^rhythm|^hq|^quest|^care|^macro-goal|^sun-full|^body-trip|^buddy|^r3a_fast/.test(src)) return '';
+        if (/^f\d|^f3all|^f2_break|^e1:|^rhythm|^hq|^quest|^care|^macro-goal|^sun-full|^body-trip|^buddy|^discover|^fast-edit|^r3a_fast/.test(src)) return '';
         if (/fast|badge|streak|level|quest/.test(txt) && !/breakfast/.test(txt)) return '';
         if (/check.?in/.test(txt)) return 'checkin';
         if (/water|wasser|agua|hydrat/.test(txt)) return 'water';
@@ -115,7 +128,7 @@
         const opts = list.length > 1 ? list.filter(x => x !== last) : list.slice();
         return opts[Math.min(opts.length - 1, Math.floor(r() * opts.length))];
     }
-    const api = { TAP_XP, EXPLORE_XP, DAY_CAP, MIN_GAP_MS, WATER_MAX, COMBO, dayKey, negative, keyFor, fresh, norm, decide, flush, isMinor, healthyKind, verdict, chain, comboDue, pick };
+    const api = { WATER_MAX, COMBO, ACTIONS, dayKey, cleanId, action, category, isMinor, healthyKind, verdict, chain, comboDue, pick };
     root.LowiTapXPCore = api;
     if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

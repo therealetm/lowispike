@@ -286,7 +286,7 @@
     function act(kind, id) {
         const bk = cards(), c = bk.cards.find(x => x.id === id);
         let r = null;
-        if (kind === 'add') { r = K.add(stored(), id, bk.cards, Date.now()); if (r.ok) toast(tr('joined', { n: name(c) })); else if (r.why === 'full') toast(tr('full')); }
+        if (kind === 'add') { r = K.add(stored(), id, bk.cards, Date.now()); if (r.ok) { toast(tr('joined', { n: name(c) })); try { W.dispatchEvent(new CustomEvent('lowi:buddy-added', { detail: { id, name: name(c) } })); } catch (e) {} } else if (r.why === 'full') toast(tr('full')); }
         if (kind === 'drop') { r = K.drop(stored(), id, bk.cards); if (r.ok) toast(tr('wentHome', { n: name(c) })); }
         if (kind === 'lead') { r = K.lead(stored(), id, bk.cards); if (r.ok) toast(tr('leadNow', { n: name(c) })); }
         if (r && r.ok) { store(r.st); view = null; refresh(true); syncBond(); try { W.dispatchEvent(new CustomEvent('lowi:buddies', { detail: { crew: r.st.crew.slice() } })); } catch (e) {} }

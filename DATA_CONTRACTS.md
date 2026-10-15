@@ -35,7 +35,7 @@ Runtime modules may add compatible fields such as `herb`, `health.body`, `health
 - `award()` returns `0` if an event ID is already in the ledger.
 - The herb derives its stage from `S.xp`; it does not maintain or deduct a second XP total.
 - Only canonical `award(amt, label, el, src, eventId, opts?)` writes XP; `opts.quiet` (2026-10-15) skips only its own toast.
-- Mounting, animation replay, notification display, restoring a view and taps from code award zero. Since 2026-10-15 (user decision) trusted purposeful taps and first visits award small Curiosity XP via `xp-tap.js`: src `tap`, ids `tap:<day>:<seq>` (batched), once per control/place per day, max 40 XP a day; close/cancel/back/delete never. Healthy-streak bonus: src `combo`, ids `combo:<day>:<3|5|8>`. Entries with src `tap`/`combo` are minor: never care, sunbeams, praise, quests or active days.
+- Mounting, animation replay, notification display, restoring a view, taps (trusted or not), tab switches, opening sheets and navigation award zero. Since 2026-10-15 15:00 (user decision) `xp-tap.js` pays only completed actions that had no reward yet, via `award()` with eventIds: `discover:region-<id>` (5 XP, once ever), `buddy-add:<id>` (5 XP, once ever, from window event `lowi:buddy-added` {id, name} in microbe-buddies.js), `care-sent:<day>:<n>` (5 XP, max 3/day), `fast-edit:<day>:0` (3 XP, max 1/day), and the streak bonus `combo:<day>:<n>`. `LowiTapXPCore.category(entry)` names the category of any ledger entry (src first; Move srcs are always `move`). Old src `tap` entries remain in the ledger and stay minor.
 
 An XP ledger entry is:
 
@@ -58,7 +58,7 @@ Do not change the meaning of an existing `src` or `eventId` prefix without migra
 | `lowispike.shelf.v1` | Shelf/Cook | Products, votes, shopping/list state, swipes, shelf XP metadata, reports, and name. |
 | `lowispike.r5.v1` | Food swipe | Liked/skipped/never/today state, last result, audio/notification preferences, MBTI. |
 | `lowispike.swipe.shared.v1` | Shared food | Community-fed food swipe records cached on the device. |
-| `lowi.xptap.v1` | xp-tap.js | Today's tap XP state `{v:1, day, keys, xp, seq, pend, pendN, last, capSaid}`; resets each day; pending taps flush once. |
+| `lowi.xptap.v1` | xp-tap.js (retired) | Old per-day tap XP state. Removed on boot since build 20261015-150000; pending tap points are dropped, never paid. |
 | `lowi.dex.v1` | Scan/Pokédex | Scan/catch view state and local scan data. |
 | `lowi.camok` | Scan | Whether camera access previously succeeded; not permission authority. |
 | `lowi.swaflo.prefs` | Swaflo | `{mode: "cook"|"buy", snack: boolean}`. |

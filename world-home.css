@@ -334,7 +334,8 @@ html.wh-home #tabbar, html.wh-home.apple-ui #tabbar, html.wh-home .apple-ui #tab
 html.wh-home #spHome .fe-bub { left: calc(50% - var(--wh-sx)) !important; top: calc(var(--wh-cy) + var(--wh-sy) - var(--wh-fs) / 2 - 8px) !important;
     transform: translate(-50%, -100%); height: 24px; padding: 0 10px; border-radius: 999px; text-decoration: none;
     border: 1.5px solid var(--wh-glass-rim); background: var(--wh-glass-wide); box-shadow: var(--wh-glass-sh); color: var(--wh-glass-ink); line-height: 21px;
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); pointer-events: auto; z-index: 7 !important; }
+html.wh-home.wh-away #spHome .fe-bub { pointer-events: none !important; }
 html.wh-home #spHome .fe-bub:active { transform: translate(-50%, -100%) scale(.94); }
 html.wh-home #spHome #spFast .fb-lab { display: none !important; }
 

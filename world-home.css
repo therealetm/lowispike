@@ -159,3 +159,9 @@ html.wh-on.wh-host-on #tabbar { transform: translateY(calc(100% + 40px)) !import
 
 /* a sheet that is closing never catches taps meant for the world under it */
 html.wh-on .r2-ov.off, html.wh-on .r2-ov.off * { pointer-events: none !important; }
+
+/* iPad / wide layout: #tab-home is a grid there; keep the top row at the top instead of the middle of the screen */
+html.wh-on.wh-home:not([data-lay=phone]) #tab-home#tab-home { align-content: start !important; }
+html.wh-on.wh-home:not([data-lay=phone]) #tab-home#tab-home > #spHome { align-self: start !important; grid-row: 1 !important; margin-top: calc(var(--sat, env(safe-area-inset-top, 0px)) + 16px) !important; }
+/* while Today slides away it is already closed: taps go to the world and Misty under it */
+html.wh-home:not(.wh-today-open) .wh-today, html.wh-home:not(.wh-today-open) .wh-today * { pointer-events: none !important; }

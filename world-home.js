@@ -186,7 +186,7 @@
         let n = 0;
         const go = () => {
             const r = rig();
-            if (!r || r.mode !== 'full' || r.fly) { if (++n < 40) return setTimeout(go, 80); return; }
+            if (!r || r.mode !== 'full' || r.fly) { if (++n < 150) return setTimeout(go, 80); return; } /* a busy device can take a few seconds to open the world */
             if (inRegion()) { try { W.LowiWorldRegions.travel('hub'); } catch (e) { } setTimeout(() => animateDist(r.maxD, 0.42), 1500); }
             else animateDist(r.maxD, 0.42);
             paintZoom();
@@ -271,8 +271,9 @@
         let n = 0;
         const go = () => {
             const R = W.LowiWorldRegions, busy = R && R.state && (R.state.warp || R.state.busy);
-            if (busy && ++n < 30) return setTimeout(go, 90);
+            if (busy && ++n < 170) return setTimeout(go, 90);
             if (R && R.current && R.current() !== id) return;
+            if (!regionGroup(id) && ++n < 170) return setTimeout(go, 90); /* region still mounting on a slow frame */
             heroTurn(id);
         };
         setTimeout(go, reduced() ? 0 : 120);
@@ -454,7 +455,10 @@
     function layout() {
         const tb = D.getElementById('tabbar');
         let top = W.innerHeight;
-        if (tb) { const r = tb.getBoundingClientRect(); if (r.height && !H.classList.contains('wh-today-open') && !H.classList.contains('wh-r2-on')) top = Math.min(top, r.top); else if (r.height) top = Math.min(top, W.innerHeight - (parseFloat(H.style.getPropertyValue('--wh-tb')) || 0)); }
+        /* only a bar along the bottom (phone) lifts the thumb row; the iPad side rail does not */
+        const tr = tb ? tb.getBoundingClientRect() : null, bottomBar = !!(tr && tr.height && tr.width > tr.height && tr.top > W.innerHeight * .5);
+        if (bottomBar) { if (!H.classList.contains('wh-today-open') && !H.classList.contains('wh-r2-on')) top = Math.min(top, tr.top); else top = Math.min(top, W.innerHeight - (parseFloat(H.style.getPropertyValue('--wh-tb')) || 0)); }
+        else top = W.innerHeight - 8;
         /* banners that float above the tab bar (add to Home Screen, offline, update) push the thumb row up */
         D.querySelectorAll('#lcA2hs, .lc-banner').forEach(b => { const r = b.getBoundingClientRect(); if (r.height && r.bottom > W.innerHeight * .6 && getComputedStyle(b).display !== 'none' && getComputedStyle(b).visibility !== 'hidden') top = Math.min(top, r.top); });
         H.style.setProperty('--wh-tb', Math.max(0, Math.round(W.innerHeight - top)) + 'px');

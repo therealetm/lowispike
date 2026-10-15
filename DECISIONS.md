@@ -189,3 +189,7 @@ This file is append-only. Add decisions with a date, status, context, decision, 
 - After a load that still shows the old build, the note now says to close and reopen the app (shown 9 s), cooldown unchanged.
 - sw.js install also caches the page itself, so an offline launch right after an update still opens (activate deletes the old cache that held the last page).
 - Users still on a build before 151500 run the old button once; if it hangs for them, closing and reopening the app once gets them onto the fixed one.
+
+
+## 2026-10-15 — Publish recovered world-first Home for review
+The user explicitly requested deploying the recovered Home implementation without waiting for browser setup, and will review its appearance in the app. This permits publication for review; it does not establish completion of visual or physical-device acceptance.

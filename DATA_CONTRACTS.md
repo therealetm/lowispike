@@ -174,3 +174,7 @@ Water retains `lowi_fast_v1.water` and adds stable `waterEvents`; the existing l
 - Table `public.auth_handoff(code_hash text pk, user_id uuid -> auth.users on delete cascade, created_at, expires_at, used_at)`. RLS on, no policies, no grants to anon/authenticated: only the `auth-handoff` edge function (service role) touches it. Rows older than a day are deleted on issue.
 - Edge function `auth-handoff` (verify_jwt off, checks the bearer itself; CORS: therealetm.github.io + localhost): `issue` (account bearer) -> `{code, expires_in:1800}`, retires that user's older open codes, max 30/hour; `redeem {code}` -> `{token_hash}` (atomic single use, expiry checked) for `auth.verifyOtp({token_hash, type:"magiclink"})`; `revoke` (bearer) retires open codes.
 - Client: `window.LowiHandoff` (script `#hofjs`). Clipboard text `... LOWI-XXXX-XXXX-XXXX`. CacheStorage `lowi-handoff` / `./__lowi_handoff__` holds `{c, exp}`; sw.js keeps that cache across updates. Nothing goes into URLs, the manifest or logs.
+
+
+## World-first Home
+Home reads canonical XP, companion and fasting state through the existing bridges. `lowi.aura` stores the selected XP-unlocked aura; invalid or locked values fall back to the default. Opening sheets, zooming and navigating do not award XP. Existing fasting-start editing and persistence are unchanged.

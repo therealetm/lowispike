@@ -93,7 +93,7 @@ test('trip facts: a new one while unseen facts are unlocked, otherwise a known o
   assert.equal(c.fact, 2, '60 % unlocks the third');
   st.p.blood.x = 10; st.p.blood.seen = 1;
   B.start(st, 'blood', T0 + 864e5); const d = B.claim(st, T0 + 864e5 + B.TRIP_MS);
-  assert.equal(d.isNew, false); assert.equal(d.fact, 0);
+  assert.equal(d.isNew, false); assert.equal(d.fact, -1, 'no repeated facts'); assert.ok(d.learned); assert.equal(d.nextAt, 25);
 });
 
 test('the cell travels to where the biggest gain went', () => {

@@ -143,7 +143,7 @@
         if (mode === 'full') return !!full;
         if (!visibleHome || !stage || !stage.isConnected) return false;
         const tab = D.getElementById('spHome'); if (tab && !tab.offsetParent) return false;
-        if (D.querySelector('.r2-ov, .sp-world.on, .ht-world.on')) return false;
+        if (D.querySelector(H.classList.contains('wh-on') ? '.sp-world.on, .ht-world.on' : '.r2-ov, .sp-world.on, .ht-world.on')) return false; /* world-first Home: sheets are see-through, the world keeps breathing behind them */
         return true;
     }
     function syncGlow() {

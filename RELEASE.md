@@ -87,3 +87,7 @@ Known limitations: <none or exact list>
 ## Spirit build 20261014-162100
 
 The Spirit assets (`spirit-core.js`, `spirit.js`, `spirit.css`) are part of the ordered loader and network-first/offline asset lists. The 50-test suite and whitespace checks pass. Publishing uses Git data API blobs/tree/commit plus a leased `main` ref when shell Git has no write credentials. Each blob SHA is checked against the local `git hash-object` result before moving the ref. Premium checkout and physical-device/production-account checks are explicitly unverified.
+
+
+## World-first Home build 20261015-173001
+Recovered the supplied source patch against `dcfe82cd19f085ce230cba1e7b40c30791c80a60`, including the final uncommitted CSS/JS layer. Build metadata, service-worker cache and ordered-loader versions are synchronized. The user explicitly requested publication before further browser setup so they can review the app. Publication and live verification must be checked separately from the 445 passing automated tests.

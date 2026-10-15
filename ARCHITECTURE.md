@@ -183,3 +183,7 @@ The app accumulated chronological inline patches. Several modules wrap or rearra
 ## Sign-in handoff module (`#hofjs`, end of index.html)
 
 Self-contained IIFE, `window.LowiHandoff`. Hooks: R2 `startHTML()` (Paste block on the Home Screen start screen; also injected if the gate rendered first), R2 `signOut()`/`startFresh()` (revoke before sign-out), and it adapts the browser note `#lcA2hs` (owned by the update-notes module) for signed-in iPhone accounts. Backend: `supabase/functions/auth-handoff`. Tests: `tests/handoff.test.cjs` (offline), `tests/handoff-live.cjs` (backend, needs a service key in env).
+
+
+## World-first Home
+`world-home-core.js`, `world-home.js` and `world-home.css` load last through the existing ordered companion loader. Home reuses `LowiWorld3D` and its canvas; Today moves the existing status/log nodes into a sheet. Companion, fasting and appearance controls retain their existing bridges. No second renderer is created.

@@ -160,11 +160,13 @@
         apply(st, { [t.place]: TRIP_GAIN }, now, true);
         p.v = (+p.v || 0) + 1;
         const avail = unlocked(p.x);
-        let fact, isNew = false;
-        if (p.seen < avail) { fact = p.seen; p.seen++; isNew = true; } else fact = (p.v - 1) % Math.max(1, avail);
+        /* never repeat a fact: once everything unlocked here is learned, the trip says so and points at the next unlock */
+        let fact = -1, isNew = false;
+        if (p.seen < avail) { fact = p.seen; p.seen++; isNew = true; }
         st.trips[t.id].got = true;
         st.trips[t.id].fact = fact;
-        return { id: t.id, place: t.place, fact, isNew, x: p.x, eventId: 'body-trip:' + t.id };
+        const n = unlocked(p.x), nextAt = n < 4 ? (n === 0 ? 1 : n * 25) : 0;
+        return { id: t.id, place: t.place, fact, isNew, learned: fact < 0, nextAt, x: p.x, eventId: 'body-trip:' + t.id };
     }
     /* which place a set of gains sends the cell to: the biggest gain, ties go to the order of PLACES */
     function destination(g) {
@@ -291,7 +293,10 @@
         firstFact: ['The first visit brings the first fact.', 'Der erste Besuch bringt den ersten Fakt.', 'La primera visita trae el primer dato.'],
         surprise: ['Your cell is back from', 'Deine Zelle ist zurück aus:', 'Tu célula volvió de'],
         newFact: ['New discovery', 'Neu entdeckt', 'Nuevo hallazgo'],
-        oldFact: ['Remember?', 'Weißt du noch?', '¿Te acuerdas?'],
+        oldFact: ['Already learned', 'Schon gelernt', 'Ya aprendido'],
+        learnedAll: ['Your cell already knows everything here for now. No repeats: the next fact unlocks at', 'Deine Zelle kennt hier schon alles, was es gerade gibt. Keine Wiederholung: der nächste Fakt kommt bei', 'Tu célula ya conoce todo lo de aquí por ahora. Sin repetir: el próximo dato llega al'],
+        learnedDone: ['Your cell has learned every fact about this place. Try another place for something new.', 'Deine Zelle hat jeden Fakt über diesen Ort gelernt. Probier einen anderen Ort für etwas Neues.', 'Tu célula aprendió todos los datos de este lugar. Prueba otro lugar para algo nuevo.'],
+        learnedN: ['learned', 'gelernt', 'aprendidos'],
         keep: ['Into the collection', 'In die Sammlung', 'A la colección'],
         list: ['All places', 'Alle Orte', 'Todos los lugares'],
         spike: ['Right now, after your sweet meal: beta cells are sending out insulin and extra sugar is in the blood.', 'Gerade nach deiner süßen Mahlzeit: Beta-Zellen schicken Insulin los, und im Blut ist mehr Zucker unterwegs.', 'Justo ahora, tras tu comida dulce: las células beta liberan insulina y hay más azúcar en la sangre.'],
@@ -423,14 +428,15 @@
         R().sheet('<div class="bt-sheet bt-place" style="--h:' + p.hue + '"><div class="bt-hero">' + scene(id, Object.assign({ live: true }, m)) + '</div><h2>' + esc(nm(p)) + '</h2><p class="bt-sub">' + esc(p.sub[L()] || p.sub[0]) + ' · <b class="num">' + (pr.x <= 0 && !pr.v ? esc(tr('never')) : pct(pr.x) + ' ' + esc(tr('explored'))) + '</b></p>' +
             '<div class="bt-pbar big" aria-hidden="true"><i style="width:' + Math.min(100, pr.x) + '%"></i></div>' + (note ? '<p class="bt-live">' + esc(note) + '</p>' : '') +
             '<h3>' + esc(tr('how')) + '</h3><p class="bt-note">' + esc(p.how[L()] || p.how[0]) + '</p>' +
-            '<h3>' + esc(tr('facts')) + '</h3><ol class="bt-facts">' + facts + lockedLi + '</ol>' + action + '</div>', { cls: 'bt-ov' });
+            '<h3>' + esc(tr('facts')) + (shown ? ' · ' + shown + ' ' + esc(tr('learnedN')) : '') + '</h3><ol class="bt-facts">' + facts + lockedLi + '</ol>' + action + '</div>', { cls: 'bt-ov' });
     }
     function surpriseSheet(res) {
         const p = byId(res.place);
         if (!p || !R() || !R().sheet) return;
-        const f = p.f[res.fact] || p.f[0];
+        const f = res.fact >= 0 ? (p.f[res.fact] || p.f[0]) : null;
+        const cardTx = f ? (f[L()] || f[0]) : (res.nextAt ? tr('learnedAll') + ' ' + pct(res.nextAt) + '.' : tr('learnedDone'));
         R().sheet('<div class="bt-sheet bt-surprise" style="--h:' + p.hue + '"><div class="bt-hero">' + scene(p.id, Object.assign({ live: true }, moods(Date.now()))) + '</div><p class="bt-sub">' + esc(tr('surprise')) + '</p><h2>' + esc(nm(p)) + '</h2>' +
-            '<div class="bt-card"><small>' + esc(res.isNew ? tr('newFact') : tr('oldFact')) + '</small><p>' + esc(f[L()] || f[0]) + '</p></div>' +
+            '<div class="bt-card' + (f ? '' : ' bt-learned') + '"><small>' + esc(res.isNew ? tr('newFact') : tr('oldFact')) + '</small><p>' + esc(cardTx) + '</p></div>' +
             '<p class="bt-reward num">' + (res.xp ? '+' + res.xp + ' XP · ' : '') + '+' + TRIP_GAIN + (lang() === 'en' ? '% ' : ' % ') + esc(tr('explored')) + ' · ' + pct(res.x) + '</p>' +
             '<button type="button" class="bt-cta" data-bt="close">' + esc(tr('keep')) + '</button> <button type="button" class="bt-link" data-bt="list">' + esc(tr('list')) + '</button></div>', { cls: 'bt-ov' });
     }
@@ -500,7 +506,7 @@
         res.xp = xp;
         save();
         /* the adventure log in micro-book.js keeps one entry per journey */
-        try { const f = byId(res.place).f[res.fact] || []; W.dispatchEvent(new CustomEvent('lowi:body-trip-done', { detail: { id: res.eventId, place: nm(byId(res.place)), saw: String(f[L()] || f[0] || '').slice(0, 88), ts: now } })); } catch (e) {}
+        try { const f = (res.fact >= 0 && byId(res.place).f[res.fact]) || []; W.dispatchEvent(new CustomEvent('lowi:body-trip-done', { detail: { id: res.eventId, place: nm(byId(res.place)), saw: String(f[L()] || f[0] || '').slice(0, 88), ts: now } })); } catch (e) {}
         render();
         surpriseSheet(res);
         return res;

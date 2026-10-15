@@ -116,3 +116,7 @@ Never convert fixture success into “tested on iPhone.” Never report deployme
 ## Spirit release checks
 
 `tests/spirit.test.cjs` exercises the native reward/meal bridge, duplicate capture and water retry, shared six-stage levels, optional/unknown macros, once-daily bonuses, gradual dehydration/recovery, throw boundaries/velocity, date/personality names, German/Spanish voice and non-destructive feed merging. With the original regressions the suite contains 50 passing tests. `tests/spirit-qa.html` supplies 390×844, 375×812 and 375×667 isolated component fixtures with real Spirit UI and reward functions. Fixtures deliberately do not exercise a real camera, signed-in backend or payment. They are not physical-device evidence.
+
+
+## World-first Home release
+The recovered Home patch includes `tests/world-home.test.cjs`, covering aura unlocks, stage thresholds, camera/zoom helpers, loader/cache wiring and use of the existing renderer. The full Node suite passes 445 tests. Cross-device visual, signed-in browser, service-worker upgrade and physical-device checks remain unverified for this release; the user requested publication for their own visual review.

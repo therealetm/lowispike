@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261015-043000">
+<meta name="lowi-build" content="20261015-050000">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -9893,6 +9893,7 @@ R2.needsGate = needsGate;
 /* ---------- start screen ---------- */
 function startHTML(){
   const back = hasLocalStuff();
+  if (window.LowiHerbStart && LowiHerbStart.want(back)) return LowiHerbStart.html();   /* hs-hook: herb-first start */
   if (!back && window.LowiA2 && LowiA2.use()) return LowiA2.html();   /* a2-hook */
   return '<div class="r2-start">' +
     '<div class="r2-orbs" aria-hidden="true"><i></i><i></i><i></i></div>' +
@@ -10089,7 +10090,7 @@ function finishOb(){
   el.innerHTML = '<div class="r2-obpane done"><div class="r2-burst" aria-hidden="true">' + Array.from({length: 14}, (_, i) => '<i style="--i:' + i + '"></i>').join("") + '</div>' +
     '<div class="r2-donecheck">' + R2.ico.check + '</div><div class="r2-obt">You\'re all set' + (s.user.name ? ", " + esc(s.user.name) : "") + '</div>' +
     '<div class="r2-obs">' + (z ? z.g + " " + esc(z.n) + " · " : "") + 'Saved to your account.</div></div>';
-  setTimeout(() => { const ov = el.closest(".r2-ov"); R2.close(ov); try { goTab("home"); } catch(e){} }, 1500);
+  setTimeout(() => { const ov = el.closest(".r2-ov"); R2.close(ov); try { goTab("home"); } catch(e){} try { window.LowiHerbStart && LowiHerbStart.afterSetup(); } catch(e){} }, 1500);   /* hs-hook: starter plan */
 }
 function pickPhoto(cb){
   const inp = document.createElement("input"); inp.type = "file"; inp.accept = "image/*";

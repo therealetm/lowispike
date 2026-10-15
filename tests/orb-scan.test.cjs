@@ -67,6 +67,6 @@ test('bottom bar layout: safe on short screens and reduced motion', () => {
 
 test('update note for the new Scan bar in de, en and es', () => {
   const v = JSON.parse(fs.readFileSync(path.join(root, 'version.json'), 'utf8'));
-  assert.ok(/^[a-z-]+-\d{8}-\d{6}$/.test(v.news.id)); // later builds put their note first and keep this text
+  assert.ok(/^[a-z][a-z-]*-\d{8}-\d{6}$/.test(v.news.id)); /* later builds combine their note with this one */
   for (const l of ['de', 'en', 'es']) assert.ok(v.news.text[l] && v.news.text[l].includes('Deep analyze'), 'news ' + l);
 });

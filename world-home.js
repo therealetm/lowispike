@@ -144,11 +144,25 @@
         if (tb && tb.textContent !== tt) tb.textContent = tt;
         const hint = head ? (head.textContent || '').trim() : '';
         if (ts && ts.textContent !== hint) ts.textContent = hint;
+        mirrorTiles();
         void l;
+    }
+    /* Oct 16: the six Today shortcuts (Check-ins, Meals, Your plate, Medicine, Shopping, Extras) never float over the world as
+       bare words. On the world Home #g2hTiles is hidden (world-home.css); the same shortcuts live as a row inside the Today sheet. */
+    function mirrorTiles() {
+        const box = D.getElementById('whToday'), src = D.getElementById('g2hTiles'); if (!box) return;
+        let row = box.querySelector(':scope > .wh-tiles');
+        const html = src ? src.innerHTML : '';
+        if (!html) { if (row) row.remove(); return; }
+        if (!row) { row = D.createElement('div'); row.className = 'wh-tiles'; row.setAttribute('data-noi18n', ''); }
+        const st0 = box.querySelector(':scope > .sp-status');
+        if (st0 && row.previousElementSibling !== st0) st0.insertAdjacentElement('afterend', row); else if (!st0 && row.parentNode !== box) box.appendChild(row);
+        if (row.__h !== html) { row.__h = html; row.innerHTML = html; }
     }
     /* ---------- the today sheet ---------- */
     function openToday(on) {
         const box = ensureToday(); if (!box) return;
+        if (on) mirrorTiles();
         st.today = !!on;
         H.classList.toggle('wh-today-open', st.today);
         box.setAttribute('aria-hidden', st.today ? 'false' : 'true');
@@ -539,6 +553,8 @@
         const t = e.target;
         if (!H.classList.contains('wh-on')) return;
         const b = t.closest && t.closest('[data-wh]');
+        /* a Today shortcut opens its own sheet: the Today sheet steps aside first (g2h's own listener opens the panel) */
+        if (t.closest && t.closest('#whToday .wh-tiles [data-g2h-open]')) { if (st.today) openToday(false); return; }
         /* Misty herself, the wardrobe and the old evolution path all open Misty's sheet over the world now */
         const sp = t.closest && t.closest('[data-sp]');
         if (!b && sp) {

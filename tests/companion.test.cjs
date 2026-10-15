@@ -87,3 +87,9 @@ t('companion awards no XP and is wired into the loader, service worker and scan'
   assert.ok(/prefers-reduced-motion/.test(css), 'reduced motion respected');
   assert.ok(/Escape/.test(src));
 });
+
+t('the forms sheet is reachable from the herb path and the wardrobe sheet', () => {
+  assert.ok(src.includes('.hq-root[data-view="path"]'), 'herb path host');
+  assert.ok(src.includes("'#spWd'"), 'wardrobe sheet host');
+  assert.ok(/data-cf', 'open'/.test(src));
+});

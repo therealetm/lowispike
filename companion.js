@@ -313,15 +313,29 @@
     D.addEventListener('keydown', e => { if (V.ov && e.key === 'Escape') { e.stopPropagation(); close(); } }, true);
 
     /* entry button next to the wardrobe, and the friends tree */
+    /* where people really look: the herb path sheet (herb world > Entwicklung), the wardrobe sheet (> Kleiderschrank), and the old wardrobe grid */
+    function entryBtn() {
+        const b = D.createElement('button');
+        b.type = 'button'; b.className = 'cf-entry'; b.setAttribute('data-cf', 'open');
+        const g = myGenome();
+        b.innerHTML = '<span class="cf-entry-i">' + (g ? C.miniSVG(g, 'entry') : '') + '</span><span><b>' + esc(L('Your companion\u2019s forms', 'Formen deines Begleiters', 'Formas de tu compa\u00f1ero')) + '</b><small>' + esc(g ? C.formName(g.st, g.el, lang()) : '') + '</small></span>';
+        return b;
+    }
     function entries() {
         D.querySelectorAll('.lh-wardrobe').forEach(w => {
             const host = w.parentNode;
             if (!host || host.querySelector(':scope > .cf-entry')) return;
-            const b = D.createElement('button');
-            b.type = 'button'; b.className = 'cf-entry'; b.setAttribute('data-cf', 'open');
-            const g = myGenome();
-            b.innerHTML = '<span class="cf-entry-i">' + (g ? C.miniSVG(g, 'entry') : '') + '</span><span><b>' + esc(L('Evolution', 'Entwicklung', 'Evolución')) + '</b><small>' + esc(g ? C.formName(g.st, g.el, lang()) : '') + '</small></span>';
-            host.insertBefore(b, w);
+            host.insertBefore(entryBtn(), w);
+        });
+        D.querySelectorAll('.hq-root[data-view="path"]').forEach(r => {
+            if (r.querySelector(':scope > .cf-entry')) return;
+            const h = r.querySelector(':scope > h2');
+            if (h) h.after(entryBtn()); else r.prepend(entryBtn());
+        });
+        D.querySelectorAll('#spWd').forEach(r => {
+            if (r.querySelector(':scope > .cf-entry')) return;
+            const st = r.querySelector(':scope > .wd-stage');
+            if (st) st.after(entryBtn());
         });
         paintFriends();
     }

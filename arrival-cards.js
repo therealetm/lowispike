@@ -151,6 +151,9 @@
     /* the world closed or the card's host went away: forget it */
     setInterval(() => { if (cur && cur.el && !cur.el.isConnected) { clearTimeout(cur.t); cur = null; } }, 1500);
 
+    /* the stylesheet comes in up front, so the first card is already styled when it slides in */
+    if (D.head) css(); else D.addEventListener('DOMContentLoaded', css, { once: true });
+
     W.LowiArrival = { show, close: () => close(), current: () => cur && { id: cur.id, where: cur.where }, core: C };
     if (typeof module !== 'undefined' && module.exports) module.exports = W.LowiArrival;
 })();

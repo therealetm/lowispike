@@ -49,6 +49,7 @@ test('fasting bubble: "Edit" sits above the bubble, stage numbers do not run int
     assert.match(css, /html\.wh-home #spHome \.fe-bub \{ left: calc\(50% - var\(--wh-sx\)\) !important; top: calc\(var\(--wh-cy\) \+ var\(--wh-sy\) - var\(--wh-fs\) \/ 2 - 8px\) !important;/);
     assert.match(css, /html\.wh-home #spHome #spFast \.fb-lab \{ display: none !important; \}/);
     assert.match(fe, /en: \{ editHome: 'Edit',/);
+    assert.match(css, /pointer-events: auto; z-index: 7 !important; \}/);
 });
 
 test('Misty\'s adventures: no "In the garden" label; you see her out in the world, strong or weak', () => {

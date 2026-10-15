@@ -31,6 +31,7 @@
         aura: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="8.5" opacity=".55"/></svg>',
         home: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-6.5 8 6.5V20H4z"/><path d="M10 20v-5h4v5"/></svg>',
         lock: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2.4"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>',
+        sun: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>',
         check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'
     };
     const st = { today: false, x: null, hud: null, zoomAnim: null, heroAnim: null, off: null, misty: null, mistyKey: '', sheetTab: 'aura', wired: false, lastHome: null };
@@ -71,7 +72,7 @@
         Object.keys(attrs || {}).forEach(k => b.setAttribute(k, attrs[k])); b.innerHTML = html; return b;
     }
     function ensureHud() {
-        const tab = D.getElementById('tab-home'); if (!tab) return null;
+        const tab = D.getElementById('spHome'); if (!tab) return null; /* inside #spHome: Home v2 hides anything new it finds loose in #tab-home */
         let hud = D.getElementById('whHud');
         if (hud && hud.isConnected) return hud;
         hud = D.createElement('div'); hud.id = 'whHud'; hud.className = 'wh-hud';
@@ -79,7 +80,8 @@
         const water = btn('wh-cell wh-water', T('Water, add a glass', 'Wasser, ein Glas dazu', 'Agua, un vaso más'), '<span class="wh-cell-fill" aria-hidden="true"></span><span class="wh-cell-tx"><small></small><b></b></span>', { 'data-sp': 'water' });
         const today = btn('wh-todaybtn', T('Open today', 'Heute öffnen', 'Abrir hoy'), ICO.today + '<span><b></b><small></small></span>', { 'data-wh': 'today', 'aria-expanded': 'false', 'aria-controls': 'whToday' });
         const zoom = btn('wh-zoom', T('Show the whole world', 'Ganze Welt zeigen', 'Ver todo el mundo'), ICO.out, { 'data-wh': 'zoom' });
-        hud.append(name, water, today, zoom);
+        const scrim = D.createElement('div'); scrim.className = 'wh-scrim'; scrim.setAttribute('data-wh', 'scrim'); scrim.setAttribute('aria-hidden', 'true');
+        hud.append(scrim, name, water, today, zoom);
         tab.appendChild(hud);
         return hud;
     }
@@ -133,9 +135,16 @@
         D.body.appendChild(x);
         return x;
     }
+    function topHost() { const w = D.getElementById('sheetwrap'); return w && w.classList.contains('open') ? w : null; }
     function closeTop() {
+        if (topHost()) { try { W.LowiHost.closeSheet(); } catch (e) { const w = topHost(); w && w.click(); } setTimeout(syncX, 30); return true; }
         const r = topR2();
-        if (r) { try { W.LowiR2.close(r); } catch (e) { const b = r.querySelector('.r2-x'); b && b.click(); } setTimeout(syncX, 30); return true; }
+        if (r) {
+            try { W.LowiR2.close(r); } catch (e) { const b = r.querySelector('.r2-x'); b && b.click(); }
+            /* the close spring runs on animation frames; if the device is busy and it stalls, the closed sheet must not linger over the world */
+            setTimeout(() => { if (r.isConnected && r.classList.contains('off')) r.remove(); syncX(); }, 900);
+            setTimeout(syncX, 30); return true;
+        }
         if (st.today) { openToday(false); return true; }
         const w = topWorld(); if (w) { const b = w.querySelector('[data-sp="close"]'); b && b.click(); setTimeout(syncX, 30); return true; }
         return false;
@@ -148,8 +157,9 @@
         if (m) { const p = m[1].split(',').map(s => s.trim()); if (p.length >= 3) sh.style.setProperty('--wh-sheet-bg', 'rgba(' + p[0] + ',' + p[1] + ',' + p[2] + ',0.86)'); }
     }
     function syncX() {
-        const x = ensureX(), r = topR2(), w = topWorld();
-        const on = !!(r || st.today || w);
+        const x = ensureX(), r = topR2(), w = topWorld(), hs = topHost();
+        const on = !!(r || st.today || w || hs);
+        H.classList.toggle('wh-host-on', !!hs);
         H.classList.toggle('wh-x-on', on);
         H.classList.toggle('wh-r2-on', !!r);
         if (r) glassSheet(r);
@@ -205,6 +215,15 @@
         ['pointerdown', 'touchstart'].forEach(n => b.addEventListener(n, e => e.stopPropagation(), { passive: true }));
         b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); toggleZoom(); });
         host.appendChild(b); paintZoom();
+        /* the day & night slider (atmosphere.js mounts its card into any .r2-look) right here in the world */
+        if (W.LowiAtmos) {
+            const ab = btn('wh-atmbtn', T('Day & night', 'Tag & Nacht', 'D\u00eda y noche'), ICO.sun, { 'data-wh': 'atm', 'aria-expanded': 'false' });
+            const pop = D.createElement('div'); pop.className = 'wh-atm-pop'; pop.hidden = true; pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', T('Day & night', 'Tag & Nacht', 'D\u00eda y noche'));
+            pop.innerHTML = '<div class="r2-look"></div>';
+            [ab, pop].forEach(el => ['pointerdown', 'touchstart', 'pointermove', 'touchmove', 'wheel'].forEach(n => el.addEventListener(n, e => e.stopPropagation(), { passive: true })));
+            ab.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); pop.hidden = !pop.hidden; ab.setAttribute('aria-expanded', String(!pop.hidden)); ab.classList.toggle('on', !pop.hidden); });
+            host.append(ab, pop);
+        }
     }
 
     /* ---------- hero view on arrival in a region ---------- */
@@ -267,6 +286,8 @@
         c.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
         c.removeAttribute('class'); c.setAttribute('width', '260'); c.setAttribute('height', '310');
         c.querySelectorAll('.lh-acc,.lh-pot-fx,.lh-constellation').forEach(n => n.remove());
+        /* the live markup can carry a stray attribute (e.g. a lone quote) that HTML tolerates and XML does not: drop it or the image never loads */
+        [c, ...c.querySelectorAll('*')].forEach(n => [...n.attributes].forEach(at => { if (!/^[A-Za-z_][-A-Za-z0-9_.:]*$/.test(at.name)) { try { n.removeAttributeNode(at); } catch (e) { } } }));
         const sty = s.getAttribute('style') || '';
         let txt = new XMLSerializer().serializeToString(c);
         /* CSS variables do not resolve inside an <img>: inline the two herb colours */
@@ -298,6 +319,7 @@
                 const old = sp.material.map; sp.material.map = new THREE.CanvasTexture(cv); sp.material.needsUpdate = true; if (old) old.dispose();
             } catch (e) { }
         };
+        img.onerror = () => { st.mistyKey = ''; };
         img.src = url;
     }
 
@@ -416,6 +438,7 @@
         const k = b.dataset.wh;
         if (k === 'misty') { e.preventDefault(); openMisty('aura'); }
         else if (k === 'today') { e.preventDefault(); openToday(!st.today); }
+        else if (k === 'scrim') { e.preventDefault(); openToday(false); }
         else if (k === 'zoom') { e.preventDefault(); if (st.today) openToday(false); zoomOutWhole(); }
         else if (k === 'mstab') { e.preventDefault(); st.sheetTab = b.dataset.tab; repaintMisty(); const nb = D.querySelector('#whMs [data-tab="' + st.sheetTab + '"]'); nb && nb.focus({ preventScroll: true }); }
         else if (k === 'aura') { e.preventDefault(); pickAura(b.dataset.id); }
@@ -430,7 +453,11 @@
     /* ---------- layout + lifecycle ---------- */
     function layout() {
         const tb = D.getElementById('tabbar');
-        if (tb) { const r = tb.getBoundingClientRect(); if (r.height) H.style.setProperty('--wh-tb', Math.max(0, Math.round(W.innerHeight - r.top)) + 'px'); }
+        let top = W.innerHeight;
+        if (tb) { const r = tb.getBoundingClientRect(); if (r.height && !H.classList.contains('wh-today-open') && !H.classList.contains('wh-r2-on')) top = Math.min(top, r.top); else if (r.height) top = Math.min(top, W.innerHeight - (parseFloat(H.style.getPropertyValue('--wh-tb')) || 0)); }
+        /* banners that float above the tab bar (add to Home Screen, offline, update) push the thumb row up */
+        D.querySelectorAll('#lcA2hs, .lc-banner').forEach(b => { const r = b.getBoundingClientRect(); if (r.height && r.bottom > W.innerHeight * .6 && getComputedStyle(b).display !== 'none' && getComputedStyle(b).visibility !== 'hidden') top = Math.min(top, r.top); });
+        H.style.setProperty('--wh-tb', Math.max(0, Math.round(W.innerHeight - top)) + 'px');
     }
     function tick() {
         const h = home(); if (!h || !h.querySelector('.sp-heroes')) return;
@@ -454,7 +481,8 @@
         W.addEventListener('resize', layout);
         const mo = new MutationObserver(() => { clearTimeout(st.mt); st.mt = setTimeout(tick, 60); });
         mo.observe(D.body, { childList: true });
-        const tabs = () => { const t = D.getElementById('tab-home'); if (t && !t.dataset.whObs) { t.dataset.whObs = '1'; new MutationObserver(tick).observe(t, { attributes: true, attributeFilter: ['class'] }); } };
+        const tabs = () => { const t = D.getElementById('tab-home'); if (t && !t.dataset.whObs) { t.dataset.whObs = '1'; new MutationObserver(tick).observe(t, { attributes: true, attributeFilter: ['class'] }); }
+            const sw = D.getElementById('sheetwrap'); if (sw && !sw.dataset.whObs) { sw.dataset.whObs = '1'; new MutationObserver(syncX).observe(sw, { attributes: true, attributeFilter: ['class'] }); } };
         setInterval(() => { tabs(); tick(); }, 700);
         tabs(); tick();
     }

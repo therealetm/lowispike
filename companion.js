@@ -217,42 +217,52 @@
     function curType() { try { const m = model(); return C.normType(m && m.profile && m.profile.personality); } catch (e) { return ''; } }
     function stages() { try { return (W.LOWI_HERB_CONFIG && LOWI_HERB_CONFIG.stages) || null; } catch (e) { return null; } }
     const FALLBACK = [{ xp: 0 }, { xp: 100 }, { xp: 300 }, { xp: 700 }, { xp: 1500 }, { xp: 3000 }];
+    /* Misty's view (Oct 15 evening): tapping Misty opens THIS, the Pokémon route. Her picture is the same render as on Home
+       (plantHTML 'hero' through cell-world + the form wrapper, inside the same glass bubble), then XP to the next evolution,
+       the six forms drawn with the same render code (locked ones as silhouettes), the optional style picker and sharing. */
+    function homeLook() {
+        const c = D.querySelector('#spBubble .sp-creature'), svg = c && c.querySelector('svg.tmg-plant');
+        return { dim: !!(svg && svg.classList.contains('lh-droopy')), dry: c ? (c.style.getPropertyValue('--sp-dry') || '0') : '0' };
+    }
+    function heroArt(m, hp) {
+        const T = HT(), h = homeLook();
+        try { return T.plantHTML(Object.assign({}, m, h.dim ? { dim: true, mood: 'droopy' } : {}), 'hero', hp); } catch (e) { return ''; }
+    }
+    function formArt(m, hp, g, i) {
+        const T = HT();
+        try { return T.plantHTML(Object.assign({}, m, { index: i, dim: false, mood: 'happy' }), 'node', hp, { cfStage: i, hidden: true }); } catch (e) { }
+        return C.miniSVG(Object.assign({}, g, { st: i }), 'p' + i);
+    }
     function sheetHTML() {
         const m = model(), g = myGenome(m), p = prefs();
-        if (!m || !g) return '<div class="cf-panel"><p>' + esc(L('Your companion is still waking up.', 'Dein Begleiter wacht gerade auf.', 'Tu compañero se está despertando.')) + '</p></div>';
-        const nm = (() => { try { return W.LowiHerbIdentity.current().name; } catch (e) { return 'Misty'; } })();
-        const T = HT(), cc = cur(), hp = cc && cc.p ? cc.p : {};
-        let big = '';
-        try { big = T.plantHTML(m, 'card', hp, {}); } catch (e) { big = ''; }
+        const xBtn = '<button type="button" class="cf-x" data-cf="close" aria-label="' + esc(L('Close', 'Schließen', 'Cerrar')) + '">×</button>';
+        if (!m || !g) return '<div class="cf-panel cf-misty" role="dialog" aria-modal="true" aria-label="Misty"><header class="cf-head"><h2>Misty</h2>' + xBtn + '</header><div class="cf-scroll"><p>' + esc(L('Your companion is still waking up.', 'Dein Begleiter wacht gerade auf.', 'Tu compañero se está despertando.')) + '</p></div></div>';
+        const nm = (() => { try { return W.LowiHerbIdentity.current().name; } catch (e) { } try { return HT().name(cur().p, m) || 'Misty'; } catch (e) { return 'Misty'; } })();
+        const cc = cur(), hp = cc && cc.p ? cc.p : {}, pal = (m.profile && m.profile.palette) || {};
         const sign = m.profile && m.profile.sign, t = curType();
         const signTxt = sign ? (() => { try { return W.LowiHerbIdentity.signLabel(sign.name); } catch (e) { return sign.name; } })() : '';
-        const elTxt = { fire: L('fire family: flame tufts and blaze wings', 'Feuerfamilie: Flammenbüschel und Feuerflügel', 'familia de fuego: penachos y alas de fuego'), water: L('water family: fins and flowing frills', 'Wasserfamilie: Flossen und Rüschen', 'familia de agua: aletas y volantes'), air: L('air family: wisp ears and sky wings', 'Luftfamilie: Wirbelohren und Himmelsflügel', 'familia de aire: orejas de brisa y alas'), earth: L('earth family: leaf sprouts and a crystal shell', 'Erdfamilie: Blattsprossen und Kristallpanzer', 'familia de tierra: brotes y caparazón'), spirit: L('glow family until a sign is set', 'Leuchtfamilie, bis ein Sternzeichen da ist', 'familia de luz hasta tener signo') }[g.el];
-        const body = t ? [g.au === 'wide' ? L('wide sparkles', 'weite Funken', 'chispas amplias') : L('close glow', 'nahes Leuchten', 'brillo cercano'), g.pt === 'band' ? L('soft bands', 'sanfte Streifen', 'bandas suaves') : L('star freckles', 'Sternsprenkel', 'pecas de estrella'), g.sh === 'edge' ? L('crisp edges', 'klare Kanten', 'bordes nítidos') : L('round shapes', 'runde Formen', 'formas redondas'), g.sy === 'even' ? L('even pairs', 'gleiche Paare', 'pares iguales') : L('playful, uneven pairs', 'verspielt ungleich', 'pares juguetones')].join(' · ') : '';
+        const fam = { fire: L('Fire family', 'Feuerfamilie', 'Familia de fuego'), water: L('Water family', 'Wasserfamilie', 'Familia de agua'), air: L('Air family', 'Luftfamilie', 'Familia de aire'), earth: L('Earth family', 'Erdfamilie', 'Familia de tierra'), spirit: L('Glow family', 'Leuchtfamilie', 'Familia de luz') }[g.el] || '';
         const steps = C.path(stages() || FALLBACK, m.xp, m.index, g.el, lang());
-        const forms = steps.map(s => {
-            const gg = Object.assign({}, g, { st: s.i });
-            return '<li class="cf-step' + (s.reached ? ' on' : ' cf-locked') + (s.current ? ' cur' : '') + '"><span class="cf-sm">' + C.miniSVG(gg, 'p' + s.i) + '</span><b>' + esc(s.name) + '</b><small>' + esc(s.trait) + '</small><em>' +
-                esc(s.current ? L('now', 'jetzt', 'ahora') : s.reached ? '✓' : s.left + ' XP') + '</em></li>';
-        }).join('');
-        let calmTxt = '';
-        if (calmNow > 0 && hoursNow != null) {
-            const h = Math.floor(hoursNow);
-            calmTxt = '<p class="cf-note cf-calmnote">' + esc(calmNow >= 1 ? L(h + ' h since your last meal: calm glow is full. It stays like this, there\'s nothing extra for going longer. Eat when you\'re hungry.', h + ' h seit deiner letzten Mahlzeit: das ruhige Leuchten ist voll. Es bleibt so, länger bringt nichts extra. Iss, wenn du Hunger hast.', h + ' h desde tu última comida: el brillo tranquilo está completo. Se queda así, ir más lejos no da nada extra. Come cuando tengas hambre.') : L(h + ' h since your last meal: a calm glow is building around me.', h + ' h seit deiner letzten Mahlzeit: um mich baut sich ein ruhiges Leuchten auf.', h + ' h desde tu última comida: un brillo tranquilo crece a mi alrededor.')) + '</p>';
-        }
+        const ci = C.clampStage(m.index), now = steps[ci] || steps[0], nx = steps[ci + 1] || null, xp = Math.max(0, Math.round(+m.xp || 0));
+        const pct = nx ? Math.max(0, Math.min(100, Math.round((xp - now.xp) / Math.max(1, nx.xp - now.xp) * 100))) : 100;
+        const nextTxt = !nx ? L('Final form reached. She keeps glowing with you.', 'Letzte Form erreicht. Sie leuchtet weiter mit dir.', 'Forma final alcanzada. Sigue brillando contigo.')
+            : nx.left > 0 ? L(nx.left + ' XP to ' + nx.name, 'Noch ' + nx.left + ' XP bis ' + nx.name, 'Faltan ' + nx.left + ' XP para ' + nx.name)
+                : L('Ready to evolve into ' + nx.name, 'Bereit für ' + nx.name, 'Lista para ' + nx.name);
+        const dry = homeLook().dry;
+        const forms = steps.map((s, i) => '<li class="cf-step' + (s.reached ? ' on' : ' cf-locked') + (s.current ? ' cur' : '') + '"' + (s.current ? ' aria-current="step"' : '') + '><span class="cf-sm">' + formArt(m, hp, g, s.i) + '</span><b>' + esc(s.name) + '</b><em>' +
+            esc(s.current ? L('now', 'jetzt', 'ahora') : s.reached ? '✓' : s.xp + ' XP') + '</em><span class="cf-sr">' + esc(L('Form ', 'Form ', 'Forma ') + (i + 1) + ': ' + s.name + (s.reached ? '' : ', ' + L('from ', 'ab ', 'desde ') + s.xp + ' XP')) + '</span></li>').join('');
         const sel = V.pend || (t ? t.split('') : ['', '', '', '']);
         const typeBtns = AX.map((a, i) => '<div class="cf-ax" role="group">' + [0, 1].map(j => '<button type="button" data-cf="ax" data-i="' + i + '" data-v="' + a[j] + '" aria-pressed="' + (sel[i] === a[j]) + '">' + esc(pick3(a[2 + j])) + '</button>').join('') + '</div>').join('');
-        return '<div class="cf-panel" role="dialog" aria-modal="true" aria-labelledby="cfTitle"><header class="cf-head"><h2 id="cfTitle">' + esc(L('Evolution', 'Entwicklung', 'Evolución')) + '</h2><button type="button" class="cf-x" data-cf="close" aria-label="' + esc(L('Close', 'Schließen', 'Cerrar')) + '">×</button></header><div class="cf-scroll">' +
-            '<div class="cf-hero"><div class="cf-big">' + big + '</div><div><b class="cf-form">' + esc(nm) + ' · ' + esc(C.formName(g.st, g.el, lang())) + '</b><small>' + esc(L('Grows with what you log: meals, water, moves, scans. Forms never shrink.', 'Wächst mit dem, was du loggst: Essen, Wasser, Bewegung, Scans. Formen schrumpfen nie.', 'Crece con lo que registras: comidas, agua, movimiento, escaneos. Las formas nunca encogen.')) + '</small></div></div>' +
-            calmTxt +
-            '<h3>' + esc(L('What makes it yours', 'Was es zu deinem macht', 'Qué lo hace tuyo')) + '</h3><ul class="cf-made">' +
-            '<li><b>' + esc(L('Star sign', 'Sternzeichen', 'Signo')) + '</b><span>' + esc(sign ? signTxt + ' · ' + elTxt : L('Add your birthday in Profile, then your element shows up here.', 'Trag deinen Geburtstag im Profil ein, dann zeigt sich hier dein Element.', 'Añade tu cumpleaños en Perfil y aquí aparecerá tu elemento.')) + '</span></li>' +
-            '<li><b>' + esc(L('Personality style', 'Persönlichkeitsstil', 'Estilo de personalidad')) + '</b><span>' + esc(t ? t + ' · ' + body : L('Not chosen. Optional, pick below.', 'Nicht gewählt. Optional, unten wählen.', 'Sin elegir. Opcional, elige abajo.')) + '</span></li>' +
-            '<li><b>' + esc(L('Bubble', 'Blase', 'Burbuja')) + '</b><span>' + esc(L('your cell and its colours stay.', 'deine Zelle und ihre Farben bleiben.', 'tu célula y sus colores se quedan.')) + '</span></li></ul>' +
-            '<details class="cf-pick"' + (!t || V.pickOpen ? ' open' : '') + '><summary>' + esc(L('Choose your style (optional)', 'Stil wählen (optional)', 'Elige tu estilo (opcional)')) + '</summary>' + typeBtns +
-            '<p class="cf-tiny">' + esc(L('Only changes how your companion looks and talks. Not a test or a diagnosis.', 'Ändert nur, wie dein Begleiter aussieht und spricht. Kein Test, keine Diagnose.', 'Solo cambia cómo se ve y habla tu compañero. No es un test ni un diagnóstico.')) + '</p>' + (t ? '<button type="button" class="cf-link" data-cf="clear">' + esc(L('Remove style', 'Stil entfernen', 'Quitar estilo')) + '</button>' : '') + '</details>' +
-            '<h3>' + esc(L('Forms', 'Formen', 'Formas')) + '</h3><ol class="cf-path">' + forms + '</ol>' +
-            '<p class="cf-tiny">' + esc(L('Forms show what you have logged, not a health measurement. A sweet treat never takes a form away.', 'Formen zeigen, was du geloggt hast, keine Gesundheitsmessung. Etwas Süßes nimmt nie eine Form weg.', 'Las formas muestran lo que registraste, no una medida de salud. Un dulce nunca quita una forma.')) + '</p>' +
-            '<label class="cf-row"><input type="checkbox" data-cf="traits"' + (p.traits ? ' checked' : '') + '><span>' + esc(L('Show evolved traits', 'Entwicklungsmerkmale zeigen', 'Mostrar rasgos evolucionados')) + '</span></label>' +
+        return '<div class="cf-panel cf-misty" role="dialog" aria-modal="true" aria-labelledby="cfTitle"><header class="cf-head"><h2 id="cfTitle">' + esc(nm) + '</h2>' + xBtn + '</header><div class="cf-scroll">' +
+            '<div class="cf-hero"><div class="cf-bub" style="--tmg-a:' + esc(pal.a || '#92ddd7') + ';--tmg-b:' + esc(pal.b || '#b8b0ff') + '"><span class="cf-bub-water" aria-hidden="true"></span><span class="cf-bub-herb"><span class="cf-bub-c" style="--sp-dry:' + esc(dry) + '">' + heroArt(m, hp) + '</span></span></div>' +
+            '<b class="cf-fname">' + esc(now.name) + '</b><small class="cf-sub">' + esc(L('Form ' + (ci + 1) + ' of 6', 'Form ' + (ci + 1) + ' von 6', 'Forma ' + (ci + 1) + ' de 6') + (sign ? ' · ' + signTxt + ' · ' + fam : '')) + '</small>' +
+            '<i class="cf-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '" aria-label="' + esc(L('XP to the next evolution', 'XP bis zur nächsten Entwicklung', 'XP hasta la próxima evolución')) + '"><i style="width:' + pct + '%"></i></i>' +
+            '<small class="cf-next"><b>' + xp + ' XP</b> · ' + esc(nextTxt) + '</small></div>' +
+            '<h3>' + esc(L('Evolution path', 'Entwicklungsweg', 'Camino de evolución')) + '</h3><ol class="cf-path">' + forms + '</ol>' +
+            '<p class="cf-tiny">' + esc(L('She evolves with what you log: meals, water, moves, scans. Forms never shrink.', 'Sie entwickelt sich mit dem, was du loggst: Essen, Wasser, Bewegung, Scans. Formen schrumpfen nie.', 'Evoluciona con lo que registras: comidas, agua, movimiento, escaneos. Las formas nunca encogen.')) + '</p>' +
+            '<details class="cf-pick"' + (V.pickOpen ? ' open' : '') + '><summary>' + esc(L('Her style (optional)', 'Ihr Stil (optional)', 'Su estilo (opcional)')) + (t ? '<span class="cf-pick-t">' + esc(t) + '</span>' : '') + '</summary>' + typeBtns +
+            '<p class="cf-tiny">' + esc(L('Only changes how your companion looks and talks. Not a test or a diagnosis.', 'Ändert nur, wie dein Begleiter aussieht und spricht. Kein Test, keine Diagnose.', 'Solo cambia cómo se ve y habla tu compañero. No es un test ni un diagnóstico.')) + '</p>' + (t ? '<button type="button" class="cf-link" data-cf="clear">' + esc(L('Remove style', 'Stil entfernen', 'Quitar estilo')) + '</button>' : '') +
+            '<label class="cf-row"><input type="checkbox" data-cf="traits"' + (p.traits ? ' checked' : '') + '><span>' + esc(L('Show evolved traits', 'Entwicklungsmerkmale zeigen', 'Mostrar rasgos evolucionados')) + '</span></label></details>' +
             '<label class="cf-row"><input type="checkbox" data-cf="share"' + (p.share ? ' checked' : '') + '><span>' + esc(L('Friends see my companion in their friends tree', 'Freunde sehen meinen Begleiter in ihrem Freundesbaum', 'Mis amigos ven a mi compañero en su árbol')) + '<small>' + esc(L('Only the look is shared, never your birthday, sign or type.', 'Geteilt wird nur das Aussehen, nie Geburtstag, Sternzeichen oder Typ.', 'Solo se comparte el aspecto, nunca tu cumpleaños, signo o tipo.')) + '</small></span></label>' +
             (V.msg ? '<p class="cf-note" role="status">' + esc(V.msg) + '</p>' : '') + '</div></div>';
     }

@@ -398,6 +398,8 @@
     }
     function openMisty(tab) {
         st.sheetTab = tab || 'aura';
+        /* Oct 15 evening: tapping Misty opens her evolution view (same Misty as here, her six forms, XP to the next one) */
+        try { if (W.LowiCompanion && W.LowiCompanion.open && W.LowiCompanion.open()) return true; } catch (e) { }
         const R2 = W.LowiR2; if (!R2 || !R2.sheet) return false;
         const ex = D.getElementById('whMs'); if (ex) { repaintMisty(); return true; }
         R2.sheet(mistyHTML(st.sheetTab), { cls: 'wh-ms-ov' });

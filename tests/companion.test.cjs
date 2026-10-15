@@ -93,3 +93,17 @@ t('the forms sheet is reachable from the herb path and the wardrobe sheet', () =
   assert.ok(src.includes("'#spWd'"), 'wardrobe sheet host');
   assert.ok(/data-cf', 'open'/.test(src));
 });
+
+t('tapping Misty opens her evolution view with the same Misty as on Home (Oct 15 evening)', () => {
+  const wh = fs.readFileSync(path.join(root, 'world-home.js'), 'utf8');
+  const om = wh.slice(wh.indexOf('function openMisty('), wh.indexOf('function openMisty(') + 400);
+  assert.ok(/LowiCompanion\.open\(\)/.test(om), 'world-home openMisty routes to the companion view first');
+  assert.ok(/T\.plantHTML\([^;]*'hero', hp\)/.test(src), 'hero uses the same plantHTML hero render as Home');
+  assert.ok(/'node', hp, \{ cfStage: i/.test(src), 'each of the six forms uses the same render code');
+  assert.ok(/class="cf-bub"/.test(src) && /\.cf-bub\s*\{[^}]*border-radius: 50%/.test(css), 'same round glass bubble');
+  assert.ok(/cf-locked/.test(src) && /\.cf-locked \.cf-sm \{[^}]*brightness\(0\)/.test(css), 'locked forms as silhouettes');
+  assert.ok(/role="progressbar"/.test(src) && /XP bis/.test(src), 'XP to the next evolution');
+  assert.ok(/data-cf="share"/.test(src) && /never your birthday/.test(src), 'sharing note: only the look');
+  assert.ok(!/data-cf="wardrobe"|Kleiderschrank öffnen/.test(src.slice(src.indexOf('function sheetHTML'), src.indexOf('function paint('))), 'no dress-up in the view');
+  assert.ok(/\.cf-bub-water \{ animation: none/.test(css), 'reduced motion stills the bubble');
+});

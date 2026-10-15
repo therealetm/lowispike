@@ -113,6 +113,6 @@ test('reduced motion turns the animations off, hooks are wired', () => {
   const rm = css.slice(css.indexOf('prefers-reduced-motion:reduce'));
   for (const s of ['.dr-ov.dr-in .dr-card', '.dr-day-herb', '.dr-note']) assert.ok(rm.includes(s), s);
   const apple = fs.readFileSync(path.join(root, 'apple-ui.js'), 'utf8'), sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
-  assert.ok(/'daily-ritual\.js'\]/.test(apple)); assert.ok(apple.includes('daily-ritual.css?v='));
+  assert.ok(/'daily-ritual\.js'[,\]]/.test(apple)); assert.ok(apple.includes('daily-ritual.css?v='));
   assert.equal((sw.match(/"daily-ritual\.js", "daily-ritual\.css"/g) || []).length, 2);
 });

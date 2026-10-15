@@ -123,7 +123,7 @@ a.hs-act{text-decoration:none;box-sizing:border-box;text-align:center}
 .hs-ov[data-still] .hs-k-body,.hs-ov[data-still] .hs-k-tail{animation:none}
 
 /* Kometa's daily gift spot (Oct 15): one small glass cell bottom left of the world Home, mirrored to the zoom button. */
-html.wh-home #whHud > .hs-gift { left: max(16px, env(safe-area-inset-left)); bottom: calc(var(--wh-tb, 84px) + 15px); width: 44px; height: 44px; padding: 0; border-radius: 50%;
+html.wh-home #whHud > .hs-gift { left: var(--hs-gl, max(16px, env(safe-area-inset-left))); bottom: calc(var(--wh-tb, 84px) + 15px); width: 44px; height: 44px; padding: 0; border-radius: 50%;
   display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,.24); background: rgba(10,22,52,.5);
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 8px 24px -12px rgba(0,0,0,.55); transition: opacity .35s, transform .35s; }
 .hs-gift-core { width: 18px; height: 18px; border-radius: 50%; background: radial-gradient(circle at 35% 32%, #fff 0 14%, #ffe7a8 26%, #ffb85c 62%, rgba(255,160,70,.15) 100%);
@@ -132,7 +132,7 @@ html.wh-home #whHud > .hs-gift { left: max(16px, env(safe-area-inset-left)); bot
 html.wh-home #whHud > .hs-gift:active { transform: scale(.94); }
 html.wh-home #whHud > .hs-gift.is-open { opacity: 0; transform: scale(.6); pointer-events: none; }
 html[data-theme="light"] #whHud > .hs-gift { background: rgba(255,255,255,.66); border-color: rgba(11,29,63,.14); }
-.hs-giftpop { position: absolute; pointer-events: auto; left: max(16px, env(safe-area-inset-left)); bottom: calc(var(--wh-tb, 84px) + 70px); width: min(280px, calc(100vw - 32px)); box-sizing: border-box;
+.hs-giftpop { position: absolute; pointer-events: auto; left: var(--hs-gl, max(16px, env(safe-area-inset-left))); bottom: calc(var(--wh-tb, 84px) + 70px); width: min(280px, calc(100vw - 32px)); box-sizing: border-box;
   padding: 14px 16px 12px; border-radius: 22px; color: #fff; background: rgba(10,22,52,.78); border: 1px solid rgba(255,255,255,.2);
   backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); box-shadow: 0 16px 40px -18px rgba(0,0,0,.6); animation: hs-pop-in .32s ease-out both; z-index: 4; }
 .hs-giftpop b { display: block; font-size: 13px; letter-spacing: .02em; opacity: .85; }

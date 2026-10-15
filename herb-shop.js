@@ -103,7 +103,7 @@ D.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data
 D.addEventListener('change',e=>{const t=e.target;if(!V.ov||!V.ov.contains(t)||!t.dataset||!t.dataset.shop)return;if(t.dataset.shop==='remind'){save({...read(),remind:t.checked});paint('[data-shop="remind"]');}else if(t.dataset.shop==='notify')save({...read(),notify:t.checked});},true);
 D.addEventListener('keydown',e=>{if(!V.ov)return;if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();close();return;}
  if(e.key==='Tab'){const f=[...V.ov.querySelectorAll('button:not([disabled]),a[href],input,[tabindex="0"]')];if(!f.length)return;const i=f.indexOf(D.activeElement);if(e.shiftKey&&(i<=0)){e.preventDefault();f[f.length-1].focus();}else if(!e.shiftKey&&i===f.length-1){e.preventDefault();f[0].focus();}else if(i<0){e.preventDefault();f[0].focus();}e.stopImmediatePropagation();}},true);
-if(!D.getElementById('hsCss')){const l=D.createElement('link');l.id='hsCss';l.rel='stylesheet';l.href='herb-shop.css?v='+(((D.querySelector('meta[name="lowi-build"]')||{}).content)||'');D.head.appendChild(l);}
+if(!D.getElementById('hsShopCss')){const l=D.createElement('link');l.id='hsShopCss';l.rel='stylesheet';l.href='herb-shop.css?v='+(((D.querySelector('meta[name="lowi-build"]')||{}).content)||'');D.head.appendChild(l);}
 /* Back from Ko-fi: one calm thank-you line, no tracking, nothing unlocked. */
 function back(){if(!V.away||D.visibilityState==='hidden')return;if(Date.now()-V.away<800)return;V.away=0;if(V.ov&&V.view==='plus'){V.back2=true;paint('.hs-thanks');}}
 D.addEventListener('visibilitychange',back);root.addEventListener('focus',back);root.addEventListener('pageshow',back);
@@ -130,6 +130,8 @@ function ensureGift(){const hud=D.getElementById('whHud');let b=D.querySelector(
  if(!b){b=D.createElement('button');b.type='button';b.className='hs-gift';b.setAttribute('data-shop','gift');
   b.setAttribute('aria-label',L('Kometa\'s gift of the day','Kometas Geschenk des Tages','El regalo del día de Kometa'));
   b.innerHTML='<span class="hs-gift-core" aria-hidden="true"></span>';hud.appendChild(b);}
+ /* iPad: the tab bar is a rail on the left, so the spot sits just right of it */
+ try{const tb=D.getElementById('tabbar'),r=tb&&tb.getBoundingClientRect();const rail=r&&r.height>r.width&&r.left<root.innerWidth/3;b.style.setProperty('--hs-gl',rail?Math.round(r.right+16)+'px':'');if(G.pop)G.pop.style.setProperty('--hs-gl',rail?Math.round(r.right+16)+'px':'');}catch(e){}
  return b;}
 function closeGift(){if(!G.pop)return;clearTimeout(G.t);G.pop.remove();G.pop=null;ensureGift();}
 function openGift(){const now=Date.now();if(G.pop)return;
@@ -140,7 +142,7 @@ function openGift(){const now=Date.now();if(G.pop)return;
   '<p>'+esc(giftFact(now))+'</p>'+
   '<div class="hs-giftrow"><button type="button" class="hs-giftok" data-shop="giftok">'+esc(L('Nice','Schön','Genial'))+'</button>'+
   '<button type="button" class="hs-giftkofi" data-shop="giftkofi">'+icon('heart','♥')+'<span>'+esc(L('Support LOWiSPIKE','LOWiSPIKE unterstützen','Apoyar LOWiSPIKE'))+'</span></button></div>';
- (D.getElementById('whHud')||D.body).appendChild(pop);G.pop=pop;
+ (D.getElementById('whHud')||D.body).appendChild(pop);G.pop=pop;if(b&&b.style.getPropertyValue('--hs-gl'))pop.style.setProperty('--hs-gl',b.style.getPropertyValue('--hs-gl'));
  const ok=pop.querySelector('.hs-giftok');if(ok)ok.focus({preventScroll:true});
  G.t=setTimeout(()=>{if(G.pop&&!G.pop.contains(D.activeElement))closeGift();},12000);
  if(b)setTimeout(()=>{if(b.parentNode&&!b.classList.contains('keep'))b.remove();},reduced()?0:420);}
@@ -150,6 +152,6 @@ D.addEventListener('click',e=>{const t=e.target;const b=t.closest&&t.closest('[d
  if(a==='giftkofi'){e.preventDefault();e.stopPropagation();closeGift();open('plus');return;}
  if(G.pop&&!G.pop.contains(t))closeGift();},true);
 D.addEventListener('keydown',e=>{if(G.pop&&e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();closeGift();}},true);
-setInterval(ensureGift,2000);D.addEventListener('visibilitychange',()=>{if(D.visibilityState==='visible')ensureGift();});setTimeout(ensureGift,600);
+setInterval(ensureGift,2000);root.addEventListener('resize',()=>ensureGift());D.addEventListener('visibilitychange',()=>{if(D.visibilityState==='visible')ensureGift();});setTimeout(ensureGift,600);
 root.LowiHerbShop={open,close,entryHTML,gift:{spot:ensureGift,open:openGift,close:closeGift,taken:giftTaken},state:read,isOpen:()=>!!V.ov,kofiUrl:()=>K.kofiUrl()};
 })(window);

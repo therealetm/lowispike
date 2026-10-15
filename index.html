@@ -1988,7 +1988,7 @@ function histHTML(n){ const h = st().hist.slice(-(n || 4)).reverse(); if (!h.len
   return '<div class="fst-hist" data-noi18n><div class="fst-hh">' + esc(w("recent")) + '</div>' + h.map(f => '<div class="fst-hr"><span>' + esc(at(f.e)) + '</span><b>' + esc(dur((f.e - f.s))) + '</b>' + (f.ok ? '<i class="fst-ok">✓ ' + esc(w("badge")) + '</i>' : '<i></i>') + '<em>+' + (f.xp || 0) + ' XP</em></div>').join("") + '</div>'; }
 function body(){ const s = st(), start = startOf(s), now = Date.now(), t = SEL || now, hours = (t - start) / 36e5, g = goalH(), p = points(hours, g);
   const ms = MS.filter(m => hours >= m.h);
-  return '<div class="fst-sum"><small>' + esc(w("fasted")) + '</small><b id="fstDur">' + esc(dur(t - start)) + '</b><span class="fst-since">' + esc(w("since", {t:at(start)})) + '</span>' +
+  return '<div class="fst-sum"><small>' + esc(w("fasted")) + '</small><b id="fstDur">' + esc(dur(t - start)) + '</b>' + (window.LowiFastEdit ? LowiFastEdit.sinceRow(w("since", {t:at(start)})) : '<span class="fst-since">' + esc(w("since", {t:at(start)})) + '</span>') +
     '<span class="fst-goal' + (p.ok ? " ok" : "") + '">' + esc(p.ok ? "✓ " + w("goalOk", {h:hTxt(g)}) : w("goalLeft", {h:hTxt(g), d:dur(start + g * 36e5 - t)})) + '</span>' +
     (ms.length ? '<span class="fst-msl">' + ms.map(m => '<i>✓ ' + esc(msName(m.h)) + '</i>').join("") + '</span>' : "") + '</div>' +
     '<div class="fst-q">' + esc(w("when")) + '</div>' +
@@ -2072,7 +2072,7 @@ const stopPill = () => '<button type="button" class="fst-stop" data-fst="open" a
 const bigBtn = cls => '<button type="button" class="btn primary fst-btn' + (cls ? " " + cls : "") + '" data-fst="open" data-noi18n>' + esc(w("btnNow")) + '</button>';
 const LV = {en:"Level {n} \u00b7 you're a {t} now", de:"Level {n} \u00b7 du bist jetzt {t}", es:"Nivel {n} \u00b7 ahora eres {t}"};
 const lvl = (n, t) => LV[lang()].replace("{n}", n).replace("{t}", t);
-window.LowiFastStop = {lvl, open, end, mealTicked, points, startOf, stopPill, bigBtn, histHTML, reward, _st:st, w};
+window.LowiFastStop = {lvl, open, end, mealTicked, points, startOf, stopPill, bigBtn, histHTML, reward, paint, _st:st, w};
 })();
 </script>
 <style id="g1css">

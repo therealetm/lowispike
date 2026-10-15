@@ -1640,16 +1640,33 @@ html[data-theme=light] #lwBoot{background:#f6f8fc;color:#141a2b}
   function settle(){
     if (done || !dom || !files) return;
     var wait = sheetsIn(), left = wait.length, t0 = Date.now();
-    /* Late modules finish with short debounced renders (rows, cards slotting in). Wait until the page has been still
-       for 180 ms (at most 700 ms), so the first frame you see is the settled one, then two frames to paint it. */
+    /* Late modules finish with short debounced renders (rows, cards slotting in). Wait until the layout has held still
+       for about 180 ms (at most 700 ms), so the first frame you see is the settled one, then two frames to paint it.
+       It watches the boxes of the screen you are on (layout only, so animations and re-renders of identical content do not count). */
+    function layoutSig(){
+      var h = 7, tabs = document.querySelectorAll('[id^="tab-"]'), i, j, k, t, c, r;
+      for (i = 0; i < tabs.length; i++) { t = tabs[i]; r = t.getBoundingClientRect();
+        if (!(r.width > 0 && r.height > 0 && r.right > 0 && r.left < innerWidth && r.bottom > 0 && r.top < innerHeight)) continue;
+        c = getComputedStyle(t); if (c.visibility === "hidden" || +c.opacity < 0.05) continue;
+        h = (h * 31 + t.scrollHeight) | 0;
+        for (j = 0; j < t.children.length; j++) { c = t.children[j]; h = (h * 31 + c.offsetTop * 7 + c.offsetHeight) | 0;
+          for (k = 0; k < c.children.length; k++) h = (h * 31 + c.children[k].offsetTop * 7 + c.children[k].offsetHeight) | 0; } }
+      return h;
+    }
     function go(){
       if (done || go.on) return; go.on = 1;
-      var q = Date.now(), t = 0, mo = null;
-      function fin(why){ if (fin.d) return; fin.d = 1; if (mo) mo.disconnect(); clearTimeout(t); window.__LOWI_BOOT_Q = (Date.now() - q) + (why ? " " + why : "");
+      var q = Date.now(), last = null, same = 0;
+      function fin(why){ if (fin.d) return; fin.d = 1; window.__LOWI_BOOT_Q = (Date.now() - q) + (why ? " " + why : "");
         requestAnimationFrame(function(){ requestAnimationFrame(function(){ reveal("ready"); }); }); }
-      function still(){ clearTimeout(t); t = setTimeout(function(){ fin("still"); }, 180); }
-      try { mo = new MutationObserver(function(){ if (Date.now() - q > 700) fin("max"); else still(); }); mo.observe(document.body, {childList:true, subtree:true}); } catch(e){ mo = null; }
-      still(); setTimeout(function(){ if (!done) fin("max"); }, 720);
+      function poll(){
+        if (done) return;
+        var sig; try { sig = layoutSig(); } catch(e){ fin("err"); return; }
+        if (sig === last) same++; else { same = 0; last = sig; }
+        if (same >= 3) { fin("still"); return; }
+        if (Date.now() - q >= 700) { fin("max"); return; }
+        setTimeout(poll, 60);
+      }
+      poll();
     }
     if (!left) { go(); return; }
     var fin = function(){ if (--left <= 0) go(); };

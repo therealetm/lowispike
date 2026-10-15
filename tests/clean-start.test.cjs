@@ -22,11 +22,13 @@ function fakeDom(opts) {
     };
     const H = mk('HTML'); H.classList = { add: c => cls.add(c), remove: c => cls.delete(c), contains: c => cls.has(c) };
     const sheets = opts.sheets || [];
-    const document = { documentElement: H, readyState: opts.readyState || 'loading', createElement: mk,
-        querySelectorAll: () => sheets, addEventListener: (t, f) => { (docListeners[t] = docListeners[t] || []).push(f); } };
+    let clock = 0, n = 0;
+    const body = null;
+    const document = { documentElement: H, body, readyState: opts.readyState || 'loading', createElement: mk,
+        querySelectorAll: (q) => q.indexOf('tab-') >= 0 ? (opts.restless ? [{ scrollHeight: ++n, children: [], getBoundingClientRect: () => ({ width: 1, height: 1, right: 1, left: 0, bottom: 1, top: 0 }) }] : []) : sheets, addEventListener: (t, f) => { (docListeners[t] = docListeners[t] || []).push(f); } };
     const events = [];
-    const win = { document, location: { search: opts.search || '' },
-        performance: { now: () => 1234 },
+    const win = { document, location: { search: opts.search || '' }, Date: { now: () => clock },
+        performance: { now: () => 1234 }, innerWidth: 390, innerHeight: 844, getComputedStyle: () => ({ visibility: 'visible', opacity: '1' }),
         matchMedia: () => ({ matches: !!opts.still }),
         setTimeout: (f, ms) => { const x = { f, ms }; timers.push(x); return x; },
         clearTimeout: (x) => { const i = timers.indexOf(x); if (i >= 0) timers.splice(i, 1); },
@@ -38,8 +40,9 @@ function fakeDom(opts) {
     const fire = (t) => (docListeners[t] || []).forEach(f => f());
     const fireWin = (t) => (listeners[t] || []).forEach(f => f());
     const runTimers = (pred) => { const t = timers.filter(pred); t.forEach(x => { timers.splice(timers.indexOf(x), 1); x.f(); }); };
-    const settle = () => { runTimers(t => t.ms === 180); flushRaf(); };
-    return { win, H, cls, timers, events, flushRaf, fire, fireWin, runTimers, settle };
+    const settle = () => { for (let i = 0; i < 20; i++) runTimers(t => t.ms === 60); flushRaf(); };
+    const tick = ms => { clock += ms; };
+    return { win, H, cls, timers, events, flushRaf, fire, fireWin, runTimers, settle, tick };
 }
 function boot(opts) { const d = fakeDom(opts); vm.runInNewContext(bootJs, d.win); return d; }
 
@@ -72,7 +75,7 @@ test('the app shows once the page and every companion file are in, after two fra
     assert.ok(d.cls.has('lw-boot'), 'files alone are not enough while the page is still parsing');
     d.fire('DOMContentLoaded');
     assert.ok(d.cls.has('lw-boot'), 'waits for the page to be still, then two frames, so the first visible frame is the settled one');
-    assert.ok(d.timers.some(t => t.ms === 180) && d.timers.some(t => t.ms === 720), 'stillness window 180 ms, never more than ~0.7 s');
+    assert.ok(d.timers.some(t => t.ms === 60), 'checks the layout every 60 ms until it holds still');
     d.flushRaf(); assert.ok(d.cls.has('lw-boot'));
     d.settle();
     assert.ok(!d.cls.has('lw-boot'));
@@ -86,9 +89,12 @@ test('the app shows once the page and every companion file are in, after two fra
 });
 
 test('a page that keeps changing still opens after the 0.7 s stillness cap', () => {
-    const d = boot({ readyState: 'complete' });
+    const d = boot({ readyState: 'complete', restless: true });
     d.win.LowiBoot.loaded();
-    d.runTimers(t => t.ms === 720); d.flushRaf();
+    for (let i = 0; i < 6; i++) { d.tick(60); d.runTimers(t => t.ms === 60); }
+    d.flushRaf(); assert.ok(d.cls.has('lw-boot'), 'still changing: keep waiting');
+    for (let i = 0; i < 8; i++) { d.tick(60); d.runTimers(t => t.ms === 60); }
+    d.flushRaf();
     assert.ok(!d.cls.has('lw-boot')); assert.match(String(d.win.__LOWI_BOOT_Q), /max/);
 });
 

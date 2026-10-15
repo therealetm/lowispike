@@ -161,7 +161,7 @@
         pops.forEach(p => row.appendChild(p));
     }
     function awayBadge() {
-        /* Oct 16 (E-man): no "In the garden 1:00" label in Misty's bubble. While she is out you see her flying through the world
+        /* Oct 16 (E-man): no garden countdown label in Misty's bubble. While she is out you see her flying through the world
            (world-home.js adventure); the countdown stays on the sun bar in Today. */
         const b = D.querySelector('#spBubble .ls-away'); if (b) b.remove();
     }

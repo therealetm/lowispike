@@ -231,10 +231,16 @@ test('feedback tiers exist and respect reduced motion; only transform and opacit
     for (const f of frames) assert.ok(!/(width|height|top|left|margin)\s*:/.test(f), f.slice(0, 40));
 });
 
-test('wiring: loader after arrival cards, both service-worker lists, stylesheet next to the script', () => {
+test('wiring: loader after fast edit, both service-worker lists, stylesheet next to the script', () => {
     const ui = read('apple-ui.js');
-    assert.ok(ui.includes("'arrival-cards.js','xp-tap-core.js','xp-tap.js'"));
+    assert.ok(ui.includes("'fast-edit.js','xp-tap-core.js','xp-tap.js'"));
     const sw = read('sw.js');
     for (const f of ['xp-tap-core.js', 'xp-tap.js', 'xp-tap.css']) assert.equal(sw.split('"' + f + '"').length - 1, 2, f);
     assert.ok(read('xp-tap.js').includes("replace('xp-tap.js', 'xp-tap.css')"));
+});
+
+test('editing a fast start gives no XP, and fasting never feeds tap or streak rewards twice', () => {
+    for (const f of ['fast-edit.js', 'fast-edit-core.js']) assert.ok(!/\baward\s*\(/.test(read(f)), f);
+    let s = K.decide(K.fresh(DAY), { key: K.keyFor('home/fst-ov', 'Edit start'), tier: 'tap', now: NOW }).store;
+    assert.equal(K.decide(s, { key: K.keyFor('home/fst-ov', 'Edit start'), tier: 'tap', now: NOW + 60000 }).outcome, 'repeat');
 });

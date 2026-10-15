@@ -20,6 +20,7 @@
         if (!e) return 'other';
         const src = String(e.src || ''), id = String(e.eventId || ''), txt = (src + ' ' + (e.label || '')).toLowerCase();
         if (/^sun-full/.test(src) || /^sun-full:/.test(id)) return 'sun';
+        if (/^(tap|combo)$/.test(src)) return 'quest'; /* xtp: tap XP and streak bonus add no sunbeams and no herb praise */
         /* quest, streak and board bonuses reward actions that already counted: no second sunbeam */
         if (!src || /^f\d|^f3all|^f2_break|^e1:/.test(src)) return 'quest';
         if (/^meal/.test(src) || /^meal:|^plan-meal:/.test(id)) return 'meal';

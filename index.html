@@ -5646,7 +5646,7 @@ function award(amt, label, el, src, eventId){
   if (window.LowiHerbCore) LowiHerbCore.sync(S); save();
   try { window.dispatchEvent(new CustomEvent("lowi:reward", {detail:{entry,beforeXP,afterXP:S.xp}})); } catch(e){}
   const after = levelOf(S.xp).L;
-  toast("+" + amt + " XP · " + label);
+  if (!(arguments[5] && arguments[5].quiet)) toast("+" + amt + " XP · " + label); /* xtp: quiet = xp-tap.js shows its own small pop */
   $$(".lvchip").forEach(c => { c.classList.remove("pulse"); void c.offsetWidth; c.classList.add("pulse"); });
   if (after > before) setTimeout(() => toast(window.LowiFastStop ? LowiFastStop.lvl(after, (typeof T === "function" ? T(titleOf(after)) : titleOf(after))) : "Level " + after + " · you're a " + titleOf(after) + " now", 3000) /* fst-lvl */, 1600);
   return amt;

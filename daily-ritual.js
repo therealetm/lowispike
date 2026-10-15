@@ -158,7 +158,7 @@
         const out = {};
         try { Object.keys((s.streak && s.streak.days) || {}).forEach(k => { out[k] = 1; }); } catch (e) {}
         try { (s.logs || []).forEach(l => { const k = l.day || (l.ts ? dayKey(new Date(l.ts)) : ''); if (k) out[k] = 1; }); } catch (e) {}
-        try { (s.ledger || []).forEach(e => { const k = e.day || (e.ts ? dayKey(new Date(e.ts)) : ''); if (k) out[k] = 1; }); } catch (e) {}
+        try { (s.ledger || []).forEach(e => { if (e && /^(tap|combo)$/.test(String(e.src || ''))) return; /* xtp: taps alone don't make an active day */ const k = e.day || (e.ts ? dayKey(new Date(e.ts)) : ''); if (k) out[k] = 1; }); } catch (e) {}
         return Object.keys(out).sort();
     }
     function busy() {

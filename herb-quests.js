@@ -241,7 +241,8 @@
     }
     W.addEventListener('lowi:reward', e => {
         const d = e.detail || {};
-        if (Number.isFinite(+d.beforeXP) && Number.isFinite(+d.afterXP)) setTimeout(() => pop(+d.beforeXP, +d.afterXP), 1700);
+        const minor = d.entry && d.entry.src === 'tap'; /* xtp: tap XP shows its own tiny pop, not the evolution card */
+        if (!minor && Number.isFinite(+d.beforeXP) && Number.isFinite(+d.afterXP)) setTimeout(() => pop(+d.beforeXP, +d.afterXP), 1700);
         setTimeout(repaint, 60);
     });
     /* the first time a food from the collection is logged, say so (no XP) */

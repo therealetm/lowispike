@@ -75,7 +75,7 @@ function toggleEquip(eq,id,xp){const c=cosmetic(id);if(!c||!owns(id,xp))return n
  out[c.kind]=out[c.kind]===c.id?BASE_EQUIPMENT[c.kind]:c.id;return out;}
 function previewEquip(eq,id,xp){const out=cleanEquipment(eq,xp),c=cosmetic(id);if(c)out[c.kind]=c.id;return out;}
 function period(now){const h=new Date(now||Date.now()).getHours();return h>=23||h<5?'night':h<11?'morning':h<17?'day':'evening';}
-function careKind(e){const s=String(e&&((e.src||'')+' '+(e.label||''))||'').toLowerCase();
+function careKind(e){if(e&&/^(tap|combo)$/.test(String(e.src||'')))return null;/* xtp */const s=String(e&&((e.src||'')+' '+(e.label||''))||'').toLowerCase();
  if(/recipe|cook|gekocht/.test(s))return'bloom';if(/swap|swaflo|tausch/.test(s))return'sunlight';
  if(/meal|logged|ate|essen|water|hydrate/.test(s))return'water';if(/move|walk|step|workout|exercise|beweg/.test(s))return'dance';
  if(/scan|barcode|product|caught|catch|find|vitamin/.test(s))return'vitamin';if(/quest|check.?in|glow|fast|e1:/.test(s))return'cheer';return null;}

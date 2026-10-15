@@ -24,7 +24,7 @@ Then inspect the current remote `main` SHA, working-tree status, owning source m
 - The herb is **the** companion. Never render a second companion. The floating bubble above Scan is the herb's compact form; tapping it opens the herb room.
 - Companion speech is event-driven. It may speak after a deliberate herb tap, care action, evolution, or permitted reminder. It must not speak on navigation, every click, or page load.
 - Copy is short, clear, playful, warm, and non-repetitive within a session. No guilt, alarm, medical claims, vague poetry, or unexplained phrases.
-- XP has one source of truth. Care actions use stable event IDs and award XP once. Tapping, navigation, animation, and reopening a screen never award XP.
+- XP has one source of truth. Care actions use stable event IDs and award XP once. Since 2026-10-15 (user decision, see DECISIONS.md) purposeful taps and first visits earn small Curiosity XP through xp-tap.js: once per control or place per day, capped at 40 XP a day, src "tap", batched ids tap:<day>:<seq>; close/cancel/back/delete never earn. These minor entries (src tap/combo) never count as care, sunbeams, herb praise, active days or quests. Animation and reopening a screen still never award XP; care still comes only from real actions.
 - Preserve all six evolution stages and thresholds: Seed 0, Sprout 100, Young Herb 300, Flourishing Herb 700, Radiant Herb 1500, Legendary Bloom 3000. Stages never regress.
 - Wilting is gentle and reversible with one real healthy action. It is never punishment.
 - The star sign must visibly influence color, constellation, and personality, while clarity remains more important than decoration.

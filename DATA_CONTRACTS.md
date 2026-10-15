@@ -31,11 +31,11 @@ Runtime modules may add compatible fields such as `herb`, `health.body`, `health
 
 - `S.xp` is the single total.
 - `S.ledger` is the single reward history.
-- Only canonical `award(amt, label, el, src, eventId)` writes XP.
 - Any repeatable or asynchronous completion must supply a stable `eventId`.
 - `award()` returns `0` if an event ID is already in the ledger.
 - The herb derives its stage from `S.xp`; it does not maintain or deduct a second XP total.
-- Decorative taps, navigation, opening a feature, mounting, animation replay, notification display, and restoring a view award zero.
+- Only canonical `award(amt, label, el, src, eventId, opts?)` writes XP; `opts.quiet` (2026-10-15) skips only its own toast.
+- Mounting, animation replay, notification display, restoring a view and taps from code award zero. Since 2026-10-15 (user decision) trusted purposeful taps and first visits award small Curiosity XP via `xp-tap.js`: src `tap`, ids `tap:<day>:<seq>` (batched), once per control/place per day, max 40 XP a day; close/cancel/back/delete never. Healthy-streak bonus: src `combo`, ids `combo:<day>:<3|5|8>`. Entries with src `tap`/`combo` are minor: never care, sunbeams, praise, quests or active days.
 
 An XP ledger entry is:
 
@@ -58,6 +58,7 @@ Do not change the meaning of an existing `src` or `eventId` prefix without migra
 | `lowispike.shelf.v1` | Shelf/Cook | Products, votes, shopping/list state, swipes, shelf XP metadata, reports, and name. |
 | `lowispike.r5.v1` | Food swipe | Liked/skipped/never/today state, last result, audio/notification preferences, MBTI. |
 | `lowispike.swipe.shared.v1` | Shared food | Community-fed food swipe records cached on the device. |
+| `lowi.xptap.v1` | xp-tap.js | Today's tap XP state `{v:1, day, keys, xp, seq, pend, pendN, last, capSaid}`; resets each day; pending taps flush once. |
 | `lowi.dex.v1` | Scan/Pokédex | Scan/catch view state and local scan data. |
 | `lowi.camok` | Scan | Whether camera access previously succeeded; not permission authority. |
 | `lowi.swaflo.prefs` | Swaflo | `{mode: "cook"|"buy", snack: boolean}`. |

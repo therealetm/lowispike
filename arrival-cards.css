@@ -1,0 +1,56 @@
+/* LOWiSPIKE arrival cards (arrival-cards.js). Prefix .arr-. Navy glass, gold rim and glow (--gold #caa15a / #ecd08f),
+   the place's own hue on the orb and the name. Motion: opacity/transform only, off under reduced motion. */
+.arr-card { --h: #ecd08f; --g1: #caa15a; --g2: #ecd08f; box-sizing: border-box; color: #f3f6ff; font-family: var(--font, system-ui), -apple-system, sans-serif; text-align: left;
+    padding: 12px 14px 13px; border-radius: 20px; border: 1px solid color-mix(in srgb, var(--g2) 62%, transparent);
+    background: linear-gradient(160deg, rgba(20,24,58,.86), rgba(11,16,42,.84)); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    box-shadow: 0 0 0 1px rgba(236,208,143,.08) inset, 0 0 26px -6px color-mix(in srgb, var(--g1) 75%, transparent), 0 0 44px -18px var(--h), 0 12px 30px -16px rgba(0,0,0,.6); }
+.arr-hd { display: flex; align-items: center; gap: 10px; }
+.arr-orb { flex: none; width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 38% 34%, #fff 0 14%, var(--h) 44%, color-mix(in srgb, var(--h) 25%, transparent) 72%);
+    box-shadow: 0 0 14px var(--h), 0 0 0 2px color-mix(in srgb, var(--g2) 55%, transparent); animation: arr-breathe 5s ease-in-out infinite; }
+.arr-tt { flex: 1 1 auto; min-width: 0; }
+.arr-tt small { display: block; font: 700 11px/1.2 var(--font, system-ui), sans-serif; letter-spacing: .08em; text-transform: uppercase; color: var(--g2); text-shadow: 0 0 10px color-mix(in srgb, var(--g1) 70%, transparent); }
+.arr-tt b { display: block; margin-top: 2px; font-size: 18px; font-weight: 800; letter-spacing: -.01em; color: #fff; text-shadow: 0 0 14px color-mix(in srgb, var(--h) 65%, transparent); overflow-wrap: anywhere; }
+.arr-x { flex: none; width: 44px; height: 44px; margin: -8px -8px -8px 0; display: grid; place-items: center; border-radius: 50%; border: 0; background: transparent; color: var(--g2); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.arr-x svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; fill: none; }
+.arr-x:focus-visible { outline: 2px solid var(--g2); outline-offset: -4px; }
+.arr-fact, .arr-today { margin: 9px 0 0; font-size: 13.5px; line-height: 1.38; overflow-wrap: anywhere; }
+.arr-fact span, .arr-today span { display: block; margin-bottom: 2px; font-size: 10.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; opacity: .72; }
+.arr-today { padding: 8px 10px; border-radius: 12px; border-left: 3px solid var(--g1); background: linear-gradient(90deg, color-mix(in srgb, var(--g1) 18%, transparent), color-mix(in srgb, var(--h) 6%, transparent)); }
+.arr-today span { color: var(--g2); opacity: 1; }
+
+/* inside the 3D world: near the top, under the world's header buttons; only the card takes touches */
+.arr-world { position: absolute; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 116px); z-index: 7; width: min(calc(100% - 28px), 400px);
+    transform: translate(-50%, -10px) scale(.96); opacity: 0; transition: opacity .3s ease, transform .35s cubic-bezier(.2,.9,.3,1.2); pointer-events: auto; }
+.arr-world.on { opacity: 1; transform: translate(-50%, 0) scale(1); }
+.arr-world.out { opacity: 0; transform: translate(-50%, -8px) scale(.98); pointer-events: none; }
+/* one label card at a time: the region label and the base card's place text step aside while the arrival card shows */
+.bw3-full.arr-on .bwr-label { visibility: hidden !important; }
+.bw3-full.arr-on .bw3-card > b, .bw3-full.arr-on .bw3-card > p { display: none; }
+
+/* floating (no world, no ride): top of the screen, no backdrop */
+.arr-float { position: fixed; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 12px); z-index: 99997; width: min(calc(100% - 24px), 400px);
+    transform: translate(-50%, -14px); opacity: 0; transition: opacity .3s ease, transform .35s cubic-bezier(.2,.9,.3,1.2); pointer-events: auto; }
+.arr-float.on { opacity: 1; transform: translate(-50%, 0); }
+.arr-float.out { opacity: 0; transform: translate(-50%, -10px); pointer-events: none; }
+
+/* the cell ride's own arrival card, turned into this card (keeps the ride's buttons) */
+.br-card.arr-ride { display: block; width: min(440px, 100%); }
+.arr-ride .arr-body { width: 100%; }
+.arr-ride .br-cbtn { margin-top: 10px; }
+
+/* body journeys: gold "today here" strip in the surprise sheet */
+.arr-strip { --g1: #caa15a; --g2: #ecd08f; display: flex; gap: 10px; align-items: flex-start; margin: 10px 0 4px; padding: 10px 12px; border-radius: 14px; text-align: left;
+    border: 1px solid color-mix(in srgb, var(--g2) 55%, transparent); background: linear-gradient(90deg, color-mix(in srgb, var(--g1) 16%, transparent), color-mix(in srgb, var(--h) 6%, transparent)); box-shadow: 0 0 22px -10px var(--g1); }
+.arr-strip .arr-orb { width: 16px; height: 16px; margin-top: 2px; }
+.arr-strip p { margin: 0; font-size: 13.5px; line-height: 1.38; }
+.arr-strip small { display: block; margin-bottom: 2px; font-size: 10.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: #a8802f; }
+html:not([data-theme="light"]) .arr-strip small { color: var(--g2); }
+
+/* light theme: outside the body world the card turns to warm glass */
+html[data-theme="light"] .arr-float, html[data-theme="light"] .arr-world { color: #12345a; background: linear-gradient(160deg, rgba(255,255,255,.93), rgba(255,248,232,.9)); }
+html[data-theme="light"] .arr-float .arr-tt b, html[data-theme="light"] .arr-world .arr-tt b { color: #12345a; text-shadow: none; }
+html[data-theme="light"] .arr-float .arr-tt small, html[data-theme="light"] .arr-world .arr-tt small, html[data-theme="light"] .arr-float .arr-today span, html[data-theme="light"] .arr-world .arr-today span, html[data-theme="light"] .arr-float .arr-x, html[data-theme="light"] .arr-world .arr-x { color: #94701f; text-shadow: none; }
+
+@keyframes arr-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+@media (prefers-reduced-motion: reduce) { .arr-world, .arr-float { transition: opacity .2s; transform: translate(-50%, 0) !important; } .arr-orb { animation: none; } }
+@media (max-height: 560px) { .arr-world { top: calc(env(safe-area-inset-top, 0px) + 60px); } .arr-fact { display: none; } }

@@ -125,3 +125,9 @@ html.gx-keep #tab-foryou{pointer-events:none!important}
 html.gx-out #tab-foryou.p2-tabin>*,html.gx-in #tab-home.p2-tabin>*,html.gx-keep #tab-foryou>*{animation:none!important}
 html.gx-out #cmPaneChat .cm-compose,html.gx-in #cmPaneChat .cm-compose{opacity:0}
 html.gx-out #cmPaneChat .cg-bub,html.gx-out #cmPaneChat .cg-mid{opacity:0!important}
+/* Oct 16: minimal speech bubbles. No "→ to X" labels; each bubble is filled with its sender's companion colour,
+   so mine are my colour and theirs are theirs. Room messages are simply a bubble next to the sender. */
+#cmPaneChat[data-spirit-chat] .cg-bub,#cmPaneChat[data-spirit-chat] .cg-bub.mine{background:color-mix(in srgb,var(--c) 58%,#ffffff);color:#15122a;border-color:color-mix(in srgb,var(--c) 85%,#000000 0%)}
+#cmPaneChat[data-spirit-chat] .cg-bub.tome{box-shadow:0 5px 18px #0000005e}
+#cmPaneChat[data-spirit-chat] .cg-mid{background:color-mix(in srgb,var(--c) 58%,#ffffff);color:#15122a;border-color:var(--c);min-width:0}
+#cmPaneChat[data-spirit-chat] .cg-mid .cg-hint{color:#3a3556}

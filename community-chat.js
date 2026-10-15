@@ -201,19 +201,20 @@ function galaxy(ms,w,h,quiet){
    /* One line, one conversation: what you said to someone lives on the line while you talk to them and is gone when you stop.
       What they said to you rides the line too while they are the one you picked. */
    if(me&&t)return;if(!me&&toMe&&picked)return;
-   const tag=t?'<span class="cg-to'+(toMe?' me':'')+'">→ '+esc(toMe?tr('toYou'):fill('toArrow',(r.get(t.uid)||{n:t.n}).n||t.n))+'</span>':'';
-   const est=Math.round(body.length*6.2+24<=x.bub.width?Math.max(t?104:64,body.length*6.2+24):x.bub.width),side=x.bub.mode!=='top';
+   /* Oct 16 (E-man: "keep it minimal"): no "→ to X" label. The bubble wears the sender's colour and sits next to the sender. */
+   const tag='';
+   const est=Math.round(body.length*6.2+24<=x.bub.width?Math.max(48,body.length*6.2+24):x.bub.width),side=x.bub.mode!=='top';
    const left=side?(x.bub.mode==='l'?x.bub.left:x.bub.right-est):Math.max(x.cell.x+6,Math.min(x.x-est/2,x.cell.x+x.cell.w-6-est)),tail=side?0:Math.max(14,Math.min(est-14,x.x-left));
    const st=m.status?'<span class="cg-st">'+tr(m.status==='sending'?'sending':'unconfirmed')+'</span>':'';
-   html+=button('thread',tag+'<span class="cg-t" style="-webkit-line-clamp:'+Math.max(1,x.bub.lines-(t?1:0)-(st?1:0))+'">'+text(body)+'</span>'+st,'data-id="'+esc(m.id)+'" aria-label="'+esc(label+': '+m.t)+' · '+tr('openThread')+'" style="left:'+Math.round(left)+'px;width:'+Math.round(est)+'px;'+(side?'top:'+x.bub.cy+'px;':'bottom:'+Math.round(h-x.bub.bottom)+'px;')+'max-height:'+x.bub.max+'px;--o:'+(m.status?1:o)+';--tail:'+Math.round(tail)+'px;--c:'+hueColor(x.uid,me)+'"','cg-bub'+(side?' s'+x.bub.mode:'')+(me?' mine':'')+(toMe?' tome':'')+(talking?' pop':''));}
+   html+=button('thread',tag+'<span class="cg-t" style="-webkit-line-clamp:'+Math.max(1,x.bub.lines-(st?1:0))+'">'+text(body)+'</span>'+st,'data-id="'+esc(m.id)+'" aria-label="'+esc(label+': '+m.t)+' · '+tr('openThread')+'" style="left:'+Math.round(left)+'px;width:'+Math.round(est)+'px;'+(side?'top:'+x.bub.cy+'px;':'bottom:'+Math.round(h-x.bub.bottom)+'px;')+'max-height:'+x.bub.max+'px;--o:'+(m.status?1:o)+';--tail:'+Math.round(tail)+'px;--c:'+hueColor(x.uid,me)+'"','cg-bub'+(side?' s'+x.bub.mode:'')+(me?' mine':'')+(toMe?' tome':'')+(talking?' pop':''));}
  });
  if(sel&&spot.has(sel)){const t=spot.get(sel),p=r.get(sel)||{n:''},theyTalk=!!(cv&&!cv.fromMe)||botTyping===sel,A=theyTalk?t:meSpot,B=theyTalk?meSpot:t;
   lines.push({a:{x:A.x,y:A.y},b:{x:B.x,y:B.y},rb:(B.size||46)/2,alpha:1,sel:true,arrow:true,from:hueColor(A.uid,A.me),to:hueColor(B.uid,B.me)});
   const mid=G.midOf({x:A.x,y:A.y},{x:B.x,y:B.y}),mw=Math.min(210,Math.max(120,w-40)),cx=Math.max(mw/2+8,Math.min(w-mw/2-8,mid.x)),cy=Math.max(34,Math.min(h-34,mid.y));
-  const who=esc(theyTalk?p.n:tr('youWord'))+' <i aria-hidden="true">→</i> '+esc(theyTalk?tr('youWord'):p.n);
+  /* no "You → Name" header: the bubble is the colour of whoever wrote it (yours when you wrote, theirs when they did) */
   const body=botTyping===sel?'<span class="cg-mt cg-typing">'+tr('typing')+'</span>':cv?'<span class="cg-mt">'+text(cv.t)+'</span>'+(cv.status?'<span class="cg-st">'+tr(cv.status==='sending'?'sending':'unconfirmed')+'</span>':''):'<span class="cg-mt cg-hint">'+tr('sayHi')+'</span>';
-  const style='left:'+Math.round(cx)+'px;top:'+Math.round(cy)+'px;max-width:'+Math.round(mw)+'px;--a:'+hueColor(A.uid,A.me)+';--b:'+hueColor(B.uid,B.me);
-  const inner='<span class="cg-mh">'+who+'</span>'+body;
+  const style='left:'+Math.round(cx)+'px;top:'+Math.round(cy)+'px;max-width:'+Math.round(mw)+'px;--a:'+hueColor(A.uid,A.me)+';--b:'+hueColor(B.uid,B.me)+';--c:'+hueColor(A.uid,A.me);
+  const inner=body;
   html+=cv&&cv.id?button('thread',inner,'data-id="'+esc(cv.id)+'" aria-label="'+esc((theyTalk?p.n:tr('youWord'))+' → '+(theyTalk?tr('youWord'):p.n)+': '+cv.t)+'" style="'+style+'"','cg-mid'+(theyTalk?' in':' out')):'<div class="cg-mid'+(theyTalk?' in':' out')+'" role="status" style="'+style+'">'+inner+'</div>';}
  gxIds=L.spots.map(x=>x.uid).filter(u=>u&&u!=='me');
  return {html,lines,names,me:meSpot};

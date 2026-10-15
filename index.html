@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261015-180000">
+<meta name="lowi-build" content="20261015-184500">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -5645,7 +5645,11 @@ const STORAGE_OK = (() => { try { localStorage.setItem("lowi.t", "1"); localStor
 function load(){ try { S = JSON.parse(localStorage.getItem(KEY)) || fresh(); } catch(e){ S = fresh(); }
   const f = fresh(); for (const k in f) if (S[k] === undefined) S[k] = f[k];
   for (const k in f.health) if (S.health[k] === undefined) S.health[k] = f.health[k];
-  if (S.streak.shields === undefined) S.streak.shields = 1; delete S.streak.freezeWeek; }
+  if (S.streak.shields === undefined) S.streak.shields = 1; delete S.streak.freezeWeek;
+  /* Oct 15: goals vs conditions split. Old fallback labels map to today's keys; an old PCOS checkbox becomes the PCOS condition. Nothing is dropped. */
+  try { const OLD = {"Less sugar cravings":"Cravings","Steady energy":"Energy","Eat healthier":"Just eat better","Lose weight":"Weight","Feel better":"Just eat better"};
+    if (S.user && Array.isArray(S.user.tags)) { const out = []; S.user.tags.forEach(t => { const k = OLD[t] || t; if (out.indexOf(k) < 0) out.push(k); });
+      if (S.health && S.health.pcos && S.user.gender === "f" && out.indexOf("PCOS") < 0) out.push("PCOS"); S.user.tags = out; } } catch(e){} }
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); window.LOWI_STORAGE_ERROR=false; return true; } catch(e){ window.LOWI_STORAGE_ERROR=true; console.warn("LOWiSPIKE could not save state; existing photos and records were retained."); return false; } }
 
 /* The profile and herb share the original six stages and exact XP thresholds. */
@@ -6090,7 +6094,7 @@ function renderProfile(){ const lv = levelOf(S.xp), z = zodiac(S.user.bday), h =
         : '<div class="field"><label>First day of your last period</label><input class="input" type="date" id="lastPeriod" value="' + esc(h.lastPeriod) + '"></div><div class="field"><label>Usual cycle length (days)</label><input class="input" id="cycleLen" inputmode="numeric" value="' + esc(h.cycleLen) + '"></div>') +
       '<div class="small gold" style="margin-top:10px" id="cyclePhase">' + (c.on ? "Today: " + esc(c.label) : "No phase set: you get the general tip.") + '</div><div class="small dim" style="margin-top:6px">Only changes tips. Not medical advice, and it can\'t predict your cycle or fertility.</div></div>' : "") +
     '<div class="setrow"><div class="t"><b>Body weight</b><div class="small muted" id="weightVal">' + (h.weight ? (weightShown ? esc(h.weight) + " kg" : "•••• hidden") : "Not set") + ' · private, never in For You</div></div>' + (h.weight ? '<button class="chip" data-act="showweight" id="showWeight">' + (weightShown ? "Hide" : "Show") + '</button>' : "") + '<button class="chip" data-act="setweight">' + (h.weight ? "Edit" : "Add") + '</button></div>' +
-    '<div class="setrow"><div class="t"><b>Goals</b><div class="small muted">' + esc(S.user.tags.join(", ") || "None picked") + '</div></div><button class="chip" data-act="editgoals">Edit</button></div>' +
+    '<div class="setrow"><div class="t"><b>Goals</b><div class="small muted">' + esc(S.user.tags.map(tagLabel).join(", ") || "None picked") + '</div></div><button class="chip" data-act="editgoals">Edit</button></div>' +
     '<div class="setrow"><div class="t"><b>Foods I always eat too much of</b><div class="small muted">' + (S.trig.length ? S.trig.length + " marked as a NO for you" : "None yet. Mark one from any result.") + '</div></div>' + (S.trig.length ? '<button class="chip" data-act="cleartrig">Clear</button>' : "") + '</div></div>' +
     (S.autoSkipped && !S.user.name ? '<div class="card" style="margin-top:16px"><div class="h3" style="font-size:16px">Set up your profile</div><div class="small muted" style="margin:4px 0 12px">Optional. Name, goals and foods that hit you. The app works without it.</div><button class="btn ghost sm" data-act="setupprofile" id="setupProfile">Set up now</button></div>' : "") +
     (STORAGE_OK ? "" : '<div class="card" style="margin-top:12px;border-color:var(--line)"><div class="tiny gold">This viewer forgets</div><div class="small" style="margin-top:6px;line-height:1.45">This window doesn\'t keep data between opens, so your plan resets. Open LOWiSPIKE in Safari and add it to your Home Screen to keep it.</div></div>') +
@@ -6104,7 +6108,10 @@ function renderProfile(){ const lv = levelOf(S.xp), z = zodiac(S.user.bday), h =
 function weightSheet(){ sheet('<div class="h2">Body weight</div><div class="field"><label>kg (private)</label><input class="input" id="wIn" inputmode="decimal" value="' + esc(S.health.weight) + '"></div><div class="lockline" style="margin-top:10px">' + ICO.lock + '<span>Stays on this phone. Never shown next to your name or in posts.</span></div><button class="btn primary" style="margin-top:14px" data-act="saveweight">Save</button>'); }
 
 function nameSheet(){ sheet('<div class="h2">Your name</div><div class="field"><label>Shown on your posts</label><input class="input" id="nameIn" maxlength="24" value="' + esc(S.user.name) + '"></div><button class="btn primary" style="margin-top:14px" data-act="savename">Save</button>'); }
-function goalsSheet(){ sheet('<div class="h2">Your goals</div><div class="small muted" style="margin-top:4px">Private. They only change your tips and notes.</div><div class="chips" style="margin-top:14px">' + TAGS.map(t => '<button class="chip' + (S.user.tags.indexOf(t) >= 0 ? " on" : "") + '" data-act="goaltag" data-v="' + t + '">' + t + '</button>').join("") + '</div><button class="btn primary" style="margin-top:18px" data-act="closesheet">Done</button>'); }
+function goalsSheet(){ const ch = l => l.map(t => '<button type="button" class="chip' + (S.user.tags.indexOf(t[0]) >= 0 ? " on" : "") + '" aria-pressed="' + (S.user.tags.indexOf(t[0]) >= 0) + '" data-act="goaltag" data-v="' + t[0] + '">' + t[1] + '</button>').join("");
+  sheet('<div class="h2">Your goals</div><div class="small muted" style="margin-top:4px">Private. They only change your tips and notes.</div><div class="chips goalchips" style="margin-top:14px">' + ch(GOAL_TAGS) + '</div>' +
+    '<div class="h3" style="font-size:15px;margin-top:18px">Anything we should look out for? (optional)</div><div class="chips goalchips" style="margin-top:10px">' + ch(COND_TAGS) + '<button type="button" class="chip' + (S.user.noCond && !S.user.tags.some(isCondTag) ? " on" : "") + '" aria-pressed="' + !!(S.user.noCond && !S.user.tags.some(isCondTag)) + '" data-act="nocond">None of these</button></div>' +
+    '<button class="btn primary" style="margin-top:18px" data-act="closesheet">Done</button>'); }
 /* Oct 14: Add to Home Screen steps in the app language, for the browser the person is in (iPhone Safari, other iPhone browsers, in-app browsers, Android) */
 function a2Lang(){ let l = "en"; try { l = (window.LowiLang && LowiLang.get && LowiLang.get()) || localStorage.getItem("lowispike.lang") || document.documentElement.lang || "en"; } catch(e){} l = String(l).slice(0, 2); return l === "de" || l === "es" ? l : "en"; }
 function a2Kind(){ const u = navigator.userAgent || ""; if (/Instagram|FBAN|FBAV|FB_IAB|TikTok|musical_ly|Bytedance|Snapchat|Line\//i.test(u)) return "inapp"; if (/Android/i.test(u)) return "android";
@@ -6447,13 +6454,22 @@ function goTab(t){
 }
 function renderAll(){ cancelTabRefresh(); RENDER[TAB](); markRendered(TAB); }
 
-const TAGS = ["PCOS", "Insulin resistance", "Cravings", "Energy", "Skin", "Weight", "Pre-diabetes", "Just eat better"];
+/* Oct 15: goals and health conditions are separate. Stored keys stay the same (old profiles keep working);
+   goals are shown phrased as goals, conditions sit in their own optional group and are never shown as something wanted. */
+const GOAL_TAGS = [["Cravings", "Fewer cravings"], ["Energy", "More energy"], ["Skin", "Better skin"], ["Weight", "Lose weight"], ["Steady blood sugar", "Steadier blood sugar"], ["Just eat better", "Just eat better"]];
+const COND_TAGS = [["PCOS", "PCOS"], ["Insulin resistance", "Insulin resistance"], ["Pre-diabetes", "Pre-diabetes"]];
+const TAGS = GOAL_TAGS.concat(COND_TAGS).map(x => x[0]);
+const isCondTag = k => COND_TAGS.some(x => x[0] === k);
+function tagLabel(k){ const f = GOAL_TAGS.concat(COND_TAGS).find(x => x[0] === k); return f ? f[1] : k; }
+window.LowiTags = {goals: GOAL_TAGS, conds: COND_TAGS, isCond: isCondTag, label: tagLabel};
 let OB = {name:"", bday:"", avatar:"", tags:[]};
 function obGo(i){ $("#obTrack").style.transform = "translateX(" + (-i * 33.3333) + "%)"; }
 function obCheck(){ OB.name = $("#obName").value.trim(); OB.bday = $("#obBday").value; const z = zodiac(OB.bday);
   $("#obZod").textContent = z ? z.g + " " + z.n + ", nice." : ""; $("#obNext2").disabled = !(OB.name && OB.bday); }
 function startOnboarding(){ $("#onboard").classList.remove("hidden"); $("#main").classList.add("hidden");
-  $("#obTags").innerHTML = TAGS.map(t => '<button class="chip" data-act="obtag" data-v="' + t + '">' + t + '</button>').join("");
+  $("#obTags").innerHTML = GOAL_TAGS.map(t => '<button type="button" class="chip" aria-pressed="false" data-act="obtag" data-v="' + t[0] + '">' + t[1] + '</button>').join("") +
+    '<div class="small muted" style="flex-basis:100%;margin-top:12px">Anything we should look out for? (optional)</div>' +
+    COND_TAGS.map(t => '<button type="button" class="chip" aria-pressed="false" data-act="obtag" data-v="' + t[0] + '">' + t[1] + '</button>').join("");
   $("#obName").addEventListener("input", obCheck); $("#obBday").addEventListener("input", obCheck); $("#obBday").addEventListener("change", obCheck);
   $("#obPhoto").addEventListener("change", async e => { const f = e.target.files[0]; if (!f) return; OB.avatar = await resizeImage(f, 300); $("#obAv").innerHTML = '<img src="' + OB.avatar + '" alt="">'; });
   obGo(0); }
@@ -6468,7 +6484,7 @@ document.addEventListener("click", e => {
   if (e.target === $("#sheetwrap")) { closeSheet(); return; }
   const a = e.target.closest("[data-act]"); if (!a) return; const d = a.dataset;
   switch (d.act) {
-    case "obtag": { const i = OB.tags.indexOf(d.v); i < 0 ? OB.tags.push(d.v) : OB.tags.splice(i, 1); a.classList.toggle("on"); break; }
+    case "obtag": { const i = OB.tags.indexOf(d.v); i < 0 ? OB.tags.push(d.v) : OB.tags.splice(i, 1); a.classList.toggle("on", i < 0); a.setAttribute("aria-pressed", i < 0); break; }
     case "checkin": checkinSheet(); break;
     case "mood": doCheckin(d.v); break;
     case "eatchip": $("#eatText").value = d.v; runAnalyse(d.v); break;
@@ -6499,7 +6515,8 @@ document.addEventListener("click", e => {
     case "editname": nameSheet(); break;
     case "savename": { const v = ($("#nameIn").value || "").trim(); if (v) { S.user.name = v; save(); } closeSheet(); renderAll(); break; }
     case "editgoals": goalsSheet(); break;
-    case "goaltag": { const i = S.user.tags.indexOf(d.v); i < 0 ? S.user.tags.push(d.v) : S.user.tags.splice(i, 1); save(); a.classList.toggle("on"); renderProfile(); break; }
+    case "goaltag": { const i = S.user.tags.indexOf(d.v); i < 0 ? S.user.tags.push(d.v) : S.user.tags.splice(i, 1); if (i < 0 && isCondTag(d.v)) S.user.noCond = false; save(); a.classList.toggle("on", i < 0); a.setAttribute("aria-pressed", i < 0); renderProfile(); if (isCondTag(d.v)) goalsSheet(); break; }
+    case "nocond": { S.user.noCond = !(S.user.noCond && !S.user.tags.some(isCondTag)); if (S.user.noCond) S.user.tags = S.user.tags.filter(t => !isCondTag(t)); save(); renderProfile(); goalsSheet(); break; }
     case "install": installSheet(); break;
     case "suggest": toast("Sent for a community check (prototype)"); break;
     case "cycle": S.health.cycleOn = !S.health.cycleOn; save(); renderAll(); break;
@@ -9787,6 +9804,12 @@ html[data-theme=light] .r2-bigav>span{color:#a8792e}
 .r2-chip{height:40px;padding:0 16px;border-radius:20px;border:1px solid var(--r2-line);background:var(--r2-field);color:var(--r2-ink);font:inherit;font-size:14.5px;font-weight:600;cursor:pointer;transition:background .2s,transform .12s}
 .r2-chip:active{transform:scale(.95)}
 .r2-chip.on{background:rgba(var(--acc-rgb,159,216,255),.22);border-color:rgba(var(--acc-rgb,159,216,255),.8)}
+/* Oct 15: a picked chip lights up (same green glow as the picked answer in the start questions). Doubled class beats the .apple-ui chip base. */
+.r2-chip,#obTags .chip,.goalchips .chip{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.r2-chip.r2-chip{transition:transform .1s}
+.r2-chip.r2-chip.on,#obTags .chip.chip.on,.goalchips .chip.chip.on{background:rgba(92,255,192,.16);border-color:rgba(92,255,192,.9);color:#eafff6;box-shadow:0 0 0 3px rgba(92,255,192,.14),0 0 16px rgba(92,255,192,.30)}
+html[data-theme=light] .r2-chip.r2-chip.on,html[data-theme=light] #obTags .chip.chip.on,html[data-theme=light] .goalchips .chip.chip.on{background:rgba(14,150,104,.14);border-color:#0e9668;color:#0a5a3f;box-shadow:0 0 0 3px rgba(14,150,104,.16)}
+@media (prefers-reduced-motion:reduce){.r2-chip.r2-chip{transition:none}.r2-chip.r2-chip:active{transform:none}}
 .r2-obpane.done{align-items:center;justify-content:center;text-align:center;position:relative}
 .r2-donecheck{width:76px;height:76px;border-radius:50%;background:var(--r2-pri);color:var(--r2-pri-ink);display:flex;align-items:center;justify-content:center;animation:r2Pop .55s cubic-bezier(.3,1.6,.5,1)}
 .r2-donecheck svg{width:36px;height:36px}
@@ -10124,14 +10147,26 @@ function signOf(b){ if (!b) return null; try { if (typeof zodiac === "function")
 R2.signOf = signOf;
 function signColour(){ try { const p = LowiGlass.palette(); return p && p.name ? p.name : ""; } catch(e){ return ""; } }
 function age(b){ const d = new Date(b + "T12:00:00"); if (isNaN(d)) return null; const n = new Date(); let a = n.getFullYear() - d.getFullYear(); if (n < new Date(n.getFullYear(), d.getMonth(), d.getDate())) a--; return a; }
-function tags(){ try { return TAGS; } catch(e){ return ["Lose weight","Steady energy","Less sugar cravings","Eat healthier","Feel better"]; } }
+function tags(){ try { return TAGS; } catch(e){ return ["Cravings","Energy","Skin","Weight","Steady blood sugar","Just eat better","PCOS","Insulin resistance","Pre-diabetes"]; } }
+/* Oct 15: goals (phrased as goals) and conditions (own optional group) — same stored keys as before */
+function goalList(){ const T = window.LowiTags; return T ? T.goals : [["Cravings","Fewer cravings"],["Energy","More energy"],["Skin","Better skin"],["Weight","Lose weight"],["Steady blood sugar","Steadier blood sugar"],["Just eat better","Just eat better"]]; }
+function condList(){ const T = window.LowiTags; return T ? T.conds : [["PCOS","PCOS"],["Insulin resistance","Insulin resistance"],["Pre-diabetes","Pre-diabetes"]]; }
+const isCond = k => condList().some(x => x[0] === k);
+/* shown chips: PCOS is hidden for men unless it is already saved */
+function condsFor(gender, sel){ return condList().filter(c => c[0] !== "PCOS" || gender !== "m" || sel.includes("PCOS")); }
+function condBlock(attr, noneAttr, sel, none, gender){
+  return '<div class="r2-obsub r2-condq">Anything we should look out for? <span>(optional)</span></div><div class="r2-obhint">Only changes your tips. Stays private.</div>' +
+    '<div class="r2-chips r2-conds">' + condsFor(gender, sel).map(c => '<button type="button" class="r2-chip' + (sel.includes(c[0]) ? " on" : "") + '" aria-pressed="' + sel.includes(c[0]) + '" ' + attr + '="' + esc(c[0]) + '">' + esc(c[1]) + '</button>').join("") +
+    '<button type="button" class="r2-chip r2-none' + (none && !sel.some(isCond) ? " on" : "") + '" aria-pressed="' + !!(none && !sel.some(isCond)) + '" ' + noneAttr + '="1">None of these</button></div>';
+}
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
 let ob = null;
 R2.onboard = function(opts){
   opts = opts || {};
   const s = R2.S(); s.user = s.user || {};
-  ob = { step: 0, bday: s.user.bday || "", avatar: s.user.avatar || "", tags: (s.user.tags || []).slice(), name: s.user.name || "", gender: s.user.gender || "", pcos: !!(s.health && s.health.pcos), askName: !s.user.name || opts.askName };
+  ob = { step: 0, bday: s.user.bday || "", avatar: s.user.avatar || "", tags: (s.user.tags || []).slice(), noCond: !!s.user.noCond, name: s.user.name || "", gender: s.user.gender || "", pcos: !!(s.health && s.health.pcos), askName: !s.user.name || opts.askName };
+  if (ob.pcos && ob.gender === "f" && !ob.tags.includes("PCOS")) ob.tags.push("PCOS");   /* old PCOS checkbox -> PCOS condition */
   const ov = R2.sheet('<div class="r2-ob" id="r2ob"></div>', { full: true, noClose: true, cls: "r2-obov" });
   paintOb();
   return ov;
@@ -10159,10 +10194,10 @@ function paintOb(){
   } else {
     h = dots() + '<div class="r2-obt">What do you want most?</div><div class="r2-obs">Pick any. You can change it in Profile.</div>' +
       /* round 3A: gender, and PCOS for women (tailors tips; stays on this phone) */
-      '<div class="r2-obsub">I am</div><div class="r2-chips r2-gender">' + [["f", "A woman"], ["m", "A man"], ["x", "Prefer not to say"]].map(g => '<button class="r2-chip' + (ob.gender === g[0] ? " on" : "") + '" data-r2g="' + g[0] + '">' + g[1] + '</button>').join("") + '</div>' +
-      (ob.gender === "f" ? '<button class="r2-pcos' + (ob.pcos ? " on" : "") + '" data-r2pcos="1"><i></i><span><b>I have PCOS, or think I might</b><small>Tips for steadier blood sugar. Only on this phone.</small></span></button>' : "") +
+      '<div class="r2-obsub">I am</div><div class="r2-chips r2-gender">' + [["f", "A woman"], ["m", "A man"], ["x", "Prefer not to say"]].map(g => '<button type="button" class="r2-chip' + (ob.gender === g[0] ? " on" : "") + '" aria-pressed="' + (ob.gender === g[0]) + '" data-r2g="' + g[0] + '">' + g[1] + '</button>').join("") + '</div>' +
       '<div class="r2-obsub">I want</div>' +
-      '<div class="r2-chips">' + tags().map(t => '<button class="r2-chip' + (ob.tags.includes(t) ? " on" : "") + '" data-r2tag="' + esc(t) + '">' + esc(t) + '</button>').join("") + '</div>' +
+      '<div class="r2-chips r2-goals">' + goalList().map(t => '<button type="button" class="r2-chip' + (ob.tags.includes(t[0]) ? " on" : "") + '" aria-pressed="' + ob.tags.includes(t[0]) + '" data-r2tag="' + esc(t[0]) + '">' + esc(t[1]) + '</button>').join("") + '</div>' +
+      condBlock("data-r2tag", "data-r2none", ob.tags, ob.noCond, ob.gender) +
       '<div class="r2-obacts"><button class="r2-btn pri big" data-r2o="finish">Let\'s go</button></div>';
   }
   el.innerHTML = '<div class="r2-obpane">' + h + '</div>';
@@ -10175,8 +10210,9 @@ function saveOb(final){
   s.user.bday = ob.bday || s.user.bday || "";
   if (ob.avatar && ob.avatar !== s.user.avatar) { s.user.avatar = ob.avatar; delete s.user.avatarUrl; }
   s.user.tags = ob.tags.slice();
+  s.user.noCond = !!ob.noCond && !ob.tags.some(isCond);
   if (ob.gender) s.user.gender = ob.gender;
-  s.health = s.health || {}; s.health.pcos = ob.gender === "f" && !!ob.pcos;
+  s.health = s.health || {}; s.health.pcos = ob.gender === "f" && ob.tags.includes("PCOS");
   if (final) { s.setupDone = true; s.onboarded = true; delete s.autoSkipped; }
   R2.save();
   try { window.LowiGlass && LowiGlass.apply(); } catch(e){}
@@ -10260,7 +10296,9 @@ function editHTML(){
     '<label class="r2-fl"><span>Name</span><input id="r2eName" maxlength="40" value="' + esc(u.name || "") + '" placeholder="Your first name"></label>' +
     '<label class="r2-fl date"><span>Birthday</span><input id="r2eB" type="date" max="' + todayISO() + '" min="1920-01-01" value="' + esc(u.bday || "") + '"></label>' +
     '<div class="r2-esign" id="r2eSign">' + (z ? z.g + " " + esc(z.n) : "Add your birthday to see your star sign") + '</div>' +
-    '<div class="r2-fl"><span>Goals</span><div class="r2-chips">' + tags().map(t => '<button class="r2-chip' + ((u.tags || []).includes(t) ? " on" : "") + '" data-r2etag="' + esc(t) + '">' + esc(t) + '</button>').join("") + '</div></div>' +
+    (() => { const sel = (u.tags || []).slice(); if (u.gender === "f" && s.health && s.health.pcos && !sel.includes("PCOS")) sel.push("PCOS");
+      return '<div class="r2-fl"><span>Goals</span><div class="r2-chips r2-goals">' + goalList().map(t => '<button type="button" class="r2-chip' + (sel.includes(t[0]) ? " on" : "") + '" aria-pressed="' + sel.includes(t[0]) + '" data-r2etag="' + esc(t[0]) + '">' + esc(t[1]) + '</button>').join("") + '</div></div>' +
+        '<div class="r2-fl r2-econd">' + condBlock("data-r2etag", "data-r2enone", sel, !!u.noCond, u.gender || "") + '</div>'; })() +
     '<button class="r2-row tap" data-r2p="mbti"><span class="r2-ri">🧩</span><div><b>Personality type</b><small>' + (mb ? esc(mb) : "Not set") + '</small></div>' + R2.ico.chev + '</button>' +
     '<button class="r2-btn pri big" data-r2p="saveedit">Save</button></div>';
 }
@@ -10321,6 +10359,8 @@ function saveEdit(){
   const n = $("#r2eName").value.trim(); if (n) s.user.name = n.slice(0, 40);
   s.user.bday = $("#r2eB").value || "";
   s.user.tags = $$("[data-r2etag].on").map(b => b.getAttribute("data-r2etag"));
+  const nn = $("[data-r2enone]"); s.user.noCond = !!(nn && nn.classList.contains("on")) && !s.user.tags.some(isCond);
+  if (s.user.gender === "f") { s.health = s.health || {}; s.health.pcos = s.user.tags.includes("PCOS"); }
   R2.save();
   try { window.LowiGlass && LowiGlass.apply(); } catch(e){}
   R2.applyTheme();
@@ -10385,9 +10425,15 @@ document.addEventListener("click", e => {
   if (gg && ob) { ob.gender = gg.getAttribute("data-r2g"); if (ob.gender !== "f") ob.pcos = false; const sc = ($("#r2ob .r2-obpane") || {}).scrollTop || 0; paintOb(); const pn = $("#r2ob .r2-obpane"); if (pn) pn.scrollTop = sc; return; }
   const pc = e.target.closest("[data-r2pcos]");
   if (pc && ob) { ob.pcos = !ob.pcos; pc.classList.toggle("on", ob.pcos); return; }
+  /* Oct 15: every chip toggle keeps .on and aria-pressed in step */
+  const pz = (b, on) => { if (!b) return; b.classList.toggle("on", !!on); b.setAttribute("aria-pressed", !!on); };
   const tg = e.target.closest("[data-r2tag]");
-  if (tg && ob) { const t = tg.getAttribute("data-r2tag"); const i = ob.tags.indexOf(t); if (i >= 0) ob.tags.splice(i, 1); else ob.tags.push(t); tg.classList.toggle("on"); return; }
-  const et = e.target.closest("[data-r2etag]"); if (et) { et.classList.toggle("on"); return; }
+  if (tg && ob) { const t = tg.getAttribute("data-r2tag"); const i = ob.tags.indexOf(t); if (i >= 0) ob.tags.splice(i, 1); else ob.tags.push(t); pz(tg, i < 0);
+    if (i < 0 && isCond(t)) { ob.noCond = false; pz($("#r2ob [data-r2none]"), false); } return; }
+  const tn = e.target.closest("[data-r2none]");
+  if (tn && ob) { ob.noCond = !tn.classList.contains("on"); if (ob.noCond) { ob.tags = ob.tags.filter(t => !isCond(t)); $$("#r2ob .r2-conds [data-r2tag]").forEach(b => pz(b, false)); } pz(tn, ob.noCond); return; }
+  const et = e.target.closest("[data-r2etag]"); if (et) { const on = !et.classList.contains("on"); pz(et, on); if (on && isCond(et.getAttribute("data-r2etag"))) pz($("[data-r2enone]"), false); return; }
+  const en = e.target.closest("[data-r2enone]"); if (en) { const on = !en.classList.contains("on"); pz(en, on); if (on) $$(".r2-econd [data-r2etag]").forEach(b => pz(b, false)); return; }
   const p = e.target.closest("[data-r2p]");
   if (p) { const v = p.getAttribute("data-r2p");
     if (v === "photo") return pickPhoto(url => { setPhoto(url); const ov = R2.top(); if (ov && ov.querySelector(".r2-edit")) { R2.close(ov); R2.sheet(editHTML()); } });
@@ -11438,7 +11484,7 @@ const ROWS = [
   ["People in Community see it next to your messages.", "Leute in der Community sehen es neben deinen Nachrichten.", "La gente de la Comunidad la ve junto a tus mensajes."],
   ["What do you want most?", "Was willst du am meisten?", "¿Qué quieres más?"],
   ["Pick any. You can change it in Profile.", "Wähl beliebig aus. Du kannst es im Profil ändern.", "Elige las que quieras. Puedes cambiarlo en Perfil."],
-  ["Lose weight", "Abnehmen", "Bajar de peso"],
+  ["Lose weight", "Gewicht verlieren", "Perder peso"],
   ["Steady energy", "Gleichmäßige Energie", "Energía estable"],
   ["Less sugar cravings", "Weniger Heißhunger auf Zucker", "Menos antojos de azúcar"],
   ["Eat healthier", "Gesünder essen", "Comer más sano"],
@@ -11785,6 +11831,10 @@ html[data-theme=light] .r3a-pl{background:radial-gradient(120% 80% at 50% 0%,#ff
 .r2-pcos.on i{background:#f3c97a;border-color:#f3c97a}
 .r2-pcos span{display:flex;flex-direction:column;gap:2px;min-width:0}
 .r2-pcos small{opacity:.7}
+.r2-condq span{font-weight:500;opacity:.8}
+.r2-obhint{font-size:12.5px;opacity:.6;margin:-4px 0 8px}
+.r2-econd .r2-obsub{margin-top:2px}
+@media (max-height:700px){.r2-obpane .r2-obsub{margin:8px 0 6px}.r2-obpane .r2-chip{height:36px;padding:0 13px}}
 </style>
 <script id="r3ajs">
 /* ===== LOWiSPIKE round 3A (Oct 9, 2026): saved-swap delete, clearer wording, layout fixes ===== */
@@ -11895,6 +11945,12 @@ dict([
   ["About you", "Über dich", "Sobre ti"],
   ["I am", "Ich bin", "Soy"], ["I want", "Ich will", "Quiero"], ["A woman", "Eine Frau", "Una mujer"], ["A man", "Ein Mann", "Un hombre"], ["Prefer not to say", "Sag ich lieber nicht", "Prefiero no decirlo"],
   ["I have PCOS, or think I might", "Ich habe PCOS oder vermute es", "Tengo SOP o creo que podría tenerlo"],
+  ["Fewer cravings", "Weniger Heißhunger", "Menos antojos"], ["More energy", "Mehr Energie", "Más energía"], ["Better skin", "Bessere Haut", "Mejor piel"],
+  ["Lose weight", "Gewicht verlieren", "Perder peso"], ["Steadier blood sugar", "Stabiler Blutzucker", "Azúcar en sangre estable"],
+  ["Anything we should look out for?", "Worauf sollen wir achten?", "¿Algo que debamos tener en cuenta?"], ["(optional)", "(optional)", "(opcional)"],
+  ["Anything we should look out for? (optional)", "Worauf sollen wir achten? (optional)", "¿Algo que debamos tener en cuenta? (opcional)"],
+  ["Only changes your tips. Stays private.", "Ändert nur deine Tipps. Bleibt privat.", "Solo cambia tus consejos. Es privado."],
+  ["None of these", "Nichts davon", "Nada de esto"],
   ["Tips for steadier blood sugar. Only on this phone.", "Tipps für einen ruhigeren Blutzucker. Nur auf diesem Handy.", "Consejos para un azúcar en sangre más estable. Solo en este móvil."],
   ["Blood pressure log", "Blutdruck-Tagebuch", "Registro de tensión"],
   ["Shows a blood pressure check on your morning card.", "Zeigt einen Blutdruck-Eintrag auf deiner Morgenkarte.", "Muestra la tensión en tu tarjeta de la mañana."]

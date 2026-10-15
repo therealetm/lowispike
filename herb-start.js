@@ -152,7 +152,7 @@ function ivPaint(){const el=D.getElementById('hsIv');if(!el||!IV)return;const he
   '<div class="hs-acts"><button type="button" class="r2-btn pri big" data-hsi="start">'+esc(t('go'))+'</button><button type="button" class="hs-link" data-hsi="later">'+esc(t('notNow'))+'</button></div>';
  else if(IV.step<n){const q=C.questionText(Q[IV.step],lang()),cur=IV.answers[q.id];
   h='<div class="hs-ivtop"><button type="button" class="hs-back" data-hsi="back" aria-label="'+esc(t('back'))+'">\u2039</button><div class="hs-bar" role="progressbar" aria-valuemin="0" aria-valuemax="'+n+'" aria-valuenow="'+(IV.step+1)+'"><i style="--p:'+((IV.step+1)/n)+'"></i></div><button type="button" class="hs-skip" data-hsi="skip">'+esc(t('skipQ'))+'</button></div>'+
-   '<div class="hs-ivpane q"><p class="hs-over">'+esc(q.over)+'</p><h2 id="hsQ">'+esc(q.q)+'</h2><div class="hs-opts" role="radiogroup" aria-labelledby="hsQ">'+
+   '<div class="hs-ivpane q"><p class="hs-over">'+esc(q.over)+'</p><h2 id="hsQ">'+esc(q.q)+'</h2>'+(q.sub?'<p class="hs-p hs-qsub">'+esc(q.sub)+'</p>':'')+'<div class="hs-opts" role="radiogroup" aria-labelledby="hsQ">'+
    q.opts.map(o=>'<button type="button" class="hs-opt'+(cur===o.v?' on':'')+'" role="radio" aria-checked="'+(cur===o.v)+'" data-hsi="opt" data-v="'+esc(o.v)+'"><span>'+esc(o.t)+'</span><i aria-hidden="true"></i></button>').join('')+'</div></div>';}
  else if(IV.step===n)h='<div class="hs-ivpane think"><div class="hs-scene sm">'+herbArt(2,reduce()?'':'bob')+'</div><h2>'+esc(t('think',{herb}))+'</h2></div>';
  else{const p=IV.plan,f=facts();h='<div class="hs-ivpane res"><p class="hs-over">'+esc(t('ivOver'))+'</p><h2>'+esc(t('planH'))+'</h2><p class="hs-p">'+esc(t('planP'))+'</p><ol class="hs-res">'+

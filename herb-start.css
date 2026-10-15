@@ -72,6 +72,7 @@ html[data-theme=light] .hs-over{color:#159a63!important}
 .hs-ivpane{display:flex;flex-direction:column;align-items:center;gap:10px}
 .hs-ivpane.q{align-items:stretch;text-align:left}
 .hs-ivpane.q .hs-over{align-self:flex-start}
+.hs-iv .hs-ivpane.q .hs-qsub{margin:-4px 0 2px;max-width:none;font-size:14.5px}
 .hs-ivpane.think{flex:1;justify-content:center}
 .hs-ivtop{display:flex;align-items:center;gap:12px}
 .hs-bar{flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden}

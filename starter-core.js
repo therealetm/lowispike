@@ -13,7 +13,8 @@ const fmt=(s,o)=>String(s).replace(/\{(\w+)\}/g,(m,k)=>o&&o[k]!=null?o[k]:'');
 
 /* --- the first questions: high value, optional --- */
 const QUESTIONS=[
- {id:'hard',over:t3('EATING','ESSEN','COMER'),q:t3('When is eating hardest for you?','Wann f\u00e4llt dir das Essen am schwersten?','\u00bfCu\u00e1ndo te cuesta m\u00e1s comer bien?'),
+ {id:'hard',over:t3('CRAVINGS','HEISSHUNGER','ANTOJOS'),q:t3('When are your cravings strongest?','Wann ist dein Hei\u00dfhunger am st\u00e4rksten?','\u00bfCu\u00e1ndo son m\u00e1s fuertes tus antojos?'),
+  sub:t3('Everyone has a time like that. It just helps us plan around it.','Hat jeder. Es hilft uns nur, besser f\u00fcr dich zu planen.','Todos tenemos un momento as\u00ed. Solo nos ayuda a planificar contigo.'),
   opts:[['morning',t3('In the morning','Morgens','Por la ma\u00f1ana')],['afternoon',t3('In the afternoon','Nachmittags','Por la tarde')],['evening',t3('In the evening','Abends','Por la noche')],['late',t3('Late at night','Sp\u00e4t in der Nacht','De madrugada')],['varies',t3('It changes','Ganz unterschiedlich','Depende del d\u00eda')]]},
  {id:'active',over:t3('MOVING','BEWEGUNG','MOVIMIENTO'),q:t3('How active are you right now?','Wie aktiv bist du gerade?','\u00bfQu\u00e9 tan activo eres ahora?'),
   opts:[['sit',t3('Mostly sitting','Meist im Sitzen','Casi siempre sentado')],['walk',t3('Some walking','Etwas zu Fu\u00df','Camino algo')],['active',t3('Active most days','Fast t\u00e4glich aktiv','Activo casi todos los d\u00edas')]]},
@@ -46,11 +47,11 @@ const ACTIONS={
  macros:{ic:'star',mod:'macros',t:t3('Reach one macro goal','Ein Makro-Ziel erreichen','Alcanza una meta de macros')}
 };
 const WHY={
- scanEvening:t3('You said evenings are hardest. A quick scan before dinner shows the spike before it happens.','Du hast gesagt, abends ist es am schwersten. Ein kurzer Scan vor dem Abendessen zeigt den Spike, bevor er passiert.','Dijiste que las noches son lo m\u00e1s dif\u00edcil. Un escaneo antes de cenar muestra el pico antes de que pase.'),
- scanLate:t3('Late night is your hard time. Scanning first gives you one second to choose.','Sp\u00e4t nachts ist deine schwere Zeit. Erst scannen gibt dir eine Sekunde zum Entscheiden.','La madrugada es tu momento dif\u00edcil. Escanear primero te da un segundo para decidir.'),
- scanAfternoon:t3('Afternoons are tricky for you. Scan your snack and see if it spikes.','Nachmittags wird es bei dir knifflig. Scann deinen Snack und sieh, ob er spiked.','Las tardes son dif\u00edciles para ti. Escanea tu snack y mira si dispara.'),
+ scanEvening:t3('Your cravings are strongest in the evening. A quick scan before dinner shows the spike before it happens.','Abends ist dein Hei\u00dfhunger am st\u00e4rksten. Ein kurzer Scan vor dem Abendessen zeigt den Spike, bevor er passiert.','Por la noche tus antojos son m\u00e1s fuertes. Un escaneo antes de cenar muestra el pico antes de que pase.'),
+ scanLate:t3('Late at night your cravings are strongest. Scanning first gives you one second to choose.','Sp\u00e4t nachts ist dein Hei\u00dfhunger am st\u00e4rksten. Erst scannen gibt dir eine Sekunde zum Entscheiden.','De madrugada tus antojos son m\u00e1s fuertes. Escanear primero te da un segundo para decidir.'),
+ scanAfternoon:t3('Your cravings peak in the afternoon. Scan your snack and see if it spikes.','Nachmittags ist dein Hei\u00dfhunger am st\u00e4rksten. Scann deinen Snack und sieh, ob er spiked.','Por la tarde tus antojos son m\u00e1s fuertes. Escanea tu snack y mira si dispara.'),
  scanStart:t3('Scanning is the fastest way to learn what spikes you. One a day is enough.','Scannen ist der schnellste Weg zu lernen, was bei dir spiked. Einer am Tag reicht.','Escanear es la forma m\u00e1s r\u00e1pida de saber qu\u00e9 te dispara. Uno al d\u00eda basta.'),
- mealMorning:t3('Mornings are hard for you. Logging the first meal sets up the whole day.','Morgens ist es f\u00fcr dich schwer. Die erste Mahlzeit einzutragen setzt den Ton f\u00fcr den Tag.','Las ma\u00f1anas te cuestan. Registrar la primera comida marca el d\u00eda.'),
+ mealMorning:t3('Your cravings are strongest in the morning. Logging the first meal sets up the whole day.','Morgens ist dein Hei\u00dfhunger am st\u00e4rksten. Die erste Mahlzeit einzutragen setzt den Ton f\u00fcr den Tag.','Por la ma\u00f1ana tus antojos son m\u00e1s fuertes. Registrar la primera comida marca el d\u00eda.'),
  moveSit:t3('You sit most of the day. Any movement counts, even two minutes.','Du sitzt den Gro\u00dfteil des Tages. Jede Bewegung z\u00e4hlt, auch zwei Minuten.','Pasas sentado casi todo el d\u00eda. Cualquier movimiento cuenta, incluso dos minutos.'),
  moveWalk:t3('You already walk some. A short walk after a meal flattens the spike.','Du gehst schon etwas. Ein kurzer Gang nach dem Essen macht den Spike flacher.','Ya caminas algo. Un paseo corto tras comer aplana el pico.'),
  moveActive:t3('You move most days. Keep the streak and let your herb see it.','Du bewegst dich fast t\u00e4glich. Halte die Serie und lass dein Kraut es sehen.','Te mueves casi a diario. Mant\u00e9n la racha y que tu hierba lo vea.'),
@@ -132,7 +133,7 @@ function answerFriction(plan,key,v){if(!plan||!FRICTION[key])return plan;plan.as
 
 function actionText(id,lang,vars){const a=ACTIONS[id];return a?fmt(a.t[L(lang)],vars):'';}
 function whyText(key,lang){const w=WHY[key]||WHY.picked;return w[L(lang)];}
-function questionText(q,lang){lang=L(lang);return{id:q.id,over:q.over[lang],q:q.q[lang],opts:q.opts.map(o=>({v:o[0],t:o[1][lang]}))};}
+function questionText(q,lang){lang=L(lang);return{id:q.id,over:q.over[lang],q:q.q[lang],sub:q.sub?q.sub[lang]:'',opts:q.opts.map(o=>({v:o[0],t:o[1][lang]}))};}
 function frictionText(key,lang){const q=FRICTION[key];return q?questionText(Object.assign({id:key},q),lang):null;}
 
 /* --- herb-first: name suggestions from the shipped herb identity pool --- */

@@ -17,10 +17,12 @@ test('scanner bottom has no photo-of-barcode button any more', () => {
   assert.ok(/camBar\(\) \+ '<\/div>'/.test(openScanner), 'scanner bottom must render camBar()');
 });
 
-test('Back sits above Deep analyze, both after the four actions', () => {
-  const iActs = camBarSrc.indexOf('b3-cacts'), iBack = camBarSrc.indexOf('id="b3Back"'), iDeep = camBarSrc.indexOf('id="b3Deep"');
-  assert.ok(iActs > 0 && iBack > iActs && iDeep > iBack, 'order must be actions, Back, Deep analyze');
-  assert.ok(/class="b3-cback" data-b3="camclose"/.test(camBarSrc), 'Back must close the scanner');
+test('no white Back bar: Deep analyze follows the four actions, closing is the round X only', () => {
+  const iActs = camBarSrc.indexOf('b3-cacts'), iDeep = camBarSrc.indexOf('id="b3Deep"');
+  assert.ok(iActs > 0 && iDeep > iActs, 'order must be actions, then Deep analyze');
+  assert.ok(!/b3Back|b3-cback/.test(camBarSrc), 'the white Back bar is gone');
+  assert.ok(!/\.b3-cback/.test(html), 'no Back bar styles left');
+  assert.ok(/<button class="b3-cx" data-b3="camclose"/.test(openScanner), 'the round X closes the scanner');
   for (const k of ['scan', 'photo', 'meal', 'water']) assert.ok(camBarSrc.includes('act("' + k + '"'), 'missing action ' + k);
   assert.ok(/target="_blank" rel="noopener"/.test(camBarSrc));
 });
@@ -35,12 +37,12 @@ test('Deep analyze opens the custom GPT already in the codebase, not an invented
 
 test('scanner action handler is wired and texts exist in en/de/es', () => {
   assert.ok(html.includes('case "camact": camAct(b.dataset.act); break;'));
-  for (const k of ['camBack', 'deep', 'deepS', 'actsL', 'actScan', 'actScanL', 'actPhoto', 'actPhotoL', 'actMeal', 'actMealL', 'actWater', 'actWaterL']) {
+  for (const k of ['deep', 'deepS', 'actsL', 'actScan', 'actScanL', 'actPhoto', 'actPhotoL', 'actMeal', 'actMealL', 'actWater', 'actWaterL']) {
     const m = html.match(new RegExp('\\n  ' + k + ': \\[("[^"]+"), ("[^"]+"), ("[^"]+")\\]'));
     assert.ok(m, 'text ' + k + ' needs en, de, es');
   }
   assert.ok(/\n  deep: \["Deep analyze", "Deep analyze", "Deep analyze"\]/.test(html), 'keep the name Deep analyze');
-  assert.ok(/\n  camBack: \["Back", "Zurück", "Atrás"\]/.test(html));
+  assert.ok(!/\n  camBack: /.test(html), 'Back text removed with the bar');
 });
 
 test('camAct reuses the herb functions so XP, sun meter, macro bonus and duplicate block stay the same', () => {
@@ -62,11 +64,28 @@ test('the Home orb opens only the herb game: no action menu, no GPT link in the 
 test('bottom bar layout: safe on short screens and reduced motion', () => {
   assert.ok(/\.b3-cacts\{display:grid;grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/.test(html));
   assert.ok(/@media \(max-height:720px\)\{\.b3-cam \.b3-frame\{top:21%/.test(html));
-  assert.ok(/@media \(prefers-reduced-motion:reduce\)\{\.b3-cact:active,\.b3-cback:active,\.b3-deep:active\{transform:none\}\}/.test(html));
+  assert.ok(/@media \(prefers-reduced-motion:reduce\)\{\.b3-cact:active,\.b3-deep:active\{transform:none\}\}/.test(html));
 });
 
 test('update note for the new Scan bar in de, en and es', () => {
   const v = JSON.parse(fs.readFileSync(path.join(root, 'version.json'), 'utf8'));
   assert.ok(/^[a-z][a-z-]*-\d{8}-\d{6}$/.test(v.news.id)); /* later builds combine their note with this one */
   for (const l of ['de', 'en', 'es']) assert.ok(v.news.text[l] && v.news.text[l].includes('Deep analyze'), 'news ' + l);
+});
+
+test('home-screen app band: the full-screen scanner ends where the page ends, so Deep analyze is never cut off', () => {
+  assert.ok(html.includes('html.g2f-gap body>.b3-cam{bottom:0}'));
+  assert.ok(html.includes('html.g2f-gap body>.b3-cam .b3-cbot{padding-bottom:calc(max(0px, env(safe-area-inset-bottom,0px) - var(--g2fGap,0px)) + 14px)}'));
+});
+
+test('camera opens reliably: inline video, fallback constraints, single start, restart after background, watchdog', () => {
+  assert.ok(/<video id="b3Vid" playsinline webkit-playsinline muted autoplay/.test(html));
+  const src = html.slice(html.indexOf('async function getCam(){'), html.indexOf('function loop(){'));
+  assert.ok(/video:\{facingMode:"environment"\}/.test(src) && /video:true/.test(src), 'plain-constraint retries');
+  assert.ok(/if \(CAM\.starting\) return;/.test(src), 'one start at a time');
+  assert.ok(/addEventListener\("ended"/.test(src), 'a dead track restarts');
+  assert.ok(/mine\.wd = setTimeout/.test(src) && /mine\.retried = true; startCam\(\)/.test(src), 'no picture -> one retry');
+  assert.ok(/v\.muted = true/.test(src) && /setAttribute\("playsinline", ""\)/.test(src));
+  assert.ok(/function camResume\(\)/.test(html) && /else setTimeout\(camResume, 250\)/.test(html), 'back from background restarts the camera on its own');
+  assert.ok(!/msgState\("ask"\); \} \}\);/.test(html), 'no second Allow-camera tap after returning');
 });

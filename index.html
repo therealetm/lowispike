@@ -13348,25 +13348,29 @@ html.b3-camon,html.b3-camon body{overflow:hidden}
 .b3-ctype .input::placeholder{color:rgba(255,255,255,.55);letter-spacing:0}
 .b3-cam .b3-pill{color:#fff;background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2)}
 .b3-cam .b3-pill svg{color:#e9cb88}
-/* Oct 15: scanner bottom bar: actions, Back (thumb), Deep analyze */
+/* Oct 15: scanner bottom bar: actions, then Deep analyze. Closing is only the round X at the top (no Back bar) */
 .b3-cam .b3-cbot{gap:8px}
 .b3-cacts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .b3-cact{min-height:54px;padding:7px 3px 6px;border-radius:14px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.12);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:inherit;font-size:12px;font-weight:650;line-height:1.15;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent;min-width:0}
 .b3-cact svg{width:22px;height:22px;color:#e9cb88;flex:none}
 .b3-cact span{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .b3-cact[aria-pressed=true]{background:rgba(233,203,136,.22);border-color:rgba(233,203,136,.75)}
-.b3-cact:active,.b3-cback:active,.b3-deep:active{transform:scale(.97)}
-.b3-cback{min-height:50px;width:100%;border-radius:16px;border:0;background:#fff;color:#14100a;font:inherit;font-size:16px;font-weight:750;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.b3-cback svg{width:20px;height:20px}
+.b3-cact:active,.b3-deep:active{transform:scale(.97)}
 .b3-deep{min-height:46px;border-radius:16px;border:1px solid rgba(233,203,136,.55);background:rgba(233,203,136,.12);color:#fff;text-decoration:none;display:flex;align-items:center;gap:10px;padding:6px 12px 6px 14px;-webkit-tap-highlight-color:transparent}
 .b3-deep>svg{width:20px;height:20px;color:#e9cb88;flex:none}
 .b3-deep>svg:last-child{width:16px;height:16px;opacity:.7}
 .b3-deep span{flex:1;display:flex;flex-direction:column;line-height:1.2;min-width:0;text-align:left}
 .b3-deep b{font-size:15px;font-weight:750}
 .b3-deep small{font-size:12px;opacity:.78;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.b3-cam .b3-cmsg{bottom:calc(env(safe-area-inset-bottom,0px) + 300px)}
-@media (max-height:720px){.b3-cam .b3-frame{top:21%;height:min(20vh,140px)}.b3-cam .b3-cbot{padding-top:16px}.b3-cact{min-height:50px}.b3-cam .b3-cmsg{top:calc(env(safe-area-inset-top,0px) + 58px);bottom:calc(env(safe-area-inset-bottom,0px) + 290px)}}
-@media (prefers-reduced-motion:reduce){.b3-cact:active,.b3-cback:active,.b3-deep:active{transform:none}}
+.b3-cam .b3-cmsg{bottom:calc(env(safe-area-inset-bottom,0px) + 250px)}
+/* Oct 15 (scan X only): in the iPhone home-screen app the page can end above the real screen bottom (g2f-gap). The full-screen scanner is NOT stretched into that band
+   (iOS clipped it there and cut Deep analyze off): it ends where the page ends, and the home bar sits in the band, so only the rest of the safe area is added */
+html.g2f-gap body>.b3-cam{bottom:0}
+html.g2f-gap body>.b3-cam .b3-cbot{padding-bottom:calc(max(0px, env(safe-area-inset-bottom,0px) - var(--g2fGap,0px)) + 14px)}
+html.g2f-gap.b3-camon,html.g2f-gap.b3-camon body{background:#000}
+.b3-deep{flex:none}
+@media (max-height:720px){.b3-cam .b3-frame{top:21%;height:min(20vh,140px)}.b3-cam .b3-cbot{padding-top:16px}.b3-cact{min-height:50px}.b3-cam .b3-cmsg{top:calc(env(safe-area-inset-top,0px) + 58px);bottom:calc(env(safe-area-inset-bottom,0px) + 236px)}}
+@media (prefers-reduced-motion:reduce){.b3-cact:active,.b3-deep:active{transform:none}}
 /* reveal */
 .b3-ov .r2-sh{max-height:calc(100% - env(safe-area-inset-top,0px) - 14px)}
 .b3-tall .r2-sh{min-height:78vh}
@@ -13701,7 +13705,6 @@ Object.assign(B3_TX, {
   camNo: ["No live camera here", "Hier gibt es keine Live-Kamera", "Aquí no hay cámara en directo"],
   camNoS: ["Type the number under the barcode lines below.", "Tipp unten die Nummer unter den Barcode-Strichen ein.", "Escribe abajo el número bajo las barras del código."],
   /* Oct 15: scanner bottom bar = all capture actions + Back + Deep analyze (the Home orb is only the herb game now) */
-  camBack: ["Back", "Zurück", "Atrás"],
   deep: ["Deep analyze", "Deep analyze", "Deep analyze"],
   deepS: ["Your custom GPT · swaps & content", "Dein Custom GPT · Swaps & Inhalte", "Tu GPT personalizado · cambios y contenido"],
   actsL: ["What do you want to do?", "Was möchtest du machen?", "¿Qué quieres hacer?"],
@@ -14030,17 +14033,15 @@ const CAMOK = "lowi.camok";
 const DEEP_GPT = "https://chatgpt.com/g/g-69481a874bf08191b8118f8d88c9c90e-lowispike";
 const deepURL = () => { try { const g = window.LowiVitalsBridge && LowiVitalsBridge.gpt; if (g && /^https:\/\/chatgpt\.com\/g\//.test(g)) return g; } catch(e){} return DEEP_GPT; };
 const IC_DROP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5c3.2 4 5.5 7.1 5.5 10a5.5 5.5 0 0 1-11 0c0-2.9 2.3-6 5.5-10z"/></svg>';
-const IC_BACK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>';
 const IC_SPARK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.6L19.5 10.5l-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9z"/><path d="M19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg>';
-/* bottom of the scanner: every capture action (was the Home orb menu), then Back for the thumb, then Deep analyze below it */
+/* bottom of the scanner: every capture action (was the Home orb menu), then Deep analyze. Close = the round X top left, like every other screen */
 function camBar(){
   const act = (k, ic, on) => '<button type="button" class="b3-cact" data-b3="camact" data-act="' + k + '" aria-pressed="' + (on ? "true" : "false") + '" aria-label="' + esc(t("act" + k[0].toUpperCase() + k.slice(1) + "L")) + '">' + ic + '<span>' + esc(t("act" + k[0].toUpperCase() + k.slice(1))) + '</span></button>';
   return '<div class="b3-cacts" role="group" aria-label="' + esc(t("actsL")) + '">' + act("scan", IC.bc, true) + act("photo", IC.cam) + act("meal", IC.plate) + act("water", IC_DROP) + '</div>' +
-    '<button type="button" class="b3-cback" data-b3="camclose" id="b3Back">' + IC_BACK + '<span>' + esc(t("camBack")) + '</span></button>' +
     '<a class="b3-deep" id="b3Deep" href="' + esc(deepURL()) + '" target="_blank" rel="noopener">' + IC_SPARK + '<span><b>' + esc(t("deep")) + '</b><small>' + esc(t("deepS")) + '</small></span>' + IC.chev + '</a>'; }
 function camAct(act){
   if (!CAM) return;
-  if (act === "scan") { sfx("tap"); const el = CAM.el; if (!el.classList.contains("typing") && CAM.stream) return;
+  if (act === "scan") { sfx("tap"); const el = CAM.el; if (!el.classList.contains("typing") && CAM.stream) { playVid($("#b3Vid", el)); return; }
     el.classList.remove("typing"); if (CAM.stream) return; if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { msgState("nocam"); return; }
     if (window.LowiSpirit || localStorage.getItem(CAMOK) === "1") startCam(); else msgState("ask"); return; }
   const S = window.LowiSpirit, fn = S && S[act], inWorld = !!CAM.el.closest("#spWorld");
@@ -14050,7 +14051,7 @@ function camAct(act){
 function openScanner(mode){
   closeScanner(true);
   const el = document.createElement("div"); el.className = "b3-cam"; el.id = "b3Cam"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true");
-  el.innerHTML = '<video id="b3Vid" playsinline muted autoplay></video><div class="b3-shade"></div>' +
+  el.innerHTML = '<video id="b3Vid" playsinline webkit-playsinline muted autoplay disablepictureinpicture></video><div class="b3-shade"></div>' +
     '<div class="b3-ctop"><button class="b3-cx" data-b3="camclose" aria-label="' + esc(t("close")) + '">' + IC.x + '</button><span class="b3-ctitle">' + esc(t("scanBig")) + '</span><button class="b3-torch" data-b3="torch" hidden aria-label="' + esc(t("torch")) + '">' + IC.bolt + '</button></div>' +
     '<div class="b3-frame" id="b3Frame"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><i class="b3-laser"></i></div>' +
     '<div class="b3-cmsg" id="b3CMsg"></div>' +
@@ -14073,19 +14074,36 @@ function msgState(s){ if (!CAM) return; const m = $("#b3CMsg", CAM.el); CAM.el.d
   else if (s === "starting") m.innerHTML = '<div class="b3-cbox slim"><small>' + esc(t("starting")) + '</small></div>';
   else if (s === "lookup") m.innerHTML = '<div class="b3-cbox slim"><span class="b3-spin"></span><small>' + esc(t("lookup")) + '</small></div>';
   else m.innerHTML = ""; }
+/* Oct 15: the camera opens every time. One start at a time, a plain-constraints retry when iOS refuses the ideal ones, the video is forced to play inline,
+   a stream that dies (track ended, app sent to the background) is restarted on its own, and a start that shows no picture is retried once */
+function camErrState(e){ const n = e && e.name; return n === "NotAllowedError" || n === "SecurityError" ? "denied" : "nocam"; }
+async function getCam(){
+  const tries = [{audio:false, video:{facingMode:{ideal:"environment"}, width:{ideal:1280}, height:{ideal:720}}}, {audio:false, video:{facingMode:"environment"}}, {audio:false, video:true}];
+  let err = null;
+  for (const c of tries) { try { return await navigator.mediaDevices.getUserMedia(c); } catch(e){ err = e; const n = e && e.name; if (n === "NotAllowedError" || n === "SecurityError") break; if (n === "NotReadableError" || n === "AbortError") await new Promise(r => setTimeout(r, 350)); } }
+  throw err || new Error("nocam"); }
+async function playVid(v){ v.muted = true; v.defaultMuted = true; v.setAttribute("playsinline", ""); v.setAttribute("webkit-playsinline", ""); try { await v.play(); return true; } catch(e){ return false; } }
 async function startCam(){
-  if (!CAM) return; msgState("starting");
+  if (!CAM || CAM.done) return; if (CAM.starting) return; const mine = CAM; mine.starting = true;
+  try { await startCam1(mine); } finally { mine.starting = false; } }
+async function startCam1(mine){
+  if (mine.stream) stopStream(); mine.el.classList.remove("live"); msgState("starting");
   let stream;
-  try { stream = await navigator.mediaDevices.getUserMedia({audio:false, video:{facingMode:{ideal:"environment"}, width:{ideal:1280}, height:{ideal:720}}}); }
-  catch(e){ if (!CAM) return; const n = e && e.name; msgState(n === "NotAllowedError" || n === "SecurityError" ? "denied" : "nocam"); if (n === "NotAllowedError") localStorage.removeItem(CAMOK); return; }
-  if (!CAM || CAM.done) { stream.getTracks().forEach(x => x.stop()); return; }
-  localStorage.setItem(CAMOK, "1"); CAM.stream = stream;
-  const v = $("#b3Vid", CAM.el); v.srcObject = stream; try { await v.play(); } catch(e){}
-  try { const tr = stream.getVideoTracks()[0], cap = tr.getCapabilities ? tr.getCapabilities() : {}; if (cap && cap.torch) $(".b3-torch", CAM.el).hidden = false; } catch(e){}
-  CAM.det = await nativeDetector();
-  if (!CAM) return;
-  if (!CAM.det) { try { await loadZX(); CAM.reader = zxReader(); } catch(e){ msgState("nocam"); return; } }
-  if (!CAM) return; msgState("live"); CAM.el.classList.add("live"); loop(); }
+  try { stream = await getCam(); }
+  catch(e){ if (CAM !== mine) return; const st = camErrState(e); msgState(st); if (st === "denied") localStorage.removeItem(CAMOK); return; }
+  if (CAM !== mine || mine.done || document.visibilityState === "hidden") { stream.getTracks().forEach(x => x.stop()); return; }
+  localStorage.setItem(CAMOK, "1"); mine.stream = stream;
+  const v = $("#b3Vid", mine.el); v.srcObject = stream;
+  if (!(await playVid(v)) && CAM === mine) { /* iOS can refuse play() outside a tap: the next touch on the scanner starts it */
+    mine.el.addEventListener("pointerdown", () => { if (CAM === mine && mine.stream) playVid(v); }, {once:true}); }
+  try { stream.getVideoTracks().forEach(tr => tr.addEventListener("ended", () => { if (CAM === mine && !mine.done && mine.stream === stream && document.visibilityState === "visible") startCam(); })); } catch(e){}
+  try { const tr = stream.getVideoTracks()[0], cap = tr.getCapabilities ? tr.getCapabilities() : {}; if (cap && cap.torch) $(".b3-torch", mine.el).hidden = false; } catch(e){}
+  clearTimeout(mine.wd); mine.wd = setTimeout(() => { if (CAM !== mine || mine.done || mine.stream !== stream || document.visibilityState !== "visible") return;
+    if (!v.videoWidth || v.readyState < 2) { if (!mine.retried) { mine.retried = true; startCam(); } else playVid(v); } }, 4500);
+  if (!mine.det && !mine.reader) mine.det = await nativeDetector();
+  if (CAM !== mine || mine.stream !== stream) return;
+  if (!mine.det && !mine.reader) { try { await loadZX(); mine.reader = zxReader(); } catch(e){ if (CAM === mine) msgState("nocam"); return; } }
+  if (CAM !== mine || mine.stream !== stream) return; msgState("live"); mine.el.classList.add("live"); cancelAnimationFrame(mine.raf); loop(); }
 function loop(){ if (!CAM || CAM.done) return; CAM.raf = requestAnimationFrame(loop); const now = performance.now(); if (CAM.busy || now - CAM.last < 160) return; CAM.last = now;
   const v = $("#b3Vid", CAM.el); if (!v || v.readyState < 2 || !v.videoWidth) return; CAM.busy = true;
   (async () => { let code = "";
@@ -14096,7 +14114,7 @@ function loop(){ if (!CAM || CAM.done) return; CAM.raf = requestAnimationFrame(l
         const g = cv.getContext("2d", {willReadFrequently:true}); g.drawImage(v, (W - cw) / 2, (H - ch) / 2, cw, ch, 0, 0, cv.width, cv.height); code = zxDecodeCanvas(cv, CAM.reader); }
     } catch(e){}
     if (CAM) CAM.busy = false; const c = validCode(code); if (c && CAM && !CAM.done) found(c); })(); }
-function stopStream(){ if (!CAM) return; cancelAnimationFrame(CAM.raf); try { CAM.stream && CAM.stream.getTracks().forEach(x => x.stop()); } catch(e){} CAM.stream = null; }
+function stopStream(){ if (!CAM) return; cancelAnimationFrame(CAM.raf); clearTimeout(CAM.wd); try { CAM.stream && CAM.stream.getTracks().forEach(x => x.stop()); } catch(e){} CAM.stream = null; }
 function closeScanner(now){ if (!CAM) return; const c = CAM; c.done = true; stopStream(); CAM = null; document.documentElement.classList.remove("b3-camon");
   if (now) c.el.remove(); else { c.el.classList.remove("on"); setTimeout(() => c.el.remove(), 260); } }
 async function torch(){ try { const tr = CAM.stream.getVideoTracks()[0]; CAM.torch = !CAM.torch; await tr.applyConstraints({advanced:[{torch:CAM.torch}]}); $(".b3-torch", CAM.el).classList.toggle("on", CAM.torch); } catch(e){} }
@@ -14328,7 +14346,11 @@ document.addEventListener("click", e => {
   }
 });
 document.addEventListener("keydown", e => { if (e.key === "Escape" && CAM) closeScanner(); });
-document.addEventListener("visibilitychange", () => { if (document.visibilityState !== "visible" && CAM && CAM.stream) { stopStream(); CAM.el.classList.remove("live"); msgState("ask"); } });
+/* Oct 15: leaving the app stops the camera; coming back starts it again on its own (no second "Allow camera" tap) */
+function camResume(){ if (!CAM || CAM.done || CAM.stream || CAM.el.classList.contains("typing")) return; const st = CAM.el.dataset.st; if (st === "denied" || st === "nocam" || st === "lookup") return; startCam(); }
+document.addEventListener("visibilitychange", () => { if (!CAM) return; if (document.visibilityState !== "visible") { if (CAM.stream) { stopStream(); CAM.el.classList.remove("live"); msgState("starting"); } } else setTimeout(camResume, 250); });
+window.addEventListener("pageshow", e => { if (e.persisted) setTimeout(camResume, 250); });
+window.addEventListener("focus", () => setTimeout(camResume, 300));
 window.addEventListener("online", () => { loadComm(true).then(ch => { if (ch && curTab() === "scan") renderTab(); }); });
 
 /* ---------- boot: take over the Scan tab, keep the plate flow ---------- */

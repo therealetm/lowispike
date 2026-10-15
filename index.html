@@ -1592,6 +1592,70 @@ html[data-lay=desktop] .fyv-bar{bottom:16px}
 
 </script>
 <script>try{(()=>{const h=document.documentElement,m=localStorage.getItem("lowi.theme"),c=m==="light"||m==="sunrise"?m:"dark",n=new Date,N=+n;let d=n.getHours()>=7&&n.getHours()<19;try{const w=JSON.parse(localStorage.getItem("lowi.weather.v1")||"null"),D=864e5;if(w&&w.sunset>w.sunrise&&Math.abs(N-w.sunrise)<3*D){const s=Math.round((N-(w.sunrise+w.sunset)/2)/D)*D;d=N>=w.sunrise+s&&N<w.sunset+s}}catch(e){}const t=c==="sunrise"?(d?"light":"dark"):c;h.setAttribute("data-theme",t);h.setAttribute("data-theme-mode",c)})()}catch(e){}</script>
+<!-- Oct 15, 2026 clean start: the app is assembled in layers (the base page, then its inline modules, then the companion files apple-ui.js loads).
+     Each layer used to paint on its way in, so opening the app showed older screens for a moment before the current one.
+     Now the page stays behind one calm launch screen until the last layer is in, then the finished app shows in one step.
+     Safety: it always opens by itself (window load, or 8 s at the latest) and ?noboot=1 skips the launch screen. -->
+<style id="lwBootCss">
+html.lw-boot body,html.lw-boot>:not(head):not(body):not(#lwBoot){opacity:0!important;pointer-events:none!important}
+#lwBoot{position:fixed;inset:0;z-index:2147483646;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:#03050a;color:#eef1f8;pointer-events:auto;transition:opacity .2s ease;-webkit-user-select:none;user-select:none;touch-action:none}
+html[data-theme=light] #lwBoot{background:#f6f8fc;color:#141a2b}
+#lwBoot>*{opacity:0;animation:lwbIn .35s ease .25s forwards}
+#lwBoot .lwb-orb{width:58px;height:58px;border-radius:50%;background:radial-gradient(circle at 34% 30%,#fff8dc 0,#f4c95a 42%,#c98b1f 100%);box-shadow:0 0 0 1px rgba(244,201,90,.28),0 0 38px rgba(244,201,90,.42)}
+#lwBoot .lwb-orb::after{content:"";display:block;width:100%;height:100%;border-radius:50%;animation:lwbBreath 1.8s ease-in-out .6s infinite;box-shadow:0 0 0 0 rgba(244,201,90,.35)}
+#lwBoot .lwb-w{font:700 19px/1 -apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;letter-spacing:.2em;padding-left:.2em}
+#lwBoot .lwb-w i{font-style:normal;color:#e8b33f}
+#lwBoot.out{opacity:0;pointer-events:none}
+@keyframes lwbIn{to{opacity:1}}
+@keyframes lwbBreath{50%{box-shadow:0 0 0 12px rgba(244,201,90,0)}}
+@media (prefers-reduced-motion:reduce){#lwBoot,#lwBoot>*{transition:none;animation:none;opacity:1}#lwBoot .lwb-orb::after{animation:none}#lwBoot.out{opacity:0}}
+</style>
+<script id="lwBootJs">
+(function(){
+  var H = document.documentElement, done = false, dom = false, files = false, cap = 8000;
+  try { if (/[?&]noboot=1/.test(location.search)) return; } catch(e){}
+  if (window.LowiBoot) return;
+  H.classList.add("lw-boot");
+  var el = document.createElement("div"); el.id = "lwBoot"; el.setAttribute("aria-hidden", "true");
+  el.innerHTML = '<div class="lwb-orb"></div><div class="lwb-w">LOW<i>i</i>SPIKE</div>';
+  H.appendChild(el);
+  function now(){ try { return Math.round(performance.now()); } catch(e){ return 0; } }
+  function reveal(why){
+    if (done) return; done = true;
+    window.__LOWI_BOOT_DONE = why || "ready"; window.__LOWI_BOOT_T = now();
+    var still = false; try { still = matchMedia("(prefers-reduced-motion: reduce)").matches; } catch(e){}
+    H.classList.remove("lw-boot");
+    if (still) { if (el.parentNode) el.parentNode.removeChild(el); }
+    else { el.classList.add("out"); setTimeout(function(){ if (el.parentNode) el.parentNode.removeChild(el); }, 260); }
+    try { window.dispatchEvent(new CustomEvent("lowi:boot-ready", {detail:{why:window.__LOWI_BOOT_DONE, t:window.__LOWI_BOOT_T}})); } catch(e){}
+  }
+  /* Stylesheets still on their way get a short moment, so the first frame is already styled. */
+  function sheetsIn(){
+    var ls = document.querySelectorAll('link[rel="stylesheet"]'), wait = [];
+    for (var i = 0; i < ls.length; i++) { var l = ls[i]; var ok = false; try { ok = !!l.sheet; } catch(e){ ok = true; } if (!ok) wait.push(l); }
+    return wait;
+  }
+  function settle(){
+    if (done || !dom || !files) return;
+    var wait = sheetsIn(), left = wait.length, t0 = Date.now();
+    function go(){ if (done) return; requestAnimationFrame(function(){ requestAnimationFrame(function(){ reveal("ready"); }); }); }
+    if (!left) { go(); return; }
+    var fin = function(){ if (--left <= 0) go(); };
+    for (var i = 0; i < wait.length; i++) { wait[i].addEventListener("load", fin, {once:true}); wait[i].addEventListener("error", fin, {once:true}); }
+    setTimeout(go, 1200);
+  }
+  window.LowiBoot = {
+    /* apple-ui.js calls this once every companion file has run (or failed) */
+    loaded: function(){ files = true; settle(); },
+    reveal: reveal,
+    done: function(){ return done; },
+    state: function(){ return {done:done, dom:dom, files:files, why:window.__LOWI_BOOT_DONE || ""}; }
+  };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function(){ dom = true; settle(); }); else dom = true;
+  window.addEventListener("load", function(){ setTimeout(function(){ reveal("load"); }, files ? 1300 : 300); });
+  setTimeout(function(){ reveal("cap"); }, cap);
+})();
+</script>
 <style id="r3nCss">.td-herol{margin-top:4px;opacity:.88;text-wrap:balance}.td-herotx .h3{text-wrap:balance}#tab-home .td-extra .td-mtx>*{text-wrap:pretty}#tab-home .td-hero img{object-position:center 40%}</style><style id="r3xCss">#tab-home .td-extra{flex-wrap:wrap;row-gap:10px;align-items:center}#tab-home .td-extra>.td-mtx{flex:1 1 0;min-width:0}#tab-home .td-extra>.td-mtx>div:first-child{font-size:16px;line-height:1.25}#tab-home .td-extra>.td-mtx .small{margin-top:3px;line-height:1.35}#tab-home .td-extra>.go{flex:none;align-self:center}#tab-home .td-extra>.r3a-hb{flex:0 0 100%;margin:0;padding-top:10px;border-top:1px solid var(--edge,rgba(255,255,255,.12));display:flex;flex-wrap:wrap;gap:8px;align-items:center}#tab-home .td-extra>.r3a-hb .r3a-hbt{flex:1 1 auto;text-align:center;white-space:nowrap}#tab-home .td-extra>.r3a-hb .r3a-cart{flex:0 0 auto;white-space:nowrap;border-color:rgba(var(--acc-rgb,212,175,55),.6)}</style><style id="r3yCss">.lb3.lb3-max .lb3-lvl{height:100%;background:linear-gradient(180deg,rgba(var(--b1r),.42),rgba(var(--b2r),.62))}.lb3.lb3-max .lb3-wave{display:none}.lb3.lb3-glow.lb3-max{animation:r3yPulse 2.4s ease-in-out infinite}@keyframes r3yPulse{0%,100%{box-shadow:0 0 calc(var(--sz)*.30) rgba(var(--b1r),.6),0 0 calc(var(--sz)*.10) rgba(var(--b2r),.6),0 calc(var(--sz)*.05) calc(var(--sz)*.16) rgba(0,0,0,.3);filter:saturate(1)}50%{box-shadow:0 0 calc(var(--sz)*.62) rgba(var(--b1r),.95),0 0 calc(var(--sz)*.2) rgba(var(--b2r),.9),0 calc(var(--sz)*.05) calc(var(--sz)*.16) rgba(0,0,0,.3);filter:saturate(1.25) brightness(1.08)}}.r5-bub.r5-max .r5-water i{top:-60%}.r5-bub.r5-max{animation:r3yPulse5 2.4s ease-in-out infinite}@keyframes r3yPulse5{0%,100%{filter:drop-shadow(0 0 10px var(--b1))}50%{filter:drop-shadow(0 0 26px var(--b1)) drop-shadow(0 0 8px var(--b2)) brightness(1.08)}}@media (prefers-reduced-motion:reduce){.lb3.lb3-glow.lb3-max,.r5-bub.r5-max{animation:none!important}}</style><style id="r3zCss">[id^="cm-zbot"] .cm-mini{display:none}.cm-tag.r3z-bot{background:rgba(143,184,214,.16);color:#bcd6ea;border:1px dashed rgba(143,184,214,.55)}html[data-theme=light] .cm-tag.r3z-bot{color:#2f5a78;background:rgba(80,130,170,.12)}.r3z-tog{margin-left:6px;cursor:pointer}.r3z-botbar{display:flex;align-items:center;gap:8px;margin:4px 0 12px;padding:9px 12px;border-radius:14px;border:1px dashed rgba(143,184,214,.5);background:rgba(143,184,214,.08);font-size:13px;line-height:1.35}.r3z-botbar .cm-tag{flex:none}[id^="cm-zbot"] .r3m-by b::after{content:"demo bot";margin-left:6px;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:1px 6px;border-radius:999px;border:1px dashed rgba(143,184,214,.6);color:#bcd6ea;vertical-align:1px}html[lang^=de] [id^="cm-zbot"] .r3m-by b::after{content:"Demo-Bot"}html[lang^=es] [id^="cm-zbot"] .r3m-by b::after{content:"bot de prueba"}html[data-theme=light] [id^="cm-zbot"] .r3m-by b::after{color:#2f5a78}.r3z-tog[aria-pressed=false]{opacity:.6}</style>
 <style id="gptcss">
 .gpt-card{margin:12px 0 16px;display:block;border-color:rgba(226,194,126,.45);background:linear-gradient(160deg,rgba(226,194,126,.16),rgba(226,194,126,.03)),var(--panel)}

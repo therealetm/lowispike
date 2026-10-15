@@ -5,12 +5,17 @@ const D=document,H=D.documentElement,R2=window.LowiR2;
 /* Herb Tamagotchi is loaded from this already-live shell file so the 3.2 MB app entry point stays untouched. */
 (function loadHerb(attempt){
   if(window.__LOWI_HERB_READY)return;
-  if(!window.LowiR2){if((attempt||0)<120)setTimeout(()=>loadHerb((attempt||0)+1),50);return;}
+  if(!window.LowiR2){if((attempt||0)<120)setTimeout(()=>loadHerb((attempt||0)+1),50);else{try{if(window.LowiBoot)window.LowiBoot.loaded();}catch(x){}}return;}
   if(window.__LOWI_HERB_LOADING)return;window.__LOWI_HERB_LOADING=true;window.__LOWI_HERB_READY=true;
   const v='20261015-121500';
   if(!D.getElementById('tmgCss')){const spiritCss=D.createElement('link');spiritCss.rel='stylesheet';spiritCss.href='spirit.css?v='+v;D.head.append(spiritCss);const l=D.createElement('link');l.id='tmgCss';l.rel='stylesheet';l.href='herb-tamagotchi.css?v='+v;D.head.appendChild(l);const bc=D.createElement('link');bc.id='betaCss';bc.rel='stylesheet';bc.href='beta.css?v='+v;D.head.appendChild(bc);const wx=D.createElement('link');wx.id='wxCss';wx.rel='stylesheet';wx.href='weather-sky.css?v='+v;D.head.appendChild(wx);const fb=D.createElement('link');fb.id='fbCss';fb.rel='stylesheet';fb.href='fast-bubble.css?v='+v;D.head.appendChild(fb);const ht=D.createElement('link');ht.id='htCss';ht.rel='stylesheet';ht.href='herb-touch.css?v='+v;D.head.appendChild(ht);const wl=D.createElement('link');wl.id='wideCss';wl.rel='stylesheet';wl.href='wide-layout.css?v='+v;D.head.appendChild(wl);const li=D.createElement('link');li.id='liCss';li.rel='stylesheet';li.href='lowi-icons.css?v='+v;D.head.appendChild(li);const dr=D.createElement('link');dr.id='drCss';dr.rel='stylesheet';dr.href='daily-ritual.css?v='+v;D.head.appendChild(dr);const tbc=D.createElement('link');tbc.id='tbCss';tbc.rel='stylesheet';tbc.href='top-bar.css?v='+v;D.head.appendChild(tbc);}
   const files=['weather-sky-core.js','weather-sky.js','herb-config.js','herb-core.js','herb-identity-core.js','starter-core.js','herb-start.js','herb-quests-core.js','herb-quests.js','spirit-core.js','lowi-icons.js','herb-tamagotchi-core.js','herb-shop-core.js','herb-identity.js','herb-tamagotchi.js','herb-tamagotchi-polish.js','herb-tamagotchi-mount-fix.js','cell-world.js','herb-touch.js','spirit.js','herb-shop.js','beta.js','fast-bubble.js','living-home.js','sun-meter.js','praise.js','finch-extras.js','daily-ritual.js','micro-book-core.js','micro-book.js','cell-room-core.js','cell-room.js','body-world-3d.js','body-world-regions.js','top-bar.js','body-trips.js','world-health-core.js','body-ride-core.js','body-ride.js','season-core.js','season.js','microbe-buddies-core.js','microbe-buddies.js'];
-  let i=0;const next=()=>{if(i>=files.length)return;const f=files[i++],id='tmg-'+f.replace(/\W/g,'-');if(D.getElementById(id)){next();return;}const s=D.createElement('script');s.id=id;s.src=f+'?v='+v;s.async=false;s.onload=next;s.onerror=()=>{console.warn('Herb companion could not load',f);next();};D.head.appendChild(s);};next();
+  /* Oct 15 clean start: all companion files download at once; async=false still runs them one after another in list order.
+     (They used to download one by one, each waiting for the last, which made opening the app take seconds.)
+     When every file has run or failed, LowiBoot (index.html head) shows the finished app in one step. */
+  let left=0;const boot=()=>{try{if(window.LowiBoot)window.LowiBoot.loaded();}catch(x){}};const one=()=>{if(--left<=0)boot();};
+  for(const f of files){const id='tmg-'+f.replace(/\W/g,'-');if(D.getElementById(id))continue;const s=D.createElement('script');s.id=id;s.src=f+'?v='+v;s.async=false;left++;s.onload=one;s.onerror=()=>{console.warn('Herb companion could not load',f);one();};D.head.appendChild(s);}
+  if(!left)boot();
 })(0);
 H.classList.add('apple-ui');
 if(!R2 || !R2.sheet) return;

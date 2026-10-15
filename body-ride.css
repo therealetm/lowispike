@@ -1,0 +1,110 @@
+/* LOWiSPIKE moving cell ride (body-ride.js). Prefix .br-. Inside is always dark navy (VISUAL-MASTER), glows carry colour. */
+.br-row {
+    --br-h: #8fb4ff;
+    --br-g: .7;
+    display: flex; align-items: center; gap: 8px;
+    width: 100%; min-height: 30px; margin: 0 0 6px; padding: 3px 4px 3px 9px; box-sizing: border-box;
+    border: 1px solid color-mix(in srgb, var(--br-h) 24%, transparent); border-radius: 13px;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--br-h) 10%, transparent), color-mix(in srgb, var(--text, #fff) 3%, transparent));
+    color: var(--text, #fff); font: inherit; text-align: left; cursor: pointer; overflow: hidden;
+    -webkit-tap-highlight-color: transparent; transition: transform .16s ease;
+}
+.br-row:active { transform: scale(.98); }
+.br-row:focus-visible { outline: 2px solid var(--br-h); outline-offset: 2px; }
+.br-dot { flex: none; width: 12px; height: 12px; border-radius: 50%; background: radial-gradient(circle at 40% 38%, #fff 0 18%, var(--br-h) 45%, color-mix(in srgb, var(--br-h) 30%, transparent) 75%);
+    box-shadow: 0 0 calc(4px + 10px * var(--br-g, .7)) color-mix(in srgb, var(--br-h) 70%, transparent); animation: br-breathe 5s ease-in-out infinite; }
+.br-row[data-tier=murky] .br-dot { animation-duration: 8s; }
+.br-name { flex: none; font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+.br-line { flex: 1 1 auto; min-width: 0; font-size: 11.5px; opacity: .78; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.br-go { flex: none; font-size: 11.5px; font-weight: 700; padding: 4px 9px; border-radius: 999px; background: color-mix(in srgb, var(--br-h) 22%, transparent); color: var(--text, #fff); }
+@keyframes br-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.18); } }
+
+.br-pick h2 { margin: 0 0 4px; }
+.br-sub { margin: 0 0 12px; opacity: .75; font-size: 14px; }
+.br-health { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 14px; background: color-mix(in srgb, var(--br-h) 12%, transparent); margin-bottom: 14px; }
+.br-health .br-dot { margin-top: 3px; }
+.br-health p { margin: 0; font-size: 14px; line-height: 1.35; }
+.br-places { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 8px; }
+.br-place { width: 100%; min-height: 48px; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--ph) 35%, transparent);
+    background: color-mix(in srgb, var(--ph) 10%, transparent); color: inherit; font: inherit; cursor: pointer; text-align: left; }
+.br-pdot { flex: none; width: 14px; height: 14px; border-radius: 50%; background: var(--ph); box-shadow: 0 0 10px var(--ph); }
+
+/* ---------- ride overlay ---------- */
+html.br-open, html.br-open body { overflow: hidden; }
+.br-ov { position: fixed; inset: 0; z-index: 9800; background: #0b102a; color: #f3f6ff; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; --ph: #2ef8b6; --br-h: #8fb4ff; }
+@supports (height: 100dvh) { .br-ov { height: 100dvh; bottom: auto; } }
+.br-stage { position: absolute; inset: 0; }
+.br-canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+.br-canvas:active { cursor: grabbing; }
+.br-loading .br-stage::after { content: ""; position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; margin: -23px; border-radius: 50%;
+    background: radial-gradient(circle at 40% 38%, #fff 0 12%, #6ff3ff 35%, #b14dff 70%, transparent 72%); box-shadow: 0 0 30px #6ff3ff; animation: br-breathe 1.6s ease-in-out infinite; }
+.br-flash { position: absolute; inset: 0; background: var(--ph); opacity: 0; pointer-events: none; }
+.br-flash.on { animation: br-flash .3s ease-out; }
+@keyframes br-flash { 0% { opacity: .55; } 100% { opacity: 0; } }
+.br-top { position: absolute; left: 0; right: 0; top: 0; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
+    padding: calc(env(safe-area-inset-top, 0px) + 12px) 14px 0 calc(env(safe-area-inset-left, 0px) + 16px); pointer-events: none; }
+.br-title { display: flex; flex-direction: column; text-shadow: 0 1px 8px rgba(0, 0, 0, .6); }
+.br-title small { font-size: 12px; opacity: .8; }
+.br-title b { font-size: 22px; letter-spacing: .2px; color: color-mix(in srgb, var(--ph) 55%, #fff); }
+.br-x { pointer-events: auto; flex: none; width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .22); background: rgba(11, 16, 42, .55);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); color: #fff; display: grid; place-items: center; cursor: pointer; margin-right: env(safe-area-inset-right, 0px); }
+.br-x svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; fill: none; }
+.br-why { position: absolute; left: calc(env(safe-area-inset-left, 0px) + 16px); right: 70px; top: calc(env(safe-area-inset-top, 0px) + 66px); margin: 0;
+    display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; line-height: 1.35; max-width: 460px; pointer-events: none; text-shadow: 0 1px 6px rgba(0, 0, 0, .7); opacity: .92; }
+.br-why .br-dot { margin-top: 2px; }
+.br-hint { position: absolute; left: 50%; top: 46%; transform: translate(-50%, -50%); margin: 0; padding: 8px 14px; border-radius: 999px; background: rgba(11, 16, 42, .6);
+    font-size: 13px; white-space: nowrap; max-width: calc(100vw - 32px); overflow: hidden; text-overflow: ellipsis; pointer-events: none; transition: opacity .5s ease; }
+.br-hinted .br-hint, .br-touched .br-hint { opacity: 0; }
+.br-cards { position: absolute; left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom, 0px) + 112px); display: flex; justify-content: center; padding: 0 14px; pointer-events: none; }
+.br-card { pointer-events: auto; display: flex; gap: 12px; align-items: flex-start; width: min(440px, 100%); box-sizing: border-box; padding: 12px 14px; border-radius: 18px;
+    background: rgba(11, 16, 42, .72); border: 1px solid color-mix(in srgb, var(--ph) 35%, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, .35); animation: br-in .35s ease-out; transition: opacity .35s ease, transform .35s ease; }
+.br-card.br-out { opacity: 0; transform: translateY(8px); }
+.br-card b { display: block; font-size: 15px; }
+.br-card p { margin: 3px 0 0; font-size: 13.5px; line-height: 1.38; opacity: .9; }
+.br-card .br-why2 { opacity: .72; font-size: 12.5px; }
+.br-cbtn { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+@keyframes br-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.br-bud { flex: none; width: 30px; height: 30px; border-radius: 50%; background: radial-gradient(circle at 38% 35%, #fff 0 14%, var(--bh) 42%, color-mix(in srgb, var(--bh) 25%, transparent) 72%);
+    box-shadow: 0 0 14px var(--bh); animation: br-breathe 2.4s ease-in-out infinite; }
+.br-bar { position: absolute; left: 0; right: 0; bottom: 0; padding: 10px calc(env(safe-area-inset-right, 0px) + 14px) calc(env(safe-area-inset-bottom, 0px) + 14px) calc(env(safe-area-inset-left, 0px) + 14px);
+    background: linear-gradient(0deg, rgba(11, 16, 42, .85), rgba(11, 16, 42, 0)); }
+.br-prog { height: 4px; border-radius: 4px; background: rgba(255, 255, 255, .16); overflow: hidden; margin: 0 auto 10px; max-width: 520px; }
+.br-prog i { display: block; height: 100%; background: linear-gradient(90deg, #6ff3ff, var(--ph)); transform-origin: 0 50%; transform: scaleX(0); }
+.br-ctl { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.br-ctl.br-hide { display: none; }
+.br-b { min-height: 44px; min-width: 52px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, .22); background: rgba(255, 255, 255, .1); color: #fff;
+    font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.br-b:focus-visible, .br-x:focus-visible { outline: 2px solid #6ff3ff; outline-offset: 2px; }
+.br-b[aria-pressed=true], .br-freeon [data-brc=free] { background: color-mix(in srgb, var(--ph) 35%, transparent); border-color: var(--ph); }
+.br-pri { background: color-mix(in srgb, var(--ph) 40%, transparent); border-color: color-mix(in srgb, var(--ph) 70%, transparent); }
+@media (max-width: 380px) { .br-b { padding: 0 11px; font-size: 13px; min-width: 46px; } .br-ctl { gap: 6px; } }
+
+/* ---------- 2D ride ---------- */
+.br-2d .br-stage { background: radial-gradient(120% 90% at 50% 50%, #1d0b4f 0%, #0b102a 70%); overflow: hidden; touch-action: none; }
+.br2-strip { position: absolute; left: 0; top: 0; bottom: 0; width: 300%; will-change: transform; transition: transform .9s cubic-bezier(.3, .7, .2, 1); }
+.br2-vessel { position: absolute; left: 0; right: 0; top: 34%; height: 32%; border-radius: 999px;
+    background: linear-gradient(90deg, #5a1530, #7a1c3c 55%, color-mix(in srgb, var(--ph) 55%, #5a1530));
+    box-shadow: inset 0 0 40px rgba(0, 0, 0, .5), 0 0 60px color-mix(in srgb, var(--ph) 25%, transparent); opacity: calc(.55 + .45 * var(--clarity, .8)); }
+.br2-vessel::before { content: ""; position: absolute; inset: 12% 0; background: radial-gradient(circle, #e0384f 0 5px, transparent 6px) 0 0 / 46px 30px, radial-gradient(circle, #ffd7f0 0 1.5px, transparent 2px) 13px 9px / 37px 23px;
+    opacity: .7; animation: br2-flow calc(9s / var(--flow, 1)) linear infinite; }
+@keyframes br2-flow { to { background-position: 460px 0, 370px 0; } }
+.br2-stop { position: absolute; top: 50%; transform: translate(-50%, -50%); }
+.br2-place { display: block; width: 26vmin; height: 26vmin; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--ph) 70%, #fff) 0 10%, var(--ph) 35%, transparent 70%); box-shadow: 0 0 60px var(--ph); }
+.br2-fact { display: block; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 0 18px #fff; }
+.br2-cell { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; border: 1.5px solid rgba(111, 243, 255, .9);
+    background: radial-gradient(circle at 50% 50%, #ff3fb4 0 16%, rgba(111, 243, 255, .28) 40%, rgba(177, 77, 255, .3) 70%);
+    box-shadow: 0 0 calc(10px + 36px * var(--glow, .7)) rgba(111, 243, 255, calc(.3 + .6 * var(--glow, .7))); animation: br-breathe 4s ease-in-out infinite; }
+.br2-haze { position: absolute; inset: 0; pointer-events: none; background: rgba(42, 36, 72, calc((1 - var(--clarity, .8)) * .9)); }
+.br2-steps { position: absolute; left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom, 0px) + 60px); display: flex; justify-content: center; gap: 10px; }
+.br-2d .br-cards { bottom: calc(env(safe-area-inset-bottom, 0px) + 130px); }
+
+@media (prefers-reduced-motion: reduce) {
+    .br-dot, .br-bud, .br2-cell, .br-loading .br-stage::after, .br2-vessel::before { animation: none !important; }
+    .br-card, .br2-strip { animation: none !important; transition: none !important; }
+    .br-flash { display: none; }
+}
+/* rides inside the shared 3D world: our stage is a clear touch layer over the world canvas, the world's own UI hides */
+.br-ov[data-mode="3d"] { background: transparent; }
+.br-ov[data-mode="3d"] .br-stage { touch-action: none; cursor: grab; }
+html.br-open .bw3-full > :not(.bw3-view) { visibility: hidden !important; }

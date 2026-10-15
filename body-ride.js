@@ -178,7 +178,7 @@
         const S = Math.max(0.005, (r.route.curve.length || 160) / 160), root = new THREE.Group(); root.name = 'lowi-ride'; root.scale.setScalar(S); shared.hub.add(root);
         const keep = { near: camera.near, fov: camera.fov, fog: scene.fog ? scene.fog.density : 0 };
         camera.near = Math.min(camera.near, 0.6 * S); camera.updateProjectionMatrix();
-        const navy = new THREE.Color('#0b102a'), haze = new THREE.Color('#2a2448'), place = new THREE.Color(r.route.place.hue);
+        const navy = new THREE.Color('#0b102a'), haze = new THREE.Color('#1f2c4a'), place = new THREE.Color(r.route.place.hue);
         const bg = navy.clone().lerp(haze, look.fog * 0.8), fogC = bg.clone().lerp(place, 0.08), fogD = (0.006 + look.fog * 0.03) / S;
         root.add(new THREE.AmbientLight(0xffffff, 0.2 + 0.4 * look.bright));
         root.add(new THREE.HemisphereLight(0xa8e0ff, 0x1d0b4f, 0.25 + 0.45 * look.bright));
@@ -188,14 +188,14 @@
         const cv = new THREE.CatmullRomCurve3(pts, false, 'catmullrom', 0.5);
         const RAD = 9, segs = phone ? 220 : 340;
         const tube = new THREE.TubeGeometry(cv, segs, RAD, phone ? 14 : 20, false);
-        const cols = [], pos = tube.attributes.position, wallA = new THREE.Color('#7a1c3c').lerp(haze, look.fog * 0.6), n = pos.count, ring = (phone ? 14 : 20) + 1;
+        const cols = [], pos = tube.attributes.position, wallA = new THREE.Color('#2e4066').lerp(haze, look.fog * 0.6), n = pos.count, ring = (phone ? 14 : 20) + 1;
         for (let i = 0; i < n; i++) { const t = Math.floor(i / ring) / segs, c = wallA.clone().lerp(place, Math.max(0, (t - 0.55) / 0.45) * 0.75); const v = 0.75 + 0.25 * Math.sin(i * 1.7) * Math.sin(i * 0.31); cols.push(c.r * v, c.g * v, c.b * v); }
         tube.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
-        const wallM = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.BackSide, emissive: new THREE.Color('#2a0818').lerp(place, 0.1), emissiveIntensity: 0.4 + 0.6 * look.bright });
+        const wallM = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.BackSide, emissive: new THREE.Color('#0c1a33').lerp(place, 0.1), emissiveIntensity: 0.4 + 0.6 * look.bright });
         root.add(new THREE.Mesh(tube, wallM));
         /* red blood cells flowing with the stream, instanced */
         const NC = phone ? 130 : 240, rbcG = new THREE.SphereGeometry(1, 14, 8); rbcG.scale(1, 0.36, 1);
-        const rbcM = new THREE.MeshLambertMaterial({ color: new THREE.Color('#e0384f').lerp(haze, look.fog * 0.35), emissive: '#4a0814', emissiveIntensity: 0.25 + 0.5 * look.bright });
+        const rbcM = new THREE.MeshLambertMaterial({ color: new THREE.Color('#a3b6d6').lerp(haze, look.fog * 0.35), emissive: '#1c3058', emissiveIntensity: 0.25 + 0.5 * look.bright });
         const rbc = new THREE.InstancedMesh(rbcG, rbcM, NC); rbc.instanceMatrix.setUsage(THREE.DynamicDrawUsage); root.add(rbc);
         const rnd = C().rng(C().hash(r.route.id + ':cells'));
         const cells = Array.from({ length: NC }, () => ({ u: rnd(), a: rnd() * 6.283, rr: 1.5 + rnd() * (RAD - 3), sp: 0.6 + rnd() * 0.8, s: 0.9 + rnd() * 0.7, rx: rnd() * 6.283, ry: rnd() * 6.283, w: (rnd() - .5) * 2 }));

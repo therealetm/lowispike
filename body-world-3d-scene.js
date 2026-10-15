@@ -10,8 +10,8 @@ export function createWorld(THREE, canvas, opts) {
     renderer.setPixelRatio(dpr);
     const scene = new THREE.Scene();
     const PAL = {
-        dark: { bg: '#0d1636', wall: '#5a1a33', wallHi: '#8f3550', hemiSky: '#3a9fe0', hemiGround: '#3a1630', key: '#a3b4d9', fog: 0.034, shaft: 0.11, part: 0.75 },
-        light: { bg: '#cfe4f7', wall: '#e2a9b8', wallHi: '#f6d3dc', hemiSky: '#ffffff', hemiGround: '#e9c6d2', key: '#ffffff', fog: 0.030, shaft: 0.16, part: 0.55 }
+        dark: { bg: '#121c33', wall: '#2a3a5a', wallHi: '#6a82ab', hemiSky: '#8fb4e6', hemiGround: '#17223b', key: '#c3cfe6', fog: 0.034, shaft: 0.11, part: 0.75 },
+        light: { bg: '#7f94b4', wall: '#9aacc8', wallHi: '#dbe4f0', hemiSky: '#eef3fa', hemiGround: '#5f7393', key: '#ffffff', fog: 0.030, shaft: 0.16, part: 0.55 }
     };
     let theme = 'dark';
     scene.background = new THREE.Color(PAL.dark.bg);
@@ -56,11 +56,11 @@ export function createWorld(THREE, canvas, opts) {
     /* ---------- lights ---------- */
     const hemi = new THREE.HemisphereLight(PAL.dark.hemiSky, PAL.dark.hemiGround, 0.85); scene.add(hemi);
     const key = new THREE.DirectionalLight(PAL.dark.key, 1.25); key.position.set(2, 10, 4); scene.add(key);
-    const rim = new THREE.PointLight('#b95b9f', 6, 9, 1.6); rim.position.set(-1.5, 0.6, -2.6); scene.add(rim);
+    const rim = new THREE.PointLight('#8aa7d6', 6, 9, 1.6); rim.position.set(-1.5, 0.6, -2.6); scene.add(rim);
 
     /* ---------- the vessel: 360 bloodstream around the viewer ---------- */
     const VR = 15, LEN = 90;
-    const wallMat = new THREE.MeshStandardMaterial({ color: PAL.dark.wall, map: wallTex(), roughness: 0.85, metalness: 0, side: THREE.BackSide, emissive: PAL.dark.wallHi, emissiveIntensity: 0.12 });
+    const wallMat = new THREE.MeshStandardMaterial({ color: PAL.dark.wall, map: wallTex(), roughness: 0.7, metalness: 0.2, side: THREE.BackSide, emissive: PAL.dark.wallHi, emissiveIntensity: 0.12 });
     const wall = new THREE.Mesh(new THREE.CylinderGeometry(VR, VR, LEN * 2, small ? 28 : 40, 1, true), wallMat);
     wall.rotation.z = Math.PI / 2; scene.add(wall);
 
@@ -70,7 +70,7 @@ export function createWorld(THREE, canvas, opts) {
     for (let i = 12; i >= 0; i--) { const p = prof[i]; prof.push(new THREE.Vector2(p.x, -p.y)); }
     const rbcGeo = new THREE.LatheGeometry(prof.map(p => new THREE.Vector2(Math.max(0.0001, p.x), p.y)), small ? 14 : 20);
     rbcGeo.computeVertexNormals();
-    const rbcMat = new THREE.MeshStandardMaterial({ color: '#c8324a', roughness: 0.42, metalness: 0.05, emissive: '#7a1830', emissiveIntensity: 0.35 });
+    const rbcMat = new THREE.MeshStandardMaterial({ color: '#9fb2d2', roughness: 0.32, metalness: 0.35, emissive: '#2c4675', emissiveIntensity: 0.35 }); /* Oct 16: silvery blue, the brand colour (no red world) */
     const RBC = small ? 150 : 230;
     const rbc = new THREE.InstancedMesh(rbcGeo, rbcMat, RBC);
     rbc.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
@@ -86,7 +86,7 @@ export function createWorld(THREE, canvas, opts) {
     const wbcMat = new THREE.MeshStandardMaterial({ color: '#e8eef8', roughness: 0.7, emissive: '#7d8fb8', emissiveIntensity: 0.25 });
     const wbcs = [];
     for (let i = 0; i < (small ? 3 : 5); i++) { const m = new THREE.Mesh(new THREE.IcosahedronGeometry(0.55, 2), wbcMat); const a = rnd() * 6.28, d = 4 + rnd() * 8; m.position.set((rnd() * 2 - 1) * 40, Math.cos(a) * d, Math.sin(a) * d); m.userData.v = 0.35 + rnd() * 0.2; scene.add(m); wbcs.push(m); }
-    const platMat = new THREE.MeshStandardMaterial({ color: '#f2b8c0', roughness: 0.6, emissive: '#c26a7a', emissiveIntensity: 0.3 });
+    const platMat = new THREE.MeshStandardMaterial({ color: '#d9e3f1', roughness: 0.6, emissive: '#7f97bf', emissiveIntensity: 0.3 });
     const PLT = small ? 30 : 50, plat = new THREE.InstancedMesh(new THREE.SphereGeometry(0.09, 6, 4), platMat, PLT), pl = [];
     plat.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     for (let i = 0; i < PLT; i++) { const a = rnd() * 6.28, d = 2 + rnd() * (VR - 3); pl.push({ x: (rnd() * 2 - 1) * 40, y: Math.cos(a) * d, z: Math.sin(a) * d * 0.6 + Math.sin(a) * d * 0.4, v: 0.7 + rnd() * 0.6 }); }

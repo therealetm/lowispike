@@ -80,7 +80,8 @@
         if (haze && sig === moteSig) return;
         disposeMotes();
         const L = C.look(cur, th);
-        if (a.THREE) { haze = new a.THREE.Color(L.haze); haze.amt = L.amt; moteSig = sig; }
+        /* Oct 16: the world stays silvery dark blue (brand); the season only nudges it, never turns it orange or red */
+        if (a.THREE) { haze = new a.THREE.Color(L.haze).lerp(new a.THREE.Color(th === 'light' ? '#8ea3c2' : '#1a2846'), 0.85); haze.amt = L.amt; moteSig = sig; }
     }
     function inRegion(a) { try { return !!(a.hub && a.camera && !a.hub.layers.test(a.camera.layers)); } catch (e) { return false; } }
     function riding() { try { return !!(W.LowiRide && W.LowiRide.active); } catch (e) { return false; } }

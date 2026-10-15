@@ -50,3 +50,17 @@ test('fasting bubble: "Edit" sits above the bubble, stage numbers do not run int
     assert.match(css, /html\.wh-home #spHome #spFast \.fb-lab \{ display: none !important; \}/);
     assert.match(fe, /en: \{ editHome: 'Edit',/);
 });
+
+test('Misty\'s adventures: no "In the garden" label; you see her out in the world, strong or weak', () => {
+    const sm = read('sun-meter.js'), wh = read('world-home.js'), css = read('world-home.css'), sc = read('body-world-3d-scene.js'), bw = read('body-world-3d.js');
+    assert.match(sm, /function awayBadge\(\) \{[\s\S]*?const b = D\.querySelector\('#spBubble \.ls-away'\); if \(b\) b\.remove\(\);\n    \}/);
+    assert.doesNotMatch(sm, /In the garden|in the garden/);
+    assert.match(wh, /function adventure\(dt, r\)/);
+    assert.match(wh, /A\.wand = new THREE\.Sprite\(mat\); A\.wand\.name = 'wh-misty-out'/);
+    assert.match(wh, /A\.vigor = Math\.max\(0, Math\.min\(1, 0\.55 \+ 0\.45 \* ratio - 0\.75 \* mood\)\)/);
+    assert.match(wh, /mu\.uIn\.value\.set\(base\)\.lerp\(A\.red, A\.redK\)/);
+    assert.match(wh, /const show = r\.mode === 'full' && !inRegion\(\) && !st\.adv\.away;/);
+    assert.match(css, /#spHome\[data-misty="weak"\] #spBubble::after/);
+    assert.match(sc, /return \{ scene, camera, hub, regions, onFrame, memU,/);
+    assert.match(bw, /memU: world\.memU \|\| null/);
+});

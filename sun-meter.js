@@ -90,22 +90,22 @@
     const copy = {
         sun: ['Sun', 'Sonne', 'Sol'],
         full: ['Sun is full', 'Sonne ist voll', 'Sol lleno'],
-        away: ['In the garden', 'Im Garten', 'En el jardín'],
+        away: ['Out tending the world', 'Pflegt die Welt', 'Cuidando el mundo'],
         back: ['back in', 'zurück in', 'vuelve en'],
         title: ['Your sun is full!', 'Deine Sonne ist voll!', '¡Tu sol está lleno!'],
-        thanks: ['Thank you! All that sunshine makes me want to explore. I’m popping out to the garden and I’ll bring you something back.', 'Danke! Bei so viel Sonne will ich auf Entdeckungstour. Ich geh kurz in den Garten und bring dir was mit.', '¡Gracias! Con tanto sol me dan ganas de explorar. Salgo un rato al jardín y te traigo algo.'],
+        thanks: ['Thank you! All that sunshine gives me so much energy. I’m flying out into the world to help everything grow, and I’ll bring you something back. Watch for me out there!', 'Danke! So viel Sonne gibt mir so viel Kraft. Ich flieg raus in die Welt und helfe allem beim Wachsen, und ich bring dir was mit. Schau, wo ich herumfliege!', '¡Gracias! Tanto sol me da mucha energía. Salgo volando al mundo a ayudar a que todo crezca y te traigo algo. ¡Búscame por ahí!'],
         filled: ['What filled it today', 'Das hat sie heute gefüllt', 'Lo que la llenó hoy'],
-        go: ['Off you go', 'Los, ab in den Garten', '¡Ve!'],
+        go: ['Off you go', 'Los, flieg los', '¡Ve!'],
         backIn: ['Back in', 'Zurück in', 'Vuelvo en'],
         tomorrow: ['Tomorrow your sun starts fresh.', 'Morgen fängt deine Sonne neu an.', 'Mañana tu sol empieza de nuevo.'],
         home: ['I’m back!', 'Ich bin zurück!', '¡Ya volví!'],
-        found: ['Look what I found in the garden:', 'Schau, was ich im Garten gefunden hab:', 'Mira lo que encontré en el jardín:'],
+        found: ['Look what I found out in the world:', 'Schau, was ich draußen in der Welt gefunden hab:', 'Mira lo que encontré en el mundo:'],
         keep: ['Keep it', 'Behalten', 'Guardar'],
-        finds: ['Garden finds', 'Garten-Funde', 'Hallazgos del jardín'],
+        finds: ['World finds', 'Welt-Funde', 'Hallazgos del mundo'],
         none: ['Fill your sun and I’ll bring the first one.', 'Füll deine Sonne, dann bring ich den ersten mit.', 'Llena tu sol y te traigo el primero.'],
         how: ['How the sun fills', 'So füllt sich die Sonne', 'Cómo se llena el sol'],
         howTx: ['Every counted action is a sunbeam for me, up to a daily limit per kind, so a mix fills me fastest. Repeats and meals over the daily limit don’t count.', 'Jede gezählte Aktion ist ein Sonnenstrahl für mich, pro Art bis zu einer Grenze. Eine Mischung füllt mich am schnellsten. Doppeltes und Essen über dem Tageslimit zählt nicht.', 'Cada acción contada es un rayo de sol para mí, con un límite por tipo, así que una mezcla me llena antes. Repeticiones y comidas sobre el límite diario no cuentan.'],
-        awayTap: ['I’m out in the garden! Back in', 'Ich bin im Garten! Zurück in', '¡Estoy en el jardín! Vuelvo en'],
+        awayTap: ['I’m out tending the world! Back in', 'Ich pflege gerade die Welt! Zurück in', '¡Estoy cuidando el mundo! Vuelvo en'],
         meal: ['Meal', 'Mahlzeit', 'Comida'], scan: ['Scan', 'Scan', 'Escaneo'], move: ['Move', 'Bewegung', 'Movimiento'], fast: ['Fasting milestone', 'Fasten-Etappe', 'Etapa de ayuno'],
         macro: ['Macro goal', 'Makro-Ziel', 'Meta de macros'], water: ['Glass of water', 'Glas Wasser', 'Vaso de agua'], other: ['Other action', 'Andere Aktion', 'Otra acción']
     };
@@ -160,14 +160,10 @@
         row.innerHTML = sunSvg(v.ratio) + '<span class="ls-name">' + esc(label) + '</span><span class="ls-track" aria-hidden="true"><i class="ls-fill"></i></span><span class="ls-num num">' + esc(right) + '</span>';
         pops.forEach(p => row.appendChild(p));
     }
-    function awayBadge(v) {
-        const bub = D.getElementById('spBubble');
-        if (!bub) return;
-        let b = bub.querySelector('.ls-away');
-        if (!v.away) { if (b) b.remove(); return; }
-        if (!b) { b = D.createElement('span'); b.className = 'ls-away'; b.setAttribute('aria-hidden', 'true'); bub.appendChild(b); }
-        const t = fmtLeft(v.left), html = '<i class="ls-away-ico">' + sunSvg(1) + '</i><b>' + esc(tr('away')) + '</b><small class="num">' + t + '</small>';
-        if (b.dataset.t !== t + lang()) { b.dataset.t = t + lang(); b.innerHTML = html; }
+    function awayBadge() {
+        /* Oct 16 (E-man): no "In the garden 1:00" label in Misty's bubble. While she is out you see her flying through the world
+           (world-home.js adventure); the countdown stays on the sun bar in Today. */
+        const b = D.querySelector('#spBubble .ls-away'); if (b) b.remove();
     }
     function pop(n) {
         if (!row || !row.isConnected || !n) return;

@@ -477,12 +477,121 @@
             if (kv !== st.mz) { st.mz = kv; const b = D.getElementById('spBubble'); if (b) b.style.setProperty('--wh-mz', kv); H.classList.toggle('wh-mapview', k < 0.6); }
             if (++st.zf % 20 === 0) { paintZoom(); paintHint(); }
         }
+        adventure(dt, r);
         if (st.misty) {
-            const show = r.mode === 'full' && !inRegion();
+            const show = r.mode === 'full' && !inRegion() && !st.adv.away;
             if (st.misty.visible !== show) st.misty.visible = show;
             if (show && !reduced()) { const t = performance.now() / 1000; st.misty.position.set(0, Math.sin(t * 1.3) * 0.06, 0); }
         }
     }
+
+    /* ---------- Oct 16: Misty's adventures + how strong she looks ----------
+       E-man: no "In the garden 1:00" label. When Misty goes out (full sun, LowiSun away), you SEE her floating through the world,
+       stopping to tend things: each stop sends a ring of light and sparkles into the world around her.
+       Vigor 0..1 comes from today only: sun meter ratio (tracking) up, world mood level (spiky food, no Move) down.
+       Thriving: bright, quick, generous sparkles. Weak: slow, drooping, faded, sparse grey sparkles, and her bubble turns reddish
+       (membrane colour in 3D, a red rim on the DOM bubble via #spHome[data-misty="weak"]). */
+    st.adv = { away: false, vigor: 0.6, chk: 9, t: 0, slow: 0, next: 3, wand: null, pts: null, ring: null, ringT: 9, red: null, tier: '' };
+    function advRead() {
+        let mood = 0, ratio = 0, away = false;
+        try { mood = +(W.LowiWorldMood && W.LowiWorldMood.level) || 0; } catch (e) { }
+        try { const v = W.LowiSun && W.LowiSun.live && W.LowiSun.live(); if (v) { ratio = +v.ratio || 0; away = !!v.away; } } catch (e) { }
+        const A = st.adv; A.away = away; A.vigor = Math.max(0, Math.min(1, 0.55 + 0.45 * ratio - 0.75 * mood));
+        const tier = A.vigor < 0.35 ? 'weak' : A.vigor > 0.75 ? 'thriving' : 'ok';
+        const home = D.getElementById('spHome');
+        if (home) { if (home.dataset.misty !== tier) home.dataset.misty = tier; if (away) home.dataset.mistyOut = '1'; else delete home.dataset.mistyOut; }
+        A.tier = tier;
+    }
+    function ringTex(THREE) {
+        const cv = D.createElement('canvas'); cv.width = cv.height = 128; const x = cv.getContext('2d');
+        const g = x.createRadialGradient(64, 64, 34, 64, 64, 62); g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.55, 'rgba(255,255,255,.9)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+        x.fillStyle = g; x.fillRect(0, 0, 128, 128); return new THREE.CanvasTexture(cv);
+    }
+    function advBuild(a) {
+        const THREE = a.THREE, A = st.adv;
+        const mat = new THREE.SpriteMaterial({ transparent: true, depthWrite: false, depthTest: false, fog: false, opacity: 0 });
+        A.wand = new THREE.Sprite(mat); A.wand.name = 'wh-misty-out'; A.wand.renderOrder = 61; A.wand.visible = false; a.scene.add(A.wand);
+        const N = 48, pos = new Float32Array(N * 3).fill(-999), geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        A.pts = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.11, color: '#a8ffd8', transparent: true, opacity: 0.95, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, fog: false }));
+        A.pts.name = 'wh-misty-sparkles'; A.pts.renderOrder = 59; A.pts.frustumCulled = false; A.pts.visible = false; A.pts.userData.v = new Float32Array(N * 3); A.pts.userData.life = new Float32Array(N); a.scene.add(A.pts);
+        A.ring = new THREE.Sprite(new THREE.SpriteMaterial({ map: ringTex(THREE), transparent: true, depthWrite: false, depthTest: false, fog: false, opacity: 0, blending: THREE.AdditiveBlending }));
+        A.ring.name = 'wh-misty-ring'; A.ring.renderOrder = 58; A.ring.visible = false; a.scene.add(A.ring);
+        A.c = new THREE.Vector3(); A.rt = new THREE.Vector3(); A.up = new THREE.Vector3(); A.fw = new THREE.Vector3(); A.tmp = new THREE.Vector3();
+    }
+    function burst(A, p, n, spread) {
+        const pos = A.pts.geometry.attributes.position, v = A.pts.userData.v, life = A.pts.userData.life;
+        for (let i = 0, made = 0; i < life.length && made < n; i++) {
+            if (life[i] > 0) continue; made++;
+            life[i] = 1.2 + Math.random() * 0.8;
+            pos.setXYZ(i, p.x, p.y, p.z);
+            const th = Math.random() * Math.PI * 2, ph = Math.random() * Math.PI, sp = spread * (0.4 + Math.random() * 0.6);
+            v[i * 3] = Math.cos(th) * Math.sin(ph) * sp; v[i * 3 + 1] = Math.cos(ph) * sp + 0.15; v[i * 3 + 2] = Math.sin(th) * Math.sin(ph) * sp;
+        }
+        pos.needsUpdate = true;
+    }
+    function adventure(dt, r) {
+        const a = w3(), A = st.adv; if (!a || !a.THREE || !a.scene || !a.camera) return;
+        if ((A.chk += dt) > 1) { A.chk = 0; advRead(); }
+        /* her bubble turns reddish when she is weak (and goes back to the brand blue when she is not) */
+        const mu = a.memU;
+        if (mu && !A.red) { A.red = new a.THREE.Color('#c4505f'); A.redRim = new a.THREE.Color('#e08a96'); A.rim0 = mu.uRim.value.clone(); }
+        if (mu) {
+            const want = A.tier === 'weak' ? Math.min(0.7, (0.35 - A.vigor) / 0.35 * 0.5 + 0.2) : 0;
+            A.redK = (A.redK || 0) + (want - (A.redK || 0)) * Math.min(1, dt * 1.5);
+            if (A.redK > 0.002 || A.redWas) {
+                const base = H.getAttribute('data-theme') === 'light' ? '#2e8fd6' : '#3a9fe0';
+                { mu.uIn.value.set(base).lerp(A.red, A.redK); mu.uRim.value.copy(A.rim0).lerp(A.redRim, A.redK); }
+                A.redWas = A.redK > 0.002;
+            }
+        }
+        const show = A.away && (r.mode === 'home' || r.mode === 'full') && !inRegion() && !awayHome() && !D.hidden;
+        if (!A.wand) { if (!show) return; advBuild(a); }
+        const wand = A.wand, pm = A.pts.material, k = A.vigor;
+        if (st.misty && st.misty.material.map && wand.material.map !== st.misty.material.map) { wand.material.map = st.misty.material.map; wand.material.needsUpdate = true; }
+        if (!wand.material.map) ensureMisty3D3();
+        const fade = show && wand.material.map ? 1 : 0;
+        wand.material.opacity += ((fade ? 0.55 + 0.43 * k : 0) - wand.material.opacity) * Math.min(1, dt * 2.5);
+        wand.visible = wand.material.opacity > 0.01;
+        /* sparkles keep falling even while she fades out */
+        const pos = A.pts.geometry.attributes.position, v = A.pts.userData.v, life = A.pts.userData.life; let alive = 0;
+        for (let i = 0; i < life.length; i++) {
+            if (life[i] <= 0) continue;
+            life[i] -= dt; if (life[i] <= 0) { pos.setXYZ(i, -999, -999, -999); continue; }
+            alive++; v[i * 3 + 1] -= dt * 0.25;
+            pos.setXYZ(i, pos.getX(i) + v[i * 3] * dt, pos.getY(i) + v[i * 3 + 1] * dt, pos.getZ(i) + v[i * 3 + 2] * dt);
+        }
+        if (alive) pos.needsUpdate = true;
+        A.pts.visible = alive > 0;
+        if (A.ring.visible) {
+            A.ringT += dt; const q = Math.min(1, A.ringT / 1.6);
+            const sc = 0.3 + q * (1.4 + 1.2 * k); A.ring.scale.set(sc, sc, 1); A.ring.material.opacity = (1 - q) * (0.35 + 0.55 * k);
+            if (q >= 1) A.ring.visible = false;
+        }
+        if (!wand.visible) return;
+        /* where: a slow loop around Misty's cell, in the plane facing the camera, a little in front of it */
+        const cam = a.camera; cam.updateMatrixWorld();
+        A.rt.setFromMatrixColumn(cam.matrixWorld, 0).normalize(); A.up.setFromMatrixColumn(cam.matrixWorld, 1).normalize(); A.fw.setFromMatrixColumn(cam.matrixWorld, 2).normalize();
+        if (a.hub) a.hub.getWorldPosition(A.c); else A.c.set(0, 0, 0);
+        const speed = (0.45 + 0.75 * k) * (A.slow > 0 ? 0.12 : 1); if (!reduced()) A.t += dt * speed;
+        if (A.slow > 0) A.slow -= dt;
+        const t = A.t, spanX = r.mode === 'home' ? 2.05 : 3.2, droop = (1 - k) * 0.55;
+        const x = spanX * Math.sin(t * 0.42), y = 1.05 * Math.sin(t * 0.67 + 1.1) + 0.35 - droop + (k < 0.35 ? Math.sin(t * 5) * 0.04 : 0), z = 0.6 + 0.4 * Math.cos(t * 0.42);
+        wand.position.copy(A.c).addScaledVector(A.rt, x).addScaledVector(A.up, y).addScaledVector(A.fw, z);
+        const s0 = r.mode === 'home' ? 0.95 : 1.1, s = s0 * (0.82 + 0.18 * k) * (1 + (reduced() ? 0 : Math.sin(t * 2.2) * 0.03));
+        wand.scale.set(s, s * 310 / 260, 1);
+        wand.material.rotation = reduced() ? 0 : Math.sin(t * 0.9) * 0.12 - (1 - k) * 0.18;
+        if (wand.material.color) wand.material.color.setRGB(1, 0.78 + 0.22 * k, 0.78 + 0.22 * k);
+        /* she tends something: slows down, a ring of light opens around her, sparkles spill into the world */
+        if ((A.next -= dt) <= 0) {
+            A.next = (3.2 + Math.random() * 2) / (0.6 + 0.6 * k); A.slow = 1.4;
+            pm.color.set(A.tier === 'weak' ? '#9aa3b2' : A.tier === 'thriving' ? '#bfffe0' : '#9fe3ff'); pm.opacity = 0.5 + 0.45 * k;
+            A.tmp.copy(wand.position).addScaledVector(A.up, -0.25 * s);
+            burst(A, A.tmp, Math.round(5 + 19 * k), 0.35 + 0.45 * k);
+            if (!reduced()) { A.ring.position.copy(A.tmp); A.ring.material.color.set(A.tier === 'weak' ? '#c98a92' : '#a8ffd8'); A.ringT = 0; A.ring.visible = true; }
+        }
+    }
+    function ensureMisty3D3() { if (!st.misty) { try { ensureMisty3D(); } catch (e) { } } }
 
     /* ---------- Misty's sheet: Aura / Growth / Discovered ---------- */
     function mistyArt() {

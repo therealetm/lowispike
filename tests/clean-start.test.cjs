@@ -60,7 +60,7 @@ test('while starting, the app is hidden with opacity only (layout and measuring 
     assert.doesNotMatch(bootCss, /display:none|visibility:hidden/);
     assert.match(bootCss, /#lwBoot\{position:fixed;inset:0;z-index:2147483646/);
     assert.match(bootCss, /#lwBoot\{[^}]*background:#03050a/);
-    assert.match(bootCss, /html\[data-theme=light\] #lwBoot\{background:#f6f8fc/);
+    assert.match(bootCss, /html\[data-ui=light\] #lwBoot\{background:#f6f8fc/);
     assert.match(bootCss, /#lwBoot>\*\{opacity:0;animation:lwbIn \.35s ease \.25s forwards\}/, 'fast starts show only the calm background, no logo flash');
     assert.match(bootCss, /prefers-reduced-motion:reduce\)\{#lwBoot,#lwBoot>\*\{transition:none;animation:none;opacity:1\}/);
 });

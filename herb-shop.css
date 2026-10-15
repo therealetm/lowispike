@@ -131,7 +131,7 @@ html.wh-home #whHud > .hs-gift { left: var(--hs-gl, max(16px, env(safe-area-inse
 @keyframes hs-gift-glow { 0%, 100% { transform: scale(1); opacity: .9; } 50% { transform: scale(1.12); opacity: 1; } }
 html.wh-home #whHud > .hs-gift:active { transform: scale(.94); }
 html.wh-home #whHud > .hs-gift.is-open { opacity: 0; transform: scale(.6); pointer-events: none; }
-html[data-theme="light"] #whHud > .hs-gift { background: rgba(255,255,255,.66); border-color: rgba(11,29,63,.14); }
+html[data-ui=light] #whHud > .hs-gift { background: rgba(255,255,255,.66); border-color: rgba(11,29,63,.14); }
 .hs-giftpop { position: absolute; pointer-events: auto; left: var(--hs-gl, max(16px, env(safe-area-inset-left))); bottom: calc(var(--wh-tb, 84px) + 70px); width: min(280px, calc(100vw - 32px)); box-sizing: border-box;
   padding: 14px 16px 12px; border-radius: 22px; color: #fff; background: rgba(10,22,52,.78); border: 1px solid rgba(255,255,255,.2);
   backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); box-shadow: 0 16px 40px -18px rgba(0,0,0,.6); animation: hs-pop-in .32s ease-out both; z-index: 4; }
@@ -142,7 +142,7 @@ html[data-theme="light"] #whHud > .hs-gift { background: rgba(255,255,255,.66); 
 .hs-giftok { font-weight: 600; }
 .hs-giftkofi { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; opacity: .8; background: transparent !important; border-color: transparent !important; padding: 0 6px !important; }
 .hs-giftkofi svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; }
-html[data-theme="light"] .hs-giftpop { color: #0b1d3f; background: rgba(255,255,255,.9); border-color: rgba(11,29,63,.12); }
-html[data-theme="light"] .hs-giftrow button { border-color: rgba(11,29,63,.16); background: rgba(11,29,63,.05); }
+html[data-ui=light] .hs-giftpop { color: #0b1d3f; background: rgba(255,255,255,.9); border-color: rgba(11,29,63,.12); }
+html[data-ui=light] .hs-giftrow button { border-color: rgba(11,29,63,.16); background: rgba(11,29,63,.05); }
 @keyframes hs-pop-in { from { opacity: 0; transform: translateY(8px) scale(.97); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .hs-gift-core, .hs-giftpop { animation: none; } html.wh-home #whHud > .hs-gift { transition: none; } }

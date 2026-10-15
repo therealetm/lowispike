@@ -4,10 +4,10 @@
 .wa-btn svg { width: 20px; height: 20px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .wa-btn[data-on="1"] { border-color: rgba(244,205,126,.75); color: #f4cd7e; background: rgba(40,32,20,.5); }
 .wa-btn.wa-float { position: absolute; right: 16px; top: calc(env(safe-area-inset-top, 0px) + 14px); z-index: 7; }
-html[data-theme="light"] .wa-btn { background: rgba(255,255,255,.7); }
-html[data-theme="light"] .wa-btn[data-on="1"] { color: #8a5a0c; border-color: rgba(176,120,24,.6); background: rgba(255,246,226,.85); }
+html[data-ui=light] .wa-btn { background: rgba(255,255,255,.7); }
+html[data-ui=light] .wa-btn[data-on="1"] { color: #8a5a0c; border-color: rgba(176,120,24,.6); background: rgba(255,246,226,.85); }
 .wa-panel { position: absolute; right: 16px; top: calc(env(safe-area-inset-top, 0px) + 66px); z-index: 30; width: min(320px, calc(100% - 32px)); box-sizing: border-box; padding: 14px 16px 12px; border-radius: 20px; background: rgba(10,16,44,.88); color: #eef4ff; border: 1px solid rgba(163,180,217,.25); box-shadow: 0 14px 40px rgba(0,0,0,.35); font: 500 13.5px/1.35 system-ui, -apple-system, sans-serif; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); animation: waIn .2s ease-out; touch-action: manipulation; }
-html[data-theme="light"] .wa-panel { background: rgba(255,255,255,.94); color: #12345a; border-color: rgba(18,52,90,.14); box-shadow: 0 14px 40px rgba(18,52,90,.18); }
+html[data-ui=light] .wa-panel { background: rgba(255,255,255,.94); color: #12345a; border-color: rgba(18,52,90,.14); box-shadow: 0 14px 40px rgba(18,52,90,.18); }
 @keyframes waIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
 .wa-hd, .wa-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; }
 .wa-hd b { font-size: 16px; font-weight: 800; }

@@ -81,19 +81,19 @@
 .fe-bub[hidden] { display: none; }
 .fe-bub:active { transform: scale(.94); }
 .fe-bub:focus-visible { outline: 2px solid #9fd8ff; outline-offset: 2px; }
-html[data-theme="light"] .fe-bub, html.light .fe-bub { color: #1f6fbf; text-decoration-color: rgba(31, 111, 191, .5); text-shadow: 0 1px 4px rgba(255, 255, 255, .8); }
+html[data-ui=light] .fe-bub, html.light .fe-bub { color: #1f6fbf; text-decoration-color: rgba(31, 111, 191, .5); text-shadow: 0 1px 4px rgba(255, 255, 255, .8); }
 
 /* light */
-html[data-theme="light"] .fe-ov, html.light .fe-ov { background: rgba(40, 52, 90, .28); }
-html[data-theme="light"] .fe-card, html.light .fe-card { color: #17203f; background: linear-gradient(165deg, rgba(255, 255, 255, .98), rgba(238, 244, 255, .98));
+html[data-ui=light] .fe-ov, html.light .fe-ov { background: rgba(40, 52, 90, .28); }
+html[data-ui=light] .fe-card, html.light .fe-card { color: #17203f; background: linear-gradient(165deg, rgba(255, 255, 255, .98), rgba(238, 244, 255, .98));
     border-color: rgba(40, 90, 160, .22); box-shadow: 0 0 30px -12px rgba(60, 130, 210, .45), 0 24px 50px -24px rgba(20, 30, 70, .45); }
-html[data-theme="light"] .fe-cur, html.light .fe-cur { background: rgba(60, 130, 210, .08); border-color: rgba(60, 130, 210, .2); }
-html[data-theme="light"] .fe-f input, html.light .fe-f input { border-color: rgba(23, 32, 63, .18); background: #fff; color-scheme: light; }
-html[data-theme="light"] .fe-f input:focus, html.light .fe-f input:focus { border-color: #2f7fd0; box-shadow: 0 0 0 3px rgba(47, 127, 208, .2); }
-html[data-theme="light"] .fe-n, html.light .fe-n, html[data-theme="light"] .fe-cancel, html.light .fe-cancel { border-color: rgba(23, 32, 63, .16); background: rgba(23, 32, 63, .04); }
-html[data-theme="light"] .fe-pre, html.light .fe-pre { color: #1f6fbf; }
-html[data-theme="light"] .fe-msg, html.light .fe-msg { color: #9b2a1f; background: rgba(220, 80, 60, .08); border-color: rgba(220, 80, 60, .25); }
-html[data-theme="light"] .fe-ic, html.light .fe-ic { box-shadow: 0 0 14px rgba(60, 130, 210, .3), 0 0 0 1px rgba(60, 130, 210, .3) inset; }
+html[data-ui=light] .fe-cur, html.light .fe-cur { background: rgba(60, 130, 210, .08); border-color: rgba(60, 130, 210, .2); }
+html[data-ui=light] .fe-f input, html.light .fe-f input { border-color: rgba(23, 32, 63, .18); background: #fff; color-scheme: light; }
+html[data-ui=light] .fe-f input:focus, html.light .fe-f input:focus { border-color: #2f7fd0; box-shadow: 0 0 0 3px rgba(47, 127, 208, .2); }
+html[data-ui=light] .fe-n, html.light .fe-n, html[data-ui=light] .fe-cancel, html.light .fe-cancel { border-color: rgba(23, 32, 63, .16); background: rgba(23, 32, 63, .04); }
+html[data-ui=light] .fe-pre, html.light .fe-pre { color: #1f6fbf; }
+html[data-ui=light] .fe-msg, html.light .fe-msg { color: #9b2a1f; background: rgba(220, 80, 60, .08); border-color: rgba(220, 80, 60, .25); }
+html[data-ui=light] .fe-ic, html.light .fe-ic { box-shadow: 0 0 14px rgba(60, 130, 210, .3), 0 0 0 1px rgba(60, 130, 210, .3) inset; }
 
 @media (prefers-reduced-motion: reduce) {
     .fe-ov, .fe-card, .fe-chip, .fe-acts button, .fe-bub { transition: none !important; }

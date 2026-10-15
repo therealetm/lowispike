@@ -44,12 +44,12 @@
 .arr-strip .arr-orb { width: 16px; height: 16px; margin-top: 2px; }
 .arr-strip p { margin: 0; font-size: 13.5px; line-height: 1.38; }
 .arr-strip small { display: block; margin-bottom: 2px; font-size: 10.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: #a8802f; }
-html:not([data-theme="light"]) .arr-strip small { color: var(--g2); }
+html:not([data-ui=light]) .arr-strip small { color: var(--g2); }
 
 /* light theme: outside the body world the card turns to warm glass */
-html[data-theme="light"] .arr-float, html[data-theme="light"] .arr-world { color: #12345a; background: linear-gradient(160deg, rgba(255,255,255,.93), rgba(255,248,232,.9)); }
-html[data-theme="light"] .arr-float .arr-tt b, html[data-theme="light"] .arr-world .arr-tt b { color: #12345a; text-shadow: none; }
-html[data-theme="light"] .arr-float .arr-tt small, html[data-theme="light"] .arr-world .arr-tt small, html[data-theme="light"] .arr-float .arr-today span, html[data-theme="light"] .arr-world .arr-today span, html[data-theme="light"] .arr-float .arr-x, html[data-theme="light"] .arr-world .arr-x { color: #94701f; text-shadow: none; }
+html[data-ui=light] .arr-float, html[data-ui=light] .arr-world { color: #12345a; background: linear-gradient(160deg, rgba(255,255,255,.93), rgba(255,248,232,.9)); }
+html[data-ui=light] .arr-float .arr-tt b, html[data-ui=light] .arr-world .arr-tt b { color: #12345a; text-shadow: none; }
+html[data-ui=light] .arr-float .arr-tt small, html[data-ui=light] .arr-world .arr-tt small, html[data-ui=light] .arr-float .arr-today span, html[data-ui=light] .arr-world .arr-today span, html[data-ui=light] .arr-float .arr-x, html[data-ui=light] .arr-world .arr-x { color: #94701f; text-shadow: none; }
 
 @keyframes arr-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
 @media (prefers-reduced-motion: reduce) { .arr-world, .arr-float { transition: opacity .2s; transform: translate(-50%, 0) !important; } .arr-orb { animation: none; } }

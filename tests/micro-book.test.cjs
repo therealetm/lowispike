@@ -111,7 +111,7 @@ t('UI: no fake people, honest delivery copy, plug-in points for the friends tree
     assert.ok(/es wartet auf diesem Handy|Es wartet auf diesem Handy/.test(src));
     assert.ok(/Mikroben-Sammlung/.test(src) && /K\u00d6RPER-UNIVERSUM|KÖRPER-UNIVERSUM/.test(src));
     assert.ok(/prefers-reduced-motion/.test(css) && /pointer-events:none/.test(css));
-    assert.ok(/html\[data-theme="light"\] \.mb-toast/.test(css));
+    assert.ok(/html\[data-ui=light\] \.mb-toast/.test(css));
 });
 t('loader and service worker list the files', () => {
     assert.ok(/'micro-book-core\.js','micro-book\.js'/.test(ui));

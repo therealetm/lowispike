@@ -122,7 +122,7 @@ html.hi-signed #spWorld .sp-world-head h1::before {
     margin-top: 6px
 }
 
-html[data-theme=light] .hi-mark,
+html[data-ui=light] .hi-mark,
 html.light .hi-mark {
     color: #0b1418
 }

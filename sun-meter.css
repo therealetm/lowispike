@@ -84,8 +84,8 @@
 .lp-dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: #9fe3d8; box-shadow: 0 0 8px #9fe3d8; }
 .lp-tx { min-width: 0; }
 .lp-tag { flex: none; padding: 3px 8px; border-radius: 99px; background: linear-gradient(90deg, #ff9f5a, #ffcf6b); color: #1a1206; font-size: 11px; font-weight: 800; letter-spacing: .02em; white-space: nowrap; }
-html[data-theme=light] .lp-praise { background: rgba(255, 255, 255, .95); color: #10131f; border-color: rgba(40, 110, 120, .25); }
-html[data-theme=light] .ls-sun { color: #10131f; }
+html[data-ui=light] .lp-praise { background: rgba(255, 255, 255, .95); color: #10131f; border-color: rgba(40, 110, 120, .25); }
+html[data-ui=light] .ls-sun { color: #10131f; }
 
 @media (prefers-reduced-motion: reduce) {
     .ls-sun, .ls-fill, .ls-ico line, #spHome[data-sun-away] #spBubble .sp-home-herb { transition: none !important; }

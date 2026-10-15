@@ -1,0 +1,113 @@
+/* LOWiSPIKE Liquid Glass (Oct 16, E-man: "make everything the design of our world, seamless everywhere, in the iOS Apple style").
+   One design layer for every tab, modelled on iOS 26 Liquid Glass: black space with faint stars behind the pages, dark
+   translucent glass with a soft bright rim, system font, white text with grey secondary text, blue as the only accent.
+   liquid-glass.js adds html.lg, keeps html[data-lg-tab] on the visible tab and moves this sheet to the end of <body>,
+   so it is the last word in the cascade. Light/Day only changes the 3D world now; the UI is always this dark glass. */
+
+html.lg {
+    --lg-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Helvetica Neue", sans-serif;
+    --lg-fill: rgba(30, 32, 40, .46);
+    --lg-fill-2: rgba(58, 60, 70, .42);
+    --lg-fill-hi: rgba(120, 124, 140, .30);
+    --lg-blur: blur(26px) saturate(185%);
+    --lg-rim: rgba(255, 255, 255, .16);
+    --lg-edge: inset 0 .5px 0 rgba(255, 255, 255, .38), inset 0 0 0 .5px rgba(255, 255, 255, .10), inset 0 -.5px 0 rgba(255, 255, 255, .06), inset 0 14px 24px -18px rgba(255, 255, 255, .22);
+    --lg-shadow: 0 10px 30px -12px rgba(0, 0, 0, .55);
+    --lg-ink: #fff;
+    --lg-ink-2: rgba(235, 235, 245, .62);
+    --lg-ink-3: rgba(235, 235, 245, .32);
+    --lg-blue: #0a84ff;
+    --lg-blue-2: #64d2ff;
+    --lg-r: 24px;
+    --lg-space: radial-gradient(1px 1px at 12% 18%, rgba(255, 255, 255, .75), transparent 60%),
+        radial-gradient(1px 1px at 72% 9%, rgba(255, 255, 255, .55), transparent 60%),
+        radial-gradient(1.2px 1.2px at 38% 62%, rgba(255, 255, 255, .6), transparent 60%),
+        radial-gradient(1px 1px at 86% 44%, rgba(255, 255, 255, .45), transparent 60%),
+        radial-gradient(1px 1px at 22% 84%, rgba(255, 255, 255, .5), transparent 60%),
+        radial-gradient(1.4px 1.4px at 58% 30%, rgba(200, 220, 255, .7), transparent 60%),
+        radial-gradient(1px 1px at 94% 88%, rgba(255, 255, 255, .4), transparent 60%),
+        radial-gradient(1px 1px at 4% 52%, rgba(255, 255, 255, .45), transparent 60%);
+    /* the app's own tokens, pointed at the glass system (one source of colour for every older component) */
+    --gold: #0a84ff !important; --gold2: #64d2ff !important; --line: rgba(255, 255, 255, .14) !important; --line2: rgba(255, 255, 255, .08) !important;
+    --text: #fff !important; --muted: rgba(235, 235, 245, .62) !important; --dim: rgba(235, 235, 245, .34) !important;
+    --panel: rgba(30, 32, 40, .46) !important; --panel2: rgba(58, 60, 70, .5) !important;
+    --acc: #5aa9ff !important; --acc2: #9fd0ff !important; --acc-rgb: 90, 169, 255 !important; --acc-ink: #5aa9ff !important;
+    --hi: #ff6b6b; --mid: #ffd60a; --lo: #30d158;
+    --r2-pri: linear-gradient(180deg, #2f95ff, #0a7aff) !important; --r2-sheet: #1c1c1e !important; --r2-sheet2: #2c2c2e !important;
+    --r2-ink: #fff !important; --r2-mut: rgba(235, 235, 245, .62) !important;
+    --p2-gold: #0a84ff !important; --fx-t: 90, 169, 255 !important;
+    --au-surface: rgba(30, 32, 40, .46) !important; --au-raised: rgba(58, 60, 70, .5) !important; --au-chrome: rgba(28, 28, 34, .42) !important;
+    --au-sheet: rgba(28, 28, 32, .86) !important; --au-border: rgba(255, 255, 255, .14) !important; --au-label: #fff !important;
+    --au-secondary: rgba(235, 235, 245, .62) !important; --au-focus: #0a84ff !important;
+    color-scheme: dark;
+}
+html.lg, html.lg body { font-family: var(--lg-font); -webkit-font-smoothing: antialiased; }
+
+/* 1. black space everywhere: no beige / sky strip under the tab bar, behind the safe areas or behind a page */
+html.lg, html.lg[data-atm] body, html.lg body { background: #000 !important; }
+html.lg[data-lg-tab]:not([data-lg-tab="home"]) body #app,
+html.lg[data-lg-tab]:not([data-lg-tab="home"])[data-atm] body #app { background: #000 !important; }
+html.lg #app #main > .tab:not(#tab-home) { background-color: #000 !important; background-image: var(--lg-space), radial-gradient(120% 60% at 50% -10%, rgba(40, 70, 140, .28), transparent 70%) !important; background-size: 340px 340px, 100% 100% !important; background-attachment: local, scroll; }
+/* the world's sky layers belong to Home only */
+html.lg[data-lg-tab]:not([data-lg-tab="home"]) :is(#atmSky, #wxSky, #ssnSky, .wx-sky) { opacity: 0 !important; }
+
+/* 2. type: big bold white titles, grey secondary text */
+html.lg #app #main .tab :is(h1, .h1) { font-family: var(--lg-font) !important; font-weight: 700 !important; letter-spacing: -.02em !important; color: #fff !important; -webkit-text-fill-color: #fff !important; background: none !important; text-shadow: none !important; }
+html.lg #app #main .tab :is(h2, h3, .h2, .h3) { font-family: var(--lg-font) !important; font-weight: 650 !important; letter-spacing: -.01em; color: #fff !important; }
+html.lg #app #main .tab :is(.sub, .muted, small, .lab, .hint) { color: var(--lg-ink-2) !important; }
+html.lg :is(small.gold, .gold, .goldtx) { color: var(--lg-blue-2) !important; -webkit-text-fill-color: currentColor !important; background: none !important; }
+
+/* 3. widgets: every card is a rounded glass widget */
+html.lg #app #main .tab :is(.card, .g2-tile, .g2h-tile, .mv-fmt, .sh-card, .fs-card, .r5-tile, .f2-tile, .lc-banner) {
+    background: var(--lg-fill) !important; border: .5px solid var(--lg-rim) !important; border-radius: var(--lg-r) !important;
+    box-shadow: var(--lg-edge), var(--lg-shadow) !important; -webkit-backdrop-filter: var(--lg-blur); backdrop-filter: var(--lg-blur); color: #fff;
+}
+html.lg #app #main .tab .card.goldline::before, html.lg #app #main .tab .card.goldline::after { opacity: 0 !important; }
+html.lg #app #main .tab :is(.g2-tile, .g2h-tile, .mv-fmt) { border-radius: 22px !important; }
+
+/* small round icon badges inside widgets: plain glass circles, white glyphs (no gold) */
+html.lg #app #main .tab :is(.mv-ic, .nm-lbic, .g2-ic, .g2h-ic) { background: rgba(255, 255, 255, .12) !important; color: #fff !important; border: 0 !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .3) !important; border-radius: 50% !important; }
+
+/* 4. buttons: primary = filled iOS blue capsule; others = glass capsules */
+html.lg :is(.btn.primary, button.primary, .r2-btn.pri, .r5-go, .mv-go) {
+    background: var(--lg-blue) !important; color: #fff !important; border: 0 !important; border-radius: 999px !important;
+    box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .45), 0 8px 22px -10px rgba(10, 132, 255, .8) !important; text-shadow: none !important; font-weight: 600 !important;
+}
+html.lg #app #main .tab .btn:not(.primary), html.lg #app #main .tab .btn.ghost { background: var(--lg-fill-2) !important; color: #fff !important; border: .5px solid var(--lg-rim) !important; border-radius: 999px !important; box-shadow: var(--lg-edge) !important; }
+
+/* 5. segmented controls (Cook source/view switches, Move segments, chips): iOS dark segmented control */
+html.lg #app #main .tab :is(.ck-src, .ck-view, .mv-segs, .ls-seg, .td-seg, .seg) { background: rgba(118, 118, 128, .24) !important; border: .5px solid rgba(255, 255, 255, .08) !important; border-radius: 999px !important; box-shadow: none !important; -webkit-backdrop-filter: var(--lg-blur); backdrop-filter: var(--lg-blur); }
+html.lg #app #main .tab :is(.ck-src, .ck-view, .mv-segs, .ls-seg, .td-seg, .seg) > :is(button, .ck-b) { background: transparent !important; color: rgba(235, 235, 245, .7) !important; border: 0 !important; box-shadow: none !important; border-radius: 999px !important; }
+html.lg #app #main .tab :is(.ck-src, .ck-view, .mv-segs, .ls-seg, .td-seg, .seg) > :is(button, .ck-b):is(.on, .active, [aria-pressed="true"], [aria-selected="true"]) { background: rgba(255, 255, 255, .22) !important; color: #fff !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .35), 0 2px 8px rgba(0, 0, 0, .3) !important; }
+
+/* 6. inputs: glass fields */
+html.lg :is(#app #main, .cs-overlay) :is(input[type="text"], input[type="search"], input:not([type]), textarea, .input) { background: rgba(118, 118, 128, .2) !important; color: #fff !important; border: .5px solid rgba(255, 255, 255, .12) !important; border-radius: 22px !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .12) !important; }
+html.lg :is(#app #main, .cs-overlay) :is(input, textarea)::placeholder { color: var(--lg-ink-3) !important; }
+html.lg #cmSend { background: var(--lg-blue) !important; color: #fff !important; border: 0 !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .45) !important; }
+html.lg #cmSend:disabled { background: rgba(118, 118, 128, .3) !important; color: rgba(235, 235, 245, .4) !important; }
+
+/* 7. the tab bar is a glass dock: one style on every tab (no per-tab coral/green/purple tint) */
+html.lg #app #main #tabbar {
+    background: rgba(28, 28, 34, .42) !important; -webkit-backdrop-filter: blur(28px) saturate(190%) !important; backdrop-filter: blur(28px) saturate(190%) !important;
+    border: .5px solid rgba(255, 255, 255, .18) !important; border-radius: 34px !important;
+    box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .4), inset 0 -.5px 0 rgba(255, 255, 255, .08), inset 0 18px 30px -22px rgba(255, 255, 255, .25), 0 14px 40px -10px rgba(0, 0, 0, .7) !important;
+}
+html.lg #app #main #tabbar .tb { color: rgba(235, 235, 245, .62) !important; background: transparent !important; box-shadow: none !important; }
+html.lg #app #main #tabbar .tb .tbl { color: inherit !important; font-family: var(--lg-font); font-weight: 600; letter-spacing: 0; }
+html.lg #app #main #tabbar .tb svg { filter: none !important; }
+html.lg #app #main #tabbar .tb.active { color: #fff !important; background: rgba(255, 255, 255, .16) !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .35) !important; border-radius: 28px !important; }
+html.lg #app #main #tabbar .tb.active :is(.tbl, svg) { color: #fff !important; }
+html.lg #app #main #tabbar .tb.scan .tbsp { color: #fff !important; }
+html.lg #fxGlow { display: none !important; }
+
+/* 8. sheets that open over a page: dark glass, not white */
+html.lg :is(#sheet, #rsSheet, .r2-sheet) { background: rgba(28, 28, 32, .82) !important; -webkit-backdrop-filter: blur(30px) saturate(180%); backdrop-filter: blur(30px) saturate(180%); color: #fff; border: .5px solid rgba(255, 255, 255, .14) !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .3), 0 -10px 40px rgba(0, 0, 0, .5) !important; }
+
+@media (prefers-reduced-transparency: reduce) {
+    html.lg { --lg-fill: rgba(28, 28, 32, .96); --lg-fill-2: rgba(44, 44, 48, .96); }
+}
+
+/* 9. page headers float on the space (no solid bars); the Scan button is the one blue glass circle; camera buttons are glass */
+html.lg #app #main .tab :is(.sh-top, .mv-top, .cm-top, .fy-top) { background: linear-gradient(180deg, rgba(0, 0, 0, .55), rgba(0, 0, 0, 0)) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; border: 0 !important; box-shadow: none !important; }
+html.lg #app #main #tabbar .tb.scan .ring { background: radial-gradient(120% 120% at 30% 20%, #5fb0ff, #0a7aff 60%, #0060df) !important; color: #fff !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .6), inset 0 -2px 6px rgba(0, 0, 0, .25), 0 8px 24px -6px rgba(10, 132, 255, .75) !important; }
+html.lg .camb { background: rgba(255, 255, 255, .12) !important; color: #fff !important; border: .5px solid rgba(255, 255, 255, .2) !important; -webkit-backdrop-filter: var(--lg-blur); backdrop-filter: var(--lg-blur); box-shadow: var(--lg-edge) !important; }

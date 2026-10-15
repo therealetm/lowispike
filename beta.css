@@ -9,7 +9,7 @@
     --b-edge: rgba(255, 255, 255, .09);
 }
 
-html[data-theme="light"] {
+html[data-ui=light] {
     --b-solid: #fbf8f1;
     --b-solid2: #f1ece0;
     --b-edge: rgba(40, 30, 10, .12);
@@ -783,8 +783,8 @@ html.spirit-app #tab-home #g2hTiles .g2h-tile {
     background: rgba(3, 5, 10, .62) !important;
 }
 
-html[data-theme="light"] .r2-ov.on>.r2-scrim,
-html[data-theme="light"] .rs-ov .rs-scrim {
+html[data-ui=light] .r2-ov.on>.r2-scrim,
+html[data-ui=light] .rs-ov .rs-scrim {
     background: rgba(20, 16, 8, .38) !important;
 }
 

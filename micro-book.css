@@ -100,25 +100,25 @@
 /* herb world chip */
 .mb-chip{appearance:none;display:inline-flex;align-items:center;gap:5px;min-height:36px;padding:0 11px;margin-right:8px;border-radius:999px;border:1px solid rgba(140,230,255,.35);background:rgba(120,220,255,.12);color:#dff8ff;font:700 13px/1 system-ui,sans-serif;cursor:pointer;flex:0 0 auto;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .mb-chip .mb-ico{width:17px;height:17px}
-html[data-theme="light"] .mb-chip{background:rgba(255,255,255,.7);color:#0f4c5c;border-color:rgba(15,76,92,.25)}
+html[data-ui=light] .mb-chip{background:rgba(255,255,255,.7);color:#0f4c5c;border-color:rgba(15,76,92,.25)}
 /* Home: today's journey */
 .mb-adv{appearance:none;display:flex;align-items:center;gap:8px;width:100%;min-height:36px;margin:6px 0 2px;padding:6px 10px;border-radius:12px;border:1px solid rgba(110,214,232,.3);background:rgba(110,214,232,.10);color:inherit;font:inherit;text-align:left;cursor:pointer;box-sizing:border-box;overflow:hidden}
 .mb-pin{width:16px;height:16px;flex:0 0 auto;color:#6fd6e8}
 .mb-an{font:700 12.5px/1.2 system-ui,sans-serif;white-space:nowrap;flex:0 0 auto}
 .mb-at{font:400 12.5px/1.2 system-ui,sans-serif;opacity:.8;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-html[data-theme="light"] .mb-adv{background:rgba(58,166,192,.10);border-color:rgba(58,166,192,.3)}
-html[data-theme="light"] .mb-pin{color:#1d7f96}
+html[data-ui=light] .mb-adv{background:rgba(58,166,192,.10);border-color:rgba(58,166,192,.3)}
+html[data-ui=light] .mb-pin{color:#1d7f96}
 /* toast */
 .mb-toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 64px);z-index:10050;display:flex;align-items:center;gap:8px;max-width:min(92vw,420px);padding:10px 16px;border-radius:999px;background:rgba(14,20,32,.92);color:#e9fbff;border:1px solid rgba(140,230,255,.3);box-shadow:0 8px 30px rgba(0,0,0,.35);font:600 13.5px/1.3 system-ui,sans-serif;pointer-events:none;opacity:0;transform:translate(-50%,-8px);transition:opacity .25s,transform .25s;box-sizing:border-box}
 .mb-toast.on{opacity:1;transform:translate(-50%,0)}
 .mb-toast .mb-ico{width:18px;height:18px;flex:0 0 auto;color:#8fe6f7}
-html[data-theme="light"] .mb-toast{background:rgba(255,255,255,.96);color:#13303a;border-color:rgba(15,76,92,.2);box-shadow:0 8px 30px rgba(40,60,90,.18)}
-html[data-theme="light"] .mb-toast .mb-ico{color:#1d7f96}
-html[data-theme="light"] .mb-cell .g{fill:hsla(var(--h),80%,55%,.78);stroke:hsla(var(--h),80%,40%,.6)}
-html[data-theme="light"] .mb-cell .m{fill:hsla(var(--h),85%,55%,.12);stroke:hsla(var(--h),80%,45%,.6)}
-html[data-theme="light"] .mb-cell .l{stroke:hsla(var(--h),80%,42%,.85)}
-html[data-theme="light"] .mb-cell .g2{fill:hsla(var(--h),90%,88%,.9)}
-html[data-theme="light"] .mb-card{background:radial-gradient(120% 90% at 50% 0%,rgba(58,166,192,.10),transparent 70%),var(--r2-field)}
+html[data-ui=light] .mb-toast{background:rgba(255,255,255,.96);color:#13303a;border-color:rgba(15,76,92,.2);box-shadow:0 8px 30px rgba(40,60,90,.18)}
+html[data-ui=light] .mb-toast .mb-ico{color:#1d7f96}
+html[data-ui=light] .mb-cell .g{fill:hsla(var(--h),80%,55%,.78);stroke:hsla(var(--h),80%,40%,.6)}
+html[data-ui=light] .mb-cell .m{fill:hsla(var(--h),85%,55%,.12);stroke:hsla(var(--h),80%,45%,.6)}
+html[data-ui=light] .mb-cell .l{stroke:hsla(var(--h),80%,42%,.85)}
+html[data-ui=light] .mb-cell .g2{fill:hsla(var(--h),90%,88%,.9)}
+html[data-ui=light] .mb-card{background:radial-gradient(120% 90% at 50% 0%,rgba(58,166,192,.10),transparent 70%),var(--r2-field)}
 @media (prefers-reduced-motion: reduce){.mb-cell.live,.mb-fly{animation:none}.mb-toast{transition:opacity .2s;transform:translate(-50%,0)}}
 
 /* care sheet + toast above the friends tree overlay (cell-room.css .cr-ov z 99990) */

@@ -177,4 +177,4 @@ html[data-wx-src=weather] #tab-home .f3-board {
     backdrop-filter: blur(1.5px) saturate(1.1);
 }
 html[data-wx-src=weather] #tab-home .f3-board { background: linear-gradient(160deg, rgba(14, 32, 62, .66), rgba(6, 14, 32, .7)) }
-html[data-theme=light][data-wx-src=weather] #tab-home .f3-board { background: linear-gradient(160deg, rgba(243, 249, 255, .74), rgba(227, 240, 255, .74)) }
+html[data-ui=light][data-wx-src=weather] #tab-home .f3-board { background: linear-gradient(160deg, rgba(243, 249, 255, .74), rgba(227, 240, 255, .74)) }

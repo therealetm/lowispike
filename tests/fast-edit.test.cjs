@@ -74,7 +74,7 @@ test('card: date + time inputs prefilled, save / cancel, escape and scrim cancel
     assert.ok(!/data-fe=/.test(js), 'does not use data-fe (taken by the food chooser)');
     assert.ok(js.includes('fresh.last = r.state.last; fresh.startEdit = r.state.startEdit;'), 'only last + startEdit are written');
     for (const l of ['en:', 'de:', 'es:']) assert.ok(js.includes(l), l);
-    assert.ok(css.includes('prefers-reduced-motion') && css.includes('data-theme="light"'));
+    assert.ok(css.includes('prefers-reduced-motion') && css.includes('data-ui=light'));
 });
 
 test('loaded after the arrival cards and cached by the service worker', () => {

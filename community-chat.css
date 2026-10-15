@@ -71,7 +71,7 @@ html.cs-chat-typing #cmPaneChat[data-spirit-chat]{padding-bottom:8px!important;h
 
 /* ---- Community planet (room layout) ---- */
 #cmPaneChat[data-planet]{display:flex!important;flex-direction:column;--cp-h:100px;--cp-sky1:#0f1a2e;--cp-sky2:#18294a;--cp-g1:#7fdcc2;--cp-g2:#3d9d8a;--cp-g3:#256672;--cp-g4:#173e52;--cp-glow:#8ff0d466;--cp-tag:#0b1a24c4;--cp-tagt:#e9fbf5}
-html[data-theme=light] #cmPaneChat[data-planet]{--cp-sky1:#f4f9ff;--cp-sky2:#dcefff;--cp-g1:#c5f1e1;--cp-g2:#93d9c3;--cp-g3:#6dbfab;--cp-g4:#4f9f8f;--cp-glow:#7fd8c055;--cp-tag:#ffffffe0;--cp-tagt:#163f37}
+html[data-ui=light] #cmPaneChat[data-planet]{--cp-sky1:#f4f9ff;--cp-sky2:#dcefff;--cp-g1:#c5f1e1;--cp-g2:#93d9c3;--cp-g3:#6dbfab;--cp-g4:#4f9f8f;--cp-glow:#7fd8c055;--cp-tag:#ffffffe0;--cp-tagt:#163f37}
 #cmPaneChat[data-planet=compact]{--cp-h:62px}
 #cmPaneChat[data-planet=compact] .cp-bar{display:none}
 #cmPaneChat .cp-corner{position:absolute;right:4px;top:4px;z-index:4}
@@ -95,7 +95,7 @@ html[data-lay=phone] #tab-foryou #cmPaneChat.ls-pane[data-planet]{padding-bottom
 #cmPaneChat .cp-planet{position:relative;flex:none;height:var(--cp-h);overflow:hidden;contain:paint}
 #cmPaneChat .cp-sky i{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;opacity:.55}
 #cmPaneChat .cp-sky i:nth-child(1){left:8%;top:14px}#cmPaneChat .cp-sky i:nth-child(2){left:23%;top:30px;width:2px;height:2px}#cmPaneChat .cp-sky i:nth-child(3){left:41%;top:8px;width:2px;height:2px}#cmPaneChat .cp-sky i:nth-child(4){left:63%;top:20px}#cmPaneChat .cp-sky i:nth-child(5){left:79%;top:9px;width:2px;height:2px}#cmPaneChat .cp-sky i:nth-child(6){left:93%;top:28px}
-html[data-theme=light] #cmPaneChat .cp-sky i{background:#7fb6d8;opacity:.35}
+html[data-ui=light] #cmPaneChat .cp-sky i{background:#7fb6d8;opacity:.35}
 #cmPaneChat .cp-globe{position:absolute;border-radius:50%;background:linear-gradient(180deg,var(--cp-g1) 0,var(--cp-g2) 18px,var(--cp-g3) 54px,var(--cp-g4) 120px);box-shadow:0 0 0 1px #ffffff33,0 -4px 22px 4px var(--cp-glow);pointer-events:none}
 #cmPaneChat .cp-crater{position:absolute;border-radius:50%;background:#00000022;box-shadow:inset 0 2px 0 #00000018}
 #cmPaneChat .cp-crater.a{left:calc(50% - 120px);top:30px;width:22px;height:7px}
@@ -145,7 +145,7 @@ html.cs-chat-typing #cmPaneChat .cp-planet,html.cs-chat-typing #cmPaneChat .cp-h
 #cmPaneChat #csControls .cs-tool{max-width:100%}
 #cmPaneChat .cs-avatar{display:flex;align-items:center;justify-content:center;min-width:44px;min-height:44px}
 #cmPaneChat .cs-status button,#cmPaneChat .cm-replybar button{min-height:44px}
-html[data-theme=light] #cmPaneChat[data-spirit-chat]{--chat-mint:#337c67}
+html[data-ui=light] #cmPaneChat[data-spirit-chat]{--chat-mint:#337c67}
 html.cs-chat-typing #cmPaneChat .cs-status button{display:none}
 html.cs-chat-typing #tab-foryou .ls-phd{padding-block:4px!important}
 html.cs-chat-typing #tab-foryou .ls-phd .h1{display:none}

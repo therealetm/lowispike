@@ -29,7 +29,7 @@ test('old saved picks are migrated, nothing is dropped', () => {
 test('picked chips light up and say so (aria-pressed), also in light mode and with reduced motion', () => {
   assert(html.includes('.r2-chip.r2-chip.on,'));
   assert(/\.r2-chip\.r2-chip\.on,[^{]*\{[^}]*box-shadow:0 0 0 3px rgba\(92,255,192/.test(html));
-  assert(html.includes('html[data-theme=light] .r2-chip.r2-chip.on'));
+  assert(html.includes('html[data-ui=light] .r2-chip.r2-chip.on'));
   assert(html.includes('@media (prefers-reduced-motion:reduce){.r2-chip.r2-chip{transition:none}'));
   assert(!/\.r2-chip\.r2-chip\{transition:[^}]*background/.test(html), 'colour change is instant, not faded');
   for (const a of ['data-r2g="', 'data-r2tag="', 'data-r2etag="']) assert(new RegExp('aria-pressed="\' \\+ [^>]+' + a).test(html), a);

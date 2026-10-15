@@ -90,7 +90,7 @@ test('accessible: decoration is hidden, the next marker is read out, text keeps 
   assert.match(src, /Nächste Marke/);
   assert.match(src, /Siguiente marca/);
   assert.match(css, /#spFast\.fb-on \.sp-fast-copy \{[^}]*z-index: 4;[^}]*text-shadow/);
-  assert.match(css, /html\[data-theme=light\] #spFast\.fb-on \.sp-fast-copy/);
+  assert.match(css, /html\[data-ui=light\] #spFast\.fb-on \.sp-fast-copy/);
   assert.match(css, /prefers-contrast: more/);
 });
 

@@ -67,7 +67,23 @@
         return 'none';
     }
     function pinchFactor(d0, d1) { if (!(d0 > 0) || !(d1 > 0)) return 1; return Math.max(0.5, Math.min(2, d0 / d1)); }
-    const core = { PLACES, COPY, shouldUse3D, dprCap, gyroAngles, gyroKind, wrapDeg, pinchFactor, THREE_FILE, SCENE_FILE };
+    /* 3D button spot: a size x size round tap target, as close to pref as it can get inside area without touching any
+       obstacle (rect {l,t,r,b} or circle {cx,cy,rad}). Phones: the header's right end belongs to the avatar + theme switch. */
+    function clearOf(cx, cy, half, o, gap) {
+        if (o.rad != null) return Math.hypot(cx - o.cx, cy - o.cy) >= o.rad + half + gap;
+        return cx + half + gap <= o.l || cx - half - gap >= o.r || cy + half + gap <= o.t || cy - half - gap >= o.b;
+    }
+    function pickSpot(o) {
+        o = o || {}; const a = o.area, size = o.size || 44, half = size / 2, gap = o.gap == null ? 2 : o.gap, step = o.step || 2, obs = o.obstacles || [], pref = o.pref;
+        if (!a || !pref) return null;
+        let best = null, bd = Infinity;
+        for (let y = a.t + half; y <= a.b - half; y += step) for (let x = a.l + half; x <= a.r - half; x += step) {
+            const d = Math.hypot(x - pref.x, y - pref.y); if (d >= bd) continue;
+            if (obs.every(ob => clearOf(x, y, half, ob, gap))) { best = { x, y }; bd = d; }
+        }
+        return best;
+    }
+    const core = { PLACES, COPY, shouldUse3D, dprCap, gyroAngles, gyroKind, wrapDeg, pinchFactor, pickSpot, THREE_FILE, SCENE_FILE };
     if (typeof module !== 'undefined' && module.exports) module.exports = core;
     if (!D || !D.createElement || typeof W.requestAnimationFrame !== 'function') { W.LowiWorld3D = core; return; }
 
@@ -238,11 +254,42 @@
         const topOff = Math.round(Math.min(0, tr0.top - hr.top) - 6), left = Math.round(Math.max(-12, -hr.left + 4)), right = Math.round(Math.max(-12, -(vw - hr.right) + 4));
         const key = [topOff, left, right, Math.round(hr.width), Math.round(hr.height)].join(',');
         if (key !== lastLay) { stage.style.top = topOff + 'px'; stage.style.left = left + 'px'; stage.style.right = right + 'px'; stage.style.bottom = '-6px'; lastLay = key; }
+        placeOpenBtn(els);
         if (!world || mode !== 'home') return;
         const sr = stage.getBoundingClientRect(), b = els.bubble && els.bubble.getBoundingClientRect();
         world.resize(sr.width, sr.height);
         if (b && b.width) { world.setFocus({ x: b.left + b.width / 2 - sr.left, y: b.top + b.height / 2 - sr.top }); world.setMode('home', { radiusPx: Math.min(sr.height * 0.48, b.width * 0.62) }); }
         else { world.setFocus(null); world.setMode('home', { radiusPx: sr.height * 0.36 }); }
+    }
+    /* keep the 3D button clear of the avatar ring / theme switch (phones): float it to the nearest free spot of the window */
+    let lastBtn = '';
+    function obstacleOf(el, pad) {
+        if (!el || el.hidden || el.classList.contains('tb-off')) return null;
+        const q = el.getBoundingClientRect(), w = el.offsetWidth || q.width, h = el.offsetHeight || q.height, p = pad || 0; if (w < 2 || h < 2) return null;
+        const cs = getComputedStyle(el); if (cs.visibility === 'hidden' || cs.display === 'none' || cs.pointerEvents === 'none') return null;
+        const cx = q.left + q.width / 2, cy = q.top + q.height / 2; // centre from the box, size without transforms (breathing scale never moves the spot)
+        const br = cs.borderTopLeftRadius || '', brPx = parseFloat(br) * (/%/.test(br) ? w / 100 : 1), round = Math.abs(w - h) < 2 && brPx >= w / 2 - 1;
+        return round ? { cx, cy, rad: w / 2 + p } : { l: cx - w / 2 - p, t: cy - h / 2 - p, r: cx + w / 2 + p, b: cy + h / 2 + p };
+    }
+    function scrolledBy(el) { let s = 0; for (let e = el && el.parentElement; e && e !== D.body; e = e.parentElement) s += e.scrollTop || 0; return s + (W.scrollY || 0); }
+    function placeOpenBtn(els) {
+        const btn = els.top && els.top.querySelector('.bw3-open'); if (!btn || !stage) return;
+        if (scrolledBy(els.home) > 2) return;
+        const fixed = [D.getElementById('pfBtn'), D.getElementById('tbTheme')].map(e => obstacleOf(e, 5)).filter(Boolean);
+        const inRow = [...els.top.children].filter(c => c !== btn).concat([...els.heroes.children].filter(c => c !== stage)).map(e => obstacleOf(e, 0)).filter(Boolean);
+        const obs = fixed.concat(inRow), tr0 = els.top.getBoundingClientRect();
+        const sr = stage.getBoundingClientRect(), X = n => Math.round(n - tr0.left), Y = n => Math.round(n - tr0.top); // relative to the header: a uniform shift keeps the spot
+        const key = [tr0.width, X(sr.left), Y(sr.top), X(sr.right), Y(sr.bottom)].concat(...obs.map(o => o.rad != null ? [X(o.cx), Y(o.cy), Math.round(o.rad)] : [X(o.l), Y(o.t), X(o.r), Y(o.b)])).join(',');
+        if (key === lastBtn) return; lastBtn = key;
+        btn.classList.remove('bw3-float'); btn.style.left = btn.style.top = '';
+        const b = btn.getBoundingClientRect(), cx = b.left + b.width / 2, cy = b.top + b.height / 2;
+        const box = { l: b.left, r: b.right, t: Math.min(b.top, cy - 22), b: Math.max(b.bottom, cy + 22) };
+        const boxClear = o => o.rad != null ? Math.hypot(Math.max(box.l - o.cx, 0, o.cx - box.r), Math.max(box.t - o.cy, 0, o.cy - box.b)) >= o.rad + 2 : (box.r + 2 <= o.l || box.l - 2 >= o.r || box.b + 2 <= o.t || box.t - 2 >= o.b);
+        if (fixed.every(boxClear)) return;
+        const spot = pickSpot({ area: { l: sr.left + 2, t: sr.top + 2, r: sr.right - 2, b: sr.bottom - 2 }, size: 44, gap: 4, step: 2, pref: { x: cx, y: cy }, obstacles: obs });
+        if (!spot) return;
+        btn.classList.add('bw3-float');
+        btn.style.left = Math.round(spot.x - 22 - tr0.left) + 'px'; btn.style.top = Math.round(spot.y - 22 - tr0.top) + 'px';
     }
     function attachHome() {
         mode = 'home';

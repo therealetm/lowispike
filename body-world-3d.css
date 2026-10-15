@@ -12,6 +12,12 @@ html[data-theme="light"] .bw3-stage { background: radial-gradient(120% 90% at 30
 .bw3-open { position: absolute; right: 0; top: 50%; margin-top: -16px; z-index: 3; display: inline-flex; align-items: center; gap: 4px; height: 32px; min-width: 44px; padding: 0 8px 0 7px; border-radius: 16px; border: 1px solid rgba(143,231,255,.38);
   background: rgba(13,22,54,.55); color: #e8f6ff; font: 700 12px/1 system-ui, -apple-system, sans-serif; letter-spacing: .02em; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); cursor: pointer; }
 .bw3-open svg { width: 18px; height: 18px; }
+.bw3-open::after { content: ""; position: absolute; left: -1px; right: -1px; top: -7px; bottom: -7px; border-radius: 22px; }
+/* phones: the header's right end is the avatar ring + theme switch, so the button floats to the nearest free spot of the 3D window (body-world-3d.js placeOpenBtn) */
+.bw3-open.bw3-float { right: auto; margin: 0; width: 44px; min-width: 44px; height: 44px; padding: 0; gap: 1px; justify-content: center; border-radius: 50%; }
+.bw3-open.bw3-float::after { inset: -1px; border-radius: 50%; }
+.bw3-open.bw3-float svg { width: 16px; height: 16px; }
+.bw3-open.bw3-float b { font-size: 11px; }
 .bw3-open:active { transform: scale(.94); }
 html[data-theme="light"] .bw3-open { background: rgba(255,255,255,.7); color: #2e71a9; border-color: rgba(46,113,169,.3); }
 .bw3-open:focus-visible, .bw3-full button:focus-visible { outline: 2px solid #8fe7ff; outline-offset: 2px; }

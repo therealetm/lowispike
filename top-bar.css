@@ -95,3 +95,6 @@ html[data-theme=light] .tbw-nico{background:rgba(44,108,176,.1);color:#2c6cb0}
 /* stuck: the strip above the header (status bar area) fades with it, so scrolled text never shows under the clock */
 html.tb-stuck.g2e-on.g2e-open #tab-profile > #g2eHead::before{display:block!important;background:rgba(3,5,10,.62)!important}
 html.tb-stuck[data-theme=light].g2e-on.g2e-open #tab-profile > #g2eHead::before{display:block!important;background:rgba(246,248,252,.82)!important}
+/* Oct 16: hold the moon/sun to open the Day & night adjuster — no iOS callout or text selection on the hold */
+#tbTheme{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+.atm-ov .atm-sheet{padding:6px 2px 4px}

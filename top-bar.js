@@ -260,7 +260,17 @@
         btn.id = 'tbTheme';
         btn.type = 'button';
         btn.setAttribute('data-noi18n', '');
-        btn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); toggleTheme(); });
+        /* Oct 16: tap flips Day/Night; hold (~half a second) opens the Day & night adjuster (LowiAtmos.openSheet). */
+        let holdT = 0, held = false, sx = 0, sy = 0;
+        const unhold = () => { clearTimeout(holdT); holdT = 0; };
+        btn.addEventListener('pointerdown', e => {
+            if (e.button > 0) return; held = false; sx = e.clientX; sy = e.clientY; unhold();
+            holdT = setTimeout(() => { holdT = 0; const A = root.LowiAtmos; if (!A || typeof A.openSheet !== 'function') return; held = true; try { if (navigator.vibrate) navigator.vibrate(12); } catch (x) {} A.openSheet(); }, 480);
+        });
+        btn.addEventListener('pointermove', e => { if (holdT && Math.hypot(e.clientX - sx, e.clientY - sy) > 12) unhold(); });
+        ['pointerup', 'pointercancel', 'pointerleave'].forEach(n => btn.addEventListener(n, unhold));
+        btn.addEventListener('contextmenu', e => e.preventDefault());
+        btn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); if (held) { held = false; return; } toggleTheme(); });
         btn.__h = null; btn.__pos = null;
         placeBtn(); paintBtn();
     }

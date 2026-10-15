@@ -14,3 +14,13 @@ test('no leftover Today words over the world: tiles hidden on the world Home, mi
     assert.match(js, /row\.className = 'wh-tiles'/);
     assert.match(js, /#whToday \.wh-tiles \[data-g2h-open\]'\)\) \{ if \(st\.today\) openToday\(false\); return; \}/);
 });
+
+test('holding the moon/sun button opens the Day & night adjuster; a tap still flips Day/Night', () => {
+    const tb = read('top-bar.js'), atm = read('atmosphere.js'), css = read('top-bar.css');
+    assert.match(tb, /btn\.addEventListener\('pointerdown'/);
+    assert.match(tb, /A\.openSheet\(\); \}, 480\)/);
+    assert.match(tb, /if \(held\) \{ held = false; return; \} toggleTheme\(\);/);
+    assert.match(atm, /openSheet: \(\) => \{/);
+    assert.match(atm, /<div class="r2-look"><\/div>/);
+    assert.match(css, /#tbTheme\{-webkit-touch-callout:none/);
+});

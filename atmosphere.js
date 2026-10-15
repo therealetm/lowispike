@@ -202,6 +202,14 @@
         set: p => apply({ mode: 'manual', p }),
         auto: () => apply({ mode: 'auto' }),
         quick, scrub,
+        /* Oct 16: the Day & night adjuster on its own (long-press on the moon/sun button). mountCard fills the .r2-look. */
+        openSheet: () => {
+            const r = R2(); if (!r || typeof r.sheet !== 'function') return null;
+            const old = document.querySelector('.atm-ov'); if (old) return old;
+            const ov = r.sheet('<div class="atm-sheet" data-noi18n><div class="r2-look"></div></div>', { cls: 'atm-ov' });
+            mountCard(); updateUI();
+            return ov;
+        },
         isNight: () => (state.mode === 'manual' ? C.themeFor(state.p) === 'dark' : H.getAttribute('data-theme') !== 'light'),
         clockP: () => C.clockP(Date.now())
     };

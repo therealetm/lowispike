@@ -123,7 +123,8 @@ test('scenes: every place draws its own inside view; the pancreas and blood show
 });
 
 test('wiring: bar sits right before the sun row, XP goes through LowiHost.award with a body-trip event id, loader and sw list the files', () => {
-  assert.ok(src.includes("bar.nextSibling !== before") && src.includes("#lsSun"));
+  assert.ok(src.includes("function placed(log)") && src.includes("#lsSun") && src.includes("mbAdv"));
+  assert.ok(src.includes("lowi:body-trip-done"));
   assert.ok(/LowiHost\.award\('body-trip', null, \{ amt: XP/.test(src));
   assert.ok(src.includes("addEventListener('lowi:meal-logged'") && src.includes("addEventListener('lowi:reward'"));
   assert.ok(src.includes('Noch nie besucht!') && src.includes('Körperreisen') && src.includes('erkundet'));

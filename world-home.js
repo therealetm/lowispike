@@ -289,9 +289,14 @@
             /* its own spot: in the open sky between the header / quest card and Misty, far from the thumb row buttons */
             let top = 0;
             D.querySelectorAll('#spHome .sp-top, #spHome .f3-board').forEach(el => { const r = el.getBoundingClientRect(); if (r.width && r.height && getComputedStyle(el).visibility !== 'hidden') top = Math.max(top, r.bottom); });
-            const tv = Math.round(Math.max(top + 10, 70)) + 'px'; if (h.style.top !== tv) h.style.top = tv;
+            /* Oct 16 (E-man: "Misty is the guide"): the hint is Misty talking, a speech bubble right above her head with its tail on her */
+            const mb = D.getElementById('spBubble'), mr = mb && mb.getBoundingClientRect();
+            const say = !!(mr && mr.width > 40 && getComputedStyle(mb).opacity !== '0');
+            if (h.classList.contains('wh-say') !== say) h.classList.toggle('wh-say', say);
+            const tv = Math.round(say ? mr.top - h.offsetHeight - 10 : Math.max(top + 10, 70)) + 'px'; if (h.style.top !== tv) h.style.top = tv;
+            const lv = say ? Math.round(mr.left + mr.width / 2) + 'px' : ''; if (h.style.left !== lv) h.style.left = lv;
             const hr = h.getBoundingClientRect();
-            D.querySelectorAll('#spFast, #whHud .wh-water, #whHud .wh-zoom, #whHud .wh-vr, #whHud .wa-btn, #whHud .wh-todaybtn, .fe-bub, #spHome .sp-top, #spHome .f3-board, #spBubble, #tabbar').forEach(el => {
+            D.querySelectorAll('#spFast, #whHud .wh-water, #whHud .wh-zoom, #whHud .wh-vr, #whHud .wa-btn, #whHud .wh-todaybtn, .fe-bub, #spHome .sp-top, #spHome .f3-board, ' + (say ? '' : '#spBubble, ') + '#tabbar').forEach(el => {
                 const r = el.getBoundingClientRect(); if (!r.width) return;
                 if (r.left < hr.right - 1 && r.right > hr.left + 1 && r.top < hr.bottom - 1 && r.bottom > hr.top + 1) blk = true;
             });

@@ -171,9 +171,28 @@
         e.preventDefault();
         try { if (W.LowiCommunity && W.LowiCommunity.settings) W.LowiCommunity.settings(); } catch (x) { console.error(x); }
     });
+    /* Move (Oct 16): the Leaderboard is a card right under the Move title, above the Start card, in the same card style.
+       The odd Safety shield in the header is gone; its notes now sit as a quiet "Safety notes" line under the tiles. */
+    function moveCard() {
+        const head = $('#mv-screen .mv-head'); if (!head) return;
+        let c = head.parentElement.querySelector(':scope > .nm-lbcard');
+        if (!c) {
+            c = D.createElement('button'); c.type = 'button'; c.className = 'card goldline nm-lbcard'; c.dataset.nm = 'lb'; c.setAttribute('data-noi18n', '');
+            c.innerHTML = '<span class="mv-ic nm-lbic">' + ICO.lb + '</span><span class="nm-lbtx"><span class="tiny gold"></span><b class="h3"></b></span><svg class="nm-lbgo" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
+        }
+        if (c.previousElementSibling !== head) head.after(c);
+        const tg = T('This week', 'Diese Woche', 'Esta semana'), nm = SPOTS.lb.label();
+        if (c.querySelector('.tiny').textContent !== tg) c.querySelector('.tiny').textContent = tg;
+        if (c.querySelector('b').textContent !== nm) { c.querySelector('b').textContent = nm; c.setAttribute('aria-label', nm); }
+        const tl = head.parentElement.querySelector(':scope > .g2-tiles');
+        if (tl && !(tl.nextElementSibling && tl.nextElementSibling.classList.contains('nm-safeline'))) {
+            head.parentElement.querySelectorAll(':scope > .nm-safeline').forEach(o => o.remove());
+            tl.insertAdjacentHTML('afterend', '<p class="nm-safeline" data-noi18n>' + T('Stop if anything hurts.', 'Hör auf, wenn etwas wehtut.', 'Para si algo duele.') + ' <button type="button" class="nm-safe" data-mv="safety">' + T('Safety notes', 'Sicherheitshinweise', 'Notas de seguridad') + '</button></p>');
+        }
+    }
     let raf = 0;
     function tick() {
-        raf = 0; hook(); align(); privacy();
+        raf = 0; hook(); align(); privacy(); moveCard();
         const el = D.getElementById('tab-foryou');
         if (el && D.getElementById('cmTrack') && (!el.classList.contains('nm-solo') || (D.getElementById('cmPaneFeed') || {}).parentElement === D.getElementById('cmTrack') || (D.getElementById('cmPaneBoard') || {}).parentElement === D.getElementById('cmTrack'))) solo();
     }

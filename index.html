@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261016-024500">
+<meta name="lowi-build" content="20261016-040000">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -8503,10 +8503,10 @@ function ckBarHTML(){
   const seg = (k, val, lab, on, ic) => '<button type="button" class="ck-b' + (on ? " on" : "") + '" data-ck="' + k + '" data-v="' + val + '" aria-pressed="' + on + '">' + (ic || "") + '<span>' + lab + '</span></button>';
   return '<div class="ck-bar" id="ckBar" data-noi18n>' +
     '<div class="ck-src" role="group" aria-label="' + ckT("Shuffle from", "Mischen aus", "Mezclar de") + '">' +
-      seg("src", "book", ckT("eBook", "E-Book", "eBook"), s === "book") + seg("src", "community", "Community", s === "community") + seg("src", "products", ckT("Products", "Produkte", "Productos"), s === "products") + '</div>' +
+      seg("src", "book", ckT("eBook", "E-Book", "eBook"), s === "book") + seg("src", "community", ckT("Recipes", "Rezepte", "Recetas"), s === "community") + seg("src", "products", ckT("Products", "Produkte", "Productos"), s === "products") + '</div>' +
     '<div class="ck-row">' +
       (s === "book" ? '<div class="ck-cats" role="group" aria-label="' + ckT("Kind", "Art", "Tipo") + '">' + seg("cat", "all", ckT("All", "Alle", "Todo"), c === "all") + seg("cat", "meal", ckT("Savory", "Herzhaft", "Salado"), c === "meal") + seg("cat", "sweet", ckT("Sweet", "Süß", "Dulce"), c === "sweet") + '</div>' : '<div class="ck-cats ck-note small muted">' + (s === "community" ? ckT("Meals people shared with a photo", "Geteilte Gerichte mit Foto", "Platos compartidos con foto") : ckT("Products people caught", "Gefangene Produkte", "Productos atrapados")) + '</div>') +
-      '<div class="ck-view" role="tablist" aria-label="' + ckT("Game", "Spiel", "Juego") + '">' + seg("view", "shuffle", ckT("Shuffle", "Mischen", "Mezclar"), v === "shuffle", R5IC.shuffle) + seg("view", "swipe", ckT("Swipe", "Swipen", "Deslizar"), v === "swipe", R5IC.cards) + '</div>' +
+      '<div class="ck-view" role="tablist" aria-label="' + ckT("Game", "Spiel", "Juego") + '">' + seg("view", "shuffle", ckT("Shuffle", "Mischen", "Mezclar"), v === "shuffle", R5IC.shuffle) + '<button type="button" class="ck-b ck-fy" data-nm="fy"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2.8" width="14" height="18.4" rx="3.4"/><path d="M10.3 8.9v6.2l4.9-3.1z" fill="currentColor" stroke="none"/></svg><span>' + ckT("For You", "F\u00fcr dich", "Para ti") + '</span></button>' + seg("view", "swipe", ckT("Swipe", "Swipen", "Deslizar"), v === "swipe", R5IC.cards) + '</div>' +
     '</div></div>';
 }
 function ckEmptyHTML(){
@@ -8765,7 +8765,7 @@ async function swPush(t, quiet){ const X = swCloud(); if (!X || !t) return; cons
     if (!quiet) swPull(true); } catch(e){} }
 async function swDrop(postId){ const X = swCloud(); if (!X) return; try { const sb = await X.client(), u = X.state().uid; if (!u) return; await sb.from("swipe_foods").delete().eq("post_id", postId).eq("user_id", u); swPull(true); } catch(e){} }
 function fHintTxt(){ /* ck-src */ { const n = fSrcPool().length, s = fSrc();
-  return s === "products" ? ckT(n + " caught products that won't spike", n + " gefangene Produkte, die nicht spiken", n + " productos atrapados") : s === "community" ? ckT(n + " community meals", n + " Community-Gerichte", n + " platos de la comunidad") : ckT(n + " eBook recipes", n + " E-Book-Rezepte", n + " recetas del eBook"); } const cm = fPool().filter(f => f.com).length; return "Picks something you can eat, from " + fPool().length + " foods" + (cm ? ", community ones too" : "") + "."; }
+  return s === "products" ? ckT(n + " caught products that won't spike", n + " gefangene Produkte, die nicht spiken", n + " productos atrapados") : s === "community" ? ckT(n + " recipes people shared", n + " geteilte Rezepte", n + " recetas compartidas") : ckT(n + " eBook recipes", n + " E-Book-Rezepte", n + " recetas del eBook"); } const cm = fPool().filter(f => f.com).length; return "Picks something you can eat, from " + fPool().length + " foods" + (cm ? ", community ones too" : "") + "."; }
 
 /* ---------- community posts go into the mix ---------- */
 function isFoodPost(p, k){ return !!(p && (p.me || p.photo || /^(rb_|m_)/.test(k || ""))); }

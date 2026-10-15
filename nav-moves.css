@@ -34,3 +34,20 @@ html.nm-on #cmPaneChat .cp-bar, html.nm-on #cmPaneChat #csControls { display: no
 .nm-privbtn { display: block; width: 100%; text-align: left; padding: 14px 16px; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
 .nm-privbtn b { display: block; font-size: 15px; }
 .nm-privbtn span { display: block; font-size: 12.5px; opacity: .7; margin-top: 2px; }
+
+/* Oct 16: For You sits in Cook's Shuffle | For You | Swipe switch, the Leaderboard is a card under the Move title.
+   The old top-right pills collided with the profile, weather and day/night buttons, so they are gone. */
+html.nm-on .nm-pill { display: none !important; }
+#tab-shelf .ck-view .ck-fy { white-space: nowrap; }
+/* Move: no Safety shield in the header; the notes are a quiet line under the tiles */
+.nm-safeline { margin: 6px 0 0; text-align: center; font-size: 11.5px; line-height: 1.3; opacity: .75; grid-column: 1/-1; }
+html.nm-on .g2-safe { display: none !important; }
+.nm-safe { border: 0; background: none; padding: 0; margin-left: 4px; color: var(--gold2, #e6c27a); font: inherit; font-size: inherit; text-decoration: underline; cursor: pointer; }
+.nm-lbcard { display: flex; align-items: center; gap: 12px; width: 100%; margin: 8px 0 10px; padding: 12px 14px; text-align: left; color: var(--text, #fff); font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.nm-lbcard:active { transform: scale(.98); }
+.nm-lbcard .nm-lbic svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.nm-lbtx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.nm-lbtx .h3 { margin: 0; }
+.nm-lbgo { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; opacity: .6; }
+html:not([data-lay=phone]) #mv-screen.tabmode > .stack > .nm-lbcard { grid-column: 1/-1; }
+html:not([data-lay=phone]) #mv-screen.tabmode > .stack > .nm-lbcard + .card { grid-column: 1/-1; }

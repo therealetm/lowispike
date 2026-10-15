@@ -1,0 +1,137 @@
+/* LOWiSPIKE seasonal themes (season.js). Automatic by date: html[data-season=spring|summer|autumn|winter] + data-season-phase.
+   Tints only (Home background, living cell, 3D window frame, cell room) + a few drifting particles behind every screen.
+   Transforms and opacity only; nothing takes touches. Gold (#f4cd7e) stays the shared glow in every season. */
+#ssnSky {
+    --ssn-leaf: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2c7 5 10 12 7 20-1.6 4.2-4.3 6.6-7 8-2.7-1.4-5.4-3.8-7-8C6 14 9 7 16 2z' fill='%23000'/%3E%3Cpath d='M16 6v24' stroke='%23fff' stroke-width='1.2'/%3E%3C/svg%3E");
+    --ssn-petal: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cellipse cx='16' cy='16' rx='8' ry='14' transform='rotate(30 16 16)' fill='%23000'/%3E%3C/svg%3E");
+    --ssn-frost: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg stroke='%23000' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M16 3v26M4.7 9.5l22.6 13M4.7 22.5l22.6-13'/%3E%3C/g%3E%3C/svg%3E");
+    --ssn-dot: radial-gradient(circle, #000 0 38%, transparent 70%);
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    contain: strict;
+}
+#ssnSky > i { position: absolute; display: block; pointer-events: none }
+#ssnSky .ssn-wash, #ssnSky .ssn-glow { inset: 0 }
+
+/* ---------- washes: one soft gradient per season x theme ---------- */
+html[data-season=autumn] #ssnSky .ssn-wash {
+    background:
+        radial-gradient(120% 60% at 0% 100%, rgba(200, 100, 59, .2), transparent 62%),
+        radial-gradient(90% 50% at 100% 0%, rgba(244, 205, 126, .12), transparent 60%),
+        linear-gradient(180deg, transparent 55%, rgba(120, 60, 24, .14));
+}
+html[data-theme=light][data-season=autumn] #ssnSky .ssn-wash {
+    background:
+        radial-gradient(120% 60% at 0% 100%, rgba(233, 151, 62, .2), transparent 62%),
+        radial-gradient(90% 50% at 100% 0%, rgba(244, 205, 126, .24), transparent 60%),
+        linear-gradient(180deg, transparent 55%, rgba(210, 101, 44, .08));
+}
+/* late autumn: November mist, a cooler veil over the gold */
+html[data-season=autumn][data-season-phase=late] #ssnSky .ssn-glow { background: linear-gradient(180deg, rgba(150, 140, 170, .1), transparent 40%, rgba(150, 140, 170, .12)) }
+html[data-theme=light][data-season=autumn][data-season-phase=late] #ssnSky .ssn-glow { background: linear-gradient(180deg, rgba(200, 196, 210, .22), transparent 40%, rgba(200, 196, 210, .22)) }
+
+html[data-season=winter] #ssnSky .ssn-wash {
+    background: radial-gradient(110% 55% at 50% 0%, rgba(191, 227, 255, .14), transparent 62%), radial-gradient(80% 40% at 100% 100%, rgba(244, 205, 126, .08), transparent 60%), linear-gradient(180deg, transparent 60%, rgba(127, 182, 232, .1));
+}
+html[data-theme=light][data-season=winter] #ssnSky .ssn-wash {
+    background: radial-gradient(110% 55% at 50% 0%, rgba(255, 255, 255, .5), transparent 62%), radial-gradient(80% 40% at 100% 100%, rgba(231, 196, 110, .14), transparent 60%), linear-gradient(180deg, transparent 60%, rgba(143, 191, 232, .16));
+}
+html[data-season=spring] #ssnSky .ssn-wash {
+    background: radial-gradient(110% 55% at 100% 100%, rgba(247, 168, 207, .16), transparent 62%), radial-gradient(90% 45% at 0% 0%, rgba(155, 227, 160, .1), transparent 60%);
+}
+html[data-theme=light][data-season=spring] #ssnSky .ssn-wash {
+    background: radial-gradient(110% 55% at 100% 100%, rgba(234, 143, 189, .18), transparent 62%), radial-gradient(90% 45% at 0% 0%, rgba(111, 196, 122, .14), transparent 60%);
+}
+html[data-season=summer] #ssnSky .ssn-wash {
+    background: radial-gradient(120% 60% at 80% 0%, rgba(255, 211, 107, .16), transparent 62%), radial-gradient(80% 40% at 0% 100%, rgba(255, 159, 107, .1), transparent 60%);
+}
+html[data-theme=light][data-season=summer] #ssnSky .ssn-wash {
+    background: radial-gradient(120% 60% at 80% 0%, rgba(255, 220, 130, .32), transparent 62%), radial-gradient(80% 40% at 0% 100%, rgba(233, 138, 82, .12), transparent 60%);
+}
+
+/* ---------- drifting particles (<= 10): leaves, petals, frost, pollen ---------- */
+#ssnSky .ssn-p {
+    top: -6%;
+    left: var(--x);
+    width: var(--s);
+    height: var(--s);
+    background: var(--ssn-a, #f4cd7e);
+    -webkit-mask: var(--ssn-leaf) center / contain no-repeat;
+    mask: var(--ssn-leaf) center / contain no-repeat;
+    opacity: 0;
+    will-change: transform, opacity;
+    animation: ssnFall var(--t) linear var(--d) infinite;
+}
+#ssnSky .ssn-p.ssn-t1 { background: var(--ssn-b, #f4cd7e) }
+#ssnSky .ssn-p.ssn-t2 { background: var(--ssn-c, #c8643b) }
+html[data-season=spring] #ssnSky .ssn-p { -webkit-mask-image: var(--ssn-petal); mask-image: var(--ssn-petal) }
+html[data-season=winter] #ssnSky .ssn-p { -webkit-mask-image: var(--ssn-frost); mask-image: var(--ssn-frost); width: calc(var(--s) * .8); height: calc(var(--s) * .8) }
+html[data-season=summer] #ssnSky .ssn-p { -webkit-mask-image: var(--ssn-dot); mask-image: var(--ssn-dot); width: calc(var(--s) * .45); height: calc(var(--s) * .45); animation-name: ssnFloat }
+@keyframes ssnFall {
+    0% { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 0 }
+    8% { opacity: .62 }
+    50% { transform: translate3d(var(--w), 55vh, 0) rotate(calc(var(--r) * .5)) }
+    90% { opacity: .5 }
+    100% { transform: translate3d(calc(var(--w) * -.4), 112vh, 0) rotate(var(--r)); opacity: 0 }
+}
+@keyframes ssnFloat {
+    0% { transform: translate3d(0, 105vh, 0); opacity: 0 }
+    15% { opacity: .55 }
+    50% { transform: translate3d(var(--w), 60vh, 0) }
+    85% { opacity: .45 }
+    100% { transform: translate3d(calc(var(--w) * -.5), 20vh, 0); opacity: 0 }
+}
+html[data-theme=light] #ssnSky .ssn-p { filter: saturate(1.1) }
+
+/* ---------- the living cell (Home orb + inside view) ---------- */
+.cw-env::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity .8s ease;
+}
+html[data-season] .cw-env::after { opacity: 1 }
+html[data-season=autumn] .cw-env::after { background: radial-gradient(70% 55% at 30% 85%, rgba(232, 163, 61, .2), transparent 70%), radial-gradient(50% 40% at 75% 15%, rgba(244, 205, 126, .14), transparent 70%) }
+html[data-season=winter] .cw-env::after { background: radial-gradient(70% 55% at 50% 10%, rgba(191, 227, 255, .18), transparent 70%) }
+html[data-season=spring] .cw-env::after { background: radial-gradient(70% 55% at 70% 85%, rgba(247, 168, 207, .16), transparent 70%) }
+html[data-season=summer] .cw-env::after { background: radial-gradient(70% 55% at 60% 10%, rgba(255, 211, 107, .18), transparent 70%) }
+
+/* ---------- the 3D window on Home: a seasonal rim (the scene itself is tinted inside WebGL) ---------- */
+.bw3-stage::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    z-index: 1;
+}
+html[data-season=autumn] .bw3-stage::after { box-shadow: inset 0 0 0 1px rgba(244, 205, 126, .2), inset 0 -26px 40px -28px rgba(232, 163, 61, .5) }
+html[data-season=winter] .bw3-stage::after { box-shadow: inset 0 0 0 1px rgba(191, 227, 255, .2), inset 0 26px 40px -28px rgba(191, 227, 255, .4) }
+html[data-season=spring] .bw3-stage::after { box-shadow: inset 0 0 0 1px rgba(244, 205, 126, .16), inset 0 -26px 40px -28px rgba(247, 168, 207, .42) }
+html[data-season=summer] .bw3-stage::after { box-shadow: inset 0 0 0 1px rgba(244, 205, 126, .22), inset 0 26px 40px -28px rgba(255, 211, 107, .42) }
+
+/* ---------- the cell room: a seasonal light behind the pieces ---------- */
+.cr-scene::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+}
+html[data-season=autumn] .cr-scene::before { background: radial-gradient(80% 50% at 15% 100%, rgba(232, 163, 61, .22), transparent 70%), radial-gradient(60% 40% at 90% 0%, rgba(244, 205, 126, .14), transparent 70%) }
+html[data-season=winter] .cr-scene::before { background: radial-gradient(80% 50% at 50% 0%, rgba(191, 227, 255, .2), transparent 70%) }
+html[data-season=spring] .cr-scene::before { background: radial-gradient(80% 50% at 85% 100%, rgba(247, 168, 207, .18), transparent 70%) }
+html[data-season=summer] .cr-scene::before { background: radial-gradient(80% 50% at 70% 0%, rgba(255, 211, 107, .2), transparent 70%) }
+
+/* camera open, or reduced motion: hold still (the washes stay, they do not move) */
+html:has(#spWorld.sp-capture) #ssnSky { visibility: hidden }
+@media (prefers-reduced-motion: reduce) {
+    #ssnSky .ssn-p { display: none }
+    .cw-env::after { transition: none }
+}

@@ -116,3 +116,9 @@ Never convert fixture success into “tested on iPhone.” Never report deployme
 ## Spirit release checks
 
 `tests/spirit.test.cjs` exercises the native reward/meal bridge, duplicate capture and water retry, shared six-stage levels, optional/unknown macros, once-daily bonuses, gradual dehydration/recovery, throw boundaries/velocity, date/personality names, German/Spanish voice and non-destructive feed merging. With the original regressions the suite contains 50 passing tests. `tests/spirit-qa.html` supplies 390×844, 375×812 and 375×667 isolated component fixtures with real Spirit UI and reward functions. Fixtures deliberately do not exercise a real camera, signed-in backend or payment. They are not physical-device evidence.
+
+## Community chat checks (pending integration)
+
+`node --test tests/community-chat*.test.cjs` covers scoped draft/outbox recovery, explicit consent, quiet windows, positive presets, blocking persistence, duplicate send/realtime reconciliation, owner-scoped delete acknowledgement, reaction rollback, account changes, UI/IME guards and synthetic viewport geometry. These are Node/VM tests with mocked transport, not real Supabase policy or device evidence.
+
+`tests/community-chat-qa.html` provides clearly labeled simulated chat/backend controls and 375×667, 390×844, 768×1024 and 1024×768 isolated viewport presets. `tests/community-chat-live.cjs` is opt-in: without two dedicated test-account tokens and explicit secure test-write configuration it skips without requests. Whole-app browser console/navigation, before/after captures, 375×812, installed-PWA offline upgrades and physical phone/iPad keyboard/safe-area checks remain required. The managed preview supervisor was unavailable during this assignment. Detailed results/access limits: `COMMUNITY_CHAT.md`.

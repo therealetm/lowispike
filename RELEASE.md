@@ -87,3 +87,7 @@ Known limitations: <none or exact list>
 ## Spirit build 20261014-162100
 
 The Spirit assets (`spirit-core.js`, `spirit.js`, `spirit.css`) are part of the ordered loader and network-first/offline asset lists. The 50-test suite and whitespace checks pass. Publishing uses Git data API blobs/tree/commit plus a leased `main` ref when shell Git has no write credentials. Each blob SHA is checked against the local `git hash-object` result before moving the ref. Premium checkout and physical-device/production-account checks are explicitly unverified.
+
+## Community branch integration boundary (2026-10-15)
+
+The Community chat branch adds four assets to both service-worker lists without advancing build metadata. It is not a release. The release owner must reconcile current Home changes, apply/review the backend prerequisites in staging, complete live account/RLS/privacy/moderation and browser/device checks, then advance the shared build/cache/version IDs together. Do not merge this branch as evidence of production acceptance; see `COMMUNITY_CHAT.md`.

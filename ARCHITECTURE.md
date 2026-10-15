@@ -183,3 +183,7 @@ The app accumulated chronological inline patches. Several modules wrap or rearra
 ## Sign-in handoff module (`#hofjs`, end of index.html)
 
 Self-contained IIFE, `window.LowiHandoff`. Hooks: R2 `startHTML()` (Paste block on the Home Screen start screen; also injected if the gate rendered first), R2 `signOut()`/`startFresh()` (revoke before sign-out), and it adapts the browser note `#lcA2hs` (owned by the update-notes module) for signed-in iPhone accounts. Backend: `supabase/functions/auth-handoff`. Tests: `tests/handoff.test.cjs` (offline), `tests/handoff-live.cjs` (backend, needs a service key in env).
+
+## Isolated Community chat module (pending integration, 2026-10-15)
+
+`community-chat-core.js`, `community-chat-cloud.js`, `community-chat.js` and `community-chat.css` own Spirit square. The ordered `index.html` bridge exposes the existing authenticated client, message/reaction arrays and safe bubble renderer; `lowi:chat` invalidates the view. The existing cloud channel remains the only realtime subscription. Legacy chat seeds/render/send fallback no longer represent real activity. Replies, mentions, allowed reactions and owner deletion are provided by the module. Public identity comes only from consent-controlled `community_identities`; birthday/health are excluded. See `COMMUNITY_CHAT.md` for access blockers, unapplied backend proposal and verification limits.

@@ -6332,29 +6332,16 @@ document.addEventListener("click", e => {
   }
 });
 
-/* ===== Community (Oct 8, 2026): For You feed + ONE community chat (fix round: no channel list, no door).
-   Rooms are modeled on the chat in Eman's original ChatGPT site (Discord-style channels, replies, emoji reactions, @mentions, an intro post).
-   Honest status: this is an on-device demo. Sample members are written by us, your messages stay on this phone.
-   Real shared chat needs a server, which comes at launch. ===== */
+/* ===== Community: one shared room. Cloud, identity and UI contracts are documented in COMMUNITY_CHAT.md. ===== */
 const CM_KEY = "lowispike.chat.v1";
-const CM_MEMBERS = [{n:"Merve", c:"#c9a45c"}, {n:"Aylin", c:"#8fb8a8"}, {n:"Jana", c:"#b59ad6"}, {n:"Sofia", c:"#d68f8f"}, {n:"Nora", c:"#8fa9d6"}, {n:"Eman", c:"#e6d3a3", tag:"founder"}];
-const CM_ROOM_SRC = ["intros", "wins", "sos", "finds", "fasting", "cycle"];  // the old six rooms' sample talk, merged into one room
-const CM_ROOMS = [{id:"all", e:"💬", n:"LOWiSPIKE chat", d:"Everyone, one room"}];
-const CM_EMOJI = ["❤️", "🔥", "👏", "😂", "🙏"];
-const CM_SEED = {
-  intros:[["Eman", "Welcome to LOWiSPIKE. Tell us your name, what you want to change, and one food you can't live without. No judgement here.", 300], ["Merve", "Hi! Merve, 31, Hamburg. Here because of insulin resistance and I'm tired of the 3pm crash.", 180, {"❤️":["Aylin", "Jana"]}], ["Aylin", "@Merve same crash here 😅 Aylin, PCOS, trying to eat less bread without crying about it", 150, {"😂":["Merve"]}, 1]],
-  wins:[["Jana", "Made the Nori Smash Burger Stack last night. My boyfriend didn't even miss the bun.", 240, {"🔥":["Merve", "Sofia", "Nora"]}], ["Sofia", "Döner plate instead of Döner bread at lunch. Felt awake all afternoon for once.", 95, {"👏":["Jana"]}], ["Merve", "@Jana saving that one for Sunday", 60, null, 0]],
-  sos:[["Nora", "It's 10pm and I want chocolate SO bad", 70], ["Aylin", "@Nora Cocoa cottage cheese pudding from the recipe book. 5 minutes. Saved me twice this week.", 64, {"🙏":["Nora"]}, 0], ["Nora", "ok making it. thank you 😭", 58]],
-  finds:[["Sofia", "Skyr natur at Lidl is back under 1.50. Check the label, the plain one, not the fruit one.", 400, {"🔥":["Merve"]}], ["Jana", "Konjac rice at Rewe in the Asia aisle, bottom shelf.", 200]],
-  fasting:[["Eman", "Who else doesn't think about food until late? Share how you plan your first meal.", 500], ["Merve", "I set 2 meals at 14:00 on Today. Black coffee until then.", 320, {"👏":["Eman"]}]],
-  cycle:[["Aylin", "Luteal week cravings are real. Anyone else plan more protein those days?", 600], ["Sofia", "@Aylin yes, extra eggs and Greek yogurt. And I stop beating myself up about it.", 540, {"❤️":["Aylin", "Nora"]}, 0]]
-};
+const CM_MEMBERS = [];
+const CM_ROOMS = [{id:"all", e:"✧", n:"Spirit square", d:"One shared gathering place"}];
+const CM_EMOJI = ["❤️", "👏", "🙏", "🌱", "✨"];
 let CM = null, CMV = {view:"feed", room:"", reply:null, pick:""};
 function cmLoad(){ if (CM) return CM; try { CM = JSON.parse(localStorage.getItem(CM_KEY)); } catch(e){ CM = null; }
-  if (!CM || !CM.msgs) { const now = Date.now(); CM = {msgs:{}, read:{}, intro:false}; const arr = [];
-    CM_ROOM_SRC.forEach(r => (CM_SEED[r] || []).forEach((m, i) => arr.push({id:r + i, by:m[0], t:m[1], ts:now - m[2] * 60000, rx:m[3] || {}, re:m[4] == null ? null : r + m[4], demo:true})));
-    CM.msgs.all = arr; }
+  if (!CM || !CM.msgs) CM = {msgs:{all:[]}, read:{}, intro:false};
   if (!CM.msgs.all) { const arr = []; Object.keys(CM.msgs).forEach(k => (CM.msgs[k] || []).forEach(m => arr.push(m))); CM.msgs = {all:arr}; CM.read = {all:Math.max(0, ...Object.values(CM.read || {}).concat([0]))}; }
+  CM.read = CM.read || {}; CM.msgs.all = CM.msgs.all.filter(m => m && !m.demo && !m.bot);
   CM.msgs.all.sort((a, b) => a.ts - b.ts);
   return CM; }
 function cmSave(){ try { localStorage.setItem(CM_KEY, JSON.stringify(CM)); } catch(e){} }
@@ -6388,7 +6375,7 @@ function cmSeg(v){ if (CM_SEGS.indexOf(v) < 0) return; CMV.view = v; CMV.room = 
 window.cmSeg = cmSeg; window.cmSetView = v => { CMV.view = v; CMV.room = "all"; };
 /* For You's comment button: jump to the one chat with @name ready to type */
 window.cmComment = (who) => { cmLoad(); CMV.reply = null; if ($("#cmTrack")) cmSeg("chat"); else { CMV.view = "chat"; renderCommunity(); }
-  const inp = $("#cmInput"); if (inp) { inp.value = who ? "@" + who + " " : ""; try { inp.focus({preventScroll:true}); } catch(e){ inp.focus(); } } };
+  const inp = $("#cmInput"); if (inp) { inp.value = who ? "@" + who + " " : ""; inp.dispatchEvent(new Event("input", {bubbles:true})); try { inp.focus({preventScroll:true}); } catch(e){ inp.focus(); } } };
 /* horizontal swipe between panes; vertical scrolling stays native (touch-action: pan-y) */
 function cmSwipe(t){ if (!t) return; let x0 = 0, y0 = 0, dx = 0, on = false, dir = "", w = 1, moved = false;
   t.addEventListener("pointerdown", e => { if (e.button > 0 || e.target.closest("input,textarea,.hscroll,.toggle")) return; on = true; dir = ""; dx = 0; moved = false; x0 = e.clientX; y0 = e.clientY; w = t.parentElement.clientWidth || 1; });
@@ -6408,23 +6395,17 @@ function cmMsgHTML(m, all){ const mem = cmMem(m.by), mine = m.uid ? !!(window.LO
     '<button class="cm-mini" data-cm="pick" data-id="' + m.id + '" aria-label="React">+🙂</button><button class="cm-mini" data-cm="reply" data-id="' + m.id + '">Reply</button></div>' +
     (CMV.pick === m.id ? '<div class="cm-picker">' + CM_EMOJI.map(e => '<button data-cm="react" data-id="' + m.id + '" data-e="' + e + '">' + e + "</button>").join("") + "</div>" : "") + "</div></div>"; }
 function cmRoomHost(){ return $("#cmPaneChat") || $("#tab-foryou"); }
-function cmRoom(el, keep){ if (!el) return; const r = CM_ROOMS[0], ms = (window.lowiBotsMerge ? lowiBotsMerge(CM.msgs.all) : CM.msgs.all), re = CMV.reply && ms.find(m => m.id === CMV.reply);
-  const draft = ($("#cmInput") || {}).value || "", ol = $("#cmList"), y = ol ? ol.scrollTop : 0;
-  el.innerHTML =     '<div class="cm-list" id="cmList">' + ms.map(m => cmMsgHTML(m, ms)).join("") + "</div>" +
-    '<div class="cm-compose">' + (re ? '<div class="cm-replybar"><span>Replying to <b>' + esc(re.by) + '</b></span><button data-cm="noreply" aria-label="Cancel reply">×</button></div>' : "") +
-    (!CM.intro && !re ? '<button class="cm-introline" data-cm="intro" id="cmIntro">👋 New here? <b>Say hi</b></button>' : "") +
-    '<div class="cm-mention" id="cmMention"></div><div class="cm-inrow"><input class="input" id="cmInput" placeholder="Message everyone" autocomplete="off"><button class="cm-send" data-cm="send" id="cmSend" aria-label="Send"><svg viewBox="0 0 24 24" fill="currentColor" style="width:20px;height:20px"><path d="M3.4 20.4 21 12 3.4 3.6 3.4 10l12 2-12 2z"/></svg></button></div></div>';
-  const inp = $("#cmInput"); inp.value = draft;
-  inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); cmSend(); } });
-  inp.addEventListener("input", cmMentionUpdate);
-  if (CMV.view === "chat") { CM.read.all = Date.now(); cmSave(); }
-  const l = $("#cmList"); if (l) { if (keep) l.scrollTop = y; else requestAnimationFrame(() => { l.scrollTop = l.scrollHeight; }); if (!keep) l.scrollTop = l.scrollHeight; }
+function cmRoom(el, keep){ if (!el) return; if (window.LowiCommunity) return LowiCommunity.mount(el);
+  /* Fail closed while the Community module loads: no legacy profile metadata or demo activity. */
+  let l = "en"; try { l = localStorage.getItem("lowispike.lang") || "en"; } catch(e){}
+  const t = l === "de" ? "Chat wird geladen. Wenn das dauert, verbinde dich neu und lade die Seite erneut." : l === "es" ? "Cargando el chat. Si tarda, vuelve a conectarte y recarga la página." : "Chat is loading. If it takes a while, reconnect and reload this page.";
+  el.innerHTML = '<div class="cm-list" role="status" data-noi18n>' + t + '</div>';
 }
 function cmMentionUpdate(){ const inp = $("#cmInput"), box = $("#cmMention"); if (!inp || !box) return; const m = inp.value.match(/@([A-Za-z]*)$/);
   box.innerHTML = m ? CM_MEMBERS.filter(x => x.n.toLowerCase().indexOf(m[1].toLowerCase()) === 0).map(x => '<button class="chip" data-cm="mention" data-n="' + x.n + '">@' + x.n + "</button>").join("") : ""; }
-function cmSend(){ const inp = $("#cmInput"); const t = (inp && inp.value || "").trim(); if (!t) return;
-  const ms = CM.msgs.all; ms.push({id:uid(), by:cmMe(), t:t.slice(0, 600), ts:Date.now(), rx:{}, re:CMV.reply || null});
-  CM.intro = true; CMV.reply = null; inp.value = ""; cmSave(); cmRoom(cmRoomHost()); }
+function cmSend(){ if (window.LowiCommunity) return LowiCommunity.send();
+  let l="en"; try { l=localStorage.getItem("lowispike.lang") || "en"; } catch(e){}
+  if (window.LowiHost) LowiHost.toast(l === "de" ? "Chat noch nicht bereit. Dein Text bleibt auf diesem Gerät." : l === "es" ? "Chat aún no disponible. Tu texto se conserva en este dispositivo." : "Chat is not ready. Your text is kept on this device."); }
 
 document.addEventListener("click", e => { const a = e.target.closest("[data-cm]"); if (!a) return; cmLoad(); const d = a.dataset;
   const find = id => CM.msgs.all.find(m => m.id === id);
@@ -8931,6 +8912,7 @@ window.LowiFood = {fitDeck:ckFitDeck, source:fSrc, setSource:ckSource, category:
 .lc-upd{justify-content:center;font-weight:600;cursor:pointer;text-align:center}
 .lc-newpill{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:30;padding:8px 14px;border-radius:999px;border:0;background:#fff;color:#000;font-weight:700;font-size:13px;box-shadow:0 6px 20px rgba(0,0,0,.4);cursor:pointer}
 </style>
+<script src="community-chat-core.js?v=community-1"></script>
 <script>
 window.LOWI_CFG = {"url": "https://vnfwmifmsfecascwaody.supabase.co", "key": "sb_publishable_iVA3wCYxzfWu2q8SSgieWw_adXbx4Qd"};
 </script>
@@ -8948,6 +8930,8 @@ const BUCKET = "media", MAX_UP = 50 * 1024 * 1024;
 const PRIVATE_KEYS = ["health"];             // health stays on this phone, as Profile promises
 let sb = null, uid = "", email = "", live = false, booting = false, chan = null;
 let POSTS = [], LIKES = {}, MSGS = [], RX = {}, PEOPLE = [];
+let chatRealtime = "connecting";
+function chatNotify(type, id){ document.dispatchEvent(new CustomEvent("lowi:chat", {detail:{type, id:id || ""}})); }
 const $ = s => document.querySelector(s);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const H = () => window.LowiHost;
@@ -9013,7 +8997,7 @@ function mapPost(r){
     cap:r.cap || "", photo:r.photo_url || r.photo || "", avatar:r.avatar_url || r.avatar || avatarOf(r.user_id), vid:r.video_url ? 1 : 0, vurl:r.video_url || "", poster:r.poster || "", w:r.w || 0, h:r.h || 0, dur:r.dur || 0,
     rec:r.rec || "", mine:!!r.mine, art:r.art || ["✨", 40, 280], vis:"tribe", rank:r.lv ? "Lv " + r.lv : "", get likes(){ return likeCount(this.id); }};
 }
-function mapMsg(r){ return {id:r.id, uid:r.user_id, sign:r.sign || "", bday:r.bday || "", by:r.who || "Member", t:r.body || "", ts:ts(r.created_at), re:r.reply_to || null, rx:rxOf(r.id)}; }
+function mapMsg(r){ return {id:r.id, uid:r.user_id, by:r.who || "Member", t:r.body || "", ts:ts(r.created_at), re:r.reply_to || null, rx:rxOf(r.id)}; }
 function rxOf(mid){ const o = {}; (RX[mid] || []).forEach(x => { (o[x.emoji] = o[x.emoji] || []).push(x.who || "Member"); }); return o; }
 function mapPerson(r){ return {n:r.name, s:r.sign || "", t:r.mbti || "", lv:r.lv || 1, streak:r.streak || 0, bio:r.bio || "", avatar:r.avatar_url || r.avatar || "", uid:r.id, bday:r.bday || "", xp:r.xp || 0, xpw:r.xp_week || 0, wk:r.wk || "", xpm:r.xp_month || 0, mo:r.mo || "", w:r.weight || ""}; }
 
@@ -9027,7 +9011,7 @@ async function boot(){
     await loadLib();
     if (!sb) {
       sb = window.supabase.createClient(CFG.url, CFG.key, {auth:{persistSession:true, autoRefreshToken:true, detectSessionInUrl:false, storageKey:"lowi.auth", storage:window.localStorage}});
-      sb.auth.onAuthStateChange((ev, session) => { const u = session && session.user; if (u) { if (uid && u.id !== uid) switchUser(); uid = u.id; email = u.email || ""; } });
+      sb.auth.onAuthStateChange((ev, session) => { const u = session && session.user; if (u) { if (uid && u.id !== uid) switchUser(); uid = u.id; email = u.email || ""; chatNotify("auth"); } else { switchUser(); uid = ""; email = ""; chatNotify("auth"); } });
     }
     let { data } = await sb.auth.getSession(); let session = data && data.session;
     if (!session) { const r = await sb.auth.signInAnonymously(); if (r.error) throw r.error; session = r.data.session; }
@@ -9037,13 +9021,15 @@ async function boot(){
   booting = false; paintCard();
 }
 async function start(){
+  const chatOwner = uid;
   const q = await Promise.all([
     sb.from("posts").select("*").order("created_at", {ascending:false}).limit(150),
     sb.from("post_likes").select("post_id,user_id").limit(10000),
-    sb.from("messages").select("*").order("created_at", {ascending:false}).limit(300),
+    sb.from("messages").select("id,user_id,who,body,reply_to,created_at,room").eq("room", "all").order("created_at", {ascending:false}).limit(300),
     sb.from("reactions").select("message_id,user_id,who,emoji").limit(10000),
     sb.from("profiles").select("id,name,sign,mbti,lv,streak,bio,avatar,bday,xp,xp_week,wk,xp_month,mo,weight").neq("name", "").limit(2000)
   ]);
+  if (uid !== chatOwner) return;
   const bad = q.find(r => r.error); if (bad) throw bad.error;
   LIKES = {}; q[1].data.forEach(r => (LIKES[r.post_id] = LIKES[r.post_id] || new Set()).add(r.user_id));
   RX = {}; q[3].data.forEach(r => (RX[r.message_id] = RX[r.message_id] || []).push(r));
@@ -9053,7 +9039,7 @@ async function start(){
   MSGS.length = 0; q[2].data.slice().reverse().map(mapMsg).forEach(m => MSGS.push(m));
   PEOPLE = q[4].data.filter(r => r.id !== uid).map(mapPerson);
   live = true;
-  applyChat(); applyMembers(); syncMyLikes();
+  applyChat(); applyMembers(); syncMyLikes(); chatNotify("ready");
   subscribe(); pushProfile(); backupSoon(800);
   refreshUI();
   /* a photo picked before the cloud existed never left the phone: upload it once so others see it */
@@ -9065,29 +9051,28 @@ function subscribe(){
   if (chan) { try { sb.removeChannel(chan); } catch(e){} }
   chan = sb.channel("lowi-all")
     .on("postgres_changes", {event:"INSERT", schema:"public", table:"messages"}, p => onMsg(p.new))
-    .on("postgres_changes", {event:"DELETE", schema:"public", table:"messages"}, p => { const i = MSGS.findIndex(m => m.id === (p.old || {}).id); if (i >= 0) { MSGS.splice(i, 1); const el = document.getElementById("cm-" + p.old.id); if (el) el.remove(); } })
+    .on("postgres_changes", {event:"DELETE", schema:"public", table:"messages"}, p => { const i = MSGS.findIndex(m => m.id === (p.old || {}).id); if (i >= 0) { MSGS.splice(i, 1); const el = document.getElementById("cm-" + p.old.id); if (el) el.remove(); chatNotify("delete", p.old.id); } })
     .on("postgres_changes", {event:"*", schema:"public", table:"reactions"}, p => onRx(p))
     .on("postgres_changes", {event:"*", schema:"public", table:"posts"}, p => onPost(p))
     .on("postgres_changes", {event:"*", schema:"public", table:"post_likes"}, p => onLike(p))
     .on("postgres_changes", {event:"*", schema:"public", table:"profiles"}, p => onProfile(p))
-    .subscribe();
+    .subscribe(status => { chatRealtime = status; chatNotify(status === "SUBSCRIBED" ? "reconnect" : "status"); });
 }
-function onMsg(r){ if (!r || !r.id) return; const have = MSGS.find(m => m.id === r.id);
-  if (have) { have.pending = false; return; }
+function onMsg(r){ if (!r || !r.id || (r.room && r.room !== "all")) return; const have = MSGS.find(m => m.id === r.id);
+  if (have) { Object.assign(have, mapMsg(r)); have.pending = false; chatNotify("message", r.id); return; }
   const m = mapMsg(r); MSGS.push(m); MSGS.sort((a, b) => a.ts - b.ts); saveChat();
-  const list = $("#cmList");
-  if (list && typeof cmMsgHTML === "function") { const near = list.scrollHeight - list.scrollTop - list.clientHeight < 120;
-    list.insertAdjacentHTML("beforeend", cmMsgHTML(m, MSGS)); if (near) list.scrollTop = list.scrollHeight;
-    try { if (CMV.view === "chat" && H().tab() === "foryou") { CM.read.all = Date.now(); cmSave(); } } catch(e){} }
-  else bumpDot();
+  chatNotify("message", r.id);
+  bumpDot();
 }
-function bumpDot(){ try { if (H().tab() === "foryou" && CMV.view !== "chat") { const b = document.querySelector('#cmSeg [data-v="chat"]'); if (!b) return; const n = cmUnread("all"); let d = b.querySelector(".cm-dot"); if (!d) { d = document.createElement("span"); d.className = "cm-dot"; b.appendChild(d); } d.textContent = n; } } catch(e){} }
+
+function bumpDot(){ if (window.LowiCommunity && LowiCommunity.isQuiet()) return; try { if (H().tab() === "foryou" && CMV.view !== "chat") { const b = document.querySelector('#cmSeg [data-v="chat"]'); if (!b) return; const n = cmUnread("all"); let d = b.querySelector(".cm-dot"); if (!d) { d = document.createElement("span"); d.className = "cm-dot"; b.appendChild(d); } d.textContent = n; } } catch(e){} }
 function onRx(p){ const r = p.new && p.new.message_id ? p.new : p.old; if (!r || !r.message_id) return;
   const arr = RX[r.message_id] = (RX[r.message_id] || []).filter(x => !(x.user_id === r.user_id && x.emoji === r.emoji));
   if (p.eventType !== "DELETE") arr.push(p.new);
   repaintMsg(r.message_id); }
 function repaintMsg(mid){ const m = MSGS.find(x => x.id === mid); if (!m) return; m.rx = rxOf(mid); saveChat();
-  const el = document.getElementById("cm-" + mid); if (el && typeof cmMsgHTML === "function") el.outerHTML = cmMsgHTML(m, MSGS); }
+  chatNotify("reaction", mid); }
+
 function onPost(p){
   if (p.eventType === "DELETE") { const id = (p.old || {}).id; POSTS = POSTS.filter(x => x.id !== id); return; }
   const np = mapPost(p.new), i = POSTS.findIndex(x => x.id === np.id);
@@ -9108,27 +9093,7 @@ function newPostsPill(){ const f = $("#fyFeed"); if (!f || $("#lcNew")) return;
 function saveChat(){ try { if (typeof CM !== "undefined" && CM) cmSave(); } catch(e){} }
 function applyChat(){ try { if (typeof CM !== "undefined" && CM && CM.msgs) { CM.msgs.all = MSGS; cmSave(); } } catch(e){} }
 if (typeof cmLoad === "function") { const _load = cmLoad; cmLoad = function(){ const c = _load.apply(this, arguments); if (live && c && c.msgs && c.msgs.all !== MSGS) c.msgs.all = MSGS; return c; }; }
-if (typeof cmSend === "function") { const _send = cmSend; cmSend = function(){
-  if (!live) return _send.apply(this, arguments);
-  const inp = $("#cmInput"); const t = (inp && inp.value || "").trim(); if (!t) return;
-  if (!myName()) { toast("Add your name first, so people know who's talking.", 2600); try { nameSheet(); } catch(e){} return; }
-  const m = {id:rid("m"), uid, by:myName(), t:t.slice(0, 600), ts:Date.now(), rx:{}, re:CMV.reply || null, pending:true};
-  MSGS.push(m); CM.intro = true; CMV.reply = null; inp.value = ""; cmSave(); cmRoom(cmRoomHost());
-  sb.from("messages").insert({id:m.id, who:m.by, body:m.t, reply_to:m.re}).then(({error}) => {
-    if (!error) { m.pending = false; return; }
-    const i = MSGS.indexOf(m); if (i >= 0) MSGS.splice(i, 1); cmSave();
-    const el = document.getElementById("cm-" + m.id); if (el) el.remove();
-    const box = $("#cmInput"); if (box && !box.value) box.value = m.t;
-    toast("Not sent. Check your connection.");
-  });
-}; }
-// reactions: the app toggles them locally; this mirrors the toggle to the server
-document.addEventListener("click", e => { if (!live) return; const b = e.target.closest && e.target.closest('[data-cm="react"]'); if (!b) return;
-  const id = b.dataset.id, em = b.dataset.e, m = MSGS.find(x => x.id === id); if (!m || !em) return;
-  const had = !!(RX[id] || []).find(x => x.user_id === uid && x.emoji === em);
-  if (had) { RX[id] = RX[id].filter(x => !(x.user_id === uid && x.emoji === em)); sb.from("reactions").delete().match({message_id:id, user_id:uid, emoji:em}).then(() => {}); }
-  else { (RX[id] = RX[id] || []).push({message_id:id, user_id:uid, who:myName() || "You", emoji:em}); sb.from("reactions").insert({message_id:id, who:myName() || "You", emoji:em}).then(() => {}); }
-}, true);
+/* The Community module owns durable sends and allowed reactions through the existing auth client. */
 function applyMembers(){ try { if (typeof CM_MEMBERS === "undefined") return; const keep = CM_MEMBERS.slice(0, 0); const cols = ["#f26b5b", "#5bb8f2", "#9b7bf2", "#f2b85b", "#5bd6a0", "#f27bb8", "#7bd0f2"];
   CM_MEMBERS.length = 0; PEOPLE.forEach((p, i) => CM_MEMBERS.push({n:p.n, c:cols[i % cols.length]})); keep.length = 0; } catch(e){} }
 
@@ -9174,6 +9139,8 @@ function pushProfile(){ clearTimeout(profT); profT = setTimeout(async () => { if
   let av = ""; try { av = S.user.avatarUrl || S.user.avatar || ""; } catch(e){} if (av.length > 120000) av = "";
   const row = {id:uid, name:myName(), sign:me ? me.s || "" : "", mbti:me ? me.t || "" : "", lv:me ? me.lv || 1 : 1, streak:me ? me.streak || 0 : 0, avatar:av};
   try { if (window.LowiR3 && LowiR3.profileExtra) Object.assign(row, LowiR3.profileExtra()); } catch(e){}
+  /* Community identity has its own explicit consent table; birthdays never become public profile metadata. */
+  row.bday = ""; row.mbti = ""; row.sign = "";
   const j = JSON.stringify(row); if (j === lastProf) return; lastProf = j;
   const r = await sb.from("profiles").upsert(Object.assign({updated_at:new Date().toISOString()}, row)); if (r.error) lastProf = ""; }, 1500); }
 function snapshot(){ const o = {};
@@ -9340,15 +9307,23 @@ window.LowiUpd = {check: () => checkUpdate(true), go: doUpdate, build: BUILD};
 
 
 /* ---------- round 2: accounts ---------- */
-function switchUser(){ clearTimeout(backT); clearTimeout(profT); lastBack = ""; lastProf = ""; live = false; try { if (chan) { sb.removeChannel(chan); chan = null; } } catch(e){} }
+function switchUser(){ MSGS.length = 0; RX = {}; PEOPLE = []; chatRealtime = "connecting"; chatNotify("auth"); clearTimeout(backT); clearTimeout(profT); lastBack = ""; lastProf = ""; live = false; try { if (chan) { sb.removeChannel(chan); chan = null; } } catch(e){} }
 async function client(){ await loadLib(); if (!sb) {
   sb = window.supabase.createClient(CFG.url, CFG.key, {auth:{persistSession:true, autoRefreshToken:true, detectSessionInUrl:false, storageKey:"lowi.auth", storage:window.localStorage}});
-  sb.auth.onAuthStateChange((ev, session) => { const u = session && session.user; if (u) { if (uid && u.id !== uid) switchUser(); uid = u.id; email = u.email || ""; } }); }
+  sb.auth.onAuthStateChange((ev, session) => { const u = session && session.user; if (u) { if (uid && u.id !== uid) switchUser(); uid = u.id; email = u.email || ""; chatNotify("auth"); } else { switchUser(); uid = ""; email = ""; chatNotify("auth"); } }); }
   return sb; }
 window.LOWI_CLOUD_X = {
   client, boot, restore, people:() => PEOPLE.slice(),
-  state:() => ({live, uid, email, booting}),
-  setUser(u){ if (!u) return; if (uid && u.id !== uid) switchUser(); uid = u.id; email = u.email || ""; },
+  state:() => ({live, uid, email, booting, chatRealtime}),
+  community:{
+    messages:() => MSGS.slice(),
+    reactions:() => Object.values(RX).flat(),
+    replace(messages, reactions){ MSGS.splice(0, MSGS.length, ...messages); RX = {}; reactions.forEach(r => (RX[r.message_id] = RX[r.message_id] || []).push(r)); applyChat(); },
+    upsert(m){ const old = MSGS.find(x => x.id === m.id); if (old) Object.assign(old, m); else MSGS.push(m); MSGS.sort((a,b) => a.ts-b.ts); applyChat(); },
+    remove(id){ const i = MSGS.findIndex(m => m.id === id); if (i >= 0) MSGS.splice(i,1); applyChat(); chatNotify("delete",id); },
+    setReactions(rows){ RX = {}; rows.forEach(r => (RX[r.message_id] = RX[r.message_id] || []).push(r)); MSGS.forEach(m => { m.rx = rxOf(m.id); }); }
+  },
+  setUser(u){ if (!u) return; if (uid && u.id !== uid) switchUser(); uid = u.id; email = u.email || ""; chatNotify("auth"); },
   pushProfile(){ try { pushProfile(); } catch(e){} },
   async backupNow(){ if (!live || !uid) return false; const o = snapshot(), j = JSON.stringify(o); if (j.length > 4e6) return false;
     const r = await sb.from("user_state").upsert({id:uid, data:o, updated_at:new Date().toISOString()}); if (r.error) return false; lastBack = j; return true; },
@@ -19616,6 +19591,30 @@ setTimeout(tick, 1800); setInterval(tick, 1500);
 window.LowiHandoff = { want, copy, issue, revoke, startHTML, parse, redeem, _state: () => ({ has: !!cur, exp: cur ? cur.exp : 0, pinned }) };
 })();
 </script>
+<link rel="stylesheet" href="community-chat.css?v=community-1">
+<script id="community-chat-bridge">
+/* Bounded bridge: the Community module shares auth/messages with the existing cloud owner. */
+window.LowiCommunityHost = {
+  state:() => LOWI_CLOUD_X.state(), client:() => LOWI_CLOUD_X.client(),
+  messages:() => LOWI_CLOUD_X.community.messages(), reactions:() => LOWI_CLOUD_X.community.reactions(),
+  replace:(m,r) => LOWI_CLOUD_X.community.replace(m,r), upsert:m => LOWI_CLOUD_X.community.upsert(m),
+  remove:id => LOWI_CLOUD_X.community.remove(id), setReactions:r => LOWI_CLOUD_X.community.setReactions(r),
+  people:() => LOWI_CLOUD.people(),
+  identity(){ const p = LowiR3.me(), u = S.user || {}; return {n:u.name || "", s:p.s, t:u.mbti || u.personality || p.t || "", avatar:p.avatar, lv:p.lv, xp:p.xp}; },
+  bubble:(p,size) => LowiR3.bubble(p,size), color:sign => LowiGlass.palette(String(sign || "none").toLowerCase())[0],
+  typeLabel:(type,lang) => window.LowiHerbIdentityCore ? LowiHerbIdentityCore.typeLabel(type,lang) : "",
+  sheet:html => LowiR2.sheet(html, {cls:"cs-overlay"}), active:() => TAB === "foryou" && CMV.view === "chat",
+  install(api){
+    cmRoom = (el,keep) => api.mount(el); cmSend = api.send; cmMentionUpdate = api.mentions;
+    cmMsgHTML = api.messageHTML; cmMsgHTML.__r3 = true; cmMsgHTML.__r2 = true;
+    cmUnread = () => api.unread();
+    const comment = window.cmComment; window.cmComment = function(who){ const r = comment(who); api.comment(who); return r; };
+    const segment = cmSeg; cmSeg = function(v){ const r = segment.apply(this,arguments); api.refresh(); return r; }; window.cmSeg = cmSeg;
+  }
+};
+</script>
+<script src="community-chat-cloud.js?v=community-1"></script>
+<script src="community-chat.js?v=community-1"></script>
 </body>
 </html>
 

@@ -162,3 +162,7 @@ Local state may precede account creation. Auth through Supabase preserves the se
 ## Spirit surfaces (supersedes compact-strip and separate-room descriptions)
 
 Home uses the herb and fasting water bubbles, a clear status/action, Yesterday/Today/Tomorrow strip, habit dots and existing quest/live tiles. Opening Home’s herb bubble expands the same creature into `spWorld`. Scan opens that world in capture mode, with the native scanner inside its stage. The former `tmgScreen` and floating duplicate dock are removed after Spirit loads. Four capture actions are Scan, Food photo, Meal and Water. Wardrobe, collection, profile and sealed evolution use internal sheets. Food picks expose ingredient, macro and rationale views with Cook/Log actions. Physical iPhone camera and production signed-in feed verification remain required.
+
+## Community Spirit square (isolated branch, pending integration)
+
+Community → Chat retains the existing pager and opens a compact luminous shared square, with one shared-room marker, private personality identity/consent controls, truthful connection state, scrolling history and reachable draft composer. Sender bubbles use the existing profile renderer with consent-filtered metadata. Report/block, privacy and quiet controls open a sheet. Pending/unconfirmed messages expose recovery and stable-ID retry. No bot/seed participants or presence counts. Home, For You and Leaderboard keep their existing navigation and owners. Browser/physical viewport acceptance and screenshots are still pending; see `COMMUNITY_CHAT.md`.

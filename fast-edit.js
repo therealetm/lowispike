@@ -198,43 +198,26 @@
     /* the preview keeps counting while the card is open */
     setInterval(() => { if (ov && !D.hidden) check(); }, 30000);
 
-    /* ---------- Home: a pill on the water bubble's bottom rim, \"since 18:30 \u00b7 \u270E Edit start\" ----------
-       A real <button> next to #spFast (never inside it: the bubble is a button itself), placed over the bubble's bottom rim,
-       centred under the timer and kept inside the hero row. The bubble itself (water, marks, copy, tap to open the sheet)
-       is untouched. Hidden when no fast is running. */
+    /* ---------- Home: a plain "Edit" right above the word "Fasting" (Oct 16, E-man: "put Edit above the word Fasting") ----------
+       It replaced the "since 18:30 · ✎ Edit start" pill under the bubble. A real <button> next to #spFast (never inside it: the bubble
+       is a button itself), centred over the bubble's first label line ("Fasting"). Tapping it opens the start-time editor as before.
+       Hidden when no fast is running. */
     let pill = null, pillKey = '', ro = null, roEl = null;
     function bubble() { const f = D.getElementById('spFast'); return f && f.parentElement ? f : null; }
-    function pillHTML(start) {
-        return '<span class="fe-bs num"><span class="fe-l">' + esc(w('since', { t: at(start) })) + '</span><span class="fe-s">' + esc(w('since', { t: hm(start) })) + '</span></span><span class="fe-bd" aria-hidden="true"></span><span class="fe-be"><i aria-hidden="true">\u270E</i><span class="fe-el">' + esc(w('edit')) + '</span><span class="fe-et num">' + esc(w('startAt', { t: hm(start) })) + '</span></span>';
-    }
+    function pillHTML() { return '<span class="fe-el">' + esc(w('edit')) + '</span>'; }
     function place() {
         const f = bubble();
         if (!pill || !f || pill.parentElement !== f.parentElement) return;
         const host = f.parentElement, hr = host.getBoundingClientRect(), fr = f.getBoundingClientRect();
         if (!fr.width || !hr.width) { pill.hidden = true; return; }
         pill.hidden = false;
-        /* room: from the herb bubble (or whatever sits left of the timer in the row) to the row's right edge */
-        let lo = hr.left + 4, hi = hr.right - 4;
-        [...host.children].forEach(c => {
-            if (c === f || c === pill || !c.getBoundingClientRect) return;
-            const r = c.getBoundingClientRect();
-            if (!r.width || r.bottom < fr.top || r.top > fr.bottom + 30) return;
-            if (r.right <= fr.left + 2) lo = Math.max(lo, r.right + 4);
-            else if (r.left >= fr.right - 2) hi = Math.min(hi, r.left - 4);
-        });
-        pill.classList.toggle('fe-sm', fr.width < 146);
-        pill.classList.remove('fe-compact', 'fe-tiny');
-        const fit = () => pill.offsetWidth <= hi - lo;
-        if (!fit()) pill.classList.add('fe-compact');
-        if (!fit()) pill.classList.add('fe-tiny');
-        const pw = pill.offsetWidth, ph = pill.offsetHeight;
-        let x = fr.left + fr.width / 2 - pw / 2;
-        x = Math.max(lo, Math.min(hi - pw, x));
-        /* on the bottom rim, below the timer text */
-        let copyB = 0;
         const cp = f.querySelector('.sp-fast-copy');
-        if (cp) [...cp.children].forEach(n => { const r = n.getBoundingClientRect(); if (r.height) copyB = Math.max(copyB, r.bottom); });
-        const y = Math.max(fr.bottom - Math.round(ph * 0.55), copyB ? copyB + 2 : 0);
+        let lab = null;
+        if (cp) for (const n of cp.children) { const r = n.getBoundingClientRect(); if (r.height && r.width) { lab = r; break; } }
+        const pw = pill.offsetWidth, ph = pill.offsetHeight;
+        const cx = lab ? lab.left + lab.width / 2 : fr.left + fr.width / 2;
+        const top = lab ? Math.min(lab.top, fr.top + fr.height * 0.32) : fr.top + fr.height * 0.18;
+        const x = Math.max(hr.left + 2, Math.min(hr.right - 2 - pw, cx - pw / 2)), y = top - ph - 1;
         pill.style.left = Math.round(x - hr.left - host.clientLeft) + 'px';
         pill.style.top = Math.round(y - hr.top - host.clientTop) + 'px';
     }
@@ -254,7 +237,7 @@
         const key = lang() + '|' + start + '|' + new Date().getDate();
         if (key !== pillKey) {
             pillKey = key;
-            pill.innerHTML = pillHTML(start);
+            pill.innerHTML = pillHTML();
             pill.setAttribute('aria-label', w('bubAria', { t: at(start) }));
         }
         place();

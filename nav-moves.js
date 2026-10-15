@@ -159,9 +159,21 @@
     }, true));
     D.addEventListener('keydown', e => { if (e.key !== 'Escape') return; ['fy', 'lb'].forEach(k => { if (isOpen(k) && activeTab() === SPOTS[k].tab) show(k, false); }); });
 
+    /* Privacy & quiet left Community with its old header (Oct 16): it now lives in Profile, in the Community section. */
+    function privacy() {
+        const t = D.getElementById('tab-profile'); if (!t || t.querySelector('.nm-privacy')) return;
+        const c = D.createElement('div'); c.className = 'card nm-privacy';
+        c.innerHTML = '<button type="button" class="nm-privbtn" data-nm="privacy"><b>' + T('Chat privacy & quiet hours', 'Chat-Privatsph\u00e4re & Ruhezeiten', 'Privacidad del chat y horas de silencio') + '</b><span>' + T('Who can message you, your companion in the galaxy, blocked people', 'Wer dir schreiben darf, dein Begleiter in der Galaxie, Blockierte', 'Qui\u00e9n puede escribirte, tu compa\u00f1ero en la galaxia, bloqueados') + '</span></button>';
+        t.appendChild(c);
+    }
+    D.addEventListener('click', e => {
+        const b = e.target && e.target.closest && e.target.closest('[data-nm="privacy"]'); if (!b) return;
+        e.preventDefault();
+        try { if (W.LowiCommunity && W.LowiCommunity.settings) W.LowiCommunity.settings(); } catch (x) { console.error(x); }
+    });
     let raf = 0;
     function tick() {
-        raf = 0; hook(); align();
+        raf = 0; hook(); align(); privacy();
         const el = D.getElementById('tab-foryou');
         if (el && D.getElementById('cmTrack') && (!el.classList.contains('nm-solo') || (D.getElementById('cmPaneFeed') || {}).parentElement === D.getElementById('cmTrack') || (D.getElementById('cmPaneBoard') || {}).parentElement === D.getElementById('cmTrack'))) solo();
     }

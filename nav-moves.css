@@ -28,3 +28,9 @@ html.nm-open-fy #tab-shelf > .nm-pill, html.nm-open-lb #tab-move > .nm-pill { di
 #tab-foryou.nm-solo #cmTrack > .ls-pane:not(#cmPaneChat) { display: none !important; }
 #tab-foryou.nm-solo #cmPaneChat { width: 100% !important; flex: 1 1 auto; }
 html.nm-on #cmPaneChat .cp-bar, html.nm-on #cmPaneChat #csControls { display: none !important; }
+
+/* Profile > Community: the chat privacy & quiet hours row (moved out of the Community screen) */
+.nm-privacy { padding: 0 !important; overflow: hidden; }
+.nm-privbtn { display: block; width: 100%; text-align: left; padding: 14px 16px; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
+.nm-privbtn b { display: block; font-size: 15px; }
+.nm-privbtn span { display: block; font-size: 12.5px; opacity: .7; margin-top: 2px; }

@@ -50,7 +50,8 @@
 
     /* ---------- Home: wrap today's log into the sheet, build the HUD ---------- */
     function home() { return D.getElementById('spHome'); }
-    function homeActive() { const t = D.getElementById('tab-home'); return !!(t && t.classList.contains('active')); }
+    /* gx-hold: Home stays the live world for the one second the camera pulls out into the Community galaxy (galaxy-zoom.js). */
+    function homeActive() { const t = D.getElementById('tab-home'); return !!(t && (t.classList.contains('active') || H.classList.contains('gx-hold'))); }
     function ensureToday() {
         const h = home(); if (!h) return null;
         let box = D.getElementById('whToday');
@@ -207,6 +208,17 @@
         if (reduced()) { r.dist = to; if (pitch != null) r.pitch = pitch; st.zoomAnim = null; return; }
         st.zoomAnim = { to, pitch, t: 0 };
         r.idle = 0;
+    }
+    /* The Home -> Community zoom: the camera backs out of the bloodstream while the galaxy opens around it; settle() puts it back. */
+    function pullOut() {
+        const r = rig(); if (!r || r.mode !== 'home' || reduced()) return;
+        if (!st.pull) st.pull = { dist: r.dist, pitch: r.pitch };
+        hook(); st.zoomAnim = { to: Math.min(r.maxD || 13, baseDist(r) * 2.4), pitch: 0.34, t: 0 }; r.idle = 0;
+    }
+    function settle() {
+        const r = rig();
+        if (st.pull) { if (r) { r.dist = st.pull.dist; r.pitch = st.pull.pitch; } st.zoomAnim = null; st.pull = null; }
+        try { tick(); } catch (e) {}
     }
     function baseDist(r) { return r && r.mode === 'home' ? (r.homeDist || 3.2) : 6.5; }
     function homeWorld() { const r = rig(); return !!(r && r.mode === 'home' && homeActive() && !D.querySelector('.bw3-full')); }
@@ -587,8 +599,44 @@
         if (live) hook();
         if (D.querySelector('.bw3-full')) { ensureFullZoom(); hook(); ensureMisty3D(); }
     }
+    /* ---------- water: press and hold the water cell to set today back to 0 (Oct 16, E-man: it showed 12/8 with no way back) ----------
+       A normal tap still adds a glass. Holding ~0.6 s resets today's count, buzzes once and says so; the tap that ends the hold adds nothing. */
+    const lp = { t: 0, el: null, x: 0, y: 0, fired: false, until: 0 };
+    function waterReset() {
+        try {
+            const f = JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}') || {};
+            if (f.water && typeof f.water === 'object') Object.keys(f.water).forEach(k => { f.water[k] = 0; }); else f.water = {};
+            localStorage.setItem('lowi_fast_v1', JSON.stringify(f));
+        } catch (e) { }
+        try { if (W.LowiFast && W.LowiFast.refresh) W.LowiFast.refresh(); } catch (e) { }
+        try { W.dispatchEvent(new CustomEvent('lowi:water', { detail: { reset: true } })); } catch (e) { }
+        try { if (navigator.vibrate) navigator.vibrate(30); } catch (e) { }
+        const msg = T('Water reset to 0 for today', 'Wasser für heute auf 0 gesetzt', 'Agua de hoy puesta a 0');
+        try { if (W.LowiR2 && W.LowiR2.toast) W.LowiR2.toast(msg); else if (W.toast) W.toast(msg); } catch (e) { }
+        const wc = D.querySelector('#whHud .wh-water');
+        if (wc) { const b = wc.querySelector('b'); if (b && /\//.test(b.textContent)) b.textContent = '0/' + b.textContent.split('/')[1]; wc.style.setProperty('--wh-fill', '0'); wc.classList.remove('wh-reset'); void wc.offsetWidth; wc.classList.add('wh-reset'); setTimeout(() => wc.classList.remove('wh-reset'), 700); }
+        setTimeout(() => { try { paintHud(); } catch (e) { } }, 120);
+    }
+    function lpCancel() { clearTimeout(lp.t); lp.t = 0; if (lp.el) lp.el.classList.remove('wh-holding'); }
+    function wireWaterHold() {
+        const sel = '.wh-water[data-sp="water"], #lvDash .lv-water';
+        D.addEventListener('pointerdown', e => {
+            const el = e.target.closest && e.target.closest(sel); if (!el || (e.button && e.button !== 0)) return;
+            lpCancel(); lp.el = el; lp.x = e.clientX; lp.y = e.clientY; lp.fired = false; el.classList.add('wh-holding');
+            lp.t = setTimeout(() => { lp.t = 0; lp.fired = true; lp.until = Date.now() + 1500; el.classList.remove('wh-holding'); waterReset(); }, 600);
+        }, true);
+        D.addEventListener('pointermove', e => { if (lp.t && Math.hypot(e.clientX - lp.x, e.clientY - lp.y) > 12) lpCancel(); }, true);
+        ['pointerup', 'pointercancel', 'pointerleave'].forEach(n => D.addEventListener(n, () => { if (lp.t) lpCancel(); }, true));
+        W.addEventListener('click', e => {
+            if (!lp.fired || Date.now() > lp.until) return;
+            const el = e.target.closest && e.target.closest(sel); if (!el) return;
+            lp.fired = false; e.preventDefault(); e.stopPropagation(); if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+        }, true);
+        D.addEventListener('contextmenu', e => { if (e.target.closest && e.target.closest(sel)) e.preventDefault(); }, true);
+    }
     function boot() {
         if (st.wired) return; st.wired = true;
+        wireWaterHold();
         D.addEventListener('click', onClick, true);
         D.addEventListener('keydown', onKey);
         W.addEventListener('lowi:world-region', onRegion);
@@ -612,6 +660,6 @@
         setInterval(() => { tabs(); tick(); }, 700);
         tabs(); tick();
     }
-    W.LowiWorldHome = { openToday, openMisty, toggleZoom, zoomOutWhole, closeTop, heroTurn, state: st, auraId, syncX };
+    W.LowiWorldHome = { pullOut, settle, waterReset, openToday, openMisty, toggleZoom, zoomOutWhole, closeTop, heroTurn, state: st, auraId, syncX };
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 })();

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261016-013000">
+<meta name="lowi-build" content="20261016-024500">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -18529,7 +18529,7 @@ function idOf(e){
   const c = e.classList;
   if (c.contains("r2-hero") || e.id === "lvCard" || (c.contains("row") && q(e, ":scope > .stat"))) return "home";
   if (c.contains("r3-todo")) return "todo";
-  if (c.contains("r3-comm") || c.contains("fy-prof")) return "comm";
+  if (c.contains("r3-comm") || c.contains("fy-prof") || c.contains("nm-privacy")) return "comm";
   if (c.contains("r3a-saved")) return "swaps";
   if (q(e, '[data-act="glow"]')) return "glow";
   if (c.contains("r3a-pf")) return "about";
@@ -19676,8 +19676,8 @@ setTimeout(tick, 1800); setInterval(tick, 1500);
 window.LowiHandoff = { want, copy, issue, revoke, startHTML, parse, redeem, _state: () => ({ has: !!cur, exp: cur ? cur.exp : 0, pinned }) };
 })();
 </script>
-<link rel="stylesheet" href="community-chat.css?v=galaxy-1">
-<link rel="stylesheet" href="community-galaxy.css?v=galaxy-1">
+<link rel="stylesheet" href="community-chat.css?v=galaxy-2">
+<link rel="stylesheet" href="community-galaxy.css?v=galaxy-2">
 <script id="community-chat-bridge">
 /* Bounded bridge: the Community module shares auth/messages with the existing cloud owner. */
 window.LowiCommunityHost = {
@@ -19700,10 +19700,11 @@ window.LowiCommunityHost = {
 };
 </script>
 <script src="community-chat-cloud.js?v=community-1"></script>
-<script src="community-galaxy.js?v=galaxy-1"></script>
-<script src="community-chat.js?v=galaxy-1"></script>
-<link rel="stylesheet" href="nav-moves.css?v=nav-1">
-<script src="nav-moves.js?v=nav-1"></script>
+<script src="community-galaxy.js?v=galaxy-2"></script>
+<script src="community-chat.js?v=galaxy-2"></script>
+<link rel="stylesheet" href="nav-moves.css?v=nav-2">
+<script src="nav-moves.js?v=nav-2"></script>
+<script src="galaxy-zoom.js?v=gx-1"></script>
 </body>
 </html>
 

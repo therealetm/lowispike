@@ -70,30 +70,18 @@
 .fe-shake { animation: fe-shake .35s ease; }
 @keyframes fe-shake { 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }
 
-/* Home: the pill on the water bubble's bottom rim (placed by fast-edit.js, a sibling of #spFast) */
-.fe-bub { position: absolute; z-index: 6; display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 11px 0 10px;
-    border-radius: 999px; white-space: nowrap; cursor: pointer; font: 650 11.5px/1 var(--font, system-ui), -apple-system, sans-serif;
-    color: #eaf6ff; background: linear-gradient(180deg, rgba(30, 44, 92, .94), rgba(16, 24, 58, .94));
-    border: 1.5px solid color-mix(in srgb, var(--tmg-a, #92ddd7) 50%, #ffffff99);
-    box-shadow: inset 0 1px 2px rgba(255, 255, 255, .28), 0 4px 14px -4px rgba(4, 10, 30, .65), 0 0 12px -4px rgba(159, 216, 255, .55);
+/* Home: a plain "Edit" right above the word "Fasting" (placed by fast-edit.js, a sibling of #spFast) */
+.fe-bub { position: absolute; z-index: 6; display: inline-block; height: 20px; padding: 0 6px; margin: 0; border: 0; background: none;
+    box-shadow: none; border-radius: 6px; white-space: nowrap; cursor: pointer; color: #bfe6ff;
+    font: 750 12px/20px var(--font, system-ui), -apple-system, sans-serif; letter-spacing: .02em;
+    text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; text-decoration-color: rgba(191, 230, 255, .55);
+    text-shadow: 0 1px 6px rgba(4, 10, 30, .7);
     -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: transform .12s ease, opacity .25s ease; }
+.fe-bub::before { content: ""; position: absolute; inset: -10px -12px; }
 .fe-bub[hidden] { display: none; }
-.fe-bub.fe-sm { height: 24px; gap: 5px; padding: 0 9px 0 8px; font-size: 10.5px; }
-.fe-bub:active { transform: scale(.95); }
+.fe-bub:active { transform: scale(.94); }
 .fe-bub:focus-visible { outline: 2px solid #9fd8ff; outline-offset: 2px; }
-.fe-bub .fe-bs { font-variant-numeric: tabular-nums; opacity: .85; }
-.fe-bub .fe-s { display: none; }
-.fe-bub .fe-bd { width: 1px; height: 12px; background: currentColor; opacity: .3; }
-.fe-bub .fe-be { display: inline-flex; align-items: center; gap: 4px; color: #9fd8ff; font-weight: 750; }
-.fe-bub .fe-be i { font-style: normal; font-size: 12px; }
-.fe-bub.fe-compact .fe-l { display: none; }
-.fe-bub.fe-compact .fe-s { display: inline; }
-.fe-bub .fe-et { display: none; }
-.fe-bub.fe-tiny .fe-bs, .fe-bub.fe-tiny .fe-bd, .fe-bub.fe-tiny .fe-el { display: none; }
-.fe-bub.fe-tiny .fe-et { display: inline; }
-html[data-theme="light"] .fe-bub, html.light .fe-bub { color: #17203f; background: linear-gradient(180deg, rgba(255, 255, 255, .97), rgba(236, 244, 255, .97));
-    border-color: color-mix(in srgb, var(--tmg-a, #92ddd7) 55%, #2f7fd066); box-shadow: inset 0 1px 2px #fff, 0 4px 12px -5px rgba(20, 40, 90, .35); }
-html[data-theme="light"] .fe-bub .fe-be, html.light .fe-bub .fe-be { color: #1f6fbf; }
+html[data-theme="light"] .fe-bub, html.light .fe-bub { color: #1f6fbf; text-decoration-color: rgba(31, 111, 191, .5); text-shadow: 0 1px 4px rgba(255, 255, 255, .8); }
 
 /* light */
 html[data-theme="light"] .fe-ov, html.light .fe-ov { background: rgba(40, 52, 90, .28); }

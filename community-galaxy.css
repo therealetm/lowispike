@@ -48,19 +48,11 @@ html[data-theme=light] #cmPaneChat{--cg-s1:#f5f2ff;--cg-s2:#e8eaff;--cg-s3:#fdeb
 #cmPaneChat[data-spirit-chat] .cg-empty .cg-hello{min-height:36px}
 
 /* zoom out of the body world into the galaxy */
-#cmPaneChat[data-spirit-chat] .cg-intro{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0;transform-origin:var(--me-x,50%) var(--me-y,80%);background:radial-gradient(circle at var(--me-x,50%) var(--me-y,80%),#fff1d6 0,#ffbf96 7%,#e0607d 17%,#7a2558 33%,#2b1236 60%,#0b0a1d 88%)}
-html[data-theme=light] #cmPaneChat[data-spirit-chat] .cg-intro{background:radial-gradient(circle at var(--me-x,50%) var(--me-y,80%),#fffaf0 0,#ffd9c2 8%,#f7a3b5 20%,#d98fc0 38%,#b8b2ef 64%,#eef0ff 90%)}
-#cmPaneChat[data-spirit-chat] .cg-intro i{position:absolute;border-radius:50%;background:radial-gradient(circle at 40% 35%,#ffd3c466,#e0607d33 55%,transparent 70%)}
-#cmPaneChat[data-spirit-chat] .cg-intro i:nth-child(1){width:34%;aspect-ratio:1;left:6%;top:12%}
-#cmPaneChat[data-spirit-chat] .cg-intro i:nth-child(2){width:26%;aspect-ratio:1;right:8%;top:30%}
-#cmPaneChat[data-spirit-chat] .cg-intro i:nth-child(3){width:40%;aspect-ratio:1;left:30%;bottom:-6%}
-#cmPaneChat[data-spirit-chat] .cg-galaxy[data-intro] .cg-intro{animation:cgLeave 1.35s cubic-bezier(.45,0,.2,1) both}
-#cmPaneChat[data-spirit-chat] .cg-galaxy[data-intro] .cg-field{animation:cgZoom 1.35s cubic-bezier(.2,.75,.2,1) both}
-#cmPaneChat[data-spirit-chat] .cg-galaxy[data-intro] .cg-sky{animation:cgSkyIn 1.5s cubic-bezier(.2,.75,.2,1) both}
-#cmPaneChat[data-spirit-chat] .cg-galaxy[data-intro] .cg-body:not(.me),#cmPaneChat[data-spirit-chat] .cg-galaxy[data-intro] .cg-bub{animation:cgAppear .7s ease-out both;animation-delay:calc(.55s + var(--i,0) * 40ms)}
-@keyframes cgLeave{0%{opacity:1;transform:scale(1);border-radius:0}50%{opacity:1}100%{opacity:0;transform:scale(.05);border-radius:50%}}
-@keyframes cgZoom{0%{transform:scale(3.4)}100%{transform:none}}
-@keyframes cgSkyIn{0%{transform:scale(2.4);opacity:0}100%{transform:none;opacity:1}}
+#cmPaneChat[data-spirit-chat] .cg-galaxy[data-intro] .cg-field{animation:cgZoom .95s cubic-bezier(.2,.75,.2,1) both}
+#cmPaneChat[data-spirit-chat] .cg-galaxy[data-intro] .cg-sky{animation:cgSkyIn 1.05s cubic-bezier(.2,.75,.2,1) both}
+#cmPaneChat[data-spirit-chat] .cg-galaxy[data-intro] .cg-body:not(.me),#cmPaneChat[data-spirit-chat] .cg-galaxy[data-intro] .cg-bub{animation:cgAppear .7s ease-out both;animation-delay:calc(.25s + var(--i,0) * 30ms)}
+@keyframes cgZoom{0%{transform:scale(1.35);opacity:.2}100%{transform:none;opacity:1}}
+@keyframes cgSkyIn{0%{transform:scale(1.25);opacity:0}100%{transform:none;opacity:1}}
 @keyframes cgAppear{0%{opacity:0}100%{opacity:var(--o,1)}}
 @keyframes cgBob{0%{transform:translateY(-2px)}100%{transform:translateY(3px)}}
 @keyframes cgPop{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
@@ -98,4 +90,38 @@ html[data-theme=light] .cg-toast{background:#fffffff4;color:#221d38;border-color
 .cg-tt span{opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #tabbar .tb[data-tab="foryou"]{position:relative}
 .cg-dm{position:absolute;top:2px;left:calc(50% + 6px);min-width:17px;height:17px;box-sizing:border-box;padding:0 4px;border-radius:9px;background:#ff7a59;color:#fff;font-size:10px;font-weight:800;line-height:17px;text-align:center;pointer-events:none}
-@media(prefers-reduced-motion:reduce){.cg-toast-wrap{transition:none}#cmPaneChat[data-spirit-chat] .cg-intro{animation:none!important}}
+@media(prefers-reduced-motion:reduce){.cg-toast-wrap{transition:none}#cmPaneChat[data-spirit-chat] .cg-galaxy[data-intro] *{animation:none!important}}
+
+/* Oct 16 · one space, no card: the galaxy is the whole Community screen (no framed box), so zooming out of Home has no edges. */
+#tab-foryou.nm-solo{background:radial-gradient(70% 40% at 80% 8%,#2a1650aa,transparent 70%),radial-gradient(60% 40% at 10% 60%,#13245a88,transparent 70%),linear-gradient(180deg,#070a1c,#110e31 58%,#21113d)!important}
+html[data-theme=light] #tab-foryou.nm-solo{background:radial-gradient(70% 40% at 80% 8%,#f3dcff,transparent 70%),linear-gradient(180deg,#f5f2ff,#e8eaff 58%,#fdebf3)!important}
+#tab-foryou.nm-solo #cmPaneChat[data-spirit-chat] .cp-room.cg-room{background:transparent;border-color:transparent;box-shadow:none;border-radius:0;overflow:visible}
+#tab-foryou.nm-solo #cmPaneChat[data-spirit-chat] .cg-galaxy{overflow:visible;contain:none}
+#tab-foryou.nm-solo #cmPaneChat[data-spirit-chat] .cg-sky{-webkit-mask-image:radial-gradient(130% 110% at 50% 50%,#000 62%,transparent 100%);mask-image:radial-gradient(130% 110% at 50% 50%,#000 62%,transparent 100%)}
+#cmPaneChat .cm-compose{transition:opacity .45s ease .05s}
+/* Bots wear a faint dashed ring so you can tell them apart at a glance; their profile says "Galaxy bot". */
+#cmPaneChat[data-spirit-chat] .cg-body.bot .cg-orb{outline:1px dashed color-mix(in srgb,var(--c) 55%,transparent);outline-offset:3px}
+/* The one conversation line: its newest message sits on the middle of the line, with who is talking to whom on top. */
+#cmPaneChat[data-spirit-chat] .cg-mid{position:absolute;z-index:3;transform:translate(-50%,-50%);display:block;box-sizing:border-box;margin:0;padding:5px 11px 7px;border-radius:14px;text-align:center;font:inherit;font-size:12.5px;line-height:15px;color:var(--cg-bubt);background:var(--cg-bub);border:2px solid var(--a);box-shadow:0 6px 18px #00000059;cursor:pointer;min-width:96px;animation:cgMidIn .28s ease-out both}
+#cmPaneChat[data-spirit-chat] div.cg-mid{cursor:default}
+#cmPaneChat[data-spirit-chat] .cg-mh{display:block;font-size:10.5px;line-height:13px;font-weight:850;letter-spacing:.01em;color:#4a3d8f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#cmPaneChat[data-spirit-chat] .cg-mid.in .cg-mh{color:#b4400c}
+#cmPaneChat[data-spirit-chat] .cg-mh i{font-style:normal;font-size:12px;margin:0 2px}
+#cmPaneChat[data-spirit-chat] .cg-mt{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;overflow-wrap:anywhere;margin-top:1px}
+#cmPaneChat[data-spirit-chat] .cg-mt.cg-hint,#cmPaneChat[data-spirit-chat] .cg-mt.cg-typing{color:#7b7896;font-style:italic}
+#cmPaneChat[data-spirit-chat] .cg-mid .cg-st{display:block;font-size:10px;color:#7b7896}
+@keyframes cgMidIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.85)}100%{opacity:1;transform:translate(-50%,-50%)}}
+.cs-sheet .cg-bottag{display:inline-block;vertical-align:middle;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;background:#8f7cff2e;color:#8f7cff;margin-left:6px}
+.cs-sheet .cg-pbot .cp-form{width:72px;height:72px}
+.cs-sheet .cg-prows{display:grid;gap:6px;margin:12px 0}
+.cs-sheet .cg-prow{display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:8px 12px;border-radius:12px;background:var(--r2-field,#ffffff10)}
+.cs-sheet .cg-prow span{opacity:.7}
+.cs-sheet .cg-pline{font-style:italic}
+
+/* Home -> Community, one camera (galaxy-zoom.js): Home stays drawn on top while it shrinks into your orb; Community waits underneath. */
+html.gx-hold #tab-home,html.gx-in #tab-home{opacity:1;visibility:visible!important;z-index:6!important;pointer-events:none!important;transition:none!important;will-change:transform,clip-path,opacity}
+html.gx-out #tab-foryou,html.gx-keep #tab-foryou{opacity:1!important;visibility:visible!important;z-index:5!important;transition:none!important}
+html.gx-keep #tab-foryou{pointer-events:none!important}
+html.gx-out #tab-foryou.p2-tabin>*,html.gx-in #tab-home.p2-tabin>*,html.gx-keep #tab-foryou>*{animation:none!important}
+html.gx-out #cmPaneChat .cm-compose,html.gx-in #cmPaneChat .cm-compose{opacity:0}
+html.gx-out #cmPaneChat .cg-bub,html.gx-out #cmPaneChat .cg-mid{opacity:0!important}

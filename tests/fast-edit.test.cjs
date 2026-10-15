@@ -88,7 +88,9 @@ test('Home: a real button on the water bubble rim opens the same card; the bubbl
     assert.ok(js.includes("f.insertAdjacentElement('afterend', pill)"), 'a sibling of #spFast, never inside the bubble button');
     assert.ok(js.includes("pill.setAttribute('data-fse', 'open')"), 'opens the same LowiFastEdit card');
     assert.ok(!/getElementById\('spFast'\)\.(innerHTML|appendChild)/.test(js), 'bubble content untouched');
-    assert.ok(css.includes('.fe-bub') && css.includes('.fe-bub.fe-tiny'));
+    assert.ok(css.includes('.fe-bub') && /\.fe-bub \{[^}]*background: none/.test(css), 'a plain Edit, no pill');
+    assert.ok(js.includes("function pillHTML() { return '<span class=\"fe-el\">' + esc(w('edit')) + '</span>'; }"), 'just the word Edit');
+    assert.ok(js.includes('lab.top') && js.includes('y = top - ph - 1'), 'right above the first label line (Fasting)');
     for (const l of ["startAt: 'Start {t}'", "since: 'seit {t}'", "since: 'desde {t}'"]) assert.ok(js.includes(l), l);
 });
 

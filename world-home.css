@@ -167,3 +167,6 @@ html.wh-on.wh-home:not([data-lay=phone]) #tab-home#tab-home > #spHome { align-se
 html.wh-home:not(.wh-today-open) .wh-today, html.wh-home:not(.wh-today-open) .wh-today * { pointer-events: none !important; }
 /* the companion forms (companion.js) stay one tap away from Misty's sheet */
 .wh-ms-forms { display: flex; margin: 10px auto 4px; }
+/* iPad upright: the wide layout centres #tab-home as a column, which pushed the top bar and the quest card into the middle,
+   right across Misty (she could not be tapped). On the world Home they sit at the top, like on the phone. */
+html.spirit-app.wh-on.wh-home[data-lay=tablet] #tab-home#tab-home { justify-content: flex-start !important; }

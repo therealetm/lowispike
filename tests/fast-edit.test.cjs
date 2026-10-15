@@ -82,3 +82,12 @@ test('loaded after the arrival cards and cached by the service worker', () => {
     const n = f => sw.split('"' + f + '"').length - 1;
     assert.strictEqual(n('fast-edit-core.js'), 2); assert.strictEqual(n('fast-edit.js'), 2); assert.strictEqual(n('fast-edit.css'), 2);
 });
+
+test('Home: a real button on the water bubble rim opens the same card; the bubble itself is not rebuilt', () => {
+    assert.ok(js.includes("pill = D.createElement('button')"), 'a real button');
+    assert.ok(js.includes("f.insertAdjacentElement('afterend', pill)"), 'a sibling of #spFast, never inside the bubble button');
+    assert.ok(js.includes("pill.setAttribute('data-fse', 'open')"), 'opens the same LowiFastEdit card');
+    assert.ok(!/getElementById\('spFast'\)\.(innerHTML|appendChild)/.test(js), 'bubble content untouched');
+    assert.ok(css.includes('.fe-bub') && css.includes('.fe-bub.fe-tiny'));
+    for (const l of ["startAt: 'Start {t}'", "since: 'seit {t}'", "since: 'desde {t}'"]) assert.ok(js.includes(l), l);
+});

@@ -1,4 +1,5 @@
 /* LOWiSPIKE fasting start edit (Oct 15, 2026): "Edit start" right under the fasting timer.
+   - Home: a pill on the water bubble's bottom rim, "since 18:30 \u00b7 \u270E Edit start", opens the card straight away.
    - The fasting sheet (tap the water bubble on Home) shows "since 18:30 yesterday" with an Edit start button next to it.
    - The edit card has a date and a time field filled with the saved start, quick -1 h / -30 min / +30 min / +1 h,
      a live preview of how long that makes the fast, and the phone's time zone.
@@ -16,19 +17,19 @@
     const C = () => W.LowiFastEditCore;
     const KEY = 'lowi_fast_v1';
     const T = {
-        en: { edit: 'Edit start', set: 'Set start', title: 'When did your fast start?', sub: 'Your last meal. Fix it if the clock started at the wrong time.',
+        en: { startAt: 'Start {t}', since: 'since {t}', bubAria: 'Edit when your fast started, now since {t}', edit: 'Edit start', set: 'Set start', title: 'When did your fast start?', sub: 'Your last meal. Fix it if the clock started at the wrong time.',
             saved: 'Saved now: {t}', date: 'Date', time: 'Time', makes: 'That makes {d} of fasting so far.', tz: 'Times in your phone\u2019s time zone ({z}).',
             future: 'That\u2019s in the future. Pick a time that has passed.', overlap: 'Your last fast ended at {t}. This one can\u2019t start earlier.',
             old: 'You can go back up to 7 days.', invalid: 'Pick a date and a time.', same: 'That\u2019s already your start.',
             keep: 'Your fast keeps running. Points come when you end it.', save: 'Save start', cancel: 'Cancel', done: 'Fast start set to {t}.',
             yesterday: 'yesterday', h: 'h', m: 'min', aria: 'Edit when your fast started' },
-        de: { edit: 'Start \u00e4ndern', set: 'Start setzen', title: 'Wann hat dein Fasten begonnen?', sub: 'Deine letzte Mahlzeit. Korrigier sie, wenn die Uhr zur falschen Zeit gestartet ist.',
+        de: { startAt: 'Start {t}', since: 'seit {t}', bubAria: '\u00c4ndern, wann dein Fasten begonnen hat, gerade seit {t}', edit: 'Start \u00e4ndern', set: 'Start setzen', title: 'Wann hat dein Fasten begonnen?', sub: 'Deine letzte Mahlzeit. Korrigier sie, wenn die Uhr zur falschen Zeit gestartet ist.',
             saved: 'Gespeichert: {t}', date: 'Datum', time: 'Uhrzeit', makes: 'Damit fastest du schon {d}.', tz: 'Zeiten in der Zeitzone deines Handys ({z}).',
             future: 'Das liegt in der Zukunft. W\u00e4hl eine Zeit, die schon vorbei ist.', overlap: 'Dein letztes Fasten endete um {t}. Dieses kann nicht fr\u00fcher beginnen.',
             old: 'Du kannst bis zu 7 Tage zur\u00fcckgehen.', invalid: 'W\u00e4hl Datum und Uhrzeit.', same: 'Das ist schon dein Start.',
             keep: 'Dein Fasten l\u00e4uft weiter. Punkte gibt es, wenn du es beendest.', save: 'Start speichern', cancel: 'Abbrechen', done: 'Fasten-Start auf {t} gesetzt.',
             yesterday: 'gestern', h: 'h', m: 'min', aria: '\u00c4ndern, wann dein Fasten begonnen hat' },
-        es: { edit: 'Cambiar inicio', set: 'Poner inicio', title: '\u00bfCu\u00e1ndo empez\u00f3 tu ayuno?', sub: 'Tu \u00faltima comida. C\u00e1mbiala si el reloj empez\u00f3 a la hora equivocada.',
+        es: { startAt: 'Inicio {t}', since: 'desde {t}', bubAria: 'Cambiar cu\u00e1ndo empez\u00f3 tu ayuno, ahora desde {t}', edit: 'Cambiar inicio', set: 'Poner inicio', title: '\u00bfCu\u00e1ndo empez\u00f3 tu ayuno?', sub: 'Tu \u00faltima comida. C\u00e1mbiala si el reloj empez\u00f3 a la hora equivocada.',
             saved: 'Guardado: {t}', date: 'Fecha', time: 'Hora', makes: 'As\u00ed llevas {d} de ayuno.', tz: 'Horas en la zona horaria de tu m\u00f3vil ({z}).',
             future: 'Eso est\u00e1 en el futuro. Elige una hora que ya pas\u00f3.', overlap: 'Tu \u00faltimo ayuno termin\u00f3 a las {t}. Este no puede empezar antes.',
             old: 'Puedes volver hasta 7 d\u00edas atr\u00e1s.', invalid: 'Elige fecha y hora.', same: 'Ese ya es tu inicio.',
@@ -137,6 +138,7 @@
         try { if (W.LowiSpirit && LowiSpirit.refresh) LowiSpirit.refresh(); } catch (e) {}
         try { if (W.LowiFastBubble && LowiFastBubble.refresh) LowiFastBubble.refresh(); } catch (e) {}
         try { if (W.LowiE1 && LowiE1.paint) LowiE1.paint(); } catch (e) {}
+        try { ensurePill(); } catch (e) {}
         /* the reminder server gets the new fast start on its next sync */
         try { if (W.LowiN1P && LowiN1P.sync) { const r = LowiN1P.sync(); if (r && r.catch) r.catch(() => {}); } } catch (e) {}
     }
@@ -195,7 +197,75 @@
     /* the preview keeps counting while the card is open */
     setInterval(() => { if (ov && !D.hidden) check(); }, 30000);
 
-    W.LowiFastEdit = { open, close: () => close(), isOpen, chip, sinceRow, save, at, w, _orig: () => orig };
+    /* ---------- Home: a pill on the water bubble's bottom rim, \"since 18:30 \u00b7 \u270E Edit start\" ----------
+       A real <button> next to #spFast (never inside it: the bubble is a button itself), placed over the bubble's bottom rim,
+       centred under the timer and kept inside the hero row. The bubble itself (water, marks, copy, tap to open the sheet)
+       is untouched. Hidden when no fast is running. */
+    let pill = null, pillKey = '', ro = null, roEl = null;
+    function bubble() { const f = D.getElementById('spFast'); return f && f.parentElement ? f : null; }
+    function pillHTML(start) {
+        return '<span class="fe-bs num"><span class="fe-l">' + esc(w('since', { t: at(start) })) + '</span><span class="fe-s">' + esc(w('since', { t: hm(start) })) + '</span></span><span class="fe-bd" aria-hidden="true"></span><span class="fe-be"><i aria-hidden="true">\u270E</i><span class="fe-el">' + esc(w('edit')) + '</span><span class="fe-et num">' + esc(w('startAt', { t: hm(start) })) + '</span></span>';
+    }
+    function place() {
+        const f = bubble();
+        if (!pill || !f || pill.parentElement !== f.parentElement) return;
+        const host = f.parentElement, hr = host.getBoundingClientRect(), fr = f.getBoundingClientRect();
+        if (!fr.width || !hr.width) { pill.hidden = true; return; }
+        pill.hidden = false;
+        /* room: from the herb bubble (or whatever sits left of the timer in the row) to the row's right edge */
+        let lo = hr.left + 4, hi = hr.right - 4;
+        [...host.children].forEach(c => {
+            if (c === f || c === pill || !c.getBoundingClientRect) return;
+            const r = c.getBoundingClientRect();
+            if (!r.width || r.bottom < fr.top || r.top > fr.bottom + 30) return;
+            if (r.right <= fr.left + 2) lo = Math.max(lo, r.right + 4);
+            else if (r.left >= fr.right - 2) hi = Math.min(hi, r.left - 4);
+        });
+        pill.classList.toggle('fe-sm', fr.width < 146);
+        pill.classList.remove('fe-compact', 'fe-tiny');
+        const fit = () => pill.offsetWidth <= hi - lo;
+        if (!fit()) pill.classList.add('fe-compact');
+        if (!fit()) pill.classList.add('fe-tiny');
+        const pw = pill.offsetWidth, ph = pill.offsetHeight;
+        let x = fr.left + fr.width / 2 - pw / 2;
+        x = Math.max(lo, Math.min(hi - pw, x));
+        /* on the bottom rim, below the timer text */
+        let copyB = 0;
+        const cp = f.querySelector('.sp-fast-copy');
+        if (cp) [...cp.children].forEach(n => { const r = n.getBoundingClientRect(); if (r.height) copyB = Math.max(copyB, r.bottom); });
+        const y = Math.max(fr.bottom - Math.round(ph * 0.55), copyB ? copyB + 2 : 0);
+        pill.style.left = Math.round(x - hr.left - host.clientLeft) + 'px';
+        pill.style.top = Math.round(y - hr.top - host.clientTop) + 'px';
+    }
+    function ensurePill() {
+        const f = bubble(), start = f ? curStart() : 0;
+        if (!f || !start || start > Date.now()) { if (pill) { pill.remove(); pill = null; pillKey = ''; } return; }
+        if (!pill || pill.parentElement !== f.parentElement) {
+            if (pill) pill.remove();
+            pill = D.createElement('button');
+            pill.type = 'button'; pill.className = 'fe-bub'; pill.id = 'feBub';
+            pill.setAttribute('data-fse', 'open'); pill.setAttribute('data-noi18n', '');
+            if (getComputedStyle(f.parentElement).position === 'static') f.parentElement.style.position = 'relative';
+            f.insertAdjacentElement('afterend', pill);
+            pillKey = '';
+            if (W.ResizeObserver && roEl !== f) { try { ro && ro.disconnect(); ro = new ResizeObserver(() => place()); ro.observe(f); ro.observe(f.parentElement); roEl = f; } catch (e) {} }
+        }
+        const key = lang() + '|' + start + '|' + new Date().getDate();
+        if (key !== pillKey) {
+            pillKey = key;
+            pill.innerHTML = pillHTML(start);
+            pill.setAttribute('aria-label', w('bubAria', { t: at(start) }));
+        }
+        place();
+    }
+    setInterval(() => { if (!D.hidden) ensurePill(); }, 1500);
+    W.addEventListener('resize', () => { try { place(); } catch (e) {} });
+    W.addEventListener('lowi:fast-start', () => setTimeout(ensurePill, 0));
+    W.addEventListener('storage', e => { if (e.key === KEY) ensurePill(); });
+    D.addEventListener('visibilitychange', () => { if (!D.hidden) ensurePill(); });
+    setTimeout(ensurePill, 300);
+
+    W.LowiFastEdit = { open, close: () => close(), isOpen, chip, sinceRow, save, at, w, pill: ensurePill, _orig: () => orig };
     /* the fasting sheet may already be open (it was built before this file ran): drop the button in now */
     try { if (D.getElementById('fstSheet') && W.LowiFastStop && LowiFastStop.paint) LowiFastStop.paint(); } catch (e) {}
 })();

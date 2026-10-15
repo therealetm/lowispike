@@ -67,6 +67,6 @@ test('bottom bar layout: safe on short screens and reduced motion', () => {
 
 test('update note for the new Scan bar in de, en and es', () => {
   const v = JSON.parse(fs.readFileSync(path.join(root, 'version.json'), 'utf8'));
-  assert.ok(/^(scan-bar|micro-book|living-cell)-/.test(v.news.id));
+  assert.ok(/^(scan-bar|micro-book|living-cell|world3d)-/.test(v.news.id));
   for (const l of ['de', 'en', 'es']) assert.ok(v.news.text[l] && v.news.text[l].includes('Deep analyze'), 'news ' + l);
 });

@@ -65,3 +65,7 @@ test('tabs page sideways like the iPhone home screen, without stealing the world
     assert.ok(/\.tab:is\(\.lg-out, \.lg-peek\) \{ opacity: 1 !important; visibility: visible !important;/.test(css));
     assert.ok(/touch-action: pan-y pinch-zoom/.test(css));
 });
+
+test('Home <-> Community stays the galaxy zoom, not a slide', () => {
+    assert.ok(js.includes("const zooming = H.classList.contains('gx-out') || H.classList.contains('gx-in');"));
+});

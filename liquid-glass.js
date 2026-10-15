@@ -21,7 +21,9 @@
     }
     function slide(from, to, startDx) {
         const a = pageEl(from), b = pageEl(to), i = PAGES.indexOf(from), j = PAGES.indexOf(to);
-        if (!a || !b || i < 0 || j < 0 || i === j || calm()) { clearSlide(); return; }
+        /* Home <-> Community is the galaxy zoom (galaxy-zoom.js), one continuous space: never a sideways slide */
+        const zooming = H.classList.contains('gx-out') || H.classList.contains('gx-in');
+        if (!a || !b || i < 0 || j < 0 || i === j || calm() || zooming) { clearSlide(); return; }
         clearSlide();
         const main = D.getElementById('main'), W = (main && main.clientWidth) || innerWidth, dir = j > i ? 1 : -1;
         const dx = Math.max(-W, Math.min(W, startDx || 0)), left = Math.abs(dir * W + dx) / W;

@@ -1,9 +1,10 @@
 /* LOWiSPIKE whole body world (Oct 15, 2026, ref Random42 "Intercellular" aogLFedcnTI, spec VISUAL-MASTER.md "Whole world").
    The body is one explorable 3D world: the bloodstream hub (owned by body-world-3d*.js) plus seven regions you travel to
-   through a vessel and look around in: brain, lung, heart, liver, pancreas, gut, muscle. Regions are built lazily inside the
+   in one continuous fly-to and look around in: brain, lung, heart, liver, pancreas, gut, muscle. Regions are built lazily inside the
    SAME renderer/scene as the hub (window.LowiWorld3D), only one at a time, and disposed when you leave. No second WebGL
    context. Drag / pinch / gyro come from the hub controls, which orbit around the origin, so every region is laid out
-   around the origin. No WebGL or reduced motion: the world bar still lists the regions and opens the 2D journey sheets.
+   around the origin. You pick a place on the World map or by tapping it in the world (no second list of chips).
+   No WebGL: the 2D journey sheets. Reduced motion: you arrive without the fly-to.
    Travelling pays nothing; region brightness follows journey progress from logged actions only.
    Pure data + layout at the top are tested in tests/body-world-regions.test.cjs (also builds every region with three.js). */
 (function () {
@@ -59,11 +60,8 @@
         Object.keys(b).forEach(n => { o[n] = Math.max(n === 'microbes' || n === 'neurons' || n === 'clusters' || n === 'spokes' || n === 'fibres' ? 4 : 10, Math.round(b[n] * (n === 'microbes' ? 1 : k))); });
         return o;
     }
-    const travelMs = reduced => reduced ? 250 : 1900;
+    const travelMs = reduced => reduced ? 250 : 1450 + 420 + 640;
     const pick = (arr, l) => arr[{ en: 0, de: 1, es: 2 }[l] || 0] || arr[0];
-    function chips(cur, l) {
-        return neighbours(cur).map(id => ({ id, label: pick(byId(id).n, l), hub: id === 'hub' }));
-    }
 
     /* ---------- three.js builders (pure: take THREE, return { group, tick, dispose }) ---------- */
     function rng(seed) { let s = seed >>> 0 || 1; return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296; }
@@ -231,25 +229,48 @@
         out.dispose = () => { out.group.traverse(o => { if (o.geometry) o.geometry.dispose(); const m = o.material; (Array.isArray(m) ? m : m ? [m] : []).forEach(x => { if (x.map) x.map.dispose(); x.dispose(); }); }); tex.dispose(); if (out.group.parent) out.group.parent.remove(out.group); };
         return out;
     }
-    /* vessel: an open tube around the camera, along its view axis; it follows the camera every frame, and its wall
-       texture streams past = flying forward through a blood vessel, whatever the orbit rig does meanwhile */
-    function buildVessel(THREE, hue) {
-        const g = new THREE.Group(), wt = texCanvas(THREE, 128, (x, s) => { x.fillStyle = '#3a0a16'; x.fillRect(0, 0, s, s); for (let i = 0; i < 40; i++) { x.fillStyle = 'rgba(' + (180 + (i * 37) % 70) + ',40,70,' + (0.25 + (i % 5) * 0.1) + ')'; x.beginPath(); x.ellipse((i * 53) % s, (i * 29) % s, 6 + i % 9, 3 + i % 4, 0, 0, 7); x.fill(); } });
-        wt.wrapS = wt.wrapT = THREE.RepeatWrapping; wt.repeat.set(3, 10);
-        const tube = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.6, 90, 28, 1, true), new THREE.MeshBasicMaterial({ map: wt, side: THREE.BackSide, color: 0xffffff, fog: false, depthTest: false }));
-        tube.rotation.x = Math.PI / 2; tube.renderOrder = 998; tube.frustumCulled = false;
-        const ring = new THREE.Mesh(new THREE.TorusGeometry(1.5, 0.06, 6, 40), new THREE.MeshBasicMaterial({ color: hue == null ? 0xffffff : hue, transparent: true, opacity: 0.8, fog: false, depthTest: false }));
-        ring.renderOrder = 999; ring.frustumCulled = false; ring.position.z = -40;
-        const cells = [], cg = new THREE.SphereGeometry(0.22, 10, 6); cg.scale(1, 0.4, 1);
-        const cm = new THREE.MeshBasicMaterial({ color: 0xd8445e, fog: false, depthTest: false });
-        for (let i = 0; i < 14; i++) { const m = new THREE.Mesh(cg, cm); m.renderOrder = 998; m.frustumCulled = false; const a = i * 2.4; m.position.set(Math.cos(a) * (0.6 + (i % 3) * 0.3), Math.sin(a) * (0.6 + (i % 3) * 0.3), -3 - i * 3); m.rotation.set(i, i * 0.7, 0); cells.push(m); g.add(m); }
-        g.add(tube, ring);
-        return { group: g, follow(cam) { g.position.copy(cam.position); g.quaternion.copy(cam.quaternion); },
-            tick(p) { wt.offset.y = -p * 7; ring.position.z = -40 + p * 40; ring.material.opacity = 0.8 * Math.min(1, p * 2.5); cells.forEach((m, i) => { let z = m.position.z + 0.9; if (z > 1) z -= 44; m.position.z = z; m.rotation.x += 0.05; }); },
-            dispose() { tube.geometry.dispose(); tube.material.dispose(); wt.dispose(); ring.geometry.dispose(); ring.material.dispose(); cg.dispose(); cm.dispose(); if (g.parent) g.parent.remove(g); } };
+    /* warp streaks: light lines in camera space that stream past as the camera flies (Stargate / Google Earth fly-to).
+       The world stays visible behind them; they only add the sense of speed. vf = signed speed along the view axis. */
+    function buildWarp(THREE, n, hue) {
+        n = Math.max(24, n | 0 || 120);
+        const g = new THREE.Group(), r = rng(9173), st = [];
+        g.name = 'bwr-warp';
+        for (let i = 0; i < n; i++) { const a = r() * Math.PI * 2, rad = 0.5 + r() * 2.6; st.push({ x: Math.cos(a) * rad, y: Math.sin(a) * rad, z: -1.5 - r() * 28, w: 0.6 + r() * 0.8 }); }
+        const pos = new Float32Array(n * 6), col = new Float32Array(n * 6), geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+        const mat = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0, depthWrite: false, depthTest: false, fog: false, blending: THREE.AdditiveBlending });
+        const lines = new THREE.LineSegments(geo, mat); lines.renderOrder = 997; lines.frustumCulled = false; g.add(lines);
+        const c = new THREE.Color();
+        function setHue(h) { c.set(0xffffff).lerp(new THREE.Color(h == null ? 0xffffff : h), 0.45); for (let i = 0; i < n; i++) { col.set([c.r, c.g, c.b, c.r * 0.08, c.g * 0.08, c.b * 0.08], i * 6); } geo.attributes.color.needsUpdate = true; }
+        setHue(hue);
+        function tick(vf, dt, amt) {
+            const v = Math.max(-40, Math.min(40, vf || 0)), d = Math.min(0.05, dt || 0.016);
+            for (let i = 0; i < n; i++) {
+                const s = st[i]; s.z += v * d * s.w * 1.6;
+                if (s.z > -0.6) s.z -= 28; else if (s.z < -30) s.z += 28;
+                const len = Math.min(4, 0.06 + Math.abs(v) * 0.09 * s.w), o = i * 6;
+                pos[o] = s.x; pos[o + 1] = s.y; pos[o + 2] = s.z; pos[o + 3] = s.x; pos[o + 4] = s.y; pos[o + 5] = s.z - (v >= 0 ? len : -len);
+            }
+            geo.attributes.position.needsUpdate = true;
+            mat.opacity = Math.max(0, Math.min(1, amt || 0)) * 0.9; lines.visible = mat.opacity > 0.01;
+        }
+        tick(0, 0.016, 0);
+        return { group: g, count: n, setHue, tick, follow(cam) { g.position.copy(cam.position); g.quaternion.copy(cam.quaternion); },
+            get opacity() { return mat.opacity; }, dispose() { geo.dispose(); mat.dispose(); if (g.parent) g.parent.remove(g); } };
     }
-
-    const API = { REGIONS, HUB, ROUTE, norm, byId, neighbours, regionForJourney, tier, counts, travelMs, chips, buildRegion, buildVessel, BUILD };
+    /* fly-to timeline (ms) after the base camera glide (body-world-3d-scene.js flyTo, 1.45 s): dive into the place's glow,
+       then settle inside the region while it unfolds around you. warpPose(phase, k) -> forward offset of the camera along
+       its view axis (world units per unit of reach), veil opacity and region scale: pure, tested. */
+    const WARP = { glide: 1450, dive: 420, settle: 640, out: 380 };
+    const smooth = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+    function warpPose(phase, k) {
+        k = Math.max(0, Math.min(1, k));
+        if (phase === 'dive') return { fwd: k * k * k, speed: 3 * k * k, veil: smooth(0.4, 1, k), scale: 1 };
+        if (phase === 'settle') { const e = 1 - Math.pow(1 - k, 3); return { fwd: -(1 - e), speed: 3 * Math.pow(1 - k, 2), veil: 1 - smooth(0, 0.65, k), scale: 0.45 + 0.55 * e }; }
+        if (phase === 'out') return { fwd: 0, speed: 0, veil: 1 - smooth(0, 1, k), scale: 1 };
+        return { fwd: 0, speed: 0, veil: 0, scale: 1 };
+    }
+    const API = { REGIONS, HUB, ROUTE, norm, byId, neighbours, regionForJourney, tier, counts, travelMs, WARP, warpPose, buildRegion, buildWarp, BUILD };
     if (typeof module !== 'undefined' && module.exports) module.exports = API;
     W.LowiWorldRegions = API;
     if (!D || !D.addEventListener) return;
@@ -269,7 +290,7 @@
     const T = (en, de, es) => pick([en, de, es], lang());
     const reduced = () => !!(W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)').matches);
     const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-    const st = { cur: 'hub', target: null, next: null, region: null, vessel: null, busy: false, tier: null, off: null, label: null, bar: null, host: null, lt: 0 };
+    const st = { cur: 'hub', target: null, next: null, region: null, warp: null, busy: false, tier: null, off: null, label: null, mapBtn: null, veil: null, host: null, lt: 0 };
     const w3 = () => W.LowiWorld3D || null;
     const baseId = id => id === 'muscle' ? 'muscles' : id;
     const parked = []; let look = null, fogWas = null;
@@ -301,28 +322,33 @@
     function host() { const a = w3(); if (!a || !a.isOpen || !a.isOpen()) return null; const h = D.querySelector('.bw3-full'); return h && h.isConnected ? h : null; }
     function ensureUi() {
         const h = host(); if (!h) return null;
-        if (st.bar && st.bar.isConnected && st.host === h) return st.bar;
+        if (st.mapBtn && st.mapBtn.isConnected && st.host === h) return st.mapBtn;
         st.host = h;
-        const bar = D.createElement('div'); bar.className = 'bwr-bar'; bar.id = 'bwrBar'; bar.setAttribute('role', 'toolbar'); bar.setAttribute('aria-label', T('Travel through your body', 'Durch deinen K\u00f6rper reisen', 'Viajar por tu cuerpo'));
-        bar.addEventListener('click', e => { const b = e.target.closest('[data-bwr]'); if (!b) return; e.preventDefault(); e.stopPropagation(); const v = b.dataset.bwr; if (v === 'map') openMap(); else if (v === 'journey') openJourney(st.cur); else travel(v); });
-        ['pointerdown', 'touchstart', 'wheel'].forEach(n => bar.addEventListener(n, e => e.stopPropagation(), { passive: true }));
+        /* one way to pick a place: the World map button (all seven, lungs included) plus tapping a place in the world itself */
         const mapBtn = D.createElement('button'); mapBtn.type = 'button'; mapBtn.className = 'bwr-mapbtn'; mapBtn.id = 'bwrMapBtn';
         mapBtn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.2"/><circle cx="6" cy="13" r="2.2"/><circle cx="18" cy="13" r="2.2"/><circle cx="12" cy="20" r="2.2"/><path d="M12 7v11M12 7l-5 4.5M12 7l5 4.5" fill="none"/></svg><span></span>';
         mapBtn.addEventListener('click', e => { e.stopPropagation(); openMap(); });
         ['pointerdown', 'touchstart'].forEach(n => mapBtn.addEventListener(n, e => e.stopPropagation(), { passive: true }));
         const lab = D.createElement('div'); lab.className = 'bwr-label'; lab.id = 'bwrLabel'; lab.setAttribute('aria-live', 'polite');
-        h.classList.add('bwr-on'); h.appendChild(lab); h.appendChild(mapBtn); h.appendChild(bar); st.bar = bar; st.label = lab; st.mapBtn = mapBtn; renderBar(); return bar;
+        const veil = D.createElement('div'); veil.className = 'bwr-veil'; veil.setAttribute('aria-hidden', 'true');
+        h.classList.add('bwr-on'); const lv = h.querySelector('.bw3-labels'); if (lv) h.insertBefore(veil, lv); else h.appendChild(veil); h.appendChild(lab); h.appendChild(mapBtn); st.label = lab; st.mapBtn = mapBtn; st.veil = veil; renderUi(); return mapBtn;
     }
-    function renderBar() {
-        if (!st.bar) return;
-        const l = lang(), cur = byId(st.cur), list = chips(st.cur, l);
+    function renderUi() {
+        if (!st.mapBtn) return;
+        const l = lang(), cur = byId(st.cur);
         st.mapBtn.querySelector('span').textContent = T('World map', 'Weltkarte', 'Mapa');
-        const here = '<span class="bwr-here" style="--h:' + cur.css + '"><i></i>' + esc(pick(cur.n, l)) + '</span>';
-        const btns = list.map(c => { const R = byId(c.id), pct = explored(c.id); return '<button type="button" class="bwr-chip' + (c.hub ? ' hub' : '') + '" data-bwr="' + c.id + '" style="--h:' + R.css + '" aria-label="' + esc(T('Travel to ', 'Reise zu ', 'Viajar a ') + c.label) + '"><i></i>' + esc(c.label) + (pct ? '<small>' + pct + '%</small>' : '') + '</button>'; }).join('');
-        const extra = (st.cur !== 'hub' && W.LowiBodyTrips && W.LowiBodyTrips.open ? '<button type="button" class="bwr-chip ghost" data-bwr="journey">' + esc(T('Journey', 'Reise', 'Viaje')) + '</button>' : '');
-        st.bar.innerHTML = here + '<div class="bwr-chips">' + btns + extra + '</div>';
-        st.bar.dataset.cur = st.cur;
+        st.mapBtn.setAttribute('aria-label', T('World map', 'Weltkarte', 'Mapa') + ' · ' + pick(cur.n, l));
         const h = st.host; if (h) { h.classList.toggle('bwr-in', st.cur !== 'hub'); h.style.setProperty('--bwr-h', cur.css); const t = h.querySelector('.bw3-top b'); if (t) { if (!t.dataset.hubTitle) t.dataset.hubTitle = t.textContent; t.textContent = st.cur === 'hub' ? t.dataset.hubTitle : pick(cur.n, l); } }
+    }
+    /* the base card (name, journey, Back) exists for the six beacons; the lungs have no beacon, so give them the same card */
+    function lungCard() {
+        const h = st.host, card = h && h.querySelector('.bw3-card'); if (!card || st.cur !== 'lung') return;
+        if (!card.hidden && card.querySelector('[data-bwr-lung]')) return;
+        const l = lang(), R = byId('lung');
+        const trip = W.LowiBodyTrips && W.LowiBodyTrips.open ? '<button type="button" data-bw3-trip="lung">' + esc(T('Open journey', 'Reise öffnen', 'Abrir viaje')) + '</button>' : '';
+        card.style.setProperty('--h', R.css);
+        card.innerHTML = '<b data-bwr-lung>' + esc(pick(R.n, l)) + '</b><p>' + esc(pick(R.line, l)) + '</p><div>' + trip + '<button type="button" class="ghost" data-bw3-back>' + esc(T('Back to your cell', 'Zurück zu deiner Zelle', 'Volver a tu célula')) + '</button></div>';
+        card.hidden = false;
     }
     function say(id) {
         if (!st.label) return; const R = byId(id), l = lang();
@@ -333,15 +359,92 @@
         st.label.classList.remove('on'); void st.label.offsetWidth; st.label.classList.add('on');
         clearTimeout(st.lt); st.lt = setTimeout(() => st.label && st.label.classList.remove('on'), 3600);
     }
+    /* ---------- the fly-to: one continuous camera move through the world, no cut ----------
+       glide: the base camera glides through the hub to the place (whole world visible, streaks + wider lens with speed);
+       dive:  it keeps pushing forward into the place's glow until the glow fills the view;
+       settle: inside the glow the region is mounted and unfolds around you while the camera slows to rest.
+       Leaving a region (Back, map, bloodstream) bursts out of its glow and the base camera pulls back through the hub. */
+    function portalFor(THREE, hue) {
+        const m = new THREE.SpriteMaterial({ map: glow(THREE), color: new THREE.Color(hue), transparent: true, opacity: 0, depthWrite: false, depthTest: false, fog: false, blending: THREE.AdditiveBlending });
+        const s = new THREE.Sprite(m); s.renderOrder = 996; s.userData.bwr = true; s.visible = false;
+        return { sprite: s, dispose() { if (s.parent) s.parent.remove(s); if (m.map) m.map.dispose(); m.dispose(); } };
+    }
+    function veil(o, css) {
+        const v = st.veil; if (!v) return;
+        if (css) v.style.setProperty('--vh', css);
+        v.style.opacity = String(Math.max(0, Math.min(1, o)).toFixed(3));
+    }
+    function stepWarp(w, dt) {
+        const q = st.warp, a = w3(), cam = w.camera, THREE = w.three, d = Math.max(1 / 240, Math.min(0.05, dt || 0.016));
+        /* the warp clock runs on the same capped frame time as the base glide, so on a slow phone both stay in step */
+        q.clock += d * 1000; const now = q.clock;
+        const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(cam.quaternion);
+        const base = cam.position.clone();
+        let vf = q.last ? base.clone().sub(q.last).dot(fwd) / d : 0; q.last = base;
+        let veilO = 0;
+        if (q.outT != null) { const k = (now - q.outT) / WARP.out; veilO = Math.max(veilO, warpPose('out', k).veil); if (k >= 1) q.outT = null; }
+        const flying = a && a.rig ? !!a.rig.fly : null;
+        if (flying) q.saw = true;
+        if (q.phase === 'glide') {
+            const el = now - q.t0;
+            const glideOver = flying === null ? el > WARP.glide + 80 : (q.saw ? !flying : el > 320);
+            if (el > 90 && glideOver) {
+                if (q.id === 'hub') { finish(); return; }
+                q.phase = 'dive'; q.tp = now; veil(0, q.css); q.reach = Math.max(0.6, base.distanceTo(q.B) - 0.2);
+            }
+        }
+        if (q.phase === 'dive') {
+            const k = (now - q.tp) / WARP.dive, p = warpPose('dive', k);
+            cam.position.addScaledVector(fwd, q.reach * p.fwd); vf += q.reach * p.speed / (WARP.dive / 1000);
+            veilO = Math.max(veilO, p.veil);
+            const ps = q.portal.sprite; ps.visible = true; ps.position.copy(q.B); ps.scale.setScalar(2.6 + 5 * k * k); ps.material.opacity = 0.35 + 0.6 * k;
+            if (k >= 1) {
+                q.portal.dispose(); q.portal = portalFor(THREE, q.hue); w.scene.add(q.portal.sprite);
+                enter(q.id); if (st.region) st.region.group.scale.setScalar(warpPose('settle', 0).scale);
+                q.phase = 'settle'; q.ts = now; veilO = 1;
+            }
+        } else if (q.phase === 'settle') {
+            const k = (now - q.ts) / WARP.settle, p = warpPose('settle', k), back = 1.8;
+            cam.position.addScaledVector(fwd, back * p.fwd); vf += back * p.speed / (WARP.settle / 1000);
+            veilO = Math.max(veilO, p.veil);
+            if (st.region) st.region.group.scale.setScalar(p.scale);
+            if (k >= 1) { finish(); return; }
+        }
+        const amt = Math.max(0, Math.min(1, Math.abs(vf) / 7));
+        q.amt += (amt - q.amt) * Math.min(1, d * 9);
+        q.streaks.tick(vf, d, q.amt); q.streaks.follow(cam);
+        const fov = q.fov0 + 16 * q.amt;
+        if (Math.abs(cam.fov - fov) > 0.01) { cam.fov = fov; cam.updateProjectionMatrix(); }
+        veil(veilO);
+    }
+    function finish() {
+        const q = st.warp; if (!q) return;
+        st.warp = null; clean(q);
+        if (q.id === 'hub' && st.cur !== 'hub') enter('hub');
+        lungCard();
+        q.done && q.done();
+    }
+    function clean(q) {
+        const a = w3(), cam = a && a.camera;
+        if (cam && q.fov0 && Math.abs(cam.fov - q.fov0) > 0.001) { cam.fov = q.fov0; cam.updateProjectionMatrix(); }
+        try { q.streaks && q.streaks.dispose(); } catch (e) { }
+        try { q.portal && q.portal.dispose(); } catch (e) { }
+        if (st.region) st.region.group.scale.setScalar(1);
+        veil(0);
+        if (st.host) st.host.classList.remove('bwr-warp');
+    }
+    /* leave the region you are in without announcing the bloodstream (going on to another place) */
+    function leaveQuiet() {
+        const w = wo(); if (!w) return;
+        if (st.region) { st.region.dispose(); st.region = null; }
+        w.setLook(null); w.setHubVisible(true); st.cur = 'hub'; renderUi();
+    }
     function frame(t, dt) {
         const h = host();
         if (st.host && h !== st.host) reset();
         if (h && !st.host) ensureUi();
         const w = wo(); if (!w) return;
-        if (st.vessel) {
-            const v = st.vessel, p = Math.min(1, (performance.now() - v.t0) / v.ms); v.v.follow(w.camera); v.v.tick(p);
-            if (p >= 1) { st.vessel = null; v.v.dispose(); v.done(); }
-        }
+        if (st.warp) { try { stepWarp(w, dt); } catch (e) { const q = st.warp; st.warp = null; clean(q); if (q.id !== st.cur) enter(q.id); q.done && q.done(); } }
         if (st.region && st.region.tick) { try { st.region.tick(t, Math.min(0.05, dt || 0.016), reduced()); } catch (e) { } }
         applyLook();
     }
@@ -362,10 +465,10 @@
             const bg = new w.three.Color(reg.bg); if (lightMode()) bg.lerp(new w.three.Color(0xcfe4f7), 0.22);
             w.setLook({ bg, fog: 0.026 }); st.region = reg;
         }
-        st.cur = id; renderBar(); say(id);
+        st.cur = id; renderUi(); if (id === 'lung' && !st.warp) lungCard(); say(id);
         try { W.dispatchEvent(new CustomEvent('lowi:world-region', { detail: { id, place: id === 'hub' ? 'blood' : id } })); } catch (e) { }
     }
-    /* fromBase: the base world already started its glide (its chips, labels, beacon taps or the card's Back) */
+    /* fromBase: the base world already started its glide (its labels, beacon taps or the card's Back) */
     function travel(id, fromBase, tries) {
         id = norm(id);
         if (!byId(id) || id === st.cur && !st.busy) return false;
@@ -374,16 +477,22 @@
         if (!a || a.state === 'fallback' || !a.open) { openJourney(id); return false; }
         if (!wo() || !host()) { if ((tries || 0) < 12) { a.open(); setTimeout(() => travel(id, false, (tries || 0) + 1), 400); return true; } openJourney(id); return false; }
         hook(); ensureUi();
-        const w = wo();
-        st.busy = true; st.target = id; st.next = null; st.bar && st.bar.classList.add('busy');
-        const done = () => { st.busy = false; st.target = null; st.bar && st.bar.classList.remove('busy'); const n = st.next; st.next = null; if (n && n !== st.cur) travel(n, true); };
+        const w = wo(), THREE = w.three, h = st.host;
+        st.busy = true; st.target = id; st.next = null;
+        const done = () => { st.busy = false; st.target = null; const n = st.next; st.next = null; if (n && n !== st.cur) travel(n); };
         if (!fromBase && a.flyTo) a.flyTo(id === 'hub' ? null : baseId(id));
-        if (reduced()) { enter(id); done(); return true; }
-        const R = byId(id), v = buildVessel(w.three, R.hue != null ? R.hue : 0xe0475a);
-        v.group.userData.bwr = true;
-        if (st.region) st.region.group.visible = false; w.setHubVisible(false);
-        w.setLook({ bg: new w.three.Color(0x2a0a16), fog: 0.05 }); w.scene.add(v.group); v.follow(w.camera);
-        st.vessel = { v, t0: performance.now(), ms: travelMs(false), done: () => { enter(id); done(); } };
+        if (h) h.classList.remove('bw3-flash');
+        if (reduced()) { enter(id); lungCard(); done(); return true; }
+        const R = byId(id), from = byId(st.cur), hue = R.hue != null ? R.hue : 0xe0475a;
+        const q = { id, phase: 'glide', t0: 0, saw: false, amt: 0, last: null, outT: null, hue, css: R.css, fov0: w.camera.fov, done, clock: 0 };
+        if (st.cur !== 'hub') { veil(1, from.css); q.outT = 0; if (id === 'hub') enter('hub'); else leaveQuiet(); }
+        const bp = (a.regions || []).find(x => x.id === baseId(id));
+        q.B = bp && bp.pos ? bp.pos.clone() : new THREE.Vector3();
+        q.streaks = buildWarp(THREE, (st.tier || tier({ w: W.innerWidth, h: W.innerHeight, mem: navigator.deviceMemory })) === 'low' ? 70 : 130, hue);
+        q.streaks.group.userData.bwr = true; w.scene.add(q.streaks.group); q.streaks.follow(w.camera);
+        q.portal = portalFor(THREE, hue); w.scene.add(q.portal.sprite);
+        if (h) h.classList.add('bwr-warp');
+        st.warp = q;
         return true;
     }
     function openJourney(id) {
@@ -397,7 +506,7 @@
         const dots = nodes.map(R => '<button type="button" class="bwr-node' + (R.id === st.cur ? ' cur' : '') + '" data-bwr="' + R.id + '" style="left:' + R.map[0] + '%;top:' + R.map[1] + '%;--h:' + R.css + '"><i></i><span>' + esc(pick(R.n, l)) + '</span></button>').join('');
         m = D.createElement('div'); m.id = 'bwrMap'; m.className = 'bwr-map'; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true'); m.setAttribute('aria-label', T('Body world map', 'Karte der K\u00f6rperwelt', 'Mapa del mundo del cuerpo'));
         m.innerHTML = '<div class="bwr-map-card"><div class="bwr-map-hd"><b>' + esc(T('Your body world', 'Deine K\u00f6rperwelt', 'Tu mundo del cuerpo')) + '</b><button type="button" class="bwr-x" data-x aria-label="' + esc(T('Close', 'Schlie\u00dfen', 'Cerrar')) + '">\u00d7</button></div>' +
-            '<p>' + esc(T('Tap a place to travel there through your blood vessels.', 'Tipp auf einen Ort und reise durch deine Blutgef\u00e4\u00dfe dorthin.', 'Toca un lugar y viaja hasta \u00e9l por tus vasos sangu\u00edneos.')) + '</p>' +
+            '<p>' + esc(T('Tap a place and you zoom right into it.', 'Tipp auf einen Ort und du zoomst direkt hinein.', 'Toca un lugar y entras volando directamente.')) + '</p>' +
             '<div class="bwr-body"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path class="sil" d="M50 2c6 0 10 5 10 11s-4 10-10 10-10-4-10-10 4-11 10-11zM34 25h32c6 0 9 4 9 9v28c0 4-3 6-6 6l-3 30h-8l-2-26h-12l-2 26h-8l-3-30c-3 0-6-2-6-6V34c0-5 3-9 9-9z"/>' + lines + '</svg>' + dots + '</div></div>';
         ['pointerdown', 'touchstart', 'wheel'].forEach(n => m.addEventListener(n, e => e.stopPropagation(), { passive: true }));
         m.addEventListener('click', e => { e.stopPropagation(); if (e.target === m || e.target.closest('[data-x]')) { m.remove(); return; } const b = e.target.closest('[data-bwr]'); if (b) { m.remove(); travel(b.dataset.bwr); } });
@@ -405,19 +514,20 @@
         const x = m.querySelector('[data-x]'); x && x.focus && x.focus({ preventScroll: true });
     }
     function reset() {
-        if (st.vessel) { st.vessel.v.dispose(); st.vessel = null; }
+        if (st.warp) { const q = st.warp; st.warp = null; clean(q); }
         if (st.region) { st.region.dispose(); st.region = null; }
         setLook(null); setHubVisible(true);
-        if (st.host) st.host.classList.remove('bwr-on', 'bwr-in');
-        st.cur = 'hub'; st.busy = false; st.target = null; st.next = null; st.bar = null; st.label = null; st.host = null;
+        if (st.host) st.host.classList.remove('bwr-on', 'bwr-in', 'bwr-warp');
+        [st.veil, st.label, st.mapBtn].forEach(e => { try { e && e.remove(); } catch (x) { } });
+        st.cur = 'hub'; st.busy = false; st.target = null; st.next = null; st.mapBtn = null; st.label = null; st.veil = null; st.host = null;
         const m = D.getElementById('bwrMap'); if (m) m.remove();
     }
     /* the base world's own chips, labels and beacon taps fly to a place: follow it into the region */
-    W.addEventListener('lowi:world3d-place', e => { const id = e && e.detail && e.detail.id; if (!id || !host()) return; const r = norm(id); if (ROUTE.indexOf(r) >= 0) travel(r, true); });
+    W.addEventListener('lowi:world3d-place', e => { const id = e && e.detail && e.detail.id; const h = host(); if (!id || !h) return; if (!reduced()) h.classList.remove('bw3-flash'); const r = norm(id); if (ROUTE.indexOf(r) >= 0) travel(r, true); });
     /* the card's Back button returns the base camera to the hub: leave the region with it */
     D.addEventListener('click', e => { const b = e.target && e.target.closest && e.target.closest('.bw3-full [data-bw3-back]'); if (b && (st.cur !== 'hub' || st.busy)) travel('hub', true); }, true);
     W.addEventListener('lowi:world3d-ready', () => hook());
-    W.addEventListener('lowi:lang', () => renderBar());
+    W.addEventListener('lowi:lang', () => renderUi());
     hook();
     Object.assign(API, { travel, openMap, current: () => st.cur, state: st, reset });
 })();

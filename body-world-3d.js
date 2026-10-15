@@ -121,7 +121,7 @@
             canvas = D.createElement('canvas'); canvas.className = 'bw3-canvas'; canvas.setAttribute('aria-hidden', 'true');
             canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); fail('context-lost'); });
             world = S.createWorld(THREE, canvas, { places: PLACES, small: W.innerWidth < 380, dprCap: dprCap({ w: W.innerWidth, mem: navigator.deviceMemory }), theme: themeNow(), shouldRender });
-            Object.assign(api, { THREE, scene: world.scene, camera: world.camera, renderer: world.renderer, hub: world.hub, regions: world.regions });
+            Object.assign(api, { THREE, scene: world.scene, camera: world.camera, renderer: world.renderer, hub: world.hub, regions: world.regions, rig: world.rig });
             pendingFrames.forEach(fn => { const t = pendingBind.get(fn); const off = world.onFrame(fn); if (t) t.bind(off); }); pendingFrames.clear(); pendingBind.clear();
             api.ready = true; api.state = 'ready'; H.classList.add('bw3-ready');
             try { W.dispatchEvent(new CustomEvent('lowi:world3d-ready', { detail: api })); } catch (e) {}
@@ -133,7 +133,7 @@
     function fail(why) {
         api.state = 'fallback'; api.why = why; api.ready = false; H.classList.remove('bw3-ready'); H.classList.add('bw3-off');
         try { if (world) world.dispose(); } catch (e) {}
-        world = null; Object.assign(api, { scene: null, camera: null, renderer: null, hub: null, regions: [] });
+        world = null; Object.assign(api, { scene: null, camera: null, renderer: null, hub: null, regions: [], rig: null });
         if (stage) { stage.remove(); stage = null; }
         D.querySelectorAll('.bw3-home').forEach(e => e.classList.remove('bw3-home'));
         if (full) close();

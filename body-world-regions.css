@@ -1,22 +1,15 @@
-/* LOWiSPIKE whole body world: travel bar, arrival label, world map (body-world-regions.js). Spec VISUAL-MASTER.md "Whole world". */
-.bwr-bar{position:absolute;left:0;right:0;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:6;display:flex;align-items:center;gap:8px;padding:0 10px;pointer-events:none;max-width:100%;box-sizing:border-box}
-.bwr-bar>*{pointer-events:auto}
+/* LOWiSPIKE whole body world: world map button, fly-to veil, arrival label, world map (body-world-regions.js). Spec VISUAL-MASTER.md "Whole world". */
 .bw3-full.bwr-on .bw3-chips{display:none}
 .bw3-full.bwr-in .bw3-labels{display:none}
+/* fly-to: the place's glow fills the view at the moment you pass into it; labels, card and taps rest during the 2.5 s move */
+.bwr-veil{position:absolute;inset:0;pointer-events:none;opacity:0;background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.92) 0,var(--vh,#e0475a) 38%,color-mix(in srgb,var(--vh,#e0475a) 70%,#05060f) 100%);will-change:opacity}
+.bw3-full .bw3-labels,.bw3-full .bw3-card{transition:opacity .25s}
+.bw3-full.bwr-on .bw3-card{bottom:calc(env(safe-area-inset-bottom,0px) + 18px)}
+.bw3-full.bwr-warp .bw3-labels,.bw3-full.bwr-warp .bw3-card{opacity:0;pointer-events:none}
+.bw3-full.bwr-warp .bw3-view,.bw3-full.bwr-warp canvas{pointer-events:none}
 .bwr-mapbtn{position:absolute;left:16px;top:calc(env(safe-area-inset-top,0px) + 68px);z-index:6;display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 12px 0 10px;border-radius:20px;border:1px solid rgba(255,255,255,.2);background:rgba(10,16,44,.62);color:#eef3ff;font:600 13px/1 var(--font,system-ui),sans-serif;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);cursor:pointer;touch-action:manipulation}
 .bwr-mapbtn svg{width:18px;height:18px;fill:currentColor;stroke:currentColor;stroke-width:1.6}
-:root[data-theme="light"] .bwr-mapbtn,:root[data-theme="light"] .bwr-chip,:root[data-theme="light"] .bwr-here{background:rgba(255,255,255,.8);color:#12345a;border-color:rgba(18,52,90,.18)}
-.bwr-here{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;padding:8px 11px;border-radius:999px;background:rgba(8,12,34,.72);color:#fff;font:600 13px/1.1 var(--font,system-ui),sans-serif;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid color-mix(in srgb,var(--h) 55%,transparent)}
-.bwr-here i,.bwr-chip i{width:9px;height:9px;border-radius:50%;background:var(--h);box-shadow:0 0 10px var(--h);flex:0 0 auto}
-.bwr-chips{flex:1 1 auto;min-width:0;display:flex;gap:6px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:2px}
-.bwr-chips::-webkit-scrollbar{display:none}
-.bwr-chip{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 13px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(10,16,44,.62);color:#eef3ff;font:600 13px/1 var(--font,system-ui),sans-serif;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);cursor:pointer;touch-action:manipulation}
-.bwr-chip small{font-weight:500;opacity:.7;font-size:11px}
-.bwr-chip.hub{border-color:rgba(224,71,90,.55)}
-.bwr-chip.ghost{background:rgba(255,255,255,.1)}
-.bwr-chip:active{transform:scale(.96)}
-.bwr-chip:focus-visible,.bwr-node:focus-visible,.bwr-go:focus-visible,.bwr-x:focus-visible{outline:2px solid #fff;outline-offset:2px}
-.bwr-bar.busy .bwr-chip{opacity:.5;pointer-events:none}
+:root[data-theme="light"] .bwr-mapbtn{background:rgba(255,255,255,.8);color:#12345a;border-color:rgba(18,52,90,.18)}
 .bwr-label{position:absolute;left:50%;top:calc(116px + env(safe-area-inset-top,0px));z-index:6;transform:translate(-50%,-6px);width:min(86%,420px);box-sizing:border-box;padding:10px 14px;border-radius:16px;background:rgba(8,12,34,.74);color:#eef3ff;font:500 13px/1.35 var(--font,system-ui),sans-serif;text-align:center;opacity:0;pointer-events:none;transition:opacity .35s,transform .35s;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .bwr-label.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 .bwr-label b{display:block;font-size:15px;margin-bottom:2px;color:var(--h);text-shadow:0 0 12px color-mix(in srgb,var(--h) 60%,transparent)}
@@ -38,4 +31,4 @@
 .bwr-node i{width:16px;height:16px;border-radius:50%;background:var(--h);box-shadow:0 0 14px var(--h)}
 .bwr-node.cur i{outline:2px solid #fff;outline-offset:3px}
 .bwr-node span{white-space:nowrap;text-shadow:0 1px 4px #000}
-@media (prefers-reduced-motion:reduce){.bwr-label{transition:opacity .2s}.bwr-chip:active{transform:none}.bwr-fade{animation:none}}
+@media (prefers-reduced-motion:reduce){.bwr-label{transition:opacity .2s}.bwr-fade{animation:none}}

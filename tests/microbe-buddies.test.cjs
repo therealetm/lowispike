@@ -157,7 +157,7 @@ t('loader, service worker lists and update note include the buddy files', () => 
     assert.ok(hits >= 2, 'both sw lists carry ' + f + ' (' + hits + ')');
   }
   const news = ver.news || {};
-  assert.ok(/^microbe-buddies-\d{8}-\d{6}$/.test(news.id || ''), 'update note id ' + news.id);
+  assert.ok(/^[a-z0-9-]+-\d{8}-\d{6}$/.test(news.id || ''), 'update note id ' + news.id); /* later builds take over the id; earlier text is kept */
   assert.ok(/Buddys/.test(news.text.de) && /buddies/i.test(news.text.en) && /compa\u00f1eros/i.test(news.text.es), 'note in de/en/es');
 });
 

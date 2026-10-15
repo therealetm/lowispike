@@ -40,3 +40,16 @@ test('the glue marks the visible tab on <html> and keeps the sheet last', () => 
     assert.ok(js.includes("setAttribute('data-lg-tab'"));
     assert.ok(js.includes("getElementById('lgCss')"));
 });
+
+test('Community is a solar system: you in the middle, a sun, orbit rings through every world, glass bubbles', () => {
+    const G = require('../community-galaxy.js'), chat = read('community-chat.js'), gal = read('community-galaxy.js');
+    const L = G.layout([{ uid: 'a' }, { uid: 'b' }, { uid: 'c' }], 390, 560, 'me');
+    const me = L.spots.find(s => s.me);
+    assert.ok(me.cell.r > 0 && me.cell.r < L.grid.rows - 1, 'you sit in a middle row, not the bottom');
+    assert.ok(gal.includes('set(next,isLight,orb)') && /ctx\.arc\(O\.cx,O\.cy,r,0,6\.283\)/.test(gal), 'orbit rings drawn round you');
+    assert.ok(!/rgba\(255,170,210/.test(gal), 'no pastel nebula');
+    assert.ok(chat.includes('orbits:meSpot?{cx:meSpot.x,cy:meSpot.y') && chat.includes('sk.set(gx.lines,false,gx.orbits)'));
+    assert.ok(chat.includes("' ringed'"));
+    assert.ok(/html\.lg #cmPaneChat\[data-spirit-chat\] \.cp-room\.cg-room \{ background: #000 !important;/.test(css));
+    assert.ok(/\.cg-body\.ringed \.cg-orb::after/.test(css) && /html\.lg #cmPaneChat\[data-spirit-chat\] \.cg-bub \{/.test(css));
+});

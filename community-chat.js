@@ -195,7 +195,7 @@ function galaxy(ms,w,h,quiet){
   const aria=me?(sel?tr('toEveryone'):tr('youAll')):(picked?fill('talking',p.n):fill('talkTo',p.n));
   const attrs='data-uid="'+esc(x.uid)+'" data-name="'+esc(me?own().n||'':p.n)+'" aria-label="'+esc(aria)+'"'+(me?'':' aria-pressed="'+picked+'"')+' style="left:'+x.x+'px;top:'+x.y+'px;--s:'+x.size+'px;--i:'+i+';--c:'+hueColor(x.uid,me)+'"';
   const inner='<span class="cg-orb">'+mate(me?(scope||'me'):x.uid,'g'+i)+'</span><span class="cg-name">'+esc(label)+'</span>';
-  html+=button(me?'to-all':'select',inner,attrs,'cg-body'+(me?' me':'')+(picked?' sel':'')+(talking?' speaking':'')+(p.bot?' bot':'')+(me&&!scope?' cg-off':''));
+  html+=button(me?'to-all':'select',inner,attrs,'cg-body'+(me?' me':'')+(picked?' sel':'')+(talking?' speaking':'')+(p.bot?' bot':'')+(!me&&G.hash(x.uid)%3===0?' ringed':'')+(me&&!scope?' cg-off':''));
   const m=last.get(me?scope:x.uid);const o=m?G.fade(m.ts,now):0;
   if(m&&(o>0||m.status)&&x.bub.lines>=1){const t=G.targetOf(m,ms,idx),body=G.bubbleText(m,t),toMe=t&&t.uid===scope;
    /* One line, one conversation: what you said to someone lives on the line while you talk to them and is gone when you stop.
@@ -217,9 +217,9 @@ function galaxy(ms,w,h,quiet){
   const inner=body;
   html+=cv&&cv.id?button('thread',inner,'data-id="'+esc(cv.id)+'" aria-label="'+esc((theyTalk?p.n:tr('youWord'))+' → '+(theyTalk?tr('youWord'):p.n)+': '+cv.t)+'" style="'+style+'"','cg-mid'+(theyTalk?' in':' out')):'<div class="cg-mid'+(theyTalk?' in':' out')+'" role="status" style="'+style+'">'+inner+'</div>';}
  gxIds=L.spots.map(x=>x.uid).filter(u=>u&&u!=='me');
- return {html,lines,names,me:meSpot};
+ return {html,lines,names,me:meSpot,orbits:meSpot?{cx:meSpot.x,cy:meSpot.y,r:L.spots.filter(x=>!x.me).map(x=>Math.round(Math.hypot(x.x-meSpot.x,x.y-meSpot.y)))}:null};
 }
-function skyStart(){const c=D.getElementById('cgSky');if(!G||!c||!c.getContext)return;if(!sk||sk.canvas!==c){if(sk)sk.stop();sk=G.sky(c);if(sk)sk.canvas=c;}if(sk&&active()&&!D.hidden)sk.start();}
+function skyStart(){const c=D.getElementById('cgSky');if(!G||!c||!c.getContext)return;if(!sk||sk.canvas!==c){if(sk)sk.stop();sk=G.sky(c);if(sk){sk.canvas=c;const g0=W.__lgGx;if(g0)sk.set(g0.lines,false,g0.orbits);}}if(sk&&active()&&!D.hidden)sk.start();}
 /* Arriving in Community: coming from Home, galaxy-zoom.js pulls the one camera out of Misty's world into the galaxy (no boxed
    snapshot of Home any more). From anywhere else the galaxy just settles in from a little closer. */
 function intro(){const g=D.getElementById('cgGalaxy');if(!g||!g.removeAttribute)return;g.__intro=1;if(D.documentElement.classList.contains('gx-out'))return;if(W.matchMedia&&W.matchMedia('(prefers-reduced-motion: reduce)').matches)return;g.removeAttribute('data-intro');void g.offsetWidth;g.setAttribute('data-intro','1');clearTimeout(introT);introT=setTimeout(()=>{g.removeAttribute('data-intro');},1100);}
@@ -287,7 +287,7 @@ function paint(el){
  const fieldHTML=gx.html+(quietRoom?'<div class="cg-empty"><span class="cs-lantern" aria-hidden="true">✧</span><b>'+tr('emptyTitle')+'</b><p>'+(st.phase==='ready'?(Object.values(prefs.blocks).some(x=>x.blocked)?tr('filtered'):tr('empty')):tr('waiting'))+'</p>'+(st.phase==='ready'?button('hello',tr('hi'),'','cs-action cg-hello'):'')+'</div>':'');
  if(field&&field.__html!==fieldHTML){field.innerHTML=fieldHTML;field.__html=fieldHTML;}
  if(gal){gal.setAttribute('aria-label',tr('onPlanet')+': '+gx.names.join(', '));gal.setAttribute('data-streams',String(gx.lines.length));if(gx.me&&gal.style)gal.style.setProperty('--me-x',gx.me.x+'px'),gal.style.setProperty('--me-y',gx.me.y+'px');}
- if(sk)sk.set(gx.lines,D.documentElement.dataset&&D.documentElement.dataset.theme==='light');watch();if(active()&&!D.hidden){if(!wasOn)onShow();else{if(gal&&!gal.__intro&&Date.now()-enterAt<600)intro();skyStart();}}
+ W.__lgGx=gx;if(sk)sk.set(gx.lines,false,gx.orbits);watch();if(active()&&!D.hidden){if(!wasOn)onShow();else{if(gal&&!gal.__intro&&Date.now()-enterAt<600)intro();skyStart();}}
  if(room&&W.ResizeObserver&&ro!==room.__ro){if(ro)ro.disconnect();let lastSz='';ro=new W.ResizeObserver(()=>{const sz=room.clientWidth+'x'+room.clientHeight;if(sz===lastSz)return;lastSz=sz;clearTimeout(W.__cgRo);W.__cgRo=setTimeout(()=>{if(active()){refresh();if(sk)sk.resize();}},90);});ro.observe(room);room.__ro=ro;}
  const tt=q('#cgThreadTitle');if(tt)tt.textContent=tr('history');const cx=q('#cgClose');if(cx&&cx.setAttribute)cx.setAttribute('aria-label',tr('back'));
  dmCheck(ms);

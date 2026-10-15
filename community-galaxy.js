@@ -14,7 +14,8 @@ function grid(w,h,mode){
  const cols=Math.max(side?1:2,Math.min(side?5:(big?7:4),Math.floor(w/minW))),rows=Math.max(2,Math.min(side?9:5,Math.floor(h/minH)));
  const cw=w/cols,ch=h/rows,cells=[];
  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)cells.push({r,c,x:c*cw,y:r*ch,w:cw,h:ch});
- const last=rows-1,even=cols%2===0,mid=Math.floor(cols/2);
+ /* Oct 16 (E-man's wallpaper: a sun in the middle, worlds on orbits around it): you sit in the middle row, the centre of the system. */
+ const last=rows>2?Math.floor(rows/2):rows-1,even=cols%2===0,mid=Math.floor(cols/2);
  const meBlocks=cols===1?[last]:side?[last*cols+Math.floor((cols-1)/2)]:even?[last*cols+mid-1,last*cols+mid]:[last*cols+mid];
  return {w,h,cols,rows,cw,ch,big,tab,tiny,side,cells,meBlocks};
 }
@@ -109,14 +110,18 @@ function midOf(a,b){return pointOn(curveOf(a,b),.5);}
 function sky(canvas,opts){
  const ctx=canvas&&canvas.getContext&&canvas.getContext('2d');if(!ctx)return null;
  const reduce=()=>!!(root.matchMedia&&root.matchMedia('(prefers-reduced-motion: reduce)').matches);
- let w=0,h=0,dpr=1,stars=[],lines=[],raf=0,last=0,running=false,light=false,seed=hash('lowi-galaxy');
+ let w=0,h=0,dpr=1,stars=[],lines=[],orbits=null,raf=0,last=0,running=false,light=false,seed=hash('lowi-galaxy');
  function size(){const r=canvas.getBoundingClientRect?canvas.getBoundingClientRect():{width:0,height:0};const nw=Math.round(r.width),nh=Math.round(r.height);dpr=Math.min(2,root.devicePixelRatio||1);if(nw===w&&nh===h&&canvas.width===Math.round(nw*dpr))return;w=nw;h=nh;canvas.width=Math.max(1,Math.round(w*dpr));canvas.height=Math.max(1,Math.round(h*dpr));const r2=rng(seed),count=Math.round(Math.min(220,w*h/2600));stars=[];for(let i=0;i<count;i++)stars.push({x:r2()*w,y:r2()*h,r:r2()<.12?1.6:r2()*1.1+.35,p:r2()*6.28,s:.4+r2()*1.4});}
  const curve=curveOf,at=pointOn;
  function draw(now){
   size();if(!w||!h)return;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);const still=reduce(),t=now/1000;
-  const neb=[[.22,.28,.55,light?'rgba(255,170,210,.30)':'rgba(140,90,220,.26)'],[.8,.62,.6,light?'rgba(150,200,255,.34)':'rgba(60,150,200,.22)'],[.5,.95,.5,light?'rgba(255,220,170,.28)':'rgba(220,110,150,.16)']];
-  for(const [nx,ny,nr,col] of neb){const g=ctx.createRadialGradient(nx*w,ny*h,0,nx*w,ny*h,nr*Math.max(w,h));g.addColorStop(0,col);g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);}
-  for(const s of stars){const tw=still?.8:.55+.45*Math.sin(t*s.s+s.p);ctx.globalAlpha=(light?.45:.85)*tw;ctx.fillStyle=light?'#7d6bb0':'#fff';ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,6.283);ctx.fill();}
+  /* Oct 16: deep space like E-man's iOS wallpaper: pure black, faint stars, a glowing sun behind you and thin grey orbit rings
+     that pass through every other world, so each companion sits on its own orbit. */
+  const O=orbits&&isFinite(orbits.cx)&&isFinite(orbits.cy)?orbits:null;
+  if(O){const R0=Math.max(40,Math.min(w,h)*.16),g=ctx.createRadialGradient(O.cx,O.cy,0,O.cx,O.cy,R0*2.6);g.addColorStop(0,'rgba(255,244,214,.55)');g.addColorStop(.18,'rgba(255,214,150,.22)');g.addColorStop(.45,'rgba(120,150,255,.07)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+   const seen=[];ctx.lineWidth=.8;ctx.strokeStyle='rgba(235,235,245,.16)';
+   for(const r of (O.r||[]).slice().sort((a,b)=>a-b)){if(!(r>8)||seen.some(q=>Math.abs(q-r)<10))continue;seen.push(r);ctx.beginPath();ctx.arc(O.cx,O.cy,r,0,6.283);ctx.stroke();}}
+  for(const s of stars){const tw=still?.8:.55+.45*Math.sin(t*s.s+s.p);ctx.globalAlpha=.8*tw;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,6.283);ctx.fill();}
   ctx.globalAlpha=1;
   for(const L of lines){const q=curve(L.a,L.b),alpha=Math.max(.15,L.alpha||1);
    const grad=ctx.createLinearGradient(q.a.x,q.a.y,q.b.x,q.b.y);grad.addColorStop(0,L.from||'#9cdac7');grad.addColorStop(1,L.to||'#ffd27a');
@@ -131,7 +136,7 @@ function sky(canvas,opts){
  }
  function loop(now){raf=0;if(!running)return;if(now-last>=33){last=now;draw(now);}raf=(root.requestAnimationFrame||setTimeout)(loop,16);}
  return {
-  set(next,isLight){lines=Array.isArray(next)?next:[];light=!!isLight;if(!running||reduce())draw(performance.now?performance.now():Date.now());},
+  set(next,isLight,orb){lines=Array.isArray(next)?next:[];light=!!isLight;orbits=orb||null;if(!running||reduce())draw(performance.now?performance.now():Date.now());},
   start(){if(running)return;running=true;if(reduce()){draw(0);running=false;return;}raf=(root.requestAnimationFrame||setTimeout)(loop,16);},
   stop(){running=false;if(raf&&root.cancelAnimationFrame)root.cancelAnimationFrame(raf);raf=0;},
   resize(){w=0;h=0;draw(performance.now?performance.now():Date.now());},

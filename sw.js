@@ -1,6 +1,6 @@
 /* LOWiSPIKE service worker · network-first app shell with offline static fallback. */
-const SHELL_BUILD = "20261015-023000";
-const CACHE = "lowispike-updates-20261015-023000";
+const SHELL_BUILD = "20261015-025000";
+const CACHE = "lowispike-updates-20261015-025000";
 const STATIC = ["finch-extras.js", "finch-extras.css", "spirit-core.js", "lowi-icons.js", "lowi-icons.css", "spirit.js", "spirit.css", "herb-quests-core.js", "herb-quests.js", "herb-quests.css", "wardrobe.css", "herb-config.js", "herb-core.js", "herb-tamagotchi-core.js", "herb-shop-core.js", "herb-shop.js", "herb-shop.css", "herb-identity-core.js", "herb-identity.js", "herb-identity.css", "herb-tamagotchi.js", "herb-tamagotchi-polish.js", "herb-tamagotchi-mount-fix.js", "herb-tamagotchi.css", "body-core.js", "body-companion.js", "body-companion.css", "swaflo-config.js", "swaflo-core.js", "swaflo.js", "swaflo.css", "discovery-config.js", "discovery-core.js", "discovery.js", "discovery.css", "apple-ui.js", "apple-ui.css", "appearance.js", "recipe-book.js", "updates.css", "weather-sky-core.js", "weather-sky.js", "weather-sky.css", "fast-bubble.js", "fast-bubble.css", "herb-touch.js", "herb-touch.css", "wide-layout.css", "living-home.js", "living-home.css", "daily-ritual.js", "daily-ritual.css", "sun-meter.js", "sun-meter.css", "praise.js", "vendor/supabase-2.117.3.js", "vendor/zxing-0.21.3.min.js", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png"];
 self.addEventListener("install", e => {
   self.skipWaiting();

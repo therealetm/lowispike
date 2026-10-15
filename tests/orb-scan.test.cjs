@@ -53,7 +53,8 @@ test('camAct reuses the herb functions so XP, sun meter, macro bonus and duplica
 
 test('the Home orb opens only the herb game: no action menu, no GPT link in the herb world', () => {
   assert.ok(!spirit.includes('<div class="sp-actions">'), 'old orb action menu still rendered');
-  assert.ok(!spirit.includes('<a class="sp-gpt"'), 'GPT link moved to the scanner');
+  const world = spirit.slice(spirit.indexOf("<p class=\"sp-play-hint\">"), spirit.indexOf("<p class=\"sp-play-hint\">") + 200);
+  assert.ok(world.length > 50 && !world.includes('sp-gpt') && !world.includes('sp-actions'), 'herb world keeps no capture menu and no GPT link (moved to the scanner)');
   assert.ok(spirit.includes('data-sp="open"') || /bubble[^\n]*'open'/.test(spirit), 'the orb still opens the herb world');
   assert.ok(spirit.includes("button('wardrobe'") || spirit.includes('wardrobe'), 'herb functions stay');
 });

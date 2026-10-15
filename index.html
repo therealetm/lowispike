@@ -1638,7 +1638,17 @@ html[data-theme=light] #lwBoot{background:#f6f8fc;color:#141a2b}
   function settle(){
     if (done || !dom || !files) return;
     var wait = sheetsIn(), left = wait.length, t0 = Date.now();
-    function go(){ if (done) return; requestAnimationFrame(function(){ requestAnimationFrame(function(){ reveal("ready"); }); }); }
+    /* Late modules finish with short debounced renders (rows, cards slotting in). Wait until the page has been still
+       for 180 ms (at most 700 ms), so the first frame you see is the settled one, then two frames to paint it. */
+    function go(){
+      if (done || go.on) return; go.on = 1;
+      var q = Date.now(), t = 0, mo = null;
+      function fin(why){ if (fin.d) return; fin.d = 1; if (mo) mo.disconnect(); clearTimeout(t); window.__LOWI_BOOT_Q = (Date.now() - q) + (why ? " " + why : "");
+        requestAnimationFrame(function(){ requestAnimationFrame(function(){ reveal("ready"); }); }); }
+      function still(){ clearTimeout(t); t = setTimeout(function(){ fin("still"); }, 180); }
+      try { mo = new MutationObserver(function(){ if (Date.now() - q > 700) fin("max"); else still(); }); mo.observe(document.body, {childList:true, subtree:true}); } catch(e){ mo = null; }
+      still(); setTimeout(function(){ if (!done) fin("max"); }, 720);
+    }
     if (!left) { go(); return; }
     var fin = function(){ if (--left <= 0) go(); };
     for (var i = 0; i < wait.length; i++) { wait[i].addEventListener("load", fin, {once:true}); wait[i].addEventListener("error", fin, {once:true}); }

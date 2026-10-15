@@ -28,7 +28,8 @@ function fakeDom(opts) {
     const win = { document, location: { search: opts.search || '' },
         performance: { now: () => 1234 },
         matchMedia: () => ({ matches: !!opts.still }),
-        setTimeout: (f, ms) => { timers.push({ f, ms }); return timers.length; },
+        setTimeout: (f, ms) => { const x = { f, ms }; timers.push(x); return x; },
+        clearTimeout: (x) => { const i = timers.indexOf(x); if (i >= 0) timers.splice(i, 1); },
         requestAnimationFrame: f => { rafs.push(f); return rafs.length; },
         addEventListener: (t, f) => { (listeners[t] = listeners[t] || []).push(f); },
         dispatchEvent: e => events.push(e), CustomEvent: function (t, o) { this.type = t; this.detail = o && o.detail; } };
@@ -37,7 +38,8 @@ function fakeDom(opts) {
     const fire = (t) => (docListeners[t] || []).forEach(f => f());
     const fireWin = (t) => (listeners[t] || []).forEach(f => f());
     const runTimers = (pred) => { const t = timers.filter(pred); t.forEach(x => { timers.splice(timers.indexOf(x), 1); x.f(); }); };
-    return { win, H, cls, timers, events, flushRaf, fire, fireWin, runTimers };
+    const settle = () => { runTimers(t => t.ms === 180); flushRaf(); };
+    return { win, H, cls, timers, events, flushRaf, fire, fireWin, runTimers, settle };
 }
 function boot(opts) { const d = fakeDom(opts); vm.runInNewContext(bootJs, d.win); return d; }
 
@@ -69,15 +71,25 @@ test('the app shows once the page and every companion file are in, after two fra
     B.loaded(); d.flushRaf();
     assert.ok(d.cls.has('lw-boot'), 'files alone are not enough while the page is still parsing');
     d.fire('DOMContentLoaded');
-    assert.ok(d.cls.has('lw-boot'), 'waits two frames so the first visible frame is laid out');
-    d.flushRaf();
+    assert.ok(d.cls.has('lw-boot'), 'waits for the page to be still, then two frames, so the first visible frame is the settled one');
+    assert.ok(d.timers.some(t => t.ms === 180) && d.timers.some(t => t.ms === 720), 'stillness window 180 ms, never more than ~0.7 s');
+    d.flushRaf(); assert.ok(d.cls.has('lw-boot'));
+    d.settle();
     assert.ok(!d.cls.has('lw-boot'));
+    assert.match(String(d.win.__LOWI_BOOT_Q), /still/);
     assert.strictEqual(d.win.__LOWI_BOOT_DONE, 'ready');
     assert.strictEqual(d.events[0].type, 'lowi:boot-ready');
     assert.ok(splash._cls.has('out'), 'launch screen fades away over the finished app');
     d.runTimers(t => t.ms === 260);
     assert.ok(!d.H.children.includes(splash), 'launch screen is removed afterwards');
     B.reveal('again'); assert.strictEqual(d.win.__LOWI_BOOT_DONE, 'ready'); assert.strictEqual(d.events.length, 1);
+});
+
+test('a page that keeps changing still opens after the 0.7 s stillness cap', () => {
+    const d = boot({ readyState: 'complete' });
+    d.win.LowiBoot.loaded();
+    d.runTimers(t => t.ms === 720); d.flushRaf();
+    assert.ok(!d.cls.has('lw-boot')); assert.match(String(d.win.__LOWI_BOOT_Q), /max/);
 });
 
 test('it can never trap you on the launch screen', () => {
@@ -98,20 +110,20 @@ test('stylesheets still loading get a short moment, never more than 1.2 s', () =
     let d = boot({ readyState: 'interactive', sheets: [sheet] });
     d.win.LowiBoot.loaded(); d.flushRaf();
     assert.ok(d.cls.has('lw-boot'));
-    sheet._l.load.forEach(f => f()); d.flushRaf();
+    sheet._l.load.forEach(f => f()); d.settle();
     assert.ok(!d.cls.has('lw-boot'));
     const stuck = { sheet: null, addEventListener() {} };
     d = boot({ readyState: 'complete', sheets: [stuck] });
     d.win.LowiBoot.loaded(); d.flushRaf();
     assert.ok(d.cls.has('lw-boot'));
     assert.ok(d.timers.some(t => t.ms === 1200));
-    d.runTimers(t => t.ms === 1200); d.flushRaf();
+    d.runTimers(t => t.ms === 1200); d.settle();
     assert.ok(!d.cls.has('lw-boot'));
 });
 
 test('reduced motion: the launch screen leaves at once, without a fade', () => {
     const d = boot({ still: true, readyState: 'complete' });
-    d.win.LowiBoot.loaded(); d.flushRaf();
+    d.win.LowiBoot.loaded(); d.settle();
     assert.ok(!d.cls.has('lw-boot'));
     assert.ok(!d.H.children.some(c => c.id === 'lwBoot'));
 });

@@ -98,6 +98,7 @@ test('reactions are fixed supportive phrases, hidden people disappear, privacy l
 
 test('wardrobe and herb hints exist and every hint is also an aria-description on its control', () => {
   const ids = X.HINTS.map(h => h.id);
-  for (const id of ['scan', 'herb', 'wear', 'try', 'fast', 'vibes']) assert.ok(ids.includes(id), id);
+  for (const id of ['scan', 'herb', 'fast', 'vibes']) assert.ok(ids.includes(id), id);
+  for (const id of ['wear', 'try']) assert.ok(!ids.includes(id), 'dress-up hint retired: ' + id);
   assert.match(read('finch-extras.js'), /setAttribute\('aria-description'/);
 });

@@ -7,30 +7,24 @@ const src=f=>fs.readFileSync(path.join(__dirname,'..',f),'utf8');
 T.registerExtras(K.SEASONAL);
 const at=s=>new Date(s).getTime();
 
-test('seasonal pieces are registered but only count once owned',()=>{
- T.setOwned([]);
- assert.ok(T.cosmetic('maple'),'seasonal piece is known');
- assert.equal(T.owns('maple',99999),false,'XP alone never owns a seasonal piece');
- assert.equal(T.toggleEquip({},'maple',99999),null);
- assert.equal(T.cleanEquipment({hat:'maple'},99999).hat,'');
- assert.ok(!T.wardrobeItems(99999,{}).some(c=>c.id==='maple'),'unowned seasonal pieces stay out of the wardrobe');
- T.setOwned(['maple','tidal']);
- assert.equal(T.owns('maple',0),true);
- assert.equal(T.owns('tidal',1e9),false,'premium can never be owned');
- assert.equal(T.toggleEquip({},'maple',0).hat,'maple');
- assert.equal(T.cleanEquipment({hat:'maple'},0).hat,'maple');
- assert.equal(T.wardrobeItems(0,{}).find(c=>c.id==='maple').status,'ready');
+test('seasonal pieces stay known for old saves, but nothing can be worn any more (Oct 15)',()=>{
+ T.setOwned(['maple','mistscarf','acorn']);
+ assert.ok(T.cosmetic('maple'),'seasonal piece is still known, so old saves parse');
+ assert.equal(T.owns('maple',0),true,'what he had stays his in the data');
+ assert.equal(T.toggleEquip({},'maple',0),null);
+ assert.deepEqual(T.cleanEquipment({hat:'maple',neck:'mistscarf',pot:'acorn'},0),T.BASE_EQUIPMENT);
  T.setOwned([]);
 });
 
-test('a gifted regular piece is wearable before its XP; others stay locked',()=>{
- T.setOwned(['halo']);
- assert.equal(T.toggleEquip({},'halo',10).effect,'halo');
- assert.equal(T.itemStatus('halo',10,{}),'ready');
- assert.equal(T.wardrobeItems(10,{}).find(c=>c.id==='halo').left,0);
- assert.equal(T.toggleEquip({},'aurora',10),null);
- T.setOwned([]);
- assert.equal(T.toggleEquip({},'halo',10),null);
+test('shop UI (Oct 15): no shelf, no outfit gift, one small daily gift spot with a fact and no XP, Ko-fi stays reachable',()=>{
+ const s=src('herb-shop.js'),css=src('herb-shop.css');
+ assert.match(s,/function entryHTML\(\)\{return'';\}/,'no shop entry button anywhere');
+ assert.ok(s.includes("V.view='plus'"),'opening always shows the voluntary support view');
+ assert.ok(s.includes("lowispike.gift.v1")&&s.includes("data-shop','gift'"),'one gift spot');
+ assert.ok(!/addXP|awardXP|LowiXP/.test(s.slice(s.indexOf('Kometa\'s daily gift'))),'the gift gives no XP');
+ assert.ok(s.includes("open('plus')"),'Ko-fi door inside the gift card');
+ assert.ok(/#whHud > \.hs-gift \{[^}]*width: 44px/.test(css),'small spot');
+ assert.ok(/prefers-reduced-motion[^}]*hs-gift-core/.test(css));
 });
 
 test('drop windows: autumn runs in October, winter wraps over new year, spring shows the next drop',()=>{

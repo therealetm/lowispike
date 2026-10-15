@@ -1,6 +1,6 @@
 /* LOWiSPIKE cell room + friends tree UI (Oct 15). Finch-style home for the living cell and a friends tree.
-   Room: opens from the Wardrobe header, the herb world header and window.LowiCellRoom.openRoom(). Pieces come from the
-   wardrobe/shop (owned only) plus own furniture earned with XP. Shop button top right opens Kometa's shop.
+   Room: RETIRED Oct 15 (user: "remove the window, plasma cushion and all that stuff, we go the Pokémon route").
+   The room code below stays only so old saves (lowispike.room.v1) still parse; nothing opens it any more.
    Friends tree: opens from Community (button next to Milestones, and a row in the Milestones sheet). Real people only:
    an invite link, or people who are in the Community room while signed in. No contact sync, no health data. */
 (function(root){'use strict';
@@ -141,24 +141,22 @@ function checkInvite(){const inv=K.parseInvite(root.location.search);if(!inv)ret
  try{const u=new URL(root.location.href);['friend','fn','fc'].forEach(k=>u.searchParams.delete(k));history.replaceState(history.state,'',u.pathname+u.search+u.hash);}catch(e){}
  setTimeout(()=>{if(inv.uid===myUid()||I.ov)return;T.invite=inv;I.ov=overlay('cr-ov-inv','crInvTitle');I.ov.innerHTML=inviteHTML(inv);const b=I.ov.querySelector('[data-cr="invYes"]');b&&b.focus({preventScroll:true});},2200);}
 function closeInvite(){if(I.ov){I.ov.remove();I.ov=null;}}
-/* ---------- entry points ---------- */
+/* ---------- entry points (friends tree only; the room door is gone since Oct 15) ---------- */
 function btn(cls,act,label,icon,text){const b=D.createElement('button');b.type='button';b.className=cls;b.dataset.cr=act;b.setAttribute('aria-label',label);b.setAttribute('data-noi18n','');b.innerHTML=icon+(text?'<span>'+esc(text)+'</span>':'');return b;}
 function inject(){
- const wh=D.querySelector('#spWd .wd-head');if(wh&&!wh.querySelector('.cr-entry')){const b=btn('cr-entry','room',L('Decorate your cell\'s home','Zuhause deiner Zelle einrichten','Decora la casa de tu célula'),ICO.home,L('Home','Zuhause','Casa'));const s=wh.querySelector('.hs-entry');if(s)s.after(b);else{const x=wh.querySelector('.wd-xp');x?wh.insertBefore(b,x):wh.appendChild(b);}}
- const rh=D.querySelector('.lh-room-head');if(rh&&!rh.querySelector('.cr-entry')){const b=btn('cr-entry cr-entry-w','room',L('Decorate your cell\'s home','Zuhause deiner Zelle einrichten','Decora la casa de tu célula'),ICO.home,L('Home','Zuhause','Casa'));const x=rh.querySelector('.tmg-close');x?rh.insertBefore(b,x):rh.appendChild(b);}
  const h1=D.querySelector('#tab-foryou .ls-phd .h1');if(h1&&!h1.querySelector('#crTreeBtn')){const b=btn('cr-treeb','tree',L('Friends tree','Freundesbaum','Árbol de amigos'),ICO.tree,'');b.id='crTreeBtn';h1.appendChild(b);}
  const fs=D.querySelector('.fx-sheet');if(fs&&!fs.querySelector('.cr-mrow')){const n=friends().list.length,b=btn('cr-mrow','tree',L('Friends tree','Freundesbaum','Árbol de amigos'),ICO.tree,L('Your friends tree','Dein Freundesbaum','Tu árbol de amigos')+(n?' · '+n:''));const sub=fs.querySelector('.fx-sub');sub?sub.after(b):fs.prepend(b);}}
 let qd=0;const queue=()=>{if(qd)return;qd=requestAnimationFrame(()=>{qd=0;try{inject();}catch(e){}});};
 /* ---------- events ---------- */
 D.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-cr]');if(!b||b.tagName==='INPUT')return;const a=b.dataset.cr;
- if(a==='room'){e.preventDefault();e.stopPropagation();openRoom();return;}
+ /* Oct 15 (user): Misty's room (window, plasma cushion, decor) is retired. Old room buttons do nothing harmful. */
+ if(a==='room'){e.preventDefault();e.stopPropagation();return;}
  if(a==='tree'&&!(T.ov&&T.ov.contains(b))){e.preventDefault();e.stopPropagation();try{if(D.querySelector('.fx-sheet')&&root.LowiHost&&LowiHost.closeSheet)LowiHost.closeSheet();}catch(x){}openTree();return;}
  if(I.ov&&I.ov.contains(b)){e.preventDefault();e.stopPropagation();const inv=T.invite;closeInvite();if(a==='invYes'&&inv){addFriend(inv,'link');openTree();T.sel=inv.uid;T.msg=L(inv.n+' is in your tree now.',inv.n+' ist jetzt in deinem Baum.',inv.n+' ya está en tu árbol.');paintTree();}return;}
  if(R.ov&&R.ov.contains(b)){e.preventDefault();e.stopPropagation();
   if(a==='close')closeRoom();
   else if(a==='cat'){R.cat=b.dataset.cat;R.msg='';paintRoom('tab');}
   else if(a==='toggle')toggleRoom(b.dataset.id);
-  else if(a==='shop'&&root.LowiHerbShop)LowiHerbShop.open();
   return;}
  if(T.ov&&T.ov.contains(b)){e.preventDefault();e.stopPropagation();
   if(a==='close')closeTree();
@@ -182,5 +180,6 @@ root.addEventListener('storage',e=>{if(e.key===K.RKEY&&R.ov)paintRoom();if(e.key
 if(!D.getElementById('crCss')){const l=D.createElement('link');l.id='crCss';l.rel='stylesheet';l.href='cell-room.css?v='+(((D.querySelector('meta[name="lowi-build"]')||{}).content)||'');D.head.appendChild(l);}
 function boot(){if(!D.body){setTimeout(boot,50);return;}new MutationObserver(queue).observe(D.body,{childList:true,subtree:true});queue();checkInvite();}
 boot();
-root.LowiCellRoom={openRoom,closeRoom,openTree,closeTree,isOpen:()=>!!(R.ov||T.ov),friends:()=>friends().list.slice(),room:()=>read(K.RKEY,K.cleanRoom)};
+/* openRoom is no longer exported: Misty's room is retired (Oct 15), so no screen offers a door to it. */
+root.LowiCellRoom={closeRoom,openTree,closeTree,isOpen:()=>!!(R.ov||T.ov),friends:()=>friends().list.slice(),room:()=>read(K.RKEY,K.cleanRoom)};
 })(window);

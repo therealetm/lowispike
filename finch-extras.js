@@ -12,8 +12,7 @@
     const HINTS = [
         { id: 'scan', sel: ['#lhDock', '#tabbar .tb.scan'], txt: ['TAP TO SCAN', 'TIPPEN ZUM SCANNEN', 'TOCA PARA ESCANEAR'] },
         { id: 'herb', sel: ['#spBubble'], txt: ['PRESS YOUR HERB', 'DRÜCK DEIN KRAUT', 'PULSA TU HIERBA'] },
-        { id: 'wear', sel: ['[data-sp="wardrobe"]'], txt: ['OPEN THE WARDROBE', 'ZUM KLEIDERSCHRANK', 'ABRE EL ARMARIO'] },
-        { id: 'try', sel: ['.wd-item'], txt: ['TAP TO TRY ON', 'TIPPEN ZUM ANPROBIEREN', 'TOCA PARA PROBAR'] },
+        /* 'wear' (open the wardrobe) removed Oct 15: dress-up is retired */
         { id: 'fast', sel: ['#spFast'], txt: ['TAP FOR YOUR FAST', 'TIPP FÜRS FASTEN', 'TOCA PARA TU AYUNO'] },
         { id: 'miles', sel: ['#fxMilesBtn'], txt: ['SEE MILESTONES', 'MEILENSTEINE ANSEHEN', 'VER LOGROS'] },
         { id: 'vibes', sel: ['.fx-vibe:not([disabled])'], txt: ['SEND GOOD VIBES', 'GUTE VIBES SENDEN', 'ENVÍA BUENAS VIBRAS'] }

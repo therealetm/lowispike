@@ -1,5 +1,7 @@
-/* LOWiSPIKE herb shop UI (Oct 15): Kometa's shop (seasonal drop, 8-hour shelf, one free gift a day, try-on)
-   and pay what you want as a voluntary Ko-fi tip (opens over the app). Opens from the Wardrobe header. Nothing is sold in the app; supporting unlocks nothing. */
+/* LOWiSPIKE herb shop UI (Oct 15): pay what you want as a voluntary Ko-fi tip (opens over the app), plus Kometa's daily gift.
+   Oct 15 later (user: "dressing up Misty is too much ... we go the Pokémon route"): the cosmetic shop, try-on and outfit gifts are
+   retired. What stays: ONE small gift spot on the world Home (a calm body fact once a day, no XP, no items) and, inside its card,
+   the door to the Ko-fi support view. Nothing was ever sold in the app and XP was never spent, so nobody loses anything. */
 (function(root){'use strict';
 const D=root.document,K=root.LowiHerbShopCore,WC=root.LowiHerbTamagotchiCore;if(!D||!K||!WC||root.LowiHerbShop)return;
 const mq=root.matchMedia?root.matchMedia('(prefers-reduced-motion: reduce)'):null,reduced=()=>!!(mq&&mq.matches);
@@ -16,7 +18,8 @@ function save(st){st=K.clean({...st,ts:Date.now()});try{localStorage.setItem(K.S
 root.addEventListener('storage',e=>{if(e.key===K.SKEY)WC.setOwned(read().owned);});
 function herb(){try{return root.LowiHerbTamagotchi.current();}catch(e){return null;}}
 const V={open:false,view:'shop',sel:'',msg:'',back:null,timer:0,ov:null,away:0,back2:false};
-function entryHTML(){const st=read(),now=Date.now(),gift=!K.freeClaimed(st,now);
+function entryHTML(){return'';}
+function entryHTMLOld(){const st=read(),now=Date.now(),gift=!K.freeClaimed(st,now);
  return'<button type="button" class="hs-entry" data-shop="open" aria-label="'+esc(L('Kometa\'s shop','Kometas Laden','Tienda de Kometa')+(gift?' · '+L('a free gift is waiting','ein Gratis-Geschenk wartet','te espera un regalo'):''))+'">'+icon('bag')+'<span>'+esc(L('Shop','Laden','Tienda'))+'</span>'+(gift?'<i class="hs-dot" aria-hidden="true"></i>':'')+'</button>';}
 const KOMETA='<svg class="hs-kometa" viewBox="0 0 120 100" aria-hidden="true"><defs><radialGradient id="hsKb" cx=".35" cy=".3" r=".8"><stop stop-color="#fff7df"/><stop offset=".55" stop-color="#ffd88a"/><stop offset="1" stop-color="#e58fb6"/></radialGradient><linearGradient id="hsKt" x1="1" x2="0"><stop stop-color="#ffe6a2" stop-opacity=".9"/><stop offset="1" stop-color="#9d8cff" stop-opacity="0"/></linearGradient></defs><path class="hs-k-tail" d="M58 52Q30 30 4 38Q26 48 6 62Q32 60 58 60Z" fill="url(#hsKt)"/><g class="hs-k-body"><path d="M66 30l4-14M84 30l-2-14" stroke="#ffe6a2" stroke-width="2.2" stroke-linecap="round"/><circle cx="70" cy="15" r="3" fill="#fff3c4"/><circle cx="82" cy="15" r="3" fill="#fff3c4"/><ellipse cx="76" cy="55" rx="25" ry="24" fill="url(#hsKb)" stroke="#fff1c9" stroke-width="1.4"/><path d="M57 62q19 12 38 0" fill="none" stroke="#c76d97" stroke-width="1.2" opacity=".5"/><circle cx="68" cy="52" r="3.2" fill="#2a2a46"/><circle cx="84" cy="52" r="3.2" fill="#2a2a46"/><circle cx="69" cy="51" r="1" fill="#fff"/><circle cx="85" cy="51" r="1" fill="#fff"/><path d="M71 60q5 4 10 0" fill="none" stroke="#2a2a46" stroke-width="1.8" stroke-linecap="round"/><circle cx="63" cy="58" r="3" fill="#f59ab9" opacity=".55"/><circle cx="89" cy="58" r="3" fill="#f59ab9" opacity=".55"/><path d="M52 72q24 10 48 0l-3 8q-21 8-42 0Z" fill="#7a6ad8" stroke="#c8b0ff" stroke-width="1"/><path d="M76 74l2 4 4 1-4 1-2 4-2-4-4-1 4-1Z" fill="#ffe6a2"/></g></svg>';
 function status(c,st,now,xp,offer){const own=st.owned.includes(c.id)||WC.owns(c.id,xp);
@@ -62,21 +65,21 @@ function fmtDay(t){try{return new Date(t).toLocaleDateString(['en','de','es'][li
 function plusHTML(){const st=read(),m=st.support,url=K.kofiUrl();
  const modes=[['free',money(0),L('Just stay','Einfach dabei sein','Solo quedarte')],['once',L('One-time','Einmalig','Una vez'),L('You pick the amount','Betrag frei wählbar','Tú eliges la cantidad')],['month',L('Monthly','Monatlich','Mensual'),L('Cancel any time','Jederzeit kündbar','Cancela cuando quieras')]];
  const away=L('Ko-fi opens on top of LOWiSPIKE. Close it and you are right back here.','Ko-fi öffnet sich über LOWiSPIKE. Schließen, und du bist wieder hier.','Ko-fi se abre sobre LOWiSPIKE. Ciérralo y vuelves aquí.');
- const facts=m==='free'?[L('Nothing happens and nothing is charged.','Nichts passiert, es wird nichts berechnet.','No pasa nada y no se cobra nada.'),L('You keep everything: scan, log, fasting, your herb, the wardrobe, the shop and the daily gift.','Du behältst alles: Scan, Loggen, Fasten, dein Kraut, den Kleiderschrank, den Laden und das Tagesgeschenk.','Te quedas con todo: escanear, registrar, ayuno, tu hierba, el armario, la tienda y el regalo diario.')]
+ const facts=m==='free'?[L('Nothing happens and nothing is charged.','Nichts passiert, es wird nichts berechnet.','No pasa nada y no se cobra nada.'),L('You keep everything: scan, log, fasting, Misty and her forms, and the daily gift.','Du behältst alles: Scan, Loggen, Fasten, Misty mit ihren Formen und das Tagesgeschenk.','Te quedas con todo: escanear, registrar, ayuno, Misty y sus formas, y el regalo diario.')]
   :m==='once'?[away,L('On Ko-fi you choose the amount and pay by card or PayPal.','Bei Ko-fi wählst du den Betrag und zahlst mit Karte oder PayPal.','En Ko-fi eliges la cantidad y pagas con tarjeta o PayPal.'),L('Charged once. No subscription, nothing renews.','Einmal abgebucht. Kein Abo, nichts verlängert sich.','Se cobra una vez. Sin suscripción, nada se renueva.')]
   :[away,L('On Ko-fi tap "Monthly" and choose the amount.','Bei Ko-fi auf „Monthly“ tippen und den Betrag wählen.','En Ko-fi toca «Monthly» y elige la cantidad.'),L('First payment right away, then the same amount on the same day every month.','Erste Zahlung sofort, danach jeden Monat am gleichen Tag der gleiche Betrag.','Primer pago al momento, luego la misma cantidad el mismo día cada mes.'),L('Cancel any time in your Ko-fi account or in PayPal.','Kündigen jederzeit in deinem Ko-fi-Konto oder bei PayPal.','Cancela cuando quieras en tu cuenta de Ko-fi o en PayPal.')];
- return'<div class="hs-panel" data-view="plus"><header class="hs-head"><button type="button" class="hs-x hs-back" data-shop="shop" aria-label="'+esc(L('Back to the shop','Zurück zum Laden','Volver a la tienda'))+'">‹</button><h2 id="hsTitle">'+esc(L('Pay what you want','Zahl, was du willst','Paga lo que quieras'))+'</h2><button type="button" class="hs-x" data-shop="close" aria-label="'+esc(L('Close','Schließen','Cerrar'))+'">×</button></header><div class="hs-scroll">'+
+ return'<div class="hs-panel" data-view="plus"><header class="hs-head"><button type="button" class="hs-x hs-back" data-shop="close" aria-label="'+esc(L('Close','Schließen','Cerrar'))+'">×</button><h2 id="hsTitle">'+esc(L('Pay what you want','Zahl, was du willst','Paga lo que quieras'))+'</h2><button type="button" class="hs-x" data-shop="close" aria-label="'+esc(L('Close','Schließen','Cerrar'))+'">×</button></header><div class="hs-scroll">'+
   (V.back2?'<p class="hs-thanks" role="status">'+esc(L('Welcome back. Thank you if you supported LOWiSPIKE. Nothing in the app changes either way.','Willkommen zurück. Danke, falls du LOWiSPIKE unterstützt hast. In der App ändert sich so oder so nichts.','Bienvenido de nuevo. Gracias si apoyaste LOWiSPIKE. En la app no cambia nada, lo hagas o no.'))+'</p>':'')+
   '<p class="hs-must" role="note">'+icon('heart')+'<span><b>'+esc(L('Voluntary, straight to the maker of LOWiSPIKE.','Freiwillig, direkt an den Macher von LOWiSPIKE.','Voluntario, directo al creador de LOWiSPIKE.'))+'</b> '+esc(L('Everything in the app stays free. Supporting unlocks nothing: no XP, no pieces, no advantage.','Alles in der App bleibt kostenlos. Unterstützen schaltet nichts frei: keine XP, keine Teile, kein Vorteil.','Todo en la app sigue gratis. Apoyar no desbloquea nada: ni XP, ni piezas, ni ventajas.'))+'</span></p>'+
   '<div class="hs-modes" role="radiogroup" aria-label="'+esc(L('How you want to support','Wie du unterstützen willst','Cómo quieres apoyar'))+'">'+modes.map(([k,t,d])=>'<button type="button" role="radio" aria-checked="'+(k===m)+'" data-shop="mode" data-mode="'+k+'"><b>'+esc(t)+'</b><small>'+esc(d)+'</small></button>').join('')+'</div>'+
   '<ul class="hs-facts">'+facts.map(f=>'<li>'+esc(f)+'</li>').join('')+'</ul>'+
-  (m==='free'?'<button type="button" class="hs-act hs-cta" data-shop="shop">'+esc(L('Done','Fertig','Listo'))+'</button>'
+  (m==='free'?'<button type="button" class="hs-act hs-cta" data-shop="close">'+esc(L('Done','Fertig','Listo'))+'</button>'
    :'<a class="hs-act hs-cta hs-kofi" href="'+esc(url)+'" target="_blank" rel="noopener" data-shop="kofi">'+esc(m==='month'?L('Support monthly on Ko-fi','Monatlich bei Ko-fi unterstützen','Apoyar cada mes en Ko-fi'):L('Support once on Ko-fi','Einmalig bei Ko-fi unterstützen','Apoyar una vez en Ko-fi'))+'<span class="hs-ext" aria-hidden="true">↗</span></a>')+
   '<p class="hs-fine">'+esc(L('Payment happens on Ko-fi, not in LOWiSPIKE. The app sees no payment details and does not know whether or how much you give.','Bezahlt wird bei Ko-fi, nicht in LOWiSPIKE. Die App sieht keine Zahlungsdaten und weiß nicht, ob oder wie viel du gibst.','El pago se hace en Ko-fi, no en LOWiSPIKE. La app no ve datos de pago y no sabe si das ni cuánto.'))+'</p></div></div>';}
 function paint(focusSel){if(!V.ov)return;const sc=V.ov.querySelector('.hs-scroll'),top=sc?sc.scrollTop:0;const catOpen=!!V.ov.querySelector('.hs-cat[open]');V.ov.innerHTML=V.view==='plus'?plusHTML():shopHTML();if(catOpen){const c=V.ov.querySelector('.hs-cat');if(c)c.open=true;}const ns=V.ov.querySelector('.hs-scroll');if(ns&&focusSel!=='top')ns.scrollTop=top;
  const f=focusSel&&focusSel!=='top'?V.ov.querySelector(focusSel):null;(f||V.ov.querySelector('.hs-head .hs-x:last-of-type')||V.ov).focus({preventScroll:true});}
 function tick(){if(!V.ov)return;const now=Date.now();let stale=false;V.ov.querySelectorAll('[data-shop-count]').forEach(el=>{const t=+el.dataset.shopCount;if(t<=now)stale=true;});if(stale){V.msg='';paint();}}
-function open(view){if(V.ov)return;V.back=D.activeElement;V.view=view||'shop';V.msg='';V.sel='';
+function open(view){if(V.ov)return;V.back=D.activeElement;V.view='plus';V.back2=false;V.msg='';V.sel='';
  const ov=D.createElement('div');ov.className='hs-ov';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');ov.setAttribute('aria-labelledby','hsTitle');ov.tabIndex=-1;if(reduced())ov.dataset.still='';
  V.ov=ov;D.body.appendChild(ov);paint('top');V.timer=setInterval(tick,30000);root.dispatchEvent(new CustomEvent('lowi:shop',{detail:{open:true}}));}
 function close(then){if(!V.ov)return;clearInterval(V.timer);V.ov.remove();V.ov=null;
@@ -90,20 +93,63 @@ D.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data
  if(a==='open'){e.preventDefault();e.stopPropagation();open();return;}
  if(!V.ov||!V.ov.contains(b))return;e.preventDefault();e.stopPropagation();const h=herb(),xp=h?+h.m.xp||0:0,now=Date.now();
  if(a==='close')close();
- else if(a==='pick'){V.sel=b.dataset.item;V.msg='';paint('.hs-stage .hs-act:not([disabled]),.hs-stage .hs-act');const st=V.ov&&V.ov.querySelector('.hs-stage');if(st&&st.scrollIntoView)st.scrollIntoView({block:'nearest',behavior:reduced()?'auto':'smooth'});}
- else if(a==='free'){const n=K.claimFree(WC,read(),now,xp,uid());if(n){save(n);V.sel=n.free.id;V.msg=K.line('given',li(),0);}paint('.hs-stage .hs-act');}
- else if(a==='claim'){const n=K.claim(WC,read(),b.dataset.item,now,xp);if(n){save(n);V.msg=L('It\'s yours. Find it in the wardrobe.','Gehört dir. Du findest es im Kleiderschrank.','Es tuya. La encontrarás en el armario.');}paint('.hs-stage .hs-act');}
- else if(a==='wear')wear(b.dataset.item);
+ else if(a==='pick'&&0){V.sel=b.dataset.item;V.msg='';paint('.hs-stage .hs-act:not([disabled]),.hs-stage .hs-act');const st=V.ov&&V.ov.querySelector('.hs-stage');if(st&&st.scrollIntoView)st.scrollIntoView({block:'nearest',behavior:reduced()?'auto':'smooth'});}
+ else if(a==='free'&&0){const n=K.claimFree(WC,read(),now,xp,uid());if(n){save(n);V.sel=n.free.id;V.msg=K.line('given',li(),0);}paint('.hs-stage .hs-act');}
+ else if(a==='claim'&&0){const n=K.claim(WC,read(),b.dataset.item,now,xp);if(n){save(n);V.msg=L('It\'s yours. Find it in the wardrobe.','Gehört dir. Du findest es im Kleiderschrank.','Es tuya. La encontrarás en el armario.');}paint('.hs-stage .hs-act');}
  else if(a==='plus'){V.view='plus';V.back2=false;paint('top');}
- else if(a==='shop'){V.view='shop';paint('top');}
+ else if(a==='shop')close();
  else if(a==='mode'){save({...read(),support:b.dataset.mode});V.back2=false;paint('[data-shop="mode"][aria-checked="true"]');}
 },true);
 D.addEventListener('change',e=>{const t=e.target;if(!V.ov||!V.ov.contains(t)||!t.dataset||!t.dataset.shop)return;if(t.dataset.shop==='remind'){save({...read(),remind:t.checked});paint('[data-shop="remind"]');}else if(t.dataset.shop==='notify')save({...read(),notify:t.checked});},true);
-D.addEventListener('keydown',e=>{if(!V.ov)return;if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();if(V.view==='plus'){V.view='shop';paint('top');}else close();return;}
+D.addEventListener('keydown',e=>{if(!V.ov)return;if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();close();return;}
  if(e.key==='Tab'){const f=[...V.ov.querySelectorAll('button:not([disabled]),a[href],input,[tabindex="0"]')];if(!f.length)return;const i=f.indexOf(D.activeElement);if(e.shiftKey&&(i<=0)){e.preventDefault();f[f.length-1].focus();}else if(!e.shiftKey&&i===f.length-1){e.preventDefault();f[0].focus();}else if(i<0){e.preventDefault();f[0].focus();}e.stopImmediatePropagation();}},true);
 if(!D.getElementById('hsCss')){const l=D.createElement('link');l.id='hsCss';l.rel='stylesheet';l.href='herb-shop.css?v='+(((D.querySelector('meta[name="lowi-build"]')||{}).content)||'');D.head.appendChild(l);}
 /* Back from Ko-fi: one calm thank-you line, no tracking, nothing unlocked. */
 function back(){if(!V.away||D.visibilityState==='hidden')return;if(Date.now()-V.away<800)return;V.away=0;if(V.ov&&V.view==='plus'){V.back2=true;paint('.hs-thanks');}}
 D.addEventListener('visibilitychange',back);root.addEventListener('focus',back);root.addEventListener('pageshow',back);
-root.LowiHerbShop={open,close,entryHTML,state:read,isOpen:()=>!!V.ov,kofiUrl:()=>K.kofiUrl()};
+
+/* ---------- Kometa's daily gift: one small cell spot on the world Home (Oct 15) ----------
+   Bottom left of the world, mirrored to the zoom button. Shows once a day until tapped. The gift is a short body fact:
+   no XP (only real actions earn XP), no items. Its card also holds the quiet door to the Ko-fi support view. */
+const GKEY='lowispike.gift.v1';
+const FACTS=[
+ ['Your liver stores sugar as glycogen and releases it between meals.','Deine Leber speichert Zucker als Glykogen und gibt ihn zwischen den Mahlzeiten frei.','Tu hígado guarda azúcar como glucógeno y lo libera entre comidas.'],
+ ['A ten-minute walk after eating flattens the sugar curve.','Zehn Minuten Gehen nach dem Essen glätten die Zuckerkurve.','Caminar diez minutos después de comer suaviza la curva de azúcar.'],
+ ['Fibre first, carbs last: the same meal spikes less.','Erst Ballaststoffe, dann Kohlenhydrate: dieselbe Mahlzeit steigt weniger an.','Primero fibra, luego carbohidratos: la misma comida sube menos.'],
+ ['Working muscles take up sugar even without much insulin.','Arbeitende Muskeln nehmen Zucker auch mit wenig Insulin auf.','Los músculos en movimiento absorben azúcar incluso con poca insulina.'],
+ ['Water helps your kidneys clear extra sugar.','Wasser hilft deinen Nieren, überschüssigen Zucker loszuwerden.','El agua ayuda a tus riñones a eliminar el azúcar sobrante.'],
+ ['Deep sleep makes your cells more sensitive to insulin the next day.','Tiefer Schlaf macht deine Zellen am nächsten Tag empfindlicher für Insulin.','El sueño profundo hace tus células más sensibles a la insulina al día siguiente.'],
+ ['A little vinegar before a meal can soften the spike.','Etwas Essig vor dem Essen kann den Anstieg abmildern.','Un poco de vinagre antes de comer puede suavizar el pico.']];
+function giftRead(){try{const g=JSON.parse(localStorage.getItem(GKEY)||'null');return g&&typeof g==='object'?g:{};}catch(e){return{};}}
+function giftTaken(now){return giftRead().day===K.dayKey(now||Date.now());}
+function giftFact(now){const d=new Date(now||Date.now()),n=Math.floor((d-new Date(d.getFullYear(),0,0))/864e5);return FACTS[n%FACTS.length][li()];}
+const G={pop:null,t:0};
+function ensureGift(){const hud=D.getElementById('whHud');let b=D.querySelector('.hs-gift');
+ if(!hud||giftTaken()){if(b&&!G.pop)b.remove();return null;}
+ if(b&&b.parentNode!==hud){b.remove();b=null;}
+ if(!b){b=D.createElement('button');b.type='button';b.className='hs-gift';b.setAttribute('data-shop','gift');
+  b.setAttribute('aria-label',L('Kometa\'s gift of the day','Kometas Geschenk des Tages','El regalo del día de Kometa'));
+  b.innerHTML='<span class="hs-gift-core" aria-hidden="true"></span>';hud.appendChild(b);}
+ return b;}
+function closeGift(){if(!G.pop)return;clearTimeout(G.t);G.pop.remove();G.pop=null;ensureGift();}
+function openGift(){const now=Date.now();if(G.pop)return;
+ try{localStorage.setItem(GKEY,JSON.stringify({day:K.dayKey(now),ts:now}));}catch(e){}
+ const b=D.querySelector('.hs-gift');if(b)b.classList.add('is-open');
+ const pop=D.createElement('div');pop.className='hs-giftpop';pop.setAttribute('role','dialog');pop.setAttribute('aria-labelledby','hsGiftT');
+ pop.innerHTML='<b id="hsGiftT">'+esc(L('Kometa\'s gift of the day','Kometas Geschenk des Tages','El regalo del día de Kometa'))+'</b>'+
+  '<p>'+esc(giftFact(now))+'</p>'+
+  '<div class="hs-giftrow"><button type="button" class="hs-giftok" data-shop="giftok">'+esc(L('Nice','Schön','Genial'))+'</button>'+
+  '<button type="button" class="hs-giftkofi" data-shop="giftkofi">'+icon('heart','♥')+'<span>'+esc(L('Support LOWiSPIKE','LOWiSPIKE unterstützen','Apoyar LOWiSPIKE'))+'</span></button></div>';
+ (D.getElementById('whHud')||D.body).appendChild(pop);G.pop=pop;
+ const ok=pop.querySelector('.hs-giftok');if(ok)ok.focus({preventScroll:true});
+ G.t=setTimeout(()=>{if(G.pop&&!G.pop.contains(D.activeElement))closeGift();},12000);
+ if(b)setTimeout(()=>{if(b.parentNode&&!b.classList.contains('keep'))b.remove();},reduced()?0:420);}
+D.addEventListener('click',e=>{const t=e.target;const b=t.closest&&t.closest('[data-shop]');const a=b&&b.dataset.shop;
+ if(a==='gift'){e.preventDefault();e.stopPropagation();openGift();return;}
+ if(a==='giftok'){e.preventDefault();e.stopPropagation();closeGift();return;}
+ if(a==='giftkofi'){e.preventDefault();e.stopPropagation();closeGift();open('plus');return;}
+ if(G.pop&&!G.pop.contains(t))closeGift();},true);
+D.addEventListener('keydown',e=>{if(G.pop&&e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();closeGift();}},true);
+setInterval(ensureGift,2000);D.addEventListener('visibilitychange',()=>{if(D.visibilityState==='visible')ensureGift();});setTimeout(ensureGift,600);
+root.LowiHerbShop={open,close,entryHTML,gift:{spot:ensureGift,open:openGift,close:closeGift,taken:giftTaken},state:read,isOpen:()=>!!V.ov,kofiUrl:()=>K.kofiUrl()};
 })(window);

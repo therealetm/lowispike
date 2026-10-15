@@ -3,7 +3,7 @@
      body language from the personality type, six forms from the existing retained herb stage. No XP is awarded here.
    - Reactions: a logged meal or a scanned product makes Misty brace (high spike), nod (medium) or cheer (low spike).
    - Calm glow between meals from lowi_fast_v1 (rises from 3 h, full at 12 h, flat after that).
-   - Evolution sheet (button in the wardrobe): the forms, what shapes them, optional style picker, share toggle.
+   - Evolution sheet (button in the herb path sheet; the wardrobe is retired since Oct 15): the forms, what shapes them, optional style picker, share toggle.
    - Friends tree: each friend shows their own published look (profiles.look, a visual-only code); no look -> the old cell.
    Local prefs: localStorage "lowispike.companion.v1" {share, traits, born}. */
 (function () {
@@ -247,12 +247,11 @@
             '<h3>' + esc(L('What makes it yours', 'Was es zu deinem macht', 'Qué lo hace tuyo')) + '</h3><ul class="cf-made">' +
             '<li><b>' + esc(L('Star sign', 'Sternzeichen', 'Signo')) + '</b><span>' + esc(sign ? signTxt + ' · ' + elTxt : L('Add your birthday in Profile, then your element shows up here.', 'Trag deinen Geburtstag im Profil ein, dann zeigt sich hier dein Element.', 'Añade tu cumpleaños en Perfil y aquí aparecerá tu elemento.')) + '</span></li>' +
             '<li><b>' + esc(L('Personality style', 'Persönlichkeitsstil', 'Estilo de personalidad')) + '</b><span>' + esc(t ? t + ' · ' + body : L('Not chosen. Optional, pick below.', 'Nicht gewählt. Optional, unten wählen.', 'Sin elegir. Opcional, elige abajo.')) + '</span></li>' +
-            '<li><b>' + esc(L('Bubble', 'Blase', 'Burbuja')) + '</b><span>' + esc(L('your cell, its colours and everything from the wardrobe stay.', 'deine Zelle, ihre Farben und alles aus dem Kleiderschrank bleiben.', 'tu célula, sus colores y todo lo del armario se quedan.')) + '</span></li></ul>' +
+            '<li><b>' + esc(L('Bubble', 'Blase', 'Burbuja')) + '</b><span>' + esc(L('your cell and its colours stay.', 'deine Zelle und ihre Farben bleiben.', 'tu célula y sus colores se quedan.')) + '</span></li></ul>' +
             '<details class="cf-pick"' + (!t || V.pickOpen ? ' open' : '') + '><summary>' + esc(L('Choose your style (optional)', 'Stil wählen (optional)', 'Elige tu estilo (opcional)')) + '</summary>' + typeBtns +
             '<p class="cf-tiny">' + esc(L('Only changes how your companion looks and talks. Not a test or a diagnosis.', 'Ändert nur, wie dein Begleiter aussieht und spricht. Kein Test, keine Diagnose.', 'Solo cambia cómo se ve y habla tu compañero. No es un test ni un diagnóstico.')) + '</p>' + (t ? '<button type="button" class="cf-link" data-cf="clear">' + esc(L('Remove style', 'Stil entfernen', 'Quitar estilo')) + '</button>' : '') + '</details>' +
             '<h3>' + esc(L('Forms', 'Formen', 'Formas')) + '</h3><ol class="cf-path">' + forms + '</ol>' +
             '<p class="cf-tiny">' + esc(L('Forms show what you have logged, not a health measurement. A sweet treat never takes a form away.', 'Formen zeigen, was du geloggt hast, keine Gesundheitsmessung. Etwas Süßes nimmt nie eine Form weg.', 'Las formas muestran lo que registraste, no una medida de salud. Un dulce nunca quita una forma.')) + '</p>' +
-            '<p class="cf-note">' + esc(L('Wardrobe pieces you earned fit every form. With a hat on, the crest moves to the sides.', 'Deine verdienten Kleiderschrank-Teile passen zu jeder Form. Mit Hut wandert der Kamm zur Seite.', 'Las piezas que ganaste encajan en cada forma. Con sombrero, la cresta va a los lados.')) + '</p>' +
             '<label class="cf-row"><input type="checkbox" data-cf="traits"' + (p.traits ? ' checked' : '') + '><span>' + esc(L('Show evolved traits', 'Entwicklungsmerkmale zeigen', 'Mostrar rasgos evolucionados')) + '</span></label>' +
             '<label class="cf-row"><input type="checkbox" data-cf="share"' + (p.share ? ' checked' : '') + '><span>' + esc(L('Friends see my companion in their friends tree', 'Freunde sehen meinen Begleiter in ihrem Freundesbaum', 'Mis amigos ven a mi compañero en su árbol')) + '<small>' + esc(L('Only the look is shared, never your birthday, sign or type.', 'Geteilt wird nur das Aussehen, nie Geburtstag, Sternzeichen oder Typ.', 'Solo se comparte el aspecto, nunca tu cumpleaños, signo o tipo.')) + '</small></span></label>' +
             (V.msg ? '<p class="cf-note" role="status">' + esc(V.msg) + '</p>' : '') + '</div></div>';

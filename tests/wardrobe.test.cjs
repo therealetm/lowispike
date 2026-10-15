@@ -11,32 +11,23 @@ test('catalog is sorted by XP, every item has three names and a known slot',()=>
  for(const s of T.SLOTS)assert.ok(T.COSMETICS.some(c=>c.kind===s.kind),'every slot has an earnable item: '+s.kind);
 });
 
-test('cleanEquipment keeps only earned, non-premium items and always has a pot',()=>{
+test('dress-up is retired (Oct 15): every saved outfit cleans to the plain look, the free pot stays',()=>{
+ assert.equal(T.DRESSUP_RETIRED,true);
  assert.deepEqual(T.cleanEquipment(null,0),T.BASE_EQUIPMENT);
- assert.deepEqual(T.cleanEquipment({pot:'porcelain',hat:'crown',neck:'scarf',face:'glasses',glow:'aurora',effect:'comet'},800),{pot:'ceramic',hat:'crown',neck:'scarf',face:'',glow:'',effect:''});
+ assert.deepEqual(T.cleanEquipment({pot:'porcelain',hat:'crown',neck:'scarf',face:'glasses',glow:'aurora',effect:'comet'},800),T.BASE_EQUIPMENT);
+ assert.deepEqual(T.cleanEquipment({pot:'acorn',hat:'maple',neck:'mistscarf'},1e9),T.BASE_EQUIPMENT,'old shop pieces never come back');
  assert.equal(T.cleanEquipment({pot:'tidal'},99999).pot,'ceramic');
- assert.equal(T.cleanEquipment({hat:'scarf'},99999).hat,'','an item only fits its own slot');
 });
 
-test('toggleEquip equips, takes off, and refuses locked or premium items',()=>{
- let eq=T.toggleEquip({},'bow',300);assert.equal(eq.hat,'bow');
- assert.equal(T.toggleEquip(eq,'crown',300),null,'crown is locked at 300 XP');
- eq=T.toggleEquip({hat:'bow'},'crown',700);assert.equal(eq.hat,'crown','one item per slot');
- assert.equal(T.toggleEquip(eq,'crown',700).hat,'','second tap takes it off');
- assert.equal(T.toggleEquip({pot:'glass'},'glass',100).pot,'ceramic','taking a pot off returns the free pot');
- assert.equal(T.toggleEquip({},'halo',2999),null);
+test('toggleEquip refuses everything now that dress-up is retired',()=>{
+ for(const id of ['bow','crown','glass','halo','maple','nope'])assert.equal(T.toggleEquip({},id,1e9),null,id);
  for(const p of T.PREMIUM)assert.equal(T.toggleEquip({},p.id,1e9),null,'premium never equips: '+p.id);
- assert.equal(T.toggleEquip({},'nope',1e9),null);
 });
 
-test('status, XP left and preview reflect the existing XP economy',()=>{
+test('catalog data still parses for old saves; preview never puts a piece on Misty',()=>{
  const items=T.wardrobeItems(820,{hat:'crown'}),by=id=>items.find(c=>c.id===id);
- assert.equal(by('crown').status,'equipped');assert.equal(by('bow').status,'ready');
- assert.equal(by('beanie').status,'locked');assert.equal(by('beanie').left,30);
- assert.equal(by('comet').status,'premium');
- assert.equal(T.nextUnlock(820).id,'beanie');assert.equal(T.nextInSlot('glow',820).id,'aurora');
- const pv=T.previewEquip({hat:'crown'},'mushroom',820);assert.equal(pv.hat,'mushroom','preview may show premium');
- assert.equal(T.cleanEquipment(pv,820).hat,'','but it never survives cleaning');
+ assert.ok(by('crown')&&by('bow'),'old catalog still readable');
+ assert.equal(T.previewEquip({hat:'crown'},'mushroom',820).hat,'');
  assert.equal(T.cosmeticAllowed('comet',1e9),false);
 });
 

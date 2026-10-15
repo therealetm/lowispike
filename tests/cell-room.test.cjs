@@ -73,7 +73,7 @@ t('tree has 8 branch spots plus your own cell in the centre', () => {
 t('UI: German-first copy, privacy line, Shop + close, honest friends (no fallback people)', () => {
   assert.ok(src.includes('Freund hinzuf\\u00fcgen') || src.includes('Freund hinzuf\u00fcgen'));
   assert.ok(/Gesundheitsdaten nicht sehen/.test(src));
-  assert.ok(src.includes("data-cr=\"shop\"") && src.includes('LowiHerbShop.open()'));
+  assert.ok(!/root\.LowiCellRoom=\{openRoom/.test(src) && !src.includes("#spWd .wd-head") && !src.includes(".lh-room-head')"), 'room retired Oct 15: no door, openRoom not exported');
   assert.ok(src.includes('data-cr="close"'));
   assert.ok(/function roomPeople\(\)\{if\(!live\(\)\)return\[\]/.test(src), 'people list only when the cloud is live');
   assert.ok(src.includes('LowiExtras.openMiles'), 'hooks into Community milestones / good vibes');

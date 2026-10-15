@@ -278,7 +278,7 @@
                 mood = 'glow';
                 title = L(n + ' is glowing', n + ' leuchtet', n + ' brilla');
                 sub = L('All done today', 'Heute alles geschafft', 'Todo hecho hoy');
-                next = pick('wardrobe', 'hat', L('Wardrobe', 'Kleiderschrank', 'Armario'));
+                next = pick('path', 'mystery', L('Forms', 'Formen', 'Formas'));
             }
         }
         return {
@@ -318,7 +318,7 @@
             world.setAttribute('aria-modal', 'true');
             world.setAttribute('aria-label', tr('world'));
             world.setAttribute('data-noi18n', '');
-            world.innerHTML = '<header class="sp-world-head"><div><small><span class="sp-head-world">' + esc(tr('world')) + '</span><span class="sp-head-scan">' + esc(tr('scanHead')) + '</span></small><h1></h1></div>' + button('close', 'close', 'close') + '</header><div class="sp-world-xp"></div><div class="sp-stage"><div class="sp-constellation"></div><div class="sp-scanner-host"></div><div class="sp-body" tabindex="0" role="button" aria-label="' + esc(tr('leafHelp')) + '"></div><p class="sp-speech" role="status" aria-live="polite"></p><span class="sp-xp-pop" aria-hidden="true"></span></div><p class="sp-play-hint">' + esc(tr('leafHelp')) + '</p><footer class="sp-world-tools">' + button('wardrobe', 'hat', 'wardrobe') + button('collection', 'book', 'collection') + button('profile', 'leaf', 'profile') + button('evolution', 'mystery', 'path') + '</footer>';
+            world.innerHTML = '<header class="sp-world-head"><div><small><span class="sp-head-world">' + esc(tr('world')) + '</span><span class="sp-head-scan">' + esc(tr('scanHead')) + '</span></small><h1></h1></div>' + button('close', 'close', 'close') + '</header><div class="sp-world-xp"></div><div class="sp-stage"><div class="sp-constellation"></div><div class="sp-scanner-host"></div><div class="sp-body" tabindex="0" role="button" aria-label="' + esc(tr('leafHelp')) + '"></div><p class="sp-speech" role="status" aria-live="polite"></p><span class="sp-xp-pop" aria-hidden="true"></span></div><p class="sp-play-hint">' + esc(tr('leafHelp')) + '</p><footer class="sp-world-tools">' + button('collection', 'book', 'collection') + button('profile', 'leaf', 'profile') + button('evolution', 'mystery', 'path') + '</footer>';
             D.body.append(world);
         }
         if (!creature) {
@@ -1783,7 +1783,7 @@
         else if (a === 'shutter') shutter();
         else if (a === 'upload') photoInput.click();
         else if (a === 'savePhoto') savePhoto();
-        else if (a === 'wardrobe') wardrobe();
+        else if (a === 'wardrobe') { /* Oct 15: dress-up retired; old wardrobe buttons lead to Misty's forms instead of a dead end */ if (window.LowiCompanion && LowiCompanion.open) LowiCompanion.open(); }
         else if (a === 'collection') collection();
         else if (a === 'profile') profile();
         else if (a === 'path') { if (window.LowiHerbQuests) { LowiHerbQuests.reset(); showSheet(LowiHerbQuests.pathHTML() + '<h3 class="hq-prodh">' + esc(tr('evolution')) + '</h3>' + pathHTML()); } else showSheet('<h2>' + esc(tr('evolution')) + '</h2>' + pathHTML()); }

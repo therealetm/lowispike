@@ -229,6 +229,17 @@
         if (!st.pull) st.pull = { dist: r.dist, pitch: r.pitch };
         hook(); st.zoomAnim = { to: Math.min(r.maxD || 13, baseDist(r) * 2.4), pitch: 0.34, t: 0 }; r.idle = 0;
     }
+    /* Galaxy -> Home (Oct 16, E-man: "the camera should fly back down into Misty"): the camera starts out where pullOut() left it, high
+       above the bloodstream, and glides back down to Misty's usual view. Misty's bubble grows with it (--wh-mz follows the distance). */
+    function diveIn() {
+        const r = rig(); if (!r || r.mode !== 'home' || reduced()) return;
+        st.pull = null;
+        const home = { dist: r.dist, pitch: r.pitch };
+        r.dist = Math.min(r.maxD || 13, baseDist(r) * 2.4); r.pitch = 0.34; r.vy = 0; r.idle = 0;
+        /* the target is kept as a share of Misty's framing distance: Home re-measures that framing while its layer settles */
+        hook(); st.zoomAnim = { to: home.dist, rel: home.dist / baseDist(r), pitch: home.pitch, t: 0, rate: 4.2 };
+        try { frame(1 / 60); } catch (e) { }
+    }
     function settle() {
         const r = rig();
         if (st.pull) { if (r) { r.dist = st.pull.dist; r.pitch = st.pull.pitch; } st.zoomAnim = null; st.pull = null; }
@@ -451,11 +462,11 @@
     function frame(dt) {
         const r = rig(); if (!r) return;
         if (st.zoomAnim) {
-            const z = st.zoomAnim; z.t += dt;
+            const z = st.zoomAnim; z.t += dt; if (z.rel) z.to = z.rel * baseDist(r);
             if ((r.mode !== 'full' && r.mode !== 'home') || Math.abs(r.vy) > 0.02) st.zoomAnim = null;
             else if (z.t > 2.5) { r.dist = z.to; if (z.pitch != null) r.pitch = z.pitch; st.zoomAnim = null; paintZoom(); }
             else {
-                const k = Math.min(1, dt * 3.2);
+                const k = Math.min(1, dt * (z.rate || 3.2));
                 r.dist += (z.to - r.dist) * k; if (z.pitch != null) r.pitch += (z.pitch - r.pitch) * k; r.idle = 0;
                 if (Math.abs(z.to - r.dist) < 0.02) { r.dist = z.to; st.zoomAnim = null; paintZoom(); }
             }
@@ -790,6 +801,6 @@
         setInterval(() => { tabs(); tick(); }, 700);
         tabs(); tick();
     }
-    W.LowiWorldHome = { pullOut, settle, waterReset, openToday, openMisty, toggleZoom, zoomOutWhole, closeTop, heroTurn, state: st, auraId, syncX, rig };
+    W.LowiWorldHome = { pullOut, diveIn, settle, waterReset, openToday, openMisty, toggleZoom, zoomOutWhole, closeTop, heroTurn, state: st, auraId, syncX, rig };
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 })();

@@ -43,11 +43,11 @@ test('pinch: past Home\'s widest view you land in the galaxy, spreading on the g
 test('no boxed snapshot of Home is left in the galaxy; the zoom script is shipped and cached', () => {
     const chat = read('community-chat.js'), css = read('community-galaxy.css'), html = read('index.html'), sw = read('sw.js');
     assert.ok(!chat.includes('cg-intro') && !css.includes('.cg-intro'), 'the fake Home gradient card is gone');
-    assert.ok(html.includes('<script src="galaxy-zoom.js?v=gx-2"></script>'));
+    assert.ok(html.includes('<script src="galaxy-zoom.js?v=gx-3"></script>'));
     assert.ok(sw.includes('"galaxy-zoom.js"'));
     assert.ok(css.includes('html.gx-hold #tab-home') && css.includes('#tab-foryou.nm-solo{background:'), 'Home held on top, Community is one space with no card');
     const wh = read('world-home.js');
-    assert.ok(wh.includes("H.classList.contains('gx-hold')") && wh.includes('W.LowiWorldHome = { pullOut, settle, waterReset,'));
+    assert.ok(wh.includes("H.classList.contains('gx-hold')") && wh.includes('W.LowiWorldHome = { pullOut, diveIn, settle, waterReset,'));
 });
 
 test('bots: unique people, unique companions, real birth dates, every stage', () => {
@@ -107,4 +107,15 @@ test('chat privacy & quiet hours have a home in Profile > Community', () => {
     assert.ok(nm.includes("c.className = 'card nm-privacy'") && nm.includes('W.LowiCommunity.settings()'));
     assert.ok(html.includes('c.contains("nm-privacy")) return "comm"'));
     assert.ok(read('community-chat.js').includes('W.LowiCommunity={mount,refresh,send,comment,isQuiet,unread,messageHTML:renderMessage,mentions,fit,settings,'));
+});
+
+test('back from the galaxy the 3D camera flies down into Misty instead of Home just growing back', () => {
+    const wh = read('world-home.js'), src = read('galaxy-zoom.js');
+    assert.ok(wh.includes('function diveIn()') && wh.includes('W.LowiWorldHome = { pullOut, diveIn, settle,'));
+    assert.ok(wh.includes("st.zoomAnim = { to: home.dist, rel: home.dist / baseDist(r), pitch: home.pitch, t: 0, rate: 4.2 };"), 'camera glides back to Misty\'s usual view');
+    assert.ok(wh.includes('dt * (z.rate || 3.2)'));
+    assert.ok(src.includes("if (dir === 'in') { try { if (W.LowiWorldHome && W.LowiWorldHome.diveIn) W.LowiWorldHome.diveIn(); } catch (e) {} }"));
+    const m = { x: 195, y: 388, r: 105 }, y = { x: 120, y: 520, r: 27 }, g = { left: 18, top: 12 };
+    const pin = Z.plan(m, y, g, 390, 844, Z.HS_IN), pout = Z.plan(m, y, g, 390, 844);
+    assert.ok(pin.s > pout.s && pin.s >= 0.75, 'the flat Home layer barely grows on the way back');
 });

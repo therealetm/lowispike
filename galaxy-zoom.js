@@ -14,10 +14,13 @@
        both anchored on the same moving point (Misty -> You). No clip, no huge scale, 760 ms.
        And you can get there with your fingers: keep pinching out past Home's widest view and you land in the galaxy; spread two fingers
        on the galaxy and you dive back into Home. */
-    const DUR = 760, EASE = 'cubic-bezier(.4,0,.2,1)', GX = 2.4, HS = 0.42;
+    const DUR = 760, EASE = 'cubic-bezier(.4,0,.2,1)', GX = 2.4, HS0 = 0.42;
+    /* Going back home the 3D camera itself flies down into Misty (LowiWorldHome.diveIn), so the flat Home layer only grows a little:
+       the motion you see is the camera diving, not a picture growing back into place. */
+    const HS_IN = 0.78;
     /* Geometry: m = Misty's centre + radius on Home, y = your orb's centre + radius in the galaxy (both in viewport px), g = galaxy box. */
-    function plan(m, y, g, vw, vh) {
-        const dx = (y.x - m.x).toFixed(1), dy = (y.y - m.y).toFixed(1), bx = (m.x - y.x).toFixed(1), by = (m.y - y.y).toFixed(1);
+    function plan(m, y, g, vw, vh, hs) {
+        const HS = hs || HS0, dx = (y.x - m.x).toFixed(1), dy = (y.y - m.y).toFixed(1), bx = (m.x - y.x).toFixed(1), by = (m.y - y.y).toFixed(1);
         return {
             s: HS, K: GX,
             home: { origin: m.x.toFixed(1) + 'px ' + m.y.toFixed(1) + 'px', from: 'translate(0px,0px) scale(1)', to: 'translate(' + dx + 'px,' + dy + 'px) scale(' + HS + ')' },
@@ -27,7 +30,7 @@
     /* Pinch past the edge: how far the fingers kept closing (Home, at its widest) or opening (galaxy) before we cross over. */
     const PINCH_GO = 1.45;
     function overPull(d0, d) { return d0 > 0 && d > 0 ? d0 / d : 1; }
-    const api = { plan, DUR, overPull, PINCH_GO };
+    const api = { plan, DUR, overPull, PINCH_GO, HS_IN };
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
@@ -59,7 +62,7 @@
     function run(dir) {
         const home = D.getElementById('tab-home'), gal = D.getElementById('cgGalaxy'), y = youBox();
         if (!home || !gal || !y || !home.animate) { finish(); return; }
-        const m = mistyBox(), g = gal.getBoundingClientRect(), p = plan(m, y, g, innerWidth, innerHeight), out = dir === 'out';
+        const m = mistyBox(), g = gal.getBoundingClientRect(), out = dir === 'out', p = plan(m, y, g, innerWidth, innerHeight, out ? 0 : HS_IN);
         /* Home falls away and fades in the first three quarters; the galaxy comes in from just in front of you and is solid by 70 % */
         const kh = [{ transform: p.home.from, opacity: 1 }, { opacity: 1, offset: 0.18 }, { opacity: 0, offset: 0.78 }, { transform: p.home.to, opacity: 0 }];
         const kg = [{ transform: p.galaxy.from, opacity: 0 }, { opacity: 0.15, offset: 0.12 }, { opacity: 1, offset: 0.7 }, { transform: p.galaxy.to, opacity: 1 }];
@@ -92,6 +95,7 @@
             if (dir) start(dir); else if (busy) finish();
             let r; inCall = true;
             try { r = orig.apply(this, arguments); } finally { inCall = false; }
+            if (dir === 'in') { try { if (W.LowiWorldHome && W.LowiWorldHome.diveIn) W.LowiWorldHome.diveIn(); } catch (e) {} }
             if (dir) {
                 try { if (W.LowiCommunity && W.LowiCommunity.refresh) W.LowiCommunity.refresh(); } catch (e) {}
                 /* after the galaxy laid out (one frame), or 70 ms at most when frames are slow */

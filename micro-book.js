@@ -71,6 +71,8 @@
     const myUid = () => { try { return W.LOWI_CLOUD.uid() || ''; } catch (e) { return ''; } };
     const cloudLive = () => { try { return !!(W.LOWI_CLOUD && W.LOWI_CLOUD.live() && W.LOWI_CLOUD_X && W.LOWI_CLOUD_X.client && myUid()); } catch (e) { return false; } };
     function friends() {
+        /* one friend source: the friends tree's own list (same uids) when it is loaded */
+        try { if (W.LowiCellRoom && W.LowiCellRoom.friends) return W.LowiCellRoom.friends().filter(f => f && C.okUid(f.uid) && f.n).map(f => ({ uid: f.uid, n: String(f.n).slice(0, 24), c: String(f.c || '').slice(0, 24) })); } catch (e) {}
         let raw = null;
         try { const s = S(); if (s.friends && Array.isArray(s.friends.list)) raw = s.friends; } catch (e) {}
         if (!raw) { try { raw = JSON.parse(localStorage.getItem('lowispike.friends.v1') || 'null'); } catch (e) { raw = null; } }
@@ -187,11 +189,18 @@
             (cur.r.why === 'sparks' ? '<p class="mb-note">' + esc(tr('noSpark')) + '</p>' : '') + btn + '<p class="mb-note">' + esc(live ? tr('live', { n: f.n }) : tr('wait')) + '</p></div>';
     }
     function cpaint() { if (!cov || !cov.isConnected) { cov = null; return; } const box = cov.querySelector('.mb-care'); if (box) box.outerHTML = careHTML(); }
-    function openCare(uid) {
-        const f = friends().find(x => x.uid === (uid && uid.uid || uid));
+    const treeUp = () => { try { return !!(W.LowiCellRoom && W.LowiCellRoom.isOpen && W.LowiCellRoom.isOpen()); } catch (e) { return false; } };
+    function openCare(uid, opts) {
+        opts = opts || {};
+        const id = uid && uid.uid || uid;
+        let f = friends().find(x => x.uid === id);
+        /* name + uid passed in (friends tree) when the list has not caught up yet */
+        if (!f && uid && typeof uid === 'object' && C.okUid(uid.uid) && uid.n) f = { uid: uid.uid, n: String(uid.n).slice(0, 24), c: String(uid.c || '').slice(0, 24) };
         if (!f || !R() || !R().sheet) return null;
+        if (cov && cov.isConnected && R().close) R().close(cov);
         cf = f; ck = '';
-        cov = R().sheet(careHTML(), { cls: 'mb-ov' });
+        /* above the friends tree overlay (z 99990) while it is open */
+        const me = cov = R().sheet(careHTML(), { cls: 'mb-ov' + (treeUp() || opts.top ? ' mb-ov-top' : ''), onClose: () => { if (cov === me) cov = null; badges(); try { opts.onClose && opts.onClose(f.uid); } catch (e) {} try { W.dispatchEvent(new CustomEvent('lowi:care-close', { detail: { uid: f.uid } })); } catch (e) {} } });
         return cov;
     }
     function sendCare() {
@@ -206,6 +215,7 @@
         toast((live ? tr('sentTo') : tr('queued')).replace('{k}', P(k.n)).replace('{n}', cf.n));
         if (!reduced() && cov) { const b = cov.querySelector('.mb-them'); if (b) { const h = D.createElement('i'); h.className = 'mb-fly'; h.innerHTML = heartIco; b.appendChild(h); setTimeout(() => h.remove(), 1100); } }
         setTimeout(cpaint, reduced() ? 0 : 650);
+        badges();
         try { W.dispatchEvent(new CustomEvent('lowi:care-sent', { detail: { kind: k.id, to: cf.uid } })); } catch (e) {}
         return true;
     }
@@ -248,15 +258,18 @@
             badges(); paint();
         } catch (e) {}
     }
-    /* heart bubbles on friend nodes the friends tree renders */
+    /* heart bubbles on friend nodes the friends tree renders: care they sent you today, or care you sent them today */
+    const sentToday = (st, uid, today) => Object.keys(st.sent || {}).some(id => { const c = C.parseCare(id); return c && c.to === uid && c.day === today; });
     function badges() {
         const st = care(), today = C.dayKey(Date.now());
         D.querySelectorAll('[data-care-uid],[data-friend-uid]').forEach(n => {
-            const uid = n.getAttribute('data-care-uid') || n.getAttribute('data-friend-uid'), b = st.inbox[uid], has = b && b.day === today && b.kinds.length;
+            const uid = n.getAttribute('data-care-uid') || n.getAttribute('data-friend-uid'), b = st.inbox[uid], got = b && b.day === today && b.kinds.length, out = !got && sentToday(st, uid, today);
             let h = n.querySelector(':scope > .mb-heart');
-            if (!has) { if (h) h.remove(); return; }
-            if (!h) { h = D.createElement('i'); h.className = 'mb-heart'; h.setAttribute('aria-hidden', 'true'); n.appendChild(h); if (getComputedStyle(n).position === 'static') n.style.position = 'relative'; }
-            h.innerHTML = heartIco + (b.kinds.length > 1 ? '<b>' + b.kinds.length + '</b>' : '');
+            if (!got && !out) { if (h) h.remove(); return; }
+            if (!h) { h = D.createElement('i'); h.setAttribute('aria-hidden', 'true'); n.appendChild(h); if (getComputedStyle(n).position === 'static') n.style.position = 'relative'; }
+            h.className = 'mb-heart' + (out ? ' mb-sent' : '');
+            const html = heartIco + (got && b.kinds.length > 1 ? '<b>' + b.kinds.length + '</b>' : '');
+            if (h.innerHTML !== html) h.innerHTML = html;
         });
     }
 
@@ -270,6 +283,7 @@
         let el = D.getElementById('mbToast');
         if (!el) { el = D.createElement('div'); el.id = 'mbToast'; el.className = 'mb-toast'; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite'); D.body.appendChild(el); }
         el.innerHTML = cellIco() + '<span>' + esc(msg) + '</span>';
+        el.classList.toggle('mb-top', treeUp());
         el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
         setTimeout(() => { el.classList.remove('on'); setTimeout(nextToast, 260); }, 2600);
     }
@@ -356,6 +370,7 @@
     D.addEventListener('click', e => {
         const t = e.target.closest && e.target.closest('[data-mb],[data-care-uid],[data-friend-uid]');
         if (!t) return;
+        if (!t.dataset.mb && t.dataset.cr) return; /* friends tree nodes: the tree opens care itself (LowiCare.open) */
         if (!t.dataset.mb) { e.preventDefault(); e.stopPropagation(); openCare(t.getAttribute('data-care-uid') || t.getAttribute('data-friend-uid')); return; }
         const a = t.dataset.mb, sheetOv = t.closest('.r2-ov');
         if (a === 'open') { e.preventDefault(); e.stopPropagation(); open('mic'); }

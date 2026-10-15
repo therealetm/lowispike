@@ -120,3 +120,9 @@ html[data-theme="light"] .mb-cell .l{stroke:hsla(var(--h),80%,42%,.85)}
 html[data-theme="light"] .mb-cell .g2{fill:hsla(var(--h),90%,88%,.9)}
 html[data-theme="light"] .mb-card{background:radial-gradient(120% 90% at 50% 0%,rgba(58,166,192,.10),transparent 70%),var(--r2-field)}
 @media (prefers-reduced-motion: reduce){.mb-cell.live,.mb-fly{animation:none}.mb-toast{transition:opacity .2s;transform:translate(-50%,0)}}
+
+/* care sheet + toast above the friends tree overlay (cell-room.css .cr-ov z 99990) */
+.r2-ov.mb-ov-top{z-index:99995}
+.r2-ov.mb-ov-top.off{pointer-events:none}
+.mb-toast.mb-top{z-index:99996}
+.mb-heart.mb-sent{background:radial-gradient(circle at 35% 30%,#ffe3ec,#ff8fb1 65%);box-shadow:0 0 8px rgba(255,143,177,.55)}

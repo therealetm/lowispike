@@ -129,3 +129,4 @@ html[data-theme=light] .cr-treeb{color:#245a6b}
 html[data-theme=light] .cr-ov{color:#effcff}
 @media (prefers-reduced-motion:reduce){.cr-ov,.cr-plasma,.cr-me .cr-cell,.cr-ves,.cr-flow,.cr-bulb,.cr-bub,.cr-glow,.cr-stars i,.cr-mine .cr-fc{animation:none!important}}
 .cr-ov[data-still] *{animation:none!important}
+.cr-fcard .cr-care{background:#ff8fb126;border-color:#ff8fb170}

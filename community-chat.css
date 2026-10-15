@@ -4,17 +4,6 @@
 #cmPaneChat[data-spirit-chat] button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
 #cmPaneChat[data-spirit-chat] button:disabled{cursor:default;opacity:.55}
 #cmPaneChat[data-spirit-chat] button:focus-visible,#cmPaneChat[data-spirit-chat] textarea:focus-visible{outline:2px solid var(--chat-mint);outline-offset:2px}
-#cmPaneChat .cs-world{position:relative;flex:none;min-height:116px;padding:14px 16px 12px;overflow:hidden;border:1px solid var(--chat-edge);border-radius:24px;background:radial-gradient(ellipse at 85% 110%,#76c9ae38,transparent 65%),linear-gradient(125deg,color-mix(in srgb,var(--chat-surface) 94%,#2b5154),var(--chat-surface));}
-#cmPaneChat .cs-town{position:absolute;right:6px;bottom:0;width:180px;height:108px;opacity:.65;pointer-events:none;color:var(--chat-mint)}
-#cmPaneChat .cs-kicker{position:relative;font-size:10px;font-weight:750;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 3px}
-#cmPaneChat .cs-world h2{position:relative;font-size:clamp(20px,3vw,27px);line-height:1.2;letter-spacing:-.025em;margin:0 0 4px;color:var(--text)}
-#cmPaneChat .cs-world p{position:relative;max-width:76%;margin:0 0 7px;line-height:1.35;font-size:12px;color:var(--muted)}
-#cmPaneChat .cs-place{display:inline-flex;align-items:center;gap:5px;position:relative;font-size:11px;font-weight:650;border:1px solid var(--chat-edge);border-radius:20px;padding:4px 8px;background:var(--chat-surface)}
-#cmPaneChat .cs-place i{width:5px;height:5px;border-radius:50%;background:currentColor}
-#cmPaneChat .cs-tools{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:none;padding:6px 0;min-width:0}
-#cmPaneChat .cs-self{border:0;background:none;display:flex;align-items:center;gap:8px;text-align:left;min-width:0;padding:0;min-height:44px}
-#cmPaneChat .cs-self>span:last-child{min-width:0;display:flex;flex-direction:column;font-size:12px;line-height:1.35}
-#cmPaneChat .cs-self small{font-size:10px;color:var(--muted)}
 #cmPaneChat .cs-tool,#cmPaneChat .cm-mini,#cmPaneChat .cm-chip,#cmPaneChat .cs-action{min-height:44px;border:1px solid var(--chat-edge);border-radius:12px;background:color-mix(in srgb,var(--chat-surface) 88%,transparent);padding:6px 10px;font-size:12px;white-space:normal}
 #cmPaneChat .cs-tool{max-width:45%;flex:none;font-size:11px}
 #cmPaneChat .cs-status{display:flex;align-items:center;gap:7px;flex:none;font-size:11px;line-height:1.3;color:var(--muted);min-height:28px;padding-bottom:4px}
@@ -75,24 +64,88 @@
 .cs-sheet select{font:inherit;color:inherit;background:var(--panel);border:1px solid var(--line2);border-radius:12px;padding:12px;width:100%}
 /* Shrink only this pane to the visual viewport while typing; the existing pager/nav stays in place. */
 html.cs-chat-typing #cmPaneChat[data-spirit-chat]{padding-bottom:8px!important;height:var(--cs-keyboard-height)!important;max-height:var(--cs-keyboard-height)!important;align-self:flex-start}
-html.cs-chat-typing #cmPaneChat .cs-world{display:none}
-html.cs-chat-typing #cmPaneChat .cs-tools{padding-block:0}
-@media(min-width:700px){#cmPaneChat[data-spirit-chat]{padding-left:24px;padding-right:24px}#cmPaneChat[data-spirit-chat]>*{width:100%;max-width:760px;margin-inline:auto}#cmPaneChat .cs-world{min-height:138px;padding:20px 22px}#cmPaneChat .cs-town{width:240px;height:134px}#cmPaneChat .cs-world p{font-size:14px}#cmPaneChat[data-spirit-chat] .cm-msg{max-width:85%}#cmPaneChat[data-spirit-chat] .cm-t{font-size:15px}}
-@media(max-height:720px){#cmPaneChat .cs-world{min-height:85px;padding:10px 14px}#cmPaneChat .cs-world p{display:none}#cmPaneChat .cs-town{height:85px}#cmPaneChat .cs-tools{padding-block:1px}#cmPaneChat .cs-status{min-height:23px}#cmPaneChat .cs-empty{padding:12px}#cmPaneChat .cs-empty .cs-lantern{display:none}}
+@media(min-width:700px){#cmPaneChat[data-spirit-chat]{padding-left:24px;padding-right:24px}#cmPaneChat[data-spirit-chat]>*{width:100%;max-width:760px;margin-inline:auto}#cmPaneChat[data-spirit-chat] .cm-msg{max-width:85%}#cmPaneChat[data-spirit-chat] .cm-t{font-size:15px}}
+@media(max-height:720px){#cmPaneChat .cs-status{min-height:23px}#cmPaneChat .cs-empty{padding:12px}#cmPaneChat .cs-empty .cs-lantern{display:none}}
 @media(prefers-reduced-motion:reduce){#cmPaneChat *, .cs-sheet *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
-@media(prefers-reduced-transparency:reduce),(prefers-contrast:more){#cmPaneChat[data-spirit-chat]{--chat-edge:var(--muted)}#cmPaneChat .cs-world,#cmPaneChat .cm-bub{background:var(--chat-surface)!important;backdrop-filter:none!important}}
+@media(prefers-reduced-transparency:reduce),(prefers-contrast:more){#cmPaneChat[data-spirit-chat]{--chat-edge:var(--muted)}#cmPaneChat .cm-bub{background:var(--chat-surface)!important;backdrop-filter:none!important}}
 
-#cmPaneChat[data-personality^="I"] .cs-town{opacity:.4}
-#cmPaneChat[data-personality^="E"] .cs-town{opacity:.8}
+/* ---- Community planet (room layout) ---- */
+#cmPaneChat[data-planet]{display:flex!important;flex-direction:column;--cp-h:100px;--cp-sky1:#0f1a2e;--cp-sky2:#18294a;--cp-g1:#7fdcc2;--cp-g2:#3d9d8a;--cp-g3:#256672;--cp-g4:#173e52;--cp-glow:#8ff0d466;--cp-tag:#0b1a24c4;--cp-tagt:#e9fbf5}
+html[data-theme=light] #cmPaneChat[data-planet]{--cp-sky1:#f4f9ff;--cp-sky2:#dcefff;--cp-g1:#c5f1e1;--cp-g2:#93d9c3;--cp-g3:#6dbfab;--cp-g4:#4f9f8f;--cp-glow:#7fd8c055;--cp-tag:#ffffffe0;--cp-tagt:#163f37}
+#cmPaneChat[data-planet=compact]{--cp-h:62px}
+#cmPaneChat[data-planet=compact] .cp-bar{display:none}
+#cmPaneChat .cp-corner{position:absolute;right:4px;top:4px;z-index:4}
+#cmPaneChat .cp-corner .cp-ctl{width:44px;height:44px;padding:0;justify-content:center;border-radius:50%}
+#cmPaneChat .cp-corner .cp-ctl span{display:none}
+#cmPaneChat[data-planet] .cm-compose{top:auto!important;bottom:auto!important;margin-bottom:0!important}
+html[data-lay=phone] #tab-foryou #cmPaneChat.ls-pane[data-planet]{padding-bottom:calc(var(--sab,0px) + 114px)!important}
+#cmPaneChat[data-planet=tall]{--cp-h:128px}
+#cmPaneChat .cp-bar{display:flex;align-items:center;gap:10px;flex:none;padding:2px 2px 8px;min-width:0}
+#cmPaneChat .cp-head{flex:1;min-width:0}
+#cmPaneChat .cp-head h2{margin:0;font-size:19px;line-height:1.2;letter-spacing:-.02em;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#cmPaneChat .cp-head p{margin:2px 0 0;font-size:12px;line-height:1.35;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+#cmPaneChat #csControls{flex:none;max-width:52%}
+#cmPaneChat .cp-ctl{display:inline-flex;align-items:center;gap:6px;border-radius:22px;padding:6px 12px 6px 10px;font-size:12px;font-weight:650;max-width:100%}
+#cmPaneChat .cp-ctl svg{width:18px;height:18px;flex:none}
+#cmPaneChat .cp-ctl span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#cmPaneChat .cs-status[data-state=live]:not([data-quiet="1"]){display:none}
+#cmPaneChat .cp-room{position:relative;flex:1 1 auto;min-height:0;display:flex;flex-direction:column;border:1px solid var(--chat-edge);border-radius:24px;overflow:hidden;background:radial-gradient(120% 70% at 50% 100%,var(--cp-glow),transparent 62%),linear-gradient(180deg,var(--cp-sky1),var(--cp-sky2));isolation:isolate}
+#cmPaneChat[data-spirit-chat] .cp-room .cm-list{flex:1 1 auto!important;min-height:0!important;height:auto!important;max-height:none!important;overflow-y:auto!important;overflow-x:hidden;padding:12px 10px 10px!important;gap:14px;display:flex;flex-direction:column;margin:0!important}
+#cmPaneChat .cp-room .cs-jump{bottom:calc(var(--cp-h) + 8px);right:12px}
+#cmPaneChat .cp-planet{position:relative;flex:none;height:var(--cp-h);overflow:hidden;contain:paint}
+#cmPaneChat .cp-sky i{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;opacity:.55}
+#cmPaneChat .cp-sky i:nth-child(1){left:8%;top:14px}#cmPaneChat .cp-sky i:nth-child(2){left:23%;top:30px;width:2px;height:2px}#cmPaneChat .cp-sky i:nth-child(3){left:41%;top:8px;width:2px;height:2px}#cmPaneChat .cp-sky i:nth-child(4){left:63%;top:20px}#cmPaneChat .cp-sky i:nth-child(5){left:79%;top:9px;width:2px;height:2px}#cmPaneChat .cp-sky i:nth-child(6){left:93%;top:28px}
+html[data-theme=light] #cmPaneChat .cp-sky i{background:#7fb6d8;opacity:.35}
+#cmPaneChat .cp-globe{position:absolute;border-radius:50%;background:linear-gradient(180deg,var(--cp-g1) 0,var(--cp-g2) 18px,var(--cp-g3) 54px,var(--cp-g4) 120px);box-shadow:0 0 0 1px #ffffff33,0 -4px 22px 4px var(--cp-glow);pointer-events:none}
+#cmPaneChat .cp-crater{position:absolute;border-radius:50%;background:#00000022;box-shadow:inset 0 2px 0 #00000018}
+#cmPaneChat .cp-crater.a{left:calc(50% - 120px);top:30px;width:22px;height:7px}
+#cmPaneChat .cp-crater.b{left:calc(50% + 70px);top:44px;width:30px;height:9px}
+#cmPaneChat .cp-crater.c{left:calc(50% - 30px);top:58px;width:16px;height:5px}
+#cmPaneChat .cp-mate{--bh:40px;position:absolute;display:flex;flex-direction:column;align-items:center;width:54px;min-height:44px;margin:0;padding:0;border:0!important;background:none!important;transform:translate(-50%,calc(3px - var(--bh))) rotate(var(--tilt,0deg));transform-origin:50% calc(var(--bh) - 3px);z-index:1}
+#cmPaneChat .cp-mate.me{--bh:48px;z-index:2}
+#cmPaneChat[data-planet=compact] .cp-mate{--bh:28px;width:48px}#cmPaneChat[data-planet=compact] .cp-mate.me{--bh:34px}
+#cmPaneChat[data-planet=tall] .cp-mate{--bh:46px;width:68px}#cmPaneChat[data-planet=tall] .cp-mate.me{--bh:56px}
+#cmPaneChat .cp-body{position:relative;display:block;width:var(--bh);height:var(--bh);animation:cpBob 5s ease-in-out infinite;animation-delay:calc(var(--i,0) * -.8s)}
+#cmPaneChat .cp-form{display:block;width:100%;height:100%;line-height:0}
+#cmPaneChat .cp-form svg{display:block;width:100%;height:100%;overflow:visible}
+#cmPaneChat .cp-mate.me .cp-body:after{content:"";position:absolute;inset:-3px;border-radius:50%;border:2px solid var(--chat-mint);box-shadow:0 0 12px color-mix(in srgb,var(--chat-mint) 60%,transparent);pointer-events:none}
+#cmPaneChat .cp-name{display:block;max-width:100%;margin-top:1px;padding:0 5px;border-radius:7px;font-size:10px;line-height:14px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:var(--cp-tag);color:var(--cp-tagt)}
+#cmPaneChat .cp-mate.me .cp-name{background:var(--chat-mint);color:#08231d}
+#cmPaneChat .cp-mate.speaking .cp-body{animation:cpHop .55s ease-out 2}
+#cmPaneChat .cp-puff{position:absolute;left:72%;top:-4px;display:flex;gap:2px;padding:4px 5px;border-radius:9px 9px 9px 2px;background:#fff;box-shadow:0 2px 6px #0003;z-index:3}
+#cmPaneChat .cp-puff i{display:block;width:4px;height:4px;border-radius:50%;background:#28364a;animation:cpDot 1s ease-in-out infinite}
+#cmPaneChat .cp-puff i:nth-child(2){animation-delay:.15s}#cmPaneChat .cp-puff i:nth-child(3){animation-delay:.3s}
+@keyframes cpBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes cpHop{0%,100%{transform:translateY(0)}40%{transform:translateY(-9px)}}
+@keyframes cpDot{0%,100%{opacity:.35}50%{opacity:1}}
+/* Speech bubbles from companions */
+#cmPaneChat[data-spirit-chat] .cm-msg.cp-msg{max-width:92%;align-items:flex-end;gap:6px}
+#cmPaneChat[data-spirit-chat] .cm-msg.cp-msg:not(.cp-start){margin-top:-8px}
+#cmPaneChat .cp-av{display:flex;align-items:flex-end;justify-content:center;flex:none;width:44px;min-width:44px;height:44px;min-height:44px;padding:0!important}
+#cmPaneChat .cp-av .cp-form{width:38px;height:38px}
+#cmPaneChat .mine .cp-av .cp-form{width:34px;height:34px;border-radius:50%;box-shadow:0 0 0 2px var(--chat-mint)}
+#cmPaneChat[data-spirit-chat] .cp-msg .cm-bub{position:relative;border-radius:18px;padding:8px 12px 8px;box-shadow:0 2px 10px #0000001f}
+#cmPaneChat[data-spirit-chat] .mine.cp-msg .cm-bub{border-radius:18px;background:color-mix(in srgb,var(--chat-mint) 20%,var(--chat-surface))}
+#cmPaneChat[data-spirit-chat] .cp-msg.cp-end .cm-bub:before{content:"";display:block;position:absolute;left:-6px;bottom:13px;width:12px;height:12px;background:inherit;border:solid var(--chat-edge);border-width:0 0 1px 1px;transform:rotate(45deg);border-radius:0 0 0 3px;pointer-events:none}
+#cmPaneChat[data-spirit-chat] .mine.cp-msg.cp-end .cm-bub:before{left:auto;right:-6px;border-width:1px 1px 0 0;border-radius:0 3px 0 0}
+#cmPaneChat .cp-msg .cs-by{flex-wrap:nowrap;margin-bottom:3px;min-width:0}
+#cmPaneChat .cp-msg .cs-by .cs-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--chat-mint)}
+#cmPaneChat .cs-by .cp-more{flex:none;min-width:44px;min-height:34px;margin:-8px -10px -8px 0;padding:0 8px;border:0!important;background:none!important;border-radius:12px;color:var(--muted);font-weight:900;letter-spacing:1px;line-height:1}
+#cmPaneChat .cp-msg.cp-open .cp-more{color:var(--text)}
+#cmPaneChat .cp-acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+#cmPaneChat .cp-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+#cmPaneChat .cp-msg .cm-bub{cursor:pointer}
+html.cs-chat-typing #cmPaneChat .cp-planet,html.cs-chat-typing #cmPaneChat .cp-head p{display:none}
+@media(max-width:360px){#cmPaneChat .cp-ctl{padding:6px 11px}#cmPaneChat .cp-ctl span{display:none}#cmPaneChat .cp-head h2{font-size:17px}}
+@media(max-height:700px){#cmPaneChat .cp-head p{display:none}#cmPaneChat .cp-bar{padding-bottom:6px}#cmPaneChat .cs-compose-meta{min-height:0}#cmPaneChat .cs-compose-meta:has(#csDraft:empty):has(#csCount:empty){display:none}}
+@media(prefers-reduced-motion:reduce){#cmPaneChat .cp-body,#cmPaneChat .cp-puff i{animation:none!important}}
 #cmPaneChat #csAnnounce{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 
-#cmPaneChat #csSelf{flex:1;min-width:0}
 #cmPaneChat #csControls{flex:none;max-width:45%}
 #cmPaneChat #csControls .cs-tool{max-width:100%}
 #cmPaneChat .cs-avatar{display:flex;align-items:center;justify-content:center;min-width:44px;min-height:44px}
 #cmPaneChat .cs-status button,#cmPaneChat .cm-replybar button{min-height:44px}
 html[data-theme=light] #cmPaneChat[data-spirit-chat]{--chat-mint:#337c67}
-html.cs-chat-typing #cmPaneChat .cs-tools{display:none}
 html.cs-chat-typing #cmPaneChat .cs-status button{display:none}
 html.cs-chat-typing #tab-foryou .ls-phd{padding-block:4px!important}
 html.cs-chat-typing #tab-foryou .ls-phd .h1{display:none}

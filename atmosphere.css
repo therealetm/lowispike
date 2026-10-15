@@ -1,0 +1,81 @@
+/* LOWiSPIKE day-night atmosphere (atmosphere.js). Only active with html[data-atm="manual"]; Auto (the old automatic)
+   leaves every existing layer exactly as it was. Animations are transform/opacity only and stop with reduced motion. */
+
+/* base sky: the same rule sits in <head> so a reload paints the chosen sky before anything else */
+html[data-atm="manual"], html[data-atm="manual"] body { background: var(--atm-bot) !important; }
+html[data-atm="manual"] body #app { background: linear-gradient(180deg, var(--atm-top) 0%, var(--atm-mid) 52%, var(--atm-bot) 100%) !important; }
+
+#atmSky { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; display: none; contain: strict; }
+html[data-atm="manual"] #atmSky { display: block; }
+#atmSky i { position: absolute; display: block; pointer-events: none; }
+
+/* sun by day, afterglow at dusk, moon at night: one glow that travels along the timelapse */
+#atmSky .atm-glow {
+    left: calc(var(--atm-sun-x, 50%) - 60vmax); top: calc(var(--atm-sun-y, 20%) - 60vmax); width: 120vmax; height: 120vmax;
+    background: radial-gradient(circle at 50% 50%, var(--atm-sun) 0, color-mix(in srgb, var(--atm-sun) 55%, transparent) 5%, color-mix(in srgb, var(--atm-sun) 18%, transparent) 18%, transparent 46%);
+    opacity: var(--atm-sun-a, 0);
+}
+
+/* stars: two sparse dot tiles, the second one twinkles */
+#atmSky .atm-stars {
+    inset: 0 0 35% 0; opacity: var(--atm-star-a, 0);
+    background-image:
+        radial-gradient(1.4px 1.4px at 12% 18%, #fff 50%, transparent 52%), radial-gradient(1px 1px at 33% 9%, #fff 50%, transparent 52%),
+        radial-gradient(1.2px 1.2px at 58% 22%, #e8eeff 50%, transparent 52%), radial-gradient(1px 1px at 76% 12%, #fff 50%, transparent 52%),
+        radial-gradient(1.6px 1.6px at 88% 30%, #fff 50%, transparent 52%), radial-gradient(1px 1px at 22% 40%, #dfe6ff 50%, transparent 52%),
+        radial-gradient(1.1px 1.1px at 46% 46%, #fff 50%, transparent 52%), radial-gradient(1px 1px at 67% 52%, #fff 50%, transparent 52%),
+        radial-gradient(1.3px 1.3px at 6% 58%, #fff 50%, transparent 52%), radial-gradient(1px 1px at 94% 60%, #e8eeff 50%, transparent 52%);
+    background-size: 260px 260px;
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 55%, transparent 100%); mask-image: linear-gradient(180deg, #000 0%, #000 55%, transparent 100%);
+}
+#atmSky .atm-stars2 { background-size: 190px 190px; background-position: 70px 40px; }
+html[data-atm-stars="1"] #atmSky .atm-stars2 { animation: atmTwinkle 4.6s ease-in-out infinite alternate; }
+@keyframes atmTwinkle { from { opacity: calc(var(--atm-star-a, 0) * 0.35); } to { opacity: var(--atm-star-a, 0); } }
+
+/* mist: two soft bands, low over the horizon and mid-screen, drifting slowly sideways */
+#atmSky .atm-mist { left: -30%; width: 160%; height: 34%; opacity: var(--atm-mist-a, 0);
+    background: radial-gradient(ellipse 50% 50% at 50% 50%, color-mix(in srgb, var(--atm-mist) 70%, transparent) 0%, color-mix(in srgb, var(--atm-mist) 30%, transparent) 45%, transparent 72%); }
+html[data-theme="dark"] #atmSky .atm-mist { background: radial-gradient(ellipse 50% 50% at 50% 50%, color-mix(in srgb, var(--atm-mist) 35%, transparent) 0%, color-mix(in srgb, var(--atm-mist) 14%, transparent) 45%, transparent 72%); }
+#atmSky .atm-mist1 { top: 58%; }
+#atmSky .atm-mist2 { top: 26%; height: 26%; left: -45%; opacity: calc(var(--atm-mist-a, 0) * 0.7); }
+html[data-atm-mist="1"] #atmSky .atm-mist1 { animation: atmDrift 38s ease-in-out infinite alternate; }
+html[data-atm-mist="1"] #atmSky .atm-mist2 { animation: atmDrift 52s ease-in-out infinite alternate-reverse; }
+@keyframes atmDrift { from { transform: translate3d(-6%, 0, 0); } to { transform: translate3d(6%, 0, 0); } }
+
+/* the real weather keeps its meaning (clouds, rain, fog, frost); only its own time-of-day pieces step aside */
+html[data-atm="manual"] #wxSky :is(.wx-tint, .wx-orb, .wx-stars) { display: none !important; }
+
+/* living cell + Home 3D window catch the light of the chosen hour */
+html[data-atm="manual"] .cw-env::before { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0; border-radius: inherit;
+    background: radial-gradient(circle at var(--atm-sun-x, 50%) var(--atm-sun-y, 20%), var(--atm-sun), transparent 62%); opacity: var(--atm-cell-a, 0); mix-blend-mode: screen; }
+html[data-atm="manual"][data-theme="light"] .cw-env::before { mix-blend-mode: soft-light; }
+
+@media (prefers-reduced-motion: reduce) {
+    #atmSky i, html[data-atm-stars="1"] #atmSky .atm-stars2, html[data-atm-mist="1"] #atmSky .atm-mist1, html[data-atm-mist="1"] #atmSky .atm-mist2 { animation: none !important; }
+}
+
+/* ---------- Look & Ton: Day & night card ---------- */
+.r2-look[data-atm-card] .atm-quick button { min-width: 0; }
+.atm-slider { position: relative; margin-top: 14px; padding-top: 28px; }
+.atm-now { position: absolute; top: 0; left: clamp(36px, var(--x, 50%), calc(100% - 36px)); transform: translateX(-50%); font-size: 13px; font-weight: 700; white-space: nowrap;
+    padding: 3px 10px; border-radius: 999px; background: var(--r2-field, rgba(127,127,127,.14)); border: 1px solid var(--r2-line, rgba(127,127,127,.2)); color: var(--r2-ink, inherit); pointer-events: none; }
+.atm-trackwrap { position: relative; height: 44px; display: flex; align-items: center; }
+.atm-track { position: absolute; left: 0; right: 0; height: 14px; border-radius: 999px; box-shadow: inset 0 0 0 1px rgba(127,127,127,.28), inset 0 1px 3px rgba(0,0,0,.18); }
+.atm-range { -webkit-appearance: none; appearance: none; position: relative; width: 100%; height: 44px; margin: 0; background: transparent; cursor: pointer; touch-action: pan-y; }
+.atm-range:focus { outline: none; }
+.atm-range::-webkit-slider-runnable-track { height: 44px; background: transparent; border: 0; }
+.atm-range::-moz-range-track { height: 44px; background: transparent; border: 0; }
+.atm-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 32px; height: 32px; margin-top: 6px; border-radius: 50%;
+    background: var(--atm-sun, #fff1b8); border: 3px solid #fff; box-shadow: 0 2px 10px rgba(0,0,0,.35), 0 0 0 1px rgba(0,0,0,.18); }
+.atm-range::-moz-range-thumb { width: 26px; height: 26px; border-radius: 50%; background: var(--atm-sun, #fff1b8); border: 3px solid #fff; box-shadow: 0 2px 10px rgba(0,0,0,.35); }
+.atm-range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px var(--acc, #9fd8ff), 0 2px 10px rgba(0,0,0,.35); }
+.r2-look.atm-is-auto .atm-range::-webkit-slider-thumb { background: transparent; border-style: dashed; }
+.atm-marks { display: grid; grid-template-columns: 1.3fr .7fr 1fr 1fr 1.3fr; gap: 4px; margin-top: 2px; }
+.atm-mark { min-height: 34px; padding: 2px 0; border: 0; background: none; font: inherit; font-size: 11px; line-height: 1.2; font-weight: 600;
+    color: var(--r2-mut, inherit); text-align: center; cursor: pointer; overflow-wrap: break-word; hyphens: auto; -webkit-hyphens: auto; min-width: 0; }
+.atm-mark:first-child { text-align: left; }
+.atm-mark:last-child { text-align: right; }
+.atm-mark.on { color: var(--r2-ink, inherit); font-weight: 750; }
+.atm-autonote { display: none; margin-top: 6px; font-size: 13px; color: var(--r2-mut, inherit); }
+.r2-look.atm-is-auto .atm-autonote { display: block; }
+@media (min-width: 700px) { .atm-mark { font-size: 12.5px; } }

@@ -1592,6 +1592,8 @@ html[data-lay=desktop] .fyv-bar{bottom:16px}
 
 </script>
 <script>try{(()=>{const h=document.documentElement,m=localStorage.getItem("lowi.theme"),c=m==="light"||m==="sunrise"?m:"dark",n=new Date,N=+n;let d=n.getHours()>=7&&n.getHours()<19;try{const w=JSON.parse(localStorage.getItem("lowi.weather.v1")||"null"),D=864e5;if(w&&w.sunset>w.sunrise&&Math.abs(N-w.sunrise)<3*D){const s=Math.round((N-(w.sunrise+w.sunset)/2)/D)*D;d=N>=w.sunrise+s&&N<w.sunset+s}}catch(e){}const t=c==="sunrise"?(d?"light":"dark"):c;h.setAttribute("data-theme",t);h.setAttribute("data-theme-mode",c)})()}catch(e){}</script>
+<script>try{(()=>{const h=document.documentElement,m=localStorage.getItem("lowi.theme"),a=JSON.parse(localStorage.getItem("lowi.atmos")||"null"),c=localStorage.getItem("lowi.atmos.css");if(a&&a.mode==="manual"&&c&&+a.p>=0&&(+a.p<62?"light":"dark")===(m==="light"?"light":m==="sunrise"?"":"dark")){h.setAttribute("data-atm","manual");h.style.cssText+=c}})()}catch(e){}</script>
+<style>html[data-atm="manual"],html[data-atm="manual"] body{background:var(--atm-bot)!important}html[data-atm="manual"] body #app{background:linear-gradient(180deg,var(--atm-top) 0%,var(--atm-mid) 52%,var(--atm-bot) 100%)!important}html[data-atm="manual"] #lwBoot{background:linear-gradient(180deg,var(--atm-top) 0%,var(--atm-mid) 52%,var(--atm-bot) 100%)}</style>
 <!-- Oct 15, 2026 clean start: the app is assembled in layers (the base page, then its inline modules, then the companion files apple-ui.js loads).
      Each layer used to paint on its way in, so opening the app showed older screens for a moment before the current one.
      Now the page stays behind one calm launch screen until the last layer is in, then the finished app shows in one step.
@@ -9915,8 +9917,8 @@ new MutationObserver(muts => { if (R2.themeEffective() !== "light") return; if (
 if (window.LowiGlass && LowiGlass.apply) { const _ap = LowiGlass.apply; LowiGlass.apply = function(){ const r = _ap.apply(this, arguments); if (R2.themeEffective() === "light") setTimeout(tuneAccent, 0); return r; }; }
 R2.themeHTML = () => '<div class="r2-seg" role="group" aria-label="Look">' +
   '<button data-r2theme="dark" class="' + (R2.theme() === "dark" ? "on" : "") + '">' + R2.ico.moon + '<span>Night</span></button>' +
-  '<button data-r2theme="light" class="' + (R2.theme() === "light" ? "on" : "") + '">' + R2.ico.sun + '<span>Cloud</span></button>' +
-  '<button data-r2theme="sunrise" class="' + (R2.theme() === "sunrise" ? "on" : "") + '">' + R2.ico.sunrise + '<span>Sunrise</span></button></div>';
+  '<button data-r2theme="light" class="' + (R2.theme() === "light" ? "on" : "") + '">' + R2.ico.sun + '<span>Day</span></button>' +
+  '<button data-r2theme="sunrise" class="' + (R2.theme() === "sunrise" ? "on" : "") + '">' + R2.ico.sunrise + '<span>Auto</span></button></div>';
 
 /* ---------- tasteful motion: entrance for freshly rendered screens ---------- */
 const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -9939,7 +9941,7 @@ R2.boot = function(){
   R2.applyTheme();
   watchTabs();
   document.addEventListener("click", e => {
-    const t = e.target.closest("[data-r2theme]"); if (t) { R2.applyTheme(t.getAttribute("data-r2theme")); const m = R2.theme(); R2.toast(m === "sunrise" ? "Sunrise mode on" : m === "light" ? "Cloud mode on" : "Night mode on"); return; }
+    const t = e.target.closest("[data-r2theme]"); if (t) { R2.applyTheme(t.getAttribute("data-r2theme")); const m = R2.theme(); R2.toast(m === "sunrise" ? "Auto on" : m === "light" ? "Day on" : "Night on"); return; }
     const c = e.target.closest('[data-r2="close"]'); if (c) { const ov = c.closest(".r2-ov"); R2.close(ov); }
   });
   document.addEventListener("visibilitychange", () => { if (!document.hidden && R2.theme() === "sunrise") R2.applyTheme(); });
@@ -9951,7 +9953,7 @@ R2.boot = function(){
 "use strict";
 const R2 = window.LowiR2, $ = R2.$, $$ = R2.$$, esc = R2.esc;
 const GATE = "lowi.gate";            // "done" (has account) | "skip" (chose to try without) — per device
-const KEEP = k => k === "lowi.theme" || k === "lowi.a2hs" || k === "lowi.news.seen" || k === "lowispike.lang" || k.indexOf("lowi.health.") === 0 || k === "lowi.t";
+const KEEP = k => k === "lowi.theme" || k === "lowi.atmos" || k === "lowi.atmos.css" || k === "lowi.a2hs" || k === "lowi.news.seen" || k === "lowispike.lang" || k.indexOf("lowi.health.") === 0 || k === "lowi.t";
 
 function session(){ try { const j = JSON.parse(localStorage.getItem("lowi.auth") || "null"); return j && j.user ? j : null; } catch(e){ return null; } }
 function isAccount(){ const s = session(); return !!(s && s.user && !s.user.is_anonymous && s.user.email); }
@@ -10317,7 +10319,7 @@ function decorateProfile(){
     const acct = tab.querySelector("#lcAcct");
     const sec = document.createElement("div"); sec.className = "sec"; sec.textContent = "Look";
     const card = document.createElement("div"); card.className = "card r2-look";
-    card.innerHTML = '<div class="r2-lookrow"><div><b>Night, Cloud or Sunrise</b><small>Dark, bright, or automatic by time</small></div>' + R2.themeHTML() + '</div>';
+    card.innerHTML = '<div class="r2-lookrow"><div><b>Day & night</b><small>Day, night, or automatic by the sun</small></div>' + R2.themeHTML() + '</div>';
     if (acct && acct.nextSibling) { acct.parentNode.insertBefore(card, acct.nextSibling); acct.parentNode.insertBefore(sec, card); } else { tab.appendChild(sec); tab.appendChild(card); }
   }
 }
@@ -11459,6 +11461,11 @@ const ROWS = [
   ["Profile saved", "Profil gespeichert", "Perfil guardado"],
   ["Look", "Aussehen", "Aspecto"],
   ["Night, Cloud or Sunrise", "Night, Cloud oder Sunrise", "Night, Cloud o Sunrise"],
+  ["Day & night", "Tag & Nacht", "Día y noche"],
+  ["Day, night, or automatic by the sun", "Tag, Nacht oder automatisch nach der Sonne", "Día, noche o automático según el sol"],
+  ["Day on", "Tag an", "Día activado"],
+  ["Night on", "Nacht an", "Noche activada"],
+  ["Auto on", "Auto an", "Auto activado"],
   ["Dark, bright, or automatic by time", "Dunkel, hell oder automatisch nach Uhrzeit", "Oscuro, claro o automático según la hora"],
   ["Night", "Night", "Night"],
   ["Cloud", "Cloud", "Cloud"],

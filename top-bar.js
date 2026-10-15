@@ -2,7 +2,7 @@
    1. Sub-page header (Back + title, #g2eHead) no longer paints a solid black band: it is transparent and only
       gets a soft fade when content scrolls under it. The "TAP TO SCAN" first-use hint only shows on Today,
       never floating over Community, Cook, Move or a Profile sub-page.
-   2. One-tap Night/Cloud switch (#tbTheme) next to the profile button on every page, phone, iPad and desktop.
+   2. One-tap Day/Night switch (#tbTheme) next to the profile button on every page, phone, iPad and desktop.
       It uses LowiR2.applyTheme, so Look & sound stays in sync; Sunrise (automatic) stays in Look & sound.
    3. Tapping the weather pill opens a small weather app inside LOWiSPIKE: now, next hours, today's high/low,
       sunrise/sunset, UV, and "So wirkt das Wetter heute auf deinen Körper" with careful, general facts.
@@ -13,10 +13,10 @@
     'use strict';
     const LANGS = ['en', 'de', 'es'];
     const T = {
-        toDark: ['Switch to Night', 'Night einschalten', 'Activar Night'],
-        toLight: ['Switch to Cloud', 'Cloud einschalten', 'Activar Cloud'],
-        nightOn: ['Night on', 'Night an', 'Night activado'],
-        cloudOn: ['Cloud on', 'Cloud an', 'Cloud activado'],
+        toDark: ['Switch to Night', 'Nacht einschalten', 'Activar Noche'],
+        toLight: ['Switch to Day', 'Tag einschalten', 'Activar Día'],
+        nightOn: ['Night on', 'Nacht an', 'Noche activada'],
+        cloudOn: ['Day on', 'Tag an', 'Día activado'],
         weather: ['Weather', 'Wetter', 'Tiempo'],
         now: ['Now', 'Jetzt', 'Ahora'],
         feels: ['Feels like', 'Gefühlt', 'Sensación'],
@@ -246,7 +246,9 @@
     function toggleTheme() {
         const to = nextTheme(effective());
         const R2 = root.LowiR2;
-        if (R2 && R2.applyTheme) R2.applyTheme(to);
+        /* Day & night atmosphere (atmosphere.js): one tap jumps to its Day or Night stop; the slider lives in Look & Ton */
+        if (root.LowiAtmos && root.LowiAtmos.quick) root.LowiAtmos.quick(to === 'light' ? 'day' : 'night', { toast: false });
+        else if (R2 && R2.applyTheme) R2.applyTheme(to);
         else { try { localStorage.setItem('lowi.theme', to); } catch (e) {} H.setAttribute('data-theme', to); H.setAttribute('data-theme-mode', to); }
         paintBtn();
         try { if (R2 && R2.toast) R2.toast(to === 'light' ? t('cloudOn') : t('nightOn')); } catch (e) {}

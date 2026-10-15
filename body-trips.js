@@ -340,9 +340,16 @@
             bar.dataset.bt = 'bar';
         }
         /* the sun row must stay right before #lvDash (sun-meter.js re-inserts it there), so the bar goes right before the sun row */
-        const sun = log.querySelector('#lsSun'), dash = log.querySelector('#lvDash'), before = sun || dash;
-        if (bar.parentNode !== log || (before && bar.nextSibling !== before)) { if (before) log.insertBefore(bar, before); else log.appendChild(bar); last = ''; }
+        if (bar.parentNode !== log || !placed(log)) { const before = log.querySelector('#lsSun') || log.querySelector('#lvDash'); if (before) log.insertBefore(bar, before); else log.appendChild(bar); last = ''; }
         return bar;
+    }
+    /* in place = right before the sun row (or #lvDash); micro-book.js puts its #mbAdv row right after the bar, which is fine */
+    function placed(log) {
+        const target = log.querySelector('#lsSun') || log.querySelector('#lvDash');
+        if (!target) return true;
+        let n = bar.nextSibling;
+        while (n && n.id === 'mbAdv') n = n.nextSibling;
+        return n === target;
     }
     const cellIco = '<svg class="bt-cell" viewBox="0 0 24 24" aria-hidden="true"><circle class="bt-cell-m" cx="12" cy="12" r="9"/><circle class="bt-cell-n" cx="13.5" cy="10.5" r="3.3"/><circle class="bt-cell-o" cx="8" cy="14.5" r="1.3"/><circle class="bt-cell-o" cx="15" cy="16" r="1"/></svg>';
     function render() {
@@ -492,6 +499,8 @@
         try { if (W.LowiHost && LowiHost.award) xp = LowiHost.award('body-trip', null, { amt: XP, label: tr('xpL') + ' · ' + nm(byId(res.place)), eventId: res.eventId, perDay: TRIPS_PER_DAY }) || 0; } catch (e) {}
         res.xp = xp;
         save();
+        /* the adventure log in micro-book.js keeps one entry per journey */
+        try { const f = byId(res.place).f[res.fact] || []; W.dispatchEvent(new CustomEvent('lowi:body-trip-done', { detail: { id: res.eventId, place: nm(byId(res.place)), saw: String(f[L()] || f[0] || '').slice(0, 88), ts: now } })); } catch (e) {}
         render();
         surpriseSheet(res);
         return res;
@@ -535,7 +544,7 @@
             D.head.appendChild(l);
         }
         const tab = D.getElementById('tab-home');
-        if (tab && W.MutationObserver) new MutationObserver(() => { if (!bar || !bar.isConnected) schedule(); else { const s = D.getElementById('lsSun') || D.getElementById('lvDash'); if (s && bar.nextSibling !== s) schedule(); } }).observe(tab, { childList: true, subtree: true });
+        if (tab && W.MutationObserver) new MutationObserver(() => { if (!bar || !bar.isConnected || (bar.parentNode && !placed(bar.parentNode))) schedule(); }).observe(tab, { childList: true, subtree: true });
         schedule();
         setTimeout(checkFast, 2500);
         setInterval(tick, 1000);

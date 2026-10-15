@@ -11,29 +11,39 @@ const read = f => fs.readFileSync(path.join(root, f), 'utf8');
 
 function parse(t) { const m = /translate\(([-\d.]+)px,([-\d.]+)px\) scale\(([\d.]+)\)/.exec(t); return { x: +m[1], y: +m[2], s: +m[3] }; }
 
-test('the pull-out keeps Misty and your orb on the same point for every frame', () => {
+test('the pull-out keeps Misty and your orb on the same moving point, with gentle scales and no clip', () => {
     const m = { x: 195, y: 388, r: 105 }, y = { x: 120, y: 520, r: 27 }, g = { left: 18, top: 12 };
     const p = Z.plan(m, y, g, 390, 844);
-    assert.ok(Math.abs(p.s * p.K - 1) < 1e-9);
     const h0 = parse(p.home.from), h1 = parse(p.home.to), g0 = parse(p.galaxy.from), g1 = parse(p.galaxy.to);
     for (const e of [0, 0.25, 0.5, 0.75, 1]) {
         const lerp = (a, b) => a + (b - a) * e;
-        /* Misty's centre is the Home transform origin; your orb's centre is the galaxy transform origin. */
         const hx = m.x + lerp(h0.x, h1.x), hy = m.y + lerp(h0.y, h1.y);
         const gx = y.x + lerp(g0.x, g1.x), gy = y.y + lerp(g0.y, g1.y);
         assert.ok(Math.abs(hx - gx) < 0.2 && Math.abs(hy - gy) < 0.2, 'same anchor at ' + e);
-        /* and both layers shrink at the same rate */
-        assert.ok(Math.abs(lerp(h0.s, h1.s) * p.K - lerp(g0.s, g1.s)) < 0.01, 'same scale at ' + e);
     }
-    assert.match(p.home.clipFrom, /^circle\(\d+px at 195\.0px 388\.0px\)$/);
-    assert.match(p.home.clipTo, /^circle\(109\.2px at/);
+    /* E-man saw a giant "You" fill the screen: the galaxy never starts more than 2.5x, Home never shrinks below 0.4 */
+    assert.ok(g0.s <= 2.5 && g1.s === 1 && h1.s >= 0.4 && h0.s === 1);
+    assert.ok(!('clipFrom' in p.home), 'no clip circle (the stray teal ring)');
     assert.equal(p.galaxy.origin, '102.0px 508.0px');
+    assert.ok(Z.DUR <= 800, 'short move, no 1 s wait');
+    const src = read('galaxy-zoom.js');
+    assert.ok(!/clipPath/.test(src));
+});
+
+test('pinch: past Home\'s widest view you land in the galaxy, spreading on the galaxy dives back home', () => {
+    assert.equal(Z.overPull(200, 100), 2);
+    assert.ok(Z.overPull(200, 150) < Z.PINCH_GO && Z.overPull(200, 130) >= Z.PINCH_GO);
+    const src = read('galaxy-zoom.js'), wh = read('world-home.js'), ac = read('arrival-cards.js');
+    assert.ok(src.includes("if (r.dist < r.maxD * 0.995) { gest.ref = 0; return; }") && src.includes("if (over >= PINCH_GO) cross('foryou');"));
+    assert.ok(src.includes("cross('home');") && src.includes("t.closest('#cgGalaxy')"));
+    assert.ok(wh.includes('syncX, rig };'), 'Home exposes the camera rig');
+    assert.ok(ac.includes('if (!opts.force && !rideOpen() && offHome()) return null;'), 'no arrival card over the galaxy');
 });
 
 test('no boxed snapshot of Home is left in the galaxy; the zoom script is shipped and cached', () => {
     const chat = read('community-chat.js'), css = read('community-galaxy.css'), html = read('index.html'), sw = read('sw.js');
     assert.ok(!chat.includes('cg-intro') && !css.includes('.cg-intro'), 'the fake Home gradient card is gone');
-    assert.ok(html.includes('<script src="galaxy-zoom.js?v=gx-1"></script>'));
+    assert.ok(html.includes('<script src="galaxy-zoom.js?v=gx-2"></script>'));
     assert.ok(sw.includes('"galaxy-zoom.js"'));
     assert.ok(css.includes('html.gx-hold #tab-home') && css.includes('#tab-foryou.nm-solo{background:'), 'Home held on top, Community is one space with no card');
     const wh = read('world-home.js');

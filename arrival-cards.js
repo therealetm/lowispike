@@ -120,9 +120,12 @@
         return sh;
     }
 
+    function offHome() { const h = D.documentElement; if (h.classList.contains('gx-out') || h.classList.contains('gx-hold')) return true; const t = D.querySelector('.tab.active'); return !!(t && t.id === 'tab-foryou'); }
     /* public: show(id) picks the right surface */
     function show(id, opts) {
         opts = opts || {};
+        /* Oct 16: never over the Community galaxy (a "You arrived: Brain" card popped up there during the zoom) */
+        if (!opts.force && !rideOpen() && offHome()) return null;
         const p = C() && C().pid(id); if (!p) return null;
         const now = Date.now();
         if (!opts.force && p === last.id && now - last.t < 2500 && cur && cur.id === p) return cur.el;

@@ -8,19 +8,26 @@
    Pure geometry is in plan(); the DOM part only runs in a browser, skips with reduced motion and gives up quietly if anything is missing. */
 (function (root) {
     'use strict';
-    const DUR = 1250, EASE = 'cubic-bezier(.62,0,.32,1)';
+    /* Oct 16, round 2 (E-man's screenshots): the old move shrank Home through a clip circle and blew the galaxy up 4-8x, which on the
+       phone showed a dark screen with a stray teal ring, then a giant "You" filling the screen, after a ~1 s wait. Now it is a short
+       zoom-and-crossfade with gentle scales: Home falls away into Misty's point while the galaxy settles in from just in front of you,
+       both anchored on the same moving point (Misty -> You). No clip, no huge scale, 760 ms.
+       And you can get there with your fingers: keep pinching out past Home's widest view and you land in the galaxy; spread two fingers
+       on the galaxy and you dive back into Home. */
+    const DUR = 760, EASE = 'cubic-bezier(.4,0,.2,1)', GX = 2.4, HS = 0.42;
     /* Geometry: m = Misty's centre + radius on Home, y = your orb's centre + radius in the galaxy (both in viewport px), g = galaxy box. */
     function plan(m, y, g, vw, vh) {
-        const s = Math.max(0.05, Math.min(1, (y.r || 27) / Math.max(1, m.r || 100))), K = 1 / s;
-        const full = Math.hypot(Math.max(m.x, vw - m.x), Math.max(m.y, vh - m.y)) + 4;
+        const dx = (y.x - m.x).toFixed(1), dy = (y.y - m.y).toFixed(1), bx = (m.x - y.x).toFixed(1), by = (m.y - y.y).toFixed(1);
         return {
-            s, K,
-            home: { origin: m.x + 'px ' + m.y + 'px', from: 'translate(0px,0px) scale(1)', to: 'translate(' + (y.x - m.x).toFixed(1) + 'px,' + (y.y - m.y).toFixed(1) + 'px) scale(' + s.toFixed(4) + ')',
-                clipFrom: 'circle(' + full.toFixed(0) + 'px at ' + m.x.toFixed(1) + 'px ' + m.y.toFixed(1) + 'px)', clipTo: 'circle(' + ((m.r || 100) * 1.04).toFixed(1) + 'px at ' + m.x.toFixed(1) + 'px ' + m.y.toFixed(1) + 'px)' },
-            galaxy: { origin: (y.x - g.left).toFixed(1) + 'px ' + (y.y - g.top).toFixed(1) + 'px', from: 'translate(' + (m.x - y.x).toFixed(1) + 'px,' + (m.y - y.y).toFixed(1) + 'px) scale(' + K.toFixed(4) + ')', to: 'translate(0px,0px) scale(1)' }
+            s: HS, K: GX,
+            home: { origin: m.x.toFixed(1) + 'px ' + m.y.toFixed(1) + 'px', from: 'translate(0px,0px) scale(1)', to: 'translate(' + dx + 'px,' + dy + 'px) scale(' + HS + ')' },
+            galaxy: { origin: (y.x - g.left).toFixed(1) + 'px ' + (y.y - g.top).toFixed(1) + 'px', from: 'translate(' + bx + 'px,' + by + 'px) scale(' + GX + ')', to: 'translate(0px,0px) scale(1)' }
         };
     }
-    const api = { plan, DUR };
+    /* Pinch past the edge: how far the fingers kept closing (Home, at its widest) or opening (galaxy) before we cross over. */
+    const PINCH_GO = 1.45;
+    function overPull(d0, d) { return d0 > 0 && d > 0 ? d0 / d : 1; }
+    const api = { plan, DUR, overPull, PINCH_GO };
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
@@ -45,6 +52,7 @@
         const b = busy; busy = null; clearTimeout(b.timer);
         (b.anims || []).forEach(a => { try { a.cancel(); } catch (e) {} });
         H.classList.remove('gx-hold', 'gx-out', 'gx-in', 'gx-keep');
+        if (b.dir === 'out') { try { if (W.LowiArrival && W.LowiArrival.current && W.LowiArrival.current()) W.LowiArrival.close(); } catch (e) {} }
         try { if (W.LowiWorldHome && W.LowiWorldHome.settle) W.LowiWorldHome.settle(); } catch (e) {}
         try { if (W.LowiCommunity && W.LowiCommunity.refresh) W.LowiCommunity.refresh(); } catch (e) {}
     }
@@ -52,9 +60,9 @@
         const home = D.getElementById('tab-home'), gal = D.getElementById('cgGalaxy'), y = youBox();
         if (!home || !gal || !y || !home.animate) { finish(); return; }
         const m = mistyBox(), g = gal.getBoundingClientRect(), p = plan(m, y, g, innerWidth, innerHeight), out = dir === 'out';
-        /* transform and clip run over the whole move (in lockstep with the galaxy); only the fade waits for the last 18 % */
-        const kh = [{ transform: p.home.from, clipPath: p.home.clipFrom, opacity: 1 }, { opacity: out ? 1 : 0.9, offset: 0.82 }, { transform: p.home.to, clipPath: p.home.clipTo, opacity: 0 }];
-        const kg = [{ transform: p.galaxy.from }, { transform: p.galaxy.to }];
+        /* Home falls away and fades in the first three quarters; the galaxy comes in from just in front of you and is solid by 70 % */
+        const kh = [{ transform: p.home.from, opacity: 1 }, { opacity: 1, offset: 0.18 }, { opacity: 0, offset: 0.78 }, { transform: p.home.to, opacity: 0 }];
+        const kg = [{ transform: p.galaxy.from, opacity: 0 }, { opacity: 0.15, offset: 0.12 }, { opacity: 1, offset: 0.7 }, { transform: p.galaxy.to, opacity: 1 }];
         home.style.transformOrigin = p.home.origin; gal.style.transformOrigin = p.galaxy.origin;
         const o = { duration: DUR, easing: EASE, fill: 'both', direction: out ? 'normal' : 'reverse' };
         busy.anims = [home.animate(kh, o), gal.animate(kg, o)];
@@ -97,6 +105,65 @@
         try { if (typeof goTab !== 'undefined' && goTab !== g) goTab = g; } catch (e) {}
         return true;
     }
+    /* ---------- fingers: pinch out past Home's widest view -> galaxy; spread on the galaxy -> back into Home ---------- */
+    const rigNow = () => { try { return W.LowiWorldHome && W.LowiWorldHome.rig ? W.LowiWorldHome.rig() : null; } catch (e) { return null; } };
+    const atHub = () => { try { const R = W.LowiWorldRegions, s = R && R.state; return !(s && (s.busy || (s.cur && s.cur !== 'hub'))); } catch (e) { return true; } };
+    function homePinchOk(t) {
+        const r = rigNow();
+        return !!(r && r.mode === 'home' && worldHome() && activeTab() === 'home' && !busy && atHub() && !D.querySelector('.bw3-full') && t && t.closest && t.closest('#tab-home') && !t.closest('button, .wh-sheet, .sheet, input, textarea'));
+    }
+    const gest = { on: '', d0: 0, ref: 0, el: null };
+    const tdist = e => Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+    function feel(el, k, o) { if (!el) return; el.style.transition = 'none'; el.style.transform = k === 1 ? '' : 'scale(' + k.toFixed(3) + ')'; el.style.opacity = o == null || o === 1 ? '' : String(o.toFixed(3)); }
+    function release() {
+        const el = gest.el; gest.on = ''; gest.el = null; gest.ref = 0;
+        if (el) { el.style.transition = 'transform .25s ease, opacity .25s ease'; el.style.transform = ''; el.style.opacity = ''; setTimeout(() => { if (!gest.el) el.style.transition = ''; }, 300); }
+    }
+    function cross(to) {
+        const el = gest.el; gest.on = ''; gest.el = null; gest.ref = 0;
+        if (el) { el.style.transition = ''; el.style.transform = ''; el.style.opacity = ''; }
+        try { (W.goTab || goTab)(to); } catch (e) {}
+    }
+    D.addEventListener('touchstart', e => {
+        if (e.touches.length !== 2) { if (e.touches.length > 2) release(); return; }
+        const t = e.target;
+        if (homePinchOk(t)) { gest.on = 'home'; gest.el = D.getElementById('tab-home'); gest.d0 = tdist(e); gest.ref = 0; }
+        else if (activeTab() === 'foryou' && !busy && t && t.closest && t.closest('#cgGalaxy') && !t.closest('#cmPaneChat .cm-compose, input, textarea')) { gest.on = 'gal'; gest.el = D.getElementById('cgGalaxy'); gest.d0 = tdist(e); e.preventDefault(); }
+    }, { capture: true, passive: false });
+    D.addEventListener('touchmove', e => {
+        if (!gest.on || e.touches.length !== 2) return;
+        const d = tdist(e);
+        if (gest.on === 'home') {
+            const r = rigNow(); if (!r) return release();
+            /* only counts once the camera is already at its widest; the fingers' distance there is the reference */
+            if (r.dist < r.maxD * 0.995) { gest.ref = 0; return; }
+            if (!gest.ref) gest.ref = d;
+            const over = overPull(gest.ref, d);
+            if (over <= 1) { feel(gest.el, 1, 1); return; }
+            const f = Math.min(1, (over - 1) / (PINCH_GO - 1));
+            feel(gest.el, 1 - 0.12 * f, 1 - 0.25 * f);
+            if (over >= PINCH_GO) cross('foryou');
+        } else {
+            e.preventDefault();
+            const open = d / gest.d0;
+            if (open <= 1) { feel(gest.el, 1, 1); return; }
+            const f = Math.min(1, (open - 1) / (PINCH_GO - 1));
+            feel(gest.el, 1 + 0.25 * f, 1 - 0.2 * f);
+            if (open >= PINCH_GO && D.querySelector('#cgField .cg-body.me')) cross('home');
+        }
+    }, { capture: true, passive: false });
+    const tend = e => { if (gest.on && e.touches.length < 2) release(); };
+    D.addEventListener('touchend', tend, true); D.addEventListener('touchcancel', tend, true);
+    /* iOS Safari's own page zoom would fight the galaxy pinch */
+    D.addEventListener('gesturestart', e => { if (gest.on === 'gal') e.preventDefault(); }, { passive: false });
+    /* trackpad / mouse wheel: keep scrolling out at Home's widest view (or in on the galaxy) to cross over */
+    let wheelOver = 0, wheelT = 0;
+    D.addEventListener('wheel', e => {
+        if (busy) return;
+        const now = Date.now(); if (now - wheelT > 450) wheelOver = 0; wheelT = now;
+        if (e.deltaY > 0 && homePinchOk(e.target)) { const r = rigNow(); if (r.dist >= r.maxD * 0.995 && ++wheelOver >= 5) { wheelOver = 0; (W.goTab || goTab)('foryou'); } }
+        else if (e.deltaY < 0 && activeTab() === 'foryou' && e.target && e.target.closest && e.target.closest('#cgGalaxy') && D.querySelector('#cgField .cg-body.me')) { e.preventDefault(); if (++wheelOver >= 5) { wheelOver = 0; (W.goTab || goTab)('home'); } }
+    }, { capture: true, passive: false });
     let tries = 0;
     (function boot() { if (!wrap() && tries++ < 80) setTimeout(boot, 150); else setInterval(wrap, 2000); })();
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -665,6 +665,6 @@
         setInterval(() => { tabs(); tick(); }, 700);
         tabs(); tick();
     }
-    W.LowiWorldHome = { pullOut, settle, waterReset, openToday, openMisty, toggleZoom, zoomOutWhole, closeTop, heroTurn, state: st, auraId, syncX };
+    W.LowiWorldHome = { pullOut, settle, waterReset, openToday, openMisty, toggleZoom, zoomOutWhole, closeTop, heroTurn, state: st, auraId, syncX, rig };
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 })();

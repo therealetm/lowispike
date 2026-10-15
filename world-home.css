@@ -219,3 +219,22 @@ html[data-theme="light"] .wh-fhint span { background: rgba(255,255,255,.8); colo
 /* small phones: Misty and her two cells sit a touch higher and closer, so nothing meets the Today button or the screen edge */
 @media (max-height: 700px) { :root { --wh-cy: 42%; } }
 @media (max-width: 340px) { :root { --wh-bs: 176px; --wh-fs: 80px; } }
+
+/* ---------- One world, one Misty (Oct 15) ---------- */
+/* VR / motion viewing right on Home: a compact button stacked above the World map button, so the thumb row keeps its room */
+.wh-hud .wh-vr { right: calc(max(16px, env(safe-area-inset-right)) + 6px); bottom: calc(var(--wh-tb) + 12px + 58px + 10px); width: 46px; height: 46px; border-radius: 16px; padding: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; font-size: 9.5px; font-weight: 700; line-height: 1; letter-spacing: .02em;
+    border: 1px solid rgba(255,255,255,.24); background: rgba(10,22,52,.58); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 8px 26px -12px rgba(0,0,0,.55); }
+.wh-hud .wh-vr svg { width: 20px; height: 20px; }
+.wh-hud .wh-vr.vr-left { right: auto; left: calc(var(--wh-l, 0px) + max(16px, env(safe-area-inset-left)) + 6px); }
+.wh-hud .wh-vr:active { transform: scale(.94); }
+.wh-hud .wh-vr[data-state="on"] { background: rgba(255,255,255,.92); color: #0b1d3f; border-color: #2ef8b6; box-shadow: 0 0 0 2px rgba(46,248,182,.45), 0 8px 26px -12px rgba(0,0,0,.55); }
+.wh-hud .wh-vr[data-state="no"], .wh-hud .wh-vr[data-state="denied"] { opacity: .7; }
+html[data-theme="light"] .wh-hud .wh-vr { background: rgba(255,255,255,.78); color: #0b1d3f; border-color: rgba(11,29,63,.16); }
+/* a place reached from Home is shown in Home itself: Misty's cell, water and fasting step aside until you fly back */
+html.wh-home #spHome #spBubble, html.wh-home #spHome #spFast, html.wh-home #whHud .wh-water { transition: opacity .35s ease; }
+html.wh-home.wh-away #spHome #spBubble, html.wh-home.wh-away #spHome #spFast, html.wh-home.wh-away #whHud .wh-water, html.wh-home.wh-away .fe-bub { opacity: 0 !important; pointer-events: none !important; }
+/* the regions' own World map pill belongs to the old full window; on Home the thumb row World map button does the job */
+.wh-hud .bwr-mapbtn { display: none !important; }
+.wh-hud .bwr-map { pointer-events: auto; }
+.wh-hud .bwr-label { top: calc(env(safe-area-inset-top, 0px) + 132px); }

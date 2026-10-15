@@ -319,7 +319,13 @@
     function explored(id) {
         try { const t = W.LowiBodyTrips; const pid = id === 'hub' ? 'blood' : id; const v = t && (t.progress ? t.progress(pid) : t.pct ? t.pct(pid) : null); const n = typeof v === 'number' ? v : (v && (v.pct != null ? v.pct : v.p)); return Math.max(0, Math.min(100, Math.round(n || 0))); } catch (e) { return 0; }
     }
-    function host() { const a = w3(); if (!a || !a.isOpen || !a.isOpen()) return null; const h = D.querySelector('.bw3-full'); return h && h.isConnected ? h : null; }
+    function host() { const a = w3(); if (!a || !a.isOpen) return null; if (!a.isOpen()) return homeHost(a); const h = D.querySelector('.bw3-full'); return h && h.isConnected ? h : null; }
+    /* One world (Oct 15): Home's live world is a host too, so a warp from Home lands in Home itself (no second window) */
+    function homeHost(a) {
+        const H = D.documentElement; if (!H.classList.contains('wh-home') || !H.classList.contains('wh-world-live')) return null;
+        if (!a.rig || a.rig.mode !== 'home' || !a.ready) return null;
+        const h = D.getElementById('whHud'); return h && h.isConnected ? h : null;
+    }
     function ensureUi() {
         const h = host(); if (!h) return null;
         if (st.mapBtn && st.mapBtn.isConnected && st.host === h) return st.mapBtn;

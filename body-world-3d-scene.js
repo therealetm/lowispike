@@ -212,7 +212,7 @@ export function createWorld(THREE, canvas, opts) {
     function flyTo(id) {
         const b = id && beacons[id];
         const from = { t: rig.target.clone(), d: rig.dist };
-        const to = b ? { t: b.pos.clone().multiplyScalar(0.92), d: 2.6 } : { t: new THREE.Vector3(), d: 6.5 };
+        const to = b ? { t: b.pos.clone().multiplyScalar(0.92), d: 2.6 } : { t: new THREE.Vector3(), d: rig.mode === 'home' ? (rig.homeDist || 3.2) : 6.5 }; /* back home on Home: Misty's own framing */
         if (b) { const ang = Math.atan2(b.pos.x, b.pos.z); rig.flyYaw = { from: rig.yaw, to: ang + Math.round((rig.yaw - ang) / (Math.PI * 2)) * Math.PI * 2 }; } else rig.flyYaw = null;
         rig.fly = { from, to, t: 0, dur: 1.45 }; rig.idle = 0;
         tint = b ? b.hue.clone() : null; tintT = b ? 0.2 : 0;

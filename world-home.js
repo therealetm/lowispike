@@ -27,6 +27,7 @@
         x: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
         out: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><circle cx="12" cy="12" r="8.6" stroke-dasharray="2.4 2.6"/><path d="M3 3l3.2 3.2M21 3l-3.2 3.2M3 21l3.2-3.2M21 21l-3.2-3.2"/></svg>',
         inn: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M4 4l4 4M20 4l-4 4M4 20l4-4M20 20l-4-4M8 4.6V8H4.6M16 4.6V8h3.4M8 19.4V16H4.6M16 19.4V16h3.4"/></svg>',
+        vr: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16a2 2 0 0 1 2 2v5a2.5 2.5 0 0 1-2.5 2.5h-3.3l-2-2.4a2.8 2.8 0 0 0-4.4 0l-2 2.4H4.5A2.5 2.5 0 0 1 2 15v-5a2 2 0 0 1 2-2z"/><circle cx="7.5" cy="12.4" r="1.5"/><circle cx="16.5" cy="12.4" r="1.5"/></svg>',
         today: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4M8 14h3M8 17h6"/></svg>',
         aura: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="8.5" opacity=".55"/></svg>',
         home: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-6.5 8 6.5V20H4z"/><path d="M10 20v-5h4v5"/></svg>',
@@ -87,6 +88,37 @@
         tab.appendChild(hud);
         return hud;
     }
+    /* One world (Oct 15): VR / motion viewing right on Home, no extra window. A compact button stacked above the World map
+       button, so the thumb row (Klang | Today | World map) keeps its room; it only exists on devices with a motion sensor. */
+    function ensureVr() {
+        const hud = D.getElementById('whHud'), a = w3(); if (!hud || !a || !a.gyro) return;
+        let b = hud.querySelector('.wh-vr');
+        let kind = 'none'; try { kind = a.gyro.kind(); } catch (e) { }
+        if (kind === 'none') { if (b) b.remove(); return; }
+        if (b) { if ((b.dataset.state === 'on') !== !!a.gyro.on()) a.gyro.paint(b); return; }
+        b = btn('wh-vr', 'VR', ICO.vr + '<span class="wh-vr-tx">VR</span>', { 'data-wh': 'vr', 'data-short': '1', 'aria-pressed': 'false' });
+        ['pointerdown', 'touchstart'].forEach(n => b.addEventListener(n, e => e.stopPropagation(), { passive: true }));
+        const hint = hud.querySelector('.wh-hint'); if (hint) hud.insertBefore(b, hint); else hud.appendChild(b);
+        a.gyro.paint(b); placeVr();
+    }
+    function vrHits(b) {
+        const r = b.getBoundingClientRect(); if (!r.width) return false;
+        let hit = false;
+        D.querySelectorAll('#spFast, #whHud .wh-water, #spBubble, .fe-bub').forEach(el => {
+            const q = el.getBoundingClientRect(); if (!q.width || !q.height || getComputedStyle(el).display === 'none') return;
+            if (q.left < r.right + 4 && q.right > r.left - 4 && q.top < r.bottom + 4 && q.bottom > r.top - 4) hit = true;
+        });
+        return hit;
+    }
+    /* above World map by default; on a very small phone where Misty's water cell reaches down there, above Klang instead */
+    function placeVr() {
+        const b = D.querySelector('#whHud .wh-vr'); if (!b || !H.classList.contains('wh-home')) return;
+        const was = b.classList.contains('vr-left');
+        b.classList.remove('vr-left');
+        let left = false;
+        if (vrHits(b)) { b.classList.add('vr-left'); left = !vrHits(b); }
+        b.classList.toggle('vr-left', left); void was;
+    }
     function paintHud() {
         const hud = D.getElementById('whHud'); if (!hud) return;
         const xp = xpNow(), s = C.stage(xp), l = lang();
@@ -145,6 +177,8 @@
             setTimeout(syncX, 30); return true;
         }
         if (st.today) { openToday(false); return true; }
+        /* One world: travelling in Home's own world, the X flies back to Misty's cell (same warp, reversed) */
+        if (H.classList.contains('wh-away')) { try { W.LowiWorldRegions.travel('hub'); } catch (e) { } setTimeout(syncX, 30); return true; }
         const w = topWorld(); if (w) { const b = w.querySelector('[data-sp="close"]'); b && b.click(); setTimeout(syncX, 30); return true; }
         return false;
     }
@@ -157,7 +191,7 @@
     }
     function syncX() {
         const x = ensureX(), r = topR2(), w = topWorld(), hs = topHost();
-        const on = !!(r || st.today || w || hs);
+        const on = !!(r || st.today || w || hs); /* a place on Home is no window: no X. World map flies you back (Esc / back gesture too) */
         H.classList.toggle('wh-host-on', !!hs);
         H.classList.toggle('wh-x-on', on);
         H.classList.toggle('wh-r2-on', !!r);
@@ -181,9 +215,10 @@
         return C.zoomTarget(r.dist, r.minD, r.maxD, baseDist(r));
     }
     function inRegion() { try { const R = W.LowiWorldRegions; return !!(R && R.current && R.current() !== 'hub'); } catch (e) { return false; } }
+    function awayHome() { try { const r = rig(), s = W.LowiWorldRegions && W.LowiWorldRegions.state; return !!(r && r.mode === 'home' && homeActive() && s && (s.busy || (s.cur && s.cur !== 'hub')) && !D.querySelector('.bw3-full')); } catch (e) { return false; } }
     function zoomOutWhole() {
         const a = w3(); if (!a || a.state === 'fallback' || !a.open) return;
-        if (homeWorld()) { const r = rig(); animateDist(r.maxD, 0.42); st.hintUntil = Date.now() + 7000; setTimeout(() => { paintZoom(); paintHint(); }, 50); return; }
+        if (homeWorld()) { const r = rig(); if (inRegion()) { try { W.LowiWorldRegions.travel('hub'); } catch (e) { } setTimeout(() => animateDist(r.maxD, 0.42), 1900); } else animateDist(r.maxD, 0.42); st.hintUntil = Date.now() + 7000; setTimeout(() => { paintZoom(); paintHint(); }, 50); return; }
         if (!a.isOpen || !a.isOpen()) a.open();
         let n = 0;
         const go = () => {
@@ -229,11 +264,12 @@
     function paintHint() {
         const h = D.getElementById('whHint'); if (!h) return;
         const live = H.classList.contains('wh-world-live') && homeWorld();
-        const tx = isZoomedOut()
+        const tip = st.vrTip && Date.now() < st.vrTip.until ? st.vrTip.text : '';
+        const tx = tip ? tip : isZoomedOut()
             ? T('Tap a glowing place to travel there', 'Tippe auf ein Leuchten, um hinzureisen', 'Toca un brillo para viajar allí')
             : T('Drag to look around · two fingers to zoom', 'Ziehen zum Umsehen · zwei Finger zum Zoomen', 'Arrastra para mirar · dos dedos para hacer zoom');
         if (h.textContent !== tx) h.textContent = tx;
-        const on = live && !st.today && (Date.now() < (st.hintUntil || 0) || isZoomedOut()); /* on the world map it stays: tap a glow to travel */
+        const on = live && !st.today && (!!tip || (!H.classList.contains('wh-away') && (Date.now() < (st.hintUntil || 0) || isZoomedOut()))); /* on the world map it stays: tap a glow to travel */
         if (h.classList.contains('on') !== on) h.classList.toggle('on', on);
         /* never on top of Misty's water / fasting cells or the start pill: on tight screens it simply stays out */
         let blk = false;
@@ -243,7 +279,7 @@
             D.querySelectorAll('#spHome .sp-top, #spHome .f3-board').forEach(el => { const r = el.getBoundingClientRect(); if (r.width && r.height && getComputedStyle(el).visibility !== 'hidden') top = Math.max(top, r.bottom); });
             const tv = Math.round(Math.max(top + 10, 70)) + 'px'; if (h.style.top !== tv) h.style.top = tv;
             const hr = h.getBoundingClientRect();
-            D.querySelectorAll('#spFast, #whHud .wh-water, #whHud .wh-zoom, #whHud .wa-btn, #whHud .wh-todaybtn, .fe-bub, #spHome .sp-top, #spHome .f3-board, #spBubble, #tabbar').forEach(el => {
+            D.querySelectorAll('#spFast, #whHud .wh-water, #whHud .wh-zoom, #whHud .wh-vr, #whHud .wa-btn, #whHud .wh-todaybtn, .fe-bub, #spHome .sp-top, #spHome .f3-board, #spBubble, #tabbar').forEach(el => {
                 const r = el.getBoundingClientRect(); if (!r.width) return;
                 if (r.left < hr.right - 1 && r.right > hr.left + 1 && r.top < hr.bottom - 1 && r.bottom > hr.top + 1) blk = true;
             });
@@ -313,7 +349,10 @@
         st.heroAnim = q; hook();
     }
     function onRegion(e) {
-        const id = e && e.detail && e.detail.id; if (!id || id === 'hub') { st.heroAnim = null; return; }
+        const id = e && e.detail && e.detail.id;
+        /* back from a place on Home: settle on Misty's own framing, exactly the Home view you left */
+        if (id === 'hub') { const r0 = rig(); if (r0 && r0.mode === 'home' && homeActive()) setTimeout(() => { const r = rig(); if (r && r.mode === 'home' && !r.fly && !inRegion() && !st.zoomAnim) animateDist(baseDist(r), 0.12); }, reduced() ? 0 : 1600); }
+        if (!id || id === 'hub') { st.heroAnim = null; return; }
         /* wait for the warp to settle (regions: dive -> settle 640 ms), then glide the view to the pretty side */
         let n = 0;
         const go = () => {
@@ -393,7 +432,7 @@
         if (st.heroAnim) {
             const q = st.heroAnim; q.t += dt;
             const k = Math.min(1, q.t / q.dur), e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
-            if (r.fly || r.mode !== 'full') st.heroAnim = null;
+            if (r.fly || (r.mode !== 'full' && r.mode !== 'home')) st.heroAnim = null;
             else {
                 r.target.lerpVectors(q.fromT, q.toT, e); r.yaw = q.fromY + (q.toY - q.fromY) * e; r.pitch = q.fromP + (q.toP - q.fromP) * e;
                 r.vy = r.vp = 0; r.idle = 0;
@@ -401,6 +440,8 @@
             }
         }
         if (r.mode === 'home') {
+            /* One world: while Home travels to a place (and stays there), Misty's cell, water and fasting step aside */
+            const aw = awayHome(); if (H.classList.contains('wh-away') !== aw) { H.classList.toggle('wh-away', aw); syncX(); }
             const k = Math.max(0.12, Math.min(1.4, (r.homeDist || 3.2) / Math.max(0.1, r.dist))), kv = k.toFixed(3);
             if (kv !== st.mz) { st.mz = kv; const b = D.getElementById('spBubble'); if (b) b.style.setProperty('--wh-mz', kv); H.classList.toggle('wh-mapview', k < 0.6); }
             if (++st.zf % 20 === 0) { paintZoom(); paintHint(); }
@@ -494,6 +535,8 @@
         if (!b) return;
         const k = b.dataset.wh;
         if (k === 'misty') { e.preventDefault(); openMisty('aura'); }
+        /* VR: motion viewing only (tilt to look around). It never warps; travelling stays on the glowing places and the World map */
+        if (k === 'vr') { e.preventDefault(); e.stopPropagation(); const a = w3(); try { a && a.gyro && a.gyro.tap(b); } catch (x) { } return; }
         else if (k === 'today') { e.preventDefault(); openToday(!st.today); }
         else if (k === 'scrim') { e.preventDefault(); openToday(false); }
         else if (k === 'zoom') { e.preventDefault(); if (st.today) openToday(false); if (homeWorld()) toggleZoom(); else zoomOutWhole(); }
@@ -521,17 +564,20 @@
         /* banners that float above the tab bar (add to Home Screen, offline, update) push the thumb row up */
         D.querySelectorAll('#lcA2hs, .lc-banner').forEach(b => { const r = b.getBoundingClientRect(); if (r.height && r.bottom > W.innerHeight * .6 && getComputedStyle(b).display !== 'none' && getComputedStyle(b).visibility !== 'hidden') top = Math.min(top, r.top); });
         H.style.setProperty('--wh-tb', Math.max(0, Math.round(W.innerHeight - top)) + 'px');
+        placeVr();
     }
     function tick() {
         const h = home(); if (!h || !h.querySelector('.sp-heroes')) return;
         if (!H.classList.contains('wh-on')) H.classList.add('wh-on');
-        ensureToday(); ensureHud(); ensureX(); applyAura();
+        ensureToday(); ensureHud(); ensureVr(); ensureX(); applyAura();
         const act = homeActive();
         if (act !== st.lastHome) {
             /* Oct 15: arriving on Today shows the world in its resting state at once (no sheet sliding away, no HUD fading in) */
             if (act) { H.classList.add('wh-snap'); clearTimeout(st.snapT); st.snapT = setTimeout(() => requestAnimationFrame(() => requestAnimationFrame(() => H.classList.remove('wh-snap'))), 80); }
             st.lastHome = act; H.classList.toggle('wh-home', act);
             if (!act && st.today) openToday(false);
+            /* leaving Home switches motion viewing off (the world pauses on other tabs) */
+            if (!act) { const a = w3(), vb = D.querySelector('#whHud .wh-vr'); try { if (a && a.gyro && a.gyro.on() && vb) a.gyro.tap(vb); } catch (e) { } }
             /* back on Home: make sure the world is running again (it pauses on other tabs) */
             if (act) { st.hintUntil = Date.now() + 8000; const a = w3(); try { if (a && a.state !== 'fallback' && a.mountHome) a.mountHome(); } catch (e) { } W.dispatchEvent(new Event('resize')); }
         }
@@ -546,6 +592,9 @@
         D.addEventListener('click', onClick, true);
         D.addEventListener('keydown', onKey);
         W.addEventListener('lowi:world-region', onRegion);
+        W.addEventListener('lowi:gyro-state', e => { const d = e && e.detail; if (!d || d.state === 'off') { st.vrTip = null; return; }
+            st.vrTip = { text: d.state === 'on' ? T('VR on · tilt your phone to look around', 'VR an · neig dein Handy zum Umsehen', 'RV activa · inclina el móvil para mirar') : d.text, until: Date.now() + 3200 };
+            paintHint(); setTimeout(paintHint, 3300); });
         W.addEventListener('lowi:misty-open', () => { if (homeActive()) openMisty('aura'); });
         W.addEventListener('resize', layout);
         const mo = new MutationObserver(() => { clearTimeout(st.mt); st.mt = setTimeout(tick, 60); });

@@ -104,9 +104,12 @@
         D.head.appendChild(l);
     }
 
-    const api = Object.assign({}, core, { ready: false, state: 'idle', why: '', fps: () => (world ? world.fps() : 0), open, close, flyTo: id => { open(); setTimeout(() => go(id), 50); }, setGlow: g => { glowOverride = g; if (world) world.setGlow(g); }, places: () => PLACES.slice(),
+    const api = Object.assign({}, core, { ready: false, state: 'idle', why: '', fps: () => (world ? world.fps() : 0), open, close, flyTo: id => { if (flyHome(id)) return; open(); setTimeout(() => go(id), 50); }, setGlow: g => { glowOverride = g; if (world) world.setGlow(g); }, places: () => PLACES.slice(),
         THREE: null, scene: null, camera: null, renderer: null, hub: null, regions: [],
         isOpen: () => !!full,
+        /* One world (Oct 15): Home's own VR / motion button drives the same gyro as the full window */
+        gyro: { kind: () => gyroKind(gyroEnv()), on: () => gyroOn, tap: b => gyroTap(b), paint: (b, s) => paintGyro(b, s || (gyroOn ? 'on' : 'off')) },
+        homeAway: () => homeAway(),
         onFrame: fn => { if (typeof fn !== 'function') return () => {}; if (world) return world.onFrame(fn); pendingFrames.add(fn); let off = null; const t = { off: () => { pendingFrames.delete(fn); if (off) off(); } }; t.bind = o => { off = o; }; pendingBind.set(fn, t); return t.off; } });
     const pendingFrames = new Set(), pendingBind = new Map();
     W.LowiWorld3D = api;
@@ -209,7 +212,22 @@
     function paintGyro(btn, st) {
         btn.dataset.state = st;
         btn.setAttribute('aria-pressed', String(st === 'on'));
-        btn.querySelector('span').textContent = st === 'on' ? tr('gyroOn') : st === 'no' ? tr('gyroNo') : st === 'denied' ? tr('gyroDenied') : gyroEnv().needsPermission ? tr('gyroAsk') : tr('gyroOff');
+        const tx = st === 'on' ? tr('gyroOn') : st === 'no' ? tr('gyroNo') : st === 'denied' ? tr('gyroDenied') : gyroEnv().needsPermission ? tr('gyroAsk') : tr('gyroOff');
+        const sp = btn.querySelector('span');
+        /* Home's compact VR button keeps its short name; the full sentence goes to its label and a short hint */
+        if (btn.dataset.short) { btn.setAttribute('aria-label', 'VR · ' + tx); if (sp && sp.textContent !== 'VR') sp.textContent = 'VR'; try { W.dispatchEvent(new CustomEvent('lowi:gyro-state', { detail: { state: st, text: tx } })); } catch (e) { } }
+        else if (sp) sp.textContent = tx;
+    }
+    /* One world (Oct 15): on Home a glowing place is travelled to right there, inside Home's own world. No second
+       full-screen version: the regions warp runs in place (LowiWorldRegions.travel) and its camera leg comes back here. */
+    let homeWarp = false;
+    function homeHere() { return !!(world && stage && stage.isConnected && mode === 'home' && !full && H.classList.contains('wh-home') && H.classList.contains('wh-world-live')); }
+    function homeAway() { const R = W.LowiWorldRegions, s = R && R.state; return !!(s && !full && (s.busy || (s.cur && s.cur !== 'hub'))); }
+    function flyHome(id) {
+        if (!homeHere()) return false;
+        const R = W.LowiWorldRegions;
+        if (!homeWarp && R && R.travel) { homeWarp = true; try { R.travel(id || 'hub'); } catch (e) { } finally { homeWarp = false; } return true; }
+        world.flyTo(id || null); return true;
     }
     function gyroTap(btn) {
         if (gyroOn) { setGyro(false, btn); return; }
@@ -257,6 +275,8 @@
         if (key !== lastLay) { stage.style.top = topOff + 'px'; stage.style.left = left + 'px'; stage.style.right = right + 'px'; stage.style.bottom = '-6px'; lastLay = key; }
         placeOpenBtn(els);
         if (!world || mode !== 'home') return;
+        /* travelling inside Home's world (a place or the warp there): keep the camera where the warp put it */
+        if (homeAway()) { const s0 = stage.getBoundingClientRect(); world.resize(s0.width, s0.height); return; }
         const sr = stage.getBoundingClientRect(), b = els.bubble && els.bubble.getBoundingClientRect(), bw = els.bubble ? (els.bubble.offsetWidth || 0) : 0;
         world.resize(sr.width, sr.height);
         if (b && b.width) { world.setFocus({ x: b.left + b.width / 2 - sr.left, y: b.top + b.height / 2 - sr.top }); world.setMode('home', { radiusPx: Math.min(sr.height * 0.48, (bw || b.width) * 0.54) }); }

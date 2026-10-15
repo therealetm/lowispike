@@ -1,0 +1,30 @@
+/* LOWiSPIKE navigation moves (Oct 15, 2026): For You in Cook, Leaderboard in Move, Community is the galaxy alone */
+.nm-pill { position: absolute; right: calc(max(14px, env(safe-area-inset-right)) + var(--nm-r, 0px)); top: calc(var(--sat, 0px) + 14px); z-index: 4; height: 38px; padding: 0 14px 0 11px;
+    display: inline-flex; align-items: center; gap: 6px; border-radius: 19px; border: 1px solid var(--line2, rgba(255,255,255,.18));
+    background: var(--card, rgba(255,255,255,.08)); color: var(--text, #fff); font: 700 13.5px/1 inherit; letter-spacing: -.01em; cursor: pointer;
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 6px 18px -10px rgba(0,0,0,.45); -webkit-tap-highlight-color: transparent; }
+.nm-pill svg, .nm-back svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.nm-pill svg .nm-fill { fill: currentColor; stroke: none; }
+.nm-pill:active { transform: scale(.96); }
+.nm-pill.nm-hide { display: none; }
+html.nm-open-fy #tab-shelf > .nm-pill, html.nm-open-lb #tab-move > .nm-pill { display: none; }
+.nm-layer { position: absolute; inset: 0; z-index: 6; display: flex; flex-direction: column; background: var(--bg, #0b1220); }
+.nm-layer[hidden] { display: none; }
+.nm-head { flex: none; display: flex; align-items: center; gap: 8px; padding: calc(var(--sat, 0px) + 12px) 14px 8px; min-height: 44px; z-index: 3; }
+.nm-back { display: inline-flex; align-items: center; gap: 2px; height: 38px; padding: 0 12px 0 6px; border-radius: 19px; border: 1px solid var(--line2, rgba(255,255,255,.18));
+    background: var(--card, rgba(255,255,255,.08)); color: var(--text, #fff); font: 700 13.5px/1 inherit; cursor: pointer; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+.nm-title { flex: 1; text-align: center; margin-right: 76px; font-size: 17px; font-weight: 800; letter-spacing: -.02em; color: var(--text, #fff); }
+.nm-body { position: relative; flex: 1; min-height: 0; display: flex; }
+.nm-body > .ls-pane { width: 100% !important; flex: 1 1 auto; height: 100%; }
+/* For You keeps its full-screen slides: the header floats over the feed */
+.nm-layer-fy { background: #000; }
+.nm-layer-fy .nm-head { position: absolute; left: 0; right: 0; top: 0; background: linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,0)); }
+.nm-layer-fy .nm-title { color: #fff; text-shadow: 0 1px 6px rgba(0,0,0,.5); }
+.nm-layer-fy .nm-back { background: rgba(0,0,0,.35); border-color: rgba(255,255,255,.22); color: #fff; }
+.nm-layer-lb .nm-body > .ls-pane { padding-top: 4px; }
+/* Community: the spirit galaxy alone. No For You / Leaderboard tabs, no big title, no Privacy & quiet button. */
+#tab-foryou.nm-solo .ls-phd { display: none !important; }
+#tab-foryou.nm-solo #cmTrack { width: 100% !important; transform: none !important; padding-top: calc(var(--sat, 0px) + 8px); }
+#tab-foryou.nm-solo #cmTrack > .ls-pane:not(#cmPaneChat) { display: none !important; }
+#tab-foryou.nm-solo #cmPaneChat { width: 100% !important; flex: 1 1 auto; }
+html.nm-on #cmPaneChat .cp-bar, html.nm-on #cmPaneChat #csControls { display: none !important; }

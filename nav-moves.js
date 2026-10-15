@@ -1,0 +1,178 @@
+/* LOWiSPIKE navigation moves (Oct 15, 2026)
+   - For You lives in Cook: a "For You" button top right in Cook opens the feed right there.
+   - Leaderboard lives in Move: a "Leaderboard" button top right in Move opens the board right there.
+   - Community is the spirit galaxy alone: no For You / Leaderboard tabs, no big title, no Privacy & quiet button.
+   A thin layer over the legacy modules. The real panes (#cmPaneFeed, #cmPaneBoard) are moved, not copied, so their
+   styles, renderers and listeners keep working. No legacy module is edited or reordered. */
+(function () {
+    'use strict';
+    const W = window, D = document, H = D.documentElement;
+    if (W.LowiNavMoves) return;
+    const lang = () => { try { return ((W.LowiLang && W.LowiLang.get && W.LowiLang.get()) || H.lang || 'en').slice(0, 2); } catch (e) { return 'en'; } };
+    const T = (en, de, es) => ({ de, es })[lang()] || en;
+    const $ = s => D.querySelector(s);
+    const ICO = {
+        fy: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="2.8" width="14" height="18.4" rx="3.4"/><path d="M10.3 8.9v6.2l4.9-3.1z" class="nm-fill"/></svg>',
+        lb: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5v1.5A3 3 0 0 0 8 10.5M16 6h3v1.5a3 3 0 0 1-3 3M12 13v4M8.5 20h7M9.5 17h5"/></svg>',
+        back: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>'
+    };
+    const SPOTS = {
+        fy: { tab: 'shelf', root: '#tab-shelf', pane: 'cmPaneFeed', label: () => T('For You', 'F\u00fcr dich', 'Para ti'), back: () => T('Cook', 'Kochen', 'Cocina') },
+        lb: { tab: 'move', root: '#tab-move', pane: 'cmPaneBoard', label: () => T('Leaderboard', 'Bestenliste', 'Clasificaci\u00f3n'), back: () => T('Move', 'Bewegen', 'Moverse') }
+    };
+    const activeTab = () => { const t = $('.tab.active'); return t ? t.id.replace(/^tab-/, '') : ''; };
+    function go(t) { try { if (typeof W.goTab === 'function') W.goTab(t); else { const b = $('#tabbar .tb[data-tab="' + t + '"]'); if (b) b.click(); } } catch (e) { console.error(e); } }
+
+    /* ---------- the panes ---------- */
+    function ensurePane(k) {
+        const s = SPOTS[k]; let p = D.getElementById(s.pane);
+        if (!p) {
+            p = D.createElement('div');
+            if (k === 'fy') { p.className = 'ls-pane fy-pane'; p.id = 'cmPaneFeed'; p.innerHTML = '<div id="cmFeed"></div>'; }
+            else { p.className = 'ls-pane ls-board'; p.id = 'cmPaneBoard'; }
+        }
+        return p;
+    }
+    function paint(k) {
+        try {
+            if (k === 'fy') { const f = D.getElementById('cmFeed'); if (f && W.TRIBE && W.TRIBE.renderForYou) W.TRIBE.renderForYou(f); }
+            else if (W.LowiR3F && W.LowiR3F.paintBoard) W.LowiR3F.paintBoard();
+        } catch (e) { console.error(e); }
+    }
+    /* move the live pane into its new home (Cook or Move); a fresh Community render hands over its new pane */
+    function adopt(k) {
+        const L = layer(k); if (!L) return null;
+        const body = L.querySelector('.nm-body'), p = ensurePane(k);
+        if (p.parentElement !== body) { body.querySelectorAll('#' + SPOTS[k].pane).forEach(o => { if (o !== p) o.remove(); }); body.appendChild(p); }
+        p.removeAttribute('inert');
+        return p;
+    }
+
+    /* ---------- the entry buttons and the layers ---------- */
+    function pill(k) {
+        const s = SPOTS[k], root = $(s.root); if (!root) return null;
+        let b = root.querySelector(':scope > .nm-pill');
+        if (!b) {
+            b = D.createElement('button'); b.type = 'button'; b.className = 'nm-pill nm-pill-' + k; b.dataset.nm = k; b.setAttribute('data-noi18n', '');
+            b.innerHTML = ICO[k] + '<span></span>'; root.appendChild(b);
+        }
+        const t = s.label(); if (b.lastChild.textContent !== t) { b.lastChild.textContent = t; b.setAttribute('aria-label', t); }
+        return b;
+    }
+    function layer(k) {
+        const s = SPOTS[k], root = $(s.root); if (!root) return null;
+        let L = root.querySelector(':scope > .nm-layer');
+        if (!L) {
+            L = D.createElement('section'); L.className = 'nm-layer nm-layer-' + k; L.hidden = true; L.setAttribute('role', 'region');
+            L.innerHTML = '<header class="nm-head"><button type="button" class="nm-back" data-nm="back" data-noi18n>' + ICO.back + '<span></span></button><b class="nm-title" data-noi18n></b></header><div class="nm-body"></div>';
+            root.appendChild(L);
+        }
+        L.querySelector('.nm-back span').textContent = s.back();
+        L.querySelector('.nm-title').textContent = s.label();
+        L.setAttribute('aria-label', s.label());
+        return L;
+    }
+    const isOpen = k => { const L = layer(k); return !!(L && !L.hidden); };
+    function show(k, on) {
+        const L = layer(k); if (!L) return;
+        if (on) { const rt = $(SPOTS[k].root); if (rt) rt.scrollTop = 0; adopt(k); paint(k); L.hidden = false; H.classList.add('nm-open-' + k); }
+        else { L.hidden = true; H.classList.remove('nm-open-' + k); }
+        const b = pill(k); if (b) b.setAttribute('aria-expanded', on ? 'true' : 'false');
+    }
+    function open(k) {
+        const s = SPOTS[k];
+        if (activeTab() !== s.tab) go(s.tab);
+        setTimeout(() => { show(k, true); align(); }, 30);
+    }
+    /* the entry button sits on the right of the Cook / Move title row, vertically centred on it */
+    function align() {
+        Object.keys(SPOTS).forEach(k => {
+            const b = pill(k); if (!b) return;
+            const root = $(SPOTS[k].root);
+            const row = k === 'fy' ? $('#shTop .sh-row') : $('#mv-screen .mv-head');
+            const mainCook = k === 'fy' ? !!$('#shTop .sh-row:only-child > div:only-child') : true;
+            const ok = !!(row && root && row.getBoundingClientRect().height && mainCook);
+            b.classList.toggle('nm-hide', !ok);
+            if (!ok) return;
+            const rr = root.getBoundingClientRect(), r = row.getBoundingClientRect();
+            const top = Math.round(r.top - rr.top + root.scrollTop + r.height / 2 - 19);
+            if (b.style.top !== top + 'px') b.style.top = top + 'px';
+        });
+    }
+
+    /* ---------- Community: the galaxy alone ---------- */
+    let swipeGuard = false;
+    function solo() {
+        const el = D.getElementById('tab-foryou'); if (!el) return;
+        el.classList.add('nm-solo');
+        if (D.getElementById('cmPaneFeed') && D.getElementById('cmPaneFeed').closest('#cmTrack')) adopt('fy');
+        if (D.getElementById('cmPaneBoard') && D.getElementById('cmPaneBoard').closest('#cmTrack')) adopt('lb');
+        const ch = D.getElementById('cmPaneChat'); if (ch) ch.removeAttribute('inert');
+    }
+    function hook() {
+        if (typeof W.renderCommunity === 'function' && !W.renderCommunity.__nm) {
+            const r0 = W.renderCommunity;
+            const r = function () {
+                try { if (W.cmSetView) W.cmSetView.__nmRaw('chat'); } catch (e) { }
+                const out = r0.apply(this, arguments);
+                try { solo(); } catch (e) { console.error(e); }
+                return out;
+            };
+            r.__nm = true; W.renderCommunity = r;
+        }
+        if (typeof W.cmSetView === 'function' && !W.cmSetView.__nm) {
+            const v0 = W.cmSetView;
+            const v = function (x) { if (x === 'feed' || x === 'board') { v0.call(this, 'chat'); setTimeout(() => open(x === 'feed' ? 'fy' : 'lb'), 60); return; } return v0.apply(this, arguments); };
+            v.__nm = true; v.__nmRaw = x => v0(x); W.cmSetView = v;
+        }
+        if (typeof W.cmSeg === 'function' && !W.cmSeg.__nm) {
+            const s0 = W.cmSeg;
+            const s = function (x) {
+                if (x === 'feed' || x === 'board') {
+                    /* a sideways drag in the galaxy must not throw you into Cook or Move: snap back to the galaxy */
+                    if (swipeGuard) return s0.call(this, 'chat');
+                    s0.call(this, 'chat'); open(x === 'feed' ? 'fy' : 'lb'); return;
+                }
+                return s0.apply(this, arguments);
+            };
+            s.__nm = true; W.cmSeg = s;
+            try { cmSeg = s; } catch (e) { } // eslint-disable-line no-undef
+        }
+    }
+
+    /* ---------- events ---------- */
+    D.addEventListener('click', e => {
+        const b = e.target.closest && e.target.closest('[data-nm]'); if (!b) return;
+        const k = b.dataset.nm;
+        if (k === 'fy' || k === 'lb') { e.preventDefault(); show(k, !isOpen(k)); align(); return; }
+        if (k === 'back') { e.preventDefault(); const L = b.closest('.nm-layer'); if (L) show(L.classList.contains('nm-layer-fy') ? 'fy' : 'lb', false); }
+    }, true);
+    /* the feed's filter chips and the board's switches only re-render on the old Community tab; re-render them here too */
+    D.addEventListener('click', e => {
+        const t = e.target; if (!t || !t.closest) return;
+        if (t.closest('.nm-layer-fy [data-tr="filter"]')) setTimeout(() => paint('fy'), 0);
+        if (t.closest('.nm-layer-lb [data-r3lb]')) setTimeout(() => paint('lb'), 0);
+    });
+    ['pointerdown', 'pointerup', 'pointercancel'].forEach(n => D.addEventListener(n, e => {
+        if (n === 'pointerdown') swipeGuard = !!(e.target && e.target.closest && e.target.closest('#tab-foryou'));
+        else if (swipeGuard) setTimeout(() => { swipeGuard = false; }, 0);
+    }, true));
+    D.addEventListener('keydown', e => { if (e.key !== 'Escape') return; ['fy', 'lb'].forEach(k => { if (isOpen(k) && activeTab() === SPOTS[k].tab) show(k, false); }); });
+
+    let raf = 0;
+    function tick() {
+        raf = 0; hook(); align();
+        const el = D.getElementById('tab-foryou');
+        if (el && D.getElementById('cmTrack') && (!el.classList.contains('nm-solo') || (D.getElementById('cmPaneFeed') || {}).parentElement === D.getElementById('cmTrack') || (D.getElementById('cmPaneBoard') || {}).parentElement === D.getElementById('cmTrack'))) solo();
+    }
+    const soon = () => { if (!raf) raf = requestAnimationFrame(tick); };
+    function boot() {
+        H.classList.add('nm-on');
+        hook(); pill('fy'); pill('lb'); layer('fy'); layer('lb'); tick();
+        try { new MutationObserver(soon).observe(D.getElementById('main') || D.body, { childList: true, subtree: true }); } catch (e) { }
+        W.addEventListener('resize', soon);
+        setInterval(soon, 1500);
+    }
+    W.LowiNavMoves = { open, show, isOpen, solo, align };
+    if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
+})();

@@ -162,7 +162,9 @@
         const regions = w.regions.map(x => ({ id: x.id, pos: v(x.pos), hue: x.hue }));
         const rad = regions.reduce((a, x) => a + Math.hypot(...x.pos), 0) / regions.length;
         Object.keys(P).forEach(id => { if (!regions.some(x => C().placeId(x.id) === id)) { const p = P[id].pos, l = Math.hypot(...p) || 1; regions.push({ id, pos: p.map(c => c * rad / l), hue: P[id].hue }); } });
-        return { regions, vesselPath: typeof w.vesselPath === 'function' ? w.vesselPath : undefined };
+        /* whole-world regions (LowiWorldRegions): inside the world you ride from the region you are in to the next one */
+        let hub; try { const R = W.LowiWorldRegions, cur = R && R.current && w.isOpen && w.isOpen() ? R.current() : 'hub'; const at = cur && cur !== 'hub' && regions.find(x => C().placeId(x.id) === C().placeId(cur)); if (at) hub = { pos: at.pos.map(c => c * 0.92) }; } catch (e) {}
+        return { regions, hub, vesselPath: typeof w.vesselPath === 'function' ? w.vesselPath : undefined };
     }
     function glowTex(THREE, inner, outer) {
         const c = D.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);

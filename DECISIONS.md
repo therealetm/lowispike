@@ -178,3 +178,14 @@ This file is append-only. Add decisions with a date, status, context, decision, 
 - Every award names its own action; LowiTapXPCore.category(entry) maps any ledger entry to its category from src first, so a Move entry is always move, never explore.
 - Farming and safety: Craving handled max 3 a day, weekly glow once a week, hourly fast points stop at 16 h (CAP_H 36 -> 16) so longer fasts earn nothing extra; Move stays capped at 3 sessions and 30 XP each.
 - Healthy streak bonus and the subtle pop / banner / fanfare tiers are unchanged. Bonus actions above never feed the streak.
+
+## 2026-10-15 15:15 CEST: the Update button never freezes
+- User report: tapping Update on the new-version bubble did nothing and the button stayed greyed out (iPhone web app).
+- Cause reproduced: doUpdate awaited navigator.serviceWorker.getRegistration() before navigating, with no time limit. When the service worker's promises never settle (seen on iPhone web apps), it never navigated, and `updating` stayed true, so every later tap and check was ignored too.
+- Now the tap never waits on the service worker: it shows "Updating..." at once and loads ?v=<new>&r=<now> straight away. The new page registers and updates its own service worker.
+- 12 s watchdog (paused while the app is hidden): if the old page is still there, the bubble says it is taking long, the button becomes "Try again" and works again, and the text names the fallback: close LOWiSPIKE completely and open it again. A web app cannot close itself on iOS, so the app only says it.
+- Offline taps do not navigate (that would only load the old copy); the bubble says the update loads once you are online.
+- Back/forward-cache restores reset a pending update. Rapid taps start one load only. No storage is cleared; login, fasting and all local data stay.
+- After a load that still shows the old build, the note now says to close and reopen the app (shown 9 s), cooldown unchanged.
+- sw.js install also caches the page itself, so an offline launch right after an update still opens (activate deletes the old cache that held the last page).
+- Users still on a build before 151500 run the old button once; if it hangs for them, closing and reopening the app once gets them onto the fixed one.

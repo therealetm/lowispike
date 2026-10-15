@@ -53,3 +53,15 @@ test('Community is a solar system: you in the middle, a sun, orbit rings through
     assert.ok(/html\.lg #cmPaneChat\[data-spirit-chat\] \.cp-room\.cg-room \{ background: #000 !important;/.test(css));
     assert.ok(/\.cg-body\.ringed \.cg-orb::after/.test(css) && /html\.lg #cmPaneChat\[data-spirit-chat\] \.cg-bub \{/.test(css));
 });
+
+test('tabs page sideways like the iPhone home screen, without stealing the world drag, pinches or Cook scrollers', () => {
+    assert.ok(js.includes("const PAGES = ['home', 'foryou', 'shelf', 'move']"));
+    assert.ok(/function slide\(from, to, startDx\)/.test(js) && js.includes("a.animate([") && js.includes("b.animate(["), 'tapping a tab slides both pages');
+    assert.ok(js.includes("if (cur === 'home' && !onBar && e.clientX > 26 && e.clientX < W - 26) return;"), 'the 3D world keeps its drag; edges and the tab bar page');
+    assert.ok(js.includes('a second finger: pinch, not paging'));
+    assert.ok(js.includes('if (!onBar && hScroller(t, pageEl(cur))) return;'), 'horizontal scrollers keep their swipe');
+    assert.ok(js.includes('rubber band at the first and the last page'));
+    assert.ok(js.includes("prefers-reduced-motion: reduce"));
+    assert.ok(/\.tab:is\(\.lg-out, \.lg-peek\) \{ opacity: 1 !important; visibility: visible !important;/.test(css));
+    assert.ok(/touch-action: pan-y pinch-zoom/.test(css));
+});

@@ -148,3 +148,9 @@ html.lg #cmPaneChat[data-spirit-chat] .cg-dotc.all { background: conic-gradient(
 html.lg #cmPaneChat[data-spirit-chat] .cg-thread { background: rgba(10, 10, 14, .82) !important; }
 html.lg #cmPaneChat[data-spirit-chat] .cm-msg.cg-focus .cm-bub { box-shadow: 0 0 0 2px #0a84ff !important; }
 html.lg :is(#cgToast .cg-toast) { background: rgba(30, 30, 36, .72) !important; color: #fff !important; border: .5px solid rgba(255, 255, 255, .18) !important; -webkit-backdrop-filter: var(--lg-blur); backdrop-filter: var(--lg-blur); box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .3), 0 12px 30px -10px rgba(0, 0, 0, .7) !important; border-radius: 22px !important; }
+
+/* 11. paging like the iPhone home screen (liquid-glass.js): during a slide or a drag both pages are visible and move side by side */
+html.lg #app #main > .tab:is(.lg-out, .lg-peek) { opacity: 1 !important; visibility: visible !important; pointer-events: none !important; transition: none !important; z-index: 1; }
+html.lg #app #main > .tab.lg-in { transition: none !important; opacity: 1 !important; }
+html.lg #app #main.lg-drag > .tab { transition: none !important; will-change: transform; }
+html.lg #app #main > .tab:not(#tab-home), html.lg #app #main #tabbar, html.lg #app #main :is(#mv-screen, #shBody, #cmList, #fyFeed, #cmPaneBoard) { touch-action: pan-y pinch-zoom; }

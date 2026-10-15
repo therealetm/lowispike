@@ -1,0 +1,101 @@
+/* ---- Community spirit galaxy (view layer over the shared room) ---- */
+#cmPaneChat{--cg-s1:#070a1c;--cg-s2:#110e31;--cg-s3:#21113d;--cg-name:#ece9ff;--cg-nameb:#0a0920c4;--cg-bub:#fffdf8;--cg-bubt:#1d1a2e;--cg-mine:#eafbf4;--cg-thread:#0d0b22eb}
+html[data-theme=light] #cmPaneChat{--cg-s1:#f5f2ff;--cg-s2:#e8eaff;--cg-s3:#fdebf3;--cg-name:#272050;--cg-nameb:#ffffffd9;--cg-bub:#ffffff;--cg-bubt:#221d38;--cg-mine:#e6f8f1;--cg-thread:#f7f5ffef}
+#cmPaneChat[data-spirit-chat] .cp-room.cg-room{display:block;background:linear-gradient(180deg,var(--cg-s1),var(--cg-s2) 58%,var(--cg-s3));border-color:var(--chat-edge)}
+#cmPaneChat[data-spirit-chat]>.cg-room{max-width:1120px}
+#cmPaneChat[data-spirit-chat] .cg-galaxy{position:absolute;inset:0;overflow:hidden;contain:paint;touch-action:manipulation}
+#cmPaneChat[data-spirit-chat] .cg-sky,#cmPaneChat[data-spirit-chat] .cg-field{position:absolute;inset:0;width:100%;height:100%;display:block}
+#cmPaneChat[data-spirit-chat] .cg-sky{pointer-events:none;transform-origin:var(--me-x,50%) var(--me-y,80%)}
+#cmPaneChat[data-spirit-chat] .cg-field{transform-origin:var(--me-x,50%) var(--me-y,80%)}
+
+/* bodies */
+#cmPaneChat[data-spirit-chat] .cg-body{position:absolute;transform:translate(-50%,calc(var(--s) / -2));width:calc(var(--s) + 30px);display:flex;flex-direction:column;align-items:center;gap:4px;padding:0;margin:0;background:none;border:0;color:var(--cg-name);font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;z-index:1}
+#cmPaneChat[data-spirit-chat] .cg-orb{position:relative;width:var(--s);height:var(--s);flex:none;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 36% 30%,#ffffff66,transparent 42%),radial-gradient(circle,color-mix(in srgb,var(--c) 42%,transparent) 0,color-mix(in srgb,var(--c) 14%,transparent) 60%,transparent 72%);box-shadow:0 0 20px color-mix(in srgb,var(--c) 42%,transparent),inset 0 0 0 1.5px color-mix(in srgb,var(--c) 60%,transparent);animation:cgBob 7s ease-in-out infinite alternate;animation-delay:calc(var(--i) * -1.1s)}
+#cmPaneChat[data-spirit-chat] .cg-orb .cp-form{width:84%;height:84%;display:grid;place-items:center}
+#cmPaneChat[data-spirit-chat] .cg-orb svg{width:100%;height:100%;display:block;overflow:visible}
+#cmPaneChat[data-spirit-chat] .cg-name{font-size:11px;font-weight:750;line-height:14px;max-width:100%;padding:1px 7px;border-radius:8px;background:var(--cg-nameb);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#cmPaneChat[data-spirit-chat] .cg-body.me .cg-name{background:#9cdac7;color:#0d2a24}
+#cmPaneChat[data-spirit-chat] .cg-body.me .cg-orb{box-shadow:0 0 26px #9cdac777,inset 0 0 0 2px #9cdac7}
+#cmPaneChat[data-spirit-chat] .cg-body.sel .cg-orb{box-shadow:0 0 0 3px var(--c),0 0 30px var(--c)}
+#cmPaneChat[data-spirit-chat] .cg-body.sel .cg-name{background:var(--c);color:#15122b}
+#cmPaneChat[data-spirit-chat] .cg-body.speaking .cg-orb{animation:cgPop .7s ease-out}
+#cmPaneChat[data-spirit-chat] .cg-body.cg-off{opacity:.7}
+#cmPaneChat[data-spirit-chat] .cg-body:focus-visible{outline:none}
+#cmPaneChat[data-spirit-chat] .cg-body:focus-visible .cg-orb{outline:2px solid currentColor;outline-offset:3px}
+
+/* cartoon speech bubbles, tail pointing at the speaker */
+#cmPaneChat[data-spirit-chat] .cg-bub{position:absolute;z-index:2;display:block;margin:0;text-align:left;padding:5px 10px 6px;min-height:28px;box-sizing:border-box;border-radius:16px;background:var(--cg-bub);color:var(--cg-bubt);border:1.5px solid color-mix(in srgb,var(--c) 75%,#ffffff);box-shadow:0 5px 16px #0000004d;opacity:var(--o,1);font:inherit;font-size:12px;line-height:14px;cursor:pointer;overflow:visible;transform-origin:var(--tail) 100%;-webkit-tap-highlight-color:transparent}
+#cmPaneChat[data-spirit-chat] .cg-bub::after{content:'';position:absolute;left:calc(var(--tail) - 6px);bottom:-7px;width:11px;height:11px;background:inherit;border-right:1.5px solid color-mix(in srgb,var(--c) 75%,#ffffff);border-bottom:1.5px solid color-mix(in srgb,var(--c) 75%,#ffffff);border-bottom-right-radius:3px;transform:rotate(45deg)}
+#cmPaneChat[data-spirit-chat] .cg-bub.sl,#cmPaneChat[data-spirit-chat] .cg-bub.sr{transform:translateY(-50%);transform-origin:0 50%}
+#cmPaneChat[data-spirit-chat] .cg-bub.sr{transform-origin:100% 50%}
+#cmPaneChat[data-spirit-chat] .cg-bub.sl::after{left:-7px;bottom:auto;top:calc(50% - 6px);border-right:0;border-bottom:1.5px solid color-mix(in srgb,var(--c) 75%,#ffffff);border-left:1.5px solid color-mix(in srgb,var(--c) 75%,#ffffff);border-radius:0 0 0 3px}
+#cmPaneChat[data-spirit-chat] .cg-bub.sr::after{left:auto;right:-7px;bottom:auto;top:calc(50% - 6px);border-bottom:0;border-top:1.5px solid color-mix(in srgb,var(--c) 75%,#ffffff);border-right:1.5px solid color-mix(in srgb,var(--c) 75%,#ffffff);border-radius:0 3px 0 0}
+#cmPaneChat[data-spirit-chat] .cg-bub.mine{background:var(--cg-mine)}
+#cmPaneChat[data-spirit-chat] .cg-bub.tome{box-shadow:0 0 0 2px #ffb86b,0 5px 18px #0000005e}
+#cmPaneChat[data-spirit-chat] .cg-bub.pop{animation:cgBubIn .5s cubic-bezier(.2,1.4,.4,1)}
+#cmPaneChat[data-spirit-chat] .cg-bub:focus-visible{outline:2px solid #ffd27a;outline-offset:2px}
+#cmPaneChat[data-spirit-chat] .cg-t{display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;max-width:100%}
+#cmPaneChat[data-spirit-chat] .cg-to{display:block;font-size:10px;line-height:14px;font-weight:800;color:#5b4b9a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+#cmPaneChat[data-spirit-chat] .cg-to.me{color:#c2410c}
+#cmPaneChat[data-spirit-chat] .cg-st{display:block;font-size:10px;line-height:14px;color:#6b6585}
+#cmPaneChat[data-spirit-chat] .cg-t .cm-mention{color:#5b4b9a;font-weight:700;background:none}
+
+/* empty galaxy */
+#cmPaneChat[data-spirit-chat] .cg-empty{position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:3;width:min(300px,calc(100% - 28px));box-sizing:border-box;text-align:center;padding:10px 14px 12px;border-radius:18px;background:var(--cg-nameb);color:var(--cg-name)}
+#cmPaneChat[data-spirit-chat] .cg-empty .cs-lantern{display:block;font-size:18px;opacity:.8}
+#cmPaneChat[data-spirit-chat] .cg-empty b{display:block;font-size:14px}
+#cmPaneChat[data-spirit-chat] .cg-empty p{margin:3px 0 8px;font-size:12px;line-height:1.35;opacity:.85}
+#cmPaneChat[data-spirit-chat] .cg-empty .cg-hello{min-height:36px}
+
+/* zoom out of the body world into the galaxy */
+#cmPaneChat[data-spirit-chat] .cg-intro{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0;transform-origin:var(--me-x,50%) var(--me-y,80%);background:radial-gradient(circle at var(--me-x,50%) var(--me-y,80%),#fff1d6 0,#ffbf96 7%,#e0607d 17%,#7a2558 33%,#2b1236 60%,#0b0a1d 88%)}
+html[data-theme=light] #cmPaneChat[data-spirit-chat] .cg-intro{background:radial-gradient(circle at var(--me-x,50%) var(--me-y,80%),#fffaf0 0,#ffd9c2 8%,#f7a3b5 20%,#d98fc0 38%,#b8b2ef 64%,#eef0ff 90%)}
+#cmPaneChat[data-spirit-chat] .cg-intro i{position:absolute;border-radius:50%;background:radial-gradient(circle at 40% 35%,#ffd3c466,#e0607d33 55%,transparent 70%)}
+#cmPaneChat[data-spirit-chat] .cg-intro i:nth-child(1){width:34%;aspect-ratio:1;left:6%;top:12%}
+#cmPaneChat[data-spirit-chat] .cg-intro i:nth-child(2){width:26%;aspect-ratio:1;right:8%;top:30%}
+#cmPaneChat[data-spirit-chat] .cg-intro i:nth-child(3){width:40%;aspect-ratio:1;left:30%;bottom:-6%}
+#cmPaneChat[data-spirit-chat] .cg-galaxy[data-intro] .cg-intro{animation:cgLeave 1.35s cubic-bezier(.45,0,.2,1) both}
+#cmPaneChat[data-spirit-chat] .cg-galaxy[data-intro] .cg-field{animation:cgZoom 1.35s cubic-bezier(.2,.75,.2,1) both}
+#cmPaneChat[data-spirit-chat] .cg-galaxy[data-intro] .cg-sky{animation:cgSkyIn 1.5s cubic-bezier(.2,.75,.2,1) both}
+#cmPaneChat[data-spirit-chat] .cg-galaxy[data-intro] .cg-body:not(.me),#cmPaneChat[data-spirit-chat] .cg-galaxy[data-intro] .cg-bub{animation:cgAppear .7s ease-out both;animation-delay:calc(.55s + var(--i,0) * 40ms)}
+@keyframes cgLeave{0%{opacity:1;transform:scale(1);border-radius:0}50%{opacity:1}100%{opacity:0;transform:scale(.05);border-radius:50%}}
+@keyframes cgZoom{0%{transform:scale(3.4)}100%{transform:none}}
+@keyframes cgSkyIn{0%{transform:scale(2.4);opacity:0}100%{transform:none;opacity:1}}
+@keyframes cgAppear{0%{opacity:0}100%{opacity:var(--o,1)}}
+@keyframes cgBob{0%{transform:translateY(-2px)}100%{transform:translateY(3px)}}
+@keyframes cgPop{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes cgBubIn{0%{opacity:0;scale:.6}100%{opacity:var(--o,1);scale:1}}
+
+/* composer: who you are writing to + all messages */
+#cmPaneChat[data-spirit-chat] .cg-torow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 6px;min-width:0}
+#cmPaneChat[data-spirit-chat] .cg-chip{display:inline-flex;align-items:center;gap:7px;min-width:0;font-size:12px;font-weight:700;color:var(--muted);padding:0 4px 0 10px;border-radius:18px;min-height:36px}
+#cmPaneChat[data-spirit-chat] .cg-chip.on{background:color-mix(in srgb,var(--c,#9cdac7) 20%,transparent);color:var(--text)}
+#cmPaneChat[data-spirit-chat] .cg-chipname{background:none;border:0;color:inherit;font:inherit;padding:0 2px;min-height:36px;min-width:0;max-width:46vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;text-decoration:underline dotted 1px;text-underline-offset:3px}
+#cmPaneChat[data-spirit-chat] .cg-chipx{width:36px;height:36px;flex:none;border-radius:50%;border:0;background:color-mix(in srgb,var(--text) 10%,transparent);color:inherit;font-size:18px;line-height:1;cursor:pointer;padding:0}
+#cmPaneChat[data-spirit-chat] .cg-dotc{width:9px;height:9px;flex:none;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c)}
+#cmPaneChat[data-spirit-chat] .cg-dotc.all{background:conic-gradient(#9cdac7,#ffd27a,#c9a2ff,#9cdac7);box-shadow:none}
+#cmPaneChat[data-spirit-chat] .cg-hist{display:inline-flex;align-items:center;gap:6px;flex:none;border:1px solid var(--chat-edge);background:none;color:var(--text);font:inherit;font-size:12px;font-weight:650;border-radius:18px;padding:0 12px;min-height:36px;cursor:pointer}
+#cmPaneChat[data-spirit-chat] .cg-hist svg{width:16px;height:16px}
+
+/* full history over the galaxy */
+#cmPaneChat[data-spirit-chat] .cg-thread{position:absolute;inset:0;z-index:6;display:none;flex-direction:column;background:var(--cg-thread);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+#cmPaneChat[data-spirit-chat] .cg-thread[data-open]{display:flex;animation:cgAppear .2s ease-out}
+#cmPaneChat[data-spirit-chat] .cg-thead{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:none;padding:6px 6px 6px 16px;border-bottom:1px solid var(--chat-edge)}
+#cmPaneChat[data-spirit-chat] .cg-thead b{font-size:15px;color:var(--text)}
+#cmPaneChat[data-spirit-chat] .cg-x{width:44px;height:44px;border-radius:50%;border:0;background:color-mix(in srgb,var(--text) 10%,transparent);color:var(--text);font-size:22px;line-height:1;cursor:pointer;padding:0}
+#cmPaneChat[data-spirit-chat] .cp-room .cg-thread .cs-jump{bottom:10px;right:12px}
+#cmPaneChat[data-spirit-chat] .cm-msg.cg-focus .cm-bub{box-shadow:0 0 0 2px #ffd27a}
+html.cs-chat-typing #cmPaneChat[data-spirit-chat] .cg-empty p{display:none}
+
+/* in-app "talking to you" banner and the tab badge */
+.cg-toast-wrap{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translate(-50%,-160%);z-index:9999;width:min(420px,calc(100vw - 24px));pointer-events:none;transition:transform .35s cubic-bezier(.2,.9,.3,1.15)}
+.cg-toast-wrap[data-on]{transform:translate(-50%,0);pointer-events:auto}
+.cg-toast{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 14px;border-radius:20px;border:1px solid #ffffff22;background:#17122ff0;color:#f3f0ff;font:inherit;box-shadow:0 10px 30px #00000066;cursor:pointer}
+html[data-theme=light] .cg-toast{background:#fffffff4;color:#221d38;border-color:#2a235022}
+.cg-torb{width:40px;height:40px;flex:none;border-radius:50%;display:grid;place-items:center;background:#9cdac733}
+.cg-torb .cp-form,.cg-torb svg{width:88%;height:88%;display:block}
+.cg-tt{display:flex;flex-direction:column;min-width:0;font-size:13px;line-height:1.3}
+.cg-tt span{opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#tabbar .tb[data-tab="foryou"]{position:relative}
+.cg-dm{position:absolute;top:2px;left:calc(50% + 6px);min-width:17px;height:17px;box-sizing:border-box;padding:0 4px;border-radius:9px;background:#ff7a59;color:#fff;font-size:10px;font-weight:800;line-height:17px;text-align:center;pointer-events:none}
+@media(prefers-reduced-motion:reduce){.cg-toast-wrap{transition:none}#cmPaneChat[data-spirit-chat] .cg-intro{animation:none!important}}

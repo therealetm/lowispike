@@ -6,17 +6,17 @@ const K=W.LowiChatCore, H=W.LowiCommunityHost;if(!K||!H||!W.LowiCommunityCloud)r
 const esc=K.esc;
 const deviceStorage={getItem:k=>localStorage.getItem(k),setItem:(k,v)=>localStorage.setItem(k,v)};
 const COPY={
- square:['Community planet','Community-Planet','Planeta de la comunidad'],
- welcome:['Everyone is here as their companion. Write, and yours speaks.','Alle sind hier als ihr Begleiter. Schreib, und deiner spricht.','Aquí todos son su compañero. Escribe y el tuyo habla.'],
- onPlanet:['On the planet','Auf dem Planeten','En el planeta'],
+ square:['Spirit galaxy','Geister-Galaxie','Galaxia de espíritus'],
+ welcome:['Everyone floats here as their companion. Tap someone to talk to them directly.','Alle schweben hier als ihr Begleiter. Tippe jemanden an, um direkt mit ihm zu sprechen.','Todos flotan aquí como su compañero. Toca a alguien para hablarle directamente.'],
+ onPlanet:['In the galaxy','In der Galaxie','En la galaxia'],
  you:['You','Du','Tú'],
  more:['Message options','Nachrichtenoptionen','Opciones del mensaje'],
  says:['says','sagt','dice'],
- mateShare:['Show my companion’s form on the planet','Meinen Begleiter auf dem Planeten zeigen','Mostrar la forma de mi compañero en el planeta'],
+ mateShare:['Show my companion’s form in the galaxy','Die Form meines Begleiters in der Galaxie zeigen','Mostrar la forma de mi compañero en la galaxia'],
  mateNote:['Others see your companion only when this is on (it also shows in friends trees). Otherwise they see a plain spirit. Only the look is shared.','Andere sehen deinen Begleiter nur, wenn das an ist (auch im Freundesbaum). Sonst sehen sie einen schlichten Geist. Geteilt wird nur das Aussehen.','Los demás solo ven a tu compañero si esto está activado (también en el árbol de amigos). Si no, ven un espíritu sencillo. Solo se comparte el aspecto.'],
  mateSaved:['Saved.','Gespeichert.','Guardado.'],
  sharedDetails:['Sharing enabled','Freigaben aktiv','Compartir activado'],
- sharedType:['Shared on the planet','Auf dem Planeten geteilt','Compartido en el planeta'],
+ sharedType:['Shared in the galaxy','In der Galaxie geteilt','Compartido en la galaxia'],
  presence:['Your presence','Dein Auftritt','Tu presencia'],
  private:['Only you · private','Nur für dich · privat','Solo tú · privado'],
  style:['Your personality','Deine Persönlichkeit','Tu personalidad'],
@@ -30,15 +30,15 @@ const COPY={
  live:['Connected · shared conversation','Verbunden · gemeinsames Gespräch','Conectado · conversación compartida'],
  retry:['Try again','Erneut versuchen','Reintentar'],
  calm:['Quiet hours · updates stay silent','Ruhezeit · Updates bleiben still','Horas de silencio · sin avisos'],
- emptyTitle:['The planet is quiet','Auf dem Planeten ist es ruhig','El planeta está tranquilo'],
+ emptyTitle:['The galaxy is quiet','Die Galaxie ist still','La galaxia está tranquila'],
  empty:['No messages yet. Say hello and your companion speaks first.','Noch keine Nachrichten. Sag hallo, dann spricht dein Begleiter zuerst.','Aún no hay mensajes. Saluda y tu compañero hablará primero.'],
  waiting:['The conversation appears here once it loads.','Das Gespräch erscheint hier, sobald es geladen ist.','La conversación aparecerá aquí al cargarse.'],
  filtered:['Messages from people you blocked are hidden.','Nachrichten blockierter Personen sind ausgeblendet.','Los mensajes de personas bloqueadas están ocultos.'],
  hi:['Say hello','Hallo sagen','Saludar'],
  hiText:['Hi everyone! Happy to be here.','Hallo zusammen! Schön, hier zu sein.','¡Hola a todos! Me alegra estar aquí.'],
- message:['Message the planet','Nachricht an den Planeten','Mensaje al planeta'],
+ message:['Write to the galaxy','Schreib in die Galaxie','Escribe a la galaxia'],
  send:['Send message','Nachricht senden','Enviar mensaje'],
- hint:['Everyone on the planet can read what you send.','Alle auf dem Planeten können deine Nachricht lesen.','Todos en el planeta pueden leer lo que envías.'],
+ hint:['Everyone in the galaxy can read what you send.','Alle in der Galaxie können lesen, was du sendest.','Todos en la galaxia pueden leer lo que envías.'],
  draft:['Draft kept on this device','Entwurf auf diesem Gerät gespeichert','Borrador guardado en este dispositivo'],
  volatile:['Device storage is unavailable. Keep this page open to retain your draft.','Gerätespeicher nicht verfügbar. Lass diese Seite offen, um deinen Entwurf zu behalten.','Almacenamiento no disponible. Mantén esta página abierta para conservar el borrador.'],
  reply:['Reply','Antworten','Responder'],
@@ -59,7 +59,7 @@ const COPY={
  name:['Add your profile name before sending.','Ergänze vor dem Senden deinen Profilnamen.','Añade tu nombre de perfil antes de enviar.'],
  newMessages:['New messages','Neue Nachrichten','Mensajes nuevos'],
  profile:['Community profile','Community-Profil','Perfil de comunidad'],
- profileNote:['Only details explicitly shared for this planet appear here.','Hier erscheinen nur ausdrücklich für diesen Planeten geteilte Angaben.','Aquí solo aparecen datos compartidos expresamente para este planeta.'],
+ profileNote:['Only details explicitly shared for the galaxy appear here.','Hier erscheinen nur ausdrücklich für die Galaxie geteilte Angaben.','Aquí solo aparecen datos compartidos expresamente para la galaxia.'],
  noDetails:['Personality and star sign are private.','Persönlichkeit und Sternzeichen sind privat.','La personalidad y el signo son privados.'],
  noRouting:['Your personality type stays private. If you share it below, it only appears on your profile card, never in the chat itself.','Dein Persönlichkeitstyp bleibt privat. Teilst du ihn unten, erscheint er nur auf deiner Profilkarte, nie im Chat selbst.','Tu tipo de personalidad es privado. Si lo compartes abajo, solo aparece en tu tarjeta de perfil, nunca en el chat.'],
  privacyNote:['Birthday, age, food logs, body details and macros are never included in this chat profile. No contacts are synced.','Geburtstag, Alter, Essensprotokoll, Körperdaten und Makros gehören nie zu diesem Chatprofil. Keine Kontakte werden synchronisiert.','Cumpleaños, edad, comidas, datos corporales y macros nunca se incluyen en este perfil de chat. No se sincronizan contactos.'],
@@ -93,6 +93,20 @@ const COPY={
  sendReport:['Send report','Meldung senden','Enviar denuncia'],
  reportSent:['Report received by the server for review.','Meldung vom Server zur Prüfung empfangen.','Denuncia recibida por el servidor para revisión.'],
  reportFailed:['Report delivery not confirmed. Try again or block this person.','Zustellung der Meldung nicht bestätigt. Versuch es erneut oder blockiere die Person.','Entrega de denuncia sin confirmar. Reintenta o bloquea a esta persona.'],
+ toAll:['To the whole galaxy','An die ganze Galaxie','A toda la galaxia'],
+ toName:['To {n}','An {n}','Para {n}'],
+ writeTo:['Write to {n}','Schreib {n}','Escribe a {n}'],
+ hintTo:['Everyone can read it; {n} gets a notification that you are talking to them.','Alle können es lesen; {n} bekommt eine Nachricht, dass du mit ihm sprichst.','Todos pueden leerlo; {n} recibe un aviso de que le estás hablando.'],
+ talkTo:['Talk to {n} directly','Direkt mit {n} sprechen','Hablar directamente con {n}'],
+ talking:['Talking to {n} · tap again for everyone','Du sprichst mit {n} · nochmal tippen für alle','Hablas con {n} · toca de nuevo para todos'],
+ toEveryone:['Write to everyone instead','Stattdessen an alle schreiben','Escribir a todos'],
+ youAll:['You · talking to everyone','Du · sprichst mit allen','Tú · hablas con todos'],
+ history:['All messages','Alle Nachrichten','Todos los mensajes'],
+ back:['Back to the galaxy','Zurück zur Galaxie','Volver a la galaxia'],
+ toArrow:['to {n}','an {n}','para {n}'],
+ toYou:['to you','an dich','para ti'],
+ dmTitle:['{n} is talking to you','{n} spricht mit dir','{n} te está hablando'],
+ openThread:['Open the conversation','Gespräch öffnen','Abrir la conversación'],
  close:['Close','Schließen','Cerrar'],
  optional:['Not set','Nicht festgelegt','Sin definir']
 };
@@ -114,7 +128,7 @@ function isQuiet(){return K.quiet(prefs);}
 function unread(){return isQuiet()?0:messages().filter(m=>m.uid!==scope&&!m.status&&m.ts>(prefs.readAt||0)).length;}
 function active(){return H.active();}
 function ensureScope(){const id=H.state().uid||'';if(id===scope&&(store||!id))return;
- scope=id;transport.reset();identities=new Map();looks=new Map();openId='';speak='';lastNewest='';cache=[];cacheJSON='';extrasAttempt='';extrasFlight=null;notice='';pick='';lastCount=0;newCount=0;
+ scope=id;sel='';threadOpen=false;dmLive=new Set();transport.reset();identities=new Map();looks=new Map();openId='';speak='';lastNewest='';cache=[];cacheJSON='';extrasAttempt='';extrasFlight=null;notice='';pick='';lastCount=0;newCount=0;
  prefs=scope?K.read(deviceStorage,prefsKey(),{}):{};prefs.blocks=prefs.blocks||{};
  store=scope?K.session({scope,storage:deviceStorage,id:()=> 'm'+crypto.randomUUID(),send:transport.send,changed:()=>refresh()}):null;
  if(scope){const c=K.read(deviceStorage,cacheKey(),{});cache=Array.isArray(c.messages)?c.messages.map(K.message).filter(m=>m&&!m.demo&&!m.bot):[];transport.reload();}
@@ -129,20 +143,61 @@ function sid(v){return String(v||'').replace(/[^a-z0-9]/gi,'').slice(-12)||'x';}
 function genomeFor(id){const C=W.LowiCompanionCore;if(!C)return null;if(id&&id===scope){try{return W.LowiCompanion&&W.LowiCompanion.genome?W.LowiCompanion.genome():null;}catch(e){return null;}}const l=looks.get(id);try{return l&&C.decode?C.decode(l):null;}catch(e){return null;}}
 function spirit(id,key){const h=hue(id);return '<svg class="cp-spirit" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><defs><radialGradient id="cps'+key+'" cx=".38" cy=".34" r=".72"><stop stop-color="#fff" stop-opacity=".7"/><stop offset=".55" stop-color="hsl('+h+' 52% 74%)" stop-opacity=".8"/><stop offset="1" stop-color="hsl('+h+' 42% 48%)" stop-opacity=".9"/></radialGradient></defs><path d="M50 18c19 0 33 15 33 34 0 18-14 32-33 32S17 70 17 52c0-19 14-34 33-34z" fill="url(#cps'+key+')" stroke="#fff" stroke-opacity=".75" stroke-width="2.4"/><circle cx="40" cy="54" r="4" fill="#1b1035"/><circle cx="60" cy="54" r="4" fill="#1b1035"/><circle cx="41.4" cy="52.6" r="1.4" fill="#fff"/><circle cx="61.4" cy="52.6" r="1.4" fill="#fff"/><path d="M45 63q5 4 10 0" stroke="#1b1035" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg>';}
 function mate(id,key){const g=genomeFor(id),C=W.LowiCompanionCore;let svg='';if(g&&C&&C.miniSVG){try{svg=C.miniSVG(g,key);}catch(e){svg='';}}return '<span class="cp-form'+(svg?'':' cp-plain')+'">'+(svg||spirit(id,key))+'</span>';}
-function planetPeople(ms){const seen=new Map();for(let i=ms.length-1;i>=0;i--){const m=ms[i];if(!m||m.demo||m.bot||m.uid===scope||blocked(m.uid))continue;if(!seen.has(m.uid))seen.set(m.uid,{uid:m.uid,n:m.by});}return [...seen.values()];}
-function planet(ms,width,mode,ctl){const tall=mode==='tall',compact=mode==='compact';
- width=Math.max(240,width||360);
- const others=planetPeople(ms),slots=compact?Math.max(2,Math.min(5,Math.floor((width-112)/50))):Math.max(3,Math.min(tall?11:9,Math.floor((width-20)/62))),show=others.slice(0,slots-1);
- const left=[],right=[];show.forEach((p,i)=>(i%2?left:right).push(p));
- const row=[...left.reverse(),{uid:scope,n:tr('you'),me:true},...right];
- const step=Math.min(tall?80:compact?52:66,(width-(compact?112:24))/row.length),mid=(row.length-1)/2,cx=width/2,d=Math.max(1,mid*step),drop=tall?30:compact?7:18,R=Math.max(width*.9,(d*d+drop*drop)/(2*drop)),y0=tall?64:compact?34:54;
- const globe='<div class="cp-globe" aria-hidden="true" style="width:'+Math.round(2*R)+'px;height:'+Math.round(2*R)+'px;left:'+Math.round(cx-R)+'px;top:'+y0+'px"><i class="cp-crater a"></i><i class="cp-crater b"></i><i class="cp-crater c"></i></div>';
- const mates=row.map((p,k)=>{const x=cx+(k-mid)*step,dx=x-cx,surf=y0+R-Math.sqrt(Math.max(0,R*R-dx*dx)),ang=Math.asin(Math.max(-1,Math.min(1,dx/R)))*180/Math.PI;
-  const label=p.me?tr('you'):p.n,attrs='data-uid="'+esc(p.uid||'')+'" data-name="'+esc(p.me?own().n||'':p.n)+'" aria-label="'+esc(label)+' · '+tr('profile')+'" style="left:'+x.toFixed(1)+'px;top:'+surf.toFixed(1)+'px;--tilt:'+ang.toFixed(1)+'deg;--i:'+k+'"';
-  const inner='<span class="cp-body">'+(speak&&speak===(p.uid||'')?'<span class="cp-puff" aria-hidden="true"><i></i><i></i><i></i></span>':'')+mate(p.uid||'me','p'+k)+'</span><span class="cp-name">'+esc(label)+'</span>';
-  return p.me&&!scope?'<span class="cp-mate me" '+attrs+'>'+inner+'</span>':button('profile',inner,attrs,'cp-mate'+(p.me?' me':'')+(speak&&speak===(p.uid||'')?' speaking':''));}).join('');
- return '<div class="cp-sky" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>'+globe+mates+(compact&&ctl?'<div class="cp-corner">'+ctl+'</div>':'');
+const G=W.LowiGalaxy;
+let sel='',threadOpen=false,sk=null,wasOn=false,introT=0,gxIds=[],dmLive=new Set(),dmBoot=Date.now(),toastT=0,watching=false;
+function hueColor(id,me){return me?'#9cdac7':'hsl('+hue(id)+' 78% 74%)';}
+function roster(){const map=new Map();for(const p of (H.people&&H.people())||[]){if(p&&p.uid&&p.uid!==scope&&p.n&&!blocked(p.uid))map.set(p.uid,{uid:p.uid,n:String(p.n),lv:p.lv||1});}
+ for(const m of messages()){if(m&&m.uid&&!m.demo&&!m.bot&&m.uid!==scope&&!blocked(m.uid)&&!map.has(m.uid))map.set(m.uid,{uid:m.uid,n:m.by||'Member',lv:1});}return map;}
+function nameIdx(r){const list=[...(r||roster()).values()];if(scope&&own().n)list.push({uid:scope,n:own().n});return G?G.nameIndex(list):[];}
+function latestBy(ms){const last=new Map();for(const m of ms){if(!m||m.demo||m.bot||!m.uid||blocked(m.uid))continue;last.set(m.uid,m);}return last;}
+function crowd(ms,r,idx){const last=latestBy(ms),order=[],seen=new Set();const add=uid=>{if(!uid||uid===scope||seen.has(uid)||!r.has(uid))return;seen.add(uid);order.push(r.get(uid));};
+ if(sel)add(sel);[...last.values()].sort((x,y)=>y.ts-x.ts).forEach(m=>{add(m.uid);const t=G&&G.targetOf(m,ms,idx);if(t)add(t.uid);});
+ [...r.values()].sort((x,y)=>(y.lv||0)-(x.lv||0)||String(x.n).localeCompare(String(y.n))).forEach(p=>add(p.uid));return order;}
+function fill(k,n){return tr(k).replace('{n}',n);}
+function galaxy(ms,w,h,quiet){
+ if(!G)return {html:'',lines:[],names:[]};
+ const r=roster(),idx=nameIdx(r),order=crowd(ms,r,idx),L=G.layout(order,w,h,scope||'me',{reserveTop:quiet}),last=latestBy(ms),now=Date.now(),spot=new Map(L.spots.map(x=>[x.uid,x])),meSpot=L.spots[0],lines=[],names=[];
+ if(sel&&!spot.has(sel))sel='';
+ let html='';
+ L.spots.forEach((x,i)=>{const me=x.me,p=me?{uid:scope,n:own().n||tr('you')}:r.get(x.uid);if(!p)return;const label=me?tr('you'):p.n;names.push(label);
+  const picked=!me&&sel===x.uid,talking=speak&&speak===x.uid;
+  const aria=me?(sel?tr('toEveryone'):tr('youAll')):(picked?fill('talking',p.n):fill('talkTo',p.n));
+  const attrs='data-uid="'+esc(x.uid)+'" data-name="'+esc(me?own().n||'':p.n)+'" aria-label="'+esc(aria)+'"'+(me?'':' aria-pressed="'+picked+'"')+' style="left:'+x.x+'px;top:'+x.y+'px;--s:'+x.size+'px;--i:'+i+';--c:'+hueColor(x.uid,me)+'"';
+  const inner='<span class="cg-orb">'+mate(me?(scope||'me'):x.uid,'g'+i)+'</span><span class="cg-name">'+esc(label)+'</span>';
+  html+=button(me?'to-all':'select',inner,attrs,'cg-body'+(me?' me':'')+(picked?' sel':'')+(talking?' speaking':'')+(me&&!scope?' cg-off':''));
+  const m=last.get(me?scope:x.uid);const o=m?G.fade(m.ts,now):0;
+  if(m&&(o>0||m.status)&&x.bub.lines>=1){const t=G.targetOf(m,ms,idx),body=G.bubbleText(m,t),toMe=t&&t.uid===scope;
+   const tag=t?'<span class="cg-to'+(toMe?' me':'')+'">→ '+esc(toMe?tr('toYou'):fill('toArrow',(r.get(t.uid)||{n:t.n}).n||t.n))+'</span>':'';
+   const est=Math.round(body.length*6.2+24<=x.bub.width?Math.max(t?104:64,body.length*6.2+24):x.bub.width),side=x.bub.mode!=='top';
+   const left=side?(x.bub.mode==='l'?x.bub.left:x.bub.right-est):Math.max(x.cell.x+6,Math.min(x.x-est/2,x.cell.x+x.cell.w-6-est)),tail=side?0:Math.max(14,Math.min(est-14,x.x-left));
+   const st=m.status?'<span class="cg-st">'+tr(m.status==='sending'?'sending':'unconfirmed')+'</span>':'';
+   html+=button('thread',tag+'<span class="cg-t" style="-webkit-line-clamp:'+Math.max(1,x.bub.lines-(t?1:0)-(st?1:0))+'">'+text(body)+'</span>'+st,'data-id="'+esc(m.id)+'" aria-label="'+esc(label+': '+m.t)+' · '+tr('openThread')+'" style="left:'+Math.round(left)+'px;width:'+Math.round(est)+'px;'+(side?'top:'+x.bub.cy+'px;':'bottom:'+Math.round(h-x.bub.bottom)+'px;')+'max-height:'+x.bub.max+'px;--o:'+(m.status?1:o)+';--tail:'+Math.round(tail)+'px;--c:'+hueColor(x.uid,me)+'"','cg-bub'+(side?' s'+x.bub.mode:'')+(me?' mine':'')+(toMe?' tome':'')+(talking?' pop':''));
+   const to=t&&spot.get(t.uid);if(to&&to!==x&&!(me&&sel&&t.uid===sel))lines.push({a:{x:x.x,y:x.y},b:{x:to.x,y:to.y},alpha:m.status?.6:Math.max(.25,o),from:hueColor(x.uid,me),to:hueColor(to.uid,to.me)});}
+ });
+ if(sel&&spot.has(sel)){const t=spot.get(sel);lines.push({a:{x:meSpot.x,y:meSpot.y},b:{x:t.x,y:t.y},alpha:1,sel:true,from:hueColor(scope,true),to:hueColor(sel,false)});}
+ gxIds=L.spots.map(x=>x.uid).filter(u=>u&&u!=='me');
+ return {html,lines,names,me:meSpot};
 }
+function skyStart(){const c=D.getElementById('cgSky');if(!G||!c||!c.getContext)return;if(!sk||sk.canvas!==c){if(sk)sk.stop();sk=G.sky(c);if(sk)sk.canvas=c;}if(sk&&active()&&!D.hidden)sk.start();}
+function intro(){const g=D.getElementById('cgGalaxy');if(!g||!g.removeAttribute)return;g.__intro=1;if(W.matchMedia&&W.matchMedia('(prefers-reduced-motion: reduce)').matches){const o=g.querySelector('.cg-intro');if(o&&o.animate)o.animate([{opacity:1},{opacity:0}],{duration:380,easing:'ease-out'});return;}g.removeAttribute('data-intro');void g.offsetWidth;g.setAttribute('data-intro','1');clearTimeout(introT);introT=setTimeout(()=>{g.removeAttribute('data-intro');},1700);}
+let enterAt=0,ro=null;
+function onShow(){const on=!!(active()&&!D.hidden);if(on&&!wasOn){wasOn=true;enterAt=Date.now();intro();skyStart();refresh();}else if(!on&&wasOn){wasOn=false;if(sk)sk.stop();}}
+function watch(){if(watching||!W.MutationObserver)return;const t=D.getElementById('tab-foryou');if(!t)return;watching=true;new W.MutationObserver(onShow).observe(t,{attributes:true,attributeFilter:['class']});}
+function thread(open,focusId){threadOpen=!!open;const t=D.getElementById('cgThread');if(!t||!t.setAttribute)return;if(threadOpen)t.setAttribute('data-open','1');else t.removeAttribute('data-open');
+ const l=D.getElementById('cmList');if(threadOpen&&l){requestAnimationFrame(()=>{const m=focusId&&D.getElementById('cm-'+focusId);if(m&&m.scrollIntoView){m.scrollIntoView({block:'center'});m.classList.add('cg-focus');setTimeout(()=>m.classList.remove('cg-focus'),2200);}else l.scrollTop=l.scrollHeight;const c=t.querySelector('[data-chat="close-thread"]');if(c&&c.focus)c.focus({preventScroll:true});});}}
+function dmCheck(ms){if(!scope||!G)return;const idx=nameIdx(),list=ms.filter(m=>m.uid&&m.uid!==scope&&!m.status&&!m.demo&&!m.bot&&!blocked(m.uid)&&((G.targetOf(m,ms,idx)||{}).uid===scope));
+ if(prefs.dmSeen==null){prefs.dmSeen=list.length?list[list.length-1].ts:Date.now();persist();}
+ if(active()&&!D.hidden&&list.length&&list[list.length-1].ts>prefs.dmSeen){prefs.dmSeen=list[list.length-1].ts;persist();}
+ const fresh=list.filter(m=>m.ts>prefs.dmSeen);dmBadge(isQuiet()?0:fresh.length);
+ for(const m of fresh){if(dmLive.has(m.id))continue;dmLive.add(m.id);if(m.ts<dmBoot-60000||isQuiet())continue;dmAlert(m);}}
+function dmBadge(n){const tb=D.querySelector('#tabbar .tb[data-tab="foryou"]');if(!tb||!tb.querySelector)return;let d=tb.querySelector('.cg-dm');if(!n){if(d)d.remove();return;}if(!d){d=D.createElement('span');d.className='cg-dm';d.setAttribute('aria-hidden','true');tb.appendChild(d);}d.textContent=n>9?'9+':String(n);}
+function dmAlert(m){const title=fill('dmTitle',m.by||'Member'),body=String(m.t||'').slice(0,140);
+ if(D.hidden){try{if(W.Notification&&Notification.permission==='granted'&&navigator.serviceWorker)navigator.serviceWorker.ready.then(r=>r.showNotification(title,{body,icon:'icon-192.png',badge:'icon-192.png',tag:'lowi-dm-'+m.id,data:{q:'',tab:'foryou'}})).catch(()=>{});}catch(e){}return;}
+ if(active())return;
+ let t=D.getElementById('cgToast');if(!t){t=D.createElement('div');t.id='cgToast';t.className='cg-toast-wrap';t.setAttribute('role','status');D.body.appendChild(t);}
+ t.innerHTML=button('open-galaxy','<span class="cg-torb">'+mate(m.uid,'t'+sid(m.id))+'</span><span class="cg-tt"><b>'+esc(title)+'</b><span>'+text(body)+'</span></span>','data-uid="'+esc(m.uid)+'"','cg-toast');t.setAttribute('data-on','1');
+ clearTimeout(toastT);toastT=setTimeout(()=>{t.removeAttribute('data-on');},6500);}
+function openGalaxy(uid){try{if(typeof W.goTab==='function')W.goTab('foryou');}catch(e){}try{if(typeof W.cmSeg==='function')W.cmSeg('chat');}catch(e){}const t=D.getElementById('cgToast');if(t)t.removeAttribute('data-on');if(uid&&roster().has(uid))sel=uid;refresh();}
 function text(t){return esc(t).replace(/@([\p{L}\p{N}_-]+)/gu,'<span class="cm-at">@$1</span>');}
 function time(ts){try{return new Date(ts).toLocaleTimeString(['en','de','es'][Math.max(0,lang())],{hour:'2-digit',minute:'2-digit'});}catch(e){return '';}}
 function renderMessage(m,all,prev,next){
@@ -163,7 +218,7 @@ function renderMessage(m,all,prev,next){
 }
 function mount(el){if(!el)return;ensureScope();if(!el.hasAttribute('data-spirit-chat')){
  el.setAttribute('data-spirit-chat','');el.setAttribute('data-planet','normal');el.setAttribute('data-noi18n','');
- el.innerHTML='<header class="cp-bar"><div class="cp-head"><h2 id="cpTitle"></h2><p id="cpSub"></p></div><div id="csControls"></div></header><div class="cs-status" id="csStatus" role="status"></div><section class="cp-room" id="cpRoom"><div class="cm-list" id="cmList" role="log" aria-live="off" tabindex="0"></div><div id="csJump"></div><div class="cp-planet" id="cpPlanet" role="group"></div></section><div class="cm-compose"><div id="csReply"></div><div class="cm-mention" id="cmMention"></div><div class="cm-inrow"><textarea id="cmInput" rows="1" maxlength="600" enterkeyhint="send"></textarea><button type="button" id="cmSend" data-chat="send" data-sfx="none">↑</button></div><div class="cs-compose-meta"><span id="csDraft"></span><span id="csCount"></span></div><p class="cs-notice" id="csNotice" role="status"></p></div><span id="csAnnounce" class="sr-only" aria-live="polite"></span>';
+ el.innerHTML='<header class="cp-bar"><div class="cp-head"><h2 id="cpTitle"></h2><p id="cpSub"></p></div><div id="csControls"></div></header><div class="cs-status" id="csStatus" role="status"></div><section class="cp-room cg-room" id="cpRoom"><div class="cg-galaxy" id="cgGalaxy" role="group"><canvas class="cg-sky" id="cgSky" aria-hidden="true"></canvas><div class="cg-field" id="cgField"></div><div class="cg-intro" aria-hidden="true"><i></i><i></i><i></i></div></div><section class="cg-thread" id="cgThread"><header class="cg-thead"><b id="cgThreadTitle"></b><button type="button" class="cg-x" data-sfx="none" data-chat="close-thread" id="cgClose">×</button></header><div class="cm-list" id="cmList" role="log" aria-live="off" tabindex="0"></div><div id="csJump"></div></section></section><div class="cm-compose"><div class="cg-torow" id="cgTo"></div><div id="csReply"></div><div class="cm-mention" id="cmMention"></div><div class="cm-inrow"><textarea id="cmInput" rows="1" maxlength="600" enterkeyhint="send"></textarea><button type="button" id="cmSend" data-chat="send" data-sfx="none">↑</button></div><div class="cs-compose-meta"><span id="csDraft"></span><span id="csCount"></span></div><p class="cs-notice" id="csNotice" role="status"></p></div><span id="csAnnounce" class="sr-only" aria-live="polite"></span>';
  el.querySelector('#cmList').addEventListener('scroll',()=>{if(nearBottom()){newCount=0;const j=D.getElementById('csJump');if(j)j.innerHTML='';}},{passive:true});
  }
  paint(el);}
@@ -182,9 +237,17 @@ function paint(el){
  q('#csStatus').dataset.state=state;q('#csStatus').dataset.quiet=isQuiet()?'1':'';q('#csStatus').innerHTML='<i aria-hidden="true"></i><span>'+esc(status)+'</span>'+(['error','offline','connecting'].includes(state)?button('reload',tr('retry'),'',''):'');
  const newest=ms.length?ms[ms.length-1]:null,nid=newest?newest.id:'';let ownNew=false;
  if(nid&&nid!==lastNewest){ownNew=!!lastNewest&&newest.uid===scope;if(lastNewest&&newest.uid&&!newest.status){speak=newest.uid;clearTimeout(speakTimer);speakTimer=setTimeout(()=>{speak='';refresh();},3400);}lastNewest=nid;}
- const pl=q('#cpPlanet'),pw=(pl&&pl.clientWidth)||(el.clientWidth?el.clientWidth-36:0)||360,mode=W.innerWidth>=700&&W.innerHeight>=700?'tall':W.innerHeight<700?'compact':'normal';el.dataset.planet=mode;
- const crowd=planetPeople(ms),planetHTML=planet(ms,pw,mode,ctl);if(pl&&pl.__html!==planetHTML){pl.innerHTML=planetHTML;pl.__html=planetHTML;}
- if(pl)pl.setAttribute('aria-label',tr('onPlanet')+': '+[tr('you'),...crowd.map(x=>x.n)].join(', '));
+ const selP=sel&&roster().get(sel),toRow=(selP?'<span class="cg-chip on"><span class="cg-dotc" style="--c:'+hueColor(sel,false)+'" aria-hidden="true"></span>'+button('profile',esc(fill('toName',selP.n)),'data-uid="'+esc(sel)+'" data-name="'+esc(selP.n)+'" aria-label="'+esc(fill('toName',selP.n))+' · '+tr('profile')+'"','cg-chipname')+button('to-all','×','aria-label="'+tr('toEveryone')+'"','cg-chipx')+'</span>':'<span class="cg-chip"><span class="cg-dotc all" aria-hidden="true"></span>'+esc(tr('toAll'))+'</span>')+button('history','<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 6.5h14M5 12h14M5 17.5h9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>'+tr('history')+'</span>','aria-expanded="'+threadOpen+'"','cg-hist');
+ const tw=q('#cgTo');if(tw&&tw.innerHTML!==toRow)tw.innerHTML=toRow;
+ const room=q('#cpRoom'),gw=(room&&room.clientWidth)||(el.clientWidth||0)||360,gh=(room&&room.clientHeight)||420,quietRoom=!ms.some(x=>!x.demo&&!x.bot&&!blocked(x.uid));el.dataset.planet=W.innerWidth>=700&&W.innerHeight>=700?'tall':W.innerHeight<700?'compact':'normal';
+ const gx=galaxy(ms,gw,gh,quietRoom),field=q('#cgField'),gal=q('#cgGalaxy');
+ const fieldHTML=gx.html+(quietRoom?'<div class="cg-empty"><span class="cs-lantern" aria-hidden="true">✧</span><b>'+tr('emptyTitle')+'</b><p>'+(st.phase==='ready'?(Object.values(prefs.blocks).some(x=>x.blocked)?tr('filtered'):tr('empty')):tr('waiting'))+'</p>'+(st.phase==='ready'?button('hello',tr('hi'),'','cs-action cg-hello'):'')+'</div>':'');
+ if(field&&field.__html!==fieldHTML){field.innerHTML=fieldHTML;field.__html=fieldHTML;}
+ if(gal){gal.setAttribute('aria-label',tr('onPlanet')+': '+gx.names.join(', '));gal.setAttribute('data-streams',String(gx.lines.length));if(gx.me&&gal.style)gal.style.setProperty('--me-x',gx.me.x+'px'),gal.style.setProperty('--me-y',gx.me.y+'px');}
+ if(sk)sk.set(gx.lines,D.documentElement.dataset&&D.documentElement.dataset.theme==='light');watch();if(active()&&!D.hidden){if(!wasOn)onShow();else{if(gal&&!gal.__intro&&Date.now()-enterAt<600)intro();skyStart();}}
+ if(room&&W.ResizeObserver&&ro!==room.__ro){if(ro)ro.disconnect();let lastSz='';ro=new W.ResizeObserver(()=>{const sz=room.clientWidth+'x'+room.clientHeight;if(sz===lastSz)return;lastSz=sz;clearTimeout(W.__cgRo);W.__cgRo=setTimeout(()=>{if(active()){refresh();if(sk)sk.resize();}},90);});ro.observe(room);room.__ro=ro;}
+ const tt=q('#cgThreadTitle');if(tt)tt.textContent=tr('history');const cx=q('#cgClose');if(cx&&cx.setAttribute)cx.setAttribute('aria-label',tr('back'));
+ dmCheck(ms);
  if(!W.LowiCompanionCore&&mateTries<20){mateTries++;setTimeout(refresh,1500);}
  const empty=st.phase==='ready'?(Object.values(prefs.blocks).some(x=>x.blocked)?tr('filtered'):tr('empty')):tr('waiting');
  const shown=ms.filter(x=>!x.demo&&!x.bot&&!blocked(x.uid));
@@ -193,17 +256,17 @@ function paint(el){
  if(ownNew)newCount=0;if(ms.length>lastCount&&!near&&!ownNew){newCount+=ms.length-lastCount;if(!isQuiet())q('#csAnnounce').textContent=tr('newMessages');}lastCount=ms.length;
  q('#csJump').innerHTML=newCount&&!near&&!ownNew?button('latest',tr('newMessages'),'','cs-jump'):'';
  const parent=ms.find(x=>x.id===ds.draft.reply);q('#csReply').innerHTML=ds.draft.reply?'<div class="cm-replybar"><span>'+tr('replying')+' <b>'+esc(parent?parent.by:tr('gone'))+'</b></span>'+button('noreply','×','aria-label="'+tr('cancel')+'"','')+'</div>':'';
- const inp=q('#cmInput');if(inp.value!==ds.draft.text)inp.value=ds.draft.text;inp.placeholder=tr('message');inp.setAttribute('aria-label',tr('message'));inp.setAttribute('aria-describedby','csDraft csNotice');
+ const inp=q('#cmInput');if(inp.value!==ds.draft.text)inp.value=ds.draft.text;const selN=sel&&(roster().get(sel)||{}).n;inp.placeholder=selN?fill('writeTo',selN):tr('message');inp.setAttribute('aria-label',inp.placeholder);inp.setAttribute('aria-describedby','csDraft csNotice');
  q('#cmSend').setAttribute('aria-label',tr('send'));q('#cmSend').disabled=!scope||!inp.value.trim()||ds.busy||navigator.onLine===false;
- q('#csDraft').textContent=ds.storageOK?(ds.draft.text?tr('draft'):tr('hint')):tr('volatile');q('#csCount').textContent=inp.value.length+'/600';q('#csNotice').textContent=notice;
+ q('#csDraft').textContent=ds.storageOK?(ds.draft.text?tr('draft'):selN?fill('hintTo',selN):tr('hint')):tr('volatile');q('#csCount').textContent=inp.value.length+'/600';q('#csNotice').textContent=notice;
  q('#cmList').setAttribute('aria-label',tr('square'));q('#csAnnounce').setAttribute('aria-live',isQuiet()?'off':'polite');mentions();fit();
 }
 function refresh(){if(raf)return;raf=requestAnimationFrame(()=>{raf=0;ensureScope();if(store){store.confirm(H.messages());if(transport.state().phase==='ready'){cache=H.messages().map(({id,uid,by,t,ts,re})=>({id,uid,by,t,ts,re,rx:{}}));const json=JSON.stringify(cache);if(json!==cacheJSON){cacheJSON=json;K.write(deviceStorage,cacheKey(),{messages:cache});}}}const el=D.getElementById('cmPaneChat');if(el)mount(el);loadExtras();});}
-function mentions(){const inp=D.getElementById('cmInput'),box=D.getElementById('cmMention');if(!inp||!box)return;const match=inp.value.match(/@([\p{L}\p{N}_-]*)$/u);const people=new Map();for(const msg of messages()){if(msg.uid!==scope&&!blocked(msg.uid))people.set(msg.uid,{uid:msg.uid,n:msg.by});}box.innerHTML=match?[...people.values()].filter(p=>p.n.toLocaleLowerCase().startsWith(match[1].toLocaleLowerCase())).slice(0,4).map(p=>button('mention','@'+esc(p.n),'data-name="'+esc(p.n)+'"')).join(''):'';}
+function mentions(){const inp=D.getElementById('cmInput'),box=D.getElementById('cmMention');if(!inp||!box)return;const match=inp.value.match(/@([\p{L}\p{N}_-]*)$/u);const people=new Map();for(const msg of messages()){if(msg.uid!==scope&&!blocked(msg.uid))people.set(msg.uid,{uid:msg.uid,n:msg.by});}for(const p of roster().values())if(!people.has(p.uid))people.set(p.uid,p);box.innerHTML=match?[...people.values()].filter(p=>p.n.toLocaleLowerCase().startsWith(match[1].toLocaleLowerCase())).slice(0,4).map(p=>button('mention','@'+esc(p.n),'data-name="'+esc(p.n)+'"')).join(''):'';}
 function draft(text,reply){if(store)store.setDraft(text,reply);}
 function comment(who){draft(who?'@'+who+' ':'',null);refresh();focusInput();}
 function focusInput(){const i=D.getElementById('cmInput');if(i)i.focus({preventScroll:true});}
-async function send(retryId){if(!store||navigator.onLine===false){notice=tr('offline');refresh();return;}const m=own(),name=String(m.n||'').trim();if(!name){notice=tr('name');refresh();return;}notice='';try{await store.submit(name,retryId);}catch(e){notice=tr('sendFailed');}refresh();}
+async function send(retryId){if(!store||navigator.onLine===false){notice=tr('offline');refresh();return;}const m=own(),name=String(m.n||'').trim();if(!name){notice=tr('name');refresh();return;}notice='';if(!retryId&&sel&&G){const ds=draftState(),p=roster().get(sel);if(p&&ds.draft.text.trim()){const t=G.direct(ds.draft.text,p.n);if(t!==ds.draft.text)draft(t,ds.draft.reply);}}try{await store.submit(name,retryId);}catch(e){notice=tr('sendFailed');}refresh();}
 function resultText(el,t){if(el)el.textContent=t;}
 function sheet(html){return H.sheet('<div class="cs-sheet" data-noi18n data-sfx="none">'+html+'</div>');}
 function settings(){const m=own(),shared=K.identity(identities.get(scope)),row=identities.get(scope)||{};const cp=matePref();sheet('<h2>'+tr('presence')+'</h2><div class="cs-pub cp-pubme">'+mate(scope,'set')+'<div><b>'+esc(m.n||tr('you'))+'</b></div></div><form data-chat-form="mate"><label>'+tr('mateShare')+' <input type="checkbox" name="share" '+(cp.share?'checked':'')+'></label><p>'+tr('mateNote')+'</p><button class="cs-submit" data-sfx="none">'+tr('save')+'</button><div class="cs-result" role="status"></div></form><p>'+tr('noRouting')+'</p><p>'+tr('style')+': <b>'+esc(K.type(m.t)||tr('optional'))+'</b> · '+tr(shared.t&&shared.t===K.type(m.t)?'sharedType':'private')+'</p><p>'+tr('privacyNote')+'</p><form data-chat-form="sharing"><label>'+tr('shareType')+' <input type="checkbox" name="type" '+(row.share_personality?'checked':'')+(!K.type(m.t)?' disabled':'')+'></label><label>'+tr('shareSign')+' <input type="checkbox" name="sign" '+(row.share_sign?'checked':'')+(!K.SIGNS.includes(m.s)?' disabled':'')+'></label><button class="cs-submit" data-sfx="none">'+tr('publish')+'</button><div class="cs-result" role="status"></div></form><h2 style="margin-top:24px">'+tr('quiet')+'</h2><p>'+tr('quietDesc')+'</p><form data-chat-form="quiet"><label>'+tr('quiet')+'<input type="checkbox" name="enabled" '+(prefs.quietEnabled!==false?'checked':'')+'></label><div class="cs-hours"><label>'+tr('from')+' <input aria-label="'+tr('from')+'" type="number" name="start" min="0" max="23" value="'+(prefs.quietStart??22)+'" required></label><label>'+tr('until')+' <input aria-label="'+tr('until')+'" type="number" name="end" min="0" max="23" value="'+(prefs.quietEnd??8)+'" required></label></div><button class="cs-submit" data-sfx="none">'+tr('saveQuiet')+'</button><div class="cs-result" role="status"></div></form><h2 style="margin-top:24px">'+tr('blocked')+'</h2><div id="csBlockedList">'+blockList()+'</div><p class="cs-result" id="csBlockResult" role="status"></p>'+(extrasAttempt==='failed'?'<p>'+tr('extrasMissing')+'</p>':''));}
@@ -216,7 +279,7 @@ function syncBlock(id){const key=scope+':'+id,prior=blockJobs.get(key);if(prior)
 
 async function blockPerson(id,name,on){if(!scope||!id||id===scope)return;const actor=scope;prefs.blocks[id]={blocked:on,name:name||prefs.blocks[id]?.name||'Member',dirty:true};const saved=persist();pick='';if(draftState().draft.reply&& !messages().some(m=>m.id===draftState().draft.reply))draft(draftState().draft.text,null);refresh();resultText(D.getElementById('csBlockResult'),saved?tr('blockLocal'):tr('blockStorage'));const ok=await syncBlock(id);if(actor!==scope)return;resultText(D.getElementById('csBlockResult'),ok?tr('blockSynced'):tr('blockLocal'));const b=D.getElementById('csBlockedList');if(b)b.innerHTML=blockList();}
 async function loadExtras(force){
- if(!scope||extrasFlight||navigator.onLine===false)return;const ids=[...new Set([scope,...H.messages().map(m=>m.uid)])].filter(Boolean).sort(),signature=ids.join(',');if(!force&&extrasAttempt===signature||!force&&extrasAttempt==='failed')return;extrasAttempt=signature;const actor=scope;
+ if(!scope||extrasFlight||navigator.onLine===false)return;const ids=[...new Set([scope,...H.messages().map(m=>m.uid),...gxIds])].filter(Boolean).sort(),signature=ids.join(',');if(!force&&extrasAttempt===signature||!force&&extrasAttempt==='failed')return;extrasAttempt=signature;const actor=scope;
  const task=(async()=>{const results=await Promise.allSettled([transport.table('community_identities',t=>t.select('user_id,share_personality,personality,share_sign,sign').in('user_id',ids)),transport.table('community_blocks',(t,u)=>t.select('blocked_user_id').eq('user_id',u)),transport.table('profiles',t=>t.select('id,look').in('id',ids))]);if(scope!==actor)return;
  if(results[2].status==='fulfilled'){looks=new Map((results[2].value||[]).filter(r=>r&&r.id&&typeof r.look==='string'&&r.look).map(r=>[r.id,r.look]));}
  if(results[0].status==='fulfilled'){identities=new Map((results[0].value||[]).map(r=>[r.user_id,r]));}else{identities=new Map();extrasAttempt='failed';}
@@ -241,15 +304,16 @@ function fit(){
  pane.style.setProperty('--cs-keyboard-height',Math.max(0,bottom-rect.top-8)+'px');
 }
 D.addEventListener('input',e=>{if(e.target.id!=='cmInput')return;draft(e.target.value,draftState().draft.reply);mentions();});
-D.addEventListener('keydown',e=>{if(e.target.id==='cmInput'&&e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();send();}});
+D.addEventListener('keydown',e=>{if(e.key==='Escape'&&threadOpen&&active()&&!D.querySelector('.r2-ov.on')){thread(false);refresh();return;}if(e.target.id==='cmInput'&&e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();send();}});
 D.addEventListener('submit',e=>{const f=e.target;if(!f.matches('form[data-chat-form]'))return;e.preventDefault();e.stopPropagation();if(f.dataset.sent!=='1')submitForm(f);});
 D.addEventListener('click',async e=>{const b=e.target.closest&&e.target.closest('[data-chat]');if(!b){const bub=e.target.closest&&e.target.closest('#cmPaneChat [data-chat-bub]');if(bub&&!(W.getSelection&&String(W.getSelection()).trim())){const mid=bub.getAttribute('data-chat-bub'),m=messages().find(x=>x.id===mid);if(m&&!m.status){openId=openId===mid?'':mid;if(pick&&pick!==openId)pick='';refresh();}}return;}e.preventDefault();e.stopPropagation();const a=b.dataset.chat,id=b.dataset.id;
- if(a==='send')send();else if(a==='reload'){transport.reload();loadExtras(true);}else if(a==='settings')settings();else if(a==='profile')openProfile(b.dataset.uid,b.dataset.name);else if(a==='hello'){draft(tr('hiText'),null);refresh();focusInput();}else if(a==='more'){openId=openId===id?'':id;if(pick&&pick!==openId)pick='';refresh();}else if(a==='pick'){pick=pick===id?'':id;if(pick)openId=id;refresh();}else if(a==='reply'){openId='';pick='';draft(draftState().draft.text,id);refresh();focusInput();}else if(a==='noreply'){draft(draftState().draft.text,null);refresh();focusInput();}else if(a==='mention'){draft((D.getElementById('cmInput').value||'').replace(/@[\p{L}\p{N}_-]*$/u,'@'+b.dataset.name+' '),draftState().draft.reply);refresh();focusInput();}else if(a==='latest'){const l=D.getElementById('cmList');l.scrollTop=l.scrollHeight;newCount=0;refresh();}else if(a==='retry-send')send(id);else if(a==='discard'){store.discard(id);refresh();}else if(a==='react'){pick='';openId='';try{await transport.react(id,b.dataset.emoji,own().n);}catch(x){notice=tr('reactFailed');}refresh();}else if(a==='report')openReport(id);else if(a==='block')blockPerson(b.dataset.uid,b.dataset.name,true);else if(a==='unblock')blockPerson(b.dataset.uid,'',false);else if(a==='delete'){
+ if(a==='send')send();else if(a==='reload'){transport.reload();loadExtras(true);}else if(a==='settings')settings();else if(a==='profile')openProfile(b.dataset.uid,b.dataset.name);else if(a==='select'){sel=sel===b.dataset.uid?'':b.dataset.uid;refresh();}else if(a==='to-all'){sel='';refresh();}else if(a==='thread'){thread(true,id);refresh();}else if(a==='history'){thread(!threadOpen);refresh();}else if(a==='close-thread'){thread(false);refresh();const h=D.querySelector('#cgTo .cg-hist');if(h&&h.focus)h.focus({preventScroll:true});}else if(a==='open-galaxy')openGalaxy(b.dataset.uid);else if(a==='hello'){draft(tr('hiText'),null);refresh();focusInput();}else if(a==='more'){openId=openId===id?'':id;if(pick&&pick!==openId)pick='';refresh();}else if(a==='pick'){pick=pick===id?'':id;if(pick)openId=id;refresh();}else if(a==='reply'){openId='';pick='';draft(draftState().draft.text,id);refresh();focusInput();}else if(a==='noreply'){draft(draftState().draft.text,null);refresh();focusInput();}else if(a==='mention'){draft((D.getElementById('cmInput').value||'').replace(/@[\p{L}\p{N}_-]*$/u,'@'+b.dataset.name+' '),draftState().draft.reply);refresh();focusInput();}else if(a==='latest'){const l=D.getElementById('cmList');l.scrollTop=l.scrollHeight;newCount=0;refresh();}else if(a==='retry-send')send(id);else if(a==='discard'){store.discard(id);refresh();}else if(a==='react'){pick='';openId='';try{await transport.react(id,b.dataset.emoji,own().n);}catch(x){notice=tr('reactFailed');}refresh();}else if(a==='report')openReport(id);else if(a==='block')blockPerson(b.dataset.uid,b.dataset.name,true);else if(a==='unblock')blockPerson(b.dataset.uid,'',false);else if(a==='delete'){
   if(armed!==id){armed=id;clearTimeout(armTimer);armTimer=setTimeout(()=>{armed='';refresh();},3500);refresh();return;}armed='';b.disabled=true;b.textContent=tr('deleting');try{await transport.remove(id);}catch(x){notice=tr('deleteFailed');}refresh();}
 });
-D.addEventListener('focusin',fit);D.addEventListener('focusout',()=>requestAnimationFrame(fit));W.addEventListener('resize',()=>{fit();clearTimeout(W.__cpResize);W.__cpResize=setTimeout(()=>{if(active())refresh();},120);});if(W.visualViewport){W.visualViewport.addEventListener('resize',fit);W.visualViewport.addEventListener('scroll',fit);}
+D.addEventListener('focusin',fit);D.addEventListener('focusout',()=>requestAnimationFrame(fit));W.addEventListener('resize',()=>{fit();clearTimeout(W.__cpResize);W.__cpResize=setTimeout(()=>{if(active()){refresh();if(sk)sk.resize();}},120);});if(W.visualViewport){W.visualViewport.addEventListener('resize',fit);W.visualViewport.addEventListener('scroll',fit);}
 D.addEventListener('lowi:chat',e=>{ensureScope();transport.notify(e.detail);if(e.detail&&['ready','reconnect'].includes(e.detail.type)){transport.reload();loadExtras(true);}refresh();});
 W.addEventListener('online',()=>{ensureScope();transport.reload();loadExtras(true);});W.addEventListener('offline',refresh);W.addEventListener('storage',e=>{if(e.key===prefsKey()){prefs=K.read(deviceStorage,prefsKey(),{});prefs.blocks=prefs.blocks||{};refresh();}});
-D.addEventListener('visibilitychange',()=>{if(!D.hidden){transport.reload();loadExtras(true);refresh();}});
-W.LowiCommunity={mount,refresh,send,comment,isQuiet,unread,messageHTML:renderMessage,mentions,fit};H.install(W.LowiCommunity);ensureScope();refresh();setInterval(()=>{if(active()){refresh();loadExtras(true);}},60000);
+D.addEventListener('visibilitychange',()=>{onShow();if(!D.hidden){transport.reload();loadExtras(true);refresh();}});
+try{if(navigator.serviceWorker&&navigator.serviceWorker.addEventListener)navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.cgTab==='foryou')openGalaxy('');});}catch(e){}
+W.LowiCommunity={mount,refresh,send,comment,isQuiet,unread,messageHTML:renderMessage,mentions,fit,select:uid=>{sel=uid||'';refresh();},thread:(o,id)=>{thread(o,id);refresh();}};H.install(W.LowiCommunity);ensureScope();refresh();setInterval(()=>{if(active()){refresh();loadExtras(true);}},60000);
 })(window,document);

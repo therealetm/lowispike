@@ -120,7 +120,7 @@
         }
         for (let k = 0; k < VES[i]; k++) {
             const ang = r() * Math.PI * 2, d = R * (0.2 + r() * 0.62), x = CX + Math.cos(ang) * d, y = CY + Math.sin(ang) * d * 0.9, rr = 2.2 + r() * 3.4;
-            org += '<circle class="cw-org cw-ves" style="--k:' + (k + 3) + '" cx="' + f(x) + '" cy="' + f(y) + '" r="' + f(rr) + '" fill="' + (k % 2 ? a : '#eafcff') + '" fill-opacity=".5" stroke="#ffffff" stroke-opacity=".55" stroke-width=".8"/>';
+            org += '<circle class="cw-org cw-ves" style="--k:' + (k + 3) + '" cx="' + f(x) + '" cy="' + f(y) + '" r="' + f(rr) + '" fill="' + (k % 2 ? a : '#2ef8b6') + '" fill-opacity=".5" stroke="#ffffff" stroke-opacity=".55" stroke-width=".8"/>';
         }
         let ribo = '';
         for (let k = 0; k < 10 + i * 3; k++) {
@@ -345,6 +345,7 @@
         const bubble = home && home.querySelector('#spBubble'), stage = world && world.querySelector('.sp-stage');
         ensureEnv(bubble, 'cw-env-home', 5);
         ensureEnv(stage, 'cw-env-world', 9);
+        if (root.dataset.cell !== v.state) { try { W.dispatchEvent(new CustomEvent('lowi:cell-state', { detail: v })); } catch (e) {} }
         root.dataset.cell = v.state;
         root.classList.add('cw-on');
         root.classList.toggle('cw-away', !!v.away);

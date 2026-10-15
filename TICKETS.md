@@ -61,3 +61,12 @@ When adding a ticket, include:
 ## 2026-10-14 - Sign-in handoff follow-up
 
 - [ ] Physical iPhone: sign in in Safari, tap "So geht's", add to Home Screen, open it, tap "Anmeldung einfügen" -> signed in as the same account. Note whether it signs in by itself (CacheStorage shared) on this iOS version.
+
+## LS-COM-VERIFY — Community backend, privacy and device acceptance
+
+- **Status:** blocked on project access/verification environment; frontend implementation provided separately.
+- **Depends on:** Community branch integration review; current live schema/RLS export, realtime configuration and two dedicated authorized test accounts.
+- **Outcome:** Establish actual shared delivery, owner authorization, moderation persistence and consent with screenshots and device evidence.
+- **Scope:** Review the unapplied SQL proposal; audit/remediate old public birthdays/type/sign and old-client writes; run the opt-in two-account checker; assign report review/retention/abuse controls; verify block persistence across devices and local quiet controls. Test Community navigation, phone/iPad portrait/landscape, keyboard/safe areas, long history, Home/For You/companion/fasting regression and PWA offline upgrades.
+- **Out of scope:** Home redesign, XP/evolution, fasting storage, scanner/cooking, product game, private messages and personality-based access rules.
+- **Evidence:** actual backend/account results, browser console plus before/after captures, physical phone/iPad keyboard tests and release-owner build/Pages verification if deployed. `COMMUNITY_CHAT.md` records the implemented boundary and current blockers.

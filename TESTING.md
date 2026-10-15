@@ -120,3 +120,8 @@ Never convert fixture success into “tested on iPhone.” Never report deployme
 
 ## World-first Home release
 The recovered Home patch includes `tests/world-home.test.cjs`, covering aura unlocks, stage thresholds, camera/zoom helpers, loader/cache wiring and use of the existing renderer. The full Node suite passes 445 tests. Cross-device visual, signed-in browser, service-worker upgrade and physical-device checks remain unverified for this release; the user requested publication for their own visual review.
+## Community chat checks (pending integration)
+
+`node --test tests/community-chat*.test.cjs` covers scoped draft/outbox recovery, explicit consent, quiet windows, positive presets, blocking persistence, duplicate send/realtime reconciliation, owner-scoped delete acknowledgement, reaction rollback, account changes, UI/IME guards and synthetic viewport geometry. These are Node/VM tests with mocked transport, not real Supabase policy or device evidence.
+
+`tests/community-chat-qa.html` provides clearly labeled simulated chat/backend controls and 375×667, 390×844, 768×1024 and 1024×768 isolated viewport presets. `tests/community-chat-live.cjs` is opt-in: without two dedicated test-account tokens and explicit secure test-write configuration it skips without requests. Whole-app browser console/navigation, before/after captures, 375×812, installed-PWA offline upgrades and physical phone/iPad keyboard/safe-area checks remain required. The managed preview supervisor was unavailable during this assignment. Detailed results/access limits: `COMMUNITY_CHAT.md`.

@@ -92,3 +92,7 @@ Treat this as historical baseline, not a substitute for checking the current rem
 ## Spirit release, 2026-10-14
 
 Home now presents the single herb in a water bubble. Home and Scan open the same world; the native scanner is embedded in it. Profile levels use the same six thresholds as the herb. `spirit-core.js` and `spirit.js` add portion macros, once-daily goal rewards, water logs, personality setup, and touch physics. Unknown nutrition stays unknown. Premium wardrobe items are previews because no checkout exists.
+
+## Community chat workstream (2026-10-15, pending integration)
+
+Spirit square is a bounded Community chat presentation: a shared gathering place, existing water-bubble identities, private personality presentation and explicit public sharing. No personality-derived health advice, segregation, matching algorithm or new multiplayer world. It is independent of Home/Scan. Local implementation and automated checks do not establish backend readiness or device acceptance; current evidence is in `COMMUNITY_CHAT.md`.

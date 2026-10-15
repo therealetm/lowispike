@@ -178,3 +178,12 @@ Water retains `lowi_fast_v1.water` and adds stable `waterEvents`; the existing l
 
 ## World-first Home
 Home reads canonical XP, companion and fasting state through the existing bridges. `lowi.aura` stores the selected XP-unlocked aura; invalid or locked values fall back to the default. Opening sheets, zooming and navigating do not award XP. Existing fasting-start editing and persistence are unchanged.
+## Community chat (pending integration, 2026-10-15)
+
+- `lowi.community.draft.v1:<auth uid>`: `{draft:{text,reply,retryId?},outbox:[{id,uid,by,t,ts,re,status,rx}]}`. Stable IDs survive reload/ambiguous responses; pending records reopen as unconfirmed. No automatic resends or general cloud backup. Newer text is not overwritten by a failed older send.
+- `lowi.community.prefs.v1:<auth uid>`: quiet-hour controls (default 22–08, device clock), `readAt`, and `blocks` keyed by blocked UID (`blocked,name,dirty`). Dirty block/unblock operations override a stale account snapshot and retry on reconnect. Device-only persistence is named if sync is unavailable.
+- `lowi.community.cache.v1:<auth uid>`: recent shared messages only, no birthday/health/profile fields. Signed-out/other-account drafts are never merged. Existing `lowispike.chat.v1` remains a legacy bridge/cache; it is not the draft/outbox store and never seeds a real room.
+- `window.LowiCommunityHost`: bounded read/write adapter for the existing cloud arrays/client, own safe identity, existing bubble rendering, sheets and activation. `window.LowiCommunity`: idempotent UI/messaging entrypoints; owns no XP or health state.
+- Document event `lowi:chat`: `{type,id}` where type is `auth`, `ready`, `reconnect`, `status`, `message`, `reaction` or `delete`; ID is a message ID where relevant. No health, birthday or credentials in events. Replays reconcile by ID, without another channel/listener.
+- Unapplied optional tables: `community_identities` (explicitly shared personality/sign, never birthday/health), `community_blocks` (private account list), `community_reports` (reason/message ID, own acknowledged reports). Existing `messages`/`reactions` use the original shared-room contracts. Actual RLS/realtime/schema remain unverified. `supabase/proposals/community_chat_20261015.sql` is a review proposal, not a completed backend deployment.
+- Future legacy public profile writes clear birthday/type/sign; the private local profile is unchanged. Older published records and old clients require server-side privacy remediation before acceptance. See `COMMUNITY_CHAT.md`.

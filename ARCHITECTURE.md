@@ -187,3 +187,6 @@ Self-contained IIFE, `window.LowiHandoff`. Hooks: R2 `startHTML()` (Paste block 
 
 ## World-first Home
 `world-home-core.js`, `world-home.js` and `world-home.css` load last through the existing ordered companion loader. Home reuses `LowiWorld3D` and its canvas; Today moves the existing status/log nodes into a sheet. Companion, fasting and appearance controls retain their existing bridges. No second renderer is created.
+## Isolated Community chat module (pending integration, 2026-10-15)
+
+`community-chat-core.js`, `community-chat-cloud.js`, `community-chat.js` and `community-chat.css` own Spirit square. The ordered `index.html` bridge exposes the existing authenticated client, message/reaction arrays and safe bubble renderer; `lowi:chat` invalidates the view. The existing cloud channel remains the only realtime subscription. Legacy chat seeds/render/send fallback no longer represent real activity. Replies, mentions, allowed reactions and owner deletion are provided by the module. Public identity comes only from consent-controlled `community_identities`; birthday/health are excluded. See `COMMUNITY_CHAT.md` for access blockers, unapplied backend proposal and verification limits.

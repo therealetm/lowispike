@@ -91,3 +91,6 @@ The Spirit assets (`spirit-core.js`, `spirit.js`, `spirit.css`) are part of the 
 
 ## World-first Home build 20261015-173001
 Recovered the supplied source patch against `dcfe82cd19f085ce230cba1e7b40c30791c80a60`, including the final uncommitted CSS/JS layer. Build metadata, service-worker cache and ordered-loader versions are synchronized. The user explicitly requested publication before further browser setup so they can review the app. Publication and live verification must be checked separately from the 445 passing automated tests.
+## Community branch integration boundary (2026-10-15)
+
+The Community chat branch adds four assets to both service-worker lists without advancing build metadata. It is not a release. The release owner must reconcile current Home changes, apply/review the backend prerequisites in staging, complete live account/RLS/privacy/moderation and browser/device checks, then advance the shared build/cache/version IDs together. Do not merge this branch as evidence of production acceptance; see `COMMUNITY_CHAT.md`.

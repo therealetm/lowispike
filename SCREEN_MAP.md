@@ -166,3 +166,6 @@ Home uses the herb and fasting water bubbles, a clear status/action, Yesterday/T
 
 ## World-first Home
 Home presents the shared body world and the single companion. Compact water, fasting, Today and zoom controls remain reachable. Today opens the existing log/status sheet; the companion opens its detail sheet. The shared round close control dismisses the active sheet; primary navigation is retained.
+## Community Spirit square (isolated branch, pending integration)
+
+Community → Chat retains the existing pager and opens a compact luminous shared square, with one shared-room marker, private personality identity/consent controls, truthful connection state, scrolling history and reachable draft composer. Sender bubbles use the existing profile renderer with consent-filtered metadata. Report/block, privacy and quiet controls open a sheet. Pending/unconfirmed messages expose recovery and stable-ID retry. No bot/seed participants or presence counts. Home, For You and Leaderboard keep their existing navigation and owners. Browser/physical viewport acceptance and screenshots are still pending; see `COMMUNITY_CHAT.md`.

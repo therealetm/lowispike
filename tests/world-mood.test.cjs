@@ -61,3 +61,10 @@ test('applied to the world: canvas filter, veil on the pulse beat, line in the t
     assert.ok(js.includes("new CustomEvent('lowi:world-mood'"));
     assert.ok(!/award\(|addXp|LowiXp|save\(\)/.test(js), 'reads only, no XP, no writes');
 });
+
+test('Oct 16: a stormy world stays blue (no sepia, no rust veil, no warm hue shift)', () => {
+    const s = M.look(1).filter, css = read('world-mood.css');
+    assert.ok(!/sepia/.test(s), 'no sepia');
+    assert.ok(!/hue-rotate\(-/.test(s), 'no shift toward orange');
+    assert.ok(!css.includes('rgba(52, 22, 12') && !css.includes('rgba(70, 38, 18') && !css.includes('#e7b48a'));
+});

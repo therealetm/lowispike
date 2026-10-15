@@ -36,7 +36,9 @@
     function look(level) {
         const x = Math.max(0, Math.min(1, +level || 0));
         if (!x) return { filter: 'saturate(1.08) brightness(1.04)', veil: 0, clear: 1 };
-        const f = 'saturate(' + (1 - 0.55 * x).toFixed(3) + ') sepia(' + (0.45 * x).toFixed(3) + ') hue-rotate(' + (-12 * x).toFixed(1) + 'deg) brightness(' + (1 - 0.3 * x).toFixed(3) + ') contrast(' + (1 + 0.1 * x).toFixed(3) + ')';
+        /* Oct 16 (E-man's screenshot: the world turned brown/beige on a stormy day): no sepia or warm hue shift any more. Stormy
+           stays in the brand's silvery dark blue; it only gets greyer, dimmer and a little colder. */
+        const f = 'saturate(' + (1 - 0.55 * x).toFixed(3) + ') hue-rotate(' + (6 * x).toFixed(1) + 'deg) brightness(' + (1 - 0.3 * x).toFixed(3) + ') contrast(' + (1 + 0.1 * x).toFixed(3) + ')';
         return { filter: f, veil: +(0.45 + 0.55 * x).toFixed(3), clear: 0 };
     }
     const STR = {

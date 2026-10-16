@@ -260,6 +260,8 @@
             title = L(n + ' is sleeping', n + ' schläft', n + ' duerme');
             sub = L('Your XP is safe', 'Deine XP sind sicher', 'Tus XP están a salvo');
             next = pick('open', 'moon', L('Say goodnight', 'Gute Nacht sagen', 'Dar las buenas noches'));
+            /* Oct 16: once you said goodnight in Misty's card, Today stops asking */
+            try { if (window.LowiMistyHub && window.LowiMistyHub.saidGoodnight()) { title = L(n + ' is fast asleep', n + ' schläft tief', n + ' duerme profundamente'); sub = L('Sweet dreams · your XP is safe', 'Süße Träume · deine XP sind sicher', 'Dulces sueños · tus XP están a salvo'); next = pick('open', 'moon', L('Visit ' + n, n + ' besuchen', 'Visitar a ' + n)); } } catch (e) { }
         }
         if (!next) {
             if (!day.meals) {
@@ -553,6 +555,9 @@
 
     function open(opts) {
         opts = opts || {};
+        /* Oct 16 (E-man: "this weird misty radiant hub ... nuke that"): the plain herb world is replaced by Misty's card
+           (misty-hub.js). Scan's capture and result views still use this layer. */
+        if (!opts.capture && !opts.embedded && window.LowiMistyHub && window.LowiMistyHub.open) { try { if (window.LowiMistyHub.open()) return; } catch (e) { } }
         ensure();
         paint();
         if (!opened) {
@@ -1926,6 +1931,7 @@
     /* every meal log (also plan meals and logs past the daily XP cap, which fire no reward) checks the macro bonus; once per day per goal via the ledger eventId */
     window.addEventListener('lowi:meal-logged', () => setTimeout(() => checkBonuses(false), 0));
     window.addEventListener('lowi:state', refresh);
+    window.addEventListener('lowi:goodnight', refresh);
     window.addEventListener('resize', refresh);
     D.addEventListener('visibilitychange', () => {
         if (D.hidden) stopPhoto();

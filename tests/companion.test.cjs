@@ -96,8 +96,10 @@ t('the forms sheet is reachable from the herb path and the wardrobe sheet', () =
 
 t('tapping Misty opens her evolution view with the same Misty as on Home (Oct 15 evening)', () => {
   const wh = fs.readFileSync(path.join(root, 'world-home.js'), 'utf8');
-  const om = wh.slice(wh.indexOf('function openMisty('), wh.indexOf('function openMisty(') + 400);
-  assert.ok(/LowiCompanion\.open\(\)/.test(om), 'world-home openMisty routes to the companion view first');
+  const om = wh.slice(wh.indexOf('function openMisty('), wh.indexOf('function openMisty(') + 900);
+  /* Oct 16: holding Misty opens her new card (misty-hub.js) first; the companion view is its Forms door and the fallback */
+  assert.ok(/LowiMistyHub\.open\(\)/.test(om), 'world-home openMisty opens Misty\'s card first');
+  assert.ok(/LowiCompanion\.open\(\)/.test(om), 'world-home openMisty still falls back to the companion view');
   assert.ok(/T\.plantHTML\([^;]*'hero', hp\)/.test(src), 'hero uses the same plantHTML hero render as Home');
   assert.ok(/'node', hp, \{ cfStage: i/.test(src), 'each of the six forms uses the same render code');
   assert.ok(/class="cf-bub"/.test(src) && /\.cf-bub\s*\{[^}]*border-radius: 50%/.test(css), 'same round glass bubble');

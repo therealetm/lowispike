@@ -667,8 +667,16 @@
     }
     function openMisty(tab) {
         st.sheetTab = tab || 'aura';
+        /* Oct 16 (E-man: "nuke that and redesign it"): holding Misty opens her one clear card (misty-hub.js); her forms,
+           collection and glow are doors inside it */
+        try { if (W.LowiMistyHub && W.LowiMistyHub.open && W.LowiMistyHub.open()) return true; } catch (e) { }
         /* Oct 15 evening: tapping Misty opens her evolution view (same Misty as here, her six forms, XP to the next one) */
         try { if (W.LowiCompanion && W.LowiCompanion.open && W.LowiCompanion.open()) return true; } catch (e) { }
+        return openDetails(st.sheetTab);
+    }
+    /* the aura / growth / discoveries sheet, opened from the Glow door in Misty's card */
+    function openDetails(tab) {
+        st.sheetTab = tab || 'aura';
         const R2 = W.LowiR2; if (!R2 || !R2.sheet) return false;
         const ex = D.getElementById('whMs'); if (ex) { repaintMisty(); return true; }
         R2.sheet(mistyHTML(st.sheetTab), { cls: 'wh-ms-ov' });
@@ -880,6 +888,6 @@
         setInterval(() => { tabs(); tick(); }, 700);
         tabs(); tick();
     }
-    W.LowiWorldHome = { pullOut, diveIn, settle, waterReset, openToday, openMisty, toggleZoom, zoomOutWhole, closeTop, heroTurn, state: st, auraId, syncX, rig };
+    W.LowiWorldHome = { pullOut, diveIn, settle, waterReset, openToday, openMisty, toggleZoom, zoomOutWhole, closeTop, openDetails, heroTurn, state: st, auraId, syncX, rig };
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 })();

@@ -1,0 +1,63 @@
+/* Oct 16: Misty's card (misty-hub.js). Dark liquid glass like the tab bar and the Daily Quest box, over the live world.
+   Text rule for the whole card: light text on dark glass, dark text on light/mint fills. Nothing is clipped: every line wraps. */
+html .r2-ov.mh-ov .r2-sh, html.wh-on .r2-ov.mh-ov:not(.full) .r2-sh { background: rgba(14, 20, 38, .80) !important; color: #fff; -webkit-backdrop-filter: blur(28px) saturate(185%); backdrop-filter: blur(28px) saturate(185%); border: .5px solid rgba(255, 255, 255, .14); }
+.mh { --a: #6ee7c8; --b: #64d2ff; --mh-ink: #fff; --mh-ink-2: rgba(235, 235, 245, .80); --mh-card: rgba(255, 255, 255, .07); --mh-rim: rgba(255, 255, 255, .14);
+    color: var(--mh-ink); font-family: var(--lg-font, -apple-system, system-ui, sans-serif); display: flex; flex-direction: column; gap: 12px; padding: 2px 0 6px; }
+.mh * { box-sizing: border-box; }
+.mh h2, .mh h3, .mh p { margin: 0; }
+.mh svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Misty herself: the same artwork as on Home, cloned live */
+.mh-head { display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 14px; align-items: center; padding-right: 40px; }
+.mh-art { position: relative; width: 104px; height: 104px; display: flex; align-items: center; justify-content: center; }
+.mh-glow { position: absolute; inset: 6px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--a) 45%, transparent), transparent 70%); }
+@media (prefers-reduced-motion: no-preference) { .mh-glow { animation: wh-breathe 4.5s ease-in-out infinite; } }
+.mh-art svg.tmg-plant, .mh-art svg { position: relative; width: 100px !important; height: 100px !important; stroke: none; fill: initial; stroke-width: initial; pointer-events: none; }
+.mh-art .lh-acc, .mh-art .lh-pot-fx, .mh-art .cw-pill { display: none !important; }
+.mh-id { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.mh-id h2 { font-size: 24px; font-weight: 700; letter-spacing: -.01em; line-height: 1.15; overflow-wrap: anywhere; }
+.mh-lv { font-size: 13.5px; font-weight: 600; color: var(--a); }
+.mh-st { display: flex; flex-direction: column; gap: 1px; font-size: 13px; line-height: 1.3; color: var(--mh-ink-2); }
+.mh-st b { color: var(--mh-ink); font-size: 14.5px; font-weight: 600; }
+
+/* her words, a real speech bubble with the tail on her, wrapping instead of being cut off */
+.mh-say { position: relative; padding: 11px 14px; border-radius: 18px; background: rgba(255, 255, 255, .10); border: .5px solid var(--mh-rim); font-size: 15px; line-height: 1.38; color: var(--mh-ink); white-space: normal; overflow-wrap: anywhere; box-shadow: var(--lg-edge, none); }
+.mh-say::before { content: ""; position: absolute; left: 44px; top: -7px; width: 12px; height: 12px; background: inherit; border-left: .5px solid var(--mh-rim); border-top: .5px solid var(--mh-rim); transform: rotate(45deg); }
+.mh-say[hidden] { display: none; }
+
+.mh-card { padding: 14px 16px; border-radius: 20px; background: var(--mh-card); border: .5px solid var(--mh-rim); box-shadow: var(--lg-edge, none); }
+.mh-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.mh-row b { font-size: 15.5px; font-weight: 600; }
+.mh-row .num { font-size: 15px; font-weight: 700; color: var(--a); font-variant-numeric: tabular-nums; }
+.mh-bar { display: block; height: 8px; margin: 10px 0 6px; border-radius: 4px; background: rgba(255, 255, 255, .14); overflow: hidden; }
+.mh-bar > i { display: block; height: 100%; min-width: 4px; border-radius: inherit; background: linear-gradient(90deg, var(--a), var(--b)); }
+.mh-xp small { display: block; font-size: 13px; color: var(--mh-ink-2); }
+
+.mh-mood h3 { font-size: 15.5px; font-weight: 600; margin-bottom: 10px; }
+.mh-moods { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.mh-moods button { min-height: 44px; padding: 6px 4px; border-radius: 14px; border: .5px solid var(--mh-rim); background: rgba(255, 255, 255, .08); color: var(--mh-ink); font: inherit; font-size: 14px; font-weight: 600; line-height: 1.15; cursor: pointer; overflow-wrap: anywhere; }
+.mh-moods button[aria-pressed="true"] { background: var(--a); border-color: transparent; color: #06201a; }
+
+/* the one filled button: mint fill, dark ink (like See my fast and Scan) */
+.mh-pri { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 50px; padding: 10px 16px; border: 0; border-radius: 16px; background: linear-gradient(135deg, var(--a), var(--b)); color: #06201a; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; }
+.mh-pri[aria-pressed="true"] { background: var(--mh-card); border: .5px solid var(--mh-rim); color: var(--mh-ink); }
+
+.mh-doors { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.mh-doors button { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-height: 96px; padding: 12px; border-radius: 18px; border: .5px solid var(--mh-rim); background: var(--mh-card); box-shadow: var(--lg-edge, none); color: var(--mh-ink); font: inherit; text-align: left; cursor: pointer; }
+.mh-doors svg { color: var(--a); margin-bottom: 4px; }
+.mh-doors b { font-size: 14.5px; font-weight: 600; line-height: 1.2; }
+.mh-doors small { font-size: 12px; line-height: 1.25; color: var(--mh-ink-2); overflow-wrap: anywhere; }
+.mh button:focus-visible { outline: 3px solid var(--b); outline-offset: 2px; }
+.mh button:active { transform: scale(.98); }
+
+/* Misty's nudge on Home: her normal speech bubble, tappable (opens Today) */
+.wh-hint.mh-nudge { pointer-events: none; cursor: pointer; border: 1.5px solid var(--wh-glass-rim, rgba(255, 255, 255, .3)); font: inherit; font-size: 13.5px; font-weight: 600; line-height: 1.3; color: var(--wh-glass-ink, #fff); z-index: 6; }
+.wh-hint.mh-nudge.on { pointer-events: auto; }
+html.wh-today-open .wh-hint.mh-nudge { opacity: 0; pointer-events: none; }
+/* the row in Today it points at */
+.mh-point { box-shadow: 0 0 0 2px var(--wh-aura-a, #6ee7c8), 0 0 18px color-mix(in srgb, var(--wh-aura-a, #6ee7c8) 55%, transparent) !important; border-radius: 14px; transition: box-shadow .3s ease; }
+
+/* ---------- readable text everywhere (same request, item 3) ----------
+   Rule: dark ink on light or mint fills, light ink on dark glass. */
+/* "Say goodnight" and every other next-step button in Today: the label span inherited the grey status text */
+html.spirit-app #spHome .sp-next, html.spirit-app #spHome .sp-next span { color: #06201a; }

@@ -403,6 +403,31 @@ export function createWorld(THREE, canvas, opts) {
         /* tissue haze: a few very large, very faint veils of deep blue with a breath of violet */
         const haze = [];
         for (let i = 0; i < 6; i++) { const h = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: i % 3 === 2 ? '#3d2c70' : '#1f3d70', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending })); const a = i * 1.1; h.position.set(Math.cos(a) * 260, (rnd() - 0.5) * 160, Math.sin(a) * 260); const sc = 260 + rnd() * 200; h.scale.set(sc, sc, 1); g.add(h); haze.push(h); }
+        /* Oct 16, 2026 (E-man, voice note on the outer world: "there's a transparent cylinder ... it looks like there's a line cutting
+           through it. I would rather have it be like light frequency"). The bloodstream's tube no longer reaches out here (see
+           cosmosStep); in its place our bubble carries the flow as light: a few soft strands of light frequency, waves of cyan, Misty
+           blue and violet that swell in the middle and fade to nothing at both ends, well inside our membrane. Camera-facing ribbons
+           (no surface, no hard edge, no depth write), additive, gently travelling; reduced motion holds them still. */
+        const FREQ_V = 'uniform float uT; uniform float uLen; uniform float uAmp; uniform float uK; uniform float uSpd; uniform float uPh; uniform float uW; attribute float aU; attribute float aSide; varying float vU; varying float vS;'
+            + ' vec3 cen(float u){ float e = sin(3.14159 * clamp(u, 0.0, 1.0)); float a = uAmp * e * (0.8 + 0.2 * sin(uT * 0.5 + uPh)); float w = uK * u * 6.28318 - uT * uSpd + uPh; return vec3((u - 0.5) * uLen, a * sin(w), a * 0.55 * cos(w * 0.5 + uPh)); }'
+            + ' void main(){ vec4 mp = modelViewMatrix * vec4(cen(aU), 1.0); vec4 mq = modelViewMatrix * vec4(cen(aU + 0.004), 1.0); vec2 d = mq.xy - mp.xy; vec2 tg = length(d) > 1e-6 ? normalize(d) : vec2(1.0, 0.0);'
+            + ' float e = sin(3.14159 * aU); mp.xy += vec2(-tg.y, tg.x) * aSide * uW * (0.4 + 0.6 * e); vU = aU; vS = aSide; gl_Position = projectionMatrix * mp; }';
+        const FREQ_F = 'uniform float uT; uniform float uO; uniform float uPh; uniform vec3 uA; uniform vec3 uB; varying float vU; varying float vS;'
+            + ' void main(){ float e = pow(sin(3.14159 * vU), 1.6); float core = exp(-vS * vS * 4.0); float pulse = 0.65 + 0.35 * sin(vU * 16.0 - uT * 1.3 + uPh);'
+            + ' vec3 c = mix(uA, uB, vU) * (0.55 + 0.75 * core * core); gl_FragColor = vec4(c, core * e * pulse * uO); }';
+        const FREQ_SEG = small ? 120 : 180, fU = new Float32Array((FREQ_SEG + 1) * 2), fS = new Float32Array((FREQ_SEG + 1) * 2), fIdx = [];
+        for (let k = 0; k <= FREQ_SEG; k++) { fU[k * 2] = fU[k * 2 + 1] = k / FREQ_SEG; fS[k * 2] = -1; fS[k * 2 + 1] = 1; if (k < FREQ_SEG) { const a = k * 2; fIdx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } }
+        const freqGeo = new THREE.BufferGeometry();
+        freqGeo.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array((FREQ_SEG + 1) * 2 * 3), 3));
+        freqGeo.setAttribute('aU', new THREE.Float32BufferAttribute(fU, 1)); freqGeo.setAttribute('aSide', new THREE.Float32BufferAttribute(fS, 1)); freqGeo.setIndex(fIdx);
+        const freq = new THREE.Group(); freq.name = 'light-frequency';
+        [[1.6, 7.5, 0.55, 0.0, 1.5, 'cyan', 'misty'], [2.3, 5.5, -0.42, 1.9, 1.2, 'misty', 'purple'], [3.1, 4.0, 0.7, 3.7, 1.0, 'teal', 'cyan'], [1.2, 9.5, -0.3, 5.1, 1.8, 'blue', 'purple']].slice(0, small ? 3 : 4).forEach(s => {
+            const m = new THREE.Mesh(freqGeo, new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+                uniforms: { uT: { value: 0 }, uO: { value: 0 }, uLen: { value: COSMOS.R * 1.5 }, uK: { value: s[0] }, uAmp: { value: s[1] }, uSpd: { value: s[2] }, uPh: { value: s[3] }, uW: { value: s[4] }, uA: { value: SPK[s[5]].clone() }, uB: { value: SPK[s[6]].clone() } },
+                vertexShader: FREQ_V, fragmentShader: FREQ_F }));
+            m.frustumCulled = false; m.rotation.x = s[3]; freq.add(m);
+        });
+        g.add(freq);
         scene.add(g);
         /* a few huge cell-spheres right in front of the camera, cut off by the screen edges (deepest parallax), placed in screen space */
         const near = new THREE.Group(); near.visible = false; near.name = 'cosmos-near';
@@ -418,7 +443,7 @@ export function createWorld(THREE, canvas, opts) {
             return gi;
         });
         scene.add(near);
-        return { g, mine, mineGlow, others, cells, nodes, web, threads, beads, sparkPts, sparks, paths, motes, stars, farCells, haze, near, giants, S, tissue: new THREE.Color('#050f2a'), tmp: new THREE.Color() };
+        return { g, mine, mineGlow, others, cells, nodes, web, threads, beads, sparkPts, sparks, paths, motes, stars, farCells, haze, freq, near, giants, S, tissue: new THREE.Color('#050f2a'), tmp: new THREE.Color() };
     }
     /* 0 inside the World Map, 1 out in the spirit world; the walls and the fog give way as the camera leaves our bubble */
     function cosmosStep(t, dt) {
@@ -431,7 +456,10 @@ export function createWorld(THREE, canvas, opts) {
         if (k !== cosmosK) {
             cosmosK = k;
             const want = k > 0.001 ? 1600 : 120; if (want !== farNow) { farNow = want; camera.far = want; camera.updateProjectionMatrix(); }
-            const wo = 1 - walls * 0.97; if (wallMat.transparent !== (wo < 0.999)) { wallMat.transparent = wo < 0.999; wallMat.needsUpdate = true; } wallMat.opacity = wo; wall.visible = wo > 0.02;
+            /* the tube of the bloodstream fades out completely past the World Map (it used to stay at 3%, a faint glass cylinder that
+               stuck out of our bubble and, still writing depth, cut a straight-edged slice out of the bubbles behind it); while it fades
+               it no longer writes depth, so it can never punch a hole in a membrane */
+            const wo = 1 - walls; if (wallMat.transparent !== (wo < 0.999)) { wallMat.transparent = wo < 0.999; wallMat.depthWrite = !wallMat.transparent; wallMat.needsUpdate = true; } wallMat.opacity = wo; wall.visible = wo > 0.02;
             shafts.visible = walls < 0.9;
         }
         C.near.visible = C.g.visible && nearK > 0.01;
@@ -456,6 +484,9 @@ export function createWorld(THREE, canvas, opts) {
         }
         C.motes.material.uniforms.uO.value = mem * 0.85; C.stars.material.uniforms.uO.value = far * 0.8; C.farCells.material.uniforms.uO.value = far * 0.7 * calm;
         C.haze.forEach(h => { h.material.opacity = far * 0.05; });
+        /* the light frequency takes over from the tube as it fades */
+        const fo = smoothC(0.3, 1, walls) * 0.6 * calm;
+        C.freq.visible = fo > 0.005; C.freq.children.forEach(m => { m.material.uniforms.uO.value = fo; m.material.uniforms.uT.value = tt; });
         C.g.rotation.y += dt * 0.004;
         if (C.near.visible) {
             /* screen space: they come in from right past the camera while it pulls out (and go back out when it dives in), then sway with

@@ -170,6 +170,8 @@ export function createWorld(THREE, canvas, opts) {
     /* ---------- camera rig ---------- */
     const rig = { yaw: 0.35, pitch: 0.12, dist: 6.5, vy: 0, vp: 0, gy: 0, gp: 0, gyT: 0, gpT: 0, target: new THREE.Vector3(), mode: 'full', minD: 2.4, maxD: 13, pMax: 1.2, homeDist: 3.2, idle: 0, fly: null };
     let focus = null, W = 1, H = 1, glow = 0.55, glowT = 0.55, tint = null, tintAmt = 0, tintT = 0;
+    /* Oct 16: tend 0..1 = how much Misty's trip today has energised the cells (LowiSun.tended): their glow grows, rings and cores brighten */
+    let tend = 0, tendT = 0; const tendWhite = new THREE.Color('#ffffff');
     const tmpM = new THREE.Matrix4(), tmpQ = new THREE.Quaternion(), tmpE = new THREE.Euler(), tmpS = new THREE.Vector3(), tmpP = new THREE.Vector3(), baseBg = new THREE.Color(PAL.dark.bg), curBg = new THREE.Color();
 
     function applyView() {
@@ -200,6 +202,8 @@ export function createWorld(THREE, canvas, opts) {
     function zoom(f) { rig.dist = Math.min(rig.maxD, Math.max(rig.minD, rig.dist * f)); rig.idle = 0; }
     function setGyro(y, p) { rig.gyT = y; rig.gpT = p; }
     function setGlow(g) { glowT = Math.max(0, Math.min(1, g)); }
+    function setTend(k) { tendT = Math.max(0, Math.min(1, +k || 0)); }
+    function beaconLook() { const b = Object.values(beacons)[0]; return b ? { tend: +tend.toFixed(3), glowScale: +b.glow.scale.x.toFixed(3), glowOpacity: +b.glow.material.opacity.toFixed(3), ringOpacity: +b.ring.material.opacity.toFixed(3), ringScale: +b.ring.scale.x.toFixed(3), core: '#' + b.core.material.color.getHexString() } : null; }
     function setTheme(t) {
         theme = t === 'light' ? 'light' : 'dark'; const P = PAL[theme];
         baseBg.set(P.bg); scene.fog.density = P.fog; hemi.color.set(P.hemiSky); hemi.groundColor.set(P.hemiGround); key.color.set(P.key);
@@ -274,7 +278,12 @@ export function createWorld(THREE, canvas, opts) {
         halo.material.opacity = (theme === 'light' ? 0.16 : 0.24) + glow * 0.18;
         mitos.forEach(m => { const u = m.userData; const a = u.a + t * u.s; m.position.set(Math.cos(a) * u.r, u.y + Math.sin(t * 0.9 + u.a) * 0.06, Math.sin(a) * u.r); m.rotation.set(a, a * 0.7, 0.4); });
         vesicles.forEach(m => { const u = m.userData; const a = u.a - t * u.s; m.position.set(Math.cos(a) * u.r, u.y + Math.sin(t + u.a) * 0.05, Math.sin(a) * u.r); });
-        Object.values(beacons).forEach((b, i) => { b.ring.rotation.x = t * 0.6 + i; b.ring.rotation.y = t * 0.4; const s = 2.2 + Math.sin(t * 1.6 + i) * 0.25; b.glow.scale.set(s, s, 1); });
+        tend += (tendT - tend) * Math.min(1, dt * 1.2);
+        Object.values(beacons).forEach((b, i) => {
+            b.ring.rotation.x = t * 0.6 + i; b.ring.rotation.y = t * 0.4; const s = (2.2 + Math.sin(t * 1.6 + i) * 0.25) * (1 + 0.45 * tend); b.glow.scale.set(s, s, 1);
+            b.glow.material.opacity = 0.85 + 0.15 * tend; b.ring.material.opacity = 0.7 + 0.3 * tend; const rs = 1 + 0.3 * tend; b.ring.scale.set(rs, rs, rs);
+            b.core.material.color.copy(b.hue).lerp(tendWhite, 0.4 * tend);
+        });
         microbes.forEach(m => { const u = m.userData; m.position.copy(u.base).add(tmpP.set(Math.sin(t * 0.8 + u.ph) * 0.2, Math.sin(t * 1.3 + u.ph) * 0.18, 0)); m.lookAt(camera.position); });
         /* place tint */
         tintAmt += (tintT - tintAmt) * Math.min(1, dt * 2.5);
@@ -298,5 +307,5 @@ export function createWorld(THREE, canvas, opts) {
     function renderOnce() { step(0.016); renderer.render(scene, camera); }
     function dispose() { stop(); renderer.dispose(); }
     setTheme(opts.theme || 'dark');
-    return { scene, camera, hub, regions, onFrame, memU, resize, setFocus, setMode, drag, release, zoom, setGyro, setGlow, setTheme, flyTo, pick, project, start, stop, fps, renderOnce, dispose, get running() { return running; }, get dpr() { return dpr; }, rig, renderer };
+    return { scene, camera, hub, regions, onFrame, memU, resize, setFocus, setMode, drag, release, zoom, setGyro, setGlow, setTend, beaconLook, setTheme, flyTo, pick, project, start, stop, fps, renderOnce, dispose, get running() { return running; }, get dpr() { return dpr; }, rig, renderer };
 }

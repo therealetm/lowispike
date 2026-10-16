@@ -104,7 +104,7 @@
         D.head.appendChild(l);
     }
 
-    const api = Object.assign({}, core, { ready: false, state: 'idle', why: '', fps: () => (world ? world.fps() : 0), open, close, flyTo: id => { if (flyHome(id)) return; open(); setTimeout(() => go(id), 50); }, setGlow: g => { glowOverride = g; if (world) world.setGlow(g); }, places: () => PLACES.slice(),
+    const api = Object.assign({}, core, { ready: false, state: 'idle', why: '', fps: () => (world ? world.fps() : 0), look: () => (world && world.beaconLook ? world.beaconLook() : null), open, close, flyTo: id => { if (flyHome(id)) return; open(); setTimeout(() => go(id), 50); }, setGlow: g => { glowOverride = g; if (world) world.setGlow(g); }, places: () => PLACES.slice(),
         THREE: null, scene: null, camera: null, renderer: null, hub: null, regions: [],
         isOpen: () => !!full,
         /* One world (Oct 15): Home's own VR / motion button drives the same gyro as the full window */
@@ -153,6 +153,8 @@
         if (!world) return;
         if (glowOverride != null) { world.setGlow(glowOverride); return; }
         try { const v = W.LowiSun && W.LowiSun.live && W.LowiSun.live(); world.setGlow(v ? 0.35 + 0.65 * (v.ratio || 0) : 0.55); } catch (e) { world.setGlow(0.55); }
+        /* Oct 16: an energised trip leaves the world's cells brighter for the rest of the day */
+        try { if (world.setTend) world.setTend(W.LowiSun && W.LowiSun.tendedNow ? W.LowiSun.tendedNow() : 0); } catch (e) { }
     }
 
     /* ---------- pointer: drag, pinch, tap ---------- */

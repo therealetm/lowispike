@@ -120,11 +120,12 @@ test('countdown: "Out exploring · back in 42 min" in her empty bubble, "Too tir
   assert.doesNotMatch(sm, /In the garden|in the garden/);
 });
 
-test('Misty\'s face: smile only when full of energy; neutral, sleepy or sad otherwise (page and 3D sprite)', () => {
+test('Misty\'s face: content when full of energy; neutral, sleepy or sad otherwise (page and 3D sprite)', () => {
   const herb = read('herb-tamagotchi.js'), hcss = read('herb-tamagotchi.css'), css = read('world-home.css'), sm = read('sun-meter.js'), wh = read('world-home.js');
   assert.match(herb, /<path class="lh-flat"/); assert.match(herb, /<path class="lh-frown"/);
-  assert.match(hcss, /\.lh-flat,\.lh-frown\{display:none\}/);
-  assert.match(css, /#spHome:is\(\[data-misty="ok"\], \[data-misty="tired"\], \[data-misty="weak"\]\) #spBubble \.lh-smile/);
+  assert.match(hcss, /\.lh-flat,\.lh-calm,\.lh-frown\{display:none\}/);
+  assert.match(herb, /<path class="lh-calm"/); assert.match(hcss, /\.lh-calm/);
+  assert.match(css, /#spHome\[data-misty="thriving"\] #spBubble \.lh-calm[^{]*\{ display: inline; \}/);
   assert.match(css, /#spHome\[data-misty="weak"\] #spBubble \.lh-frown/);
   assert.match(css, /#spHome:is\(\[data-misty="tired"\], \[data-misty="weak"\]\) #spBubble \.lh-eyes[^{]*\{ transform: scaleY\(\.42\); animation: none; \}/);
   assert.match(sm, /if \(home && home\.dataset\.misty !== en\.tier\) home\.dataset\.misty = en\.tier;/);
@@ -136,4 +137,30 @@ test('body trips wait while she is too tired; exploring progress still counts', 
   assert.match(bt, /if \(Object\.keys\(got\)\.length && canStart\(st, now\) && !tooTired\(\)\)/);
   assert.match(bt, /if \(tooTired\(\)\) \{ try \{ if \(W\.LowiPraise && LowiPraise\.say\) LowiPraise\.say\(tr\('tired'\)\); \} catch \(e\) \{\} return false; \}/);
   assert.match(bt, /else if \(tooTired\(\)\) action = '<p class="bt-note">'/);
+});
+
+test('regression (E-man): the smile is hidden in every energy tier, and no tier rule ever shows it', () => {
+  const css = read('world-home.css'), sm = read('sun-meter.js');
+  const tiers = [...new Set([...sm.matchAll(/'(thriving|ok|tired|weak)'/g)].map(m => m[1]))].sort();
+  assert.deepEqual(tiers, ['ok', 'thriving', 'tired', 'weak'], 'energy() has exactly these tiers');
+  const rules = [...css.matchAll(/([^{}]+)\{([^}]*)\}/g)].map(m => ({sel: m[1], body: m[2]}));
+  const hide = rules.filter(r => /\.lh-smile/.test(r.sel) && /display:\s*none/.test(r.body) && /data-misty/.test(r.sel));
+  for (const t of tiers) assert.ok(hide.some(r => r.sel.includes('[data-misty="' + t + '"]')), 'smile hidden for tier ' + t);
+  const show = rules.filter(r => /\.lh-smile/.test(r.sel) && /data-misty/.test(r.sel) && !/display:\s*none/.test(r.body));
+  assert.deepEqual(show.map(r => r.sel.trim()), [], 'no energy-tier rule shows or restyles the smile');
+  const herb = read('herb-tamagotchi.js');
+  for (const c of ['lh-flat', 'lh-calm', 'lh-frown']) assert.match(herb, new RegExp('class="' + c + '"'), c + ' replaces the smile');
+});
+
+test('an energised trip visibly energises the world cells: grows over the hour and stays for the day', () => {
+  const start = now - 30 * 60000;
+  assert.equal(SUN.tended(null, now), 0);
+  assert.equal(SUN.tended({start, vigor: 'thriving'}, now), 0.5, 'half way through the trip');
+  assert.equal(SUN.tended({start, vigor: 'thriving'}, now + 3 * 36e5), 1, 'stays energised after she is back');
+  assert.equal(SUN.tended({start, vigor: 'thriving', got: true}, now), 1);
+  assert.equal(SUN.tended({start, vigor: 'ok', got: true}, now), 0.5, 'an okay trip helps half as much');
+  const sc = read('body-world-3d-scene.js'), bw = read('body-world-3d.js');
+  assert.match(sc, /const s = \(2\.2 \+ Math\.sin\(t \* 1\.6 \+ i\) \* 0\.25\) \* \(1 \+ 0\.45 \* tend\)/);
+  assert.match(sc, /b\.core\.material\.color\.copy\(b\.hue\)\.lerp\(tendWhite, 0\.4 \* tend\)/);
+  assert.match(bw, /world\.setTend\(W\.LowiSun && W\.LowiSun\.tendedNow \? W\.LowiSun\.tendedNow\(\) : 0\)/);
 });

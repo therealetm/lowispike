@@ -129,7 +129,15 @@
         if (tier === 'thriving') t.item2 = pickItem(key + ':2', (owned || []).concat([item]));
         return t;
     }
-    const core = { GOAL, AWAY_MS, BONUS, PTS, CAP, ITEMS, ENERGY, classify, points, model, pickItem, fmtLeft, fmtBack, dayKey, verdict, energy, mayDepart, tripFinds, makeTrip };
+    /* how much today's trip has energised the world's cells, 0..1: grows over the trip, stays for the rest of the day.
+       Full of energy when she left: 1, okay: .5. */
+    function tended(trip, now) {
+        if (!trip || !(+trip.start > 0)) return 0;
+        const mult = trip.vigor === 'thriving' ? 1 : trip.vigor === 'ok' ? 0.5 : 0.25;
+        const prog = trip.got ? 1 : Math.max(0, Math.min(1, ((+now || Date.now()) - trip.start) / AWAY_MS));
+        return +(mult * prog).toFixed(3);
+    }
+    const core = { GOAL, AWAY_MS, BONUS, PTS, CAP, ITEMS, ENERGY, tended, classify, points, model, pickItem, fmtLeft, fmtBack, dayKey, verdict, energy, mayDepart, tripFinds, makeTrip };
     if (!D) {
         if (typeof module !== 'undefined' && module.exports) module.exports = core;
         return;
@@ -395,6 +403,7 @@
     }
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 
-    W.LowiSun = Object.assign({}, core, { render, live, energyNow, info: infoSheet, collect, depart });
+    const tendedNow = () => { const v = live(); return tended(v.trip, Date.now()); };
+    W.LowiSun = Object.assign({}, core, { tendedNow, render, live, energyNow, info: infoSheet, collect, depart });
     if (typeof module !== 'undefined' && module.exports) module.exports = W.LowiSun;
 })();

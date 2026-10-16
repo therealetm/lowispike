@@ -414,7 +414,7 @@
         const c = s.cloneNode(true);
         /* an <img> has no page CSS: keep only the face parts the page shows right now (smile / neutral / sad, open or sleepy eyes) */
         try {
-            const F = '.lh-smile,.lh-flat,.lh-frown,.lh-eyes,.lh-sleep-eyes,.lh-dizzy-eyes,.lh-ooh', os = [...s.querySelectorAll(F)], cs = [...c.querySelectorAll(F)];
+            const F = '.lh-smile,.lh-flat,.lh-calm,.lh-frown,.lh-eyes,.lh-sleep-eyes,.lh-dizzy-eyes,.lh-ooh', os = [...s.querySelectorAll(F)], cs = [...c.querySelectorAll(F)];
             os.forEach((o, i) => {
                 if (!cs[i]) return;
                 const cs0 = getComputedStyle(o);

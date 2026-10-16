@@ -63,7 +63,7 @@ test('copy: three languages, no health claims', () => {
 test('Sound opens the string pad first; it follows volume and the app sound switch, plays only from a touch', () => {
     const ph = wa.slice(wa.indexOf('function panelHtml'), wa.indexOf('function sfxMuted'));
     assert.ok(ph.indexOf('data-wa-strings') > 0 && ph.indexOf('data-wa-strings') < ph.indexOf('data-wa="on"'), 'strings above the background switch');
-    assert.ok(wa.includes('W.LowiSoundStrings.mount(sp, { instrument, idle: instrumentIdle, lang })'));
+    assert.ok(wa.includes('W.LowiSoundStrings.mount(sp, { instrument, idle: instrumentIdle, lang, tune: () => Object.assign({}, tune), setTune, resetTune, wake, ambientOn: () => st.on })'));
     assert.ok(wa.includes('W.LowiSoundStrings.unmount('), 'closing the panel stops the strings');
     assert.ok(/function instrument\(\) \{\s*if \(sfxMuted\(\)\) return \{ muted: true/.test(wa), 'app sounds off: the pad stays silent');
     assert.ok(wa.includes('C.masterGain(prefs.vol) * 3'), 'follows the volume slider');

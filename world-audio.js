@@ -7,6 +7,12 @@
      and a slow low bowl, silent until the shared game-world mood (world-mood.js, LowiWorldMood.level) turns stormy, then it
      fades in slowly and the light layer dips. Capped master, limiter at 3 kHz low-pass, no beeps, nothing piercing.
    - The panel (Sound on Home, Klang in the world) opens with the glass string pad (sound-strings.js) on top.
+   - Oct 16 (Eman: "I'm playing with the strings ... I'm not actually controlling what the background sound is going to be ...
+     and then it automatically just resets it"): the strings now set the TUNE of the ongoing soundscape (world-audio-core.js:
+     key from the string, brightness/level from the height, pitch shift from sliding along a string). setTune() glides the
+     running pads, filter and level to it, and the bowls strike in that key. It is stored in localStorage (lowi.soundTune) and
+     nothing resets it: the old 22-second chord walk is gone, start/stop/visibility rebuild the sound from the stored tune, and
+     the stormy-world layer only fades in on top (it never touches the tune). "Reset sound" in the pad is the only way back.
    - Warp: window 'lowi:world-warp' {phase:'start'|'dive'|'arrive'|'cancel'} from body-world-regions.js (the real glide/dive/
      settle), plus the cell ride's 'lowi:ride-start'/'lowi:ride-arrive'. One warp voice at a time, duplicate phases ignored.
    - Lifecycle: world closes -> fade out, sources stopped, context suspended. App hidden -> suspended. Reopening the world with a
@@ -28,6 +34,10 @@
     const tr = k => C.t(k, lang());
     let prefs = C.loadPrefs((() => { try { return localStorage.getItem(C.KEY); } catch (e) { return null; } })());
     function save() { try { localStorage.setItem(C.KEY, C.savePrefs(prefs)); } catch (e) { } }
+    /* the listener's tune (set by the strings, kept until Reset sound) */
+    let tune = C.loadTune((() => { try { return localStorage.getItem(C.TUNE_KEY); } catch (e) { return null; } })());
+    let tuneSaveT = 0;
+    function saveTune() { clearTimeout(tuneSaveT); tuneSaveT = 0; try { localStorage.setItem(C.TUNE_KEY, C.saveTune(tune)); } catch (e) { } }
 
     /* ---------- audio engine ---------- */
     const st = { on: false, idleT: 0, ctx: null, master: null, out: null, ambBus: null, fxBus: null, amb: null, warp: null, last: null, plays: { start: 0, dive: 0, arrive: 0, ride: 0 }, bowlT: 0, bowlN: 0, lowT: 0, lowN: 0, timer: 0, stopT: 0, playing: false };
@@ -87,6 +97,7 @@
             return [o, o2];
         });
         srcs.push(lg[0]); nodes.push(lp, g, lg[1]);
+        voices.lp = lp;
         return voices;
     }
     /* one singing-bowl strike (calm-sound-core.js bowl(): partials in detuned pairs that beat slowly, long ring) */
@@ -110,15 +121,16 @@
         const lightBus = ctx.createGain(); lightBus.gain.value = 1; lightBus.connect(st.ambBus);
         const uneasyBus = ctx.createGain(); uneasyBus.gain.value = 0; uneasyBus.connect(st.ambBus);
         nodes.push(lightBus, uneasyBus);
-        /* LIGHT: the soft pad, gliding to the next open chord every M.pad.hold seconds (schedule() moves it) */
-        const pad = padVoices(ctx, M.pad, C.chordAt(0), lightBus, now, srcs, nodes);
+        /* LIGHT: the soft pad, holding the open chord of the listener's key (only setTune() moves it) */
+        const padLvl = ctx.createGain(); padLvl.gain.value = C.padLevel(tune); padLvl.connect(lightBus); nodes.push(padLvl);
+        const pad = padVoices(ctx, Object.assign({}, M.pad, { lp: C.padLp(tune) }), C.padChord(tune), padLvl, now, srcs, nodes);
         const bowlBus = ctx.createGain(); bowlBus.gain.value = M.bowl.gain;
         const blp = ctx.createBiquadFilter(); blp.type = 'lowpass'; blp.frequency.value = M.bowl.lp; bowlBus.connect(blp); blp.connect(lightBus); nodes.push(bowlBus, blp);
         /* UNEASY: a deeper, darker pad and a slow low bowl. Silent until the game world turns stormy */
-        padVoices(ctx, U.pad, U.pad.notes, uneasyBus, now, srcs, nodes);
+        const deep = padVoices(ctx, U.pad, C.uneasyNotes(tune), uneasyBus, now, srcs, nodes);
         const lowBus = ctx.createGain(); lowBus.gain.value = U.bowl.gain;
         const llp = ctx.createBiquadFilter(); llp.type = 'lowpass'; llp.frequency.value = U.bowl.lp; lowBus.connect(llp); llp.connect(uneasyBus); nodes.push(lowBus, llp);
-        st.amb = { srcs, nodes, pad, chord: 0, t0: now, bowlBus, lowBus, lightBus, uneasyBus, level: -1 };
+        st.amb = { srcs, nodes, pad, deep, padLvl, t0: now, bowlBus, lowBus, lightBus, uneasyBus, level: -1 };
         st.bowlT = now + 2.5; st.bowlN = 0; st.lowT = now + 6; st.lowN = 0;
         setMood(true);
         clearInterval(st.timer); st.timer = setInterval(schedule, 250); schedule();
@@ -131,6 +143,31 @@
         ramp(a.uneasyBus.gain, lv * C.UNEASY.gain, tc);
         ramp(a.lightBus.gain, 1 - (1 - C.MIX.lightDuck) * lv, tc);
     }
+    /* glide the running sound to the tune (his changes follow the finger smoothly and then hold) */
+    function applyTune(tc) {
+        const a = st.amb, ctx = st.ctx; if (!a || !ctx) return;
+        const T = C.TUNE, g = tc == null ? T.glide : tc, ch = C.padChord(tune), dn = C.uneasyNotes(tune);
+        a.pad.forEach((v, i) => v.forEach(o => ramp(o.frequency, ch[i] || ch[0], g)));
+        a.deep.forEach((v, i) => v.forEach(o => ramp(o.frequency, dn[i] || dn[0], g)));
+        ramp(a.pad.lp.frequency, C.padLp(tune), tc == null ? T.filterGlide : tc);
+        ramp(a.padLvl.gain, C.padLevel(tune), tc == null ? T.filterGlide : tc);
+    }
+    function emitTune() { try { W.dispatchEvent(new CustomEvent('lowi:sound-tune', { detail: Object.assign({}, tune) })); } catch (e) { } }
+    /* the string pad calls this while you play: the change is heard at once and stored (debounced while the finger moves) */
+    function setTune(patch, commit) {
+        tune = C.tuneFrom(tune, patch || {});
+        applyTune();
+        if (commit) saveTune(); else { clearTimeout(tuneSaveT); tuneSaveT = setTimeout(saveTune, 300); }
+        emitTune();
+        return Object.assign({}, tune);
+    }
+    function resetTune() {
+        tune = C.tuneFrom(C.TUNE_DEFAULTS, {});
+        applyTune(0.6); saveTune(); emitTune();
+        return Object.assign({}, tune);
+    }
+    /* the first string touch starts the background sound (inside that touch, iOS), unless he switched it off himself */
+    function wake() { if (!st.on && !st.userOff && !sfxMuted() && isOpen()) setOn(true); }
     function bowlsDue(B, key, bus, until) {
         const ctx = st.ctx;
         if (st[key + 'T'] < ctx.currentTime) st[key + 'T'] = ctx.currentTime + 0.3;
@@ -144,13 +181,11 @@
         const ctx = st.ctx, a = st.amb; if (!ctx || !a || ctx.state !== 'running') return;
         setMood(false);
         const until = ctx.currentTime + 0.8;
-        /* the pad glides to the next chord (slow portamento, no new attack) */
-        const k = Math.floor((ctx.currentTime - a.t0) / C.MIX.pad.hold);
-        if (k !== a.chord) { a.chord = k; const ch = C.chordAt((ctx.currentTime - a.t0)); a.pad.forEach((v, i) => v.forEach(o => ramp(o.frequency, ch[i] || ch[0], C.MIX.pad.glide))); }
-        bowlsDue(C.MIX.bowl, 'bowl', a.bowlBus, until);
+        /* the pad holds the listener's chord: nothing here retunes it. The bowls strike in his key */
+        bowlsDue(Object.assign({}, C.MIX.bowl, { notes: C.bowlNotes(tune) }), 'bowl', a.bowlBus, until);
         /* the low bowl only while the deep layer is audible */
         if ((a.level || 0) <= 0.01) { st.lowT = until; return; }
-        bowlsDue(C.UNEASY.bowl, 'low', a.lowBus, until);
+        bowlsDue(Object.assign({}, C.UNEASY.bowl, { notes: C.lowBowlNotes(tune) }), 'low', a.lowBus, until);
     }
     function stopAmbient(fade) {
         clearInterval(st.timer); st.timer = 0;
@@ -305,7 +340,7 @@
         p.addEventListener('click', e => {
             e.stopPropagation();
             const b = e.target.closest('[data-wa]'); if (!b || b.tagName === 'INPUT') return;
-            if (b.dataset.wa === 'on') setOn(!st.on);
+            if (b.dataset.wa === 'on') { st.userOff = st.on; setOn(!st.on); }
             else if (b.dataset.wa === 'x') { togglePanel(false); const bt = host.querySelector('.wa-btn'); bt && bt.focus && bt.focus({ preventScroll: true }); }
             else if (b.dataset.wa === 'warp') { prefs.warp = !prefs.warp; save(); if (!prefs.warp) killWarp(0.2); paint(); }
         });
@@ -314,7 +349,7 @@
         r.addEventListener('change', save);
         host.appendChild(p); paint();
         const sp = p.querySelector('[data-wa-strings]');
-        if (W.LowiSoundStrings && sp) { try { W.LowiSoundStrings.mount(sp, { instrument, idle: instrumentIdle, lang }); } catch (e) { sp.remove(); } }
+        if (W.LowiSoundStrings && sp) { try { W.LowiSoundStrings.mount(sp, { instrument, idle: instrumentIdle, lang, tune: () => Object.assign({}, tune), setTune, resetTune, wake, ambientOn: () => st.on }); } catch (e) { sp.remove(); } }
         else if (sp) sp.remove();
         const sw = p.querySelector('[data-wa=x]') || p.querySelector('[data-wa=on]'); sw && sw.focus && sw.focus({ preventScroll: true });
     }
@@ -371,7 +406,7 @@
         wasPlay = audible() && !!st.amb;
         paint();
     });
-    W.addEventListener('pagehide', () => { if (st.ctx) { stopAmbient(0); try { st.ctx.close(); } catch (e) { } st.ctx = null; st.master = st.ambBus = st.fxBus = null; } });
+    W.addEventListener('pagehide', () => { if (tuneSaveT) saveTune(); if (st.ctx) { stopAmbient(0); try { st.ctx.close(); } catch (e) { } st.ctx = null; st.master = st.ambBus = st.fxBus = null; } });
     W.addEventListener('lowi:lang', () => { const p = D.getElementById('waPanel'); if (p) { removePanel(p); togglePanel(true); } paint(); });
     ['play', 'playing', 'pause', 'ended', 'volumechange'].forEach(k => D.addEventListener(k, () => setTimeout(sync, 30), true));
     W.addEventListener('lowi:media', e => { const d = e.detail || {}, id = d.id || 'media'; if (d.on) mediaHold.add(id); else mediaHold.delete(id); sync(); });
@@ -381,6 +416,9 @@
     W.LowiWorldAudio = {
         get on() { return st.on; }, get state() { return st.ctx ? st.ctx.state : 'none'; }, get ambient() { return !!st.amb; }, get uneasy() { return st.amb ? +st.amb.uneasyBus.gain.value.toFixed(4) : 0; }, get light() { return st.amb ? +st.amb.lightBus.gain.value.toFixed(4) : 0; }, get mood() { return st.amb ? st.amb.level : null; }, get warp() { return st.warp ? st.warp.phase : null; },
         get plays() { return Object.assign({}, st.plays); }, get gain() { return st.master ? st.master.gain.value : 0; }, prefs: () => Object.assign({}, prefs),
-        setOn, open: () => togglePanel(true), close: () => togglePanel(false), instrument, get bowls() { return st.bowlN; }
+        setOn, open: () => togglePanel(true), close: () => togglePanel(false), instrument, get bowls() { return st.bowlN; },
+        tune: () => Object.assign({}, tune), setTune, resetTune,
+        /* what is really playing (for checks): pad frequencies, filter and level read back from the audio graph */
+        get playing() { const a = st.amb; return a ? { chord: a.pad.map(v => +v[0].frequency.value.toFixed(2)), lp: Math.round(a.pad.lp.frequency.value), level: +a.padLvl.gain.value.toFixed(3) } : null; }
     };
 })();

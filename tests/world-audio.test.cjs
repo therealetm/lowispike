@@ -50,7 +50,9 @@ test('opt-in: the context is only made inside a tap, no autoplay on load', () =>
     assert.ok(js.includes('function setOn(') && js.includes('st.on = !!on'));
     assert.ok(/let prefs[\s\S]*?const st = \{ on: false/.test(js), 'starts off');
     const bootTail = js.slice(js.indexOf('/* ---------- lifecycle'));
-    assert.ok(!/setOn\(true\)/.test(js), 'nothing turns it on by itself');
+    /* Oct 16: the only automatic start is the string pad's touch (wake), and only if he did not switch it off himself */
+    assert.strictEqual((js.match(/setOn\(true\)/g) || []).length, 1, 'nothing else turns it on');
+    assert.ok(js.includes('function wake() { if (!st.on && !st.userOff && !sfxMuted() && isOpen()) setOn(true); }'), 'only wake() does, from a string touch');
     assert.ok(bootTail.includes("if (!st.on || D.hidden || !st.ctx) return;"), 'resume only after the user turned it on');
     assert.ok(js.includes('ctx.resume()'));
 });
@@ -107,15 +109,16 @@ test('loader and service worker', () => {
 });
 
 test('light by default: a soft pad and singing bowls, no rumble, nothing bright', () => {
-    for (const hz of C.lightHz()) assert.ok(hz >= 200, 'light layer has no low rumble: ' + hz);
+    for (const hz of C.lightHz()) assert.ok(hz >= 130, 'light layer has no low rumble, even on the lowest string: ' + hz);
     assert.ok(C.MIX.pad.lp <= 1400 && C.MIX.pad.gain <= 0.05 && C.MIX.pad.glide >= 1, 'pad: warm, quiet, gliding');
-    assert.ok(C.MIX.pad.hold >= 15, 'chords change slowly');
-    for (const ch of C.MIX.pad.chords) assert.strictEqual(ch.length, 3);
+    /* Oct 16: no automatic chord walk any more; the pad holds one open voicing on the root the strings set */
+    assert.ok(!('chords' in C.MIX.pad) && !('hold' in C.MIX.pad) && !('chordAt' in C), 'no chord walk');
+    assert.strictEqual(C.MIX.pad.voicing.length, 3);
+    assert.deepStrictEqual(C.padChord(C.TUNE_DEFAULTS), [293.66, 440.49, 659.27], 'the default is the old default chord');
     assert.ok(C.MIX.bowl.gain <= 0.07, 'bowls stay quiet');
     const g = C.bowls(0, 120); assert.ok(g.length >= 4 && g.length <= 10, 'sparse bowls: ' + g.length);
     for (let i = 1; i < g.length; i++) { assert.ok(g[i].t - g[i - 1].t >= C.MIX.bowl.gap[0] - 1e-6); assert.notStrictEqual(g[i].hz, g[i - 1].hz); }
     for (const f of C.MIX.bowl.notes) for (const r of C.BOWL_RATIOS) if (f * r <= C.MAX_HZ) assert.ok(f * r >= 200);
-    assert.deepStrictEqual(C.chordAt(0), C.MIX.pad.chords[0]); assert.deepStrictEqual(C.chordAt(C.MIX.pad.hold + 1), C.MIX.pad.chords[1]);
     assert.ok(C.MIX.tone <= C.MAX_HZ && C.MAX_HZ <= 3000);
     assert.ok(js.includes('W.LowiCalmSoundCore') && js.includes('CS.bowl(hz'), 'bowl strikes share the calm-sound core');
 });

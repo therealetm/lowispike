@@ -30,8 +30,9 @@
        still a clear change of mood, but no rumble and no pulse. rates in Hz (LFO), gains relative to the master */
     const MIX = {
         bus: 0.9, limiter: { threshold: -20, knee: 8, ratio: 10, attack: 0.01, release: 0.4 }, tone: 3000,
-        pad: { gain: 0.045, chords: [[293.66, 440, 659.25], [246.94, 369.99, 587.33], [329.63, 493.88, 587.33], [220, 329.63, 493.88]],
-            hold: 22, glide: 1.6, lp: 1100, lfo: 0.05, depth: 0.35, detune: 6, soft: 0.25 },
+        /* Oct 16 (string pad control): the pad no longer walks through a chord list on its own (that walk is what pulled the
+           sound away from what Eman played). It holds one open voicing (root, fifth, ninth) on the root he picks with the strings */
+        pad: { gain: 0.045, voicing: [1, 1.5, 2.245], glide: 1.6, lp: 1100, lfo: 0.05, depth: 0.35, detune: 6, soft: 0.25 },
         bowl: { gain: 0.06, notes: [293.66, 329.63, 440, 493.88, 587.33], gap: [12, 24], attack: 0.07, decay: 10, lp: 2600 },
         lightDuck: 0.75                                                               /* light layer a little lower while uneasy */
     };
@@ -53,8 +54,56 @@
         }
         return out;
     }
-    /* which pad chord plays at time t (seconds since the sound started) */
-    function chordAt(t) { const C = MIX.pad.chords; return C[Math.floor(Math.max(0, +t || 0) / MIX.pad.hold) % C.length]; }
+    /* ---------- the listener's tune (Oct 16, Eman: "I'm playing with the strings ... it seems like I'm not actually controlling
+       what the background sound is going to be ... and then it automatically just resets it") ----------
+       The string pad now shapes the ongoing soundscape, and what he sets stays:
+       - root: which string he last touched (0..6, left = low) sets the key of the pads and the singing bowls;
+       - bright: how high he touched (0 = bottom, 1 = top) opens the pad's filter and makes it fuller;
+       - bend: sliding along a held string shifts the whole soundscape by up to a semitone either way (cents).
+       Stored in localStorage (TUNE_KEY), so it survives closing the pad and reloading. Nothing in the engine changes it on its
+       own: no chord walk, no timers, no mood or time-of-day retune (the stormy layer only fades in on top). Reset restores
+       TUNE_DEFAULTS, which are exactly the old default sound (D, filter about 1 kHz, level 1). */
+    const TUNE_KEY = 'lowi.soundTune';
+    const TUNE_DEFAULTS = { root: 5, bright: 0.5, bend: 0 };
+    const TUNE = {
+        roots: [146.83, 164.81, 185, 220, 246.94, 293.66, 329.63],   /* the seven strings (D pentatonic) one octave down */
+        names: ['D', 'E', 'F\u266f', 'A', 'B', 'D', 'E'], octaves: [3, 3, 3, 3, 3, 4, 4],
+        ref: 293.66,                     /* the old default root: bowls and the stormy pad are written in this key */
+        lp: [380, 2500],                 /* pad filter from the bottom to the top of the pad */
+        level: [0.55, 1.45],             /* pad level from the bottom to the top of the pad */
+        bend: 100,                       /* cents either way */
+        glide: 0.35, filterGlide: 0.25   /* time constants for his changes: smooth, but you hear them follow your finger */
+    };
+    const clamp01 = v => { v = +v; return isFinite(v) ? Math.max(0, Math.min(1, v)) : null; };
+    function tuneFrom(base, patch) {
+        const b = base && typeof base === 'object' ? base : TUNE_DEFAULTS, p = patch && typeof patch === 'object' ? patch : {}, o = {};
+        const r = p.root != null ? Math.round(+p.root) : Math.round(+b.root);
+        o.root = isFinite(r) ? Math.max(0, Math.min(TUNE.roots.length - 1, r)) : TUNE_DEFAULTS.root;
+        const br = clamp01(p.bright != null ? p.bright : b.bright);
+        o.bright = br == null ? TUNE_DEFAULTS.bright : +br.toFixed(3);
+        const bd = Math.round(+(p.bend != null ? p.bend : b.bend));
+        o.bend = isFinite(bd) ? Math.max(-TUNE.bend, Math.min(TUNE.bend, bd)) : TUNE_DEFAULTS.bend;
+        return o;
+    }
+    function loadTune(raw) {
+        let o = null; try { o = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch (e) { o = null; }
+        return tuneFrom(TUNE_DEFAULTS, o && typeof o === 'object' ? o : {});
+    }
+    function saveTune(t) { const q = tuneFrom(TUNE_DEFAULTS, t || {}); return JSON.stringify({ root: q.root, bright: q.bright, bend: q.bend }); }
+    function isDefaultTune(t) { const q = tuneFrom(TUNE_DEFAULTS, t || {}); return q.root === TUNE_DEFAULTS.root && Math.abs(q.bright - TUNE_DEFAULTS.bright) < 0.005 && q.bend === 0; }
+    const cents = c => Math.pow(2, (+c || 0) / 1200);
+    /* the root in Hz (with the bend) and the factor everything else is moved by */
+    function tuneRoot(t) { const q = tuneFrom(TUNE_DEFAULTS, t || {}); return +(TUNE.roots[q.root] * cents(q.bend)).toFixed(2); }
+    function tuneRatio(t) { return tuneRoot(t) / TUNE.ref; }
+    function padChord(t) { const r = tuneRoot(t); return MIX.pad.voicing.map(v => +(r * v).toFixed(2)); }
+    function padLp(t) { const q = tuneFrom(TUNE_DEFAULTS, t || {}); return Math.round(TUNE.lp[0] * Math.pow(TUNE.lp[1] / TUNE.lp[0], q.bright)); }
+    function padLevel(t) { const q = tuneFrom(TUNE_DEFAULTS, t || {}); return +(TUNE.level[0] + (TUNE.level[1] - TUNE.level[0]) * q.bright).toFixed(3); }
+    function bowlNotes(t) { const k = tuneRatio(t); return MIX.bowl.notes.map(f => +(f * k).toFixed(2)); }
+    /* the stormy pad follows his key too (so it never clashes), folded up an octave when it would sink into a rumble */
+    function uneasyNotes(t) { let k = tuneRatio(t); if (k < 0.75) k *= 2; return UNEASY.pad.notes.map(f => +(f * k).toFixed(2)); }
+    function lowBowlNotes(t) { let k = tuneRatio(t); if (k < 0.75) k *= 2; return UNEASY.bowl.notes.map(f => +(f * k).toFixed(2)); }
+    /* what the pad shows: note name + octave, Hz, level in %, bend in cents */
+    function tuneLabel(t) { const q = tuneFrom(TUNE_DEFAULTS, t || {}); return { note: TUNE.names[q.root], octave: TUNE.octaves[q.root], hz: Math.round(tuneRoot(q)), level: Math.round(q.bright * 100), bend: q.bend }; }
     /* warp: real phases from body-world-regions.js ('lowi:world-warp'): start (glide), dive (into the glow), arrive, cancel */
     const WARP = {
         gain: 0.42,
@@ -75,12 +124,15 @@
     const BOWL_RATIOS = [1, 2.71, 5.1];   /* same strike as calm-sound-core.js bowl() */
     function allHz() {
         const U = UNEASY, hz = [MIX.tone, MIX.pad.lp, MIX.bowl.lp, U.pad.lp, U.bowl.lp];
-        MIX.pad.chords.forEach(c => hz.push.apply(hz, c));
+        tuneExtremes().forEach(t => { hz.push.apply(hz, padChord(t)); hz.push(padLp(t)); hz.push.apply(hz, uneasyNotes(t));
+            bowlNotes(t).concat(lowBowlNotes(t)).forEach(f => BOWL_RATIOS.forEach(r => { if (f * r <= MAX_HZ) hz.push(f * r); })); });
         MIX.bowl.notes.concat(U.bowl.notes).forEach(f => BOWL_RATIOS.forEach(r => { if (f * r <= MAX_HZ) hz.push(f * r); }));
         return hz.concat(U.pad.notes, WARP.start.from, WARP.start.to, WARP.start.sub, WARP.dive.up, WARP.dive.down, WARP.dive.sub, WARP.arrive.notes, WARP.arrive.lp, WARP.home.notes, WARP.home.lp);
     }
     /* the normal (light) layer only: no low rumble */
-    function lightHz() { const hz = []; MIX.pad.chords.forEach(c => hz.push.apply(hz, c)); return hz.concat(MIX.bowl.notes); }
+    function lightHz() { const hz = []; tuneExtremes().forEach(t => { hz.push.apply(hz, padChord(t)); hz.push.apply(hz, bowlNotes(t)); }); return hz; }
+    /* every root at both bend ends and both brightness ends (the range the strings can reach) */
+    function tuneExtremes() { const out = []; TUNE.roots.forEach((f, root) => [-TUNE.bend, 0, TUNE.bend].forEach(bend => [0, 1].forEach(bright => out.push({ root, bend, bright })))); return out; }
     const STR = {
         btn: ['Sound', 'Klang', 'Sonido'],
         aria: ['Body world sound', 'Klang der K\u00f6rperwelt', 'Sonido del mundo del cuerpo'],
@@ -88,15 +140,15 @@
         on: ['On', 'An', 'S\u00ed'], off: ['Off', 'Aus', 'No'],
         vol: ['Volume', 'Lautst\u00e4rke', 'Volumen'],
         warp: ['Warp sounds', 'Warp-Kl\u00e4nge', 'Sonidos del warp'],
-        note: ['Soft pads and singing bowls while the world is open. The sound turns deeper and slower when today\u2019s logs show spikes. Starts only when you turn it on.',
-            'Sanfte Kl\u00e4nge und Klangschalen, solange die Welt offen ist. Zeigen deine Eintr\u00e4ge von heute Spikes, wird der Klang tiefer und langsamer. Startet nur, wenn du es einschaltest.',
-            'Pads suaves y cuencos sonoros mientras el mundo est\u00e1 abierto. El sonido se vuelve m\u00e1s grave y lento cuando tus registros de hoy muestran picos. Solo empieza si lo activas.'],
+        note: ['Soft pads and singing bowls while the world is open. The strings set their key, brightness and pitch, and it stays that way until you reset it. Spiky logs today add a deeper layer on top. Starts only when you turn it on or play the strings.',
+            'Sanfte Kl\u00e4nge und Klangschalen, solange die Welt offen ist. Die Saiten bestimmen Tonart, Helligkeit und Tonh\u00f6he, und so bleibt es, bis du es zur\u00fccksetzt. Zeigen deine Eintr\u00e4ge von heute Spikes, kommt eine tiefere Schicht dazu. Startet nur, wenn du es einschaltest oder die Saiten spielst.',
+            'Pads suaves y cuencos sonoros mientras el mundo est\u00e1 abierto. Las cuerdas fijan su tono, brillo y afinaci\u00f3n, y as\u00ed se queda hasta que lo restableces. Si tus registros de hoy muestran picos, se suma una capa m\u00e1s grave. Solo empieza si lo activas o tocas las cuerdas.'],
         ambient: ['Background sound', 'Hintergrundklang', 'Sonido de fondo'],
         quiet: ['Nothing to hear? Check your device volume and silent switch.', 'Nichts zu h\u00f6ren? Pr\u00fcf die Lautst\u00e4rke und den Stumm-Schalter deines Ger\u00e4ts.', '\u00bfNo oyes nada? Revisa el volumen y el modo silencio de tu dispositivo.'],
         close: ['Close', 'Schlie\u00dfen', 'Cerrar']
     };
     function t(key, lang) { const a = STR[key]; if (!a) return ''; const i = { en: 0, de: 1, es: 2 }[String(lang || 'de').slice(0, 2)]; return a[i == null ? 1 : i]; }
-    const api = { KEY, DEFAULTS, MAX_MASTER, MAX_HZ, FADE_IN, FADE_OUT, CLOSE_FADE, MIX, UNEASY, WARP, bowls, chordAt, BOWL_RATIOS, lightHz, STR, clampVol, masterGain, loadPrefs, savePrefs, guard, audible, warpAudible, allHz, t };
+    const api = { KEY, DEFAULTS, MAX_MASTER, MAX_HZ, FADE_IN, FADE_OUT, CLOSE_FADE, MIX, UNEASY, WARP, bowls, BOWL_RATIOS, TUNE_KEY, TUNE_DEFAULTS, TUNE, tuneFrom, loadTune, saveTune, isDefaultTune, tuneRoot, tuneRatio, padChord, padLp, padLevel, bowlNotes, uneasyNotes, lowBowlNotes, tuneLabel, tuneExtremes, lightHz, STR, clampVol, masterGain, loadPrefs, savePrefs, guard, audible, warpAudible, allHz, t };
     if (typeof module === 'object' && module.exports) module.exports = api;
     root.LowiWorldAudioCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

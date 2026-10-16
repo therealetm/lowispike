@@ -65,10 +65,17 @@
     }
     const STR = {
         title: ['Play the strings', 'Spiel die Saiten', 'Toca las cuerdas'],
-        hint: ['Touch or swipe. Higher is fuller, slide along a string to bend it.', 'Tippen oder wischen. Weiter oben klingt voller, entlang einer Saite gleiten biegt den Ton.', 'Toca o desliza. M\u00e1s arriba suena m\u00e1s lleno; desliza por una cuerda para doblar la nota.'],
+        hint: ['Touch a string to set the key of the background sound. Higher is brighter and fuller, slide along a string to shift the pitch. It stays when you let go.', 'Tippe eine Saite an, um die Tonart des Hintergrundklangs zu w\u00e4hlen. Weiter oben klingt heller und voller, entlang der Saite gleiten verschiebt die Tonh\u00f6he. Es bleibt, wenn du losl\u00e4sst.', 'Toca una cuerda para elegir el tono del sonido de fondo. M\u00e1s arriba suena m\u00e1s brillante y lleno; desliza por la cuerda para cambiar la afinaci\u00f3n. Se queda al soltar.'],
         aria: ['String pad, seven glowing strings', 'Saiten-Pad, sieben leuchtende Saiten', 'Panel de cuerdas, siete cuerdas brillantes'],
         muted: ['App sounds are off. Turn them on in Profile to hear the strings.', 'App-Kl\u00e4nge sind aus. Schalte sie im Profil ein, um die Saiten zu h\u00f6ren.', 'Los sonidos de la app est\u00e1n apagados. Act\u00edvalos en el Perfil para o\u00edr las cuerdas.'],
-        silent: ['Volume is at 0.', 'Lautst\u00e4rke ist auf 0.', 'El volumen est\u00e1 en 0.']
+        silent: ['Volume is at 0.', 'Lautst\u00e4rke ist auf 0.', 'El volumen est\u00e1 en 0.'],
+        /* Oct 16 (string pad control): the readout of what the background sound is set to, and the reset */
+        key: ['Key', 'Tonart', 'Tono'],
+        level: ['Level', 'F\u00fclle', 'Nivel'],
+        shift: ['Pitch', 'Tonh\u00f6he', 'Afinaci\u00f3n'],
+        reset: ['Reset sound', 'Klang zur\u00fccksetzen', 'Restablecer sonido'],
+        resetAria: ['Reset the background sound to its default key, brightness and pitch', 'Hintergrundklang auf Standard-Tonart, -Helligkeit und -Tonh\u00f6he zur\u00fccksetzen', 'Restablecer el tono, el brillo y la afinaci\u00f3n del sonido de fondo'],
+        bgOff: ['Background sound is off. Your setting is saved for when you turn it on.', 'Hintergrundklang ist aus. Deine Einstellung bleibt gespeichert, bis du ihn einschaltest.', 'El sonido de fondo est\u00e1 apagado. Tu ajuste se guarda para cuando lo actives.']
     };
     function t(key, lang) { const a = STR[key]; if (!a) return ''; const i = { en: 0, de: 1, es: 2 }[String(lang || 'de').slice(0, 2)]; return a[i == null ? 1 : i]; }
     const api = { MAX_HZ, BOWL, CHIME, STRINGS, bowl, fold, chime, stringAt, stringX, crossed, level, bend, noteHz, steal, wobble, allHz, STR, t };

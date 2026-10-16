@@ -4,6 +4,12 @@
      to bend it up to a semitone. The touched string glows and vibrates where the finger is (reduced motion: it only glows).
      Sound goes through world-audio's context (api.instrument(), called inside the touch, so iOS allows it), follows the
      Sound volume slider and stays silent when app sounds are off (LowiSFX). Canvas 2D, drawn only while something moves.
+   - Oct 16 (Eman: "I'm not actually controlling what the background sound is going to be ... and then it automatically just
+     resets it"): the strings now shape the ongoing soundscape through world-audio's tune (api.tune/setTune/resetTune). The
+     string you touch sets the key, how high you touch sets brightness and level, sliding along a held string shifts the pitch.
+     It stays when you let go (stored by world-audio, survives closing the pad and reloading); the readout under the pad shows
+     what is playing, the chosen string keeps glowing with a marker at the level and pitch you set, and "Reset sound" goes back
+     to the defaults. The first touch starts the background sound if it is off (unless you switched it off yourself).
    - LowiCalmChime(ac, f, d): the soft bowl chime that replaces the old Move and guided-session timer beeps. */
 (function () {
     'use strict';
@@ -48,7 +54,7 @@
     }
     function voiceOn(P, i, lv, cents) {
         const ins = P.ins; if (!ins || ins.muted || !ins.ctx || !ins.gain) return null;
-        const ctx = ins.ctx, t = ctx.currentTime, hz = CS.noteHz(i, cents || 0), peak = S.gain * lv;
+        const ctx = ins.ctx, t = ctx.currentTime, base = tuneOf(P).bend || 0, hz = CS.noteHz(i, base + (cents || 0)), peak = S.gain * lv;
         const old = CS.steal(P.voices); if (old) voiceOff(P, old, 0.25);
         const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = hz;
         const o2 = ctx.createOscillator(); o2.type = 'triangle'; o2.frequency.value = hz * 2;
@@ -57,7 +63,7 @@
         const env = ctx.createGain(); env.gain.setValueAtTime(0.0001, t); env.gain.linearRampToValueAtTime(peak, t + S.attack); env.gain.setTargetAtTime(peak * S.hold, t + S.attack, S.decay / 3);
         o.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(env); env.connect(bus(ins));
         o.start(t); o2.start(t);
-        const v = { i, t: t, o, o2, env, nodes: [g2, lp, env], peak, hz, cap: setTimeout(() => voiceOff(P, v), 8000) };
+        const v = { i, t: t, o, o2, env, nodes: [g2, lp, env], peak, hz, base, cap: setTimeout(() => voiceOff(P, v), 8000) };
         P.voices.push(v);
         return v;
     }
@@ -70,6 +76,34 @@
         P.voices = P.voices.filter(x => x !== v);
     }
     function bendVoice(v, cents) { if (!v || v.off) return; try { v.o.frequency.setTargetAtTime(CS.noteHz(v.i, cents), v.o.context.currentTime, 0.03); v.o2.frequency.setTargetAtTime(CS.noteHz(v.i, cents) * 2, v.o.context.currentTime, 0.03); } catch (e) { } }
+    /* ---------- the tune: what the strings set for the background sound (world-audio owns and stores it) ---------- */
+    const DEF_TUNE = { root: 5, bright: 0.5, bend: 0 };
+    function tuneOf(P) { try { return (P.api.tune && P.api.tune()) || P.tune || DEF_TUNE; } catch (e) { return P.tune || DEF_TUNE; } }
+    function setTune(P, patch, commit) {
+        let t = null;
+        try { t = P.api.setTune ? P.api.setTune(patch, !!commit) : null; } catch (e) { t = null; }
+        P.tune = t || Object.assign({}, tuneOf(P), patch);
+        readout(P); kick(P);
+        return P.tune;
+    }
+    const brightAt = (y, h) => +Math.max(0, Math.min(1, 1 - (+y || 0) / (+h || 1))).toFixed(3);
+    const clampBend = c => Math.max(-S.bend, Math.min(S.bend, Math.round(+c || 0)));
+    function readout(P) {
+        if (!P.now) return;
+        const t = tuneOf(P), L = P.lang(), AC = W.LowiWorldAudioCore, lb = AC && AC.tuneLabel ? AC.tuneLabel(t) : null;
+        const note = lb ? lb.note + lb.octave : '', bend = t.bend || 0;
+        const parts = [CS.t('key', L) + ' <b>' + note + '</b>' + (lb ? ' <span class="ss-hz">' + lb.hz + ' Hz</span>' : ''),
+            CS.t('level', L) + ' <b>' + Math.round((t.bright == null ? 0.5 : t.bright) * 100) + '\u202f%</b>',
+            CS.t('shift', L) + ' <b>' + (bend > 0 ? '+' : bend < 0 ? '\u2212' : '\u00b1') + Math.abs(bend) + '\u202f\u00a2</b>'];
+        const html = parts.map(x => '<span>' + x + '</span>').join('');
+        if (P.nowHtml !== html) { P.now.innerHTML = html; P.nowHtml = html; }
+        const off = !!(P.api.ambientOn && !P.api.ambientOn());
+        P.el.classList.toggle('ss-bg-off', off);
+        if (P.off) { P.off.hidden = !off; if (off && !P.off.textContent) P.off.textContent = CS.t('bgOff', L); }
+        const def = AC && AC.isDefaultTune ? AC.isDefaultTune(t) : false;
+        if (P.reset) P.reset.disabled = def;
+        P.box.setAttribute('aria-valuetext', note + ', ' + CS.t('level', L) + ' ' + Math.round((t.bright || 0) * 100) + ' %, ' + CS.t('shift', L) + ' ' + bend + ' cents');
+    }
     function levelVoice(v, lv) { if (!v || v.off) return; const ctx = v.o.context; if (ctx.currentTime - v.t < 0.15) return; try { v.env.gain.setTargetAtTime(S.gain * lv * S.hold * 1.3, ctx.currentTime, 0.08); } catch (e) { } }
 
     function size(P) {
@@ -86,10 +120,11 @@
     function draw(P) {
         const g = P.g, dpr = P.dpr, w = P.w, h = P.h, now = performance.now(), red = reduced(); let busy = P.ptr.size > 0;
         g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+        const T = tuneOf(P), sel = T.root == null ? -1 : T.root;
         for (let i = 0; i < N; i++) {
             const s = P.str[i], x = CS.stringX(i, w, N), age = (now - s.t0) / 1000, held = [...P.ptr.values()].some(p => p.i === i);
             if (!held) s.e *= 0.94; if (s.e < 0.004) s.e = 0; if (s.e > 0) busy = true;
-            const e = s.e, off = CS.wobble(age, s.amp, red) * (held ? 0.5 : 1);
+            const e = i === sel ? Math.max(s.e, 0.3) : s.e, off = CS.wobble(age, s.amp, red) * (held ? 0.5 : 1);
             g.save();
             g.strokeStyle = 'rgba(' + P.col[i] + ',' + (0.42 + e * 0.58).toFixed(3) + ')';
             g.lineWidth = 1.4 + e * 1.8; g.shadowColor = 'rgba(' + P.col[i] + ',.9)'; g.shadowBlur = 6 + e * 18;
@@ -101,6 +136,15 @@
                 rg.addColorStop(0, 'rgba(255,255,255,' + (0.85 * e).toFixed(3) + ')'); rg.addColorStop(0.35, 'rgba(' + P.col[i] + ',' + (0.5 * e).toFixed(3) + ')'); rg.addColorStop(1, 'rgba(' + P.col[i] + ',0)');
                 g.fillStyle = rg; g.beginPath(); g.arc(x + off, s.y, 18 + e * 16, 0, Math.PI * 2); g.fill();
             }
+        }
+        /* the setting that is playing: a soft level line across the pad and a glass knob on the chosen string, nudged sideways
+           by the pitch shift. It is what the background sound is set to, and it stays until the next touch or a reset. */
+        if (sel >= 0) {
+            const lane = w / N, ky = 6 + (1 - (T.bright == null ? 0.5 : T.bright)) * (h - 12), kx = CS.stringX(sel, w, N) + (T.bend || 0) / S.bend * lane * 0.5;
+            g.save(); g.setLineDash([3, 6]); g.strokeStyle = 'rgba(190,230,255,.28)'; g.lineWidth = 1; g.beginPath(); g.moveTo(8, ky); g.lineTo(w - 8, ky); g.stroke(); g.restore();
+            g.save(); g.shadowColor = 'rgba(' + P.col[sel] + ',.95)'; g.shadowBlur = 14;
+            g.fillStyle = 'rgba(225,245,255,.92)'; g.strokeStyle = 'rgba(' + P.col[sel] + ',1)'; g.lineWidth = 2;
+            g.beginPath(); g.arc(kx, ky, 7, 0, Math.PI * 2); g.fill(); g.stroke(); g.restore();
         }
         return busy;
     }
@@ -116,9 +160,12 @@
         size(P);
         P.ins = P.api.instrument ? P.api.instrument() : null; hint(P);
         try { P.cv.setPointerCapture(e.pointerId); } catch (x) { }
+        if (P.api.wake) { try { P.api.wake(); } catch (x) { } }
         const p = pos(P, e), i = CS.stringAt(p.x, P.w, N), lv = CS.level(p.y, P.h);
         const v = voiceOn(P, i, lv, 0);
-        P.ptr.set(e.pointerId, { i, x: p.x, y: p.y, v });
+        /* the string sets the key, the height sets brightness and level; the pitch shift you set before stays */
+        const t = setTune(P, { root: i, bright: brightAt(p.y, P.h) }, false);
+        P.ptr.set(e.pointerId, { i, x: p.x, y: p.y, x0: p.x, v, bend0: t.bend || 0 });
         excite(P, i, p.y, 0.55 + lv * 0.45);
     }
     function move(P, e) {
@@ -131,14 +178,19 @@
                 if (q.v) voiceOff(P, q.v, k < hit.length - 1 ? 0.9 : S.release);
                 q.v = voiceOn(P, i, lv, 0); q.i = i; excite(P, i, p.y, 0.5 + lv * 0.5);
             });
+            /* a strum lands on its last string: that becomes the key */
+            const t = setTune(P, { root: q.i, bright: brightAt(p.y, P.h) }, false); q.x0 = p.x; q.bend0 = t.bend || 0;
         } else {
-            /* along the held string: sideways bends, height sets the loudness */
-            bendVoice(q.v, CS.bend(p.x - CS.stringX(q.i, P.w, N), P.w, N)); levelVoice(q.v, lv);
+            /* along the held string: sideways shifts the pitch of the whole soundscape, height sets brightness and level */
+            const bend = clampBend(q.bend0 + CS.bend(p.x - q.x0, P.w, N));
+            bendVoice(q.v, bend); levelVoice(q.v, lv);
+            setTune(P, { bright: brightAt(p.y, P.h), bend }, false);
             const s = P.str[q.i]; s.y = p.y; s.e = Math.max(s.e, 0.4 + lv * 0.4); kick(P);
         }
         q.x = p.x; q.y = p.y;
     }
-    function up(P, e) { const q = P.ptr.get(e.pointerId); if (!q) return; P.ptr.delete(e.pointerId); if (q.v) voiceOff(P, q.v); kick(P); }
+    /* letting go keeps the setting: it is stored, nothing glides back */
+    function up(P, e) { const q = P.ptr.get(e.pointerId); if (!q) return; P.ptr.delete(e.pointerId); if (q.v) voiceOff(P, q.v); setTune(P, {}, true); kick(P); }
     function key(P, e) {
         let i = -1;
         if (/^[1-7]$/.test(e.key)) i = +e.key - 1;
@@ -148,6 +200,8 @@
         if (i < 0) return;
         e.preventDefault(); e.stopPropagation(); P.cursor = i;
         size(P); P.ins = P.api.instrument ? P.api.instrument() : null; hint(P);
+        if (P.api.wake) { try { P.api.wake(); } catch (x) { } }
+        setTune(P, { root: i }, true);
         const v = voiceOn(P, i, 0.7, 0); excite(P, i, P.h * 0.4, 0.8); setTimeout(() => voiceOff(P, v), 450);
     }
     function releaseAll(P) { P.ptr.clear(); P.voices.slice().forEach(v => voiceOff(P, v, 0.3)); }
@@ -155,14 +209,25 @@
         if (!el) return null;
         if (pad) unmount();
         const L = api && api.lang ? api.lang : lang;
-        el.innerHTML = '<div class="ss-hd">' + CS.t('title', L()) + '</div><div class="ss-pad" tabindex="0" role="group"><canvas aria-hidden="true"></canvas></div><p class="ss-hint" aria-live="polite"></p>';
+        el.innerHTML = '<div class="ss-top"><div class="ss-hd">' + CS.t('title', L()) + '</div><button type="button" class="ss-reset" aria-label="' + CS.t('resetAria', L()) + '">' + CS.t('reset', L()) + '</button></div>' +
+            '<div class="ss-pad" tabindex="0" role="group"><canvas aria-hidden="true"></canvas></div>' +
+            '<p class="ss-now" aria-live="polite"></p><p class="ss-off" hidden></p><p class="ss-hint" aria-live="polite"></p>';
         const box = el.querySelector('.ss-pad'), cv = el.querySelector('canvas');
         box.setAttribute('aria-label', CS.t('aria', L()) + '. ' + CS.t('hint', L()));
         const P = { el, box, cv, g: cv.getContext('2d'), api: api || {}, lang: L, ptr: new Map(), voices: [], plays: 0, cursor: 3, ins: null, hintKey: '', dead: false, raf: 0,
             str: S.notes.map(() => ({ e: 0, y: 0, t0: 0, amp: 0 })),
             col: ['120,200,255', '110,215,255', '120,230,250', '150,225,255', '110,190,255', '140,210,255', '170,235,255'] };
-        P.hint = el.querySelector('.ss-hint'); hint(P);
+        P.hint = el.querySelector('.ss-hint'); P.now = el.querySelector('.ss-now'); P.off = el.querySelector('.ss-off'); P.reset = el.querySelector('.ss-reset'); hint(P);
         if (!P.g) { el.innerHTML = ''; return null; }
+        P.tune = tuneOf(P); readout(P);
+        P.reset.addEventListener('click', e => {
+            e.stopPropagation();
+            let t = null; try { t = P.api.resetTune ? P.api.resetTune() : null; } catch (x) { }
+            P.tune = t || Object.assign({}, DEF_TUNE); readout(P); kick(P);
+        });
+        /* the panel shows what is playing, also when the sound changes from somewhere else (the switch, another tab) */
+        P.onTune = () => { if (!P.dead) { readout(P); kick(P); } };
+        W.addEventListener('lowi:sound-tune', P.onTune); W.addEventListener('lowi:world-audio', P.onTune);
         cv.addEventListener('pointerdown', e => down(P, e));
         cv.addEventListener('pointermove', e => move(P, e));
         ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => cv.addEventListener(t, e => up(P, e)));
@@ -178,12 +243,14 @@
     function unmount() {
         const P = pad; if (!P) return; pad = null; P.dead = true;
         releaseAll(P); cancelAnimationFrame(P.raf); P.ro && P.ro.disconnect(); D.removeEventListener('visibilitychange', P.onVis);
+        W.removeEventListener('lowi:sound-tune', P.onTune); W.removeEventListener('lowi:world-audio', P.onTune);
         try { P.el.innerHTML = ''; } catch (e) { }
         if (P.api.idle) P.api.idle();
     }
     W.LowiSoundStrings = {
         mount, unmount, chime,
         get mounted() { return !!pad; }, get voices() { return pad ? pad.voices.length : 0; }, get plays() { return pad ? pad.plays : 0; },
-        glow: () => pad ? pad.str.map(s => +s.e.toFixed(3)) : []
+        glow: () => pad ? pad.str.map(s => +s.e.toFixed(3)) : [],
+        get readout() { return pad && pad.now ? pad.now.textContent : ''; }
     };
 })();

@@ -1,5 +1,6 @@
 /* LOWiSPIKE herb-first start + starter plan (Oct 15, 2026).
-   1. Misty-first (Oct 16 redesign): a new user meets Misty, learns that healthy habits are her energy, tells her their name and
+   1. Companion-first (Oct 16 redesign; birth companion later that day): a new user meets an unrevealed being of light (no name,
+      face or colour until the birthday step brings it to life, see companion-birth.js), learns that healthy habits are its energy, tells it their name and
       gets a first small reward, all before the account form, on the living metabolic-world background (onboarding-world.css).
    2. Starter plan: after setup, up to 4 optional questions -> 3 or 4 next actions on Today. Each action has "Why this?", a direct
       link into the module that does it, and can be changed. Done-state is read live from those modules (LowiLiving, LowiFastStop);
@@ -21,35 +22,35 @@ const save=()=>{try{if(R().save)R().save();else LowiVitalsBridge.save();}catch(e
 const dayKey=d=>{d=new Date(d||Date.now());return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
 
 const TX={
- en:{over:'MEET MISTY',plantH:'This is Misty.',plantP:'A little comet who lives in your body\u2019s metabolic world. She glows when you look after yourself.',plantBtn:'Hi Misty',have:'I already have an account',back:'Back',
-  nameOver:'HER ENERGY',nameH:'Your habits are her energy.',nameP:'Every healthy step you track fills her up:',hab:['Eat well','Water','Move','Fasting','Track it'],nameP2:'Full of energy, she flies off on adventures and heals your cells. On tired days she just rests.',nameBtn:'Got it',
+ en:{over:'MEET YOUR COMPANION',plantH:'Someone is waiting for you.',plantP:'A little being of light lives in your body\u2019s metabolic world. Nobody has seen its final form yet: your birthday will bring it to life.',plantBtn:'Say hi',have:'I already have an account',back:'Back',
+  nameOver:'ITS ENERGY',nameH:'Your habits are its energy.',nameP:'Every healthy step you track fills it up:',hab:['Eat well','Water','Move','Fasting','Track it'],nameP2:'Full of energy, it flies off on adventures and heals your cells. On tired days it just rests.',nameBtn:'Got it',
   nameLabel:'Name',shuffle:'Shuffle',later:'You can change this later.',
-  askOver:'HELLO',ask:'Hi, I\u2019m {herb}! I live inside you, so we should be friends. What\u2019s your name?',youLabel:'Your first name',askBtn:'Nice to meet you',needName:'Tell {herb} your name first.',
-  rewOver:'YOUR WORLD',rew:'{name}! Look after yourself and I\u2019ll light up your world. Zoom out and you\u2019ll find the spirit world, where everyone\u2019s companions meet.',chip:'+5 XP \u00b7 first spark',saveBtn:'Save {herb}\u2019s world: free account',fine:'Free. Takes 20 seconds.',firstLeaf:'First spark',
+  askOver:'HELLO',ask:'Hi! I live inside you, but I don\u2019t have a name or a face yet. Your birthday will give me both. First: what\u2019s your name?',youLabel:'Your first name',askBtn:'Nice to meet you',needName:'Tell your companion your name first.',
+  rewOver:'YOUR WORLD',rew:'{name}! Look after yourself and I\u2019ll light up your world. Zoom out and you\u2019ll find the spirit world, where everyone\u2019s companions meet.',chip:'+5 XP \u00b7 first spark',saveBtn:'Save your companion\u2019s world: free account',fine:'Free. Takes 20 seconds.',firstLeaf:'First spark',
   ivOver:'STARTER PLAN',ivH:'{herb} is ready for your first adventure.',ivP:'Up to 4 quick questions so your first steps fit your day. Every one is optional. No health questions.',go:'Let\u2019s go',notNow:'Not now',skipQ:'Skip',
   think:'{herb} is picking your first steps\u2026',planH:'Your next steps',planP:'They sit on Today. Each one opens the part of the app that does it.',planBtn:'Let\u2019s do it',
   rowT:'Next steps',rowAll:'All done for today',rowQ:'{herb} has a question',why:'Why this?',goBtn:'Go',change:'Change',remove:'Remove',addOne:'Add a step',doneLbl:'Done today',pickOne:'Pick a step',cancel:'Cancel',
-  redo:'Redo the questions',hide:'Hide from Today',show:'Show on Today',profT:'Starter plan',profNone:'4 optional questions with Misty. They set 3 or 4 next steps on Today.',profHas:'{n} next steps on Today',profStart:'Start',
+  redo:'Redo the questions',hide:'Hide from Today',show:'Show on Today',profT:'Starter plan',profNone:'4 optional questions with your companion. They set 3 or 4 next steps on Today.',profHas:'{n} next steps on Today',profStart:'Start',
   skipped:'Any time: Profile \u203a About you \u203a Starter plan.',saved:'Your next steps are on Today.',qNot:'Not now',qThanks:'Got it. I changed your steps.',allDone:'All steps done. {herb} is glowing.'},
- de:{over:'TRIFF MISTY',plantH:'Das ist Misty.',plantP:'Ein kleiner Komet, der in der Stoffwechselwelt deines K\u00f6rpers lebt. Sie leuchtet, wenn du gut f\u00fcr dich sorgst.',plantBtn:'Hallo Misty',have:'Ich habe schon ein Konto',back:'Zur\u00fcck',
-  nameOver:'IHRE ENERGIE',nameH:'Deine Gewohnheiten sind ihre Energie.',nameP:'Jeder gesunde Schritt, den du eintr\u00e4gst, l\u00e4dt sie auf:',hab:['Gut essen','Wasser','Bewegung','Fasten','Eintragen'],nameP2:'Voller Energie fliegt sie auf Abenteuer und heilt deine Zellen. An m\u00fcden Tagen ruht sie sich einfach aus.',nameBtn:'Verstanden',
+ de:{over:'TRIFF DEIN LICHTWESEN',plantH:'Jemand wartet auf dich.',plantP:'Ein kleines Lichtwesen lebt in der Stoffwechselwelt deines K\u00f6rpers. Seine endg\u00fcltige Gestalt hat noch niemand gesehen: Dein Geburtstag erweckt es zum Leben.',plantBtn:'Hallo sagen',have:'Ich habe schon ein Konto',back:'Zur\u00fcck',
+  nameOver:'ENERGIE',nameH:'Deine Gewohnheiten sind die Energie deines Lichtwesens.',nameP:'Jeder gesunde Schritt, den du eintr\u00e4gst, l\u00e4dt es auf:',hab:['Gut essen','Wasser','Bewegung','Fasten','Eintragen'],nameP2:'Voller Energie fliegt es auf Abenteuer und heilt deine Zellen. An m\u00fcden Tagen ruht es sich einfach aus.',nameBtn:'Verstanden',
   nameLabel:'Name',shuffle:'Mischen',later:'Du kannst das sp\u00e4ter \u00e4ndern.',
-  askOver:'HALLO',ask:'Hi, ich bin {herb}! Ich wohne in dir, also sollten wir Freunde sein. Wie hei\u00dft du?',youLabel:'Dein Vorname',askBtn:'Freut mich',needName:'Sag {herb} zuerst deinen Namen.',
-  rewOver:'DEINE WELT',rew:'{name}! Sorg gut f\u00fcr dich und ich bringe deine Welt zum Leuchten. Zoom heraus, dann findest du die Geisterwelt, wo sich alle Begleiter treffen.',chip:'+5 XP \u00b7 erster Funke',saveBtn:'{herb}s Welt sichern: kostenloses Konto',fine:'Kostenlos. Dauert 20 Sekunden.',firstLeaf:'Erster Funke',
+  askOver:'HALLO',ask:'Hi! Ich wohne in dir, aber ich habe noch keinen Namen und kein Gesicht. Dein Geburtstag gibt mir beides. Zuerst: Wie hei\u00dft du?',youLabel:'Dein Vorname',askBtn:'Freut mich',needName:'Sag deinem Lichtwesen zuerst deinen Namen.',
+  rewOver:'DEINE WELT',rew:'{name}! Sorg gut f\u00fcr dich und ich bringe deine Welt zum Leuchten. Zoom heraus, dann findest du die Geisterwelt, wo sich alle Begleiter treffen.',chip:'+5 XP \u00b7 erster Funke',saveBtn:'Welt deines Lichtwesens sichern: kostenloses Konto',fine:'Kostenlos. Dauert 20 Sekunden.',firstLeaf:'Erster Funke',
   ivOver:'STARTPLAN',ivH:'{herb} ist bereit f\u00fcr euer erstes Abenteuer.',ivP:'Bis zu 4 kurze Fragen, damit deine ersten Schritte zu deinem Tag passen. Alle freiwillig. Keine Gesundheitsfragen.',go:'Los geht\u2019s',notNow:'Jetzt nicht',skipQ:'\u00dcberspringen',
   think:'{herb} sucht deine ersten Schritte aus\u2026',planH:'Deine n\u00e4chsten Schritte',planP:'Sie stehen auf Heute. Jeder \u00f6ffnet den Teil der App, der ihn erledigt.',planBtn:'Los geht\u2019s',
   rowT:'N\u00e4chste Schritte',rowAll:'Heute alles geschafft',rowQ:'{herb} hat eine Frage',why:'Warum das?',goBtn:'Los',change:'\u00c4ndern',remove:'Entfernen',addOne:'Schritt hinzuf\u00fcgen',doneLbl:'Heute erledigt',pickOne:'Schritt ausw\u00e4hlen',cancel:'Abbrechen',
-  redo:'Fragen neu beantworten',hide:'Auf Heute ausblenden',show:'Auf Heute zeigen',profT:'Startplan',profNone:'4 freiwillige Fragen mit Misty. Daraus werden 3 oder 4 n\u00e4chste Schritte auf Heute.',profHas:'{n} n\u00e4chste Schritte auf Heute',profStart:'Starten',
+  redo:'Fragen neu beantworten',hide:'Auf Heute ausblenden',show:'Auf Heute zeigen',profT:'Startplan',profNone:'4 freiwillige Fragen. Daraus werden 3 oder 4 n\u00e4chste Schritte auf Heute.',profHas:'{n} n\u00e4chste Schritte auf Heute',profStart:'Starten',
   skipped:'Jederzeit: Profil \u203a \u00dcber dich \u203a Startplan.',saved:'Deine n\u00e4chsten Schritte stehen auf Heute.',qNot:'Jetzt nicht',qThanks:'Verstanden. Ich habe deine Schritte angepasst.',allDone:'Alle Schritte geschafft. {herb} leuchtet.'},
- es:{over:'CONOCE A MISTY',plantH:'Esta es Misty.',plantP:'Un peque\u00f1o cometa que vive en el mundo metab\u00f3lico de tu cuerpo. Brilla cuando te cuidas.',plantBtn:'Hola, Misty',have:'Ya tengo una cuenta',back:'Atr\u00e1s',
-  nameOver:'SU ENERG\u00cdA',nameH:'Tus h\u00e1bitos son su energ\u00eda.',nameP:'Cada paso sano que registras la recarga:',hab:['Comer bien','Agua','Moverte','Ayuno','Registrar'],nameP2:'Llena de energ\u00eda, sale de aventura y cura tus c\u00e9lulas. Los d\u00edas cansados, simplemente descansa.',nameBtn:'Entendido',
+ es:{over:'CONOCE A TU SER DE LUZ',plantH:'Alguien te est\u00e1 esperando.',plantP:'Un peque\u00f1o ser de luz vive en el mundo metab\u00f3lico de tu cuerpo. Nadie ha visto a\u00fan su forma final: tu cumplea\u00f1os le dar\u00e1 vida.',plantBtn:'Saludar',have:'Ya tengo una cuenta',back:'Atr\u00e1s',
+  nameOver:'SU ENERG\u00cdA',nameH:'Tus h\u00e1bitos son su energ\u00eda.',nameP:'Cada paso sano que registras le da energ\u00eda:',hab:['Comer bien','Agua','Moverte','Ayuno','Registrar'],nameP2:'Con energ\u00eda de sobra, sale de aventura y cura tus c\u00e9lulas. Los d\u00edas de cansancio, simplemente descansa.',nameBtn:'Entendido',
   nameLabel:'Nombre',shuffle:'Otro',later:'Puedes cambiarlo despu\u00e9s.',
-  askOver:'HOLA',ask:'\u00a1Hola, soy {herb}! Vivo dentro de ti, as\u00ed que deber\u00edamos ser amigos. \u00bfC\u00f3mo te llamas?',youLabel:'Tu nombre',askBtn:'Encantado',needName:'Dile primero tu nombre a {herb}.',
-  rewOver:'TU MUNDO',rew:'\u00a1{name}! Cu\u00eddate y yo iluminar\u00e9 tu mundo. Aleja el zoom y encontrar\u00e1s el mundo espiritual, donde se re\u00fanen los compa\u00f1eros de todos.',chip:'+5 XP \u00b7 primera chispa',saveBtn:'Guarda el mundo de {herb}: cuenta gratis',fine:'Gratis. Tarda 20 segundos.',firstLeaf:'Primera chispa',
-  ivOver:'PLAN INICIAL',ivH:'{herb} est\u00e1 lista para tu primera aventura.',ivP:'Hasta 4 preguntas r\u00e1pidas para que tus primeros pasos encajen en tu d\u00eda. Todas opcionales. Sin preguntas de salud.',go:'Vamos',notNow:'Ahora no',skipQ:'Saltar',
+  askOver:'HOLA',ask:'\u00a1Hola! Vivo dentro de ti, pero a\u00fan no tengo nombre ni cara. Tu cumplea\u00f1os me dar\u00e1 las dos cosas. Primero: \u00bfc\u00f3mo te llamas?',youLabel:'Tu nombre',askBtn:'\u00a1Un placer!',needName:'Primero dime tu nombre.',
+  rewOver:'TU MUNDO',rew:'\u00a1{name}! Cu\u00eddate y yo iluminar\u00e9 tu mundo. Aleja el zoom y encontrar\u00e1s el mundo espiritual, donde se re\u00fanen los seres de luz de todo el mundo.',chip:'+5 XP \u00b7 primera chispa',saveBtn:'Guarda el mundo de tu ser de luz: cuenta gratis',fine:'Gratis. Tarda 20 segundos.',firstLeaf:'Primera chispa',
+  ivOver:'PLAN INICIAL',ivH:'{herb} tiene todo listo para tu primera aventura.',ivP:'Hasta 4 preguntas r\u00e1pidas para que tus primeros pasos encajen en tu d\u00eda. Todas opcionales. Sin preguntas de salud.',go:'Vamos',notNow:'Ahora no',skipQ:'Saltar',
   think:'{herb} est\u00e1 eligiendo tus primeros pasos\u2026',planH:'Tus pr\u00f3ximos pasos',planP:'Est\u00e1n en Hoy. Cada uno abre la parte de la app que lo hace.',planBtn:'\u00a1A por ello!',
   rowT:'Pr\u00f3ximos pasos',rowAll:'Todo hecho hoy',rowQ:'{herb} tiene una pregunta',why:'\u00bfPor qu\u00e9?',goBtn:'Ir',change:'Cambiar',remove:'Quitar',addOne:'A\u00f1adir paso',doneLbl:'Hecho hoy',pickOne:'Elige un paso',cancel:'Cancelar',
-  redo:'Repetir las preguntas',hide:'Ocultar de Hoy',show:'Mostrar en Hoy',profT:'Plan inicial',profNone:'4 preguntas opcionales con Misty. Crean 3 o 4 pr\u00f3ximos pasos en Hoy.',profHas:'{n} pr\u00f3ximos pasos en Hoy',profStart:'Empezar',
+  redo:'Repetir las preguntas',hide:'Ocultar de Hoy',show:'Mostrar en Hoy',profT:'Plan inicial',profNone:'4 preguntas opcionales. Crean 3 o 4 pr\u00f3ximos pasos en Hoy.',profHas:'{n} pr\u00f3ximos pasos en Hoy',profStart:'Empezar',
   skipped:'Cuando quieras: Perfil \u203a Sobre ti \u203a Plan inicial.',saved:'Tus pr\u00f3ximos pasos est\u00e1n en Hoy.',qNot:'Ahora no',qThanks:'Entendido. Ajust\u00e9 tus pasos.',allDone:'Todos los pasos hechos. {herb} brilla.'}
 };
 const t=(k,o)=>C.fmt((TX[lang()]||TX.en)[k]||TX.en[k]||k,o);
@@ -64,7 +65,12 @@ function mistyInner(){try{const T=window.LowiHerbTamagotchi;if(T&&T.plantHTML&&T
 function mistyFallback(){return '<svg class="hs-fb" viewBox="0 0 120 120" aria-hidden="true"><defs><radialGradient id="hsFbB" cx=".38" cy=".32" r=".75"><stop offset="0" stop-color="#eefaff"/><stop offset=".45" stop-color="#8fdcff"/><stop offset="1" stop-color="#4f86e8"/></radialGradient><linearGradient id="hsFbT" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9d8ff" stop-opacity="0"/><stop offset="1" stop-color="#a9d8ff" stop-opacity=".75"/></linearGradient></defs>'+
  '<path d="M98 18 Q70 38 52 50 L66 70 Q84 48 98 18Z" fill="url(#hsFbT)"/><circle cx="56" cy="66" r="30" fill="url(#hsFbB)"/><ellipse cx="46" cy="64" rx="3.4" ry="5" fill="#183d42"/><ellipse cx="64" cy="64" rx="3.4" ry="5" fill="#183d42"/><path d="M48 75 Q55 80 62 75" fill="none" stroke="#183d42" stroke-width="2.4" stroke-linecap="round"/></svg>';}
 const cellReady=()=>{try{const T=window.LowiHerbTamagotchi;return !!(T&&T.plantHTML&&T.plantHTML.cell);}catch(e){return false;}};
-function herbArt(stage,cls){const inner=mistyInner(),done=inner&&cellReady();
+/* Oct 16 birth companion: before the birthday (sign-in gate) it is a spark nobody has seen yet; once the user brought
+   their own companion to life, that companion; Misty only for existing users who have not made theirs yet. */
+function herbArt(stage,cls,gate){const LC=window.LowiBirthCompanion;
+ if(LC&&LC.has())return '<div class="hs-misty hs-own '+(cls||'')+'" aria-hidden="true"><div class="hs-orb">'+LC.svg(null,{size:200})+'</div></div>';
+ if(gate)return '<div class="hs-misty hs-mys '+(cls||'')+'" aria-hidden="true"><div class="hs-orb">'+(LC?LC.mysterySVG({size:200}):'')+'</div></div>';
+ const inner=mistyInner(),done=inner&&cellReady();
  return '<div class="hs-misty '+(cls||'')+'" aria-hidden="true"><div class="hs-orb"'+(done?'':' data-fb="1"')+'>'+(inner||mistyFallback())+'</div></div>';}
 /* the companion drawing (and the cell look Home gives it) loads a moment after this file: redraw Misty once it is there */
 let FILL=0;
@@ -83,14 +89,14 @@ function html(){let st=hs();if(!st){st={step:0,seed:Math.floor(Math.random()*1e6
  const step=Math.max(0,Math.min(3,+st.step||0)),herb=st.herb||MISTY,pick=window.LowiA2&&LowiA2.picker?LowiA2.picker():'';
  const top='<div class="hs-top">'+(step?'<button type="button" class="hs-back" data-hs="back" aria-label="'+esc(t('back'))+'">\u2039</button>':'<span></span>')+'<div class="hs-dots" aria-hidden="true">'+[0,1,2,3].map(i=>'<i'+(i<=step?' class="on"':'')+'></i>').join('')+'</div>'+(step?'<span></span>':pick)+'</div>';
  let body='';
- if(step===0)body='<div class="hs-scene" id="hsScene">'+herbArt(0)+'</div><div class="hs-copy"><p class="hs-over">'+esc(t('over'))+'</p><h1>'+esc(t('plantH'))+'</h1><p class="hs-p">'+esc(t('plantP'))+'</p></div>'+
+ if(step===0)body='<div class="hs-scene" id="hsScene">'+herbArt(0,'',1)+'</div><div class="hs-copy"><p class="hs-over">'+esc(t('over'))+'</p><h1>'+esc(t('plantH'))+'</h1><p class="hs-p">'+esc(t('plantP'))+'</p></div>'+
   '<div class="hs-acts"><button type="button" class="r2-btn pri big" data-hs="plant">'+esc(t('plantBtn'))+'</button><button type="button" class="hs-link" data-r2a="signin">'+esc(t('have'))+'</button></div>';
- else if(step===1)body='<div class="hs-scene sm">'+herbArt(1)+'</div><div class="hs-copy"><p class="hs-over">'+esc(t('nameOver'))+'</p><h1>'+esc(t('nameH'))+'</h1><p class="hs-p">'+esc(t('nameP'))+'</p>'+habits()+'<p class="hs-p hs-p2">'+esc(t('nameP2'))+'</p></div>'+
+ else if(step===1)body='<div class="hs-scene sm">'+herbArt(1,'',1)+'</div><div class="hs-copy"><p class="hs-over">'+esc(t('nameOver'))+'</p><h1>'+esc(t('nameH'))+'</h1><p class="hs-p">'+esc(t('nameP'))+'</p>'+habits()+'<p class="hs-p hs-p2">'+esc(t('nameP2'))+'</p></div>'+
   '<div class="hs-acts"><button type="button" class="r2-btn pri big" data-hs="name">'+esc(t('nameBtn'))+'</button></div>';
- else if(step===2)body='<div class="hs-scene">'+herbArt(2)+'<div class="hs-bubble" role="status">'+esc(t('ask',{herb}))+'</div></div><div class="hs-copy"><p class="hs-over">'+esc(t('askOver'))+'</p>'+
+ else if(step===2)body='<div class="hs-scene">'+herbArt(2,'',1)+'<div class="hs-bubble" role="status">'+esc(t('ask',{herb}))+'</div></div><div class="hs-copy"><p class="hs-over">'+esc(t('askOver'))+'</p>'+
   '<label class="hs-lbl" for="hsYou">'+esc(t('youLabel'))+'</label><input id="hsYou" class="hs-in" maxlength="24" autocomplete="given-name" enterkeyhint="done" value="'+esc(st.user||'')+'"><p class="hs-err" id="hsErr" role="alert"></p></div>'+
   '<div class="hs-acts"><button type="button" class="r2-btn pri big" data-hs="you">'+esc(t('askBtn'))+'</button></div>';
- else body='<div class="hs-scene rew">'+(reduce()?'':'<div class="hs-burst" aria-hidden="true">'+Array.from({length:12},(_,i)=>'<i style="--i:'+i+'"></i>').join('')+'</div>')+herbArt(3)+'<div class="hs-bubble" role="status">'+esc(t('rew',{name:st.user||'',herb}))+'</div></div>'+
+ else body='<div class="hs-scene rew">'+(reduce()?'':'<div class="hs-burst" aria-hidden="true">'+Array.from({length:12},(_,i)=>'<i style="--i:'+i+'"></i>').join('')+'</div>')+herbArt(3,'',1)+'<div class="hs-bubble" role="status">'+esc(t('rew',{name:st.user||'',herb}))+'</div></div>'+
   '<div class="hs-copy"><p class="hs-over">'+esc(t('rewOver'))+'</p><span class="hs-chip">'+ico('sparkle')+esc(t('chip'))+'</span></div>'+
   '<div class="hs-acts"><button type="button" class="r2-btn pri big" data-r2a="signup">'+esc(t('saveBtn',{herb}))+'</button><p class="hs-fine">'+esc(t('fine'))+'</p><button type="button" class="hs-link" data-r2a="signin">'+esc(t('have'))+'</button></div>';
  return '<div class="r2-start hs" data-hs-step="'+step+'" data-noi18n>'+top+body+'</div>';}
@@ -105,11 +111,11 @@ function firstReward(){try{if(window.LowiHost&&LowiHost.award)LowiHost.award('he
 function onGateClick(e){const b=e.target.closest('[data-hs]');if(!b||!b.closest('.r2-start.hs'))return;const a=b.getAttribute('data-hs'),st=hs()||{step:0,seed:0};
  e.preventDefault();
  if(a==='back'){st.step=Math.max(0,(+st.step||0)-1);hsSet(st);paint(false);return;}
- if(a==='plant'){const sc=D.getElementById('hsScene');const next=()=>{st.step=1;st.herb=st.herb||MISTY;hsSet(st);setHerbName(st.herb);paint();};
+ if(a==='plant'){const sc=D.getElementById('hsScene');const next=()=>{st.step=1;hsSet(st);paint();};
   if(reduce()||!sc){next();return;}b.disabled=true;const m=sc.querySelector('.hs-misty');if(m)m.classList.add('wake');setTimeout(next,750);return;}
  if(a==='shuffle'){st.seed=(+st.seed||0)+1+Math.floor(Math.random()*40);const cur=(D.getElementById('hsHerb')||{}).value;st.herb=C.suggestName(core(),st.seed,cur);hsSet(st);const i=D.getElementById('hsHerb');if(i){i.value=st.herb;if(!reduce()){i.classList.remove('pop');void i.offsetWidth;i.classList.add('pop');}}return;}
- if(a==='name'){const v=st.herb||MISTY;st.herb=v;st.step=2;hsSet(st);setHerbName(v);paint();return;}
- if(a==='you'){const v=C.cleanName((D.getElementById('hsYou')||{}).value,30);if(!v){const er=D.getElementById('hsErr');if(er)er.textContent=t('needName',{herb:st.herb||herbName()});const i=D.getElementById('hsYou');if(i)i.focus();return;}
+ if(a==='name'){st.step=2;hsSet(st);paint();return;}
+ if(a==='you'){const v=C.cleanName((D.getElementById('hsYou')||{}).value,30);if(!v){const er=D.getElementById('hsErr');if(er)er.textContent=t('needName');const i=D.getElementById('hsYou');if(i)i.focus();return;}
   st.user=v;st.step=3;hsSet(st);const s=S();if(s){s.user=s.user||{};s.user.name=v;save();}firstReward();paint(false);return;}}
 function onGateKey(e){if(e.key!=='Enter')return;const i=e.target;if(!i||!i.classList||!i.classList.contains('hs-in'))return;e.preventDefault();const b=D.querySelector('.r2-start.hs [data-hs="name"],.r2-start.hs [data-hs="you"]');if(b)b.click();}
 

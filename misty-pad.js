@@ -43,7 +43,7 @@
         return b;
     }
     function label() {
-        if (st.mode === 'auto') return low() ? T('Autopilot, Misty is drifting sleepily. Tap to steer her', 'Autopilot, Misty treibt m\u00fcde. Tippen, um sie zu steuern', 'Piloto autom\u00e1tico, Misty flota con sue\u00f1o. Toca para dirigirla') : T('Autopilot, Misty flies on her own. Tap to steer her', 'Autopilot, Misty fliegt allein. Tippen, um sie zu steuern', 'Piloto autom\u00e1tico, Misty vuela sola. Toca para dirigirla');
+        if (st.mode === 'auto') return low() ? T('Autopilot, Misty is drifting sleepily. Tap to steer', 'Autopilot, Misty treibt m\u00fcde. Tippen zum Steuern', 'Piloto autom\u00e1tico, Misty flota con sue\u00f1o. Toca para dirigir') : T('Autopilot, Misty flies on its own. Tap to steer', 'Autopilot, Misty fliegt allein. Tippen zum Steuern', 'Piloto autom\u00e1tico, Misty vuela por su cuenta. Toca para dirigir');
         return T('Controller: drag to fly Misty, double-tap for autopilot', 'Steuerung: ziehen, um Misty zu fliegen, doppelt tippen f\u00fcr Autopilot', 'Control: arrastra para volar con Misty, toca dos veces para piloto autom\u00e1tico');
     }
     function paint() {

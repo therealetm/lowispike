@@ -10223,9 +10223,9 @@ R2.onboard = function(opts){
 function dots(){ return '<div class="r2-dots">' + [0,1,2].map(i => '<i class="' + (i === ob.step ? "on" : i < ob.step ? "done" : "") + '"></i>').join("") + '</div>'; }
 function signReveal(){
   const z = signOf(ob.bday);
-  if (!z) return '<div class="r2-sign empty"><div class="r2-sg">✦</div><div class="r2-sn">Your star sign shows up here</div><div class="r2-sc">It sets the colour of your app.</div></div>';
+  if (!z) return '<div class="r2-sign empty"><div class="r2-sg">✦</div><div class="r2-sn">Your star sign shows up here</div><div class="r2-sc">It shapes your companion and the colour of your app.</div></div>';
   const a = age(ob.bday);
-  return '<div class="r2-sign"><div class="r2-sg pop">' + z.g + '</div><div class="r2-sn">' + esc(z.n) + (a != null && a > 0 && a < 120 ? ' · ' + a : "") + '</div><div class="r2-sc">Your app takes on your sign\'s colour.</div></div>';
+  return '<div class="r2-sign"><div class="r2-sg pop">' + z.g + '</div><div class="r2-sn">' + esc(z.n) + (a != null && a > 0 && a < 120 ? ' · ' + a : "") + '</div><div class="r2-sc">Your companion and your app take on your sign\'s colour.</div></div>';
 }
 function paintOb(){
   const el = $("#r2ob"); if (!el) return;
@@ -10234,6 +10234,7 @@ function paintOb(){
     h = dots() + '<div class="r2-obt">' + (ob.askName ? "Nice to meet you" : "Hi " + esc(ob.name) + "!") + '</div><div class="r2-obs">When\'s your birthday?</div>' +
       (ob.askName ? '<label class="r2-fl"><span>Name</span><input id="r2obName" maxlength="40" placeholder="Your first name" value="' + esc(ob.name) + '"></label>' : "") +
       '<label class="r2-fl date"><span>Birthday</span><input id="r2obB" type="date" max="' + todayISO() + '" min="1920-01-01" value="' + esc(ob.bday) + '"></label>' +
+      '<label class="r2-fl date r2ob-btime"><span>Birth time (optional)</span><input id="r2obT" type="time" value="' + esc(ob.btime || "") + '"></label>' +
       '<div id="r2obSign">' + signReveal() + '</div>' +
       '<div class="r2-err" id="r2obErr" role="alert"></div><div class="r2-obacts"><button class="r2-btn pri big" data-r2o="next">Next</button></div>';
   } else if (ob.step === 1) {
@@ -10252,6 +10253,7 @@ function paintOb(){
   el.innerHTML = '<div class="r2-obpane">' + h + '</div>';
   const b = $("#r2obB"); if (b) b.addEventListener("input", () => { ob.bday = b.value; $("#r2obSign").innerHTML = signReveal(); });
   const n = $("#r2obName"); if (n) n.addEventListener("input", () => { ob.name = n.value.trim(); });
+  const bt = $("#r2obT"); if (bt) bt.addEventListener("input", () => { ob.btime = bt.value; });
 }
 function saveOb(final){
   const s = R2.S(); s.user = s.user || {};
@@ -10466,8 +10468,13 @@ document.addEventListener("click", e => {
         const bad = (m, el) => { if (er) { er.textContent = m; er.classList.remove("shake"); void er.offsetWidth; er.classList.add("shake"); } if (el) el.focus(); };
         if (ob.askName && !ob.name) return bad("Add your name.", n);
         if (!ob.bday || !signOf(ob.bday)) return bad("Add your birthday to go on.", b);
-        const ag = age(ob.bday); if (ag == null || ag < 1 || ag > 119) return bad("Check your birthday.", b); }
-      saveOb(false); ob.step++; paintOb(); return; }
+        const ag = age(ob.bday); if (ag == null || ag < 1 || ag > 119) return bad("Check your birthday.", b);
+        const bt = $("#r2obT"); if (bt) ob.btime = bt.value; }
+      saveOb(false);
+      /* Oct 16 birth companion: the birthday (+ optional birth time) brings the user's own companion to life before the next step */
+      if (ob.step === 0 && window.LowiBirthCompanion && LowiBirthCompanion.reveal) { const host = $("#r2ob"); host.innerHTML = '<div class="r2-obpane r2-obrev">' + dots() + '<div id="r2obRev"></div></div>';
+        LowiBirthCompanion.reveal($("#r2obRev"), { bday: ob.bday, btime: ob.btime || "" }, () => { ob.step = 1; paintOb(); }); return; }
+      ob.step++; paintOb(); return; }
     if (v === "finish") return finishOb();
   }
   const gg = e.target.closest("[data-r2g]");
@@ -11519,6 +11526,9 @@ const ROWS = [
   ["Your star sign shows up here", "Hier erscheint dein Sternzeichen", "Aquí aparece tu signo"],
   ["It sets the colour of your app.", "Es bestimmt die Farbe deiner App.", "Define el color de tu app."],
   ["Your app takes on your sign's colour.", "Deine App nimmt die Farbe deines Zeichens an.", "Tu app toma el color de tu signo."],
+  ["It shapes your companion and the colour of your app.", "Es formt deinen Begleiter und die Farbe deiner App.", "Da forma a tu compañía y al color de tu app."],
+  ["Your companion and your app take on your sign's colour.", "Dein Begleiter und deine App nehmen die Farbe deines Zeichens an.", "Tu compañía y tu app toman el color de tu signo."],
+  ["Birth time (optional)", "Geburtszeit (optional)", "Hora de nacimiento (opcional)"],
   ["Next", "Weiter", "Siguiente"],
   ["Later", "Später", "Más tarde"],
   ["Back", "Zurück", "Atrás"],

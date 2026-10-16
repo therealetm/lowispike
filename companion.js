@@ -245,7 +245,7 @@
         const steps = C.path(stages() || FALLBACK, m.xp, m.index, g.el, lang());
         const ci = C.clampStage(m.index), now = steps[ci] || steps[0], nx = steps[ci + 1] || null, xp = Math.max(0, Math.round(+m.xp || 0));
         const pct = nx ? Math.max(0, Math.min(100, Math.round((xp - now.xp) / Math.max(1, nx.xp - now.xp) * 100))) : 100;
-        const nextTxt = !nx ? L('Final form reached. She keeps glowing with you.', 'Letzte Form erreicht. Sie leuchtet weiter mit dir.', 'Forma final alcanzada. Sigue brillando contigo.')
+        const nextTxt = !nx ? L('Final form reached. It keeps glowing with you.', 'Letzte Form erreicht. Es leuchtet weiter mit dir.', 'Forma final alcanzada. Sigue brillando contigo.')
             : nx.left > 0 ? L(nx.left + ' XP to ' + nx.name, 'Noch ' + nx.left + ' XP bis ' + nx.name, 'Faltan ' + nx.left + ' XP para ' + nx.name)
                 : L('Ready to evolve into ' + nx.name, 'Bereit für ' + nx.name, 'Lista para ' + nx.name);
         const dry = homeLook().dry;
@@ -259,8 +259,8 @@
             '<i class="cf-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '" aria-label="' + esc(L('XP to the next evolution', 'XP bis zur nächsten Entwicklung', 'XP hasta la próxima evolución')) + '"><i style="width:' + pct + '%"></i></i>' +
             '<small class="cf-next"><b>' + xp + ' XP</b> · ' + esc(nextTxt) + '</small></div>' +
             '<h3>' + esc(L('Evolution path', 'Entwicklungsweg', 'Camino de evolución')) + '</h3><ol class="cf-path">' + forms + '</ol>' +
-            '<p class="cf-tiny">' + esc(L('She evolves with what you log: meals, water, moves, scans. Forms never shrink.', 'Sie entwickelt sich mit dem, was du loggst: Essen, Wasser, Bewegung, Scans. Formen schrumpfen nie.', 'Evoluciona con lo que registras: comidas, agua, movimiento, escaneos. Las formas nunca encogen.')) + '</p>' +
-            '<details class="cf-pick"' + (V.pickOpen ? ' open' : '') + '><summary>' + esc(L('Her style (optional)', 'Ihr Stil (optional)', 'Su estilo (opcional)')) + (t ? '<span class="cf-pick-t">' + esc(t) + '</span>' : '') + '</summary>' + typeBtns +
+            '<p class="cf-tiny">' + esc(L('It evolves with what you log: meals, water, moves, scans. Forms never shrink.', 'Es entwickelt sich mit dem, was du loggst: Essen, Wasser, Bewegung, Scans. Formen schrumpfen nie.', 'Evoluciona con lo que registras: comidas, agua, movimiento, escaneos. Las formas nunca encogen.')) + '</p>' +
+            '<details class="cf-pick"' + (V.pickOpen ? ' open' : '') + '><summary>' + esc(L('Style (optional)', 'Stil (optional)', 'Estilo (opcional)')) + (t ? '<span class="cf-pick-t">' + esc(t) + '</span>' : '') + '</summary>' + typeBtns +
             '<p class="cf-tiny">' + esc(L('Only changes how your companion looks and talks. Not a test or a diagnosis.', 'Ändert nur, wie dein Begleiter aussieht und spricht. Kein Test, keine Diagnose.', 'Solo cambia cómo se ve y habla tu compañero. No es un test ni un diagnóstico.')) + '</p>' + (t ? '<button type="button" class="cf-link" data-cf="clear">' + esc(L('Remove style', 'Stil entfernen', 'Quitar estilo')) + '</button>' : '') +
             '<label class="cf-row"><input type="checkbox" data-cf="traits"' + (p.traits ? ' checked' : '') + '><span>' + esc(L('Show evolved traits', 'Entwicklungsmerkmale zeigen', 'Mostrar rasgos evolucionados')) + '</span></label></details>' +
             '<label class="cf-row"><input type="checkbox" data-cf="share"' + (p.share ? ' checked' : '') + '><span>' + esc(L('Friends see my companion in their friends tree', 'Freunde sehen meinen Begleiter in ihrem Freundesbaum', 'Mis amigos ven a mi compañero en su árbol')) + '<small>' + esc(L('Only the look is shared, never your birthday, sign or type.', 'Geteilt wird nur das Aussehen, nie Geburtstag, Sternzeichen oder Typ.', 'Solo se comparte el aspecto, nunca tu cumpleaños, signo o tipo.')) + '</small></span></label>' +

@@ -181,9 +181,9 @@
         how: ['How the sun fills', 'So füllt sich die Sonne', 'Cómo se llena el sol'],
         howTx: ['Every counted action is a sunbeam for me, up to a daily limit per kind, so a mix fills me fastest. Repeats, spiky meals and meals over the daily limit don’t count.', 'Jede gezählte Aktion ist ein Sonnenstrahl für mich, pro Art bis zu einer Grenze. Eine Mischung füllt mich am schnellsten. Doppeltes, Spike-Mahlzeiten und Essen über dem Tageslimit zählen nicht.', 'Cada acción contada es un rayo de sol para mí, con un límite por tipo, así que una mezcla me llena antes. Repeticiones, comidas con pico y comidas sobre el límite diario no cuentan.'],
         awayTap: ['I’m out tending the world! Back in', 'Ich pflege gerade die Welt! Zurück in', '¡Estoy cuidando el mundo! Vuelvo en'],
-        tiredT: ['Thank you! The sun is full, but I’m too tired to head out right now. A meal, a glass of water or a Move gives me energy, and then I’m off.', 'Danke! Die Sonne ist voll, aber ich bin gerade zu müde zum Losfliegen. Eine Mahlzeit, ein Glas Wasser oder Bewegung gibt mir Kraft, dann flieg ich los.', '¡Gracias! El sol está lleno, pero ahora estoy demasiado cansada para salir. Una comida, un vaso de agua o moverte me da energía y salgo.'],
-        tooTired: ['Too tired to explore', 'Zu müde zum Erkunden', 'Demasiado cansada para explorar'],
-        tiredTap: ['I’m too tired to head out. A meal, water or a Move gives me energy.', 'Ich bin zu müde zum Losfliegen. Essen, Wasser oder Bewegung geben mir Kraft.', 'Estoy demasiado cansada para salir. Comer, agua o moverte me da energía.'],
+        tiredT: ['Thank you! The sun is full, but I’m too tired to head out right now. A meal, a glass of water or a Move gives me energy, and then I’m off.', 'Danke! Die Sonne ist voll, aber ich bin gerade zu müde zum Losfliegen. Eine Mahlzeit, ein Glas Wasser oder Bewegung gibt mir Kraft, dann flieg ich los.', '¡Gracias! El sol está lleno, pero ahora no tengo energía para salir. Una comida, un vaso de agua o moverte me da energía y salgo.'],
+        tooTired: ['Too tired to explore', 'Zu müde zum Erkunden', 'Sin energía para explorar'],
+        tiredTap: ['I’m too tired to head out. A meal, water or a Move gives me energy.', 'Ich bin zu müde zum Losfliegen. Essen, Wasser oder Bewegung geben mir Kraft.', 'No tengo energía para salir. Comer, agua o moverte me da energía.'],
         okay: ['Okay', 'Okay', 'Vale'],
         out: ['Out exploring', 'Unterwegs', 'Explorando'],
         backShort: ['back in', 'zurück in', 'vuelve en'],
@@ -194,7 +194,7 @@
         eFood: ['Food', 'Essen', 'Comida'], eWater: ['Water', 'Wasser', 'Agua'], eMove: ['Move', 'Bewegung', 'Movimiento'],
         notYet: ['not tracked yet', 'noch nicht eingetragen', 'aún sin registrar'],
         mealsN: ['logged', 'eingetragen', 'registradas'], spikyN: ['spiky', 'mit Spike', 'con pico'], glasses: ['glasses', 'Gläser', 'vasos'], moved: ['logged', 'eingetragen', 'registrado'],
-        eNote: ['“Not tracked yet” only means Misty gets no energy from it yet, not that you didn’t do it. She needs energy to head out on adventures.', '„Noch nicht eingetragen“ heißt nur, dass Misty daraus noch keine Kraft bekommt, nicht dass du es nicht gemacht hast. Für Abenteuer braucht sie Energie.', '“Aún sin registrar” solo significa que Misty aún no recibe energía de eso, no que no lo hayas hecho. Necesita energía para sus aventuras.'],
+        eNote: ['“Not tracked yet” only means Misty gets no energy from it yet, not that you didn’t do it. Energy is what sends Misty out on adventures.', '„Noch nicht eingetragen“ heißt nur, dass Misty daraus noch keine Kraft bekommt, nicht dass du es nicht gemacht hast. Für Abenteuer braucht Misty Energie.', '“Aún sin registrar” solo significa que Misty aún no recibe energía de eso, no que no lo hayas hecho. Necesita energía para sus aventuras.'],
         meal: ['Meal', 'Mahlzeit', 'Comida'], scan: ['Scan', 'Scan', 'Escaneo'], move: ['Move', 'Bewegung', 'Movimiento'], fast: ['Fasting milestone', 'Fasten-Etappe', 'Etapa de ayuno'],
         macro: ['Macro goal', 'Makro-Ziel', 'Meta de macros'], water: ['Glass of water', 'Glas Wasser', 'Vaso de agua'], other: ['Other action', 'Andere Aktion', 'Otra acción']
     };

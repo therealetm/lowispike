@@ -1,0 +1,86 @@
+/* LOWiSPIKE birth companion (Oct 16, 2026): reveal moment, creator overlay and Profile card.
+   Black space, iOS blue glass, the companion's sign colour (--lc-a / --lc-b) as the accent. */
+.lc-svg{display:block;overflow:visible}
+.lc-svg .lc-body{transform-box:fill-box}
+@media (prefers-reduced-motion:no-preference){
+ .lc-svg .lc-shape,.lc-svg .lc-face{animation:lcBreath 4.2s ease-in-out infinite;transform-origin:center;transform-box:fill-box}
+ .lc-svg .lc-tw{animation:lcTw 3.2s ease-in-out infinite}
+ .lc-svg .lc-pulse{animation:lcPulse 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+ .lc-svg .lc-spin{animation:lcSpin 9s linear infinite;transform-origin:0 0}
+ .lc-svg .lc-orbit{animation:lcBob 3s ease-in-out infinite}.lc-svg .lc-o2{animation-delay:-1.5s}
+ .lc-mystery .lc-seedling{animation:lcSeed 2.6s ease-in-out infinite;transform-origin:60px 62px}
+}
+@keyframes lcBreath{0%,100%{transform:scale(1,1)}50%{transform:scale(1.035,.97) translateY(1px)}}
+@keyframes lcTw{0%,100%{opacity:.25}50%{opacity:1}}
+@keyframes lcPulse{0%,100%{opacity:.75;transform:scale(1)}50%{opacity:1;transform:scale(1.18)}}
+@keyframes lcSpin{to{transform:rotate(360deg)}}
+@keyframes lcBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes lcSeed{0%,100%{transform:scale(.92);opacity:.85}50%{transform:scale(1.06);opacity:1}}
+
+/* reveal */
+.lc-rev{--lc-a:#8fdcff;--lc-b:#a9b8ff;display:flex;flex-direction:column;align-items:center;text-align:center;color:#fff;gap:6px;padding:8px 4px 4px;min-height:420px;justify-content:center}
+.lc-stage{position:relative;width:200px;height:200px;margin:0 auto 6px}
+.lc-stage .lc-art{position:relative;z-index:1;filter:drop-shadow(0 0 22px color-mix(in srgb,var(--lc-a) 45%,transparent))}
+.lc-flash{position:absolute;inset:-30px;border-radius:50%;background:radial-gradient(circle,#fff 0,color-mix(in srgb,var(--lc-a) 70%,#fff) 22%,transparent 62%);opacity:0;transform:scale(.3);pointer-events:none;z-index:2}
+.lc-rev.lc-waking .lc-art{animation:lcWake .55s ease-in-out infinite alternate}
+.lc-rev.lc-burst .lc-flash{animation:lcFlash .7s ease-out forwards}
+.lc-rev.lc-alive .lc-art{animation:none}
+.lc-born{animation:lcBorn .75s cubic-bezier(.2,1.4,.4,1) both}
+.lc-over{margin:0;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#bfe6ff;font-weight:700}
+.lc-name{margin:2px 0 0;font-size:34px;line-height:1.1;font-weight:800;letter-spacing:-.01em;background:linear-gradient(90deg,#fff,var(--lc-a) 55%,var(--lc-b));-webkit-background-clip:text;background-clip:text;color:transparent;min-height:1.1em}
+.lc-name.lc-pop{animation:lcPop .35s ease-out}
+.lc-sign{margin:0;font-size:15px;font-weight:650;color:#e6f3ff}
+.lc-glyph{font-size:18px;margin-right:2px}
+.lc-pers{margin:6px auto 0;max-width:330px;font-size:15px;line-height:1.4;color:rgba(235,244,255,.92)}
+.lc-pers b{display:block;font-size:16px;color:var(--lc-a)}
+.lc-myth{margin:2px auto 0;max-width:330px;font-size:13px;line-height:1.4;color:rgba(200,220,245,.75)}
+.lc-name,.lc-sign,.lc-pers,.lc-myth,.lc-btns{opacity:0;transform:translateY(6px);transition:opacity .45s ease,transform .45s ease}
+.lc-alive .lc-name{opacity:1;transform:none;transition-delay:.15s}.lc-alive .lc-sign{opacity:1;transform:none;transition-delay:.3s}
+.lc-alive .lc-pers{opacity:1;transform:none;transition-delay:.45s}.lc-alive .lc-myth{opacity:1;transform:none;transition-delay:.55s}.lc-alive .lc-btns{opacity:1;transform:none;transition-delay:.65s}
+.lc-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px;width:100%;max-width:360px}
+.lc-glass,.lc-cta,.lc-pcard{font:inherit;color:#fff;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.lc-glass,.lc-cta{min-height:48px;padding:0 20px;border-radius:999px;font-size:16px;font-weight:700;flex:1 1 140px;
+ background:linear-gradient(165deg,rgba(96,160,255,.30),rgba(28,64,140,.34) 55%,rgba(12,30,70,.42));border:1px solid rgba(160,220,255,.6);
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 10px 24px -14px rgba(30,110,255,.7);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+.lc-cta{background:linear-gradient(165deg,color-mix(in srgb,var(--lc-a,#8fdcff) 55%,#3d8bff),#1f5fd6 70%);border-color:rgba(200,235,255,.75)}
+.lc-glass:disabled,.lc-cta:disabled{opacity:.45}
+.lc-glass:active,.lc-cta:active{transform:scale(.97)}
+@keyframes lcWake{from{transform:scale(.96) rotate(-2deg)}to{transform:scale(1.04) rotate(2deg)}}
+@keyframes lcFlash{0%{opacity:0;transform:scale(.3)}35%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.5)}}
+@keyframes lcBorn{0%{opacity:0;transform:scale(.35)}100%{opacity:1;transform:scale(1)}}
+@keyframes lcPop{0%{transform:scale(.9);opacity:.4}100%{transform:scale(1);opacity:1}}
+@media (prefers-reduced-motion:reduce){.lc-rev *{animation:none!important;transition:none!important}}
+
+/* creator overlay */
+.lc-ov{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));
+ background:rgba(2,4,10,.72);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);opacity:0;transition:opacity .22s ease}
+.lc-ov.on{opacity:1}
+.lc-card{position:relative;width:100%;max-width:440px;max-height:100%;overflow:auto;border-radius:28px;padding:22px 18px 20px;color:#fff;
+ background:linear-gradient(165deg,rgba(40,70,140,.55),rgba(8,14,34,.88));border:1px solid rgba(160,220,255,.45);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 30px 80px rgba(0,0,0,.6)}
+.lc-x{position:absolute;top:12px;right:12px;width:44px;height:44px;border-radius:50%;font-size:26px;line-height:1;color:#fff;cursor:pointer;z-index:3;
+ background:linear-gradient(165deg,rgba(96,160,255,.30),rgba(28,64,140,.34));border:1px solid rgba(160,220,255,.6)}
+.lc-form{display:flex;flex-direction:column;align-items:stretch;gap:10px;padding-top:8px}
+.lc-form .lc-art{align-self:center}
+.lc-l{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:650;color:#d6ecff;text-align:left}
+.lc-l input{min-height:48px;border-radius:14px;padding:0 14px;font:inherit;font-size:17px;color:#fff;background:rgba(10,20,44,.7);border:1px solid rgba(160,220,255,.45);color-scheme:dark}
+.lc-hint{margin-top:-4px;color:rgba(200,220,245,.7);font-size:12.5px}
+.lc-err{margin:0;color:#ffb3c1;font-size:14px}
+.lc-form .lc-cta{flex:none;margin-top:6px}
+
+/* Profile card */
+.lc-pcard{display:flex;align-items:center;gap:12px;width:100%;text-align:left;margin-top:12px;padding:10px 14px;border-radius:22px;min-height:76px;
+ background:linear-gradient(165deg,rgba(96,160,255,.22),rgba(28,64,140,.26) 55%,rgba(12,30,70,.36));border:1px solid rgba(160,220,255,.45);
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.22);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+.lc-pcard .lc-svg{flex:none}
+.lc-pt{display:flex;flex-direction:column;min-width:0;flex:1}
+.lc-pt small{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#bfe6ff;font-weight:700}
+.lc-pt b{font-size:17px}
+.lc-pt em{font-style:normal;font-size:13px;color:rgba(220,235,255,.8);line-height:1.3}
+.lc-chev{font-size:24px;color:#bfe6ff}
+/* onboarding birthday step: optional birth time */
+.r2ob-btime{margin-top:10px}
+.r2ob-btime .lc-hint{display:block;margin-top:4px}
+/* herb-start gate / starter plan art: our SVG already draws its own glass bubble */
+.hs-misty.hs-own .hs-orb,.hs-misty.hs-mys .hs-orb{background:none!important;border:0!important;box-shadow:none!important;overflow:visible!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+.hs-misty.hs-own .hs-orb::after,.hs-misty.hs-mys .hs-orb::after,.hs-misty.hs-own .hs-orb::before,.hs-misty.hs-mys .hs-orb::before{display:none!important}
+.hs-misty.hs-own .lc-svg,.hs-misty.hs-mys .lc-svg{width:118%;height:118%;flex:none}

@@ -32,7 +32,7 @@
         autoLong: ['Auto: follows the real sun', 'Auto: folgt der echten Sonne', 'Auto: sigue al sol real'],
         slider: ['Time of day in the app', 'Tageszeit in der App', 'Hora del día en la app'],
         speed: ['World speed', 'Tempo der Welt', 'Velocidad del mundo'],
-        speedNote: ['How fast the world around Misty moves. Misty keeps her own pace.', 'Wie schnell sich die Welt um Misty bewegt. Misty behält ihr eigenes Tempo.', 'Qué tan rápido se mueve el mundo alrededor de Misty. Misty mantiene su propio ritmo.'],
+        speedNote: ['How fast the world around Misty moves. Misty keeps its own pace.', 'Wie schnell sich die Welt um Misty bewegt. Misty behält das eigene Tempo.', 'Qué tan rápido se mueve el mundo alrededor de Misty. Misty mantiene su propio ritmo.'],
         mist: ['Morning mist', 'Morgennebel', 'Niebla matinal'],
         golden: ['Golden hour', 'Goldene Stunde', 'Hora dorada'],
         blue: ['Blue mist', 'Blauer Nebel', 'Niebla azul'],

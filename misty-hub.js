@@ -103,7 +103,7 @@
             '</section>' +
             (night ? '<button type="button" class="mh-pri" data-mh="goodnight"' + (gn ? ' aria-pressed="true"' : '') + '>' + ICO.moon + '<span>' + esc(gn ? T('Tucked in for the night', 'F\u00fcr die Nacht eingekuschelt', 'Arropada para la noche') : T('Say goodnight', 'Gute Nacht sagen', 'Dar las buenas noches')) + '</span></button>' : '') +
             '<nav class="mh-doors" aria-label="' + esc(name()) + '">' +
-                '<button type="button" data-mh="forms">' + ICO.forms + '<b>' + esc(T('Forms', 'Formen', 'Formas')) + '</b><small>' + esc(T('How she evolves', 'Wie sie sich entwickelt', 'C\u00f3mo evoluciona')) + '</small></button>' +
+                '<button type="button" data-mh="forms">' + ICO.forms + '<b>' + esc(T('Forms', 'Formen', 'Formas')) + '</b><small>' + esc(T('How it evolves', 'Wie es sich entwickelt', 'C\u00f3mo evoluciona')) + '</small></button>' +
                 '<button type="button" data-mh="collection">' + ICO.col + '<b>' + esc(T('Collection', 'Sammlung', 'Colecci\u00f3n')) + '</b><small>' + esc(T('Your scanned cards', 'Deine Scan-Karten', 'Tus cartas')) + '</small></button>' +
                 '<button type="button" data-mh="glow">' + ICO.glow + '<b>' + esc(T('Glow', 'Leuchten', 'Brillo')) + '</b><small>' + esc(T('Aura and finds', 'Aura und Funde', 'Aura y hallazgos')) + '</small></button>' +
             '</nav>' +

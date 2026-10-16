@@ -12,17 +12,20 @@ test('onboarding copy tells the Misty story in all three languages, with no herb
   for (const bad of [/glow-up/i, /\bseed\b/i, /\bplant\b/i, /your herb/i, /\bherbs?\b(?!\})/i, /Kraut/i, /hierba/i, /Samen/i, /semilla/i, /pflanz/i, /planta/i, /sprout/i, /Keim/i])
     assert.ok(!bad.test(tx.replace(/plant(H|P|Btn)/g, '').replace(/\{herb\}/g, '')), 'old wording in onboarding: ' + bad);
   for (const lang of ['en:', 'de:', 'es:']) assert.ok(tx.includes(lang));
-  assert.ok(tx.includes("plantH:'This is Misty.'") && tx.includes("plantH:'Das ist Misty.'") && tx.includes("plantH:'Esta es Misty.'"));
+  // Oct 16 birth companion: before the birthday the companion is an unrevealed being with no name ("Misty" only stays as the fallback for existing users)
+  assert.ok(tx.includes("plantH:'Someone is waiting for you.'") && tx.includes("plantH:'Jemand wartet auf dich.'") && tx.includes("plantH:'Alguien te est\\u00e1 esperando.'"));
+  assert.ok(!/Misty/.test(tx.slice(0, tx.indexOf('ivOver'))), 'no Misty in the gate copy');
   assert.ok(/metabolic world/.test(tx) && /Stoffwechselwelt/.test(tx) && /mundo metab/.test(tx));
   assert.ok(/spirit world/.test(tx) && /Geisterwelt/.test(tx) && /mundo espiritual/.test(tx));
   assert.ok(!/glow-up|Plant my herb|Every glow/i.test(read('index.html')));
 });
 
-test('onboarding draws Misty with the companion art, not a seed in a pot, and names her Misty', () => {
+test('onboarding draws the unrevealed companion (no name until the birthday reveal), not a seed in a pot', () => {
   const src = read('herb-start.js');
   assert.ok(!/hs-pot|hs-seed|hs-sprout|hsSeed|hsPot/.test(src));
   assert.ok(src.includes('T.plantHTML(') && src.includes("const MISTY='Misty'"));
-  assert.ok(/if\(a==='plant'\)\{[^]*?setHerbName\(st\.herb\)/.test(src));
+  assert.ok(!/if\(a==='plant'\)\{[^\n]*setHerbName/.test(src), 'the gate no longer names the companion Misty');
+  assert.ok(/herbArt\(0,'',1\)/.test(src) && /mysterySVG/.test(src));
   assert.ok(!/hs-art/.test(read('herb-start.css')));
 });
 

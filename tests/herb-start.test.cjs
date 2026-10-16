@@ -111,7 +111,7 @@ test('wiring: gate hook, setup hook, loader, offline cache, and auth handoff unt
     assert(idx.indexOf('hs-hook: herb-first start') < idx.indexOf('/* a2-hook */'), 'herb-first comes before the old start carousel');
     assert(idx.includes('LowiHerbStart.afterSetup()'));
     const ui = read('apple-ui.js');
-    assert(ui.indexOf("'starter-core.js','herb-start.js'") > ui.indexOf("'herb-identity-core.js'"));
+    assert(ui.indexOf("'starter-core.js','companion-birth-core.js','companion-birth.js','herb-start.js'") > ui.indexOf("'herb-identity-core.js'"));
     const sw = read('sw.js');
     for (const f of ['starter-core.js', 'herb-start.js', 'herb-start.css']) assert(sw.includes('"' + f + '"'), f);
     const js = read('herb-start.js');

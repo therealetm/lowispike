@@ -247,7 +247,7 @@
             next;
         if (v.dry > .55) {
             mood = 'dry';
-            title = L(n + ' is thirsty and tired', n + ' ist durstig und schlapp', n + ' tiene sed y está cansada');
+            title = L(n + ' is thirsty and tired', n + ' ist durstig und schlapp', n + ' tiene sed y poca energía');
             sub = L('One glass brings the leaves back', 'Ein Glas bringt die Blätter zurück', 'Un vaso le devuelve las hojas');
             next = pick('water', 'water', L('Drink water', 'Wasser trinken', 'Beber agua'));
         } else if (v.dry > .2) {

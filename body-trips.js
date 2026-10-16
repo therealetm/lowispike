@@ -317,7 +317,7 @@
         here: ['Your cell is here', 'Deine Zelle ist hier', 'Tu célula está aquí'],
         go: ['Travel here', 'Hinreisen', 'Viajar aquí'],
         busy: ['Your cell is already on a trip.', 'Deine Zelle ist schon unterwegs.', 'Tu célula ya está de viaje.'],
-        tired: ['Misty is too tired to travel right now. A meal, a glass of water or a Move gives her energy.', 'Misty ist gerade zu müde zum Reisen. Eine Mahlzeit, ein Glas Wasser oder Bewegung gibt ihr Kraft.', 'Misty está demasiado cansada para viajar ahora. Una comida, un vaso de agua o moverte le da energía.'],
+        tired: ['Misty is too tired to travel right now. A meal, a glass of water or a Move gives Misty energy.', 'Misty ist gerade zu müde zum Reisen. Eine Mahlzeit, ein Glas Wasser oder Bewegung gibt Misty Kraft.', 'Misty no tiene energía para viajar ahora. Una comida, un vaso de agua o moverte le da energía.'],
         limit: ['That was today’s 3 trips. Tomorrow your cell travels again.', 'Das waren heute 3 Reisen. Morgen reist deine Zelle wieder.', 'Ya van 3 viajes hoy. Mañana tu célula vuelve a viajar.'],
         how: ['How to explore it', 'So erkundest du es', 'Cómo explorarlo'],
         facts: ['What your cell found', 'Was deine Zelle entdeckt hat', 'Lo que encontró tu célula'],

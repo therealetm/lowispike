@@ -112,35 +112,36 @@ html.lg #app #main .tab :is(.sh-top, .mv-top, .cm-top, .fy-top) { background: li
 html.lg #app #main #tabbar .tb.scan .ring { background: radial-gradient(120% 120% at 30% 20%, #5fb0ff, #0a7aff 60%, #0060df) !important; color: #fff !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .6), inset 0 -2px 6px rgba(0, 0, 0, .25), 0 8px 24px -6px rgba(10, 132, 255, .75) !important; }
 html.lg .camb { background: rgba(255, 255, 255, .12) !important; color: #fff !important; border: .5px solid rgba(255, 255, 255, .2) !important; -webkit-backdrop-filter: var(--lg-blur); backdrop-filter: var(--lg-blur); box-shadow: var(--lg-edge) !important; }
 
-/* 10. Community = the zoomed-out solar system (E-man's wallpaper): black space, a sun behind you, thin orbits (drawn on the
-   sky canvas), every companion a small world of its own colour sitting on its orbit, names like iOS icon labels, and glass
-   speech bubbles tinted in the speaker's colour. */
+/* 10. Community = the spirit world seen from far out (Oct 16, round 3, E-man: "it's still the spirit world ... within the metabolic
+   health style"): the same silvery dark-blue bloodstream as Home (drawn on the sky canvas, with drifting cells), every companion
+   floating in its own glowing cell of its colour, names like iOS icon labels. No sun, no planets, no orbit rings. */
 html.lg #cmPaneChat[data-spirit-chat] { --cg-name: #fff; --cg-nameb: transparent; --cg-thread: rgba(10, 10, 14, .82); --chat-edge: rgba(255, 255, 255, .14); }
-html.lg #cmPaneChat[data-spirit-chat] .cp-room.cg-room { background: #000 !important; border: .5px solid rgba(255, 255, 255, .12) !important; border-radius: 28px !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .18) !important; }
+html.lg #cmPaneChat[data-spirit-chat] .cp-room.cg-room { background: #060d1f !important; border: .5px solid rgba(255, 255, 255, .12) !important; border-radius: 28px !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .18) !important; }
 html.lg #cmPaneChat[data-spirit-chat] .cg-orb {
-    background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, .55), rgba(255, 255, 255, 0) 34%),
-        radial-gradient(circle at 70% 75%, rgba(0, 0, 0, .55), rgba(0, 0, 0, 0) 62%),
-        radial-gradient(circle at 45% 40%, color-mix(in srgb, var(--c, #8fb4ff) 85%, #fff), color-mix(in srgb, var(--c, #8fb4ff) 70%, #000) 78%) !important;
-    box-shadow: inset -6px -8px 14px rgba(0, 0, 0, .45), inset 2px 2px 6px rgba(255, 255, 255, .25), 0 0 18px -4px color-mix(in srgb, var(--c, #8fb4ff) 70%, transparent) !important;
+    background: radial-gradient(circle at 34% 28%, rgba(255, 255, 255, .42), rgba(255, 255, 255, 0) 30%),
+        radial-gradient(circle, color-mix(in srgb, var(--c, #8fb4ff) 16%, transparent) 0 52%, color-mix(in srgb, var(--c, #8fb4ff) 46%, transparent) 70%, color-mix(in srgb, var(--c, #8fb4ff) 80%, #fff) 79%, color-mix(in srgb, var(--c, #8fb4ff) 30%, transparent) 84%, transparent 88%) !important;
+    box-shadow: 0 0 22px -2px color-mix(in srgb, var(--c, #8fb4ff) 65%, transparent), inset 0 0 14px color-mix(in srgb, var(--c, #8fb4ff) 40%, transparent) !important;
     border: 0 !important; overflow: visible;
 }
-html.lg #cmPaneChat[data-spirit-chat] .cg-orb .cp-form { width: 74%; height: 74%; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .35)); }
-html.lg #cmPaneChat[data-spirit-chat] .cg-body.ringed .cg-orb::after { content: ''; position: absolute; left: -24%; right: -24%; top: 41%; height: 18%; border-radius: 50%; border: 1.5px solid color-mix(in srgb, var(--c, #cbb88f) 55%, #fff); opacity: .75; transform: rotate(-16deg); box-shadow: 0 0 0 2px rgba(255, 255, 255, .06); pointer-events: none; }
-html.lg #cmPaneChat[data-spirit-chat] .cg-body.me .cg-orb { box-shadow: 0 0 0 1.5px rgba(255, 244, 214, .8), 0 0 34px 6px rgba(255, 226, 170, .45), inset -6px -8px 14px rgba(0, 0, 0, .35) !important; }
-html.lg #cmPaneChat[data-spirit-chat] .cg-body.sel .cg-orb { box-shadow: 0 0 0 2px #fff, 0 0 26px var(--c), inset -6px -8px 14px rgba(0, 0, 0, .4) !important; }
+html.lg #cmPaneChat[data-spirit-chat] .cg-orb .cp-form { width: 72%; height: 72%; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .35)); }
+html.lg #cmPaneChat[data-spirit-chat] .cg-body.me .cg-orb { box-shadow: 0 0 0 1.5px rgba(156, 218, 199, .9), 0 0 34px 8px rgba(156, 218, 199, .45), inset 0 0 16px rgba(156, 218, 199, .35) !important; }
+html.lg #cmPaneChat[data-spirit-chat] .cg-body.sel .cg-orb { box-shadow: 0 0 0 2px #fff, 0 0 26px var(--c), inset 0 0 14px color-mix(in srgb, var(--c, #8fb4ff) 40%, transparent) !important; }
 html.lg #cmPaneChat[data-spirit-chat] .cg-name { font-family: var(--lg-font); font-size: 11px !important; font-weight: 600 !important; background: none !important; color: #fff !important; text-shadow: 0 1px 3px rgba(0, 0, 0, .9); padding: 0 2px !important; }
 html.lg #cmPaneChat[data-spirit-chat] .cg-body:is(.me, .sel) .cg-name { background: none !important; color: #fff !important; }
 html.lg #cmPaneChat[data-spirit-chat] .cg-body.bot .cg-name { color: rgba(235, 235, 245, .7) !important; }
+/* speech bubbles (Oct 16, round 3): minimal, round, cartoon. White, a rim in the speaker's colour, a little tail pointing at the
+   companion who is talking, a flat cartoon shadow, a springy pop when it appears. */
 html.lg #cmPaneChat[data-spirit-chat] .cg-bub {
-    background: color-mix(in srgb, var(--c, #8fb4ff) 30%, rgba(30, 30, 36, .82)) !important; color: #fff !important;
-    border: .5px solid rgba(255, 255, 255, .22) !important; border-radius: 18px !important; font-family: var(--lg-font);
-    -webkit-backdrop-filter: blur(18px) saturate(170%); backdrop-filter: blur(18px) saturate(170%);
-    box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .35), 0 6px 18px -6px rgba(0, 0, 0, .7) !important;
+    background: #fff !important; color: #15122a !important; font-family: var(--lg-font); font-weight: 600;
+    border: 2px solid color-mix(in srgb, var(--c, #8fb4ff) 80%, #fff) !important; border-radius: 20px !important;
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+    box-shadow: 0 3px 0 color-mix(in srgb, var(--c, #8fb4ff) 45%, rgba(0, 0, 0, .55)) !important;
 }
-html.lg #cmPaneChat[data-spirit-chat] .cg-bub::after { background: color-mix(in srgb, var(--c, #8fb4ff) 30%, rgb(30, 30, 36)) !important; border-color: rgba(255, 255, 255, .22) !important; }
-html.lg #cmPaneChat[data-spirit-chat] .cg-bub.mine { background: color-mix(in srgb, var(--c, #0a84ff) 45%, rgba(10, 132, 255, .55)) !important; }
-html.lg #cmPaneChat[data-spirit-chat] .cg-bub.mine::after { background: color-mix(in srgb, var(--c, #0a84ff) 45%, rgb(10, 100, 210)) !important; }
-html.lg #cmPaneChat[data-spirit-chat] .cg-bub.tome { box-shadow: 0 0 0 1.5px #0a84ff, 0 6px 18px -6px rgba(0, 0, 0, .7) !important; }
+html.lg #cmPaneChat[data-spirit-chat] .cg-bub::after { background: #fff !important; border-color: color-mix(in srgb, var(--c, #8fb4ff) 80%, #fff) !important; border-width: 2px !important; }
+html.lg #cmPaneChat[data-spirit-chat] .cg-bub.mine, html.lg #cmPaneChat[data-spirit-chat] .cg-bub.mine::after { background: #eafbf4 !important; }
+html.lg #cmPaneChat[data-spirit-chat] .cg-bub.tome { box-shadow: 0 0 0 2px #ffd27a, 0 3px 0 rgba(0, 0, 0, .45) !important; }
+html.lg #cmPaneChat[data-spirit-chat] :is(.cg-bub, .cg-bub.mine) :is(.cg-to, .cg-t .cm-mention) { color: #2a62c9 !important; }
+html.lg #cmPaneChat[data-spirit-chat] .cg-bub .cg-st { color: rgba(21, 18, 42, .55) !important; }
 html.lg #cmPaneChat[data-spirit-chat] :is(.cg-to, .cg-t .cm-mention) { color: #9fd0ff !important; }
 html.lg #cmPaneChat[data-spirit-chat] .cg-st { color: rgba(235, 235, 245, .6) !important; }
 html.lg #cmPaneChat[data-spirit-chat] :is(.cg-hist, .cg-chip.on, .cg-chipx, .cg-x, .cg-empty) { background: rgba(118, 118, 128, .24) !important; color: #fff !important; border: .5px solid rgba(255, 255, 255, .14) !important; -webkit-backdrop-filter: var(--lg-blur); backdrop-filter: var(--lg-blur); box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .25) !important; }
@@ -155,10 +156,10 @@ html.lg #app #main > .tab.lg-in { transition: none !important; opacity: 1 !impor
 html.lg #app #main.lg-drag > .tab { transition: none !important; will-change: transform; }
 html.lg #app #main > .tab:not(#tab-home), html.lg #app #main #tabbar, html.lg #app #main :is(#mv-screen, #shBody, #cmList, #fyFeed, #cmPaneBoard) { touch-action: pan-y pinch-zoom; }
 /* the camera is a page too (Oct 16): a dark viewfinder page slides in, the live camera opens over it; on the camera a sideways swipe pages on */
-#main > .lg-campage { position: absolute; inset: 0; z-index: 1; display: none; background: #000; color: rgba(255, 255, 255, .85); pointer-events: none; }
+#main > .lg-campage { position: absolute; inset: 0; z-index: 1; display: none; background-color: #000; background-image: var(--lg-space, none), radial-gradient(120% 60% at 50% -10%, rgba(40, 70, 140, .32), transparent 70%); background-size: 340px 340px, 100% 100%; color: #fff; pointer-events: none; }
 #main > .lg-campage:is(.lg-peek, .lg-in, .lg-out) { display: grid; place-items: center; }
 #main > .lg-campage .lg-camframe { position: relative; width: min(64vw, 280px); aspect-ratio: 1.45; }
-#main > .lg-campage .lg-camframe i { position: absolute; width: 34px; height: 34px; border: 3px solid rgba(255, 255, 255, .9); }
+#main > .lg-campage .lg-camframe i { position: absolute; width: 34px; height: 34px; border: 3px solid var(--lg-blue-2, #64d2ff); filter: drop-shadow(0 0 6px rgba(10, 132, 255, .65)); }
 #main > .lg-campage .lg-camframe i:nth-child(1) { left: 0; top: 0; border-right: 0; border-bottom: 0; border-radius: 12px 0 0 0; }
 #main > .lg-campage .lg-camframe i:nth-child(2) { right: 0; top: 0; border-left: 0; border-bottom: 0; border-radius: 0 12px 0 0; }
 #main > .lg-campage .lg-camframe i:nth-child(3) { left: 0; bottom: 0; border-right: 0; border-top: 0; border-radius: 0 0 0 12px; }

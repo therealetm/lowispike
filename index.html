@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261016-085010">
+<meta name="lowi-build" content="20261016-085510">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -19696,7 +19696,7 @@ window.LowiCommunityHost = {
   identity(){ const p = LowiR3.me(), u = S.user || {}; return {n:u.name || "", s:p.s, t:u.mbti || u.personality || p.t || "", avatar:p.avatar, lv:p.lv, xp:p.xp}; },
   bubble:(p,size) => LowiR3.bubble(p,size), color:sign => LowiGlass.palette(String(sign || "none").toLowerCase())[0],
   typeLabel:(type,lang) => window.LowiHerbIdentityCore ? LowiHerbIdentityCore.typeLabel(type,lang) : "",
-  sheet:html => LowiR2.sheet(html, {cls:"cs-overlay"}), active:() => TAB === "foryou" && CMV.view === "chat",
+  sheet:html => LowiR2.sheet(html, {cls:"cs-overlay"}), active:() => TAB === "foryou" && (CMV.view === "chat" || !!document.querySelector("#tab-foryou.nm-solo")), /* Oct 16: Community is the galaxy alone (nav-moves.js), so it is live whatever the old segment says */
   install(api){
     cmRoom = (el,keep) => api.mount(el); cmSend = api.send; cmMentionUpdate = api.mentions;
     cmMsgHTML = api.messageHTML; cmMsgHTML.__r3 = true; cmMsgHTML.__r2 = true;
@@ -19709,10 +19709,10 @@ window.LowiCommunityHost = {
 <script src="community-chat-cloud.js?v=community-1"></script>
 <script src="community-galaxy.js?v=galaxy-2"></script>
 <script src="community-chat.js?v=galaxy-2"></script>
-<link rel="stylesheet" id="lgCss" href="liquid-glass.css?v=20261016-085010">
-<script src="liquid-glass.js?v=20261016-085010"></script>
-<link rel="stylesheet" id="sgCss" href="scan-glass.css?v=20261016-085010">
-<script src="scan-glass.js?v=20261016-085010"></script>
+<link rel="stylesheet" id="lgCss" href="liquid-glass.css?v=20261016-085510">
+<script src="liquid-glass.js?v=20261016-085510"></script>
+<link rel="stylesheet" id="sgCss" href="scan-glass.css?v=20261016-085510">
+<script src="scan-glass.js?v=20261016-085510"></script>
 <link rel="stylesheet" href="nav-moves.css?v=nav-2">
 <script src="nav-moves.js?v=nav-2"></script>
 <script src="galaxy-zoom.js?v=gx-3"></script>

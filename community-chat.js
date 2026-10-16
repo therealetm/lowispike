@@ -195,7 +195,7 @@ function galaxy(ms,w,h,quiet){
   const aria=me?(sel?tr('toEveryone'):tr('youAll')):(picked?fill('talking',p.n):fill('talkTo',p.n));
   const attrs='data-uid="'+esc(x.uid)+'" data-name="'+esc(me?own().n||'':p.n)+'" aria-label="'+esc(aria)+'"'+(me?'':' aria-pressed="'+picked+'"')+' style="left:'+x.x+'px;top:'+x.y+'px;--s:'+x.size+'px;--i:'+i+';--c:'+hueColor(x.uid,me)+'"';
   const inner='<span class="cg-orb">'+mate(me?(scope||'me'):x.uid,'g'+i)+'</span><span class="cg-name">'+esc(label)+'</span>';
-  html+=button(me?'to-all':'select',inner,attrs,'cg-body'+(me?' me':'')+(picked?' sel':'')+(talking?' speaking':'')+(p.bot?' bot':'')+(!me&&G.hash(x.uid)%3===0?' ringed':'')+(me&&!scope?' cg-off':''));
+  html+=button(me?'to-all':'select',inner,attrs,'cg-body'+(me?' me':'')+(picked?' sel':'')+(talking?' speaking':'')+(p.bot?' bot':'')+(me&&!scope?' cg-off':''));
   const m=last.get(me?scope:x.uid);const o=m?G.fade(m.ts,now):0;
   if(m&&(o>0||m.status)&&x.bub.lines>=1){const t=G.targetOf(m,ms,idx),body=G.bubbleText(m,t),toMe=t&&t.uid===scope;
    /* One line, one conversation: what you said to someone lives on the line while you talk to them and is gone when you stop.

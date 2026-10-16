@@ -41,17 +41,20 @@ test('the glue marks the visible tab on <html> and keeps the sheet last', () => 
     assert.ok(js.includes("getElementById('lgCss')"));
 });
 
-test('Community is a solar system: you in the middle, a sun, orbit rings through every world, glass bubbles', () => {
+test('Community is the spirit world seen from far out: metabolic, not planets; round cartoon bubbles by the speaker', () => {
     const G = require('../community-galaxy.js'), chat = read('community-chat.js'), gal = read('community-galaxy.js');
     const L = G.layout([{ uid: 'a' }, { uid: 'b' }, { uid: 'c' }], 390, 560, 'me');
     const me = L.spots.find(s => s.me);
     assert.ok(me.cell.r > 0 && me.cell.r < L.grid.rows - 1, 'you sit in a middle row, not the bottom');
-    assert.ok(gal.includes('set(next,isLight,orb)') && /ctx\.arc\(O\.cx,O\.cy,r,0,6\.283\)/.test(gal), 'orbit rings drawn round you');
-    assert.ok(!/rgba\(255,170,210/.test(gal), 'no pastel nebula');
+    assert.ok(gal.includes('set(next,isLight,orb)') && !/ctx\.arc\(O\.cx,O\.cy,r,0,6\.283\)/.test(gal), 'no orbit rings');
+    assert.ok(!/rgba\(255,244,214,\.55\)/.test(gal), 'no sun');
+    assert.ok(gal.includes("'#16305a'") && gal.includes('a cell: soft disc'), 'dark-blue bloodstream with drifting cells');
     assert.ok(chat.includes('orbits:meSpot?{cx:meSpot.x,cy:meSpot.y') && chat.includes('sk.set(gx.lines,false,gx.orbits)'));
-    assert.ok(chat.includes("' ringed'"));
-    assert.ok(/html\.lg #cmPaneChat\[data-spirit-chat\] \.cp-room\.cg-room \{ background: #000 !important;/.test(css));
-    assert.ok(/\.cg-body\.ringed \.cg-orb::after/.test(css) && /html\.lg #cmPaneChat\[data-spirit-chat\] \.cg-bub \{/.test(css));
+    assert.ok(!chat.includes("' ringed'") && !/\.cg-body\.ringed/.test(css), 'no planet rings');
+    assert.ok(/html\.lg #cmPaneChat\[data-spirit-chat\] \.cg-bub \{\n    background: #fff !important;/.test(css) && /border-radius: 20px !important;/.test(css), 'white, round bubbles');
+    assert.ok(/\.cg-bub::after \{ background: #fff !important;/.test(css), 'the tail points at the companion talking');
+    assert.ok(/for\(const L of lines\)/.test(gal), 'the energy stream lines stay');
+    assert.ok(read('index.html').includes('CMV.view === "chat" || !!document.querySelector("#tab-foryou.nm-solo")'), 'the galaxy sky (and its stream lines) runs even when the old segment state says For You');
 });
 
 test('tabs page sideways like the iPhone home screen, without stealing the world drag, pinches or Cook scrollers', () => {

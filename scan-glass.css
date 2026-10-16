@@ -140,3 +140,13 @@ html.lg #lcUpd.lc-upd { background: rgba(28, 28, 34, .72) !important; color: #ff
     html.lg .b3-cam :is(.b3-cbox, .b3-cx, .b3-torch) { background: rgba(28, 28, 32, .96) !important; }
     html.lg .b3-cam.sg-docked .b3-cbot { background: rgba(28, 28, 32, .96) !important; }
 }
+
+/* Oct 16: typing the barcode number. The panel sits right above the keyboard; the camera card and capture buttons step aside. */
+.b3-cam.kb .b3-cbot, html.lg .b3-cam.kb .b3-cbot, html.lg .b3-cam.sg-docked.kb .b3-cbot, #spWorld .b3-cam.kb .b3-cbot {
+    top: auto !important; bottom: calc(var(--b3kb, 0px) + 10px) !important;
+    left: max(10px, calc(50% - 280px)) !important; right: max(10px, calc(50% - 280px)) !important;
+    z-index: 60 !important; transform: none !important; padding: 12px !important;
+}
+.b3-cam.kb .b3-cmsg, .b3-cam.kb .b3-cacts, .b3-cam.kb .b3-deep { display: none !important; }
+.b3-cam.kb .b3-ctype input, .b3-cam.kb #b3Bc { height: 48px !important; min-height: 48px !important; font-size: 17px !important; }
+.b3-cam.kb .b3-go { width: 48px !important; height: 48px !important; min-height: 48px !important; }

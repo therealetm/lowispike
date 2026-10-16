@@ -23,7 +23,8 @@ test('no white Back bar: Deep analyze follows the four actions, closing is the r
   assert.ok(!/b3Back|b3-cback/.test(camBarSrc), 'the white Back bar is gone');
   assert.ok(!/\.b3-cback/.test(html), 'no Back bar styles left');
   assert.ok(/<button class="b3-cx" data-b3="camclose"/.test(openScanner), 'the round X closes the scanner');
-  for (const k of ['scan', 'photo', 'meal', 'water']) assert.ok(camBarSrc.includes('act("' + k + '"'), 'missing action ' + k);
+  for (const k of ['scan', 'photo', 'meal']) assert.ok(camBarSrc.includes('act("' + k + '"'), 'missing action ' + k);
+  assert.ok(!camBarSrc.includes('act("water"'), 'water does not belong in the scanner');
   assert.ok(/target="_blank" rel="noopener"/.test(camBarSrc));
 });
 

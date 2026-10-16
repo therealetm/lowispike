@@ -236,6 +236,11 @@
         el.innerHTML = a.next ? '<span class="hq-over">' + esc(evolved ? t('Evolved! Next: ', 'Entwickelt! Nächste: ', '¡Evolucionó! Siguiente: ') + sname(a.next) : t('Next form: ', 'Nächste Form: ', 'Siguiente forma: ') + sname(a.next)) + '</span><b class="num">' + esc(t(a.left + ' XP more · ≈ ' + a.meals + ' meals', 'noch ' + a.left + ' XP · ≈ ' + a.meals + ' Mahlzeiten', 'faltan ' + a.left + ' XP · ≈ ' + a.meals + ' comidas')) + '</b>' + bar(a.progress, 'thin')
             : '<span class="hq-over">' + esc(t('Final form', 'Endform', 'Forma final')) + '</span><b>' + esc(sname(a.current)) + '</b>';
         el.setAttribute('aria-label', el.textContent);
+        /* Oct 16 (E-man: the XP card "is in another position, doesn't fit"): on Home it sits right under the Daily Quest box,
+           the same width, never over the top row or the quest; elsewhere it drops in under the top bar */
+        try { const q = D.getElementById('f3Board'), r = q && q.offsetParent ? q.getBoundingClientRect() : null;
+            if (r && r.width > 0 && r.bottom > 0) { el.style.top = Math.round(r.bottom + 10) + 'px'; el.style.width = Math.round(r.width) + 'px'; el.style.left = Math.round(r.left + r.width / 2) + 'px'; el.dataset.at = 'quest'; }
+            else { ['top', 'width', 'left'].forEach(k => el.style.removeProperty(k)); delete el.dataset.at; } } catch (e) {}
         el.hidden = false; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
         clearTimeout(popTimer); popTimer = setTimeout(() => { el.classList.remove('on'); setTimeout(() => { el.hidden = true; }, reduced() ? 0 : 300); }, 4600);
     }

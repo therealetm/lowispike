@@ -4,12 +4,12 @@
   const config = {
     version: 'herb-living-20261014-0010',
     stages: [
-      {id:'seedling',xp:0,name:['Seed','Samen','Semilla']},
-      {id:'sprout',xp:100,name:['Sprout','Spross','Brote']},
-      {id:'young',xp:300,name:['Young Herb','Junges Kraut','Hierba joven']},
-      {id:'flourishing',xp:700,name:['Flourishing Herb','Blühendes Kraut','Hierba floreciente']},
-      {id:'radiant',xp:1500,name:['Radiant Herb','Strahlendes Kraut','Hierba radiante']},
-      {id:'legendary',xp:3000,name:['Legendary Bloom','Legendäre Blüte','Flor legendaria']}
+      {id:'seedling',xp:0,name:['Spark','Funke','Chispa']},
+      {id:'sprout',xp:100,name:['Glimmer','Schimmer','Destello']},
+      {id:'young',xp:300,name:['Young Comet','Junger Komet','Cometa joven']},
+      {id:'flourishing',xp:700,name:['Bright Comet','Heller Komet','Cometa brillante']},
+      {id:'radiant',xp:1500,name:['Radiant Comet','Strahlender Komet','Cometa radiante']},
+      {id:'legendary',xp:3000,name:['Legendary Comet','Legendärer Komet','Cometa legendario']}
     ],
     gentleDimAfterHours:48,
     body: {

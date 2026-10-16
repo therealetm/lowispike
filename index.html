@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261016-184510">
+<meta name="lowi-build" content="20261016-190510">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -3607,7 +3607,7 @@ html.n1-talk #n1B .g1-mini .g1-face u{animation:g1Talk .28s ease-in-out 4 altern
 
 </style>
 <link rel="stylesheet" href="updates.css">
-<link rel="stylesheet" id="obwCss" href="onboarding-world.css?v=20261016-184510">
+<link rel="stylesheet" id="obwCss" href="onboarding-world.css?v=20261016-190510">
 </head>
 <body>
 <div id="app">
@@ -14072,7 +14072,7 @@ const IC_SPARK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
 /* bottom of the scanner: every capture action (was the Home orb menu), then Deep analyze. Close = the round X top left, like every other screen */
 function camBar(){
   const act = (k, ic, on) => '<button type="button" class="b3-cact" data-b3="camact" data-act="' + k + '" aria-pressed="' + (on ? "true" : "false") + '" aria-label="' + esc(t("act" + k[0].toUpperCase() + k.slice(1) + "L")) + '">' + ic + '<span>' + esc(t("act" + k[0].toUpperCase() + k.slice(1))) + '</span></button>';
-  return '<div class="b3-cacts" role="group" aria-label="' + esc(t("actsL")) + '">' + act("scan", IC.bc, true) + act("photo", IC.cam) + act("meal", IC.plate) + act("water", IC_DROP) + '</div>' +
+  return '<div class="b3-cacts" role="group" aria-label="' + esc(t("actsL")) + '">' + act("scan", IC.bc, true) + act("photo", IC.cam) + act("meal", IC.plate) + '</div>' +
     '<a class="b3-deep" id="b3Deep" href="' + esc(deepURL()) + '" target="_blank" rel="noopener">' + IC_SPARK + '<span><b>' + esc(t("deep")) + '</b><small>' + esc(t("deepS")) + '</small></span>' + IC.chev + '</a>'; }
 function camAct(act){
   if (!CAM) return;
@@ -14095,6 +14095,7 @@ function openScanner(mode){
       camBar() + '</div>';
   if(window.LowiSpirit){LowiSpirit.scannerHost().appendChild(el);el.removeAttribute("aria-modal");}else document.body.appendChild(el); document.documentElement.classList.add("b3-camon");
   CAM = {el, stream:null, raf:0, det:null, reader:null, done:false, last:0};
+  kbWire(el);
   $("#b3BcF", el).addEventListener("submit", e => { e.preventDefault(); const v = $("#b3Bc", el).value, c = validCode(v); if (!c) { msg(t("bcBad"), "warn"); sfx("error"); return; } found(c); });
   requestAnimationFrame(() => el.classList.add("on"));
   if (mode === "type") { el.classList.add("typing"); setTimeout(() => { const i = $("#b3Bc", el); if (i) i.focus(); }, 120); msgState("type"); return; }
@@ -14105,6 +14106,14 @@ function openScanner(mode){
   if (window.LowiRealmBack && LowiRealmBack.dress) LowiRealmBack.dress(el);
   startCam();
 }
+/* Oct 16 (E-man: "I try to type the number and I can't, the keyboard blocks it"): while the barcode field has focus the panel
+   rides just above the iOS keyboard (visualViewport), the camera card and action row step aside, so the field and its Go button stay in view */
+function kbFit(){ if (!CAM) return; const el = CAM.el, i = $("#b3Bc", el), vv = window.visualViewport, on = !!i && document.activeElement === i;
+  const kb = on && vv ? Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)) : 0;
+  el.classList.toggle("kb", on); el.style.setProperty("--b3kb", kb + "px"); if (on) el.classList.add("typing"); }
+function kbWire(el){ const i = $("#b3Bc", el); if (!i) return; const f = () => requestAnimationFrame(kbFit);
+  i.addEventListener("focus", () => { f(); setTimeout(kbFit, 320); setTimeout(kbFit, 650); }); i.addEventListener("blur", () => setTimeout(kbFit, 60));
+  if (!window.__b3kbVV && window.visualViewport) { window.__b3kbVV = 1; visualViewport.addEventListener("resize", f); visualViewport.addEventListener("scroll", f); } }
 function msg(text, kind){ const m = CAM && $("#b3Hint", CAM.el); if (m) { m.textContent = text; m.className = "b3-chint" + (kind ? " " + kind : ""); } }
 function msgState(s){ if (!CAM) return; const m = $("#b3CMsg", CAM.el); CAM.el.dataset.st = s;
   /* no camera (blocked, none, didn't start): Misty-blue glass card, a blue Try again and typing the number as the clear way round;
@@ -19779,7 +19788,7 @@ window.LowiHandoff = { want, copy, issue, revoke, startHTML, parse, redeem, _sta
 })();
 </script>
 <link rel="stylesheet" href="community-chat.css?v=galaxy-2">
-<link rel="stylesheet" href="community-galaxy.css?v=20261016-184510">
+<link rel="stylesheet" href="community-galaxy.css?v=20261016-190510">
 <script id="community-chat-bridge">
 /* Bounded bridge: the Community module shares auth/messages with the existing cloud owner. */
 window.LowiCommunityHost = {
@@ -19804,29 +19813,29 @@ window.LowiCommunityHost = {
 <script src="community-chat-cloud.js?v=community-1"></script>
 <script src="community-galaxy.js?v=galaxy-2"></script>
 <script src="community-chat.js?v=galaxy-2"></script>
-<link rel="stylesheet" id="lgCss" href="liquid-glass.css?v=20261016-184510">
-<script src="liquid-glass.js?v=20261016-184510"></script>
-<link rel="stylesheet" id="sweepCss" href="style-sweep.css?v=20261016-184510">
-<link rel="stylesheet" id="sgCss" href="scan-glass.css?v=20261016-184510">
-<script src="scan-glass.js?v=20261016-184510"></script>
-<link rel="stylesheet" id="rwCss" href="realm-backdrop.css?v=20261016-184510">
-<script src="realm-backdrop-core.js?v=20261016-184510"></script>
-<script src="realm-backdrop.js?v=20261016-184510"></script>
-<link rel="stylesheet" href="nav-moves.css?v=20261016-184510">
+<link rel="stylesheet" id="lgCss" href="liquid-glass.css?v=20261016-190510">
+<script src="liquid-glass.js?v=20261016-190510"></script>
+<link rel="stylesheet" id="sweepCss" href="style-sweep.css?v=20261016-190510">
+<link rel="stylesheet" id="sgCss" href="scan-glass.css?v=20261016-190510">
+<script src="scan-glass.js?v=20261016-190510"></script>
+<link rel="stylesheet" id="rwCss" href="realm-backdrop.css?v=20261016-190510">
+<script src="realm-backdrop-core.js?v=20261016-190510"></script>
+<script src="realm-backdrop.js?v=20261016-190510"></script>
+<link rel="stylesheet" href="nav-moves.css?v=20261016-190510">
 <script src="nav-moves.js?v=nav-3"></script>
-<link rel="stylesheet" id="mvdCss" href="move-durations.css?v=20261016-184510">
-<link rel="stylesheet" id="mvpCss" href="move-player.css?v=20261016-184510">
-<script src="move-player.js?v=20261016-184510"></script>
-<link rel="stylesheet" id="fyeCss" href="fy-embed.css?v=20261016-184510">
-<script src="fy-embed.js?v=20261016-184510"></script>
-<link rel="stylesheet" id="cspCss" href="community-spirit.css?v=20261016-184510">
-<script src="community-spirit.js?v=20261016-184510"></script>
-<script src="galaxy-zoom.js?v=20261016-184510"></script>
-<link rel="stylesheet" id="mhCss" href="misty-hub.css?v=20261016-184510">
-<script src="misty-hub.js?v=20261016-184510"></script>
-<link rel="stylesheet" id="mpCss" href="misty-pad.css?v=20261016-184510">
-<script src="misty-pad.js?v=20261016-184510"></script>
-<script src="misty-flight.js?v=20261016-184510"></script>
+<link rel="stylesheet" id="mvdCss" href="move-durations.css?v=20261016-190510">
+<link rel="stylesheet" id="mvpCss" href="move-player.css?v=20261016-190510">
+<script src="move-player.js?v=20261016-190510"></script>
+<link rel="stylesheet" id="fyeCss" href="fy-embed.css?v=20261016-190510">
+<script src="fy-embed.js?v=20261016-190510"></script>
+<link rel="stylesheet" id="cspCss" href="community-spirit.css?v=20261016-190510">
+<script src="community-spirit.js?v=20261016-190510"></script>
+<script src="galaxy-zoom.js?v=20261016-190510"></script>
+<link rel="stylesheet" id="mhCss" href="misty-hub.css?v=20261016-190510">
+<script src="misty-hub.js?v=20261016-190510"></script>
+<link rel="stylesheet" id="mpCss" href="misty-pad.css?v=20261016-190510">
+<script src="misty-pad.js?v=20261016-190510"></script>
+<script src="misty-flight.js?v=20261016-190510"></script>
 </body>
 </html>
 

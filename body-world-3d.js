@@ -492,12 +492,24 @@
     }
     function openTrip(id) { try { close(); W.LowiBodyTrips.open(id); } catch (e) {} }
 
+    /* Oct 16 (E-man: Community's background took ~4 s to start moving): once Home has settled, get the spirit world that Community
+       pulls out into ready in a quiet moment (built + shaders compiled), so the first pull-out moves from its first frame.
+       Waits a few seconds after the world appears and for an idle slot, so Home's own start is not slowed; skipped while hidden. */
+    function warmLater() {
+        let tries = 0;
+        const go = () => {
+            if (!world || !world.warm || world.warmed) return;
+            if (D.hidden && tries++ < 20) { setTimeout(go, 3000); return; }
+            try { world.warm(); api.__warm = true; } catch (e) { }
+        };
+        setTimeout(() => { if (W.requestIdleCallback) W.requestIdleCallback(go, { timeout: 2500 }); else go(); }, 2500);
+    }
     /* ---------- boot ---------- */
     function boot() {
         const e = env(), d = shouldUse3D(e);
         if (!d.ok) { api.state = 'fallback'; api.why = d.why; H.classList.add('bw3-off'); return; }
         mountHome();
-        const kick = () => load().then(w => { if (w && mode === 'home') attachHome(); });
+        const kick = () => load().then(w => { if (w && mode === 'home') attachHome(); if (w) warmLater(); });
         if (W.requestIdleCallback) W.requestIdleCallback(kick, { timeout: 1500 }); else setTimeout(kick, 300);
         /* only while Home is the page you see (or the Community warp is showing it): behind Community this measured the whole page
            every 1.2 s for a world nobody could see, one of the regular hitches in the spirit world */

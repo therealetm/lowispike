@@ -154,7 +154,7 @@ export function createWorld(THREE, canvas, opts) {
     /* (the little microbe buddies that bobbed next to the gut were removed Oct 16, user decision) */
 
     /* ---------- camera rig ---------- */
-    const rig = { yaw: 0.35, pitch: 0.12, dist: 6.5, vy: 0, vp: 0, gy: 0, gp: 0, gyT: 0, gpT: 0, target: new THREE.Vector3(), mode: 'full', minD: 2.4, maxD: 13, pMax: 1.2, homeDist: 3.2, idle: 0, fly: null };
+    const rig = { yaw: 0.35, pitch: 0.12, dist: 6.5, vy: 0, vp: 0, gy: 0, gp: 0, gyT: 0, gpT: 0, target: new THREE.Vector3(), mode: 'full', minD: 2.4, maxD: 13, pMax: 1.2, homeDist: 3.2, idle: 0, drift: 0, fly: null };
     let focus = null, W = 1, H = 1, glow = 0.55, glowT = 0.55, tint = null, tintAmt = 0, tintT = 0;
     /* Oct 16: tend 0..1 = how much Misty's trip today has energised the cells (LowiSun.tended): their glow grows, rings and cores brighten */
     let tend = 0, tendT = 0; const tendWhite = new THREE.Color('#ffffff');
@@ -521,7 +521,14 @@ export function createWorld(THREE, canvas, opts) {
             rig.yaw += rig.vy * dt * 3.2; rig.pitch += rig.vp * dt * 3.2;
             const damp = Math.pow(0.04, dt); rig.vy *= damp; rig.vp *= damp;
             rig.idle += dt;
-            if (rig.idle > 6) rig.yaw += dt * (rig.mode === 'home' ? 0.05 : 0.025);
+            /* Oct 16 (E-man: "when you open the community section, it takes about 4 seconds until the background starts playing, where
+               we're seeing everything circle each other. That's a lag"): the slow orbit that makes the worlds circle each other used to
+               wait for 6 s of stillness, and the pull-out keeps resetting that clock, so Community sat frozen for seconds. Out in the
+               spirit world behind a page (Community, Cook, Move, Scan) it runs from the first frames of the pull-out, easing in over
+               ~0.2 s so it never jerks. Home (idle > 6 s) is unchanged; reduced motion keeps the old wait. */
+            rig.drift += ((realmBack() ? 1 : 0) - rig.drift) * Math.min(1, dt * 5);
+            const spin = rig.idle > 6 ? 1 : rig.drift;
+            if (spin > 0.001) rig.yaw += dt * (rig.mode === 'home' ? 0.05 : 0.025) * spin;
         }
         rig.pitch = Math.max(-rig.pMax, Math.min(rig.pMax, rig.pitch));
         rig.gy += (rig.gyT - rig.gy) * Math.min(1, dt * 8); rig.gp += (rig.gpT - rig.gp) * Math.min(1, dt * 8);
@@ -575,7 +582,33 @@ export function createWorld(THREE, canvas, opts) {
     function stop() { running = false; if (raf) cancelAnimationFrame(raf); raf = 0; }
     function fps() { if (!frames.length) return 0; return Math.round(frames.length / frames.reduce((a, b) => a + b, 0)); }
     function renderOnce() { step(0.016); renderer.render(scene, camera); }
+    /* the camera is out past the World Map (spirit world) and the world is the layer under a page (html.wb-on: Community, Cook...) */
+    function realmBack() {
+        if (rig.mode !== 'home' || !(rig.dist > (rig.maxD || 13) * 1.06) || (reduceMq && reduceMq.matches)) return false;
+        return typeof document !== 'undefined' && document.documentElement.classList.contains('wb-on');
+    }
+    /* Oct 16 (the 4 s Community lag): build the spirit world and get its GPU programs and textures ready ahead of time, while Home
+       is idle, so the first pull-out to Community does not stall on building ~40 cell-spheres and compiling their shaders.
+       Everything is made visible only for the compile and hidden again; nothing is drawn, Home looks exactly the same. */
+    let warmed = false;
+    function warm() {
+        if (warmed) return true;
+        if (!cosmos) cosmos = buildCosmos();
+        const C = cosmos, gv = C.g.visible, nv = C.near.visible, tr = wallMat.transparent, dw = wallMat.depthWrite, texs = new Set();
+        C.g.visible = true; C.near.visible = true;
+        try {
+            [C.g, C.near].forEach(o => o.traverse(m => { const mt = m.material; if (!mt) return; if (mt.map) texs.add(mt.map); const u = mt.uniforms || {}; Object.keys(u).forEach(k => { const v = u[k] && u[k].value; if (v && v.isTexture) texs.add(v); }); }));
+            if (renderer.initTexture) texs.forEach(tx => { try { renderer.initTexture(tx); } catch (e) { } });
+            renderer.compile(scene, camera);
+            /* the tube's see-through variant, used while it fades on the way out */
+            wallMat.transparent = true; wallMat.depthWrite = false; wallMat.needsUpdate = true; renderer.compile(scene, camera);
+        } catch (e) { } finally {
+            wallMat.transparent = tr; wallMat.depthWrite = dw; wallMat.needsUpdate = true;
+            C.g.visible = gv; C.near.visible = nv;
+        }
+        warmed = true; return true;
+    }
     function dispose() { stop(); renderer.dispose(); }
     setTheme(opts.theme || 'dark');
-    return { scene, camera, hub, regions, onFrame, memU, resize, setFocus, setMode, drag, release, zoom, setGyro, setGlow, setTend, beaconLook, setTheme, flyTo, pick, project, start, stop, fps, renderOnce, dispose, get running() { return running; }, get dpr() { return dpr; }, rig, renderer };
+    return { scene, camera, hub, regions, onFrame, memU, resize, setFocus, setMode, drag, release, zoom, setGyro, setGlow, setTend, beaconLook, setTheme, flyTo, pick, project, start, stop, fps, renderOnce, warm, get warmed() { return warmed; }, dispose, get running() { return running; }, get dpr() { return dpr; }, rig, renderer };
 }

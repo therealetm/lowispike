@@ -61,3 +61,13 @@ html.wh-today-open .wh-hint.mh-nudge { opacity: 0; pointer-events: none; }
    Rule: dark ink on light or mint fills, light ink on dark glass. */
 /* "Say goodnight" and every other next-step button in Today: the label span inherited the grey status text */
 html.spirit-app #spHome .sp-next, html.spirit-app #spHome .sp-next span { color: #06201a; }
+/* small grey second lines (Today pill on Home, the Today shortcuts, the Cook and Profile tiles) were a dim grey at 62% and then faded again:
+   one solid secondary ink instead, no extra fade. The tabs are always dark glass (html.lg), so light ink there;
+   only Home's own glass (Today pill, Today shortcuts) turns light in day theme, and gets dark navy ink then. */
+html .g2h-tile small, html.lg #app #main .tab .g2h-tile small,
+html .wh-todaybtn small, html.lg #app #main .wh-todaybtn small, html.lg.wh-home #app #main .wh-hud .wh-todaybtn small, html.lg #app #main .tab .wh-todaybtn small, html.wh-home .wh-tiles small, html.lg #app #main .tab .wh-tiles small { opacity: 1 !important; color: rgba(235, 235, 245, .86) !important; }
+html[data-theme="light"] .wh-todaybtn small, html[data-theme="light"].lg #app #main .wh-todaybtn small, html[data-theme="light"].lg.wh-home #app #main .wh-hud .wh-todaybtn small, html[data-theme="light"].lg #app #main .tab .wh-todaybtn small,
+html[data-theme="light"].wh-home .wh-tiles .g2h-tile small, html[data-theme="light"].lg.wh-home #app #main .wh-tiles .g2h-tile small { color: rgba(11, 29, 63, .80) !important; }
+/* Community chat (dark glass): the send arrow while the box is empty was grey on grey (still disabled, now readable); small meta line and chips at full secondary ink */
+html.lg #cmSend:disabled, html #cmPaneChat #cmSend:disabled { opacity: 1 !important; color: rgba(235, 235, 245, .80) !important; background: rgba(118, 118, 128, .36) !important; }
+html #cmPaneChat .cs-compose-meta, html #cmPaneChat[data-spirit-chat] .cg-chip:not(.on), html #cmPaneChat :is(.cm-chip, .cm-mini) { color: rgba(235, 235, 245, .82) !important; opacity: 1; }

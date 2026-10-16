@@ -1,0 +1,45 @@
+/* Misty's bubble controller (misty-pad.js): the same clear glass as Daily Quest, Today and Misty's bubble. */
+.wh-hud .wh-pad { position: absolute; left: 50%; bottom: calc(var(--wh-tb, 104px) + 76px); width: 60px; height: 60px; margin: 0; padding: 0; transform: translateX(-50%);
+    border-radius: 50%; border: 1.5px solid var(--wh-glass-rim, rgba(225,248,255,.42)); background: var(--wh-glass-bg, rgba(255,255,255,.08)); box-shadow: var(--wh-glass-sh, 0 8px 24px -14px rgba(0,0,0,.45));
+    backdrop-filter: blur(10px) saturate(1.4); -webkit-backdrop-filter: blur(10px) saturate(1.4); color: var(--wh-glass-ink, #fff);
+    touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; cursor: grab; z-index: 4; pointer-events: auto;
+    transition: opacity .25s ease, box-shadow .3s ease, border-color .3s ease; --mp-en: .6; --mp-c: #7fe3ff; }
+.wh-hud .wh-pad:active { transform: translateX(-50%); }
+.wh-hud .wh-pad[data-tier="thriving"] { --mp-c: #7ff3c4; }
+.wh-hud .wh-pad[data-tier="tired"] { --mp-c: #b7c2d6; }
+.wh-hud .wh-pad[data-tier="weak"] { --mp-c: #e9a0aa; }
+/* Misty's energy: a thin arc around the controller */
+.wh-pad .mp-ring { position: absolute; inset: -5px; border-radius: 50%; pointer-events: none;
+    background: conic-gradient(var(--mp-c) calc(var(--mp-en) * 360deg), rgba(255,255,255,.14) 0);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px)); mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px)); opacity: .9; }
+.wh-pad .mp-well { position: absolute; inset: 9px; border-radius: 50%; pointer-events: none; border: 1px dashed rgba(225,248,255,.28); }
+.wh-pad .mp-knob { position: absolute; left: 50%; top: 50%; width: 32px; height: 32px; margin: -16px 0 0 -16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; pointer-events: none;
+    background: radial-gradient(circle at 32% 28%, rgba(255,255,255,.55), rgba(255,255,255,0) 55%), rgba(127,227,255,.26); border: 1px solid rgba(225,248,255,.6);
+    box-shadow: inset 0 0 8px rgba(200,240,255,.35), 0 4px 10px -4px rgba(0,0,0,.45); transition: transform .28s cubic-bezier(.2,.9,.25,1.25), background .3s ease; }
+.wh-pad.mp-down .mp-knob { transition: none; }
+.wh-pad .mp-knob svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+/* you steer: a soft glow; autopilot: a mint ring that breathes and a knob that slowly orbits its loop */
+.wh-hud .wh-pad[data-mode="drive"] { border-color: rgba(127,227,255,.75); box-shadow: 0 0 0 2px rgba(127,227,255,.28), var(--wh-glass-sh, 0 8px 24px -14px rgba(0,0,0,.45)); }
+.wh-hud .wh-pad[data-mode="auto"] { border-color: #2ef8b6; box-shadow: 0 0 0 2px rgba(46,248,182,.4), 0 0 18px rgba(46,248,182,.35), var(--wh-glass-sh, 0 8px 24px -14px rgba(0,0,0,.45)); animation: mpBreathe 3.2s ease-in-out infinite; }
+.wh-pad[data-mode="auto"] .mp-knob { background: radial-gradient(circle at 32% 28%, rgba(255,255,255,.6), rgba(255,255,255,0) 55%), rgba(46,248,182,.32); border-color: rgba(190,255,232,.8); }
+.wh-pad[data-mode="auto"] .mp-dot { fill: currentColor; animation: mpOrbit 2.4s linear infinite; transform-origin: 12px 12px; }
+.wh-pad[data-icon="sleepy"] .mp-knob svg { stroke-width: 1.6; opacity: .9; }
+.wh-hud .wh-pad[data-mode="auto"][data-icon="sleepy"] { animation-duration: 5.5s; border-color: #a9c7ff; box-shadow: 0 0 0 2px rgba(169,199,255,.35), var(--wh-glass-sh, 0 8px 24px -14px rgba(0,0,0,.45)); }
+@keyframes mpBreathe { 50% { box-shadow: 0 0 0 3px rgba(46,248,182,.25), 0 0 26px rgba(46,248,182,.45), var(--wh-glass-sh, 0 8px 24px -14px rgba(0,0,0,.45)); } }
+@keyframes mpOrbit { to { transform: rotate(360deg); } }
+/* the mode line above the controller */
+.wh-hud .wh-pad-chip { position: absolute; left: 50%; bottom: calc(var(--wh-tb, 104px) + 144px); transform: translate(-50%, 4px); opacity: 0; pointer-events: none; white-space: nowrap; max-width: calc(100vw - 32px); overflow: hidden; text-overflow: ellipsis;
+    font-size: 12.5px; font-weight: 650; line-height: 1; padding: 7px 12px; border-radius: 999px; color: var(--wh-glass-ink, #fff);
+    border: 1.5px solid var(--wh-glass-rim, rgba(225,248,255,.42)); background: var(--wh-glass-bg, rgba(255,255,255,.08)); background-color: rgba(8,14,40,.32);
+    backdrop-filter: blur(10px) saturate(1.4); -webkit-backdrop-filter: blur(10px) saturate(1.4); transition: opacity .25s ease, transform .25s ease; z-index: 4; }
+.wh-hud .wh-pad-chip.on { opacity: 1; transform: translate(-50%, 0); }
+html[data-theme="light"] .wh-hud .wh-pad-chip { background-color: rgba(255,255,255,.55); }
+html[data-theme="light"] .wh-pad .mp-well { border-color: rgba(11,29,63,.22); }
+html[data-theme="light"] .wh-pad .mp-knob { border-color: rgba(11,29,63,.25); }
+/* only on Home's own world view: not while Today or a sheet is open, not inside a place, not before the world is live */
+html.wh-today-open .wh-hud .wh-pad-chip, html.wh-r2-on .wh-hud .wh-pad, html.wh-r2-on .wh-hud .wh-pad-chip,
+html.wh-away .wh-hud .wh-pad, html.wh-away .wh-hud .wh-pad-chip, html:not(.wh-home) .wh-hud .wh-pad, html:not(.wh-home) .wh-hud .wh-pad-chip { opacity: 0 !important; pointer-events: none !important; }
+/* Misty is out flying from the controller: her cell is empty (never two Mistys) */
+html.wh-padfly #spBubble .tmg-plant, html.wh-padfly #spBubble .sp-bubble-name { opacity: 0 !important; transition: opacity .35s ease; }
+#spBubble .tmg-plant { transition: opacity .35s ease; }
+@media (prefers-reduced-motion: reduce) { .wh-hud .wh-pad[data-mode="auto"], .wh-pad[data-mode="auto"] .mp-dot { animation: none; } .wh-pad .mp-knob { transition: none; } }

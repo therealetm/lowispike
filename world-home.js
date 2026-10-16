@@ -512,6 +512,7 @@
             if (++st.zf % 20 === 0) { paintZoom(); paintHint(); }
         }
         adventure(dt, r);
+        { const wd = st.adv.wand, pf = !!(st.pad.mode && wd && wd.visible && wd.material.opacity > 0.3); if (H.classList.contains('wh-padfly') !== pf) H.classList.toggle('wh-padfly', pf); }
         if (st.misty) {
             const show = r.mode === 'full' && !inRegion() && !st.adv.away;
             if (st.misty.visible !== show) st.misty.visible = show;
@@ -584,7 +585,10 @@
                 A.redWas = A.redK > 0.002;
             }
         }
-        const show = A.away && (r.mode === 'home' || r.mode === 'full') && !inRegion() && !awayHome() && !D.hidden;
+        /* Oct 16: the bubble controller (misty-pad.js) can take Misty out of her cell at any time: drive = you steer, auto = she
+           flies her own adventure (a slow, sleepy drift when her energy is low), home = she glides back into her cell */
+        const PD = st.pad, padOn = !!PD.mode;
+        const show = (A.away || padOn) && (r.mode === 'home' || r.mode === 'full') && !inRegion() && !awayHome() && !D.hidden;
         if (!A.wand) { if (!show) return; advBuild(a); }
         const wand = A.wand, pm = A.pts.material, k = A.vigor;
         if (st.misty && st.misty.material.map && wand.material.map !== st.misty.material.map) { wand.material.map = st.misty.material.map; wand.material.needsUpdate = true; }
@@ -612,10 +616,40 @@
         const cam = a.camera; cam.updateMatrixWorld();
         A.rt.setFromMatrixColumn(cam.matrixWorld, 0).normalize(); A.up.setFromMatrixColumn(cam.matrixWorld, 1).normalize(); A.fw.setFromMatrixColumn(cam.matrixWorld, 2).normalize();
         if (a.hub) a.hub.getWorldPosition(A.c); else A.c.set(0, 0, 0);
-        const speed = (0.45 + 0.75 * k) * (A.slow > 0 ? 0.12 : 1); if (!reduced()) A.t += dt * speed;
+        const sleepy = PD.mode === 'auto' && k < 0.4;
+        const speed = (0.45 + 0.75 * k) * (A.slow > 0 ? 0.12 : 1) * (sleepy ? 0.5 : 1);
+        if (!reduced()) A.t += dt * speed; else if (PD.mode === 'auto') A.t += dt * speed * 0.4;
         if (A.slow > 0) A.slow -= dt;
-        const t = A.t, spanX = r.mode === 'home' ? 2.05 : 3.2, droop = (1 - k) * 0.55;
-        const x = spanX * Math.sin(t * 0.42), y = 1.05 * Math.sin(t * 0.67 + 1.1) + 0.35 - droop + (k < 0.35 ? Math.sin(t * 5) * 0.04 : 0), z = 0.6 + 0.4 * Math.cos(t * 0.42);
+        const t = A.t, spanX = (r.mode === 'home' ? 2.05 : 3.2) * (sleepy ? 0.65 : 1), droop = (1 - k) * 0.55;
+        let x = spanX * Math.sin(t * 0.42), y = 1.05 * (sleepy ? 0.6 : 1) * Math.sin(t * 0.67 + 1.1) + 0.35 - droop + (k < 0.35 ? Math.sin(t * 5) * 0.04 : 0), z = 0.6 + 0.4 * Math.cos(t * 0.42);
+        if (padOn || PD.blend > 0) {
+            const span = r.mode === 'home' ? 2.1 : 3.2, bob = reduced() ? 0 : Math.sin(performance.now() / 1000 * 1.6) * 0.05;
+            let tx = x, ty = y, tz = z, rate = 2.4;
+            if (PD.mode === 'drive') {
+                /* tired Misty is slower and sinks a little; full of energy she is quick */
+                const vmax = 0.7 + 1.5 * k;
+                PD.x = Math.max(-span, Math.min(span, PD.x + PD.vx * vmax * dt));
+                PD.y = Math.max(-1.25, Math.min(1.6, PD.y + PD.vy * vmax * dt));
+                const moving = Math.abs(PD.vx) + Math.abs(PD.vy) > 0.05;
+                PD.idle = moving ? 0 : PD.idle + dt;
+                if (PD.idle > 20) { PD.mode = 'home'; try { W.dispatchEvent(new CustomEvent('lowi:pad', { detail: { mode: 'home' } })); } catch (e) { } }
+                tx = PD.x; ty = PD.y - droop * 0.5 + bob; tz = 0.6; rate = 7;
+                if (moving && (PD.trail = (PD.trail || 0) - dt) <= 0) {
+                    PD.trail = 0.14 / (0.5 + k); pm.color.set(A.tier === 'weak' || A.tier === 'tired' ? '#9aa3b2' : '#9fe3ff'); pm.opacity = 0.45 + 0.4 * k;
+                    A.tmp.copy(wand.position).addScaledVector(A.up, -0.2); burst(A, A.tmp, 1 + Math.round(2 * k), 0.12);
+                }
+                A.next = Math.max(A.next, moving ? 2.5 : 0);
+            } else if (PD.mode === 'home') {
+                tx = PD.homeX; ty = PD.homeY; tz = 0.6; rate = 3;
+                if (A.away) PD.mode = '';
+                else if (Math.abs(PD.cx - tx) + Math.abs(PD.cy - ty) < 0.06) { PD.mode = ''; PD.blend = 0; try { W.dispatchEvent(new CustomEvent('lowi:pad', { detail: { mode: '' } })); } catch (e) { } }
+            }
+            if (PD.mode === 'auto' || (!PD.mode && A.away)) { PD.x = PD.cx; PD.y = PD.cy; }
+            const q = Math.min(1, dt * rate);
+            PD.cx += (tx - PD.cx) * q; PD.cy += (ty - PD.cy) * q; PD.cz += (tz - PD.cz) * q;
+            x = PD.cx; y = PD.cy; z = PD.cz;
+            if (!padOn) PD.blend = A.away ? Math.max(0, PD.blend - dt * 0.5) : 0;
+        } else if (A.away) { PD.cx = x; PD.cy = y; PD.cz = z; } else { x = PD.cx; y = PD.cy; z = PD.cz; }
         wand.position.copy(A.c).addScaledVector(A.rt, x).addScaledVector(A.up, y).addScaledVector(A.fw, z);
         const s0 = r.mode === 'home' ? 0.95 : 1.1, s = s0 * (0.82 + 0.18 * k) * (1 + (reduced() ? 0 : Math.sin(t * 2.2) * 0.03));
         wand.scale.set(s, s * 310 / 260, 1);
@@ -629,6 +663,27 @@
             burst(A, A.tmp, Math.round(5 + 19 * k), 0.35 + 0.45 * k);
             if (!reduced()) { A.ring.position.copy(A.tmp); A.ring.material.color.set(A.tier === 'weak' ? '#c98a92' : '#a8ffd8'); A.ringT = 0; A.ring.visible = true; }
         }
+    }
+    /* the bubble controller's way in: pad({ mode, vx, vy }); vx/vy -1..1 (right / up). Returns what the world is doing now. */
+    st.pad = { mode: '', vx: 0, vy: 0, x: 0, y: 0, cx: 0, cy: 0, cz: 0.6, homeX: 0, homeY: 0, idle: 0, blend: 0 };
+    function pad(cmd) {
+        const PD = st.pad, A = st.adv;
+        if (cmd && typeof cmd === 'object') {
+            if ('mode' in cmd && cmd.mode !== PD.mode) {
+                const m = ['', 'drive', 'auto', 'home'].indexOf(cmd.mode) >= 0 ? cmd.mode : '';
+                if (!PD.mode && m) { if (!A.away) { PD.cx = PD.homeX; PD.cy = PD.homeY; PD.cz = 0.6; } PD.x = PD.cx; PD.y = PD.cy; A.next = 2.5; }
+                if (m === 'home' && A.away) { PD.mode = ''; PD.blend = 1; }
+                else { PD.mode = m; if (!m && A.away) PD.blend = 1; }
+                PD.idle = 0; if (PD.mode !== 'drive') PD.vx = PD.vy = 0;
+            }
+            if ('vx' in cmd) PD.vx = Math.max(-1, Math.min(1, +cmd.vx || 0));
+            if ('vy' in cmd) PD.vy = Math.max(-1, Math.min(1, +cmd.vy || 0));
+            if (PD.vx || PD.vy) PD.idle = 0;
+        }
+        const out = { mode: PD.mode, away: !!A.away, tier: A.tier || '', vigor: +(A.vigor || 0).toFixed(2), x: +PD.cx.toFixed(2), y: +PD.cy.toFixed(2), flying: H.classList.contains('wh-padfly'), visible: !!(A.wand && A.wand.visible) };
+        const a = w3();
+        if (a && a.camera && A.wand) { const v = A.wand.position.clone().project(a.camera); out.sx = Math.round((v.x + 1) / 2 * innerWidth); out.sy = Math.round((1 - v.y) / 2 * innerHeight); }
+        return out;
     }
     function ensureMisty3D3() { if (!st.misty) { try { ensureMisty3D(); } catch (e) { } } }
 
@@ -896,5 +951,6 @@
         tabs(); tick();
     }
     W.LowiWorldHome = { pullOut, diveIn, settle, waterReset, openToday, openMisty, toggleZoom, zoomOutWhole, closeTop, openDetails, heroTurn, state: st, auraId, syncX, rig };
+    W.LowiWorldHome.pad = pad;
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 })();

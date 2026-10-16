@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261016-192010">
+<meta name="lowi-build" content="20261016-193510">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2438,11 +2438,26 @@ function start(from){ if (TOUR) close("restart", true); hush(); goHome();
   const m = mem(); remember({t:"", n:NEWS && NEWS.id ? NEWS.id : m.n});
   setTimeout(() => { const steps = stepList(); let i = typeof from === "number" ? from : 0; if (i >= steps.length - 1) i = 0;
     begin({steps, i, kind:"tour"}); }, onHome() ? 60 : 420); }
-function newsGo(){ const go = (NEWS && NEWS.go) || {}; if (go.tour) return "tour"; if (go.sel) return "sel"; if (go.tab && go.tab !== tabNow()) return "tab"; return ""; }
+function newsGo(){ if (NEWS && Array.isArray(NEWS.steps) && NEWS.steps.length) return "steps"; const go = (NEWS && NEWS.go) || {}; if (go.tour) return "tour"; if (go.sel) return "sel"; if (go.tab && go.tab !== tabNow()) return "tab"; return ""; }
 /* "Show me": go to the new thing. It never repeats the text it just showed; with a target on screen it says "Here it is." */
 function startNews(){ if (!NEWS) return; hush(); markSeen(NEWS.id); const go = NEWS.go || {};
+  /* Oct 16 (E-man: "when it says I've got a new update, I should be able to tap a button that shows me exactly what it updated,
+     every new thing, one, two, three or four, like the tutorial at the start"): news.steps in version.json = one step per new
+     thing {tab, sel, text}. "Show me" walks through them like the first tour: it goes to the tab, lights up the new thing and
+     says what changed; Next, Back, Skip, Done. A thing that is not on screen gets the bubble alone, never a dead end. */
+  if (Array.isArray(NEWS.steps) && NEWS.steps.length) { const steps = NEWS.steps.map((x, j) => ({k:"news" + j, tab:x.tab || "", text:NT(x.text), fixed:!!x.fixed, round:!!x.round,
+      el:x.sel ? () => { const list = String(x.sel).split("||"); for (const q of list) { const e = $(q.trim()); if (e && vis(e)) return e; } return null; } : null}));
+    if (TOUR) close("restart", true); setTimeout(() => begin({steps, i:0, kind:"news"}), 60); return; }
   if (go.tour) { start(0); return; } if (go.tab && go.tab !== tabNow()) b2Tab(go.tab); if (!go.sel) return;
   setTimeout(() => { const el = $(go.sel); if (!el || !vis(el)) return; begin({steps:[{k:"news", text:NT({en:"Here it is.", de:"Hier ist es.", es:"Aquí está."}), el:() => $(go.sel)}], i:0, kind:"show"}); }, 450); }
+/* Oct 16: right after an update (even when the update bubble already showed the text) one short bubble offers the walkthrough
+   of everything new: "N new things. Want me to show you?" with Show me. Once per news id (lowi.news.toured). */
+const TOURED = "lowi.news.toured";
+function toured(id){ try { return localStorage.getItem(TOURED) === id; } catch(e){ return true; } }
+function offerTour(){ if (!NEWS || TOUR) return; hush(); try { localStorage.setItem(TOURED, NEWS.id); } catch(e){} markSeen(NEWS.id);
+  const n = NEWS.steps.length, lead = NT(NEWS.lead) || NT(n === 1 ? {en:"One new thing in this update. Want me to show you where?", de:"Eine neue Sache in diesem Update. Soll ich dir zeigen, wo?", es:"Una novedad en esta versión. ¿Te enseño dónde?"}
+    : {en:n + " new things in this update. Want me to show you each one?", de:n + " neue Sachen in diesem Update. Soll ich dir jede zeigen?", es:n + " novedades en esta versión. ¿Te enseño cada una?"});
+  begin({steps:[{k:"offer", text:lead}], i:0, kind:"offer"}); }
 function bnSeen(){ return !!(NEWS && NEWS.id && newsSeen(NEWS.id)); } /* b2-once */
 function b2Tab(t){ const b = $("#tabbar .tb[data-tab=" + t + "]") || $(".tb[data-tab=" + t + "]"); if (b) b.click(); else if (typeof window.goTab === "function") window.goTab(t); }
 /* the one news bubble: text once, then "Got it" (and "Show me" only when there is somewhere to go). Marked seen as it opens. */
@@ -2458,8 +2473,8 @@ function show(){ if (!TOUR) return; const r = root(), s = TOUR.steps[TOUR.i], n 
   if (TOUR.kind === "tour") remember({s:TOUR.i});
   const listen = SS ? '<button type="button" class="g1-btn g1-say" data-g1="say" aria-pressed="false"><span class="g1-sayi">' + SPK + '</span><span class="g1-sayl">' + esc(T("Listen")) + '</span></button>' : "";
   let head = "", btns = "";
-  if (TOUR.kind === "tour") {
-    head = '<div class="g1-count" aria-label="' + (TOUR.i + 1) + " " + esc(T("of")) + " " + n + '">' + TOUR.steps.map((_, j) => '<i class="' + (j === TOUR.i ? "on" : j < TOUR.i ? "was" : "") + '"></i>').join("") + '</div>';
+  if (TOUR.kind === "tour" || TOUR.kind === "news") {
+    head = (TOUR.kind === "news" ? '<div class="g1-tag">' + esc(T("newin")) + '</div>' : "") + '<div class="g1-count" aria-label="' + (TOUR.i + 1) + " " + esc(T("of")) + " " + n + '">' + TOUR.steps.map((_, j) => '<i class="' + (j === TOUR.i ? "on" : j < TOUR.i ? "was" : "") + '"></i>').join("") + '</div>';
     btns = (last ? "" : '<button type="button" class="g1-btn g1-skip" data-g1="skip">' + esc(T("Skip")) + '</button>') + '<span class="g1-sp"></span>' +
       (TOUR.i > 0 && !last ? '<button type="button" class="g1-btn g1-back" data-g1="back" aria-label="' + esc(T("Back")) + '">‹</button>' : "") +
       '<button type="button" class="g1-btn g1-next" data-g1="next">' + esc(last ? T("Done") : T("Next")) + (last ? "" : " ›") + '</button>';
@@ -2473,7 +2488,7 @@ function show(){ if (!TOUR) return; const r = root(), s = TOUR.steps[TOUR.i], n 
   }
   card.classList.remove("in");
   card.innerHTML = head + '<p class="g1-p" aria-live="polite">' + esc(textOf(s)) + '</p>' + listen + '<div class="g1-btns">' + btns + '</div><i class="g1-tail"></i>';
-  paintListen(); if (TOUR.kind === "tour" && toTab(s.tab)) { r.classList.add("nospot"); setTimeout(() => { if (TOUR && TOUR.steps[TOUR.i] === s) place(true); }, 260); } else place(true);
+  paintListen(); if ((TOUR.kind === "tour" || TOUR.kind === "news") && toTab(s.tab)) { r.classList.add("nospot"); setTimeout(() => { if (TOUR && TOUR.steps[TOUR.i] === s) place(true); }, 260); } else place(true);
   clearTimeout(show.t); show.t = setTimeout(() => { if (!TOUR) return; place(false); r.dataset.b3k = s.k; card.classList.add("in"); fzBounce("g1z-land"); const nb = card.querySelector(".g1-next"); if (nb) try { nb.focus({preventScroll:true}); } catch(e){} }, reduce ? 0 : 520);
 }
 /* positions: the spotlight on the thing, the fairy right beside it, the bubble attached to the fairy */
@@ -2647,6 +2662,7 @@ function tick(){ if (document.hidden) return; if (TOUR) { helpPlace(); return; }
   if (!newsLoaded) return; if (fromBanner) { fromBanner = false; if (NEWS) markSeen(NEWS.id); }
   if (!onHome()) return; const m = mem();
   if (!m.t) { start(typeof m.s === "number" ? m.s : 0); return; }
+  if (NEWS && NEWS.id && newsGo() === "steps" && !toured(NEWS.id)) { offerTour(); return; } /* Oct 16: after an update, "Show me what's new" */
   if (NEWS && NEWS.id && !newsSeen(NEWS.id)) { offerNews(); return; } } /* b2-offer: once per news id */
 
 function init(){ H.classList.add("g1"); helpBtn(); helpPlace(); decorate(); loadNews();
@@ -3607,7 +3623,7 @@ html.n1-talk #n1B .g1-mini .g1-face u{animation:g1Talk .28s ease-in-out 4 altern
 
 </style>
 <link rel="stylesheet" href="updates.css">
-<link rel="stylesheet" id="obwCss" href="onboarding-world.css?v=20261016-192010">
+<link rel="stylesheet" id="obwCss" href="onboarding-world.css?v=20261016-193510">
 </head>
 <body>
 <div id="app">
@@ -19788,7 +19804,7 @@ window.LowiHandoff = { want, copy, issue, revoke, startHTML, parse, redeem, _sta
 })();
 </script>
 <link rel="stylesheet" href="community-chat.css?v=galaxy-2">
-<link rel="stylesheet" href="community-galaxy.css?v=20261016-192010">
+<link rel="stylesheet" href="community-galaxy.css?v=20261016-193510">
 <script id="community-chat-bridge">
 /* Bounded bridge: the Community module shares auth/messages with the existing cloud owner. */
 window.LowiCommunityHost = {
@@ -19813,29 +19829,29 @@ window.LowiCommunityHost = {
 <script src="community-chat-cloud.js?v=community-1"></script>
 <script src="community-galaxy.js?v=galaxy-2"></script>
 <script src="community-chat.js?v=galaxy-2"></script>
-<link rel="stylesheet" id="lgCss" href="liquid-glass.css?v=20261016-192010">
-<script src="liquid-glass.js?v=20261016-192010"></script>
-<link rel="stylesheet" id="sweepCss" href="style-sweep.css?v=20261016-192010">
-<link rel="stylesheet" id="sgCss" href="scan-glass.css?v=20261016-192010">
-<script src="scan-glass.js?v=20261016-192010"></script>
-<link rel="stylesheet" id="rwCss" href="realm-backdrop.css?v=20261016-192010">
-<script src="realm-backdrop-core.js?v=20261016-192010"></script>
-<script src="realm-backdrop.js?v=20261016-192010"></script>
-<link rel="stylesheet" href="nav-moves.css?v=20261016-192010">
+<link rel="stylesheet" id="lgCss" href="liquid-glass.css?v=20261016-193510">
+<script src="liquid-glass.js?v=20261016-193510"></script>
+<link rel="stylesheet" id="sweepCss" href="style-sweep.css?v=20261016-193510">
+<link rel="stylesheet" id="sgCss" href="scan-glass.css?v=20261016-193510">
+<script src="scan-glass.js?v=20261016-193510"></script>
+<link rel="stylesheet" id="rwCss" href="realm-backdrop.css?v=20261016-193510">
+<script src="realm-backdrop-core.js?v=20261016-193510"></script>
+<script src="realm-backdrop.js?v=20261016-193510"></script>
+<link rel="stylesheet" href="nav-moves.css?v=20261016-193510">
 <script src="nav-moves.js?v=nav-3"></script>
-<link rel="stylesheet" id="mvdCss" href="move-durations.css?v=20261016-192010">
-<link rel="stylesheet" id="mvpCss" href="move-player.css?v=20261016-192010">
-<script src="move-player.js?v=20261016-192010"></script>
-<link rel="stylesheet" id="fyeCss" href="fy-embed.css?v=20261016-192010">
-<script src="fy-embed.js?v=20261016-192010"></script>
-<link rel="stylesheet" id="cspCss" href="community-spirit.css?v=20261016-192010">
-<script src="community-spirit.js?v=20261016-192010"></script>
-<script src="galaxy-zoom.js?v=20261016-192010"></script>
-<link rel="stylesheet" id="mhCss" href="misty-hub.css?v=20261016-192010">
-<script src="misty-hub.js?v=20261016-192010"></script>
-<link rel="stylesheet" id="mpCss" href="misty-pad.css?v=20261016-192010">
-<script src="misty-pad.js?v=20261016-192010"></script>
-<script src="misty-flight.js?v=20261016-192010"></script>
+<link rel="stylesheet" id="mvdCss" href="move-durations.css?v=20261016-193510">
+<link rel="stylesheet" id="mvpCss" href="move-player.css?v=20261016-193510">
+<script src="move-player.js?v=20261016-193510"></script>
+<link rel="stylesheet" id="fyeCss" href="fy-embed.css?v=20261016-193510">
+<script src="fy-embed.js?v=20261016-193510"></script>
+<link rel="stylesheet" id="cspCss" href="community-spirit.css?v=20261016-193510">
+<script src="community-spirit.js?v=20261016-193510"></script>
+<script src="galaxy-zoom.js?v=20261016-193510"></script>
+<link rel="stylesheet" id="mhCss" href="misty-hub.css?v=20261016-193510">
+<script src="misty-hub.js?v=20261016-193510"></script>
+<link rel="stylesheet" id="mpCss" href="misty-pad.css?v=20261016-193510">
+<script src="misty-pad.js?v=20261016-193510"></script>
+<script src="misty-flight.js?v=20261016-193510"></script>
 </body>
 </html>
 

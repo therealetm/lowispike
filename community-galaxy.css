@@ -119,7 +119,8 @@ html[data-ui=light] #tab-foryou.nm-solo{background:radial-gradient(70% 40% at 80
 .cs-sheet .cg-pline{font-style:italic}
 
 /* Home -> Community, one camera (galaxy-zoom.js): Home stays drawn on top while it shrinks into your orb; Community waits underneath. */
-html.gx-hold #tab-home,html.gx-in #tab-home{opacity:1;visibility:visible!important;z-index:6!important;pointer-events:none!important;transition:none!important;will-change:transform,opacity}
+html.gx-hold #tab-home,html.gx-in #tab-home{opacity:1;visibility:visible!important;z-index:6!important;pointer-events:none!important;transition:none!important;transform:none!important;will-change:opacity}
+html.gx-in #tab-home{opacity:0}
 html.gx-out #tab-foryou,html.gx-keep #tab-foryou{opacity:1!important;visibility:visible!important;z-index:5!important;transition:none!important}
 html.gx-keep #tab-foryou{pointer-events:none!important}
 html.gx-out #tab-foryou.p2-tabin>*,html.gx-in #tab-home.p2-tabin>*,html.gx-keep #tab-foryou>*{animation:none!important}
@@ -131,4 +132,4 @@ html.gx-out #cmPaneChat .cg-bub,html.gx-out #cmPaneChat .cg-mid{opacity:0!import
 #cmPaneChat[data-spirit-chat] .cg-bub.tome{box-shadow:0 5px 18px #0000005e}
 #cmPaneChat[data-spirit-chat] .cg-mid{background:color-mix(in srgb,var(--c) 58%,#ffffff);color:#15122a;border-color:var(--c);min-width:0}
 #cmPaneChat[data-spirit-chat] .cg-mid .cg-hint{color:#3a3556}
-html.gx-out #cgGalaxy,html.gx-in #cgGalaxy{will-change:transform,opacity}
+html.gx-out #cgField,html.gx-in #cgField{will-change:transform,opacity}

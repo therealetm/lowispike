@@ -411,7 +411,10 @@
         mountHome();
         const kick = () => load().then(w => { if (w && mode === 'home') attachHome(); });
         if (W.requestIdleCallback) W.requestIdleCallback(kick, { timeout: 1500 }); else setTimeout(kick, 300);
-        setInterval(() => { if (api.state !== 'fallback' && !D.hidden) { mountHome(); syncGlow(); } }, 1200);
+        /* only while Home is the page you see (or the Community warp is showing it): behind Community this measured the whole page
+           every 1.2 s for a world nobody could see, one of the regular hitches in the spirit world */
+        const homeSeen = () => { const t = D.getElementById('tab-home'); return !t || t.classList.contains('active') || /(^|\s)gx-(hold|in)(\s|$)/.test(H.className) || mode === 'full'; };
+        setInterval(() => { if (api.state !== 'fallback' && !D.hidden && homeSeen()) { mountHome(); syncGlow(); } }, 1200);
         W.addEventListener('resize', () => { lastLay = ''; if (mode === 'home') layoutHome(); else if (full && world) { const r = full.querySelector('.bw3-view').getBoundingClientRect(); world.resize(r.width, r.height); } });
         new MutationObserver(() => { if (world) world.setTheme(themeNow()); }).observe(H, { attributes: true, attributeFilter: ['data-theme'] });
         D.addEventListener('visibilitychange', () => { if (D.hidden && world) world.stop(); else if (world) world.start(); });

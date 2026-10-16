@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261016-085510">
+<meta name="lowi-build" content="20261016-090010">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -18085,8 +18085,14 @@ function fit(h){
 /* ---- the pass ---- */
 let raf = 0, busy = false, moH = null, moR = null, hooked = null;
 function schedule(){ if (raf || busy) return; raf = requestAnimationFrame(() => { raf = 0; pass(); }); }
+/* Oct 16, 2026 (E-man: "in the spirit world, every two to three seconds everything freezes"): the fit below strips and re-adds
+   eight classes on <html> and measures the page after each one, a full-page style + layout every time. It ran every half second
+   while Home sat hidden behind Community (each tick of the Today board, each class change anywhere). Now it only runs while
+   Home is the page you see and no Community warp is moving; it catches up the moment Home is back. */
+function homeShown(h){ return h.classList.contains("active") && !/(^|\s)gx-(hold|in|out)(\s|$)/.test(H.className); }
 function pass(){
   const h = home(); if (!h) return;
+  if (!homeShown(h)) return;
   busy = true;
   try {
     addL();
@@ -18113,6 +18119,8 @@ function hook(){
   hooked = h; if (moH) moH.disconnect();
   moH = new MutationObserver(() => { if (!busy) schedule(); });
   moH.observe(h, {childList:true, subtree:true, characterData:true});
+  /* Home becoming the page you see again (its "active" class) catches the fit up */
+  new MutationObserver(() => { if (!busy && homeShown(h)) schedule(); }).observe(h, {attributes:true, attributeFilter:["class"]});
   schedule();
 }
 function boot(){
@@ -19684,7 +19692,7 @@ window.LowiHandoff = { want, copy, issue, revoke, startHTML, parse, redeem, _sta
 })();
 </script>
 <link rel="stylesheet" href="community-chat.css?v=galaxy-2">
-<link rel="stylesheet" href="community-galaxy.css?v=galaxy-2">
+<link rel="stylesheet" href="community-galaxy.css?v=20261016-090010">
 <script id="community-chat-bridge">
 /* Bounded bridge: the Community module shares auth/messages with the existing cloud owner. */
 window.LowiCommunityHost = {
@@ -19709,13 +19717,13 @@ window.LowiCommunityHost = {
 <script src="community-chat-cloud.js?v=community-1"></script>
 <script src="community-galaxy.js?v=galaxy-2"></script>
 <script src="community-chat.js?v=galaxy-2"></script>
-<link rel="stylesheet" id="lgCss" href="liquid-glass.css?v=20261016-085510">
-<script src="liquid-glass.js?v=20261016-085510"></script>
-<link rel="stylesheet" id="sgCss" href="scan-glass.css?v=20261016-085510">
-<script src="scan-glass.js?v=20261016-085510"></script>
+<link rel="stylesheet" id="lgCss" href="liquid-glass.css?v=20261016-090010">
+<script src="liquid-glass.js?v=20261016-090010"></script>
+<link rel="stylesheet" id="sgCss" href="scan-glass.css?v=20261016-090010">
+<script src="scan-glass.js?v=20261016-090010"></script>
 <link rel="stylesheet" href="nav-moves.css?v=nav-2">
 <script src="nav-moves.js?v=nav-2"></script>
-<script src="galaxy-zoom.js?v=gx-3"></script>
+<script src="galaxy-zoom.js?v=20261016-090010"></script>
 </body>
 </html>
 

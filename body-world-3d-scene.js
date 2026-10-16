@@ -179,7 +179,9 @@ export function createWorld(THREE, canvas, opts) {
         if (focus && rig.mode === 'home') camera.setViewOffset(W, H, W / 2 - focus.x, H / 2 - focus.y, W, H); else camera.clearViewOffset();
         camera.updateProjectionMatrix();
     }
-    function resize(w, h) { W = Math.max(1, w | 0); H = Math.max(1, h | 0); renderer.setSize(W, H, false); applyView(); }
+    /* Oct 16: Home re-lays itself out every 1.2 s; setting the canvas size again, even to the same numbers, wipes and re-allocates the
+       WebGL buffer (a dropped frame on iPhone). Only a real change touches the canvas. */
+    function resize(w, h) { const nw = Math.max(1, w | 0), nh = Math.max(1, h | 0); if (nw !== W || nh !== H) { W = nw; H = nh; renderer.setSize(W, H, false); } applyView(); }
     function setFocus(f) { focus = f; applyView(); }
     function homeDistFor(px) { return CR / ((px / (H / 2)) * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))); }
     function setMode(m, o) {

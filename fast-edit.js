@@ -242,7 +242,9 @@
         }
         place();
     }
-    setInterval(() => { if (!D.hidden) ensurePill(); }, 1500);
+    /* only while Home is the page you see: behind Community this measured Home every 1.5 s for nothing (Oct 16, the spirit-world hitches) */
+    const homeOn = () => { const t = D.getElementById('tab-home'); return !t || t.classList.contains('active'); };
+    setInterval(() => { if (!D.hidden && homeOn()) ensurePill(); }, 1500);
     W.addEventListener('resize', () => { try { place(); } catch (e) {} });
     W.addEventListener('lowi:fast-start', () => setTimeout(ensurePill, 0));
     W.addEventListener('storage', e => { if (e.key === KEY) ensurePill(); });

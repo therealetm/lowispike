@@ -9,25 +9,29 @@ const Z = require('../galaxy-zoom.js');
 const G = require('../community-galaxy.js');
 const read = f => fs.readFileSync(path.join(root, f), 'utf8');
 
-function parse(t) { const m = /translate\(([-\d.]+)px,([-\d.]+)px\) scale\(([\d.]+)\)/.exec(t); return { x: +m[1], y: +m[2], s: +m[3] }; }
-
-test('the pull-out keeps Misty and your orb on the same moving point, with gentle scales and no clip', () => {
-    const m = { x: 195, y: 388, r: 105 }, y = { x: 120, y: 520, r: 27 }, g = { left: 18, top: 12 };
-    const p = Z.plan(m, y, g, 390, 844);
-    const h0 = parse(p.home.from), h1 = parse(p.home.to), g0 = parse(p.galaxy.from), g1 = parse(p.galaxy.to);
-    for (const e of [0, 0.25, 0.5, 0.75, 1]) {
-        const lerp = (a, b) => a + (b - a) * e;
-        const hx = m.x + lerp(h0.x, h1.x), hy = m.y + lerp(h0.y, h1.y);
-        const gx = y.x + lerp(g0.x, g1.x), gy = y.y + lerp(g0.y, g1.y);
-        assert.ok(Math.abs(hx - gx) < 0.2 && Math.abs(hy - gy) < 0.2, 'same anchor at ' + e);
+test('Home -> Community never scales a flat box: Home only fades over the 3D camera move, only the companions settle', () => {
+    /* E-man (Oct 16, with screenshots): "that rectangle box ... coming closer and getting bigger ... not the same as when I click on a
+       glowing place to travel" */
+    for (const dir of ['out', 'in']) {
+        let prev = null;
+        for (let i = 0; i <= 40; i++) {
+            const L = Z.look(dir, i / 40);
+            assert.ok(L.home >= 0 && L.home <= 1 && L.fieldO >= 0 && L.fieldO <= 1);
+            assert.ok(L.field >= 1 && L.field <= Z.FIELD0 + 1e-9, 'companions only ever move between 1x and FIELD0, never below 1');
+            if (prev) assert.ok(Math.abs(L.home - prev.home) < 0.12 && Math.abs(L.field - prev.field) < 0.05, 'no jump between frames (' + dir + ' ' + i + ')');
+            prev = L;
+        }
     }
-    /* E-man saw a giant "You" fill the screen: the galaxy never starts more than 2.5x, Home never shrinks below 0.4 */
-    assert.ok(g0.s <= 2.5 && g1.s === 1 && h1.s >= 0.4 && h0.s === 1);
-    assert.ok(!('clipFrom' in p.home), 'no clip circle (the stray teal ring)');
-    assert.equal(p.galaxy.origin, '102.0px 508.0px');
+    const o0 = Z.look('out', 0), o1 = Z.look('out', 1), i0 = Z.look('in', 0), i1 = Z.look('in', 1);
+    assert.ok(o0.home === 1 && o1.home === 0 && Math.abs(o0.field - Z.FIELD0) < 1e-9 && o1.field === 1, 'out: Home fades away, the companions settle onto you');
+    assert.ok(i0.home === 0 && i1.home === 1 && i0.field === 1 && i1.fieldO === 0, 'in: Home fades in over the dive, the companions rush past');
     assert.ok(Z.DUR >= 800 && Z.DUR < 1000, 'a cinematic pull-back, still under a second');
-    const src = read('galaxy-zoom.js');
+    const src = read('galaxy-zoom.js'), css = read('community-galaxy.css');
     assert.ok(!/clipPath/.test(src));
+    assert.ok(!/\.animate\(/.test(src), 'no Web Animations that can wait for a first frame and leave Home shrunk and untappable');
+    assert.ok(!/gal\.style\.transform = 'scale/.test(src) && !/home\.style\.transform = 'scale/.test(src), 'the page boxes are never scaled');
+    assert.ok(src.includes('b.timer = setTimeout(finish, DUR + 350)'), 'the move always ends on time');
+    assert.ok(css.includes('html.gx-in #tab-home{opacity:0}') && css.includes('transform:none!important;will-change:opacity}'));
 });
 
 test('pinch: past Home\'s widest view you land in the galaxy, spreading on the galaxy dives back home', () => {
@@ -43,7 +47,7 @@ test('pinch: past Home\'s widest view you land in the galaxy, spreading on the g
 test('no boxed snapshot of Home is left in the galaxy; the zoom script is shipped and cached', () => {
     const chat = read('community-chat.js'), css = read('community-galaxy.css'), html = read('index.html'), sw = read('sw.js');
     assert.ok(!chat.includes('cg-intro') && !css.includes('.cg-intro'), 'the fake Home gradient card is gone');
-    assert.ok(html.includes('<script src="galaxy-zoom.js?v=gx-3"></script>'));
+    assert.ok(/<script src="galaxy-zoom.js\?v=[0-9-]+"><\/script>/.test(html), 'cache-busted with the build');
     assert.ok(sw.includes('"galaxy-zoom.js"'));
     assert.ok(css.includes('html.gx-hold #tab-home') && css.includes('#tab-foryou.nm-solo{background:'), 'Home held on top, Community is one space with no card');
     const wh = read('world-home.js');
@@ -115,9 +119,6 @@ test('back from the galaxy the 3D camera flies down into Misty instead of Home j
     assert.ok(wh.includes("st.zoomAnim = { to: home.dist, rel: home.dist / baseDist(r), pitch: home.pitch, t: 0, rate: 4.2 };"), 'camera glides back to Misty\'s usual view');
     assert.ok(wh.includes('dt * (z.rate || 3.2)'));
     assert.ok(src.includes("if (dir === 'in') { try { if (W.LowiWorldHome && W.LowiWorldHome.diveIn) W.LowiWorldHome.diveIn(); } catch (e) {} }"));
-    const m = { x: 195, y: 388, r: 105 }, y = { x: 120, y: 520, r: 27 }, g = { left: 18, top: 12 };
-    const pin = Z.plan(m, y, g, 390, 844, Z.HS_IN), pout = Z.plan(m, y, g, 390, 844);
-    assert.ok(pin.s > pout.s && pin.s >= 0.75, 'the flat Home layer barely grows on the way back');
 });
 
 test('the Community warp reuses the brain-cell warp from Home and starts where a finger swipe left it', () => {
@@ -125,11 +126,24 @@ test('the Community warp reuses the brain-cell warp from Home and starts where a
     assert.ok(src.includes('R.buildWarp(A.THREE') && src.includes('s.follow(cam)') && src.includes('cam.updateProjectionMatrix()'), 'the same light streaks and widening view as the places on Home');
     assert.ok(src.includes("detail: { phase: 'start', id: 'community'"), 'the warp sound fires too');
     assert.ok(src.includes("c.id = 'gxWarp'"), 'the streaks carry on over the galaxy');
-    /* a swipe pull: Home already at scale .9 -> the warp's first frame is that scale, not 1 */
-    const p = Z.plan({ x: 200, y: 400 }, { x: 100, y: 500 }, { left: 0, top: 0 }, 390, 844, 0, { dir: 'out', k: 0.9, o: 0.8 });
-    assert.equal(p.home.from, 'translate(0px,0px) scale(0.9)');
-    const q = Z.plan({ x: 200, y: 400 }, { x: 100, y: 500 }, { left: 0, top: 0 }, 390, 844, 0.5, { dir: 'in', k: 1.2, o: 0.8 });
-    assert.equal(q.galaxy.to, 'translate(0px,0px) scale(1.2)');
-    assert.equal(Z.swipeScale('out', 0), 1); assert.ok(Z.swipeScale('out', 1) < 1 && Z.swipeScale('in', 1) > 1);
+    /* a swipe pull: the warp's first frame is exactly where the finger let go, not a jump back */
+    const so = Z.swipeLook('out', 0.5), si = Z.swipeLook('in', 0.5);
+    assert.ok(so.k === 1 && so.o < 1 && so.fov > 0, 'out of Home the finger widens the 3D view and dims Home, no shrinking box');
+    assert.ok(Math.abs(Z.look('out', 0, so).home - so.o) < 1e-9);
+    assert.ok(Math.abs(Z.look('in', 0, si).field - si.k) < 1e-9 && Math.abs(Z.look('in', 0, si).fieldO - si.o) < 1e-9);
+    assert.equal(Z.swipeLook('out', 0).o, 1); assert.ok(Z.swipeLook('in', 1).k > 1);
+    assert.ok(src.includes('fov0 = cam.fov - fovX') && src.includes('fovX * (1 - ease(k))'), 'the lens carries on from the swipe');
     assert.ok(Z.warpAmt(0) === 0 && Z.warpAmt(0.4) > 0.8 && Z.warpAmt(1) < 0.01, 'streaks rise and are gone as the view settles');
+});
+
+test('spirit world stays smooth: nothing re-measures hidden Home every second or two, the warp streaks keep their GPU program', () => {
+    /* E-man (Oct 16): "in the spirit world, every two to three seconds everything freezes for a moment" */
+    const html = read('index.html'), fe = read('fast-edit.js'), fx = read('finch-extras.js'), b3 = read('body-world-3d.js'), sc = read('body-world-3d-scene.js'), gz = read('galaxy-zoom.js');
+    assert.ok(html.includes('function homeShown(h){ return h.classList.contains("active")') && html.includes('if (!homeShown(h)) return;'), 'the Today fit only runs while Home is the page you see');
+    assert.ok(html.includes('observe(h, {attributes:true, attributeFilter:["class"]})'), 'and catches up when Home is back');
+    assert.ok(fe.includes('if (!D.hidden && homeOn()) ensurePill();'));
+    assert.ok(b3.includes('homeSeen()) { mountHome(); syncGlow(); }'));
+    assert.ok(sc.includes('if (nw !== W || nh !== H) { W = nw; H = nh; renderer.setSize(W, H, false); }'), 'same size never wipes the WebGL buffer');
+    assert.ok(fx.includes("if (spot && spot.key === key && spot.el === el)") && fx.includes('if (layer.textContent !== x.txt[L()])'));
+    assert.ok(gz.includes('function keptWarp(A, R)') && !/s\.dispose\(\)/.test(gz) && gz.includes('A.renderer.compile(A.scene, A.camera)'), 'one warp, warmed up, never thrown away');
 });

@@ -130,7 +130,7 @@
 
     /* ---------- 12 · in-scene hints ---------- */
     const hints = read(KH, {});
-    let layer = null, shown = null, armed = false, raf = 0;
+    let layer = null, shown = null, armed = false, raf = 0, spot = null;
     function shownEl(sel) {
         for (const s of sel) {
             const el = D.querySelector(s);
@@ -174,9 +174,12 @@
         let el = null, h = null, pos = null;
         for (const x of HINTS) {
             if (hints[x.id] || !(el = shownEl(x.sel))) continue;
-            layer.textContent = x.txt[L()];
-            layer.dataset.h = x.id;
-            if ((pos = place(el))) { h = x; break; }
+            if (layer.textContent !== x.txt[L()]) layer.textContent = x.txt[L()];   /* unchanged words: no DOM write, no observers woken */
+            if (layer.dataset.h !== x.id) layer.dataset.h = x.id;
+            /* Oct 16: the same hint on the same control that has not moved keeps its spot: no new hit-testing every 700 ms */
+            const r0 = el.getBoundingClientRect(), key = x.id + '|' + Math.round(r0.left) + ',' + Math.round(r0.top) + ',' + Math.round(r0.width) + ',' + Math.round(r0.height) + '|' + layer.textContent + '|' + innerWidth + 'x' + innerHeight;
+            if (spot && spot.key === key && spot.el === el) { pos = spot.pos; h = x; break; }
+            if ((pos = place(el))) { spot = { key, el, pos }; h = x; break; }
         }
         if (!h || !pos) { layer.classList.remove('on'); shown = null; return; }
         /* the same words for screen readers, on the control itself; every hinted control also works with a plain tap */

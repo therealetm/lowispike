@@ -5,7 +5,7 @@
    "You" orb, the galaxy opens up around it. Both layers move with the same easing and the same anchor, so for every frame the point
    that was Misty is exactly the point that becomes You (one continuous pull-out, Stargate style). Going back to Home runs the same
    camera the other way: the galaxy dives into You and Home opens out of it.
-   Pure geometry is in plan(); the DOM part only runs in a browser, skips with reduced motion and gives up quietly if anything is missing. */
+   Pure frame maths is in look(); the DOM part only runs in a browser, skips with reduced motion and gives up quietly if anything is missing. */
 (function (root) {
     'use strict';
     /* Oct 16, round 2 (E-man's screenshots): the old move shrank Home through a clip circle and blew the galaxy up 4-8x, which on the
@@ -17,30 +17,40 @@
     /* Oct 16, round 3 (E-man: "when you click on community, we get warped out", "use the zoom from the brain cell"): the move is the
        same warp the places on Home use (body-world-regions.js): its light streaks rush past the 3D camera and the view widens while
        the camera backs out, and the streaks carry on over the galaxy until it settles. A little slower, so it reads as a pull-back. */
-    const DUR = 920, EASE = 'cubic-bezier(.4,0,.2,1)', GX = 2.4, HS0 = 0.42;
-    /* Going back home the 3D camera itself flies down into Misty (LowiWorldHome.diveIn), so the flat Home layer only grows a little:
-       the motion you see is the camera diving, not a picture growing back into place. */
-    const HS_IN = 0.78;
-    /* Geometry: m = Misty's centre + radius on Home, y = your orb's centre + radius in the galaxy (both in viewport px), g = galaxy box. */
-    /* pv: where a finger swipe already pulled the page (scale k of Home on the way out, of the galaxy on the way in): the warp
-       starts from there, so letting go never jumps back first. */
-    function plan(m, y, g, vw, vh, hs, pv) {
-        const HS = hs || HS0, dx = (y.x - m.x).toFixed(1), dy = (y.y - m.y).toFixed(1), bx = (m.x - y.x).toFixed(1), by = (m.y - y.y).toFixed(1);
-        const kh = pv && pv.dir === 'out' ? pv.k : 1, kg = pv && pv.dir === 'in' ? pv.k : 1;
-        return {
-            s: HS, K: GX,
-            home: { origin: m.x.toFixed(1) + 'px ' + m.y.toFixed(1) + 'px', from: 'translate(0px,0px) scale(' + +kh.toFixed(3) + ')', to: 'translate(' + dx + 'px,' + dy + 'px) scale(' + HS + ')' },
-            galaxy: { origin: (y.x - g.left).toFixed(1) + 'px ' + (y.y - g.top).toFixed(1) + 'px', from: 'translate(' + bx + 'px,' + by + 'px) scale(' + GX + ')', to: 'translate(0px,0px) scale(' + +kg.toFixed(3) + ')' }
-        };
+    /* Oct 16, round 4 (E-man's screenshots: "do you not see that rectangle box ... coming closer and getting bigger ... that's not
+       the same as the animation when I click on a glowing place to travel"): the old move scaled two flat boxes, the Home page down to
+       0.42 and the 352 x 571 galaxy box up to 2.4, so a rectangle flew at you. And it ran on Web Animations that could sit waiting for
+       their first frame, leaving Home shrunk, see-through and untappable (no glowing places) until a 4 s safety net snapped it back.
+       Now nothing flat is ever scaled. Exactly like travelling to a place: the real 3D camera moves (pullOut / diveIn) with the warp
+       streaks and the widening view, and the pages only cross-fade, full screen, driven frame by frame from the clock. In the galaxy
+       only the companions (the field has no box or background) settle onto you, or rush past as you dive home. */
+    const DUR = 900, FIELD0 = 1.22;
+    const clamp = k => Math.max(0, Math.min(1, k || 0));
+    const smooth = (a, b, k) => { const t = clamp((k - a) / (b - a)); return t * t * (3 - 2 * t); };
+    const ease = k => { k = clamp(k); return k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; };
+    /* One frame of the move, k = 0..1 of DUR. home = Home's opacity (never a transform), field = scale of the companions only,
+       fieldO = their opacity. pv: where a finger swipe already pulled things, so letting go never jumps back first. */
+    function look(dir, k, pv) {
+        const p = pv && pv.dir === dir ? pv : null;
+        if (dir === 'out') {
+            const h0 = p ? p.o : 1;
+            return { home: h0 * (1 - smooth(0.25, 0.8, k)), field: FIELD0 + (1 - FIELD0) * ease(k), fieldO: 1 };
+        }
+        const f0 = p ? p.k : 1, o0 = p ? p.o : 1;
+        return { home: smooth(0.3, 0.82, k), field: f0 + (FIELD0 - f0) * ease(k), fieldO: o0 * (1 - smooth(0.15, 0.7, k)) };
     }
-    /* A sideways swipe between Home and Community does not slide: it pulls the warp with the finger. f = 0..1 of the screen width. */
-    function swipeScale(dir, f) { f = Math.max(0, Math.min(1, f || 0)); return dir === 'out' ? 1 - 0.2 * f : 1 + 0.3 * f; }
+    /* A sideways swipe between Home and Community does not slide and does not shrink a box: out of Home the 3D view widens (fov) and
+       Home dims a little with the finger; out of the galaxy the companions start to rush past you. f = 0..1 of the screen width. */
+    function swipeLook(dir, f) {
+        f = clamp(f);
+        return dir === 'out' ? { dir, k: 1, o: 1 - 0.3 * f, fov: 14 * f } : { dir, k: 1 + 0.22 * f, o: 1 - 0.3 * f, fov: 0 };
+    }
     /* warp streak strength over the move: up fast, gone as the view settles */
     function warpAmt(k) { k = Math.max(0, Math.min(1, k)); return Math.sin(Math.PI * Math.pow(k, 0.8)); }
     /* Pinch past the edge: how far the fingers kept closing (Home, at its widest) or opening (galaxy) before we cross over. */
     const PINCH_GO = 1.45;
     function overPull(d0, d) { return d0 > 0 && d > 0 ? d0 / d : 1; }
-    const api = { plan, DUR, overPull, PINCH_GO, HS_IN, swipeScale, warpAmt };
+    const api = { look, swipeLook, DUR, FIELD0, overPull, PINCH_GO, warpAmt };
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
@@ -61,20 +71,36 @@
         return null;
     }
     /* ---------- the brain-cell warp, reused: LowiWorldRegions.buildWarp streaks on the 3D camera + a 2D echo over the galaxy ---------- */
-    function warpFx(dir, m, y) {
-        const fx = { offs: [] }, out = dir === 'out', t0 = performance.now();
+    /* One set of 3D streaks, built once and kept: building and disposing them for every move threw away the GPU program, so the
+       first frame of every Home <-> Community move had to compile a shader (the hitch right as the move starts). Warmed up while idle. */
+    let warpKeep = null;
+    function keptWarp(A, R) {
+        if (warpKeep && warpKeep.scene === A.scene) return warpKeep.s;
+        const s = R.buildWarp(A.THREE, 150, 0x9cdac7); A.scene.add(s.group); warpKeep = { scene: A.scene, s, warm: false }; return s;
+    }
+    function prewarm() {
+        try {
+            const A = W.LowiWorld3D, R = W.LowiWorldRegions;
+            if (!A || !A.scene || !A.camera || !A.THREE || !R || !R.buildWarp) return;
+            if (warpKeep && warpKeep.scene === A.scene && warpKeep.warm) return;
+            const s = keptWarp(A, R);
+            if (A.renderer && A.renderer.compile) { s.tick(0, 0.016, 0.05); s.follow(A.camera); A.renderer.compile(A.scene, A.camera); s.tick(0, 0.016, 0); }
+            warpKeep.warm = true;
+        } catch (e) { }
+    }
+    function warpFx(dir, m, y, pv) {
+        const fx = { offs: [] }, out = dir === 'out', t0 = performance.now(), fovX = pv && pv.dir === dir && pv.fov > 0 ? pv.fov : 0;
         try { W.dispatchEvent(new CustomEvent('lowi:world-warp', { detail: { phase: 'start', id: 'community', from: out ? 'hub' : 'community' } })); } catch (e) { }
         const A = W.LowiWorld3D, R = W.LowiWorldRegions;
         try {
             if (A && A.scene && A.camera && A.THREE && R && R.buildWarp && A.onFrame) {
-                const s = R.buildWarp(A.THREE, 150, 0x9cdac7), cam = A.camera, fov0 = cam.fov;
-                A.scene.add(s.group);
+                const s = keptWarp(A, R), cam = A.camera, fov0 = cam.fov - fovX;   /* a swipe already widened the view by fovX: carry on from there */
                 const off = A.onFrame(dt => {
                     const k = (performance.now() - t0) / DUR, amt = k >= 1 ? 0 : warpAmt(k);
                     s.tick((out ? -1 : 1) * 26 * amt, dt, amt); s.follow(cam);
-                    const fov = fov0 + 16 * amt; if (Math.abs(cam.fov - fov) > 0.01) { cam.fov = fov; cam.updateProjectionMatrix(); }
+                    const fov = fov0 + 16 * amt + fovX * (1 - ease(k)); if (Math.abs(cam.fov - fov) > 0.01) { cam.fov = fov; cam.updateProjectionMatrix(); }
                 });
-                fx.offs.push(() => { try { off(); } catch (e) { } try { s.dispose(); } catch (e) { } if (Math.abs(cam.fov - fov0) > 0.001) { cam.fov = fov0; cam.updateProjectionMatrix(); } });
+                fx.offs.push(() => { try { off(); } catch (e) { } try { s.tick(0, 0.016, 0); } catch (e) { } if (Math.abs(cam.fov - fov0) > 0.001) { cam.fov = fov0; cam.updateProjectionMatrix(); } });
             }
         } catch (e) { }
         /* the same streaks in 2D over the galaxy layer, centred on the point that travels from Misty to You */
@@ -107,41 +133,51 @@
         fx.stop = () => { fx.offs.splice(0).forEach(f => { try { f(); } catch (e) { } }); try { W.dispatchEvent(new CustomEvent('lowi:world-warp', { detail: { phase: 'arrive', id: out ? 'community' : 'hub', from: out ? 'hub' : 'community' } })); } catch (e) { } };
         return fx;
     }
+    /* inline styles the move and the fingers put on; cleared so the stylesheet owns every page again */
+    function clean() {
+        const home = D.getElementById('tab-home'), gal = D.getElementById('cgGalaxy'), field = D.getElementById('cgField');
+        [home, gal, field].forEach(el => { if (el) { el.style.transition = ''; el.style.transform = ''; el.style.opacity = ''; el.style.transformOrigin = ''; } });
+    }
     function finish() {
         if (!busy) return;
-        const b = busy; busy = null; clearTimeout(b.timer);
+        const b = busy; busy = null; clearTimeout(b.timer); if (b.raf) cancelAnimationFrame(b.raf);
         if (b.fx) b.fx.stop();
-        (b.anims || []).forEach(a => { try { a.cancel(); } catch (e) {} });
+        clean();
         H.classList.remove('gx-hold', 'gx-out', 'gx-in', 'gx-keep');
         if (b.dir === 'out') { try { if (W.LowiArrival && W.LowiArrival.current && W.LowiArrival.current()) W.LowiArrival.close(); } catch (e) {} }
         try { if (W.LowiWorldHome && W.LowiWorldHome.settle) W.LowiWorldHome.settle(); } catch (e) {}
         try { if (W.LowiCommunity && W.LowiCommunity.refresh) W.LowiCommunity.refresh(); } catch (e) {}
     }
+    /* Driven from the clock every frame (no Web Animations waiting for a first frame): a slow frame only skips ahead, and the move
+       always ends on time, with Home tappable again (glowing places included). */
+    function paint(dir, k, pv) {
+        const home = D.getElementById('tab-home'), field = D.getElementById('cgField'), L = look(dir, k, pv);
+        if (home) { home.style.transform = ''; home.style.opacity = L.home >= 0.999 ? '' : L.home.toFixed(3); }
+        if (field) { field.style.transform = Math.abs(L.field - 1) < 0.0005 ? '' : 'scale(' + L.field.toFixed(4) + ')'; field.style.opacity = L.fieldO >= 0.999 ? '' : L.fieldO.toFixed(3); }
+    }
     function run(dir) {
-        const home = D.getElementById('tab-home'), gal = D.getElementById('cgGalaxy'), y = youBox();
-        if (!home || !gal || !y || !home.animate) { finish(); return; }
-        const m = mistyBox(), g = gal.getBoundingClientRect(), out = dir === 'out', p = plan(m, y, g, innerWidth, innerHeight, out ? 0 : HS_IN, busy.pv);
-        const pvo = busy.pv ? busy.pv.o : 1;
-        busy.fx = warpFx(dir, m, y);
-        /* Home falls away and fades in the first three quarters; the galaxy comes in from just in front of you and is solid by 70 % */
-        const ho = out ? pvo : 1, go = out ? 1 : pvo;
-        const kh = [{ transform: p.home.from, opacity: ho }, { opacity: ho, offset: 0.18 }, { opacity: 0, offset: 0.78 }, { transform: p.home.to, opacity: 0 }];
-        const kg = [{ transform: p.galaxy.from, opacity: 0 }, { opacity: 0.15, offset: 0.12 }, { opacity: go, offset: 0.7 }, { transform: p.galaxy.to, opacity: go }];
-        home.style.transformOrigin = p.home.origin; gal.style.transformOrigin = p.galaxy.origin;
-        const o = { duration: DUR, easing: EASE, fill: 'both', direction: out ? 'normal' : 'reverse' };
-        busy.anims = [home.animate(kh, o), gal.animate(kg, o)];
-        busy.anims[0].onfinish = finish;
-        /* safety net counted from when the animation really starts (slow first frame), never cutting the move short */
-        clearTimeout(busy.timer); busy.timer = setTimeout(finish, DUR + 3000);
-        const b = busy; try { b.anims[0].ready.then(() => { if (busy === b) { clearTimeout(b.timer); b.timer = setTimeout(finish, DUR + 500); } }); } catch (e) { }
+        const home = D.getElementById('tab-home'), gal = D.getElementById('cgGalaxy');
+        if (!home || !gal) { finish(); return; }
+        const m = mistyBox(), y = youBox() || { x: innerWidth / 2, y: innerHeight * 0.62, r: 24 }, b = busy, t0 = performance.now();
+        gal.style.transform = ''; gal.style.opacity = '';
+        b.fx = warpFx(dir, m, y, b.pv);
+        const step = () => {
+            if (busy !== b) return;
+            const k = Math.min(1, (performance.now() - t0) / DUR);
+            paint(dir, k, b.pv);
+            if (k >= 1) { finish(); return; }
+            b.raf = requestAnimationFrame(step);
+        };
+        step();
+        clearTimeout(b.timer); b.timer = setTimeout(finish, DUR + 350);
     }
     let pending = null;   /* a finger swipe's pull, handed to the next start() */
     function start(dir) {
         if (busy) finish();
-        busy = { dir, anims: [], timer: 0, pv: pending && pending.dir === dir ? pending : null }; pending = null;
+        busy = { dir, raf: 0, timer: 0, pv: pending && pending.dir === dir ? pending : null }; pending = null;
         if (dir === 'out') { H.classList.add('gx-hold', 'gx-out'); try { if (W.LowiWorldHome && W.LowiWorldHome.pullOut) W.LowiWorldHome.pullOut(); } catch (e) {} }
         else H.classList.add('gx-in', 'gx-keep');
-        busy.timer = setTimeout(finish, DUR + 3000);
+        busy.timer = setTimeout(finish, DUR + 800);   /* run() starts within a frame and resets this */
     }
     function wrap() {
         const orig = W.goTab;
@@ -180,7 +216,8 @@
     }
     const gest = { on: '', d0: 0, ref: 0, el: null };
     const tdist = e => Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-    function feel(el, k, o) { if (!el) return; el.style.transition = 'none'; el.style.transform = k === 1 ? '' : 'scale(' + k.toFixed(3) + ')'; el.style.opacity = o == null || o === 1 ? '' : String(o.toFixed(3)); }
+    /* fingers never scale a page box either: Home only dims, in the galaxy only the companions (the field) move */
+    function feel(el, k, o) { if (!el) return; el.style.transition = 'none'; el.style.transform = el.id === 'tab-home' || k === 1 ? '' : 'scale(' + k.toFixed(3) + ')'; el.style.opacity = o == null || o === 1 ? '' : String(o.toFixed(3)); }
     function release() {
         const el = gest.el; gest.on = ''; gest.el = null; gest.ref = 0;
         if (el) { el.style.transition = 'transform .25s ease, opacity .25s ease'; el.style.transform = ''; el.style.opacity = ''; setTimeout(() => { if (!gest.el) el.style.transition = ''; }, 300); }
@@ -194,7 +231,7 @@
         if (e.touches.length !== 2) { if (e.touches.length > 2) release(); return; }
         const t = e.target;
         if (homePinchOk(t)) { gest.on = 'home'; gest.el = D.getElementById('tab-home'); gest.d0 = tdist(e); gest.ref = 0; }
-        else if (activeTab() === 'foryou' && !busy && t && t.closest && t.closest('#cgGalaxy') && !t.closest('#cmPaneChat .cm-compose, input, textarea')) { gest.on = 'gal'; gest.el = D.getElementById('cgGalaxy'); gest.d0 = tdist(e); e.preventDefault(); }
+        else if (activeTab() === 'foryou' && !busy && t && t.closest && t.closest('#cgGalaxy') && !t.closest('#cmPaneChat .cm-compose, input, textarea')) { gest.on = 'gal'; gest.el = D.getElementById('cgField'); gest.d0 = tdist(e); e.preventDefault(); }
     }, { capture: true, passive: false });
     D.addEventListener('touchmove', e => {
         if (!gest.on || e.touches.length !== 2) return;
@@ -237,24 +274,50 @@
         if (from === 'foryou' && to === 'home' && D.querySelector('#cgField .cg-body.me')) return 'in';
         return '';
     }
-    function swipeEl(dir) { return dir === 'out' ? D.getElementById('tab-home') : D.getElementById('cgGalaxy'); }
+    function swipeEl(dir) { return dir === 'out' ? D.getElementById('tab-home') : D.getElementById('cgField'); }
+    /* Home's 3D view widens with the finger (the same lens the warp uses), nothing flat shrinks */
+    let fovBase = 0;
+    function setFov(extra) {
+        try {
+            const cam = W.LowiWorld3D && W.LowiWorld3D.camera; if (!cam) return;
+            if (!fovBase) fovBase = cam.fov;
+            const v = fovBase + extra; if (Math.abs(cam.fov - v) > 0.01) { cam.fov = v; cam.updateProjectionMatrix(); }
+            if (extra <= 0) fovBase = 0;
+        } catch (e) { }
+    }
     function swipe(dir, f) {
         const el = swipeEl(dir); if (!el) return;
-        const k = swipeScale(dir, f), o = 1 - 0.3 * Math.max(0, Math.min(1, f));
-        if (dir === 'out') { const m = mistyBox(); el.style.transformOrigin = m.x.toFixed(1) + 'px ' + m.y.toFixed(1) + 'px'; }
-        else { const y = youBox(), g = el.getBoundingClientRect(); if (y) el.style.transformOrigin = (y.x - g.left).toFixed(1) + 'px ' + (y.y - g.top).toFixed(1) + 'px'; }
-        el.style.transition = 'none'; el.style.transform = 'scale(' + k.toFixed(3) + ')'; el.style.opacity = o.toFixed(3);
-        return { dir, k, o };
+        const L = swipeLook(dir, f);
+        el.style.transition = 'none';
+        el.style.transform = dir === 'out' ? '' : 'scale(' + L.k.toFixed(3) + ')';
+        el.style.opacity = L.o.toFixed(3);
+        if (dir === 'out') setFov(L.fov);
+        return L;
     }
     function swipeEnd(dir, f, commit) {
         const el = swipeEl(dir); if (!el) return false;
-        const k = swipeScale(dir, f), o = 1 - 0.3 * Math.max(0, Math.min(1, f));
-        el.style.transition = ''; el.style.transform = ''; el.style.opacity = '';
-        if (commit) { pending = { dir, k, o }; try { (W.goTab || goTab)(dir === 'out' ? 'foryou' : 'home'); } catch (e) { } const ok = !!(busy && busy.dir === dir); pending = null; return ok; }
-        if (el.animate && !reduced()) el.animate([{ transform: 'scale(' + k.toFixed(3) + ')', opacity: o }, { transform: 'scale(1)', opacity: 1 }], { duration: 260, easing: 'cubic-bezier(.22,.8,.28,1)' });
+        const L = swipeLook(dir, f);
+        if (commit) {
+            /* the warp takes over from exactly this frame: its paint() and lens start where the finger left them */
+            pending = L; fovBase = 0;
+            try { (W.goTab || goTab)(dir === 'out' ? 'foryou' : 'home'); } catch (e) { }
+            const ok = !!(busy && busy.dir === dir); pending = null;
+            if (!ok) { el.style.transition = ''; el.style.transform = ''; el.style.opacity = ''; setFov(0); }
+            return ok;
+        }
+        /* let go too early: ease back */
+        const t0 = performance.now(), T = reduced() ? 1 : 260;
+        const back = () => {
+            const k = Math.min(1, (performance.now() - t0) / T), e = 1 - Math.pow(1 - k, 3), r = swipeLook(dir, (f || 0) * (1 - e));
+            el.style.transform = dir === 'out' || k >= 1 ? '' : 'scale(' + r.k.toFixed(3) + ')';
+            el.style.opacity = k >= 1 ? '' : r.o.toFixed(3);
+            if (dir === 'out') setFov(k >= 1 ? 0 : r.fov);
+            if (k < 1) requestAnimationFrame(back); else el.style.transition = '';
+        };
+        back();
         return false;
     }
     Object.assign(api, { swipeOk, swipe, swipeEnd, busy: () => !!busy });
     let tries = 0;
-    (function boot() { if (!wrap() && tries++ < 80) setTimeout(boot, 150); else setInterval(wrap, 2000); })();
+    (function boot() { if (!wrap() && tries++ < 80) setTimeout(boot, 150); else setInterval(() => { wrap(); if (!busy) { const ric = W.requestIdleCallback || (f => setTimeout(f, 1)); ric(prewarm); } }, 2000); })();
 })(typeof window !== 'undefined' ? window : globalThis);

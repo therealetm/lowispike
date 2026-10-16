@@ -12,14 +12,14 @@
     const THRESH = 62, DAY = 25, NIGHT = 100;
     /* p, theme side, sky top/mid/bottom, light glow colour/alpha/x/y (%), mist colour/alpha, stars, 3D haze/amount/light */
     const STOPS = [
-        { p: 0, id: 'mist', top: '#c3cfe0', mid: '#dbe2ec', bot: '#eef1f5', sun: '#ffd2bf', sunA: 0.42, sunX: 12, sunY: 74, mist: '#ffffff', mistA: 0.85, star: 0, haze: '#9fb3c9', amt: 0.22, light: 1.12 },
-        { p: 25, id: 'day', top: '#7fb6ea', mid: '#bfdcf6', bot: '#eef5fc', sun: '#fff1b8', sunA: 0.6, sunX: 72, sunY: 9, mist: '#ffffff', mistA: 0.1, star: 0, haze: '#7fb0d8', amt: 0.12, light: 1.2 },
-        { p: 38, id: 'afternoon', top: '#c4d2e2', mid: '#e6e4da', bot: '#f8f0e2', sun: '#ffe2a0', sunA: 0.65, sunX: 80, sunY: 30, mist: '#fff8ec', mistA: 0.15, star: 0, haze: '#a8b4b8', amt: 0.16, light: 1.15 },
-        { p: 50, id: 'golden', top: '#f0ac68', mid: '#f6cf98', bot: '#fae6c8', sun: '#ffb35c', sunA: 0.72, sunX: 84, sunY: 56, mist: '#fff0d6', mistA: 0.25, star: 0, haze: '#c98a4a', amt: 0.22, light: 1.1 },
-        { p: 61, id: 'sunset', top: '#e39a86', mid: '#eeb59a', bot: '#f5d2b8', sun: '#ff8f66', sunA: 0.55, sunX: 90, sunY: 76, mist: '#ffd9c8', mistA: 0.3, star: 0, haze: '#b8707a', amt: 0.2, light: 1.0 },
-        { p: THRESH, id: 'dusk', top: '#1a1f45', mid: '#2b2d5c', bot: '#4a3a66', sun: '#ff9a7a', sunA: 0.28, sunX: 92, sunY: 88, mist: '#8f8ac0', mistA: 0.3, star: 0.15, haze: '#2b2d5c', amt: 0.18, light: 0.85 },
-        { p: 75, id: 'blue', top: '#142452', mid: '#1f3466', bot: '#283f70', sun: '#cfd8ff', sunA: 0.06, sunX: 60, sunY: 40, mist: '#7088c0', mistA: 0.55, star: 0.45, haze: '#1f3466', amt: 0.25, light: 0.8 },
-        { p: NIGHT, id: 'night', top: '#070c22', mid: '#0a1430', bot: '#03050a', sun: '#cfd8ff', sunA: 0.34, sunX: 24, sunY: 14, mist: '#4a5a90', mistA: 0.12, star: 1, haze: '#050a1c', amt: 0.1, light: 0.7 }
+        { p: 0, id: 'mist', top: '#c3cfe0', mid: '#dbe2ec', bot: '#eef1f5', sun: '#ffd2bf', sunA: 0.42, sunX: 12, sunY: 74, mist: '#ffffff', mistA: 0.85, star: 0, haze: '#c0cee0', amt: 0.45, tint: '#f2f5ff', tintA: 0.25, light: 1.12 },
+        { p: 25, id: 'day', top: '#7fb6ea', mid: '#bfdcf6', bot: '#eef5fc', sun: '#fff1b8', sunA: 0.6, sunX: 72, sunY: 9, mist: '#ffffff', mistA: 0.1, star: 0, haze: '#6aaeea', amt: 0.32, tint: '#fff6dc', tintA: 0.22, light: 1.2 },
+        { p: 38, id: 'afternoon', top: '#c4d2e2', mid: '#e6e4da', bot: '#f8f0e2', sun: '#ffe2a0', sunA: 0.65, sunX: 80, sunY: 30, mist: '#fff8ec', mistA: 0.15, star: 0, haze: '#a6c0cc', amt: 0.36, tint: '#ffe8bc', tintA: 0.3, light: 1.15 },
+        { p: 50, id: 'golden', top: '#f0ac68', mid: '#f6cf98', bot: '#fae6c8', sun: '#ffb35c', sunA: 0.72, sunX: 84, sunY: 56, mist: '#fff0d6', mistA: 0.25, star: 0, haze: '#e89a52', amt: 0.45, tint: '#ffb664', tintA: 0.45, light: 1.1 },
+        { p: 61, id: 'sunset', top: '#e39a86', mid: '#eeb59a', bot: '#f5d2b8', sun: '#ff8f66', sunA: 0.55, sunX: 90, sunY: 76, mist: '#ffd9c8', mistA: 0.3, star: 0, haze: '#d2706a', amt: 0.48, tint: '#ff9070', tintA: 0.5, light: 1.0 },
+        { p: THRESH, id: 'dusk', top: '#1a1f45', mid: '#2b2d5c', bot: '#4a3a66', sun: '#ff9a7a', sunA: 0.28, sunX: 92, sunY: 88, mist: '#8f8ac0', mistA: 0.3, star: 0.15, haze: '#3a3a86', amt: 0.5, tint: '#8a90e0', tintA: 0.4, light: 0.85 },
+        { p: 75, id: 'blue', top: '#142452', mid: '#1f3466', bot: '#283f70', sun: '#cfd8ff', sunA: 0.06, sunX: 60, sunY: 40, mist: '#7088c0', mistA: 0.55, star: 0.45, haze: '#2856c0', amt: 0.6, tint: '#6f9cff', tintA: 0.6, light: 0.8 },
+        { p: NIGHT, id: 'night', top: '#070c22', mid: '#0a1430', bot: '#03050a', sun: '#cfd8ff', sunA: 0.34, sunX: 24, sunY: 14, mist: '#4a5a90', mistA: 0.12, star: 1, haze: '#040a22', amt: 0.55, tint: '#7286d8', tintA: 0.35, light: 0.7 }
     ];
     /* the five named places on the scale (what the user asked for, in his order) */
     const MARKS = [{ p: 0, id: 'mist' }, { p: DAY, id: 'day' }, { p: 50, id: 'golden' }, { p: 75, id: 'blue' }, { p: NIGHT, id: 'night' }];
@@ -48,6 +48,9 @@
     const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
     const num = v => (typeof v === 'number' ? v : typeof v === 'string' && v.trim() !== '' ? +v : NaN);
     function clampP(p) { p = num(p); return Number.isFinite(p) ? Math.round(clamp(p, 0, 100) * 2) / 2 : DAY; }
+    /* Oct 16 (E-man): an ease-in-out between stops, so the colour settles gently on each peak (mist, day, golden, blue mist,
+       night) like a photo editor's hue slider, and moves gradually in between, never a jump. The stops themselves (haze + the
+       colour of the light) are real-sky colours, stronger than before so the change is easy to see, but not neon. */
     const ease = t => t * t * (3 - 2 * t);
     function hex(h) { h = String(h).replace('#', ''); if (h.length === 3) h = h.split('').map(c => c + c).join(''); const n = parseInt(h, 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
     const toHex = c => '#' + c.map(v => Math.round(clamp(v, 0, 255)).toString(16).padStart(2, '0')).join('');
@@ -70,7 +73,7 @@
             top: mixHex(a.top, b.top, t), mid: mixHex(a.mid, b.mid, t), bot: mixHex(a.bot, b.bot, t),
             sun: mixHex(a.sun, b.sun, t), sunA: +L(a.sunA, b.sunA).toFixed(3), sunX: +L(a.sunX, b.sunX).toFixed(1), sunY: +L(a.sunY, b.sunY).toFixed(1),
             mist: mixHex(a.mist, b.mist, t), mistA: +L(a.mistA, b.mistA).toFixed(3), star: +L(a.star, b.star).toFixed(3),
-            haze: mixHex(a.haze, b.haze, t), amt: +L(a.amt, b.amt).toFixed(3), light: +L(a.light, b.light).toFixed(3)
+            haze: mixHex(a.haze, b.haze, t), amt: +L(a.amt, b.amt).toFixed(3), tint: mixHex(a.tint, b.tint, t), tintA: +L(a.tintA, b.tintA).toFixed(3), light: +L(a.light, b.light).toFixed(3)
         };
     }
     /* CSS custom properties (strings) for <html style>. The same string is cached so the <head> can restore it before paint. */

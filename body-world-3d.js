@@ -110,6 +110,8 @@
         /* One world (Oct 15): Home's own VR / motion button drives the same gyro as the full window */
         gyro: { kind: () => gyroKind(gyroEnv()), on: () => gyroOn, tap: b => gyroTap(b), paint: (b, s) => paintGyro(b, s || (gyroOn ? 'on' : 'off')) },
         homeAway: () => homeAway(),
+        hold: false, /* spirit-world.js sets this while it zooms past Home's widest view */
+        projectPlace: id => (world && world.project ? world.project(id) : null),
         onFrame: fn => { if (typeof fn !== 'function') return () => {}; if (world) return world.onFrame(fn); pendingFrames.add(fn); let off = null; const t = { off: () => { pendingFrames.delete(fn); if (off) off(); } }; t.bind = o => { off = o; }; pendingBind.set(fn, t); return t.off; } });
     const pendingFrames = new Set(), pendingBind = new Map();
     W.LowiWorld3D = api;
@@ -158,14 +160,25 @@
     }
 
     /* ---------- pointer: drag, pinch, tap ---------- */
-    function bindGestures(el, onTap, allowPinch) {
-        const pts = new Map(); let start = null, pinch0 = 0, moved = 0, lastX = 0, lastY = 0, vx = 0, vy = 0, lastT = 0;
+    /* double tap = map zoom: halfway in each time, and back out to the widest view once you're all the way in */
+    function zoomTap() {
+        const r = world && world.rig; if (!r || r.fly || api.hold) return;
+        const nd = r.dist > r.minD * 1.3 ? Math.max(r.minD, r.dist * 0.5) : r.maxD;
+        r.fly = { from: { t: r.target.clone(), d: r.dist }, to: { t: r.target.clone(), d: nd }, t: 0, dur: 0.45 }; r.flyYaw = null; r.idle = 0;
+    }
+    /* Oct 16 (E-man): map gestures. opts.onLong(x, y) fires on a still ~0.5 s press (then no tap follows); opts.onDouble(x, y)
+       fires on the second of two quick taps in the same spot (the first tap still did its own thing). */
+    function bindGestures(el, onTap, allowPinch, opts) {
+        opts = opts || {};
+        const pts = new Map(); let start = null, pinch0 = 0, moved = 0, lastX = 0, lastY = 0, vx = 0, vy = 0, lastT = 0, lpT = 0, lpFired = false, lastTap = null;
         el.addEventListener('pointerdown', e => {
             if (!world) return;
             pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
             try { el.setPointerCapture(e.pointerId); } catch (err) {}
-            if (pts.size === 1) { start = { x: e.clientX, y: e.clientY, t: e.timeStamp }; moved = 0; lastX = e.clientX; lastY = e.clientY; vx = vy = 0; lastT = e.timeStamp; }
-            if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch0 = Math.hypot(a.x - b.x, a.y - b.y); }
+            if (pts.size === 1) { start = { x: e.clientX, y: e.clientY, t: e.timeStamp }; moved = 0; lastX = e.clientX; lastY = e.clientY; vx = vy = 0; lastT = e.timeStamp;
+                lpFired = false; clearTimeout(lpT);
+                if (opts.onLong) { const sx = e.clientX, sy = e.clientY; lpT = setTimeout(() => { if (!start || moved >= 10 || pts.size !== 1) return; lpFired = true; const r = el.getBoundingClientRect(); try { navigator.vibrate && navigator.vibrate(12); } catch (err) {} opts.onLong(sx - r.left, sy - r.top); }, 520); } }
+            if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch0 = Math.hypot(a.x - b.x, a.y - b.y); clearTimeout(lpT); }
         });
         el.addEventListener('pointermove', e => {
             if (!world || !pts.has(e.pointerId)) return;
@@ -185,7 +198,13 @@
             if (!pts.has(e.pointerId)) return;
             pts.delete(e.pointerId);
             if (pts.size === 0 && start) {
-                if (moved < 10 && e.type === 'pointerup' && e.timeStamp - start.t < 450) { const r = el.getBoundingClientRect(); onTap(e.clientX - r.left, e.clientY - r.top); }
+                clearTimeout(lpT);
+                if (lpFired) { lpFired = false; }
+                else if (moved < 10 && e.type === 'pointerup' && e.timeStamp - start.t < 450) {
+                    const r = el.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+                    const dbl = opts.onDouble && lastTap && e.timeStamp - lastTap.t < 330 && Math.hypot(x - lastTap.x, y - lastTap.y) < 40;
+                    if (dbl) { lastTap = null; opts.onDouble(x, y); } else { lastTap = { x, y, t: e.timeStamp }; onTap(x, y); }
+                }
                 else if (world && e.timeStamp - lastT < 90) world.release(vx, vy);
                 start = null;
             }
@@ -255,7 +274,10 @@
             els.heroes.classList.add('bw3-on'); els.home.classList.add('bw3-home');
             [...els.heroes.children].forEach(c => { if (c !== stage && getComputedStyle(c).position === 'static') c.style.position = 'relative'; });
             /* Home is the world itself: drag orbits, two fingers zoom, tapping a glowing place warps there; tapping empty space does nothing */
-            bindGestures(stage, (x, y) => { if (!world) return; const id = world.pick(x, y); if (id === 'cell') { try { W.dispatchEvent(new CustomEvent('lowi:misty-open')); } catch (e) {} } else if (id) api.flyTo(id); }, true);
+            /* Oct 16 (E-man): a tap on Misty pets her (no sheet popping up mid-play); a long press opens her sheet; a double tap zooms */
+            bindGestures(stage, (x, y) => { if (!world) return; const id = world.pick(x, y); if (id === 'cell') { try { W.dispatchEvent(new CustomEvent('lowi:misty-pet')); } catch (e) {} } else if (id) api.flyTo(id); }, true,
+                { onLong: (x, y) => { if (!world) return; if (world.pick(x, y) === 'cell') { try { W.dispatchEvent(new CustomEvent('lowi:misty-open')); } catch (e) {} } },
+                  onDouble: (x, y) => { if (!world) return; const id = world.pick(x, y); if (!id || id === 'cell') zoomTap(); } });
             if (io) io.disconnect();
             if ('IntersectionObserver' in W) { io = new IntersectionObserver(es => { visibleHome = es.some(x => x.isIntersecting); }, { threshold: 0.01 }); io.observe(stage); }
             if (mode === 'home' && canvas) stage.insertBefore(canvas, stage.firstChild);
@@ -278,7 +300,7 @@
         placeOpenBtn(els);
         if (!world || mode !== 'home') return;
         /* travelling inside Home's world (a place or the warp there): keep the camera where the warp put it */
-        if (homeAway()) { const s0 = stage.getBoundingClientRect(); world.resize(s0.width, s0.height); return; }
+        if (homeAway() || api.hold) { const s0 = stage.getBoundingClientRect(); world.resize(s0.width, s0.height); return; } /* api.hold: the spirit-world zoom (spirit-world.js) owns the distance */
         const sr = stage.getBoundingClientRect(), b = els.bubble && els.bubble.getBoundingClientRect(), bw = els.bubble ? (els.bubble.offsetWidth || 0) : 0;
         world.resize(sr.width, sr.height);
         if (b && b.width) { world.setFocus({ x: b.left + b.width / 2 - sr.left, y: b.top + b.height / 2 - sr.top }); world.setMode('home', { radiusPx: Math.min(sr.height * 0.48, (bw || b.width) * 0.54) }); }
@@ -345,7 +367,8 @@
         full.addEventListener('click', e => { const b = e.target.closest('[data-bw3-go]'); if (b) go(b.dataset.bw3Go); const bk = e.target.closest('[data-bw3-back]'); if (bk) go(null); const tp = e.target.closest('[data-bw3-trip]'); if (tp) openTrip(tp.dataset.bw3Trip); });
         const gb = full.querySelector('.bw3-gyro');
         if (gb) { paintGyro(gb, gyroOn ? 'on' : 'off'); gb.addEventListener('click', () => gyroTap(gb)); }
-        bindGestures(view, (x, y) => { if (!world) return; const id = world.pick(x, y); if (id === 'cell') showCell(); else if (id) go(id); }, true);
+        bindGestures(view, (x, y) => { if (!world) return; const id = world.pick(x, y); if (id === 'cell') showCell(); else if (id) go(id); }, true,
+            { onDouble: (x, y) => { if (!world) return; const id = world.pick(x, y); if (!id || id === 'cell') zoomTap(); } });
         D.addEventListener('keydown', onKey);
         load().then(w => {
             if (!w || !full) return;

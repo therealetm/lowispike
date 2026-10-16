@@ -355,3 +355,9 @@ html.wh-home #spHome #spFast .fb-lab { display: none !important; }
 #spHome:is([data-misty="tired"], [data-misty="weak"]) #spBubble .lh-eyes:not([data-reaction] *):not([data-touchface] *) { transform: scaleY(.42); animation: none; }
 #spHome[data-misty="tired"] #spBubble .sp-home-herb { filter: saturate(.72) brightness(.9); transform: translateY(5px) rotate(-3deg) scale(.96); transition: filter 1s ease, transform 1s ease; }
 @media (prefers-reduced-motion: reduce) { #spHome:is([data-misty="weak"], [data-misty="tired"]) #spBubble .sp-home-herb { transition: none; } }
+
+/* Oct 16: a tap on Misty is a pet: a small heart floats up (her sheet is a long press now) */
+#spBubble { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+.wh-pet { position: fixed; z-index: 60; pointer-events: none; color: #ff8fb8; font-size: 22px; text-shadow: 0 0 10px rgba(255,140,190,.8); transform: translate(-50%, 0); animation: wh-pet 1.15s ease-out forwards; }
+@keyframes wh-pet { 0% { opacity: 0; transform: translate(-50%, 6px) scale(.6); } 18% { opacity: 1; transform: translate(-50%, -6px) scale(1.1); } 100% { opacity: 0; transform: translate(-50%, -64px) scale(.9); } }
+@media (prefers-reduced-motion: reduce) { .wh-pet { animation-duration: .01s; } }

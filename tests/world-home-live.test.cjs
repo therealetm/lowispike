@@ -9,7 +9,9 @@ test('Home world: free orbit, two-finger zoom from Misty out to the whole world,
   assert(scene.includes('rig.homeDist * was'));
   assert(scene.includes('halo.visible = false'), 'no outer glow shell around Misty on Home');
   assert(!bw.includes("mode === 'home' ? dy * 0.4"), 'vertical drag is no longer damped on Home');
-  assert(/bindGestures\(stage, \(x, y\) => \{ if \(!world\) return; const id = world\.pick\(x, y\);[^\n]*api\.flyTo\(id\); \}, true\);/.test(bw), 'tap a glowing place warps, pinch allowed');
+  assert(/bindGestures\(stage, \(x, y\) => \{ if \(!world\) return; const id = world\.pick\(x, y\);[^\n]*api\.flyTo\(id\); \}, true,/.test(bw), 'tap a glowing place warps, pinch allowed');
+  assert(bw.includes("W.dispatchEvent(new CustomEvent('lowi:misty-pet'))"), 'a tap on Misty pets her');
+  assert(bw.includes("onLong: (x, y) =>") && bw.includes("onDouble: (x, y) =>"), 'long press opens Misty, double tap zooms');
   assert(!bw.includes('bindGestures(stage, () => open(), false)'), 'no separate tap to enter the world');
   assert(css.includes('html.wh-home #spHome .sp-heroes > .bw3-stage { touch-action: none; }'));
 });

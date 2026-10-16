@@ -160,7 +160,7 @@
     }
 
     /* ---------- 3D hub: haze + light toward the chosen time of day (after season.js) ---------- */
-    let hooked3d = false, hazeCol = null;
+    let hooked3d = false, hazeCol = null, tintCol = null;
     const lightBase = new WeakMap();
     function inRegion(a) { try { return !!(a.hub && a.camera && !a.hub.layers.test(a.camera.layers)); } catch (e) { return false; } }
     function riding() { try { return !!(window.LowiRide && window.LowiRide.active); } catch (e) { return false; } }
@@ -173,8 +173,10 @@
         for (let i = 0; i < kids.length; i++) {
             const o = kids[i];
             if (!o || !(o.isHemisphereLight || o.isDirectionalLight || o.isAmbientLight)) continue;
-            if (on) { if (!o.userData.atmOn) { lightBase.set(o, o.intensity); o.userData.atmOn = true; } o.intensity = lightBase.get(o) * k.light; }
-            else if (o.userData.atmOn) { o.intensity = lightBase.get(o); o.userData.atmOn = false; }
+            /* Oct 16: the light itself also takes the time-of-day colour (golden = orange light, blue mist = blue light), so the
+               slider swings the whole world's hue, not just the far haze */
+            if (on) { if (!o.userData.atmOn) { lightBase.set(o, { i: o.intensity, c: o.color ? o.color.clone() : null }); o.userData.atmOn = true; } const b0 = lightBase.get(o); o.intensity = b0.i * k.light; if (b0.c && o.color && a.THREE) { tintCol = tintCol || new a.THREE.Color(); tintCol.set(k.tint || '#ffffff'); o.color.copy(b0.c).lerp(tintCol, k.tintA || 0); } }
+            else if (o.userData.atmOn) { const b0 = lightBase.get(o); o.intensity = b0.i; if (b0.c && o.color) o.color.copy(b0.c); o.userData.atmOn = false; }
         }
         if (!on || !a.THREE) return;
         hazeCol = hazeCol || new a.THREE.Color();

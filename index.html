@@ -2218,6 +2218,12 @@ html[data-ui=light] #g1Ob{--ob-bg:rgba(255,255,255,.98);--ob-fg:#17202e;--ob-mu:
 #g1Ob .g1ob-btn{appearance:none;-webkit-appearance:none;font:inherit;font-size:15px;font-weight:700;min-height:44px;padding:0 15px;border-radius:999px;border:1px solid var(--ob-ln);background:transparent;color:var(--ob-fg);cursor:pointer;touch-action:manipulation}
 #g1Ob .g1ob-1{background:var(--ob-ac);border-color:transparent;color:#0d1a12}
 #g1Ob .g1ob-say{width:44px;padding:0;display:inline-flex;align-items:center;justify-content:center}
+/* Oct 16: the update card is Liquid Glass and stays put (one spot at the top, no tail, no orb copy) */
+#g1Ob[data-mode="fixed"] .g1ob-orb,#g1Ob[data-mode="fixed"] .g1ob-tail{display:none!important}
+#g1Ob[data-mode="fixed"] .g1ob-bub{transition:opacity .22s ease;transform:none!important;animation:none!important;background:radial-gradient(120% 90% at 18% 0%,rgba(255,255,255,.16),rgba(255,255,255,0) 52%),linear-gradient(160deg,rgba(60,130,230,.22),rgba(14,30,66,.62));background-color:rgba(10,18,40,.55);-webkit-backdrop-filter:blur(22px) saturate(1.5);backdrop-filter:blur(22px) saturate(1.5);border:1.5px solid rgba(225,248,255,.36);border-radius:24px;color:#fff;box-shadow:inset 0 0 18px rgba(200,240,255,.12),0 18px 40px -16px rgba(0,0,0,.6)}
+#g1Ob[data-mode="fixed"] .g1ob-p{color:rgba(255,255,255,.74)}
+#g1Ob[data-mode="fixed"] .g1ob-btn{color:#fff;border-color:rgba(225,248,255,.3);background:rgba(255,255,255,.08)}
+#g1Ob[data-mode="fixed"] .g1ob-1{background:#3d8bff;border-color:transparent;color:#fff}
 #g1Ob .g1ob-say svg{width:20px;height:20px}
 #g1Ob .g1ob-say.on{background:color-mix(in srgb,var(--ob-ac) 26%,transparent)}
 #g1Ob .g1ob-btn:focus-visible{outline:3px solid var(--ob-ac);outline-offset:2px}
@@ -2575,8 +2581,8 @@ function obShow(o){ let r = $("#g1Ob"); const fresh = !r || !OB || OB.kind !== o
   if (fresh) { clearTimeout(obT); r.classList.remove("in", "out", "busy"); obPalette(r); r.querySelector(".g1ob-herb").innerHTML = obHerb(); r.querySelector(".g1ob-btns").innerHTML = obButtons(); paintListen();
     obPlace(); void r.offsetWidth; if (reduce) r.classList.add("in"); else requestAnimationFrame(() => requestAnimationFrame(() => { if (OB && r.isConnected) r.classList.add("in"); })); sfx("open"); }
   else obPlace();
-  if (!obLoop.t) obLoop.t = setInterval(obLoop, 500); }
-function obLoop(){ if (!OB || !$("#g1Ob")) { clearInterval(obLoop.t); obLoop.t = 0; return; } obPlace(); }
+  /* no re-placing loop any more: the card stays where it opened (resize still re-places it) */ }
+function obLoop(){ clearInterval(obLoop.t); obLoop.t = 0; }
 function obClose(quick){ const r = $("#g1Ob"); OB = null; clearInterval(obLoop.t); obLoop.t = 0; hush(); const sp = $("#spBubble"); if (sp) sp.classList.remove("g1ob-talk");
   if (!r) return; const had = r.contains(document.activeElement); r.classList.remove("in"); r.classList.add("out"); clearTimeout(obT);
   obT = setTimeout(() => { if (!OB && r.parentNode) r.remove(); }, quick || reduce ? 0 : 240); if (had) try { document.activeElement.blur(); } catch(e){} }
@@ -2603,29 +2609,20 @@ function obAnchor(){ if (!onHome()) return null; const a = $("#spBubble"); if (!
   if (b.width < 60 || b.top < 0 || b.left < 0 || b.bottom > innerHeight || b.right > innerWidth) return null;
   let hit = null; try { hit = document.elementsFromPoint(b.left + b.width / 2, b.top + b.height / 2).find(x => !x.closest("#g1Ob")); } catch(e){}
   return hit && hit.closest("#spBubble") ? b : null; }
-function obPlace(){ const r = $("#g1Ob"); if (!r || !OB) return; const bub = r.querySelector(".g1ob-bub"), orb = r.querySelector(".g1ob-orb");
-  const vw = innerWidth, vh = innerHeight, M = 12, GAP = 14, OS = 64, st = parseFloat(getComputedStyle(r).paddingTop) || 0;
-  const tb = $("#tabbar"), tr = tb && vis(tb) ? tb.getBoundingClientRect() : null; let lim = vh - M;
-  if (tr && tr.top > vh * 0.5 && tr.width > vw * 0.4) lim = tr.top - 8;
-  const ML = tr && tr.height > vh * 0.5 && tr.right < vw * 0.5 ? Math.round(tr.right + M) : M; /* side rail (iPad/desktop): stay right of it */
-  const setW = w => { w = Math.round(w); if (bub.style.width !== w + "px") bub.style.width = w + "px"; return bub.offsetHeight; };
-  const a = obAnchor(); let mode = a ? "real" : "own", side = "", L = M, Tp = M, W = Math.min(360, vw - 2 * M), Hh = 0, tx = 0, ty = 0;
-  if (a) { const cx = a.left + a.width / 2, cy = a.top + a.height / 2; Hh = setW(W);
-    if (a.bottom + GAP + Hh <= lim) { side = "below"; Tp = a.bottom + GAP; L = clampN(cx - W / 2, ML, vw - W - M); tx = cx - L; }
-    else if (vw - a.right - GAP - M >= 230) { W = Math.min(360, vw - a.right - GAP - M); Hh = setW(W); side = "right"; L = a.right + GAP; Tp = clampN(cy - Hh / 2, st + M, Math.max(st + M, lim - Hh)); ty = cy - Tp; }
-    else if (a.top - GAP - Hh >= st + M) { side = "above"; Tp = a.top - GAP - Hh; L = clampN(cx - W / 2, ML, vw - W - M); tx = cx - L; }
-    else mode = "own"; }
-  if (mode === "own") { let ox = M, oy = st + 10;
-    if (tr && tr.left < ox + OS && tr.right > ox && tr.top < oy + OS && tr.bottom > oy) ox = Math.round(tr.right + M);
-    if (orb.style.left !== ox + "px") orb.style.left = ox + "px"; if (orb.style.top !== oy + "px") orb.style.top = oy + "px";
-    const room = vw - (ox + OS + GAP) - M;
-    if (room >= 300) { W = Math.min(360, room); Hh = setW(W); side = "right"; L = ox + OS + GAP; Tp = Math.max(st + 6, Math.min(oy - 4, lim - Hh)); ty = oy + OS / 2 - Tp; }
-    else { W = Math.min(360, vw - 2 * M); Hh = setW(W); side = "below"; Tp = oy + OS + GAP; L = M; tx = ox + OS / 2 - L; } }
-  tx = clampN(tx, 24, W - 24); ty = clampN(ty, 22, Math.max(22, Hh - 22));
-  const css = Math.round(L) + "px|" + Math.round(Tp) + "px"; if (bub.dataset.at !== css) { bub.dataset.at = css; bub.style.left = Math.round(L) + "px"; bub.style.top = Math.round(Tp) + "px"; }
-  bub.style.setProperty("--tx", Math.round(tx) + "px"); bub.style.setProperty("--ty", Math.round(ty) + "px");
-  if (r.dataset.mode !== mode) r.dataset.mode = mode; if (r.dataset.side !== side) r.dataset.side = side;
-  const sp = $("#spBubble"); if (sp) sp.classList.toggle("g1ob-talk", mode === "real" && !r.classList.contains("out")); }
+/* Oct 16 (E-man: the "New in this update" bubble "jumps up and down, up and down", once beside Misty, once top left):
+   it used to re-pick its spot every half second (next to Misty's bubble when she was in the clear, else top left with a
+   small orb copy), and Misty's bubble bobs and gets covered, so it flipped between the two. Now it has ONE spot: a Liquid
+   Glass card centred at the top, below the status bar (right of the side rail on iPad). It only moves when the screen
+   size changes. */
+function obPlace(){ const r = $("#g1Ob"); if (!r || !OB) return; const bub = r.querySelector(".g1ob-bub");
+  const vw = innerWidth, M = 12, st = parseFloat(getComputedStyle(r).paddingTop) || 0;
+  const tb = $("#tabbar"), tr = tb && vis(tb) ? tb.getBoundingClientRect() : null;
+  const ML = tr && tr.height > innerHeight * 0.5 && tr.right < vw * 0.5 ? Math.round(tr.right + M) : M; /* side rail (iPad/desktop): stay right of it */
+  const W = Math.round(Math.min(380, vw - ML - M)), L = Math.round(ML + (vw - ML - M - W) / 2), Tp = Math.round(st + 10);
+  const key = vw + "|" + innerHeight + "|" + ML + "|" + st; if (bub.dataset.at === key) return; bub.dataset.at = key;
+  bub.style.width = W + "px"; bub.style.left = L + "px"; bub.style.top = Tp + "px";
+  if (r.dataset.mode !== "fixed") r.dataset.mode = "fixed"; if (r.dataset.side !== "") r.dataset.side = "";
+  const sp = $("#spBubble"); if (sp) sp.classList.remove("g1ob-talk"); }
 addEventListener("resize", () => { if (OB) obPlace(); });
 function decorate(){ const d = $("#lcUpd"); if (!d) { if (OB && OB.kind === "update") obClose(); return; }
   d.classList.add("g1-upd", "g1-ob"); d.setAttribute("aria-hidden", "true"); d.tabIndex = -1;

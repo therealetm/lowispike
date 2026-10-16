@@ -361,6 +361,8 @@
         const card = st.host && st.host.querySelector('.bw3-card'); if (card && !card.hidden && id !== 'hub') { st.label.classList.remove('on'); return; }
         let line = pick(R.line, l);
         try { const c = W.LowiBodyDepth && W.LowiBodyDepth.arrival && W.LowiBodyDepth.arrival(id === 'hub' ? 'blood' : id); if (c && (c.line || c.text)) line = c.line || c.text; } catch (e) { }
+        /* Oct 16 (E-man): on Home this line no longer floats over the Daily Quest: it goes into the Daily Quest box */
+        if (!D.querySelector('.bw3-full') && W.LowiArrival && W.LowiArrival.note) { st.label.classList.remove('on'); try { if (W.LowiArrival.note(pick(R.n, l), line, R.css, 3600)) return; } catch (e) { } }
         st.label.innerHTML = '<b style="--h:' + R.css + '">' + esc(pick(R.n, l)) + '</b><span>' + esc(line) + '</span>';
         st.label.classList.remove('on'); void st.label.offsetWidth; st.label.classList.add('on');
         clearTimeout(st.lt); st.lt = setTimeout(() => st.label && st.label.classList.remove('on'), 3600);
@@ -431,6 +433,10 @@
         if (q.id === 'hub' && st.cur !== 'hub') enter('hub');
         lungCard(); warpEv('arrive', q.id, q.from);
         q.done && q.done();
+        /* Oct 16 (E-man): "when entering a world, start from the most zoomed-out view": right after the dive the camera glides
+           back out to the widest view of the place, like a map; pinch or double tap to zoom into a spot */
+        const a = w3(), r = a && a.rig;
+        if (q.id !== 'hub' && r && !r.fly && r.dist < r.maxD * 0.9) { r.fly = { from: { t: r.target.clone(), d: r.dist }, to: { t: r.target.clone(), d: r.maxD }, t: 0, dur: 1.1 }; r.flyYaw = null; }
     }
     function clean(q) {
         const a = w3(), cam = a && a.camera;

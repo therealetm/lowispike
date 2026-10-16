@@ -297,6 +297,11 @@
             hb.classList.toggle('is-out', out);
         }
     }
+    const HINT_KEY = 'lowi.wh.hint.v1';
+    function hintState() { try { return JSON.parse(localStorage.getItem(HINT_KEY) || '{}') || {}; } catch (e) { return {}; } }
+    function firstTimer() { const h = hintState(); return !h.travelled && (h.opens || 0) <= 3; }
+    function hintNote(k) { try { const h = hintState(); if (k === 'open') { if (st.hintOpenCounted) return; st.hintOpenCounted = true; h.opens = (h.opens || 0) + 1; } else h.travelled = 1; localStorage.setItem(HINT_KEY, JSON.stringify(h)); } catch (e) { } }
+    W.addEventListener('lowi:world-warp', ev => { if (ev && ev.detail && ev.detail.phase === 'arrive' && ev.detail.id && ev.detail.id !== 'hub') hintNote('travel'); });
     /* one short hint line with its own spot; shown when Home opens and right after the world map zooms */
     function paintHint() {
         const h = D.getElementById('whHint'); if (!h) return;
@@ -306,7 +311,10 @@
             ? T('Tap a glowing place to travel there', 'Tippe auf ein Leuchten, um hinzureisen', 'Toca un brillo para viajar allí')
             : T('Drag to look around · two fingers to zoom', 'Ziehen zum Umsehen · zwei Finger zum Zoomen', 'Arrastra para mirar · dos dedos para hacer zoom');
         if (h.textContent !== tx) h.textContent = tx;
-        const on = live && !st.today && (!!tip || (!H.classList.contains('wh-away') && (Date.now() < (st.hintUntil || 0) || isZoomedOut()))); /* on the world map it stays: tap a glow to travel */
+        /* Oct 16 (E-man): the "tap a glowing place" / "drag to look around" lines are for first-timers only: once you have travelled
+           somewhere (or seen them on 3 app opens) they stay away. The VR tip (an answer to a button you pressed) still shows. */
+        const newbie = firstTimer();
+        const on = live && !st.today && (!!tip || (newbie && !H.classList.contains('wh-away') && (Date.now() < (st.hintUntil || 0) || isZoomedOut()))); /* on the world map it stays: tap a glow to travel */
         if (h.classList.contains('on') !== on) h.classList.toggle('on', on);
         /* never on top of Misty's water / fasting cells or the start pill: on tight screens it simply stays out */
         let blk = false;
@@ -684,6 +692,28 @@
     }
 
     /* ---------- clicks ---------- */
+    /* long press on Misty's bubble (~0.5 s, finger still) opens her sheet; the click that follows is swallowed */
+    function wireMistyHold() {
+        let t = 0, sx = 0, sy = 0;
+        const stop = () => { clearTimeout(t); t = 0; };
+        D.addEventListener('pointerdown', e => {
+            const b = e.target && e.target.closest && e.target.closest('#spBubble'); if (!b || !H.classList.contains('wh-on')) return;
+            sx = e.clientX; sy = e.clientY; stop(); st.lpOpened = false;
+            t = setTimeout(() => { t = 0; st.lpOpened = true; try { navigator.vibrate && navigator.vibrate(14); } catch (err) { } openMisty('aura'); setTimeout(() => { st.lpOpened = false; }, 900); }, 520);
+        }, true);
+        D.addEventListener('pointermove', e => { if (t && Math.hypot(e.clientX - sx, e.clientY - sy) > 10) stop(); }, true);
+        D.addEventListener('pointerup', stop, true); D.addEventListener('pointercancel', stop, true);
+        D.addEventListener('contextmenu', e => { if (e.target && e.target.closest && e.target.closest('#spBubble')) e.preventDefault(); }, true);
+    }
+    /* a tap = a pet: a little heart floats up from Misty (the squish itself is herb-touch.js) */
+    function pet() {
+        const b = D.getElementById('spBubble'); if (!b) return;
+        const r = b.getBoundingClientRect(); if (!r.width) return;
+        const h = D.createElement('span'); h.className = 'wh-pet'; h.setAttribute('aria-hidden', 'true');
+        h.textContent = ['\u2665', '\u2726', '\u2665'][Math.floor(Math.random() * 3)];
+        h.style.left = (r.left + r.width * (0.35 + Math.random() * 0.3)) + 'px'; h.style.top = (r.top + r.height * 0.3) + 'px';
+        D.body.appendChild(h); setTimeout(() => h.remove(), 1200);
+    }
     function onClick(e) {
         const t = e.target;
         if (!H.classList.contains('wh-on')) return;
@@ -694,7 +724,14 @@
         const sp = t.closest && t.closest('[data-sp]');
         if (!b && sp) {
             const a = sp.dataset.sp;
-            if ((a === 'open' && sp.id === 'spBubble') || a === 'wardrobe' || a === 'path') {
+            /* Oct 16 (E-man): a TAP on Misty is for playing / petting (she squishes, see herb-touch.js, and a heart pops); her
+               sheet (levels, info) opens on a LONG PRESS instead, so petting never gets interrupted by a sheet */
+            if (a === 'open' && sp.id === 'spBubble') {
+                e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+                if (st.lpOpened) { st.lpOpened = false; return; }
+                pet(); return;
+            }
+            if (a === 'wardrobe' || a === 'path') {
                 e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
                 openMisty(a === 'path' ? 'grow' : 'aura'); return;
             }
@@ -751,7 +788,7 @@
         }
         layout(); paintHud(); syncX();
         const a3 = w3(), live = !!(a3 && a3.state === 'ready' && D.querySelector('#spHome .bw3-stage.bw3-live'));
-        if (H.classList.contains('wh-world-live') !== live) { H.classList.toggle('wh-world-live', live); if (live) st.hintUntil = Date.now() + 8000; }
+        if (H.classList.contains('wh-world-live') !== live) { H.classList.toggle('wh-world-live', live); if (live) { st.hintUntil = Date.now() + 8000; hintNote('open'); } }
         if (live) hook();
         if (D.querySelector('.bw3-full')) { ensureFullZoom(); hook(); ensureMisty3D(); }
     }
@@ -800,6 +837,8 @@
             st.vrTip = { text: d.state === 'on' ? T('VR on · tilt your phone to look around', 'VR an · neig dein Handy zum Umsehen', 'RV activa · inclina el móvil para mirar') : d.text, until: Date.now() + 3200 };
             paintHint(); setTimeout(paintHint, 3300); });
         W.addEventListener('lowi:misty-open', () => { if (homeActive()) openMisty('aura'); });
+        W.addEventListener('lowi:misty-pet', () => { if (homeActive()) pet(); });
+        wireMistyHold();
         W.addEventListener('resize', layout);
         const mo = new MutationObserver(() => { clearTimeout(st.mt); st.mt = setTimeout(tick, 60); });
         mo.observe(D.body, { childList: true });

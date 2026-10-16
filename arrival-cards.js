@@ -49,6 +49,7 @@
         const c = cur; cur = null; if (!c) return;
         clearTimeout(c.t);
         if (c.host) c.host.classList.remove('arr-on');
+        if (c.where === 'quest') { const b = D.getElementById('f3Board'); setTimeout(() => { if (!(cur && cur.where === 'quest') && b) b.classList.remove('hq-joined'); }, reduced() || how === 'now' ? 0 : 320); }
         const el = c.el; if (!el) return;
         if (c.where === 'ride') { el.remove(); return; }
         el.classList.remove('on'); el.classList.add('out');
@@ -84,10 +85,40 @@
         close('now'); css();
         return mount(build(c, 'arr-world'), h, 'world', h, c.id);
     }
+    /* Oct 16 (E-man): on Home the card no longer floats over the Daily Quest ("distracting, in the wrong place"). It goes INTO
+       the Daily Quest box: a slot right under the quest list that grows to fit the card and shrinks back when it closes, so
+       the quest and the card read as one Liquid Glass unit. (The board repaints its own innerHTML, so the slot is its next
+       sibling and the CSS joins the two.) Off Home it is still the small floating card. */
+    function questSlot() {
+        const b = D.getElementById('f3Board'); if (!b || !b.offsetParent) return null;
+        const t = b.closest('.tab'); if (t && !t.classList.contains('active')) return null;
+        let n = D.getElementById('hqSlot');
+        if (!n) { n = D.createElement('div'); n.id = 'hqSlot'; n.className = 'hq-slot'; }
+        if (n.previousElementSibling !== b) b.insertAdjacentElement('afterend', n);
+        return n;
+    }
+    function inQuest(c, cls) {
+        const n = questSlot(); if (!n) return null;
+        close('now'); css();
+        const b = D.getElementById('f3Board'); if (b) b.classList.add('hq-joined');
+        return mount(build(c, 'arr-quest ' + (cls || '')), n, 'quest', n, c.id);
+    }
     function floating(id) {
         const c = data(id); if (!c) return null;
+        const q = inQuest(c); if (q) return q;
         close('now'); css();
         return mount(build(c, 'arr-float'), D.body, 'float', null, c.id);
+    }
+    /* the short world lines ("Back in the bloodstream ...") on Home go into the same slot, a few seconds, one line */
+    function note(title, line, hue, ms) {
+        if (offHome()) return false;
+        if (cur && cur.where === 'quest' && !cur.line) return true; /* an open info card wins: it already says where you are */
+        const c = { id: 'line', hue: hue || '#7fd1ff', name: title || '', over: '', close: (C() && C().text ? '' : '') || 'Close', factLabel: '', fact: line || '', todayLabel: '', today: '' };
+        const el = inQuest(c, 'arr-line'); if (!el) return false;
+        el.innerHTML = '<div class="arr-hd"><span class="arr-orb" aria-hidden="true"></span><div class="arr-tt"><b>' + esc(c.name) + '</b></div>' +
+            '<button type="button" class="arr-x" data-arr-x aria-label="Close">' + XSVG + '</button></div>' + (line ? '<p class="arr-fact">' + esc(line) + '</p>' : '');
+        if (cur) { cur.line = true; clearTimeout(cur.t); const me = cur; cur.t = setTimeout(() => { if (cur === me) close(); }, ms || 3600); }
+        return true;
     }
     function inRide(id, tries) {
         const ov = D.getElementById('brOv'); if (!ov) return null;
@@ -157,6 +188,6 @@
     /* the stylesheet comes in up front, so the first card is already styled when it slides in */
     if (D.head) css(); else D.addEventListener('DOMContentLoaded', css, { once: true });
 
-    W.LowiArrival = { show, close: () => close(), current: () => cur && { id: cur.id, where: cur.where }, core: C };
+    W.LowiArrival = { show, note, close: () => close(), current: () => cur && { id: cur.id, where: cur.where }, core: C };
     if (typeof module !== 'undefined' && module.exports) module.exports = W.LowiArrival;
 })();

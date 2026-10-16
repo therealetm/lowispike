@@ -12,7 +12,7 @@ test('api.flyTo travels inside Home when Home is live (no second full-screen ver
     assert.match(js, /function flyHome\(id\) \{/);
     assert.match(js, /R\.travel\(id \|\| 'hub'\)/);
     // Home's layout leaves the camera alone while travelling
-    assert.match(js, /if \(homeAway\(\)\) \{ const s0 = stage\.getBoundingClientRect\(\); world\.resize\(s0\.width, s0\.height\); return; \}/);
+    assert.match(js, /if \(homeAway\(\) \|\| api\.hold\) \{ const s0 = stage\.getBoundingClientRect\(\); world\.resize\(s0\.width, s0\.height\); return; \}/);
 });
 
 test('the regions warp accepts Home as its host', () => {

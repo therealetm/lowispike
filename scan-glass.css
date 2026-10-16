@@ -98,6 +98,12 @@ html.lg #tab-scan .b3-modes button[aria-pressed="true"] { background: rgba(255, 
 html.lg #tab-scan .b3-pill, html.lg #tab-scan .b3-prog { background: var(--lg-fill-2) !important; color: #fff !important; border: .5px solid var(--lg-rim) !important; }
 html.lg #tab-scan .b3-pill svg { color: var(--lg-blue-2) !important; }
 
+/* ---------- small mismatches found in the Oct 16 check of every tab ----------
+   Cook's Shuffle ring was a rainbow (gold, cyan, purple, pink) and the "new version" banner a blue-to-purple gradient: both now
+   Misty's blue. Per-person colours (planets, avatars), the spike meter and medal tiers stay as they are on purpose. */
+html.lg .r5-ring { background: conic-gradient(from 0deg, var(--lg-blue), var(--lg-blue-2), rgba(255, 255, 255, .85), var(--lg-blue-2), var(--lg-blue)) !important; }
+html.lg #lcUpd.lc-upd { background: rgba(28, 28, 34, .72) !important; color: #fff !important; border: .5px solid rgba(255, 255, 255, .18) !important; -webkit-backdrop-filter: blur(28px) saturate(190%); backdrop-filter: blur(28px) saturate(190%); box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .4), 0 14px 40px -10px rgba(0, 0, 0, .7) !important; }
+
 @media (prefers-reduced-transparency: reduce) {
     html.lg .b3-cam :is(.b3-cbox, .b3-cx, .b3-torch) { background: rgba(28, 28, 32, .96) !important; }
     html.lg .b3-cam.sg-docked .b3-cbot { background: rgba(28, 28, 32, .96) !important; }

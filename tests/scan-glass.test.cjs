@@ -132,3 +132,9 @@ test('no observer loop: a class sync with nothing to change writes no class', ()
     assert.strictEqual(w.H.classList.writes, before);
     assert.ok(/if \(H\.classList\.contains\('sg-dock'\)\) H\.classList\.remove\('sg-dock'\)/.test(js));
 });
+
+test('the last off-brand colours on other tabs: Cook shuffle ring and the update banner are Misty blue glass', () => {
+    assert.ok(/html\.lg \.r5-ring \{ background: conic-gradient\(from 0deg, var\(--lg-blue\)/.test(css));
+    assert.ok(/html\.lg #lcUpd\.lc-upd \{ background: rgba\(28, 28, 34, \.72\)/.test(css));
+    assert.ok(/\.r5-ring\{[^}]*#c49bff,#ff8fd0/.test(html), 'still overriding the rainbow ring');
+});

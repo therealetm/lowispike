@@ -154,6 +154,8 @@ html.lg :is(#cgToast .cg-toast) { background: rgba(30, 30, 36, .72) !important; 
 html.lg #app #main > .tab:is(.lg-out, .lg-peek) { opacity: 1 !important; visibility: visible !important; pointer-events: none !important; transition: none !important; z-index: 1; }
 html.lg #app #main > .tab.lg-in { transition: none !important; opacity: 1 !important; }
 html.lg #app #main.lg-drag > .tab { transition: none !important; will-change: transform; }
+/* Oct 16: like iPhone home screens, a page arrives whole: no content rising or fading in while it slides (old per-tab entrance animations) */
+html.lg #app #main > .tab.p2-tabin > *, html.lg #app #main > .tab > .r2-rise { animation: none !important; }
 html.lg #app #main > .tab:not(#tab-home), html.lg #app #main #tabbar, html.lg #app #main :is(#mv-screen, #shBody, #cmList, #fyFeed, #cmPaneBoard) { touch-action: pan-y pinch-zoom; }
 /* the camera is a page too (Oct 16): a dark viewfinder page slides in, the live camera opens over it; on the camera a sideways swipe pages on */
 #main > .lg-campage { position: absolute; inset: 0; z-index: 1; display: none; background-color: #000; background-image: var(--lg-space, none), radial-gradient(120% 60% at 50% -10%, rgba(40, 70, 140, .32), transparent 70%); background-size: 340px 340px, 100% 100%; color: #fff; pointer-events: none; }

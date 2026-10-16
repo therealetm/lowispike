@@ -76,5 +76,9 @@ html[data-theme="light"] .bw3-card b { color: #12345a; }
 /* a soft veil so lists stay readable over the moving world (none on Community, which IS the world, zoomed out) */
 #bw3Back::after { content: ''; position: absolute; inset: 0; background: radial-gradient(120% 90% at 50% 40%, rgba(4, 10, 26, .18), rgba(4, 10, 26, .5)); opacity: 1; transition: opacity .5s ease; }
 html.wb-on.wb-comm #bw3Back::after, html.wb-on.gx-out #bw3Back::after, html.wb-on.gx-in #bw3Back::after { opacity: 0; }
+/* sliding back to Home (from Cook, Move, Scan): the veil lifts with the slide, so the world is already Home's when the page lands */
+html.wb-on.wb-home #bw3Back::after { opacity: 0; transition: opacity .38s cubic-bezier(.25, .8, .25, 1); }
+/* Home's world is full screen: no window frame line or shadow at its edge (it showed as a bar at the page edge while paging) */
+html.wh-home #spHome .sp-heroes > .bw3-stage, html.wb-on #bw3Stage#bw3Stage { box-shadow: none !important; }
 html.wb-on.wb-on.wb-on body #app#app, html.wb-on.wb-on.wb-on #app #main#main, html.wb-on.wb-on.wb-on #app #main > .tab.tab:not(#bw3x), html.wb-on.wb-on #cmPaneChat[data-spirit-chat] .cp-room.cg-room#cpRoom, html.wb-on #bw3Stage#bw3Stage { background: transparent !important; background-image: none !important; }
 html.wb-on #cgSky { opacity: 1; }

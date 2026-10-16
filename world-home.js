@@ -823,6 +823,9 @@
             /* back on Home: make sure the world is running again (it pauses on other tabs) */
             if (act) { st.hintUntil = Date.now() + 8000; const a = w3(); try { if (a && a.state !== 'fallback' && a.mountHome) a.mountHome(); } catch (e) { } W.dispatchEvent(new Event('resize')); }
         }
+        /* Oct 16 (E-man: paging must glide like iPhone home screens): Home keeps its world layout while it slides out sideways;
+           dropping wh-home at the tap flipped the outgoing page to the old card layout mid-slide */
+        { const th = D.getElementById('tab-home'), out = !act && !!(th && th.classList.contains('lg-out')); H.classList.toggle('wh-home', act || out); H.classList.toggle('wh-leave', out); }
         layout(); paintHud(); syncX();
         const a3 = w3(), live = !!(a3 && a3.state === 'ready' && D.querySelector('#spHome .bw3-stage.bw3-live'));
         if (H.classList.contains('wh-world-live') !== live) { H.classList.toggle('wh-world-live', live); if (live) { st.hintUntil = Date.now() + 8000; hintNote('open'); } }

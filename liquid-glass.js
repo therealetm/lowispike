@@ -51,7 +51,8 @@
         const A = a.animate([{ transform: 'translate3d(' + dx + 'px,0,0)' }, { transform: 'translate3d(' + (-dir * W) + 'px,0,0)' }], o);
         const B = b.animate([{ transform: 'translate3d(' + (dir * W + dx) + 'px,0,0)' }, { transform: 'translate3d(0,0,0)' }], o);
         sliding = [A, B];
-        B.onfinish = () => { if (sliding[1] === B) { sliding = []; a.classList.remove('lg-out'); b.classList.remove('lg-in'); } };
+        /* Oct 16: the page that slid out hides at once when the slide lands; with the old .22s fade it hung over the new page as a ghost */
+        B.onfinish = () => { if (sliding[1] === B) { sliding = []; a.style.transition = 'none'; a.classList.remove('lg-out'); b.classList.remove('lg-in'); void getComputedStyle(a).opacity; requestAnimationFrame(() => { a.style.transition = ''; }); } };
     }
     function syncTab() {
         const t = activeTab();

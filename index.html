@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261016-105010">
+<meta name="lowi-build" content="20261016-105510">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -9974,6 +9974,7 @@ const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)
 R2.reduce = reduce;
 function animateIn(root){
   if (reduce || !root) return;
+  if (root.classList.contains("tab") && document.documentElement.classList.contains("lg")) return; /* Oct 16: tabs slide in whole (liquid-glass paging); no per-child reflows on the first frame */
   const kids = Array.from(root.children).filter(el => el.offsetParent !== null || el.tagName !== "SCRIPT").slice(0, 10);
   kids.forEach((el, i) => { el.classList.remove("r2-rise"); void el.offsetWidth; el.style.setProperty("--r2d", (i * 45) + "ms"); el.classList.add("r2-rise"); });
 }
@@ -11286,7 +11287,7 @@ document.addEventListener("click", e => {
 /* =====================================================================
    gentle motion around the app: tab content rises in, the swap card glows once
    ===================================================================== */
-function tabIn(){ const a = $(".tab.active"); if (!a || RM()) return; a.classList.remove("p2-tabin"); void a.offsetWidth; a.classList.add("p2-tabin"); }
+function tabIn(){ const a = $(".tab.active"); if (!a || RM() || document.documentElement.classList.contains("lg")) return; a.classList.remove("p2-tabin"); void a.offsetWidth; a.classList.add("p2-tabin"); }
 
 /* ---------- boot ---------- */
 function boot(){
@@ -19689,7 +19690,7 @@ window.LowiHandoff = { want, copy, issue, revoke, startHTML, parse, redeem, _sta
 })();
 </script>
 <link rel="stylesheet" href="community-chat.css?v=galaxy-2">
-<link rel="stylesheet" href="community-galaxy.css?v=20261016-105010">
+<link rel="stylesheet" href="community-galaxy.css?v=20261016-105510">
 <script id="community-chat-bridge">
 /* Bounded bridge: the Community module shares auth/messages with the existing cloud owner. */
 window.LowiCommunityHost = {
@@ -19714,15 +19715,15 @@ window.LowiCommunityHost = {
 <script src="community-chat-cloud.js?v=community-1"></script>
 <script src="community-galaxy.js?v=galaxy-2"></script>
 <script src="community-chat.js?v=galaxy-2"></script>
-<link rel="stylesheet" id="lgCss" href="liquid-glass.css?v=20261016-105010">
-<script src="liquid-glass.js?v=20261016-105010"></script>
-<link rel="stylesheet" id="sgCss" href="scan-glass.css?v=20261016-105010">
-<script src="scan-glass.js?v=20261016-105010"></script>
+<link rel="stylesheet" id="lgCss" href="liquid-glass.css?v=20261016-105510">
+<script src="liquid-glass.js?v=20261016-105510"></script>
+<link rel="stylesheet" id="sgCss" href="scan-glass.css?v=20261016-105510">
+<script src="scan-glass.js?v=20261016-105510"></script>
 <link rel="stylesheet" href="nav-moves.css?v=nav-2">
 <script src="nav-moves.js?v=nav-2"></script>
-<script src="galaxy-zoom.js?v=20261016-105010"></script>
-<link rel="stylesheet" id="mhCss" href="misty-hub.css?v=20261016-105010">
-<script src="misty-hub.js?v=20261016-105010"></script>
+<script src="galaxy-zoom.js?v=20261016-105510"></script>
+<link rel="stylesheet" id="mhCss" href="misty-hub.css?v=20261016-105510">
+<script src="misty-hub.js?v=20261016-105510"></script>
 </body>
 </html>
 

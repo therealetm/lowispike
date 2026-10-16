@@ -360,7 +360,7 @@
             return true;
         }
         if (mode !== 'back') return false;
-        H.classList.remove('wb-on', 'wb-comm');
+        H.classList.remove('wb-on', 'wb-comm', 'wb-home');
         if (stage && stage.isConnected) attachHome(); else mode = 'home';
         /* back on Home without the dive (from Cook, Move...): Misty's usual framing */
         if (!H.classList.contains('gx-in')) { try { const WH = W.LowiWorldHome; if (WH && WH.state && WH.state.pull && WH.diveIn) WH.diveIn(); else if (WH && WH.settle) WH.settle(); } catch (e) { } }
@@ -370,12 +370,19 @@
         if (!world || mode === 'full' || D.hidden) return null;
         if (H.classList.contains('gx-out') || H.classList.contains('gx-in')) return true;   /* the Home <-> Community zoom: the world stays put, the pages fade over it */
         const t = D.querySelector('.tab.active'); if (!t) return null;
-        return t.id !== 'tab-home';
+        if (t.id !== 'tab-home') return true;
+        /* Oct 16 (E-man: Move/Cook -> Home must glide like iPhone home screens): while Home is still sliding in, the world stays the
+           fixed wallpaper behind both pages (no world riding in with Home, no page turning black mid-slide); it moves into Home once the slide lands */
+        if (mode === 'back' && (t.classList.contains('lg-in') || t.classList.contains('lg-peek'))) return true;
+        return false;
     }
     let backQ = 0;
     function syncBack() {
         backQ = 0; const w = wantBack(), t = D.querySelector('.tab.active');
-        H.classList.toggle('wb-comm', !!(t && t.id === 'tab-foryou')); if (w === true && mode !== 'back') backdrop(true); else if (w === false && mode === 'back') backdrop(false);
+        H.classList.toggle('wb-comm', !!(t && t.id === 'tab-foryou')); const homeIn = !!(w === true && t && t.id === 'tab-home' && !H.classList.contains('gx-in') && !H.classList.contains('gx-out'));
+        /* sliding back to Home with the camera still pulled out (Community was visited): the camera dives home WITH the slide, not after it lands */
+        if (homeIn && !H.classList.contains('wb-home')) { try { const WH = W.LowiWorldHome; if (WH && WH.state && WH.state.pull && WH.diveIn) WH.diveIn(); } catch (e) { } }
+        H.classList.toggle('wb-home', homeIn); if (w === true && mode !== 'back') backdrop(true); else if (w === false && mode === 'back') backdrop(false);
     }
     function queueBack() { if (!backQ) backQ = (W.requestAnimationFrame || setTimeout)(syncBack, 0); }
     if (typeof MutationObserver !== 'undefined') {

@@ -40,7 +40,7 @@ test('every bubble is Misty\'s glass: fasting, water, VR, World map, Sound, Toda
     assert.match(css, /--wh-glass-bg: radial-gradient\(circle at 32% 24%, rgba\(255,255,255,\.34\)/);
     assert.match(css, /html\.wh-home #spHome #spFast, html\.wh-home #whHud \.wh-water \{\n    border: 1\.5px solid var\(--wh-glass-rim\) !important; background: var\(--wh-glass-bg\) !important;/);
     assert.match(css, /html\.wh-home #tab-home #f3Board \{\n    background: var\(--wh-glass-wide\) !important;/);
-    assert.match(css, /html\.wh-home #tabbar, html\.wh-home\.apple-ui #tabbar/);
+    assert.match(css, /html\.wh-home(?::not\(\.wh-leave\))? #tabbar, html\.wh-home\.apple-ui(?::not\(\.wh-leave\))? #tabbar/);
     assert.match(css, /html\.wh-home \.wh-hud \.wh-todaybtn, html\.wh-home \.hs-gift,/);
 });
 

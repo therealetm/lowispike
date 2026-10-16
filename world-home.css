@@ -324,7 +324,7 @@ html.wh-home:not([data-theme="light"]) #tab-home #f3Board { text-shadow: 0 1px 4
 .wh-hint.wh-say, html[data-theme="light"] .wh-hint.wh-say { border: 1.5px solid var(--wh-glass-rim); background: var(--wh-glass-wide); background-color: transparent; box-shadow: var(--wh-glass-sh); color: var(--wh-glass-ink); }
 html.wh-home .wh-tiles .g2h-tile { background: var(--wh-glass-wide); border-color: var(--wh-glass-rim); color: var(--wh-glass-ink); }
 /* the menu bar (bottom on phone, left rail on iPad/desktop) */
-html.wh-home #tabbar, html.wh-home.apple-ui #tabbar, html.wh-home .apple-ui #tabbar {
+html.wh-home:not(.wh-leave) #tabbar, html.wh-home.apple-ui:not(.wh-leave) #tabbar, html.wh-home:not(.wh-leave) .apple-ui #tabbar {
     background: var(--wh-glass-wide) !important; border: 1.5px solid var(--wh-glass-rim) !important; box-shadow: var(--wh-glass-sh) !important;
     backdrop-filter: blur(14px) saturate(1.4) !important; -webkit-backdrop-filter: blur(14px) saturate(1.4) !important; }
 

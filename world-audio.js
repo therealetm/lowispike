@@ -10,8 +10,8 @@
    - Warp: window 'lowi:world-warp' {phase:'start'|'dive'|'arrive'|'cancel'} from body-world-regions.js (the real glide/dive/
      settle), plus the cell ride's 'lowi:ride-start'/'lowi:ride-arrive'. One warp voice at a time, duplicate phases ignored.
    - Lifecycle: world closes -> fade out, sources stopped, context suspended. App hidden -> suspended. Reopening the world with a
-     tap brings it back while the app stays open. Page hide -> context closed. It plays only while the world is open and the app
-     is in front; it never promises playback with the screen locked. */
+     tap brings it back while the app stays open. Page hide -> context closed. Oct 16: once on, it plays on every tab while the app
+     is in front, stepping aside for videos, voice notes, the workout player and the ride; never with the screen locked. */
 (function () {
     'use strict';
     const W = window, D = document, H = D.documentElement;
@@ -34,6 +34,14 @@
     /* the world is "open" as the full window, or as the living Home background (Home is the world now) */
     const homeLive = () => H.classList.contains('wh-world-live') && H.classList.contains('wh-home') && !H.classList.contains('bw3-full-open') && !!D.getElementById('whHud');
     const isOpen = () => (H.classList.contains('bw3-full-open') && !!D.querySelector('.bw3-full')) || homeLive();
+    /* Oct 16 (E-man: "the sound disappears when I go into Community, Cook or Move. It should only stop for a voice note, a video
+       or the game"): once he turns sound on it keeps playing on every tab while the app is in front. It steps aside only while
+       real media plays (a video or audio with sound, a For You embed, the workout player, the cell ride) or another part of the
+       app says so with window 'lowi:media' {on:true|false}, and comes back when that ends. */
+    const mediaHold = new Set();
+    const busy = () => mediaHold.size > 0 || H.classList.contains('mp-on') || H.classList.contains('br-open') || !!D.querySelector('.fye-on .fye-in, .fye-on .fye-ready') ||
+        Array.prototype.some.call(D.querySelectorAll('video,audio'), m => !m.paused && !m.ended && !m.muted && m.volume > 0);
+    const audible = () => st.on && !D.hidden && !busy();
     const uiHost = () => D.querySelector('.bw3-full') || (homeLive() ? D.getElementById('whHud') : null);
     const running = () => !!(st.ctx && st.ctx.state === 'running');
     let noiseBuf = null;
@@ -168,12 +176,13 @@
         if (!st.ctx) return;
         fadeOut(fade); stopAmbient(fade);
         clearTimeout(st.stopT);
-        st.stopT = setTimeout(() => { if (st.ctx && st.ctx.state === 'running' && !(st.on && isOpen() && !D.hidden)) st.ctx.suspend().catch(() => { }); paint(); }, ((fade || C.FADE_OUT) + 0.25) * 1000);
+        st.stopT = setTimeout(() => { if (st.ctx && st.ctx.state === 'running' && !audible()) st.ctx.suspend().catch(() => { }); paint(); }, ((fade || C.FADE_OUT) + 0.25) * 1000);
         paint();
     }
     function setOn(on) {
         st.on = !!on;
         if (st.on) { if (!begin()) st.on = false; } else pause(C.FADE_OUT);
+        wasPlay = st.on && audible();
         paint();
         try { W.dispatchEvent(new CustomEvent('lowi:world-audio', { detail: { on: st.on, vol: prefs.vol } })); } catch (e) { }
     }
@@ -279,7 +288,7 @@
     /* the pad closed: if the background sound is off, let the strings ring out, then put the context back to sleep */
     function instrumentIdle() {
         clearTimeout(st.idleT);
-        st.idleT = setTimeout(() => { if (st.ctx && !(st.on && isOpen()) && running()) st.ctx.suspend().catch(() => { }); }, 2200);
+        st.idleT = setTimeout(() => { if (st.ctx && !audible() && running()) st.ctx.suspend().catch(() => { }); }, 2200);
     }
     function removePanel(p) {
         if (!p) return;
@@ -332,37 +341,40 @@
     D.addEventListener('keydown', e => { if (e.key === 'Escape' && D.getElementById('waPanel')) togglePanel(false); });
 
     /* ---------- lifecycle ---------- */
-    let wasOpen = false;
+    let wasOpen = false, wasPlay = false;
     function sync() {
         const open = isOpen();
         if (open) ensureUi();
-        if (open !== wasOpen) {
-            wasOpen = open;
-            if (!open) { pause(C.CLOSE_FADE); removePanel(D.getElementById('waPanel')); }
-            else if (st.on && st.ctx && !D.hidden) begin();   /* woken by the tap that opened it; otherwise the next tap in the world wakes it */
+        if (open !== wasOpen) { wasOpen = open; if (!open) removePanel(D.getElementById('waPanel')); }
+        const want = audible();
+        if (want !== wasPlay) {
+            wasPlay = want;
+            if (!want) { if (st.ctx && (st.amb || running())) pause(C.CLOSE_FADE); }
+            else if (st.ctx) begin();   /* iOS may want a tap to resume: tapResume wakes it on the next one */
         }
     }
     new MutationObserver(sync).observe(H, { attributes: true, attributeFilter: ['class'] });
     /* reopening the world with a tap while sound was on in this visit: resume inside that same tap (iOS) */
     function tapResume(e) {
         if (!st.on || D.hidden || !st.ctx) return;
-        if (isOpen()) { if (!running() || !st.amb) begin(); return; }
-        /* the world may open a moment after this tap (Home 3D button, cell ride): wake the context inside the tap, and put it
-           back to sleep if the world does not open */
-        const t = e && e.target; if (t && t.closest && t.closest('.bw3-full')) return;   /* the tap that closed the world */
+        /* sound is on: any tap on any tab brings it back if iOS put it to sleep (unless a video, voice note or the game is playing) */
+        if (audible()) { if (!running() || !st.amb) begin(); return; }
         try { const p = st.ctx.resume(); if (p && p.catch) p.catch(() => { }); } catch (x) { }
-        clearTimeout(st.idleT); st.idleT = setTimeout(() => { if (!isOpen() && running()) st.ctx.suspend().catch(() => { }); }, 3000);
+        clearTimeout(st.idleT); st.idleT = setTimeout(() => { if (!audible() && running()) st.ctx.suspend().catch(() => { }); }, 3000);
     }
     D.addEventListener('click', tapResume, true);              /* capture: open buttons may stop the click from bubbling */
     D.addEventListener('touchend', tapResume, { passive: true, capture: true });
     D.addEventListener('visibilitychange', () => {
         if (!st.ctx) return;
         if (D.hidden) { killWarp(0.05); stopAmbient(0); try { st.master.gain.cancelScheduledValues(0); st.master.gain.value = 0; } catch (e) { } st.ctx.suspend().catch(() => { }); }
-        else if (st.on && isOpen()) begin();   /* may need the next tap on iOS: tapResume handles that */
+        else if (audible()) begin();   /* may need the next tap on iOS: tapResume handles that */
+        wasPlay = audible() && !!st.amb;
         paint();
     });
     W.addEventListener('pagehide', () => { if (st.ctx) { stopAmbient(0); try { st.ctx.close(); } catch (e) { } st.ctx = null; st.master = st.ambBus = st.fxBus = null; } });
     W.addEventListener('lowi:lang', () => { const p = D.getElementById('waPanel'); if (p) { removePanel(p); togglePanel(true); } paint(); });
+    ['play', 'playing', 'pause', 'ended', 'volumechange'].forEach(k => D.addEventListener(k, () => setTimeout(sync, 30), true));
+    W.addEventListener('lowi:media', e => { const d = e.detail || {}, id = d.id || 'media'; if (d.on) mediaHold.add(id); else mediaHold.delete(id); sync(); });
     setInterval(() => { if (!D.hidden) sync(); }, 1500);
     sync();
 

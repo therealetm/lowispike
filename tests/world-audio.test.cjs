@@ -56,7 +56,11 @@ test('opt-in: the context is only made inside a tap, no autoplay on load', () =>
 });
 
 test('lifecycle: world close, hidden app and page hide stop the sound', () => {
-    assert.ok(js.includes("if (!open) { pause(C.CLOSE_FADE)"));
+    /* Oct 16: once on, sound plays on every tab; it steps aside only for real media (video, voice note, workout player, ride) */
+    assert.ok(js.includes("const audible = () => st.on && !D.hidden && !busy();"));
+    assert.ok(js.includes("if (!want) { if (st.ctx && (st.amb || running())) pause(C.CLOSE_FADE); }"));
+    assert.ok(/const busy = \(\) =>[^\n]*mp-on[^\n]*br-open/.test(js) && js.includes("D.querySelectorAll('video,audio')"));
+    assert.ok(js.includes("addEventListener('lowi:media'"));
     assert.ok(js.includes("if (D.hidden) { killWarp(0.05); stopAmbient(0)") && js.includes('st.ctx.suspend()'));
     assert.ok(js.includes("'pagehide'") && js.includes('st.ctx.close()'));
     assert.ok(C.audible({ on: true, open: true, hidden: false }));

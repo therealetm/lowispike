@@ -20,7 +20,7 @@ html.lg .b3-cam .b3-frame i[class^=c] { border-color: var(--lg-blue-2) !importan
 html.lg .b3-cam .b3-laser { background: linear-gradient(90deg, transparent, var(--lg-blue-2), transparent) !important; box-shadow: 0 0 14px var(--lg-blue) !important; }
 html.lg .b3-cam.got .b3-frame i[class^=c] { border-color: #30d158 !important; filter: drop-shadow(0 0 6px rgba(48, 209, 88, .6)); }
 
-/* messages (allow the camera, denied, no camera, starting, looking up): a dark glass card */
+/* messages (looking up; the camera states below get Misty's blue glass): a dark glass card */
 html.lg .b3-cam .b3-cbox { background: rgba(28, 28, 32, .82) !important; color: #fff; border: .5px solid rgba(255, 255, 255, .14) !important; border-radius: var(--lg-r) !important; -webkit-backdrop-filter: var(--lg-blur) !important; backdrop-filter: var(--lg-blur) !important; box-shadow: var(--lg-edge), var(--lg-shadow) !important; }
 html.lg .b3-cam .b3-cbox b { font-weight: 650; color: #fff; }
 html.lg .b3-cam .b3-cbox small { color: var(--lg-ink-2); opacity: 1; }
@@ -79,6 +79,38 @@ html.lg.sg-dock.b3-camon #app #main #tabbar { z-index: 2147483001 !important; }
 html.lg.sg-dock.b3-camon #app #main #tabbar .tb.active:not(.scan) { background: transparent !important; box-shadow: none !important; color: rgba(235, 235, 245, .62) !important; }
 html.lg.sg-dock.b3-camon #app #main #tabbar .tb.active:not(.scan) :is(.tbl, svg) { color: rgba(235, 235, 245, .62) !important; }
 html.lg.sg-dock.b3-camon #app #main #tabbar .tb.scan .ring { box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .6), inset 0 -2px 6px rgba(0, 0, 0, .25), 0 0 0 2px rgba(255, 255, 255, .85), 0 8px 26px -4px rgba(10, 132, 255, .9) !important; }
+
+/* Oct 16 (E-man, iPhone screenshots: "Scan" lit Community): while the camera is open, Scan is the lit tab and the page under it
+   is not. world-home.css paints the active tab with #tabbar#tabbar, so this needs the same weight plus the camera class. */
+html.b3-camon #app #main #tabbar#tabbar .tb.active:not(.scan) { background: transparent !important; box-shadow: none !important; opacity: .72; }
+html.b3-camon #app #main #tabbar#tabbar .tb.scan .ring { box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .6), inset 0 -2px 6px rgba(0, 0, 0, .25), 0 0 0 2px rgba(225, 248, 255, .9), 0 0 22px 2px rgba(110, 190, 255, .75), 0 8px 26px -4px rgba(10, 132, 255, .9) !important; }
+
+/* ---------- Oct 16: the camera states in Misty's blue liquid glass ----------
+   E-man (camera blocked screenshot): "It doesn't fit our whole theme." Starting, blocked, no camera and didn't-start use the
+   same glass as Daily Quest, the weather pill and the bubbles (world-home.css --wh-glass-*): compact, so the living world shows
+   around it, a blue Try again, and typing the number offered as the way round. With no camera the frame corners and the light
+   hide; the barcode field gets the blue rim so it reads as the thing to use. */
+html .b3-cam .b3-cbox.b3-cglass { width: auto; max-width: min(320px, 100%); gap: 6px; padding: 16px 18px 14px !important; border-radius: 24px !important;
+    background: var(--wh-glass-wide) !important; border: 1.5px solid var(--wh-glass-rim) !important; box-shadow: var(--wh-glass-sh) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(1.4) !important; backdrop-filter: blur(14px) saturate(1.4) !important; color: var(--wh-glass-ink, #fff) !important;
+    animation: b3GlassIn .38s cubic-bezier(.22, .8, .24, 1) both; }
+html .b3-cam .b3-cbox.b3-cglass.slim { flex-direction: row; gap: 10px; padding: 10px 16px !important; border-radius: 999px !important; }
+html .b3-cam .b3-cbox.b3-cglass b { font-size: 17px; font-weight: 650; color: inherit !important; }
+html .b3-cam .b3-cbox.b3-cglass small { font-size: 14px; line-height: 1.38; color: inherit !important; opacity: .82 !important; }
+html .b3-cam .b3-cbox.b3-cglass .b3-cic { width: 42px; height: 42px; background: rgba(110, 190, 255, .22) !important; color: #bfe6ff !important; box-shadow: inset 0 0 0 1px var(--wh-glass-rim) !important; }
+html .b3-cam .b3-cbox.b3-cglass .b3-cic svg { width: 22px; height: 22px; }
+html .b3-cam .b3-cbtns { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 8px; width: 100%; }
+html .b3-cam .b3-cbtn { flex: 1 1 120px; min-height: 44px; padding: 0 16px; border-radius: 999px; font: 600 15px/1 var(--lg-font, -apple-system, system-ui, sans-serif); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+html .b3-cam .b3-cbtn.pri { color: #fff; border: .5px solid rgba(255, 255, 255, .35); background: linear-gradient(180deg, #3d9bff, #0a84ff);
+    box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .55), 0 8px 20px -10px rgba(10, 132, 255, .9); }
+html .b3-cam .b3-cbtn.ghost { color: var(--wh-glass-ink, #fff); border: 1px solid var(--wh-glass-rim); background: rgba(255, 255, 255, .08); }
+html .b3-cam .b3-cbtn:active { transform: scale(.97); }
+@keyframes b3GlassIn { 0% { opacity: 0; transform: translateY(10px) scale(.97); } 100% { opacity: 1; transform: none; } }
+html .b3-cam:is([data-st=starting], [data-st=denied], [data-st=nocam], [data-st=camerr]) .b3-frame { opacity: 0 !important; transition: opacity .25s; }
+html .b3-cam:not(.live) .b3-torch { visibility: hidden !important; pointer-events: none !important; }
+html .b3-cam:is([data-st=denied], [data-st=nocam], [data-st=camerr]) #b3Bc { border-color: var(--wh-glass-rim) !important; box-shadow: 0 0 0 2px rgba(110, 190, 255, .35) !important; }
+@media (prefers-reduced-motion: reduce) { html .b3-cam .b3-cbox.b3-cglass { animation: none !important; } }
+@media (prefers-reduced-transparency: reduce) { html .b3-cam .b3-cbox.b3-cglass { background: rgba(16, 36, 74, .96) !important; } }
 
 /* the same layer inside the herb world (#spWorld): same accents */
 html.lg #spWorld .b3-cam .b3-cbot .b3-pill svg { color: var(--lg-blue-2) !important; }

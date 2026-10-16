@@ -47,24 +47,26 @@ html[data-theme="light"] .rw-layer .rw-veil { background: radial-gradient(120% 8
 .rw-layer.rw-still *, #app > #rwBack.rw-under * { animation-play-state: paused !important; }
 #app > #rwBack.rw-back.rw-still { visibility: hidden; }
 
-/* ---------- Scan: the living world inside the camera layer, the feed fading in over it ---------- */
-/* the camera window sits inside Misty's capture sheet, not over the 3D world, so (no picture any more) it opens on the deep
-   starfield of the Scan glass with the spirit world's breathing light and rising motes until the feed fades in */
-.b3-cam.rw-scan > .rw-cam { z-index: 0; }
+/* ---------- Scan: the camera screen in the same living world as Community, Cook and Move ----------
+   E-man (Oct 16): "our background for Scan a barcode should be the metabolic world, the same as every other page". While the
+   camera is open full screen (html.rw-scanworld, realm-backdrop.js) the camera screen is see-through: under it are this
+   wallpaper layer (#rwBack) and the live 3D world pulled out into the spirit world (body-world-3d.js), exactly as behind Cook and
+   Move. The page that lies under the camera is hidden (its dock stays), so only the world shows until the feed fades in. */
+html.rw-scanworld .b3-cam.rw-scan { background: transparent !important; background-image: none !important; }
+html.rw-scanworld.b3-camon body, html.rw-scanworld.g2f-gap.b3-camon body { background: #02060f !important; }
+html.rw-scanworld #app #main > :not(#tabbar):not(.lg-in):not(.lg-peek):not(.lg-out) { visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }
+/* the herb world's own camera keeps its copy of the layer (it sits in Misty's sheet, away from the 3D world) */
+.b3-cam.rw-scan > .rw-cam { z-index: 0; transition: opacity .8s ease; }
+.b3-cam.rw-scan.rw-feed.live > .rw-cam { opacity: .0; }
+.b3-cam.rw-scan.rw-feed.live > .rw-cam * { animation-play-state: paused !important; }
 .b3-cam.rw-scan video { transition: opacity .8s cubic-bezier(.25, .8, .25, 1) !important; }
 /* the feed shows only once a frame really plays; until then (and after it stops) the world is what you see */
 .b3-cam.rw-scan:not(.rw-feed) video { opacity: 0 !important; }
 .b3-cam.rw-scan.rw-feed video { opacity: 1 !important; }
-/* the world quiets as the feed comes in and stops moving under it */
-.b3-cam.rw-scan > .rw-cam { transition: opacity .8s ease; }
-.b3-cam.rw-scan.rw-feed.live > .rw-cam { opacity: .0; }
-.b3-cam.rw-scan.rw-feed.live > .rw-cam * { animation-play-state: paused !important; }
-/* the glass camera card: deep-blue Liquid Glass, rising gently into place a second after the world appears */
-html.lg .b3-cam.rw-scan[data-st=ask] .b3-cbox { background: rgba(14, 26, 52, .58) !important; border: .5px solid rgba(255, 255, 255, .22) !important;
-    -webkit-backdrop-filter: blur(26px) saturate(180%) !important; backdrop-filter: blur(26px) saturate(180%) !important;
-    box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .42), inset 0 -.5px 0 rgba(255, 255, 255, .08), inset 0 18px 30px -22px rgba(255, 255, 255, .25), 0 18px 48px -14px rgba(0, 0, 0, .75) !important; }
-.b3-cam.rw-scan.rw-asked[data-st=ask] .b3-cbox { animation: rwAsk .42s cubic-bezier(.22, .8, .24, 1) both; }
-@keyframes rwAsk { 0% { opacity: 0; transform: translateY(14px) scale(.97); } 100% { opacity: 1; transform: none; } }
+/* the camera's darkening (vignette and top fade) is for the feed: before it plays the world looks exactly as on Cook and Move */
+html.rw-scanworld .b3-cam.rw-scan .b3-shade { transition: opacity .8s ease; }
+html.rw-scanworld .b3-cam.rw-scan:not(.rw-feed) .b3-shade { opacity: 0; }
+html.rw-scanworld .b3-cam.rw-scan:not(.rw-feed) .b3-ctop { background: none !important; }
 
 /* ---------- reduced motion / transparency ---------- */
 @media (prefers-reduced-motion: reduce) {
@@ -73,8 +75,4 @@ html.lg .b3-cam.rw-scan[data-st=ask] .b3-cbox { background: rgba(14, 26, 52, .58
     #app > #rwBack.rw-back.rw-show.rw-arrive { animation: none !important; }
     #app > #rwBack.rw-back, #app > #rwBack.rw-back.rw-show { transition-duration: .2s, 0s; }
     .b3-cam.rw-scan video { transition-duration: .25s !important; }
-    .b3-cam.rw-scan.rw-asked[data-st=ask] .b3-cbox { animation: none !important; }
-}
-@media (prefers-reduced-transparency: reduce) {
-    html.lg .b3-cam.rw-scan[data-st=ask] .b3-cbox { background: rgba(14, 24, 44, .96) !important; }
 }

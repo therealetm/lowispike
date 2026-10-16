@@ -370,6 +370,8 @@
     function wantBack() {
         if (!world || mode === 'full' || D.hidden) return null;
         if (H.classList.contains('gx-out') || H.classList.contains('gx-in')) return true;   /* the Home <-> Community zoom: the world stays put, the pages fade over it */
+        /* Oct 16: the full-screen Scan camera (realm-backdrop.js, html.rw-scanworld) shows the world like Cook and Move, whatever tab lies under it */
+        if (H.classList.contains('rw-scanworld')) return true;
         const t = D.querySelector('.tab.active'); if (!t) return null;
         if (t.id !== 'tab-home') return true;
         /* Oct 16 (E-man: Move/Cook -> Home must glide like iPhone home screens): while Home is still sliding in, the world stays the
@@ -379,7 +381,7 @@
     }
     let backQ = 0;
     function syncBack() {
-        backQ = 0; const w = wantBack(), t = D.querySelector('.tab.active');
+        backQ = 0; const w = wantBack(), t0 = D.querySelector('.tab.active'), t = H.classList.contains('rw-scanworld') ? { id: 'tab-scan' } : t0;
         H.classList.toggle('wb-comm', !!(t && t.id === 'tab-foryou')); const homeIn = !!(w === true && t && t.id === 'tab-home' && !H.classList.contains('gx-in') && !H.classList.contains('gx-out'));
         /* sliding back to Home with the camera still pulled out (Community was visited): the camera dives home WITH the slide, not after it lands */
         if (homeIn && !H.classList.contains('wb-home')) { try { const WH = W.LowiWorldHome; if (WH && WH.state && WH.state.pull && WH.diveIn) WH.diveIn(); } catch (e) { } }

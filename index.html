@@ -13731,13 +13731,14 @@ Object.assign(B3_TX, {
   bcPh: ["Barcode number, e.g. 4006040000000", "Barcode-Nummer, z. B. 4006040000000", "Número del código, p. ej. 4006040000000"],
   bcBad: ["That number doesn't look like a barcode. Check the digits under the lines.", "Die Nummer sieht nicht wie ein Barcode aus. Prüf die Ziffern unter den Strichen.", "Ese número no parece un código. Revisa los dígitos bajo las barras."],
   bcNone: ["No barcode found in that photo. Try closer, flat and sharp, or type the number.", "Kein Barcode auf dem Foto gefunden. Näher, gerade und scharf probieren oder die Nummer eintippen.", "No se encontró código en la foto. Prueba más cerca, recto y nítido, o escribe el número."],
-  camAskT: ["Let LOWiSPIKE use the camera", "Kamera für LOWiSPIKE erlauben", "Deja que LOWiSPIKE use la cámara"],
-  camAskS: ["Only to read barcodes. Nothing is recorded or saved.", "Nur zum Lesen von Barcodes. Nichts wird aufgenommen oder gespeichert.", "Solo para leer códigos. No se graba ni se guarda nada."],
-  camAllow: ["Allow camera", "Kamera erlauben", "Permitir cámara"],
-  camDenied: ["Camera is blocked", "Kamera ist blockiert", "La cámara está bloqueada"],
-  camDeniedS: ["On iPhone: Settings > Safari > Camera > Allow, then come back. Or type the number below.", "Auf dem iPhone: Einstellungen > Safari > Kamera > Erlauben, dann zurückkommen. Oder unten die Nummer eintippen.", "En iPhone: Ajustes > Safari > Cámara > Permitir y vuelve. O escribe el número abajo."],
-  camNo: ["No live camera here", "Hier gibt es keine Live-Kamera", "Aquí no hay cámara en directo"],
-  camNoS: ["Type the number under the barcode lines below.", "Tipp unten die Nummer unter den Barcode-Strichen ein.", "Escribe abajo el número bajo las barras del código."],
+  camDenied: ["The camera is off", "Die Kamera ist aus", "La cámara está apagada"],
+  camDeniedS: ["No problem. Type the barcode number below, or turn the camera on in Settings > Safari > Camera.", "Kein Problem. Tipp die Nummer unter dem Barcode unten ein oder schalte die Kamera an: Einstellungen > Safari > Kamera.", "No pasa nada. Escribe abajo el número del código o activa la cámara en Ajustes > Safari > Cámara."],
+  camErr: ["The camera didn't start", "Die Kamera ist nicht gestartet", "La cámara no arrancó"],
+  camErrS: ["Try again, or type the barcode number below.", "Versuch es nochmal oder tipp unten die Nummer unter dem Barcode ein.", "Inténtalo de nuevo o escribe abajo el número del código."],
+  camType: ["Type the number", "Nummer eintippen", "Escribir el número"],
+  camTypeHint: ["Type the number under the barcode", "Tipp die Nummer unter dem Barcode ein", "Escribe el número bajo el código"],
+  camNo: ["No camera here", "Hier gibt es keine Kamera", "Aquí no hay cámara"],
+  camNoS: ["Type the barcode number below instead.", "Tipp stattdessen unten die Nummer unter dem Barcode ein.", "Escribe abajo el número del código."],
   /* Oct 15: scanner bottom bar = all capture actions + Back + Deep analyze (the Home orb is only the herb game now) */
   deep: ["Deep analyze", "Deep analyze", "Deep analyze"],
   deepS: ["Your custom GPT · swaps & content", "Dein Custom GPT · Swaps & Inhalte", "Tu GPT personalizado · cambios y contenido"],
@@ -14077,7 +14078,7 @@ function camAct(act){
   if (!CAM) return;
   if (act === "scan") { sfx("tap"); const el = CAM.el; if (!el.classList.contains("typing") && CAM.stream) { playVid($("#b3Vid", el)); return; }
     el.classList.remove("typing"); if (CAM.stream) return; if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { msgState("nocam"); return; }
-    if (window.LowiSpirit || localStorage.getItem(CAMOK) === "1") startCam(); else msgState("ask"); return; }
+    startCam(); return; }
   const S = window.LowiSpirit, fn = S && S[act], inWorld = !!CAM.el.closest("#spWorld");
   sfx("tap"); closeScanner(true);
   if (inWorld && act !== "photo" && S && S.close) try { S.close(true); } catch(e){}
@@ -14098,21 +14099,27 @@ function openScanner(mode){
   requestAnimationFrame(() => el.classList.add("on"));
   if (mode === "type") { el.classList.add("typing"); setTimeout(() => { const i = $("#b3Bc", el); if (i) i.focus(); }, 120); msgState("type"); return; }
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { msgState("nocam"); return; }
-  /* Oct 16: the camera layer opens on the living Spirit World; realm-backdrop.js says when to start or ask (about a second later) */
-  if (window.LowiRealmBack && LowiRealmBack.gate) LowiRealmBack.gate(el, {start: startCam, ask: () => msgState("ask"), open: () => !!(CAM && CAM.el === el && !CAM.done && !CAM.stream && !el.dataset.st && !el.classList.contains("typing"))});
-  else if (window.LowiSpirit || localStorage.getItem(CAMOK) === "1") startCam(); else msgState("ask");
+  /* Oct 16 (E-man: "iOS asks for camera access itself ... let's not have it double"): no in-app "Allow camera" card. Tapping Scan
+     asks for the camera straight away, so the only prompt is iOS's own; already allowed, it just starts. realm-backdrop.js puts the
+     camera screen in the same living spirit world as Community, Cook and Move; the feed fades in over the world. */
+  if (window.LowiRealmBack && LowiRealmBack.dress) LowiRealmBack.dress(el);
+  startCam();
 }
 function msg(text, kind){ const m = CAM && $("#b3Hint", CAM.el); if (m) { m.textContent = text; m.className = "b3-chint" + (kind ? " " + kind : ""); } }
 function msgState(s){ if (!CAM) return; const m = $("#b3CMsg", CAM.el); CAM.el.dataset.st = s;
-  if (s === "ask") m.innerHTML = '<div class="b3-cbox"><span class="b3-cic">' + IC.cam + '</span><b>' + esc(t("camAskT")) + '</b><small>' + esc(t("camAskS")) + '</small><button class="r2-btn pri" data-b3="camallow" id="b3Allow">' + esc(t("camAllow")) + '</button></div>';
-  else if (s === "denied") m.innerHTML = '<div class="b3-cbox"><span class="b3-cic">' + IC.cam + '</span><b>' + esc(t("camDenied")) + '</b><small>' + esc(t("camDeniedS")) + '</small><button class="r2-btn ghost" data-b3="camallow">' + esc(t("camTry")) + '</button></div>';
-  else if (s === "nocam") m.innerHTML = '<div class="b3-cbox"><span class="b3-cic">' + IC.cam + '</span><b>' + esc(t("camNo")) + '</b><small>' + esc(t("camNoS")) + '</small></div>';
-  else if (s === "starting") m.innerHTML = '<div class="b3-cbox slim"><small>' + esc(t("starting")) + '</small></div>';
+  /* no camera (blocked, none, didn't start): Misty-blue glass card, a blue Try again and typing the number as the clear way round;
+     the frame corners and the light hide (scan-glass.css), the living world stays in view */
+  const typeBtn = '<button class="b3-cbtn ghost" data-b3="camtype">' + esc(t("camType")) + '</button>';
+  if (s === "denied" || s === "nocam" || s === "camerr") msg(t("camTypeHint")); else if (s === "starting") msg(t("aim"));
+  if (s === "denied") m.innerHTML = '<div class="b3-cbox b3-cglass"><span class="b3-cic">' + IC.cam + '</span><b>' + esc(t("camDenied")) + '</b><small>' + esc(t("camDeniedS")) + '</small><div class="b3-cbtns"><button class="b3-cbtn pri" data-b3="camallow">' + esc(t("camTry")) + '</button>' + typeBtn + '</div></div>';
+  else if (s === "camerr") m.innerHTML = '<div class="b3-cbox b3-cglass"><span class="b3-cic">' + IC.cam + '</span><b>' + esc(t("camErr")) + '</b><small>' + esc(t("camErrS")) + '</small><div class="b3-cbtns"><button class="b3-cbtn pri" data-b3="camallow">' + esc(t("camTry")) + '</button>' + typeBtn + '</div></div>';
+  else if (s === "nocam") m.innerHTML = '<div class="b3-cbox b3-cglass"><span class="b3-cic">' + IC.cam + '</span><b>' + esc(t("camNo")) + '</b><small>' + esc(t("camNoS")) + '</small><div class="b3-cbtns">' + typeBtn + '</div></div>';
+  else if (s === "starting") m.innerHTML = '<div class="b3-cbox b3-cglass slim"><span class="b3-spin"></span><small>' + esc(t("starting")) + '</small></div>';
   else if (s === "lookup") m.innerHTML = '<div class="b3-cbox slim"><span class="b3-spin"></span><small>' + esc(t("lookup")) + '</small></div>';
   else m.innerHTML = ""; }
 /* Oct 15: the camera opens every time. One start at a time, a plain-constraints retry when iOS refuses the ideal ones, the video is forced to play inline,
    a stream that dies (track ended, app sent to the background) is restarted on its own, and a start that shows no picture is retried once */
-function camErrState(e){ const n = e && e.name; return n === "NotAllowedError" || n === "SecurityError" ? "denied" : "nocam"; }
+function camErrState(e){ const n = e && e.name; return n === "NotAllowedError" || n === "SecurityError" ? "denied" : n === "NotFoundError" || n === "DevicesNotFoundError" || n === "OverconstrainedError" ? "nocam" : "camerr"; }
 async function getCam(){
   const tries = [{audio:false, video:{facingMode:{ideal:"environment"}, width:{ideal:1280}, height:{ideal:720}}}, {audio:false, video:{facingMode:"environment"}}, {audio:false, video:true}];
   let err = null;
@@ -14138,7 +14145,7 @@ async function startCam1(mine){
     if (!v.videoWidth || v.readyState < 2) { if (!mine.retried) { mine.retried = true; startCam(); } else playVid(v); } }, 4500);
   if (!mine.det && !mine.reader) mine.det = await nativeDetector();
   if (CAM !== mine || mine.stream !== stream) return;
-  if (!mine.det && !mine.reader) { try { await loadZX(); mine.reader = zxReader(); } catch(e){ if (CAM === mine) msgState("nocam"); return; } }
+  if (!mine.det && !mine.reader) { try { await loadZX(); mine.reader = zxReader(); } catch(e){ if (CAM === mine) msgState("camerr"); return; } }
   if (CAM !== mine || mine.stream !== stream) return; msgState("live"); mine.el.classList.add("live"); cancelAnimationFrame(mine.raf); loop(); }
 function loop(){ if (!CAM || CAM.done) return; CAM.raf = requestAnimationFrame(loop); const now = performance.now(); if (CAM.busy || now - CAM.last < 160) return; CAM.last = now;
   const v = $("#b3Vid", CAM.el); if (!v || v.readyState < 2 || !v.videoWidth) return; CAM.busy = true;
@@ -14353,6 +14360,7 @@ document.addEventListener("click", e => {
     case "typebc": openScanner("type"); break;
     case "photo": pickPhoto(); break;
     case "camallow": startCam(); break;
+    case "camtype": { const i = CAM && $("#b3Bc", CAM.el); if (i) i.focus(); break; }
     case "mode": captureMode = b.dataset.mode === "meal" ? "meal" : "barcode"; renderTab(); break;
     case "camclose": closeScanner(); break;
     case "camact": camAct(b.dataset.act); break;

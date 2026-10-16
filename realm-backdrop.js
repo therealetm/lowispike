@@ -8,9 +8,10 @@
      only, paused whenever the layer is hidden, and still with prefers-reduced-motion;
    - from Today it comes in from a little further away (as on the warp to Community); back to Today it fades so Misty's world
      shows through; during the Home <-> Community warp it stays out of the way;
-   - Scan: the camera layer opens on the same living world; after about a second the glass card asks for the camera (or the
-     camera starts at once when it is already allowed), and the feed fades in over the world when its first frame plays.
-     The barcode reading, lookup and food logging are not touched (index.html only asks LowiRealmBack.gate when to start).
+   - Scan: the camera screen is see-through onto this same layer and the same live 3D world pulled out into the spirit world
+     (html.rw-scanworld while it is open full screen), exactly as on Cook and Move. No in-app camera card: index.html asks for
+     the camera as Scan opens, so iOS's own prompt is the only one, and the feed fades in over the world when its first frame
+     plays. The barcode reading, lookup and food logging are not touched (index.html only calls LowiRealmBack.dress).
    It never takes a tap: every layer is pointer-events: none. */
 (function (W) {
     'use strict';
@@ -53,10 +54,15 @@
         return back;
     }
     function activeId() { const t = D.querySelector('#main > .tab.active'); return t ? t.id : ''; }
+    /* the full-screen camera (not the one inside the herb world) counts as the Scan page, whatever tab lies under it */
+    function scanCam() {
+        const c = D.getElementById('b3Cam');
+        return !!(c && H.classList.contains('b3-camon') && c.classList.contains('rw-scan') && !(c.closest && c.closest('#spWorld')));
+    }
     function state() {
         const sliding = [];
         D.querySelectorAll('#main > .tab.lg-out, #main > .tab.lg-in, #main > .tab.lg-peek').forEach(t => sliding.push(t.id));
-        return { active: activeId(), zoom: H.classList.contains('gx-out') || H.classList.contains('gx-in'), sliding };
+        return { active: scanCam() ? 'tab-scan' : activeId(), zoom: H.classList.contains('gx-out') || H.classList.contains('gx-in'), sliding };
     }
     function show(on, how) {
         const L = place(); if (!L) return;
@@ -72,58 +78,34 @@
         else tmr = setTimeout(() => L.classList.remove('rw-arrive', 'rw-instant', 'rw-fade'), C.ARRIVE_MS + 60);
     }
     function sync() {
+        /* html.rw-scanworld: the camera screen shows the world (body-world-3d.js pulls the live camera out for it) */
+        const cam = scanCam();
+        if (cam !== H.classList.contains('rw-scanworld')) H.classList.toggle('rw-scanworld', cam);
         if (!place()) return;
         const s = state(), on = C.want(s);
         if (on !== shown) { show(on, C.change(lastTab, s.active, on)); shown = on; }
-        /* the camera layer covers the whole screen: pause the wallpaper under it */
-        back.classList.toggle('rw-under', H.classList.contains('b3-camon'));
-        if (s.active && !s.sliding.length) lastTab = s.active;
+        /* pause the wallpaper only once the camera feed covers it (or under the herb world's own camera) */
+        const under = H.classList.contains('b3-camon') && (!cam || !!D.querySelector('#b3Cam.rw-feed'));
+        if (back.classList.contains('rw-under') !== under) back.classList.toggle('rw-under', under);
+        if (s.active && !s.sliding.length && !cam) lastTab = s.active;
     }
 
-    /* ---------- Scan: the camera layer opens on the living world ---------- */
-    function dressCam(el) {
+    /* ---------- Scan: the camera screen opens on the living world ---------- */
+    /* index.html openScanner() calls dress(el) and then asks for the camera at once (no in-app card, iOS's prompt only) */
+    function dress(el) {
         if (!el || el.__rw) return;
         el.__rw = true;
-        if (!el.querySelector(':scope > .rw-cam')) el.insertBefore(make('', 'rw-cam rw-show'), el.firstChild);
         el.classList.add('rw-scan');
+        /* inside the herb world the camera sits in Misty's sheet, away from the 3D world: it keeps its own copy of the layer */
+        if (el.closest && el.closest('#spWorld') && !el.querySelector(':scope > .rw-cam')) el.insertBefore(make('', 'rw-cam rw-show'), el.firstChild);
         const v = el.querySelector('video');
         if (v) {
             /* the feed fades in over the world when its first frame really plays, and goes back to the world when it stops */
-            const on = () => { if (v.videoWidth || v.readyState >= 2) el.classList.add('rw-feed'); };
+            const on = () => { if (v.videoWidth || v.readyState >= 2) { el.classList.add('rw-feed'); sync(); } };
             v.addEventListener('playing', on); v.addEventListener('loadeddata', on);
-            v.addEventListener('emptied', () => el.classList.remove('rw-feed'));
+            v.addEventListener('emptied', () => { el.classList.remove('rw-feed'); sync(); });
         }
-    }
-    function permission() {
-        try {
-            const P = W.navigator && W.navigator.permissions;
-            if (!P || !P.query) return Promise.resolve('');
-            return Promise.race([
-                P.query({ name: 'camera' }).then(r => (r && r.state) || '', () => ''),
-                new Promise(r => setTimeout(() => r(''), 600))
-            ]);
-        } catch (e) { return Promise.resolve(''); }
-    }
-    /* index.html openScanner(): gate(el, { start, ask, open }) instead of starting the camera at once.
-       start = the normal camera start, ask = the existing glass "Allow camera" card, open = is this layer still the open scanner. */
-    function gate(el, fns) {
-        fns = fns || {};
-        const still = () => { try { return !fns.open || fns.open(); } catch (e) { return false; } };
-        dressCam(el);
-        el.dataset.rw = 'world';
-        const t0 = Date.now();
-        return permission().then(perm => {
-            const g = C.gate(perm), wait = Math.max(0, g.delay - (Date.now() - t0));
-            const go = () => {
-                if (!still()) return g.act + ':closed';
-                el.dataset.rw = g.act;
-                if (g.act === 'start') { if (fns.start) fns.start(); }
-                else if (fns.ask) { fns.ask(); el.classList.add('rw-asked'); }
-                return g.act;
-            };
-            if (!wait) return go();
-            return new Promise(r => setTimeout(() => r(go()), wait));
-        });
+        sync();
     }
 
     function boot() {
@@ -139,6 +121,6 @@
         D.addEventListener('visibilitychange', sync);
     }
 
-    W.LowiRealmBack = { gate, sync, dressCam, layer: () => back, shown: () => shown, _state: state };
+    W.LowiRealmBack = { dress, sync, layer: () => back, shown: () => shown, _state: state };
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 })(window);

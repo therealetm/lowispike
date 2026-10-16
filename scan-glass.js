@@ -40,6 +40,9 @@
         const cam = D.getElementById('b3Cam');
         if (cam && cam.parentElement === D.body) adopt(cam);
         const docked = !!(cam && cam.classList.contains('sg-docked') && H.classList.contains('b3-camon'));
+        /* Scan is the current page while the camera is open (the lit tab is scan-glass.css) */
+        const sb = D.querySelector('#tabbar .tb.scan'), open = !!(cam && H.classList.contains('b3-camon'));
+        if (sb && (sb.getAttribute('aria-current') === 'page') !== open) { if (open) sb.setAttribute('aria-current', 'page'); else sb.removeAttribute('aria-current'); }
         if (!docked) {
             /* only when set: classList.remove always rewrites the attribute, which would wake the class observer again */
             if (H.classList.contains('sg-dock')) H.classList.remove('sg-dock');

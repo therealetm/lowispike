@@ -35,11 +35,9 @@ test('how it comes and goes: from Today it arrives from further away, from Commu
     assert.ok(C.ARRIVE_MS >= 300 && C.ARRIVE_MS <= 900 && C.LEAVE_MS >= 200 && C.LEAVE_MS <= 700);
 });
 
-test('Scan camera: allowed starts at once; otherwise the world shows first and the glass card asks after about a second', () => {
-    assert.deepEqual(C.gate('granted'), { act: 'start', delay: 0 });
-    for (const p of ['prompt', '', undefined, 'weird']) assert.deepEqual(C.gate(p), { act: 'ask', delay: C.ASK_DELAY });
-    assert.deepEqual(C.gate('denied'), { act: 'start', delay: C.ASK_DELAY }, 'denied: the normal start shows the existing camera-off card');
-    assert.ok(C.ASK_DELAY >= 800 && C.ASK_DELAY <= 1300, 'about one second');
+test('Scan camera: no in-app camera card and no delay; iOS asks on its own', () => {
+    assert.equal(C.gate, undefined, 'no gate'); assert.equal(C.ASK_DELAY, undefined, 'no one-second wait');
+    assert.ok(!/ask|Allow camera|permissions/i.test(read('realm-backdrop.js').replace(/\/\*[\s\S]*?\*\//g, '')), 'no asking, no Permissions API');
 });
 
 test('motes: same places every launch, inside the screen, in the picture\'s colours, few on phones and none with reduced motion', () => {
@@ -85,7 +83,6 @@ test('the layer never takes a touch, never covers Today, and is see-through over
     assert.match(css, /\.rw-layer\.rw-still \*, #app > #rwBack\.rw-under \* \{ animation-play-state: paused !important; \}/, 'nothing moves while hidden or under the camera');
     const rm = css.slice(css.indexOf('@media (prefers-reduced-motion: reduce)'));
     assert.ok(rm.includes('.rw-layer .rw-motes { display: none; }') && rm.includes('rw-arrive { animation: none !important; }'));
-    assert.ok(css.includes('prefers-reduced-transparency: reduce'));
     /* fills the whole screen: in #app (the whole screen, also on iPad), not in the 680px page column */
     assert.ok(/#app > #rwBack\.rw-back \{ z-index: 0;/.test(css));
 });
@@ -117,7 +114,7 @@ function dom() {
         documentElement: html, readyState: 'complete', hidden: false,
         createElement: t => new El(t), addEventListener() { },
         getElementById: id => all.find(e => e.id === id && e.isConnected) || null,
-        querySelector: sel => sel === '#main > .tab.active' ? main.children.find(c => c.classList.contains('tab') && c.classList.contains('active')) || null : null,
+        querySelector: sel => sel === '#main > .tab.active' ? main.children.find(c => c.classList.contains('tab') && c.classList.contains('active')) || null : sel === '#b3Cam.rw-feed' ? all.find(e => e.id === 'b3Cam' && e.isConnected && e.classList.contains('rw-feed')) || null : null,
         querySelectorAll: () => ({ forEach: f => main.children.filter(c => ['lg-out', 'lg-in', 'lg-peek'].some(k => c.classList.contains(k))).forEach(f) })
     };
     return { D, El, html, app, main, bw3, tabs };
@@ -156,56 +153,74 @@ test('the wallpaper sits right under the pages, above the live world, and follow
 });
 
 function scanner(env) {
-    const el = new env.El('div'); el.className = 'b3-cam'; const v = new env.El('video'); el.appendChild(v); env.app.appendChild(el); return { el, v };
+    const el = new env.El('div'); el.className = 'b3-cam'; el.id = 'b3Cam'; const v = new env.El('video'); el.appendChild(v); env.app.appendChild(el); return { el, v };
 }
 
-test('Scan, camera not yet allowed: living world first, the glass card about a second later, the camera only after the tap', async () => {
-    const env = dom(); const { R, timers } = load(env, 'prompt');
-    const { el, v } = scanner(env); let started = 0, asked = 0;
-    const p = R.gate(el, { start: () => started++, ask: () => asked++, open: () => true });
-    assert.ok(el.firstChild.classList.contains('rw-cam'), 'the world is the bottom layer of the camera screen');
-    assert.ok(el.classList.contains('rw-scan') && el.dataset.rw === 'world');
-    await tick(); await tick();
-    assert.equal(asked + started, 0, 'nothing yet: only the world');
-    const t = timers.find(x => x.ms >= 800 && x.ms <= 1000); assert.ok(t, 'waits about a second'); t.f();
-    assert.equal(await p, 'ask'); assert.equal(asked, 1); assert.equal(started, 0, 'the system prompt waits for the tap on the glass card');
-    assert.ok(el.classList.contains('rw-asked'));
+test('Scan opens in the same living world as Cook and Move: see-through camera screen, wallpaper and pulled-out world under it', () => {
+    const env = dom(); const { R } = load(env); const back = R.layer();
+    env.app.insertBefore(env.bw3, env.main); R.sync();
+    /* Today lies under the camera: the camera screen still counts as Scan */
+    const { el, v } = scanner(env); env.html.classList.add('b3-camon'); R.dress(el);
+    assert.ok(el.classList.contains('rw-scan'));
+    assert.ok(!el.children.some(c => c.classList.contains('rw-cam')), 'no copy of the layer inside: the real one shows through');
+    assert.ok(env.html.classList.contains('rw-scanworld'), 'body-world-3d.js pulls the live world out for it');
+    assert.ok(back.classList.contains('rw-show') && back.classList.contains('rw-arrive'), 'from Today the world arrives, as on Cook');
+    assert.ok(!back.classList.contains('rw-under'), 'alive until the feed covers it');
     /* the feed fades in over the world only once a frame plays, and the world comes back when it stops */
-    v.videoWidth = 1280; v.fire('playing'); assert.ok(el.classList.contains('rw-feed'));
-    v.fire('emptied'); assert.ok(!el.classList.contains('rw-feed'));
-    R.gate(el, {}); assert.equal(el.children.filter(c => c.classList.contains('rw-cam')).length, 1, 'dressed once');
+    v.fire('playing'); assert.ok(!el.classList.contains('rw-feed'), 'no frame yet');
+    v.videoWidth = 1280; v.fire('playing'); assert.ok(el.classList.contains('rw-feed')); assert.ok(back.classList.contains('rw-under'), 'paused under the feed');
+    v.fire('emptied'); assert.ok(!el.classList.contains('rw-feed') && !back.classList.contains('rw-under'));
+    R.dress(el); assert.equal(v.listeners.playing.length, 1, 'dressed once');
+    /* closing goes back to Today with a fade */
+    el.parentElement.children.splice(el.parentElement.children.indexOf(el), 1); el.parentElement = null;
+    env.html.classList.remove('b3-camon'); R.sync();
+    assert.ok(!env.html.classList.contains('rw-scanworld') && !back.classList.contains('rw-show') && back.classList.contains('rw-fade'));
 });
 
-test('Scan, camera already allowed: starts at once, the world stays until the feed plays', async () => {
-    const env = dom(); const { R } = load(env, 'granted');
-    const { el } = scanner(env); let started = 0, asked = 0;
-    assert.equal(await R.gate(el, { start: () => started++, ask: () => asked++, open: () => true }), 'start');
-    assert.equal(started, 1); assert.equal(asked, 0); assert.ok(!el.classList.contains('rw-feed'));
+test('Scan over Community or Cook: the same world stays, no flash', () => {
+    const env = dom(); const { R } = load(env); const back = R.layer();
+    const go = t => { Object.values(env.tabs).forEach(e => e.classList.remove('active')); env.tabs[t].classList.add('active'); R.sync(); };
+    go('shelf'); const { el } = scanner(env); env.html.classList.add('b3-camon'); R.dress(el);
+    assert.ok(back.classList.contains('rw-show') && env.html.classList.contains('rw-scanworld'));
+    env.html.classList.remove('b3-camon'); el.parentElement.children.pop(); el.parentElement = null; go('foryou');
+    const s2 = scanner(env); env.html.classList.add('b3-camon'); R.dress(s2.el);
+    assert.ok(back.classList.contains('rw-show') && back.classList.contains('rw-instant'), 'Community -> Scan: instant');
 });
 
-test('Scan: closed or typing before the second is up does nothing; no Permissions API or an error falls back to asking', async () => {
-    for (const perm of ['prompt', 'denied']) {
-        const env = dom(); const { R, timers } = load(env, perm); const { el } = scanner(env); let n = 0;
-        const p = R.gate(el, { start: () => n++, ask: () => n++, open: () => false });
-        await tick(); await tick(); timers.filter(x => x.ms >= 800).forEach(x => x.f());
-        assert.match(await p, /:closed$/); assert.equal(n, 0, perm);
-    }
-    for (const perm of [undefined, new Error('camera not a permission name')]) {
-        const env = dom(); const { R, timers } = load(env, perm); const { el } = scanner(env); let asked = 0;
-        const p = R.gate(el, { ask: () => asked++, open: () => true });
-        await tick(); await tick(); timers.filter(x => x.ms >= 800 && x.ms <= 1000).forEach(x => x.f());
-        assert.equal(await p, 'ask'); assert.equal(asked, 1);
-    }
-});
-
-test('index.html only asks the gate when to start: the barcode scanner, lookup and fallbacks are unchanged', () => {
+test('index.html asks for the camera as Scan opens: no in-app card, iOS prompt only; reading, lookup and fallbacks unchanged', () => {
     const html = read('index.html');
     const open = html.slice(html.indexOf('function openScanner(mode){'), html.indexOf('function msg(text, kind){'));
-    assert.ok(open.includes('if (window.LowiRealmBack && LowiRealmBack.gate) LowiRealmBack.gate(el, {start: startCam, ask: () => msgState("ask"), open: () => !!(CAM && CAM.el === el && !CAM.done && !CAM.stream && !el.dataset.st && !el.classList.contains("typing"))});'));
-    assert.ok(open.includes('else if (window.LowiSpirit || localStorage.getItem(CAMOK) === "1") startCam(); else msgState("ask");'), 'the old start stays as the fallback');
-    assert.ok(open.indexOf('if (mode === "type")') < open.indexOf('LowiRealmBack.gate') && open.indexOf('getUserMedia) { msgState("nocam")') < open.indexOf('LowiRealmBack.gate'), 'typing a code and no-camera are untouched');
-    /* the reading itself */
+    assert.ok(open.includes('if (window.LowiRealmBack && LowiRealmBack.dress) LowiRealmBack.dress(el);\n  startCam();'), 'straight to the camera');
+    assert.ok(!/msgState\("ask"\)|camAsk|camAllow|s === "ask"/.test(html), 'the "Let LOWiSPIKE use the camera" card is gone');
+    assert.ok(!/CAMOK\) === "1"\) startCam\(\); else/.test(html), 'no remembered-permission gate either');
+    assert.ok(open.indexOf('if (mode === "type")') < open.indexOf('startCam();') && open.indexOf('getUserMedia) { msgState("nocam")') < open.indexOf('LowiRealmBack.dress'), 'typing a code and no-camera are untouched');
     for (const s of ['function validCode(c){', 'function zxReader(){', 'async function nativeDetector(){', 'case "camallow": startCam(); break;', 'localStorage.setItem(CAMOK, "1"); mine.stream = stream;'])
         assert.ok(html.includes(s), s);
-    assert.equal(html.split('LowiRealmBack.gate(el').length, 2, 'one call site in index.html');
+    assert.equal(html.split('LowiRealmBack.dress(el)').length, 2, 'one call site in index.html');
+});
+
+test('camera states wear Misty\'s blue glass: blue Try again, type the number offered, no frame or light without a camera', () => {
+    const html = read('index.html'), css = read('scan-glass.css');
+    const ms = html.slice(html.indexOf('function msgState(s){'), html.indexOf('function msgState(s){') + 3000);
+    for (const st of ['"denied"', '"camerr"', '"nocam"', '"starting"']) assert.ok(ms.includes('s === ' + st), st);
+    assert.equal((ms.match(/b3-cbox b3-cglass/g) || []).length, 4, 'all four camera states in the glass');
+    assert.equal((ms.match(/class="b3-cbtn pri" data-b3="camallow"/g) || []).length, 2, 'blue Try again when blocked or failed');
+    assert.ok(ms.includes('data-b3="camtype"') && html.includes('case "camtype":'), 'typing the number is offered');
+    assert.ok(!/r2-btn ghost" data-b3="camallow"/.test(html), 'the grey Try again is gone');
+    assert.ok(/camDenied: \["The camera is off"/.test(html) && !/Camera is blocked/.test(html));
+    assert.ok(/\.b3-cbox\.b3-cglass \{[^}]*var\(--wh-glass-wide\)[^}]*var\(--wh-glass-rim\)[^}]*var\(--wh-glass-sh\)/.test(css), 'Daily Quest / weather pill glass tokens');
+    assert.ok(/\.b3-cbtn\.pri \{[^}]*#0a84ff/.test(css), 'blue button');
+    assert.ok(/\[data-st=denied\], \[data-st=nocam\], \[data-st=camerr\]\) \.b3-frame \{ opacity: 0/.test(css), 'no frame corners without a camera');
+    assert.ok(/\.b3-cam:not\(\.live\) \.b3-torch \{ visibility: hidden/.test(css), 'no light button without a camera');
+    assert.ok(/camErrState\(e\)\{[^\n]*"camerr"/.test(html), 'other camera errors get their own friendly state');
+});
+
+test('Scan is the lit tab while the camera is open, and the page under it hides behind the see-through camera', () => {
+    const sg = read('scan-glass.css'), rb = read('realm-backdrop.css'), bw = read('body-world-3d.js');
+    assert.ok(/html\.b3-camon #app #main #tabbar#tabbar \.tb\.active:not\(\.scan\) \{ background: transparent/.test(sg), 'beats world-home.css #tabbar#tabbar');
+    assert.ok(/html\.b3-camon #app #main #tabbar#tabbar \.tb\.scan \.ring/.test(sg));
+    assert.ok(/html\.rw-scanworld \.b3-cam\.rw-scan \{ background: transparent !important/.test(rb));
+    assert.ok(/html\.rw-scanworld #app #main > :not\(#tabbar\):not\(\.lg-in\):not\(\.lg-peek\):not\(\.lg-out\) \{ visibility: hidden/.test(rb), 'the page under hides, the dock and swipes stay');
+    assert.ok(bw.includes("if (H.classList.contains('rw-scanworld')) return true;") && bw.includes("H.classList.contains('rw-scanworld') ? { id: 'tab-scan' } : t0"), 'the live 3D world pulls out for Scan');
+    assert.ok(!/metabolic-spirit-world|\.webp|\.jpg/.test(rb), 'never the flat picture');
 });

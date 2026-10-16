@@ -51,3 +51,11 @@ html.nm-on .g2-safe { display: none !important; }
 .nm-lbgo { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; opacity: .6; }
 html:not([data-lay=phone]) #mv-screen.tabmode > .stack > .nm-lbcard { grid-column: 1/-1; }
 html:not([data-lay=phone]) #mv-screen.tabmode > .stack > .nm-lbcard + .card { grid-column: 1/-1; }
+/* Oct 16 (E-man, iPad screenshot: "remove that boring black"): For You no longer sits on a black backdrop. The layer is clear,
+   the Cook page underneath steps aside while it is open, and the living world shows around the video. On iPad/laptop the
+   video column is a rounded frame with the blue glass rim; the video itself, its buttons and swiping are unchanged. */
+.nm-layer-fy { background: transparent; }
+html.nm-open-fy #tab-shelf > :not(.nm-layer) { visibility: hidden !important; }
+html:not([data-lay=phone]) .nm-layer-fy .nm-head { background: none; }
+html:not([data-lay=phone]) .nm-layer-fy .fy-slide { border-radius: 28px; outline: 1.5px solid var(--wh-glass-rim, rgba(160,220,255,.55)); outline-offset: -1.5px;
+    box-shadow: 0 18px 50px -22px rgba(40,120,255,.55); }

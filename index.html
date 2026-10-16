@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261016-111710">
+<meta name="lowi-build" content="20261016-113010">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -18095,9 +18095,21 @@ function schedule(){ if (raf || busy) return; raf = requestAnimationFrame(() => 
    while Home sat hidden behind Community (each tick of the Today board, each class change anywhere). Now it only runs while
    Home is the page you see and no Community warp is moving; it catches up the moment Home is back. */
 function homeShown(h){ return h.classList.contains("active") && !/(^|\s)gx-(hold|in|out)(\s|$)/.test(H.className); }
+/* Oct 16, 2026 (E-man, iPad: coming back from Community, the old meals / fasting / 1-2-3 steps showed for about a second):
+   Today re-renders while it sits hidden behind Community, and the fresh step nodes (Check-ins, Meals, Your plate, Medicine,
+   Shopping) had no data-g2h tag yet, because the whole pass waited for Home to be on screen and the warp to end. Those nodes
+   are the live content of the Today tiles, so they stay; they are just tagged (and so tucked into their tiles) the moment they
+   are rendered. Tagging reads no layout. Only the tiles row and the expensive fit still wait until Home is the page you see. */
+function tagOnly(h){
+  const want = phone() && !!h.children.length;
+  if (want !== H.classList.contains("g2h-on")) H.classList.toggle("g2h-on", want);
+  if (!want) return;
+  const g = groups(h);
+  Object.keys(g).forEach(k => g[k].forEach(n => { if (n.getAttribute("data-g2h") !== k) n.setAttribute("data-g2h", k); }));
+}
 function pass(){
   const h = home(); if (!h) return;
-  if (!homeShown(h)) return;
+  if (!homeShown(h)) { busy = true; try { tagOnly(h); } catch(e){ console.error(e); } finally { if (moH) moH.takeRecords(); if (moR) moR.takeRecords(); busy = false; } return; }
   busy = true;
   try {
     addL();
@@ -19697,7 +19709,7 @@ window.LowiHandoff = { want, copy, issue, revoke, startHTML, parse, redeem, _sta
 })();
 </script>
 <link rel="stylesheet" href="community-chat.css?v=galaxy-2">
-<link rel="stylesheet" href="community-galaxy.css?v=20261016-111710">
+<link rel="stylesheet" href="community-galaxy.css?v=20261016-113010">
 <script id="community-chat-bridge">
 /* Bounded bridge: the Community module shares auth/messages with the existing cloud owner. */
 window.LowiCommunityHost = {
@@ -19722,15 +19734,15 @@ window.LowiCommunityHost = {
 <script src="community-chat-cloud.js?v=community-1"></script>
 <script src="community-galaxy.js?v=galaxy-2"></script>
 <script src="community-chat.js?v=galaxy-2"></script>
-<link rel="stylesheet" id="lgCss" href="liquid-glass.css?v=20261016-111710">
-<script src="liquid-glass.js?v=20261016-111710"></script>
-<link rel="stylesheet" id="sgCss" href="scan-glass.css?v=20261016-111710">
-<script src="scan-glass.js?v=20261016-111710"></script>
-<link rel="stylesheet" href="nav-moves.css?v=nav-2">
+<link rel="stylesheet" id="lgCss" href="liquid-glass.css?v=20261016-113010">
+<script src="liquid-glass.js?v=20261016-113010"></script>
+<link rel="stylesheet" id="sgCss" href="scan-glass.css?v=20261016-113010">
+<script src="scan-glass.js?v=20261016-113010"></script>
+<link rel="stylesheet" href="nav-moves.css?v=20261016-113010">
 <script src="nav-moves.js?v=nav-2"></script>
-<script src="galaxy-zoom.js?v=20261016-111710"></script>
-<link rel="stylesheet" id="mhCss" href="misty-hub.css?v=20261016-111710">
-<script src="misty-hub.js?v=20261016-111710"></script>
+<script src="galaxy-zoom.js?v=20261016-113010"></script>
+<link rel="stylesheet" id="mhCss" href="misty-hub.css?v=20261016-113010">
+<script src="misty-hub.js?v=20261016-113010"></script>
 </body>
 </html>
 

@@ -327,6 +327,18 @@ html.wh-home .wh-tiles .g2h-tile { background: var(--wh-glass-wide); border-colo
 html.wh-home:not(.wh-leave) #tabbar, html.wh-home.apple-ui:not(.wh-leave) #tabbar, html.wh-home:not(.wh-leave) .apple-ui #tabbar {
     background: var(--wh-glass-wide) !important; border: 1.5px solid var(--wh-glass-rim) !important; box-shadow: var(--wh-glass-sh) !important;
     backdrop-filter: blur(14px) saturate(1.4) !important; -webkit-backdrop-filter: blur(14px) saturate(1.4) !important; }
+/* Oct 16 (E-man: "the menu bar's bubble is a different colour, it's distracting"): the rule above never won, because
+   liquid-glass.css paints the dock grey with a stronger selector (html.lg #app #main #tabbar), and its active-tab bubble is
+   flat white. Now the bar is the Daily Quest glass on every page (bottom bar on iPhone, left rail on iPad), the active tab
+   is a small blue glass bubble with the same rim, and the labels use the Daily Quest ink. Taps and layout are unchanged. */
+html #app #main #tabbar#tabbar {
+    background: var(--wh-glass-wide) !important; border: 1.5px solid var(--wh-glass-rim) !important; box-shadow: var(--wh-glass-sh) !important;
+    backdrop-filter: blur(14px) saturate(1.4) !important; -webkit-backdrop-filter: blur(14px) saturate(1.4) !important; }
+html #app #main #tabbar#tabbar .tb:not(.scan) { color: var(--wh-glass-ink) !important; opacity: .72; }
+html #app #main #tabbar#tabbar .tb.active:not(.scan) { opacity: 1; color: var(--wh-glass-ink) !important;
+    background: radial-gradient(120% 100% at 30% 0%, rgba(255,255,255,.22), rgba(255,255,255,0) 60%), rgba(110,190,255,.20) !important;
+    box-shadow: inset 0 0 0 1px var(--wh-glass-rim), inset 0 0 12px rgba(140,210,255,.28) !important; }
+html #app #main #tabbar#tabbar .tb.active:not(.scan) :is(.tbl, svg) { color: var(--wh-glass-ink) !important; }
 
 /* ---------- Oct 16: the fasting bubble's text has room ----------
    "Edit" sits just above the bubble (not squeezed against its top rim) and the 14h/12h/8h stage numbers are left out on Home,

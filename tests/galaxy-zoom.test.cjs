@@ -139,7 +139,10 @@ test('the Community warp reuses the brain-cell warp from Home and starts where a
 test('spirit world stays smooth: nothing re-measures hidden Home every second or two, the warp streaks keep their GPU program', () => {
     /* E-man (Oct 16): "in the spirit world, every two to three seconds everything freezes for a moment" */
     const html = read('index.html'), fe = read('fast-edit.js'), fx = read('finch-extras.js'), b3 = read('body-world-3d.js'), sc = read('body-world-3d-scene.js'), gz = read('galaxy-zoom.js');
-    assert.ok(html.includes('function homeShown(h){ return h.classList.contains("active")') && html.includes('if (!homeShown(h)) return;'), 'the Today fit only runs while Home is the page you see');
+    assert.ok(html.includes('function homeShown(h){ return h.classList.contains("active")') && html.includes('if (!homeShown(h)) { busy = true; try { tagOnly(h); }') && /if \(!homeShown\(h\)\) \{[^\n]*return; \}/.test(html), 'the Today fit only runs while Home is the page you see');
+    /* E-man (Oct 16, iPad): back from Community the old meals / fasting / 1-2-3 steps flashed for a second */
+    const t0 = html.indexOf('function tagOnly(h){'), tag = html.slice(t0, html.indexOf('function pass(){', t0));
+    assert.ok(tag.includes('groups(h)') && tag.includes('setAttribute("data-g2h", k)') && !/getBoundingClientRect|offsetHeight|fit\(/.test(tag), 'hidden Home still tags its fresh Today steps into their tiles, without measuring anything');
     assert.ok(html.includes('observe(h, {attributes:true, attributeFilter:["class"]})'), 'and catches up when Home is back');
     assert.ok(fe.includes('if (!D.hidden && homeOn()) ensurePill();'));
     assert.ok(b3.includes('homeSeen()) { mountHome(); syncGlow(); }'));

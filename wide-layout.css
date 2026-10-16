@@ -54,6 +54,14 @@ html.spirit-app.g2c-on[data-lay=desktop] #shelf #shBody>*{grid-column:1 / -1!imp
 html.spirit-app.g2c-on[data-lay=desktop] #shelf #shBody>#r5Shuf{grid-column:1!important}
 html.spirit-app.g2c-on[data-lay=desktop] #shelf #shBody>#g2cTiles{grid-column:2!important;align-self:center;grid-template-columns:repeat(2,minmax(0,1fr))!important}
 html.spirit-app.g2c-on[data-lay=desktop] #shelf #g2cTiles .g2c-tile:last-child:nth-child(odd){grid-column:1 / -1!important}
+/* Oct 16 (E-man, iPad screenshots: "it doesn't make sense where it's positioned, the whole thing is below"): in Swipe the
+   tiles above beat Cook's own "no tiles in Swipe" rule, so on iPad landscape the tiles sat top right, the left column stayed
+   empty and the yes/no deck with its buttons was pushed under the screen. Landscape: the deck takes the shuffle's spot on the
+   left, next to the tiles, so Shuffle and Swipe share one layout. Portrait: Swipe shows only the deck, like the iPhone. */
+html.spirit-app.g2c-on[data-lay=desktop] #shelf #shBody>#r5Shuf{grid-row:2}
+html.spirit-app.g2c-on[data-lay=desktop] #shelf #shBody>#r3kSwipe{grid-column:1!important;grid-row:2;align-self:center}
+html.spirit-app.g2c-on[data-lay=desktop] #shelf #shBody>#g2cTiles{grid-row:2}
+html.spirit-app.g2c-on[data-lay=tablet][data-ckview=swipe] #shelf #shBody>#g2cTiles{display:none!important}
 
 /* ---------- Move ---------- */
 html.spirit-app:is([data-lay=tablet],[data-lay=desktop]) #mv-screen>.stack.g2{padding-top:calc(env(safe-area-inset-top,0px) + 20px)!important}

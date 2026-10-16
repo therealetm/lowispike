@@ -665,11 +665,15 @@
            flies her own adventure (a slow, sleepy drift when her energy is low), home = she glides back into her cell */
         const PD = st.pad, padOn = !!PD.mode;
         const show = (A.away || padOn) && (r.mode === 'home' || r.mode === 'full') && !inRegion() && !awayHome() && !D.hidden;
-        if (!A.wand) { if (!show) return; advBuild(a); }
+        /* Oct 16 (E-man): misty-flight.js takes over the steering at Home: out of her bubble (it stretches, never pops), across the
+           whole world at her real size, and into a place by flying (the tap's warp), still steerable inside. Old path = fallback. */
+        const MF = W.LowiMistyFlight, mfx = MF && MF.wants ? { a, r, A, PD, dt, k: A.vigor, wand: A.wand, reduced: reduced(), inRegion: inRegion(), awayHome: awayHome(), burst: (p, n, sp) => burst(A, p, n, sp) } : null;
+        let mf = false; try { mf = !!(mfx && MF.wants(mfx)); } catch (e) { mf = false; }
+        if (!A.wand) { if (!show && !mf) return; advBuild(a); if (mfx) mfx.wand = A.wand; }
         const wand = A.wand, pm = A.pts.material, k = A.vigor;
         if (st.misty && st.misty.material.map && wand.material.map !== st.misty.material.map) { wand.material.map = st.misty.material.map; wand.material.needsUpdate = true; }
         if (!wand.material.map) ensureMisty3D3();
-        const fade = show && wand.material.map ? 1 : 0;
+        const fade = (show || mf) && wand.material.map ? 1 : 0;
         wand.material.opacity += ((fade ? 0.55 + 0.43 * k : 0) - wand.material.opacity) * Math.min(1, dt * 2.5);
         wand.visible = wand.material.opacity > 0.01;
         /* sparkles keep falling even while she fades out */
@@ -687,6 +691,7 @@
             const sc = 0.3 + q * (1.4 + 1.2 * k); A.ring.scale.set(sc, sc, 1); A.ring.material.opacity = (1 - q) * (0.35 + 0.55 * k);
             if (q >= 1) A.ring.visible = false;
         }
+        if (mf) { try { MF.frame(mfx); return; } catch (e) { if (!A.mfErr) { A.mfErr = 1; console.error('misty-flight', e); } } }
         if (!wand.visible) return;
         /* where: a slow loop around Misty's cell, in the plane facing the camera, a little in front of it */
         const cam = a.camera; cam.updateMatrixWorld();

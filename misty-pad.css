@@ -43,3 +43,10 @@ html.wh-away .wh-hud .wh-pad, html.wh-away .wh-hud .wh-pad-chip, html:not(.wh-ho
 html.wh-padfly #spBubble .tmg-plant, html.wh-padfly #spBubble .sp-bubble-name { opacity: 0 !important; transition: opacity .35s ease; }
 #spBubble .tmg-plant { transition: opacity .35s ease; }
 @media (prefers-reduced-motion: reduce) { .wh-hud .wh-pad[data-mode="auto"], .wh-pad[data-mode="auto"] .mp-dot { animation: none; } .wh-pad .mp-knob { transition: none; } }
+
+/* Oct 16 (E-man): Misty flies out of her bubble (misty-flight.js). While she is out the 3D membrane is the bubble, so it can
+   stretch around her: the flat DOM wall lines step aside, and her cell's DOM bits follow the 3D cell when the camera follows her. */
+html.mf-on #spHome #spBubble .cw-wall, html.mf-on #spHome #spBubble .cw-cilia { opacity: 0 !important; transition: opacity .3s ease; }
+html.mf-roam #spHome #spBubble { translate: var(--mf-bx, 0px) var(--mf-by, 0px); }
+/* inside a place she flew into, the controller stays so you can keep steering her there */
+html.mf-in.wh-away .wh-hud .wh-pad, html.mf-in.wh-away.wh-r2-on .wh-hud .wh-pad { opacity: 1 !important; pointer-events: auto !important; }

@@ -64,7 +64,7 @@ test('a card has everything it shows', () => {
 test('wired into the app: loader, both service worker lists, self-loaded CSS', () => {
     const ui = read('apple-ui.js');
     assert.ok(ui.includes("'arrival-core.js','arrival-cards.js'"));
-    assert.ok(ui.indexOf("'arrival-cards.js'") > ui.indexOf("'body-ride.js'"));
+    assert.ok(ui.indexOf("'arrival-cards.js'") > ui.indexOf("'inside-row.js'"));
     const sw = read('sw.js');
     for (const f of ['arrival-core.js', 'arrival-cards.js', 'arrival-cards.css']) assert.equal(sw.split('"' + f + '"').length - 1, 2, f + ' in both sw lists');
     assert.ok(read('arrival-cards.js').includes("replace('arrival-cards.js', 'arrival-cards.css')"));

@@ -39,6 +39,11 @@
 @keyframes btGlow { 50% { transform: scale(1.15); } }
 .bt-bar.back { border-color: color-mix(in srgb, var(--bt-a) 60%, transparent); box-shadow: 0 0 18px -6px var(--bt-a); }
 .bt-mini { flex: 1 1 auto; display: flex; justify-content: flex-end; gap: 4px; min-width: 40px; }
+/* Oct 16: the idle row now says what comes next ("Start next journey · Gut", "Next journey tomorrow · in 6:05").
+   The words come first; the place name may shorten, and on phones the little place dots make room. */
+.bt-bar[data-next] .bt-name { flex: 0 0 auto; max-width: 72%; }
+.bt-bar[data-next] .bt-num { flex: 0 1 auto; min-width: 0; margin-left: auto; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 600px) { .bt-bar[data-next] .bt-mini { display: none; } }
 .bt-mini i { width: 7px; height: 7px; border-radius: 50%; border: 1px solid hsl(var(--h) 80% 70% / .55); }
 .bt-mini i.on { background: hsl(var(--h) 85% 68%); box-shadow: 0 0 5px hsl(var(--h) 85% 60%); }
 

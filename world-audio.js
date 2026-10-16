@@ -14,7 +14,7 @@
      nothing resets it: the old 22-second chord walk is gone, start/stop/visibility rebuild the sound from the stored tune, and
      the stormy-world layer only fades in on top (it never touches the tune). "Reset sound" in the pad is the only way back.
    - Warp: window 'lowi:world-warp' {phase:'start'|'dive'|'arrive'|'cancel'} from body-world-regions.js (the real glide/dive/
-     settle), plus the cell ride's 'lowi:ride-start'/'lowi:ride-arrive'. One warp voice at a time, duplicate phases ignored.
+     settle). (The old cell ride's events are gone with body-ride.js.) One warp voice at a time, duplicate phases ignored.
    - Lifecycle: world closes -> fade out, sources stopped, context suspended. App hidden -> suspended. Reopening the world with a
      tap brings it back while the app stays open. Page hide -> context closed. Oct 16: once on, it plays on every tab while the app
      is in front, stepping aside for videos, voice notes, the workout player and the ride; never with the screen locked. */
@@ -283,8 +283,6 @@
     }
     W.addEventListener('lowi:world-mood', () => setMood(false));
     W.addEventListener('lowi:world-warp', e => { const d = e && e.detail || {}; onWarp(d.phase, d.id); });
-    W.addEventListener('lowi:ride-start', e => { if (!st.ctx || !warpOk()) return; const id = 'ride:' + ((e.detail && e.detail.place) || ''); onWarp('start', id); st.plays.ride++; const v = st.warp; if (v) { clearTimeout(v.t); v.t = setTimeout(() => { if (st.warp === v) killWarp(1.2); }, 1600); } });
-    W.addEventListener('lowi:ride-arrive', e => { if (!st.ctx || !warpOk()) return; onWarp('arrive', 'ride:' + ((e.detail && e.detail.place) || '')); });
 
     /* ---------- UI: pill in the world's top bar + small panel ---------- */
     const ICON_ON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z" fill="currentColor" stroke="none"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>';

@@ -174,11 +174,10 @@
     let hooked3d = false, hazeCol = null, tintCol = null;
     const lightBase = new WeakMap();
     function inRegion(a) { try { return !!(a.hub && a.camera && !a.hub.layers.test(a.camera.layers)); } catch (e) { return false; } }
-    function riding() { try { return !!(window.LowiRide && window.LowiRide.active); } catch (e) { return false; } }
     function frame3d() {
         const a = window.LowiWorld3D;
         if (!a || !a.scene) return;
-        const on = state.mode === 'manual' && !inRegion(a) && !riding();
+        const on = state.mode === 'manual' && !inRegion(a);
         /* the world's own continuous curve (C.world), not the sky's theme-split one, so the hue never snaps.
            Oct 16: while the slider is being dragged/animated, state.p moves in half steps; the world follows it smoothly */
         const k = on ? (C.world ? C.world(smoothP()) : C.look(state.p)) : null;

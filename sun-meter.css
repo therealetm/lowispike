@@ -89,6 +89,11 @@
 .ls-head h2 { margin: 0; }
 .ls-head p { margin: 2px 0 0; color: #ffcf6b; font-weight: 700; }
 .ls-track.big { display: block; height: 12px; margin: 12px 0 10px; }
+/* Oct 16 (E-man: the energy bar runs off the screen): index.html has its own .ls-track (a 300%-wide slider strip,
+   translated and touch-locked). Undo that here so the sun row and both sheet bars stay inside their box. */
+.ls-sun .ls-track, .ls-sheet .ls-track { width: auto; max-width: 100%; transform: none; touch-action: auto; box-sizing: border-box; }
+.ls-sheet .ls-track.big { width: 100%; }
+.ls-reset { margin: -4px 0 8px; font-size: 12.5px; }
 .ls-finds { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
 .ls-finds li { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px; border-radius: 12px; background: rgba(255, 255, 255, .05); font-size: 12px; text-align: center; }
 .ls-find { width: 36px; height: 36px; }

@@ -72,7 +72,8 @@ test('season.js: automatic, no setting, no second WebGL context, stays out of re
     assert.ok(!/getContext\(\s*['"](webgl|webgl2|experimental-webgl)/.test(js), 'no own WebGL context');
     assert.ok(!/WebGLRenderer|import\(/.test(js), 'no own renderer or three.js load');
     assert.ok(js.includes('LowiWorld3D') && js.includes('onFrame'), 'uses the shared world');
-    assert.ok(js.includes('inRegion(a) || riding()'), 'regions and the cell ride keep their own look');
+    assert.ok(js.includes('if (inRegion(a)) return;'), 'regions keep their own look');
+    assert.ok(!js.includes('LowiRide'), 'the cell ride is gone');
     assert.ok(!/localStorage\.setItem/.test(js), 'nothing to store, nothing to set');
     assert.ok(js.includes("setAttribute('aria-hidden', 'true')"));
     assert.ok(js.includes("'season.css'"), 'loads its own css');
@@ -92,10 +93,10 @@ test('season.css: no touches, transforms/opacity only, reduced motion holds stil
 
 test('loader and service worker carry the season files after the cell ride', () => {
     const files = loader.match(/const files=\[([^\]]*)\]/)[1];
-    const i = files.indexOf("'body-ride.js'"), a = files.indexOf("'season-core.js'"), b = files.indexOf("'season.js'");
-    assert.ok(i >= 0 && a > i && b > a, 'season-core.js then season.js after body-ride.js');
+    const i = files.indexOf("'inside-row.js'"), a = files.indexOf("'season-core.js'"), b = files.indexOf("'season.js'");
+    assert.ok(i >= 0 && a > i && b > a, 'season-core.js then season.js after inside-row.js');
     assert.ok(!files.includes("'season.css'"), 'season.css loads itself');
-    const lines = sw.split('\n').filter(l => l.includes('"body-ride.css"'));
+    const lines = sw.split('\n').filter(l => l.includes('"inside-row.js"'));
     assert.strictEqual(lines.length, 2);
     for (const l of lines) for (const f of ['season-core.js', 'season.js', 'season.css']) assert.ok(l.includes('"' + f + '"'), f);
 });

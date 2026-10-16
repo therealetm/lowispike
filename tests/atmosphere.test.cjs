@@ -107,7 +107,7 @@ test('wiring: loader, offline cache, top bar, Look card, weather and seasons kep
     assert.ok(js.includes("app.insertBefore(sky, app.firstChild)"), '#atmSky is the first layer, under weather and season');
     assert.ok(/prefers-reduced-motion: reduce[\s\S]*animation: none/.test(css), 'reduced motion stops twinkle and drift');
     assert.ok(!/getContext\(|new [A-Za-z.]*WebGLRenderer/.test(js), 'no second WebGL context');
-    assert.ok(js.includes('inRegion(a) && !riding()') || js.includes('!inRegion(a) && !riding()'), '3D only in the hub, not in regions or rides');
+    assert.ok(js.includes("state.mode === 'manual' && !inRegion(a);"), '3D only in the hub, not in regions');
     assert.ok(/::-webkit-slider-thumb \{[^}]*width: 32px/.test(css), 'big touch thumb');
 });
 

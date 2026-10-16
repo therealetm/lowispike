@@ -84,14 +84,13 @@
         if (a.THREE) { haze = new a.THREE.Color(L.haze).lerp(new a.THREE.Color(th === 'light' ? '#8ea3c2' : '#1a2846'), 0.85); haze.amt = L.amt; moteSig = sig; }
     }
     function inRegion(a) { try { return !!(a.hub && a.camera && !a.hub.layers.test(a.camera.layers)); } catch (e) { return false; } }
-    function riding() { try { return !!(W.LowiRide && W.LowiRide.active); } catch (e) { return false; } }
     let tAcc = 0;
     function frame(dt) {
         const a = world3d; if (!a || !a.scene || !cur) return;
         dt = dt > 1 ? dt / 1000 : dt; if (!(dt > 0)) dt = 1 / 60; dt = Math.min(dt, 0.05);
         tAcc += dt;
         if (!haze || moteSig !== cur.key + '|' + themeNow()) buildMotes();
-        if (inRegion(a) || riding()) return;
+        if (inRegion(a)) return;
         /* season haze on top of the base + world-health colour; the regions build sets its own look when inside */
         const bg = a.scene.background, f = a.scene.fog;
         if (haze && bg && bg.isColor) { bg.lerp(haze, haze.amt); if (f && f.color) f.color.copy(bg); }

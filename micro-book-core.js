@@ -60,6 +60,10 @@
     const SOMEWHERE = { name: T('Body', 'Körper', 'Cuerpo'), saw: T('a new place in your body', 'einen neuen Ort in deinem Körper', 'un lugar nuevo de tu cuerpo') };
     function place(key) { const k = String(key || '').toLowerCase(); return PLACES.find(p => p.re.test(k)) || SOMEWHERE; }
     const cleanText = s => String(s == null ? '' : s).replace(/[\u0000-\u001f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 90);
+    /* Oct 16: body-trips.js used to send the trip's fact as 'saw', cut at 88 characters ("Your cell discovered While you
+       fast, t…"). A 'saw' only counts when it reads like a place ("the villi of the gut"): starts small, no full stop,
+       short. Anything else (including those old saved entries) falls back to the place's own words. */
+    const placeSaw = s => { const x = cleanText(s); return x && x.length <= 64 && !/[.!?\u2026:;]/.test(x) && x.charAt(0) === x.charAt(0).toLowerCase() && x.charAt(0) !== x.charAt(0).toUpperCase() ? x : ''; };
     /* journeys = ledger body-trip entries + logged events, one per id, oldest first */
     function journeys(ledger, logged) {
         const map = new Map();
@@ -71,7 +75,7 @@
         for (const t of logged || []) {
             if (!t || !t.id) continue;
             const id = /^body-trip:/.test(t.id) ? t.id : 'body-trip:' + t.id, old = map.get(id) || {};
-            map.set(id, { id, key: String(t.place || t.key || old.key || t.id), ts: +t.ts || old.ts || 0, day: t.day || old.day || dayKey(+t.ts || 0), saw: t.saw ? [cleanText(t.saw)] : old.saw, name: t.name ? [cleanText(t.name)] : old.name });
+            map.set(id, { id, key: String(t.place || t.key || old.key || t.id), ts: +t.ts || old.ts || 0, day: t.day || old.day || dayKey(+t.ts || 0), saw: placeSaw(t.saw) ? [placeSaw(t.saw)] : old.saw, name: t.name ? [cleanText(t.name)] : old.name });
         }
         const list = [...map.values()].sort((a, b) => a.ts - b.ts);
         return list.map((j, i) => { const p = place(j.key); return Object.assign({}, j, { no: i + 1, place: { name: j.name || p.name, saw: j.saw || p.saw } }); });

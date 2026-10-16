@@ -178,7 +178,34 @@
         const s = Math.max(1, Math.ceil(Math.max(0, +ms || 0) / 1000)), m = Math.floor(s / 60);
         return Math.floor(m / 60) + ':' + pad(m % 60) + ':' + pad(s % 60);
     }
-    const core = { PLACES, TRIP_MS, TRIPS_PER_DAY, DAY_CAP, TRIP_GAIN, XP, DOTS, dayKey, mealGains, kindOf, entryGains, fastGains, fresh, apply, unlocked, current, canStart, start, view, claim, destination, fmtLeft, byId };
+    /* Oct 16 (E-man): "it doesn't tell me when the next journey is going to start, and I can't click 'start next journey'".
+       next() says what comes after a journey: 'away'/'back' while one runs, 'ready' (with the place a tap on
+       "Start next journey" sends Misty to: the least explored one, the bloodstream last since every trip passes it),
+       'tired' (no energy yet, see tooTired) or 'tomorrow' (today's 3 are used; inMs = time to local midnight). */
+    function msToMidnight(now) {
+        const d = new Date(now), m = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1, 0, 0, 0, 0);
+        return Math.max(0, m.getTime() - now);
+    }
+    function suggest(st) {
+        st = fresh(st);
+        const order = PLACES.filter(p => p.id !== 'blood').concat(PLACES.filter(p => p.id === 'blood'));
+        let best = null;
+        for (const p of order) if (!best || (+st.p[p.id].x || 0) < (+st.p[best].x || 0)) best = p.id;
+        return best;
+    }
+    function next(st, now, tired) {
+        st = fresh(st);
+        const v = view(st, now);
+        if (v.status !== 'idle') return { kind: v.status, place: v.trip.place, leftMs: v.leftMs || 0 };
+        if (v.left <= 0) return { kind: 'tomorrow', inMs: msToMidnight(now) };
+        if (tired) return { kind: 'tired', left: v.left };
+        return { kind: 'ready', left: v.left, place: suggest(st) };
+    }
+    function fmtHM(ms) {
+        const m = Math.max(1, Math.ceil(Math.max(0, +ms || 0) / 60000));
+        return Math.floor(m / 60) + ':' + pad(m % 60);
+    }
+    const core = { PLACES, TRIP_MS, TRIPS_PER_DAY, DAY_CAP, TRIP_GAIN, XP, DOTS, dayKey, mealGains, kindOf, entryGains, fastGains, fresh, apply, unlocked, current, canStart, start, view, claim, destination, fmtLeft, fmtHM, msToMidnight, suggest, next, byId };
 
     /* ---------- scenes: science-class views of the inside, drawn see-through and glowing ---------- */
     let sid = 0;
@@ -279,6 +306,11 @@
         places: ['places discovered', 'Orte entdeckt', 'lugares descubiertos'],
         pick: ['Pick a trip', 'Reise wählen', 'Elige un viaje'],
         doneToday: ['Back tomorrow', 'Morgen wieder', 'Mañana más'],
+        nextGo: ['Start next journey', 'Nächste Reise starten', 'Empezar el próximo viaje'],
+        nextTomorrow: ['Next journey tomorrow', 'Nächste Reise morgen', 'Próximo viaje mañana'],
+        nextIn: ['in', 'in', 'en'],
+        nextTired: ['Next journey: Misty needs energy', 'Nächste Reise: Misty braucht Energie', 'Próximo viaje: Misty necesita energía'],
+        nextTo: ['to', 'nach', 'a'],
         never: ['Never visited!', 'Noch nie besucht!', '¡Nunca visitado!'],
         explored: ['explored', 'erkundet', 'explorado'],
         full: ['Fully explored', 'Ganz erkundet', 'Explorado del todo'],
@@ -372,9 +404,21 @@
             right = '';
             aria = label + ', ' + nm(pl);
         } else {
-            label = tr('idle');
-            right = v.visited + '/' + PLACES.length;
-            aria = label + ', ' + right + ' ' + tr('places') + ', ' + (v.left > 0 ? tr('pick') : tr('doneToday'));
+            const nx = next(body(), now, tooTired());
+            if (nx.kind === 'ready') {
+                label = tr('nextGo');
+                right = nm(byId(nx.place));
+                aria = label + ' ' + tr('nextTo') + ' ' + right;
+            } else if (nx.kind === 'tomorrow') {
+                label = tr('nextTomorrow');
+                right = tr('nextIn') + ' ' + fmtHM(nx.inMs);
+                aria = label + ', ' + right;
+            } else {
+                label = tr('nextTired');
+                right = v.visited + '/' + PLACES.length;
+                aria = label + ', ' + right + ' ' + tr('places');
+            }
+            v.next = nx.kind;
         }
         if (v.status !== 'idle') {
             for (let i = 0; i < DOTS; i++) dots += '<i class="bt-dot' + (v.status === 'back' || i < v.dots ? ' on' : '') + '"></i>';
@@ -382,10 +426,11 @@
         } else {
             dots = '<span class="bt-mini" aria-hidden="true">' + PLACES.map(p => '<i style="--h:' + p.hue + '" class="' + (body().p[p.id].x > 0 || body().p[p.id].v > 0 ? 'on' : '') + '"></i>').join('') + '</span>';
         }
-        const sig = [v.status, label, right, v.dots, lang(), dots.length].join('|');
+        const sig = [v.status, v.next || '', label, right, v.dots, lang(), dots.length].join('|');
         if (sig === last) return;
         last = sig;
-        bar.className = 'bt-bar ' + v.status;
+        bar.className = 'bt-bar ' + v.status + (v.next ? ' next-' + v.next : '');
+        if (v.next) bar.dataset.next = v.next; else delete bar.dataset.next;
         if (pl) bar.style.setProperty('--h', pl.hue); else bar.style.removeProperty('--h');
         bar.setAttribute('aria-label', aria);
         bar.innerHTML = cellIco + '<span class="bt-name">' + esc(label) + '</span>' + dots + (right ? '<span class="bt-num num">' + esc(right) + '</span>' : '');
@@ -406,6 +451,11 @@
         if (cur) {
             const pl = byId(cur.place);
             head = '<button type="button" class="bt-now ' + v.status + '" data-bt="bar" style="--h:' + pl.hue + '">' + scene(pl.id, Object.assign({ live: true }, moods(now))) + '<span class="bt-now-t"><b>' + esc(v.status === 'back' ? tr('back') : tr('away') + ' · ' + nm(pl)) + '</b>' + (v.status === 'away' ? '<small class="num" data-bt-left>' + esc(tr('backIn')) + ' ' + fmtLeft(v.leftMs) + '</small>' : '') + '</span></button>';
+        }
+        else {
+            const nx = next(st, now, tooTired());
+            head = nx.kind === 'ready' ? '<button type="button" class="bt-cta bt-next" data-bt="next" data-id="' + nx.place + '">' + esc(tr('nextGo')) + ' · ' + esc(nm(byId(nx.place))) + '</button>'
+                : '<p class="bt-note bt-next">' + esc(nx.kind === 'tomorrow' ? tr('nextTomorrow') + ' (' + tr('nextIn') + ' ' + fmtHM(nx.inMs) + '). ' + tr('limit') : tr('tired')) + '</p>';
         }
         R().sheet('<div class="bt-sheet"><h2>' + esc(tr('title')) + '</h2><p class="bt-intro">' + esc(tr('intro')) + '</p>' + head + '<div class="bt-list">' + PLACES.map(p => ticket(p, st, cur)).join('') + '</div></div>', { cls: 'bt-ov' });
     }
@@ -502,6 +552,18 @@
         render();
         return true;
     }
+    /* "Start next journey": starts the trip, closes the sheets and the Today sheet, and lets Misty fly her galaxy
+       on autopilot (misty-pad.js) so you watch her travel in the real world, with the countdown in the journey row. */
+    function startNext(id) {
+        const st = body(), now = Date.now(), nx = next(st, now, tooTired());
+        if (nx.kind !== 'ready') { if (nx.kind === 'tired') { try { if (W.LowiPraise && LowiPraise.say) LowiPraise.say(tr('tired')); } catch (e) {} } return false; }
+        if (!goPlace(byId(id) ? id : nx.place)) return false;
+        try { if (R()) R().closeAll(); } catch (e) {}
+        try { const H = W.LowiWorldHome; if (H && H.state && H.state.today && H.openToday) H.openToday(false); } catch (e) {}
+        let calm = false; try { calm = W.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+        setTimeout(() => { try { if (W.LowiPad && W.LowiPad.mode) W.LowiPad.mode('auto'); } catch (e) {} }, calm ? 0 : 480);
+        return true;
+    }
     function collect() {
         const st = body(), now = Date.now(), v = view(st, now);
         if (v.status !== 'back') return null;
@@ -512,7 +574,9 @@
         res.xp = xp;
         save();
         /* the adventure log in micro-book.js keeps one entry per journey */
-        try { const f = (res.fact >= 0 && byId(res.place).f[res.fact]) || []; W.dispatchEvent(new CustomEvent('lowi:body-trip-done', { detail: { id: res.eventId, place: nm(byId(res.place)), saw: String(f[L()] || f[0] || '').slice(0, 88), ts: now } })); } catch (e) {}
+        /* Oct 16: no 'saw' here. It used to carry the fact, cut at 88 characters, so the log read
+           "Your cell discovered While you fast, t…". micro-book.js names what the cell saw from the place itself. */
+        try { W.dispatchEvent(new CustomEvent('lowi:body-trip-done', { detail: { id: res.eventId, place: nm(byId(res.place)), ts: now } })); } catch (e) {}
         render();
         surpriseSheet(res);
         return res;
@@ -523,14 +587,13 @@
         const a = c.dataset.bt, ov = c.closest('.r2-ov');
         if (a === 'bar') {
             e.preventDefault();
-            if (view(body(), Date.now()).status === 'back') { if (ov && R()) R().close(ov); collect(); }
+            const st0 = view(body(), Date.now()).status;
+            if (st0 === 'back') { if (ov && R()) R().close(ov); collect(); }
+            else if (st0 === 'idle' && next(body(), Date.now(), tooTired()).kind === 'ready') startNext();
             else if (!ov) listSheet();
             else if (current(body())) placeSheet(current(body()).place);
         } else if (a === 'place') { e.preventDefault(); placeSheet(c.dataset.id); }
-        else if (a === 'go') {
-            e.preventDefault();
-            if (goPlace(c.dataset.id)) { if (R()) R().closeAll(); }
-        } else if (a === 'close') { if (ov && R()) R().close(ov); }
+        else if (a === 'go' || a === 'next') { e.preventDefault(); startNext(c.dataset.id); } else if (a === 'close') { if (ov && R()) R().close(ov); }
         else if (a === 'list') { if (ov && R()) R().close(ov); setTimeout(listSheet, 340); }
     }, true);
 
@@ -564,6 +627,6 @@
     }
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 
-    W.LowiBodyTrips = Object.assign({}, core, { render, list: listSheet, place: placeSheet, collect, go: goPlace, gain, state: body, checkFast });
+    W.LowiBodyTrips = Object.assign({}, core, { render, list: listSheet, place: placeSheet, collect, go: goPlace, startNext, gain, state: body, checkFast });
     if (typeof module !== 'undefined' && module.exports) module.exports = W.LowiBodyTrips;
 })();

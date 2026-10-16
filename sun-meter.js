@@ -37,10 +37,24 @@
         return 'other';
     }
     const points = e => (e && +e.amt > 0) ? (PTS[classify(e)] || 0) : 0;
+    /* meal logs: their own day decides (a meal can be logged for another day) */
     const isDay = (e, key) => (e.day ? e.day === key : dayKey(+e.ts || 0) === key);
+    /* Oct 16 (E-man: "Sun is full 12/12... did it even reset?"): XP ledger entries count for the sun on the local day
+       they happened. Their moment (ts, in ms) decides; the stamped day is only the fallback, so an entry stamped with
+       another day (a sync from another device or time zone, a re-save) can never keep yesterday's sun full today. */
+    const inDay = (e, key) => (+e.ts > 1e12 ? dayKey(+e.ts) === key : e.day ? e.day === key : false);
+    function msToMidnight(now) {
+        const d = new Date(now), m = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1, 0, 0, 0, 0);
+        return Math.max(0, m.getTime() - now);
+    }
+    /* "6:05" until the new sun */
+    function fmtHM(ms) {
+        const m = Math.max(1, Math.ceil(Math.max(0, +ms || 0) / 60000));
+        return Math.floor(m / 60) + ':' + pad(m % 60);
+    }
     function model(input) {
         input = input || {};
-        const now = +input.now || Date.now(), key = dayKey(now), ledger = (input.ledger || []).filter(e => e && isDay(e, key));
+        const now = +input.now || Date.now(), key = dayKey(now), ledger = (input.ledger || []).filter(e => e && inDay(e, key));
         const parts = {};
         let raw = 0;
         for (const e of ledger) {
@@ -99,7 +113,7 @@
         input = input || {};
         const now = +input.now || Date.now(), key = dayKey(now);
         const logs = (input.logs || []).filter(l => l && isDay(l, key));
-        const ledger = (input.ledger || []).filter(e => e && isDay(e, key));
+        const ledger = (input.ledger || []).filter(e => e && inDay(e, key));
         const counted = ledger.filter(e => classify(e) === 'water').length;
         const water = Math.max(0, Math.floor(+input.water || 0)) || counted;
         const moves = ledger.filter(e => +e.amt > 0 && classify(e) === 'move').length;
@@ -137,7 +151,7 @@
         const prog = trip.got ? 1 : Math.max(0, Math.min(1, ((+now || Date.now()) - trip.start) / AWAY_MS));
         return +(mult * prog).toFixed(3);
     }
-    const core = { GOAL, AWAY_MS, BONUS, PTS, CAP, ITEMS, ENERGY, tended, classify, points, model, pickItem, fmtLeft, fmtBack, dayKey, verdict, energy, mayDepart, tripFinds, makeTrip };
+    const core = { GOAL, AWAY_MS, BONUS, PTS, CAP, ITEMS, ENERGY, tended, classify, points, model, pickItem, fmtLeft, fmtBack, fmtHM, msToMidnight, dayKey, verdict, energy, mayDepart, tripFinds, makeTrip };
     if (!D) {
         if (typeof module !== 'undefined' && module.exports) module.exports = core;
         return;
@@ -157,6 +171,8 @@
         go: ['Off you go', 'Los, flieg los', '¡Ve!'],
         backIn: ['Back in', 'Zurück in', 'Vuelvo en'],
         tomorrow: ['Tomorrow your sun starts fresh.', 'Morgen fängt deine Sonne neu an.', 'Mañana tu sol empieza de nuevo.'],
+        newIn: ['new in', 'neu in', 'nuevo en'],
+        resetAt: ['At midnight your sun starts fresh. New sun in', 'Um Mitternacht fängt deine Sonne neu an. Neue Sonne in', 'A medianoche tu sol empieza de nuevo. Sol nuevo en'],
         home: ['I’m back!', 'Ich bin zurück!', '¡Ya volví!'],
         found: ['Look what I found out in the world:', 'Schau, was ich draußen in der Welt gefunden hab:', 'Mira lo que encontré en el mundo:'],
         keep: ['Keep it', 'Behalten', 'Guardar'],
@@ -221,8 +237,9 @@
         if (!mount()) return;
         const v = live(), home = D.getElementById('spHome');
         const away = !!v.away, label = away ? tr('away') : v.full ? tr('full') : tr('sun');
-        const right = away ? tr('back') + ' ' + fmtLeft(v.left) : v.points + '/' + v.goal;
-        const sig = [label, right, v.ratio.toFixed(3), lang(), away].join('|');
+        /* when full, the row says when the new sun starts, so it is clear it resets every night */
+        const right = away ? tr('back') + ' ' + fmtLeft(v.left) : v.points + '/' + v.goal + (v.full ? ' · ' + tr('newIn') + ' ' + fmtHM(msToMidnight(Date.now())) : '');
+        const sig = [label, right, v.ratio.toFixed(3), lang(), away, v.key].join('|');
         if (home) { if (away) home.dataset.sunAway = '1'; else delete home.dataset.sunAway; }
         const en = energyNow();
         if (home && home.dataset.misty !== en.tier) home.dataset.misty = en.tier;
@@ -309,7 +326,7 @@
         const how = ['meal', 'scan', 'move', 'fast', 'macro', 'water'].map(k => '<li><span>' + esc(tr(k)) + '</span><b class="num">+' + PTS[k] + ' <small>/ ' + CAP[k] + '</small></b></li>').join('');
         const finds = g.items.length ? '<ul class="ls-finds">' + g.items.slice(-12).reverse().map(i => '<li>' + itemSvg(i.id) + '<span>' + esc(itemName(i.id)) + '</span></li>').join('') + '</ul>' : '<p class="ls-note">' + esc(tr('none')) + '</p>';
         R().sheet('<div class="ls-sheet ls-info"><div class="ls-head">' + sunSvg(v.ratio) + '<div><h2>' + esc(v.away ? tr('away') : v.full ? tr('full') : tr('sun')) + '</h2><p class="num">' + (v.away ? esc(tr('back')) + ' ' + fmtLeft(v.left) : v.points + '/' + v.goal) + '</p></div></div>' +
-            '<div class="ls-track big" style="--ls-fill:' + v.ratio.toFixed(3) + '"><i class="ls-fill"></i></div>' + partsHtml(v) + energyHtml(energyNow()) +
+            '<div class="ls-track big" style="--ls-fill:' + v.ratio.toFixed(3) + '"><i class="ls-fill"></i></div>' + '<p class="ls-note ls-reset num">' + esc(tr('resetAt')) + ' ' + fmtHM(msToMidnight(Date.now())) + '.</p>' + partsHtml(v) + energyHtml(energyNow()) +
             '<h3>' + esc(tr('how')) + '</h3><p class="ls-note">' + esc(tr('howTx')) + '</p><ul class="ls-parts how">' + how + '</ul>' +
             '<h3>' + esc(tr('finds')) + '</h3>' + finds + '</div>', { cls: 'ls-ov' });
     }

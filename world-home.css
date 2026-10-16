@@ -420,3 +420,15 @@ html.spirit-app.wh-home #tab-home > .rs-sec.rs-head { min-height: 0 !important; 
 html.spirit-app.wh-home[data-lay=tablet] #tab-home#tab-home { max-width: none !important; width: auto !important; margin-left: 0 !important; margin-right: 0 !important; left: 0 !important; right: 0 !important; }
 /* the world-map place name sits under the quest box, not across it */
 html.wh-home .wh-hud .bwr-label { top: calc(var(--b-top, 0px) + 148px); }
+
+/* ---------- Oct 16 (handoff task 2, iPad follow-up, user: "on iPad put it below where it says Hey ... Friday 16 October") ----------
+   iPad upright and sideways: one centre column down the middle of the screen, the same line the world's own buttons use
+   (Today pill, Misty's pad, the hint bubble): the greeting, the weather pill right under it, then the Daily Quest box.
+   With the side rail (iPad sideways) #tab-home starts after the rail, so the row and the box reach back by --wh-l
+   (world-home.js sets it to the rail width, 0 px without a rail) and centre on the screen, not on the page.
+   Phones keep the one-row layout above. */
+html.spirit-app.wh-home:is([data-lay=tablet],[data-lay=desktop]) #tab-home #spHome .sp-top { left: calc(14px - var(--wh-l, 0px)); height: auto;
+    grid-template-rows: 44px 44px; row-gap: 6px; }
+html.spirit-app.wh-home:is([data-lay=tablet],[data-lay=desktop]) #tab-home #spHome .sp-top > .sp-weather { grid-column: 2 !important; grid-row: 2 !important; justify-self: center; }
+html.spirit-app.wh-home:is([data-lay=tablet],[data-lay=desktop]) #tab-home #f3Board { top: calc(var(--b-top, 0px) + 113px) !important; left: calc(-1 * var(--wh-l, 0px)) !important; }
+html.wh-home:is([data-lay=tablet],[data-lay=desktop]) .wh-hud .bwr-label { top: calc(var(--b-top, 0px) + 208px); }

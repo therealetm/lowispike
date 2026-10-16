@@ -1,0 +1,125 @@
+/* LOWiSPIKE onboarding in Misty's world (Oct 16, 2026).
+   Every screen before Home (the sign-in gate: Meet Misty, Add to Home Screen, the account form, sign in) and the two
+   full sheets right after it (setup: birthday, photo, goals; and the starter-plan questions) sit on the same living
+   metabolic-world background as Home, with the Misty blue-glass cards and buttons used by Daily Quest and the menu bar.
+   Light buttons always carry dark text. Pure CSS: no logic, accounts, data or saving are touched. */
+
+/* palette for every gate / setup control (the r2 controls all read these variables) */
+html .r2-gate, html .r2-ov.r2-obov, html .r2-ov.hs-ivov,
+html[data-ui=light] .r2-gate, html[data-ui=light] .r2-ov.r2-obov, html[data-ui=light] .r2-ov.hs-ivov {
+  --r2-sheet: rgba(12, 30, 66, .58);
+  --r2-sheet2: rgba(16, 38, 80, .55);
+  --r2-ink: #f4f9ff;
+  --r2-mut: rgba(214, 232, 255, .78);
+  --r2-field: rgba(120, 180, 255, .12);
+  --r2-line: rgba(160, 220, 255, .32);
+  --r2-pri: linear-gradient(180deg, #ffffff 0%, #e4f3ff 55%, #c9e6ff 100%);
+  --r2-pri-ink: #0b1d3f;
+  --r2-danger: #ff9a8a;
+  --obw-rim: rgba(160, 220, 255, .55);
+  --obw-glass: linear-gradient(165deg, rgba(96, 160, 255, .26), rgba(28, 64, 140, .30) 55%, rgba(12, 30, 70, .38));
+  --obw-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), inset 0 0 0 .5px rgba(160, 220, 255, .25), 0 18px 44px -18px rgba(30, 110, 255, .55);
+  color: var(--r2-ink);
+  color-scheme: dark;
+}
+
+/* ---- the living world: deep bloodstream blue, drifting glowing places, slow particles ---- */
+html .r2-gate, html[data-ui=light] .r2-gate {
+  background: radial-gradient(130% 75% at 50% 12%, #1b4c94 0%, #0e2d63 34%, #071a3f 64%, #030b1f 100%) #040d22 !important;
+}
+html .r2-gate::before, html .r2-gate::after,
+html .r2-ov.r2-obov .r2-sh::before, html .r2-ov.hs-ivov .r2-sh::before,
+html .r2-ov.r2-obov .r2-sh::after, html .r2-ov.hs-ivov .r2-sh::after {
+  content: ""; position: fixed; inset: -12%; pointer-events: none; z-index: 0;
+}
+/* glowing places (brain, gut, pancreas, heart) floating in the distance */
+html .r2-gate::before, html .r2-ov.r2-obov .r2-sh::before, html .r2-ov.hs-ivov .r2-sh::before {
+  background:
+    radial-gradient(closest-side, rgba(143, 220, 255, .55), rgba(143, 220, 255, 0)) 12% 18% / 220px 220px no-repeat,
+    radial-gradient(closest-side, rgba(255, 150, 210, .40), rgba(255, 150, 210, 0)) 88% 30% / 170px 170px no-repeat,
+    radial-gradient(closest-side, rgba(110, 240, 190, .36), rgba(110, 240, 190, 0)) 22% 78% / 190px 190px no-repeat,
+    radial-gradient(closest-side, rgba(255, 214, 130, .34), rgba(255, 214, 130, 0)) 84% 84% / 150px 150px no-repeat,
+    radial-gradient(closest-side, rgba(169, 184, 255, .30), rgba(169, 184, 255, 0)) 55% 50% / 420px 420px no-repeat;
+  filter: blur(6px);
+  animation: obwDrift 26s ease-in-out infinite alternate;
+}
+/* fine particles in the stream */
+html .r2-gate::after, html .r2-ov.r2-obov .r2-sh::after, html .r2-ov.hs-ivov .r2-sh::after {
+  background-image:
+    radial-gradient(1.6px 1.6px at 20px 30px, rgba(220, 240, 255, .85), transparent 60%),
+    radial-gradient(1.2px 1.2px at 140px 90px, rgba(190, 225, 255, .7), transparent 60%),
+    radial-gradient(2px 2px at 90px 160px, rgba(160, 220, 255, .6), transparent 60%),
+    radial-gradient(1.3px 1.3px at 200px 210px, rgba(255, 255, 255, .7), transparent 60%),
+    radial-gradient(1.5px 1.5px at 60px 240px, rgba(200, 190, 255, .6), transparent 60%);
+  background-size: 260px 260px;
+  opacity: .8;
+  animation: obwStream 60s linear infinite;
+}
+@keyframes obwDrift { from { transform: translate3d(-2%, -1%, 0) scale(1); } to { transform: translate3d(2%, 2%, 0) scale(1.06); } }
+@keyframes obwStream { from { background-position: 0 0; } to { background-position: -260px -520px; } }
+
+/* content sits above the world */
+html .r2-gate > *, html .r2-ov.r2-obov .r2-sh > *, html .r2-ov.hs-ivov .r2-sh > * { position: relative; z-index: 1; }
+html .r2-gate .r2-orbs { display: none !important; }
+
+/* the setup and starter-plan sheets: same world, no grey card */
+html body .r2-ov.r2-obov .r2-sh, html body .r2-ov.hs-ivov .r2-sh,
+html.apple-ui body .r2-ov.r2-obov .r2-sh, html.apple-ui body .r2-ov.hs-ivov .r2-sh {
+  background: radial-gradient(130% 75% at 50% 12%, #1b4c94 0%, #0e2d63 34%, #071a3f 64%, #030b1f 100%) #040d22 !important;
+  color: var(--r2-ink) !important; border: 0 !important; box-shadow: none !important; overflow-x: hidden;
+  -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+}
+html:not([data-lay=phone]) body .r2-ov.r2-obov .r2-sh, html:not([data-lay=phone]) body .r2-ov.hs-ivov .r2-sh {
+  border: 1px solid var(--obw-rim) !important; box-shadow: 0 30px 90px -20px rgba(20, 90, 220, .55) !important;
+}
+html:not([data-lay=phone]) .r2-ov.r2-obov .r2-sh::before, html:not([data-lay=phone]) .r2-ov.hs-ivov .r2-sh::before,
+html:not([data-lay=phone]) .r2-ov.r2-obov .r2-sh::after, html:not([data-lay=phone]) .r2-ov.hs-ivov .r2-sh::after { position: absolute; inset: 0; }
+
+/* iPad / desktop: the gate card becomes a blue-glass panel floating in the world */
+html:not([data-lay=phone]) body .r2-gate .r2-start:not(.a2),
+html[data-ui=light]:not([data-lay=phone]) body .r2-gate .r2-start:not(.a2) {
+  background: var(--obw-glass) !important; border: 1px solid var(--obw-rim) !important; box-shadow: var(--obw-shadow), 0 30px 90px -30px rgba(10, 40, 120, .8) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(170%); backdrop-filter: blur(22px) saturate(170%);
+}
+
+/* ---- buttons: light glass with dark text (primary), blue glass with white text (others) ---- */
+html body .r2-gate .r2-btn.pri, html body .r2-ov.r2-obov .r2-btn.pri, html body .r2-ov.hs-ivov .r2-btn.pri,
+html.lg body .r2-gate .r2-btn.pri, html.lg body .r2-ov.r2-obov .r2-btn.pri, html.lg body .r2-ov.hs-ivov .r2-btn.pri {
+  background: var(--r2-pri) !important; color: var(--r2-pri-ink) !important; border: 1px solid rgba(255, 255, 255, .85) !important; border-radius: 999px !important;
+  box-shadow: inset 0 1px 0 #fff, 0 12px 30px -12px rgba(90, 180, 255, .9) !important; text-shadow: none !important; font-weight: 700 !important;
+}
+html body .r2-gate .r2-btn.pri:disabled, html body .r2-ov.r2-obov .r2-btn.pri:disabled { opacity: .55; }
+html body .r2-gate .r2-btn:not(.pri), html body .r2-ov.r2-obov .r2-btn:not(.pri), html body .r2-ov.hs-ivov .r2-btn:not(.pri),
+html.apple-ui body .r2-gate .r2-btn.ghost, html.apple-ui body .r2-ov.r2-obov .r2-btn.ghost {
+  background: var(--obw-glass) !important; color: #fff !important; border: 1px solid var(--obw-rim) !important; border-radius: 999px !important; box-shadow: var(--obw-shadow) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(170%); backdrop-filter: blur(18px) saturate(170%);
+}
+
+/* ---- fields ---- */
+html body .r2-gate :is(input:not([type=checkbox]):not([type=radio]):not([type=file]), select, textarea),
+html body .r2-ov.r2-obov :is(input:not([type=checkbox]):not([type=radio]):not([type=file]), select, textarea),
+html body .r2-gate .hs-in {
+  background: rgba(6, 20, 52, .55) !important; color: #fff !important; border: 1.5px solid rgba(160, 220, 255, .42) !important;
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+}
+html body .r2-gate :is(input, select, textarea)::placeholder, html body .r2-ov.r2-obov :is(input, textarea)::placeholder { color: rgba(214, 232, 255, .6) !important; }
+html body .r2-gate :is(input, select, textarea):focus, html body .r2-ov.r2-obov :is(input, select, textarea):focus {
+  border-color: #8fdcff !important; box-shadow: 0 0 0 4px rgba(143, 220, 255, .22) !important; outline: none;
+}
+
+/* ---- little glass bits: language switch, setup chips, step cards ---- */
+html body .r2-gate .a2-langs { background: var(--obw-glass) !important; border: 1px solid var(--obw-rim) !important; box-shadow: var(--obw-shadow); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+html body .r2-gate .a2-lang { color: #fff !important; }
+html body .r2-gate .a2-lang.on { background: var(--r2-pri) !important; color: var(--r2-pri-ink) !important; }
+html body .r2-gate :is(.a1-step, .a2-prev, .a2-row, .a2-pc),
+html body .r2-ov.r2-obov :is(.r2-chip, .r2-goal, .r2-card, .r2-sg) {
+  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+}
+html body .r2-gate a, html body .r2-gate .r2-link { color: #bfe6ff; }
+
+/* reduced motion and low-power: a still world */
+@media (prefers-reduced-motion: reduce) {
+  html .r2-gate::before, html .r2-gate::after,
+  html .r2-ov.r2-obov .r2-sh::before, html .r2-ov.hs-ivov .r2-sh::before,
+  html .r2-ov.r2-obov .r2-sh::after, html .r2-ov.hs-ivov .r2-sh::after { animation: none !important; }
+}

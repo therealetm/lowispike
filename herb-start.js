@@ -1,5 +1,6 @@
 /* LOWiSPIKE herb-first start + starter plan (Oct 15, 2026).
-   1. Herb-first: a new user plants and names the herb before the account form; the herb asks their name; a first small reward lands.
+   1. Misty-first (Oct 16 redesign): a new user meets Misty, learns that healthy habits are her energy, tells her their name and
+      gets a first small reward, all before the account form, on the living metabolic-world background (onboarding-world.css).
    2. Starter plan: after setup, up to 4 optional questions -> 3 or 4 next actions on Today. Each action has "Why this?", a direct
       link into the module that does it, and can be changed. Done-state is read live from those modules (LowiLiving, LowiFastStop);
       nothing is counted twice. "What makes this hard?" is asked later, only when that friction shows up.
@@ -20,49 +21,57 @@ const save=()=>{try{if(R().save)R().save();else LowiVitalsBridge.save();}catch(e
 const dayKey=d=>{d=new Date(d||Date.now());return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
 
 const TX={
- en:{over:'YOUR HERB',plantH:'Every glow-up starts with a seed.',plantP:'Plant your herb. It grows every time you look after yourself.',plantBtn:'Plant my herb',have:'I already have an account',back:'Back',
-  nameOver:'IT SPROUTED',nameH:'What should your herb be called?',nameLabel:'Herb name',shuffle:'Shuffle',later:'You can change this later.',nameBtn:'That\u2019s the one',
-  askOver:'HELLO',ask:'Hi, I\u2019m {herb}! Thanks for planting me. And what\u2019s your name?',youLabel:'Your first name',askBtn:'Nice to meet you',needName:'Tell {herb} your name first.',
-  rewOver:'FIRST LEAF',rew:'{name}! When you look after yourself, you look after me too. Let\u2019s grow together.',chip:'+5 XP \u00b7 first leaf',saveBtn:'Keep {herb} safe: free account',fine:'Free. Takes 20 seconds.',firstLeaf:'First leaf',
-  ivOver:'STARTER PLAN',ivH:'{herb} wants to grow with you.',ivP:'Up to 4 quick questions so your first steps fit your day. Every one is optional. No health questions.',go:'Let\u2019s go',notNow:'Not now',skipQ:'Skip',
+ en:{over:'MEET MISTY',plantH:'This is Misty.',plantP:'A little comet who lives in your body\u2019s metabolic world. She glows when you look after yourself.',plantBtn:'Hi Misty',have:'I already have an account',back:'Back',
+  nameOver:'HER ENERGY',nameH:'Your habits are her energy.',nameP:'Every healthy step you track fills her up:',hab:['Eat well','Water','Move','Fasting','Track it'],nameP2:'Full of energy, she flies off on adventures and heals your cells. On tired days she just rests.',nameBtn:'Got it',
+  nameLabel:'Name',shuffle:'Shuffle',later:'You can change this later.',
+  askOver:'HELLO',ask:'Hi, I\u2019m {herb}! I live inside you, so we should be friends. What\u2019s your name?',youLabel:'Your first name',askBtn:'Nice to meet you',needName:'Tell {herb} your name first.',
+  rewOver:'YOUR WORLD',rew:'{name}! Look after yourself and I\u2019ll light up your world. Zoom out and you\u2019ll find the spirit world, where everyone\u2019s companions meet.',chip:'+5 XP \u00b7 first spark',saveBtn:'Save {herb}\u2019s world: free account',fine:'Free. Takes 20 seconds.',firstLeaf:'First spark',
+  ivOver:'STARTER PLAN',ivH:'{herb} is ready for your first adventure.',ivP:'Up to 4 quick questions so your first steps fit your day. Every one is optional. No health questions.',go:'Let\u2019s go',notNow:'Not now',skipQ:'Skip',
   think:'{herb} is picking your first steps\u2026',planH:'Your next steps',planP:'They sit on Today. Each one opens the part of the app that does it.',planBtn:'Let\u2019s do it',
   rowT:'Next steps',rowAll:'All done for today',rowQ:'{herb} has a question',why:'Why this?',goBtn:'Go',change:'Change',remove:'Remove',addOne:'Add a step',doneLbl:'Done today',pickOne:'Pick a step',cancel:'Cancel',
-  redo:'Redo the questions',hide:'Hide from Today',show:'Show on Today',profT:'Starter plan',profNone:'4 optional questions with your herb. It sets 3 or 4 next steps on Today.',profHas:'{n} next steps on Today',profStart:'Start',
+  redo:'Redo the questions',hide:'Hide from Today',show:'Show on Today',profT:'Starter plan',profNone:'4 optional questions with Misty. They set 3 or 4 next steps on Today.',profHas:'{n} next steps on Today',profStart:'Start',
   skipped:'Any time: Profile \u203a About you \u203a Starter plan.',saved:'Your next steps are on Today.',qNot:'Not now',qThanks:'Got it. I changed your steps.',allDone:'All steps done. {herb} is glowing.'},
- de:{over:'DEIN KRAUT',plantH:'Jede Verwandlung beginnt mit einem Samen.',plantP:'Pflanz dein Kraut. Es w\u00e4chst jedes Mal, wenn du gut f\u00fcr dich sorgst.',plantBtn:'Mein Kraut pflanzen',have:'Ich habe schon ein Konto',back:'Zur\u00fcck',
-  nameOver:'ES KEIMT',nameH:'Wie soll dein Kraut hei\u00dfen?',nameLabel:'Name des Krauts',shuffle:'Mischen',later:'Du kannst das sp\u00e4ter \u00e4ndern.',nameBtn:'Passt perfekt',
-  askOver:'HALLO',ask:'Hi, ich bin {herb}! Danke, dass du mich gepflanzt hast. Und wie hei\u00dft du?',youLabel:'Dein Vorname',askBtn:'Freut mich',needName:'Sag {herb} zuerst deinen Namen.',
-  rewOver:'ERSTES BLATT',rew:'{name}! Wenn du gut f\u00fcr dich sorgst, sorgst du auch f\u00fcr mich. Lass uns zusammen wachsen.',chip:'+5 XP \u00b7 erstes Blatt',saveBtn:'{herb} sichern: kostenloses Konto',fine:'Kostenlos. Dauert 20 Sekunden.',firstLeaf:'Erstes Blatt',
-  ivOver:'STARTPLAN',ivH:'{herb} will mit dir wachsen.',ivP:'Bis zu 4 kurze Fragen, damit deine ersten Schritte zu deinem Tag passen. Alle freiwillig. Keine Gesundheitsfragen.',go:'Los geht\u2019s',notNow:'Jetzt nicht',skipQ:'\u00dcberspringen',
+ de:{over:'TRIFF MISTY',plantH:'Das ist Misty.',plantP:'Ein kleiner Komet, der in der Stoffwechselwelt deines K\u00f6rpers lebt. Sie leuchtet, wenn du gut f\u00fcr dich sorgst.',plantBtn:'Hallo Misty',have:'Ich habe schon ein Konto',back:'Zur\u00fcck',
+  nameOver:'IHRE ENERGIE',nameH:'Deine Gewohnheiten sind ihre Energie.',nameP:'Jeder gesunde Schritt, den du eintr\u00e4gst, l\u00e4dt sie auf:',hab:['Gut essen','Wasser','Bewegung','Fasten','Eintragen'],nameP2:'Voller Energie fliegt sie auf Abenteuer und heilt deine Zellen. An m\u00fcden Tagen ruht sie sich einfach aus.',nameBtn:'Verstanden',
+  nameLabel:'Name',shuffle:'Mischen',later:'Du kannst das sp\u00e4ter \u00e4ndern.',
+  askOver:'HALLO',ask:'Hi, ich bin {herb}! Ich wohne in dir, also sollten wir Freunde sein. Wie hei\u00dft du?',youLabel:'Dein Vorname',askBtn:'Freut mich',needName:'Sag {herb} zuerst deinen Namen.',
+  rewOver:'DEINE WELT',rew:'{name}! Sorg gut f\u00fcr dich und ich bringe deine Welt zum Leuchten. Zoom heraus, dann findest du die Geisterwelt, wo sich alle Begleiter treffen.',chip:'+5 XP \u00b7 erster Funke',saveBtn:'{herb}s Welt sichern: kostenloses Konto',fine:'Kostenlos. Dauert 20 Sekunden.',firstLeaf:'Erster Funke',
+  ivOver:'STARTPLAN',ivH:'{herb} ist bereit f\u00fcr euer erstes Abenteuer.',ivP:'Bis zu 4 kurze Fragen, damit deine ersten Schritte zu deinem Tag passen. Alle freiwillig. Keine Gesundheitsfragen.',go:'Los geht\u2019s',notNow:'Jetzt nicht',skipQ:'\u00dcberspringen',
   think:'{herb} sucht deine ersten Schritte aus\u2026',planH:'Deine n\u00e4chsten Schritte',planP:'Sie stehen auf Heute. Jeder \u00f6ffnet den Teil der App, der ihn erledigt.',planBtn:'Los geht\u2019s',
   rowT:'N\u00e4chste Schritte',rowAll:'Heute alles geschafft',rowQ:'{herb} hat eine Frage',why:'Warum das?',goBtn:'Los',change:'\u00c4ndern',remove:'Entfernen',addOne:'Schritt hinzuf\u00fcgen',doneLbl:'Heute erledigt',pickOne:'Schritt ausw\u00e4hlen',cancel:'Abbrechen',
-  redo:'Fragen neu beantworten',hide:'Auf Heute ausblenden',show:'Auf Heute zeigen',profT:'Startplan',profNone:'4 freiwillige Fragen mit deinem Kraut. Daraus werden 3 oder 4 n\u00e4chste Schritte auf Heute.',profHas:'{n} n\u00e4chste Schritte auf Heute',profStart:'Starten',
+  redo:'Fragen neu beantworten',hide:'Auf Heute ausblenden',show:'Auf Heute zeigen',profT:'Startplan',profNone:'4 freiwillige Fragen mit Misty. Daraus werden 3 oder 4 n\u00e4chste Schritte auf Heute.',profHas:'{n} n\u00e4chste Schritte auf Heute',profStart:'Starten',
   skipped:'Jederzeit: Profil \u203a \u00dcber dich \u203a Startplan.',saved:'Deine n\u00e4chsten Schritte stehen auf Heute.',qNot:'Jetzt nicht',qThanks:'Verstanden. Ich habe deine Schritte angepasst.',allDone:'Alle Schritte geschafft. {herb} leuchtet.'},
- es:{over:'TU HIERBA',plantH:'Todo cambio empieza con una semilla.',plantP:'Planta tu hierba. Crece cada vez que te cuidas.',plantBtn:'Plantar mi hierba',have:'Ya tengo una cuenta',back:'Atr\u00e1s',
-  nameOver:'\u00a1BROT\u00d3!',nameH:'\u00bfC\u00f3mo se llamar\u00e1 tu hierba?',nameLabel:'Nombre de la hierba',shuffle:'Otro',later:'Puedes cambiarlo despu\u00e9s.',nameBtn:'Ese es',
-  askOver:'HOLA',ask:'\u00a1Hola, soy {herb}! Gracias por plantarme. \u00bfY t\u00fa c\u00f3mo te llamas?',youLabel:'Tu nombre',askBtn:'Encantado',needName:'Dile primero tu nombre a {herb}.',
-  rewOver:'PRIMERA HOJA',rew:'\u00a1{name}! Cuando te cuidas, tambi\u00e9n me cuidas a m\u00ed. Crezcamos juntos.',chip:'+5 XP \u00b7 primera hoja',saveBtn:'Protege a {herb}: cuenta gratis',fine:'Gratis. Tarda 20 segundos.',firstLeaf:'Primera hoja',
-  ivOver:'PLAN INICIAL',ivH:'{herb} quiere crecer contigo.',ivP:'Hasta 4 preguntas r\u00e1pidas para que tus primeros pasos encajen en tu d\u00eda. Todas opcionales. Sin preguntas de salud.',go:'Vamos',notNow:'Ahora no',skipQ:'Saltar',
+ es:{over:'CONOCE A MISTY',plantH:'Esta es Misty.',plantP:'Un peque\u00f1o cometa que vive en el mundo metab\u00f3lico de tu cuerpo. Brilla cuando te cuidas.',plantBtn:'Hola, Misty',have:'Ya tengo una cuenta',back:'Atr\u00e1s',
+  nameOver:'SU ENERG\u00cdA',nameH:'Tus h\u00e1bitos son su energ\u00eda.',nameP:'Cada paso sano que registras la recarga:',hab:['Comer bien','Agua','Moverte','Ayuno','Registrar'],nameP2:'Llena de energ\u00eda, sale de aventura y cura tus c\u00e9lulas. Los d\u00edas cansados, simplemente descansa.',nameBtn:'Entendido',
+  nameLabel:'Nombre',shuffle:'Otro',later:'Puedes cambiarlo despu\u00e9s.',
+  askOver:'HOLA',ask:'\u00a1Hola, soy {herb}! Vivo dentro de ti, as\u00ed que deber\u00edamos ser amigos. \u00bfC\u00f3mo te llamas?',youLabel:'Tu nombre',askBtn:'Encantado',needName:'Dile primero tu nombre a {herb}.',
+  rewOver:'TU MUNDO',rew:'\u00a1{name}! Cu\u00eddate y yo iluminar\u00e9 tu mundo. Aleja el zoom y encontrar\u00e1s el mundo espiritual, donde se re\u00fanen los compa\u00f1eros de todos.',chip:'+5 XP \u00b7 primera chispa',saveBtn:'Guarda el mundo de {herb}: cuenta gratis',fine:'Gratis. Tarda 20 segundos.',firstLeaf:'Primera chispa',
+  ivOver:'PLAN INICIAL',ivH:'{herb} est\u00e1 lista para tu primera aventura.',ivP:'Hasta 4 preguntas r\u00e1pidas para que tus primeros pasos encajen en tu d\u00eda. Todas opcionales. Sin preguntas de salud.',go:'Vamos',notNow:'Ahora no',skipQ:'Saltar',
   think:'{herb} est\u00e1 eligiendo tus primeros pasos\u2026',planH:'Tus pr\u00f3ximos pasos',planP:'Est\u00e1n en Hoy. Cada uno abre la parte de la app que lo hace.',planBtn:'\u00a1A por ello!',
   rowT:'Pr\u00f3ximos pasos',rowAll:'Todo hecho hoy',rowQ:'{herb} tiene una pregunta',why:'\u00bfPor qu\u00e9?',goBtn:'Ir',change:'Cambiar',remove:'Quitar',addOne:'A\u00f1adir paso',doneLbl:'Hecho hoy',pickOne:'Elige un paso',cancel:'Cancelar',
-  redo:'Repetir las preguntas',hide:'Ocultar de Hoy',show:'Mostrar en Hoy',profT:'Plan inicial',profNone:'4 preguntas opcionales con tu hierba. Crea 3 o 4 pr\u00f3ximos pasos en Hoy.',profHas:'{n} pr\u00f3ximos pasos en Hoy',profStart:'Empezar',
+  redo:'Repetir las preguntas',hide:'Ocultar de Hoy',show:'Mostrar en Hoy',profT:'Plan inicial',profNone:'4 preguntas opcionales con Misty. Crean 3 o 4 pr\u00f3ximos pasos en Hoy.',profHas:'{n} pr\u00f3ximos pasos en Hoy',profStart:'Empezar',
   skipped:'Cuando quieras: Perfil \u203a Sobre ti \u203a Plan inicial.',saved:'Tus pr\u00f3ximos pasos est\u00e1n en Hoy.',qNot:'Ahora no',qThanks:'Entendido. Ajust\u00e9 tus pasos.',allDone:'Todos los pasos hechos. {herb} brilla.'}
 };
 const t=(k,o)=>C.fmt((TX[lang()]||TX.en)[k]||TX.en[k]||k,o);
+const tl=k=>(TX[lang()]||TX.en)[k]||TX.en[k]||[];
+const MISTY='Misty';
 
-/* ---------- herb art: own drawing, LOWiSPIKE glow ---------- */
-let ART=0;
-function herbArt(stage,cls){const u='hs'+(++ART);
- const leaves=stage>=1?'<g class="hs-sprout"><path class="hs-stem" d="M60 92 C60 80 60 70 60 60"/>'+
-  '<path fill="url(#'+u+'l)" class="hs-leaf hs-l1" d="M60 66 C48 64 40 54 40 44 C52 44 60 54 60 66Z"/><path fill="url(#'+u+'l)" class="hs-leaf hs-l2" d="M60 62 C72 60 82 50 82 38 C68 38 60 50 60 62Z"/>'+
-  (stage>=3?'<path fill="url(#'+u+'l)" class="hs-leaf hs-l3" d="M60 76 C70 76 78 70 80 62 C70 60 62 66 60 76Z"/>':'')+
-  (stage>=2?'<g class="hs-face"><circle cx="53" cy="104" r="2.6"/><circle cx="67" cy="104" r="2.6"/><path d="M55 111 Q60 115 65 111"/></g>':'')+'</g>'
-  :'<g class="hs-seed"><ellipse cx="60" cy="88" rx="7" ry="9"/><path d="M60 80 C62 84 62 90 60 96"/></g>';
- return '<svg class="hs-art '+(cls||'')+'" viewBox="0 0 120 140" aria-hidden="true"><defs><linearGradient id="'+u+'p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b3557"/><stop offset="1" stop-color="#141a33"/></linearGradient>'+
-  '<linearGradient id="'+u+'l" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8dffc4"/><stop offset="1" stop-color="#2fcf8f"/></linearGradient><radialGradient id="'+u+'g"><stop offset="0" stop-color="#5cffc0" stop-opacity=".45"/><stop offset="1" stop-color="#5cffc0" stop-opacity="0"/></radialGradient></defs>'+
-  '<circle class="hs-glow" cx="60" cy="80" r="52" fill="url(#'+u+'g)"/><ellipse cx="60" cy="132" rx="30" ry="4" fill="#000" opacity=".35"/>'+
-  '<path d="M30 92 H90 L84 128 Q83 132 79 132 H41 Q37 132 36 128Z" fill="url(#'+u+'p)" stroke="rgba(140,220,255,.45)" stroke-width="1.4"/><rect x="26" y="86" width="68" height="10" rx="5" fill="#222b4a" stroke="rgba(140,220,255,.6)" stroke-width="1.4"/>'+
-  '<ellipse cx="60" cy="91" rx="30" ry="3" fill="#3a2a20" opacity=".9"/>'+leaves+'</svg>';}
+/* ---------- Misty art (Oct 16): the same companion drawing Home uses, in her glass bubble, blue comet look ---------- */
+const BLUE={a:'#8fdcff',b:'#a9b8ff'};
+function mistyInner(){try{const T=window.LowiHerbTamagotchi;if(T&&T.plantHTML&&T.current){const c=T.current();if(c&&c.m&&c.m.profile){
+  const m=Object.assign({},c.m,{profile:Object.assign({},c.m.profile,{palette:BLUE}),dim:false,mood:'happy'});return T.plantHTML(m,'preview',c.p,{label:MISTY,hidden:true,preview:{effect:'comet'}});}}}catch(e){}
+ return '';}
+function mistyFallback(){return '<svg class="hs-fb" viewBox="0 0 120 120" aria-hidden="true"><defs><radialGradient id="hsFbB" cx=".38" cy=".32" r=".75"><stop offset="0" stop-color="#eefaff"/><stop offset=".45" stop-color="#8fdcff"/><stop offset="1" stop-color="#4f86e8"/></radialGradient><linearGradient id="hsFbT" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9d8ff" stop-opacity="0"/><stop offset="1" stop-color="#a9d8ff" stop-opacity=".75"/></linearGradient></defs>'+
+ '<path d="M98 18 Q70 38 52 50 L66 70 Q84 48 98 18Z" fill="url(#hsFbT)"/><circle cx="56" cy="66" r="30" fill="url(#hsFbB)"/><ellipse cx="46" cy="64" rx="3.4" ry="5" fill="#183d42"/><ellipse cx="64" cy="64" rx="3.4" ry="5" fill="#183d42"/><path d="M48 75 Q55 80 62 75" fill="none" stroke="#183d42" stroke-width="2.4" stroke-linecap="round"/></svg>';}
+const cellReady=()=>{try{const T=window.LowiHerbTamagotchi;return !!(T&&T.plantHTML&&T.plantHTML.cell);}catch(e){return false;}};
+function herbArt(stage,cls){const inner=mistyInner(),done=inner&&cellReady();
+ return '<div class="hs-misty '+(cls||'')+'" aria-hidden="true"><div class="hs-orb"'+(done?'':' data-fb="1"')+'>'+(inner||mistyFallback())+'</div></div>';}
+/* the companion drawing (and the cell look Home gives it) loads a moment after this file: redraw Misty once it is there */
+let FILL=0;
+function fillArt(n){clearTimeout(FILL);const els=D.querySelectorAll('.hs-orb[data-fb]');if(!els.length)return;
+ if(cellReady()){const inner=mistyInner();if(inner){els.forEach(e=>{e.innerHTML=mistyInner();e.removeAttribute('data-fb');});return;}}
+ if((n||0)<40)FILL=setTimeout(()=>fillArt((n||0)+1),300);else{const inner=mistyInner();if(inner)els.forEach(e=>{e.innerHTML=mistyInner();e.removeAttribute('data-fb');});}}
+function habits(){const ic=['salad','water','move','hourglass','check'];return '<ul class="hs-habits">'+tl('hab').map((h,i)=>'<li>'+ico(ic[i])+'<span>'+esc(h)+'</span></li>').join('')+'</ul>';}
 
 /* ---------- 1. herb-first start (inside the sign-in gate) ---------- */
 function hs(){try{return JSON.parse(localStorage.getItem(KEY)||'null')||null;}catch(e){return null;}}
@@ -71,36 +80,35 @@ function core(){return window.LowiHerbIdentityCore||null;}
 function want(back){const s=S();if(!s)return false;try{if(R().isAccount&&R().isAccount())return false;}catch(e){}
  if(s.setupDone||(s.logs&&s.logs.length))return false;if(back&&!hs())return false;return true;}
 function html(){let st=hs();if(!st){st={step:0,seed:Math.floor(Math.random()*1e6),herb:'',user:''};hsSet(st);}
- const step=Math.max(0,Math.min(3,+st.step||0)),herb=st.herb||C.suggestName(core(),st.seed),pick=window.LowiA2&&LowiA2.picker?LowiA2.picker():'';
+ const step=Math.max(0,Math.min(3,+st.step||0)),herb=st.herb||MISTY,pick=window.LowiA2&&LowiA2.picker?LowiA2.picker():'';
  const top='<div class="hs-top">'+(step?'<button type="button" class="hs-back" data-hs="back" aria-label="'+esc(t('back'))+'">\u2039</button>':'<span></span>')+'<div class="hs-dots" aria-hidden="true">'+[0,1,2,3].map(i=>'<i'+(i<=step?' class="on"':'')+'></i>').join('')+'</div>'+(step?'<span></span>':pick)+'</div>';
  let body='';
  if(step===0)body='<div class="hs-scene" id="hsScene">'+herbArt(0)+'</div><div class="hs-copy"><p class="hs-over">'+esc(t('over'))+'</p><h1>'+esc(t('plantH'))+'</h1><p class="hs-p">'+esc(t('plantP'))+'</p></div>'+
   '<div class="hs-acts"><button type="button" class="r2-btn pri big" data-hs="plant">'+esc(t('plantBtn'))+'</button><button type="button" class="hs-link" data-r2a="signin">'+esc(t('have'))+'</button></div>';
- else if(step===1)body='<div class="hs-scene">'+herbArt(1)+'</div><div class="hs-copy"><p class="hs-over">'+esc(t('nameOver'))+'</p><h1>'+esc(t('nameH'))+'</h1>'+
-  '<div class="hs-namebox"><label class="hs-lbl" for="hsHerb">'+esc(t('nameLabel'))+'</label><div class="hs-namerow"><input id="hsHerb" class="hs-in" maxlength="24" autocomplete="off" enterkeyhint="done" value="'+esc(herb)+'"><button type="button" class="hs-shuf" data-hs="shuffle">'+ico('repeat')+'<span>'+esc(t('shuffle'))+'</span></button></div><p class="hs-fine">'+esc(t('later'))+'</p></div></div>'+
+ else if(step===1)body='<div class="hs-scene sm">'+herbArt(1)+'</div><div class="hs-copy"><p class="hs-over">'+esc(t('nameOver'))+'</p><h1>'+esc(t('nameH'))+'</h1><p class="hs-p">'+esc(t('nameP'))+'</p>'+habits()+'<p class="hs-p hs-p2">'+esc(t('nameP2'))+'</p></div>'+
   '<div class="hs-acts"><button type="button" class="r2-btn pri big" data-hs="name">'+esc(t('nameBtn'))+'</button></div>';
  else if(step===2)body='<div class="hs-scene">'+herbArt(2)+'<div class="hs-bubble" role="status">'+esc(t('ask',{herb}))+'</div></div><div class="hs-copy"><p class="hs-over">'+esc(t('askOver'))+'</p>'+
   '<label class="hs-lbl" for="hsYou">'+esc(t('youLabel'))+'</label><input id="hsYou" class="hs-in" maxlength="24" autocomplete="given-name" enterkeyhint="done" value="'+esc(st.user||'')+'"><p class="hs-err" id="hsErr" role="alert"></p></div>'+
   '<div class="hs-acts"><button type="button" class="r2-btn pri big" data-hs="you">'+esc(t('askBtn'))+'</button></div>';
  else body='<div class="hs-scene rew">'+(reduce()?'':'<div class="hs-burst" aria-hidden="true">'+Array.from({length:12},(_,i)=>'<i style="--i:'+i+'"></i>').join('')+'</div>')+herbArt(3)+'<div class="hs-bubble" role="status">'+esc(t('rew',{name:st.user||'',herb}))+'</div></div>'+
-  '<div class="hs-copy"><p class="hs-over">'+esc(t('rewOver'))+'</p><span class="hs-chip">'+ico('leaf')+esc(t('chip'))+'</span></div>'+
+  '<div class="hs-copy"><p class="hs-over">'+esc(t('rewOver'))+'</p><span class="hs-chip">'+ico('sparkle')+esc(t('chip'))+'</span></div>'+
   '<div class="hs-acts"><button type="button" class="r2-btn pri big" data-r2a="signup">'+esc(t('saveBtn',{herb}))+'</button><p class="hs-fine">'+esc(t('fine'))+'</p><button type="button" class="hs-link" data-r2a="signin">'+esc(t('have'))+'</button></div>';
- return '<div class="r2-start hs" data-hs-step="'+step+'" data-noi18n><div class="r2-orbs" aria-hidden="true"><i></i><i></i><i></i></div>'+top+body+'</div>';}
+ return '<div class="r2-start hs" data-hs-step="'+step+'" data-noi18n>'+top+body+'</div>';}
 function gate(){return D.getElementById('r2gate');}
-function paint(focus){const g=gate();if(!g)return;g.innerHTML=html();const f=g.firstElementChild;if(f&&!reduce())f.classList.add('r2-swap');
+function paint(focus){const g=gate();if(!g)return;g.innerHTML=html();fillArt(0);const f=g.firstElementChild;if(f&&!reduce())f.classList.add('r2-swap');
  if(focus!==false){const i=g.querySelector('.hs-in');if(i&&matchMedia('(pointer:fine)').matches)setTimeout(()=>{try{i.focus();}catch(e){}},60);}}
 function setHerbName(v){try{if(window.LowiHerbIdentity&&LowiHerbIdentity.setCustomName){LowiHerbIdentity.setCustomName(v);return;}}catch(e){}
  const s=S();if(s){s.herb=s.herb&&typeof s.herb==='object'?s.herb:{};s.herb.name=v;save();}}
 function herbName(){try{if(window.LowiHerbIdentity&&LowiHerbIdentity.current){const c=LowiHerbIdentity.current();if(c&&c.name)return c.name;}}catch(e){}
- const s=S();if(s&&s.herb&&s.herb.name)return s.herb.name;const st=hs();return (st&&st.herb)||(lang()==='de'?'dein Kraut':lang()==='es'?'tu hierba':'your herb');}
+ const s=S();if(s&&s.herb&&s.herb.name)return s.herb.name;const st=hs();return (st&&st.herb)||MISTY;}
 function firstReward(){try{if(window.LowiHost&&LowiHost.award)LowiHost.award('herb-first',null,{amt:5,label:t('firstLeaf'),eventId:'herb-first:planted'});}catch(e){}}
 function onGateClick(e){const b=e.target.closest('[data-hs]');if(!b||!b.closest('.r2-start.hs'))return;const a=b.getAttribute('data-hs'),st=hs()||{step:0,seed:0};
  e.preventDefault();
  if(a==='back'){st.step=Math.max(0,(+st.step||0)-1);hsSet(st);paint(false);return;}
- if(a==='plant'){const sc=D.getElementById('hsScene');const next=()=>{st.step=1;st.herb=st.herb||C.suggestName(core(),st.seed);hsSet(st);paint();};
-  if(reduce()||!sc){next();return;}b.disabled=true;sc.innerHTML=herbArt(1,'grow');setTimeout(next,1100);return;}
+ if(a==='plant'){const sc=D.getElementById('hsScene');const next=()=>{st.step=1;st.herb=st.herb||MISTY;hsSet(st);setHerbName(st.herb);paint();};
+  if(reduce()||!sc){next();return;}b.disabled=true;const m=sc.querySelector('.hs-misty');if(m)m.classList.add('wake');setTimeout(next,750);return;}
  if(a==='shuffle'){st.seed=(+st.seed||0)+1+Math.floor(Math.random()*40);const cur=(D.getElementById('hsHerb')||{}).value;st.herb=C.suggestName(core(),st.seed,cur);hsSet(st);const i=D.getElementById('hsHerb');if(i){i.value=st.herb;if(!reduce()){i.classList.remove('pop');void i.offsetWidth;i.classList.add('pop');}}return;}
- if(a==='name'){const v=C.cleanName((D.getElementById('hsHerb')||{}).value)||C.suggestName(core(),st.seed);st.herb=v;st.step=2;hsSet(st);setHerbName(v);paint();return;}
+ if(a==='name'){const v=st.herb||MISTY;st.herb=v;st.step=2;hsSet(st);setHerbName(v);paint();return;}
  if(a==='you'){const v=C.cleanName((D.getElementById('hsYou')||{}).value,30);if(!v){const er=D.getElementById('hsErr');if(er)er.textContent=t('needName',{herb:st.herb||herbName()});const i=D.getElementById('hsYou');if(i)i.focus();return;}
   st.user=v;st.step=3;hsSet(st);const s=S();if(s){s.user=s.user||{};s.user.name=v;save();}firstReward();paint(false);return;}}
 function onGateKey(e){if(e.key!=='Enter')return;const i=e.target;if(!i||!i.classList||!i.classList.contains('hs-in'))return;e.preventDefault();const b=D.querySelector('.r2-start.hs [data-hs="name"],.r2-start.hs [data-hs="you"]');if(b)b.click();}
@@ -158,7 +166,7 @@ function ivPaint(){const el=D.getElementById('hsIv');if(!el||!IV)return;const he
  else{const p=IV.plan,f=facts();h='<div class="hs-ivpane res"><p class="hs-over">'+esc(t('ivOver'))+'</p><h2>'+esc(t('planH'))+'</h2><p class="hs-p">'+esc(t('planP'))+'</p><ol class="hs-res">'+
    p.actions.map(a=>'<li><span class="hs-ic">'+ico(C.ACTIONS[a.id].ic)+'</span><span><b>'+esc(C.actionText(a.id,lang(),AV(f)))+'</b><small>'+esc(C.whyText(a.why,lang()))+'</small></span></li>').join('')+'</ol></div>'+
    '<div class="hs-acts"><button type="button" class="r2-btn pri big" data-hsi="done">'+esc(t('planBtn'))+'</button></div>';}
- el.innerHTML=h;el.setAttribute('data-step',IV.step);const f=el.querySelector('.hs-opt.on,.hs-opt,[data-hsi="start"],[data-hsi="done"]');if(f&&matchMedia('(pointer:fine)').matches)try{f.focus({preventScroll:true});}catch(e){}}
+ el.innerHTML=h;fillArt(0);el.setAttribute('data-step',IV.step);const f=el.querySelector('.hs-opt.on,.hs-opt,[data-hsi="start"],[data-hsi="done"]');if(f&&matchMedia('(pointer:fine)').matches)try{f.focus({preventScroll:true});}catch(e){}}
 function ivNext(){if(!IV)return;IV.step++;if(IV.step===C.QUESTIONS.length){IV.plan=C.newPlan(IV.answers);ivPaint();setTimeout(()=>{if(IV){IV.step++;ivPaint();}},reduce()?250:1300);return;}ivPaint();}
 function onIvClick(e){const b=e.target.closest('[data-hsi]');if(!b||!IV)return;const a=b.getAttribute('data-hsi');e.preventDefault();
  if(a==='start'){IV.step=0;ivPaint();return;}

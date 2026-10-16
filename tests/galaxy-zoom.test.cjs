@@ -25,7 +25,7 @@ test('the pull-out keeps Misty and your orb on the same moving point, with gentl
     assert.ok(g0.s <= 2.5 && g1.s === 1 && h1.s >= 0.4 && h0.s === 1);
     assert.ok(!('clipFrom' in p.home), 'no clip circle (the stray teal ring)');
     assert.equal(p.galaxy.origin, '102.0px 508.0px');
-    assert.ok(Z.DUR <= 800, 'short move, no 1 s wait');
+    assert.ok(Z.DUR >= 800 && Z.DUR < 1000, 'a cinematic pull-back, still under a second');
     const src = read('galaxy-zoom.js');
     assert.ok(!/clipPath/.test(src));
 });
@@ -118,4 +118,18 @@ test('back from the galaxy the 3D camera flies down into Misty instead of Home j
     const m = { x: 195, y: 388, r: 105 }, y = { x: 120, y: 520, r: 27 }, g = { left: 18, top: 12 };
     const pin = Z.plan(m, y, g, 390, 844, Z.HS_IN), pout = Z.plan(m, y, g, 390, 844);
     assert.ok(pin.s > pout.s && pin.s >= 0.75, 'the flat Home layer barely grows on the way back');
+});
+
+test('the Community warp reuses the brain-cell warp from Home and starts where a finger swipe left it', () => {
+    const src = read('galaxy-zoom.js');
+    assert.ok(src.includes('R.buildWarp(A.THREE') && src.includes('s.follow(cam)') && src.includes('cam.updateProjectionMatrix()'), 'the same light streaks and widening view as the places on Home');
+    assert.ok(src.includes("detail: { phase: 'start', id: 'community'"), 'the warp sound fires too');
+    assert.ok(src.includes("c.id = 'gxWarp'"), 'the streaks carry on over the galaxy');
+    /* a swipe pull: Home already at scale .9 -> the warp's first frame is that scale, not 1 */
+    const p = Z.plan({ x: 200, y: 400 }, { x: 100, y: 500 }, { left: 0, top: 0 }, 390, 844, 0, { dir: 'out', k: 0.9, o: 0.8 });
+    assert.equal(p.home.from, 'translate(0px,0px) scale(0.9)');
+    const q = Z.plan({ x: 200, y: 400 }, { x: 100, y: 500 }, { left: 0, top: 0 }, 390, 844, 0.5, { dir: 'in', k: 1.2, o: 0.8 });
+    assert.equal(q.galaxy.to, 'translate(0px,0px) scale(1.2)');
+    assert.equal(Z.swipeScale('out', 0), 1); assert.ok(Z.swipeScale('out', 1) < 1 && Z.swipeScale('in', 1) > 1);
+    assert.ok(Z.warpAmt(0) === 0 && Z.warpAmt(0.4) > 0.8 && Z.warpAmt(1) < 0.01, 'streaks rise and are gone as the view settles');
 });

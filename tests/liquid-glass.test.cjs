@@ -55,7 +55,7 @@ test('Community is a solar system: you in the middle, a sun, orbit rings through
 });
 
 test('tabs page sideways like the iPhone home screen, without stealing the world drag, pinches or Cook scrollers', () => {
-    assert.ok(js.includes("const PAGES = ['home', 'foryou', 'shelf', 'move']"));
+    assert.ok(js.includes("const PAGES = ['home', 'foryou', 'scan', 'shelf', 'move'];"), 'every tab is a page, the camera too');
     assert.ok(/function slide\(from, to, startDx\)/.test(js) && js.includes("a.animate([") && js.includes("b.animate(["), 'tapping a tab slides both pages');
     assert.ok(js.includes("if (cur === 'home' && !onBar && e.clientX > 26 && e.clientX < W - 26) return;"), 'the 3D world keeps its drag; edges and the tab bar page');
     assert.ok(js.includes('a second finger: pinch, not paging'));
@@ -66,6 +66,16 @@ test('tabs page sideways like the iPhone home screen, without stealing the world
     assert.ok(/touch-action: pan-y pinch-zoom/.test(css));
 });
 
-test('Home <-> Community stays the galaxy zoom, not a slide', () => {
+test('Home <-> Community stays the warp, also on a swipe: the page pulls back with the finger, no slide', () => {
     assert.ok(js.includes("const zooming = H.classList.contains('gx-out') || H.classList.contains('gx-in');"));
+    assert.ok(js.includes("GZ().swipeOk(g.cur, n)") && js.includes("GZ().swipe(z, Math.abs(dx) / g.W)") && js.includes("GZ().swipeEnd(s.warp, Math.abs(s.dx) / s.W, go)"));
+});
+
+test('the camera is a page: a viewfinder page slides in, the camera opens; on the camera a swipe pages on and closes it', () => {
+    assert.ok(js.includes("el.id = 'lgCamPage'") && /#main > \.lg-campage:is\(\.lg-peek, \.lg-in, \.lg-out\)/.test(css));
+    assert.ok(js.includes("window.goTab('scan')"), 'landing opens the same camera as the Scan button');
+    assert.ok(js.includes("querySelector('[data-b3=\"camclose\"]')"), 'leaving closes it the normal way (stream stopped)');
+    assert.ok(js.includes("cam.closest('#spWorld')"), 'a camera inside a spirit world is left alone');
+    assert.ok(/html\.lg body #b3Cam:not\(#spWorld \*\) \{ touch-action: pan-y; \}/.test(css));
+    assert.ok(js.includes('function quietGo(n)'), 'the tab under the camera switches without a visible slide');
 });

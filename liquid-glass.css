@@ -154,3 +154,14 @@ html.lg #app #main > .tab:is(.lg-out, .lg-peek) { opacity: 1 !important; visibil
 html.lg #app #main > .tab.lg-in { transition: none !important; opacity: 1 !important; }
 html.lg #app #main.lg-drag > .tab { transition: none !important; will-change: transform; }
 html.lg #app #main > .tab:not(#tab-home), html.lg #app #main #tabbar, html.lg #app #main :is(#mv-screen, #shBody, #cmList, #fyFeed, #cmPaneBoard) { touch-action: pan-y pinch-zoom; }
+/* the camera is a page too (Oct 16): a dark viewfinder page slides in, the live camera opens over it; on the camera a sideways swipe pages on */
+#main > .lg-campage { position: absolute; inset: 0; z-index: 1; display: none; background: #000; color: rgba(255, 255, 255, .85); pointer-events: none; }
+#main > .lg-campage:is(.lg-peek, .lg-in, .lg-out) { display: grid; place-items: center; }
+#main > .lg-campage .lg-camframe { position: relative; width: min(64vw, 280px); aspect-ratio: 1.45; }
+#main > .lg-campage .lg-camframe i { position: absolute; width: 34px; height: 34px; border: 3px solid rgba(255, 255, 255, .9); }
+#main > .lg-campage .lg-camframe i:nth-child(1) { left: 0; top: 0; border-right: 0; border-bottom: 0; border-radius: 12px 0 0 0; }
+#main > .lg-campage .lg-camframe i:nth-child(2) { right: 0; top: 0; border-left: 0; border-bottom: 0; border-radius: 0 12px 0 0; }
+#main > .lg-campage .lg-camframe i:nth-child(3) { left: 0; bottom: 0; border-right: 0; border-top: 0; border-radius: 0 0 0 12px; }
+#main > .lg-campage .lg-camframe i:nth-child(4) { right: 0; bottom: 0; border-left: 0; border-top: 0; border-radius: 0 0 12px 0; }
+#main > .lg-campage .lg-camname { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 22px); left: 0; right: 0; text-align: center; font: 600 17px/1.2 var(--lg-font, -apple-system, system-ui, sans-serif); }
+html.lg body #b3Cam:not(#spWorld *) { touch-action: pan-y; }

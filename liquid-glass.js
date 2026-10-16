@@ -10,11 +10,29 @@
         return t && t.id ? t.id.replace(/^tab-/, '') : 'home';
     }
     /* ---- iPhone home-screen paging: the tabs sit side by side; tapping a tab slides there, a swipe drags the pages with the finger ---- */
-    const PAGES = ['home', 'foryou', 'shelf', 'move'];   /* the tab bar order (Scan is the camera, not a page) */
-    const pageEl = n => D.getElementById('tab-' + n);
+    /* Oct 16 (E-man: "I want that on every page ... the camera, even ... seamless scroll, just like with Apple"): every tab is a page,
+       the camera too, in the tab bar order. Home <-> Community is the warp (galaxy-zoom.js), every other neighbour slides. */
+    const PAGES = ['home', 'foryou', 'scan', 'shelf', 'move'];
+    const camOpen = () => !!(H.classList.contains('b3-camon') && D.getElementById('b3Cam'));
+    /* the camera page: while you slide towards Scan a dark viewfinder page comes in; when it lands the real camera opens on top */
+    function camPage() {
+        let el = D.getElementById('lgCamPage'); const main = D.getElementById('main');
+        if (!el && main) {
+            const lab = D.querySelector('#tabbar .tb[data-tab="scan"]'), name = ((lab && (lab.getAttribute('aria-label') || lab.textContent)) || 'Scan').trim();
+            el = D.createElement('div'); el.id = 'lgCamPage'; el.className = 'lg-campage'; el.setAttribute('aria-hidden', 'true');
+            el.innerHTML = '<div class="lg-camframe"><i></i><i></i><i></i><i></i></div><span class="lg-camname"></span>';
+            el.querySelector('.lg-camname').textContent = name; main.appendChild(el);
+        }
+        return el;
+    }
+    const pageEl = n => n === 'scan' ? (camOpen() ? D.getElementById('b3Cam') : camPage()) : D.getElementById('tab-' + n);
+    /* the page you are on: the camera when it is open (it lies over the tab you came from) */
+    const curPage = () => camOpen() ? 'scan' : activeTab();
+    const baseGo = () => { const f = window.goTab; return f && f.__orig ? f.__orig : f; };   /* past the warp wrapper: a quiet switch under the camera */
+    function quietGo(n) { const f = baseGo(); if (!f) return; quiet = true; try { f(n); } catch (e) { } quiet = false; prevTab = activeTab(); }
     const calm = () => !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
     const EASE = 'cubic-bezier(.22,.8,.28,1)';
-    let prevTab = null, pendingDx = 0, sliding = [];
+    let prevTab = null, pendingDx = 0, sliding = [], quiet = false;
     function clearSlide() {
         sliding.forEach(a => { try { a.cancel(); } catch (e) {} }); sliding = [];
         D.querySelectorAll('#main > .tab.lg-out, #main > .tab.lg-peek, #main > .tab.lg-in').forEach(el => { el.classList.remove('lg-out', 'lg-peek', 'lg-in'); el.style.transform = ''; });
@@ -38,7 +56,7 @@
     function syncTab() {
         const t = activeTab();
         if (H.getAttribute('data-lg-tab') !== t) H.setAttribute('data-lg-tab', t);
-        if (prevTab && prevTab !== t) { const d = pendingDx; pendingDx = 0; slide(prevTab, t, d); }
+        if (prevTab && prevTab !== t && !quiet) { const d = pendingDx; pendingDx = 0; slide(prevTab, t, d); }
         prevTab = t;
     }
     function hScroller(el, stop) {
@@ -49,8 +67,18 @@
     }
     let g = null;
     function setX(el, x) { if (el) el.style.transform = x ? 'translate3d(' + x + 'px,0,0)' : ''; }
+    const GZ = () => window.LowiGalaxyZoom || null;
     function dragTo(dx) {
         const cur = pageEl(g.cur), n = PAGES[g.i + (dx < 0 ? 1 : -1)] || null;
+        /* Home <-> Community: no sideways slide, the page pulls back into the warp with the finger */
+        const z = n && GZ() && GZ().swipeOk ? GZ().swipeOk(g.cur, n) : '';
+        if (g.warp && g.warp !== z) { GZ().swipeEnd(g.warp, 0, false); g.warp = ''; }
+        if (z) {
+            if (g.peek) { const pe = pageEl(g.peek); if (pe) { pe.classList.remove('lg-peek'); pe.style.transform = ''; } g.peek = null; }
+            setX(cur, 0); g.warp = z; g.wn = n; g.dx = dx; GZ().swipe(z, Math.abs(dx) / g.W); return;
+        }
+        /* from the camera the neighbour is the tab under it: switch that tab quietly first, the camera hides the switch */
+        if (g.cur === 'scan' && n && activeTab() !== n) { quietGo(n); }
         if (g.peek && g.peek !== n) { const pe = pageEl(g.peek); if (pe) { pe.classList.remove('lg-peek'); pe.style.transform = ''; } }
         g.peek = n;
         const x = n ? dx : dx / 3;   /* rubber band at the first and the last page */
@@ -60,10 +88,17 @@
     function release(cancelled) {
         const s = g; g = null; if (!s || s.dir !== 'x') return;
         const main = D.getElementById('main'); if (main) main.classList.remove('lg-drag');
-        const v = s.v || 0, n = s.peek;
+        const v = s.v || 0;
+        if (s.warp) {
+            const go = !cancelled && (Math.abs(s.dx) > s.W * 0.22 || (Math.abs(v) > 0.45 && Math.sign(v) === Math.sign(s.dx)));
+            GZ().swipeEnd(s.warp, Math.abs(s.dx) / s.W, go);
+            noClick(); return;
+        }
+        const n = s.peek;
         const go = !cancelled && n && (Math.abs(s.dx) > s.W * 0.25 || (Math.abs(v) > 0.45 && Math.sign(v) === Math.sign(s.dx)));
         const cur = pageEl(s.cur), pe = n ? pageEl(n) : null;
-        if (go && typeof window.goTab === 'function') {
+        if (go && (s.cur === 'scan' || n === 'scan')) camSlide(s, n, cur, pe);
+        else if (go && typeof window.goTab === 'function') {
             setX(cur, 0); if (pe) { pe.classList.remove('lg-peek'); setX(pe, 0); }
             pendingDx = s.dx; window.goTab(n);
             if (activeTab() === s.cur) pendingDx = 0;   /* goTab refused: nothing moved */
@@ -72,25 +107,55 @@
             const back = [cur && cur.animate([{ transform: 'translate3d(' + s.dx + 'px,0,0)' }, { transform: 'translate3d(0,0,0)' }], o)];
             if (pe) back.push(pe.animate([{ transform: pe.style.transform || 'none' }, { transform: 'translate3d(' + (s.dx < 0 ? s.W : -s.W) + 'px,0,0)' }], o));
             setX(cur, 0);
-            const done = () => { if (pe) { pe.classList.remove('lg-peek'); pe.style.transform = ''; } };
-            if (back[1]) back[1].onfinish = done; else done();
+            let fin = false;
+            const done = () => { if (fin) return; fin = true; if (pe) { pe.classList.remove('lg-peek'); pe.style.transform = ''; }
+                /* back on the camera: the tab under it is the one you came from again */
+                if (s.cur === 'scan' && s.under && activeTab() !== s.under) quietGo(s.under); };
+            if (back[1]) { back[1].onfinish = done; back[1].oncancel = done; setTimeout(done, 320); } else done();
         }
-        /* the finger moved pages: the click that follows is not a tap */
+        noClick();
+    }
+    /* the finger moved pages: the click that follows is not a tap */
+    function noClick() {
         const stop = ev => { ev.stopPropagation(); ev.preventDefault(); };
         D.addEventListener('click', stop, { capture: true, once: true }); setTimeout(() => D.removeEventListener('click', stop, { capture: true }), 80);
+    }
+    /* sliding into or out of the camera: both pages finish the slide together, then the camera opens (in) or closes (out) */
+    function camSlide(s, n, cur, pe) {
+        const dir = s.dx < 0 ? 1 : -1, W = s.W, left = Math.abs(dir * W + s.dx) / W, dur = Math.round(170 + 230 * Math.max(.25, Math.min(1, left)));
+        const o = { duration: dur, easing: EASE, fill: 'forwards' };
+        const A = cur && cur.animate ? cur.animate([{ transform: 'translate3d(' + s.dx + 'px,0,0)' }, { transform: 'translate3d(' + (-dir * W) + 'px,0,0)' }], o) : null;
+        const B = pe && pe.animate ? pe.animate([{ transform: 'translate3d(' + (dir * W + s.dx) + 'px,0,0)' }, { transform: 'translate3d(0,0,0)' }], o) : null;
+        if (s.cur === 'scan') {
+            /* out of the camera: it slides away and closes; the page under it (already switched) slides in */
+            if (pe) { pe.classList.remove('lg-peek'); pe.classList.add('lg-in'); }
+            const end = () => { const x = cur && cur.querySelector && cur.querySelector('[data-b3="camclose"]'); if (cur) { cur.style.transition = 'none'; cur.style.opacity = '0'; } if (x) x.click(); else if (cur) cur.remove();
+                if (B) B.cancel(); if (pe) { pe.classList.remove('lg-in'); pe.style.transform = ''; } prevTab = activeTab(); };
+            if (B) B.onfinish = end; else end();
+        } else {
+            /* into the camera: the viewfinder page lands, then the real camera opens over it */
+            if (cur) cur.classList.add('lg-out'); if (pe) { pe.classList.remove('lg-peek'); pe.classList.add('lg-in'); }
+            const end = () => { try { window.goTab('scan'); } catch (e) { }
+                setTimeout(() => { if (A) A.cancel(); if (B) B.cancel(); if (cur) { cur.classList.remove('lg-out'); cur.style.transform = ''; } if (pe) { pe.classList.remove('lg-in'); pe.style.transform = ''; } }, 320); };
+            if (B) B.onfinish = end; else end();
+        }
+        setX(cur, 0); if (pe) setX(pe, 0);
     }
     function onDown(e) {
         if (g) { const s = g; g = null; if (s.dir === 'x') { g = s; release(true); } return; }   /* a second finger: pinch, not paging */
         if (!e.isPrimary || (e.pointerType === 'mouse' && e.button !== 0) || calm()) return;
-        const main = D.getElementById('main'), t = e.target;
-        if (!main || !t || !t.closest || !main.contains(t)) return;
-        const cur = activeTab(), i = PAGES.indexOf(cur); if (i < 0) return;
-        if (t.closest('input, textarea, select, [contenteditable], .hscroll, .toggle, .no-page-swipe')) return;
+        const main = D.getElementById('main'), t = e.target, cam = camOpen() ? D.getElementById('b3Cam') : null;
+        if (!main || !t || !t.closest) return;
+        if (cam ? !cam.contains(t) : !main.contains(t)) return;
+        /* the camera opened from inside a spirit world belongs to that world: no paging there */
+        if (cam && cam.closest('#spWorld')) return;
+        const cur = curPage(), i = PAGES.indexOf(cur); if (i < 0) return;
+        if (t.closest('input, textarea, select, [contenteditable], .hscroll, .toggle, .no-page-swipe, form')) return;
         const onBar = !!t.closest('#tabbar'), W = main.clientWidth || innerWidth;
         /* Home is a 3D world you drag to look around: there the pages move from the screen edges or the tab bar */
         if (cur === 'home' && !onBar && e.clientX > 26 && e.clientX < W - 26) return;
         if (!onBar && hScroller(t, pageEl(cur))) return;
-        g = { id: e.pointerId, x0: e.clientX, y0: e.clientY, lx: e.clientX, lt: performance.now(), v: 0, dir: '', dx: 0, cur, i, W, peek: null };
+        g = { id: e.pointerId, x0: e.clientX, y0: e.clientY, lx: e.clientX, lt: performance.now(), v: 0, dir: '', dx: 0, cur, i, W, peek: null, warp: '', under: cur === 'scan' ? activeTab() : '' };
     }
     function onMove(e) {
         if (!g || e.pointerId !== g.id) return;
@@ -122,5 +187,5 @@
         window.addEventListener('pointercancel', onUp, true);
     }
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
-    window.LowiLiquidGlass = { activeTab, TAB_IDS, PAGES, slide };
+    window.LowiLiquidGlass = { activeTab, TAB_IDS, PAGES, slide, curPage, gesture: () => g ? (g.dir || 'pending') : '' };
 })();

@@ -11,7 +11,7 @@ const CS = require('../calm-sound-core.js');
 const wa = read('world-audio.js'), ss = read('sound-strings.js'), css = read('sound-strings.css');
 
 /* ---------- a tiny fake browser with a fake Web Audio graph, enough to run world-audio.js ---------- */
-function param(v) { return { value: v, setValueAtTime(x) { this.value = x; }, setTargetAtTime(x) { this.value = x; }, linearRampToValueAtTime(x) { this.value = x; }, exponentialRampToValueAtTime(x) { this.value = x; }, cancelScheduledValues() { } }; }
+function param(v) { return { value: v, setValueAtTime(x) { this.value = x; }, setTargetAtTime(x, t, tc) { this.value = x; this.tc = tc; }, linearRampToValueAtTime(x) { this.value = x; }, exponentialRampToValueAtTime(x) { this.value = x; }, cancelScheduledValues() { } }; }
 function node() { return { connect() { }, disconnect() { }, start() { }, stop() { }, frequency: param(440), detune: param(0), gain: param(1), Q: param(1), pan: param(0), threshold: param(0), knee: param(0), ratio: param(1), attack: param(0), release: param(0) }; }
 function boot(store) {
     const intervals = [], events = [];
@@ -26,7 +26,7 @@ function boot(store) {
     const doc = {
         documentElement: { classList: { contains: c => cls.has(c) }, lang: 'en' }, hidden: false, head: { appendChild() { } }, currentScript: null,
         getElementById: id => id === 'whHud' ? { id: 'whHud', querySelector: () => null, appendChild() { } } : null,
-        querySelector: () => null, createElement: () => ({ classList: { add() { } }, setAttribute() { }, addEventListener() { }, appendChild() { } }), addEventListener() { }
+        querySelector: () => null, querySelectorAll: () => [], createElement: () => ({ classList: { add() { } }, setAttribute() { }, addEventListener() { }, appendChild() { } }), addEventListener() { }
     };
     const win = {
         document: doc, console, Promise, Math, JSON, Object, Array, Number, String, Date, Float32Array,
@@ -119,4 +119,25 @@ test('source: nothing in the engine retunes on its own, and the pad wires every 
     assert.ok(/\.ss-reset \{[^}]*min-height: 44px/.test(css) && /\.ss-reset \{[^}]*backdrop-filter/.test(css), 'glass, a real touch target');
     assert.ok(css.includes('prefers-reduced-motion'));
     for (const k of ['key', 'level', 'shift', 'reset', 'resetAria', 'bgOff']) for (const l of ['en', 'de', 'es']) assert.ok(CS.t(k, l).length > 1, k + ' ' + l);
+});
+
+test('low latency: a string touch moves the running oscillators and filter within ~0.1 s, and iOS is unlocked inside the touch', () => {
+    const store = {};
+    const a = boot(store);
+    a.A.setOn(true);
+    const before = J(a.A.playing);
+    const t = a.A.setTune({ root: 0, bright: 0.95 }, false);
+    const after = J(a.A.playing);
+    assert.notDeepStrictEqual(after.chord, before.chord, 'the key changed in the live oscillators');
+    assert.ok(after.lp > before.lp && after.level > before.level, 'higher touch: brighter filter and louder pad, right now');
+    assert.deepStrictEqual(after.chord, C.padChord(t));
+    assert.ok(C.TUNE.glide <= 0.1 && C.TUNE.filterGlide <= 0.1, 'glide time constants keep the change near-instant');
+    const bent = a.A.setTune({ bend: 80 }, false);
+    assert.ok(a.A.playing.chord[0] > after.chord[0], 'sliding bends the running pad up');
+    assert.deepStrictEqual(J(a.A.playing.chord), C.padChord(bent));
+    /* source: smallest output buffer, silent-sample unlock in the gesture, letting go also resumes (older iOS only trusts touchend) */
+    assert.ok(wa.includes("latencyHint: 'interactive'") && !wa.includes("latencyHint: 'playback'"));
+    assert.ok(/function unlock\(ctx\)[\s\S]*createBufferSource[\s\S]*s\.start\(0\)/.test(wa) && /function instrument\(\)[\s\S]{0,400}unlock\(ctx\)/.test(wa));
+    assert.ok(/function up\(P, e\)[^\n]*P\.api\.instrument\(\)/.test(ss));
+    assert.ok(/function down\(P, e\)[\s\S]{0,300}P\.api\.instrument \? P\.api\.instrument\(\)/.test(ss), 'the first touch opens the audio context');
 });

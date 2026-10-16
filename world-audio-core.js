@@ -72,7 +72,7 @@
         lp: [380, 2500],                 /* pad filter from the bottom to the top of the pad */
         level: [0.55, 1.45],             /* pad level from the bottom to the top of the pad */
         bend: 100,                       /* cents either way */
-        glide: 0.35, filterGlide: 0.25   /* time constants for his changes: smooth, but you hear them follow your finger */
+        glide: 0.08, filterGlide: 0.06   /* time constants for his changes: no click, but the sound follows the finger at once (~0.1-0.2 s) */
     };
     const clamp01 = v => { v = +v; return isFinite(v) ? Math.max(0, Math.min(1, v)) : null; };
     function tuneFrom(base, patch) {

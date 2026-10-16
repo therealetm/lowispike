@@ -64,7 +64,8 @@
     function ensureCtx() {
         if (st.ctx && st.ctx.state !== 'closed') return st.ctx;
         const AC = W.AudioContext || W.webkitAudioContext; if (!AC) return null;
-        let ctx; try { ctx = new AC({ latencyHint: 'playback' }); } catch (e) { try { ctx = new AC(); } catch (x) { return null; } }
+        /* 'interactive': the smallest output buffer, so a string touch is heard at once on iOS ('playback' adds a big buffer) */
+        let ctx; try { ctx = new AC({ latencyHint: 'interactive' }); } catch (e) { try { ctx = new AC(); } catch (x) { return null; } }
         const lim = ctx.createDynamicsCompressor(), L = C.MIX.limiter;
         lim.threshold.value = L.threshold; lim.knee.value = L.knee; lim.ratio.value = L.ratio; lim.attack.value = L.attack; lim.release.value = L.release;
         const tone = ctx.createBiquadFilter(); tone.type = 'lowpass'; tone.frequency.value = C.MIX.tone; tone.Q.value = 0.5;
@@ -318,7 +319,13 @@
         const ctx = ensureCtx(); if (!ctx) return null;
         clearTimeout(st.stopT); clearTimeout(st.idleT);
         if (ctx.state !== 'running') { try { const pr = ctx.resume(); if (pr && pr.catch) pr.catch(() => { }); } catch (e) { } }
+        unlock(ctx);
         return { ctx, out: st.out, gain: +(C.masterGain(prefs.vol) * 3).toFixed(4), vol: prefs.vol, muted: false };
+    }
+    /* iOS Safari: inside the first touch, resume and play one silent sample so the context is really unlocked from then on */
+    function unlock(ctx) {
+        if (st.unlocked || !ctx) return;
+        try { const b = ctx.createBuffer(1, 1, ctx.sampleRate || 44100), s = ctx.createBufferSource(); s.buffer = b; s.connect(ctx.destination); s.start(0); st.unlocked = true; } catch (e) { }
     }
     /* the pad closed: if the background sound is off, let the strings ring out, then put the context back to sleep */
     function instrumentIdle() {

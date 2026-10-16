@@ -190,7 +190,7 @@
         q.x = p.x; q.y = p.y;
     }
     /* letting go keeps the setting: it is stored, nothing glides back */
-    function up(P, e) { const q = P.ptr.get(e.pointerId); if (!q) return; P.ptr.delete(e.pointerId); if (q.v) voiceOff(P, q.v); setTune(P, {}, true); kick(P); }
+    function up(P, e) { const q = P.ptr.get(e.pointerId); if (!q) return; P.ptr.delete(e.pointerId); if (q.v) voiceOff(P, q.v); if (P.api.instrument) { try { P.api.instrument(); } catch (x) { } } setTune(P, {}, true); kick(P); }
     function key(P, e) {
         let i = -1;
         if (/^[1-7]$/.test(e.key)) i = +e.key - 1;

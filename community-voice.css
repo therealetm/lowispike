@@ -1,0 +1,96 @@
+/* Oct 16 (E-man: "I can't even send voice notes" / "when you just click on the companion ... a connection stream").
+   Community chat: voice notes (mic key, recording bar, mic-off card, play buttons in the Chat room and in the galaxy bubbles),
+   photo thumbnails in the galaxy bubbles, and the connection stream drawn from your companion to the one you tapped.
+   Same blue glass as the photo key and the Daily Quest / weather pill. Loaded after community-chat.css and community-galaxy.css. */
+
+/* ---- the mic key: a 46 px round glass key like the photo key; while the field is empty it stands where Send would be ---- */
+#cmPaneChat .cs-mic-btn{width:46px;height:46px;flex:none;display:grid;place-items:center;margin:0;padding:0;border-radius:50%;border:1px solid rgba(160,220,255,.32);background:rgba(28,74,150,.30);color:#dff2ff;-webkit-backdrop-filter:blur(18px) saturate(170%);backdrop-filter:blur(18px) saturate(170%);box-shadow:inset 0 1px 0 rgba(255,255,255,.18);touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#cmPaneChat .cs-mic-btn:active{transform:scale(.96)}
+#cmPaneChat .cs-mic-btn:disabled{opacity:.42}
+#cmPaneChat .cs-mic-btn:focus-visible{outline:2px solid #9fd8ff;outline-offset:2px}
+#cmPaneChat .cm-inrow.cs-empty #cmSend{display:none}
+#cmPaneChat .cm-inrow:not(.cs-empty) .cs-mic-btn{display:none}
+
+/* ---- recording: the bar takes the whole row (field, photo and mic step aside) ---- */
+#cmPaneChat .cs-rec-host:empty{display:none}
+#cmPaneChat .cm-inrow.cs-recording > :not(.cs-rec-host){display:none!important}
+#cmPaneChat .cm-inrow.cs-recording .cs-rec-host{flex:1;min-width:0;display:block}
+#cmPaneChat .cs-rec{position:relative;display:flex;align-items:center;gap:10px;height:46px;padding:0 0 0 4px;border-radius:23px;background:linear-gradient(165deg,rgba(34,70,140,.94),rgba(12,28,66,.96));border:1px solid rgba(160,220,255,.36);box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 10px 26px -14px rgba(0,0,0,.7);color:#eaf7ff;transform:translateX(var(--dx,0px));transition:transform .12s ease-out,background .2s}
+#cmPaneChat .cs-rec.cancelling{background:linear-gradient(165deg,rgba(150,40,70,.92),rgba(70,14,36,.96))}
+#cmPaneChat .cs-rec-hint{position:absolute;left:12px;right:12px;bottom:calc(100% + 6px);margin:0;padding:5px 10px;border-radius:12px;background:rgba(8,20,50,.86);color:#eaf7ff;font:600 12.5px/1.3 system-ui,-apple-system,sans-serif;text-align:center;pointer-events:none}
+#cmPaneChat .cs-rec-x{width:38px;height:38px;flex:none;display:grid;place-items:center;margin:0;padding:0;border-radius:50%;border:1px solid rgba(160,220,255,.32);background:rgba(255,255,255,.08);color:#fff}
+#cmPaneChat .cs-rec-dot{width:10px;height:10px;flex:none;border-radius:50%;background:#ff4d6d;box-shadow:0 0 0 4px rgba(255,77,109,.2);animation:csRecDot 1s ease-in-out infinite}
+#cmPaneChat .cs-rec.starting .cs-rec-dot{background:#9fd8ff;box-shadow:0 0 0 4px rgba(159,216,255,.2)}
+#cmPaneChat .cs-rec-time{flex:none;min-width:36px;font:700 15px/1 ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums;color:#fff}
+#cmPaneChat .cs-rec-wave{flex:1;min-width:0;height:28px;display:block}
+#cmPaneChat .cs-rec-send{width:46px;height:46px;flex:none;margin:-1px -1px -1px 0;padding:0;border:0;border-radius:50%;background:#fff;color:#0b1d3f;font-size:21px;font-weight:700;box-shadow:0 4px 14px -6px rgba(120,200,255,.9)}
+#cmPaneChat .cs-rec.hold .cs-rec-send{opacity:.55}
+@keyframes csRecDot{50%{opacity:.35}}
+
+/* ---- the mic-off / no mic / too old card, like the photo-ready strip ---- */
+#csMic:empty{display:none}
+#csMic .cs-mic-card{display:flex;align-items:flex-start;gap:10px;margin:0 0 8px;padding:10px;border-radius:18px;background:linear-gradient(165deg,rgba(34,70,140,.94),rgba(12,28,66,.96));border:1px solid rgba(160,220,255,.32);color:#eaf5ff}
+#csMic .cs-mic-ic{width:36px;height:36px;flex:none;display:grid;place-items:center;border-radius:50%;background:rgba(255,255,255,.1)}
+#csMic .cs-mic-card > div{flex:1;min-width:0;font-size:14px;line-height:1.3}
+#csMic .cs-mic-card b{display:block;font-weight:650}
+#csMic .cs-mic-card small{display:block;color:rgba(223,242,255,.8);font-size:12.5px;margin-top:3px}
+#csMic .cs-mic-retry{margin:8px 0 0;padding:8px 14px;min-height:36px;border:0;border-radius:18px;background:#0a84ff;color:#fff;font:600 13px/1 system-ui,-apple-system,sans-serif}
+#csMic .cs-photo-x{width:36px;height:36px;flex:none;border-radius:50%;border:1px solid rgba(160,220,255,.4);background:rgba(255,255,255,.1);color:#fff;font-size:20px;line-height:1;margin:0;padding:0}
+
+/* ---- a voice note in the Chat room: glass play key, waveform that fills as it plays, length ---- */
+.cs-voice{display:flex;align-items:center;gap:10px;width:min(250px,68vw);margin:4px 0 2px;padding:6px 12px 6px 6px;border-radius:22px;border:1px solid rgba(160,220,255,.34);background:linear-gradient(165deg,rgba(60,120,220,.34),rgba(18,44,104,.5));color:#eaf7ff;-webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%);font:inherit;text-align:left;cursor:pointer;--vp:0}
+.cs-voice:focus-visible{outline:2px solid #9fd8ff;outline-offset:2px}
+.cs-vi{position:relative;width:34px;height:34px;flex:none;border-radius:50%;background:#fff;box-shadow:0 3px 10px -4px rgba(120,200,255,.9)}
+.cs-vi::before{content:'';position:absolute;left:13px;top:10px;border-left:11px solid #0b1d3f;border-top:7px solid transparent;border-bottom:7px solid transparent}
+.cs-voice.playing .cs-vi::before{left:11px;top:11px;width:4px;height:12px;border:0;background:#0b1d3f;box-shadow:8px 0 0 #0b1d3f}
+.cs-vw{position:relative;flex:1;min-width:0;height:26px;display:flex;align-items:center;gap:2px}
+.cs-vw i{flex:1;min-width:2px;max-width:4px;border-radius:2px;background:rgba(223,242,255,.42)}
+.cs-vp{position:absolute;inset:0;display:flex;align-items:center;gap:2px;clip-path:inset(0 calc(100% - var(--vp,0) * 100%) 0 0);pointer-events:none}
+.cs-vp i{background:#fff}
+.cs-vt{flex:none;font:600 12.5px/1 system-ui,-apple-system,sans-serif;font-variant-numeric:tabular-nums;color:rgba(234,247,255,.9)}
+
+/* ---- the galaxy bubbles: a voice note is a little play key + length; a photo shows a small thumbnail ---- */
+#cmPaneChat[data-spirit-chat] .cg-snap .cg-t.cg-vo,#cmPaneChat[data-spirit-chat] .cg-snap .cg-t.cg-pict{display:flex;align-items:center;gap:6px;-webkit-line-clamp:unset}
+#cmPaneChat[data-spirit-chat] .cg-vplay{position:relative;width:20px;height:20px;flex:none;border-radius:50%;background:#fff}
+#cmPaneChat[data-spirit-chat] .cg-vplay::before{content:'';position:absolute;left:7.5px;top:5.5px;border-left:7px solid #0b1d3f;border-top:4.5px solid transparent;border-bottom:4.5px solid transparent}
+#cmPaneChat[data-spirit-chat] .cg-bub.playing .cg-vplay::before{left:6px;top:6px;width:3px;height:8px;border:0;background:#0b1d3f;box-shadow:5px 0 0 #0b1d3f}
+#cmPaneChat[data-spirit-chat] .cg-vo .cs-vt{font-size:12px;color:#fff}
+#cmPaneChat[data-spirit-chat] .cg-vbar{position:absolute;left:10px;right:10px;bottom:3px;height:2px;border-radius:1px;background:rgba(255,255,255,.18);overflow:hidden}
+#cmPaneChat[data-spirit-chat] .cg-vbar::after{content:'';position:absolute;inset:0;background:#9fe4ff;transform-origin:0 50%;transform:scaleX(var(--vp,0))}
+#cmPaneChat[data-spirit-chat] .cg-thumb{width:26px;height:26px;flex:none;object-fit:cover;border-radius:7px;border:1px solid rgba(255,255,255,.45)}
+
+/* ---- the connection stream: under the companions, never takes a tap ---- */
+#cmPaneChat[data-spirit-chat] .cg-stream{position:absolute;inset:0;width:100%;height:100%;display:block;overflow:visible;pointer-events:none;opacity:0;transition:opacity .35s ease;transform-origin:var(--me-x,50%) var(--me-y,80%)}
+#cmPaneChat[data-spirit-chat] .cg-stream[data-on="1"]{opacity:1}
+.cg-stream path{fill:none;stroke:url(#cgStreamG);stroke-linecap:round}
+.cg-stream .cs-st-halo{stroke-width:16;opacity:.16;filter:blur(6px)}
+.cg-stream .cs-st-glow{stroke-width:6;opacity:.45;filter:blur(2px)}
+.cg-stream .cs-st-core{stroke-width:2;opacity:.95;stroke:#ffffff}
+.cg-stream .cs-st-beads{stroke-width:4;stroke:#eaf9ff;stroke-dasharray:1.5 14;opacity:.9;animation:csStreamFlow 1.4s linear infinite}
+.cg-stream[data-dir="in"] .cs-st-beads{animation-direction:normal}
+.cg-stream .cs-st-surge{stroke-width:5;stroke:#ffffff;opacity:0;filter:drop-shadow(0 0 6px #9fe4ff)}
+.cg-stream.surge .cs-st-surge{opacity:1}
+.cg-stream .cs-st-comet{fill:#ffffff;opacity:0;filter:drop-shadow(0 0 8px #9fe4ff)}
+.cg-stream.surge .cs-st-comet{opacity:1}
+.cg-stream.arrive .cs-st-comet{opacity:0;transition:opacity .4s}
+.cg-stream .cs-st-ring{fill:none;stroke:#bfeaff;stroke-width:2;opacity:0;transform-box:fill-box;transform-origin:center}
+.cg-stream.surge .cs-st-ring.a{animation:csStreamRing .7s ease-out both}
+.cg-stream.arrive .cs-st-ring.b{animation:csStreamRing .8s ease-out both}
+@keyframes csStreamFlow{to{stroke-dashoffset:-31}}
+@keyframes csStreamRing{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(1.9)}}
+
+/* a long-press opens the person card: the companion gives a small squeeze so you feel it */
+#cmPaneChat[data-spirit-chat] .cg-body.cg-held .cg-orb{animation:csHeld .42s ease-out}
+#cmPaneChat[data-spirit-chat] .cg-body{-webkit-touch-callout:none}
+@keyframes csHeld{40%{transform:scale(.9)}100%{transform:scale(1)}}
+
+@media (prefers-reduced-motion:reduce){
+ #cmPaneChat .cs-mic-btn:active{transform:none}
+ #cmPaneChat .cs-rec-dot{animation:none}
+ .cg-stream .cs-st-beads{animation:none}
+ .cg-stream.surge .cs-st-ring.a,.cg-stream.arrive .cs-st-ring.b{animation:none}
+ #cmPaneChat[data-spirit-chat] .cg-body.cg-held .cg-orb{animation:none}
+}
+
+/* the photo picker input stays in the page (iOS opens the picker more reliably than from a [hidden] input) but takes no room */
+#cmPaneChat .cs-file{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;clip-path:inset(50%)!important;border:0!important;opacity:0!important;pointer-events:none!important}

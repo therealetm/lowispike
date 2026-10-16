@@ -9,6 +9,11 @@ const image = v => /^https:\/\//.test(String(v || '')) || /^data:image\/(png|jpe
 /* Oct 16 (E-man, handoff Task 11): a chat photo is an ordinary message whose body carries '📷 <public URL>' from OUR media bucket (uid/chat-<id>.jpg). No schema change; older clients still read it as text, and only links from the app's own bucket ever render as a picture. */
 const PHOTO_RE = /(^|\s)\u{1F4F7} (https:\/\/[a-z0-9-]{8,40}\.supabase\.co\/storage\/v1\/object\/public\/media\/([A-Za-z0-9_-]{6,64})\/chat-[A-Za-z0-9_-]{4,80}\.(?:jpe?g|webp|png))(?=\s|$)/u;
 function photo(text, uid){ const s=String(text||''), m=PHOTO_RE.exec(s); if(!m||(uid&&m[3]!==uid))return null; const caption=(s.slice(0,m.index)+m[1]+s.slice(m.index+m[0].length)).replace(/\s+/g,' ').trim(); return {src:m[2],caption}; }
+/* Oct 16 (E-man: "I can't even send voice notes"): a voice note is the same kind of message: '🎤 <public URL>#d=<seconds>', the file at
+   <uid>/voice-<id>.<m4a|mp4|aac|webm|ogg> in the same media bucket. Older clients read it as text; only our own bucket links play. */
+const VOICE_RE = /(^|\s)\u{1F3A4} (https:\/\/[a-z0-9-]{8,40}\.supabase\.co\/storage\/v1\/object\/public\/media\/([A-Za-z0-9_-]{6,64})\/voice-[A-Za-z0-9_-]{4,80}\.(?:m4a|mp4|aac|webm|ogg))(?:#d=(\d{1,3}))?(?=\s|$)/u;
+function voice(text, uid){ const s=String(text||''), m=VOICE_RE.exec(s); if(!m||(uid&&m[3]!==uid))return null; const rest=(s.slice(0,m.index)+m[1]+s.slice(m.index+m[0].length)).replace(/\s+/g,' ').trim(); return {src:m[2],dur:Math.min(600,+m[4]||0),rest}; }
+function voiceBody(src, dur){ const s=String(src||''); if(!voice('\u{1F3A4} '+s))return ''; const d=Math.max(1,Math.min(600,Math.round(+dur||0))); return '\u{1F3A4} '+s+'#d='+d; }
 function photoBody(src, caption){ const s=String(src||''); if(!photo('\u{1F4F7} '+s))return ''; const c=String(caption||'').replace(/\s+/g,' ').trim().slice(0,600-s.length-4); return '\u{1F4F7} '+s+(c?' '+c:''); }
 function identity(row){ row=row||{}; return {t:row.share_personality === true ? type(row.personality) : '',s:row.share_sign === true && SIGNS.includes(row.sign) ? row.sign : ''}; }
 function quiet(p, now){ p=p||{}; if(p.quietEnabled === false)return false;const hour=(now||new Date()).getHours(),a=Number.isInteger(+p.quietStart)?Math.max(0,Math.min(23,+p.quietStart)):22,b=Number.isInteger(+p.quietEnd)?Math.max(0,Math.min(23,+p.quietEnd)):8; return a===b || (a<b ? hour>=a&&hour<b : hour>=a||hour<b); }
@@ -38,17 +43,17 @@ function session(options){
   busy.add(m.id);m.status='sending';
   if(draft.text.trim()===m.t&&draft.reply===m.re)draft={text:'',reply:null};save();
   try{const row=await send(m);if(!row||row.id!==m.id||row.uid!==scope)throw new Error('missing-ack');outbox=outbox.filter(x=>x.id!==m.id);if(draft.retryId===m.id)draft={text:'',reply:null};save();return row;}
-  catch(e){if(outbox.some(x=>x.id===m.id)){m.status='unconfirmed';if(!draft.text&&!photo(m.t)&&!m.line)draft={text:m.t,reply:m.re,retryId:m.id};save();}throw e;}
+  catch(e){if(outbox.some(x=>x.id===m.id)){m.status='unconfirmed';if(!draft.text&&!photo(m.t)&&!voice(m.t)&&!m.line)draft={text:m.t,reply:m.re,retryId:m.id};save();}throw e;}
   finally{busy.delete(m.id);changed();}
  }
  /* a photo goes out once its picture is uploaded: same outbox, same ack, same retry; its body never lands in the text draft */
  let photoIn=null;
- function submitPhoto(by,text,id,reply){if(!photo(text,scope))return Promise.reject(new Error('bad-photo'));if(id&&outbox.some(x=>x.id===id))return submit(by,id);photoIn={text,id,reply:reply||null};return submit(by);}
+ function submitPhoto(by,text,id,reply){if(!photo(text,scope)&&!voice(text,scope))return Promise.reject(new Error('bad-photo'));if(id&&outbox.some(x=>x.id===id))return submit(by,id);photoIn={text,id,reply:reply||null};return submit(by);}
  /* Oct 16 (energy hits): one short line sent on its own (same outbox, ack and retry); it never touches or lands in the text draft */
  function submitLine(by,text){const t=String(text||'').trim().slice(0,600);if(!t)return Promise.reject(new Error('empty'));photoIn={text:t,id:null,reply:null,line:true};return submit(by);}
  function discard(id){if(busy.has(id))return;outbox=outbox.filter(m=>m.id!==id);if(draft.retryId===id)draft={text:'',reply:null};save();}
  return {setDraft,confirm,submit,submitPhoto,submitLine,discard,state:()=>({draft:{...draft},outbox:outbox.map(m=>({...m})),storageOK,busy:busy.size>0})};
 }
-const api={EMOJI,SIGNS,type,esc,image,photo,photoBody,identity,quiet,message,visible,read,write,session};
+const api={EMOJI,SIGNS,type,esc,image,photo,photoBody,voice,voiceBody,identity,quiet,message,visible,read,write,session};
 if(typeof module==='object'&&module.exports)module.exports=api;else root.LowiChatCore=api;
 })(typeof window==='object'?window:globalThis);

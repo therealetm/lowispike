@@ -104,6 +104,31 @@ const COPY={
  history:['Chat','Chat','Chat'],
  newPic:['New picture','Neues Bild','Foto nueva'],photoBtn:['Send a photo','Foto senden','Enviar foto'],photoReady:['Photo ready. Add a caption or just send.','Foto bereit. Schreib etwas dazu oder sende direkt.','Foto lista. Añade un texto o envíala.'],photoRemove:['Remove photo','Foto entfernen','Quitar foto'],photoSending:['Sending photo…','Foto wird gesendet …','Enviando foto…'],photoFailed:['Photo not sent. Check your connection and try again.','Foto nicht gesendet. Prüfe die Verbindung und versuch es erneut.','La foto no se envió. Revisa la conexión e inténtalo de nuevo.'],photoBad:['That file could not be read as a photo.','Diese Datei konnte nicht als Foto gelesen werden.','Ese archivo no se pudo leer como foto.'],photoBig:['That photo is too large (25 MB max).','Das Foto ist zu groß (max. 25 MB).','La foto es demasiado grande (máx. 25 MB).'],photoBots:['Photos go to real people, not galaxy bots.','Fotos gehen an echte Menschen, nicht an Galaxie-Bots.','Las fotos van a personas reales, no a bots.'],photoNote:['Location and camera details are removed before it is sent.','Standort- und Kameradaten werden vor dem Senden entfernt.','Los datos de ubicación y cámara se quitan antes de enviar.'],pcChat:['Chat','Chat','Chat'],pcEnergy:['Send energy','Energie senden','Enviar energía'],energyPing:['⚡ {n} sent you energy','⚡ {n} hat dir Energie geschickt','⚡ {n} te envió energía'],pcEnergyNo:['Energy can only go to real members.','Energie geht nur an echte Mitglieder.','La energía solo va a miembros reales.'],pcSign:['Star sign','Sternzeichen','Signo'],pcBday:['Birthday','Geburtstag','Cumpleaños'],pcType:['Personality','Persönlichkeit','Personalidad'],pcLevel:['Level','Level','Nivel'],pcNotShared:['Not shared','Nicht geteilt','No compartido'],pcOnlyYou:['only you see this','nur für dich sichtbar','solo tú lo ves'],pcYou:['This is you','Das bist du','Eres tú'],pcLast:['Last message {n}','Letzte Nachricht {n}','Último mensaje {n}'],pcQuiet:['No recent messages here','Hier keine neuen Nachrichten','Sin mensajes recientes aquí'],pcLiveNote:['Status comes only from their last message in this chat. LOWiSPIKE never tracks location.','Der Status stammt nur aus der letzten Nachricht in diesem Chat. LOWiSPIKE verfolgt nie den Standort.','El estado viene solo de su último mensaje en este chat. LOWiSPIKE nunca rastrea la ubicación.'],pcSharedNote:['Star sign and personality show only when they chose to share them. Birthdays are never shared.','Sternzeichen und Persönlichkeit erscheinen nur, wenn die Person sie teilt. Geburtstage werden nie geteilt.','El signo y la personalidad solo aparecen si la persona los comparte. Los cumpleaños nunca se comparten.'],pcPrivate:['private','privat','privado'],pcSharedTag:['shared','geteilt','compartido'],
  photoOf:['Photo from {n}','Foto von {n}','Foto de {n}'],
+ photoTap:['Tap to open picture','Tippen, um das Bild zu öffnen','Toca para abrir la foto'],
+ voiceBtn:['Record a voice note','Sprachnachricht aufnehmen','Grabar una nota de voz'],
+ voiceNote:['Voice note','Sprachnachricht','Nota de voz'],
+ voicePlay:['Play voice note from {n}','Sprachnachricht von {n} abspielen','Reproducir nota de voz de {n}'],
+ recording:['Recording a voice note','Sprachnachricht wird aufgenommen','Grabando una nota de voz'],
+ recHold:['Release to send · slide left to cancel','Loslassen zum Senden · nach links schieben zum Abbrechen','Suelta para enviar · desliza a la izquierda para cancelar'],
+ recTap:['Recording · tap the arrow to send','Aufnahme · tippe auf den Pfeil zum Senden','Grabando · toca la flecha para enviar'],
+ recCancel:['Delete recording','Aufnahme löschen','Borrar grabación'],
+ recSend:['Send voice note','Sprachnachricht senden','Enviar nota de voz'],
+ micAsk:['Allow the microphone to record…','Erlaube das Mikrofon für die Aufnahme …','Permite el micrófono para grabar…'],
+ micOffT:['Microphone is off','Mikrofon ist aus','El micrófono está desactivado'],
+ micDenied:['LOWiSPIKE may not use the microphone yet. On iPhone or iPad open Settings › Apps › Safari › Microphone (or tap “aA” › Website Settings in Safari) and choose Allow, then try again.','LOWiSPIKE darf das Mikrofon noch nicht nutzen. Öffne auf iPhone oder iPad Einstellungen › Apps › Safari › Mikrofon (oder in Safari „aA“ › Website-Einstellungen) und wähle Erlauben, dann versuch es erneut.','LOWiSPIKE aún no puede usar el micrófono. En iPhone o iPad abre Ajustes › Apps › Safari › Micrófono (o toca “aA” › Ajustes del sitio web en Safari), elige Permitir y vuelve a intentarlo.'],
+ micNoneT:['No microphone found','Kein Mikrofon gefunden','No se encontró micrófono'],
+ micNone:['This device has no microphone LOWiSPIKE can use.','Dieses Gerät hat kein Mikrofon, das LOWiSPIKE nutzen kann.','Este dispositivo no tiene un micrófono que LOWiSPIKE pueda usar.'],
+ micOldT:['Voice notes need an update','Sprachnachrichten brauchen ein Update','Las notas de voz necesitan una actualización'],
+ micOld:['Recording needs iOS 14.3 or newer, or a current browser.','Aufnehmen braucht iOS 14.3 oder neuer oder einen aktuellen Browser.','Grabar necesita iOS 14.3 o posterior, o un navegador actual.'],
+ micRetry:['Try again','Erneut versuchen','Reintentar'],
+ voiceShort:['Too short. Hold the mic a little longer.','Zu kurz. Halte das Mikrofon etwas länger.','Demasiado corta. Mantén el micrófono un poco más.'],
+ voiceSending:['Sending voice note…','Sprachnachricht wird gesendet …','Enviando nota de voz…'],
+ voiceFailed:['Voice note not sent. Check your connection and try again.','Sprachnachricht nicht gesendet. Prüfe die Verbindung und versuch es erneut.','La nota de voz no se envió. Revisa la conexión e inténtalo de nuevo.'],
+ voiceBad:['This voice note cannot play on this device.','Diese Sprachnachricht kann auf diesem Gerät nicht abgespielt werden.','Esta nota de voz no se puede reproducir en este dispositivo.'],
+ mediaSignIn:['Sign in to send photos and voice notes.','Melde dich an, um Fotos und Sprachnachrichten zu senden.','Inicia sesión para enviar fotos y notas de voz.'],
+ streamOn:['Connected to {n}. Your words, photos and voice notes go to them.','Verbunden mit {n}. Deine Worte, Fotos und Sprachnachrichten gehen an sie.','Conectado con {n}. Tus palabras, fotos y notas de voz van para esa persona.'],
+ botPicR:['Oh, I love this picture! Thank you for showing me ✨','Oh, ich liebe dieses Bild! Danke, dass du es mir zeigst ✨','¡Me encanta esta foto! Gracias por enseñármela ✨'],
+ botVoiceR:['I listened to your voice note. It is so nice to hear you! 💙','Ich habe deine Sprachnachricht gehört. Schön, dich zu hören! 💙','Escuché tu nota de voz. ¡Qué bonito escucharte! 💙'],
  back:['Back to the galaxy','Zurück zur Galaxie','Volver a la galaxia'],
  toArrow:['to {n}','an {n}','para {n}'],
  toYou:['to you','an dich','para ti'],
@@ -182,10 +207,11 @@ function crowd(ms,r,idx){const last=latestBy(ms),order=[],seen=new Set();const a
 function fill(k,n){return tr(k).replace('{n}',n);}
 /* The active conversation (you and the person you picked): its newest message rides on the one line between you two. */
 function convo(ms,idx){if(!sel||!G)return null;const b=botOf(sel);
- if(b){const arr=botStore()[sel]||[],m=arr[arr.length-1];return m?{t:m.t,fromMe:m.from==='me',ts:m.ts,id:''}:null;}
+ if(b){const arr=botStore()[sel]||[],m=arr[arr.length-1];return m?{t:mediaWords({t:m.t,uid:scope})||m.t,fromMe:m.from==='me',ts:m.ts,id:''}:null;}
  for(let i=ms.length-1;i>=0;i--){const m=ms[i];if(!m||m.demo||m.bot||!m.uid)continue;
-  if(m.uid===scope||m.uid===sel){const t=G.targetOf(m,ms,idx);if(t&&((m.uid===scope&&t.uid===sel)||(m.uid===sel&&t.uid===scope)))return {t:photoOf(m)?'\u{1F4F7} '+tr('newPic'):G.bubbleText(m,t),fromMe:m.uid===scope,ts:m.ts,id:m.id,status:m.status};}}
+  if(m.uid===scope||m.uid===sel){const t=G.targetOf(m,ms,idx);if(t&&((m.uid===scope&&t.uid===sel)||(m.uid===sel&&t.uid===scope)))return {t:mediaWords(m)||G.bubbleText(m,t),fromMe:m.uid===scope,ts:m.ts,id:m.id,status:m.status};}}
  return null;}
+function mediaWords(m){const vo=voiceOf(m);if(vo)return '\u{1F3A4} '+tr('voiceNote')+' '+mmss(vo.dur);return photoOf(m)?'\u{1F4F7} '+tr('newPic'):'';}
 function photoView(src,name){if(!K.image(src))return;const o=D.createElement('div');o.className='cg-photo';o.setAttribute('role','dialog');o.setAttribute('aria-label',fill('photoOf',name||''));
  o.innerHTML='<img alt="" src="'+esc(src)+'"><button type="button" class="cg-photo-x" aria-label="×">×</button>';const back=D.activeElement,close=()=>{o.remove();D.removeEventListener('keydown',key,true);try{if(back&&back.focus)back.focus({preventScroll:true});}catch(e){}},key=e=>{if(e.key==='Escape'){e.preventDefault();close();}};o.setAttribute('aria-modal','true');o.querySelector('img').alt=fill('photoOf',name||'');o.addEventListener('click',close);D.addEventListener('keydown',key,true);D.body.appendChild(o);const x=o.querySelector('.cg-photo-x');if(x)x.focus({preventScroll:true});}
 function galaxy(ms,w,h,quiet){
@@ -213,13 +239,16 @@ function galaxy(ms,w,h,quiet){
       place() picks the side so a bubble never covers another person or name; when there is no room it shrinks to a dot. */
    const m=last.get(me?scope:x.uid),typing=!me&&botTyping===x.uid;const o=m?G.fade(m.ts,now):0;let bw=0;
    if(typing||(m&&(o>0||m.status))){const t=m&&G.targetOf(m,ms,idx),toMe=!!(t&&t.uid===scope),pic=m?(K.image(m.img||m.photo||m.image||'')||((photoOf(m)||{}).src||'')):'';
-    const words=typing?tr('typing'):pic?'📷 '+tr('newPic'):G.bubbleText(m,t);
-    bw=Math.round(Math.min(Math.max(64,Math.max(words.length,label.length)*6.4+26),Math.min(176,w-12)));
+    const vo=!typing&&!pic&&m?voiceOf(m):null;
+    const words=typing?tr('typing'):pic?tr('newPic'):vo?mmss(vo.dur)+' '+tr('voiceNote'):G.bubbleText(m,t);
+    bw=Math.round(Math.min(Math.max(64,Math.max(words.length+(pic?5:vo?3:0),label.length)*6.4+26),Math.min(176,w-12)));
     const st=m&&m.status?'<span class="cg-st">'+tr(m.status==='sending'?'sending':'unconfirmed')+'</span>':'';
-    const inner='<b class="cg-bn">'+esc(label)+'</b><span class="cg-t'+(typing?' cg-typing':'')+'">'+(typing?esc(words):pic?esc(words):text(words))+'</span>'+st;
+    /* Oct 16: a photo shows a small thumbnail and "Tap to open picture"; a voice note shows a glass play button with its length and progress. */
+    const inner='<b class="cg-bn">'+esc(label)+'</b><span class="cg-t'+(typing?' cg-typing':'')+(pic?' cg-pict':'')+(vo?' cg-vo':'')+'">'+(typing?esc(words):pic?'<img class="cg-thumb" alt="" loading="lazy" decoding="async" src="'+esc(pic)+'">'+esc(words):vo?'<span class="cg-vplay" aria-hidden="true"></span><span class="cs-vt">'+esc(mmss(vo.dur))+'</span> '+esc(tr('voiceNote'))+'<span class="cg-vbar" aria-hidden="true"></span>':text(words))+'</span>'+st;
     const style='width:'+bw+'px;--o:'+(m&&m.status||typing?1:o)+';--c:'+hueColor(x.uid,me);
-    const cls='cg-bub cg-snap'+(me?' mine':'')+(toMe?' tome':'')+(talking||typing?' pop':'')+(pic?' pic':''),fr=' data-for="'+esc(x.uid)+'"';
-    html+=pic?button('photo',inner,'data-id="'+esc(m.id)+'" data-src="'+esc(pic)+'" data-name="'+esc(label)+'" aria-label="'+esc(fill('photoOf',label))+'" style="'+style+'"'+fr,cls)
+    const cls='cg-bub cg-snap'+(me?' mine':'')+(toMe?' tome':'')+(talking||typing?' pop':'')+(pic?' pic':'')+(vo?' voice':''),fr=' data-for="'+esc(x.uid)+'"';
+    html+=vo?button('voice',inner,'data-id="'+esc(m.id)+'" data-src="'+esc(vo.src)+'" data-dur="'+vo.dur+'" aria-pressed="false" aria-label="'+esc(fill('voicePlay',label)+', '+mmss(vo.dur))+'" style="'+style+'"'+fr,cls)
+     :pic?button('photo',inner,'data-id="'+esc(m.id)+'" data-src="'+esc(pic)+'" data-name="'+esc(label)+'" aria-label="'+esc(fill('photoOf',label))+'" style="'+style+'"'+fr,cls)
      :m&&m.id?button('thread',inner,'data-id="'+esc(m.id)+'" aria-label="'+esc(label+': '+(m.t||''))+' · '+tr('openThread')+'" style="'+style+'"'+fr,cls)
      :'<div class="'+cls+'" role="status" style="'+style+'"'+fr+'>'+inner+'</div>';}
    labels.push({id:x.uid,pri:picked?0:me?1:(typing||talking)?2:3,ts:m?(+m.ts||0):0,bw,size});
@@ -265,9 +294,10 @@ function place(){
    if(!b)continue;if(r.bub){b.style.display='';b.style.left=r.bub.x+'px';b.style.setProperty('top',r.bub.y+'px','important');b.style.setProperty('bottom','auto','important');b.style.setProperty('--tail',r.bub.tail+'px');b.setAttribute('data-side',r.bub.side);}else b.style.display='none';}
   const me=gx.me&&gx.spot.get(gx.me.uid),mp=me?scr(me):{x:cx,y:cy};
   gal.style.setProperty('--me-x',Math.round(mp.x)+'px');gal.style.setProperty('--me-y',Math.round(mp.y)+'px');
-  gx.lines=gx.lineDefs.map(d=>{const A=epos(gx.spot.get(d.a),d.a),B=epos(gx.spot.get(d.b),d.b);if(!A||!B)return null;const a=scr(A),b=scr(B),bs=(B.me?(v.w>=640?64:54):(v.w>=640?56:46))*f;return {a,b,rb:bs/2,alpha:1,sel:d.sel,arrow:d.arrow,from:d.from,to:d.to};}).filter(Boolean);
+  gx.lines=gx.lineDefs.map(d=>{const A=epos(gx.spot.get(d.a),d.a),B=epos(gx.spot.get(d.b),d.b);if(!A||!B)return null;const a=scr(A),b=scr(B),bs=(B.me?(v.w>=640?64:54):(v.w>=640?56:46))*f,as=(A.me?(v.w>=640?64:54):(v.w>=640?56:46))*f;return {a,b,rb:bs/2,ra:as/2,ame:!!A.me,alpha:1,sel:d.sel,arrow:d.arrow,from:d.from,to:d.to};}).filter(Boolean);
   gx.orbits={cx:mp.x,cy:mp.y,r:[]};
-  if(sk)sk.set(gx.lines,false,gx.orbits);
+  /* Oct 16: the picked person's thread is drawn as the connection stream (SVG), so the sky leaves that one out. */
+  const streamed=streamDraw(gx.lines,v)&&!!sel;if(sk){if(streamed)sk.set(gx.lines.filter(l=>!l.sel),false,gx.orbits);else sk.set(gx.lines,false,gx.orbits);}
   gal.setAttribute('data-zoom',cam.z>=Z.zmax*.995?'max':cam.z<=Z.zmin*1.005?'min':'mid');
 }
 function camTo(target,ms){const gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(!gx||!gal||!cam)return;cancelAnimationFrame(camAnim);const v=mapView(gal),to=G.mapClamp(target,gx.map.radius,v.w,v.h),from={...cam},t0=performance.now(),dur=ms||280;
@@ -275,19 +305,25 @@ function camTo(target,ms){const gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(
 /* zoom by k keeping the world point under (px,py) (galaxy px) under the finger */
 function zoomAt(c0,k,px,py,v){const gx=W.__lgGx,Z=gx&&gx.map?mapZ(gx,v):{zmin:.18,zmax:3},z=Math.max(Z.zmin,Math.min(Z.zmax,c0.z*k)),wx=c0.x+(px-v.w/2)/c0.z,wy=c0.y+(py-v.h*.5)/c0.z;return {x:wx-(px-v.w/2)/z,y:wy-(py-v.h*.5)/z,z};}
 function mapGestures(gal){if(gal.__map)return;gal.__map=1;
-  const pts=new Map();let g=null,suppress=0,lastTap=0,lastXY=null;
+  const pts=new Map();let g=null,suppress=0,lastTap=0,lastXY=null,lpT=0,lpHeld=false,lpAt=0;
+  /* Oct 16 (E-man: "that [card] only appears if you long-press on the companion, or any companion's name"): holding a companion still
+     for 450 ms opens their person card (with a little buzz where the device supports it); a plain tap connects instead (see connect()).
+     Moving more than 9 px (a pan) or a second finger (a pinch) cancels the hold, so dragging, pinching and double-tap stay as they were. */
+  const lpStop=()=>{clearTimeout(lpT);lpT=0;};
+  const lpOpen=body=>{lpHeld=true;lpAt=Date.now();try{if(navigator.vibrate)navigator.vibrate(12);}catch(x){}body.classList.add('cg-held');setTimeout(()=>body.classList.remove('cg-held'),420);const u=body.getAttribute('data-uid');if(u&&u!=='me')openProfile(u,body.getAttribute('data-name')||'');};
   const local=e=>{const r=gal.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};};
   const inUi=t=>!!(t&&t.closest&&t.closest('.cm-compose,input,textarea,#cgThread,.cg-empty,.ce-joy'));
   gal.addEventListener('pointerdown',e=>{if(inUi(e.target)||(e.pointerType==='mouse'&&e.button!==0))return;cancelAnimationFrame(camAnim);pts.set(e.pointerId,local(e));
-   if(pts.size===1)g={kind:'tap',p0:local(e),cam0:{...cam},t0:Date.now(),onBody:!!(e.target.closest&&e.target.closest('.cg-body,.cg-bub'))};
+   lpStop();lpHeld=false;
+   if(pts.size===1){g={kind:'tap',p0:local(e),cam0:{...cam},t0:Date.now(),onBody:!!(e.target.closest&&e.target.closest('.cg-body,.cg-bub'))};const body=e.target.closest&&e.target.closest('.cg-body');if(body)lpT=setTimeout(()=>{lpT=0;if(g&&g.kind==='tap'&&pts.size===1)lpOpen(body);},450);}
    else if(pts.size===2){const [a,b]=[...pts.values()];g={kind:'pinch',d0:Math.hypot(a.x-b.x,a.y-b.y)||1,m0:{x:(a.x+b.x)/2,y:(a.y+b.y)/2},cam0:{...cam}};}});
   gal.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId)||!g||!cam)return;pts.set(e.pointerId,local(e));const v=mapView(gal);
    if(g.kind==='pinch'&&pts.size>=2){const [a,b]=[...pts.values()],d=Math.hypot(a.x-b.x,a.y-b.y)||1,m={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
     const c=zoomAt(g.cam0,d/g.d0,g.m0.x,g.m0.y,v);c.x-=(m.x-g.m0.x)/c.z;c.y-=(m.y-g.m0.y)/c.z;cam=c;schedulePlace();return;}
    if(pts.size!==1)return;const p=pts.get(e.pointerId),dx=p.x-g.p0.x,dy=p.y-g.p0.y;
-   if(g.kind==='tap'&&Math.hypot(dx,dy)>9){g.kind='pan';try{gal.setPointerCapture(e.pointerId);}catch(x){}}
+   if(g.kind==='tap'&&Math.hypot(dx,dy)>9){lpStop();g.kind='pan';try{gal.setPointerCapture(e.pointerId);}catch(x){}}
    if(g.kind==='pan'){cam={x:g.cam0.x-dx/g.cam0.z,y:g.cam0.y-dy/g.cam0.z,z:g.cam0.z};schedulePlace();}});
-  const end=e=>{if(!pts.has(e.pointerId))return;const p=pts.get(e.pointerId);pts.delete(e.pointerId);if(!g)return;
+  const end=e=>{if(!pts.has(e.pointerId))return;const p=pts.get(e.pointerId);pts.delete(e.pointerId);lpStop();if(lpHeld){lpHeld=false;suppress=Date.now();if(!pts.size)g=null;return;}if(!g)return;
    if(g.kind==='pan'||g.kind==='pinch'){suppress=Date.now();if(!pts.size)g=null;else if(g.kind==='pinch'){const q=[...pts.values()][0];g={kind:'pan',p0:q,cam0:{...cam}};}return;}
    if(g.kind==='tap'&&e.type==='pointerup'&&!g.onBody){const now=Date.now();
     if(now-lastTap<420&&lastXY&&Math.hypot(p.x-lastXY.x,p.y-lastXY.y)<40){lastTap=0;const gx=W.__lgGx,v=mapView(gal),Z=gx&&gx.map?mapZ(gx,v):null;
@@ -297,6 +333,8 @@ function mapGestures(gal){if(gal.__map)return;gal.__map=1;
   gal.addEventListener('pointerup',end);gal.addEventListener('pointercancel',end);
   gal.addEventListener('click',e=>{if(Date.now()-suppress<380){e.preventDefault();e.stopPropagation();}},true);
   gal.addEventListener('dblclick',e=>e.preventDefault());
+  /* Right-click, the keyboard's context-menu key or Android's long-press menu: the same person card; never the browser menu on a companion. */
+  gal.addEventListener('contextmenu',e=>{const body=e.target.closest&&e.target.closest('.cg-body');if(!body)return;e.preventDefault();if(Date.now()-lpAt<1500)return;lpAt=Date.now();const u=body.getAttribute('data-uid');if(u&&u!=='me')openProfile(u,body.getAttribute('data-name')||'');});
   gal.addEventListener('wheel',e=>{const gx=W.__lgGx;if(!gx||!gx.map||!cam||inUi(e.target))return;const v=mapView(gal),Z=mapZ(gx,v);
    if(e.deltaY<0&&cam.z>=Z.zmax*.995)return;/* fully zoomed in: galaxy-zoom.js may dive you back into Home */
    e.preventDefault();const p=local(e);cam=zoomAt(cam,Math.exp(-e.deltaY*.0022),p.x,p.y,v);schedulePlace();},{passive:false});
@@ -336,8 +374,13 @@ function openGalaxy(uid){try{if(typeof W.goTab==='function')W.goTab('foryou');}c
 function text(t){return esc(t).replace(/@([\p{L}\p{N}_-]+)/gu,'<span class="cm-at">@$1</span>');}
 /* Oct 16 (Task 11): a photo message shows its picture (tap to open) and caption, never the raw link */
 function photoOf(m){return m&&K.photo?K.photo(m.t,String(m.uid||'').indexOf('bot:')===0?'x':m.uid):null;}
-function plain(m){const ph=photoOf(m);return ph?'\u{1F4F7} '+tr('newPic')+(ph.caption?' \u00b7 '+ph.caption:''):String(m&&m.t||'');}
-function msgBody(m){const ph=photoOf(m);if(!ph)return '<div class="cm-t">'+text(m.t)+'</div>';return '<button type="button" class="cs-photo" data-chat="photo" data-sfx="none" data-src="'+esc(ph.src)+'" data-name="'+esc(m.by||'')+'" aria-label="'+esc(fill('photoOf',m.by||''))+'"><img loading="lazy" decoding="async" alt="" src="'+esc(ph.src)+'"></button>'+(ph.caption?'<div class="cm-t">'+text(ph.caption)+'</div>':'');}
+function voiceOf(m){return m&&K.voice?K.voice(m.t,String(m.uid||'').indexOf('bot:')===0?'x':m.uid):null;}
+function mmss(s){s=Math.max(0,Math.round(+s||0));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
+/* A voice note in the chat: a glass play button, a little waveform that fills as it plays, and its length. */
+function voiceHtml(vo,by,cls){let h=0;for(const ch of vo.src)h=(h*31+ch.charCodeAt(0))>>>0;let bars='';for(let i=0;i<24;i++){h=(h*1103515245+12345)>>>0;bars+='<i style="height:'+(28+(h>>>8)%64)+'%"></i>';}
+ return '<button type="button" class="'+cls+'" data-chat="voice" data-sfx="none" data-src="'+esc(vo.src)+'" data-dur="'+vo.dur+'" aria-pressed="false" aria-label="'+esc(fill('voicePlay',by||'')+', '+mmss(vo.dur))+'"><span class="cs-vi" aria-hidden="true"></span><span class="cs-vw" aria-hidden="true">'+bars+'<span class="cs-vp">'+bars+'</span></span><span class="cs-vt">'+esc(mmss(vo.dur))+'</span></button>';}
+function plain(m){const vo=voiceOf(m);if(vo)return '\u{1F3A4} '+tr('voiceNote')+' \u00b7 '+mmss(vo.dur);const ph=photoOf(m);return ph?'\u{1F4F7} '+tr('newPic')+(ph.caption?' \u00b7 '+ph.caption:''):String(m&&m.t||'');}
+function msgBody(m){const vo=voiceOf(m);if(vo)return voiceHtml(vo,m.by,'cs-voice')+(vo.rest?'<div class="cm-t">'+text(vo.rest)+'</div>':'');const ph=photoOf(m);if(!ph)return '<div class="cm-t">'+text(m.t)+'</div>';return '<button type="button" class="cs-photo" data-chat="photo" data-sfx="none" data-src="'+esc(ph.src)+'" data-name="'+esc(m.by||'')+'" aria-label="'+esc(fill('photoOf',m.by||''))+'"><img loading="lazy" decoding="async" alt="" src="'+esc(ph.src)+'"></button>'+(ph.caption?'<div class="cm-t">'+text(ph.caption)+'</div>':'');}
 function time(ts){try{return new Date(ts).toLocaleTimeString(['en','de','es'][Math.max(0,lang())],{hour:'2-digit',minute:'2-digit'});}catch(e){return '';}}
 /* Oct 16, round 5 (E-man: "the Chat room only shows my own messages"): the chats with the galaxy companions live on this
    phone (botStore), so the Chat room now reads them in too, in time order with everyone else: their words on the left with
@@ -369,7 +412,7 @@ function renderMessage(m,all,prev,next){
 }
 function mount(el){if(!el)return;ensureScope();if(!el.hasAttribute('data-spirit-chat')){
  el.setAttribute('data-spirit-chat','');el.setAttribute('data-planet','normal');el.setAttribute('data-noi18n','');
- el.innerHTML='<header class="cp-bar"><div class="cp-head"><h2 id="cpTitle"></h2><p id="cpSub"></p></div><div id="csControls"></div></header><div class="cs-status" id="csStatus" role="status"></div><section class="cp-room cg-room" id="cpRoom"><div class="cg-galaxy" id="cgGalaxy" role="group"><canvas class="cg-sky" id="cgSky" aria-hidden="true"></canvas><div class="cg-field" id="cgField"></div></div><section class="cg-thread" id="cgThread"><header class="cg-thead"><b id="cgThreadTitle"></b><button type="button" class="cg-x" data-sfx="none" data-chat="close-thread" id="cgClose">×</button></header><div class="cm-list" id="cmList" role="log" aria-live="off" tabindex="0"></div><div id="csJump"></div></section></section><div class="cm-compose"><div class="cg-torow" id="cgTo"></div><div id="csReply"></div><div class="cm-mention" id="cmMention"></div><div id="csPhoto"></div><div class="cm-inrow"><button type="button" id="cmPhoto" class="cs-photo-btn" data-chat="photo-pick" data-sfx="none"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.2-1.6A1.5 1.5 0 0 1 10.5 4h3a1.5 1.5 0 0 1 1.2.6L15.9 6h1.6A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="12.4" r="3.4" fill="none" stroke="currentColor" stroke-width="1.7"/></svg></button><input type="file" id="cmPhotoFile" accept="image/*" hidden tabindex="-1" aria-hidden="true"><textarea id="cmInput" rows="1" maxlength="600" enterkeyhint="send"></textarea><button type="button" id="cmSend" data-chat="send" data-sfx="none">↑</button></div><div class="cs-compose-meta"><span id="csDraft"></span><span id="csCount"></span></div><p class="cs-notice" id="csNotice" role="status"></p></div><span id="csAnnounce" class="sr-only" aria-live="polite"></span>';
+ el.innerHTML='<header class="cp-bar"><div class="cp-head"><h2 id="cpTitle"></h2><p id="cpSub"></p></div><div id="csControls"></div></header><div class="cs-status" id="csStatus" role="status"></div><section class="cp-room cg-room" id="cpRoom"><div class="cg-galaxy" id="cgGalaxy" role="group"><canvas class="cg-sky" id="cgSky" aria-hidden="true"></canvas><svg class="cg-stream" id="cgStream" aria-hidden="true" focusable="false" data-on="0"></svg><div class="cg-field" id="cgField"></div></div><section class="cg-thread" id="cgThread"><header class="cg-thead"><b id="cgThreadTitle"></b><button type="button" class="cg-x" data-sfx="none" data-chat="close-thread" id="cgClose">×</button></header><div class="cm-list" id="cmList" role="log" aria-live="off" tabindex="0"></div><div id="csJump"></div></section></section><div class="cm-compose"><div class="cg-torow" id="cgTo"></div><div id="csReply"></div><div class="cm-mention" id="cmMention"></div><div id="csPhoto"></div><div id="csMic"></div><div class="cm-inrow"><button type="button" id="cmPhoto" class="cs-photo-btn" data-chat="photo-pick" data-sfx="none"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.2-1.6A1.5 1.5 0 0 1 10.5 4h3a1.5 1.5 0 0 1 1.2.6L15.9 6h1.6A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="12.4" r="3.4" fill="none" stroke="currentColor" stroke-width="1.7"/></svg></button><input type="file" id="cmPhotoFile" accept="image/*" class="cs-file" tabindex="-1" aria-hidden="true"><textarea id="cmInput" rows="1" maxlength="600" enterkeyhint="send"></textarea><button type="button" id="cmMic" class="cs-mic-btn" data-chat="mic" data-sfx="none"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><rect x="9" y="3.5" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M5.8 11.5a6.2 6.2 0 0 0 12.4 0M12 17.7V20.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button><div class="cs-rec-host" id="csRec"></div><button type="button" id="cmSend" data-chat="send" data-sfx="none">↑</button></div><div class="cs-compose-meta"><span id="csDraft"></span><span id="csCount"></span></div><p class="cs-notice" id="csNotice" role="status"></p></div><span id="csAnnounce" class="sr-only" aria-live="polite"></span>';
  el.querySelector('#cmList').addEventListener('scroll',()=>{if(nearBottom()){newCount=0;const j=D.getElementById('csJump');if(j)j.innerHTML='';}},{passive:true});
  }
  paint(el);}
@@ -408,7 +451,7 @@ function paint(el){
  q('#csJump').innerHTML=newCount&&!near&&!ownNew?button('latest',tr('newMessages'),'','cs-jump'):'';
  const parent=ms.find(x=>x.id===ds.draft.reply);q('#csReply').innerHTML=ds.draft.reply?'<div class="cm-replybar"><span>'+tr('replying')+' <b>'+esc(parent?parent.by:tr('gone'))+'</b></span>'+button('noreply','×','aria-label="'+tr('cancel')+'"','')+'</div>':'';
  const inp=q('#cmInput');if(inp.value!==ds.draft.text)inp.value=ds.draft.text;const selN=sel&&(roster().get(sel)||{}).n;inp.placeholder=selN?fill('writeTo',selN):tr('message');inp.setAttribute('aria-label',inp.placeholder);inp.setAttribute('aria-describedby','csDraft csNotice');
- q('#cmSend').setAttribute('aria-label',tr('send'));const toBot=!!(sel&&botOf(sel));q('#cmSend').disabled=(!scope&&!toBot)||(!inp.value.trim()&&!(pendingPhoto&&!toBot))||photoBusy||(!toBot&&(ds.busy||navigator.onLine===false));photoBar(toBot);
+ q('#cmSend').setAttribute('aria-label',tr('send'));const toBot=!!(sel&&botOf(sel));q('#cmSend').disabled=(!scope&&!toBot)||(!inp.value.trim()&&!pendingPhoto)||photoBusy||voiceBusy||(!toBot&&(ds.busy||navigator.onLine===false));photoBar(toBot);
  q('#csDraft').textContent=ds.storageOK?(ds.draft.text?tr('draft'):selN?fill('hintTo',selN):tr('hint')):tr('volatile');q('#csCount').textContent=inp.value.length+'/600';q('#csNotice').textContent=notice;
  q('#cmList').setAttribute('aria-label',tr('square'));q('#csAnnounce').setAttribute('aria-live',isQuiet()?'off':'polite');mentions();fit();
 }
@@ -420,16 +463,23 @@ function focusInput(){const i=D.getElementById('cmInput');if(i)i.focus({preventS
 function botSend(b){const ds=draftState(),inp=D.getElementById('cmInput'),t=String(ds.draft.text||(inp&&inp.value)||'').trim();if(!t)return;botSay(b.uid,'me',t);draft('',null);if(inp)inp.value='';notice='';
  clearTimeout(botTimer);botTyping='';refresh();const wait=900+Math.min(1600,t.length*25);
  botTimer=setTimeout(()=>{botTyping=b.uid;refresh();botTimer=setTimeout(()=>{botTyping='';botSay(b.uid,'bot',G.botReply(b,t,lang()));speak=b.uid;clearTimeout(speakTimer);speakTimer=setTimeout(()=>{speak='';refresh();},3400);refresh();},1100+Math.min(1400,t.length*18));},wait);}
-async function send(retryId){if(!retryId&&pendingPhoto&&!(sel&&botOf(sel))){await sendPhoto();return;}if(!retryId&&sel&&botOf(sel)){botSend(botOf(sel));return;}if(!store||navigator.onLine===false){notice=tr('offline');refresh();return;}const m=own(),name=String(m.n||'').trim();if(!name){notice=tr('name');refresh();return;}notice='';if(!retryId&&sel&&G){const ds=draftState(),p=roster().get(sel);if(p&&ds.draft.text.trim()){const t=G.direct(ds.draft.text,p.n);if(t!==ds.draft.text)draft(t,ds.draft.reply);}}try{await store.submit(name,retryId);}catch(e){notice=tr('sendFailed');}refresh();}
+async function send(retryId){if(!retryId&&pendingPhoto){await sendPhoto();return;}if(!retryId&&sel&&botOf(sel)){botSend(botOf(sel));return;}if(!store||navigator.onLine===false){notice=tr('offline');refresh();return;}const m=own(),name=String(m.n||'').trim();if(!name){notice=tr('name');refresh();return;}notice='';if(!retryId&&sel&&G){const ds=draftState(),p=roster().get(sel);if(p&&ds.draft.text.trim()){const t=G.direct(ds.draft.text,p.n);if(t!==ds.draft.text)draft(t,ds.draft.reply);}}try{await store.submit(name,retryId);}catch(e){notice=tr('sendFailed');}refresh();}
 /* ---- Oct 16 (E-man, handoff Task 11): photos in Community chat ----
    A photo is shrunk on the device (longest edge 1600 px, JPEG): re-encoding drops EXIF location and camera data.
    It is uploaded to the app's own media bucket at <uid>/chat-<message id>.jpg, and the message carries its public link.
    Nothing is sent before the user taps send; bots get no photos (their chats are local text only). */
 let pendingPhoto=null,photoBusy=false;
-function photoBar(toBot){const el=D.getElementById('csPhoto'),btn=D.getElementById('cmPhoto');if(btn){btn.setAttribute('aria-label',tr('photoBtn'));btn.title=toBot?tr('photoBots'):tr('photoBtn');btn.disabled=!!toBot||!scope||photoBusy;}if(!el)return;
- if(!pendingPhoto||toBot){if(el.innerHTML)el.innerHTML='';return;}
+/* Oct 16 (E-man on iPad: "it has the button, but clicking on it doesn't even work"): the button used to be DISABLED whenever a galaxy
+   bot was picked or you were signed out, so a tap did nothing at all. It now always answers: it opens the picker, or says why it can't. */
+function photoBar(toBot){const el=D.getElementById('csPhoto'),btn=D.getElementById('cmPhoto');if(btn){btn.setAttribute('aria-label',tr('photoBtn'));btn.title=tr('photoBtn');btn.disabled=photoBusy||voiceBusy||!!rec;btn.setAttribute('aria-disabled',String(!scope));}
+ micSwap();
+ const mic=D.getElementById('cmMic');if(mic){mic.setAttribute('aria-label',tr('voiceBtn'));mic.title=tr('voiceBtn');mic.disabled=photoBusy||voiceBusy||!!pendingPhoto;mic.setAttribute('aria-disabled',String(!scope));}
+ if(!el)return;
+ if(!pendingPhoto){if(el.innerHTML)el.innerHTML='';return;}
  if(el.dataset.pid===pendingPhoto.id&&el.innerHTML)return;el.dataset.pid=pendingPhoto.id;
  el.innerHTML='<div class="cs-photo-ready"><img alt="" src="'+esc(pendingPhoto.preview)+'"><div><b>'+tr('photoReady')+'</b><small>'+tr('photoNote')+'</small></div>'+button('photo-clear','×','aria-label="'+tr('photoRemove')+'"','cs-photo-x')+'</div>';}
+/* Oct 16: while the field is empty (no text, no photo) the mic stands where Send is, like Messages; as soon as you type, Send comes back. */
+function micSwap(){const row=D.querySelector('#cmPaneChat .cm-inrow'),inp=D.getElementById('cmInput');if(!row||!row.classList)return;row.classList.toggle('cs-empty',!pendingPhoto&&!String(inp&&inp.value||'').trim());}
 function newPhotoId(){try{if(W.crypto&&W.crypto.randomUUID)return 'p'+W.crypto.randomUUID().replace(/-/g,'');}catch(e){}return 'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,10);}
 function shrinkPhoto(file){return new Promise((res,rej)=>{if(!file)return rej(new Error('bad'));if(file.type&&!/^image\//.test(file.type))return rej(new Error('bad'));if(file.size>25e6)return rej(new Error('big'));
  let url='';try{url=URL.createObjectURL(file);}catch(e){return rej(new Error('bad'));}const img=new Image();
@@ -437,19 +487,139 @@ function shrinkPhoto(file){return new Promise((res,rej)=>{if(!file)return rej(ne
   const pk=Math.min(1,240/Math.max(c.width,c.height)),pc=D.createElement('canvas');pc.width=Math.max(1,Math.round(c.width*pk));pc.height=Math.max(1,Math.round(c.height*pk));pc.getContext('2d').drawImage(c,0,0,pc.width,pc.height);const preview=pc.toDataURL('image/jpeg',.7);
   c.toBlob(b=>b?res({blob:b,preview,w:c.width,h:c.height}):rej(new Error('bad')),'image/jpeg',.82);}catch(e){try{URL.revokeObjectURL(url);}catch(x){}rej(new Error('bad'));}};
  img.onerror=()=>{try{URL.revokeObjectURL(url);}catch(x){}rej(new Error('bad'));};img.src=url;});}
-function pickPhoto(){if(sel&&botOf(sel)){notice=tr('photoBots');refresh();return;}if(!scope){notice=tr('offline');refresh();return;}const f=D.getElementById('cmPhotoFile');if(f){f.value='';f.click();}}
+/* Runs synchronously inside the tap's click handler (iOS only opens the picker from a real user gesture), on an input that stays in the
+   layout (never display:none or [hidden]). No capture attribute, so iOS offers both Take Photo and Photo Library. Bots get photos too. */
+function pickPhoto(){if(photoBusy)return;if(!scope){notice=tr('mediaSignIn');refresh();return;}const f=D.getElementById('cmPhotoFile');if(f){try{f.value='';}catch(e){}f.click();}}
 async function takePhoto(file){if(!file)return;try{const p=await shrinkPhoto(file);pendingPhoto={id:newPhotoId(),blob:p.blob,preview:p.preview,w:p.w,h:p.h,src:''};notice='';}catch(e){pendingPhoto=null;notice=tr(e&&e.message==='big'?'photoBig':'photoBad');}refresh();focusInput();}
 function clearPhoto(){pendingPhoto=null;const el=D.getElementById('csPhoto');if(el){el.innerHTML='';el.dataset.pid='';}}
-async function sendPhoto(){if(photoBusy||!pendingPhoto)return;if(!store||!scope||navigator.onLine===false){notice=tr('offline');refresh();return;}const m=own(),name=String(m.n||'').trim();if(!name){notice=tr('name');refresh();return;}
+async function sendPhoto(){if(photoBusy||!pendingPhoto)return;const bot=sel&&botOf(sel);if(!scope){notice=tr('mediaSignIn');refresh();return;}if((!bot&&!store)||navigator.onLine===false){notice=tr('offline');refresh();return;}const m=own(),name=String(m.n||'').trim();if(!name&&!bot){notice=tr('name');refresh();return;}
  const ds=draftState(),pin=pendingPhoto,p=sel&&roster().get(sel);let cap=String(ds.draft.text||'').trim(),tag='';
  if(p&&G){const t=G.direct(cap,p.n),at='@'+String(p.n).trim();if(t.toLocaleLowerCase().startsWith(at.toLocaleLowerCase())){tag=t.slice(0,at.length);cap=t.slice(at.length).trim();}}
  photoBusy=true;notice=tr('photoSending');refresh();
- try{const sb=H.client?await H.client():null;if(!sb||!sb.storage||!sb.storage.from)throw new Error('client');const path=scope+'/chat-'+pin.id+'.jpg';if(!pin.src){const up=await sb.storage.from('media').upload(path,pin.blob,{contentType:'image/jpeg',upsert:true,cacheControl:'31536000'});if(!up||up.error)throw (up&&up.error)||new Error('upload');const pub=sb.storage.from('media').getPublicUrl(path);pin.src=pub&&pub.data&&pub.data.publicUrl||'';}
+ try{const path=scope+'/chat-'+pin.id+'.jpg';if(!pin.src)pin.src=await mediaUpload(path,pin.blob,['image/jpeg']);
   const body=(tag?tag+' ':'')+K.photoBody(pin.src,cap);if(!K.photo(body,scope))throw new Error('url');
   if(pendingPhoto===pin)clearPhoto();if(ds.draft.text)draft('',null);const inp=D.getElementById('cmInput');if(inp)inp.value='';notice='';photoBusy=false;
-  await store.submitPhoto(name,body,pin.id,ds.draft.reply||null);}
+  if(bot){botSay(bot.uid,'me',body);botAnswer(bot,tr('botPicR'));}else await store.submitPhoto(name,body,pin.id,ds.draft.reply||null);}
  catch(e){photoBusy=false;notice=tr('photoFailed');}
  photoBusy=false;refresh();}
+/* ---- Oct 16 (E-man on iPad): shared media upload, voice notes, the connection stream ---- */
+async function mediaUpload(path,blob,types){const sb=H.client?await H.client():null;if(!sb||!sb.storage||!sb.storage.from)throw new Error('client');let err=null;
+ for(const ct of types){const up=await sb.storage.from('media').upload(path,blob,{contentType:ct,upsert:true,cacheControl:'31536000'});
+  if(up&&!up.error){const pub=sb.storage.from('media').getPublicUrl(path);const u=pub&&pub.data&&pub.data.publicUrl||'';if(!u)throw new Error('url');return u;}err=(up&&up.error)||new Error('upload');}
+ throw err||new Error('upload');}
+function botAnswer(b,reply){clearTimeout(botTimer);botTyping='';refresh();
+ botTimer=setTimeout(()=>{botTyping=b.uid;refresh();botTimer=setTimeout(()=>{botTyping='';botSay(b.uid,'bot',reply);speak=b.uid;clearTimeout(speakTimer);speakTimer=setTimeout(()=>{speak='';refresh();},3400);refresh();},1300);},900);}
+
+/* Voice notes: tap the mic to record and tap the arrow to send, or hold the mic, release to send and slide left to cancel.
+   MediaRecorder picks audio/mp4 on iOS Safari and webm/ogg elsewhere. The file goes to <uid>/voice-<id>.<ext> in the media bucket
+   (if the bucket refuses the audio type it is stored under the matching video type; an <audio> element plays both), and the
+   message body is '🎤 <public URL>#d=<seconds>'. Up to two minutes; at the limit it sends by itself. */
+const VOICE_MAX=120;let rec=null,voiceBusy=false,micPress=null,micDownAt=0,micErr='';
+function voiceMime(){const MR=W.MediaRecorder;if(!MR)return null;if(typeof MR.isTypeSupported!=='function')return '';
+ for(const t of ['audio/mp4;codecs=mp4a.40.2','audio/mp4','audio/aac','audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus'])try{if(MR.isTypeSupported(t))return t;}catch(e){}return '';}
+function voiceExt(type){const t=String(type||'');return /webm/.test(t)?'webm':/ogg/.test(t)?'ogg':/aac/.test(t)?'aac':'m4a';}
+function micCard(kind){micErr=kind||'';const el=D.getElementById('csMic');if(!el)return;if(!micErr){el.innerHTML='';return;}
+ const T={denied:['micOffT','micDenied'],none:['micNoneT','micNone'],old:['micOldT','micOld']}[micErr]||['micOffT','micDenied'];
+ el.innerHTML='<div class="cs-mic-card" role="alert"><span class="cs-mic-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" focusable="false"><rect x="9" y="3.5" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M5.8 11.5a6.2 6.2 0 0 0 12.4 0M12 17.7V20.5M4 4l16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span><div><b>'+esc(tr(T[0]))+'</b><small>'+esc(tr(T[1]))+'</small>'+(micErr==='old'?'':button('mic-retry',esc(tr('micRetry')),'','cs-mic-retry'))+'</div>'+button('mic-close','×','aria-label="'+esc(tr('close'))+'"','cs-photo-x')+'</div>';}
+function recUI(){const box=D.getElementById('csRec'),row=D.querySelector('#cmPaneChat .cm-inrow');if(!box)return;const on=!!rec;if(row)row.classList.toggle('cs-recording',on);
+ if(!on){if(box.innerHTML)box.innerHTML='';return;}
+ if(!box.firstChild)box.innerHTML='<div class="cs-rec" role="group" aria-label="'+esc(tr('recording'))+'"><p class="cs-rec-hint" id="csRecHint" aria-live="polite"></p>'+button('rec-cancel','<svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true" focusable="false"><path d="M5 7h14M10 4h4M8 7l.8 12.2A1.8 1.8 0 0 0 10.6 21h2.8a1.8 1.8 0 0 0 1.8-1.8L16 7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>','aria-label="'+esc(tr('recCancel'))+'"','cs-rec-x')+'<span class="cs-rec-dot" aria-hidden="true"></span><span class="cs-rec-time" id="csRecTime">0:00</span><canvas class="cs-rec-wave" id="csRecWave" aria-hidden="true"></canvas>'+button('rec-send','\u2191','aria-label="'+esc(tr('recSend'))+'"','cs-rec-send')+'</div>';
+ const h=D.getElementById('csRecHint');if(h)h.textContent=rec.starting?tr('micAsk'):rec.mode==='hold'?tr('recHold'):tr('recTap');
+ box.firstChild.classList.toggle('hold',rec.mode==='hold');box.firstChild.classList.toggle('starting',!!rec.starting);}
+function recStart(mode,x){if(rec||voiceBusy||photoBusy)return;if(!scope){notice=tr('mediaSignIn');refresh();return;}if(navigator.onLine===false){notice=tr('offline');refresh();return;}
+ const md=navigator.mediaDevices;if(!md||!md.getUserMedia||!W.MediaRecorder){micCard('old');return;}
+ micCard('');notice='';const r={mode,x0:x||0,t0:0,chunks:[],levels:[],starting:true,send:false,cancel:false};rec=r;
+ /* The AudioContext for the live waveform is made here, inside the tap, so iOS lets it run. */
+ try{const AC=W.AudioContext||W.webkitAudioContext;if(AC){r.ac=new AC();if(r.ac.resume)r.ac.resume().catch(()=>{});}}catch(e){r.ac=null;}
+ refresh();recUI();
+ md.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}}).then(stream=>{
+  if(rec!==r||r.cancel){stream.getTracks().forEach(t=>t.stop());recClose(r);if(rec===r)rec=null;recUI();refresh();return;}
+  const mime=voiceMime();let mr=null;try{mr=mime?new W.MediaRecorder(stream,{mimeType:mime,audioBitsPerSecond:64000}):new W.MediaRecorder(stream);}catch(e){try{mr=new W.MediaRecorder(stream);}catch(x){mr=null;}}
+  if(!mr){stream.getTracks().forEach(t=>t.stop());recClose(r);rec=null;recUI();refresh();micCard('old');return;}
+  r.stream=stream;r.mr=mr;r.mime=String(mr.mimeType||mime||'audio/mp4');r.starting=false;
+  mr.ondataavailable=e=>{if(e.data&&e.data.size)r.chunks.push(e.data);};mr.onstop=()=>recDone(r);
+  try{mr.start(250);}catch(e){try{mr.start();}catch(x){stream.getTracks().forEach(t=>t.stop());recClose(r);rec=null;recUI();refresh();micCard('old');return;}}
+  r.t0=Date.now();
+  try{if(r.ac){const src=r.ac.createMediaStreamSource(stream),an=r.ac.createAnalyser();an.fftSize=512;src.connect(an);r.an=an;r.buf=new Uint8Array(an.fftSize);}}catch(e){r.an=null;}
+  r.tick=setInterval(()=>recTick(r),80);recUI();
+ }).catch(e=>{recClose(r);if(rec===r)rec=null;recUI();refresh();const n=e&&e.name||'';micCard(/NotFound|DevicesNotFound|Overconstrained/.test(n)?'none':/NotSupported|TypeError/.test(n)?'old':'denied');});}
+function recTick(r){if(rec!==r||!r.t0)return;const sec=(Date.now()-r.t0)/1000,t=D.getElementById('csRecTime');if(t)t.textContent=mmss(Math.floor(sec));
+ let lv=0;if(r.an){try{r.an.getByteTimeDomainData(r.buf);let sum=0;for(let i=0;i<r.buf.length;i++){const d=(r.buf[i]-128)/128;sum+=d*d;}lv=Math.min(1,Math.sqrt(sum/r.buf.length)*4.2);}catch(e){lv=0;}}
+ if(!r.an||(!lv&&r.ac&&r.ac.state!=='running'))lv=.18+.14*Math.abs(Math.sin(sec*5.3))*Math.abs(Math.sin(sec*1.7+1));
+ r.levels.push(lv);if(r.levels.length>64)r.levels.shift();
+ const c=D.getElementById('csRecWave');if(c){const w=c.clientWidth|0,h=c.clientHeight|0,dpr=Math.min(2,W.devicePixelRatio||1);if(w&&h){if(c.width!==Math.round(w*dpr)){c.width=Math.round(w*dpr);c.height=Math.round(h*dpr);}const g=c.getContext('2d');if(g){g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,w,h);const n=Math.max(8,Math.floor(w/5)),L=r.levels;g.fillStyle='rgba(234,247,255,.92)';
+  for(let i=0;i<n;i++){const v=L[L.length-n+i];const bh=v==null?2:Math.max(2,v*(h-4));const x=i*5;g.globalAlpha=v==null?.3:.55+.45*(i/n);g.beginPath();if(g.roundRect)g.roundRect(x,(h-bh)/2,3,bh,1.5);else g.rect(x,(h-bh)/2,3,bh);g.fill();}g.globalAlpha=1;}}}
+ if(sec>=VOICE_MAX)recStop(true);}
+function recClose(r){clearInterval(r.tick);try{if(r.stream)r.stream.getTracks().forEach(t=>t.stop());}catch(e){}try{if(r.ac&&r.ac.close)r.ac.close().catch(()=>{});}catch(e){}r.an=null;}
+function recStop(send){const r=rec;if(!r)return;r.send=!!send;if(r.starting){if(send){r.mode='tap';recUI();return;}r.cancel=true;rec=null;recClose(r);recUI();refresh();return;}
+ if(r.mr&&r.mr.state!=='inactive'){try{r.mr.stop();}catch(e){recDone(r);}}else recDone(r);}
+function recDone(r){if(r.done)return;r.done=true;recClose(r);const dur=r.t0?(Date.now()-r.t0)/1000:0;if(rec===r)rec=null;recUI();
+ if(!r.send){refresh();return;}if(dur<0.8){notice=tr('voiceShort');refresh();return;}
+ const type=String(r.mime||'audio/mp4').split(';')[0],blob=new Blob(r.chunks,{type});if(!blob.size){notice=tr('voiceFailed');refresh();return;}
+ sendVoice(blob,Math.min(VOICE_MAX,dur));}
+async function sendVoice(blob,dur){const bot=sel&&botOf(sel),p=!bot&&sel&&roster().get(sel);if(!scope){notice=tr('mediaSignIn');refresh();return;}
+ if((!bot&&!store)||navigator.onLine===false){notice=tr('offline');refresh();return;}const name=String(own().n||'').trim();if(!name&&!bot){notice=tr('name');refresh();return;}
+ voiceBusy=true;notice=tr('voiceSending');refresh();
+ try{const id='v'+newPhotoId().slice(1),type=String(blob.type||'audio/mp4').split(';')[0],ext=voiceExt(type),path=scope+'/voice-'+id+'.'+ext;
+  const src=await mediaUpload(path,blob,[type,ext==='webm'?'video/webm':ext==='ogg'?'video/ogg':'video/mp4']);
+  const body=K.voiceBody(src,dur);if(!body||!K.voice(body,scope))throw new Error('url');
+  voiceBusy=false;notice='';
+  if(bot){botSay(bot.uid,'me',body);botAnswer(bot,tr('botVoiceR'));}
+  else{const tag=p?'@'+String(p.n).trim()+' ':'';await store.submitPhoto(name,tag+body,id,draftState().draft.reply||null);}}
+ catch(e){notice=tr('voiceFailed');}
+ voiceBusy=false;refresh();}
+/* Playing: one shared <audio>; every play button for that note shows play/pause and fills as it plays. */
+let vAudio=null,vSrc='';
+function voicePlay(btn){const src=btn&&btn.getAttribute('data-src')||'';if(!K.voice||!K.voice('\u{1F3A4} '+src))return;
+ if(!vAudio){vAudio=new Audio();vAudio.preload='auto';vAudio.setAttribute('playsinline','');for(const ev of ['timeupdate','play','pause','loadedmetadata'])vAudio.addEventListener(ev,()=>voiceSync());
+  vAudio.addEventListener('ended',()=>{vSrc='';voiceSync();});vAudio.addEventListener('error',()=>{if(!vSrc)return;vSrc='';notice=tr('voiceBad');voiceSync();refresh();});}
+ if(vSrc===src){if(vAudio.paused)vAudio.play().catch(()=>{});else vAudio.pause();return;}
+ vSrc=src;try{vAudio.pause();}catch(e){}vAudio.src=src;const pr=vAudio.play();if(pr&&pr.catch)pr.catch(e=>{if(e&&e.name==='NotSupportedError'){vSrc='';notice=tr('voiceBad');refresh();}voiceSync();});voiceSync();}
+function voiceSync(){const btns=D.querySelectorAll('#cmPaneChat [data-chat="voice"]');if(!btns.length)return;const a=vAudio,d=a&&isFinite(a.duration)&&a.duration>0?a.duration:0;
+ for(const b of btns){const on=!!vSrc&&b.getAttribute('data-src')===vSrc,playing=on&&a&&!a.paused,dur=+b.getAttribute('data-dur')||d||0,len=d||dur;
+  b.classList.toggle('playing',!!playing);b.setAttribute('aria-pressed',String(!!playing));b.style.setProperty('--vp',on&&len?Math.min(1,a.currentTime/len).toFixed(3):'0');
+  const t=b.querySelector('.cs-vt');if(t){const s=on&&a.currentTime>0?mmss(a.currentTime):mmss(dur);if(t.textContent!==s)t.textContent=s;}}}
+D.addEventListener('visibilitychange',()=>{if(D.hidden){if(vAudio&&!vAudio.paused)vAudio.pause();if(rec)recStop(false);}});
+/* The mic: press starts recording; a quick tap leaves it running (tap the arrow to send), a hold sends on release. */
+D.addEventListener('pointerdown',e=>{const m=e.target&&e.target.closest&&e.target.closest('#cmMic');if(!m||m.disabled)return;if(e.pointerType==='mouse'&&e.button!==0)return;
+ e.preventDefault();micDownAt=Date.now();if(rec)return;micPress={id:e.pointerId,x:e.clientX,t:Date.now()};try{m.setPointerCapture(e.pointerId);}catch(x){}recStart('hold',e.clientX);},true);
+D.addEventListener('pointermove',e=>{if(!micPress||e.pointerId!==micPress.id||!rec||rec.mode!=='hold')return;const dx=e.clientX-micPress.x,bar=D.querySelector('#csRec .cs-rec');if(bar){bar.classList.toggle('cancelling',dx<-40);bar.style.setProperty('--dx',Math.min(0,Math.max(-120,dx))+'px');}
+ if(dx<-110){micPress=null;recStop(false);}},true);
+function micUp(e,cancelled){if(!micPress||e.pointerId!==micPress.id)return;const held=Date.now()-micPress.t;micPress=null;if(!rec)return;const bar=D.querySelector('#csRec .cs-rec');if(bar){bar.classList.remove('cancelling');bar.style.removeProperty('--dx');}
+ if(cancelled||held<350||rec.starting){rec.mode='tap';recUI();}else recStop(true);}
+D.addEventListener('pointerup',e=>micUp(e,false),true);D.addEventListener('pointercancel',e=>micUp(e,true),true);
+
+/* The connection stream (E-man: "when you just click on the companion, that connection is supposed to happen, a connection stream").
+   One tap on a companion picks them and sends a glowing, beaded thread of light from your companion to theirs along the same bend
+   as the galaxy's threads, with a bright pulse riding it and a ripple where it lands; it then keeps flowing softly while you talk.
+   Drawn in an SVG under the companions (cgStream), so it never takes a tap; with Reduce Motion it just fades in, without the flow. */
+const SVGNS='http://www.w3.org/2000/svg';
+function streamSvg(){const s=D.getElementById('cgStream');if(!s||typeof s.getAttribute!=='function'||typeof s.querySelector!=='function')return null;if(!s.__ok){s.__ok=1;
+  s.innerHTML='<defs><linearGradient id="cgStreamG" gradientUnits="userSpaceOnUse"><stop offset="0" class="cs-st-a"/><stop offset="1" class="cs-st-b"/></linearGradient></defs><path class="cs-st-halo"/><path class="cs-st-glow"/><path class="cs-st-core"/><path class="cs-st-beads"/><path class="cs-st-surge"/><circle class="cs-st-comet" r="6"/><circle class="cs-st-ring a" r="10"/><circle class="cs-st-ring b" r="10"/>';}return s;}
+function streamDraw(lines,v){const s=streamSvg();if(!s)return false;const L=sel&&lines.find(l=>l.sel);if(!L){if(s.getAttribute('data-on')!=='0')s.setAttribute('data-on','0');return true;}
+ const toMe=!L.ame,a=toMe?L.b:L.a,b=toMe?L.a:L.b,ra=toMe?L.rb:L.ra,rb=toMe?L.ra:L.rb;
+ const dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy)||1,ux=dx/len,uy=dy/len,bend=Math.min(90,len*.18);
+ const c={x:(a.x+b.x)/2-uy*bend,y:(a.y+b.y)/2+ux*bend};
+ const trim=(p,r)=>{const tx=c.x-p.x,ty=c.y-p.y,tl=Math.hypot(tx,ty)||1;return {x:p.x+tx/tl*r,y:p.y+ty/tl*r};};
+ const p0=trim(a,(ra||24)+2),p1=trim(b,(rb||24)+2),d='M'+p0.x.toFixed(1)+' '+p0.y.toFixed(1)+'Q'+c.x.toFixed(1)+' '+c.y.toFixed(1)+' '+p1.x.toFixed(1)+' '+p1.y.toFixed(1);
+ for(const p of s.querySelectorAll('path'))p.setAttribute('d',d);
+ const g=s.querySelector('#cgStreamG');if(g){g.setAttribute('x1',p0.x.toFixed(1));g.setAttribute('y1',p0.y.toFixed(1));g.setAttribute('x2',p1.x.toFixed(1));g.setAttribute('y2',p1.y.toFixed(1));const st=g.querySelectorAll('stop');st[0].setAttribute('stop-color',(toMe?L.to:L.from)||'#9fd6ff');st[1].setAttribute('stop-color',(toMe?L.from:L.to)||'#9fd6ff');}
+ const ra1=s.querySelector('.cs-st-ring.a'),rb1=s.querySelector('.cs-st-ring.b');ra1.setAttribute('cx',a.x.toFixed(1));ra1.setAttribute('cy',a.y.toFixed(1));ra1.setAttribute('r',Math.max(12,ra||24).toFixed(1));rb1.setAttribute('cx',b.x.toFixed(1));rb1.setAttribute('cy',b.y.toFixed(1));rb1.setAttribute('r',Math.max(12,rb||24).toFixed(1));
+ s.setAttribute('data-dir',toMe?'in':'out');s.setAttribute('data-on','1');s.setAttribute('data-uid',sel);return true;}
+function streamSurge(){const s=streamSvg();if(!s)return;s.classList.remove('surge','arrive');void s.getBoundingClientRect();s.classList.add('surge');cancelAnimationFrame(s.__raf);clearTimeout(s.__t);
+ const reduce=!!(W.matchMedia&&W.matchMedia('(prefers-reduced-motion: reduce)').matches);
+ if(reduce){s.classList.add('arrive');s.__t=setTimeout(()=>s.classList.remove('surge','arrive'),900);return;}
+ const t0=performance.now(),dur=900;let arrived=false;
+ const step=t=>{const path=s.querySelector('.cs-st-surge'),comet=s.querySelector('.cs-st-comet');if(!path||!comet)return;const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);let len=0;try{len=path.getTotalLength();}catch(x){len=0;}
+  if(len){path.style.strokeDasharray=len.toFixed(1)+' '+len.toFixed(1);path.style.strokeDashoffset=(len*(1-e)).toFixed(1);const p=path.getPointAtLength(len*e);comet.setAttribute('cx',p.x.toFixed(1));comet.setAttribute('cy',p.y.toFixed(1));}
+  if(k>=1&&!arrived){arrived=true;s.classList.add('arrive');}
+  if(t-t0<dur+700)s.__raf=requestAnimationFrame(step);else{s.classList.remove('surge','arrive');path.style.strokeDasharray='';path.style.strokeDashoffset='';}};
+ s.__raf=requestAnimationFrame(step);}
+/* One tap on a companion (or their name, which sits on the same button): connect, stream, and talk to them right away. */
+function connect(uid,name){if(!uid||uid==='me')return;if(uid===scope){sel='';micCard('');refresh();return;}const was=sel;sel=uid;notice='';
+ refresh();schedulePlace();requestAnimationFrame(()=>{place();streamSurge();});
+ try{const a=D.getElementById('csAnnounce');if(a&&!isQuiet())a.textContent=fill('streamOn',name||(botOf(uid)||{}).n||(roster().get(uid)||{}).n||'');}catch(e){}
+ try{if(navigator.vibrate&&was!==uid)navigator.vibrate(8);}catch(e){}}
 /* ---- Oct 16 (Task 11): Find My-style person card on a companion tap ----
    Shows only what really exists: their profile photo (if they set one), star sign and personality only when they chose to share them,
    and a status taken from their last message in this chat. Birthdays are never shared, so another member's birthday reads "Not shared".
@@ -532,11 +702,11 @@ function fit(){
  pane.style.setProperty('--cs-keyboard-height',Math.max(0,bottom-rect.top-8)+'px');
 }
 D.addEventListener('change',e=>{if(e.target&&e.target.id==='cmPhotoFile'){const f=e.target.files&&e.target.files[0];takePhoto(f);}});
-D.addEventListener('input',e=>{if(e.target.id!=='cmInput')return;draft(e.target.value,draftState().draft.reply);if(!store){const sb=D.getElementById('cmSend');if(sb)sb.disabled=!(sel&&botOf(sel))||!e.target.value.trim();}mentions();});
+D.addEventListener('input',e=>{if(e.target.id!=='cmInput')return;draft(e.target.value,draftState().draft.reply);micSwap();if(!store){const sb=D.getElementById('cmSend');if(sb)sb.disabled=!(sel&&botOf(sel))||!e.target.value.trim();}mentions();});
 D.addEventListener('keydown',e=>{if(e.key==='Escape'&&threadOpen&&active()&&!D.querySelector('.r2-ov.on')){thread(false);refresh();return;}if(e.target.id==='cmInput'&&e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();send();}});
 D.addEventListener('submit',e=>{const f=e.target;if(!f.matches('form[data-chat-form]'))return;e.preventDefault();e.stopPropagation();if(f.dataset.sent!=='1')submitForm(f);});
 D.addEventListener('click',async e=>{const b=e.target.closest&&e.target.closest('[data-chat]');if(!b){const bub=e.target.closest&&e.target.closest('#cmPaneChat [data-chat-bub]');if(bub&&!(W.getSelection&&String(W.getSelection()).trim())){const mid=bub.getAttribute('data-chat-bub'),m=messages().find(x=>x.id===mid);if(m&&!m.status){openId=openId===mid?'':mid;if(pick&&pick!==openId)pick='';refresh();}}return;}e.preventDefault();e.stopPropagation();const a=b.dataset.chat,id=b.dataset.id;
- if(a==='send')send();else if(a==='reload'){transport.reload();loadExtras(true);}else if(a==='settings')settings();else if(a==='profile')openProfile(b.dataset.uid,b.dataset.name);else if(a==='person'){openProfile(b.dataset.uid,b.dataset.name);}else if(a==='photo-pick'){pickPhoto();}else if(a==='photo-clear'){clearPhoto();notice='';refresh();focusInput();}else if(a==='energy'){const u=b.dataset.uid,nm=b.dataset.name;if(!u||botOf(u)||!(W.LowiMicroBook&&W.LowiMicroBook.openCare))return;try{if(W.LowiR2&&W.LowiR2.close)W.LowiR2.close();}catch(x){}setTimeout(()=>{try{W.LowiMicroBook.openCare({uid:u,n:nm},{top:true});}catch(x){}},260);}else if(a==='select'){sel=sel===b.dataset.uid?'':b.dataset.uid;refresh();}else if(a==='to-all'){sel='';refresh();}else if(a==='select-close'){sel=b.dataset.uid||'';try{if(W.LowiR2&&W.LowiR2.close)W.LowiR2.close();}catch(x){}refresh();}else if(a==='thread'){thread(true,id);refresh();}else if(a==='photo'){photoView(b.dataset.src,b.dataset.name);}else if(a==='history'){thread(!threadOpen);refresh();}else if(a==='close-thread'){thread(false);refresh();const h=D.querySelector('#cgTo .cg-hist');if(h&&h.focus)h.focus({preventScroll:true});}else if(a==='open-galaxy')openGalaxy(b.dataset.uid);else if(a==='hello'){draft(tr('hiText'),null);refresh();focusInput();}else if(a==='more'){openId=openId===id?'':id;if(pick&&pick!==openId)pick='';refresh();}else if(a==='pick'){pick=pick===id?'':id;if(pick)openId=id;refresh();}else if(a==='reply'){openId='';pick='';draft(draftState().draft.text,id);refresh();focusInput();}else if(a==='noreply'){draft(draftState().draft.text,null);refresh();focusInput();}else if(a==='mention'){draft((D.getElementById('cmInput').value||'').replace(/@[\p{L}\p{N}_-]*$/u,'@'+b.dataset.name+' '),draftState().draft.reply);refresh();focusInput();}else if(a==='latest'){const l=D.getElementById('cmList');l.scrollTop=l.scrollHeight;newCount=0;refresh();}else if(a==='retry-send')send(id);else if(a==='discard'){store.discard(id);refresh();}else if(a==='react'){pick='';openId='';try{await transport.react(id,b.dataset.emoji,own().n);}catch(x){notice=tr('reactFailed');}refresh();}else if(a==='report')openReport(id);else if(a==='block')blockPerson(b.dataset.uid,b.dataset.name,true);else if(a==='unblock')blockPerson(b.dataset.uid,'',false);else if(a==='delete'){
+ if(a==='send')send();else if(a==='reload'){transport.reload();loadExtras(true);}else if(a==='settings')settings();else if(a==='profile')openProfile(b.dataset.uid,b.dataset.name);else if(a==='person'){connect(b.dataset.uid,b.dataset.name);}else if(a==='voice'){voicePlay(b);}else if(a==='mic'){if(Date.now()-micDownAt>700){if(rec)recStop(true);else recStart('tap',0);}}else if(a==='rec-send'){recStop(true);}else if(a==='rec-cancel'){recStop(false);}else if(a==='mic-retry'){micCard('');recStart('tap',0);}else if(a==='mic-close'){micCard('');}else if(a==='photo-pick'){pickPhoto();}else if(a==='photo-clear'){clearPhoto();notice='';refresh();focusInput();}else if(a==='energy'){const u=b.dataset.uid,nm=b.dataset.name;if(!u||botOf(u)||!(W.LowiMicroBook&&W.LowiMicroBook.openCare))return;try{if(W.LowiR2&&W.LowiR2.close)W.LowiR2.close();}catch(x){}setTimeout(()=>{try{W.LowiMicroBook.openCare({uid:u,n:nm},{top:true});}catch(x){}},260);}else if(a==='select'){sel=sel===b.dataset.uid?'':b.dataset.uid;refresh();}else if(a==='to-all'){sel='';refresh();}else if(a==='select-close'){const u=b.dataset.uid||'',nm=b.dataset.name||'';try{if(W.LowiR2&&W.LowiR2.close)W.LowiR2.close();}catch(x){}setTimeout(()=>connect(u,nm),260);}else if(a==='thread'){thread(true,id);refresh();}else if(a==='photo'){photoView(b.dataset.src,b.dataset.name);}else if(a==='history'){thread(!threadOpen);refresh();}else if(a==='close-thread'){thread(false);refresh();const h=D.querySelector('#cgTo .cg-hist');if(h&&h.focus)h.focus({preventScroll:true});}else if(a==='open-galaxy')openGalaxy(b.dataset.uid);else if(a==='hello'){draft(tr('hiText'),null);refresh();focusInput();}else if(a==='more'){openId=openId===id?'':id;if(pick&&pick!==openId)pick='';refresh();}else if(a==='pick'){pick=pick===id?'':id;if(pick)openId=id;refresh();}else if(a==='reply'){openId='';pick='';draft(draftState().draft.text,id);refresh();focusInput();}else if(a==='noreply'){draft(draftState().draft.text,null);refresh();focusInput();}else if(a==='mention'){draft((D.getElementById('cmInput').value||'').replace(/@[\p{L}\p{N}_-]*$/u,'@'+b.dataset.name+' '),draftState().draft.reply);refresh();focusInput();}else if(a==='latest'){const l=D.getElementById('cmList');l.scrollTop=l.scrollHeight;newCount=0;refresh();}else if(a==='retry-send')send(id);else if(a==='discard'){store.discard(id);refresh();}else if(a==='react'){pick='';openId='';try{await transport.react(id,b.dataset.emoji,own().n);}catch(x){notice=tr('reactFailed');}refresh();}else if(a==='report')openReport(id);else if(a==='block')blockPerson(b.dataset.uid,b.dataset.name,true);else if(a==='unblock')blockPerson(b.dataset.uid,'',false);else if(a==='delete'){
   if(armed!==id){armed=id;clearTimeout(armTimer);armTimer=setTimeout(()=>{armed='';refresh();},3500);refresh();return;}armed='';b.disabled=true;b.textContent=tr('deleting');try{await transport.remove(id);}catch(x){notice=tr('deleteFailed');}refresh();}
 });
 D.addEventListener('focusin',fit);D.addEventListener('focusout',()=>requestAnimationFrame(fit));W.addEventListener('resize',()=>{fit();clearTimeout(W.__cpResize);W.__cpResize=setTimeout(()=>{if(active()){refresh();if(sk)sk.resize();}},120);});if(W.visualViewport){W.visualViewport.addEventListener('resize',fit);W.visualViewport.addEventListener('scroll',fit);}

@@ -50,10 +50,11 @@ test('thread shows the picture and caption, never the raw link; previews and ale
  assert.match(js,/function plain\(m\)/);
  assert.match(css,/\.cs-photo/);
 });
-test('tapping a person opens the glass person card with only shared details and real actions',()=>{
+test('long-pressing a person opens the glass person card with only shared details and real actions (a tap connects)',()=>{
  assert.match(js,/function openPerson\(id,name\)/);
  assert.match(js,/function openProfile\(id,name\)\{if\(!blocked\(id\)\)\{openPerson\(id,name\);return;\}/);
- assert.match(js,/a==='person'\)\{openProfile\(/);
+ assert.match(js,/a==='person'\)\{connect\(/);
+ assert.match(js,/const lpOpen=body=>\{[^\n]*openProfile\(/);
  assert.match(js,/pcNotShared/);
  assert.match(js,/button\('select-close'/);
  assert.match(js,/button\('energy'/);

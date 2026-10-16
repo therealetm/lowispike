@@ -7292,7 +7292,10 @@ function shBoot(){
       return SH.products.filter(p => isLive(p) && p.g.indexOf(g) >= 0 && (!ws.length || ws.some(w => norm(p.n).indexOf(w) >= 0))).sort((a, b) => lastSeen(b) - lastSeen(a))
         .map(p => { const sg = bestSighting(p); return {n:p.n, store:sg ? storeById(sg.s).n : "", price:sg && ["fresh", "check"].indexOf(priceState(sg)) >= 0 ? eur(sg.p) : ""}; }); },
     listOpen:withDone => SH.list.filter(i => withDone || !i.done).map(i => ({id:i.id, n:i.n, done:i.done, store:i.s === "any" ? "" : storeById(i.s).n})),
-    tickList:id => { const i = SH.list.find(x => x.id === id); if (i) { i.done = !i.done; shSave(); } }};
+    tickList:id => { const i = SH.list.find(x => x.id === id); if (i) { i.done = !i.done; shSave(); } },
+    /* Oct 16 in-store scan (shop-scan.js): a scanned product goes on the list as in the cart; undo puts it back */
+    addScanned:p => { const C = window.LowiShopScanCore, r = C && C.cartAdd(SH.list, p, uid); if (!r) return null; shSave(); return {action:r.action, n:r.item.n, q:r.item.q || 1, count:C.cartCount(SH.list), undo:() => { r.undo(SH.list); shSave(); }}; },
+    cartCount:() => window.LowiShopScanCore ? LowiShopScanCore.cartCount(SH.list) : 0};
   if (window.LowiHost && LowiHost.tab() === "shelf") showTab();
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", shBoot); else shBoot();
@@ -14113,14 +14116,16 @@ function openScanner(mode){
   closeScanner(true);
   const el = document.createElement("div"); el.className = "b3-cam"; el.id = "b3Cam"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true");
   el.innerHTML = '<video id="b3Vid" playsinline webkit-playsinline muted autoplay disablepictureinpicture></video><div class="b3-shade"></div>' +
-    '<div class="b3-ctop"><button class="b3-cx" data-b3="camclose" aria-label="' + esc(t("close")) + '">' + IC.x + '</button><span class="b3-ctitle">' + esc(t("scanBig")) + '</span><button class="b3-torch" data-b3="torch" hidden aria-label="' + esc(t("torch")) + '">' + IC.bolt + '</button></div>' +
+    '<div class="b3-ctop"><button class="b3-cx" data-b3="camclose" aria-label="' + esc(t("close")) + '">' + IC.x + '</button><span class="b3-ctitle">' + esc(t("scanBig")) + '</span>' + (window.LowiShopScan ? LowiShopScan.pill() : "") + '<button class="b3-torch" data-b3="torch" hidden aria-label="' + esc(t("torch")) + '">' + IC.bolt + '</button></div>' +
     '<div class="b3-frame" id="b3Frame"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><i class="b3-laser"></i></div>' +
     '<div class="b3-cmsg" id="b3CMsg"></div>' +
     '<div class="b3-cbot"><div class="b3-chint" id="b3Hint">' + esc(t("aim")) + '</div>' +
       '<form class="b3-type b3-ctype" id="b3BcF" autocomplete="off"><input class="input" id="b3Bc" inputmode="numeric" pattern="[0-9]*" maxlength="14" placeholder="' + esc(t("bcPh")) + '" enterkeyhint="go"><button class="b3-go" aria-label="' + esc(t("check")) + '">' + IC.go + '</button></form>' +
       camBar() + '</div>';
-  if(window.LowiSpirit){LowiSpirit.scannerHost().appendChild(el);el.removeAttribute("aria-modal");}else document.body.appendChild(el); document.documentElement.classList.add("b3-camon");
+  /* Oct 16 in-store scan: shopping mode (from Shop / the cart) opens as its own full-screen layer, not inside Misty's world */
+  if(window.LowiSpirit && mode !== "shop"){LowiSpirit.scannerHost().appendChild(el);el.removeAttribute("aria-modal");}else { document.body.appendChild(el); if (mode === "shop") el.classList.add("lv-solo"); } document.documentElement.classList.add("b3-camon");
   CAM = {el, stream:null, raf:0, det:null, reader:null, done:false, last:0};
+  if (window.LowiShopScan) shopMode(LowiShopScan.want(mode));
   kbWire(el);
   $("#b3BcF", el).addEventListener("submit", e => { e.preventDefault(); const v = $("#b3Bc", el).value, c = validCode(v); if (!c) { msg(t("bcBad"), "warn"); sfx("error"); return; } found(c); });
   requestAnimationFrame(() => el.classList.add("on"));
@@ -14140,6 +14145,13 @@ function kbFit(){ if (!CAM) return; const el = CAM.el, i = $("#b3Bc", el), vv = 
 function kbWire(el){ const i = $("#b3Bc", el); if (!i) return; const f = () => requestAnimationFrame(kbFit);
   i.addEventListener("focus", () => { f(); setTimeout(kbFit, 320); setTimeout(kbFit, 650); }); i.addEventListener("blur", () => setTimeout(kbFit, 60));
   if (!window.__b3kbVV && window.visualViewport) { window.__b3kbVV = 1; visualViewport.addEventListener("resize", f); visualViewport.addEventListener("scroll", f); } }
+/* Oct 16 (E-man: "I scan it and I just quickly want to see if it's estimated to spike my insulin or not. Then I put it into my cart"):
+   shopping mode. The same camera and barcode reading; a hit holds the scan (the stream stays on) and shop-scan.js shows one big
+   verdict and Add to cart over the camera; shopResume() scans the next product at once. */
+function shopMode(on){ if (!CAM) return false; CAM.shop = !!on; CAM.el.classList.toggle("b3-shop", CAM.shop); if (!CAM.shop) { CAM.hold = false; CAM.done = false; }
+  const tt = $(".b3-ctitle", CAM.el); if (tt) tt.textContent = CAM.shop && window.LowiShopScan ? LowiShopScan.title() : t("scanBig"); return CAM.shop; }
+function shopResume(){ if (!CAM) return; CAM.hold = false; CAM.done = false; CAM.el.classList.remove("got"); if (CAM.lastHit) CAM.lastHit.at = performance.now();
+  if (CAM.stream) { msgState("live"); msg(t("aim")); cancelAnimationFrame(CAM.raf); loop(); } }
 function msg(text, kind){ const m = CAM && $("#b3Hint", CAM.el); if (m) { m.textContent = text; m.className = "b3-chint" + (kind ? " " + kind : ""); } }
 function msgState(s){ if (!CAM) return; const m = $("#b3CMsg", CAM.el); CAM.el.dataset.st = s;
   /* no camera (blocked, none, didn't start): Misty-blue glass card, a blue Try again and typing the number as the clear way round;
@@ -14151,7 +14163,8 @@ function msgState(s){ if (!CAM) return; const m = $("#b3CMsg", CAM.el); CAM.el.d
   else if (s === "nocam") m.innerHTML = '<div class="b3-cbox b3-cglass"><span class="b3-cic">' + IC.cam + '</span><b>' + esc(t("camNo")) + '</b><small>' + esc(t("camNoS")) + '</small><div class="b3-cbtns">' + typeBtn + '</div></div>';
   else if (s === "starting") m.innerHTML = '<div class="b3-cbox b3-cglass slim"><span class="b3-spin"></span><small>' + esc(t("starting")) + '</small></div>';
   else if (s === "lookup") m.innerHTML = '<div class="b3-cbox slim"><span class="b3-spin"></span><small>' + esc(t("lookup")) + '</small></div>';
-  else m.innerHTML = ""; }
+  else m.innerHTML = "";
+  if (CAM.shop && window.LowiShopScan) LowiShopScan.decorate(m, s); }
 /* Oct 15: the camera opens every time. One start at a time, a plain-constraints retry when iOS refuses the ideal ones, the video is forced to play inline,
    a stream that dies (track ended, app sent to the background) is restarted on its own, and a start that shows no picture is retried once */
 function camErrState(e){ const n = e && e.name; return n === "NotAllowedError" || n === "SecurityError" ? "denied" : n === "NotFoundError" || n === "DevicesNotFoundError" || n === "OverconstrainedError" ? "nocam" : "camerr"; }
@@ -14182,7 +14195,7 @@ async function startCam1(mine){
   if (CAM !== mine || mine.stream !== stream) return;
   if (!mine.det && !mine.reader) { try { await loadZX(); mine.reader = zxReader(); } catch(e){ if (CAM === mine) msgState("camerr"); return; } }
   if (CAM !== mine || mine.stream !== stream) return; msgState("live"); mine.el.classList.add("live"); cancelAnimationFrame(mine.raf); loop(); }
-function loop(){ if (!CAM || CAM.done) return; CAM.raf = requestAnimationFrame(loop); const now = performance.now(); if (CAM.busy || now - CAM.last < 160) return; CAM.last = now;
+function loop(){ if (!CAM || CAM.done) return; CAM.raf = requestAnimationFrame(loop); const now = performance.now(); if (CAM.busy || CAM.hold || now - CAM.last < 160) return; CAM.last = now;
   const v = $("#b3Vid", CAM.el); if (!v || v.readyState < 2 || !v.videoWidth) return; CAM.busy = true;
   (async () => { let code = "";
     try {
@@ -14191,12 +14204,15 @@ function loop(){ if (!CAM || CAM.done) return; CAM.raf = requestAnimationFrame(l
         const sc = Math.min(1, 900 / cw); cv.width = Math.round(cw * sc); cv.height = Math.round(ch * sc);
         const g = cv.getContext("2d", {willReadFrequently:true}); g.drawImage(v, (W - cw) / 2, (H - ch) / 2, cw, ch, 0, 0, cv.width, cv.height); code = zxDecodeCanvas(cv, CAM.reader); }
     } catch(e){}
-    if (CAM) CAM.busy = false; const c = validCode(code); if (c && CAM && !CAM.done) found(c); })(); }
+    if (CAM) CAM.busy = false; const c = validCode(code); if (c && CAM && !CAM.done && !CAM.hold) found(c); })(); }
 function stopStream(){ if (!CAM) return; cancelAnimationFrame(CAM.raf); clearTimeout(CAM.wd); try { CAM.stream && CAM.stream.getTracks().forEach(x => x.stop()); } catch(e){} CAM.stream = null; }
 function closeScanner(now){ if (!CAM) return; const c = CAM; c.done = true; stopStream(); CAM = null; document.documentElement.classList.remove("b3-camon");
   if (now) c.el.remove(); else { c.el.classList.remove("on"); setTimeout(() => c.el.remove(), 260); } }
 async function torch(){ try { const tr = CAM.stream.getVideoTracks()[0]; CAM.torch = !CAM.torch; await tr.applyConstraints({advanced:[{torch:CAM.torch}]}); $(".b3-torch", CAM.el).classList.toggle("on", CAM.torch); } catch(e){} }
-async function found(code){ if (!CAM) return; CAM.done = true; stopStream(); buzz(30); sfx("check");
+async function found(code){ if (!CAM) return;
+  if (CAM.shop && window.LowiShopScan) { const now = performance.now(); if (CAM.hold || (window.LowiShopScanCore && LowiShopScanCore.repeatHit(code, CAM.lastHit, now))) return;
+    CAM.hold = true; CAM.lastHit = {code, at:now}; buzz(30); sfx("check"); msg(t("bcFound", code)); LowiShopScan.found(code, CAM.el); return; }
+  CAM.done = true; stopStream(); buzz(30); sfx("check");
   CAM.el.classList.add("got"); msgState("lookup"); msg(t("bcFound", code));
   let p = null; try { p = await byBarcode(code); } catch(e){}
   if (p && !p.notFound && window.LowiSpirit) { closeScanner(true); await LowiSpirit.captureProduct(p); return; }
@@ -14445,7 +14461,7 @@ function boot(){
   try { if (curTab() === "scan") renderTab(); } catch(e){}
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => setTimeout(boot, 0)); else setTimeout(boot, 0);
-window.LowiDex = {open:openDex, scan:openScanner, reveal, rate, rateName, validCode, enrich, showProduct, vtext:v => [t("vl_" + v), t("vs_" + v)], whyText, /* prod-verdict */ render:renderTab, state:() => D, stop:() => closeScanner(true), load:loadComm, lookup:byBarcode, collect:doCatch, items:() => D.comm.concat(mineList()), cur:() => CUR || (window.LowiDiscovery ? LowiDiscovery.cur() : null)} /* f2-cur */;
+window.LowiDex = {open:openDex, scan:openScanner, reveal, rate, rateName, validCode, enrich, showProduct, vtext:v => [t("vl_" + v), t("vs_" + v)], whyText, /* prod-verdict */ render:renderTab, state:() => D, stop:() => closeScanner(true), load:loadComm, lookup:byBarcode, search:searchName, shopMode, shopResume, shopOn:() => !!(CAM && CAM.shop), collect:doCatch, items:() => D.comm.concat(mineList()), cur:() => CUR || (window.LowiDiscovery ? LowiDiscovery.cur() : null)} /* f2-cur */;
 })();
 </script>
 <style id="r3kcss">
@@ -19868,6 +19884,9 @@ window.LowiCommunityHost = {
 <link rel="stylesheet" id="tsgCss" href="today-sheet.css?v=20261016-211010">
 <link rel="stylesheet" id="ccCss" href="community-composer.css?v=20261016-211010">
 <script src="community-composer.js?v=20261016-211010"></script>
+<link rel="stylesheet" id="ssCss" href="shop-scan.css?v=20261016-211010">
+<script src="shop-scan-core.js?v=20261016-211010"></script>
+<script src="shop-scan.js?v=20261016-211010"></script>
 </body>
 </html>
 

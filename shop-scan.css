@@ -1,0 +1,168 @@
+/* LOWiSPIKE · in-store scan (shop-scan.js, Oct 16, 2026). Black space, iOS blue glass (the weather pill's glass), no gold/beige.
+   One big verdict first, one big Add to cart, details folded underneath. Spike = red, mild = orange, no spike = green. */
+.b3-cam {
+    --ss-rim: var(--wh-glass-rim, rgba(160, 220, 255, .55));
+    --ss-wide: var(--wh-glass-wide, radial-gradient(120% 90% at 18% 0%, rgba(255, 255, 255, .18), rgba(255, 255, 255, 0) 52%), linear-gradient(160deg, rgba(80, 170, 255, .14), rgba(28, 74, 150, .34)));
+    --ss-sh: var(--wh-glass-sh, inset 0 0 18px rgba(140, 210, 255, .32), 0 8px 26px -12px rgba(40, 120, 255, .5));
+}
+/* the Shopping switch in the scanner's top bar */
+.b3-cam .ss-pill {
+    display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border-radius: 18px; flex: none;
+    font: 650 13px/1 var(--lg-font, -apple-system, system-ui, sans-serif); color: #fff; cursor: pointer; -webkit-tap-highlight-color: transparent;
+    border: 1px solid rgba(255, 255, 255, .22); background: rgba(8, 14, 30, .5); -webkit-backdrop-filter: blur(14px) saturate(1.4); backdrop-filter: blur(14px) saturate(1.4);
+}
+.b3-cam .ss-pill svg { width: 17px; height: 17px; }
+.b3-cam .ss-pill[aria-pressed="true"] { border-color: var(--ss-rim); background: var(--ss-wide), rgba(10, 60, 150, .55); box-shadow: var(--ss-sh); }
+.b3-cam .ss-pill:focus-visible { outline: 2px solid #9fd6ff; outline-offset: 2px; }
+.b3-cam .b3-ctop .b3-ctitle { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* shopping mode: the capture actions step aside; search by name and the cart count take their place */
+.b3-cam .ss-row { display: none; }
+.b3-cam.b3-shop .b3-cacts, .b3-cam.b3-shop .b3-deep { display: none !important; }
+.b3-cam.b3-shop .ss-row { display: flex; gap: 8px; width: 100%; }
+.b3-cam .ss-chip {
+    flex: 1 1 0; min-width: 0; min-height: 46px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 0 12px; border-radius: 23px;
+    font: 650 14px/1.1 var(--lg-font, -apple-system, system-ui, sans-serif); color: #fff; cursor: pointer; -webkit-tap-highlight-color: transparent;
+    border: 1.5px solid var(--ss-rim); background: var(--ss-wide), rgba(8, 20, 48, .42); box-shadow: var(--ss-sh);
+    -webkit-backdrop-filter: blur(10px) saturate(1.4); backdrop-filter: blur(10px) saturate(1.4);
+}
+.b3-cam .ss-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.b3-cam .ss-chip svg { width: 18px; height: 18px; flex: none; }
+.b3-cam .ss-chip .ss-count { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; display: inline-grid; place-items: center; font-size: 12.5px; background: rgba(255, 255, 255, .14); }
+.b3-cam .ss-cartchip.has .ss-count { background: #0a84ff; }
+.b3-cam .ss-chip:active, .b3-cam .ss-add:active, .b3-cam .ss-entry:active { transform: scale(.97); }
+
+/* the result card replaces the bottom panel while it is open */
+.b3-cam.ss-open .b3-cbot, .b3-cam.ss-open .b3-cmsg { visibility: hidden; }
+.b3-cam .ss-card {
+    position: absolute; z-index: 6; left: 0; right: 0; bottom: var(--sg-dock, 0px);
+    padding: 0 calc(env(safe-area-inset-right, 0px) + 12px) calc(env(safe-area-inset-bottom, 0px) + 12px) calc(env(safe-area-inset-left, 0px) + 12px);
+    display: flex; justify-content: center; pointer-events: none; animation: ss-up .26s cubic-bezier(.2, .8, .2, 1) both;
+}
+.b3-cam.sg-docked .ss-card { padding-bottom: 10px; }
+@keyframes ss-up { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+.b3-cam .ss-sheet {
+    pointer-events: auto; position: relative; box-sizing: border-box; width: 100%; max-width: 520px; max-height: calc(100dvh - var(--sg-dock, 0px) - env(safe-area-inset-top, 0px) - 84px);
+    overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 14px; border-radius: 28px; color: #fff;
+    font-family: var(--lg-font, -apple-system, system-ui, sans-serif);
+    border: 1.5px solid var(--ss-rim); background: var(--ss-wide), rgba(6, 12, 28, .82); box-shadow: var(--ss-sh), 0 18px 50px -18px rgba(0, 0, 0, .8);
+    -webkit-backdrop-filter: blur(24px) saturate(1.5); backdrop-filter: blur(24px) saturate(1.5);
+}
+.b3-cam .ss-load { display: flex; align-items: center; gap: 12px; }
+.b3-cam .ss-load b { display: block; font-size: 16px; }
+.b3-cam .ss-load small { color: rgba(235, 235, 245, .62); font-size: 13px; }
+.b3-cam .ss-load.slim { justify-content: center; padding: 10px; }
+
+.b3-cam .ss-head { display: flex; align-items: center; gap: 12px; }
+.b3-cam .ss-img { width: 52px; height: 52px; flex: none; border-radius: 14px; overflow: hidden; display: grid; place-items: center; background: rgba(255, 255, 255, .92); color: #1b3b70; }
+.b3-cam .ss-v-unknown .ss-img, .b3-cam .ss-unk .ss-img { background: rgba(255, 255, 255, .08); color: #9fd6ff; }
+.b3-cam .ss-img img { width: 100%; height: 100%; object-fit: contain; }
+.b3-cam .ss-img svg { width: 26px; height: 26px; }
+.b3-cam .ss-name { flex: 1; min-width: 0; }
+.b3-cam .ss-name b { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 16px; line-height: 1.25; font-weight: 700; }
+.b3-cam .ss-name small { display: block; margin-top: 2px; color: rgba(235, 235, 245, .62); font-size: 13px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; }
+.b3-cam .ss-x { width: 36px; height: 36px; flex: none; border-radius: 18px; display: grid; place-items: center; color: #fff; cursor: pointer; border: 1px solid rgba(255, 255, 255, .2); background: rgba(255, 255, 255, .08); }
+.b3-cam .ss-x svg { width: 16px; height: 16px; }
+
+/* THE verdict: big, colour + word + icon, labelled as an estimate */
+.b3-cam .ss-verdict {
+    --ss-c: #8fb3ff; --ss-bg: rgba(143, 179, 255, .14);
+    display: flex; align-items: center; gap: 14px; margin-top: 12px; padding: 14px 16px; border-radius: 22px;
+    background: var(--ss-bg); border: 1.5px solid color-mix(in srgb, var(--ss-c) 60%, transparent); box-shadow: inset 0 0 22px color-mix(in srgb, var(--ss-c) 22%, transparent);
+}
+.b3-cam .ss-v-spike .ss-verdict { --ss-c: #ff4d6a; --ss-bg: rgba(255, 77, 106, .17); }
+.b3-cam .ss-v-mild .ss-verdict { --ss-c: #ff9640; --ss-bg: rgba(255, 150, 64, .16); }
+.b3-cam .ss-v-none .ss-verdict { --ss-c: #32d583; --ss-bg: rgba(50, 213, 131, .15); }
+.b3-cam .ss-vic { width: 58px; height: 58px; flex: none; border-radius: 50%; display: grid; place-items: center; color: #fff; background: var(--ss-c); box-shadow: 0 6px 20px -6px var(--ss-c); }
+.b3-cam .ss-vic svg { width: 32px; height: 32px; stroke-width: 2.6; }
+.b3-cam .ss-vt { min-width: 0; }
+.b3-cam .ss-est { display: inline-block; padding: 2px 8px; border-radius: 9px; font-size: 11.5px; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; color: rgba(255, 255, 255, .86); background: rgba(255, 255, 255, .12); }
+.b3-cam .ss-vw { display: block; margin-top: 4px; font-size: 32px; line-height: 1.05; font-weight: 800; letter-spacing: -.01em; color: var(--ss-c); }
+.b3-cam .ss-vt small { display: block; margin-top: 3px; font-size: 14px; line-height: 1.3; color: rgba(255, 255, 255, .88); }
+
+/* one big Add to cart */
+.b3-cam .ss-add {
+    width: 100%; min-height: 58px; margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; border-radius: 29px; cursor: pointer;
+    font: 750 18px/1 var(--lg-font, -apple-system, system-ui, sans-serif); color: #fff; -webkit-tap-highlight-color: transparent;
+    border: 1px solid rgba(255, 255, 255, .38); background: linear-gradient(180deg, #3d9bff, #0a84ff); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), 0 10px 28px -10px rgba(10, 132, 255, .9);
+    transition: transform .15s ease;
+}
+.b3-cam .ss-add svg { width: 22px; height: 22px; }
+.b3-cam .ss-add:focus-visible, .b3-cam .ss-chip:focus-visible, .b3-cam .ss-x:focus-visible { outline: 2px solid #9fd6ff; outline-offset: 3px; }
+
+/* the optional details */
+.b3-cam .ss-more { margin-top: 10px; border-top: 1px solid rgba(255, 255, 255, .1); }
+.b3-cam .ss-more summary { list-style: none; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; cursor: pointer; font-size: 15px; font-weight: 650; color: #9fd6ff; }
+.b3-cam .ss-more summary::-webkit-details-marker { display: none; }
+.b3-cam .ss-more summary i { width: 8px; height: 8px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-2px); transition: transform .2s; }
+.b3-cam .ss-more[open] summary i { transform: rotate(-135deg) translateY(-1px); }
+.b3-cam .ss-body { padding: 2px 2px 4px; }
+.b3-cam .ss-h { margin: 10px 0 6px; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: rgba(235, 235, 245, .55); }
+.b3-cam .ss-facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.b3-cam .ss-facts div { padding: 8px 6px; border-radius: 14px; text-align: center; background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .08); }
+.b3-cam .ss-facts small { display: block; font-size: 11.5px; color: rgba(235, 235, 245, .62); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.b3-cam .ss-facts b { display: block; margin-top: 2px; font-size: 15px; }
+.b3-cam .ss-why { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.4; color: rgba(255, 255, 255, .9); }
+.b3-cam .ss-ing { margin: 0; font-size: 13px; line-height: 1.45; color: rgba(235, 235, 245, .75); }
+.b3-cam .ss-legal { margin: 10px 0 0; font-size: 12px; line-height: 1.4; color: rgba(235, 235, 245, .5); }
+
+/* unknown barcode / no internet / no camera: the name search */
+.b3-cam .ss-find { display: flex; gap: 8px; margin-top: 12px; }
+.b3-cam .ss-find .input { flex: 1; min-width: 0; min-height: 48px; padding: 0 14px; border-radius: 24px; font-size: 16px; color: #fff; border: 1px solid rgba(160, 220, 255, .35); background: rgba(255, 255, 255, .07); }
+.b3-cam .ss-find .input::placeholder { color: rgba(235, 235, 245, .45); }
+.b3-cam .ss-go { width: 48px; height: 48px; flex: none; border-radius: 24px; display: grid; place-items: center; color: #fff; cursor: pointer; border: 1px solid rgba(255, 255, 255, .38); background: linear-gradient(180deg, #3d9bff, #0a84ff); }
+.b3-cam .ss-go svg { width: 20px; height: 20px; }
+.b3-cam .ss-results { margin-top: 8px; display: grid; gap: 6px; }
+.b3-cam .ss-res { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 12px; border-radius: 16px; text-align: left; color: #fff; cursor: pointer; border: 1px solid rgba(255, 255, 255, .1); background: rgba(255, 255, 255, .06); font: inherit; }
+.b3-cam .ss-res span { flex: 1; min-width: 0; }
+.b3-cam .ss-res b { display: block; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.b3-cam .ss-res small { display: block; font-size: 12.5px; color: rgba(235, 235, 245, .6); }
+.b3-cam .ss-res em { font-style: normal; font-size: 13px; font-weight: 700; }
+.b3-cam .ss-dot { width: 12px; height: 12px; flex: none; border-radius: 50%; background: #8fb3ff; }
+.b3-cam .ss-d-spike { background: #ff4d6a; } .b3-cam .ss-d-mild { background: #ff9640; } .b3-cam .ss-d-none { background: #32d583; }
+
+/* after Add to cart: a short note with Undo, while the camera already looks for the next product */
+.b3-cam .ss-toast {
+    position: absolute; z-index: 7; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 64px); transform: translate(-50%, -12px); opacity: 0; pointer-events: none;
+    display: flex; align-items: center; gap: 10px; width: max-content; max-width: calc(100% - 32px); padding: 8px 8px 8px 10px; border-radius: 26px; color: #fff;
+    border: 1.5px solid var(--ss-rim); background: var(--ss-wide), rgba(6, 14, 34, .86); box-shadow: var(--ss-sh); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+    transition: opacity .2s, transform .25s cubic-bezier(.2, .8, .2, 1); font-family: var(--lg-font, -apple-system, system-ui, sans-serif);
+}
+.b3-cam .ss-toast.on { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.b3-cam .ss-tic { width: 30px; height: 30px; flex: none; border-radius: 50%; display: grid; place-items: center; background: #32d583; }
+.b3-cam .ss-tic svg { width: 18px; height: 18px; stroke-width: 2.8; }
+.b3-cam .ss-tt { min-width: 0; }
+.b3-cam .ss-tt b { display: block; font-size: 14px; }
+.b3-cam .ss-tt small { display: block; font-size: 12.5px; color: rgba(235, 235, 245, .7); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 46vw; }
+.b3-cam .ss-toast button { min-height: 36px; padding: 0 14px; border-radius: 18px; flex: none; font: 700 14px/1 inherit; font-family: inherit; color: #fff; cursor: pointer; border: 1px solid rgba(255, 255, 255, .25); background: rgba(255, 255, 255, .1); }
+
+/* the way in: Shop mode (Today's list) and the cart */
+.ss-entry {
+    box-sizing: border-box; width: 100%; display: flex; align-items: center; gap: 12px; min-height: 60px; margin: 10px 0 12px; padding: 10px 16px; border-radius: 22px;
+    text-align: left; color: #fff; cursor: pointer; font-family: var(--lg-font, -apple-system, system-ui, sans-serif); -webkit-tap-highlight-color: transparent;
+    border: 1.5px solid var(--wh-glass-rim, rgba(160, 220, 255, .55));
+    background: var(--wh-glass-wide, linear-gradient(160deg, rgba(80, 170, 255, .14), rgba(28, 74, 150, .34))), rgba(8, 20, 48, .42);
+    box-shadow: var(--wh-glass-sh, inset 0 0 18px rgba(140, 210, 255, .32), 0 8px 26px -12px rgba(40, 120, 255, .5));
+    -webkit-backdrop-filter: blur(10px) saturate(1.4); backdrop-filter: blur(10px) saturate(1.4); transition: transform .15s ease;
+}
+.ss-entry > svg { width: 30px; height: 30px; flex: none; padding: 7px; border-radius: 50%; box-sizing: content-box; background: linear-gradient(180deg, #3d9bff, #0a84ff); }
+.ss-entry span { min-width: 0; }
+.ss-entry b { display: block; font-size: 16px; font-weight: 700; }
+.ss-entry small { display: block; margin-top: 2px; font-size: 13px; color: rgba(235, 235, 245, .7); }
+.ss-entry:focus-visible { outline: 2px solid #9fd6ff; outline-offset: 2px; }
+
+@media (max-height: 700px) {
+    .b3-cam .ss-verdict { padding: 10px 12px; margin-top: 10px; }
+    .b3-cam .ss-vic { width: 48px; height: 48px; }
+    .b3-cam .ss-vic svg { width: 26px; height: 26px; }
+    .b3-cam .ss-vw { font-size: 28px; }
+    .b3-cam .ss-add { min-height: 52px; margin-top: 10px; }
+    .b3-cam .ss-img { width: 44px; height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .b3-cam .ss-card { animation: none; }
+    .b3-cam .ss-toast { transition: none; }
+}
+html[data-ui=light] .ss-entry, html[data-theme="light"] .ss-entry { color: #0b1d3f; background: radial-gradient(circle at 30% 22%, rgba(255, 255, 255, .55), rgba(255, 255, 255, 0) 50%), rgba(225, 238, 255, .7); border-color: rgba(11, 29, 63, .16); }
+html[data-ui=light] .ss-entry small, html[data-theme="light"] .ss-entry small { color: rgba(11, 29, 63, .62); }
+html[data-ui=light] .ss-entry > svg, html[data-theme="light"] .ss-entry > svg { color: #fff; }

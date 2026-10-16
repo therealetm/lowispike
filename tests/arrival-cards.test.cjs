@@ -40,7 +40,7 @@ test('today line follows the shared world-health reading of today\'s entries', (
     const t = NOON - 3600e3;
     const st = {
         logs: [{ r: 'nein', ts: t }, { r: 'ja', ts: t }, { r: 'ja', ts: t }, { r: 'nein', ts: NOON - 864e5 }],
-        ledger: [{ src: 'move', label: 'Move walk', amt: 10, ts: t }, { src: 'water', label: 'Water', amt: 2, ts: t }, { src: 'water', label: 'Water', amt: 2, ts: t }]
+        ledger: [{ src: 'move', label: 'Move walk', amt: 10, ts: t }, { src: 'water', label: 'Water', amt: 2, ts: t }, { src: 'water', label: 'Water', amt: 2, ts: t + 60e3 }]
     };
     const c = A.today(st, NOON, WH);
     assert.deepEqual([c.meals, c.spikes, c.good, c.water, c.move], [3, 1, 2, 2, true]);

@@ -49,6 +49,9 @@
     }
     new MutationObserver(() => { if (H.classList.contains('bw3-full-open')) apply(); }).observe(H, { attributes: true, attributeFilter: ['class'] });
     ['focus', 'storage', 'lowi:lang'].forEach(n => W.addEventListener(n, () => check(n === 'lowi:lang')));
+    /* Oct 16 fast weather: react the moment something is logged (events, no extra loop); the 2 s poll stays as the safety net */
+    let soon = 0;
+    ['lowi:meal-logged', 'lowi:reward', 'lowi:care'].forEach(n => W.addEventListener(n, () => { if (!soon) soon = setTimeout(() => { soon = 0; check(); }, 60); }));
     D.addEventListener('visibilitychange', () => { if (!D.hidden) check(); });
     setInterval(() => { if (!D.hidden) check(); }, 2000);
     check(true);

@@ -4,7 +4,8 @@ const WH = require('../world-health-core.js');
 const now = new Date(2026, 9, 15, 20, 0).getTime();
 const dk = i => { const d = new Date(now); d.setHours(12); d.setDate(d.getDate() - i); return WH.dayKey(d.getTime()); };
 const meal = (i, r, lvl) => ({ ts: now - i * 864e5, day: dk(i), t: 'm' + Math.random(), r, lvl: lvl || '' });
-const led = (i, src, amt, label, eventId) => ({ ts: now - i * 864e5, day: dk(i), src, amt, label: label || src, eventId });
+let tick = 0; /* Oct 16 fair play: real taps are seconds apart; same-moment repeats count once */
+const led = (i, src, amt, label, eventId) => ({ ts: now - i * 864e5 + (++tick) * 60e3, day: dk(i), src, amt, label: label || src, eventId });
 function healthyDay(i) {
     return { logs: [meal(i, 'ja', 'low'), meal(i, 'ja', 'low'), meal(i, 'ja', 'low')],
         ledger: [led(i, 'meal', 15), led(i, 'meal', 15), led(i, 'meal', 15), led(i, 'move:walk', 20, 'Walk done'), led(i, 'water', 5, 'Water logged'), led(i, 'water', 5, 'Water logged'),

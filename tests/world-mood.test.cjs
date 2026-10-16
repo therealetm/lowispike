@@ -4,7 +4,7 @@ const root = path.join(__dirname, '..');
 const M = require('../world-mood-core.js'), WH = require('../world-health-core.js');
 const read = f => fs.readFileSync(path.join(root, f), 'utf8');
 const NOW = new Date(2026, 9, 15, 15, 0).getTime(), DAY = WH.dayKey(NOW), YDAY = WH.dayKey(NOW - 864e5);
-const meal = (r, extra) => Object.assign({ day: DAY, r, t: 'x', eventId: 'meal:' + Math.random() }, extra || {});
+const meal = (r, extra) => Object.assign({ day: DAY, r, t: 'meal ' + Math.random().toString(36).slice(2), eventId: 'meal:' + Math.random() }, extra || {});
 const move = (day) => ({ day: day || DAY, src: 'move', label: 'Move session', amt: 10 });
 
 test('nothing logged is missing data, not a stormy world', () => {
@@ -14,22 +14,25 @@ test('nothing logged is missing data, not a stormy world', () => {
     assert.strictEqual(M.read({ logs: [meal('ja')], ledger: [] }, NOW, WH).level, 0, 'good food without a Move logged stays clear');
 });
 
-test('triggers combine: spiky food, spiky scanned products, no Move logged', () => {
+test('triggers combine: spiky food, spiky scanned products; a Move calms (Oct 16: fast, proportional weather)', () => {
     const f = M.read({ logs: [meal('nein')], ledger: [] }, NOW, WH);
-    assert.deepStrictEqual([f.level, f.tier, f.why], [0.75, 'stormy', ['food', 'nomove']]);
+    assert.deepStrictEqual([f.level, f.tier, f.why], [0.42, 'stormy', ['food', 'nomove']]);
     const fm = M.read({ logs: [meal('nein')], ledger: [move()] }, NOW, WH);
-    assert.deepStrictEqual([fm.level, fm.why], [0.5, ['food']], 'a logged Move softens it');
-    const p = M.read({ logs: [meal('nein', { via: 'barcode', eventId: 'meal:bc:123:1' })], ledger: [move()] }, NOW, WH);
-    assert.deepStrictEqual([p.level, p.products, p.food], [0.5, 1, 0]);
+    assert.deepStrictEqual([fm.level, fm.tier, fm.why], [0.12, 'stormy', ['food']], 'a logged Move calms it right away');
+    const p = M.read({ logs: [meal('nein', { via: 'barcode', eventId: 'meal:bc:123:1' })], ledger: [] }, NOW, WH);
+    assert.deepStrictEqual([p.level, p.products, p.food], [0.34, 1, 0]);
     const all = M.read({ logs: [meal('nein'), meal('nein', { via: 'barcode' })], ledger: [] }, NOW, WH);
-    assert.strictEqual(all.level, 1);
+    assert.strictEqual(all.level, 0.76);
     const both = M.read({ logs: [meal('nein'), meal('nein', { via: 'barcode' })], ledger: [move()] }, NOW, WH);
-    assert.strictEqual(both.level, 0.75);
+    assert.strictEqual(both.level, 0.46);
+    assert.ok(both.level < all.level && all.level > f.level);
 });
 
 test('only today counts', () => {
-    assert.strictEqual(M.read({ logs: [meal('nein', { day: YDAY })], ledger: [] }, NOW, WH).level, 0);
-    assert.strictEqual(M.read({ logs: [meal('nein')], ledger: [move(YDAY)] }, NOW, WH).level, 0.75, "yesterday's Move does not count today");
+    const q = M.read({ logs: [meal('nein', { day: YDAY })], ledger: [] }, NOW, WH);
+    assert.ok(q.tier === 'clear' && q.level <= 0.15, "yesterday's spike only leaves a faint haze until something is logged today: " + q.level);
+    const y = M.read({ logs: [meal('nein'), meal('ja', { day: YDAY })], ledger: [move(YDAY)] }, NOW, WH);
+    assert.ok(y.level >= 0.3 && y.level <= 0.42 && !y.moved, "yesterday's Move does not calm today (it only nudges the start a little)");
     assert.strictEqual(M.read({ logs: [meal('jein')], ledger: [] }, NOW, WH).level, 0, 'a medium meal is not a spike');
 });
 

@@ -40,10 +40,35 @@
         return 'other';
     }
     const entryDay = e => e.day || dayKey(+e.ts || 0);
+    /* Oct 16 fair play (E-man: "we definitely have to kill all cheating and all loops"). What counts toward the world's weather,
+       the inside and Misty's energy (XP has its own guards in award()/logMeal): one entry per eventId; a meal twin (same name or
+       barcode on the same day) counts once; the same kind of ledger entry (water, Move, macro goal) within FAST ms of the last
+       counted one is one rapid-fire tap. Everything is read from what is saved, so log / undo / log again adds nothing extra. */
+    const FAST = { water: 20000, move: 60000, macro: 20000 };
+    const mealKey = t => String(t || '').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').split(/\s+[\u00b7|-]\s+/)[0].replace(/[^a-z0-9\u00df]+/g, '');
+    function fairDay(state, key) {
+        state = state || {};
+        const seen = new Set(), logs = [], ledger = [], last = {};
+        for (const l of (state.logs || [])) {
+            if (!l || entryDay(l) !== key) continue;
+            const id = l.eventId || l.id, k = l.code ? 'c:' + l.code : mealKey(l.t);
+            if (id && seen.has('l:' + id)) continue;
+            if (k && seen.has('m:' + k)) continue;
+            if (id) seen.add('l:' + id); if (k) seen.add('m:' + k);
+            logs.push(l);
+        }
+        for (const e of (state.ledger || [])) {
+            if (!e || entryDay(e) !== key) continue;
+            if (e.eventId) { if (seen.has('g:' + e.eventId)) continue; seen.add('g:' + e.eventId); }
+            const k = kind(e), gap = FAST[k], t = +e.ts || 0;
+            if (gap && t) { if (last[k] && Math.abs(t - last[k]) < gap) continue; last[k] = t; }
+            ledger.push(e);
+        }
+        return { logs, ledger };
+    }
 
     function dayParts(state, key) {
-        const logs = (state.logs || []).filter(l => l && entryDay(l) === key);
-        const led = (state.ledger || []).filter(e => e && entryDay(e) === key);
+        const fair = fairDay(state, key), logs = fair.logs, led = fair.ledger;
         const n = { move: 0, water: 0, macro: 0, xp: 0 };
         for (const e of led) { const k = kind(e); if (n[k] != null) n[k]++; if (+e.amt > 0) n.xp += +e.amt; }
         if (!logs.length && !led.length) return null;
@@ -118,7 +143,7 @@
         return head + ' ' + tr('t_' + tip(res.parts), li);
     }
     function forState(state, now, li) { const r = score(state, now); r.look = look(r.score); r.line = why(r, li); r.tip = tip(r.parts); return r; }
-    const api = { WEIGHTS, PART_W, FULL, FLOOR, START, dayKey, verdict, kind, dayParts, score, tierOf, look, tip, why, forState, COPY };
+    const api = { WEIGHTS, PART_W, FULL, FLOOR, START, FAST, dayKey, verdict, kind, mealKey, fairDay, dayParts, score, tierOf, look, tip, why, forState, COPY };
     if (typeof module !== 'undefined' && module.exports) module.exports = api;
     if (root) root.LowiWorldHealth = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -112,10 +112,15 @@
     function energy(input) {
         input = input || {};
         const now = +input.now || Date.now(), key = dayKey(now);
-        const logs = (input.logs || []).filter(l => l && isDay(l, key));
-        const ledger = (input.ledger || []).filter(e => e && inDay(e, key));
+        /* Oct 16 fair play: twins, repeats and rapid-fire taps count once (LowiWorldHealth.fairDay, the shared rule) */
+        const WHc = W.LowiWorldHealth, fair = WHc && typeof WHc.fairDay === 'function' ? WHc.fairDay({ logs: (input.logs || []).filter(l => l && isDay(l, key)), ledger: (input.ledger || []).filter(e => e && inDay(e, key)).map(e => Object.assign({}, e, { day: key })) }, key) : null;
+        const logs = fair ? fair.logs : (input.logs || []).filter(l => l && isDay(l, key));
+        const ledger = fair ? fair.ledger : (input.ledger || []).filter(e => e && inDay(e, key));
         const counted = ledger.filter(e => classify(e) === 'water').length;
-        const water = Math.max(0, Math.floor(+input.water || 0)) || counted;
+        const raw = fair ? (input.ledger || []).filter(e => e && inDay(e, key) && classify(e) === 'water').length : counted;
+        const tapped = Math.max(0, Math.floor(+input.water || 0));
+        /* glasses past the daily water XP limit still count (the counter knows them), rapid-fire repeats the ledger caught do not */
+        const water = tapped ? (raw ? Math.min(tapped, counted + Math.max(0, tapped - raw)) : tapped) : counted;
         const moves = ledger.filter(e => +e.amt > 0 && classify(e) === 'move').length;
         const spikes = logs.filter(l => verdict(l) <= 0.15).length;
         const food = logs.length ? logs.reduce((a, l) => a + verdict(l), 0) / logs.length : 0;

@@ -90,7 +90,7 @@ test('energy: a spiky meal alone wears her out (sad), good tracking energises he
 
 test('energy: water from the counter wins over ledger entries (capped water XP still counts as water)', () => {
   assert.equal(SUN.energy({now, water: 6}).water, 6);
-  assert.equal(SUN.energy({now, ledger: [E('water', 2), E('water', 2)]}).water, 2);
+  assert.equal(SUN.energy({now, ledger: [E('water', 2), E('water', 2, {ts: now - 5e5})]}).water, 2); /* Oct 16 fair play: same-moment repeats count once */
   assert.equal(SUN.energy({now, water: 12}).parts.water, 1);
 });
 

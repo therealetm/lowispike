@@ -70,15 +70,19 @@
     D.addEventListener('visibilitychange', schedule);
     W.LowiInside = { health, info, render: renderRow };
     /* world health in the real world: the shared world's fog and depth follow LowiWorldHealth */
-    let hTs = 0, hLook = null, fogBase = 0, fogSet = -1;
+    let hTs = 0, hLook = null, fogBase = 0, fogSet = -1, wmNow = 0;
+    const moodNow = () => { try { return W.LowiWorldMood ? Math.max(0, Math.min(1, +W.LowiWorldMood.level || 0)) : 0; } catch (e) { return 0; } };
+    W.addEventListener('lowi:world-mood', () => { hTs = 0; schedule(); });
     function hookWorld() {
         const w = W.LowiWorld3D; if (!w || w.__brHealth || typeof w.onFrame !== 'function') return; w.__brHealth = 1;
         w.onFrame(() => {
             if (!w.scene || !(w.isOpen && w.isOpen())) return;
-            const now = Date.now(); if (!hLook || now - hTs > 5000) { hLook = health().look; hTs = now; }
+            const now = Date.now(); if (!hLook || now - hTs > 5000) { hLook = health().look; hTs = now; wmNow = moodNow(); }
+            /* Oct 16 fast weather: the 4-day score is the slow baseline, today's weather (LowiWorldMood) moves the fog fast */
+            const fog = Math.min(1, 0.65 * hLook.fog + 0.45 * wmNow), bright = hLook.bright * (1 - 0.25 * wmNow);
             const f = w.scene.fog, bg = w.scene.background;
-            if (f) { if (f.density !== fogSet) fogBase = f.density; f.density = fogSet = fogBase * (0.7 + 0.9 * hLook.fog); }
-            if (bg && bg.isColor) { bg.multiplyScalar(0.8 + 0.25 * hLook.bright); if (f) f.color.copy(bg); }
+            if (f) { if (f.density !== fogSet) fogBase = f.density; f.density = fogSet = fogBase * (0.7 + 0.9 * fog); }
+            if (bg && bg.isColor) { bg.multiplyScalar(0.8 + 0.25 * bright); if (f) f.color.copy(bg); }
         });
     }
     function boot() {

@@ -32,20 +32,22 @@ function session(options){
  function confirm(rows){const ids=new Set((rows||[]).filter(m=>m.uid===scope).map(m=>String(m.id)));const next=outbox.filter(m=>!ids.has(String(m.id)));if(next.length===outbox.length)return;outbox=next;if(draft.retryId&&ids.has(String(draft.retryId)))draft={text:'',reply:null};save();}
  async function submit(by,retryId){
   let m=photoIn&&!retryId?null:outbox.find(x=>x.id===(retryId||draft.retryId));
-  if(!m&&photoIn){const pin=photoIn;photoIn=null;if(outbox.length>=20)throw new Error('outbox-full');m={id:pin.id||options.id(),uid:scope,by,t:pin.text,ts:Date.now(),rx:{},re:pin.reply||null,status:'sending'};outbox.push(m);}
+  if(!m&&photoIn){const pin=photoIn;photoIn=null;if(outbox.length>=20)throw new Error('outbox-full');m={id:pin.id||options.id(),uid:scope,by,t:pin.text,ts:Date.now(),rx:{},re:pin.reply||null,status:'sending'};if(pin.line)m.line=true;outbox.push(m);}
   if(!m){const text=draft.text.trim();if(!text)return null;if(outbox.length>=20)throw new Error('outbox-full');m={id:options.id(),uid:scope,by,t:text,ts:Date.now(),rx:{},re:draft.reply||null,status:'sending'};outbox.push(m);}
   if(busy.has(m.id))return null;
   busy.add(m.id);m.status='sending';
   if(draft.text.trim()===m.t&&draft.reply===m.re)draft={text:'',reply:null};save();
   try{const row=await send(m);if(!row||row.id!==m.id||row.uid!==scope)throw new Error('missing-ack');outbox=outbox.filter(x=>x.id!==m.id);if(draft.retryId===m.id)draft={text:'',reply:null};save();return row;}
-  catch(e){if(outbox.some(x=>x.id===m.id)){m.status='unconfirmed';if(!draft.text&&!photo(m.t))draft={text:m.t,reply:m.re,retryId:m.id};save();}throw e;}
+  catch(e){if(outbox.some(x=>x.id===m.id)){m.status='unconfirmed';if(!draft.text&&!photo(m.t)&&!m.line)draft={text:m.t,reply:m.re,retryId:m.id};save();}throw e;}
   finally{busy.delete(m.id);changed();}
  }
  /* a photo goes out once its picture is uploaded: same outbox, same ack, same retry; its body never lands in the text draft */
  let photoIn=null;
  function submitPhoto(by,text,id,reply){if(!photo(text,scope))return Promise.reject(new Error('bad-photo'));if(id&&outbox.some(x=>x.id===id))return submit(by,id);photoIn={text,id,reply:reply||null};return submit(by);}
+ /* Oct 16 (energy hits): one short line sent on its own (same outbox, ack and retry); it never touches or lands in the text draft */
+ function submitLine(by,text){const t=String(text||'').trim().slice(0,600);if(!t)return Promise.reject(new Error('empty'));photoIn={text:t,id:null,reply:null,line:true};return submit(by);}
  function discard(id){if(busy.has(id))return;outbox=outbox.filter(m=>m.id!==id);if(draft.retryId===id)draft={text:'',reply:null};save();}
- return {setDraft,confirm,submit,submitPhoto,discard,state:()=>({draft:{...draft},outbox:outbox.map(m=>({...m})),storageOK,busy:busy.size>0})};
+ return {setDraft,confirm,submit,submitPhoto,submitLine,discard,state:()=>({draft:{...draft},outbox:outbox.map(m=>({...m})),storageOK,busy:busy.size>0})};
 }
 const api={EMOJI,SIGNS,type,esc,image,photo,photoBody,identity,quiet,message,visible,read,write,session};
 if(typeof module==='object'&&module.exports)module.exports=api;else root.LowiChatCore=api;

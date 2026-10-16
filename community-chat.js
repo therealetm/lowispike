@@ -102,7 +102,7 @@ const COPY={
  toEveryone:['Write to everyone instead','Stattdessen an alle schreiben','Escribir a todos'],
  youAll:['You · talking to everyone','Du · sprichst mit allen','Tú · hablas con todos'],
  history:['Chat','Chat','Chat'],
- newPic:['New picture','Neues Bild','Foto nueva'],photoBtn:['Send a photo','Foto senden','Enviar foto'],photoReady:['Photo ready. Add a caption or just send.','Foto bereit. Schreib etwas dazu oder sende direkt.','Foto lista. Añade un texto o envíala.'],photoRemove:['Remove photo','Foto entfernen','Quitar foto'],photoSending:['Sending photo…','Foto wird gesendet …','Enviando foto…'],photoFailed:['Photo not sent. Check your connection and try again.','Foto nicht gesendet. Prüfe die Verbindung und versuch es erneut.','La foto no se envió. Revisa la conexión e inténtalo de nuevo.'],photoBad:['That file could not be read as a photo.','Diese Datei konnte nicht als Foto gelesen werden.','Ese archivo no se pudo leer como foto.'],photoBig:['That photo is too large (25 MB max).','Das Foto ist zu groß (max. 25 MB).','La foto es demasiado grande (máx. 25 MB).'],photoBots:['Photos go to real people, not galaxy bots.','Fotos gehen an echte Menschen, nicht an Galaxie-Bots.','Las fotos van a personas reales, no a bots.'],photoNote:['Location and camera details are removed before it is sent.','Standort- und Kameradaten werden vor dem Senden entfernt.','Los datos de ubicación y cámara se quitan antes de enviar.'],pcChat:['Chat','Chat','Chat'],pcEnergy:['Send energy','Energie senden','Enviar energía'],pcEnergyNo:['Energy can only go to real members.','Energie geht nur an echte Mitglieder.','La energía solo va a miembros reales.'],pcSign:['Star sign','Sternzeichen','Signo'],pcBday:['Birthday','Geburtstag','Cumpleaños'],pcType:['Personality','Persönlichkeit','Personalidad'],pcLevel:['Level','Level','Nivel'],pcNotShared:['Not shared','Nicht geteilt','No compartido'],pcOnlyYou:['only you see this','nur für dich sichtbar','solo tú lo ves'],pcYou:['This is you','Das bist du','Eres tú'],pcLast:['Last message {n}','Letzte Nachricht {n}','Último mensaje {n}'],pcQuiet:['No recent messages here','Hier keine neuen Nachrichten','Sin mensajes recientes aquí'],pcLiveNote:['Status comes only from their last message in this chat. LOWiSPIKE never tracks location.','Der Status stammt nur aus der letzten Nachricht in diesem Chat. LOWiSPIKE verfolgt nie den Standort.','El estado viene solo de su último mensaje en este chat. LOWiSPIKE nunca rastrea la ubicación.'],pcSharedNote:['Star sign and personality show only when they chose to share them. Birthdays are never shared.','Sternzeichen und Persönlichkeit erscheinen nur, wenn die Person sie teilt. Geburtstage werden nie geteilt.','El signo y la personalidad solo aparecen si la persona los comparte. Los cumpleaños nunca se comparten.'],pcPrivate:['private','privat','privado'],pcSharedTag:['shared','geteilt','compartido'],
+ newPic:['New picture','Neues Bild','Foto nueva'],photoBtn:['Send a photo','Foto senden','Enviar foto'],photoReady:['Photo ready. Add a caption or just send.','Foto bereit. Schreib etwas dazu oder sende direkt.','Foto lista. Añade un texto o envíala.'],photoRemove:['Remove photo','Foto entfernen','Quitar foto'],photoSending:['Sending photo…','Foto wird gesendet …','Enviando foto…'],photoFailed:['Photo not sent. Check your connection and try again.','Foto nicht gesendet. Prüfe die Verbindung und versuch es erneut.','La foto no se envió. Revisa la conexión e inténtalo de nuevo.'],photoBad:['That file could not be read as a photo.','Diese Datei konnte nicht als Foto gelesen werden.','Ese archivo no se pudo leer como foto.'],photoBig:['That photo is too large (25 MB max).','Das Foto ist zu groß (max. 25 MB).','La foto es demasiado grande (máx. 25 MB).'],photoBots:['Photos go to real people, not galaxy bots.','Fotos gehen an echte Menschen, nicht an Galaxie-Bots.','Las fotos van a personas reales, no a bots.'],photoNote:['Location and camera details are removed before it is sent.','Standort- und Kameradaten werden vor dem Senden entfernt.','Los datos de ubicación y cámara se quitan antes de enviar.'],pcChat:['Chat','Chat','Chat'],pcEnergy:['Send energy','Energie senden','Enviar energía'],energyPing:['⚡ {n} sent you energy','⚡ {n} hat dir Energie geschickt','⚡ {n} te envió energía'],pcEnergyNo:['Energy can only go to real members.','Energie geht nur an echte Mitglieder.','La energía solo va a miembros reales.'],pcSign:['Star sign','Sternzeichen','Signo'],pcBday:['Birthday','Geburtstag','Cumpleaños'],pcType:['Personality','Persönlichkeit','Personalidad'],pcLevel:['Level','Level','Nivel'],pcNotShared:['Not shared','Nicht geteilt','No compartido'],pcOnlyYou:['only you see this','nur für dich sichtbar','solo tú lo ves'],pcYou:['This is you','Das bist du','Eres tú'],pcLast:['Last message {n}','Letzte Nachricht {n}','Último mensaje {n}'],pcQuiet:['No recent messages here','Hier keine neuen Nachrichten','Sin mensajes recientes aquí'],pcLiveNote:['Status comes only from their last message in this chat. LOWiSPIKE never tracks location.','Der Status stammt nur aus der letzten Nachricht in diesem Chat. LOWiSPIKE verfolgt nie den Standort.','El estado viene solo de su último mensaje en este chat. LOWiSPIKE nunca rastrea la ubicación.'],pcSharedNote:['Star sign and personality show only when they chose to share them. Birthdays are never shared.','Sternzeichen und Persönlichkeit erscheinen nur, wenn die Person sie teilt. Geburtstage werden nie geteilt.','El signo y la personalidad solo aparecen si la persona los comparte. Los cumpleaños nunca se comparten.'],pcPrivate:['private','privat','privado'],pcSharedTag:['shared','geteilt','compartido'],
  photoOf:['Photo from {n}','Foto von {n}','Foto de {n}'],
  back:['Back to the galaxy','Zurück zur Galaxie','Volver a la galaxia'],
  toArrow:['to {n}','an {n}','para {n}'],
@@ -242,27 +242,30 @@ function mapView(gal){const typing=D.documentElement.classList.contains('cs-chat
   return camFrozen;}
 function mapZ(gx,v){return G.mapZooms(gx.map.radius,v.w,v.h);}
 function schedulePlace(){if(placeRaf)return;placeRaf=requestAnimationFrame(()=>{placeRaf=0;place();});}
+/* Oct 16 (energy hits, community-energy.js): a knocked companion rolls away from its spot for a moment; epos() adds that offset */
+function epos(s,id){const e=W.LowiEnergy,o=s&&e&&e.offset?e.offset(id):null;return o?{uid:s.uid,me:s.me,x:s.x+o.x,y:s.y+o.y}:s;}
 function place(){
   const gx=W.__lgGx,field=D.getElementById('cgField'),gal=D.getElementById('cgGalaxy');if(!G||!gx||!gx.map||!field||!gal)return;
-  mapGestures(gal);
+  mapGestures(gal);if(W.LowiEnergy&&W.LowiEnergy.mount)W.LowiEnergy.mount(gal);
   const v=mapView(gal),Z=mapZ(gx,v);if(!cam)cam={x:0,y:0,z:Z.z0};cam=G.mapClamp(cam,gx.map.radius,v.w,v.h);
   const f=Math.max(.68,Math.min(1.2,Math.sqrt(cam.z/Z.z0))),fn=Math.max(.8,f),cx=v.w/2,cy=v.h*.5,scr=s=>({x:cx+(s.x-cam.x)*cam.z,y:cy+(s.y-cam.y)*cam.z});
   const bodies=new Map(),bubs=new Map();
   for(const el of field.querySelectorAll('.cg-body'))bodies.set(el.getAttribute('data-uid'),el);
   for(const el of field.querySelectorAll('.cg-bub[data-for]'))bubs.set(el.getAttribute('data-for'),el);
   const items=[];
-  for(const L of gx.labels){const el=bodies.get(L.id),s=gx.spot.get(L.id);if(!el||!s)continue;const p=scr(s);
+  for(const L of gx.labels){const el=bodies.get(L.id),s=epos(gx.spot.get(L.id),L.id);if(!el||!s)continue;const p=scr(s);
    if(el.__nw==null){const n=el.querySelector('.cg-name');el.__nw=n?Math.min(L.size+30,n.offsetWidth||60):60;}
    const b=bubs.get(L.id);if(b&&b.__bh==null)b.__bh=b.offsetHeight||34;
    items.push({id:L.id,x:p.x,y:p.y,s:L.size*f,nw:el.__nw*fn,bw:b?L.bw:0,bh:b?b.__bh:0,bub:!!b});
    el.style.left='0';el.style.top='0';el.style.transform='translate3d('+p.x.toFixed(1)+'px,'+p.y.toFixed(1)+'px,0) translate(-50%,calc(var(--s) / -2)) scale('+f.toFixed(3)+')';
    el.style.setProperty('--nk',(fn/f).toFixed(3));el.classList.toggle('cg-out',p.x<-80||p.x>v.w+80||p.y<-80||p.y>v.h+80);}
+  const ko=W.LowiEnergy&&W.LowiEnergy.keepOut?W.LowiEnergy.keepOut(gal):null;if(ko)items.push({id:'__ce',x:ko.x,y:ko.y,s:ko.s,nw:0,bw:0,bh:0,bub:false});
   const lab=G.mapLabels(items,{w:v.w,h:v.hb||v.h});
   for(const it of items){const r=lab.get(it.id),el=bodies.get(it.id),b=bubs.get(it.id);if(!r||!el)continue;el.classList.toggle('cg-nn',!r.name);el.classList.toggle('cg-dot',!!r.dot);
    if(!b)continue;if(r.bub){b.style.display='';b.style.left=r.bub.x+'px';b.style.setProperty('top',r.bub.y+'px','important');b.style.setProperty('bottom','auto','important');b.style.setProperty('--tail',r.bub.tail+'px');b.setAttribute('data-side',r.bub.side);}else b.style.display='none';}
   const me=gx.me&&gx.spot.get(gx.me.uid),mp=me?scr(me):{x:cx,y:cy};
   gal.style.setProperty('--me-x',Math.round(mp.x)+'px');gal.style.setProperty('--me-y',Math.round(mp.y)+'px');
-  gx.lines=gx.lineDefs.map(d=>{const A=gx.spot.get(d.a),B=gx.spot.get(d.b);if(!A||!B)return null;const a=scr(A),b=scr(B),bs=(B.me?(v.w>=640?64:54):(v.w>=640?56:46))*f;return {a,b,rb:bs/2,alpha:1,sel:d.sel,arrow:d.arrow,from:d.from,to:d.to};}).filter(Boolean);
+  gx.lines=gx.lineDefs.map(d=>{const A=epos(gx.spot.get(d.a),d.a),B=epos(gx.spot.get(d.b),d.b);if(!A||!B)return null;const a=scr(A),b=scr(B),bs=(B.me?(v.w>=640?64:54):(v.w>=640?56:46))*f;return {a,b,rb:bs/2,alpha:1,sel:d.sel,arrow:d.arrow,from:d.from,to:d.to};}).filter(Boolean);
   gx.orbits={cx:mp.x,cy:mp.y,r:[]};
   if(sk)sk.set(gx.lines,false,gx.orbits);
   gal.setAttribute('data-zoom',cam.z>=Z.zmax*.995?'max':cam.z<=Z.zmin*1.005?'min':'mid');
@@ -274,7 +277,7 @@ function zoomAt(c0,k,px,py,v){const gx=W.__lgGx,Z=gx&&gx.map?mapZ(gx,v):{zmin:.1
 function mapGestures(gal){if(gal.__map)return;gal.__map=1;
   const pts=new Map();let g=null,suppress=0,lastTap=0,lastXY=null;
   const local=e=>{const r=gal.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};};
-  const inUi=t=>!!(t&&t.closest&&t.closest('.cm-compose,input,textarea,#cgThread,.cg-empty'));
+  const inUi=t=>!!(t&&t.closest&&t.closest('.cm-compose,input,textarea,#cgThread,.cg-empty,.ce-joy'));
   gal.addEventListener('pointerdown',e=>{if(inUi(e.target)||(e.pointerType==='mouse'&&e.button!==0))return;cancelAnimationFrame(camAnim);pts.set(e.pointerId,local(e));
    if(pts.size===1)g={kind:'tap',p0:local(e),cam0:{...cam},t0:Date.now(),onBody:!!(e.target.closest&&e.target.closest('.cg-body,.cg-bub'))};
    else if(pts.size===2){const [a,b]=[...pts.values()];g={kind:'pinch',d0:Math.hypot(a.x-b.x,a.y-b.y)||1,m0:{x:(a.x+b.x)/2,y:(a.y+b.y)/2},cam0:{...cam}};}});
@@ -300,7 +303,14 @@ function mapGestures(gal){if(gal.__map)return;gal.__map=1;
   gal.addEventListener('gesturestart',e=>e.preventDefault());
 }
 W.LowiCgMap={atMax(){const gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(!gx||!gx.map||!gal||!cam)return true;return cam.z>=mapZ(gx,mapView(gal)).zmax*.995;},
-  cam(){return cam&&{...cam};},reset(){cam=null;schedulePlace();},place};
+  cam(){return cam&&{...cam};},reset(){cam=null;schedulePlace();},place,
+  /* Oct 16 (energy hits): the camera and every companion's home spot and radius in map units, for community-energy.js */
+  geom(){const gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(!G||!gx||!gx.map||!gal||!cam)return null;const v=mapView(gal),Z=mapZ(gx,v),f=Math.max(.68,Math.min(1.2,Math.sqrt(cam.z/Z.z0))),big=v.w>=640,sz=new Map((gx.labels||[]).map(L=>[L.id,L.size]));
+   return {cam:{...cam},w:v.w,h:v.h,cx:v.w/2,cy:v.h*.5,f,radius:gx.map.radius,spots:gx.map.spots.filter(s=>gx.spot.has(s.uid)).map(s=>({uid:s.uid,me:!!s.me,x:s.x,y:s.y,r:((sz.get(s.uid)||(s.me?(big?64:54):(big?56:46)))*f/2)/cam.z}))};},
+  /* an energy hit on a real member sends one short directed line ("@Name ⚡ Eman sent you energy"); community-energy.js rate-limits it */
+  energy(uid){if(!uid||uid===scope||uid==='me')return 'self';if(botOf(uid))return 'bot';const p=roster().get(uid);if(!p||!G)return 'gone';if(blocked(uid))return 'blocked';
+   if(!store||!store.submitLine||!scope||navigator.onLine===false)return 'offline';const name=String(own().n||'').trim();if(!name)return 'name';
+   store.submitLine(name,G.direct(fill('energyPing',name),p.n)).catch(()=>{}).then(()=>refresh());refresh();return 'sent';}};
 function skyStart(){const c=D.getElementById('cgSky');if(!G||!c||!c.getContext)return;if(!sk||sk.canvas!==c){if(sk)sk.stop();sk=G.sky(c);if(sk){sk.canvas=c;const g0=W.__lgGx;if(g0)sk.set(g0.lines,false,g0.orbits);}}if(sk&&active()&&!D.hidden)sk.start();}
 /* Arriving in Community: coming from Home, galaxy-zoom.js pulls the one camera out of Misty's world into the galaxy (no boxed
    snapshot of Home any more). From anywhere else the galaxy just settles in from a little closer. */

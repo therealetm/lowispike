@@ -305,6 +305,65 @@ export function createWorld(THREE, canvas, opts) {
         scene.add(g);
         return { g, mine, mineGlow, others, fibres, motes, haze, tissue: new THREE.Color('#071635'), tmp: new THREE.Color() };
     }
+    /* Oct 16 (task 1 rework, E-man: "each bubble holds that person's cells and companion; way out there the companions gather and float
+       like gods"): once the Community roster is known (LowiCommunity.people), every outer bubble gets one person: their companion
+       (the same little figure as on the Community map, drawn from its SVG) floating in the middle, their cells in their aura colour
+       and as many as their level earns, and their name. Beyond all the bubbles, the Community realm: everyone's companions on a slow
+       halo, big and bright, always at the far side of the view. */
+    const formCache = new Map();
+    const toCol = c => { const m = /hsl\(\s*([\d.]+)[\s,]+([\d.]+)%[\s,]+([\d.]+)%/.exec(c || ''); const k = new THREE.Color(); if (m) k.setHSL(+m[1] / 360, +m[2] / 100, +m[3] / 100); else { try { k.set(c || '#9cdac7'); } catch (e) { k.set('#9cdac7'); } } return k; };
+    function formTex(p) {
+        if (formCache.has(p.uid)) return formCache.get(p.uid);
+        const S = 160, cv = document.createElement('canvas'); cv.width = cv.height = S; const x = cv.getContext('2d');
+        const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; formCache.set(p.uid, tex);
+        const plain = () => { const g = x.createRadialGradient(S / 2, S / 2, 4, S / 2, S / 2, S / 2); g.addColorStop(0, '#ffffff'); g.addColorStop(0.35, p.color); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, S, S); tex.needsUpdate = true; };
+        const m = /<svg[\s\S]*<\/svg>/.exec(p.form || ''); if (!m) { plain(); return tex; }
+        let svg = m[0].replace(/var\(--c\)/g, p.color);
+        if (!/^<svg[^>]*xmlns=/.test(svg)) svg = svg.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+        if (!/^<svg[^>]*\swidth=/.test(svg)) svg = svg.replace('<svg', '<svg width="' + S + '" height="' + S + '"');
+        const im = new Image();
+        im.onload = () => { try { x.drawImage(im, 0, 0, S, S); tex.needsUpdate = true; } catch (e) { plain(); } };
+        im.onerror = plain; im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+        return tex;
+    }
+    const cellTex = (() => { const S = 64, c = document.createElement('canvas'); c.width = c.height = S; const x = c.getContext('2d');
+        const g = x.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2); g.addColorStop(0, 'rgba(255,255,255,.95)'); g.addColorStop(0.18, 'rgba(255,255,255,.75)'); g.addColorStop(0.26, 'rgba(255,255,255,.12)');
+        g.addColorStop(0.66, 'rgba(255,255,255,.16)'); g.addColorStop(0.8, 'rgba(255,255,255,.7)'); g.addColorStop(0.9, 'rgba(255,255,255,.18)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+        x.fillStyle = g; x.fillRect(0, 0, S, S); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })();
+    function nameTex(n) { const c = document.createElement('canvas'); c.width = 256; c.height = 64; const x = c.getContext('2d');
+        x.font = '600 30px -apple-system, system-ui, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = 'rgba(0,0,0,.8)'; x.shadowBlur = 8;
+        x.fillStyle = 'rgba(235,245,255,.95)'; x.fillText(String(n || '').slice(0, 16), 128, 32); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; }
+    const addSprite = (parent, map, color, sz, add) => { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map, color, transparent: true, opacity: 0, depthWrite: false, blending: add ? THREE.AdditiveBlending : THREE.NormalBlending })); sp.scale.set(sz, sz, 1); parent.add(sp); return sp; };
+    function dressCosmos(C, people) {
+        const others = people.filter(p => !p.me);
+        if (!others.length) return false;
+        C.others.forEach((o, i) => {
+            const u = o.userData, p = others[i % others.length], col = toCol(p.color);
+            u.person = p.uid;
+            u.sanct.material.color.copy(col); u.core.material.color.copy(col); u.core.scale.set(u.r * 0.9, u.r * 0.9, 1);
+            /* their companion in the middle of their world */
+            u.mate = addSprite(o, formTex(p), '#ffffff', u.r * 0.62, false); u.mate.renderOrder = 3;
+            /* their cells, in their aura colour, as many as their level earns */
+            u.cells.forEach(c => { o.remove(c); c.material.dispose(); });
+            const n = Math.min(small ? 8 : 12, 4 + Math.round(Math.sqrt(p.lv || 1) * 1.6)); u.cells = [];
+            for (let k = 0; k < n; k++) { const c = addSprite(o, cellTex, col.clone().lerp(new THREE.Color('#ffffff'), 0.25 * (k % 3)), u.r * (0.13 + 0.05 * ((k * 7) % 4)), true); c.userData = { a: k * 2.399 + u.p, r: u.r * (0.38 + 0.14 * ((k * 5) % 4)), y: (((k * 37) % 11) / 11 - 0.5) * u.r * 0.9, s: 0.12 + 0.05 * (k % 3) }; u.cells.push(c); }
+            const lab = addSprite(o, nameTex(p.name), '#ffffff', 1, false); lab.scale.set(u.r * 0.9, u.r * 0.225, 1); lab.position.set(0, -u.r * 1.18, 0); u.label = lab;
+        });
+        /* the Community realm: every companion, the user's too, floating on a slow halo far beyond the bubbles */
+        const realm = new THREE.Group(); realm.name = 'community-realm';
+        const halo = addSprite(realm, glowTex, '#9fc6ff', 520, true);
+        const gods = people.slice(0, small ? 20 : 31).map((p, i, all) => {
+            const sp = addSprite(realm, formTex(p), '#ffffff', p.me ? 46 : 38, false); sp.renderOrder = 4;
+            const aura = addSprite(realm, glowTex, toCol(p.color), p.me ? 120 : 96, true);
+            sp.userData = { a: (i / all.length) * 6.283, y: ((i * 37) % 13 / 13 - 0.5) * 70, rr: 150 + (i % 3) * 34, p: i * 1.7, aura };
+            return sp;
+        });
+        /* far beyond the fog: the realm keeps its light (no fog on it) */
+        realm.traverse(o => { if (o.material) o.material.fog = false; });
+        C.g.add(realm); C.realm = { g: realm, halo, gods };
+        return true;
+    }
+    const realmDir = new THREE.Vector3();
     /* 0 inside the World Map, 1 out in the spirit world; the walls and the fog give way as the camera leaves our bubble */
     function cosmosStep(t, dt) {
         const d = rig.dist, homeish = rig.mode === 'home';
@@ -322,13 +381,29 @@ export function createWorld(THREE, canvas, opts) {
         if (!C.g.visible) { return; }
         C.mine.material.uniforms.uO.value = mem * 0.9; C.mine.material.uniforms.uT.value = t;
         C.mineGlow.material.opacity = mem * 0.22;
+        if (!C.dressed && t - (C.tryT || -9) > 1.2) {
+            C.tryT = t; try { const L = window.LowiCommunity, ps = L && L.people ? L.people() : []; if (ps.length) C.dressed = dressCosmos(C, ps); } catch (e) { C.dressed = true; }
+        }
         C.others.forEach((o, i) => {
             const u = o.userData, wob = 1 + 0.02 * Math.sin(t * 0.6 + u.p);
+            if (u.mate) { u.mate.material.opacity = far * 0.95; u.mate.position.y = Math.sin(t * 0.7 + u.p) * u.r * 0.06; u.label.material.opacity = far * 0.85; }
             u.m.scale.setScalar(u.r * wob); u.m.material.uniforms.uO.value = far * 0.85; u.m.material.uniforms.uT.value = t + i;
             u.sanct.material.opacity = far * 0.3; u.core.material.opacity = far * (0.75 + 0.25 * Math.sin(t * 1.3 + u.p));
             u.cells.forEach(c => { const q = c.userData, a = q.a + t * q.s; c.position.set(Math.cos(a) * q.r, q.y + Math.sin(t * 0.5 + q.a) * 2, Math.sin(a) * q.r); c.material.opacity = far * 0.55; });
             o.position.y += Math.sin(t * 0.2 + u.p) * dt * 0.8;
         });
+        if (C.realm) {
+            /* always at the far side of the view, beyond every bubble; on the Community page the real companions are in front, so it stays faint */
+            const R = C.realm, on = smoothC(150, 290, d) * (document.documentElement.classList.contains('cg-spirit-on') ? 0.35 : 1);
+            R.g.visible = on > 0.01;
+            if (R.g.visible) {
+                realmDir.copy(rig.target).sub(camera.position).normalize();
+                R.g.position.copy(realmDir).multiplyScalar(560).add(rig.target); R.g.position.y += 70; R.g.position.applyAxisAngle(new THREE.Vector3(0, 1, 0), -C.g.rotation.y);
+                R.halo.material.opacity = on * 0.16;
+                R.gods.forEach(sp => { const q = sp.userData, a = q.a + t * 0.03; sp.position.set(Math.cos(a) * q.rr, q.y + Math.sin(t * 0.4 + q.p) * 6, Math.sin(a) * q.rr * 0.35);
+                    sp.material.opacity = on; q.aura.position.copy(sp.position); q.aura.material.opacity = on * (0.22 + 0.08 * Math.sin(t * 1.1 + q.p)); });
+            }
+        }
         C.fibres.material.opacity = far * 0.28; C.motes.material.opacity = mem * 0.5; C.haze.forEach(h => { h.material.opacity = far * 0.05; });
         C.g.rotation.y += dt * 0.004;
         /* the tissue between the bubbles: the background and the fog turn from the bloodstream's blue into deep tissue teal, and thin out */

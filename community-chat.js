@@ -470,5 +470,8 @@ D.addEventListener('lowi:chat',e=>{ensureScope();transport.notify(e.detail);if(e
 W.addEventListener('online',()=>{ensureScope();transport.reload();loadExtras(true);});W.addEventListener('offline',refresh);W.addEventListener('storage',e=>{if(e.key===prefsKey()){prefs=K.read(deviceStorage,prefsKey(),{});prefs.blocks=prefs.blocks||{};refresh();}});
 D.addEventListener('visibilitychange',()=>{onShow();if(!D.hidden){transport.reload();loadExtras(true);refresh();}});
 try{if(navigator.serviceWorker&&navigator.serviceWorker.addEventListener)navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.cgTab==='foryou')openGalaxy('');});}catch(e){}
-W.LowiCommunity={mount,refresh,send,comment,isQuiet,unread,messageHTML:renderMessage,mentions,fit,settings,bots:()=>botList().slice(),select:uid=>{sel=uid||'';refresh();},thread:(o,id)=>{thread(o,id);refresh();}};H.install(W.LowiCommunity);ensureScope();refresh();setInterval(()=>{if(active()){refresh();loadExtras(true);}},60000);
+/* Oct 16 (task 1 rework): who lives out in the spirit world, for the 3D world (body-world-3d-scene.js dresses each outer bubble with
+   one person's companion and cells, and gathers everyone's companions in the far Community realm). Same companions as the map here. */
+function people(){try{ensureScope();const r=[...roster().values()];const me={uid:scope||'me',n:'You',lv:(W.LowiCompanion&&W.LowiCompanion.level&&+W.LowiCompanion.level())||1,me:true};return [me].concat(r).map((p,i)=>({uid:p.uid,name:p.n,lv:+p.lv||1,me:!!p.me,color:hueColor(p.uid,p.me),form:mate(p.me?scope:p.uid,'cw'+i)}));}catch(e){return [];}}
+W.LowiCommunity={mount,refresh,send,comment,isQuiet,unread,messageHTML:renderMessage,mentions,fit,settings,bots:()=>botList().slice(),people,select:uid=>{sel=uid||'';refresh();},thread:(o,id)=>{thread(o,id);refresh();}};H.install(W.LowiCommunity);ensureScope();refresh();setInterval(()=>{if(active()){refresh();loadExtras(true);}},60000);
 })(window,document);

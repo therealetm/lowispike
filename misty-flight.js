@@ -169,7 +169,7 @@
     function end(ctx, why) {
         const a = ctx && ctx.a, r = ctx && ctx.r;
         note('end ' + why);
-        if (r && a && (why === 'abort' || why === 'home') && !regionsBusy() && curRegion() === 'hub') { r.target.set(0, 0, 0); if (why === 'abort' && S.dHome) r.dist = S.dHome; }
+        if (r && a && (why === 'abort' || why === 'home') && !regionsBusy() && curRegion() === 'hub') { r.target.set(0, 0, 0); if (why === 'abort' && S.dHome && S.dollyOut) r.dist = S.dHome; }
         S.st = 'idle'; S.flew = null; S.dolly = 0; hold(false); classes(false, false, false);
         if (ctx && ctx.PD && ctx.PD.mode) padMode(ctx, '');
         if (ctx && ctx.wand) { ctx.wand.material.opacity = 0; ctx.wand.visible = false; }

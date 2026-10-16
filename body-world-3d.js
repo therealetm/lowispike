@@ -282,7 +282,8 @@
             /* Oct 16 (E-man): a tap on Misty pets her (no sheet popping up mid-play); a long press opens her sheet; a double tap zooms */
             bindGestures(stage, (x, y) => { if (!world) return; const id = world.pick(x, y); if (id === 'cell') { try { W.dispatchEvent(new CustomEvent('lowi:misty-pet')); } catch (e) {} } else if (id) api.flyTo(id); }, true,
                 { onLong: (x, y) => { if (!world) return; if (world.pick(x, y) === 'cell') { try { W.dispatchEvent(new CustomEvent('lowi:misty-open')); } catch (e) {} } },
-                  onDouble: (x, y) => { if (!world) return; const id = world.pick(x, y); if (!id || id === 'cell') zoomTap(); } });
+                  /* Oct 16: on Home the re-layout resets rig.fly, so a double tap uses Home's own glide (the World map <-> Misty toggle, same as a tap on the stick) */
+                  onDouble: (x, y) => { if (!world) return; const id = world.pick(x, y); if (id && id !== 'cell') return; const H2 = W.LowiWorldHome; if (H2 && H2.toggleZoom) H2.toggleZoom(); else zoomTap(); } });
             if (io) io.disconnect();
             if ('IntersectionObserver' in W) { io = new IntersectionObserver(es => { visibleHome = es.some(x => x.isIntersecting); }, { threshold: 0.01 }); io.observe(stage); }
             if (mode === 'home' && canvas) stage.insertBefore(canvas, stage.firstChild);

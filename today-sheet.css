@@ -1,0 +1,129 @@
+/* Oct 16 (Eman: "That Today bar, you haven't updated it."): the Today sheet (#whToday, opened from the Today pill on the world
+   Home) wears the app's design language: black space under iOS blue glass, the same glass as the weather pill and the Daily
+   Quest card. One row height, one radius, one gap; no mint, gold, beige or orange chrome. Styling only: every button, its
+   handler and its tap target stay exactly as the modules render them. Loaded last so it wins over the older per-module looks;
+   scoped to html.wh-home #whToday (and the bottom X while the sheet is open), so nothing outside the sheet changes. */
+html.wh-home {
+    --ts-row: 48px;            /* every row and tile */
+    --ts-r: 16px;              /* every card, row and tile */
+    --ts-gap: 8px;             /* between everything */
+    --ts-ink: #fff;
+    --ts-ink2: rgba(226, 238, 255, .78);   /* secondary lines: readable on the glass (>= 4.5:1 on the dark panel) */
+    --ts-acc: #9fd4ff;                     /* small accents ("+1 glass", "Log a meal") */
+    --ts-rim: rgba(160, 220, 255, .34);
+    --ts-glass: radial-gradient(120% 90% at 18% 0%, rgba(255,255,255,.14), rgba(255,255,255,0) 52%), linear-gradient(160deg, rgba(80,170,255,.13), rgba(28,74,150,.30));
+    --ts-glass-sh: inset 0 0 14px rgba(140,210,255,.18), inset 0 1px 0 rgba(255,255,255,.10);
+    --ts-blue: linear-gradient(180deg, rgba(72,162,255,.96), rgba(10,122,255,.94));
+    --ts-blue-rim: rgba(200,232,255,.62);
+}
+
+/* ---------- the sheet itself: dark space with a blue glass sheen ---------- */
+html.wh-home #whToday.wh-today {
+    background: radial-gradient(130% 50% at 20% 0%, rgba(110,185,255,.18), rgba(110,185,255,0) 60%),
+                linear-gradient(180deg, rgba(14,32,70,.80), rgba(3,7,18,.92) 46%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(1.4) !important; backdrop-filter: blur(24px) saturate(1.4) !important;
+    border: 1px solid var(--ts-rim) !important; border-bottom: 0 !important; border-radius: 28px 28px 0 0 !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.22), inset 0 0 30px rgba(120,190,255,.10), 0 -18px 50px -24px rgba(0,0,0,.75) !important;
+    color: var(--ts-ink) !important; padding-left: 16px !important; padding-right: 16px !important;
+}
+html.wh-home #whToday .wh-today-grab { background: rgba(200,230,255,.55) !important; opacity: 1 !important; width: 40px; height: 5px; margin: 2px auto 12px !important; }
+
+/* one glass for every card, row and tile in the sheet */
+html.wh-home #whToday .sp-status,
+html.wh-home #whToday .wh-tiles .g2h-tile,
+html.wh-home #whToday .br-row,
+html.wh-home #whToday .bt-bar,
+html.wh-home #whToday .ls-sun,
+html.wh-home #whToday .lv-tile:not(.lv-scan),
+html.wh-home #whToday .sp-log-row {
+    background: var(--ts-glass) !important; border: 1px solid var(--ts-rim) !important; border-radius: var(--ts-r) !important;
+    box-shadow: var(--ts-glass-sh) !important; color: var(--ts-ink) !important; text-shadow: none !important;
+}
+/* the primary actions: the iOS blue */
+html.wh-home #whToday .sp-next,
+html.wh-home #whToday .lv-tile.lv-scan,
+html.wh-home #whToday .br-go,
+html.wh-home #whToday .ls-cta,
+html.wh-home #whToday .bt-cta {
+    background: var(--ts-blue) !important; border: 1px solid var(--ts-blue-rim) !important; color: #fff !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 6px 18px -8px rgba(10,122,255,.7) !important; text-shadow: none !important;
+}
+html.wh-home #whToday .sp-next *, html.wh-home #whToday .lv-tile.lv-scan *, html.wh-home #whToday .br-go * { color: #fff !important; stroke: currentColor; }
+
+/* ---------- 1. Misty's status card ---------- */
+html.wh-home #whToday .sp-status { min-height: 64px; padding: 10px 10px 10px 14px !important; gap: 12px !important; margin: 0 0 var(--ts-gap) !important; align-items: center !important; }
+html.wh-home #whToday .sp-status-dot { background: #7fd8ff !important; box-shadow: 0 0 0 4px rgba(127,216,255,.18), 0 0 10px rgba(127,216,255,.7) !important; }
+html.wh-home #whToday .sp-status b { color: var(--ts-ink) !important; font-weight: 700 !important; font-size: 15px !important; line-height: 1.25 !important; }
+html.wh-home #whToday .sp-status span { color: var(--ts-ink2) !important; font-size: 13px !important; }
+html.wh-home #whToday .sp-status .sp-next span { color: #fff !important; font-weight: 700 !important; font-size: 14px !important; }
+html.wh-home #whToday .sp-next { min-height: 44px !important; border-radius: 22px !important; padding: 0 16px !important; gap: 6px !important; flex: none; }
+
+/* ---------- 2. the six shortcuts: one grid, one height ---------- */
+html.wh-home #whToday > .wh-tiles { gap: var(--ts-gap) !important; margin: 0 0 var(--ts-gap) !important; }
+html.wh-home #whToday .wh-tiles .g2h-tile { min-height: var(--ts-row) !important; height: auto !important; padding: 6px 10px !important; gap: 8px !important; justify-content: flex-start !important; }
+/* liquid-glass.css rounds every tab tile to 22px with two ids (#app #main); the doubled id here outweighs it inside the sheet only */
+html.wh-home #whToday#whToday .wh-tiles .g2h-tile { border-radius: var(--ts-r) !important; }
+html.wh-home #whToday .wh-tiles .g2h-ic { background: rgba(140,200,255,.18) !important; color: #cfe9ff !important; border-radius: 9px !important; box-shadow: inset 0 0 0 1px rgba(160,220,255,.25) !important; }
+html.wh-home #whToday .wh-tiles .g2h-tile b { color: var(--ts-ink) !important; font-weight: 650 !important; font-size: 13px !important; }
+html.wh-home #whToday .wh-tiles .g2h-tile small { color: var(--ts-ink2) !important; }
+
+/* ---------- 3. today's log: no box in a box, just a labelled group ---------- */
+html.wh-home #whToday .sp-log { background: transparent !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; color: var(--ts-ink) !important; }
+html.wh-home #whToday .sp-log > header { min-height: 32px; margin: 6px 2px var(--ts-gap) !important; padding: 0 !important; align-items: center !important; }
+html.wh-home #whToday .sp-log > header b { color: var(--ts-ink2) !important; font-size: 13px !important; font-weight: 650 !important; letter-spacing: .01em; }
+html.wh-home #whToday .dr-chip {
+    background: var(--ts-glass) !important; border: 1px solid var(--ts-rim) !important; color: #dff0ff !important; border-radius: 14px !important;
+    min-height: 28px !important; padding: 0 12px !important; box-shadow: var(--ts-glass-sh) !important; text-shadow: none !important;
+}
+html.wh-home #whToday .dr-chip * { color: #dff0ff !important; }
+html.wh-home #whToday .dr-chip svg { stroke: currentColor !important; }
+html.wh-home #whToday .sp-habits i { border-color: rgba(160,215,255,.7) !important; background: transparent !important; }
+html.wh-home #whToday .sp-habits i.on { background: #6cc0ff !important; border-color: #9fd4ff !important; box-shadow: 0 0 6px rgba(108,192,255,.7) !important; }
+html.wh-home #whToday .sp-log-rows { gap: var(--ts-gap) !important; }
+html.wh-home #whToday .sp-log-row svg { color: var(--ts-acc) !important; }
+html.wh-home #whToday .sp-log-row small, html.wh-home #whToday .sp-bullet { color: var(--ts-ink2) !important; border-color: var(--ts-ink2) !important; }
+
+/* the three bars (Ride along / Body journeys / Sun): the same row height, glass, white label, blue progress */
+html.wh-home #whToday .br-row,
+html.wh-home #whToday .bt-bar,
+html.wh-home #whToday .ls-sun { min-height: var(--ts-row) !important; height: auto !important; padding: 6px 12px !important; margin: 0 0 var(--ts-gap) !important; gap: 10px !important; align-items: center !important; }
+html.wh-home #whToday .br-name, html.wh-home #whToday .bt-name, html.wh-home #whToday .ls-name { color: var(--ts-ink) !important; font-weight: 650 !important; font-size: 14px !important; }
+html.wh-home #whToday .br-line { color: var(--ts-ink2) !important; }
+html.wh-home #whToday .br-go { border-radius: 16px !important; min-height: 32px; padding: 0 12px !important; display: inline-flex; align-items: center; font-weight: 700 !important; }
+html.wh-home #whToday .br-dot { background: radial-gradient(circle at 40% 38%, #fff 0, #bfe6ff 30%, #4aa8ff 70%, rgba(74,168,255,0) 100%) !important; }
+html.wh-home #whToday .bt-num, html.wh-home #whToday .ls-num { color: #bfe3ff !important; font-weight: 700 !important; }
+html.wh-home #whToday .bt-mini i { border-color: rgba(160,215,255,.55) !important; background: transparent !important; }
+html.wh-home #whToday .bt-mini i.on { background: #7fd0ff !important; border-color: #bfe6ff !important; }
+html.wh-home #whToday .bt-bar.back,
+html.wh-home #whToday .bt-bar.away,
+html.wh-home #whToday .ls-sun.full,
+html.wh-home #whToday .ls-sun.away { --bt-a: #6cc0ff; --ls-a: #6cc0ff; --ls-b: #9fe0ff; border-color: rgba(170,225,255,.7) !important; box-shadow: var(--ts-glass-sh), 0 0 18px -6px rgba(108,192,255,.85) !important; }
+html.wh-home #whToday .bt-bar.back .bt-name, html.wh-home #whToday .ls-sun.full .ls-name { color: #fff !important; }
+html.wh-home #whToday .ls-track { background: rgba(200,230,255,.16) !important; border-radius: 6px !important; }
+html.wh-home #whToday .ls-fill { background: linear-gradient(90deg, #3d9bff, #9fe6ff) !important; border-radius: 6px !important; }
+html.wh-home #whToday .ls-ico { color: #fff0c8; }
+
+/* ---------- 4. the dashboard tiles: one grid, one tile ---------- */
+html.wh-home #whToday .lv-dash { gap: var(--ts-gap) !important; margin: 0 !important; }
+html.wh-home #whToday .lv-tile { min-height: 56px !important; border-radius: var(--ts-r) !important; padding: 8px 10px !important; }
+html.wh-home #whToday .lv-tile .lv-vis { color: var(--ts-acc) !important; }
+html.wh-home #whToday .lv-tile small { color: var(--ts-ink2) !important; }
+html.wh-home #whToday .lv-tile b { color: var(--ts-ink) !important; }
+html.wh-home #whToday .lv-tile em { color: var(--ts-acc) !important; font-style: normal !important; }
+html.wh-home #whToday .lv-tile.lv-scan em { color: rgba(255,255,255,.86) !important; }
+html.wh-home #whToday .lv-liquid { background: linear-gradient(rgba(120,195,255,.30), rgba(60,150,255,.42)) !important; }
+
+/* readable text everywhere in the sheet, also when Day (light) is on: the sheet stays dark glass with white ink */
+html.wh-home[data-theme="light"] #whToday.wh-today { color: #fff !important; }
+
+/* ---------- the round X under the open sheet: the same blue glass ---------- */
+html.wh-home.wh-today-open .wh-x {
+    background: radial-gradient(circle at 32% 24%, rgba(255,255,255,.34), rgba(255,255,255,0) 40%), radial-gradient(closest-side, rgba(80,170,255,.22), rgba(28,74,150,.62)) !important;
+    color: #fff !important; border: 1px solid rgba(170,225,255,.6) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(1.4); backdrop-filter: blur(18px) saturate(1.4);
+    box-shadow: inset 0 0 18px rgba(140,210,255,.32), 0 10px 28px -10px rgba(10,60,160,.7) !important;
+}
+
+@media (min-width: 700px) {
+    html.wh-home #whToday .lv-tile { min-height: 60px !important; }
+}

@@ -2,10 +2,11 @@
    - A "Klang" pill sits in the world's top bar next to the X. It opens a small panel: on/off switch, volume, warp sounds.
    - Sound is opt-in: the AudioContext is created and resumed only inside a tap (iOS rule). Nothing turns sound on by itself;
      only the volume and the warp switch are stored (lowi.worldAudio), so a reload is always silent.
-   - Ambient (Oct 15 rework): LIGHT by default: soft airy pink noise (high-passed, no rumble), a quiet open pad and sparse
-     soft pentatonic glints (sine, slow attack). The old low layer (rumble, low pulse, low drone) is UNEASY: silent until the
-     shared game-world mood (world-mood.js, LowiWorldMood.level) turns stormy, then it fades in slowly and the light layer
-     dips; a calmer world fades it out again. Capped master, limiter at 3 kHz low-pass, no beeps, nothing piercing.
+   - Ambient (Oct 16 rework, handoff task 9): calm meditation sound. LIGHT: a soft breathing pad gliding through open chords
+     and a singing bowl now and then. No noise band (it hummed like a microwave) and no pulse. UNEASY: a deeper, darker pad
+     and a slow low bowl, silent until the shared game-world mood (world-mood.js, LowiWorldMood.level) turns stormy, then it
+     fades in slowly and the light layer dips. Capped master, limiter at 3 kHz low-pass, no beeps, nothing piercing.
+   - The panel (Sound on Home, Klang in the world) opens with the glass string pad (sound-strings.js) on top.
    - Warp: window 'lowi:world-warp' {phase:'start'|'dive'|'arrive'|'cancel'} from body-world-regions.js (the real glide/dive/
      settle), plus the cell ride's 'lowi:ride-start'/'lowi:ride-arrive'. One warp voice at a time, duplicate phases ignored.
    - Lifecycle: world closes -> fade out, sources stopped, context suspended. App hidden -> suspended. Reopening the world with a
@@ -29,7 +30,7 @@
     function save() { try { localStorage.setItem(C.KEY, C.savePrefs(prefs)); } catch (e) { } }
 
     /* ---------- audio engine ---------- */
-    const st = { on: false, idleT: 0, ctx: null, master: null, ambBus: null, fxBus: null, amb: null, warp: null, last: null, plays: { start: 0, dive: 0, arrive: 0, ride: 0 }, pulseT: 0, pulseN: 0, timer: 0, stopT: 0 };
+    const st = { on: false, idleT: 0, ctx: null, master: null, out: null, ambBus: null, fxBus: null, amb: null, warp: null, last: null, plays: { start: 0, dive: 0, arrive: 0, ride: 0 }, bowlT: 0, bowlN: 0, lowT: 0, lowN: 0, timer: 0, stopT: 0, playing: false };
     /* the world is "open" as the full window, or as the living Home background (Home is the world now) */
     const homeLive = () => H.classList.contains('wh-world-live') && H.classList.contains('wh-home') && !H.classList.contains('bw3-full-open') && !!D.getElementById('whHud');
     const isOpen = () => (H.classList.contains('bw3-full-open') && !!D.querySelector('.bw3-full')) || homeLive();
@@ -53,7 +54,7 @@
         const ambBus = ctx.createGain(); ambBus.gain.value = C.MIX.bus;
         const fxBus = ctx.createGain(); fxBus.gain.value = C.WARP.gain;
         ambBus.connect(master); fxBus.connect(master); master.connect(tone); tone.connect(lim); lim.connect(ctx.destination);
-        Object.assign(st, { ctx, master, ambBus, fxBus });
+        Object.assign(st, { ctx, master, ambBus, fxBus, out: tone });
         ctx.onstatechange = () => paint();
         return ctx;
     }
@@ -64,83 +65,57 @@
         try { o.start(ctx.currentTime + (phase || 0)); } catch (e) { o.start(); }
         return [o, g];
     }
-    /* pink-ish noise for the light air layer (softer than white: less hiss) */
-    let pinkBuf = null;
-    function pink(ctx) {
-        if (pinkBuf && pinkBuf.sampleRate === ctx.sampleRate) return pinkBuf;
-        const len = Math.floor(ctx.sampleRate * 6), b = ctx.createBuffer(1, len, ctx.sampleRate), d = b.getChannelData(0);
-        let s = 7654321, b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
-        for (let i = 0; i < len; i++) {
-            s = (s * 1103515245 + 12345) & 0x7fffffff; const w = (s / 0x3fffffff) - 1;
-            b0 = 0.99886 * b0 + w * 0.0555179; b1 = 0.99332 * b1 + w * 0.0750759; b2 = 0.969 * b2 + w * 0.153852; b3 = 0.8665 * b3 + w * 0.3104856;
-            b4 = 0.55 * b4 + w * 0.5329522; b5 = -0.7616 * b5 - w * 0.016898; d[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362) * 0.11; b6 = w * 0.115926;
-        }
-        pinkBuf = b; return b;
-    }
     const moodLevel = () => { try { return W.LowiWorldMood ? +W.LowiWorldMood.level || 0 : 0; } catch (e) { return 0; } };
+    /* a soft pad: per note a sine and a quiet, low-passed triangle a few cents apart (warm, no buzz), breathing slowly */
+    function padVoices(ctx, P, notes, bus, now, srcs, nodes) {
+        const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = P.lp; lp.Q.value = 0.4;
+        const g = ctx.createGain(); g.gain.value = P.gain; lp.connect(g); g.connect(bus);
+        const lg = lfo(ctx, P.lfo, P.gain * (P.depth || 0.3), g.gain, 0);
+        const voices = notes.map((hz, i) => {
+            const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = hz; o.detune.value = (i - 1) * (P.detune || 4);
+            const o2 = ctx.createOscillator(); o2.type = 'triangle'; o2.frequency.value = hz; o2.detune.value = -(i - 1) * (P.detune || 4) - 5;
+            const sg = ctx.createGain(); sg.gain.value = P.soft == null ? 0.25 : P.soft;
+            o.connect(lp); o2.connect(sg); sg.connect(lp); o.start(now); o2.start(now); srcs.push(o, o2); nodes.push(sg);
+            return [o, o2];
+        });
+        srcs.push(lg[0]); nodes.push(lp, g, lg[1]);
+        return voices;
+    }
+    /* one singing-bowl strike (calm-sound-core.js bowl(): partials in detuned pairs that beat slowly, long ring) */
+    function strike(ctx, B, hz, t, pan, bus) {
+        const CS = W.LowiCalmSoundCore, parts = CS ? CS.bowl(hz, { decay: B.decay }) : [{ hz, amp: 1, beat: 1, decay: B.decay }];
+        const g = ctx.createGain(); g.gain.value = 1; let out = g;
+        if (ctx.createStereoPanner) { const p = ctx.createStereoPanner(); p.pan.value = pan || 0; g.connect(p); out = p; }
+        out.connect(bus);
+        let end = t;
+        parts.forEach(pt => [-0.5, 0.5].forEach(side => {
+            const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = pt.hz + side * pt.beat;
+            const e = ctx.createGain(); e.gain.setValueAtTime(0.0001, t); e.gain.linearRampToValueAtTime(pt.amp * 0.5, t + B.attack); e.gain.setTargetAtTime(0.0001, t + B.attack, pt.decay / 4);
+            o.connect(e); e.connect(g); const stopAt = t + B.attack + pt.decay * 1.3; o.start(t); o.stop(stopAt); end = Math.max(end, stopAt);
+            o.onended = () => { try { e.disconnect(); } catch (x) { } };
+        }));
+        setTimeout(() => { try { g.disconnect(); out.disconnect(); } catch (x) { } }, (end - ctx.currentTime + 0.5) * 1000);
+    }
     function startAmbient() {
         const ctx = st.ctx; if (!ctx || st.amb) return;
         const M = C.MIX, U = C.UNEASY, nodes = [], srcs = [], now = ctx.currentTime;
         const lightBus = ctx.createGain(); lightBus.gain.value = 1; lightBus.connect(st.ambBus);
         const uneasyBus = ctx.createGain(); uneasyBus.gain.value = 0; uneasyBus.connect(st.ambBus);
         nodes.push(lightBus, uneasyBus);
-        /* LIGHT. air: two soft breezes (pink noise, high-passed so nothing rumbles), drifting left/right, breathing slowly */
-        M.air.lfo.forEach((rate, i) => {
-            const s = ctx.createBufferSource(); s.buffer = pink(ctx); s.loop = true;
-            const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = M.air.hp; hp.Q.value = 0.5;
-            const hp2 = ctx.createBiquadFilter(); hp2.type = 'highpass'; hp2.frequency.value = M.air.hp; hp2.Q.value = 0.5;
-            const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = M.air.lp * (i ? 0.8 : 1); lp.Q.value = 0.3;
-            const g = ctx.createGain(); g.gain.value = M.air.gain;
-            const lf = lfo(ctx, rate, M.air.gain * M.air.depth, g.gain, i * 3);
-            let out = g;
-            if (ctx.createStereoPanner) { const p = ctx.createStereoPanner(); p.pan.value = i ? 0.4 : -0.4; const pl = lfo(ctx, rate * 0.6, 0.3, p.pan, i * 5); g.connect(p); out = p; nodes.push(p, pl[1]); srcs.push(pl[0]); }
-            s.connect(hp); hp.connect(hp2); hp2.connect(lp); lp.connect(g); out.connect(lightBus);
-            s.start(now, (i * 2.7) % 6); srcs.push(s, lf[0]); nodes.push(hp, hp2, lp, g, lf[1]);
-        });
-        /* pad: open and quiet, an octave above the old drone, sine only */
-        {
-            const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = M.pad.lp; lp.Q.value = 0.4;
-            const g = ctx.createGain(); g.gain.value = M.pad.gain; lp.connect(g); g.connect(lightBus);
-            const lg = lfo(ctx, M.pad.lfo, M.pad.gain * 0.5, g.gain, 0);
-            M.pad.notes.forEach((hz, i) => { const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = hz; o.detune.value = (i - 1) * 4; o.connect(lp); o.start(now); srcs.push(o); });
-            srcs.push(lg[0]); nodes.push(lp, g, lg[1]);
-        }
-        const glintBus = ctx.createGain(); glintBus.gain.value = M.glint.gain;
-        const glp = ctx.createBiquadFilter(); glp.type = 'lowpass'; glp.frequency.value = M.glint.lp; glintBus.connect(glp); glp.connect(lightBus); nodes.push(glintBus, glp);
-        /* UNEASY (the old low layer): deep rumble, soft current, low drone, low pulse. Silent until the game world turns stormy */
-        U.flow.lfo.forEach((rate, i) => {
-            const s = ctx.createBufferSource(); s.buffer = noise(ctx); s.loop = true;
-            const f1 = ctx.createBiquadFilter(); f1.type = 'lowpass'; f1.frequency.value = U.flow.lp; f1.Q.value = 0.3;
-            const f2 = ctx.createBiquadFilter(); f2.type = 'lowpass'; f2.frequency.value = U.flow.lp * 1.4; f2.Q.value = 0.2;
-            const g = ctx.createGain(); g.gain.value = U.flow.gain;
-            const lf = lfo(ctx, rate, U.flow.gain * U.flow.depth, g.gain, i * 3);
-            let out = g;
-            if (ctx.createStereoPanner) { const p = ctx.createStereoPanner(); p.pan.value = i ? 0.35 : -0.35; g.connect(p); out = p; nodes.push(p); }
-            s.connect(f1); f1.connect(f2); f2.connect(g); out.connect(uneasyBus);
-            s.start(now, (i * 2.7) % 6); srcs.push(s, lf[0]); nodes.push(f1, f2, g, lf[1]);
-        });
-        {
-            const s = ctx.createBufferSource(); s.buffer = noise(ctx); s.loop = true;
-            const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = U.swish.bp; bp.Q.value = U.swish.q;
-            const g = ctx.createGain(); g.gain.value = U.swish.gain;
-            const lf = lfo(ctx, U.swish.lfo, U.swish.sweep, bp.frequency, 1);
-            s.connect(bp); bp.connect(g); g.connect(uneasyBus); s.start(now, 3.1);
-            srcs.push(s, lf[0]); nodes.push(bp, g, lf[1]);
-        }
-        {
-            const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = U.pad.lp; lp.Q.value = 0.4;
-            const g = ctx.createGain(); g.gain.value = U.pad.gain; lp.connect(g); g.connect(uneasyBus);
-            U.pad.notes.forEach((hz, i) => { const o = ctx.createOscillator(); o.type = i === 1 ? 'triangle' : 'sine'; o.frequency.value = hz; o.detune.value = (i - 1) * 4; o.connect(lp); o.start(now); srcs.push(o); });
-            nodes.push(lp, g);
-        }
-        const pulseBus = ctx.createGain(); pulseBus.gain.value = U.pulse.gain;
-        const plp = ctx.createBiquadFilter(); plp.type = 'lowpass'; plp.frequency.value = 220; pulseBus.connect(plp); plp.connect(uneasyBus); nodes.push(pulseBus, plp);
-        st.amb = { srcs, nodes, pulseBus, glintBus, lightBus, uneasyBus, level: -1 };
-        st.pulseT = now + 1.2; st.pulseN = 0; st.glintT = now + 1.5; st.glintN = 0;
+        /* LIGHT: the soft pad, gliding to the next open chord every M.pad.hold seconds (schedule() moves it) */
+        const pad = padVoices(ctx, M.pad, C.chordAt(0), lightBus, now, srcs, nodes);
+        const bowlBus = ctx.createGain(); bowlBus.gain.value = M.bowl.gain;
+        const blp = ctx.createBiquadFilter(); blp.type = 'lowpass'; blp.frequency.value = M.bowl.lp; bowlBus.connect(blp); blp.connect(lightBus); nodes.push(bowlBus, blp);
+        /* UNEASY: a deeper, darker pad and a slow low bowl. Silent until the game world turns stormy */
+        padVoices(ctx, U.pad, U.pad.notes, uneasyBus, now, srcs, nodes);
+        const lowBus = ctx.createGain(); lowBus.gain.value = U.bowl.gain;
+        const llp = ctx.createBiquadFilter(); llp.type = 'lowpass'; llp.frequency.value = U.bowl.lp; lowBus.connect(llp); llp.connect(uneasyBus); nodes.push(lowBus, llp);
+        st.amb = { srcs, nodes, pad, chord: 0, t0: now, bowlBus, lowBus, lightBus, uneasyBus, level: -1 };
+        st.bowlT = now + 2.5; st.bowlN = 0; st.lowT = now + 6; st.lowN = 0;
         setMood(true);
         clearInterval(st.timer); st.timer = setInterval(schedule, 250); schedule();
     }
-    /* follow the shared game-world mood: the low layer fades in/out slowly (about 5 s), the light layer dips a little */
+    /* follow the shared game-world mood: the deep layer fades in/out slowly (about 5 s), the light layer dips a little */
     function setMood(now) {
         const a = st.amb, ctx = st.ctx; if (!a || !ctx) return;
         const lv = moodLevel(); if (lv === a.level) return; a.level = lv;
@@ -148,37 +123,26 @@
         ramp(a.uneasyBus.gain, lv * C.UNEASY.gain, tc);
         ramp(a.lightBus.gain, 1 - (1 - C.MIX.lightDuck) * lv, tc);
     }
+    function bowlsDue(B, key, bus, until) {
+        const ctx = st.ctx;
+        if (st[key + 'T'] < ctx.currentTime) st[key + 'T'] = ctx.currentTime + 0.3;
+        while (st[key + 'T'] < until) {
+            const t = st[key + 'T'], n = C.bowls(0, B.gap[1] + 1, st[key + 'N'], B)[0] || { hz: B.notes[0], pan: 0, gap: B.gap[1] };
+            strike(ctx, B, n.hz, t, n.pan, bus);
+            st[key + 'N']++; st[key + 'T'] = t + (n.gap || B.gap[1]);
+        }
+    }
     function schedule() {
         const ctx = st.ctx, a = st.amb; if (!ctx || !a || ctx.state !== 'running') return;
         setMood(false);
         const until = ctx.currentTime + 0.8;
-        /* glints: sparse soft high notes from one pentatonic scale */
-        const G = C.MIX.glint;
-        if (st.glintT < ctx.currentTime) st.glintT = ctx.currentTime + 0.2;
-        while (st.glintT < until) {
-            const t = st.glintT, n = C.glints(0, 100, st.glintN)[0] || { hz: G.notes[0], pan: 0, t: 5 };
-            const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = n.hz;
-            const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(1, t + G.attack); g.gain.setTargetAtTime(0.0001, t + G.attack, G.decay / 3);
-            let out = g; if (ctx.createStereoPanner) { const p = ctx.createStereoPanner(); p.pan.value = n.pan; g.connect(p); out = p; }
-            o.connect(g); out.connect(a.glintBus); o.start(t); o.stop(t + G.attack + G.decay * 1.6);
-            o.onended = () => { try { g.disconnect(); out.disconnect(); } catch (e) { } };
-            st.glintN++; st.glintT = t + (n.gap || 5);
-        }
-        /* low pulse: only scheduled while the low layer is audible */
-        if ((a.level || 0) <= 0.01) { st.pulseT = until; return; }
-        const P = C.UNEASY.pulse;
-        if (st.pulseT < ctx.currentTime) st.pulseT = ctx.currentTime + 0.1;
-        const times = [st.pulseT].concat(C.pulses(st.pulseT, until, st.pulseN)).filter(t => t < until);
-        times.forEach(t => {
-            [[P.hz, 1], [P.harm, 0.35]].forEach(([hz, amt]) => {
-                const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(hz * 1.04, t); o.frequency.exponentialRampToValueAtTime(hz, t + 0.25);
-                const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(amt, t + P.attack); g.gain.setTargetAtTime(0.0001, t + P.attack, P.decay / 3);
-                o.connect(g); g.connect(a.pulseBus); o.start(t); o.stop(t + P.attack + P.decay * 1.6);
-                o.onended = () => { try { g.disconnect(); } catch (e) { } };
-            });
-            st.pulseN++;
-        });
-        if (times.length) { const lastT = times[times.length - 1]; const nx = C.pulses(lastT, lastT + 3, st.pulseN); st.pulseT = nx.length ? nx[0] : lastT + P.every; }
+        /* the pad glides to the next chord (slow portamento, no new attack) */
+        const k = Math.floor((ctx.currentTime - a.t0) / C.MIX.pad.hold);
+        if (k !== a.chord) { a.chord = k; const ch = C.chordAt((ctx.currentTime - a.t0)); a.pad.forEach((v, i) => v.forEach(o => ramp(o.frequency, ch[i] || ch[0], C.MIX.pad.glide))); }
+        bowlsDue(C.MIX.bowl, 'bowl', a.bowlBus, until);
+        /* the low bowl only while the deep layer is audible */
+        if ((a.level || 0) <= 0.01) { st.lowT = until; return; }
+        bowlsDue(C.UNEASY.bowl, 'low', a.lowBus, until);
     }
     function stopAmbient(fade) {
         clearInterval(st.timer); st.timer = 0;
@@ -292,16 +256,40 @@
         if (x) top.insertBefore(btn, x); else { btn.classList.add('wa-float'); if (host.id === 'whHud') btn.classList.add('wa-home'); host.appendChild(btn); }
         paint(); return btn;
     }
+    /* Oct 16 (handoff task 9): Sound on Home opens the glass string pad first (sound-strings.js mounts into .wa-strings);
+       the background sound switch, its volume and the warp sounds sit below it */
     function panelHtml() {
-        return '<div class="wa-hd"><b>' + tr('title') + '</b><button type="button" class="wa-sw" role="switch" data-wa="on"><i></i><span></span></button></div>' +
+        return '<div class="wa-hd"><b>' + tr('title') + '</b><button type="button" class="wa-x" data-wa="x" aria-label="' + tr('close') + '">\u00d7</button></div>' +
+            '<div class="wa-strings" data-wa-strings></div>' +
+            '<div class="wa-row wa-amb"><span>' + tr('ambient') + '</span><button type="button" class="wa-sw" role="switch" data-wa="on"><i></i><span></span></button></div>' +
             '<label class="wa-row wa-vol"><span>' + tr('vol') + '</span><input type="range" min="0" max="100" step="1" data-wa="vol" aria-label="' + tr('vol') + '"><output></output></label>' +
-            '<div class="wa-row"><span>' + tr('warp') + '</span><button type="button" class="wa-sw wa-sm" role="switch" data-wa="warp" aria-label="' + tr('warp') + '"><i></i><span></span></button></div>' +
+            '<div class="wa-row wa-warp"><span>' + tr('warp') + '</span><button type="button" class="wa-sw wa-sm" role="switch" data-wa="warp" aria-label="' + tr('warp') + '"><i></i><span></span></button></div>' +
             '<p>' + tr('note') + '</p><p class="wa-quiet">' + tr('quiet') + '</p>';
+    }
+    /* the string pad plays through this world's audio graph, bypassing the ambient master (so it works with the background
+       sound off) but following the same volume slider and the app-wide sound switch. Call only inside a user gesture. */
+    function sfxMuted() { try { return !!(W.LowiSFX && typeof W.LowiSFX.on === 'function' && W.LowiSFX.on() === false); } catch (e) { return false; } }
+    function instrument() {
+        if (sfxMuted()) return { muted: true, vol: prefs.vol };
+        const ctx = ensureCtx(); if (!ctx) return null;
+        clearTimeout(st.stopT); clearTimeout(st.idleT);
+        if (ctx.state !== 'running') { try { const pr = ctx.resume(); if (pr && pr.catch) pr.catch(() => { }); } catch (e) { } }
+        return { ctx, out: st.out, gain: +(C.masterGain(prefs.vol) * 3).toFixed(4), vol: prefs.vol, muted: false };
+    }
+    /* the pad closed: if the background sound is off, let the strings ring out, then put the context back to sleep */
+    function instrumentIdle() {
+        clearTimeout(st.idleT);
+        st.idleT = setTimeout(() => { if (st.ctx && !(st.on && isOpen()) && running()) st.ctx.suspend().catch(() => { }); }, 2200);
+    }
+    function removePanel(p) {
+        if (!p) return;
+        try { W.LowiSoundStrings && W.LowiSoundStrings.unmount(p.querySelector('[data-wa-strings]')); } catch (e) { }
+        p.remove(); instrumentIdle();
     }
     function togglePanel(force) {
         const host = uiHost(); if (!host) return;
         let p = host.querySelector('.wa-panel'); const want = force == null ? !p : !!force;
-        if (!want) { if (p) p.remove(); paint(); return; }
+        if (!want) { if (p) removePanel(p); paint(); return; }
         if (p) return;
         p = D.createElement('div'); p.className = 'wa-panel'; p.id = 'waPanel'; p.setAttribute('role', 'dialog'); p.setAttribute('aria-label', tr('aria'));
         p.innerHTML = panelHtml(); stop(p);
@@ -309,13 +297,17 @@
             e.stopPropagation();
             const b = e.target.closest('[data-wa]'); if (!b || b.tagName === 'INPUT') return;
             if (b.dataset.wa === 'on') setOn(!st.on);
+            else if (b.dataset.wa === 'x') { togglePanel(false); const bt = host.querySelector('.wa-btn'); bt && bt.focus && bt.focus({ preventScroll: true }); }
             else if (b.dataset.wa === 'warp') { prefs.warp = !prefs.warp; save(); if (!prefs.warp) killWarp(0.2); paint(); }
         });
         const r = p.querySelector('input[data-wa=vol]');
         r.addEventListener('input', () => { prefs.vol = C.clampVol(r.value); if (st.on && st.master && running()) ramp(st.master.gain, C.masterGain(prefs.vol), 0.06); paint(); });
         r.addEventListener('change', save);
         host.appendChild(p); paint();
-        const sw = p.querySelector('[data-wa=on]'); sw && sw.focus && sw.focus({ preventScroll: true });
+        const sp = p.querySelector('[data-wa-strings]');
+        if (W.LowiSoundStrings && sp) { try { W.LowiSoundStrings.mount(sp, { instrument, idle: instrumentIdle, lang }); } catch (e) { sp.remove(); } }
+        else if (sp) sp.remove();
+        const sw = p.querySelector('[data-wa=x]') || p.querySelector('[data-wa=on]'); sw && sw.focus && sw.focus({ preventScroll: true });
     }
     function paint() {
         const host = uiHost(); if (!host) return;
@@ -337,6 +329,7 @@
     }
     /* outside tap closes the panel (the world keeps its drag) */
     D.addEventListener('pointerdown', e => { const p = D.querySelector('.wa-panel'); if (p && !p.contains(e.target) && !(e.target.closest && e.target.closest('.wa-btn'))) togglePanel(false); }, true);
+    D.addEventListener('keydown', e => { if (e.key === 'Escape' && D.getElementById('waPanel')) togglePanel(false); });
 
     /* ---------- lifecycle ---------- */
     let wasOpen = false;
@@ -345,7 +338,7 @@
         if (open) ensureUi();
         if (open !== wasOpen) {
             wasOpen = open;
-            if (!open) { pause(C.CLOSE_FADE); const p = D.getElementById('waPanel'); if (p) p.remove(); }
+            if (!open) { pause(C.CLOSE_FADE); removePanel(D.getElementById('waPanel')); }
             else if (st.on && st.ctx && !D.hidden) begin();   /* woken by the tap that opened it; otherwise the next tap in the world wakes it */
         }
     }
@@ -369,13 +362,13 @@
         paint();
     });
     W.addEventListener('pagehide', () => { if (st.ctx) { stopAmbient(0); try { st.ctx.close(); } catch (e) { } st.ctx = null; st.master = st.ambBus = st.fxBus = null; } });
-    W.addEventListener('lowi:lang', () => { const p = D.getElementById('waPanel'); if (p) { p.remove(); togglePanel(true); } paint(); });
+    W.addEventListener('lowi:lang', () => { const p = D.getElementById('waPanel'); if (p) { removePanel(p); togglePanel(true); } paint(); });
     setInterval(() => { if (!D.hidden) sync(); }, 1500);
     sync();
 
     W.LowiWorldAudio = {
         get on() { return st.on; }, get state() { return st.ctx ? st.ctx.state : 'none'; }, get ambient() { return !!st.amb; }, get uneasy() { return st.amb ? +st.amb.uneasyBus.gain.value.toFixed(4) : 0; }, get light() { return st.amb ? +st.amb.lightBus.gain.value.toFixed(4) : 0; }, get mood() { return st.amb ? st.amb.level : null; }, get warp() { return st.warp ? st.warp.phase : null; },
         get plays() { return Object.assign({}, st.plays); }, get gain() { return st.master ? st.master.gain.value : 0; }, prefs: () => Object.assign({}, prefs),
-        setOn, open: () => togglePanel(true), close: () => togglePanel(false)
+        setOn, open: () => togglePanel(true), close: () => togglePanel(false), instrument, get bowls() { return st.bowlN; }
     };
 })();

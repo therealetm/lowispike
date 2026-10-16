@@ -214,3 +214,23 @@ The user explicitly requested deploying the recovered Home implementation withou
 - Removed: microbe-buddies.js/.css/-core.js (starter Lacto, crew of three orbiting the cell and the Home orb, Buddys chip and sheet, cell-room buddies, bond levels and XP gifts, mood lines, trip companion), the `buddy` XP action in xp-tap, the talking buddy stops on the cell ride, the microbes with eyes next to the gut in the 3D scene, and the microbe collection in the book (Microbes tab, herb world chip, discovery toasts, the external-buddy contract `LowiBodyBuddies` / `lowi:buddy-found`).
 - Kept: Misty, the adventure log (Journeys) and friend care (Friends) in the same sheet, now titled Adventure log; the plain drifting particles in the ride vessel.
 - XP: `load()` drops ledger entries with src `buddy-add` or `buddy-bond:*` and subtracts them from S.xp (never below 0); the retained herb stage never regresses. S.buddies and S.microbes are deleted. Idempotent.
+
+## 2026-10-16 — Calm sound: pads, singing bowls and a string pad replace the harsh tones
+
+**Status:** Accepted (handoff task 9; branch `sesame/audio-companions-20261016`)
+
+**Context:** E-man described the app's tones as a harsh microwave sound. The timers used thin 740-1568 Hz sine beeps with a 15 ms click attack, and the world sound used a constant noise band plus a 58 Hz pulse when the world turned stormy.
+
+**Decision:** Timer beeps in Move and the guided player become a soft singing-bowl chime (`LowiCalmChime`), with pitch order kept so countdowns still read. The world sound becomes a slowly gliding soft pad with sparse singing bowls; the stormy cue becomes a deeper pad and a slow low bowl, with no noise and no pulse. Sound on Home opens a glass string pad first: touch or swipe plays notes, height sets loudness, sliding along a string bends it, and the touched string glows and vibrates. Everything follows the volume slider and the app-wide sound switch, starts only from a user gesture, and stops when the app is hidden.
+
+**Consequences:** `UNEASY.pulse.every` stays only as the visual beat `world-mood.js` reads. Any new tone should use the calm-sound core and not add square or sawtooth waves.
+
+## 2026-10-16 — Region companions are guides, not pets
+
+**Status:** Accepted (handoff task 10; branch `sesame/audio-companions-20261016`)
+
+**Context:** The leftover gold info cards and the region label line felt like UI left behind after the world-first redesign. E-man asked for a small glass companion in each region that moves with you and tells you facts the way Misty talks.
+
+**Decision:** Each region has one glass creature (`region-pals.js`) with a Misty-blue speech bubble that says a greeting, the region's reviewed facts from `arrival-core.js`, and today's line. Its presence suppresses the arrival card and the Daily Quest line in regions. They award no XP, store nothing, cannot be collected, and none is a microbe (the gut guide is a villus). Misty stays the blue comet and the only companion tied to XP.
+
+**Consequences:** New region facts go into `arrival-core.js`, not into the companion file. A steering module can move the companion with `lowi:region-steer`.

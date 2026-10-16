@@ -138,6 +138,7 @@
         if (leftPlace()) { leave(); return true; } /* Oct 16: back out of the place the open card is about: the card fades away, no new line in its place */
         if (justLeft()) return true;
         if (offHome()) return false;
+        { const R = W.LowiWorldRegions, rid = R && R.current && R.current(); if (rid && rid !== 'hub' && palTakes(rid)) return true; }   /* the companion says it */
         if (cur && cur.where === 'quest' && !cur.line) return true; /* an open info card wins: it already says where you are */
         const c = { id: 'line', hue: hue || '#7fd1ff', name: title || '', over: '', close: (C() && C().text ? '' : '') || 'Close', factLabel: '', fact: line || '', todayLabel: '', today: '' };
         const el = inQuest(c, 'arr-line'); if (!el) return false;
@@ -179,8 +180,12 @@
 
     function offHome() { const h = D.documentElement; if (h.classList.contains('gx-out') || h.classList.contains('gx-hold')) return true; const t = D.querySelector('.tab.active'); return !!(t && t.id === 'tab-foryou'); }
     /* public: show(id) picks the right surface */
+    /* Oct 16 (handoff task 10): inside a region its glass companion (region-pals.js) tells the facts in a speech bubble,
+       so the gold card and the Daily Quest line stay away there. The cell ride keeps its card. */
+    const palTakes = id => { try { const P = W.LowiRegionPals; return !!(P && P.takes && P.takes(id)); } catch (e) { return false; } };
     function show(id, opts) {
         opts = opts || {};
+        if (!opts.force && !rideOpen() && palTakes(id)) return null;
         /* Oct 16: never over the Community galaxy (a "You arrived: Brain" card popped up there during the zoom) */
         if (!opts.force && !rideOpen() && offHome()) return null;
         const p = C() && C().pid(id); if (!p) return null;
@@ -199,6 +204,7 @@
             const d = e && e.detail || {}; const id = d.id;
             if (rideOpen()) return;
             if (!id || id === 'hub') { if (cur && cur.where === 'world') close(); return; }
+            if (palTakes(id)) { if (cur && cur.where !== 'ride') close(); return; }
             show(id);
         } catch (err) {}
     });
@@ -255,6 +261,6 @@
     /* the stylesheet comes in up front, so the first card is already styled when it slides in */
     if (D.head) css(); else D.addEventListener('DOMContentLoaded', css, { once: true });
 
-    W.LowiArrival = { show, note, close: () => close(), current: () => cur && { id: cur.id, where: cur.where }, core: C };
+    W.LowiArrival = { show, note, close: () => close(), current: () => cur && { id: cur.id, where: cur.where }, core: C, data };
     if (typeof module !== 'undefined' && module.exports) module.exports = W.LowiArrival;
 })();

@@ -31,9 +31,12 @@ test('comfortable mix: nothing bright, slow fades, a limiter, no beeps', () => {
     assert.ok(C.MIX.limiter.ratio >= 8 && C.MIX.limiter.threshold <= -12);
     assert.ok(js.includes('createDynamicsCompressor'));
     assert.ok(!/type = 'square'|type = 'sawtooth'/.test(js), 'no harsh waveforms');
-    assert.ok(C.UNEASY.pulse.attack >= 0.05, 'the pulse has a soft attack');
-    const ts = C.pulses(0, 30); assert.ok(ts.length >= 18 && ts.length <= 30, 'about 40-55 soft pulses a minute');
-    for (let i = 1; i < ts.length; i++) assert.ok(ts[i] - ts[i - 1] > 1);
+    /* Oct 16 (handoff task 9): the microwave-like hum is gone: no noise band and no audible pulse in the ambient mix */
+    const amb = js.slice(js.indexOf('function startAmbient'), js.indexOf('function stopAmbient'));
+    assert.ok(!/noise\(ctx\)/.test(amb), 'no noise layer in the ambient');
+    assert.ok(!amb.includes('pulse'), 'no pulse in the ambient');
+    assert.ok(!C.MIX.air && !C.MIX.glint && !C.pulses, 'old air/glint/pulse layers removed');
+    assert.ok(C.MIX.bowl.attack >= 0.05 && C.MIX.bowl.decay >= 6, 'bowls: soft mallet, long ring');
 });
 
 test('no medical, sleep, tinnitus or anxiety claims in the copy', () => {
@@ -99,22 +102,28 @@ test('loader and service worker', () => {
     assert.ok(!/award\(|addXp|LowiXp/.test(js + core), 'no XP from sound');
 });
 
-test('light by default: no rumble in the normal layer, light accents stay soft', () => {
-    for (const hz of C.lightHz()) assert.ok(hz >= 250, 'light layer has no low rumble: ' + hz);
-    assert.ok(C.MIX.air.hp >= 250 && C.MIX.air.lp <= 2600, 'air is a band, not a hiss');
-    for (const hz of C.MIX.glint.notes) assert.ok(hz >= 800 && hz <= 1600, 'glints are light, never piercing: ' + hz);
-    assert.ok(C.MIX.glint.attack >= 0.25 && C.MIX.glint.decay >= 2, 'glints swell and fade, no beeps');
-    assert.ok(C.MIX.glint.gain <= 0.06 && C.MIX.pad.gain <= 0.04, 'accents stay quiet');
-    const g = C.glints(0, 120); assert.ok(g.length >= 15 && g.length <= 35, 'sparse: ' + g.length);
-    for (let i = 1; i < g.length; i++) { assert.ok(g[i].t - g[i - 1].t >= C.MIX.glint.gap[0] - 1e-6); assert.notStrictEqual(g[i].hz, g[i - 1].hz); }
+test('light by default: a soft pad and singing bowls, no rumble, nothing bright', () => {
+    for (const hz of C.lightHz()) assert.ok(hz >= 200, 'light layer has no low rumble: ' + hz);
+    assert.ok(C.MIX.pad.lp <= 1400 && C.MIX.pad.gain <= 0.05 && C.MIX.pad.glide >= 1, 'pad: warm, quiet, gliding');
+    assert.ok(C.MIX.pad.hold >= 15, 'chords change slowly');
+    for (const ch of C.MIX.pad.chords) assert.strictEqual(ch.length, 3);
+    assert.ok(C.MIX.bowl.gain <= 0.07, 'bowls stay quiet');
+    const g = C.bowls(0, 120); assert.ok(g.length >= 4 && g.length <= 10, 'sparse bowls: ' + g.length);
+    for (let i = 1; i < g.length; i++) { assert.ok(g[i].t - g[i - 1].t >= C.MIX.bowl.gap[0] - 1e-6); assert.notStrictEqual(g[i].hz, g[i - 1].hz); }
+    for (const f of C.MIX.bowl.notes) for (const r of C.BOWL_RATIOS) if (f * r <= C.MAX_HZ) assert.ok(f * r >= 200);
+    assert.deepStrictEqual(C.chordAt(0), C.MIX.pad.chords[0]); assert.deepStrictEqual(C.chordAt(C.MIX.pad.hold + 1), C.MIX.pad.chords[1]);
     assert.ok(C.MIX.tone <= C.MAX_HZ && C.MAX_HZ <= 3000);
+    assert.ok(js.includes('W.LowiCalmSoundCore') && js.includes('CS.bowl(hz'), 'bowl strikes share the calm-sound core');
 });
 
 test('the old low layer only plays as the stormy-world cue', () => {
     assert.ok(js.includes('uneasyBus.gain.value = 0'), 'silent by default');
     assert.ok(js.includes("addEventListener('lowi:world-mood'") && js.includes('W.LowiWorldMood'), 'follows the shared game-world mood');
-    assert.ok(js.includes('if ((a.level || 0) <= 0.01) { st.pulseT = until; return; }'), 'no low pulse in a clear world');
+    assert.ok(js.includes('if ((a.level || 0) <= 0.01) { st.lowT = until; return; }'), 'no low bowl in a clear world');
     assert.ok(C.UNEASY.tc >= 1, 'fades in and out slowly');
-    for (const k of ['flow', 'pulse', 'pad']) assert.ok(C.UNEASY[k], k);
+    for (const k of ['pad', 'bowl']) assert.ok(C.UNEASY[k], k);
+    assert.ok(!C.UNEASY.flow, 'no rumble noise any more');
+    assert.ok(C.UNEASY.pulse && C.UNEASY.pulse.every > 0 && Object.keys(C.UNEASY.pulse).length === 1, 'pulse is only the visual beat for world-mood.js');
+    assert.ok(C.UNEASY.bowl.gap[0] >= 10 && C.UNEASY.pad.lp <= 600, 'deeper and slower, not a pulse');
     assert.ok(!C.MIX.flow && !C.MIX.pulse, 'not part of the normal mix any more');
 });

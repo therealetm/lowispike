@@ -5235,7 +5235,7 @@ function bodySummaryHTML(fmt, reached, when){
 let P = null;          // running session
 let speed = 1;         // test hook
 let ac = null, wake = null;
-function beep(f, d){ if (!M.sound || (window.LowiSFX && !LowiSFX.on())) return; try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); const o = ac.createOscillator(), g = ac.createGain(), n = ac.currentTime; o.type = "sine"; o.frequency.value = f; g.gain.setValueAtTime(.0001, n); g.gain.exponentialRampToValueAtTime(.22, n + .015); g.gain.exponentialRampToValueAtTime(.0001, n + d); o.connect(g); g.connect(ac.destination); o.start(n); o.stop(n + d + .03); } catch(e){} }
+function beep(f, d){ if (!M.sound || (window.LowiSFX && !LowiSFX.on())) return; try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (window.LowiCalmChime && LowiCalmChime(ac, f, d)) return; /* Oct 16: soft bowl chime, not the microwave beep */ const o = ac.createOscillator(), g = ac.createGain(), n = ac.currentTime; o.type = "sine"; o.frequency.value = f; g.gain.setValueAtTime(.0001, n); g.gain.exponentialRampToValueAtTime(.22, n + .015); g.gain.exponentialRampToValueAtTime(.0001, n + d); o.connect(g); g.connect(ac.destination); o.start(n); o.stop(n + d + .03); } catch(e){} }
 const AUD = () => !!(window.LowiAudio && LowiAudio.on());
 function say(txt){
   if (window.R3W && R3W.session()) return; if (!(M.voice || AUD()) || !window.speechSynthesis) return; if (window.LowiAudio && LowiAudio.muted()) return; try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(txt); u.rate = 1.02; u.lang = "en-US"; speechSynthesis.speak(u); } catch(e){} }
@@ -12300,7 +12300,7 @@ H["m-food"] = () => { const el = $(".td-plan") || $(".td-meal") || $(".td-card")
 
 /* ---------- guided player ---------- */
 let PL = null, wake = null, ac = null;
-function beep(){ try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = 660; g.gain.setValueAtTime(.0001, ac.currentTime); g.gain.exponentialRampToValueAtTime(.12, ac.currentTime + .02); g.gain.exponentialRampToValueAtTime(.0001, ac.currentTime + .35); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + .4); } catch(e){} }
+function beep(){ if (window.LowiSFX && !LowiSFX.on()) return; try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (window.LowiCalmChime && LowiCalmChime(ac, 660, .35)) return; /* Oct 16: soft bowl chime */ const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = 660; g.gain.setValueAtTime(.0001, ac.currentTime); g.gain.exponentialRampToValueAtTime(.12, ac.currentTime + .02); g.gain.exponentialRampToValueAtTime(.0001, ac.currentTime + .35); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + .4); } catch(e){} }
 async function lockOn(){ try { if ("wakeLock" in navigator) wake = await navigator.wakeLock.request("screen"); } catch(e){} }
 function lockOff(){ try { wake && wake.release(); } catch(e){} wake = null; }
 document.addEventListener("visibilitychange", () => { if (PL && document.visibilityState === "visible") lockOn(); });

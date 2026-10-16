@@ -134,6 +134,9 @@ Most legacy modules are IIFEs or ordered script blocks inside `index.html`. Sear
 | `LowiAudio` | Shared speech/toast audio behavior. |
 | `LowiSFX` | Synthesized Web Audio reward/interaction kit and stored volume preference. |
 | `LowiSwipeSFX` | Cook swipe-specific direction feedback using the shared sound preference. |
+| `LowiCalmSoundCore` (`calm-sound-core.js`) | Pure calm-sound helpers (2026-10-16): singing-bowl strike plan, the timer chime that replaced the Move/guided-session beeps, and the string-pad maths (lanes, strums, loudness by height, bend by sliding, voice stealing, vibration). |
+| `LowiSoundStrings`, `LowiCalmChime` (`sound-strings.js`, `sound-strings.css`) | The Sound panel's glass string pad (seven glowing strings, canvas 2D, drawn only while moving) played through `LowiWorldAudio.instrument()`; and `LowiCalmChime(ac, f, d)`, the soft bowl chime both timer `beep()` functions in `index.html` call. Silent when `LowiSFX.on()` is false. |
+| `LowiWorldAudio` (`world-audio-core.js`, `world-audio.js`) | Opt-in world sound. Since 2026-10-16: soft pad + singing bowls (no noise band, no pulse); stormy-world cue is a deeper pad and slow low bowl. The panel opens with the string pad. `instrument()` hands the pad the audio context inside a user gesture. |
 
 ## External feature files
 
@@ -154,6 +157,8 @@ Most legacy modules are IIFEs or ordered script blocks inside `index.html`. Sear
 | `appearance.js` | Atmosphere/theme UI. |
 | `weather-sky-core.js`, `weather-sky.js`, `weather-sky.css` | Live weather sky. Pure rules turn the Open-Meteo reading that `spirit.js` already caches (`lowi.weather.v1`) into condition, temperature band and real day/night (sunrise/sunset first, fresh `is_day` next, local clock last). One `#wxSky` layer, first child of `#app`, z-index 0, `pointer-events: none`, hidden while the scan camera is open, still under reduced motion. Sunrise theme mode follows the real sun through a wrapper on `LowiR2.themeEffective`; Night and Cloud stay as chosen. Loaded by the `apple-ui.js` herb loader before `spirit.js`. Never requests location itself. |
 | `updates.css` | Install/update banners and related shell styling. |
+
+| `region-pals-core.js`, `region-pals.js`, `region-pals.css` | Region companions (2026-10-16): one small glass creature per region (Brain Spark, Lungs Puff, Heart Pulse, Liver Hexa, Pancreas Isla, Gut Villo, Muscles Flex) on the world host (`.bw3-full` or `#whHud`). Says a greeting, the `arrival-core.js` facts and today's line in a Misty-blue speech bubble; tap for the next line. Follows drags (passive window listeners) and `lowi:region-steer` `{vx, vy}`. `arrival-cards.js` defers to `LowiRegionPals.takes(id)`, so regions show no gold card or Daily Quest line; the cell ride keeps its card. No XP, no storage, no collection, no microbes. |
 
 ## Assets and vendored code
 

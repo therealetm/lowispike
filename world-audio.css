@@ -2,10 +2,10 @@
 .bw3-top > div:first-child { flex: 1 1 auto; min-width: 0; }
 .wa-btn { pointer-events: auto; flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 14px 0 11px; border-radius: 22px; border: 1px solid rgba(163,180,217,.3); background: rgba(13,22,54,.55); color: inherit; font: 600 13.5px/1 system-ui, -apple-system, sans-serif; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transition: border-color .25s, color .25s, background .25s; }
 .wa-btn svg { width: 20px; height: 20px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.wa-btn[data-on="1"] { border-color: rgba(244,205,126,.75); color: #f4cd7e; background: rgba(40,32,20,.5); }
+.wa-btn[data-on="1"] { border-color: rgba(150,215,255,.85); color: #dff3ff; background: rgba(30,90,180,.5); box-shadow: 0 0 16px rgba(90,180,255,.45); }
 .wa-btn.wa-float { position: absolute; right: 16px; top: calc(env(safe-area-inset-top, 0px) + 14px); z-index: 7; }
 html[data-ui=light] .wa-btn { background: rgba(255,255,255,.7); }
-html[data-ui=light] .wa-btn[data-on="1"] { color: #8a5a0c; border-color: rgba(176,120,24,.6); background: rgba(255,246,226,.85); }
+html[data-ui=light] .wa-btn[data-on="1"] { color: #0b2f66; border-color: rgba(40,110,210,.6); background: rgba(225,240,255,.9); }
 .wa-panel { position: absolute; right: 16px; top: calc(env(safe-area-inset-top, 0px) + 66px); z-index: 30; width: min(320px, calc(100% - 32px)); box-sizing: border-box; padding: 14px 16px 12px; border-radius: 20px; background: rgba(10,16,44,.88); color: #eef4ff; border: 1px solid rgba(163,180,217,.25); box-shadow: 0 14px 40px rgba(0,0,0,.35); font: 500 13.5px/1.35 system-ui, -apple-system, sans-serif; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); animation: waIn .2s ease-out; touch-action: manipulation; }
 html[data-ui=light] .wa-panel { background: rgba(255,255,255,.94); color: #12345a; border-color: rgba(18,52,90,.14); box-shadow: 0 14px 40px rgba(18,52,90,.18); }
 @keyframes waIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
@@ -14,13 +14,13 @@ html[data-ui=light] .wa-panel { background: rgba(255,255,255,.94); color: #12345
 .wa-sw { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; min-width: 44px; padding: 0 2px 0 0; border: 0; background: none; color: inherit; font: 600 13px/1 system-ui, -apple-system, sans-serif; cursor: pointer; flex-direction: row-reverse; }
 .wa-sw i { position: relative; width: 50px; height: 30px; border-radius: 15px; background: rgba(163,180,217,.35); transition: background .25s; flex: 0 0 auto; }
 .wa-sw i::after { content: ""; position: absolute; left: 3px; top: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.3); transition: transform .25s; }
-.wa-sw[aria-checked="true"] i { background: #e8a33d; }
+.wa-sw[aria-checked="true"] i { background: #3d9bff; }
 .wa-sw[aria-checked="true"] i::after { transform: translateX(20px); }
 .wa-sw.wa-sm i { width: 44px; height: 26px; }
 .wa-sw.wa-sm i::after { width: 20px; height: 20px; }
 .wa-sw.wa-sm[aria-checked="true"] i::after { transform: translateX(18px); }
 .wa-vol { display: grid; grid-template-columns: auto 1fr auto; }
-.wa-vol input { width: 100%; min-width: 0; height: 44px; margin: 0; background: transparent; accent-color: #e8a33d; cursor: pointer; }
+.wa-vol input { width: 100%; min-width: 0; height: 44px; margin: 0; background: transparent; accent-color: #5cb4ff; cursor: pointer; }
 .wa-vol output { min-width: 3.2em; text-align: right; font-variant-numeric: tabular-nums; opacity: .8; }
 .wa-panel p { margin: 8px 0 0; font-size: 12.5px; opacity: .78; }
 .wa-panel p.wa-quiet { margin-top: 4px; font-size: 11.5px; opacity: .6; }
@@ -28,3 +28,18 @@ html[data-ui=light] .wa-panel { background: rgba(255,255,255,.94); color: #12345
 .bw3-full .wa-btn:focus-visible, .wa-panel button:focus-visible, .wa-panel input:focus-visible { outline: 2px solid #8fe7ff; outline-offset: 2px; }
 @media (max-width: 360px) { .wa-btn { padding: 0 11px 0 10px; } .wa-btn span { display: none; } .wa-btn { width: 44px; justify-content: center; padding: 0; } }
 @media (prefers-reduced-motion: reduce) { .wa-panel { animation: none; } .wa-sw i, .wa-sw i::after, .wa-btn { transition: none; } }
+
+/* ---------- Oct 16 (handoff task 9): Sound opens the string pad; the panel is Misty-blue liquid glass, no gold ---------- */
+.wa-panel { width: min(360px, calc(100% - 32px)); max-height: calc(100% - env(safe-area-inset-top, 0px) - 96px); overflow-y: auto; overscroll-behavior: contain;
+    background: radial-gradient(120% 90% at 18% 0%, rgba(255,255,255,.16), rgba(255,255,255,0) 52%), linear-gradient(160deg, rgba(40,110,210,.42), rgba(8,20,58,.9));
+    border: 1.5px solid rgba(160,220,255,.45); box-shadow: inset 0 0 18px rgba(140,210,255,.24), 0 14px 40px rgba(0,10,40,.45); color: #f3f9ff; }
+html[data-ui=light] .wa-panel, html[data-theme="light"] .wa-panel { background: radial-gradient(120% 90% at 18% 0%, rgba(255,255,255,.3), rgba(255,255,255,0) 52%), linear-gradient(160deg, rgba(40,110,210,.78), rgba(12,34,90,.94)); color: #fff; border-color: rgba(40,80,140,.35); }
+.wh-hud .wa-panel { max-height: calc(100% - var(--wh-tb, 90px) - 96px - env(safe-area-inset-top, 0px)); }
+.wa-x { min-width: 44px; min-height: 44px; margin-right: -8px; border: 0; border-radius: 22px; background: none; color: inherit; font: 400 26px/1 system-ui, -apple-system, sans-serif; cursor: pointer; opacity: .85; }
+.wa-x:hover { opacity: 1; }
+.wa-amb span:first-child { font-weight: 700; }
+.wa-panel:not(.wa-is-on) .wa-amb { opacity: 1; }
+html.wh-home .wh-hud .wa-btn.wa-home[data-on="1"], html[data-theme="light"].wh-home .wh-hud .wa-btn.wa-home[data-on="1"], html[data-theme="light"] .wh-hud .wa-btn.wa-home[data-on="1"] {
+    border: 1.5px solid rgba(170,225,255,.9); background: radial-gradient(circle at 32% 24%, rgba(255,255,255,.4), rgba(255,255,255,0) 36%), radial-gradient(closest-side, rgba(90,180,255,.3), rgba(30,90,190,.6));
+    color: #fff; box-shadow: inset 0 0 18px rgba(140,210,255,.4), 0 0 18px rgba(80,170,255,.55); }
+@media (max-height: 700px) { .wa-panel .wa-quiet { display: none; } }

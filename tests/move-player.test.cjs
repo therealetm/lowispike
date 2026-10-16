@@ -89,15 +89,13 @@ test('Move player: full screen and transparent over the living world, blue liqui
     assert.match(css, /\.mp-top \.mv-icon \{\s*width: 48px;/);
 });
 
-test('Move player: Misty is the one moving, with the working parts glowing', () => {
+test('Move player: a human silhouette in liquid glass is the one moving (not the companion), working parts glowing', () => {
     const js = read('move-player.js'), css = read('move-player.css');
-    /* her own live Home artwork is cloned (face, colours, form, mood), ids made unique so gradients never clash */
-    assert.ok(js.includes("D.querySelector('#spBubble .sp-home-herb svg.tmg-plant')"));
-    assert.ok(js.includes('function uniq(svg)'));
-    assert.ok(js.includes("'.cw-stars, .lh-reflection, .lh-pot, .cw-dock, .lh-care-fx, .lh-acc, .lh-pot-fx, .cw-pill, title'"));
-    /* the old stick figure is hidden; Misty's own glass limbs do the move and the working parts glow (misty-limbs.test.cjs) */
-    assert.ok(css.includes('#mv-fig.mpj-on > :not(.mpj) { display: none !important; }'));
-    assert.ok(css.includes('#mv-fig:is(.mp-g-ua, .mp-g-fa) .mpj-arm .mpj-glow'));
+    /* E-man, Oct 16 evening: no companion head on a body; a human body in the same liquid cell glass (human-silhouette.test.cjs) */
+    assert.ok(!js.includes("D.querySelector('#spBubble .sp-home-herb svg.tmg-plant')"), 'the companion artwork is no longer cloned into the player');
+    assert.ok(!js.includes('function uniq(svg)'));
+    assert.ok(css.includes('#mv-fig.mph-on > :not(.mph) { display: none !important; }'));
+    assert.ok(css.includes('#mv-fig.mp-g-ua .mph-ua.mph-glow'));
     assert.ok(css.includes('filter: url(#mpHotF)'));
 });
 

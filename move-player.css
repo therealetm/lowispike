@@ -1,6 +1,6 @@
 /* LOWiSPIKE Move: the immersive workout player (Oct 16, 2026). Behaviour and the why: move-player.js.
    Full screen and transparent: the living spirit world (the live 3D world, flown out by move-player.js) is the background.
-   Every control and card is the app's blue liquid glass (the Daily Quest / weather pill recipe). Misty does the moves. */
+   Every control and card is the app's blue liquid glass (the Daily Quest / weather pill recipe). A human silhouette in the same liquid glass does the moves (not the companion). */
 
 html #app #mv-player.mp {
     --mp-a: #9ff7ff;
@@ -188,7 +188,7 @@ html.mp-noworld #app #mv-player.mp {
 }
 #app #mv-player.mp .mp-segs i.rest b { background: linear-gradient(90deg, rgba(190, 230, 255, .7), rgba(150, 200, 255, .6)) !important; box-shadow: none; }
 
-/* stage: Misty in the world */
+/* stage: the workout figure in the world */
 #app #mv-player.mp .mp-stage {
     position: relative;
     min-height: 0;
@@ -488,60 +488,66 @@ html.mp-noworld #app #mv-player.mp {
 }
 #app #mv-player.mp > .mv-done :is(.muted, .dim, .small) { color: var(--mp-soft) !important; }
 
-/* ---------- Misty with limbs: her bubble, jelly arms and legs, mitten hands, little sneakers ---------- */
-html #app #mv-player.mp #mv-fig.mpj-on > :not(.mpj) { display: none !important; }
-html #app #mv-player.mp #mv-fig.mpj-on { overflow: visible; }
-#mv-fig .mpj-limb { opacity: .9; }
-#mv-fig .mpj-f { opacity: .58; }
-#mv-fig .mpj-limb path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
-#mv-fig .mpj-rim { stroke: var(--mpj-rim, #1cf7f9); }
-#mv-fig .mpj-fill { stroke: var(--mpj-in, #12557a); }
-#mv-fig .mpj-core { stroke: var(--mpj-core, #93e3ff); stroke-opacity: .32; }
-#mv-fig .mpj-shine { stroke: #fff; stroke-opacity: .85; stroke-width: 1.7px; }
-#mv-fig .mpj-glow { stroke: var(--mpj-rim, #1cf7f9); stroke-opacity: 0; filter: url(#mpHotF); }
-#mv-fig .mpj-leg .mpj-rim { stroke-width: 11.5px; }
-#mv-fig .mpj-leg .mpj-fill { stroke-width: 9px; }
-#mv-fig .mpj-leg .mpj-core { stroke-width: 4.4px; }
-#mv-fig .mpj-leg .mpj-glow { stroke-width: 20px; }
-#mv-fig .mpj-arm .mpj-rim { stroke-width: 9.5px; }
-#mv-fig .mpj-arm .mpj-fill { stroke-width: 7.2px; }
-#mv-fig .mpj-arm .mpj-core { stroke-width: 3.6px; }
-#mv-fig .mpj-arm .mpj-glow { stroke-width: 18px; }
-#mv-fig .mpj-mit, #mv-fig .mpj-thumb { fill: var(--mpj-in, #12557a); stroke: var(--mpj-rim, #1cf7f9); stroke-width: 1.4px; }
-#mv-fig .mpj-mshine { fill: none; stroke: #fff; stroke-opacity: .85; stroke-width: 1.3px; stroke-linecap: round; }
-#mv-fig .mpj-hand .mpj-db { display: none; }
-#mv-fig .mpj-hand.mpj-has-db .mpj-db { display: inline; }
-#mv-fig .mpj-db-bar { stroke: #bfeaff; stroke-width: 2.2px; stroke-linecap: round; }
-#mv-fig .mpj-db-plate { fill: rgba(90, 180, 255, .55); stroke: #d6f6ff; stroke-width: .9px; }
-#mv-fig .mpj-shoe-up { fill: #eaf8ff; stroke: var(--mpj-rim, #84d2ff); stroke-width: .9px; stroke-linejoin: round; }
-#mv-fig .mpj-shoe-sole { stroke: #4fb0f5; stroke-width: 2px; stroke-linecap: round; }
-#mv-fig .mpj-shoe-lace { stroke: #3a8ad2; stroke-width: .8px; stroke-linecap: round; }
-#mv-fig .mpj-shoe-shine { fill: none; stroke: #fff; stroke-width: .9px; stroke-linecap: round; }
-#mv-fig .mpj-plat { fill: url(#mpjPlat); }
-#mv-fig .mpj-plat-rim { fill: none; stroke: rgba(190, 240, 255, .7); stroke-width: .9px; }
-#mv-fig .mpj-plat-core { fill: rgba(225, 250, 255, .32); filter: url(#mpHotF); }
-#mv-fig .mpj-belt { fill: none; stroke: rgba(175, 238, 255, .5); stroke-width: .8px; stroke-dasharray: 4 5; }
-#mv-fig .mpj-pouf, #mv-fig .mpj-bed, #mv-fig .mpj-mat, #mv-fig .mpj-pillow { fill: url(#mpjGlass); stroke: rgba(190, 240, 255, .55); stroke-width: 1px; }
-#mv-fig .mpj-pouf-shine { fill: none; stroke: rgba(255, 255, 255, .5); stroke-width: 1.2px; stroke-linecap: round; }
-#mv-fig .mpj-shadow { fill: rgba(8, 24, 60, .38); }
-#mv-fig .mpj-aura { fill: none; stroke: var(--mpj-rim, #1cf7f9); stroke-width: 2.4px; stroke-opacity: 0; filter: url(#mpHotF); }
-#mv-fig .mpj-sweat { display: none; fill: rgba(195, 240, 255, .85); stroke: #fff; stroke-width: .6px; }
-#mv-fig.mpj-tired .mpj-sweat { display: inline; }
+/* ---------- the workout figure: a human silhouette in liquid cell glass (not the companion) ---------- */
+html #app #mv-player.mp #mv-fig.mph-on > :not(.mph) { display: none !important; }
+html #app #mv-player.mp #mv-fig.mph-on { overflow: visible; }
+#mv-fig .mph-limb { opacity: .94; }
+#mv-fig .mph-f { opacity: .56; }
+#mv-fig .mph :is(.mph-rim, .mph-fill, .mph-core, .mph-shine, .mph-glow) { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+/* the membrane: one bright rim around the whole body, a deep translucent inside, a soft core and a white shine */
+#mv-fig .mph-rim { stroke: #8fe9ff; }
+#mv-fig .mph-fill { stroke: #123f6c; stroke-opacity: .92; }
+#mv-fig .mph-core { stroke: #a8ecff; stroke-opacity: .3; }
+#mv-fig .mph-shine { stroke: #fff; stroke-opacity: .8; stroke-width: 1.5px; }
+#mv-fig .mph-glow { display: none; stroke: #8fe9ff; stroke-opacity: .5; filter: url(#mpHotF); }
+#mv-fig .mph-thigh.mph-rim { stroke-width: 14.5px; }
+#mv-fig .mph-thigh.mph-fill { stroke-width: 11.9px; }
+#mv-fig .mph-thigh.mph-glow { stroke-width: 22px; }
+#mv-fig .mph-shin.mph-rim { stroke-width: 10.5px; }
+#mv-fig .mph-shin.mph-fill { stroke-width: 8.1px; }
+#mv-fig .mph-shin.mph-glow { stroke-width: 18px; }
+#mv-fig .mph-leg-core { stroke-width: 3.6px; }
+#mv-fig .mph-ua.mph-rim { stroke-width: 8.6px; }
+#mv-fig .mph-ua.mph-fill { stroke-width: 6.4px; }
+#mv-fig .mph-ua.mph-glow { stroke-width: 16px; }
+#mv-fig .mph-fa.mph-rim { stroke-width: 7.2px; }
+#mv-fig .mph-fa.mph-fill { stroke-width: 5.1px; }
+#mv-fig .mph-fa.mph-glow { stroke-width: 15px; }
+#mv-fig .mph-arm-core { stroke-width: 2.6px; }
+#mv-fig .mph-neck.mph-rim { stroke-width: 8.4px; }
+#mv-fig .mph-neck.mph-fill { stroke-width: 6px; }
+/* closed shapes (torso, head, hands, feet): the rim is a stroke around a filled body */
+#mv-fig :is(.mph-torso, .mph-head).mph-rim { fill: #8fe9ff; stroke-width: 2.4px; }
+#mv-fig :is(.mph-torso, .mph-head).mph-fill { fill: #123f6c; fill-opacity: .92; stroke: none; }
+#mv-fig .mph-torso.mph-glow { stroke-width: 8px; }
+#mv-fig .mph-frim { fill: #8fe9ff; stroke: #8fe9ff; stroke-width: 2.4px; stroke-linejoin: round; }
+#mv-fig .mph-ffill { fill: #123f6c; fill-opacity: .92; stroke: none; }
+#mv-fig .mph-footg { fill: #8fe9ff; fill-opacity: .4; stroke: none; }
+#mv-fig :is(.mph-torso-core, .mph-head-core) { fill: #a8ecff; fill-opacity: .14; stroke-width: 1px; stroke-opacity: .25; }
+/* the liquid cell's nucleus: a soft light in the chest, it beats on walking moves */
+#mv-fig .mph-heart { fill: url(#mphNuc); opacity: .55; transform-box: fill-box; transform-origin: center; }
+#mv-fig .mph-arm .mph-db { display: none; }
+#mv-fig .mph-arm.mph-has-db .mph-db { display: inline; }
+#mv-fig .mph-db-bar { stroke: #bfeaff; stroke-width: 2.2px; stroke-linecap: round; }
+#mv-fig .mph-db-plate { fill: rgba(90, 180, 255, .55); stroke: #d6f6ff; stroke-width: .9px; }
+#mv-fig .mph-plat { fill: url(#mphPlat); }
+#mv-fig .mph-plat-rim { fill: none; stroke: rgba(190, 240, 255, .7); stroke-width: .9px; }
+#mv-fig .mph-plat-core { fill: rgba(225, 250, 255, .32); filter: url(#mpHotF); }
+#mv-fig .mph-belt { fill: none; stroke: rgba(175, 238, 255, .5); stroke-width: .8px; stroke-dasharray: 4 5; }
+#mv-fig :is(.mph-pouf, .mph-bed, .mph-mat, .mph-pillow) { fill: url(#mphGlass); stroke: rgba(190, 240, 255, .55); stroke-width: 1px; }
+#mv-fig .mph-pouf-shine { fill: none; stroke: rgba(255, 255, 255, .5); stroke-width: 1.2px; stroke-linecap: round; }
+#mv-fig .mph-shadow { fill: rgba(8, 24, 60, .38); }
 #mv-fig .mp-halo { opacity: .9; }
 html #app #mv-player.mp[data-mp-type="rest"] #mv-fig .mp-halo { opacity: .55; }
-/* the parts doing the work glow and breathe */
-#mv-fig:is(.mp-g-thigh, .mp-g-shin) .mpj-leg .mpj-glow,
-#mv-fig:is(.mp-g-ua, .mp-g-fa) .mpj-arm .mpj-glow { animation: mpjHot 1.3s ease-in-out infinite; }
-#mv-fig:is(.mp-g-thigh, .mp-g-shin) .mpj-leg .mpj-core,
-#mv-fig:is(.mp-g-ua, .mp-g-fa) .mpj-arm .mpj-core { stroke-opacity: .8; }
-#mv-fig:is(.mp-g-ua, .mp-g-fa) :is(.mpj-mit, .mpj-thumb) { filter: drop-shadow(0 0 2.5px var(--mpj-rim, #1cf7f9)); }
-#mv-fig:is(.mp-g-foot, .mp-g-shin) .mpj-shoe { filter: drop-shadow(0 0 2.5px var(--mpj-rim, #1cf7f9)); }
-#mv-fig:is(.mp-g-torso, .mp-g-heart) .mpj-aura { animation: mpjAura 1.3s ease-in-out infinite; }
-#mv-fig.mpj-tired .mpj-glow { animation-duration: 2.4s !important; }
-html #app #mv-player.mp[data-mp-stage="stand"]:not([data-mp-type="rest"]) #mv-fig .mpj-belt { animation: mpjBelt .9s linear infinite; }
-@keyframes mpjHot { 0%, 100% { stroke-opacity: .3; } 50% { stroke-opacity: .75; } }
-@keyframes mpjAura { 0%, 100% { stroke-opacity: .25; } 50% { stroke-opacity: .7; } }
-@keyframes mpjBelt { to { stroke-dashoffset: -18; } }
+/* the parts doing the work glow and breathe (only those glow layers exist on screen) */
+#mv-fig.mp-g-thigh .mph-thigh.mph-glow, #mv-fig.mp-g-shin .mph-shin.mph-glow, #mv-fig.mp-g-foot .mph-footg,
+#mv-fig.mp-g-ua .mph-ua.mph-glow, #mv-fig.mp-g-fa .mph-fa.mph-glow, #mv-fig.mp-g-torso .mph-torso.mph-glow { display: inline; animation: mphHot 1.3s ease-in-out infinite; }
+#mv-fig:is(.mp-g-thigh, .mp-g-shin) .mph-leg-core, #mv-fig:is(.mp-g-ua, .mp-g-fa) .mph-arm-core { stroke-opacity: .8; }
+#mv-fig.mp-g-torso .mph-torso-core { fill-opacity: .3; }
+#mv-fig.mp-g-heart .mph-heart { opacity: .95; animation: mpBeat 1.1s ease-in-out infinite; }
+html #app #mv-player.mp[data-mp-stage="stand"]:not([data-mp-type="rest"]) #mv-fig .mph-belt { animation: mphBelt .9s linear infinite; }
+@keyframes mphHot { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
+@keyframes mphBelt { to { stroke-dashoffset: -18; } }
 @keyframes mpBeat { 0%, 100% { transform: scale(.85); } 15% { transform: scale(1.25); } 30% { transform: scale(.95); } 45% { transform: scale(1.12); } }
 
 /* ---------- warp in / out ---------- */
@@ -557,7 +563,7 @@ html #app #mv-player.mp[data-mp-stage="stand"]:not([data-mp-type="rest"]) #mv-fi
 #app #mv-player.mp.mp-in .mp-wrap > .mp-ctrl { transition-delay: .46s; }
 #app #mv-player.mp.mp-out .mp-wrap > * { opacity: 0; transform: scale(1.1); transition: opacity .4s ease, transform .5s ease-in; transition-delay: 0s; }
 
-/* ---------- iPad / iPhone landscape: Misty left, the workout right ---------- */
+/* ---------- iPad / iPhone landscape: the figure left, the workout right ---------- */
 @media (orientation: landscape) and (min-width: 700px) {
     #app #mv-player.mp > .mp-wrap {
         max-width: 1280px;
@@ -568,7 +574,7 @@ html #app #mv-player.mp[data-mp-stage="stand"]:not([data-mp-type="rest"]) #mv-fi
     }
     #app #mv-player.mp .mp-stage { margin-top: 8px !important; }
 }
-/* short screens (iPhone SE, phones sideways): tighter type, Misty keeps the room */
+/* short screens (iPhone SE, phones sideways): tighter type, the figure keeps the room */
 @media (max-height: 720px) {
     #app #mv-player.mp .mp-info { padding: 9px 14px; border-radius: 22px; margin-top: 6px !important; }
     #app #mv-player.mp .mp-info .mv-move { font-size: 20px; }
@@ -602,9 +608,6 @@ html #app #mv-player.mp[data-mp-stage="stand"]:not([data-mp-type="rest"]) #mv-fi
     #app #mv-player.mp:not(.mp-in) .mp-wrap > *,
     #app #mv-player.mp.mp-out .mp-wrap > * { transform: none !important; transition: opacity .25s ease !important; transition-delay: 0s !important; }
     #app #mv-player.mp :is(.mp-zone i, .mp-zone.mp-pop, #mv-body),
-    html #app #mv-player.mp #mv-fig :is(.mpj-glow, .mpj-aura, .mpj-belt) { animation: none !important; }
-    html #app #mv-player.mp #mv-fig:is(.mp-g-thigh, .mp-g-shin) .mpj-leg .mpj-glow,
-    html #app #mv-player.mp #mv-fig:is(.mp-g-ua, .mp-g-fa) .mpj-arm .mpj-glow { stroke-opacity: .5; }
-    html #app #mv-player.mp #mv-fig:is(.mp-g-torso, .mp-g-heart) .mpj-aura { stroke-opacity: .5; }
+    html #app #mv-player.mp #mv-fig :is(.mph-glow, .mph-footg, .mph-heart, .mph-belt) { animation: none !important; }
     html.mp-back #app > #main { animation: none; }
 }

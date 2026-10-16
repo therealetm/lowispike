@@ -264,3 +264,13 @@ The user explicitly requested deploying the recovered Home implementation withou
 - **Scan is the lit tab while the camera is open** (scan-glass.css, same weight as world-home.css's `#tabbar#tabbar`).
 
 **Consequences:** Barcode reading, manual entry, Snap food, Log meal, Water +1 and Deep analyze are unchanged. The herb world's own camera (inside `#spWorld`) keeps its copy of the layer. Tests: tests/realm-backdrop.test.cjs.
+
+## 2026-10-16 — The Move workout figure is a human silhouette, not the companion
+
+**Status:** Accepted (supersedes the "Misty with limbs" workout body of build 20261016-205010)
+
+**Context:** The workout player showed Misty's own bubble head on short glass limbs. The owner: putting the companion's head on a body "broke everything" and looked nonsensical. He likes the liquid cell / bubble glass look, but wants a plain human body silhouette doing the moves.
+
+**Decision:** `move-player.js` draws a naturally proportioned human in profile (head with a soft face profile, neck, torso with chest and back, full-length arms and legs, hands, feet) straight on the joints the Figure solver in `index.html` already computes, at their real lengths, so every move keeps its exact timing and shape. Every part uses the same glass: membrane rim, deep translucent fill, soft core, white shine, rims drawn before fills so the body reads as one liquid outline, plus a small light (nucleus) in the chest. No companion artwork is cloned into the player and no picture assets are used. Misty stays unchanged on Home and everywhere else. Glow layers exist only for the body parts being worked.
+
+**Consequences:** Styles are `mph-*` in `move-player.css`; `tests/human-silhouette.test.cjs` guards the proportions, the no-companion rule and the glass layering. The camera-mirror ghost (separate task) uses its own front-view drawing in the same glass style.

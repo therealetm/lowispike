@@ -488,53 +488,60 @@ html.mp-noworld #app #mv-player.mp {
 }
 #app #mv-player.mp > .mv-done :is(.muted, .dim, .small) { color: var(--mp-soft) !important; }
 
-/* ---------- Misty's body of light ---------- */
-html #app #mv-player.mp #mv-fig.mp-fig .mv-floor,
-html #app #mv-player.mp #mv-fig.mp-fig .mv-props line { stroke: rgba(150, 215, 255, .22) !important; }
-html #app #mv-player.mp #mv-fig.mp-fig .mv-props :is(rect, path, polyline, circle) { stroke: rgba(150, 215, 255, .4) !important; fill: rgba(150, 215, 255, .07) !important; }
-html #app #mv-player.mp #mv-fig.mp-fig .mv-shadow { fill: rgba(110, 210, 255, .2) !important; }
-html #app #mv-player.mp #mv-fig.mp-fig .mv-trail { stroke: var(--mp-hot) !important; stroke-opacity: .55; filter: url(#mpGlowF); }
-/* the glass tubes */
-html #app #mv-player.mp #mv-fig.mp-fig .mv-side line { stroke: rgba(160, 232, 255, .3) !important; stroke-linecap: round; }
-html #app #mv-player.mp #mv-fig.mp-fig .mv-side.mv-f { opacity: .5 !important; }
-html #app #mv-player.mp #mv-fig.mp-fig .mv-side .hand { fill: rgba(225, 250, 255, .92) !important; stroke: none !important; }
-html #app #mv-player.mp #mv-fig.mp-fig .mv-side :is(.db) { stroke: #a9e6ff !important; }
-html #app #mv-player.mp #mv-fig.mp-fig .mv-side :is(.dbp) { stroke: #5cc0ff !important; }
-html #app #mv-player.mp #mv-fig.mp-fig .mv-side .band { stroke: rgba(255, 215, 110, .75) !important; }
-html #app #mv-player.mp #mv-fig.mp-fig .mv-body .torso { stroke: rgba(160, 225, 255, .26) !important; stroke-width: 22px !important; }
-html #app #mv-player.mp #mv-fig.mp-fig .mv-body .head { display: none !important; }
-html #app #mv-player.mp #mv-fig.mp-fig .mp-neck { stroke: rgba(180, 240, 255, .45); stroke-width: 6px; stroke-linecap: round; }
-/* the bright energy core inside each limb */
-html #app #mv-player.mp #mv-fig.mp-fig .mpc { stroke: var(--mp-a); stroke-linecap: round; stroke-opacity: .92; filter: url(#mpGlowF); }
-html #app #mv-player.mp #mv-fig.mp-fig .mpc.thigh { stroke-width: 4.2px; }
-html #app #mv-player.mp #mv-fig.mp-fig .mpc.shin { stroke-width: 3.6px; }
-html #app #mv-player.mp #mv-fig.mp-fig .mpc.foot { stroke-width: 3px; }
-html #app #mv-player.mp #mv-fig.mp-fig .mpc.ua { stroke-width: 3.4px; }
-html #app #mv-player.mp #mv-fig.mp-fig .mpc.fa { stroke-width: 3px; }
-html #app #mv-player.mp #mv-fig.mp-fig .mpc.torso-core { stroke: var(--mp-b); stroke-width: 4.5px; stroke-opacity: .8; }
-html #app #mv-player.mp #mv-fig.mp-fig .mp-core-f .mpc { stroke-opacity: .5; }
-html #app #mv-player.mp #mv-fig.mp-fig .mpc-hand { display: none; }
-html #app #mv-player.mp #mv-fig.mp-fig .mp-heart { fill: #ff7a9c; opacity: .35; filter: url(#mpGlowF); }
-/* the body parts this move works: warm glow + pulse */
-html #app #mv-player.mp #mv-fig.mp-fig .mv-side line.hi,
-html #app #mv-player.mp #mv-fig.mp-fig:is(.mp-g-thigh) .mv-side line.thigh,
-html #app #mv-player.mp #mv-fig.mp-fig:is(.mp-g-shin) .mv-side line.shin,
-html #app #mv-player.mp #mv-fig.mp-fig:is(.mp-g-foot) .mv-side line.foot,
-html #app #mv-player.mp #mv-fig.mp-fig:is(.mp-g-ua) .mv-side line.ua,
-html #app #mv-player.mp #mv-fig.mp-fig:is(.mp-g-fa) .mv-side line.fa,
-html #app #mv-player.mp #mv-fig.mp-fig:is(.mp-g-torso) .mv-body .torso { stroke: rgba(255, 210, 110, .5) !important; animation: mpHotTube 1.3s ease-in-out infinite; }
-html #app #mv-player.mp #mv-fig.mp-fig .mpc.hi,
-html #app #mv-player.mp #mv-fig.mp-fig.mp-g-thigh .mpc.thigh,
-html #app #mv-player.mp #mv-fig.mp-fig.mp-g-shin .mpc.shin,
-html #app #mv-player.mp #mv-fig.mp-fig.mp-g-foot .mpc.foot,
-html #app #mv-player.mp #mv-fig.mp-fig.mp-g-ua .mpc.ua,
-html #app #mv-player.mp #mv-fig.mp-fig.mp-g-fa .mpc.fa,
-html #app #mv-player.mp #mv-fig.mp-fig.mp-g-torso .mpc.torso-core { stroke: var(--mp-hot); stroke-opacity: 1; filter: url(#mpHotF); animation: mpHotCore 1.3s ease-in-out infinite; }
-html #app #mv-player.mp #mv-fig.mp-fig.mp-g-heart .mp-heart { opacity: 1; animation: mpBeat 1s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-html #app #mv-player.mp #mv-fig.mp-fig .mp-halo { opacity: .9; }
-html #app #mv-player.mp[data-mp-type="rest"] #mv-fig.mp-fig .mp-halo { opacity: .55; }
-@keyframes mpHotTube { 0%, 100% { stroke-opacity: .45; } 50% { stroke-opacity: .8; } }
-@keyframes mpHotCore { 0%, 100% { stroke-opacity: .78; } 50% { stroke-opacity: 1; } }
+/* ---------- Misty with limbs: her bubble, jelly arms and legs, mitten hands, little sneakers ---------- */
+html #app #mv-player.mp #mv-fig.mpj-on > :not(.mpj) { display: none !important; }
+html #app #mv-player.mp #mv-fig.mpj-on { overflow: visible; }
+#mv-fig .mpj-limb { opacity: .9; }
+#mv-fig .mpj-f { opacity: .58; }
+#mv-fig .mpj-limb path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+#mv-fig .mpj-rim { stroke: var(--mpj-rim, #1cf7f9); }
+#mv-fig .mpj-fill { stroke: var(--mpj-in, #12557a); }
+#mv-fig .mpj-core { stroke: var(--mpj-core, #93e3ff); stroke-opacity: .32; }
+#mv-fig .mpj-shine { stroke: #fff; stroke-opacity: .85; stroke-width: 1.7px; }
+#mv-fig .mpj-glow { stroke: var(--mpj-rim, #1cf7f9); stroke-opacity: 0; filter: url(#mpHotF); }
+#mv-fig .mpj-leg .mpj-rim { stroke-width: 11.5px; }
+#mv-fig .mpj-leg .mpj-fill { stroke-width: 9px; }
+#mv-fig .mpj-leg .mpj-core { stroke-width: 4.4px; }
+#mv-fig .mpj-leg .mpj-glow { stroke-width: 20px; }
+#mv-fig .mpj-arm .mpj-rim { stroke-width: 9.5px; }
+#mv-fig .mpj-arm .mpj-fill { stroke-width: 7.2px; }
+#mv-fig .mpj-arm .mpj-core { stroke-width: 3.6px; }
+#mv-fig .mpj-arm .mpj-glow { stroke-width: 18px; }
+#mv-fig .mpj-mit, #mv-fig .mpj-thumb { fill: var(--mpj-in, #12557a); stroke: var(--mpj-rim, #1cf7f9); stroke-width: 1.4px; }
+#mv-fig .mpj-mshine { fill: none; stroke: #fff; stroke-opacity: .85; stroke-width: 1.3px; stroke-linecap: round; }
+#mv-fig .mpj-hand .mpj-db { display: none; }
+#mv-fig .mpj-hand.mpj-has-db .mpj-db { display: inline; }
+#mv-fig .mpj-db-bar { stroke: #bfeaff; stroke-width: 2.2px; stroke-linecap: round; }
+#mv-fig .mpj-db-plate { fill: rgba(90, 180, 255, .55); stroke: #d6f6ff; stroke-width: .9px; }
+#mv-fig .mpj-shoe-up { fill: #eaf8ff; stroke: var(--mpj-rim, #84d2ff); stroke-width: .9px; stroke-linejoin: round; }
+#mv-fig .mpj-shoe-sole { stroke: #4fb0f5; stroke-width: 2px; stroke-linecap: round; }
+#mv-fig .mpj-shoe-lace { stroke: #3a8ad2; stroke-width: .8px; stroke-linecap: round; }
+#mv-fig .mpj-shoe-shine { fill: none; stroke: #fff; stroke-width: .9px; stroke-linecap: round; }
+#mv-fig .mpj-plat { fill: url(#mpjPlat); }
+#mv-fig .mpj-plat-rim { fill: none; stroke: rgba(190, 240, 255, .7); stroke-width: .9px; }
+#mv-fig .mpj-plat-core { fill: rgba(225, 250, 255, .32); filter: url(#mpHotF); }
+#mv-fig .mpj-belt { fill: none; stroke: rgba(175, 238, 255, .5); stroke-width: .8px; stroke-dasharray: 4 5; }
+#mv-fig .mpj-pouf, #mv-fig .mpj-bed, #mv-fig .mpj-mat, #mv-fig .mpj-pillow { fill: url(#mpjGlass); stroke: rgba(190, 240, 255, .55); stroke-width: 1px; }
+#mv-fig .mpj-pouf-shine { fill: none; stroke: rgba(255, 255, 255, .5); stroke-width: 1.2px; stroke-linecap: round; }
+#mv-fig .mpj-shadow { fill: rgba(8, 24, 60, .38); }
+#mv-fig .mpj-aura { fill: none; stroke: var(--mpj-rim, #1cf7f9); stroke-width: 2.4px; stroke-opacity: 0; filter: url(#mpHotF); }
+#mv-fig .mpj-sweat { display: none; fill: rgba(195, 240, 255, .85); stroke: #fff; stroke-width: .6px; }
+#mv-fig.mpj-tired .mpj-sweat { display: inline; }
+#mv-fig .mp-halo { opacity: .9; }
+html #app #mv-player.mp[data-mp-type="rest"] #mv-fig .mp-halo { opacity: .55; }
+/* the parts doing the work glow and breathe */
+#mv-fig:is(.mp-g-thigh, .mp-g-shin) .mpj-leg .mpj-glow,
+#mv-fig:is(.mp-g-ua, .mp-g-fa) .mpj-arm .mpj-glow { animation: mpjHot 1.3s ease-in-out infinite; }
+#mv-fig:is(.mp-g-thigh, .mp-g-shin) .mpj-leg .mpj-core,
+#mv-fig:is(.mp-g-ua, .mp-g-fa) .mpj-arm .mpj-core { stroke-opacity: .8; }
+#mv-fig:is(.mp-g-ua, .mp-g-fa) :is(.mpj-mit, .mpj-thumb) { filter: drop-shadow(0 0 2.5px var(--mpj-rim, #1cf7f9)); }
+#mv-fig:is(.mp-g-foot, .mp-g-shin) .mpj-shoe { filter: drop-shadow(0 0 2.5px var(--mpj-rim, #1cf7f9)); }
+#mv-fig:is(.mp-g-torso, .mp-g-heart) .mpj-aura { animation: mpjAura 1.3s ease-in-out infinite; }
+#mv-fig.mpj-tired .mpj-glow { animation-duration: 2.4s !important; }
+html #app #mv-player.mp[data-mp-stage="stand"]:not([data-mp-type="rest"]) #mv-fig .mpj-belt { animation: mpjBelt .9s linear infinite; }
+@keyframes mpjHot { 0%, 100% { stroke-opacity: .3; } 50% { stroke-opacity: .75; } }
+@keyframes mpjAura { 0%, 100% { stroke-opacity: .25; } 50% { stroke-opacity: .7; } }
+@keyframes mpjBelt { to { stroke-dashoffset: -18; } }
 @keyframes mpBeat { 0%, 100% { transform: scale(.85); } 15% { transform: scale(1.25); } 30% { transform: scale(.95); } 45% { transform: scale(1.12); } }
 
 /* ---------- warp in / out ---------- */
@@ -595,6 +602,9 @@ html #app #mv-player.mp[data-mp-type="rest"] #mv-fig.mp-fig .mp-halo { opacity: 
     #app #mv-player.mp:not(.mp-in) .mp-wrap > *,
     #app #mv-player.mp.mp-out .mp-wrap > * { transform: none !important; transition: opacity .25s ease !important; transition-delay: 0s !important; }
     #app #mv-player.mp :is(.mp-zone i, .mp-zone.mp-pop, #mv-body),
-    html #app #mv-player.mp #mv-fig.mp-fig :is(line, circle, .torso, .mp-heart) { animation: none !important; }
+    html #app #mv-player.mp #mv-fig :is(.mpj-glow, .mpj-aura, .mpj-belt) { animation: none !important; }
+    html #app #mv-player.mp #mv-fig:is(.mp-g-thigh, .mp-g-shin) .mpj-leg .mpj-glow,
+    html #app #mv-player.mp #mv-fig:is(.mp-g-ua, .mp-g-fa) .mpj-arm .mpj-glow { stroke-opacity: .5; }
+    html #app #mv-player.mp #mv-fig:is(.mp-g-torso, .mp-g-heart) .mpj-aura { stroke-opacity: .5; }
     html.mp-back #app > #main { animation: none; }
 }

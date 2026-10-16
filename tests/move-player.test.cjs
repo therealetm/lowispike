@@ -95,10 +95,9 @@ test('Move player: Misty is the one moving, with the working parts glowing', () 
     assert.ok(js.includes("D.querySelector('#spBubble .sp-home-herb svg.tmg-plant')"));
     assert.ok(js.includes('function uniq(svg)'));
     assert.ok(js.includes("'.cw-stars, .lh-reflection, .lh-pot, .cw-dock, .lh-care-fx, .lh-acc, .lh-pot-fx, .cw-pill, title'"));
-    /* the old head is hidden, the limbs are glass tubes with a bright core, the move's parts glow warm */
-    assert.ok(css.includes('#mv-fig.mp-fig .mv-body .head { display: none !important; }'));
-    assert.ok(css.includes('#mv-fig.mp-fig .mpc.hi,'));
-    assert.ok(css.includes('#mv-fig.mp-fig.mp-g-ua .mpc.ua,'));
+    /* the old stick figure is hidden; Misty's own glass limbs do the move and the working parts glow (misty-limbs.test.cjs) */
+    assert.ok(css.includes('#mv-fig.mpj-on > :not(.mpj) { display: none !important; }'));
+    assert.ok(css.includes('#mv-fig:is(.mp-g-ua, .mp-g-fa) .mpj-arm .mpj-glow'));
     assert.ok(css.includes('filter: url(#mpHotF)'));
 });
 

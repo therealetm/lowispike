@@ -480,3 +480,13 @@ html.wh-home #spHome #spFast::after, html.wh-home #whHud .wh-water::after {
 @keyframes wh-mem-swell { 0%, 100% { scale: 1; } 50% { scale: 1.025; } }
 @keyframes wh-mem-morph { 0%, 100% { border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%; } 33% { border-radius: 52% 48% 51% 49% / 48% 52% 49% 51%; } 66% { border-radius: 48% 52% 49% 51% / 51% 49% 52% 48%; } }
 @keyframes wh-mem-shimmer { 0% { transform: translateY(-12%); } 100% { transform: translateY(12%); } }
+
+/* ---------- Oct 16 (iPad, Emmanuel: "the profile picture and the moon day/night light next to where the weather is") ----------
+   iPad upright and sideways, on Today only: the weather pill, the sun/moon button and the profile picture form one centred row
+   right under "Hey <name> / date": [weather 92][6][sun/moon 44][6][picture 44] = 192 px, centred on the screen (the same centre
+   line as the greeting and the Daily Quest). The pill moves 50 px left of centre; the picture is placed against #main (the full
+   screen) and the sun/moon follows it on its own (top-bar.js places it 6 px left of the picture). Row 2 ends at +103 px, the
+   Daily Quest box starts at +113 px. Other tabs and phones keep the picture top right. */
+html.spirit-app.wh-home:is([data-lay=tablet],[data-lay=desktop]) #tab-home #spHome .sp-top > .sp-weather { transform: translateX(-50px); }
+html.spirit-app.wh-home:is([data-lay=tablet],[data-lay=desktop]) #tab-home #spHome .sp-top > .sp-weather:active { transform: translateX(-50px) scale(.96); }
+html.spirit-app.wh-home:is([data-lay=tablet],[data-lay=desktop]) #main #pfBtn#pfBtn { top: calc(var(--b-top, 0px) + 59px) !important; right: auto !important; left: calc(50% + 52px) !important; width: 44px !important; height: 44px !important; }

@@ -5198,6 +5198,7 @@ function showMs(i, auto){
   const T = bodyTrack(P.fmt), m = T[i], c = $("#mv-ms"); if (!m || !c) return;
   c.innerHTML = msCardHTML(m, i, T.length, P.msWhen[i] || "");
   if (AUD() && auto && window.LowiAudio) LowiAudio.speak("In your body: " + m.t + ". " + m.d, {queue:true});
+  if (auto && window.LowiMovePlayer && LowiMovePlayer.quiet()) { LowiMovePlayer.peek(); return; }   /* immersive player: the pill glows, the card opens on tap */
   c.classList.remove("on"); void c.offsetWidth; c.classList.add("on"); const w = $("#mv-bodywrap"); if (w) w.classList.add("open");
   clearTimeout(P.msTimer); P.msTimer = setTimeout(() => { const el = $("#mv-ms"); if (el) el.classList.remove("on"); const w = $("#mv-bodywrap"); if (w) w.classList.remove("open"); }, auto ? 11000 : 15000);
 }
@@ -5250,22 +5251,28 @@ function start(fmt, mins, opts){
   let el = $("#mv-player"); if (!el) { el = document.createElement("div"); el.id = "mv-player"; ($("#app") || document.body).appendChild(el); }
   el.innerHTML = playerHTML(); el.classList.remove("mv-asking"); el.classList.add("on"); mvGuard();
   P.fig = new Figure($("#mv-fig"));
+  if (window.LowiMovePlayer) LowiMovePlayer.open(el);   /* move-player.js: full-screen world, Misty's workout body */
   lockScreen(true);
   if (!M.safetySeen) { M.safetySeen = true; save(); }
   P.raf = requestAnimationFrame(loop);
   if (window.R3W) R3W.start(P);
 }
 function playerHTML(){
+  /* Oct 16: the immersive player (move-player.css/js). Full screen over the living world, blue liquid glass, Misty does the moves.
+     Same ids and data-mv actions as before, so the timer, sounds, audio coach and saving are untouched. */
   const segs = P.plan.blocks.map((b, i) => '<i class="' + b.type + '" style="flex:' + b.dur + '"><b id="mv-seg' + i + '"></b></i>').join("");
-  return '<div class="mv-ptop"><button class="mv-icon" data-mv="end-ask" aria-label="End">' + IC.x + '</button><div style="flex:1;text-align:center"><div class="tiny dim">' + esc(P.name) + (P.postMeal ? " · after a meal" : "") + '</div><div class="h3 num" id="mv-left">' + mmss(P.plan.total) + '</div></div><button class="mv-icon' + (M.sound ? " on" : "") + '" data-mv="sound" aria-label="Beeps">' + IC.bell + '</button><button class="mv-icon' + ((M.voice || (AUD() && !LowiAudio.muted())) ? " on" : "") + '" data-mv="voice" aria-label="' + (AUD() ? "Mute or unmute audio" : "Voice cues") + '">' + IC.voice + '</button></div>' +
-    '<div class="mv-segs">' + segs + '</div>' +
-    '<div class="mv-stage"><svg id="mv-fig" viewBox="10 0 190 200"></svg><div class="mv-count" id="mv-count">3</div>' +
+  return '<div class="mp-veil" aria-hidden="true"></div><div class="mp-wrap">' +
+    '<div class="mv-ptop mp-top"><button class="mv-icon mp-x" data-mv="end-ask" aria-label="End">' + IC.x + '</button><div class="mp-title"><div class="tiny">' + esc(P.name) + (P.postMeal ? " · after a meal" : "") + '</div><div class="h3 num" id="mv-left">' + mmss(P.plan.total) + '</div></div><button class="mv-icon' + (M.sound ? " on" : "") + '" data-mv="sound" aria-label="Beeps">' + IC.bell + '</button><button class="mv-icon' + ((M.voice || (AUD() && !LowiAudio.muted())) ? " on" : "") + '" data-mv="voice" aria-label="' + (AUD() ? "Mute or unmute audio" : "Voice cues") + '">' + IC.voice + '</button></div>' +
+    '<div class="mv-segs mp-segs">' + segs + '</div>' +
+    '<div class="mv-stage mp-stage"><svg id="mv-fig" viewBox="10 0 190 200" aria-hidden="true"></svg><div class="mv-count" id="mv-count">3</div>' +
     '<div class="mv-safe" id="mv-safe" role="note"><span>' + esc(safetyChipText()) + '</span><button data-mv="safe-x" aria-label="Dismiss tip">' + IC.x + '</button></div>' +
+    '<div class="mp-zone" id="mp-zone" aria-live="polite"><i aria-hidden="true"></i><span>Working</span><b></b></div>' +
     '</div>' +
-    '<div class="mv-info"><div class="tiny" id="mv-type">Get ready</div><div class="mv-move" id="mv-name">' + esc(MOVES[P.plan.blocks[0].move].n) + '</div><div class="mv-big num" id="mv-block">0:00</div><div class="p" id="mv-cue"></div><div class="small gold" id="mv-gear" style="margin-top:6px"></div><div class="small dim" id="mv-easy" style="margin-top:6px"></div></div>' +
-    '<div class="mv-bodywrap" id="mv-bodywrap">' + bodyStripHTML() + '<div class="mv-ms" id="mv-ms" aria-live="polite"></div></div>' +
+    '<div class="mv-info mp-info"><div class="tiny" id="mv-type">Get ready</div><div class="mv-move" id="mv-name">' + esc(MOVES[P.plan.blocks[0].move].n) + '</div><div class="mv-big num" id="mv-block">0:00</div><div class="p" id="mv-cue"></div><div class="small gold" id="mv-gear"></div><div class="small dim" id="mv-easy"></div></div>' +
     '<div class="mv-next small muted" id="mv-next"></div>' +
-    '<div class="mv-ctrl"><button class="mv-icon big r3w-add" data-mv="add5" aria-label="Add 5 minutes">+5</button><button class="mv-play" data-mv="pause" id="mv-pp" aria-label="Pause">' + IC.pause + '</button><button class="mv-icon big" data-mv="skip" aria-label="Skip">' + IC.skip + '</button></div>' +
+    '<div class="mv-bodywrap mp-bodywrap" id="mv-bodywrap">' + bodyStripHTML() + '<div class="mv-ms" id="mv-ms" aria-live="polite"></div></div>' +
+    '<div class="mv-ctrl mp-ctrl"><button class="mv-icon big r3w-add" data-mv="add5" aria-label="Add 5 minutes">+5</button><button class="mv-play" data-mv="pause" id="mv-pp" aria-label="Pause">' + IC.pause + '</button><button class="mv-icon big" data-mv="skip" aria-label="Skip">' + IC.skip + '</button></div>' +
+    '</div>' +
     '<div class="mv-confirm hidden" id="mv-confirm"><div class="card"><div class="h3">End this session?</div><div class="small muted" style="margin-top:4px" id="mv-confirm-t"></div><div class="mv-row" style="gap:8px;margin-top:14px"><button class="btn ghost mv-sm" data-mv="end-keep">Keep going</button><button class="btn primary mv-sm" data-mv="end-save">End and save</button></div></div></div>';
 }
 const typeLabel = {warm:"Warm-up", work:"Move", rest:"Rest", cool:"Cool-down"};
@@ -5296,6 +5303,7 @@ function paint(clock){
     $("#mv-cue").textContent = b.type === "rest" ? (m.base === "walk" ? "Keep walking easy." : "Shake it out and breathe.") : m.cue;
     $("#mv-gear").textContent = b.type === "rest" ? "" : gearLine(b.move);
     $("#mv-easy").textContent = b.type === "rest" || !m.easy ? "" : "Easier: " + m.easy;
+    if (window.LowiMovePlayer) LowiMovePlayer.block(P, b, m, b.type === "rest");
     const nx = B[i + 1]; $("#mv-next").innerHTML = nx ? "Up next: <b>" + esc(nx.type === "rest" ? "Rest" : MOVES[nx.move].n) + "</b> · " + mmss(nx.dur) : "Last one. Finish strong.";
     if (t >= 0 && i > 0) { beep(b.type === "rest" ? 660 : 990, .25); }
     /* audio mode: the full cue only the first time a move shows up, then just its name. Sparse on purpose. */
@@ -5313,6 +5321,7 @@ function paint(clock){
   if (!P.paused) P.frozen = mt;
   P.fig.setScene(m.base, has("tread"));
   P.fig.draw(pose, P.paused ? 0 : clock, gear);
+  if (window.LowiMovePlayer) LowiMovePlayer.frame(P);
   bodyTick();
 }
 function extendSession(){
@@ -5361,7 +5370,7 @@ function finish(complete){
   if (window.LowiSFX) { if (M.sound) try{window.LowiSFX&&LowiSFX.play("workoutDone")}catch(_){}; } else { beep(880, .18); setTimeout(() => beep(1320, .3), 160); }/*r3e*/
   P = null;
 }
-function closePlayer(){ mvUnguard(); const el = $("#mv-player"); if (el) { el.classList.remove("on", "mv-asking"); setTimeout(() => { if (!P) el.innerHTML = ""; }, 400); } if ($("#mv-screen.on")) renderScreen(); const h = H(); if (h && h.refresh) h.refresh(); }
+function closePlayer(){ mvUnguard(); const el = $("#mv-player"); if (window.LowiMovePlayer) LowiMovePlayer.close(el); if (el) { el.classList.remove("on", "mv-asking"); setTimeout(() => { if (!P) el.innerHTML = ""; }, 400); } if ($("#mv-screen.on")) renderScreen(); const h = H(); if (h && h.refresh) h.refresh(); }
 
 /* ---------- steps ---------- */
 function setSteps(v){
@@ -5391,7 +5400,7 @@ document.addEventListener("click", e => {
     case "go-fmt": M.fmt = b.dataset.k; save(); go(M.fmt, M.mins); break;
     case "safe-x": { const c = $("#mv-safe"); if (c) c.classList.add("gone"); break; }
     case "ms-close": { e.stopPropagation(); const c = $("#mv-ms"); if (c) c.classList.remove("on"); const w = $("#mv-bodywrap"); if (w) w.classList.remove("open"); break; }
-    case "body-card": if (P && P.ms >= 0) showMs(P.ms, false); break;
+    case "body-card": if (P && P.ms >= 0) { const c = $("#mv-ms"), w = $("#mv-bodywrap"); if (w) w.classList.remove("mp-new"); if (c && c.classList.contains("on")) { c.classList.remove("on"); if (w) w.classList.remove("open"); clearTimeout(P.msTimer); } else showMs(P.ms, false); } break;
     case "quick": { const h = H(); if (h && h.closeSheet) h.closeSheet(); M.fmt = b.dataset.fmt; save(); go(b.dataset.fmt, +b.dataset.min || 10); break; }
     case "safety-ok": { M.safetySeen = true; save(); const h = H(); if (h) h.closeSheet(); const p = pending; pending = null; if (p) setTimeout(() => start(p[0], p[1]), 250); break; }
     case "safety": safetySheet(false); break;
@@ -19785,6 +19794,8 @@ window.LowiCommunityHost = {
 <link rel="stylesheet" href="nav-moves.css?v=20261016-174510">
 <script src="nav-moves.js?v=nav-2"></script>
 <link rel="stylesheet" id="mvdCss" href="move-durations.css?v=20261016-174510">
+<link rel="stylesheet" id="mvpCss" href="move-player.css?v=20261016-174510">
+<script src="move-player.js?v=20261016-174510"></script>
 <link rel="stylesheet" id="fyeCss" href="fy-embed.css?v=20261016-174510">
 <script src="fy-embed.js?v=20261016-174510"></script>
 <link rel="stylesheet" id="cspCss" href="community-spirit.css?v=20261016-174510">

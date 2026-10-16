@@ -1,0 +1,600 @@
+/* LOWiSPIKE Move: the immersive workout player (Oct 16, 2026). Behaviour and the why: move-player.js.
+   Full screen and transparent: the living spirit world (the live 3D world, flown out by move-player.js) is the background.
+   Every control and card is the app's blue liquid glass (the Daily Quest / weather pill recipe). Misty does the moves. */
+
+html #app #mv-player.mp {
+    --mp-a: #9ff7ff;
+    --mp-b: #c9a6ff;
+    --mp-hot: #ffd76e;
+    --mp-ink: #f4f9ff;
+    --mp-soft: rgba(232, 244, 255, .78);
+    --mp-rim: var(--wh-glass-rim, rgba(170, 222, 255, .42));
+    --mp-glass: radial-gradient(120% 90% at 18% 0%, rgba(255, 255, 255, .14), rgba(255, 255, 255, 0) 55%), linear-gradient(160deg, rgba(80, 170, 255, .12), rgba(18, 46, 104, .42));
+    --mp-glass-strong: radial-gradient(120% 90% at 18% 0%, rgba(255, 255, 255, .12), rgba(255, 255, 255, 0) 55%), linear-gradient(160deg, rgba(40, 110, 200, .42), rgba(10, 28, 72, .78));
+    --mp-glass-sh: inset 0 .5px 0 rgba(255, 255, 255, .35), inset 0 0 14px rgba(140, 210, 255, .16), 0 10px 30px -14px rgba(0, 10, 40, .6);
+    --mp-blur: blur(14px) saturate(160%);
+    left: 0 !important;
+    right: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    width: auto !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    color: var(--mp-ink);
+    transform: none !important;
+    opacity: 0;
+    transition: opacity .5s ease, visibility 0s linear .5s !important;
+}
+html #app #mv-player.mp.on {
+    opacity: 1;
+    transition: opacity .45s ease, visibility 0s !important;
+}
+html #app #mv-player.mp.mp-out { opacity: 0; transition: opacity .45s ease .1s, visibility 0s linear .6s !important; }
+
+/* the app underneath steps back so only the world is left behind the player */
+html.mp-on #app > :not(#mv-player):not(#bw3Back):not(#toast):not(canvas):not(#main) {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: opacity .45s ease !important;
+}
+/* #main is hidden by visibility, not opacity, so the live world can stay lit when it is still inside Home (#bw3Stage) */
+html.mp-on #app > #main { visibility: hidden !important; pointer-events: none !important; }
+html.mp-on #app > #main #bw3Stage { visibility: visible !important; }
+html.mp-on #app > #main #bw3Stage * { pointer-events: none !important; }
+html.mp-back #app > #main { animation: mpMainBack .6s ease both; }
+@keyframes mpMainBack { from { opacity: 0; } to { opacity: 1; } }
+
+/* readability veil: clear in the middle, a little deeper at the top and bottom where the text sits. Not a slab. */
+#app #mv-player.mp .mp-veil {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse 85% 62% at 50% 42%, rgba(4, 10, 30, 0) 42%, rgba(4, 10, 30, .34) 100%),
+        linear-gradient(180deg, rgba(3, 8, 26, .34), rgba(3, 8, 26, 0) 16%, rgba(3, 8, 26, 0) 52%, rgba(3, 8, 26, .42));
+}
+/* the warp: a ring of light opens as you pass into the world */
+#app #mv-player.mp .mp-veil::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 44%;
+    width: 60vmax;
+    height: 60vmax;
+    margin: -30vmax 0 0 -30vmax;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(160, 230, 255, 0) 52%, rgba(160, 230, 255, .32) 62%, rgba(200, 170, 255, .16) 68%, rgba(160, 230, 255, 0) 74%);
+    opacity: 0;
+    transform: scale(.2);
+}
+#app #mv-player.mp.mp-in .mp-veil::before { animation: mpWarp 1.25s cubic-bezier(.2, .7, .2, 1) both; }
+#app #mv-player.mp.mp-out .mp-veil::before { animation: mpWarpOut .6s ease-in both; }
+@keyframes mpWarp { 0% { opacity: 0; transform: scale(.15); } 25% { opacity: 1; } 100% { opacity: 0; transform: scale(3.2); } }
+@keyframes mpWarpOut { 0% { opacity: 0; transform: scale(3); } 40% { opacity: .8; } 100% { opacity: 0; transform: scale(.3); } }
+
+/* no live world on this device (no WebGL): a drawn spirit-world glow instead of black */
+html.mp-noworld #app #mv-player.mp {
+    background:
+        radial-gradient(28vmax 28vmax at 22% 30%, rgba(90, 140, 255, .32), transparent 70%),
+        radial-gradient(22vmax 22vmax at 78% 24%, rgba(180, 110, 255, .26), transparent 70%),
+        radial-gradient(24vmax 24vmax at 70% 78%, rgba(70, 220, 170, .2), transparent 70%),
+        radial-gradient(18vmax 18vmax at 18% 82%, rgba(255, 160, 80, .18), transparent 70%),
+        linear-gradient(180deg, #060d26, #0a1440 55%, #070b22) !important;
+}
+
+/* ---------- layout ---------- */
+#app #mv-player.mp > .mp-wrap {
+    position: relative;
+    flex: 1 1 auto !important;
+    min-height: 0;
+    height: 100%;
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr) auto auto auto auto auto;
+    grid-template-areas: "top" "segs" "stage" "info" "next" "cap" "body" "ctrl";
+    padding: calc(env(safe-area-inset-top, 0px) + 10px) calc(env(safe-area-inset-right, 0px) + 16px) calc(env(safe-area-inset-bottom, 0px) + 14px) calc(env(safe-area-inset-left, 0px) + 16px);
+}
+#app #mv-player.mp .mp-top { grid-area: top; }
+#app #mv-player.mp .mp-segs { grid-area: segs; }
+#app #mv-player.mp .mp-stage { grid-area: stage; }
+#app #mv-player.mp .mp-info { grid-area: info; }
+#app #mv-player.mp .mp-wrap > .mv-next { grid-area: next; }
+#app #mv-player.mp .mp-wrap > .r3w-cap { grid-area: cap; }
+#app #mv-player.mp .mp-bodywrap { grid-area: body; }
+#app #mv-player.mp .mp-ctrl { grid-area: ctrl; }
+
+/* glass, shared */
+#app #mv-player.mp :is(.mp-top .mv-icon, .mp-segs, .mv-safe, .mp-zone, .mp-info, #mv-body, .mp-ctrl .mv-icon, .mv-confirm .card, .r3w-cap) {
+    background: var(--mp-glass) !important;
+    border: 1px solid var(--mp-rim) !important;
+    box-shadow: var(--mp-glass-sh) !important;
+    -webkit-backdrop-filter: var(--mp-blur);
+    backdrop-filter: var(--mp-blur);
+    color: var(--mp-ink) !important;
+}
+
+/* top bar */
+#app #mv-player.mp .mp-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: none !important;
+    border: 0 !important;
+    position: relative;
+    z-index: 3;
+}
+#app #mv-player.mp .mp-top .mv-icon {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    cursor: pointer;
+}
+#app #mv-player.mp .mp-top .mv-icon svg { width: 20px; height: 20px; }
+#app #mv-player.mp .mp-top .mv-icon.on { background: linear-gradient(160deg, rgba(100, 200, 255, .5), rgba(10, 132, 255, .55)) !important; }
+#app #mv-player.mp .mp-title { flex: 1; min-width: 0; text-align: center; }
+#app #mv-player.mp .mp-title .tiny {
+    color: var(--mp-soft) !important;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#app #mv-player.mp .mp-title .h3 { color: #fff !important; font-size: 20px; font-weight: 700; margin: 1px 0 0; text-shadow: 0 1px 10px rgba(0, 20, 60, .6); }
+
+/* segments */
+#app #mv-player.mp .mp-segs {
+    display: flex;
+    gap: 3px;
+    height: 12px;
+    padding: 3px;
+    margin: 12px 0 0 !important;
+    border-radius: 99px;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 3;
+}
+#app #mv-player.mp .mp-segs i {
+    display: block;
+    height: 100%;
+    min-width: 3px;
+    border-radius: 99px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, .16) !important;
+}
+#app #mv-player.mp .mp-segs i.rest { background: rgba(255, 255, 255, .08) !important; }
+#app #mv-player.mp .mp-segs i b {
+    display: block;
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #7fe3ff, #3aa0ff) !important;
+    box-shadow: 0 0 8px rgba(100, 210, 255, .8);
+}
+#app #mv-player.mp .mp-segs i.rest b { background: linear-gradient(90deg, rgba(190, 230, 255, .7), rgba(150, 200, 255, .6)) !important; box-shadow: none; }
+
+/* stage: Misty in the world */
+#app #mv-player.mp .mp-stage {
+    position: relative;
+    min-height: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: none !important;
+    border: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+    flex: none;
+    height: auto !important;
+}
+#app #mv-player.mp #mv-fig {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    min-height: 140px;
+    overflow: visible;
+    display: block;
+}
+#app #mv-player.mp .mv-count {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: clamp(84px, 16vmin, 150px);
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 0 24px rgba(120, 220, 255, .95), 0 0 60px rgba(160, 120, 255, .6);
+    pointer-events: none;
+    background: none !important;
+}
+#app #mv-player.mp .mv-safe {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: min(94%, 520px);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 6px 7px 14px;
+    border-radius: 99px;
+    font-size: 13px;
+    line-height: 1.3;
+    z-index: 2;
+}
+#app #mv-player.mp .mv-safe.gone { opacity: 0; pointer-events: none; transform: translate(-50%, -8px); transition: opacity .4s, transform .4s; }
+#app #mv-player.mp .mv-safe button {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: 50%;
+    border: 0;
+    background: rgba(255, 255, 255, .1);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    padding: 0;
+}
+#app #mv-player.mp .mv-safe button svg { width: 14px; height: 14px; }
+#app #mv-player.mp .mp-zone {
+    position: absolute;
+    left: 50%;
+    bottom: 4px;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 14px 7px 11px;
+    border-radius: 99px;
+    white-space: nowrap;
+    font-size: 14px;
+    z-index: 2;
+    pointer-events: none;
+}
+#app #mv-player.mp .mp-zone[hidden] { display: none; }
+#app #mv-player.mp .mp-zone i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--mp-hot);
+    box-shadow: 0 0 10px var(--mp-hot), 0 0 2px #fff;
+    animation: mpDot 1.6s ease-in-out infinite;
+}
+#app #mv-player.mp .mp-zone span { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--mp-soft); }
+#app #mv-player.mp .mp-zone b { font-weight: 700; color: #fff; }
+#app #mv-player.mp .mp-zone.mp-pop { animation: mpPop .5s cubic-bezier(.2, 1.4, .4, 1); }
+@keyframes mpDot { 0%, 100% { transform: scale(.8); opacity: .75; } 50% { transform: scale(1.15); opacity: 1; } }
+@keyframes mpPop { 0% { transform: translateX(-50%) scale(.86); } 100% { transform: translateX(-50%) scale(1); } }
+
+/* info card */
+#app #mv-player.mp .mp-info {
+    margin: 10px auto 0 !important;
+    width: 100%;
+    max-width: 560px;
+    box-sizing: border-box;
+    padding: 12px 18px 12px;
+    border-radius: 26px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+#app #mv-player.mp #mv-type {
+    color: #9fe4ff !important;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+}
+#app #mv-player.mp #mv-type.mv-t-work { color: var(--mp-hot) !important; }
+#app #mv-player.mp #mv-type.mv-t-rest { color: rgba(220, 236, 255, .7) !important; }
+#app #mv-player.mp .mp-info .mv-move { color: #fff; font-size: 24px; margin-top: 2px; line-height: 1.15; }
+#app #mv-player.mp .mp-info .mv-big { color: #fff; font-size: clamp(46px, 7.4vh, 72px); margin: 2px 0 4px; text-shadow: 0 0 22px rgba(100, 200, 255, .45); }
+#app #mv-player.mp #mv-cue { color: rgba(240, 248, 255, .92) !important; font-size: 15px; line-height: 1.38; min-height: 0; max-width: 460px; }
+#app #mv-player.mp #mv-gear { color: #a8dcff !important; font-size: 13px; margin-top: 6px; }
+#app #mv-player.mp #mv-easy { color: rgba(225, 238, 255, .66) !important; font-size: 13px; margin-top: 3px; }
+#app #mv-player.mp :is(#mv-gear, #mv-easy, #mv-cue):empty { display: none; }
+#app #mv-player.mp .mp-wrap > .mv-next {
+    text-align: center;
+    margin: 8px 0 0 !important;
+    min-height: 20px;
+    font-size: 14px;
+    color: var(--mp-soft) !important;
+    text-shadow: 0 1px 8px rgba(0, 16, 50, .8);
+}
+#app #mv-player.mp .mp-wrap > .mv-next b { color: #fff !important; }
+#app #mv-player.mp .mp-wrap > .r3w-cap { margin: 8px auto 0; max-width: 560px; width: 100%; box-sizing: border-box; border-radius: 18px; }
+
+/* IN YOUR BODY pill + QUICK FUEL card */
+#app #mv-player.mp .mp-bodywrap {
+    position: relative;
+    margin: 10px auto 0 !important;
+    width: 100%;
+    max-width: 560px;
+    min-height: 0 !important;
+    padding: 0 !important;
+    z-index: 4;
+}
+#app #mv-player.mp #mv-body {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 56px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 14px 8px 10px;
+    border-radius: 22px;
+    text-align: left;
+    cursor: pointer;
+    position: relative;
+    margin: 0 !important;
+}
+#app #mv-player.mp #mv-body #mv-bodyvis { flex: none; }
+#app #mv-player.mp #mv-body :is(#mv-bodyk, .tiny) { color: #9fe4ff !important; }
+#app #mv-player.mp #mv-body :is(b, #mv-bodyt, strong) { color: #fff !important; }
+#app #mv-player.mp #mv-body :is(.small, .muted, .dim) { color: var(--mp-soft) !important; }
+#app #mv-player.mp #mv-body::after {
+    content: "";
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    margin-top: -6px;
+    border-right: 2px solid rgba(220, 240, 255, .7);
+    border-bottom: 2px solid rgba(220, 240, 255, .7);
+    transform: rotate(-135deg);
+    transition: transform .3s;
+}
+#app #mv-player.mp .mp-bodywrap.open #mv-body::after { transform: rotate(45deg); margin-top: -8px; }
+#app #mv-player.mp .mp-bodywrap.mp-new #mv-body { animation: mpNew 1.8s ease-in-out 3; border-color: rgba(255, 215, 110, .8) !important; }
+#app #mv-player.mp .mp-bodywrap.mp-new #mv-body::before {
+    content: "";
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--mp-hot);
+    box-shadow: 0 0 8px var(--mp-hot);
+}
+@keyframes mpNew { 0%, 100% { box-shadow: var(--mp-glass-sh), 0 0 0 0 rgba(255, 215, 110, 0); } 50% { box-shadow: var(--mp-glass-sh), 0 0 0 6px rgba(255, 215, 110, .22); } }
+#app #mv-player.mp .mv-ms {
+    position: absolute !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: auto !important;
+    top: auto !important;
+    bottom: calc(100% + 10px) !important;
+    max-height: min(52vh, 420px);
+    overflow-y: auto;
+    box-sizing: border-box;
+    border-radius: 24px;
+    padding: 14px 16px !important;
+    background: var(--mp-glass-strong) !important;
+    border: 1px solid var(--mp-rim) !important;
+    box-shadow: var(--mp-glass-sh), 0 20px 50px -20px rgba(0, 8, 30, .8) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    backdrop-filter: blur(20px) saturate(160%);
+    color: var(--mp-ink) !important;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(14px) scale(.97) !important;
+    transition: opacity .3s ease, transform .35s cubic-bezier(.2, .9, .3, 1) !important;
+}
+#app #mv-player.mp .mv-ms.on { opacity: 1; pointer-events: auto; transform: none !important; }
+#app #mv-player.mp .mv-ms :is(.tiny, .mv-msk) { color: var(--mp-hot) !important; }
+#app #mv-player.mp .mv-ms :is(.h3, b, strong) { color: #fff !important; }
+#app #mv-player.mp .mv-ms :is(.small, .p, .muted, .dim) { color: rgba(236, 245, 255, .88) !important; }
+#app #mv-player.mp .mv-ms button { min-width: 40px; min-height: 40px; }
+
+/* controls: big, mid-workout tap targets */
+#app #mv-player.mp .mp-ctrl {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(22px, 6vw, 40px);
+    margin: 14px 0 0 !important;
+    position: relative !important;
+    z-index: 3;
+    background: none !important;
+}
+#app #mv-player.mp .mp-ctrl .mv-icon {
+    width: 66px;
+    height: 66px;
+    min-width: 66px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    font-size: 19px;
+    font-weight: 800;
+    cursor: pointer;
+}
+#app #mv-player.mp .mp-ctrl .mv-icon svg { width: 26px; height: 26px; }
+#app #mv-player.mp .mp-ctrl .mv-play {
+    width: 88px;
+    height: 88px;
+    min-width: 88px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    color: #fff !important;
+    background: radial-gradient(120% 90% at 30% 10%, rgba(255, 255, 255, .38), rgba(255, 255, 255, 0) 55%), linear-gradient(160deg, #5cc8ff, #0a6cff) !important;
+    border: 1px solid rgba(200, 236, 255, .7) !important;
+    box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .6), 0 0 26px rgba(70, 170, 255, .55), 0 12px 30px -10px rgba(0, 20, 70, .7) !important;
+    cursor: pointer;
+}
+#app #mv-player.mp .mp-ctrl .mv-play svg { width: 36px; height: 36px; fill: currentColor; }
+#app #mv-player.mp .mp-ctrl :is(.mv-icon, .mv-play):active { transform: scale(.94); }
+
+/* end-session confirm */
+#app #mv-player.mp .mv-confirm {
+    position: absolute;
+    inset: 0;
+    z-index: 9;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgba(3, 10, 30, .3) !important;
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+}
+#app #mv-player.mp .mv-confirm.hidden { display: none; }
+#app #mv-player.mp .mv-confirm .card { width: min(92%, 400px); border-radius: 26px; padding: 20px; background: var(--mp-glass-strong) !important; }
+#app #mv-player.mp .mv-confirm .small { color: var(--mp-soft) !important; }
+#app #mv-player.mp .mv-confirm .btn { min-height: 48px; }
+
+/* the finish screen floats in the world too */
+#app #mv-player.mp > .mv-done {
+    flex: 1 1 auto !important;
+    min-height: 0;
+    overflow-y: auto;
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    padding: calc(env(safe-area-inset-top, 0px) + 24px) calc(env(safe-area-inset-right, 0px) + 18px) calc(env(safe-area-inset-bottom, 0px) + 24px) calc(env(safe-area-inset-left, 0px) + 18px) !important;
+    color: var(--mp-ink);
+    position: relative;
+}
+#app #mv-player.mp > .mv-done .card {
+    background: var(--mp-glass-strong) !important;
+    border: 1px solid var(--mp-rim) !important;
+    box-shadow: var(--mp-glass-sh) !important;
+    -webkit-backdrop-filter: var(--mp-blur);
+    backdrop-filter: var(--mp-blur);
+    color: var(--mp-ink) !important;
+}
+#app #mv-player.mp > .mv-done :is(.muted, .dim, .small) { color: var(--mp-soft) !important; }
+
+/* ---------- Misty's body of light ---------- */
+html #app #mv-player.mp #mv-fig.mp-fig .mv-floor,
+html #app #mv-player.mp #mv-fig.mp-fig .mv-props line { stroke: rgba(150, 215, 255, .22) !important; }
+html #app #mv-player.mp #mv-fig.mp-fig .mv-props :is(rect, path, polyline, circle) { stroke: rgba(150, 215, 255, .4) !important; fill: rgba(150, 215, 255, .07) !important; }
+html #app #mv-player.mp #mv-fig.mp-fig .mv-shadow { fill: rgba(110, 210, 255, .2) !important; }
+html #app #mv-player.mp #mv-fig.mp-fig .mv-trail { stroke: var(--mp-hot) !important; stroke-opacity: .55; filter: url(#mpGlowF); }
+/* the glass tubes */
+html #app #mv-player.mp #mv-fig.mp-fig .mv-side line { stroke: rgba(160, 232, 255, .3) !important; stroke-linecap: round; }
+html #app #mv-player.mp #mv-fig.mp-fig .mv-side.mv-f { opacity: .5 !important; }
+html #app #mv-player.mp #mv-fig.mp-fig .mv-side .hand { fill: rgba(225, 250, 255, .92) !important; stroke: none !important; }
+html #app #mv-player.mp #mv-fig.mp-fig .mv-side :is(.db) { stroke: #a9e6ff !important; }
+html #app #mv-player.mp #mv-fig.mp-fig .mv-side :is(.dbp) { stroke: #5cc0ff !important; }
+html #app #mv-player.mp #mv-fig.mp-fig .mv-side .band { stroke: rgba(255, 215, 110, .75) !important; }
+html #app #mv-player.mp #mv-fig.mp-fig .mv-body .torso { stroke: rgba(160, 225, 255, .26) !important; stroke-width: 22px !important; }
+html #app #mv-player.mp #mv-fig.mp-fig .mv-body .head { display: none !important; }
+html #app #mv-player.mp #mv-fig.mp-fig .mp-neck { stroke: rgba(180, 240, 255, .45); stroke-width: 6px; stroke-linecap: round; }
+/* the bright energy core inside each limb */
+html #app #mv-player.mp #mv-fig.mp-fig .mpc { stroke: var(--mp-a); stroke-linecap: round; stroke-opacity: .92; filter: url(#mpGlowF); }
+html #app #mv-player.mp #mv-fig.mp-fig .mpc.thigh { stroke-width: 4.2px; }
+html #app #mv-player.mp #mv-fig.mp-fig .mpc.shin { stroke-width: 3.6px; }
+html #app #mv-player.mp #mv-fig.mp-fig .mpc.foot { stroke-width: 3px; }
+html #app #mv-player.mp #mv-fig.mp-fig .mpc.ua { stroke-width: 3.4px; }
+html #app #mv-player.mp #mv-fig.mp-fig .mpc.fa { stroke-width: 3px; }
+html #app #mv-player.mp #mv-fig.mp-fig .mpc.torso-core { stroke: var(--mp-b); stroke-width: 4.5px; stroke-opacity: .8; }
+html #app #mv-player.mp #mv-fig.mp-fig .mp-core-f .mpc { stroke-opacity: .5; }
+html #app #mv-player.mp #mv-fig.mp-fig .mpc-hand { display: none; }
+html #app #mv-player.mp #mv-fig.mp-fig .mp-heart { fill: #ff7a9c; opacity: .35; filter: url(#mpGlowF); }
+/* the body parts this move works: warm glow + pulse */
+html #app #mv-player.mp #mv-fig.mp-fig .mv-side line.hi,
+html #app #mv-player.mp #mv-fig.mp-fig:is(.mp-g-thigh) .mv-side line.thigh,
+html #app #mv-player.mp #mv-fig.mp-fig:is(.mp-g-shin) .mv-side line.shin,
+html #app #mv-player.mp #mv-fig.mp-fig:is(.mp-g-foot) .mv-side line.foot,
+html #app #mv-player.mp #mv-fig.mp-fig:is(.mp-g-ua) .mv-side line.ua,
+html #app #mv-player.mp #mv-fig.mp-fig:is(.mp-g-fa) .mv-side line.fa,
+html #app #mv-player.mp #mv-fig.mp-fig:is(.mp-g-torso) .mv-body .torso { stroke: rgba(255, 210, 110, .5) !important; animation: mpHotTube 1.3s ease-in-out infinite; }
+html #app #mv-player.mp #mv-fig.mp-fig .mpc.hi,
+html #app #mv-player.mp #mv-fig.mp-fig.mp-g-thigh .mpc.thigh,
+html #app #mv-player.mp #mv-fig.mp-fig.mp-g-shin .mpc.shin,
+html #app #mv-player.mp #mv-fig.mp-fig.mp-g-foot .mpc.foot,
+html #app #mv-player.mp #mv-fig.mp-fig.mp-g-ua .mpc.ua,
+html #app #mv-player.mp #mv-fig.mp-fig.mp-g-fa .mpc.fa,
+html #app #mv-player.mp #mv-fig.mp-fig.mp-g-torso .mpc.torso-core { stroke: var(--mp-hot); stroke-opacity: 1; filter: url(#mpHotF); animation: mpHotCore 1.3s ease-in-out infinite; }
+html #app #mv-player.mp #mv-fig.mp-fig.mp-g-heart .mp-heart { opacity: 1; animation: mpBeat 1s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+html #app #mv-player.mp #mv-fig.mp-fig .mp-halo { opacity: .9; }
+html #app #mv-player.mp[data-mp-type="rest"] #mv-fig.mp-fig .mp-halo { opacity: .55; }
+@keyframes mpHotTube { 0%, 100% { stroke-opacity: .45; } 50% { stroke-opacity: .8; } }
+@keyframes mpHotCore { 0%, 100% { stroke-opacity: .78; } 50% { stroke-opacity: 1; } }
+@keyframes mpBeat { 0%, 100% { transform: scale(.85); } 15% { transform: scale(1.25); } 30% { transform: scale(.95); } 45% { transform: scale(1.12); } }
+
+/* ---------- warp in / out ---------- */
+#app #mv-player.mp .mp-wrap > * { transition: opacity .55s ease, transform .7s cubic-bezier(.2, .8, .2, 1); }
+#app #mv-player.mp:not(.mp-in) .mp-wrap > * { opacity: 0; transform: translateY(16px) scale(.96); }
+#app #mv-player.mp:not(.mp-in) .mp-wrap > .mp-stage { transform: scale(.5); }
+#app #mv-player.mp.mp-in .mp-wrap > .mp-stage { transition-delay: .12s; }
+#app #mv-player.mp.mp-in .mp-wrap > .mp-top { transition-delay: .2s; }
+#app #mv-player.mp.mp-in .mp-wrap > .mp-segs { transition-delay: .26s; }
+#app #mv-player.mp.mp-in .mp-wrap > .mp-info { transition-delay: .32s; }
+#app #mv-player.mp.mp-in .mp-wrap > :is(.mv-next, .r3w-cap) { transition-delay: .38s; }
+#app #mv-player.mp.mp-in .mp-wrap > .mp-bodywrap { transition-delay: .42s; }
+#app #mv-player.mp.mp-in .mp-wrap > .mp-ctrl { transition-delay: .46s; }
+#app #mv-player.mp.mp-out .mp-wrap > * { opacity: 0; transform: scale(1.1); transition: opacity .4s ease, transform .5s ease-in; transition-delay: 0s; }
+
+/* ---------- iPad / iPhone landscape: Misty left, the workout right ---------- */
+@media (orientation: landscape) and (min-width: 700px) {
+    #app #mv-player.mp > .mp-wrap {
+        max-width: 1280px;
+        grid-template-columns: minmax(0, 1.15fr) minmax(330px, 460px);
+        column-gap: clamp(16px, 3vw, 44px);
+        grid-template-rows: auto auto minmax(0, 1fr) auto auto auto auto auto minmax(0, 1fr);
+        grid-template-areas: "top top" "segs segs" "stage ." "stage info" "stage next" "stage cap" "stage body" "stage ctrl" "stage .";
+    }
+    #app #mv-player.mp .mp-stage { margin-top: 8px !important; }
+}
+/* short screens (iPhone SE, phones sideways): tighter type, Misty keeps the room */
+@media (max-height: 720px) {
+    #app #mv-player.mp .mp-info { padding: 9px 14px; border-radius: 22px; margin-top: 6px !important; }
+    #app #mv-player.mp .mp-info .mv-move { font-size: 20px; }
+    #app #mv-player.mp .mp-info .mv-big { font-size: 44px; margin: 0 0 2px; }
+    #app #mv-player.mp #mv-cue { font-size: 14px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    #app #mv-player.mp #mv-easy { display: none; }
+    #app #mv-player.mp .mp-wrap > .mv-next { margin-top: 5px !important; font-size: 13px; }
+    #app #mv-player.mp .mp-bodywrap { margin-top: 6px !important; }
+    #app #mv-player.mp #mv-body { min-height: 48px; padding: 5px 12px 5px 8px; }
+    #app #mv-player.mp .mp-ctrl { margin-top: 8px !important; }
+    #app #mv-player.mp .mp-ctrl .mv-icon { width: 58px; height: 58px; min-width: 58px; }
+    #app #mv-player.mp .mp-ctrl .mv-play { width: 76px; height: 76px; min-width: 76px; }
+    #app #mv-player.mp .mp-segs { margin-top: 8px !important; }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+    #app #mv-player.mp > .mp-wrap { grid-template-columns: minmax(0, 1fr) minmax(240px, 290px); padding-top: 8px; }
+    #app #mv-player.mp .mp-zone { font-size: 12px; padding: 5px 10px 5px 8px; }
+    #app #mv-player.mp .mp-zone span { display: none; }
+    #app #mv-player.mp .mp-top .mv-icon { width: 44px; height: 44px; min-width: 44px; }
+    #app #mv-player.mp .mp-info .mv-big { font-size: 38px; }
+    #app #mv-player.mp #mv-gear { display: none; }
+    #app #mv-player.mp #mv-body { min-height: 44px; }
+    #app #mv-player.mp .mp-ctrl .mv-icon { width: 52px; height: 52px; min-width: 52px; }
+    #app #mv-player.mp .mp-ctrl .mv-play { width: 66px; height: 66px; min-width: 66px; }
+}
+
+/* ---------- reduced motion: no warp, no pulsing, no zoom ---------- */
+@media (prefers-reduced-motion: reduce) {
+    #app #mv-player.mp .mp-veil::before { display: none; }
+    #app #mv-player.mp .mp-wrap > *,
+    #app #mv-player.mp:not(.mp-in) .mp-wrap > *,
+    #app #mv-player.mp.mp-out .mp-wrap > * { transform: none !important; transition: opacity .25s ease !important; transition-delay: 0s !important; }
+    #app #mv-player.mp :is(.mp-zone i, .mp-zone.mp-pop, #mv-body),
+    html #app #mv-player.mp #mv-fig.mp-fig :is(line, circle, .torso, .mp-heart) { animation: none !important; }
+    html.mp-back #app > #main { animation: none; }
+}

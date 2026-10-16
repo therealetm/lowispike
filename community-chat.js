@@ -189,48 +189,124 @@ function convo(ms,idx){if(!sel||!G)return null;const b=botOf(sel);
 function photoView(src,name){if(!K.image(src))return;const o=D.createElement('div');o.className='cg-photo';o.setAttribute('role','dialog');o.setAttribute('aria-label',fill('photoOf',name||''));
  o.innerHTML='<img alt="" src="'+esc(src)+'"><button type="button" class="cg-photo-x" aria-label="×">×</button>';const close=()=>o.remove();o.addEventListener('click',close);D.body.appendChild(o);}
 function galaxy(ms,w,h,quiet){
- if(!G)return {html:'',lines:[],names:[]};
- const r=roster(),idx=nameIdx(r),order=crowd(ms,r,idx),L=G.layout(order,w,h,scope||'me',{reserveTop:quiet}),last=latestBy(ms),now=Date.now(),spot=new Map(L.spots.map(x=>[x.uid,x])),meSpot=L.spots[0],lines=[],names=[];
- /* Oct 16: chats with the galaxy bots live on this phone; their newest words go in the same avatar bubbles */
- try{const bs=botStore();for(const u in bs){const arr=bs[u];const m=arr&&arr[arr.length-1];if(!m||!m.t)continue;const k=m.from==='me'?scope:u,cur=last.get(k);if(!cur||(+cur.ts||0)<=(+m.ts||0))last.set(k,{id:'',uid:k,t:m.t,ts:m.ts||now});}}catch(e){}
- if(sel&&!spot.has(sel))sel='';
- const cv=convo(ms,idx);
- let html='';
- L.spots.forEach((x,i)=>{const me=x.me,p=me?{uid:scope,n:own().n||tr('you')}:r.get(x.uid);if(!p)return;const label=me?tr('you'):p.n;names.push(label);
-  const picked=!me&&sel===x.uid,talking=speak&&speak===x.uid;
-  const aria=me?(sel?tr('toEveryone'):tr('youAll')):(picked?fill('talking',p.n):fill('talkTo',p.n));
-  const attrs='data-uid="'+esc(x.uid)+'" data-name="'+esc(me?own().n||'':p.n)+'" aria-label="'+esc(aria)+'"'+(me?'':' aria-pressed="'+picked+'"')+' style="left:'+x.x+'px;top:'+x.y+'px;--s:'+x.size+'px;--i:'+i+';--c:'+hueColor(x.uid,me)+'"';
-  const inner='<span class="cg-orb">'+mate(me?(scope||'me'):x.uid,'g'+i)+'</span><span class="cg-name">'+esc(label)+'</span>';
-  html+=button(me?'to-all':'select',inner,attrs,'cg-body'+(me?' me':'')+(picked?' sel':'')+(talking?' speaking':'')+(p.bot?' bot':'')+(me&&!scope?' cg-off':''));
-  /* Oct 16 (E-man: "like Snapchat's map"): every companion's newest message sits in one small bubble anchored right above their round
-     avatar: their name, then the words (or "New picture" for a photo, which opens it). Your own words always sit above YOUR avatar.
-     Chat never moves anywhere else; the stream between you and the one you tapped carries the energy. Same glass as Misty's bubble. */
-  const m=last.get(me?scope:x.uid),typing=!me&&botTyping===x.uid;const o=m?G.fade(m.ts,now):0;
-  if(typing||(m&&(o>0||m.status))){const t=m&&G.targetOf(m,ms,idx),toMe=!!(t&&t.uid===scope),pic=m?K.image(m.img||m.photo||m.image||''):'';
-   const words=typing?tr('typing'):pic?'📷 '+tr('newPic'):G.bubbleText(m,t);
-   const est=Math.round(Math.min(Math.max(64,Math.max(words.length,label.length)*6.4+26),Math.min(176,w-12)));
-   const left=Math.max(6,Math.min(w-6-est,x.x-est/2)),tail=Math.max(14,Math.min(est-14,x.x-left)),bottom=Math.round(h-(x.y-(x.size||46)/2-9));
-   const st=m&&m.status?'<span class="cg-st">'+tr(m.status==='sending'?'sending':'unconfirmed')+'</span>':'';
-   const inner='<b class="cg-bn">'+esc(label)+'</b><span class="cg-t'+(typing?' cg-typing':'')+'">'+(typing?esc(words):pic?esc(words):text(words))+'</span>'+st;
-   const style='left:'+Math.round(left)+'px;width:'+est+'px;bottom:'+bottom+'px;--o:'+(m&&m.status||typing?1:o)+';--tail:'+Math.round(tail)+'px;--c:'+hueColor(x.uid,me);
-   const cls='cg-bub cg-snap'+(me?' mine':'')+(toMe?' tome':'')+(talking||typing?' pop':'')+(pic?' pic':'');
-   html+=pic?button('photo',inner,'data-id="'+esc(m.id)+'" data-src="'+esc(pic)+'" data-name="'+esc(label)+'" aria-label="'+esc(fill('photoOf',label))+'" style="'+style+'"',cls)
-    :m&&m.id?button('thread',inner,'data-id="'+esc(m.id)+'" aria-label="'+esc(label+': '+(m.t||''))+' · '+tr('openThread')+'" style="'+style+'"',cls)
-    :'<div class="'+cls+'" role="status" style="'+style+'">'+inner+'</div>';}
- });
- if(sel&&spot.has(sel)){const t=spot.get(sel),p=r.get(sel)||{n:''},theyTalk=!!(cv&&!cv.fromMe)||botTyping===sel,A=theyTalk?t:meSpot,B=theyTalk?meSpot:t;
-  lines.push({a:{x:A.x,y:A.y},b:{x:B.x,y:B.y},rb:(B.size||46)/2,alpha:1,sel:true,arrow:true,from:hueColor(A.uid,A.me),to:hueColor(B.uid,B.me)});
-  /* Oct 16: the words stay in the bubbles above the avatars; the line between you two only carries the energy */
- }
- gxIds=L.spots.map(x=>x.uid).filter(u=>u&&u!=='me');
- return {html,lines,names,me:meSpot,orbits:meSpot?{cx:meSpot.x,cy:meSpot.y,r:L.spots.filter(x=>!x.me).map(x=>Math.round(Math.hypot(x.x-meSpot.x,x.y-meSpot.y)))}:null};
+  if(!G)return {html:'',lines:[],names:[]};
+  /* Oct 16, round 5 (E-man: "tapping Joseph selected Bastian", "everyone changes places"): a map, not a seating plan. Each person
+     has one fixed spot (G.mapLayout); selecting, typing, new messages and the keyboard never move anyone. place() draws the spots
+     through the camera (drag to pan, pinch / double-tap to zoom), so the HTML here carries no positions at all. */
+  const r=roster(),idx=nameIdx(r),order=crowd(ms,r,idx),L=G.mapLayout(order,scope||'me'),last=latestBy(ms),now=Date.now(),spot=new Map(L.spots.map(x=>[x.uid,x])),meSpot=L.spots[0],names=[],labels=[],lineDefs=[];
+  const big=w>=640,bodyS=big?56:46,meS=big?64:54;
+  /* Oct 16: chats with the galaxy bots live on this phone; their newest words go in the same avatar bubbles */
+  try{const bs=botStore();for(const u in bs){const arr=bs[u];const m=arr&&arr[arr.length-1];if(!m||!m.t)continue;const k=m.from==='me'?scope:u,cur=last.get(k);if(!cur||(+cur.ts||0)<=(+m.ts||0))last.set(k,{id:'',uid:k,t:m.t,ts:m.ts||now});}}catch(e){}
+  if(sel&&!spot.has(sel))sel='';
+  const cv=convo(ms,idx);
+  let html='';
+  /* drawing order only (real people before bots); the spots themselves never depend on it */
+  const drawOrder=L.spots.slice().sort((a,b)=>(b.me?1:0)-(a.me?1:0)||((r.get(a.uid)||{}).bot?1:0)-((r.get(b.uid)||{}).bot?1:0));
+  drawOrder.forEach((x,i)=>{const me=x.me,p=me?{uid:scope,n:own().n||tr('you')}:r.get(x.uid);if(!p)return;const label=me?tr('you'):p.n;names.push(label);
+   const picked=!me&&sel===x.uid,talking=speak&&speak===x.uid,size=me?meS:bodyS;
+   const aria=me?(sel?tr('toEveryone'):tr('youAll')):(picked?fill('talking',p.n):fill('talkTo',p.n));
+   const attrs='data-uid="'+esc(x.uid)+'" data-name="'+esc(me?own().n||'':p.n)+'" aria-label="'+esc(aria)+'"'+(me?'':' aria-pressed="'+picked+'"')+' style="--s:'+size+'px;--i:'+(i%24)+';--c:'+hueColor(x.uid,me)+'"';
+   const inner='<span class="cg-orb">'+mate(me?(scope||'me'):x.uid,'g'+i)+'</span><span class="cg-name">'+esc(label)+'</span>';
+   html+=button(me?'to-all':'select',inner,attrs,'cg-body'+(me?' me':'')+(picked?' sel':'')+(talking?' speaking':'')+(p.bot?' bot':'')+(me&&!scope?' cg-off':''));
+   /* Oct 16 (E-man: "like Snapchat's map"): every companion's newest message sits in one small bubble next to their round avatar:
+      their name, then the words (or "New picture" for a photo, which opens it). Your own words always sit next to YOUR avatar.
+      place() picks the side so a bubble never covers another person or name; when there is no room it shrinks to a dot. */
+   const m=last.get(me?scope:x.uid),typing=!me&&botTyping===x.uid;const o=m?G.fade(m.ts,now):0;let bw=0;
+   if(typing||(m&&(o>0||m.status))){const t=m&&G.targetOf(m,ms,idx),toMe=!!(t&&t.uid===scope),pic=m?K.image(m.img||m.photo||m.image||''):'';
+    const words=typing?tr('typing'):pic?'📷 '+tr('newPic'):G.bubbleText(m,t);
+    bw=Math.round(Math.min(Math.max(64,Math.max(words.length,label.length)*6.4+26),Math.min(176,w-12)));
+    const st=m&&m.status?'<span class="cg-st">'+tr(m.status==='sending'?'sending':'unconfirmed')+'</span>':'';
+    const inner='<b class="cg-bn">'+esc(label)+'</b><span class="cg-t'+(typing?' cg-typing':'')+'">'+(typing?esc(words):pic?esc(words):text(words))+'</span>'+st;
+    const style='width:'+bw+'px;--o:'+(m&&m.status||typing?1:o)+';--c:'+hueColor(x.uid,me);
+    const cls='cg-bub cg-snap'+(me?' mine':'')+(toMe?' tome':'')+(talking||typing?' pop':'')+(pic?' pic':''),fr=' data-for="'+esc(x.uid)+'"';
+    html+=pic?button('photo',inner,'data-id="'+esc(m.id)+'" data-src="'+esc(pic)+'" data-name="'+esc(label)+'" aria-label="'+esc(fill('photoOf',label))+'" style="'+style+'"'+fr,cls)
+     :m&&m.id?button('thread',inner,'data-id="'+esc(m.id)+'" aria-label="'+esc(label+': '+(m.t||''))+' · '+tr('openThread')+'" style="'+style+'"'+fr,cls)
+     :'<div class="'+cls+'" role="status" style="'+style+'"'+fr+'>'+inner+'</div>';}
+   labels.push({id:x.uid,pri:picked?0:me?1:(typing||talking)?2:3,ts:m?(+m.ts||0):0,bw,size});
+  });
+  if(sel&&spot.has(sel)){const cvTheirs=!!(cv&&!cv.fromMe)||botTyping===sel,A=cvTheirs?sel:meSpot.uid,B=cvTheirs?meSpot.uid:sel;
+   lineDefs.push({a:A,b:B,sel:true,arrow:true,from:hueColor(A,A===meSpot.uid),to:hueColor(B,B===meSpot.uid)});
+   /* Oct 16: the words stay in the bubbles next to the avatars; the line between you two only carries the energy */
+  }
+  labels.sort((a,b)=>a.pri-b.pri||b.ts-a.ts);
+  gxIds=L.spots.map(x=>x.uid).filter(u=>u&&u!=='me');
+  return {html,map:L,spot,labels,lineDefs,lines:[],names,me:meSpot};
 }
+/* ---- the map camera: pins stay put, the camera moves ---- */
+let cam=null,camFrozen=null,placeRaf=0,camAnim=0;
+function mapView(gal){const typing=D.documentElement.classList.contains('cs-chat-map-typing');const w=gal.clientWidth||360,h=gal.clientHeight||480;
+  /* the centre of the map is fixed: the composer growing a chip row, or the keyboard coming up, never slides the pins.
+     Only a real change of screen (rotation, iPad split view) re-centres it. */
+  if(typing&&camFrozen)return camFrozen;
+  if(!camFrozen||Math.abs(w-camFrozen.w)>40||h>camFrozen.h||camFrozen.h-h>160)camFrozen={w,h,hb:h};else camFrozen={w:camFrozen.w,h:camFrozen.h,hb:h};
+  return camFrozen;}
+function mapZ(gx,v){return G.mapZooms(gx.map.radius,v.w,v.h);}
+function schedulePlace(){if(placeRaf)return;placeRaf=requestAnimationFrame(()=>{placeRaf=0;place();});}
+function place(){
+  const gx=W.__lgGx,field=D.getElementById('cgField'),gal=D.getElementById('cgGalaxy');if(!G||!gx||!gx.map||!field||!gal)return;
+  mapGestures(gal);
+  const v=mapView(gal),Z=mapZ(gx,v);if(!cam)cam={x:0,y:0,z:Z.z0};cam=G.mapClamp(cam,gx.map.radius,v.w,v.h);
+  const f=Math.max(.6,Math.min(1.2,Math.sqrt(cam.z/Z.z0))),cx=v.w/2,cy=v.h*.5,scr=s=>({x:cx+(s.x-cam.x)*cam.z,y:cy+(s.y-cam.y)*cam.z});
+  const bodies=new Map(),bubs=new Map();
+  for(const el of field.querySelectorAll('.cg-body'))bodies.set(el.getAttribute('data-uid'),el);
+  for(const el of field.querySelectorAll('.cg-bub[data-for]'))bubs.set(el.getAttribute('data-for'),el);
+  const items=[];
+  for(const L of gx.labels){const el=bodies.get(L.id),s=gx.spot.get(L.id);if(!el||!s)continue;const p=scr(s);
+   if(el.__nw==null){const n=el.querySelector('.cg-name');el.__nw=n?Math.min(L.size+30,n.offsetWidth||60):60;}
+   const b=bubs.get(L.id);if(b&&b.__bh==null)b.__bh=b.offsetHeight||34;
+   items.push({id:L.id,x:p.x,y:p.y,s:L.size*f,nw:el.__nw*f,bw:b?L.bw:0,bh:b?b.__bh:0,bub:!!b});
+   el.style.left='0';el.style.top='0';el.style.transform='translate3d('+p.x.toFixed(1)+'px,'+p.y.toFixed(1)+'px,0) translate(-50%,calc(var(--s) / -2)) scale('+f.toFixed(3)+')';
+   el.classList.toggle('cg-out',p.x<-80||p.x>v.w+80||p.y<-80||p.y>v.h+80);}
+  const lab=G.mapLabels(items,{w:v.w,h:v.hb||v.h});
+  for(const it of items){const r=lab.get(it.id),el=bodies.get(it.id),b=bubs.get(it.id);if(!r||!el)continue;el.classList.toggle('cg-nn',!r.name);el.classList.toggle('cg-dot',!!r.dot);
+   if(!b)continue;if(r.bub){b.style.display='';b.style.left=r.bub.x+'px';b.style.setProperty('top',r.bub.y+'px','important');b.style.setProperty('bottom','auto','important');b.style.setProperty('--tail',r.bub.tail+'px');b.setAttribute('data-side',r.bub.side);}else b.style.display='none';}
+  const me=gx.me&&gx.spot.get(gx.me.uid),mp=me?scr(me):{x:cx,y:cy};
+  gal.style.setProperty('--me-x',Math.round(mp.x)+'px');gal.style.setProperty('--me-y',Math.round(mp.y)+'px');
+  gx.lines=gx.lineDefs.map(d=>{const A=gx.spot.get(d.a),B=gx.spot.get(d.b);if(!A||!B)return null;const a=scr(A),b=scr(B),bs=(B.me?(v.w>=640?64:54):(v.w>=640?56:46))*f;return {a,b,rb:bs/2,alpha:1,sel:d.sel,arrow:d.arrow,from:d.from,to:d.to};}).filter(Boolean);
+  gx.orbits={cx:mp.x,cy:mp.y,r:[]};
+  if(sk)sk.set(gx.lines,false,gx.orbits);
+  gal.setAttribute('data-zoom',cam.z>=Z.zmax*.995?'max':cam.z<=Z.zmin*1.005?'min':'mid');
+}
+function camTo(target,ms){const gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(!gx||!gal||!cam)return;cancelAnimationFrame(camAnim);const v=mapView(gal),to=G.mapClamp(target,gx.map.radius,v.w,v.h),from={...cam},t0=performance.now(),dur=ms||280;
+  const step=t=>{const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);cam={x:from.x+(to.x-from.x)*e,y:from.y+(to.y-from.y)*e,z:from.z*Math.pow(to.z/from.z,e)};place();if(k<1)camAnim=requestAnimationFrame(step);};camAnim=requestAnimationFrame(step);}
+/* zoom by k keeping the world point under (px,py) (galaxy px) under the finger */
+function zoomAt(c0,k,px,py,v){const gx=W.__lgGx,Z=gx&&gx.map?mapZ(gx,v):{zmin:.18,zmax:3},z=Math.max(Z.zmin,Math.min(Z.zmax,c0.z*k)),wx=c0.x+(px-v.w/2)/c0.z,wy=c0.y+(py-v.h*.5)/c0.z;return {x:wx-(px-v.w/2)/z,y:wy-(py-v.h*.5)/z,z};}
+function mapGestures(gal){if(gal.__map)return;gal.__map=1;
+  const pts=new Map();let g=null,suppress=0,lastTap=0,lastXY=null;
+  const local=e=>{const r=gal.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};};
+  const inUi=t=>!!(t&&t.closest&&t.closest('.cm-compose,input,textarea,#cgThread,.cg-empty'));
+  gal.addEventListener('pointerdown',e=>{if(inUi(e.target)||(e.pointerType==='mouse'&&e.button!==0))return;cancelAnimationFrame(camAnim);pts.set(e.pointerId,local(e));
+   if(pts.size===1)g={kind:'tap',p0:local(e),cam0:{...cam},t0:Date.now(),onBody:!!(e.target.closest&&e.target.closest('.cg-body,.cg-bub'))};
+   else if(pts.size===2){const [a,b]=[...pts.values()];g={kind:'pinch',d0:Math.hypot(a.x-b.x,a.y-b.y)||1,m0:{x:(a.x+b.x)/2,y:(a.y+b.y)/2},cam0:{...cam}};}});
+  gal.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId)||!g||!cam)return;pts.set(e.pointerId,local(e));const v=mapView(gal);
+   if(g.kind==='pinch'&&pts.size>=2){const [a,b]=[...pts.values()],d=Math.hypot(a.x-b.x,a.y-b.y)||1,m={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+    const c=zoomAt(g.cam0,d/g.d0,g.m0.x,g.m0.y,v);c.x-=(m.x-g.m0.x)/c.z;c.y-=(m.y-g.m0.y)/c.z;cam=c;schedulePlace();return;}
+   if(pts.size!==1)return;const p=pts.get(e.pointerId),dx=p.x-g.p0.x,dy=p.y-g.p0.y;
+   if(g.kind==='tap'&&Math.hypot(dx,dy)>9){g.kind='pan';try{gal.setPointerCapture(e.pointerId);}catch(x){}}
+   if(g.kind==='pan'){cam={x:g.cam0.x-dx/g.cam0.z,y:g.cam0.y-dy/g.cam0.z,z:g.cam0.z};schedulePlace();}});
+  const end=e=>{if(!pts.has(e.pointerId))return;const p=pts.get(e.pointerId);pts.delete(e.pointerId);if(!g)return;
+   if(g.kind==='pan'||g.kind==='pinch'){suppress=Date.now();if(!pts.size)g=null;else if(g.kind==='pinch'){const q=[...pts.values()][0];g={kind:'pan',p0:q,cam0:{...cam}};}return;}
+   if(g.kind==='tap'&&e.type==='pointerup'&&!g.onBody){const now=Date.now();
+    if(now-lastTap<420&&lastXY&&Math.hypot(p.x-lastXY.x,p.y-lastXY.y)<40){lastTap=0;const gx=W.__lgGx,v=mapView(gal),Z=gx&&gx.map?mapZ(gx,v):null;
+     if(Z)camTo(cam.z>=Z.zmax*.98?{x:0,y:0,z:Z.z0}:zoomAt(cam,1.8,p.x,p.y,v));suppress=now;}
+    else{lastTap=now;lastXY=p;}}
+   if(!pts.size)g=null;};
+  gal.addEventListener('pointerup',end);gal.addEventListener('pointercancel',end);
+  gal.addEventListener('click',e=>{if(Date.now()-suppress<380){e.preventDefault();e.stopPropagation();}},true);
+  gal.addEventListener('dblclick',e=>e.preventDefault());
+  gal.addEventListener('wheel',e=>{const gx=W.__lgGx;if(!gx||!gx.map||!cam||inUi(e.target))return;const v=mapView(gal),Z=mapZ(gx,v);
+   if(e.deltaY<0&&cam.z>=Z.zmax*.995)return;/* fully zoomed in: galaxy-zoom.js may dive you back into Home */
+   e.preventDefault();const p=local(e);cam=zoomAt(cam,Math.exp(-e.deltaY*.0022),p.x,p.y,v);schedulePlace();},{passive:false});
+  gal.addEventListener('gesturestart',e=>e.preventDefault());
+}
+W.LowiCgMap={atMax(){const gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(!gx||!gx.map||!gal||!cam)return true;return cam.z>=mapZ(gx,mapView(gal)).zmax*.995;},
+  cam(){return cam&&{...cam};},reset(){cam=null;schedulePlace();},place};
 function skyStart(){const c=D.getElementById('cgSky');if(!G||!c||!c.getContext)return;if(!sk||sk.canvas!==c){if(sk)sk.stop();sk=G.sky(c);if(sk){sk.canvas=c;const g0=W.__lgGx;if(g0)sk.set(g0.lines,false,g0.orbits);}}if(sk&&active()&&!D.hidden)sk.start();}
 /* Arriving in Community: coming from Home, galaxy-zoom.js pulls the one camera out of Misty's world into the galaxy (no boxed
    snapshot of Home any more). From anywhere else the galaxy just settles in from a little closer. */
 function intro(){const g=D.getElementById('cgGalaxy');if(!g||!g.removeAttribute)return;g.__intro=1;if(D.documentElement.classList.contains('gx-out'))return;if(W.matchMedia&&W.matchMedia('(prefers-reduced-motion: reduce)').matches)return;g.removeAttribute('data-intro');void g.offsetWidth;g.setAttribute('data-intro','1');clearTimeout(introT);introT=setTimeout(()=>{g.removeAttribute('data-intro');},1100);}
 let enterAt=0,ro=null;
-function onShow(){const on=!!(active()&&!D.hidden);if(on&&!wasOn){wasOn=true;enterAt=Date.now();intro();skyStart();refresh();}else if(!on&&wasOn){wasOn=false;if(sk)sk.stop();}}
+function onShow(){const on=!!(active()&&!D.hidden);if(on&&!wasOn){wasOn=true;enterAt=Date.now();cam=null;intro();skyStart();refresh();}else if(!on&&wasOn){wasOn=false;if(sk)sk.stop();}}
 function watch(){if(watching||!W.MutationObserver)return;const t=D.getElementById('tab-foryou');if(!t)return;watching=true;new W.MutationObserver(onShow).observe(t,{attributes:true,attributeFilter:['class']});}
 function thread(open,focusId){threadOpen=!!open;const t=D.getElementById('cgThread');if(!t||!t.setAttribute)return;if(threadOpen)t.setAttribute('data-open','1');else t.removeAttribute('data-open');
  const l=D.getElementById('cmList');if(threadOpen&&l){requestAnimationFrame(()=>{const m=focusId&&D.getElementById('cm-'+focusId);if(m&&m.scrollIntoView){m.scrollIntoView({block:'center'});m.classList.add('cg-focus');setTimeout(()=>m.classList.remove('cg-focus'),2200);}else l.scrollTop=l.scrollHeight;const c=t.querySelector('[data-chat="close-thread"]');if(c&&c.focus)c.focus({preventScroll:true});});}}
@@ -249,7 +325,19 @@ function dmAlert(m){const title=fill('dmTitle',m.by||'Member'),body=String(m.t||
 function openGalaxy(uid){try{if(typeof W.goTab==='function')W.goTab('foryou');}catch(e){}try{if(typeof W.cmSeg==='function')W.cmSeg('chat');}catch(e){}const t=D.getElementById('cgToast');if(t)t.removeAttribute('data-on');if(uid&&roster().has(uid))sel=uid;refresh();}
 function text(t){return esc(t).replace(/@([\p{L}\p{N}_-]+)/gu,'<span class="cm-at">@$1</span>');}
 function time(ts){try{return new Date(ts).toLocaleTimeString(['en','de','es'][Math.max(0,lang())],{hour:'2-digit',minute:'2-digit'});}catch(e){return '';}}
+/* Oct 16, round 5 (E-man: "the Chat room only shows my own messages"): the chats with the galaxy companions live on this
+   phone (botStore), so the Chat room now reads them in too, in time order with everyone else: their words on the left with
+   their name and avatar, yours on the right. They stay on this phone; nothing new is sent anywhere. */
+function botLines(){const out=[];let bs={};try{bs=botStore();}catch(e){}const me=own().n||tr('you');
+ for(const u in bs){const b=botOf(u);if(!b||blocked(u))continue;for(const m of bs[u]||[]){if(!m||!m.t)continue;const mine=m.from==='me',t=String(m.t);
+  out.push({id:'bot-'+sid(u)+'-'+String(m.id||m.ts),uid:mine?scope:u,by:mine?me:b.n,t:mine&&t[0]!=='@'?'@'+b.n+' '+t:t,ts:+m.ts||0,local:true});}}
+ return out;}
+function renderLocal(m,prev,next){const mine=m.uid===scope,start=!prev||prev.uid!==m.uid||m.ts-prev.ts>300000,end=!next||next.uid!==m.uid||next.ts-m.ts>300000;
+ const who=end?'<span class="cs-avatar cp-av" aria-hidden="true">'+mate(mine?(scope||'me'):m.uid,'l'+sid(m.id))+'</span>':'<span class="cp-av cp-gap" aria-hidden="true"></span>';
+ const head='<div class="cs-by">'+(start&&!mine?'<b class="cs-name">'+esc(m.by)+'</b>':'<span class="cp-sr">'+esc(mine?tr('you'):m.by)+' '+tr('says')+'</span>')+'<time datetime="'+new Date(m.ts).toISOString()+'">'+esc(time(m.ts))+'</time></div>';
+ return '<article class="cm-msg cp-msg cp-local'+(mine?' mine':'')+(start?' cp-start':'')+(end?' cp-end':'')+'" id="cm-'+esc(m.id)+'" data-who="'+esc(m.by)+'" style="--chat-color:'+(mine?'#9cdac7':hueColor(m.uid,false))+'">'+who+'<div class="cm-bub">'+head+'<div class="cm-t">'+text(m.t)+'</div></div></article>';}
 function renderMessage(m,all,prev,next){
+ if(m.local)return renderLocal(m,prev,next);
  if(m.demo||m.bot||blocked(m.uid))return '';
  const mine=m.uid===scope,p=profile(m.uid,m.by),re=m.re&&all.find(x=>x.id===m.re),pending=!!m.status,open=openId===m.id||pick===m.id;
  const color=H.color?H.color(p.s):'#9fd8ff';
@@ -292,14 +380,14 @@ function paint(el){
  const gx=galaxy(ms,gw,gh,quietRoom),field=q('#cgField'),gal=q('#cgGalaxy');
  const fieldHTML=gx.html+(quietRoom?'<div class="cg-empty"><span class="cs-lantern" aria-hidden="true">✧</span><b>'+tr('emptyTitle')+'</b><p>'+(st.phase==='ready'?(Object.values(prefs.blocks).some(x=>x.blocked)?tr('filtered'):tr('empty')):tr('waiting'))+'</p>'+(st.phase==='ready'?button('hello',tr('hi'),'','cs-action cg-hello'):'')+'</div>':'');
  if(field&&field.__html!==fieldHTML){field.innerHTML=fieldHTML;field.__html=fieldHTML;}
- if(gal){gal.setAttribute('aria-label',tr('onPlanet')+': '+gx.names.join(', '));gal.setAttribute('data-streams',String(gx.lines.length));if(gx.me&&gal.style)gal.style.setProperty('--me-x',gx.me.x+'px'),gal.style.setProperty('--me-y',gx.me.y+'px');}
- W.__lgGx=gx;if(sk)sk.set(gx.lines,false,gx.orbits);watch();if(active()&&!D.hidden){if(!wasOn)onShow();else{if(gal&&!gal.__intro&&Date.now()-enterAt<600)intro();skyStart();}}
+ if(gal){gal.setAttribute('aria-label',tr('onPlanet')+': '+gx.names.join(', '));gal.setAttribute('data-streams',String(gx.lineDefs.length));}
+ W.__lgGx=gx;place();watch();if(active()&&!D.hidden){if(!wasOn)onShow();else{if(gal&&!gal.__intro&&Date.now()-enterAt<600)intro();skyStart();}}
  if(room&&W.ResizeObserver&&ro!==room.__ro){if(ro)ro.disconnect();let lastSz='';ro=new W.ResizeObserver(()=>{const sz=room.clientWidth+'x'+room.clientHeight;if(sz===lastSz)return;lastSz=sz;clearTimeout(W.__cgRo);W.__cgRo=setTimeout(()=>{if(active()){refresh();if(sk)sk.resize();}},90);});ro.observe(room);room.__ro=ro;}
  const tt=q('#cgThreadTitle');if(tt)tt.textContent=tr('history');const cx=q('#cgClose');if(cx&&cx.setAttribute)cx.setAttribute('aria-label',tr('back'));
  dmCheck(ms);
  if(!W.LowiCompanionCore&&mateTries<20){mateTries++;setTimeout(refresh,1500);}
  const empty=st.phase==='ready'?(Object.values(prefs.blocks).some(x=>x.blocked)?tr('filtered'):tr('empty')):tr('waiting');
- const shown=ms.filter(x=>!x.demo&&!x.bot&&!blocked(x.uid));
+ const shown=ms.filter(x=>!x.demo&&!x.bot&&!blocked(x.uid)).concat(botLines()).sort((a,b)=>(+a.ts||0)-(+b.ts||0));
  const html=shown.length?shown.map((m,i)=>renderMessage(m,ms,shown[i-1],shown[i+1])).join(''):'<div class="cs-empty"><span class="cs-lantern" aria-hidden="true">✧</span><b>'+tr('emptyTitle')+'</b><p>'+empty+'</p>'+(st.phase==='ready'?button('hello',tr('hi')):'')+'</div>';
  if(list.__html!==html){list.innerHTML=html;list.__html=html;if(near||ownNew)list.scrollTop=list.scrollHeight;else list.scrollTop=y;if(fk){const b=[...list.querySelectorAll('[data-chat]')].find(b=>b.dataset.chat===fk.a&&b.dataset.id===fk.id&&b.dataset.uid===fk.uid&&b.dataset.emoji===fk.em);if(b)b.focus({preventScroll:true});}}
  if(ownNew)newCount=0;if(ms.length>lastCount&&!near&&!ownNew){newCount+=ms.length-lastCount;if(!isQuiet())q('#csAnnounce').textContent=tr('newMessages');}lastCount=ms.length;
@@ -349,6 +437,7 @@ async function submitForm(form){const result=form.querySelector('.cs-result'),bt
  else if(form.dataset.chatForm==='sharing'){const m=own(),row={share_personality:form.elements.type.checked,personality:form.elements.type.checked?K.type(m.t):'',share_sign:form.elements.sign.checked,sign:form.elements.sign.checked?m.s:''};const data=await transport.table('community_identities',(t,u)=>t.upsert({...row,user_id:u}).select('user_id,share_personality,personality,share_sign,sign').single());if(actor!==scope)return;if(!data||data.user_id!==scope)throw new Error('ack');identities.set(scope,data);resultText(result,tr('published'));refresh();}
  else if(form.dataset.chatForm==='report'){const mid=form.dataset.mid;if(!messages().some(m=>m.id===mid&&m.uid!==scope))throw new Error('message');const rows=await transport.table('community_reports',(t,u)=>t.insert({reporter_id:u,message_id:mid,reason:form.elements.reason.value}).select('id'));if(!rows||!rows[0]?.id)throw new Error('ack');resultText(result,tr('reportSent'));form.dataset.sent='1';}
  }catch(e){resultText(result,tr(form.dataset.chatForm==='sharing'?'publishFailed':form.dataset.chatForm==='mate'?'volatile':'reportFailed'));}finally{if(form.dataset.sent!=='1')btn.disabled=false;}}
+let kbTop=0,kbLift=0;
 function fit(){
  const pane=D.getElementById('cmPaneChat'),inp=D.getElementById('cmInput'),v=W.visualViewport;
  const focus=!!(pane&&inp&&D.activeElement===inp&&active()),height=v?v.height:W.innerHeight,width=W.innerWidth;
@@ -356,7 +445,15 @@ function fit(){
  if(!focus&&!D.documentElement.classList.contains('cs-chat-typing'))restHeight=Math.max(restHeight,height);
  const typing=!!(pane&&active()&&restHeight-height>100);
  D.documentElement.classList.toggle('cs-chat-typing',typing);
+ /* Oct 16, round 5: on the map the pane keeps its size and place while you type (see community-chat.css); only the full
+    Chat room shrinks above the keyboard. */
+ const mapMode=typing&&!threadOpen;D.documentElement.classList.toggle('cs-chat-map-typing',mapMode);
+ if(pane&&!mapMode){kbTop=0;kbLift=0;pane.style.setProperty('--cs-vv-top','0px');pane.style.setProperty('--cs-kb-lift','0px');}
  if(!typing)return;
+ if(mapMode){const top=v?Math.max(0,Math.round(v.offsetTop)):0,comp=pane.querySelector('.cm-compose');
+  for(const el of [D.scrollingElement,D.getElementById('main'),D.getElementById('tab-foryou')])if(el&&el.scrollTop)el.scrollTop=0;
+  if(comp){const B=comp.getBoundingClientRect().bottom-kbTop+kbLift;kbTop=top;kbLift=Math.max(0,Math.round(B-(height-8)));}
+  pane.style.setProperty('--cs-vv-top',kbTop+'px');pane.style.setProperty('--cs-kb-lift',kbLift+'px');}
  const rect=pane.getBoundingClientRect(),nav=D.getElementById('tabbar');let bottom=v?v.offsetTop+v.height:W.innerHeight;
  if(nav){const n=nav.getBoundingClientRect();if(n.height>20&&n.top>rect.top+100&&n.top<bottom)bottom=n.top-32;}
  pane.style.setProperty('--cs-keyboard-height',Math.max(0,bottom-rect.top-8)+'px');

@@ -233,7 +233,7 @@
         if (e.touches.length !== 2) { if (e.touches.length > 2) release(); return; }
         const t = e.target;
         if (homePinchOk(t)) { gest.on = 'home'; gest.el = D.getElementById('tab-home'); gest.d0 = tdist(e); gest.ref = 0; }
-        else if (activeTab() === 'foryou' && !busy && t && t.closest && t.closest('#cgGalaxy') && !t.closest('#cmPaneChat .cm-compose, input, textarea')) { gest.on = 'gal'; gest.el = D.getElementById('cgField'); gest.d0 = tdist(e); e.preventDefault(); }
+        else if (activeTab() === 'foryou' && !busy && t && t.closest && t.closest('#cgGalaxy') && !t.closest('#cmPaneChat .cm-compose, input, textarea') && (!W.LowiCgMap || W.LowiCgMap.atMax())) { gest.on = 'gal'; gest.el = D.getElementById('cgField'); gest.d0 = tdist(e); e.preventDefault(); }
     }, { capture: true, passive: false });
     D.addEventListener('touchmove', e => {
         if (!gest.on || e.touches.length !== 2) return;
@@ -267,7 +267,7 @@
         if (busy) return;
         const now = Date.now(); if (now - wheelT > 450) wheelOver = 0; wheelT = now;
         if (e.deltaY > 0 && homePinchOk(e.target)) { const r = rigNow(); if (r.dist >= r.maxD * 0.995 && ++wheelOver >= 5) { wheelOver = 0; (W.goTab || goTab)('foryou'); } }
-        else if (e.deltaY < 0 && activeTab() === 'foryou' && e.target && e.target.closest && e.target.closest('#cgGalaxy') && D.querySelector('#cgField .cg-body.me')) { e.preventDefault(); if (++wheelOver >= 5) { wheelOver = 0; (W.goTab || goTab)('home'); } }
+        else if (e.deltaY < 0 && activeTab() === 'foryou' && e.target && e.target.closest && e.target.closest('#cgGalaxy') && D.querySelector('#cgField .cg-body.me') && (!W.LowiCgMap || W.LowiCgMap.atMax())) { e.preventDefault(); if (++wheelOver >= 5) { wheelOver = 0; (W.goTab || goTab)('home'); } }
     }, { capture: true, passive: false });
     /* ---------- sideways swipe Home <-> Community (driven by liquid-glass.js): the page pulls back with the finger, letting go warps ---------- */
     function swipeOk(from, to) {

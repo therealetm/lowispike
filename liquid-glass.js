@@ -155,6 +155,8 @@
         const onBar = !!t.closest('#tabbar'), W = main.clientWidth || innerWidth;
         /* Home is a 3D world you drag to look around: there the pages move from the screen edges or the tab bar */
         if (cur === 'home' && !onBar && e.clientX > 26 && e.clientX < W - 26) return;
+        /* Oct 16: Community is a map you drag around (community-chat.js), so there too the pages move from the edges or the tab bar */
+        if (cur === 'foryou' && !onBar && t.closest('#cgGalaxy') && e.clientX > 26 && e.clientX < W - 26) return;
         if (!onBar && hScroller(t, pageEl(cur))) return;
         g = { id: e.pointerId, x0: e.clientX, y0: e.clientY, lx: e.clientX, lt: performance.now(), v: 0, dir: '', dx: 0, cur, i, W, peek: null, warp: '', under: cur === 'scan' ? activeTab() : '' };
     }

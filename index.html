@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261016-113010">
+<meta name="lowi-build" content="20261016-114510">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -6396,7 +6396,7 @@ window.cmComment = (who) => { cmLoad(); CMV.reply = null; if ($("#cmTrack")) cmS
   const inp = $("#cmInput"); if (inp) { inp.value = who ? "@" + who + " " : ""; inp.dispatchEvent(new Event("input", {bubbles:true})); try { inp.focus({preventScroll:true}); } catch(e){ inp.focus(); } } };
 /* horizontal swipe between panes; vertical scrolling stays native (touch-action: pan-y) */
 function cmSwipe(t){ if (!t) return; let x0 = 0, y0 = 0, dx = 0, on = false, dir = "", w = 1, moved = false;
-  t.addEventListener("pointerdown", e => { if (e.button > 0 || e.target.closest("input,textarea,.hscroll,.toggle")) return; on = true; dir = ""; dx = 0; moved = false; x0 = e.clientX; y0 = e.clientY; w = t.parentElement.clientWidth || 1; });
+  t.addEventListener("pointerdown", e => { if (e.button > 0 || e.target.closest("input,textarea,.hscroll,.toggle,#cgGalaxy")) return; /* Oct 16: dragging the Community map pans it, it never swipes panes */ on = true; dir = ""; dx = 0; moved = false; x0 = e.clientX; y0 = e.clientY; w = t.parentElement.clientWidth || 1; });
   t.addEventListener("pointermove", e => { if (!on) return; const mx = e.clientX - x0, my = e.clientY - y0;
     if (!dir) { if (Math.abs(mx) < 8 && Math.abs(my) < 8) return; dir = Math.abs(mx) > Math.abs(my) * 1.2 ? "x" : "y"; if (dir === "x") t.classList.add("drag"); }
     if (dir !== "x") return; moved = true; const i = CM_SEGS.indexOf(CMV.view); dx = mx; if ((i === 0 && dx > 0) || (i === 2 && dx < 0)) dx = dx / 3;
@@ -19709,7 +19709,7 @@ window.LowiHandoff = { want, copy, issue, revoke, startHTML, parse, redeem, _sta
 })();
 </script>
 <link rel="stylesheet" href="community-chat.css?v=galaxy-2">
-<link rel="stylesheet" href="community-galaxy.css?v=20261016-113010">
+<link rel="stylesheet" href="community-galaxy.css?v=20261016-114510">
 <script id="community-chat-bridge">
 /* Bounded bridge: the Community module shares auth/messages with the existing cloud owner. */
 window.LowiCommunityHost = {
@@ -19734,15 +19734,15 @@ window.LowiCommunityHost = {
 <script src="community-chat-cloud.js?v=community-1"></script>
 <script src="community-galaxy.js?v=galaxy-2"></script>
 <script src="community-chat.js?v=galaxy-2"></script>
-<link rel="stylesheet" id="lgCss" href="liquid-glass.css?v=20261016-113010">
-<script src="liquid-glass.js?v=20261016-113010"></script>
-<link rel="stylesheet" id="sgCss" href="scan-glass.css?v=20261016-113010">
-<script src="scan-glass.js?v=20261016-113010"></script>
-<link rel="stylesheet" href="nav-moves.css?v=20261016-113010">
+<link rel="stylesheet" id="lgCss" href="liquid-glass.css?v=20261016-114510">
+<script src="liquid-glass.js?v=20261016-114510"></script>
+<link rel="stylesheet" id="sgCss" href="scan-glass.css?v=20261016-114510">
+<script src="scan-glass.js?v=20261016-114510"></script>
+<link rel="stylesheet" href="nav-moves.css?v=20261016-114510">
 <script src="nav-moves.js?v=nav-2"></script>
-<script src="galaxy-zoom.js?v=20261016-113010"></script>
-<link rel="stylesheet" id="mhCss" href="misty-hub.css?v=20261016-113010">
-<script src="misty-hub.js?v=20261016-113010"></script>
+<script src="galaxy-zoom.js?v=20261016-114510"></script>
+<link rel="stylesheet" id="mhCss" href="misty-hub.css?v=20261016-114510">
+<script src="misty-hub.js?v=20261016-114510"></script>
 </body>
 </html>
 

@@ -63,7 +63,7 @@
 .cs-sheet .cs-pub{display:flex;align-items:center;gap:15px;margin-bottom:18px}
 .cs-sheet select{font:inherit;color:inherit;background:var(--panel);border:1px solid var(--line2);border-radius:12px;padding:12px;width:100%}
 /* Shrink only this pane to the visual viewport while typing; the existing pager/nav stays in place. */
-html.cs-chat-typing #cmPaneChat[data-spirit-chat]{padding-bottom:8px!important;height:var(--cs-keyboard-height)!important;max-height:var(--cs-keyboard-height)!important;align-self:flex-start}
+html.cs-chat-typing:not(.cs-chat-map-typing) #cmPaneChat[data-spirit-chat]{padding-bottom:8px!important;height:var(--cs-keyboard-height)!important;max-height:var(--cs-keyboard-height)!important;align-self:flex-start}
 @media(min-width:700px){#cmPaneChat[data-spirit-chat]{padding-left:24px;padding-right:24px}#cmPaneChat[data-spirit-chat]>*{width:100%;max-width:760px;margin-inline:auto}#cmPaneChat[data-spirit-chat] .cm-msg{max-width:85%}#cmPaneChat[data-spirit-chat] .cm-t{font-size:15px}}
 @media(max-height:720px){#cmPaneChat .cs-status{min-height:23px}#cmPaneChat .cs-empty{padding:12px}#cmPaneChat .cs-empty .cs-lantern{display:none}}
 @media(prefers-reduced-motion:reduce){#cmPaneChat *, .cs-sheet *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
@@ -135,7 +135,7 @@ html[data-ui=light] #cmPaneChat .cp-sky i{background:#7fb6d8;opacity:.35}
 #cmPaneChat .cp-acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 #cmPaneChat .cp-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 #cmPaneChat .cp-msg .cm-bub{cursor:pointer}
-html.cs-chat-typing #cmPaneChat .cp-planet,html.cs-chat-typing #cmPaneChat .cp-head p{display:none}
+html.cs-chat-typing:not(.cs-chat-map-typing) #cmPaneChat .cp-planet,html.cs-chat-typing:not(.cs-chat-map-typing) #cmPaneChat .cp-head p{display:none}
 @media(max-width:360px){#cmPaneChat .cp-ctl{padding:6px 11px}#cmPaneChat .cp-ctl span{display:none}#cmPaneChat .cp-head h2{font-size:17px}}
 @media(max-height:700px){#cmPaneChat .cp-head p{display:none}#cmPaneChat .cp-bar{padding-bottom:6px}#cmPaneChat .cs-compose-meta{min-height:0}#cmPaneChat .cs-compose-meta:has(#csDraft:empty):has(#csCount:empty){display:none}}
 @media(prefers-reduced-motion:reduce){#cmPaneChat .cp-body,#cmPaneChat .cp-puff i{animation:none!important}}
@@ -146,6 +146,13 @@ html.cs-chat-typing #cmPaneChat .cp-planet,html.cs-chat-typing #cmPaneChat .cp-h
 #cmPaneChat .cs-avatar{display:flex;align-items:center;justify-content:center;min-width:44px;min-height:44px}
 #cmPaneChat .cs-status button,#cmPaneChat .cm-replybar button{min-height:44px}
 html[data-ui=light] #cmPaneChat[data-spirit-chat]{--chat-mint:#337c67}
-html.cs-chat-typing #cmPaneChat .cs-status button{display:none}
-html.cs-chat-typing #tab-foryou .ls-phd{padding-block:4px!important}
-html.cs-chat-typing #tab-foryou .ls-phd .h1{display:none}
+html.cs-chat-typing:not(.cs-chat-map-typing) #cmPaneChat .cs-status button{display:none}
+html.cs-chat-typing:not(.cs-chat-map-typing) #tab-foryou .ls-phd{padding-block:4px!important}
+html.cs-chat-typing:not(.cs-chat-map-typing) #tab-foryou .ls-phd .h1{display:none}
+
+/* Oct 16, round 5 (E-man: "when I type everything wiggles; WhatsApp would never do this"): typing on the map keeps the map
+   exactly where it is. Only the composer rises above the keyboard (--cs-kb-lift), and when iOS pans the page up to show the
+   field, the pane is moved back down by the same amount (--cs-vv-top) so nothing slides behind the status bar.
+   The full Chat room still shrinks to the space above the keyboard, like a normal chat list. */
+html.cs-chat-map-typing #cmPaneChat[data-spirit-chat]{transform:translate3d(0,var(--cs-vv-top,0px),0)}
+html.cs-chat-map-typing #cmPaneChat[data-spirit-chat] .cm-compose{transform:translate3d(0,calc(-1 * var(--cs-kb-lift,0px)),0);z-index:40}

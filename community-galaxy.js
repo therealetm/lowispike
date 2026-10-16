@@ -153,7 +153,54 @@ function sky(canvas,opts){
   running:()=>running
  };
 }
-const api={hash,grid,layout,sizes,pickMode,nameIndex,mentionOf,targetOf,bubbleText,direct,fade,sky,bots,uniqueNames,withBots,botReply,stageForLevel,ageOn,signOf,curveOf,pointOn,midOf};
+/* Oct 16, round 5 (E-man: "like the Snapchat Map or Find My"): the Community map. Every person owns ONE fixed spot in a big
+   world, like a pin on a map. The spot depends only on that person's id and on the crowd size in bands (48, 96, ...),
+   never on who is selected, who spoke last, the screen size or the keyboard, so nothing moves when you tap or type.
+   You sit at (0,0). World units are screen pixels at zoom 1; the camera (pan + zoom) is separate. */
+const MAP_C=86;
+function mapPool(n){let p=48;while(p<(+n||0)*1.4)p*=2;return p;}
+function mapSlot(i,c){c=c||MAP_C;const r=c*Math.sqrt(i+1.6),a=i*2.399963+0.6;return {x:r*Math.cos(a),y:r*Math.sin(a)};}
+function mapLayout(members,meId){
+ const me=meId||'me',list=[],seen=new Set();
+ for(const m of members||[]){if(!m||!m.uid||m.uid===me||seen.has(m.uid))continue;seen.add(m.uid);list.push(m);}
+ /* insertion order is by id hash, so who is first in the caller's list (selected, newest talker) can never change a spot */
+ list.sort((a,b)=>hash(a.uid)-hash(b.uid)||(a.uid<b.uid?-1:a.uid>b.uid?1:0));
+ const P=mapPool(list.length),taken=new Set(),spots=[{uid:me,me:true,x:0,y:0}];let R=0;
+ for(const m of list){let k=hash('slot:'+m.uid)%P;while(taken.has(k))k=(k+1)%P;taken.add(k);
+  const s=mapSlot(k+1),r=rng(hash(m.uid)+11),jx=(r()-.5)*MAP_C*.5,jy=(r()-.5)*MAP_C*.5,x=Math.round(s.x+jx),y=Math.round(s.y+jy);
+  R=Math.max(R,Math.hypot(x,y));spots.push({uid:m.uid,me:false,x,y});}
+ return {spots,radius:Math.round(R),pool:P};
+}
+/* Camera limits for a w x h view: z0 = the zoom you arrive at, zmin shows everyone, zmax is a close look. */
+function mapZooms(radius,w,h){w=Math.max(200,+w||360);h=Math.max(200,+h||500);const z0=Math.max(.85,Math.min(1.25,Math.min(w,h)/400)),fit=Math.min(w,h)/(2*((+radius||0)+90));
+ return {z0,zmin:Math.max(.18,Math.min(z0*.55,fit)),zmax:z0*2.4};}
+function mapClamp(cam,radius,w,h){const Z=mapZooms(radius,w,h),z=Math.max(Z.zmin,Math.min(Z.zmax,+cam.z||Z.z0)),lim=(+radius||0)+40;
+ return {x:Math.max(-lim,Math.min(lim,+cam.x||0)),y:Math.max(-lim,Math.min(lim,+cam.y||0)),z};}
+function overlaps(a,b){return a.x<b.x+b.w&&b.x<a.x+a.w&&a.y<b.y+b.h&&b.y<a.y+a.h;}
+/* Labels on the map: items = [{id,x,y,s,nw,bw,bh,bub}] in screen px (x,y = orb centre, s = orb size, nw = name width,
+   bw/bh = bubble size when it has one) in PRIORITY order. Orbs never move. A name hides when it would cover a higher
+   priority orb or name; a bubble tries above, beside, below and shifted spots and takes the first that covers no orb,
+   no shown name and no earlier bubble, else it shrinks to a dot. Returns Map id -> {name,bub:{x,y,side,tail}|null,dot}. */
+function mapLabels(items,view){
+ const W0=view.w,H0=view.h,pad=4,out=new Map(),orbs=[],names=[],bubs=[];
+ const vis=it=>it.x>-it.s&&it.x<W0+it.s&&it.y>-it.s&&it.y<H0+it.s;
+ for(const it of items){const s=it.s;orbs.push({id:it.id,x:it.x-s/2-2,y:it.y-s/2-2,w:s+4,h:s+4});}
+ for(const it of items){const nm={id:it.id,x:it.x-it.nw/2,y:it.y+it.s/2+3,w:it.nw,h:16};
+  const ok=vis(it)&&!orbs.some(o=>o.id!==it.id&&overlaps(o,nm))&&!names.some(n=>overlaps(n,nm));
+  if(ok)names.push(nm);out.set(it.id,{name:ok,bub:null,dot:false});}
+ for(const it of items){if(!it.bub)continue;const r=out.get(it.id);if(!vis(it))continue;
+  const s=it.s,bw=it.bw,bh=it.bh,gap=9,ny=r.name?it.y+s/2+21:it.y+s/2+2;
+  const cands=[['t',it.x-bw/2,it.y-s/2-gap-bh],['r',it.x+s/2+gap+2,it.y-bh/2-6],['l',it.x-s/2-gap-2-bw,it.y-bh/2-6],
+   ['t',it.x-bw*.15,it.y-s/2-gap-bh],['t',it.x-bw*.85,it.y-s/2-gap-bh],['b',it.x-bw/2,ny+gap],['b',it.x-bw*.15,ny+gap],['b',it.x-bw*.85,ny+gap]];
+  let got=null;
+  for(const [side,x0,y0] of cands){let x=x0;if(side==='t'||side==='b')x=Math.max(pad,Math.min(W0-pad-bw,x));
+   const box={x,y:y0,w:bw,h:bh};if(box.x<pad-.5||box.y<pad-.5||box.x+bw>W0-pad+.5||box.y+bh>H0-pad+.5)continue;
+   if(orbs.some(o=>o.id!==it.id&&overlaps(o,box))||names.some(n=>overlaps(n,box))||bubs.some(b=>overlaps(b,box)))continue;
+   got={x:Math.round(x),y:Math.round(y0),side,tail:Math.round(side==='t'||side==='b'?Math.max(14,Math.min(bw-14,it.x-x)):bh/2)};bubs.push(box);break;}
+  if(got)r.bub=got;else r.dot=true;}
+ return out;
+}
+const api={hash,mapPool,mapSlot,mapLayout,mapZooms,mapClamp,mapLabels,grid,layout,sizes,pickMode,nameIndex,mentionOf,targetOf,bubbleText,direct,fade,sky,bots,uniqueNames,withBots,botReply,stageForLevel,ageOn,signOf,curveOf,pointOn,midOf};
 if(typeof module==='object'&&module.exports)module.exports=api;
 root.LowiGalaxy=api;
 })(typeof window!=='undefined'?window:globalThis);

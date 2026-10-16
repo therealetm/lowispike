@@ -77,7 +77,7 @@ html[data-ui=light] #cmPaneChat{--cg-s1:#f5f2ff;--cg-s2:#e8eaff;--cg-s3:#fdebf3;
 #cmPaneChat[data-spirit-chat] .cg-x{width:44px;height:44px;border-radius:50%;border:0;background:color-mix(in srgb,var(--text) 10%,transparent);color:var(--text);font-size:22px;line-height:1;cursor:pointer;padding:0}
 #cmPaneChat[data-spirit-chat] .cp-room .cg-thread .cs-jump{bottom:10px;right:12px}
 #cmPaneChat[data-spirit-chat] .cm-msg.cg-focus .cm-bub{box-shadow:0 0 0 2px #ffd27a}
-html.cs-chat-typing #cmPaneChat[data-spirit-chat] .cg-empty p{display:none}
+html.cs-chat-typing:not(.cs-chat-map-typing) #cmPaneChat[data-spirit-chat] .cg-empty p{display:none}
 
 /* in-app "talking to you" banner and the tab badge */
 .cg-toast-wrap{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translate(-50%,-160%);z-index:9999;width:min(420px,calc(100vw - 24px));pointer-events:none;transition:transform .35s cubic-bezier(.2,.9,.3,1.15)}
@@ -162,3 +162,16 @@ html #cmPaneChat[data-spirit-chat] .cg-bub.cg-snap::after, html.lg #cmPaneChat[d
 html.lg #cmPaneChat[data-spirit-chat] .cg-bub.cg-snap.mine, html #cmPaneChat[data-spirit-chat] .cg-bub.cg-snap.mine { background: var(--wh-glass-bg, rgba(28,74,150,.36)) !important; background-color: rgba(8,14,40,.38) !important; color: #fff !important; }
 html.lg #cmPaneChat[data-spirit-chat] .cg-bub.cg-snap.mine::after, html #cmPaneChat[data-spirit-chat] .cg-bub.cg-snap.mine::after { background: rgba(8,14,40,.38) !important; }
 html.lg #cmPaneChat[data-spirit-chat] .cg-snap :is(.cg-to, .cg-t .cm-mention) { color: #9fd8ff !important; }
+
+/* Oct 16, round 5 (E-man: "like the Snapchat Map / Find My"): Community is a map. Pins keep their place (community-chat.js
+   place() moves them only with the camera): drag to pan, pinch or double-tap to zoom. Names hide when they would cover someone,
+   a bubble that has no free spot becomes a small dot on the avatar, and pins outside the view are not drawn. */
+#cmPaneChat[data-spirit-chat] .cg-galaxy{touch-action:none;-webkit-user-select:none;user-select:none}
+#cmPaneChat[data-spirit-chat] .cg-field{clip-path:inset(-6px -400px -6px -400px)}
+#cmPaneChat[data-spirit-chat] .cg-body{transform-origin:50% calc(var(--s) / 2);will-change:transform}
+#cmPaneChat[data-spirit-chat] .cg-body.cg-out{visibility:hidden}
+#cmPaneChat[data-spirit-chat] .cg-body.cg-nn .cg-name{opacity:0}
+#cmPaneChat[data-spirit-chat] .cg-body.cg-dot .cg-orb::after{content:'';position:absolute;top:-1px;right:-1px;width:11px;height:11px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px var(--c),0 0 8px var(--c)}
+html #cmPaneChat[data-spirit-chat] .cg-bub.cg-snap[data-side=b]::after{top:-7px!important;bottom:auto!important;transform:rotate(225deg)!important}
+html #cmPaneChat[data-spirit-chat] .cg-bub.cg-snap[data-side=r]::after{left:-6px!important;top:calc(50% + .5px)!important;bottom:auto!important;transform:rotate(135deg)!important}
+html #cmPaneChat[data-spirit-chat] .cg-bub.cg-snap[data-side=l]::after{left:auto!important;right:-6px!important;top:calc(50% + .5px)!important;bottom:auto!important;transform:rotate(-45deg)!important}

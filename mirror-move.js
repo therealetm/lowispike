@@ -30,7 +30,7 @@
     /* ---------- entry on the Move screen ---------- */
     function stripHTML() {
         return '<button type="button" class="mm-strip" data-mm="open">' + ICON.cam +
-            '<span><b>' + esc(T('Mirror mode', 'Spiegel-Modus', 'Modo espejo')) + '</b><small>' + esc(T('Follow an outline over your camera picture', 'Folge einem Umriss über deinem Kamerabild', 'Sigue una silueta sobre tu imagen de cámara')) + '</small></span><i aria-hidden="true">›</i></button>';
+            '<span><b>' + esc(T('Mirror mode', 'Spiegel-Modus', 'Modo espejo')) + '</b><small>' + esc(T('Follow along with your camera', 'Mitmachen mit Kamera', 'Sigue con tu cámara')) + '</small></span><i aria-hidden="true">›</i></button>';
     }
 
     /* ---------- state ---------- */

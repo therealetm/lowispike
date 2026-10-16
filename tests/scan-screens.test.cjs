@@ -60,8 +60,8 @@ test('barcode result and the Scan a product button stay out of the herb world', 
   assert.doesNotMatch(cap, /open\(\{/);
   assert.doesNotMatch(cap, /world\.append\(ov\)/);
   assert.match(cap, /classList\.add\('sp-sheet', 'ss-sheet'\)/);
-  // the result first, the deeper analysis link under it
-  assert.match(cap, /\.b3-stage'\) \|\| sh\.querySelector\('\.b3-rev'\) \|\| sh\)\.append\(link\)/);
+  // Oct 16 simple spike card (owner: "very overwhelming"): no deeper-analysis link stacked on the result at all
+  assert.doesNotMatch(cap, /gptHTML\(\)/);
   const scan = fnBody(spirit, 'function scan()');
   assert.doesNotMatch(scan, /open\(\{/);
   assert.match(scan, /LowiLiving\.scan\('cam'\)/);

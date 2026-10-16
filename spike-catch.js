@@ -116,12 +116,13 @@
         const ends = today ? tx('endsToday') : tx('left', end.toLocaleDateString([undefined, 'de-DE', 'es-ES'][LI()], {weekday: 'short', day: 'numeric', month: 'short'}));
         return '<li class="sc-deal"><b class="sc-dprice">' + esc(eur(+d.price)) + '</b><span class="sc-dtx">' + (withName ? '<b>' + esc(d.name) + '</b>' : '') + '<span>' + esc(d.store) + ' · ' + esc(ends) + (d.by ? ' · ' + esc(tx('by', d.by)) : '') + '</span></span></li>';
     }
+    const CARD = {};
     function cardHTML(p) {
         sync().then(ok => { if (ok) repaint(p); });
-        const list = forProduct(L, p);
+        const list = forProduct(L, p); CARD[pkey(p)] = p;
         return '<section class="sc-sec sc-deals" data-sckey="' + esc(pkey(p)) + '"><h4>' + esc(tx('deals')) + '</h4>' +
             (list.length ? '<ul class="sc-dl">' + list.slice(0, 4).map(d => dealRow(d)).join('') + '</ul>' : '<p class="sc-none">' + esc(tx('noDeals')) + '</p>') +
-            '<button type="button" class="sc-ghost" data-sc="post">' + esc(tx('post')) + '</button></section>';
+            '<button type="button" class="sc-ghost" data-sc="post" data-k="' + esc(pkey(p)) + '">' + esc(tx('post')) + '</button></section>';
     }
     function repaint(p) {
         D.querySelectorAll('.sc-deals[data-sckey="' + pkey(p).replace(/"/g, '') + '"]').forEach(el => { const t = D.createElement('div'); t.innerHTML = cardHTML(p); el.replaceWith(t.firstChild); });
@@ -184,7 +185,7 @@
     D.addEventListener('click', e => {
         const b = e.target.closest && e.target.closest('[data-sc]'); if (!b) return;
         const a = b.dataset.sc;
-        if (a === 'post') { e.preventDefault(); postForm(cur()); }
+        if (a === 'post') { e.preventDefault(); postForm(CARD[b.dataset.k] || cur()); }
         else if (a === 'postfree') { e.preventDefault(); postForm(null); }
         else if (a === 'lists') { e.preventDefault(); openLists(); }
         else if (a === 'tab') { ST.tab = b.dataset.t; paintLists(b.closest('.sc-lv')); }

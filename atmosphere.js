@@ -168,7 +168,9 @@
         const a = window.LowiWorld3D;
         if (!a || !a.scene) return;
         const on = state.mode === 'manual' && !inRegion(a) && !riding();
-        const k = on ? C.look(state.p) : null;
+        /* the world's own continuous curve (C.world), not the sky's theme-split one, so the hue never snaps.
+           Oct 16: while the slider is being dragged/animated, state.p moves in half steps; the world follows it smoothly */
+        const k = on ? (C.world ? C.world(smoothP()) : C.look(state.p)) : null;
         const kids = a.scene.children;
         for (let i = 0; i < kids.length; i++) {
             const o = kids[i];
@@ -183,6 +185,17 @@
         hazeCol.set(k.haze);
         const bg = a.scene.background, f = a.scene.fog;
         if (bg && bg.isColor) { bg.lerp(hazeCol, k.amt); if (f && f.color) f.color.copy(bg); }
+    }
+    /* the 3D world eases toward the chosen time over ~1 s (exponential follow), so even a tap on a named stop
+       (Day / Night quick buttons) glides like a timelapse instead of cutting */
+    let curP = null, lastT = 0;
+    function smoothP() {
+        const target = state.p == null ? C.DAY : state.p, now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+        if (curP == null) { curP = target; lastT = now; return curP; }
+        const dt = Math.min(0.1, Math.max(0, (now - lastT) / 1000)); lastT = now;
+        curP += (target - curP) * (1 - Math.exp(-dt * 3.2));
+        if (Math.abs(target - curP) < 0.05) curP = target;
+        return curP;
     }
     function hook3d() {
         const a = window.LowiWorld3D;

@@ -110,3 +110,17 @@ test('wiring: loader, offline cache, top bar, Look card, weather and seasons kep
     assert.ok(js.includes('inRegion(a) && !riding()') || js.includes('!inRegion(a) && !riding()'), '3D only in the hub, not in regions or rides');
     assert.ok(/::-webkit-slider-thumb \{[^}]*width: 32px/.test(css), 'big touch thumb');
 });
+
+test('Oct 16: the 3D world tone moves gradually across the whole scale, no jump at the theme flip or at blue mist', () => {
+    const d = (a, b) => { const A = C.mixHex(a, a, 0), x = parseInt(A.slice(1), 16), y = parseInt(b.slice(1), 16); return Math.max(Math.abs((x >> 16) - (y >> 16)), Math.abs((x >> 8 & 255) - (y >> 8 & 255)), Math.abs((x & 255) - (y & 255))); };
+    let moving = 0;
+    for (let p = 0; p < 100; p += 0.5) {
+        const a = C.world(p), b = C.world(p + 0.5);
+        assert.ok(d(a.haze, b.haze) <= 8, p + ' haze step ' + d(a.haze, b.haze));
+        assert.ok(d(a.tint, b.tint) <= 8, p + ' tint step ' + d(a.tint, b.tint));
+        assert.ok(Math.abs(a.light - b.light) <= 0.02 && Math.abs(a.tintA - b.tintA) <= 0.02, p + ' light/tint amount step');
+        if (a.haze !== b.haze) moving++;
+    }
+    assert.ok(moving >= 195, 'something changes at (almost) every half step: ' + moving);
+    assert.notStrictEqual(C.world(61).haze, C.world(63).haze);
+});

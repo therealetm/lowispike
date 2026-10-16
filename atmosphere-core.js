@@ -76,6 +76,27 @@
             haze: mixHex(a.haze, b.haze, t), amt: +L(a.amt, b.amt).toFixed(3), tint: mixHex(a.tint, b.tint, t), tintA: +L(a.tintA, b.tintA).toFixed(3), light: +L(a.light, b.light).toFixed(3)
         };
     }
+    /* Oct 16 (E-man, 3:50 AM): "not nothing-then-everything at blue mist; like real life, like slowly sliding a hue control".
+       The 3D world's light and haze do NOT follow the UI theme flip at THRESH. They have their own stops, spread across the
+       whole scale (sunset 58, dusk 68, blue mist 80), and move piecewise-linearly between them: a constant, gentle speed with
+       no plateau on a stop and no jump anywhere. Every half step changes by only a little (tests/atmosphere.test.cjs). */
+    const WORLD = [
+        { p: 0, haze: '#c0cee0', amt: 0.45, tint: '#f2f5ff', tintA: 0.25, light: 1.12 },
+        { p: 25, haze: '#6aaeea', amt: 0.32, tint: '#fff6dc', tintA: 0.22, light: 1.2 },
+        { p: 38, haze: '#a6c0cc', amt: 0.36, tint: '#ffe8bc', tintA: 0.3, light: 1.15 },
+        { p: 50, haze: '#e89a52', amt: 0.42, tint: '#ffb664', tintA: 0.4, light: 1.08 },
+        { p: 58, haze: '#d2786a', amt: 0.45, tint: '#ff9a78', tintA: 0.44, light: 1.0 },
+        { p: 68, haze: '#5a4a8e', amt: 0.5, tint: '#a090d8', tintA: 0.44, light: 0.9 },
+        { p: 80, haze: '#2856c0', amt: 0.56, tint: '#6f9cff', tintA: 0.52, light: 0.8 },
+        { p: NIGHT, haze: '#040a22', amt: 0.55, tint: '#7286d8', tintA: 0.35, light: 0.7 }
+    ];
+    function world(p) {
+        p = num(p); p = Number.isFinite(p) ? clamp(p, 0, 100) : DAY;
+        let i = 0;
+        while (i < WORLD.length - 2 && p >= WORLD[i + 1].p) i++;
+        const a = WORLD[i], b = WORLD[i + 1], t = clamp((p - a.p) / (b.p - a.p), 0, 1), L = (x, y) => x + (y - x) * t;
+        return { p, haze: mixHex(a.haze, b.haze, t), amt: +L(a.amt, b.amt).toFixed(3), tint: mixHex(a.tint, b.tint, t), tintA: +L(a.tintA, b.tintA).toFixed(3), light: +L(a.light, b.light).toFixed(3) };
+    }
     /* CSS custom properties (strings) for <html style>. The same string is cached so the <head> can restore it before paint. */
     function vars(p) {
         const k = look(p);
@@ -137,7 +158,7 @@
         return NIGHT;
     }
 
-    const core = { KEY, CSS_KEY, THRESH, DAY, NIGHT, STOPS, MARKS, WORDS, LANGS, word, markWord, clampP, look, vars, cssText, trackGradient, themeFor, parse, reconcile, legacyFor, serialize, clockP, mixHex, lum, contrast };
+    const core = { KEY, CSS_KEY, THRESH, DAY, NIGHT, STOPS, MARKS, WORDS, LANGS, word, markWord, clampP, look, world, WORLD, vars, cssText, trackGradient, themeFor, parse, reconcile, legacyFor, serialize, clockP, mixHex, lum, contrast };
     if (typeof module === 'object' && module.exports) module.exports = core;
     root.LowiAtmosCore = core;
 })(typeof window !== 'undefined' ? window : globalThis);

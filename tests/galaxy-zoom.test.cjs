@@ -143,6 +143,7 @@ test('spirit world stays smooth: nothing re-measures hidden Home every second or
     /* E-man (Oct 16, iPad): back from Community the old meals / fasting / 1-2-3 steps flashed for a second */
     const t0 = html.indexOf('function tagOnly(h){'), tag = html.slice(t0, html.indexOf('function pass(){', t0));
     assert.ok(tag.includes('groups(h)') && tag.includes('setAttribute("data-g2h", k)') && !/getBoundingClientRect|offsetHeight|fit\(/.test(tag), 'hidden Home still tags its fresh Today steps into their tiles, without measuring anything');
+    assert.ok(html.includes('moH = new MutationObserver(() => { if (busy) return; busy = true; try { tagOnly(h); }'), 'a step re-rendered on landing is tagged before the browser can paint it');
     assert.ok(html.includes('observe(h, {attributes:true, attributeFilter:["class"]})'), 'and catches up when Home is back');
     assert.ok(fe.includes('if (!D.hidden && homeOn()) ensurePill();'));
     assert.ok(b3.includes('homeSeen()) { mountHome(); syncGlow(); }'));

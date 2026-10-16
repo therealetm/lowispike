@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261016-114510">
+<meta name="lowi-build" content="20261016-120010">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -18134,7 +18134,8 @@ function pass(){
 function hook(){
   const h = home(); if (!h || h === hooked) return;
   hooked = h; if (moH) moH.disconnect();
-  moH = new MutationObserver(() => { if (!busy) schedule(); });
+  /* tag fresh Today steps in the observer itself (a microtask, before the browser can paint them), not a frame later */
+  moH = new MutationObserver(() => { if (busy) return; busy = true; try { tagOnly(h); } catch(e){ console.error(e); } finally { moH.takeRecords(); busy = false; } schedule(); });
   moH.observe(h, {childList:true, subtree:true, characterData:true});
   /* Home becoming the page you see again (its "active" class) catches the fit up */
   new MutationObserver(() => { if (!busy && homeShown(h)) schedule(); }).observe(h, {attributes:true, attributeFilter:["class"]});
@@ -19709,7 +19710,7 @@ window.LowiHandoff = { want, copy, issue, revoke, startHTML, parse, redeem, _sta
 })();
 </script>
 <link rel="stylesheet" href="community-chat.css?v=galaxy-2">
-<link rel="stylesheet" href="community-galaxy.css?v=20261016-114510">
+<link rel="stylesheet" href="community-galaxy.css?v=20261016-120010">
 <script id="community-chat-bridge">
 /* Bounded bridge: the Community module shares auth/messages with the existing cloud owner. */
 window.LowiCommunityHost = {
@@ -19734,15 +19735,15 @@ window.LowiCommunityHost = {
 <script src="community-chat-cloud.js?v=community-1"></script>
 <script src="community-galaxy.js?v=galaxy-2"></script>
 <script src="community-chat.js?v=galaxy-2"></script>
-<link rel="stylesheet" id="lgCss" href="liquid-glass.css?v=20261016-114510">
-<script src="liquid-glass.js?v=20261016-114510"></script>
-<link rel="stylesheet" id="sgCss" href="scan-glass.css?v=20261016-114510">
-<script src="scan-glass.js?v=20261016-114510"></script>
-<link rel="stylesheet" href="nav-moves.css?v=20261016-114510">
+<link rel="stylesheet" id="lgCss" href="liquid-glass.css?v=20261016-120010">
+<script src="liquid-glass.js?v=20261016-120010"></script>
+<link rel="stylesheet" id="sgCss" href="scan-glass.css?v=20261016-120010">
+<script src="scan-glass.js?v=20261016-120010"></script>
+<link rel="stylesheet" href="nav-moves.css?v=20261016-120010">
 <script src="nav-moves.js?v=nav-2"></script>
-<script src="galaxy-zoom.js?v=20261016-114510"></script>
-<link rel="stylesheet" id="mhCss" href="misty-hub.css?v=20261016-114510">
-<script src="misty-hub.js?v=20261016-114510"></script>
+<script src="galaxy-zoom.js?v=20261016-120010"></script>
+<link rel="stylesheet" id="mhCss" href="misty-hub.css?v=20261016-120010">
+<script src="misty-hub.js?v=20261016-120010"></script>
 </body>
 </html>
 

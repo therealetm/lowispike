@@ -62,7 +62,36 @@ html:not([data-lay=phone]) #mv-screen.tabmode > .stack > .nm-lbcard + .card { gr
    the Cook page underneath steps aside while it is open, and the living world shows around the video. On iPad/laptop the
    video column is a rounded frame with the blue glass rim; the video itself, its buttons and swiping are unchanged. */
 .nm-layer-fy { background: transparent; }
-html.nm-open-fy #tab-shelf > :not(.nm-layer) { visibility: hidden !important; }
+html.nm-open-fy:not(.nm-fyw) #tab-shelf > :not(.nm-layer) { visibility: hidden !important; }
 html:not([data-lay=phone]) .nm-layer-fy .nm-head { background: none; }
 html:not([data-lay=phone]) .nm-layer-fy .fy-slide { border-radius: 28px; outline: 1.5px solid var(--wh-glass-rim, rgba(160,220,255,.55)); outline-offset: -1.5px;
     box-shadow: 0 18px 50px -22px rgba(40,120,255,.55); }
+
+/* Oct 16 (E-man: "For You should open like Shuffle and Swipe"): For You is a window inside Cook. Cook's title, top row and
+   switch stay on screen; the window sits where the Shuffle game and the Swipe cards appear, in the blue liquid glass of the
+   Misty bubble, and you swipe up and down through the posts inside it. nav-moves.js sets its height (room left above the tab bar). */
+#tab-shelf .nm-layer-fy.fyw { position: relative; inset: auto; z-index: 1; flex: none; width: 100%; max-width: 560px; height: 520px; margin: 12px auto 0; align-self: center;
+    border-radius: 26px; overflow: hidden; isolation: isolate; box-sizing: border-box; transform: translateZ(0);
+    border: 1.5px solid var(--wh-glass-rim, rgba(160,220,255,.55));
+    background: var(--wh-glass-wide, linear-gradient(160deg, rgba(80,170,255,.14), rgba(28,74,150,.34))), rgba(8,20,48,.5);
+    box-shadow: var(--wh-glass-sh, inset 0 0 18px rgba(140,210,255,.32), 0 8px 26px -12px rgba(40,120,255,.5));
+    backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4); animation: nmFywIn .28s cubic-bezier(.2,.9,.3,1); }
+html[data-theme="light"] #tab-shelf .nm-layer-fy.fyw { background: var(--wh-glass-wide), rgba(8,20,48,.62); }
+#tab-shelf .nm-layer-fy.fyw[hidden] { display: none; }
+@keyframes nmFywIn { from { opacity: 0; transform: translateY(10px) scale(.985); } to { opacity: 1; transform: translateZ(0); } }
+@media (prefers-reduced-motion: reduce) { #tab-shelf .nm-layer-fy.fyw { animation: none; } }
+/* Cook steps aside only where the window goes: the Shuffle game, the Swipe cards and the tools row under them */
+html.nm-open-fy.nm-fyw #tab-shelf #shBody > :is(#r5Shuf, #r3kSwipe, #g2cTiles, #r3kYes, #r3kAll) { display: none !important; }
+html.nm-open-fy.nm-fyw #app #main #tab-shelf #ckBar .ck-view .ck-b.on:not(.ck-fy) { background: transparent !important; color: var(--muted, rgba(235,235,245,.7)) !important; box-shadow: none !important; }
+html.nm-open-fy.nm-fyw #tab-shelf #ckBar .ck-view .ck-fy.on { background: var(--tmg-a, #9de6b8); color: #0b1410; }
+/* inside the window: no floating header, slides fill the glass, caption and buttons sit at the window's bottom edge */
+#tab-shelf .nm-layer-fy.fyw .nm-head { display: none; }
+#tab-shelf .nm-layer-fy.fyw .nm-body, #tab-shelf .nm-layer-fy.fyw .fy-pane, #tab-shelf .nm-layer-fy.fyw #cmFeed { height: 100%; min-height: 0; }
+#tab-shelf .nm-layer-fy.fyw #cmFeed { position: relative; }
+#tab-shelf .nm-layer-fy.fyw .fy-feed { height: 100%; touch-action: pan-y; overscroll-behavior: contain; }
+#tab-shelf .nm-layer-fy.fyw .fy-slide { width: 100%; margin: 0; border-radius: 0; outline: 0; box-shadow: none; background: transparent; }
+#tab-shelf .nm-layer-fy.fyw :is(.fy-rail, .fy-meta) { bottom: 16px; }
+#tab-shelf .nm-layer-fy.fyw .fy-endin { padding-bottom: 0; }
+/* Post sits in the window's top-left corner: the like / chat / save / share column runs down the right edge */
+#tab-shelf .nm-layer-fy.fyw .fyv-fab { top: 12px; left: 12px; right: auto; }
+#tab-shelf .nm-layer-fy.fyw .fy-rail { gap: 10px; right: 6px; }

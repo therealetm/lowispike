@@ -4415,11 +4415,11 @@ function doPost(btn){
   }
   T.posts.unshift(p); if (T.posts.length > 80) T.posts.length = 80;
   if (p.vis !== "tribe") T.filter = "mine"; else if (T.filter === "orig" && !p.mine) T.filter = "all";
-  save(); C = null; h.closeSheet(); if (window.cmSetView) cmSetView("feed"); h.go("foryou");
+  save(); C = null; h.closeSheet(); showFeed();
   if (p.vis === "tribe" && window.LOWI_CLOUD) LOWI_CLOUD.publish(p);
   if (p.vis === "tribe") { h.award("tribe-post", null, POST_XP); if (p.mine) setTimeout(() => h.toast("Live as a Tribe Original"), 2300); }
   else h.toast("Saved. Only you can see it.");
-  setTimeout(() => { const el = $('.fy-slide[data-id="' + p.id + '"]'), f = $("#fyFeed"); if (el && f) f.scrollTop = el.offsetTop; }, 140);
+  setTimeout(() => { const el = $('.fy-slide[data-id="' + p.id + '"]'), f = $("#fyFeed"); if (el && f) f.scrollTop = el.offsetTop; }, 220);
 }
 function postMenu(id){
   const h = H(), p = T.posts.map(x => Object.assign({me:true}, x)).find(x => x.id === id) || DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)); if (!p || !h) return;
@@ -4484,8 +4484,13 @@ function defs(){ if (document.getElementById("trholoDefs")) return; const d = do
 if (document.body) defs(); else document.addEventListener("DOMContentLoaded", defs);
 window.addEventListener("hashchange", checkShareHash);
 
+/* after a post: open For You where it lives (Cook's For You window when nav-moves.js runs, else the Community feed) */
+function showFeed(){ const h = H(); if (!h) return;
+  const nm = window.LowiNavMoves;
+  if (nm && nm.open) { if (nm.isOpen && nm.isOpen("fy") && h.tab() === "shelf" && $("#cmFeed")) renderForYou(); else nm.open("fy"); return; }
+  if (window.cmSetView) cmSetView("feed"); h.go("foryou"); }
 window.TRIBE = {
-  renderForYou, compose, composeInto, setPhoto:ph => { if (C) { C.photo = ph || ""; paintRest(); } } /* f2-photo */,
+  renderForYou, compose, showFeed, composeInto, setPhoto:ph => { if (C) { C.photo = ph || ""; paintRest(); } } /* f2-photo */,
   addPost:p => { load(); T.posts.unshift(p); while (T.posts.length > 80) { const x = T.posts.pop(); if (x && x.vid && window.FYV) FYV.remove(x.id); } try { localStorage.setItem(KEY, JSON.stringify(T)); return true; } catch(e){ T.posts.shift(); const h = H(); if (h) h.toast("Storage is full on this phone."); return false; } }, checkShareHash, profileHTML, shareRecipe,
   post:id => T.posts.map(x => Object.assign({me:true}, x)).find(x => x.id === id) || DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)), imgKey:id => FY_IMG[id] || "", demoNames:() => DEMO.map(x => x.who),
   reset:() => { localStorage.removeItem(KEY); },
@@ -4585,7 +4590,10 @@ function attach(feedEl){
   io = new IntersectionObserver(es => es.forEach(e => { const v = e.target; if (e.isIntersecting && e.intersectionRatio >= .6) { v.dataset.want = "1"; play(v); } else { v.dataset.want = ""; v.pause(); } }), {threshold:[0, .6, 1]});
   vids.forEach(v => io.observe(v));
 }
-const onFeed = () => { const h = H(), t = document.getElementById("tab-foryou"); return !document.hidden && (!h || h.tab() === "foryou") && (!t || t.classList.contains("active")) && !(window.MOVE && document.querySelector(".mv-screen.open")); };
+const onFeed = () => { const h = H(), t = document.getElementById("tab-foryou"), nm = window.LowiNavMoves;
+  if (document.hidden || (window.MOVE && document.querySelector(".mv-screen.open"))) return false;
+  if (nm && nm.isOpen && nm.isOpen("fy")) return !h || h.tab() === "shelf"; /* Oct 16: For You is a window in Cook */
+  return (!h || h.tab() === "foryou") && (!t || t.classList.contains("active")); };
 let mo = null;
 function watchTab(){ const t = document.getElementById("tab-foryou"); if (!t || mo) return;
   mo = new MutationObserver(() => { if (!t.classList.contains("active")) pauseAll(); else $$("video.fyv-v").forEach(v => { if (v.dataset.want === "1") play(v); }); });
@@ -4656,8 +4664,10 @@ async function doPost(btn){
   const p = {id, ts:Date.now(), plat:"", url:"", meta:null, vid:1, cap:(u.cap || "").trim().slice(0, 150), rec:u.rec || "", vis:"tribe", mine:true, poster:meta.poster || "", w:meta.w || 0, h:meta.h || 0, dur:meta.dur || 0};
   if (!TRIBE.addPost(p)) { delVid(id).catch(() => {}); return; }
   if (window.LOWI_CLOUD) LOWI_CLOUD.publish(p, u.file);
-  h.closeSheet(); if (window.cmSetView) cmSetView("feed");
-  if (h.tab() !== "foryou") h.go("foryou"); else if (window.cmSeg && $("#cmTrack")) { cmSeg("feed"); TRIBE.renderForYou(); } else TRIBE.renderForYou();
+  h.closeSheet();
+  if (window.LowiNavMoves && TRIBE.showFeed) TRIBE.showFeed(); /* Oct 16: For You is a window in Cook */
+  else { if (window.cmSetView) cmSetView("feed");
+  if (h.tab() !== "foryou") h.go("foryou"); else if (window.cmSeg && $("#cmTrack")) { cmSeg("feed"); TRIBE.renderForYou(); } else TRIBE.renderForYou(); }
   h.award("tribe-post", null, {amt:10, perDay:2, label:"Shared to For You"});
   setTimeout(() => { const f = $("#fyFeed"); if (f) f.scrollTop = 0; h.toast("Live in your For You"); }, 160);
 }
@@ -15629,7 +15639,10 @@ function fabHTML(){ return '<button class="fyv-fab r3f-fab" data-r3f="post" data
 R3F.fabHTML = fabHTML;
 function postSheet(prefill, text, rec){
   if (!window.TRIBE || !TRIBE.composeInto) return;
-  try { if (typeof TAB !== "undefined" && TAB !== "foryou") { if (window.cmSetView) cmSetView("feed"); goTab("foryou"); } } catch(e){}
+  /* Oct 16 fix (E-man: "I click on post... the window kind of opens for a second"): For You lives in Cook now (nav-moves.js).
+     Switching to the Community tab here made Cook re-open For You 60 ms later, and that tab change closed this sheet.
+     The posting sheet works on any tab, so with For You in Cook there is no tab switch at all. */
+  try { if (!window.LowiNavMoves && typeof TAB !== "undefined" && TAB !== "foryou") { if (window.cmSetView) cmSetView("feed"); goTab("foryou"); } } catch(e){}
   const html = '<button class="xbtn" data-act="close-sheet" aria-label="' + esc(T("Close")) + '">' + XI + '</button>' +
     '<div class="sheetbody r3f-post"><div class="h2 r3f-ph" data-noi18n>' + esc(T("New post")) + '</div><div class="small muted r3f-psub" data-noi18n>' + esc(T("Video, photo, a TikTok or Instagram link, or just a few words.")) + '</div>' +
     '<div class="ls-post" id="r3fCompose"></div></div>';
@@ -19792,7 +19805,7 @@ window.LowiCommunityHost = {
 <script src="realm-backdrop-core.js?v=20261016-180010"></script>
 <script src="realm-backdrop.js?v=20261016-180010"></script>
 <link rel="stylesheet" href="nav-moves.css?v=20261016-180010">
-<script src="nav-moves.js?v=nav-2"></script>
+<script src="nav-moves.js?v=nav-3"></script>
 <link rel="stylesheet" id="mvdCss" href="move-durations.css?v=20261016-180010">
 <link rel="stylesheet" id="mvpCss" href="move-player.css?v=20261016-180010">
 <script src="move-player.js?v=20261016-180010"></script>

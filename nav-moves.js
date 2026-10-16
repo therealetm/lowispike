@@ -59,14 +59,24 @@
         const t = s.label(); if (b.lastChild.textContent !== t) { b.lastChild.textContent = t; b.setAttribute('aria-label', t); }
         return b;
     }
+    /* Oct 16 (E-man: "For You should behave like Shuffle and Swipe"): For You is a window inside Cook, in the spot where the
+       Shuffle game and the Swipe cards appear (right under Cook's top row). Cook stays on screen; the window holds the feed and
+       you swipe up and down through the posts inside it. The full-screen layer is only a fallback when that row is missing. */
+    const LAY = {};
+    function home(k) { return k === 'fy' ? $('#tab-shelf #shBody > #ckBar') : null; }
     function layer(k) {
         const s = SPOTS[k], root = $(s.root); if (!root) return null;
-        let L = root.querySelector(':scope > .nm-layer');
+        let L = LAY[k] || root.querySelector('.nm-layer-' + k);
         if (!L) {
             L = D.createElement('section'); L.className = 'nm-layer nm-layer-' + k; L.hidden = true; L.setAttribute('role', 'region');
             L.innerHTML = '<header class="nm-head"><button type="button" class="nm-back" data-nm="back" data-noi18n>' + ICO.back + '<span></span></button><b class="nm-title" data-noi18n></b></header><div class="nm-body"></div>';
-            root.appendChild(L);
         }
+        LAY[k] = L;
+        const bar = home(k);
+        if (bar) { if (L.previousElementSibling !== bar || !L.isConnected) bar.after(L); }
+        else if (L.parentElement !== root) root.appendChild(L);
+        L.classList.toggle('fyw', !!bar);
+        if (k === 'fy') H.classList.toggle('nm-fyw', !!bar);
         L.querySelector('.nm-back span').textContent = s.back();
         L.querySelector('.nm-title').textContent = s.label();
         L.setAttribute('aria-label', s.label());
@@ -75,9 +85,26 @@
     const isOpen = k => { const L = layer(k); return !!(L && !L.hidden); };
     function show(k, on) {
         const L = layer(k); if (!L) return;
-        if (on) { const rt = $(SPOTS[k].root); if (rt) rt.scrollTop = 0; adopt(k); paint(k); L.hidden = false; H.classList.add('nm-open-' + k); }
-        else { L.hidden = true; H.classList.remove('nm-open-' + k); }
+        if (on) { const rt = $(SPOTS[k].root); if (rt && !L.classList.contains('fyw')) rt.scrollTop = 0; adopt(k); paint(k); L.hidden = false; H.classList.add('nm-open-' + k); }
+        else { L.hidden = true; H.classList.remove('nm-open-' + k); if (k === 'fy') { try { if (W.LowiFyEmbed) W.LowiFyEmbed.closeAll(null); D.querySelectorAll('video.fyv-v').forEach(v => v.pause()); } catch (e) { } } }
         const b = pill(k); if (b) b.setAttribute('aria-expanded', on ? 'true' : 'false');
+        if (k === 'fy') { marks(); fit(); }
+    }
+    /* the For You button in Cook's Shuffle | For You | Swipe switch lights up like the other two while the window is open */
+    function marks() {
+        const on = isOpen('fy');
+        D.querySelectorAll('#tab-shelf .ck-fy').forEach(b => { b.classList.toggle('on', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
+    }
+    /* the window fills the room left under Cook's top row, down to just above the tab bar (like the Swipe cards) */
+    function fit() {
+        const L = LAY.fy; if (!L || L.hidden || !L.classList.contains('fyw') || !L.isConnected) return;
+        const body = $('#tab-shelf #shBody'); if (!body) return;
+        const br = body.getBoundingClientRect(), lr = L.getBoundingClientRect(); if (!br.height) return;
+        const pb = parseFloat(getComputedStyle(body).paddingBottom) || 0;
+        let bottom = Math.min(br.bottom - pb, W.innerHeight);
+        const tb = $('#tabbar'); if (tb) { const tr = tb.getBoundingClientRect(); if (tr.height && tr.top > lr.top + 200 && tr.top < bottom + 8) bottom = Math.min(bottom, tr.top - 8); }
+        const h = Math.round(Math.max(320, Math.min(bottom - lr.top - 4, 900)));
+        if (L.style.height !== h + 'px') { L.style.height = h + 'px'; try { if (W.LowiFyEmbed) D.querySelectorAll('.nm-layer-fy .fy-slide.fye-on').forEach(W.LowiFyEmbed.place); } catch (e) { } }
     }
     function open(k) {
         const s = SPOTS[k];
@@ -147,6 +174,18 @@
         if (k === 'fy' || k === 'lb') { e.preventDefault(); show(k, !isOpen(k)); align(); return; }
         if (k === 'back') { e.preventDefault(); const L = b.closest('.nm-layer'); if (L) show(L.classList.contains('nm-layer-fy') ? 'fy' : 'lb', false); }
     }, true);
+    /* Chat on a post: the chat lives in Community, so go there with the @name ready to type (it used to fill a hidden box) */
+    D.addEventListener('click', e => {
+        const b = e.target && e.target.closest && e.target.closest('.nm-layer-fy [data-tr="comment"]'); if (!b || typeof W.cmComment !== 'function') return;
+        e.preventDefault(); e.stopPropagation(); if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+        let who = ''; try { const p = W.TRIBE && W.TRIBE.post ? W.TRIBE.post(b.dataset.id) : null; who = p && !p.me ? (p.who || '') : ''; } catch (x) { }
+        go('foryou'); setTimeout(() => { try { W.cmComment(who); } catch (x) { console.error(x); } }, 160);
+    }, true);
+    /* Shuffle or Swipe in Cook's switch closes the For You window, so that game shows in the same spot */
+    D.addEventListener('click', e => {
+        const b = e.target && e.target.closest && e.target.closest('#tab-shelf #ckBar [data-ck="view"]');
+        if (b && isOpen('fy')) show('fy', false);
+    }, true);
     /* the feed's filter chips and the board's switches only re-render on the old Community tab; re-render them here too */
     D.addEventListener('click', e => {
         const t = e.target; if (!t || !t.closest) return;
@@ -193,6 +232,8 @@
     let raf = 0;
     function tick() {
         raf = 0; hook(); align(); privacy(); moveCard();
+        /* a Cook re-render replaces its page: put the open For You window back under the new top row */
+        if (LAY.fy && (!LAY.fy.hidden || LAY.fy.classList.contains('fyw'))) { layer('fy'); marks(); fit(); }
         const el = D.getElementById('tab-foryou');
         if (el && D.getElementById('cmTrack') && (!el.classList.contains('nm-solo') || (D.getElementById('cmPaneFeed') || {}).parentElement === D.getElementById('cmTrack') || (D.getElementById('cmPaneBoard') || {}).parentElement === D.getElementById('cmTrack'))) solo();
     }
@@ -204,6 +245,6 @@
         W.addEventListener('resize', soon);
         setInterval(soon, 1500);
     }
-    W.LowiNavMoves = { open, show, isOpen, solo, align };
+    W.LowiNavMoves = { open, show, isOpen, solo, align, fit };
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 })();

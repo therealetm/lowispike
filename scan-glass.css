@@ -1,0 +1,104 @@
+/* LOWiSPIKE Scan in the shared Liquid Glass design (Oct 16). Scan was the one screen still in the old gold look: gold frame
+   corners, a red laser, gold icons, a gold Go button and gold-tinted tiles on a black layer without the dock. Here it uses the
+   same tokens as every other tab (liquid-glass.css): Misty's blue as the only accent, dark translucent glass with a soft bright
+   rim, white text with grey secondary text, the system font, and the glass dock stays at the bottom (scan-glass.js).
+   Colours and chrome only: the camera, permissions, capture and food-logging flow are untouched. */
+
+/* ---------- the camera layer ---------- */
+html.lg .b3-cam { font-family: var(--lg-font); background-color: #000 !important; background-image: var(--lg-space), radial-gradient(120% 60% at 50% -10%, rgba(40, 70, 140, .32), transparent 70%) !important; background-size: 340px 340px, 100% 100% !important; }
+html.lg .b3-cam.sg-docked { z-index: 2147483000; bottom: 0 !important; }
+html.lg .b3-cam .b3-shade { background: radial-gradient(ellipse 72% 32% at 50% 42%, transparent 60%, rgba(0, 0, 0, .5) 100%); }
+
+/* top: the round glass X and torch, a white title in the system font */
+html.lg .b3-cam .b3-ctop { background: linear-gradient(180deg, rgba(0, 0, 0, .55), rgba(0, 0, 0, 0)) !important; }
+html.lg .b3-cam .b3-ctitle { font-family: var(--lg-font) !important; font-size: 17px !important; font-weight: 650 !important; letter-spacing: -.01em; color: #fff !important; }
+html.lg .b3-cam :is(.b3-cx, .b3-torch) { background: rgba(255, 255, 255, .12) !important; color: #fff !important; border: .5px solid rgba(255, 255, 255, .2) !important; -webkit-backdrop-filter: var(--lg-blur) !important; backdrop-filter: var(--lg-blur) !important; box-shadow: var(--lg-edge), 0 6px 18px -8px rgba(0, 0, 0, .6) !important; }
+html.lg .b3-cam .b3-torch.on { background: var(--lg-blue) !important; color: #fff !important; border-color: rgba(255, 255, 255, .3) !important; }
+
+/* the viewfinder: Misty-blue corners and a blue scan line (green only for a caught code) */
+html.lg .b3-cam .b3-frame i[class^=c] { border-color: var(--lg-blue-2) !important; filter: drop-shadow(0 0 6px rgba(10, 132, 255, .65)); }
+html.lg .b3-cam .b3-laser { background: linear-gradient(90deg, transparent, var(--lg-blue-2), transparent) !important; box-shadow: 0 0 14px var(--lg-blue) !important; }
+html.lg .b3-cam.got .b3-frame i[class^=c] { border-color: #30d158 !important; filter: drop-shadow(0 0 6px rgba(48, 209, 88, .6)); }
+
+/* messages (allow the camera, denied, no camera, starting, looking up): a dark glass card */
+html.lg .b3-cam .b3-cbox { background: rgba(28, 28, 32, .82) !important; color: #fff; border: .5px solid rgba(255, 255, 255, .14) !important; border-radius: var(--lg-r) !important; -webkit-backdrop-filter: var(--lg-blur) !important; backdrop-filter: var(--lg-blur) !important; box-shadow: var(--lg-edge), var(--lg-shadow) !important; }
+html.lg .b3-cam .b3-cbox b { font-weight: 650; color: #fff; }
+html.lg .b3-cam .b3-cbox small { color: var(--lg-ink-2); opacity: 1; }
+html.lg .b3-cam .b3-cic { background: rgba(10, 132, 255, .18) !important; color: var(--lg-blue-2) !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .25); }
+html.lg .b3-cam .b3-spin { border-color: rgba(255, 255, 255, .22) !important; border-top-color: var(--lg-blue-2) !important; }
+html.lg .b3-cam .b3-cbox .r2-btn.ghost { background: rgba(118, 118, 128, .24) !important; color: #fff !important; border: .5px solid rgba(255, 255, 255, .18) !important; }
+
+/* bottom: hint, code field, the four actions and Deep analyze in one glass panel */
+html.lg .b3-cam .b3-chint { font-family: var(--lg-font); color: #fff; opacity: 1; font-weight: 600; text-shadow: 0 1px 3px rgba(0, 0, 0, .6); }
+html.lg .b3-cam .b3-chint.warn { color: #ff9f8f; }
+html.lg .b3-cam .b3-ctype .input, html.lg .b3-cam #b3Bc { background: rgba(118, 118, 128, .24) !important; color: #fff !important; border: .5px solid rgba(255, 255, 255, .14) !important; border-radius: 22px !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .12) !important; }
+html.lg .b3-cam .b3-ctype .input::placeholder { color: var(--lg-ink-3) !important; }
+html.lg .b3-cam .b3-go { background: var(--lg-blue) !important; color: #fff !important; border: 0 !important; border-radius: 50% !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .45), 0 8px 22px -10px rgba(10, 132, 255, .8) !important; }
+html.lg .b3-cam .b3-cact { background: rgba(255, 255, 255, .08) !important; color: #fff !important; border: .5px solid rgba(255, 255, 255, .16) !important; border-radius: 18px !important; font-family: var(--lg-font) !important; font-weight: 600 !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .22) !important; }
+html.lg .b3-cam .b3-cact svg { color: #fff !important; }
+html.lg .b3-cam .b3-cact[aria-pressed=true] { background: rgba(10, 132, 255, .30) !important; border-color: rgba(100, 210, 255, .55) !important; }
+html.lg .b3-cam .b3-cact[aria-pressed=true] svg { color: var(--lg-blue-2) !important; }
+html.lg .b3-cam .b3-deep { background: rgba(255, 255, 255, .08) !important; color: #fff !important; border: .5px solid rgba(255, 255, 255, .16) !important; border-radius: 18px !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .22) !important; }
+html.lg .b3-cam .b3-deep b { font-weight: 650 !important; }
+html.lg .b3-cam .b3-deep small { color: var(--lg-ink-2); opacity: 1; }
+html.lg .b3-cam .b3-deep > svg { color: var(--lg-blue-2) !important; }
+html.lg .b3-cam .b3-deep > svg:last-child { color: var(--lg-ink-3) !important; opacity: 1; }
+html.lg .b3-cam .b3-pill { background: rgba(255, 255, 255, .08) !important; color: #fff !important; border: .5px solid rgba(255, 255, 255, .16) !important; }
+html.lg .b3-cam .b3-pill svg { color: var(--lg-blue-2) !important; }
+
+/* the panel is one glass card in the dock's material; with the dock over the camera it ends just above the dock, and the
+   messages sit above the panel */
+html.lg .b3-cam .b3-cbot {
+    padding: 12px !important; gap: 8px;
+    background: rgba(28, 28, 34, .42) !important; border: .5px solid rgba(255, 255, 255, .18); border-radius: 30px;
+    -webkit-backdrop-filter: blur(28px) saturate(190%); backdrop-filter: blur(28px) saturate(190%);
+    box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .4), inset 0 -.5px 0 rgba(255, 255, 255, .08), inset 0 18px 30px -22px rgba(255, 255, 255, .25), 0 14px 40px -10px rgba(0, 0, 0, .7);
+}
+html.lg .b3-cam:not(.sg-docked) .b3-cbot { left: 10px !important; right: 10px !important; }
+html.lg .b3-cam.sg-docked .b3-cbot {
+    left: max(10px, calc(50% - 280px)) !important; right: max(10px, calc(50% - 280px)) !important; bottom: calc(var(--sg-dock, 96px) + 10px) !important;
+    max-width: none; margin: 0;
+}
+html.lg .b3-cam.sg-docked .b3-cmsg { bottom: calc(var(--sg-dock, 96px) + 250px) !important; }
+html.lg .b3-cam.sg-docked .b3-frame { top: 24%; }
+@media (max-height: 720px) {
+    html.lg .b3-cam.sg-docked .b3-frame { top: 15%; height: min(18vh, 120px); }
+    html.lg .b3-cam.sg-docked .b3-cbot { padding: 10px !important; gap: 6px; }
+    html.lg .b3-cam.sg-docked .b3-chint { min-height: 0; font-size: 13px; }
+    html.lg .b3-cam.sg-docked .b3-cact { min-height: 48px; }
+    html.lg .b3-cam.sg-docked .b3-deep { min-height: 42px; }
+    html.lg .b3-cam.sg-docked .b3-ctype .input, html.lg .b3-cam.sg-docked #b3Bc, html.lg .b3-cam.sg-docked .b3-go { height: 44px; min-height: 44px; }
+    html.lg .b3-cam.sg-docked .b3-go { width: 44px; }
+    html.lg .b3-cam.sg-docked .b3-cmsg { top: calc(env(safe-area-inset-top, 0px) + 58px) !important; bottom: calc(var(--sg-dock, 96px) + 226px) !important; }
+}
+
+/* the dock over the camera: #main stops being its own layer (html.sg-dock, scan-glass.js) and the dock is lifted above the camera.
+   Scan is the lit button while the camera is open, the page under it is not. */
+html.lg.sg-dock.b3-camon #app #main { z-index: auto !important; }
+html.lg.sg-dock.b3-camon #app #main #tabbar { z-index: 2147483001 !important; }
+html.lg.sg-dock.b3-camon #app #main #tabbar .tb.active:not(.scan) { background: transparent !important; box-shadow: none !important; color: rgba(235, 235, 245, .62) !important; }
+html.lg.sg-dock.b3-camon #app #main #tabbar .tb.active:not(.scan) :is(.tbl, svg) { color: rgba(235, 235, 245, .62) !important; }
+html.lg.sg-dock.b3-camon #app #main #tabbar .tb.scan .ring { box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .6), inset 0 -2px 6px rgba(0, 0, 0, .25), 0 0 0 2px rgba(255, 255, 255, .85), 0 8px 26px -4px rgba(10, 132, 255, .9) !important; }
+
+/* the same layer inside the herb world (#spWorld): same accents */
+html.lg #spWorld .b3-cam .b3-cbot .b3-pill svg { color: var(--lg-blue-2) !important; }
+
+/* ---------- after a scan: the reveal and the Scan page use blue, not gold ---------- */
+html.lg .b3-glow { background: radial-gradient(circle at 50% 55%, rgba(10, 132, 255, .32), transparent 65%) !important; }
+html.lg .b3-card.v-ok .b3-glow { background: radial-gradient(circle at 50% 55%, rgba(48, 209, 88, .28), transparent 65%) !important; }
+html.lg .b3-card.v-spike .b3-glow { background: radial-gradient(circle at 50% 55%, rgba(255, 107, 107, .24), transparent 65%) !important; }
+html.lg .b3-stage.show .b3-card.anim { animation-name: sgflash !important; }
+@keyframes sgflash { 0% { box-shadow: 0 0 0 0 rgba(100, 210, 255, .9), 0 0 80px rgba(10, 132, 255, .7); } 100% { box-shadow: 0 0 0 0 transparent; } }
+html.lg .b3-bar i { background: linear-gradient(90deg, var(--lg-blue), var(--lg-blue-2)) !important; }
+html.lg .b3-ball { background: rgba(255, 255, 255, .12) !important; color: #fff !important; border: .5px solid rgba(255, 255, 255, .2) !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .3) !important; }
+html.lg .b3-go { background: var(--lg-blue) !important; color: #fff !important; border: 0 !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .45) !important; }
+html.lg #tab-scan .b3-capture { background: var(--lg-fill) !important; border: .5px solid var(--lg-rim) !important; border-radius: var(--lg-r) !important; box-shadow: var(--lg-edge), var(--lg-shadow) !important; -webkit-backdrop-filter: var(--lg-blur); backdrop-filter: var(--lg-blur); }
+html.lg #tab-scan .b3-capture-icon { background: var(--lg-blue) !important; color: #fff !important; border: 0 !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .45), 0 8px 22px -10px rgba(10, 132, 255, .8) !important; }
+html.lg #tab-scan .b3-modes button[aria-pressed="true"] { background: rgba(255, 255, 255, .22) !important; color: #fff !important; }
+html.lg #tab-scan .b3-pill, html.lg #tab-scan .b3-prog { background: var(--lg-fill-2) !important; color: #fff !important; border: .5px solid var(--lg-rim) !important; }
+html.lg #tab-scan .b3-pill svg { color: var(--lg-blue-2) !important; }
+
+@media (prefers-reduced-transparency: reduce) {
+    html.lg .b3-cam :is(.b3-cbox, .b3-cx, .b3-torch) { background: rgba(28, 28, 32, .96) !important; }
+    html.lg .b3-cam.sg-docked .b3-cbot { background: rgba(28, 28, 32, .96) !important; }
+}

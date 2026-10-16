@@ -247,7 +247,11 @@
     function homeAway() { const R = W.LowiWorldRegions, s = R && R.state; return !!(s && !full && (s.busy || (s.cur && s.cur !== 'hub'))); }
     function flyHome(id) {
         if (!homeHere()) return false;
-        const R = W.LowiWorldRegions;
+        const R = W.LowiWorldRegions, s = R && R.state;
+        /* Oct 16 (E-man): the regions controller asking for the camera leg of the trip it is already running (the World map
+           warp back out of a place) gets the camera glide itself, not a second trip that is refused as "busy" (that left the
+           camera parked in the old place and Home snapped back to Misty a moment later) */
+        if (s && s.ownFly) { world.flyTo(id || null); return true; }
         if (!homeWarp && R && R.travel) { homeWarp = true; try { R.travel(id || 'hub'); } catch (e) { } finally { homeWarp = false; } return true; }
         world.flyTo(id || null); return true;
     }

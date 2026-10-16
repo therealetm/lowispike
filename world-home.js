@@ -253,10 +253,12 @@
         return C.zoomTarget(r.dist, r.minD, r.maxD, baseDist(r));
     }
     function inRegion() { try { const R = W.LowiWorldRegions; return !!(R && R.current && R.current() !== 'hub'); } catch (e) { return false; } }
-    function awayHome() { try { const r = rig(), s = W.LowiWorldRegions && W.LowiWorldRegions.state; return !!(r && r.mode === 'home' && homeActive() && s && (s.busy || (s.cur && s.cur !== 'hub')) && !D.querySelector('.bw3-full')); } catch (e) { return false; } }
+    function awayHome() { try { const r = rig(), s = W.LowiWorldRegions && W.LowiWorldRegions.state; if (s && s.warp && s.warp.reveal) return false; /* the warp back out is landing: Misty fades in as her cell slides into place */ return !!(r && r.mode === 'home' && homeActive() && s && (s.busy || (s.cur && s.cur !== 'hub')) && !D.querySelector('.bw3-full')); } catch (e) { return false; } }
     function zoomOutWhole() {
         const a = w3(); if (!a || a.state === 'fallback' || !a.open) return;
-        if (homeWorld()) { const r = rig(); if (inRegion()) { try { W.LowiWorldRegions.travel('hub'); } catch (e) { } setTimeout(() => animateDist(r.maxD, 0.42), 1900); } else animateDist(r.maxD, 0.42); st.hintUntil = Date.now() + 7000; setTimeout(() => { paintZoom(); paintHint(); }, 50); return; }
+        /* Oct 16 (E-man): from inside a place, World map is the fly-to played backwards, ending on the whole world in one move
+           (it used to drop the place under a flash and snap to Misty, then zoom out a second later) */
+        if (homeWorld()) { const r = rig(); if (inRegion()) { let ok = false; try { const R = W.LowiWorldRegions; ok = R.travel('hub', false, 0, { wide: true }) || (R.state.busy && R.state.next === 'hub'); } catch (e) { } if (!ok || reduced()) setTimeout(() => animateDist(r.maxD, 0.42), 1900); } else animateDist(r.maxD, 0.42); st.hintUntil = Date.now() + 7000; setTimeout(() => { paintZoom(); paintHint(); }, 50); return; }
         if (!a.isOpen || !a.isOpen()) a.open();
         let n = 0;
         const go = () => {
@@ -402,7 +404,9 @@
     function onRegion(e) {
         const id = e && e.detail && e.detail.id;
         /* back from a place on Home: settle on Misty's own framing, exactly the Home view you left */
-        if (id === 'hub') { const r0 = rig(); if (r0 && r0.mode === 'home' && homeActive()) setTimeout(() => { const r = rig(); if (r && r.mode === 'home' && !r.fly && !inRegion() && !st.zoomAnim) animateDist(baseDist(r), 0.12); }, reduced() ? 0 : 1600); }
+        /* (the warp played backwards, World map / X, lands on its own framing: Misty's, or the whole world for World map) */
+        const rs = W.LowiWorldRegions && W.LowiWorldRegions.state, revTrip = !!(rs && rs.warp && rs.warp.rev);
+        if (id === 'hub' && !revTrip) { const r0 = rig(); if (r0 && r0.mode === 'home' && homeActive()) setTimeout(() => { const r = rig(); if (r && r.mode === 'home' && !r.fly && !inRegion() && !st.zoomAnim) animateDist(baseDist(r), 0.12); }, reduced() ? 0 : 1600); }
         if (!id || id === 'hub') { st.heroAnim = null; return; }
         /* wait for the warp to settle (regions: dive -> settle 640 ms), then glide the view to the pretty side */
         let n = 0;

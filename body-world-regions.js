@@ -390,12 +390,62 @@
         const base = cam.position.clone();
         let vf = q.last ? base.clone().sub(q.last).dot(fwd) / d : 0; q.last = base;
         let veilO = 0;
+        /* Oct 16 (E-man): leaving a place for the bloodstream (World map, X) is the fly-to played backwards: the place shrinks
+           away as the camera pulls back under its glow (settle reversed), the camera backs out of the glowing spot (dive
+           reversed), then glides back out to Home (glide reversed). Same streaks, same easing, no cut and no blank frame. */
+        if (q.phase === 'unsettle') {
+            const k = (now - q.tu) / WARP.settle, p = warpPose('settle', 1 - k);
+            if (q.back == null) q.back = 1.2 + 0.25 * (a && a.rig ? a.rig.dist : 2.6);
+            cam.position.addScaledVector(fwd, q.back * p.fwd); vf -= q.back * p.speed / (WARP.settle / 1000);
+            veilO = Math.max(veilO, p.veil);
+            if (st.region) st.region.group.scale.setScalar(p.scale);
+            if (k >= 1) {
+                /* under the full glow: the place goes, the bloodstream comes back, and the camera waits just outside the glowing
+                   spot it dived into, facing in, exactly where the fly-to left it before the dive */
+                enter('hub');
+                const r = a && a.rig;
+                if (r) {
+                    const ang = Math.atan2(q.B.x, q.B.z);
+                    r.fly = null; r.flyYaw = null; r.vy = 0; r.vp = 0; r.idle = 0;
+                    r.target.copy(q.B).multiplyScalar(0.92); r.dist = 2.6;
+                    r.yaw = ang + Math.round((r.yaw - ang) / (Math.PI * 2)) * Math.PI * 2;
+                    r.pitch = Math.max(-0.5, Math.min(0.5, r.pitch));
+                    /* the base's own glide home (resets the hue tint now, under the glow); it is held until the back-out ends */
+                    if (a.flyTo) { st.ownFly = true; try { a.flyTo(null); } finally { st.ownFly = false; } }
+                    q.fly = r.fly; r.fly = null;
+                }
+                q.phase = 'undive'; q.tp = now; q.reach = null; q.last = null; veil(1);
+                q.streaks.follow(cam); return;
+            }
+        } else if (q.phase === 'undive') {
+            /* first frame from the new spot: the clock for the back-out starts here, under the full glow (a slow frame never shows the jump) */
+            if (q.reach == null) { q.reach = Math.max(0.6, base.distanceTo(q.B) - 0.2); q.tp = now; }
+            const k = (now - q.tp) / WARP.dive, p = warpPose('dive', 1 - k);
+            cam.position.addScaledVector(fwd, q.reach * p.fwd); vf -= q.reach * p.speed / (WARP.dive / 1000);
+            veilO = Math.max(veilO, p.veil);
+            const ps = q.portal.sprite, kk = 1 - Math.min(1, k);
+            ps.visible = k < 1; ps.position.copy(q.B); ps.scale.setScalar(2.6 + 5 * kk * kk); ps.material.opacity = (0.35 + 0.6 * kk) * (1 - smooth(0.55, 1, k));
+            if (k >= 1) {
+                const r = a && a.rig;
+                if (r && q.fly) {
+                    q.fly.from = { t: r.target.clone(), d: r.dist }; q.fly.t = 0;
+                    if (q.wide && r.maxD) q.fly.to.d = r.maxD; /* World map: one pull back out to the whole world, Misty in the middle */
+                    r.fly = q.fly; r.flyYaw = null; q.p0 = r.pitch;
+                }
+                q.phase = 'glide'; q.t0 = now; q.saw = false;
+            }
+        }
         if (q.outT != null) { const k = (now - q.outT) / WARP.out; veilO = Math.max(veilO, warpPose('out', k).veil); if (k >= 1) q.outT = null; }
         const flying = a && a.rig ? !!a.rig.fly : null;
         if (flying) q.saw = true;
         if (q.phase === 'glide') {
             const el = now - q.t0;
             const glideOver = flying === null ? el > WARP.glide + 80 : (q.saw ? !flying : el > 320);
+            if (q.rev && a && a.rig && a.rig.fly) {
+                const f = a.rig.fly, k = Math.min(1, f.t / f.dur), e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+                if (q.wide && q.p0 != null) a.rig.pitch = q.p0 + (0.42 - q.p0) * e;
+                q.reveal = k > 0.68; /* Home's Misty fades back in over the last stretch, as her cell slides into place */
+            }
             if (el > 90 && glideOver) {
                 if (q.id === 'hub') { finish(); return; }
                 q.phase = 'dive'; q.tp = now; veil(0, q.css); warpEv('dive', q.id, q.from); q.reach = Math.max(0.6, base.distanceTo(q.B) - 0.2);
@@ -431,6 +481,7 @@
         const q = st.warp; if (!q) return;
         st.warp = null; clean(q);
         if (q.id === 'hub' && st.cur !== 'hub') enter('hub');
+        if (q.rev && q.wide) { const r0 = w3() && w3().rig; if (r0 && !r0.fly) r0.pitch = 0.42; }
         lungCard(); warpEv('arrive', q.id, q.from);
         q.done && q.done();
         /* Oct 16 (E-man): "when entering a world, start from the most zoomed-out view": right after the dive the camera glides
@@ -483,24 +534,28 @@
         try { W.dispatchEvent(new CustomEvent('lowi:world-region', { detail: { id, place: id === 'hub' ? 'blood' : id } })); } catch (e) { }
     }
     /* fromBase: the base world already started its glide (its labels, beacon taps or the card's Back) */
-    function travel(id, fromBase, tries) {
+    /* opts.wide (World map): the trip back out ends on the whole world, not on Misty's close framing */
+    function travel(id, fromBase, tries, opts) {
         id = norm(id);
         if (!byId(id) || id === st.cur && !st.busy) return false;
-        if (st.busy) { if (id !== st.target) st.next = id; return false; }
+        if (st.busy) { if (id !== st.target) { st.next = id; st.nextOpts = opts || null; } return false; }
         const a = w3();
         if (!a || a.state === 'fallback' || !a.open) { openJourney(id); return false; }
-        if (!wo() || !host()) { if ((tries || 0) < 12) { a.open(); setTimeout(() => travel(id, false, (tries || 0) + 1), 400); return true; } openJourney(id); return false; }
+        if (!wo() || !host()) { if ((tries || 0) < 12) { a.open(); setTimeout(() => travel(id, false, (tries || 0) + 1, opts), 400); return true; } openJourney(id); return false; }
         hook(); ensureUi();
         const w = wo(), THREE = w.three, h = st.host;
         st.busy = true; st.target = id; st.next = null;
-        const done = () => { st.busy = false; st.target = null; const n = st.next; st.next = null; if (n && n !== st.cur) travel(n); };
-        if (!fromBase && a.flyTo) a.flyTo(id === 'hub' ? null : baseId(id));
+        const done = () => { st.busy = false; st.target = null; const n = st.next, no = st.nextOpts; st.next = null; st.nextOpts = null; if (n && n !== st.cur) travel(n, false, 0, no || undefined); };
+        /* back out of a place to the bloodstream: the reversed fly-to (see stepWarp) starts the base glide itself, later */
+        const rev = id === 'hub' && st.cur !== 'hub' && !fromBase && !reduced() && !!a.rig;
+        if (!fromBase && !rev && a.flyTo) { st.ownFly = true; try { a.flyTo(id === 'hub' ? null : baseId(id)); } finally { st.ownFly = false; } }
         if (h) h.classList.remove('bw3-flash');
         if (reduced()) { enter(id); lungCard(); done(); return true; }
-        const R = byId(id), from = byId(st.cur), hue = R.hue != null ? R.hue : 0xe0475a;
-        const q = { id, phase: 'glide', t0: 0, saw: false, amt: 0, last: null, outT: null, hue, css: R.css, fov0: w.camera.fov, done, clock: 0 };
-        if (st.cur !== 'hub') { veil(1, from.css); q.outT = 0; if (id === 'hub') enter('hub'); else leaveQuiet(); }
-        const bp = (a.regions || []).find(x => x.id === baseId(id));
+        const R = byId(id), from = byId(st.cur), src = rev && from ? from : R, hue = src.hue != null ? src.hue : 0xe0475a;
+        const q = { id, phase: 'glide', t0: 0, saw: false, amt: 0, last: null, outT: null, hue, css: src.css, fov0: w.camera.fov, done, clock: 0 };
+        if (rev) { q.rev = true; q.wide = !!(opts && opts.wide); q.phase = 'unsettle'; q.tu = 0; veil(0, src.css); if (a.rig.fly) a.rig.fly = null; a.rig.vy = 0; a.rig.vp = 0; }
+        else if (st.cur !== 'hub') { veil(1, from.css); q.outT = 0; if (id === 'hub') enter('hub'); else leaveQuiet(); }
+        const bp = (a.regions || []).find(x => x.id === baseId(rev && from ? from.id : id));
         q.B = bp && bp.pos ? bp.pos.clone() : new THREE.Vector3();
         q.streaks = buildWarp(THREE, (st.tier || tier({ w: W.innerWidth, h: W.innerHeight, mem: navigator.deviceMemory })) === 'low' ? 70 : 130, hue);
         q.streaks.group.userData.bwr = true; w.scene.add(q.streaks.group); q.streaks.follow(w.camera);

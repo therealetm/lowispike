@@ -1,0 +1,28 @@
+/* Oct 16 (E-man: "When I'm texting in the community I can almost not even see my writing. That bar, the typing bar,
+   make it stick out more or darken it more"). The Community typing bar is solid dark blue glass, not see-through grey,
+   so speech bubbles and names behind it never mix with what you type. Loaded last, so it beats liquid-glass.css. */
+html #cmPaneChat[data-spirit-chat] textarea#cmInput#cmInput{
+  background:linear-gradient(180deg,rgba(18,38,84,.96),rgba(6,12,32,.97))!important;
+  -webkit-backdrop-filter:blur(28px) saturate(170%);backdrop-filter:blur(28px) saturate(170%);
+  color:#fff!important;-webkit-text-fill-color:#fff;caret-color:#9fd8ff;font-weight:500;
+  border:1px solid rgba(160,220,255,.48)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 6px 20px rgba(0,0,0,.5)!important;
+  text-shadow:none}
+html #cmPaneChat[data-spirit-chat] textarea#cmInput#cmInput::placeholder{color:rgba(223,242,255,.74)!important;-webkit-text-fill-color:rgba(223,242,255,.74);opacity:1}
+html #cmPaneChat[data-spirit-chat] textarea#cmInput#cmInput:focus{border-color:rgba(170,226,255,.78)!important;outline:none;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 0 0 3px rgba(80,170,255,.22),0 6px 20px rgba(0,0,0,.5)!important}
+
+/* While typing on the map the composer rises over the galaxy: a dark glass plate sits behind the whole bar
+   (To row / Chat pill, camera, field, send), so nothing from the map shows between or behind the controls. */
+html.cs-chat-typing #cmPaneChat[data-spirit-chat] .cm-compose::before{content:'';position:absolute;z-index:-1;inset:-6px -10px -4px;
+  border-radius:26px;pointer-events:none;background:linear-gradient(180deg,rgba(8,16,40,.86),rgba(3,6,18,.92));
+  -webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);
+  border:1px solid rgba(160,220,255,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 10px 30px rgba(0,0,0,.55)}
+html.cs-chat-typing #cmPaneChat[data-spirit-chat] .cm-compose{isolation:isolate}
+
+/* Speech bubbles and names that would sit under the bar fade out while you type (community-composer.js marks them). */
+#cmPaneChat[data-spirit-chat] #cgField .cc-under{opacity:0!important;pointer-events:none!important;transition:opacity .18s ease}
+
+@media(prefers-reduced-transparency:reduce){
+  html #cmPaneChat[data-spirit-chat] textarea#cmInput#cmInput{background:#0a1530!important}
+  html.cs-chat-typing #cmPaneChat[data-spirit-chat] .cm-compose::before{background:#040916}}

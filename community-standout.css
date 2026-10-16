@@ -1,0 +1,60 @@
+/* Oct 16 (E-man: "How can we make the people in the community, their companions, stick out more than the galaxy beneath it?")
+   Depth of field for Community: the living world behind (membrane bubbles, inner cells, threads) steps back, dimmer, calmer
+   and a touch soft, still visible. The companions step forward: each sits on a solid blue glass disc with a crisp light rim,
+   a soft dark halo that lifts it off the background, its person's own colour ring kept, and a white bold name that reads on
+   any background. Loaded last so it wins over liquid-glass.css. Community only (html.wb-comm / #cmPaneChat). */
+
+/* 1. push the galaxy back (the 3D world canvas is the same one Today uses, so this only applies while Community is open) */
+html.wb-on.wb-comm:not(.gx-in):not(.gx-out) #bw3Back .bw3-canvas {
+    filter: var(--wm-filter, ) brightness(.62) saturate(.72) blur(1.4px) !important;
+    transition: filter .6s ease !important;
+}
+html.wb-on.wb-comm:not(.gx-in):not(.gx-out) #bw3Back::after {
+    opacity: 1 !important;
+    background: radial-gradient(120% 95% at 50% 45%, rgba(2, 6, 18, .12), rgba(2, 6, 18, .42)) !important;
+}
+
+/* 2. bring the companions forward */
+html #cmPaneChat[data-spirit-chat] .cg-body .cg-orb.cg-orb {
+    background:
+        radial-gradient(circle at 34% 26%, rgba(255, 255, 255, .5), rgba(255, 255, 255, 0) 32%),
+        radial-gradient(circle, rgba(64, 124, 230, .55) 0, rgba(22, 54, 120, .92) 58%, color-mix(in srgb, var(--c, #8fb4ff) 70%, #0a1a3a) 70%, color-mix(in srgb, var(--c, #8fb4ff) 92%, #fff) 79%, color-mix(in srgb, var(--c, #8fb4ff) 60%, transparent) 85%, transparent 88%),
+        rgba(10, 26, 62, .9) !important;
+    background-clip: padding-box !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .55),
+        0 0 0 1.25px rgba(235, 244, 255, .82),
+        0 0 0 5px rgba(2, 6, 16, .38),
+        0 6px 18px 6px rgba(0, 0, 0, .55),
+        0 0 26px 2px color-mix(in srgb, var(--c, #8fb4ff) 55%, transparent) !important;
+}
+html #cmPaneChat[data-spirit-chat] .cg-body .cg-orb .cp-form { filter: drop-shadow(0 1px 3px rgba(0, 0, 0, .5)) brightness(1.08) !important; }
+html #cmPaneChat[data-spirit-chat] .cg-body.me .cg-orb.cg-orb {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), 0 0 0 1.5px rgba(156, 218, 199, .95), 0 0 0 5px rgba(2, 6, 16, .38), 0 6px 18px 6px rgba(0, 0, 0, .5), 0 0 34px 8px rgba(156, 218, 199, .45) !important;
+}
+html #cmPaneChat[data-spirit-chat] .cg-body.sel .cg-orb.cg-orb {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), 0 0 0 2px #fff, 0 0 0 5.5px rgba(2, 6, 16, .4), 0 6px 18px 6px rgba(0, 0, 0, .5), 0 0 30px var(--c) !important;
+}
+/* bots keep their quiet dashed hint, now outside the halo */
+html #cmPaneChat[data-spirit-chat] .cg-body.bot .cg-orb.cg-orb { outline-offset: 6px !important; }
+
+/* names: white, bold, a soft dark shadow and a faint dark pill so they read over bright cells too */
+html #cmPaneChat[data-spirit-chat] .cg-body .cg-name.cg-name {
+    color: #fff !important;
+    font-weight: 700 !important;
+    font-size: 11px !important;
+    letter-spacing: .01em;
+    padding: 0 4px !important;
+    border-radius: 8px !important;
+    background: rgba(3, 8, 22, .5) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .95), 0 0 6px rgba(0, 0, 0, .7) !important;
+    /* far out the companion shrinks with the map, its name less so (place() sets --nk), so names stay readable */
+    transform: scale(var(--nk, 1));
+    transform-origin: 50% 0;
+}
+html #cmPaneChat[data-spirit-chat] .cg-body.bot .cg-name.cg-name { color: rgba(255, 255, 255, .9) !important; }
+html #cmPaneChat[data-spirit-chat] .cg-body:is(.me, .sel) .cg-name.cg-name { background: rgba(3, 8, 22, .62) !important; }
+
+@media (prefers-reduced-motion: reduce) {
+    html.wb-on.wb-comm #bw3Back .bw3-canvas { transition: none !important; }
+}

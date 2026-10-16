@@ -246,7 +246,7 @@ function place(){
   const gx=W.__lgGx,field=D.getElementById('cgField'),gal=D.getElementById('cgGalaxy');if(!G||!gx||!gx.map||!field||!gal)return;
   mapGestures(gal);
   const v=mapView(gal),Z=mapZ(gx,v);if(!cam)cam={x:0,y:0,z:Z.z0};cam=G.mapClamp(cam,gx.map.radius,v.w,v.h);
-  const f=Math.max(.6,Math.min(1.2,Math.sqrt(cam.z/Z.z0))),cx=v.w/2,cy=v.h*.5,scr=s=>({x:cx+(s.x-cam.x)*cam.z,y:cy+(s.y-cam.y)*cam.z});
+  const f=Math.max(.68,Math.min(1.2,Math.sqrt(cam.z/Z.z0))),fn=Math.max(.8,f),cx=v.w/2,cy=v.h*.5,scr=s=>({x:cx+(s.x-cam.x)*cam.z,y:cy+(s.y-cam.y)*cam.z});
   const bodies=new Map(),bubs=new Map();
   for(const el of field.querySelectorAll('.cg-body'))bodies.set(el.getAttribute('data-uid'),el);
   for(const el of field.querySelectorAll('.cg-bub[data-for]'))bubs.set(el.getAttribute('data-for'),el);
@@ -254,9 +254,9 @@ function place(){
   for(const L of gx.labels){const el=bodies.get(L.id),s=gx.spot.get(L.id);if(!el||!s)continue;const p=scr(s);
    if(el.__nw==null){const n=el.querySelector('.cg-name');el.__nw=n?Math.min(L.size+30,n.offsetWidth||60):60;}
    const b=bubs.get(L.id);if(b&&b.__bh==null)b.__bh=b.offsetHeight||34;
-   items.push({id:L.id,x:p.x,y:p.y,s:L.size*f,nw:el.__nw*f,bw:b?L.bw:0,bh:b?b.__bh:0,bub:!!b});
+   items.push({id:L.id,x:p.x,y:p.y,s:L.size*f,nw:el.__nw*fn,bw:b?L.bw:0,bh:b?b.__bh:0,bub:!!b});
    el.style.left='0';el.style.top='0';el.style.transform='translate3d('+p.x.toFixed(1)+'px,'+p.y.toFixed(1)+'px,0) translate(-50%,calc(var(--s) / -2)) scale('+f.toFixed(3)+')';
-   el.classList.toggle('cg-out',p.x<-80||p.x>v.w+80||p.y<-80||p.y>v.h+80);}
+   el.style.setProperty('--nk',(fn/f).toFixed(3));el.classList.toggle('cg-out',p.x<-80||p.x>v.w+80||p.y<-80||p.y>v.h+80);}
   const lab=G.mapLabels(items,{w:v.w,h:v.hb||v.h});
   for(const it of items){const r=lab.get(it.id),el=bodies.get(it.id),b=bubs.get(it.id);if(!r||!el)continue;el.classList.toggle('cg-nn',!r.name);el.classList.toggle('cg-dot',!!r.dot);
    if(!b)continue;if(r.bub){b.style.display='';b.style.left=r.bub.x+'px';b.style.setProperty('top',r.bub.y+'px','important');b.style.setProperty('bottom','auto','important');b.style.setProperty('--tail',r.bub.tail+'px');b.setAttribute('data-side',r.bub.side);}else b.style.display='none';}

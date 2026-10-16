@@ -446,7 +446,9 @@ async function sendPhoto(){if(photoBusy||!pendingPhoto)return;if(!store||!scope|
    Bots are labelled as bots. Actions: Chat (direct line in the galaxy) and Send energy (Adventure log care, real members only). */
 function lastSeen(id){let ts=0;for(const m of messages())if(m&&m.uid===id&&!m.status&&+m.ts>ts)ts=+m.ts;return ts;}
 function ago(ts){const sec=Math.max(0,(Date.now()-ts)/1000),loc=['en','de','es'][Math.max(0,lang())];try{const f=new Intl.RelativeTimeFormat(loc,{numeric:'auto'});return sec<60?f.format(0,'second'):sec<3600?f.format(-Math.round(sec/60),'minute'):sec<86400?f.format(-Math.round(sec/3600),'hour'):f.format(-Math.round(sec/86400),'day');}catch(e){return new Date(ts).toLocaleString();}}
-function pcDate(v){const d=new Date(String(v||'')+'T12:00:00');return isNaN(d)?'':d.toLocaleDateString(['en','de','es'][Math.max(0,lang())],{day:'numeric',month:'long'});}
+/* Person-card dates: a YYYY-MM-DD day, a ms timestamp (number or digit string) or an ISO string. Unreadable -> '' so the row hides; never a raw number. */
+function pcParse(v){if(v==null||v===''||typeof v==='boolean')return null;let d;const s=String(v).trim();if(typeof v==='number'||/^\d{9,}$/.test(s)){if(!(+s>0))return null;d=new Date(+s);}else if(/^\d{4}-\d{2}-\d{2}$/.test(s))d=new Date(s+'T12:00:00');else if(/^\d{4}-\d{2}-\d{2}T/.test(s))d=new Date(s);else return null;return isNaN(d)?null:d;}
+function pcDate(v,year){const d=pcParse(v);if(!d)return '';const o={day:'numeric',month:'long'};if(year)o.year='numeric';try{return d.toLocaleDateString(['en-GB','de-DE','es-ES'][Math.max(0,lang())],o);}catch(e){return '';}}
 function pcRow(label,value,muted){return '<div class="cp-row"><span>'+esc(label)+'</span><b'+(muted?' class="cp-muted"':'')+'>'+esc(value)+'</b></div>';}
 function openPerson(id,name){if(!id)return;const bt=botOf(id),mine=id===scope;const p=bt?null:profile(id,name),n=bt?bt.n:p.n,key='pc'+sid(id);
  const art=!bt&&p.avatar?'<img class="cp-pic" alt="" src="'+esc(p.avatar)+'">':mate(id,key);
@@ -461,7 +463,7 @@ function openPerson(id,name){if(!id)return;const bt=botOf(id),mine=id===scope;co
  else rows+=pcRow(tr('pcBday'),tr('pcNotShared'),true);
  if(!bt)rows+=pcRow(tr('pcType'),type?type+tagOf(type,sh&&sh.t===type):tr('pcNotShared'),!type);
  rows+=pcRow(tr('pcLevel'),String(bt?bt.lv+' · '+bt.xp+' XP':p.lv));
- if(bt&&bt.since)rows+=pcRow(tr('withUs'),pcDate(bt.since)||String(bt.since));
+ if(bt&&pcDate(bt.since,1))rows+=pcRow(tr('withUs'),pcDate(bt.since,1));
  const care=!bt&&!mine&&W.LowiMicroBook&&typeof W.LowiMicroBook.openCare==='function';
  const acts=mine?button('settings','<i aria-hidden="true">⚙︎</i><span>'+tr('controls')+'</span>','','cp-act'):
   button('select-close','<i aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" focusable="false"><path d="M5 6.5A2.5 2.5 0 0 1 7.5 4h9A2.5 2.5 0 0 1 19 6.5v6a2.5 2.5 0 0 1-2.5 2.5H11l-4 4v-4h0A2 2 0 0 1 5 13z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></i><span>'+tr('pcChat')+'</span>','data-uid="'+esc(id)+'" aria-label="'+esc(fill('talkBtn',n))+'"','cp-act cp-act-pri')+
@@ -474,10 +476,10 @@ function settings(){const m=own(),shared=K.identity(identities.get(scope)),row=i
 function blockList(){const ids=Object.keys(prefs.blocks).filter(id=>prefs.blocks[id].blocked);return ids.length?ids.map(id=>'<div class="cs-blockrow"><span>'+esc(prefs.blocks[id].name||'Member')+'</span>'+button('unblock',tr('unblock'),'data-uid="'+esc(id)+'"')+'</div>').join(''):'<p>'+tr('noBlocked')+'</p>';}
 function matePref(){try{const v=JSON.parse(localStorage.getItem('lowispike.companion.v1')||'null')||{};return {share:v.share!==false,traits:v.traits!==false,born:+v.born||0};}catch(e){return {share:true,traits:true,born:0};}}
 function botProfile(b){const C=W.LowiCompanionCore,l=lang(),loc=['en-GB','de-DE','es-ES'][Math.max(0,l)];let form='';try{form=C&&C.formName?C.formName(b.stage,b.el,['en','de','es'][Math.max(0,l)]):'';}catch(e){}
- const d=s=>{try{return new Date(s).toLocaleDateString(loc,{day:'numeric',month:'long',year:'numeric'});}catch(e){return String(s);}};
+ const d=s=>pcDate(s,1);
  const row=(k,v)=>'<div class="cg-prow"><span>'+esc(k)+'</span><b>'+esc(v)+'</b></div>';
  sheet('<h2>'+esc(b.n)+' <span class="cg-bottag">'+tr('botTag')+'</span></h2><div class="cs-pub cg-pbot">'+mate(b.uid,'sh'+sid(b.uid))+'<div><b>'+esc(b.mate)+'</b><br>'+esc(form)+' · '+esc(fill('levelN',b.lv))+'</div></div>'+
-  '<div class="cg-prows">'+row(tr('companion'),b.mate+(form?' · '+form:''))+row(tr('levelN').replace('{n}','').trim()||'Level',String(b.lv)+' · '+b.xp+' XP')+row(tr('born'),d(b.bday)+' · '+fill('ageN',b.age))+row(tr('sign'),b.sign)+row(tr('withUs'),d(b.since))+'</div>'+
+  '<div class="cg-prows">'+row(tr('companion'),b.mate+(form?' · '+form:''))+row(tr('levelN').replace('{n}','').trim()||'Level',String(b.lv)+' · '+b.xp+' XP')+row(tr('born'),[d(b.bday),fill('ageN',b.age)].filter(Boolean).join(' · '))+row(tr('sign'),b.sign)+(d(b.since)?row(tr('withUs'),d(b.since)):'')+'</div>'+
   '<p class="cg-pline">“'+esc(b.line[Math.max(0,l)])+'”</p><p>'+tr('botNote')+'</p>'+button('select-close',esc(fill('talkBtn',b.n)),'data-uid="'+esc(b.uid)+'"','cs-action'));}
 function openProfile(id,name){if(!blocked(id)){openPerson(id,name);return;}const bt=botOf(id);if(bt){botProfile(bt);return;}const p=profile(id,name);sheet('<h2>'+tr('profile')+'</h2><div class="cs-pub">'+mate(id,'sh'+sid(id))+'<div><b>'+esc(p.n)+'</b><br>'+esc([p.t,p.s].filter(Boolean).join(' · ')||tr('noDetails'))+'</div></div><p>'+tr('profileNote')+'</p>'+(id!==scope?'<p>'+tr('blockNote')+'</p>'+button('block',tr('block'),'data-uid="'+esc(id)+'" data-name="'+esc(p.n)+'"')+'<p class="cs-result" id="csBlockResult" role="status"></p>':button('settings',tr('controls'))));}
 function openReport(mid){const m=messages().find(x=>x.id===mid);if(!m||m.uid===scope)return;sheet('<h2>'+tr('report')+'</h2><p>'+tr('reportDesc')+'</p><form data-chat-form="report" data-mid="'+esc(mid)+'"><select name="reason" aria-label="'+tr('report')+'">'+['harassment','spam','privacy','unsafe'].map(v=>'<option value="'+v+'">'+tr(v)+'</option>').join('')+'</select><button class="cs-submit" data-sfx="none">'+tr('sendReport')+'</button><p class="cs-result" role="status"></p></form>'+button('block',tr('block'),'data-uid="'+esc(m.uid)+'" data-name="'+esc(m.by)+'"')+'<p class="cs-result" id="csBlockResult" role="status"></p>');}

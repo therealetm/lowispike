@@ -81,3 +81,13 @@ html.wh-home #tab-home #f3Board.hq-joined { border-bottom-left-radius: 0 !import
 .arr-card.arr-quest.arr-line { padding-top: 8px; padding-bottom: 10px; }
 .arr-card.arr-quest.arr-line .arr-fact { margin-top: 3px; }
 .arr-card.arr-quest.out { opacity: 1; transform: none; }
+
+/* ---------- Oct 16 (E-man, iPad): placement under the Daily Quest box + gentle fade ----------
+   arrival-cards.js gives #hqSlot the board's own left, width and bottom edge (the board is placed absolutely on the world Home),
+   so the card sits centred directly under the Daily Quest box and never over the weather pill, sun/moon or profile picture.
+   The card fades in and out (opacity only); the slot shrinks back after the fade. Reduced motion: it simply appears and goes. */
+.hq-slot[data-placed] { box-sizing: border-box; }
+.arr-card.arr-quest { opacity: 0; transition: opacity .28s ease; }
+.arr-card.arr-quest.on { opacity: 1; }
+.arr-card.arr-quest.out { opacity: 0; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .hq-slot, .arr-card.arr-quest { transition: none !important; } }

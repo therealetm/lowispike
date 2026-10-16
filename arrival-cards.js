@@ -48,8 +48,9 @@
     function close(how) {
         const c = cur; cur = null; if (!c) return;
         clearTimeout(c.t);
-        if (c.host) c.host.classList.remove('arr-on');
-        if (c.where === 'quest') { const b = D.getElementById('f3Board'); setTimeout(() => { if (!(cur && cur.where === 'quest') && b) b.classList.remove('hq-joined'); }, reduced() || how === 'now' ? 0 : 320); }
+        /* Oct 16: the Daily Quest slot stays open while its card fades, then shrinks back with the board's round corners */
+        if (c.host && c.where !== 'quest') c.host.classList.remove('arr-on');
+        if (c.where === 'quest') { const b = D.getElementById('f3Board'), n = c.host; setTimeout(() => { if (!(cur && cur.where === 'quest')) { if (b) b.classList.remove('hq-joined'); if (n) n.classList.remove('arr-on'); } }, reduced() || how === 'now' ? 0 : 320); }
         const el = c.el; if (!el) return;
         if (c.where === 'ride') { el.remove(); return; }
         el.classList.remove('on'); el.classList.add('out');
@@ -95,22 +96,47 @@
         let n = D.getElementById('hqSlot');
         if (!n) { n = D.createElement('div'); n.id = 'hqSlot'; n.className = 'hq-slot'; }
         if (n.previousElementSibling !== b) b.insertAdjacentElement('afterend', n);
+        placeSlot(); watchBoard(b);
         return n;
+    }
+    /* Oct 16 (E-man, iPad sideways: the card sat top-right over the sun/moon button, the profile picture and half of the
+       centred Daily Quest box; "it is only supposed to appear below the daily quest"). Since the Home top row places the
+       board absolutely (world-home.css), the slot no longer follows it in the page flow. So the slot takes the board's own
+       left, width and bottom edge: the card is always centred directly under the Daily Quest box, on phone and iPad, and
+       moves with it when the quest list opens or the screen turns. A board in the normal flow keeps the plain slot. */
+    function placeSlot() {
+        const n = D.getElementById('hqSlot'), b = D.getElementById('f3Board'); if (!n || !b) return;
+        const pos = b.offsetParent ? getComputedStyle(b).position : '';
+        if (pos !== 'absolute' && pos !== 'fixed') { if (n.dataset.placed) { ['position', 'top', 'left', 'right', 'width', 'margin'].forEach(k => n.style.removeProperty(k)); delete n.dataset.placed; } return; }
+        const v = { position: pos, top: (b.offsetTop + b.offsetHeight) + 'px', left: b.offsetLeft + 'px', right: 'auto', width: b.offsetWidth + 'px', margin: '0' };
+        for (const k in v) if (n.style.getPropertyValue(k) !== v[k]) n.style.setProperty(k, v[k]);
+        n.dataset.placed = '1';
+    }
+    let boardRO = null, boardSeen = null;
+    function watchBoard(b) {
+        if (boardSeen === b || typeof ResizeObserver === 'undefined') return;
+        if (boardRO) boardRO.disconnect();
+        boardSeen = b; boardRO = new ResizeObserver(() => placeSlot()); boardRO.observe(b);
     }
     function inQuest(c, cls) {
         const n = questSlot(); if (!n) return null;
         close('now'); css();
+        n.querySelectorAll('.arr-card').forEach(e => e.remove()); /* a card still fading out leaves at once for the new one */
         const b = D.getElementById('f3Board'); if (b) b.classList.add('hq-joined');
         return mount(build(c, 'arr-quest ' + (cls || '')), n, 'quest', n, c.id);
     }
     function floating(id) {
         const c = data(id); if (!c) return null;
         const q = inQuest(c); if (q) return q;
+        /* Oct 16: on the world Home the card only ever shows under the Daily Quest box, never floating over the top row */
+        if (D.documentElement.classList.contains('wh-home')) return null;
         close('now'); css();
         return mount(build(c, 'arr-float'), D.body, 'float', null, c.id);
     }
     /* the short world lines ("Back in the bloodstream ...") on Home go into the same slot, a few seconds, one line */
     function note(title, line, hue, ms) {
+        if (leftPlace()) { leave(); return true; } /* Oct 16: back out of the place the open card is about: the card fades away, no new line in its place */
+        if (justLeft()) return true;
         if (offHome()) return false;
         if (cur && cur.where === 'quest' && !cur.line) return true; /* an open info card wins: it already says where you are */
         const c = { id: 'line', hue: hue || '#7fd1ff', name: title || '', over: '', close: (C() && C().text ? '' : '') || 'Close', factLabel: '', fact: line || '', todayLabel: '', today: '' };
@@ -182,6 +208,47 @@
     W.addEventListener('lowi:ride-arrive', e => { try { const id = e && e.detail && e.detail.place; if (id) { last = { id: C().pid(id), t: Date.now() }; inRide(C().pid(id)); } } catch (err) {} });
     W.addEventListener('lowi:ride-end', () => { if (cur && cur.where === 'ride') cur = null; });
     W.addEventListener('lowi:body-trip-done', e => { try { const d = e && e.detail || {}; inTrip(d.place); } catch (err) {} });
+
+    /* ---------- Oct 16 (E-man: "we move out of the world again and this display is still there, that doesn't make sense") ----------
+       A place's card belongs to that place. It fades away (no fade under reduced motion) as soon as you leave it: back to the
+       bloodstream / Misty's Home view, a fly-out to another place or the bloodstream from the World map, another tab, or the
+       Community zoom-out. The cell ride keeps its own card (its buttons go on with the ride). */
+    const pidOf = id => { try { return (C() && C().pid(id)) || null; } catch (e) { return null; } };
+    const regionNow = () => { try { const R = W.LowiWorldRegions; return R && R.current ? R.current() : null; } catch (e) { return null; } };
+    const activeTab = () => { const t = D.querySelector('.tab.active'); return t ? t.id : ''; };
+    function leftPlace() {
+        if (!cur || cur.where === 'ride' || cur.line || !cur.id) return false;
+        const r = regionNow(); if (r == null) return false;
+        return pidOf(r === 'hub' ? 'blood' : r) !== cur.id;
+    }
+    let leftAt = 0;
+    function leave() { if (cur && cur.where !== 'ride') { if (!cur.line) leftAt = Date.now(); close(); } }
+    /* just left a place's card behind: the "Back in the bloodstream" line does not pop up in its spot right after */
+    const justLeft = () => regionNow() === 'hub' && Date.now() - leftAt < 8000;
+    function awayCheck() {
+        if (!cur || cur.where === 'ride' || cur.where === 'world') return;
+        if (offHome() || (cur.tab != null && activeTab() !== cur.tab)) { leave(); return; }
+        /* zoomed out to the World map or past it into the spirit world (not while a fly-in is still settling) */
+        const H = D.documentElement, busy = (() => { try { const s = W.LowiWorldRegions && W.LowiWorldRegions.state; return !!(s && s.busy); } catch (e) { return false; } })();
+        if (H.classList.contains('wh-cosmos') || (H.classList.contains('wh-mapview') && !busy)) { leave(); return; }
+        if (cur.where === 'quest') { const h = D.getElementById('tab-home'); if (h && !h.classList.contains('active')) leave(); }
+    }
+    W.addEventListener('lowi:world-region', e => {
+        try { const id = e && e.detail && e.detail.id; if (rideOpen()) return; if (!id || id === 'hub') leave(); else if (cur && !cur.line && cur.where !== 'ride' && cur.id && pidOf(id) !== cur.id && !worldHost()) leave(); } catch (err) {}
+    });
+    W.addEventListener('lowi:world-warp', e => {
+        try { const d = e && e.detail || {}; if (d.phase !== 'start' || rideOpen() || !cur) return; if (pidOf(d.id === 'hub' ? 'blood' : d.id) !== cur.id) leave(); } catch (err) {}
+    });
+    W.addEventListener('lowi:arrival', () => { if (cur) cur.tab = activeTab(); placeSlot(); });
+    W.addEventListener('resize', () => placeSlot(), { passive: true });
+    function watchTabs() {
+        if (typeof MutationObserver === 'undefined') return;
+        const mo = new MutationObserver(awayCheck);
+        mo.observe(D.documentElement, { attributes: true, attributeFilter: ['class'] });
+        D.querySelectorAll('.tab').forEach(t => mo.observe(t, { attributes: true, attributeFilter: ['class'] }));
+    }
+    if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', watchTabs, { once: true }); else watchTabs();
+    setInterval(() => { awayCheck(); if (cur && cur.where === 'quest') placeSlot(); }, 1500);
     /* the world closed or the card's host went away: forget it */
     setInterval(() => { if (cur && cur.el && !cur.el.isConnected) { clearTimeout(cur.t); cur = null; } }, 1500);
 

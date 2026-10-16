@@ -1,0 +1,170 @@
+/* Oct 16 (Eman: "it's either cook it or grocery shop it. These are the two major things people like ... the shop it interface is not
+   aligned with our design style. Improve it so it's very efficient.")
+   1) Cook it / Shop it: two equal primary actions on Cook, on the shuffle pick and on every recipe.
+   2) Shop it (the cart, #lsCart) and the in-store list (#lcShop) in black space + Misty's blue Liquid Glass (same tokens as style-sweep.css).
+   Loaded last, scoped to its own selectors. */
+:root {
+  --cs-glass: var(--ms-glass, linear-gradient(160deg, rgba(80, 170, 255, .14), rgba(28, 74, 150, .34)));
+  --cs-glass-solid: var(--ms-glass-solid, linear-gradient(170deg, rgba(14, 36, 82, .92), rgba(8, 22, 54, .94)));
+  --cs-line: var(--ms-line, rgba(160, 220, 255, .55));
+  --cs-line-soft: var(--ms-line-soft, rgba(160, 220, 255, .24));
+  --cs-sh: var(--ms-sh, inset 0 0 18px rgba(140, 210, 255, .32), 0 8px 26px -12px rgba(40, 120, 255, .5));
+  --cs-btn: var(--ms-btn, linear-gradient(180deg, #ffffff 0%, #e4f3ff 55%, #c9e6ff 100%));
+  --cs-ink: var(--ms-ink, #0b1d3f);
+  --cs-accent: var(--ms-accent, #9fd8ff);
+  --cs-glow: var(--ms-glow, rgba(100, 210, 255, .42));
+}
+
+/* ---------- the pair: Cook it | Shop it ---------- */
+html body .cs-pair { display: grid !important; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin: 12px 0 0; }
+html body .cs-pair .cs-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 50px; padding: 0 14px; border-radius: 999px;
+  font: inherit; font-size: 16px; font-weight: 700; letter-spacing: -.01em; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  background: var(--cs-btn) !important; color: var(--cs-ink) !important; border: 1px solid rgba(255, 255, 255, .8) !important;
+  box-shadow: inset 0 1px 0 #fff, 0 8px 22px -10px var(--cs-glow) !important; text-shadow: none !important;
+  transition: transform .15s ease, box-shadow .2s ease; white-space: nowrap; width: auto !important; margin: 0 !important; flex: none;
+}
+html body .cs-pair .cs-btn > span { color: inherit !important; }
+html body .cs-pair .cs-btn svg { width: 20px; height: 20px; flex: none; color: inherit; stroke: currentColor; }
+html body .cs-pair .cs-btn:active { transform: scale(.97); }
+html body .cs-pair .cs-btn:focus-visible { outline: 2px solid var(--cs-accent); outline-offset: 3px; }
+html body .cs-pair:has(> .cs-btn:only-child) { grid-template-columns: 1fr; }
+/* on the Cook tab: right under the shuffle button, a touch smaller so Cook still fits */
+html body .cs-hub { max-width: 420px; margin: 10px auto 0; }
+html body .cs-hub .cs-btn { min-height: 46px; font-size: 15px; }
+/* the recipe screen: the pair rides along at the bottom until you scroll to its place, so it's always one tap away */
+html body .p2-cs { position: sticky; bottom: calc(var(--sab, 0px) + 12px); z-index: 6; margin: 4px -8px 22px; padding: 8px; width: auto; border-radius: 999px;
+  background: rgba(4, 10, 26, .55); border: 1px solid var(--cs-line-soft); -webkit-backdrop-filter: blur(16px) saturate(160%); backdrop-filter: blur(16px) saturate(160%); }
+/* the shuffle pick card */
+html body .r5-card .cs-pair.r5-btns { margin-top: 12px; }
+html body .r5-card .r5-mini:empty { display: none; }
+
+/* ---------- Shop it: the cart ---------- */
+html body #lsCart {
+  background: radial-gradient(120% 46% at 50% -8%, rgba(40, 110, 220, .22), transparent 62%), radial-gradient(90% 40% at 50% 108%, rgba(60, 40, 160, .16), transparent 60%), rgba(2, 4, 12, .96) !important;
+  color: #fff;
+}
+/* the Today / sheet close X (#whX) never floats over the cart or the in-store list: they have their own glass close */
+html:has(#lsCart.open) #whX, html:has(#lcShop.open) #whX { display: none !important; }
+html body #lsCart .cs-hd, html body #lcShop .cs-shd { display: flex; align-items: center; gap: 12px; padding: calc(var(--sat, 0px) + 12px) 16px 8px; }
+html body :is(#lsCart, #lcShop) .cs-x {
+  flex: none; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; padding: 0; cursor: pointer;
+  background: var(--wh-glass-bg, var(--cs-glass)) !important; border: 1.5px solid var(--cs-line) !important; box-shadow: var(--cs-sh) !important; color: #fff !important;
+  -webkit-backdrop-filter: blur(20px) saturate(170%); backdrop-filter: blur(20px) saturate(170%);
+}
+html body :is(#lsCart, #lcShop) .cs-x svg { width: 18px; height: 18px; }
+html body :is(#lsCart, #lcShop) .cs-ht { flex: 1; min-width: 0; }
+html body :is(#lsCart, #lcShop) .cs-ht .h2 { margin: 0; line-height: 1.15; }
+html body :is(#lsCart, #lcShop) .cs-hsub { color: rgba(220, 236, 255, .78); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 4px; }
+html body #lsCart .cs-est { flex: none; font-size: 11px; font-weight: 650; padding: 5px 10px; border-radius: 99px; color: rgba(220, 236, 255, .85); background: rgba(80, 170, 255, .1); border: 1px solid var(--cs-line-soft); }
+html body #lsCart .lc-lab { color: rgba(220, 236, 255, .7); }
+/* always black space, so the small print stays light in Light mode too */
+html body :is(#lsCart, #lcShop) :is(.muted, .dim, .lc-note, .ls-swipehint, .lc-tuck, .tiny) { color: rgba(220, 236, 255, .66) !important; }
+/* store chips: one compact row, the chosen one is lit glass */
+html body #lsCart .lc-st {
+  min-width: 0; flex-direction: row; align-items: center; gap: 7px; padding: 0 14px; min-height: 44px; border-radius: 999px;
+  background: rgba(80, 170, 255, .06) !important; border: 1px solid var(--cs-line-soft) !important; box-shadow: none !important; color: #fff; margin-top: 8px;
+}
+html body #lsCart .lc-st b { font-size: 14.5px; }
+html body #lsCart .lc-st .lc-stp { font-size: 13px; color: rgba(220, 236, 255, .7); }
+html body #lsCart .lc-st.on { background: var(--cs-glass) !important; border: 1.5px solid var(--cs-line) !important; box-shadow: var(--cs-sh) !important; }
+html body #lsCart .lc-st.on .lc-stp { color: #fff; }
+html body #lsCart .lc-cheap { top: -8px; right: 10px; background: #0b2a5a !important; color: #bfe6ff !important; border: 1px solid var(--cs-line); letter-spacing: .04em; }
+html body #lsCart .cs-save {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; margin: 10px 0 0; min-height: 44px; padding: 0 6px 0 14px; border-radius: 999px;
+  background: rgba(80, 170, 255, .08); border: 1px solid var(--cs-line-soft); color: #fff; font: inherit; font-size: 14px; cursor: pointer; text-align: left;
+}
+html body #lsCart .cs-save > b { flex: none; padding: 7px 14px; border-radius: 99px; background: var(--cs-btn); color: var(--cs-ink); font-size: 13.5px; }
+/* meals */
+html body #lsCart .lc-m img, html body #lsCart .lc-me { border-radius: 50%; border: 1.5px solid var(--cs-line-soft); background: rgba(80, 170, 255, .08); }
+html body #lsCart .lc-m.on img, html body #lsCart .lc-m.on .lc-me { border-color: var(--cs-line); box-shadow: 0 0 18px rgba(100, 200, 255, .35); }
+html body #lsCart .lc-ck { background: var(--cs-btn); color: var(--cs-ink); }
+html body #lsCart .lc-add .lc-me { border-style: dashed; color: rgba(220, 236, 255, .8); }
+/* the cart: a glass bubble, no grid drawing */
+html body #lsCart .lc-stage { width: auto; height: auto; margin: 18px 0 0; } /* companion-birth.css also uses .lc-stage (200x200): not here */
+html body #lsCart .lc-cart { padding: 0 6px 6px; max-width: 380px; width: 100%; box-sizing: border-box; }
+html body #lsCart .lc-handle, html body #lsCart .lc-wheels { display: none !important; }
+html body #lsCart .lc-basket {
+  position: relative; overflow: hidden; min-height: 132px; border-radius: 34px !important; padding: 14px 12px !important;
+  background: radial-gradient(130% 90% at 22% 0%, rgba(255, 255, 255, .16), rgba(255, 255, 255, 0) 50%), radial-gradient(90% 80% at 50% 110%, rgba(120, 90, 255, .2), rgba(0, 0, 0, 0) 60%), linear-gradient(160deg, rgba(80, 170, 255, .14), rgba(20, 56, 128, .4)) !important;
+  border: 1.5px solid var(--cs-line) !important; box-shadow: var(--cs-sh), inset 0 -10px 30px rgba(10, 30, 80, .45) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(170%) !important; backdrop-filter: blur(22px) saturate(170%) !important;
+}
+html body #lsCart .cs-glow { position: absolute; inset: auto 12% -40% 12%; height: 70%; border-radius: 50%; background: radial-gradient(closest-side, rgba(100, 210, 255, .28), rgba(100, 210, 255, 0)); pointer-events: none; animation: csBreath 6s ease-in-out infinite; }
+@keyframes csBreath { 0%, 100% { opacity: .55; transform: scale(1); } 50% { opacity: 1; transform: scale(1.06); } }
+html body #lsCart .lc-in { position: relative; min-height: 104px; align-content: center; }
+html body #lsCart .lc-cart.hot .lc-basket { border-color: #cfeeff !important; box-shadow: var(--cs-sh), 0 0 34px rgba(100, 210, 255, .55) !important; }
+html body #lsCart .lc-n { color: rgba(235, 245, 255, .9); }
+html body #lsCart .lc-sum { margin-top: 10px; color: #fff; }
+html body #lsCart .lc-shelf { border: 1px dashed var(--cs-line-soft); background: rgba(80, 170, 255, .04); }
+/* the list: tick it off */
+html body #lsCart .cs-listlab { display: flex; justify-content: space-between; align-items: baseline; }
+html body #lsCart .cs-gotn { color: var(--cs-accent); font-weight: 700; }
+html body #lsCart .cs-list, html body #lsCart .lc-list {
+  background: var(--cs-glass) !important; border: 1px solid var(--cs-line-soft) !important; box-shadow: var(--cs-sh) !important; border-radius: 22px !important; padding: 4px 12px !important;
+}
+html body :is(#lsCart, #lcShop) .cs-aisle { font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: rgba(191, 230, 255, .62); padding: 12px 2px 2px; }
+html body :is(#lsCart, #lcShop) :is(.cs-row, .cs-si) {
+  width: 100%; text-align: left; font: inherit; color: #fff; background: none; border: 0; border-top: 1px solid rgba(160, 220, 255, .1); cursor: pointer;
+  display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 8px 0; -webkit-tap-highlight-color: transparent;
+}
+html body :is(#lsCart, #lcShop) .cs-aisle + :is(.cs-row, .cs-si) { border-top: 0; }
+html body :is(#lsCart, #lcShop) .cs-tick {
+  flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; border: 2px solid rgba(191, 230, 255, .55); color: var(--cs-ink); transition: background .15s, transform .15s;
+}
+html body :is(#lsCart, #lcShop) .cs-tick.big { width: 34px; height: 34px; }
+html body :is(#lsCart, #lcShop) .cs-tick svg { width: 14px; height: 14px; }
+html body :is(#lsCart, #lcShop) .cs-tick.big svg { width: 18px; height: 18px; }
+html body :is(#lsCart, #lcShop) .got .cs-tick { background: var(--cs-btn); border-color: #fff; transform: scale(1.04); }
+html body :is(#lsCart, #lcShop) .got .lc-rt b { text-decoration: line-through; text-decoration-color: rgba(191, 230, 255, .6); }
+html body :is(#lsCart, #lcShop) .got :is(.lc-rt, .lc-rp, .lc-re) { opacity: .5; }
+html body #lsCart .lc-rowt { border-top: 1px solid rgba(160, 220, 255, .22); }
+html body #lsCart .cs-tickhint { text-align: center; margin: 8px 0 14px; color: rgba(220, 236, 255, .6); }
+/* search by ingredient: blue glass, no gold tile */
+html body .k9-entry { border-color: var(--cs-line-soft) !important; background: var(--cs-glass) !important; box-shadow: var(--cs-sh) !important; color: #fff; }
+html body .k9-eic { background: var(--wh-glass-bg, rgba(80, 170, 255, .2)) !important; border: 1.5px solid var(--cs-line) !important; color: #fff !important; border-radius: 50% !important; box-shadow: inset 0 0 12px rgba(140, 210, 255, .3) !important; }
+html body .k9-entry .k9-go { color: var(--cs-accent); }
+html body #lsCart .k9-entry { margin: 18px 0 0; }
+/* footer: glass copy + one primary, nothing on top of them */
+html body #lsCart .cs-ft { position: relative; z-index: 2; gap: 10px; background: linear-gradient(rgba(2, 4, 12, .4), rgba(2, 4, 12, .9)) !important; border-top: 1px solid var(--cs-line-soft) !important; }
+html body :is(#lsCart, #lcShop) .cs-copy, html body #lcShop .cs-chip {
+  flex: .8; min-height: 50px; border-radius: 999px; background: var(--cs-glass) !important; border: 1.5px solid var(--cs-line) !important; box-shadow: var(--cs-sh) !important; color: #fff !important; font-weight: 650;
+}
+html body :is(#lsCart, #lcShop) :is(.cs-go, .cs-done) {
+  flex: 1.4; min-height: 50px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: var(--cs-btn) !important; color: var(--cs-ink) !important; border: 1px solid rgba(255, 255, 255, .8) !important; box-shadow: inset 0 1px 0 #fff, 0 8px 22px -10px var(--cs-glow) !important; font-weight: 750;
+}
+html body #lsCart .cs-go svg { width: 20px; height: 20px; flex: none; }
+html body #lsCart .cs-go span { color: inherit; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html body #lsCart .cs-go:disabled { opacity: .45; }
+
+/* ---------- in the store: big ticks, aisle order ---------- */
+html body #lcShop {
+  position: absolute; inset: 0; z-index: 41; display: flex; flex-direction: column; color: #fff;
+  background: radial-gradient(120% 46% at 50% -8%, rgba(40, 110, 220, .24), transparent 62%), rgba(2, 4, 12, .97);
+  transform: translateY(100%); transition: transform .32s cubic-bezier(.2, .8, .2, 1); visibility: hidden;
+}
+html body #lcShop.open { transform: none; visibility: visible; }
+html body #lcShop .cs-chip { flex: none; min-height: 44px; padding: 0 16px; font: inherit; font-size: 14px; cursor: pointer; }
+html body #lcShop .cs-bar { height: 6px; margin: 4px 16px 6px; border-radius: 99px; background: rgba(160, 220, 255, .14); overflow: hidden; }
+html body #lcShop .cs-bar b { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #8fd0ff, #ffffff); box-shadow: 0 0 12px var(--cs-glow); transition: width .3s ease; }
+html body #lcShop .cs-sbody { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 16px 16px; }
+html body #lcShop .cs-si { min-height: 60px; }
+html body #lcShop .ss-entry { margin: 4px 0 6px; }
+html body #lcShop .lc-rt b { font-size: 17px; }
+html body #lcShop .cs-sft { display: flex; align-items: center; gap: 12px; padding: 12px 16px calc(var(--sab, 0px) + 14px); border-top: 1px solid var(--cs-line-soft); background: rgba(2, 4, 12, .9); }
+html body #lcShop .cs-left { flex: 1; min-width: 0; color: rgba(220, 236, 255, .78); }
+html body #lcShop .cs-left b { color: #fff; }
+html body #lcShop .lc-empty { margin-top: 40px; text-align: center; }
+
+/* iPad and wide screens: a centred column, not a stretched page */
+html:not([data-lay=phone]) body :is(#lsCart .lc-body, #lsCart .cs-hd, #lsCart .cs-ft, #lcShop .cs-shd, #lcShop .cs-sbody, #lcShop .cs-sft, #lcShop .cs-bar) { width: 100%; max-width: 640px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
+html:not([data-lay=phone]) body #lcShop .cs-bar { max-width: 608px; }
+/* the in-store list sits exactly where the cart panel sits on iPad */
+html:not([data-lay=phone]) body #lcShop { left: calc(var(--side, 0px) + max(0px, (100vw - var(--side, 0px) - var(--pw, 760px)) / 2)); right: max(0px, (100vw - var(--side, 0px) - var(--pw, 760px)) / 2);
+  border-left: 1px solid rgba(255, 255, 255, .1); border-right: 1px solid rgba(255, 255, 255, .1); box-shadow: 0 0 80px rgba(0, 0, 0, .6); }
+
+@media (prefers-reduced-motion: reduce) {
+  html body #lsCart .cs-glow { animation: none; }
+  html body #lcShop { transition: none; }
+}

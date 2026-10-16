@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261016-211510">
+<meta name="lowi-build" content="20261016-213010">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -3623,7 +3623,7 @@ html.n1-talk #n1B .g1-mini .g1-face u{animation:g1Talk .28s ease-in-out 4 altern
 
 </style>
 <link rel="stylesheet" href="updates.css">
-<link rel="stylesheet" id="obwCss" href="onboarding-world.css?v=20261016-211510">
+<link rel="stylesheet" id="obwCss" href="onboarding-world.css?v=20261016-213010">
 </head>
 <body>
 <div id="app">
@@ -7350,14 +7350,15 @@ const lcPic = i => { const k = LC_IMG[i.k] || LC_GIMG[i.g]; return window.PROD_I
 const lcFace = (i, cls) => { const src = lcPic(i); return src ? '<img class="' + cls + ' lc-img" alt="" draggable="false" src="' + src + '">' : '<span class="' + cls + '">' + i.e + "</span>"; };
 const LC_FREE = ["cold water", "ice"];   // from the tap or the freezer: never on a shopping list
 const lcEur = n => "€" + (Math.round(n * 100) / 100).toFixed(2).replace(".", ",");
-const lcRec = id => (typeof recById === "function" ? recById(id) : null) || RECIPE_BOOK.find(x => x.id === id);
+const lcRec = id => (typeof recById === "function" ? recById(id) : null) || RECIPE_BOOK.find(x => x.id === id) || /* cs: Shop it from any recipe */ (window.LowiP2 && LowiP2.rec && /^(m_|t_)/.test(String(id)) ? LowiP2.rec(id) : null);
+const lcMealPic = (id, r) => FOOD_IMG[id] || (r && r.img) || "";
 const lcStore = id => LC_STORES.find(s => s[0] === id) || LC_STORES[0];
 let LC = null, lcFx = {k:"", how:""};
 
 function lcState(){ if (!S.cart) S.cart = {store:"lidl"}; return S.cart; }
 function lcItems(){ const m = {};
   LC.shown.filter(id => LC.on[id]).forEach(id => { const r = lcRec(id); if (!r) return;
-    r.ing.forEach(i => { const k = i.n.toLowerCase(); if (LC_FREE.indexOf(k) >= 0) return; const pr = LC_PR[k] || LC_G[i.g] || ["🛒", 2];
+    r.ing.forEach(i => { const k = i.n.toLowerCase(); if (LC_FREE.indexOf(k) >= 0) return; const pr = LC_PR[k] || LC_G[i.g] || (i.e && i.p ? [i.e, i.p] : ["🛒", 2]);
       if (!m[k]) m[k] = {k, n:i.n, g:i.g, e:pr[0], p:pr[1], for:[]}; if (m[k].for.indexOf(r.n) < 0) m[k].for.push(r.n); }); });
   return Object.keys(m).map(k => m[k]); }
 const lcIn = i => !(S.td && S.td.have && S.td.have[i.k]);
@@ -7375,45 +7376,76 @@ function openCart(opts){ opts = opts || {}; tdEnsure(); const td = S.td, base = 
   (opts.recipe ? [opts.recipe] : base).forEach(id => on[id] = 1);
   if (opts.store) lcState().store = opts.store;
   LC = {shown, on, from:opts.recipe ? "recipe" : "today"};
+  if (!opts.store && !lcState().picked) { const it = lcItems(); if (it.filter(lcIn).length) lcState().store = LC_STORES.map(s => [s[0], lcTotal(it, s[0], true)]).sort((a, b) => a[1] - b[1])[0][0]; }
   let el = $("#lsCart"); if (!el) { el = document.createElement("div"); el.id = "lsCart"; ($("#app") || document.body).appendChild(el); lcBindDrag(el); }
   lcRender(); requestAnimationFrame(() => el.classList.add("open")); }
-function closeCart(){ const el = $("#lsCart"); if (el) el.classList.remove("open"); if (typeof TAB !== "undefined" && TAB === "home") renderHome(); }
+function closeCart(){ const el = $("#lsCart"); if (el) el.classList.remove("open"); const sh = $("#lcShop"); if (sh) sh.classList.remove("open"); if (typeof TAB !== "undefined" && TAB === "home") renderHome(); }
 
 function lcTile(i, where){ return '<button class="lc-t' + (lcFx.k === i.k ? " " + lcFx.how : "") + '" data-lc="tile" data-k="' + esc(i.k) + '" data-w="' + where + '" aria-label="' + esc(i.n) + '">' + lcFace(i, "lc-e") + '<span class="lc-n">' + esc(i.n) + "</span></button>"; }
 /* Oct 8 fix: a tap in the cart never jumps the list back to the top. Keep every scroller's position. */
 function lcRender(){ const el = $("#lsCart"); if (!el) return lcRender0(); const keep = [el].concat(Array.from(el.querySelectorAll("*"))).filter(x => x.scrollTop || x.scrollLeft).map(x => [x === el ? null : (x.id ? "#" + x.id : "." + String(x.className).trim().split(/\s+/)[0]), x.scrollTop, x.scrollLeft]);
   lcRender0(); keep.forEach(([sel, t, l]) => { const x = sel ? el.querySelector(sel) : el; if (x) { x.scrollTop = t; x.scrollLeft = l; } }); }
+/* Oct 16 (Eman: "it's either cook it or grocery shop it ... the shop it interface is not aligned with our design style. Make it very efficient."):
+   Shop it = black space + Misty blue glass. Glass close in the header (never over an action), compact store chips that already say which is cheapest,
+   the cart as a glass bubble, and a list you tick off right in the store. Same functions: prices, stores, drag in/out, copy, shop at the store. */
+const CS_IC = {cart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h2.2l2.1 10.2a1.6 1.6 0 001.6 1.3h7.9a1.6 1.6 0 001.6-1.2L20 8H6.2"/><circle cx="9.5" cy="19.5" r="1.4"/><circle cx="17" cy="19.5" r="1.4"/></svg>',
+  pot:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h16v5a5 5 0 01-5 5H9a5 5 0 01-5-5v-5z"/><path d="M2 10h2M20 10h2M9 6.5c0-1 .8-1.5.8-2.5M12.5 6.5c0-1 .8-1.5.8-2.5"/></svg>',
+  search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>'};
+function csPair(id, o){ o = o || {}; const cook = o.cook || ('data-p2="recipe" data-id="' + esc(id) + '"');
+  return '<div class="cs-pair' + (o.cls ? " " + o.cls : "") + '">' + (o.noCook ? "" : '<button type="button" class="cs-btn cs-cook" ' + cook + (o.cookId ? ' id="' + o.cookId + '"' : "") + '>' + CS_IC.pot + '<span>Cook it</span></button>') +
+    '<button type="button" class="cs-btn cs-shop" data-lc="open" data-id="' + esc(id) + '"' + (o.close ? ' data-p2close="1"' : "") + (o.shopId ? ' id="' + o.shopId + '"' : "") + '>' + CS_IC.cart + '<span>Shop it</span></button></div>'; }
+window.LowiCS = {pair:csPair, ic:CS_IC};
+const lcGot = () => { const st = lcState(); if (!st.got || typeof st.got !== "object") st.got = {}; return st.got; };
 function lcRender0(){ const el = $("#lsCart"); if (!el || !LC) return; const st = lcState(), items = lcItems(), inC = items.filter(lcIn), out = items.filter(i => !lcIn(i));
-  const tots = LC_STORES.map(s => [s, lcTotal(items, s[0], true)]), cheap = tots.slice().sort((a, b) => a[1] - b[1])[0], dear = tots.slice().sort((a, b) => b[1] - a[1])[0];
-  const cur = lcStore(st.store), curT = lcTotal(items, cur[0]), f = cur[3];
+  const tots = LC_STORES.map(s => [s, lcTotal(items, s[0], true)]), cheap = tots.slice().sort((a, b) => a[1] - b[1])[0];
+  const cur = lcStore(st.store), curT = lcTotal(items, cur[0]), curPure = lcTotal(items, cur[0], true), save = curPure - cheap[1], got = lcGot();
   const aisle = g => typeof tdAisle === "function" ? tdAisle(g) : "Other";
-  const sorted = inC.slice().sort((a, b) => aisle(a.g) < aisle(b.g) ? -1 : aisle(a.g) > aisle(b.g) ? 1 : 0);
-  el.innerHTML = '<div class="lc-hd"><button class="td-x big" data-lc="close" aria-label="Close">' + ICO.x + '</button><div style="flex:1;min-width:0"><div class="h2">Your cart</div><div class="small muted">Pick the store, then the meals</div></div><span class="badge demo">Estimates</span></div>' +
-    '<div class="lc-body">' + (window.LowiK9 ? LowiK9.entry() : "") + /* k9-cart */
-    // 1 store
+  const sorted = inC.slice().sort((a, b) => aisle(a.g) < aisle(b.g) ? -1 : aisle(a.g) > aisle(b.g) ? 1 : 0), nGot = inC.filter(i => got[i.k]).length;
+  let lastA = "";
+  el.innerHTML = '<div class="lc-hd cs-hd"><button class="cs-x" data-lc="close" aria-label="Close">' + ICO.x + '</button><div class="cs-ht"><div class="h2">Shop it</div><div class="small cs-hsub">' +
+      (inC.length ? '<span class="num">' + inC.length + '</span> <span>items</span> · <span class="num">≈ ' + lcEur(curT) + '</span> <span>at ' + cur[1] + '</span>' : '<span>Pick meals. The list fills itself.</span>') + '</div></div><span class="cs-est">Estimates</span></div>' +
+    '<div class="lc-body">' +
+    // 1 store: compact chips, the cheapest says so
     '<div class="lc-lab">Where are you shopping?</div><div class="hscroll lc-stores">' + tots.map(t => { const s = t[0];
-      return '<button class="lc-st' + (s[0] === cur[0] ? " on" : "") + '" data-lc="store" data-s="' + s[0] + '"><span class="lc-dot" style="background:' + s[2] + '"></span><b>' + s[1] + '</b><span class="num lc-stp">≈ ' + lcEur(t[1]) + "</span>" + (inC.length && s[0] === cheap[0][0] ? '<span class="lc-cheap">cheapest</span>' : "") + "</button>"; }).join("") + "</div>" +
+      return '<button class="lc-st' + (s[0] === cur[0] ? " on" : "") + '" data-lc="store" data-s="' + s[0] + '" aria-pressed="' + (s[0] === cur[0]) + '"><span class="lc-dot" style="background:' + s[2] + '"></span><b>' + s[1] + '</b><span class="num lc-stp">≈ ' + lcEur(t[1]) + "</span>" + (inC.length && s[0] === cheap[0][0] ? '<span class="lc-cheap">cheapest</span>' : "") + "</button>"; }).join("") + "</div>" +
+    (inC.length && cur[0] !== cheap[0][0] && save >= .05 ? '<button class="cs-save" data-lc="store" data-s="' + cheap[0][0] + '"><span>' + cheap[0][1] + ' is <b class="num">' + lcEur(save) + '</b> cheaper</span><b>Switch</b></button>' : "") +
     // 2 meals
-    '<div class="lc-lab">Which meals?</div><div class="hscroll lc-meals">' + LC.shown.map(id => { const r = lcRec(id); if (!r) return "";
-      return '<button class="lc-m' + (LC.on[id] ? " on" : "") + '" data-lc="meal" data-id="' + id + '">' + (FOOD_IMG[id] ? '<img alt="" src="' + FOOD_IMG[id] + '">' : '<span class="lc-me">' + esc(r.e || "🍽️") + "</span>") + '<span class="lc-ck">' + (LC.on[id] ? ICO.chk : "") + '</span><span class="lc-mn">' + esc(r.n) + "</span></button>"; }).join("") +
+    '<div class="lc-lab">Which meals?</div><div class="hscroll lc-meals">' + LC.shown.map(id => { const r = lcRec(id); if (!r) return ""; const pic = lcMealPic(id, r);
+      return '<button class="lc-m' + (LC.on[id] ? " on" : "") + '" data-lc="meal" data-id="' + esc(id) + '">' + (pic ? '<img alt="" src="' + pic + '">' : '<span class="lc-me">' + esc(r.e || "🍽️") + "</span>") + '<span class="lc-ck">' + (LC.on[id] ? ICO.chk : "") + '</span><span class="lc-mn">' + esc(r.swapName || r.n) + "</span></button>"; }).join("") +
       '<button class="lc-m lc-add" data-lc="addmeal"><span class="lc-me">+</span><span class="lc-mn">Add a meal</span></button></div>' +
-    // 3 the cart
-    '<div class="lc-stage" id="lcStage"><div class="lc-cart" id="lcCart"><div class="lc-basket"><div class="lc-in" id="lcIn">' + (inC.length ? inC.map(i => lcTile(i, "in")).join("") : '<div class="lc-empty small muted">Empty. Pick a meal or drag something in.</div>') + '</div></div>' +
+    // 3 the cart: a glass bubble you drop things into
+    '<div class="lc-stage" id="lcStage"><div class="lc-cart" id="lcCart"><div class="lc-basket"><i class="cs-glow" aria-hidden="true"></i><div class="lc-in" id="lcIn">' + (inC.length ? inC.map(i => lcTile(i, "in")).join("") : '<div class="lc-empty small muted">Empty. Pick a meal or drag something in.</div>') + '</div></div>' +
       '<div class="lc-handle"></div><div class="lc-wheels"><i></i><i></i></div></div>' +
       '<div class="lc-sum"><span class="num"><b id="lcCount">' + inC.length + '</b> <span>items</span></span><span class="num lc-tot">≈ <b id="lcTot">' + lcEur(curT) + '</b></span><span class="small muted">at ' + cur[1] + "</span></div></div>" +
     '<div class="ls-swipehint">Drag products in and out of the cart, or tap them.</div>' +
     (out.length ? '<div class="lc-lab">Not in the cart <span class="dim">(at home or taken out)</span></div><div class="lc-shelf" id="lcShelf">' + out.map(i => lcTile(i, "out")).join("") + "</div>" : '<div class="lc-shelf lc-shelf0" id="lcShelf"><span class="small dim">Drop things here that you already have.</span></div>') +
-    // compare
-    (inC.length ? '<div class="card lc-cmp"><div class="tiny gold">Which store is cheaper?</div><div style="margin-top:6px"><b>' + cheap[0][1] + '</b> <span class="small muted">is cheapest for this cart:</span> <b class="num">≈ ' + lcEur(cheap[1]) + '</b></div><div class="small muted" style="margin-top:2px">' + dear[0][1] + " ≈ " + lcEur(dear[1]) + "</div>" +
-      (cur[0] !== cheap[0][0] ? '<button class="chip" style="margin-top:10px" data-lc="store" data-s="' + cheap[0][0] + '">Switch to ' + cheap[0][1] + "</button>" : "") + "</div>" : "") +
-    // list
-    (inC.length ? '<div class="lc-lab">Shopping list for ' + cur[1] + '</div><div class="card lc-list">' + sorted.map(i => '<div class="lc-row">' + lcFace(i, "lc-re") + '<span class="lc-rt"><b>' + esc(i.n) + '</b><span class="tiny muted">' + esc(i.for.join(" · ")) + '</span></span><span class="num lc-rp">≈ ' + lcEur(lcPx(i, lcAt(i, cur[0]))) + (lcAt(i, cur[0]) !== cur[0] ? '<span class="rs-at">at ' + lcStore(lcAt(i, cur[0]))[1] + "</span>" : "") + "</span></div>").join("") +
-      '<div class="lc-row lc-rowt"><span class="lc-rt"><b>Total</b></span><span class="num lc-rp"><b>≈ ' + lcEur(curT) + "</b></span></div></div>" : "") +
+    // 4 the list: tick it off in the store
+    (inC.length ? '<div class="lc-lab cs-listlab"><span>Shopping list for ' + cur[1] + '</span><span class="num cs-gotn" id="lcGotN">' + nGot + " / " + inC.length + '</span></div><div class="card lc-list cs-list">' + sorted.map(i => { const a = aisle(i.g), on = !!got[i.k], at = lcAt(i, cur[0]);
+        const head = a !== lastA ? '<div class="cs-aisle">' + esc(a) + "</div>" : ""; lastA = a;
+        return head + '<button type="button" class="lc-row cs-row' + (on ? " got" : "") + '" data-lc="tick" data-k="' + esc(i.k) + '" aria-pressed="' + on + '"><span class="cs-tick">' + (on ? ICO.chk : "") + "</span>" + lcFace(i, "lc-re") + '<span class="lc-rt"><b>' + esc(i.n) + '</b><span class="tiny muted">' + esc(i.for.join(" · ")) + '</span></span><span class="num lc-rp">≈ ' + lcEur(lcPx(i, at)) + (at !== cur[0] ? '<span class="rs-at">at ' + lcStore(at)[1] + "</span>" : "") + "</span></button>"; }).join("") +
+      '<div class="lc-row lc-rowt"><span class="lc-rt"><b>Total</b></span><span class="num lc-rp"><b>≈ ' + lcEur(curT) + "</b></span></div></div>" +
+      '<div class="tiny muted cs-tickhint">Tap an item to tick it off while you shop.</div>' : "") +
+    (window.LowiK9 ? LowiK9.entry() : "") + /* k9-cart */
     '<p class="lc-note">Prices are estimates, not live store prices: a typical pack price at a discounter, with REWE and EDEKA counted about 20% higher. Check the shelf price in the store.</p>' +
     '<button class="lc-tuck" data-lc="order">Order online instead ›</button></div>' +
-    '<div class="lc-ft"><button class="btn ghost" data-lc="copy">Copy list</button><button class="btn primary" data-lc="shop"' + (inC.length ? "" : " disabled") + ">Shop at " + cur[1] + "</button></div>";
+    '<div class="lc-ft cs-ft"><button class="btn ghost cs-copy" data-lc="copy">Copy list</button><button class="btn primary cs-go" data-lc="shop"' + (inC.length ? "" : " disabled") + ">" + CS_IC.cart + "<span>Shop at " + cur[1] + "</span></button></div>";
   lcFx = {k:"", how:""};
 }
+/* in the store: full screen, big ticks, aisle order, the cart's own items at the cart's store */
+function lcShopOpen(){ let el = $("#lcShop"); if (!el) { el = document.createElement("div"); el.id = "lcShop"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true"); ($("#app") || document.body).appendChild(el); }
+  lcShopRender(); requestAnimationFrame(() => el.classList.add("open")); }
+function lcShopClose(){ const el = $("#lcShop"); if (el) el.classList.remove("open"); lcRender(); }
+function lcShopRender(){ const el = $("#lcShop"); if (!el || !LC) return; const st = lcState(), cur = lcStore(st.store), got = lcGot(), aisle = g => typeof tdAisle === "function" ? tdAisle(g) : "Other";
+  const inC = lcItems().filter(lcIn).sort((a, b) => aisle(a.g) < aisle(b.g) ? -1 : aisle(a.g) > aisle(b.g) ? 1 : 0), n = inC.filter(i => got[i.k]).length, left = inC.filter(i => !got[i.k]);
+  let lastA = "";
+  el.innerHTML = '<div class="cs-shd"><button class="cs-x" data-lc="shopback" aria-label="Back to the cart">' + ICO.x + '</button><div class="cs-ht"><div class="small cs-hsub"><span class="lc-dot" style="background:' + cur[2] + '"></span> <span>Shopping at ' + cur[1] + '</span></div><div class="h2 num" id="lcShopN">' + n + " of " + inC.length + '</div></div><button class="cs-chip" data-lc="copy">Copy</button></div>' +
+    '<div class="cs-bar"><b style="width:' + (inC.length ? Math.round(n / inC.length * 100) : 0) + '%"></b></div><div class="cs-sbody">' +
+    (window.LowiShopScan && LowiShopScan.entryHTML ? LowiShopScan.entryHTML("in-shop") : "") + /* scan a product while you shop (shop-scan.js) */
+    (inC.length ? inC.map(i => { const a = aisle(i.g), on = !!got[i.k], head = a !== lastA ? '<div class="cs-aisle">' + esc(a) + "</div>" : ""; lastA = a;
+        return head + '<button type="button" class="cs-si' + (on ? " got" : "") + '" data-lc="stick" data-k="' + esc(i.k) + '" aria-pressed="' + on + '"><span class="cs-tick big">' + (on ? ICO.chk : "") + "</span>" + lcFace(i, "lc-re") + '<span class="lc-rt"><b>' + esc(i.n) + '</b><span class="tiny muted">' + esc(i.for.join(" · ")) + '</span></span><span class="num lc-rp">≈ ' + lcEur(lcPx(i, lcAt(i, cur[0]))) + "</span></button>"; }).join("")
+      : '<div class="lc-empty"><div class="h3">Nothing to buy</div><div class="small muted">Your cart is empty.</div></div>') +
+    '</div><div class="cs-sft"><span class="small muted cs-left">' + (left.length ? '<span>Still to get</span> <b class="num">≈ ' + lcEur(lcTotal(left, cur[0])) + "</b>" : "<span>All in the basket</span>") + '</span><button class="btn primary cs-done" data-lc="shopdone">' + (n >= inC.length ? "Done shopping" : "Done for now") + "</button></div>"; }
+function lcTick(k){ const g = lcGot(); if (g[k]) delete g[k]; else g[k] = 1; save(); try { navigator.vibrate && navigator.vibrate(8); } catch(e){} }
 function lcSet(k, inCart){ tdEnsure(); if (inCart) delete S.td.have[k]; else S.td.have[k] = 1; save(); lcFx = {k, how:inCart ? "lc-drop" : "lc-pop"}; lcRender();
   const c = $("#lcCart"); if (c && inCart) { c.classList.remove("wob"); void c.offsetWidth; c.classList.add("wob"); } }
 function lcText(){ const st = lcStore(lcState().store), items = lcItems().filter(lcIn);
@@ -7450,7 +7482,18 @@ document.addEventListener("click", e => { const b = e.target.closest("[data-lc]"
     case "pickmeal": { const id = b.dataset.id; if (LC.shown.indexOf(id) < 0) LC.shown.push(id); LC.on[id] = 1; closeSheet(); lcRender(); break; }
     case "copy": if (typeof tdCopy === "function") tdCopy(lcText()); break;
     case "order": if (typeof tdOrderSheet === "function") tdOrderSheet(); break;
-    case "shop": { const el = $("#lsCart"); if (el) el.classList.remove("open"); if (typeof tdShopOpen === "function") tdShopOpen(); break; }
+    case "shop": lcShopOpen(); break;
+    case "tick": { lcTick(b.dataset.k); lcRender(); break; }
+    case "stick": { lcTick(b.dataset.k); const sb = $("#lcShop .cs-sbody"), y = sb ? sb.scrollTop : 0; lcShopRender(); const sb2 = $("#lcShop .cs-sbody"); if (sb2) sb2.scrollTop = y; break; }
+    case "shopback": lcShopClose(); break;
+    case "shopdone": { /* what you ticked is bought: Today counts it as got, the cart starts fresh next time */
+      const g = lcGot(); tdEnsure(); Object.keys(g).forEach(k => { S.td.got[k] = 1; }); lcState().got = {}; save();
+      const sh = $("#lcShop"); if (sh) sh.classList.remove("open"); closeCart(); if (typeof toast === "function") toast("Nice. Your shopping is done."); break; }
+    case "hubshop": { const pk = document.querySelector("#r5Pick .r5-card[data-id]"), id = pk && pk.dataset.id; openCart(id && lcRec(id) ? {recipe:id} : {}); break; }
+    case "hubcook": { const pk = document.querySelector("#r5Pick .r5-card[data-id]"), id = pk && pk.dataset.id;
+      if (id && window.LowiP2 && LowiP2.rec(id)) { LowiP2.open(id); break; }
+      const td = S.td || {}, pl = (td.plan || []).concat(td.extra || []).find(x => window.LowiP2 && LowiP2.rec(x)); if (pl) { LowiP2.open(pl); break; }
+      const all = document.querySelector(".g2c-all, [data-g2c-open=all]"); if (all) all.click(); else if (window.LowiG2C) try { LowiG2C.open("all"); } catch(e){} break; }
   }
 });
 /* ===== One store per recipe list (Oct 8, late). Eman: "Nobody goes from shop to shop to shop."
@@ -7761,6 +7804,11 @@ const T = [
   ["Prices are estimates, not live store prices: a typical pack price at a discounter, with REWE and EDEKA counted about 20% higher. Check the shelf price in the store.", "Preise sind Schätzwerte, keine echten Ladenpreise: ein typischer Packungspreis beim Discounter, REWE und EDEKA etwa 20 % teurer gerechnet. Schau im Laden aufs Preisschild.", "Los precios son estimaciones, no precios reales: un precio típico de discounter, con REWE y EDEKA un 20 % más caros. Mira el precio en la tienda."],
   ["Order online instead ›", "Lieber online bestellen ›", "Mejor pedir online ›"],
   ["Copy list", "Liste kopieren", "Copiar lista"],
+  ["Shop it", "Einkaufen", "Comprarlo"], ["Pick meals. The list fills itself.", "Gerichte wählen. Die Liste füllt sich.", "Elige comidas. La lista se llena sola."],
+  ["Tap an item to tick it off while you shop.", "Tippe ein Teil an, um es beim Einkaufen abzuhaken.", "Toca un producto para marcarlo mientras compras."],
+  ["Switch", "Wechseln", "Cambiar"], ["Still to get", "Noch zu holen", "Falta comprar"], ["All in the basket", "Alles im Korb", "Todo en la cesta"],
+  ["Nice. Your shopping is done.", "Super. Dein Einkauf ist erledigt.", "Genial. Tu compra está hecha."],
+  ["Back to the cart", "Zurück zum Wagen", "Volver al carrito"], ["Your cart is empty.", "Dein Wagen ist leer.", "Tu carrito está vacío."],
   ["From the LOWiSPIKE Recipe Book. All fit the rules.", "Aus dem LOWiSPIKE Rezeptbuch. Alle passen zu den Regeln.", "Del recetario LOWiSPIKE. Todas cumplen las reglas."],
   /* Oct 8 (late): one store per recipe list + compare sheet */
   ["What you need", "Was du brauchst", "Lo que necesitas"],
@@ -8587,6 +8635,7 @@ function fHomeHTML(){
       '<div class="r5-win"><div class="r5-strip" id="r5Strip">' + (last ? fCell(last) : '<div class="r5-cell r5-idle"><span class="r5-q">?</span></div>') + '</div></div>' +
       '<i class="r5-scan"></i><i class="r5-flash"></i></div>' +
     '<button class="btn primary r5-go" data-r5="shuffle" id="r5Go">' + R5IC.shuffle.replace("<svg", '<svg width="20" height="20"') + '<span>' + (last ? "Shuffle again" : "Shuffle my food") + '</span></button>' +
+    (window.LowiCS ? '<div class="cs-pair cs-hub" id="csHub"><button type="button" class="cs-btn cs-cook" data-lc="hubcook">' + LowiCS.ic.pot + '<span>Cook it</span></button><button type="button" class="cs-btn cs-shop" data-lc="hubshop">' + LowiCS.ic.cart + '<span>Shop it</span></button></div>' : "") +
     '<div class="small muted r5-hint" data-noi18n>' + /* r3k-hint */ fHintTxt() + '</div>' +
     '<div id="r5Pick">' + (last ? fRevealHTML(last, false) : "") + '</div></div>' +
     /* r3k-home */ dkSectionHTML() +
@@ -8623,8 +8672,8 @@ function fRevealHTML(f, anim){
   const ing = f.ing.slice(0, 8), more = f.ing.length - ing.length;
   return '<div class="r5-card' + (anim ? " in" : "") + '" data-id="' + esc(f.id) + '"><div class="r5-ct"><div style="flex:1;min-width:0"><div class="tiny gold">' + (f.com ? "Community pick" : "Your pick") + '</div><div class="h2 r5-cn">' + esc(f.n) + '</div><div class="small muted">' + esc(fMeta(f)) + '</div></div>' + fBadge(f) + '</div>' +
     (f.book ? '<div class="r5-lab">You need</div><div class="r5-ingl">' + ing.map(n => '<span>' + esc(n) + '</span>').join("") + (more > 0 ? '<span class="dim">+' + more + '</span>' : "") + '</div>' +
-      '<div class="r5-btns"><button class="btn primary" data-sh="recipe" data-r="' + esc(f.id) + '" id="r5Cook">Recipe + shopping list</button></div>' +
-      '<div class="r5-mini"><button data-lc="open" data-id="' + esc(f.id) + '">Fill my cart</button><button data-td="addtoday" data-id="' + esc(f.id) + '">Add to today</button></div>'
+      (window.LowiCS ? LowiCS.pair(f.id, {cls:"r5-btns", cook:'data-sh="recipe" data-r="' + esc(f.id) + '"', cookId:"r5Cook", shopId:"r5Shop"}) : '<div class="r5-btns"><button class="btn primary" data-sh="recipe" data-r="' + esc(f.id) + '" id="r5Cook">Recipe + shopping list</button></div>') +
+      '<div class="r5-mini">' + (window.LowiCS ? "" : '<button data-lc="open" data-id="' + esc(f.id) + '">Fill my cart</button>') + '<button data-td="addtoday" data-id="' + esc(f.id) + '">Add to today</button></div>'
     : '<div class="small r5-ccap">' + esc(f.sub) + '</div><div class="r5-btns"><button class="btn primary" data-r5="ask" data-who="' + esc(f.who) + '">Ask ' + esc(f.who) + ' for the recipe</button></div><div class="r5-mini"><button data-r5="profile" data-who="' + esc(f.who) + '">' + esc(f.who) + '\'s profile</button></div>') + '</div>';
 }
 let fSpinning = false;
@@ -11106,7 +11155,8 @@ function recipeHTML(r){ const b = basket(r), e = ease(r), cur = storeId(), pick 
       (r.swapName && r.swapName !== r.n ? '<div class="small muted">Recipe Book: ' + esc(r.n) + '</div>' : "") + '</div>' +
     '<div class="p2-facts p2-up" style="--d:1">' + (r.mins ? '<span class="p2-fact">' + IC.clock + '<b>' + esc(minsLabel(r)) + '</b></span>' : "") +
       '<span class="p2-fact">' + meter(e.lv) + '<b>' + e.t + '</b></span>' + (r.steps.length ? '<span class="p2-fact"><b>' + r.steps.length + ' steps</b></span>' : "") + (e.h ? '<span class="p2-fact"><b>' + e.h + '</b></span>' : "") + '</div>' +
-    (r.steps.length ? '<button class="r2-btn pri big p2-start p2-up" style="--d:2" data-p2="cook" id="p2Start">' + IC.play + '<span>Start cooking</span></button>' : "") +
+    (window.LowiCS ? LowiCS.pair(r.id, {cls:"p2-start p2-up p2-cs", cook:'data-p2="cook"', cookId:"p2Start", shopId:"p2Shop", close:true, noCook:!r.steps.length}).replace('class="cs-pair', 'style="--d:2" class="cs-pair')
+      : (r.steps.length ? '<button class="r2-btn pri big p2-start p2-up" style="--d:2" data-p2="cook" id="p2Start">' + IC.play + '<span>Start cooking</span></button>' : "")) +
     '<div class="p2-sec p2-up" style="--d:3"><div class="p2-lab"><span>Probably at home</span><span class="p2-cnt">' + b.home.length + '</span></div>' +
       '<div class="p2-ings" id="p2Home">' + (b.home.length ? b.home.map(i => ingChip(i, true)).join("") : '<span class="small muted">Nothing yet. Tap what you have below.</span>') + '</div></div>' +
     '<div class="p2-sec p2-up" style="--d:4"><div class="p2-lab"><span>To buy</span><span class="p2-cnt">' + b.buy.length + '</span></div>' +
@@ -11114,7 +11164,7 @@ function recipeHTML(r){ const b = basket(r), e = ease(r), cur = storeId(), pick 
       '<div class="p2-hint">Tap anything you already have.</div></div>' +
     (b.buy.length ? shopsHTML(b, pick) : "") +
     (r.steps.length ? '<div class="p2-sec p2-up" style="--d:6"><div class="p2-lab"><span>How it goes</span></div><ol class="p2-steps">' + r.steps.map((s, i) => '<li><span class="p2-sn">' + (i + 1) + '</span><span>' + esc(s) + '</span></li>').join("") + '</ol></div>' : "") +
-    '<div class="p2-more p2-up" style="--d:7">' + (r.book ? '<button class="r2-btn ghost" data-td="addtoday" data-id="' + esc(r.id) + '" data-p2close="1">Add to today</button><button class="r2-btn ghost" data-lc="open" data-id="' + esc(r.id) + '" data-p2close="1">' + IC.cart + '<span>Fill my cart</span></button><button class="r2-btn ghost p2-share" data-tr="share-recipe" data-r="' + esc(r.id) + '" data-p2close="1">Share to For You</button>' : '<button class="r2-btn ghost" data-p2="copy">Copy shopping list</button>') + '</div>' +
+    '<div class="p2-more p2-up" style="--d:7">' + (r.book ? '<button class="r2-btn ghost" data-td="addtoday" data-id="' + esc(r.id) + '" data-p2close="1">Add to today</button>' + (window.LowiCS ? "" : '<button class="r2-btn ghost" data-lc="open" data-id="' + esc(r.id) + '" data-p2close="1">' + IC.cart + '<span>Fill my cart</span></button>') + '<button class="r2-btn ghost p2-share" data-tr="share-recipe" data-r="' + esc(r.id) + '" data-p2close="1">Share to For You</button>' : '<button class="r2-btn ghost" data-p2="copy">Copy shopping list</button>') + '</div>' +
     '<div style="height:12px"></div>'; }
 function ingChip(i, home, s){ return '<button class="p2-ing' + (home ? " home" : "") + '" data-p2="ing" data-k="' + esc(i.k) + '"><span class="p2-ie">' + ingArt(i) + '</span><span class="p2-in"><b>' + esc(i.n) + '</b>' + (i.q ? '<small>' + esc(i.q) + '</small>' : "") + '</span>' +
   (home ? '<span class="p2-ok">' + IC.check + '</span>' : (s ? '<span class="p2-ip num">' + eur(px(i, s)) + '</span>' : "")) + '</button>'; }
@@ -11304,7 +11354,7 @@ function enhancePick(card){ if (!card || card.dataset.p2) return; card.dataset.p
     (b.buy.length ? '<div class="small p2-pshop"><span class="p2-sdot" style="background:' + b.best.s[2] + '"></span><span>' + b.best.s[1] + '</span> <b class="num">' + eur(b.best.t) + '</b></div>' : "") + '</div></div>';
   const lab = card.querySelector(".r5-lab"), ingl = card.querySelector(".r5-ingl"); if (lab) lab.remove(); if (ingl) ingl.remove();
   const btns = card.querySelector(".r5-btns"); card.insertBefore(info, btns || null);
-  const cookB = card.querySelector("#r5Cook"); if (cookB) { cookB.innerHTML = IC.play + "<span>Cook it</span>"; cookB.removeAttribute("data-sh"); cookB.dataset.p2 = "recipe"; cookB.dataset.id = r.id; }
+  const cookB = card.querySelector("#r5Cook"); if (cookB) { cookB.innerHTML = (window.LowiCS ? LowiCS.ic.pot : IC.play) + "<span>Cook it</span>"; cookB.removeAttribute("data-sh"); cookB.dataset.p2 = "recipe"; cookB.dataset.id = r.id; }
   card.classList.add("p2-tapcard"); }
 
 /* =====================================================================
@@ -19830,8 +19880,8 @@ window.LowiHandoff = { want, copy, issue, revoke, startHTML, parse, redeem, _sta
 })();
 </script>
 <link rel="stylesheet" href="community-chat.css?v=galaxy-2">
-<link rel="stylesheet" href="community-galaxy.css?v=20261016-211510">
-<link rel="stylesheet" href="community-energy.css?v=20261016-211510">
+<link rel="stylesheet" href="community-galaxy.css?v=20261016-213010">
+<link rel="stylesheet" href="community-energy.css?v=20261016-213010">
 <script id="community-chat-bridge">
 /* Bounded bridge: the Community module shares auth/messages with the existing cloud owner. */
 window.LowiCommunityHost = {
@@ -19856,37 +19906,38 @@ window.LowiCommunityHost = {
 <script src="community-chat-cloud.js?v=community-1"></script>
 <script src="community-galaxy.js?v=galaxy-2"></script>
 <script src="community-chat.js?v=galaxy-2"></script>
-<script src="community-energy.js?v=20261016-211510"></script>
-<link rel="stylesheet" id="lgCss" href="liquid-glass.css?v=20261016-211510">
-<script src="liquid-glass.js?v=20261016-211510"></script>
-<link rel="stylesheet" id="sweepCss" href="style-sweep.css?v=20261016-211510">
-<link rel="stylesheet" id="sgCss" href="scan-glass.css?v=20261016-211510">
-<script src="scan-glass.js?v=20261016-211510"></script>
-<link rel="stylesheet" id="rwCss" href="realm-backdrop.css?v=20261016-211510">
-<script src="realm-backdrop-core.js?v=20261016-211510"></script>
-<script src="realm-backdrop.js?v=20261016-211510"></script>
-<link rel="stylesheet" href="nav-moves.css?v=20261016-211510">
+<script src="community-energy.js?v=20261016-213010"></script>
+<link rel="stylesheet" id="lgCss" href="liquid-glass.css?v=20261016-213010">
+<script src="liquid-glass.js?v=20261016-213010"></script>
+<link rel="stylesheet" id="sweepCss" href="style-sweep.css?v=20261016-213010">
+<link rel="stylesheet" id="sgCss" href="scan-glass.css?v=20261016-213010">
+<script src="scan-glass.js?v=20261016-213010"></script>
+<link rel="stylesheet" id="rwCss" href="realm-backdrop.css?v=20261016-213010">
+<script src="realm-backdrop-core.js?v=20261016-213010"></script>
+<script src="realm-backdrop.js?v=20261016-213010"></script>
+<link rel="stylesheet" href="nav-moves.css?v=20261016-213010">
 <script src="nav-moves.js?v=nav-3"></script>
-<link rel="stylesheet" id="mvdCss" href="move-durations.css?v=20261016-211510">
-<link rel="stylesheet" id="mvpCss" href="move-player.css?v=20261016-211510">
-<script src="move-player.js?v=20261016-211510"></script>
-<link rel="stylesheet" id="fyeCss" href="fy-embed.css?v=20261016-211510">
-<script src="fy-embed.js?v=20261016-211510"></script>
-<link rel="stylesheet" id="cspCss" href="community-spirit.css?v=20261016-211510">
-<script src="community-spirit.js?v=20261016-211510"></script>
-<script src="galaxy-zoom.js?v=20261016-211510"></script>
-<link rel="stylesheet" id="mhCss" href="misty-hub.css?v=20261016-211510">
-<script src="misty-hub.js?v=20261016-211510"></script>
-<link rel="stylesheet" id="mpCss" href="misty-pad.css?v=20261016-211510">
-<script src="misty-pad.js?v=20261016-211510"></script>
-<script src="misty-flight.js?v=20261016-211510"></script>
-<link rel="stylesheet" id="csoCss" href="community-standout.css?v=20261016-211510">
-<link rel="stylesheet" id="tsgCss" href="today-sheet.css?v=20261016-211510">
-<link rel="stylesheet" id="ccCss" href="community-composer.css?v=20261016-211510">
-<script src="community-composer.js?v=20261016-211510"></script>
-<link rel="stylesheet" id="ssCss" href="shop-scan.css?v=20261016-211510">
-<script src="shop-scan-core.js?v=20261016-211510"></script>
-<script src="shop-scan.js?v=20261016-211510"></script>
+<link rel="stylesheet" id="mvdCss" href="move-durations.css?v=20261016-213010">
+<link rel="stylesheet" id="mvpCss" href="move-player.css?v=20261016-213010">
+<script src="move-player.js?v=20261016-213010"></script>
+<link rel="stylesheet" id="fyeCss" href="fy-embed.css?v=20261016-213010">
+<script src="fy-embed.js?v=20261016-213010"></script>
+<link rel="stylesheet" id="cspCss" href="community-spirit.css?v=20261016-213010">
+<script src="community-spirit.js?v=20261016-213010"></script>
+<script src="galaxy-zoom.js?v=20261016-213010"></script>
+<link rel="stylesheet" id="mhCss" href="misty-hub.css?v=20261016-213010">
+<script src="misty-hub.js?v=20261016-213010"></script>
+<link rel="stylesheet" id="mpCss" href="misty-pad.css?v=20261016-213010">
+<script src="misty-pad.js?v=20261016-213010"></script>
+<script src="misty-flight.js?v=20261016-213010"></script>
+<link rel="stylesheet" id="csoCss" href="community-standout.css?v=20261016-213010">
+<link rel="stylesheet" id="tsgCss" href="today-sheet.css?v=20261016-213010">
+<link rel="stylesheet" id="ccCss" href="community-composer.css?v=20261016-213010">
+<script src="community-composer.js?v=20261016-213010"></script>
+<link rel="stylesheet" id="ssCss" href="shop-scan.css?v=20261016-213010">
+<script src="shop-scan-core.js?v=20261016-213010"></script>
+<script src="shop-scan.js?v=20261016-213010"></script>
+<link rel="stylesheet" id="cshCss" href="cook-shop.css?v=20261016-213010">
 </body>
 </html>
 

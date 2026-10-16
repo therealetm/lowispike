@@ -31,7 +31,7 @@
 
     /* ---------- pure helpers ---------- */
     const K = { CR: 1.4, ENTRY: 1.35, NEAR: 4.4, MIN_K: 0.42, ROAM: 11, MAG_DEG: 42, IN_R: 3.0, IDLE_HOME: 20,
-        JOIN: 0.7, HANDBACK: 6, STAY_IN: 32, CAM_IDLE: 6, SAFE: { x0: 0.14, x1: 0.86, y0: 0.36, y1: 0.74 } };
+        JOIN: 0.7, HANDBACK: 6, STAY_IN: 32, CAM_IDLE: 6, ADV_STAY: 42, LOST: 5, ADV_SPEED: 0.5, PULL: 4.6, FALL: 1.8, EMERGE: 1.6, RECALL: 1.6, SAFE: { x0: 0.14, x1: 0.86, y0: 0.36, y1: 0.74 } };
     const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
     function smooth(e0, e1, x) { const t = clamp((x - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t); }
     /* 0 while far from a place, 1 at the edge of its atmosphere (the entry threshold) */
@@ -75,7 +75,12 @@
     /* inside a place: she roams on her own unless you are steering her (or let go less than K.HANDBACK s ago) */
     const roams = (mode, idle) => mode !== 'drive' || (+idle || 0) > K.HANDBACK;
     /* autopilot: after K.STAY_IN s inside she heads out to the next place, but never while you are touching the world */
-    const autoLeave = (mode, inT, camIdle) => mode === 'auto' && inT > K.STAY_IN && camIdle > K.CAM_IDLE;
+    const autoLeave = (mode, inT, camIdle, stay) => mode === 'auto' && inT > (stay || K.STAY_IN) && camIdle > K.CAM_IDLE;
+    /* adventure (adventure.js): gravity pull into a world. e = eased 0..1 progress: slow start, accelerating fall (t^2),
+       radius shrinks to a quarter, she circles up to ~2.2 rad round the world, her size drops to 25% of where she began */
+    function pullAt(t) { const q = clamp(+t || 0, 0, 1), e = q * q; return { e, rad: 1 - 0.75 * e, ang: 2.2 * q * q * (3 - 2 * q), size: 1 - 0.75 * e }; }
+    /* falling into the world: she starts at 30% size above, grows to full as she lands (ease-out) */
+    function fallAt(t) { const q = clamp(+t || 0, 0, 1), e = 1 - (1 - q) * (1 - q); return { e, size: 0.3 + 0.7 * e, drop: 1 - e }; }
     /* her next spot, as fractions of the view: inside the safe zone (clear of the top bar, Daily Quest, arrival card, dock and
        controller) and at least a third of the zone away from where she is, so she really travels. u, v: two randoms 0..1 */
     function roamSpot(u, v, from) {
@@ -87,7 +92,7 @@
     }
     /* her roaming pace on screen, px per second: calm, slower when tired, a little quicker on a big screen */
     const roamPx = (k, minSide) => (55 + 85 * clamp(+k || 0, 0, 1)) * clamp((+minSide || 390) / 390, 0.85, 1.6);
-    const core = { K, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, roams, autoLeave, roamSpot, roamPx };
+    const core = { K, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, roams, autoLeave, roamSpot, roamPx, pullAt, fallAt };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!D || !D.addEventListener || W.LowiMistyFlight) return;
 
@@ -99,6 +104,7 @@
     let V = null; /* temp vectors, made once THREE is known */
     const w3 = () => W.LowiWorld3D || null;
     const R = () => W.LowiWorldRegions || null;
+    const ADV = () => !!(W.LowiAdventure && W.LowiAdventure.on);
     function curRegion() { try { const r = R(); return r && r.current ? r.current() : 'hub'; } catch (e) { return 'hub'; } }
     function regionsBusy() { const r = R(), s = r && r.state; return !!(s && (s.busy || s.warp)); }
     const norm = id => id === 'muscles' ? 'muscle' : id === 'blood' ? 'hub' : id;
@@ -107,7 +113,7 @@
         V = { rt: new THREE.Vector3(), up: new THREE.Vector3(), fw: new THREE.Vector3(), c: new THREE.Vector3(), a: new THREE.Vector3(), b: new THREE.Vector3(),
             want: new THREE.Vector3(), m4: new THREE.Matrix4(), q: new THREE.Vector3() };
         S.p = new THREE.Vector3(); S.v = new THREE.Vector3(); S.wobDir = new THREE.Vector3(0, 1, 0); S.pushDir = new THREE.Vector3(0, 1, 0);
-        S.warpFrom = new THREE.Vector3(); S.warpTo = new THREE.Vector3(); S.inC = new THREE.Vector3(); S.cell0 = { x: 0, y: 0 };
+        S.warpFrom = new THREE.Vector3(); S.warpTo = new THREE.Vector3(); S.pullRel = new THREE.Vector3(); S.pullC = new THREE.Vector3(); S.fallTo = new THREE.Vector3(); S.outPos = new THREE.Vector3(); S.inC = new THREE.Vector3(); S.cell0 = { x: 0, y: 0 };
         return V;
     }
     function canvasRect(a) { const cv = a.renderer && a.renderer.domElement; const q = cv && cv.getBoundingClientRect ? cv.getBoundingClientRect() : null; return q && q.width ? q : { left: 0, top: 0, width: W.innerWidth, height: W.innerHeight }; }
@@ -191,6 +197,14 @@
         const cs = toScreen(a, V.c, {}); S.cell0.x = cs.x; S.cell0.y = cs.y;
         S.hs = S.base / pxPerUnit(a, S.p);
         S.st = S.p.distanceTo(V.c) < K.CR * 0.95 ? 'exit' : 'free';
+        /* adventure: coming back out of a world she does not pop back into her cell: she rises out of the world she just
+           left, small, and grows as she drifts away from it (the fall in, reversed) */
+        if (S.outT && performance.now() - S.outT < 20000 && (ADV() || S.recallOut)) {
+            V.b.subVectors(V.c, S.outPos); if (V.b.lengthSq() < 1e-6) V.b.copy(V.fw); V.b.normalize();
+            S.p.copy(S.outPos).addScaledVector(V.b, K.ENTRY * 0.75); S.ks = 0.12; S.st = 'free'; S.emerge = K.EMERGE; S.fade = 0.45;
+            S.v.copy(V.b).multiplyScalar(0.5); note('emerge');
+        }
+        S.outT = 0;
         hold(true); classes(true, false, false); note('begin ' + S.st + ' ' + ctx.PD.mode + ' px=' + Math.round(S.base));
     }
     function end(ctx, why) {
@@ -199,7 +213,8 @@
         if (r && a && (why === 'abort' || why === 'home') && !regionsBusy() && curRegion() === 'hub') { r.target.set(0, 0, 0); if (why === 'abort' && S.dHome && S.dollyOut) r.dist = S.dHome; }
         S.st = 'idle'; S.flew = null; S.dolly = 0; hold(false); classes(false, false, false);
         /* autopilot heading out of a place keeps flying: she slips back into her cell and goes on to the next place */
-        const keep = S.keepAuto && why === 'left' && ctx && ctx.PD && ctx.PD.mode === 'auto';
+        const keep = (S.keepAuto && why === 'left' && ctx && ctx.PD && ctx.PD.mode === 'auto') || (S.recallOut && why === 'left');
+        if (why === 'home' || why === 'abort') { S.recallOut = false; S.recallFast = false; }
         S.keepAuto = false; S.joined = 0; S.rw = null;
         if (ctx && ctx.PD && ctx.PD.mode && !keep) padMode(ctx, '');
         if (ctx && ctx.wand) { ctx.wand.material.opacity = 0; ctx.wand.visible = false; }
@@ -225,8 +240,11 @@
             return false;
         }
         S.joinT = 0;
+        /* adventure: back on Today (or after a tap took her somewhere) the tour simply goes on */
+        if (S.st === 'idle' && !PD.mode) { S.recallOut = false; S.recallFast = false; }
+        if (S.st === 'idle' && ADV() && !PD.mode && !ctx.inRegion && !ctx.awayHome && !regionsBusy()) padMode(ctx, 'auto');
         if (S.st === 'idle') {
-            if ((PD.mode === 'drive' || PD.mode === 'auto') && !ctx.inRegion && !ctx.awayHome && !regionsBusy()) begin(ctx);
+            if ((PD.mode === 'drive' || PD.mode === 'auto' || (PD.mode === 'home' && S.recallOut)) && !ctx.inRegion && !ctx.awayHome && !regionsBusy()) begin(ctx);
             else return false;
         }
         return true;
@@ -243,11 +261,23 @@
         if ((S.st === 'inside' || S.st === 'warp') && S.entered && (cur !== S.flew && !regionsBusy())) { end(ctx, 'left'); return; }
         if (S.st === 'inside' && cur === 'hub') { end(ctx, 'left'); return; }
 
+        /* adventure recall (adventure.js stop): straight home, a little quicker, then she settles in her cell */
+        if (S.recallReq && S.st !== 'warp') {
+            S.recallReq = false; S.recallFast = true;
+            if (S.st === 'inside') {
+                const reg = (a.regions || []).find(g => norm(g.id) === S.flew), Rg = R(); let ok = false;
+                try { ok = !regionsBusy() && !r.fly && !!(Rg && Rg.travel && Rg.travel('hub')); } catch (e) { ok = false; }
+                if (ok) { if (reg) S.outPos.copy(reg.pos); S.outT = performance.now(); S.recallOut = true; S.wpNext = -1; note('recall out'); }
+                padMode(ctx, ok ? 'home' : 'drive');
+            } else { if (S.st === 'pull') S.st = 'free'; padMode(ctx, 'home'); }
+        }
         const mode = PD.mode || 'drive', vx = PD.vx || 0, vy = PD.vy || 0, mag = Math.min(1, Math.hypot(vx, vy)), steering = mode === 'drive' && mag > 0.05;
+        if (steering && ADV()) { try { W.LowiAdventure.stop('steer'); } catch (e) { } }
         if (mode === 'drive') S.idle = steering ? 0 : S.idle + dt; else S.idle = 0;
         if (mode === 'drive' && S.idle > K.IDLE_HOME && (S.st === 'free' || S.st === 'exit')) { padMode(ctx, 'home'); note('idle home'); }
         const camFree = !r.fly;
 
+        if (S.st === 'pull') { pullFrame(ctx, k); return; }
         if (S.st === 'warp') { warpFrame(ctx, k); return; }
         if (S.st === 'inside') { insideFrame(ctx, k, mode, vx, vy, mag, still); return; }
 
@@ -288,14 +318,19 @@
             if (mode === 'drive' && mag > 0.1) magnet(a, vx, vy, mag);
             const nb = nearest(a); S.near = nb; S.ap = nb ? approach(nb.d) : 0;
             /* autopilot: done pausing at a place's door, she goes in by herself (the same warp as a tap) */
-            if (S.tourGo && mode === 'auto' && !regionsBusy()) { const g = S.tourGo; S.tourGo = null; startWarp(ctx, { id: g.id, pos: g.pos }); return; }
-            const sp = speed(k, 'out') * (1 - 0.55 * S.ap) * (mode === 'auto' && k < 0.4 ? 0.5 : 1) * (mode === 'home' ? 1.25 : 1);
+            if (S.tourGo && mode === 'auto' && !regionsBusy()) {
+                const g = S.tourGo; S.tourGo = null;
+                if (ADV() && !still) { startPull(ctx, g); return; }
+                startWarp(ctx, { id: g.id, pos: g.pos }); return;
+            }
+            const adv = ADV() && mode === 'auto';
+            const sp = speed(k, 'out') * (1 - 0.55 * S.ap) * (mode === 'auto' && k < 0.4 ? 0.5 : 1) * (mode === 'home' ? 1.25 * (S.recallFast ? K.RECALL : 1) : 1) * (adv ? K.ADV_SPEED : 1);
             S.v.lerp(V.b.copy(V.want).multiplyScalar(sp), Math.min(1, dt * 3.2));
             S.p.addScaledVector(S.v, dt);
             const L = S.p.length(); if (L > K.ROAM) { S.p.multiplyScalar(K.ROAM / L); const out = S.v.dot(V.b.copy(S.p).normalize()); if (out > 0) S.v.addScaledVector(V.b, -out); }
             /* back into her own cell */
             const offN = V.a.subVectors(S.p, V.c).length();
-            if (offN < K.CR * 0.92 && (mode === 'home' || V.want.dot(V.a) < 0)) { S.st = 'exit'; S.wob = -0.25; S.wobT = 0; S.wobDir.copy(V.a).normalize(); note('back in'); }
+            if (offN < K.CR * 0.92 && (mode === 'home' || (V.want.dot(V.a) < 0 && !(ADV() && mode === 'auto')))) { /* adventure: no dipping back into her cell mid-tour */ S.st = 'exit'; S.wob = -0.25; S.wobT = 0; S.wobDir.copy(V.a).normalize(); note('back in'); }
             /* at a place's atmosphere: the tap's own warp takes her in */
             if (nb && nb.d < K.ENTRY && mode === 'drive' && !regionsBusy()) { startWarp(ctx, nb); return; }
             /* the camera follows her, easing in as she nears a place (and giving back your zoom when she leaves it) */
@@ -303,7 +338,7 @@
                 if (mode === 'home') { r.target.lerp(V.c, 1 - Math.exp(-dt * 1.6)); r.dist += (S.dHome - r.dist) * Math.min(1, dt * 1.6); }
                 else {
                     V.b.copy(S.p).addScaledVector(S.v, 0.3);
-                    r.target.lerp(V.b, 1 - Math.exp(-dt * 2.4));
+                    r.target.lerp(V.b, 1 - Math.exp(-dt * (adv ? 1.1 : 2.4))); /* adventure: the camera drifts after her, gently */
                     S.dolly += (S.ap - S.dolly) * Math.min(1, dt * 2.2);
                     if (S.dolly < 0.004 && Math.abs(r.dist - S.d0) > 0.001 && !S.dollyOut) S.d0 = r.dist; /* a pinch while flying is yours */
                     S.dollyOut = S.dolly > 0.004;
@@ -313,9 +348,11 @@
             }
         }
         /* her size: constant on screen; smaller only near a place */
-        S.ks += (sizeK(S.ap) - S.ks) * Math.min(1, dt * 5);
+        /* rising out of a world (adventure): she grows back slowly instead of snapping to size */
+        if (S.emerge > 0) { S.emerge -= dt; S.fade = Math.min(1, S.fade + dt * 0.7); }
+        S.ks += (sizeK(S.ap) - S.ks) * Math.min(1, dt * (S.emerge > 0 ? 1.2 : 5));
         S.hs = S.base * S.ks / pxPerUnit(a, S.p);
-        place(ctx, k, still, 1);
+        place(ctx, k, still, S.emerge > 0 || S.fade < 1 ? (S.fade = Math.min(1, S.fade + dt * 0.7)) : 1);
         bubbleFollow(a);
         trail(ctx, k, mode === 'drive' ? mag : 0.6);
     }
@@ -344,9 +381,45 @@
         V.want.multiplyScalar(1 / mag).multiplyScalar(1 - w).addScaledVector(V.b, w).normalize().multiplyScalar(mag);
     }
     /* autopilot: a slow tour from place to place, stopping in front of each one, then going in by herself (misty-roam) */
+    /* adventure: on the way to the next world she drifts from corner to corner first, now and then stopping as if a bit
+       lost and looking around, on curved paths (aquarium pace, never a straight hop) */
+    function driftPts(ctx) {
+        const a = ctx.a, n = 1 + Math.floor(Math.random() * 2), out = [];
+        let sx = V.a.subVectors(S.p, V.c).dot(V.rt) > 0 ? -1 : 1;
+        for (let i = 0; i < n; i++) {
+            const p = new a.THREE.Vector3().copy(V.c).addScaledVector(V.rt, sx * (2.4 + 1.8 * Math.random()))
+                .addScaledVector(V.up, (Math.random() < 0.5 ? -1 : 1) * (1.1 + 1.3 * Math.random())).addScaledVector(V.fw, (Math.random() - 0.5) * 1.6);
+            const L = p.length(); if (L > K.ROAM * 0.85) p.multiplyScalar(K.ROAM * 0.85 / L);
+            out.push(p); sx = -sx;
+        }
+        /* now and then (about 1 drift in 3) she wanders off to the far edge of her world and is lost there for a while */
+        if (Math.random() < 0.34) {
+            const far = new a.THREE.Vector3().copy(V.c).addScaledVector(V.rt, sx * K.ROAM * 0.7).addScaledVector(V.up, (Math.random() - 0.5) * 3).addScaledVector(V.fw, -1.5 - Math.random() * 2);
+            const L = far.length(); if (L > K.ROAM * 0.92) far.multiplyScalar(K.ROAM * 0.92 / L);
+            out.far = out.length; out.push(far);
+        }
+        return out;
+    }
     function tourWant(ctx, k) {
         const a = ctx.a, regs = a.regions || []; if (!regs.length) return;
         if (S.wp < 0) { let bi = 0, bd = 1e9; regs.forEach((g, i) => { const d = S.p.distanceTo(g.pos); if (d < bd) { bd = d; bi = i; } }); S.wp = bi; }
+        if (ADV() && !ctx.reduced) {
+            if (S.driftFor !== S.wp || !S.drift) { S.driftFor = S.wp; S.drift = driftPts(ctx); S.driftI = 0; S.lostT = 0; }
+            if (S.driftI < S.drift.length) {
+                V.a.subVectors(S.drift[S.driftI], S.p); const d = V.a.length();
+                if (S.lostT > 0 || d < 0.6) {
+                    const farOff = S.drift.far === S.driftI;
+                    if (S.lostT <= 0) S.lostT = farOff ? K.LOST + Math.random() * 3 : 1.2 + Math.random() * 1.6;
+                    S.lostT -= ctx.dt;
+                    if (S.lostT <= 0.01) { S.lostT = 0; S.driftI++; if (farOff) { note('lost, back'); try { if (W.LowiMistyHints) W.LowiMistyHints.lost(); } catch (e) { } } }
+                    V.want.set(0, 0, 0).addScaledVector(V.rt, Math.cos(S.t * 1.7) * 0.1).addScaledVector(V.up, Math.sin(S.t * 2.1) * 0.08);
+                    return;
+                }
+                V.want.copy(V.a).multiplyScalar(Math.min(1, d / 1.5) * 0.8 / d);
+                V.want.addScaledVector(V.up, Math.sin(S.t * 0.7) * 0.3).addScaledVector(V.rt, Math.cos(S.t * 0.45) * 0.25);
+                return;
+            }
+        }
         const g = regs[S.wp % regs.length]; V.b.subVectors(V.c, g.pos).normalize();
         V.a.copy(g.pos).addScaledVector(V.b, 2.9).addScaledVector(V.up, 0.4);
         V.a.sub(S.p); const d = V.a.length();
@@ -392,9 +465,27 @@
         if (H.classList.contains('mf-roam') !== roam) H.classList.toggle('mf-roam', roam);
     }
 
+    /* ---------- adventure: gravity pulls her in ---------- */
+    function startPull(ctx, g) {
+        S.st = 'pull'; S.pullT = 0; S.pullId = g.id; S.pullC.copy(g.pos); S.pullRel.subVectors(S.p, g.pos); S.pullKs = S.ks;
+        S.pullAx = (S.pullAx || new ctx.a.THREE.Vector3()).copy(V.fw); S.v.set(0, 0, 0); note('pull ' + g.id);
+    }
+    function pullFrame(ctx, k) {
+        const a = ctx.a, r = ctx.r, dt = ctx.dt; S.pullT += dt;
+        const P = pullAt(S.pullT / K.PULL);
+        V.b.copy(S.pullRel).applyAxisAngle(S.pullAx, P.ang).multiplyScalar(P.rad);
+        S.p.copy(S.pullC).add(V.b);
+        S.ks = S.pullKs * P.size; S.hs = S.base * S.ks / pxPerUnit(a, S.p);
+        if (!r.fly) r.target.lerp(S.p, 1 - Math.exp(-dt * 1.4));
+        place(ctx, k, false, 1); bubbleFollow(a); trail(ctx, k, 0.4);
+        if (S.pullT >= K.PULL && !regionsBusy()) startWarp(ctx, { id: S.pullId, pos: S.pullC });
+        else if (S.pullT > K.PULL + 6) { S.st = 'free'; note('pull timeout'); }
+    }
+
     /* ---------- into a place ---------- */
     function startWarp(ctx, nb) {
         const a = w3(); if (!a || !a.flyTo) return;
+        S.advWarp = ADV() && !ctx.reduced;
         S.st = 'warp'; S.flew = norm(nb.id); S.warpT = 0; S.entered = 0; S.warpFrom.copy(S.p); S.warpTo.copy(nb.pos); S.v.set(0, 0, 0);
         setPush(ctx.a, S.wobDir, 0); hold(false); note('warp ' + nb.id);
         try { a.flyTo(nb.id); } catch (e) { }
@@ -408,7 +499,7 @@
         const q = Math.min(1, S.warpT / 0.55);
         S.p.lerpVectors(S.warpFrom, S.warpTo, q * 0.8);
         S.hs = Math.max(1e-3, S.base * S.ks * (1 - 0.7 * q) / pxPerUnit(a, S.p));
-        place(ctx, k, ctx.reduced, 1 - q);
+        place(ctx, k, ctx.reduced, S.advWarp ? 1 - 0.55 * q : 1 - q); /* adventure: she never vanishes, she stays readable */
         if (S.entered && !busy) { enterInside(ctx); return; }
         if (S.warpT > 9) end(ctx, 'warp-timeout');
     }
@@ -419,7 +510,10 @@
         /* in front of you, a little below the middle, about as big as she was at the door */
         S.p.copy(r.target).addScaledVector(V.fw, Math.min(1.1, r.dist * 0.42)).addScaledVector(V.up, -0.15);
         S.inHs = S.base * K.MIN_K / pxPerUnit(a, S.p); S.hs = S.inHs; S.fade = 0; S.v.set(0, 0, 0); S.wp = -1;
-        S.st = 'inside'; S.inT = 0; S.rw = null; S.rwWait = 0; S.rwN = 0; hold(false); classes(true, false, true); note('inside ' + S.flew);
+        S.st = 'inside'; S.inT = 0; S.advIn = 0; S.rw = null; S.rwWait = 0; S.rwN = 0; hold(false); classes(true, false, true); note('inside ' + S.flew);
+        /* adventure: she falls into the world from above, small, growing as she lands (continuous with the pull) */
+        S.fallT = -1; if (S.advWarp && !ctx.reduced) { S.fallT = 0; S.fallTo.copy(S.p); S.fade = 0.45; }
+        S.advWarp = false;
     }
     /* misty-roam: she was not flown in (a tap, the World map): she comes in by herself, rising in from below the view */
     function join(ctx) {
@@ -461,17 +555,35 @@
     function insideFrame(ctx, k, mode, vx, vy, mag, still) {
         const a = ctx.a, r = ctx.r, dt = ctx.dt, zs = clamp(r.dist / 2.6, 1, 8), inR = Math.max(K.IN_R, (r.maxD || 10) * 0.32);
         /* the place opens on its widest view (body-world-regions.js): her pace and reach scale with how far out you are */
-        if (mode === 'home') { padMode(ctx, 'drive'); mode = 'drive'; } /* her cell is far away: no flying home from here (World map takes you both back) */
+        if (mode === 'home' && !S.recallOut) { padMode(ctx, 'drive'); mode = 'drive'; }
+        if (S.fallT >= 0 && S.fallT < K.FALL) {
+            S.fallT += dt; const F = fallAt(S.fallT / K.FALL);
+            S.p.copy(S.fallTo).addScaledVector(V.up, F.drop * Math.min(1.1, r.dist * 0.42) * 0.8);
+            S.fade = Math.min(1, S.fade + dt * 0.5);
+            S.hs = S.base * K.MIN_K * F.size / pxPerUnit(a, S.p);
+            place(ctx, k, still, S.fade); trail(ctx, k, 0.3);
+            return;
+        }
+        if (ADV()) S.advIn = (S.advIn || 0) + dt; /* her cell is far away: no flying home from here (World map takes you both back) */
         S.inT = (S.inT || 0) + dt;
         /* misty-roam: on her own (not steered, or let go a while ago) she roams the whole view freely */
         const free = roams(mode, S.idle);
         if (free) {
             roamFrame(ctx, k, still);
             /* autopilot: after a while she heads back out and on to the next place (never while you touch the world) */
-            if (autoLeave(mode, S.inT, +r.idle || 0) && !regionsBusy() && !r.fly) {
+            const adv = ADV();
+            if (autoLeave(mode, S.inT, +r.idle || 0, adv ? K.ADV_STAY : K.STAY_IN) && !regionsBusy() && !r.fly) {
                 const regs = a.regions || [], i = regs.findIndex(g => norm(g.id) === S.flew);
                 const Rg = R(); let ok = false; try { ok = !!(Rg && Rg.travel && Rg.travel('hub')); } catch (e) { ok = false; }
-                if (ok) { S.keepAuto = true; S.wpNext = i >= 0 && regs.length ? (i + 1) % regs.length : -1; note('auto out'); } else S.inT = 0;
+                if (ok) {
+                    S.keepAuto = true; S.wpNext = i >= 0 && regs.length ? (i + 1) % regs.length : -1; note('auto out');
+                    if (adv) { if (i >= 0) S.outPos.copy(regs[i].pos); S.outT = performance.now(); try { W.LowiAdventure.visited(S.flew, S.advIn || 0); } catch (e) { } }
+                } else S.inT = 0;
+            }
+            /* adventure: the camera drifts after her inside the world too, gently and bounded around the world's middle */
+            const WHx = W.LowiWorldHome;
+            if (adv && !r.fly && !regionsBusy() && !(WHx && WHx.state && WHx.state.heroAnim) && (+r.idle || 0) > K.CAM_IDLE) {
+                V.b.copy(S.inC).lerp(S.p, 0.35); r.target.lerp(V.b, 1 - Math.exp(-dt * 0.6));
             }
         } else {
             S.rw = null; S.rwWait = 0;
@@ -497,6 +609,7 @@
 
     W.addEventListener('lowi:world-warp', e => { const d = e && e.detail; if (d && d.phase === 'arrive' && S.st === 'warp' && norm(d.id) === S.flew) S.entered = 1; });
     W.LowiMistyFlight = {
+        recall: () => { if (S.st === 'idle') { try { if (W.LowiPad) W.LowiPad.mode(''); } catch (e) { } } else S.recallReq = true; },
         wants, frame, core,
         state: () => ({ st: S.st, flew: S.flew, joined: !!S.joined, roam: !!S.rw, inT: +(S.inT || 0).toFixed(1), wpNext: S.wpNext, ap: +S.ap.toFixed(3), near: S.near ? S.near.id : null, nearD: S.near ? +S.near.d.toFixed(2) : null, px: Math.round(S.base), ks: +S.ks.toFixed(3),
             hs: +S.hs.toFixed(3), push: S.mem && w3() && w3().memU && w3().memU.uPushA ? +w3().memU.uPushA.value.toFixed(3) : 0, p: S.p ? [+S.p.x.toFixed(2), +S.p.y.toFixed(2), +S.p.z.toFixed(2)] : null, log: S.log.slice(-12) })

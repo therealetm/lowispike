@@ -186,6 +186,8 @@
     function show(id, opts) {
         opts = opts || {};
         if (!opts.force && !rideOpen() && palTakes(id)) return null;
+        /* Oct 16: no arrival card while the companion is on an adventure (the camera stays on her) */
+        if (!opts.force && D.documentElement.classList.contains('lw-adv')) return null;
         /* Oct 16: never over the Community galaxy (a "You arrived: Brain" card popped up there during the zoom) */
         if (!opts.force && !rideOpen() && offHome()) return null;
         const p = C() && C().pid(id); if (!p) return null;

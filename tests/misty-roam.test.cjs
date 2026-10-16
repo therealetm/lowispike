@@ -62,9 +62,9 @@ test('wired: joins after a tap, roams without moving the camera, autopilot goes 
     assert.match(js, /S\.st === 'idle' && ctx\.inRegion/, 'Home\'s per-frame ask lets her join you in a place');
     assert.match(js, /function join\(ctx\)[\s\S]*?enterInside\(ctx\)/, 'she enters like a flown-in Misty');
     assert.match(js, /if \(!free && !r\.fly && !heroBusy/, 'the camera follows her only when you steer: roaming never moves your view');
-    assert.match(js, /S\.tourGo && mode === 'auto' && !regionsBusy\(\)\) \{[^}]*startWarp/, 'autopilot dives into the place after its stop');
+    assert.match(js, /S\.tourGo && mode === 'auto' && !regionsBusy\(\)\) \{[\s\S]{0,400}startWarp/, 'autopilot dives into the place after its stop');
     assert.match(js, /Rg\.travel\('hub'\)/, 'and heads back out the same way as the World map');
-    assert.match(js, /const keep = S\.keepAuto && why === 'left'/, 'autopilot keeps flying after heading out');
+    assert.match(js, /const keep = \(?S\.keepAuto && why === 'left'/, 'autopilot keeps flying after heading out');
     assert.match(js, /if \(ctx && ctx\.PD && ctx\.PD\.mode && !keep\) padMode\(ctx, ''\)/);
     assert.doesNotMatch(js, /addEventListener\(['"](click|pointerdown|touchstart)/, 'she lives in the 3D canvas: no new tap handlers, nothing blocks your taps');
 });

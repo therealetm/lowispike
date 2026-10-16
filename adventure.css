@@ -1,0 +1,22 @@
+/* LOWiSPIKE companion adventure button (adventure.js). Glass pill beside Misty's controller, world view on Today only. */
+.wh-hud .lw-adv-btn { position: absolute; left: calc(50% + 42px); bottom: calc(var(--wh-tb, 104px) + 88px); height: 36px; min-width: 44px; padding: 0 12px 0 9px;
+  display: none; align-items: center; gap: 6px; border-radius: 18px; border: 1px solid rgba(255,255,255,.22); color: #f3f6ff; font: 600 13px/1 -apple-system, system-ui, sans-serif;
+  background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.05)); -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.28), 0 6px 18px rgba(8,10,30,.28); pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+html.wh-world-live.wh-home .wh-hud .lw-adv-btn { display: inline-flex; }
+.wh-hud .lw-adv-btn svg { width: 18px; height: 18px; flex: none; }
+.wh-hud .lw-adv-btn.on { border-color: rgba(150,230,255,.55); background: linear-gradient(180deg, rgba(120,210,255,.30), rgba(120,160,255,.10)); }
+.wh-hud .lw-adv-btn.on svg path { animation: lwAdvSpin 6s linear infinite; transform-origin: 12px 12px; }
+.wh-hud .lw-adv-n:empty { display: none; }
+.wh-hud .lw-adv-n { font-size: 11px; opacity: .8; padding-left: 2px; }
+.wh-hud .lw-adv-btn:focus-visible { outline: 2px solid #9fe3ff; outline-offset: 2px; }
+.wh-hud .lw-adv-info { position: absolute; left: 50%; bottom: calc(var(--wh-tb, 104px) + 134px); transform: translateX(-50%); width: min(320px, calc(100vw - 32px)); padding: 10px 12px;
+  border-radius: 16px; color: #f3f6ff; font: 13px/1.35 -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; gap: 3px; pointer-events: auto;
+  background: rgba(20,24,52,.55); border: 1px solid rgba(255,255,255,.16); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+.wh-hud .lw-adv-info[hidden] { display: none; }
+.wh-hud .lw-adv-info small { font-size: 11px; opacity: .72; }
+.wh-hud .lw-adv-info .lw-adv-hint { font-style: italic; opacity: .92; }
+.lw-adv-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; background: hsl(var(--h, 200), 90%, 70%); box-shadow: 0 0 6px hsl(var(--h, 200), 90%, 70%); }
+@keyframes lwAdvSpin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .wh-hud .lw-adv-btn { display: none !important; } .wh-hud .lw-adv-btn.on svg path { animation: none; } }
+html:not(.wh-home) .lw-adv-info { display: none !important; }

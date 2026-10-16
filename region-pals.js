@@ -107,6 +107,8 @@
     function show(id) {
         id = C.pid(id); const h = host();
         if (!id || !h) { hide(); return null; }
+        /* Oct 16 (E-man): on an adventure HER companion is the one we watch: no other companion pops up to introduce the place */
+        if (D.documentElement.classList.contains('lw-adv')) { hide(); return null; }
         if (st.el && st.id === id && st.host === h && st.el.isConnected) { sayLine(st.i, false); return st.el; }
         hide();
         const el = build(id); if (!el) return null;

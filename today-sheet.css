@@ -62,7 +62,7 @@ html.wh-home #whToday .sp-next { min-height: 44px !important; border-radius: 22p
 html.wh-home #whToday > .wh-tiles { gap: var(--ts-gap) !important; margin: 0 0 var(--ts-gap) !important; }
 html.wh-home #whToday .wh-tiles .g2h-tile { min-height: var(--ts-row) !important; height: auto !important; padding: 6px 10px !important; gap: 8px !important; justify-content: flex-start !important; }
 /* liquid-glass.css rounds every tab tile to 22px with two ids (#app #main); the doubled id here outweighs it inside the sheet only */
-html.wh-home #whToday#whToday .wh-tiles .g2h-tile { border-radius: var(--ts-r) !important; }
+html.wh-home #whToday#whToday .wh-tiles.wh-tiles .g2h-tile { border-radius: var(--ts-r) !important; }
 html.wh-home #whToday .wh-tiles .g2h-ic { background: rgba(140,200,255,.18) !important; color: #cfe9ff !important; border-radius: 9px !important; box-shadow: inset 0 0 0 1px rgba(160,220,255,.25) !important; }
 html.wh-home #whToday .wh-tiles .g2h-tile b { color: var(--ts-ink) !important; font-weight: 650 !important; font-size: 13px !important; }
 html.wh-home #whToday .wh-tiles .g2h-tile small { color: var(--ts-ink2) !important; }

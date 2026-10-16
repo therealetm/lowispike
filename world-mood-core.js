@@ -11,7 +11,7 @@
      One glass of water never clears a day of spikes, and there is no on/off switch: the look scales with the level.
    - Good logs before a spike leave a small cushion (down to -.15), never a free pass.
    - The 4-day habit trend (LowiWorldHealth.score up to yesterday) sets where the day starts: a hazy few days start up to
-     +.15 (a faint haze, never a storm on its own: the tier stays clear until something is logged today), a bright streak
+     +.15 (a faint haze, never a storm on its own: the tier turns stormy only from a spike logged today), a bright streak
      starts with up to -.1 of cushion. Nothing logged at all = clear.
    - Duplicates, twins, rapid-fire taps and log/undo loops add nothing (LowiWorldHealth.fairDay; read from what is saved).
    This is a game-world mood, never a health verdict: copy speaks about the world (clear / stormy), no diagnosis, no shame.
@@ -67,9 +67,8 @@
         }
         out.moved = out.moves > 0; out.base = base;
         out.level = r3(Math.max(0, lv));
-        if (out.level < STORMY || !ev.length) return out;
+        if (out.level < STORMY || !(out.food + out.products)) return out; /* the trend alone only hazes, never storms */
         if (out.food) out.why.push('food'); if (out.products) out.why.push('products');
-        if (!out.food && !out.products) out.why.push('trend');
         if (!out.moved) out.why.push('nomove');
         out.tier = 'stormy';
         return out;
@@ -95,7 +94,6 @@
         products: ['spiky products scanned in', 'Spike-Produkte eingescannt', 'productos con picos escaneados'],
         nomove: ['a Move calms it', 'eine Bewegung beruhigt sie', 'un Movimiento la calma'],
         moved: ['your Move is calming it', 'deine Bewegung beruhigt sie', 'tu Movimiento la est\u00e1 calmando'],
-        trend: ['a hazy few days', 'ein paar diesige Tage', 'unos d\u00edas brumosos'],
         clearing: ['it is clearing up', 'sie klart auf', 'se est\u00e1 despejando']
     };
     function line(m, lang) {
@@ -103,7 +101,6 @@
         if (!m || !m.level || m.tier === 'clear') return L('clear');
         const parts = [];
         if (m.food) parts.push(L('food')); if (m.products) parts.push(L('products'));
-        if (!parts.length) parts.push(L('trend'));
         parts.push(m.moved ? L('moved') : m.calm ? L('clearing') : L('nomove'));
         return L('stormy') + ' \u00b7 ' + parts.join(' \u00b7 ');
     }

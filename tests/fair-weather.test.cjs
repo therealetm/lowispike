@@ -116,7 +116,10 @@ test('copy stays a kind game-world line, wired for fast reactions without a new 
     const all = JSON.stringify(M.STR).toLowerCase();
     for (const w of ['unhealthy', 'ungesund', 'sick', 'krank', 'disease', 'diagnos', 'insulin resist', 'diabet', 'bad', 'schlecht', 'fail', 'shame', 'cheat'])
         assert.ok(!all.includes(w), w);
-    for (const k of ['trend', 'clearing']) assert.strictEqual(M.STR[k].length, 3, k);
+    assert.strictEqual(M.STR.clearing.length, 3);
+    const dk1 = (() => { const d = new Date(NOW); d.setHours(12); d.setDate(d.getDate() - 1); return WH.dayKey(d.getTime()); })();
+    const hazyWater = M.read({ logs: [{ day: dk1, r: 'nein', t: 'old a' }, { day: dk1, r: 'nein', t: 'old b' }], ledger: [water(at(9))] }, NOW, WH);
+    assert.deepStrictEqual([hazyWater.tier, hazyWater.why], ['clear', []], 'logging water on a hazy-trend day never flips it to stormy');
     const spike = meal('nein', 12);
     assert.strictEqual(M.line(M.read({ logs: [spike], ledger: [water(at(14))] }, NOW, WH), 'en'), 'Stormy world \u00b7 spiky food logged today \u00b7 it is clearing up');
     assert.strictEqual(M.line(M.read({ logs: [spike], ledger: [move(at(14))] }, NOW, WH), 'de'), 'St\u00fcrmische Welt \u00b7 heute Spike-Essen eingetragen \u00b7 deine Bewegung beruhigt sie');

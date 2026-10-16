@@ -457,3 +457,26 @@ html.wh-home:is([data-lay=tablet],[data-lay=desktop]) .wh-hud .bwr-label { top: 
    spirit world (our membrane bubble among everyone's) is clear; the top row, the quest box, the stick and the tab bar stay */
 html.wh-home.wh-cosmos .sp-heroes, html.wh-home.wh-cosmos #whHud .wh-cell, html.wh-home.wh-cosmos #whHint, html.wh-home.wh-cosmos .wh-hud .bwr-label,
 html.wh-home.wh-cosmos .wh-hud .wh-pad-chip, html.wh-home.wh-cosmos .bwr-pins, html.wh-home.wh-cosmos .bwr-pin { opacity: 0 !important; pointer-events: none !important; transition: opacity .35s ease !important; }
+
+/* Oct 16 (task 1 rework, E-man: "the fasting and water bubbles should look and move like Misty's bubble"): the same living
+   membrane as Misty's 3D cell (body-world-3d-scene.js memMat): almost clear in the middle (#3a9fe0 at ~10%), a violet rim
+   (#9b87d2) going to a pale cyan highlight (#8fe7ff) at the very edge, a soft cyan halo, faint shimmer bands drifting over it,
+   and the same slow wobble (two out-of-step swells, ~4 s and ~5.7 s) and breathing. Water and the fasting ring stay inside. */
+html.wh-home #spHome #spFast, html.wh-home #whHud .wh-water,
+html[data-theme="light"].wh-home #spHome #spFast, html[data-theme="light"].wh-home #whHud .wh-water {
+    border: 1px solid rgba(143, 231, 255, .5) !important;
+    background: radial-gradient(circle at 34% 26%, rgba(255, 255, 255, .34), rgba(255, 255, 255, 0) 22%),
+                radial-gradient(circle at 50% 50%, rgba(58, 159, 224, .1) 0%, rgba(58, 159, 224, .14) 54%, rgba(155, 135, 210, .34) 80%, rgba(143, 231, 255, .58) 97%) !important;
+    box-shadow: 0 0 24px 3px rgba(143, 231, 255, .26), inset 0 0 14px rgba(155, 135, 210, .42), inset 0 0 3px 1px rgba(143, 231, 255, .55) !important;
+    overflow: hidden; isolation: isolate; }
+html.wh-home #spHome #spFast::after, html.wh-home #whHud .wh-water::after {
+    content: ""; position: absolute; inset: -30%; border-radius: inherit; pointer-events: none; z-index: 3; mix-blend-mode: screen; opacity: .5;
+    background: repeating-linear-gradient(172deg, rgba(143, 231, 255, 0) 0 9%, rgba(143, 231, 255, .09) 12%, rgba(143, 231, 255, 0) 15% 24%); }
+@media (prefers-reduced-motion: no-preference) {
+    html.wh-home #spHome #spFast, html.wh-home #spHome #spFast.fb-on.done { animation: wh-float 6s ease-in-out infinite, wh-mem-swell 3.9s ease-in-out infinite, wh-mem-morph 5.7s ease-in-out infinite; }
+    html.wh-home #whHud .wh-water { animation: wh-float 6.8s ease-in-out -2.4s infinite, wh-mem-swell 3.9s ease-in-out -1.3s infinite, wh-mem-morph 5.7s ease-in-out -2.9s infinite; }
+    html.wh-home #spHome #spFast::after, html.wh-home #whHud .wh-water::after { animation: wh-mem-shimmer 7.8s linear infinite; }
+}
+@keyframes wh-mem-swell { 0%, 100% { scale: 1; } 50% { scale: 1.025; } }
+@keyframes wh-mem-morph { 0%, 100% { border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%; } 33% { border-radius: 52% 48% 51% 49% / 48% 52% 49% 51%; } 66% { border-radius: 48% 52% 49% 51% / 51% 49% 52% 48%; } }
+@keyframes wh-mem-shimmer { 0% { transform: translateY(-12%); } 100% { transform: translateY(12%); } }

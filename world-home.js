@@ -412,6 +412,16 @@
         const s = D.querySelector('#spBubble .tmg-plant') || D.querySelector('.sp-home-herb svg');
         if (!s) return null;
         const c = s.cloneNode(true);
+        /* an <img> has no page CSS: keep only the face parts the page shows right now (smile / neutral / sad, open or sleepy eyes) */
+        try {
+            const F = '.lh-smile,.lh-flat,.lh-frown,.lh-eyes,.lh-sleep-eyes,.lh-dizzy-eyes,.lh-ooh', os = [...s.querySelectorAll(F)], cs = [...c.querySelectorAll(F)];
+            os.forEach((o, i) => {
+                if (!cs[i]) return;
+                const cs0 = getComputedStyle(o);
+                if (cs0.display === 'none') { cs[i].remove(); return; }
+                if (o.classList.contains('lh-eyes') && cs0.animationName === 'none' && cs0.transform && cs0.transform !== 'none') cs[i].setAttribute('style', 'transform-box:fill-box;transform-origin:center;transform:' + cs0.transform);
+            });
+        } catch (e) { }
         c.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
         c.removeAttribute('class'); c.setAttribute('width', '260'); c.setAttribute('height', '310');
         c.querySelectorAll('.lh-acc,.lh-pot-fx,.lh-constellation').forEach(n => n.remove());
@@ -507,8 +517,13 @@
         let mood = 0, ratio = 0, away = false;
         try { mood = +(W.LowiWorldMood && W.LowiWorldMood.level) || 0; } catch (e) { }
         try { const v = W.LowiSun && W.LowiSun.live && W.LowiSun.live(); if (v) { ratio = +v.ratio || 0; away = !!v.away; } } catch (e) { }
-        const A = st.adv; A.away = away; A.vigor = Math.max(0, Math.min(1, 0.55 + 0.45 * ratio - 0.75 * mood));
-        const tier = A.vigor < 0.35 ? 'weak' : A.vigor > 0.75 ? 'thriving' : 'ok';
+        const A = st.adv; A.away = away;
+        /* Oct 16: one energy for face, flight and travel: LowiSun.energyNow() (tracked meals by verdict, water, Move).
+           Fallback only if sun-meter.js is missing. */
+        let en = null;
+        try { en = W.LowiSun && W.LowiSun.energyNow && W.LowiSun.energyNow(); } catch (e) { }
+        A.vigor = en ? en.value : Math.max(0, Math.min(1, 0.55 + 0.45 * ratio - 0.75 * mood));
+        const tier = en ? en.tier : A.vigor < 0.4 ? 'weak' : A.vigor > 0.75 ? 'thriving' : 'ok';
         const home = D.getElementById('spHome');
         if (home) { if (home.dataset.misty !== tier) home.dataset.misty = tier; if (away) home.dataset.mistyOut = '1'; else delete home.dataset.mistyOut; }
         A.tier = tier;
@@ -548,7 +563,7 @@
         const mu = a.memU;
         if (mu && !A.red) { A.red = new a.THREE.Color('#c4505f'); A.redRim = new a.THREE.Color('#e08a96'); A.rim0 = mu.uRim.value.clone(); }
         if (mu) {
-            const want = A.tier === 'weak' ? Math.min(0.7, (0.35 - A.vigor) / 0.35 * 0.5 + 0.2) : 0;
+            const want = A.tier === 'weak' ? Math.min(0.7, Math.max(0, 0.4 - A.vigor) / 0.4 * 0.5 + 0.2) : 0;
             A.redK = (A.redK || 0) + (want - (A.redK || 0)) * Math.min(1, dt * 1.5);
             if (A.redK > 0.002 || A.redWas) {
                 const base = H.getAttribute('data-theme') === 'light' ? '#2e8fd6' : '#3a9fe0';
@@ -596,7 +611,7 @@
         /* she tends something: slows down, a ring of light opens around her, sparkles spill into the world */
         if ((A.next -= dt) <= 0) {
             A.next = (3.2 + Math.random() * 2) / (0.6 + 0.6 * k); A.slow = 1.4;
-            pm.color.set(A.tier === 'weak' ? '#9aa3b2' : A.tier === 'thriving' ? '#bfffe0' : '#9fe3ff'); pm.opacity = 0.5 + 0.45 * k;
+            pm.color.set(A.tier === 'weak' || A.tier === 'tired' ? '#9aa3b2' : A.tier === 'thriving' ? '#bfffe0' : '#9fe3ff'); pm.opacity = 0.5 + 0.45 * k;
             A.tmp.copy(wand.position).addScaledVector(A.up, -0.25 * s);
             burst(A, A.tmp, Math.round(5 + 19 * k), 0.35 + 0.45 * k);
             if (!reduced()) { A.ring.position.copy(A.tmp); A.ring.material.color.set(A.tier === 'weak' ? '#c98a92' : '#a8ffd8'); A.ringT = 0; A.ring.visible = true; }

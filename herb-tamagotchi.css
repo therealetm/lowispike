@@ -22,7 +22,7 @@ html.herb-living #tabbar .tb[data-tab="scan"]{background-image:linear-gradient(9
 .lh-creature{transform-origin:130px 257px;animation:lh-breathe 4.4s ease-in-out infinite}
 .lh-leaf{animation:lh-sway 4.8s ease-in-out infinite;animation-delay:var(--delay)}
 .lh-eyes{transform-box:fill-box;transform-origin:center;animation:lh-blink 5.4s ease-in-out infinite}
-.lh-sleep-eyes,.lh-dizzy-eyes,.lh-ooh{display:none}
+.lh-sleep-eyes,.lh-dizzy-eyes,.lh-ooh,.lh-flat,.lh-frown{display:none}
 .lh-particle{animation:lh-drift 5.5s ease-in-out infinite;animation-delay:var(--delay);opacity:.6}
 .lh-constellation{opacity:.58}.lh-halo{animation:lh-halo 6s ease-in-out infinite;transform-origin:130px 48px}
 .lh-reflection{transform-origin:center;animation:lh-reflect 4.4s ease-in-out infinite}

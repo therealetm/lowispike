@@ -58,7 +58,7 @@ test('Misty\'s adventures: no "In the garden" label; you see her out in the worl
     assert.doesNotMatch(sm, /In the garden|in the garden/);
     assert.match(wh, /function adventure\(dt, r\)/);
     assert.match(wh, /A\.wand = new THREE\.Sprite\(mat\); A\.wand\.name = 'wh-misty-out'/);
-    assert.match(wh, /A\.vigor = Math\.max\(0, Math\.min\(1, 0\.55 \+ 0\.45 \* ratio - 0\.75 \* mood\)\)/);
+    assert.match(wh, /A\.vigor = en \? en\.value : Math\.max\(0, Math\.min\(1, 0\.55 \+ 0\.45 \* ratio - 0\.75 \* mood\)\)/, 'energy (sun-meter energyNow) drives the flight, old formula only as fallback');
     assert.match(wh, /mu\.uIn\.value\.set\(base\)\.lerp\(A\.red, A\.redK\)/);
     assert.match(wh, /const show = r\.mode === 'full' && !inRegion\(\) && !st\.adv\.away;/);
     assert.match(css, /#spHome\[data-misty="weak"\] #spBubble::after/);

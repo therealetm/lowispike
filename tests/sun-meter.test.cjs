@@ -48,7 +48,7 @@ test('duplicate and capped meals never reach the ledger, so they add no points',
     const v = SUN.model({ now, ledger: [e('meal:spirit', 15), e('meal:spirit', 0)] });
     assert.equal(v.raw, 3);
     const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-    assert.match(html, /const xp=n<this\.MEAL_CAP\?award\(15/, 'cap still gates the meal award');
+    assert.match(html, /xp=!spike&&n<this\.MEAL_CAP\?award\(15/, 'cap (and the spike rule) still gate the meal award');
     assert.match(html, /const twin=this\.mealDup\(data\);if\(twin\)return \{log:null,xp:0/, 'dup returns before any award');
 });
 

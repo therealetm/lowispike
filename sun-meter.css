@@ -49,6 +49,23 @@
 #spBubble .ls-away small { font-size: 15px; font-weight: 800; color: #c8f5d6; font-variant-numeric: tabular-nums; }
 @keyframes lsDrift { 50% { transform: translateY(-3px) rotate(8deg); } }
 
+/* Oct 16 (E-man): the return countdown in Misty's empty bubble while she's out; "Too tired to explore" under her when the sun
+   is full but she has no energy yet. Same Liquid Glass as her bubble. */
+#spBubble > .ls-back { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 4; pointer-events: none;
+    padding: 6px 12px; border-radius: 99px; white-space: nowrap; font-size: 12.5px; font-weight: 750; letter-spacing: .1px; line-height: 1.2;
+    color: #eaf6ff; font-variant-numeric: tabular-nums; text-shadow: 0 1px 3px rgba(4, 16, 40, .55);
+    background: radial-gradient(circle at 32% 24%, rgba(255, 255, 255, .30), rgba(160, 205, 255, .10) 60%, rgba(120, 170, 255, .06));
+    border: 1.5px solid rgba(220, 240, 255, .55); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), 0 6px 18px -8px rgba(8, 24, 60, .6);
+    -webkit-backdrop-filter: blur(10px) saturate(1.3); backdrop-filter: blur(10px) saturate(1.3); animation: lsBackIn .45s ease both; }
+#spBubble > .ls-back.tired { top: auto; bottom: -6px; transform: translate(-50%, 100%); font-size: 11.5px; color: #dbe6f5; }
+@keyframes lsBackIn { from { opacity: 0; } to { opacity: 1; } }
+.ls-energy { --ls-a: #9fe3ff; --ls-b: #5fb6ff; }
+.ls-energy.thriving { --ls-a: #a8ffd8; --ls-b: #5fe0b0; }
+.ls-energy.tired, .ls-energy.weak { --ls-a: #9aa9c4; --ls-b: #7b8aa6; }
+.ls-eparts li.unk b { color: var(--muted, #9aa); font-weight: 600; font-style: italic; }
+.ls-big.sm { width: 64px; height: 64px; }
+.ls-big.sm .ls-find { width: 44px; height: 44px; }
+
 /* sheets */
 .ls-sheet { text-align: center; padding: 4px 4px 2px; }
 .ls-sheet h2 { margin: 6px 0 6px; font-size: 22px; line-height: 1.2; }
@@ -88,7 +105,7 @@ html[data-ui=light] .lp-praise { background: rgba(255, 255, 255, .95); color: #1
 html[data-ui=light] .ls-sun { color: #10131f; }
 
 @media (prefers-reduced-motion: reduce) {
-    .ls-sun, .ls-fill, .ls-ico line, #spHome[data-sun-away] #spBubble .sp-home-herb { transition: none !important; }
+    .ls-sun, .ls-fill, .ls-ico line, #spHome[data-sun-away] #spBubble .sp-home-herb { transition: none !important; } #spBubble > .ls-back { animation: none; }
     .ls-sun.ls-bump .ls-ico, #spBubble .ls-away-ico, .ls-big .ls-ico { animation: none !important; }
     .lp-praise { transform: translate(-50%, 0) !important; transition: opacity .15s linear; }
 }

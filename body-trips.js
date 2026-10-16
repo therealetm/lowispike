@@ -285,6 +285,7 @@
         here: ['Your cell is here', 'Deine Zelle ist hier', 'Tu célula está aquí'],
         go: ['Travel here', 'Hinreisen', 'Viajar aquí'],
         busy: ['Your cell is already on a trip.', 'Deine Zelle ist schon unterwegs.', 'Tu célula ya está de viaje.'],
+        tired: ['Misty is too tired to travel right now. A meal, a glass of water or a Move gives her energy.', 'Misty ist gerade zu müde zum Reisen. Eine Mahlzeit, ein Glas Wasser oder Bewegung gibt ihr Kraft.', 'Misty está demasiado cansada para viajar ahora. Una comida, un vaso de agua o moverte le da energía.'],
         limit: ['That was today’s 3 trips. Tomorrow your cell travels again.', 'Das waren heute 3 Reisen. Morgen reist deine Zelle wieder.', 'Ya van 3 viajes hoy. Mañana tu célula vuelve a viajar.'],
         how: ['How to explore it', 'So erkundest du es', 'Cómo explorarlo'],
         facts: ['What your cell found', 'Was deine Zelle entdeckt hat', 'Lo que encontró tu célula'],
@@ -424,6 +425,7 @@
         if (cur && cur.place === id) action = '<p class="bt-note num">' + esc(tr('here')) + '</p>';
         else if (cur) action = '<p class="bt-note">' + esc(tr('busy')) + '</p>';
         else if (!canStart(st, now)) action = '<p class="bt-note">' + esc(tr('limit')) + '</p>';
+        else if (tooTired()) action = '<p class="bt-note">' + esc(tr('tired')) + '</p>';
         else action = '<button type="button" class="bt-cta" data-bt="go" data-id="' + id + '">' + esc(tr('go')) + '</button>';
         R().sheet('<div class="bt-sheet bt-place" style="--h:' + p.hue + '"><div class="bt-hero">' + scene(id, Object.assign({ live: true }, m)) + '</div><h2>' + esc(nm(p)) + '</h2><p class="bt-sub">' + esc(p.sub[L()] || p.sub[0]) + ' · <b class="num">' + (pr.x <= 0 && !pr.v ? esc(tr('never')) : pct(pr.x) + ' ' + esc(tr('explored'))) + '</b></p>' +
             '<div class="bt-pbar big" aria-hidden="true"><i style="width:' + Math.min(100, pr.x) + '%"></i></div>' + (note ? '<p class="bt-live">' + esc(note) + '</p>' : '') +
@@ -442,11 +444,14 @@
     }
 
     /* ---------- flow ---------- */
+    /* Oct 16 (E-man): Misty only travels with energy (LowiSun.energyNow: tracked meals by verdict, water, Move).
+       Exploring progress from logs still counts; she just doesn't set off while she's too tired. */
+    function tooTired() { try { const en = W.LowiSun && LowiSun.energyNow && LowiSun.energyNow(); return !!(en && !en.canTravel); } catch (e) { return false; } }
     function gain(g, why) {
         const st = body(), now = Date.now(), got = apply(st, g, now);
         if (why) st.recent[why] = now;
         let sent = null;
-        if (Object.keys(got).length && canStart(st, now)) {
+        if (Object.keys(got).length && canStart(st, now) && !tooTired()) {
             const dest = destination(got);
             if (dest) sent = start(st, dest, now);
         }
@@ -490,6 +495,7 @@
     }
     function goPlace(id) {
         const st = body(), now = Date.now();
+        if (tooTired()) { try { if (W.LowiPraise && LowiPraise.say) LowiPraise.say(tr('tired')); } catch (e) {} return false; }
         const t = start(st, id, now);
         if (!t) return false;
         save();

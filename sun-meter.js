@@ -3,7 +3,12 @@
    Duplicate meals and meals over the daily cap never reach the ledger, so they add nothing.
    Full sun: one reward per local day (ledger eventId sun-full:<day>, +10 XP), one reward sheet, then the herb goes out
    into the garden for an hour (countdown on its bubble and on the bar) and comes back with one find.
-   Finds are kept in S.garden (account data). Pure model at the top is tested in tests/sun-meter.test.cjs. */
+   Finds are kept in S.garden (account data). Pure model at the top is tested in tests/sun-meter.test.cjs.
+   Oct 16 (E-man): Misty's ENERGY (energy() below) comes from what was tracked today: meals (rated by the app's own verdict),
+   glasses of water and Moves. Not tracked = no energy from it yet, never "you didn't". Low energy: she looks tired (spiky
+   food logged: worn out) and is too tired to head out; the sun-full bonus still counts and she leaves once she has energy.
+   Full of energy when she leaves: she brings back a second find. The countdown shows in her empty bubble on Home.
+   The trip is timestamps only (start/back), reconciled on load: nothing simulates in the background. */
 (function () {
     'use strict';
     const W = typeof window !== 'undefined' ? window : globalThis, D = W.document;
@@ -78,7 +83,53 @@
         const m = Math.max(1, Math.ceil(Math.max(0, +ms || 0) / 60000));
         return Math.floor(m / 60) + ':' + pad(m % 60);
     }
-    const core = { GOAL, AWAY_MS, BONUS, PTS, CAP, ITEMS, classify, points, model, pickItem, fmtLeft, dayKey };
+    /* ---------- Misty's energy (pure) ----------
+       0.15 resting base + food 40% + water 30% + Move 30%. Food = mean app verdict of today's logged meals (same rule as
+       LowiWorldHealth.verdict: low 1, mid .55, unknown .6, spike .15). Water = glasses / 4. Move = any Move logged.
+       tiers: thriving >= .75, ok >= .4, below: 'weak' if a spiky meal was logged, else 'tired'. Travel needs >= .4. */
+    const ENERGY = { base: 0.15, food: 0.4, water: 0.3, move: 0.3, waterGoal: 4, travel: 0.4, strong: 0.75 };
+    function verdict(l) {
+        const r = String(l && l.r != null ? l.r : '').toLowerCase(), v = String(l && l.lvl || '').toLowerCase();
+        if (r === 'ja' || v === 'low' || r === 'low' || r === 'yes') return 1;
+        if (r === 'nein' || v === 'high' || r === 'high' || r === 'no') return 0.15;
+        if (r === 'jein' || v === 'mid' || v === 'medium' || r === 'mid' || r === 'maybe') return 0.55;
+        return 0.6;
+    }
+    function energy(input) {
+        input = input || {};
+        const now = +input.now || Date.now(), key = dayKey(now);
+        const logs = (input.logs || []).filter(l => l && isDay(l, key));
+        const ledger = (input.ledger || []).filter(e => e && isDay(e, key));
+        const counted = ledger.filter(e => classify(e) === 'water').length;
+        const water = Math.max(0, Math.floor(+input.water || 0)) || counted;
+        const moves = ledger.filter(e => +e.amt > 0 && classify(e) === 'move').length;
+        const spikes = logs.filter(l => verdict(l) <= 0.15).length;
+        const food = logs.length ? logs.reduce((a, l) => a + verdict(l), 0) / logs.length : 0;
+        const parts = { food, water: Math.min(1, water / ENERGY.waterGoal), move: moves ? 1 : 0 };
+        const value = Math.max(0, Math.min(1, ENERGY.base + (1 - ENERGY.base) * (ENERGY.food * parts.food + ENERGY.water * parts.water + ENERGY.move * parts.move)));
+        const tier = value >= ENERGY.strong ? 'thriving' : value >= ENERGY.travel ? 'ok' : spikes ? 'weak' : 'tired';
+        return { value, tier, canTravel: value >= ENERGY.travel, meals: logs.length, spikes, water, moves, parts, known: { food: logs.length > 0, water: water > 0, move: moves > 0 } };
+    }
+    /* a trip may start today only once the sun bonus is in, nothing is out, and Misty has the energy */
+    const mayDepart = (v, en) => !!(v && v.fullDone && !v.trip && !v.away && en && en.canTravel);
+    /* "42 min" / "1 h 05" for the bubble countdown, never 0 while still away */
+    function fmtBack(ms) {
+        const m = Math.max(1, Math.ceil(Math.max(0, +ms || 0) / 60000));
+        return m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + pad(m % 60);
+    }
+    /* the finds a trip brings home: one, plus a bonus one when Misty left full of energy */
+    function tripFinds(trip, day) {
+        if (!trip || !trip.item) return [];
+        const out = [{ id: trip.item, day }];
+        if (trip.vigor === 'thriving' && trip.item2) out.push({ id: trip.item2, day, bonus: true });
+        return out;
+    }
+    function makeTrip(key, owned, now, tier) {
+        const item = pickItem(key, owned), t = { start: now, back: now + AWAY_MS, item, got: false, vigor: tier || 'ok' };
+        if (tier === 'thriving') t.item2 = pickItem(key + ':2', (owned || []).concat([item]));
+        return t;
+    }
+    const core = { GOAL, AWAY_MS, BONUS, PTS, CAP, ITEMS, ENERGY, classify, points, model, pickItem, fmtLeft, fmtBack, dayKey, verdict, energy, mayDepart, tripFinds, makeTrip };
     if (!D) {
         if (typeof module !== 'undefined' && module.exports) module.exports = core;
         return;
@@ -104,8 +155,22 @@
         finds: ['World finds', 'Welt-Funde', 'Hallazgos del mundo'],
         none: ['Fill your sun and I’ll bring the first one.', 'Füll deine Sonne, dann bring ich den ersten mit.', 'Llena tu sol y te traigo el primero.'],
         how: ['How the sun fills', 'So füllt sich die Sonne', 'Cómo se llena el sol'],
-        howTx: ['Every counted action is a sunbeam for me, up to a daily limit per kind, so a mix fills me fastest. Repeats and meals over the daily limit don’t count.', 'Jede gezählte Aktion ist ein Sonnenstrahl für mich, pro Art bis zu einer Grenze. Eine Mischung füllt mich am schnellsten. Doppeltes und Essen über dem Tageslimit zählt nicht.', 'Cada acción contada es un rayo de sol para mí, con un límite por tipo, así que una mezcla me llena antes. Repeticiones y comidas sobre el límite diario no cuentan.'],
+        howTx: ['Every counted action is a sunbeam for me, up to a daily limit per kind, so a mix fills me fastest. Repeats, spiky meals and meals over the daily limit don’t count.', 'Jede gezählte Aktion ist ein Sonnenstrahl für mich, pro Art bis zu einer Grenze. Eine Mischung füllt mich am schnellsten. Doppeltes, Spike-Mahlzeiten und Essen über dem Tageslimit zählen nicht.', 'Cada acción contada es un rayo de sol para mí, con un límite por tipo, así que una mezcla me llena antes. Repeticiones, comidas con pico y comidas sobre el límite diario no cuentan.'],
         awayTap: ['I’m out tending the world! Back in', 'Ich pflege gerade die Welt! Zurück in', '¡Estoy cuidando el mundo! Vuelvo en'],
+        tiredT: ['Thank you! The sun is full, but I’m too tired to head out right now. A meal, a glass of water or a Move gives me energy, and then I’m off.', 'Danke! Die Sonne ist voll, aber ich bin gerade zu müde zum Losfliegen. Eine Mahlzeit, ein Glas Wasser oder Bewegung gibt mir Kraft, dann flieg ich los.', '¡Gracias! El sol está lleno, pero ahora estoy demasiado cansada para salir. Una comida, un vaso de agua o moverte me da energía y salgo.'],
+        tooTired: ['Too tired to explore', 'Zu müde zum Erkunden', 'Demasiado cansada para explorar'],
+        tiredTap: ['I’m too tired to head out. A meal, water or a Move gives me energy.', 'Ich bin zu müde zum Losfliegen. Essen, Wasser oder Bewegung geben mir Kraft.', 'Estoy demasiado cansada para salir. Comer, agua o moverte me da energía.'],
+        okay: ['Okay', 'Okay', 'Vale'],
+        out: ['Out exploring', 'Unterwegs', 'Explorando'],
+        backShort: ['back in', 'zurück in', 'vuelve en'],
+        leaves: ['I’ve got energy now, I’m heading out! Back in', 'Jetzt hab ich Kraft, ich flieg los! Zurück in', '¡Ya tengo energía, salgo! Vuelvo en'],
+        bonusFind: ['I had so much energy, I found a second one:', 'Ich hatte so viel Kraft, ich hab noch was gefunden:', 'Tenía tanta energía que encontré otro:'],
+        energy: ['Misty’s energy', 'Mistys Energie', 'Energía de Misty'],
+        eThriving: ['Full of energy', 'Voller Energie', 'Llena de energía'], eOk: ['Doing okay', 'Geht so', 'Bien'], eTired: ['Low on energy', 'Wenig Energie', 'Poca energía'], eWeak: ['Worn out', 'Erschöpft', 'Agotada'],
+        eFood: ['Food', 'Essen', 'Comida'], eWater: ['Water', 'Wasser', 'Agua'], eMove: ['Move', 'Bewegung', 'Movimiento'],
+        notYet: ['not tracked yet', 'noch nicht eingetragen', 'aún sin registrar'],
+        mealsN: ['logged', 'eingetragen', 'registradas'], spikyN: ['spiky', 'mit Spike', 'con pico'], glasses: ['glasses', 'Gläser', 'vasos'], moved: ['logged', 'eingetragen', 'registrado'],
+        eNote: ['“Not tracked yet” only means Misty gets no energy from it yet, not that you didn’t do it. She needs energy to head out on adventures.', '„Noch nicht eingetragen“ heißt nur, dass Misty daraus noch keine Kraft bekommt, nicht dass du es nicht gemacht hast. Für Abenteuer braucht sie Energie.', '“Aún sin registrar” solo significa que Misty aún no recibe energía de eso, no que no lo hayas hecho. Necesita energía para sus aventuras.'],
         meal: ['Meal', 'Mahlzeit', 'Comida'], scan: ['Scan', 'Scan', 'Escaneo'], move: ['Move', 'Bewegung', 'Movimiento'], fast: ['Fasting milestone', 'Fasten-Etappe', 'Etapa de ayuno'],
         macro: ['Macro goal', 'Makro-Ziel', 'Meta de macros'], water: ['Glass of water', 'Glas Wasser', 'Vaso de agua'], other: ['Other action', 'Andere Aktion', 'Otra acción']
     };
@@ -124,6 +189,8 @@
     const save = () => { try { B().save(); } catch (e) {} };
     function garden() { const s = S(); if (!s.garden || typeof s.garden !== 'object') s.garden = { trips: {}, items: [] }; s.garden.trips = s.garden.trips || {}; s.garden.items = s.garden.items || []; return s.garden; }
     const live = () => { const s = S(); return model({ now: Date.now(), ledger: s.ledger || [], garden: s.garden }); };
+    function waterToday(now) { try { const f = JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}') || {}; return +((f.water || {})[dayKey(now)]) || 0; } catch (e) { return 0; } }
+    const energyNow = () => { const s = S(), now = Date.now(); return energy({ now, logs: s.logs || [], ledger: s.ledger || [], water: waterToday(now) }); };
 
     /* ---------- bar on Today ---------- */
     let row = null, last = '';
@@ -149,7 +216,10 @@
         const right = away ? tr('back') + ' ' + fmtLeft(v.left) : v.points + '/' + v.goal;
         const sig = [label, right, v.ratio.toFixed(3), lang(), away].join('|');
         if (home) { if (away) home.dataset.sunAway = '1'; else delete home.dataset.sunAway; }
+        const en = energyNow();
+        if (home && home.dataset.misty !== en.tier) home.dataset.misty = en.tier;
         awayBadge(v);
+        backChip(v, en);
         if (sig === last) return;
         last = sig;
         row.classList.toggle('full', v.full);
@@ -164,6 +234,18 @@
         /* Oct 16 (E-man): no garden countdown label in Misty's bubble. While she is out you see her flying through the world
            (world-home.js adventure); the countdown stays on the sun bar in Today. */
         const b = D.querySelector('#spBubble .ls-away'); if (b) b.remove();
+    }
+    /* Oct 16 (E-man: "a timer, so we know when Misty comes back"): while she is out, her empty bubble on Home shows
+       "Out exploring · back in 42 min"; when the sun is full but she is too tired, it says so under her. */
+    function backChip(v, en) {
+        const bub = D.getElementById('spBubble');
+        let c = bub && bub.querySelector(':scope > .ls-back');
+        const waiting = !v.away && v.fullDone && !v.trip && en && !en.canTravel;
+        if (!bub || (!v.away && !waiting)) { if (c) c.remove(); return; }
+        if (!c) { c = D.createElement('span'); c.className = 'ls-back'; c.setAttribute('role', 'status'); bub.appendChild(c); }
+        const txt = v.away ? tr('out') + ' · ' + tr('backShort') + ' ' + fmtBack(v.left) : tr('tooTired');
+        c.classList.toggle('tired', !v.away);
+        if (c.textContent !== txt) c.textContent = txt;
     }
     function pop(n) {
         if (!row || !row.isConnected || !n) return;
@@ -186,27 +268,40 @@
     function fullSheet(v) {
         if (!R() || !R().sheet) return;
         try { localStorage.setItem('lowi.sun.sheet', v.key); } catch (e) {}
-        const html = '<div class="ls-sheet"><div class="ls-big">' + sunSvg(1) + '</div><h2>' + esc(tr('title')) + '</h2><p class="ls-say">' + esc(tr('thanks')) + '</p>' +
+        const gone = !!v.trip;
+        const html = '<div class="ls-sheet"><div class="ls-big">' + sunSvg(1) + '</div><h2>' + esc(tr('title')) + '</h2><p class="ls-say">' + esc(tr(gone ? 'thanks' : 'tiredT')) + '</p>' +
             '<p class="ls-bonus num">+' + BONUS + ' XP</p>' +
             (Object.keys(v.parts).length ? '<h3>' + esc(tr('filled')) + '</h3>' + partsHtml(v) : '') +
-            '<p class="ls-note">' + esc(tr('backIn')) + ' ' + fmtLeft(AWAY_MS) + ' · ' + esc(tr('tomorrow')) + '</p>' +
-            '<button type="button" class="ls-cta" data-ls="close">' + esc(tr('go')) + '</button></div>';
+            '<p class="ls-note">' + (gone ? esc(tr('backIn')) + ' ' + fmtBack(Math.max(0, +v.trip.back - Date.now())) + ' · ' : '') + esc(tr('tomorrow')) + '</p>' +
+            '<button type="button" class="ls-cta" data-ls="close">' + esc(tr(gone ? 'go' : 'okay')) + '</button></div>';
         R().sheet(html, { cls: 'ls-ov' });
     }
     function returnSheet(trip) {
         const name = itemName(trip.item);
+        const bonus = trip.vigor === 'thriving' && trip.item2 ? '<p class="ls-say">' + esc(tr('bonusFind')) + '</p><div class="ls-big sm">' + itemSvg(trip.item2) + '</div><p class="ls-item">' + esc(itemName(trip.item2)) + '</p>' : '';
         if (R() && R().sheet) {
-            R().sheet('<div class="ls-sheet"><div class="ls-big">' + itemSvg(trip.item) + '</div><h2>' + esc(tr('home')) + '</h2><p class="ls-say">' + esc(tr('found')) + '</p><p class="ls-item">' + esc(name) + '</p>' +
+            R().sheet('<div class="ls-sheet"><div class="ls-big">' + itemSvg(trip.item) + '</div><h2>' + esc(tr('home')) + '</h2><p class="ls-say">' + esc(tr('found')) + '</p><p class="ls-item">' + esc(name) + '</p>' + bonus +
                 '<button type="button" class="ls-cta" data-ls="close">' + esc(tr('keep')) + '</button></div>', { cls: 'ls-ov' });
         }
     }
+    function energyHtml(en) {
+        const name = { thriving: 'eThriving', ok: 'eOk', tired: 'eTired', weak: 'eWeak' }[en.tier] || 'eOk';
+        const food = en.meals ? en.meals + ' ' + tr('mealsN') + (en.spikes ? ' · ' + en.spikes + ' ' + tr('spikyN') : '') : tr('notYet');
+        const water = en.water ? en.water + ' ' + tr('glasses') : tr('notYet');
+        const move = en.moves ? tr('moved') : tr('notYet');
+        const li = (k, t, known) => '<li class="' + (known ? '' : 'unk') + '"><span>' + esc(tr(k)) + '</span><b>' + esc(t) + '</b></li>';
+        return '<h3>' + esc(tr('energy')) + ' · ' + esc(tr(name)) + '</h3><div class="ls-track big ls-energy ' + en.tier + '" style="--ls-fill:' + en.value.toFixed(3) + '"><i class="ls-fill"></i></div>' +
+            '<ul class="ls-parts ls-eparts">' + li('eFood', food, en.known.food) + li('eWater', water, en.known.water) + li('eMove', move, en.known.move) + '</ul>' +
+            '<p class="ls-note">' + esc(tr('eNote')) + (v0().away || en.canTravel ? '' : ' ' + esc(tr('tiredTap'))) + '</p>';
+    }
+    const v0 = () => live();
     function infoSheet() {
         if (!R() || !R().sheet) return;
         const v = live(), g = garden();
         const how = ['meal', 'scan', 'move', 'fast', 'macro', 'water'].map(k => '<li><span>' + esc(tr(k)) + '</span><b class="num">+' + PTS[k] + ' <small>/ ' + CAP[k] + '</small></b></li>').join('');
         const finds = g.items.length ? '<ul class="ls-finds">' + g.items.slice(-12).reverse().map(i => '<li>' + itemSvg(i.id) + '<span>' + esc(itemName(i.id)) + '</span></li>').join('') + '</ul>' : '<p class="ls-note">' + esc(tr('none')) + '</p>';
         R().sheet('<div class="ls-sheet ls-info"><div class="ls-head">' + sunSvg(v.ratio) + '<div><h2>' + esc(v.away ? tr('away') : v.full ? tr('full') : tr('sun')) + '</h2><p class="num">' + (v.away ? esc(tr('back')) + ' ' + fmtLeft(v.left) : v.points + '/' + v.goal) + '</p></div></div>' +
-            '<div class="ls-track big" style="--ls-fill:' + v.ratio.toFixed(3) + '"><i class="ls-fill"></i></div>' + partsHtml(v) +
+            '<div class="ls-track big" style="--ls-fill:' + v.ratio.toFixed(3) + '"><i class="ls-fill"></i></div>' + partsHtml(v) + energyHtml(energyNow()) +
             '<h3>' + esc(tr('how')) + '</h3><p class="ls-note">' + esc(tr('howTx')) + '</p><ul class="ls-parts how">' + how + '</ul>' +
             '<h3>' + esc(tr('finds')) + '</h3>' + finds + '</div>', { cls: 'ls-ov' });
     }
@@ -223,6 +318,7 @@
             if (n > 0) pop(n);
         }
         if (v.full && !v.fullDone && !busy) { busy = true; setTimeout(fill, 700); }
+        else if (v.fullDone && !v.trip) depart();
     }
     function fill() {
         busy = false;
@@ -230,13 +326,25 @@
         if (!v.full || v.fullDone || !W.LowiHost) return;
         const got = LowiHost.award('sun-full', null, { amt: BONUS, label: 'Sun meter full', eventId: 'sun-full:' + v.key, perDay: 1 });
         if (!got) return;
-        const g = garden();
-        if (!g.trips[v.key]) g.trips[v.key] = { start: Date.now(), back: Date.now() + AWAY_MS, item: pickItem(v.key, g.items), got: false };
+        const g = garden(), en = energyNow();
+        if (!g.trips[v.key] && en.canTravel) g.trips[v.key] = makeTrip(v.key, g.items, Date.now(), en.tier);
         save();
         let shown = '';
         try { shown = localStorage.getItem('lowi.sun.sheet') || ''; } catch (x) {}
         if (shown !== v.key) fullSheet(live());
         render();
+    }
+    /* the sun bonus is in but Misty was too tired: she leaves as soon as she has the energy (same day only) */
+    function depart() {
+        const v = live(), en = energyNow();
+        if (!mayDepart(v, en)) return false;
+        const g = garden();
+        if (g.trips[v.key]) return false;
+        g.trips[v.key] = makeTrip(v.key, g.items, Date.now(), en.tier);
+        save();
+        render();
+        if (W.LowiPraise && LowiPraise.say) setTimeout(() => { try { LowiPraise.say(tr('leaves') + ' ' + fmtBack(AWAY_MS) + '.'); } catch (e) {} }, 900);
+        return true;
     }
     function collect() {
         const v = live();
@@ -247,7 +355,7 @@
         const g = garden(), t = v.pending[0], trip = g.trips[t.day];
         if (!trip || trip.got) return;
         trip.got = true;
-        if (!g.items.some(i => i.day === t.day)) g.items.push({ id: trip.item, day: t.day, ts: Date.now() });
+        for (const f of tripFinds(trip, t.day)) if (!g.items.some(i => i.day === t.day && !!i.bonus === !!f.bonus)) g.items.push(Object.assign({ ts: Date.now() }, f));
         save();
         render();
         returnSheet(trip);
@@ -260,7 +368,8 @@
         if (bub) {
             const v = live();
             /* ambience only: the trip never blocks the herb world or anything in it */
-            if (v.away && W.LowiPraise && LowiPraise.say) LowiPraise.say(tr('awayTap') + ' ' + fmtLeft(v.left) + '.');
+            if (v.away && W.LowiPraise && LowiPraise.say) LowiPraise.say(tr('awayTap') + ' ' + fmtBack(v.left) + '.');
+            else if (v.fullDone && !v.trip && !energyNow().canTravel && W.LowiPraise && LowiPraise.say) LowiPraise.say(tr('tiredTap'));
         }
     }, true);
 
@@ -282,10 +391,10 @@
         schedule();
         setTimeout(() => check(null), 1500);
         setInterval(() => { if (D.hidden) return; const v = live(); if (v.away || v.pending.length) { schedule(); collect(); } }, 5000);
-        setInterval(() => { if (!D.hidden) schedule(); }, 30000);
+        setInterval(() => { if (!D.hidden) { schedule(); try { depart(); } catch (e) {} } }, 30000);
     }
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 
-    W.LowiSun = Object.assign({}, core, { render, live, info: infoSheet, collect });
+    W.LowiSun = Object.assign({}, core, { render, live, energyNow, info: infoSheet, collect, depart });
     if (typeof module !== 'undefined' && module.exports) module.exports = W.LowiSun;
 })();

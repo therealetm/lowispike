@@ -26,6 +26,28 @@ test('YYYY-MM-DD days still work, and unreadable values give an empty string so 
  assert.equal(helpers(1)('2026-10-16',1),'16. Oktober 2026');
 });
 
+test('a "since" in seconds (10 digits) is read as seconds, not as a 1970 date, in en, de and es',()=>{
+ const SEC=Math.floor(Date.UTC(2026,9,16,12)/1000);
+ for(const v of [SEC,String(SEC)]){
+  assert.equal(helpers(0)(v,1),'16 October 2026','en '+v);
+  assert.equal(helpers(1)(v,1),'16. Oktober 2026','de '+v);
+  assert.equal(helpers(2)(v,1),'16 de octubre de 2026','es '+v);
+ }
+ assert.equal(helpers(2)(Date.UTC(2026,9,16,12),1),'16 de octubre de 2026');
+ assert.equal(helpers(0)(12345,1),'','tiny numbers hide the row');
+});
+
+test('the real person card markup shows a proper date for a ms and a seconds since',()=>{
+ const SEC=Math.floor(Date.UTC(2026,9,16,12)/1000);
+ const pcDate=helpers(0);
+ for(const v of [Date.UTC(2026,9,16,12),SEC]){
+  const bt={since:v};
+  const row=(bt&&pcDate(bt.since,1))?'<div class="pc-row"><b>In the galaxy since</b><span>'+pcDate(bt.since,1)+'</span></div>':'';
+  assert.match(row,/In the galaxy since<\/b><span>16 October 2026<\/span>/);
+  assert.doesNotMatch(row,/\d{5,}/);
+ }
+});
+
 test('person card and bot profile never fall back to the raw since value',()=>{
  assert.doesNotMatch(js,/String\(bt\.since\)/);
  assert.match(js,/if\(bt&&pcDate\(bt\.since,1\)\)rows\+=pcRow\(tr\('withUs'\),pcDate\(bt\.since,1\)\)/);

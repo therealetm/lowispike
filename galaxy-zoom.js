@@ -246,6 +246,9 @@
             const r = rigNow(); if (!r) return release();
             /* only counts once the camera is already at its widest; the fingers' distance there is the reference */
             if (r.dist < r.maxD * 0.995) { gest.ref = 0; return; }
+            /* Oct 16 (task 3): the world itself goes on past the World Map now (the camera keeps pulling out into the spirit world and
+               world-home.js hands over to Community at its far edge), so the fingers are not counted here any more */
+            if (r.outer) { gest.ref = 0; feel(gest.el, 1, 1); return; }
             if (!gest.ref) gest.ref = d;
             const over = overPull(gest.ref, d);
             if (over <= 1) { feel(gest.el, 1, 1); return; }
@@ -270,7 +273,7 @@
     D.addEventListener('wheel', e => {
         if (busy) return;
         const now = Date.now(); if (now - wheelT > 450) wheelOver = 0; wheelT = now;
-        if (e.deltaY > 0 && homePinchOk(e.target)) { const r = rigNow(); if (r.dist >= r.maxD * 0.995 && ++wheelOver >= 5) { wheelOver = 0; (W.goTab || goTab)('foryou'); } }
+        if (e.deltaY > 0 && homePinchOk(e.target)) { const r = rigNow(); if (!r.outer && r.dist >= r.maxD * 0.995 && ++wheelOver >= 5) { wheelOver = 0; (W.goTab || goTab)('foryou'); } }
         else if (e.deltaY < 0 && activeTab() === 'foryou' && e.target && e.target.closest && e.target.closest('#cgGalaxy') && D.querySelector('#cgField .cg-body.me') && (!W.LowiCgMap || W.LowiCgMap.atMax())) { e.preventDefault(); if (++wheelOver >= 5) { wheelOver = 0; (W.goTab || goTab)('home'); } }
     }, { capture: true, passive: false });
     /* ---------- sideways swipe Home <-> Community (driven by liquid-glass.js): the page pulls back with the finger, letting go warps ---------- */

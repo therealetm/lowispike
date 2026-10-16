@@ -386,6 +386,9 @@
            world"): leaving Community for any other page brings the camera back down into Misty's world, as on Home */
         const otherIn = !!(w === true && t && t.id !== 'tab-home' && t.id !== 'tab-foryou' && !H.classList.contains('gx-in') && !H.classList.contains('gx-out'));
         if (otherIn) { try { const WH = W.LowiWorldHome; if (WH && WH.state && WH.state.pull && WH.diveIn) WH.diveIn(); } catch (e) { } }
+        /* ...and Community, however it is opened (the tab bar from Cook, a deep link), is always the spirit world out past our bubble */
+        const commIn = !!(w === true && t && t.id === 'tab-foryou' && !H.classList.contains('gx-in') && !H.classList.contains('gx-out'));
+        if (commIn) { try { const WH = W.LowiWorldHome; if (WH && WH.state && !WH.state.pull && WH.pullOut) WH.pullOut(); } catch (e) { } }
         H.classList.toggle('wb-home', homeIn); if (w === true && mode !== 'back') backdrop(true); else if (w === false && mode === 'back') backdrop(false);
     }
     function queueBack() { if (!backQ) backQ = (W.requestAnimationFrame || setTimeout)(syncBack, 0); }

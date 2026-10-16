@@ -432,3 +432,28 @@ html.spirit-app.wh-home:is([data-lay=tablet],[data-lay=desktop]) #tab-home #spHo
 html.spirit-app.wh-home:is([data-lay=tablet],[data-lay=desktop]) #tab-home #spHome .sp-top > .sp-weather { grid-column: 2 !important; grid-row: 2 !important; justify-self: center; }
 html.spirit-app.wh-home:is([data-lay=tablet],[data-lay=desktop]) #tab-home #f3Board { top: calc(var(--b-top, 0px) + 113px) !important; left: calc(-1 * var(--wh-l, 0px)) !important; }
 html.wh-home:is([data-lay=tablet],[data-lay=desktop]) .wh-hud .bwr-label { top: calc(var(--b-top, 0px) + 208px); }
+
+/* ---------- Oct 16 (handoff task 3): the zoom stick + the world past the World Map ----------
+   The World map button is a small Liquid Glass zoom stick (Google Earth style): a glowing groove with a knob you push up to fly
+   out (Misty -> World map -> out through our bubble -> Community) and down to come back to Misty. Same spot and size as the old
+   button; a plain tap still toggles World map / Misty. The knob carries the icon, the word stays under it. */
+.wh-hud .wh-zoom.wh-stick { flex-direction: column; gap: 2px; touch-action: none; overflow: visible;
+    border: 1.5px solid var(--wh-glass-rim) !important; background: var(--wh-glass-wide) !important; box-shadow: var(--wh-glass-sh), 0 8px 26px -12px rgba(0,0,0,.55) !important; color: var(--wh-glass-ink); }
+.wh-stick .wh-stk-track { position: absolute; left: 50%; top: 5px; bottom: 5px; width: 16px; margin-left: -8px; border-radius: 8px; pointer-events: none;
+    background: linear-gradient(180deg, rgba(160,220,255,.22), rgba(160,220,255,.05) 50%, rgba(160,220,255,.22)); box-shadow: inset 0 0 6px rgba(140,210,255,.25); opacity: .55; transition: opacity .2s; }
+.wh-stick .wh-stk-track i { position: absolute; left: 50%; width: 6px; height: 6px; margin-left: -3px; border: solid rgba(220,242,255,.85); border-width: 1.6px 1.6px 0 0; }
+.wh-stick .wh-stk-up { top: 3px; transform: rotate(-45deg); }
+.wh-stick .wh-stk-dn { bottom: 3px; transform: rotate(135deg); }
+.wh-stick .wh-stk-knob { position: relative; z-index: 1; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; pointer-events: none;
+    background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.4), rgba(120,200,255,.22) 55%, rgba(40,110,200,.3)); border: 1px solid rgba(190,232,255,.7);
+    box-shadow: 0 0 calc(10px + 14px * var(--stk-a, 0)) rgba(120,200,255,.55), inset 0 0 8px rgba(255,255,255,.25); transition: transform .28s cubic-bezier(.3,1.5,.5,1), box-shadow .2s; }
+.wh-stick .wh-stk-knob svg { width: 17px; height: 17px; }
+.wh-stick.is-held { --stk-a: 1; }
+.wh-stick.is-held .wh-stk-track { opacity: 1; }
+.wh-stick.is-held .wh-stk-knob { transition: box-shadow .2s; }
+.wh-stick .wh-zoom-tx { position: relative; z-index: 1; }
+@media (prefers-reduced-motion: reduce) { .wh-stick .wh-stk-knob { transition: none; } }
+/* past the World Map (html.wh-cosmos): Misty's cell, the water and fasting bubbles, the place names and the hints step aside so the
+   spirit world (our membrane bubble among everyone's) is clear; the top row, the quest box, the stick and the tab bar stay */
+html.wh-home.wh-cosmos .sp-heroes, html.wh-home.wh-cosmos #whHud .wh-cell, html.wh-home.wh-cosmos #whHint, html.wh-home.wh-cosmos .wh-hud .bwr-label,
+html.wh-home.wh-cosmos .wh-hud .wh-pad-chip, html.wh-home.wh-cosmos .bwr-pins, html.wh-home.wh-cosmos .bwr-pin { opacity: 0 !important; pointer-events: none !important; transition: opacity .35s ease !important; }

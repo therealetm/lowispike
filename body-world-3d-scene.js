@@ -178,7 +178,10 @@ export function createWorld(THREE, canvas, opts) {
             const was = rig.mode === 'home' && rig.homeDist > 0 && rig.lastHome ? rig.dist / rig.homeDist : 1;
             rig.homeDist = homeDistFor(o.radiusPx || 100); rig.lastHome = true;
             rig.minD = rig.homeDist * 0.72; rig.maxD = Math.max(14, rig.homeDist * 2.5); rig.pMax = 1.1;
-            rig.dist = Math.min(rig.maxD, Math.max(rig.minD, rig.homeDist * was)); rig.fly = null; rig.target.set(0, 0, 0);
+            /* Oct 16 (task 1 fix): Home re-lays itself out every frame; past the World Map (rig.outer) the camera may be out in the
+               spirit world, so the re-layout must not pull it back to the World Map limit */
+            const hiD = rig.outer && rig.dist > rig.maxD ? (rig.outerD || 300) : rig.maxD;
+            rig.dist = Math.min(hiD, Math.max(rig.minD, was > 0 && rig.dist > rig.maxD && rig.outer ? rig.dist : rig.homeDist * was)); rig.fly = null; rig.target.set(0, 0, 0);
             rig.mode = m; inner.visible = false; halo.visible = false; /* one bubble: Misty's own cell, no extra glow shell */
         }
         else { rig.mode = m; rig.lastHome = false; rig.minD = 2.4; rig.maxD = 13; rig.pMax = 1.2; if (rig.dist < 4) rig.dist = 6.5; inner.visible = true; halo.visible = true; }
@@ -187,14 +190,23 @@ export function createWorld(THREE, canvas, opts) {
     }
     function drag(dx, dy) { rig.yaw -= dx * 0.0062; rig.pitch += dy * 0.005; rig.vy = -dx * 0.0062; rig.vp = dy * 0.005; rig.idle = 0; }
     function release(vx, vy) { rig.vy = -vx * 0.0062 * 16; rig.vp = vy * 0.005 * 16; }
-    function zoom(f) { rig.dist = Math.min(rig.maxD, Math.max(rig.minD, rig.dist * f)); rig.idle = 0; }
+    function zoom(f) {
+        /* past the World Map (Home only, while rig.outer is on): the same pinch keeps going, like Google Earth, and moves faster the
+           farther out it is, so the spirit world is one or two pinches away and not twenty */
+        if (rig.mode === 'home' && rig.outer && (rig.dist >= rig.maxD * 0.999 && f > 1 || rig.dist > rig.maxD)) {
+            const over = Math.max(1, rig.dist / rig.maxD), g = 1 + Math.min(2.2, Math.log(over) * 0.9 + 0.6);
+            const nd = rig.dist * Math.pow(f, g);
+            rig.dist = Math.min(COSMOS.OUT, nd < rig.maxD && f < 1 ? Math.max(rig.minD, Math.max(rig.maxD * 0.999, nd)) : Math.max(rig.minD, nd)); rig.idle = 0; return;
+        }
+        rig.dist = Math.min(rig.maxD, Math.max(rig.minD, rig.dist * f)); rig.idle = 0;
+    }
     function setGyro(y, p) { rig.gyT = y; rig.gpT = p; }
     function setGlow(g) { glowT = Math.max(0, Math.min(1, g)); }
     function setTend(k) { tendT = Math.max(0, Math.min(1, +k || 0)); }
     function beaconLook() { const b = Object.values(beacons)[0]; return b ? { tend: +tend.toFixed(3), glowScale: +b.glow.scale.x.toFixed(3), glowOpacity: +b.glow.material.opacity.toFixed(3), ringOpacity: +b.ring.material.opacity.toFixed(3), ringScale: +b.ring.scale.x.toFixed(3), core: '#' + b.core.material.color.getHexString() } : null; }
     function setTheme(t) {
         theme = t === 'light' ? 'light' : 'dark'; const P = PAL[theme];
-        baseBg.set(P.bg); scene.fog.density = P.fog; hemi.color.set(P.hemiSky); hemi.groundColor.set(P.hemiGround); key.color.set(P.key);
+        baseBg.set(P.bg); scene.fog.density = P.fog; baseFog = P.fog; hemi.color.set(P.hemiSky); hemi.groundColor.set(P.hemiGround); key.color.set(P.key);
         wallMat.color.set(P.wall); wallMat.emissive.set(P.wallHi); shaftMat.opacity = P.shaft; pMat.opacity = P.part;
         pMat.blending = theme === 'light' ? THREE.NormalBlending : THREE.AdditiveBlending; pMat.color.set(theme === 'light' ? '#ffffff' : '#bfe9ff'); pMat.needsUpdate = true;
         memU.uIn.value.set(theme === 'light' ? '#2e8fd6' : '#3a9fe0'); memU.uBase.value = theme === 'light' ? 0.16 : 0.1;
@@ -230,6 +242,99 @@ export function createWorld(THREE, canvas, opts) {
     /* Oct 16 (E-man): a speed control for the world's own motion (cells drifting, platelets, mitochondria...). The camera, gestures,
        glow fades and Misty (DOM, her own animations) keep real time. Set by atmosphere.js as window.LowiWorldSpeed (0.25..3). */
     function worldSpeed() { const v = +(typeof window !== 'undefined' && window.LowiWorldSpeed); return v > 0 ? Math.min(3, Math.max(0.1, v)) : 1; }
+    /* Oct 16, 2026 (handoff task 3, E-man: "pinch out like Google Maps / Google Earth ... we're not just inside our one, we now see
+       all the other ones around us"; "the bubbles are membranes: inside each is the sanctuary where the cells and companions live,
+       the space outside is the connective tissue of the spirit world"). The world goes on past the World Map: keep pulling out and
+       the bloodstream thins into a glowing sanctuary inside OUR membrane bubble, and around it the other bubbles (everyone else's
+       worlds, each with its own companion glow) hang in soft connective tissue, joined by fibres. Built on first use, hidden (and
+       costing nothing) until the camera is past the World Map. Not a starfield: no stars, no planets, no purple, no gold. */
+    let baseFog = PAL.dark.fog;
+    const COSMOS = { R: 46, OUT: 300, N: small ? 7 : 10 };
+    rig.outerD = COSMOS.OUT;
+    let cosmos = null, cosmosK = -1, farNow = 120;
+    const smoothC = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+    function membraneMat(col, rim) {
+        return new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.FrontSide,
+            uniforms: { uCol: { value: new THREE.Color(col) }, uRim: { value: new THREE.Color(rim) }, uO: { value: 0 }, uT: { value: 0 } },
+            vertexShader: 'varying vec3 vN; varying vec3 vV; varying vec3 vP; void main(){ vec4 mv = modelViewMatrix * vec4(position,1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); vP = position; gl_Position = projectionMatrix * mv; }',
+            fragmentShader: 'uniform vec3 uCol; uniform vec3 uRim; uniform float uO; uniform float uT; varying vec3 vN; varying vec3 vV; varying vec3 vP; void main(){ float f = 1.0 - abs(dot(vN, vV)); float rim = pow(f, 2.6); float veins = 0.5 + 0.5 * sin(vP.x * 0.21 + uT * 0.4) * sin(vP.y * 0.17 - uT * 0.3) * sin(vP.z * 0.19 + uT * 0.25); vec3 c = mix(uCol * 0.18, uRim, rim) + uRim * veins * rim * 0.35; gl_FragColor = vec4(c, (0.05 + rim * 0.95) * uO); }' });
+    }
+    function buildCosmos() {
+        const g = new THREE.Group(); g.visible = false; g.name = 'cosmos';
+        const rnd = (() => { let sd = 4242; return () => (sd = (sd * 16807) % 2147483647) / 2147483647; })();
+        /* our own membrane: Misty blue */
+        const sphere = new THREE.SphereGeometry(1, small ? 40 : 56, small ? 28 : 40);
+        const mine = new THREE.Mesh(sphere, membraneMat('#396b9c', '#a8dcff')); mine.scale.setScalar(COSMOS.R); g.add(mine);
+        const mineGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: '#6fc8ff', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending })); mineGlow.scale.set(COSMOS.R * 1.6, COSMOS.R * 1.6, 1); g.add(mineGlow);
+        /* the other worlds: aura colours of companions (mint, rose, sky, coral, aqua, sea-green, peach), each a membrane with a sanctuary glow,
+           a few cells drifting inside and its companion's bright core */
+        /* palette taken from E-man's spirit-world picture: pale cyan, blues, soft lavender, plus a few warm companion auras */
+        const hues = ['#a2bcc9', '#7fb8ff', '#9d8ac9', '#8fd0ff', '#7fe3d0', '#7d8eb2', '#ff9fb4', '#b8d8f0', '#896da2', '#5fc0f0'];
+        const others = [];
+        for (let i = 0; i < COSMOS.N; i++) {
+            const a = i * 2.399963 + 0.7, ring = 150 + (i % 3) * 55 + rnd() * 40, y = (rnd() - 0.5) * 120, r = 26 + rnd() * 22, col = hues[i % hues.length];
+            const o = new THREE.Group(); o.position.set(Math.cos(a) * ring, y, Math.sin(a) * ring);
+            const m = new THREE.Mesh(sphere, membraneMat(col, col)); m.scale.setScalar(r); o.add(m);
+            const sanct = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: col, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending })); sanct.scale.set(r * 1.5, r * 1.5, 1); o.add(sanct);
+            const core = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: '#ffffff', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending })); core.scale.set(r * 0.42, r * 0.42, 1); o.add(core);
+            const cells = [];
+            for (let k = 0; k < 6; k++) { const c = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: col, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending })); const s = r * (0.12 + rnd() * 0.1); c.scale.set(s, s, 1); c.userData = { a: rnd() * 6.283, r: r * (0.3 + rnd() * 0.45), s: 0.15 + rnd() * 0.25, y: (rnd() - 0.5) * r * 0.6 }; o.add(c); cells.push(c); }
+            o.userData = { m, sanct, core, cells, r, p: rnd() * 6.283 };
+            g.add(o); others.push(o);
+        }
+        /* connective tissue: soft fibres from our membrane to each neighbour and between neighbours, plus slow motes in between */
+        const fib = []; const curve = (p, q, bend) => { const mid = p.clone().add(q).multiplyScalar(0.5).add(new THREE.Vector3((rnd() - 0.5) * bend, (rnd() - 0.5) * bend, (rnd() - 0.5) * bend)); const pts = new THREE.QuadraticBezierCurve3(p, mid, q).getPoints(18); for (let j = 0; j < pts.length - 1; j++) fib.push(pts[j], pts[j + 1]); };
+        const surf = (from, to, rad) => from.clone().add(to.clone().sub(from).normalize().multiplyScalar(rad));
+        const O = new THREE.Vector3();
+        others.forEach((o, i) => {
+            curve(surf(O, o.position, COSMOS.R), surf(o.position, O, o.userData.r), 60);
+            const n = others[(i + 1) % others.length]; curve(surf(o.position, n.position, o.userData.r), surf(n.position, o.position, n.userData.r), 70);
+            if (i % 2 === 0) { const n2 = others[(i + 3) % others.length]; curve(surf(o.position, n2.position, o.userData.r), surf(n2.position, o.position, n2.userData.r), 90); }
+        });
+        const fGeo = new THREE.BufferGeometry().setFromPoints(fib);
+        const fMat = new THREE.LineBasicMaterial({ color: '#8fa6cc', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending });
+        const fibres = new THREE.LineSegments(fGeo, fMat); g.add(fibres);
+        const MN = small ? 260 : 420, mPos = new Float32Array(MN * 3);
+        for (let i = 0; i < MN; i++) { const rr = 70 + rnd() * 420, th = rnd() * 6.283, ph = Math.acos(2 * rnd() - 1); mPos[i * 3] = rr * Math.sin(ph) * Math.cos(th); mPos[i * 3 + 1] = rr * Math.cos(ph) * 0.6; mPos[i * 3 + 2] = rr * Math.sin(ph) * Math.sin(th); }
+        const mGeo = new THREE.BufferGeometry(); mGeo.setAttribute('position', new THREE.BufferAttribute(mPos, 3));
+        const mMat = new THREE.PointsMaterial({ map: glowTex, color: '#a2bcc9', size: 3.2, sizeAttenuation: true, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending });
+        const motes = new THREE.Points(mGeo, mMat); g.add(motes);
+        /* tissue haze: a few very large, very faint veils (deep blue and a little lavender, from the picture), like looking through living tissue */
+        const haze = [];
+        for (let i = 0; i < 6; i++) { const h = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: i % 3 === 2 ? '#5b4588' : '#214072', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending })); const a = i * 1.1; h.position.set(Math.cos(a) * 260, (rnd() - 0.5) * 160, Math.sin(a) * 260); const sc = 260 + rnd() * 200; h.scale.set(sc, sc, 1); g.add(h); haze.push(h); }
+        scene.add(g);
+        return { g, mine, mineGlow, others, fibres, motes, haze, tissue: new THREE.Color('#071635'), tmp: new THREE.Color() };
+    }
+    /* 0 inside the World Map, 1 out in the spirit world; the walls and the fog give way as the camera leaves our bubble */
+    function cosmosStep(t, dt) {
+        const d = rig.dist, homeish = rig.mode === 'home';
+        const k = homeish ? smoothC((rig.maxD || 14) * 1.05, 120, d) : 0;
+        if (k <= 0 && !cosmos) return;
+        if (!cosmos) cosmos = buildCosmos();
+        const C = cosmos, walls = smoothC((rig.maxD || 14) * 1.05, 44, d), mem = smoothC(30, 75, d), far = smoothC(55, 190, d);
+        C.g.visible = k > 0.001;
+        if (k !== cosmosK) {
+            cosmosK = k;
+            const want = k > 0.001 ? 1500 : 120; if (want !== farNow) { farNow = want; camera.far = want; camera.updateProjectionMatrix(); }
+            const wo = 1 - walls * 0.97; if (wallMat.transparent !== (wo < 0.999)) { wallMat.transparent = wo < 0.999; wallMat.needsUpdate = true; } wallMat.opacity = wo; wall.visible = wo > 0.02;
+            shafts.visible = walls < 0.9;
+        }
+        if (!C.g.visible) { return; }
+        C.mine.material.uniforms.uO.value = mem * 0.9; C.mine.material.uniforms.uT.value = t;
+        C.mineGlow.material.opacity = mem * 0.22;
+        C.others.forEach((o, i) => {
+            const u = o.userData, wob = 1 + 0.02 * Math.sin(t * 0.6 + u.p);
+            u.m.scale.setScalar(u.r * wob); u.m.material.uniforms.uO.value = far * 0.85; u.m.material.uniforms.uT.value = t + i;
+            u.sanct.material.opacity = far * 0.3; u.core.material.opacity = far * (0.75 + 0.25 * Math.sin(t * 1.3 + u.p));
+            u.cells.forEach(c => { const q = c.userData, a = q.a + t * q.s; c.position.set(Math.cos(a) * q.r, q.y + Math.sin(t * 0.5 + q.a) * 2, Math.sin(a) * q.r); c.material.opacity = far * 0.55; });
+            o.position.y += Math.sin(t * 0.2 + u.p) * dt * 0.8;
+        });
+        C.fibres.material.opacity = far * 0.28; C.motes.material.opacity = mem * 0.5; C.haze.forEach(h => { h.material.opacity = far * 0.05; });
+        C.g.rotation.y += dt * 0.004;
+        /* the tissue between the bubbles: the background and the fog turn from the bloodstream's blue into deep tissue teal, and thin out */
+        curBg.lerp(C.tissue, walls * 0.85); scene.background.copy(curBg); scene.fog.color.copy(curBg);
+        scene.fog.density = baseFog + (0.0011 - baseFog) * walls;
+    }
     function step(dt) {
         const wdt = dt * worldSpeed();
         t += wdt;
@@ -280,6 +385,7 @@ export function createWorld(THREE, canvas, opts) {
         tintAmt += (tintT - tintAmt) * Math.min(1, dt * 2.5);
         curBg.copy(baseBg); if (tint && tintAmt > 0.001) curBg.lerp(tint, tintAmt * (theme === 'light' ? 0.5 : 0.35));
         scene.background.copy(curBg); scene.fog.color.copy(curBg);
+        cosmosStep(t, dt);
     }
     function frame(now) {
         raf = 0; if (!running) return;

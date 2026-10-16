@@ -116,7 +116,7 @@ test('chat privacy & quiet hours have a home in Profile > Community', () => {
 test('back from the galaxy the 3D camera flies down into Misty instead of Home just growing back', () => {
     const wh = read('world-home.js'), src = read('galaxy-zoom.js');
     assert.ok(wh.includes('function diveIn()') && wh.includes('W.LowiWorldHome = { pullOut, diveIn, settle,'));
-    assert.ok(wh.includes("st.zoomAnim = { to: home.dist, rel: home.dist / baseDist(r), pitch: home.pitch, t: 0, rate: 4.2 };"), 'camera glides back to Misty\'s usual view');
+    assert.ok(wh.includes("st.zoomAnim = { to: home.dist, rel: home.dist / baseDist(r), pitch: home.pitch, t: 0, rate: 4.2, log: true };"), 'camera glides back to Misty\'s usual view');
     assert.ok(wh.includes('dt * (z.rate || 3.2)'));
     assert.ok(src.includes("if (dir === 'in') { try { if (W.LowiWorldHome && W.LowiWorldHome.diveIn) W.LowiWorldHome.diveIn(); } catch (e) {} }"));
 });

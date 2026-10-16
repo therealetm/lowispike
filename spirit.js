@@ -49,11 +49,11 @@
         meal1: ['meal logged', 'Mahlzeit eingetragen', 'comida registrada'],
         drink: ['Glass logged. I drink with you!', 'Glas eingetragen. Ich trinke mit!', 'Vaso registrado. ¡Bebo contigo!'],
         waterSaved: ['Water logged', 'Wasser eingetragen', 'Agua registrada'],
-        captured: ['Caught for your herb', 'Für dein Kraut eingefangen', 'Capturado para tu hierba'],
+        captured: ['Caught for Misty', 'Für Misty eingefangen', 'Capturado para Misty'],
         glow: ['Caught! My leaves are glowing.', 'Eingefangen! Meine Blätter leuchten.', '¡Capturado! Mis hojas brillan.'],
         scanOk: ['Yes, I like this one! Likely only a small spike.', 'Ja, das mag ich! Wahrscheinlich nur ein kleiner Spike.', '¡Sí, me gusta! Probablemente solo un pico pequeño.'],
         scanBetter: ['Hmm, okay now and then. Pair it with protein or fiber.', 'Hmm, ab und zu okay. Am besten mit Eiweiß oder Ballaststoffen.', 'Hmm, de vez en cuando. Mejor con proteína o fibra.'],
-        scanSpike: ['Oof, my leaves droop. Likely a big spike, check the swaps.', 'Uff, meine Blätter hängen. Wahrscheinlich ein großer Spike, schau dir die Tauschideen an.', 'Uf, mis hojas caen. Probablemente un pico grande, mira los cambios.'],
+        scanSpike: ['Oof, that one makes me wobble. Likely a big spike, check the swaps.', 'Uff, da wackle ich. Wahrscheinlich ein großer Spike, schau dir die Tauschideen an.', 'Uf, eso me hace temblar. Probablemente un pico grande, mira los cambios.'],
         photoTitle: ['Your photo', 'Dein Foto', 'Tu foto'],
         savePhoto: ['Save photo', 'Foto speichern', 'Guardar foto'],
         photoSaved: ['Photo ready', 'Foto bereit', 'Foto lista'],
@@ -74,7 +74,7 @@
         missing: ['Not provided', 'Nicht angegeben', 'No disponible'],
         portion: ['For the portion you ate', 'Für deine gegessene Portion', 'Para la porción que comiste'],
         title: ['What did you eat?', 'Was hast du gegessen?', '¿Qué comiste?'],
-        save: ['Log & feed my herb', 'Eintragen & mein Kraut füttern', 'Registrar y alimentar mi hierba'],
+        save: ['Log meal', 'Mahlzeit eintragen', 'Registrar comida'],
         addMacros: ['Add macros', 'Makros ergänzen', 'Añadir macros'],
         saved: ['Meal logged', 'Mahlzeit eingetragen', 'Comida registrada'],
         camera: ['Take photo', 'Foto aufnehmen', 'Hacer foto'],
@@ -93,7 +93,7 @@
         whyText: ['A recipe from your current food picks. Check the ingredients and portion to make it yours.', 'Ein Rezept aus deinen aktuellen Essensideen. Prüfe Zutaten und Portion für dich.', 'Una receta de tus ideas actuales. Revisa los ingredientes y la porción.'],
         cook: ['Cook it', 'Kochen', 'Cocinar'],
         logPick: ['I ate this', 'Hab ich gegessen', 'Lo he comido'],
-        herbTip: ['Your herb suggests', 'Dein Kraut schlägt vor', 'Tu hierba sugiere'],
+        herbTip: ['Misty suggests', 'Misty schlägt vor', 'Misty sugiere'],
         doneToday: ['Logged today', 'Heute eingetragen', 'Registrado hoy'],
         scanAgain: ['Scanned today already, no new XP', 'Heute schon gescannt, keine neuen XP', 'Ya escaneado hoy, sin XP nuevos'],
         scanCap: ['Scan XP for today is full', 'Scan-XP für heute voll', 'XP de escaneo de hoy completos'],
@@ -114,7 +114,21 @@
         premium: ['Premium · coming soon', 'Premium · bald verfügbar', 'Premium · próximamente'],
         equipped: ['Wearing', 'Ausgewählt', 'Puesto'],
         capturing: ['Capturing…', 'Wird eingefangen…', 'Capturando…'],
-        cancel: ['Back to my herb', 'Zurück zu meinem Kraut', 'Volver a mi hierba'],
+        cancel: ['Close', 'Schließen', 'Cerrar'],
+        /* Oct 16 (E-man: Scan's meal, photo and barcode screens in the app's black space + blue glass): the food camera's own words */
+        snapTitle: ['Snap your food', 'Fotografiere dein Essen', 'Fotografía tu comida'],
+        snapHint: ['Fit your plate in the frame, then tap the big button.', 'Teller in den Rahmen, dann den großen Knopf tippen.', 'Encuadra tu plato y toca el botón grande.'],
+        snapStart: ['Starting camera…', 'Kamera startet…', 'Iniciando cámara…'],
+        typeIt: ['Type it', 'Eintippen', 'Escribir'],
+        barcode: ['Barcode', 'Barcode', 'Código'],
+        library: ['Photos', 'Fotos', 'Fotos'],
+        retake: ['Retake', 'Neu aufnehmen', 'Repetir'],
+        camOff: ['Camera is off for LOWiSPIKE', 'Kamera ist für LOWiSPIKE aus', 'La cámara está desactivada para LOWiSPIKE'],
+        camOffS: ['Allow it in Settings › Safari › Camera (or aA › Website Settings), then tap Try again. Or choose a photo.', 'Erlaube sie in Einstellungen › Safari › Kamera (oder aA › Website-Einstellungen) und tippe auf Nochmal. Oder wähle ein Foto.', 'Actívala en Ajustes › Safari › Cámara (o aA › Configuración del sitio web) y toca Reintentar. O elige una foto.'],
+        camNone: ['No camera here', 'Keine Kamera verfügbar', 'No hay cámara'],
+        camNoneS: ['Choose a photo from your library, or type the meal in.', 'Wähle ein Foto aus deiner Mediathek oder trag das Essen ein.', 'Elige una foto de tu galería o escribe la comida.'],
+        camTryAgain: ['Try again', 'Nochmal', 'Reintentar'],
+        photoPh: ['e.g. chicken salad', 'z. B. Hähnchensalat', 'p. ej. ensalada de pollo'],
         ends: ['Ends', 'Ende', 'Termina'],
         goal: ['of', 'von', 'de'],
         fast: ['Fasting', 'Fasten', 'Ayuno'],
@@ -170,6 +184,7 @@
         opened = false,
         capture = false,
         photoStream = null,
+        foodCam = null,
         photoURL = '',
         lastMealId = '',
         homeQueued = false;
@@ -591,6 +606,11 @@
         stopPhoto();
         if (window.LowiDex && LowiDex.stop) LowiDex.stop();
         capture = false;
+        if (foodCam) {
+            foodCam.remove();
+            foodCam = null;
+        }
+        D.documentElement.classList.remove('ss-foodon');
         world?.classList.remove('sp-capture');
         const h = world?.querySelector('.sp-scanner-host');
         if (h) h.innerHTML = '';
@@ -622,15 +642,15 @@
     }
 
     function scan() {
-        open({
-            embedded: true
-        });
+        /* Oct 16: the barcode camera is the full-screen glass one (living-home.js), never the old herb-world card */
+        if (opened) close(true);
         if (ownedSheet) {
             R.close(ownedSheet);
             ownedSheet = null;
         }
-        stopPhoto();
-        LowiDex.scan('cam');
+        cancelCapture();
+        if (window.LowiLiving && LowiLiving.scan) LowiLiving.scan('cam');
+        else LowiDex.scan('cam');
     }
 
     function showSheet(html, extra) {
@@ -643,6 +663,8 @@
             }
         });
         if (opened && ownedSheet) world.append(ownedSheet);
+        /* every sheet of Scan's flows (meal, photo, logged) in the app's blue glass (scan-screens.css) */
+        if (ownedSheet) ownedSheet.classList.add('ss-sheet');
         return ownedSheet;
     }
 
@@ -684,6 +706,8 @@
     }
 
     function flight(image) {
+        /* Scan's screens no longer open the herb world: with the world closed there is nothing to fly into */
+        if (!opened) return Promise.resolve();
         const el = D.createElement('div');
         el.className = 'sp-catch-token';
         el.innerHTML = image ? '<img alt="" src="' + esc(image) + '">' : icon('plate');
@@ -710,9 +734,9 @@
         return a.finished.catch(() => {}).then(() => el.remove());
     }
     async function captureProduct(p) {
-        open({
-            embedded: true
-        });
+        /* Oct 16 (E-man: Scan in black space + blue glass): the result card opens over the Scan screen in the living world,
+           not inside the old herb-world card. XP, the collection and the spike reaction stay the same. */
+        if (opened) close(true);
         cancelCapture();
         const id = 'scan:' + (p.barcode || p.id || p.name);
         await flight(p.img || p.photo);
@@ -739,13 +763,14 @@
         LowiDex.reveal(p);
         const ov = R.top && R.top();
         if (ov) {
-            world.append(ov);
-            ov.classList.add('sp-sheet');
+            ov.classList.add('sp-sheet', 'ss-sheet');
             const sh = ov.querySelector('.r2-sh');
             if (sh) {
                 const link = D.createElement('div');
+                link.className = 'ss-gpt-wrap';
                 link.innerHTML = gptHTML();
-                sh.prepend(link);
+                /* the result comes first; the deeper analysis link sits under it, not above the verdict */
+                (sh.querySelector('.b3-stage') || sh.querySelector('.b3-rev') || sh).append(link);
                 paginate(sh);
             }
         }
@@ -873,17 +898,50 @@
         const gained = V.water(uid());
         feedback('water', tr('drink'), gained);
     }
+    /* Oct 16 (E-man: Scan's photo screen like the rest: black space, iOS blue glass, clear flow, camera permission that makes sense):
+       the food camera is its own full-screen layer over the living world (no herb-world card, no herb moods), the same look as the
+       barcode camera: X top left, a framed view, one big shutter, Choose a photo and Type it beside it. Blocked or missing camera:
+       a blue glass card that says how to allow it, Try again, and the photo library as the way round. iOS asks for the camera itself. */
+    function foodState(h, s) {
+        h.dataset.st = s;
+        const card = h.querySelector('.ss-card');
+        const pick = '<label class="ss-btn sp-upload-label">' + icon('plus') + '<span>' + esc(tr('upload')) + '</span><input type="file" accept="image/*" class="sp-file-in"></label>';
+        if (s === 'starting') card.innerHTML = '<span class="ss-spin" aria-hidden="true"></span><small>' + esc(tr('snapStart')) + '</small>';
+        else if (s === 'denied') card.innerHTML = '<span class="ss-card-ic">' + icon('camera') + '</span><b>' + esc(tr('camOff')) + '</b><small>' + esc(tr('camOffS')) + '</small><div class="ss-card-btns"><button type="button" class="ss-btn pri" data-sp="photo">' + esc(tr('camTryAgain')) + '</button>' + pick + '</div>';
+        else if (s === 'nocam') card.innerHTML = '<span class="ss-card-ic">' + icon('camera') + '</span><b>' + esc(tr('camNone')) + '</b><small>' + esc(tr('camNoneS')) + '</small><div class="ss-card-btns">' + pick.replace('ss-btn', 'ss-btn pri') + '<button type="button" class="ss-btn" data-sp="meal">' + esc(tr('typeIt')) + '</button></div>';
+        else card.innerHTML = '';
+        const hint = h.querySelector('.ss-hint');
+        if (hint) hint.hidden = s !== 'live';
+    }
     async function photo() {
-        open({
-            embedded: true
-        });
+        if (opened) close(true);
         cancelCapture();
-        const h = scannerHost();
-        h.innerHTML = '<div class="sp-food-camera"><video autoplay muted playsinline></video><p role="status"></p><div>' + button('camera', 'camera', 'shutter') + '<label class="sp-action sp-upload-label">' + icon('camera') + '<span>' + esc(tr('upload')) + '</span><input type="file" accept="image/*" class="sp-file-in"></label>' + button('cancel', 'close', 'cancelCapture') + '</div></div>';
+        if (ownedSheet) {
+            R.close(ownedSheet);
+            ownedSheet = null;
+        }
+        capture = true;
+        const h = D.createElement('div');
+        h.className = 'ss-food';
+        h.id = 'ssFood';
+        h.setAttribute('role', 'dialog');
+        h.setAttribute('aria-modal', 'true');
+        h.setAttribute('aria-label', tr('snapTitle'));
+        h.setAttribute('data-noi18n', '');
+        h.innerHTML = '<video autoplay muted playsinline webkit-playsinline disablepictureinpicture></video><div class="ss-shade" aria-hidden="true"></div>' +
+            '<header class="ss-top"><button type="button" class="ss-x" data-sp="cancelCapture" aria-label="' + esc(tr('close')) + '">' + icon('close') + '</button><span class="ss-title">' + esc(tr('snapTitle')) + '</span>' + '<button type="button" class="ss-bc" data-sp="toBarcode">' + icon('scan') + '<span>' + esc(tr('barcode')) + '</span></button></header>' +
+            '<div class="ss-frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="ss-card" role="status" aria-live="polite"></div>' +
+            '<div class="ss-bar"><p class="ss-hint" hidden>' + esc(tr('snapHint')) + '</p><div class="ss-row"><label class="ss-side sp-upload-label" aria-label="' + esc(tr('upload')) + '">' + icon('plus') + '<span>' + esc(tr('library')) + '</span><input type="file" accept="image/*" class="sp-file-in"></label>' +
+            '<button type="button" class="ss-shutter" data-sp="shutter" aria-label="' + esc(tr('camera')) + '"><i></i></button>' +
+            '<button type="button" class="ss-side" data-sp="meal">' + icon('plate') + '<span>' + esc(tr('typeIt')) + '</span></button></div></div>';
+        D.body.append(h);
+        foodCam = h;
+        D.documentElement.classList.add('ss-foodon');
         if (!navigator.mediaDevices?.getUserMedia) {
-            setText(h.querySelector('p'), tr('noCamera'));
+            foodState(h, 'nocam');
             return;
         }
+        foodState(h, 'starting');
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
                 audio: false,
@@ -899,20 +957,24 @@
                     }
                 }
             });
-            if (!opened || !capture || !h.querySelector('video')) {
+            if (foodCam !== h || !h.isConnected) {
                 stream.getTracks().forEach(t => t.stop());
                 return;
             }
             photoStream = stream;
             h.querySelector('video').srcObject = stream;
             await h.querySelector('video').play();
+            if (foodCam === h) {
+                h.classList.add('live');
+                foodState(h, 'live');
+            }
         } catch (e) {
-            setText(h.querySelector('p'), tr(e.name === 'NotAllowedError' ? 'cameraDenied' : 'noCamera'));
+            if (foodCam === h) foodState(h, e && (e.name === 'NotAllowedError' || e.name === 'SecurityError') ? 'denied' : 'nocam');
         }
     }
 
     function shutter() {
-        const v = world.querySelector('.sp-food-camera video');
+        const v = foodCam && foodCam.querySelector('video');
         if (!v || !v.videoWidth) return;
         const cv = D.createElement('canvas'),
             scale = Math.min(1, 640 / v.videoWidth);
@@ -935,7 +997,8 @@
     function photoSheet() {
         if (!photoURL) return mealForm();
         lastMealId = uid();
-        showSheet('<h2>' + esc(tr('photoTitle')) + '</h2><img class="sp-photo-prev" alt="" src="' + esc(photoURL) + '"><div class="sp-photo-acts">' + button('savePhoto', 'arrow', 'savePhoto') + gptHTML() + '</div><p class="sp-note small">' + esc(tr('photoGptHint')) + '</p><form id="spMeal" class="sp-photo-form" data-id="' + esc(lastMealId) + '"><label>' + esc(tr('photoName')) + '<input name="title" required maxlength="100" autocomplete="off"></label><button type="submit" class="sp-action sp-primary">' + icon('plate') + '<span>' + esc(tr('photoLog')) + '</span></button></form>');
+        /* one clear flow: the photo, what it is, Log as meal; Retake / Save photo / deeper analysis below it */
+        showSheet('<h2>' + esc(tr('photoTitle')) + '</h2><img class="sp-photo-prev" alt="" src="' + esc(photoURL) + '"><form id="spMeal" class="sp-photo-form" data-id="' + esc(lastMealId) + '"><label>' + esc(tr('photoName')) + '<input name="title" required maxlength="100" autocomplete="off" enterkeyhint="done" placeholder="' + esc(tr('photoPh')) + '"></label><button type="submit" class="sp-action sp-primary">' + icon('plate') + '<span>' + esc(tr('photoLog')) + '</span></button></form><div class="sp-photo-acts">' + button('retake', 'camera', 'photo') + button('savePhoto', 'arrow', 'savePhoto') + '</div>' + gptHTML() + '<p class="sp-note small">' + esc(tr('photoGptHint')) + '</p>', { cls: 'sp-sheet ss-sheet' });
     }
     function photoAsFile() {
         if (photoFile) return photoFile;
@@ -1768,9 +1831,12 @@
             R.close(ownedSheet);
             ownedSheet = null;
         }
+        /* Type it on the food camera: the camera closes, the meal sheet opens over Scan */
+        if (a === 'meal' && foodCam && foodCam.contains(b)) cancelCapture();
         if (a === 'open') open();
         else if (a === 'close') close();
         else if (a === 'scan') scan();
+        else if (a === 'toBarcode') scan(); /* the food camera's Barcode switch (living-home.js takes plain data-sp=scan clicks first) */
         else if (a === 'photo') photo();
         else if (a === 'meal') mealForm();
         else if (a === 'quickMeal') quickMeal(b.dataset.q);

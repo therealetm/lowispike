@@ -89,7 +89,7 @@ test('no herb wording left on these screens', () => {
 });
 
 test('scan-screens.css: loaded last, cached offline, blue glass tokens, no gold/beige', () => {
-  assert.match(html, /<link rel="stylesheet" id="ssCss" href="scan-screens\.css\?v=[0-9-]+">/);
+  assert.match(html, /<link rel="stylesheet" id="scrCss" href="scan-screens\.css\?v=[0-9-]+">/);
   const links = [...html.matchAll(/<link rel="stylesheet"[^>]*href="([^"?]+)/g)].map(m => m[1]);
   assert.ok(links.indexOf('scan-screens.css') > links.indexOf('style-sweep.css'), 'after style-sweep.css');
   assert.ok(links.indexOf('scan-screens.css') > links.indexOf('spirit.css'), 'after spirit.css');

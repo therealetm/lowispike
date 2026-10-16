@@ -207,6 +207,24 @@ The user explicitly requested deploying the recovered Home implementation withou
 
 **Energy:** `LowiSun.energy()` (sun-meter.js): 0.15 base + food 40% (mean verdict of today's logged meals) + water 30% (glasses/4) + Move 30%. Tiers: thriving >= .75 (content: short calm mouth, no smile), ok >= .4 (neutral mouth), below: weak if a spiky meal was logged (sleepy eyes, small sad mouth, red rim) else tired (sleepy eyes, neutral, faded). Not tracked is shown as "not tracked yet", never as "you didn't". The sun-full bonus still pays; the 1 h trip only starts once energy >= .4 (same day), body trips don't start either. Leaving full of energy brings back a second find. Update (E-man): no smile in any energy tier. Today's trip energises the world's cells (`LowiSun.tended`: thriving 1, ok .5, grows over the hour, stays for the day): beacon glow +45% size, brighter rings and cores (`setTend` in body-world-3d-scene.js). Countdown "Out exploring · back in N min" sits in her empty bubble on Home. Trips are timestamps reconciled on load, not a background simulation; finds are paid once.
 
+## 2026-10-16 12:10 — The flat spirit-world wallpaper is gone for good (user decision)
+
+**Decision (E-man):** "I hate the wallpaper. Remove it, kill it completely." The Metabolic Spirit World picture (his image of glowing spheres joined by threads of light) was shown as a flat wallpaper behind Community and the Community warp (fd83f55, build 20261016-141510) and was about to be copied behind Cook, Move and Scan (branch parallel/backgrounds-scan, e659e4d). He rejected it as lazy.
+
+- The picture is **inspiration only**. It must never be used as a backdrop, wallpaper, background-image, `<img>`/`<picture>` layer or texture behind any screen: not Community, not the warp, not Cook/Move/Scan, not onboarding, not a sheet.
+- Community is the living 3D world zoomed out past the World Map into the spirit world (87158db, build 20261016-150010): our bubble among everyone's, joined by light threads, rendered by body-world-3d-scene.js. Any page that wants the spirit-world look shows that same live world, never a picture of it.
+- The image files (spirit/metabolic-spirit-world*.webp/jpg) are deleted and out of sw.js. Do not re-add them or any other raster wallpaper. tests/no-wallpaper.test.cjs fails if they or a raster `url(...)` background come back.
+- e659e4d (realm-backdrop with the picture behind Cook/Move/Scan) never shipped with its picture. 4d68c16 (build 20261016-153010) shipped that layer as see-through light and motes over the live 3D world, and Scan's flow (world first, glass camera card after about a second, feed fades in) over the living world. Keep it that way: realm-backdrop never gets an image.
+- Bringing any wallpaper back needs a new, explicit decision from E-man.
+
+## 2026-10-16 12:30 — In-app banners never sit in the status bar
+
+**Decision (E-man, iPad screenshot of Move):** the check-in bubble (#n1B, "Later" / "Check in ›") was jammed into the iOS status bar, "nobody can read that". With the menu as a side rail there is no Scan orb under the content, so the old "above the orb" placement pushed it past the top edge.
+
+- On iPad/desktop (side rail) the bubble is a centred card inside the content column, right of the rail, under the safe area and under the page's top row, in the blue liquid glass (the Misty / Daily Quest glass, darker base so it reads over any page).
+- On a phone it stays above the Scan orb with its tail, and falls back to the same card under the top row if there is not enough room above the orb (phone on its side). It never goes above `env(safe-area-inset-top)`.
+- Any new toast or banner follows the same rule: below the safe area, inside the content column, clear of the rail, readable and tappable (44 px buttons).
+
 ## 2026-10-16 05:00 — Microbe buddies removed, with their XP
 
 **Decision (E-man):** "So basically, my pet has also their own pet. I think it's annoying. Let's delete them." Anything to do with them goes, and the XP they earned is taken back.

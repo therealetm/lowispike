@@ -18970,6 +18970,18 @@ html[data-ui=light] .n1-sheet .n1-opt.on{color:#fff;background:linear-gradient(1
 .n1-foot{display:flex;gap:10px}
 .n1-foot .btn{flex:1}
 @media (prefers-reduced-motion:reduce){#n1B,#n1B.in{transition:none}html.n1-talk #tabbar .tb.scan,#n1B .n1-dot{animation:none}}
+/* Oct 16: the bubble in the app's blue liquid glass (the Misty / Daily Quest glass), dark enough to read over any page */
+html #n1B,html:not([data-ui=light]) #n1B{color:#fff;background:var(--wh-glass-wide,linear-gradient(160deg,rgba(80,170,255,.14),rgba(28,74,150,.34))),rgba(8,18,44,.74);border:1.5px solid var(--wh-glass-rim,rgba(160,220,255,.55));
+  box-shadow:var(--wh-glass-sh,0 8px 26px -12px rgba(40,120,255,.5)),0 18px 44px rgba(0,0,0,.42);-webkit-backdrop-filter:blur(20px) saturate(1.5);backdrop-filter:blur(20px) saturate(1.5);text-shadow:0 1px 3px rgba(0,20,60,.35)}
+html #n1B .n1-tail,html:not([data-ui=light]) #n1B .n1-tail{background:rgba(16,40,92,.92);box-shadow:1px 1px 0 var(--wh-glass-rim,rgba(160,220,255,.55))}
+html #n1B .n1-later,html:not([data-ui=light]) #n1B .n1-later{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.18)}
+html #n1B .n1-go,html:not([data-ui=light]) #n1B .n1-go{color:#06122a;background:linear-gradient(180deg,#eaf6ff,#bfe2ff);box-shadow:0 6px 18px rgba(40,120,255,.32);text-shadow:none}
+html #n1B .n1-tag,html:not([data-ui=light]) #n1B .n1-tag{color:#06122a;background:linear-gradient(90deg,#bfe2ff,#d8ecff);text-shadow:none}
+/* on iPad/desktop (side rail) and short screens: a centred card under the top row, no tail, dropping in from above */
+#n1B.n1-card{transform-origin:50% 0;transform:scale(.96) translateY(-10px)}
+#n1B.n1-card.in{transform:none}
+#n1B.n1-card.out{transform:scale(.96) translateY(-8px)}
+#n1B.n1-card .n1-tail{display:none}
 </style>
 <script id="n1Js">/* ===== LOWiSPIKE N1 part 1 (Oct 11, 2026): reminders and nudges from the bubble =====
    The scan orb speaks up now and then while the app is open: a morning hello with your first quest, water, your fast
@@ -19111,13 +19123,36 @@ let cur = null, hideT = 0;
 const GEAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-1.8-.3 1.6 1.6 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.6 1.6 0 00-1-1.5 1.6 1.6 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.6 1.6 0 00.3-1.8 1.6 1.6 0 00-1.5-1H3a2 2 0 110-4h.1a1.6 1.6 0 001.5-1 1.6 1.6 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.6 1.6 0 001.8.3H9a1.6 1.6 0 001-1.5V3a2 2 0 114 0v.1a1.6 1.6 0 001 1.5 1.6 1.6 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 00-.3 1.8V9a1.6 1.6 0 001.5 1H21a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z"/></svg>';
 const XI = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 function orb(){ const o = D.querySelector("#tabbar .tb.scan"); return vis(o) ? o : null; }
-function place(){ const b = D.getElementById("n1B"); if (!b) return; const o = orb(), m = 12, W0 = Math.min(360, innerWidth - 2 * m);
+/* Oct 16 (E-man, iPad screenshot of Move: the check-in bubble sat in the status bar, "nobody can read that"): with the menu as a
+   side rail (iPad/desktop) there is no orb under the content, so the old "above the orb" maths pushed the bubble up past the top
+   edge, into the clock and date. Now it is a centred glass card inside the content column, under the safe area and under the
+   page's top row, clear of the rail. On a phone it still sits above the Scan orb, but never higher than the safe area. */
+function safe(){ let p = D.getElementById("n1Sa"); if (!p) { p = D.createElement("i"); p.id = "n1Sa"; p.setAttribute("aria-hidden", "true");
+    p.style.cssText = "position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)"; D.body.appendChild(p); }
+  const cs = getComputedStyle(p); return {t:parseFloat(cs.paddingTop) || 0, r:parseFloat(cs.paddingRight) || 0, b:parseFloat(cs.paddingBottom) || 0, l:parseFloat(cs.paddingLeft) || 0}; }
+function rail(){ const tb = D.getElementById("tabbar"); if (!vis(tb)) return null; const r = tb.getBoundingClientRect(); return r.height > innerHeight * 0.5 && r.right < innerWidth * 0.5 ? r : null; }
+/* bottom edge of the active page's top row (title, greeting, weather pill...): small visible things that start near the top */
+function topRow(L, R, sat){ const a = D.querySelector(".tab.active"); let y = 0; if (!a) return y; const els = a.querySelectorAll("*");
+  for (let i = 0; i < els.length && i < 1500; i++) { const r = els[i].getBoundingClientRect();
+    if (r.height < 14 || r.height > 110 || r.width < 8 || r.top < sat - 4 || r.top > sat + 150 || r.right < L || r.left > R) continue;
+    if (r.bottom > y) { const cs = getComputedStyle(els[i]); if (cs.visibility !== "hidden" && +cs.opacity > 0.05) y = r.bottom; } }
+  return Math.min(y, sat + 170); }
+function placeCard(b, rr, sa){ const m = 16, L = Math.round((rr ? rr.right : sa.l) + m), R = Math.round(innerWidth - sa.r - m), W0 = Math.round(Math.min(360, R - L));
+  b.classList.add("n1-card"); b.style.width = W0 + "px"; b.style.left = Math.round(L + (R - L - W0) / 2) + "px"; b.style.bottom = "auto";
+  const h = b.offsetHeight || 140, tr = topRow(L, R, sa.t), maxT = Math.max(sa.t + 10, innerHeight - sa.b - h - 16);
+  b.style.top = Math.round(Math.min(maxT, Math.max(sa.t + 12, tr ? tr + 10 : 0))) + "px"; }
+function place(){ const b = D.getElementById("n1B"); if (!b) return; const sa = safe(), rr = rail();
+  if (rr) { placeCard(b, rr, sa); return; }
+  b.classList.remove("n1-card"); b.style.top = "";
+  const o = orb(), m = 12, W0 = Math.min(360, innerWidth - 2 * m);
   b.style.width = W0 + "px"; let bottom, cx;
   if (o) { const r = o.getBoundingClientRect(); const tb = D.getElementById("tabbar"); const top = Math.min(r.top, tb ? tb.getBoundingClientRect().top + 0 : r.top);
     bottom = innerHeight - Math.min(r.top, top) + 12; cx = r.left + r.width / 2; }
   else { const tb = D.getElementById("tabbar"); bottom = innerHeight - (tb ? tb.getBoundingClientRect().top : innerHeight - 90) + 12; cx = innerWidth / 2; }
   let left = Math.round(Math.max(m, Math.min(innerWidth - m - W0, cx - W0 / 2)));
   b.style.left = left + "px"; b.style.bottom = Math.round(bottom) + "px";
+  /* never up into the status bar: if the space above the orb is too short (phone on its side), be a card under the top row */
+  if (innerHeight - bottom - (b.offsetHeight || 140) < sa.t + 8) { placeCard(b, null, sa); return; }
   const tail = b.querySelector(".n1-tail"); if (tail) tail.style.left = Math.round(Math.max(22, Math.min(W0 - 22, cx - left))) + "px"; }
 function show(n){ if (cur && cur.stay && !n.stay && cur.id !== n.id && D.getElementById("n1B")) return false; hide(true); cur = n; const b = D.createElement("div"); b.id = "n1B"; b.setAttribute("role", "status"); b.setAttribute("data-noi18n", ""); b.dataset.n = n.id;
   b.innerHTML = '<div class="n1-top"><span class="n1-tag b3-tag">' + (window.LowiG1 && LowiG1.mini ? LowiG1.mini() : '') + '<i class="n1-dot"></i>' + esc(w("tag")) + '</span><span class="n1-sp"></span>' +

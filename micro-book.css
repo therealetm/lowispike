@@ -3,22 +3,10 @@
 .mb-sheet .num{font-variant-numeric:tabular-nums}
 .mb-over{font:700 11px/1 system-ui,-apple-system,sans-serif;letter-spacing:.14em;color:#c9a560;margin:6px 0 6px}
 .mb-sheet h2{font:700 22px/1.2 system-ui,-apple-system,sans-serif;margin:0 0 12px;padding-right:40px;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
-.mb-tot{font:600 14px/1 system-ui,sans-serif;color:var(--r2-mut,#a19c90)}
 .mb-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;border-radius:14px;background:var(--r2-field,rgba(255,255,255,.06));margin-bottom:12px}
 .mb-tab{appearance:none;border:0;background:transparent;color:var(--r2-mut,#a19c90);font:600 14px/1 system-ui,sans-serif;min-height:38px;border-radius:10px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 6px}
 .mb-tab.on{background:var(--r2-sheet2,#151926);color:var(--r2-ink,#f8f5ed);box-shadow:0 1px 6px rgba(0,0,0,.18)}
-.mb-intro{font:400 14px/1.4 system-ui,sans-serif;color:var(--r2-mut,#a19c90);margin:0 0 12px}
-.mb-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}
-.mb-card{appearance:none;width:100%;min-height:150px;position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:22px 6px 10px;border-radius:18px;border:1px solid var(--r2-line,rgba(255,255,255,.12));background:radial-gradient(120% 90% at 50% 0%,rgba(120,220,255,.10),transparent 70%),var(--r2-field,rgba(255,255,255,.06));color:inherit;cursor:pointer;font:inherit;text-align:center;box-sizing:border-box}
-.mb-card:focus-visible,.mb-tab:focus-visible,.mb-kind:focus-visible,.mb-fr:focus-visible,.mb-chip:focus-visible,.mb-adv:focus-visible{outline:2px solid #c9a560;outline-offset:2px}
-.mb-card.sil{background:var(--r2-field,rgba(255,255,255,.04))}
-.mb-no{position:absolute;top:7px;left:9px;font:700 11px/1 system-ui,sans-serif;color:var(--r2-mut,#a19c90);letter-spacing:.04em}
-.mb-card .mb-cell{width:64px;height:64px}
-.mb-nm{font:600 12.5px/1.2 system-ui,sans-serif;hyphens:auto;-webkit-hyphens:auto;overflow-wrap:anywhere}
-.mb-hint{font:400 11px/1.25 system-ui,sans-serif;color:var(--r2-mut,#a19c90)}
-.mb-dots{display:flex;gap:5px;margin-top:2px}
-.mb-dots i{width:8px;height:8px;border-radius:50%;border:1px solid hsla(var(--h),70%,60%,.7);box-sizing:border-box}
-.mb-dots i.on{background:hsl(var(--h),85%,62%);box-shadow:0 0 6px hsla(var(--h),90%,60%,.7)}
+.mb-tab:focus-visible,.mb-kind:focus-visible,.mb-fr:focus-visible,.mb-adv:focus-visible{outline:2px solid #c9a560;outline-offset:2px}
 /* the see-through glowing cell */
 .mb-cell .m{fill:hsla(var(--h),90%,65%,.13);stroke:hsla(var(--h),95%,72%,.75);stroke-width:1.4}
 .mb-cell .g{fill:hsla(var(--h),90%,66%,.78);stroke:hsla(var(--h),100%,85%,.9);stroke-width:1}
@@ -34,20 +22,8 @@
 .mb-cell.sil text{font:700 14px system-ui,sans-serif;fill:var(--r2-mut,#a19c90)}
 .mb-cell.live{animation:mbBob 3.6s ease-in-out infinite}
 @keyframes mbBob{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3px) scale(1.03)}}
-.mb-back{appearance:none;border:0;background:transparent;color:#c9a560;font:600 15px/1 system-ui,sans-serif;min-height:40px;padding:0 4px;cursor:pointer}
-.mb-det{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;padding:6px 4px 4px}
-.mb-det .mb-no{top:4px;left:4px;font-size:13px}
-.mb-cell.big{width:132px;height:132px;margin:4px 0 6px}
-.mb-det h3{font:700 20px/1.2 system-ui,sans-serif;margin:2px 0}
 .mb-sub{margin:0 0 8px;color:var(--r2-mut,#a19c90);font:500 13px/1.2 system-ui,sans-serif}
 .mb-fact{font:400 15px/1.45 system-ui,sans-serif;margin:4px 0 12px;max-width:420px}
-.mb-how{font:500 13px/1.35 system-ui,sans-serif;color:var(--r2-mut,#a19c90);margin:8px 0 0}
-.mb-cols{display:flex;align-items:center;gap:10px;font:600 13px/1 system-ui,sans-serif;color:var(--r2-mut,#a19c90)}
-.mb-col{appearance:none;width:30px;height:30px;border-radius:50%;border:2px solid hsla(var(--h),70%,60%,.5);background:transparent;cursor:pointer;padding:0;position:relative}
-.mb-col::after{content:"";position:absolute;inset:-7px}
-.mb-col.on{background:hsl(var(--h),85%,62%);box-shadow:0 0 10px hsla(var(--h),90%,60%,.6)}
-.mb-col.act{outline:2px solid var(--r2-ink,#fff);outline-offset:2px}
-.mb-col:disabled{cursor:default;opacity:.55}
 .mb-empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:14px 8px 6px;color:var(--r2-mut,#a19c90);font:400 14px/1.45 system-ui,sans-serif}
 .mb-empty .mb-cell{width:72px;height:72px}
 .mb-empty p{margin:0;max-width:340px}
@@ -98,9 +74,6 @@
 .mb-done h2{justify-content:center;padding:0}
 .mb-done .mb-say{margin-bottom:4px}
 /* herb world chip */
-.mb-chip{appearance:none;display:inline-flex;align-items:center;gap:5px;min-height:36px;padding:0 11px;margin-right:8px;border-radius:999px;border:1px solid rgba(140,230,255,.35);background:rgba(120,220,255,.12);color:#dff8ff;font:700 13px/1 system-ui,sans-serif;cursor:pointer;flex:0 0 auto;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-.mb-chip .mb-ico{width:17px;height:17px}
-html[data-ui=light] .mb-chip{background:rgba(255,255,255,.7);color:#0f4c5c;border-color:rgba(15,76,92,.25)}
 /* Home: today's journey */
 .mb-adv{appearance:none;display:flex;align-items:center;gap:8px;width:100%;min-height:36px;margin:6px 0 2px;padding:6px 10px;border-radius:12px;border:1px solid rgba(110,214,232,.3);background:rgba(110,214,232,.10);color:inherit;font:inherit;text-align:left;cursor:pointer;box-sizing:border-box;overflow:hidden}
 .mb-pin{width:16px;height:16px;flex:0 0 auto;color:#6fd6e8}
@@ -118,7 +91,6 @@ html[data-ui=light] .mb-cell .g{fill:hsla(var(--h),80%,55%,.78);stroke:hsla(var(
 html[data-ui=light] .mb-cell .m{fill:hsla(var(--h),85%,55%,.12);stroke:hsla(var(--h),80%,45%,.6)}
 html[data-ui=light] .mb-cell .l{stroke:hsla(var(--h),80%,42%,.85)}
 html[data-ui=light] .mb-cell .g2{fill:hsla(var(--h),90%,88%,.9)}
-html[data-ui=light] .mb-card{background:radial-gradient(120% 90% at 50% 0%,rgba(58,166,192,.10),transparent 70%),var(--r2-field)}
 @media (prefers-reduced-motion: reduce){.mb-cell.live,.mb-fly{animation:none}.mb-toast{transition:opacity .2s;transform:translate(-50%,0)}}
 
 /* care sheet + toast above the friends tree overlay (cell-room.css .cr-ov z 99990) */

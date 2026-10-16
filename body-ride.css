@@ -65,8 +65,6 @@ html.br-open, html.br-open body { overflow: hidden; }
 .br-card .br-why2 { opacity: .72; font-size: 12.5px; }
 .br-cbtn { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
 @keyframes br-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-.br-bud { flex: none; width: 30px; height: 30px; border-radius: 50%; background: radial-gradient(circle at 38% 35%, #fff 0 14%, var(--bh) 42%, color-mix(in srgb, var(--bh) 25%, transparent) 72%);
-    box-shadow: 0 0 14px var(--bh); animation: br-breathe 2.4s ease-in-out infinite; }
 .br-bar { position: absolute; left: 0; right: 0; bottom: 0; padding: 10px calc(env(safe-area-inset-right, 0px) + 14px) calc(env(safe-area-inset-bottom, 0px) + 14px) calc(env(safe-area-inset-left, 0px) + 14px);
     background: linear-gradient(0deg, rgba(11, 16, 42, .85), rgba(11, 16, 42, 0)); }
 .br-prog { height: 4px; border-radius: 4px; background: rgba(255, 255, 255, .16); overflow: hidden; margin: 0 auto 10px; max-width: 520px; }
@@ -100,7 +98,7 @@ html.br-open, html.br-open body { overflow: hidden; }
 .br-2d .br-cards { bottom: calc(env(safe-area-inset-bottom, 0px) + 130px); }
 
 @media (prefers-reduced-motion: reduce) {
-    .br-dot, .br-bud, .br2-cell, .br-loading .br-stage::after, .br2-vessel::before { animation: none !important; }
+    .br-dot, .br2-cell, .br-loading .br-stage::after, .br2-vessel::before { animation: none !important; }
     .br-card, .br2-strip { animation: none !important; transition: none !important; }
     .br-flash { display: none; }
 }

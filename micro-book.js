@@ -1,11 +1,12 @@
-/* LOWiSPIKE microbe collection book, adventure log and friend care (UI). Logic lives in micro-book-core.js.
-   - Book: herb world header chip (cell icon + X/N) opens "Mikroben-Sammlung" with three tabs: Mikroben, Reisen, Freunde.
+/* LOWiSPIKE adventure log and friend care (UI). Logic lives in micro-book-core.js.
+   (The microbe collection and its herb world chip were removed Oct 16 with the microbe buddies, user decision.)
+   - Book: "Adventure log" sheet with two tabs: Journeys, Friends (opened from the Home journey line, data-mb="log").
    - Journeys: when a body journey ends (ledger eventId body-trip:* or the lowi:body-trip-done event) one card opens
      ("3. Reise geschafft! Deine Zelle hat heute ... entdeckt.") and Home shows the line for the rest of the day.
    - Care: tap a friend (Freunde tab, or any [data-care-uid] / [data-friend-uid] node the friends tree renders) to send
      something kind. Delivered through the reactions table when signed in; otherwise it waits on this phone and goes out
      once the cloud is live. Incoming care from friends shows as a heart bubble on their cell.
-   State: S.microbes {found}, S.adventures {log, seen}, S.care {sent, spent, out, seen, inbox} (account data). */
+   State: S.adventures {log, seen}, S.care {sent, spent, out, seen, inbox} (account data). */
 (function () {
     'use strict';
     const W = window, D = document, H = D.documentElement;
@@ -19,17 +20,8 @@
     const T = (en, de, es) => [en, de, es];
     const copy = {
         over: T('BODY UNIVERSE', 'KÖRPER-UNIVERSUM', 'UNIVERSO DEL CUERPO'),
-        book: T('Microbe collection', 'Mikroben-Sammlung', 'Colección de microbios'),
-        found: T('{n}/{t} found', '{n}/{t} gefunden', '{n}/{t} encontrados'),
-        tMic: T('Microbes', 'Mikroben', 'Microbios'), tTrip: T('Journeys', 'Reisen', 'Viajes'), tFr: T('Friends', 'Freunde', 'Amigos'),
-        intro: T('Every buddy lives in your body. You find them with real actions; repeating them unlocks new colours.', 'Jeder Buddy lebt in deinem Körper. Du findest sie mit echten Aktionen, Wiederholen schaltet neue Farben frei.', 'Cada compañero vive en tu cuerpo. Los encuentras con acciones reales; repetirlas desbloquea colores nuevos.'),
-        back: T('Back', 'Zurück', 'Atrás'), close: T('Close', 'Schließen', 'Cerrar'),
-        colours: T('Colours', 'Farben', 'Colores'), colour: T('Colour', 'Farbe', 'Color'),
-        nextC: T('Next colour: {h}', 'Nächste Farbe: {h}', 'Siguiente color: {h}'), allC: T('All colours found', 'Alle Farben gefunden', 'Todos los colores encontrados'),
-        how: T('How to find it: {h}', 'So findest du ihn: {h}', 'Cómo encontrarlo: {h}'),
-        secret: T('Not found yet', 'Noch nicht entdeckt', 'Aún sin descubrir'),
-        newFind: T('New in your microbe collection: ', 'Neu in der Mikroben-Sammlung: ', 'Nuevo en tu colección: '),
-        newCol: T('New colour: ', 'Neue Farbe: ', 'Color nuevo: '),
+        tTrip: T('Journeys', 'Reisen', 'Viajes'), tFr: T('Friends', 'Freunde', 'Amigos'),
+        close: T('Close', 'Schließen', 'Cerrar'),
         trips: T('{n} journeys completed', '{n} Reisen geschafft', '{n} viajes completados'), trip1: T('1 journey completed', '1 Reise geschafft', '1 viaje completado'),
         noTrips: T('No body journey finished yet. When your cell comes back from one, it lands here with what it discovered.', 'Noch keine Körperreise beendet. Wenn deine Zelle von einer zurückkommt, steht hier, was sie entdeckt hat.', 'Aún no has terminado ningún viaje. Cuando tu célula vuelva de uno, aquí verás lo que descubrió.'),
         today: T('Today', 'Heute', 'Hoy'), great: T('Great', 'Super', 'Genial'), logBtn: T('Adventure log', 'Reisetagebuch', 'Diario de viajes'),
@@ -54,17 +46,9 @@
     const S = () => { try { return B().state() || {}; } catch (e) { return {}; } };
     const save = () => { try { B().save(); } catch (e) {} };
     const obj = (s, k, d) => { if (!s[k] || typeof s[k] !== 'object') s[k] = d; for (const x in d) if (s[k][x] == null) s[k][x] = d[x]; return s[k]; };
-    const micro = () => obj(S(), 'microbes', { found: {} });
     const adv = () => obj(S(), 'adventures', { log: [], seen: {} });
     const care = () => obj(S(), 'care', { sent: {}, spent: {}, out: [], seen: {}, inbox: {} });
     const ledger = () => S().ledger || [];
-    const extra = () => { const x = W.LowiBodyBuddies || (W.LowiBodyDepth && (W.LowiBodyDepth.BUDDIES || W.LowiBodyDepth.buddies)); return Array.isArray(x) ? x : []; };
-    function bookNow() {
-        const list = C.merge(C.BUDDIES, extra()), c = C.counts(ledger(), adv().log);
-        const st = micro(), bk = C.book(c, st, list);
-        /* event-found buddies (journeys) are stored as found */
-        return bk;
-    }
     const trips = () => C.journeys(ledger(), adv().log);
     const level = () => { try { return W.LowiHost.level() || 1; } catch (e) { return 1; } };
     const myName = () => { try { return W.LowiHost.user().name || ''; } catch (e) { return ''; } };
@@ -112,33 +96,10 @@
     const sparkIco = '<svg class="mb-spk" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg>';
     const pin = '<svg class="mb-pin" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" d="M12 21s-6-5.7-6-11a6 6 0 0 1 12 0c0 5.3-6 11-6 11z"/><circle cx="12" cy="10" r="2.2" fill="currentColor"/></svg>';
     const lock = '<svg class="mb-lock" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2" fill="currentColor"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
-    const no2 = n => '#' + String(n).padStart(2, '0');
 
     /* ---------- book sheet ---------- */
     const R = () => W.LowiR2;
-    let ov = null, tab = 'mic', detail = '', preview = -1;
-    function dots(c, active) {
-        return '<span class="mb-dots" aria-label="' + esc(tr('colours') + ' ' + c.vars + '/3') + '">' + c.hues.map((h, i) => '<i class="' + (i < c.vars ? 'on' : '') + (i === active ? ' act' : '') + '" style="--h:' + h + '"></i>').join('') + '</span>';
-    }
-    function micHTML(bk) {
-        if (detail) {
-            const c = bk.cards.find(x => x.id === detail);
-            if (c) return detailHTML(c);
-        }
-        return '<p class="mb-intro">' + esc(tr('intro')) + '</p><ul class="mb-grid">' + bk.cards.map(c => {
-            const name = c.found ? P(c.b.n) : tr('secret');
-            return '<li><button type="button" class="mb-card' + (c.found ? '' : ' sil') + '" data-mb="card" data-id="' + esc(c.id) + '" aria-label="' + esc(no2(c.no) + ' ' + name) + '"><span class="mb-no num">' + no2(c.no) + '</span>' +
-                cellSvg(c.b.shape, c.hues[Math.max(0, c.vars - 1)], !c.found) + '<span class="mb-nm">' + esc(name) + '</span>' + (c.found ? dots(c, -1) : '<span class="mb-hint">' + esc(C.hint(c, L())) + '</span>') + '</button></li>';
-        }).join('') + '</ul>';
-    }
-    function detailHTML(c) {
-        const v = preview >= 0 && preview < c.vars ? preview : Math.max(0, c.vars - 1);
-        const head = '<button type="button" class="mb-back" data-mb="back">‹ ' + esc(tr('back')) + '</button>';
-        if (!c.found) return head + '<div class="mb-det sil"><span class="mb-no num">' + no2(c.no) + '</span>' + cellSvg(c.b.shape, c.b.hue, true, 'big') + '<h3>' + esc(tr('secret')) + '</h3><p class="mb-sub">' + esc(P(c.b.sub)) + '</p><p class="mb-how">' + esc(tr('how', { h: C.hint(c, L()) })) + '</p></div>';
-        return head + '<div class="mb-det"><span class="mb-no num">' + no2(c.no) + '</span>' + cellSvg(c.b.shape, c.hues[v], false, 'big' + (reduced() ? '' : ' live')) + '<h3>' + esc(P(c.b.n)) + '</h3><p class="mb-sub">' + esc(P(c.b.sub)) + '</p><p class="mb-fact">' + esc(P(c.b.fact)) + '</p>' +
-            '<div class="mb-cols"><span>' + esc(tr('colours')) + '</span>' + c.hues.map((h, i) => '<button type="button" class="mb-col' + (i < c.vars ? ' on' : '') + (i === v ? ' act' : '') + '" data-mb="col" data-i="' + i + '" style="--h:' + h + '"' + (i < c.vars ? '' : ' disabled') + ' aria-label="' + esc(tr('colour') + ' ' + (i + 1)) + '"></button>').join('') + '</div>' +
-            '<p class="mb-how">' + esc(c.vars < 3 ? tr('nextC', { h: C.hint(c, L()) }) : tr('allC')) + '</p></div>';
-    }
+    let ov = null, tab = 'trip';
     function tripHTML() {
         const list = trips(), today = C.dayKey(Date.now());
         if (!list.length) return '<div class="mb-empty">' + cellSvg('cluster', 186, true) + '<p>' + esc(tr('noTrips')) + '</p></div>';
@@ -157,16 +118,16 @@
             (list.length ? '<ul class="mb-frs">' + list.map(friendRow).join('') + '</ul>' : '<div class="mb-empty">' + cellSvg('blob', 200, true) + '<p>' + esc(tr('noFr')) + '</p>' + tree + '</div>');
     }
     function bookHTML() {
-        const bk = bookNow(), n = trips().length;
-        const tabs = [['mic', tr('tMic')], ['trip', tr('tTrip') + (n ? ' · ' + n : '')], ['fr', tr('tFr')]];
-        return '<div class="mb-sheet" data-noi18n><div class="mb-over">' + esc(tr('over')) + '</div><h2>' + esc(tr('book')) + ' <span class="mb-tot num">' + esc(tr('found', { n: bk.n, t: bk.total })) + '</span></h2>' +
+        const n = trips().length;
+        const tabs = [['trip', tr('tTrip') + (n ? ' · ' + n : '')], ['fr', tr('tFr')]];
+        return '<div class="mb-sheet" data-noi18n><div class="mb-over">' + esc(tr('over')) + '</div><h2>' + esc(tr('logBtn')) + '</h2>' +
             '<div class="mb-tabs" role="tablist">' + tabs.map(t => '<button type="button" role="tab" class="mb-tab' + (t[0] === tab ? ' on' : '') + '" aria-selected="' + (t[0] === tab) + '" data-mb="tab" data-t="' + t[0] + '">' + esc(t[1]) + '</button>').join('') + '</div>' +
-            '<div class="mb-pane" data-t="' + tab + '">' + (tab === 'trip' ? tripHTML() : tab === 'fr' ? frHTML() : micHTML(bk)) + '</div></div>';
+            '<div class="mb-pane" data-t="' + tab + '">' + (tab === 'fr' ? frHTML() : tripHTML()) + '</div></div>';
     }
     function paint() { if (!ov || !ov.isConnected) { ov = null; return; } const box = ov.querySelector('.mb-sheet'); if (box) box.outerHTML = bookHTML(); }
     function open(t) {
         if (!R() || !R().sheet) return null;
-        tab = t || 'mic'; detail = ''; preview = -1;
+        tab = t === 'fr' ? 'fr' : 'trip';
         if (ov && ov.isConnected) { paint(); return ov; }
         ov = R().sheet(bookHTML(), { cls: 'mb-ov' });
         return ov;
@@ -288,32 +249,6 @@
         setTimeout(() => { el.classList.remove('on'); setTimeout(nextToast, 260); }, 2600);
     }
 
-    /* ---------- discovery ---------- */
-    function discover(quiet) {
-        const bk = bookNow(), d = C.diff(micro(), bk, Date.now());
-        if (!d.fresh.length && !d.colours.length) return d;
-        S().microbes = d.state; save();
-        if (!quiet) {
-            /* after the praise toast (1.7 s) so the two never stack */
-            setTimeout(() => {
-                d.fresh.slice(0, 2).forEach(c => toast(tr('newFind') + no2(c.no) + ' ' + P(c.b.n)));
-                d.colours.slice(0, 1).forEach(c => toast(tr('newCol') + P(c.b.n)));
-            }, 2100);
-        }
-        chip();
-        return d;
-    }
-    function found(id) {
-        /* external buddies (body depth layer) report their own find */
-        const st = micro();
-        if (typeof id !== 'string' || st.found[id]) return false;
-        if (!C.merge(C.BUDDIES, extra()).some(b => b.id === id)) return false;
-        st.found[id] = { ts: Date.now(), v: 1 }; save();
-        const bk = bookNow(), c = bk.cards.find(x => x.id === id);
-        if (c) setTimeout(() => toast(tr('newFind') + no2(c.no) + ' ' + P(c.b.n)), 600);
-        chip();
-        return true;
-    }
 
     /* ---------- journeys ---------- */
     function logTrip(t) {
@@ -352,19 +287,6 @@
         if (row.parentNode !== log || (anchor && row.previousSibling !== anchor)) log.insertBefore(row, want);
     }
 
-    /* ---------- herb world chip ---------- */
-    function chip() {
-        const head = D.querySelector('.sp-world-head');
-        if (!head) return;
-        let b = head.querySelector('#mbChip');
-        const bk = bookNow(), txt = bk.n + '/' + bk.total;
-        if (!b) {
-            b = D.createElement('button'); b.type = 'button'; b.id = 'mbChip'; b.className = 'mb-chip'; b.dataset.mb = 'open'; b.setAttribute('data-noi18n', '');
-            const close = head.querySelector(':scope > button:last-child');
-            head.insertBefore(b, close || null);
-        }
-        if (b.dataset.t !== txt + lang()) { b.dataset.t = txt + lang(); b.innerHTML = cellIco() + '<span class="num">' + esc(txt) + '</span>'; b.setAttribute('aria-label', tr('book') + ', ' + tr('found', { n: bk.n, t: bk.total })); }
-    }
 
     /* ---------- events ---------- */
     D.addEventListener('click', e => {
@@ -373,13 +295,10 @@
         if (!t.dataset.mb && t.dataset.cr) return; /* friends tree nodes: the tree opens care itself (LowiCare.open) */
         if (!t.dataset.mb) { e.preventDefault(); e.stopPropagation(); openCare(t.getAttribute('data-care-uid') || t.getAttribute('data-friend-uid')); return; }
         const a = t.dataset.mb, sheetOv = t.closest('.r2-ov');
-        if (a === 'open') { e.preventDefault(); e.stopPropagation(); open('mic'); }
+        if (a === 'open') { e.preventDefault(); e.stopPropagation(); open('trip'); }
         else if (a === 'log') { e.preventDefault(); if (sheetOv && R()) R().close(sheetOv); setTimeout(() => open('trip'), sheetOv ? 320 : 0); }
         else if (a === 'close' || a === 'cclose' || a === 'x') { if (sheetOv && R()) R().close(sheetOv); }
-        else if (a === 'tab') { tab = t.dataset.t; detail = ''; preview = -1; paint(); const n = ov && ov.querySelector('.mb-tab.on'); if (n) n.focus({ preventScroll: true }); }
-        else if (a === 'card') { detail = t.dataset.id; preview = -1; paint(); const s = ov && ov.querySelector('.r2-sh'); if (s) s.scrollTop = 0; const bk = ov && ov.querySelector('.mb-back'); if (bk) bk.focus({ preventScroll: true }); }
-        else if (a === 'back') { const id = detail; detail = ''; paint(); const c = ov && ov.querySelector('.mb-card[data-id="' + id + '"]'); if (c) { c.focus({ preventScroll: true }); c.scrollIntoView({ block: 'nearest' }); } }
-        else if (a === 'col') { preview = +t.dataset.i; paint(); }
+        else if (a === 'tab') { tab = t.dataset.t; paint(); const n = ov && ov.querySelector('.mb-tab.on'); if (n) n.focus({ preventScroll: true }); }
         else if (a === 'care') { openCare(t.dataset.uid); }
         else if (a === 'tree') { if (sheetOv && R()) R().close(sheetOv); setTimeout(() => { try { W.LowiCellRoom.openTree(); } catch (x) {} }, 320); }
         else if (a === 'kind') { ck = t.dataset.k; cpaint(); const n = cov && cov.querySelector('.mb-kind.act'); if (n) n.focus({ preventScroll: true }); }
@@ -387,13 +306,11 @@
     }, true);
     W.addEventListener('lowi:reward', e => {
         const en = e && e.detail && e.detail.entry;
-        discover(false);
         if (en && C.kind(en) === 'trip') setTimeout(tripCheck, 1200);
         if (cov) cpaint();
     });
-    W.addEventListener('lowi:body-trip-done', e => { const d = e && e.detail || {}; logTrip(d); discover(false); });
-    W.addEventListener('lowi:buddy-found', e => { const d = e && e.detail || {}; found(d.id); });
-    W.addEventListener('lowi:lang', () => { chip(); homeRow(); paint(); cpaint(); });
+    W.addEventListener('lowi:body-trip-done', e => { const d = e && e.detail || {}; logTrip(d); });
+    W.addEventListener('lowi:lang', () => { homeRow(); paint(); cpaint(); });
     W.addEventListener('online', () => setTimeout(flush, 1500));
 
     function boot() {
@@ -404,16 +321,14 @@
             l.href = me ? me.getAttribute('src').replace('micro-book.js', 'micro-book.css') : 'micro-book.css';
             D.head.appendChild(l);
         }
-        /* existing finds are recorded quietly; only new ones get a toast */
         setTimeout(() => {
-            discover(true);
             const a = adv(), now = Date.now();
             trips().forEach(j => { if (now - j.ts >= 864e5) a.seen[j.id] = 1; });
-            homeRow(); chip(); badges();
+            homeRow(); badges();
         }, 1200);
         if (W.MutationObserver) {
             let q = 0;
-            new MutationObserver(() => { if (q) return; q = requestAnimationFrame(() => { q = 0; if (D.querySelector('.sp-world-head') && !D.getElementById('mbChip')) chip(); const log = D.querySelector('#spHome .sp-log'); if (log && (!row || !row.isConnected)) homeRow(); if (D.querySelector('[data-care-uid],[data-friend-uid]')) badges(); }); }).observe(D.body, { childList: true, subtree: true });
+            new MutationObserver(() => { if (q) return; q = requestAnimationFrame(() => { q = 0; const log = D.querySelector('#spHome .sp-log'); if (log && (!row || !row.isConnected)) homeRow(); if (D.querySelector('[data-care-uid],[data-friend-uid]')) badges(); }); }).observe(D.body, { childList: true, subtree: true });
         }
         setInterval(() => { if (!D.hidden) tripCheck(); }, 4000);
         setInterval(flush, 20000);
@@ -422,6 +337,6 @@
     }
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 
-    W.LowiMicroBook = { open, openCare, book: bookNow, trips, logTrip, found, discover, friends, sparks: () => C.sparks(ledger(), care().spent, Date.now()), flush, poll, badges, isOpen: () => !!(ov && ov.isConnected) };
+    W.LowiMicroBook = { open, openCare, trips, logTrip, friends, sparks: () => C.sparks(ledger(), care().spent, Date.now()), flush, poll, badges, isOpen: () => !!(ov && ov.isConnected) };
     W.LowiCare = { open: openCare, badges };
 })();

@@ -1,5 +1,5 @@
 /* LOWiSPIKE companion evolution, pure core (Oct 15, 2026).
-   Misty (the main herb/cell companion, not the microbe buddies) gets one fused creature design:
+   Misty (the one herb/cell companion) gets one fused creature design:
    - star sign (from the user's own birthday in user.bday, or the chosen prefs.starSign when no birthday) -> element family
      (fire / water / air / earth) and the existing sign palette (--tmg-a / --tmg-b);
    - personality type (Profile R5.mbti / user.mbti / herb prefs.personality, chosen by the user, optional) -> body language:

@@ -3,9 +3,8 @@
    - Taps, tab switches, opening sheets, scrolling and plain navigation earn NOTHING. There is no click listener that pays.
    - XP comes from completed actions only. The app's own actions keep their own rewards and caps (meals, water, Move sessions,
      steps, fasts, body journeys, scans, swaps, cooking, check-ins, quests). This file adds the few completed actions that had
-     no reward yet, each with its own category, a fixed amount and a cap so they can't be farmed:
+     no reward yet (the microbe buddy reward was removed with the buddies on Oct 16), each with its own category, a fixed amount and a cap so they can't be farmed:
        discover  first time ever you reach a body region            5 XP, once per region, ever
-       buddy     a microbe joins your crew for the first time       5 XP, once per microbe, ever
        care      care sent to a friend (costs care points)          5 XP, max 3 a day
        fastedit  fasting start corrected                            3 XP, max 1 a day (honest logging, never a reward for longer fasts)
    - category(entry) names the category of any ledger entry from its src first, so a Move entry is always 'move', never explore.
@@ -18,7 +17,6 @@
     const COMBO = [{ n: 3, xp: 10, tier: 'pop' }, { n: 5, xp: 20, tier: 'big' }, { n: 8, xp: 40, tier: 'fanfare' }];
     const ACTIONS = {
         discover: { amt: 5, once: true, src: 'discover' },
-        buddy: { amt: 5, once: true, src: 'buddy-add' },
         care: { amt: 5, perDay: 3, src: 'care-sent' },
         fastedit: { amt: 3, perDay: 1, src: 'fast-edit' }
     };
@@ -48,7 +46,6 @@
         if (src === 'tap') return 'legacy-tap';
         if (src === 'combo') return 'streak';
         if (src === 'discover') return 'discover';
-        if (/^buddy/.test(src)) return 'buddy';
         if (src === 'care-sent' || /^care/.test(src)) return 'care';
         if (src === 'fast-edit' || /^r3a_fast|^f2_break|fast/.test(src)) return 'fast';
         if (/^move|^r3a_move/.test(src)) return 'move';
@@ -79,7 +76,7 @@
             if (/^(swap saved|craving handled)$/.test(lab)) return 'swap';
             return '';
         }
-        if (/^f\d|^f3all|^f2_break|^e1:|^rhythm|^hq|^quest|^care|^macro-goal|^sun-full|^body-trip|^buddy|^discover|^fast-edit|^r3a_fast/.test(src)) return '';
+        if (/^f\d|^f3all|^f2_break|^e1:|^rhythm|^hq|^quest|^care|^macro-goal|^sun-full|^body-trip|^discover|^fast-edit|^r3a_fast/.test(src)) return '';
         if (/fast|badge|streak|level|quest/.test(txt) && !/breakfast/.test(txt)) return '';
         if (/check.?in/.test(txt)) return 'checkin';
         if (/water|wasser|agua|hydrat/.test(txt)) return 'water';

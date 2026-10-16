@@ -1,7 +1,7 @@
 /* LOWiSPIKE moving cell ride, pure core (Oct 15, 2026). Ref: Random42 "Intercellular – An Interbody VR Experience" (youtu.be/aogLFedcnTI):
    the camera travels by itself through vessels while you look around 360. You ride along with your own cell.
    - route(id, world): hub -> vessel -> region, as smooth Catmull-Rom points; uses LowiWorld3D regions/vesselPath when present.
-   - stops along the route (u = 0..1): buddy moments and a fact card on the way, the arrival card at the end.
+   - stops along the route (u = 0..1): a fact card on the way, the arrival card at the end.
    - look(): drag/gyro offset; released, it waits HOLD s and then eases back to the path (rate EASE /s).
    - duration(): ~40 s per ride at 1x; a healthier world flows a bit faster (world-health look.flow), never slower than 0.8x.
    Tested in tests/body-ride.test.cjs. */
@@ -18,13 +18,8 @@
         brain: { pos: [0, 115, -70], hue: '#1cf7f9', n: ['Brain', 'Gehirn', 'Cerebro'], f: ['Your brain runs on a steady supply. Fewer spikes, steadier focus.', 'Dein Gehirn mag gleichmäßigen Nachschub. Weniger Spitzen, ruhigerer Fokus.', 'Tu cerebro prefiere un suministro estable. Menos picos, más foco.'] }
     };
     const ALIAS = { lung: 'lungs', blood: 'heart', vessels: 'heart', intestine: 'gut', darm: 'gut', muscles: 'muscle', sugar: 'pancreas' };
-    const BUDDIES = [
-        { id: 'bifi', hue: '#2ef8b6', n: 'Bifi', l: ['Hi! I eat the fiber you send me.', 'Hi! Ich futtere die Ballaststoffe, die du schickst.', '¡Hola! Me como la fibra que me mandas.'] },
-        { id: 'lacto', hue: '#9feb25', n: 'Lacto', l: ['Wheee, the stream is fast today!', 'Juhu, der Strom ist heute schnell!', '¡Yuju, la corriente va rápida hoy!'] },
-        { id: 'akki', hue: '#1cf7f9', n: 'Akki', l: ['I keep the gut wall cosy. Wave back!', 'Ich halte die Darmwand gemütlich. Wink zurück!', 'Mantengo cómoda la pared intestinal. ¡Saluda!'] },
-        { id: 'rosa', hue: '#f14770', n: 'Rosa', l: ['Ride with us, there is room!', 'Fahr mit, hier ist Platz!', '¡Ven con nosotros, hay sitio!'] },
-        { id: 'sol', hue: '#f8ea40', n: 'Sol', l: ['Water day? Everything flows so smooth.', 'Wassertag? Alles fließt so sanft.', '¿Día de agua? Todo fluye tan suave.'] }
-    ];
+    /* the microbe buddies (talking stops) were removed Oct 16 (user decision); the ride particles keep these plain colours */
+    const TINTS = ['#2ef8b6', '#9feb25', '#1cf7f9', '#f14770', '#f8ea40'];
     const placeId = id => { id = String(id || '').toLowerCase(); return PLACES[id] ? id : (ALIAS[id] || 'gut'); };
     function hash(s) { let h = 2166136261; for (const c of String(s)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
     function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -66,9 +61,7 @@
         return { at, tangent, length: total };
     }
     function stops(pid) {
-        const r = rng(hash('stops:' + pid)), b1 = BUDDIES[Math.floor(r() * BUDDIES.length)];
-        let b2 = BUDDIES[Math.floor(r() * BUDDIES.length)]; if (b2.id === b1.id) b2 = BUDDIES[(BUDDIES.indexOf(b1) + 2) % BUDDIES.length];
-        return [{ u: 0.2, kind: 'buddy', buddy: b1 }, { u: 0.48, kind: 'fact' }, { u: 0.72, kind: 'buddy', buddy: b2 }, { u: 0.95, kind: 'arrive' }];
+        return [{ u: 0.48, kind: 'fact' }, { u: 0.95, kind: 'arrive' }];
     }
     function duration(flow, speed) { const f = Math.max(0.45, Math.min(1.3, +flow || 1)); return BASE_S / (0.8 + 0.2 * f) / Math.max(0.1, +speed || 1); }
     /* progress step; returns new u (0..1) */
@@ -85,7 +78,7 @@
         return st;
     }
     const nextSpeed = s => SPEEDS[(SPEEDS.indexOf(s) + 1) % SPEEDS.length] || 1;
-    const api = { HOLD, EASE, BASE_S, SPEEDS, PLACES, BUDDIES, ALIAS, placeId, route, curve, stops, duration, advance, passed, look, wrap, nextSpeed, hash, rng };
+    const api = { HOLD, EASE, BASE_S, SPEEDS, PLACES, TINTS, ALIAS, placeId, route, curve, stops, duration, advance, passed, look, wrap, nextSpeed, hash, rng };
     if (typeof module !== 'undefined' && module.exports) module.exports = api;
     if (root) root.LowiRideCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

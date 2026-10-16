@@ -1,8 +1,8 @@
 /* LOWiSPIKE XP: completed actions only + healthy streak bonus (Oct 15, 2026). Rules: xp-tap-core.js.
    User decision: taps, tab visits, opening Move, menus and sheets, travelling to body regions and reading arrival cards
-   earn 0 XP. This file listens to no taps, no tab changes and no menu or sheet events. It pays only four completed
-   actions that had no reward yet (K.action): a first-ever discovery of a body region (once per region, ever), a microbe
-   joining the crew (once per microbe, ever), care sent to a friend (max 3 a day), a corrected fasting start (max 1 a day).
+   earn 0 XP. This file listens to no taps, no tab changes and no menu or sheet events. It pays only three completed
+   actions that had no reward yet (K.action): a first-ever discovery of a body region (once per region, ever), care sent
+   to a friend (max 3 a day), a corrected fasting start (max 1 a day). (The microbe buddies and their XP were removed Oct 16.)
    Real completed actions keep
    their own rewards (meals, water, Move sessions, steps, scans, swaps, cooking, check-in, quests, body trips), each with
    an eventId or per-day cap in award(). On top, a run of healthy completed actions builds a streak bonus (3 / 5 / 8),
@@ -97,14 +97,12 @@
     function grant() { return 'none'; }
 
     /* ---------- completed actions that had no reward yet (rules + caps: K.action) ----------
-       Each one is a finished thing, never a tap: a first-ever arrival in a body region (once per region, ever), a microbe
-       joining the crew for the first time (once per microbe, ever), care sent to a friend (max 3 a day), a corrected fasting
+       Each one is a finished thing, never a tap: a first-ever arrival in a body region (once per region, ever), care sent to a friend (max 3 a day), a corrected fasting
        start (max 1 a day; the length of the fast never matters). The award() toast names the action. */
     const REG = { brain: ['Brain', 'Gehirn', 'Cerebro'], lung: ['Lungs', 'Lunge', 'Pulmones'], heart: ['Heart', 'Herz', 'Coraz\u00f3n'], liver: ['Liver', 'Leber', 'H\u00edgado'],
         pancreas: ['Pancreas', 'Bauchspeicheldr\u00fcse', 'P\u00e1ncreas'], gut: ['Gut', 'Darm', 'Intestino'], muscle: ['Muscle', 'Muskel', 'M\u00fasculo'] };
     const LAB = {
         discover: n => t('First discovery \u00b7 ', 'Erste Entdeckung \u00b7 ', 'Primer descubrimiento \u00b7 ') + n,
-        buddy: n => t('New buddy \u00b7 ', 'Neuer Buddy \u00b7 ', 'Nuevo compa\u00f1ero \u00b7 ') + n,
         care: () => t('Care sent to a friend', 'F\u00fcrsorge an Freund gesendet', 'Cuidado enviado a un amigo'),
         fastedit: () => t('Fasting start updated', 'Fastenstart korrigiert', 'Inicio del ayuno corregido')
     };
@@ -116,7 +114,6 @@
     }
     const detailOf = e => (e && e.detail) || {};
     W.addEventListener('lowi:world-region', e => { const id = String(detailOf(e).id || ''); if (REG[id]) act('discover', 'region-' + id, REG[id][L()]); });
-    W.addEventListener('lowi:buddy-added', e => { const d = detailOf(e); if (d.id && !d.starter) act('buddy', d.id, d.name || d.id); });
     W.addEventListener('lowi:care-sent', () => act('care', 'care'));
     W.addEventListener('lowi:fast-start', e => { const d = detailOf(e); if (d.to && d.to !== d.from) act('fastedit', 'fast'); });
 

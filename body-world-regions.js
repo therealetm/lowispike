@@ -25,7 +25,7 @@
         { id: 'pancreas', hue: 0xf8ea40, css: '#f8ea40', bg: 0x14120a, fog: 0x1c1a0c, map: [60, 52],
             n: ['Pancreas', 'Bauchspeicheldrüse', 'Páncreas'], line: ['A little island of cells. This is where insulin is made.', 'Eine kleine Zellinsel. Hier entsteht Insulin.', 'Una islita de células. Aquí se fabrica la insulina.'] },
         { id: 'gut', hue: 0x2ef8b6, css: '#2ef8b6', bg: 0x041611, fog: 0x07201a, map: [50, 64],
-            n: ['Gut', 'Darm', 'Intestino'], line: ['A forest of villi. Your microbe buddies live here.', 'Ein Wald aus Zotten. Hier wohnen deine Mikroben-Freunde.', 'Un bosque de vellosidades. Aquí viven tus microbios.'] },
+            n: ['Gut', 'Darm', 'Intestino'], line: ['A forest of villi that takes in your food.', 'Ein Wald aus Zotten, der deine Nahrung aufnimmt.', 'Un bosque de vellosidades que absorbe tu comida.'] },
         { id: 'muscle', hue: 0x9feb25, css: '#9feb25', bg: 0x0b1405, fog: 0x101c08, map: [38, 84],
             n: ['Muscles', 'Muskeln', 'Músculos'], line: ['Long fibres full of tiny power plants.', 'Lange Fasern voller winziger Kraftwerke.', 'Fibras largas llenas de pequeñas centrales.'] }
     ];

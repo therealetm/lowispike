@@ -5643,6 +5643,15 @@ function load(){ try { S = JSON.parse(localStorage.getItem(KEY)) || fresh(); } c
   const f = fresh(); for (const k in f) if (S[k] === undefined) S[k] = f[k];
   for (const k in f.health) if (S.health[k] === undefined) S.health[k] = f.health[k];
   if (S.streak.shields === undefined) S.streak.shields = 1; delete S.streak.freezeWeek;
+  /* Oct 16 (user decision): the microbe buddies are gone. Their XP (src buddy-add / buddy-bond:*) leaves the ledger and S.xp,
+     and their state goes (S.buddies, and S.microbes: the microbe collection is removed too). The retained herb stage never regresses (LowiHerbCore keeps the highest stage). Idempotent: once
+     the entries are gone this does nothing. */
+  try { const isBud = e => e && (/^buddy-(add|bond)/.test(String(e.src || "")) || /^buddy-(add|bond):/.test(String(e.eventId || "")));
+    if (Array.isArray(S.ledger) && S.ledger.some(isBud)) { const gone = S.ledger.filter(isBud).reduce((a, e) => a + (+e.amt > 0 ? +e.amt : 0), 0);
+      S.ledger = S.ledger.filter(e => !isBud(e)); S.xp = Math.max(0, (+S.xp || 0) - gone); S.budGone = 1; }
+    if (S.buddies !== undefined) { delete S.buddies; S.budGone = 1; }
+    if (S.microbes !== undefined) { delete S.microbes; S.budGone = 1; } /* the microbe collection went with them */
+    if (S.budGone) { delete S.budGone; save(); } } catch(e){}
   /* Oct 15: goals vs conditions split. Old fallback labels map to today's keys; an old PCOS checkbox becomes the PCOS condition. Nothing is dropped. */
   try { const OLD = {"Less sugar cravings":"Cravings","Steady energy":"Energy","Eat healthier":"Just eat better","Lose weight":"Weight","Feel better":"Just eat better"};
     if (S.user && Array.isArray(S.user.tags)) { const out = []; S.user.tags.forEach(t => { const k = OLD[t] || t; if (out.indexOf(k) < 0) out.push(k); });
@@ -13372,8 +13381,6 @@ html.g2f-gap body>.b3-cam{bottom:0}
 html.g2f-gap body>.b3-cam .b3-cbot{bottom:0;padding-bottom:calc(max(0px, env(safe-area-inset-bottom,0px) - var(--g2fGap,0px)) + 14px)}
 html.g2f-gap.b3-camon,html.g2f-gap.b3-camon body{background:#000}
 .b3-deep{flex:none}
-/* while scanning inside the herb world, the floating microbe buddies step aside so they never sit on the capture buttons */
-#spWorld.sp-capture .mbd-orbit{display:none}
 @media (max-width:360px){.b3-cacts{gap:6px}.b3-cact{font-size:11.5px;padding:6px 2px 5px}.b3-cact span{white-space:normal;overflow:visible;line-height:1.1;overflow-wrap:normal;hyphens:none}}
 @media (max-height:720px){.b3-cam .b3-frame{top:21%;height:min(20vh,140px)}.b3-cam .b3-cbot{padding-top:16px}.b3-cact{min-height:50px}.b3-cam .b3-cmsg{top:calc(env(safe-area-inset-top,0px) + 58px);bottom:calc(env(safe-area-inset-bottom,0px) + 236px)}}
 @media (prefers-reduced-motion:reduce){.b3-cact:active,.b3-deep:active{transform:none}}

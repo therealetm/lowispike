@@ -11,7 +11,7 @@
    - Score 0..100 = 18 + 82 * weighted day mean (floor 18: never black, never gross).
    - Smoothing: one meal moves a 4-day score by a few points only; tier names: bright >= 70, steady 45..69, murky < 45.
    - look params (0..1 unless noted) map linearly from the score: clarity (1 - fog), bright, flow (speed factor .45..1.25),
-     microbes (buddy share .35..1), cellGlow (.35..1), warmth.
+     microbes (ambient particle share .35..1), cellGlow (.35..1), warmth.
    - why line: names the strongest recent part and the one thing that would brighten it most. Kind wording, no shame.
    Pure, no DOM: tested in tests/world-health.test.cjs. */
 (function (root) {

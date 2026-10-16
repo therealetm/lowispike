@@ -2,7 +2,7 @@
    itself through the vessels, from the hub into a body place, alongside your own glowing cell. Touch and drag (or the gyro)
    to look around 360 at any moment; let go and the view eases back to the path. Pause, speed, Free look, step out.
    The inside reflects how you treat yourself: LowiWorldHealth (world-health-core.js) drives fog, brightness, flow speed,
-   microbe buddies and the cell glow, and one honest line says why and what would brighten it.
+   drifting microbe particles and the cell glow, and one honest line says why and what would brighten it.
    Rides inside the ONE shared 3D world (window.LowiWorld3D: THREE/scene/camera/renderer/hub/regions/onFrame): the vessel is a group
    in its hub, and the ride sets the world camera each frame (path pose, then drag/pinch/gyro on top). It never opens a WebGL context.
    World fallback (no WebGL, Save-Data, ?no3d) or prefers-reduced-motion: a 2D ride (panorama strip with the same stops, step by step when motion is reduced).
@@ -28,8 +28,7 @@
         gyro: ['Gyro', 'Gyro', 'Giro'], close: ['Step out', 'Aussteigen', 'Salir'], speed: ['Speed', 'Tempo', 'Velocidad'],
         to: ['On the way to', 'Unterwegs zu:', 'Rumbo a'], arrived: ['You made it:', 'Angekommen:', 'Has llegado:'],
         again: ['Ride again', 'Nochmal fahren', 'Otra vez'], other: ['Another place', 'Anderer Ort', 'Otro lugar'],
-        next: ['Next', 'Weiter', 'Siguiente'], prev: ['Back', 'Zurück', 'Atrás'], start: ['Start', 'Start', 'Inicio'],
-        says: ['says', 'sagt', 'dice']
+        next: ['Next', 'Weiter', 'Siguiente'], prev: ['Back', 'Zurück', 'Atrás'], start: ['Start', 'Start', 'Inicio']
     };
     const tr = k => (copy[k] || [k])[L()] || (copy[k] || [k])[0];
     const B = () => W.LowiVitalsBridge;
@@ -107,8 +106,7 @@
     }
     function onStop(r, s) {
         const P = r.route.place, li = L();
-        if (s.kind === 'buddy') { const b = s.buddy; card(r, '<span class="br-bud" style="--bh:' + b.hue + '" aria-hidden="true"></span><div><b>' + esc(b.n) + ' ' + esc(tr('says')) + '</b><p>' + esc(b.l[li] || b.l[0]) + '</p></div>', 'br-c-bud', 4200); if (r.scene && r.scene.wave) r.scene.wave(b); }
-        else if (s.kind === 'fact') card(r, '<div><b>' + esc(tr('to')) + ' ' + esc(P.n[li] || P.n[0]) + '</b><p>' + esc(P.f[li] || P.f[0]) + '</p></div>', 'br-c-fact', 4800);
+        if (s.kind === 'fact') card(r, '<div><b>' + esc(tr('to')) + ' ' + esc(P.n[li] || P.n[0]) + '</b><p>' + esc(P.f[li] || P.f[0]) + '</p></div>', 'br-c-fact', 4800);
         else if (s.kind === 'arrive') {
             const fl = r.ov.querySelector('.br-flash'); if (fl && !reduced()) { fl.classList.remove('on'); void fl.offsetWidth; fl.classList.add('on'); }
             r.ov.querySelector('.br-title small').textContent = tr('arrived');
@@ -199,11 +197,11 @@
         const rbc = new THREE.InstancedMesh(rbcG, rbcM, NC); rbc.instanceMatrix.setUsage(THREE.DynamicDrawUsage); root.add(rbc);
         const rnd = C().rng(C().hash(r.route.id + ':cells'));
         const cells = Array.from({ length: NC }, () => ({ u: rnd(), a: rnd() * 6.283, rr: 1.5 + rnd() * (RAD - 3), sp: 0.6 + rnd() * 0.8, s: 0.9 + rnd() * 0.7, rx: rnd() * 6.283, ry: rnd() * 6.283, w: (rnd() - .5) * 2 }));
-        /* microbe buddies: how many and how lively depends on world health */
+        /* drifting microbe particles: how many and how lively depends on world health */
         const NB = Math.round((phone ? 18 : 30) * look.microbes), budG = new THREE.IcosahedronGeometry(0.7, 1);
         const budM = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6 + 0.4 * look.bright });
         const bud = new THREE.InstancedMesh(budG, budM, Math.max(1, NB)); bud.count = NB; bud.instanceMatrix.setUsage(THREE.DynamicDrawUsage); root.add(bud);
-        const BC = C().BUDDIES, buds = Array.from({ length: NB }, (_, i) => ({ u: rnd(), a: rnd() * 6.283, rr: 2 + rnd() * (RAD - 4), ph: rnd() * 6.283, c: new THREE.Color(BC[i % BC.length].hue) }));
+        const BC = C().TINTS, buds = Array.from({ length: NB }, (_, i) => ({ u: rnd(), a: rnd() * 6.283, rr: 2 + rnd() * (RAD - 4), ph: rnd() * 6.283, c: new THREE.Color(BC[i % BC.length]) }));
         buds.forEach((b, i) => bud.setColorAt(i, b.c)); if (bud.instanceColor) bud.instanceColor.needsUpdate = true;
         /* floating sparkle particles */
         const NP = phone ? 260 : 520, pp = new Float32Array(NP * 3), pu = [];
@@ -292,7 +290,7 @@
         r.ov.classList.add('br-2d'); stage.setAttribute('aria-hidden', 'false');
         const st = r.route.stops, P = r.route.place, li = L();
         stage.style.setProperty('--clarity', String(look.clarity)); stage.style.setProperty('--glow', String(look.cellGlow)); stage.style.setProperty('--flow', String(look.flow));
-        stage.innerHTML = '<div class="br2-strip"><div class="br2-vessel"></div>' + st.map((s, i) => '<div class="br2-stop br2-' + s.kind + '" style="left:' + (8 + s.u * 84) + '%"' + (s.buddy ? ' data-bud="' + esc(s.buddy.n) + '"' : '') + '>' + (s.kind === 'arrive' ? '<span class="br2-place"></span>' : s.kind === 'buddy' ? '<span class="br-bud" style="--bh:' + s.buddy.hue + '"></span>' : '<span class="br2-fact"></span>') + '</div>').join('') + '</div><div class="br2-cell" aria-hidden="true"><i></i></div><div class="br2-haze"></div>' +
+        stage.innerHTML = '<div class="br2-strip"><div class="br2-vessel"></div>' + st.map((s, i) => '<div class="br2-stop br2-' + s.kind + '" style="left:' + (8 + s.u * 84) + '%"' + '>' + (s.kind === 'arrive' ? '<span class="br2-place"></span>' : '<span class="br2-fact"></span>') + '</div>').join('') + '</div><div class="br2-cell" aria-hidden="true"><i></i></div><div class="br2-haze"></div>' +
             (auto ? '' : '<div class="br2-steps"><button type="button" class="br-b" data-brc="prev">' + esc(tr('prev')) + '</button><button type="button" class="br-b br-pri" data-brc="next">' + esc(tr('next')) + '</button></div>');
         r.stepI = -1;
         r.step = dir => { r.stepI = Math.max(0, Math.min(st.length - 1, r.stepI + dir)); r.u = st[r.stepI].u; onStop(r, st[r.stepI]); progress(r); place2D(r); };

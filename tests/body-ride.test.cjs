@@ -42,13 +42,13 @@ test('a healthier world flows a bit faster, a rough one never drags', () => {
     assert.ok(R.duration(1.25, 1) < R.duration(0.45, 1));
     assert.ok(R.duration(0.45, 1) / R.duration(1.25, 1) < 1.3);
 });
-test('stops: buddy, fact, buddy, arrival, each popping once in order', () => {
+test('stops: fact, arrival, each popping once in order (no talking microbe buddies)', () => {
     const s = R.stops('gut');
-    assert.deepEqual(s.map(x => x.kind), ['buddy', 'fact', 'buddy', 'arrive']);
-    assert.notEqual(s[0].buddy.id, s[2].buddy.id);
+    assert.deepEqual(s.map(x => x.kind), ['fact', 'arrive']);
+    assert.equal(R.BUDDIES, undefined);
     let u = 0, seen = []; const dur = R.duration(1, 1);
     while (u < 1) { const n = R.advance(u, 0.05, dur, false); seen = seen.concat(R.passed(s, u, n).map(x => x.kind)); u = n; }
-    assert.deepEqual(seen, ['buddy', 'fact', 'buddy', 'arrive']);
+    assert.deepEqual(seen, ['fact', 'arrive']);
 });
 test('look: free while dragging, eases back to the path after release', () => {
     let st = { yaw: 2, pitch: 0.8, idle: 0 };

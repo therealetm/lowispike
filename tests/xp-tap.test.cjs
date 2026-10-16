@@ -31,9 +31,7 @@ test('completed actions: amounts, own category, once ever or capped per day', ()
     assert.deepEqual([a.amt, a.src, a.eventId], [5, 'discover', 'discover:region-liver']);
     assert.equal(K.action('discover', 'region-liver', led, NOWT + 864e5 * 3), null, 'a region is discovered once, ever');
     assert.ok(K.action('discover', 'region-heart', led, NOWT));
-    a = take(K.action('buddy', 'bifido', led, NOWT));
-    assert.deepEqual([a.amt, a.eventId], [5, 'buddy-add:bifido']);
-    assert.equal(K.action('buddy', 'bifido', led, NOWT + 864e5), null, 'drop and re-add the same microbe pays nothing');
+    assert.equal(K.action('buddy', 'bifido', led, NOWT), null, 'the microbe buddies are gone: no buddy XP');
     for (let i = 0; i < 3; i++) { a = take(K.action('care', 'care', led, NOWT + i)); assert.equal(a.eventId, 'care-sent:' + DAY + ':' + i); }
     assert.equal(K.action('care', 'care', led, NOWT + 10), null, 'care: max 3 a day');
     assert.ok(K.action('care', 'care', led, NOWT + 864e5), 'next day counts again');
@@ -54,8 +52,6 @@ test('categories: every action gets its own label; Move is always move, never ex
     assert.equal(C('r3a_fast', 'Fast done: 16 h'), 'fast');
     assert.equal(C('fast-edit', 'Fasting start updated'), 'fast');
     assert.equal(C('body-trip', 'Body trip \u00b7 Liver'), 'journey');
-    assert.equal(C('buddy-add', 'New buddy \u00b7 Bifido'), 'buddy');
-    assert.equal(C('buddy-bond:lacto:2', 'Buddy \u00b7 Lacto'), 'buddy');
     assert.equal(C('care-sent', 'Care sent to a friend'), 'care');
     assert.equal(C('discover', 'First discovery \u00b7 Liver'), 'discover');
     assert.equal(C('combo', 'Healthy streak \u00d73'), 'streak');
@@ -202,10 +198,9 @@ test('xp-tap.js: pays only completed actions through award() with eventIds; quie
     const js = read('xp-tap.js');
     assert.ok(js.includes("W.award(a.amt, LAB[kind](name || a.id), null, a.src, a.eventId)"));
     assert.ok(js.includes("W.award(m.xp, label, null, 'combo', m.eventId, { quiet: true })"));
-    for (const ev of ['lowi:world-region', 'lowi:buddy-added', 'lowi:care-sent', 'lowi:fast-start']) assert.ok(js.includes("'" + ev + "'"), ev);
+    for (const ev of ['lowi:world-region', 'lowi:care-sent', 'lowi:fast-start']) assert.ok(js.includes("'" + ev + "'"), ev);
+    assert.ok(!js.includes("'lowi:buddy-added'") && !/buddy/i.test(read('xp-tap-core.js').replace(/\/\*[\s\S]*?\*\//g, '')), 'no buddy XP');
     assert.ok(js.includes("if (REG[id]) act('discover'"), 'only the 7 real regions, never the hub');
-    assert.ok(js.includes('if (d.id && !d.starter)'), 'the starter buddy is not a discovery');
-    assert.ok(read('microbe-buddies.js').includes("new CustomEvent('lowi:buddy-added', { detail: { id, name: name(c) } })"));
     assert.ok(!/getContext|WebGLRenderer|three\./i.test(js + read('xp-tap-core.js')), 'no WebGL');
     assert.ok(!/LowiSpeak|speak\(|say\(/.test(js), 'the companion never talks for XP');
 });

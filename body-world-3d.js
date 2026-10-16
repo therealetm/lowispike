@@ -12,7 +12,7 @@
 
     const THREE_FILE = 'vendor/three-0.160.1.module.min.js', SCENE_FILE = 'body-world-3d-scene.js', GYRO_KEY = 'lowi.world3d.gyro';
     const PLACES = [
-        { id: 'gut', hue: '#2ef8b6', name: ['Gut', 'Darm', 'Intestino'], line: ['Your microbe buddies live here.', 'Hier wohnen deine Mikroben-Freunde.', 'Aquí viven tus amigos microbios.'] },
+        { id: 'gut', hue: '#2ef8b6', name: ['Gut', 'Darm', 'Intestino'], line: ['Where your food is taken in.', 'Hier wird deine Nahrung aufgenommen.', 'Aquí se absorbe tu comida.'] },
         { id: 'liver', hue: '#e78631', name: ['Liver', 'Leber', 'Hígado'], line: ['Your store room and filter.', 'Dein Speicher und Filter.', 'Tu almacén y filtro.'] },
         { id: 'pancreas', hue: '#f8ea40', name: ['Pancreas', 'Bauchspeicheldrüse', 'Páncreas'], line: ['This is where insulin is made.', 'Hier wird Insulin gemacht.', 'Aquí se produce la insulina.'] },
         { id: 'muscles', hue: '#9feb25', name: ['Muscles', 'Muskeln', 'Músculos'], line: ['Moving wakes them up.', 'Bewegung macht sie wach.', 'El movimiento los despierta.'] },

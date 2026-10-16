@@ -146,26 +146,12 @@ export function createWorld(THREE, canvas, opts) {
         g.add(glow, core, ring, hit); scene.add(g); hitMeshes.push(hit);
         beacons[p.id] = { g, ring, glow, core, hue: col, pos: g.position.clone() };
     });
-    /* microbe buddies bob next to the gut */
     /* hub for other builds (regions, cell ride, living cell) to add their meshes */
     const hub = new THREE.Group(); hub.name = 'lowi-hub'; scene.add(hub);
     const regions = places.map(p => ({ id: p.id, pos: beacons[p.id].pos.clone(), hue: p.hue }));
     const frameFns = new Set();
     function onFrame(fn) { if (typeof fn !== 'function') return () => {}; frameFns.add(fn); return () => frameFns.delete(fn); }
-    const microbes = [];
-    const gut = beacons.gut;
-    if (gut) {
-        const eyeMat = new THREE.MeshBasicMaterial({ color: '#0b102a' });
-        [['#2ef8b6', 0], ['#9feb25', 2.1], ['#8fe7ff', 4.2]].forEach(([c, ph], i) => {
-            const m = new THREE.Group();
-            const body = new THREE.Mesh(new THREE.SphereGeometry(0.22, 16, 12), new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: 0.45, roughness: 0.4 }));
-            body.scale.set(1.25, 0.9, 1);
-            const e1 = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6), eyeMat), e2 = e1.clone();
-            e1.position.set(-0.08, 0.05, 0.19); e2.position.set(0.08, 0.05, 0.19);
-            m.add(body, e1, e2); m.userData = { ph, base: gut.pos.clone().add(new THREE.Vector3(Math.cos(ph) * 0.95, 0.45 * Math.sin(ph * 1.7), Math.sin(ph) * 0.95)) };
-            scene.add(m); microbes.push(m);
-        });
-    }
+    /* (the little microbe buddies that bobbed next to the gut were removed Oct 16, user decision) */
 
     /* ---------- camera rig ---------- */
     const rig = { yaw: 0.35, pitch: 0.12, dist: 6.5, vy: 0, vp: 0, gy: 0, gp: 0, gyT: 0, gpT: 0, target: new THREE.Vector3(), mode: 'full', minD: 2.4, maxD: 13, pMax: 1.2, homeDist: 3.2, idle: 0, fly: null };
@@ -290,7 +276,6 @@ export function createWorld(THREE, canvas, opts) {
             b.glow.material.opacity = 0.85 + 0.15 * tend; b.ring.material.opacity = 0.7 + 0.3 * tend; const rs = 1 + 0.3 * tend; b.ring.scale.set(rs, rs, rs);
             b.core.material.color.copy(b.hue).lerp(tendWhite, 0.4 * tend);
         });
-        microbes.forEach(m => { const u = m.userData; m.position.copy(u.base).add(tmpP.set(Math.sin(t * 0.8 + u.ph) * 0.2, Math.sin(t * 1.3 + u.ph) * 0.18, 0)); m.lookAt(camera.position); });
         /* place tint */
         tintAmt += (tintT - tintAmt) * Math.min(1, dt * 2.5);
         curBg.copy(baseBg); if (tint && tintAmt > 0.001) curBg.lerp(tint, tintAmt * (theme === 'light' ? 0.5 : 0.35));

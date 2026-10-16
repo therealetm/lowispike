@@ -146,6 +146,7 @@
     function shouldRender() {
         if (D.hidden) return false;
         if (mode === 'full') return !!full;
+        if (mode === 'back') return !!(back && back.isConnected);
         if (!visibleHome || !stage || !stage.isConnected) return false;
         const tab = D.getElementById('spHome'); if (tab && !tab.offsetParent) return false;
         if (D.querySelector(H.classList.contains('wh-on') ? '.sp-world.on, .ht-world.on' : '.r2-ov, .sp-world.on, .ht-world.on')) return false; /* world-first Home: sheets are see-through, the world keeps breathing behind them */
@@ -336,6 +337,48 @@
         btn.classList.add('bw3-float');
         btn.style.left = Math.round(spot.x - 22 - tr0.left) + 'px'; btn.style.top = Math.round(spot.y - 22 - tr0.top) + 'px';
     }
+    /* ---------- Oct 16 (E-man: "Community is the SAME world, just zoomed out"; "every screen uses the same live wallpaper as Today"):
+       when Home is not on screen, the very same canvas moves into #bw3Back, a full-screen layer under every page, and keeps rendering.
+       Nothing is rebuilt and the camera stays where it is, so leaving Home (or the pull-out to Community) never cuts or snaps. ---------- */
+    let back = null;
+    api.backdrop = on => backdrop(on); api.inBack = () => mode === 'back';
+    function backdrop(on) {
+        if (!world || !canvas || mode === 'full') return false;
+        if (on) {
+            if (!back || !back.isConnected) {
+                back = D.getElementById('bw3Back') || D.createElement('div'); back.id = 'bw3Back'; back.setAttribute('aria-hidden', 'true');
+                const app = D.getElementById('app'), main = D.getElementById('main');
+                if (app && main && main.parentElement === app) app.insertBefore(back, main); else D.body.insertBefore(back, D.body.firstChild);
+            }
+            if (canvas.parentElement !== back) back.appendChild(canvas);
+            mode = 'back'; H.classList.add('wb-on');
+            world.resize(back.clientWidth || W.innerWidth, back.clientHeight || W.innerHeight); world.start();
+            return true;
+        }
+        if (mode !== 'back') return false;
+        H.classList.remove('wb-on', 'wb-comm');
+        if (stage && stage.isConnected) attachHome(); else mode = 'home';
+        /* back on Home without the dive (from Cook, Move...): Misty's usual framing */
+        if (!H.classList.contains('gx-in')) { try { const WH = W.LowiWorldHome; if (WH && WH.state && WH.state.pull && WH.diveIn) WH.diveIn(); else if (WH && WH.settle) WH.settle(); } catch (e) { } }
+        return true;
+    }
+    function wantBack() {
+        if (!world || mode === 'full' || D.hidden) return null;
+        if (H.classList.contains('gx-out') || H.classList.contains('gx-in')) return true;   /* the Home <-> Community zoom: the world stays put, the pages fade over it */
+        const t = D.querySelector('.tab.active'); if (!t) return null;
+        return t.id !== 'tab-home';
+    }
+    let backQ = 0;
+    function syncBack() {
+        backQ = 0; const w = wantBack(), t = D.querySelector('.tab.active');
+        H.classList.toggle('wb-comm', !!(t && t.id === 'tab-foryou')); if (w === true && mode !== 'back') backdrop(true); else if (w === false && mode === 'back') backdrop(false);
+    }
+    function queueBack() { if (!backQ) backQ = (W.requestAnimationFrame || setTimeout)(syncBack, 0); }
+    if (typeof MutationObserver !== 'undefined') {
+        const mo = new MutationObserver(queueBack);
+        const watchTabs = () => { mo.observe(H, { attributes: true, attributeFilter: ['class'] }); const m = D.getElementById('main'); if (m) mo.observe(m, { attributes: true, attributeFilter: ['class'], subtree: true }); else setTimeout(watchTabs, 300); };
+        watchTabs();
+    }
     function attachHome() {
         mode = 'home';
         if (!world || !stage) return;
@@ -438,7 +481,7 @@
            every 1.2 s for a world nobody could see, one of the regular hitches in the spirit world */
         const homeSeen = () => { const t = D.getElementById('tab-home'); return !t || t.classList.contains('active') || /(^|\s)gx-(hold|in)(\s|$)/.test(H.className) || mode === 'full'; };
         setInterval(() => { if (api.state !== 'fallback' && !D.hidden && homeSeen()) { mountHome(); syncGlow(); } }, 1200);
-        W.addEventListener('resize', () => { lastLay = ''; if (mode === 'home') layoutHome(); else if (full && world) { const r = full.querySelector('.bw3-view').getBoundingClientRect(); world.resize(r.width, r.height); } });
+        W.addEventListener('resize', () => { lastLay = ''; if (mode === 'back' && back && world) world.resize(back.clientWidth || W.innerWidth, back.clientHeight || W.innerHeight); else if (mode === 'home') layoutHome(); else if (full && world) { const r = full.querySelector('.bw3-view').getBoundingClientRect(); world.resize(r.width, r.height); } });
         new MutationObserver(() => { if (world) world.setTheme(themeNow()); }).observe(H, { attributes: true, attributeFilter: ['data-theme'] });
         D.addEventListener('visibilitychange', () => { if (D.hidden && world) world.stop(); else if (world) world.start(); });
         if (mqReduce.addEventListener) mqReduce.addEventListener('change', () => { if (mqReduce.matches) fail('reduced-motion'); });

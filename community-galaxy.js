@@ -119,6 +119,9 @@ function sky(canvas,opts){
      no sun, no orbit rings, no stars. The same silvery dark-blue bloodstream as Home's world, seen from far out: Misty's mint glow
      behind you, cells and energy motes drifting slowly past. The companions float in it; the stream lines still carry the talk. */
   const O=orbits&&isFinite(orbits.cx)&&isFinite(orbits.cy)?orbits:null,cx=O?O.cx:w/2,cy=O?O.cy:h*.45,R=Math.hypot(w,h);
+  /* Oct 16: with the live 3D world under the page (html.wb-on), this layer only draws the energy streams */
+  const bare=!!(root.document&&root.document.documentElement&&root.document.documentElement.classList.contains('wb-on'));
+  if(!bare){
   const bg=ctx.createRadialGradient(cx,cy,0,cx,cy,R*.75);bg.addColorStop(0,'#16305a');bg.addColorStop(.45,'#0a1834');bg.addColorStop(1,'#040811');ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
   for(let i=0;i<3;i++){const px=w*(.2+.3*i)+(still?0:Math.sin(t*.07+i*2.1)*w*.06),py=h*(.25+.28*((i*7)%3))+(still?0:Math.cos(t*.05+i)*h*.05),pr=Math.min(w,h)*(.34+.08*i),pg=ctx.createRadialGradient(px,py,0,px,py,pr);pg.addColorStop(0,i===1?'rgba(196,92,120,.10)':'rgba(120,170,235,.09)');pg.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=pg;ctx.fillRect(0,0,w,h);}
   {const R0=Math.max(40,Math.min(w,h)*.16),g=ctx.createRadialGradient(cx,cy,0,cx,cy,R0*2.4);g.addColorStop(0,'rgba(156,218,199,.34)');g.addColorStop(.3,'rgba(156,218,199,.12)');g.addColorStop(.6,'rgba(110,150,230,.05)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);}
@@ -128,6 +131,7 @@ function sky(canvas,opts){
     const r=s.r*2.6,red=s.p>3.1;ctx.globalAlpha=.55;ctx.fillStyle=red?'rgba(214,96,120,.30)':'rgba(190,210,240,.20)';ctx.beginPath();ctx.ellipse(x,y,r,r*.82,s.p,0,6.283);ctx.fill();
     ctx.lineWidth=1.2;ctx.strokeStyle=red?'rgba(255,160,175,.45)':'rgba(225,235,255,.38)';ctx.stroke();ctx.fillStyle='rgba(4,8,17,.35)';ctx.beginPath();ctx.ellipse(x,y,r*.42,r*.34,s.p,0,6.283);ctx.fill();}
    else{const tw=still?.8:.55+.45*Math.sin(t*s.s+s.p);ctx.globalAlpha=.7*tw;ctx.fillStyle=s.p<1.2?'#ffd27a':'#bfeee0';ctx.beginPath();ctx.arc(x,y,s.r,0,6.283);ctx.fill();}}
+  }
   ctx.globalAlpha=1;
   for(const L of lines){const q=curve(L.a,L.b),alpha=Math.max(.15,L.alpha||1);
    const grad=ctx.createLinearGradient(q.a.x,q.a.y,q.b.x,q.b.y);grad.addColorStop(0,L.from||'#9cdac7');grad.addColorStop(1,L.to||'#ffd27a');

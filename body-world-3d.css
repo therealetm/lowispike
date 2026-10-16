@@ -69,3 +69,12 @@ html[data-theme="light"] .bw3-card b { color: #12345a; }
 .bw3-full.bw3-flash::after { animation: bw3flash .3s ease-out; }
 @keyframes bw3flash { 0% { opacity: .2; } 100% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .bw3-full, .bw3-stage .bw3-canvas { transition: none; } .bw3-loading { animation: none; } .bw3-full.bw3-flash::after { animation: none; } }
+
+/* Oct 16: one live world under every page (body-world-3d.js backdrop()). The pages go see-through over it; text keeps its own glass. */
+#bw3Back { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+#bw3Back .bw3-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 1; }
+/* a soft veil so lists stay readable over the moving world (none on Community, which IS the world, zoomed out) */
+#bw3Back::after { content: ''; position: absolute; inset: 0; background: radial-gradient(120% 90% at 50% 40%, rgba(4, 10, 26, .18), rgba(4, 10, 26, .5)); opacity: 1; transition: opacity .5s ease; }
+html.wb-on.wb-comm #bw3Back::after, html.wb-on.gx-out #bw3Back::after, html.wb-on.gx-in #bw3Back::after { opacity: 0; }
+html.wb-on.wb-on.wb-on body #app#app, html.wb-on.wb-on.wb-on #app #main#main, html.wb-on.wb-on.wb-on #app #main > .tab.tab:not(#bw3x), html.wb-on.wb-on #cmPaneChat[data-spirit-chat] .cp-room.cg-room#cpRoom, html.wb-on #bw3Stage#bw3Stage { background: transparent !important; background-image: none !important; }
+html.wb-on #cgSky { opacity: 1; }

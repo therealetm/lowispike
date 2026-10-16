@@ -233,8 +233,9 @@
        above the bloodstream, and glides back down to Misty's usual view. Misty's bubble grows with it (--wh-mz follows the distance). */
     function diveIn() {
         const r = rig(); if (!r || r.mode !== 'home' || reduced()) return;
+        /* Oct 16: the camera now stays pulled out while Community (or any other page) shows the world, so aim for the view saved by pullOut() */
+        const home = st.pull ? { dist: st.pull.dist, pitch: st.pull.pitch } : { dist: r.dist, pitch: r.pitch };
         st.pull = null;
-        const home = { dist: r.dist, pitch: r.pitch };
         r.dist = Math.min(r.maxD || 13, baseDist(r) * 2.4); r.pitch = 0.34; r.vy = 0; r.idle = 0;
         /* the target is kept as a share of Misty's framing distance: Home re-measures that framing while its layer settles */
         hook(); st.zoomAnim = { to: home.dist, rel: home.dist / baseDist(r), pitch: home.pitch, t: 0, rate: 4.2 };

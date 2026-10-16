@@ -145,7 +145,9 @@
         clean();
         H.classList.remove('gx-hold', 'gx-out', 'gx-in', 'gx-keep');
         if (b.dir === 'out') { try { if (W.LowiArrival && W.LowiArrival.current && W.LowiArrival.current()) W.LowiArrival.close(); } catch (e) {} }
-        try { if (W.LowiWorldHome && W.LowiWorldHome.settle) W.LowiWorldHome.settle(); } catch (e) {}
+        /* Oct 16: Community is Home's world zoomed out (the canvas now lives under every page): after the pull-out the camera STAYS out */
+        const keepOut = b.dir === 'out' && W.LowiWorld3D && W.LowiWorld3D.inBack && W.LowiWorld3D.inBack();
+        if (!keepOut) { try { if (W.LowiWorldHome && W.LowiWorldHome.settle) W.LowiWorldHome.settle(); } catch (e) {} }
         try { if (W.LowiCommunity && W.LowiCommunity.refresh) W.LowiCommunity.refresh(); } catch (e) {}
     }
     /* Driven from the clock every frame (no Web Animations waiting for a first frame): a slow frame only skips ahead, and the move

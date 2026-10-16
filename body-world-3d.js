@@ -382,6 +382,10 @@
         H.classList.toggle('wb-comm', !!(t && t.id === 'tab-foryou')); const homeIn = !!(w === true && t && t.id === 'tab-home' && !H.classList.contains('gx-in') && !H.classList.contains('gx-out'));
         /* sliding back to Home with the camera still pulled out (Community was visited): the camera dives home WITH the slide, not after it lands */
         if (homeIn && !H.classList.contains('wb-home')) { try { const WH = W.LowiWorldHome; if (WH && WH.state && WH.state.pull && WH.diveIn) WH.diveIn(); } catch (e) { } }
+        /* Oct 16 (handoff task 1, E-man: "Cook, Move and Scan have the same background as Today; only Community expands into the spirit
+           world"): leaving Community for any other page brings the camera back down into Misty's world, as on Home */
+        const otherIn = !!(w === true && t && t.id !== 'tab-home' && t.id !== 'tab-foryou' && !H.classList.contains('gx-in') && !H.classList.contains('gx-out'));
+        if (otherIn) { try { const WH = W.LowiWorldHome; if (WH && WH.state && WH.state.pull && WH.diveIn) WH.diveIn(); } catch (e) { } }
         H.classList.toggle('wb-home', homeIn); if (w === true && mode !== 'back') backdrop(true); else if (w === false && mode === 'back') backdrop(false);
     }
     function queueBack() { if (!backQ) backQ = (W.requestAnimationFrame || setTimeout)(syncBack, 0); }

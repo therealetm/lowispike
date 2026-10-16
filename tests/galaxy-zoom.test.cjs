@@ -25,7 +25,7 @@ test('Home -> Community never scales a flat box: Home only fades over the 3D cam
     const o0 = Z.look('out', 0), o1 = Z.look('out', 1), i0 = Z.look('in', 0), i1 = Z.look('in', 1);
     assert.ok(o0.home === 1 && o1.home === 0 && Math.abs(o0.field - Z.FIELD0) < 1e-9 && o1.field === 1, 'out: Home fades away, the companions settle onto you');
     assert.ok(i0.home === 0 && i1.home === 1 && i0.field === 1 && i1.fieldO === 0, 'in: Home fades in over the dive, the companions rush past');
-    assert.ok(Z.DUR >= 800 && Z.DUR < 1000, 'a cinematic pull-back, still under a second');
+    assert.ok(Z.DUR >= 560 && Z.DUR <= 700, 'a sped-up warp out of our world (E-man, Oct 16), never a page swap');
     const src = read('galaxy-zoom.js'), css = read('community-galaxy.css');
     assert.ok(!/clipPath/.test(src));
     assert.ok(!/\.animate\(/.test(src), 'no Web Animations that can wait for a first frame and leave Home shrunk and untappable');

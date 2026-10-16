@@ -24,7 +24,8 @@
        Now nothing flat is ever scaled. Exactly like travelling to a place: the real 3D camera moves (pullOut / diveIn) with the warp
        streaks and the widening view, and the pages only cross-fade, full screen, driven frame by frame from the clock. In the galaxy
        only the companions (the field has no box or background) settle onto you, or rush past as you dive home. */
-    const DUR = 900, FIELD0 = 1.22;
+    /* Oct 16 (handoff task 1, E-man: "a sped-up warp" Today -> Community, "realistic, we're zooming out of our world, not opening a new page") */
+    const DUR = 640, FIELD0 = 1.22;
     const clamp = k => Math.max(0, Math.min(1, k || 0));
     const smooth = (a, b, k) => { const t = clamp((k - a) / (b - a)); return t * t * (3 - 2 * t); };
     const ease = k => { k = clamp(k); return k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; };
@@ -137,6 +138,7 @@
     function clean() {
         const home = D.getElementById('tab-home'), gal = D.getElementById('cgGalaxy'), field = D.getElementById('cgField');
         [home, gal, field].forEach(el => { if (el) { el.style.transition = ''; el.style.transform = ''; el.style.opacity = ''; el.style.transformOrigin = ''; } });
+        try { if (W.LowiSpiritWorld) W.LowiSpiritWorld.clear(); } catch (e) { }
     }
     function finish() {
         if (!busy) return;
@@ -156,6 +158,8 @@
         const home = D.getElementById('tab-home'), field = D.getElementById('cgField'), L = look(dir, k, pv);
         if (home) { home.style.transform = ''; home.style.opacity = L.home >= 0.999 ? '' : L.home.toFixed(3); }
         if (field) { field.style.transform = Math.abs(L.field - 1) < 0.0005 ? '' : 'scale(' + L.field.toFixed(4) + ')'; field.style.opacity = L.fieldO >= 0.999 ? '' : L.fieldO.toFixed(3); }
+        /* the Metabolic Spirit World picture behind Community comes into view from far away (out) and falls away behind you (in) */
+        try { if (W.LowiSpiritWorld) W.LowiSpiritWorld.paint(dir, k); } catch (e) { }
     }
     function run(dir) {
         const home = D.getElementById('tab-home'), gal = D.getElementById('cgGalaxy');

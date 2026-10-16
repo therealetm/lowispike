@@ -1,0 +1,47 @@
+/* LOWiSPIKE For You: the inline video player (fy-embed.js). Misty-blue glass frame around the platform's own
+   player; it sits in the slide's free space, so the like rail and the caption stay usable beside it. */
+.fy-slide > .fye {
+    position: absolute; z-index: 3; left: 12px; top: 80px; width: calc(100% - 96px);
+    display: flex; flex-direction: column; gap: 8px;
+    opacity: 0; transform: translateY(8px) scale(.985); transition: opacity .24s ease, transform .28s cubic-bezier(.2, .8, .2, 1);
+}
+.fy-slide > .fye.fye-in { opacity: 1; transform: none; }
+.fy-slide > .fye .fye-frame {
+    position: relative; width: 100%; height: 220px; overflow: hidden; border-radius: 20px;
+    background: #02050c; border: 1.5px solid var(--wh-glass-rim, rgba(160, 220, 255, .55));
+    box-shadow: inset 0 0 18px rgba(140, 210, 255, .22), 0 16px 40px -14px rgba(0, 0, 0, .8), 0 0 0 6px rgba(80, 170, 255, .08);
+}
+.fy-slide > .fye .fye-if { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; background: #000; opacity: 0; transition: opacity .3s ease; }
+.fy-slide > .fye.fye-ready .fye-if { opacity: 1; }
+.fy-slide > .fye .fye-load {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 18px;
+    color: rgba(235, 245, 255, .86); font-size: 14px; font-weight: 600; text-align: center; line-height: 1.35;
+}
+.fy-slide > .fye.fye-ready .fye-load { display: none; }
+.fy-slide > .fye .fye-spin {
+    width: 18px; height: 18px; flex: none; border-radius: 50%; border: 2px solid rgba(160, 220, 255, .3); border-top-color: #9fd6ff;
+    animation: fye-spin .9s linear infinite;
+}
+.fy-slide > .fye.fye-fail .fye-spin { display: none; }
+@keyframes fye-spin { to { transform: rotate(360deg); } }
+.fy-slide > .fye .fye-bar { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.fy-slide > .fye .fye-btn {
+    display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 14px; border-radius: 999px;
+    font-family: inherit; font-size: 13.5px; font-weight: 600; line-height: 1; text-decoration: none; white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent;
+    background: linear-gradient(180deg, rgba(246, 251, 255, .96), rgba(211, 233, 255, .92)); color: #0b1d3f;
+    border: .5px solid rgba(255, 255, 255, .7); box-shadow: inset 0 .5px 0 #fff, 0 6px 18px -8px rgba(40, 120, 255, .7);
+}
+.fy-slide > .fye .fye-btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.fy-slide > .fye .fye-btn:focus-visible { outline: 2px solid #9fd6ff; outline-offset: 2px; }
+/* a 46px tap area around the 38px pill */
+.fy-slide > .fye .fye-btn { position: relative; }
+.fy-slide > .fye .fye-btn::before { content: ""; position: absolute; inset: -4px -2px; }
+/* while a player is open, the big play button and the dimmed artwork step back */
+.fy-slide.fye-on > .fy-play { opacity: 0 !important; pointer-events: none !important; }
+.fy-slide.fye-on > .fy-bg { filter: blur(10px) brightness(.55); transform: scale(1.06); transition: filter .3s ease, transform .3s ease; }
+.fy-slide.fye-on > .fy-big { opacity: 0; }
+.fy-slide.fye-tall > .fy-meta { opacity: 0; pointer-events: none; transition: opacity .2s ease; }
+@media (prefers-reduced-motion: reduce) {
+    .fy-slide > .fye, .fy-slide > .fye .fye-if, .fy-slide.fye-on > .fy-bg { transition: none !important; transform: none !important; }
+    .fy-slide > .fye .fye-spin { animation: none; border-top-color: rgba(160, 220, 255, .3); }
+}

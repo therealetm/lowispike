@@ -1,0 +1,52 @@
+/* LOWiSPIKE Move: the session length picker (Oct 16, 2026)
+   One clean, centred glass track of seven equal buttons (5 10 15 20 30 45 60 min) under Start.
+   It sits in the normal flow below Start, so it can never overlap it, and its buttons never shrink
+   below a 44px touch target. On a very narrow screen it wraps into two centred rows instead of
+   squeezing the numbers. Misty-blue Liquid Glass; the chosen length is a light button with dark text. */
+html #mv-screen .mv-hero .mv-row.mv-mins.mvd {
+    display: flex !important; flex-wrap: wrap !important; justify-content: center !important; align-items: stretch;
+    gap: 3px !important; position: relative; inset: auto; transform: none;
+    width: calc(100% + 12px); max-width: 520px; box-sizing: border-box;
+    margin: 12px -6px 0 !important; padding: 3px !important;
+    overflow: visible !important; -webkit-mask-image: none !important; mask-image: none !important;
+    border-radius: 24px; border: 1px solid var(--wh-glass-rim, rgba(160, 220, 255, .45));
+    background: radial-gradient(120% 90% at 18% 0%, rgba(255, 255, 255, .14), rgba(255, 255, 255, 0) 55%), linear-gradient(160deg, rgba(80, 170, 255, .12), rgba(18, 46, 104, .42));
+    box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .35), inset 0 0 14px rgba(140, 210, 255, .16);
+    -webkit-backdrop-filter: blur(14px) saturate(160%); backdrop-filter: blur(14px) saturate(160%);
+}
+html #mv-screen .mv-hero .mv-row.mv-mins.mvd > .chip {
+    flex: 1 1 0 !important; min-width: 40px !important; max-width: 72px; min-height: 44px !important; height: auto !important;
+    display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+    margin: 0 !important; padding: 4px 0 !important; box-sizing: border-box;
+    border: 0 !important; border-radius: 20px !important; background: transparent !important; box-shadow: none !important;
+    color: #fff !important; text-shadow: none !important; line-height: 1 !important; white-space: nowrap;
+    font-variant-numeric: tabular-nums; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    transition: background-color .18s ease, color .18s ease, box-shadow .18s ease;
+}
+html #mv-screen .mv-hero .mv-row.mv-mins.mvd > .chip b { font-size: 17px; font-weight: 700; letter-spacing: -.01em; color: inherit; }
+html #mv-screen .mv-hero .mv-row.mv-mins.mvd > .chip small { font-size: 10px; font-weight: 600; letter-spacing: .03em; color: inherit; opacity: .72; }
+html #mv-screen .mv-hero .mv-row.mv-mins.mvd > .chip.on {
+    background: linear-gradient(180deg, #f6fbff, #d3e9ff) !important; color: #0b1d3f !important;
+    box-shadow: inset 0 .5px 0 #fff, 0 3px 12px -3px rgba(80, 170, 255, .75) !important;
+}
+html #mv-screen .mv-hero .mv-row.mv-mins.mvd > .chip.on small { opacity: .8; }
+html #mv-screen .mv-hero .mv-row.mv-mins.mvd > .chip:focus-visible { outline: 2px solid #9fd6ff !important; outline-offset: 1px; }
+/* the hero is a size container so the picker reacts to its own width, not the screen's */
+html #mv-screen .mv-hero { container: mvhero / inline-size; }
+@container mvhero (min-width: 508px) {
+    html #mv-screen .mv-hero .mv-row.mv-mins.mvd { margin: 14px auto 0 !important; width: 100%; }
+}
+/* below about 300px of track seven buttons would be cramped: two centred rows (4 + 3) instead */
+@container mvhero (max-width: 300px) {
+    html #mv-screen .mv-hero .mv-row.mv-mins.mvd > .chip { flex: 0 0 calc((100% - 9px) / 4) !important; max-width: none; }
+}
+/* Start keeps clear space above the picker whatever the screen fitting does */
+html #mv-screen .mv-hero .mv-go { position: relative; z-index: 1; }
+html #mv-screen .mv-hero .mv-go + .mv-mins.mvd { clear: both; }
+/* light look: same track, darker ink */
+html[data-ui=light] #mv-screen .mv-hero .mv-row.mv-mins.mvd { border-color: rgba(40, 80, 140, .24); background: rgba(255, 255, 255, .42); }
+html[data-ui=light] #mv-screen .mv-hero .mv-row.mv-mins.mvd > .chip { color: #0b1d3f !important; }
+html[data-ui=light] #mv-screen .mv-hero .mv-row.mv-mins.mvd > .chip.on { background: #fff !important; }
+@media (prefers-reduced-motion: reduce) {
+    html #mv-screen .mv-hero .mv-row.mv-mins.mvd > .chip { transition: none !important; }
+}

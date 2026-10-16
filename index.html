@@ -4455,7 +4455,7 @@ document.addEventListener("click", e => {
     case "list-mine": listSheet("mine"); break;
     case "list-saved": listSheet("saved"); break;
     case "like": { if (T.likes[id]) delete T.likes[id]; else T.likes[id] = 1; save(); const p = DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || T.posts.find(x => x.id === id); b.classList.toggle("on", !!T.likes[id]); b.querySelector("span").textContent = ((p && p.likes) || 0) + (T.likes[id] ? 1 : 0); if (T.likes[id]) { b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop"); } if (window.LOWI_CLOUD) LOWI_CLOUD.like(id, !!T.likes[id]); break; }
-    case "open": { const p = DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || T.posts.find(x => x.id === id); if (!p || !p.url) break; if (p.demo) { h.toast("Sample post. Real links open in " + PLAT[p.plat].n + "."); break; } window.open(p.url, "_blank", "noopener"); break; }
+    case "open": { const p = DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)) || T.posts.find(x => x.id === id); if (!p || !p.url) break; if (p.demo) { h.toast("Sample post. Real videos play right here."); break; } window.open(p.url, "_blank", "noopener"); break; }
     case "post-menu": postMenu(id); break;
     case "toggle-vis": { const p = T.posts.find(x => x.id === id); if (p) { p.vis = p.vis === "tribe" ? "me" : "tribe"; save(); h.toast(p.vis === "tribe" ? "Now in For You" : "Now only visible to you"); if (window.LOWI_CLOUD) { if (p.vis === "tribe") LOWI_CLOUD.publish(p); else LOWI_CLOUD.unpublish(p.id); } } h.closeSheet(); rerender(); break; }
     case "toggle-mine": { const p = T.posts.find(x => x.id === id); if (p) { p.mine = !p.mine; save(); if (window.LOWI_CLOUD && p.vis === "tribe") LOWI_CLOUD.publish(p); } h.closeSheet(); rerender(); break; }
@@ -4968,7 +4968,7 @@ function renderScreen(){
   /* hero: Start is the first thing on screen. One tap, no reading first. */
   h += '<div class="card goldline mv-hero"><div class="mv-row" style="gap:12px"><span class="mv-ic">' + IC[M.fmt] + '</span><div style="flex:1;min-width:0"><div class="tiny gold">' + esc(FORMATS[M.fmt].tag) + '</div><div class="h3 mv-hero-n">' + esc(fmtName(M.fmt)) + '</div></div></div>' +
     '<button class="btn primary mv-go" data-mv="start">' + IC.play.replace("<svg", '<svg width="22" height="22"') + ' Start ' + M.mins + '-min ' + esc(fmtName(M.fmt)) + '</button>' +
-    '<div class="mv-row mv-mins r3w-mins">' + [5, 10, 15, 20, 30, 45, 60].map(n => '<button class="chip' + (M.mins === n ? " on" : "") + '" data-mv="mins" data-n="' + n + '">' + n + ' min</button>').join("") + '</div>' +
+    '<div class="mv-row mv-mins r3w-mins mvd" role="group" aria-label="Minutes">' + [5, 10, 15, 20, 30, 45, 60].map(n => '<button class="chip' + (M.mins === n ? " on" : "") + '" data-mv="mins" data-n="' + n + '" aria-pressed="' + (M.mins === n) + '" aria-label="' + n + ' min"><b>' + n + '</b><small>min</small></button>').join("") + '</div>' +
     '<div class="small dim mv-hero-sub">Live body science while you move.</div></div>';
   /* other sessions: tap one and it starts */
   h += '<div class="mv-quick"><div class="tiny dim mv-quick-h">Or tap one to start now</div><div class="mv-fmts">' + Object.keys(FORMATS).filter(k => k !== M.fmt).map(k => '<button class="mv-fmt" data-mv="go-fmt" data-k="' + k + '"><span class="mv-ic">' + IC[k] + '</span><span style="flex:1;text-align:left;min-width:0"><b>' + esc(fmtName(k)) + '</b><span class="small muted" style="display:block">' + esc(fmtSub(k)) + '</span></span><span class="mv-fmt-go">' + IC.play + '</span></button>').join("") + '</div>' +
@@ -19743,6 +19743,9 @@ window.LowiCommunityHost = {
 <script src="scan-glass.js?v=20261016-143010"></script>
 <link rel="stylesheet" href="nav-moves.css?v=20261016-143010">
 <script src="nav-moves.js?v=nav-2"></script>
+<link rel="stylesheet" id="mvdCss" href="move-durations.css?v=20261016-143010">
+<link rel="stylesheet" id="fyeCss" href="fy-embed.css?v=20261016-143010">
+<script src="fy-embed.js?v=20261016-143010"></script>
 <link rel="stylesheet" id="cspCss" href="community-spirit.css?v=20261016-143010">
 <script src="community-spirit.js?v=20261016-143010"></script>
 <script src="galaxy-zoom.js?v=20261016-143010"></script>

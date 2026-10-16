@@ -575,8 +575,26 @@ export function createWorld(THREE, canvas, opts) {
             const avg = frames.reduce((a, b) => a + b, 0) / frames.length;
             if (avg > 1 / 38 && dpr > 1) { lowFor += dt; if (lowFor > 2) { dpr = Math.max(1, dpr - 0.25); renderer.setPixelRatio(dpr); renderer.setSize(W, H, false); lowFor = 0; frames = []; } } else lowFor = 0;
         }
-        if (!opts.shouldRender || opts.shouldRender()) { step(dt); frameFns.forEach(fn => { try { fn(dt, now); } catch (e) { console.warn('world3d onFrame', e && e.message); } }); renderer.render(scene, camera); }
+        /* Oct 16 speed pass (E-man: the newest iPhone overheats): nobody touching, no camera flight, no Community warp, no gyro swing,
+           only the slow drift of the bloodstream moving = draw every second screen refresh (about 30 a second). Time still runs at full
+           speed (the skipped refresh's time is added to the next one), so it looks the same, at half the GPU work. A touch, a glide or a
+           tilt brings back every frame at once. The DPR watcher above still sees every refresh, so this never lowers the sharpness. */
+        acc += dt;
+        odd = calm(now) ? !odd : false;
+        if (!odd) {
+            if (!opts.shouldRender || opts.shouldRender()) { const d = Math.min(0.1, acc); step(d); frameFns.forEach(fn => { try { fn(d, now); } catch (e) { console.warn('world3d onFrame', e && e.message); } }); renderer.render(scene, camera); }
+            acc = 0;
+        }
         raf = requestAnimationFrame(frame);
+    }
+    let acc = 0, odd = false, lastIn = 0;
+    const markIn = () => { lastIn = performance.now(); };
+    try { ['pointerdown', 'pointermove', 'touchstart', 'touchmove', 'wheel', 'keydown'].forEach(ev => window.addEventListener(ev, markIn, { passive: true, capture: true })); } catch (e) { }
+    function calm(now) {
+        if (now - lastIn < 2500 || rig.fly) return false;
+        if (Math.abs(rig.vy) + Math.abs(rig.vp) > 0.002 || Math.abs(rig.gyT - rig.gy) + Math.abs(rig.gpT - rig.gp) > 0.002) return false;
+        const H = typeof document !== 'undefined' && document.documentElement;
+        return !(H && /(^|\s)gx-(in|out|hold)(\s|$)/.test(H.className));
     }
     function start() { if (running) return; running = true; last = 0; raf = requestAnimationFrame(frame); }
     function stop() { running = false; if (raf) cancelAnimationFrame(raf); raf = 0; }

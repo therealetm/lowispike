@@ -214,7 +214,9 @@ function onSheetClick(e){const b=e.target.closest('[data-hsp]');if(!b)return;con
 
 /* row on Today (after the living-home tiles) and the card in Profile > About you */
 let busy=false;
-const sig=h=>{h=String(h).replace(/\bhs\d+/g,'hs');let x=0;for(let i=0;i<h.length;i++)x=(x*31+h.charCodeAt(i))|0;return String(x);};
+/* Oct 16 speed pass: the drawings number their gradient ids (lh26, lh27, lc5x...) on every render, so the signature changed every time,
+   the card rebuilt itself, its own observer saw that and rebuilt it again ~6x a second forever. Ids no longer count. */
+const sig=h=>{h=String(h).replace(/\b(?:hs|lh|lc)\d+(?:x\d+)?/g,'hs');let x=0;for(let i=0;i<h.length;i++)x=(x*31+h.charCodeAt(i))|0;return String(x);};
 function refresh(){if(busy)return;busy=true;try{
  const home=D.getElementById('tab-home'),p=plan();const old=D.getElementById('hsPlan');
  if(home){if(p&&!p.hidden&&p.actions.length){const host=home.querySelector('.sp-log')||home.querySelector('#spHome');const html=rowHTML(p);

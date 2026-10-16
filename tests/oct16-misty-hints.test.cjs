@@ -21,7 +21,7 @@ test('hints follow the world: storm, a Move calming it, cleared, low energy, haz
     assert.strictEqual(Hn.pick({}, 'de').k, 'calm');
 });
 
-test('below 0.4 energy she cannot go on an adventure, and the button says why instead', () => {
+test('below 0.4 energy she cannot go on an adventure, and she says why instead', () => {
     assert.strictEqual(Hn.TRAVEL, 0.4);
     assert.strictEqual(Hn.pick({ energy: { value: 0.39 } }).canTravel, false);
     assert.strictEqual(Hn.pick({ energy: { value: 0.4 } }).canTravel, true);

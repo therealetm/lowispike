@@ -55,16 +55,26 @@ test('gravity pull: slow start, accelerating fall, continuous shrink, she circle
     assert.strictEqual(F.autoLeave('auto', 45, 9, F.K.ADV_STAY), true);
 });
 
-test('wiring: button + css loaded, other companions and arrival cards stay quiet on an adventure, she never fully vanishes', () => {
+test('wiring: no button of its own (started from the controller), other companions and arrival cards stay quiet on an adventure, she never fully vanishes', () => {
     const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-    assert.ok(/<script src="adventure\.js\?v=/.test(html) && /adventure\.css\?v=/.test(html));
-    assert.ok(/"adventure\.js"/.test(fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8')));
+    assert.ok(/<script src="adventure\.js\?v=/.test(html));
+    const sw = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
+    assert.ok(/"adventure\.js"/.test(sw));
+    /* Oct 16, E-man: no pill crammed next to the controller. No Adventure button, no adventure.css, nothing new on Today */
+    assert.ok(!/adventure\.css/.test(html) && !/adventure\.css/.test(sw) && !fs.existsSync(path.join(ROOT, 'adventure.css')));
+    const adv = fs.readFileSync(path.join(ROOT, 'adventure.js'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+    assert.ok(!/createElement|lw-adv-btn|appendChild|innerHTML/.test(adv), 'adventure.js builds no UI');
+    assert.ok(!/lw-adv-btn/.test(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8')), 'What\'s New does not point at a button that is gone');
+    /* the existing controller starts and ends it: double-tap = autopilot = adventure, touch = you steer, empty cell = recall */
+    const pad = fs.readFileSync(path.join(ROOT, 'misty-pad.js'), 'utf8');
+    assert.ok(/if \(m === 'auto'\) A\.start\(\); else if \(A\.on\) A\.stop\('abort'\)/.test(pad));
+    assert.ok(/userMode\(st\.mode === 'auto' \? 'drive' : 'auto'\)/.test(pad), 'double-tap toggles through userMode');
+    assert.ok(/A\.stop\('recall'\)/.test(pad), 'tapping her empty cell calls her back');
     assert.ok(/lw-adv'\)\) \{ hide\(\); return null; \}/.test(fs.readFileSync(path.join(ROOT, 'region-pals.js'), 'utf8')));
     assert.ok(/classList\.contains\('lw-adv'\)\) return null;/.test(fs.readFileSync(path.join(ROOT, 'arrival-cards.js'), 'utf8')));
     const mf = fs.readFileSync(path.join(ROOT, 'misty-flight.js'), 'utf8');
     assert.ok(/S\.advWarp \? 1 - 0\.55 \* q : 1 - q/.test(mf), 'during the warp she stays at least 45% visible');
     assert.ok(/W\.LowiAdventure\.stop\('steer'\)/.test(mf), 'steering the controller ends the adventure');
     assert.ok(/W\.LowiAdventure\.visited\(S\.flew, S\.advIn/.test(mf), 'finds come only from completed watched visits');
-    const css = fs.readFileSync(path.join(ROOT, 'adventure.css'), 'utf8');
-    assert.ok(/prefers-reduced-motion/.test(css));
+    assert.ok(/prefers-reduced-motion/.test(adv), 'reduced motion: no adventure');
 });

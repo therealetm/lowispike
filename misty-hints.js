@@ -4,7 +4,7 @@
    - LowiSun.energyNow() (sun-meter.js; below ENERGY.travel = 0.4 she cannot go on trips or adventures)
    - LowiWorldHealth.forState() (world-health-core.js, the 4-day "Your inside" haze)
    and turns them into one short, kind line in her voice. Game world only: no body readings, no blame, no medical claims.
-   Runs only on events (a world-mood change, a tap on the adventure button): no timers per frame, nothing off-screen. */
+   Runs only on events (a world-mood change, a double-tap on Misty's controller): no timers per frame, nothing off-screen. */
 (function (root) {
     'use strict';
     const TRAVEL = 0.4;
@@ -15,7 +15,7 @@
         weak: ['I am a little wobbly and too low on energy for adventures right now. Water, a Move or a low-spike meal fills me up again.', 'Ich bin etwas wackelig und habe gerade zu wenig Energie für Abenteuer. Wasser, eine Bewegung oder eine Low-Spike-Mahlzeit füllen mich wieder auf.', 'Estoy un poco tambaleante y con poca energía para aventuras ahora. Agua, un Movimiento o una comida sin picos me recargan.'],
         tired: ['I am a bit sleepy for adventures right now. A glass of water, a Move or a meal you log gives me energy.', 'Ich bin gerade etwas müde für Abenteuer. Ein Glas Wasser, eine Bewegung oder eine eingetragene Mahlzeit geben mir Energie.', 'Tengo un poco de sueño para aventuras ahora. Un vaso de agua, un Movimiento o una comida registrada me dan energía.'],
         hazy: ['It is a bit hazy in here these days. ', 'Hier drin ist es in letzter Zeit etwas diesig. ', 'Aquí dentro está algo brumoso estos días. '],
-        bright: ['Clear skies and I am full of light. Send me on an adventure?', 'Klarer Himmel und ich bin voller Licht. Schickst du mich auf ein Abenteuer?', 'Cielo despejado y estoy llena de luz. ¿Me mandas de aventura?'],
+        bright: ['Clear skies and I am full of light. Double-tap my controller and I go exploring.', 'Klarer Himmel und ich bin voller Licht. Tippe doppelt auf meine Steuerung und ich gehe auf Entdeckungstour.', 'Cielo despejado y estoy llena de luz. Toca dos veces mi control y salgo a explorar.'],
         calm: ['Calm weather today. I could drift around the worlds for a while.', 'Ruhiges Wetter heute. Ich könnte eine Weile durch die Welten treiben.', 'Clima tranquilo hoy. Podría flotar un rato por los mundos.'],
         cleared: ['The storm has passed. Thank you, it feels lighter in here.', 'Der Sturm ist vorbei. Danke, es fühlt sich hier leichter an.', 'La tormenta pasó. Gracias, aquí se siente más ligero.'],
         lost: ['Oh, where am I? ... Ah, there you are.', 'Oh, wo bin ich? ... Ah, da bist du ja.', 'Oh, ¿dónde estoy? ... Ah, ahí estás.'],

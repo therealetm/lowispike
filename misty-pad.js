@@ -1,8 +1,8 @@
 /* LOWiSPIKE bubble controller (Oct 16, E-man: a little bubble controller to move Misty around the world; double-tap it
    and Misty flies through the world by herself, so you can watch her adventure while falling asleep, or steer her yourself).
    One small round liquid-glass thumbpad on Home, centred just above Today. Drag it: Misty leaves her cell and you steer her.
-   Double-tap it: autopilot, she flies her own adventure (a slow, sleepy drift when her energy is low). Touch it again: you
-   steer again. Let go and leave her: after 20 s she floats back into her cell. Tapping her empty cell calls her home too.
+   Double-tap it: autopilot, she flies her own adventure (adventure.js: slow aquarium tour with finds; a slow, sleepy drift
+   when her energy is low). Touch it again: you steer again. Let go and leave her: after 20 s she floats back into her cell. Tapping her empty cell calls her home too.
    On the controller: the ring around it is Misty's energy (same energy as her face and her trips), the centre shows the mode.
    The 3D flight itself lives in world-home.js (LowiWorldHome.pad). Loads misty-pad.css itself. */
 (function () {
@@ -81,6 +81,12 @@
         else if (m === 'drive') chip(T('You steer', 'Du steuerst', 'T\u00fa diriges'), 1400);
         else chip('');
     }
+    /* the controller is the one place adventures start and stop (no extra button on Today): autopilot you chose = adventure */
+    function userMode(m) {
+        setMode(m);
+        const A = W.LowiAdventure; if (!A) return;
+        try { if (m === 'auto') A.start(); else if (A.on) A.stop('abort'); } catch (e) { }
+    }
     function knob(dx, dy) { if (st.knob) st.knob.style.transform = dx || dy ? 'translate(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px)' : ''; }
     function steer(dx, dy) {
         const R = st.R, d = Math.hypot(dx, dy), k = d > R ? R / d : 1, kx = dx * k, ky = dy * k;
@@ -100,7 +106,7 @@
             try { b.setPointerCapture(e.pointerId); } catch (er) { }
             b.classList.add('mp-down');
             /* autopilot: any touch hands control back to you (and that touch never counts towards a double-tap) */
-            if (st.mode === 'auto') { st.ignoreDbl = performance.now() + 450; setMode('drive'); }
+            if (st.mode === 'auto') { st.ignoreDbl = performance.now() + 450; userMode('drive'); }
         });
         b.addEventListener('pointermove', e => {
             if (e.pointerId !== st.id) return;
@@ -117,7 +123,7 @@
             if (st.moved || e.type === 'pointercancel') { st.lastUp = 0; return; }
             const now = performance.now();
             if (now < st.ignoreDbl) { st.lastUp = 0; return; }
-            if (now - st.lastUp < 340) { st.lastUp = 0; setMode(st.mode === 'auto' ? 'drive' : 'auto'); hintDone(); return; }
+            if (now - st.lastUp < 340) { st.lastUp = 0; userMode(st.mode === 'auto' ? 'drive' : 'auto'); hintDone(); return; }
             st.lastUp = now;
             /* one tap on a resting controller: a short how-to (Misty stays home until you drag or double-tap) */
             setTimeout(() => { if (st.lastUp === now && !st.mode) chip(T('Drag to fly \u00b7 double-tap: autopilot', 'Ziehen zum Fliegen \u00b7 doppelt tippen: Autopilot', 'Arrastra para volar \u00b7 dos toques: autom\u00e1tico'), 2600); }, 360);
@@ -129,7 +135,7 @@
         /* keyboard: Enter / Space toggles autopilot, arrow keys steer */
         const keys = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] };
         b.addEventListener('keydown', e => {
-            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setMode(st.mode === 'auto' ? 'drive' : 'auto'); return; }
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); userMode(st.mode === 'auto' ? 'drive' : 'auto'); return; }
             const k = keys[e.key]; if (!k) return; e.preventDefault();
             if (st.mode !== 'drive') setMode('drive', true);
             send({ vx: k[0], vy: k[1] });
@@ -142,7 +148,7 @@
         if (!st.mode || !H.classList.contains('wh-padfly')) return;
         const t = e.target; if (!t || !t.closest || !t.closest('#spBubble')) return;
         e.stopPropagation(); if (e.cancelable) e.preventDefault();
-        if (e.type === 'pointerdown') { setMode('home', true); chip(T('Misty is flying home', 'Misty fliegt nach Hause', 'Misty vuelve a casa'), 1600); }
+        if (e.type === 'pointerdown') { const A = W.LowiAdventure; let rec = false; if (A && A.on) { try { A.stop('recall'); rec = true; } catch (er) { } } if (!rec) setMode('home', true); chip(T('Misty is flying home', 'Misty fliegt nach Hause', 'Misty vuelve a casa'), 1600); }
     }
     ['pointerdown', 'click'].forEach(n => D.addEventListener(n, callHome, true));
     W.addEventListener('lowi:pad', e => { const m = e.detail ? e.detail.mode : null; if (m != null && m !== st.mode) { st.mode = m; paint(); if (!m) chip(''); } });

@@ -2,9 +2,10 @@
    stuff, like a screensaver: slow, the camera follows her, she floats from corner to corner a bit lost, gravity pulls her
    into a world, she gets smaller and falls in, and out again the same way. Like watching fish in an aquarium.")
 
-   Button: a glass pill under Misty's controller on Today (world view only). Start = her autopilot tour in slow
-   "aquarium" pacing (misty-flight.js does the flying, gated on LowiAdventure.on). Stop / recall = she flies straight home,
-   a little faster, and settles in her cell. Touching the controller = you take over, the adventure stops.
+   No button of its own (Oct 16, E-man: no pills crammed next to the controller). It starts from the control Today already
+   has: double-tap Misty's controller (autopilot, misty-pad.js calls LowiAdventure.start()) = her tour in slow "aquarium"
+   pacing (misty-flight.js does the flying, gated on LowiAdventure.on). Tapping her empty cell = recall: she flies straight
+   home, a little faster, and settles in her cell. Touching the controller = you take over, the adventure stops.
 
    Finds, with anti-cheat rules (pure, tested in tests/oct16-adventure.test.cjs):
    - one find per completed visit, a visit counts only after RULES.minStay seconds inside a world that you actually
@@ -77,15 +78,8 @@
     const H = D.documentElement;
     const L = () => { const l = String((W.LowiI18n && W.LowiI18n.lang) || H.lang || 'de').slice(0, 2); return l === 'en' ? 0 : l === 'es' ? 2 : 1; };
     const T = {
-        go: ['Send {n} on an adventure', '{n} auf Abenteuer schicken', 'Enviar a {n} de aventura'],
-        stop: ['Call {n} back', '{n} zurückrufen', 'Llamar a {n}'],
-        goShort: ['Adventure', 'Abenteuer', 'Aventura'], stopShort: ['Call back', 'Zurückrufen', 'Llamar'],
-        out: ['{n} is exploring', '{n} ist unterwegs', '{n} está explorando'],
-        paused: ['Adventure paused, it goes on when you are back on Today', 'Abenteuer pausiert, es geht weiter, wenn du auf Heute bist', 'Aventura en pausa, sigue cuando vuelvas a Hoy'],
         found: ['{n} found a {i} in the {w}!', '{n} hat in der {w} ein {i} gefunden!', '¡{n} encontró {i} en {w}!'],
         cap: ['{n} found plenty today. She keeps exploring just for fun.', '{n} hat heute genug gefunden. Sie erkundet einfach weiter.', '{n} ya encontró bastante hoy. Sigue explorando por diversión.'],
-        rules: ['Finds: one per world per day, up to {c} a day, after she has spent a little while inside. She only explores while you watch Today: nothing runs in the background or with the screen off.', 'Funde: einer pro Welt und Tag, bis zu {c} am Tag, wenn sie eine Weile drin war. Sie erkundet nur, während du auf Heute zuschaust: nichts läuft im Hintergrund oder bei ausgeschaltetem Bildschirm.', 'Hallazgos: uno por mundo y día, hasta {c} al día, tras pasar un rato dentro. Solo explora mientras miras Hoy: nada funciona en segundo plano ni con la pantalla apagada.'],
-        count: ['Today: {a} of {c} finds', 'Heute: {a} von {c} Funden', 'Hoy: {a} de {c} hallazgos'],
         steer: ['You took the controls, adventure stopped.', 'Du steuerst, Abenteuer beendet.', 'Tomaste el control, aventura detenida.'],
         reduced: ['Adventures need the moving world (reduced motion is on).', 'Abenteuer brauchen die bewegte Welt (Bewegung reduzieren ist an).', 'Las aventuras necesitan el mundo en movimiento (movimiento reducido activado).']
     };
@@ -96,14 +90,14 @@
     const reduced = () => { try { return W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
     const live = () => H.classList.contains('wh-world-live');
     const say = s => { try { if (W.LowiPraise && W.LowiPraise.say) W.LowiPraise.say(s); } catch (e) { } };
-    let on = false, btn = null, info = null;
+    let on = false;
     const hint = () => { try { return W.LowiMistyHints ? W.LowiMistyHints.now() : null; } catch (e) { return null; } };
     function store() { const s = S(); if (!s) return null; s.adventure = norm(s.adventure); return s; }
     function setPad(m) { try { if (W.LowiPad && W.LowiPad.mode) W.LowiPad.mode(m); } catch (e) { } }
     function padMode() { try { const st = W.LowiPad && W.LowiPad.state && W.LowiPad.state(); return st ? (st.pad && st.pad.mode) || st.mode || '' : ''; } catch (e) { return ''; } }
     function start() {
         if (on) return true;
-        if (!live() || reduced()) { say(tr('reduced')); return false; }
+        if (!live() || reduced()) { if (reduced()) say(tr('reduced')); return false; }
         /* below LowiSun's travel energy (0.4) she stays home, and says kindly why (misty-hints.js reads the existing signals) */
         const h = hint();
         if (h && !h.canTravel) { say(h.text); paint(); return false; }
@@ -132,45 +126,13 @@
         try { W.dispatchEvent(new CustomEvent('lowi:adventure-find', { detail: r.find })); } catch (e) { }
         return r;
     }
-    function svgDot(hue) { return '<i class="lw-adv-dot" style="--h:' + (+hue || 200) + '"></i>'; }
-    function paint() {
-        if (!btn) return;
-        const n = name(), s = store(), got = s ? today(s.adventure).length : 0;
-        btn.classList.toggle('on', on);
-        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-        btn.setAttribute('aria-label', on ? tr('stop', { n }) : tr('go', { n }));
-        btn.querySelector('.lw-adv-t').textContent = on ? tr('stopShort') : tr('goShort');
-        btn.querySelector('.lw-adv-n').textContent = got ? got + '/' + RULES.perDay : '';
-        if (info) {
-            const fs = s ? today(s.adventure) : [];
-            const h = hint(), esc = x => String(x).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-            info.innerHTML = '<b>' + (on ? tr('out', { n }) : tr('go', { n })) + '</b>' + (h ? '<span class="lw-adv-hint">' + esc(h.text) + '</span>' : '') + '<span>' + tr('count', { a: fs.length, c: RULES.perDay }) + '</span>' +
-                (fs.length ? '<span class="lw-adv-finds">' + fs.map(f => { const it = ITEMS.find(i => i.id === f.item); return svgDot(it && it.hue) + (it ? it.n[L()] : f.item); }).join(' · ') + '</span>' : '') +
-                '<small>' + tr('rules', { c: RULES.perDay }) + '</small>';
-        }
-    }
-    function mount() {
-        const host = D.querySelector('#tab-home .wh-hud') || D.querySelector('.wh-hud');
-        if (btn && btn.isConnected && (!host || btn.parentNode === host)) return;
-        if (!host) return;
-        if (btn) { btn.remove(); if (info) info.remove(); }
-        btn = D.createElement('button'); btn.type = 'button'; btn.className = 'lw-adv-btn';
-        btn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.6" opacity=".55"/><path d="M12 5.5l1.9 4.6 4.6 1.9-4.6 1.9L12 18.5l-1.9-4.6L5.5 12l4.6-1.9z" fill="currentColor"/></svg><span class="lw-adv-t"></span><span class="lw-adv-n"></span>';
-        info = D.createElement('div'); info.className = 'lw-adv-info'; info.setAttribute('role', 'status'); info.hidden = true;
-        btn.addEventListener('click', () => { if (on) stop('recall'); else if (start()) { paint(); info.hidden = false; clearTimeout(mount.t); mount.t = setTimeout(() => { info.hidden = true; }, 6000); } });
-        btn.addEventListener('contextmenu', e => { e.preventDefault(); info.hidden = !info.hidden; });
-        host.appendChild(btn); host.appendChild(info);
-        paint();
-    }
+    /* no UI of its own: the controller shows autopilot (misty-pad.js), finds are spoken through LowiPraise */
+    function paint() { }
     /* the controller is yours: misty-flight stops the adventure when you steer with the controller (stop('steer')).
        Leaving Today or hiding the app pauses the flight (misty-flight aborts, nothing renders); back on Today, misty-flight
        resumes the tour itself while LowiAdventure.on is still true. */
     function resume() { if (on && live() && !D.hidden && H.classList.contains('wh-home') && !padMode()) setPad('auto'); }
-    function boot() { mount(); paint(); }
-    if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
-    [1500, 4000, 9000].forEach(t => setTimeout(boot, t));
-    W.addEventListener('pageshow', boot);
-    const api = Object.assign({}, core, { start, stop, visited, resume, paint, _mount: mount });
+    const api = Object.assign({}, core, { start, stop, visited, resume, paint });
     Object.defineProperty(api, 'on', { get: () => on, enumerable: true }); /* live getter (Object.assign would freeze it) */
     W.LowiAdventure = api;
 })(typeof window !== 'undefined' ? window : globalThis);

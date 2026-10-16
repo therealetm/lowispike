@@ -315,7 +315,7 @@ function mapGestures(gal){if(gal.__map)return;gal.__map=1;
   const inUi=t=>!!(t&&t.closest&&t.closest('.cm-compose,input,textarea,#cgThread,.cg-empty,.ce-joy'));
   gal.addEventListener('pointerdown',e=>{if(inUi(e.target)||(e.pointerType==='mouse'&&e.button!==0))return;cancelAnimationFrame(camAnim);pts.set(e.pointerId,local(e));
    lpStop();lpHeld=false;
-   if(pts.size===1){g={kind:'tap',p0:local(e),cam0:{...cam},t0:Date.now(),onBody:!!(e.target.closest&&e.target.closest('.cg-body,.cg-bub'))};const body=e.target.closest&&e.target.closest('.cg-body');if(body)lpT=setTimeout(()=>{lpT=0;if(g&&g.kind==='tap'&&pts.size===1)lpOpen(body);},450);}
+   if(pts.size===1){const body=e.target.closest&&e.target.closest('.cg-body');g={kind:'tap',p0:local(e),cam0:{...cam},t0:Date.now(),onBody:!!(e.target.closest&&e.target.closest('.cg-body,.cg-bub')),body:body||null};if(body)lpT=setTimeout(()=>{lpT=0;if(g&&g.kind==='tap'&&pts.size===1)lpOpen(body);},450);}
    else if(pts.size===2){const [a,b]=[...pts.values()];g={kind:'pinch',d0:Math.hypot(a.x-b.x,a.y-b.y)||1,m0:{x:(a.x+b.x)/2,y:(a.y+b.y)/2},cam0:{...cam}};}});
   gal.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId)||!g||!cam)return;pts.set(e.pointerId,local(e));const v=mapView(gal);
    if(g.kind==='pinch'&&pts.size>=2){const [a,b]=[...pts.values()],d=Math.hypot(a.x-b.x,a.y-b.y)||1,m={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
@@ -323,7 +323,10 @@ function mapGestures(gal){if(gal.__map)return;gal.__map=1;
    if(pts.size!==1)return;const p=pts.get(e.pointerId),dx=p.x-g.p0.x,dy=p.y-g.p0.y;
    if(g.kind==='tap'&&Math.hypot(dx,dy)>9){lpStop();g.kind='pan';try{gal.setPointerCapture(e.pointerId);}catch(x){}}
    if(g.kind==='pan'){cam={x:g.cam0.x-dx/g.cam0.z,y:g.cam0.y-dy/g.cam0.z,z:g.cam0.z};schedulePlace();}});
-  const end=e=>{if(!pts.has(e.pointerId))return;const p=pts.get(e.pointerId);pts.delete(e.pointerId);lpStop();if(lpHeld){lpHeld=false;suppress=Date.now();if(!pts.size)g=null;return;}if(!g)return;
+  const end=e=>{if(!pts.has(e.pointerId))return;const p=pts.get(e.pointerId);pts.delete(e.pointerId);
+   // a busy frame can deliver the finger lift before the 450 ms hold timer: a held press still opens the card
+   if(lpT&&!lpHeld&&e.type==='pointerup'&&g&&g.kind==='tap'&&g.body&&!pts.size&&Date.now()-g.t0>=450){lpStop();lpOpen(g.body);}
+   lpStop();if(lpHeld){lpHeld=false;suppress=Date.now();if(!pts.size)g=null;return;}if(!g)return;
    if(g.kind==='pan'||g.kind==='pinch'){suppress=Date.now();if(!pts.size)g=null;else if(g.kind==='pinch'){const q=[...pts.values()][0];g={kind:'pan',p0:q,cam0:{...cam}};}return;}
    if(g.kind==='tap'&&e.type==='pointerup'&&!g.onBody){const now=Date.now();
     if(now-lastTap<420&&lastXY&&Math.hypot(p.x-lastXY.x,p.y-lastXY.y)<40){lastTap=0;const gx=W.__lgGx,v=mapView(gal),Z=gx&&gx.map?mapZ(gx,v):null;

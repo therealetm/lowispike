@@ -71,6 +71,20 @@ test('tap a companion = connection stream and talk to them; long-press (or right
  assert.match(js,/function streamDraw\(lines,v\)/);assert.match(js,/function streamSurge\(\)/);
 });
 
+test('a held press still opens the person card when the finger lift arrives before the hold timer (busy frame)',()=>{
+ const end=js.slice(js.indexOf('const end=e=>{'),js.indexOf('const end=e=>{')+700);
+ assert.match(end,/if\(lpT&&!lpHeld&&e\.type==='pointerup'&&g&&g\.kind==='tap'&&g\.body&&!pts\.size&&Date\.now\(\)-g\.t0>=450\)\{lpStop\(\);lpOpen\(g\.body\);\}/);
+ assert.ok(end.indexOf('lpOpen(g.body)')<end.indexOf('if(lpHeld){'),'fallback runs before the held-press branch, so the tap does not also start a stream');
+ assert.match(js,/body:body\|\|null\}/,'the pressed companion is remembered on the gesture');
+});
+
+test('voice keys live in the same composer row as the typing bar fix (camera, field, mic, send)',()=>{
+ const row=js.slice(js.indexOf('<div class="cm-inrow">'),js.indexOf('<div class="cs-compose-meta">'));
+ for(const id of ['cmPhoto','cmInput','cmMic','csRec','cmSend'])assert.ok(row.includes('id="'+id+'"'),id);
+ assert.ok(row.indexOf('cmInput')<row.indexOf('cmMic')&&row.indexOf('cmMic')<row.indexOf('cmSend'),'mic between the field and send');
+ assert.ok(html.includes('community-composer.css?v='),'typing bar styles still load');
+});
+
 test('voice styles load after the chat styles and are cached for offline',()=>{
  const iE=html.indexOf('community-energy.css?v='),iV=html.indexOf('community-voice.css?v='),iC=html.indexOf('community-chat.css?v=');
  assert.ok(iV>iE&&iE>iC,'community-voice.css after community-chat.css and community-energy.css');

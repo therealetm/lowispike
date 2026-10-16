@@ -118,3 +118,17 @@ html[data-ui=light] #tbWx .tbw-btn,html[data-ui=light] #tbWx .tbw-hr,html[data-u
 html[data-ui=light] #tbWx .tbw-h,html[data-ui=light] #tbWx .tbw-sub,html[data-ui=light] #tbWx .tbw-hh,html[data-ui=light] #tbWx .tbw-facts small,html[data-ui=light] #tbWx .tbw-fine{color:rgba(11,29,63,.68)}
 html[data-ui=light] #tbWx .tbw-cell svg{color:#2c6cb0}
 @media (min-width:700px){#tbWx .tbw-sheet,#tbWx[data-night="0"] .tbw-sheet{border-bottom:1.5px solid var(--wh-glass-rim,rgba(160,220,255,.55))}}
+/* Oct 16 (Emmanuel: the sun/moon button is a dark thin-outlined circle that doesn't match the theme): it is now the same blue
+   liquid glass as the weather pill, with the weather pill's own tokens (fill --wh-glass-wide, rim --wh-glass-rim, glow and shadow
+   --wh-glass-sh, ink --wh-glass-ink, blur 10px saturate 1.4), as a round button 44 px tall like the weather pill and the profile
+   picture. Position and tap behaviour stay with top-bar.js: it places a 38 px box 10 px left of the profile picture, centred on it;
+   the negative margins grow that box to 44 px around the same centre line, so it lines up with the picture's top and bottom and
+   keeps a 6 px gap to it. The icon has the weather symbol's colour; the fill, rim and ink follow the same tokens as the pill. */
+html #tbTheme#tbTheme{width:44px;height:44px;margin:-3px 0 0 -2px;box-sizing:border-box;
+  color:var(--wh-glass-ink,#fff);border:1.5px solid var(--wh-glass-rim,rgba(160,220,255,.55));
+  background:var(--wh-glass-wide,linear-gradient(160deg,rgba(80,170,255,.14),rgba(28,74,150,.34)));
+  box-shadow:var(--wh-glass-sh,inset 0 0 18px rgba(140,210,255,.32),0 8px 26px -12px rgba(40,120,255,.5));
+  -webkit-backdrop-filter:blur(10px) saturate(1.4);backdrop-filter:blur(10px) saturate(1.4)}
+html #tbTheme#tbTheme svg{width:20px;height:20px;color:#bfe6ff}
+html #tbTheme#tbTheme:active{transform:scale(.96)}
+html #tbTheme#tbTheme::after{inset:-2px}

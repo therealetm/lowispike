@@ -97,9 +97,9 @@ test('For You: one player at a time, inside the slide, stopped when it scrolls a
     assert.ok(js.includes("slide.classList.add('fye-tall')") && read('fy-embed.css').includes('.fy-slide.fye-tall > .fy-meta'), 'tall players get the caption space on short screens');
 });
 
-test('For You: glass styling, light buttons with dark text, reduced motion', () => {
+test('For You: glass styling, blue liquid-glass buttons (see glass-controls.test.cjs), reduced motion', () => {
     const css = read('fy-embed.css'), js = read('fy-embed.js');
-    assert.ok(/\.fye-btn \{[^}]*color: #0b1d3f/.test(css));
+    assert.ok(/\.fye-btn \{[^}]*color: var\(--wh-glass-ink, #fff\)/.test(css));
     assert.ok(css.includes('var(--wh-glass-rim'));
     assert.ok(css.includes('prefers-reduced-motion: reduce'));
     assert.ok(css.includes('.fy-slide.fye-on > .fy-play { opacity: 0 !important; pointer-events: none !important; }'));

@@ -21,6 +21,13 @@ html.nm-open-fy #tab-shelf > .nm-pill, html.nm-open-lb #tab-move > .nm-pill { di
 .nm-layer-fy .nm-head { position: absolute; left: 0; right: 0; top: 0; background: linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,0)); }
 .nm-layer-fy .nm-title { color: #fff; text-shadow: 0 1px 6px rgba(0,0,0,.5); }
 .nm-layer-fy .nm-back { background: rgba(0,0,0,.35); border-color: rgba(255,255,255,.22); color: #fff; }
+/* Oct 16: For You's Back button sits right above the inline player, so it wears the same blue liquid glass as the player's
+   Close / Open on ... buttons and the weather pill (same tokens, same blur); size and place unchanged. */
+.nm-layer-fy .nm-back { border: 1.5px solid var(--wh-glass-rim, rgba(160,220,255,.55)); color: var(--wh-glass-ink, #fff);
+    background: var(--wh-glass-wide, linear-gradient(160deg, rgba(80,170,255,.14), rgba(28,74,150,.34))), rgba(8,20,48,.42);
+    box-shadow: var(--wh-glass-sh, inset 0 0 18px rgba(140,210,255,.32), 0 8px 26px -12px rgba(40,120,255,.5));
+    backdrop-filter: blur(10px) saturate(1.4); -webkit-backdrop-filter: blur(10px) saturate(1.4); text-shadow: 0 1px 4px rgba(0,20,60,.45); }
+html[data-theme="light"] .nm-layer-fy .nm-back { background: var(--wh-glass-wide), rgba(235,243,255,.66); text-shadow: none; }
 .nm-layer-lb .nm-body > .ls-pane { padding-top: 4px; }
 /* Community: the spirit galaxy alone. No For You / Leaderboard tabs, no big title, no Privacy & quiet button. */
 #tab-foryou.nm-solo .ls-phd { display: none !important; }

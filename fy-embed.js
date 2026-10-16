@@ -93,17 +93,29 @@
         let top = Math.max(12, sat + 12), bottom = 120, right = 12;
         if (head) { const hr = head.getBoundingClientRect(); if (hr.height && hr.bottom > sr.top) top = Math.max(top, hr.bottom - sr.top + 10); }
         if (rail) { const rr = rail.getBoundingClientRect(); if (rr.width) right = Math.max(12, sr.right - rr.left + 8); }
-        const left = 12, bar = 46, ar = +box.dataset.ar || 16 / 9, availW = Math.max(120, sr.width - left - right);
-        const fit = b => { const aH = Math.max(120, sr.height - top - b - bar); let w = availW, h = w / ar; if (h > aH) { h = aH; w = h * ar; } return { w, h, aH }; };
+        /* bar: the 44 px glass buttons + the 8 px gap above them */
+        const left = 12, ar = +box.dataset.ar || 16 / 9, availW = Math.max(120, sr.width - left - right);
+        const barEl = box.querySelector('.fye-bar'); let bar = 52;
+        const fit = b => { const aH = Math.max(96, sr.height - top - b - bar); let w = availW, h = w / ar; if (h > aH) { h = aH; w = h * ar; } return { w, h, aH }; };
         let mb = bottom; slide.classList.remove('fye-tall');
         if (meta) { const mr = meta.getBoundingClientRect(); if (mr.height) { bottom = Math.max(16, sr.bottom - mr.top + 10); mb = Math.max(16, sr.bottom - mr.bottom + 8); } }
         let f = fit(bottom);
         /* a tall player (TikTok, Shorts, Reels) on a short screen: the caption steps aside so the video gets its room */
         if (ar < 1 && f.h < sr.height * 0.55 && mb < bottom) { f = fit(mb); slide.classList.add('fye-tall'); }
-        const availH = f.aH; let w = f.w, h = f.h;
-        w = Math.round(w); h = Math.round(h);
-        box.style.left = Math.round(left + (availW - w) / 2) + 'px'; box.style.top = Math.round(top + Math.max(0, (availH - h) / 2)) + 'px';
-        box.style.width = w + 'px'; box.querySelector('.fye-frame').style.height = h + 'px';
+        const tall = slide.classList.contains('fye-tall'), apply = () => {
+            const availH = f.aH; const w = Math.round(f.w), h = Math.round(f.h), bx = Math.round(left + (availW - w) / 2);
+            box.style.left = bx + 'px'; box.style.top = Math.round(top + Math.max(0, (availH - h) / 2)) + 'px';
+            box.style.width = w + 'px'; box.querySelector('.fye-frame').style.height = h + 'px';
+            /* the buttons may use the whole free column (left edge to the like rail), centred under the player */
+            if (barEl) { barEl.style.width = Math.round(availW) + 'px'; barEl.style.marginLeft = (left - bx) + 'px'; }
+        };
+        apply();
+        if (barEl) {
+            box.classList.remove('fye-narrow');
+            if (barEl.offsetHeight > 48) box.classList.add('fye-narrow');
+            /* still two rows: reserve their real height so they never reach the caption */
+            if (barEl.offsetHeight > 48) { bar = barEl.offsetHeight + 8; f = fit(tall ? mb : bottom); apply(); }
+        }
     }
     function frameHTML(emb) {
         return '<iframe class="fye-if" src="' + esc(emb.src) + '" title="' + esc(T('Video on ', 'Video auf ', 'V\u00eddeo en ') + NAME[emb.plat]) + '" ' +

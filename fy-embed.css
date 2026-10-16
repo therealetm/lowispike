@@ -24,24 +24,35 @@
 }
 .fy-slide > .fye.fye-fail .fye-spin { display: none; }
 @keyframes fye-spin { to { transform: rotate(360deg); } }
-.fy-slide > .fye .fye-bar { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+/* Oct 16 (Emmanuel: "everything should conform"): Close and Open on ... are the app's blue liquid-glass pills, the same tokens as
+   the weather pill and Daily Quest (fill --wh-glass-wide, rim --wh-glass-rim, glow --wh-glass-sh, ink --wh-glass-ink, blur 10px),
+   44 px tall. A soft tint under the glass keeps the words readable over a bright video poster. fy-embed.js gives the bar the
+   free width between the left edge and the like rail (never past the rail) and reserves its 44 px + 8 px gap above the caption,
+   so one row fits even beside a narrow TikTok/Reels player; if it still can't fit, Close becomes a 44 px round icon button. */
+.fy-slide > .fye .fye-bar { display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap; box-sizing: border-box; }
 .fy-slide > .fye .fye-btn {
-    display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 14px; border-radius: 999px;
-    font-family: inherit; font-size: 13.5px; font-weight: 600; line-height: 1; text-decoration: none; white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent;
-    background: linear-gradient(180deg, rgba(246, 251, 255, .96), rgba(211, 233, 255, .92)); color: #0b1d3f;
-    border: .5px solid rgba(255, 255, 255, .7); box-shadow: inset 0 .5px 0 #fff, 0 6px 18px -8px rgba(40, 120, 255, .7);
+    position: relative; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; min-width: 44px; padding: 0 16px; border-radius: 22px;
+    font-family: inherit; font-size: 14px; font-weight: 700; line-height: 1; text-decoration: none; white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent;
+    color: var(--wh-glass-ink, #fff); border: 1.5px solid var(--wh-glass-rim, rgba(160, 220, 255, .55));
+    background: var(--wh-glass-wide, linear-gradient(160deg, rgba(80, 170, 255, .14), rgba(28, 74, 150, .34))), rgba(8, 20, 48, .42);
+    box-shadow: var(--wh-glass-sh, inset 0 0 18px rgba(140, 210, 255, .32), 0 8px 26px -12px rgba(40, 120, 255, .5));
+    -webkit-backdrop-filter: blur(10px) saturate(1.4); backdrop-filter: blur(10px) saturate(1.4); text-shadow: 0 1px 4px rgba(0, 20, 60, .45);
+    transition: transform .15s ease;
 }
-.fy-slide > .fye .fye-btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+html[data-theme="light"] .fy-slide > .fye .fye-btn { background: var(--wh-glass-wide), rgba(235, 243, 255, .66); text-shadow: none; }
+.fy-slide > .fye .fye-btn:active { transform: scale(.96); }
+.fy-slide > .fye .fye-btn svg { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 .fy-slide > .fye .fye-btn:focus-visible { outline: 2px solid #9fd6ff; outline-offset: 2px; }
-/* a 46px tap area around the 38px pill */
-.fy-slide > .fye .fye-btn { position: relative; }
-.fy-slide > .fye .fye-btn::before { content: ""; position: absolute; inset: -4px -2px; }
+.fy-slide > .fye .fye-btn::before { content: ""; position: absolute; inset: -2px; }
+/* last resort on a very narrow free column: Close keeps its label for screen readers (aria-label) and shows only the X */
+.fy-slide > .fye.fye-narrow .fye-x { width: 44px; padding: 0; }
+.fy-slide > .fye.fye-narrow .fye-x > span { display: none; }
 /* while a player is open, the big play button and the dimmed artwork step back */
 .fy-slide.fye-on > .fy-play { opacity: 0 !important; pointer-events: none !important; }
 .fy-slide.fye-on > .fy-bg { filter: blur(10px) brightness(.55); transform: scale(1.06); transition: filter .3s ease, transform .3s ease; }
 .fy-slide.fye-on > .fy-big { opacity: 0; }
 .fy-slide.fye-tall > .fy-meta { opacity: 0; pointer-events: none; transition: opacity .2s ease; }
 @media (prefers-reduced-motion: reduce) {
-    .fy-slide > .fye, .fy-slide > .fye .fye-if, .fy-slide.fye-on > .fy-bg { transition: none !important; transform: none !important; }
+    .fy-slide > .fye, .fy-slide > .fye .fye-if, .fy-slide.fye-on > .fy-bg, .fy-slide > .fye .fye-btn { transition: none !important; transform: none !important; }
     .fy-slide > .fye .fye-spin { animation: none; border-top-color: rgba(160, 220, 255, .3); }
 }

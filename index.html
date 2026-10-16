@@ -5013,7 +5013,7 @@ function renderScreen(){
     '<div class="small dim mv-hero-sub">Live body science while you move.</div></div>';
   /* other sessions: tap one and it starts */
   h += '<div class="mv-quick"><div class="tiny dim mv-quick-h">Or tap one to start now</div><div class="mv-fmts">' + Object.keys(FORMATS).filter(k => k !== M.fmt).map(k => '<button class="mv-fmt" data-mv="go-fmt" data-k="' + k + '"><span class="mv-ic">' + IC[k] + '</span><span style="flex:1;text-align:left;min-width:0"><b>' + esc(fmtName(k)) + '</b><span class="small muted" style="display:block">' + esc(fmtSub(k)) + '</span></span><span class="mv-fmt-go">' + IC.play + '</span></button>').join("") + '</div>' +
-    '</div>' + kitHTML() + (window.R3W ? R3W.rowHTML() : "");
+    '</div>' + (window.LowiMirror ? LowiMirror.stripHTML() : "") + kitHTML() + (window.R3W ? R3W.rowHTML() : "");  /* Oct 16: Mirror mode (mirror-move.js), camera follow-along */
   if (meal) h += '<div class="card goldline">' + '<div class="tiny gold">Just ate? 10-minute move</div><div class="p" style="margin-top:5px">' + esc(meal.name) + ' logged ' + agoStr(meal.ts) + '. Moving soon after a meal is one of the best-studied ways to soften the rise.</div><button class="r3w-why" data-mv="science">Why move after eating? ›</button><div class="mv-row" style="gap:8px;margin-top:12px"><button class="btn primary mv-sm" data-mv="quick" data-fmt="desk" data-min="10">Seated, at my desk</button><button class="btn ghost mv-sm" data-mv="quick" data-fmt="' + (has("db") && has("tread") ? "lift" : "walk") + '" data-min="10">Walk</button></div></div>';
   /* rings + streak */
   h += '<div class="card"><div class="mv-row" style="gap:16px">' + rings(112, mm / MOVE_GOAL_MIN, st / M.stepGoal) + '<div style="flex:1"><div class="mv-leg"><i style="background:#d9b56a"></i><span><b class="num">' + mm + '/' + MOVE_GOAL_MIN + '</b> min moved</span></div><div class="mv-leg"><i style="background:#efe2c4"></i><span><b class="num">' + fmtN(st) + '</b> / ' + fmtN(M.stepGoal) + ' steps</span></div></div></div>' + dotsHTML() + '<div class="small dim" style="margin-top:8px">Days you moved this week. A day counts when you move 3+ minutes or hit your step goal.</div></div>';
@@ -19978,6 +19978,9 @@ window.LowiCommunityHost = {
 <link rel="stylesheet" id="mvdCss" href="move-durations.css?v=20261016-224510">
 <link rel="stylesheet" id="mvpCss" href="move-player.css?v=20261016-224510">
 <script src="move-player.js?v=20261016-224510"></script>
+<link rel="stylesheet" id="mmCss" href="mirror-move.css?v=20261016-224510">
+<script src="mirror-move-core.js?v=20261016-224510"></script>
+<script src="mirror-move.js?v=20261016-224510"></script>
 <link rel="stylesheet" id="fyeCss" href="fy-embed.css?v=20261016-224510">
 <script src="fy-embed.js?v=20261016-224510"></script>
 <link rel="stylesheet" id="cspCss" href="community-spirit.css?v=20261016-224510">

@@ -145,6 +145,7 @@
     }
     function shouldRender() {
         if (D.hidden) return false;
+        if (H.classList.contains('mm-open')) return false;   /* Mirror mode covers the screen: no world frames behind it */
         if (mode === 'full') return !!full;
         if (mode === 'back') return !!(back && back.isConnected);
         if (!visibleHome || !stage || !stage.isConnected) return false;

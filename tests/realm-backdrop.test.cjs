@@ -58,27 +58,24 @@ test('motes: same places every launch, inside the screen, in the picture\'s colo
     assert.ok(C.moteCount(1366, 1024, false) <= 24, 'iPad stays light');
 });
 
-test('loaded once, after Scan\'s glass styles, with the same picture files as Community (precached by community-spirit)', () => {
+test('loaded once, after Scan\'s glass styles, and no picture: the live 3D world shows through', () => {
     const html = read('index.html');
     const iSg = html.indexOf('<script src="scan-glass.js'), iCss = html.indexOf('<link rel="stylesheet" id="rwCss" href="realm-backdrop.css?v='),
         iCore = html.indexOf('<script src="realm-backdrop-core.js?v='), iJs = html.indexOf('<script src="realm-backdrop.js?v=');
     assert.ok(iSg > 0 && iCss > iSg && iCore > iCss && iJs > iCore, 'css, then rules, then the module');
     assert.equal(html.split('realm-backdrop.js?v=').length, 2, 'loaded once');
-    assert.equal(C.IMAGE, 'spirit/metabolic-spirit-world');
-    assert.ok(read('community-spirit.js').includes("IMG = '" + C.IMAGE + "'"), 'the same picture as Community');
-    for (const f of ['metabolic-spirit-world.webp', 'metabolic-spirit-world-phone.webp', 'metabolic-spirit-world.jpg', 'metabolic-spirit-world-phone.jpg']) assert.ok(fs.existsSync(path.join(root, 'spirit', f)), f);
+    assert.equal(C.IMAGE, undefined);
     const js = read('realm-backdrop.js');
-    for (const s of ['-phone.webp', '.webp', '-phone.jpg', '.jpg', 'max-aspect-ratio: 3/4', 'object-fit'].slice(0, 5)) assert.ok(js.includes(s), s);
+    assert.ok(!/<picture|<img|\.webp|\.jpg|metabolic-spirit-world/.test(js), 'no wallpaper picture');
+    for (const f of ['realm-backdrop.css', 'realm-backdrop-core.js', 'realm-backdrop.js']) assert.ok(read('sw.js').includes('"' + f + '"'), f + ' precached');
 });
 
-test('the layer never takes a touch, never covers Today, and looks exactly like Community\'s (same crop, same veil)', () => {
+test('the layer never takes a touch, never covers Today, and is see-through over the live world', () => {
     const css = read('realm-backdrop.css'), cs = read('community-spirit.css'), bare = noComments(css);
     assert.match(css, /\.rw-layer \{ position: absolute; inset: 0; overflow: hidden; pointer-events: none !important;/);
     assert.match(css, /\.rw-layer \* \{ pointer-events: none !important; \}/);
-    assert.match(css, /object-fit: cover; object-position: 50% 50%;/);
-    assert.ok(/\.rw-pan \{ position: absolute; inset: -22px;/.test(css) && /\.cg-spirit-pan \{ position: absolute; inset: -22px;/.test(cs), 'same overscan as Community');
-    const veil = s => (s.match(/rgba\(3,8,20,[.\d]+\)/g) || []).join(' ');
-    assert.equal(veil(css), veil(cs), 'the very same veil (dark and light theme) as Community');
+    assert.match(css, /\.rw-layer \{ position: absolute; inset: 0; overflow: hidden; pointer-events: none !important; touch-action: none; background: transparent;/);
+    assert.ok(css.includes('.rw-layer .rw-veil {'), 'a readability veil');
     assert.ok(!/#tab-home|\.wh-|#bw3Back|cgField|cg-body|#cgSpirit|#tab-foryou/.test(bare), 'touches neither Today, the live world, nor Community');
     /* animations are transform/opacity only (mobile performance) */
     for (const kf of bare.match(/@keyframes \w+ \{[\s\S]*?\}\s*\}/g) || []) {
@@ -87,7 +84,7 @@ test('the layer never takes a touch, never covers Today, and looks exactly like 
     }
     assert.match(css, /\.rw-layer\.rw-still \*, #app > #rwBack\.rw-under \* \{ animation-play-state: paused !important; \}/, 'nothing moves while hidden or under the camera');
     const rm = css.slice(css.indexOf('@media (prefers-reduced-motion: reduce)'));
-    assert.ok(rm.includes('.rw-layer .rw-pan { animation: none !important; transform: none !important;') && rm.includes('.rw-layer .rw-motes { display: none; }') && rm.includes('rw-arrive { animation: none !important; }'));
+    assert.ok(rm.includes('.rw-layer .rw-motes { display: none; }') && rm.includes('rw-arrive { animation: none !important; }'));
     assert.ok(css.includes('prefers-reduced-transparency: reduce'));
     /* fills the whole screen: in #app (the whole screen, also on iPad), not in the 680px page column */
     assert.ok(/#app > #rwBack\.rw-back \{ z-index: 0;/.test(css));

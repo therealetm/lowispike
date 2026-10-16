@@ -3,12 +3,9 @@
    its own (drift, breathing light, rising motes; transform and opacity only). It never takes a tap. Today/Home is not touched. */
 
 /* ---------- the layer (wallpaper and the copy inside the Scan camera) ---------- */
-.rw-layer { position: absolute; inset: 0; overflow: hidden; pointer-events: none !important; touch-action: none; background: #050b18; contain: strict; }
+.rw-layer { position: absolute; inset: 0; overflow: hidden; pointer-events: none !important; touch-action: none; background: transparent; contain: strict; }
 .rw-layer * { pointer-events: none !important; }
-.rw-layer .rw-pan { position: absolute; inset: -22px; transform-origin: 50% 48%; animation: rwDrift 64s ease-in-out infinite alternate; will-change: transform; }
-.rw-layer picture, .rw-layer .rw-img { display: block; width: 100%; height: 100%; }
-.rw-layer .rw-img { object-fit: cover; object-position: 50% 50%; user-select: none; -webkit-user-select: none; -webkit-user-drag: none; }
-@keyframes rwDrift { 0% { transform: translate3d(-8px, -5px, 0) scale(1.03); } 100% { transform: translate3d(8px, 6px, 0) scale(1); } }
+/* no picture (task 1 rework): the live 3D world shows through, pulled out into the spirit world behind these pages */
 
 /* breathing light: three soft glows in the picture's own colours, slowly swelling and fading out of step */
 .rw-layer .rw-breath { position: absolute; inset: 0; }
@@ -51,6 +48,8 @@ html[data-theme="light"] .rw-layer .rw-veil { background: radial-gradient(120% 8
 #app > #rwBack.rw-back.rw-still { visibility: hidden; }
 
 /* ---------- Scan: the living world inside the camera layer, the feed fading in over it ---------- */
+/* the camera window sits inside Misty's capture sheet, not over the 3D world, so (no picture any more) it opens on the deep
+   starfield of the Scan glass with the spirit world's breathing light and rising motes until the feed fades in */
 .b3-cam.rw-scan > .rw-cam { z-index: 0; }
 .b3-cam.rw-scan video { transition: opacity .8s cubic-bezier(.25, .8, .25, 1) !important; }
 /* the feed shows only once a frame really plays; until then (and after it stops) the world is what you see */
@@ -69,7 +68,6 @@ html.lg .b3-cam.rw-scan[data-st=ask] .b3-cbox { background: rgba(14, 26, 52, .58
 
 /* ---------- reduced motion / transparency ---------- */
 @media (prefers-reduced-motion: reduce) {
-    .rw-layer .rw-pan { animation: none !important; transform: none !important; inset: 0; will-change: auto; }
     .rw-layer .rw-breath b { animation: none !important; opacity: .28; transform: none; will-change: auto; }
     .rw-layer .rw-motes { display: none; }
     #app > #rwBack.rw-back.rw-show.rw-arrive { animation: none !important; }

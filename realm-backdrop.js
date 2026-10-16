@@ -19,21 +19,15 @@
     const H = D.documentElement;
     const mq = q => { try { return !!(W.matchMedia && W.matchMedia(q).matches); } catch (e) { return false; } };
     const reduced = () => mq('(prefers-reduced-motion: reduce)');
-    const IMG = () => (W.LowiSpiritWorld && W.LowiSpiritWorld.image) || C.IMAGE;
 
     function layerHTML(n) {
-        const img = IMG();
         let m = '';
         C.motes(n, 11).forEach(p => {
             m += '<i style="left:' + p.x + '%;top:' + p.y + '%;--s:' + p.s + 'px;--dx:' + p.dx + 'px;--dy:' + -p.dy + 'px;--d:' + p.dur + 's;--dl:' + p.delay + 's;--h:' + p.hue + ';--a:' + p.a + '"></i>';
         });
-        return '<div class="rw-pan"><picture>' +
-            '<source type="image/webp" media="(max-aspect-ratio: 3/4)" srcset="' + img + '-phone.webp">' +
-            '<source type="image/webp" srcset="' + img + '.webp">' +
-            '<source media="(max-aspect-ratio: 3/4)" srcset="' + img + '-phone.jpg">' +
-            '<img class="rw-img" src="' + img + '.jpg" alt="" decoding="async" draggable="false">' +
-            '</picture></div>' +
-            '<div class="rw-breath"><b class="b1"></b><b class="b2"></b><b class="b3"></b></div>' +
+        /* no picture (task 1 rework): the live 3D world under this layer is already pulled out into the spirit world
+           (body-world-3d.js syncBack), so this layer only adds breathing light, motes and the readability veil */
+        return '<div class="rw-breath"><b class="b1"></b><b class="b2"></b><b class="b3"></b></div>' +
             '<div class="rw-motes">' + m + '</div>' +
             '<div class="rw-veil"></div>';
     }

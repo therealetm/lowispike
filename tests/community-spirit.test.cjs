@@ -66,9 +66,11 @@ test('the zoom out of our world brings it in from far away, and the way back rev
     assert.ok(gz.includes('W.LowiSpiritWorld.paint(dir, k)') && gz.includes('W.LowiSpiritWorld.clear()'));
 });
 
-test('leaving Community brings the camera back down into Misty\'s world; opening it from anywhere pulls out to the spirit world', () => {
+test('Today brings the camera back down into Misty\'s world; Community, Cook, Move and Scan pull out to the spirit world', () => {
     const b = read('body-world-3d.js');
     assert.ok(b.includes("if (commIn) { try { const WH = W.LowiWorldHome; if (WH && WH.state && !WH.state.pull && WH.pullOut) WH.pullOut(); }"));
-    assert.match(b, /const otherIn = !!\(w === true && t && t\.id !== 'tab-home' && t\.id !== 'tab-foryou'/);
+    assert.ok(b.includes("const REALM = ['tab-foryou', 'tab-shelf', 'tab-move', 'tab-scan'];"), 'Community, Cook, Move and Scan share the pulled-out spirit world');
+    assert.match(b, /const otherIn = !!\(w === true && t && t\.id !== 'tab-home' && REALM\.indexOf\(t\.id\) < 0/);
+    assert.match(b, /const commIn = !!\(w === true && t && REALM\.indexOf\(t\.id\) >= 0/);
     assert.ok(b.includes("if (otherIn) { try { const WH = W.LowiWorldHome; if (WH && WH.state && WH.state.pull && WH.diveIn) WH.diveIn(); }"));
 });

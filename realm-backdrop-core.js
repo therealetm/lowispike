@@ -8,8 +8,6 @@
     /* the pages that sit in the realm (Community has its own copy of the same picture, LowiSpiritWorld, inside its page) */
     const PAGES = ['tab-shelf', 'tab-move', 'tab-scan'];
     const COMMUNITY = 'tab-foryou', HOME = 'tab-home';
-    /* same picture, same files as Community (community-spirit.js), so the browser decodes it once */
-    const IMAGE = 'spirit/metabolic-spirit-world';
     /* Scan: the world shows first; the glass camera prompt follows after about a second */
     const ASK_DELAY = 1000;
     /* coming in from Today: from a little further away, as on the way out to Community (community-spirit.js FAR = 1.18) */
@@ -66,7 +64,7 @@
     /* fewer motes on a small phone, more on an iPad; none with reduced motion (the picture alone is enough) */
     function moteCount(w, h, reduced) { if (reduced) return 0; const a = Math.max(0, w) * Math.max(0, h); return a > 700000 ? 22 : a > 330000 ? 16 : 12; }
 
-    const api = { PAGES, COMMUNITY, HOME, IMAGE, ASK_DELAY, FAR, ARRIVE_MS, LEAVE_MS, isPage, want, change, gate, motes, moteCount, HUES };
+    const api = { PAGES, COMMUNITY, HOME, ASK_DELAY, FAR, ARRIVE_MS, LEAVE_MS, isPage, want, change, gate, motes, moteCount, HUES };
     if (typeof module === 'object' && module.exports) module.exports = api;
     root.LowiRealmCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

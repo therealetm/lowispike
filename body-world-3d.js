@@ -382,12 +382,13 @@
         H.classList.toggle('wb-comm', !!(t && t.id === 'tab-foryou')); const homeIn = !!(w === true && t && t.id === 'tab-home' && !H.classList.contains('gx-in') && !H.classList.contains('gx-out'));
         /* sliding back to Home with the camera still pulled out (Community was visited): the camera dives home WITH the slide, not after it lands */
         if (homeIn && !H.classList.contains('wb-home')) { try { const WH = W.LowiWorldHome; if (WH && WH.state && WH.state.pull && WH.diveIn) WH.diveIn(); } catch (e) { } }
-        /* Oct 16 (handoff task 1, E-man: "Cook, Move and Scan have the same background as Today; only Community expands into the spirit
-           world"): leaving Community for any other page brings the camera back down into Misty's world, as on Home */
-        const otherIn = !!(w === true && t && t.id !== 'tab-home' && t.id !== 'tab-foryou' && !H.classList.contains('gx-in') && !H.classList.contains('gx-out'));
+        /* Oct 16 (task 1 rework, E-man: "Cook, Move and Scan share the expanded Community spirit world; Today stays as it is"):
+           Community, Cook, Move and Scan, however they are opened, are the live world pulled out past our bubble into the spirit
+           world; only Today brings the camera back down into Misty's world (above). Any other page keeps Misty's world. */
+        const REALM = ['tab-foryou', 'tab-shelf', 'tab-move', 'tab-scan'];
+        const otherIn = !!(w === true && t && t.id !== 'tab-home' && REALM.indexOf(t.id) < 0 && !H.classList.contains('gx-in') && !H.classList.contains('gx-out'));
         if (otherIn) { try { const WH = W.LowiWorldHome; if (WH && WH.state && WH.state.pull && WH.diveIn) WH.diveIn(); } catch (e) { } }
-        /* ...and Community, however it is opened (the tab bar from Cook, a deep link), is always the spirit world out past our bubble */
-        const commIn = !!(w === true && t && t.id === 'tab-foryou' && !H.classList.contains('gx-in') && !H.classList.contains('gx-out'));
+        const commIn = !!(w === true && t && REALM.indexOf(t.id) >= 0 && !H.classList.contains('gx-in') && !H.classList.contains('gx-out'));
         if (commIn) { try { const WH = W.LowiWorldHome; if (WH && WH.state && !WH.state.pull && WH.pullOut) WH.pullOut(); } catch (e) { } }
         H.classList.toggle('wb-home', homeIn); if (w === true && mode !== 'back') backdrop(true); else if (w === false && mode === 'back') backdrop(false);
     }

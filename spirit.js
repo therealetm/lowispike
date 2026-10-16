@@ -53,7 +53,7 @@
         glow: ['Caught! My leaves are glowing.', 'Eingefangen! Meine Blätter leuchten.', '¡Capturado! Mis hojas brillan.'],
         scanOk: ['Yes, I like this one! Likely only a small spike.', 'Ja, das mag ich! Wahrscheinlich nur ein kleiner Spike.', '¡Sí, me gusta! Probablemente solo un pico pequeño.'],
         scanBetter: ['Hmm, okay now and then. Pair it with protein or fiber.', 'Hmm, ab und zu okay. Am besten mit Eiweiß oder Ballaststoffen.', 'Hmm, de vez en cuando. Mejor con proteína o fibra.'],
-        scanSpike: ['Oof, that one makes me wobble. Likely a big spike, check the swaps.', 'Uff, da wackle ich. Wahrscheinlich ein großer Spike, schau dir die Tauschideen an.', 'Uf, eso me hace temblar. Probablemente un pico grande, mira los cambios.'],
+        scanSpike: ['Oof, my leaves droop. Likely a spike. Catch it so others know too.', 'Uff, meine Blätter hängen. Wahrscheinlich ein Spike. Fang es, damit andere es auch wissen.', 'Uf, mis hojas caen. Probablemente un pico. Atrápalo para que otros también lo sepan.'],
         photoTitle: ['Your photo', 'Dein Foto', 'Tu foto'],
         savePhoto: ['Save photo', 'Foto speichern', 'Guardar foto'],
         photoSaved: ['Photo ready', 'Foto bereit', 'Foto lista'],
@@ -733,48 +733,23 @@
         });
         return a.finished.catch(() => {}).then(() => el.remove());
     }
+    /* Oct 16 (E-man: Scan in black space + blue glass): the result card opens over the Scan screen in the living world,
+       not inside the old herb-world card. Oct 16 simple spike card: scanning no longer catches on its own; the user chooses
+       Catch it (saved to the spike lists, XP for spiky and non-spiky alike). No GPT card stacked on the result. */
     async function captureProduct(p) {
-        /* Oct 16 (E-man: Scan in black space + blue glass): the result card opens over the Scan screen in the living world,
-           not inside the old herb-world card. XP, the collection and the spike reaction stay the same. */
         if (opened) close(true);
         cancelCapture();
-        const id = 'scan:' + (p.barcode || p.id || p.name);
         await flight(p.img || p.photo);
-        const gained = V.complete('vitamin', id, {
-            amt: 5,
-            perDay: 5,
-            label: tr('captured'),
-            src: 'scan:product'
-        });
-        try {
-            await LowiDex.collect(p);
-        } catch (e) {
-            R.toast(tr('storage'));
-        }
-        // Herb reaction follows the LOWiSPIKE likely-spike estimate (the same verdict the result card shows).
         let verdict = p && p.verdict && p.verdict !== 'unknown' ? p.verdict : 'unknown';
-        try { if (verdict === 'unknown' && !p.notFound && LowiDex.rate) verdict = LowiDex.rate(p).verdict || 'unknown'; } catch (e) {}
-        let zero = '';
-        if (!gained) {
-            const today = new Date().toDateString();
-            zero = ' ' + tr((V.state().ledger || []).some(e => String(e.eventId || '').endsWith(':' + id) && new Date(+e.ts).toDateString() === today) ? 'scanAgain' : 'scanCap') + '.';
-        }
-        feedback(verdict === 'spike' ? 'wilt' : verdict === 'better' ? 'curious' : verdict === 'ok' ? 'bloom' : 'curious', tr(verdict === 'spike' ? 'scanSpike' : verdict === 'better' ? 'scanBetter' : verdict === 'ok' ? 'scanOk' : 'unknown') + zero, gained);
+        try { if (!p.notFound && LowiDex.rate) verdict = LowiDex.rate(p).verdict || verdict; } catch (e) {}
+        feedback(verdict === 'spike' ? 'wilt' : verdict === 'ok' ? 'bloom' : 'curious', tr(verdict === 'spike' ? 'scanSpike' : verdict === 'ok' ? 'scanOk' : 'unknown'), 0);
         LowiDex.reveal(p);
         const ov = R.top && R.top();
         if (ov) {
             ov.classList.add('sp-sheet', 'ss-sheet');
-            const sh = ov.querySelector('.r2-sh');
-            if (sh) {
-                const link = D.createElement('div');
-                link.className = 'ss-gpt-wrap';
-                link.innerHTML = gptHTML();
-                /* the result comes first; the deeper analysis link sits under it, not above the verdict */
-                (sh.querySelector('.b3-stage') || sh.querySelector('.b3-rev') || sh).append(link);
-                paginate(sh);
-            }
+            /* Oct 16 simple spike card: no 'Deeper analysis & create content' link stacked on the result any more */
         }
-        return gained;
+        return 0;
     }
 
     // one-tap meal logging: recent meals first, photo/scan next, manual fields tucked behind "Manuell"

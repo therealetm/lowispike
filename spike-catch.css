@@ -1,0 +1,112 @@
+/* LOWiSPIKE simple spike card, spike lists and community deals (Oct 16, 2026).
+   Black space + the weather pill's iOS blue glass. One big verdict, one big Catch it, everything else folded. */
+.b3-ov, .sc-ov {
+    --sc-rim: var(--wh-glass-rim, rgba(160, 220, 255, .55));
+    --sc-wide: var(--wh-glass-wide, radial-gradient(120% 90% at 18% 0%, rgba(255, 255, 255, .18), rgba(255, 255, 255, 0) 52%), linear-gradient(160deg, rgba(80, 170, 255, .14), rgba(28, 74, 150, .34)));
+    --sc-sh: var(--wh-glass-sh, inset 0 0 18px rgba(140, 210, 255, .32), 0 8px 26px -12px rgba(40, 120, 255, .5));
+    --sc-font: var(--lg-font, -apple-system, system-ui, sans-serif);
+}
+.b3-ov .r2-sh:has(.sc-card), .sc-ov .r2-sh { background: rgba(3, 6, 16, .94) !important; color: #fff; border-top: 1px solid rgba(160, 220, 255, .28); }
+.b3-ov .r2-sh:has(.sc-card) .r2-x, .sc-ov .r2-sh .r2-x { background: var(--sc-wide), rgba(8, 20, 48, .5); border: 1px solid var(--sc-rim); color: #fff; box-shadow: var(--sc-sh); }
+.sc-stage { padding: 0 0 8px; }
+.b3-card.sc-card { background: none !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; margin: 0; text-align: left; color: #fff; font-family: var(--sc-font); display: flex; flex-direction: column; gap: 14px; }
+.sc-top { display: flex; align-items: center; gap: 14px; padding-right: 44px; min-width: 0; }
+.sc-img { width: 76px; height: 76px; flex: none; border-radius: 20px; overflow: hidden; display: grid; place-items: center; background: rgba(255, 255, 255, .92); border: 1px solid var(--sc-rim); }
+.sc-img img { width: 100%; height: 100%; object-fit: contain; }
+.sc-img i { font-style: normal; font-size: 38px; }
+.sc-nm { min-width: 0; }
+.sc-card .b3-name { font: 700 19px/1.2 var(--sc-font); color: #fff; margin: 0; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-align: left; }
+.sc-brand { font-size: 13.5px; color: #b9d4ff; margin-top: 3px; }
+.sc-verd { border-radius: 24px; padding: 16px 18px; display: flex; flex-direction: column; gap: 5px; border: 1.5px solid var(--sc-rim); background: var(--sc-wide), rgba(8, 20, 48, .5); box-shadow: var(--sc-sh); }
+.sc-verd small { font: 650 11.5px/1 var(--sc-font); letter-spacing: .06em; text-transform: uppercase; color: #b9d4ff; }
+.sc-verd strong { font: 800 26px/1.12 var(--sc-font); color: #fff; }
+.sc-verd span { font-size: 14.5px; line-height: 1.35; color: #dce9ff; }
+.sc-verd.v-spike { border-color: rgba(255, 120, 120, .75); background: radial-gradient(120% 90% at 18% 0%, rgba(255, 255, 255, .14), rgba(255, 255, 255, 0) 52%), linear-gradient(160deg, rgba(255, 80, 90, .26), rgba(120, 20, 40, .42)); box-shadow: inset 0 0 18px rgba(255, 140, 140, .28), 0 8px 26px -12px rgba(255, 70, 90, .55); }
+.sc-verd.v-ok { border-color: rgba(110, 230, 170, .7); background: radial-gradient(120% 90% at 18% 0%, rgba(255, 255, 255, .14), rgba(255, 255, 255, 0) 52%), linear-gradient(160deg, rgba(60, 200, 140, .22), rgba(10, 80, 70, .4)); box-shadow: inset 0 0 18px rgba(130, 240, 190, .26), 0 8px 26px -12px rgba(40, 200, 140, .5); }
+.sc-acts { display: flex; flex-direction: column; align-items: stretch; gap: 8px; margin: 0 !important; }
+.sc-card .sc-catch, .sc-catchlike {
+    width: 100%; min-height: 56px; border-radius: 28px; border: 1.5px solid rgba(190, 230, 255, .8); color: #fff; cursor: pointer;
+    font: 800 18px/1 var(--sc-font); display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    background: radial-gradient(120% 90% at 18% 0%, rgba(255, 255, 255, .3), rgba(255, 255, 255, 0) 55%), linear-gradient(160deg, #2f8bff, #0a5ce0) !important;
+    box-shadow: inset 0 0 16px rgba(190, 230, 255, .4), 0 10px 26px -10px rgba(10, 132, 255, .8); -webkit-tap-highlight-color: transparent;
+}
+.sc-card .sc-catch small { font: 700 13px/1 var(--sc-font); padding: 5px 9px; border-radius: 12px; background: rgba(255, 255, 255, .2); }
+.sc-card .sc-catch:disabled { opacity: .65; }
+.sc-have { min-height: 52px; border-radius: 26px; display: flex; flex-direction: column; align-items: center; justify-content: center; font: 700 16px/1.2 var(--sc-font); color: #fff; border: 1px solid var(--sc-rim); background: var(--sc-wide), rgba(8, 20, 48, .45); padding: 8px 14px; text-align: center; }
+.sc-have small { font-weight: 500; font-size: 12px; color: #b9d4ff; }
+.sc-card .b3-caught { border-radius: 24px; padding: 16px; text-align: center; border: 1px solid var(--sc-rim); background: var(--sc-wide), rgba(8, 20, 48, .5); box-shadow: var(--sc-sh); color: #fff; }
+.sc-card .b3-caught .b3-cbig { color: #fff; }
+.sc-card .b3-caught .r2-btn { background: rgba(255, 255, 255, .1); color: #fff; border: 1px solid var(--sc-rim); }
+.sc-xp { display: inline-block; margin-top: 8px; padding: 5px 12px; border-radius: 14px; font-weight: 800; background: rgba(10, 132, 255, .5); border: 1px solid var(--sc-rim); }
+.sc-sec { border-radius: 20px; padding: 13px 14px; border: 1px solid rgba(160, 220, 255, .3); background: rgba(10, 22, 50, .55); display: flex; flex-direction: column; gap: 8px; }
+.sc-sec h4 { margin: 0; font: 700 14.5px/1.2 var(--sc-font); color: #fff; }
+.sc-sec, .sc-sec * { color: #e6f0ff; }
+.sc-sec .card, .sc-sec [class*="pc-"] { background: rgba(255, 255, 255, .06) !important; border-color: rgba(160, 220, 255, .22) !important; color: #fff !important; }
+.sc-none { margin: 0; font-size: 13.5px; color: #a9c2e8 !important; line-height: 1.35; }
+.sc-ghost, .sc-chip, .sc-lists, .sc-tabs button {
+    min-height: 44px; border-radius: 22px; padding: 0 16px; font: 650 14.5px/1.1 var(--sc-font); color: #fff !important; cursor: pointer;
+    border: 1.5px solid var(--sc-rim); background: var(--sc-wide), rgba(8, 20, 48, .42); box-shadow: var(--sc-sh); -webkit-tap-highlight-color: transparent;
+}
+.sc-ghost { align-self: flex-start; }
+.sc-lists { width: 100%; margin-top: 2px; }
+.sc-dl, .sc-items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.sc-deal { display: flex; align-items: center; gap: 12px; padding: 9px 12px; border-radius: 16px; background: rgba(255, 255, 255, .06); border: 1px solid rgba(160, 220, 255, .2); }
+.sc-dprice { font: 800 17px/1 var(--sc-font); color: #8fe6b8 !important; flex: none; min-width: 64px; }
+.sc-dtx { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: 13px; }
+.sc-dtx b { font-size: 14px; color: #fff !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sc-more { border-radius: 18px; border: 1px solid rgba(160, 220, 255, .22); background: rgba(255, 255, 255, .04); padding: 0 14px; }
+.sc-more summary { min-height: 46px; display: flex; align-items: center; font: 650 14.5px/1 var(--sc-font); color: #cfe2ff; cursor: pointer; list-style: none; }
+.sc-more summary::-webkit-details-marker { display: none; }
+.sc-more summary::after { content: "›"; margin-left: auto; font-size: 22px; transition: transform .2s; }
+.sc-more[open] summary::after { transform: rotate(90deg); }
+.sc-more[open] { padding-bottom: 12px; }
+.sc-more, .sc-more * { color: #dce9ff; }
+.sc-more .b3-why { margin: 0 0 10px; padding-left: 18px; font-size: 13.5px; line-height: 1.4; }
+.sc-more .b3-facts { background: rgba(255, 255, 255, .05) !important; border-radius: 14px; }
+.sc-more .b3-facts b { color: #fff !important; }
+/* forms + lists */
+.sc-form, .sc-lv { display: flex; flex-direction: column; gap: 12px; color: #fff; font-family: var(--sc-font); padding-bottom: 10px; }
+.sc-form h3, .sc-lv h3 { margin: 0 44px 0 0; font: 800 21px/1.2 var(--sc-font); color: #fff; }
+.sc-fprod, .sc-lsub { margin: 0; color: #b9d4ff; font-size: 14px; line-height: 1.35; }
+.sc-form label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #b9d4ff; }
+.sc-form input[type=text], .sc-form input:not([type]), .sc-form input[inputmode], .sc-search {
+    min-height: 46px; border-radius: 14px; padding: 0 14px; font: 500 16px/1 var(--sc-font); color: #fff; background: rgba(255, 255, 255, .08); border: 1px solid rgba(160, 220, 255, .35); outline: none; width: 100%; box-sizing: border-box;
+}
+.sc-form input:focus, .sc-search:focus { border-color: #9fd6ff; }
+.sc-form fieldset { border: 0; padding: 0; margin: 0; }
+.sc-form legend { font-size: 13px; color: #b9d4ff; margin-bottom: 6px; }
+.sc-runs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.sc-runs label { position: relative; }
+.sc-runs input { position: absolute; opacity: 0; inset: 0; }
+.sc-runs span { min-height: 44px; display: flex; align-items: center; justify-content: center; text-align: center; border-radius: 14px; font: 650 13px/1.1 var(--sc-font); color: #fff; border: 1px solid rgba(160, 220, 255, .3); background: rgba(255, 255, 255, .06); padding: 0 4px; }
+.sc-runs input:checked + span { border-color: var(--sc-rim); background: var(--sc-wide), rgba(10, 60, 150, .6); box-shadow: var(--sc-sh); }
+.sc-ferr { margin: 0; color: #ff9b9b; font-size: 13.5px; }
+.sc-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.sc-tabs button { padding: 0 6px; font-size: 13.5px; background: rgba(255, 255, 255, .06); box-shadow: none; border-color: rgba(160, 220, 255, .3); }
+.sc-tabs button[aria-selected="true"] { background: var(--sc-wide), rgba(10, 60, 150, .6); box-shadow: var(--sc-sh); border-color: var(--sc-rim); }
+.sc-chip { align-self: flex-start; min-height: 38px; font-size: 13.5px; background: rgba(255, 255, 255, .06); box-shadow: none; }
+.sc-chip[aria-pressed="true"] { background: linear-gradient(160deg, rgba(255, 80, 90, .35), rgba(120, 20, 40, .5)); border-color: rgba(255, 120, 120, .75); }
+.sc-it { width: 100%; display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 16px; text-align: left; cursor: pointer; color: #fff; font-family: var(--sc-font); background: rgba(255, 255, 255, .06); border: 1px solid rgba(160, 220, 255, .2); min-height: 56px; }
+.sc-iimg { width: 42px; height: 42px; flex: none; border-radius: 12px; overflow: hidden; background: rgba(255, 255, 255, .9); }
+.sc-iimg img { width: 100%; height: 100%; object-fit: contain; }
+.sc-itx { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.sc-itx b { font-size: 14.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sc-itx span { font-size: 12.5px; color: #a9c2e8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sc-dot { flex: none; font-style: normal; font: 700 12px/1 var(--sc-font); padding: 6px 9px; border-radius: 11px; }
+.sc-dot.v-spike { background: rgba(255, 80, 90, .3); border: 1px solid rgba(255, 120, 120, .7); }
+.sc-dot.v-ok { background: rgba(60, 200, 140, .25); border: 1px solid rgba(110, 230, 170, .65); }
+@media (min-width: 760px) { .sc-card, .sc-form, .sc-lv { max-width: 560px; margin-left: auto !important; margin-right: auto !important; width: 100%; } }
+
+/* Your herb's world: the "How do you feel?" card was a pale cream box with near-invisible white text. Now blue glass, readable. */
+.cw-panel, html[data-theme=light] .cw-panel {
+    background: radial-gradient(120% 90% at 18% 0%, rgba(255, 255, 255, .14), rgba(255, 255, 255, 0) 52%), linear-gradient(160deg, rgba(80, 170, 255, .16), rgba(20, 50, 110, .62)), rgba(6, 14, 34, .7) !important;
+    border: 1px solid rgba(160, 220, 255, .5) !important; color: #fff !important;
+    box-shadow: inset 0 0 18px rgba(140, 210, 255, .28), 0 8px 26px -12px rgba(40, 120, 255, .5) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(1.5); backdrop-filter: blur(16px) saturate(1.5);
+}
+.cw-panel .cw-feel small, html[data-theme=light] .cw-panel .cw-feel small { color: #d6e7ff !important; font-weight: 600; }
+.cw-panel .cw-mood, html[data-theme=light] .cw-panel .cw-mood { color: #fff !important; background: rgba(255, 255, 255, .1) !important; border-color: rgba(160, 220, 255, .38) !important; }
+.cw-panel .cw-mood[aria-pressed=true] { background: rgba(10, 100, 230, .6) !important; border-color: rgba(190, 230, 255, .85) !important; }
+.cw-panel .cw-hint, html[data-theme=light] .cw-panel .cw-hint { color: #c8dcff !important; }
+/* the old dashed "Deeper analysis & create content" link is no longer stacked on the scan result; if any old sheet still has it, it can't overlap */
+.sp-sheet .r2-sh > div > .sp-gpt { display: none !important; }

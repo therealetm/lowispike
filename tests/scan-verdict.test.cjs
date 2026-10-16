@@ -29,8 +29,9 @@ assert.ok(!/LowiDiscovery/.test(rateName), 'rateName() must not be disabled by d
 
 const reveal = fnBody(html, 'function reveal(p, quiet){');
 assert.ok(!/LowiDiscovery\.openProduct/.test(reveal), 'reveal() must show the verdict card, not jump to the field guide');
-assert.ok(/cardHTML\(p, anim\)/.test(reveal), 'reveal() renders the verdict card');
-assert.ok(/b3-stage/.test(reveal) && /classList\.add\("show"\)/.test(reveal), 'reveal() keeps the silhouette-to-verdict animation');
+// Oct 16: the owner found the stacked card overwhelming; reveal() now renders the simple spike card (tests/spike-catch.test.cjs)
+assert.ok(/simpleCardHTML\(p\)/.test(reveal), 'reveal() renders the simple spike card');
+assert.ok(/b3-stage sc-stage show/.test(reveal), 'reveal() shows the card straight away');
 assert.ok(/fillHerb\(REV\)/.test(reveal), 'reveal() gives the herb a visible reaction');
 
 const card = fnBody(html, 'function cardHTML(p, anim){');
@@ -38,7 +39,7 @@ assert.ok(!/LowiDiscovery\.productHTML/.test(card), 'cardHTML() must not be repl
 assert.ok(/b3-vb v-/.test(card), 'card shows the colour-coded verdict');
 assert.ok(/herbHTML\(v\)\s*\+\s*eatHTML\(p\)/.test(card), 'herb reaction and Ate it / Skip sit right under the verdict');
 assert.ok(/r\[0\] === "pending" \? ""/.test(card), 'no "Tier pending" badge on the scan card');
-assert.ok(/data-b3="label"/.test(reveal), 'label evidence stays reachable as a secondary link');
+assert.ok(/data-b3="label"/.test(fnBody(html, 'function simpleCardHTML(p){')), 'label evidence stays reachable as a secondary link (in Details)');
 assert.ok(/case "label": if \(CUR && window\.LowiDiscovery\) LowiDiscovery\.openProduct\(CUR\)/.test(html), 'label link opens the field guide');
 
 const eat = fnBody(html, 'function eatCur(btn){');

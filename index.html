@@ -13950,6 +13950,8 @@ function spikeScore(f, drink){
 }
 /* returns {verdict:'ok'|'better'|'spike'|'unknown', why:[[key,...args]], score, est} */
 function rate(p){
+  /* Oct 16 spike estimator (spike-core.js): fully automatic from label data, one question: likely spike or not */
+  if (window.LowiSpikeCore && p && !p.manual) return LowiSpikeCore.assess(p);
   const f = p.facts || {}, why = [], drink = p.cat === "drink" || !!f.drink; let v = "ok", lvl = 0;
   const up = (k, nv, args) => { why.push([k].concat(args || [])); const r = {ok:0, better:1, spike:2}[nv]; if (r > lvl) { lvl = r; v = nv; } };
   const L = ingList(p.ingredients), hasI = L.length > 0, hasN = f.c != null || f.s != null;
@@ -13998,12 +14000,12 @@ const NAMES = [
 function rateName(name){ const k = nkey(name) + " " + String(name || "").toLowerCase();
   for (const [why, v, rx] of NAMES) if (rx.test(k)) return {verdict:v, why:[[why], ["w_name"]], score:{ok:14, better:45, spike:74}[v], est:true};
   return null; }
-function whyText(w){ const k = w[0]; if (!B3_TX[k]) return ""; return t.apply(null, [k].concat(w.slice(1).map(x => typeof x === "number" ? String(x).replace(".", LI() ? "," : ".") : String(x).charAt(0).toUpperCase() + String(x).slice(1)))); }
+function whyText(w){ const k = w[0]; if (!B3_TX[k]) return window.LowiSpikeCore ? LowiSpikeCore.text(w, LI()) : ""; return t.apply(null, [k].concat(w.slice(1).map(x => typeof x === "number" ? String(x).replace(".", LI() ? "," : ".") : String(x).charAt(0).toUpperCase() + String(x).slice(1)))); }
 function packWhy(why){ let s = JSON.stringify(why || []); while (s.length > 400 && why.length) { why = why.slice(0, -1); s = JSON.stringify(why); } return s; }
 function unpackWhy(s){ try { const a = JSON.parse(s || "[]"); return Array.isArray(a) ? a.filter(x => Array.isArray(x) && typeof x[0] === "string") : []; } catch(e){ return []; } }
 
 /* ---------- categories ---------- */
-function catOf(tags, name){ const s = (tags || []).join(" ") + " " + nkey(name);
+function catOf(tags, name){ const s = (tags || []).filter(x => !/foods-and-beverages/.test(String(x))).join(" ") + " " + nkey(name);
   if (/beverage|drink|soda|water|juice|getränk|getraenk|cola|limo|tea-based|coffee/.test(s)) return "drink";
   if (/breakfast-cereal|muesli|granola|cornflakes|porridge/.test(s)) return "cereal";
   if (/chocolate|candies|confection|sweet-spread|biscuit|cake|sweet-snack|ice-cream|dessert|gummi|cookie|schoko/.test(s)) return "sweets";
@@ -14317,6 +14319,39 @@ function cardHTML(p, anim){
     (v !== "unknown" ? meterHTML(p.score != null ? p.score : (p.facts && p.facts.score) || rate(p).score, p.est || (p.facts && p.facts.est)) : "") +
     (why.length ? '<ul class="b3-why">' + why.map(w => '<li>' + esc(w) + '</li>').join("") + '</ul>' : "") + factsHTML(p.facts) + fillNoteHTML(p) + storeCmp +
     '<div class="tiny dim b3-meta">' + [by, p.id ? (p.catches > 1 ? t("catches", p.catches) : t("catches1")) : "", p.barcode ? t("bcFound", p.barcode) : "", p.source === "off" ? t("r_off") : ""].filter(Boolean).map(esc).join(" · ") + '</div></div>'; }
+/* Oct 16 simple spike card: photo + name, one big spike verdict (an estimate), one action: Catch it.
+   Cheaper at other stores and community deals right under it; everything else folded into Details. */
+const SC_TX = {
+  spike: ["Will likely spike insulin", "Treibt Insulin wahrscheinlich hoch", "Probablemente sube la insulina"],
+  ok: ["Likely won't spike insulin", "Treibt Insulin wahrscheinlich nicht hoch", "Probablemente no sube la insulina"],
+  est: ["Spike estimate", "Spike-Schätzung", "Estimación de pico"],
+  catchXP: ["+10 XP", "+10 XP", "+10 XP"],
+  caughtHave: ["Caught", "Gefangen", "Atrapado"],
+  cheaper: ["Cheaper at other stores", "Woanders günstiger", "Más barato en otras tiendas"],
+  noPrices: ["No prices from other stores for this product yet.", "Für dieses Produkt gibt es noch keine Preise aus anderen Läden.", "Aún no hay precios de otras tiendas para este producto."],
+  details: ["Details", "Details", "Detalles"],
+  lists: ["Browse spike lists & deals", "Spike-Listen & Angebote ansehen", "Ver listas de picos y ofertas"],
+  per100: ["Per 100 g", "Pro 100 g", "Por 100 g"]
+};
+const sct = k => (SC_TX[k] || [k])[LI()] || SC_TX[k][0];
+function simpleCardHTML(p){
+  const v = p.verdict === "spike" ? "spike" : "ok", mine = isMine(p), m = mine ? D.mine[pkey(p)] : null;
+  let storeCmp = ""; try { storeCmp = window.LOWI_SHELF && LOWI_SHELF.priceCompareHTML ? LOWI_SHELF.priceCompareHTML(p.name, p.barcode, true) : ""; } catch(e){}
+  const why = (p.why || []).map(whyText).filter(Boolean);
+  const deals = window.LowiDeals && LowiDeals.cardHTML ? LowiDeals.cardHTML(p) : "";
+  return '<div class="b3-card sc-card v-' + v + '" id="b3Card">' +
+    '<div class="sc-top"><div class="sc-img">' + (p.img ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(p.img) + '">' : '<i>' + (CAT_E[p.cat] || CAT_E.other) + '</i>') + '</div>' +
+    '<div class="sc-nm"><div class="b3-name">' + esc(p.name) + '</div>' + (p.brand ? '<div class="sc-brand">' + esc(p.brand) + (p.facts && p.facts.q ? " · " + esc(p.facts.q) : "") + '</div>' : "") + '</div></div>' +
+    '<div class="sc-verd v-' + v + '" role="status"><small>' + esc(sct("est")) + '</small><strong>' + esc(sct(v)) + '</strong>' + (why[0] ? '<span>' + esc(why[0]) + '</span>' : "") + '</div>' +
+    '<div class="b3-acts sc-acts">' + (mine ? '<div class="b3-have sc-have">' + esc(sct("caughtHave")) + ' ✓' + (m && m.pending ? '<small>' + esc(t("pending")) + '</small>' : "") + '</div>' :
+      '<button class="r2-btn pri big b3-catch sc-catch" data-b3="catch" id="b3Catch"><span class="b3-pb" aria-hidden="true"></span>' + esc(t("catch")) + ' <small>' + esc(sct("catchXP")) + '</small></button>') + '</div>' +
+    '<section class="sc-sec sc-prices"><h4>' + esc(sct("cheaper")) + '</h4>' + (storeCmp || '<p class="sc-none">' + esc(sct("noPrices")) + '</p>') + '</section>' + deals +
+    '<details class="sc-more"><summary>' + esc(sct("details")) + '</summary>' +
+      (why.length ? '<ul class="b3-why">' + why.map(w => '<li>' + esc(w) + '</li>').join("") + '</ul>' : "") + factsHTML(p.facts) + fillNoteHTML(p) +
+      '<div class="tiny dim b3-meta">' + [p.id ? (p.catches > 1 ? t("catches", p.catches) : t("catches1")) : "", p.barcode ? t("bcFound", p.barcode) : "", p.source === "off" ? t("r_off") : ""].filter(Boolean).map(esc).join(" · ") + '</div>' +
+      (window.LowiDiscovery ? '<button type="button" class="r2-link b3-label" data-b3="label">' + esc(["Label details & evidence", "Etikett-Details & Belege", "Detalles de la etiqueta"][LI()]) + '</button>' : "") +
+      '<div class="tiny dim b3-legal">' + esc(t("legal")) + '</div></details>' +
+    '<button type="button" class="sc-lists" data-sc="lists">' + esc(sct("lists")) + '</button></div>'; }
 function actsHTML(p){ const mine = isMine(p);
   if (p.verdict === "unknown") return "";
   return '<div class="b3-acts">' + (mine ? '<div class="b3-have">' + esc(t("already")) + (D.mine[pkey(p)] && D.mine[pkey(p)].pending ? '<small>' + esc(t("pending")) + '</small>' : "") + '</div>' :
@@ -14395,14 +14430,16 @@ function eatCur(btn){
 function reveal(p, quiet){
   if (REV) { try { R2.close(REV); } catch(e){} REV = null; }
   if (p && !p.notFound && !p.verdict) { p = Object.assign({}, p); }
+  /* Oct 16: always re-rate with the current spike estimator, so older saved verdicts (e.g. a vegetable pan rated as a drink) are corrected */
+  if (p && !p.notFound && !p.manual && window.LowiSpikeCore) { const r = rate(p); if (r.verdict !== "unknown") { p = Object.assign({}, p, {verdict:r.verdict, why:r.why, score:r.score, est:true}); } }
   if (p && !p.notFound && (!p.verdict || p.verdict === "unknown" || !p.why)) { const r = rate(p); p.verdict = p.verdict && p.verdict !== "unknown" ? p.verdict : r.verdict; p.why = p.why && p.why.length ? p.why : r.why; if (p.score == null) p.score = r.score; if (p.est == null) p.est = r.est; }
   if (p && p.notFound) { if (p.partial) { p.name = ""; } }
   CUR = p; const anim = !quiet && !RM();
   if (!quiet && p && !p.notFound && p.verdict && p.verdict !== "unknown") { try { window.dispatchEvent(new CustomEvent("lowi:scan-verdict", { detail: { verdict: p.verdict } })); } catch(e){} }
-  const body = p.notFound || p.verdict === "unknown" ? manualHTML(p) : '<div class="b3-stage' + (anim ? " hide" : "") + '">' + (anim ? '<div class="b3-sil"><span class="b3-q">?</span><div class="small gold">' + esc(t("wild")) + '</div></div>' : "") + cardHTML(p, anim) + actsHTML(p) + swapsHTML(p) + '<div class="tiny dim b3-legal">' + esc(t("legal")) + '</div>' + (window.LowiDiscovery ? '<button type="button" class="r2-link b3-label" data-b3="label">' + esc(["Label details & evidence", "Etikett-Details & Belege", "Detalles de la etiqueta"][LI()]) + '</button>' : "") + '</div>';
+  const body = p.notFound || p.verdict === "unknown" ? manualHTML(p) : '<div class="b3-stage sc-stage show">' + simpleCardHTML(p) + '</div>';
   REV = R2.sheet('<div class="b3-rev">' + body + '</div>', {cls:"b3-ov", onClose:() => { REV = null; CUR = null; }});
   fillHerb(REV); if (!anim) { const h = $(".b3-herb", REV); h && h.classList.add("go"); }
-  if (anim && !p.notFound && p.verdict !== "unknown") { sfx("open"); setTimeout(() => { const s = REV && $(".b3-stage", REV); if (s) { s.classList.remove("hide"); s.classList.add("show"); const h = $(".b3-herb", s); h && h.classList.add("go"); sfx(p.verdict === "ok" ? "preview" : "soft"); buzz(15); } }, 950); }
+  if (anim && !p.notFound && p.verdict !== "unknown") { sfx(p.verdict === "ok" ? "preview" : "soft"); buzz(15); }
   if (p.notFound) { const n = $("#b3MName", REV); n && n.addEventListener("input", manualReady); }
 }
 function manualReady(){ if (!REV) return; const n = ($("#b3MName", REV) || {}).value || "", any = $$(".b3-tick[aria-pressed=true]", REV).length; const b = $("#b3MCatch", REV); if (b) b.disabled = !(n.trim().length >= 2 && any); }
@@ -14410,10 +14447,12 @@ async function catchCur(btn, p){
   if (!p || btn.disabled) return; btn.disabled = true; btn.classList.add("throw"); sfx("tap");
   const res = await doCatch(p);
   const first = res.first, k = pkey(p), m = D.mine[k] || p;
-  // Collection/scanning itself earns no points. Accepted contributions have their own ledger.
+  // Oct 16: catching earns XP for spiky and non-spiky products alike (the owner's call: knowing is the point).
+  let cxp = 0; try { if (window.LowiVitalsBridge) cxp = LowiVitalsBridge.complete("vitamin", "catch:" + k, {amt:10, perDay:10, label:"Product caught", src:"scan:catch"}) || 0; } catch(e){}
+  try { window.dispatchEvent(new CustomEvent("lowi:product-caught", {detail:{product:slim(Object.assign({}, p, m)), verdict:p.verdict, xp:cxp}})); } catch(e){}
   sfx(first ? "catchFirst" : "catch"); buzz(first ? [30, 60, 30, 60, 80] : [30, 50, 40]);
   const acts = btn.closest(".b3-acts, .b3-man"); const card = REV && $("#b3Card", REV);
-  const burst = '<div class="b3-caught' + (first ? " first" : "") + '"><div class="b3-cbig">' + esc(first ? t("firstCatch") : t("caught")) + '</div><div class="small">' + esc(first ? t("firstCatchSub") : res.pending ? t("pending") : m.byName && m.byName !== myName() ? t("addedSub", m.byName) : t("inYours")) + '</div>' +
+  const burst = '<div class="b3-caught' + (first ? " first" : "") + '"><div class="b3-cbig">' + esc(first ? t("firstCatch") : t("caught")) + '</div><div class="small">' + esc(first ? t("firstCatchSub") : res.pending ? t("pending") : m.byName && m.byName !== myName() ? t("addedSub", m.byName) : t("inYours")) + '</div>' + (cxp ? '<div class="sc-xp">+' + cxp + ' XP</div>' : "") +
     '<button class="r2-btn ghost" data-b3="dex" style="margin-top:12px">' + esc(t("openDex")) + '</button></div>';
   if (acts && acts.classList.contains("b3-man")) { const q = Object.assign({}, p, m); const st = REV && $(".b3-rev", REV); if (st) st.innerHTML = '<div class="b3-stage show">' + cardHTML(q, false) + burst + swapsHTML(q) + '</div>'; }
   else if (acts) { acts.outerHTML = burst; if (card && m.dex) { const no = $(".b3-no", card); if (no) no.textContent = t("dexNo") + " " + String(m.dex).padStart(3, "0"); } }
@@ -19938,6 +19977,9 @@ window.LowiCommunityHost = {
 <link rel="stylesheet" id="ssCss" href="shop-scan.css?v=20261016-214010">
 <script src="shop-scan-core.js?v=20261016-214010"></script>
 <script src="shop-scan.js?v=20261016-214010"></script>
+<link rel="stylesheet" id="scCss" href="spike-catch.css?v=20261016-214010">
+<script src="spike-core.js?v=20261016-214010"></script>
+<script src="spike-catch.js?v=20261016-214010"></script>
 <link rel="stylesheet" id="scrCss" href="scan-screens.css?v=20261016-214010">
 <link rel="stylesheet" id="cshCss" href="cook-shop.css?v=20261016-214010">
 </body>

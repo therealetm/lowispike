@@ -101,7 +101,9 @@ const COPY={
  talking:['Talking to {n} · tap again for everyone','Du sprichst mit {n} · nochmal tippen für alle','Hablas con {n} · toca de nuevo para todos'],
  toEveryone:['Write to everyone instead','Stattdessen an alle schreiben','Escribir a todos'],
  youAll:['You · talking to everyone','Du · sprichst mit allen','Tú · hablas con todos'],
- history:['All messages','Alle Nachrichten','Todos los mensajes'],
+ history:['Chat','Chat','Chat'],
+ newPic:['New picture','Neues Bild','Foto nueva'],
+ photoOf:['Photo from {n}','Foto von {n}','Foto de {n}'],
  back:['Back to the galaxy','Zurück zur Galaxie','Volver a la galaxia'],
  toArrow:['to {n}','an {n}','para {n}'],
  toYou:['to you','an dich','para ti'],
@@ -184,9 +186,13 @@ function convo(ms,idx){if(!sel||!G)return null;const b=botOf(sel);
  for(let i=ms.length-1;i>=0;i--){const m=ms[i];if(!m||m.demo||m.bot||!m.uid)continue;
   if(m.uid===scope||m.uid===sel){const t=G.targetOf(m,ms,idx);if(t&&((m.uid===scope&&t.uid===sel)||(m.uid===sel&&t.uid===scope)))return {t:G.bubbleText(m,t),fromMe:m.uid===scope,ts:m.ts,id:m.id,status:m.status};}}
  return null;}
+function photoView(src,name){if(!K.image(src))return;const o=D.createElement('div');o.className='cg-photo';o.setAttribute('role','dialog');o.setAttribute('aria-label',fill('photoOf',name||''));
+ o.innerHTML='<img alt="" src="'+esc(src)+'"><button type="button" class="cg-photo-x" aria-label="×">×</button>';const close=()=>o.remove();o.addEventListener('click',close);D.body.appendChild(o);}
 function galaxy(ms,w,h,quiet){
  if(!G)return {html:'',lines:[],names:[]};
  const r=roster(),idx=nameIdx(r),order=crowd(ms,r,idx),L=G.layout(order,w,h,scope||'me',{reserveTop:quiet}),last=latestBy(ms),now=Date.now(),spot=new Map(L.spots.map(x=>[x.uid,x])),meSpot=L.spots[0],lines=[],names=[];
+ /* Oct 16: chats with the galaxy bots live on this phone; their newest words go in the same avatar bubbles */
+ try{const bs=botStore();for(const u in bs){const arr=bs[u];const m=arr&&arr[arr.length-1];if(!m||!m.t)continue;const k=m.from==='me'?scope:u,cur=last.get(k);if(!cur||(+cur.ts||0)<=(+m.ts||0))last.set(k,{id:'',uid:k,t:m.t,ts:m.ts||now});}}catch(e){}
  if(sel&&!spot.has(sel))sel='';
  const cv=convo(ms,idx);
  let html='';
@@ -196,26 +202,26 @@ function galaxy(ms,w,h,quiet){
   const attrs='data-uid="'+esc(x.uid)+'" data-name="'+esc(me?own().n||'':p.n)+'" aria-label="'+esc(aria)+'"'+(me?'':' aria-pressed="'+picked+'"')+' style="left:'+x.x+'px;top:'+x.y+'px;--s:'+x.size+'px;--i:'+i+';--c:'+hueColor(x.uid,me)+'"';
   const inner='<span class="cg-orb">'+mate(me?(scope||'me'):x.uid,'g'+i)+'</span><span class="cg-name">'+esc(label)+'</span>';
   html+=button(me?'to-all':'select',inner,attrs,'cg-body'+(me?' me':'')+(picked?' sel':'')+(talking?' speaking':'')+(p.bot?' bot':'')+(me&&!scope?' cg-off':''));
-  const m=last.get(me?scope:x.uid);const o=m?G.fade(m.ts,now):0;
-  if(m&&(o>0||m.status)&&x.bub.lines>=1){const t=G.targetOf(m,ms,idx),body=G.bubbleText(m,t),toMe=t&&t.uid===scope;
-   /* One line, one conversation: what you said to someone lives on the line while you talk to them and is gone when you stop.
-      What they said to you rides the line too while they are the one you picked. */
-   if(me&&t)return;if(!me&&toMe&&picked)return;
-   /* Oct 16 (E-man: "keep it minimal"): no "→ to X" label. The bubble wears the sender's colour and sits next to the sender. */
-   const tag='';
-   const est=Math.round(body.length*6.2+24<=x.bub.width?Math.max(48,body.length*6.2+24):x.bub.width),side=x.bub.mode!=='top';
-   const left=side?(x.bub.mode==='l'?x.bub.left:x.bub.right-est):Math.max(x.cell.x+6,Math.min(x.x-est/2,x.cell.x+x.cell.w-6-est)),tail=side?0:Math.max(14,Math.min(est-14,x.x-left));
-   const st=m.status?'<span class="cg-st">'+tr(m.status==='sending'?'sending':'unconfirmed')+'</span>':'';
-   html+=button('thread',tag+'<span class="cg-t" style="-webkit-line-clamp:'+Math.max(1,x.bub.lines-(st?1:0))+'">'+text(body)+'</span>'+st,'data-id="'+esc(m.id)+'" aria-label="'+esc(label+': '+m.t)+' · '+tr('openThread')+'" style="left:'+Math.round(left)+'px;width:'+Math.round(est)+'px;'+(side?'top:'+x.bub.cy+'px;':'bottom:'+Math.round(h-x.bub.bottom)+'px;')+'max-height:'+x.bub.max+'px;--o:'+(m.status?1:o)+';--tail:'+Math.round(tail)+'px;--c:'+hueColor(x.uid,me)+'"','cg-bub'+(side?' s'+x.bub.mode:'')+(me?' mine':'')+(toMe?' tome':'')+(talking?' pop':''));}
+  /* Oct 16 (E-man: "like Snapchat's map"): every companion's newest message sits in one small bubble anchored right above their round
+     avatar: their name, then the words (or "New picture" for a photo, which opens it). Your own words always sit above YOUR avatar.
+     Chat never moves anywhere else; the stream between you and the one you tapped carries the energy. Same glass as Misty's bubble. */
+  const m=last.get(me?scope:x.uid),typing=!me&&botTyping===x.uid;const o=m?G.fade(m.ts,now):0;
+  if(typing||(m&&(o>0||m.status))){const t=m&&G.targetOf(m,ms,idx),toMe=!!(t&&t.uid===scope),pic=m?K.image(m.img||m.photo||m.image||''):'';
+   const words=typing?tr('typing'):pic?'📷 '+tr('newPic'):G.bubbleText(m,t);
+   const est=Math.round(Math.min(Math.max(64,Math.max(words.length,label.length)*6.4+26),Math.min(176,w-12)));
+   const left=Math.max(6,Math.min(w-6-est,x.x-est/2)),tail=Math.max(14,Math.min(est-14,x.x-left)),bottom=Math.round(h-(x.y-(x.size||46)/2-9));
+   const st=m&&m.status?'<span class="cg-st">'+tr(m.status==='sending'?'sending':'unconfirmed')+'</span>':'';
+   const inner='<b class="cg-bn">'+esc(label)+'</b><span class="cg-t'+(typing?' cg-typing':'')+'">'+(typing?esc(words):pic?esc(words):text(words))+'</span>'+st;
+   const style='left:'+Math.round(left)+'px;width:'+est+'px;bottom:'+bottom+'px;--o:'+(m&&m.status||typing?1:o)+';--tail:'+Math.round(tail)+'px;--c:'+hueColor(x.uid,me);
+   const cls='cg-bub cg-snap'+(me?' mine':'')+(toMe?' tome':'')+(talking||typing?' pop':'')+(pic?' pic':'');
+   html+=pic?button('photo',inner,'data-id="'+esc(m.id)+'" data-src="'+esc(pic)+'" data-name="'+esc(label)+'" aria-label="'+esc(fill('photoOf',label))+'" style="'+style+'"',cls)
+    :m&&m.id?button('thread',inner,'data-id="'+esc(m.id)+'" aria-label="'+esc(label+': '+(m.t||''))+' · '+tr('openThread')+'" style="'+style+'"',cls)
+    :'<div class="'+cls+'" role="status" style="'+style+'">'+inner+'</div>';}
  });
  if(sel&&spot.has(sel)){const t=spot.get(sel),p=r.get(sel)||{n:''},theyTalk=!!(cv&&!cv.fromMe)||botTyping===sel,A=theyTalk?t:meSpot,B=theyTalk?meSpot:t;
   lines.push({a:{x:A.x,y:A.y},b:{x:B.x,y:B.y},rb:(B.size||46)/2,alpha:1,sel:true,arrow:true,from:hueColor(A.uid,A.me),to:hueColor(B.uid,B.me)});
-  const mid=G.midOf({x:A.x,y:A.y},{x:B.x,y:B.y}),mw=Math.min(210,Math.max(120,w-40)),cx=Math.max(mw/2+8,Math.min(w-mw/2-8,mid.x)),cy=Math.max(34,Math.min(h-34,mid.y));
-  /* no "You → Name" header: the bubble is the colour of whoever wrote it (yours when you wrote, theirs when they did) */
-  const body=botTyping===sel?'<span class="cg-mt cg-typing">'+tr('typing')+'</span>':cv?'<span class="cg-mt">'+text(cv.t)+'</span>'+(cv.status?'<span class="cg-st">'+tr(cv.status==='sending'?'sending':'unconfirmed')+'</span>':''):'<span class="cg-mt cg-hint">'+tr('sayHi')+'</span>';
-  const style='left:'+Math.round(cx)+'px;top:'+Math.round(cy)+'px;max-width:'+Math.round(mw)+'px;--a:'+hueColor(A.uid,A.me)+';--b:'+hueColor(B.uid,B.me)+';--c:'+hueColor(A.uid,A.me);
-  const inner=body;
-  html+=cv&&cv.id?button('thread',inner,'data-id="'+esc(cv.id)+'" aria-label="'+esc((theyTalk?p.n:tr('youWord'))+' → '+(theyTalk?tr('youWord'):p.n)+': '+cv.t)+'" style="'+style+'"','cg-mid'+(theyTalk?' in':' out')):'<div class="cg-mid'+(theyTalk?' in':' out')+'" role="status" style="'+style+'">'+inner+'</div>';}
+  /* Oct 16: the words stay in the bubbles above the avatars; the line between you two only carries the energy */
+ }
  gxIds=L.spots.map(x=>x.uid).filter(u=>u&&u!=='me');
  return {html,lines,names,me:meSpot,orbits:meSpot?{cx:meSpot.x,cy:meSpot.y,r:L.spots.filter(x=>!x.me).map(x=>Math.round(Math.hypot(x.x-meSpot.x,x.y-meSpot.y)))}:null};
 }
@@ -359,7 +365,7 @@ D.addEventListener('input',e=>{if(e.target.id!=='cmInput')return;draft(e.target.
 D.addEventListener('keydown',e=>{if(e.key==='Escape'&&threadOpen&&active()&&!D.querySelector('.r2-ov.on')){thread(false);refresh();return;}if(e.target.id==='cmInput'&&e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();send();}});
 D.addEventListener('submit',e=>{const f=e.target;if(!f.matches('form[data-chat-form]'))return;e.preventDefault();e.stopPropagation();if(f.dataset.sent!=='1')submitForm(f);});
 D.addEventListener('click',async e=>{const b=e.target.closest&&e.target.closest('[data-chat]');if(!b){const bub=e.target.closest&&e.target.closest('#cmPaneChat [data-chat-bub]');if(bub&&!(W.getSelection&&String(W.getSelection()).trim())){const mid=bub.getAttribute('data-chat-bub'),m=messages().find(x=>x.id===mid);if(m&&!m.status){openId=openId===mid?'':mid;if(pick&&pick!==openId)pick='';refresh();}}return;}e.preventDefault();e.stopPropagation();const a=b.dataset.chat,id=b.dataset.id;
- if(a==='send')send();else if(a==='reload'){transport.reload();loadExtras(true);}else if(a==='settings')settings();else if(a==='profile')openProfile(b.dataset.uid,b.dataset.name);else if(a==='select'){sel=sel===b.dataset.uid?'':b.dataset.uid;refresh();}else if(a==='to-all'){sel='';refresh();}else if(a==='select-close'){sel=b.dataset.uid||'';try{if(W.LowiR2&&W.LowiR2.close)W.LowiR2.close();}catch(x){}refresh();}else if(a==='thread'){thread(true,id);refresh();}else if(a==='history'){thread(!threadOpen);refresh();}else if(a==='close-thread'){thread(false);refresh();const h=D.querySelector('#cgTo .cg-hist');if(h&&h.focus)h.focus({preventScroll:true});}else if(a==='open-galaxy')openGalaxy(b.dataset.uid);else if(a==='hello'){draft(tr('hiText'),null);refresh();focusInput();}else if(a==='more'){openId=openId===id?'':id;if(pick&&pick!==openId)pick='';refresh();}else if(a==='pick'){pick=pick===id?'':id;if(pick)openId=id;refresh();}else if(a==='reply'){openId='';pick='';draft(draftState().draft.text,id);refresh();focusInput();}else if(a==='noreply'){draft(draftState().draft.text,null);refresh();focusInput();}else if(a==='mention'){draft((D.getElementById('cmInput').value||'').replace(/@[\p{L}\p{N}_-]*$/u,'@'+b.dataset.name+' '),draftState().draft.reply);refresh();focusInput();}else if(a==='latest'){const l=D.getElementById('cmList');l.scrollTop=l.scrollHeight;newCount=0;refresh();}else if(a==='retry-send')send(id);else if(a==='discard'){store.discard(id);refresh();}else if(a==='react'){pick='';openId='';try{await transport.react(id,b.dataset.emoji,own().n);}catch(x){notice=tr('reactFailed');}refresh();}else if(a==='report')openReport(id);else if(a==='block')blockPerson(b.dataset.uid,b.dataset.name,true);else if(a==='unblock')blockPerson(b.dataset.uid,'',false);else if(a==='delete'){
+ if(a==='send')send();else if(a==='reload'){transport.reload();loadExtras(true);}else if(a==='settings')settings();else if(a==='profile')openProfile(b.dataset.uid,b.dataset.name);else if(a==='select'){sel=sel===b.dataset.uid?'':b.dataset.uid;refresh();}else if(a==='to-all'){sel='';refresh();}else if(a==='select-close'){sel=b.dataset.uid||'';try{if(W.LowiR2&&W.LowiR2.close)W.LowiR2.close();}catch(x){}refresh();}else if(a==='thread'){thread(true,id);refresh();}else if(a==='photo'){photoView(b.dataset.src,b.dataset.name);}else if(a==='history'){thread(!threadOpen);refresh();}else if(a==='close-thread'){thread(false);refresh();const h=D.querySelector('#cgTo .cg-hist');if(h&&h.focus)h.focus({preventScroll:true});}else if(a==='open-galaxy')openGalaxy(b.dataset.uid);else if(a==='hello'){draft(tr('hiText'),null);refresh();focusInput();}else if(a==='more'){openId=openId===id?'':id;if(pick&&pick!==openId)pick='';refresh();}else if(a==='pick'){pick=pick===id?'':id;if(pick)openId=id;refresh();}else if(a==='reply'){openId='';pick='';draft(draftState().draft.text,id);refresh();focusInput();}else if(a==='noreply'){draft(draftState().draft.text,null);refresh();focusInput();}else if(a==='mention'){draft((D.getElementById('cmInput').value||'').replace(/@[\p{L}\p{N}_-]*$/u,'@'+b.dataset.name+' '),draftState().draft.reply);refresh();focusInput();}else if(a==='latest'){const l=D.getElementById('cmList');l.scrollTop=l.scrollHeight;newCount=0;refresh();}else if(a==='retry-send')send(id);else if(a==='discard'){store.discard(id);refresh();}else if(a==='react'){pick='';openId='';try{await transport.react(id,b.dataset.emoji,own().n);}catch(x){notice=tr('reactFailed');}refresh();}else if(a==='report')openReport(id);else if(a==='block')blockPerson(b.dataset.uid,b.dataset.name,true);else if(a==='unblock')blockPerson(b.dataset.uid,'',false);else if(a==='delete'){
   if(armed!==id){armed=id;clearTimeout(armTimer);armTimer=setTimeout(()=>{armed='';refresh();},3500);refresh();return;}armed='';b.disabled=true;b.textContent=tr('deleting');try{await transport.remove(id);}catch(x){notice=tr('deleteFailed');}refresh();}
 });
 D.addEventListener('focusin',fit);D.addEventListener('focusout',()=>requestAnimationFrame(fit));W.addEventListener('resize',()=>{fit();clearTimeout(W.__cpResize);W.__cpResize=setTimeout(()=>{if(active()){refresh();if(sk)sk.resize();}},120);});if(W.visualViewport){W.visualViewport.addEventListener('resize',fit);W.visualViewport.addEventListener('scroll',fit);}

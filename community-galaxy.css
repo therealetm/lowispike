@@ -133,3 +133,32 @@ html.gx-out #cmPaneChat .cg-bub,html.gx-out #cmPaneChat .cg-mid{opacity:0!import
 #cmPaneChat[data-spirit-chat] .cg-mid{background:color-mix(in srgb,var(--c) 58%,#ffffff);color:#15122a;border-color:var(--c);min-width:0}
 #cmPaneChat[data-spirit-chat] .cg-mid .cg-hint{color:#3a3556}
 html.gx-out #cgField,html.gx-in #cgField{will-change:transform,opacity}
+
+/* Oct 16 (E-man: "like Snapchat's map"): one small glass bubble anchored above each avatar, name + newest words.
+   The same liquid glass as Misty's "tap a glowing place" bubble (world-home.css .wh-hint.wh-say). */
+html #cmPaneChat[data-spirit-chat] .cg-bub.cg-snap, html.lg #cmPaneChat[data-spirit-chat] .cg-bub.cg-snap {
+    position: absolute; top: auto !important; transform: none !important; display: flex; flex-direction: column; gap: 1px; min-height: 0; max-height: none;
+    padding: 5px 10px 6px !important; border-radius: 16px !important; box-sizing: border-box; text-align: left; opacity: var(--o, 1);
+    border: 1.5px solid var(--wh-glass-rim, rgba(160,220,255,.55)) !important; color: #fff !important; font-family: var(--lg-font, inherit); font-weight: 500;
+    background: var(--wh-glass-bg, rgba(28,74,150,.36)) !important; background-color: rgba(8,14,40,.38) !important;
+    box-shadow: var(--wh-glass-sh, 0 8px 24px -12px rgba(40,120,255,.5)) !important;
+    -webkit-backdrop-filter: blur(10px) saturate(1.4); backdrop-filter: blur(10px) saturate(1.4); text-shadow: 0 1px 3px rgba(0,20,60,.45);
+}
+html #cmPaneChat[data-spirit-chat] .cg-bub.cg-snap::after, html.lg #cmPaneChat[data-spirit-chat] .cg-bub.cg-snap::after {
+    content: ''; position: absolute; left: calc(var(--tail) - 6px); top: auto; bottom: -7px; right: auto; width: 11px; height: 11px; transform: rotate(45deg);
+    background: rgba(8,14,40,.38) !important; border: 0 !important; border-right: 1.5px solid var(--wh-glass-rim, rgba(160,220,255,.55)) !important;
+    border-bottom: 1.5px solid var(--wh-glass-rim, rgba(160,220,255,.55)) !important; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+#cmPaneChat[data-spirit-chat] .cg-snap .cg-bn { font-size: 10.5px; font-weight: 700; line-height: 1.15; color: color-mix(in srgb, var(--c) 70%, #fff); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: .01em; }
+#cmPaneChat[data-spirit-chat] .cg-snap .cg-t { font-size: 12.5px; line-height: 1.25; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; color: #fff; }
+#cmPaneChat[data-spirit-chat] .cg-snap.mine { border-color: rgba(156,218,199,.7) !important; }
+#cmPaneChat[data-spirit-chat] .cg-snap.tome { box-shadow: 0 0 0 2px rgba(255,210,122,.75), 0 8px 24px -12px rgba(40,120,255,.5) !important; }
+#cmPaneChat[data-spirit-chat] .cg-snap.pic .cg-t { color: #ffe7a8; font-weight: 600; }
+#cmPaneChat[data-spirit-chat] .cg-snap .cg-typing { opacity: .8; font-style: italic; }
+#cmPaneChat[data-spirit-chat] .cg-snap .cg-st { font-size: 10px; color: rgba(235,235,245,.65) !important; }
+.cg-photo { position: fixed; inset: 0; z-index: 9000; display: flex; align-items: center; justify-content: center; background: rgba(2,6,18,.82); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.cg-photo img { max-width: 92vw; max-height: 80vh; border-radius: 22px; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
+.cg-photo-x { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 14px); right: 16px; width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid rgba(160,220,255,.55); background: rgba(28,74,150,.36); color: #fff; font-size: 22px; }
+html.lg #cmPaneChat[data-spirit-chat] .cg-bub.cg-snap.mine, html #cmPaneChat[data-spirit-chat] .cg-bub.cg-snap.mine { background: var(--wh-glass-bg, rgba(28,74,150,.36)) !important; background-color: rgba(8,14,40,.38) !important; color: #fff !important; }
+html.lg #cmPaneChat[data-spirit-chat] .cg-bub.cg-snap.mine::after, html #cmPaneChat[data-spirit-chat] .cg-bub.cg-snap.mine::after { background: rgba(8,14,40,.38) !important; }
+html.lg #cmPaneChat[data-spirit-chat] .cg-snap :is(.cg-to, .cg-t .cm-mention) { color: #9fd8ff !important; }

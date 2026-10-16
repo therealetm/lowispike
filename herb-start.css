@@ -176,3 +176,21 @@ html body .r2-gate .hs-in:focus{border-color:#8fdcff!important;box-shadow:0 0 0 
 .hs-bar i{background:linear-gradient(90deg,#8fdcff,#a9b8ff)}
 html body .r2-ov.hs-ivov .hs-opt.on{border-color:#8fdcff}
 @media (max-height:700px){.hs-scene.sm .hs-misty{--hs-m:84px}.hs-habits li{min-height:32px;font-size:13px;padding:0 11px}.hs-p2{font-size:13.5px!important}}
+/* phone held sideways: Misty on the left, words and buttons on the right, so nothing needs scrolling */
+@media (orientation:landscape) and (max-height:520px){
+ html body .r2-gate .r2-start.hs{display:grid!important;grid-template-columns:minmax(150px,36%) 1fr;grid-template-rows:auto 1fr auto;grid-template-areas:"top top" "scene copy" "scene acts";column-gap:22px;row-gap:6px;align-items:center;max-width:none;padding-top:max(8px,env(safe-area-inset-top));padding-bottom:max(8px,env(safe-area-inset-bottom))}
+ .r2-start.hs .hs-top{grid-area:top;min-height:34px}
+ .r2-start.hs .hs-scene{grid-area:scene;min-height:0;max-height:none;justify-content:center;align-self:stretch}
+ .r2-start.hs .hs-copy{grid-area:copy;gap:4px}
+ .r2-start.hs .hs-acts{grid-area:acts;margin-top:0;padding-top:0;gap:4px}
+ .r2-start.hs .hs-misty{--hs-m:min(30vh,118px)}
+ .r2-start.hs .hs-scene.sm .hs-misty{--hs-m:min(26vh,96px)}
+ .r2-start.hs h1{font-size:22px}
+ .r2-start.hs .hs-p{font-size:14px;line-height:1.35;margin:0}
+ .r2-start.hs .hs-p2{font-size:13px!important}
+ .r2-start.hs .hs-habits{gap:5px}.r2-start.hs .hs-habits li{min-height:28px;font-size:12.5px;padding:0 10px}
+ .r2-start.hs .hs-bubble{font-size:13.5px;margin:0 0 8px;padding:9px 12px}
+ .r2-start.hs .r2-btn.big{min-height:46px}
+ .r2-start.hs .hs-fine{margin:0;font-size:12px}
+ .r2-start.hs .hs-in{min-height:44px}
+}

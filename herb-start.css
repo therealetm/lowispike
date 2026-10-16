@@ -178,8 +178,11 @@ html body .r2-ov.hs-ivov .hs-opt.on{border-color:#8fdcff}
 @media (max-height:700px){.hs-scene.sm .hs-misty{--hs-m:84px}.hs-habits li{min-height:32px;font-size:13px;padding:0 11px}.hs-p2{font-size:13.5px!important}}
 /* phone held sideways: Misty on the left, words and buttons on the right, so nothing needs scrolling */
 @media (orientation:landscape) and (max-height:520px){
- html body .r2-gate .r2-start.hs{display:grid!important;grid-template-columns:minmax(150px,36%) 1fr;grid-template-rows:auto 1fr auto;grid-template-areas:"top top" "scene copy" "scene acts";column-gap:22px;row-gap:6px;align-items:center;max-width:none;padding-top:max(8px,env(safe-area-inset-top));padding-bottom:max(8px,env(safe-area-inset-bottom))}
- .r2-start.hs .hs-top{grid-area:top;min-height:34px}
+ html body .r2-gate .r2-start.hs{display:grid!important;grid-template-columns:minmax(150px,36%) 1fr;grid-template-rows:auto 1fr auto;grid-template-areas:"top top" "scene copy" "scene acts";column-gap:22px;row-gap:6px;align-items:center;max-width:none;padding-top:max(6px,env(safe-area-inset-top));padding-bottom:max(12px,env(safe-area-inset-bottom));overflow:hidden}
+ /* the step change fades in place here: the usual slide-up pushed the buttons 14px below the screen while it played */
+ html body .r2-gate .r2-start.hs.r2-swap{animation:hsFadeIn .38s ease-out both}
+ .r2-start.hs .hs-top{grid-area:top;min-height:32px}
+ .r2-start.hs .hs-top .hs-back{width:34px;height:34px}
  .r2-start.hs .hs-scene{grid-area:scene;min-height:0;max-height:none;justify-content:center;align-self:stretch}
  .r2-start.hs .hs-copy{grid-area:copy;gap:4px}
  .r2-start.hs .hs-acts{grid-area:acts;margin-top:0;padding-top:0;gap:4px}
@@ -190,7 +193,25 @@ html body .r2-ov.hs-ivov .hs-opt.on{border-color:#8fdcff}
  .r2-start.hs .hs-p2{font-size:13px!important}
  .r2-start.hs .hs-habits{gap:5px}.r2-start.hs .hs-habits li{min-height:28px;font-size:12.5px;padding:0 10px}
  .r2-start.hs .hs-bubble{font-size:13.5px;margin:0 0 8px;padding:9px 12px}
- .r2-start.hs .r2-btn.big{min-height:46px}
+ .r2-start.hs .r2-btn.big{min-height:44px}
+ .r2-start.hs .hs-link{min-height:36px}
  .r2-start.hs .hs-fine{margin:0;font-size:12px}
  .r2-start.hs .hs-in{min-height:44px}
+}
+@keyframes hsFadeIn{from{opacity:0}to{opacity:1}}
+/* account form (sign up / sign in) with the phone held sideways: words left, fields right, all on one screen */
+@media (orientation:landscape) and (max-height:520px){
+ html body .r2-gate .r2-start.form:not(.a2){display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);column-gap:28px;row-gap:8px;align-content:center;align-items:start;
+  width:calc(100% - 24px);max-width:820px;min-height:0;margin:auto;padding:max(10px,env(safe-area-inset-top)) 28px max(12px,env(safe-area-inset-bottom));border-radius:26px;overflow:hidden}
+ html body .r2-gate .r2-start.form:not(.a2)>*{grid-column:1;margin-top:0;margin-bottom:0}
+ html body .r2-gate .r2-start.form:not(.a2)>.r2-form{grid-column:2;grid-row:1 / span 8;align-self:center}
+ html body .r2-gate .r2-start.form.r2-swap{animation:hsFadeIn .38s ease-out both}
+ html body .r2-gate:has(>.r2-start.form){display:flex;flex-direction:column}
+ html body .r2-gate .r2-start.form h1{font-size:24px!important;margin:2px 0!important}
+ html body .r2-gate .r2-start.form p{font-size:14px!important;line-height:1.35}
+ html body .r2-gate .r2-start.form .r2-back{width:36px;height:36px}
+ html body .r2-gate .r2-start.form .r2-form{gap:8px}
+ html body .r2-gate .r2-start.form .r2-fl{gap:3px}
+ html body .r2-gate .r2-start.form .r2-fl input{height:42px;font-size:16px}
+ html body .r2-gate .r2-start.form .r2-form .r2-btn{min-height:44px}
 }

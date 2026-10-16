@@ -6,6 +6,10 @@ const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio
 const type = v => /^[IE][NS][TF][JP]$/.test(String(v || '').toUpperCase()) ? String(v).toUpperCase() : '';
 const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const image = v => /^https:\/\//.test(String(v || '')) || /^data:image\/(png|jpeg|webp);base64,/.test(String(v || '')) ? v : '';
+/* Oct 16 (E-man, handoff Task 11): a chat photo is an ordinary message whose body carries '📷 <public URL>' from OUR media bucket (uid/chat-<id>.jpg). No schema change; older clients still read it as text, and only links from the app's own bucket ever render as a picture. */
+const PHOTO_RE = /(^|\s)\u{1F4F7} (https:\/\/[a-z0-9-]{8,40}\.supabase\.co\/storage\/v1\/object\/public\/media\/([A-Za-z0-9_-]{6,64})\/chat-[A-Za-z0-9_-]{4,80}\.(?:jpe?g|webp|png))(?=\s|$)/u;
+function photo(text, uid){ const s=String(text||''), m=PHOTO_RE.exec(s); if(!m||(uid&&m[3]!==uid))return null; const caption=(s.slice(0,m.index)+m[1]+s.slice(m.index+m[0].length)).replace(/\s+/g,' ').trim(); return {src:m[2],caption}; }
+function photoBody(src, caption){ const s=String(src||''); if(!photo('\u{1F4F7} '+s))return ''; const c=String(caption||'').replace(/\s+/g,' ').trim().slice(0,600-s.length-4); return '\u{1F4F7} '+s+(c?' '+c:''); }
 function identity(row){ row=row||{}; return {t:row.share_personality === true ? type(row.personality) : '',s:row.share_sign === true && SIGNS.includes(row.sign) ? row.sign : ''}; }
 function quiet(p, now){ p=p||{}; if(p.quietEnabled === false)return false;const hour=(now||new Date()).getHours(),a=Number.isInteger(+p.quietStart)?Math.max(0,Math.min(23,+p.quietStart)):22,b=Number.isInteger(+p.quietEnd)?Math.max(0,Math.min(23,+p.quietEnd)):8; return a===b || (a<b ? hour>=a&&hour<b : hour>=a||hour<b); }
 function message(m){if(!m||typeof m.id!=='string'||!m.id||typeof m.uid!=='string'||!m.uid||typeof m.t!=='string')return null;return {...m,by:String(m.by||'Member').slice(0,40),t:m.t.slice(0,600),ts:Number.isFinite(+m.ts)&&+m.ts>0?+m.ts:Date.now(),re:typeof m.re==='string'?m.re:null};}
@@ -27,18 +31,22 @@ function session(options){
  function setDraft(text,reply){const retry=outbox.find(m=>m.id===draft.retryId);draft={text:String(text).slice(0,600),reply:reply||null,retryId:retry&&retry.t===String(text).trim()&&retry.re===(reply||null)?retry.id:null};save();}
  function confirm(rows){const ids=new Set((rows||[]).filter(m=>m.uid===scope).map(m=>String(m.id)));const next=outbox.filter(m=>!ids.has(String(m.id)));if(next.length===outbox.length)return;outbox=next;if(draft.retryId&&ids.has(String(draft.retryId)))draft={text:'',reply:null};save();}
  async function submit(by,retryId){
-  let m=outbox.find(x=>x.id===(retryId||draft.retryId));
+  let m=photoIn&&!retryId?null:outbox.find(x=>x.id===(retryId||draft.retryId));
+  if(!m&&photoIn){const pin=photoIn;photoIn=null;if(outbox.length>=20)throw new Error('outbox-full');m={id:pin.id||options.id(),uid:scope,by,t:pin.text,ts:Date.now(),rx:{},re:pin.reply||null,status:'sending'};outbox.push(m);}
   if(!m){const text=draft.text.trim();if(!text)return null;if(outbox.length>=20)throw new Error('outbox-full');m={id:options.id(),uid:scope,by,t:text,ts:Date.now(),rx:{},re:draft.reply||null,status:'sending'};outbox.push(m);}
   if(busy.has(m.id))return null;
   busy.add(m.id);m.status='sending';
   if(draft.text.trim()===m.t&&draft.reply===m.re)draft={text:'',reply:null};save();
   try{const row=await send(m);if(!row||row.id!==m.id||row.uid!==scope)throw new Error('missing-ack');outbox=outbox.filter(x=>x.id!==m.id);if(draft.retryId===m.id)draft={text:'',reply:null};save();return row;}
-  catch(e){if(outbox.some(x=>x.id===m.id)){m.status='unconfirmed';if(!draft.text)draft={text:m.t,reply:m.re,retryId:m.id};save();}throw e;}
+  catch(e){if(outbox.some(x=>x.id===m.id)){m.status='unconfirmed';if(!draft.text&&!photo(m.t))draft={text:m.t,reply:m.re,retryId:m.id};save();}throw e;}
   finally{busy.delete(m.id);changed();}
  }
+ /* a photo goes out once its picture is uploaded: same outbox, same ack, same retry; its body never lands in the text draft */
+ let photoIn=null;
+ function submitPhoto(by,text,id,reply){if(!photo(text,scope))return Promise.reject(new Error('bad-photo'));if(id&&outbox.some(x=>x.id===id))return submit(by,id);photoIn={text,id,reply:reply||null};return submit(by);}
  function discard(id){if(busy.has(id))return;outbox=outbox.filter(m=>m.id!==id);if(draft.retryId===id)draft={text:'',reply:null};save();}
- return {setDraft,confirm,submit,discard,state:()=>({draft:{...draft},outbox:outbox.map(m=>({...m})),storageOK,busy:busy.size>0})};
+ return {setDraft,confirm,submit,submitPhoto,discard,state:()=>({draft:{...draft},outbox:outbox.map(m=>({...m})),storageOK,busy:busy.size>0})};
 }
-const api={EMOJI,SIGNS,type,esc,image,identity,quiet,message,visible,read,write,session};
+const api={EMOJI,SIGNS,type,esc,image,photo,photoBody,identity,quiet,message,visible,read,write,session};
 if(typeof module==='object'&&module.exports)module.exports=api;else root.LowiChatCore=api;
 })(typeof window==='object'?window:globalThis);

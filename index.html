@@ -19723,7 +19723,7 @@ window.LowiCommunityHost = {
   replace:(m,r) => LOWI_CLOUD_X.community.replace(m,r), upsert:m => LOWI_CLOUD_X.community.upsert(m),
   remove:id => LOWI_CLOUD_X.community.remove(id), setReactions:r => LOWI_CLOUD_X.community.setReactions(r),
   people:() => LOWI_CLOUD.people(),
-  identity(){ const p = LowiR3.me(), u = S.user || {}; return {n:u.name || "", s:p.s, t:u.mbti || u.personality || p.t || "", avatar:p.avatar, lv:p.lv, xp:p.xp}; },
+  identity(){ const p = LowiR3.me(), u = S.user || {}; return {n:u.name || "", s:p.s, t:u.mbti || u.personality || p.t || "", avatar:p.avatar, lv:p.lv, xp:p.xp, bday:/^\d{4}-\d{2}-\d{2}$/.test(u.bday || "") ? u.bday : ""}; }, /* bday: own person card only, never synced */
   bubble:(p,size) => LowiR3.bubble(p,size), color:sign => LowiGlass.palette(String(sign || "none").toLowerCase())[0],
   typeLabel:(type,lang) => window.LowiHerbIdentityCore ? LowiHerbIdentityCore.typeLabel(type,lang) : "",
   sheet:html => LowiR2.sheet(html, {cls:"cs-overlay"}), active:() => TAB === "foryou" && (CMV.view === "chat" || !!document.querySelector("#tab-foryou.nm-solo")), /* Oct 16: Community is the galaxy alone (nav-moves.js), so it is live whatever the old segment says */
@@ -19741,6 +19741,7 @@ window.LowiCommunityHost = {
 <script src="community-chat.js?v=galaxy-2"></script>
 <link rel="stylesheet" id="lgCss" href="liquid-glass.css?v=20261016-163010">
 <script src="liquid-glass.js?v=20261016-163010"></script>
+<link rel="stylesheet" id="sweepCss" href="style-sweep.css?v=20261016-163010">
 <link rel="stylesheet" id="sgCss" href="scan-glass.css?v=20261016-163010">
 <script src="scan-glass.js?v=20261016-163010"></script>
 <link rel="stylesheet" id="rwCss" href="realm-backdrop.css?v=20261016-163010">

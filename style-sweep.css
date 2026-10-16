@@ -1,0 +1,166 @@
+/* Oct 16 (E-man, handoff Task 8): the last old-look leftovers, brought into Misty's dark-blue Liquid Glass.
+   One scoped override layer, loaded last, so the owning modules stay untouched and the change is easy to review or drop.
+   Rules of the sweep: no purple space or crystal washes, no gold cards or gold buttons, no light cards with light text.
+   Light buttons always carry dark text. Onboarding, the level-up card and the Community scene are NOT restyled here. */
+:root {
+  /* the Daily Quest / weather pill glass (world-home.css --wh-glass-*), with a deep-blue base so text stays readable on sheets and cards */
+  --ms-deep: #07122b;
+  --ms-glass: var(--wh-glass-wide, linear-gradient(160deg, rgba(80, 170, 255, .14), rgba(28, 74, 150, .34))), linear-gradient(rgba(10, 28, 66, .52), rgba(10, 28, 66, .52));
+  --ms-glass-solid: var(--wh-glass-wide, linear-gradient(160deg, rgba(80, 170, 255, .14), rgba(28, 74, 150, .34))), linear-gradient(170deg, rgba(14, 36, 82, .92), rgba(8, 22, 54, .94));
+  --ms-line: var(--wh-glass-rim, rgba(160, 220, 255, .55));
+  --ms-line-soft: rgba(160, 220, 255, .24);
+  --ms-sh: var(--wh-glass-sh, inset 0 0 18px rgba(140, 210, 255, .32), 0 8px 26px -12px rgba(40, 120, 255, .5));
+  --ms-ink: #0b1d3f;
+  --ms-btn: linear-gradient(180deg, #ffffff 0%, #e4f3ff 55%, #c9e6ff 100%);
+  --ms-accent: #9fd8ff;
+  --ms-accent-hi: #bfe6ff;
+  --ms-glow: rgba(100, 210, 255, .42);
+  --ms-wash: radial-gradient(120% 80% at 50% 18%, rgba(20, 60, 130, .44), rgba(3, 8, 22, .82));
+}
+
+/* ---------- Community sheets (person card, settings, profile): Misty blue glass, not iOS grey ---------- */
+html body .r2-ov.cs-overlay:not(.full) .r2-sh,
+html body .r2-ov.cs-overlay.cs-overlay .r2-sh {
+  background: var(--ms-glass-solid) !important;
+  border: 1.5px solid var(--ms-line) !important;
+  box-shadow: var(--ms-sh), 0 -10px 40px rgba(0, 10, 40, .5) !important;
+  -webkit-backdrop-filter: blur(26px) saturate(170%) !important;
+  backdrop-filter: blur(26px) saturate(170%) !important;
+  color: #fff;
+}
+
+/* ---------- light buttons, dark text (was gold) ---------- */
+html body :is(#f3Board .f3-claim, #f3Board .f3-cl, .hq-btn.hq-claim, .fe-save, .e1-go, .mb-cta:not(.ghost), .cr-go, .wd-premium .wd-lock) {
+  background: var(--ms-btn) !important;
+  color: var(--ms-ink) !important;
+  border: 1px solid rgba(255, 255, 255, .75) !important;
+  box-shadow: inset 0 1px 0 #fff, 0 8px 22px -10px var(--ms-glow) !important;
+  text-shadow: none !important;
+}
+html body :is(#f3Board .f3-claim, .hq-btn.hq-claim, .fe-save, .e1-go, .mb-cta:not(.ghost), .cr-go) :is(b, span, i, small, .num, svg) {
+  color: var(--ms-ink) !important;
+}
+html body :is(.fe-save, .e1-go, .mb-cta:not(.ghost), .hq-btn.hq-claim)[disabled] {
+  opacity: .5 !important;
+  box-shadow: none !important;
+}
+html body #f3Board .f3-cur-claim .f3-ic,
+html body .hq-step.ready .hq-ck { color: var(--ms-accent) !important; }
+html body .hq-step.ready .hq-ck { background: rgba(120, 190, 255, .18) !important; }
+
+/* level map: the step you are on glows Misty blue (tier rims stay bronze/silver/gold, they name the tier) */
+html body .r3m-row.cur .r3m-node {
+  background: var(--ms-btn) !important;
+  color: var(--ms-ink) !important;
+  border-color: transparent !important;
+  box-shadow: 0 0 0 4px rgba(100, 210, 255, .25), 0 0 18px -2px var(--ms-glow) !important;
+}
+html body .r3m-row.got:not(.big) .r3m-node {
+  border-color: rgba(159, 216, 255, .6) !important;
+  color: var(--ms-accent) !important;
+}
+
+/* ---------- purple space -> Misty's deep blue ---------- */
+html body .dr-ov { background: var(--ms-wash) !important; }
+html body .dr-home {
+  background: radial-gradient(90% 60% at 50% 0%, rgba(60, 130, 230, .40), transparent), linear-gradient(180deg, #0f2452, #07122b) !important;
+}
+html body .dr-card {
+  background: var(--ms-glass) !important;
+  border: 1px solid var(--ms-line) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .24), 0 18px 44px -18px rgba(30, 110, 255, .5) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  color: #fff;
+}
+html body .dr-btn.pri {
+  background: var(--ms-btn) !important;
+  color: var(--ms-ink) !important;
+  border: 1px solid rgba(255, 255, 255, .75) !important;
+  box-shadow: inset 0 1px 0 #fff, 0 8px 22px -10px var(--ms-glow) !important;
+}
+
+html body .cr-tree {
+  background: radial-gradient(60% 60% at 50% 45%, rgba(159, 230, 255, .12), transparent 70%), radial-gradient(120% 90% at 50% 100%, #12306a, #0a1838 70%) !important;
+  border: 1px solid var(--ms-line-soft);
+}
+html body .cr-scene {
+  background: radial-gradient(70% 55% at 50% 45%, rgba(143, 216, 255, .2), transparent 70%), radial-gradient(120% 90% at 50% 100%, #12306a 0%, #07122b 75%) !important;
+}
+html body :is(.cr-entry, .cr-mrow, .cr-fcard, .cr-shop) {
+  background: var(--ms-glass) !important;
+  border: 1px solid var(--ms-line-soft) !important;
+}
+html body .cr-tabs [aria-selected="true"] { background: rgba(120, 190, 255, .24) !important; color: #fff !important; }
+html body .cr-ring { box-shadow: 0 0 0 2px rgba(159, 216, 255, .6), 0 0 calc(var(--u, 4px) * 4) rgba(100, 210, 255, .4), inset 0 0 calc(var(--u, 4px) * 4) rgba(100, 210, 255, .25) !important; }
+html body .cr-spot.sel .cr-fc { filter: drop-shadow(0 0 12px var(--ms-glow)) !important; }
+
+/* milestones sheet: blue overline and chips, not violet */
+html body .fx-sheet .fx-over { color: var(--ms-accent) !important; }
+html body :is(.fx-vibe, .fx-pick button, .fx-mod button, #fxMilesBtn) {
+  border-color: var(--ms-line) !important;
+  background: rgba(120, 190, 255, .14) !important;
+  color: #eaf5ff !important;
+}
+html body .fx-tog.on { background: #0a84ff !important; }
+html body .fx-mile.mine { border-color: var(--ms-line) !important; background: rgba(120, 190, 255, .10) !important; }
+
+/* wardrobe + support sheet leftovers */
+html body :is(.wd-xp, .hs-xp) {
+  background: rgba(120, 190, 255, .18) !important;
+  border-color: var(--ms-line) !important;
+}
+html body .wd-item.wd-premium small { color: var(--ms-accent-hi) !important; }
+html body .wd-premium .wd-thumb { background: radial-gradient(circle, rgba(100, 210, 255, .2), transparent 70%) !important; }
+html body :is(.hs-link, .hs-plus-card .hs-over) { color: var(--ms-accent) !important; }
+html body :is(.hs-plus-card, .hs-thanks) { border-color: var(--ms-line) !important; }
+html body .hs-bar i { background: linear-gradient(90deg, #64d2ff, #9fd8ff) !important; }
+html body .hs-tl::before { background: linear-gradient(#9fd8ff, #0a84ff) !important; }
+html body .hs-tl-remind::before { border-color: var(--ms-accent) !important; }
+html body .hs-must { background: rgba(120, 190, 255, .12) !important; border-color: var(--ms-line-soft) !important; }
+
+/* ---------- gold accents -> Misty blue ---------- */
+html body :is(.mb-over, .mb-go, .mb-kind small .mb-spk) { color: var(--ms-accent) !important; }
+html body .mb-sparks { background: rgba(120, 190, 255, .14) !important; color: var(--ms-accent-hi) !important; }
+html body .mb-kind.act { border-color: var(--ms-accent) !important; box-shadow: 0 0 0 1px var(--ms-accent) inset, 0 0 14px rgba(100, 210, 255, .25) !important; }
+html body .hs-ask { background: rgba(120, 190, 255, .08) !important; border-color: var(--ms-line) !important; }
+html body .hs-askh .hs-over { color: var(--ms-accent) !important; }
+html body .hs-qdot { background: var(--ms-accent) !important; box-shadow: 0 0 10px var(--ms-glow) !important; }
+html body .cf-entry { border-color: var(--ms-line) !important; background: var(--ms-glass) !important; }
+html body .cf-ax button[aria-pressed="true"],
+html body .cf-step.cur { background: rgba(120, 190, 255, .2) !important; border-color: var(--ms-accent) !important; }
+html body .cf-misty .cf-step.cur .cf-sm { filter: drop-shadow(0 0 6px var(--ms-glow)) !important; }
+
+/* XP moments: Misty-blue glass and chips instead of gold */
+html body .xtp-pop {
+  color: var(--ms-ink) !important;
+  background: var(--ms-btn) !important;
+  box-shadow: 0 2px 10px rgba(100, 210, 255, .38), 0 0 0 1px rgba(255, 255, 255, .7) inset !important;
+}
+html body :is(.xtp-pop i, .xtp-banner i) { background: var(--ms-accent) !important; }
+html body .xtp-banner {
+  background: var(--ms-glass-solid) !important;
+  box-shadow: 0 10px 30px rgba(8, 16, 40, .35), 0 0 0 1px var(--ms-line) inset, 0 0 24px rgba(100, 210, 255, .22) !important;
+}
+html body .xtp-banner b { color: var(--ms-accent-hi) !important; }
+html body .xtp-fan { background: radial-gradient(ellipse at 50% 45%, rgba(100, 180, 255, .26), rgba(6, 14, 36, .45) 60%, rgba(6, 14, 36, .6)) !important; }
+html body .xtp-fan-card {
+  background: var(--ms-glass-solid) !important;
+  box-shadow: 0 22px 60px rgba(5, 10, 30, .5), 0 0 0 1.5px var(--ms-line) inset, 0 0 60px rgba(100, 210, 255, .28) !important;
+}
+html body .xtp-fan-big { color: var(--ms-accent-hi) !important; text-shadow: 0 0 22px var(--ms-glow) !important; }
+
+/* ---------- light cards -> glass ---------- */
+html body #lhActionToast,
+html body .lh-card-bubble {
+  background: var(--ms-glass-solid) !important;
+  color: #eaf5ff !important;
+  border: 1px solid var(--ms-line) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2), 0 10px 30px -10px rgba(5, 12, 34, .7) !important;
+}
+html body .lh-card-bubble:after { background: #13306a !important; border-color: var(--ms-line) !important; }
+html body :is(#lhActionToast, .lh-card-bubble) :is(b, strong, span) { color: inherit !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  html body :is(.dr-card, .xtp-fan-card) { -webkit-backdrop-filter: none; backdrop-filter: none; }
+}

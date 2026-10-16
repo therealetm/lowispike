@@ -87,10 +87,24 @@ html.herb-room #g1Z,html.herb-evolving #g1Z{display:none!important}
 .lh-name-form label,.lh-setting{font-size:12px;color:#c8c1dd;display:block;line-height:1.5}.lh-name-form input,.lh-setting select{display:block;width:100%;min-height:44px;border:1px solid #ddd5ff3d;border-radius:12px;background:#111a2c;color:#eee9ff;padding:8px 10px;box-sizing:border-box;font:inherit;font-size:16px;margin:6px 0 10px}
 .lh-name-ideas{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}.lh-name-ideas button{border:1px solid #cac2f42b;background:#ffffff05;color:#ded5f4;border-radius:16px;padding:6px 12px;min-height:36px;font-size:12px}.lh-setting{margin-top:15px}
 #lhActionToast{position:fixed;z-index:2147483001;left:50%;transform:translateX(-50%);bottom:calc(112px + env(safe-area-inset-bottom));width:min(320px,calc(100vw - 48px));padding:12px 16px;border:1px solid #ddccf366;border-radius:18px;background:#f4effa;color:#33334b;box-shadow:0 8px 34px #11152825;font-size:13px;line-height:1.45;box-sizing:border-box;pointer-events:none}#lhActionToast[hidden]{display:none}
-#lhEvolution{position:fixed;z-index:2147483500;inset:0;display:grid;place-items:center;background:#080d22f5;color:#f4efff;overflow:hidden}
-.lh-evolution-content{position:relative;z-index:2;text-align:center;width:min(360px,calc(100vw - 42px));--tmg-a:#b7efd2;--tmg-b:#c8b8ff;animation:lh-reveal 3.8s ease both}
-.lh-evolution-content h2{font-size:32px;letter-spacing:-.04em;margin:0 0 10px}.lh-evolution-content p{font-size:13px;line-height:1.6;color:#d4cceb;min-height:42px}.lh-evolution-herb{height:320px;margin:-10px 0 -14px}.lh-evolution-herb .lh-sprite{filter:drop-shadow(0 0 24px #c1ffde66)}
-.lh-evolution-rays{position:absolute;inset:-60%;background:repeating-conic-gradient(from 0deg,#c2a6ff00 0deg,#c2a6ff12 14deg,#a9ffe31a 23deg,#a9ffe300 30deg);animation:lh-rays 3.8s ease both}
+/* Oct 16 (E-man): level-up = Misty's blue-glass card over the live world (no purple space, no herb in a pot) */
+#lhEvolution{position:fixed;z-index:2147483500;inset:0;display:grid;place-items:center;box-sizing:border-box;padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));background:radial-gradient(120% 80% at 50% 42%,rgba(20,60,130,.30),rgba(3,11,31,.66));-webkit-backdrop-filter:blur(10px) saturate(150%);backdrop-filter:blur(10px) saturate(150%);color:#f4f9ff;overflow:hidden;font-family:var(--lg-font,-apple-system,system-ui,sans-serif);color-scheme:dark}
+#lhEvolution .lh-evo-veil{position:absolute;inset:0;cursor:pointer}
+#lhEvolution .lh-evolution-content{position:relative;z-index:2;text-align:center;width:min(360px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;box-sizing:border-box;padding:18px 18px 16px;border-radius:28px;background:linear-gradient(165deg,rgba(96,160,255,.26),rgba(28,64,140,.30) 55%,rgba(12,30,70,.38));border:1px solid rgba(160,220,255,.55);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 0 0 .5px rgba(160,220,255,.25),0 18px 44px -18px rgba(30,110,255,.55);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);animation:lh-evo-in .6s cubic-bezier(.2,.9,.25,1.12) both}
+#lhEvolution .lh-overline{display:block;margin:0;font-size:12.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#bfe6ff}
+#lhEvolution .lh-evolution-herb{position:relative;height:190px;margin:6px auto 4px;display:flex;align-items:center;justify-content:center}
+#lhEvolution .lh-evolution-herb svg{position:relative;height:190px;width:auto;max-width:100%;filter:drop-shadow(0 0 18px rgba(100,210,255,.45))}
+#lhEvolution .lh-evolution-herb .lh-acc,#lhEvolution .lh-evolution-herb .lh-pot-fx,#lhEvolution .lh-evolution-herb .cw-pill{display:none!important}
+#lhEvolution .lh-evo-glow{position:absolute;left:50%;top:50%;width:170px;height:170px;margin:-85px 0 0 -85px;border-radius:50%;background:radial-gradient(circle,rgba(100,210,255,.42),rgba(100,210,255,0) 70%);animation:lh-evo-breathe 3s ease-in-out infinite}
+#lhEvolution h2{font-size:28px;font-weight:700;letter-spacing:-.02em;line-height:1.15;margin:0 0 6px;color:#fff;overflow-wrap:anywhere}
+#lhEvolution .lh-evo-lv{display:inline-block;margin:0 0 10px;padding:3px 11px;border-radius:999px;background:rgba(120,180,255,.16);border:.5px solid rgba(160,220,255,.45);font-size:13px;font-weight:650;color:#e2efff}
+#lhEvolution p{font-size:15px;line-height:1.42;color:rgba(222,236,255,.92);margin:0 0 12px;overflow-wrap:anywhere}
+#lhEvolution .lh-evo-unlock{font-size:14px;padding:8px 12px;border-radius:14px;background:rgba(255,255,255,.08);border:.5px solid rgba(160,220,255,.3)}
+#lhEvolution .lh-evo-unlock b{color:#fff;font-weight:650}
+#lhEvolution .lh-primary{display:block;width:100%;min-height:48px;margin-top:4px;border-radius:16px;border:1px solid rgba(255,255,255,.75);background:linear-gradient(180deg,#ffffff 0%,#e4f3ff 55%,#c9e6ff 100%);color:#0b1d3f;font-size:16px;font-weight:700!important;box-shadow:0 8px 22px -10px rgba(30,110,255,.6)}
+@keyframes lh-evo-in{0%{opacity:0;transform:translateY(18px) scale(.92)}100%{opacity:1;transform:none}}
+@keyframes lh-evo-breathe{0%,100%{transform:scale(.92);opacity:.8}50%{transform:scale(1.06);opacity:1}}
+@media(prefers-reduced-motion:reduce){#lhEvolution .lh-evolution-content,#lhEvolution .lh-evo-glow{animation:none!important}}
 #tmgHomeCard button:focus-visible,#tmgScreen :focus-visible,#lhEvolution :focus-visible{outline:3px solid var(--tmg-a,#b6ebd2);outline-offset:4px}
 .tab:not(.active) .lh-creature,.tab:not(.active) .lh-leaf,.tab:not(.active) .lh-eyes,.tab:not(.active) .lh-particle{animation-play-state:paused}
 @keyframes lh-breathe{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3px) scale(1.018)}}

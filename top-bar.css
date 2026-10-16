@@ -98,3 +98,23 @@ html.tb-stuck[data-ui=light].g2e-on.g2e-open #tab-profile > #g2eHead::before{dis
 /* Oct 16: hold the moon/sun to open the Day & night adjuster — no iOS callout or text selection on the hold */
 #tbTheme{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
 .atm-ov .atm-sheet{padding:6px 2px 4px}
+/* Oct 16 (handoff task 2): the weather view is the same Liquid Glass as Daily Quest: see-through blue glass over the live
+   world (blurred), the same rim and glow, white ink, and every inner tile is a lighter pane of the same glass. */
+#tbWx .tbw-bg{background:rgba(2,8,24,.34)}
+#tbWx .tbw-sheet,#tbWx[data-night="0"] .tbw-sheet,#tbWx[data-k="4"] .tbw-sheet,#tbWx[data-k="5"] .tbw-sheet,#tbWx[data-k="6"] .tbw-sheet,#tbWx[data-k="8"] .tbw-sheet{
+  color:#fff;border:1.5px solid var(--wh-glass-rim,rgba(160,220,255,.55));border-bottom:0;
+  background:var(--wh-glass-wide,linear-gradient(160deg,rgba(80,170,255,.14),rgba(28,74,150,.34))),rgba(8,20,48,.5);
+  box-shadow:var(--wh-glass-sh,inset 0 0 18px rgba(140,210,255,.32)),0 -12px 40px rgba(0,0,0,.35);
+  -webkit-backdrop-filter:blur(22px) saturate(1.4);backdrop-filter:blur(22px) saturate(1.4)}
+#tbWx .tbw-btn{border:1.5px solid var(--wh-glass-rim,rgba(160,220,255,.55));background:var(--wh-glass-bg,rgba(255,255,255,.08));color:#fff}
+#tbWx .tbw-hr,#tbWx .tbw-facts>div,#tbWx .tbw-note{background:rgba(255,255,255,.07);border:1px solid rgba(160,220,255,.24);box-shadow:inset 0 0 12px rgba(140,210,255,.12)}
+#tbWx .tbw-cell{border:1.5px solid var(--wh-glass-rim,rgba(160,220,255,.55));background:var(--wh-glass-bg,rgba(255,255,255,.08));box-shadow:var(--wh-glass-sh,none)}
+#tbWx .tbw-cell svg{color:#e8f6ff}
+#tbWx .tbw-h,#tbWx .tbw-sub,#tbWx .tbw-hh,#tbWx .tbw-facts small,#tbWx .tbw-fine{opacity:1;color:rgba(225,238,255,.74)}
+#tbWx .tbw-hr small{color:#a9dcff}
+#tbWx .tbw-nico{background:rgba(110,190,255,.2);color:#cfeeff}
+html[data-ui=light] #tbWx .tbw-sheet{color:#0b1d3f;background:var(--wh-glass-wide),rgba(235,243,255,.62)}
+html[data-ui=light] #tbWx .tbw-btn,html[data-ui=light] #tbWx .tbw-hr,html[data-ui=light] #tbWx .tbw-facts>div,html[data-ui=light] #tbWx .tbw-note{color:#0b1d3f;background:rgba(255,255,255,.5);border-color:rgba(40,80,140,.22)}
+html[data-ui=light] #tbWx .tbw-h,html[data-ui=light] #tbWx .tbw-sub,html[data-ui=light] #tbWx .tbw-hh,html[data-ui=light] #tbWx .tbw-facts small,html[data-ui=light] #tbWx .tbw-fine{color:rgba(11,29,63,.68)}
+html[data-ui=light] #tbWx .tbw-cell svg{color:#2c6cb0}
+@media (min-width:700px){#tbWx .tbw-sheet,#tbWx[data-night="0"] .tbw-sheet{border-bottom:1.5px solid var(--wh-glass-rim,rgba(160,220,255,.55))}}

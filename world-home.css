@@ -386,3 +386,37 @@ html.wh-home #whHud > .hs-gift.hs-gift ~ .wa-panel, .wh-hud .wa-panel { z-index:
     html.wh-home #whHud > .hs-gift.hs-gift { left: calc(var(--wh-l, 0px) + max(16px, env(safe-area-inset-left)) + 11px); bottom: calc(var(--wh-tb, 84px) + 22px + 62px + 10px); }
     .wh-hud .wa-panel { bottom: calc(var(--wh-tb) + 96px); }
 }
+
+/* ---------- Oct 16 (handoff task 2): Home top row ----------
+   One symmetric row on every size: the weather pill on the left is exactly as wide as the Day/Night + profile pair on the
+   right (38 + 10 + 44 = 92 px), the greeting sits centred between them, and the Daily Quest box sits centred right under the
+   row, clear of the weather pill, the sun/moon button and the profile picture (phone, iPad upright and iPad landscape).
+   Both are placed against #tab-home, which is the page area (it starts after the left rail on iPad), so the centre line is
+   the page's own centre. Positions only: the quest list, its claim buttons and the trip notes inside it are unchanged. */
+html.spirit-app.wh-home #tab-home#tab-home > #spHome#spHome { position: absolute !important; left: 0 !important; right: 0 !important; top: 0 !important; width: auto !important; max-width: none !important;
+    height: 0 !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; grid-row: auto !important; grid-column: auto !important; grid-area: auto !important; align-self: auto !important; }
+html.spirit-app.wh-home #tab-home #spHome .sp-top { position: absolute !important; z-index: 2; left: 14px; right: 14px; top: calc(var(--b-top, 0px) + 9px); height: 44px; margin: 0 !important; padding: 0 !important;
+    display: grid !important; grid-template-columns: 92px minmax(0, 1fr) 92px; grid-template-rows: 44px; align-items: center; column-gap: 8px; }
+html.spirit-app.wh-home #tab-home #spHome .sp-top > .sp-weather { grid-column: 1 !important; grid-row: 1 !important; justify-self: start; }
+html.spirit-app.wh-home #tab-home #spHome .sp-top > .sp-greeting { grid-column: 2 !important; grid-row: 1 !important; min-width: 0; display: flex !important; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 2px; }
+html.spirit-app.wh-home #tab-home #spHome .sp-greeting > * { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html.spirit-app.wh-home #tab-home #spHome .sp-greeting > span { font-size: 17px; line-height: 1.15; }
+html.spirit-app.wh-home #tab-home #spHome .sp-greeting > small { font-size: 12px; line-height: 1.2; color: rgba(225,238,255,.78); }
+html.spirit-app.wh-home[data-theme="light"] #tab-home #spHome .sp-greeting > small { color: rgba(11,29,63,.7); }
+/* the weather pill: the Daily Quest glass, 44 px tall like the profile picture */
+html.spirit-app.wh-home #tab-home #spHome .sp-weather, html.spirit-app.wh-home #tab-home #spHome .sp-weather.ask {
+    box-sizing: border-box; width: 92px; height: 44px; padding: 0 12px; border-radius: 22px; gap: 6px; justify-content: center;
+    border: 1.5px solid var(--wh-glass-rim) !important; background: var(--wh-glass-wide) !important; box-shadow: var(--wh-glass-sh) !important; color: var(--wh-glass-ink) !important;
+    backdrop-filter: blur(10px) saturate(1.4); -webkit-backdrop-filter: blur(10px) saturate(1.4); font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; }
+html.spirit-app.wh-home #tab-home #spHome .sp-weather.ask { font-size: 12.5px; }
+html.spirit-app.wh-home #tab-home #spHome .sp-weather .sp-symbol { width: 19px; height: 19px; flex: none; color: #bfe6ff; }
+html.spirit-app.wh-home #tab-home #spHome .sp-weather:active { transform: scale(.96); }
+/* the Daily Quest box: centred under the row, never wider than a comfortable card on iPad */
+html.spirit-app.wh-home #tab-home #f3Board { position: absolute !important; top: calc(var(--b-top, 0px) + 61px) !important; left: 0 !important; right: 0 !important;
+    margin: 0 auto !important; width: min(440px, calc(100% - 28px)) !important; max-width: none !important; box-sizing: border-box; order: 0 !important; }
+html.spirit-app.wh-home #tab-home > .rs-sec.rs-head { min-height: 0 !important; }
+/* iPad upright: Home's page used to be the 680 px centre column while the profile picture sits at the screen edge; on the world
+   Home everything in the page is placed (row, quest box), so the page is the whole screen and the row mirrors edge to edge. */
+html.spirit-app.wh-home[data-lay=tablet] #tab-home#tab-home { max-width: none !important; width: auto !important; margin-left: 0 !important; margin-right: 0 !important; left: 0 !important; right: 0 !important; }
+/* the world-map place name sits under the quest box, not across it */
+html.wh-home .wh-hud .bwr-label { top: calc(var(--b-top, 0px) + 148px); }

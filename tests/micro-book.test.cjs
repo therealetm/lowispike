@@ -15,6 +15,12 @@ t('the microbe collection is gone (removed with the microbe buddies, Oct 16)', (
     assert.ok(!/LowiBodyBuddies|lowi:buddy-found|Mikroben-Sammlung|mbChip|data-mb="card"/.test(src));
     assert.ok(!/\bbuddy|\bBuddy/.test(src + fs.readFileSync(path.join(root, 'micro-book-core.js'), 'utf8')));
 });
+t('guard: the microbe buddies never come back (user decision Oct 16)', () => {
+    for (const fn of ['microbe-buddies.js', 'microbe-buddies.css', 'microbe-buddies-core.js']) assert.ok(!fs.existsSync(path.join(root, fn)), fn + ' must stay deleted');
+    assert.ok(!/microbe-buddies/.test(ui + sw), 'loader and service worker never list them');
+    const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+    assert.ok(/buddy-\(add\|bond\)/.test(html) && /delete S\.buddies/.test(html), 'buddy XP is purged on load');
+});
 t('counts only real counted ledger actions (amt > 0)', () => {
     const c = C.counts([e('meal', 'meal:1'), e('meal', 'meal:2', '', 0), e('r3a_water', 'w', 'Water'), e('move', 'm', 'Move walk'), e('macro-goal', 'macro-goal:' + DAY + ':fiber'), e('sun-full', 'sun-full:' + DAY), e('body-trip', 'body-trip:gut-1'), e('f1', 'q', 'Quest')]);
     assert.deepStrictEqual([c.meal, c.water, c.move, c.fiber, c.sun, c.trip, c.days], [1, 1, 1, 1, 1, 1, 1]);

@@ -55,6 +55,9 @@ html[data-theme="light"] .rw-layer .rw-veil { background: radial-gradient(120% 8
 html.rw-scanworld .b3-cam.rw-scan { background: transparent !important; background-image: none !important; }
 html.rw-scanworld.b3-camon body, html.rw-scanworld.g2f-gap.b3-camon body { background: #02060f !important; }
 html.rw-scanworld #app #main > :not(#tabbar):not(.lg-in):not(.lg-peek):not(.lg-out) { visibility: hidden !important; opacity: 0 !important; pointer-events: none !important; }
+/* iPad held sideways: the side rail is not the flat dock, so the camera covers it as before; it is not shown through it either
+   (opacity, not visibility: scan-glass.js reads visibility to decide whether the dock is flat) */
+html.rw-scanworld:not(.sg-dock) #app #main > #tabbar { opacity: 0 !important; }
 /* the herb world's own camera keeps its copy of the layer (it sits in Misty's sheet, away from the 3D world) */
 .b3-cam.rw-scan > .rw-cam { z-index: 0; transition: opacity .8s ease; }
 .b3-cam.rw-scan.rw-feed.live > .rw-cam { opacity: .0; }

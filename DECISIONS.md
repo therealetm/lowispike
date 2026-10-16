@@ -252,3 +252,15 @@ The user explicitly requested deploying the recovered Home implementation withou
 **Decision:** Each region has one glass creature (`region-pals.js`) with a Misty-blue speech bubble that says a greeting, the region's reviewed facts from `arrival-core.js`, and today's line. Its presence suppresses the arrival card and the Daily Quest line in regions. They award no XP, store nothing, cannot be collected, and none is a microbe (the gut guide is a villus). Misty stays the blue comet and the only companion tied to XP.
 
 **Consequences:** New region facts go into `arrival-core.js`, not into the companion file. A steering module can move the companion with `lowi:region-steer`.
+
+## 2026-10-16 — Scan: iOS's camera prompt only, the same living world, camera states in blue glass
+
+**Context:** E-man tested Scan on iPhone (build 20261016-161510): "Why did you add 'Let LOWiSPIKE use the camera'? That's double work ... iOS shows its own prompt again." The camera screen also sat on a plain starfield instead of the living world every other page uses, the "Camera is blocked" card was flat grey ("It doesn't fit our whole theme"), and the tab bar lit Community while he was on Scan.
+
+**Decision:**
+- **No in-app pre-permission card for the camera.** Tapping Scan asks for the camera straight away, so iOS's own prompt is the only one; when access is already granted it just starts. The one-second delayed card from c2aeaad/4d68c16 (build 20261016-153010) and the "Allow camera" strings are gone. Do not bring back a pre-prompt.
+- **Scan uses the same living world as Community, Cook and Move.** While the camera is open full screen (`html.rw-scanworld`, set by realm-backdrop.js) the camera screen is see-through: under it are the realm-backdrop layer (`#rwBack`) and the live 3D world pulled out into the spirit world (body-world-3d.js treats it as `tab-scan`). The page that lies under the camera is hidden; the dock stays. The feed fades in over the world once a frame plays, and the camera's vignette only comes with the feed. Never the flat spirit-world picture.
+- **Camera states use Misty's blue glass** (`--wh-glass-*`, the Daily Quest / weather pill / bubble tokens): starting, camera off (denied), no camera and didn't-start. Compact card, a blue Try again, "Type the number" offered as the way round, frame corners and the light hidden while there is no camera.
+- **Scan is the lit tab while the camera is open** (scan-glass.css, same weight as world-home.css's `#tabbar#tabbar`).
+
+**Consequences:** Barcode reading, manual entry, Snap food, Log meal, Water +1 and Deep analyze are unchanged. The herb world's own camera (inside `#spWorld`) keeps its copy of the layer. Tests: tests/realm-backdrop.test.cjs.

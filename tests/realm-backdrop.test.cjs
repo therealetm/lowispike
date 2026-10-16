@@ -222,5 +222,6 @@ test('Scan is the lit tab while the camera is open, and the page under it hides 
     assert.ok(/html\.rw-scanworld \.b3-cam\.rw-scan \{ background: transparent !important/.test(rb));
     assert.ok(/html\.rw-scanworld #app #main > :not\(#tabbar\):not\(\.lg-in\):not\(\.lg-peek\):not\(\.lg-out\) \{ visibility: hidden/.test(rb), 'the page under hides, the dock and swipes stay');
     assert.ok(bw.includes("if (H.classList.contains('rw-scanworld')) return true;") && bw.includes("H.classList.contains('rw-scanworld') ? { id: 'tab-scan' } : t0"), 'the live 3D world pulls out for Scan');
+    assert.ok(read('body-world-3d.css').includes('html.wb-on.rw-scanworld #bw3Back::after'), 'no reading veil: it looks like Community');
     assert.ok(!/metabolic-spirit-world|\.webp|\.jpg/.test(rb), 'never the flat picture');
 });

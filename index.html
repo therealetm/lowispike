@@ -14079,7 +14079,9 @@ function openScanner(mode){
   requestAnimationFrame(() => el.classList.add("on"));
   if (mode === "type") { el.classList.add("typing"); setTimeout(() => { const i = $("#b3Bc", el); if (i) i.focus(); }, 120); msgState("type"); return; }
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { msgState("nocam"); return; }
-  if (window.LowiSpirit || localStorage.getItem(CAMOK) === "1") startCam(); else msgState("ask");
+  /* Oct 16: the camera layer opens on the living Spirit World; realm-backdrop.js says when to start or ask (about a second later) */
+  if (window.LowiRealmBack && LowiRealmBack.gate) LowiRealmBack.gate(el, {start: startCam, ask: () => msgState("ask"), open: () => !!(CAM && CAM.el === el && !CAM.done && !CAM.stream && !el.dataset.st && !el.classList.contains("typing"))});
+  else if (window.LowiSpirit || localStorage.getItem(CAMOK) === "1") startCam(); else msgState("ask");
 }
 function msg(text, kind){ const m = CAM && $("#b3Hint", CAM.el); if (m) { m.textContent = text; m.className = "b3-chint" + (kind ? " " + kind : ""); } }
 function msgState(s){ if (!CAM) return; const m = $("#b3CMsg", CAM.el); CAM.el.dataset.st = s;
@@ -19741,6 +19743,9 @@ window.LowiCommunityHost = {
 <script src="liquid-glass.js?v=20261016-151510"></script>
 <link rel="stylesheet" id="sgCss" href="scan-glass.css?v=20261016-151510">
 <script src="scan-glass.js?v=20261016-151510"></script>
+<link rel="stylesheet" id="rwCss" href="realm-backdrop.css?v=20261016-151510">
+<script src="realm-backdrop-core.js?v=20261016-151510"></script>
+<script src="realm-backdrop.js?v=20261016-151510"></script>
 <link rel="stylesheet" href="nav-moves.css?v=20261016-151510">
 <script src="nav-moves.js?v=nav-2"></script>
 <link rel="stylesheet" id="mvdCss" href="move-durations.css?v=20261016-151510">

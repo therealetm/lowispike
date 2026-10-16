@@ -90,8 +90,17 @@
             '<div class="atm-slider"><div class="atm-now" aria-hidden="true"></div>' +
             '<div class="atm-trackwrap"><div class="atm-track" style="background:' + C.trackGradient() + '"></div>' +
             '<input class="atm-range" type="range" min="0" max="100" step="0.5" aria-label="' + W('slider') + '"></div>' +
-            '<div class="atm-marks">' + marks + '</div><small class="atm-autonote">' + W('autoLong') + '</small></div>';
+            '<div class="atm-marks">' + marks + '</div><small class="atm-autonote">' + W('autoLong') + '</small></div>' +
+            /* Oct 16 (E-man): a speed slider right next to the day-night control: how fast the world moves (Misty keeps her pace) */
+            '<div class="atm-speed"><div class="atm-speedhd"><b>' + W('speed') + '</b><output class="atm-spdout">' + speedWord(worldSpeed()) + '</output></div>' +
+            '<div class="atm-speedrow"><span aria-hidden="true">🐢</span><input class="atm-spd" type="range" min="0.25" max="3" step="0.05" value="' + worldSpeed() + '" aria-label="' + W('speed') + '"><span aria-hidden="true">🐇</span></div>' +
+            '<small class="atm-spdnote">' + W('speedNote') + '</small></div>';
     }
+    const SPD_KEY = 'lowi.world.speed.v1';
+    function worldSpeed() { let v = 1; try { v = +localStorage.getItem(SPD_KEY) || 1; } catch (e) { } return Math.min(3, Math.max(0.25, v)); }
+    function speedWord(v) { return (Math.round(v * 100) / 100).toString().replace(/\.?0+$/, '') + '×'; }
+    function setSpeed(v) { v = Math.min(3, Math.max(0.25, +v || 1)); if (Math.abs(v - 1) < 0.06) v = 1; window.LowiWorldSpeed = v; try { localStorage.setItem(SPD_KEY, String(v)); } catch (e) { } document.querySelectorAll('.atm-spdout').forEach(o => { o.textContent = speedWord(v); }); }
+    try { window.LowiWorldSpeed = worldSpeed(); } catch (e) { }
     function shownP() { return state.mode === 'manual' ? state.p : C.clockP(Date.now()); }
     function updateUI() {
         document.querySelectorAll('[data-atm-card]').forEach(card => {
@@ -113,6 +122,8 @@
             const r = card.querySelector('.atm-range');
             r.addEventListener('input', () => scrub(+r.value));
             r.addEventListener('change', () => { if (raf) { cancelAnimationFrame(raf); raf = 0; } apply({ mode: 'manual', p: +r.value }); });
+            const sp = card.querySelector('.atm-spd');
+            if (sp) { sp.addEventListener('input', () => setSpeed(+sp.value)); sp.addEventListener('change', () => { setSpeed(+sp.value); sp.value = String(window.LowiWorldSpeed); }); }
         });
         updateUI();
     }

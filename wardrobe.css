@@ -46,3 +46,8 @@
 /* Premium pot look for the preview (same selector pattern as the earned pots in herb-tamagotchi.css). */
 .lh-pot-tidal .lh-pot>path{fill:#2fa7bd;stroke:#bdf3ff;stroke-width:2}
 .lh-pot-tidal .lh-pot>text{fill:#e3fdff}
+
+/* Oct 16 (E-man): the Edit Profile wardrobe is see-through, so the live world shows behind Misty while you dress her */
+html .r2-ov.wd-sheet, html.lg .r2-ov.wd-sheet { background: transparent !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+html .r2-ov.wd-sheet .r2-sheet, html.lg .r2-ov.wd-sheet .r2-sheet { background: rgba(8, 16, 38, .26) !important; -webkit-backdrop-filter: blur(5px) saturate(1.35) !important; backdrop-filter: blur(5px) saturate(1.35) !important; border: 1px solid rgba(160, 220, 255, .28); }
+html .r2-ov.wd-sheet .wd-stage { background: rgba(255, 255, 255, .06) !important; }

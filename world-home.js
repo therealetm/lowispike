@@ -714,6 +714,28 @@
         h.textContent = ['\u2665', '\u2726', '\u2665'][Math.floor(Math.random() * 3)];
         h.style.left = (r.left + r.width * (0.35 + Math.random() * 0.3)) + 'px'; h.style.top = (r.top + r.height * 0.3) + 'px';
         D.body.appendChild(h); setTimeout(() => h.remove(), 1200);
+        petLine();
+    }
+    /* Oct 16 (E-man): petting gets an answer. Misty speaks in her own bubble above her head (the same spot as the VR tip):
+       a quick "hey", a giggle when tickled (several taps fast), "slow down" if you keep poking, and lines that follow her energy. */
+    const PET = {
+        hey: [['Hey!', 'Hey!', '¡Hola!'], ['Hi you', 'Hallo du', 'Hola, tú'], ['Oh, hello!', 'Oh, hallo!', '¡Oh, hola!']],
+        tickle: [['Hihi, that tickles!', 'Hihi, das kitzelt!', '¡Jiji, me haces cosquillas!'], ['Hahaha, stop it!', 'Hahaha, hör auf!', '¡Jajaja, para!']],
+        slow: [['Slow down!', 'Langsam!', '¡Más despacio!'], ['Whoa, easy there', 'Hey, sachte', 'Eh, con calma']],
+        thriving: [['I feel amazing today', 'Ich fühl mich heute super', 'Hoy me siento genial'], ['Let us go explore!', 'Lass uns was entdecken!', '¡Vamos a explorar!']],
+        ok: [['That feels nice', 'Das tut gut', 'Qué agradable'], ['A bit of water would help', 'Ein Schluck Wasser wär gut', 'Un poco de agua me vendría bien']],
+        weak: [['That meal made me wobbly', 'Das Essen macht mich wackelig', 'Esa comida me dejó flojita'], ['Something green next?', 'Als Nächstes was Grünes?', '¿Algo verde después?']],
+        tired: [['So sleepy...', 'So müde...', 'Qué sueño...'], ['A glass of water, please?', 'Ein Glas Wasser, bitte?', '¿Un vaso de agua, por favor?']]
+    };
+    function petLine() {
+        const now = Date.now(); st.pets = (st.pets || []).filter(t => now - t < 2200); st.pets.push(now);
+        const n = st.pets.length;
+        let tier = 'ok'; try { const en = W.LowiSun && W.LowiSun.energyNow && W.LowiSun.energyNow(); if (en && en.tier) tier = en.tier; } catch (e) { }
+        const set = n >= 7 ? PET.slow : n >= 4 ? PET.tickle : (n === 1 && (now - (st.petSaidAt || 0) > 20000)) ? PET.hey : (PET[tier] || PET.ok);
+        if (n > 1 && n < 4 && now - (st.petSaidAt || 0) < 1500) return;   /* don't chatter on every single tap */
+        const l = set[Math.floor(Math.random() * set.length)];
+        st.vrTip = { text: T(l[0], l[1], l[2]), until: now + 2600 }; st.petSaidAt = now;
+        try { paintHint(); } catch (e) { }
     }
     function onClick(e) {
         const t = e.target;
@@ -759,7 +781,9 @@
     /* ---------- layout + lifecycle ---------- */
     function layout() {
         /* iPad landscape: the tab bar is a side rail, so left-hand Home buttons start where Home starts */
-        const th = D.getElementById('tab-home'), lv = (th ? Math.max(0, Math.round(th.getBoundingClientRect().left)) : 0) + 'px';
+        /* Oct 16 (iPad portrait): only a real side rail pushes them in; with the tab bar at the bottom they sit 16 px from the screen edge, mirroring World map */
+        const th = D.getElementById('tab-home'), tbr = D.getElementById('tabbar'), tr0 = tbr && tbr.getBoundingClientRect(), rail = !!(tr0 && tr0.height > tr0.width && tr0.left < W.innerWidth / 3);
+        const lv = (rail && th ? Math.max(0, Math.round(th.getBoundingClientRect().left)) : 0) + 'px';
         if (st.wl !== lv) { st.wl = lv; H.style.setProperty('--wh-l', lv); }
         const tb = D.getElementById('tabbar');
         let top = W.innerHeight;

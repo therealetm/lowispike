@@ -241,8 +241,12 @@ export function createWorld(THREE, canvas, opts) {
 
     /* ---------- loop ---------- */
     let running = false, raf = 0, last = 0, t = 0, frames = [], lowFor = 0;
+    /* Oct 16 (E-man): a speed control for the world's own motion (cells drifting, platelets, mitochondria...). The camera, gestures,
+       glow fades and Misty (DOM, her own animations) keep real time. Set by atmosphere.js as window.LowiWorldSpeed (0.25..3). */
+    function worldSpeed() { const v = +(typeof window !== 'undefined' && window.LowiWorldSpeed); return v > 0 ? Math.min(3, Math.max(0.1, v)) : 1; }
     function step(dt) {
-        t += dt;
+        const wdt = dt * worldSpeed();
+        t += wdt;
         /* camera */
         if (rig.fly) {
             rig.fly.t += dt; const k = ease(Math.min(1, rig.fly.t / rig.fly.dur));
@@ -262,21 +266,21 @@ export function createWorld(THREE, canvas, opts) {
         camera.lookAt(rig.target);
         /* flow */
         for (let i = 0; i < RBC; i++) {
-            const c = rb[i]; c.x += c.v * dt; if (c.x > 40) c.x -= 80;
+            const c = rb[i]; c.x += c.v * wdt; if (c.x > 40) c.x -= 80;
             tmpE.set(c.ax + t * 0.35 * c.w, c.ay + t * 0.22, 0); tmpQ.setFromEuler(tmpE); tmpS.setScalar(c.s); tmpP.set(c.x, c.y + Math.sin(t * 0.5 + c.ax) * 0.15, c.z);
             tmpM.compose(tmpP, tmpQ, tmpS); rbc.setMatrixAt(i, tmpM);
         }
         rbc.instanceMatrix.needsUpdate = true;
-        for (let i = 0; i < PLT; i++) { const c = pl[i]; c.x += c.v * dt; if (c.x > 40) c.x -= 80; tmpM.makeTranslation(c.x, c.y, c.z); plat.setMatrixAt(i, tmpM); }
+        for (let i = 0; i < PLT; i++) { const c = pl[i]; c.x += c.v * wdt; if (c.x > 40) c.x -= 80; tmpM.makeTranslation(c.x, c.y, c.z); plat.setMatrixAt(i, tmpM); }
         plat.instanceMatrix.needsUpdate = true;
-        for (let i = 0; i < PN; i++) { let x = pPos[i * 3] + pVel[i] * dt; if (x > 40) x -= 80; pPos[i * 3] = x; }
+        for (let i = 0; i < PN; i++) { let x = pPos[i * 3] + pVel[i] * wdt; if (x > 40) x -= 80; pPos[i * 3] = x; }
         pGeo.attributes.position.needsUpdate = true;
-        wbcs.forEach(m => { m.position.x += m.userData.v * dt; if (m.position.x > 40) m.position.x -= 80; m.rotation.y += dt * 0.2; });
+        wbcs.forEach(m => { m.position.x += m.userData.v * wdt; if (m.position.x > 40) m.position.x -= 80; m.rotation.y += wdt * 0.2; });
         shafts.children.forEach(m => { m.material.opacity = m.material.opacity; m.rotation.y = Math.sin(t * 0.1 + m.userData.p) * 0.3; });
         shafts.position.x = Math.sin(t * 0.05) * 2;
         /* cell */
         glow += (glowT - glow) * Math.min(1, dt * 2); memU.uGlow.value = glow; memU.uT.value = t;
-        const br = 1 + 0.015 * Math.sin(t * 1.55); cell.scale.setScalar(br); cell.rotation.y += dt * 0.12; cell.position.y = Math.sin(t * 0.7) * 0.06;
+        const br = 1 + 0.015 * Math.sin(t * 1.55); cell.scale.setScalar(br); cell.rotation.y += wdt * 0.12; cell.position.y = Math.sin(t * 0.7) * 0.06;
         halo.material.opacity = (theme === 'light' ? 0.16 : 0.24) + glow * 0.18;
         mitos.forEach(m => { const u = m.userData; const a = u.a + t * u.s; m.position.set(Math.cos(a) * u.r, u.y + Math.sin(t * 0.9 + u.a) * 0.06, Math.sin(a) * u.r); m.rotation.set(a, a * 0.7, 0.4); });
         vesicles.forEach(m => { const u = m.userData; const a = u.a - t * u.s; m.position.set(Math.cos(a) * u.r, u.y + Math.sin(t + u.a) * 0.05, Math.sin(a) * u.r); });

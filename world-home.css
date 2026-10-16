@@ -361,3 +361,16 @@ html.wh-home #spHome #spFast .fb-lab { display: none !important; }
 .wh-pet { position: fixed; z-index: 60; pointer-events: none; color: #ff8fb8; font-size: 22px; text-shadow: 0 0 10px rgba(255,140,190,.8); transform: translate(-50%, 0); animation: wh-pet 1.15s ease-out forwards; }
 @keyframes wh-pet { 0% { opacity: 0; transform: translate(-50%, 6px) scale(.6); } 18% { opacity: 1; transform: translate(-50%, -6px) scale(1.1); } 100% { opacity: 0; transform: translate(-50%, -64px) scale(.9); } }
 @media (prefers-reduced-motion: reduce) { .wh-pet { animation-duration: .01s; } }
+
+/* Oct 16 (iPad): the left column mirrors the right one exactly. Sound sits where World map sits on the other side, and Kometa's glowing
+   gift sits centred right above Sound, the way VR sits above World map (it used to slide under Sound or float beside it, off-centre). */
+html.wh-home #whHud > .hs-gift.hs-gift { left: calc(var(--wh-l, 0px) + max(16px, env(safe-area-inset-left)) + 7px); bottom: calc(var(--wh-tb, 84px) + 12px + 58px + 10px); }
+html.wh-home #whHud > .hs-gift.hs-gift ~ .wa-panel, .wh-hud .wa-panel { z-index: 8; }
+/* bigger screens: a little more air above the tab bar, and room for the button words (Weltkarte, World map, Klang) */
+@media (min-width: 700px) and (min-height: 700px) {
+    .wh-hud .wa-btn.wa-home, .wh-hud .wh-zoom { bottom: calc(var(--wh-tb) + 22px); width: 66px; height: 62px; }
+    .wh-hud .wh-zoom-tx, .wh-hud .wa-btn.wa-home span { max-width: 60px; font-size: 10.5px; padding: 0 3px; box-sizing: border-box; }
+    .wh-hud .wh-vr { right: calc(max(16px, env(safe-area-inset-right)) + 10px); bottom: calc(var(--wh-tb) + 22px + 62px + 10px); }
+    html.wh-home #whHud > .hs-gift.hs-gift { left: calc(var(--wh-l, 0px) + max(16px, env(safe-area-inset-left)) + 11px); bottom: calc(var(--wh-tb, 84px) + 22px + 62px + 10px); }
+    .wh-hud .wa-panel { bottom: calc(var(--wh-tb) + 96px); }
+}

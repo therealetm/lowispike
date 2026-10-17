@@ -119,6 +119,7 @@ test('total freedom: your own flying reaches to just inside the visible walls, c
     }
     const f = read('misty-flight.js');
     assert.ok(/freeR = freeReach\(r\.maxD, curRegion\(\)\)/.test(f));
-    assert.ok(/edgeR = free \? inR : freeR/.test(f), 'the soft edge uses the big reach while you steer');
+    assert.ok(/baseR = free \? inR : freeR/.test(f), 'the soft edge uses the big reach while you steer');
+    assert.ok(/mistReach\(inR, misty, pushOut\)/.test(f) && /exitCheck\(ctx, k, mode, vx, vy, magX, baseR\)/.test(f), 'mist rule kept; the 3 s exit sees the free edge and a held forward');
     assert.ok(/W\.LowiMistyHunt\.frame\(ctx, S\.p, !free, inR\)/.test(f), 'crumbs keep their old spread');
 });

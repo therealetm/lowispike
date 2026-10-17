@@ -243,7 +243,7 @@
         if (btn.__pos !== x + ',' + y) { btn.__pos = x + ',' + y; btn.style.top = y + 'px'; btn.style.left = x + 'px'; }
         btn.classList.toggle('tb-off', !!main.classList.contains('pf-hide') || cs.display === 'none');
     }
-    function toggleTheme() {
+    function toggleTheme(quiet) {
         const to = nextTheme(effective());
         const R2 = root.LowiR2;
         /* Day & night atmosphere (atmosphere.js): one tap jumps to its Day or Night stop; the slider lives in Look & Ton */
@@ -251,26 +251,39 @@
         else if (R2 && R2.applyTheme) R2.applyTheme(to);
         else { try { localStorage.setItem('lowi.theme', to); } catch (e) {} H.setAttribute('data-theme', to); H.setAttribute('data-theme-mode', to); }
         paintBtn();
-        try { if (R2 && R2.toast) R2.toast(to === 'light' ? t('cloudOn') : t('nightOn')); } catch (e) {}
+        try { if (!quiet && R2 && R2.toast) R2.toast(to === 'light' ? t('cloudOn') : t('nightOn')); } catch (e) {}
         try { D.dispatchEvent(new CustomEvent('lowi:theme', { detail: { theme: to } })); } catch (e) {}
     }
+    /* third tap: undo the first tap's flip (quietly) and open the Day & night adjuster */
+    function tripleTheme(before) {
+        if (before && effective() !== before) toggleTheme(true);
+        const A = root.LowiAtmos; if (!A || typeof A.openSheet !== 'function') return null;
+        try { if (navigator.vibrate) navigator.vibrate(12); } catch (x) {}
+        return A.openSheet();
+    }
+    root.LowiTopBar = Object.assign(root.LowiTopBar || {}, { tripleTheme });
     function mountBtn() {
         if (btn && btn.isConnected) return;
         btn = D.getElementById('tbTheme') || D.createElement('button');
         btn.id = 'tbTheme';
         btn.type = 'button';
         btn.setAttribute('data-noi18n', '');
-        /* Oct 16: tap flips Day/Night; hold (~half a second) opens the Day & night adjuster (LowiAtmos.openSheet). */
-        let holdT = 0, held = false, sx = 0, sy = 0;
-        const unhold = () => { clearTimeout(holdT); holdT = 0; };
-        btn.addEventListener('pointerdown', e => {
-            if (e.button > 0) return; held = false; sx = e.clientX; sy = e.clientY; unhold();
-            holdT = setTimeout(() => { holdT = 0; const A = root.LowiAtmos; if (!A || typeof A.openSheet !== 'function') return; held = true; try { if (navigator.vibrate) navigator.vibrate(12); } catch (x) {} A.openSheet(); }, 480);
-        });
-        btn.addEventListener('pointermove', e => { if (holdT && Math.hypot(e.clientX - sx, e.clientY - sy) > 12) unhold(); });
-        ['pointerup', 'pointercancel', 'pointerleave'].forEach(n => btn.addEventListener(n, unhold));
+        /* Oct 17 (Eman): no more long press (iOS turned it into copy/select and cancelled the hold, so the menu never came back).
+           One tap flips Day/Night right away. THREE quick taps open the Day & night adjuster (LowiAtmos.openSheet) and put the
+           theme back to where it was before the first tap. Tapping anywhere outside the adjuster closes it. */
+        let taps = 0, lastTap = 0, tapT = 0, before = null;
+        const TAP_GAP = 420;
         btn.addEventListener('contextmenu', e => e.preventDefault());
-        btn.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); if (held) { held = false; return; } toggleTheme(); });
+        btn.addEventListener('click', e => {
+            e.preventDefault(); e.stopPropagation();
+            const now = Date.now();
+            if (now - lastTap > TAP_GAP) { taps = 0; before = effective(); }
+            lastTap = now; taps++;
+            clearTimeout(tapT); tapT = 0;
+            if (taps === 1) { toggleTheme(); return; }
+            if (taps === 2) { tapT = setTimeout(() => { tapT = 0; if (taps === 2) toggleTheme(); }, TAP_GAP); return; }
+            if (taps === 3) { taps = 0; lastTap = 0; tripleTheme(before); }
+        });
         btn.__h = null; btn.__pos = null;
         placeBtn(); paintBtn();
     }

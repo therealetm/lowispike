@@ -25,7 +25,7 @@ test('Today: the sun/moon button is the weather pill glass, round, 44 px, same p
     /* the margins grow top-bar.js's 38 px box to 44 px around the same centre: tied to its size and 10 px gap */
     assert.ok(r.includes('margin:-3px 0 0 -2px'));
     assert.ok(js.includes('const size = 38;') && js.includes('x = Math.round(left - size - 10)') && js.includes('y = Math.round(top + (h - size) / 2)'), 'placement unchanged');
-    assert.match(js, /if \(held\) \{ held = false; return; \} toggleTheme\(\);/, 'tap still flips Day/Night');
+    assert.match(js, /if \(taps === 1\) \{ toggleTheme\(\); return; \}/, 'tap still flips Day/Night');
     /* the old dark thin-outlined look no longer wins */
     assert.ok(css.indexOf('html #tbTheme#tbTheme{') > css.indexOf('html[data-ui=light] #tbTheme{'));
 });

@@ -227,12 +227,24 @@
         set: p => apply({ mode: 'manual', p }),
         auto: () => apply({ mode: 'auto' }),
         quick, scrub,
-        /* Oct 16: the Day & night adjuster on its own (long-press on the moon/sun button). mountCard fills the .r2-look. */
+        /* Oct 16: the Day & night adjuster on its own (Oct 17: three taps on the moon/sun button). mountCard fills the .r2-look.
+           Oct 17 fix: a closed sheet that never finished leaving (.off) no longer blocks the next one, which is why the menu
+           did not appear again. A tap anywhere outside the sheet closes it. */
         openSheet: () => {
             const r = R2(); if (!r || typeof r.sheet !== 'function') return null;
-            const old = document.querySelector('.atm-ov'); if (old) return old;
+            document.querySelectorAll('.atm-ov.off').forEach(o => o.remove());
+            const old = document.querySelector('.atm-ov:not(.off)'); if (old) return old;
             const ov = r.sheet('<div class="atm-sheet" data-noi18n><div class="r2-look"></div></div>', { cls: 'atm-ov' });
             mountCard(); updateUI();
+            const away = e => {
+                if (!ov.isConnected || ov.classList.contains('off')) { document.removeEventListener('pointerdown', away, true); return; }
+                const sh = ov.querySelector('.r2-sh');
+                if (sh && sh.contains(e.target)) return;
+                if (e.target && e.target.closest && e.target.closest('#tbTheme')) return;
+                document.removeEventListener('pointerdown', away, true);
+                try { r.close(ov); } catch (x) { ov.remove(); }
+            };
+            setTimeout(() => document.addEventListener('pointerdown', away, true), 0);
             return ov;
         },
         isNight: () => (state.mode === 'manual' ? C.themeFor(state.p) === 'dark' : H.getAttribute('data-theme') !== 'light'),

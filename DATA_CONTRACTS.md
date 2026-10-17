@@ -199,3 +199,7 @@ Home reads canonical XP, companion and fasting state through the existing bridge
 ## Shopping rhythm (`lowispike.shopplan.v1`, Oct 17 2026)
 
 `{v:1, every: int 1..60 | null, days: int[0..6] (0 = Sunday), store: string <= 60, updated: ms, skipped: bool}`. Written only by `LowiShopPlan.set` (shop-plan.js) after normalisation by `LowiShopPlanCore.normalize`. `every` is only what the person typed; `null` means not set. Event `lowi:shopplan` fires after each save. `LowiShopPlanCore.dueState(plan, lastCheckInMs, nowMs)` returns `unset | fresh | due | grace | lapsed`; it never records check-ins itself. Included in the cloud backup through the `lowispike.` prefix.
+
+## Store ranges (`data/shop/<range>.json`, Oct 17-18 2026)
+
+`{chain, name, country, source, sourceUrl, scope, note, built, count, cols:[n,b,k,c,s,f,p,fat,kcal,u,q,g,im], rows:[[...]], images:{source, base, withPhoto, built, note?}}`. Built by `tools/shop-data/build.py`, then `tools/shop-data/add-images.py` fills `im`: the Open Food Facts front photo for barcode `g`, stored without `https://images.openfoodfacts.org/images/products/` and `.200.jpg` (only the file part when the folder is the usual 3/3/3 barcode split). `LowiStorePicksCore.photo(p, 200|400)` turns it back into the exact URL OFF returned and accepts nothing else; `link(p, data)` gives the OFF product page; `explain(r)` gives the numbers behind Best/Good. Ranges are chain-wide catalogue tags, never one shop's stock. Store-picks state `lowi.storePicks.v1` is unchanged.

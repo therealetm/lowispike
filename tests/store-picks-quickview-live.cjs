@@ -57,7 +57,9 @@ async function run(name, launcher, ctxOpts, base) {
         setInterval(unlock, 200);
     });
     await page.waitForSelector('.stp-ov button.stp-item', { timeout: 30000 });
-    await page.waitForTimeout(1500);
+    // headless WebKit on this VM paints the heavy 3D app slowly, so wait for the first thumbnails instead of a fixed time
+    await page.waitForFunction(() => [...document.querySelectorAll('.stp-th img[src]')].some(i => i.complete && i.naturalWidth > 0), null, { timeout: 60000 });
+    await page.waitForTimeout(800);
     const rows = await page.locator('.stp-ov button.stp-item').count();
     ok(rows > 100, rows + ' product rows are buttons');
     const pending = await page.locator('.stp-th img[data-src]').count();
@@ -76,7 +78,7 @@ async function run(name, launcher, ctxOpts, base) {
     ok(before > 500, 'list scrolled down to ' + before);
     const nameInRow = (await target.locator('b').innerText()).trim();
     if (ctxOpts.hasTouch) await target.tap(); else await target.click();
-    await page.waitForSelector('.stp-qv.in [role="dialog"]');
+    await page.waitForSelector('.stp-qv.in [role="dialog"]', { timeout: 60000 });
     const h3 = (await page.locator('.stp-qv h3').innerText()).trim();
     ok(h3 === nameInRow, 'quick view shows the tapped product: ' + h3);
     await page.locator('[data-stp="qv-close"].stp-pill').click();
@@ -92,7 +94,7 @@ async function run(name, launcher, ctxOpts, base) {
     const lent = page.locator('.stp-ov button.stp-item', { hasText: 'Bio-Linsen rot' }).first();
     ok(await lent.count(), 'Bio-Linsen rot found by search (left-out list included if needed)');
     if (ctxOpts.hasTouch) await lent.tap(); else await lent.click();
-    await page.waitForSelector('.stp-qv.in .stp-qv-ph img');
+    await page.waitForSelector('.stp-qv.in .stp-qv-ph img', { timeout: 60000 });
     await page.waitForFunction(() => { const i = document.querySelector('.stp-qv-ph img'); return i && i.complete; }, null, { timeout: 20000 });
     const qi = await page.evaluate(() => { const i = document.querySelector('.stp-qv-ph img'); return { src: i.src, w: i.naturalWidth, alt: i.alt }; });
     ok(/^https:\/\/images\.openfoodfacts\.org\/images\/products\/.+\.400\.jpg$/.test(qi.src) && qi.w > 0, 'large photo loaded ' + qi.src + ' (' + qi.w + 'px)');
@@ -103,8 +105,9 @@ async function run(name, launcher, ctxOpts, base) {
     ok(/glycemic load/.test(txt) && /× GI/.test(txt), 'why-rating text with the numbers');
     ok(/not checked against the shelf/.test(txt), 'says it is not checked against the shelf');
     ok(/not medical advice/.test(txt), 'says it is not medical advice');
-    const fit = await page.evaluate(() => { const c = document.querySelector('.stp-qv-card').getBoundingClientRect(); return c.left >= 0 && c.right <= innerWidth + 0.5 && c.top >= 0 && c.bottom <= innerHeight + 0.5; });
-    ok(fit, 'quick view fits the screen');
+    await page.waitForFunction(() => { const c = document.querySelector('.stp-qv-card'); return c && getComputedStyle(c).transform === 'none'; }, null, { timeout: 60000 }).catch(() => {});
+    const fit = await page.evaluate(() => { const c = document.querySelector('.stp-qv-card').getBoundingClientRect(); const vw = document.documentElement.clientWidth, vh = innerHeight; return { ok: c.left >= 0 && c.right <= vw + 0.5 && c.top >= 0 && c.bottom <= vh + 0.5, r: [c.left, c.top, c.right, c.bottom].map(Math.round), vw, vh }; });
+    ok(fit.ok, 'quick view fits the screen ' + JSON.stringify(fit));
     await page.screenshot({ path: OUT + '/' + name + '-quickview.png' });
     await page.keyboard.press('Escape');
     await page.waitForTimeout(300);
@@ -118,7 +121,7 @@ async function run(name, launcher, ctxOpts, base) {
     if (await none.count()) {
         await none.scrollIntoViewIfNeeded();
         if (ctxOpts.hasTouch) await none.tap(); else await none.click();
-        await page.waitForSelector('.stp-qv.in');
+        await page.waitForSelector('.stp-qv.in', { timeout: 60000 });
         ok(/No photo yet|didn’t load/.test(await page.locator('.stp-qv-ph').innerText()), 'missing photo is labelled');
         await page.screenshot({ path: OUT + '/' + name + '-nophoto.png' });
         await page.mouse.click(5, 5); // tap the dimmed area above the card

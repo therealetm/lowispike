@@ -19,7 +19,6 @@
         calm: ['Calm weather today. I could drift around the worlds for a while.', 'Ruhiges Wetter heute. Ich könnte eine Weile durch die Welten treiben.', 'Clima tranquilo hoy. Podría flotar un rato por los mundos.'],
         cleared: ['The storm has passed. Thank you, it feels lighter in here.', 'Der Sturm ist vorbei. Danke, es fühlt sich hier leichter an.', 'La tormenta pasó. Gracias, aquí se siente más ligero.'],
         lost: ['Oh, where am I? ... Ah, there you are.', 'Oh, wo bin ich? ... Ah, da bist du ja.', 'Oh, ¿dónde estoy? ... Ah, ahí estás.'],
-        hole: ['A black hole! Keep pushing me away from it and I can get out.', 'Ein Schwarzes Loch! Drück mich weiter davon weg, dann komme ich raus.', '¡Un agujero negro! Sigue empujándome lejos de él y podré salir.'],
         t_food: ['A low-spike meal brightens it most.', 'Eine Low-Spike-Mahlzeit macht es am hellsten.', 'Una comida sin picos lo ilumina más.'],
         t_move: ['A short Move gets the flow going.', 'Eine kurze Bewegung bringt den Fluss in Schwung.', 'Un Movimiento corto activa el flujo.'],
         t_water: ['A glass of water clears the haze.', 'Ein Glas Wasser klärt den Dunst.', 'Un vaso de agua despeja la bruma.'],
@@ -74,5 +73,5 @@
             lastSaid = Date.now(); say(now({ prevTier: prev }).text);
         }, 2500);
     });
-    W.LowiMistyHints = Object.assign({}, core, { now, read, say: extra => { const h = now(extra); say(h.text); lastSaid = Date.now(); return h; }, lost: () => say(tr('lost', lang())), hole: () => say(tr('hole', lang())) });
+    W.LowiMistyHints = Object.assign({}, core, { now, read, say: extra => { const h = now(extra); say(h.text); lastSaid = Date.now(); return h; }, lost: () => say(tr('lost', lang())) });
 })(typeof window !== 'undefined' ? window : globalThis);

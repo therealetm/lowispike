@@ -111,13 +111,13 @@
         s = s || { t: 0, miss: 0, fired: false }; i = i || {};
         const dt = clamp(+i.dt || 0, 0, EXIT.DT), out = +i.out || 0;
         const pressing = i.mode === 'drive' && !i.busy && (+i.mag || 0) >= EXIT.MAG && out >= EXIT.AWAY;
-        /* cloud walls (Oct 17, item 3): the cloudy wall is the way out; a black hole's dark sector is not */
-        const atRim = (+i.edge || 0) >= EXIT.EDGE && out >= EXIT.OUT, atEdge = atRim && !i.hole;
+        /* cloud walls (Oct 17, item 3): the cloudy wall is the way out; a dark zone (DARK, below) never is */
+        const atRim = (+i.edge || 0) >= EXIT.EDGE && out >= EXIT.OUT, atEdge = atRim && !i.dark;
         let fire = false;
         if (!pressing) { s.t = 0; s.miss = 0; s.fired = false; }
         else if (atEdge) { s.miss = 0; if (!s.fired) { s.t += dt; if (s.t >= EXIT.HOLD - 1e-9) { s.t = EXIT.HOLD; s.fired = true; fire = true; } } }
         else { s.miss += dt; if (s.miss > EXIT.GRACE) { s.t = 0; s.miss = 0; } }
-        return { s, p: s.fired ? 1 : clamp(s.t / EXIT.HOLD, 0, 1), fire, lost: pressing && atRim && !!i.hole };
+        return { s, p: s.fired ? 1 : clamp(s.t / EXIT.HOLD, 0, 1), fire, dark: pressing && atRim && !!i.dark };
     }
     /* mist rule (Oct 17, E-man): inside a world the mist and clouds at its edge are the forbidden edge. Pushing into them only
        lets her explore and get lost out there (out of bounds); only pushing outward into clear space (a gap with no mist, where
@@ -142,38 +142,34 @@
         (gaps || []).forEach(g => { const d = Math.abs(angWrap(ang - g.a)); if (d < bd) { bd = d; best = g.a; } });
         return best == null ? angWrap(ang) : best;
     }
-    /* how far out she may go: further only while you push outward into the mist */
-    function mistReach(inR, mist, pushingOut) { return (+inR || 0) * (mist && pushingOut ? MIST.LOST : 1); }
-    /* 0 = inside her usual reach, 1 = as deep in the mist as she can go */
-    function lostAmt(edge) { return clamp(((+edge || 0) - 1) / (MIST.LOST - 1), 0, 1); }
-    /* cloud walls & black holes (Oct 17, E-man handoff item 3: "Misty-style cloudy walls are exits. Dark spots are black holes
-       that pull you into a forbidden area that is difficult to leave"). This turns the mist rule round: the soft cloud wall round
-       a world, in Misty's own blue / violet / cyan, is now the way out (push into it for EXIT.HOLD s: it stretches, Home shows
-       through behind it, then it bursts open). Where the clear gaps were, each world now has a dark spot (same places every
-       time, exitGaps): a black hole. Inside R x reach of one its pull grows (x^2, so the outskirts are easy, the middle is a
-       fight); its pull at the core is SUCK x her own full speed, so once she reaches CORE x reach she is caught: dragged out into
-       the dark beyond the wall (DEEP x reach), the forbidden area. Only pushing away from it (stick >= MAG, at least AWAY toward
-       the world's middle) for ESC s gets her out; letting go loses progress DECAY x as fast. After that she is thrown back in
-       and the hole leaves her alone for COOL s. Only your own steering can get her caught: the autopilot steers clear. */
-    const HOLE = { AT: 0.9, R: 0.34, CORE: 0.12, SUCK: 1.25, ESC: 2.2, MAG: 0.6, AWAY: 0.5, DECAY: 1.5, DEEP: 1.3, COOL: 3, CLEAR: 0.35 };
-    const holeSpots = id => exitGaps(id).map(g => ({ a: g.a, w: g.w }));
-    function inHole(ang, holes) { return (holes || []).some(h => Math.abs(angWrap(ang - h.a)) <= h.w / 2); }
-    /* 0..1: how hard a hole pulls at distance d from its middle (reach = the world's reach) */
-    function holePull(d, reach) { const pr = HOLE.R * (+reach || 0); if (!(pr > 0)) return 0; const x = clamp(1 - (+d || 0) / pr, 0, 1); return x * x; }
-    const holeCaught = (d, reach) => (+reach || 0) > 0 && (+d || 0) <= HOLE.CORE * reach;
-    /* the way out of a black hole. s = { t }; i = { dt, mag, away (cos between the stick and "away from the hole") } */
-    function holeEscape(s, i) {
-        s = s || { t: 0 }; i = i || {};
-        const dt = clamp(+i.dt || 0, 0, EXIT.DT), pushing = (+i.mag || 0) >= HOLE.MAG && (+i.away || 0) >= HOLE.AWAY;
-        s.t = pushing ? s.t + dt : Math.max(0, s.t - dt * HOLE.DECAY);
-        const free = s.t >= HOLE.ESC - 1e-9; if (free) s.t = HOLE.ESC;
-        return { s, p: clamp(s.t / HOLE.ESC, 0, 1), free, pushing };
-    }
-    /* the autopilot's way out: the nearest point of the cloud wall that keeps CLEAR radians away from every black hole */
-    function wallToward(ang, holes) {
+    /* dark zones (Oct 17, E-man, replacing the black holes of release 131627: "delete all the black holes"; what he and Maya were
+       after is "the child feeling of going so far into the dark space that you feel like you just entered a zone that you weren't
+       supposed to be in ... out of the game zone"; "it feels like you're able to fly in there, which you are supposed to ... so to
+       give it an infinite type of feeling ... everything becomes so dark that Misty can't, and the human can't see anything ... and
+       then for every three seconds they start glowing just for like a split second, so they know the game isn't buggy, but they
+       are in the dark"). Where the cloud wall has its gaps (exitGaps: the same places in a world every time) the world opens onto
+       the dark (a soft shapeless patch of darkness there, no swirl, no ring). Nothing pulls, nothing catches, there is nothing to
+       escape: you just fly in, up to DEEP x the world's reach, and the deeper you go (from START to FULL x the reach, so it is
+       already near black where the world's own shell is) the darker everything gets, up to MAX (Misty too). Every PULSE
+       s out there she glows for FLASH s. Fly back and the light comes back (IN / OUT: how fast the dark closes in and lifts).
+       The dark is never a way out: only the cloud wall is, and its glass bubble skin bulges like Home's does when she leaves for
+       the spirit world (exitTent). */
+    const DARK = { START: 0.8, FULL: 1.3, MAX: 0.95, DEEP: 3, PULSE: 3, FLASH: 0.32, CLEAR: 0.35, IN: 1.6, OUT: 2.4, TENT: 0.28 };
+    const darkSpots = id => exitGaps(id).map(g => ({ a: g.a, w: g.w }));
+    function inDark(ang, zones) { return (zones || []).some(h => Math.abs(angWrap(ang - h.a)) <= h.w / 2); }
+    /* how far out she may fly: far on into the dark, the usual edge at the cloud wall (where the exit counts) */
+    function darkReach(inR, dark) { return (+inR || 0) * (dark ? DARK.DEEP : 1); }
+    /* 0..MAX: how dark it is with her at edge = her distance from the world's middle / its reach */
+    function darkAmt(edge) { return DARK.MAX * smooth(DARK.START, DARK.FULL, +edge || 0); }
+    /* 0..1: her glow t s after the dark closed in: one short flash every PULSE s, the first after PULSE s */
+    function darkGlow(t) { t = +t || 0; if (t < DARK.PULSE - 1e-9) return 0; const ph = t % DARK.PULSE; return ph < DARK.FLASH ? Math.sin(Math.PI * ph / DARK.FLASH) : 0; }
+    /* how far the cloud wall's bubble skin bulges out around her (world units) for p = 0..1 of the 3-second push */
+    const exitTent = (p, reach) => DARK.TENT * (+reach || 0) * Math.pow(clamp(+p || 0, 0, 1), 1.3);
+    /* the autopilot's way out: the nearest point of the cloud wall that keeps CLEAR radians away from every dark zone */
+    function wallToward(ang, zones) {
         let x = angWrap(ang);
-        for (let n = 0; n < 3; n++) (holes || []).forEach(h => {
-            const half = h.w / 2 + HOLE.CLEAR, d = angWrap(x - h.a);
+        for (let n = 0; n < 3; n++) (zones || []).forEach(h => {
+            const half = h.w / 2 + DARK.CLEAR, d = angWrap(x - h.a);
             if (Math.abs(d) < half) x = angWrap(h.a + (d >= 0 ? half : -half));
         });
         return x;
@@ -202,7 +198,7 @@
     function orbitSpin(rad, sleepy) { return ORBIT.W * Math.pow(1 / Math.max(+rad || 0, ORBIT.R_END), 1.2) * (sleepy ? 0.7 : 1); }
     /* at the door: fling her back out (true) or let her in (false). tries = flings so far; refuse = the world's bounce rule said no */
     function orbitFling(tries, refuse) { return tries < ORBIT.MIN_FLINGS || (!!refuse && tries < ORBIT.TRIES - 1); }
-    const core = { K, inReach, freeReach, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, roams, autoLeave, roamSpot, roamPx, pullAt, fallAt, EXIT, exitHold, MIST, angWrap, exitGaps, inMist, gapToward, mistReach, lostAmt, HOLE, holeSpots, inHole, holePull, holeCaught, holeEscape, wallToward, outAt, ORBIT, orbitAt, orbitSpin, orbitFling };
+    const core = { K, inReach, freeReach, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, roams, autoLeave, roamSpot, roamPx, pullAt, fallAt, EXIT, exitHold, MIST, angWrap, exitGaps, inMist, gapToward, DARK, darkSpots, inDark, darkReach, darkAmt, darkGlow, exitTent, wallToward, outAt, ORBIT, orbitAt, orbitSpin, orbitFling };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!D || !D.addEventListener || W.LowiMistyFlight) return;
 
@@ -321,7 +317,7 @@
         const a = ctx && ctx.a, r = ctx && ctx.r;
         note('end ' + why); if (W.LowiMistyGalaxy) W.LowiMistyGalaxy.reset(ctx, S); S.huntFly = false; S.outReq = false; S.exH = null; S.exP = 0; S.exD0 = 0; S.autoX = null; S.orb = null; if (ctx && ctx.wand) dropDraw(ctx.wand);
         if (r && a && (why === 'abort' || why === 'home') && !regionsBusy() && curRegion() === 'hub') { r.target.set(0, 0, 0); if (why === 'abort' && S.dHome && S.dollyOut) r.dist = S.dHome; }
-        S.st = 'idle'; S.flew = null; S.dolly = 0; S.bh = null; S.bhEsc = 0; S.bhPull = 0; hold(false); classes(false, false, false); H.classList.remove('mf-transit');
+        S.st = 'idle'; S.flew = null; S.dolly = 0; S.deep = false; S.dk = 0; S.dkT = 0; veilOff(); hold(false); classes(false, false, false); H.classList.remove('mf-transit');
         /* autopilot heading out of a place keeps flying: she slips back into her cell and goes on to the next place */
         const keep = (S.keepAuto && why === 'left' && ctx && ctx.PD && ctx.PD.mode === 'auto') || (S.recallOut && why === 'left');
         if (why === 'home' || why === 'abort') { S.recallOut = false; S.recallFast = false; }
@@ -383,7 +379,7 @@
         const a = ctx.a, r = ctx.r, PD = ctx.PD, wand = ctx.wand, dt = ctx.dt, k = clamp(+ctx.k || 0, 0, 1), still = !!ctx.reduced;
         if (!wand) return;
         basis(a); S.t += dt;
-        if (S.st !== 'inside') mistFrame(ctx, 0, false);
+        if (S.st !== 'inside') { mistFrame(ctx, 0, false); darkFrame(ctx, 0); }
         const cur = curRegion();
         /* world-exit: leaving the world she is in (World map, X, the autopilot heading on, a recall, or your 3-second push at its
            edge) no longer drops her back into her bubble: she flies out with the camera and stays out in the universe */
@@ -786,7 +782,7 @@
         const a = ctx.a, r = ctx.r, dt = ctx.dt, zs = clamp(r.dist / 2.6, 1, 8), inR = inReach(r.maxD), freeR = freeReach(r.maxD, curRegion());
         /* the place opens on its widest view (body-world-regions.js): her pace and reach scale with how far out you are */
         if (mode === 'home' && !S.recallOut) { padMode(ctx, 'drive'); mode = 'drive'; }
-        mistFrame(ctx, freeR, true); /* item 3: the cloud wall and its black holes sit at the edge your own flying reaches */
+        mistFrame(ctx, freeR, true); /* item 3: the cloud wall and its dark openings sit at the edge your own flying reaches */
         if (S.fallT >= 0 && S.fallT < K.FALL) {
             S.fallT += dt; const F = fallAt(S.fallT / K.FALL);
             S.p.copy(S.fallTo).addScaledVector(V.up, F.drop * Math.min(1.1, r.dist * 0.42) * 0.8);
@@ -797,23 +793,19 @@
         }
         if (ADV()) S.advIn = (S.advIn || 0) + dt; /* her cell is far away: no flying home from here (World map takes you both back) */
         S.inT = (S.inT || 0) + dt;
-        /* black holes (item 3): near a dark spot its pull drags at her; caught, she is out in the forbidden dark beyond the wall */
-        const caught = holeFrame(ctx, k, mode, vx, vy, mag, freeR, zs);
         /* misty-roam: on her own (not steered, or let go a while ago) she roams the whole view freely */
-        const free = !caught && roams(mode, S.idle);
-        if (caught) { S.rw = null; S.rwWait = 0; if (S.autoX) { S.autoX = null; S.inT = 0; } exitReset(ctx); S.inMist = false; S.inHole = true; }
-        else if (free) {
+        const free = roams(mode, S.idle);
+        if (free) {
             /* autopilot: after a while she heads back out and on to the next place (never while you touch the world).
                world-exit (Oct 17, E-man: "even on autopilot ... she's supposed to actually try to get out of that world by going
                to the corner and then pushing against it"): she flies to the nearest corner of the world, presses against its
                edge for the same 3 seconds you would, and only then flies out, the camera with her */
             const adv = ADV();
-            S.lost = Math.max(0, (S.lost || 0) - dt);
             if (S.autoX && (mode !== 'auto' || (+r.idle || 0) < 0.4 || regionsBusy() || r.fly)) { S.autoX = null; exitReset(ctx); S.inT = 0; note('auto exit cancelled'); }
             if (!S.autoX && autoLeave(mode, S.inT, +r.idle || 0, adv ? K.ADV_STAY : K.STAY_IN) && !regionsBusy() && !r.fly) {
-                /* cloud walls (item 3): she heads for the nearest stretch of the cloud wall, well clear of the black holes */
+                /* cloud walls (item 3): she heads for the nearest stretch of the cloud wall, well clear of the dark zones */
                 V.a.subVectors(S.p, S.inC);
-                const ga = wallToward(Math.atan2(V.a.dot(V.up), V.a.dot(V.rt)), holeSpots(S.flew));
+                const ga = wallToward(Math.atan2(V.a.dot(V.up), V.a.dot(V.rt)), darkSpots(S.flew));
                 S.autoX = { dir: V.rt.clone().multiplyScalar(Math.cos(ga)).addScaledVector(V.up, Math.sin(ga)).normalize(), sx: Math.cos(ga) * 0.7, ph: 'seek', t: 0, ga };
                 S.rw = null; note('auto exit seek wall ' + ga.toFixed(2));
             }
@@ -837,20 +829,17 @@
             S.v.lerp(V.b.copy(V.want).multiplyScalar(speed(k, 'in') * zs * power()), Math.min(1, dt * 4));
             S.p.addScaledVector(S.v, dt);
             /* soft edge: right after she roamed far, she is eased back into reach instead of jumping.
-               mist rule: pushing outward into the mist lets her drift further out and get lost there; back in reach slowly */
+               dark zones: the cloud wall is the way out; where the world opens onto the dark she just flies on in, as deep as
+               DEEP x the reach, and once out there (S.deep) she may turn any way she likes until she is back inside the world.
+               Pressing into the cloud wall, she rides the tip of its bulging bubble skin. */
             V.a.subVectors(S.p, S.inC); const L = V.a.length(), baseR = free ? inR : freeR, magX = Math.max(mag, Math.abs(S.th || 0)); /* misty-turn: free reach; holding forward counts as pushing */
-            /* item 3: the cloud wall is the way out; a black hole's dark sector is the forbidden edge (she may drift into the dark there) */
-            const mAng = Math.atan2(V.a.dot(V.up), V.a.dot(V.rt)), dark = inHole(mAng, holeSpots(S.flew)), misty = !dark;
+            const mAng = Math.atan2(V.a.dot(V.up), V.a.dot(V.rt)), zone = inDark(mAng, darkSpots(S.flew));
+            if (zone && L >= baseR * 0.98) S.deep = true; else if (L < baseR * 0.97) S.deep = false;
+            const dark = zone || !!S.deep;
             const pushOut = mode === 'drive' && magX >= EXIT.MAG && L > 1e-4 && V.want.dot(V.a) > 0;
-            const reach = Math.max(baseR, mistReach(baseR, dark, pushOut));
+            const reach = dark ? darkReach(baseR, true) : baseR + exitTent(S.exP || 0, baseR) * 0.92;
             if (L > reach) { const L2 = Math.min(reach * 1.12, L - (L - reach) * Math.min(1, dt * (!pushOut && L > baseR * 1.05 ? 0.9 : 3))); S.p.copy(S.inC).addScaledVector(V.a, L2 / L); }
-            S.inMist = misty; S.inHole = dark; S.mistAng = mAng;
-            const lostNow = dark ? lostAmt(L / Math.max(1e-4, baseR)) : 0;
-            if (lostNow > 0.6) S.wasLost = true;
-            if (S.wasLost && lostNow < 0.05) { S.wasLost = false; if (!S.lostSaid || performance.now() - S.lostSaid > 20000) { S.lostSaid = performance.now(); note('lost in the mist, back'); try { if (W.LowiMistyHints) W.LowiMistyHints.lost(); } catch (e) { } } }
-            S.lost = lostNow;
-            /* lost in the dark: her path wanders a little, she can't quite hold a line out there */
-            if (lostNow > 0 && !still) S.p.addScaledVector(V.rt, Math.sin(S.t * 0.8) * 0.35 * lostNow * dt * zs).addScaledVector(V.up, Math.cos(S.t * 0.6) * 0.3 * lostNow * dt * zs);
+            S.inMist = !dark; S.inDark = dark; S.mistAng = mAng;
             /* world-exit: keep pushing outward at the edge for 3 s and you both fly out */
             if (exitCheck(ctx, k, mode, vx, vy, magX, baseR)) return;
         }
@@ -867,20 +856,22 @@
         }
         S.fade = Math.min(1, S.fade + dt * 2.5);
         S.hs = S.base * K.MIN_K / pxPerUnit(a, S.p); /* the size she had at the door, whatever the zoom */
-        place(ctx, k, still, S.fade * (1 - 0.5 * (S.lost || 0))); turnDraw(ctx, S.fade); /* deep in the mist she is half swallowed by it */
+        place(ctx, k, still, S.fade); turnDraw(ctx, S.fade); /* deep in the dark the veil (darkFrame) swallows her, not her own fade */
         trail(ctx, k, free ? (S.rwWait > 0 ? 0 : 0.5) : mag);
         /* misty-hunt: the hidden crumbs of this world; only YOUR steering eats them (the autopilot never farms) */
         try { if (W.LowiMistyHunt) W.LowiMistyHunt.frame(ctx, S.p, !free, inR); } catch (e) { }
         toScreen(a, S.p, S.scr); S.scrT = performance.now();
+        darkFrame(ctx, freeR);
     }
 
-    /* ---------- cloud walls & black holes (Oct 17, item 3) ----------
+    /* ---------- cloud walls & dark zones (Oct 17, item 3; dark zones replace the black holes) ----------
        A ring of soft cloud sprites in Misty's own colours (blue glass, violet rim, cyan edge) at the edge her own flying reaches, in
-       the view's own plane through the world's middle: the way out. Pushing into it stretches it outward where she presses, it thins
-       there and Home's light (a small glowing cell) shows through behind it; when the 3 seconds are up it bursts open there and the
-       pieces fly outward and fade while you both fly out. Where the wall has a gap sits a black hole: a dark spot with a slow violet
-       swirl round it. Only drawn while she is inside a world; fades away after. */
-    const MS = { g: null, sp: [], gl: [], hl: [], hm: null, hr: null, f: 0, N: 26, bt: -1, ba: 0 };
+       the view's own plane through the world's middle: the way out. Pushing into it, the wall's thin glass bubble skin shows itself
+       and bulges outward around her (the same skin as Home's edge when she leaves for the spirit world), the clouds stretch and thin
+       there and Home's light (a small glowing cell) shows through behind; when the 3 seconds are up it bursts open there, the skin
+       rings out and the pieces fly outward and fade while you both fly out. Where the wall has a gap the world opens onto the dark
+       (darkFrame). Only drawn while she is inside a world; fades away after. */
+    const MS = { g: null, sp: [], dz: [], hm: null, hr: null, f: 0, N: 26, bt: -1, ba: 0 };
     const WALL_C = ['#b9d4ff', '#cdbbff', '#bff3ff'];
     function mistTex(T, soft) {
         const c = D.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d');
@@ -888,7 +879,7 @@
         gr.addColorStop(0, 'rgba(255,255,255,' + (soft ? 0.9 : 0.75) + ')'); gr.addColorStop(soft ? 0.25 : 0.45, 'rgba(255,255,255,' + (soft ? 0.35 : 0.4) + ')'); gr.addColorStop(1, 'rgba(255,255,255,0)');
         x.fillStyle = gr; x.fillRect(0, 0, 64, 64); const t = new T.CanvasTexture(c); return t;
     }
-    /* a soft ring (a black hole's swirl, Home's cell wall) */
+    /* a soft ring (Home's cell wall) */
     function ringTex(T) {
         const c = D.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d');
         const gr = x.createRadialGradient(32, 32, 0, 32, 32, 32);
@@ -902,15 +893,17 @@
         if (MS.g || !a || !a.THREE || !a.scene || !D || !D.createElement) return !!MS.g;
         const T = a.THREE, tm = mistTex(T, false), tg = mistTex(T, true), tr = ringTex(T);
         MS.g = new T.Group(); MS.g.name = 'mf-mist'; MS.g.visible = false; MS.g.renderOrder = 2;
+        /* lwKeep: a later world must not park the wall out of sight (body-world-regions setHubVisible parks every other scene child) */
+        MS.g.userData.lwKeep = true;
         for (let j = 0; j < MS.N; j++) {
             const m = new T.SpriteMaterial({ map: tm, color: new T.Color(WALL_C[j % 3]), transparent: true, opacity: 0, depthWrite: false, fog: false });
             const s = new T.Sprite(m); s.userData.r = idHash('m' + j); MS.g.add(s); MS.sp.push(s);
         }
-        for (let j = 0; j < MIST.GAPS; j++) {
-            /* a black hole: a dark core (normal blending, so it really darkens what is behind it) and a slow violet swirl */
-            const core = new T.Sprite(new T.SpriteMaterial({ map: tg, color: new T.Color('#06020e'), transparent: true, opacity: 0, depthWrite: false, fog: false }));
-            const halo = new T.Sprite(new T.SpriteMaterial({ map: tr, color: new T.Color('#8f6bff'), transparent: true, opacity: 0, depthWrite: false, fog: false, blending: T.AdditiveBlending }));
-            MS.g.add(halo); MS.g.add(core); MS.gl.push(core); MS.hl.push(halo);
+        /* the dark openings: where the wall has a gap, a few soft overlapping patches of darkness (normal blending: they really
+           darken what is behind them), so that part of the world looks black and deep, and inviting to fly into */
+        for (let j = 0; j < MIST.GAPS * 3; j++) {
+            const d = new T.Sprite(new T.SpriteMaterial({ map: tg, color: new T.Color(j % 3 === 1 ? '#05020c' : '#010104'), transparent: true, opacity: 0, depthWrite: false, fog: false }));
+            d.userData.r = idHash('dz' + j); MS.g.add(d); MS.dz.push(d);
         }
         /* Home, showing through the stretched wall: its light and its cell wall */
         MS.hm = new T.Sprite(new T.SpriteMaterial({ map: tg, color: new T.Color('#a8e6ff'), transparent: true, opacity: 0, depthWrite: false, fog: false, blending: T.AdditiveBlending }));
@@ -929,14 +922,14 @@
     function wallBurst(ang) { MS.bt = 0; MS.ba = +ang || 0; }
     function mistDraw(a, inR, dt) {
         if (inR) MS.inR = inR; inR = MS.inR || inR; if (!inR) return;
-        const holes = holeSpots(S.flew), t = S.t, still = !!(W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        const zones = darkSpots(S.flew), t = S.t, still = !!(W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)').matches);
         V.h.subVectors(S.p, S.inC);
         const pa = Math.atan2(V.h.dot(V.up), V.h.dot(V.rt)), p = S.st === 'inside' ? S.exP || 0 : 0;
         if (MS.bt >= 0) MS.bt += dt || 0.016;
         const be = MS.bt >= 0 ? smooth(0, 1, Math.min(1, MS.bt / 0.9)) : 0;
         for (let j = 0; j < MS.sp.length; j++) {
             const s = MS.sp[j], u = s.userData.r, th = (j + 0.5) / MS.sp.length * 2 * Math.PI + (still ? 0 : Math.sin(t * 0.05 + j) * 0.04);
-            if (inHole(th, holes)) { s.visible = false; continue; }
+            if (inDark(th, zones)) { s.visible = false; continue; } /* no cloud where the world opens onto the dark */
             /* stretch: the wall tents outward and thins where she presses; burst: it tears open there and flies apart */
             const w = p > 0 ? smooth(0, 1, 1 - Math.abs(angWrap(th - pa)) / 0.9) : 0, wb = be > 0 ? smooth(0, 1, 1 - Math.abs(angWrap(th - MS.ba)) / 1.3) : 0;
             const rr = inR * (1.1 + 0.16 * u + (still ? 0 : 0.04 * Math.sin(t * 0.21 + j * 1.7))) * (1 + 0.22 * p * w) + inR * 0.9 * be * wb;
@@ -946,17 +939,13 @@
             s.material.rotation = u * 6.28 + (still ? 0 : t * 0.02 * (u - 0.5));
             s.visible = s.material.opacity > 0.005;
         }
-        for (let j = 0; j < MS.gl.length; j++) {
-            const core = MS.gl[j], halo = MS.hl[j], h = holes[j]; if (!h) { core.visible = halo.visible = false; continue; }
-            const rr = inR * HOLE.AT, mine = !!(S.bh && S.bh.i === j);
-            core.position.copy(S.inC).addScaledVector(V.rt, Math.cos(h.a) * rr).addScaledVector(V.up, Math.sin(h.a) * rr).addScaledVector(V.fw, -inR * 0.02);
-            halo.position.copy(core.position);
-            const cs = inR * 2 * HOLE.CORE * 1.15; core.scale.set(cs, cs, 1);
-            const hs = inR * 2 * HOLE.R * (0.92 + (still ? 0 : 0.05 * Math.sin(t * 0.9 + j * 2))); halo.scale.set(hs, hs, 1);
-            halo.material.rotation = still ? 0 : t * (mine ? 1.6 : 0.6) * (j ? -1 : 1);
-            core.material.opacity = MS.f * 0.88;
-            halo.material.opacity = MS.f * (mine ? 0.62 : 0.32 + 0.25 * (S.bhPull || 0));
-            core.visible = core.material.opacity > 0.005; halo.visible = halo.material.opacity > 0.005;
+        for (let j = 0; j < MS.dz.length; j++) {
+            const d = MS.dz[j], z = zones[Math.floor(j / 3)], u = d.userData.r; if (!z) { d.visible = false; continue; }
+            const th = z.a + (j % 3 - 1) * z.w * 0.28 + (still ? 0 : Math.sin(t * 0.07 + j) * 0.03), rr = inR * (1.12 + 0.12 * u);
+            d.position.copy(S.inC).addScaledVector(V.rt, Math.cos(th) * rr).addScaledVector(V.up, Math.sin(th) * rr).addScaledVector(V.fw, -inR * (0.05 + 0.1 * u));
+            const sc = inR * (0.75 + 0.35 * u) * (j % 3 === 1 ? 1.15 : 0.9); d.scale.set(sc * 1.2, sc, 1);
+            d.material.rotation = u * 6.28; d.material.opacity = MS.f * (0.55 + 0.2 * u);
+            d.visible = d.material.opacity > 0.005;
         }
         /* Home shows through behind the wall where she presses, brighter as it stretches; it flares as the wall bursts */
         const ha = MS.bt >= 0 ? MS.ba : pa, hp = MS.bt >= 0 ? Math.max(0, 1 - MS.bt / 1.1) : p;
@@ -968,62 +957,116 @@
             MS.hr.material.rotation = still ? 0 : t * 0.3;
             MS.hm.visible = MS.hm.material.opacity > 0.005; MS.hr.visible = MS.hr.material.opacity > 0.005;
         }
+        skinDraw(a, inR, dt);
     }
-    /* ---------- black holes: the pull, being caught, and the long way back ---------- */
-    function holeAt(i, reach, out) {
-        const h = holeSpots(S.flew)[i]; if (!h) return null;
-        return out.copy(S.inC).addScaledVector(V.rt, Math.cos(h.a) * reach * HOLE.AT).addScaledVector(V.up, Math.sin(h.a) * reach * HOLE.AT);
+    /* ---------- the cloud wall's bubble skin: a thin glass skin at the wall, tented out where she presses (misty-galaxy's look) ---------- */
+    const XS = { m: null, u: null, dir: null, live: false, amt: 0, op: 0, ring: 0, ringT: 9 };
+    function skinBuild(a) {
+        if (XS.m && XS.m.parent) return XS.m;
+        const T = a && a.THREE; if (!T || !a.scene) return null;
+        XS.dir = new T.Vector3(0, 1, 0);
+        XS.u = { uD: { value: XS.dir }, uA: { value: 0 }, uO: { value: 0 }, uR: { value: 1 } };
+        const m = new T.ShaderMaterial({
+            uniforms: XS.u, transparent: true, depthWrite: false, side: T.DoubleSide, blending: T.AdditiveBlending, fog: false,
+            vertexShader: 'uniform vec3 uD;uniform float uA;uniform float uR;varying float vF;varying float vT;' +
+                'void main(){vec3 n=normalize(position);float c=max(dot(n,uD),0.0);float pw=pow(c,60.0);vec3 p=n*uR+uD*(uA*pw);' +
+                'vec4 mv=modelViewMatrix*vec4(p,1.0);vec3 nv=normalize(normalMatrix*n);vF=1.0-abs(dot(nv,normalize(-mv.xyz)));vT=pow(c,16.0);gl_Position=projectionMatrix*mv;}',
+            fragmentShader: 'uniform float uO;varying float vF;varying float vT;' +
+                'void main(){float a=uO*(0.06+0.6*pow(vF,3.0))*vT+uO*vT*vT*0.35;vec3 c=mix(vec3(0.45,0.85,1.0),vec3(0.9,0.75,1.0),vT);gl_FragColor=vec4(c*a,a);}'
+        });
+        XS.m = new T.Mesh(new T.SphereGeometry(1, 64, 40), m); XS.m.name = 'mf-wall-skin'; XS.m.frustumCulled = false; XS.m.visible = false;
+        XS.m.renderOrder = 5; XS.m.userData.lwKeep = true;
+        a.scene.add(XS.m); return XS.m;
     }
-    /* true = she is caught this frame (the caller skips her normal flying) */
-    function holeFrame(ctx, k, mode, vx, vy, mag, reach, zs) {
-        const r = ctx.r, dt = ctx.dt;
-        if (regionsBusy() || r.fly || ctx.reduced || !(reach > 0)) { if (S.bh) { S.bh = null; S.bhEsc = 0; S.lost = 0; } S.bhPull = 0; return false; }
-        S.bhCool = Math.max(0, (S.bhCool || 0) - dt);
-        const top = speed(1, 'in') * zs * power();
-        if (!S.bh) {
-            /* only your own steering can get her caught: the autopilot and her own roaming steer clear */
-            if (roams(mode, S.idle) || S.bhCool > 0) { S.bhPull = 0; return false; }
-            let best = -1, bd = 1e9;
-            for (let i = 0; i < MIST.GAPS; i++) {
-                if (!holeAt(i, reach, V.h)) continue;
-                V.h2.subVectors(V.h, S.p); V.h2.addScaledVector(V.fw, -V.h2.dot(V.fw)); /* across the view; her depth does not save her */
-                const d = V.h2.length(); if (d < bd) { bd = d; best = i; }
-            }
-            const pa = best >= 0 ? holePull(bd, reach) : 0; S.bhPull = pa;
-            if (pa <= 0) return false;
-            holeAt(best, reach, V.h); V.h2.subVectors(V.h, S.p); const d3 = V.h2.length();
-            if (d3 > 1e-4) S.p.addScaledVector(V.h2, Math.min(d3, top * HOLE.SUCK * pa * dt) / d3);
-            if (!holeCaught(bd, reach)) return false;
-            S.bh = { i: best, esc: null, t: 0, sw: idHash(String(S.flew) + best) * 6.28 }; S.bhPull = 1; S.bhEsc = 0; note('black hole ' + best);
-            try { if (navigator.vibrate) navigator.vibrate([18, 40, 18]); } catch (e) { }
-            if (!S.holeSaid || performance.now() - S.holeSaid > 20000) { S.holeSaid = performance.now(); try { if (W.LowiMistyHints && W.LowiMistyHints.hole) W.LowiMistyHints.hole(); } catch (e) { } }
+    /* exitFx, each frame of a push: off = her offset from the world's middle (length L), p = 0..1 of the 3 seconds */
+    function skinPush(off, L, p) {
+        if (!XS.dir) { XS.pend = { x: off.x / L, y: off.y / L, z: off.z / L }; } else XS.dir.copy(off).multiplyScalar(1 / L);
+        XS.live = true; XS.p = p; XS.ring = 0;
+    }
+    /* the wall burst open (exitGo): the skin rings out instead of popping */
+    function skinPop() { XS.ring = Math.max(XS.amt, 0.1); XS.ringT = 0; XS.live = false; }
+    /* mistDraw, each frame */
+    function skinDraw(a, inR, dt) {
+        if (!inR) return;
+        if (XS.live) {
+            if (!skinBuild(a)) return;
+            if (XS.pend) { XS.dir.set(XS.pend.x, XS.pend.y, XS.pend.z); XS.pend = null; }
+            XS.amt = exitTent(XS.p, inR); XS.op = 0.25 + 0.75 * XS.p; XS.live = false; XS.was = true;
+        } else if (XS.was && !XS.ring) { XS.ring = Math.max(XS.amt, 0.05) * 0.6; XS.ringT = 0; XS.was = false; } /* let go: it springs back */
+        else if (XS.ring) {
+            XS.ringT += dt || 0.016; XS.was = false;
+            XS.amt = Math.max(0, XS.ring * Math.exp(-3 * XS.ringT) * Math.cos(11 * XS.ringT)); XS.op = 0.7 * Math.exp(-1.6 * XS.ringT);
+            if (XS.ringT > 2.4) { XS.ring = 0; XS.op = 0; }
+        } else XS.op = 0;
+        const m = XS.m; if (!m) return;
+        const on = XS.op > 0.01 && MS.f > 0.01;
+        if (m.visible !== on) m.visible = on;
+        if (!on) return;
+        m.position.copy(S.inC); XS.u.uR.value = inR * 1.04; XS.u.uA.value = XS.amt; XS.u.uO.value = XS.op * MS.f;
+    }
+
+    /* ---------- dark zones: the deeper into the dark, the darker it gets; she glows for a moment every few seconds ----------
+       One full-screen veil drawn over the whole world (and over Misty: she is lost in it too), in its own group drawn last. When
+       she glows, the veil opens a little round her and a soft cyan light flares where she is. The controller and the menus are
+       not in the 3D world, so they stay usable; her guide and speech bubbles dim with the dark. */
+    const DV = { g: null, q: null, s: null, u: null, v: null };
+    function veilBuild(a) {
+        if (DV.g && DV.g.parent) return true;
+        const T = a && a.THREE; if (!T || !a.scene || !D || !D.createElement) return false;
+        DV.u = { uA: { value: 0 }, uG: { value: 0 }, uC: { value: new T.Vector2(0.5, 0.5) }, uR: { value: 0.12 }, uAsp: { value: 1 } };
+        const m = new T.ShaderMaterial({
+            uniforms: DV.u, transparent: true, depthTest: false, depthWrite: false, fog: false,
+            vertexShader: 'varying vec2 vUv;void main(){vUv=position.xy+0.5;gl_Position=vec4(position.xy*2.0,0.0,1.0);}',
+            fragmentShader: 'uniform float uA;uniform float uG;uniform vec2 uC;uniform float uR;uniform float uAsp;varying vec2 vUv;' +
+                'void main(){vec2 d=(vUv-uC)*vec2(uAsp,1.0);float h=uG*(1.0-smoothstep(uR*0.3,uR,length(d)));' +
+                'float e=0.05*smoothstep(0.4,1.0,length((vUv-0.5)*2.0));gl_FragColor=vec4(0.0,0.0,0.012,clamp(uA*(1.0-h)+e*uA,0.0,1.0));}'
+        });
+        DV.q = new T.Mesh(new T.PlaneGeometry(1, 1), m); DV.q.frustumCulled = false; DV.q.renderOrder = 1;
+        DV.s = new T.Sprite(new T.SpriteMaterial({ map: mistTex(T, true), color: new T.Color('#bff3ff'), transparent: true, opacity: 0, depthTest: false, depthWrite: false, fog: false, blending: T.AdditiveBlending }));
+        DV.s.frustumCulled = false; DV.s.renderOrder = 2;
+        DV.v = new T.Vector3();
+        /* groupOrder 99: after everything else in the world (the cloud wall's group is 2, Misty and her face 61 / 62 at group 0) */
+        DV.g = new T.Group(); DV.g.name = 'mf-dark'; DV.g.renderOrder = 99; DV.g.visible = false; DV.g.userData.lwKeep = true;
+        DV.g.add(DV.q); DV.g.add(DV.s); a.scene.add(DV.g); return true;
+    }
+    function veilOff() { if (DV.g) DV.g.visible = false; if (H.classList.contains('mf-dark')) H.classList.remove('mf-dark'); }
+    function veilDraw(a, dk, glow) {
+        if (dk <= 0.003) { veilOff(); return; }
+        if (!veilBuild(a)) return;
+        DV.g.visible = true;
+        const q = canvasRect(a), cam = a.camera;
+        DV.v.copy(S.p).project(cam);
+        DV.u.uA.value = dk; DV.u.uG.value = glow; DV.u.uAsp.value = q.width / Math.max(1, q.height);
+        DV.u.uC.value.set((DV.v.x + 1) / 2, (DV.v.y + 1) / 2);
+        const px = (S.hs || 0.3) * pxPerUnit(a, S.p); DV.u.uR.value = clamp(px * 2.2 / Math.max(1, q.height), 0.06, 0.3);
+        DV.s.position.copy(S.p); const g = (S.hs || 0.3) * (2.2 + 1.6 * glow); DV.s.scale.set(g, g, 1);
+        DV.s.material.opacity = 0.9 * glow; DV.s.visible = glow > 0.01;
+        const on = dk > 0.5; if (H.classList.contains('mf-dark') !== on) H.classList.toggle('mf-dark', on);
+        if (on && !D.getElementById('mfDarkCss') && D.head) {
+            const st = D.createElement('style'); st.id = 'mfDarkCss';
+            st.textContent = 'html.mf-dark #rpPal,html.mf-dark #whHint,html.mf-dark .lp-praise,html.mf-dark .rp-say{opacity:.1!important;transition:opacity .9s ease!important}';
+            D.head.appendChild(st);
         }
-        const B = S.bh, h = holeSpots(S.flew)[B.i]; B.t += dt;
-        if (!h || !holeAt(B.i, reach, V.h)) { S.bh = null; return false; }
-        V.a.set(0, 0, 0).addScaledVector(V.rt, Math.cos(h.a)).addScaledVector(V.up, Math.sin(h.a)); /* outward, into the dark */
-        V.want.set(0, 0, 0).addScaledVector(V.rt, vx).addScaledVector(V.up, vy);
-        const wl = Math.min(1, V.want.length()), away = wl > 1e-4 ? -V.want.dot(V.a) / V.want.length() : 0;
-        /* left alone (autopilot, or nobody touching for a while) she works her own way out, slowly: never stuck for good */
-        const self = mode !== 'drive' || (+S.idle || 0) > 8;
-        const e = holeEscape(B.esc, self ? { dt: dt * 0.35, mag: 1, away: 1 } : { dt, mag: Math.max(mag, wl), away });
-        B.esc = e.s; S.bhEsc = e.p;
-        /* where she is: pulled out into the dark beyond the wall, climbing back toward the mouth only as you fight it */
-        const deep = reach * (HOLE.DEEP - HOLE.AT) * (1 - e.p) * smooth(0, 1, Math.min(1, B.t / 1.2));
-        V.b.copy(V.h).addScaledVector(V.a, deep);
-        const sw = B.sw + B.t * (2.4 - 1.2 * e.p), rad = reach * 0.05 * (1 - 0.7 * e.p);
-        V.b.addScaledVector(V.rt, Math.cos(sw) * rad).addScaledVector(V.up, Math.sin(sw) * rad);
-        if (wl > 1e-4) V.b.addScaledVector(V.want, reach * 0.04 / Math.max(1, V.want.length()));
-        S.p.lerp(V.b, 1 - Math.exp(-dt * 3)); S.v.set(0, 0, 0);
-        S.lost = clamp(0.85 - 0.6 * e.p, 0, 1);
-        if (e.pushing && (S.bhBeat = (S.bhBeat || 0) - dt) <= 0) { S.bhBeat = 0.3; ctx.burst(S.p, 1 + Math.round(2 * e.p), 0.1 * Math.max(0.4, S.hs)); }
-        if (!e.free) return true;
-        /* out: thrown back into the world; the hole leaves her alone for a while */
-        S.bh = null; S.bhCool = HOLE.COOL; S.bhEsc = 0; S.bhPull = 0; S.idle = 0;
-        S.v.copy(V.a).multiplyScalar(-top * 1.4);
-        ring(ctx, k); note('black hole escaped');
-        try { if (navigator.vibrate) navigator.vibrate(30); } catch (e2) { }
-        if (!S.lostSaid || performance.now() - S.lostSaid > 20000) { S.lostSaid = performance.now(); try { if (W.LowiMistyHints) W.LowiMistyHints.lost(); } catch (e2) { } }
-        return false;
+    }
+    /* each frame inside a world (reach = the edge her own flying reaches), or with reach 0 anywhere else: the light comes back */
+    function darkFrame(ctx, reach) {
+        const a = ctx.a, r = ctx.r, dt = ctx.dt || 0.016;
+        let want = 0;
+        if (reach > 0 && S.st === 'inside' && S.flew && !regionsBusy() && !(r && r.fly)) {
+            V.h.subVectors(S.p, S.inC); const L = V.h.length(), zone = inDark(Math.atan2(V.h.dot(V.up), V.h.dot(V.rt)), darkSpots(S.flew));
+            if (zone && L >= reach * 0.98) S.deep = true; else if (L < reach * 0.97) S.deep = false;
+            if (zone || S.deep) want = darkAmt(L / reach);
+        } else S.deep = false;
+        const was = S.dk || 0;
+        S.dk = was + (want - was) * (1 - Math.exp(-dt * (want > was ? DARK.IN : DARK.OUT)));
+        if (want === 0 && S.dk < 0.003) S.dk = 0;
+        S.dkT = S.dk > 0.55 ? (S.dkT || 0) + dt : 0;
+        S.dkG = darkGlow(S.dkT);
+        if (S.dkG > 0 && !S.dkPulse) { S.dkPulse = true; note('dark glow'); } else if (S.dkG === 0) S.dkPulse = false;
+        /* back out of the dark: "Oh, where am I? ... Ah, there you are." */
+        if (S.dk > 0.6 && !S.wasLost) { S.wasLost = true; note('into the dark'); }
+        if (S.wasLost && S.dk < 0.05) { S.wasLost = false; note('out of the dark'); if (reach > 0 && (!S.lostSaid || performance.now() - S.lostSaid > 20000)) { S.lostSaid = performance.now(); try { if (W.LowiMistyHints) W.LowiMistyHints.lost(); } catch (e) { } } }
+        if (a && a.camera) veilDraw(a, S.dk, S.dkG); else veilOff();
     }
 
     /* ---------- world-exit: out of a world, with her ---------- */
@@ -1038,8 +1081,8 @@
         V.a.subVectors(S.p, S.inC); const L = V.a.length(), wl = V.want.length();
         const out = L > 1e-4 && wl > 1e-4 ? V.want.dot(V.a) / (L * wl) : 0;
         const busy = regionsBusy() || !!r.fly || (S.fallT >= 0 && S.fallT < K.FALL) || ctx.reduced;
-        const h = exitHold(S.exH, { dt, mode, mag, out, edge: inR > 0 ? L / inR : 0, busy, hole: !!S.inHole });
-        S.exLost = !!h.lost;
+        const h = exitHold(S.exH, { dt, mode, mag, out, edge: inR > 0 ? L / inR : 0, busy, dark: !!S.inDark });
+        S.exDark = !!h.dark;
         S.exH = h.s; S.exVx = vx; S.exE = inR > 0 ? L / inR : 0; S.exO = out;
         if (h.p <= 0) { const keep = S.exH; exitReset(ctx); S.exH = keep; return false; }
         exitFx(ctx, k, h.p, L);
@@ -1053,6 +1096,8 @@
     function exitFx(ctx, k, p, L) {
         const r = ctx.r, dt = ctx.dt, h = { p };
         S.exP = p;
+        /* the cloud wall's glass bubble skin bulges out around her, like Home's when she leaves for the spirit world */
+        if (L > 1e-4) skinPush(V.a, L, p);
         /* the camera eases back a little as you push: the way out is opening */
         if (!S.exD0) S.exD0 = r.dist;
         if (!r.fly) r.dist += (S.exD0 * (1 + 0.14 * h.p * h.p) - r.dist) * Math.min(1, dt * 6);
@@ -1073,7 +1118,7 @@
         S.outWhy0 = why;
         try { ok = !!(Rg && Rg.travel && Rg.travel('hub', false, 0, { wide: true })); } catch (e) { ok = false; }
         if (!ok) { S.outWhy0 = ''; return false; }
-        if (L > 1e-4) { V.b.copy(S.inC).addScaledVector(V.a, (L + 0.3 * S.hs) / L); ctx.burst(V.b, 14 + Math.round(10 * k), 0.5 + 0.4 * k); wallBurst(Math.atan2(V.a.dot(V.up), V.a.dot(V.rt))); } /* item 3: the cloud wall bursts open there */
+        if (L > 1e-4) { V.b.copy(S.inC).addScaledVector(V.a, (L + 0.3 * S.hs) / L); ctx.burst(V.b, 14 + Math.round(10 * k), 0.5 + 0.4 * k); wallBurst(Math.atan2(V.a.dot(V.up), V.a.dot(V.rt))); skinPop(); } /* item 3: the cloud wall bursts open there, its bubble skin rings out */
         ring(ctx, k); if (why === 'hold') try { if (navigator.vibrate) navigator.vibrate(40); } catch (e) { }
         note('exit ' + why);
         if (S.outReq) { S.outReq = false; startOut(ctx, why); outFrame(ctx, k); }
@@ -1095,7 +1140,8 @@
         S.v.lerp(V.want, Math.min(1, dt * 2.2));
         S.p.addScaledVector(S.v, dt);
         V.a.subVectors(S.p, S.inC); L = V.a.length();
-        if (L > inR) { S.p.copy(S.inC).addScaledVector(V.a, (L - (L - inR) * Math.min(1, dt * 3)) / L); V.a.subVectors(S.p, S.inC); L = V.a.length(); }
+        const lim = inR + exitTent(S.exP || 0, inR) * 0.92; /* she rides the tip of the bubble skin as it bulges */
+        if (L > lim) { S.p.copy(S.inC).addScaledVector(V.a, (L - (L - lim) * Math.min(1, dt * 3)) / L); V.a.subVectors(S.p, S.inC); L = V.a.length(); }
         if (X.ph !== 'press') return false;
         S.exVx = X.sx; S.exVib = false;
         const p = clamp(X.t / EXIT.HOLD, 0, 1);
@@ -1206,6 +1252,6 @@
         recall: () => { if (S.st === 'idle') { try { if (W.LowiPad) W.LowiPad.mode(''); } catch (e) { } } else S.recallReq = true; },
         wants, frame, core,
         state: () => ({ st: S.st, flew: S.flew, joined: !!S.joined, roam: !!S.rw, inT: +(S.inT || 0).toFixed(1), wpNext: S.wpNext, ap: +S.ap.toFixed(3), near: S.near ? S.near.id : null, nearD: S.near ? +S.near.d.toFixed(2) : null, px: Math.round(S.base), ks: +S.ks.toFixed(3),
-            hs: +S.hs.toFixed(3), exP: +(S.exP || 0).toFixed(3), exE: +(S.exE || 0).toFixed(2), exO: +(S.exO || 0).toFixed(2), mist: !!S.inMist, lost: +(S.lost || 0).toFixed(2), exLost: !!S.exLost, mistAng: S.mistAng == null ? null : +S.mistAng.toFixed(2), gaps: S.flew ? exitGaps(S.flew).map(g => +g.a.toFixed(2)) : null, hole: !!S.inHole, bh: S.bh ? S.bh.i : -1, bhEsc: +(S.bhEsc || 0).toFixed(2), bhPull: +(S.bhPull || 0).toFixed(2), transit: H.classList.contains('mf-transit'), autoX: S.autoX ? S.autoX.ph : null, orb: S.orb ? { q: +S.orb.q.toFixed(2), tries: S.orb.tries, fling: S.orb.fling > 0 } : null, outPh: S.st === 'out' ? S.oPh : null, push: S.mem && w3() && w3().memU && w3().memU.uPushA ? +w3().memU.uPushA.value.toFixed(3) : 0, p: S.p ? [+S.p.x.toFixed(2), +S.p.y.toFixed(2), +S.p.z.toFixed(2)] : null, log: S.log.slice(-12) })
+            hs: +S.hs.toFixed(3), exP: +(S.exP || 0).toFixed(3), exE: +(S.exE || 0).toFixed(2), exO: +(S.exO || 0).toFixed(2), mist: !!S.inMist, dk: +(S.dk || 0).toFixed(2), deep: !!S.deep, glow: +(S.dkG || 0).toFixed(2), exDark: !!S.exDark, skin: XS.m && XS.m.visible ? +XS.u.uA.value.toFixed(2) : 0, mistAng: S.mistAng == null ? null : +S.mistAng.toFixed(2), gaps: S.flew ? exitGaps(S.flew).map(g => +g.a.toFixed(2)) : null, dark: !!S.inDark, transit: H.classList.contains('mf-transit'), autoX: S.autoX ? S.autoX.ph : null, orb: S.orb ? { q: +S.orb.q.toFixed(2), tries: S.orb.tries, fling: S.orb.fling > 0 } : null, outPh: S.st === 'out' ? S.oPh : null, push: S.mem && w3() && w3().memU && w3().memU.uPushA ? +w3().memU.uPushA.value.toFixed(3) : 0, p: S.p ? [+S.p.x.toFixed(2), +S.p.y.toFixed(2), +S.p.z.toFixed(2)] : null, log: S.log.slice(-12) })
     };
 })();

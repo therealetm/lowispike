@@ -579,10 +579,11 @@
             /* Oct 16 (task 3): past the World Map the world opens into the spirit world (pinch, wheel or the zoom stick). Misty's
                cell, the place names and the hints step aside out there; at its far edge the camera hands over to Community. */
             r.outer = !reduced();
-            const far = r.dist > (r.maxD || 13) * 1.06; if (H.classList.contains('wh-cosmos') !== far) H.classList.toggle('wh-cosmos', far);
+            const gx = H.classList.contains('mf-galaxy'); /* galaxy breakout (misty-galaxy.js): Misty flies out there herself, Home stays Home */
+            const far = r.dist > (r.maxD || 13) * 1.06 && !gx; if (H.classList.contains('wh-cosmos') !== far) H.classList.toggle('wh-cosmos', far);
             const fk = Math.max(0, Math.min(1, Math.log(Math.max(1, r.dist / (r.maxD || 13))) / Math.log(outerD(r) / (r.maxD || 13))));
             H.style.setProperty('--wh-far', fk.toFixed(3));
-            if (fk > 0.9 && !st.zoomAnim && !st.pull && homeActive() && !H.classList.contains('gx-out') && !H.classList.contains('gx-in') && Date.now() - (st.farGo || 0) > 2500) {
+            if (fk > 0.9 && !gx && !st.zoomAnim && !st.pull && homeActive() && !H.classList.contains('gx-out') && !H.classList.contains('gx-in') && Date.now() - (st.farGo || 0) > 2500) {
                 st.farGo = Date.now(); try { if (W.goTab) W.goTab('foryou'); } catch (e) { }
             }
             /* One world: while Home travels to a place (and stays there), Misty's cell, water and fasting step aside */

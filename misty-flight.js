@@ -281,7 +281,7 @@
     }
     function end(ctx, why) {
         const a = ctx && ctx.a, r = ctx && ctx.r;
-        note('end ' + why); S.huntFly = false; S.outReq = false; S.exH = null; S.exP = 0; S.exD0 = 0; S.autoX = null; S.orb = null; if (ctx && ctx.wand) dropDraw(ctx.wand);
+        note('end ' + why); if (W.LowiMistyGalaxy) W.LowiMistyGalaxy.reset(ctx, S); S.huntFly = false; S.outReq = false; S.exH = null; S.exP = 0; S.exD0 = 0; S.autoX = null; S.orb = null; if (ctx && ctx.wand) dropDraw(ctx.wand);
         if (r && a && (why === 'abort' || why === 'home') && !regionsBusy() && curRegion() === 'hub') { r.target.set(0, 0, 0); if (why === 'abort' && S.dHome && S.dollyOut) r.dist = S.dHome; }
         S.st = 'idle'; S.flew = null; S.dolly = 0; hold(false); classes(false, false, false);
         /* autopilot heading out of a place keeps flying: she slips back into her cell and goes on to the next place */
@@ -404,10 +404,12 @@
                 startWarp(ctx, { id: g.id, pos: g.pos }); return;
             }
             const adv = ADV() && mode === 'auto';
-            const sp = speed(k, 'out') * (1 - 0.55 * S.ap) * (mode === 'auto' && k < 0.4 ? 0.5 : 1) * (mode === 'home' ? 1.25 * (S.recallFast ? K.RECALL : 1) : 1) * (adv ? K.ADV_SPEED : 1);
+            const GX = W.LowiMistyGalaxy; /* galaxy breakout (misty-galaxy.js): out there she is faster, so on screen she keeps her pace */
+            const sp = (GX ? GX.speed(ctx, S) : 1) * speed(k, 'out') * (1 - 0.55 * S.ap) * (mode === 'auto' && k < 0.4 ? 0.5 : 1) * (mode === 'home' ? 1.25 * (S.recallFast ? K.RECALL : 1) : 1) * (adv ? K.ADV_SPEED : 1);
             S.v.lerp(V.b.copy(V.want).multiplyScalar(sp), Math.min(1, dt * 3.2));
             S.p.addScaledVector(S.v, dt);
-            const L = S.p.length(); if (L > K.ROAM) { S.p.multiplyScalar(K.ROAM / L); const out = S.v.dot(V.b.copy(S.p).normalize()); if (out > 0) S.v.addScaledVector(V.b, -out); }
+            /* galaxy breakout: push long enough on the edge of your world and it gives way (misty-galaxy.js); otherwise the edge holds */
+            if (!(GX && GX.step(ctx, S, V, mode, mag, K))) { const L = S.p.length(); if (L > K.ROAM) { S.p.multiplyScalar(K.ROAM / L); const out = S.v.dot(V.b.copy(S.p).normalize()); if (out > 0) S.v.addScaledVector(V.b, -out); } }
             /* back into her own cell */
             const offN = V.a.subVectors(S.p, V.c).length();
             if (offN < K.CR * 0.92 && (mode === 'home' || (V.want.dot(V.a) < 0 && !(ADV() && mode === 'auto')))) { /* adventure: no dipping back into her cell mid-tour */ S.st = 'exit'; S.wob = -0.25; S.wobT = 0; S.wobDir.copy(V.a).normalize(); note('back in'); }
@@ -419,14 +421,17 @@
             }
             /* the camera follows her, easing in as she nears a place (and giving back your zoom when she leaves it) */
             if (camFree) {
-                if (mode === 'home') { r.target.lerp(V.c, 1 - Math.exp(-dt * 1.6)); r.dist += (S.dHome - r.dist) * Math.min(1, dt * 1.6); }
+                if (mode === 'home' && !S.gx && !S.gxBack) { r.target.lerp(V.c, 1 - Math.exp(-dt * 1.6)); r.dist += (S.dHome - r.dist) * Math.min(1, dt * 1.6); }
                 else {
                     V.b.copy(S.p).addScaledVector(S.v, 0.3);
                     r.target.lerp(V.b, 1 - Math.exp(-dt * (adv ? 1.1 : 2.4))); /* adventure: the camera drifts after her, gently */
                     S.dolly += (S.ap - S.dolly) * Math.min(1, dt * 2.2);
-                    if (S.dolly < 0.004 && Math.abs(r.dist - S.d0) > 0.001 && !S.dollyOut) S.d0 = r.dist; /* a pinch while flying is yours */
-                    S.dollyOut = S.dolly > 0.004;
-                    if (S.dollyOut) r.dist = S.d0 + (Math.max(3.4, S.d0 * 0.42) - S.d0) * S.dolly;
+                    if (GX && GX.cam(Object.assign(ctx, { K }), S)) { S.dolly = 0; S.dollyOut = false; } /* out in the galaxy (or pushing on its edge) the camera is the galaxy's */
+                    else {
+                        if (S.dolly < 0.004 && Math.abs(r.dist - S.d0) > 0.001 && !S.dollyOut) S.d0 = r.dist; /* a pinch while flying is yours */
+                        S.dollyOut = S.dolly > 0.004;
+                        if (S.dollyOut) r.dist = S.d0 + (Math.max(3.4, S.d0 * 0.42) - S.d0) * S.dolly;
+                    }
                 }
                 if (mag > 0.05 || mode !== 'drive') r.idle = 0;
             }

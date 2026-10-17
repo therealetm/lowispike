@@ -9388,8 +9388,8 @@ const updTxt = () => { let l = "en"; try { l = (window.LowiLang && LowiLang.get 
 function showUpd(){ if (!document.body) return; /* on <html>, not <body>: sheets and the sign-in screen change <body> */ let d = $("#lcUpd"); if (!d) { d = document.createElement("button"); d.id = "lcUpd"; d.type = "button"; d.className = "lc-banner lc-upd"; d.setAttribute("data-cl", "update"); d.setAttribute("role", "status"); d.setAttribute("aria-live", "polite"); d.setAttribute("data-noi18n", ""); d.setAttribute("data-sfx", "none"); try { d.style.fontFamily = getComputedStyle(document.body).fontFamily; } catch(e){} document.documentElement.appendChild(d); }
   const ok = $("#lcUpdOk"); if (ok) ok.remove();
   d.dataset.build = newBuild; const t = updTxt()[0]; if (d.dataset.t !== t) { d.dataset.t = t; d.innerHTML = '<i class="lc-ud" aria-hidden="true"></i><span>' + t + '</span>'; } }
-/* Oct 18 (heat and data pass): version.json also carries every What's New text, about 185 KB, and the poll below runs
-   every 60 s, which was about 11 MB an hour on mobile data. The build id is the file's first key, so the poll asks for
+/* Oct 18 (heat and data pass): version.json also carries every What's New text, about 185 KB (67 KB gzipped on the wire), and
+   the poll below runs every 60 s, which was about 4 MB an hour on mobile data. The build id is the file's first key, so the poll asks for
    the first 64 bytes only (GitHub Pages answers 206). The whole file is fetched only when that answer has no build id,
    when the server sends the whole file anyway (then that answer is used), or when the small request fails. */
 async function liveBuild(){

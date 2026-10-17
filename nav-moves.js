@@ -229,7 +229,11 @@
         }
         if (c.previousElementSibling !== head) head.after(c);
         const tg = T('This week', 'Diese Woche', 'Esta semana') + careLine(), nm = SPOTS.lb.label();
-        if (c.querySelector('.tiny').textContent !== tg) c.querySelector('.tiny').textContent = tg;
+        /* Oct 17 crash fix: compare with what we last wrote, never with what the page shows. spirit.js swaps the sun emoji for
+           its icon, so the shown text never matched again and this line rewrote itself on every frame (an endless DOM loop that
+           woke every observer, heated the phone and crashed Safari). */
+        const tiny = c.querySelector('.tiny');
+        if (tiny.__tg !== tg) { tiny.__tg = tg; tiny.textContent = tg; }
         if (c.querySelector('b').textContent !== nm) { c.querySelector('b').textContent = nm; c.setAttribute('aria-label', nm); }
         const tl = head.parentElement.querySelector(':scope > .g2-tiles');
         if (tl && !(tl.nextElementSibling && tl.nextElementSibling.classList.contains('nm-safeline'))) {

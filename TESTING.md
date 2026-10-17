@@ -10,7 +10,7 @@ node --test tests/*.test.cjs
 git diff --check
 ```
 
-The suite uses Node's built-in test runner and VM/static checks. There is no install or build step. GitHub Actions (`.github/workflows/ci.yml`) runs the same three on every push and pull request, so a broken push shows a red cross on the commit.
+The suite uses Node's built-in test runner and VM/static checks. There is no install or build step. GitHub Actions (`.github/workflows/ci.yml`) runs the same three on every push and pull request as the job `Release check and tests`. That job is a required check in the `main` ruleset: a commit that has not passed it on another branch first is refused by `main` (`scripts/push-main.sh` handles this), and GitHub Pages deploys only from a `main` run where it passed.
 
 `scripts/release-check.cjs` fails on: build ids that disagree, What's New missing a language, tracked stray or secret-looking files (`*.log`, `.env`, keys), merge conflict markers, files over 25 MB. It warns about big files (over 2 MB outside `vendor/` and `data/`), a `version.json` over 100 KB and assets with their own `?v=` tag. `tests/release-tooling.test.cjs` covers the gate, the build bump, the test floor and the CI file. `scripts/test-floor.cjs` fails when fewer tests pass than the newest `tests N/M` in the commit subjects; `scripts/release.sh` writes that count into every release commit.
 

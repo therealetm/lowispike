@@ -85,9 +85,9 @@ The complete inline-module, screen, persistence, backend, asset, and test invent
 ## Release workflow
 
 - `main` is the live branch. Use a branch/PR for non-trivial work unless the user explicitly authorizes a live deployment.
-- Before release, set the same build identifier in the build metadata in `index.html`, `version.json`, and `sw.js`. Update cache-busting versions in `apple-ui.js` when its dynamically loaded assets change.
-- Update the remote ref with the previously observed SHA as a lease. If `main` moved, stop and reconcile; never force over unknown work.
-- Wait for the GitHub Pages workflow to succeed, then verify the build metadata served by `https://therealetm.github.io/lowispike/`.
+- Release with `scripts/release.sh "summary" --news news.json` (see `RELEASE.md`). Do not write another one-off release script: it bumps every build id (`index.html`, `version.json`, `sw.js` x2, `apple-ui.js`), runs the gate and the tests, pushes without force under the shared lock and waits until the build is live.
+- If you must release by hand: same build id everywhere (`node scripts/release-check.cjs` proves it), plain `git push origin HEAD:main` (refused unless it fast-forwards), never `--force`.
+- Wait for the GitHub Pages workflow to succeed, then verify the build metadata served by `https://therealetm.github.io/lowispike/` (`node scripts/verify-live.cjs BUILD --compare`). The CI run on `main` also checks this.
 - An update notice must be a state transition, not a loop. Do not show “new version” when the active version already matches.
 
 ## Definition of done
@@ -108,4 +108,7 @@ The complete inline-module, screen, persistence, backend, asset, and test invent
 - Freeze scope before release. Ship the smallest complete slice, verify it, then start another.
 - Conserve user time and credits: batch inspection, avoid repeated polling, reuse existing evidence, and surface blockers immediately.
 - Never use a dirty local checkout as proof of what is live. Compare with the remote SHA and deployed build.
+- Evidence before "done": a passing command, a live build id, a matching file. A confident summary is not evidence.
+- Parallel agents: one task, one worktree, one branch (`git worktree add ../wt-<topic> -b <topic> origin/main`). Two tasks never edit the same files; split by file before starting. Write who owns what in `/home/sprite/COORD-<topic>.md` when tasks overlap.
+- Keep releases small and one at a time: each one is one user-visible change, its What's New and its tests.
 

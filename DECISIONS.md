@@ -307,3 +307,11 @@ The user explicitly requested deploying the recovered Home implementation withou
 - Existing users are never sent through setup again; they set or change it in Profile > About you > Grocery shopping.
 - The sign-in gate gained a "How you play" step (controller, autopilot, bubbles, worlds, barcode estimate) and "Shop & scan" leads the habit list.
 - `ONBOARDING.md` maps every onboarding screen to the code it describes; `tests/onboarding-current.test.cjs` fails when they drift or when a new shopping feature ships without an onboarding entry.
+
+## 2026-10-18 One release path and CI on every push
+
+**Context:** The owner asked for the way the app is built and shipped to be improved from what people who build with GitHub and AI actually do. The repo had no CI (every Actions run was the Pages deploy), and each release was a new copy-pasted script outside the repo (37 of them, about 1,700 lines) repeating the same build bump.
+
+**Decision:** `scripts/release.sh` is the one release path: shared lock, rebase, `scripts/bump-build.cjs`, `scripts/release-check.cjs`, full tests, plain fast-forward push, `scripts/verify-live.cjs`. `.github/workflows/ci.yml` runs the gate and the tests on every push and pull request with read-only permissions and actions pinned to commit SHAs, and on `main` confirms the build is live.
+
+**Consequences:** CI reports; it does not yet block a push to `main` (that needs a ruleset or Pages built from Actions, both owner settings). Deploys still come from the branch. The tooling commit changes no app file and needs no build id.

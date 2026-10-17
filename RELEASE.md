@@ -7,6 +7,18 @@
 - Live URL: <https://therealetm.github.io/lowispike/>
 - Hosting: GitHub Pages configured at repository level.
 - `.github/workflows/keepalive.yml` only pings the free Supabase backend every three days; it is not the application deployment workflow.
+- `.github/workflows/ci.yml` runs `scripts/release-check.cjs`, the full test suite and a whitespace check on every push and pull request. On `main` its second job waits until the live site serves that build (or a newer one) and the shell files match the commit. A red CI run on `main` means something is wrong live: look before releasing more.
+
+## Release tooling (use this, not a new one-off script)
+
+```bash
+# from a worktree whose branch holds the finished, committed change
+scripts/release.sh "what users get, in one line" --news news.json
+```
+
+`news.json` is the What's New entry: `{"slug":"care-board","go":{"tab":"home"},"lead":{en,de,es},"steps":[...],"text":{"en":"..","de":"..","es":".."}}`. The script takes the shared lock `/tmp/lowispike-release.lock`, fetches, rebases on `origin/main` (stops on conflict), moves every build id to a fresh one later than both the repo and the live build (`scripts/bump-build.cjs`), runs `scripts/release-check.cjs` and all tests (undoes the bump on failure), checks whitespace, commits only the four build files, pushes `HEAD:main` without force, frees the lock and then waits for the live site (`scripts/verify-live.cjs --at-least --compare`). `--no-bump` releases a commit that already carries its build; `--no-verify` skips the wait.
+
+Parts on their own: `node scripts/release-check.cjs` (gate, exit 1 on errors), `node scripts/bump-build.cjs --dry-run` (shows the next id), `node scripts/verify-live.cjs [BUILD] --compare` (is it live, do the bytes match).
 
 `main` is live. Use a branch and pull request for non-trivial work unless the user explicitly asks to ship directly.
 
@@ -40,11 +52,11 @@ git diff --check
 ## Publishing safely
 
 1. Create the commit from the verified base.
-2. Update the remote branch with the previously observed head SHA as a lease.
-3. If the lease fails, fetch the new head and reconcile. Never force over unknown work.
+2. Push with a plain `git push origin HEAD:main`. GitHub refuses it unless it fast-forwards, which is the lease: it can never overwrite another agent's release. Never use `--force`.
+3. If the push is refused, fetch, rebase and run the checks again (`scripts/release.sh` does this under the lock).
 4. Wait for the repository's Pages deployment for that commit to succeed.
-5. Fetch the live page with cache busting and verify its embedded build identifier.
-6. Fetch live `version.json` and confirm the same build.
+5. Fetch the live page with cache busting and verify its embedded build identifier. Pages sends `Cache-Control: max-age=600`, so an unbusted fetch can show a build up to ten minutes old.
+6. Fetch live `version.json` and confirm the same build. `scripts/verify-live.cjs` does 4 to 6 and compares the bytes.
 7. Open the live app once in a clean browser context and once with an existing service worker when the change affects caching or updates.
 
 ## Update-system invariants

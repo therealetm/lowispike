@@ -1,0 +1,62 @@
+# Checks every push and pull request, then proves that what landed on main is really live.
+# Sources: docs.github.com (concurrency, secure use of Actions), martinfowler.com/articles/continuousIntegration.html.
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+# Least privilege: the workflow can read the code and nothing else.
+permissions:
+  contents: read
+
+# One run per branch. Superseded runs on work branches are cancelled; runs on main queue up
+# so every release gets its live check.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  test:
+    name: Release check and tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # Actions pinned to full commit SHAs (tag in the comment) so a moved tag cannot change what runs.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+      - name: Release check (build ids, What's New, stray files, conflict markers)
+        run: node scripts/release-check.cjs
+      - name: Test suite
+        run: node --test tests/*.test.cjs
+      - name: No new whitespace errors in this push
+        env:
+          BEFORE: ${{ github.event.before }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          BASE="${PR_BASE:-$BEFORE}"
+          if [ -z "$BASE" ] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then BASE="$(git rev-parse HEAD~1)"; fi
+          git diff --check "$BASE" HEAD
+
+  live:
+    name: Live on GitHub Pages
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+      - name: Wait until the live site serves this build (or a newer one)
+        run: node scripts/verify-live.cjs --at-least --compare --timeout 900

@@ -5,11 +5,14 @@
 Run from the repository root:
 
 ```bash
+node scripts/release-check.cjs
 node --test tests/*.test.cjs
 git diff --check
 ```
 
-The suite uses Node's built-in test runner and VM/static checks. There is no install or build step.
+The suite uses Node's built-in test runner and VM/static checks. There is no install or build step. GitHub Actions (`.github/workflows/ci.yml`) runs the same three on every push and pull request, so a broken push shows a red cross on the commit.
+
+`scripts/release-check.cjs` fails on: build ids that disagree, What's New missing a language, tracked stray or secret-looking files (`*.log`, `.env`, keys), merge conflict markers, files over 25 MB. It warns about big files (over 2 MB outside `vendor/` and `data/`), a `version.json` over 100 KB and assets with their own `?v=` tag. `tests/release-tooling.test.cjs` covers the gate, the build bump and the CI file.
 
 ## Current automated coverage
 

@@ -21,7 +21,7 @@ test('one tap flips at once, three quick taps open the adjuster and put the them
     assert.match(tb, /if \(taps === 2\) \{ tapT = setTimeout\(\(\) => \{ tapT = 0; if \(taps === 2\) toggleTheme\(\); \}, TAP_GAP\); return; \}/);
     assert.match(tb, /if \(before && effective\(\) !== before\) toggleTheme\(true\);/);
     assert.match(tb, /if \(!quiet && R2 && R2\.toast\)/);
-    assert.match(tb, /const TAP_GAP = 420;/);
+    assert.match(tb, /const TAP_GAP = 500;/);
 });
 
 test('tap counting: 1 tap = 1 flip; 2 quick taps = 2 flips; 3 quick taps = adjuster, theme unchanged', async () => {
@@ -31,18 +31,18 @@ test('tap counting: 1 tap = 1 flip; 2 quick taps = 2 flips; 3 quick taps = adjus
         return new Promise(res => {
             let theme = 'dark', flips = 0, opened = 0, handler = null, t0 = 1000;
             const ctx = {
-                Date: { now: () => t0 },
+                performance: { now: () => t0 },
                 setTimeout, clearTimeout,
                 effective: () => theme,
                 toggleTheme: () => { theme = theme === 'dark' ? 'light' : 'dark'; flips++; },
                 tripleTheme: before => { if (theme !== before) { theme = before; } opened++; },
                 btn: { addEventListener: (n, f) => { if (n === 'click') handler = f; } }
             };
-            vm.runInNewContext('let taps = 0, lastTap = 0, tapT = 0, before = null; const TAP_GAP = 420;\n' + body, ctx);
-            const ev = { preventDefault() {}, stopPropagation() {} };
+            vm.runInNewContext('let taps = 0, lastTap = 0, tapT = 0, before = null; const TAP_GAP = 500;\n' + body, ctx);
+            const ev = { timeStamp: 0, preventDefault() {}, stopPropagation() {} };
             handler(ev);
             for (const g of gaps) { t0 += g; handler(ev); }
-            setTimeout(() => res({ theme, flips, opened }), 480);
+            setTimeout(() => res({ theme, flips, opened }), 560);
         });
     }
     assert.deepStrictEqual(await run([]), { theme: 'light', flips: 1, opened: 0 });

@@ -272,11 +272,11 @@
            One tap flips Day/Night right away. THREE quick taps open the Day & night adjuster (LowiAtmos.openSheet) and put the
            theme back to where it was before the first tap. Tapping anywhere outside the adjuster closes it. */
         let taps = 0, lastTap = 0, tapT = 0, before = null;
-        const TAP_GAP = 420;
+        const TAP_GAP = 500; /* taps are timed by when the finger touched (e.timeStamp), so a busy frame after the first flip cannot split a triple tap */
         btn.addEventListener('contextmenu', e => e.preventDefault());
         btn.addEventListener('click', e => {
             e.preventDefault(); e.stopPropagation();
-            const now = Date.now();
+            const now = e.timeStamp || performance.now();
             if (now - lastTap > TAP_GAP) { taps = 0; before = effective(); }
             lastTap = now; taps++;
             clearTimeout(tapT); tapT = 0;

@@ -626,13 +626,13 @@
     function advBuild(a) {
         const THREE = a.THREE, A = st.adv;
         const mat = new THREE.SpriteMaterial({ transparent: true, depthWrite: false, depthTest: false, fog: false, opacity: 0 });
-        A.wand = new THREE.Sprite(mat); A.wand.name = 'wh-misty-out'; A.wand.renderOrder = 61; A.wand.visible = false; a.scene.add(A.wand);
+        A.wand = new THREE.Sprite(mat); A.wand.name = 'wh-misty-out'; A.wand.userData.lwKeep = true; A.wand.renderOrder = 61; A.wand.visible = false; a.scene.add(A.wand);
         const N = 48, pos = new Float32Array(N * 3).fill(-999), geo = new THREE.BufferGeometry();
         geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
         A.pts = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.11, color: '#a8ffd8', transparent: true, opacity: 0.95, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, fog: false }));
-        A.pts.name = 'wh-misty-sparkles'; A.pts.renderOrder = 59; A.pts.frustumCulled = false; A.pts.visible = false; A.pts.userData.v = new Float32Array(N * 3); A.pts.userData.life = new Float32Array(N); a.scene.add(A.pts);
+        A.pts.name = 'wh-misty-sparkles'; A.pts.userData.lwKeep = true; A.pts.renderOrder = 59; A.pts.frustumCulled = false; A.pts.visible = false; A.pts.userData.v = new Float32Array(N * 3); A.pts.userData.life = new Float32Array(N); a.scene.add(A.pts);
         A.ring = new THREE.Sprite(new THREE.SpriteMaterial({ map: ringTex(THREE), transparent: true, depthWrite: false, depthTest: false, fog: false, opacity: 0, blending: THREE.AdditiveBlending }));
-        A.ring.name = 'wh-misty-ring'; A.ring.renderOrder = 58; A.ring.visible = false; a.scene.add(A.ring);
+        A.ring.name = 'wh-misty-ring'; A.ring.userData.lwKeep = true; A.ring.renderOrder = 58; A.ring.visible = false; a.scene.add(A.ring);
         A.c = new THREE.Vector3(); A.rt = new THREE.Vector3(); A.up = new THREE.Vector3(); A.fw = new THREE.Vector3(); A.tmp = new THREE.Vector3();
     }
     function burst(A, p, n, spread) {

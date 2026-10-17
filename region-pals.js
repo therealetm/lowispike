@@ -95,7 +95,9 @@
         if (!st.drag && performance.now() > st.steerT) st.off = C.relax(st.off);
         /* frame-rate independent: a slow phone takes up to three spring steps per frame */
         const now = performance.now(), n = Math.max(1, Math.min(3, Math.round((now - (st.lastF || now - 16.7)) / 16.7))); st.lastF = now;
-        const home = sidekickAt() || C.FOLLOW.home;
+        const ska = sidekickAt(), home = ska || C.FOLLOW.home;
+        /* Oct 17: beside Misty it is clearly her small helper (smaller orb, same tap target), never a stand-in for her */
+        if (!!ska !== !!st.side) { st.side = !!ska; st.el.classList.toggle('rp-side', st.side); }
         for (let k = 0; k < n; k++) { const r = C.step(st.p, st.v, C.target(home, st.off), red ? 0 : t, red); st.p = r.p; st.v = r.v; }
         place();
         st.raf = requestAnimationFrame(loop);

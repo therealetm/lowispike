@@ -298,7 +298,9 @@
         const a = w3(); if (!a || !a.scene) return;
         if (on) { parked.forEach(p => { p[0].layers.mask = p[1]; }); parked.length = 0; return; }
         if (parked.length) return;
-        a.scene.children.forEach(c => { if (c.isLight || (c.userData && c.userData.bwr)) return; c.traverse(o => { if (o.isLight) return; parked.push([o, o.layers.mask]); o.layers.set(31); }); });
+        /* Oct 17 (E-man: "Misty should be everywhere"): her flying sprite, sparkles and ring (userData.lwKeep, world-home.js) stay
+           drawn in every place; parking them made the real Misty invisible inside a world once she had flown before */
+        a.scene.children.forEach(c => { if (c.isLight || (c.userData && (c.userData.bwr || c.userData.lwKeep))) return; c.traverse(o => { if (o.isLight) return; parked.push([o, o.layers.mask]); o.layers.set(31); }); });
     }
     function setLook(o) {
         const a = w3(); if (!a || !a.scene || !a.scene.fog) { look = o; return; }

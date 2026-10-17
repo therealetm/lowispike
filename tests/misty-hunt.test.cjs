@@ -85,7 +85,7 @@ test('wiring: no loop of its own, only your steering eats, shared API + event, s
     assert.match(mf, /S\.huntFly && W\.LowiMistyHunt\) W\.LowiMistyHunt\.entered\(S\.flew\)/, 'only an entry you steered powers her up');
     assert.match(mf, /S\.huntFly = true; startWarp\(ctx, nb\)/);
     assert.strictEqual(require('../misty-flight.js').inReach(10), 6.2, 'she reaches far into a world now');
-    assert.match(read('region-pals.js'), /const home = sidekickAt\(\) \|\| C\.FOLLOW\.home;/);
+    assert.match(read('region-pals.js'), /const ska = sidekickAt\(\), home = ska \|\| C\.FOLLOW\.home;/);
     const sc = read('body-world-3d-scene.js');
     assert.match(sc, /function zoom\(f, sx, sy\)/); assert.match(sc, /PLACE_MIN = 0\.75/);
     assert.match(read('body-world-3d.js'), /world\.zoom\(pinchFactor\(pinch0, d\), \(a\.x \+ b\.x\) \/ 2, \(a\.y \+ b\.y\) \/ 2\)/);

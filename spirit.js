@@ -298,6 +298,14 @@
                 next = pick('path', 'mystery', L('Forms', 'Formen', 'Formas'));
             }
         }
+        /* Oct 17: the status line never says "bright and awake" (or glowing) while her energy ring / controller say she is
+           worn out: it reads the same shared energy (LowiSun.energyNow) as the ring and the zz */
+        let en = null;
+        try { en = window.LowiSun && window.LowiSun.energyNow ? window.LowiSun.energyNow() : null; } catch (e) { en = null; }
+        if (en && (en.tier === 'weak' || en.tier === 'tired') && (mood === 'fresh' || mood === 'glow')) {
+            mood = 'tired';
+            title = en.tier === 'weak' ? L(n + ' is low on energy', n + ' hat wenig Energie', n + ' tiene poca energía') : L(n + ' is a bit sleepy', n + ' ist etwas müde', n + ' tiene algo de sueño');
+        }
         return {
             mood,
             title,
@@ -1973,6 +1981,7 @@
     window.addEventListener('lowi:meal-logged', () => setTimeout(() => checkBonuses(false), 0));
     window.addEventListener('lowi:state', refresh);
     window.addEventListener('lowi:goodnight', refresh);
+    window.addEventListener('lowi:misty-power', refresh); /* hunt power-ups move her energy: the status line follows */
     window.addEventListener('resize', refresh);
     D.addEventListener('visibilitychange', () => {
         if (D.hidden) stopPhoto();

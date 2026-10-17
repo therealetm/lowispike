@@ -453,6 +453,8 @@
     /* draw her: position, size, tilt, energy tint (the face comes from the DOM Misty's art: she smiles only when full) */
     function place(ctx, k, still, alpha) {
         const wand = ctx.wand; if (!wand.material.map) alpha = 0; /* never a blank square before her art is ready */
+        /* Oct 17: she is the one you see in every world; if anything parked her on a hidden layer, she comes back */
+        if (ctx.a && ctx.a.camera && !wand.layers.test(ctx.a.camera.layers)) wand.layers.mask = ctx.a.camera.layers.mask;
         const bob = still ? 0 : Math.sin(S.t * 1.6) * 0.04 * S.hs, droop = (1 - k) * 0.08 * S.hs;
         wand.position.copy(S.p).addScaledVector(V.up, bob - droop);
         const br = still ? 1 : 1 + Math.sin(S.t * 2.2) * 0.02;
@@ -587,9 +589,10 @@
                     if (adv) { if (i >= 0) S.outPos.copy(regs[i].pos); S.outT = performance.now(); try { W.LowiAdventure.visited(S.flew, S.advIn || 0); } catch (e) { } }
                 } else S.inT = 0;
             }
-            /* adventure: the camera drifts after her inside the world too, gently and bounded around the world's middle */
+            /* the camera drifts after her inside the world, gently and bounded around the world's middle. Oct 17: in every
+               autopilot / tap-in roam, not only adventures ("The camera needs to follow Misty everywhere") */
             const WHx = W.LowiWorldHome;
-            if (adv && !r.fly && !regionsBusy() && !(WHx && WHx.state && WHx.state.heroAnim) && (+r.idle || 0) > K.CAM_IDLE) {
+            if (!r.fly && !regionsBusy() && !(WHx && WHx.state && WHx.state.heroAnim) && (+r.idle || 0) > K.CAM_IDLE) {
                 V.b.copy(S.inC).lerp(S.p, 0.35); r.target.lerp(V.b, 1 - Math.exp(-dt * 0.6));
             }
         } else {
@@ -605,7 +608,11 @@
         const WH = W.LowiWorldHome, heroBusy = !!(WH && WH.state && WH.state.heroAnim);
         if (!free && !r.fly && !heroBusy && !regionsBusy()) {
             V.b.subVectors(S.p, r.target); const off = V.b.length(), dz = 0.14 * r.dist;
-            if (off > dz) r.target.addScaledVector(V.b, (1 - dz / off) * (1 - Math.exp(-dt * 2)));
+            if (off > dz) r.target.addScaledVector(V.b, (1 - dz / off) * (1 - Math.exp(-dt * 3.5)));
+            /* Oct 17 ("the camera needs to follow Misty everywhere"): a hard leash, so steering fast on a narrow iPhone never
+               pushes her off the screen edge: she stays inside ~60% of the half-view (the narrower side) */
+            const hv = Math.tan(((a.camera.fov || 50) * Math.PI) / 360) * Math.min(1, a.camera.aspect || 1) * 0.6 * r.dist;
+            V.b.subVectors(S.p, r.target); const off2 = V.b.length(); if (off2 > hv) r.target.addScaledVector(V.b, 1 - hv / off2);
             if (mag > 0.05) r.idle = 0;
         }
         S.fade = Math.min(1, S.fade + dt * 2.5);

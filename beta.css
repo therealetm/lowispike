@@ -229,7 +229,8 @@ html.spirit-app #spHome .sp-status-dot {
     box-shadow: 0 0 10px #7be0a6;
 }
 
-html.spirit-app #spHome[data-mood="thirsty"] .sp-status-dot {
+html.spirit-app #spHome[data-mood="thirsty"] .sp-status-dot,
+html.spirit-app #spHome[data-mood="tired"] .sp-status-dot {
     background: #f2c46b;
     box-shadow: 0 0 10px #f2c46b;
 }

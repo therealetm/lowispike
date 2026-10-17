@@ -17669,7 +17669,12 @@ function unskip(id){ const r = skipRec(), n = r.ids.length; r.ids = id ? r.ids.f
 /* Oct 17 (E-man: Daily Quest and Meals both asked to log a meal): while the Meals bubble sits on Home it owns meals.
    The meal quest still counts (same log, nothing counts twice) but is never the glowing "Next" while another quest is open,
    and its button opens the Meals bubble's own sheet, so there is one way to log a meal, not two. */
-function mealsBub(){ try { const b = document.querySelector("#whHud .wh-meals"); if (!b || !b.isConnected || !document.documentElement.classList.contains("wh-home")) return null; const r = b.getBoundingClientRect(); return r.width > 4 && r.height > 4 ? b : null; } catch(e){ return null; } }
+/* Oct 18 game-perf: state() asks this many times per frame while tabs change, and each getBoundingClientRect after a DOM write
+   forced a full page layout (about 1 s of every 13 s of tab switching in the profile). Whether the bubble shows changes far more
+   slowly than that, so one answer is kept for a quarter of a second. */
+let mbAt = -1e9, mbVal = null;
+function mealsBub(){ const t = typeof performance !== "undefined" ? performance.now() : Date.now(); if (t - mbAt < 250 && (!mbVal || mbVal.isConnected)) return mbVal; mbAt = t; mbVal = mealsBubNow(); return mbVal; }
+function mealsBubNow(){ try { const b = document.querySelector("#whHud .wh-meals"); if (!b || !b.isConnected || !document.documentElement.classList.contains("wh-home")) return null; const r = b.getBoundingClientRect(); return r.width > 4 && r.height > 4 ? b : null; } catch(e){ return null; } }
 function next(L){ L = L || state(); const open = L.filter(q => !q.done && !q.skip); if (open.length > 1 && mealsBub()) return open.find(q => q.id !== "eat") || open[0]; return open[0]; }
 
 /* ---------- XP: +10 per quest, +50 for all six, each once a day ---------- */
@@ -18227,13 +18232,21 @@ D.addEventListener("click", e => {
 /* ---- fit: tighten step by step until Today fits ---- */
 const LV = ["g2h-t1", "g2h-t2", "g2h-t3", "g2h-t4", "g2h-t5", "g2h-t6", "g2h-t7", "g2h-t8"];
 function over(h){ return window.LowiFit ? LowiFit.over(h) : h.scrollHeight - h.clientHeight > 1; }
+/* Oct 18 game-perf: a pass that finds Today exactly as the last fit left it changes nothing (no strip-and-re-add of the levels
+   on <html>, which woke the top bar, the 3D world and the other passes; see the Cook fit) */
+let hFitKey = "";
+function hKids(X){ let n = 0; for (const k of X.children) n += k.offsetHeight; return n; }
+function hFitSig(X){ return [innerWidth, innerHeight, X.clientWidth, X.clientHeight, X.scrollHeight, X.getElementsByTagName("*").length, X.textContent.length, hKids(X), H.lang || ""].join("|"); }
 function fit(h){
+  if (on() && h.offsetHeight && hFitKey && hFitSig(h) === hFitKey) return;
+  hFitKey = "";
   let lv = 0; LV.forEach(c => H.classList.remove(c)); H.classList.remove("g2f-snh");
   if (!on() || !h.offsetHeight) return;
   const st = h.scrollTop; h.scrollTop = 0;
   while (over(h) && lv < LV.length) { H.classList.add(LV[lv]); lv++; }
   if (over(h)) { H.classList.add("g2f-snh"); if (window.LowiFit) LowiFit.sp(h); }
   h.scrollTop = st;
+  hFitKey = hFitSig(h);
 }
 
 /* ---- the pass ---- */
@@ -18264,7 +18277,7 @@ function pass(){
     addL();
     const want = phone() && !!h.children.length;
     if (want !== H.classList.contains("g2h-on")) H.classList.toggle("g2h-on", want);
-    if (!want) { LV.forEach(c => H.classList.remove(c)); if (ov) closePanel(true); return; }
+    if (!want) { LV.forEach(c => H.classList.remove(c)); hFitKey = ""; if (ov) closePanel(true); return; }
     const g = groups(h);
     if (ov && openKey && g[openKey]) take(openKey, g[openKey]);
     Object.keys(g).forEach(k => g[k].forEach(n => { if (n.getAttribute("data-g2h") !== k) n.setAttribute("data-g2h", k); }));
@@ -18437,7 +18450,16 @@ D.addEventListener("click", e => { const t = e.target; if (t && t.closest && t.c
 /* ---- fit: tighten step by step until Cook fits ---- */
 const LV = ["g2c-t1", "g2c-t2", "g2c-t3", "g2c-t4", "g2c-t5", "g2c-t6"];
 function over(b){ return window.LowiFit ? LowiFit.over(b) : b.scrollHeight - b.clientHeight > 1; }
+/* Oct 18 game-perf: fit() used to strip every g2c-t level off <html> and add them back on every pass, so each pass wrote 6+
+   class changes on <html> even when nothing moved. Those woke the top bar, the 3D world and the layout passes, whose writes
+   started the next pass: a loop that ran every frame after Cook or Community, on Home and with the phone locked too.
+   Now a pass that finds Cook exactly as the last fit left it (same size, same content, same view) changes nothing. */
+let fitKey = "";
+function cKids(X){ let n = 0; for (const k of X.children) n += k.offsetHeight; return n; }
+function fitSig(b){ return [innerWidth, innerHeight, b.clientWidth, b.clientHeight, b.scrollHeight, b.getElementsByTagName("*").length, b.textContent.length, cKids(b), H.getAttribute("data-ckview") || "", H.lang || ""].join("|"); }
 function fit(b){
+  if (on() && b && b.offsetHeight && fitKey && fitSig(b) === fitKey) return;
+  fitKey = "";
   LV.forEach(c => H.classList.remove(c)); H.classList.remove("g2f-snc");
   if (!on() || !b || !b.offsetHeight) return;
   try { if (H.getAttribute("data-ckview") === "swipe" && window.LowiFood && LowiFood.fitDeck) LowiFood.fitDeck(b); } catch(e){}
@@ -18445,6 +18467,7 @@ function fit(b){
   let lv = 0; while (over(b) && lv < LV.length) { H.classList.add(LV[lv]); lv++; }
   if (over(b)) { H.classList.add("g2f-snc"); if (window.LowiFit) LowiFit.sp(b); }
   b.scrollTop = st;
+  fitKey = fitSig(b);
 }
 
 /* ---- the pass ---- */
@@ -18459,7 +18482,7 @@ function pass(){
     const main = cookMain(b), want = phone() && main && !H.classList.contains("g2c-full");
     if (want !== on()) H.classList.toggle("g2c-on", want);
     if (!shelfShown()) back = null;
-    if (!want) { LV.forEach(c => H.classList.remove(c)); if (ov) { if (b && !main && phone()) { back = openKey; backSeen = true; } closePanel(true); } return; }
+    if (!want) { LV.forEach(c => H.classList.remove(c)); fitKey = ""; if (ov) { if (b && !main && phone()) { back = openKey; backSeen = true; } closePanel(true); } return; }
     const g = groups(b);
     if (ov && openKey) { if (g[openKey]) take(openKey, g[openKey]); else closePanel(true); }
     Object.keys(g).forEach(k => g[k].forEach(n => { if (n.getAttribute("data-g2c") !== k) n.setAttribute("data-g2c", k); }));
@@ -18752,12 +18775,19 @@ D.addEventListener("keydown", e => { if (e.key === "Escape" && H.classList.conta
 const LV = ["g2e-t1", "g2e-t2", "g2e-t3", "g2e-t4", "g2e-t5"];
 function limit(){ if (window.LowiFit) return LowiFit.limit(); const tb = D.getElementById("tabbar"); const r = tb && tb.offsetHeight ? tb.getBoundingClientRect().top : innerHeight; return r - 6; }
 function bottom(t){ let m = 0; Array.from(t.children).forEach(k => { if (k.offsetHeight) m = Math.max(m, k.getBoundingClientRect().bottom); }); return m; }
+/* Oct 18 game-perf: skip a pass that finds the Profile screen as the last fit left it (see the Cook fit) */
+let eFitKey = "";
+function eKids(X){ let n = 0; for (const k of X.children) n += k.offsetHeight; return n; }
+function eFitSig(X){ return [limit(), innerWidth, innerHeight, X.clientWidth, X.clientHeight, X.scrollHeight, X.getElementsByTagName("*").length, X.textContent.length, eKids(X), H.lang || ""].join("|"); }
 function fit(t){
+  if (on() && !H.classList.contains("g2e-open") && t && t.offsetHeight && eFitKey && eFitSig(t) === eFitKey) return;
+  eFitKey = "";
   LV.forEach(c => H.classList.remove(c)); H.classList.remove("g2f-sne");
   if (!on() || H.classList.contains("g2e-open") || !t || !t.offsetHeight) return;
   t.scrollTop = 0; const lim = limit();
   let lv = 0; while (bottom(t) > lim && lv < LV.length) { H.classList.add(LV[lv]); lv++; }
   if (bottom(t) > lim + .5) { H.classList.add("g2f-sne"); if (window.LowiFit) LowiFit.sp(t); }
+  eFitKey = eFitSig(t);
 }
 
 /* ---- the pass ---- */
@@ -18770,7 +18800,7 @@ function pass(){
     addL();
     const want = !!t && phone() && shown(t) && !H.classList.contains("g2e-full") && !!q(t, ":scope > .r2-hero");
     if (want !== on()) H.classList.toggle("g2e-on", want);
-    if (!want) { LV.forEach(c => H.classList.remove(c)); if (H.classList.contains("g2e-open") && !(t && shown(t))) { H.classList.remove("g2e-open"); H.removeAttribute("data-g2e-k"); } return; }
+    if (!want) { LV.forEach(c => H.classList.remove(c)); eFitKey = ""; if (H.classList.contains("g2e-open") && !(t && shown(t))) { H.classList.remove("g2e-open"); H.removeAttribute("data-g2e-k"); } return; }
     const have = tag(t), hero = q(t, ":scope > .r2-hero");
     if (H.classList.contains("g2e-open") && !have[H.getAttribute("data-g2e-k")]) { H.classList.remove("g2e-open"); H.removeAttribute("data-g2e-k"); }
     /* the Back header sits right after the hero (the hero is hidden while a part is open) */

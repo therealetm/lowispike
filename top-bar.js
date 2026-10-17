@@ -228,8 +228,11 @@
         if (btn.__h !== html) { btn.__h = html; btn.innerHTML = html; }
         const lab = dark ? t('toLight') : t('toDark');
         if (btn.getAttribute('aria-label') !== lab) { btn.setAttribute('aria-label', lab); btn.title = lab; }
-        btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
-        btn.dataset.mode = dark ? 'dark' : 'light';
+        /* Oct 18 game-perf: setAttribute with the same value still queues a mutation, and paintBtn runs from an <html> observer,
+           so unguarded writes here fed the every-frame observer loop */
+        const pr = dark ? 'true' : 'false', md = dark ? 'dark' : 'light';
+        if (btn.getAttribute('aria-pressed') !== pr) btn.setAttribute('aria-pressed', pr);
+        if (btn.dataset.mode !== md) btn.dataset.mode = md;
     }
     function placeBtn() {
         if (!btn) return;

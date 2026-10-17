@@ -1,0 +1,601 @@
+{
+"about": "Measured with tools/soak/game-soak.cjs --quick (Chromium headless, SwiftShader WebGL), build before 20261018-000407 (Care board line loop). Trimmed to the fields budget.cjs reads.",
+"engine": "chromium",
+"scenarios": {
+"home-idle": {
+"rafPerSec": 103.4,
+"hiddenRafPerSec": 0,
+"glDrawsPerSec": 512.1,
+"ctxAliveGL": 1,
+"glBy": [
+"three-0.160.1.module.min.js:6 390x844"
+],
+"liveDelta": {
+"tex": 0,
+"buf": 11,
+"prog": 0,
+"fb": 0,
+"rb": 0
+},
+"canvasTexUploadsPerSec": 0,
+"seconds": 10,
+"mutPerSec": 173,
+"longTasks": 1,
+"rafByAll": [
+[
+"fast-bubble.js:414",
+47.5
+],
+[
+"body-world-3d-scene.js:698",
+47.5
+],
+[
+"finch-extras.js:191",
+1.4
+],
+[
+"nav-moves.js:248",
+0.8
+],
+[
+"index.html:3614",
+0.7
+],
+[
+"index.html:17798",
+0.6
+],
+[
+"sym-home.js:197",
+0.6
+],
+[
+"index.html:18754",
+0.5
+]
+]
+},
+"care-board-week": {
+"rafPerSec": 284.8,
+"hiddenRafPerSec": 0,
+"glDrawsPerSec": 658.4,
+"ctxAliveGL": 1,
+"glBy": [
+"three-0.160.1.module.min.js:6 390x844"
+],
+"liveDelta": {
+"tex": 0,
+"buf": 138,
+"prog": 0,
+"fb": 0,
+"rb": 0
+},
+"canvasTexUploadsPerSec": 0,
+"seconds": 10.1,
+"mutPerSec": 134.9,
+"longTasks": 88,
+"rafByAll": [
+[
+"body-world-3d-scene.js:698",
+15.5
+],
+[
+"index.html:16361",
+15.4
+],
+[
+"spirit.js:1999",
+15.4
+],
+[
+"beta.js:111",
+15.4
+],
+[
+"cell-room.js:149",
+15.4
+],
+[
+"atmosphere.js:258",
+15.4
+],
+[
+"companion.js:352",
+15.4
+],
+[
+"index.html:7296",
+15.4
+]
+]
+},
+"care-board-month": {
+"rafPerSec": 306.9,
+"hiddenRafPerSec": 0,
+"glDrawsPerSec": 600.5,
+"ctxAliveGL": 1,
+"glBy": [
+"three-0.160.1.module.min.js:6 390x844"
+],
+"liveDelta": {
+"tex": 0,
+"buf": 0,
+"prog": 0,
+"fb": 0,
+"rb": 0
+},
+"canvasTexUploadsPerSec": 0,
+"seconds": 20.2,
+"mutPerSec": 130.3,
+"longTasks": 154,
+"rafByAll": [
+[
+"index.html:16361",
+16.7
+],
+[
+"spirit.js:1999",
+16.7
+],
+[
+"beta.js:111",
+16.7
+],
+[
+"cell-room.js:149",
+16.7
+],
+[
+"atmosphere.js:258",
+16.7
+],
+[
+"companion.js:352",
+16.7
+],
+[
+"index.html:7296",
+16.7
+],
+[
+"index.html:7944",
+16.7
+]
+]
+},
+"care-board-month-toggle": {
+"rafPerSec": 334.1,
+"hiddenRafPerSec": 0,
+"glDrawsPerSec": 631.7,
+"ctxAliveGL": 1,
+"glBy": [
+"three-0.160.1.module.min.js:6 390x844"
+],
+"liveDelta": {
+"tex": 0,
+"buf": 0,
+"prog": 0,
+"fb": 0,
+"rb": 0
+},
+"canvasTexUploadsPerSec": 0,
+"seconds": 5.3,
+"mutPerSec": 212.6,
+"longTasks": 42,
+"rafByAll": [
+[
+"index.html:16361",
+17.3
+],
+[
+"spirit.js:1999",
+17.3
+],
+[
+"beta.js:111",
+17.3
+],
+[
+"cell-room.js:149",
+17.3
+],
+[
+"atmosphere.js:258",
+17.3
+],
+[
+"companion.js:352",
+17.3
+],
+[
+"index.html:7296",
+17.3
+],
+[
+"index.html:7944",
+17.3
+]
+]
+},
+"cook-home-nav-x8": {
+"rafPerSec": 140.5,
+"hiddenRafPerSec": 0,
+"glDrawsPerSec": 157.2,
+"ctxAliveGL": 1,
+"glBy": [
+"three-0.160.1.module.min.js:6 390x844"
+],
+"liveDelta": {
+"tex": 0,
+"buf": 0,
+"prog": 0,
+"fb": 0,
+"rb": 0
+},
+"canvasTexUploadsPerSec": 0,
+"seconds": 16.5,
+"mutPerSec": 276.3,
+"longTasks": 116,
+"rafByAll": [
+[
+"index.html:16361",
+5.8
+],
+[
+"spirit.js:1999",
+5.8
+],
+[
+"beta.js:111",
+5.8
+],
+[
+"cell-room.js:149",
+5.8
+],
+[
+"atmosphere.js:258",
+5.8
+],
+[
+"companion.js:352",
+5.8
+],
+[
+"index.html:7296",
+5.8
+],
+[
+"index.html:7944",
+5.8
+]
+]
+},
+"community-open": {
+"rafPerSec": 203.2,
+"hiddenRafPerSec": 0,
+"glDrawsPerSec": 343.2,
+"ctxAliveGL": 1,
+"glBy": [
+"three-0.160.1.module.min.js:6 390x844"
+],
+"liveDelta": {
+"tex": 0,
+"buf": 2,
+"prog": 0,
+"fb": 0,
+"rb": 0
+},
+"canvasTexUploadsPerSec": 0,
+"seconds": 10.4,
+"mutPerSec": 235.3,
+"longTasks": 90,
+"rafByAll": [
+[
+"index.html:16361",
+8.5
+],
+[
+"spirit.js:1999",
+8.5
+],
+[
+"beta.js:111",
+8.5
+],
+[
+"cell-room.js:149",
+8.5
+],
+[
+"atmosphere.js:258",
+8.5
+],
+[
+"companion.js:352",
+8.5
+],
+[
+"index.html:7296",
+8.5
+],
+[
+"index.html:7944",
+8.5
+]
+]
+},
+"community-galaxy-zoom-x20": {
+"rafPerSec": 210.7,
+"hiddenRafPerSec": 0,
+"glDrawsPerSec": 636.3,
+"ctxAliveGL": 1,
+"glBy": [
+"three-0.160.1.module.min.js:6 390x844"
+],
+"liveDelta": {
+"tex": 0,
+"buf": 0,
+"prog": 0,
+"fb": 0,
+"rb": 0
+},
+"canvasTexUploadsPerSec": 0,
+"seconds": 13.3,
+"mutPerSec": 203.3,
+"longTasks": 116,
+"rafByAll": [
+[
+"index.html:16361",
+8.8
+],
+[
+"spirit.js:1999",
+8.8
+],
+[
+"beta.js:111",
+8.8
+],
+[
+"cell-room.js:149",
+8.8
+],
+[
+"atmosphere.js:258",
+8.8
+],
+[
+"companion.js:352",
+8.8
+],
+[
+"body-world-3d.js:439",
+8.8
+],
+[
+"index.html:7296",
+8.8
+]
+]
+},
+"home-community-x6": {
+"rafPerSec": 121.9,
+"hiddenRafPerSec": 0,
+"glDrawsPerSec": 214.1,
+"ctxAliveGL": 1,
+"glBy": [
+"three-0.160.1.module.min.js:6 390x844"
+],
+"liveDelta": {
+"tex": 0,
+"buf": 0,
+"prog": 0,
+"fb": 0,
+"rb": 0
+},
+"canvasTexUploadsPerSec": 0,
+"seconds": 16.2,
+"mutPerSec": 342.5,
+"longTasks": 92,
+"rafByAll": [
+[
+"index.html:16361",
+4.4
+],
+[
+"spirit.js:1999",
+4.4
+],
+[
+"beta.js:111",
+4.4
+],
+[
+"cell-room.js:149",
+4.4
+],
+[
+"atmosphere.js:258",
+4.4
+],
+[
+"companion.js:352",
+4.4
+],
+[
+"body-world-3d.js:439",
+4.4
+],
+[
+"index.html:7296",
+4.4
+]
+]
+},
+"back-home-idle": {
+"rafPerSec": 173.1,
+"hiddenRafPerSec": 0,
+"glDrawsPerSec": 138.8,
+"ctxAliveGL": 1,
+"glBy": [
+"three-0.160.1.module.min.js:6 390x844"
+],
+"liveDelta": {
+"tex": 0,
+"buf": 0,
+"prog": 0,
+"fb": 0,
+"rb": 0
+},
+"canvasTexUploadsPerSec": 0,
+"seconds": 10.2,
+"mutPerSec": 246.4,
+"longTasks": 73,
+"rafByAll": [
+[
+"index.html:16361",
+7.1
+],
+[
+"spirit.js:1999",
+7.1
+],
+[
+"beta.js:111",
+7.1
+],
+[
+"cell-room.js:149",
+7.1
+],
+[
+"atmosphere.js:258",
+7.1
+],
+[
+"companion.js:352",
+7.1
+],
+[
+"body-world-3d.js:439",
+7.1
+],
+[
+"index.html:7296",
+7.1
+]
+]
+},
+"hidden-tab": {
+"rafPerSec": 120.9,
+"hiddenRafPerSec": 120.9,
+"glDrawsPerSec": 0,
+"ctxAliveGL": 1,
+"glBy": [
+"three-0.160.1.module.min.js:6 390x844"
+],
+"liveDelta": {
+"tex": 0,
+"buf": 0,
+"prog": 0,
+"fb": 0,
+"rb": 0
+},
+"canvasTexUploadsPerSec": 0,
+"seconds": 8.1,
+"mutPerSec": 133,
+"longTasks": 42,
+"rafByAll": [
+[
+"index.html:16361",
+5.5
+],
+[
+"spirit.js:1999",
+5.5
+],
+[
+"beta.js:111",
+5.5
+],
+[
+"cell-room.js:149",
+5.5
+],
+[
+"atmosphere.js:258",
+5.5
+],
+[
+"companion.js:352",
+5.5
+],
+[
+"body-world-3d.js:439",
+5.5
+],
+[
+"index.html:7296",
+5.5
+]
+]
+},
+"visible-again": {
+"rafPerSec": 235.3,
+"hiddenRafPerSec": 0,
+"glDrawsPerSec": 117.3,
+"ctxAliveGL": 1,
+"glBy": [
+"three-0.160.1.module.min.js:6 390x844"
+],
+"liveDelta": {
+"tex": 0,
+"buf": 0,
+"prog": 0,
+"fb": 0,
+"rb": 0
+},
+"canvasTexUploadsPerSec": 0,
+"seconds": 4.1,
+"mutPerSec": 277.5,
+"longTasks": 40,
+"rafByAll": [
+[
+"index.html:16361",
+9.9
+],
+[
+"spirit.js:1999",
+9.9
+],
+[
+"beta.js:111",
+9.9
+],
+[
+"cell-room.js:149",
+9.9
+],
+[
+"atmosphere.js:258",
+9.9
+],
+[
+"companion.js:352",
+9.9
+],
+[
+"body-world-3d.js:439",
+9.9
+],
+[
+"index.html:7296",
+9.9
+]
+]
+}
+},
+"errors": []
+}

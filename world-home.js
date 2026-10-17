@@ -597,7 +597,9 @@
             const gx = H.classList.contains('mf-galaxy'); /* galaxy breakout (misty-galaxy.js): Misty flies out there herself, Home stays Home */
             const far = r.dist > (r.maxD || 13) * 1.06 && !gx && !inRegion(); /* Oct 17: inside a world the camera's distance is the world's own, not past Home's World Map */ if (H.classList.contains('wh-cosmos') !== far) H.classList.toggle('wh-cosmos', far);
             const fk = Math.max(0, Math.min(1, Math.log(Math.max(1, r.dist / (r.maxD || 13))) / Math.log(outerD(r) / (r.maxD || 13))));
-            H.style.setProperty('--wh-far', fk.toFixed(3));
+            /* Oct 18 game-perf: this runs every frame; an inherited variable written on <html> restyles the whole page and wakes the
+               <html> observers, so write it only when the value moves */
+            { const fv = fk.toFixed(3); if (H.style.getPropertyValue('--wh-far') !== fv) H.style.setProperty('--wh-far', fv); }
             if (fk > 0.9 && !gx && !st.zoomAnim && !st.pull && homeActive() && !H.classList.contains('gx-out') && !H.classList.contains('gx-in') && Date.now() - (st.farGo || 0) > 2500) {
                 st.farGo = Date.now(); try { if (W.goTab) W.goTab('foryou'); } catch (e) { }
             }

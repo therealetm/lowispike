@@ -1709,10 +1709,11 @@
                 }, {
                     starSign: p.s || p.sign
                 });
-            by.style.setProperty('--sp-sign', look.palette.a);
+            /* Oct 18 game-perf: this runs on every DOM change, so write the colour only when it differs */
+            if (by.style.getPropertyValue('--sp-sign') !== look.palette.a) by.style.setProperty('--sp-sign', look.palette.a);
             by.querySelectorAll('.av,.lb3-ph').forEach(av => {
                 av.classList.add('sp-avatar-ring');
-                av.style.setProperty('--sp-sign', look.palette.a);
+                if (av.style.getPropertyValue('--sp-sign') !== look.palette.a) av.style.setProperty('--sp-sign', look.palette.a);
             });
         }
     }

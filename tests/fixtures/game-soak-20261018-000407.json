@@ -1,0 +1,1687 @@
+{
+"about": "Measured with tools/soak/game-soak.cjs --quick (Chromium headless, SwiftShader WebGL), build 20261018-000407 (Community/Cook observer loop). Trimmed to the fields budget.cjs reads.",
+"engine": "chromium",
+"scenarios": {
+"home-idle": {
+"rafPerSec": 83.1,
+"rafByAll": [
+[
+"fast-bubble.js:414",
+36.6
+],
+[
+"body-world-3d-scene.js:698",
+36.6
+],
+[
+"finch-extras.js:191",
+1.5
+],
+[
+"nav-moves.js:252",
+1
+],
+[
+"index.html:3614",
+0.7
+],
+[
+"index.html:17798",
+0.7
+],
+[
+"sym-home.js:197",
+0.7
+],
+[
+"index.html:16361",
+0.5
+],
+[
+"index.html:7944",
+0.5
+],
+[
+"index.html:2755",
+0.5
+],
+[
+"index.html:18754",
+0.5
+],
+[
+"spirit.js:1999",
+0.2
+],
+[
+"beta.js:111",
+0.2
+],
+[
+"cell-room.js:149",
+0.2
+],
+[
+"atmosphere.js:258",
+0.2
+],
+[
+"companion.js:352",
+0.2
+],
+[
+"body-world-3d.js:439",
+0.2
+],
+[
+"index.html:7296",
+0.2
+],
+[
+"index.html:13005",
+0.2
+],
+[
+"index.html:18230",
+0.2
+],
+[
+"fast-bubble.js:428",
+0.2
+],
+[
+"micro-book.js:331",
+0.2
+],
+[
+"store-picks.js:252",
+0.2
+],
+[
+"grocery-hunt.js:446",
+0.2
+]
+],
+"hiddenRafPerSec": 0,
+"glDrawsPerSec": 394.7,
+"ctxAliveGL": 1,
+"glBy": [
+"three-0.160.1.module.min.js:6 390x844"
+],
+"liveDelta": {
+"tex": 0,
+"buf": 0,
+"prog": 0,
+"fb": 0,
+"rb": 0
+},
+"canvasTexUploadsPerSec": 0,
+"unchangedWritesPerSec": 49.5,
+"writesPerSec": 196.3,
+"seconds": 4,
+"mutPerSec": 155,
+"longTasks": 1
+},
+"care-board-week": {
+"rafPerSec": 60.4,
+"rafByAll": [
+[
+"body-world-3d-scene.js:698",
+17.9
+],
+[
+"index.html:18754",
+4.3
+],
+[
+"index.html:18230",
+4.1
+],
+[
+"index.html:18441",
+4.1
+],
+[
+"index.html:18591",
+4.1
+],
+[
+"body-world-3d.js:439",
+1.7
+],
+[
+"index.html:16361",
+1.4
+],
+[
+"index.html:3614",
+1.4
+],
+[
+"index.html:7944",
+1.4
+],
+[
+"nav-moves.js:252",
+1.4
+],
+[
+"finch-extras.js:191",
+1.4
+],
+[
+"index.html:2755",
+1.2
+],
+[
+"index.html:17798",
+1.2
+],
+[
+"index.html:3392",
+1
+],
+[
+"beta.js:111",
+1
+],
+[
+"cell-room.js:149",
+1
+],
+[
+"atmosphere.js:258",
+1
+],
+[
+"companion.js:352",
+1
+],
+[
+"index.html:7296",
+1
+],
+[
+"index.html:13005",
+1
+],
+[
+"fast-bubble.js:421",
+1
+],
+[
+"fast-bubble.js:428",
+1
+],
+[
+"micro-book.js:331",
+1
+],
+[
+"store-picks.js:252",
+1
+],
+[
+"grocery-hunt.js:446",
+1
+],
+[
+"spirit.js:1999",
+0.7
+],
+[
+"sym-home.js:197",
+0.7
+],
+[
+"index.html:17735",
+0.5
+],
+[
+"fast-bubble.js:414",
+0.5
+],
+[
+"shop-scan.js:260",
+0.2
+],
+[
+"liquid-glass.js:55",
+0.2
+]
+],
+"hiddenRafPerSec": 0,
+"glDrawsPerSec": 842.8,
+"ctxAliveGL": 1,
+"glBy": [
+"three-0.160.1.module.min.js:6 390x844"
+],
+"liveDelta": {
+"tex": 0,
+"buf": 149,
+"prog": 0,
+"fb": 0,
+"rb": 0
+},
+"canvasTexUploadsPerSec": 0,
+"unchangedWritesPerSec": 68.1,
+"writesPerSec": 107.4,
+"seconds": 4.1,
+"mutPerSec": 57.7,
+"longTasks": 15
+},
+"care-board-month": {
+"rafPerSec": 61.4,
+"rafByAll": [
+[
+"body-world-3d-scene.js:698",
+37
+],
+[
+"index.html:16361",
+1.5
+],
+[
+"index.html:7944",
+1.5
+],
+[
+"finch-extras.js:191",
+1.5
+],
+[
+"nav-moves.js:252",
+1.3
+],
+[
+"fast-bubble.js:421",
+1.1
+],
+[
+"index.html:17798",
+1.1
+],
+[
+"index.html:2755",
+1
+],
+[
+"index.html:18230",
+1
+],
+[
+"index.html:18754",
+1
+],
+[
+"spirit.js:1999",
+0.8
+],
+[
+"beta.js:111",
+0.8
+],
+[
+"cell-room.js:149",
+0.8
+],
+[
+"atmosphere.js:258",
+0.8
+],
+[
+"companion.js:352",
+0.8
+],
+[
+"index.html:7296",
+0.8
+],
+[
+"index.html:3614",
+0.8
+],
+[
+"index.html:13005",
+0.8
+],
+[
+"index.html:18591",
+0.8
+],
+[
+"fast-bubble.js:428",
+0.8
+],
+[
+"micro-book.js:331",
+0.8
+],
+[
+"store-picks.js:252",
+0.8
+],
+[
+"grocery-hunt.js:446",
+0.8
+],
+[
+"sym-home.js:197",
+0.7
+],
+[
+"index.html:3392",
+0.5
+],
+[
+"body-world-3d.js:439",
+0.5
+],
+[
+"index.html:18441",
+0.5
+],
+[
+"index.html:17735",
+0.3
+],
+[
+"living-home.js:190",
+0.3
+],
+[
+"cell-world.js:405",
+0.2
+]
+],
+"hiddenRafPerSec": 0,
+"glDrawsPerSec": 1441.4,
+"ctxAliveGL": 1,
+"glBy": [
+"three-0.160.1.module.min.js:6 390x844"
+],
+"liveDelta": {
+"tex": 0,
+"buf": 0,
+"prog": 0,
+"fb": 0,
+"rb": 0
+},
+"canvasTexUploadsPerSec": 0,
+"unchangedWritesPerSec": 65.9,
+"writesPerSec": 86.1,
+"seconds": 6.1,
+"mutPerSec": 24.1,
+"longTasks": 5
+},
+"care-board-month-toggle": {
+"rafPerSec": 141.9,
+"rafByAll": [
+[
+"body-world-3d-scene.js:698",
+30.1
+],
+[
+"index.html:16361",
+7.3
+],
+[
+"index.html:7944",
+7.3
+],
+[
+"index.html:18591",
+6.4
+],
+[
+"index.html:18230",
+6
+],
+[
+"nav-moves.js:252",
+4.9
+],
+[
+"index.html:2755",
+4.5
+],
+[
+"index.html:17798",
+4.5
+],
+[
+"index.html:18754",
+4.3
+],
+[
+"spirit.js:1999",
+4.1
+],
+[
+"beta.js:111",
+4.1
+],
+[
+"cell-room.js:149",
+4.1
+],
+[
+"atmosphere.js:258",
+4.1
+],
+[
+"companion.js:352",
+4.1
+],
+[
+"index.html:7296",
+4.1
+],
+[
+"index.html:13005",
+4.1
+],
+[
+"fast-bubble.js:428",
+4.1
+],
+[
+"micro-book.js:331",
+4.1
+],
+[
+"store-picks.js:252",
+4.1
+],
+[
+"grocery-hunt.js:446",
+4.1
+],
+[
+"index.html:3392",
+3.9
+],
+[
+"body-world-3d.js:439",
+3.9
+],
+[
+"index.html:18441",
+3.9
+],
+[
+"living-home.js:190",
+3.6
+],
+[
+"index.html:3614",
+2.4
+],
+[
+"fast-bubble.js:421",
+1.3
+],
+[
+"finch-extras.js:191",
+1.3
+],
+[
+"sym-home.js:197",
+0.6
+],
+[
+"index.html:17735",
+0.4
+]
+],
+"hiddenRafPerSec": 0,
+"glDrawsPerSec": 1153.6,
+"ctxAliveGL": 1,
+"glBy": [
+"three-0.160.1.module.min.js:6 390x844"
+],
+"liveDelta": {
+"tex": 0,
+"buf": 0,
+"prog": 0,
+"fb": 0,
+"rb": 0
+},
+"canvasTexUploadsPerSec": 0,
+"unchangedWritesPerSec": 170.7,
+"writesPerSec": 291.1,
+"seconds": 5.3,
+"mutPerSec": 126.2,
+"longTasks": 11
+},
+"cook-home-nav-x8": {
+"rafPerSec": 129.7,
+"rafByAll": [
+[
+"body-world-3d-scene.js:698",
+8.8
+],
+[
+"body-world-3d.js:439",
+6.1
+],
+[
+"index.html:18230",
+6.1
+],
+[
+"index.html:16361",
+5.2
+],
+[
+"index.html:7944",
+5.2
+],
+[
+"index.html:3614",
+5
+],
+[
+"finch-extras.js:191",
+4.8
+],
+[
+"index.html:18754",
+4.7
+],
+[
+"nav-moves.js:252",
+4.7
+],
+[
+"index.html:2755",
+4.5
+],
+[
+"index.html:18441",
+4.5
+],
+[
+"index.html:18591",
+4.5
+],
+[
+"beta.js:111",
+4.3
+],
+[
+"index.html:17798",
+4.2
+],
+[
+"cell-room.js:149",
+4.1
+],
+[
+"atmosphere.js:258",
+4.1
+],
+[
+"companion.js:352",
+4.1
+],
+[
+"index.html:7296",
+4.1
+],
+[
+"index.html:13005",
+4.1
+],
+[
+"fast-bubble.js:428",
+4.1
+],
+[
+"micro-book.js:331",
+4.1
+],
+[
+"store-picks.js:252",
+4.1
+],
+[
+"grocery-hunt.js:446",
+4
+],
+[
+"spirit.js:1999",
+3.9
+],
+[
+"index.html:17735",
+3
+],
+[
+"index.html:3392",
+2.9
+],
+[
+"fast-bubble.js:414",
+2.9
+],
+[
+"sym-home.js:197",
+1.3
+],
+[
+"spirit.js:435",
+1
+],
+[
+"fast-bubble.js:421",
+1
+],
+[
+"world-home.js:980",
+1
+],
+[
+"move-bubble.js:334",
+1
+],
+[
+"liquid-glass.js:55",
+0.8
+],
+[
+"fy-embed.js:163",
+0.5
+],
+[
+"index.html:7010",
+0.4
+],
+[
+"cell-world.js:405",
+0.1
+],
+[
+"living-home.js:190",
+0.1
+],
+[
+"sun-meter.js:543",
+0.1
+]
+],
+"hiddenRafPerSec": 0,
+"glDrawsPerSec": 253.5,
+"ctxAliveGL": 1,
+"glBy": [
+"three-0.160.1.module.min.js:6 390x844"
+],
+"liveDelta": {
+"tex": 0,
+"buf": 0,
+"prog": 0,
+"fb": 0,
+"rb": 0
+},
+"canvasTexUploadsPerSec": 0,
+"unchangedWritesPerSec": 217,
+"writesPerSec": 464,
+"seconds": 15.7,
+"mutPerSec": 280.3,
+"longTasks": 104
+},
+"community-open": {
+"rafPerSec": 216.6,
+"rafByAll": [
+[
+"body-world-3d-scene.js:698",
+10.5
+],
+[
+"index.html:16361",
+10.2
+],
+[
+"beta.js:111",
+10.2
+],
+[
+"cell-room.js:149",
+10.2
+],
+[
+"atmosphere.js:258",
+10.2
+],
+[
+"companion.js:352",
+10.2
+],
+[
+"body-world-3d.js:439",
+10.2
+],
+[
+"index.html:7296",
+10.2
+],
+[
+"index.html:3614",
+10.2
+],
+[
+"index.html:7944",
+10.2
+],
+[
+"index.html:13005",
+10.2
+],
+[
+"index.html:18230",
+10.2
+],
+[
+"index.html:18441",
+10.2
+],
+[
+"nav-moves.js:252",
+10.2
+],
+[
+"index.html:18591",
+10
+],
+[
+"index.html:18754",
+10
+],
+[
+"finch-extras.js:191",
+10
+],
+[
+"community-galaxy.js:150",
+9.8
+],
+[
+"fast-bubble.js:428",
+5.6
+],
+[
+"micro-book.js:331",
+5.6
+],
+[
+"store-picks.js:252",
+5.6
+],
+[
+"grocery-hunt.js:446",
+5.6
+],
+[
+"spirit.js:1999",
+1.6
+],
+[
+"index.html:2755",
+1.6
+],
+[
+"index.html:17798",
+1.3
+],
+[
+"community-chat.js:461",
+0.9
+],
+[
+"sym-home.js:197",
+0.9
+],
+[
+"index.html:3392",
+0.7
+],
+[
+"fast-bubble.js:421",
+0.7
+],
+[
+"index.html:17735",
+0.7
+],
+[
+"fast-bubble.js:414",
+0.7
+],
+[
+"galaxy-zoom.js:175",
+0.7
+],
+[
+"galaxy-zoom.js:129",
+0.4
+],
+[
+"galaxy-zoom.js:207",
+0.2
+],
+[
+"galaxy-zoom.js:131",
+0.2
+],
+[
+"community-galaxy.js:153",
+0.2
+]
+],
+"hiddenRafPerSec": 0,
+"glDrawsPerSec": 508.2,
+"ctxAliveGL": 1,
+"glBy": [
+"three-0.160.1.module.min.js:6 390x844"
+],
+"liveDelta": {
+"tex": 0,
+"buf": 2,
+"prog": 0,
+"fb": 0,
+"rb": 0
+},
+"canvasTexUploadsPerSec": 0,
+"unchangedWritesPerSec": 429.1,
+"writesPerSec": 560.3,
+"seconds": 4.5,
+"mutPerSec": 271.8,
+"longTasks": 34
+},
+"community-galaxy-zoom-x20": {
+"rafPerSec": 309.7,
+"rafByAll": [
+[
+"index.html:16361",
+15.3
+],
+[
+"beta.js:111",
+15.3
+],
+[
+"cell-room.js:149",
+15.3
+],
+[
+"atmosphere.js:258",
+15.3
+],
+[
+"companion.js:352",
+15.3
+],
+[
+"body-world-3d.js:439",
+15.3
+],
+[
+"index.html:7296",
+15.3
+],
+[
+"index.html:3614",
+15.3
+],
+[
+"index.html:7944",
+15.3
+],
+[
+"index.html:13005",
+15.3
+],
+[
+"index.html:18230",
+15.3
+],
+[
+"index.html:18441",
+15.3
+],
+[
+"index.html:18591",
+15.3
+],
+[
+"index.html:18754",
+15.3
+],
+[
+"nav-moves.js:252",
+15.3
+],
+[
+"finch-extras.js:191",
+15.3
+],
+[
+"body-world-3d-scene.js:698",
+15.3
+],
+[
+"community-galaxy.js:150",
+15.3
+],
+[
+"fast-bubble.js:428",
+7.8
+],
+[
+"micro-book.js:331",
+7.8
+],
+[
+"store-picks.js:252",
+7.8
+],
+[
+"grocery-hunt.js:446",
+7.8
+],
+[
+"fast-bubble.js:421",
+1.2
+],
+[
+"index.html:17798",
+0.7
+],
+[
+"sym-home.js:197",
+0.6
+],
+[
+"index.html:2755",
+0.4
+],
+[
+"spirit.js:1999",
+0.2
+],
+[
+"index.html:17735",
+0.2
+]
+],
+"hiddenRafPerSec": 0,
+"glDrawsPerSec": 1095.4,
+"ctxAliveGL": 1,
+"glBy": [
+"three-0.160.1.module.min.js:6 390x844"
+],
+"liveDelta": {
+"tex": 0,
+"buf": 0,
+"prog": 0,
+"fb": 0,
+"rb": 0
+},
+"canvasTexUploadsPerSec": 0,
+"unchangedWritesPerSec": 487.9,
+"writesPerSec": 582.7,
+"seconds": 9.9,
+"mutPerSec": 237.8,
+"longTasks": 99
+},
+"home-community-x6": {
+"rafPerSec": 104.8,
+"rafByAll": [
+[
+"index.html:16361",
+3.9
+],
+[
+"beta.js:111",
+3.9
+],
+[
+"cell-room.js:149",
+3.9
+],
+[
+"atmosphere.js:258",
+3.9
+],
+[
+"companion.js:352",
+3.9
+],
+[
+"body-world-3d.js:439",
+3.9
+],
+[
+"index.html:7296",
+3.9
+],
+[
+"index.html:3614",
+3.9
+],
+[
+"index.html:7944",
+3.9
+],
+[
+"index.html:13005",
+3.9
+],
+[
+"index.html:18230",
+3.9
+],
+[
+"index.html:18441",
+3.9
+],
+[
+"index.html:18591",
+3.9
+],
+[
+"index.html:18754",
+3.9
+],
+[
+"nav-moves.js:252",
+3.9
+],
+[
+"finch-extras.js:191",
+3.9
+],
+[
+"body-world-3d-scene.js:698",
+3.9
+],
+[
+"fast-bubble.js:428",
+3.2
+],
+[
+"micro-book.js:331",
+3.2
+],
+[
+"store-picks.js:252",
+3.2
+],
+[
+"grocery-hunt.js:446",
+3.2
+],
+[
+"index.html:2755",
+2.9
+],
+[
+"index.html:17798",
+2.7
+],
+[
+"spirit.js:1999",
+2.5
+],
+[
+"galaxy-zoom.js:175",
+2.4
+],
+[
+"index.html:3392",
+1.9
+],
+[
+"index.html:17735",
+1.9
+],
+[
+"fast-bubble.js:414",
+1.8
+],
+[
+"galaxy-zoom.js:129",
+1.7
+],
+[
+"community-galaxy.js:150",
+1.5
+],
+[
+"community-chat.js:461",
+1.2
+],
+[
+"sym-home.js:197",
+0.8
+],
+[
+"galaxy-zoom.js:207",
+0.7
+],
+[
+"galaxy-zoom.js:131",
+0.7
+],
+[
+"community-galaxy.js:153",
+0.7
+],
+[
+"spirit.js:435",
+0.5
+],
+[
+"fast-bubble.js:421",
+0.5
+],
+[
+"cell-world.js:405",
+0.1
+],
+[
+"living-home.js:190",
+0.1
+],
+[
+"sun-meter.js:543",
+0.1
+]
+],
+"hiddenRafPerSec": 0,
+"glDrawsPerSec": 183.2,
+"ctxAliveGL": 1,
+"glBy": [
+"three-0.160.1.module.min.js:6 390x844"
+],
+"liveDelta": {
+"tex": 0,
+"buf": 0,
+"prog": 0,
+"fb": 0,
+"rb": 0
+},
+"canvasTexUploadsPerSec": 0,
+"unchangedWritesPerSec": 338.2,
+"writesPerSec": 531.9,
+"seconds": 17,
+"mutPerSec": 310.8,
+"longTasks": 86
+},
+"back-home-idle": {
+"rafPerSec": 140.2,
+"rafByAll": [
+[
+"index.html:16361",
+6.4
+],
+[
+"beta.js:111",
+6.4
+],
+[
+"cell-room.js:149",
+6.4
+],
+[
+"atmosphere.js:258",
+6.4
+],
+[
+"companion.js:352",
+6.4
+],
+[
+"body-world-3d.js:439",
+6.4
+],
+[
+"index.html:7296",
+6.4
+],
+[
+"index.html:3614",
+6.4
+],
+[
+"index.html:7944",
+6.4
+],
+[
+"index.html:13005",
+6.4
+],
+[
+"index.html:18230",
+6.4
+],
+[
+"index.html:18441",
+6.4
+],
+[
+"index.html:18591",
+6.4
+],
+[
+"index.html:18754",
+6.4
+],
+[
+"nav-moves.js:252",
+6.4
+],
+[
+"finch-extras.js:191",
+6.4
+],
+[
+"body-world-3d-scene.js:698",
+6.4
+],
+[
+"fast-bubble.js:414",
+5.7
+],
+[
+"fast-bubble.js:428",
+3.7
+],
+[
+"micro-book.js:331",
+3.7
+],
+[
+"store-picks.js:252",
+3.7
+],
+[
+"grocery-hunt.js:446",
+3.7
+],
+[
+"index.html:2755",
+1.4
+],
+[
+"index.html:17798",
+1.1
+],
+[
+"index.html:3392",
+0.9
+],
+[
+"spirit.js:1999",
+0.9
+],
+[
+"index.html:17735",
+0.9
+],
+[
+"sym-home.js:197",
+0.9
+],
+[
+"galaxy-zoom.js:175",
+0.7
+],
+[
+"community-chat.js:461",
+0.5
+],
+[
+"spirit.js:435",
+0.5
+],
+[
+"world-home.js:980",
+0.5
+],
+[
+"move-bubble.js:334",
+0.5
+],
+[
+"galaxy-zoom.js:129",
+0.5
+],
+[
+"fast-bubble.js:421",
+0.2
+],
+[
+"fy-embed.js:163",
+0.2
+],
+[
+"galaxy-zoom.js:207",
+0.2
+],
+[
+"galaxy-zoom.js:131",
+0.2
+],
+[
+"community-galaxy.js:150",
+0.2
+]
+],
+"hiddenRafPerSec": 0,
+"glDrawsPerSec": 191.2,
+"ctxAliveGL": 1,
+"glBy": [
+"three-0.160.1.module.min.js:6 390x844"
+],
+"liveDelta": {
+"tex": 0,
+"buf": 0,
+"prog": 0,
+"fb": 0,
+"rb": 0
+},
+"canvasTexUploadsPerSec": 0,
+"unchangedWritesPerSec": 304.7,
+"writesPerSec": 440.1,
+"seconds": 4.4,
+"mutPerSec": 231.7,
+"longTasks": 28
+},
+"hidden-tab": {
+"rafPerSec": 259.3,
+"rafByAll": [
+[
+"index.html:16361",
+14
+],
+[
+"beta.js:111",
+14
+],
+[
+"cell-room.js:149",
+14
+],
+[
+"atmosphere.js:258",
+14
+],
+[
+"companion.js:352",
+14
+],
+[
+"body-world-3d.js:439",
+14
+],
+[
+"index.html:7296",
+14
+],
+[
+"index.html:3614",
+14
+],
+[
+"index.html:7944",
+14
+],
+[
+"index.html:13005",
+14
+],
+[
+"index.html:18230",
+14
+],
+[
+"index.html:18441",
+14
+],
+[
+"index.html:18591",
+14
+],
+[
+"index.html:18754",
+14
+],
+[
+"nav-moves.js:252",
+14
+],
+[
+"finch-extras.js:191",
+14
+],
+[
+"fast-bubble.js:428",
+7.4
+],
+[
+"micro-book.js:331",
+7.4
+],
+[
+"store-picks.js:252",
+7.4
+],
+[
+"grocery-hunt.js:446",
+7.4
+],
+[
+"fast-bubble.js:421",
+1
+],
+[
+"index.html:2755",
+0.7
+],
+[
+"index.html:17798",
+0.7
+],
+[
+"spirit.js:1999",
+0.5
+],
+[
+"index.html:17735",
+0.5
+],
+[
+"body-trips.js:613",
+0.5
+],
+[
+"fast-bubble.js:414",
+0.5
+],
+[
+"living-home.js:190",
+0.2
+],
+[
+"sun-meter.js:543",
+0.2
+],
+[
+"body-world-3d-scene.js:698",
+0.2
+]
+],
+"hiddenRafPerSec": 254.1,
+"glDrawsPerSec": 0,
+"ctxAliveGL": 1,
+"glBy": [
+"three-0.160.1.module.min.js:6 390x844"
+],
+"liveDelta": {
+"tex": 0,
+"buf": 0,
+"prog": 0,
+"fb": 0,
+"rb": 0
+},
+"canvasTexUploadsPerSec": 0,
+"unchangedWritesPerSec": 434.6,
+"writesPerSec": 526.5,
+"seconds": 4.2,
+"mutPerSec": 227.9,
+"longTasks": 38
+},
+"visible-again": {
+"rafPerSec": 135.2,
+"rafByAll": [
+[
+"index.html:16361",
+6.4
+],
+[
+"beta.js:111",
+6.4
+],
+[
+"cell-room.js:149",
+6.4
+],
+[
+"atmosphere.js:258",
+6.4
+],
+[
+"companion.js:352",
+6.4
+],
+[
+"body-world-3d.js:439",
+6.4
+],
+[
+"index.html:7296",
+6.4
+],
+[
+"index.html:3614",
+6.4
+],
+[
+"index.html:7944",
+6.4
+],
+[
+"index.html:13005",
+6.4
+],
+[
+"index.html:18230",
+6.4
+],
+[
+"index.html:18441",
+6.4
+],
+[
+"index.html:18591",
+6.4
+],
+[
+"index.html:18754",
+6.4
+],
+[
+"nav-moves.js:252",
+6.4
+],
+[
+"finch-extras.js:191",
+6.4
+],
+[
+"fast-bubble.js:414",
+6.4
+],
+[
+"body-world-3d-scene.js:698",
+6.4
+],
+[
+"fast-bubble.js:428",
+3.7
+],
+[
+"micro-book.js:331",
+3.7
+],
+[
+"store-picks.js:252",
+3.7
+],
+[
+"grocery-hunt.js:446",
+3.7
+],
+[
+"index.html:17798",
+1.7
+],
+[
+"index.html:2755",
+1.5
+],
+[
+"spirit.js:1999",
+0.7
+],
+[
+"sym-home.js:197",
+0.7
+],
+[
+"index.html:17735",
+0.5
+],
+[
+"index.html:3392",
+0.2
+],
+[
+"body-trips.js:613",
+0.2
+]
+],
+"hiddenRafPerSec": 0,
+"glDrawsPerSec": 81,
+"ctxAliveGL": 1,
+"glBy": [
+"three-0.160.1.module.min.js:6 390x844"
+],
+"liveDelta": {
+"tex": 0,
+"buf": 0,
+"prog": 0,
+"fb": 0,
+"rb": 0
+},
+"canvasTexUploadsPerSec": 0,
+"unchangedWritesPerSec": 236.6,
+"writesPerSec": 310.7,
+"seconds": 4.1,
+"mutPerSec": 140.9,
+"longTasks": 26
+}
+},
+"errors": []
+}

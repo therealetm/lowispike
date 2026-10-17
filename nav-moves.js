@@ -77,9 +77,15 @@
         else if (L.parentElement !== root) root.appendChild(L);
         L.classList.toggle('fyw', !!bar);
         if (k === 'fy') H.classList.toggle('nm-fyw', !!bar);
-        L.querySelector('.nm-back span').textContent = s.back();
-        L.querySelector('.nm-title').textContent = s.label();
-        L.setAttribute('aria-label', s.label());
+        /* Oct 18 game-perf: write only when the words change. A textContent write with the same words still swaps the text node,
+           and tick() calls layer('fy') on every DOM change, so the unguarded writes kept waking every observer: a loop that ran
+           every frame after Community or Cook, even on Home and with the phone locked. Compare with the last value written here,
+           never with the text on screen: spirit.js swaps emoji for icons and the translator rewrites words, so the shown text
+           never matches again (the Care board loop, release 20261018-000407). */
+        const bk = L.querySelector('.nm-back span'), ti = L.querySelector('.nm-title'), back = s.back(), label = s.label();
+        if (bk && bk.__nmW !== back) { bk.__nmW = back; bk.textContent = back; }
+        if (ti && ti.__nmW !== label) { ti.__nmW = label; ti.textContent = label; }
+        if (L.__nmAria !== label) { L.__nmAria = label; L.setAttribute('aria-label', label); }
         return L;
     }
     const isOpen = k => { const L = layer(k); return !!(L && !L.hidden); };

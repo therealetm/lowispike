@@ -204,3 +204,11 @@ test('wiring: scripts load, the shopping scanner reports real barcode scans only
     assert.doesNotMatch(ui, /in stock|auf Lager|guaranteed|garantiert|won't spike/i, 'no stock or spike promises');
     assert.match(ui, /not identified|nicht erkannt/i, 'a photo says it is not identified');
 });
+
+test('shared shopping rhythm: the hunt reads LowiShopPlan when it is there and links to its editor, never a second editor', () => {
+    const src = require('fs').readFileSync(require('path').join(__dirname, '..', 'grocery-hunt.js'), 'utf8');
+    assert.match(src, /W\.LowiShopPlan/);
+    assert.match(src, /lowi:shopplan/);
+    assert.match(src, /data-gh="plan-edit"/);
+    assert.match(src, /sp\.openEditor\(\)/);
+});

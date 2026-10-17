@@ -205,8 +205,34 @@
         return '<label class="stp-tog gh-tog"><input type="checkbox" data-gh="consent"' + (S.consent ? ' checked' : '') + '> <span>' + esc(T('Share my finds with other shoppers at this shop', 'Meine Funde mit anderen in diesem Laden teilen', 'Compartir mis hallazgos con otras personas en esta tienda')) + '</span></label>' +
             '<p class="stp-fine">' + esc(T('Shares only the shop, the product, the app\'s estimate, scan or photo, and the date. Never your name, your position or your photos.', 'Geteilt werden nur Laden, Produkt, die Schätzung der App, Scan oder Foto und das Datum. Nie dein Name, dein Standort oder deine Fotos.', 'Solo se comparte la tienda, el producto, la estimación, escaneo o foto, y la fecha. Nunca tu nombre, tu ubicación ni tus fotos.')) + (st ? ' ' + esc(st) : '') + '</p>';
     }
+    /* Oct 17: the shopping rhythm has ONE home, the onboarding/shopping setup (shop-plan.js, window.LowiShopPlan, 'lowi:shopplan').
+       When it is there the hunt only READS it (how often, which days) for the glow timing and links to its editor; its own chips are
+       the fallback for builds without it. An unset plan keeps the hunt's quiet weekly timing and shows no number. */
+    const SPL = () => W.LowiShopPlan;
+    function syncPlan() {
+        try {
+            const sp = SPL(); if (!sp || typeof sp.get !== 'function') return false;
+            const p = sp.get() || {}, cur = load().plan, ch = {};
+            const ev = p.every != null && +p.every > 0 ? Math.max(C.EVERY_MIN, Math.min(C.EVERY_MAX, Math.round(+p.every))) : null;
+            if (ev != null && ev !== cur.every) ch.every = ev;
+            const ds = Array.isArray(p.days) ? [...new Set(p.days.map(Number).filter(d => d >= 0 && d <= 6))].sort() : [];
+            if (ds.join() !== cur.days.join()) ch.days = ds;
+            if (Object.keys(ch).length) { C.setPlan(S, ch); save(); }
+            return true;
+        } catch (e) { return false; }
+    }
     function rhythmHTML(now) {
         const p = S.plan, st = C.status(S, now);
+        if (syncPlan()) {
+            const sp = SPL(); let sum = ''; try { sum = String(sp.summary ? sp.summary() : ''); } catch (e) {}
+            let life2 = st.phase === 'paused' ? '<button type="button" class="stp-pill" data-gh="resume">' + esc(T('End the pause', 'Pause beenden', 'Terminar la pausa')) + '</button>' :
+                '<button type="button" class="stp-pill" data-gh="pause" data-n="7">' + esc(T('Pause 1 week', '1 Woche pausieren', 'Pausar 1 semana')) + '</button><button type="button" class="stp-pill" data-gh="pause" data-n="14">' + esc(T('Pause 2 weeks', '2 Wochen pausieren', 'Pausar 2 semanas')) + '</button>';
+            if (st.graceOk) life2 += '<button type="button" class="stp-pill" data-gh="grace">' + esc(T('Shopped but couldn\'t scan? Hold my glow 3 days', 'Eingekauft, aber Scannen ging nicht? Leuchten 3 Tage halten', '¿Compraste pero no pudiste escanear? Mantener el brillo 3 días')) + '</button>';
+            return '<h4 class="stp-h4">' + esc(T('Your shopping rhythm (optional)', 'Dein Einkaufsrhythmus (optional)', 'Tu ritmo de compra (opcional)')) + '</h4>' +
+                (sum ? '<p class="gh-q">' + esc(sum) + '</p>' : '') +
+                '<div class="stp-chips stp-wrap"><button type="button" class="stp-pill" data-gh="plan-edit">' + esc(T('Change my shopping rhythm', 'Einkaufsrhythmus ändern', 'Cambiar mi ritmo de compra')) + '</button></div>' +
+                '<div class="stp-chips stp-wrap gh-life">' + life2 + '</div>';
+        }
         const ev = [3, 4, 7, 14].map(n => '<button type="button" class="stp-chip' + (p.every === n ? ' on' : '') + '" data-gh="every" data-n="' + n + '">' + esc(n === 7 ? T('Weekly', 'Wöchentlich', 'Semanal') : n === 14 ? T('Every 2 weeks', 'Alle 2 Wochen', 'Cada 2 semanas') : T('Every ' + n + ' days', 'Alle ' + n + ' Tage', 'Cada ' + n + ' días')) + '</button>').join('');
         const wd = WD(), days = [1, 2, 3, 4, 5, 6, 0].map(d => '<button type="button" class="stp-chip gh-day' + (p.days.indexOf(d) >= 0 ? ' on' : '') + '" data-gh="day" data-d="' + d + '" aria-pressed="' + (p.days.indexOf(d) >= 0) + '">' + esc(wd[d]) + '</button>').join('');
         const nx = C.nextShopDay(S, now);
@@ -336,6 +362,7 @@
         }
         if (a === 'store') { const s = (stores && stores.stores || []).find(x => x.id === b.dataset.id); if (s) setStore(s); return; }
         if (a === 'store-own') { const n = q.trim().slice(0, 40); if (n.length >= 2) setStore({ id: 'own:' + C.nameKey(n).replace(/ /g, '-'), name: n, brand: '', town: '' }); return; }
+        if (a === 'plan-edit') { const sp = SPL(); if (sp && sp.openEditor) { close(); try { sp.openEditor(); } catch (e) {} } return; }
         if (a === 'every') { C.setPlan(S, { every: +b.dataset.n }); save(); return paint(); }
         if (a === 'day') { const d = +b.dataset.d, ds = S.plan.days.slice(), i = ds.indexOf(d); if (i >= 0) ds.splice(i, 1); else ds.push(d); C.setPlan(S, { days: ds }); save(); return paint(); }
         if (a === 'pause') { C.pause(S, now, +b.dataset.n); save(); return paint(); }
@@ -419,7 +446,8 @@
     function soon() { if (pend) return; pend = requestAnimationFrame(() => { pend = 0; try { decorate(); } catch (e) {} }); }
     D.addEventListener('click', e => { const b = e.target && e.target.closest && e.target.closest('[data-gh="open"]'); if (!b || (ov && ov.contains(b))) return; e.preventDefault(); e.stopPropagation(); open(); }, true);
     function boot() {
-        load(); hookWorld();
+        load(); syncPlan(); hookWorld();
+        W.addEventListener('lowi:shopplan', () => { syncPlan(); if (ov) { try { paint(); } catch (e) {} } });
         new MutationObserver(soon).observe(D.body, { childList: true, subtree: true });
         ['lowi:lang', 'lowi:grocery', 'focus'].forEach(n => W.addEventListener(n, soon));
         soon();

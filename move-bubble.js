@@ -84,11 +84,22 @@
     /* Where it floats: mirror the water bubble upward (upper-right of Misty). On short or wide screens (iPhone SE, phones in
        landscape) that spot can hit the Daily Quest card or the water bubble, so try a few other spots around Misty and take the
        first one that touches nothing. Positions are written as --wm-x / --wm-y; without them the CSS default applies. */
+    /* Misty's HOME cell, never where her cell drifts to: while the camera follows her flight (autopilot, steering, a world)
+       misty-flight.js slides #spBubble by --mf-bx / --mf-by (html.mf-roam). Measuring that moved box made this bubble jump
+       after her, into the middle where she used to sit. The other bubbles are pinned by CSS, so this one is too. */
+    function homeRect(mi) {
+        const q = mi.getBoundingClientRect();
+        if (!D.documentElement.classList.contains('mf-roam')) return q;
+        const dx = parseFloat(mi.style.getPropertyValue('--mf-bx')) || 0, dy = parseFloat(mi.style.getPropertyValue('--mf-by')) || 0;
+        return { left: q.left - dx, top: q.top - dy, right: q.right - dx, bottom: q.bottom - dy, width: q.width, height: q.height };
+    }
     function place() {
         const b = ensure(); if (!b) return;
         const hud = D.getElementById('whHud'), mi = D.getElementById('spBubble');
         if (!hud || !mi || !D.documentElement.classList.contains('wh-home')) return;
-        const hr = hud.getBoundingClientRect(), mr = mi.getBoundingClientRect();
+        /* while the UI is faded for Misty's flight the spot stays where it was: the faded cards would read as gone */
+        if (D.documentElement.classList.contains('lw-clean')) return;
+        const hr = hud.getBoundingClientRect(), mr = homeRect(mi);
         if (!mr.width || !hr.width) return;
         const r = b.offsetWidth / 2 || 46, gap = 8, vw = W.innerWidth, vh = W.innerHeight;
         const mcx = mr.left + mr.width / 2, mcy = mr.top + mr.height / 2, mR = mr.width / 2;
@@ -123,9 +134,12 @@
             const board = vis(D.getElementById('f3Board'));
             pick = best || [cands[0][0], Math.max(cands[0][1], board ? board.bottom + 10 + r : 0)];
         }
-        const X = Math.round(pick[0] - hr.left) + 'px', Y = Math.round(pick[1] - hr.top) + 'px';
-        if (b.style.getPropertyValue('--wm-x') !== X) b.style.setProperty('--wm-x', X);
-        if (b.style.getPropertyValue('--wm-y') !== Y) b.style.setProperty('--wm-y', Y);
+        const nx = Math.round(pick[0] - hr.left), ny = Math.round(pick[1] - hr.top);
+        /* a fixed spot: the neighbours' own few-pixel wobble never nudges it, only a real change of layout does */
+        const ox = parseFloat(b.style.getPropertyValue('--wm-x')), oy = parseFloat(b.style.getPropertyValue('--wm-y'));
+        if (isFinite(ox) && isFinite(oy) && Math.abs(nx - ox) < 9 && Math.abs(ny - oy) < 9) return;
+        b.style.setProperty('--wm-x', nx + 'px');
+        b.style.setProperty('--wm-y', ny + 'px');
     }
     /* tap = bloom, long press = edit (same rule as the other Home bubbles) */
     function wire(b) {
@@ -319,6 +333,7 @@
         W.addEventListener('resize', () => { if (bloom) closeBloom(false); placeSoon(); setTimeout(placeSoon, 400); });
         W.addEventListener('orientationchange', () => setTimeout(placeSoon, 300));
         W.addEventListener('lowi:layout', placeSoon);
+        W.addEventListener('lowi:clean-view', e => { if (!(e.detail && e.detail.on)) setTimeout(placeSoon, 60); });   /* back from the clean flight view: catch up on a turn or resize */
         [300, 1200, 3000].forEach(ms => setTimeout(placeSoon, ms));
     }
     W.LowiMoveBubble = { paint, open: openBloom, close: closeBloom, edit: editSheet, pick: (id) => pick(id, null), el: () => ensure() };

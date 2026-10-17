@@ -107,7 +107,11 @@
         const r = b.getBoundingClientRect(); if (!r.width) return false;
         let hit = false;
         D.querySelectorAll('#spFast, #whHud .wh-water, #spBubble, .fe-bub').forEach(el => {
-            const q = el.getBoundingClientRect(); if (!q.width || !q.height || getComputedStyle(el).display === 'none') return;
+            let q = el.getBoundingClientRect(); if (!q.width || !q.height || getComputedStyle(el).display === 'none') return;
+            if (el.id === 'spBubble' && H.classList.contains('mf-roam')) {   /* her home cell, not where it drifts with the camera */
+                const dx = parseFloat(el.style.getPropertyValue('--mf-bx')) || 0, dy = parseFloat(el.style.getPropertyValue('--mf-by')) || 0;
+                q = { left: q.left - dx, right: q.right - dx, top: q.top - dy, bottom: q.bottom - dy };
+            }
             if (q.left < r.right + 4 && q.right > r.left - 4 && q.top < r.bottom + 4 && q.bottom > r.top - 4) hit = true;
         });
         return hit;

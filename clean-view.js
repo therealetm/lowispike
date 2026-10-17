@@ -61,7 +61,11 @@
         try { const P = W.LowiPad, s = P && P.state && P.state(); if (s) return (s.pad && s.pad.mode) || s.mode || ''; } catch (e) { }
         return null;
     }
-    function onHome() { return H.classList.contains('wh-home') && !H.classList.contains('wh-cosmos'); }
+    function onHome() {
+        if (!H.classList.contains('wh-home') || H.classList.contains('wh-cosmos')) return false;
+        const t = D.getElementById('tab-home');
+        return !t || !t.classList || t.classList.contains('active');
+    }
     function check() {
         if (!onHome()) { if (st.clean || st.mode) feed({ type: 'leave', mode: padMode() || '' }); return; }
         const m = padMode();
@@ -69,8 +73,15 @@
     }
     function poll() { hookPad(); }
     /* the controller's own data-mode (misty-pad.js keeps it in step with the world) tells every mode change: no polling */
-    let hooked = null, padObs = null;
+    let hooked = null, padObs = null, tabHooked = null;
+    function hookTab() {                       /* leaving Home for another tab restores at once: nothing hidden leaks */
+        const t = D.getElementById('tab-home');
+        if (!t || t === tabHooked) return;
+        tabHooked = t;
+        try { new MutationObserver(() => { if (st.clean && !onHome()) feed({ type: 'leave', mode: padMode() || '' }); }).observe(t, { attributes: true, attributeFilter: ['class'] }); } catch (e) { }
+    }
     function hookPad() {
+        hookTab();
         const b = D.getElementById('whPad');
         if (!b || b === hooked) return !!b;
         hooked = b;
@@ -139,7 +150,7 @@
         if (padP && e.pointerId === padP.id) { clearTimeout(padP.hold); padP = null; soon(); }
         if (watch && e.pointerId === watch.id) {
             const w = watch; watch = null; clearTimeout(w.timer);
-            if (e.type === 'pointerup' && C.isTap(w.moved, now() - w.t)) { eat(e); cancelFor(w); swallowStart(null); swallowEnd(null); reveal(); }
+            if (e.type === 'pointerup' && C.isTap(w.moved, 0)) {   /* any still press is the reveal tap, even on a busy, late frame */ eat(e); cancelFor(w); swallowStart(null); swallowEnd(null); reveal(); }
             return;
         }
         if (swallowIds.has(e.pointerId)) { eat(e); swallowEnd(e.pointerId); }

@@ -122,7 +122,22 @@
         const tx = clamp(door.x + (0.5 - door.x) * 0.3, 0.16, 0.84), ty = clamp(door.y + (0.52 - door.y) * 0.3, 0.24, 0.8);
         return { x: from.x + (tx - from.x) * e, y: from.y + (ty - from.y) * e, e };
     }
-    const core = { K, inReach, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, roams, autoLeave, roamSpot, roamPx, pullAt, fallAt, EXIT, exitHold, outAt };
+    /* orbit-in (Oct 17, E-man: autopilot "feels like cheating ... lacks the struggle"; "Interstellar-style: orbit the world,
+       getting smaller and smaller ... a sense of vast distance and perspective, rather than just flying straight in").
+       q = 0..1 of the approach. rad = share of her starting distance (a slow spiral that tightens), size = share of her size in
+       the world (she is drawn at her true depth, so the far side of the orbit also shrinks her by perspective). spin = how fast
+       she goes round at that radius (faster as she falls closer, like a real orbit). The first time she reaches the door she
+       skims it and is flung back out (FLING s, back to q = BACK); on a low-energy day the world's own bounce rule can fling her
+       again; she always gets in by the last try. */
+    const ORBIT = { T: 7, R_END: 0.16, W: 0.62, FLING: 1.3, BACK: 0.45, TRIES: 3, MIN_FLINGS: 1 };
+    function orbitAt(q) {
+        q = clamp(+q || 0, 0, 1);
+        return { rad: 1 - (1 - ORBIT.R_END) * Math.pow(q, 1.5), size: 0.2 + 0.8 * Math.pow(1 - q, 1.25) };
+    }
+    function orbitSpin(rad, sleepy) { return ORBIT.W * Math.pow(1 / Math.max(+rad || 0, ORBIT.R_END), 1.2) * (sleepy ? 0.7 : 1); }
+    /* at the door: fling her back out (true) or let her in (false). tries = flings so far; refuse = the world's bounce rule said no */
+    function orbitFling(tries, refuse) { return tries < ORBIT.MIN_FLINGS || (!!refuse && tries < ORBIT.TRIES); }
+    const core = { K, inReach, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, roams, autoLeave, roamSpot, roamPx, pullAt, fallAt, EXIT, exitHold, outAt, ORBIT, orbitAt, orbitSpin, orbitFling };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!D || !D.addEventListener || W.LowiMistyFlight) return;
 
@@ -239,7 +254,7 @@
     }
     function end(ctx, why) {
         const a = ctx && ctx.a, r = ctx && ctx.r;
-        note('end ' + why); S.huntFly = false; S.outReq = false; S.exH = null; S.exP = 0; S.exD0 = 0; S.autoX = null; if (ctx && ctx.wand) dropDraw(ctx.wand);
+        note('end ' + why); S.huntFly = false; S.outReq = false; S.exH = null; S.exP = 0; S.exD0 = 0; S.autoX = null; S.orb = null; if (ctx && ctx.wand) dropDraw(ctx.wand);
         if (r && a && (why === 'abort' || why === 'home') && !regionsBusy() && curRegion() === 'hub') { r.target.set(0, 0, 0); if (why === 'abort' && S.dHome && S.dollyOut) r.dist = S.dHome; }
         S.st = 'idle'; S.flew = null; S.dolly = 0; hold(false); classes(false, false, false);
         /* autopilot heading out of a place keeps flying: she slips back into her cell and goes on to the next place */
@@ -303,7 +318,7 @@
                 try { ok = !regionsBusy() && !r.fly && !!(Rg && Rg.travel && Rg.travel('hub')); } catch (e) { ok = false; }
                 if (ok) { if (reg) S.outPos.copy(reg.pos); S.outT = performance.now(); S.recallOut = true; S.wpNext = -1; note('recall out'); }
                 padMode(ctx, ok ? 'home' : 'drive');
-            } else { if (S.st === 'pull') S.st = 'free'; padMode(ctx, 'home'); }
+            } else { if (S.st === 'pull' || S.st === 'orbit') { S.st = 'free'; S.orb = null; } padMode(ctx, 'home'); }
         }
         const mode = PD.mode || 'drive', vx = PD.vx || 0, vy = PD.vy || 0, mag = Math.min(1, Math.hypot(vx, vy)), steering = mode === 'drive' && mag > 0.05;
         if (steering && ADV()) { try { W.LowiAdventure.stop('steer'); } catch (e) { } }
@@ -312,6 +327,7 @@
         const camFree = !r.fly;
 
         if (S.st === 'pull') { pullFrame(ctx, k); return; }
+        if (S.st === 'orbit') { orbitFrame(ctx, k, still); return; }
         if (S.st === 'warp') { warpFrame(ctx, k); return; }
         if (S.st === 'inside') { insideFrame(ctx, k, mode, vx, vy, mag, still); return; }
 
@@ -354,7 +370,9 @@
             /* autopilot: done pausing at a place's door, she goes in by herself (the same warp as a tap) */
             if (S.tourGo && mode === 'auto' && !regionsBusy()) {
                 const g = S.tourGo; S.tourGo = null;
-                if (ADV() && !still) { startPull(ctx, g); return; }
+                /* orbit-in: never straight in on autopilot; she spirals round the world, smaller and smaller, skims it, is flung
+                   out, and falls in on the next pass */
+                if (!ctx.reduced && startOrbit(ctx, g)) return;
                 startWarp(ctx, { id: g.id, pos: g.pos }); return;
             }
             const adv = ADV() && mode === 'auto';
@@ -509,6 +527,56 @@
     }
 
     /* ---------- adventure: gravity pulls her in ---------- */
+    /* ---------- orbit-in: autopilot's way into a world ---------- */
+    function startOrbit(ctx, g) {
+        const a = ctx.a, r = ctx.r; if (!g || !g.pos || !S.p) return false;
+        basis(a);
+        const n = S.p.clone().sub(g.pos); let r0 = n.length();
+        if (r0 < 1e-3) { n.copy(V.fw); r0 = K.ENTRY * 2; }
+        n.normalize(); r0 = Math.max(r0, K.ENTRY * 1.6);
+        /* the orbit's plane leans away from the camera, so she swings in front of the world and round behind it */
+        const up = V.up.clone().multiplyScalar(Math.cos(0.5)).addScaledVector(V.fw, Math.sin(0.5));
+        const ax = up.clone().addScaledVector(n, -up.dot(n));
+        if (ax.lengthSq() < 1e-6) ax.copy(V.fw).addScaledVector(n, -V.fw.dot(n));
+        if (ax.lengthSq() < 1e-6) return false;
+        ax.normalize();
+        const tang = ax.clone().cross(n);
+        S.orb = { id: norm(g.id), C: g.pos.clone(), n, r0, ax, sgn: tang.dot(S.v) < 0 ? -1 : 1, q: 0, ang: 0, fling: 0, tries: 0, hs0: S.hs, d0: r.dist, prev: S.p.clone() };
+        S.st = 'orbit'; S.near = null; S.ap = 0; S.wob = 0; setPush(a, S.wobDir, 0); note('orbit ' + g.id);
+        return true;
+    }
+    function orbitFrame(ctx, k, still) {
+        const a = ctx.a, r = ctx.r, dt = ctx.dt, O = S.orb;
+        basis(a);
+        if (!O || ctx.PD.mode !== 'auto' || regionsBusy() || !(a.regions || []).some(g => norm(g.id) === O.id)) { S.st = 'free'; S.orb = null; note('orbit off'); return; }
+        if (O.fling > 0) { O.fling -= dt; O.q = Math.max(ORBIT.BACK, O.q - dt * (1 - ORBIT.BACK) / ORBIT.FLING * 1.5); }
+        else O.q = Math.min(1, O.q + dt / (ORBIT.T * (still ? 1.3 : 1)));
+        const o = orbitAt(O.q);
+        O.ang += dt * orbitSpin(o.rad, still) * O.sgn;
+        V.a.copy(O.n).applyAxisAngle(O.ax, O.ang).multiplyScalar(O.r0 * o.rad);
+        O.prev.copy(S.p); S.p.copy(O.C).add(V.a);
+        S.v.subVectors(S.p, O.prev).divideScalar(Math.max(1e-3, dt));
+        /* her size in the world, not on screen: far side of the orbit = smaller, and smaller still as she falls in */
+        S.hs = O.hs0 * o.size; S.ks = clamp(S.hs * pxPerUnit(a, S.p) / Math.max(1, S.base), 0.05, 2);
+        /* the camera holds the world, wide enough for the whole orbit, like a long lens on a planet */
+        if (!r.fly) {
+            r.target.lerp(O.C, 1 - Math.exp(-dt * 0.9));
+            const want = Math.max(O.d0, O.r0 * 2.7);
+            r.dist += (want - r.dist) * (1 - Math.exp(-dt * 0.7));
+        }
+        place(ctx, k, still, 1);
+        trail(ctx, k, O.fling > 0 ? 1 : 0.55);
+        if (O.q < 1 || O.fling > 0) return;
+        /* at the door */
+        let refuse = false;
+        if (O.tries >= ORBIT.MIN_FLINGS) { try { const Hn = W.LowiMistyHunt; refuse = !!(Hn && Hn.gate && Hn.gate(O.id) === false); } catch (e) { refuse = false; } }
+        if (orbitFling(O.tries, refuse)) {
+            O.tries++; O.fling = ORBIT.FLING;
+            ctx.burst(S.p, 10 + Math.round(8 * k), 0.4 + 0.3 * k); ring(ctx, k); note('orbit fling ' + O.tries);
+            return;
+        }
+        S.orb = null; startWarp(ctx, { id: O.id, pos: O.C });
+    }
     function startPull(ctx, g) {
         S.st = 'pull'; S.pullT = 0; S.pullId = g.id; S.pullC.copy(g.pos); S.pullRel.subVectors(S.p, g.pos); S.pullKs = S.ks;
         S.pullAx = (S.pullAx || new ctx.a.THREE.Vector3()).copy(V.fw); S.v.set(0, 0, 0); note('pull ' + g.id);
@@ -839,6 +907,6 @@
         recall: () => { if (S.st === 'idle') { try { if (W.LowiPad) W.LowiPad.mode(''); } catch (e) { } } else S.recallReq = true; },
         wants, frame, core,
         state: () => ({ st: S.st, flew: S.flew, joined: !!S.joined, roam: !!S.rw, inT: +(S.inT || 0).toFixed(1), wpNext: S.wpNext, ap: +S.ap.toFixed(3), near: S.near ? S.near.id : null, nearD: S.near ? +S.near.d.toFixed(2) : null, px: Math.round(S.base), ks: +S.ks.toFixed(3),
-            hs: +S.hs.toFixed(3), exP: +(S.exP || 0).toFixed(3), autoX: S.autoX ? S.autoX.ph : null, outPh: S.st === 'out' ? S.oPh : null, push: S.mem && w3() && w3().memU && w3().memU.uPushA ? +w3().memU.uPushA.value.toFixed(3) : 0, p: S.p ? [+S.p.x.toFixed(2), +S.p.y.toFixed(2), +S.p.z.toFixed(2)] : null, log: S.log.slice(-12) })
+            hs: +S.hs.toFixed(3), exP: +(S.exP || 0).toFixed(3), autoX: S.autoX ? S.autoX.ph : null, orb: S.orb ? { q: +S.orb.q.toFixed(2), tries: S.orb.tries, fling: S.orb.fling > 0 } : null, outPh: S.st === 'out' ? S.oPh : null, push: S.mem && w3() && w3().memU && w3().memU.uPushA ? +w3().memU.uPushA.value.toFixed(3) : 0, p: S.p ? [+S.p.x.toFixed(2), +S.p.y.toFixed(2), +S.p.z.toFixed(2)] : null, log: S.log.slice(-12) })
     };
 })();

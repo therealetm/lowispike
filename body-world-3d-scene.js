@@ -115,11 +115,16 @@ export function createWorld(THREE, canvas, opts) {
     /* ---------- the user's cell ---------- */
     const cell = new THREE.Group(); scene.add(cell);
     const CR = 1.4;
+    /* crisp bubble edges (Oct 17, E-man: "the bubbles have jagged, pixely edges"): the membrane is brightest and most opaque exactly at
+       its outline, and the canvas runs without MSAA (antialias is off at dpr >= 2 to save battery), so every bubble outline stepped like
+       stairs. EDGE_AA fades the last pixel or so of the outline using the screen-space change of the facing term (fwidth), a soft 1-2 px
+       edge at any size and any sharpness step, for one extra instruction per pixel - no extra resolution, no MSAA, no new pass. */
+    const EDGE_AA = '\n#if __VERSION__ >= 300 || defined(GL_OES_standard_derivatives)\nfloat lwEdge(float nv){return smoothstep(0.0,fwidth(nv)*2.0+0.02,nv);}\n#else\nfloat lwEdge(float nv){return smoothstep(0.0,0.06,nv);}\n#endif\n';
     const memU = { uIn: { value: new THREE.Color('#3a9fe0') }, uRim: { value: new THREE.Color('#9b87d2') }, uHi: { value: new THREE.Color('#8fe7ff') }, uGlow: { value: 0.55 }, uBase: { value: 0.1 }, uT: { value: 0 } };
     const memMat = new THREE.ShaderMaterial({
-        uniforms: memU, transparent: true, depthWrite: false,
+        uniforms: memU, transparent: true, depthWrite: false, extensions: { derivatives: true },
         vertexShader: 'uniform float uT;varying vec3 vN;varying vec3 vV;varying vec3 vP;void main(){vec3 p=position*(1.0+0.025*sin(uT*1.6+position.y*3.0)+0.018*sin(uT*1.1+position.x*4.0));vec4 mv=modelViewMatrix*vec4(p,1.0);vN=normalize(normalMatrix*normal);vV=normalize(-mv.xyz);vP=position;gl_Position=projectionMatrix*mv;}',
-        fragmentShader: 'uniform vec3 uIn;uniform vec3 uRim;uniform vec3 uHi;uniform float uGlow;uniform float uBase;uniform float uT;varying vec3 vN;varying vec3 vV;varying vec3 vP;void main(){float f=pow(1.0-abs(dot(normalize(vN),normalize(vV))),2.0);vec3 c=mix(uIn,uRim,f);c=mix(c,uHi,pow(f,5.0)*0.8);float shimmer=0.5+0.5*sin(vP.y*9.0+uT*0.8+sin(vP.x*7.0));float a=uBase+f*(0.55+0.45*uGlow)+shimmer*0.04;gl_FragColor=vec4(c*(0.75+0.6*uGlow),clamp(a,0.0,0.95));\n#include <colorspace_fragment>\n}'
+        fragmentShader: 'uniform vec3 uIn;uniform vec3 uRim;uniform vec3 uHi;uniform float uGlow;uniform float uBase;uniform float uT;varying vec3 vN;varying vec3 vV;varying vec3 vP;' + EDGE_AA + 'void main(){float nv=abs(dot(normalize(vN),normalize(vV)));float f=pow(1.0-nv,2.0);vec3 c=mix(uIn,uRim,f);c=mix(c,uHi,pow(f,5.0)*0.8);float shimmer=0.5+0.5*sin(vP.y*9.0+uT*0.8+sin(vP.x*7.0));float a=(uBase+f*(0.55+0.45*uGlow)+shimmer*0.04)*lwEdge(nv);gl_FragColor=vec4(c*(0.75+0.6*uGlow),clamp(a,0.0,0.95));\n#include <colorspace_fragment>\n}'
     });
     const membrane = new THREE.Mesh(new THREE.SphereGeometry(CR, small ? 40 : 56, small ? 28 : 40), memMat); cell.add(membrane);
     const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: '#8fe7ff', transparent: true, opacity: 0.32, depthWrite: false, blending: THREE.AdditiveBlending })); halo.scale.set(CR * 3.4, CR * 3.4, 1); cell.add(halo);
@@ -278,10 +283,10 @@ export function createWorld(THREE, canvas, opts) {
        deep. Base stays dark blue and Misty blue; cyan, green, purple, magenta and gold only as glows inside the cells, like his picture. */
     const reduceMq = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
     function membraneMat(col, rim, rim2) {
-        return new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.FrontSide,
+        return new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.FrontSide, extensions: { derivatives: true },
             uniforms: { uCol: { value: new THREE.Color(col) }, uRim: { value: new THREE.Color(rim) }, uRim2: { value: new THREE.Color(rim2 || rim) }, uO: { value: 0 }, uT: { value: 0 } },
             vertexShader: 'varying vec3 vN; varying vec3 vV; varying vec3 vP; void main(){ vec4 mv = modelViewMatrix * vec4(position,1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); vP = position; gl_Position = projectionMatrix * mv; }',
-            fragmentShader: 'uniform vec3 uCol; uniform vec3 uRim; uniform vec3 uRim2; uniform float uO; uniform float uT; varying vec3 vN; varying vec3 vV; varying vec3 vP; void main(){ float f = 1.0 - abs(dot(vN, vV)); float rim = pow(f, 2.3); float veins = 0.5 + 0.5 * sin(vP.x * 7.0 + uT * 0.4) * sin(vP.y * 6.0 - uT * 0.3) * sin(vP.z * 6.5 + uT * 0.25); vec3 rc = mix(uRim, uRim2, 0.5 + 0.5 * vN.y); float hl = pow(max(dot(vN, normalize(vec3(-0.45, 0.6, 0.65))), 0.0), 22.0); vec3 c = uCol * 0.10 + rc * rim * 0.85 + rc * veins * rim * 0.35 + vec3(0.8, 0.92, 1.0) * hl * 0.3; gl_FragColor = vec4(c, (0.035 + rim * 0.9 + hl * 0.25) * uO); }' });
+            fragmentShader: 'uniform vec3 uCol; uniform vec3 uRim; uniform vec3 uRim2; uniform float uO; uniform float uT; varying vec3 vN; varying vec3 vV; varying vec3 vP;' + EDGE_AA + 'void main(){ float f = 1.0 - abs(dot(vN, vV)); float nv = abs(dot(normalize(vN), normalize(vV))); float rim = pow(f, 2.3); float veins = 0.5 + 0.5 * sin(vP.x * 7.0 + uT * 0.4) * sin(vP.y * 6.0 - uT * 0.3) * sin(vP.z * 6.5 + uT * 0.25); vec3 rc = mix(uRim, uRim2, 0.5 + 0.5 * vN.y); float hl = pow(max(dot(vN, normalize(vec3(-0.45, 0.6, 0.65))), 0.0), 22.0); vec3 c = uCol * 0.10 + rc * rim * 0.85 + rc * veins * rim * 0.35 + vec3(0.8, 0.92, 1.0) * hl * 0.3; gl_FragColor = vec4(c, (0.035 + rim * 0.9 + hl * 0.25) * uO * lwEdge(nv)); }' });
     }
     /* glowing points: one shader for inner cells, organelles, beads, dust and the starry deep (size in world units, own distance fade,
        optional slow orbit around a centre so cells drift inside their sphere, optional twinkle) */

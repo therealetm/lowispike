@@ -19,7 +19,7 @@ test('all seven Home controls are on the shared membrane list, with their own sh
 test('one shader for all: controls are built by the same build() and material as fasting and water', () => {
     assert.ok(js.includes('s.mat = makeMat(THREE);') && js.split('makeMat(THREE)').length === 3, 'single material path');
     assert.ok(js.includes("new THREE.Mesh((s.opts.shape === 'pill' || s.opts.shape === 'box') ? dropGeo(CORE.dropN(s.opts.shape)) : geo, s.mat)"), 'a pill only swaps the geometry, never the material');
-    assert.ok(js.includes('new THREE.SphereGeometry(gR, 56, 36)') && !js.includes('CapsuleGeometry'), 'pill = Misty\'s sphere pulled into a drop, no capsule (no straight lines)');
+    assert.ok(js.includes('new THREE.SphereGeometry(gR, CORE.DROP_SEG[0], CORE.DROP_SEG[1])') && !js.includes('CapsuleGeometry'), 'pill = Misty\'s sphere pulled into a drop, no capsule (no straight lines)');
     assert.ok(!/requestAnimationFrame\(|setInterval\(\(\) => \{[^}]*frame/.test(js.replace("setInterval(() => { if (D.hidden) return; if (homeShown()) scan(); else unlive(); }, 1500);", '')), 'no new loop');
 });
 

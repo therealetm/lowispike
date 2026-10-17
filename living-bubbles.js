@@ -56,6 +56,7 @@
            doesn't really look like a water bubble"): pills and boxes are no longer a capsule with a straight middle but a liquid drop, a
            superellipsoid |x|^n + |y|^n + |z|^n = 1, curved everywhere (no flat top or bottom line), stretched over the control.
            n: lower = rounder. dropAxes: half-axes in CSS px, a little larger than the box so its content stays inside the membrane. */
+        DROP_SEG: [96, 64], /* width x height segments of the liquid-drop geometry (was 56 x 36: faceted corners on the wide Daily Quest) */
         dropN(shape) { return shape === 'box' ? 3 : 2.6; },
         dropAxes(w, h, shape) { w = Math.max(0, +w || 0); h = Math.max(0, +h || 0); return shape === 'box' ? { ax: w * 0.53, ay: h * 0.6 } : { ax: w * 0.54, ay: h * 0.6 }; },
         /* scale for one unit direction (x, y, z) onto the superellipsoid of exponent n, and its outward normal there */
@@ -94,7 +95,8 @@
         const U = api.memU;
         return new THREE.ShaderMaterial({
             uniforms: { uIn: U.uIn, uRim: U.uRim, uHi: U.uHi, uGlow: U.uGlow, uBase: U.uBase, uT: U.uT, uO: { value: 0 } },
-            vertexShader: vs, fragmentShader: fs, transparent: true, depthWrite: false, depthTest: false
+            vertexShader: vs, fragmentShader: fs, transparent: true, depthWrite: false, depthTest: false,
+            extensions: { derivatives: true } /* Misty's shader now softens its own outline with fwidth (crisp edges, body-world-3d-scene.js EDGE_AA) */
         });
     }
     /* sym-home: Misty's sphere, pulled into a liquid drop (superellipsoid of exponent n); the mesh is stretched over the control */
@@ -102,7 +104,9 @@
     function dropGeo(n) {
         if (drops[n]) return drops[n];
         const THREE = api.THREE, gR = (geo && geo.parameters && geo.parameters.radius) || 1.4;
-        const g = new THREE.SphereGeometry(gR, 56, 36), P = g.attributes.position, N = g.attributes.normal;
+        /* crisp edges (Oct 17): the drop is stretched over wide controls (Daily Quest, Today), so its outline needs more points than
+           Misty's round sphere or the corners show as flat facets; built once per shape and shared, about 6k points each */
+        const g = new THREE.SphereGeometry(gR, CORE.DROP_SEG[0], CORE.DROP_SEG[1]), P = g.attributes.position, N = g.attributes.normal;
         for (let i = 0; i < P.count; i++) {
             const x = P.getX(i) / gR, y = P.getY(i) / gR, z = P.getZ(i) / gR, q = CORE.dropPoint(x, y, z, n);
             P.setXYZ(i, q.x * gR, q.y * gR, q.z * gR); N.setXYZ(i, q.nx, q.ny, q.nz);

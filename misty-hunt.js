@@ -110,7 +110,15 @@
     const save = () => { try { W.LowiVitalsBridge.save(); } catch (e) { } };
     const lang = () => String((W.LowiI18n && W.LowiI18n.lang) || D.documentElement.lang || 'de').slice(0, 2);
     let lastSay = 0;
-    const say = (s, force) => { const t = Date.now(); if (!force && t - lastSay < 2500) return; lastSay = t; try { if (W.LowiPraise && W.LowiPraise.say) W.LowiPraise.say(s); } catch (e) { } };
+    /* cell-guide (Oct 17, E-man): in a world the little cell guide says these lines itself, in its bubble beside it, placed clear of
+       the Daily Quest and the controls (region-pals.js). The top toast is only the fallback when no guide is there (e.g. the bounce
+       at a world's edge, before you are in). */
+    const say = (key, v, force, world) => {
+        try { const G = W.LowiRegionPals; if (G && G.hunt && G.hunt(key, v || {}, world || H.id)) return; } catch (e) { }
+        if (!STR[key]) return;
+        const t = Date.now(); if (!force && t - lastSay < 2500) return; lastSay = t;
+        try { if (W.LowiPraise && W.LowiPraise.say) W.LowiPraise.say(tr(key, lang(), v)); } catch (e) { }
+    };
     const reduced = () => { try { return W.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
     const mine = () => { const s = S(); return s ? (s.mistyPower = norm(s.mistyPower)) : norm(null); };
     let last = null;
@@ -133,29 +141,37 @@
     function canvasArt() {
         if (art) return art;
         const mk = (draw) => { const c = D.createElement('canvas'); c.width = c.height = 96; draw(c.getContext('2d')); return c; };
+        /* cell-guide (Oct 17, E-man: "not in the same visual language"): the crumbs are small glass bubbles like the rest of the app
+           (pale rim, soft tint, a highlight top-left), with the sugar cube / germ inside, instead of flat stickers */
+        const orb = (g, rgb, rim) => {
+            const halo = g.createRadialGradient(48, 48, 10, 48, 48, 47); halo.addColorStop(0, 'rgba(' + rgb + ',.42)'); halo.addColorStop(1, 'rgba(' + rgb + ',0)');
+            g.fillStyle = halo; g.fillRect(0, 0, 96, 96);
+            const body = g.createRadialGradient(42, 40, 3, 48, 48, 27); body.addColorStop(0, 'rgba(255,255,255,.22)'); body.addColorStop(0.6, 'rgba(' + rgb + ',.26)'); body.addColorStop(1, 'rgba(' + rgb + ',.5)');
+            g.fillStyle = body; g.beginPath(); g.arc(48, 48, 27, 0, Math.PI * 2); g.fill();
+            g.strokeStyle = rim; g.lineWidth = 2.2; g.stroke();
+        };
+        const shine = g => { const hl = g.createRadialGradient(38, 35, 1, 38, 35, 12); hl.addColorStop(0, 'rgba(255,255,255,.85)'); hl.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = hl; g.beginPath(); g.arc(38, 35, 12, 0, Math.PI * 2); g.fill(); };
         art = {
             sugar: mk(g => {
-                const gr = g.createRadialGradient(48, 48, 4, 48, 48, 46); gr.addColorStop(0, 'rgba(255,214,150,.55)'); gr.addColorStop(1, 'rgba(255,170,90,0)');
-                g.fillStyle = gr; g.fillRect(0, 0, 96, 96);
-                g.translate(48, 50); g.rotate(0.5);
-                g.fillStyle = 'rgba(255,196,120,.85)'; g.strokeStyle = 'rgba(255,246,220,.95)'; g.lineWidth = 3;
-                g.beginPath(); g.rect(-15, -15, 30, 30); g.fill(); g.stroke();
-                g.fillStyle = 'rgba(255,255,255,.75)'; g.fillRect(-11, -11, 9, 5);
+                orb(g, '255,190,110', 'rgba(255,240,215,.9)');
+                g.save(); g.translate(48, 50); g.rotate(0.5);
+                g.fillStyle = 'rgba(255,200,130,.9)'; g.strokeStyle = 'rgba(255,248,230,.95)'; g.lineWidth = 2;
+                g.beginPath(); if (g.roundRect) g.roundRect(-11, -11, 22, 22, 5); else g.rect(-11, -11, 22, 22); g.fill(); g.stroke();
+                g.restore(); shine(g);
             }),
             germ: mk(g => {
-                const gr = g.createRadialGradient(48, 48, 4, 48, 48, 46); gr.addColorStop(0, 'rgba(176,120,230,.5)'); gr.addColorStop(1, 'rgba(120,80,190,0)');
-                g.fillStyle = gr; g.fillRect(0, 0, 96, 96);
-                g.strokeStyle = 'rgba(214,176,255,.9)'; g.lineWidth = 3;
-                for (let k = 0; k < 9; k++) { const a = k / 9 * Math.PI * 2; g.beginPath(); g.moveTo(48 + Math.cos(a) * 16, 48 + Math.sin(a) * 16); g.lineTo(48 + Math.cos(a) * 25, 48 + Math.sin(a) * 25); g.stroke(); }
-                g.fillStyle = 'rgba(120,70,170,.85)'; g.beginPath(); g.arc(48, 48, 17, 0, Math.PI * 2); g.fill(); g.stroke();
-                g.fillStyle = 'rgba(255,255,255,.6)'; g.beginPath(); g.arc(42, 42, 4, 0, Math.PI * 2); g.fill();
+                orb(g, '176,128,236', 'rgba(232,214,255,.9)');
+                g.strokeStyle = 'rgba(226,200,255,.9)'; g.lineWidth = 2;
+                for (let k = 0; k < 8; k++) { const a = k / 8 * Math.PI * 2; g.beginPath(); g.moveTo(48 + Math.cos(a) * 10, 48 + Math.sin(a) * 10); g.lineTo(48 + Math.cos(a) * 16, 48 + Math.sin(a) * 16); g.stroke(); }
+                g.fillStyle = 'rgba(132,82,190,.9)'; g.beginPath(); g.arc(48, 48, 10, 0, Math.PI * 2); g.fill(); g.stroke();
+                shine(g);
             }),
             murk: mk(g => { const gr = g.createRadialGradient(48, 48, 2, 48, 48, 48); gr.addColorStop(0, 'rgba(70,40,90,.55)'); gr.addColorStop(1, 'rgba(70,40,90,0)'); g.fillStyle = gr; g.fillRect(0, 0, 96, 96); })
         };
         return art;
     }
     /* ---- live hunt in the current world ---- */
-    const H = { reg: null, id: null, bits: [], n: 0, t: 0, eatAnim: [], warmT: 0, sensed: {}, day: '', dayChk: 0 };
+    const H = { reg: null, id: null, bits: [], n: 0, t: 0, eatAnim: [], warmT: 0, sensed: {}, day: '', dayChk: 0, steerAt: 0, autoSaid: 0, autoChk: 0 };
     /* hunt-count (Oct 17, E-man: "how many are left? I'm just flying around, not knowing if there are still any"): the live
        count of THIS world's hunt, straight from the crumbs that are really there. 'lowi:hunt-count' fires only when it changes
        (she gets in, eats one, leaves, a new day), never per frame. hunt-count.js shows it under the Daily Quest box. */
@@ -169,7 +185,7 @@
     function spikesToday() { try { const m = W.LowiWorldMood && W.LowiWorldMood.mood; return m ? (+m.food || 0) + (+m.products || 0) : 0; } catch (e) { return 0; } }
     function murk() { const R = regions(); if (!R || !R.state) return; const left = H.bits.filter(b => !b.gone).length; R.state.murk = H.n ? left / H.n : 0; }
     function spawn(ctx, reg, id, reach) {
-        H.reg = reg; H.id = id; H.bits = []; H.eatAnim = []; H.n = 0;
+        H.reg = reg; H.id = id; H.bits = []; H.eatAnim = []; H.n = 0; H.autoSaid = 0; H.autoChk = 0;
         const a = ctx.a, T = a && a.THREE; if (!T || !reg || !reg.group || !id || id === 'hub') { tell(); return; }
         const day = dayKey(); H.day = day; const n = count(spikesToday()), s = mine(), done = s.eaten[cleanId(id)] || [], A = canvasArt();
         const tex = {}; for (const k of ['sugar', 'germ', 'murk']) { tex[k] = new T.CanvasTexture(A[k]); if (T.SRGBColorSpace) tex[k].colorSpace = T.SRGBColorSpace; }
@@ -186,7 +202,7 @@
         }
         murk();
         const left = H.bits.length, key = day + id;
-        if (left && !H.sensed[key]) { H.sensed[key] = 1; setTimeout(() => { if (H.id === id) say(tr('sense', lang(), { n: left }), true); }, 2600); }
+        if (left && !H.sensed[key]) { H.sensed[key] = 1; setTimeout(() => { if (H.id === id) say('sense', { n: left }, true, id); }, 2600); }
         tell();
     }
     function clear() {
@@ -204,10 +220,10 @@
         const left = H.bits.filter(x => !x.gone).length; murk(); tell();
         const now = read(r.state, Date.now(), lang());
         pub({ gained: r.gained, why: 'eat', world: H.id, left, count: H.n });
-        if (now.level > before.level) say(tr('level', lang(), { L: now.level }), true);
-        else if (!left) { say(tr('clean', lang()), true); try { if (ctx.burst) ctx.burst(p, 30, 1.6); } catch (e) { } }
-        else if (r.why === 'cap') say(tr('full', lang()));
-        else say(tr('found', lang(), { left }), true);
+        if (now.level > before.level) say('level', { L: now.level }, true);
+        else if (!left) { say('clean', {}, true); try { if (ctx.burst) ctx.burst(p, 30, 1.6); } catch (e) { } }
+        else if (r.why === 'cap') say('full', {});
+        else say('found', { left }, true);
     }
     /* called by misty-flight.js every frame while she is inside a world. p = her position, steer = you are steering her */
     function frame(ctx, p, steer, reach) {
@@ -223,6 +239,10 @@
         let nearest = 1e9;
         if (!H.fw) { const T = ctx.a.THREE; H.fw = new T.Vector3(); H.dv = new T.Vector3(); H.cam = new T.Vector3(); }
         ctx.a.camera.getWorldPosition(H.cam); H.fw.subVectors(p, H.cam); H.pd = H.fw.length() || 1e-3; H.fw.divideScalar(H.pd);
+        /* cell-guide: remembered for toward() (asked at most every second by the guide, never per frame) */
+        H.camObj = ctx.a.camera; H.mp = p; if (steer) H.steerAt = performance.now();
+        /* on autopilot the guide says once per visit that crumbs only count when you steer (checked every 2 s, not per frame) */
+        if (!steer && !H.autoSaid && H.t > 9 && H.t - H.autoChk > 2) { H.autoChk = H.t; let auto = false; try { auto = W.LowiPad.state().pad === 'auto'; } catch (e) { } if (auto && H.bits.some(b => !b.gone)) { H.autoSaid = 1; say('auto', {}, true); } }
         for (const b of H.bits) {
             if (b.gone) continue;
             if (!red) { b.sp.position.copy(b.home); b.sp.position.y += Math.sin(H.t * 0.9 + b.ph) * 0.08; b.sp.material.rotation = Math.sin(H.t * 0.6 + b.ph) * 0.4; }
@@ -236,7 +256,7 @@
             b.sp.material.opacity = 0.42 + 0.5 * near + (red ? 0 : Math.sin(H.t * 2 + b.ph) * 0.06);
             if (steer && d < eatR) eatBit(ctx, b, p);
         }
-        if (steer && nearest < senseR && H.t - H.warmT > 25) { H.warmT = H.t; say(tr('warm', lang())); }
+        if (steer && nearest < senseR && H.t - H.warmT > 25) { H.warmT = H.t; say('warm', {}); }
         /* eaten: pulled into her, shrinking; its murk cloud fades away */
         for (let k = H.eatAnim.length - 1; k >= 0; k--) {
             const e = H.eatAnim[k]; e.t += dt; const q = clamp(e.t / 0.45, 0, 1), b = e.b;
@@ -250,7 +270,7 @@
         id = cleanId(id); if (!id || id === 'hub') return true;
         let en = null; try { en = W.LowiSun && W.LowiSun.energyNow && W.LowiSun.energyNow(); } catch (e) { }
         const need = tries(en && en.value), key = dayKey() + id;
-        if ((bounced[key] || 0) < need) { bounced[key] = (bounced[key] || 0) + 1; say(tr('bounce', lang()), true); return false; }
+        if ((bounced[key] || 0) < need) { bounced[key] = (bounced[key] || 0) + 1; say('bounce', {}, true); return false; }
         return true;
     }
     function entered(id) {
@@ -258,9 +278,18 @@
         const r = enter(mine(), { world: id });
         if (!r.ok) return;
         st.mistyPower = r.state; save();
-        if (r.gained || r.boosted) { pub({ gained: r.gained, why: 'enter', world: cleanId(id) }); setTimeout(() => say(tr('entered', lang())), 900); }
+        if (r.gained || r.boosted) { pub({ gained: r.gained, why: 'enter', world: cleanId(id) }); setTimeout(() => say('entered', {}, false, cleanId(id)), 900); }
     }
     W.addEventListener('lowi:world-region', e => { const id = e && e.detail && e.detail.id; if (!id || id === 'hub') clear(); });
-    W.LowiMistyHunt = Object.assign({}, core, { frame, gate, entered, clear, tally, state: () => ({ id: H.id, n: H.n, left: H.bits.filter(b => !b.gone).length, spots: H.bits.filter(b => !b.gone).map(b => { b.sp.getWorldPosition(b.w); return [+b.w.x.toFixed(2), +b.w.y.toFixed(2), +b.w.z.toFixed(2)]; }) }) });
+    /* cell-guide: which way the nearest crumb is on screen from Misty (x right, y up), for the guide's nudge; null when none */
+    function toward() {
+        const cam = H.camObj, p = H.mp; if (!cam || !p || !H.id) return null;
+        let best = null, bd = 1e9; const live = H.bits.filter(b => !b.gone);
+        for (const b of live) { const d = b.w.distanceTo(p); if (d < bd) { bd = d; best = b; } }
+        if (!best) return { x: 0, y: 0, left: 0, behind: false, steerAgo: performance.now() - (H.steerAt || 0) };
+        const a = best.w.clone().project(cam), m = p.clone().project(cam);
+        return { x: +(a.x - m.x).toFixed(3), y: +(a.y - m.y).toFixed(3), left: live.length, behind: a.z > 1, steerAgo: performance.now() - (H.steerAt || 0) };
+    }
+    W.LowiMistyHunt = Object.assign({}, core, { frame, gate, entered, clear, tally, toward, state: () => ({ id: H.id, n: H.n, left: H.bits.filter(b => !b.gone).length, spots: H.bits.filter(b => !b.gone).map(b => { b.sp.getWorldPosition(b.w); return [+b.w.x.toFixed(2), +b.w.y.toFixed(2), +b.w.z.toFixed(2)]; }) }) });
     setTimeout(() => pub(), 1500);
 })(typeof window !== 'undefined' ? window : globalThis);

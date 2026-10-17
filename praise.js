@@ -50,6 +50,14 @@
         el.innerHTML = '<i class="lp-dot" aria-hidden="true"></i><span class="lp-tx"></span>' + (tag ? '<b class="lp-tag"></b>' : '');
         el.querySelector('.lp-tx').textContent = text;
         if (tag) el.querySelector('.lp-tag').textContent = tag;
+        /* cell-guide (Oct 17, E-man): the toast never sits on the Daily Quest; when the quest is showing it drops just below it */
+        el.style.top = '';
+        try {
+            const q = D.getElementById('f3Board'), r = q && q.getBoundingClientRect();
+            if (r && r.height > 4 && r.bottom > 0 && getComputedStyle(q).visibility !== 'hidden' && (!q.checkVisibility || q.checkVisibility({ opacityProperty: true }))) {
+                const t = el.getBoundingClientRect(); if (t.bottom > r.top && t.top < r.bottom) el.style.top = Math.round(r.bottom + 8) + 'px';
+            }
+        } catch (e) { }
         el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
         clearTimeout(timer);
         timer = setTimeout(() => { if (el) el.classList.remove('on'); }, SHOW_MS);

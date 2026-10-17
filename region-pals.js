@@ -40,7 +40,12 @@
         villus: '<path d="M20 50 C20 36 22 20 32 14 C42 20 44 36 44 50 Z" fill="rgba(var(--rgb),.4)" stroke="rgba(255,255,255,.85)" stroke-width="1.6"/><path d="M26 46 C26 36 28 26 32 21 M38 46 C38 36 36 26 32 21" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.2"/>',
         fibre: '<rect x="14" y="23" width="36" height="18" rx="9" fill="rgba(var(--rgb),.4)" stroke="rgba(255,255,255,.85)" stroke-width="1.6"/><g stroke="rgba(255,255,255,.7)" stroke-width="1.4"><path d="M22 24 v16 M28 24 v16 M34 24 v16 M40 24 v16"/></g>'
     };
-    const st = { id: null, el: null, host: null, lines: [], i: 0, p: C.FOLLOW.home.slice(), v: [0, 0], off: [0, 0], drag: null, steerT: 0, raf: 0, t0: 0, sayT: 0, nextT: 0, shown: 0 };
+    const st = { id: null, el: null, host: null, lines: [], i: 0, p: C.FOLLOW.home.slice(), v: [0, 0], off: [0, 0], drag: null, steerT: 0, raf: 0, t0: 0, sayT: 0, nextT: 0, shown: 0,
+        /* cell-guide: what is showing now, one waiting line, quiet time, this visit's count, where the bubble sits */
+        cur: null, wait: null, waitT: 0, endT: 0, visit: 0, spot: 'ar', placeT: 0, obs: null, obsT: 0, size: null, lastKind: '' };
+    /* this session only (no storage): which lines each place has already said, and the places greeted */
+    const seen = {}, greeted = {};
+    const said = (id, i) => { (seen[id] = seen[id] || new Set()).add(i); };
 
     function todayText(id) { try { const A = W.LowiArrival; const d = A && A.data ? A.data(id) : null; return d && d.today ? d.today : ''; } catch (e) { return ''; } }
     function takes(id) { return !!(C.pid(id) && host() && !offView()); }
@@ -54,21 +59,101 @@
         el.querySelector('.rp-say').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); quiet(); });
         return el;
     }
+    /* one bubble, one voice. A line: {text, prio, kind ('hunt' | 'fact' | 'tip'), i (index into lines for facts)}.
+       A new line replaces the one showing only once that one has been readable for a moment (sooner if the new one matters more);
+       otherwise it waits in a single slot (a newer or more important line takes the slot). Nothing piles up, nothing goes stale. */
+    function speak(line, user) {
+        if (!st.el || !line || !line.text) return false;
+        const now = performance.now(), c = st.cur && st.el.classList.contains('rp-talk') ? st.cur : null;
+        if (c && !user) {
+            const until = c.t + C.minRead(c.text, c.prio, line.prio);
+            if (now < until && line.prio <= c.prio + 1) {
+                if (!st.wait || line.prio >= st.wait.prio) { st.wait = line; clearTimeout(st.waitT); st.waitT = setTimeout(flush, Math.max(60, until - now)); }
+                return true;
+            }
+        }
+        if (st.wait && st.wait.prio <= line.prio) { st.wait = null; clearTimeout(st.waitT); }
+        show1(line, user);
+        return true;
+    }
+    function flush() { const w = st.wait; st.wait = null; if (w && st.el) show1(w, false); }
+    function show1(line, user) {
+        const b = st.el.querySelector('.rp-say'), tx = b.querySelector('.rp-tx');
+        tx.textContent = line.text;
+        st.el.classList.toggle('rp-hunt', line.kind === 'hunt');
+        st.cur = { text: line.text, prio: line.prio || 0, kind: line.kind || 'fact', t: performance.now() };
+        st.lastKind = line.kind || 'fact';
+        if (line.i != null) { st.i = line.i; said(st.id, line.i); }
+        st.el.classList.add('rp-talk'); st.shown++; st.visit++;
+        st.size = null; st.obsT = 0; placeSay(true);
+        clearTimeout(st.sayT); clearTimeout(st.nextT);
+        const ms = C.showMs(line.text, line.kind === 'hunt' ? 'hunt' : 'fact') + (user ? 1500 : 0);
+        st.sayT = setTimeout(quiet, ms);
+        try { W.dispatchEvent(new CustomEvent('lowi:region-pal', { detail: { id: st.id, line: line.i != null ? line.i : -1, kind: st.lastKind, text: line.text, user: !!user } })); } catch (e) { }
+    }
     function sayLine(i, user) {
         if (!st.el || !st.lines.length) return;
-        st.i = ((i % st.lines.length) + st.lines.length) % st.lines.length;
-        const text = st.lines[st.i], b = st.el.querySelector('.rp-say');
-        b.querySelector('.rp-tx').textContent = text;
-        st.el.classList.add('rp-talk'); st.shown++;
-        clearTimeout(st.sayT); clearTimeout(st.nextT);
-        const ms = Math.min(12000, 4000 + text.length * 45);
-        st.sayT = setTimeout(quiet, ms);
-        /* after the greeting, the first fact follows by itself once; after that, taps lead */
-        if (!user && st.i === 0 && st.lines.length > 1) st.nextT = setTimeout(() => sayLine(1, false), Math.min(ms, 5200));
-        try { W.dispatchEvent(new CustomEvent('lowi:region-pal', { detail: { id: st.id, line: st.i, text, user: !!user } })); } catch (e) { }
+        i = ((i % st.lines.length) + st.lines.length) % st.lines.length;
+        speak({ text: st.lines[i], prio: user ? 3 : 0, kind: 'fact', i }, user);
     }
-    function quiet() { clearTimeout(st.sayT); clearTimeout(st.nextT); if (st.el) st.el.classList.remove('rp-talk'); }
-    function next(user) { if (st.el) sayLine(st.shown ? st.i + 1 : 0, !!user); }
+    function quiet() {
+        clearTimeout(st.sayT); clearTimeout(st.nextT);
+        if (st.el) st.el.classList.remove('rp-talk');
+        st.cur = null; st.endT = performance.now();
+        if (st.wait) { clearTimeout(st.waitT); st.waitT = setTimeout(flush, 380); }
+    }
+    /* tap: the next line in order (greeting, facts, today), then round again */
+    function next(user) { if (st.el) sayLine(st.shown && st.cur && st.cur.kind === 'fact' ? st.i + 1 : nextUnseen(), !!user); }
+    function nextUnseen() { const k = C.nextFact(st.lines.length, seen[st.id], 1); return k == null ? (st.i + 1) % st.lines.length : k; }
+
+    /* ---------- the bubble never sits on the Daily Quest, the top row, the controls, the tab bar or Misty ---------- */
+    const AVOID = '#f3Board, #tab-home .sp-top, #whHud button, #whHud .wh-water, #spFast, #whPad, #tabbar, .wh-hint.wh-say, #lpPraise.on, .bw3-full button, [data-guide-avoid]';
+    function visible(e) {
+        try { if (e.checkVisibility && !e.checkVisibility({ opacityProperty: true, visibilityProperty: true })) return false; } catch (x) { }
+        const cs = getComputedStyle(e); return cs.visibility !== 'hidden' && cs.display !== 'none' && +cs.opacity > 0.05;
+    }
+    function obstacles() {
+        const now = performance.now(); if (st.obs && now - st.obsT < 600) return st.obs;
+        const vw = W.innerWidth, vh = W.innerHeight, out = [];
+        D.querySelectorAll(AVOID).forEach(e => {
+            if (st.el && st.el.contains(e)) return;
+            const q = e.getBoundingClientRect(); if (q.width < 4 || q.height < 4 || q.bottom < 0 || q.top > vh || q.right < 0 || q.left > vw) return;
+            if (!visible(e)) return;
+            out.push({ l: q.left - 6, t: q.top - 6, r: q.right + 6, b: q.bottom + 6, w: e.id === 'f3Board' ? 3 : 2, k: e.id || '' });
+        });
+        st.obs = out; st.obsT = now; return out;
+    }
+    function hostRect() { const now = performance.now(); if (!st.rect || now - st.rectT > 1000) { st.rect = st.host.getBoundingClientRect(); st.rectT = now; } return st.rect; }
+    function placeSay(force) {
+        const el = st.el; if (!el || !st.host || !el.classList.contains('rp-talk')) return;
+        const now = performance.now(); if (!force && now - st.placeT < 160) return; st.placeT = now;
+        const b = el.querySelector('.rp-say'); if (!b) return;
+        if (!st.size) st.size = { w: b.offsetWidth || 220, h: b.offsetHeight || 80 };
+        const q = hostRect(), w = st.host.clientWidth || W.innerWidth, hh = st.host.clientHeight || W.innerHeight;
+        const pal = { x: q.left + st.p[0] * w, y: q.top + st.p[1] * hh };
+        const obs = obstacles().slice();
+        const MF = W.LowiMistyFlight, m = MF && MF.screen ? MF.screen() : null;
+        if (m) obs.push({ l: m.x - 46, t: m.y - 46, r: m.x + 46, b: m.y + 46, w: 4 });
+        obs.push({ l: pal.x - 30, t: pal.y - 30, r: pal.x + 30, b: pal.y + 30, w: 2 }); /* never over the guide that is talking */
+        const view = { w: W.innerWidth, h: W.innerHeight, top: 6, bottom: 6 };
+        const r = C.place(pal, st.size, obs, view, force ? null : st.spot);
+        if (!r) return;
+        if (r.spot !== st.spot) { el.classList.remove('rp-s-' + st.spot); st.spot = r.spot; }
+        el.classList.add('rp-placed');
+        el.classList.add('rp-s-' + r.spot);
+        b.style.left = Math.round(r.l - pal.x) + 'px'; b.style.top = Math.round(r.t - pal.y) + 'px';
+        b.style.setProperty('--tail', Math.round(r.tail) + 'px'); /* the tail always points back at the guide that is talking */
+        st.bx = r.l - pal.x; st.btail = r.tail; st.bvert = r.spot[0] !== 's';
+    }
+    /* between placements (every frame, numbers only, no layout reads): slide the bubble so a fast guide never drags it off screen */
+    function keepOn(x0) {
+        const el = st.el; if (!el || !st.size || st.bx == null || !el.classList.contains('rp-talk')) return;
+        const vw = W.innerWidth, q = hostRect(), x = q.left + x0, w = st.size.w;
+        const l = Math.max(10, Math.min(vw - 10 - w, x + st.bx)), dx = l - (x + st.bx);
+        if (Math.abs(dx) < 0.5) return;
+        const b = el.querySelector('.rp-say'); b.style.left = Math.round(l - x) + 'px';
+        if (st.bvert) b.style.setProperty('--tail', Math.round(Math.max(18, Math.min(w - 18, x - l))) + 'px');
+    }
 
     function place() {
         const el = st.el, h = st.host; if (!el || !h) return;
@@ -76,17 +161,21 @@
         const x = st.p[0] * w, y = st.p[1] * hh;
         el.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0)';
         el.style.setProperty('--tilt', C.tilt(st.v) + 'deg');
-        el.classList.toggle('rp-flip', st.p[0] > 0.55);
+        placeSay(false); keepOn(x);
     }
-    /* Misty's sidekick: a little above her and to her side (the side with more room), in host fractions; null = she is not in */
+    /* Misty's sidekick: a little above her and to her side (the side with more room), in host fractions; null = she is not in.
+       cell-guide: it keeps below the Daily Quest and above the controls, so the guide itself never parks on them either. */
     function sidekickAt() {
         const MF = W.LowiMistyFlight, m = MF && MF.screen ? MF.screen() : null, h = st.host; if (!m || !h) return null;
-        const now = performance.now(); if (!st.rect || now - st.rectT > 1000) { st.rect = h.getBoundingClientRect(); st.rectT = now; }
-        const q = st.rect; if (!q || !q.width || !q.height) return null;
+        const q = hostRect(); if (!q || !q.width || !q.height) return null;
         const fx = (m.x - q.left) / q.width, fy = (m.y - q.top) / q.height;
         if (fx < -0.1 || fx > 1.1 || fy < -0.1 || fy > 1.1) return null;
         const side = fx > 0.5 ? -1 : 1;
-        return [Math.max(0.08, Math.min(0.8, fx + side * 0.13 - 0.06)), Math.max(0.12, Math.min(0.74, fy - 0.1))];
+        let lo = 0.12, hi = 0.74;
+        const quest = (st.obs || []).find(o => o.k === 'f3Board');
+        /* while it talks it keeps low enough that its bubble fits between the Daily Quest and itself */
+        if (quest) lo = Math.max(lo, Math.min(0.55, (quest.b + 34 + (st.cur && st.size ? st.size.h + 12 : 0) - q.top) / q.height));
+        return [Math.max(0.08, Math.min(0.8, fx + side * 0.13 - 0.06)), Math.max(lo, Math.min(hi, fy - 0.1))];
     }
     function loop() {
         st.raf = 0;
@@ -111,8 +200,8 @@
     function steer(vx, vy) { if (!st.el) return false; st.off = [Math.max(-1, Math.min(1, +vx || 0)), Math.max(-1, Math.min(1, +vy || 0))]; st.steerT = performance.now() + 250; kick(); return true; }
 
     function hide() {
-        quiet(); cancelAnimationFrame(st.raf); st.raf = 0;
-        const el = st.el, h = st.host; st.el = null; st.id = null; st.drag = null;
+        quiet(); clearTimeout(st.waitT); st.wait = null; cancelAnimationFrame(st.raf); st.raf = 0;
+        const el = st.el, h = st.host; st.el = null; st.id = null; st.drag = null; st.cur = null; st.obs = null;
         if (h) h.classList.remove('rp-on');
         W.removeEventListener('pointerdown', onDown, true); W.removeEventListener('pointermove', onMove, true);
         if (el) { el.classList.remove('rp-in'); setTimeout(() => el.remove(), reduced() ? 0 : 320); }
@@ -122,10 +211,10 @@
         if (!id || !h) { hide(); return null; }
         /* Oct 17 (E-man): the explainer cell is Misty's sidekick now, "like an elf flying next to her": it comes along on an
            adventure too and flies beside her (sidekickAt), instead of popping up at a fixed spot */
-        if (st.el && st.id === id && st.host === h && st.el.isConnected) { sayLine(st.i, false); return st.el; }
+        if (st.el && st.id === id && st.host === h && st.el.isConnected) return st.el;
         hide();
         const el = build(id); if (!el) return null;
-        st.id = id; st.el = el; st.host = h; st.i = 0; st.shown = 0; st.off = [0, 0]; st.v = [0, 0]; st.t0 = performance.now();
+        st.id = id; st.el = el; st.host = h; st.i = 0; st.shown = 0; st.visit = 0; st.off = [0, 0]; st.v = [0, 0]; st.t0 = performance.now(); st.endT = performance.now();
         st.p = [C.FOLLOW.home[0] - 0.12, C.FOLLOW.home[1] + 0.08];   /* swims in from the lower left */
         st.lines = C.lines(id, lang(), W.LowiArrivalCore, todayText(id));
         h.appendChild(el); h.classList.add('rp-on');
@@ -134,24 +223,66 @@
         place();
         requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('rp-in')));
         kick();
-        clearTimeout(st.nextT); st.nextT = setTimeout(() => { if (st.el === el) sayLine(0, false); }, reduced() ? 200 : 900);
+        /* first visit this session: hello. Coming back: no second hello, straight to something it hasn't told you yet. */
+        clearTimeout(st.nextT); st.nextT = setTimeout(() => {
+            if (st.el !== el) return;
+            if (!greeted[id]) { greeted[id] = 1; sayLine(0, false); return; }
+            const k = C.nextFact(st.lines.length, seen[id], 1);
+            if (k != null) speak({ text: C.guide('back', lang()) + ' ' + st.lines[k], prio: 0, kind: 'fact', i: k }, false);
+        }, reduced() ? 200 : 900);
         return el;
+    }
+
+    /* ---------- the hunt, told by the guide ----------
+       misty-hunt.js calls hunt(key, vars, world): the guide says it in its own voice, next to itself. Returns false when no
+       guide is in that world (the hunt then falls back to its own short line). */
+    let realSaid = false;
+    function hunt(key, v, world) {
+        if (!st.el || !st.el.isConnected || offView()) return false;
+        if (world && C.pid(world) !== st.id) return false;
+        v = v || {}; v = Object.assign({}, v, { n: mistyName(), k: v.k != null ? v.k : v.n });
+        const L = C.huntLine(key, lang(), v); if (!L) return false;
+        speak({ text: L.text, prio: L.prio, kind: 'hunt' }, false);
+        /* once per session, after the first catch: the crumbs are a game, not your body */
+        if (key === 'found' && !realSaid) { realSaid = true; const R = C.huntLine('real', lang(), v); if (R) setTimeout(() => { if (st.el) speak({ text: R.text, prio: R.prio, kind: 'hunt' }, false); }, 400); }
+        return true;
+    }
+    function mistyName() { try { const T = W.LowiHerbTamagotchi, c = T && T.current ? T.current() : null; const n = c && T.name ? T.name(c.p, c.m) : ''; return n ? String(n).slice(0, 24) : 'Misty'; } catch (e) { return 'Misty'; } }
+    /* keeps teaching while you're in a world, without chatter: only after a quiet spell, only something new, a few per visit.
+       While you steer and crumbs are left: a nudge towards the nearest one. Otherwise: the next fact it hasn't told you yet. */
+    function teach() {
+        if (!st.el || st.cur || st.wait || D.hidden) return;
+        const now = performance.now();
+        if (now - st.endT < (st.visit <= 1 ? 7000 : 26000) || st.visit >= 7) return;
+        const Hn = W.LowiMistyHunt, tw = Hn && Hn.toward ? Hn.toward() : null;
+        const steering = tw && tw.steerAgo < 5000;
+        if (steering && tw.left > 0 && st.lastKind !== 'tip') {
+            const L = C.huntLine(tw.behind ? 'behind' : 'dir', lang(), { d: [tw.x, tw.y] });
+            if (L) { speak({ text: L.text, prio: L.prio, kind: 'tip' }, false); st.lastKind = 'tip'; return; }
+        }
+        const k = C.nextFact(st.lines.length, seen[st.id], 1);
+        if (k != null) speak({ text: st.lines[k], prio: 0, kind: 'fact', i: k }, false);
+        else if (steering && tw.left > 0) { const L = C.huntLine('dir', lang(), { d: [tw.x, tw.y] }); if (L) speak({ text: L.text, prio: L.prio, kind: 'tip' }, false); }
     }
     W.addEventListener('pointerup', onUp, { passive: true }); W.addEventListener('pointercancel', onUp, { passive: true });
     W.addEventListener('lowi:world-region', e => { try { const id = e && e.detail && e.detail.id; if (C.pid(id) && takes(id)) show(id); else hide(); } catch (err) { } });
     W.addEventListener('lowi:region-steer', e => { const d = e && e.detail || {}; steer(d.vx, d.vy); });
     W.addEventListener('lowi:lang', () => { if (st.id) { const id = st.id; hide(); show(id); } });
+    W.addEventListener('resize', () => { st.rect = null; st.obs = null; st.size = null; if (st.el) placeSay(true); }, { passive: true });
     D.addEventListener('visibilitychange', () => { if (!D.hidden) kick(); });
     /* the world closed, the host changed or Community zoomed out: the companion leaves with it */
     setInterval(() => {
         if (!st.el) return;
         const R = W.LowiWorldRegions, cur = R && R.current ? R.current() : st.id;
-        if (!st.el.isConnected || host() !== st.host || offView() || !C.pid(cur)) hide();
+        if (!st.el.isConnected || host() !== st.host || offView() || !C.pid(cur)) { hide(); return; }
+        obstacles(); /* keeps the guide itself below the Daily Quest (sidekickAt) */
+        teach();
     }, 1200);
 
     W.LowiRegionPals = {
-        takes, show, hide, steer, next: () => next(true), say: text => { if (!st.el || !text) return false; st.lines.push(String(text)); sayLine(st.lines.length - 1, false); return true; },
-        current: () => st.id, get line() { return st.el && st.el.classList.contains('rp-talk') ? st.lines[st.i] : null; }, get pos() { return st.p.slice(); },
-        get lines() { return st.lines.slice(); }, core: C
+        takes, show, hide, steer, hunt, next: () => next(true),
+        say: text => { if (!st.el || !text) return false; return speak({ text: String(text), prio: 1, kind: 'tip' }, false); },
+        current: () => st.id, get line() { return st.el && st.el.classList.contains('rp-talk') && st.cur ? st.cur.text : null; }, get pos() { return st.p.slice(); },
+        get spot() { return st.spot; }, get lines() { return st.lines.slice(); }, core: C
     };
 })();

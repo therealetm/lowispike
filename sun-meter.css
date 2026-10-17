@@ -114,3 +114,8 @@ html[data-ui=light] .ls-sun { color: #10131f; }
     .ls-sun.ls-bump .ls-ico, #spBubble .ls-away-ico, .ls-big .ls-ico { animation: none !important; }
     .lp-praise { transform: translate(-50%, 0) !important; transition: opacity .15s linear; }
 }
+/* cell-guide (Oct 17, E-man: the top toast "isn't the same visual language"): the same blue liquid glass as Misty's and the
+   guide's bubbles instead of the dark pill. Light mode keeps its own rule above (more specific). */
+.lp-praise { background: radial-gradient(120% 90% at 18% 0%, rgba(255,255,255,.18), rgba(255,255,255,0) 52%), linear-gradient(160deg, rgba(60,140,240,.42), rgba(14,40,104,.82));
+    border: 1.5px solid var(--wh-glass-rim, rgba(160,220,255,.55)); box-shadow: var(--wh-glass-sh, inset 0 0 18px rgba(140,210,255,.32), 0 8px 26px -12px rgba(40,120,255,.5));
+    -webkit-backdrop-filter: blur(12px) saturate(1.4); backdrop-filter: blur(12px) saturate(1.4); text-shadow: 0 1px 3px rgba(0,20,60,.45); }

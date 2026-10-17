@@ -35,16 +35,17 @@ test('what it says: greeting, the reviewed place facts, today line; tap walks th
     for (const id of C.IDS) for (const li of [0, 1, 2]) {
         const L = C.lines(id, li, A, 'Today line');
         assert.ok(L[0].includes(C.pal(id, li).name), 'greets with its name');
-        assert.strictEqual(L.length, 1 + A.PLACES[id].f.length + 1);
+        assert.strictEqual(L.length, 1 + A.PLACES[id].f.length + C.MORE[id].length + 1, 'greeting, arrival facts, the guide\'s own facts (cell-guide), today');
+        C.MORE[id].forEach((f, k) => assert.strictEqual(L[1 + A.PLACES[id].f.length + k], f[li]));
         A.PLACES[id].f.forEach((f, k) => assert.strictEqual(L[1 + k], f[li], 'facts straight from arrival-core'));
         assert.strictEqual(L[L.length - 1], 'Today line');
     }
     assert.deepStrictEqual(C.lines('hub', 0, A), []);
-    assert.strictEqual(C.lines('brain', 'en', null).length, 1, 'works without the facts module');
+    assert.strictEqual(C.lines('brain', 'en', null).length, 1 + C.MORE.brain.length, 'works without the facts module');
     for (const k of Object.keys(C.COPY)) assert.strictEqual(C.COPY[k].length, 3, k);
     const copy = JSON.stringify(C.COPY).toLowerCase();
     for (const w of ['cure', 'heal', 'heil', 'treat', 'diagnos', 'medic', 'prevent']) assert.ok(!copy.includes(w), w);
-    assert.ok(/function next\(user\) \{ if \(st\.el\) sayLine\(st\.shown \? st\.i \+ 1 : 0, !!user\); \}/.test(js), 'tap = next line');
+    assert.ok(/function next\(user\) \{ if \(st\.el\) sayLine\(st\.shown && st\.cur && st\.cur\.kind === 'fact' \? st\.i \+ 1 : nextUnseen\(\), !!user\); \}/.test(js), 'tap = next line (or the first one it has not said yet)');
 });
 
 test('moves with you: spring follow inside the safe area, relaxes home, still in reduced motion', () => {

@@ -841,8 +841,11 @@
         const r = ctx && ctx.r;
         if (S.exD0 && r && !r.fly && !regionsBusy()) { r.dist += (S.exD0 - r.dist) * Math.min(1, (ctx.dt || 0.016) * 5); if (Math.abs(r.dist - S.exD0) < 0.01) { r.dist = S.exD0; S.exD0 = 0; } }
         else if (S.exD0 && (!r || r.fly || regionsBusy())) S.exD0 = 0;
+        if (S.exP > 0 || S.exPk) { S.exPk = 0; try { const Rg = R(); if (Rg && Rg.peek && !(Rg.state && Rg.state.warp)) Rg.peek(0); } catch (e) { } try { if (W.LowiWorldBurst) W.LowiWorldBurst.release(); } catch (e) { } }
         S.exH = null; S.exP = 0; S.exBeat = 0;
     }
+    /* limbo fix: the place's own colour (for the membrane, the tear and the streaks) */
+    function placeCss() { try { const Rg = R(), g = Rg && Rg.byId && S.flew && Rg.byId(S.flew); return g && g.css || ''; } catch (e) { return ''; } }
     function exitCheck(ctx, k, mode, vx, vy, mag, inR) {
         const a = ctx.a, r = ctx.r, dt = ctx.dt;
         V.a.subVectors(S.p, S.inC); const L = V.a.length(), wl = V.want.length();
@@ -873,6 +876,16 @@
             if (pm) { pm.color.set(h.p > 0.66 ? '#ffffff' : '#bfefff'); pm.opacity = 0.5 + 0.45 * h.p; }
             V.b.copy(S.inC).addScaledVector(V.a, (L + 0.35 * S.hs) / L); ctx.burst(V.b, 1 + Math.round(4 * h.p), (0.1 + 0.25 * h.p) * Math.max(0.4, S.hs));
         }
+        /* limbo fix (Oct 17, E-man): the membrane stretches under her as she pushes, and Home is already drawn behind the place
+           (LowiWorldRegions.peek), so backing toward the edge never shows empty space */
+        try { const Rg = R(); if (Rg && Rg.peek) { Rg.peek(h.p); S.exPk = 1; } } catch (e) { }
+        if (L > 1e-4 && W.LowiWorldBurst) {
+            try {
+                V.b.copy(S.inC).addScaledVector(V.a, (L + 0.35 * S.hs) / L);
+                const e1 = toScreen(ctx.a, V.b, {}), m = toScreen(ctx.a, S.p, {});
+                if (e1.z < 1) W.LowiWorldBurst.press(h.p, e1.x, e1.y, placeCss(), e1.x - m.x, e1.y - m.y);
+            } catch (e) { }
+        }
         const beat = Math.floor(h.p * EXIT.HOLD + 1e-6);
         if (beat > (S.exBeat || 0) && beat < EXIT.HOLD) { S.exBeat = beat; ring(ctx, k); if (S.exVib !== false) try { if (navigator.vibrate) navigator.vibrate(12); } catch (e) { } }
     }
@@ -884,6 +897,8 @@
         try { ok = !!(Rg && Rg.travel && Rg.travel('hub', false, 0, { wide: true })); } catch (e) { ok = false; }
         if (!ok) { S.outWhy0 = ''; return false; }
         if (L > 1e-4) { V.b.copy(S.inC).addScaledVector(V.a, (L + 0.3 * S.hs) / L); ctx.burst(V.b, 14 + Math.round(10 * k), 0.5 + 0.4 * k); }
+        /* limbo fix: the membrane tears open with a flash, a ring, sparks and warp streaks, right where she is (world-burst.js) */
+        try { if (W.LowiWorldBurst) { const m = toScreen(ctx.a, S.p, {}), e1 = L > 1e-4 ? toScreen(ctx.a, V.b, {}) : m; S.exPk = 0; W.LowiWorldBurst.pop(m.x, m.y, placeCss(), { ax: e1.x - m.x, ay: e1.y - m.y, n: ctx.reduced ? 0 : 10 + Math.round(6 * k) }); } } catch (e) { }
         ring(ctx, k); if (why === 'hold') try { if (navigator.vibrate) navigator.vibrate(40); } catch (e) { }
         note('exit ' + why);
         if (S.outReq) { S.outReq = false; startOut(ctx, why); outFrame(ctx, k); }

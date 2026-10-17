@@ -62,8 +62,12 @@
     /* one bubble, one voice. A line: {text, prio, kind ('hunt' | 'fact' | 'tip'), i (index into lines for facts)}.
        A new line replaces the one showing only once that one has been readable for a moment (sooner if the new one matters more);
        otherwise it waits in a single slot (a newer or more important line takes the slot). Nothing piles up, nothing goes stale. */
+    function moving() {
+        try { const R = W.LowiWorldRegions, F = W.LowiMistyFlight; return !!(R && R.state && (R.state.busy || R.state.warp)) || !!(F && F.state && F.state().st === 'out'); } catch (e) { return false; }
+    }
     function speak(line, user) {
         if (!st.el || !line || !line.text) return false;
+        if (!user && moving()) return false;
         const now = performance.now(), c = st.cur && st.el.classList.contains('rp-talk') ? st.cur : null;
         if (c && !user) {
             const until = c.t + C.minRead(c.text, c.prio, line.prio);
@@ -224,8 +228,10 @@
         requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('rp-in')));
         kick();
         /* first visit this session: hello. Coming back: no second hello, straight to something it hasn't told you yet. */
-        clearTimeout(st.nextT); st.nextT = setTimeout(() => {
+        clearTimeout(st.nextT); st.nextT = setTimeout(function talk() {
             if (st.el !== el) return;
+            /* limbo fix (Oct 17, E-man): quiet while a trip between worlds is running; it speaks once she has settled */
+            if (moving()) { st.nextT = setTimeout(talk, 500); return; }
             if (!greeted[id]) { greeted[id] = 1; sayLine(0, false); return; }
             const k = C.nextFact(st.lines.length, seen[id], 1);
             if (k != null) speak({ text: C.guide('back', lang()) + ' ' + st.lines[k], prio: 0, kind: 'fact', i: k }, false);
@@ -266,6 +272,7 @@
     }
     W.addEventListener('pointerup', onUp, { passive: true }); W.addEventListener('pointercancel', onUp, { passive: true });
     W.addEventListener('lowi:world-region', e => { try { const id = e && e.detail && e.detail.id; if (C.pid(id) && takes(id)) show(id); else hide(); } catch (err) { } });
+    W.addEventListener('lowi:world-warp', e => { const d = e && e.detail; if (d && d.phase === 'start') quiet(); });
     W.addEventListener('lowi:region-steer', e => { const d = e && e.detail || {}; steer(d.vx, d.vy); });
     W.addEventListener('lowi:lang', () => { if (st.id) { const id = st.id; hide(); show(id); } });
     W.addEventListener('resize', () => { st.rect = null; st.obs = null; st.size = null; if (st.el) placeSay(true); }, { passive: true });

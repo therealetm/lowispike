@@ -293,7 +293,7 @@
     const st = { cur: 'hub', target: null, next: null, region: null, warp: null, busy: false, tier: null, off: null, label: null, mapBtn: null, veil: null, host: null, lt: 0 };
     const w3 = () => W.LowiWorld3D || null;
     const baseId = id => id === 'muscle' ? 'muscles' : id;
-    const parked = []; let look = null, fogWas = null;
+    const parked = []; let look = null, fogWas = null, bgWas = null, lookReg = null;
     function setHubVisible(on) {
         const a = w3(); if (!a || !a.scene) return;
         if (on) { parked.forEach(p => { p[0].layers.mask = p[1]; }); parked.length = 0; return; }
@@ -304,7 +304,7 @@
     }
     function setLook(o) {
         const a = w3(); if (!a || !a.scene || !a.scene.fog) { look = o; return; }
-        if (o && fogWas == null) fogWas = a.scene.fog.density;
+        if (o && fogWas == null) { fogWas = a.scene.fog.density; bgWas = a.scene.background && a.scene.background.clone ? a.scene.background.clone() : (a.scene.fog.color ? a.scene.fog.color.clone() : null); }
         if (!o && fogWas != null) { a.scene.fog.density = fogWas; fogWas = null; }
         look = o;
     }
@@ -312,6 +312,24 @@
         const a = w3(); if (!look || !a || !a.scene) return;
         if (a.scene.background && a.scene.background.copy) a.scene.background.copy(look.bg);
         if (a.scene.fog) { a.scene.fog.color.copy(look.bg); a.scene.fog.density = look.fog * (1 + 0.9 * Math.max(0, Math.min(1, +st.murk || 0))); } /* misty-hunt: murk thins as Misty eats */
+    }
+    /* limbo fix (Oct 17, E-man: "that 1 second or 2 seconds between worlds ... looks horrible"): Home is never parked while you are
+       on the way out. peek(p) = how far the way out is open (0..1, world-exit push): Home is drawn behind the place and the place's
+       colour leans toward Home's, so when the camera backs past the place's walls there is always a world, never empty space.
+       The reversed fly-to (travel to 'hub') runs with peek 1 from its first frame. */
+    function blendLook(k) {
+        if (!st.region || !look || !bgWas || !fogWas) return;
+        if (!lookReg) lookReg = { bg: look.bg.clone(), fog: look.fog };
+        k = Math.max(0, Math.min(1, +k || 0));
+        look = { bg: lookReg.bg.clone().lerp(bgWas, k), fog: lookReg.fog + (fogWas - lookReg.fog) * k };
+    }
+    function peek(p) {
+        const w = wo(); p = Math.max(0, Math.min(1, +p || 0));
+        if (!w || st.cur === 'hub' || !st.region) { st.peek = 0; return 0; }
+        if (p > 0 && !st.peek) w.setHubVisible(true);
+        else if (p <= 0 && st.peek && !st.warp) { w.setHubVisible(false); if (lookReg) { look = { bg: lookReg.bg.clone(), fog: lookReg.fog }; } }
+        st.peek = p; if (p > 0) blendLook(0.45 * p);
+        return p;
     }
     function centerOf(id) {
         const a = w3(), THREE = a.THREE, r = (a.regions || []).find(x => x.id === baseId(id));
@@ -401,6 +419,7 @@
             cam.position.addScaledVector(fwd, q.back * p.fwd); vf -= q.back * p.speed / (WARP.settle / 1000);
             veilO = Math.max(veilO, p.veil);
             if (st.region) st.region.group.scale.setScalar(p.scale);
+            blendLook(0.45 + 0.55 * smooth(0, 1, k));
             if (k >= 1) {
                 /* under the full glow: the place goes, the bloodstream comes back, and the camera waits just outside the glowing
                    spot it dived into, facing in, exactly where the fly-to left it before the dive */
@@ -511,6 +530,8 @@
         if (st.host && h !== st.host) reset();
         if (h && !st.host) ensureUi();
         const w = wo(); if (!w) return;
+        /* never stuck in limbo: a place that is current but not mounted (and no trip running) goes straight back to Home */
+        if (!st.warp && !st.busy && st.cur !== 'hub' && !st.region) { try { enter('hub'); } catch (e) { } }
         if (st.warp) { try { stepWarp(w, dt); } catch (e) { const q = st.warp; st.warp = null; clean(q); if (q.id !== st.cur) enter(q.id); q.done && q.done(); } }
         if (st.region && st.region.tick) { try { st.region.tick(t, Math.min(0.05, dt || 0.016), reduced()); } catch (e) { } }
         applyLook();
@@ -527,7 +548,7 @@
     function enter(id) {
         const w = wo(); if (!w) return;
         if (st.region) { st.region.dispose(); st.region = null; }
-        st.murk = 0; st.place = null;
+        st.murk = 0; st.place = null; st.peek = 0; lookReg = null;
         if (id === 'hub') { w.setLook(null); w.setHubVisible(true); }
         else {
             st.tier = st.tier || tier({ w: W.innerWidth, h: W.innerHeight, mem: navigator.deviceMemory, save: navigator.connection && navigator.connection.saveData });
@@ -559,7 +580,7 @@
         if (reduced()) { enter(id); lungCard(); done(); return true; }
         const R = byId(id), from = byId(st.cur), src = rev && from ? from : R, hue = src.hue != null ? src.hue : 0xe0475a;
         const q = { id, phase: 'glide', t0: 0, saw: false, amt: 0, last: null, outT: null, hue, css: src.css, fov0: w.camera.fov, done, clock: 0 };
-        if (rev) { q.rev = true; q.wide = !!(opts && opts.wide); q.phase = 'unsettle'; q.tu = 0; veil(0, src.css); if (a.rig.fly) a.rig.fly = null; a.rig.vy = 0; a.rig.vp = 0; }
+        if (rev) { q.rev = true; q.wide = !!(opts && opts.wide); q.phase = 'unsettle'; q.tu = 0; veil(0, src.css); peek(1); if (a.rig.fly) a.rig.fly = null; a.rig.vy = 0; a.rig.vp = 0; }
         else if (st.cur !== 'hub') { veil(1, from.css); q.outT = 0; if (id === 'hub') enter('hub'); else leaveQuiet(); }
         const bp = (a.regions || []).find(x => x.id === baseId(rev && from ? from.id : id));
         q.B = bp && bp.pos ? bp.pos.clone() : new THREE.Vector3();
@@ -605,5 +626,5 @@
     W.addEventListener('lowi:world3d-ready', () => hook());
     W.addEventListener('lowi:lang', () => renderUi());
     hook();
-    Object.assign(API, { travel, openMap, current: () => st.cur, state: st, reset });
+    Object.assign(API, { travel, openMap, peek, current: () => st.cur, state: st, reset });
 })();

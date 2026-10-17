@@ -160,10 +160,34 @@
     function tended(trip, now) {
         if (!trip || !(+trip.start > 0)) return 0;
         const mult = trip.vigor === 'thriving' ? 1 : trip.vigor === 'ok' ? 0.5 : 0.25;
-        const prog = trip.got ? 1 : Math.max(0, Math.min(1, ((+now || Date.now()) - trip.start) / AWAY_MS));
+        /* called back early: the world keeps what she tended up to that moment */
+        const until = +trip.recalled > 0 ? +trip.recalled : (+now || Date.now());
+        const prog = trip.got && !(+trip.recalled > 0) ? 1 : Math.max(0, Math.min(1, (until - trip.start) / AWAY_MS));
         return +(mult * prog).toFixed(3);
     }
-    const core = { GOAL, AWAY_MS, BONUS, PTS, CAP, ITEMS, ENERGY, tended, classify, points, model, pickItem, fmtLeft, fmtBack, fmtHM, msToMidnight, dayKey, verdict, energy, mayDepart, tripFinds, makeTrip };
+    /* Oct 17 (E-man: "I would like to be able to cancel the exploration and call Misty back"): calling her home early.
+       His follow-up: "simply clicking on out of exploration mode ... out there quickly" -> one tap on the timer, no
+       question. She always brings her find(s) home with her, so nothing is lost and nothing needs confirming. The day's
+       trip is used up (one per day, as before, so recalling can't farm finds) and the world keeps the glow she gave it
+       so far. RECALL_KEEP stays as the knob: raise it above 0 and early recalls lose the find and ask first again. */
+    const RECALL_KEEP = 0;
+    function recallPlan(trip, now) {
+        now = +now || Date.now();
+        if (!trip || trip.got || !(+trip.start > 0) || !(+trip.back > now)) return null;
+        const done = Math.max(0, Math.min(1, (now - trip.start) / AWAY_MS));
+        const keep = done >= RECALL_KEEP;
+        return { done: +done.toFixed(3), keep, loses: !keep && !!trip.item, out: Math.max(0, now - trip.start), left: trip.back - now };
+    }
+    function recallTrip(trip, now, day) {
+        now = +now || Date.now();
+        const p = recallPlan(trip, now);
+        if (!p) return null;
+        const t = Object.assign({}, trip, { back: now, recalled: now, got: true });
+        const finds = p.keep ? tripFinds(trip, day) : [];
+        if (!p.keep) { t.lost = [trip.item, trip.item2].filter(Boolean); delete t.item; delete t.item2; }
+        return { trip: t, finds, keep: p.keep, plan: p };
+    }
+    const core = { GOAL, AWAY_MS, BONUS, PTS, CAP, ITEMS, ENERGY, RECALL_KEEP, tended, classify, points, model, pickItem, fmtLeft, fmtBack, fmtHM, msToMidnight, dayKey, verdict, energy, mayDepart, tripFinds, makeTrip, recallPlan, recallTrip };
     if (!D) {
         if (typeof module !== 'undefined' && module.exports) module.exports = core;
         return;
@@ -198,6 +222,17 @@
         tiredTap: ['I’m too tired to head out. A meal, water or a Move gives me energy.', 'Ich bin zu müde zum Losfliegen. Essen, Wasser oder Bewegung geben mir Kraft.', 'No tengo energía para salir. Comer, agua o moverte me da energía.'],
         okay: ['Okay', 'Okay', 'Vale'],
         out: ['Out exploring', 'Unterwegs', 'Explorando'],
+        callBack: ['Call Misty back', 'Misty zurückrufen', 'Llamar a Misty'],
+        tapBack: ['Tap to call her back', 'Tippen zum Zurückrufen', 'Toca para llamarla'],
+        letGo: ['Let her explore', 'Weiter erkunden lassen', 'Déjala explorar'],
+        recallQ: ['Call Misty back now?', 'Misty jetzt zurückrufen?', '¿Llamar a Misty ahora?'],
+        recallLose: ['She’s only been out for', 'Sie ist erst seit', 'Solo lleva fuera'],
+        recallLose2: ['If she comes home now, she won’t bring a find today, and she can’t head out again until tomorrow. From halfway on she brings her find with her.', 'unterwegs. Wenn sie jetzt heimkommt, bringt sie heute keinen Fund mit und kann erst morgen wieder los. Ab der Hälfte bringt sie ihren Fund mit.', '. Si vuelve ahora, hoy no traerá ningún hallazgo y no podrá salir de nuevo hasta mañana. A partir de la mitad trae su hallazgo.'],
+        recallKeep: ['She comes home right away and brings her find with her. Her next trip is tomorrow.', 'Sie kommt sofort heim und bringt ihren Fund mit. Ihr nächster Ausflug ist morgen.', 'Vuelve enseguida y trae su hallazgo. Su próxima salida es mañana.'],
+        recallEmpty: ['She comes home right away, but she won’t bring a find today because it’s before halfway. Her next trip is tomorrow.', 'Sie kommt sofort heim, bringt aber heute keinen Fund mit, weil die Hälfte noch nicht um ist. Ihr nächster Ausflug ist morgen.', 'Vuelve enseguida, pero hoy no trae hallazgo porque aún no va por la mitad. Su próxima salida es mañana.'],
+        yesBack: ['Call her back', 'Zurückrufen', 'Llamarla'],
+        coming: ['Coming home!', 'Ich komm heim!', '¡Ya voy a casa!'],
+        comingEmpty: ['Coming home! No find this time, but the world got a little sunshine.', 'Ich komm heim! Diesmal ohne Fund, aber die Welt hat ein bisschen Sonne abbekommen.', '¡Ya voy! Esta vez sin hallazgo, pero el mundo recibió un poco de sol.'],
         backShort: ['back in', 'zurück in', 'vuelve en'],
         leaves: ['I’ve got energy now, I’m heading out! Back in', 'Jetzt hab ich Kraft, ich flieg los! Zurück in', '¡Ya tengo energía, salgo! Vuelvo en'],
         bonusFind: ['I had so much energy, I found a second one:', 'Ich hatte so viel Kraft, ich hab noch was gefunden:', 'Tenía tanta energía que encontré otro:'],
@@ -283,7 +318,12 @@
         if (!c) { c = D.createElement('span'); c.className = 'ls-back'; c.setAttribute('role', 'status'); bub.appendChild(c); }
         const txt = v.away ? tr('out') + ' · ' + tr('backShort') + ' ' + fmtBack(v.left) : tr('tooTired');
         c.classList.toggle('tired', !v.away);
-        if (c.textContent !== txt) c.textContent = txt;
+        /* Oct 17: while she is out the timer is also the button that calls her home */
+        c.classList.toggle('ls-recall', !!v.away);
+        if (v.away) { c.setAttribute('role', 'button'); c.setAttribute('tabindex', '0'); c.setAttribute('aria-label', txt + '. ' + tr('callBack')); }
+        else { c.setAttribute('role', 'status'); c.removeAttribute('tabindex'); c.removeAttribute('aria-label'); }
+        const html = v.away ? esc(txt) + '<small>' + esc(tr('tapBack')) + '</small>' : esc(txt);
+        if (c.dataset.k !== html) { c.dataset.k = html; c.innerHTML = html; }
     }
     function pop(n) {
         if (!row || !row.isConnected || !n) return;
@@ -343,7 +383,24 @@
         R().sheet('<div class="ls-sheet ls-info"><div class="ls-head">' + sunSvg(v.ratio) + '<div><h2>' + esc(v.away ? tr('away') : v.full ? tr('full') : tr('sun')) + '</h2><p class="num">' + (v.away ? esc(tr('back')) + ' ' + fmtLeft(v.left) : v.points + '/' + v.goal) + '</p></div></div>' +
             '<div class="ls-track big" style="--ls-fill:' + v.ratio.toFixed(3) + '"><i class="ls-fill"></i></div>' + '<p class="ls-note ls-reset num">' + esc(tr('resetAt')) + ' ' + fmtHM(msToMidnight(Date.now())) + '.</p>' + partsHtml(v) + scaleOr() +
             '<h3>' + esc(tr('how')) + '</h3><p class="ls-note">' + esc(tr('howTx')) + '</p><ul class="ls-parts how">' + how + '</ul>' +
+            (v.away ? recallBlock(v) : '') +
             '<h3>' + esc(tr('finds')) + '</h3>' + finds + '</div>', { cls: 'ls-ov' });
+    }
+    /* Oct 17: the "Call Misty back" button under the countdown, with what it means for her find */
+    function recallBlock(v) {
+        const p = recallPlan(v.away, Date.now());
+        if (!p) return '';
+        return '<p class="ls-note ls-recall-note">' + esc(tr(p.keep ? 'recallKeep' : 'recallEmpty')) + '</p>' +
+            '<button type="button" class="ls-cta ls-recall-btn" data-ls="recall">' + esc(tr('callBack')) + '</button>';
+    }
+    function recallSheet(p) {
+        if (!R() || !R().sheet) return false;
+        const mins = Math.max(1, Math.floor(p.out / 60000)) + ' min';
+        const tx = L() === 1 ? tr('recallLose') + ' ' + mins + ' ' + tr('recallLose2') : L() === 2 ? tr('recallLose') + ' ' + mins + tr('recallLose2') : tr('recallLose') + ' ' + mins + '. ' + tr('recallLose2');
+        R().sheet('<div class="ls-sheet ls-recall-sheet"><h2>' + esc(tr('recallQ')) + '</h2><p class="ls-note">' + esc(tx) + '</p>' +
+            '<button type="button" class="ls-cta" data-ls="recall-yes">' + esc(tr('yesBack')) + '</button>' +
+            '<button type="button" class="ls-cta ls-ghost" data-ls="close">' + esc(tr('letGo')) + '</button></div>', { cls: 'ls-ov' });
+        return true;
     }
 
     /* ---------- flow ---------- */
@@ -400,9 +457,78 @@
         render();
         returnSheet(trip);
     }
+    /* Oct 17: call Misty home early. Returns { ok, why }. force skips the "no find" question. */
+    function recall(opts) {
+        const force = !!(opts && opts.force);
+        const v = live(), now = Date.now();
+        if (!v.away) return { ok: false, why: 'home' };
+        const g = garden();
+        const key = Object.keys(g.trips).find(k => g.trips[k] === v.away) || Object.keys(g.trips).find(k => g.trips[k] && +g.trips[k].start === +v.away.start);
+        const p = recallPlan(v.away, now);
+        if (!key || !p) return { ok: false, why: 'home' };
+        if (p.loses && !force) { recallSheet(p); return { ok: false, why: 'confirm', plan: p }; }
+        const r = recallTrip(g.trips[key], now, key);
+        g.trips[key] = r.trip;
+        for (const f of r.finds) if (!g.items.some(i => i.day === key && !!i.bonus === !!f.bonus)) g.items.push(Object.assign({ ts: now }, f));
+        save();
+        flyHome();
+        render();
+        try { W.dispatchEvent(new CustomEvent('lowi:recall', { detail: { source: 'trip', keep: r.keep, finds: r.finds.length } })); } catch (e) {}
+        try { if (W.LowiPraise && LowiPraise.say) LowiPraise.say(tr(r.finds.length ? 'coming' : 'comingEmpty')); } catch (e) {}
+        if (r.finds.length) setTimeout(() => { try { returnSheet(r.trip); } catch (e) {} }, reduced() ? 300 : 1800);
+        return { ok: true, keep: r.keep, finds: r.finds.length };
+    }
+    /* she was flying around Home on the trip: glide her from where she is back into her cell, then normal control */
+    function flyHome() {
+        const WH = W.LowiWorldHome, st = WH && WH.state;
+        if (!st || !st.adv || !st.pad) return;
+        const A = st.adv, PD = st.pad, wasOut = !!(A.away && A.wand && A.wand.visible);
+        A.away = false; A.chk = 0;
+        if (PD.mode) { try { if (W.LowiPad && LowiPad.mode) LowiPad.mode(''); } catch (e) {} return; }
+        if (wasOut && !reduced()) { PD.mode = 'home'; PD.blend = 1; PD.idle = 0; PD.vx = PD.vy = 0; }
+    }
+    /* one "call Misty back" for every way she can be out on her own: today's sun trip, the Adventure tour, and whatever
+       registers later (LowiRecall.register(id, { active, loses, call })). */
+    const sources = {};
+    const Recall = {
+        register(id, src) { if (id && src && typeof src.active === 'function' && typeof src.call === 'function') sources[id] = src; return Recall; },
+        list() { return Object.keys(sources).filter(id => { try { return !!sources[id].active(); } catch (e) { return false; } }); },
+        active() { return Recall.list().length > 0; },
+        loses() { return Recall.list().some(id => { try { return !!(sources[id].loses && sources[id].loses()); } catch (e) { return false; } }); },
+        call(opts) {
+            const ids = Recall.list();
+            if (!ids.length) return { ok: false, why: 'home' };
+            const force = !!(opts && opts.force);
+            if (!force && Recall.loses()) {
+                const t = ids.indexOf('trip') >= 0 ? recall({}) : null;
+                if (t && t.why === 'confirm') return t;
+            }
+            const out = { ok: false, done: [] };
+            /* the trip first: it hands Misty back to the controller, then the Adventure flies her home */
+            ids.sort((a, b) => (a === 'trip' ? -1 : b === 'trip' ? 1 : 0)).forEach(id => {
+                try { const r = sources[id].call({ force: true }); if (r === undefined || r === true || (r && r.ok)) { out.ok = true; out.done.push(id); } } catch (e) {}
+            });
+            return out;
+        }
+    };
+    Recall.register('trip', { active: () => !!live().away, loses: () => { const p = recallPlan(live().away, Date.now()); return !!(p && p.loses); }, call: o => recall(o) });
+    Recall.register('adventure', { active: () => !!(W.LowiAdventure && W.LowiAdventure.on), loses: () => false, call: () => { W.LowiAdventure.stop('recall'); return true; } });
+    if (!W.LowiRecall) W.LowiRecall = Recall;
+
+    D.addEventListener('keydown', e => {
+        if ((e.key === 'Enter' || e.key === ' ') && e.target && e.target.closest && e.target.closest('#spBubble > .ls-recall')) { e.preventDefault(); Recall.call(); }
+    }, true);
     D.addEventListener('click', e => {
         const c = e.target.closest && e.target.closest('[data-ls]');
         if (c && c.dataset.ls === 'close') { const ov = c.closest('.r2-ov'); if (ov && R()) R().close(ov); return; }
+        if (c && (c.dataset.ls === 'recall' || c.dataset.ls === 'recall-yes')) {
+            e.preventDefault();
+            const ov = c.closest('.r2-ov'); if (ov && R()) R().close(ov);
+            setTimeout(() => { try { Recall.call({ force: c.dataset.ls === 'recall-yes' }); } catch (x) {} }, 60);
+            return;
+        }
+        const rc = e.target.closest && e.target.closest('#spBubble > .ls-recall');
+        if (rc) { e.preventDefault(); e.stopImmediatePropagation(); Recall.call(); return; }
         if (c && c.dataset.ls === 'info') { e.preventDefault(); infoSheet(); return; }
         const bub = e.target.closest && e.target.closest('#spBubble');
         if (bub) {
@@ -436,6 +562,6 @@
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 
     const tendedNow = () => { const v = live(); return tended(v.trip, Date.now()); };
-    W.LowiSun = Object.assign({}, core, { tendedNow, render, live, energyNow, info: infoSheet, collect, depart });
+    W.LowiSun = Object.assign({}, core, { tendedNow, render, live, energyNow, info: infoSheet, collect, depart, recall, recallSheet });
     if (typeof module !== 'undefined' && module.exports) module.exports = W.LowiSun;
 })();

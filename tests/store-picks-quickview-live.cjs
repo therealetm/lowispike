@@ -92,6 +92,7 @@ async function run(name, launcher, ctxOpts, base) {
     await page.fill('.stp-q', 'Bio-Linsen rot');
     await page.waitForTimeout(700);
     const lent = page.locator('.stp-ov button.stp-item', { hasText: 'Bio-Linsen rot' }).first();
+    await lent.waitFor({ state: 'attached', timeout: 30000 }).catch(() => {});
     ok(await lent.count(), 'Bio-Linsen rot found by search (left-out list included if needed)');
     if (ctxOpts.hasTouch) await lent.tap(); else await lent.click();
     await page.waitForSelector('.stp-qv.in .stp-qv-ph img', { timeout: 60000 });
@@ -138,7 +139,7 @@ async function run(name, launcher, ctxOpts, base) {
     let srv = null, base = process.env.BASE;
     if (!base) { srv = await serve(); base = 'http://127.0.0.1:' + srv.address().port + '/'; }
     try {
-        await run('chromium-390x844', pw.chromium, { viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true }, base);
+        if (process.env.ONLY !== 'webkit') await run('chromium-390x844', pw.chromium, { viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true }, base);
         await run('webkit-iphone13', pw.webkit, pw.devices['iPhone 13'], base);
         console.log('PASS');
     } catch (e) { console.error('FAIL', e.message); process.exitCode = 1; } finally { if (srv) srv.close(); }

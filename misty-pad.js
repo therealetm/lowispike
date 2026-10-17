@@ -1,8 +1,8 @@
 /* LOWiSPIKE bubble controller (Oct 16, E-man: a little bubble controller to move Misty around the world; double-tap it
    and Misty flies through the world by herself, so you can watch her adventure while falling asleep, or steer her yourself).
    One small round liquid-glass thumbpad on Home, centred just above Today. Drag it: Misty leaves her cell and you steer her.
-   Oct 17 (E-man, misty-turn.js): hold it still in the middle = Misty flies straight ahead into the world; tap once, then hold =
-   she backs up; while holding, slide it to steer (left/right turns her, up/down climbs/dives). THREE quick taps = autopilot
+   Oct 17 (E-man, misty-turn.js): hold it still in the middle = Misty flies straight ahead into the world; double tap = she backs
+   up for a moment; tap once, then hold = she keeps backing up; while holding, slide it to steer (left/right turns her, up/down climbs/dives). THREE quick taps = autopilot
    (was a double-tap; two taps now start the back hold). Triple-tap it: autopilot, she flies her own adventure (adventure.js: slow aquarium tour with finds; a slow, sleepy drift
    when her energy is low). Touch it again: you steer again. Let go and leave her: after 20 s she floats back into her cell. Tapping her empty cell calls her home too.
    On the controller: the ring around it is Misty's energy (same energy as her face and her trips), the centre shows the mode.
@@ -24,7 +24,7 @@
         auto: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12c-2.2-3-6.6-3-6.6 0s4.4 3 6.6 0 6.6-3 6.6 0-4.4 3-6.6 0z"/><circle cx="18.6" cy="12" r="1.3" class="mp-dot"/></svg>',
         sleepy: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9h5l-5 6h5M13 6h4l-4 4.5h4"/></svg>'
     };
-    const st = { el: null, knob: null, chip: null, mode: '', id: null, x0: 0, y0: 0, moved: false, lastUp: 0, taps: 0, holdT: 0, thr: 0, downT: 0, ignoreDbl: 0, chipT: 0, enT: 0, tier: '', value: 0, R: 22, hinted: false };
+    const st = { el: null, knob: null, chip: null, mode: '', id: null, x0: 0, y0: 0, moved: false, lastUp: 0, taps: 0, holdT: 0, backT: 0, thr: 0, downT: 0, ignoreDbl: 0, chipT: 0, enT: 0, tier: '', value: 0, R: 22, hinted: false };
     const wh = () => W.LowiWorldHome && W.LowiWorldHome.pad ? W.LowiWorldHome : null;
     function send(cmd) { const w = wh(); if (!w) return null; try { return w.pad(cmd); } catch (e) { return null; } }
     function low() { return st.tier === 'weak' || st.tier === 'tired'; }
@@ -110,6 +110,12 @@
         try { navigator.vibrate && navigator.vibrate(10); } catch (e) { }
         chip(v > 0 ? T('Forward', 'Vorw\u00e4rts', 'Adelante') : T('Backwards', 'R\u00fcckw\u00e4rts', 'Atr\u00e1s'), 1200);
     }
+    /* misty-turn: double tap = a short reverse (BACK_MS); any new touch on the controller ends it */
+    function backBurst() {
+        const ms = (W.LowiMistyTurn && W.LowiMistyTurn.core ? W.LowiMistyTurn.core.K.BACK_MS : 1200);
+        startHold(-1); clearTimeout(st.backT);
+        st.backT = setTimeout(() => { if (st.id == null && st.thr < 0) thrust(0); }, ms);
+    }
     function hintDone() { try { localStorage.setItem(HINT_KEY, '1'); } catch (e) { } }
     function wire(b) {
         /* the world (look-around drag, pinch, taps on places) and the tab pager never see a touch that starts here */
@@ -124,7 +130,7 @@
             const t0 = performance.now(); st.downT = t0;
             if (st.mode === 'auto') { st.ignoreDbl = t0 + 450; userMode('drive'); }
             /* misty-turn: held still in the middle = straight ahead; right after a tap = back */
-            clearTimeout(st.holdT);
+            clearTimeout(st.holdT); clearTimeout(st.backT); if (st.thr < 0 && st.id === e.pointerId) thrust(0);
             const dir = t0 < st.ignoreDbl ? 1 : (W.LowiMistyTurn && W.LowiMistyTurn.core ? W.LowiMistyTurn.core.holdDir(st.lastUp, t0) : 1), id = e.pointerId;
             st.holdT = setTimeout(() => { if (st.id === id && !st.moved && !st.thr) startHold(dir); }, (W.LowiMistyTurn && W.LowiMistyTurn.core ? W.LowiMistyTurn.core.K.HOLD_MS : 280));
         });
@@ -151,8 +157,9 @@
             const n = st.taps;
             setTimeout(() => {
                 if (st.lastUp !== now || st.id != null) return;
-                if (n === 1 && !st.mode) chip(T('Drag to fly \u00b7 hold: forward \u00b7 3 taps: autopilot', 'Ziehen zum Fliegen \u00b7 halten: vorw\u00e4rts \u00b7 3\u00d7 tippen: Autopilot', 'Arrastra para volar \u00b7 mant\u00e9n: adelante \u00b7 3 toques: autom\u00e1tico'), 2600);
-                else if (n === 2) chip(T('Tap, then hold: backwards \u00b7 3 taps: autopilot', 'Tippen, dann halten: r\u00fcckw\u00e4rts \u00b7 3\u00d7 tippen: Autopilot', 'Toca y mant\u00e9n: atr\u00e1s \u00b7 3 toques: autom\u00e1tico'), 2600);
+                if (n === 1 && !st.mode) chip(T('Drag to fly \u00b7 hold: forward \u00b7 2 taps: back \u00b7 3 taps: autopilot', 'Ziehen zum Fliegen \u00b7 halten: vorw\u00e4rts \u00b7 2\u00d7: zur\u00fcck \u00b7 3\u00d7: Autopilot', 'Arrastra para volar \u00b7 mant\u00e9n: adelante \u00b7 2 toques: atr\u00e1s \u00b7 3: autom\u00e1tico'), 2600);
+                /* misty-turn: a plain double tap = she backs up for a moment (tap, then hold = keep backing up) */
+                else if (n === 2) backBurst();
             }, 360);
         };
         b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up);

@@ -25,7 +25,8 @@
         STEER_YAW: 1.9,   /* rad/s of turning at full controller sideways while you hold forward / back */
         CHASE: 1.6,       /* how fast the camera swings in behind her while she flies forward */
         CUE: 1.4,         /* the facing dots stay this long after a turn */
-        HOLD_MS: 280,     /* controller: held still this long = forward (or back, right after a tap) */
+        HOLD_MS: 280,
+        BACK_MS: 1200,    /* controller: a plain double tap backs her up this long */     /* controller: held still this long = forward (or back, right after a tap) */
         TAP_GAP: 340,     /* controller: taps closer than this chain (2 = the back hold, 3 = autopilot) */
         DRAWN_MS: 1200   /* she was drawn this recently (frames can be slow on a busy phone) */
     };

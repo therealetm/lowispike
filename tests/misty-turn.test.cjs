@@ -67,6 +67,9 @@ test('controller gestures: hold = forward, tap then hold = back, three quick tap
     const pad = read('misty-pad.js');
     assert.ok(/if \(st\.taps >= 3\) \{[^}]*userMode\(st\.mode === 'auto' \? 'drive' : 'auto'\)/.test(pad), 'three taps toggle autopilot');
     assert.ok(!/if \(now - st\.lastUp < 340\) \{ st\.lastUp = 0; userMode/.test(pad), 'two taps no longer start autopilot');
+    assert.ok(/else if \(n === 2\) backBurst\(\);/.test(pad), 'a plain double tap = reverse');
+    assert.ok(/function backBurst\(\) \{[\s\S]*?startHold\(-1\)[\s\S]*?thrust\(0\)/.test(pad), 'the reverse is short and stops by itself');
+    assert.equal(T.K.BACK_MS > 0 && T.K.BACK_MS <= 2000, true);
     assert.ok(/startHold\(dir\)/.test(pad) && /holdDir\(st\.lastUp, t0\)/.test(pad));
     assert.ok(/const held = !!st\.thr; if \(held\) thrust\(0\);/.test(pad), 'letting go (or a cancel) always stops her');
     assert.ok(/lostpointercapture/.test(pad) && /visibilitychange/.test(pad));

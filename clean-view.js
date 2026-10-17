@@ -97,7 +97,9 @@
     W.addEventListener('lowi:pad', e => { const m = e.detail && e.detail.mode; if (typeof m === 'string' && onHome()) feed({ type: 'mode', mode: m }); else soon(); poll(); });
     W.addEventListener('lowi:adventure', soon);
     W.addEventListener('lowi:autopilot', e => { const on = e.detail && e.detail.on; if (on && onHome()) feed({ type: 'mode', mode: 'auto' }); else soon(); });
-    try { new MutationObserver(() => { hookPad(); if (st.clean && !onHome()) feed({ type: 'leave', mode: padMode() || '' }); }).observe(H, { attributes: true, attributeFilter: ['class'] }); } catch (e) { }
+    /* inside a cell world (html.wh-away) Home's menus are never shown; flying out of it, the ones you never brought back stay away */
+    let away = H.classList.contains('wh-away');
+    try { new MutationObserver(() => { hookPad(); if (st.clean && !onHome()) feed({ type: 'leave', mode: padMode() || '' }); const aw = H.classList.contains('wh-away'); if (aw !== away) { away = aw; if (!aw && onHome()) feed({ type: 'world-left' }); } }).observe(H, { attributes: true, attributeFilter: ['class'] }); } catch (e) { }
     D.addEventListener('visibilitychange', () => { if (!D.hidden) check(); });
 
     /* ---------- the controller: steering hides, every touch gets a look at the mode ---------- */
@@ -116,7 +118,7 @@
     function cancelFor(w) {                  /* end the world's own gesture so its tap / long press never fires */
         try { const ev = new PointerEvent('pointercancel', { pointerId: w.id, pointerType: w.type, isPrimary: true, bubbles: true, cancelable: false, clientX: w.x, clientY: w.y }); ev.lwClean = true; (w.target.isConnected ? w.target : D).dispatchEvent(ev); } catch (e) { }
     }
-    function reveal() { feed({ type: 'tap' }); }
+    function reveal() { feed({ type: 'tap', inWorld: H.classList.contains('wh-away') }); }
     const padHeld = () => { try { return !!(W.LowiPad && W.LowiPad.held && W.LowiPad.held()); } catch (e) { return false; } };
     function worldTarget(t) {
         if (!t || !t.closest) return false;

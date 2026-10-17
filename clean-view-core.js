@@ -7,7 +7,13 @@
      move on the controller hides it again.
    - Oct 17 (E-man: "the menu comes back by itself about a second after leaving a world"): nothing comes back by itself
      either. She leaving a world, floating home, stopping, the autopilot ending or a world warp keep the view clean; only
-     your tap (or a key) brings the menu back. Switching to another tab is the one exception (nothing hidden on another page). */
+     your tap (or a key) brings the menu back. Switching to another tab is the one exception (nothing hidden on another page).
+   - Oct 17 (E-man: "when Misty gets out of the world ... on autopilot, all of a sudden the whole interface appears, which is not
+     supposed to"): inside a cell world a tap can only bring back what a world shows (the controller and the World map stick;
+     Home's menus stay away there, WORLD_HIDE). That tap used to count as "menus back" all the same, so the moment she flew
+     out of the world Home's whole interface jumped in although you never asked for it there. Now a reveal tap inside a world
+     is remembered as a world tap: leaving the world keeps Home's menus hidden (the controller you brought back stays), and
+     the next tap on Home brings them back as always. */
 (function (root) {
     'use strict';
     /* faded in both views (Home and inside a world). The controller (#whPad + its chip) is extra in autopilot. */
@@ -33,8 +39,8 @@
     const KEEP = ['#spBubble', '#bw3Stage', '.bw3-canvas', '#rpPal', '.rp-body', '.rp-say', '#mhNudge'];
 
     const FLY = { auto: 1, drive: 1 };
-    function init() { return { mode: '', clean: false, view: '' }; }
-    /* ev: {type:'mode', mode} | {type:'steer'} | {type:'tap'} | {type:'leave'}
+    function init() { return { mode: '', clean: false, view: '', worldTap: false }; }
+    /* ev: {type:'mode', mode} | {type:'steer'} | {type:'tap', inWorld} | {type:'leave'} | {type:'world-left'}
        returns { st, act: 'hide' | 'show' | 'view' | null } (view = still hidden, the controller's visibility changed) */
     function step(st, ev) {
         const s = Object.assign({}, st || init());
@@ -43,7 +49,7 @@
         if (ev.type === 'mode') {
             const prev = s.mode, m = ev.mode || '';
             s.mode = m;
-            if (m === 'auto' && prev !== 'auto') { act = s.clean ? (s.view !== 'auto' ? 'view' : null) : 'hide'; s.clean = true; s.view = 'auto'; }
+            if (m === 'auto' && prev !== 'auto') { act = s.clean ? (s.view !== 'auto' ? 'view' : null) : 'hide'; s.clean = true; s.view = 'auto'; s.worldTap = false; }
             else if (m === 'drive') { if (s.clean && s.view !== 'drive') { s.view = 'drive'; act = 'view'; } }
             /* she stopped, went home or left a world: the view stays as it is until you tap (no automatic return) */
             else if (!FLY[m]) { act = null; }
@@ -51,11 +57,18 @@
             /* a real steering move on the controller: a drag, a hold or an arrow key */
             if (s.mode !== 'auto') s.mode = 'drive';
             if (!s.clean) act = 'hide'; else if (s.view !== 'drive') act = 'view';
-            s.clean = true; s.view = 'drive';
+            s.clean = true; s.view = 'drive'; s.worldTap = false;
         } else if (ev.type === 'tap' || ev.type === 'leave') {   /* leave = another tab, never a world transition */
             if (s.clean) act = 'show';
+            /* a reveal tap inside a cell world only brought back what a world shows (Home's menus stay away there) */
+            if (ev.type === 'tap') s.worldTap = !!(ev.inWorld && (s.clean || s.worldTap)); else s.worldTap = false;
             s.clean = false; s.view = '';
             if (ev.type === 'leave') s.mode = ev.mode || '';   /* where she is now: coming back to Home never fades by itself */
+        } else if (ev.type === 'world-left') {
+            /* she flew out of a cell world: Home's menus you never brought back there stay hidden (the controller you did bring
+               back stays usable); with no world tap nothing changes, whatever was shown stays shown */
+            if (!s.clean && s.worldTap) { s.clean = true; s.view = 'drive'; act = 'hide'; }
+            s.worldTap = false;
         }
         return { st: s, act };
     }

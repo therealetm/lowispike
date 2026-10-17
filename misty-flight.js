@@ -260,7 +260,8 @@
     function vecs(THREE) {
         if (V) return V;
         V = { rt: new THREE.Vector3(), up: new THREE.Vector3(), fw: new THREE.Vector3(), c: new THREE.Vector3(), a: new THREE.Vector3(), b: new THREE.Vector3(),
-            want: new THREE.Vector3(), m4: new THREE.Matrix4(), q: new THREE.Vector3(), h: new THREE.Vector3(), h2: new THREE.Vector3(), wu: new THREE.Vector3(0, 1, 0), ws: new THREE.Vector3() };
+            want: new THREE.Vector3(), m4: new THREE.Matrix4(), q: new THREE.Vector3(), h: new THREE.Vector3(), h2: new THREE.Vector3(), wu: new THREE.Vector3(0, 1, 0), ws: new THREE.Vector3(), e: new THREE.Vector3() };
+        S.outHd = new THREE.Vector3();
         S.p = new THREE.Vector3(); S.v = new THREE.Vector3(); S.wobDir = new THREE.Vector3(0, 1, 0); S.pushDir = new THREE.Vector3(0, 1, 0);
         S.warpFrom = new THREE.Vector3(); S.warpTo = new THREE.Vector3(); S.pullRel = new THREE.Vector3(); S.pullC = new THREE.Vector3(); S.fallTo = new THREE.Vector3(); S.outPos = new THREE.Vector3(); S.inC = new THREE.Vector3(); S.cell0 = { x: 0, y: 0 };
         return V;
@@ -642,7 +643,10 @@
                     if (S.lostT <= 0) S.lostT = farOff ? K.LOST + Math.random() * 3 : 1.2 + Math.random() * 1.6;
                     S.lostT -= ctx.dt;
                     if (S.lostT <= 0.01) { S.lostT = 0; S.driftI++; if (farOff) { note('lost, back'); try { if (W.LowiMistyHints) W.LowiMistyHints.lost(); } catch (e) { } } }
-                    V.want.set(0, 0, 0).addScaledVector(V.rt, Math.cos(S.t * 1.7) * 0.1).addScaledVector(V.up, Math.sin(S.t * 2.1) * 0.08);
+                    /* Oct 17 (E-man: "busy like a fish in an aquarium the whole time"): lost out here she never just hovers and
+                       stares; she noses about in slow little loops, still swimming, then sets off again */
+                    const w = S.t * 1.25;
+                    V.want.set(0, 0, 0).addScaledVector(V.rt, Math.cos(w) * 0.42).addScaledVector(V.up, Math.sin(w) * 0.3).addScaledVector(V.fw, Math.sin(w * 0.5) * 0.12);
                     return;
                 }
                 V.want.copy(V.a).multiplyScalar(Math.min(1, d / 1.5) * 0.8 / d);
@@ -693,7 +697,7 @@
         /* misty-face (Oct 17, E-man: "Misty is basically just staring you down"): her round body turns in 3D, her face goes
            where she looks (along her path, her heading when you steer, glances when idle); you see her back when she flies away */
         const MFc = W.LowiMistyFace;
-        if (MFc && MFc.draw) { try { MFc.draw({ a: ctx.a, wand, p: S.p, hs: S.hs, mode: ctx.PD && ctx.PD.mode, hd: S.hd, st: S.st, reduced: ctx.reduced }); } catch (e) { } }
+        if (MFc && MFc.draw) { try { MFc.draw({ a: ctx.a, wand, p: S.p, hs: S.hs, mode: ctx.PD && ctx.PD.mode, hd: S.hd, st: S.st, path: S.st === 'out' && S.outHd ? S.outHd : null, reduced: ctx.reduced }); } catch (e) { } }
     }
     /* the DOM parts of her cell (wall lines, name) follow the 3D cell when the camera leaves it */
     function bubbleFollow(a) {
@@ -1293,6 +1297,11 @@
         S.oCur = { x: S.oFrom.x, y: S.oFrom.y };
         V.b.subVectors(S.p, a.camera.position); S.oD0 = Math.max(0.6, -V.b.dot(V.fw)); S.oDcur = S.oD0;
         S.oPh = 'A'; S.oT0 = performance.now(); S.oTB = -1; S.oGame = 0; S.oWhy = why; S.oKs = S.ks = K.MIN_K; S.oPrev = (S.oPrev || S.p.clone()).copy(S.p);
+        /* Oct 17 (E-man: out of a world on autopilot "for like three seconds she just stares at us"): on the way out the camera
+           pulls back and carries her along, so in the world she moves straight at you; misty-face read that as her flying at you
+           and turned her face to the lens for the whole pull-back. Her own heading out is the way she left (through the wall she
+           pressed), across the screen, so that is where she looks (place() hands it to misty-face while S.st === 'out'). */
+        acrossScreen(S.outHd, V.a.subVectors(S.p, S.outPos));
         S.st = 'out'; S.fallT = -1; S.rw = null; S.huntFly = false;
         /* no second Misty: her cell stays empty while she is out (wh-padfly needs a pad mode) */
         if (!PD.mode) { padMode(ctx, 'drive'); S.idle = K.IDLE_HOME - 6; } else if (PD.mode === 'drive') S.idle = Math.min(S.idle, K.HANDBACK);
@@ -1337,7 +1346,7 @@
         if (ctx.wand && ctx.wand.onBeforeRender !== outDraw) { ctx.wand.frustumCulled = false; ctx.wand.onBeforeRender = outDraw; }
         S.oGame = (S.oGame || 0) + dt;
         if (S.oPh === 'A' && cur === 'hub') { S.oPh = 'B'; S.oTB = -1; S.oA = { x: S.oCur.x, y: S.oCur.y }; S.oDA = S.oDcur; S.oKs = S.ks; note('out B'); }
-        if (S.oPh === 'B' && !busy && !r.fly) { outLand(ctx); return; }
+        if (S.oPh === 'B' && !busy && !r.fly) { outLand(ctx, k); return; }
         /* the warp was cancelled before the place went: she is still in it */
         if (!busy && cur !== 'hub') { dropDraw(ctx.wand); S.st = 'inside'; S.fade = 1; note('out cancelled'); return; }
         if (S.oGame > 12) { dropDraw(ctx.wand); end(ctx, 'out-timeout'); return; }
@@ -1347,17 +1356,40 @@
         place(ctx, k, ctx.reduced, 1); /* opacity, tilt, tint; outDraw sets where and how big */
         trail(ctx, k, 0.7);
     }
-    function outLand(ctx) {
+    function outLand(ctx, k) {
         const a = ctx.a, r = ctx.r; basis(a);
         outDraw.call(ctx.wand); dropDraw(ctx.wand);
-        /* she stays out in the universe, a little way from the world she left, drifting gently away from it */
-        V.a.subVectors(S.p, S.outPos); if (V.a.lengthSq() < 1e-6) V.a.copy(V.fw); V.a.normalize();
+        /* she stays out in the universe, a little way from the world she left, drifting gently away from it (across the screen:
+           "away from the world" points at the camera out here, and drifting at you reads as staring at you) */
+        acrossScreen(V.a, V.e.subVectors(S.p, S.outPos));
         S.v.copy(V.a).multiplyScalar(0.35);
         S.st = 'free'; S.d0 = r.dist; S.dHome = r.homeRest || r.homeDist || 3.2; S.dolly = 0; S.dollyOut = false;
         S.wp = S.wpNext >= 0 ? S.wpNext : -1; S.wpNext = -1; S.wpWait = 0; S.tourGo = null; S.joined = 0; S.flew = null; S.entered = 0;
         S.fade = 1; S.emerge = 0; S.outT = 0; S.keepAuto = false; S.wob = 0; S.wobT = 9;
         const cs = toScreen(a, V.c, {}); S.cell0.x = cs.x; S.cell0.y = cs.y;
+        /* Oct 17 (E-man: "Misty should be busy like a fish in an aquarium the whole time"): on autopilot the tour goes on at once.
+           Her next stop is planned now and she is already flying for it at cruising speed: no slow drift, no pause, no stare. */
+        if (ctx.PD && ctx.PD.mode === 'auto') onward(ctx, k);
         hold(true); classes(true, false, false); note('out landed ' + S.oWhy);
+    }
+    /* a direction made to read across the screen: what points at or away from the camera is mostly taken out */
+    function acrossScreen(out, d) {
+        out.copy(d); if (out.lengthSq() < 1e-8) out.copy(V.rt);
+        out.addScaledVector(V.fw, -0.8 * out.dot(V.fw));
+        if (out.lengthSq() < 1e-6) out.copy(V.rt);
+        return out.normalize();
+    }
+    /* autopilot right after a world: plan where the tour goes next and head for it now */
+    function onward(ctx, k) {
+        const a = ctx.a, regs = a.regions || [];
+        if (regs.length && S.wp < 0) { let bi = 0, bd = 1e9; regs.forEach((g, i) => { const d = S.p.distanceTo(g.pos); if (d < bd) { bd = d; bi = i; } }); S.wp = bi; }
+        let to = null;
+        if (ADV() && !ctx.reduced && regs.length) { S.driftFor = S.wp; S.drift = driftPts(ctx); S.driftI = 0; S.lostT = 0; to = S.drift[0]; }
+        else if (regs.length) to = regs[S.wp % regs.length].pos;
+        if (to) acrossScreen(V.a, V.e.subVectors(to, S.p));
+        const cruise = speed(k, 'out') * (k < 0.4 ? 0.5 : 1) * (ADV() ? K.ADV_SPEED : 1) * 0.8;
+        S.v.copy(V.a).multiplyScalar(cruise);
+        S.outHd.copy(V.a);
     }
     W.addEventListener('lowi:world-warp', e => {
         const d = e && e.detail; if (!d) return;

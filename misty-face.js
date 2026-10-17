@@ -26,6 +26,7 @@
         LOOK_MAX: 2.2,
         MOVE_ON: 0.45,    /* she is "flying" above this speed, in body heights per second ... */
         MOVE_OFF: 0.25,   /* ... and "still" again below this (no flicker at the threshold) */
+        AUTO_MOVE: 0.4,   /* on autopilot a slow drift already counts as flying (thresholds x this: 0.18 on, 0.1 off) */
         VEL: 5,           /* smoothing of her measured velocity (1/s) */
         HEAD_MS: 1500,    /* after you turned / held her, she keeps facing her heading this long */
         FACE_K: 0.66,     /* at her edge the middle of her face sits this far out (of her radius): eyes stay on her body */
@@ -138,6 +139,10 @@
         return false;
     }
     /* moving or not, with a gap between the two thresholds; speed in world units/s, hs = her height in world units */
+    /* Oct 17 (E-man: "busy like a fish in an aquarium the whole time"): on autopilot she drifts slowly (a sleepy, low-energy
+       adventure is slower still), and that slow drift is still her flying somewhere: she looks along it instead of standing
+       still and glancing at you. The speed that counts as flying is lower on autopilot (this scales her size in movingNow). */
+    function slowFlight(mode) { return mode === 'auto' ? K.AUTO_MOVE : 1; }
     function movingNow(was, speed, hs) {
         const h = Math.max(1e-3, +hs || 1), q = (+speed || 0) / h;
         return was ? q > K.MOVE_OFF : q > K.MOVE_ON;
@@ -165,7 +170,7 @@
         const face = '<svg xmlns="http://www.w3.org/2000/svg" width="' + C.w * px + '" height="' + C.h * px + '" viewBox="' + C.x + ' ' + C.y + ' ' + C.w + ' ' + C.h + '">' + inner + '</svg>';
         return { body: svg.slice(0, start) + svg.slice(end), face, fx, fy, rx, ry };
     }
-    const core = { K, dot, cross, unit, rot, turnToward, faceFrame, faceVis, pickDir, glance, movingNow, splitArt, sideAxis, peekDir, peekStep };
+    const core = { K, dot, cross, unit, rot, turnToward, faceFrame, faceVis, pickDir, glance, movingNow, slowFlight, splitArt, sideAxis, peekDir, peekStep };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!D || !W || W.LowiMistyFace) return;
 
@@ -277,7 +282,12 @@
             if (!jump && dt > 0) { const v = scale(dv, 1 / dt), q = 1 - Math.exp(-K.VEL * dt); S.vel = add(S.vel, scale(add(v, scale(S.vel, -1)), q)); }
         } else S.vel = [0, 0, 0];
         S.pp = p;
-        const sp = len(S.vel); S.moving = movingNow(S.moving, sp, hs);
+        /* Oct 17 (E-man, out of a world on autopilot: "for like three seconds she just stares at us"): while the camera carries her
+           (the flight out of a world) her measured motion is the camera's, straight at you; misty-flight hands over her own heading
+           (path) and that is the way she flies and looks. Her speed carries on along it, so nothing resets to you when she lands. */
+        const path = i.path && isFinite(i.path.x) ? unit([i.path.x, i.path.y, i.path.z]) : null;
+        if (path) S.vel = scale(path, hs * K.MOVE_ON * 1.6);
+        const sp = len(S.vel); S.moving = movingNow(S.moving, sp, hs * slowFlight(i.mode));
         const vdir = S.moving ? unit(S.vel) : null;
         const drive = i.mode === 'drive', MT = W.LowiMistyTurn;
         let th = 0, turning = false; try { th = MT && MT.thrust ? MT.thrust() : 0; turning = !!(MT && MT.turning && MT.turning()); } catch (e) { }

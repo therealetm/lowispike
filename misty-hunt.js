@@ -290,6 +290,6 @@
         const a = best.w.clone().project(cam), m = p.clone().project(cam);
         return { x: +(a.x - m.x).toFixed(3), y: +(a.y - m.y).toFixed(3), left: live.length, behind: a.z > 1, steerAgo: performance.now() - (H.steerAt || 0) };
     }
-    W.LowiMistyHunt = Object.assign({}, core, { frame, gate, entered, clear, tally, toward, state: () => ({ id: H.id, n: H.n, left: H.bits.filter(b => !b.gone).length, spots: H.bits.filter(b => !b.gone).map(b => { b.sp.getWorldPosition(b.w); return [+b.w.x.toFixed(2), +b.w.y.toFixed(2), +b.w.z.toFixed(2)]; }) }) });
+    W.LowiMistyHunt = Object.assign({}, core, { frame, gate, entered, clear, toward, tally, state: () => ({ id: H.id, n: H.n, left: H.bits.filter(b => !b.gone).length, spots: H.bits.filter(b => !b.gone).map(b => { b.sp.getWorldPosition(b.w); return [+b.w.x.toFixed(2), +b.w.y.toFixed(2), +b.w.z.toFixed(2)]; }) }) });
     setTimeout(() => pub(), 1500);
 })(typeof window !== 'undefined' ? window : globalThis);

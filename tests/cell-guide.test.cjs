@@ -119,7 +119,7 @@ test('wiring: hunt lines go to the guide first; the toast is only the fallback, 
     assert.ok(/if \(!STR\[key\]\) return;/.test(hunt), 'guide-only lines never become a toast');
     for (const k of ['sense', 'level', 'clean', 'full', 'found', 'warm', 'bounce', 'entered']) assert.ok(new RegExp("say\\('" + k + "'").test(hunt), k);
     assert.ok(!/(^|[^.\w])say\(tr\(/m.test(hunt), 'no pre-translated toast text left');
-    assert.ok(/toward,? state:|toward, state/.test(hunt) && /function toward\(\)/.test(hunt));
+    assert.ok(/toward,\s*(tally,\s*)?state:/.test(hunt) && /function toward\(\)/.test(hunt));
     assert.ok(/H\.t - H\.autoChk > 2/.test(hunt), 'autopilot check every 2 s, not per frame');
     assert.ok(/if \(steer && d < eatR\) eatBit/.test(hunt), 'hunt rule kept: she only eats while you steer');
     assert.ok(/#f3Board/.test(pals) && /\[data-guide-avoid\]/.test(pals) && /#tabbar/.test(pals) && /#whPad/.test(pals));

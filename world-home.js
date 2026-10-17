@@ -44,8 +44,11 @@
     function auraId() { let v = ''; try { v = localStorage.getItem(AKEY) || ''; } catch (e) { } return C.cleanAura(v, xpNow()); }
     function applyAura() {
         const a = C.aura(auraId());
-        H.style.setProperty('--wh-aura-a', a.a); H.style.setProperty('--wh-aura-b', a.b);
-        H.dataset.whAura = a.id;
+        /* Oct 18 game-perf: tick() calls this every 700 ms; a write with the same value still wakes every <html>/<body> observer,
+           so write only when the aura changes */
+        if (H.style.getPropertyValue('--wh-aura-a') !== a.a) H.style.setProperty('--wh-aura-a', a.a);
+        if (H.style.getPropertyValue('--wh-aura-b') !== a.b) H.style.setProperty('--wh-aura-b', a.b);
+        if (H.dataset.whAura !== a.id) H.dataset.whAura = a.id;
     }
 
     /* ---------- Home: wrap today's log into the sheet, build the HUD ---------- */
@@ -136,7 +139,7 @@
         const tile = D.querySelector('#lvDash .lv-water'), wc = hud.querySelector('.wh-water');
         if (tile && wc) {
             const f = parseFloat(tile.style.getPropertyValue('--lv-fill')) || 0;
-            wc.style.setProperty('--wh-fill', String(Math.max(0, Math.min(1, f))));
+            { const fv = String(Math.max(0, Math.min(1, f))); if (wc.style.getPropertyValue('--wh-fill') !== fv) wc.style.setProperty('--wh-fill', fv); }
             const lab = tile.getAttribute('aria-label') || '', m = lab.match(/(\d+)\s*\/\s*(\d+)/);
             /* Oct 17 (Emmanuel): the count says its unit, "0/6 cups", in the same n/goal form as Meals and Move */
             const small = wc.querySelector('small'), b = wc.querySelector('b');
@@ -146,7 +149,7 @@
             if (small.textContent !== sm) small.textContent = sm;
             if (num.textContent !== bv) num.textContent = bv;
             if (unit.textContent !== uv) unit.textContent = uv;
-            wc.setAttribute('aria-label', (lab || sm) + '');
+            { const al = (lab || sm) + ''; if (wc.getAttribute('aria-label') !== al) wc.setAttribute('aria-label', al); }
         }
         const tb = hud.querySelector('.wh-todaybtn b'), ts = hud.querySelector('.wh-todaybtn small');
         const head = D.querySelector('#whToday .sp-status b'), tt = T('Today', 'Heute', 'Hoy');
@@ -222,7 +225,7 @@
         H.classList.toggle('wh-x-on', on);
         H.classList.toggle('wh-r2-on', !!r);
         if (r) glassSheet(r);
-        x.hidden = !on;
+        if (x.hidden !== !on) x.hidden = !on; /* Oct 18 game-perf: runs every 700 ms, write only on change */
     }
 
     /* ---------- zoom: whole world <-> back in ---------- */

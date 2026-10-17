@@ -152,6 +152,7 @@
     /* ---------- Misty's nudges on Home ---------- */
     const NUDGE_GAP = 90e3, NUDGE_SHOW = 11e3, NUDGE_DAY_MAX = 4, SETTLE = 3500;
     let nudge = null, nudgeEl = null, hideT = 0, homeSince = 0, lastShown = 0;
+    const NUDGE_RETRY = 10 * 60e3, NUDGE_SHOWS_MAX = 8, retry = {}, shows = [];
     function seen() { try { const s = JSON.parse(localStorage.getItem(NUDGE_KEY) || '{}'); return s && typeof s === 'object' ? s : {}; } catch (e) { return {}; } }
     function markSeen(key) {
         const s = seen(), now = Date.now(); s[key] = now;
@@ -172,6 +173,8 @@
     /* why Misty stays quiet right now ('' = she may speak) */
     function quiet() {
         if (D.hidden) return 'hidden';
+        /* Oct 17 (E-man): no nudges while Misty flies (autopilot or steering); nobody reads them then */
+        if (H.classList.contains('mf-on')) return 'flying';
         const wh = W.LowiWorldHome;
         const tab = D.getElementById('tab-home');
         if (!tab || !tab.classList.contains('active')) return 'not-home';
@@ -201,7 +204,8 @@
             nudgeEl.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); tapNudge(); });
             hud.appendChild(nudgeEl);
         }
-        nudge = n; lastShown = Date.now(); markSeen(n.key);
+        /* only a deliberate tap on the nudge marks it (tapNudge); a nudge that fades unread may come back after NUDGE_RETRY */
+        nudge = n; lastShown = Date.now(); retry[n.key] = lastShown; shows.push(lastShown);
         nudgeEl.textContent = n.text;
         nudgeEl.setAttribute('aria-label', n.text + ' \u00b7 ' + T('Open Today', 'Heute \u00f6ffnen', 'Abrir Hoy'));
         place();
@@ -210,7 +214,7 @@
     }
     function hideNudge() { clearTimeout(hideT); if (nudgeEl) nudgeEl.classList.remove('on'); nudge = null; }
     function tapNudge() {
-        const n = nudge; hideNudge();
+        const n = nudge; hideNudge(); if (n) markSeen(n.key);
         try { W.LowiWorldHome && W.LowiWorldHome.openToday(true); } catch (e) { }
         if (!n || !n.row) return;
         /* Today repaints its rows while it opens, so keep re-finding the row and keep the glow on it for a moment */
@@ -230,7 +234,9 @@
         if (!homeSince) { homeSince = Date.now(); return; }
         if (nudge) { place(); return; }
         if (Date.now() - homeSince < SETTLE || Date.now() - lastShown < NUDGE_GAP || shownToday() >= NUDGE_DAY_MAX) return;
-        const s = seen(), n = candidates().find(c => !s[c.key]);
+        const now = Date.now(); while (shows.length && dayKey(shows[0]) !== dayKey(now)) shows.shift();
+        if (shows.length >= NUDGE_SHOWS_MAX) return;
+        const s = seen(), n = candidates().find(c => !s[c.key] && !(retry[c.key] && now - retry[c.key] < NUDGE_RETRY));
         if (n) showNudge(n);
     }
     function boot() { setInterval(tick, 1500); W.addEventListener('resize', place); }

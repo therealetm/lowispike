@@ -42,8 +42,12 @@ test('readable text: dark ink on light fills, light ink on dark glass, nothing f
 
 test('nudges: one at a time, each once, a quiet gap, a daily cap, and never over a sheet or a hint', () => {
     assert.ok(/NUDGE_GAP = 90e3/.test(js) && /NUDGE_DAY_MAX = 4/.test(js) && /SETTLE = 3500/.test(js));
-    assert.ok(/candidates\(\)\.find\(c => !s\[c\.key\]\)/.test(js), 'a nudge already shown never repeats');
-    assert.ok(/markSeen\(n\.key\)/.test(js));
+    assert.ok(/candidates\(\)\.find\(c => !s\[c\.key\] && !\(retry\[c\.key\]/.test(js), 'a tapped nudge never repeats; an unread one waits NUDGE_RETRY');
+    /* Oct 17 (E-man): only the deliberate tap marks it, never just showing it, and never while Misty flies */
+    assert.ok(/function tapNudge\(\) \{\n\s*const n = nudge; hideNudge\(\); if \(n\) markSeen\(n\.key\);/.test(js), 'marked on tap');
+    const show = js.slice(js.indexOf('function showNudge'), js.indexOf('function hideNudge'));
+    assert.ok(!/markSeen/.test(show), 'showing does not mark');
+    assert.ok(/H\.classList\.contains\('mf-on'\)\) return 'flying'/.test(js), 'quiet while flying');
     for (const why of ["'today-open'", "'sheet'", "'hint'", "'overlay'", "'not-home'"]) assert.ok(js.includes(why), why);
     assert.ok(/className = 'wh-hint wh-say mh-nudge'/.test(js), 'same bubble as her speech lines');
     assert.ok(/W\.LowiWorldHome\.openToday\(true\)/.test(js), 'tapping it opens Today');

@@ -281,9 +281,10 @@
     function tick() {
         if (D.visibilityState === 'hidden') return;
         const k = dayKey();
-        if ($('#drDay')) { if ($('#g1Ob:not(.out)') || $('#lcUpd') || D.documentElement.classList.contains('gate-up')) { dayClose(false); quiet = 0; } return; }
+        if ($('#drDay')) { if ($('#g1Ob:not(.out)') || $('#lcUpd') || D.documentElement.classList.contains('gate-up') || D.documentElement.classList.contains('mf-on')) { dayClose(false); quiet = 0; } return; }
         if (!shouldShowDaily(seenDay(), k) || !S()) { quiet = 0; return; }
-        if (!$('#spHome') || busy()) { quiet = 0; return; }
+        /* Oct 17: not while Misty flies (autopilot or steering); it waits, unseen, until she is home */
+        if (!$('#spHome') || busy() || D.documentElement.classList.contains('mf-on')) { quiet = 0; return; }
         quiet++;
         if (quiet >= 2) { quiet = 0; dayCard(); }
     }

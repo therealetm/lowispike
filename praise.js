@@ -9,9 +9,9 @@
     if (W.LowiPraise) return;
     const SHOW_MS = 1700;
     const POOL = {
-        en: ['I’m so proud of you!', 'That made my leaves glow.', 'You and me, we’re on a roll.', 'I felt that one in my roots!', 'Look at us grow!', 'Another sunbeam for me, thank you!', 'You take such good care of us.', 'My leaves are dancing right now.', 'Tiny step, big glow.', 'I knew you’d do it.', 'Stars are jealous of us today.', 'That’s my human!'],
-        de: ['Ich bin so stolz auf dich!', 'Davon glühen meine Blätter.', 'Wir zwei sind gerade richtig gut drauf.', 'Das spür ich bis in die Wurzeln!', 'Schau, wie wir wachsen!', 'Noch ein Sonnenstrahl für mich, danke!', 'Du kümmerst dich so gut um uns.', 'Meine Blätter tanzen gerade.', 'Kleiner Schritt, großes Leuchten.', 'Ich wusste, dass du das schaffst.', 'Die Sterne sind heute neidisch auf uns.', 'Das ist mein Mensch!'],
-        es: ['¡Qué orgullo me das!', 'Eso hizo brillar mis hojas.', 'Tú y yo vamos con todo.', '¡Eso lo sentí hasta en las raíces!', '¡Mira cómo crecemos!', 'Otro rayito de sol para mí, ¡gracias!', 'Nos cuidas muy bien.', 'Mis hojas están bailando.', 'Paso pequeño, brillo grande.', 'Sabía que lo lograrías.', 'Hoy las estrellas nos envidian.', '¡Ese es mi humano!']
+        en: ['I’m so proud of you!', 'That made my bubble glow.', 'You and me, we’re on a roll.', 'I felt that one right in my core!', 'Look at us grow!', 'Another sunbeam for me, thank you!', 'You take such good care of us.', 'My bubble is wobbling with joy.', 'Tiny step, big glow.', 'I knew you’d do it.', 'Stars are jealous of us today.', 'That’s my human!'],
+        de: ['Ich bin so stolz auf dich!', 'Davon glüht meine Blase.', 'Wir zwei sind gerade richtig gut drauf.', 'Das spür ich bis in meinen Kern!', 'Schau, wie wir wachsen!', 'Noch ein Sonnenstrahl für mich, danke!', 'Du kümmerst dich so gut um uns.', 'Meine Blase wackelt vor Freude.', 'Kleiner Schritt, großes Leuchten.', 'Ich wusste, dass du das schaffst.', 'Die Sterne sind heute neidisch auf uns.', 'Das ist mein Mensch!'],
+        es: ['¡Qué orgullo me das!', 'Eso hizo brillar mi burbuja.', 'Tú y yo vamos con todo.', '¡Eso lo sentí hasta en mi núcleo!', '¡Mira cómo crecemos!', 'Otro rayito de sol para mí, ¡gracias!', 'Nos cuidas muy bien.', 'Mi burbuja tiembla de alegría.', 'Paso pequeño, brillo grande.', 'Sabía que lo lograrías.', 'Hoy las estrellas nos envidian.', '¡Ese es mi humano!']
     };
     const FIRST = { en: 'First time!', de: 'Zum ersten Mal!', es: '¡Primera vez!' };
     const TYPES = ['meal', 'scan', 'water', 'move', 'fast', 'macro'];

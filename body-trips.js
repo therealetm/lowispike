@@ -160,15 +160,24 @@
         apply(st, { [t.place]: TRIP_GAIN }, now, true);
         p.v = (+p.v || 0) + 1;
         const avail = unlocked(p.x);
-        /* never repeat a fact: once everything unlocked here is learned, the trip says so and points at the next unlock */
+        /* never repeat a fact: once everything unlocked here is learned, the trip says so and points at the next unlock.
+           Oct 17 (E-man): showing the fact does not learn it. It joins the facts list only through learn(), after the
+           deliberate "Into the collection" tap; closed unread, the same fact comes back on the next trip here. */
         let fact = -1, isNew = false;
-        if (p.seen < avail) { fact = p.seen; p.seen++; isNew = true; }
+        if (p.seen < avail) { fact = p.seen; isNew = true; }
         st.trips[t.id].got = true;
         st.trips[t.id].fact = fact;
         const n = unlocked(p.x), nextAt = n < 4 ? (n === 0 ? 1 : n * 25) : 0;
         return { id: t.id, place: t.place, fact, isNew, learned: fact < 0, nextAt, x: p.x, eventId: 'body-trip:' + t.id };
     }
     /* which place a set of gains sends the cell to: the biggest gain, ties go to the order of PLACES */
+    /* the deliberate tap: the shown fact joins this place's learned list (in order, never twice) */
+    function learn(st, place, fact) {
+        st = fresh(st);
+        const p = st.p[place]; fact = +fact;
+        if (!p || !(fact >= 0) || fact !== p.seen || fact >= unlocked(p.x)) return false;
+        p.seen = fact + 1; return true;
+    }
     function destination(g) {
         let best = null;
         for (const p of PLACES) if ((+g[p.id] || 0) > 0 && (!best || g[p.id] > g[best])) best = p.id;
@@ -205,7 +214,7 @@
         const m = Math.max(1, Math.ceil(Math.max(0, +ms || 0) / 60000));
         return Math.floor(m / 60) + ':' + pad(m % 60);
     }
-    const core = { PLACES, TRIP_MS, TRIPS_PER_DAY, DAY_CAP, TRIP_GAIN, XP, DOTS, dayKey, mealGains, kindOf, entryGains, fastGains, fresh, apply, unlocked, current, canStart, start, view, claim, destination, fmtLeft, fmtHM, msToMidnight, suggest, next, byId };
+    const core = { PLACES, TRIP_MS, TRIPS_PER_DAY, DAY_CAP, TRIP_GAIN, XP, DOTS, dayKey, mealGains, kindOf, entryGains, fastGains, fresh, apply, unlocked, current, canStart, start, view, claim, learn, destination, fmtLeft, fmtHM, msToMidnight, suggest, next, byId };
 
     /* ---------- scenes: science-class views of the inside, drawn see-through and glowing ---------- */
     let sid = 0;
@@ -490,7 +499,7 @@
         R().sheet('<div class="bt-sheet bt-surprise" style="--h:' + p.hue + '"><div class="bt-hero">' + scene(p.id, Object.assign({ live: true }, moods(Date.now()))) + '</div><p class="bt-sub">' + esc(tr('surprise')) + '</p><h2>' + esc(nm(p)) + '</h2>' +
             '<div class="bt-card' + (f ? '' : ' bt-learned') + '"><small>' + esc(res.isNew ? tr('newFact') : tr('oldFact')) + '</small><p>' + esc(cardTx) + '</p></div>' +
             '<p class="bt-reward num">' + (res.xp ? '+' + res.xp + ' XP · ' : '') + '+' + TRIP_GAIN + (lang() === 'en' ? '% ' : ' % ') + esc(tr('explored')) + ' · ' + pct(res.x) + '</p>' +
-            '<button type="button" class="bt-cta" data-bt="close">' + esc(tr('keep')) + '</button> <button type="button" class="bt-link" data-bt="list">' + esc(tr('list')) + '</button></div>', { cls: 'bt-ov' });
+            '<button type="button" class="bt-cta" data-bt="close"' + (f && res.isNew ? ' data-learn="' + esc(res.place) + ':' + res.fact + '"' : '') + '>' + esc(tr('keep')) + '</button> <button type="button" class="bt-link" data-bt="list">' + esc(tr('list')) + '</button></div>', { cls: 'bt-ov' });
     }
 
     /* ---------- flow ---------- */
@@ -593,7 +602,10 @@
             else if (!ov) listSheet();
             else if (current(body())) placeSheet(current(body()).place);
         } else if (a === 'place') { e.preventDefault(); placeSheet(c.dataset.id); }
-        else if (a === 'go' || a === 'next') { e.preventDefault(); startNext(c.dataset.id); } else if (a === 'close') { if (ov && R()) R().close(ov); }
+        else if (a === 'go' || a === 'next') { e.preventDefault(); startNext(c.dataset.id); } else if (a === 'close') {
+            if (c.dataset.learn) { const [pl, fi] = c.dataset.learn.split(':'); if (learn(body(), pl, +fi)) { save(); render(); } }
+            if (ov && R()) R().close(ov);
+        }
         else if (a === 'list') { if (ov && R()) R().close(ov); setTimeout(listSheet, 340); }
     }, true);
 

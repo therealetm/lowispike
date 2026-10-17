@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
-<meta name="lowi-build" content="20261017-112510">
+<meta name="lowi-build" content="20261017-113110">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -3638,7 +3638,7 @@ html.n1-talk #n1B .g1-mini .g1-face u{animation:g1Talk .28s ease-in-out 4 altern
 
 </style>
 <link rel="stylesheet" href="updates.css">
-<link rel="stylesheet" id="obwCss" href="onboarding-world.css?v=20261017-112510">
+<link rel="stylesheet" id="obwCss" href="onboarding-world.css?v=20261017-113110">
 </head>
 <body>
 <div id="app">
@@ -9044,7 +9044,7 @@ window.LowiFood = {fitDeck:ckFitDeck, source:fSrc, setSource:ckSource, category:
 .lc-upd{justify-content:center;font-weight:600;cursor:pointer;text-align:center}
 .lc-newpill{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:30;padding:8px 14px;border-radius:999px;border:0;background:#fff;color:#000;font-weight:700;font-size:13px;box-shadow:0 6px 20px rgba(0,0,0,.4);cursor:pointer}
 </style>
-<script src="community-chat-core.js?v=20261017-112510"></script>
+<script src="community-chat-core.js?v=20261017-113110"></script>
 <script>
 window.LOWI_CFG = {"url": "https://vnfwmifmsfecascwaody.supabase.co", "key": "sb_publishable_iVA3wCYxzfWu2q8SSgieWw_adXbx4Qd"};
 </script>
@@ -19284,12 +19284,17 @@ function pick(now, opts){ now = now || new Date(); opts = opts || {}; const L = 
     if (q.id === "water") { const p = q.p || [0, 2]; return mk("water", w("water", {g:p[0], w:p[1]}), "goWater", "water"); }
     return mk(q.id, w(q.id), GO[q.id], q.id); } }
   return null; }
-function log(now){ const l = js(LOG), t = dk(now || new Date()); return {day:t, last:+l.last || 0, ids:l.day === t && Array.isArray(l.ids) ? l.ids : []}; }
+function log(now){ const l = js(LOG), t = dk(now || new Date()); return {day:t, last:+l.last || 0, shown:+l.shown || 0, ids:l.day === t && Array.isArray(l.ids) ? l.ids : []}; }
+/* Oct 17 (E-man): a nudge only counts as read after a deliberate tap (its action or OK). Showing it, the 20 s fade, or Misty
+   taking off does not mark it, so an unread tip comes back later (after RETRY_MIN) instead of being used up. */
+const RETRY_MIN = 30;
+function shownAt(now){ const l = log(now); l.shown = (now || new Date()).getTime(); put(LOG, l); }
 function mark(id, now){ const l = log(now); if (l.ids.indexOf(id) < 0) l.ids.push(id); l.last = (now || new Date()).getTime(); put(LOG, l); }
 
 /* ---------- when it may speak ---------- */
 const vis = el => { if (!el || !el.isConnected) return false; const r = el.getBoundingClientRect(); if (r.width < 4 || r.height < 4) return false; const cs = getComputedStyle(el); return cs.display !== "none" && cs.visibility !== "hidden"; };
 function appFree(){
+  if (H.classList.contains("mf-on")) return false; /* Misty is flying (autopilot or your steering): no tips while you watch or play */
   if (H.classList.contains("gate-up") || H.classList.contains("gate-boot") || H.classList.contains("g1-touring")) return false;
   try { if (window.LowiG1 && LowiG1.state && LowiG1.state()) return false; } catch(e){}
   const tb = D.getElementById("tabbar"); if (!vis(tb)) return false; if (!D.querySelector(".tab.active")) return false;
@@ -19301,10 +19306,11 @@ function tourSeen(){ try { return !window.LowiG1 || !LowiG1.mem || !!LowiG1.mem(
 function check(opts){ opts = opts || {}; const now = opts.now ? new Date(opts.now) : new Date(), s = get();
   if (cur) return null;
   if (!opts.force) { if (!s.on || quiet(now, s) || !tourSeen() || !appFree()) return null;
-    const lg = log(now); if (lg.last && now.getTime() - lg.last < GAP[s.freq] * 36e5) return null; }
+    const lg = log(now); if (lg.last && now.getTime() - lg.last < GAP[s.freq] * 36e5) return null;
+    if (lg.shown && now.getTime() - lg.shown < RETRY_MIN * 6e4) return null; }
   else if (!appFree() && !opts.anywhere) return null;
   const n = pick(now, {open:opts.open, any:opts.force}); if (!n) return null;
-  if (!opts.force) mark(n.id, now); show(n); return n; }
+  if (!opts.force) { shownAt(now); n.ack = true; } show(n); return n; }
 
 /* ---------- the bubble ---------- */
 let cur = null, hideT = 0;
@@ -19377,8 +19383,8 @@ function paintRow(){ D.querySelectorAll(".n1-prs").forEach(e => { e.textContent 
 D.addEventListener("click", e => { const t = e.target; if (!t || !t.closest) return;
   const a = t.closest("[data-n1]");
   if (a) { e.preventDefault(); e.stopPropagation(); const k = a.dataset.n1, c = cur;
-    if (k === "go") { hide(); sfx("tap"); if (c && c.fn) { try { c.fn(); } catch(x){ console.warn(x); } } else act(c && c.q); }
-    else if (k === "later" || k === "x") { hide(); const l = log(); l.last = Date.now(); put(LOG, l); if (c && c.laterFn) { try { c.laterFn(k); } catch(x){} } }
+    if (k === "go") { hide(); sfx("tap"); if (c && c.ack) mark(c.id); if (c && c.fn) { try { c.fn(); } catch(x){ console.warn(x); } } else act(c && c.q); }
+    else if (k === "later" || k === "x") { hide(); if (k === "x" && c && c.ack) mark(c.id); const l = log(); l.last = Date.now(); put(LOG, l); if (c && c.laterFn) { try { c.laterFn(k); } catch(x){} } }
     else if (k === "set") { sfx("open"); openSet(); }
     else if (k === "try") { try { LowiHost.closeSheet(); } catch(x){} setTimeout(() => { const n = check({force:true}); if (!n) show({id:"try", text:w("water", {g:0, w:2}), go:"goWater", q:"water"}); }, 380); }
     return; }
@@ -19394,6 +19400,8 @@ let hidAt = 0;
 function init(){
   setTimeout(() => check({open:true}), 6000);
   setInterval(() => { if (!D.hidden) check({}); }, 60000);
+  /* Misty takes off (autopilot or steering): an open nudge fades away unread, it is not marked */
+  try { new MutationObserver(() => { if (H.classList.contains("mf-on") && cur && !cur.stay && D.getElementById("n1B")) hide(); }).observe(H, {attributes:true, attributeFilter:["class"]}); } catch(e){}
   D.addEventListener("visibilitychange", () => { if (D.hidden) { hidAt = Date.now(); if (cur && !cur.stay) hide(true); return; }
     if (hidAt && Date.now() - hidAt > 10 * 6e4) setTimeout(() => check({open:true}), 1500); });
 }
@@ -19941,9 +19949,9 @@ window.LowiHandoff = { want, copy, issue, revoke, startHTML, parse, redeem, _sta
 })();
 </script>
 <link rel="stylesheet" href="community-chat.css?v=galaxy-2">
-<link rel="stylesheet" href="community-galaxy.css?v=20261017-112510">
-<link rel="stylesheet" href="community-energy.css?v=20261017-112510">
-<link rel="stylesheet" href="community-voice.css?v=20261017-112510">
+<link rel="stylesheet" href="community-galaxy.css?v=20261017-113110">
+<link rel="stylesheet" href="community-energy.css?v=20261017-113110">
+<link rel="stylesheet" href="community-voice.css?v=20261017-113110">
 <script id="community-chat-bridge">
 /* Bounded bridge: the Community module shares auth/messages with the existing cloud owner. */
 window.LowiCommunityHost = {
@@ -19967,57 +19975,58 @@ window.LowiCommunityHost = {
 </script>
 <script src="community-chat-cloud.js?v=community-1"></script>
 <script src="community-galaxy.js?v=galaxy-2"></script>
-<script src="community-chat.js?v=20261017-112510"></script>
-<script src="community-energy.js?v=20261017-112510"></script>
-<link rel="stylesheet" id="lgCss" href="liquid-glass.css?v=20261017-112510">
-<script src="liquid-glass.js?v=20261017-112510"></script>
-<link rel="stylesheet" id="sweepCss" href="style-sweep.css?v=20261017-112510">
-<link rel="stylesheet" id="sgCss" href="scan-glass.css?v=20261017-112510">
-<script src="scan-glass.js?v=20261017-112510"></script>
-<link rel="stylesheet" id="rwCss" href="realm-backdrop.css?v=20261017-112510">
-<script src="realm-backdrop-core.js?v=20261017-112510"></script>
-<script src="realm-backdrop.js?v=20261017-112510"></script>
-<link rel="stylesheet" href="nav-moves.css?v=20261017-112510">
+<script src="community-chat.js?v=20261017-113110"></script>
+<script src="community-energy.js?v=20261017-113110"></script>
+<link rel="stylesheet" id="lgCss" href="liquid-glass.css?v=20261017-113110">
+<script src="liquid-glass.js?v=20261017-113110"></script>
+<link rel="stylesheet" id="sweepCss" href="style-sweep.css?v=20261017-113110">
+<link rel="stylesheet" id="sgCss" href="scan-glass.css?v=20261017-113110">
+<script src="scan-glass.js?v=20261017-113110"></script>
+<link rel="stylesheet" id="rwCss" href="realm-backdrop.css?v=20261017-113110">
+<script src="realm-backdrop-core.js?v=20261017-113110"></script>
+<script src="realm-backdrop.js?v=20261017-113110"></script>
+<link rel="stylesheet" href="nav-moves.css?v=20261017-113110">
 <script src="nav-moves.js?v=nav-3"></script>
-<link rel="stylesheet" id="mvdCss" href="move-durations.css?v=20261017-112510">
-<link rel="stylesheet" id="mvpCss" href="move-player.css?v=20261017-112510">
-<script src="move-player.js?v=20261017-112510"></script>
-<link rel="stylesheet" id="mmCss" href="mirror-move.css?v=20261017-112510">
-<script src="mirror-move-core.js?v=20261017-112510"></script>
-<script src="mirror-move.js?v=20261017-112510"></script>
-<link rel="stylesheet" id="fyeCss" href="fy-embed.css?v=20261017-112510">
-<script src="fy-embed.js?v=20261017-112510"></script>
-<link rel="stylesheet" id="cspCss" href="community-spirit.css?v=20261017-112510">
-<script src="community-spirit.js?v=20261017-112510"></script>
-<script src="galaxy-zoom.js?v=20261017-112510"></script>
-<link rel="stylesheet" id="mhCss" href="misty-hub.css?v=20261017-112510">
-<script src="misty-hub.js?v=20261017-112510"></script>
-<link rel="stylesheet" id="mpCss" href="misty-pad.css?v=20261017-112510">
-<script src="misty-pad.js?v=20261017-112510"></script>
-<script src="misty-flight.js?v=20261017-112510"></script>
-<script src="misty-hunt.js?v=20261017-112510"></script>
-<script src="hunt-count.js?v=20261017-112510"></script>
-<script src="misty-hints.js?v=20261017-112510"></script>
-<link rel="stylesheet" id="msCss" href="misty-scale.css?v=20261017-112510">
-<script src="misty-scale.js?v=20261017-112510"></script>
-<link rel="stylesheet" id="mbCss" href="move-bubble.css?v=20261017-112510">
-<script src="move-estimate-core.js?v=20261017-112510"></script>
-<script src="move-bubble.js?v=20261017-112510"></script>
-<script src="adventure.js?v=20261017-112510"></script>
-<link rel="stylesheet" id="csoCss" href="community-standout.css?v=20261017-112510">
-<link rel="stylesheet" id="tsgCss" href="today-sheet.css?v=20261017-112510">
-<link rel="stylesheet" id="ccCss" href="community-composer.css?v=20261017-112510">
-<script src="community-composer.js?v=20261017-112510"></script>
-<link rel="stylesheet" id="ssCss" href="shop-scan.css?v=20261017-112510">
-<script src="shop-scan-core.js?v=20261017-112510"></script>
-<script src="shop-scan.js?v=20261017-112510"></script>
-<link rel="stylesheet" id="scCss" href="spike-catch.css?v=20261017-112510">
-<script src="spike-core.js?v=20261017-112510"></script>
-<script src="spike-catch.js?v=20261017-112510"></script>
-<script src="living-bubbles.js?v=20261017-112510"></script>
-<link rel="stylesheet" id="scrCss" href="scan-screens.css?v=20261017-112510">
-<link rel="stylesheet" id="gnCss" href="glass-nav.css?v=20261017-112510">
-<link rel="stylesheet" id="cshCss" href="cook-shop.css?v=20261017-112510">
+<link rel="stylesheet" id="mvdCss" href="move-durations.css?v=20261017-113110">
+<link rel="stylesheet" id="mvpCss" href="move-player.css?v=20261017-113110">
+<script src="move-player.js?v=20261017-113110"></script>
+<link rel="stylesheet" id="mmCss" href="mirror-move.css?v=20261017-113110">
+<script src="mirror-move-core.js?v=20261017-113110"></script>
+<script src="mirror-move.js?v=20261017-113110"></script>
+<link rel="stylesheet" id="fyeCss" href="fy-embed.css?v=20261017-113110">
+<script src="fy-embed.js?v=20261017-113110"></script>
+<link rel="stylesheet" id="cspCss" href="community-spirit.css?v=20261017-113110">
+<script src="community-spirit.js?v=20261017-113110"></script>
+<script src="galaxy-zoom.js?v=20261017-113110"></script>
+<link rel="stylesheet" id="mhCss" href="misty-hub.css?v=20261017-113110">
+<script src="misty-hub.js?v=20261017-113110"></script>
+<link rel="stylesheet" id="mpCss" href="misty-pad.css?v=20261017-113110">
+<script src="misty-pad.js?v=20261017-113110"></script>
+<script src="misty-flight.js?v=20261017-113110"></script>
+<script src="misty-hunt.js?v=20261017-113110"></script>
+<script src="hunt-count.js?v=20261017-113110"></script>
+<script src="misty-hints.js?v=20261017-113110"></script>
+<link rel="stylesheet" id="msCss" href="misty-scale.css?v=20261017-113110">
+<script src="misty-scale.js?v=20261017-113110"></script>
+<link rel="stylesheet" id="mbCss" href="move-bubble.css?v=20261017-113110">
+<script src="move-estimate-core.js?v=20261017-113110"></script>
+<script src="move-bubble.js?v=20261017-113110"></script>
+<script src="adventure.js?v=20261017-113110"></script>
+<link rel="stylesheet" id="csoCss" href="community-standout.css?v=20261017-113110">
+<link rel="stylesheet" id="tsgCss" href="today-sheet.css?v=20261017-113110">
+<link rel="stylesheet" id="ccCss" href="community-composer.css?v=20261017-113110">
+<script src="community-composer.js?v=20261017-113110"></script>
+<link rel="stylesheet" id="ssCss" href="shop-scan.css?v=20261017-113110">
+<script src="shop-scan-core.js?v=20261017-113110"></script>
+<script src="shop-scan.js?v=20261017-113110"></script>
+<link rel="stylesheet" id="scCss" href="spike-catch.css?v=20261017-113110">
+<script src="spike-core.js?v=20261017-113110"></script>
+<script src="spike-catch.js?v=20261017-113110"></script>
+<script src="living-bubbles.js?v=20261017-113110"></script>
+<link rel="stylesheet" id="scrCss" href="scan-screens.css?v=20261017-113110">
+<link rel="stylesheet" id="mpopCss" href="misty-pop.css?v=20261017-113110">
+<link rel="stylesheet" id="gnCss" href="glass-nav.css?v=20261017-113110">
+<link rel="stylesheet" id="cshCss" href="cook-shop.css?v=20261017-113110">
 </body>
 </html>
 

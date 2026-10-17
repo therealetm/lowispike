@@ -122,23 +122,28 @@ const FACTS=[
  ['A little vinegar before a meal can soften the spike.','Etwas Essig vor dem Essen kann den Anstieg abmildern.','Un poco de vinagre antes de comer puede suavizar el pico.']];
 function giftRead(){try{const g=JSON.parse(localStorage.getItem(GKEY)||'null');return g&&typeof g==='object'?g:{};}catch(e){return{};}}
 function giftTaken(now){return giftRead().day===K.dayKey(now||Date.now());}
+/* Oct 17 (E-man): a fact is only "taken" after a deliberate tap (Nice or Support). Opening it, an outside tap, Escape,
+   or the autopilot taking over closes it unread, and the spot stays for later. No gift spot while Misty flies. */
+function giftAck(now){now=now||Date.now();try{localStorage.setItem(GKEY,JSON.stringify({day:K.dayKey(now),ts:now}));}catch(e){}}
+function flying(){const h=D.documentElement;return !!(h&&h.classList.contains('mf-on'));}
 function giftFact(now){const d=new Date(now||Date.now()),n=Math.floor((d-new Date(d.getFullYear(),0,0))/864e5);return FACTS[n%FACTS.length][li()];}
 const G={pop:null,t:0};
 function ensureGift(){const hud=D.getElementById('whHud');let b=D.querySelector('.hs-gift');
+ if(hud&&flying()&&!giftTaken()){if(G.pop){clearTimeout(G.t);G.pop.remove();G.pop=null;}if(b)b.remove();return null;}
  if(!hud||giftTaken()){if(b&&!G.pop)b.remove();return null;}
  if(b&&b.parentNode!==hud){b.remove();b=null;}
  if(!b){b=D.createElement('button');b.type='button';b.className='hs-gift';b.setAttribute('data-shop','gift');
-  b.setAttribute('aria-label',L('Kometa\'s gift of the day','Kometas Geschenk des Tages','El regalo del día de Kometa'));
+  b.setAttribute('aria-label',L('Misty\'s gift of the day','Mistys Geschenk des Tages','El regalo del día de Misty'));
   b.innerHTML='<span class="hs-gift-core" aria-hidden="true"></span>';hud.appendChild(b);}
  /* iPad: the tab bar is a rail on the left, so the spot sits just right of it */
  try{const tb=D.getElementById('tabbar'),r=tb&&tb.getBoundingClientRect();const rail=r&&r.height>r.width&&r.left<root.innerWidth/3;b.style.setProperty('--hs-gl',rail?Math.round(r.right+16)+'px':'');if(G.pop)G.pop.style.setProperty('--hs-gl',rail?Math.round(r.right+16)+'px':'');}catch(e){}
  return b;}
 function closeGift(){if(!G.pop)return;clearTimeout(G.t);G.pop.remove();G.pop=null;ensureGift();}
-function openGift(){const now=Date.now();if(G.pop)return;
- try{localStorage.setItem(GKEY,JSON.stringify({day:K.dayKey(now),ts:now}));}catch(e){}
+function openGift(){const now=Date.now();if(G.pop||flying())return;
  const b=D.querySelector('.hs-gift');if(b)b.classList.add('is-open');
  const pop=D.createElement('div');pop.className='hs-giftpop';pop.setAttribute('role','dialog');pop.setAttribute('aria-labelledby','hsGiftT');
- pop.innerHTML='<b id="hsGiftT">'+esc(L('Kometa\'s gift of the day','Kometas Geschenk des Tages','El regalo del día de Kometa'))+'</b>'+
+ pop.className='hs-giftpop mpop';
+ pop.innerHTML='<b id="hsGiftT">'+esc(L('Misty\'s gift of the day','Mistys Geschenk des Tages','El regalo del día de Misty'))+'</b>'+
   '<p>'+esc(giftFact(now))+'</p>'+
   '<div class="hs-giftrow"><button type="button" class="hs-giftok" data-shop="giftok">'+esc(L('Nice','Schön','Genial'))+'</button>'+
   '<button type="button" class="hs-giftkofi" data-shop="giftkofi">'+icon('heart','♥')+'<span>'+esc(L('Support LOWiSPIKE','LOWiSPIKE unterstützen','Apoyar LOWiSPIKE'))+'</span></button></div>';
@@ -148,10 +153,10 @@ function openGift(){const now=Date.now();if(G.pop)return;
  if(b)setTimeout(()=>{if(b.parentNode&&!b.classList.contains('keep'))b.remove();},reduced()?0:420);}
 D.addEventListener('click',e=>{const t=e.target;const b=t.closest&&t.closest('[data-shop]');const a=b&&b.dataset.shop;
  if(a==='gift'){e.preventDefault();e.stopPropagation();openGift();return;}
- if(a==='giftok'){e.preventDefault();e.stopPropagation();closeGift();return;}
- if(a==='giftkofi'){e.preventDefault();e.stopPropagation();closeGift();open('plus');return;}
+ if(a==='giftok'){e.preventDefault();e.stopPropagation();giftAck();closeGift();return;}
+ if(a==='giftkofi'){e.preventDefault();e.stopPropagation();giftAck();closeGift();open('plus');return;}
  if(G.pop&&!G.pop.contains(t))closeGift();},true);
 D.addEventListener('keydown',e=>{if(G.pop&&e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();closeGift();}},true);
 setInterval(ensureGift,2000);root.addEventListener('resize',()=>ensureGift());D.addEventListener('visibilitychange',()=>{if(D.visibilityState==='visible')ensureGift();});setTimeout(ensureGift,600);
-root.LowiHerbShop={open,close,entryHTML,gift:{spot:ensureGift,open:openGift,close:closeGift,taken:giftTaken},state:read,isOpen:()=>!!V.ov,kofiUrl:()=>K.kofiUrl()};
+root.LowiHerbShop={open,close,entryHTML,gift:{spot:ensureGift,open:openGift,close:closeGift,taken:giftTaken,ack:giftAck},state:read,isOpen:()=>!!V.ov,kofiUrl:()=>K.kofiUrl()};
 })(window);

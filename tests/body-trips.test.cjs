@@ -87,13 +87,25 @@ test('trip facts: a new one while unseen facts are unlocked, otherwise a known o
   st.p = {}; B.fresh(st); st.p.muscle.x = 30;
   B.start(st, 'muscle', T0); const a = B.claim(st, T0 + B.TRIP_MS);
   assert.equal(a.fact, 0); assert.ok(a.isNew); assert.equal(a.x, 40);
+  assert.equal(st.p.muscle.seen, 0, 'shown is not learned');
+  assert.ok(B.learn(st, 'muscle', 0)); assert.equal(B.learn(st, 'muscle', 0), false, 'never twice');
   B.start(st, 'muscle', T0 + 2 * B.TRIP_MS); const b = B.claim(st, T0 + 3 * B.TRIP_MS);
-  assert.equal(b.fact, 1); assert.ok(b.isNew);
-  B.start(st, 'muscle', T0 + 4 * B.TRIP_MS); const c = B.claim(st, T0 + 5 * B.TRIP_MS);
+  assert.equal(b.fact, 1); assert.ok(b.isNew); B.learn(st, 'muscle', 1);
+  B.start(st, 'muscle', T0 + 4 * B.TRIP_MS); const c = B.claim(st, T0 + 5 * B.TRIP_MS); B.learn(st, 'muscle', c.fact);
   assert.equal(c.fact, 2, '60 % unlocks the third');
   st.p.blood.x = 10; st.p.blood.seen = 1;
   B.start(st, 'blood', T0 + 864e5); const d = B.claim(st, T0 + 864e5 + B.TRIP_MS);
   assert.equal(d.isNew, false); assert.equal(d.fact, -1, 'no repeated facts'); assert.ok(d.learned); assert.equal(d.nextAt, 25);
+});
+
+test('Oct 17: a fact closed unread is not learned and comes back on the next trip; only the deliberate tap learns it', () => {
+  const st = {}; st.p = {}; B.fresh(st); st.p.gut.x = 30;
+  B.start(st, 'gut', T0); const a = B.claim(st, T0 + B.TRIP_MS);
+  B.start(st, 'gut', T0 + 2 * B.TRIP_MS); const b = B.claim(st, T0 + 3 * B.TRIP_MS);
+  assert.equal(a.fact, 0); assert.equal(b.fact, 0, 'same fact again'); assert.ok(b.isNew); assert.equal(st.p.gut.seen, 0);
+  assert.equal(B.learn(st, 'gut', 2), false, 'out of order'); assert.ok(B.learn(st, 'gut', 0)); assert.equal(st.p.gut.seen, 1);
+  const s = require('fs').readFileSync(require('path').join(__dirname, '..', 'body-trips.js'), 'utf8');
+  assert.ok(s.includes('data-learn=') && /a === 'close'[\s\S]{0,160}learn\(/.test(s), 'Into the collection learns it');
 });
 
 test('the cell travels to where the biggest gain went', () => {

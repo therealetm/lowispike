@@ -1,0 +1,134 @@
+/* LOWiSPIKE misty-pop.css (Oct 17, 2026): ONE look for everything that pops up.
+   E-man: "all the things that pop up look different ... your 16 hour fast ... that bubble just looks different ...
+   our style needs to be coherent everywhere."
+   Every popup surface now wears Misty's own membrane, the colours of her 3D bubble (living-bubbles.js):
+   a deep blue see-through core, her violet rim at the bottom, a cyan edge of light on top, and her soft white glint.
+   Paint only: no layout, no position, no new animation, no JavaScript, so each popup keeps its place, its timing,
+   its buttons and its taps. Loaded last, so it wins over the older per-popup colours.
+   Surfaces: #toast, the sign-in toast, #n1B (bubble reminders, e.g. "Your 16 h fast ends at"), .hs-giftpop (Misty's
+   gift of the day), .lp-praise, .xtp-banner, #lcUpd / #lcUpdOk (update bar), .fst-rwc + .fst-medal (Fast done). */
+:root {
+  --mp-ink: #f4f9ff;
+  --mp-sub: rgba(232, 244, 255, .84);
+  --mp-core: rgba(9, 22, 52, .86);
+  --mp-fill:
+    radial-gradient(120% 90% at 50% 120%, rgba(155, 135, 210, .30), rgba(155, 135, 210, 0) 60%),
+    radial-gradient(110% 80% at 50% -30%, rgba(143, 231, 255, .22), rgba(143, 231, 255, 0) 55%),
+    linear-gradient(180deg, rgba(58, 159, 224, .20), rgba(36, 70, 160, .14));
+  --mp-glint: radial-gradient(closest-side, rgba(255, 255, 255, .34), rgba(255, 255, 255, 0));
+  /* her rim, top to bottom: cyan light, blue sides, violet base */
+  --mp-rim: rgba(186, 242, 255, .78) rgba(118, 178, 240, .58) rgba(160, 136, 220, .82) rgba(118, 178, 240, .58);
+  --mp-shadow: 0 14px 38px rgba(2, 8, 26, .50), 0 0 26px rgba(143, 231, 255, .16), inset 0 1px 0 rgba(255, 255, 255, .22), inset 0 -10px 22px rgba(155, 135, 210, .16);
+  --mp-btn: linear-gradient(180deg, #ecf8ff, #bfe6ff);
+  --mp-btn-ink: #06122a;
+  --mp-btn2: rgba(255, 255, 255, .13);
+}
+
+/* ---------- the shared surface ---------- */
+html body #toast,
+html body #r2gate .a1-toast,
+html body #n1B,
+html body .hs-giftpop,
+html body .lp-praise,
+html body .xtp-banner,
+html body #lcUpd.lc-upd,
+html body #lcUpdOk,
+html body .fst-rwc {
+  color: var(--mp-ink) !important;
+  background:
+    var(--mp-glint) 18px 5px / min(42%, 150px) 12px no-repeat,
+    var(--mp-fill),
+    var(--mp-core) !important;
+  border: 1.5px solid !important;
+  border-color: var(--mp-rim) !important;
+  box-shadow: var(--mp-shadow) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(1.35);
+  backdrop-filter: blur(14px) saturate(1.35);
+  text-shadow: 0 1px 2px rgba(2, 8, 26, .45);
+}
+/* rounded like a bubble, never a hard box */
+html body #toast, html body #r2gate .a1-toast, html body .lp-praise, html body #lcUpd.lc-upd, html body #lcUpdOk { border-radius: 999px !important; }
+html body #n1B, html body .hs-giftpop, html body .xtp-banner { border-radius: 26px !important; }
+html body .fst-rwc { border-radius: 30px !important; }
+
+/* secondary text keeps its contrast on the glass */
+html body #n1B p, html body #n1B .n1-sub, html body .hs-giftpop p, html body .xtp-banner small, html body .lp-praise small, html body .fst-rwc p, html body .fst-rwc small, html body .fst-rwc .fst-rws { color: var(--mp-sub) !important; }
+html body .fst-rwc .fst-rwt, html body .hs-giftpop b, html body .xtp-banner b, html body .fst-rwc h2, html body .fst-rwc h3, html body .fst-rwc b { color: var(--mp-ink) !important; }
+
+/* XP and the goal badge keep their warm reward gold, readable on the glass in day and night */
+html body .fst-rwc .fst-xp { color: #ffe08a !important; }
+html body .fst-rwc .fst-badge { color: #ffe08a !important; background: rgba(255, 211, 110, .16) !important; border-color: rgba(255, 211, 110, .55) !important; }
+
+/* ---------- the speech tail of a reminder: same glass as the card ---------- */
+html body #n1B .n1-tail {
+  background: var(--mp-core) !important;
+  box-shadow: 1px 1px 0 rgba(160, 136, 220, .82) !important;
+}
+
+/* ---------- tags and little dots: Misty's cyan, not a separate brand colour ---------- */
+html body #n1B .n1-tag,
+html body .lp-praise .lp-tag {
+  color: var(--mp-btn-ink) !important;
+  background: linear-gradient(90deg, #bff0ff, #d9ccff) !important;
+  text-shadow: none !important;
+}
+html body #lcUpd.lc-upd .lc-ud { background: #8fe7ff !important; box-shadow: 0 0 10px rgba(143, 231, 255, .8); }
+
+/* ---------- buttons inside popups: one primary, one quiet, both 44 px ---------- */
+html body #n1B .n1-go,
+html body .hs-giftpop .hs-giftok,
+html body .fst-rwc .fst-ok-b,
+html body .fst-rwc .fst-btn.pri {
+  color: var(--mp-btn-ink) !important;
+  background: var(--mp-btn) !important;
+  border: 0 !important;
+  box-shadow: 0 6px 18px rgba(58, 159, 224, .34), inset 0 1px 0 rgba(255, 255, 255, .9) !important;
+  text-shadow: none !important;
+  min-height: 44px;
+}
+html body #n1B .n1-later,
+html body .hs-giftpop .hs-giftkofi {
+  color: var(--mp-ink) !important;
+  background: var(--mp-btn2) !important;
+  border: 1px solid rgba(186, 242, 255, .28) !important;
+  box-shadow: none !important;
+  min-height: 44px;
+}
+/* the living bubble's press: a small squish, nothing that runs on its own */
+html body #n1B .n1-btn:active,
+html body .hs-giftpop button:active,
+html body .fst-rwc button:active { transform: scale(.95); transition: transform .12s ease; }
+
+/* ---------- the Fast done medal is a small Misty bubble ---------- */
+html body .fst-medal {
+  color: var(--mp-ink) !important;
+  background:
+    radial-gradient(30% 10% at 30% 18%, rgba(255, 255, 255, .55), rgba(255, 255, 255, 0)),
+    radial-gradient(circle at 50% 50%, rgba(58, 159, 224, .22) 52%, rgba(155, 135, 210, .50) 86%, rgba(143, 231, 255, .78) 100%),
+    var(--mp-core) !important;
+  border: 1.5px solid !important;
+  border-color: var(--mp-rim) !important;
+  box-shadow: 0 0 30px rgba(143, 231, 255, .32), inset 0 -8px 18px rgba(155, 135, 210, .30) !important;
+  text-shadow: 0 1px 2px rgba(2, 8, 26, .5);
+}
+/* goal reached: the same bubble, glowing warm from inside */
+html body .fst-rw.goal .fst-medal {
+  box-shadow: 0 0 34px rgba(255, 211, 110, .45), inset 0 0 22px rgba(255, 211, 110, .35), inset 0 -8px 18px rgba(155, 135, 210, .30) !important;
+}
+
+/* ---------- day mode: the popups stay Misty's glass (her bubble does not turn white), a little denser ---------- */
+html[data-ui=light] body { --mp-core: rgba(10, 26, 60, .90); }
+
+/* ---------- accessibility ---------- */
+@media (prefers-contrast: more) {
+  :root { --mp-core: rgba(4, 12, 32, .97); --mp-sub: #f4f9ff; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  html body #toast, html body #r2gate .a1-toast, html body #n1B, html body .hs-giftpop, html body .lp-praise,
+  html body .xtp-banner, html body #lcUpd.lc-upd, html body #lcUpdOk, html body .fst-rwc {
+    -webkit-backdrop-filter: none; backdrop-filter: none; --mp-core: rgba(9, 22, 52, .98);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html body #n1B .n1-btn:active, html body .hs-giftpop button:active, html body .fst-rwc button:active { transform: none; }
+}

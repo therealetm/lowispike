@@ -163,6 +163,25 @@
     function darkAmt(edge) { return DARK.MAX * smooth(DARK.START, DARK.FULL, +edge || 0); }
     /* 0..1: her glow t s after the dark closed in: one short flash every PULSE s, the first after PULSE s */
     function darkGlow(t) { t = +t || 0; if (t < DARK.PULSE - 1e-9) return 0; const ph = t % DARK.PULSE; return ph < DARK.FLASH ? Math.sin(Math.PI * ph / DARK.FLASH) : 0; }
+    /* home glow (Oct 17, E-man after flying so far into the dark that he nearly got lost: "It would have been nice if we could
+       kind of just a little bit see the cell world ... glow, but just very very ... not too much. It should still be difficult").
+       Out in the dark the world she came from still glows, very faintly, where it really is: the veil thins a little over the
+       world itself (SEE) and a dim warm light (TINT) spreads from it (HALO), fading with distance from the world on screen, so
+       even with the world off the edge of the screen the side facing home is a touch less black than the rest. Strongest just
+       past the shell (NEAR), still there (FAR, never zero) all the way out at DEEP x the reach. No arrow, nothing fixed to the
+       screen, no pull: it is light in the 3D world, and finding your way back is still up to you. */
+    const HOME = { NEAR: 0.24, FAR: 0.13, SEE: 0.7, HALO: 0.85, CORE0: 0.55, CORE1: 1.1, FALL: 0.9, FALL0: 0.35, TINT: '#ffc4d2' };
+    /* 0..1: how much of the world still shows through with her at edge = distance / reach (only matters once the dark is on) */
+    function homeGlow(edge) { return HOME.NEAR + (HOME.FAR - HOME.NEAR) * smooth(DARK.FULL, DARK.DEEP, +edge || 0); }
+    /* the veil shader's home terms at a screen point dw (screen heights) from the world's middle, world radius wr on screen,
+       strength s = homeGlow: see = how much the veil thins there, lift = how much warm light is added. Mirrors the shader. */
+    function homeAt(dw, wr, s) {
+        dw = Math.max(0, +dw || 0); wr = Math.max(1e-4, +wr || 0); s = clamp(+s || 0, 0, 1);
+        const c = 1 - smooth(wr * HOME.CORE0, wr * HOME.CORE1, dw), hl = Math.exp(-Math.max(dw - wr, 0) / (wr * HOME.FALL + HOME.FALL0));
+        return { see: s * HOME.SEE * c, lift: s * HOME.HALO * Math.max(c, hl) };
+    }
+    /* the veil's opacity at that point with darkness dk (Misty's own flash hole aside) */
+    const veilAt = (dk, dw, wr, s) => clamp((+dk || 0) * (1 - homeAt(dw, wr, s).see), 0, 1);
     /* how far the cloud wall's bubble skin bulges out around her (world units) for p = 0..1 of the 3-second push */
     const exitTent = (p, reach) => DARK.TENT * (+reach || 0) * Math.pow(clamp(+p || 0, 0, 1), 1.3);
     /* the autopilot's way out: the nearest point of the cloud wall that keeps CLEAR radians away from every dark zone */
@@ -198,7 +217,7 @@
     function orbitSpin(rad, sleepy) { return ORBIT.W * Math.pow(1 / Math.max(+rad || 0, ORBIT.R_END), 1.2) * (sleepy ? 0.7 : 1); }
     /* at the door: fling her back out (true) or let her in (false). tries = flings so far; refuse = the world's bounce rule said no */
     function orbitFling(tries, refuse) { return tries < ORBIT.MIN_FLINGS || (!!refuse && tries < ORBIT.TRIES - 1); }
-    const core = { K, inReach, freeReach, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, roams, autoLeave, roamSpot, roamPx, pullAt, fallAt, EXIT, exitHold, MIST, angWrap, exitGaps, inMist, gapToward, DARK, darkSpots, inDark, darkReach, darkAmt, darkGlow, exitTent, wallToward, outAt, ORBIT, orbitAt, orbitSpin, orbitFling };
+    const core = { K, inReach, freeReach, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, roams, autoLeave, roamSpot, roamPx, pullAt, fallAt, EXIT, exitHold, MIST, angWrap, exitGaps, inMist, gapToward, DARK, darkSpots, inDark, darkReach, darkAmt, darkGlow, HOME, homeGlow, homeAt, veilAt, exitTent, wallToward, outAt, ORBIT, orbitAt, orbitSpin, orbitFling };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!D || !D.addEventListener || W.LowiMistyFlight) return;
 
@@ -1013,24 +1032,31 @@
     function veilBuild(a) {
         if (DV.g && DV.g.parent) return true;
         const T = a && a.THREE; if (!T || !a.scene || !D || !D.createElement) return false;
-        DV.u = { uA: { value: 0 }, uG: { value: 0 }, uC: { value: new T.Vector2(0.5, 0.5) }, uR: { value: 0.12 }, uAsp: { value: 1 } };
+        DV.u = { uA: { value: 0 }, uG: { value: 0 }, uC: { value: new T.Vector2(0.5, 0.5) }, uR: { value: 0.12 }, uAsp: { value: 1 },
+            uW: { value: new T.Vector2(0.5, 0.5) }, uWR: { value: 0.3 }, uWS: { value: 0 }, uWT: { value: new T.Color(HOME.TINT) } };
+        const f = n => (+n).toFixed(3);
         const m = new T.ShaderMaterial({
             uniforms: DV.u, transparent: true, depthTest: false, depthWrite: false, fog: false,
             vertexShader: 'varying vec2 vUv;void main(){vUv=position.xy+0.5;gl_Position=vec4(position.xy*2.0,0.0,1.0);}',
-            fragmentShader: 'uniform float uA;uniform float uG;uniform vec2 uC;uniform float uR;uniform float uAsp;varying vec2 vUv;' +
+            /* home glow (HOME / homeAt): the veil thins a little over the world she came from and a dim warm light spreads from it */
+            fragmentShader: 'uniform float uA;uniform float uG;uniform vec2 uC;uniform float uR;uniform float uAsp;uniform vec2 uW;uniform float uWR;uniform float uWS;uniform vec3 uWT;varying vec2 vUv;' +
                 'void main(){vec2 d=(vUv-uC)*vec2(uAsp,1.0);float h=uG*(1.0-smoothstep(uR*0.3,uR,length(d)));' +
-                'float e=0.05*smoothstep(0.4,1.0,length((vUv-0.5)*2.0));gl_FragColor=vec4(0.0,0.0,0.012,clamp(uA*(1.0-h)+e*uA,0.0,1.0));}'
+                'float dw=length((vUv-uW)*vec2(uAsp,1.0));float wr=max(uWR,0.0001);' +
+                'float c=1.0-smoothstep(wr*' + f(HOME.CORE0) + ',wr*' + f(HOME.CORE1) + ',dw);float hl=exp(-max(dw-wr,0.0)/(wr*' + f(HOME.FALL) + '+' + f(HOME.FALL0) + '));' +
+                'float see=uWS*' + f(HOME.SEE) + '*c;float lift=uWS*' + f(HOME.HALO) + '*max(c,hl);' +
+                'float e=0.05*smoothstep(0.4,1.0,length((vUv-0.5)*2.0));' +
+                'gl_FragColor=vec4(vec3(0.0,0.0,0.012)+uWT*lift,clamp(uA*(1.0-h)*(1.0-see)+e*uA*(1.0-lift),0.0,1.0));}'
         });
         DV.q = new T.Mesh(new T.PlaneGeometry(1, 1), m); DV.q.frustumCulled = false; DV.q.renderOrder = 1;
         DV.s = new T.Sprite(new T.SpriteMaterial({ map: mistTex(T, true), color: new T.Color('#bff3ff'), transparent: true, opacity: 0, depthTest: false, depthWrite: false, fog: false, blending: T.AdditiveBlending }));
         DV.s.frustumCulled = false; DV.s.renderOrder = 2;
-        DV.v = new T.Vector3();
+        DV.v = new T.Vector3(); DV.w = new T.Vector3(); DV.w2 = new T.Vector3();
         /* groupOrder 99: after everything else in the world (the cloud wall's group is 2, Misty and her face 61 / 62 at group 0) */
         DV.g = new T.Group(); DV.g.name = 'mf-dark'; DV.g.renderOrder = 99; DV.g.visible = false; DV.g.userData.lwKeep = true;
         DV.g.add(DV.q); DV.g.add(DV.s); a.scene.add(DV.g); return true;
     }
     function veilOff() { if (DV.g) DV.g.visible = false; if (H.classList.contains('mf-dark')) H.classList.remove('mf-dark'); }
-    function veilDraw(a, dk, glow) {
+    function veilDraw(a, dk, glow, reach, edge) {
         if (dk <= 0.003) { veilOff(); return; }
         if (!veilBuild(a)) return;
         DV.g.visible = true;
@@ -1041,6 +1067,17 @@
         const px = (S.hs || 0.3) * pxPerUnit(a, S.p); DV.u.uR.value = clamp(px * 2.2 / Math.max(1, q.height), 0.06, 0.3);
         DV.s.position.copy(S.p); const g = (S.hs || 0.3) * (2.2 + 1.6 * glow); DV.s.scale.set(g, g, 1);
         DV.s.material.opacity = 0.9 * glow; DV.s.visible = glow > 0.01;
+        /* home glow: where the world she came from really is on screen (off the edge too), and how big it looks */
+        let ws = 0;
+        if (reach > 0 && S.inC) {
+            DV.w.copy(S.inC).project(cam); DV.w2.copy(S.inC).addScaledVector(V.up, reach).project(cam);
+            if (DV.w.z < 1 && DV.w2.z < 1) {
+                DV.u.uW.value.set((DV.w.x + 1) / 2, (DV.w.y + 1) / 2);
+                DV.u.uWR.value = Math.max(0.02, Math.hypot((DV.w2.x - DV.w.x) / 2 * DV.u.uAsp.value, (DV.w2.y - DV.w.y) / 2));
+                ws = homeGlow(edge);
+            }
+        }
+        DV.u.uWS.value = ws; S.homeS = ws;
         const on = dk > 0.5; if (H.classList.contains('mf-dark') !== on) H.classList.toggle('mf-dark', on);
         if (on && !D.getElementById('mfDarkCss') && D.head) {
             const st = D.createElement('style'); st.id = 'mfDarkCss';
@@ -1051,9 +1088,10 @@
     /* each frame inside a world (reach = the edge her own flying reaches), or with reach 0 anywhere else: the light comes back */
     function darkFrame(ctx, reach) {
         const a = ctx.a, r = ctx.r, dt = ctx.dt || 0.016;
-        let want = 0;
+        let want = 0, edge = 0;
         if (reach > 0 && S.st === 'inside' && S.flew && !regionsBusy() && !(r && r.fly)) {
             V.h.subVectors(S.p, S.inC); const L = V.h.length(), zone = inDark(Math.atan2(V.h.dot(V.up), V.h.dot(V.rt)), darkSpots(S.flew));
+            edge = L / reach;
             if (zone && L >= reach * 0.98) S.deep = true; else if (L < reach * 0.97) S.deep = false;
             if (zone || S.deep) want = darkAmt(L / reach);
         } else S.deep = false;
@@ -1066,7 +1104,7 @@
         /* back out of the dark: "Oh, where am I? ... Ah, there you are." */
         if (S.dk > 0.6 && !S.wasLost) { S.wasLost = true; note('into the dark'); }
         if (S.wasLost && S.dk < 0.05) { S.wasLost = false; note('out of the dark'); if (reach > 0 && (!S.lostSaid || performance.now() - S.lostSaid > 20000)) { S.lostSaid = performance.now(); try { if (W.LowiMistyHints) W.LowiMistyHints.lost(); } catch (e) { } } }
-        if (a && a.camera) veilDraw(a, S.dk, S.dkG); else veilOff();
+        if (a && a.camera) veilDraw(a, S.dk, S.dkG, reach, edge); else veilOff();
     }
 
     /* ---------- world-exit: out of a world, with her ---------- */
@@ -1252,6 +1290,6 @@
         recall: () => { if (S.st === 'idle') { try { if (W.LowiPad) W.LowiPad.mode(''); } catch (e) { } } else S.recallReq = true; },
         wants, frame, core,
         state: () => ({ st: S.st, flew: S.flew, joined: !!S.joined, roam: !!S.rw, inT: +(S.inT || 0).toFixed(1), wpNext: S.wpNext, ap: +S.ap.toFixed(3), near: S.near ? S.near.id : null, nearD: S.near ? +S.near.d.toFixed(2) : null, px: Math.round(S.base), ks: +S.ks.toFixed(3),
-            hs: +S.hs.toFixed(3), exP: +(S.exP || 0).toFixed(3), exE: +(S.exE || 0).toFixed(2), exO: +(S.exO || 0).toFixed(2), mist: !!S.inMist, dk: +(S.dk || 0).toFixed(2), deep: !!S.deep, glow: +(S.dkG || 0).toFixed(2), exDark: !!S.exDark, skin: XS.m && XS.m.visible ? +XS.u.uA.value.toFixed(2) : 0, mistAng: S.mistAng == null ? null : +S.mistAng.toFixed(2), gaps: S.flew ? exitGaps(S.flew).map(g => +g.a.toFixed(2)) : null, dark: !!S.inDark, transit: H.classList.contains('mf-transit'), autoX: S.autoX ? S.autoX.ph : null, orb: S.orb ? { q: +S.orb.q.toFixed(2), tries: S.orb.tries, fling: S.orb.fling > 0 } : null, outPh: S.st === 'out' ? S.oPh : null, push: S.mem && w3() && w3().memU && w3().memU.uPushA ? +w3().memU.uPushA.value.toFixed(3) : 0, p: S.p ? [+S.p.x.toFixed(2), +S.p.y.toFixed(2), +S.p.z.toFixed(2)] : null, log: S.log.slice(-12) })
+            hs: +S.hs.toFixed(3), exP: +(S.exP || 0).toFixed(3), exE: +(S.exE || 0).toFixed(2), exO: +(S.exO || 0).toFixed(2), mist: !!S.inMist, dk: +(S.dk || 0).toFixed(2), deep: !!S.deep, glow: +(S.dkG || 0).toFixed(2), home: +(S.homeS || 0).toFixed(2), exDark: !!S.exDark, skin: XS.m && XS.m.visible ? +XS.u.uA.value.toFixed(2) : 0, mistAng: S.mistAng == null ? null : +S.mistAng.toFixed(2), gaps: S.flew ? exitGaps(S.flew).map(g => +g.a.toFixed(2)) : null, dark: !!S.inDark, transit: H.classList.contains('mf-transit'), autoX: S.autoX ? S.autoX.ph : null, orb: S.orb ? { q: +S.orb.q.toFixed(2), tries: S.orb.tries, fling: S.orb.fling > 0 } : null, outPh: S.st === 'out' ? S.oPh : null, push: S.mem && w3() && w3().memU && w3().memU.uPushA ? +w3().memU.uPushA.value.toFixed(3) : 0, p: S.p ? [+S.p.x.toFixed(2), +S.p.y.toFixed(2), +S.p.z.toFixed(2)] : null, log: S.log.slice(-12) })
     };
 })();

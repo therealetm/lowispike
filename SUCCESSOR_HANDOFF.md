@@ -1,7 +1,7 @@
 # LOWiSPIKE successor handoff
 
 Snapshot written 18 Oct 2026, about 01:45 CEST (Europe/Berlin), against `origin/main` 7b7e18c, live build
-20261018-011214. Everything marked "snapshot" below was true at that moment and will go stale. Re-check it before
+20261018-011214; refreshed at 01:29 CEST after build 20261018-012739 (commit 45141bc) landed. Everything marked "snapshot" below was true at that moment and will go stale. Re-check it before
 you act on it (see "Refresh procedure").
 
 This file carries project knowledge, decisions and open work so that a new assistant, a new chat session or a
@@ -68,7 +68,7 @@ successor elsewhere should use the branch names (pushed ones are on GitHub) and 
 
 | Task (Sesame id prefix) | State at snapshot | Branch / worktree | Owns | Next action |
 |---|---|---|---|---|
-| Community/Cook loop fix and soak (`cc6cad4b`) | Running, "waiting for soak tests" | `game-perf` (released); follow-up `game-perf-resume` daaeb3e, pushed, CI green on the branch, **not on main** | follow-up touches `index.html`, `misty-pad.js`, `nav-moves.js`, `world-home.js`, `tests/game-perf-observer-loops.test.cjs` | First part is live: commit f93d0d7, build 20261018-005411. Finish the soak, rebase, release the follow-up. |
+| Community/Cook loop fix and soak (`cc6cad4b`) | Running | `game-perf` and the follow-up `game-perf-resume`, both released | follow-up touched `index.html`, `misty-pad.js`, `nav-moves.js`, `world-home.js`, `tests/game-perf-observer-loops.test.cjs` | Both parts are on main: f93d0d7 (build 20261018-005411) and 45141bc (build 20261018-012739, "Calmer Home"). Check its final report for the WebKit soak result before calling performance done. |
 | Explore camera / Misty size (`2d2c1408`) | Running | `fix/explore-camera` at 7b7e18c, local only (`wt-explorecam`), untracked `tools/explore-probe.cjs` | Misty size lines in `misty-flight.js`, `tests/misty-in-size.test.cjs`, `tools/explore-probe.cjs` | Nothing shipped yet. Fix so Misty is never stuck tiny inside a world (see section 6). |
 | Grocery photo quick view (`b3479d1f`) | Running | `grocery-quickview` from 4329372 (behind main), local (`wt-quickview`), uncommitted `data/shop/*.json` changes | `store-picks.js`, `store-picks.css`, `store-picks-core.js`, `data/shop/*.json`, `tools/shop-data/*`, quick-view tests | Not shipped. Commit, rebase on main, browser-test, release. Must coordinate with the Cook crash task. |
 | Quality audit (`4497d8e6`) | Running | `quality-audit` 9179b43, pushed, CI green on the branch | `tools/audit/`, new `tests/audit-*` | Tooling only so far (isolated nav-audit harness). Hunt for similar faulty patterns app-wide; fix confirmed defects, never delete code blindly. |
@@ -148,6 +148,7 @@ tested it, mostly in a test browser at iPhone size. None of these is confirmed o
 | 20261018-002755 | Update check reads 64 bytes instead of 185 KB a minute | commit a9e87b3 |
 | 20261018-005411 | Crash/heat fix: observer write loop after Community/Cook | commit f93d0d7; CI and Pages green; live files matched. One WebKit soak budget still fails (below). |
 | 20261018-011214 | Care board shows you once | commit 7b7e18c; live and CI verified at the snapshot |
+| 20261018-012739 | Calmer Home: more labels and ticks write only when they change (WebKit visible-again budget) | commit 45141bc; seen live in `version.json` at the refresh |
 
 Open evidence gaps worth knowing:
 

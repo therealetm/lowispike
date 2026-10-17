@@ -78,12 +78,23 @@ test('bump moves every id and prepends What\'s New in three languages', () => {
   assert.ok(fs.readFileSync(path.join(d, 'index.html'), 'utf8').includes('a.js?v=20261018-010001'));
 });
 
+test('test floor reads the pass count and the newest recorded count', () => {
+  const { parsePass, floorFromSubjects } = require('../scripts/test-floor.cjs');
+  assert.strictEqual(parsePass('ℹ tests 1213\nℹ pass 1212\nℹ fail 1\n'), 1212);
+  assert.strictEqual(parsePass('nothing'), null);
+  const f = floorFromSubjects(['Docs only', 'Release 20261018-000407: care board (tests 1205/1205)', 'Release x (tests 1100/1100)']);
+  assert.strictEqual(f.floor, 1205);
+  assert.strictEqual(floorFromSubjects(['a', 'b']), null);
+});
+
 test('CI workflow keeps least privilege, pinned actions and the same gates', () => {
   const y = fs.readFileSync(path.join(root, '.github/workflows/ci.yml'), 'utf8');
   assert.match(y, /permissions:\s*\n\s*contents: read/);
   for (const m of y.matchAll(/uses:\s*(\S+)/g)) assert.match(m[1], /@[0-9a-f]{40}$/, m[1] + ' must be pinned to a full commit SHA');
   assert.match(y, /node scripts\/release-check\.cjs/);
   assert.match(y, /node --test tests\/\*\.test\.cjs/);
+  assert.match(y, /pipefail/);
+  assert.match(y, /node scripts\/test-floor\.cjs/);
   assert.match(y, /verify-live\.cjs --at-least/);
   assert.match(y, /cancel-in-progress: \$\{\{ github\.ref != 'refs\/heads\/main' \}\}/);
 });

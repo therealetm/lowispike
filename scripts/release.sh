@@ -37,12 +37,14 @@ if ! node --test tests/*.test.cjs >"$LOG" 2>&1; then
   tail -40 "$LOG"; git checkout -- . ; echo "BLOCKER: tests failed, bump undone"; exit 4
 fi
 grep -E '^ℹ (tests|pass|fail)' "$LOG"
+node scripts/test-floor.cjs "$LOG" --ref origin/main || { git checkout -- . ; echo "BLOCKER: test count dropped, bump undone"; exit 4; }
+PASS=$(grep -oP '^ℹ pass \K\d+' "$LOG"); TOTAL=$(grep -oP '^ℹ tests \K\d+' "$LOG")
 git diff --check "$BASE"
 
 if [ -n "$(git status --porcelain)" ]; then
   git add index.html sw.js apple-ui.js version.json
   if ! git diff --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then echo "BLOCKER: unexpected files changed:"; git status --short; exit 6; fi
-  git commit -qm "Release $NEW: $SUMMARY"
+  git commit -qm "Release $NEW: $SUMMARY (tests $PASS/$TOTAL)"
 fi
 git push origin HEAD:main   # a plain push is refused unless it fast-forwards, so it can never overwrite someone else's release
 SHA=$(git rev-parse HEAD)

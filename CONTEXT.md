@@ -1,5 +1,22 @@
 # LOWiSPIKE product context
 
+## Current product (read first, 18 Oct 2026)
+
+Much of this file was written on 13 and 14 Oct 2026, when the companion was a potted herb in a terrarium. The
+product has moved on. The current picture, with the evidence behind it, is in `SUCCESSOR_HANDOFF.md` (sections 4
+and 5); the newest entries in `DECISIONS.md` override anything here. In short:
+
+- The companion is a glass, water-like bubble creature (Misty for the owner and the fallback; others are named by
+  star sign). It lives in a body world of cell worlds inside a spirit world galaxy of everyone's bubbles. Code still
+  says `herb` in many places.
+- The XP thresholds 0, 100, 300, 700, 1500, 3000 still define six stages, shown as Level 1 to 6 (`world-home-core.js`
+  `STAGES`). The herb stage names below are legacy.
+- The primary tabs are still Today, Community, Scan, Cook and Move, but Home is world-first. The XP leaderboard was
+  replaced by the Care board (opened from Move; the code's "Leaderboard tab" now shows the same care list), which
+  ranks sunbeams. VIP, courses and mentoring rewards are gone.
+- The sections below are kept as history and for the parts that still hold (audience, promise, tone, accessibility,
+  medical boundaries). Where they describe the herb, its terrarium or the bubble above Scan, treat them as legacy.
+
 ## What it is
 
 LOWiSPIKE is a mobile-first health and food PWA that turns everyday metabolic habits into a personal game. It helps people scan packaged food, log meals, choose swaps, cook, move, follow fasting progress, and complete daily quests. The experience is a mirror of the user's energy and habits, not a clinical dashboard.

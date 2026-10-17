@@ -8,6 +8,7 @@ Live app: <https://therealetm.github.io/lowispike/>
 
 Every engineer or AI must read these documents before changing code, in this order:
 
+0. [`SUCCESSOR_HANDOFF.md`](SUCCESSOR_HANDOFF.md) — picking up the project: boot sequence, current state, open work and decisions (dated snapshot, re-check it).
 1. [`AGENTS.md`](AGENTS.md) — operating rules and non-negotiable invariants.
 2. [`CONTEXT.md`](CONTEXT.md) — product purpose, audience, language, and experience direction.
 3. [`ARCHITECTURE.md`](ARCHITECTURE.md) — complete runtime and source ownership map.

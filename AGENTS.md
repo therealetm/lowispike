@@ -6,6 +6,7 @@ This is the operational source of truth for any AI or engineer changing LOWiSPIK
 
 Before inspecting implementation details or proposing a change, read:
 
+0. `SUCCESSOR_HANDOFF.md` first: boot sequence, truth hierarchy, who is working on what (a dated snapshot, re-check it), current vocabulary and open decisions.
 1. `CONTEXT.md`
 2. `ARCHITECTURE.md`
 3. `SCREEN_MAP.md`
@@ -21,11 +22,13 @@ Then inspect the current remote `main` SHA, working-tree status, owning source m
 
 ## Non-negotiable product rules
 
+Vocabulary note (18 Oct 2026): these rules were written when the companion was a potted herb. Read *herb* as *the companion*: the one glass bubble creature (Misty for the owner and as the fallback; other names come from the star sign). Code still says `herb` in many places. The rules themselves still hold unless a later `DECISIONS.md` entry overrides them; the specific places they changed are marked below and in `SUCCESSOR_HANDOFF.md` section 5.
+
 - The herb is **the** companion. Never render a second companion. The floating bubble above Scan is the herb's compact form; tapping it opens the herb room.
 - Companion speech is event-driven. It may speak after a deliberate herb tap, care action, evolution, or permitted reminder. It must not speak on navigation, every click, or page load.
 - Copy is short, clear, playful, warm, and non-repetitive within a session. No guilt, alarm, medical claims, vague poetry, or unexplained phrases.
 - XP has one source of truth. Care actions use stable event IDs and award XP once. Since 2026-10-15 15:00 (user decision, see DECISIONS.md) taps, tab switches, opening sheets or menus and plain navigation earn 0 XP; XP comes only from completed actions, each with an eventId or a per-day cap. xp-tap.js has no tap listener: it pays only first-ever region discovery (src `discover`, once per region), care sent (src `care-sent`, 3 a day), a corrected fasting start (src `fast-edit`, 1 a day), plus the healthy streak bonus (src `combo`). Old `tap` ledger entries stay (XP kept) and stay minor. The microbe buddies were removed 2026-10-16 (user decision): their XP (src `buddy-add`, `buddy-bond:*`) is purged from the ledger and S.xp on load; never bring buddies or the microbe collection back without a new user decision. Never reward longer fasts: hourly fast XP stops at 16 h (CAP_H).
-- Preserve all six evolution stages and thresholds: Seed 0, Sprout 100, Young Herb 300, Flourishing Herb 700, Radiant Herb 1500, Legendary Bloom 3000. Stages never regress.
+- Preserve all six evolution stages and thresholds: 0, 100, 300, 700, 1500, 3000 XP. Stages never regress. They are shown today as Level 1 to 6 with the names in `world-home-core.js` `STAGES` (Spark to Legend); the herb names (Seed, Sprout, Young Herb, Flourishing Herb, Radiant Herb, Legendary Bloom) are legacy.
 - Wilting is gentle and reversible with one real healthy action. It is never punishment.
 - The star sign must visibly influence color, constellation, and personality, while clarity remains more important than decoration.
 - Home and primary tabs are mobile-first game screens. At common iPhone sizes, essential actions must fit without page scrolling. Put secondary detail in sheets or dedicated screens.
@@ -64,12 +67,12 @@ The complete inline-module, screen, persistence, backend, asset, and test invent
 
 ## Current interaction contracts
 
-- Home: a compact living herb strip is the hero, with stage progress and a contextual line. It must not collide with Daily Quest, fasting, utilities, or bottom navigation.
+- Home (legacy wording, superseded by the world-first Home: see `SCREEN_MAP.md` "Spirit surfaces" and "World-first Home" and the newest `DECISIONS.md`): a compact living herb strip is the hero, with stage progress and a contextual line. It must not collide with Daily Quest, fasting, utilities, or bottom navigation.
 - Scan: one capture surface offers Barcode and Meal photo modes. Barcode photo and manual number entry stay reachable inside that surface.
 - Cook: choosing or shuffling must show real motion through multiple images and then settle on a result.
 - Move: the compact layout is prepared before first paint; the old layout must not flash first.
 - Navigation: changing tabs never summons companion chatter.
-- Care mapping: meal logging waters; a swap gives sunlight; movement makes the herb dance; a scan gives a vitamin sparkle; finishing a recipe makes it bloom. Each completed app event is consumed once.
+- Care mapping (herb-era wording; the Care board now ranks sunbeams from meals, water, Moves and scans, so check the code before relying on the reactions listed here): meal logging waters; a swap gives sunlight; movement makes the herb dance; a scan gives a vitamin sparkle; finishing a recipe makes it bloom. Each completed app event is consumed once.
 - Reminders: at most one per day, never at night, in the herb's voice, and pointing to one easy action.
 
 ## Safe change workflow

@@ -16,7 +16,7 @@ test('ships: loaded after the controller, precached, and handed the sprite by Ho
     assert.match(sw, /"misty-flight\.js"/);
     assert.match(wh, /MF\.wants\(mfx\)/, 'Home asks the flight each frame whether it owns Misty');
     assert.match(wh, /if \(mf\) \{ try \{ MF\.frame\(mfx\); return; \}/, 'and lets it place her, falling back to the old path on an error');
-    assert.match(css, /html\.mf-in\.wh-away \.wh-hud \.wh-pad/, 'the controller stays inside a place she flew into');
+    assert.match(css, /html\.mf-in\.wh-away:not\(\.lw-clean-auto\) \.wh-hud \.wh-pad/, 'the controller stays inside a place she flew into (not on autopilot with the clean view)');
 });
 
 test('her size stays the same until she nears a place, then shrinks smoothly to the door', () => {

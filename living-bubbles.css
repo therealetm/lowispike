@@ -113,3 +113,42 @@ html.wh-home #whHud .wh-cell.lb-bub:active { transform: translate(-50%, -50%); }
 @media (prefers-reduced-motion: reduce) {
     html.wh-home .lb-bub, html.wh-home .lb-bub[data-pressed] { transition: none; scale: none; }
 }
+
+/* 5. home-controls (Oct 17, Emmanuel: "Update the VR bubble. The sound bubble. The world map bubble. The night bubble ... even the
+   Today" + weather + Daily Quest, "Misty's actual bubble, not glass"): living-bubbles.js draws Misty's 3D membrane around each control
+   (.lb-ctl), round, as a pill (Today, weather) or as a soft box (Daily Quest). While that membrane is really drawn (.lb-live, Home only),
+   the CSS shell turns clear exactly like fasting and water, and only the icon / label / content stays inside it.
+   Untouched: size, place, radius, icon, label, taps, hold, drag, each control's own :active press. No float, no new animation.
+   On-states keep their fill so you still see at a glance that VR / Sound is on and that the World map is out. */
+html.lb3d.wh-home body #whHud .lb-ctl.lb-live:not([data-state="on"]):not([data-on="1"]):not(.is-out),
+html.lb3d.wh-home body #tbTheme#tbTheme.lb-ctl.lb-live,
+html.lb3d.wh-home body #tab-home #spHome .sp-weather.sp-weather.lb-ctl.lb-live,
+html.lb3d.wh-home body #tab-home #f3Board.f3-board.lb-ctl.lb-live,
+html.lb3d.wh-home.hc-on body #tab-home:has(#f3Board.hc-joined.lb-live) #hcLine.hc-line {
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+/* the liquid-glass ring of glass-nav.css steps aside for the membrane's own fresnel rim (no ring on top of a ring) */
+html.lb3d.wh-home body #tbTheme#tbTheme.lb-ctl.lb-live::before,
+html.lb3d.wh-home body #tab-home #spHome .sp-weather.sp-weather.lb-ctl.lb-live::before { display: none !important; }
+/* labels stay readable on the clear shell (they are white in day and night): a soft shadow under text and icons */
+html.lb3d.wh-home body :is(.lb-ctl.lb-live, #tab-home:has(#f3Board.hc-joined.lb-live) #hcLine) { text-shadow: 0 1px 3px rgba(0, 8, 30, .6); }
+html.lb3d.wh-home body .lb-ctl.lb-live svg { filter: drop-shadow(0 1px 2px rgba(0, 8, 30, .55)); }
+/* Increase Contrast / Reduce Transparency: keep a quiet solid base under the membrane, so labels never depend on the world behind */
+@media (prefers-contrast: more) {
+    html.lb3d.wh-home body #whHud .lb-ctl.lb-live:not([data-state="on"]):not([data-on="1"]):not(.is-out),
+    html.lb3d.wh-home body #tbTheme#tbTheme.lb-ctl.lb-live,
+    html.lb3d.wh-home body #tab-home #spHome .sp-weather.sp-weather.lb-ctl.lb-live,
+    html.lb3d.wh-home body #tab-home #f3Board.f3-board.lb-ctl.lb-live { background: rgba(10, 24, 56, .72) !important; }
+    html.lb3d.wh-home:is([data-ui=light], [data-theme="light"]) body :is(#whHud, #tab-home) .lb-ctl.lb-live,
+    html.lb3d.wh-home:is([data-ui=light], [data-theme="light"]) body #tbTheme#tbTheme.lb-ctl.lb-live { background: rgba(236, 243, 255, .85) !important; }
+}
+@media (prefers-reduced-transparency: reduce) {
+    html.lb3d.wh-home body #whHud .lb-ctl.lb-live:not([data-state="on"]):not([data-on="1"]):not(.is-out),
+    html.lb3d.wh-home body #tbTheme#tbTheme.lb-ctl.lb-live,
+    html.lb3d.wh-home body #tab-home #spHome .sp-weather.sp-weather.lb-ctl.lb-live,
+    html.lb3d.wh-home body #tab-home #f3Board.f3-board.lb-ctl.lb-live { background: rgba(10, 24, 56, .86) !important; }
+}

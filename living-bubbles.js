@@ -31,7 +31,28 @@
         unitsPerPx(d, fovDeg, H) { return (2 * d * Math.tan((fovDeg * Math.PI / 180) / 2)) / Math.max(1, H); },
         /* long press: held long enough and the finger hardly moved */
         isLong(ms, moved) { return ms >= 520 && moved < 12; },
-        AUTO: ['#spFast', '#whHud .wh-water', '#whHud .wh-move', '#whHud [data-hb]', '.lw-bub']
+        AUTO: ['#spFast', '#whHud .wh-water', '#whHud .wh-move', '#whHud [data-hb]', '.lw-bub'],
+        /* home-controls (Oct 17, Emmanuel: "Update the VR bubble. The sound bubble. The world map bubble. The night bubble ... even the
+           Today" - the actual bubble, not glass colours): the Home controls get the same membrane. They keep their own shape (round, and
+           Today stays a pill), position, icon, label, tap/hold/drag and their own :active press, so no squish, no float added here. */
+        CTL: [
+            { sel: '#whHud .wh-vr', kind: 'vr' },
+            { sel: '#whHud .wa-btn', kind: 'sound' },
+            { sel: '#whHud .wh-zoom', kind: 'map' },
+            { sel: '#tbTheme', kind: 'daynight' },
+            { sel: '#whHud .wh-todaybtn', kind: 'today', shape: 'pill' },
+            { sel: '#tab-home #spHome .sp-weather', kind: 'weather', shape: 'pill' },
+            { sel: '#tab-home #f3Board', kind: 'quest', shape: 'box' }
+        ],
+        /* membrane radius in CSS px for a box: a round control like a bubble (0.52 x width), a pill on its height (its round ends) */
+        radiusForBox(w, h, shape, rx) { return shape === 'box' ? CORE.cornerOf(w, h, rx) * 1.04 : shape === 'pill' ? Math.max(0, +h || 0) * 0.52 : CORE.radiusFor(w); },
+        /* a box (Daily Quest) keeps its own corner: the round end of the capsule is its corner radius, never more than half its height */
+        cornerOf(w, h, rx) { h = Math.max(0, +h || 0); const r = +rx > 0 ? +rx : h / 2; return Math.min(h / 2, Math.max(4, Math.min(r, (+w || 0) / 2))); },
+        /* how much taller than its corners the box membrane is stretched (1 for a pill: plain capsule) */
+        stretchY(h, rx) { const r = +rx > 0 ? Math.min(+rx, (+h || 0) / 2) : (+h || 0) / 2; return r > 0 ? ((+h || 0) * 0.52) / (r * 1.04) : 1; },
+        /* a pill is Misty's membrane stretched into a capsule: the straight middle (in geometry units, cap radius gR) so that the caps
+           land on the pill's own round ends */
+        capsuleLen(w, h, gR, rx) { w = +w || 0; h = +h || 0; if (!(h > 0)) return 0; const r = rx > 0 ? CORE.cornerOf(w, h, rx) : h / 2; return Math.max(0, w - 2 * r) * gR / (1.04 * r); }
     };
     if (typeof module !== 'undefined' && module.exports) module.exports = CORE;
     if (!root || !root.document) return;
@@ -63,11 +84,19 @@
             vertexShader: vs, fragmentShader: fs, transparent: true, depthWrite: false, depthTest: false
         });
     }
+    /* home-controls: Misty's membrane as a capsule for a pill (same radius and ring density as her sphere), lying along x */
+    function pillGeo(L) {
+        const THREE = api.THREE, gR = (geo && geo.parameters && geo.parameters.radius) || 1.4;
+        const g = new THREE.CapsuleGeometry(gR, Math.max(0.001, L), 14, 40);
+        g.rotateZ(Math.PI / 2);
+        return g;
+    }
     function build(el) {
         const s = list.get(el); if (!s || s.mesh || !group) return;
         const THREE = api.THREE;
         s.mat = makeMat(THREE);
-        s.mesh = new THREE.Mesh(geo, s.mat);
+        if (s.opts.shape === 'pill' || s.opts.shape === 'box') { s.pg = pillGeo(s.pL || 0.01); }
+        s.mesh = new THREE.Mesh(s.pg || geo, s.mat);
         s.mesh.renderOrder = 20; s.mesh.frustumCulled = false; s.mesh.visible = false;
         s.mesh.userData.lwKeep = true; /* body-world-regions setHubVisible leaves it alone */
         group.add(s.mesh);
@@ -77,7 +106,7 @@
         const m = findMembrane(a); if (!m) return false;
         const f = CORE.fadeShader(m.material.fragmentShader); if (!f) return false;
         api = a; mem = m; vs = m.material.vertexShader; fs = f; geo = m.geometry;
-        const THREE = a.THREE; tmp = { v: new THREE.Vector3(), f: new THREE.Vector3(), q: new THREE.Quaternion(), y: new THREE.Vector3(0, 1, 0) };
+        const THREE = a.THREE; tmp = { v: new THREE.Vector3(), f: new THREE.Vector3(), q: new THREE.Quaternion(), y: new THREE.Vector3(0, 1, 0), x: new THREE.Vector3(1, 0, 0) };
         group = new THREE.Group(); group.name = 'lowi-living-bubbles'; group.userData.lwKeep = true; a.scene.add(group);
         list.forEach((s, el) => build(el));
         offFrame = a.onFrame(frame);
@@ -106,8 +135,19 @@
     function refreshVis(now) {
         lastVis = now;
         const on = homeShown();
-        list.forEach((s, el) => { s.oT = on ? effOpacity(el) : 0; });
+        list.forEach((s, el) => {
+            s.oT = on ? effOpacity(el) : 0;
+            if (s.opts.ctl) live(el, s.oT > 0 && !!s.mesh);
+            if (s.oT > 0 && s.opts.shape === 'box') {
+                const v = parseFloat(getComputedStyle(el).borderTopLeftRadius); if (v > 0) s.rx = v; /* its corner, as styled now */
+                const j = el.classList.contains('hc-joined') ? D.getElementById('hcLine') : null; /* hunt-count.js joins its line under it */
+                s.join = j && effOpacity(j) > 0.5 ? j : null;
+            }
+        });
     }
+    /* home-controls: the shell of a control turns clear only while its membrane is really drawn (Day/Night lives on every page) */
+    function live(el, on) { if (el.classList.contains('lb-live') !== on) el.classList.toggle('lb-live', on); }
+    function unlive() { list.forEach((s, el) => { if (s.opts.ctl) live(el, false); }); }
 
     /* ---------- every drawn frame of the world (its own loop) ---------- */
     function frame(dt, now) {
@@ -123,8 +163,12 @@
             if (!s.mesh) return;
             s.o += (s.oT - s.o) * Math.min(1, dt * 9);
             if (s.oT <= 0 && s.o < 0.01) { s.o = 0; s.mesh.visible = false; return; }
-            const r = el.getBoundingClientRect();
+            let r = el.getBoundingClientRect();
             if (!r.width) { s.mesh.visible = false; return; }
+            if (s.join) { /* Daily Quest + the hunt count line it carries inside a world: one membrane around both, as one box */
+                const j = s.join.getBoundingClientRect();
+                if (j.height > 0 && j.bottom > r.bottom) r = { left: r.left, top: r.top, width: r.width, height: j.bottom - r.top };
+            }
             const n = CORE.ndc(r.left + r.width / 2 - cr.left, r.top + r.height / 2 - cr.top, cr.width, cr.height);
             tmp.v.set(n.x, n.y, 0.5).unproject(cam).sub(cam.position).normalize();
             const k = D0 / Math.max(0.2, tmp.v.dot(tmp.f));
@@ -133,8 +177,20 @@
             s.mesh.quaternion.copy(cam.quaternion).multiply(tmp.q.setFromAxisAngle(tmp.y, s.spin));
             /* the mesh sits at depth D0 on the camera axis, so one CSS px is upp world units there; the box already carries the press
                squish and the float */
-            const R = CORE.radiusFor(r.width) * upp, gR = (geo && geo.parameters && geo.parameters.radius) || 1.4;
-            s.mesh.scale.setScalar((R / gR) * CORE.breath(t, s.phase, calm));
+            const gR = (geo && geo.parameters && geo.parameters.radius) || 1.4;
+            const capsule = s.opts.shape === 'pill' || s.opts.shape === 'box', rx = s.opts.shape === 'box' ? s.rx : 0;
+            const sq = capsule && el.offsetWidth ? r.width / el.offsetWidth : 1; /* its own press scale: the shape stays, only the size follows */
+            if (capsule) {
+                /* the pill keeps its long axis on screen: it turns about its own length (Misty's slow turn), never out of shape */
+                s.mesh.quaternion.copy(cam.quaternion).multiply(tmp.q.setFromAxisAngle(tmp.x, rx ? 0 : s.spin)); /* a box is stretched in y: no turn */
+                const L = CORE.capsuleLen(r.width / sq, r.height / sq, gR, rx);
+                if (Math.abs(L - s.pL) > Math.max(0.02, s.pL * 0.03)) { /* Today's text changed width: rebuild once, not per frame */
+                    s.pL = L; const old = s.pg; s.pg = pillGeo(L); s.mesh.geometry = s.pg; try { old && old.dispose(); } catch (e) {}
+                }
+            }
+            const R = CORE.radiusForBox(r.width, r.height, s.opts.shape, rx * sq) * upp, k1 = (R / gR) * CORE.breath(t, s.phase, calm);
+            s.mesh.scale.setScalar(k1);
+            if (rx) s.mesh.scale.y = k1 * CORE.stretchY(r.height, rx * sq); /* the box: capsule ends become its rounded corners */
             s.mat.uniforms.uO.value = s.o;
             s.mesh.visible = true;
         });
@@ -157,6 +213,7 @@
     }
     D.addEventListener('pointerdown', e => {
         const el = bubbleOf(e.target); if (!el || (e.button != null && e.button !== 0)) return;
+        if (list.get(el).opts.ctl) return; /* home-controls: their own :active press, tap, hold and drag stay exactly as they were */
         endPress(false);
         const s = list.get(el);
         press = { el, id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now(), moved: 0, timer: 0 };
@@ -189,19 +246,21 @@
         if (!el || !el.nodeType) return false;
         const prev = list.get(el);
         if (prev) { if (opts) prev.opts = Object.assign(prev.opts, opts); return true; }
-        const s = { mesh: null, mat: null, phase: (seq * 2.1) % 6.28, spin: 0.9 + seq * 1.7, o: 0, oT: 0, opts: Object.assign({}, opts || {}) };
+        const s = { mesh: null, mat: null, pg: null, pL: 0, phase: (seq * 2.1) % 6.28, spin: 0.9 + seq * 1.7, o: 0, oT: 0, opts: Object.assign({}, opts || {}) };
         seq++;
         list.set(el, s);
-        el.classList.add('lb-bub');
+        el.classList.add(s.opts.ctl ? 'lb-ctl' : 'lb-bub'); /* a control is not a Home bubble: no float, no squish, no forced circle */
         if (s.opts.kind) el.setAttribute('data-lb', s.opts.kind);
+        if (s.opts.shape) el.setAttribute('data-lb-shape', s.opts.shape);
+        if (s.opts.shape === 'box') { try { s.rx = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 20; } catch (e) { s.rx = 20; } }
         if (api) build(el);
         lastVis = 0;
         return true;
     }
     function remove(el) {
         const s = list.get(el); if (!s) return false;
-        if (s.mesh) { group && group.remove(s.mesh); try { s.mat.dispose(); } catch (e) {} }
-        el.classList.remove('lb-bub'); el.removeAttribute('data-lb');
+        if (s.mesh) { group && group.remove(s.mesh); try { s.mat.dispose(); } catch (e) {} try { s.pg && s.pg.dispose(); } catch (e) {} }
+        el.classList.remove('lb-bub', 'lb-ctl', 'lb-live'); el.removeAttribute('data-lb'); el.removeAttribute('data-lb-shape');
         list.delete(el); return true;
     }
     /* Home is rebuilt now and then: drop bubbles that left the page, pick up new ones */
@@ -218,18 +277,22 @@
             const kind = el.id === 'spFast' ? 'fast' : el.classList.contains('wh-water') ? 'water' : (el.getAttribute('data-hb') || (el.classList.contains('wh-move') ? 'move' : 'bubble'));
             add(el, kind === 'fast' ? { kind, onLong: fastLong } : { kind });
         }));
+        CORE.CTL.forEach(c => D.querySelectorAll(c.sel).forEach(el => {
+            if (list.has(el)) return;
+            add(el, c.shape ? { kind: c.kind, ctl: true, shape: c.shape } : { kind: c.kind, ctl: true });
+        }));
         if (!api && W.LowiWorld3D && W.LowiWorld3D.ready) attach3d(W.LowiWorld3D);
     }
     W.addEventListener('lowi:world3d-ready', e => { attach3d((e && e.detail) || W.LowiWorld3D); scan(); });
     W.addEventListener('lowi:home-bubble-added', e => { const d = e && e.detail; if (d && d.el) add(d.el, { kind: d.kind || 'bubble' }); });
     /* only while Home is the page you see (no measuring behind Community) */
-    setInterval(() => { if (!D.hidden && homeShown()) scan(); }, 1500);
+    setInterval(() => { if (D.hidden) return; if (homeShown()) scan(); else unlive(); }, 1500);
     D.addEventListener('visibilitychange', () => { if (!D.hidden) scan(); });
     css();
     setTimeout(scan, 400);
 
     const API = { add, remove, attach: add, scan, list: () => [...list.keys()], active: () => !!api, core: CORE,
-        look: () => [...list.entries()].map(([el, s]) => ({ kind: s.opts.kind || '', visible: !!(s.mesh && s.mesh.visible), opacity: +s.o.toFixed(2), sameUniforms: !!(s.mat && api && s.mat.uniforms.uT === api.memU.uT && s.mat.uniforms.uGlow === api.memU.uGlow && s.mat.uniforms.uIn === api.memU.uIn), sameShader: !!(s.mat && mem && s.mat.vertexShader === mem.material.vertexShader), scale: s.mesh ? +s.mesh.scale.x.toFixed(4) : 0 })) };
+        look: () => [...list.entries()].map(([el, s]) => ({ kind: s.opts.kind || '', visible: !!(s.mesh && s.mesh.visible), opacity: +s.o.toFixed(2), sameUniforms: !!(s.mat && api && s.mat.uniforms.uT === api.memU.uT && s.mat.uniforms.uGlow === api.memU.uGlow && s.mat.uniforms.uIn === api.memU.uIn), sameShader: !!(s.mat && mem && s.mat.vertexShader === mem.material.vertexShader), ctl: !!s.opts.ctl, shape: s.opts.shape || 'round', live: !!(s.opts.ctl && el.classList.contains('lb-live')), pill: s.pg ? +s.pL.toFixed(3) : 0, scale: s.mesh ? +s.mesh.scale.x.toFixed(4) : 0 })) };
     W.LowiBubbles = API;
     W.LowiLivingBubble = { attach: (el, o) => add(el, o) };
 })(typeof window !== 'undefined' ? window : null);

@@ -1,0 +1,90 @@
+/* ---------- Oct 17 (Emmanuel, approved "Okay. Go ahead."): the menu bar, the weather pill and the Day/Night button are made of
+   the same liquid glass as Misty's bubble ----------
+   Misty's real bubble is the 3D membrane in body-world-3d-scene.js (memMat): a see-through blue core (#3a9fe0, low alpha), a
+   fresnel rim that turns violet (#9b87d2) towards the edge and catches a cyan highlight (#8fe7ff) right at the edge, plus a soft
+   cyan halo. This file gives those three controls that same material, as a still picture (no animation, no JS, no new loop):
+   - fill: the existing deep-blue see-through glass, a top-left light spot and a faint violet glow along the lower inner edge;
+   - rim: a thin ring that runs cyan -> blue -> violet -> cyan around the shape (a masked ::before over the existing border);
+   - depth: a bright top lip, the inner cyan glow and a soft cyan halo outside.
+   Paint only: sizes, positions, borders' widths, icons, labels, taps and the weather/Day-Night behaviour are untouched.
+   The weather pill keeps its symbol and temperature, the sun/moon keeps its icon, tap and hold. The backdrop blur values
+   stay what they were (no extra GPU cost). Fasting/water/movement bubbles are owned by the living-bubbles work, not here. */
+
+:root {
+    --gn-rim: linear-gradient(150deg, rgba(200,246,255,.95) 0%, rgba(143,231,255,.78) 16%, rgba(58,159,224,.58) 42%, rgba(155,135,210,.82) 74%, rgba(143,231,255,.72) 100%);
+    --gn-fill: radial-gradient(130% 95% at 20% -8%, rgba(255,255,255,.22), rgba(255,255,255,0) 48%),
+        radial-gradient(120% 90% at 84% 118%, rgba(155,135,210,.22), rgba(155,135,210,0) 58%),
+        linear-gradient(160deg, rgba(58,159,224,.16), rgba(28,74,150,.38));
+    --gn-sh: inset 0 1px 0 rgba(255,255,255,.22), inset 0 0 18px rgba(143,231,255,.2), inset 0 -10px 18px -12px rgba(155,135,210,.55),
+        0 8px 26px -12px rgba(40,120,255,.5), 0 0 16px -8px rgba(143,231,255,.45);
+    --gn-pick: radial-gradient(120% 100% at 30% 0%, rgba(255,255,255,.26), rgba(255,255,255,0) 60%),
+        radial-gradient(100% 90% at 70% 112%, rgba(155,135,210,.24), rgba(155,135,210,0) 62%), rgba(58,159,224,.2);
+    --gn-pick-sh: inset 0 1px 0 rgba(255,255,255,.2), inset 0 0 12px rgba(143,231,255,.26);
+    --gn-base: transparent;
+}
+html:is([data-theme="light"], [data-ui="light"]) {
+    --gn-rim: linear-gradient(150deg, rgba(255,255,255,.95) 0%, rgba(120,190,240,.78) 18%, rgba(44,108,176,.46) 45%, rgba(120,100,190,.56) 75%, rgba(90,170,230,.62) 100%);
+    --gn-fill: radial-gradient(130% 95% at 20% -8%, rgba(255,255,255,.62), rgba(255,255,255,0) 50%),
+        radial-gradient(120% 90% at 84% 118%, rgba(155,135,210,.18), rgba(155,135,210,0) 58%),
+        linear-gradient(160deg, rgba(160,195,235,.32), rgba(80,120,180,.3));
+    --gn-sh: inset 0 1px 0 rgba(255,255,255,.6), inset 0 0 16px rgba(255,255,255,.35), inset 0 -10px 18px -12px rgba(120,100,190,.4),
+        0 8px 24px -12px rgba(30,60,120,.38);
+    --gn-pick: radial-gradient(120% 100% at 30% 0%, rgba(255,255,255,.6), rgba(255,255,255,0) 60%),
+        radial-gradient(100% 90% at 70% 112%, rgba(120,100,190,.18), rgba(120,100,190,0) 62%), rgba(90,150,220,.2);
+    --gn-pick-sh: inset 0 1px 0 rgba(255,255,255,.55), inset 0 0 12px rgba(255,255,255,.3);
+}
+
+/* the three surfaces: same fill, same depth, the existing border becomes see-through so the ring can sit on it */
+html body #app #main #tabbar#tabbar,
+html body #tbTheme#tbTheme,
+html.spirit-app.wh-home body #tab-home #spHome .sp-weather.sp-weather {
+    background: var(--gn-fill), var(--gn-base) !important;
+    border-color: transparent !important;
+    box-shadow: var(--gn-sh) !important;
+}
+/* the weather pill is a static grid item: relative makes it the ring's box without moving it */
+html.spirit-app.wh-home body #tab-home #spHome .sp-weather.sp-weather { position: relative; --gn-in: 0px; }
+
+/* the ring (cyan -> blue -> violet -> cyan), drawn exactly over the border; pointer-events none, so taps are unchanged.
+   The menu bar's old ::before sheen (lsBar, already hidden by apple-ui) stays off: no animation here. */
+html body #app #main #tabbar#tabbar::before,
+html body #tbTheme#tbTheme::before,
+html.spirit-app.wh-home body #tab-home #spHome .sp-weather.sp-weather::before {
+    content: ""; display: block; position: absolute; inset: var(--gn-in, -1.5px); padding: 1.5px; border-radius: inherit; box-sizing: border-box;
+    background: var(--gn-rim); pointer-events: none; animation: none !important; z-index: 0;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+/* (the weather pill clips its text with overflow hidden, so its ring sits on the inside edge of its border: --gn-in 0 above) */
+/* keep the pill's symbol and temperature above the ring */
+html.spirit-app.wh-home body #tab-home #spHome .sp-weather.sp-weather > * { position: relative; z-index: 1; }
+
+/* the chosen tab: a small bubble of the same glass, with the same ring (Scan keeps its own orb; camera-open keeps scan-glass's rule) */
+html:not(.b3-camon) body #app #main #tabbar#tabbar .tb.active:not(.scan) {
+    background: var(--gn-pick) !important; box-shadow: var(--gn-pick-sh) !important;
+}
+html:not(.b3-camon) body #app #main #tabbar#tabbar .tb.active:not(.scan)::before {
+    content: ""; position: absolute; inset: 0; padding: 1px; border-radius: inherit; box-sizing: border-box;
+    background: var(--gn-rim); opacity: .85; pointer-events: none; z-index: -1;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+
+/* a browser without mask compositing would paint the whole ring box: fall back to a plain rim colour */
+@supports not ((mask-composite: exclude) or (-webkit-mask-composite: xor)) {
+    html body #app #main #tabbar#tabbar::before, html body #tbTheme#tbTheme::before,
+    html.spirit-app.wh-home body #tab-home #spHome .sp-weather.sp-weather::before,
+    html body #app #main #tabbar#tabbar .tb.active:not(.scan)::before { display: none !important; }
+    html body #app #main #tabbar#tabbar, html body #tbTheme#tbTheme, html.spirit-app.wh-home body #tab-home #spHome .sp-weather.sp-weather {
+        border-color: var(--wh-glass-rim, rgba(160,220,255,.55)) !important; }
+}
+/* Reduce Transparency: a nearly solid deep-blue base under the same light, so labels never depend on the world behind */
+@media (prefers-reduced-transparency: reduce) {
+    :root { --gn-base: rgba(10,24,56,.86); }
+    html:is([data-theme="light"], [data-ui="light"]) { --gn-base: rgba(236,243,255,.9); }
+}
+/* Increase Contrast: a solid bright ring instead of the colour run */
+@media (prefers-contrast: more) {
+    :root { --gn-rim: linear-gradient(rgba(220,246,255,.95), rgba(220,246,255,.95)); --gn-base: rgba(10,24,56,.7); }
+    html:is([data-theme="light"], [data-ui="light"]) { --gn-rim: linear-gradient(rgba(20,50,100,.8), rgba(20,50,100,.8)); --gn-base: rgba(236,243,255,.8); }
+}

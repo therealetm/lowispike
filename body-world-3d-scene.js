@@ -177,14 +177,17 @@ export function createWorld(THREE, canvas, opts) {
        WebGL buffer (a dropped frame on iPhone). Only a real change touches the canvas. */
     function resize(w, h) { const nw = Math.max(1, w | 0), nh = Math.max(1, h | 0); if (nw !== W || nh !== H) { W = nw; H = nh; renderer.setSize(W, H, false); } applyView(); }
     function setFocus(f) { focus = f; applyView(); }
+    const HOME_OUT = 1.4; /* the resting Home view: Misty at 1/1.4 of her close-up size (above wh-mapview's 0.6) */
     function homeDistFor(px) { return CR / ((px / (H / 2)) * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))); }
     function setMode(m, o) {
         o = o || {};
         if (m === 'home') {
             /* Home IS the world: drag orbits freely, two fingers zoom from Misty close-up out to the whole world.
                A re-layout keeps the current zoom (scaled to the new size) instead of snapping back to Misty. */
-            const was = rig.mode === 'home' && rig.homeDist > 0 && rig.lastHome ? rig.dist / rig.homeDist : 1;
-            rig.homeDist = homeDistFor(o.radiusPx || 100); rig.lastHome = true;
+            /* Oct 17 (handoff 6, E-man: zoomed-out Home is the default): Home rests a little pulled back (rig.homeRest), Misty smaller in
+               the middle with her four bubbles circling her (sym-home.js). homeDist stays the distance where her cell fits her DOM bubble. */
+            const was = rig.mode === 'home' && rig.homeDist > 0 && rig.lastHome ? rig.dist / rig.homeDist : HOME_OUT;
+            rig.homeDist = homeDistFor(o.radiusPx || 100); rig.homeOut = HOME_OUT; rig.homeRest = rig.homeDist * HOME_OUT; rig.lastHome = true;
             rig.minD = rig.homeDist * 0.72; rig.maxD = Math.max(14, rig.homeDist * 2.5); rig.pMax = 1.1;
             /* Oct 16 (task 1 fix): Home re-lays itself out every frame; past the World Map (rig.outer) the camera may be out in the
                spirit world, so the re-layout must not pull it back to the World Map limit */
@@ -237,7 +240,7 @@ export function createWorld(THREE, canvas, opts) {
     function flyTo(id) {
         const b = id && beacons[id];
         const from = { t: rig.target.clone(), d: rig.dist };
-        const to = b ? { t: b.pos.clone().multiplyScalar(0.92), d: 2.6 } : { t: new THREE.Vector3(), d: rig.mode === 'home' ? (rig.homeDist || 3.2) : 6.5 }; /* back home on Home: Misty's own framing */
+        const to = b ? { t: b.pos.clone().multiplyScalar(0.92), d: 2.6 } : { t: new THREE.Vector3(), d: rig.mode === 'home' ? (rig.homeRest || rig.homeDist || 3.2) : 6.5 }; /* back home on Home: Misty's own (zoomed-out) framing */
         if (b) { const ang = Math.atan2(b.pos.x, b.pos.z); rig.flyYaw = { from: rig.yaw, to: ang + Math.round((rig.yaw - ang) / (Math.PI * 2)) * Math.PI * 2 }; } else rig.flyYaw = null;
         rig.fly = { from, to, t: 0, dur: 1.45 }; rig.idle = 0;
         tint = b ? b.hue.clone() : null; tintT = b ? 0.2 : 0;

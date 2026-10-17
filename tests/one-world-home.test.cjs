@@ -43,7 +43,7 @@ test('the regions warp accepts Home as its host', () => {
 });
 
 test('flying back on Home returns to Misty\'s own framing', () => {
-    assert.match(read('body-world-3d-scene.js'), /d: rig\.mode === 'home' \? \(rig\.homeDist \|\| 3\.2\) : 6\.5/);
+    assert.match(read('body-world-3d-scene.js'), /d: rig\.mode === 'home' \? \(rig\.homeRest \|\| rig\.homeDist \|\| 3\.2\) : 6\.5/);
     assert.match(read('world-home.js'), /animateDist\(baseDist\(r\), 0\.12\)/);
 });
 

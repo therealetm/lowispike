@@ -1174,7 +1174,7 @@
         /* she stays out in the universe, a little way from the world she left, drifting gently away from it */
         V.a.subVectors(S.p, S.outPos); if (V.a.lengthSq() < 1e-6) V.a.copy(V.fw); V.a.normalize();
         S.v.copy(V.a).multiplyScalar(0.35);
-        S.st = 'free'; S.d0 = r.dist; S.dHome = r.homeDist || 3.2; S.dolly = 0; S.dollyOut = false;
+        S.st = 'free'; S.d0 = r.dist; S.dHome = r.homeRest || r.homeDist || 3.2; S.dolly = 0; S.dollyOut = false;
         S.wp = S.wpNext >= 0 ? S.wpNext : -1; S.wpNext = -1; S.wpWait = 0; S.tourGo = null; S.joined = 0; S.flew = null; S.entered = 0;
         S.fade = 1; S.emerge = 0; S.outT = 0; S.keepAuto = false; S.wob = 0; S.wobT = 9;
         const cs = toScreen(a, V.c, {}); S.cell0.x = cs.x; S.cell0.y = cs.y;

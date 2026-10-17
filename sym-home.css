@@ -36,3 +36,14 @@ html.spirit-app.wh-home body #tab-home #spHome .sp-weather.sp-weather.ask {
     flex-direction: column; justify-content: center; align-items: center; gap: 1px !important; font-size: 12.5px !important; line-height: 1 !important; }
 html.spirit-app.wh-home body #tab-home #spHome .sp-weather.sp-weather.ask { font-size: 10px !important; white-space: normal; text-align: center; }
 html.spirit-app.wh-home body #tab-home #spHome .sp-weather.sp-weather .sp-symbol { width: 17px !important; height: 17px !important; }
+
+/* 5. Oct 17 (handoff 6): Meals, Move, Water and Fasting circle Misty like Dragon Balls on the zoomed-out Home.
+   sym-home.js writes each bubble's spot on the ring (--ho-x / --ho-y, relative to its own parent) from the world's frame. */
+html.wh-home.ho-orbit #whHud .wh-cell[data-ho],
+html.wh-home.ho-orbit #spHome #spFast[data-ho] { left: var(--ho-x) !important; top: var(--ho-y) !important; }
+html.wh-home.ho-orbit.ho-in #whHud .wh-cell[data-ho],
+html.wh-home.ho-orbit.ho-in #spHome #spFast[data-ho] { transition: left .8s cubic-bezier(.2,.8,.2,1), top .8s cubic-bezier(.2,.8,.2,1), opacity .35s ease !important; }
+@media (prefers-reduced-motion: reduce) {
+    html.wh-home.ho-orbit.ho-in #whHud .wh-cell[data-ho],
+    html.wh-home.ho-orbit.ho-in #spHome #spFast[data-ho] { transition: opacity .35s ease !important; }
+}

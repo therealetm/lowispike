@@ -258,7 +258,8 @@
         if (st.pull) { if (r) { r.dist = st.pull.dist; r.pitch = st.pull.pitch; } st.zoomAnim = null; st.pull = null; }
         try { tick(); } catch (e) {}
     }
-    function baseDist(r) { return r && r.mode === 'home' ? (r.homeDist || 3.2) : 6.5; }
+    /* Oct 17 (handoff 6): Home's usual view is the zoomed-out rest view (scene rig.homeRest), not Misty's close-up */
+    function baseDist(r) { return r && r.mode === 'home' ? (r.homeRest || r.homeDist || 3.2) : 6.5; }
     function outerD(r) { return r && r.outerD ? r.outerD : 300; }
     /* Oct 16 (task 3): the zoom stick. A rate control like Google Earth's: the farther the knob is pushed, the faster the one camera
        moves, evenly in scale (x per second), from Misty's close-up through the World map and out past our bubble; the far edge hands
@@ -576,6 +577,14 @@
             }
         }
         if (r.mode === 'home') {
+            /* Oct 17 (handoff 6, E-man: zoomed-out Home by default, "like physically pulling back"): the first time Home's world shows,
+               the one camera starts at Misty's close-up and glides back to the zoomed-out rest view. Once per session, never with reduced motion. */
+            if (!st.restIntro && r.homeRest && homeActive() && H.classList.contains('wh-world-live')) {
+                st.restIntro = true;
+                if (!reduced() && !st.zoomAnim && !st.pull && !r.fly && !inRegion() && Math.abs(r.dist - r.homeRest) < r.homeRest * 0.02) {
+                    r.dist = r.homeDist; st.zoomAnim = { to: r.homeRest, rel: 1, t: 0, rate: 1.8, log: true };
+                }
+            }
             /* Oct 16 (task 3): past the World Map the world opens into the spirit world (pinch, wheel or the zoom stick). Misty's
                cell, the place names and the hints step aside out there; at its far edge the camera hands over to Community. */
             r.outer = !reduced();

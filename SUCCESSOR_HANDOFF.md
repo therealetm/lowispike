@@ -1,8 +1,9 @@
 # LOWiSPIKE successor handoff
 
-Snapshot written 18 Oct 2026, about 01:45 CEST (Europe/Berlin), against `origin/main` 7b7e18c, live build
-20261018-011214; refreshed at 01:29 CEST after build 20261018-012739 (commit 45141bc) landed. Everything marked "snapshot" below was true at that moment and will go stale. Re-check it before
-you act on it (see "Refresh procedure").
+Snapshot written 18 Oct 2026, about 01:25 CEST (Europe/Berlin), against `origin/main` 7b7e18c, live build
+20261018-011214; refreshed at 01:29 CEST after build 20261018-012739 (commit 45141bc) landed. Everything marked
+"snapshot" below was true at that moment and will go stale. Re-check it before you act on it (see "Refresh
+procedure").
 
 This file carries project knowledge, decisions and open work so that a new assistant, a new chat session or a
 human developer can pick up where the last one stopped. It does not carry an assistant's memory, personality or
@@ -60,7 +61,7 @@ Refresh this file when the task ledger, open decisions or release process change
 the snapshot sections and the timestamp at the top, and land it docs-only (no build id) through the normal release
 flow.
 
-## 3. Task ledger (snapshot 18 Oct 01:45 CEST)
+## 3. Task ledger (snapshot 18 Oct 01:25 CEST, refreshed 01:29)
 
 Task IDs, worktree paths under `/home/sprite` and the `COORD-*.md` files only exist inside the Sesame agent VM. A
 successor elsewhere should use the branch names (pushed ones are on GitHub) and treat each row as an open issue.

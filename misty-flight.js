@@ -74,6 +74,11 @@
     function joinOk(o) { return !!(o && o.inRegion && !o.busy && !o.hero && !o.reduced && (+o.settled || 0) >= K.JOIN); }
     /* Oct 17 (E-man: "the movement is a bit limited"): inside a world she reaches far out into its corners (was maxD * .32) */
     const inReach = maxD => Math.max(K.IN_R, (+maxD || 10) * 0.62);
+    /* misty-turn (Oct 17, E-man): "total freedom to fly to any corner of anything that I see ... fly down into the dark and get lost".
+       Your own flying reaches out to just inside the world's visible walls (a heart / organ shell ~20-26, the gut tube 15.5), not the
+       old camera-sized bubble. The hunt's crumbs and the autopilot's tour stay in the core (inReach). */
+    const FREE_R = 18, FREE_R_GUT = 13;
+    const freeReach = (maxD, id) => Math.max(inReach(maxD), String(id || '') === 'gut' ? FREE_R_GUT : FREE_R);
     const power = () => { try { return W.LowiMistyPower && W.LowiMistyPower.strength ? W.LowiMistyPower.strength() : 1; } catch (e) { return 1; } };
     /* inside a place: she roams on her own unless you are steering her (or let go less than K.HANDBACK s ago) */
     const roams = (mode, idle) => mode !== 'drive' || (+idle || 0) > K.HANDBACK;
@@ -164,7 +169,7 @@
     function orbitSpin(rad, sleepy) { return ORBIT.W * Math.pow(1 / Math.max(+rad || 0, ORBIT.R_END), 1.2) * (sleepy ? 0.7 : 1); }
     /* at the door: fling her back out (true) or let her in (false). tries = flings so far; refuse = the world's bounce rule said no */
     function orbitFling(tries, refuse) { return tries < ORBIT.MIN_FLINGS || (!!refuse && tries < ORBIT.TRIES - 1); }
-    const core = { K, inReach, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, roams, autoLeave, roamSpot, roamPx, pullAt, fallAt, EXIT, exitHold, MIST, angWrap, exitGaps, inMist, gapToward, mistReach, lostAmt, outAt, ORBIT, orbitAt, orbitSpin, orbitFling };
+    const core = { K, inReach, freeReach, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, roams, autoLeave, roamSpot, roamPx, pullAt, fallAt, EXIT, exitHold, MIST, angWrap, exitGaps, inMist, gapToward, mistReach, lostAmt, outAt, ORBIT, orbitAt, orbitSpin, orbitFling };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!D || !D.addEventListener || W.LowiMistyFlight) return;
 
@@ -348,7 +353,10 @@
                 padMode(ctx, ok ? 'home' : 'drive');
             } else { if (S.st === 'pull' || S.st === 'orbit') { S.st = 'free'; S.orb = null; } padMode(ctx, 'home'); }
         }
-        const mode = PD.mode || 'drive', vx = PD.vx || 0, vy = PD.vy || 0, mag = Math.min(1, Math.hypot(vx, vy)), steering = mode === 'drive' && mag > 0.05;
+        const mode = PD.mode || 'drive';
+        /* misty-turn: a drag on Misty turns her; holding the controller's middle flies her straight ahead (or back), steering = turning */
+        const tq = turnStep(ctx, mode, PD.vx || 0, PD.vy || 0); S.th = tq ? tq.th : 0;
+        const vx = tq ? tq.vx : PD.vx || 0, vy = tq ? tq.vy : PD.vy || 0, mag = Math.min(1, Math.hypot(vx, vy)), steering = mode === 'drive' && (mag > 0.05 || !!S.th || !!(tq && tq.hands));
         if (steering && ADV()) { try { W.LowiAdventure.stop('steer'); } catch (e) { } }
         if (mode === 'drive') S.idle = steering ? 0 : S.idle + dt; else S.idle = 0;
         if (mode === 'drive' && S.idle > K.IDLE_HOME && (S.st === 'free' || S.st === 'exit')) { padMode(ctx, 'home'); note('idle home'); }
@@ -362,7 +370,7 @@
         /* where she wants to go, in world space (length 0..1) */
         const homeP = homePoint(a);
         V.want.set(0, 0, 0);
-        if (mode === 'drive') V.want.addScaledVector(V.rt, vx).addScaledVector(V.up, vy);
+        if (mode === 'drive') { V.want.addScaledVector(V.rt, vx).addScaledVector(V.up, vy); thrustWant(); }
         else if (mode === 'home') { V.a.subVectors(homeP, S.p); const d = V.a.length(); if (d > 1e-4) V.want.copy(V.a).multiplyScalar(Math.min(1, d / 0.9) / d); }
         else if (mode === 'auto') tourWant(ctx, k);
 
@@ -433,7 +441,7 @@
                         if (S.dollyOut) r.dist = S.d0 + (Math.max(3.4, S.d0 * 0.42) - S.d0) * S.dolly;
                     }
                 }
-                if (mag > 0.05 || mode !== 'drive') r.idle = 0;
+                if (mag > 0.05 || S.th || mode !== 'drive') r.idle = 0;
             }
         }
         /* her size: constant on screen; smaller only near a place */
@@ -442,6 +450,7 @@
         S.ks += (sizeK(S.ap) - S.ks) * Math.min(1, dt * (S.emerge > 0 ? 1.2 : 5));
         S.hs = S.base * S.ks / pxPerUnit(a, S.p);
         place(ctx, k, still, S.emerge > 0 || S.fade < 1 ? (S.fade = Math.min(1, S.fade + dt * 0.7)) : 1);
+        if (S.st === 'free') turnDraw(ctx, S.fade);
         bubbleFollow(a);
         trail(ctx, k, mode === 'drive' ? mag : 0.6);
     }
@@ -458,6 +467,25 @@
         return best;
     }
     /* the stick points at a place you can see: bend her path toward it (depth included) */
+    /* misty-turn (Oct 17, E-man): misty-turn.js owns her heading (a drag on Misty turns her, not the world) and the controller's
+       middle hold (forward / back). These three are its only hooks in here. */
+    function turnStep(ctx, mode, vx, vy) {
+        const MT = W.LowiMistyTurn; if (!MT || !MT.steer || !S.p) return null;
+        const r = ctx.r, WH = W.LowiWorldHome, busy = !!r.fly || regionsBusy() || !!(WH && WH.state && WH.state.heroAnim) || S.st === 'warp' || S.st === 'pull' || S.recallOut;
+        let o = null; try { o = MT.steer({ dt: ctx.dt, mode, vx, vy, rig: r, busy }); } catch (e) { o = null; }
+        if (!o || !o.f) return null;
+        if (!S.hd) S.hd = new ctx.a.THREE.Vector3();
+        S.hd.set(o.f[0], o.f[1], o.f[2]);
+        return o;
+    }
+    function thrustWant() { if (!S.th || !S.hd) return; V.want.addScaledVector(S.hd, S.th); const L = V.want.length(); if (L > 1) V.want.divideScalar(L); }
+    function turnDraw(ctx, alpha) {
+        const MT = W.LowiMistyTurn; if (!MT || !MT.draw) return;
+        let o = null; try { o = MT.draw({ a: ctx.a, rig: ctx.r, p: S.p, hs: S.hs, dt: ctx.dt, alpha, reduced: ctx.reduced }); } catch (e) { o = null; }
+        if (!o) return;
+        if (o.bank && ctx.wand && ctx.wand.material) ctx.wand.material.rotation += o.bank;
+        if (o.sparkle) { try { V.b.copy(S.p); ctx.burst(V.b.clone(), 6, 0.18 * Math.max(0.3, S.hs)); } catch (e) { } }
+    }
     function magnet(a, vx, vy, mag) {
         const me = toScreen(a, S.p, {}), cands = [];
         (a.regions || []).forEach(g => {
@@ -697,7 +725,7 @@
         S.p.addScaledVector(S.v, dt);
     }
     function insideFrame(ctx, k, mode, vx, vy, mag, still) {
-        const a = ctx.a, r = ctx.r, dt = ctx.dt, zs = clamp(r.dist / 2.6, 1, 8), inR = inReach(r.maxD);
+        const a = ctx.a, r = ctx.r, dt = ctx.dt, zs = clamp(r.dist / 2.6, 1, 8), inR = inReach(r.maxD), freeR = freeReach(r.maxD, curRegion());
         /* the place opens on its widest view (body-world-regions.js): her pace and reach scale with how far out you are */
         if (mode === 'home' && !S.recallOut) { padMode(ctx, 'drive'); mode = 'drive'; }
         mistFrame(ctx, inR, true);
@@ -743,25 +771,25 @@
         } else {
             S.rw = null; S.rwWait = 0;
             V.want.set(0, 0, 0);
-            V.want.addScaledVector(V.rt, vx).addScaledVector(V.up, vy);
+            V.want.addScaledVector(V.rt, vx).addScaledVector(V.up, vy); thrustWant(); /* misty-turn: straight ahead into the world */
             S.v.lerp(V.b.copy(V.want).multiplyScalar(speed(k, 'in') * zs * power()), Math.min(1, dt * 4));
             S.p.addScaledVector(S.v, dt);
             /* soft edge: right after she roamed far, she is eased back into reach instead of jumping.
                mist rule: pushing outward into the mist lets her drift further out and get lost there; back in reach slowly */
-            V.a.subVectors(S.p, S.inC); const L = V.a.length();
+            V.a.subVectors(S.p, S.inC); const L = V.a.length(), baseR = free ? inR : freeR, magX = Math.max(mag, Math.abs(S.th || 0)); /* misty-turn: free reach; holding forward counts as pushing */
             const mAng = Math.atan2(V.a.dot(V.up), V.a.dot(V.rt)), misty = inMist(mAng, exitGaps(S.flew));
-            const pushOut = mode === 'drive' && mag >= EXIT.MAG && L > 1e-4 && V.want.dot(V.a) > 0;
-            const reach = mistReach(inR, misty, pushOut);
-            if (L > reach) { const L2 = Math.min(reach * 1.12, L - (L - reach) * Math.min(1, dt * (!pushOut && L > inR * 1.05 ? 0.9 : 3))); S.p.copy(S.inC).addScaledVector(V.a, L2 / L); }
+            const pushOut = mode === 'drive' && magX >= EXIT.MAG && L > 1e-4 && V.want.dot(V.a) > 0;
+            const reach = Math.max(baseR, mistReach(inR, misty, pushOut));
+            if (L > reach) { const L2 = Math.min(reach * 1.12, L - (L - reach) * Math.min(1, dt * (!pushOut && L > baseR * 1.05 ? 0.9 : 3))); S.p.copy(S.inC).addScaledVector(V.a, L2 / L); }
             S.inMist = misty; S.mistAng = mAng;
-            const lostNow = misty ? lostAmt(L / Math.max(1e-4, inR)) : 0;
+            const lostNow = misty ? lostAmt(L / Math.max(1e-4, baseR / MIST.LOST)) : 0;
             if (lostNow > 0.6) S.wasLost = true;
             if (S.wasLost && lostNow < 0.05) { S.wasLost = false; if (!S.lostSaid || performance.now() - S.lostSaid > 20000) { S.lostSaid = performance.now(); note('lost in the mist, back'); try { if (W.LowiMistyHints) W.LowiMistyHints.lost(); } catch (e) { } } }
             S.lost = lostNow;
             /* lost in the mist: her path wanders a little, she can't quite hold a line out there */
             if (lostNow > 0 && !still) S.p.addScaledVector(V.rt, Math.sin(S.t * 0.8) * 0.35 * lostNow * dt * zs).addScaledVector(V.up, Math.cos(S.t * 0.6) * 0.3 * lostNow * dt * zs);
             /* world-exit: keep pushing outward at the edge for 3 s and you both fly out */
-            if (exitCheck(ctx, k, mode, vx, vy, mag, inR)) return;
+            if (exitCheck(ctx, k, mode, vx, vy, magX, baseR)) return;
         }
         /* the camera keeps her in view once the place has settled (its own hero turn first) */
         const WH = W.LowiWorldHome, heroBusy = !!(WH && WH.state && WH.state.heroAnim);
@@ -772,11 +800,11 @@
                pushes her off the screen edge: she stays inside ~60% of the half-view (the narrower side) */
             const hv = Math.tan(((a.camera.fov || 50) * Math.PI) / 360) * Math.min(1, a.camera.aspect || 1) * 0.6 * r.dist;
             V.b.subVectors(S.p, r.target); const off2 = V.b.length(); if (off2 > hv) r.target.addScaledVector(V.b, 1 - hv / off2);
-            if (mag > 0.05) r.idle = 0;
+            if (mag > 0.05 || S.th) r.idle = 0;
         }
         S.fade = Math.min(1, S.fade + dt * 2.5);
         S.hs = S.base * K.MIN_K / pxPerUnit(a, S.p); /* the size she had at the door, whatever the zoom */
-        place(ctx, k, still, S.fade * (1 - 0.5 * (S.lost || 0))); /* deep in the mist she is half swallowed by it */
+        place(ctx, k, still, S.fade * (1 - 0.5 * (S.lost || 0))); turnDraw(ctx, S.fade); /* deep in the mist she is half swallowed by it */
         trail(ctx, k, free ? (S.rwWait > 0 ? 0 : 0.5) : mag);
         /* misty-hunt: the hidden crumbs of this world; only YOUR steering eats them (the autopilot never farms) */
         try { if (W.LowiMistyHunt) W.LowiMistyHunt.frame(ctx, S.p, !free, inR); } catch (e) { }
@@ -1006,6 +1034,13 @@
     W.LowiMistyFlight = {
         /* where she is on screen while inside a world (the explainer cell flies next to her, region-pals.js) */
         screen: () => (S.st === 'inside' && S.scrT && performance.now() - S.scrT < 400 ? { x: S.scr.x, y: S.scr.y } : null),
+        /* misty-turn: where she is on screen right now and how tall (px), out flying or inside a world; null while she is home */
+        touchSpot: () => {
+            const a = w3(); if (!a || !a.camera || !V || !S.p || !(S.st === 'inside' || S.st === 'free') || !(S.hs > 0)) return null;
+            if (S.st === 'inside' && S.fallT >= 0 && S.fallT < K.FALL) return null;
+            const q = toScreen(a, S.p, {}); if (!(q.z < 1)) return null;
+            return { x: q.x, y: q.y, h: S.hs * pxPerUnit(a, S.p) };
+        },
         recall: () => { if (S.st === 'idle') { try { if (W.LowiPad) W.LowiPad.mode(''); } catch (e) { } } else S.recallReq = true; },
         wants, frame, core,
         state: () => ({ st: S.st, flew: S.flew, joined: !!S.joined, roam: !!S.rw, inT: +(S.inT || 0).toFixed(1), wpNext: S.wpNext, ap: +S.ap.toFixed(3), near: S.near ? S.near.id : null, nearD: S.near ? +S.near.d.toFixed(2) : null, px: Math.round(S.base), ks: +S.ks.toFixed(3),

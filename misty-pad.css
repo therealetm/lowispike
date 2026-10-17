@@ -17,6 +17,9 @@
     background: radial-gradient(circle at 32% 28%, rgba(255,255,255,.55), rgba(255,255,255,0) 55%), rgba(127,227,255,.26); border: 1px solid rgba(225,248,255,.6);
     box-shadow: inset 0 0 8px rgba(200,240,255,.35), 0 4px 10px -4px rgba(0,0,0,.45); transition: transform .28s cubic-bezier(.2,.9,.25,1.25), background .3s ease; }
 .wh-pad.mp-down .mp-knob { transition: none; }
+/* misty-turn: held in the middle = forward (mint glow, knob pressed in), tap then hold = back (soft violet). Paint only, same size */
+.wh-pad.mp-fwd .mp-knob { box-shadow: 0 0 0 3px rgba(168,255,216,.35), 0 0 14px rgba(120,255,210,.55); background-color: rgba(46,248,182,.26); scale: .92; }
+.wh-pad.mp-back .mp-knob { box-shadow: 0 0 0 3px rgba(196,170,255,.35), 0 0 14px rgba(170,140,255,.5); background-color: rgba(150,120,255,.24); scale: .92; }
 .wh-pad .mp-knob svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 /* you steer: a soft glow; autopilot: a mint ring that breathes and a knob that slowly orbits its loop */
 .wh-hud .wh-pad[data-mode="drive"] { border-color: rgba(127,227,255,.75); box-shadow: 0 0 0 2px rgba(127,227,255,.28), var(--wh-glass-sh, 0 8px 24px -14px rgba(0,0,0,.45)); }

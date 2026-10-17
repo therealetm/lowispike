@@ -1,7 +1,9 @@
 /* LOWiSPIKE bubble controller (Oct 16, E-man: a little bubble controller to move Misty around the world; double-tap it
    and Misty flies through the world by herself, so you can watch her adventure while falling asleep, or steer her yourself).
    One small round liquid-glass thumbpad on Home, centred just above Today. Drag it: Misty leaves her cell and you steer her.
-   Double-tap it: autopilot, she flies her own adventure (adventure.js: slow aquarium tour with finds; a slow, sleepy drift
+   Oct 17 (E-man, misty-turn.js): hold it still in the middle = Misty flies straight ahead into the world; tap once, then hold =
+   she backs up; while holding, slide it to steer (left/right turns her, up/down climbs/dives). THREE quick taps = autopilot
+   (was a double-tap; two taps now start the back hold). Triple-tap it: autopilot, she flies her own adventure (adventure.js: slow aquarium tour with finds; a slow, sleepy drift
    when her energy is low). Touch it again: you steer again. Let go and leave her: after 20 s she floats back into her cell. Tapping her empty cell calls her home too.
    On the controller: the ring around it is Misty's energy (same energy as her face and her trips), the centre shows the mode.
    The 3D flight itself lives in world-home.js (LowiWorldHome.pad). Loads misty-pad.css itself. */
@@ -22,7 +24,7 @@
         auto: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12c-2.2-3-6.6-3-6.6 0s4.4 3 6.6 0 6.6-3 6.6 0-4.4 3-6.6 0z"/><circle cx="18.6" cy="12" r="1.3" class="mp-dot"/></svg>',
         sleepy: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9h5l-5 6h5M13 6h4l-4 4.5h4"/></svg>'
     };
-    const st = { el: null, knob: null, chip: null, mode: '', id: null, x0: 0, y0: 0, moved: false, lastUp: 0, ignoreDbl: 0, chipT: 0, enT: 0, tier: '', value: 0, R: 22, hinted: false };
+    const st = { el: null, knob: null, chip: null, mode: '', id: null, x0: 0, y0: 0, moved: false, lastUp: 0, taps: 0, holdT: 0, thr: 0, downT: 0, ignoreDbl: 0, chipT: 0, enT: 0, tier: '', value: 0, R: 22, hinted: false };
     const wh = () => W.LowiWorldHome && W.LowiWorldHome.pad ? W.LowiWorldHome : null;
     function send(cmd) { const w = wh(); if (!w) return null; try { return w.pad(cmd); } catch (e) { return null; } }
     function low() { return st.tier === 'weak' || st.tier === 'tired'; }
@@ -44,7 +46,7 @@
     }
     function label() {
         if (st.mode === 'auto') return low() ? T('Autopilot, Misty is drifting sleepily. Tap to steer', 'Autopilot, Misty treibt m\u00fcde. Tippen zum Steuern', 'Piloto autom\u00e1tico, Misty flota con sue\u00f1o. Toca para dirigir') : T('Autopilot, Misty flies on its own. Tap to steer', 'Autopilot, Misty fliegt allein. Tippen zum Steuern', 'Piloto autom\u00e1tico, Misty vuela por su cuenta. Toca para dirigir');
-        return T('Controller: drag to fly Misty, double-tap for autopilot', 'Steuerung: ziehen, um Misty zu fliegen, doppelt tippen f\u00fcr Autopilot', 'Control: arrastra para volar con Misty, toca dos veces para piloto autom\u00e1tico');
+        return T('Controller: drag to fly Misty, hold the middle to go forward, tap then hold to go back, three taps for autopilot', 'Steuerung: ziehen, um Misty zu fliegen, Mitte halten f\u00fcr vorw\u00e4rts, tippen und halten f\u00fcr r\u00fcckw\u00e4rts, dreimal tippen f\u00fcr Autopilot', 'Control: arrastra para volar con Misty, mant\u00e9n el centro para avanzar, toca y mant\u00e9n para retroceder, tres toques para piloto autom\u00e1tico');
     }
     function paint() {
         const b = st.el; if (!b) return;
@@ -95,6 +97,19 @@
         if (m < 0.14) { vx = vy = 0; } else { const s = (m - 0.14) / 0.86 / m; vx *= s; vy *= s; }
         send({ vx, vy });
     }
+    /* misty-turn: forward / back while the controller is held (misty-turn.js flies her along her heading) */
+    const MT = () => W.LowiMistyTurn || null;
+    function thrust(v) {
+        st.thr = v; const t = MT(); try { if (t && t.thrust) t.thrust(v); } catch (e) { }
+        if (st.el) { st.el.classList.toggle('mp-fwd', v > 0); st.el.classList.toggle('mp-back', v < 0); }
+    }
+    function startHold(v) {
+        if (st.mode !== 'drive') setMode('drive', true);
+        try { if (W.LowiAdventure && W.LowiAdventure.on) W.LowiAdventure.stop('steer'); } catch (e) { }
+        thrust(v); hintDone();
+        try { navigator.vibrate && navigator.vibrate(10); } catch (e) { }
+        chip(v > 0 ? T('Forward', 'Vorw\u00e4rts', 'Adelante') : T('Backwards', 'R\u00fcckw\u00e4rts', 'Atr\u00e1s'), 1200);
+    }
     function hintDone() { try { localStorage.setItem(HINT_KEY, '1'); } catch (e) { } }
     function wire(b) {
         /* the world (look-around drag, pinch, taps on places) and the tab pager never see a touch that starts here */
@@ -105,42 +120,58 @@
             st.id = e.pointerId; st.x0 = e.clientX; st.y0 = e.clientY; st.moved = false;
             try { b.setPointerCapture(e.pointerId); } catch (er) { }
             b.classList.add('mp-down');
-            /* autopilot: any touch hands control back to you (and that touch never counts towards a double-tap) */
-            if (st.mode === 'auto') { st.ignoreDbl = performance.now() + 450; userMode('drive'); }
+            /* autopilot: any touch hands control back to you (and that touch never counts towards the taps) */
+            const t0 = performance.now(); st.downT = t0;
+            if (st.mode === 'auto') { st.ignoreDbl = t0 + 450; userMode('drive'); }
+            /* misty-turn: held still in the middle = straight ahead; right after a tap = back */
+            clearTimeout(st.holdT);
+            const dir = t0 < st.ignoreDbl ? 1 : (W.LowiMistyTurn && W.LowiMistyTurn.core ? W.LowiMistyTurn.core.holdDir(st.lastUp, t0) : 1), id = e.pointerId;
+            st.holdT = setTimeout(() => { if (st.id === id && !st.moved && !st.thr) startHold(dir); }, (W.LowiMistyTurn && W.LowiMistyTurn.core ? W.LowiMistyTurn.core.K.HOLD_MS : 280));
         });
         b.addEventListener('pointermove', e => {
             if (e.pointerId !== st.id) return;
             e.stopPropagation(); if (e.cancelable) e.preventDefault();
             const dx = e.clientX - st.x0, dy = e.clientY - st.y0;
             if (!st.moved && Math.hypot(dx, dy) < 6) return;
-            if (!st.moved) { st.moved = true; if (st.mode !== 'drive') setMode('drive'); hintDone(); }
+            if (!st.moved) { st.moved = true; clearTimeout(st.holdT); if (st.mode !== 'drive') setMode('drive'); hintDone(); }
             steer(dx, dy);
         }, { passive: false });
         const up = e => {
             if (e.pointerId !== st.id) return;
             e.stopPropagation();
-            st.id = null; b.classList.remove('mp-down'); knob(0, 0); send({ vx: 0, vy: 0 });
-            if (st.moved || e.type === 'pointercancel') { st.lastUp = 0; return; }
+            st.id = null; b.classList.remove('mp-down'); knob(0, 0); send({ vx: 0, vy: 0 }); clearTimeout(st.holdT);
+            const held = !!st.thr; if (held) thrust(0);
+            if (held || st.moved || e.type === 'pointercancel') { st.lastUp = 0; st.taps = 0; return; }
             const now = performance.now();
-            if (now < st.ignoreDbl) { st.lastUp = 0; return; }
-            if (now - st.lastUp < 340) { st.lastUp = 0; userMode(st.mode === 'auto' ? 'drive' : 'auto'); hintDone(); return; }
-            st.lastUp = now;
-            /* one tap on a resting controller: a short how-to (Misty stays home until you drag or double-tap) */
-            setTimeout(() => { if (st.lastUp === now && !st.mode) chip(T('Drag to fly \u00b7 double-tap: autopilot', 'Ziehen zum Fliegen \u00b7 doppelt tippen: Autopilot', 'Arrastra para volar \u00b7 dos toques: autom\u00e1tico'), 2600); }, 360);
+            if (now < st.ignoreDbl) { st.lastUp = 0; st.taps = 0; return; }
+            st.taps = now - st.lastUp < 340 ? st.taps + 1 : 1; st.lastUp = now;
+            /* three quick taps: autopilot on / off (two taps are the start of the back hold) */
+            if (st.taps >= 3) { st.lastUp = 0; st.taps = 0; userMode(st.mode === 'auto' ? 'drive' : 'auto'); hintDone(); return; }
+            /* one tap on a resting controller, or two taps and no hold: a short how-to */
+            const n = st.taps;
+            setTimeout(() => {
+                if (st.lastUp !== now || st.id != null) return;
+                if (n === 1 && !st.mode) chip(T('Drag to fly \u00b7 hold: forward \u00b7 3 taps: autopilot', 'Ziehen zum Fliegen \u00b7 halten: vorw\u00e4rts \u00b7 3\u00d7 tippen: Autopilot', 'Arrastra para volar \u00b7 mant\u00e9n: adelante \u00b7 3 toques: autom\u00e1tico'), 2600);
+                else if (n === 2) chip(T('Tap, then hold: backwards \u00b7 3 taps: autopilot', 'Tippen, dann halten: r\u00fcckw\u00e4rts \u00b7 3\u00d7 tippen: Autopilot', 'Toca y mant\u00e9n: atr\u00e1s \u00b7 3 toques: autom\u00e1tico'), 2600);
+            }, 360);
         };
         b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up);
+        b.addEventListener('lostpointercapture', e => { if (e.pointerId === st.id) up({ pointerId: e.pointerId, type: 'pointercancel', stopPropagation() { } }); });
+        D.addEventListener('visibilitychange', () => { if (D.hidden && st.thr) thrust(0); });
         b.addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); });
         b.addEventListener('dblclick', e => { e.stopPropagation(); e.preventDefault(); });
         b.addEventListener('contextmenu', e => e.preventDefault());
-        /* keyboard: Enter / Space toggles autopilot, arrow keys steer */
+        /* keyboard: Enter / Space toggles autopilot, arrow keys steer, W / S hold = forward / back */
         const keys = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] };
         b.addEventListener('keydown', e => {
             if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); userMode(st.mode === 'auto' ? 'drive' : 'auto'); return; }
+            const fk = e.key === 'w' || e.key === 'W' ? 1 : e.key === 's' || e.key === 'S' ? -1 : 0;
+            if (fk) { e.preventDefault(); if (st.thr !== fk) startHold(fk); return; }
             const k = keys[e.key]; if (!k) return; e.preventDefault();
             if (st.mode !== 'drive') setMode('drive', true);
             send({ vx: k[0], vy: k[1] });
         });
-        b.addEventListener('keyup', e => { if (keys[e.key]) send({ vx: 0, vy: 0 }); });
+        b.addEventListener('keyup', e => { if (keys[e.key]) send({ vx: 0, vy: 0 }); if (/^[wWsS]$/.test(e.key) && st.thr) thrust(0); });
     }
 
     /* while Misty is out on the controller her cell is empty: tapping it calls her home (no petting an empty cell) */
@@ -174,11 +205,11 @@
         const s = send(null); if (s && s.mode !== st.mode && st.id == null) { st.mode = s.mode; paint(); if (!s.mode) chip(''); }
         if (!st.hinted && H.classList.contains('wh-world-live') && H.classList.contains('wh-home')) {
             st.hinted = true; let seen = false; try { seen = !!localStorage.getItem(HINT_KEY); } catch (e) { }
-            if (!seen) setTimeout(() => { if (!st.mode) chip(T('New: drag to fly Misty \u00b7 double-tap for autopilot', 'Neu: ziehen, um Misty zu fliegen \u00b7 doppelt tippen f\u00fcr Autopilot', 'Nuevo: arrastra para volar con Misty \u00b7 dos toques: autom\u00e1tico'), 5200); hintDone(); }, 2500);
+            if (!seen) setTimeout(() => { if (!st.mode) chip(T('New: drag to fly Misty \u00b7 hold: forward \u00b7 3 taps: autopilot', 'Neu: ziehen, um Misty zu fliegen \u00b7 halten: vorw\u00e4rts \u00b7 3\u00d7 tippen: Autopilot', 'Nuevo: arrastra para volar con Misty \u00b7 mant\u00e9n: adelante \u00b7 3 toques: autom\u00e1tico'), 5200); hintDone(); }, 2500);
         }
     }
     setInterval(tick, 500);
     W.addEventListener('resize', () => setTimeout(place, 60));
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', tick); else tick();
-    W.LowiPad = { state: () => Object.assign({ pad: st.mode, tier: st.tier, energy: +st.value.toFixed(2) }, send(null) || {}), mode: m => setMode(m), steer: (vx, vy) => send({ vx, vy }) };
+    W.LowiPad = { state: () => Object.assign({ pad: st.mode, tier: st.tier, energy: +st.value.toFixed(2) }, send(null) || {}), mode: m => setMode(m), steer: (vx, vy) => send({ vx, vy }), thrust: v => (v ? startHold(v > 0 ? 1 : -1) : thrust(0)) };
 })();

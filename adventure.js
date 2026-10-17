@@ -3,7 +3,7 @@
    into a world, she gets smaller and falls in, and out again the same way. Like watching fish in an aquarium.")
 
    No button of its own (Oct 16, E-man: no pills crammed next to the controller). It starts from the control Today already
-   has: double-tap Misty's controller (autopilot, misty-pad.js calls LowiAdventure.start()) = her tour in slow "aquarium"
+   has: triple-tap Misty's controller (was double-tap; Oct 17 two taps + hold = back) (autopilot, misty-pad.js calls LowiAdventure.start()) = her tour in slow "aquarium"
    pacing (misty-flight.js does the flying, gated on LowiAdventure.on). Tapping her empty cell = recall: she flies straight
    home, a little faster, and settles in her cell. Touching the controller = you take over, the adventure stops.
 

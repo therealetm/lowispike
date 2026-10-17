@@ -25,6 +25,8 @@
 html.wh-home.hc-on #tab-home #f3Board.hc-joined { border-bottom-left-radius: 0 !important; border-bottom-right-radius: 0 !important; border-bottom-color: transparent !important; margin-bottom: 0 !important; }
 html.hc-on.hc-slot .hq-slot.arr-on .arr-card.arr-quest { border-bottom-left-radius: 0 !important; border-bottom-right-radius: 0 !important; border-bottom-color: transparent !important; }
 /* the box itself steps away in some views (sheets, map zoom, warps; hunt-count.js mirrors it): the line goes with it */
+/* Misty, the guide, its speech bubble or the controller is under the line: it fades right down so they stay fully visible */
+.hc-line.on.hc-dim { opacity: .14; }
 .hc-line.hc-away { opacity: 0 !important; visibility: hidden; }
 html:not(.wh-home) .hc-line { display: none !important; }
 /* clean autopilot view (clean-view.js, html.lw-clean) hides the Daily Quest: the line goes too */
@@ -36,6 +38,8 @@ html[data-theme="light"] .hc-sub, html[data-ui=light] .hc-sub { color: rgba(18,5
 html[data-theme="light"] .hc-dots i, html[data-ui=light] .hc-dots i { border-color: rgba(18,52,90,.45); }
 /* narrow phones: smaller name, the dots step aside before the numbers ever get cut */
 @media (max-width: 380px) { .hc-line { gap: 6px; padding-left: 12px; padding-right: 12px; font-size: 12px; } .hc-dots i { width: 6px; height: 6px; } }
+/* short screens (phone sideways): a thinner line so it ends above Misty's controller */
+@media (max-height: 500px) { .hc-line { min-height: 23px; padding-top: 2px; padding-bottom: 3px; font-size: 11.5px; } .hc-w { font-size: 9.5px; } }
 @media (max-width: 340px) { .hc-dots { display: none; } }
 @keyframes hc-in { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .hc-line, .hc-line.on { transition: none; animation: none; } }

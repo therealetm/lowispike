@@ -44,7 +44,9 @@ test('the numbers come from the real hunt, only when they change, never per fram
     const frame = hunt.slice(hunt.indexOf('function frame('), hunt.indexOf('function frame(') + 1400);
     assert.ok(!/tell\(\)/.test(frame.split('if (!H.bits.length) return;')[0].replace(/spawn\(ctx, reg, id, reach\)/g, '')), 'frame itself does not send counts');
     assert.ok(/tally,\s*state:/.test(hunt), 'LowiMistyHunt.tally() for a late start');
-    assert.ok(!/requestAnimationFrame|setInterval/.test(js), 'no loop in hunt-count.js');
+    assert.ok(!/requestAnimationFrame/.test(js), 'no frame loop in hunt-count.js');
+    assert.strictEqual((js.match(/setInterval\(/g) || []).length, 1, 'one light look, only while the line shows');
+    assert.ok(/setInterval\(look, 400\)/.test(js) && /clearInterval\(watch\)/.test(js) && /watchOn\(false\); return;/.test(js));
     assert.ok(/addEventListener\('lowi:hunt-count'/.test(js));
 });
 
@@ -75,4 +77,10 @@ test('loaded after misty-hunt.js and cached for offline', () => {
     const a = html.indexOf('misty-hunt.js?v='), b = html.indexOf('hunt-count.js?v=');
     assert.ok(a > 0 && b > a);
     assert.ok(sw.includes('"hunt-count.js"') && sw.includes('"hunt-count.css"'));
+});
+
+test('Misty, the cell guide, its speech bubble and the controller are never hidden behind the line', () => {
+    for (const k of ['LowiMistyFlight', ".rp-body", ".rp-say", "#whPad"]) assert.ok(js.includes(k), k);
+    assert.ok(/\.hc-line\.on\.hc-dim \{ opacity: \.14; \}/.test(css));
+    assert.ok(/html\.lw-clean \.hc-line/.test(css), 'clean autopilot view hides it with the Daily Quest');
 });

@@ -4,7 +4,8 @@
    (filled = collected) and "2/6 collected · 4 left"; when all are gone it says the world is clean.
    - The numbers come only from misty-hunt.js ('lowi:hunt-count' / LowiMistyHunt.tally()): the crumbs that are really there,
      so it is right after a reload, on a world switch, on a new day and when today's food changed the number of crumbs.
-   - Event driven: it re-renders on a count change and re-measures on resize / when the box changes size. No frame loop.
+   - Event driven: it re-renders on a count change and re-measures on resize / when the box changes size. No frame loop;
+     while it shows, a look every 0.4 s fades it right down when Misty, the guide, its bubble or the controller is under it.
    - Not a button and not a popup: no touches, no timers, no sound. Screen readers hear the change (polite live region).
    - Speech bubbles, Misty, the cell guide and the controls stay on top: the line sits under the box, below their layers. */
 (function () {
@@ -71,12 +72,25 @@
         const pop = D.querySelector('.hq-pop.on');
         if (pop && !el.classList.contains('hc-away')) { const a = el.getBoundingClientRect(), q = pop.getBoundingClientRect(); if (a.height && q.top < a.bottom && q.bottom > a.top) pop.style.top = Math.round(a.bottom + 10) + 'px'; }
     }
+    /* step aside: when Misty, the cell guide, its speech bubble or the controller is under the line, the line fades right down
+       so nothing of them is hidden. A light look every 0.4 s only while the line shows (no frame loop), stopped when it goes. */
+    let watch = 0;
+    function ovl(a, q, pad) { return q && q.width > 0 && a.left < q.right + pad && q.left < a.right + pad && a.top < q.bottom + pad && q.top < a.bottom + pad; }
+    function look() {
+        if (!el || !el.classList.contains('on') || D.hidden) return;
+        const a = el.getBoundingClientRect(); if (!a.height) return;
+        let hit = false;
+        try { const M = W.LowiMistyFlight, p = M && M.screen && M.screen(); if (p && p.x > a.left - 30 && p.x < a.right + 30 && p.y > a.top - 30 && p.y < a.bottom + 30) hit = true; } catch (e) { }
+        if (!hit) for (const s of ['.rp-body', '.rp-say', '#whPad', '#whPadChip']) { const n = D.querySelector(s); if (n && n.offsetParent !== null && ovl(a, n.getBoundingClientRect(), s[1] === 'w' ? 0 : 4)) { const cs = W.getComputedStyle(n); if (cs.visibility !== 'hidden' && +cs.opacity > 0.15) { hit = true; break; } } }
+        if (hit !== el.classList.contains('hc-dim')) el.classList.toggle('hc-dim', hit);
+    }
+    function watchOn(on) { if (on && !watch) { watch = setInterval(look, 400); look(); } else if (!on && watch) { clearInterval(watch); watch = 0; if (el) el.classList.remove('hc-dim'); } }
     function render() {
         const m = H.classList.contains('wh-home') ? model(cur, lang(), cur && worldName(cur.world)) : null;
         const b = board();
         if (!m) {
             if (el) { el.classList.remove('on'); el.setAttribute('aria-hidden', 'true'); }
-            if (b) b.classList.remove('hc-joined'); H.classList.remove('hc-on', 'hc-slot'); return;
+            if (b) b.classList.remove('hc-joined'); H.classList.remove('hc-on', 'hc-slot'); watchOn(false); return;
         }
         if (!make()) return;
         const dots = m.dots ? '<span class="hc-dots" aria-hidden="true">' + m.dots.map(x => '<i' + (x ? ' class="got"' : '') + '></i>').join('') + '</span>' : '';
@@ -88,7 +102,7 @@
         if (m.aria !== lastAria) { el.setAttribute('aria-label', m.aria); lastAria = m.aria; }
         el.removeAttribute('aria-hidden');
         el.classList.add('on'); if (b) b.classList.add('hc-joined'); H.classList.add('hc-on');
-        place();
+        place(); watchOn(true);
     }
     W.addEventListener('lowi:hunt-count', e => { cur = e && e.detail ? Object.assign({}, e.detail) : null; render(); });
     /* back to the bloodstream / world map: no world, no count (misty-hunt.js also sends a zero count then) */

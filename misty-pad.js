@@ -253,7 +253,7 @@
         const p = PA.pick(spot, { vw: innerWidth, vh: innerHeight, size, flying: fly, settling: performance.now() - resizeT < PA.SETTLE_MS,
             today: tr && tr.width ? { cx: tr.left + tr.width / 2, top: tr.top } : null, gap, hud: { left: hr.left, right: hr.right, bottom: hr.bottom }, tb });
         if (!p) return;
-        spot = p; b.dataset.anchor = p.held ? 'held' : 'home';
+        spot = p; { const an = p.held ? 'held' : 'home'; if (b.dataset.anchor !== an) b.dataset.anchor = an; } /* Oct 18 game-perf: every 500 ms, write only on change */
         const c = PA.css(p, hr), bottom = c.bottom, left = c.left;
         if (b.style.bottom !== bottom + 'px') b.style.bottom = bottom + 'px';
         if (b.style.left !== left + 'px') b.style.left = left + 'px';

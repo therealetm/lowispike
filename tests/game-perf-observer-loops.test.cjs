@@ -67,6 +67,35 @@ test('per-frame writes on <html> are guarded: --wh-far and the Profile colour', 
     assert.ok(!/^\s*by\.style\.setProperty\('--sp-sign'/m.test(sp), '--sp-sign on the profile is guarded');
 });
 
+/* Loop 3 (WebKit visible-again budget): the 700 ms Home tick and the 500 ms controller tick rewrote unchanged attributes and
+   variables on <html> and the HUD, so every body observer (Daily Quest, workout badges, Cook, the fit passes...) scheduled a
+   frame about twice a second; in WebKit, coming back to the tab, that was ~30 extra callbacks/s for a ~5/s world. */
+test('Home tick writes the aura, the water cell and the close button only when they change', () => {
+    const src = read('world-home.js');
+    const aura = src.slice(src.indexOf('function applyAura()'), src.indexOf('function applyAura()') + 600);
+    assert.ok(!/^\s*H\.dataset\.whAura = a\.id;/m.test(aura) && /H\.dataset\.whAura !== a\.id/.test(aura), 'data-wh-aura guarded');
+    assert.ok(/getPropertyValue\('--wh-aura-a'\) !== a\.a/.test(aura) && /getPropertyValue\('--wh-aura-b'\) !== a\.b/.test(aura), 'aura colours guarded');
+    assert.ok(!/^\s*wc\.setAttribute\('aria-label'/m.test(src), 'water cell aria-label guarded');
+    assert.ok(/wc\.style\.getPropertyValue\('--wh-fill'\) !== fv/.test(src), 'water fill guarded');
+    assert.ok(!/^\s*x\.hidden = !on;/m.test(src) && /if \(x\.hidden !== !on\) x\.hidden = !on;/.test(src), 'close button hidden guarded');
+});
+
+test('controller anchor, Cook For You switch and Today more/less button write attributes only on change', () => {
+    assert.ok(/if \(b\.dataset\.anchor !== an\) b\.dataset\.anchor = an;/.test(read('misty-pad.js')), 'misty-pad data-anchor guarded');
+    const nm = read('nav-moves.js'), marks = nm.slice(nm.indexOf('function marks()'), nm.indexOf('function marks()') + 400);
+    assert.ok(/getAttribute\('aria-selected'\) !== as/.test(marks), 'ck-fy aria-selected guarded');
+    assert.ok(/if \(b\.getAttribute\("aria-expanded"\) !== ae\) b\.setAttribute\("aria-expanded", ae\);/.test(read('index.html')), 'g1-more aria-expanded guarded');
+});
+
+test('Daily Quest board repaints only when its own markup changes, compared with what it last wrote', () => {
+    const html = read('index.html');
+    const p = html.slice(html.indexOf('function paint(){ let r; try { r = html(); }'), html.indexOf('/* ---------- where each quest takes you'));
+    assert.ok(p.length > 50, 'Daily Quest paint() found');
+    assert.ok(!/b\.innerHTML !== h/.test(p), 'no comparison with the board text on screen (spirit.js swaps its emoji)');
+    assert.ok(/b\.__f3H !== h/.test(p) && /b\.__f3H = h/.test(p), 'compares with the last markup written');
+    assert.ok(/getAttribute\("aria-label"\) !== al/.test(p), 'aria-label guarded');
+});
+
 test('soak tool files are present and parse', () => {
     new Function(read('tools/soak/probe.js'));
     assert.ok(/require\('\.\/budget\.cjs'\)/.test(read('tools/soak/game-soak.cjs')));

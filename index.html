@@ -2751,7 +2751,7 @@ function tidy(){ const home = document.getElementById("tab-home"); if (!home) re
   }
   paint(); }
 function paint(){ const o = open(); H.classList.toggle("g1-more-open", o); document.querySelectorAll("#tab-home .g1-more").forEach(b => { const t = o ? T("less") : T("more");
-  const html = '<span>' + t.replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])) + '</span><i aria-hidden="true">' + (o ? "▴" : "▾") + '</i>'; if (b.innerHTML !== html) b.innerHTML = html; b.setAttribute("aria-expanded", o ? "true" : "false"); }); }
+  const html = '<span>' + t.replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])) + '</span><i aria-hidden="true">' + (o ? "▴" : "▾") + '</i>'; if (b.innerHTML !== html) b.innerHTML = html; const ae = o ? "true" : "false"; if (b.getAttribute("aria-expanded") !== ae) b.setAttribute("aria-expanded", ae); }); }
 let q = 0; const run = () => { if (q) return; q = requestAnimationFrame(() => { q = 0; try { mo.disconnect(); tidy(); } catch(e){ console.warn(e); } watch(); }); };
 const mo = new MutationObserver(run);
 function watch(){ const h = document.getElementById("tab-home"); if (h) mo.observe(h, {childList:true, subtree:true}); }
@@ -17724,8 +17724,10 @@ function mount(){ const home = document.getElementById("tab-home"); if (!home) r
   if (b.previousElementSibling !== top) top.insertAdjacentElement("afterend", b);
   return b; }
 function paint(){ let r; try { r = html(); } catch(e){ console.warn(e); return; }
-  const b = mount(); if (!b) return; const h = r.h; if (h !== lastH || b.innerHTML !== h) { b.innerHTML = h; lastH = h; }
-  b.classList.toggle("f3-all", r.n === r.L.length); b.setAttribute("aria-label", w("tag")); }
+  /* Oct 18 game-perf: compare with what this board last wrote, never with its innerHTML: spirit.js swaps the emoji for icons,
+     so the page never matched again and every paint rewrote the board, which woke every body observer about twice a second */
+  const b = mount(); if (!b) return; const h = r.h; if (b.__f3H !== h || !b.firstChild) { b.innerHTML = h; b.__f3H = h; lastH = h; }
+  b.classList.toggle("f3-all", r.n === r.L.length); const al = w("tag"); if (b.getAttribute("aria-label") !== al) b.setAttribute("aria-label", al); }
 
 /* ---------- where each quest takes you ---------- */
 function flash(el){ if (!el) return; try { el.scrollIntoView({block:"center", behavior:"smooth"}); } catch(e){} el.classList.remove("f3-flash"); void el.offsetWidth; el.classList.add("f3-flash"); setTimeout(() => el.classList.remove("f3-flash"), 1900); }

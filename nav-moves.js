@@ -99,7 +99,7 @@
     /* the For You button in Cook's Shuffle | For You | Swipe switch lights up like the other two while the window is open */
     function marks() {
         const on = isOpen('fy');
-        D.querySelectorAll('#tab-shelf .ck-fy').forEach(b => { b.classList.toggle('on', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
+        D.querySelectorAll('#tab-shelf .ck-fy').forEach(b => { b.classList.toggle('on', on); const as = on ? 'true' : 'false'; if (b.getAttribute('aria-selected') !== as) b.setAttribute('aria-selected', as); });
     }
     /* the window fills the room left under Cook's top row, down to just above the tab bar (like the Swipe cards) */
     function fit() {

@@ -235,13 +235,25 @@
     function orbitSpin(rad, sleepy) { return ORBIT.W * Math.pow(1 / Math.max(+rad || 0, ORBIT.R_END), 1.2) * (sleepy ? 0.7 : 1); }
     /* at the door: fling her back out (true) or let her in (false). tries = flings so far; refuse = the world's bounce rule said no */
     function orbitFling(tries, refuse) { return tries < ORBIT.MIN_FLINGS || (!!refuse && tries < ORBIT.TRIES - 1); }
+    /* Oct 18 (E-man, on her timed Explore trip: "so tiny I can't even see her ... she needs to be able to also come close to the
+       camera, and only sometimes go to the distance"): inside a world she used to stay at the door size (K.MIN_K) the whole time.
+       Now she is close (NEAR of her size) and only now and then, on her own, drifts off into the distance (FAR, the door size)
+       for a few seconds. t = seconds inside, seed = 0..1 per world (its own rhythm), steered = you are flying her: always close.
+       Period P = 18..26 s: close for P-5 s, then ~1.2 s away, ~2.6 s far, ~1.2 s back. The first far spell is after 13 s. */
+    const IN_SIZE = { NEAR: 0.85, FAR: K.MIN_K, P0: 18, PV: 8, AWAY: 5, EASE: 1.2 };
+    function inSizeK(t, seed, steered) {
+        const N = IN_SIZE.NEAR; if (steered) return N;
+        const P = IN_SIZE.P0 + IN_SIZE.PV * clamp(+seed || 0, 0, 1), u = Math.max(0, +t || 0) % P, a0 = P - IN_SIZE.AWAY;
+        const far = smooth(a0, a0 + IN_SIZE.EASE, u) * (1 - smooth(P - IN_SIZE.EASE, P, u));
+        return far > 0 ? N + (IN_SIZE.FAR - N) * far : N;
+    }
     /* view gestures (turning or pinching the view) count as busy: rig.idle is reset by every drag and pinch */
     const lookBusy = r => !!r && (+r.idle || 0) < 0.3;
     const homeIdle = (stickIdle, lookIdle, limit) => (+stickIdle || 0) > limit && (+lookIdle || 0) > limit;
     /* a blink of Home (in the background, world briefly not live) pauses a flight for up to OFF_GRACE s of screen time; anything else ends it */
     const OFF_GRACE = 4;
     const offGrace = (blink, offT) => !!blink && (+offT || 0) < OFF_GRACE;
-    const core = { lookBusy, homeIdle, OFF_GRACE, offGrace, K, inReach, freeReach, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, roams, autoLeave, roamSpot, roamHold, roamPx, pullAt, fallAt, EXIT, exitHold, MIST, angWrap, exitGaps, inMist, gapToward, DARK, darkSpots, inDark, darkReach, darkAmt, darkGlow, GUIDE, guideLight, HOME, homeGlow, homeAt, veilAt, exitTent, wallToward, outAt, ORBIT, orbitAt, orbitSpin, orbitFling };
+    const core = { IN_SIZE, inSizeK, lookBusy, homeIdle, OFF_GRACE, offGrace, K, inReach, freeReach, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, roams, autoLeave, roamSpot, roamHold, roamPx, pullAt, fallAt, EXIT, exitHold, MIST, angWrap, exitGaps, inMist, gapToward, DARK, darkSpots, inDark, darkReach, darkAmt, darkGlow, GUIDE, guideLight, HOME, homeGlow, homeAt, veilAt, exitTent, wallToward, outAt, ORBIT, orbitAt, orbitSpin, orbitFling };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!D || !D.addEventListener || W.LowiMistyFlight) return;
 
@@ -818,7 +830,7 @@
         if (reg) S.inC.copy(reg.pos).multiplyScalar(0.92); else S.inC.copy(r.target);
         /* in front of you, a little below the middle, about as big as she was at the door */
         S.p.copy(r.target).addScaledVector(V.fw, Math.min(1.1, r.dist * 0.42)).addScaledVector(V.up, -0.15);
-        S.inHs = S.base * K.MIN_K / pxPerUnit(a, S.p); S.hs = S.inHs; S.fade = 0; S.v.set(0, 0, 0); S.wp = -1;
+        S.inHs = S.base * K.MIN_K / pxPerUnit(a, S.p); S.hs = S.inHs; S.inK = K.MIN_K; /* lands at the door size, then comes close */ S.fade = 0; S.v.set(0, 0, 0); S.wp = -1;
         S.st = 'inside'; S.inT = 0; S.advIn = 0; /* misty-hunt: getting in by YOUR steering powers her up (once per world per day); a tap or the autopilot does not */ try { if (S.huntFly && W.LowiMistyHunt) W.LowiMistyHunt.entered(S.flew); } catch (e) { } S.huntFly = false; S.rw = null; S.rwWait = 0; S.rwN = 0; hold(false); classes(true, false, true); note('inside ' + S.flew);
         /* adventure: she falls into the world from above, small, growing as she lands (continuous with the pull) */
         S.fallT = -1; if (S.advWarp && !ctx.reduced) { S.fallT = 0; S.fallTo.copy(S.p); S.fade = 0.45; }
@@ -949,7 +961,10 @@
             if (mag > 0.05 || S.th) r.idle = 0;
         }
         S.fade = Math.min(1, S.fade + dt * 2.5);
-        S.hs = S.base * K.MIN_K / pxPerUnit(a, S.p); /* the size she had at the door, whatever the zoom */
+        /* Oct 18: close to you most of the time, only now and then off in the distance (inSizeK); eased, so never a pop */
+        S.inK = S.inK || K.MIN_K;
+        S.inK += (inSizeK(S.inT, idHash('in:' + (S.flew || '')), !free || !!S.autoX) - S.inK) * Math.min(1, dt * 1.4);
+        S.hs = S.base * S.inK / pxPerUnit(a, S.p);
         place(ctx, k, still, S.fade); turnDraw(ctx, S.fade); /* deep in the dark the veil (darkFrame) swallows her, not her own fade */
         trail(ctx, k, free ? (S.rwWait > 0 ? 0 : 0.5) : mag);
         /* misty-hunt: the hidden crumbs of this world; only YOUR steering eats them (the autopilot never farms) */
@@ -1312,7 +1327,7 @@
         S.oFrom = { x: clamp((S.scr.x - q.left) / q.width, 0.08, 0.92), y: clamp((S.scr.y - q.top) / q.height, 0.12, 0.9) };
         S.oCur = { x: S.oFrom.x, y: S.oFrom.y };
         V.b.subVectors(S.p, a.camera.position); S.oD0 = Math.max(0.6, -V.b.dot(V.fw)); S.oDcur = S.oD0;
-        S.oPh = 'A'; S.oT0 = performance.now(); S.oTB = -1; S.oGame = 0; S.oWhy = why; S.oKs = S.ks = K.MIN_K; S.oPrev = (S.oPrev || S.p.clone()).copy(S.p);
+        S.oPh = 'A'; S.oT0 = performance.now(); S.oTB = -1; S.oGame = 0; S.oWhy = why; S.oKs = S.ks = clamp(S.inK || K.MIN_K, K.MIN_K, 1); S.oPrev = (S.oPrev || S.p.clone()).copy(S.p);
         /* Oct 17 (E-man: out of a world on autopilot "for like three seconds she just stares at us"): on the way out the camera
            pulls back and carries her along, so in the world she moves straight at you; misty-face read that as her flying at you
            and turned her face to the lens for the whole pull-back. Her own heading out is the way she left (through the wall she

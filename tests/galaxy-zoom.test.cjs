@@ -54,9 +54,12 @@ test('no boxed snapshot of Home is left in the galaxy; the zoom script is shippe
     assert.ok(wh.includes("H.classList.contains('gx-hold')") && wh.includes('W.LowiWorldHome = { pullOut, diveIn, settle, waterReset,'));
 });
 
-test('bots: unique people, unique companions, real birth dates, every stage', () => {
+test('bots: only three (low, medium, highest level), unique companions, real birth dates', () => {
     const now = new Date('2026-10-16T12:00:00').getTime(), b = G.bots({ now });
-    assert.ok(b.length >= 24);
+    assert.equal(b.length, 3, 'the community keeps exactly three bots');
+    assert.deepEqual(b.map(x => x.n).sort(), ['Jonas', 'Mateo', 'Samir']);
+    assert.deepEqual(b.map(x => x.lv).sort((x, y) => x - y), [1, 18, 43], 'one low, one medium, one at the highest level');
+    assert.deepEqual(b.map(x => x.mate).sort(), ['Fennel', 'Nori', 'Rune'], 'they keep their companions');
     assert.equal(new Set(b.map(x => x.n)).size, b.length);
     assert.equal(new Set(b.map(x => x.mate)).size, b.length);
     assert.equal(new Set(b.map(x => x.uid)).size, b.length);
@@ -68,7 +71,7 @@ test('bots: unique people, unique companions, real birth dates, every stage', ()
         assert.equal(x.sign, G.signOf(+x.bday.slice(5, 7), +x.bday.slice(8, 10))[0]);
         assert.ok(x.bot && x.uid.startsWith('bot:'));
     }
-    assert.deepEqual([...new Set(b.map(x => x.stage))].sort(), [0, 1, 2, 3, 4, 5]);
+    assert.deepEqual([...new Set(b.map(x => x.stage))].sort(), [0, 3, 5], 'newborn, halfway grown, fully grown');
     assert.deepEqual(G.bots({ now }).map(x => x.n + x.bday), b.map(x => x.n + x.bday), 'same galaxy on every phone');
     assert.equal(G.signOf(3, 21)[0], 'Aries'); assert.equal(G.signOf(12, 25)[0], 'Capricorn'); assert.equal(G.signOf(1, 5)[0], 'Capricorn');
 });
@@ -77,8 +80,8 @@ test('names: duplicates collapse to the most recent one, own name excluded, bots
     const last = new Map([['x1', 5], ['x3', 9]]);
     const u = G.uniqueNames([{ uid: 'x1', n: 'Emmanuel', lv: 3 }, { uid: 'x2', n: 'Emmanuel', lv: 9 }, { uid: 'x3', n: 'EMMANUEL', lv: 1 }, { uid: 'x4', n: 'Me', lv: 2 }, { uid: 'x5', n: 'Gatey' }], 'me', last);
     assert.deepEqual(u.map(x => x.uid).sort(), ['x3', 'x5']);
-    const bots = G.withBots([{ n: 'Amara' }], G.bots(), 'Jonas');
-    assert.ok(!bots.some(x => x.n === 'Amara' || x.n === 'Jonas'));
+    const bots = G.withBots([{ n: 'Mateo' }], G.bots(), 'Jonas');
+    assert.deepEqual(bots.map(x => x.n), ['Samir']);
     assert.equal(G.uniqueNames([{ uid: 'a', n: 'Bo', lv: 2 }, { uid: 'b', n: 'Bo', lv: 7 }], '', new Map()).map(x => x.uid)[0], 'b', 'no activity: highest level');
 });
 
@@ -86,7 +89,7 @@ test('bot replies use who they are and the language', () => {
     const b = G.bots()[0];
     assert.match(G.botReply(b, 'hi', 0), new RegExp(b.n));
     assert.match(G.botReply(b, 'what level is your misty?', 0), new RegExp('level ' + b.lv));
-    assert.match(G.botReply(b, 'Fasten ist hart', 1), /faste/i);
+    assert.match(G.botReply(b, 'Fasten ist hart', 1), /faste|Wasser und ein Spaziergang/i, 'a German fasting reply');
 });
 
 test('the one line ends in an arrow at the person being talked to, and its label sits on the curve middle', () => {

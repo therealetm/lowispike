@@ -13345,19 +13345,21 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
 <script id="r3zJs">
 /* round 3Z: demo bots, local to this phone, never sent to the server */
 (function(){
+  /* Oct 17, 2026: the same three bots as the Community galaxy (LowiGalaxy BOT_KEEP), one low, one medium, one at the
+     highest level, so the leaderboard and chat show the range of companion growth. Signs and types match the galaxy. */
   const BOTS = window.LOWI_BOTS = [
-    {n:"Mila", s:"Pisces", t:"INFP", lv:7, xp:0, streak:12, bot:true, c:"#8fb8d6", bio:"Night-shift nurse. Learning to stop eating out of the vending machine at 3am."},
-    {n:"Theo", s:"Capricorn", t:"ENTJ", lv:18, xp:0, streak:41, bot:true, c:"#c9a45c", bio:"Tracks everything: glucose, steps, sleep. Ask me about my spreadsheets."},
-    {n:"Kenji", s:"Leo", t:"ESFP", lv:30, xp:0, streak:96, bot:true, c:"#e0a36a", bio:"Down 22 kg. Bone broth evangelist. I post my dinners whether you like it or not."}
+    {n:"Mateo", s:"Libra", t:"INFP", lv:1, xp:0, streak:3, bot:true, c:"#f6b8d8", bio:"Just hatched my companion Nori. Morning stretch, then oats. Day three."},
+    {n:"Jonas", s:"Libra", t:"ISFP", lv:18, xp:0, streak:41, bot:true, c:"#9fd8ff", bio:"Swapping white rice for lentils. Fennel and I are halfway grown."},
+    {n:"Samir", s:"Taurus", t:"INTP", lv:43, xp:0, streak:180, bot:true, c:"#9fd59a", bio:"Learning to love bitter greens. Rune is fully grown and so am I, mostly."}
   ];
   try { BOTS.forEach(b => { b.xp = levelStart(b.lv) + Math.round(stepXP(b.lv) * .4); }); } catch(e){}
   try { BOTS.forEach(b => { if (!CM_MEMBERS.find(m => m.n === b.n)) CM_MEMBERS.push({n:b.n, c:b.c, tag:"demo bot"}); }); } catch(e){}
-  const SAY = [["Theo", "Morning check: fasting glucose 92, 9k steps yesterday. Slow week but trending down.", 52, {"👏":["Mila"]}],
-    ["Mila", "Survived a night shift without the vending machine. Brought the bitter green tea instead.", 40, {"❤️":["Kenji", "Theo"]}],
-    ["Kenji", "Hot ginger bone broth at 10pm works. Sweet craving gone in five minutes.", 31],
-    ["Theo", "Anyone tried the Aldi shirataki? Worth it or rubbery?", 22],
-    ["Kenji", "Rubbery if you skip the dry-fry. Hot pan, no oil, two minutes. Then it's great.", 15, {"🔥":["Theo"]}, 3],
-    ["Mila", "Saving that. Level 7 today, my bubble is finally filling up.", 6]];
+  const SAY = [["Samir", "Morning check: walked 9k steps yesterday and had bitter greens with lunch. Slow and steady.", 52, {"👏":["Jonas"]}],
+    ["Jonas", "Lentils instead of white rice again. Honestly I don't miss it anymore.", 40, {"❤️":["Mateo", "Samir"]}],
+    ["Mateo", "First day on LOWiSPIKE. My companion Nori just hatched!", 31],
+    ["Jonas", "Welcome! Anyone tried the Aldi shirataki? Worth it or rubbery?", 22],
+    ["Samir", "Rubbery if you skip the dry-fry. Hot pan, no oil, two minutes. Then it's great.", 15, {"🔥":["Jonas"]}, 3],
+    ["Mateo", "Saving that. Level 1, but my bubble is starting to fill up.", 6]];
   const K0 = "lowi.demobots.t0", KOFF = "lowi.demobots.off";
   const t0 = () => { let t = +localStorage.getItem(K0); if (!t) { t = Date.now(); try { localStorage.setItem(K0, String(t)); } catch(e){} } return t; };
   const off = () => false;
@@ -19981,7 +19983,7 @@ window.LowiCommunityHost = {
 };
 </script>
 <script src="community-chat-cloud.js?v=community-1"></script>
-<script src="community-galaxy.js?v=galaxy-2"></script>
+<script src="community-galaxy.js?v=galaxy-3"></script>
 <script src="community-chat.js?v=20261017-184614"></script>
 <script src="community-energy.js?v=20261017-184614"></script>
 <link rel="stylesheet" id="lgCss" href="liquid-glass.css?v=20261017-184614">

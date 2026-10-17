@@ -67,6 +67,7 @@ function fade(ts,now){const age=Math.max(0,(now||Date.now())-(+ts||0)),M=60000;i
    its own companion name, a birth date (so a star sign and an age), a level and the evolution stage that level reaches.
    Deterministic (same galaxy on every phone), never stored on the server, always marked as a bot in their profile. */
 const BOT_PEOPLE=['Amara','Jonas','Sofía','Kenji','Priya','Mateo','Ingrid','Tobias','Leilani','Yusuf','Clara','Dario','Noor','Elif','Rafael','Hana','Malik','Freya','Diego','Aiko','Bastian','Zara','Luca','Mirela','Oskar','Valentina','Kofi','Inés','Samir','Greta'];
+const BOT_KEEP=['Mateo','Jonas','Samir'];
 const BOT_MATES=['Pip','Nimbus','Juniper','Ember','Sprout','Quill','Mochi','Brisa','Tumble','Fennel','Lumi','Kiwi','Pebble','Saffron','Wisp','Biscuit','Coral','Tansy','Rune','Basil','Nori','Clover','Zephyr','Marlo','Sorrel','Puck','Indigo','Olive','Tiko','Hazel'];
 const BOT_LINES=[['16:8 fasting, day 12','16:8 Fasten, Tag 12','Ayuno 16:8, día 12'],['Swapping white rice for lentils','Tausche weißen Reis gegen Linsen','Cambio arroz blanco por lentejas'],['Walk after every dinner','Nach jedem Abendessen ein Spaziergang','Paseo después de cada cena'],['Two litres before noon','Zwei Liter vor Mittag','Dos litros antes del mediodía'],['Learning to love bitter greens','Lerne bittere Blätter zu mögen','Aprendo a amar las verduras amargas'],['Morning stretch, then oats','Morgens dehnen, dann Hafer','Estiramiento y luego avena'],['Cooking more beans this month','Diesen Monat mehr Bohnen','Este mes más legumbres'],['First 18 hour fast done','Erstes 18-Stunden-Fasten geschafft','Primer ayuno de 18 horas hecho'],['Stairs instead of the lift','Treppe statt Aufzug','Escaleras en vez del ascensor'],['Less sugar in my coffee','Weniger Zucker im Kaffee','Menos azúcar en el café'],['Dancing in the kitchen counts','Tanzen in der Küche zählt','Bailar en la cocina cuenta'],['Veggies first, then the rest','Erst Gemüse, dann der Rest','Primero verduras, luego lo demás']];
 const SIGNS=[['Capricorn',1,19,'earth','#8fb39a','#c9b38a'],['Aquarius',2,18,'air','#8fd3ff','#b9a8ff'],['Pisces',3,20,'water','#8ad7d2','#b8b0ff'],['Aries',4,19,'fire','#ff9f7a','#ffd27a'],['Taurus',5,20,'earth','#9fd59a','#e6c7a0'],['Gemini',6,20,'air','#ffe28a','#9fd8ff'],['Cancer',7,22,'water','#a8d8ff','#e0c8ff'],['Leo',8,22,'fire','#ffb35c','#ffe08a'],['Virgo',9,22,'earth','#b5d6a0','#d8c9a8'],['Libra',10,22,'air','#f6b8d8','#b8c8ff'],['Scorpio',11,21,'water','#7fb8c9','#c08ad8'],['Sagittarius',12,21,'fire','#ff8f8f','#ffc58a'],['Capricorn',12,31,'earth','#8fb39a','#c9b38a']];
@@ -83,7 +84,9 @@ function bots(opts){
   const xp=Math.round(lv*lv*12+r()*80),since=now-Math.round((10+r()*400)*864e5);
   out.push({uid:'bot:'+n.normalize('NFD').replace(/[^a-z]/gi,'').toLowerCase(),bot:true,n,mate:mates[i],bday,age:ageOn(bday,now),sign:sg[0],el:sg[3],pal:{a:sg[4],b:sg[5]},type:TYPES16[Math.floor(r()*16)],lv,stage,xp,since,line:BOT_LINES[i%BOT_LINES.length],seed:hash(n)%65536});
  });
- return out;
+ /* Oct 17, 2026, E-man: "in the community I only want three bots", one low, one medium, one at the highest level.
+    The full set is still generated first so the three keep the same birth date, companion and look on every phone. */
+ return out.filter(b=>BOT_KEEP.includes(b.n));
 }
 /* One name, one body: duplicates of a name (several test accounts, an old device session) collapse into the most recently
    active one, then the highest level. Your own name is yours alone. Bots whose name is taken by a real person step aside. */
@@ -200,7 +203,7 @@ function mapLabels(items,view){
   if(got)r.bub=got;else r.dot=true;}
  return out;
 }
-const api={hash,mapPool,mapSlot,mapLayout,mapZooms,mapClamp,mapLabels,grid,layout,sizes,pickMode,nameIndex,mentionOf,targetOf,bubbleText,direct,fade,sky,bots,uniqueNames,withBots,botReply,stageForLevel,ageOn,signOf,curveOf,pointOn,midOf};
+const api={BOT_KEEP,hash,mapPool,mapSlot,mapLayout,mapZooms,mapClamp,mapLabels,grid,layout,sizes,pickMode,nameIndex,mentionOf,targetOf,bubbleText,direct,fade,sky,bots,uniqueNames,withBots,botReply,stageForLevel,ageOn,signOf,curveOf,pointOn,midOf};
 if(typeof module==='object'&&module.exports)module.exports=api;
 root.LowiGalaxy=api;
 })(typeof window!=='undefined'?window:globalThis);

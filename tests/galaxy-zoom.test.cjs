@@ -147,7 +147,7 @@ test('spirit world stays smooth: nothing re-measures hidden Home every second or
     assert.ok(html.includes('observe(h, {attributes:true, attributeFilter:["class"]})'), 'and catches up when Home is back');
     assert.ok(fe.includes('if (!D.hidden && homeOn()) ensurePill();'));
     assert.ok(b3.includes('homeSeen()) { mountHome(); syncGlow(); }'));
-    assert.ok(sc.includes('if (nw !== W || nh !== H) { W = nw; H = nh; renderer.setSize(W, H, false); }'), 'same size never wipes the WebGL buffer');
+    assert.ok(sc.includes('if (nw !== W || nh !== H) { W = nw; H = nh; renderer.setSize(W, H, false); paintNow = true; }'), 'same size never wipes the WebGL buffer (and a real resize is redrawn at once)');
     assert.ok(fx.includes("if (spot && spot.key === key && spot.el === el)") && fx.includes('if (layer.textContent !== x.txt[L()])'));
     assert.ok(gz.includes('function keptWarp(A, R)') && !/s\.dispose\(\)/.test(gz) && gz.includes('A.renderer.compile(A.scene, A.camera)'), 'one warp, warmed up, never thrown away');
 });

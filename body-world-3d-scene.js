@@ -6,6 +6,7 @@ export function createWorld(THREE, canvas, opts) {
     opts = opts || {};
     const small = !!opts.small, places = opts.places || [];
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: (window.devicePixelRatio || 1) < 2, alpha: false, powerPreference: 'high-performance', stencil: false });
+    let paintNow = false; /* the canvas was just resized (picture wiped): draw it in this same refresh */
     let dprCap = opts.dprCap || 2, dpr = Math.min(window.devicePixelRatio || 1, dprCap);
     /* sharpness floor + ceiling for the frame-time watcher in frame(): never below 1.5x on a retina screen, back up to the cap when smooth */
     const dprTop = dpr, dprFloor = Math.min(dprTop, (window.devicePixelRatio || 1) >= 2 ? 1.5 : 1);
@@ -176,7 +177,7 @@ export function createWorld(THREE, canvas, opts) {
     }
     /* Oct 16: Home re-lays itself out every 1.2 s; setting the canvas size again, even to the same numbers, wipes and re-allocates the
        WebGL buffer (a dropped frame on iPhone). Only a real change touches the canvas. */
-    function resize(w, h) { const nw = Math.max(1, w | 0), nh = Math.max(1, h | 0); if (nw !== W || nh !== H) { W = nw; H = nh; renderer.setSize(W, H, false); } applyView(); }
+    function resize(w, h) { const nw = Math.max(1, w | 0), nh = Math.max(1, h | 0); if (nw !== W || nh !== H) { W = nw; H = nh; renderer.setSize(W, H, false); paintNow = true; } applyView(); if (paintNow && running) { try { renderer.render(scene, camera); } catch (e) { } } }
     function setFocus(f) { focus = f; applyView(); }
     const HOME_OUT = 1.4; /* the resting Home view: Misty at 1/1.4 of her close-up size (above wh-mapview's 0.6) */
     function homeDistFor(px) { return CR / ((px / (H / 2)) * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))); }
@@ -672,8 +673,12 @@ export function createWorld(THREE, canvas, opts) {
                3x stretched canvas with no antialias (antialias is off at dpr >= 2), so every living bubble went jagged - and a phone
                in Low Power Mode (30 Hz) or a warm phone always tripped it. Now it never goes below dprFloor (1.5 on retina screens)
                and climbs back to full sharpness after a few smooth seconds. */
-            if (avg > 1 / 38 && dpr > dprFloor) { lowFor += dt; hiFor = 0; if (lowFor > 2) { dprDropAt = now; dpr = Math.max(dprFloor, dpr - 0.25); renderer.setPixelRatio(dpr); renderer.setSize(W, H, false); lowFor = 0; frames = []; } }
-            else if (avg < 1 / 50 && dpr < dprTop && now - dprDropAt > 20000) { lowFor = 0; hiFor += dt; if (hiFor > 4) { dpr = Math.min(dprTop, dpr + 0.25); renderer.setPixelRatio(dpr); renderer.setSize(W, H, false); hiFor = 0; frames = []; } }
+            /* Oct 17 (E-man, flat blue screen while leaving a world): a sharpness change resizes the canvas, which wipes the picture.
+               Never during a world transition (the heaviest frames, so the likeliest moment for it), and when it happens the picture
+               is drawn again in the same screen refresh (paintNow), never left blank for a skipped one. */
+            if (inTransit()) { lowFor = 0; hiFor = 0; }
+            else if (avg > 1 / 38 && dpr > dprFloor) { lowFor += dt; hiFor = 0; if (lowFor > 2) { dprDropAt = now; dpr = Math.max(dprFloor, dpr - 0.25); renderer.setPixelRatio(dpr); renderer.setSize(W, H, false); paintNow = true; lowFor = 0; frames = []; } }
+            else if (avg < 1 / 50 && dpr < dprTop && now - dprDropAt > 20000) { lowFor = 0; hiFor += dt; if (hiFor > 4) { dpr = Math.min(dprTop, dpr + 0.25); renderer.setPixelRatio(dpr); renderer.setSize(W, H, false); paintNow = true; hiFor = 0; frames = []; } }
             else { lowFor = 0; hiFor = 0; }
         }
         /* Oct 16 speed pass (E-man: the newest iPhone overheats): nobody touching, no camera flight, no Community warp, no gyro swing,
@@ -681,7 +686,8 @@ export function createWorld(THREE, canvas, opts) {
            speed (the skipped refresh's time is added to the next one), so it looks the same, at half the GPU work. A touch, a glide or a
            tilt brings back every frame at once. The DPR watcher above still sees every refresh, so this never lowers the sharpness. */
         acc += dt;
-        odd = calm(now) ? !odd : false;
+        odd = calm(now) && !paintNow && !inTransit() ? !odd : false;
+        paintNow = false;
         if (!odd) {
             if (!opts.shouldRender || opts.shouldRender()) { const d = Math.min(0.1, acc); step(d); frameFns.forEach(fn => { try { fn(d, now); } catch (e) { console.warn('world3d onFrame', e && e.message); } }); renderer.render(scene, camera); }
             acc = 0;
@@ -689,6 +695,17 @@ export function createWorld(THREE, canvas, opts) {
         raf = requestAnimationFrame(frame);
     }
     let acc = 0, odd = false, lastIn = 0;
+    /* a world transition is running (a fly-to / leaving a place: body-world-regions.js html.bwr-warping; Misty going through a wall,
+       flying out, falling or warping: misty-flight.js html.mf-transit): every refresh is drawn and the canvas size is left alone */
+    /* ... and for 2 s after the camera crosses our own membrane into the spirit world or back (world-home.js html.wh-cosmos), the
+       other moment where a lot of new scenery appears at once (E-man: the same blank blue there) */
+    let cosOn = null, cosAt = -1e9;
+    function inTransit() {
+        const E = typeof document !== 'undefined' && document.documentElement; if (!E) return false;
+        const c = E.className, now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+        const cos = /(^|\s)wh-cosmos(\s|$)/.test(c); if (cos !== cosOn) { if (cosOn !== null) cosAt = now; cosOn = cos; }
+        return /(^|\s)(bwr-warping|mf-transit)(\s|$)/.test(c) || now - cosAt < 2000;
+    }
     const markIn = () => { lastIn = performance.now(); };
     try { ['pointerdown', 'pointermove', 'touchstart', 'touchmove', 'wheel', 'keydown'].forEach(ev => window.addEventListener(ev, markIn, { passive: true, capture: true })); } catch (e) { }
     function calm(now) {

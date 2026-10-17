@@ -324,6 +324,10 @@
             if (io) io.disconnect();
             if ('IntersectionObserver' in W) { io = new IntersectionObserver(es => { visibleHome = es.some(x => x.isIntersecting); }, { threshold: 0.01 }); io.observe(stage); }
             if (mode === 'home' && canvas) stage.insertBefore(canvas, stage.firstChild);
+            /* Oct 17 (E-man, iPhone screenshot of a flat blue screen while leaving a world): a stage rebuilt around a world that is
+               already running must show it at once. The canvas only shows inside .bw3-live (opacity 0 + a 0.6 s fade otherwise), and
+               only attachHome added it, so a Home re-render mid-flight left the world invisible over the plain page background. */
+            if (canvas && world && api.state === 'ready') stage.classList.add('bw3-live');
         }
         if (els.top && !els.top.querySelector('.bw3-open')) {
             const btn = D.createElement('button'); btn.type = 'button'; btn.className = 'bw3-open'; btn.setAttribute('aria-label', tr('open'));

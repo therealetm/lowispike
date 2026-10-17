@@ -341,7 +341,12 @@
         ['pointerdown', 'touchstart'].forEach(n => mapBtn.addEventListener(n, e => e.stopPropagation(), { passive: true }));
         const lab = D.createElement('div'); lab.className = 'bwr-label'; lab.id = 'bwrLabel'; lab.setAttribute('aria-live', 'polite');
         const veil = D.createElement('div'); veil.className = 'bwr-veil'; veil.setAttribute('aria-hidden', 'true');
-        h.classList.add('bwr-on'); const lv = h.querySelector('.bw3-labels'); if (lv) h.insertBefore(veil, lv); else h.appendChild(veil); h.appendChild(lab); h.appendChild(mapBtn); st.label = lab; st.mapBtn = mapBtn; st.veil = veil; renderUi(); return mapBtn;
+        /* Oct 17 (E-man, iPhone: "everything just turns boring, bluish ... for like a split second" when Misty leaves a world; then:
+           keep the elastic bubble exit and the surroundings visible the whole way, no warp that hides it): the full glow stays as it
+           was (the flight view's menu fade keeps it out of a flight), and a light edge-only layer (.bwr-wx, data-clean-keep: part of
+           the world, never faded with the menus) keeps colour moving at the rim of the screen while the middle stays clear. */
+        const fx = D.createElement('div'); fx.className = 'bwr-wx'; fx.id = 'bwrWarp'; fx.setAttribute('aria-hidden', 'true'); fx.setAttribute('data-clean-keep', ''); fx.innerHTML = '<i></i><i></i><b></b>';
+        h.classList.add('bwr-on'); const lv = h.querySelector('.bw3-labels'); if (lv) h.insertBefore(veil, lv); else h.appendChild(veil); h.insertBefore(fx, veil.nextSibling); h.appendChild(lab); h.appendChild(mapBtn); st.label = lab; st.mapBtn = mapBtn; st.veil = veil; st.wx = fx; renderUi(); return mapBtn;
     }
     function renderUi() {
         if (!st.mapBtn) return;
@@ -385,6 +390,35 @@
         const v = st.veil; if (!v) return;
         if (css) v.style.setProperty('--vh', css);
         v.style.opacity = String(Math.max(0, Math.min(1, o)).toFixed(3));
+    }
+    /* Oct 17 (E-man): colour carried from the moment she leaves (or enters) a world until the new view has settled: thin streaks
+       of light rushing out from Misty toward the rim of the screen, her blue / violet / cyan and the world's own colour at the
+       edges only, the middle (the bubble, Misty, the world around her) always clear; and behind the world a bright colour wash
+       instead of the plain blue page (html.bwr-warping, body-world-regions.css). Only CSS custom properties change per frame
+       (strength, Misty's spot on screen), on the warp's own frame step. */
+    const WX_MAX = 1;
+    function wx(o, css) {
+        const f = st.wx; if (!f) return;
+        if (css) { f.style.setProperty('--vh', css); try { D.documentElement.style.setProperty('--bwr-wxc', css); } catch (e) { } }
+        const v = Math.max(0, Math.min(WX_MAX, o));
+        if (st.wxV == null || Math.abs(v - st.wxV) > 0.01) { st.wxV = v; f.style.setProperty('--wx', v.toFixed(3)); }
+        let sp = null; try { const mf = W.LowiMistyFlight; sp = mf && mf.touchSpot ? mf.touchSpot() : null; } catch (e) { }
+        const vw = W.innerWidth || 390, vh = W.innerHeight || 844;
+        const x = sp && isFinite(sp.x) && sp.x > -vw * 0.2 && sp.x < vw * 1.2 ? sp.x : vw / 2, y = sp && isFinite(sp.y) && sp.y > -vh * 0.2 && sp.y < vh * 1.2 ? sp.y : vh * 0.46;
+        if (st.wxX == null || Math.abs(x - st.wxX) > 3 || Math.abs(y - st.wxY) > 3) { st.wxX = x; st.wxY = y; f.style.setProperty('--wx-x', Math.round(x) + 'px'); f.style.setProperty('--wx-y', Math.round(y) + 'px'); }
+    }
+    /* reduced motion: no rush, no streaks; the colours crossfade gently over the swap (html.bwr-fade, a CSS fade only) */
+    function fadeSwap(id) {
+        const E = D.documentElement; if (!E || !st.wx) return;
+        const R = byId(id), from = byId(st.cur), c = (id === 'hub' && from ? from.css : R && R.css) || '#e0475a';
+        st.wx.style.setProperty('--vh', c); try { E.style.setProperty('--bwr-wxc', c); } catch (e) { }
+        E.classList.remove('bwr-fade'); void E.offsetWidth; E.classList.add('bwr-fade');
+        clearTimeout(st.fadeT); st.fadeT = setTimeout(() => E.classList.remove('bwr-fade'), 900);
+    }
+    function warpOn(on, css) {
+        const E = D.documentElement; if (!E) return;
+        if (on) { st.wxV = null; wx(0.5, css); E.classList.add('bwr-warping'); }
+        else E.classList.remove('bwr-warping');
     }
     function stepWarp(w, dt) {
         const q = st.warp, a = w3(), cam = w.camera, THREE = w.three, d = Math.max(1 / 240, Math.min(0.05, dt || 0.016));
@@ -478,6 +512,11 @@
         const fov = q.fov0 + 16 * q.amt;
         if (Math.abs(cam.fov - fov) > 0.01) { cam.fov = fov; cam.updateProjectionMatrix(); }
         veil(veilO);
+        /* warp strength: the camera's rush, the glow, and a floor that keeps the colours up through the whole move; on the way
+           back out it eases down over the glide as Home's own colours take over */
+        let floor = 0.55;
+        if (q.phase === 'glide') { const g = Math.min(1, (now - q.t0) / WARP.glide); floor = q.rev ? 0.6 * (1 - g * g) : 0.3 + 0.3 * g; }
+        wx(Math.max(floor, q.amt, veilO * 0.9));
     }
     /* Oct 15: the fly-to's real phases go out as window 'lowi:world-warp' {phase:'start'|'dive'|'arrive'|'cancel', id, from} (world-audio.js plays its warp sounds on them) */
     function warpEv(phase, id, from) { try { W.dispatchEvent(new CustomEvent('lowi:world-warp', { detail: { phase, id, from: from || null } })); } catch (e) { } }
@@ -499,7 +538,7 @@
         try { q.streaks && q.streaks.dispose(); } catch (e) { }
         try { q.portal && q.portal.dispose(); } catch (e) { }
         if (st.region) st.region.group.scale.setScalar(1);
-        veil(0);
+        veil(0); warpOn(false);
         if (st.host) st.host.classList.remove('bwr-warp');
     }
     /* leave the region you are in without announcing the bloodstream (going on to another place) */
@@ -558,7 +597,7 @@
         const rev = id === 'hub' && st.cur !== 'hub' && !fromBase && !reduced() && !!a.rig;
         if (!fromBase && !rev && a.flyTo) { st.ownFly = true; try { a.flyTo(id === 'hub' ? null : baseId(id)); } finally { st.ownFly = false; } }
         if (h) h.classList.remove('bw3-flash');
-        if (reduced()) { enter(id); lungCard(); done(); return true; }
+        if (reduced()) { fadeSwap(id); enter(id); lungCard(); done(); return true; }
         const R = byId(id), from = byId(st.cur), src = rev && from ? from : R, hue = src.hue != null ? src.hue : 0xe0475a;
         const q = { id, phase: 'glide', t0: 0, saw: false, amt: 0, last: null, outT: null, hue, css: src.css, fov0: w.camera.fov, done, clock: 0 };
         if (rev) { q.rev = true; q.wide = !!(opts && opts.wide); q.phase = 'unsettle'; q.tu = 0; veil(0, src.css); if (a.rig.fly) a.rig.fly = null; a.rig.vy = 0; a.rig.vp = 0; }
@@ -569,7 +608,7 @@
         q.streaks.group.userData.bwr = true; w.scene.add(q.streaks.group); q.streaks.follow(w.camera);
         q.portal = portalFor(THREE, hue); w.scene.add(q.portal.sprite);
         if (h) h.classList.add('bwr-warp');
-        st.warp = q;
+        st.warp = q; warpOn(true, src.css);
         warpEv('start', id, q.from = from ? from.id : st.cur);
         return true;
     }
@@ -596,7 +635,7 @@
         if (st.region) { st.region.dispose(); st.region = null; }
         setLook(null); setHubVisible(true);
         if (st.host) st.host.classList.remove('bwr-on', 'bwr-in', 'bwr-warp');
-        [st.veil, st.label, st.mapBtn].forEach(e => { try { e && e.remove(); } catch (x) { } });
+        [st.veil, st.wx, st.label, st.mapBtn].forEach(e => { try { e && e.remove(); } catch (x) { } }); st.wx = null; warpOn(false);
         st.cur = 'hub'; st.busy = false; st.target = null; st.next = null; st.mapBtn = null; st.label = null; st.veil = null; st.host = null;
         const m = D.getElementById('bwrMap'); if (m) m.remove();
     }

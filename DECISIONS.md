@@ -291,3 +291,11 @@ The user explicitly requested deploying the recovered Home implementation withou
 
 **Consequences:** Only your own steering is carried (autopilot and the way home never), so home is always reachable. Nothing here pays XP, crumbs or energy. `tests/galaxy-bubbles.test.cjs` guards the rules; `tests/galaxy-bubbles-live.cjs` (Playwright, not in the offline suite) flies the real 3D world at phone and iPad sizes.
 
+
+## 2026-10-17 — Holding forward shows Misty's stretchy flight skin, not a constant light in front of her
+
+**Context:** The owner: while he holds the controller forward, a constant light (the facing dots) sits in front of Misty. "Das Schießen behalten wir ... anstatt dieses konstanten Lichts vorne ... beim Vorwärtsfliegen gegen diese dehnbare Bubble Haut drücken ... wie beim Rauskommen aus ihrer ersten Bubble."
+
+**Decision:** `misty-turn.js` no longer lights the facing dots for a forward / back hold or a shot. While she is held forward, her own thin travelling bubble skin shows round her (the same glass look as Home's membrane and the cloud wall's skin) and tents out ahead where she presses, tilted with the controller's up / down exactly like the shot aim, so you can still read where she is going. A spring drives it: it stretches a little past full as she gets going, holds while you hold, and wobbles back (one small dent) and fades when you let go. Backing up tents it behind her. A shot punches the tip out and it wobbles back. The facing dots stay only for a drag on Misty with no hold. Home's own membrane and its breakout are unchanged: the travelling skin is only drawn once she is out of Home or inside a world.
+
+**Consequences:** One small sphere mesh with a shader, built on first use and moved from the existing draw(); no loop or renderer of its own, hidden whenever she is not drawn. Reduced motion: it stretches and relaxes with no overshoot, wobble or ripple. The energy shot (controller hold + double tap, cooldown, healing) is unchanged. `tests/misty-flight-skin.test.cjs` guards it.

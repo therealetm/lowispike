@@ -16,7 +16,15 @@
    down by the controller. It uses the Community energy rate limit (community-energy.js bucket) as its cooldown, and when it lands
    inside a world it heals that world a little: its murk and fog thin (body-world-regions applyLook reads heal()). Healing is capped
    per world per day and spaced out, it never gives XP, crumbs or energy, and the autopilot never shoots. Without the controller
-   held, a double tap on the world does exactly what it did before (World map toggle / out of a world). */
+   held, a double tap on the world does exactly what it did before (World map toggle / out of a world).
+   Flight skin (Oct 17, E-man: "anstatt dieses konstanten Lichts vorne ... beim Vorwärtsfliegen gegen diese dehnbare Bubble Haut
+   drücken ... wie beim Rauskommen aus ihrer ersten Bubble"): holding forward (or back) no longer lights the facing dots in front of
+   her. Instead her own thin travelling bubble skin (the same glass look as Home's membrane / the cloud wall's skin) shows round her
+   and tents out ahead where she presses, tilted with the controller's up / down like the shot. It springs out a little further as
+   she gets going and wobbles back when you let go. Separate from Home: Home's own membrane and its breakout are untouched (she only
+   gets the travelling skin once she is out or inside a world). The facing dots stay only for a drag on Misty without a hold.
+   The energy shot is unchanged and still flies out through the skin. Reduced motion: the skin stretches and relaxes without any
+   wobble or ripple. One mesh, built on first use, updated from draw() (no loop, no renderer of its own); hidden when she is not drawn. */
 (function () {
     'use strict';
     const W = typeof window !== 'undefined' ? window : null, D = W && W.document;
@@ -104,7 +112,39 @@
         return { h, add };
     }
     const healOf = (h, id, t) => (h && h.w && h.day === dayKey(t) ? clamp(+h.w[worldId(id)] || 0, 0, SHOT.HEAL_MAX) : 0);
-    const core = { K, wrap, turnBy, fwdOf, hitR, hits, steer, tapChain, holdDir, SHOT, shotGate, dblAction, shotDir, shotAt, healAdd, healOf, dayKey, usesEnergyCore: () => !!(EC && EC.bucket) };
+    /* ---- flight skin (pure) ---- */
+    const SKIN = {
+        K: 60, C: 6.5,       /* spring: a little overshoot as she gets going (~20 %), a damped wobble when you let go */
+        UP: 5, DOWN: 1.3,    /* how fast it shows / fades (fading slower, so the wobble back is seen) */
+        R: 0.6,              /* skin radius, in her sizes (her body is about 0.34), so it reads as a bubble round her */
+        BULGE: 1.0,          /* how far the tip tents out at full push, in skin radii */
+        BACK: 0.45,          /* the skin trails behind her as it stretches, so she sits up at the tip */
+        MIN: -0.3, MAX: 1.4, /* a let-go may dent the tip in a little; a push never balloons it */
+        TURN: 10,            /* how fast the bulge follows a change of direction (1/s) */
+        KICK: 7              /* a shot punches the tip out (stretch speed added) */
+    };
+    /* one frame of the skin. s = { a: stretch, v: its speed, o: opacity }, i = { dt, th (-1, 0, 1), reduced } */
+    function skinStep(s, i) {
+        s = s || {}; i = i || {};
+        let a = +s.a || 0, v = +s.v || 0, o = +s.o || 0, left = clamp(+i.dt || 0, 0, 0.1);
+        const tgt = i.th ? 1 : 0;
+        if (i.reduced) { a += (tgt - a) * (1 - Math.exp(-left * 6)); v = 0; }
+        else while (left > 1e-6) { const h = Math.min(left, 1 / 60); v += (SKIN.K * (tgt - a) - SKIN.C * v) * h; a += v * h; left -= h; }
+        a = clamp(a, SKIN.MIN, SKIN.MAX);
+        o += (tgt - o) * (1 - Math.exp(-clamp(+i.dt || 0, 0, 0.1) * (tgt ? SKIN.UP : SKIN.DOWN)));
+        if (!tgt && Math.abs(a) < 0.004 && Math.abs(v) < 0.02 && o < 0.01) { a = 0; v = 0; o = 0; }
+        s.a = a; s.v = v; s.o = clamp(o, 0, 1); return s;
+    }
+    /* which way the skin tents: forward = where the shot would go (heading + controller tilt), back = behind her, none = keep */
+    const skinDir = (f, vy, th) => (th > 0 ? shotDir(f, vy) : th < 0 ? [-(+f[0] || 0), 0, -(+f[2] || 0)] : null);
+    /* where it sits: p = her, d = tent direction, hs = her size, a = stretch. Returns the skin's middle, radius and tip tent */
+    function skinPlace(p, d, hs, a) {
+        const r = Math.max(0.01, +hs || 0.5) * SKIN.R, back = r * SKIN.BACK * Math.max(0, +a || 0);
+        return { c: [p[0] - d[0] * back, p[1] - d[1] * back, p[2] - d[2] * back], r, tent: r * SKIN.BULGE * (+a || 0) };
+    }
+    /* how far ahead of her the tip is (her sizes): the tip is always just in front of her nose */
+    const skinTip = (hs, a) => { const q = skinPlace([0, 0, 0], [0, 0, 1], hs, a); return (q.c[2] + q.r + q.tent) / Math.max(0.01, +hs || 0.5); };
+    const core = { K, wrap, turnBy, fwdOf, hitR, hits, steer, tapChain, holdDir, SHOT, shotGate, dblAction, shotDir, shotAt, healAdd, healOf, dayKey, SKIN, skinStep, skinDir, skinPlace, skinTip, usesEnergyCore: () => !!(EC && EC.bucket) };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!D || !D.addEventListener || W.LowiMistyTurn) return;
 
@@ -115,6 +155,8 @@
     /* energy shot state: the cooldown gate, a shot asked for (spawned on her next drawn frame), shots in flight, today's healing */
     const SHOT_KEY = 'lowi.misty-shot.v1';
     const SH = { gate: {}, req: false, list: [], obj: null, vy: 0, mTap: 0, fired: 0, heal: null };
+    /* the flight skin: its spring, the way it tents (smoothed), the mesh */
+    const SK = { st: { a: 0, v: 0, o: 0 }, d: [0, 0, -1], m: null, u: null };
     try { SH.heal = JSON.parse(localStorage.getItem(SHOT_KEY) || 'null'); } catch (e) { SH.heal = null; }
     const padHeld = () => { try { return !!(W.LowiPad && W.LowiPad.held && W.LowiPad.held()); } catch (e) { return false; } };
     const emit = d => { try { W.dispatchEvent(new CustomEvent('lowi:misty-shot', { detail: d })); } catch (e) { } };
@@ -207,7 +249,8 @@
             const r = i.rig || {}, hs = Math.max(0.05, +i.hs || 0.5), f = fwdOf(wrap((+r.yaw || 0) + (+r.gy || 0) + S.off)), d = shotDir(f, SH.vy);
             SH.list.push({ from: [i.p.x + d[0] * hs * 0.6, i.p.y + d[1] * hs * 0.6, i.p.z + d[2] * hs * 0.6], d, range: hs * SHOT.RANGE, hs, t: 0, hit: false });
             if (SH.list.length > SLOTS) SH.list.shift();
-            S.cueT = Math.max(S.cueT, 0.8);
+            /* no aim light: the shot punches out through her flight skin, which pops ahead and wobbles back */
+            if (!i.reduced && S.th >= 0) { SK.st.v += SKIN.KICK; SK.st.o = Math.max(SK.st.o, 0.6); SK.d = d.slice(); }
         }
         if (!SH.list.length) { if (SH.obj) SH.obj.visible = false; return; }
         if (!SH.obj || !SH.obj.parent) SH.obj = shotBuild(i.a);
@@ -240,11 +283,54 @@
         pos.needsUpdate = true; col.needsUpdate = true;
         SH.obj.material.size = hsMax * 0.22; SH.obj.visible = true;
     }
+    /* the flight skin, drawn in the 3D world: a thin glass sphere round her, its tip tented out ahead (misty-flight's wall-skin look) */
+    function skinBuild(a) {
+        if (SK.m && SK.m.parent) return SK.m;
+        const T = a.THREE;
+        SK.u = { uD: { value: new T.Vector3(0, 0, -1) }, uA: { value: 0 }, uO: { value: 0 }, uR: { value: 1 }, uT: { value: 0 }, uW: { value: 1 } };
+        const m = new T.ShaderMaterial({
+            uniforms: SK.u, transparent: true, depthWrite: false, side: T.DoubleSide, blending: T.AdditiveBlending, fog: false,
+            vertexShader: 'uniform vec3 uD;uniform float uA;uniform float uR;uniform float uT;uniform float uW;varying float vF;varying float vT;' +
+                'void main(){vec3 n=normalize(position);float c=dot(n,uD);float f=max(c,0.0);float tent=pow(f,5.0);' +
+                'vec3 side=n-uD*c;float rip=uW*0.03*sin(c*9.0-uT*7.0)*f;' +
+                'vec3 p=n*uR*(1.0+rip)+uD*(uA*tent)-side*uR*0.12*max(uA/uR,0.0);' +
+                'vec4 mv=modelViewMatrix*vec4(p,1.0);vec3 nv=normalize(normalMatrix*n);vF=1.0-abs(dot(nv,normalize(-mv.xyz)));vT=pow(f,6.0);gl_Position=projectionMatrix*mv;}',
+            fragmentShader: 'uniform float uO;varying float vF;varying float vT;' +
+                'void main(){float a=uO*((0.05+0.55*pow(vF,3.0))*(0.35+0.65*vT)+vT*vT*0.3);vec3 c=mix(vec3(0.45,0.85,1.0),vec3(0.9,0.75,1.0),vT);gl_FragColor=vec4(c*a,a);}'
+        });
+        SK.m = new T.Mesh(new T.SphereGeometry(1, 40, 28), m); SK.m.name = 'mt-flight-skin'; SK.m.userData.lwKeep = true;
+        SK.m.renderOrder = 59; SK.m.frustumCulled = false; SK.m.visible = false;
+        /* not drawn this frame (she went home, a warp, the tab hid): never leave a stale skin hanging in the world */
+        SK.m.onBeforeRender = () => { if (now() - S.drawnT > 250) { SK.u.uO.value = 0; SK.m.visible = false; } };
+        a.scene.add(SK.m); return SK.m;
+    }
+    function skinFrame(i, dt) {
+        const th = S.alpha > 0.3 ? S.th : 0, was = SK.st.o, st = skinStep(SK.st, { dt, th, reduced: !!i.reduced });
+        const r = i.rig || {}, f = fwdOf(wrap((+r.yaw || 0) + (+r.gy || 0) + S.off)), want = skinDir(f, SH.vy, th);
+        const rev = want && SK.d[0] * want[0] + SK.d[1] * want[1] + SK.d[2] * want[2] < 0;
+        if (want && (was < 0.05 || rev)) {
+            /* a fresh push tents straight the way she goes, no swing from an old one; forward to back (or back): the old tent lets go
+               and the new one grows from a smooth skin (blending through the middle would never turn round) */
+            SK.d = want.slice(); if (rev) { SK.st.a = 0; SK.st.v = 0; }
+        } else if (want) {
+            const q = 1 - Math.exp(-dt * SKIN.TURN), d = SK.d;
+            for (let j = 0; j < 3; j++) d[j] += (want[j] - d[j]) * q;
+            const L = Math.hypot(d[0], d[1], d[2]); if (L > 1e-4) { d[0] /= L; d[1] /= L; d[2] /= L; } else SK.d = want.slice();
+        }
+        const on = st.o > 0.01 && S.alpha > 0.05;
+        if (!on) { if (SK.m) SK.m.visible = false; return; }
+        if (!SK.m || !SK.m.parent) skinBuild(i.a);
+        const hs = Math.max(0.05, +i.hs || 0.5), pl = skinPlace([i.p.x, i.p.y, i.p.z], SK.d, hs, st.a), u = SK.u;
+        SK.m.position.set(pl.c[0], pl.c[1], pl.c[2]); u.uD.value.set(SK.d[0], SK.d[1], SK.d[2]);
+        u.uR.value = pl.r; u.uA.value = pl.tent; u.uO.value = st.o * Math.min(1, S.alpha) * 0.9;
+        u.uW.value = i.reduced ? 0 : 1; u.uT.value = i.reduced ? 0 : now() / 1000;
+        SK.m.visible = true;
+    }
     /* body-world-3d.js: a double tap on the world with a second finger while the controller is held */
     W.addEventListener('lowi:pad-double', () => { shoot('double'); });
     W.LowiMistyTurn = {
         core,
-        thrust: v => { if (v === undefined) return S.th; S.th = clamp(Math.round(+v || 0), -1, 1); if (S.th) S.cueT = Math.max(S.cueT, 0.6); return S.th; },
+        thrust: v => { if (v === undefined) return S.th; S.th = clamp(Math.round(+v || 0), -1, 1); return S.th; },
         turning: () => !!(S.own && S.own.turned),
         /* misty-flight.js, once a frame while she is out: the stick, thrust and heading to use */
         steer: i => {
@@ -252,7 +338,6 @@
             SH.vy = i.mode === 'drive' ? clamp(+i.vy || 0, -1, 1) : 0;
             const o = steer(S, { dt: i.dt, mode: i.mode, vx: i.vx, vy: i.vy, th: S.th, camYaw: (+r.yaw || 0) + (+r.gy || 0), busy: i.busy });
             if (o.cam && r && typeof r.yaw === 'number') { r.yaw += o.cam; r.vy = 0; }
-            if (o.th) S.cueT = Math.max(S.cueT, 0.6);
             return { vx: o.vx, vy: o.vy, th: o.th, f: o.f, hands: !!(S.own && S.own.turned) };
         },
         /* misty-flight.js, right after it drew her: lean into the turn, the facing dots, a sparkle for a tap */
@@ -263,8 +348,10 @@
             if (!S.own || !S.own.turned) S.bank *= Math.exp(-dt * 5);
             const out = { bank: S.bank, sparkle: S.sparkle }; S.sparkle = false;
             try { shotFrame(i, dt); } catch (e) { SH.list = []; if (SH.obj) SH.obj.visible = false; }
+            try { skinFrame(i, dt); } catch (e) { if (SK.m) SK.m.visible = false; }
             S.cueT = Math.max(0, S.cueT - dt);
-            const show = (S.cueT > 0 || (S.own && S.own.turned)) && !i.reduced && S.alpha > 0.3;
+            /* the facing dots: only for a drag on her with no hold; holding forward / back shows her flight skin instead */
+            const show = !S.th && (S.cueT > 0 || (S.own && S.own.turned)) && !i.reduced && S.alpha > 0.3;
             if (!show) { if (S.pts) S.pts.visible = false; return out; }
             if (!S.pts || !S.pts.parent) S.pts = cueBuild(a);
             const hs = Math.max(0.05, +i.hs || 0.5), r = i.rig || {}, yaw = wrap((+r.yaw || 0) + (+r.gy || 0) + S.off), f = fwdOf(yaw);
@@ -279,6 +366,6 @@
         shoot: why => shoot(why),
         /* how much today's shots healed world id (0..SHOT.HEAL_MAX): body-world-regions.js thins its fog by it */
         heal: id => healOf(SH.heal, id, Date.now()),
-        state: () => ({ off: +S.off.toFixed(3), th: S.th, turning: !!(S.own && S.own.turned), touching: !!S.own, turns: S.turns, cue: S.pts ? !!S.pts.visible : false, shots: SH.list.length, fired: SH.fired })
+        state: () => ({ off: +S.off.toFixed(3), th: S.th, turning: !!(S.own && S.own.turned), touching: !!S.own, turns: S.turns, cue: S.pts ? !!S.pts.visible : false, skin: SK.m && SK.m.visible ? { a: +SK.st.a.toFixed(3), o: +SK.st.o.toFixed(3), d: SK.d.map(x => +x.toFixed(3)) } : null, shots: SH.list.length, fired: SH.fired })
     };
 })();

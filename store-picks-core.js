@@ -196,6 +196,39 @@
         return ((data && data.rows) || []).map(r => { const o = {}; cols.forEach((k, i) => { o[k] = r[i]; }); return o; });
     }
 
+    /* Oct 18, 2026 (E-man in Lidl: "a little window next to best. Just like Amazon, so we can actually see ... an image of the
+       product"). Photos: tools/shop-data/add-images.py stores the front photo Open Food Facts returned for the barcode in `im`,
+       minus the host and ".200.jpg". Only that host and that file shape are accepted, so the data file cannot point anywhere else. */
+    const IMG = 'https://images.openfoodfacts.org/images/products/';
+    function offFolder(code) {
+        const c = String(code);
+        return c.length > 8 ? c.slice(0, 3) + '/' + c.slice(3, 6) + '/' + c.slice(6, 9) + '/' + c.slice(9) : c;
+    }
+    function photo(p, size) {
+        const im = p && p.im, g = p && String(p.g || '');
+        if (!im || !/^[0-9]+$/.test(g)) return null;
+        if (!/^(?:[0-9]{3}\/[0-9]{3}\/[0-9]{3}\/[0-9]+\/|[0-9]+\/)?(?:front|image)[A-Za-z0-9_.-]*$/.test(im)) return null;
+        return IMG + (im.indexOf('/') >= 0 ? im : offFolder(g) + '/' + im) + '.' + (size === 400 ? 400 : 200) + '.jpg';
+    }
+    /* the page a shopper can open for this product: the Open Food Facts page the label came from (or, for the Salling
+       range, the OFF page only when OFF has the same barcode with a photo); null when there is no real page to link */
+    function link(p, data) {
+        const g = p && String(p.g || '');
+        if (!/^[0-9]+$/.test(g)) return null;
+        const off = /^Open Food Facts/.test(String(data && data.source || ''));
+        if (off || (p.im && photo(p))) return { url: 'https://world.openfoodfacts.org/product/' + g, site: 'Open Food Facts' };
+        return null;
+    }
+    /* why a product is Best / Good / left out: the same numbers rate() used, plus the limits */
+    function explain(r) {
+        if (!r || !r.rated) return null;
+        return {
+            verdict: r.best ? 'best' : r.pass ? 'good' : r.fail === 'sugar' ? 'sugar' : 'spikes',
+            gl: r.gl, gi: r.gi, serve: r.serve, unit: r.unit, carbs: r.carbs, sugar: r.sugar, protein: r.protein, fibre: r.fibre,
+            typical: !!r.typical, estimatedGI: true, limits: { best: LIMIT.best, gl: LIMIT.gl, sugar: LIMIT.sugar }
+        };
+    }
+
     /* rate a whole range; groups in display order, passing products best first */
     function build(data, opts) {
         opts = opts || {};
@@ -254,5 +287,5 @@
         return (stores || []).filter(s => (s.brand + ' ' + s.name + ' ' + (s.addr || '') + ' ' + town(s)).toLowerCase().indexOf(t) >= 0);
     }
 
-    return { LIMIT, GROUPS, G, groupOf, typical, rate, rows, build, km, nearest, town, findStore };
+    return { LIMIT, GROUPS, G, groupOf, typical, rate, rows, build, km, nearest, town, findStore, photo, link, explain };
 });

@@ -11,6 +11,7 @@ Sources
   off:<x>  Open Food Facts (open database, ODbL): products shoppers tagged as sold at chain <x> in Germany.
 
 Usage: python3 tools/shop-data/build.py salling | off edeka | off-all | stores
+       then python3 tools/shop-data/add-images.py   (adds the Open Food Facts front photo per barcode, column im)
 """
 import json, os, re, sys, time, urllib.request, urllib.parse, datetime
 

@@ -94,12 +94,125 @@
         if (r.fibre >= 2) parts.push(dec(r.fibre) + ' g ' + T('fibre', 'Ballaststoffe', 'fibra'));
         return parts.join(' · ');
     }
-    function itemHTML(it, failed) {
-        const r = it.r, p = it.p;
-        const tag = failed ? '<em class="stp-tag no">' + esc(r.fail === 'sugar' ? T('Too much sugar', 'Zu viel Zucker', 'Demasiado azúcar') : T('Spikes', 'Lässt steigen', 'Sube')) + '</em>'
+    /* Oct 18, 2026 (E-man in Lidl Flensburg, could not tap "Bio Linsen": "It should be linked in there ... a little window next to
+       best. Just like Amazon, so we can actually see ... an image of the product."). Each row is a button with a small photo; the
+       photo waits in data-src until the row scrolls near (IntersectionObserver), so a long list never asks for thousands at once. */
+    let shown = [], qv = null, qvFrom = -1, io = null;
+    const camera = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-2.5h6L17 8h3v11H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="13.2" r="3.4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>';
+    function tagHTML(r, failed) {
+        return failed ? '<em class="stp-tag no">' + esc(r.fail === 'sugar' ? T('Too much sugar', 'Zu viel Zucker', 'Demasiado azúcar') : T('Spikes', 'Lässt steigen', 'Sube')) + '</em>'
             : '<em class="stp-tag ' + (r.best ? 'best' : 'ok') + '">' + esc(r.best ? T('Best', 'Top', 'Mejor') : T('Good', 'Gut', 'Bien')) + '</em>';
-        return '<li class="stp-item' + (failed ? ' fail' : '') + '"><div><b>' + esc(p.n) + '</b><small>' + esc([p.b, p.q].filter(Boolean).join(' · ')) +
-            (r.typical ? ' · ' + esc(T('typical values, no label online', 'typische Werte, kein Etikett online', 'valores típicos, sin etiqueta en línea')) : '') + '</small><span class="stp-why">' + esc(reason(it)) + '</span></div>' + tag + '</li>';
+    }
+    function thumbHTML(p) {
+        const src = C.photo(p);
+        return src ? '<span class="stp-th"><img data-src="' + esc(src) + '" alt="" width="48" height="48" loading="lazy" decoding="async"></span>'
+            : '<span class="stp-th none" title="' + esc(T('No photo yet', 'Noch kein Foto', 'Aún no hay foto')) + '">' + camera + '</span>';
+    }
+    function itemHTML(it, failed) {
+        const r = it.r, p = it.p, i = shown.push({ it, failed: !!failed }) - 1;
+        return '<li class="stp-li"><button type="button" class="stp-item' + (failed ? ' fail' : '') + '" data-stp-item="' + i + '" aria-haspopup="dialog">' + thumbHTML(p) +
+            '<span class="stp-it"><b>' + esc(p.n) + '</b><small>' + esc([p.b, p.q].filter(Boolean).join(' · ')) +
+            (r.typical ? ' · ' + esc(T('typical values, no label online', 'typische Werte, kein Etikett online', 'valores típicos, sin etiqueta en línea')) : '') + '</small><span class="stp-why">' + esc(reason(it)) + '</span></span>' + tagHTML(r, failed) + '</button></li>';
+    }
+
+    /* ---------------- quick view: photo, label, why, where it comes from ---------------- */
+    function whyText(e) {
+        const g = dec(e.gl), sv = e.serve + ' ' + e.unit, su = dec(e.sugar);
+        if (e.verdict === 'best') return T('Best: about ' + g + ' glycemic load in a ' + sv + ' portion. 2 or less is Best.',
+            'Top: etwa ' + g + ' glykämische Last in einer Portion von ' + sv + '. Bis 2 heißt Top.',
+            'Mejor: unos ' + g + ' de carga glucémica en una porción de ' + sv + '. 2 o menos es Mejor.');
+        if (e.verdict === 'good') return T('Good: about ' + g + ' glycemic load in a ' + sv + ' portion and ' + su + ' g sugar. It passes at 5 or less with at most 6 g sugar; Best needs 2 or less.',
+            'Gut: etwa ' + g + ' glykämische Last in einer Portion von ' + sv + ' und ' + su + ' g Zucker. Bestanden bis 5 mit höchstens 6 g Zucker; Top braucht bis 2.',
+            'Bien: unos ' + g + ' de carga glucémica en una porción de ' + sv + ' y ' + su + ' g de azúcar. Pasa con 5 o menos y como mucho 6 g de azúcar; Mejor necesita 2 o menos.');
+        if (e.verdict === 'sugar') return T('Left out: ' + su + ' g sugar in a ' + sv + ' portion. The limit is 6 g.',
+            'Aussortiert: ' + su + ' g Zucker in einer Portion von ' + sv + '. Die Grenze ist 6 g.',
+            'Excluido: ' + su + ' g de azúcar en una porción de ' + sv + '. El límite es 6 g.');
+        return T('Left out: about ' + g + ' glycemic load in a ' + sv + ' portion. The limit is 5.',
+            'Aussortiert: etwa ' + g + ' glykämische Last in einer Portion von ' + sv + '. Die Grenze ist 5.',
+            'Excluido: unos ' + g + ' de carga glucémica en una porción de ' + sv + '. El límite es 5.');
+    }
+    function mathText(e) {
+        const s = dec(e.carbs) + ' g ' + T('carbs', 'KH', 'carbohidratos') + ' × GI ' + e.gi + ' ÷ 100 = ' + dec(e.gl) + '. ';
+        return s + (e.typical ? T('This product has no label online, so typical values for this food were used. ', 'Dieses Produkt hat online kein Etikett, deshalb wurden typische Werte für dieses Lebensmittel genommen. ', 'Este producto no tiene etiqueta en línea, así que se usaron valores típicos de este alimento. ')
+            : T('The carbs and sugar come from the label. ', 'KH und Zucker stammen vom Etikett. ', 'Los carbohidratos y el azúcar vienen de la etiqueta. ')) +
+            T('The GI is an estimate from the food type, lowered by fibre, protein and fat, so the load is an estimate too.',
+                'Der GI ist eine Schätzung aus der Lebensmittelart, gesenkt durch Ballaststoffe, Eiweiß und Fett, also ist auch die Last geschätzt.',
+                'El IG es una estimación según el tipo de alimento, reducida por la fibra, la proteína y la grasa, así que la carga también es estimada.');
+    }
+    function labelHTML(p) {
+        const v = x => (typeof x === 'number' ? dec(x) : '–');
+        const rowsL = [[T('Carbs', 'Kohlenhydrate', 'Carbohidratos'), v(p.c) + ' g'], [T('of which sugar', 'davon Zucker', 'de los cuales azúcar'), v(p.s) + ' g'],
+            [T('Fibre', 'Ballaststoffe', 'Fibra'), v(p.f) + ' g'], [T('Protein', 'Eiweiß', 'Proteína'), v(p.p) + ' g'], [T('Fat', 'Fett', 'Grasa'), v(p.fat) + ' g'],
+            [T('Energy', 'Energie', 'Energía'), v(p.kcal) + ' kcal']];
+        return '<dl class="stp-qv-dl">' + rowsL.map(x => '<div><dt>' + esc(x[0]) + '</dt><dd>' + esc(x[1]) + '</dd></div>').join('') + '</dl>';
+    }
+    function whereText() {
+        const name = (data && data.name) || (RANGE[S.range] && RANGE[S.range].label) || '';
+        if (S.range === 'salling') return T('From Salling Group’s online range (Bilka ToGo). Føtex and Bilka share most of it, but it is not checked against the shelf of your shop, so it may not be there today.',
+            'Aus dem Online-Sortiment der Salling Group (Bilka ToGo). Føtex und Bilka teilen das meiste davon, aber es ist nicht mit dem Regal deines Ladens abgeglichen, es kann also heute fehlen.',
+            'De la gama en línea de Salling Group (Bilka ToGo). Føtex y Bilka comparten la mayor parte, pero no está comprobado con la estantería de tu tienda, así que puede que hoy no esté.');
+        return T('Open Food Facts shoppers tagged this product as sold at ' + name + ' in Germany. It is not checked against the shelf of your shop, so it may not be there today.',
+            'Nutzer von Open Food Facts haben dieses Produkt als bei ' + name + ' in Deutschland erhältlich markiert. Es ist nicht mit dem Regal deines Ladens abgeglichen, es kann also heute fehlen.',
+            'Usuarios de Open Food Facts marcaron este producto como vendido en ' + name + ' en Alemania. No está comprobado con la estantería de tu tienda, así que puede que hoy no esté.');
+    }
+    function quickHTML(it, failed) {
+        const p = it.p, r = it.r, big = C.photo(p, 400), lk = C.link(p, data), e = C.explain(r);
+        const ph = big ? '<img src="' + esc(big) + '" alt="' + esc(T('Photo of ', 'Foto von ', 'Foto de ') + p.n) + '" decoding="async">'
+            : '<span class="stp-qv-none">' + camera + '<span>' + esc(T('No photo yet. Nobody has uploaded one for this barcode.', 'Noch kein Foto. Für diesen Barcode hat noch niemand eins hochgeladen.', 'Aún no hay foto. Nadie ha subido una para este código de barras.')) + '</span></span>';
+        const cap = big ? '<figcaption>' + esc(T('Photo: Open Food Facts, uploaded by shoppers', 'Foto: Open Food Facts, von Nutzern hochgeladen', 'Foto: Open Food Facts, subida por usuarios')) + '</figcaption>' : '';
+        const sub = [p.b, p.q, p.g ? T('barcode ', 'Barcode ', 'código ') + p.g : ''].filter(Boolean).join(' · ');
+        return '<div class="stp-qv-card" role="dialog" aria-modal="true" aria-labelledby="stpQvT">' +
+            '<div class="stp-qv-scroll"><figure class="stp-qv-ph' + (big ? '' : ' none') + '">' + ph + cap + '</figure>' +
+            '<div class="stp-qv-top">' + tagHTML(r, failed) + '</div><h3 id="stpQvT">' + esc(p.n) + '</h3><p class="stp-qv-sub">' + esc(sub) + '</p>' +
+            (e ? '<h4 class="stp-h5">' + esc(T('Why this rating', 'Warum diese Bewertung', 'Por qué esta valoración')) + '</h4><p class="stp-qv-why">' + esc(whyText(e)) + '</p><p class="stp-qv-p">' + esc(mathText(e)) + '</p>' : '') +
+            '<h4 class="stp-h5">' + esc(r.typical ? T('Typical values per 100 ', 'Typische Werte pro 100 ', 'Valores típicos por 100 ') + (p.u || 'g') : T('Label per 100 ', 'Etikett pro 100 ', 'Etiqueta por 100 ') + (p.u || 'g')) + '</h4>' + labelHTML(r.typical ? {} : p) +
+            '<h4 class="stp-h5">' + esc(T('Where this comes from', 'Woher das kommt', 'De dónde viene')) + '</h4><p class="stp-qv-p">' + esc(whereText()) + '</p>' +
+            (lk ? '<a class="stp-go stp-qv-link" href="' + esc(lk.url) + '" target="_blank" rel="noopener noreferrer">' + esc(T('Open the product page on ', 'Produktseite öffnen auf ', 'Abrir la página del producto en ') + lk.site) + '</a>'
+                : (data && data.sourceUrl ? '<a class="stp-pill stp-qv-src" href="' + esc(data.sourceUrl) + '" target="_blank" rel="noopener noreferrer">' + esc(T('Source: ', 'Quelle: ', 'Fuente: ') + data.sourceUrl.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')) + '</a>' : '')) +
+            '<p class="stp-fine">' + esc(T('General food guidance from the label, not medical advice. How your own blood sugar reacts can be different; check with your doctor for your own limits.',
+                'Allgemeine Ernährungshilfe vom Etikett, keine medizinische Beratung. Dein eigener Blutzucker kann anders reagieren; deine Grenzen klärst du mit deiner Ärztin oder deinem Arzt.',
+                'Orientación general a partir de la etiqueta, no consejo médico. Tu azúcar en sangre puede reaccionar distinto; consulta tus límites con tu médico.')) + '</p></div>' +
+            '<div class="stp-foot"><button type="button" class="stp-pill" data-stp="qv-close">' + esc(T('‹ Back to list', '‹ Zurück zur Liste', '‹ Volver a la lista')) + '</button>' +
+            '<button type="button" class="stp-orb stp-close" data-stp="qv-close" aria-label="' + esc(T('Close product', 'Produkt schließen', 'Cerrar producto')) + '">' + ic.x + '</button></div></div>';
+    }
+    function openQuick(i) {
+        const row = shown[i];
+        if (!ov || !row) return;
+        if (qv) qv.remove();
+        qvFrom = i;
+        qv = D.createElement('div');
+        qv.className = 'stp-qv';
+        qv.innerHTML = quickHTML(row.it, row.failed);
+        const img = qv.querySelector('.stp-qv-ph img');
+        if (img) img.addEventListener('error', () => { const f = img.closest('figure'); if (f) { f.classList.add('none'); f.innerHTML = '<span class="stp-qv-none">' + camera + '<span>' + esc(T('The photo didn’t load.', 'Das Foto ließ sich nicht laden.', 'La foto no se cargó.')) + '</span></span>'; } });
+        ov.appendChild(qv);
+        const card = ov.querySelector('.stp-card'); if (card) card.setAttribute('aria-hidden', 'true');
+        requestAnimationFrame(() => { if (qv) { qv.classList.add('in'); const b = qv.querySelector('.stp-pill[data-stp="qv-close"]'); if (b) try { b.focus({ preventScroll: true }); } catch (e) { b.focus(); } } });
+    }
+    function closeQuick() {
+        if (!qv) return;
+        const o = qv; qv = null;
+        o.remove();
+        if (!ov) return;
+        const card = ov.querySelector('.stp-card'); if (card) card.removeAttribute('aria-hidden');
+        const b = ov.querySelector('[data-stp-item="' + qvFrom + '"]');
+        if (b) try { b.focus({ preventScroll: true }); } catch (e) {}
+    }
+    function watchThumbs() {
+        if (io) { io.disconnect(); io = null; }
+        if (!ov) return;
+        const imgs = ov.querySelectorAll('.stp-th img[data-src]');
+        if (!imgs.length) return;
+        const show = img => {
+            const src = img.getAttribute('data-src'); if (!src) return;
+            img.removeAttribute('data-src');
+            img.addEventListener('error', () => { const s = img.parentNode; if (s) { s.classList.add('none'); s.innerHTML = camera; } }, { once: true });
+            img.src = src;
+        };
+        if (typeof IntersectionObserver !== 'function') { imgs.forEach(show); return; }
+        const sc = ov.querySelector('.stp-scroll');
+        io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { io.unobserve(e.target); show(e.target); } }), { root: sc || null, rootMargin: '300px 0px' });
+        imgs.forEach(img => io.observe(img));
     }
     function groupHTML(g) {
         const meta = C.G[g.id];
@@ -128,6 +241,7 @@
         else if (state === 'error') inner = '<p class="stp-msg">' + esc(T('Couldn’t load the products. Check your connection and try again.', 'Die Produkte ließen sich nicht laden. Prüf die Verbindung und versuch es nochmal.', 'No se pudieron cargar los productos. Revisa la conexión e inténtalo de nuevo.')) + '</p><button type="button" class="stp-go" data-stp="retry">' + esc(T('Try again', 'Nochmal', 'Reintentar')) + '</button>';
         else {
             built = C.build(data, { q });
+            shown = [];
             const c = built.counts;
             const chips = built.groups.filter(g => g.pass.length + g.fail.length + g.unrated).map(g => '<button type="button" class="stp-chip" data-stp-jump="' + g.id + '"><span aria-hidden="true">' + C.G[g.id].ic + '</span>' + esc(C.G[g.id][['en', 'de', 'es'][li()]].split(/[,&]| y | und /)[0].trim()) + ' <i>' + fmt(g.pass.length) + '</i></button>').join('');
             inner = '<p class="stp-sum"><b>' + esc(fmt(c.pass)) + '</b> ' + esc(T('of ' + fmt(c.total) + ' products pass', 'von ' + fmt(c.total) + ' Produkten bestehen', 'de ' + fmt(c.total) + ' productos pasan')) +
@@ -156,7 +270,9 @@
         if (!ov) return;
         const sc = ov.querySelector('.stp-scroll'), top = sc ? sc.scrollTop : 0;
         const hadQ = D.activeElement && D.activeElement.classList && D.activeElement.classList.contains('stp-q');
+        qv = null;
         ov.innerHTML = view === 'pick' ? pickHTML(state) : listHTML(state);
+        watchThumbs();
         const sc2 = ov.querySelector('.stp-scroll'); if (sc2 && state === 'keep') sc2.scrollTop = top;
         if (hadQ) { const i = ov.querySelector('.stp-q'); if (i) { i.focus(); try { i.setSelectionRange(i.value.length, i.value.length); } catch (e) {} } }
     }
@@ -183,7 +299,11 @@
 
     function onClick(e) {
         const t = e.target.closest ? e.target : null; if (!t) return;
+        if (qv && (e.target === qv || (t.closest('[data-stp="qv-close"]') && qv.contains(t)))) { closeQuick(); return; }
+        if (qv && qv.contains(t)) return;
         if (e.target === ov) { close(); return; }
+        const row = t.closest('[data-stp-item]');
+        if (row) { openQuick(+row.getAttribute('data-stp-item')); return; }
         const b = t.closest('[data-stp],[data-stp-store],[data-stp-range],[data-stp-more],[data-stp-jump]');
         if (!b || b.tagName === 'INPUT') return;
         const a = b.getAttribute('data-stp');
@@ -212,7 +332,11 @@
     function onChange(e) {
         if (e.target.getAttribute && e.target.getAttribute('data-stp') === 'fails') { showFail = !!e.target.checked; if (data) paint('keep'); }
     }
-    function onKey(e) { if (e.key === 'Escape' && ov) close(); }
+    function onKey(e) {
+        if (e.key !== 'Escape' || !ov) return;
+        if (qv) return closeQuick();
+        close();
+    }
 
     function openPanel(from) {
         if (ov) return;
@@ -230,7 +354,8 @@
     }
     function close() {
         if (!ov) return;
-        const o = ov; ov = null;
+        const o = ov; ov = null; qv = null;
+        if (io) { io.disconnect(); io = null; }
         D.removeEventListener('keydown', onKey);
         o.classList.remove('in'); o.classList.add('out');
         setTimeout(() => { try { o.remove(); } catch (e) {} }, 260);

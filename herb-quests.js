@@ -239,7 +239,9 @@
         /* Oct 16 (E-man: the XP card "is in another position, doesn't fit"): on Home it sits right under the Daily Quest box,
            the same width, never over the top row or the quest; elsewhere it drops in under the top bar */
         try { const q = D.getElementById('f3Board'), r = q && q.offsetParent ? q.getBoundingClientRect() : null;
-            if (r && r.width > 0 && r.bottom > 0) { el.style.top = Math.round(r.bottom + 10) + 'px'; el.style.width = Math.round(r.width) + 'px'; el.style.left = Math.round(r.left + r.width / 2) + 'px'; el.dataset.at = 'quest'; }
+            /* Oct 17: below the hunt-count line too when it continues the box inside a world (hunt-count.js) */
+            let bot = r ? r.bottom : 0; const hc = D.getElementById('hcLine'); if (r && hc && hc.classList.contains('on') && !hc.classList.contains('hc-away')) { const hr = hc.getBoundingClientRect(); if (hr.height > 0) bot = Math.max(bot, hr.bottom); }
+            if (r && r.width > 0 && r.bottom > 0) { el.style.top = Math.round(bot + 10) + 'px'; el.style.width = Math.round(r.width) + 'px'; el.style.left = Math.round(r.left + r.width / 2) + 'px'; el.dataset.at = 'quest'; }
             else { ['top', 'width', 'left'].forEach(k => el.style.removeProperty(k)); delete el.dataset.at; } } catch (e) {}
         el.hidden = false; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
         clearTimeout(popTimer); popTimer = setTimeout(() => { el.classList.remove('on'); setTimeout(() => { el.hidden = true; }, reduced() ? 0 : 300); }, 4600);

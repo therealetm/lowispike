@@ -155,15 +155,23 @@
         return art;
     }
     /* ---- live hunt in the current world ---- */
-    const H = { reg: null, id: null, bits: [], n: 0, t: 0, eatAnim: [], warmT: 0, sensed: {} };
+    const H = { reg: null, id: null, bits: [], n: 0, t: 0, eatAnim: [], warmT: 0, sensed: {}, day: '', dayChk: 0 };
+    /* hunt-count (Oct 17, E-man: "how many are left? I'm just flying around, not knowing if there are still any"): the live
+       count of THIS world's hunt, straight from the crumbs that are really there. 'lowi:hunt-count' fires only when it changes
+       (she gets in, eats one, leaves, a new day), never per frame. hunt-count.js shows it under the Daily Quest box. */
+    function tally() { const left = H.bits.filter(b => !b.gone).length; return { world: H.id, n: H.n, left, collected: Math.max(0, H.n - left) }; }
+    let lastTally = '';
+    function tell() { const c = tally(), k = [c.world, c.n, c.left].join('|'); if (k === lastTally) return c; lastTally = k; try { W.dispatchEvent(new CustomEvent('lowi:hunt-count', { detail: c })); } catch (e) { } return c; }
+    /* hunt-count: take the crumbs of a world out of the scene (a new day respawns the same world with its new layout) */
+    function drop() { for (const b of H.bits) for (const o of [b.sp, b.cloud]) { try { if (o.parent) o.parent.remove(o); o.material.dispose(); } catch (e) { } } }
     const bounced = {};
     function regions() { return W.LowiWorldRegions || null; }
     function spikesToday() { try { const m = W.LowiWorldMood && W.LowiWorldMood.mood; return m ? (+m.food || 0) + (+m.products || 0) : 0; } catch (e) { return 0; } }
     function murk() { const R = regions(); if (!R || !R.state) return; const left = H.bits.filter(b => !b.gone).length; R.state.murk = H.n ? left / H.n : 0; }
     function spawn(ctx, reg, id, reach) {
         H.reg = reg; H.id = id; H.bits = []; H.eatAnim = []; H.n = 0;
-        const a = ctx.a, T = a && a.THREE; if (!T || !reg || !reg.group || !id || id === 'hub') return;
-        const day = dayKey(), n = count(spikesToday()), s = mine(), done = s.eaten[cleanId(id)] || [], A = canvasArt();
+        const a = ctx.a, T = a && a.THREE; if (!T || !reg || !reg.group || !id || id === 'hub') { tell(); return; }
+        const day = dayKey(); H.day = day; const n = count(spikesToday()), s = mine(), done = s.eaten[cleanId(id)] || [], A = canvasArt();
         const tex = {}; for (const k of ['sugar', 'germ', 'murk']) { tex[k] = new T.CanvasTexture(A[k]); if (T.SRGBColorSpace) tex[k].colorSpace = T.SRGBColorSpace; }
         H.n = n;
         for (const p of spots(day, cleanId(id), n)) {
@@ -179,10 +187,12 @@
         murk();
         const left = H.bits.length, key = day + id;
         if (left && !H.sensed[key]) { H.sensed[key] = 1; setTimeout(() => { if (H.id === id) say(tr('sense', lang(), { n: left }), true); }, 2600); }
+        tell();
     }
     function clear() {
         H.reg = null; H.id = null; H.bits = []; H.eatAnim = []; H.n = 0;
         const R = regions(); if (R && R.state) R.state.murk = 0;
+        tell();
     }
     function eatBit(ctx, b, p) {
         const st = S(); const before = read(mine(), Date.now(), lang());
@@ -191,7 +201,7 @@
         if (st) { st.mistyPower = r.state; save(); }
         H.eatAnim.push({ b, t: 0 });
         try { if (ctx.burst) ctx.burst(p, 14, 0.7); } catch (e) { }
-        const left = H.bits.filter(x => !x.gone).length; murk();
+        const left = H.bits.filter(x => !x.gone).length; murk(); tell();
         const now = read(r.state, Date.now(), lang());
         pub({ gained: r.gained, why: 'eat', world: H.id, left, count: H.n });
         if (now.level > before.level) say(tr('level', lang(), { L: now.level }), true);
@@ -204,6 +214,8 @@
         const R = regions(), reg = R && R.state && R.state.region, id = R && R.current ? R.current() : null;
         if (!reg || !id || id === 'hub' || (R.state.busy || R.state.warp)) { if (H.reg && H.reg !== reg) clear(); return; }
         if (reg !== H.reg || id !== H.id) spawn(ctx, reg, id, reach);
+        /* hunt-count: past local midnight the world gets its new day's crumbs (checked every few seconds, not every frame) */
+        else { const ms = Date.now(); if (ms - H.dayChk > 5000) { H.dayChk = ms; if (H.day && H.day !== dayKey(ms)) { drop(); spawn(ctx, reg, id, reach); } } }
         if (!H.bits.length) return;
         const dt = Math.min(0.05, ctx.dt || 0.016), red = !!ctx.reduced; H.t += dt;
         /* her reach scales with how far out the camera is (like her pace in misty-flight): "next to it" on screen stays about the same */
@@ -249,6 +261,6 @@
         if (r.gained || r.boosted) { pub({ gained: r.gained, why: 'enter', world: cleanId(id) }); setTimeout(() => say(tr('entered', lang())), 900); }
     }
     W.addEventListener('lowi:world-region', e => { const id = e && e.detail && e.detail.id; if (!id || id === 'hub') clear(); });
-    W.LowiMistyHunt = Object.assign({}, core, { frame, gate, entered, clear, state: () => ({ id: H.id, n: H.n, left: H.bits.filter(b => !b.gone).length, spots: H.bits.filter(b => !b.gone).map(b => { b.sp.getWorldPosition(b.w); return [+b.w.x.toFixed(2), +b.w.y.toFixed(2), +b.w.z.toFixed(2)]; }) }) });
+    W.LowiMistyHunt = Object.assign({}, core, { frame, gate, entered, clear, tally, state: () => ({ id: H.id, n: H.n, left: H.bits.filter(b => !b.gone).length, spots: H.bits.filter(b => !b.gone).map(b => { b.sp.getWorldPosition(b.w); return [+b.w.x.toFixed(2), +b.w.y.toFixed(2), +b.w.z.toFixed(2)]; }) }) });
     setTimeout(() => pub(), 1500);
 })(typeof window !== 'undefined' ? window : globalThis);

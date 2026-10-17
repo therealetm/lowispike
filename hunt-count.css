@@ -1,0 +1,39 @@
+/* LOWiSPIKE hunt count (hunt-count.js). Prefix .hc-. A slim line that continues the Daily Quest glass box while Misty is inside
+   a world: same glass, rim and shadow as the box (world-home.css --wh-glass-*), the box's bottom corners square off and the
+   line carries them, like the arrival card does. Not touchable; speech bubbles, Misty, the guide and controls stay above it.
+   Motion: a short opacity fade only, off under reduced motion. */
+.hc-line { --hc-r: 26px; box-sizing: border-box; display: none; align-items: center; gap: 8px; min-height: 30px; padding: 5px 14px 6px;
+    z-index: 2; pointer-events: none; color: #fff; font: 600 12.5px/1.25 var(--font, system-ui), -apple-system, sans-serif; letter-spacing: .005em;
+    background: var(--wh-glass-wide, linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04)));
+    border: 1.5px solid var(--wh-glass-rim, rgba(225,248,255,.4)); border-top: 1px solid rgba(225,248,255,.16);
+    border-radius: 0 0 var(--hc-r) var(--hc-r); box-shadow: var(--wh-glass-sh, 0 14px 30px -14px rgba(0,0,0,.5));
+    -webkit-backdrop-filter: blur(8px) saturate(1.3); backdrop-filter: blur(8px) saturate(1.3);
+    text-shadow: 0 1px 4px rgba(0,20,60,.45); opacity: 0; transition: opacity .28s ease; }
+.hc-line.on { display: flex; opacity: 1; animation: hc-in .28s ease; }
+.hc-w { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: rgba(160,205,255,.92); }
+.hc-dots { flex: none; display: inline-flex; gap: 3px; }
+.hc-dots i { width: 7px; height: 7px; border-radius: 50%; border: 1px solid rgba(225,248,255,.55); background: transparent; box-sizing: border-box; }
+.hc-dots i.got { border-color: transparent; background: radial-gradient(circle at 35% 30%, #fff 0 18%, #8fe6ff 55%, #3aa6e8 100%); box-shadow: 0 0 6px rgba(120,220,255,.75); }
+.hc-t { flex: 1 0 auto; margin-left: auto; text-align: right; white-space: nowrap; }
+.hc-t b { font-weight: 700; }
+.hc-sep { margin: 0 5px; opacity: .55; }
+.hc-sub { color: rgba(255,255,255,.82); font-weight: 600; }
+.hc-ok { flex: none; width: 16px; height: 16px; display: grid; place-items: center; border-radius: 50%; background: rgba(120,230,180,.22); border: 1px solid rgba(160,255,210,.6); }
+.hc-ok svg { width: 11px; height: 11px; fill: none; stroke: #c8ffe6; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.hc-line.clean .hc-t b { color: #c8ffe6; }
+/* the Daily Quest box grows by this line (and an arrival card in the box hands its bottom corners down to it) */
+html.wh-home.hc-on #tab-home #f3Board.hc-joined { border-bottom-left-radius: 0 !important; border-bottom-right-radius: 0 !important; border-bottom-color: transparent !important; margin-bottom: 0 !important; }
+html.hc-on.hc-slot .hq-slot.arr-on .arr-card.arr-quest { border-bottom-left-radius: 0 !important; border-bottom-right-radius: 0 !important; border-bottom-color: transparent !important; }
+/* the box itself steps away in some views (sheets, map zoom, warps; hunt-count.js mirrors it): the line goes with it */
+.hc-line.hc-away { opacity: 0 !important; visibility: hidden; }
+html:not(.wh-home) .hc-line { display: none !important; }
+/* light look */
+html[data-theme="light"] .hc-line, html[data-ui=light] .hc-line { color: #12345a; text-shadow: none; }
+html[data-theme="light"] .hc-w, html[data-ui=light] .hc-w { color: #2b6aa8; }
+html[data-theme="light"] .hc-sub, html[data-ui=light] .hc-sub { color: rgba(18,52,90,.8); }
+html[data-theme="light"] .hc-dots i, html[data-ui=light] .hc-dots i { border-color: rgba(18,52,90,.45); }
+/* narrow phones: smaller name, the dots step aside before the numbers ever get cut */
+@media (max-width: 380px) { .hc-line { gap: 6px; padding-left: 12px; padding-right: 12px; font-size: 12px; } .hc-dots i { width: 6px; height: 6px; } }
+@media (max-width: 340px) { .hc-dots { display: none; } }
+@keyframes hc-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .hc-line, .hc-line.on { transition: none; animation: none; } }

@@ -1,5 +1,9 @@
-# Checks every push and pull request, then proves that what landed on main is really live.
-# Sources: docs.github.com (concurrency, secure use of Actions), martinfowler.com/articles/continuousIntegration.html.
+# Checks every push and pull request. On main it deploys GitHub Pages ONLY after the checks pass,
+# then proves the deployed site really serves that build.
+# Pages source must be "GitHub Actions" (Settings > Pages); a ruleset on main requires the
+# "Release check and tests" job to pass before a commit may land (scripts/push-main.sh).
+# Sources: docs.github.com (concurrency, secure use of Actions, Pages custom workflows, rulesets),
+# martinfowler.com/articles/continuousIntegration.html.
 name: CI
 
 on:
@@ -8,18 +12,20 @@ on:
   pull_request:
   workflow_dispatch:
 
-# Least privilege: the workflow can read the code and nothing else.
+# Least privilege: the workflow can read the code and nothing else. Only the deploy job gets
+# the two extra permissions GitHub Pages needs.
 permissions:
   contents: read
 
 # One run per branch. Superseded runs on work branches are cancelled; runs on main queue up
-# so every release gets its live check.
+# so every release is deployed in order and gets its live check.
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   test:
+    # This job name is the required status check in the main ruleset. Do not rename it.
     name: Release check and tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -48,10 +54,35 @@ jobs:
           if [ -z "$BASE" ] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then BASE="$(git rev-parse HEAD~1)"; fi
           git diff --check "$BASE" HEAD
 
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: test
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+      # The site is the repository root, served as-is (the old branch deploy used .nojekyll).
+      # .git, .github and dotfiles are left out of the artifact.
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+
   live:
     name: Live on GitHub Pages
-    needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: deploy
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

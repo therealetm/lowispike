@@ -5,8 +5,9 @@
 #   scripts/release.sh "Short summary of what users get" [--news news.json] [--no-bump] [--no-verify]
 #
 # Steps: shared lock -> fetch -> rebase on origin/main -> bump build (+ What's New) ->
-# release-check -> full test suite -> whitespace check -> commit -> push HEAD:main ->
-# release lock freed -> wait until GitHub Pages serves the new build and the files match.
+# release-check -> full test suite -> whitespace check -> commit -> scripts/push-main.sh (CI must
+# pass on the exact commit on a ci/ branch, then main fast-forwards; the main ruleset requires it) ->
+# release lock freed -> wait until GitHub Pages (deployed by CI after its tests) serves the build.
 set -euo pipefail
 SUMMARY="${1:?usage: scripts/release.sh \"summary\" [--news news.json] [--no-bump] [--no-verify]}"; shift
 NEWS=""; BUMP=1; VERIFY=1
@@ -46,7 +47,9 @@ if [ -n "$(git status --porcelain)" ]; then
   if ! git diff --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then echo "BLOCKER: unexpected files changed:"; git status --short; exit 6; fi
   git commit -qm "Release $NEW: $SUMMARY (tests $PASS/$TOTAL)"
 fi
-git push origin HEAD:main   # a plain push is refused unless it fast-forwards, so it can never overwrite someone else's release
+# CI has to pass on this exact commit before main accepts it (ruleset), and main only fast-forwards,
+# so this can never land red code or overwrite someone else's release.
+scripts/push-main.sh "$NEW" || { echo "BLOCKER: not landed; the commit stays on this branch"; exit 5; }
 SHA=$(git rev-parse HEAD)
 echo "pushed $SHA as $NEW"
 exec 9>&-   # free the lock before the slow wait so other agents can release

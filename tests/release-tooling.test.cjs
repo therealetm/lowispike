@@ -98,3 +98,26 @@ test('CI workflow keeps least privilege, pinned actions and the same gates', () 
   assert.match(y, /verify-live\.cjs --at-least/);
   assert.match(y, /cancel-in-progress: \$\{\{ github\.ref != 'refs\/heads\/main' \}\}/);
 });
+
+test('Pages deploys only after the tests pass, and the required check keeps its name', () => {
+  const y = fs.readFileSync(path.join(root, '.github/workflows/ci.yml'), 'utf8');
+  const job = name => { const m = y.match(new RegExp('\\n  ' + name + ':\\n([\\s\\S]*?)(?=\\n  [a-z]+:\\n|$)')); assert.ok(m, name + ' job missing'); return m[1]; };
+  assert.match(job('test'), /name: Release check and tests\n/, 'the main ruleset requires this exact check name');
+  const deploy = job('deploy');
+  assert.match(deploy, /needs: test\n/);
+  assert.match(deploy, /github\.ref == 'refs\/heads\/main'/);
+  assert.match(deploy, /pages: write/);
+  assert.match(deploy, /id-token: write/);
+  assert.match(deploy, /name: github-pages/);
+  assert.match(deploy, /actions\/upload-pages-artifact@/);
+  assert.match(deploy, /actions\/deploy-pages@/);
+  assert.doesNotMatch(job('test'), /pages: write|deploy-pages/, 'the test job never deploys');
+  assert.match(job('live'), /needs: deploy\n/);
+  const rel = fs.readFileSync(path.join(root, 'scripts/release.sh'), 'utf8');
+  assert.match(rel, /scripts\/push-main\.sh/);
+  assert.doesNotMatch(rel.replace(/^\s*#.*$/mg, ''), /git push origin HEAD:main/, 'release.sh lands through push-main.sh');
+  const pm = fs.readFileSync(path.join(root, 'scripts/push-main.sh'), 'utf8');
+  assert.match(pm, /refs\/heads\/\$BR/);
+  assert.match(pm, /wait-ci\.cjs/);
+  assert.doesNotMatch(pm, /--force|\s-f\s|\+HEAD/);
+});

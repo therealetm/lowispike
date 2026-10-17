@@ -1,0 +1,258 @@
+/* Oct 17, 2026 (E-man, grocery shopping in Flensburg: "I would love a little emergency button ... based on the products that
+   are actually out there within my location or within the store that I'm buying right now ... see all the snacks that I can
+   buy in the shop, all the meat ... all the bread" and "even before entering the shop, be able to see every product that I can
+   buy if I only eat insulin-friendly food, every product. In all categories ... sweets, if there is any").
+
+   Pure logic for the store picks list (store-picks.js draws it). Products come from data/shop/<range>.json, built from real
+   ranges by tools/shop-data/build.py. Every product is rated with one formula from its label:
+
+     serving   = a typical portion for its food group (100 g meat, 30 g cheese, 40 g bread, 250 ml drink ...)
+     carbs     = label carbohydrate per 100 g x serving / 100   (EU labels already list fibre separately)
+     GI (est.) = a base for the food group, lowered by fibre, protein and fat (they slow the sugar down), 20 to 90
+     GL        = carbs x GI / 100   (glycemic load of one serving)
+     passes    = GL <= 5 and sugar <= 6 g per serving      best = GL <= 2
+
+   Labels give carbs, sugar, fibre, protein and fat; the GI is an estimate, so the GL is an estimate made from real label data. */
+(function (root, factory) {
+    const api = factory();
+    if (typeof module === 'object' && module.exports) module.exports = api;
+    else root.LowiStorePicksCore = api;
+})(typeof self !== 'undefined' ? self : this, function () {
+    'use strict';
+    const LIMIT = { gl: 5, best: 2, sugar: 6 };
+
+    /* food groups in the order the list shows them; serving in g (ml for drinks), GI base before fibre/protein/fat */
+    const GROUPS = [
+        { id: 'snacks', serve: 30, gi: 55, ic: '\u{1F95C}', en: 'Snacks & nuts', de: 'Snacks & Nüsse', es: 'Snacks y frutos secos' },
+        { id: 'meat', serve: 100, gi: 50, ic: '\u{1F969}', en: 'Meat & cold cuts', de: 'Fleisch & Aufschnitt', es: 'Carne y embutidos' },
+        { id: 'fish', serve: 100, gi: 50, ic: '\u{1F41F}', en: 'Fish & seafood', de: 'Fisch & Meeresfrüchte', es: 'Pescado y marisco' },
+        { id: 'dairy', serve: 150, gi: 35, ic: '\u{1F95B}', en: 'Dairy & eggs', de: 'Milchprodukte & Eier', es: 'Lácteos y huevos' },
+        { id: 'cheese', serve: 30, gi: 35, ic: '\u{1F9C0}', en: 'Cheese', de: 'Käse', es: 'Queso' },
+        { id: 'veg', serve: 100, gi: 35, ic: '\u{1F966}', en: 'Vegetables', de: 'Gemüse', es: 'Verduras' },
+        { id: 'fruit', serve: 100, gi: 40, ic: '\u{1F353}', en: 'Fruit & berries', de: 'Obst & Beeren', es: 'Fruta y bayas' },
+        { id: 'bread', serve: 40, gi: 70, ic: '\u{1F35E}', en: 'Bread & crispbread', de: 'Brot & Knäcke', es: 'Pan y tostadas' },
+        { id: 'sweets', serve: 25, gi: 65, ic: '\u{1F36B}', en: 'Sweets, chocolate & ice cream', de: 'Süßes, Schokolade & Eis', es: 'Dulces, chocolate y helado' },
+        { id: 'drinks', serve: 250, gi: 65, ic: '\u{1F964}', en: 'Drinks', de: 'Getränke', es: 'Bebidas' },
+        { id: 'pantry', serve: 50, gi: 65, ic: '\u{1F96B}', en: 'Pantry, sauces & spreads', de: 'Vorrat, Soßen & Aufstriche', es: 'Despensa, salsas y untables' },
+        { id: 'meals', serve: 300, gi: 60, ic: '\u{1F372}', en: 'Ready meals', de: 'Fertiggerichte', es: 'Platos preparados' },
+        { id: 'other', serve: 50, gi: 60, ic: '\u{1F6D2}', en: 'Other', de: 'Sonstiges', es: 'Otros' }
+    ];
+    const G = {};
+    GROUPS.forEach(g => { G[g.id] = g; });
+
+    const has = (s, re) => re.test(s);
+    /* Salling (Danish shop path "Kød & fisk > Fisk & skaldyr > Laks"): mapped by its own aisles */
+    function groupDK(path, name) {
+        const seg = String(path).split(' > '), s0 = seg[0], s1 = seg[1] || '', s2 = seg[2] || '';
+        const n = String(name || '').toLowerCase();
+        if (s0 === 'Drikkevarer') return 'drinks';
+        if (s0 === 'Slik & snacks') return /Chips, nødder|Tørret frugt/.test(s1) ? 'snacks' : 'sweets';
+        if (s0 === 'Frugt & grønt') return s1 === 'Frugt' ? 'fruit' : 'veg';
+        if (s0 === 'Kød & fisk') return s1 === 'Fisk & skaldyr' ? 'fish' : (s1 === 'Alternativer til kød' ? 'veg' : 'meat');
+        if (s0 === 'Brød & kager') return (s1 === 'Kager' || s2 === 'Bagerens kager' || s2 === 'Kiks') ? 'sweets' : 'bread';
+        if (s0 === 'Frost') {
+            if (s1 === 'Brød & kager') return /Kager|Æbleskiver/.test(s2) ? 'sweets' : 'bread';
+            if (s1 === 'Frugt & bær') return 'fruit';
+            if (s1 === 'Færdigretter på frost') return 'meals';
+            if (s1 === 'Grøntsager' || s1 === 'Kartofler & pommes frites') return 'veg';
+            if (s1 === 'Is') return 'sweets';
+            if (s1 === 'Kød & fisk') return s2 === 'Fisk & skaldyr' ? 'fish' : 'meat';
+            return 'other';
+        }
+        if (s0 === 'Kolonial') {
+            if (s1 === 'Færdigretter & supper') return 'meals';
+            if (s1 === 'Nødder, kerner & frø') return 'snacks';
+            if (s2 === 'Fiskekonserves') return 'fish';
+            if (s2 === 'Kødkonserves') return 'meat';
+            if (/Konserveret frugt & grønt|Bønner|Oliven|Kikærter|Veganske/.test(s2)) return 'veg';
+            if (/^Desserter$|Kageblandinger|Pålægschokolade|chokoladesmørepålæg/.test(s2)) return 'sweets';
+            return 'pantry';
+        }
+        if (s0 === 'Mad fra hele verden') {
+            if (s2 === 'Nachos & tortillachips') return 'snacks';
+            if (s2 === 'Tofu') return 'veg';
+            if (s2 === 'Tortillas & tacoskaller') return 'bread';
+            return 'pantry';
+        }
+        if (s0 === 'Mejeri & køl') {
+            if (s1 === 'Bacon, pølser & toppings') return 'meat';
+            if (s1 === 'Færdigretter på køl') return 'meals';
+            if (s1 === 'Mejeri') {
+                if (s2 === 'Ost') return 'cheese';
+                if (s2 === 'Dessert & snacks') return 'sweets';
+                if (s2 === 'Kolde kaffedrikke & kakao') return 'drinks';
+                return 'dairy';
+            }
+            if (s1 === 'Pålæg') return s2 === 'Fiskepålæg' ? 'fish' : (s2 === 'Plantebaseret pålæg' ? 'veg' : 'meat');
+            if (s1 === 'Tapas & specialiteter') return /Specialpålæg|Specialpølser/.test(s2) ? 'meat' : (/Oliven/.test(s2) ? 'veg' : 'pantry');
+            if (s1 === 'Æg & gær') return s2 === 'Gær' ? 'pantry' : 'dairy';
+            return 'pantry';
+        }
+        return /æg\b/.test(n) ? 'dairy' : 'other';
+    }
+    /* Open Food Facts category tags ("dairies|cheeses|hard-cheeses"), most telling first */
+    function groupOFF(tags, name) {
+        const t = '|' + String(tags || '').toLowerCase() + '|', n = String(name || '').toLowerCase();
+        const any = re => re.test(t);
+        /* shopper-made tags are sometimes wrong; a clear product name wins */
+        if (/\b(salami|schinken|bresaola|prosciutto|speck|leberwurst|fleischwurst|mettwurst|bratwurst|wiener würstchen|aufschnitt)\b/.test(n) && !/vegan|vegetar/.test(n)) return 'meat';
+        if (/(käse|gouda|emmentaler|parmesan|grana padano|mozzarella|camembert|feta|harzer|maasdamer|cheddar)/.test(n) && !/kuchen|torte|cracker|brot|chips/.test(n)) return 'cheese';
+        if (/\b(eier|eggs|œufs)\b/.test(n) && !/nudel|likör|salat|schoko/.test(n)) return 'dairy';
+        if (any(/alcoholic|\|wines|\|beers|spirits|liqueurs/)) return null;
+        if (any(/baby-foods|food-supplements|dietary-supplements|pet-food/)) return null;
+        if (any(/\|cheeses|-cheeses\||cheese\|/)) return 'cheese';
+        if (any(/yogurts|\|milks|-milks\||\|eggs|\|butters|creams\||\|quarks|skyrs|kefir|fermented-milk|dairy-desserts/) && !any(/ice-creams|chocolates/)) return 'dairy';
+        if (any(/confectioner|chocolates|candies|\|sweets|biscuits|cakes|ice-creams|frozen-desserts|pastries|sweet-spreads|cocoa-and-chocolate|gummies|\|desserts\|/)) return 'sweets';
+        if (any(/\|breads|crispbreads|-breads\||\|rolls|toasts|rusks|wraps\||tortillas/)) return 'bread';
+        if (any(/fishes|seafood|\|fish|tunas|salmons|herrings|mackerels|sardines|shrimps|prawns/)) return 'fish';
+        if (any(/\|meats|-meats\||poultry|sausages|hams|bacon|salamis|chicken|beef|pork/)) return 'meat';
+        if (any(/salty-snacks|\|nuts|-nuts\||nuts-and|\|seeds|-seeds\||crisps|chips|popcorn|\|bars|cereal-bars|protein-bars|\|snacks\|/)) return 'snacks';
+        if (any(/beverages|getranke|drinks|waters|juices|safte|sodas|nectars|teas\||coffees/) && !any(/coffee-beans|ground-coffee/)) return 'drinks';
+        if (any(/\|vegetables|-vegetables\||leaf-vegetables|salads|legumes|mushrooms|tofu|olives|pulses|herbs|potatoes|asparagus|cabbages|sauerkraut/)) return 'veg';
+        if (any(/\|fruits\||fresh-fruits|berries|apples|bananas|citrus|\|pears|grapes|kiwis/) && !any(/dried|jams|juices|compotes|yogurts|vinegars/)) return 'fruit';
+        if (any(/\|meals|pizzas|soups|sandwiches|prepared-|lasagne|ready/)) return 'meals';
+        if (any(/cereals|pastas|rices|\|rice|sauces|condiments|spreads|oils|fats|groceries|flours|sugars|honeys|jams|spices|vinegars|dressings|mustards|ketchup|canned/)) return 'pantry';
+        if (any(/vegetables-based|fruits-and-vegetables/)) return 'veg';
+        if (/\b(thunfisch|lachs|hering|makrele|sardinen|forelle|garnelen)\b/.test(n)) return 'fish';
+        return 'other';
+    }
+    function groupOf(path, name) {
+        const p = String(path || '');
+        return / > /.test(p) || /^(Drikkevarer|Kolonial|Frost|Brød & kager|Slik & snacks|Mejeri & køl|Kød & fisk|Frugt & grønt|Mad fra hele verden)$/.test(p) ? groupDK(p, name) : groupOFF(p, name);
+    }
+
+    /* typical values per 100 g for fresh food sold without a label online (marked "typical" in the list) */
+    const TYPICAL = [
+        [/agurk|gurke/, 2.5, 1.7, 0.7, 0.7, 0.1], [/cherrytomat|tomat/, 3, 2.6, 1.2, 0.9, 0.2], [/rucola|salat|spinat|spinach|feldsalat/, 1.5, 0.8, 1.6, 2, 0.3],
+        [/broccoli|brokkoli/, 2.5, 1.7, 2.6, 2.8, 0.4], [/blomkål|blumenkohl/, 2.5, 2, 2, 1.9, 0.3], [/squash|zucchini|courgette/, 2.5, 2, 1, 1.2, 0.3],
+        [/champignon|svamp|pilze/, 0.5, 0.3, 1.5, 3, 0.3], [/avocado/, 1.9, 0.7, 6.7, 2, 15], [/aubergine/, 3, 2.8, 3, 1, 0.2],
+        [/grønkål|grünkohl|kale/, 2, 1.7, 4, 4, 0.9], [/spidskål|hvidkål|rosenkål|kål\b|kohl/, 4, 3.5, 2.5, 1.5, 0.2], [/asparges|spargel/, 2, 1.5, 2, 2.2, 0.1],
+        [/peberfrugt|paprika/, 5, 4, 1.8, 1, 0.3], [/bladselleri|selleri|sellerie/, 2, 1.5, 1.6, 0.7, 0.2], [/radise|radies/, 2, 1.9, 1.6, 0.7, 0.1],
+        [/bønner|bohnen/, 4, 2, 3, 1.8, 0.2], [/porre|lauch/, 6, 3, 2, 1.5, 0.3], [/løg\b|zwiebel/, 7, 5, 1.7, 1.1, 0.1], [/gulerod|gulerødder|karotte|möhre/, 7, 5, 2.8, 0.9, 0.2],
+        [/persille|basilikum|dild|purløg|koriander|krydderurt|mynte|kräuter/, 1, 0.5, 3, 3, 0.6],
+        [/hindbær|himbeer/, 5, 4.4, 6.5, 1.2, 0.7], [/brombeer|brombe?r|brombær/, 5, 4.9, 5.3, 1.4, 0.5], [/jordbær|erdbeer/, 6, 5, 2, 0.7, 0.3],
+        [/blåbær|heidelbeer|blaubeer/, 10, 9, 2.4, 0.7, 0.3], [/citron|lime|zitrone/, 3, 2.5, 2.8, 1, 0.3], [/æble|æbler|apfel/, 11, 10, 2.4, 0.3, 0.2],
+        [/pære|birne/, 11, 9, 3, 0.4, 0.1], [/appelsin|orange|mandarin|klementin/, 8, 8, 2, 0.9, 0.1], [/kiwi/, 10, 9, 3, 1.1, 0.5],
+        [/banan/, 20, 17, 2.6, 1.1, 0.3], [/vindruer|druer|trauben/, 16, 16, 0.9, 0.7, 0.2], [/mango/, 13, 12, 1.6, 0.8, 0.4], [/ananas/, 12, 10, 1.4, 0.5, 0.1],
+        [/kartof|kartoffel/, 15, 0.8, 1.8, 2, 0.1], [/søde kartofler|batat/, 17, 4, 3, 1.6, 0.1]
+    ];
+    function typical(name, group, path) {
+        const n = String(name || '').toLowerCase(), p = String(path || '').toLowerCase();
+        if (group === 'veg' || group === 'fruit') {
+            for (const t of TYPICAL) if (t[0].test(n)) return { c: t[1], s: t[2], f: t[3], p: t[4], fat: t[5], typical: true };
+            return null;
+        }
+        /* plain fresh meat and fish carry no carbohydrate; marinated, breaded or mixed products are left unrated */
+        if ((group === 'meat' || group === 'fish') && !/marin|panere|paniert|frikadel|farsbrød|paté|postej|leverpostej|dressing|sauce|salat|gratin|burger|nugget|fiskefrikadel|fiskefilet i|rejesalat/.test(n + ' ' + p)) {
+            return { c: 0, s: 0, f: 0, p: group === 'fish' ? 20 : 19, fat: group === 'fish' ? 6 : 10, typical: true };
+        }
+        if (group === 'dairy' && /\bæg\b|æggebakke|øko æg|fritgående|skrabe|eier\b/.test(n)) return { c: 0.7, s: 0.7, f: 0, p: 12.5, fat: 10, typical: true };
+        return null;
+    }
+
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    const r1 = v => Math.round(v * 10) / 10;
+    const nz = v => (typeof v === 'number' && isFinite(v) ? v : 0);
+
+    /* one product: {n,b,k,c,s,f,p,fat,kcal,u,q,g} -> rating, or {rated:false} when the label has no carbohydrate value */
+    function rate(prod) {
+        const group = /gavekurv|gave\u00e6ske|isterning|eiswürfel/i.test(String(prod.n)) ? null : groupOf(prod.k, prod.n);
+        if (!group) return { group: null, rated: false, skip: true };
+        let nu = prod, typ = false;
+        if (typeof prod.c !== 'number') {
+            const t = typical(prod.n, group, prod.k);
+            if (!t) return { group, rated: false };
+            nu = t; typ = true;
+        }
+        /* a label whose carbs, protein and fat cannot add up to its calories is incomplete online: leave it unrated */
+        if (!typ && typeof prod.kcal === 'number' && prod.kcal > 80 && (4 * nz(prod.c) + 4 * nz(prod.p) + 9 * nz(prod.fat) + 2 * nz(prod.f)) < prod.kcal * 0.5) return { group, rated: false, incomplete: true };
+        /* all zeros on food that cannot be zero (cake mix, bread, cheese ...) is an empty label, not a free food */
+        if (!typ && !nz(prod.c) && !nz(prod.p) && !nz(prod.fat) && !nz(prod.kcal) && /sweets|bread|snacks|meals|dairy|cheese|meat|fish/.test(group)) return { group, rated: false, incomplete: true };
+        const g = G[group];
+        const liquid = prod.u === 'ml' || group === 'drinks';
+        let serve = g.serve;
+        if (group === 'dairy' && liquid) serve = 200;          /* a glass of milk */
+        if (group === 'drinks') serve = 250;
+        /* a pudding, mousse or ice cream is eaten by the bowl, not by the 25 g piece */
+        if (group === 'sweets' && /budding|pudding|dessert|mousse|\bis\b|isvaffel|eis\b|ice cream|yoghurt|joghurt|skyr|creme|cr\u00e8me/i.test(String(prod.n) + ' ' + String(prod.k))) serve = 125;
+        const c = Math.max(0, nz(nu.c)), s = Math.max(0, nz(nu.s)), f = Math.max(0, nz(nu.f)), p = Math.max(0, nz(nu.p)), fat = Math.max(0, nz(nu.fat));
+        let base = g.gi;
+        /* milk drinks behave like dairy, not like soda */
+        if (group === 'drinks' && /mælk|milk|milch|kefir|skyr|protein/.test(String(prod.n + ' ' + prod.k).toLowerCase())) base = 35;
+        const gi = Math.round(clamp(base - Math.min(20, 2.5 * f) - Math.min(12, 0.4 * p) - Math.min(10, 0.25 * fat), 20, 90));
+        const carbs = c * serve / 100, sugar = s * serve / 100;
+        const gl = r1(carbs * gi / 100);
+        const pass = gl <= LIMIT.gl && sugar <= LIMIT.sugar;
+        return {
+            group, rated: true, typical: typ, serve, unit: liquid ? 'ml' : 'g', gi, gl, carbs: r1(carbs), sugar: r1(sugar),
+            protein: r1(p * serve / 100), fibre: r1(f * serve / 100), pass, best: pass && gl <= LIMIT.best,
+            fail: pass ? '' : (gl > LIMIT.gl ? 'gl' : 'sugar')
+        };
+    }
+
+    /* the JSON file's rows -> product objects */
+    function rows(data) {
+        const cols = (data && data.cols) || [];
+        return ((data && data.rows) || []).map(r => { const o = {}; cols.forEach((k, i) => { o[k] = r[i]; }); return o; });
+    }
+
+    /* rate a whole range; groups in display order, passing products best first */
+    function build(data, opts) {
+        opts = opts || {};
+        const q = String(opts.q || '').trim().toLowerCase();
+        const out = {}, counts = { total: 0, rated: 0, pass: 0, fail: 0, unrated: 0 };
+        GROUPS.forEach(g => { out[g.id] = { id: g.id, pass: [], fail: [], unrated: 0 }; });
+        const seen = new Set();
+        rows(data).forEach(p => {
+            const key = (String(p.n || '').toLowerCase().replace(/\s+/g, ' ').trim() + '|' + String(p.b || '').toLowerCase() + '|' + (p.q || ''));
+            if (!p.n || seen.has(key)) return;
+            seen.add(key);
+            const r = rate(p);
+            if (r.skip || !r.group) return;
+            if (q && (p.n + ' ' + (p.b || '')).toLowerCase().indexOf(q) < 0) return;
+            counts.total++;
+            const bucket = out[r.group];
+            if (!r.rated) { bucket.unrated++; counts.unrated++; return; }
+            counts.rated++;
+            const item = { p, r };
+            if (r.pass) { bucket.pass.push(item); counts.pass++; } else { bucket.fail.push(item); counts.fail++; }
+        });
+        const score = it => it.r.gl * 10 - Math.min(30, it.r.protein) * 0.15 - Math.min(10, it.r.fibre) * 0.2 + (it.r.typical ? 0.05 : 0);
+        GROUPS.forEach(g => {
+            out[g.id].pass.sort((a, b) => score(a) - score(b) || a.p.n.localeCompare(b.p.n));
+            out[g.id].fail.sort((a, b) => a.r.gl - b.r.gl || a.p.n.localeCompare(b.p.n));
+        });
+        return { groups: GROUPS.map(g => out[g.id]), counts };
+    }
+
+    /* stores -------------------------------------------------------------------------- */
+    function km(a, b) {
+        const R = 6371, t = x => x * Math.PI / 180;
+        const dLa = t(b.lat - a.lat), dLo = t(b.lon - a.lon);
+        const h = Math.sin(dLa / 2) ** 2 + Math.cos(t(a.lat)) * Math.cos(t(b.lat)) * Math.sin(dLo / 2) ** 2;
+        return 2 * R * Math.asin(Math.sqrt(h));
+    }
+    function nearest(stores, at, n) {
+        return (stores || []).map(s => Object.assign({}, s, { km: km(at, s) })).sort((a, b) => a.km - b.km).slice(0, n || 12);
+    }
+    /* a few town names for shops whose map entry has no address (most Danish ones) */
+    const TOWNS = [['Flensburg', 54.7836, 9.4321], ['Harrislee', 54.80, 9.39], ['Padborg', 54.826, 9.364], ['Kruså', 54.85, 9.40],
+        ['Sønderborg', 54.909, 9.789], ['Aabenraa', 55.044, 9.418], ['Haderslev', 55.249, 9.488], ['Gråsten', 54.919, 9.595],
+        ['Tønder', 54.933, 8.867], ['Schleswig', 54.52, 9.56], ['Husum', 54.48, 9.05], ['Glücksburg', 54.83, 9.55],
+        ['Handewitt', 54.77, 9.33], ['Tarp', 54.665, 9.40], ['Niebüll', 54.79, 8.83], ['Leck', 54.77, 8.98], ['Kappeln', 54.66, 9.93],
+        ['Eckernförde', 54.47, 9.84], ['Satrup', 54.69, 9.60], ['Nordborg', 55.06, 9.75], ['Augustenborg', 54.95, 9.87], ['Rinkenis', 54.89, 9.59],
+        ['Bov', 54.84, 9.39], ['Rødekro', 55.07, 9.33], ['Vojens', 55.25, 9.30]];
+    function town(s) {
+        if (s.addr && /,/.test(s.addr)) return s.addr.split(',').pop().trim();
+        let best = null, d = 1e9;
+        TOWNS.forEach(t => { const k = km(s, { lat: t[1], lon: t[2] }); if (k < d) { d = k; best = t[0]; } });
+        return best || '';
+    }
+    /* Flensburg's Danish name is Flensborg; there is no Føtex in Germany, the nearest are in Aabenraa and Sønderborg */
+    function findStore(stores, text) {
+        const t = String(text || '').toLowerCase().replace(/flensborg/g, 'flensburg').replace(/foetex|fötex|fotex/g, 'føtex');
+        return (stores || []).filter(s => (s.brand + ' ' + s.name + ' ' + (s.addr || '') + ' ' + town(s)).toLowerCase().indexOf(t) >= 0);
+    }
+
+    return { LIMIT, GROUPS, G, groupOf, typical, rate, rows, build, km, nearest, town, findStore };
+});

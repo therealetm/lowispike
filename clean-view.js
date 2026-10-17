@@ -20,9 +20,13 @@
         if (D.getElementById('lwCleanCss')) return;
         const hideSel = C.HIDE.map(s => 'html.lw-clean ' + s).concat(C.HIDE_AUTO.map(s => 'html.lw-clean.lw-clean-auto ' + s)).join(',\n');
         const outSel = C.HIDE.concat(C.HIDE_AUTO).map(s => 'html.lw-clean-out ' + s).join(',\n');
+        const snapSel = C.HIDE.map(s => 'html.lw-clean.lw-clean-snap ' + s).concat(C.HIDE_AUTO.map(s => 'html.lw-clean.lw-clean-auto.lw-clean-snap ' + s)).join(',\n');
         const el = D.createElement('style'); el.id = 'lwCleanCss';
         el.textContent = hideSel + ' { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; transition: opacity .45s ease, visibility 0s linear .45s !important; }\n' +
             outSel + ' { transition: opacity .3s ease, visibility 0s !important; }\n' +
+            /* leaving a world after a tap there: Home's menus go from the world's hiding straight to this one with no fade, so
+               nothing flashes up for a moment on the way (see 'world-left') */
+            snapSel + ' { transition: none !important; }\n' +
             '@media (prefers-reduced-motion: reduce) {\n' + hideSel + ',\n' + outSel + ' { transition: none !important; }\n}\n' +
             /* inside a cell world Home's menus and panels are never shown (clean-view-core.js WORLD_HIDE), whatever the clean state */
             C.worldCss() + ' { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; transition: opacity .3s ease, visibility 0s linear .3s !important; }\n' +
@@ -99,7 +103,7 @@
     W.addEventListener('lowi:autopilot', e => { const on = e.detail && e.detail.on; if (on && onHome()) feed({ type: 'mode', mode: 'auto' }); else soon(); });
     /* inside a cell world (html.wh-away) Home's menus are never shown; flying out of it, the ones you never brought back stay away */
     let away = H.classList.contains('wh-away');
-    try { new MutationObserver(() => { hookPad(); if (st.clean && !onHome()) feed({ type: 'leave', mode: padMode() || '' }); const aw = H.classList.contains('wh-away'); if (aw !== away) { away = aw; if (!aw && onHome()) feed({ type: 'world-left' }); } }).observe(H, { attributes: true, attributeFilter: ['class'] }); } catch (e) { }
+    try { new MutationObserver(() => { hookPad(); if (st.clean && !onHome()) feed({ type: 'leave', mode: padMode() || '' }); const aw = H.classList.contains('wh-away'); if (aw !== away) { away = aw; if (!aw && onHome()) worldLeft(); } }).observe(H, { attributes: true, attributeFilter: ['class'] }); } catch (e) { }
     D.addEventListener('visibilitychange', () => { if (!D.hidden) check(); });
 
     /* ---------- the controller: steering hides, every touch gets a look at the mode ---------- */
@@ -118,6 +122,13 @@
     function swallowOn() { return swallowing && (swallowIds.size > 0 || now() < swallowUntil); }
     function cancelFor(w) {                  /* end the world's own gesture so its tap / long press never fires */
         try { const ev = new PointerEvent('pointercancel', { pointerId: w.id, pointerType: w.type, isPrimary: true, bubbles: true, cancelable: false, clientX: w.x, clientY: w.y }); ev.lwClean = true; (w.target.isConnected ? w.target : D).dispatchEvent(ev); } catch (e) { }
+    }
+    /* the world's hiding is already gone when this runs (and a layout read in between saw the menus as shown), so the hide
+       right after it snaps instead of fading out from fully visible: no flash of Home's menus as she leaves the world */
+    function worldLeft() {
+        if (!(st.worldTap && !st.clean)) { feed({ type: 'world-left' }); return; }
+        H.classList.add('lw-clean-snap'); feed({ type: 'world-left' });
+        requestAnimationFrame(() => requestAnimationFrame(() => H.classList.remove('lw-clean-snap')));
     }
     function reveal() { feed({ type: 'tap', inWorld: H.classList.contains('wh-away') }); }
     /* Oct 17 (E-man: "in the spirit world, tapping the screen brings all the panels back", unwanted): out in the spirit world

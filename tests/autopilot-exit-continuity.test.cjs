@@ -54,7 +54,13 @@ test('clean view: leaving a world never brings the menus back by itself, and nev
 test('clean view (DOM): the reveal tap knows it is inside a world, and flying out of it is told to the core', () => {
     const s = read('clean-view.js');
     assert.match(s, /function reveal\(\) \{ feed\(\{ type: 'tap', inWorld: H\.classList\.contains\('wh-away'\) \}\); \}/);
-    assert.match(s, /if \(aw !== away\) \{ away = aw; if \(!aw && onHome\(\)\) feed\(\{ type: 'world-left' \}\); \}/);
+    assert.match(s, /if \(aw !== away\) \{ away = aw; if \(!aw && onHome\(\)\) worldLeft\(\); \}/);
+    /* the world's hiding is gone before the observer runs, and a layout read in between sees the menus as shown: the hide
+       right after must snap, or they fade out from fully visible (a half-second flash of Home's whole interface) */
+    assert.match(s, /H\.classList\.add\('lw-clean-snap'\); feed\(\{ type: 'world-left' \}\);/);
+    assert.match(s, /requestAnimationFrame\(\(\) => requestAnimationFrame\(\(\) => H\.classList\.remove\('lw-clean-snap'\)\)\)/);
+    assert.match(s, /snapSel \+ ' \{ transition: none !important; \}/);
+    assert.match(s, /'html\.lw-clean\.lw-clean-snap ' \+ s/);
     /* world-home.js is the one that sets html.wh-away while Misty is inside a place */
     assert.match(read('world-home.js'), /H\.classList\.toggle\('wh-away', aw\)/);
 });

@@ -308,10 +308,12 @@
         if (!o && fogWas != null) { a.scene.fog.density = fogWas; fogWas = null; }
         look = o;
     }
+    /* Oct 17 energy shot (misty-turn.js): how much today's shots healed this world, 0..0.6 */
+    function shotHeal() { const M = W.LowiMistyTurn; let h = 0; try { h = M && M.heal ? +M.heal(st.cur) || 0 : 0; } catch (e) { h = 0; } return Math.max(0, Math.min(0.6, h)); }
     function applyLook() {
         const a = w3(); if (!look || !a || !a.scene) return;
         if (a.scene.background && a.scene.background.copy) a.scene.background.copy(look.bg);
-        if (a.scene.fog) { a.scene.fog.color.copy(look.bg); a.scene.fog.density = look.fog * (1 + 0.9 * Math.max(0, Math.min(1, +st.murk || 0))); } /* misty-hunt: murk thins as Misty eats */
+        if (a.scene.fog) { a.scene.fog.color.copy(look.bg); a.scene.fog.density = look.fog * (1 + 0.9 * Math.max(0, Math.min(1, +st.murk || 0))) * (1 - 0.5 * shotHeal()); } /* misty-hunt: murk thins as Misty eats; misty-turn: her energy shots heal it */
     }
     function centerOf(id) {
         const a = w3(), THREE = a.THREE, r = (a.regions || []).find(x => x.id === baseId(id));

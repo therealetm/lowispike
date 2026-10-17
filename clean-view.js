@@ -115,6 +115,7 @@
         try { const ev = new PointerEvent('pointercancel', { pointerId: w.id, pointerType: w.type, isPrimary: true, bubbles: true, cancelable: false, clientX: w.x, clientY: w.y }); ev.lwClean = true; (w.target.isConnected ? w.target : D).dispatchEvent(ev); } catch (e) { }
     }
     function reveal() { feed({ type: 'tap' }); }
+    const padHeld = () => { try { return !!(W.LowiPad && W.LowiPad.held && W.LowiPad.held()); } catch (e) { return false; } };
     function worldTarget(t) {
         if (!t || !t.closest) return false;
         if (t.closest('#spBubble')) return false;     /* her empty cell recalls her on touch: the reveal tap eats it */
@@ -130,6 +131,8 @@
             if (!st.clean || C.padLive(st)) return;
         }
         if (!st.clean) return;
+        /* Oct 17 energy shot (misty-turn.js): with a finger on the controller, taps on the world are her energy shot, not the reveal tap */
+        if (worldTarget(e.target) && padHeld()) return;
         if (st.view === 'drive' && !watch && worldTarget(e.target)) {
             /* steering: a drag still turns the world; only a still tap or press is the reveal tap */
             const w = watch = { id: e.pointerId, type: e.pointerType, x: e.clientX, y: e.clientY, t: now(), target: e.target, moved: 0 };

@@ -1,0 +1,44 @@
+<!doctype html>
+<!-- Stage for galaxy-bubbles.js (not part of the offline suite): the real 3D world with the real galaxy modules, Misty as a stand-in
+     state driven by a tiny flight loop (misty-flight's free-flight formula). Open with ?w=390&h=844 in a headless browser;
+     window.stage exposes helpers; tests/galaxy-bubbles-live.cjs drives it. -->
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}canvas{width:100vw;height:100vh;display:block}</style></head>
+<body><canvas id="c"></canvas>
+<script src="../misty-galaxy.js"></script>
+<script src="../galaxy-bubbles.js"></script>
+<script type="module">
+import * as THREE from '../vendor/three-0.160.1.module.min.js';
+import { createWorld } from '../body-world-3d-scene.js';
+const errors = []; window.addEventListener('error', e => errors.push(String(e.message)));
+const w = createWorld(THREE, document.getElementById('c'), { places: [], small: innerWidth < 380, dprCap: 2, theme: 'dark' });
+w.setMode && w.setMode('home');
+w.rig.mode = 'home'; w.rig.maxD = 14; w.rig.dist = 80;
+const S = { st: 'free', p: new THREE.Vector3(), v: new THREE.Vector3(), hs: 1, d0: 6.5, gxD0: 6.5, gx: true }, V = { want: new THREE.Vector3() };
+document.documentElement.classList.add('mf-galaxy');
+let mode = 'drive', mag = 0, k = 0.8, bursts = 0;
+const K = { ROAM: 11 };
+function tick(dt) {
+    const ctx = { a: { scene: w.scene, THREE, camera: w.camera }, r: w.rig, dt, k, K, reduced: false, burst: () => { bursts++; } };
+    const sp = W.LowiMistyGalaxy.speed(ctx, S) * (1.5 + 2.7 * k);
+    S.v.lerp(V.want.clone().multiplyScalar(sp * (mag > 0 ? 1 : 0)), Math.min(1, dt * 3.2)); S.p.addScaledVector(S.v, dt);
+    W.LowiMistyGalaxy.step(ctx, S, V, mode, mag, K);
+    W.LowiMistyGalaxy.cam(ctx, S);
+    /* misty-flight: her on-screen size stays constant, so her world size follows the camera distance */
+    S.hs = w.rig.dist * 0.037;
+    w.rig.target.copy(S.p);
+}
+const W = window;
+function world(i) { const g = w.scene.getObjectByName('cosmos'); const o = g.children.filter(o => o.isMesh && o.userData && o.userData.r && o.position.lengthSq() > 1)[i]; const p = o.position.clone(); g.updateMatrixWorld(); return { p: o.getWorldPosition(new THREE.Vector3()), r: o.userData.r }; }
+W.stage = {
+    errors, S, V, w, THREE,
+    run(secs, opts) { opts = opts || {}; if (opts.mode) mode = opts.mode; if (opts.mag != null) mag = opts.mag; if (opts.k != null) k = opts.k; const dt = 1 / 30; for (let t = 0; t < secs; t += dt) { if (opts.aim) { const q = world(opts.aim.i).p; V.want.subVectors(q, S.p).normalize(); } else if (opts.want) V.want.set(...opts.want).normalize(); w.renderOnce ? (w.rig.target.copy(S.p), 0) : 0; tick(dt); } w.renderOnce(); return this.state(); },
+    frame() { tick(1 / 30); w.renderOnce(); },
+    world, worlds() { const g = w.scene.getObjectByName('cosmos'); return g ? g.children.filter(o => o.isMesh && o.userData && o.userData.r && o.position.lengthSq() > 1).length : 0; },
+    paths() { const g = w.scene.getObjectByName('cosmos'); const t = g && g.getObjectByName('cosmos-threads'); return t ? t.userData.paths : []; },
+    put(x, y, z) { S.p.set(x, y, z); S.v.set(0, 0, 0); },
+    state() { return Object.assign({ p: S.p.toArray().map(v => +v.toFixed(2)), dist: +w.rig.dist.toFixed(2), bursts, errors: errors.slice() }, W.LowiGalaxyBubbles.state()); },
+    ready: false
+};
+w.renderOnce(); W.stage.ready = true;
+</script></body></html>

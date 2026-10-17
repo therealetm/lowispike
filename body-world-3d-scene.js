@@ -278,7 +278,7 @@ export function createWorld(THREE, canvas, opts) {
     const COSMOS = { R: 46, OUT: 300, N: small ? 30 : 40, DEEP0: 1000, DEEP1: 1130 };
     const skyTmp = new THREE.Vector3(), skyUp = new THREE.Vector3(0, 1, 0);
     rig.outerD = COSMOS.OUT;
-    let cosmos = null, cosmosK = -1, farNow = 120;
+    let cosmos = null, cosmosK = -1, farNow = 120, cosmosGx = 0;
     const smoothC = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
     /* Oct 16, 2026 (E-man, after build 181510: "Why are there companions in the background? It's distracting ... We don't see the
        companions. We see that metabolic cellular galaxy outer world that I showed you"). The far realm is cells, not faces: NO companion,
@@ -434,13 +434,16 @@ export function createWorld(THREE, canvas, opts) {
                 pts.forEach((p, k) => { const u = k / (S - 1), col = ca.clone().lerp(cb, u).lerp(SPK.white, 0.3);
                     ptPush(beadsA, p.x, p.y, p.z, 2.4 + 1.2 * Math.sin(Math.PI * u), col.clone().multiplyScalar(0.28), rnd());
                     if (k % 6 === 3) ptPush(beadsA, p.x, p.y, p.z, 4 + rnd() * 5, col, rnd()); });
-                paths.push({ arr, col: ca.clone().lerp(cb, 0.5).lerp(SPK.white, 0.45) });
+                paths.push({ arr, col: ca.clone().lerp(cb, 0.5).lerp(SPK.white, 0.45), a: i, b: q[0], dir: 1 });
             });
         });
-        const threads = webObj(thV, thC); threads.name = 'cosmos-threads'; g.add(threads);
+        /* Oct 17 (E-man: the strings carry Misty like ocean currents): galaxy-bubbles.js reads the threads' curves (group space) from here.
+           a / b are indexes into worlds (0 = our own bubble, n = others[n - 1]); dir is the way each current flows (+1 = a to b). */
+        const threads = webObj(thV, thC); threads.name = 'cosmos-threads'; threads.userData.paths = paths; g.add(threads);
         const beads = ptsObj(beadsA, glowTex, false, 650, 1300, 0.45); g.add(beads);
         const sparkA = ptsBuf(), sparks = [];
-        paths.forEach((pa, j) => { for (let k = 0; k < 2; k++) { sparks.push({ j, o: rnd(), s: (0.025 + rnd() * 0.03) * (rnd() > 0.5 ? 1 : -1) }); ptPush(sparkA, pa.arr[0], pa.arr[1], pa.arr[2], 6 + rnd() * 3, pa.col, rnd()); } });
+        /* the sparks show which way each current flows: the first spark's coin decides the thread's direction, both sparks follow it */
+        paths.forEach((pa, j) => { for (let k = 0; k < 2; k++) { const o = rnd(), sp = 0.025 + rnd() * 0.03, sg = rnd() > 0.5 ? 1 : -1; if (k === 0) pa.dir = sg; sparks.push({ j, o, s: sp * pa.dir }); ptPush(sparkA, pa.arr[0], pa.arr[1], pa.arr[2], 6 + rnd() * 3, pa.col, rnd()); } });
         const sparkPts = ptsObj(sparkA, dotTex, false, 650, 1300, 0); g.add(sparkPts);
         /* fine sparkling dust drifting slowly between the worlds, and the dark starry deep far beyond */
         const dustA = ptsBuf(), DN = small ? 650 : 1100;
@@ -521,12 +524,18 @@ export function createWorld(THREE, canvas, opts) {
     }
     /* 0 inside the World Map, 1 out in the spirit world; the walls and the fog give way as the camera leaves our bubble */
     function cosmosStep(t, dt) {
-        const d = rig.dist, homeish = rig.mode === 'home';
+        /* inside a galaxy bubble (galaxy-bubbles.js) the camera comes in close to Misty, but the spirit world must stay the spirit world
+           (no bloodstream tube, no blue fog): rig.cosmosMin holds these looks at least at the galaxy's own camera distance */
+        const d = Math.max(rig.dist, rig.cosmosMin || 0), homeish = rig.mode === 'home';
         const k = homeish ? smoothC((rig.maxD || 14) * 1.05, 120, d) : 0;
         if (k <= 0 && !cosmos) return;
         if (!cosmos) cosmos = buildCosmos();
-        const C = cosmos, walls = smoothC((rig.maxD || 14) * 1.05, 44, d), mem = smoothC(30, 75, d), far = smoothC(55, 190, d), nearK = smoothC(120, 285, d);
+        const C = cosmos, walls = smoothC((rig.maxD || 14) * 1.05, 44, d), mem = smoothC(30, 75, d), nearK = smoothC(120, 285, d);
         C.g.visible = k > 0.001;
+        /* Oct 17: while Misty flies out in the galaxy (misty-galaxy.js) the other worlds and the currents between them stay clearly visible:
+           at the galaxy's camera distance they used to be nearly invisible glass, so you could not see where to fly */
+        cosmosGx += ((document.documentElement.classList.contains('mf-galaxy') ? 1 : 0) - cosmosGx) * Math.min(1, dt * 1.5);
+        const far = Math.max(smoothC(55, 190, d), 0.72 * cosmosGx);
         if (k !== cosmosK) {
             cosmosK = k;
             const want = k > 0.001 ? 1600 : 120; if (want !== farNow) { farNow = want; camera.far = want; camera.updateProjectionMatrix(); }

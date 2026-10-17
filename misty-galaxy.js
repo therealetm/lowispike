@@ -9,8 +9,8 @@
    flight: the camera backs out with her (the same 3D scene, the same camera, no page switch, no teleport), the bloodstream's walls
    and fog fall away and the spirit world (body-world-3d-scene.js "cosmos": our own bubble and the other glass worlds) opens up
    around her. Out there she steers with the same controller, a lot faster (her speed scales with how far out the camera is, so on
-   screen she moves the same), the camera follows her, and the clean flight view stays on. The other worlds are solid glass: she
-   slides round them. Steer back into your own world and the camera comes back in with her; past the old edge she is home again.
+   screen she moves the same), the camera follows her, and the clean flight view stays on. The other worlds are bubbles she can push
+   into, and the threads between them are currents that carry her (Oct 17, galaxy-bubbles.js). Steer back into your own world and the camera comes back in with her; past the old edge she is home again.
    Autopilot, a recall or 20 s without steering also bring her home the same way.
 
    LIMITLESS (Oct 17, E-man, handoff item 11: "a limitless spirit world, no invisible walls; getting Home always possible"): there is
@@ -169,14 +169,17 @@
             /* the edge rings out behind her */
             if (G.ring) { G.ringT += dt; const w = ringOut(G.ring, G.ringT); paintSkin(a, reach, Math.max(0, w), Math.max(0, 0.7 * Math.exp(-1.6 * G.ringT))); if (G.ringT > 2.4) { G.ring = 0; paintSkin(a, reach, 0, 0); } }
             /* back through your own edge: home again (the camera comes back in with her, misty-flight cam below) */
-            if (L < reach * GAL.BACK) { S.gx = false; S.gxBack = true; cls(false); G.ring = 0; paintSkin(a, reach, 0, 0); note('home again'); return false; }
+            if (L < reach * GAL.BACK) { if (W.LowiGalaxyBubbles) W.LowiGalaxyBubbles.reset(ctx, S); S.gx = false; S.gxBack = true; cls(false); G.ring = 0; paintSkin(a, reach, 0, 0); note('home again'); return false; }
             /* LIMITLESS: no outer edge. Out in the deep dark she and the camera are carried round to the far side together */
             if (L > GAL.LOOP) {
                 G.tmp.copy(S.p).multiplyScalar(loopK(L) - 1); S.p.add(G.tmp);
                 if (ctx.r && ctx.r.target && !ctx.r.fly) ctx.r.target.add(G.tmp);
                 G.loops++; note('came round ' + G.loops);
             }
-            bump(a, S);
+            /* Oct 17: every other world is a bubble she can go into, and the threads between them are currents (galaxy-bubbles.js);
+               without that file they stay solid glass */
+            const GBB = W.LowiGalaxyBubbles;
+            if (!(GBB && GBB.step(ctx, S, V, mode, mag, K))) bump(a, S);
             return true;
         }
         /* pushing on the edge */
@@ -207,7 +210,7 @@
         note('break out');
         return true;
     }
-    /* out there the other worlds are solid glass: she slides round them */
+    /* fallback without galaxy-bubbles.js: the other worlds are solid glass, she slides round them */
     let others = null, othersT = 0;
     function bump(a, S) {
         if (!others || (othersT -= 1) <= 0) {
@@ -224,7 +227,8 @@
     /* the camera distance while she is out (or coming back in). true = handled */
     function cam(ctx, S) {
         const r = ctx.r, dt = ctx.dt;
-        if (S.gx) { r.dist += (camDist(S.p.length(), (S.gxD0 || S.d0) * 1.16, ctx.K.ROAM) - r.dist) * Math.min(1, dt * 1.4); return true; }
+        if (S.gx) { const gb = W.LowiGalaxyBubbles && W.LowiGalaxyBubbles.camDist(ctx, S); /* inside a bubble: in close */
+            r.dist += ((gb || camDist(S.p.length(), (S.gxD0 || S.d0) * 1.16, ctx.K.ROAM)) - r.dist) * Math.min(1, dt * 1.4); return true; }
         if (S.gxBack) {
             const d0 = S.gxD0 || S.d0; r.dist += (d0 - r.dist) * Math.min(1, dt * 1.4);
             if (Math.abs(r.dist - d0) < d0 * 0.02) { r.dist = d0; S.d0 = d0; S.gxBack = false; }
@@ -242,6 +246,7 @@
         if (r && was && S.gxD0) r.dist = S.gxD0;
         /* LIMITLESS: the flight ended far out (a tab, a tap away): never leave the camera out in the deep, glide it home */
         if (r && r.target && was && !r.fly && r.target.length() > 60) { r.fly = { from: { t: r.target.clone(), d: r.dist }, to: { t: r.target.clone().set(0, 0, 0), d: S.gxD0 || r.dist }, t: 0, dur: 1.6 }; r.flyYaw = null; r.idle = 0; }
+        if (W.LowiGalaxyBubbles) W.LowiGalaxyBubbles.reset(ctx, S);
         S.gx = false; S.gxBack = false; G.h = null; G.p = 0; G.ring = 0; G.shown = false; G.shown0 = false; cls(false);
         if (ctx && ctx.a && G.skin) paintSkin(ctx.a, 11, 0, 0);
         if (was) { note('reset'); try { W.dispatchEvent(new CustomEvent('lowi:galaxy', { detail: { on: false } })); } catch (e) { } }

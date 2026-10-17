@@ -75,8 +75,15 @@
        uniqueNames). Your own name is yours alone, other accounts with one name collapse into the highest level, and a demo
        bot steps aside when a real person has its name. Rows without a name are left out. The input list is not changed. */
     const nameKey = p => String((p && p.n) || '').trim().toLocaleLowerCase();
+    /* Oct 18, 2026: leftover test accounts (hidden-accounts.js, by account id) never make the board; nothing is deleted */
+    function hiddenList() {
+        if (root.LowiHiddenAccounts) return root.LowiHiddenAccounts;
+        try { if (typeof module === 'object' && module.exports && typeof require === 'function') return require('./hidden-accounts.js'); } catch (e) {}
+        return null;
+    }
     function roster(list) {
-        list = (list || []).filter(Boolean);
+        const H = hiddenList();
+        list = (list || []).filter(p => p && !(H && H.isHidden(p)));
         const self = list.find(p => p.me) || null, own = self ? nameKey(self) : '', best = new Map(), bots = [];
         for (const p of list) {
             if (p === self) continue;

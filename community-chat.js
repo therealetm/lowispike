@@ -192,8 +192,10 @@ function botOf(id){return typeof id==='string'&&id.startsWith('bot:')?botList().
 function botStore(){if(!botChat){try{botChat=JSON.parse(localStorage.getItem('lowi.galaxy.botchat.v1')||'{}')||{};}catch(e){botChat={};}}return botChat;}
 function botSave(){try{localStorage.setItem('lowi.galaxy.botchat.v1',JSON.stringify(botStore()));}catch(e){}}
 function botSay(uid,from,t){const st=botStore(),arr=st[uid]=st[uid]||[];arr.push({id:'b'+Date.now().toString(36)+arr.length,from,t:String(t).slice(0,500),ts:Date.now()});if(arr.length>30)arr.splice(0,arr.length-30);botSave();}
-function roster(){const real=[];for(const p of (H.people&&H.people())||[]){if(p&&p.uid&&p.uid!==scope&&p.n&&!blocked(p.uid))real.push({uid:p.uid,n:String(p.n).trim(),lv:p.lv||1});}
- const have=new Set(real.map(p=>p.uid));for(const m of messages()){if(m&&m.uid&&!m.demo&&!m.bot&&m.uid!==scope&&!blocked(m.uid)&&!have.has(m.uid)){have.add(m.uid);real.push({uid:m.uid,n:String(m.by||'Member').trim(),lv:1});}}
+/* Oct 18, 2026: leftover test accounts (hidden-accounts.js, by account id) get no body in the galaxy; nothing is deleted */
+function hiddenAcct(uid){const A=W.LowiHiddenAccounts;return !!(A&&A.isHidden(uid));}
+function roster(){const real=[];for(const p of (H.people&&H.people())||[]){if(p&&p.uid&&p.uid!==scope&&p.n&&!blocked(p.uid)&&!hiddenAcct(p.uid))real.push({uid:p.uid,n:String(p.n).trim(),lv:p.lv||1});}
+ const have=new Set(real.map(p=>p.uid));for(const m of messages()){if(m&&m.uid&&!m.demo&&!m.bot&&m.uid!==scope&&!blocked(m.uid)&&!hiddenAcct(m.uid)&&!have.has(m.uid)){have.add(m.uid);real.push({uid:m.uid,n:String(m.by||'Member').trim(),lv:1});}}
  const last=new Map();for(const m of messages())if(m&&m.uid)last.set(m.uid,+m.ts||0);
  const ownName=scope?String(own().n||'').trim():'',uniq=G&&G.uniqueNames?G.uniqueNames(real,ownName,last):real,map=new Map();
  for(const p of uniq)map.set(p.uid,p);

@@ -13,6 +13,17 @@
    slides round them. Steer back into your own world and the camera comes back in with her; past the old edge she is home again.
    Autopilot, a recall or 20 s without steering also bring her home the same way.
 
+   LIMITLESS (Oct 17, E-man, handoff item 11: "a limitless spirit world, no invisible walls; getting Home always possible"): there is
+   no outer edge any more. The galaxy is a loop: fly on in any direction and the worlds thin out into the deep starry dark between
+   galaxies (body-world-3d-scene.js fades the whole cosmos out by the camera's distance, COSMOS.DEEP0..DEEP1, and the stars and
+   the far cells ride along with the camera there, like the sky); out in that dark, at GAL.LOOP from home, she and the camera are
+   carried over to the same distance on the far side, both by the same vector in one frame, with nothing in view on either side, so
+   nothing jumps. Keep flying and your own galaxy rises ahead of you again: you came round. Nothing new is ever built while she flies
+   (the same ~40 worlds and points, no streaming allocations), so memory and battery stay flat however long she roams, and looping
+   pays nothing (the galaxy gives no XP, no crumbs, no rewards of any kind). Home is never more than GAL.LOOP away in a straight
+   line, and on the way home (20 s without steering, a recall) she flies faster the farther out she is (homeK), so the longest
+   way home is about 20 seconds.
+
    Cheap: one extra mesh (the edge skin), only drawn while you push or while it rings out; out in the galaxy the per-frame work is
    a few vector ops plus a loop over ~40 spheres. Reduced motion: no breakout (Home has no 3D world then anyway).
 
@@ -32,7 +43,11 @@
        TENT: how far the skin bulges at the end (share of the reach); R: the galaxy's soft outer edge; D / D_MAX: camera distance
        out there (kept well below the spirit world's hand-over to Community, world-home.js fk > 0.9 = about 220); OPEN: where the
        camera has fully backed out (our own bubble in the spirit world, COSMOS.R = 46); BACK: back home below this share of the reach */
-    const GAL = { HOLD: 3.2, EDGE: 0.97, OUT: 0.5, AWAY: 0.15, MAG: 0.35, GRACE: 0.3, DT: 0.1, TENT: 0.16, R: 230, D: 64, D_MAX: 105, OPEN: 46, BACK: 0.985, SPEED_MAX: 18 };
+    const GAL = { HOLD: 3.2, EDGE: 0.97, OUT: 0.5, AWAY: 0.15, MAG: 0.35, GRACE: 0.3, DT: 0.1, TENT: 0.16, R: 230, D: 64, D_MAX: 105, OPEN: 46, BACK: 0.985, SPEED_MAX: 18,
+        /* LIMITLESS: R is no longer a wall, only where the camera has backed all the way out; LOOP: where the deep dark carries her
+           round to the far side; DEEP0 / DEEP1: the camera distances over which the cosmos fades into the deep (kept in step with
+           body-world-3d-scene.js COSMOS.DEEP0 / DEEP1, tested); HOME_MAX: how much faster the long way home is at the far end */
+        LOOP: 1300, DEEP0: 1000, DEEP1: 1130, HOME_MAX: 4 };
     const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
     function smooth(e0, e1, x) { const t = clamp((x - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t); }
     /* pushing on the edge: s = { t, miss, fired }; i = { dt, mode, mag, out (cos stick vs outward), edge (L / reach), busy } */
@@ -59,16 +74,23 @@
     const speedK = (dist, d0) => clamp(Math.pow(Math.max(1, (+dist || 1) / Math.max(0.5, +d0 || 6.5)), 0.85), 1, GAL.SPEED_MAX);
     /* the edge skin rings out after she slips through (no pop) */
     const ringOut = (a0, t) => a0 * Math.exp(-3 * t) * Math.cos(11 * t);
+    /* LIMITLESS: past LOOP she is carried round to the far side: the factor her offset from home is multiplied by (1 = stay). The new
+       distance is 2 * LOOP - L on the opposite side, so a straight flight goes on straight and comes home from behind */
+    const loopK = L => { L = +L || 0; return L > GAL.LOOP ? (L - 2 * GAL.LOOP) / L : 1; };
+    /* how much of the cosmos shows for the camera's distance from home: 1 among the worlds, 0 in the deep dark where the loop is */
+    const deepK = camL => 1 - smooth(GAL.DEEP0, GAL.DEEP1, +camL || 0);
+    /* the long way home: faster the farther out she is (1 near home, HOME_MAX at the far end of the loop) */
+    const homeK = L => 1 + (GAL.HOME_MAX - 1) * smooth(GAL.R, GAL.LOOP, +L || 0);
     /* the galaxy's places: today only your own world; other ecosystems are FUTURE (see the header) */
     const PLACES = [{ id: 'home', kind: 'home', pos: [0, 0, 0], r: GAL.OPEN, open: true }];
     const places = () => PLACES.map(p => Object.assign({}, p, { pos: p.pos.slice() }));
-    const core = { GAL, breakHold, tentOf, camDist, speedK, ringOut, places, smooth };
+    const core = { GAL, breakHold, tentOf, camDist, speedK, ringOut, places, smooth, loopK, deepK, homeK };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!D || !D.addEventListener || W.LowiMistyGalaxy) return;
 
     /* ---------- browser ---------- */
     const H = D.documentElement;
-    const G = { h: null, p: 0, ring: 0, ringT: 9, beat: 0, skin: null, uni: null, dir: null, tmp: null, tmp2: null, spark: 0, log: [] };
+    const G = { h: null, p: 0, ring: 0, ringT: 9, beat: 0, skin: null, uni: null, dir: null, tmp: null, tmp2: null, spark: 0, loops: 0, log: [] };
     function note(s) { G.log.push(Math.round(performance.now()) + ' ' + s); if (G.log.length > 16) G.log.shift(); }
     function busy() { try { const s = W.LowiWorldRegions && W.LowiWorldRegions.state; return !!(s && (s.busy || s.warp)); } catch (e) { return false; } }
     function cls(on) { if (H.classList.contains('mf-galaxy') !== on) H.classList.toggle('mf-galaxy', on); }
@@ -105,8 +127,12 @@
             if (G.ring) { G.ringT += dt; const w = ringOut(G.ring, G.ringT); paintSkin(a, reach, Math.max(0, w), Math.max(0, 0.7 * Math.exp(-1.6 * G.ringT))); if (G.ringT > 2.4) { G.ring = 0; paintSkin(a, reach, 0, 0); } }
             /* back through your own edge: home again (the camera comes back in with her, misty-flight cam below) */
             if (L < reach * GAL.BACK) { S.gx = false; S.gxBack = true; cls(false); G.ring = 0; paintSkin(a, reach, 0, 0); note('home again'); return false; }
-            /* the galaxy's soft outer edge */
-            if (L > GAL.R) { S.p.multiplyScalar(GAL.R / L); G.tmp.copy(S.p).normalize(); const o = S.v.dot(G.tmp); if (o > 0) S.v.addScaledVector(G.tmp, -o); }
+            /* LIMITLESS: no outer edge. Out in the deep dark she and the camera are carried round to the far side together */
+            if (L > GAL.LOOP) {
+                G.tmp.copy(S.p).multiplyScalar(loopK(L) - 1); S.p.add(G.tmp);
+                if (ctx.r && ctx.r.target && !ctx.r.fly) ctx.r.target.add(G.tmp);
+                G.loops++; note('came round ' + G.loops);
+            }
             bump(a, S);
             return true;
         }
@@ -166,16 +192,18 @@
         if (G.shown0) { r.dist += (S.gxD0 - r.dist) * Math.min(1, dt * 5); if (Math.abs(r.dist - S.gxD0) < 0.02) { r.dist = S.gxD0; G.shown0 = false; } return true; }
         return false;
     }
-    function speed(ctx, S) { return S.gx || S.gxBack ? speedK(ctx.r.dist, S.gxD0 || S.d0) : 1; }
+    function speed(ctx, S) { if (!(S.gx || S.gxBack)) return 1; const home = !!(ctx.PD && ctx.PD.mode === 'home'); return speedK(ctx.r.dist, S.gxD0 || S.d0) * (home ? homeK(S.p.length()) : 1); }
     /* the flight ended (home, tab switch, tap away): never leave the camera out in the galaxy */
     function reset(ctx, S) {
         const r = ctx && ctx.r, was = S.gx || S.gxBack || G.shown0;
         if (r && was && S.gxD0) r.dist = S.gxD0;
+        /* LIMITLESS: the flight ended far out (a tab, a tap away): never leave the camera out in the deep, glide it home */
+        if (r && r.target && was && !r.fly && r.target.length() > 60) { r.fly = { from: { t: r.target.clone(), d: r.dist }, to: { t: r.target.clone().set(0, 0, 0), d: S.gxD0 || r.dist }, t: 0, dur: 1.6 }; r.flyYaw = null; r.idle = 0; }
         S.gx = false; S.gxBack = false; G.h = null; G.p = 0; G.ring = 0; G.shown = false; G.shown0 = false; cls(false);
         if (ctx && ctx.a && G.skin) paintSkin(ctx.a, 11, 0, 0);
         if (was) { note('reset'); try { W.dispatchEvent(new CustomEvent('lowi:galaxy', { detail: { on: false } })); } catch (e) { } }
     }
     W.LowiMistyGalaxy = { core, step, cam, speed, reset, places,
         /* test browsers are too slow to fly her all the way to the edge: put her at a share of the reach on her current heading */
-        _probe: k => { const S = G.S; if (!S || S.st !== 'free') return false; const L = S.p.length() || 1; S.p.multiplyScalar(11 * k / L); return true; }, state: () => ({ p: +G.p.toFixed(3), on: H.classList.contains('mf-galaxy'), ring: +G.ring.toFixed(2), log: G.log.slice(-8) }) };
+        _probe: k => { const S = G.S; if (!S || S.st !== 'free') return false; const L = S.p.length() || 1; S.p.multiplyScalar(11 * k / L); return true; }, state: () => ({ p: +G.p.toFixed(3), on: H.classList.contains('mf-galaxy'), ring: +G.ring.toFixed(2), loops: G.loops, far: G.S && G.S.gx ? Math.round(G.S.p.length()) : 0, log: G.log.slice(-8) }) };
 })();

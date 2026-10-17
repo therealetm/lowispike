@@ -270,7 +270,10 @@ export function createWorld(THREE, canvas, opts) {
        worlds) hang in the dark, joined by threads of light. Built on first use, hidden (and costing nothing) until the camera is past
        the World Map. Since the cellular-galaxy rework (below) the bubbles are living cells and no companion is drawn out here. */
     let baseFog = PAL.dark.fog;
-    const COSMOS = { R: 46, OUT: 300, N: small ? 30 : 40 };
+    /* DEEP0 / DEEP1 (Oct 17, limitless spirit world, misty-galaxy.js GAL.LOOP): the camera distances from home over which the whole
+       cosmos fades into the deep starry dark between galaxies, where Misty's flight loops round; kept equal to GAL.DEEP0 / DEEP1 */
+    const COSMOS = { R: 46, OUT: 300, N: small ? 30 : 40, DEEP0: 1000, DEEP1: 1130 };
+    const skyTmp = new THREE.Vector3(), skyUp = new THREE.Vector3(0, 1, 0);
     rig.outerD = COSMOS.OUT;
     let cosmos = null, cosmosK = -1, farNow = 120;
     const smoothC = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
@@ -489,25 +492,34 @@ export function createWorld(THREE, canvas, opts) {
         const calm = document.documentElement.classList.contains('cg-spirit-on') ? 0.82 : 1, still = !!(reduceMq && reduceMq.matches), tt = still ? 0 : t;
         const sc = renderer.domElement.height * 0.5 / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
         ptsList.forEach(p => { p.material.uniforms.uScale.value = sc; p.material.uniforms.uT.value = tt; });
-        C.mine.material.uniforms.uO.value = mem * 0.9; C.mine.material.uniforms.uT.value = tt;
-        C.mineGlow.material.opacity = mem * 0.22;
-        C.others.forEach((o, i) => { const u = o.userData; o.scale.setScalar(u.r * (1 + 0.02 * Math.sin(tt * 0.6 + u.p))); o.material.uniforms.uO.value = far * 0.8 * calm; o.material.uniforms.uT.value = tt + i; });
-        C.cells.material.uniforms.uO.value = Math.max(mem * 0.5, far) * calm;
-        C.nodes.material.uniforms.uO.value = Math.max(mem * 0.5, far) * 0.9 * calm;
-        C.web.material.opacity = far * 0.55 * calm;
-        C.threads.material.opacity = far * 0.55 * calm; C.beads.material.uniforms.uO.value = far * 0.9 * calm;
-        C.sparkPts.material.uniforms.uO.value = still ? 0 : far * calm;
-        if (!still && far > 0.01) {
+        /* limitless spirit world (Oct 17): far out (Misty's galaxy flight, misty-galaxy.js) the worlds fade into the deep dark by the
+           camera's distance from home, and are not drawn at all out there (battery); the stars and the far cells ride along with the
+           camera like the sky (skyW), so where her flight loops round to the far side nothing in view jumps. At Home and behind
+           Community, Cook, Move and Scan the camera stays within COSMOS.OUT: deep = 1, skyW = 0, everything exactly as before. */
+        const camL = camera.position.length(), deep = 1 - smoothC(COSMOS.DEEP0, COSMOS.DEEP1, camL), skyW = smoothC(COSMOS.OUT + 20, COSMOS.DEEP0 - 100, camL);
+        const dv = deep > 0.002, farW = far * deep, memW = mem * deep;
+        if (C.deepOn !== dv) { C.deepOn = dv; [C.mine, C.mineGlow, C.cells, C.nodes, C.web, C.threads, C.beads, C.sparkPts, C.motes].concat(C.others, C.haze).forEach(o => { o.visible = dv; }); }
+        skyTmp.copy(camera.position).applyAxisAngle(skyUp, -C.g.rotation.y).multiplyScalar(skyW); C.stars.position.copy(skyTmp); C.farCells.position.copy(skyTmp);
+        C.mine.material.uniforms.uO.value = memW * 0.9; C.mine.material.uniforms.uT.value = tt;
+        C.mineGlow.material.opacity = memW * 0.22;
+        C.others.forEach((o, i) => { const u = o.userData; o.scale.setScalar(u.r * (1 + 0.02 * Math.sin(tt * 0.6 + u.p))); o.material.uniforms.uO.value = farW * 0.8 * calm; o.material.uniforms.uT.value = tt + i; });
+        C.cells.material.uniforms.uO.value = Math.max(memW * 0.5, farW) * calm;
+        C.nodes.material.uniforms.uO.value = Math.max(memW * 0.5, farW) * 0.9 * calm;
+        C.web.material.opacity = farW * 0.55 * calm;
+        C.threads.material.opacity = farW * 0.55 * calm; C.beads.material.uniforms.uO.value = farW * 0.9 * calm;
+        C.sparkPts.material.uniforms.uO.value = still ? 0 : farW * calm;
+        if (!still && farW > 0.01) {
             const pa = C.sparkPts.geometry.attributes.position, S = C.S;
             C.sparks.forEach((s, i) => { const P = C.paths[s.j].arr, u = (((t * s.s + s.o) % 1) + 1) % 1, f = u * (S - 1), k0 = Math.floor(f), k1 = Math.min(S - 1, k0 + 1), w = f - k0;
                 pa.setXYZ(i, P[k0 * 3] + (P[k1 * 3] - P[k0 * 3]) * w, P[k0 * 3 + 1] + (P[k1 * 3 + 1] - P[k0 * 3 + 1]) * w, P[k0 * 3 + 2] + (P[k1 * 3 + 2] - P[k0 * 3 + 2]) * w); });
             pa.needsUpdate = true;
         }
-        C.motes.material.uniforms.uO.value = mem * 0.85; C.stars.material.uniforms.uO.value = far * 0.8; C.farCells.material.uniforms.uO.value = far * 0.7 * calm;
-        C.haze.forEach(h => { h.material.opacity = far * 0.05; });
+        C.motes.material.uniforms.uO.value = memW * 0.85; C.stars.material.uniforms.uO.value = far * 0.8; C.farCells.material.uniforms.uO.value = far * 0.7 * calm;
+        C.haze.forEach(h => { h.material.opacity = farW * 0.05; });
         /* the light frequency takes over from the tube as it fades */
         const fo = smoothC(0.3, 1, walls) * 0.6 * calm;
         C.freq.visible = fo > 0.005; C.freq.children.forEach(m => { m.material.uniforms.uO.value = fo; m.material.uniforms.uT.value = tt; });
+        if (!dv) C.freq.visible = false; /* limitless: out in the deep our bubble's light frequency is not drawn either */
         C.g.rotation.y += dt * 0.004;
         if (C.near.visible) {
             /* screen space: they come in from right past the camera while it pulls out (and go back out when it dives in), then sway with

@@ -1,0 +1,38 @@
+/* sym-home.css - Oct 17, 2026: a symmetric, standardised Home (sym-home.js).
+   1. Meals bubble: upper-left of Misty, the mirror of the movement bubble. Same .wh-cell shell; warm fill (food).
+   2. Day/Night button: bottom left above Sound, the mirror of VR above World map (same 46 px, same spacing).
+   3. Weather: a round bubble like the others (icon above the temperature), same taps.
+   The living 3D membrane for all of them comes from living-bubbles.js. */
+
+/* 1. Meals bubble */
+#whHud .wh-meals { left: var(--wme-x, calc(50% - var(--wh-sx))); top: var(--wme-y, calc(var(--wh-cy) - var(--wh-sy))); -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: manipulation; }
+#whHud .wh-meals .wh-cell-fill { background: linear-gradient(180deg, rgba(255, 214, 150, .5), rgba(236, 150, 70, .78)); }
+#whHud .wh-meals .wh-cell-tx { z-index: 2; pointer-events: none; }
+#whHud .wh-meals .wh-cell-tx small { max-width: calc(var(--wh-fs) * .8); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html.wh-home:not(.lb3d) #whHud .wh-meals,
+html[data-theme="light"].wh-home:not(.lb3d) #whHud .wh-meals {
+    border: 1px solid rgba(143, 231, 255, .5) !important;
+    background: radial-gradient(circle at 34% 26%, rgba(255, 255, 255, .34), rgba(255, 255, 255, 0) 22%),
+                radial-gradient(circle at 50% 50%, rgba(58, 159, 224, .1) 0%, rgba(58, 159, 224, .14) 54%, rgba(155, 135, 210, .34) 80%, rgba(143, 231, 255, .58) 97%) !important;
+    box-shadow: 0 0 24px 3px rgba(143, 231, 255, .26), inset 0 0 14px rgba(155, 135, 210, .42), inset 0 0 3px 1px rgba(143, 231, 255, .55) !important;
+    overflow: hidden; isolation: isolate; transition: opacity .35s ease; }
+@media (prefers-reduced-motion: no-preference) {
+    html.wh-home:not(.lb3d) #whHud .wh-meals { animation: wh-float 7.1s ease-in-out -1.3s infinite, wh-mem-swell 4.1s ease-in-out -1.2s infinite, wh-mem-morph 5.9s ease-in-out -2.8s infinite; }
+}
+html.wh-home.wh-away #whHud .wh-meals { opacity: 0 !important; pointer-events: none !important; }
+.wme-sheet .wme-log { margin-top: 12px; width: 100%; min-height: 44px; }
+
+/* 2. Day/Night above Sound, mirroring VR above World map (world-home.css .wh-vr: right 16+6 px, bottom tb+12+58+10, 46 px) */
+html.wh-home body #tbTheme#tbTheme {
+    position: fixed !important; right: auto !important;
+    left: var(--sym-dn-l, calc(var(--wh-l, 0px) + max(16px, env(safe-area-inset-left)) + 6px)) !important;
+    top: var(--sym-dn-t, calc(100% - var(--wh-tb) - 12px - 58px - 10px - 46px)) !important; bottom: auto !important;
+    width: 46px !important; height: 46px !important; margin: 0 !important; }
+
+/* 3. Weather: a round bubble (icon on top, temperature under it) */
+html.spirit-app.wh-home body #tab-home #spHome .sp-weather.sp-weather,
+html.spirit-app.wh-home body #tab-home #spHome .sp-weather.sp-weather.ask {
+    width: 50px !important; height: 50px !important; min-width: 0 !important; padding: 0 !important; border-radius: 50% !important;
+    flex-direction: column; justify-content: center; align-items: center; gap: 1px !important; font-size: 12.5px !important; line-height: 1 !important; }
+html.spirit-app.wh-home body #tab-home #spHome .sp-weather.sp-weather.ask { font-size: 10px !important; white-space: normal; text-align: center; }
+html.spirit-app.wh-home body #tab-home #spHome .sp-weather.sp-weather .sp-symbol { width: 17px !important; height: 17px !important; }

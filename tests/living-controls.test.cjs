@@ -10,7 +10,7 @@ test('all seven Home controls are on the shared membrane list, with their own sh
     const k = Object.fromEntries(L.CTL.map(c => [c.kind, c]));
     for (const kind of ['vr', 'sound', 'map', 'daynight', 'today', 'weather', 'quest']) assert.ok(k[kind], kind + ' is a living bubble');
     assert.strictEqual(k.today.shape, 'pill', 'Today stays a pill');
-    assert.strictEqual(k.weather.shape, 'pill', 'weather stays a pill');
+    assert.ok(!k.weather.shape, 'weather is a round bubble now (sym-home, Oct 17)');
     assert.strictEqual(k.quest.shape, 'box', 'Daily Quest keeps its rounded box');
     for (const kind of ['vr', 'sound', 'map', 'daynight']) assert.ok(!k[kind].shape, kind + ' stays round');
     assert.ok(L.AUTO.includes('#spFast') && L.AUTO.includes('#whHud .wh-water'), 'fasting and water untouched');
@@ -18,28 +18,28 @@ test('all seven Home controls are on the shared membrane list, with their own sh
 
 test('one shader for all: controls are built by the same build() and material as fasting and water', () => {
     assert.ok(js.includes('s.mat = makeMat(THREE);') && js.split('makeMat(THREE)').length === 3, 'single material path');
-    assert.ok(js.includes('new THREE.Mesh(s.pg || geo, s.mat)'), 'a pill only swaps the geometry, never the material');
-    assert.ok(js.includes('new THREE.CapsuleGeometry(gR,'), 'pill = Misty\'s membrane as a capsule with her radius');
+    assert.ok(js.includes("new THREE.Mesh((s.opts.shape === 'pill' || s.opts.shape === 'box') ? dropGeo(CORE.dropN(s.opts.shape)) : geo, s.mat)"), 'a pill only swaps the geometry, never the material');
+    assert.ok(js.includes('new THREE.SphereGeometry(gR, 56, 36)') && !js.includes('CapsuleGeometry'), 'pill = Misty\'s sphere pulled into a drop, no capsule (no straight lines)');
     assert.ok(!/requestAnimationFrame\(|setInterval\(\(\) => \{[^}]*frame/.test(js.replace("setInterval(() => { if (D.hidden) return; if (homeShown()) scan(); else unlive(); }, 1500);", '')), 'no new loop');
 });
 
-test('pill and box geometry land on the control\'s own outline', () => {
-    const gR = 1.4;
-    // pill 196x50: caps radius 0.52h, straight middle = w - h
-    assert.ok(Math.abs(L.radiusForBox(196, 50, 'pill') - 26) < 1e-9);
-    const Lp = L.capsuleLen(196, 50, gR), scalePx = 26 / gR; // px per geometry unit
-    assert.ok(Math.abs(Lp * scalePx - (196 - 50)) < 1e-9, 'pill straight part = width - height');
-    assert.ok(Math.abs((Lp / 2 + gR) * scalePx - (98 + 1)) < 1e-9, 'pill reaches 1px past each end, like a bubble');
-    // Daily Quest 362x72, corner 26: corners = its own radius, height 0.52h
-    const R = L.radiusForBox(362, 72, 'box', 26), Lb = L.capsuleLen(362, 72, gR, 26), pb = R / gR;
-    assert.ok(Math.abs(R - 26 * 1.04) < 1e-9);
-    assert.ok(Math.abs((Lb / 2 + gR) * pb - (181 + 0.04 * 26)) < 1e-9, 'box half width just past its edge');
-    assert.ok(Math.abs(gR * pb * L.stretchY(72, 26) - 72 * 0.52) < 1e-9, 'box half height just past its edge');
-    assert.strictEqual(L.cornerOf(362, 72, 80), 36, 'corner never more than half the height');
-    assert.strictEqual(L.stretchY(50), 1, 'a pill is not stretched');
-    assert.strictEqual(L.capsuleLen(44, 44, gR), 0, 'a square pill is a sphere');
-    assert.ok(js.includes('tmp.x, rx ? 0 : s.spin'), 'a stretched box never turns out of shape');
-    assert.ok(js.includes('Math.abs(L - s.pL) > Math.max(0.02, s.pL * 0.03)'), 'pill rebuilt only when Today\'s text really changes width');
+test('pill and box are liquid drops: curved everywhere, no straight top or bottom line, just past the control', () => {
+    // sym-home (Oct 17): "I still see the straight lines, so it doesn't really look like a water bubble"
+    for (const [shape, n] of [['pill', 2.6], ['box', 3]]) {
+        assert.strictEqual(L.dropN(shape), n);
+        // walk along the top edge: the height keeps falling from the middle out (a capsule would stay flat for w - h)
+        let prev = Infinity;
+        for (let i = 0; i <= 10; i++) {
+            const a = (i / 10) * (Math.PI / 2) * 0.98, q = L.dropPoint(Math.sin(a), Math.cos(a), 0, n);
+            assert.ok(q.y < prev, shape + ' top edge curves at step ' + i); prev = q.y;
+            assert.ok(Math.abs(Math.pow(Math.abs(q.x), n) + Math.pow(Math.abs(q.y), n) - 1) < 1e-9, 'on the superellipsoid');
+            assert.ok(Math.abs(Math.hypot(q.nx, q.ny, q.nz) - 1) < 1e-9, 'unit normal');
+        }
+    }
+    const t = L.dropAxes(196, 50, 'pill'), d = L.dropAxes(362, 72, 'box');
+    assert.ok(t.ax > 98 && t.ay > 25 && t.ax < 110 && t.ay < 32, 'Today drop just past its 196x50 box');
+    assert.ok(d.ax > 181 && d.ay > 36 && d.ax < 200 && d.ay < 45, 'Daily Quest drop just past its 362x72 box');
+    assert.ok(js.includes('s.mesh.scale.set(a.ax * b, a.ay * b, Math.min(a.ax, a.ay) * b)'), 'drop stretched over the control, never turned out of shape');
 });
 
 test('controls keep their own tap, hold, drag and press; no float, no squish, no forced circle', () => {

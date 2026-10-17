@@ -41,7 +41,7 @@
             { sel: '#whHud .wh-zoom', kind: 'map' },
             { sel: '#tbTheme', kind: 'daynight' },
             { sel: '#whHud .wh-todaybtn', kind: 'today', shape: 'pill' },
-            { sel: '#tab-home #spHome .sp-weather', kind: 'weather', shape: 'pill' },
+            { sel: '#tab-home #spHome .sp-weather', kind: 'weather' }, /* sym-home (Oct 17): "the weather thing should be round too" */
             { sel: '#tab-home #f3Board', kind: 'quest', shape: 'box' }
         ],
         /* membrane radius in CSS px for a box: a round control like a bubble (0.52 x width), a pill on its height (its round ends) */
@@ -52,6 +52,19 @@
         stretchY(h, rx) { const r = +rx > 0 ? Math.min(+rx, (+h || 0) / 2) : (+h || 0) / 2; return r > 0 ? ((+h || 0) * 0.52) / (r * 1.04) : 1; },
         /* a pill is Misty's membrane stretched into a capsule: the straight middle (in geometry units, cap radius gR) so that the caps
            land on the pill's own round ends */
+        /* sym-home (Oct 17, Emmanuel: "the Daily Quest and the Today thingy are cylindrical, but I still see the straight lines, so it
+           doesn't really look like a water bubble"): pills and boxes are no longer a capsule with a straight middle but a liquid drop, a
+           superellipsoid |x|^n + |y|^n + |z|^n = 1, curved everywhere (no flat top or bottom line), stretched over the control.
+           n: lower = rounder. dropAxes: half-axes in CSS px, a little larger than the box so its content stays inside the membrane. */
+        dropN(shape) { return shape === 'box' ? 3 : 2.6; },
+        dropAxes(w, h, shape) { w = Math.max(0, +w || 0); h = Math.max(0, +h || 0); return shape === 'box' ? { ax: w * 0.53, ay: h * 0.6 } : { ax: w * 0.54, ay: h * 0.6 }; },
+        /* scale for one unit direction (x, y, z) onto the superellipsoid of exponent n, and its outward normal there */
+        dropPoint(x, y, z, n) {
+            const s = Math.pow(Math.pow(Math.abs(x), n) + Math.pow(Math.abs(y), n) + Math.pow(Math.abs(z), n), -1 / n);
+            const px = x * s, py = y * s, pz = z * s, g = v => Math.sign(v) * Math.pow(Math.abs(v), n - 1);
+            const nx = g(px), ny = g(py), nz = g(pz), L = Math.hypot(nx, ny, nz) || 1;
+            return { x: px, y: py, z: pz, nx: nx / L, ny: ny / L, nz: nz / L };
+        },
         capsuleLen(w, h, gR, rx) { w = +w || 0; h = +h || 0; if (!(h > 0)) return 0; const r = rx > 0 ? CORE.cornerOf(w, h, rx) : h / 2; return Math.max(0, w - 2 * r) * gR / (1.04 * r); }
     };
     if (typeof module !== 'undefined' && module.exports) module.exports = CORE;
@@ -84,19 +97,24 @@
             vertexShader: vs, fragmentShader: fs, transparent: true, depthWrite: false, depthTest: false
         });
     }
-    /* home-controls: Misty's membrane as a capsule for a pill (same radius and ring density as her sphere), lying along x */
-    function pillGeo(L) {
+    /* sym-home: Misty's sphere, pulled into a liquid drop (superellipsoid of exponent n); the mesh is stretched over the control */
+    const drops = {};
+    function dropGeo(n) {
+        if (drops[n]) return drops[n];
         const THREE = api.THREE, gR = (geo && geo.parameters && geo.parameters.radius) || 1.4;
-        const g = new THREE.CapsuleGeometry(gR, Math.max(0.001, L), 14, 40);
-        g.rotateZ(Math.PI / 2);
-        return g;
+        const g = new THREE.SphereGeometry(gR, 56, 36), P = g.attributes.position, N = g.attributes.normal;
+        for (let i = 0; i < P.count; i++) {
+            const x = P.getX(i) / gR, y = P.getY(i) / gR, z = P.getZ(i) / gR, q = CORE.dropPoint(x, y, z, n);
+            P.setXYZ(i, q.x * gR, q.y * gR, q.z * gR); N.setXYZ(i, q.nx, q.ny, q.nz);
+        }
+        P.needsUpdate = true; N.needsUpdate = true;
+        return (drops[n] = g);
     }
     function build(el) {
         const s = list.get(el); if (!s || s.mesh || !group) return;
         const THREE = api.THREE;
         s.mat = makeMat(THREE);
-        if (s.opts.shape === 'pill' || s.opts.shape === 'box') { s.pg = pillGeo(s.pL || 0.01); }
-        s.mesh = new THREE.Mesh(s.pg || geo, s.mat);
+        s.mesh = new THREE.Mesh((s.opts.shape === 'pill' || s.opts.shape === 'box') ? dropGeo(CORE.dropN(s.opts.shape)) : geo, s.mat);
         s.mesh.renderOrder = 20; s.mesh.frustumCulled = false; s.mesh.visible = false;
         s.mesh.userData.lwKeep = true; /* body-world-regions setHubVisible leaves it alone */
         group.add(s.mesh);
@@ -178,19 +196,17 @@
             /* the mesh sits at depth D0 on the camera axis, so one CSS px is upp world units there; the box already carries the press
                squish and the float */
             const gR = (geo && geo.parameters && geo.parameters.radius) || 1.4;
-            const capsule = s.opts.shape === 'pill' || s.opts.shape === 'box', rx = s.opts.shape === 'box' ? s.rx : 0;
-            const sq = capsule && el.offsetWidth ? r.width / el.offsetWidth : 1; /* its own press scale: the shape stays, only the size follows */
-            if (capsule) {
-                /* the pill keeps its long axis on screen: it turns about its own length (Misty's slow turn), never out of shape */
-                s.mesh.quaternion.copy(cam.quaternion).multiply(tmp.q.setFromAxisAngle(tmp.x, rx ? 0 : s.spin)); /* a box is stretched in y: no turn */
-                const L = CORE.capsuleLen(r.width / sq, r.height / sq, gR, rx);
-                if (Math.abs(L - s.pL) > Math.max(0.02, s.pL * 0.03)) { /* Today's text changed width: rebuild once, not per frame */
-                    s.pL = L; const old = s.pg; s.pg = pillGeo(L); s.mesh.geometry = s.pg; try { old && old.dispose(); } catch (e) {}
-                }
+            const drop = s.opts.shape === 'pill' || s.opts.shape === 'box';
+            if (drop) {
+                /* a liquid drop over the pill / box: it keeps its long axis on screen (no turn), breathes like Misty's cell, and the
+                   box already carries the press, so the drop follows it */
+                s.mesh.quaternion.copy(cam.quaternion);
+                const a = CORE.dropAxes(r.width, r.height, s.opts.shape), b = CORE.breath(t, s.phase, calm) * upp / gR;
+                s.mesh.scale.set(a.ax * b, a.ay * b, Math.min(a.ax, a.ay) * b);
+            } else {
+                const R = CORE.radiusForBox(r.width, r.height, s.opts.shape, 0) * upp, k1 = (R / gR) * CORE.breath(t, s.phase, calm);
+                s.mesh.scale.setScalar(k1);
             }
-            const R = CORE.radiusForBox(r.width, r.height, s.opts.shape, rx * sq) * upp, k1 = (R / gR) * CORE.breath(t, s.phase, calm);
-            s.mesh.scale.setScalar(k1);
-            if (rx) s.mesh.scale.y = k1 * CORE.stretchY(r.height, rx * sq); /* the box: capsule ends become its rounded corners */
             s.mat.uniforms.uO.value = s.o;
             s.mesh.visible = true;
         });
@@ -259,7 +275,7 @@
     }
     function remove(el) {
         const s = list.get(el); if (!s) return false;
-        if (s.mesh) { group && group.remove(s.mesh); try { s.mat.dispose(); } catch (e) {} try { s.pg && s.pg.dispose(); } catch (e) {} }
+        if (s.mesh) { group && group.remove(s.mesh); try { s.mat.dispose(); } catch (e) {} }
         el.classList.remove('lb-bub', 'lb-ctl', 'lb-live'); el.removeAttribute('data-lb'); el.removeAttribute('data-lb-shape');
         list.delete(el); return true;
     }
@@ -292,7 +308,7 @@
     setTimeout(scan, 400);
 
     const API = { add, remove, attach: add, scan, list: () => [...list.keys()], active: () => !!api, core: CORE,
-        look: () => [...list.entries()].map(([el, s]) => ({ kind: s.opts.kind || '', visible: !!(s.mesh && s.mesh.visible), opacity: +s.o.toFixed(2), sameUniforms: !!(s.mat && api && s.mat.uniforms.uT === api.memU.uT && s.mat.uniforms.uGlow === api.memU.uGlow && s.mat.uniforms.uIn === api.memU.uIn), sameShader: !!(s.mat && mem && s.mat.vertexShader === mem.material.vertexShader), ctl: !!s.opts.ctl, shape: s.opts.shape || 'round', live: !!(s.opts.ctl && el.classList.contains('lb-live')), pill: s.pg ? +s.pL.toFixed(3) : 0, scale: s.mesh ? +s.mesh.scale.x.toFixed(4) : 0 })) };
+        look: () => [...list.entries()].map(([el, s]) => ({ kind: s.opts.kind || '', visible: !!(s.mesh && s.mesh.visible), opacity: +s.o.toFixed(2), sameUniforms: !!(s.mat && api && s.mat.uniforms.uT === api.memU.uT && s.mat.uniforms.uGlow === api.memU.uGlow && s.mat.uniforms.uIn === api.memU.uIn), sameShader: !!(s.mat && mem && s.mat.vertexShader === mem.material.vertexShader), ctl: !!s.opts.ctl, shape: s.opts.shape || 'round', live: !!(s.opts.ctl && el.classList.contains('lb-live')), drop: !!(s.mesh && s.mesh.geometry !== geo), scale: s.mesh ? +s.mesh.scale.x.toFixed(4) : 0 })) };
     W.LowiBubbles = API;
     W.LowiLivingBubble = { attach: (el, o) => add(el, o) };
 })(typeof window !== 'undefined' ? window : null);

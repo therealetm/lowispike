@@ -77,6 +77,22 @@
     /* LIMITLESS: past LOOP she is carried round to the far side: the factor her offset from home is multiplied by (1 = stay). The new
        distance is 2 * LOOP - L on the opposite side, so a straight flight goes on straight and comes home from behind */
     const loopK = L => { L = +L || 0; return L > GAL.LOOP ? (L - 2 * GAL.LOOP) / L : 1; };
+    /* Oct 17 fix (E-man: "I just keep holding and fly out, fly out ... and eventually the app just restarts, I'm back in a bubble"):
+       carried round straight through the middle, a held-on flight came home from behind, in through her own world and right back
+       into her own bubble, which looked exactly like the app starting over. Now she is carried round beside home instead: still
+       in the deep dark (nothing on screen), still heading the same way, but her straight line passes home PASS.MISS away, through
+       the made-up worlds, so holding on just keeps going into new space for ever. Each lap passes home on a different side.
+       Pure math on plain [x, y, z] arrays: where she lands, given where she is, which way she flies and how many laps she has done. */
+    const PASS = { MISS: 1300, TURN: 2.39996 };
+    function loopTo(p, v, laps) {
+        const L = Math.hypot(p[0], p[1], p[2]) || 1, R = Math.min(GAL.LOOP - 1, Math.max(PASS.MISS + 1, 2 * GAL.LOOP - L));
+        const vl = Math.hypot(v[0], v[1], v[2]), u = vl > 1e-3 ? [v[0] / vl, v[1] / vl, v[2] / vl] : [p[0] / L, p[1] / L, p[2] / L];
+        const b = Math.abs(u[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0];
+        let w1 = [u[1] * b[2] - u[2] * b[1], u[2] * b[0] - u[0] * b[2], u[0] * b[1] - u[1] * b[0]]; const n1 = Math.hypot(w1[0], w1[1], w1[2]) || 1; w1 = w1.map(x => x / n1);
+        const w2 = [u[1] * w1[2] - u[2] * w1[1], u[2] * w1[0] - u[0] * w1[2], u[0] * w1[1] - u[1] * w1[0]];
+        const t = (+laps || 0) * PASS.TURN, c = Math.cos(t), s = Math.sin(t), back = Math.sqrt(R * R - PASS.MISS * PASS.MISS);
+        return [0, 1, 2].map(i => -u[i] * back + (w1[i] * c + w2[i] * s) * PASS.MISS);
+    }
     /* how much of the cosmos shows for the camera's distance from home: 1 among the worlds, 0 in the deep dark where the loop is */
     const deepK = camL => 1 - smooth(GAL.DEEP0, GAL.DEEP1, +camL || 0);
     /* the long way home: faster the farther out she is (1 near home, HOME_MAX from HOME_RAMP past the galaxy's camera edge on) */
@@ -127,7 +143,7 @@
     /* how much of the new space shows for the camera's distance from home: none near home, all of it out in the deep, none again
        near the loop point (so nothing is in view when she comes round) */
     const genK = camL => { camL = +camL || 0; return smooth(GEN.MIN - 300, GEN.MIN - 100, camL) * (1 - smooth(GAL.LOOP - 350, GAL.LOOP - 200, camL)); };
-    const core = { GAL, GEN, breakHold, tentOf, camDist, speedK, ringOut, places, smooth, loopK, deepK, homeK, hash3, deepWorld, deepNear, genK };
+    const core = { GAL, GEN, PASS, breakHold, tentOf, camDist, speedK, ringOut, places, smooth, loopK, loopTo, deepK, homeK, hash3, deepWorld, deepNear, genK };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!D || !D.addEventListener || W.LowiMistyGalaxy) return;
 
@@ -172,8 +188,11 @@
             if (L < reach * GAL.BACK) { if (W.LowiGalaxyBubbles) W.LowiGalaxyBubbles.reset(ctx, S); S.gx = false; S.gxBack = true; cls(false); G.ring = 0; paintSkin(a, reach, 0, 0); note('home again'); return false; }
             /* LIMITLESS: no outer edge. Out in the deep dark she and the camera are carried round to the far side together */
             if (L > GAL.LOOP) {
-                G.tmp.copy(S.p).multiplyScalar(loopK(L) - 1); S.p.add(G.tmp);
-                if (ctx.r && ctx.r.target && !ctx.r.fly) ctx.r.target.add(G.tmp);
+                const q = loopTo([S.p.x, S.p.y, S.p.z], [S.v.x, S.v.y, S.v.z], G.loops);
+                G.tmp.set(q[0] - S.p.x, q[1] - S.p.y, q[2] - S.p.z); S.p.add(G.tmp);
+                /* the camera always comes along, even mid-glide (it used to stay behind and sweep across the whole galaxy after her) */
+                const r = ctx.r;
+                if (r && r.target) { r.fly = null; r.target.add(G.tmp); }
                 G.loops++; note('came round ' + G.loops);
             }
             /* Oct 17: every other world is a bubble she can go into, and the threads between them are currents (galaxy-bubbles.js);

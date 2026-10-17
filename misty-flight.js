@@ -235,7 +235,13 @@
     function orbitSpin(rad, sleepy) { return ORBIT.W * Math.pow(1 / Math.max(+rad || 0, ORBIT.R_END), 1.2) * (sleepy ? 0.7 : 1); }
     /* at the door: fling her back out (true) or let her in (false). tries = flings so far; refuse = the world's bounce rule said no */
     function orbitFling(tries, refuse) { return tries < ORBIT.MIN_FLINGS || (!!refuse && tries < ORBIT.TRIES - 1); }
-    const core = { K, inReach, freeReach, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, roams, autoLeave, roamSpot, roamHold, roamPx, pullAt, fallAt, EXIT, exitHold, MIST, angWrap, exitGaps, inMist, gapToward, DARK, darkSpots, inDark, darkReach, darkAmt, darkGlow, GUIDE, guideLight, HOME, homeGlow, homeAt, veilAt, exitTent, wallToward, outAt, ORBIT, orbitAt, orbitSpin, orbitFling };
+    /* view gestures (turning or pinching the view) count as busy: rig.idle is reset by every drag and pinch */
+    const lookBusy = r => !!r && (+r.idle || 0) < 0.3;
+    const homeIdle = (stickIdle, lookIdle, limit) => (+stickIdle || 0) > limit && (+lookIdle || 0) > limit;
+    /* a blink of Home (in the background, world briefly not live) pauses a flight for up to OFF_GRACE s of screen time; anything else ends it */
+    const OFF_GRACE = 4;
+    const offGrace = (blink, offT) => !!blink && (+offT || 0) < OFF_GRACE;
+    const core = { lookBusy, homeIdle, OFF_GRACE, offGrace, K, inReach, freeReach, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, roams, autoLeave, roamSpot, roamHold, roamPx, pullAt, fallAt, EXIT, exitHold, MIST, angWrap, exitGaps, inMist, gapToward, DARK, darkSpots, inDark, darkReach, darkAmt, darkGlow, GUIDE, guideLight, HOME, homeGlow, homeAt, veilAt, exitTent, wallToward, outAt, ORBIT, orbitAt, orbitSpin, orbitFling };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!D || !D.addEventListener || W.LowiMistyFlight) return;
 
@@ -399,7 +405,16 @@
             if (a.memU && a.memU.uPushA && a.memU.uPushA.value) { S.wobT += ctx.dt; const w = wobble(S.wob, S.wobT, ctx.reduced); setPush(a, S.wobDir, Math.abs(w) < 0.003 || S.wobT > 2.5 ? 0 : w); }
             if ((S.domT -= ctx.dt) <= 0 && ok && !PD.mode) { S.domT = 0.5; const dm = domMisty(); if (dm) S.dom = dm; }
         }
-        if (!ok) { if (S.st !== 'idle') end(ctx, 'abort'); S.joinT = 0; return false; }
+        /* Oct 17 fix: a flight used to end the instant Home blinked (the app went to the background for a moment, or the world was
+           briefly not live), and ending snaps the camera straight home: far out that looked like the whole app starting over with
+           Misty back in her bubble. Short blinks now only pause her where she is (offGrace); leaving Home for real still ends it. */
+        if (!ok) {
+            const blink = D.hidden || (H.classList.contains('wh-home') && r.mode === 'home' && !ctx.A.away && !D.querySelector('.bw3-full'));
+            S.offT = (+S.offT || 0) + (D.hidden ? 0 : ctx.dt);
+            if (S.st !== 'idle' && !offGrace(blink, S.offT)) end(ctx, 'abort');
+            S.joinT = 0; return false;
+        }
+        S.offT = 0;
         /* misty-roam: you are in a place without her: she comes in by herself once it has settled */
         if (S.st === 'idle' && ctx.inRegion) {
             const WH = W.LowiWorldHome, hero = !!(WH && WH.state && WH.state.heroAnim), busy = regionsBusy() || !!r.fly;
@@ -450,7 +465,11 @@
         const vx = tq ? tq.vx : PD.vx || 0, vy = tq ? tq.vy : PD.vy || 0, mag = Math.min(1, Math.hypot(vx, vy)), steering = mode === 'drive' && (mag > 0.05 || !!S.th || !!(tq && tq.hands));
         if (steering && ADV()) { try { W.LowiAdventure.stop('steer'); } catch (e) { } }
         if (mode === 'drive') S.idle = steering ? 0 : S.idle + dt; else S.idle = 0;
-        if (mode === 'drive' && S.idle > K.IDLE_HOME && (S.st === 'free' || S.st === 'exit')) { padMode(ctx, 'home'); note('idle home'); }
+        /* Oct 17 fix (E-man: "I fly out ... and now I want to turn and look at the world from very far away and then everything
+           restarts, I'm back in a bubble"): letting go of the stick to turn the view round counted as doing nothing, so 20 s into
+           looking she was raced home into her bubble. Turning or pinching the view now counts as being busy too (lookIdle). */
+        S.lookIdle = lookBusy(r) ? 0 : (+S.lookIdle || 0) + dt;
+        if (mode === 'drive' && homeIdle(S.idle, S.lookIdle, K.IDLE_HOME) && (S.st === 'free' || S.st === 'exit')) { padMode(ctx, 'home'); note('idle home'); }
         const camFree = !r.fly;
 
         if (S.st === 'pull') { pullFrame(ctx, k); return; }

@@ -155,6 +155,9 @@
         const onBar = !!t.closest('#tabbar'), W = main.clientWidth || innerWidth;
         /* Home is a 3D world you drag to look around: there the pages move from the screen edges or the tab bar */
         if (cur === 'home' && !onBar && e.clientX > 26 && e.clientX < W - 26) return;
+        /* Oct 17 fix: while Misty is flying, a drag from the very edge is you turning the view, not paging away (paging away ended the
+           flight and dropped her back in her bubble); the tab bar still changes pages */
+        if (cur === 'home' && !onBar && document.documentElement.classList.contains('mf-on')) return;
         /* Oct 16: Community is a map you drag around (community-chat.js), so there too the pages move from the edges or the tab bar */
         if (cur === 'foryou' && !onBar && t.closest('#cgGalaxy') && e.clientX > 26 && e.clientX < W - 26) return;
         if (!onBar && hScroller(t, pageEl(cur))) return;

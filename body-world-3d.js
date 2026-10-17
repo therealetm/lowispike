@@ -83,7 +83,13 @@
         }
         return best;
     }
-    const core = { PLACES, COPY, shouldUse3D, dprCap, gyroAngles, gyroKind, wrapDeg, pinchFactor, pickSpot, THREE_FILE, SCENE_FILE };
+    /* Oct 17 (E-man: "I fly out, fly out, fly out ... and the app just restarts, I'm back in a bubble"): when the phone takes the
+       3D world's graphics away (iOS does that to a page that asks too much of the GPU), the world used to give up for good and Home
+       fell back to the flat bubble. Now it waits for the graphics to come back and carries on where Misty was. It only gives up when
+       they stay away (LOST.WAIT, counted only while the app is on screen) or keep going away (more than LOST.MAX times in LOST.SPAN). */
+    const LOST = { WAIT: 12000, MAX: 4, SPAN: 120000 };
+    function lostPolicy(times, now) { const recent = (times || []).filter(t => now - t < LOST.SPAN); return recent.length > LOST.MAX ? 'fallback' : 'wait'; }
+    const core = { PLACES, COPY, shouldUse3D, dprCap, gyroAngles, gyroKind, wrapDeg, pinchFactor, pickSpot, LOST, lostPolicy, THREE_FILE, SCENE_FILE };
     if (typeof module !== 'undefined' && module.exports) module.exports = core;
     if (!D || !D.createElement || typeof W.requestAnimationFrame !== 'function') { W.LowiWorld3D = core; return; }
 
@@ -92,7 +98,8 @@
     const me = D.currentScript || D.querySelector('script[src*="body-world-3d.js"]');
     const ver = (me && /[?&]v=([^&]+)/.exec(me.getAttribute('src') || '') || [])[1] || '';
     const q = ver ? '?v=' + ver : '';
-    function hasWebGL() { try { const c = D.createElement('canvas'); return !!(W.WebGLRenderingContext && (c.getContext('webgl2') || c.getContext('webgl'))); } catch (e) { return false; } }
+    /* the test context is handed back at once (a phone only keeps a few, and an abandoned one holds GPU memory until it is collected) */
+    function hasWebGL() { try { const c = D.createElement('canvas'), g = W.WebGLRenderingContext && (c.getContext('webgl2') || c.getContext('webgl')); try { const x = g && g.getExtension('WEBGL_lose_context'); if (x) x.loseContext(); } catch (e) { } return !!g; } catch (e) { return false; } }
     const mqReduce = W.matchMedia ? W.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
     function env() { return { webgl: hasWebGL(), reduced: mqReduce.matches, saveData: !!(navigator.connection && navigator.connection.saveData), disabled: /[?&]no3d\b/.test(location.search) }; }
     const themeNow = () => (H.dataset.theme === 'light' ? 'light' : 'dark');
@@ -124,7 +131,8 @@
         api.state = 'loading';
         loading = Promise.all([import('./' + THREE_FILE + q), import('./' + SCENE_FILE + q)]).then(([THREE, S]) => {
             canvas = D.createElement('canvas'); canvas.className = 'bw3-canvas'; canvas.setAttribute('aria-hidden', 'true');
-            canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); fail('context-lost'); });
+            canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); ctxLost(); });
+            canvas.addEventListener('webglcontextrestored', () => ctxBack());
             world = S.createWorld(THREE, canvas, { places: PLACES, small: W.innerWidth < 380, dprCap: dprCap({ w: W.innerWidth, mem: navigator.deviceMemory }), theme: themeNow(), shouldRender });
             Object.assign(api, { THREE, scene: world.scene, camera: world.camera, renderer: world.renderer, hub: world.hub, regions: world.regions, rig: world.rig, memU: world.memU || null });
             pendingFrames.forEach(fn => { const t = pendingBind.get(fn); const off = world.onFrame(fn); if (t) t.bind(off); }); pendingFrames.clear(); pendingBind.clear();
@@ -135,7 +143,29 @@
         }).catch(err => { console.warn('3D world unavailable', err && err.message); fail('load'); return null; });
         return loading;
     }
+    /* graphics taken away: keep everything (Misty, the camera, the flight) frozen in place, and pick up again when they come back */
+    let lostTimes = [], lostWait = 0, lostSeen = 0;
+    function ctxLost() {
+        if (!world || api.state === 'fallback') return;
+        const now = Date.now(); lostTimes.push(now); lostTimes = lostTimes.filter(t => now - t < LOST.SPAN);
+        api.lost = true; api.lostCount = (api.lostCount || 0) + 1; H.classList.add('bw3-lost');
+        try { world.stop(); } catch (e) { }
+        if (lostPolicy(lostTimes, now) === 'fallback') { fail('context-lost'); return; }
+        lostSeen = 0; clearInterval(lostWait);
+        /* the browser normally hands the graphics back by itself; ask once more after a moment in case it is waiting to be asked */
+        setTimeout(() => { if (api.lost && world && world.renderer && world.renderer.forceContextRestore) { try { world.renderer.forceContextRestore(); } catch (e) { } } }, 1500);
+        lostWait = setInterval(() => { if (!api.lost) { clearInterval(lostWait); return; } if (!D.hidden) lostSeen += 500; if (lostSeen >= LOST.WAIT) { clearInterval(lostWait); fail('context-lost'); } }, 500);
+    }
+    function ctxBack() {
+        if (!api.lost) return;
+        api.lost = false; clearInterval(lostWait); H.classList.remove('bw3-lost');
+        if (!world) return;
+        api.restored = (api.restored || 0) + 1;
+        try { if (!D.hidden) world.start(); } catch (e) { }
+        try { W.dispatchEvent(new CustomEvent('lowi:world3d-restored', { detail: api })); } catch (e) { }
+    }
     function fail(why) {
+        api.lost = false; clearInterval(lostWait); H.classList.remove('bw3-lost');
         api.state = 'fallback'; api.why = why; api.ready = false; H.classList.remove('bw3-ready'); H.classList.add('bw3-off');
         try { if (world) world.dispose(); } catch (e) {}
         world = null; Object.assign(api, { scene: null, camera: null, renderer: null, hub: null, regions: [], rig: null, memU: null });
@@ -524,7 +554,7 @@
         setInterval(() => { if (api.state !== 'fallback' && !D.hidden && homeSeen()) { mountHome(); syncGlow(); } }, 1200);
         W.addEventListener('resize', () => { lastLay = ''; if (mode === 'back' && back && world) world.resize(back.clientWidth || W.innerWidth, back.clientHeight || W.innerHeight); else if (mode === 'home') layoutHome(); else if (full && world) { const r = full.querySelector('.bw3-view').getBoundingClientRect(); world.resize(r.width, r.height); } });
         new MutationObserver(() => { if (world) world.setTheme(themeNow()); }).observe(H, { attributes: true, attributeFilter: ['data-theme'] });
-        D.addEventListener('visibilitychange', () => { if (D.hidden && world) world.stop(); else if (world) world.start(); });
+        D.addEventListener('visibilitychange', () => { if (D.hidden && world) world.stop(); else if (world && !api.lost) world.start(); });
         if (mqReduce.addEventListener) mqReduce.addEventListener('change', () => { if (mqReduce.matches) fail('reduced-motion'); });
         ['lowi:award', 'lowi:meal-logged'].forEach(n => W.addEventListener(n, () => setTimeout(syncGlow, 300)));
     }

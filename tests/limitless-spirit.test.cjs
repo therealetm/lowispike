@@ -78,8 +78,12 @@ test('Home always possible: the long way home is quicker the farther out she is,
     assert.match(src, /home \? homeK\(S\.p\.length\(\)\) : 1/);
     /* the flight ending far out never leaves the camera in the deep */
     assert.match(src, /r\.target\.length\(\) > 60\) \{ r\.fly = /);
-    /* and the camera is carried round with her in the same frame */
-    assert.match(src, /ctx\.r\.target\.add\(G\.tmp\)/);
+    /* and the camera is carried round with her in the same frame, even mid-glide (Oct 17 far-out fix: r.fly is dropped first) */
+    assert.match(src, /if \(r && r\.target\) \{ r\.fly = null; r\.target\.add\(G\.tmp\); \}/);
+    /* getting home stays possible, but holding on never forces her home: the loop carries her round beside home (loopTo), not
+       straight back through her own bubble */
+    assert.match(src, /const q = loopTo\(\[S\.p\.x, S\.p\.y, S\.p\.z\], \[S\.v\.x, S\.v\.y, S\.v\.z\], G\.loops\)/);
+    assert.ok(!/multiplyScalar\(loopK\(L\) - 1\)/.test(src), 'the old straight-through loop is gone');
 });
 
 test('looping pays nothing and builds nothing', () => {

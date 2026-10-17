@@ -161,7 +161,7 @@
        the dark (a soft shapeless patch of darkness there, no swirl, no ring). Nothing pulls, nothing catches, there is nothing to
        escape: you just fly in, up to DEEP x the world's reach, and the deeper you go (from START to FULL x the reach, so it is
        already near black where the world's own shell is) the darker everything gets, up to MAX (Misty too). Every PULSE
-       s out there she glows for FLASH s. Fly back and the light comes back (IN / OUT: how fast the dark closes in and lifts).
+       s out there her cell guide glows for FLASH s (GUIDE; it was Misty herself until E-man moved it to the guide). Fly back and the light comes back (IN / OUT: how fast the dark closes in and lifts).
        The dark is never a way out: only the cloud wall is, and its glass bubble skin bulges like Home's does when she leaves for
        the spirit world (exitTent). */
     const DARK = { START: 0.8, FULL: 1.3, MAX: 0.95, DEEP: 3, PULSE: 3, FLASH: 0.32, CLEAR: 0.35, IN: 1.6, OUT: 2.4, TENT: 0.28 };
@@ -171,8 +171,16 @@
     function darkReach(inR, dark) { return (+inR || 0) * (dark ? DARK.DEEP : 1); }
     /* 0..MAX: how dark it is with her at edge = her distance from the world's middle / its reach */
     function darkAmt(edge) { return DARK.MAX * smooth(DARK.START, DARK.FULL, +edge || 0); }
-    /* 0..1: her glow t s after the dark closed in: one short flash every PULSE s, the first after PULSE s */
+    /* 0..1: the guide's glow t s after the dark closed in: one short flash every PULSE s, the first after PULSE s */
     function darkGlow(t) { t = +t || 0; if (t < DARK.PULSE - 1e-9) return 0; const ph = t % DARK.PULSE; return ph < DARK.FLASH ? Math.sin(Math.PI * ph / DARK.FLASH) : 0; }
+    /* guide glow (Oct 17, E-man: "Instead of my companion glowing in the dark ... since the cell companion is always next to me,
+       that's the one that should be glowing"): the flash every PULSE s (darkGlow) belongs to the cell guide that flies beside her
+       (region-pals.js, #rpPal), not to Misty. Deep in the dark the guide sits at DIM; at each flash it lights up fully, the veil
+       opens a little round it (OPEN, HOLE x its orb radius) and a small soft light (LIT, LIGHT x its radius) flares where it is, so
+       only what is right round the two of them shows. Misty herself gives off no light. The home glow (HOME) is untouched. */
+    const GUIDE = { DIM: 0.1, D0: 0.5, D1: 0.8, OPEN: 0.85, HOLE: 3.2, LIT: 0.75, LIGHT: 3.4, COLOR: '#bff3ff' };
+    /* 0..1: the guide's own opacity with darkness dk and flash glow: 1 outside the dark, DIM deep in it, 1 at the flash's peak */
+    function guideLight(dk, glow) { const b = 1 - (1 - GUIDE.DIM) * smooth(GUIDE.D0, GUIDE.D1, +dk || 0), g = clamp(+glow || 0, 0, 1); return b + (1 - b) * g; }
     /* home glow (Oct 17, E-man after flying so far into the dark that he nearly got lost: "It would have been nice if we could
        kind of just a little bit see the cell world ... glow, but just very very ... not too much. It should still be difficult").
        Out in the dark the world she came from still glows, very faintly, where it really is: the veil thins a little over the
@@ -227,7 +235,7 @@
     function orbitSpin(rad, sleepy) { return ORBIT.W * Math.pow(1 / Math.max(+rad || 0, ORBIT.R_END), 1.2) * (sleepy ? 0.7 : 1); }
     /* at the door: fling her back out (true) or let her in (false). tries = flings so far; refuse = the world's bounce rule said no */
     function orbitFling(tries, refuse) { return tries < ORBIT.MIN_FLINGS || (!!refuse && tries < ORBIT.TRIES - 1); }
-    const core = { K, inReach, freeReach, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, roams, autoLeave, roamSpot, roamHold, roamPx, pullAt, fallAt, EXIT, exitHold, MIST, angWrap, exitGaps, inMist, gapToward, DARK, darkSpots, inDark, darkReach, darkAmt, darkGlow, HOME, homeGlow, homeAt, veilAt, exitTent, wallToward, outAt, ORBIT, orbitAt, orbitSpin, orbitFling };
+    const core = { K, inReach, freeReach, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, roams, autoLeave, roamSpot, roamHold, roamPx, pullAt, fallAt, EXIT, exitHold, MIST, angWrap, exitGaps, inMist, gapToward, DARK, darkSpots, inDark, darkReach, darkAmt, darkGlow, GUIDE, guideLight, HOME, homeGlow, homeAt, veilAt, exitTent, wallToward, outAt, ORBIT, orbitAt, orbitSpin, orbitFling };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!D || !D.addEventListener || W.LowiMistyFlight) return;
 
@@ -1052,10 +1060,11 @@
         m.position.copy(S.inC); XS.u.uR.value = inR * 1.04; XS.u.uA.value = XS.amt; XS.u.uO.value = XS.op * MS.f;
     }
 
-    /* ---------- dark zones: the deeper into the dark, the darker it gets; she glows for a moment every few seconds ----------
+    /* ---------- dark zones: the deeper into the dark, the darker it gets; her cell guide glows for a moment every few seconds ----------
        One full-screen veil drawn over the whole world (and over Misty: she is lost in it too), in its own group drawn last. When
-       she glows, the veil opens a little round her and a soft cyan light flares where she is. The controller and the menus are
-       not in the 3D world, so they stay usable; her guide and speech bubbles dim with the dark. */
+       the guide glows (GUIDE), the veil opens a little round the guide and a soft cyan light flares where it is; Misty gives off no
+       light. The controller and the menus are not in the 3D world, so they stay usable; the guide and speech bubbles dim with the
+       dark, and the guide lights up again at each flash. */
     const DV = { g: null, q: null, s: null, u: null, v: null };
     function veilBuild(a) {
         if (DV.g && DV.g.parent) return true;
@@ -1076,25 +1085,51 @@
                 'gl_FragColor=vec4(vec3(0.0,0.0,0.012)+uWT*lift,clamp(uA*(1.0-h)*(1.0-see)+e*uA*(1.0-lift),0.0,1.0));}'
         });
         DV.q = new T.Mesh(new T.PlaneGeometry(1, 1), m); DV.q.frustumCulled = false; DV.q.renderOrder = 1;
-        DV.s = new T.Sprite(new T.SpriteMaterial({ map: mistTex(T, true), color: new T.Color('#bff3ff'), transparent: true, opacity: 0, depthTest: false, depthWrite: false, fog: false, blending: T.AdditiveBlending }));
+        DV.s = new T.Sprite(new T.SpriteMaterial({ map: mistTex(T, true), color: new T.Color(GUIDE.COLOR), transparent: true, opacity: 0, depthTest: false, depthWrite: false, fog: false, blending: T.AdditiveBlending }));
         DV.s.frustumCulled = false; DV.s.renderOrder = 2;
-        DV.v = new T.Vector3(); DV.w = new T.Vector3(); DV.w2 = new T.Vector3();
+        DV.v = new T.Vector3(); DV.w = new T.Vector3(); DV.w2 = new T.Vector3(); DV.gp = new T.Vector3();
         /* groupOrder 99: after everything else in the world (the cloud wall's group is 2, Misty and her face 61 / 62 at group 0) */
         DV.g = new T.Group(); DV.g.name = 'mf-dark'; DV.g.renderOrder = 99; DV.g.visible = false; DV.g.userData.lwKeep = true;
         DV.g.add(DV.q); DV.g.add(DV.s); a.scene.add(DV.g); return true;
     }
-    function veilOff() { if (DV.g) DV.g.visible = false; if (H.classList.contains('mf-dark')) H.classList.remove('mf-dark'); }
+    function veilOff() {
+        if (DV.g) DV.g.visible = false; if (H.classList.contains('mf-dark')) H.classList.remove('mf-dark');
+        if (DV.go != null || DV.gg != null) { DV.go = DV.gg = null; H.style.removeProperty('--mf-go'); H.style.removeProperty('--mf-gg'); }
+        S.gGlow = 0;
+    }
+    /* where the cell guide's orb is on screen (centre and radius in px), or null when no guide is showing */
+    function guideSpot() {
+        const el = D.getElementById('rpPal'); if (!el || !el.isConnected || !el.classList.contains('rp-in')) return null;
+        const o = el.querySelector('.rp-orb') || el.querySelector('.rp-body'); if (!o || !o.getBoundingClientRect) return null;
+        const r = o.getBoundingClientRect(); if (!r.width || !r.height) return null;
+        return { x: r.left + r.width / 2, y: r.top + r.height / 2, r: Math.max(r.width, r.height) / 2 };
+    }
+    /* the guide's own light, in CSS: --mf-go = its opacity (guideLight), --mf-gg = its flash (0..1) */
+    function guideCss(o, g) {
+        const so = o.toFixed(3), sg = g.toFixed(3);
+        if (DV.go !== so) { DV.go = so; H.style.setProperty('--mf-go', so); }
+        if (DV.gg !== sg) { DV.gg = sg; H.style.setProperty('--mf-gg', sg); }
+    }
     function veilDraw(a, dk, glow, reach, edge) {
         if (dk <= 0.003) { veilOff(); return; }
         if (!veilBuild(a)) return;
         DV.g.visible = true;
         const q = canvasRect(a), cam = a.camera;
         DV.v.copy(S.p).project(cam);
-        DV.u.uA.value = dk; DV.u.uG.value = glow; DV.u.uAsp.value = q.width / Math.max(1, q.height);
-        DV.u.uC.value.set((DV.v.x + 1) / 2, (DV.v.y + 1) / 2);
-        const px = (S.hs || 0.3) * pxPerUnit(a, S.p); DV.u.uR.value = clamp(px * 2.2 / Math.max(1, q.height), 0.06, 0.3);
-        DV.s.position.copy(S.p); const g = (S.hs || 0.3) * (2.2 + 1.6 * glow); DV.s.scale.set(g, g, 1);
-        DV.s.material.opacity = 0.9 * glow; DV.s.visible = glow > 0.01;
+        DV.u.uA.value = dk; DV.u.uAsp.value = q.width / Math.max(1, q.height);
+        /* the flash is the cell guide's (GUIDE): the veil opens a little round the guide and a soft light flares where it is on
+           screen, at Misty's depth so it only lights what is right round the two of them. Misty herself gives off no light. */
+        const gd = guideSpot(), gg = gd ? glow : 0;
+        if (gd) {
+            const ux = (gd.x - q.left) / Math.max(1, q.width), uy = 1 - (gd.y - q.top) / Math.max(1, q.height);
+            DV.u.uC.value.set(ux, uy); DV.u.uR.value = clamp(gd.r * GUIDE.HOLE / Math.max(1, q.height), 0.04, 0.2);
+            DV.u.uG.value = glow * GUIDE.OPEN;
+            DV.gp.set(ux * 2 - 1, uy * 2 - 1, clamp(DV.v.z, -1, 0.999)).unproject(cam);
+            const g = gd.r * GUIDE.LIGHT * (1 + 0.6 * gg) / pxPerUnit(a, DV.gp);
+            DV.s.position.copy(DV.gp); DV.s.scale.set(g, g, 1);
+            DV.s.material.opacity = GUIDE.LIT * gg; DV.s.visible = gg > 0.01;
+        } else { DV.u.uG.value = 0; DV.s.visible = false; }
+        S.gGlow = gg; guideCss(guideLight(dk, gg), gg);
         /* home glow: where the world she came from really is on screen (off the edge too), and how big it looks */
         let ws = 0;
         if (reach > 0 && S.inC) {
@@ -1109,7 +1144,13 @@
         const on = dk > 0.5; if (H.classList.contains('mf-dark') !== on) H.classList.toggle('mf-dark', on);
         if (on && !D.getElementById('mfDarkCss') && D.head) {
             const st = D.createElement('style'); st.id = 'mfDarkCss';
-            st.textContent = 'html.mf-dark #rpPal,html.mf-dark #whHint,html.mf-dark .lp-praise,html.mf-dark .rp-say{opacity:.1!important;transition:opacity .9s ease!important}';
+            /* the guide's speech bubbles, hints and praise dim with the dark; the guide itself sits at --mf-go and lights up with a
+               soft halo (--mf-gg) at each flash */
+            st.textContent = 'html.mf-dark #rpPal .rp-say,html.mf-dark #whHint,html.mf-dark .lp-praise,html.mf-dark .rp-say{opacity:.1!important;transition:opacity .9s ease!important}' +
+                'html.mf-dark #rpPal .rp-body{opacity:var(--mf-go,.1)!important;transition:opacity .06s linear,transform .35s ease!important}' +
+                'html.mf-dark #rpPal .rp-body::after{content:"";position:absolute;z-index:-1;inset:-55%;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,rgba(235,252,255,.95),rgba(191,243,255,.5) 42%,rgba(191,243,255,0));opacity:var(--mf-gg,0);transform:scale(calc(.6 + .5*var(--mf-gg,0)))}' +
+                'html.mf-dark #rpPal.rp-side .rp-body::after{inset:-30%}' +
+                'html.mf-dark #rpPal .rp-orb{filter:brightness(calc(1 + 1.2*var(--mf-gg,0)))}';
             D.head.appendChild(st);
         }
     }
@@ -1318,6 +1359,6 @@
         recall: () => { if (S.st === 'idle') { try { if (W.LowiPad) W.LowiPad.mode(''); } catch (e) { } } else S.recallReq = true; },
         wants, frame, core,
         state: () => ({ st: S.st, flew: S.flew, joined: !!S.joined, roam: !!S.rw, inT: +(S.inT || 0).toFixed(1), wpNext: S.wpNext, ap: +S.ap.toFixed(3), near: S.near ? S.near.id : null, nearD: S.near ? +S.near.d.toFixed(2) : null, px: Math.round(S.base), ks: +S.ks.toFixed(3),
-            hs: +S.hs.toFixed(3), exP: +(S.exP || 0).toFixed(3), exE: +(S.exE || 0).toFixed(2), exO: +(S.exO || 0).toFixed(2), mist: !!S.inMist, dk: +(S.dk || 0).toFixed(2), deep: !!S.deep, glow: +(S.dkG || 0).toFixed(2), home: +(S.homeS || 0).toFixed(2), exDark: !!S.exDark, skin: XS.m && XS.m.visible ? +XS.u.uA.value.toFixed(2) : 0, mistAng: S.mistAng == null ? null : +S.mistAng.toFixed(2), gaps: S.flew ? exitGaps(S.flew).map(g => +g.a.toFixed(2)) : null, dark: !!S.inDark, transit: H.classList.contains('mf-transit'), autoX: S.autoX ? S.autoX.ph : null, orb: S.orb ? { q: +S.orb.q.toFixed(2), tries: S.orb.tries, fling: S.orb.fling > 0 } : null, outPh: S.st === 'out' ? S.oPh : null, push: S.mem && w3() && w3().memU && w3().memU.uPushA ? +w3().memU.uPushA.value.toFixed(3) : 0, p: S.p ? [+S.p.x.toFixed(2), +S.p.y.toFixed(2), +S.p.z.toFixed(2)] : null, log: S.log.slice(-12) })
+            hs: +S.hs.toFixed(3), exP: +(S.exP || 0).toFixed(3), exE: +(S.exE || 0).toFixed(2), exO: +(S.exO || 0).toFixed(2), mist: !!S.inMist, dk: +(S.dk || 0).toFixed(2), deep: !!S.deep, glow: +(S.dkG || 0).toFixed(2), guideGlow: +(S.gGlow || 0).toFixed(2), home: +(S.homeS || 0).toFixed(2), exDark: !!S.exDark, skin: XS.m && XS.m.visible ? +XS.u.uA.value.toFixed(2) : 0, mistAng: S.mistAng == null ? null : +S.mistAng.toFixed(2), gaps: S.flew ? exitGaps(S.flew).map(g => +g.a.toFixed(2)) : null, dark: !!S.inDark, transit: H.classList.contains('mf-transit'), autoX: S.autoX ? S.autoX.ph : null, orb: S.orb ? { q: +S.orb.q.toFixed(2), tries: S.orb.tries, fling: S.orb.fling > 0 } : null, outPh: S.st === 'out' ? S.oPh : null, push: S.mem && w3() && w3().memU && w3().memU.uPushA ? +w3().memU.uPushA.value.toFixed(3) : 0, p: S.p ? [+S.p.x.toFixed(2), +S.p.y.toFixed(2), +S.p.z.toFixed(2)] : null, log: S.log.slice(-12) })
     };
 })();

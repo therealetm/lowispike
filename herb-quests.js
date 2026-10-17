@@ -228,23 +228,31 @@
     function pop(beforeXP, afterXP) {
         const b = C.evolution(beforeXP), a = C.evolution(afterXP), evolved = a.index > b.index;
         const quarter = x => Math.floor(x.progress * 4);
-        let last = 0; try { last = +sessionStorage.getItem('lowi.hq.pop') || 0; } catch (e) {}
-        if (!evolved && quarter(a) === quarter(b) && Date.now() - last < 15 * 60000) return;
-        try { sessionStorage.setItem('lowi.hq.pop', String(Date.now())); } catch (e) {}
+        /* Oct 17 (E-man: "I don't like the leveling up bar. It's very big and not in our style, and it's very distracting"):
+           a small chip of Misty's bubble glass, a thin progress ring + one short line, centred under the Daily Quest.
+           It only comes when she evolves or crosses a quarter of the way to her next form (no 15-min repeats), and leaves after 3 s. */
+        if (!evolved && quarter(a) === quarter(b)) return;
         let el = D.getElementById('hqPop');
-        if (!el) { el = D.createElement('button'); el.type = 'button'; el.id = 'hqPop'; el.className = 'hq-pop'; el.setAttribute('data-sp', 'path'); D.body.appendChild(el); }
-        el.innerHTML = a.next ? '<span class="hq-over">' + esc(evolved ? t('Evolved! Next: ', 'Entwickelt! Nächste: ', '¡Evolucionó! Siguiente: ') + sname(a.next) : t('Next form: ', 'Nächste Form: ', 'Siguiente forma: ') + sname(a.next)) + '</span><b class="num">' + esc(t(a.left + ' XP more · ≈ ' + a.meals + ' meals', 'noch ' + a.left + ' XP · ≈ ' + a.meals + ' Mahlzeiten', 'faltan ' + a.left + ' XP · ≈ ' + a.meals + ' comidas')) + '</b>' + bar(a.progress, 'thin')
-            : '<span class="hq-over">' + esc(t('Final form', 'Endform', 'Forma final')) + '</span><b>' + esc(sname(a.current)) + '</b>';
-        el.setAttribute('aria-label', el.textContent);
+        if (!el) { el = D.createElement('button'); el.type = 'button'; el.id = 'hqPop'; el.setAttribute('data-sp', 'path'); D.body.appendChild(el); }
+        el.className = 'hq-pop hq-chip';
+        const pct = Math.max(0, Math.min(1, a.next ? +a.progress || 0 : 1));
+        el.style.setProperty('--hq-p', pct.toFixed(3));
+        el.innerHTML = '<i class="hq-ring" aria-hidden="true"></i><span class="hq-tx">' + (a.next
+            ? esc(evolved ? t('Evolved! Next: ', 'Entwickelt! Nächste: ', '¡Evolucionó! Siguiente: ') : t('Next: ', 'Nächste: ', 'Siguiente: ')) + '<b>' + esc(sname(a.next)) + '</b> · <span class="num">' + esc(t(a.left + ' XP to go', 'noch ' + a.left + ' XP', 'faltan ' + a.left + ' XP')) + '</span>'
+            : esc(t('Final form', 'Endform', 'Forma final')) + ' · <b>' + esc(sname(a.current)) + '</b>') + '</span>';
+        el.setAttribute('aria-label', a.next
+            ? t('Next form: ' + sname(a.next) + ', ' + a.left + ' XP more, about ' + a.meals + ' meals', 'Nächste Form: ' + sname(a.next) + ', noch ' + a.left + ' XP, etwa ' + a.meals + ' Mahlzeiten', 'Siguiente forma: ' + sname(a.next) + ', faltan ' + a.left + ' XP, unas ' + a.meals + ' comidas')
+            : el.textContent);
         /* Oct 16 (E-man: the XP card "is in another position, doesn't fit"): on Home it sits right under the Daily Quest box,
-           the same width, never over the top row or the quest; elsewhere it drops in under the top bar */
+           never over the top row or the quest; elsewhere it drops in under the top bar. Oct 17: only as wide as its words. */
         try { const q = D.getElementById('f3Board'), r = q && q.offsetParent ? q.getBoundingClientRect() : null;
             /* Oct 17: below the hunt-count line too when it continues the box inside a world (hunt-count.js) */
             let bot = r ? r.bottom : 0; const hc = D.getElementById('hcLine'); if (r && hc && hc.classList.contains('on') && !hc.classList.contains('hc-away')) { const hr = hc.getBoundingClientRect(); if (hr.height > 0) bot = Math.max(bot, hr.bottom); }
-            if (r && r.width > 0 && r.bottom > 0) { el.style.top = Math.round(bot + 10) + 'px'; el.style.width = Math.round(r.width) + 'px'; el.style.left = Math.round(r.left + r.width / 2) + 'px'; el.dataset.at = 'quest'; }
-            else { ['top', 'width', 'left'].forEach(k => el.style.removeProperty(k)); delete el.dataset.at; } } catch (e) {}
+            el.style.removeProperty('width');
+            if (r && r.width > 0 && r.bottom > 0) { el.style.top = Math.round(bot + 8) + 'px'; el.style.maxWidth = Math.round(r.width) + 'px'; el.style.left = Math.round(r.left + r.width / 2) + 'px'; el.dataset.at = 'quest'; }
+            else { ['top', 'max-width', 'left'].forEach(k => el.style.removeProperty(k)); delete el.dataset.at; } } catch (e) {}
         el.hidden = false; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
-        clearTimeout(popTimer); popTimer = setTimeout(() => { el.classList.remove('on'); setTimeout(() => { el.hidden = true; }, reduced() ? 0 : 300); }, 4600);
+        clearTimeout(popTimer); popTimer = setTimeout(() => { el.classList.remove('on'); setTimeout(() => { el.hidden = true; }, reduced() ? 0 : 300); }, 3000);
     }
     W.addEventListener('lowi:reward', e => {
         const d = e.detail || {};

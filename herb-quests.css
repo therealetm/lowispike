@@ -110,3 +110,34 @@ html.reduce-motion .hq-btn.hq-claim{animation:none}
 .hq-pop .hq-bar { margin-top: 6px; height: 6px; border-radius: 99px; background: rgba(255, 255, 255, .16) !important; overflow: hidden; }
 .hq-pop .hq-bar i { display: block; height: 100%; background: linear-gradient(90deg, #5fb4ff, #8fd0ff) !important; box-shadow: 0 0 10px rgba(110, 190, 255, .7); border-radius: 99px; }
 @media (prefers-reduced-motion: reduce) { .hq-pop, html.lg .hq-pop { transition: none; } }
+
+/* Oct 17 (E-man: "I don't like the leveling up bar. It's very big and not in our style, and it's very distracting"):
+   the XP card is a small chip of Misty's bubble glass (glass-nav tokens: blue core, violet rim, cyan edge),
+   a thin progress ring + one line, only as wide as its words. Paint only: no loop, no bounce. */
+.hq-pop.hq-chip, html.lg .hq-pop.hq-chip {
+    width: auto !important; max-width: min(320px, calc(100vw - 32px)); min-height: 30px; box-sizing: border-box;
+    flex-direction: row; align-items: center; gap: 7px; padding: 5px 13px 5px 6px; border-radius: 99px; isolation: isolate;
+    background: var(--gn-fill, linear-gradient(160deg, rgba(58, 159, 224, .16), rgba(28, 74, 150, .38))) !important;
+    border: 1px solid transparent !important;
+    box-shadow: var(--gn-sh, inset 0 1px 0 rgba(255, 255, 255, .22)) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(160%); backdrop-filter: blur(14px) saturate(160%);
+    color: #eaf6ff; font-size: 12px; line-height: 1.2; white-space: nowrap; text-align: left;
+    transform: translate(-50%, -4px); opacity: 0; transition: transform .26s ease, opacity .26s ease;
+}
+.hq-pop.hq-chip::before { content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; pointer-events: none; opacity: .85; z-index: -1;
+    background: var(--gn-rim, linear-gradient(150deg, rgba(200, 246, 255, .9), rgba(155, 135, 210, .8)));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
+.hq-pop.hq-chip.on, html.lg .hq-pop.hq-chip.on { transform: translate(-50%, 0); opacity: .95; }
+.hq-chip .hq-ring { flex: none; width: 18px; height: 18px; border-radius: 50%;
+    background: conic-gradient(#8fe7ff calc(var(--hq-p, 0) * 360deg), rgba(255, 255, 255, .18) 0);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px)); mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px));
+    filter: drop-shadow(0 0 3px rgba(143, 231, 255, .55)); }
+.hq-chip .hq-tx { min-width: 0; overflow: hidden; text-overflow: ellipsis; color: rgba(225, 240, 255, .88); }
+.hq-pop.hq-chip b { color: #fff !important; font-size: 12px; font-weight: 700; }
+.hq-chip .num { font-variant-numeric: tabular-nums; }
+html:is([data-theme="light"], [data-ui="light"]) .hq-pop.hq-chip { color: #14223a; }
+html:is([data-theme="light"], [data-ui="light"]) .hq-chip .hq-tx { color: rgba(20, 34, 58, .82); }
+html:is([data-theme="light"], [data-ui="light"]) .hq-pop.hq-chip b { color: #0e1a30 !important; }
+html:is([data-theme="light"], [data-ui="light"]) .hq-chip .hq-ring { background: conic-gradient(#2a8fd8 calc(var(--hq-p, 0) * 360deg), rgba(20, 40, 80, .16) 0); }
+html.lw-clean .hq-pop.hq-chip { opacity: 0 !important; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .hq-pop.hq-chip, html.lg .hq-pop.hq-chip { transition: opacity .01s; transform: translate(-50%, 0); } }

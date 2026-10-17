@@ -13094,7 +13094,7 @@ function pop(L){
   d.innerHTML = '<small><span>Level ' + L + '</span> · <span>' + (u ? "Unlocked" : "New reward") + '</span></small><b>' + E(u ? u.u.tn + " · " + u.u.n : r[0].t) + '</b><span class="r3m-ch" aria-hidden="true">›</span>';
   d.setAttribute("role", "status"); document.body.appendChild(d);
   requestAnimationFrame(() => requestAnimationFrame(() => d.classList.add("on")));
-  setTimeout(() => { d.classList.remove("on"); setTimeout(() => d.remove(), 400); }, 7000);
+  setTimeout(() => { d.classList.remove("on"); setTimeout(() => d.remove(), 400); }, 4000); /* Oct 17: a small chip of Misty's glass (beta.css), 4 s, not a 7 s bar */
 }
 function hookAward(){
   try { if (typeof award !== "function" || award.__r3m) return; const _a = award;

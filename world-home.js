@@ -591,7 +591,7 @@
                cell, the place names and the hints step aside out there; at its far edge the camera hands over to Community. */
             r.outer = !reduced();
             const gx = H.classList.contains('mf-galaxy'); /* galaxy breakout (misty-galaxy.js): Misty flies out there herself, Home stays Home */
-            const far = r.dist > (r.maxD || 13) * 1.06 && !gx; if (H.classList.contains('wh-cosmos') !== far) H.classList.toggle('wh-cosmos', far);
+            const far = r.dist > (r.maxD || 13) * 1.06 && !gx && !inRegion(); /* Oct 17: inside a world the camera's distance is the world's own, not past Home's World Map */ if (H.classList.contains('wh-cosmos') !== far) H.classList.toggle('wh-cosmos', far);
             const fk = Math.max(0, Math.min(1, Math.log(Math.max(1, r.dist / (r.maxD || 13))) / Math.log(outerD(r) / (r.maxD || 13))));
             H.style.setProperty('--wh-far', fk.toFixed(3));
             if (fk > 0.9 && !gx && !st.zoomAnim && !st.pull && homeActive() && !H.classList.contains('gx-out') && !H.classList.contains('gx-in') && Date.now() - (st.farGo || 0) > 2500) {

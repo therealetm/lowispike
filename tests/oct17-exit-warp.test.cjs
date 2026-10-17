@@ -1,7 +1,7 @@
 // Oct 17 (E-man, iPhone screenshot): leaving a world, or leaving the main world into the spirit world, dropped to a flat blue
 // screen (the plain Home page with its dot grid, no 3D at all) for a split second. These tests hold the fixes in place:
 // the world picture is never left blank or invisible during a transition, behind it is never the plain navy page, the move
-// carries colour at the rim only (the elastic bubble exit and the surroundings stay visible), and reduced motion gets a gentle fade.
+// (Later on Oct 17 the rim streaks and the wash were deleted again: see tests/oct17-no-inbetween.test.cjs.)
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
@@ -64,56 +64,8 @@ test('a rebuilt Home stage shows the running world at once (never stuck at opaci
   assert.match(mh, /if \(mode === 'home' && canvas\) stage\.insertBefore\(canvas, stage\.firstChild\);\s*\/\*[\s\S]*?\*\/\s*if \(canvas && world && api\.state === 'ready'\) stage\.classList\.add\('bw3-live'\);/);
 });
 
-test('behind the live world and during every move: a bright wash, never the navy page with its dot grid', () => {
-  const rule = rcss.split('\n').find(l => l.startsWith('html.wh-home.wh-world-live body,'));
-  assert.ok(rule, 'wash rule');
-  ['html.wh-home.wh-world-live #tab-home', 'html.bwr-warping #tab-home', 'html.mf-transit #tab-home'].forEach(s => assert.ok(rule.includes(s), s));
-  assert.match(rule, /background-image:radial-gradient\([^!]*#7a5cff[^!]*\)!important/);
-  assert.doesNotMatch(rule, /background-size/);
-  // the beta page dot grid is a plain declaration, so the !important wash replaces it
-  assert.doesNotMatch(R('beta.css').match(/background-image: radial-gradient\(color-mix[^;]*;/)[0], /!important/);
-});
-
-test('the move keeps the middle clear: rim-only streaks, the bubble exit and surroundings stay visible', () => {
-  // the streaks are masked out around Misty and only appear toward the rim
-  assert.match(rcss, /\.bwr-wx i\{[^}]*mask-image:radial-gradient\(circle at var\(--wx-x\) var\(--wx-y\),transparent 0,transparent 34vmin,#000 60vmin\)/);
-  assert.match(rcss, /\.bwr-wx i\{[^}]*-webkit-mask-image:/, 'iPhone needs the -webkit- mask');
-  // the colour glow is clear in the middle too
-  assert.match(rcss, /\.bwr-wx b\{[^}]*rgba\(0,0,0,0\) 0,rgba\(0,0,0,0\) 42%/);
-  // compositor-only motion, and nothing animates when no move runs
-  const kf = rcss.match(/@keyframes bwrStream\{[^\n]*\}/)[0];
-  assert.doesNotMatch(kf, /width|height|left|top|background/);
-  assert.match(rcss, /^html\.bwr-warping \.bwr-wx i\{animation:bwrStream/m);
-  assert.match(rcss, /^\.bwr-wx\{[^}]*visibility:hidden/m);
-  // the full glow is not forced through the flight view: it does not cover the bubble exit
-  assert.doesNotMatch(regions, /veil\.setAttribute\('data-clean-keep'/);
-});
-
-test('the warp layer is part of the world: the menu fade never hides it', () => {
-  assert.match(regions, /fx\.className = 'bwr-wx'; fx\.id = 'bwrWarp'; fx\.setAttribute\('aria-hidden', 'true'\); fx\.setAttribute\('data-clean-keep', ''\)/);
-  // both of the clean view's hide rules spare data-clean-keep
-  const hides = clean.match(/'#whHud > :not\(#whPad[^'"]*/g) || [];
-  assert.ok(hides.length >= 1, 'the Home hide selector');
-  hides.forEach(h => assert.ok(h.includes(':not([data-clean-keep])'), h));
-  // the in-world hide rule is built from the same list, so it spares data-clean-keep too
-  assert.match(clean, /const WORLD_HIDE = HIDE\.map\(s => s\.indexOf\('#whHud > '\) === 0 \? s\.replace\('#whHud > ', '#whHud > :not\(\.wh-zoom\)'\) : s\)/);
-});
-
-test('the warp runs exactly while a move runs, every path, and reduced motion gets a gentle fade', () => {
-  assert.match(regions, /st\.warp = q; warpOn\(true, src\.css\);/, 'starts with every move (enter, leave, map, home)');
-  const cl = fnSrc(regions, 'function clean(q)');
-  assert.match(cl, /veil\(0\); warpOn\(false\);/, 'ends with every move, finished or cancelled');
-  assert.match(fnSrc(regions, 'function reset()'), /warpOn\(false\)/);
-  // per-frame strength never drops to nothing mid-move and eases out over the glide back home
-  assert.match(regions, /wx\(Math\.max\(floor, q\.amt, veilO \* 0\.9\)\);/);
-  assert.match(regions, /floor = q\.rev \? 0\.6 \* \(1 - g \* g\) : 0\.3 \+ 0\.3 \* g;/);
-  // reduced motion: the instant swap gets a colour crossfade, no streaks
-  assert.match(regions, /if \(reduced\(\)\) \{ fadeSwap\(id\); enter\(id\);/);
-  assert.match(rcss, /@media \(prefers-reduced-motion: reduce\)\{html\.bwr-warping \.bwr-wx i\{animation:none;opacity:0\}\}/);
-  assert.match(rcss, /html\.bwr-fade \.bwr-wx\{visibility:visible;animation:bwrFade \.85s ease both\}/);
-  assert.match(rcss, /html\.bwr-fade \.bwr-wx i\{display:none\}/);
-});
-
-test('the warp does not slow anything: move timings unchanged', () => {
+// The rim streaks, the colour wash and the reduced-motion colour fade that used to follow here were removed on Oct 17 at
+// E-man's request ("delete the in-between world"); tests/oct17-no-inbetween.test.cjs holds that they stay gone.
+test('move timings unchanged', () => {
   assert.match(regions, /glide: 1450/);
 });

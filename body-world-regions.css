@@ -32,24 +32,8 @@
 .bwr-node.cur i{outline:2px solid #fff;outline-offset:3px}
 .bwr-node span{white-space:nowrap;text-shadow:0 1px 4px #000}
 @media (prefers-reduced-motion:reduce){.bwr-label{transition:opacity .2s}.bwr-fade{animation:none}}
-/* Oct 17 (E-man, iPhone: a flat blue screen "for like a split second" while Misty leaves a world, and the same when she leaves
-   the main world into the spirit world; keep the elastic bubble exit and the surroundings visible the whole time).
-   1. Behind the live world: never the plain navy page with its dot grid. If the phone ever shows a moment without the 3D picture,
-      what shows is a bright wash in Misty's cyan / blue / violet (and the world's own colour during a move), never flat blue.
-   2. During a move (html.bwr-warping): a light warp at the rim of the screen only. Thin streaks rush out from Misty and the
-      colours pull through at the edges; the middle (the bubble, Misty, the world around her) is always clear. Compositor-only
-      motion (transform + opacity), two full-screen layers for about two seconds, nothing at all when no move is running. */
-html.wh-home.wh-world-live body,html.wh-home.wh-world-live #tab-home,html.bwr-warping #tab-home,html.mf-transit #tab-home{background-color:#3b2a8f!important;background-image:radial-gradient(120% 85% at 50% 44%,var(--bwr-wxc,#7fe6ff) 0%,#58a8ff 24%,#7a5cff 50%,#9b3fd6 74%,#3b2a8f 100%)!important}
-.bwr-wx{position:absolute;inset:0;pointer-events:none;overflow:hidden;opacity:0;visibility:hidden;--wx:0;--wx-x:50%;--wx-y:46%;transition:opacity .55s ease,visibility 0s linear .55s}
-html.bwr-warping .bwr-wx{visibility:visible;opacity:calc(.35 + .65*var(--wx));transition:opacity .15s linear,visibility 0s}
-.bwr-wx b{position:absolute;inset:0;background:radial-gradient(circle at var(--wx-x) var(--wx-y),rgba(0,0,0,0) 0,rgba(0,0,0,0) 42%,color-mix(in srgb,var(--vh,#e0475a) 55%,transparent) 70%,rgba(139,92,246,.55) 86%,rgba(34,211,238,.6) 100%);mix-blend-mode:screen;opacity:.75}
-.bwr-wx i{position:absolute;inset:0;transform-origin:var(--wx-x) var(--wx-y);background:repeating-conic-gradient(from 0deg at var(--wx-x) var(--wx-y),rgba(255,255,255,0) 0deg 5.2deg,rgba(255,255,255,.85) 5.6deg,rgba(255,255,255,0) 6.2deg 11deg);-webkit-mask-image:radial-gradient(circle at var(--wx-x) var(--wx-y),transparent 0,transparent 34vmin,#000 60vmin);mask-image:radial-gradient(circle at var(--wx-x) var(--wx-y),transparent 0,transparent 34vmin,#000 60vmin);mix-blend-mode:screen;opacity:0}
-.bwr-wx i+i{background:repeating-conic-gradient(from 3deg at var(--wx-x) var(--wx-y),rgba(127,230,255,0) 0deg 7deg,rgba(127,230,255,.8) 7.5deg,rgba(186,140,255,0) 8.2deg 14deg)}
-html.bwr-warping .bwr-wx i{animation:bwrStream .6s linear infinite}
-html.bwr-warping .bwr-wx i+i{animation-delay:-.3s}
-@keyframes bwrStream{0%{transform:scale(1) rotate(0deg);opacity:0}25%{opacity:.9}100%{transform:scale(1.45) rotate(4deg);opacity:0}}
-/* reduced motion: no rush, no streaks, the colours crossfade gently over the swap (html.bwr-fade) */
-@media (prefers-reduced-motion: reduce){html.bwr-warping .bwr-wx i{animation:none;opacity:0}}
-@keyframes bwrFade{0%{opacity:0}40%{opacity:.85}100%{opacity:0}}
-html.bwr-fade .bwr-wx{visibility:visible;animation:bwrFade .85s ease both}
-html.bwr-fade .bwr-wx i{display:none}
+/* Oct 17 (E-man on his iPhone: "can you just delete the in-between world? ... So it goes from inside to outside, seamlessly"):
+   leaving a world draws nothing of its own: no streaks, no colour wash, no glow screen. .bwr-snap is a copy of the last real
+   frame of the world she was in, laid over the outside world (already drawn under it) and faded away. */
+.bwr-snap{position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;opacity:1;transition:opacity .38s ease-out;will-change:opacity}
+.bwr-snap.go{opacity:0}

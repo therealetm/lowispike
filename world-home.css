@@ -454,8 +454,10 @@ html.wh-home:is([data-lay=tablet],[data-lay=desktop]) .wh-hud .bwr-label { top: 
 .wh-stick .wh-zoom-tx { position: relative; z-index: 1; }
 @media (prefers-reduced-motion: reduce) { .wh-stick .wh-stk-knob { transition: none; } }
 /* past the World Map (html.wh-cosmos): Misty's cell, the water and fasting bubbles, the place names and the hints step aside so the
-   spirit world (our membrane bubble among everyone's) is clear; the top row, the quest box, the stick and the tab bar stay */
-html.wh-home.wh-cosmos .sp-heroes, html.wh-home.wh-cosmos #whHud .wh-cell, html.wh-home.wh-cosmos #whHint, html.wh-home.wh-cosmos .wh-hud .bwr-label,
+   spirit world (our membrane bubble among everyone's) is clear; the top row, the quest box, the stick and the tab bar stay.
+   Oct 17: never the 3D stage itself. It sits inside .sp-heroes, so fading .sp-heroes faded the whole live world away and left the
+   flat page behind it (E-man's "flat blue screen" between inside and outside, and when flying out past the World Map). */
+html.wh-home.wh-cosmos .sp-heroes > :not(.bw3-stage), html.wh-home.wh-cosmos #whHud .wh-cell, html.wh-home.wh-cosmos #whHint, html.wh-home.wh-cosmos .wh-hud .bwr-label,
 html.wh-home.wh-cosmos .wh-hud .wh-pad-chip, html.wh-home.wh-cosmos .bwr-pins, html.wh-home.wh-cosmos .bwr-pin { opacity: 0 !important; pointer-events: none !important; transition: opacity .35s ease !important; }
 
 /* Oct 16 (task 1 rework, E-man: "the fasting and water bubbles should look and move like Misty's bubble"): the same living

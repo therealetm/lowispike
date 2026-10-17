@@ -1324,7 +1324,9 @@
             const door = { x: (V.dS.x - q.left) / q.width, y: (V.dS.y - q.top) / q.height };
             if (V.dS.z > 1) { door.x = 1 - door.x; door.y = 1 - door.y; } /* behind the camera at the start of the back-out */
             if (S.oTB < 0 && wq && wq.rev) S.oTB = clk;
-            P = outAt('B', S.oTB >= 0 && clk < 1e9 ? (clk - S.oTB) / 1870 : 1, S.oA, door);
+            /* Oct 17: after the seamless cut out of a world (no pull-back any more) she drifts from her spot to beside the door in
+               a short moment, while the picture of the inside fades away over her */
+            P = outAt('B', S.oTB >= 0 && clk < 1e9 ? (clk - S.oTB) / (wq && wq.seam ? 720 : 1870) : 1, S.oA, door);
             V.b.subVectors(S.outPos, cam.position); const dB = -V.b.dot(V.fw);
             depth = S.oDA + (Math.max(0.8, dB * 0.9) - S.oDA) * P.e;
         }

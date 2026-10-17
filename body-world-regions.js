@@ -341,12 +341,7 @@
         ['pointerdown', 'touchstart'].forEach(n => mapBtn.addEventListener(n, e => e.stopPropagation(), { passive: true }));
         const lab = D.createElement('div'); lab.className = 'bwr-label'; lab.id = 'bwrLabel'; lab.setAttribute('aria-live', 'polite');
         const veil = D.createElement('div'); veil.className = 'bwr-veil'; veil.setAttribute('aria-hidden', 'true');
-        /* Oct 17 (E-man, iPhone: "everything just turns boring, bluish ... for like a split second" when Misty leaves a world; then:
-           keep the elastic bubble exit and the surroundings visible the whole way, no warp that hides it): the full glow stays as it
-           was (the flight view's menu fade keeps it out of a flight), and a light edge-only layer (.bwr-wx, data-clean-keep: part of
-           the world, never faded with the menus) keeps colour moving at the rim of the screen while the middle stays clear. */
-        const fx = D.createElement('div'); fx.className = 'bwr-wx'; fx.id = 'bwrWarp'; fx.setAttribute('aria-hidden', 'true'); fx.setAttribute('data-clean-keep', ''); fx.innerHTML = '<i></i><i></i><b></b>';
-        h.classList.add('bwr-on'); const lv = h.querySelector('.bw3-labels'); if (lv) h.insertBefore(veil, lv); else h.appendChild(veil); h.insertBefore(fx, veil.nextSibling); h.appendChild(lab); h.appendChild(mapBtn); st.label = lab; st.mapBtn = mapBtn; st.veil = veil; st.wx = fx; renderUi(); return mapBtn;
+        h.classList.add('bwr-on'); const lv = h.querySelector('.bw3-labels'); if (lv) h.insertBefore(veil, lv); else h.appendChild(veil); h.appendChild(lab); h.appendChild(mapBtn); st.label = lab; st.mapBtn = mapBtn; st.veil = veil; renderUi(); return mapBtn;
     }
     function renderUi() {
         if (!st.mapBtn) return;
@@ -391,99 +386,88 @@
         if (css) v.style.setProperty('--vh', css);
         v.style.opacity = String(Math.max(0, Math.min(1, o)).toFixed(3));
     }
-    /* Oct 17 (E-man): colour carried from the moment she leaves (or enters) a world until the new view has settled: thin streaks
-       of light rushing out from Misty toward the rim of the screen, her blue / violet / cyan and the world's own colour at the
-       edges only, the middle (the bubble, Misty, the world around her) always clear; and behind the world a bright colour wash
-       instead of the plain blue page (html.bwr-warping, body-world-regions.css). Only CSS custom properties change per frame
-       (strength, Misty's spot on screen), on the warp's own frame step. */
-    const WX_MAX = 1;
-    function wx(o, css) {
-        const f = st.wx; if (!f) return;
-        if (css) { f.style.setProperty('--vh', css); try { D.documentElement.style.setProperty('--bwr-wxc', css); } catch (e) { } }
-        const v = Math.max(0, Math.min(WX_MAX, o));
-        if (st.wxV == null || Math.abs(v - st.wxV) > 0.01) { st.wxV = v; f.style.setProperty('--wx', v.toFixed(3)); }
-        let sp = null; try { const mf = W.LowiMistyFlight; sp = mf && mf.touchSpot ? mf.touchSpot() : null; } catch (e) { }
-        const vw = W.innerWidth || 390, vh = W.innerHeight || 844;
-        const x = sp && isFinite(sp.x) && sp.x > -vw * 0.2 && sp.x < vw * 1.2 ? sp.x : vw / 2, y = sp && isFinite(sp.y) && sp.y > -vh * 0.2 && sp.y < vh * 1.2 ? sp.y : vh * 0.46;
-        if (st.wxX == null || Math.abs(x - st.wxX) > 3 || Math.abs(y - st.wxY) > 3) { st.wxX = x; st.wxY = y; f.style.setProperty('--wx-x', Math.round(x) + 'px'); f.style.setProperty('--wx-y', Math.round(y) + 'px'); }
-    }
-    /* reduced motion: no rush, no streaks; the colours crossfade gently over the swap (html.bwr-fade, a CSS fade only) */
-    function fadeSwap(id) {
-        const E = D.documentElement; if (!E || !st.wx) return;
-        const R = byId(id), from = byId(st.cur), c = (id === 'hub' && from ? from.css : R && R.css) || '#e0475a';
-        st.wx.style.setProperty('--vh', c); try { E.style.setProperty('--bwr-wxc', c); } catch (e) { }
-        E.classList.remove('bwr-fade'); void E.offsetWidth; E.classList.add('bwr-fade');
-        clearTimeout(st.fadeT); st.fadeT = setTimeout(() => E.classList.remove('bwr-fade'), 900);
-    }
-    function warpOn(on, css) {
+    /* html.bwr-warping while a move runs: the 3D view then draws every refresh and never changes its sharpness (body-world-3d-scene.js
+       inTransit), so the picture is never wiped mid-move. Nothing is drawn for it: no streaks, no wash, no colour layer. */
+    function warpOn(on) {
         const E = D.documentElement; if (!E) return;
-        if (on) { st.wxV = null; wx(0.5, css); E.classList.add('bwr-warping'); }
-        else E.classList.remove('bwr-warping');
+        if (on) E.classList.add('bwr-warping'); else E.classList.remove('bwr-warping');
+    }
+    /* ---------- leaving a place: inside -> outside, no in-between ----------
+       Oct 17 (E-man on his iPhone after the warp build: "can you just delete the in-between world? ... So it goes from inside to
+       outside, seamlessly"). There is no glow screen, no portal disc, no streaks, no wider lens and no camera trip through the
+       glowing door any more. In one frame: the place is drawn one last time and that real picture is copied (.bwr-snap), the
+       place goes, and the camera is put straight on the outside view the old pull-back used to end on (facing the world she left,
+       Misty beside it). The copy of the inside lies over the outside, which is already drawn under it, and fades away once the
+       outside has had a frame of its own, so neither a blank canvas nor a made-up screen can ever show. */
+    const SEAM = { fade: 380, hold: 760 };
+    function camFromRig(r, cam) {
+        if (!r || !cam) return;
+        const yaw = r.yaw + (r.gy || 0), pitch = Math.max(-1.35, Math.min(1.35, r.pitch + (r.gp || 0)));
+        cam.position.set(r.target.x + r.dist * Math.cos(pitch) * Math.sin(yaw), r.target.y + r.dist * Math.sin(pitch), r.target.z + r.dist * Math.cos(pitch) * Math.cos(yaw));
+        cam.lookAt(r.target); cam.updateMatrixWorld();
+    }
+    /* the real last frame of the place, drawn now (same task as the copy, so the drawing buffer is still there) */
+    function snapNow(a) {
+        snapDrop(true);
+        const h = st.host, ren = a && a.renderer, cv = ren && ren.domElement;
+        if (!h || !cv || !cv.width || !cv.height || !D.createElement) return null;
+        try {
+            ren.render(a.scene, a.camera);
+            const s = D.createElement('canvas'); s.width = cv.width; s.height = cv.height;
+            const x = s.getContext && s.getContext('2d'); if (!x) return null;
+            x.drawImage(cv, 0, 0);
+            const r = cv.getBoundingClientRect();
+            s.className = 'bwr-snap'; s.setAttribute('aria-hidden', 'true'); s.setAttribute('data-clean-keep', '');
+            s.style.left = r.left + 'px'; s.style.top = r.top + 'px'; s.style.width = r.width + 'px'; s.style.height = r.height + 'px';
+            try { const f = W.getComputedStyle && W.getComputedStyle(cv).filter; if (f && f !== 'none') s.style.filter = f; } catch (e) { } /* the world mood tint, so the copy looks exactly like the screen */
+            if (st.veil && st.veil.parentNode === h) h.insertBefore(s, st.veil); else h.appendChild(s);
+            st.snap = s; return s;
+        } catch (e) { return null; }
+    }
+    /* fade the copy away (now = gone at once) */
+    function snapDrop(now) {
+        const s = st.snap; if (!s) return; st.snap = null;
+        if (now || reduced()) { try { s.remove(); } catch (e) { } return; }
+        s.classList.add('go'); setTimeout(() => { try { s.remove(); } catch (e) { } }, SEAM.fade + 120);
+    }
+    function seamStep(q, w, a, now) {
+        const r = a && a.rig;
+        if (q.phase === 'cut') {
+            snapNow(a);
+            enter('hub');
+            if (r) {
+                const ang = Math.atan2(q.B.x, q.B.z);
+                r.fly = null; r.flyYaw = null; r.vy = 0; r.vp = 0; r.idle = 0;
+                /* where the base's glide home would end (also resets the place's hue tint), taken at once instead of flown */
+                let to = null;
+                if (a.flyTo) { st.ownFly = true; try { a.flyTo(null); } finally { st.ownFly = false; } to = r.fly && r.fly.to; }
+                r.fly = null; r.flyYaw = null;
+                if (to) { r.target.copy(to.t); r.dist = q.wide && r.maxD ? r.maxD : to.d; }
+                r.yaw = ang + Math.round((r.yaw - ang) / (Math.PI * 2)) * Math.PI * 2; /* facing the world she just left */
+                r.pitch = q.wide ? 0.42 : Math.max(-0.5, Math.min(0.5, r.pitch));
+                camFromRig(r, w.camera);
+            }
+            q.reveal = true; q.phase = 'out'; q.t0 = now; q.cutAt = now;
+            return;
+        }
+        /* the outside has been drawn at least once under the copy: let the copy go */
+        if (st.snap && !st.snap.classList.contains('go')) snapDrop(false);
+        if (now - q.t0 >= SEAM.hold) finish();
     }
     function stepWarp(w, dt) {
         const q = st.warp, a = w3(), cam = w.camera, THREE = w.three, d = Math.max(1 / 240, Math.min(0.05, dt || 0.016));
         /* the warp clock runs on the same capped frame time as the base glide, so on a slow phone both stay in step */
         q.clock += d * 1000; const now = q.clock;
+        if (q.seam) { seamStep(q, w, a, now); return; }
         const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(cam.quaternion);
         const base = cam.position.clone();
         let vf = q.last ? base.clone().sub(q.last).dot(fwd) / d : 0; q.last = base;
         let veilO = 0;
-        /* Oct 16 (E-man): leaving a place for the bloodstream (World map, X) is the fly-to played backwards: the place shrinks
-           away as the camera pulls back under its glow (settle reversed), the camera backs out of the glowing spot (dive
-           reversed), then glides back out to Home (glide reversed). Same streaks, same easing, no cut and no blank frame. */
-        if (q.phase === 'unsettle') {
-            const k = (now - q.tu) / WARP.settle, p = warpPose('settle', 1 - k);
-            if (q.back == null) q.back = 1.2 + 0.25 * (a && a.rig ? a.rig.dist : 2.6);
-            cam.position.addScaledVector(fwd, q.back * p.fwd); vf -= q.back * p.speed / (WARP.settle / 1000);
-            veilO = Math.max(veilO, p.veil);
-            if (st.region) st.region.group.scale.setScalar(p.scale);
-            if (k >= 1) {
-                /* under the full glow: the place goes, the bloodstream comes back, and the camera waits just outside the glowing
-                   spot it dived into, facing in, exactly where the fly-to left it before the dive */
-                enter('hub');
-                const r = a && a.rig;
-                if (r) {
-                    const ang = Math.atan2(q.B.x, q.B.z);
-                    r.fly = null; r.flyYaw = null; r.vy = 0; r.vp = 0; r.idle = 0;
-                    r.target.copy(q.B).multiplyScalar(0.92); r.dist = 2.6;
-                    r.yaw = ang + Math.round((r.yaw - ang) / (Math.PI * 2)) * Math.PI * 2;
-                    r.pitch = Math.max(-0.5, Math.min(0.5, r.pitch));
-                    /* the base's own glide home (resets the hue tint now, under the glow); it is held until the back-out ends */
-                    if (a.flyTo) { st.ownFly = true; try { a.flyTo(null); } finally { st.ownFly = false; } }
-                    q.fly = r.fly; r.fly = null;
-                }
-                q.phase = 'undive'; q.tp = now; q.reach = null; q.last = null; veil(1);
-                q.streaks.follow(cam); return;
-            }
-        } else if (q.phase === 'undive') {
-            /* first frame from the new spot: the clock for the back-out starts here, under the full glow (a slow frame never shows the jump) */
-            if (q.reach == null) { q.reach = Math.max(0.6, base.distanceTo(q.B) - 0.2); q.tp = now; }
-            const k = (now - q.tp) / WARP.dive, p = warpPose('dive', 1 - k);
-            cam.position.addScaledVector(fwd, q.reach * p.fwd); vf -= q.reach * p.speed / (WARP.dive / 1000);
-            veilO = Math.max(veilO, p.veil);
-            const ps = q.portal.sprite, kk = 1 - Math.min(1, k);
-            ps.visible = k < 1; ps.position.copy(q.B); ps.scale.setScalar(2.6 + 5 * kk * kk); ps.material.opacity = (0.35 + 0.6 * kk) * (1 - smooth(0.55, 1, k));
-            if (k >= 1) {
-                const r = a && a.rig;
-                if (r && q.fly) {
-                    q.fly.from = { t: r.target.clone(), d: r.dist }; q.fly.t = 0;
-                    if (q.wide && r.maxD) q.fly.to.d = r.maxD; /* World map: one pull back out to the whole world, Misty in the middle */
-                    r.fly = q.fly; r.flyYaw = null; q.p0 = r.pitch;
-                }
-                q.phase = 'glide'; q.t0 = now; q.saw = false;
-            }
-        }
-        if (q.outT != null) { const k = (now - q.outT) / WARP.out; veilO = Math.max(veilO, warpPose('out', k).veil); if (k >= 1) q.outT = null; }
         const flying = a && a.rig ? !!a.rig.fly : null;
         if (flying) q.saw = true;
         if (q.phase === 'glide') {
             const el = now - q.t0;
             const glideOver = flying === null ? el > WARP.glide + 80 : (q.saw ? !flying : el > 320);
-            if (q.rev && a && a.rig && a.rig.fly) {
-                const f = a.rig.fly, k = Math.min(1, f.t / f.dur), e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
-                if (q.wide && q.p0 != null) a.rig.pitch = q.p0 + (0.42 - q.p0) * e;
-                q.reveal = k > 0.68; /* Home's Misty fades back in over the last stretch, as her cell slides into place */
-            }
             if (el > 90 && glideOver) {
                 if (q.id === 'hub') { finish(); return; }
                 q.phase = 'dive'; q.tp = now; veil(0, q.css); warpEv('dive', q.id, q.from); q.reach = Math.max(0.6, base.distanceTo(q.B) - 0.2);
@@ -512,11 +496,6 @@
         const fov = q.fov0 + 16 * q.amt;
         if (Math.abs(cam.fov - fov) > 0.01) { cam.fov = fov; cam.updateProjectionMatrix(); }
         veil(veilO);
-        /* warp strength: the camera's rush, the glow, and a floor that keeps the colours up through the whole move; on the way
-           back out it eases down over the glide as Home's own colours take over */
-        let floor = 0.55;
-        if (q.phase === 'glide') { const g = Math.min(1, (now - q.t0) / WARP.glide); floor = q.rev ? 0.6 * (1 - g * g) : 0.3 + 0.3 * g; }
-        wx(Math.max(floor, q.amt, veilO * 0.9));
     }
     /* Oct 15: the fly-to's real phases go out as window 'lowi:world-warp' {phase:'start'|'dive'|'arrive'|'cancel', id, from} (world-audio.js plays its warp sounds on them) */
     function warpEv(phase, id, from) { try { W.dispatchEvent(new CustomEvent('lowi:world-warp', { detail: { phase, id, from: from || null } })); } catch (e) { } }
@@ -538,7 +517,7 @@
         try { q.streaks && q.streaks.dispose(); } catch (e) { }
         try { q.portal && q.portal.dispose(); } catch (e) { }
         if (st.region) st.region.group.scale.setScalar(1);
-        veil(0); warpOn(false);
+        veil(0); warpOn(false); snapDrop(false);
         if (st.host) st.host.classList.remove('bwr-warp');
     }
     /* leave the region you are in without announcing the bloodstream (going on to another place) */
@@ -590,25 +569,34 @@
         if (!a || a.state === 'fallback' || !a.open) { openJourney(id); return false; }
         if (!wo() || !host()) { if ((tries || 0) < 12) { a.open(); setTimeout(() => travel(id, false, (tries || 0) + 1, opts), 400); return true; } openJourney(id); return false; }
         hook(); ensureUi();
+        /* from one place straight to another: out first (the seamless cut below), then the fly-to into the next place */
+        if (id !== 'hub' && st.cur !== 'hub' && !reduced() && a.rig) { const ok = travel('hub', false, tries, opts); if (ok && st.busy) st.next = id; return ok; }
         const w = wo(), THREE = w.three, h = st.host;
         st.busy = true; st.target = id; st.next = null;
         const done = () => { st.busy = false; st.target = null; const n = st.next, no = st.nextOpts; st.next = null; st.nextOpts = null; if (n && n !== st.cur) travel(n, false, 0, no || undefined); };
-        /* back out of a place to the bloodstream: the reversed fly-to (see stepWarp) starts the base glide itself, later */
-        const rev = id === 'hub' && st.cur !== 'hub' && !fromBase && !reduced() && !!a.rig;
+        /* out of a place (World map, X, Back, the bloodstream, Misty through the cloud wall): the seamless cut (seamStep), every way out */
+        const rev = id === 'hub' && st.cur !== 'hub' && !reduced() && !!a.rig;
         if (!fromBase && !rev && a.flyTo) { st.ownFly = true; try { a.flyTo(id === 'hub' ? null : baseId(id)); } finally { st.ownFly = false; } }
         if (h) h.classList.remove('bw3-flash');
-        if (reduced()) { fadeSwap(id); enter(id); lungCard(); done(); return true; }
+        if (reduced()) { enter(id); lungCard(); done(); return true; }
         const R = byId(id), from = byId(st.cur), src = rev && from ? from : R, hue = src.hue != null ? src.hue : 0xe0475a;
-        const q = { id, phase: 'glide', t0: 0, saw: false, amt: 0, last: null, outT: null, hue, css: src.css, fov0: w.camera.fov, done, clock: 0 };
-        if (rev) { q.rev = true; q.wide = !!(opts && opts.wide); q.phase = 'unsettle'; q.tu = 0; veil(0, src.css); if (a.rig.fly) a.rig.fly = null; a.rig.vy = 0; a.rig.vp = 0; }
-        else if (st.cur !== 'hub') { veil(1, from.css); q.outT = 0; if (id === 'hub') enter('hub'); else leaveQuiet(); }
+        if (rev) {
+            const q = { id, phase: 'cut', seam: true, rev: true, wide: !!(opts && opts.wide), tu: 0, t0: 0, clock: 0, last: null, hue, css: src.css, fov0: w.camera.fov, done };
+            const bp = (a.regions || []).find(x => x.id === baseId(from.id));
+            q.B = bp && bp.pos ? bp.pos.clone() : new THREE.Vector3();
+            a.rig.fly = null; a.rig.flyYaw = null; a.rig.vy = 0; a.rig.vp = 0;
+            st.warp = q; warpOn(true);
+            warpEv('start', id, q.from = from ? from.id : st.cur);
+            return true;
+        }
+        const q = { id, phase: 'glide', t0: 0, saw: false, amt: 0, last: null, hue, css: src.css, fov0: w.camera.fov, done, clock: 0 };
         const bp = (a.regions || []).find(x => x.id === baseId(rev && from ? from.id : id));
         q.B = bp && bp.pos ? bp.pos.clone() : new THREE.Vector3();
         q.streaks = buildWarp(THREE, (st.tier || tier({ w: W.innerWidth, h: W.innerHeight, mem: navigator.deviceMemory })) === 'low' ? 70 : 130, hue);
         q.streaks.group.userData.bwr = true; w.scene.add(q.streaks.group); q.streaks.follow(w.camera);
         q.portal = portalFor(THREE, hue); w.scene.add(q.portal.sprite);
         if (h) h.classList.add('bwr-warp');
-        st.warp = q; warpOn(true, src.css);
+        st.warp = q; warpOn(true);
         warpEv('start', id, q.from = from ? from.id : st.cur);
         return true;
     }
@@ -635,7 +623,7 @@
         if (st.region) { st.region.dispose(); st.region = null; }
         setLook(null); setHubVisible(true);
         if (st.host) st.host.classList.remove('bwr-on', 'bwr-in', 'bwr-warp');
-        [st.veil, st.wx, st.label, st.mapBtn].forEach(e => { try { e && e.remove(); } catch (x) { } }); st.wx = null; warpOn(false);
+        [st.veil, st.label, st.mapBtn].forEach(e => { try { e && e.remove(); } catch (x) { } }); snapDrop(true); warpOn(false);
         st.cur = 'hub'; st.busy = false; st.target = null; st.next = null; st.mapBtn = null; st.label = null; st.veil = null; st.host = null;
         const m = D.getElementById('bwrMap'); if (m) m.remove();
     }

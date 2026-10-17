@@ -91,3 +91,11 @@ test('a secret: no button and no tour step for it', () => {
     const html = read('index.html');
     assert.ok(!/id="[^"]*galaxy[^"]*btn/i.test(html));
 });
+
+test("What's New only hints at it, in English, German and Spanish", () => {
+    const n = JSON.parse(read('version.json')).news;
+    assert.match(n.text.en, /Some edges give way if you push long enough\./);
+    assert.match(n.text.de, /Manche Ränder geben nach/);
+    assert.match(n.text.es, /Algunos bordes ceden/);
+    assert.ok(!/galaxy|Galaxie|galaxia/i.test(n.text.en.split('\n')[0]));
+});

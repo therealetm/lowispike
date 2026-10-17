@@ -430,7 +430,7 @@
         /* adventure tiers: her timed trip flies the autopilot tour, gated by level (misty-explore.js); autopilot (three taps) takes
            over while it is on, and when the trip ends she flies home */
         const trip = !!ctx.A.away && !ADV();
-        if (S.trip && !trip && !ADV() && S.st !== 'idle' && PD.mode === 'auto') { padMode(ctx, 'home'); note('trip over'); }
+        if (S.trip && !trip && !ADV() && S.st !== 'idle' && (PD.mode === 'auto' || !PD.mode)) { padMode(ctx, 'home'); note('trip over'); } /* timer ran out, or called back (sun-meter.js flyHome clears the pad) */
         if (S.trip !== trip && EXP()) EXP().reset(S);
         S.trip = trip;
         if (S.st === 'idle' && trip && !PD.mode && !ctx.inRegion && !ctx.awayHome && !regionsBusy()) padMode(ctx, 'auto');

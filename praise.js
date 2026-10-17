@@ -29,7 +29,18 @@
         if (seen && seen[type]) return false;
         return !(ledger || []).some(e => e && e !== entry && +e.amt > 0 && classify(e) === type);
     }
-    const core = { POOL, FIRST, TYPES, SHOW_MS, pick, isFirst };
+    /* the speech bubble's spot next to Misty (a: {x, top, bottom}): above her unless that covers the Daily Quest or leaves the
+       screen; kept on screen sideways, the tail (px from the bubble's left) always points back at her */
+    function place(a, b, quest, view, gap) {
+        gap = gap || 14;
+        const m = 10, l = Math.max(m, Math.min(view.w - m - b.w, a.x - b.w / 2));
+        const upT = a.top - gap - b.h, downT = a.bottom + gap;
+        const hits = t => !!quest && t < quest.bottom && t + b.h > quest.top && l < quest.right && l + b.w > quest.left;
+        let up = upT >= (view.top || 8) && !hits(upT);
+        if (!up && (hits(downT) || downT + b.h > view.h - 8) && upT >= (view.top || 8)) up = true; /* below is worse: stay above */
+        return { l, t: up ? upT : downT, up, tail: Math.max(18, Math.min(b.w - 18, a.x - l)) };
+    }
+    const core = { POOL, FIRST, TYPES, SHOW_MS, pick, isFirst, place };
     if (!D) {
         if (typeof module !== 'undefined' && module.exports) module.exports = core;
         return;
@@ -38,6 +49,21 @@
     let lastIdx = -1;
     try { lastIdx = +localStorage.getItem('lowi.praise.last'); if (!Number.isFinite(lastIdx)) lastIdx = -1; } catch (e) {}
     let el = null, timer = 0;
+    function visRect(q) {
+        const r = q && q.getBoundingClientRect();
+        if (!r || r.height < 4 || r.width < 4 || r.bottom <= 0 || r.top >= W.innerHeight) return null;
+        const cs = getComputedStyle(q); if (cs.visibility === 'hidden' || cs.display === 'none') return null;
+        if (q.checkVisibility && !q.checkVisibility({ opacityProperty: true })) return null;
+        return r;
+    }
+    function safeTop() { try { return parseFloat(getComputedStyle(D.documentElement).getPropertyValue('--sat')) || 0; } catch (e) { return 0; } }
+    /* where Misty is on screen: flying inside a world, else her bubble on Today; null when she is not visible */
+    function mistyAt(vw, vh) {
+        try { const MF = W.LowiMistyFlight, m = MF && MF.screen ? MF.screen() : null; if (m && m.x > 0 && m.x < vw && m.y > 0 && m.y < vh) return { x: m.x, top: m.y - 40, bottom: m.y + 40 }; } catch (e) { }
+        const b = D.getElementById('spBubble'), r = visRect(b && (b.querySelector('.tmg-plant') || b));
+        return r ? { x: r.left + r.width / 2, top: r.top, bottom: r.bottom } : null;
+    }
+    show.mistyAt = mistyAt;
     function show(text, tag) {
         if (!el || !el.isConnected) {
             el = D.createElement('div');
@@ -50,12 +76,22 @@
         el.innerHTML = '<i class="lp-dot" aria-hidden="true"></i><span class="lp-tx"></span>' + (tag ? '<b class="lp-tag"></b>' : '');
         el.querySelector('.lp-tx').textContent = text;
         if (tag) el.querySelector('.lp-tag').textContent = tag;
-        /* cell-guide (Oct 17, E-man): the toast never sits on the Daily Quest; when the quest is showing it drops just below it */
-        el.style.top = '';
+        /* cell-guide (Oct 17, E-man: "that bubble is not even a speech bubble that comes out of her ... covering the Daily Quest"):
+           it is Misty talking, so it is a speech bubble coming out of Misty: above her (below when that would cover the Daily Quest
+           or leave the screen), with a tail pointing at her. Only when she is nowhere on screen does it fall back to top centre,
+           and even then never on the Daily Quest. */
+        el.style.top = ''; el.style.left = ''; el.classList.remove('lp-said', 'lp-up', 'lp-down');
         try {
-            const q = D.getElementById('f3Board'), r = q && q.getBoundingClientRect();
-            if (r && r.height > 4 && r.bottom > 0 && getComputedStyle(q).visibility !== 'hidden' && (!q.checkVisibility || q.checkVisibility({ opacityProperty: true }))) {
-                const t = el.getBoundingClientRect(); if (t.bottom > r.top && t.top < r.bottom) el.style.top = Math.round(r.bottom + 8) + 'px';
+            const vw = W.innerWidth, vh = W.innerHeight, quest = visRect(D.getElementById('f3Board'));
+            const a = mistyAt(vw, vh);
+            if (a) {
+                el.classList.add('lp-said');
+                const w = el.offsetWidth, h = el.offsetHeight, gap = 14;
+                const p = place(a, { w, h }, quest, { w: vw, h: vh, top: 8 + safeTop() }, gap);
+                el.style.left = Math.round(p.l) + 'px'; el.style.top = Math.round(p.t) + 'px';
+                el.style.setProperty('--tail', Math.round(p.tail) + 'px'); el.classList.add(p.up ? 'lp-up' : 'lp-down');
+            } else if (quest) {
+                const t = el.getBoundingClientRect(); if (t.bottom > quest.top && t.top < quest.bottom) el.style.top = Math.round(quest.bottom + 8) + 'px';
             }
         } catch (e) { }
         el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');

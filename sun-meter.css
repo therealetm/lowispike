@@ -106,6 +106,17 @@
 .lp-dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: #9fe3d8; box-shadow: 0 0 8px #9fe3d8; }
 .lp-tx { min-width: 0; }
 .lp-tag { flex: none; padding: 3px 8px; border-radius: 99px; background: linear-gradient(90deg, #ff9f5a, #ffcf6b); color: #1a1206; font-size: 11px; font-weight: 800; letter-spacing: .02em; white-space: nowrap; }
+/* cell-guide (Oct 17): Misty's line is a speech bubble coming out of her (praise.js places it above / below her, --tail = where
+   she is along its edge); it grows out of the tail instead of dropping from the top */
+.lp-praise.lp-said { border-radius: 18px; --tail: 50%; transform: scale(.85); }
+.lp-praise.lp-said.lp-up { transform-origin: var(--tail) calc(100% + 8px); }
+.lp-praise.lp-said.lp-down { transform-origin: var(--tail) -8px; }
+.lp-praise.lp-said.on { transform: none; }
+.lp-praise.lp-said::after { content: ''; position: absolute; left: calc(var(--tail) - 7px); width: 14px; height: 14px; transform: rotate(45deg);
+    border: 1.5px solid var(--wh-glass-rim, rgba(160,220,255,.55)); pointer-events: none; }
+.lp-praise.lp-up::after { bottom: -8px; background: rgba(18, 50, 124, .86); border-top: 0; border-left: 0; border-radius: 0 0 4px 0; }
+.lp-praise.lp-down::after { top: -8px; background: rgba(60, 140, 240, .5); border-bottom: 0; border-right: 0; border-radius: 4px 0 0 0; }
+html[data-ui=light] .lp-praise.lp-said::after { background: rgba(255, 255, 255, .95); border-color: rgba(40, 110, 120, .25); }
 html[data-ui=light] .lp-praise { background: rgba(255, 255, 255, .95); color: #10131f; border-color: rgba(40, 110, 120, .25); }
 html[data-ui=light] .ls-sun { color: #10131f; }
 
@@ -113,6 +124,7 @@ html[data-ui=light] .ls-sun { color: #10131f; }
     .ls-sun, .ls-fill, .ls-ico line, #spHome[data-sun-away] #spBubble .sp-home-herb { transition: none !important; } #spBubble > .ls-back { animation: none; }
     .ls-sun.ls-bump .ls-ico, #spBubble .ls-away-ico, .ls-big .ls-ico { animation: none !important; }
     .lp-praise { transform: translate(-50%, 0) !important; transition: opacity .15s linear; }
+    .lp-praise.lp-said { transform: none !important; }
 }
 /* cell-guide (Oct 17, E-man: the top toast "isn't the same visual language"): the same blue liquid glass as Misty's and the
    guide's bubbles instead of the dark pill. Light mode keeps its own rule above (more specific). */

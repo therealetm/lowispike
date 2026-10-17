@@ -101,12 +101,13 @@
        Pure placement: pal = {x, y} centre on screen; b = {w, h} bubble size; obs = [{l, t, r, b, w}] rects to keep clear (w = weight);
        view = {w, h, top, bottom} usable area; prev = the last spot (kept unless another is clearly better).
        Spots: above/below the guide, extending right or left of it, slid sideways to stay on screen. */
-    const SPOTS = ['ar', 'al', 'br', 'bl', 'sr', 'sl'];
+    const SPOTS = ['ar', 'al', 'br', 'bl', 'sr', 'sl', 'srt', 'slt', 'srb', 'slb'];
     function overlap(a, o) { const w = Math.min(a.r, o.r) - Math.max(a.l, o.l), h = Math.min(a.b, o.b) - Math.max(a.t, o.t); return w > 0 && h > 0 ? w * h : 0; }
     function spotRect(s, pal, b, view, gap) {
         gap = gap || { up: 44, down: 40, side: 26, beside: 40 };
         let l, t;
-        if (s[0] === 's') { l = s[1] === 'r' ? pal.x + gap.beside : pal.x - gap.beside - b.w; t = pal.y - b.h / 2; }
+        /* beside: centred on the guide, or level with its top / bottom edge (t / b) so short screens have more spots */
+        if (s[0] === 's') { l = s[1] === 'r' ? pal.x + gap.beside : pal.x - gap.beside - b.w; t = s[2] === 't' ? pal.y - 22 : s[2] === 'b' ? pal.y + 22 - b.h : pal.y - b.h / 2; }
         else { l = s[1] === 'r' ? pal.x - gap.side : pal.x + gap.side - b.w; t = s[0] === 'a' ? pal.y - gap.up - b.h : pal.y + gap.down; }
         const m = 10, lo = m, hi = view.w - m - b.w; const shift = hi < lo ? lo - l : Math.min(hi, Math.max(lo, l)) - l; l += shift;
         /* tail: where the guide is, along the bubble's edge (x for above/below, y for beside), kept off the round corners */
@@ -123,7 +124,7 @@
             score += out * Math.max(b.w, b.h) * 4;
             /* a sideways bubble that had to slide back over its own guide no longer comes out of it */
             if (s[0] === 's' && Math.abs(q.shift) > 8) score += Math.abs(q.shift) * b.h * 2;
-            if (s[0] === 'b') score += 120; else if (s[0] === 's') score += 220; /* above reads most naturally */
+            if (s[0] === 'b') score += 120; else if (s[0] === 's') score += s[2] ? 260 : 220; /* above reads most naturally */
             if (s[0] !== 's' && s[1] !== (pal.x > view.w * 0.55 ? 'l' : 'r')) score += 60; /* opens towards the roomier side */
             q.score = score; return q;
         });

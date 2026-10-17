@@ -119,7 +119,7 @@
             if (st.el && st.el.contains(e)) return;
             const q = e.getBoundingClientRect(); if (q.width < 4 || q.height < 4 || q.bottom < 0 || q.top > vh || q.right < 0 || q.left > vw) return;
             if (!visible(e)) return;
-            out.push({ l: q.left - 6, t: q.top - 6, r: q.right + 6, b: q.bottom + 6, w: e.id === 'f3Board' ? 3 : 2, k: e.id || '' });
+            out.push({ l: q.left - 6, t: q.top - 6, r: q.right + 6, b: q.bottom + 6, w: e.id === 'f3Board' ? 5 : 2, k: e.id || '' });
         });
         st.obs = out; st.obsT = now; return out;
     }
@@ -138,9 +138,9 @@
         const view = { w: W.innerWidth, h: W.innerHeight, top: 6, bottom: 6 };
         const r = C.place(pal, st.size, obs, view, force ? null : st.spot);
         if (!r) return;
-        if (r.spot !== st.spot) { el.classList.remove('rp-s-' + st.spot); st.spot = r.spot; }
+        if (r.spot !== st.spot) { el.classList.remove('rp-s-' + st.spot.slice(0, 2)); st.spot = r.spot; }
         el.classList.add('rp-placed');
-        el.classList.add('rp-s-' + r.spot);
+        el.classList.add('rp-s-' + r.spot.slice(0, 2));
         b.style.left = Math.round(r.l - pal.x) + 'px'; b.style.top = Math.round(r.t - pal.y) + 'px';
         b.style.setProperty('--tail', Math.round(r.tail) + 'px'); /* the tail always points back at the guide that is talking */
         st.bx = r.l - pal.x; st.btail = r.tail; st.bvert = r.spot[0] !== 's';

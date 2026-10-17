@@ -84,9 +84,27 @@ test('a real speech bubble: the tail always points back at the guide that is tal
     const r = C.place({ x: 200, y: 300 }, b, [quest, misty], view, null);
     assert.ok(/st\.cur && st\.size \? st\.size\.h \+ 12/.test(read('region-pals.js')), 'keeps room for its bubble under the quest');
     assert.strictEqual(C.overlap(r, quest) + C.overlap(r, misty), 0, JSON.stringify(r));
+    /* short landscape phone: the Daily Quest still stays clear */
+    const lq = { l: 200, t: 61, r: 640, b: 133, w: 5 }, lm = { l: 348, t: 210, r: 440, b: 302, w: 4 };
+    const lr = C.place({ x: 284, y: 217 }, { w: 300, h: 72 }, [lq, lm], { w: 844, h: 390, top: 6, bottom: 6 }, null);
+    assert.strictEqual(C.overlap(lr, lq) + C.overlap(lr, lm), 0, JSON.stringify(lr));
     const css = read('region-pals.css');
     assert.ok(/\.rp-say::before \{[^}]*left: calc\(var\(--tail\) - 7px\)/.test(css) && /\.rp-s-sl \.rp-say::before/.test(css));
     assert.ok(/setProperty\('--tail'/.test(read('region-pals.js')));
+});
+
+test('Misty\'s own line is a speech bubble coming out of her, never on the Daily Quest', () => {
+    const P = require('../praise.js'), v = { w: 390, h: 844, top: 8 }, b = { w: 230, h: 40 };
+    const quest = { left: 60, top: 55, right: 330, bottom: 139 };
+    const low = P.place({ x: 195, top: 420, bottom: 520 }, b, quest, v);
+    assert.ok(low.up && low.t + b.h <= 420 && Math.abs(low.l + low.tail - 195) < 1);
+    const high = P.place({ x: 195, top: 150, bottom: 250 }, b, quest, v);
+    assert.ok(!high.up && high.t >= 250, 'drops below her instead of covering the quest');
+    const edge = P.place({ x: 30, top: 150, bottom: 250 }, b, null, v);
+    assert.ok(edge.l >= 10 && edge.tail >= 18 && edge.tail <= b.w - 18);
+    const css = read('sun-meter.css'), js = read('praise.js');
+    assert.ok(/\.lp-praise\.lp-up::after/.test(css) && /\.lp-praise\.lp-said \{ transform: none !important; \}/.test(css));
+    assert.ok(/getElementById\('spBubble'\)/.test(js) && /LowiMistyFlight/.test(js));
 });
 
 test('timing: readable, never forever; a more important line can cut in sooner', () => {
@@ -107,7 +125,7 @@ test('wiring: hunt lines go to the guide first; the toast is only the fallback, 
     assert.ok(/#f3Board/.test(pals) && /\[data-guide-avoid\]/.test(pals) && /#tabbar/.test(pals) && /#whPad/.test(pals));
     assert.ok(/now - st\.obsT < 600/.test(pals) && /now - st\.placeT < 160/.test(pals), 'layout reads cached / throttled');
     assert.ok(/if \(world && C\.pid\(world\) !== st\.id\) return false;/.test(pals), 'no stale line from another world');
-    assert.ok(/getElementById\('f3Board'\)/.test(praise) && /r\.bottom \+ 8/.test(praise));
+    assert.ok(/getElementById\('f3Board'\)/.test(praise) && /quest\.bottom \+ 8/.test(praise));
     assert.ok(/\.rp-say \{[^}]*top: -120px; bottom: auto;/.test(css) && /\.rp-s-bl \.rp-say/.test(css) && /-webkit-line-clamp: 6/.test(css));
     assert.ok(/\.lp-praise \{ background: radial-gradient[^}]*linear-gradient\(160deg, rgba\(60,140,240,\.42\), rgba\(14,40,104,\.82\)\)/.test(sm), 'toast in the same blue glass');
     assert.ok(/const orb = \(g, rgb, rim\)/.test(hunt), 'crumbs drawn as glass bubbles');

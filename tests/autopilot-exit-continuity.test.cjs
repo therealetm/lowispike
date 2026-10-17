@@ -58,7 +58,7 @@ test('clean view (DOM): the reveal tap knows it is inside a world, and flying ou
     /* the world's hiding is gone before the observer runs, and a layout read in between sees the menus as shown: the hide
        right after must snap, or they fade out from fully visible (a half-second flash of Home's whole interface) */
     assert.match(s, /H\.classList\.add\('lw-clean-snap'\); feed\(\{ type: 'world-left' \}\);/);
-    assert.match(s, /requestAnimationFrame\(\(\) => requestAnimationFrame\(\(\) => H\.classList\.remove\('lw-clean-snap'\)\)\)/);
+    assert.match(s, /setTimeout\(\(\) => H\.classList\.remove\('lw-clean-snap'\), 200\);/);
     assert.match(s, /snapSel \+ ' \{ transition: none !important; \}/);
     assert.match(s, /'html\.lw-clean\.lw-clean-snap ' \+ s/);
     /* world-home.js is the one that sets html.wh-away while Misty is inside a place */

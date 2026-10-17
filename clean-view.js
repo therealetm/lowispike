@@ -128,7 +128,7 @@
     function worldLeft() {
         if (!(st.worldTap && !st.clean)) { feed({ type: 'world-left' }); return; }
         H.classList.add('lw-clean-snap'); feed({ type: 'world-left' });
-        requestAnimationFrame(() => requestAnimationFrame(() => H.classList.remove('lw-clean-snap')));
+        setTimeout(() => H.classList.remove('lw-clean-snap'), 200);   /* one painted frame is enough; no frame loop here */
     }
     function reveal() { feed({ type: 'tap', inWorld: H.classList.contains('wh-away') }); }
     /* Oct 17 (E-man: "in the spirit world, tapping the screen brings all the panels back", unwanted): out in the spirit world

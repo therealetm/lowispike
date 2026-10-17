@@ -7,8 +7,55 @@
    when her energy is low). Touch it again: you steer again. Let go and leave her: after 20 s she floats back into her cell. Tapping her empty cell calls her home too.
    On the controller: the ring around it is Misty's energy (same energy as her face and her trips), the centre shows the mode.
    The 3D flight itself lives in world-home.js (LowiWorldHome.pad). Loads misty-pad.css itself. */
+/* Oct 17 (E-man): out in the world the controller stays put on the screen, it never moves with Misty. Its spot is a screen point
+   (the middle of the controller, its bottom edge), measured above Today only while Misty rests at home. As soon as she is out
+   (you steer, autopilot, inside a world, out in the galaxy) that point is held, whatever the camera, the zoom, Misty or the
+   faded bubbles do; only a new screen size (turning the phone, iPad split view) measures it again, once. Pure rules below,
+   tested in tests/misty-pad-anchor.test.cjs. */
+(function (root) {
+    'use strict';
+    const MARGIN = 8, SETTLE_MS = 700, FLY_CLS = ['wh-padfly', 'mf-on', 'mf-in', 'mf-galaxy'];
+    const num = v => (typeof v === 'number' && isFinite(v) ? v : NaN);
+    const A = {
+        MARGIN, SETTLE_MS, FLY_CLS,
+        /* one spot per screen size (a phone turned on its side is another screen) */
+        key: (vw, vh) => Math.round(+vw || 0) + 'x' + Math.round(+vh || 0),
+        /* Misty is out: a controller mode, or the page says she flies / is inside a world / out in the galaxy */
+        flying(mode, has) { if (mode) return true; if (typeof has !== 'function') return false; for (let i = 0; i < FLY_CLS.length; i++) if (has(FLY_CLS[i])) return true; return false; },
+        /* the resting spot, centred above Today: today = { cx, top } in screen px */
+        measure(today, gap) { if (!today || !(num(today.cx) >= 0) || !isFinite(num(today.top))) return null; return { x: today.cx, y: today.top - (+gap || 0) }; },
+        /* no Today to measure: the middle of the HUD, as high as the stylesheet puts it above the thumb row */
+        fallback(hud, tb) { const l = num(hud && hud.left), r = num(hud && hud.right), b = num(hud && hud.bottom); if (!isFinite(l) || !isFinite(r) || !isFinite(b) || r <= l) return null; return { x: (l + r) / 2, y: b - (Math.max(0, +tb || 0) + 76) }; },
+        /* always whole and touchable on the screen */
+        clamp(p, vw, vh, size) {
+            if (!p) return null; const z = +size || 60, w = +vw || 0, v = +vh || 0;
+            let x = p.x, y = p.y;
+            if (w > z + 2 * MARGIN) x = Math.min(w - MARGIN - z / 2, Math.max(MARGIN + z / 2, x));
+            if (v > 2 * z + 2 * MARGIN) y = Math.min(v - MARGIN, Math.max(MARGIN + 2 * z, y)); /* room for the pad and its chip */
+            return { x: Math.round(x), y: Math.round(y) };
+        },
+        /* which spot to use now. saved = { key, x, y } | null; i = { vw, vh, size, flying, settling, today: { cx, top } | null, gap, hud, tb }
+           returns { x, y, key, held } and the caller keeps it as the new saved spot */
+        pick(saved, i) {
+            i = i || {}; const key = A.key(i.vw, i.vh), same = !!(saved && saved.key === key);
+            if (i.flying && same && !i.settling) return { x: saved.x, y: saved.y, key, held: true };
+            const m = A.measure(i.today, i.gap);
+            let p = m;
+            if (!p && same) return { x: saved.x, y: saved.y, key, held: true };
+            if (!p) p = A.fallback(i.hud, i.tb);
+            if (!p) return saved ? { x: saved.x, y: saved.y, key: saved.key, held: true } : null;
+            const c = A.clamp(p, i.vw, i.vh, i.size);
+            return { x: c.x, y: c.y, key, held: false };
+        },
+        /* the screen point, written as left / bottom inside the HUD box (the HUD fills the screen; if it ever shifts, the point stays) */
+        css(p, hud) { if (!p || !hud) return null; return { left: Math.round(p.x - (+hud.left || 0)), bottom: Math.round((+hud.bottom || 0) - p.y) }; }
+    };
+    if (typeof module === 'object' && module.exports) module.exports = A;
+    if (root) root.LowiPadAnchor = A;
+})(typeof window !== 'undefined' ? window : null);
 (function () {
     'use strict';
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
     const W = window, D = document, H = D.documentElement;
     if (W.LowiPad) return;
     const lang = () => { try { return ((W.LowiLang && W.LowiLang.get && W.LowiLang.get()) || H.lang || 'de').slice(0, 2); } catch (e) { return 'de'; } };
@@ -191,16 +238,26 @@
     ['pointerdown', 'click'].forEach(n => D.addEventListener(n, callHome, true));
     W.addEventListener('lowi:pad', e => { const m = e.detail ? e.detail.mode : null; if (m != null && m !== st.mode) { st.mode = m; paint(); if (!m) chip(''); } });
 
-    /* placement: centred above Today, clear of Sound, VR, World map, Kometa's gift, fasting and water */
+    /* placement: centred above Today, clear of Sound, VR, World map, Kometa's gift, fasting and water.
+       Oct 17 (E-man): that spot is measured only while Misty rests at home; while she is out it is a fixed screen point
+       (LowiPadAnchor above), so the controller never wanders with her, the camera, the zoom or the faded bubbles. */
+    const PA = W.LowiPadAnchor;
+    let spot = null, resizeT = -1e9;
     function place() {
-        const b = st.el, hud = D.getElementById('whHud'); if (!b || !hud) return;
-        const today = hud.querySelector('.wh-todaybtn'); if (!today) return;
-        const tr = today.getBoundingClientRect(), hr = hud.getBoundingClientRect(); if (!tr.width || !hr.height) return;
+        const b = st.el, hud = D.getElementById('whHud'); if (!b || !hud || !PA) return;
+        const hr = hud.getBoundingClientRect(); if (!hr.height || !hr.width) return;
+        const today = hud.querySelector('.wh-todaybtn'), tr = today ? today.getBoundingClientRect() : null;
         const size = b.offsetWidth || 60, gap = innerHeight < 700 ? 10 : 14;
-        const bottom = Math.round(hr.bottom - tr.top + gap), left = Math.round(tr.left + tr.width / 2 - hr.left);
+        const fly = PA.flying(st.mode, c => H.classList.contains(c));
+        const tb = parseFloat(H.style.getPropertyValue('--wh-tb')) || 0;
+        const p = PA.pick(spot, { vw: innerWidth, vh: innerHeight, size, flying: fly, settling: performance.now() - resizeT < PA.SETTLE_MS,
+            today: tr && tr.width ? { cx: tr.left + tr.width / 2, top: tr.top } : null, gap, hud: { left: hr.left, right: hr.right, bottom: hr.bottom }, tb });
+        if (!p) return;
+        spot = p; b.dataset.anchor = p.held ? 'held' : 'home';
+        const c = PA.css(p, hr), bottom = c.bottom, left = c.left;
         if (b.style.bottom !== bottom + 'px') b.style.bottom = bottom + 'px';
         if (b.style.left !== left + 'px') b.style.left = left + 'px';
-        if (st.chip) { st.chip.style.bottom = (bottom + size + 8) + 'px'; st.chip.style.left = left + 'px'; }
+        if (st.chip) { const cb = (bottom + size + 8) + 'px', cl = left + 'px'; if (st.chip.style.bottom !== cb) st.chip.style.bottom = cb; if (st.chip.style.left !== cl) st.chip.style.left = cl; }
     }
     function tick() {
         const hud = D.getElementById('whHud');
@@ -216,7 +273,10 @@
         }
     }
     setInterval(tick, 500);
-    W.addEventListener('resize', () => setTimeout(place, 60));
+    /* a new screen size (turning the phone, iPad split view) measures the spot again, once it has settled */
+    const resized = () => { resizeT = performance.now(); setTimeout(place, 60); setTimeout(place, PA ? PA.SETTLE_MS - 100 : 600); };
+    W.addEventListener('resize', resized);
+    W.addEventListener('orientationchange', resized);
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', tick); else tick();
     /* Oct 17 energy shot (misty-turn.js): a short word on the controller when it fires, heals a world or is still charging */
     let shotSaid = 0;

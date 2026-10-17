@@ -143,9 +143,11 @@
             pick = best || [cands[0][0], Math.max(cands[0][1], board ? board.bottom + 10 + r : 0)];
         }
         const nx = Math.round(pick[0] - hr.left), ny = Math.round(pick[1] - hr.top);
-        /* a fixed spot: the neighbours' own few-pixel wobble never nudges it, only a real change of layout does */
+        /* a fixed spot: the neighbours' own few-pixel wobble never nudges it, only a real change of layout does.
+           13 px = one step of the landscape search above (12 px rings), so a wobble can't flip it between two
+           neighbouring rings either (it hopped 12 px when steering started on an iPhone held sideways). */
         const ox = parseFloat(b.style.getPropertyValue('--wm-x')), oy = parseFloat(b.style.getPropertyValue('--wm-y'));
-        if (isFinite(ox) && isFinite(oy) && Math.abs(nx - ox) < 9 && Math.abs(ny - oy) < 9) return;
+        if (isFinite(ox) && isFinite(oy) && Math.abs(nx - ox) < 13 && Math.abs(ny - oy) < 13) return;
         b.style.setProperty('--wm-x', nx + 'px');
         b.style.setProperty('--wm-y', ny + 'px');
     }

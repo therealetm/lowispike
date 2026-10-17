@@ -184,7 +184,8 @@ test('movement bubble stays anchored to her HOME cell while the camera follows h
     assert.ok(/mr = homeRect\(mi\)/.test(src), 'place() measures the home cell, not the drifting one');
     assert.ok(/classList\.contains\('lw-clean'\)\) return/.test(src), 'no re-placing while the UI is faded');
     assert.ok(/lowi:clean-view/.test(src));
-    assert.ok(/Math\.abs\(nx - ox\) < 9 && Math\.abs\(ny - oy\) < 9\) return/.test(src), 'no few-pixel hops from the neighbours\' wobble');
+    /* 13 px = one 12 px ring of the landscape search, so a wobble can't flip it between two neighbouring rings */
+    assert.ok(/Math\.abs\(nx - ox\) < 13 && Math\.abs\(ny - oy\) < 13\) return/.test(src), 'no few-pixel hops from the neighbours\' wobble');
     /* the same correction keeps VR from hopping sides when the camera roams */
     assert.ok(/el\.id === 'spBubble' && H\.classList\.contains\('mf-roam'\)/.test(read('world-home.js')));
     /* the cell really is slid by these two variables */

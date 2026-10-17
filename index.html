@@ -17685,13 +17685,13 @@ if (window.LowiF3) return;
 const OPEN = "lowi.f3.open", QXP = 10, BONUS = 50, WATER = 2, FASTH = 12, MOVEMIN = 10;
 const W = {
   en: {tag:"Daily quest", sub:"Clear all 6 today for a +{b} XP bonus.", next:"Next", all:"All quests", less:"Hide quests", clear:"Quest complete", clearSub:"All 6 done. +{b} XP bonus is yours. See you tomorrow.", left:"{n} left",
-    checkin:"Check in", checkinS:"How do you feel? One tap.", water:"Drink {n} glasses of water", waterS:"Tap once per glass.", fast:"Fast {n} hours", fastS:"Counted from your last meal.", eat:"Log what you ate", eatS:"Photo, barcode or a few words.", move:"Move {n} minutes", moveS:"A walk counts. Any pace.", post:"Share one post", postS:"Show the Tribe your day.",
+    checkin:"Check in", checkinS:"How do you feel? One tap.", water:"Drink {n} glasses of water", waterS:"Tap once per glass.", fast:"Fast {n} hours", fastS:"Counted from your last meal.", eat:"Log what you ate", eatS:"Photo, barcode or a few words.", eatB:"Same as your Meals bubble: one meal counts for both.", move:"Move {n} minutes", moveS:"A walk counts. Any pace.", post:"Share one post", postS:"Show the Tribe your day.",
     goCheckin:"Check in", goWater:"+1 glass", goFast:"See my fast", goEat:"Log a meal", goMove:"Start moving", goPost:"Post", done:"Done", xp:"Daily quest", xpAll:"Daily quest complete", claim:"Claim", reset:"New in {t}"},
   de: {tag:"Tägliche Quest", sub:"Schaff heute alle 6 für +{b} XP Bonus.", next:"Als Nächstes", all:"Alle Quests", less:"Quests ausblenden", clear:"Quest erfüllt", clearSub:"Alle 6 geschafft. +{b} XP Bonus gehören dir. Bis morgen.", left:"noch {n}",
-    checkin:"Einchecken", checkinS:"Wie fühlst du dich? Ein Tipp.", water:"Trink {n} Gläser Wasser", waterS:"Tipp einmal pro Glas.", fast:"{n} Stunden fasten", fastS:"Gezählt ab deiner letzten Mahlzeit.", eat:"Trag ein, was du gegessen hast", eatS:"Foto, Barcode oder ein paar Worte.", move:"{n} Minuten bewegen", moveS:"Ein Spaziergang zählt. Jedes Tempo.", post:"Teile einen Post", postS:"Zeig dem Tribe deinen Tag.",
+    checkin:"Einchecken", checkinS:"Wie fühlst du dich? Ein Tipp.", water:"Trink {n} Gläser Wasser", waterS:"Tipp einmal pro Glas.", fast:"{n} Stunden fasten", fastS:"Gezählt ab deiner letzten Mahlzeit.", eat:"Trag ein, was du gegessen hast", eatS:"Foto, Barcode oder ein paar Worte.", eatB:"Dasselbe wie deine Essen-Blase: eine Mahlzeit zählt für beide.", move:"{n} Minuten bewegen", moveS:"Ein Spaziergang zählt. Jedes Tempo.", post:"Teile einen Post", postS:"Zeig dem Tribe deinen Tag.",
     goCheckin:"Einchecken", goWater:"+1 Glas", goFast:"Mein Fasten", goEat:"Mahlzeit eintragen", goMove:"Los bewegen", goPost:"Posten", done:"Erledigt", xp:"Tägliche Quest", xpAll:"Tägliche Quest erfüllt", claim:"Abholen", reset:"Neu in {t}"},
   es: {tag:"Misión diaria", sub:"Completa las 6 hoy y gana +{b} XP extra.", next:"Siguiente", all:"Todas las misiones", less:"Ocultar misiones", clear:"Misión completa", clearSub:"Las 6 hechas. +{b} XP extra para ti. Hasta mañana.", left:"faltan {n}",
-    checkin:"Registrarte", checkinS:"¿Cómo te sientes? Un toque.", water:"Bebe {n} vasos de agua", waterS:"Toca una vez por vaso.", fast:"Ayuna {n} horas", fastS:"Desde tu última comida.", eat:"Registra lo que comiste", eatS:"Foto, código de barras o unas palabras.", move:"Muévete {n} minutos", moveS:"Caminar cuenta. A cualquier ritmo.", post:"Comparte una publicación", postS:"Enseña tu día a la Tribu.",
+    checkin:"Registrarte", checkinS:"¿Cómo te sientes? Un toque.", water:"Bebe {n} vasos de agua", waterS:"Toca una vez por vaso.", fast:"Ayuna {n} horas", fastS:"Desde tu última comida.", eat:"Registra lo que comiste", eatS:"Foto, código de barras o unas palabras.", eatB:"Igual que tu burbuja de Comidas: una comida cuenta para las dos.", move:"Muévete {n} minutos", moveS:"Caminar cuenta. A cualquier ritmo.", post:"Comparte una publicación", postS:"Enseña tu día a la Tribu.",
     goCheckin:"Registrarme", goWater:"+1 vaso", goFast:"Ver mi ayuno", goEat:"Registrar comida", goMove:"A moverse", goPost:"Publicar", done:"Hecho", xp:"Misión diaria", xpAll:"Misión diaria completa", claim:"Reclamar", reset:"Nuevas en {t}"}
 };
 const lang = () => { let l = "en"; try { l = (window.LowiLang && LowiLang.get && LowiLang.get()) || localStorage.getItem("lowispike.lang") || "en"; } catch(e){} l = String(l).slice(0, 2); return W[l] ? l : "en"; };
@@ -17717,10 +17717,16 @@ function state(){ const t = dk(), c = core(), q = (c.quests && c.quests.day === 
     {id:"checkin", t:w("checkin"), s:w("checkinS"), go:w("goCheckin"), done:st.last === t || !!q.checkin},
     {id:"water", t:w("water", {n:WATER}), s:w("waterS"), go:w("goWater"), done:glasses >= WATER, p:[Math.min(glasses, WATER), WATER]},
     {id:"fast", t:w("fast", {n:FASTH}), s:w("fastS"), go:w("goFast"), done:fh >= FASTH, p:[Math.min(Math.floor(fh), FASTH), FASTH, "h"]},
-    {id:"eat", t:w("eat"), s:w("eatS"), go:w("goEat"), done:!!q.eat || logs.some(l => l && l.day === t)},
+    {id:"eat", t:w("eat"), s:w(mealsBub() ? "eatB" : "eatS"), go:w("goEat"), done:!!q.eat || logs.some(l => l && l.day === t)},
     {id:"move", t:w("move", {n:MOVEMIN}), s:w("moveS"), go:w("goMove"), done:mmin >= MOVEMIN || !!q.walk || !!q.walk20 || (sg > 0 && steps >= sg), p:[Math.min(mmin, MOVEMIN), MOVEMIN, "min"]},
     {id:"post", t:w("post"), s:w("postS"), go:w("goPost"), done:posted}];
   return L; }
+
+/* Oct 17 (E-man: Daily Quest and Meals both asked to log a meal): while the Meals bubble sits on Home it owns meals.
+   The meal quest still counts (same log, nothing counts twice) but is never the glowing "Next" while another quest is open,
+   and its button opens the Meals bubble's own sheet, so there is one way to log a meal, not two. */
+function mealsBub(){ try { const b = document.querySelector("#whHud .wh-meals"); if (!b || !b.isConnected || !document.documentElement.classList.contains("wh-home")) return null; const r = b.getBoundingClientRect(); return r.width > 4 && r.height > 4 ? b : null; } catch(e){ return null; } }
+function next(L){ L = L || state(); const open = L.filter(q => !q.done); if (open.length > 1 && mealsBub()) return open.find(q => q.id !== "eat") || open[0]; return open[0]; }
 
 /* ---------- XP: +10 per quest, +50 for all six, each once a day ---------- */
 const PAID = "lowi.f3.paid";
@@ -17744,7 +17750,7 @@ function resetIn(now){ now = now || new Date(); const m = new Date(now.getFullYe
 /* ---------- the board ---------- */
 const isOpen = () => { try { return localStorage.getItem(OPEN) === "1"; } catch(e){ return false; } };
 function prog(q){ return q.p ? '<span class="f3-pr num">' + q.p[0] + "/" + q.p[1] + (q.p[2] ? " " + q.p[2] : "") + "</span>" : ""; }
-function html(){ const L = state(), n = L.filter(q => q.done).length, cur = L.find(q => !q.done), o = isOpen();
+function html(){ const L = state(), n = L.filter(q => q.done).length, cur = next(L), o = isOpen();
   const cx = claimXP(L), cl = claimable(L);
   let h = '<div class="f3-hd"><span class="f3-tag">' + esc(w("tag")) + '</span><span class="f3-cnt num">' + n + "/" + L.length + '</span><span class="f3-reset num" title="' + esc(w("reset", {t:resetIn()})) + '">' + esc(w("reset", {t:resetIn()})) + "</span></div>" +
     '<div class="f3-bar" aria-hidden="true">' + L.map(q => '<i class="' + (q.done ? "on" : cur && q.id === cur.id ? "cur" : "") + '"></i>').join("") + "</div>";
@@ -17776,7 +17782,8 @@ function go(id){ sfx("tap");
     if (btn) btn.click(); else { const f = js("lowi_fast_v1"), t = dk(); f.water = f.water || {}; const n = (f.water[t] || 0) + 1; f.water = {}; f.water[t] = n; try { localStorage.setItem("lowi_fast_v1", JSON.stringify(f)); } catch(e){} try { window.LowiFast && LowiFast.refresh(); } catch(e){} }
     sfx("drop"); }
   else if (id === "fast") flash(document.getElementById("fsCard") || document.querySelector("#tab-home .r3a-mt"));
-  else if (id === "eat") { if (window.LowiF2 && LowiF2.start) LowiF2.start({}); else if (typeof goTab === "function") goTab("scan"); }
+  else if (id === "eat") { if (mealsBub() && window.LowiMealsBubble && LowiMealsBubble.log) LowiMealsBubble.log();
+    else if (window.LowiF2 && LowiF2.start) LowiF2.start({}); else if (typeof goTab === "function") goTab("scan"); }
   else if (id === "move") { if (typeof goTab === "function") goTab("move"); }
   else if (id === "post") { if (window.LowiR3F && LowiR3F.postSheet) { if (typeof goTab === "function") goTab("foryou"); setTimeout(() => LowiR3F.postSheet(), 260); } else if (window.TRIBE && TRIBE.compose) TRIBE.compose(); }
   setTimeout(paint, 450); }
@@ -17792,7 +17799,7 @@ function watch(){ const h = document.getElementById("tab-home"); if (h) mo.obser
 function init(){ paint(); watch(); setInterval(() => { const h = document.getElementById("tab-home"); if (h && !document.hidden) run(); }, 5000);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) run(); }); }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else setTimeout(init, 0);
-window.LowiF3 = {paint, state, go, w, claim, claimable:() => claimable(state()), claimXP:() => claimXP(state()), resetIn};
+window.LowiF3 = {paint, state, next, go, w, claim, claimable:() => claimable(state()), claimXP:() => claimXP(state()), resetIn};
 })();
 </script>
 <style id="f3bcss">
@@ -17832,7 +17839,7 @@ const w = k => W[lang()][k] || W.en[k];
 const isOpen = () => { try { return localStorage.getItem(KEY) === "1"; } catch(e){ return false; } };
 const sfx = n => { try { window.LowiSFX && LowiSFX.play(n); } catch(e){} };
 
-function lead(){ try { if (!window.LowiF3 || !LowiF3.state) return ""; const L = LowiF3.state(), cur = L.find(q => !q.done);
+function lead(){ try { if (!window.LowiF3 || !LowiF3.state) return ""; const L = LowiF3.state(), cur = LowiF3.next ? LowiF3.next(L) : L.find(q => !q.done);
   return cur ? w("lead").split("{q}").join(cur.t) : w("leadDone"); } catch(e){ return ""; } }
 
 function tidy(){ const home = document.getElementById("tab-home"); if (!home) return;
@@ -19271,7 +19278,7 @@ function fastInfo(now){ const f = js("lowi_fast_v1"); const last = +f.last || 0;
 /* one nudge for this moment, or null. Each kind at most once a day. */
 function pick(now, opts){ now = now || new Date(); opts = opts || {}; const L = quests(); if (!L.length) return null;
   const lg = log(now), seen = id => lg.ids.indexOf(id) >= 0 && !opts.any;
-  const open = L.filter(q => !q.done), hr = now.getHours(), nx = open[0];
+  const open = L.filter(q => !q.done), hr = now.getHours(), nx = (window.LowiF3 && LowiF3.next && LowiF3.next(L)) || open[0];
   const mk = (id, text, go, q) => ({id, text, go, q});
   if (!open.length) return seen("clear") ? null : mk("clear", w("clear"), null);
   const fi = fastInfo(now); const fq = L.find(q => q.id === "fast");

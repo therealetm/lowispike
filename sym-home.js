@@ -26,7 +26,9 @@
             return { n, text: n + '/' + CORE.GOAL, fill: Math.min(1, n / CORE.GOAL), full: n >= CORE.GOAL };
         },
         /* the mirror of a point across Misty's vertical centre line */
-        mirrorX(x, cx) { return 2 * cx - x; }
+        mirrorX(x, cx) { return 2 * cx - x; },
+        /* the spot only moves for a real layout change (rotation, Move found a new spot), not for 1-3 px of drift */
+        moved(ox, oy, x, y) { return !(ox >= 0 && oy >= 0) || Math.abs(x - ox) > 3 || Math.abs(y - oy) > 3; }
     };
     if (typeof module !== 'undefined' && module.exports) module.exports = CORE;
     if (!root || !root.document) return;
@@ -38,7 +40,7 @@
     const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const state = () => { try { return W.LowiVitalsBridge && W.LowiVitalsBridge.state(); } catch (e) { return null; } };
     const label = () => T('Meals', 'Essen', 'Comidas');
-    let el = null, living = false;
+    let el = null, living = false, longAt = 0, downAt = 0;   /* a long press, however long it is held, never also opens Log a meal */
 
     function ensure() {
         const hud = D.getElementById('whHud'); if (!hud) return null;
@@ -58,7 +60,7 @@
     }
     function attachLiving(b) {
         if (living || !b) return;
-        try { if (W.LowiLivingBubble && typeof W.LowiLivingBubble.attach === 'function') { W.LowiLivingBubble.attach(b, { kind: 'meals', onLong: () => { details(); return true; } }); living = true; } } catch (e) {}
+        try { if (W.LowiLivingBubble && typeof W.LowiLivingBubble.attach === 'function') { W.LowiLivingBubble.attach(b, { kind: 'meals', onLong: () => { longAt = performance.now(); details(); return true; } }); living = true; } } catch (e) {}
     }
     function paint() {
         const b = ensure(); if (!b) return;
@@ -100,9 +102,12 @@
         const cs = getComputedStyle(mv), mx = parseFloat(cs.left), my = parseFloat(cs.top);
         if (!(mx > 0) || !(my > 0)) return;
         const cx = mr.left + mr.width / 2 - hr.left;
-        const X = Math.round(CORE.mirrorX(mx, cx)) + 'px', Y = Math.round(my) + 'px';
-        if (b.style.getPropertyValue('--wme-x') !== X) b.style.setProperty('--wme-x', X);
-        if (b.style.getPropertyValue('--wme-y') !== Y) b.style.setProperty('--wme-y', Y);
+        /* Oct 17 (E-man: "Meals moves on its own"): a few px of drift (Misty breathing, a rounding step) never moves the spot. */
+        const X = Math.round(CORE.mirrorX(mx, cx)), Y = Math.round(my);
+        const ox = parseFloat(b.style.getPropertyValue('--wme-x')), oy = parseFloat(b.style.getPropertyValue('--wme-y'));
+        if (!CORE.moved(ox, oy, X, Y)) return;
+        b.style.setProperty('--wme-x', X + 'px');
+        b.style.setProperty('--wme-y', Y + 'px');
     }
     /* Day/Night above Sound, exactly as VR sits above World map: centred on Sound, the same gap (sym-home.css is the fallback) */
     let dnSet = false;
@@ -143,7 +148,12 @@
         });
     }
     function wire(b) {
-        b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); logMeal(); });
+        b.addEventListener('pointerdown', () => { downAt = performance.now(); });
+        b.addEventListener('click', e => {
+            e.preventDefault(); e.stopPropagation();
+            if (longAt && longAt >= downAt) { longAt = 0; return; }   /* the release after a long press: today's list stays open alone */
+            logMeal();
+        });
         b.addEventListener('contextmenu', e => e.preventDefault());
         b.addEventListener('keydown', e => { if (e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10')) { e.preventDefault(); details(); } });
     }

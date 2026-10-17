@@ -5,6 +5,8 @@
 const http = require('http'), fs = require('fs'), path = require('path');
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? (process.argv[i + 1] && !process.argv[i + 1].startsWith('--') ? process.argv[i + 1] : true) : d; };
 const ROOT = path.resolve(arg('root', path.join(__dirname, '..')));
+const REGION = arg('region', ''); /* no trip: open this place (LowiWorld3D.flyTo) and let her join by herself */
+const RECALL = +arg('recall-in', 0); /* seconds inside a world, then tap the timer (LowiSun.recall) */
 const PRE = !!arg('preload', false), XP = +arg('xp', 900);
 const ENGINE = arg('engine', 'chromium'), SECS = +arg('secs', 40), ADV = !!arg('adv', false), SHOT = arg('shot', '');
 const pw = require(process.env.PW || '/tmp/pw/node_modules/playwright');
@@ -29,7 +31,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
         await page.waitForFunction(() => typeof window.goTab === 'function' && window.LowiMistyFlight && window.LowiWorldHome, null, { timeout: 60000 });
     }
     await sleep(6000);
-    const start = PRE ? { pre: true } : await page.evaluate(adv => {
+    const start = REGION ? await page.evaluate(id => { const ok = LowiWorldRegions.travel(id); return { region: id, travel: String(ok) }; }, REGION) : PRE ? { pre: true } : await page.evaluate(adv => {
         const out = { vp: [innerWidth, innerHeight] };
         try { const dm = document.querySelector('#spBubble .tmg-plant'); if (dm) { const q = dm.getBoundingClientRect(); out.domMisty = [Math.round(q.width), Math.round(q.height)]; } } catch (e) { }
         if (window.__pre) { out.pre = true; return out; }
@@ -43,7 +45,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     }, ADV);
     if (PRE) start.preAway = await page.evaluate(() => !!(window.LowiSun && LowiSun.live && LowiSun.live().away));
     console.log('start', JSON.stringify(start));
-    const rows = [];
+    const rows = []; let inN = 0, recalled = false;
     for (let i = 0; i < SECS * 2; i++) {
         await sleep(500);
         const s = await page.evaluate(() => {
@@ -54,6 +56,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
             return { st: st.st, px: st.px, ks: st.ks, h: sp ? Math.round(sp.h) : null, wandPx: wpx, vis: !!(A.wand && A.wand.visible), op: A.wand ? +A.wand.material.opacity.toFixed(2) : 0, mode: pd.mode, away: A.away, dist: r ? +(+r.dist).toFixed(1) : null, ex: ex ? ex.ph : null, autoX: st.autoX, orb: st.orb, gx: st.gx, near: st.near, nearD: st.nearD, ap: st.ap, rd: window.LowiWorld3D && LowiWorld3D.rig ? null : null };
         });
         rows.push(s);
+        if (RECALL && !recalled) { inN = s.st === 'inside' ? inN + 1 : 0; if (inN >= RECALL * 2) { recalled = true; console.log('RECALL', JSON.stringify(await page.evaluate(region => { if (region) { LowiMistyFlight.recall(); return { flightRecall: true }; } const r = LowiSun.recall({ force: true }); return { ok: r && r.ok, why: r && r.why }; }, REGION))); } }
         if (i % 2 === 0 || i < 12) console.log(((i + 1) / 2).toFixed(1).padStart(5) + 's', JSON.stringify(s));
         if (SHOT && (i === 5 || i === 20)) await page.screenshot({ path: SHOT + '-' + i + '.png' });
     }

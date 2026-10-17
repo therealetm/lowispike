@@ -347,6 +347,35 @@ export function createWorld(THREE, canvas, opts) {
         ptPush(nodesA, cx, cy, cz, r * 1.1, colA.clone().multiplyScalar(0.35), rnd());
         ptPush(nodesA, cx + r * 0.12, cy + r * 0.05, cz, r * 0.38, colB.clone().lerp(SPK.white, 0.25), rnd());
     }
+    /* LIMITLESS, new space: move the fixed glass worlds onto the made-up worlds nearest the camera (misty-galaxy.js deepNear, a few
+       times a second), and fade each by its distance (in from GEN.SEE) and by how deep out the camera is (genK) */
+    function deepStep(C, camL, dt, tt, calm) {
+        const GC = typeof window !== 'undefined' && window.LowiMistyGalaxy && window.LowiMistyGalaxy.core;
+        const gen = GC && GC.genK ? GC.genK(camL) : 0, slots = C.deepSlots;
+        C.deep.visible = gen > 0.002;
+        if (!C.deep.visible) { if (C.deepT !== 0) { C.deepT = 0; slots.forEach(gi => { gi.userData.key = -1; gi.visible = false; }); } return; }
+        const cp = camera.position, SEE = GC.GEN.SEE;
+        C.deepT -= dt;
+        if (C.deepT <= 0) {
+            C.deepT = 0.15;
+            const want = GC.deepNear(cp.x, cp.y, cp.z, slots.length);
+            slots.forEach(gi => { const k = gi.userData.key; if (k >= 0 && !want.some(w => w.key === k)) { gi.userData.key = -1; gi.visible = false; } });
+            want.forEach(w => {
+                if (slots.some(gi => gi.userData.key === w.key)) return;
+                const gi = slots.find(s => s.userData.key < 0); if (!gi) return;
+                const u = gi.userData; u.key = w.key; u.r = w.r; u.p = w.p; gi.position.set(w.x, w.y, w.z); gi.rotation.set(0, w.p, 0); gi.visible = true;
+            });
+        }
+        slots.forEach(gi => {
+            const u = gi.userData; if (u.key < 0) return;
+            const d = gi.position.distanceTo(cp) - u.r, o = gen * (1 - smoothC(SEE - 170, SEE, d)) * 0.8 * calm;
+            gi.scale.setScalar(u.r * (1 + 0.02 * Math.sin(tt * 0.6 + u.p)));
+            u.m.material.uniforms.uO.value = o; u.m.material.uniforms.uT.value = tt + u.p;
+            u.c.material.uniforms.uSz.value = u.r; u.nd.material.uniforms.uSz.value = u.r;
+            u.c.material.uniforms.uO.value = o * 0.9; u.nd.material.uniforms.uO.value = o * 0.9; u.w.material.opacity = o * 0.5;
+            u.c.material.uniforms.uT.value = tt; u.nd.material.uniforms.uT.value = tt;
+        });
+    }
     function buildCosmos() {
         const g = new THREE.Group(); g.visible = false; g.name = 'cosmos';
         const rnd = (() => { let sd = 4242; return () => (sd = (sd * 16807) % 2147483647) / 2147483647; })();
@@ -467,7 +496,25 @@ export function createWorld(THREE, canvas, opts) {
             return gi;
         });
         scene.add(near);
-        return { g, mine, mineGlow, others, cells, nodes, web, threads, beads, sparkPts, sparks, paths, motes, stars, farCells, haze, freq, near, giants, S, tissue: new THREE.Color('#050f2a'), tmp: new THREE.Color() };
+        /* LIMITLESS, new space (Oct 17): a fixed handful of glass worlds, built once, that misty-galaxy.js deepNear() places on the
+           worlds made up from the coordinates of the space around the camera (out past the hand-made galaxy). As she flies on, the
+           ones left behind are moved ahead to the next new worlds; each fades in from GEN.SEE, so new space keeps appearing and the
+           app never holds more than these. In the world's own frame (not the slowly turning cosmos), not solid: Misty flies into them. */
+        const deep = new THREE.Group(); deep.visible = false; deep.name = 'cosmos-deep';
+        const drnd = (() => { let sd = 9173; return () => (sd = (sd * 16807) % 2147483647) / 2147483647; })();
+        const deepSlots = [];
+        for (let i = 0; i < (small ? 8 : 12); i++) {
+            const colA = SPK[RIMS[(i * 3 + 2) % RIMS.length]], colB = SPK[ACC[(i * 2 + 3) % ACC.length]], gi = new THREE.Group(); gi.visible = false;
+            const m = new THREE.Mesh(sphereLo, membraneMat(colA.clone().multiplyScalar(0.6), colA, colB)); gi.add(m);
+            const cA = ptsBuf(), nA = ptsBuf(), wV = [], wC = [];
+            fillCell(drnd, cA, nA, wV, wC, 0, 0, 0, 1, colA, colB, small ? 14 : 22, small ? 14 : 20);
+            const c = ptsObj(cA, cellTex, true, 5000, 6000, 0), nd = ptsObj(nA, glowTex, false, 5000, 6000, 0.35), w = webObj(wV, wC);
+            gi.add(c); gi.add(nd); gi.add(w); deep.add(gi);
+            gi.userData = { m, c, nd, w, key: -1, r: 1, p: i * 2.3 };
+            deepSlots.push(gi);
+        }
+        scene.add(deep);
+        return { deep, deepSlots, deepT: 0, g, mine, mineGlow, others, cells, nodes, web, threads, beads, sparkPts, sparks, paths, motes, stars, farCells, haze, freq, near, giants, S, tissue: new THREE.Color('#050f2a'), tmp: new THREE.Color() };
     }
     /* 0 inside the World Map, 1 out in the spirit world; the walls and the fog give way as the camera leaves our bubble */
     function cosmosStep(t, dt) {
@@ -487,6 +534,7 @@ export function createWorld(THREE, canvas, opts) {
             shafts.visible = walls < 0.9;
         }
         C.near.visible = C.g.visible && nearK > 0.01;
+        if (!C.g.visible) C.deep.visible = false; /* limitless: the made-up worlds go with the cosmos */
         if (!C.g.visible) { return; }
         /* on the Community page the real members are the focus: the realm steps back a little behind them */
         const calm = document.documentElement.classList.contains('cg-spirit-on') ? 0.82 : 1, still = !!(reduceMq && reduceMq.matches), tt = still ? 0 : t;
@@ -500,6 +548,7 @@ export function createWorld(THREE, canvas, opts) {
         const dv = deep > 0.002, farW = far * deep, memW = mem * deep;
         if (C.deepOn !== dv) { C.deepOn = dv; [C.mine, C.mineGlow, C.cells, C.nodes, C.web, C.threads, C.beads, C.sparkPts, C.motes].concat(C.others, C.haze).forEach(o => { o.visible = dv; }); }
         skyTmp.copy(camera.position).applyAxisAngle(skyUp, -C.g.rotation.y).multiplyScalar(skyW); C.stars.position.copy(skyTmp); C.farCells.position.copy(skyTmp);
+        deepStep(C, camL, dt, tt, calm);
         C.mine.material.uniforms.uO.value = memW * 0.9; C.mine.material.uniforms.uT.value = tt;
         C.mineGlow.material.opacity = memW * 0.22;
         C.others.forEach((o, i) => { const u = o.userData; o.scale.setScalar(u.r * (1 + 0.02 * Math.sin(tt * 0.6 + u.p))); o.material.uniforms.uO.value = farW * 0.8 * calm; o.material.uniforms.uT.value = tt + i; });

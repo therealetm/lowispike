@@ -37,7 +37,7 @@ test('the loop: past LOOP she comes out the same distance away on the far side, 
 });
 
 test('flying straight on forever: comes round again and again, never farther than LOOP from home, unbounded flight stays bounded', () => {
-    const r = fly(50, 20, 600);
+    const r = fly(50, 20, 1200);
     assert.ok(r.loops >= 3, 'came round ' + r.loops + ' times');
     assert.ok(r.maxAbs <= GAL.LOOP + 1, 'max ' + r.maxAbs);
 });
@@ -88,4 +88,48 @@ test('looping pays nothing and builds nothing', () => {
     assert.ok(!/\bxp\b|award|reward|crumb|LowiMistyHunt|addXp/i.test(stepSrc.replace(/\/\*[\s\S]*?\*\//g, '')), 'no rewards in the galaxy flight');
     const gx = src.slice(src.indexOf('if (S.gx) {'), src.indexOf('/* pushing on the edge */')).replace(/\/\*[\s\S]*?\*\//g, '');
     assert.ok(gx.length > 100 && !/\bnew\b|\.clone\(/.test(gx), 'no allocations per frame out there');
+});
+
+test('new space is made up as she flies: same place, same world; nothing stored; only a handful near the camera', () => {
+    const GEN = G.GEN, a = {}, b = {};
+    let found = 0;
+    for (let i = -12; i <= 12; i++) for (let k = -12; k <= 12; k++) {
+        const ha = G.deepWorld(i, 1, k, a), hb = G.deepWorld(i, 1, k, b);
+        assert.strictEqual(ha, hb);
+        if (!ha) continue;
+        found++;
+        assert.deepStrictEqual(a, b, 'deterministic');
+        const L = Math.hypot(a.x, a.y, a.z);
+        assert.ok(L >= GEN.MIN && L <= GEN.MAX, 'only out past the hand-made galaxy and away from the loop point: ' + L);
+        assert.ok(a.r >= GEN.R0 && a.r <= GEN.R1);
+        assert.ok(a.x >= i * GEN.CELL && a.x <= (i + 1) * GEN.CELL, 'inside its own cube');
+    }
+    assert.ok(found > 40, 'plenty of new worlds out there (' + found + ')');
+    /* along a long flight the nearest few are always available and never more than the scene's glass worlds */
+    let seen = new Set(), most = 0;
+    for (let x = 1100; x < 2500; x += 20) {
+        const near = G.deepNear(x, 30, -0.4 * x, 12);
+        most = Math.max(most, near.length);
+        near.forEach((w, i) => { seen.add(w.key); assert.ok(w.d <= GEN.SEE + 60); if (i) assert.ok(w.d >= near[i - 1].d, 'nearest first'); });
+    }
+    assert.ok(most <= 12 && most >= 3, 'a handful at a time: ' + most);
+    assert.ok(seen.size > 25, 'new worlds keep coming as she flies on: ' + seen.size);
+    assert.strictEqual(G.deepNear(0, 0, 0, 12).length, 0, 'none at home');
+});
+
+test('new space fades in and out with the camera: none at home, none at the loop point', () => {
+    assert.strictEqual(G.genK(0), 0); assert.strictEqual(G.genK(300), 0);
+    assert.strictEqual(G.genK(G.GEN.MIN), 1); assert.strictEqual(G.genK(2000), 1);
+    assert.strictEqual(G.genK(G.GAL.LOOP - G.GAL.D_MAX * 1.3), 0, 'nothing new in view when she comes round');
+    assert.ok(G.GEN.MAX + G.GEN.SEE < G.GAL.LOOP + 100 || G.genK(G.GEN.MAX) === 1);
+    const sc = read('body-world-3d-scene.js');
+    assert.match(sc, /function deepStep\(C, camL, dt, tt, calm\)/);
+    assert.match(sc, /for \(let i = 0; i < \(small \? 8 : 12\); i\+\+\)/, 'a fixed handful of glass worlds, built once');
+    assert.match(sc, /GC\.deepNear\(cp\.x, cp\.y, cp\.z, slots\.length\)/);
+    assert.match(sc, /1 - smoothC\(SEE - 170, SEE, d\)/, 'each fades in from GEN.SEE');
+    /* built once in buildCosmos, never inside deepStep */
+    const ds = sc.slice(sc.indexOf('function deepStep('), sc.indexOf('function buildCosmos('));
+    assert.ok(!/new THREE\./.test(ds), 'nothing is built while she flies');
+    /* not solid: the galaxy's bump only knows the hand-made worlds */
+    assert.ok(!/deepSlots|deepNear/.test(read('misty-galaxy.js').slice(read('misty-galaxy.js').indexOf('function bump('), read('misty-galaxy.js').indexOf('function bump(') + 1500)));
 });

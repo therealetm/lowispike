@@ -14,15 +14,15 @@
    Autopilot, a recall or 20 s without steering also bring her home the same way.
 
    LIMITLESS (Oct 17, E-man, handoff item 11: "a limitless spirit world, no invisible walls; getting Home always possible"): there is
-   no outer edge any more. The galaxy is a loop: fly on in any direction and the worlds thin out into the deep starry dark between
+   no outer edge any more. The galaxy is a loop: fly on in any direction and the hand-made worlds give way to new space, made up as she flies (GEN, below), and then to the deep starry dark between
    galaxies (body-world-3d-scene.js fades the whole cosmos out by the camera's distance, COSMOS.DEEP0..DEEP1, and the stars and
    the far cells ride along with the camera there, like the sky); out in that dark, at GAL.LOOP from home, she and the camera are
    carried over to the same distance on the far side, both by the same vector in one frame, with nothing in view on either side, so
    nothing jumps. Keep flying and your own galaxy rises ahead of you again: you came round. Nothing new is ever built while she flies
-   (the same ~40 worlds and points, no streaming allocations), so memory and battery stay flat however long she roams, and looping
+   (the same ~40 worlds, plus a fixed handful of glass worlds re-used for the new space, see GEN below), so memory and battery stay flat however long she roams, and looping
    pays nothing (the galaxy gives no XP, no crumbs, no rewards of any kind). Home is never more than GAL.LOOP away in a straight
    line, and on the way home (20 s without steering, a recall) she flies faster the farther out she is (homeK), so the longest
-   way home is about 20 seconds.
+   way home is about half a minute.
 
    Cheap: one extra mesh (the edge skin), only drawn while you push or while it rings out; out in the galaxy the per-frame work is
    a few vector ops plus a loop over ~40 spheres. Reduced motion: no breakout (Home has no 3D world then anyway).
@@ -47,7 +47,7 @@
         /* LIMITLESS: R is no longer a wall, only where the camera has backed all the way out; LOOP: where the deep dark carries her
            round to the far side; DEEP0 / DEEP1: the camera distances over which the cosmos fades into the deep (kept in step with
            body-world-3d-scene.js COSMOS.DEEP0 / DEEP1, tested); HOME_MAX: how much faster the long way home is at the far end */
-        LOOP: 1300, DEEP0: 1000, DEEP1: 1130, HOME_MAX: 4 };
+        LOOP: 3000, DEEP0: 1000, DEEP1: 1130, HOME_MAX: 10, HOME_RAMP: 900 };
     const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
     function smooth(e0, e1, x) { const t = clamp((x - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t); }
     /* pushing on the edge: s = { t, miss, fired }; i = { dt, mode, mag, out (cos stick vs outward), edge (L / reach), busy } */
@@ -79,12 +79,55 @@
     const loopK = L => { L = +L || 0; return L > GAL.LOOP ? (L - 2 * GAL.LOOP) / L : 1; };
     /* how much of the cosmos shows for the camera's distance from home: 1 among the worlds, 0 in the deep dark where the loop is */
     const deepK = camL => 1 - smooth(GAL.DEEP0, GAL.DEEP1, +camL || 0);
-    /* the long way home: faster the farther out she is (1 near home, HOME_MAX at the far end of the loop) */
-    const homeK = L => 1 + (GAL.HOME_MAX - 1) * smooth(GAL.R, GAL.LOOP, +L || 0);
+    /* the long way home: faster the farther out she is (1 near home, HOME_MAX from HOME_RAMP past the galaxy's camera edge on) */
+    const homeK = L => 1 + (GAL.HOME_MAX - 1) * smooth(GAL.R, GAL.R + GAL.HOME_RAMP, +L || 0);
     /* the galaxy's places: today only your own world; other ecosystems are FUTURE (see the header) */
     const PLACES = [{ id: 'home', kind: 'home', pos: [0, 0, 0], r: GAL.OPEN, open: true }];
     const places = () => PLACES.map(p => Object.assign({}, p, { pos: p.pos.slice() }));
-    const core = { GAL, breakHold, tentOf, camDist, speedK, ringOut, places, smooth, loopK, deepK, homeK };
+    /* LIMITLESS, new space (Oct 17, E-man: "the game will generate a new space instead of having the whole world there, so the app
+       isn't bloated and doesn't take more memory, and it stays in this illusion of expansion"): past the hand-made galaxy, space is
+       split into invisible cubes of GEN.CELL; whether a cube holds a world, where in it, how big, is worked out from the cube's
+       coordinates alone (hash3), so the same place always holds the same world when you come back, nothing is stored, and only the
+       few worlds near the camera are drawn (body-world-3d-scene.js reuses a fixed handful of glass worlds for them). They are not solid:
+       Misty can fly right into any of them. GEN.MIN: no new worlds inside the hand-made galaxy; GEN.MAX: none near the loop point, so
+       nothing is in view when she comes round; GEN.SEE: how far away a new world starts to show (it fades in from there). */
+    const GEN = { CELL: 260, P: 0.5, MIN: 1000, MAX: GAL.LOOP - 450, SEE: 430, R0: 10, R1: 42 };
+    const hash3 = (i, j, k, s) => {
+        let h = Math.imul(i | 0, 0x27d4eb2d) ^ Math.imul(j | 0, 0x165667b1) ^ Math.imul(k | 0, 0x1b873593) ^ Math.imul((s | 0) + 0x9e37, 0x2c1b3c6d);
+        h = Math.imul(h ^ (h >>> 15), 0x85ebca6b); h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35); h ^= h >>> 16;
+        return (h >>> 0) / 4294967296;
+    };
+    /* the world in cube (i, j, k), written into out, or false when the cube is empty */
+    function deepWorld(i, j, k, out) {
+        if (hash3(i, j, k, 1) > GEN.P) return false;
+        const c = GEN.CELL, x = (i + 0.2 + 0.6 * hash3(i, j, k, 2)) * c, y = (j + 0.2 + 0.6 * hash3(i, j, k, 3)) * c, z = (k + 0.2 + 0.6 * hash3(i, j, k, 4)) * c;
+        const L = Math.hypot(x, y, z);
+        if (L < GEN.MIN || L > GEN.MAX) return false;
+        out.key = ((i + 512) * 1024 + (j + 512)) * 1024 + (k + 512); out.x = x; out.y = y; out.z = z;
+        out.r = GEN.R0 + (GEN.R1 - GEN.R0) * Math.pow(hash3(i, j, k, 5), 1.6); out.p = hash3(i, j, k, 6) * 6.283;
+        return true;
+    }
+    /* the worlds near a point, nearest first, at most n (no more than the scene has glass worlds for); reuses its own scratch */
+    const genScratch = Array.from({ length: 125 }, () => ({ key: 0, x: 0, y: 0, z: 0, r: 0, p: 0, d: 0 }));
+    const genOut = [];
+    function deepNear(px, py, pz, n) {
+        const c = GEN.CELL, ci = Math.floor(px / c), cj = Math.floor(py / c), ck = Math.floor(pz / c);
+        let m = 0; genOut.length = 0;
+        for (let i = ci - 2; i <= ci + 2; i++) for (let j = cj - 2; j <= cj + 2; j++) for (let k = ck - 2; k <= ck + 2; k++) {
+            const w = genScratch[m];
+            if (!deepWorld(i, j, k, w)) continue;
+            w.d = Math.hypot(w.x - px, w.y - py, w.z - pz) - w.r;
+            if (w.d > GEN.SEE + 60) continue;
+            genOut.push(w); m++;
+        }
+        genOut.sort((a, b) => a.d - b.d);
+        if (genOut.length > n) genOut.length = n;
+        return genOut;
+    }
+    /* how much of the new space shows for the camera's distance from home: none near home, all of it out in the deep, none again
+       near the loop point (so nothing is in view when she comes round) */
+    const genK = camL => { camL = +camL || 0; return smooth(GEN.MIN - 300, GEN.MIN - 100, camL) * (1 - smooth(GAL.LOOP - 350, GAL.LOOP - 200, camL)); };
+    const core = { GAL, GEN, breakHold, tentOf, camDist, speedK, ringOut, places, smooth, loopK, deepK, homeK, hash3, deepWorld, deepNear, genK };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!D || !D.addEventListener || W.LowiMistyGalaxy) return;
 

@@ -5926,7 +5926,7 @@ const CLASSIC_IMG = {"apfelschorle":"data:image/webp;base64,UklGRkQHAABXRUJQVlA4
 /* UI helpers, Home, check-in, glow */
 let toastT;
 function toast(msg, ms){ const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), ms || 2200); }
-function sheet(html){ $("#sheet").innerHTML = '<div class="grab"></div>' + html; $("#sheetwrap").classList.add("open"); }
+function sheet(html){ $("#sheet").innerHTML = '<div class="grab"></div>' + html; try{ window.LowiBloom && LowiBloom.prep($("#sheet")); }catch(e){} $("#sheetwrap").classList.add("open"); }
 function closeSheet(){ $("#sheetwrap").classList.remove("open"); }
 const ICO = {x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
   cam:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M4 8h3l2-2.5h6L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.6"/></svg>',
@@ -20040,6 +20040,7 @@ window.LowiCommunityHost = {
 <link rel="stylesheet" id="scrCss" href="scan-screens.css?v=20261017-142557">
 <link rel="stylesheet" id="mpopCss" href="misty-pop.css?v=20261017-142557">
 <link rel="stylesheet" id="mpnCss" href="misty-panels.css?v=20261017-142557">
+<script src="misty-bloom.js?v=20261017-142557"></script>
 <link rel="stylesheet" id="gnCss" href="glass-nav.css?v=20261017-142557">
 <link rel="stylesheet" id="cshCss" href="cook-shop.css?v=20261017-142557">
 <link rel="stylesheet" id="symCss" href="sym-home.css?v=20261017-142557">

@@ -1,135 +1,262 @@
-/* misty-panels.css - Oct 17, 2026 (E-man's list, item 5: "style Fasting, Meals, Today and Weather like the Move panel, main
-   actions reachable by the right thumb, one-handed and uncluttered").
+/* misty-panels.css - Oct 17, 2026, second take (Eman, with five screenshots: "ich möchte alles in dem Stil von Move").
 
-   The Move panel (move-bubble.js, long press on the movement bubble) is the model:
-   - the sheet: the app's sheet colour at 86 % over the world, blur 22 px, a 28 px radius and one hairline rim
-     (world-home.css glassSheet + apple-ui.css), white ink;
-   - a short title (18 px, bold) and one calm note line (13 px, 85 %);
-   - every card, row and tile is one Misty row: 14 px radius, a faint blue fill and her cyan rim (move-bubble.css .wm-row);
-   - every button is at least 44 px tall and round-ended; the one main action is the app's blue pill.
-   Right thumb: the Weather panel's Refresh and Close move from the top right corner down to the bottom right, next to the
-   thumb. Fasting's End fast, Meals' Log a meal and Today's next step were already full width or on the right.
+   What he means is what appears when you TAP Move on Home (move-bubble.js / move-bubble.css): the choices bloom out of the
+   bubble he touched as round Misty-membrane orbs (cyan rim, violet inner glow, a white highlight top-left, a mint fill),
+   over a light veil that keeps the world visible, popping in one after another, and they fold back into the bubble on close.
+   Meals, Fasting, Weather and Body sound instead slid up from the bottom edge like a wardrobe drawer, flat and data-like.
+   The first take (this file, earlier today) copied the long-press Move list's graphite glass, which was the wrong reference.
 
-   Paint and placement only: no JavaScript, no new animation, no handler, no tap target is removed, so every panel keeps
-   what it does (the Meals behaviour is owned by a separate fix). Scoped to the four panels; the Move panel itself is the
-   reference and is not touched. Loaded after the older per-panel looks (today-sheet.css, scan-screens.css, top-bar.css,
-   the fasting styles in index.html); the doubled roots outweigh liquid-glass.css, which moves itself to the very end. */
+   Now every one of those panels (plus Today and the Move / Meals bubble lists, which open the same way):
+   - opens out of the spot you tapped as a small round bubble that stretches into the panel, with Move's springy overshoot,
+     and shrinks back into that spot when it closes (misty-bloom.js aims it; the keyframes are below);
+   - floats as one membrane blob: Move's orb surface and rim scaled up, 34 px round on every corner, lifted off the edges,
+     over Move's light veil instead of a heavy dark dim;
+   - turns its quick choices into Move orbs that pop in one after another (Fasting's "when did you eat" times, Meals' Snap
+     food / Scan a product, Weather's hours and readings, the round close buttons) and its rows into soft membrane pills;
+   - gives the one main action Move's mint fill.
+   Paint, shape and motion only: every button, field, slider and handler stays as it was. Reduced motion: no bloom, no pop.
+   Loaded after the older per-panel looks; the doubled roots outweigh liquid-glass.css, which moves itself to the very end. */
 :root {
-  --mpn-sheet: rgba(28, 28, 30, .86); /* --r2-sheet (#1c1c1e, liquid-glass.css) at 86 %, exactly what glassSheet gives the Move panel */
-  --mpn-blur: blur(22px) saturate(1.3);
-  --mpn-edge: rgba(224, 235, 255, .13);
-  --mpn-r: 28px;
-  --mpn-ink: #fff;
-  --mpn-ink2: rgba(235, 242, 255, .78);
-  --mpn-row: rgba(140, 200, 255, .1);
-  --mpn-rim: rgba(143, 231, 255, .2);
-  --mpn-row-r: 14px;
-  --mpn-acc: #8fe7ff;
-  --mpn-pri: var(--r2-pri, linear-gradient(180deg, #2f95ff, #0a7aff));
+  --mb-r: 34px;
+  --mb-ink: #fff;
+  --mb-ink2: rgba(232, 244, 255, .86);
+  --mb-acc: #8fe7ff;
+  --mb-rim: rgba(143, 231, 255, .55);
+  --mb-blur: blur(18px) saturate(1.4);
+  /* Move's orb surface, stretched over a panel: highlight top-left, deep blue core, violet then cyan towards the rim, faint membrane bands */
+  --mb-surface: repeating-linear-gradient(172deg, rgba(143, 231, 255, 0) 0 9%, rgba(143, 231, 255, .045) 12%, rgba(143, 231, 255, 0) 15% 24%),
+                radial-gradient(120% 55% at 26% 0%, rgba(255, 255, 255, .17), rgba(255, 255, 255, 0) 46%),
+                radial-gradient(140% 115% at 50% 36%, rgba(14, 40, 92, .76) 0%, rgba(22, 52, 112, .72) 56%, rgba(88, 78, 166, .68) 84%, rgba(86, 166, 222, .68) 100%);
+  --mb-glow: 0 0 30px 3px rgba(143, 231, 255, .24), 0 20px 50px rgba(0, 6, 30, .42), inset 0 0 28px rgba(155, 135, 210, .42), inset 0 0 3px 1px rgba(143, 231, 255, .5);
+  /* one Move orb (move-bubble.css .wm-orb) */
+  --mb-orb: radial-gradient(circle at 34% 26%, rgba(255, 255, 255, .34), rgba(255, 255, 255, 0) 22%),
+            radial-gradient(circle at 50% 50%, rgba(20, 60, 120, .5) 0%, rgba(30, 70, 140, .5) 54%, rgba(155, 135, 210, .45) 80%, rgba(143, 231, 255, .6) 97%);
+  --mb-orb-sh: 0 0 18px 1px rgba(143, 231, 255, .26), inset 0 0 12px rgba(155, 135, 210, .45);
+  /* a membrane pill for rows and cards */
+  --mb-pill: radial-gradient(130% 160% at 20% 0%, rgba(255, 255, 255, .13), rgba(255, 255, 255, 0) 42%),
+             linear-gradient(180deg, rgba(40, 92, 172, .34), rgba(74, 70, 160, .3));
+  --mb-pill-rim: rgba(143, 231, 255, .42);
+  --mb-pill-sh: inset 0 0 12px rgba(155, 135, 210, .3), 0 0 10px rgba(143, 231, 255, .1);
+  /* Move's mint fill for the one main action, deep enough for white text */
+  --mb-go: radial-gradient(120% 140% at 26% 0%, rgba(255, 255, 255, .3), rgba(255, 255, 255, 0) 36%),
+           linear-gradient(180deg, rgba(52, 196, 158, .92), rgba(12, 124, 104, .96));
+  --mb-chosen: radial-gradient(circle at 34% 26%, rgba(255, 255, 255, .4), rgba(255, 255, 255, 0) 24%),
+               linear-gradient(180deg, rgba(150, 255, 210, .5), rgba(30, 170, 140, .82));
 }
 
-/* ---------- 1. one sheet ---------- */
+/* ---------- 1. one membrane surface ---------- */
 html:root body #sheetwrap #sheet:has(> .fst-sh),
-html:root body .r2-ov.ss-sheet:not(.full):has(.sp-quick-log) .r2-sh,
+html:root body .r2-ov.sp-sheet:not(.full) .r2-sh,
+html:root body .r2-ov.wm-sheet-ov:not(.full) .r2-sh,
+html:root body .r2-ov:not(.full) .r2-sh.mb-on,
 html:root.wh-home body #whToday.wh-today,
 html:root body #tbWx .tbw-sheet,
 html:root body #tbWx[data-night] .tbw-sheet,
 html:root body #tbWx[data-k] .tbw-sheet,
-html:root[data-ui=light] body #tbWx .tbw-sheet {
-  background: var(--mpn-sheet) !important;
-  background-image: none !important;
-  -webkit-backdrop-filter: var(--mpn-blur) !important;
-  backdrop-filter: var(--mpn-blur) !important;
-  border: 1px solid var(--mpn-edge) !important;
-  box-shadow: 0 -8px 48px rgba(0, 0, 0, .27) !important;
-  color: var(--mpn-ink) !important;
-  text-shadow: none !important;
+html:root[data-ui=light] body #tbWx .tbw-sheet,
+html:root body .wa-panel,
+html:root[data-ui=light] body .wa-panel {
+  background: var(--mb-surface) !important;
+  -webkit-backdrop-filter: var(--mb-blur) !important;
+  backdrop-filter: var(--mb-blur) !important;
+  border: 1px solid var(--mb-rim) !important;
+  border-radius: var(--mb-r) !important;
+  box-shadow: var(--mb-glow) !important;
+  color: var(--mb-ink) !important;
+  text-shadow: 0 1px 6px rgba(0, 30, 80, .45) !important;
 }
-/* the edge-docked sheets keep their place at the bottom: only the top corners round */
-html:root body #sheetwrap #sheet:has(> .fst-sh),
-html:root.wh-home body #whToday.wh-today,
-html:root body #tbWx .tbw-sheet { border-bottom: 0 !important; border-radius: var(--mpn-r) var(--mpn-r) 0 0 !important; }
-html:root body .r2-ov.ss-sheet:not(.full):has(.sp-quick-log) .r2-sh { border-radius: var(--mpn-r) !important; }
-/* Day (light) keeps the panels dark, like the Move panel: --r2-sheet is the same graphite in both */
 html:root[data-theme="light"].wh-home body #whToday.wh-today,
-html:root[data-ui=light] body #tbWx .tbw-sheet { color: var(--mpn-ink) !important; }
-@media (min-width: 700px) {
-  html:root body #tbWx .tbw-sheet { border-radius: var(--mpn-r) !important; border-bottom: 1px solid var(--mpn-edge) !important; }
-}
-/* the grab handle: one quiet bar */
-html:root body #sheetwrap #sheet:has(> .fst-sh) > .grab,
-html:root body .r2-ov.ss-sheet:not(.full):has(.sp-quick-log) .r2-grab,
-html:root.wh-home body #whToday .wh-today-grab { background: rgba(235, 242, 255, .45) !important; opacity: 1 !important; }
+html:root[data-ui=light] body #tbWx .tbw-sheet { color: var(--mb-ink) !important; }
 
-/* ---------- 2. one title, one note line ---------- */
+/* floating, lifted off the edges like a bubble, not docked to the bottom like a drawer */
+html:root body .r2-ov.sp-sheet:not(.full) .r2-sh,
+html:root body .r2-ov.wm-sheet-ov:not(.full) .r2-sh,
+html:root body .r2-ov:not(.full) .r2-sh.mb-on {
+  width: calc(100% - 20px) !important;
+  margin: 0 auto calc(env(safe-area-inset-bottom, 0px) + 10px) !important;
+  max-height: calc(100% - max(env(safe-area-inset-top, 0px), 20px) - 34px - env(safe-area-inset-bottom, 0px)) !important;
+}
+html:root body #sheetwrap #sheet:has(> .fst-sh) {
+  left: 10px !important; right: 10px !important; bottom: calc(var(--sab, env(safe-area-inset-bottom, 0px)) + 10px) !important;
+  max-height: calc(88% - 10px) !important;
+  padding-bottom: calc(var(--sab, 0px) + 18px) !important;
+}
+html:root.wh-home body #whToday.wh-today {
+  width: min(calc(100% - 20px), 600px) !important;
+  bottom: calc(var(--sab, env(safe-area-inset-bottom, 0px)) + 10px) !important;
+  max-height: calc(100% - var(--sat, env(safe-area-inset-top, 0px)) - 98px) !important;
+}
+html:root body #tbWx .tbw-sheet {
+  width: calc(100% - 20px) !important;
+  margin: 0 auto calc(env(safe-area-inset-bottom, 0px) + 10px) !important;
+  max-height: calc(100% - var(--sat, 0px) - 34px - env(safe-area-inset-bottom, 0px)) !important;
+}
+/* Move's light veil (rgba(4,10,30,.32)) instead of the heavy dark dim, so the world stays visible behind */
+html:root body #sheetwrap:has(> #sheet > .fst-sh) { background: rgba(4, 10, 30, .32) !important; }
+html:root body .r2-ov.sp-sheet:not(.full) .r2-scrim,
+html:root body .r2-ov.wm-sheet-ov:not(.full) .r2-scrim { background: rgba(4, 10, 30, .32) !important; }
+html:root body #tbWx .tbw-bg { background: rgba(4, 10, 30, .32) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+/* the grab bar: a short soft cyan line */
+html:root body #sheetwrap #sheet:has(> .fst-sh) > .grab,
+html:root body .r2-ov.sp-sheet:not(.full) .r2-grab,
+html:root body .r2-ov.wm-sheet-ov:not(.full) .r2-grab,
+html:root.wh-home body #whToday .wh-today-grab { background: rgba(143, 231, 255, .5) !important; opacity: 1 !important; }
+
+/* ---------- 2. the bloom: out of the tapped spot, small and round, springing open; back into it on close ---------- */
+@keyframes mb-in { from { translate: var(--mb-dx, 0px) var(--mb-dy, 60px); scale: .14; opacity: 0; border-radius: 50%; } }
+@keyframes mb-out { to { translate: var(--mb-dx, 0px) var(--mb-dy, 60px); scale: .18; opacity: 0; border-radius: 50%; } }
+@keyframes mb-pop { from { scale: .25; opacity: 0; } }
+/* misty-bloom.js measures the panel at rest */
+html:root body .mb-on.mb-measure { animation: none !important; translate: none !important; scale: none !important; }
+/* the panel's own slide-up is replaced by the bloom */
+html:root body #sheetwrap #sheet.mb-on,
+html:root body #tbWx .tbw-sheet.mb-on,
+html:root body .wa-panel.mb-on { transform: none !important; transition: none !important; }
+/* Today centres with margins instead of translate(-50%): the bloom's scale would shrink that offset and pull it sideways */
+html:root.wh-home body #whToday.mb-on { left: 0 !important; right: 0 !important; margin-left: auto !important; margin-right: auto !important; transform: none !important; transition: visibility 0s linear .3s !important; }
+html:root.wh-home.wh-today-open body #whToday.mb-on { transition: visibility 0s !important; }
+html:root body .wa-panel.mb-ghost { pointer-events: none !important; }
+@media (prefers-reduced-motion: no-preference) {
+  html:root body .r2-sh.mb-on.mb-in,
+  html:root body .wa-panel.mb-on.mb-in,
+  html:root body #sheetwrap.open #sheet.mb-on,
+  html:root body #tbWx.in .tbw-sheet.mb-on,
+  html:root.wh-home.wh-today-open body #whToday.mb-on { animation: mb-in .5s cubic-bezier(.3, 1.35, .5, 1) both; }
+  html:root body .r2-sh.mb-on.mb-out,
+  html:root body .wa-panel.mb-on.mb-out,
+  html:root body #sheetwrap:not(.open) #sheet.mb-on,
+  html:root body #tbWx:not(.in) .tbw-sheet.mb-on,
+  html:root.wh-home:not(.wh-today-open) body #whToday.mb-on { animation: mb-out .26s cubic-bezier(.5, 0, .8, .4) forwards; }
+  /* the orbs inside pop in one after another, like Move's Quick, Medium, Long, Epic */
+  :is(.r2-sh.mb-on.mb-in, .wa-panel.mb-on.mb-in, #sheetwrap.open #sheet.mb-on, #tbWx.in .tbw-sheet.mb-on, html.wh-today-open #whToday.mb-on)
+    :is(.fst-chips .chip, .fst-msl i, .sp-quick-cap button, .sp-quick-item, .tbw-hr, .tbw-facts > div, .tbw-btn, .wa-x, .wa-row, .wm-row, .g2h-tile) {
+    animation: mb-pop .42s cubic-bezier(.3, 1.6, .5, 1) both;
+    animation-delay: calc(140ms + var(--mb-i, 0) * 40ms);
+  }
+}
+:is(.fst-chips .chip, .fst-msl i, .sp-quick-cap button, .sp-quick-item, .tbw-hr, .tbw-facts > div, .tbw-btn, .wa-row, .wm-row, .g2h-tile):nth-child(2) { --mb-i: 1; }
+:is(.fst-chips .chip, .fst-msl i, .sp-quick-cap button, .sp-quick-item, .tbw-hr, .tbw-facts > div, .tbw-btn, .wa-row, .wm-row, .g2h-tile):nth-child(3) { --mb-i: 2; }
+:is(.fst-chips .chip, .fst-msl i, .sp-quick-cap button, .sp-quick-item, .tbw-hr, .tbw-facts > div, .tbw-btn, .wa-row, .wm-row, .g2h-tile):nth-child(4) { --mb-i: 3; }
+:is(.fst-chips .chip, .fst-msl i, .sp-quick-cap button, .sp-quick-item, .tbw-hr, .tbw-facts > div, .tbw-btn, .wa-row, .wm-row, .g2h-tile):nth-child(5) { --mb-i: 4; }
+:is(.fst-chips .chip, .fst-msl i, .sp-quick-cap button, .sp-quick-item, .tbw-hr, .tbw-facts > div, .tbw-btn, .wa-row, .wm-row, .g2h-tile):nth-child(6) { --mb-i: 5; }
+:is(.fst-chips .chip, .fst-msl i, .sp-quick-cap button, .sp-quick-item, .tbw-hr, .tbw-facts > div, .tbw-btn, .wa-row, .wm-row, .g2h-tile):nth-child(n+7) { --mb-i: 6; }
+
+/* ---------- 3. titles and quiet lines ---------- */
 html:root body #sheet .fst-sh .fst-title,
-html:root body .r2-ov.ss-sheet:not(.full):has(.sp-quick-log) h2,
+html:root body .r2-ov.sp-sheet:not(.full) h2,
 html:root body #tbWx .tbw-top h2 {
   font-size: 18px !important; font-weight: 700 !important; letter-spacing: -.01em !important; line-height: 1.25 !important;
-  color: var(--mpn-ink) !important; -webkit-text-fill-color: currentColor !important; margin: 2px 0 10px !important;
+  color: var(--mb-ink) !important; -webkit-text-fill-color: currentColor !important; margin: 2px 0 12px !important; text-align: center !important;
 }
-html:root body #tbWx .tbw-top h2 { margin: 0 !important; }
+html:root body #tbWx .tbw-top h2 { margin: 0 !important; text-align: left !important; }
 html:root body #sheet .fst-sh :is(.fst-hint, .fst-next, .fst-since, .fst-hh),
-html:root body .r2-ov.ss-sheet:not(.full):has(.sp-quick-log) :is(.sp-note, .sp-quick-h),
-html:root body #tbWx :is(.tbw-cellline, .tbw-msg, .tbw-fine, .tbw-sub, .tbw-hh) {
-  color: var(--mpn-ink2) !important; opacity: 1 !important; font-size: 13px !important; line-height: 1.4 !important;
+html:root body .r2-ov.sp-sheet:not(.full) :is(.sp-note, .sp-quick-h),
+html:root body #tbWx :is(.tbw-cellline, .tbw-msg, .tbw-fine, .tbw-sub, .tbw-hh),
+html:root body .wa-panel p {
+  color: var(--mb-ink2) !important; opacity: 1 !important; font-size: 13px !important; line-height: 1.4 !important;
 }
 
-/* ---------- 3. one Misty row for every card, row and tile ---------- */
+/* ---------- 4. quick choices are Move orbs ---------- */
+/* Fasting: "when did you eat?" (Just now, 15 min ago, ...) as a row of round orbs; the picked one fills mint */
+html:root body #sheet .fst-sh .fst-chips { display: flex !important; flex-wrap: wrap !important; justify-content: center !important; gap: 8px !important; }
+html:root body #sheet .fst-sh .fst-chips .chip {
+  width: 64px !important; height: 64px !important; min-height: 0 !important; padding: 4px !important; margin: 0 !important;
+  border-radius: 50% !important; display: inline-flex !important; align-items: center !important; justify-content: center !important;
+  text-align: center !important; white-space: normal !important; line-height: 1.15 !important; font-size: 12px !important; font-weight: 600 !important;
+  background: var(--mb-orb) !important; border: 1px solid var(--mb-rim) !important; box-shadow: var(--mb-orb-sh) !important; color: var(--mb-ink) !important;
+  overflow: hidden !important; text-overflow: ellipsis;
+}
+html:root body #sheet .fst-sh .fst-chips .chip.on { background: var(--mb-chosen) !important; border-color: rgba(170, 255, 220, .85) !important; box-shadow: 0 0 22px 3px rgba(120, 255, 200, .4), inset 0 0 12px rgba(155, 135, 210, .4) !important; }
+/* Meals: Snap food and Scan a product as two big orbs side by side */
+html:root body .r2-ov.sp-sheet:not(.full) .sp-quick-cap { display: flex !important; justify-content: center !important; gap: 22px !important; margin: 4px 0 14px !important; }
+html:root body .r2-ov.sp-sheet:not(.full) .sp-quick-cap button {
+  width: 104px !important; height: 104px !important; min-height: 0 !important; flex: 0 0 104px !important; padding: 8px !important; margin: 0 !important;
+  border-radius: 50% !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; gap: 4px !important;
+  text-align: center !important; line-height: 1.15 !important; font-size: 13px !important; font-weight: 600 !important; white-space: normal !important;
+  background: var(--mb-orb) !important; border: 1px solid var(--mb-rim) !important; box-shadow: 0 0 22px 2px rgba(143, 231, 255, .3), inset 0 0 12px rgba(155, 135, 210, .45) !important; color: var(--mb-ink) !important;
+}
+html:root body .r2-ov.sp-sheet:not(.full) .sp-quick-cap button svg { width: 28px !important; height: 28px !important; flex: none !important; }
+/* Weather: the hours as tall bubbles, the readings as round orbs */
+html:root body #tbWx .tbw-hr {
+  border-radius: 999px !important; background: var(--mb-orb) !important; border: 1px solid var(--mb-rim) !important; box-shadow: var(--mb-orb-sh) !important; color: var(--mb-ink) !important;
+}
+html:root body #tbWx .tbw-facts { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 10px !important; justify-items: center !important; }
+html:root body #tbWx .tbw-facts > div {
+  width: 100% !important; max-width: 112px !important; aspect-ratio: 1 !important; box-sizing: border-box !important; padding: 8px !important;
+  border-radius: 50% !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; text-align: center !important;
+  background: var(--mb-orb) !important; border: 1px solid var(--mb-rim) !important; box-shadow: var(--mb-orb-sh) !important; color: var(--mb-ink) !important;
+}
+/* round close / refresh buttons are orbs too */
+html:root body #tbWx .tbw-top .tbw-btn,
+html:root body .wa-panel .wa-x {
+  border-radius: 50% !important; background: var(--mb-orb) !important; border: 1px solid var(--mb-rim) !important; box-shadow: var(--mb-orb-sh) !important; color: var(--mb-ink) !important; opacity: 1 !important;
+}
+html:root body .wa-panel .wa-x { width: 44px !important; height: 44px !important; margin-right: -4px !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; }
+
+/* ---------- 5. rows and cards are soft membrane pills ---------- */
+html:root body .r2-ov.sp-sheet:not(.full) .sp-quick-item,
+html:root body .wa-panel .wa-row,
+html:root body .r2-ov.wm-sheet-ov .wm-row {
+  border-radius: 999px !important; background: var(--mb-pill) !important; border: 1px solid var(--mb-pill-rim) !important; box-shadow: var(--mb-pill-sh) !important; color: var(--mb-ink) !important;
+}
+html:root body .wa-panel .wa-row { padding: 2px 8px 2px 16px !important; margin-top: 8px !important; }
+html:root body .r2-ov.sp-sheet:not(.full) .sp-quick-item { min-height: 54px !important; padding-left: 16px !important; padding-right: 8px !important; }
+/* the quick-log + on each recent meal is a small orb at the end of its pill */
+html:root body .r2-ov.sp-sheet:not(.full) .sp-quick-item em {
+  width: 38px !important; height: 38px !important; flex: 0 0 38px !important; border-radius: 50% !important; display: inline-flex !important; align-items: center !important; justify-content: center !important;
+  font-style: normal !important; font-weight: 700 !important; font-size: 18px !important; color: var(--mb-ink) !important;
+  background: var(--mb-orb) !important; border: 1px solid var(--mb-rim) !important; box-shadow: var(--mb-orb-sh) !important;
+}
+html:root body .r2-ov.sp-sheet:not(.full) .sp-quick-item.done em { background: var(--mb-chosen) !important; }
 html:root body #sheet .fst-sh :is(.fst-sum, .fst-time, .fst-earn, .fst-earn.none),
-html:root body .r2-ov.ss-sheet:not(.full):has(.sp-quick-log) :is(.sp-quick-cap button, .sp-quick-item, .sp-herb-tip, details.sp-manual),
-html:root body #tbWx :is(.tbw-hr, .tbw-facts > div, .tbw-note) {
-  background: var(--mpn-row) !important; background-image: none !important;
-  border: 1px solid var(--mpn-rim) !important; border-radius: var(--mpn-row-r) !important;
-  box-shadow: none !important; color: var(--mpn-ink) !important; text-shadow: none !important;
+html:root body .r2-ov.sp-sheet:not(.full) :is(.sp-herb-tip, details.sp-manual),
+html:root body #tbWx .tbw-note {
+  border-radius: 26px !important; background: var(--mb-pill) !important; border: 1px solid var(--mb-pill-rim) !important; box-shadow: var(--mb-pill-sh) !important; color: var(--mb-ink) !important;
 }
-/* Today already draws every card from its own tokens (today-sheet.css): point them at the Move row */
+html:root body .r2-ov.sp-sheet:not(.full) details.sp-manual summary { min-height: 44px; }
+/* Fasting's milestones: small bubbles */
+html:root body #sheet .fst-sh .fst-msl i { border-radius: 999px !important; background: var(--mb-orb) !important; border: 1px solid var(--mb-pill-rim) !important; box-shadow: var(--mb-orb-sh) !important; }
+html:root body #sheet .fst-sh .fst-hist { border-top-color: var(--mb-pill-rim) !important; }
+/* Today draws every card from its own tokens (today-sheet.css): point them at the membrane */
 html:root.wh-home body #whToday {
-  --ts-glass: var(--mpn-row);
-  --ts-glass-sh: none;
-  --ts-rim: var(--mpn-rim);
-  --ts-r: var(--mpn-row-r);
-  --ts-ink: var(--mpn-ink);
-  --ts-ink2: var(--mpn-ink2);
-  --ts-acc: var(--mpn-acc);
+  --ts-glass: var(--mb-pill);
+  --ts-glass-sh: var(--mb-pill-sh);
+  --ts-rim: var(--mb-pill-rim);
+  --ts-r: 26px;
+  --ts-ink: var(--mb-ink);
+  --ts-ink2: var(--mb-ink2);
+  --ts-acc: var(--mb-acc);
 }
-html:root.wh-home body #whToday#whToday .wh-tiles.wh-tiles .g2h-tile { border-radius: var(--mpn-row-r) !important; }
-/* small accents in Misty's cyan, not gold or green */
+html:root.wh-home body #whToday#whToday .wh-tiles.wh-tiles .g2h-tile { border-radius: 26px !important; }
+/* small accents in Misty's cyan */
 html:root body #sheet .fst-sh .fst-hr em,
 html:root body #sheet .fst-sh .fst-goal.ok,
 html:root body #sheet .fst-sh .fst-hr i,
-html:root body .r2-ov.ss-sheet:not(.full):has(.sp-quick-log) .sp-herb-tip small,
-html:root body #tbWx .tbw-hr small { color: var(--mpn-acc) !important; }
-html:root body #sheet .fst-sh .fst-hist { border-top-color: var(--mpn-rim) !important; }
-html:root body #sheet .fst-sh .fst-msl i { background: var(--mpn-row) !important; border-color: var(--mpn-rim) !important; }
-html:root body #tbWx .tbw-nico { background: rgba(140, 200, 255, .16) !important; color: var(--mpn-acc) !important; }
+html:root body .r2-ov.sp-sheet:not(.full) .sp-herb-tip small,
+html:root body #tbWx .tbw-hr small { color: var(--mb-acc) !important; }
+html:root body #tbWx .tbw-nico { background: rgba(140, 200, 255, .16) !important; color: var(--mb-acc) !important; }
 
-/* ---------- 4. buttons: 44 px and round-ended; one blue main action ---------- */
-html:root body #sheet .fst-sh .fst-chips .chip {
-  min-height: 44px !important; padding: 0 16px !important; border-radius: 22px !important;
-  background: var(--mpn-row) !important; border: 1px solid var(--mpn-rim) !important; color: var(--mpn-ink) !important;
-}
-html:root body #sheet .fst-sh .fst-chips .chip.on { background: rgba(143, 231, 255, .24) !important; border-color: rgba(143, 231, 255, .7) !important; }
+/* ---------- 6. the one main action: Move's mint, round-ended ---------- */
 html:root body #sheet .fst-sh .fst-go,
-html:root body .r2-ov.ss-sheet:not(.full):has(.sp-quick-log) :is(.r2-btn.pri, .sp-primary),
+html:root body .r2-ov.sp-sheet:not(.full) :is(.r2-btn.pri, .sp-primary),
+html:root body .r2-ov.wm-sheet-ov .r2-btn.pri,
 html:root.wh-home body #whToday .sp-next {
-  background: var(--mpn-pri) !important; border: 0 !important; color: #fff !important; border-radius: 999px !important;
-  box-shadow: none !important; text-shadow: none !important;
+  background: var(--mb-go) !important; border: 1px solid rgba(170, 255, 220, .7) !important; color: #fff !important; border-radius: 999px !important;
+  box-shadow: 0 0 22px 2px rgba(120, 255, 200, .3), inset 0 0 10px rgba(255, 255, 255, .18) !important; text-shadow: 0 1px 4px rgba(0, 50, 40, .55) !important;
 }
-html:root body #sheet .fst-sh .fst-go { min-height: 50px !important; }
-html:root body .r2-ov.ss-sheet:not(.full):has(.sp-quick-log) .sp-quick-item { min-height: 52px; }
-html:root body .r2-ov.ss-sheet:not(.full):has(.sp-quick-log) .sp-quick-item em { color: var(--mpn-acc) !important; }
-html:root body .r2-ov.ss-sheet:not(.full):has(.sp-quick-log) details.sp-manual summary { min-height: 44px; }
+html:root body #sheet .fst-sh .fst-go { min-height: 54px !important; }
 
-/* ---------- 5. right thumb: Weather's Refresh and Close sit at the bottom right ---------- */
+/* ---------- 7. right thumb: Weather's Refresh and Close sit at the bottom right of the bubble ---------- */
 html:root body #tbWx .tbw-top { padding: 18px 20px 6px !important; }
 html:root body #tbWx .tbw-top .tbw-btn {
-  position: absolute; z-index: 2; bottom: calc(var(--sab, env(safe-area-inset-bottom, 0px)) + 14px);
+  position: absolute; z-index: 2; bottom: 14px;
   width: 52px !important; height: 52px !important;
-  background: var(--mpn-row) !important; border: 1px solid var(--mpn-rim) !important; color: var(--mpn-ink) !important;
-  -webkit-backdrop-filter: var(--mpn-blur); backdrop-filter: var(--mpn-blur);
 }
-html:root body #tbWx .tbw-top .tbw-btn[data-tbw="close"] { right: max(16px, env(safe-area-inset-right, 0px)); }
-html:root body #tbWx .tbw-top .tbw-btn[data-tbw="refresh"] { right: calc(max(16px, env(safe-area-inset-right, 0px)) + 62px); }
+html:root body #tbWx .tbw-top .tbw-btn[data-tbw="close"] { right: 16px; }
+html:root body #tbWx .tbw-top .tbw-btn[data-tbw="refresh"] { right: 78px; }
 /* the readings scroll clear of the two buttons */
-html:root body #tbWx .tbw-body { padding-bottom: calc(var(--sab, env(safe-area-inset-bottom, 0px)) + 82px) !important; }
+html:root body #tbWx .tbw-body { padding-bottom: 82px !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  html:root body .mb-on, html:root body .mb-on * { animation: none !important; }
+}

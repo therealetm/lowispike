@@ -333,11 +333,14 @@
     function removePanel(p) {
         if (!p) return;
         try { W.LowiSoundStrings && W.LowiSoundStrings.unmount(p.querySelector('[data-wa-strings]')); } catch (e) { }
-        p.remove(); instrumentIdle();
+        /* fold back into the Sound button like Move's choices (misty-bloom.js); gone at once with reduced motion */
+        p.removeAttribute('id'); p.classList.add('mb-ghost'); p.setAttribute('aria-hidden', 'true'); try { p.inert = true; } catch (e) { }
+        if (!(W.LowiBloom && W.LowiBloom.close(p, () => p.remove()))) p.remove();
+        instrumentIdle();
     }
     function togglePanel(force) {
         const host = uiHost(); if (!host) return;
-        let p = host.querySelector('.wa-panel'); const want = force == null ? !p : !!force;
+        let p = host.querySelector('.wa-panel:not(.mb-ghost)'); const want = force == null ? !p : !!force;
         if (!want) { if (p) removePanel(p); paint(); return; }
         if (p) return;
         p = D.createElement('div'); p.className = 'wa-panel'; p.id = 'waPanel'; p.setAttribute('role', 'dialog'); p.setAttribute('aria-label', tr('aria'));
@@ -356,11 +359,13 @@
         const sp = p.querySelector('[data-wa-strings]');
         if (W.LowiSoundStrings && sp) { try { W.LowiSoundStrings.mount(sp, { instrument, idle: instrumentIdle, lang, tune: () => Object.assign({}, tune), setTune, resetTune, wake, ambientOn: () => st.on }); } catch (e) { sp.remove(); } }
         else if (sp) sp.remove();
+        /* aimed once the strings pad is in, so it grows from the Sound button at its full size */
+        try { W.LowiBloom && W.LowiBloom.open(p); } catch (e) { }
         const sw = p.querySelector('[data-wa=x]') || p.querySelector('[data-wa=on]'); sw && sw.focus && sw.focus({ preventScroll: true });
     }
     function paint() {
         const host = uiHost(); if (!host) return;
-        const btn = host.querySelector('.wa-btn'), p = host.querySelector('.wa-panel'), on = st.on;
+        const btn = host.querySelector('.wa-btn'), p = host.querySelector('.wa-panel:not(.mb-ghost)'), on = st.on;
         if (btn) {
             const sig = (on ? 1 : 0) + lang() + (p ? 1 : 0);
             if (btn.dataset.sig !== sig) { btn.innerHTML = (on ? ICON_ON : ICON_OFF) + '<span>' + tr('btn') + '</span>'; btn.dataset.sig = sig; }
@@ -377,7 +382,7 @@
         }
     }
     /* outside tap closes the panel (the world keeps its drag) */
-    D.addEventListener('pointerdown', e => { const p = D.querySelector('.wa-panel'); if (p && !p.contains(e.target) && !(e.target.closest && e.target.closest('.wa-btn'))) togglePanel(false); }, true);
+    D.addEventListener('pointerdown', e => { const p = D.querySelector('.wa-panel:not(.mb-ghost)'); if (p && !p.contains(e.target) && !(e.target.closest && e.target.closest('.wa-btn'))) togglePanel(false); }, true);
     D.addEventListener('keydown', e => { if (e.key === 'Escape' && D.getElementById('waPanel')) togglePanel(false); });
 
     /* ---------- lifecycle ---------- */

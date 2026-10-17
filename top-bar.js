@@ -378,6 +378,8 @@
         if (reduced()) ov.classList.add('tbw-rm');
         D.body.appendChild(ov);
         H.classList.add('tbw-open');
+        /* blooms out of the weather pill you tapped, like Move's choices (misty-bloom.js) */
+        try { root.LowiBloom && root.LowiBloom.prep(ov.querySelector('.tbw-sheet')); } catch (e) {}
         void ov.offsetWidth; ov.classList.add('in');
         const x = ov.querySelector('[data-tbw=close].tbw-btn'); try { x.focus({ preventScroll: true }); } catch (e) {}
         load(false);

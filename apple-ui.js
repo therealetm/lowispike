@@ -38,10 +38,12 @@ const sheet=R2.sheet;
 R2.sheet=function(html,opts){
   opts=opts||{};const trigger=D.activeElement,ov=sheet.apply(this,arguments),sh=ov&&ov.querySelector('.r2-sh');
   if(!sh||opts.noClose) return ov;
-  const s={ov,sh,y:sh.getBoundingClientRect().height+30,v:0,target:0,raf:0,last:0,closing:false,trigger};
+  /* Home's panels bloom out of the bubble you tapped (misty-bloom.js) instead of sliding up; the grab-to-dismiss spring stays */
+  const bloom=!!(window.LowiBloom&&LowiBloom.wants(sh,opts));
+  const s={ov,sh,y:bloom?0:sh.getBoundingClientRect().height+30,v:0,target:0,raf:0,last:0,closing:false,trigger,bloom};
   states.set(ov,s);ov.classList.add('au-physics');
   const heading=sh.querySelector('h1,h2,.h1,.h2');if(heading){if(!heading.id)heading.id='au-sheet-title-'+(++sequence);sh.setAttribute('aria-labelledby',heading.id);}
-  sh.tabIndex=-1;render(s);settle(s,0,0);
+  sh.tabIndex=-1;render(s);if(bloom)LowiBloom.open(sh);else settle(s,0,0);
   requestAnimationFrame(()=>{if(R2.top()===ov&&!sh.contains(D.activeElement))sh.focus({preventScroll:true});});
   const grab=sh.querySelector('.r2-grab');
   if(grab&&!opts.full){
@@ -79,6 +81,7 @@ R2.sheet=function(html,opts){
 };
 R2.motionClose=function(ov,remove){
   const s=states.get(ov);if(!s)return false;s.closing=true;
+  if(s.bloom&&s.y<12&&LowiBloom.close(s.sh,()=>{remove();states.delete(ov);if(!R2.top()&&s.trigger&&s.trigger.isConnected)s.trigger.focus({preventScroll:true});}))return true;
   settle(s,s.sh.getBoundingClientRect().height+40,s.v,()=>{remove();states.delete(ov);if(!R2.top()&&s.trigger&&s.trigger.isConnected)s.trigger.focus({preventScroll:true});});return true;
 };
 const toast=D.getElementById('toast');if(toast){toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');toast.setAttribute('aria-atomic','true');}

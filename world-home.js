@@ -169,6 +169,8 @@
         const box = ensureToday(); if (!box) return;
         if (on) mirrorTiles();
         st.today = !!on;
+        /* Today blooms out of the Today pill like Move's choices, and folds back into it (misty-bloom.js) */
+        if (st.today) { try { W.LowiBloom && W.LowiBloom.prep(box); } catch (e) { } }
         H.classList.toggle('wh-today-open', st.today);
         box.setAttribute('aria-hidden', st.today ? 'false' : 'true');
         const b = D.querySelector('#whHud .wh-todaybtn'); b && b.setAttribute('aria-expanded', String(st.today));

@@ -32,7 +32,7 @@
        TENT: how far the skin bulges at the end (share of the reach); R: the galaxy's soft outer edge; D / D_MAX: camera distance
        out there (kept well below the spirit world's hand-over to Community, world-home.js fk > 0.9 = about 220); OPEN: where the
        camera has fully backed out (our own bubble in the spirit world, COSMOS.R = 46); BACK: back home below this share of the reach */
-    const GAL = { HOLD: 3.2, EDGE: 0.97, OUT: 0.5, AWAY: 0.15, MAG: 0.35, GRACE: 0.3, DT: 0.1, TENT: 0.16, R: 230, D: 64, D_MAX: 105, OPEN: 46, BACK: 0.96, SPEED_MAX: 18 };
+    const GAL = { HOLD: 3.2, EDGE: 0.97, OUT: 0.5, AWAY: 0.15, MAG: 0.35, GRACE: 0.3, DT: 0.1, TENT: 0.16, R: 230, D: 64, D_MAX: 105, OPEN: 46, BACK: 0.985, SPEED_MAX: 18 };
     const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
     function smooth(e0, e1, x) { const t = clamp((x - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t); }
     /* pushing on the edge: s = { t, miss, fired }; i = { dt, mode, mag, out (cos stick vs outward), edge (L / reach), busy } */
@@ -99,7 +99,7 @@
     }
     /* her free flight at home, one frame, in place of misty-flight's hard clamp at the reach. true = handled (no clamp needed) */
     function step(ctx, S, V, mode, mag, K) {
-        const a = ctx.a, dt = ctx.dt, reach = K.ROAM, L = S.p.length();
+        const a = ctx.a, dt = ctx.dt, reach = K.ROAM, L = S.p.length(); G.S = S;
         if (S.gx) {
             /* the edge rings out behind her */
             if (G.ring) { G.ringT += dt; const w = ringOut(G.ring, G.ringT); paintSkin(a, reach, Math.max(0, w), Math.max(0, 0.7 * Math.exp(-1.6 * G.ringT))); if (G.ringT > 2.4) { G.ring = 0; paintSkin(a, reach, 0, 0); } }
@@ -155,7 +155,7 @@
     /* the camera distance while she is out (or coming back in). true = handled */
     function cam(ctx, S) {
         const r = ctx.r, dt = ctx.dt;
-        if (S.gx) { r.dist += (camDist(S.p.length(), S.gxD0 || S.d0, ctx.K.ROAM) - r.dist) * Math.min(1, dt * 1.4); return true; }
+        if (S.gx) { r.dist += (camDist(S.p.length(), (S.gxD0 || S.d0) * 1.16, ctx.K.ROAM) - r.dist) * Math.min(1, dt * 1.4); return true; }
         if (S.gxBack) {
             const d0 = S.gxD0 || S.d0; r.dist += (d0 - r.dist) * Math.min(1, dt * 1.4);
             if (Math.abs(r.dist - d0) < d0 * 0.02) { r.dist = d0; S.d0 = d0; S.gxBack = false; }
@@ -175,5 +175,7 @@
         if (ctx && ctx.a && G.skin) paintSkin(ctx.a, 11, 0, 0);
         if (was) { note('reset'); try { W.dispatchEvent(new CustomEvent('lowi:galaxy', { detail: { on: false } })); } catch (e) { } }
     }
-    W.LowiMistyGalaxy = { core, step, cam, speed, reset, places, state: () => ({ p: +G.p.toFixed(3), on: H.classList.contains('mf-galaxy'), ring: +G.ring.toFixed(2), log: G.log.slice(-8) }) };
+    W.LowiMistyGalaxy = { core, step, cam, speed, reset, places,
+        /* test browsers are too slow to fly her all the way to the edge: put her at a share of the reach on her current heading */
+        _probe: k => { const S = G.S; if (!S || S.st !== 'free') return false; const L = S.p.length() || 1; S.p.multiplyScalar(11 * k / L); return true; }, state: () => ({ p: +G.p.toFixed(3), on: H.classList.contains('mf-galaxy'), ring: +G.ring.toFixed(2), log: G.log.slice(-8) }) };
 })();

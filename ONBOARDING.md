@@ -13,14 +13,14 @@ file and the onboarding copy in the same commit.**
 |---|--------|------|----------|----------|
 | 1 | Language + "A being of light is waiting for you" | `herb-start.js` step 0 | companion has no name/face until the birthday | `companion-birth.js` |
 | 2 | "Your habits are its energy" | `herb-start.js` step 1 | Shop & scan, Meals, Water, Move, Fasting fill its energy; tired days = rest | `shop-scan.js`, Home bubbles, `adventure.js` energy gate |
-| 3 | "How you play" | `herb-start.js` step 2 | controller, 3 taps autopilot, tap bubbles, cell world + spirit world, barcode estimate | `misty-pad.js` hints, `misty-hints.js`, `cell-world.js`, `spirit-core.js`, `shop-scan-core.js` |
+| 3 | "How you play" | `herb-start.js` step 2 | controller, 3 taps autopilot, tap bubbles, cell world + spirit world, scan for a spike estimate + the shopping hunt / power combos | `misty-pad.js` hints, `misty-hints.js`, `cell-world.js`, `spirit-core.js`, `shop-scan-core.js`, `grocery-hunt.js` |
 | 4 | Your name | `herb-start.js` step 3 | it learns your name | `LowiHerbIdentityCore.cleanName` |
 | 5 | First reward | `herb-start.js` step 4 | first XP, spirit world where companions meet | `firstReward()` |
 | 6 | Add to Home Screen + account | `index.html` gate (`LowiA1`, `R2`) | iPhone install, Google/Apple/email sign-in | `index.html` (LOWI_CLOUD) |
 | 7 | Setup 1: birthday | `index.html` `paintOb` step 0 | birthday gives the companion its face and name | `companion-birth.js` |
 | 8 | Setup 2: photo | `paintOb` step 1 | optional avatar | |
 | 9 | Setup 3: goals | `paintOb` step 2 | what you want most | `S.profile.goals` |
-| 10 | Setup 4: grocery shopping | `paintOb` step 3, `shop-plan.js` | the person TYPES how often they shop; weekdays + shop optional; Later skips | `shop-plan-core.js` |
+| 10 | Setup 4: grocery shopping | `paintOb` step 3, `shop-plan.js` | the person TYPES how often they shop; weekdays + shop optional; Later skips; what the shopping glow does | `shop-plan-core.js`, `grocery-hunt-core.js` (reads the rhythm) |
 | 11 | Starter plan (optional) | `herb-start.js` `ivOpen` | up to 4 optional questions, first steps on Today | `starter-core.js` |
 
 Existing users never see this flow again (`S.setupDone`). Their shopping rhythm is set or changed in
@@ -30,6 +30,12 @@ Profile > About you > Grocery shopping (`shop-plan.js` card), never forced.
 
 - **Shopping rhythm:** only the number the person typed (1 to 60 days). No default, no guess. Missing a shop never means
   someone ate badly. Stored in `lowispike.shopplan.v1`; read it through `LowiShopPlan` / `LowiShopPlanCore` only.
+- **Shopping glow + hunt** (`grocery-hunt-core.js`, `grocery-hunt.js`): two different products caught on one day (barcode
+  in the shopping scanner or a fresh product photo) is a shopping check-in. The worlds glow brighter for the rhythm plus a day,
+  then fade over one rhythm back to the normal look, never below it. Pause and "couldn't scan" exist. The hunt reads the
+  rhythm from `LowiShopPlan`; without a typed rhythm it uses a quiet weekly timing and shows no number. Shop finds and power
+  combos (e.g. Speisequark + kiwi + almonds) work on this phone; sharing with other shoppers needs the proposed Supabase
+  tables and the person's consent, so the copy must not promise other people's finds yet.
 - **Scanner:** live barcode, typed barcode, barcode from a photo. Results are *estimates* from the label, not medical
   advice and never a promise of "no spike". The Deep analyze link opens the LOWiSPIKE GPT; the photo upload there is manual
   and nothing comes back into the app automatically.

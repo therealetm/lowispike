@@ -99,3 +99,14 @@ test('ONBOARDING.md names only files that exist, and covers every feature a new 
     const feat = fs.readdirSync(R).filter(f => /^(grocery|shop-check|shop-hunt|food-combo|combo|power-food|food-hunt)[a-z0-9-]*\.js$/.test(f));
     feat.forEach(f => assert.ok(md.includes('`' + f + '`'), f + ' is a new shopping feature: explain it in the onboarding and list it in ONBOARDING.md'));
 });
+
+test('the shopping hunt follows the typed rhythm: same range, read through LowiShopPlan, no second editor when it exists', () => {
+    const G = require('../grocery-hunt-core.js');
+    assert.strictEqual(G.EVERY_MIN, C.MIN);
+    assert.strictEqual(G.EVERY_MAX, C.MAX);
+    const g = read('grocery-hunt.js');
+    assert.match(g, /W\.LowiShopPlan/);
+    assert.match(g, /sp\.openEditor\(\)/);
+    const h = read('index.html');
+    assert.ok(h.indexOf('src="shop-plan.js') < h.indexOf('src="grocery-hunt.js'), 'rhythm loads before the hunt');
+});

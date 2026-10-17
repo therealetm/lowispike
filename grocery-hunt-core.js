@@ -20,7 +20,8 @@
     'use strict';
     const DAY = 864e5;
     const KEY = 'lowi.grocery.v1';
-    const EVERY_MIN = 2, EVERY_MAX = 21, EVERY_DEF = 7;
+    /* Oct 17: same range the person can type in the shopping rhythm (shop-plan-core.js MIN/MAX), so the glow follows their number */
+    const EVERY_MIN = 1, EVERY_MAX = 60, EVERY_DEF = 7;
     const HOLD_EXTRA = 1;          // days of slack after the rhythm before the glow starts fading
     const SCAN_GRACE = 3;          // "couldn't scan": hold the glow this many more days, once per cycle
     const PAUSE_MAX = 21;          // longest pause in days

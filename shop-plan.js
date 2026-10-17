@@ -16,18 +16,21 @@
         en: {
             over: 'GROCERY SHOPPING', h: 'Healthy days start in the shop', p: 'How often do you usually go grocery shopping? Type your own number.',
             every: 'I shop every', days: 'days', daysQ: 'Usual days', opt: '(optional)', store: 'Usual shop', storePh: 'e.g. Edeka on Main Street',
+            does: 'Scan two different products on a shopping day and your worlds glow brighter until about a day after your next shop is due, then slowly fade back to normal.',
             note: 'Missing a shop never means you ate badly. Change it any time in Profile \u203a About you.',
             need: 'Type a number from 1 to 60, or tap Later.', save: 'Save', later: 'Later', saved: 'Shopping rhythm saved.', profT: 'Grocery shopping', profSet: 'Set my rhythm', profEdit: 'Change', close: 'Close'
         },
         de: {
             over: 'EINKAUFEN', h: 'Gesunde Tage beginnen im Laden', p: 'Wie oft gehst du normalerweise einkaufen? Trag deine eigene Zahl ein.',
             every: 'Ich kaufe ein alle', days: 'Tage', daysQ: 'Meist an diesen Tagen', opt: '(freiwillig)', store: 'Dein Laden', storePh: 'z. B. Edeka in der Hauptstra\u00dfe',
+            does: 'Scannst du an einem Einkaufstag zwei verschiedene Produkte, leuchten deine Welten heller, bis etwa einen Tag nach deinem n\u00e4chsten Einkauf, und werden dann langsam wieder normal.',
             note: 'Ein verpasster Einkauf hei\u00dft nie, dass du schlecht gegessen hast. \u00c4ndern kannst du es jederzeit unter Profil \u203a \u00dcber dich.',
             need: 'Trag eine Zahl von 1 bis 60 ein oder tippe auf Sp\u00e4ter.', save: 'Speichern', later: 'Sp\u00e4ter', saved: 'Einkaufsrhythmus gespeichert.', profT: 'Einkaufen', profSet: 'Rhythmus eintragen', profEdit: '\u00c4ndern', close: 'Schlie\u00dfen'
         },
         es: {
             over: 'LA COMPRA', h: 'Los d\u00edas sanos empiezan en la tienda', p: '\u00bfCada cu\u00e1nto sueles hacer la compra? Escribe tu propio n\u00famero.',
             every: 'Compro cada', days: 'd\u00edas', daysQ: 'D\u00edas habituales', opt: '(opcional)', store: 'Tu tienda', storePh: 'p. ej. Edeka de la calle Mayor',
+            does: 'Escanea dos productos distintos un d\u00eda de compra y tus mundos brillar\u00e1n m\u00e1s hasta un d\u00eda despu\u00e9s de tu pr\u00f3xima compra; luego vuelven poco a poco a la normalidad.',
             note: 'Saltarte una compra nunca significa que comiste mal. C\u00e1mbialo cuando quieras en Perfil \u203a Sobre ti.',
             need: 'Escribe un n\u00famero del 1 al 60, o toca M\u00e1s tarde.', save: 'Guardar', later: 'M\u00e1s tarde', saved: 'Ritmo de compra guardado.', profT: 'La compra', profSet: 'Definir mi ritmo', profEdit: 'Cambiar', close: 'Cerrar'
         }
@@ -58,6 +61,7 @@
             '<div class="r2-obsub spl-sub">' + esc(t('daysQ')) + ' <span>' + esc(t('opt')) + '</span></div>' +
             '<div class="r2-chips spl-days" role="group" aria-label="' + esc(t('daysQ')) + '">' + order.map(i => '<button type="button" class="r2-chip spl-day' + (p.days.indexOf(i) >= 0 ? ' on' : '') + '" aria-pressed="' + (p.days.indexOf(i) >= 0) + '" data-spl-day="' + i + '">' + esc(names[i]) + '</button>').join('') + '</div>' +
             '<label class="r2-fl spl-store"><span>' + esc(t('store')) + ' ' + esc(t('opt')) + '</span><input id="' + id + 'Store" maxlength="60" autocomplete="off" placeholder="' + esc(t('storePh')) + '" value="' + esc(p.store) + '"></label>' +
+            (window.LowiGroceryCore ? '<p class="spl-note spl-does">' + esc(t('does')) + '</p>' : '') +
             '<p class="spl-note">' + esc(t('note')) + '</p>' +
             '<div class="r2-err spl-err" id="' + id + 'Err" role="alert"></div></div>';
     }

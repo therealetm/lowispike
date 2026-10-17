@@ -45,11 +45,14 @@ test('the one goal comes from the active fast, then water, then the next action'
   assert.equal(R.pickGoal({fasting: true, fastEnd: '12:00', water: 0}, 'de').text, 'Halte dein Fastenfenster bis 12:00.');
   assert.equal(R.pickGoal({fasting: true}, 'en').kind, 'fast');
   const w = R.pickGoal({water: 2, waterGoal: 8, hour: 9, next: 'Log food'}, 'en');
-  assert.equal(w.kind, 'water'); assert.match(w.text, /3 glasses/);
+  assert.equal(w.kind, 'water'); assert.match(w.text, /3 cups/);
   assert.match(R.pickGoal({water: 7, waterGoal: 8, hour: 9}, 'de').text, /1 Glas/);
   assert.equal(R.pickGoal({water: 8, waterGoal: 8, hour: 9, next: 'Essen eintragen'}, 'de').text, 'Als N\u00e4chstes: Essen eintragen');
   assert.equal(R.pickGoal({water: 1, hour: 21, next: 'Scan'}, 'en').kind, 'next', 'no water nudge late at night');
   assert.equal(R.pickGoal({water: 8}, 'es').kind, 'log');
+  /* Oct 17: the default goal is 6 cups */
+  assert.match(R.pickGoal({water: 4, hour: 9}, 'en').text, /2 cups/);
+  assert.equal(R.pickGoal({water: 6, hour: 9, next: 'Scan'}, 'en').kind, 'next', '6 cups meets the default goal');
 });
 
 test('flexible goals next to the 2/5/7/14 streak choices, each with label, hint and herb reaction', () => {

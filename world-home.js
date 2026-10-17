@@ -78,7 +78,7 @@
         let hud = D.getElementById('whHud');
         if (hud && hud.isConnected) return hud;
         hud = D.createElement('div'); hud.id = 'whHud'; hud.className = 'wh-hud';
-        const water = btn('wh-cell wh-water', T('Water, add a glass', 'Wasser, ein Glas dazu', 'Agua, un vaso más'), '<span class="wh-cell-fill" aria-hidden="true"></span><span class="wh-cell-tx"><small></small><b></b></span>', { 'data-sp': 'water' });
+        const water = btn('wh-cell wh-water', T('Water, add a cup', 'Wasser, ein Glas dazu', 'Agua, un vaso más'), '<span class="wh-cell-fill" aria-hidden="true"></span><span class="wh-cell-tx"><small></small><b><span class="wh-num"></span> <u class="wh-unit"></u></b></span>', { 'data-sp': 'water' });
         const today = btn('wh-todaybtn', T('Open today', 'Heute öffnen', 'Abrir hoy'), ICO.today + '<span><b></b><small></small></span>', { 'data-wh': 'today', 'aria-expanded': 'false', 'aria-controls': 'whToday' });
         const zoom = btn('wh-zoom', T('World map: show the whole world', 'Weltkarte: ganze Welt zeigen', 'Mapa del mundo: ver todo el mundo'), ICO.out + '<span class="wh-zoom-tx"></span>', { 'data-wh': 'zoom' });
         wireStick(zoom);
@@ -138,10 +138,14 @@
             const f = parseFloat(tile.style.getPropertyValue('--lv-fill')) || 0;
             wc.style.setProperty('--wh-fill', String(Math.max(0, Math.min(1, f))));
             const lab = tile.getAttribute('aria-label') || '', m = lab.match(/(\d+)\s*\/\s*(\d+)/);
+            /* Oct 17 (Emmanuel): the count says its unit, "0/6 cups", in the same n/goal form as Meals and Move */
             const small = wc.querySelector('small'), b = wc.querySelector('b');
-            const sm = T('Water', 'Wasser', 'Agua'), bv = m ? m[1] + '/' + m[2] : '+1';
+            let num = b.querySelector('.wh-num'), unit = b.querySelector('.wh-unit');
+            if (!num || !unit) { b.innerHTML = '<span class="wh-num"></span> <u class="wh-unit"></u>'; num = b.querySelector('.wh-num'); unit = b.querySelector('.wh-unit'); }
+            const sm = T('Water', 'Wasser', 'Agua'), bv = m ? m[1] + '/' + m[2] : '+1', uv = m ? T('cups', 'Gläser', 'vasos') : '';
             if (small.textContent !== sm) small.textContent = sm;
-            if (b.textContent !== bv) b.textContent = bv;
+            if (num.textContent !== bv) num.textContent = bv;
+            if (unit.textContent !== uv) unit.textContent = uv;
             wc.setAttribute('aria-label', (lab || sm) + '');
         }
         const tb = hud.querySelector('.wh-todaybtn b'), ts = hud.querySelector('.wh-todaybtn small');

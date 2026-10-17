@@ -134,7 +134,7 @@ function facts(){let v={};try{v=window.LowiLiving&&LowiLiving.live?LowiLiving.li
  const age=p?Math.round((new Date(dayKey(now)).getTime()-new Date(dayKey(p.created)).getTime())/864e5):0;
  return Object.assign({},v,{fastH,fastBestTodayH:best,fastShortRecent:short,spikeRecent:spike,movedYesterday:movedY,planAgeDays:age});}
 function status(p,f){f=f||facts();return p.actions.map(a=>({id:a.id,why:a.why,done:C.isDone(a.id,f)}));}
-const AV=f=>({goal:(f&&f.waterGoal)||8});
+const AV=f=>({goal:(f&&f.waterGoal)||6});
 
 /* deep links: each action opens its own module */
 function spot(sel){let tries=0;const first=()=>{const el=D.querySelector(sel);const r=el&&el.getBoundingClientRect();

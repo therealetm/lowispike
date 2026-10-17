@@ -5495,7 +5495,7 @@ const HEDGE = "Rough timings. Your last meal, activity and body all shift them. 
 /* fs-l10n */
 const FS_EN = STAGES.map(s => ({n:s.n, t:s.t, x:s.x}));
 const FS_UI = {
-  en: {of:"of", now:"Fasting · your body now", next:(n, d) => "Next: " + n.toLowerCase() + " in about " + d, past:"Past the last marker. Listen to your body.", last:"Last meal", water:"+ Water", waterAria:"Add a glass of water", status:"Body status", here:d => "You are here · " + d + " in", inAbout:"In about", hedge:HEDGE, when:"When did you last eat?", justNow:"Just now", m:"m"},
+  en: {of:"of", now:"Fasting · your body now", next:(n, d) => "Next: " + n.toLowerCase() + " in about " + d, past:"Past the last marker. Listen to your body.", last:"Last meal", water:"+ Water", waterAria:"Add a cup of water", status:"Body status", here:d => "You are here · " + d + " in", inAbout:"In about", hedge:HEDGE, when:"When did you last eat?", justNow:"Just now", m:"m"},
   de: {of:"von", now:"Fasten · dein Körper gerade", next:(n, d) => "Als Nächstes: " + n + " in etwa " + d, past:"Über die letzte Marke hinaus. Hör auf deinen Körper.", last:"Letzte Mahlzeit", water:"+ Wasser", waterAria:"Ein Glas Wasser hinzufügen", status:"Körperstatus", here:d => "Du bist hier · seit " + d, inAbout:"In etwa", hedge:"Grobe Zeiten. Deine letzte Mahlzeit, Bewegung und dein Körper verschieben sie. Du nimmst Diabetes-Medikamente? Frag vor dem Fasten deine Ärztin oder deinen Arzt.", when:"Wann hast du zuletzt gegessen?", justNow:"Gerade eben", m:"min",
     st:[
       {n:"Blutzucker steigt", t:"Direkt nach deiner letzten Mahlzeit", x:"Kohlenhydrate aus deiner Mahlzeit werden zu Glukose, deshalb <b>steigt dein Blutzucker</b>. <b>Insulin</b> bringt sie in deine Zellen. Kleinere Anstiege genau hier sind das, worum es bei LOWiSPIKE geht."},
@@ -19726,7 +19726,7 @@ window.LowiVitalsBridge = {
   },
   editMeal(data){const log=S.logs.find(l=>l.id===data.id||l.eventId===data.id||String(l.ts)===data.id);if(!log)return false;const previous={t:log.t,macros:log.macros};log.t=data.t;log.macros=data.macros;if(!save()){Object.assign(log,previous);return false;}return{log,xp:0};},
   bonus(id,amt,label){return award(amt,label,null,"macro-goal",id);},
-  water(id){let f={};try{f=JSON.parse(localStorage.getItem("lowi_fast_v1")||"{}");}catch(e){}f.waterEvents=f.waterEvents||{};if(f.waterEvents[id])return 0;f.waterEvents[id]=Date.now();f.water=f.water||{};f.water[today()]=(+f.water[today()]||0)+1;try{localStorage.setItem("lowi_fast_v1",JSON.stringify(f));}catch(e){return 0;}return this.complete("water","water:"+id,{amt:2,perDay:8,src:"water",label:"Water logged"});},
+  water(id){let f={};try{f=JSON.parse(localStorage.getItem("lowi_fast_v1")||"{}");}catch(e){}f.waterEvents=f.waterEvents||{};if(f.waterEvents[id])return 0;f.waterEvents[id]=Date.now();f.water=f.water||{};f.water[today()]=(+f.water[today()]||0)+1;try{localStorage.setItem("lowi_fast_v1",JSON.stringify(f));}catch(e){return 0;}return this.complete("water","water:"+id,{amt:2,perDay:6,src:"water",label:"Water logged"});},
   initialize(){ if (window.LowiHerbCore) { LowiHerbCore.sync(S); save(); } },
   openMeal(){ LowiHost.go("home"); const b=document.querySelector('[data-g2h-open="plan"]'); if(b)b.click(); },
   complete(kind,id,options){

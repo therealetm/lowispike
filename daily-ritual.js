@@ -113,8 +113,8 @@
         ctx = ctx || {};
         if (ctx.fasting) return { kind: 'fast', text: ctx.fastEnd ? L(lang, 'Keep your fasting window until ' + ctx.fastEnd + '.', 'Halte dein Fastenfenster bis ' + ctx.fastEnd + '.', 'Mant\u00e9n tu ventana de ayuno hasta las ' + ctx.fastEnd + '.')
             : L(lang, 'Keep your fasting window going.', 'Bleib in deinem Fastenfenster.', 'Sigue con tu ventana de ayuno.') };
-        const goalW = ctx.waterGoal || 8, w = Math.max(0, +ctx.water || 0);
-        if (w < goalW && (ctx.hour == null || ctx.hour < 20)) { const n = Math.min(goalW - w, 3); return { kind: 'water', act: 'water', text: L(lang, n === 1 ? 'Drink 1 glass of water and tap it in.' : 'Drink ' + n + ' glasses of water and tap them in.', n === 1 ? 'Trink 1 Glas Wasser und tipp es ein.' : 'Trink ' + n + ' Gl\u00e4ser Wasser und tipp sie ein.', n === 1 ? 'Bebe 1 vaso de agua y an\u00f3talo.' : 'Bebe ' + n + ' vasos de agua y an\u00f3talos.') }; }
+        const goalW = ctx.waterGoal || 6, w = Math.max(0, +ctx.water || 0);
+        if (w < goalW && (ctx.hour == null || ctx.hour < 20)) { const n = Math.min(goalW - w, 3); return { kind: 'water', act: 'water', text: L(lang, n === 1 ? 'Drink 1 cup of water and tap it in.' : 'Drink ' + n + ' cups of water and tap them in.', n === 1 ? 'Trink 1 Glas Wasser und tipp es ein.' : 'Trink ' + n + ' Gl\u00e4ser Wasser und tipp sie ein.', n === 1 ? 'Bebe 1 vaso de agua y an\u00f3talo.' : 'Bebe ' + n + ' vasos de agua y an\u00f3talos.') }; }
         if (ctx.next) return { kind: 'next', act: 'next', text: L(lang, 'Next up: ', 'Als N\u00e4chstes: ', 'Lo siguiente: ') + ctx.next };
         return { kind: 'log', text: L(lang, 'Log one meal today.', 'Trag heute eine Mahlzeit ein.', 'Anota una comida hoy.') };
     }
@@ -241,7 +241,7 @@
         return dayNumber(f, todayK);
     }
     function goalCtx() {
-        const now = new Date(), k = dayKey(now), ctx = { hour: now.getHours(), waterGoal: 8 };
+        const now = new Date(), k = dayKey(now), ctx = { hour: now.getHours(), waterGoal: 6 };
         try { const st = W.LowiFastBubble && LowiFastBubble.state ? LowiFastBubble.state() : null; ctx.fasting = !!(st && st.on && st.running && !st.done); } catch (e) {}
         if (ctx.fasting) { const c = $('#spFast .sp-fast-copy'); const m = c && c.textContent.match(/(\d{1,2}:\d{2})(?!.*\d{1,2}:\d{2})/); if (m) ctx.fastEnd = m[1]; }
         try { if (W.LowiFast && typeof LowiFast.water === 'function') ctx.water = +LowiFast.water(k) || 0; else { const f = JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}'); ctx.water = +(f.water && f.water[k]) || 0; } } catch (e) { ctx.water = 0; }

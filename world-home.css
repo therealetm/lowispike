@@ -46,6 +46,9 @@ html.wh-home .wh-hud { display: block; position: fixed; inset: 0; z-index: 3; po
 .wh-cell-tx { position: relative; display: flex; flex-direction: column; align-items: center; line-height: 1.1; text-shadow: 0 1px 6px rgba(0,30,80,.6); }
 .wh-cell-tx small { font-size: 11px; opacity: .9; }
 .wh-cell-tx b { font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; }
+/* Oct 17: the water count names its unit, "0/6 cups"; the unit is smaller so it fits inside the bubble */
+.wh-cell-tx b .wh-unit { text-decoration: none; font-size: .62em; font-weight: 650; opacity: .9; letter-spacing: .1px; }
+.wh-cell-tx b .wh-unit:empty { display: none; }
 .wh-cell:active, .wh-name:active, .wh-todaybtn:active, .wh-zoom:active { transform: translate(-50%, -50%) scale(.95); }
 .wh-name:active { transform: translateX(-50%) scale(.96); }
 /* today + zoom, one thumb row above the tab bar */

@@ -47,7 +47,7 @@
         start: ['A fresh start', 'Ein neuer Anfang', 'Un nuevo comienzo'],
         meals: ['meals logged', 'Mahlzeiten eingetragen', 'comidas registradas'],
         meal1: ['meal logged', 'Mahlzeit eingetragen', 'comida registrada'],
-        drink: ['Glass logged. I drink with you!', 'Glas eingetragen. Ich trinke mit!', 'Vaso registrado. ¡Bebo contigo!'],
+        drink: ['Cup logged. I drink with you!', 'Glas eingetragen. Ich trinke mit!', 'Vaso registrado. ¡Bebo contigo!'],
         waterSaved: ['Water logged', 'Wasser eingetragen', 'Agua registrada'],
         captured: ['Caught for Misty', 'Für Misty eingefangen', 'Capturado para Misty'],
         glow: ['Caught! My leaves are glowing.', 'Eingefangen! Meine Blätter leuchten.', '¡Capturado! Mis hojas brillan.'],
@@ -142,7 +142,7 @@
         oneTap: ['Log again', 'Nochmal eintragen', 'Registrar de nuevo'],
         manual: ['Manual', 'Manuell', 'Manual'],
         waterLabel: ['Water', 'Wasser', 'Agua'],
-        glasses: ['glasses', 'Gläser', 'vasos'],
+        glasses: ['cups', 'Gläser', 'vasos'],
         mealLabel: ['Food', 'Essen', 'Comida'],
         mealOne: ['meal', 'Mahlzeit', 'comida'],
         mealMany: ['meals', 'Mahlzeiten', 'comidas'],
@@ -209,7 +209,7 @@
         return T.name(p, m);
     }
 
-    const WATER_GOAL = 8;
+    const WATER_GOAL = 6; /* Oct 17: 6 cups a day, the same goal as the Home water bubble */
     const locale = () => ({
         de: 'de-DE',
         es: 'es-ES'

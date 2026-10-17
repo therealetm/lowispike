@@ -42,6 +42,7 @@ html.lv-on #spHome .sp-log-rows { display: none !important; }
 .lv-tx { display: flex; flex-direction: column; min-width: 0; gap: 0; line-height: 1.12; }
 .lv-tx small { font-size: 10.5px; color: var(--muted, #9aa); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: .1px; }
 .lv-tx b { font-size: 13.5px; font-weight: 750; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lv-tx b .lv-unit { text-decoration: none; font-size: .78em; font-weight: 650; }
 .lv-tx em { font-style: normal; font-size: 10.5px; color: color-mix(in srgb, var(--lv-a) 80%, var(--text, #fff)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* level ring */

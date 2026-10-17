@@ -74,12 +74,27 @@
         const aria = label() + ' ' + v.text + '. ' + T('Tap to log a meal, long press to see today.', 'Tippen, um Essen einzutragen, lange drücken für heute.', 'Toca para registrar una comida, mantén pulsado para ver hoy.');
         if (b.getAttribute('aria-label') !== aria) b.setAttribute('aria-label', aria);
     }
+    /* Misty's HOME cell, never where she drifts to: while the camera follows her flight (autopilot, steering) misty-flight.js slides
+       #spBubble by --mf-bx / --mf-by (html.mf-roam). Mirroring across that moved box made Meals chase her across the screen
+       (Oct 17, E-man: "the meal bubble moved ... the same mistake as that other thing") - the same rule as move-bubble.js homeRect(). */
+    function homeRect(mi) {
+        const q = mi.getBoundingClientRect();
+        if (!D.documentElement.classList.contains('mf-roam')) return q;
+        const dx = parseFloat(mi.style.getPropertyValue('--mf-bx')) || 0, dy = parseFloat(mi.style.getPropertyValue('--mf-by')) || 0;
+        return { left: q.left - dx, top: q.top - dy, right: q.right - dx, bottom: q.bottom - dy, width: q.width, height: q.height };
+    }
     /* the mirror of the movement bubble across Misty's centre */
     function place() {
         const b = ensure(); if (!b) return;
         const hud = D.getElementById('whHud'), mi = D.getElementById('spBubble'), mv = hud && hud.querySelector('.wh-move');
         if (!hud || !mi || !mv || !D.documentElement.classList.contains('wh-home')) return;
-        const hr = hud.getBoundingClientRect(), mr = mi.getBoundingClientRect();
+        /* while the UI is faded for Misty's flight, and while it fades back in, the spot stays where it was */
+        const root = D.documentElement.classList;
+        if (root.contains('lw-clean') || root.contains('lw-clean-out')) return;
+        /* while she is out flying (pad not idle / camera roaming) keep the spot once it is set */
+        const pm = (D.getElementById('whPad') || { dataset: {} }).dataset.mode;
+        if (((pm && pm !== 'idle') || root.contains('mf-roam')) && b.style.getPropertyValue('--wme-x')) return;
+        const hr = hud.getBoundingClientRect(), mr = homeRect(mi);
         if (!hr.width || !mr.width) return;
         /* the movement bubble's own spot (its --wm-x/--wm-y, in HUD px), not its box: no float or squish leaks into the mirror */
         const cs = getComputedStyle(mv), mx = parseFloat(cs.left), my = parseFloat(cs.top);
@@ -142,6 +157,6 @@
         setInterval(() => { if (!D.hidden) soon(); }, 1500);
         [400, 1300, 3200].forEach(ms => setTimeout(soon, ms));
     }
-    W.LowiMealsBubble = { paint, place, placeDayNight, details, log: logMeal, el: () => ensure(), core: CORE };
+    W.LowiMealsBubble = { paint, place, placeDayNight, details, log: logMeal, homeRect, el: () => ensure(), core: CORE };
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', () => setTimeout(boot, 0), { once: true }); else setTimeout(boot, 0);
 })(typeof window !== 'undefined' ? window : null);

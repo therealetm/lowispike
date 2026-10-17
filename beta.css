@@ -765,9 +765,18 @@ html.spirit-app #tab-home #g2hTiles .g2h-tile {
 .rs-sh,
 .r2-sh,
 .pnl,
-.sp-sheet .r2-sh,
+.sp-sheet .r2-sh {
+    background: var(--b-solid) !important;
+    background-image: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    opacity: 1;
+}
+
 /* Oct 17 (E-man: the leveling-up bar is "very big and not in our style, and very distracting"):
-   the level-up pop is a small chip of Misty's bubble glass above the tab bar, one line, no gold box */
+   the level-up pop is a small chip of Misty's bubble glass above the tab bar, one line, no gold box.
+   Its own rule: when it shared the sheet selector list above, every bottom sheet got opacity 0 and a pill shape
+   (Meals tap "does nothing", only the X) - keep it separate. */
 .r3m-pop {
     display: flex !important; align-items: center; gap: 6px; width: auto !important; max-width: min(320px, calc(100vw - 32px)) !important;
     min-height: 32px; box-sizing: border-box; padding: 5px 12px 5px 13px !important; border-radius: 99px !important;

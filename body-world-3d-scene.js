@@ -7,6 +7,9 @@ export function createWorld(THREE, canvas, opts) {
     const small = !!opts.small, places = opts.places || [];
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: (window.devicePixelRatio || 1) < 2, alpha: false, powerPreference: 'high-performance', stencil: false });
     let dprCap = opts.dprCap || 2, dpr = Math.min(window.devicePixelRatio || 1, dprCap);
+    /* sharpness floor + ceiling for the frame-time watcher in frame(): never below 1.5x on a retina screen, back up to the cap when smooth */
+    const dprTop = dpr, dprFloor = Math.min(dprTop, (window.devicePixelRatio || 1) >= 2 ? 1.5 : 1);
+    let hiFor = 0, dprDropAt = -1e9; /* no climbing back for 20 s after a step down: no flip-flopping sharpness */
     renderer.setPixelRatio(dpr);
     const scene = new THREE.Scene();
     const PAL = {
@@ -586,7 +589,13 @@ export function createWorld(THREE, canvas, opts) {
         frames.push(dt); if (frames.length > 90) frames.shift();
         if (frames.length >= 90) {
             const avg = frames.reduce((a, b) => a + b, 0) / frames.length;
-            if (avg > 1 / 38 && dpr > 1) { lowFor += dt; if (lowFor > 2) { dpr = Math.max(1, dpr - 0.25); renderer.setPixelRatio(dpr); renderer.setSize(W, H, false); lowFor = 0; frames = []; } } else lowFor = 0;
+            /* Oct 17 (E-man: the bubbles look "pixely"): this used to step down to 1x and never come back. On a 3x iPhone that is a
+               3x stretched canvas with no antialias (antialias is off at dpr >= 2), so every living bubble went jagged - and a phone
+               in Low Power Mode (30 Hz) or a warm phone always tripped it. Now it never goes below dprFloor (1.5 on retina screens)
+               and climbs back to full sharpness after a few smooth seconds. */
+            if (avg > 1 / 38 && dpr > dprFloor) { lowFor += dt; hiFor = 0; if (lowFor > 2) { dprDropAt = now; dpr = Math.max(dprFloor, dpr - 0.25); renderer.setPixelRatio(dpr); renderer.setSize(W, H, false); lowFor = 0; frames = []; } }
+            else if (avg < 1 / 50 && dpr < dprTop && now - dprDropAt > 20000) { lowFor = 0; hiFor += dt; if (hiFor > 4) { dpr = Math.min(dprTop, dpr + 0.25); renderer.setPixelRatio(dpr); renderer.setSize(W, H, false); hiFor = 0; frames = []; } }
+            else { lowFor = 0; hiFor = 0; }
         }
         /* Oct 16 speed pass (E-man: the newest iPhone overheats): nobody touching, no camera flight, no Community warp, no gyro swing,
            only the slow drift of the bloodstream moving = draw every second screen refresh (about 30 a second). Time still runs at full

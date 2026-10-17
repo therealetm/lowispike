@@ -67,6 +67,9 @@
         const gone = !css || css.display === 'none' || css.visibility === 'hidden' || +css.opacity < 0.15 || !b.offsetWidth;
         el.classList.toggle('hc-away', gone);
         H.classList.toggle('hc-slot', !!useSlot);
+        /* an XP card (herb-quests.js) that popped just before the line came: move it below the line */
+        const pop = D.querySelector('.hq-pop.on');
+        if (pop && !el.classList.contains('hc-away')) { const a = el.getBoundingClientRect(), q = pop.getBoundingClientRect(); if (a.height && q.top < a.bottom && q.bottom > a.top) pop.style.top = Math.round(a.bottom + 10) + 'px'; }
     }
     function render() {
         const m = H.classList.contains('wh-home') ? model(cur, lang(), cur && worldName(cur.world)) : null;

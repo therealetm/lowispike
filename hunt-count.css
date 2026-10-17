@@ -27,6 +27,8 @@ html.hc-on.hc-slot .hq-slot.arr-on .arr-card.arr-quest { border-bottom-left-radi
 /* the box itself steps away in some views (sheets, map zoom, warps; hunt-count.js mirrors it): the line goes with it */
 .hc-line.hc-away { opacity: 0 !important; visibility: hidden; }
 html:not(.wh-home) .hc-line { display: none !important; }
+/* clean autopilot view (clean-view.js, html.lw-clean) hides the Daily Quest: the line goes too */
+html.lw-clean .hc-line { opacity: 0 !important; visibility: hidden; }
 /* light look */
 html[data-theme="light"] .hc-line, html[data-ui=light] .hc-line { color: #12345a; text-shadow: none; }
 html[data-theme="light"] .hc-w, html[data-ui=light] .hc-w { color: #2b6aa8; }

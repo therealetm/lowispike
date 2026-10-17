@@ -144,6 +144,8 @@
             verdictHTML(lvl, o.est) +
             '<button type="button" class="ss-add" data-ss="add">' + IC.cart + '<span>' + esc(T('add')) + '</span></button>' +
             detailsHTML(p, r) + '</div>';
+        /* Oct 17 grocery hunt (grocery-hunt.js): a barcode really scanned (camera, typed digits or a barcode photo) is a catch; a product picked from a name search is not */
+        if (o.code) { try { W.dispatchEvent(new CustomEvent('lowi:shop-scan', { detail: { barcode: code, name, brand: String(p.brand || ''), level: lvl, card: c } })); } catch (e) {} }
     }
     function unknown(el, code, offline) {
         cur = null;

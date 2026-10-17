@@ -563,8 +563,11 @@ export function createWorld(THREE, canvas, opts) {
         if (C.deepOn !== dv) { C.deepOn = dv; [C.mine, C.mineGlow, C.cells, C.nodes, C.web, C.threads, C.beads, C.sparkPts, C.motes].concat(C.others, C.haze).forEach(o => { o.visible = dv; }); }
         skyTmp.copy(camera.position).applyAxisAngle(skyUp, -C.g.rotation.y).multiplyScalar(skyW); C.stars.position.copy(skyTmp); C.farCells.position.copy(skyTmp);
         deepStep(C, camL, dt, tt, calm);
-        C.mine.material.uniforms.uO.value = memW * 0.9; C.mine.material.uniforms.uT.value = tt;
-        C.mineGlow.material.opacity = memW * 0.22;
+        /* Oct 17 grocery hunt: a fresh shopping check-in makes your own world in the spirit realm glow a little brighter; the extra
+           fades back to 0 when check-ins lapse (grocery-hunt.js, LowiGrocery.glow 0..1). 0 = exactly the look from before. */
+        const shopK = window.LowiGrocery && typeof window.LowiGrocery.glow === 'function' ? Math.max(0, Math.min(1, +window.LowiGrocery.glow() || 0)) : 0;
+        C.mine.material.uniforms.uO.value = memW * (0.9 + 0.1 * shopK); C.mine.material.uniforms.uT.value = tt;
+        C.mineGlow.material.opacity = memW * (0.22 + 0.2 * shopK);
         C.others.forEach((o, i) => { const u = o.userData; o.scale.setScalar(u.r * (1 + 0.02 * Math.sin(tt * 0.6 + u.p))); o.material.uniforms.uO.value = farW * 0.8 * calm; o.material.uniforms.uT.value = tt + i; });
         C.cells.material.uniforms.uO.value = Math.max(memW * 0.5, farW) * calm;
         C.nodes.material.uniforms.uO.value = Math.max(memW * 0.5, farW) * 0.9 * calm;

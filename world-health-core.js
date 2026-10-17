@@ -92,11 +92,17 @@
             wsum += WEIGHTS[i]; acc += WEIGHTS[i] * p.total;
             for (const k in agg) agg[k] += WEIGHTS[i] * p[k];
         }
-        if (!wsum) return { score: START, tier: tierOf(START), empty: true, parts: null, days };
+        const sb = shopBoost(now);
+        if (!wsum) { const e = Math.min(100, START + sb); return { score: e, tier: tierOf(e), empty: true, parts: null, days, shop: sb }; }
         for (const k in agg) agg[k] /= wsum;
-        const s = Math.round(FLOOR + (100 - FLOOR) * clamp(acc / wsum, 0, 1));
-        return { score: s, tier: tierOf(s), empty: false, parts: agg, days };
+        const s = Math.min(100, Math.round(FLOOR + (100 - FLOOR) * clamp(acc / wsum, 0, 1)) + sb);
+        return { score: s, tier: tierOf(s), empty: false, parts: agg, days, shop: sb };
     }
+    /* Oct 17 grocery hunt (grocery-hunt.js): the shopping glow adds up to a few points while a shopping check-in is fresh and fades
+       back to 0. A bonus only: it can never pull the world below what the day's own habits give it. No hook set = no change. */
+    let boostFn = null;
+    function setBoost(fn) { boostFn = typeof fn === 'function' ? fn : null; }
+    function shopBoost(now) { if (!boostFn) return 0; let b = 0; try { b = +boostFn(now) || 0; } catch (e) { b = 0; } return Math.round(clamp(b, 0, 10)); }
     const tierOf = s => s >= 70 ? 'bright' : s >= 45 ? 'steady' : 'murky';
     const lerp = (a, b, t) => a + (b - a) * t;
     function look(s) {
@@ -143,7 +149,7 @@
         return head + ' ' + tr('t_' + tip(res.parts), li);
     }
     function forState(state, now, li) { const r = score(state, now); r.look = look(r.score); r.line = why(r, li); r.tip = tip(r.parts); return r; }
-    const api = { WEIGHTS, PART_W, FULL, FLOOR, START, FAST, dayKey, verdict, kind, mealKey, fairDay, dayParts, score, tierOf, look, tip, why, forState, COPY };
+    const api = { WEIGHTS, PART_W, FULL, FLOOR, START, FAST, dayKey, verdict, kind, mealKey, fairDay, dayParts, score, setBoost, tierOf, look, tip, why, forState, COPY };
     if (typeof module !== 'undefined' && module.exports) module.exports = api;
     if (root) root.LowiWorldHealth = api;
 })(typeof window !== 'undefined' ? window : globalThis);

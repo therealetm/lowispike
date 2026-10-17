@@ -1,0 +1,95 @@
+/* Oct 17, 2026: Shopping hunt (grocery-hunt.js). Reuses the Move-style membrane panel from store-picks.css (.stp-*); this adds the
+   hunt's own parts: the entry in Shop mode, the glow bar, glimmering hints, combos, the shop map and the power-up aura. */
+.gh-ov { z-index: 410; }
+.gh-file { position: fixed; left: -9999px; top: 0; width: 1px; height: 1px; opacity: 0; }
+
+.gh-entry {
+  display: flex; align-items: center; gap: 12px; width: 100%; margin: 8px 0 4px; padding: 12px 16px; text-align: left;
+  border-radius: 999px; border: 1.5px solid rgba(255, 214, 120, .72); color: #fff; cursor: pointer; font: inherit;
+  background: radial-gradient(130% 160% at 18% 0%, rgba(255, 255, 255, .16), rgba(255, 255, 255, 0) 42%), linear-gradient(135deg, rgba(255, 200, 80, .3), rgba(90, 200, 160, .26));
+  box-shadow: 0 0 16px rgba(255, 210, 110, .28), inset 0 0 12px rgba(155, 135, 210, .35);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+.gh-entry:active { transform: scale(.98); }
+.gh-entry-dot {
+  flex: 0 0 auto; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; color: #3a2600;
+  background: radial-gradient(circle at 34% 26%, rgba(255, 255, 255, .6), rgba(255, 255, 255, 0) 32%), #ffcf4a; box-shadow: 0 0 12px rgba(255, 207, 74, .6);
+}
+.gh-entry-dot svg { width: 19px; height: 19px; }
+
+.gh-chip { margin: 12px 0 4px; padding: 10px 14px; border-radius: 18px; border: 1.2px solid rgba(255, 214, 120, .55);
+  background: linear-gradient(135deg, rgba(255, 200, 80, .16), rgba(90, 200, 160, .12)); display: flex; flex-direction: column; gap: 3px; }
+.gh-chip b { display: flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 800; color: #ffe08a; }
+.gh-chip b svg { width: 16px; height: 16px; }
+.gh-chip small { font-size: 12.5px; line-height: 1.35; opacity: .92; }
+.gh-chip.in-panel { margin: 0 0 12px; }
+.gh-chip-open { align-self: flex-start; margin-top: 6px; padding: 6px 14px; border-radius: 999px; font: inherit; font-size: 12.5px; font-weight: 800; color: #3a2600;
+  background: #ffd76a; border: 0; cursor: pointer; touch-action: manipulation; }
+
+.gh-glow { padding: 12px 14px; border-radius: 22px; margin: 0 0 12px; border: 1.2px solid rgba(143, 231, 255, .35); background: rgba(255, 255, 255, .06); }
+.gh-glow.gh-full { border-color: rgba(255, 214, 120, .65); box-shadow: 0 0 18px rgba(255, 210, 110, .22); }
+.gh-glow-t { display: flex; flex-direction: column; gap: 3px; }
+.gh-glow-t b { font-size: 15px; font-weight: 800; }
+.gh-glow-t small { font-size: 12.5px; opacity: .8; line-height: 1.35; }
+.gh-bar { height: 8px; border-radius: 6px; margin: 10px 0 8px; background: rgba(255, 255, 255, .1); overflow: hidden; }
+.gh-bar i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, #8fe7ff, #ffd76a); box-shadow: 0 0 10px rgba(255, 215, 106, .6); transition: width .6s ease; }
+.gh-trip { font-size: 12.5px; font-weight: 700; opacity: .85; }
+.gh-trip.on { color: #9ff5c9; }
+.gh-acts { display: flex; gap: 8px; margin: 0 0 6px; }
+.gh-acts .stp-go { flex: 1; width: auto; }
+.gh-photo { display: flex; align-items: center; gap: 6px; padding: 0 16px; border-radius: 999px; font-weight: 800; }
+.gh-photo svg { width: 20px; height: 20px; color: var(--mb-acc, #8fe7ff); }
+.gh-q { margin: 10px 4px 6px; font-size: 13px; font-weight: 700; opacity: .85; }
+.gh-day { min-width: 44px; justify-content: center; }
+.gh-life { margin-top: 10px; }
+.gh-tog { white-space: normal; margin: 4px 4px 0; align-items: flex-start; }
+.gh-tog input { margin-top: 1px; }
+
+.gh-hint { position: relative; }
+.gh-hint .gh-state { opacity: .62; }
+.gh-cool { opacity: .6; }
+.gh-spark { flex: 0 0 auto; width: 12px; height: 12px; border-radius: 50%; background: #ffd76a; box-shadow: 0 0 10px #ffd76a; }
+.gh-cool .gh-spark { background: rgba(255, 255, 255, .35); box-shadow: none; }
+.gh-glim .gh-spark { animation: ghGlim 2.2s ease-in-out infinite; }
+@keyframes ghGlim { 0%, 100% { transform: scale(.7); opacity: .55; } 50% { transform: scale(1.15); opacity: 1; } }
+.gh-mini { flex: 0 0 auto; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; padding: 0; color: inherit; cursor: pointer;
+  border: 1.2px solid var(--mb-pill-rim, rgba(143, 231, 255, .42)); background: var(--mb-pill, rgba(255, 255, 255, .08)); touch-action: manipulation; }
+.gh-mini svg { width: 18px; height: 18px; color: var(--mb-acc, #8fe7ff); }
+.gh-mini.sm { width: 28px; height: 28px; margin-left: 4px; }
+.gh-mini.sm svg { width: 14px; height: 14px; }
+
+.gh-combo { padding: 12px 14px; border-radius: 22px; margin: 0 0 8px; border: 1.2px solid rgba(255, 214, 120, .4); background: rgba(255, 200, 80, .07); }
+.gh-combo.done { border-color: rgba(159, 245, 201, .6); }
+.gh-combo-h { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; }
+.gh-combo-h b { font-size: 14.5px; font-weight: 800; }
+.gh-combo-h small, .gh-combo .gh-state { font-size: 12px; opacity: .7; }
+.gh-items { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+.gh-item { display: inline-flex; align-items: center; padding: 4px 6px 4px 12px; min-height: 28px; border-radius: 999px; font-size: 13px; font-weight: 700;
+  border: 1.2px dashed rgba(255, 255, 255, .35); }
+.gh-item.on { border-style: solid; border-color: rgba(159, 245, 201, .7); color: #9ff5c9; padding-right: 12px; }
+.gh-pick i input { width: 20px; height: 20px; accent-color: #ffd76a; }
+.gh-form { display: flex; flex-direction: column; gap: 10px; }
+
+.gh-map { display: block; width: 100%; max-width: 360px; aspect-ratio: 1; margin: 4px auto 6px; border-radius: 24px;
+  background: radial-gradient(circle at 50% 50%, rgba(143, 231, 255, .1), rgba(0, 0, 0, 0) 70%); border: 1px solid rgba(143, 231, 255, .25); }
+.gh-dot { cursor: pointer; }
+.gh-dot circle { fill: rgba(191, 239, 255, .7); }
+.gh-dot.on circle { fill: #8fe7ff; }
+.gh-dot .gh-ring { fill: none; stroke: #ffd76a; stroke-width: .9; animation: ghGlim 2.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.gh-dot.glim > circle:first-child { fill: #ffd76a; }
+.gh-me { fill: #fff; stroke: #8fe7ff; stroke-width: .8; }
+
+.gh-hunt svg { color: #ffd76a; }
+
+.gh-power { position: fixed; inset: 0; z-index: 460; pointer-events: none; display: grid; place-items: center;
+  background: radial-gradient(circle at 50% 55%, rgba(255, 222, 90, .55), rgba(255, 170, 40, .22) 34%, rgba(0, 0, 0, 0) 66%);
+  animation: ghAura 1.1s ease-in-out 3 alternate; transition: opacity .6s ease; }
+.gh-power.out { opacity: 0; }
+.gh-power-t { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #fff; text-shadow: 0 0 18px rgba(255, 200, 60, .9), 0 2px 6px rgba(0, 0, 0, .5); }
+.gh-power-t b { font-size: 32px; font-weight: 900; letter-spacing: .02em; }
+.gh-power-t span { font-size: 16px; font-weight: 800; }
+@keyframes ghAura { from { transform: scale(.94); opacity: .75; } to { transform: scale(1.06); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .gh-glim .gh-spark, .gh-dot .gh-ring, .gh-power { animation: none; }
+}

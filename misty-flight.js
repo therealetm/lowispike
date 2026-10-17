@@ -136,7 +136,7 @@
     }
     function orbitSpin(rad, sleepy) { return ORBIT.W * Math.pow(1 / Math.max(+rad || 0, ORBIT.R_END), 1.2) * (sleepy ? 0.7 : 1); }
     /* at the door: fling her back out (true) or let her in (false). tries = flings so far; refuse = the world's bounce rule said no */
-    function orbitFling(tries, refuse) { return tries < ORBIT.MIN_FLINGS || (!!refuse && tries < ORBIT.TRIES); }
+    function orbitFling(tries, refuse) { return tries < ORBIT.MIN_FLINGS || (!!refuse && tries < ORBIT.TRIES - 1); }
     const core = { K, inReach, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, roams, autoLeave, roamSpot, roamPx, pullAt, fallAt, EXIT, exitHold, outAt, ORBIT, orbitAt, orbitSpin, orbitFling };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!D || !D.addEventListener || W.LowiMistyFlight) return;
@@ -748,7 +748,7 @@
         const out = L > 1e-4 && wl > 1e-4 ? V.want.dot(V.a) / (L * wl) : 0;
         const busy = regionsBusy() || !!r.fly || (S.fallT >= 0 && S.fallT < K.FALL) || ctx.reduced;
         const h = exitHold(S.exH, { dt, mode, mag, out, edge: inR > 0 ? L / inR : 0, busy });
-        S.exH = h.s; S.exVx = vx;
+        S.exH = h.s; S.exVx = vx; S.exE = inR > 0 ? L / inR : 0; S.exO = out;
         if (h.p <= 0) { const keep = S.exH; exitReset(ctx); S.exH = keep; return false; }
         exitFx(ctx, k, h.p, L);
         if (!h.fire) return false;
@@ -907,6 +907,6 @@
         recall: () => { if (S.st === 'idle') { try { if (W.LowiPad) W.LowiPad.mode(''); } catch (e) { } } else S.recallReq = true; },
         wants, frame, core,
         state: () => ({ st: S.st, flew: S.flew, joined: !!S.joined, roam: !!S.rw, inT: +(S.inT || 0).toFixed(1), wpNext: S.wpNext, ap: +S.ap.toFixed(3), near: S.near ? S.near.id : null, nearD: S.near ? +S.near.d.toFixed(2) : null, px: Math.round(S.base), ks: +S.ks.toFixed(3),
-            hs: +S.hs.toFixed(3), exP: +(S.exP || 0).toFixed(3), autoX: S.autoX ? S.autoX.ph : null, orb: S.orb ? { q: +S.orb.q.toFixed(2), tries: S.orb.tries, fling: S.orb.fling > 0 } : null, outPh: S.st === 'out' ? S.oPh : null, push: S.mem && w3() && w3().memU && w3().memU.uPushA ? +w3().memU.uPushA.value.toFixed(3) : 0, p: S.p ? [+S.p.x.toFixed(2), +S.p.y.toFixed(2), +S.p.z.toFixed(2)] : null, log: S.log.slice(-12) })
+            hs: +S.hs.toFixed(3), exP: +(S.exP || 0).toFixed(3), exE: +(S.exE || 0).toFixed(2), exO: +(S.exO || 0).toFixed(2), autoX: S.autoX ? S.autoX.ph : null, orb: S.orb ? { q: +S.orb.q.toFixed(2), tries: S.orb.tries, fling: S.orb.fling > 0 } : null, outPh: S.st === 'out' ? S.oPh : null, push: S.mem && w3() && w3().memU && w3().memU.uPushA ? +w3().memU.uPushA.value.toFixed(3) : 0, p: S.p ? [+S.p.x.toFixed(2), +S.p.y.toFixed(2), +S.p.z.toFixed(2)] : null, log: S.log.slice(-12) })
     };
 })();

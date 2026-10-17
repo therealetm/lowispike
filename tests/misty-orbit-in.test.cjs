@@ -43,7 +43,7 @@ test('the struggle: she is always flung out once, more on a low-energy day, and 
   assert.strictEqual(C.orbitFling(0, false), true, 'first pass always skims and is flung');
   assert.strictEqual(C.orbitFling(1, false), false, 'good energy: in on the second pass');
   assert.strictEqual(C.orbitFling(1, true), true, 'low energy: flung again');
-  assert.strictEqual(C.orbitFling(2, true), true);
+  assert.strictEqual(C.orbitFling(2, true), false, 'always in by the third try (at most two flings)');
   assert.strictEqual(C.orbitFling(C.ORBIT.TRIES, true), false, 'never locked out');
 });
 

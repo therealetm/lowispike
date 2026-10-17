@@ -17639,6 +17639,25 @@ window.LowiF2 = {start, finish, state:() => ({on:F.on, step:F.step, mode:F.mode,
 .f3-go{flex:none;min-height:44px;max-width:44%;padding:0 12px;border-radius:12px;border:0;font:inherit;font-size:14px;font-weight:800;cursor:pointer;
   color:#04121f;background:linear-gradient(180deg,#bfe6ff,#6ec0ff);box-shadow:0 0 14px rgba(110,190,255,.55);-webkit-tap-highlight-color:transparent;line-height:1.15}
 .f3-go i{font-style:normal}
+.f3-skip{flex:none;min-height:44px;padding:0 11px;border-radius:12px;border:1px solid rgba(159,216,255,.45);background:rgba(159,216,255,.06);color:#bfe3ff;font:inherit;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;line-height:1.15;white-space:nowrap}
+.f3-skip:focus-visible{outline:3px solid #9fd8ff;outline-offset:2px}
+.f3-bar i.skip{background:repeating-linear-gradient(135deg,rgba(159,216,255,.3) 0 3px,transparent 3px 6px)}
+.f3-row.skip .f3-rt{opacity:.62}
+.f3-sk{opacity:.8;font-weight:700}
+/* Skip sits in the "Next" line as a small pill, so Start keeps its place and the quest name keeps its room; its hit area reaches
+   past the pill so a thumb finds it (never over Start, which is on the far side of the name) */
+.f3-nxr{display:flex;flex-wrap:nowrap;align-items:center;gap:8px;min-width:0}
+.f3-nxr .f3-nx{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.f3-nxr .f3-pill{flex:none}
+/* a narrow card (phone, German) has no room for both: the pill takes the "Next" line there */
+.f3-cur:has(.f3-pill) .f3-ct{container-type:inline-size}
+@container (max-width:140px){ .f3-nxr .f3-nx{display:none} .f3-nxr .f3-pill i{display:none} }
+.f3-skip.f3-pill{position:relative;min-height:24px;padding:0 9px;border-radius:999px;font-size:11.5px;letter-spacing:.02em}
+.f3-skip.f3-pill i{font-style:normal;opacity:.75}
+.f3-skip.f3-pill::before{content:"";position:absolute;inset:-9px -6px}
+html.spirit-app #tab-home #f3Board .f3-skip:not(.f3-pill){min-height:36px!important;padding:0 10px!important;font-size:12px!important}
+html.spirit-app #tab-home #f3Board .f3-skip.f3-pill{min-height:22px;font-size:10.5px;padding:0 8px}
+html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home .f3-skip:not(.f3-pill){font-size:12px;padding:0 9px}
 .f3-done{display:flex;flex-direction:column;gap:3px;margin-top:10px;padding:12px;border-radius:14px;text-align:center;background:rgba(110,190,255,.12);border:1px solid rgba(182,227,255,.6)}
 .f3-done b{font-size:15px;letter-spacing:.12em;text-transform:uppercase;color:#b6e3ff;text-shadow:0 0 12px rgba(110,190,255,.8)}
 .f3-done span{font-size:13.5px;color:#d6e9ff}
@@ -17669,6 +17688,7 @@ html[data-ui=light] .f3-bar i.on{background:linear-gradient(90deg,#1f7fd6,#4aa3f
 html[data-ui=light] .f3-bar i.cur{background:rgba(13,90,167,.35)}
 html[data-ui=light] .f3-cur{background:#fff;border-color:rgba(13,90,167,.3)}
 html[data-ui=light] .f3-ic{background:rgba(13,90,167,.1)}
+html[data-ui=light] .f3-skip{color:#0d5aa7;background:rgba(13,90,167,.05);border-color:rgba(13,90,167,.35)}
 html[data-ui=light] .f3-go{color:#fff;background:linear-gradient(180deg,#1666bb,#0d4f94);box-shadow:0 4px 12px rgba(13,90,167,.3)}
 html[data-ui=light] .f3-row{border-top-color:rgba(13,90,167,.15)}
 html[data-ui=light] .f3-ck{border-color:rgba(13,90,167,.45)}
@@ -17688,13 +17708,16 @@ const OPEN = "lowi.f3.open", QXP = 10, BONUS = 50, WATER = 2, FASTH = 12, MOVEMI
 const W = {
   en: {tag:"Daily quest", sub:"Clear all 6 today for a +{b} XP bonus.", next:"Next", all:"All quests", less:"Hide quests", clear:"Quest complete", clearSub:"All 6 done. +{b} XP bonus is yours. See you tomorrow.", left:"{n} left",
     checkin:"Check in", checkinS:"How do you feel? One tap.", water:"Drink {n} glasses of water", waterS:"Tap once per glass.", fast:"Fast {n} hours", fastS:"Counted from your last meal.", eat:"Log what you ate", eatS:"Photo, barcode or a few words.", eatB:"Same as your Meals bubble: one meal counts for both.", move:"Move {n} minutes", moveS:"A walk counts. Any pace.", post:"Share one post", postS:"Show the Tribe your day.",
-    goCheckin:"Check in", goWater:"+1 glass", goFast:"See my fast", goEat:"Log a meal", goMove:"Start moving", goPost:"Post", done:"Done", xp:"Daily quest", xpAll:"Daily quest complete", claim:"Claim", reset:"New in {t}"},
+    goCheckin:"Check in", goWater:"+1 glass", goFast:"See my fast", goEat:"Log a meal", goMove:"Start moving", goPost:"Post", done:"Done", xp:"Daily quest", xpAll:"Daily quest complete", claim:"Claim", reset:"New in {t}",
+    skip:"Skip", skipA:"Skip {q} for today", skipT:"Skipped", skipped:"Skipped for today", skippedS:"Skipped quests earn no XP. You can still do them today.", unskip:"Undo skip"},
   de: {tag:"Tägliche Quest", sub:"Schaff heute alle 6 für +{b} XP Bonus.", next:"Als Nächstes", all:"Alle Quests", less:"Quests ausblenden", clear:"Quest erfüllt", clearSub:"Alle 6 geschafft. +{b} XP Bonus gehören dir. Bis morgen.", left:"noch {n}",
     checkin:"Einchecken", checkinS:"Wie fühlst du dich? Ein Tipp.", water:"Trink {n} Gläser Wasser", waterS:"Tipp einmal pro Glas.", fast:"{n} Stunden fasten", fastS:"Gezählt ab deiner letzten Mahlzeit.", eat:"Trag ein, was du gegessen hast", eatS:"Foto, Barcode oder ein paar Worte.", eatB:"Dasselbe wie deine Essen-Blase: eine Mahlzeit zählt für beide.", move:"{n} Minuten bewegen", moveS:"Ein Spaziergang zählt. Jedes Tempo.", post:"Teile einen Post", postS:"Zeig dem Tribe deinen Tag.",
-    goCheckin:"Einchecken", goWater:"+1 Glas", goFast:"Mein Fasten", goEat:"Mahlzeit eintragen", goMove:"Los bewegen", goPost:"Posten", done:"Erledigt", xp:"Tägliche Quest", xpAll:"Tägliche Quest erfüllt", claim:"Abholen", reset:"Neu in {t}"},
+    goCheckin:"Einchecken", goWater:"+1 Glas", goFast:"Mein Fasten", goEat:"Mahlzeit eintragen", goMove:"Los bewegen", goPost:"Posten", done:"Erledigt", xp:"Tägliche Quest", xpAll:"Tägliche Quest erfüllt", claim:"Abholen", reset:"Neu in {t}",
+    skip:"Auslassen", skipA:"{q} heute auslassen", skipT:"Ausgelassen", skipped:"Heute ausgelassen", skippedS:"Ausgelassene Quests geben kein XP. Du kannst sie heute noch machen.", unskip:"Zurückholen"},
   es: {tag:"Misión diaria", sub:"Completa las 6 hoy y gana +{b} XP extra.", next:"Siguiente", all:"Todas las misiones", less:"Ocultar misiones", clear:"Misión completa", clearSub:"Las 6 hechas. +{b} XP extra para ti. Hasta mañana.", left:"faltan {n}",
     checkin:"Registrarte", checkinS:"¿Cómo te sientes? Un toque.", water:"Bebe {n} vasos de agua", waterS:"Toca una vez por vaso.", fast:"Ayuna {n} horas", fastS:"Desde tu última comida.", eat:"Registra lo que comiste", eatS:"Foto, código de barras o unas palabras.", eatB:"Igual que tu burbuja de Comidas: una comida cuenta para las dos.", move:"Muévete {n} minutos", moveS:"Caminar cuenta. A cualquier ritmo.", post:"Comparte una publicación", postS:"Enseña tu día a la Tribu.",
-    goCheckin:"Registrarme", goWater:"+1 vaso", goFast:"Ver mi ayuno", goEat:"Registrar comida", goMove:"A moverse", goPost:"Publicar", done:"Hecho", xp:"Misión diaria", xpAll:"Misión diaria completa", claim:"Reclamar", reset:"Nuevas en {t}"}
+    goCheckin:"Registrarme", goWater:"+1 vaso", goFast:"Ver mi ayuno", goEat:"Registrar comida", goMove:"A moverse", goPost:"Publicar", done:"Hecho", xp:"Misión diaria", xpAll:"Misión diaria completa", claim:"Reclamar", reset:"Nuevas en {t}",
+    skip:"Saltar", skipA:"Saltar {q} por hoy", skipT:"Saltada", skipped:"Saltadas por hoy", skippedS:"Las misiones saltadas no dan XP. Aún puedes hacerlas hoy.", unskip:"Deshacer"}
 };
 const lang = () => { let l = "en"; try { l = (window.LowiLang && LowiLang.get && LowiLang.get()) || localStorage.getItem("lowispike.lang") || "en"; } catch(e){} l = String(l).slice(0, 2); return W[l] ? l : "en"; };
 const w = (k, o) => { let s = W[lang()][k] || W.en[k] || k; if (o) for (const x in o) s = s.split("{" + x + "}").join(o[x]); return s; };
@@ -17722,13 +17745,26 @@ function state(){ const t = dk(), c = core(), q = (c.quests && c.quests.day === 
     {id:"eat", t:w("eat"), s:w(mealsBub() ? "eatB" : "eatS"), go:w("goEat"), done:!!q.eat || logs.some(l => l && l.day === t)},
     {id:"move", t:w("move", {n:MOVEMIN}), s:w("moveS"), go:w("goMove"), done:mmin >= MOVEMIN || !!q.walk || !!q.walk20 || (sg > 0 && steps >= sg), p:[Math.min(mmin, MOVEMIN), MOVEMIN, "min"]},
     {id:"post", t:w("post"), s:w("postS"), go:w("goPost"), done:posted}];
+  const sk = skipped(); L.forEach(x => { x.skip = !x.done && sk.indexOf(x.id) >= 0; });
   return L; }
+
+/* Oct 17 (E-man: "it's telling me to move ... I don't want to. It should be start, move, or skip"): Skip a quest for today.
+   A skipped quest is NOT done: it pays no XP, it does not count in the 3/6, and the all-six bonus still needs it. It only stops
+   being the glowing "Next", so the board moves on to the following quest. Doing it later still completes it (done wins over
+   skip), Start on a skipped quest takes the skip back, and the list resets at midnight with the quests. */
+const SKIP = "lowi.f3.skip", QIDS = ["checkin", "water", "fast", "eat", "move", "post"];
+function skipRec(){ const t = dk(), s = js(SKIP); return {day:t, ids:s.day === t && Array.isArray(s.ids) ? s.ids.filter(x => QIDS.indexOf(x) >= 0) : []}; }
+function skipped(){ return skipRec().ids.slice(); }
+function skip(id){ if (QIDS.indexOf(id) < 0) return false; const r = skipRec(); if (r.ids.indexOf(id) < 0) r.ids.push(id); try { localStorage.setItem(SKIP, JSON.stringify(r)); } catch(e){}
+  try { window.dispatchEvent(new CustomEvent("lowi:quest-skipped", {detail:{id, skipped:r.ids.slice()}})); } catch(e){} return true; }
+function unskip(id){ const r = skipRec(), n = r.ids.length; r.ids = id ? r.ids.filter(x => x !== id) : []; if (r.ids.length === n) return false;
+  try { localStorage.setItem(SKIP, JSON.stringify(r)); } catch(e){} try { window.dispatchEvent(new CustomEvent("lowi:quest-skipped", {detail:{id:id || "", skipped:r.ids.slice()}})); } catch(e){} return true; }
 
 /* Oct 17 (E-man: Daily Quest and Meals both asked to log a meal): while the Meals bubble sits on Home it owns meals.
    The meal quest still counts (same log, nothing counts twice) but is never the glowing "Next" while another quest is open,
    and its button opens the Meals bubble's own sheet, so there is one way to log a meal, not two. */
 function mealsBub(){ try { const b = document.querySelector("#whHud .wh-meals"); if (!b || !b.isConnected || !document.documentElement.classList.contains("wh-home")) return null; const r = b.getBoundingClientRect(); return r.width > 4 && r.height > 4 ? b : null; } catch(e){ return null; } }
-function next(L){ L = L || state(); const open = L.filter(q => !q.done); if (open.length > 1 && mealsBub()) return open.find(q => q.id !== "eat") || open[0]; return open[0]; }
+function next(L){ L = L || state(); const open = L.filter(q => !q.done && !q.skip); if (open.length > 1 && mealsBub()) return open.find(q => q.id !== "eat") || open[0]; return open[0]; }
 
 /* ---------- XP: +10 per quest, +50 for all six, each once a day ---------- */
 const PAID = "lowi.f3.paid";
@@ -17755,15 +17791,19 @@ function prog(q){ return q.p ? '<span class="f3-pr num">' + q.p[0] + "/" + q.p[1
 function html(){ const L = state(), n = L.filter(q => q.done).length, cur = next(L), o = isOpen();
   const cx = claimXP(L), cl = claimable(L);
   let h = '<div class="f3-hd"><span class="f3-tag">' + esc(w("tag")) + '</span><span class="f3-cnt num">' + n + "/" + L.length + '</span><span class="f3-reset num" title="' + esc(w("reset", {t:resetIn()})) + '">' + esc(w("reset", {t:resetIn()})) + "</span></div>" +
-    '<div class="f3-bar" aria-hidden="true">' + L.map(q => '<i class="' + (q.done ? "on" : cur && q.id === cur.id ? "cur" : "") + '"></i>').join("") + "</div>";
+    '<div class="f3-bar" aria-hidden="true">' + L.map(q => '<i class="' + (q.done ? "on" : cur && q.id === cur.id ? "cur" : q.skip ? "skip" : "") + '"></i>').join("") + "</div>";
   const cbtn = '<button type="button" class="f3-go f3-claim" data-f3="claim" data-q="all">' + esc(w("claim")) + ' <b class="num">+' + cx + "</b></button>";
   if (cx && (!cur || cl.length)) { const q = cl[0] || L[L.length - 1]; h += '<div class="f3-sub">' + esc(w("sub", {b:BONUS})) + "</div>" +
     '<div class="f3-cur f3-cur-claim" data-f3q="' + q.id + '"><span class="f3-ic" aria-hidden="true">✓</span><span class="f3-ct"><span class="f3-nx">' + esc(w("done")) + '</span><b>' + esc(cl.length > 1 ? cl.map(x => x.t).join(" · ") : cl.length ? q.t : w("clear")) + "</b>" + '<span class="f3-cs">' + esc(w("sub", {b:BONUS})) + "</span></span>" + cbtn + "</div>"; }
   else if (cur) h += '<div class="f3-sub">' + esc(w("sub", {b:BONUS})) + "</div>" +
-    '<div class="f3-cur" data-f3q="' + cur.id + '"><span class="f3-ic" aria-hidden="true">' + ICON[cur.id] + '</span><span class="f3-ct"><span class="f3-nx">' + esc(w("next")) + " · +" + QXP + ' XP</span><b>' + esc(cur.t) + "</b>" + '<span class="f3-cs">' + esc(cur.s) + " " + prog(cur) + "</span></span>" +
+    '<div class="f3-cur" data-f3q="' + cur.id + '"><span class="f3-ic" aria-hidden="true">' + ICON[cur.id] + '</span><span class="f3-ct"><span class="f3-nxr"><span class="f3-nx">' + esc(w("next")) + " · +" + QXP + ' XP</span>' +
+      '<button type="button" class="f3-skip f3-pill" data-f3="skip" data-q="' + cur.id + '" aria-label="' + esc(w("skipA", {q:cur.t})) + '">' + esc(w("skip")) + ' <i aria-hidden="true">»</i></button></span><b>' + esc(cur.t) + "</b>" + '<span class="f3-cs">' + esc(cur.s) + " " + prog(cur) + "</span></span>" +
       '<button type="button" class="f3-go" data-f3="go" data-q="' + cur.id + '">' + esc(cur.go) + ' <i aria-hidden="true">›</i></button></div>';
+  else if (L.some(q => q.skip)) { const sk = L.filter(q => q.skip); h += '<div class="f3-sub">' + esc(w("sub", {b:BONUS})) + "</div>" +
+    '<div class="f3-cur f3-cur-skip" data-f3q="' + sk[0].id + '"><span class="f3-ic" aria-hidden="true">' + ICON[sk[0].id] + '</span><span class="f3-ct"><span class="f3-nx">' + esc(w("skipped")) + '</span><b>' + esc(sk.map(x => x.t).join(" · ")) + "</b>" + '<span class="f3-cs">' + esc(w("skippedS")) + "</span></span>" +
+      '<button type="button" class="f3-skip f3-unskip" data-f3="unskip">' + esc(w("unskip")) + "</button></div>"; }
   else h += '<div class="f3-done"><b>' + esc(w("clear")) + '</b><span>' + esc(w("clearSub", {b:BONUS})) + "</span></div>";
-  h += '<div class="f3-list"' + (o ? "" : " hidden") + ">" + L.map(q => { const c = cl.indexOf(q) >= 0; return '<button type="button" class="f3-row' + (q.done ? " done" : "") + (c ? " claim" : "") + (cur && q.id === cur.id ? " cur" : "") + '" data-f3="' + (c ? "claim" : "go") + '" data-q="' + q.id + '"><span class="f3-ck" aria-hidden="true">' + (q.done ? "✓" : ICON[q.id]) + '</span><span class="f3-rt">' + esc(q.t) + "</span>" + (c ? '<span class="f3-ok f3-cl">' + esc(w("claim")) + " +" + QXP + "</span>" : q.done ? '<span class="f3-ok">' + esc(w("done")) + "</span>" : prog(q) || '<span class="f3-xp">+' + QXP + "</span>") + "</button>"; }).join("") + "</div>" +
+  h += '<div class="f3-list"' + (o ? "" : " hidden") + ">" + L.map(q => { const c = cl.indexOf(q) >= 0; return '<button type="button" class="f3-row' + (q.done ? " done" : "") + (c ? " claim" : "") + (cur && q.id === cur.id ? " cur" : "") + (q.skip ? " skip" : "") + '" data-f3="' + (c ? "claim" : "go") + '" data-q="' + q.id + '"><span class="f3-ck" aria-hidden="true">' + (q.done ? "✓" : ICON[q.id]) + '</span><span class="f3-rt">' + esc(q.t) + "</span>" + (c ? '<span class="f3-ok f3-cl">' + esc(w("claim")) + " +" + QXP + "</span>" : q.done ? '<span class="f3-ok">' + esc(w("done")) + "</span>" : q.skip ? '<span class="f3-ok f3-sk">' + esc(w("skipT")) + "</span>" : prog(q) || '<span class="f3-xp">+' + QXP + "</span>") + "</button>"; }).join("") + "</div>" +
     '<button type="button" class="f3-tog" data-f3="tog" aria-expanded="' + (o ? "true" : "false") + '">' + esc(o ? w("less") : w("all") + (cur ? " · " + w("left", {n:L.length - n}) : "")) + ' <i aria-hidden="true">' + (o ? "▴" : "▾") + "</i></button>";
   return {h, L, n}; }
 let lastH = "";
@@ -17778,7 +17818,7 @@ function paint(){ let r; try { r = html(); } catch(e){ console.warn(e); return; 
 
 /* ---------- where each quest takes you ---------- */
 function flash(el){ if (!el) return; try { el.scrollIntoView({block:"center", behavior:"smooth"}); } catch(e){} el.classList.remove("f3-flash"); void el.offsetWidth; el.classList.add("f3-flash"); setTimeout(() => el.classList.remove("f3-flash"), 1900); }
-function go(id){ sfx("tap");
+function go(id){ sfx("tap"); unskip(id);
   if (id === "checkin") { if (typeof checkinSheet === "function") checkinSheet(); }
   else if (id === "water") { const btn = document.querySelector('#tab-home [data-fs="water"]');
     if (btn) btn.click(); else { const f = js("lowi_fast_v1"), t = dk(); f.water = f.water || {}; const n = (f.water[t] || 0) + 1; f.water = {}; f.water[t] = n; try { localStorage.setItem("lowi_fast_v1", JSON.stringify(f)); } catch(e){} try { window.LowiFast && LowiFast.refresh(); } catch(e){} }
@@ -17793,6 +17833,8 @@ document.addEventListener("click", e => { const a = e.target && e.target.closest
   e.preventDefault(); e.stopPropagation();
   if (a.dataset.f3 === "tog") { try { localStorage.setItem(OPEN, isOpen() ? "0" : "1"); } catch(x){} sfx("tap"); paint(); return; }
   if (a.dataset.f3 === "claim") { claim(a.dataset.q); return; }
+  if (a.dataset.f3 === "skip") { skip(a.dataset.q); sfx("tap"); paint(); return; }
+  if (a.dataset.f3 === "unskip") { unskip(); sfx("tap"); paint(); return; }
   if (a.dataset.f3 === "go") go(a.dataset.q); }, true);
 
 let raf = 0; const run = () => { if (raf) return; raf = requestAnimationFrame(() => { raf = 0; try { mo.disconnect(); paint(); } catch(e){ console.warn(e); } watch(); }); };
@@ -17801,7 +17843,7 @@ function watch(){ const h = document.getElementById("tab-home"); if (h) mo.obser
 function init(){ paint(); watch(); setInterval(() => { const h = document.getElementById("tab-home"); if (h && !document.hidden) run(); }, 5000);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) run(); }); }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else setTimeout(init, 0);
-window.LowiF3 = {paint, state, next, go, w, claim, claimable:() => claimable(state()), claimXP:() => claimXP(state()), resetIn};
+window.LowiF3 = {paint, state, next, go, w, claim, skip:id => { const r = skip(id); paint(); return r; }, unskip:id => { const r = unskip(id); paint(); return r; }, skipped, claimable:() => claimable(state()), claimXP:() => claimXP(state()), resetIn};
 })();
 </script>
 <style id="f3bcss">
@@ -17842,7 +17884,7 @@ const isOpen = () => { try { return localStorage.getItem(KEY) === "1"; } catch(e
 const sfx = n => { try { window.LowiSFX && LowiSFX.play(n); } catch(e){} };
 
 function lead(){ try { if (!window.LowiF3 || !LowiF3.state) return ""; const L = LowiF3.state(), cur = LowiF3.next ? LowiF3.next(L) : L.find(q => !q.done);
-  return cur ? w("lead").split("{q}").join(cur.t) : w("leadDone"); } catch(e){ return ""; } }
+  return cur ? w("lead").split("{q}").join(cur.t) : L.some(q => !q.done) ? "" : w("leadDone"); } catch(e){ return ""; } }
 
 function tidy(){ const home = document.getElementById("tab-home"); if (!home) return;
   const ld = home.querySelector(".td-top .g1-lead"), t = lead(); if (ld && t && ld.textContent !== t) ld.textContent = t;
@@ -19280,9 +19322,9 @@ function fastInfo(now){ const f = js("lowi_fast_v1"); const last = +f.last || 0;
 /* one nudge for this moment, or null. Each kind at most once a day. */
 function pick(now, opts){ now = now || new Date(); opts = opts || {}; const L = quests(); if (!L.length) return null;
   const lg = log(now), seen = id => lg.ids.indexOf(id) >= 0 && !opts.any;
-  const open = L.filter(q => !q.done), hr = now.getHours(), nx = (window.LowiF3 && LowiF3.next && LowiF3.next(L)) || open[0];
+  const open = L.filter(q => !q.done && !q.skip), hr = now.getHours(), nx = (window.LowiF3 && LowiF3.next && LowiF3.next(L)) || open[0];
   const mk = (id, text, go, q) => ({id, text, go, q});
-  if (!open.length) return seen("clear") ? null : mk("clear", w("clear"), null);
+  if (!open.length) return L.some(q => !q.done) || seen("clear") ? null : mk("clear", w("clear"), null);
   const fi = fastInfo(now); const fq = L.find(q => q.id === "fast");
   if (hr < 11 && !seen("morning")) return mk("morning", w("morning", {q:nx.t}), GO[nx.id], nx.id);
   if (fi && fi.done && now.getTime() - fi.end < 3 * 36e5 && !seen("fastDone")) return mk("fastDone", w("fastDone", {h:fi.h, t:clock(fi.end, now)}), "goEat", "eat");

@@ -99,6 +99,8 @@
         if (!hud || !mi || !D.documentElement.classList.contains('wh-home')) return;
         /* while the UI is faded for Misty's flight the spot stays where it was: the faded cards would read as gone */
         if (D.documentElement.classList.contains('lw-clean')) return;
+        /* ...and during the fade back in, so it does not jump while the cards are still half visible */
+        if (D.documentElement.classList.contains('lw-clean-out')) return;
         const hr = hud.getBoundingClientRect(), mr = homeRect(mi);
         if (!mr.width || !hr.width) return;
         const r = b.offsetWidth / 2 || 46, gap = 8, vw = W.innerWidth, vh = W.innerHeight;
@@ -121,6 +123,12 @@
             for (const q of rects) { const nx = Math.max(q.left, Math.min(x, q.right)), ny = Math.max(q.top, Math.min(y, q.bottom)); if (Math.hypot(nx - x, ny - y) < r + 6) return false; }
             return true;
         };
+        /* while Misty is out flying her bubble stays put: if its spot is still free, nothing about her flight moves it */
+        const pm = (D.getElementById('whPad') || { dataset: {} }).dataset.mode;
+        if ((pm && pm !== 'idle') || D.documentElement.classList.contains('mf-roam')) {
+            const ox = parseFloat(b.style.getPropertyValue('--wm-x')), oy = parseFloat(b.style.getPropertyValue('--wm-y'));
+            if (isFinite(ox) && isFinite(oy) && clear(hr.left + ox, hr.top + oy)) return;
+        }
         let pick = null;
         for (const c of cands) if (clear(c[0], c[1])) { pick = c; break; }
         if (!pick) {   /* nothing on the list fits (phone in landscape): nearest free spot around Misty, leaning toward the usual one */
@@ -333,7 +341,7 @@
         W.addEventListener('resize', () => { if (bloom) closeBloom(false); placeSoon(); setTimeout(placeSoon, 400); });
         W.addEventListener('orientationchange', () => setTimeout(placeSoon, 300));
         W.addEventListener('lowi:layout', placeSoon);
-        W.addEventListener('lowi:clean-view', e => { if (!(e.detail && e.detail.on)) setTimeout(placeSoon, 60); });   /* back from the clean flight view: catch up on a turn or resize */
+        W.addEventListener('lowi:clean-view', e => { if (!(e.detail && e.detail.on)) setTimeout(placeSoon, 520); });   /* back from the clean flight view: catch up on a turn or resize */
         [300, 1200, 3000].forEach(ms => setTimeout(placeSoon, ms));
     }
     W.LowiMoveBubble = { paint, open: openBloom, close: closeBloom, edit: editSheet, pick: (id) => pick(id, null), el: () => ensure() };

@@ -95,7 +95,34 @@
     }
     /* her roaming pace on screen, px per second: calm, slower when tired, a little quicker on a big screen */
     const roamPx = (k, minSide) => (55 + 85 * clamp(+k || 0, 0, 1)) * clamp((+minSide || 390) / 390, 0.85, 1.6);
-    const core = { K, inReach, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, roams, autoLeave, roamSpot, roamPx, pullAt, fallAt };
+    /* world-exit (Oct 17, E-man): "When my companion is clearly trying to fly out of the world by hitting the corner of the world
+       and then pressing in for three seconds, it should then obviously take us out of the world ... so it really feels like ...
+       trying to fly back into a different universe." Pressing = you keep steering her outward against the edge of the world she
+       is in (no new button). Three seconds of it, without letting go or turning away, flies you both out. Autopilot never does.
+       s = { t, miss, fired }; i = { dt, mode, mag (stick 0..1), out (cos between the stick and "outward"), edge (her distance from
+       the world's middle / its reach), busy }. A finger that slips off the edge for a moment (< GRACE) keeps the count. */
+    const EXIT = { HOLD: 3, MAG: 0.35, OUT: 0.45, AWAY: 0.15, EDGE: 0.94, GRACE: 0.25, DT: 0.1 };
+    function exitHold(s, i) {
+        s = s || { t: 0, miss: 0, fired: false }; i = i || {};
+        const dt = clamp(+i.dt || 0, 0, EXIT.DT), out = +i.out || 0;
+        const pressing = i.mode === 'drive' && !i.busy && (+i.mag || 0) >= EXIT.MAG && out >= EXIT.AWAY;
+        const atEdge = (+i.edge || 0) >= EXIT.EDGE && out >= EXIT.OUT;
+        let fire = false;
+        if (!pressing) { s.t = 0; s.miss = 0; s.fired = false; }
+        else if (atEdge) { s.miss = 0; if (!s.fired) { s.t += dt; if (s.t >= EXIT.HOLD - 1e-9) { s.t = EXIT.HOLD; s.fired = true; fire = true; } } }
+        else { s.miss += dt; if (s.miss > EXIT.GRACE) { s.t = 0; s.miss = 0; } }
+        return { s, p: s.fired ? 1 : clamp(s.t / EXIT.HOLD, 0, 1), fire };
+    }
+    /* world-exit: the way out, on screen (fractions of the view). A = the place shrinks away around her: she stays where she was,
+       drifting a little toward the middle. B = the camera backs out of the glowing spot and glides out: she settles just beside the
+       world she left (a third of the way toward the middle), the camera with her. Continuous: B starts where A ended. */
+    function outAt(phase, k, from, door) {
+        const e = smooth(0, 1, clamp(+k || 0, 0, 1));
+        if (phase === 'A') return { x: from.x + (0.5 - from.x) * 0.45 * e, y: from.y + (0.56 - from.y) * 0.45 * e, e };
+        const tx = clamp(door.x + (0.5 - door.x) * 0.3, 0.16, 0.84), ty = clamp(door.y + (0.52 - door.y) * 0.3, 0.24, 0.8);
+        return { x: from.x + (tx - from.x) * e, y: from.y + (ty - from.y) * e, e };
+    }
+    const core = { K, inReach, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, roams, autoLeave, roamSpot, roamPx, pullAt, fallAt, EXIT, exitHold, outAt };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!D || !D.addEventListener || W.LowiMistyFlight) return;
 
@@ -212,7 +239,7 @@
     }
     function end(ctx, why) {
         const a = ctx && ctx.a, r = ctx && ctx.r;
-        note('end ' + why); S.huntFly = false;
+        note('end ' + why); S.huntFly = false; S.outReq = false; S.exH = null; S.exP = 0; S.exD0 = 0; S.autoX = null; if (ctx && ctx.wand) dropDraw(ctx.wand);
         if (r && a && (why === 'abort' || why === 'home') && !regionsBusy() && curRegion() === 'hub') { r.target.set(0, 0, 0); if (why === 'abort' && S.dHome && S.dollyOut) r.dist = S.dHome; }
         S.st = 'idle'; S.flew = null; S.dolly = 0; hold(false); classes(false, false, false);
         /* autopilot heading out of a place keeps flying: she slips back into her cell and goes on to the next place */
@@ -259,6 +286,10 @@
         if (!wand) return;
         basis(a); S.t += dt;
         const cur = curRegion();
+        /* world-exit: leaving the world she is in (World map, X, the autopilot heading on, a recall, or your 3-second push at its
+           edge) no longer drops her back into her bubble: she flies out with the camera and stays out in the universe */
+        if (S.outReq) { S.outReq = false; if (S.st === 'inside' && regionsBusy()) startOut(ctx, S.outWhy0 || 'map'); S.outWhy0 = ''; }
+        if (S.st === 'out') { outFrame(ctx, k); return; }
         /* someone else took us somewhere (a tap on a place, the World map): she was not flown there, so she is not shown there */
         if (S.st !== 'warp' && S.st !== 'inside' && (cur !== 'hub' || regionsBusy())) { end(ctx, 'tapped-away'); return; }
         if ((S.st === 'inside' || S.st === 'warp') && S.entered && (cur !== S.flew && !regionsBusy())) { end(ctx, 'left'); return; }
@@ -457,10 +488,13 @@
         if (ctx.a && ctx.a.camera && !wand.layers.test(ctx.a.camera.layers)) wand.layers.mask = ctx.a.camera.layers.mask;
         const bob = still ? 0 : Math.sin(S.t * 1.6) * 0.04 * S.hs, droop = (1 - k) * 0.08 * S.hs;
         wand.position.copy(S.p).addScaledVector(V.up, bob - droop);
+        /* world-exit: pressing against the edge she trembles harder the longer you hold, leaning into the push */
+        const xp = S.st === 'inside' ? S.exP || 0 : 0;
+        if (xp > 0 && !still) wand.position.addScaledVector(V.rt, Math.sin(S.t * 47) * 0.02 * S.hs * xp).addScaledVector(V.up, Math.cos(S.t * 39) * 0.012 * S.hs * xp);
         const br = still ? 1 : 1 + Math.sin(S.t * 2.2) * 0.02;
         wand.scale.set(S.hs * 260 / 310 * br, S.hs * br, 1);
         const lean = still ? 0 : clamp(-S.v.dot(V.rt) * 0.06, -0.3, 0.3);
-        wand.material.rotation = (still ? 0 : Math.sin(S.t * 0.9) * 0.08) - (1 - k) * 0.18 + lean;
+        wand.material.rotation = (still ? 0 : Math.sin(S.t * 0.9) * 0.08) - (1 - k) * 0.18 + lean - (xp > 0 ? (S.exVx || 0) * 0.28 * xp : 0);
         if (wand.material.color) wand.material.color.setRGB(1, 0.78 + 0.22 * k, 0.78 + 0.22 * k);
         wand.material.opacity = (0.55 + 0.43 * k) * clamp(alpha, 0, 1);
         wand.visible = wand.material.opacity > 0.01;
@@ -578,16 +612,23 @@
         /* misty-roam: on her own (not steered, or let go a while ago) she roams the whole view freely */
         const free = roams(mode, S.idle);
         if (free) {
-            roamFrame(ctx, k, still);
-            /* autopilot: after a while she heads back out and on to the next place (never while you touch the world) */
+            /* autopilot: after a while she heads back out and on to the next place (never while you touch the world).
+               world-exit (Oct 17, E-man: "even on autopilot ... she's supposed to actually try to get out of that world by going
+               to the corner and then pushing against it"): she flies to the nearest corner of the world, presses against its
+               edge for the same 3 seconds you would, and only then flies out, the camera with her */
             const adv = ADV();
-            if (autoLeave(mode, S.inT, +r.idle || 0, adv ? K.ADV_STAY : K.STAY_IN) && !regionsBusy() && !r.fly) {
-                const regs = a.regions || [], i = regs.findIndex(g => norm(g.id) === S.flew);
-                const Rg = R(); let ok = false; try { ok = !!(Rg && Rg.travel && Rg.travel('hub')); } catch (e) { ok = false; }
-                if (ok) {
-                    S.keepAuto = true; S.wpNext = i >= 0 && regs.length ? (i + 1) % regs.length : -1; note('auto out');
-                    if (adv) { if (i >= 0) S.outPos.copy(regs[i].pos); S.outT = performance.now(); try { W.LowiAdventure.visited(S.flew, S.advIn || 0); } catch (e) { } }
-                } else S.inT = 0;
+            if (S.autoX && (mode !== 'auto' || (+r.idle || 0) < 0.4 || regionsBusy() || r.fly)) { S.autoX = null; exitReset(ctx); S.inT = 0; note('auto exit cancelled'); }
+            if (!S.autoX && autoLeave(mode, S.inT, +r.idle || 0, adv ? K.ADV_STAY : K.STAY_IN) && !regionsBusy() && !r.fly) {
+                const q = canvasRect(a), me = toScreen(a, S.p, {});
+                let sx = Math.sign((me.x - q.left) / q.width - 0.5) || (Math.random() < 0.5 ? -1 : 1), sy = Math.sign(0.5 - (me.y - q.top) / q.height) || 1;
+                S.autoX = { dir: V.rt.clone().multiplyScalar(sx).addScaledVector(V.up, sy).normalize(), sx: sx / Math.SQRT2, ph: 'seek', t: 0 };
+                S.rw = null; note('auto exit seek');
+            }
+            if (S.autoX) {
+                if (autoExitFrame(ctx, k, still, adv)) return;
+            } else {
+                exitReset(ctx);
+                roamFrame(ctx, k, still);
             }
             /* the camera drifts after her inside the world, gently and bounded around the world's middle. Oct 17: in every
                autopilot / tap-in roam, not only adventures ("The camera needs to follow Misty everywhere") */
@@ -603,6 +644,8 @@
             S.p.addScaledVector(S.v, dt);
             /* soft edge: right after she roamed far, she is eased back into reach instead of jumping */
             V.a.subVectors(S.p, S.inC); const L = V.a.length(); if (L > inR) S.p.copy(S.inC).addScaledVector(V.a, (L - (L - inR) * Math.min(1, dt * 3)) / L);
+            /* world-exit: keep pushing outward at the edge for 3 s and you both fly out */
+            if (exitCheck(ctx, k, mode, vx, vy, mag, inR)) return;
         }
         /* the camera keeps her in view once the place has settled (its own hero turn first) */
         const WH = W.LowiWorldHome, heroBusy = !!(WH && WH.state && WH.state.heroAnim);
@@ -624,6 +667,171 @@
         toScreen(a, S.p, S.scr); S.scrT = performance.now();
     }
 
+    /* ---------- world-exit: out of a world, with her ---------- */
+    function exitReset(ctx) {
+        const r = ctx && ctx.r;
+        if (S.exD0 && r && !r.fly && !regionsBusy()) { r.dist += (S.exD0 - r.dist) * Math.min(1, (ctx.dt || 0.016) * 5); if (Math.abs(r.dist - S.exD0) < 0.01) { r.dist = S.exD0; S.exD0 = 0; } }
+        else if (S.exD0 && (!r || r.fly || regionsBusy())) S.exD0 = 0;
+        S.exH = null; S.exP = 0; S.exBeat = 0;
+    }
+    function exitCheck(ctx, k, mode, vx, vy, mag, inR) {
+        const a = ctx.a, r = ctx.r, dt = ctx.dt;
+        V.a.subVectors(S.p, S.inC); const L = V.a.length(), wl = V.want.length();
+        const out = L > 1e-4 && wl > 1e-4 ? V.want.dot(V.a) / (L * wl) : 0;
+        const busy = regionsBusy() || !!r.fly || (S.fallT >= 0 && S.fallT < K.FALL) || ctx.reduced;
+        const h = exitHold(S.exH, { dt, mode, mag, out, edge: inR > 0 ? L / inR : 0, busy });
+        S.exH = h.s; S.exVx = vx;
+        if (h.p <= 0) { const keep = S.exH; exitReset(ctx); S.exH = keep; return false; }
+        exitFx(ctx, k, h.p, L);
+        if (!h.fire) return false;
+        /* three seconds: out you go */
+        if (!exitGo(ctx, k, 'hold', L)) { S.exH = null; S.exP = 0; return false; }
+        S.exPx = vx; S.exPy = vy;
+        return true;
+    }
+    /* the feel of pushing on the edge of a world (yours or her autopilot's): p = 0..1 of the 3 seconds; V.a = her offset from the middle */
+    function exitFx(ctx, k, p, L) {
+        const r = ctx.r, dt = ctx.dt, h = { p };
+        S.exP = p;
+        /* the camera eases back a little as you push: the way out is opening */
+        if (!S.exD0) S.exD0 = r.dist;
+        if (!r.fly) r.dist += (S.exD0 * (1 + 0.14 * h.p * h.p) - r.dist) * Math.min(1, dt * 6);
+        /* light gathers where she presses on the edge of the world; a ring at each second, like a heartbeat */
+        const A = ctx.A, pm = A && A.pts && A.pts.material;
+        if ((S.exSpark = (S.exSpark || 0) - dt) <= 0 && L > 1e-4) {
+            S.exSpark = 0.12 - 0.07 * h.p;
+            if (pm) { pm.color.set(h.p > 0.66 ? '#ffffff' : '#bfefff'); pm.opacity = 0.5 + 0.45 * h.p; }
+            V.b.copy(S.inC).addScaledVector(V.a, (L + 0.35 * S.hs) / L); ctx.burst(V.b, 1 + Math.round(4 * h.p), (0.1 + 0.25 * h.p) * Math.max(0.4, S.hs));
+        }
+        const beat = Math.floor(h.p * EXIT.HOLD + 1e-6);
+        if (beat > (S.exBeat || 0) && beat < EXIT.HOLD) { S.exBeat = beat; ring(ctx, k); if (S.exVib !== false) try { if (navigator.vibrate) navigator.vibrate(12); } catch (e) { } }
+    }
+    /* out through the edge: the World map's own reversed warp (one continuous camera move out to the whole universe), and she
+       flies out with it (startOut). V.a = her offset from the world's middle, L its length. */
+    function exitGo(ctx, k, why, L) {
+        const Rg = R(); let ok = false;
+        S.outWhy0 = why;
+        try { ok = !!(Rg && Rg.travel && Rg.travel('hub', false, 0, { wide: true })); } catch (e) { ok = false; }
+        if (!ok) { S.outWhy0 = ''; return false; }
+        if (L > 1e-4) { V.b.copy(S.inC).addScaledVector(V.a, (L + 0.3 * S.hs) / L); ctx.burst(V.b, 14 + Math.round(10 * k), 0.5 + 0.4 * k); }
+        ring(ctx, k); if (why === 'hold') try { if (navigator.vibrate) navigator.vibrate(40); } catch (e) { }
+        note('exit ' + why);
+        if (S.outReq) { S.outReq = false; startOut(ctx, why); outFrame(ctx, k); }
+        return true;
+    }
+    /* autopilot's way out: seek the corner, then press on the edge for EXIT.HOLD seconds, then out. true = she left this frame */
+    function autoExitFrame(ctx, k, still, adv) {
+        const a = ctx.a, r = ctx.r, dt = ctx.dt, X = S.autoX, inR = inReach(r.maxD), q = canvasRect(a);
+        X.t += dt;
+        const ppu = pxPerUnit(a, S.p), v = roamPx(k, Math.min(q.width, q.height)) * 1.5 / ppu;
+        V.a.subVectors(S.p, S.inC); let L = V.a.length();
+        if (X.ph === 'seek') {
+            V.b.copy(S.inC).addScaledVector(X.dir, inR * 1.02);
+            V.want.subVectors(V.b, S.p); const d = V.want.length();
+            if (d > 1e-5) V.want.multiplyScalar(Math.min(v, d * 2) / d);
+            if (!still) V.want.addScaledVector(V.up, Math.sin(S.t * 1.1) * 0.12 * v);
+            if (L >= inR * 0.95 || X.t > 8) { X.ph = 'press'; X.t = 0; note('auto exit press'); }
+        } else V.want.copy(X.dir).multiplyScalar(v * 0.7);
+        S.v.lerp(V.want, Math.min(1, dt * 2.2));
+        S.p.addScaledVector(S.v, dt);
+        V.a.subVectors(S.p, S.inC); L = V.a.length();
+        if (L > inR) { S.p.copy(S.inC).addScaledVector(V.a, (L - (L - inR) * Math.min(1, dt * 3)) / L); V.a.subVectors(S.p, S.inC); L = V.a.length(); }
+        if (X.ph !== 'press') return false;
+        S.exVx = X.sx; S.exVib = false;
+        const p = clamp(X.t / EXIT.HOLD, 0, 1);
+        exitFx(ctx, k, p, L);
+        S.exVib = true;
+        if (p < 1) return false;
+        const regs = a.regions || [], i = regs.findIndex(g => norm(g.id) === S.flew);
+        S.autoX = null;
+        S.keepAuto = true; S.wpNext = i >= 0 && regs.length ? (i + 1) % regs.length : -1;
+        if (!exitGo(ctx, k, 'auto', L)) { S.keepAuto = false; S.wpNext = -1; S.inT = 0; exitReset(ctx); return false; }
+        note('auto out');
+        if (adv) { try { W.LowiAdventure.visited(S.flew, S.advIn || 0); } catch (e) { } } /* S.flew stays set until she lands outside */
+        return true;
+    }
+    function startOut(ctx, why) {
+        const a = ctx.a, PD = ctx.PD; basis(a);
+        const reg = (a.regions || []).find(g => norm(g.id) === S.flew);
+        S.outPos.copy(reg ? reg.pos : S.inC);
+        if (S.exD0) S.exD0 = 0; /* the warp takes the camera from here */
+        S.exH = null; S.exP = 0; S.exBeat = 0; S.autoX = null;
+        const q = canvasRect(a); toScreen(a, S.p, S.scr);
+        S.oFrom = { x: clamp((S.scr.x - q.left) / q.width, 0.08, 0.92), y: clamp((S.scr.y - q.top) / q.height, 0.12, 0.9) };
+        S.oCur = { x: S.oFrom.x, y: S.oFrom.y };
+        V.b.subVectors(S.p, a.camera.position); S.oD0 = Math.max(0.6, -V.b.dot(V.fw)); S.oDcur = S.oD0;
+        S.oPh = 'A'; S.oT0 = performance.now(); S.oTB = -1; S.oGame = 0; S.oWhy = why; S.oKs = S.ks = K.MIN_K; S.oPrev = (S.oPrev || S.p.clone()).copy(S.p);
+        S.st = 'out'; S.fallT = -1; S.rw = null; S.huntFly = false;
+        /* no second Misty: her cell stays empty while she is out (wh-padfly needs a pad mode) */
+        if (!PD.mode) { padMode(ctx, 'drive'); S.idle = K.IDLE_HOME - 6; } else if (PD.mode === 'drive') S.idle = Math.min(S.idle, K.HANDBACK);
+        const w = ctx.wand; if (w) { w.frustumCulled = false; w.onBeforeRender = outDraw; }
+        hold(false); classes(true, false, true); note('out ' + why);
+    }
+    /* drawn right before the frame is rendered, after every camera move of this frame (the warp moves the camera after Home's
+       frame runs), so she sits exactly where she should on screen: never a frame behind the camera */
+    function outDraw() {
+        const a = w3(), w = this; if (S.st !== 'out' || !a || !a.camera || !V) return;
+        basis(a);
+        const cam = a.camera, q = canvasRect(a), Rg = R(), wq = Rg && Rg.state && Rg.state.warp;
+        /* paced by the warp's own clock (capped frame time), so on a slow phone she and the camera stay in step */
+        const clk = wq && wq.rev ? wq.clock : 1e9;
+        let P, depth;
+        if (S.oPh === 'A') {
+            P = outAt('A', wq && wq.rev ? (clk - (wq.tu || 0)) / 640 : 1, S.oFrom); depth = S.oD0;
+        } else {
+            toScreen(a, S.outPos, V.dS = V.dS || {});
+            const door = { x: (V.dS.x - q.left) / q.width, y: (V.dS.y - q.top) / q.height };
+            if (V.dS.z > 1) { door.x = 1 - door.x; door.y = 1 - door.y; } /* behind the camera at the start of the back-out */
+            if (S.oTB < 0 && wq && wq.rev) S.oTB = clk;
+            P = outAt('B', S.oTB >= 0 && clk < 1e9 ? (clk - S.oTB) / 1870 : 1, S.oA, door);
+            V.b.subVectors(S.outPos, cam.position); const dB = -V.b.dot(V.fw);
+            depth = S.oDA + (Math.max(0.8, dB * 0.9) - S.oDA) * P.e;
+        }
+        V.b.copy(cam.position).addScaledVector(V.fw, -depth);
+        fromScreen(a, q.left + P.x * q.width, q.top + P.y * q.height, V.b, S.p);
+        if (S.oPh === 'B' && P.e > 0) {
+            /* never left inside the door of the world she just left (the stick would fly her straight back in) */
+            V.a.subVectors(S.p, S.outPos); const d = V.a.length(), need = K.ENTRY * 1.6;
+            if (d < need && d > 1e-4) S.p.copy(S.outPos).addScaledVector(V.a, (d + (need - d) * P.e) / d);
+            S.ks = S.oKs + (sizeK(approach(Math.max(d, need))) - S.oKs) * P.e;
+        }
+        S.oCur.x = P.x; S.oCur.y = P.y; S.oDcur = depth;
+        S.hs = S.base * S.ks / pxPerUnit(a, S.p);
+        w.position.copy(S.p); w.scale.set(S.hs * 260 / 310, S.hs, 1); w.updateMatrixWorld();
+    }
+    function dropDraw(w) { if (w && w.onBeforeRender === outDraw) { w.onBeforeRender = function () { }; w.frustumCulled = true; } }
+    function outFrame(ctx, k) {
+        const a = ctx.a, r = ctx.r, dt = ctx.dt, cur = curRegion(), busy = regionsBusy(), now = performance.now();
+        if (ctx.wand && ctx.wand.onBeforeRender !== outDraw) { ctx.wand.frustumCulled = false; ctx.wand.onBeforeRender = outDraw; }
+        S.oGame = (S.oGame || 0) + dt;
+        if (S.oPh === 'A' && cur === 'hub') { S.oPh = 'B'; S.oTB = -1; S.oA = { x: S.oCur.x, y: S.oCur.y }; S.oDA = S.oDcur; S.oKs = S.ks; note('out B'); }
+        if (S.oPh === 'B' && !busy && !r.fly) { outLand(ctx); return; }
+        /* the warp was cancelled before the place went: she is still in it */
+        if (!busy && cur !== 'hub') { dropDraw(ctx.wand); S.st = 'inside'; S.fade = 1; note('out cancelled'); return; }
+        if (S.oGame > 12) { dropDraw(ctx.wand); end(ctx, 'out-timeout'); return; }
+        S.v.subVectors(S.p, S.oPrev).divideScalar(Math.max(1e-3, dt)); S.oPrev.copy(S.p);
+        if (S.v.lengthSq() > 64) S.v.setLength(8);
+        S.fade = 1; S.ap = 0; S.near = null;
+        place(ctx, k, ctx.reduced, 1); /* opacity, tilt, tint; outDraw sets where and how big */
+        trail(ctx, k, 0.7);
+    }
+    function outLand(ctx) {
+        const a = ctx.a, r = ctx.r; basis(a);
+        outDraw.call(ctx.wand); dropDraw(ctx.wand);
+        /* she stays out in the universe, a little way from the world she left, drifting gently away from it */
+        V.a.subVectors(S.p, S.outPos); if (V.a.lengthSq() < 1e-6) V.a.copy(V.fw); V.a.normalize();
+        S.v.copy(V.a).multiplyScalar(0.35);
+        S.st = 'free'; S.d0 = r.dist; S.dHome = r.homeDist || 3.2; S.dolly = 0; S.dollyOut = false;
+        S.wp = S.wpNext >= 0 ? S.wpNext : -1; S.wpNext = -1; S.wpWait = 0; S.tourGo = null; S.joined = 0; S.flew = null; S.entered = 0;
+        S.fade = 1; S.emerge = 0; S.outT = 0; S.keepAuto = false; S.wob = 0; S.wobT = 9;
+        const cs = toScreen(a, V.c, {}); S.cell0.x = cs.x; S.cell0.y = cs.y;
+        hold(true); classes(true, false, false); note('out landed ' + S.oWhy);
+    }
+    W.addEventListener('lowi:world-warp', e => {
+        const d = e && e.detail; if (!d) return;
+        /* world-exit: any trip from the world she is in back out to the universe takes her along */
+        if (d.phase === 'start' && d.id === 'hub' && S.st === 'inside' && d.from && norm(d.from) === S.flew) S.outReq = true;
+    });
     W.addEventListener('lowi:world-warp', e => { const d = e && e.detail; if (d && d.phase === 'arrive' && S.st === 'warp' && norm(d.id) === S.flew) S.entered = 1; });
     W.LowiMistyFlight = {
         /* where she is on screen while inside a world (the explainer cell flies next to her, region-pals.js) */
@@ -631,6 +839,6 @@
         recall: () => { if (S.st === 'idle') { try { if (W.LowiPad) W.LowiPad.mode(''); } catch (e) { } } else S.recallReq = true; },
         wants, frame, core,
         state: () => ({ st: S.st, flew: S.flew, joined: !!S.joined, roam: !!S.rw, inT: +(S.inT || 0).toFixed(1), wpNext: S.wpNext, ap: +S.ap.toFixed(3), near: S.near ? S.near.id : null, nearD: S.near ? +S.near.d.toFixed(2) : null, px: Math.round(S.base), ks: +S.ks.toFixed(3),
-            hs: +S.hs.toFixed(3), push: S.mem && w3() && w3().memU && w3().memU.uPushA ? +w3().memU.uPushA.value.toFixed(3) : 0, p: S.p ? [+S.p.x.toFixed(2), +S.p.y.toFixed(2), +S.p.z.toFixed(2)] : null, log: S.log.slice(-12) })
+            hs: +S.hs.toFixed(3), exP: +(S.exP || 0).toFixed(3), autoX: S.autoX ? S.autoX.ph : null, outPh: S.st === 'out' ? S.oPh : null, push: S.mem && w3() && w3().memU && w3().memU.uPushA ? +w3().memU.uPushA.value.toFixed(3) : 0, p: S.p ? [+S.p.x.toFixed(2), +S.p.y.toFixed(2), +S.p.z.toFixed(2)] : null, log: S.log.slice(-12) })
     };
 })();

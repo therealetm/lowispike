@@ -33,7 +33,7 @@ test('chip CSS uses Misty glass tokens, pill shape, auto width; light mode and c
   assert.ok(!/animation\s*:/.test(sec), 'no keyframe animation');
 });
 
-test('level-up pop is the same small glass chip, 4 s, tap still opens the unlock / map', () => {
+test('level-up pop is the same small glass chip, 4 s, tap opens Misty\'s growth map', () => {
   const b = R('beta.css'), h = R('index.html');
   const r = b.slice(b.indexOf('.r3m-pop {'));
   assert.ok(/border-radius: 99px !important/.test(r) && r.includes('var(--gn-fill') && /width: auto !important/.test(r));
@@ -42,5 +42,6 @@ test('level-up pop is the same small glass chip, 4 s, tap still opens the unlock
   assert.ok(solid && !solid[1].includes('.r3m-pop') && solid[1].includes('.r2-sh'), 'solid box is for sheets only, not the chip');
   const pop = h.slice(h.indexOf('function pop(L){'), h.indexOf('function hookAward(){'));
   assert.ok(pop.includes('}, 4000);') && !pop.includes('}, 7000);'));
-  assert.ok(pop.includes('data-r3m') && pop.includes('"unlock" : "map"'));
+  /* Oct 17: the VIP / courses / 1:1 unlocks are gone, so the chip always opens the growth map */
+  assert.ok(pop.includes('setAttribute("data-r3m", "map")') && !pop.includes('"unlock"'));
 });

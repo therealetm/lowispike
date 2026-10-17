@@ -59,7 +59,9 @@ Most legacy modules are IIFEs or ordered script blocks inside `index.html`. Sear
 | `LowiGlass` | Shared glass/background presentation behavior. |
 | `LowiR2` | Core UI helpers, overlays/sheets, themes, toasts, and shared DOM utilities. |
 | `LowiPF` | Reachable sticky sheet headers, close behavior, and swipe-down dismissal. |
-| `LowiG2H`, `LowiG2C`, `LowiG2D`, `LowiG2E` | Phone-only compaction for Today, Cook, Community Leaderboard, and Profile. |
+| `LowiG2H`, `LowiG2C`, `LowiG2D`, `LowiG2E` | Phone-only compaction for Today, Cook, Community care board, and Profile. |
+| `LowiCareBoard` | Care board math (`care-board-core.js`): sunbeams per week / month from the sun meter, tagged cloud keys, ranking. |
+| `LowiLevels` | Misty's growth map: what Levels 1 to 6 give (her form, the Adventure reach, bubble glows), read from `LowiWorldHomeCore` and `LowiAdventureTiers`. |
 | `LowiQ4b` | Hides the install prompt when another surface is active. |
 | Header/profile-orb patch | Keeps the profile avatar current and gives the Scan button immediate press feedback. |
 
@@ -123,7 +125,7 @@ Most legacy modules are IIFEs or ordered script blocks inside `index.html`. Sear
 | Core chat and `cm*` functions | Chat messages, replies, mentions, reactions, and local fallback state. |
 | Cloud community module | Maps Supabase posts, likes, messages, reactions, and profiles into local presentation. |
 | `LowiR3F` | Community tabs and unified “New post” flow. |
-| `LowiG2D` | Compact leaderboard with ranking and unlock sheets. For You remains a scroll feed. |
+| `LowiG2D` | Compact care board with the full ranking sheet and a Misty's growth tile. For You remains a scroll feed. |
 | Community ordering module | Drag-reorders inner Community sections and keeps Profile ordering in sync. |
 | `LOWI_BOTS` | Clearly local demo members/content. Never upload or misrepresent them as real users. |
 

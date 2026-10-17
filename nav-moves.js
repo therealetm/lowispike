@@ -18,7 +18,7 @@
     };
     const SPOTS = {
         fy: { tab: 'shelf', root: '#tab-shelf', pane: 'cmPaneFeed', label: () => T('For You', 'F\u00fcr dich', 'Para ti'), back: () => T('Cook', 'Kochen', 'Cocina') },
-        lb: { tab: 'move', root: '#tab-move', pane: 'cmPaneBoard', label: () => T('Leaderboard', 'Bestenliste', 'Clasificaci\u00f3n'), back: () => T('Move', 'Bewegen', 'Moverse') }
+        lb: { tab: 'move', root: '#tab-move', pane: 'cmPaneBoard', label: () => T('Care board', 'F\u00fcrsorge-Board', 'Tabla de cuidado'), back: () => T('Move', 'Bewegen', 'Moverse') }
     };
     const activeTab = () => { const t = $('.tab.active'); return t ? t.id.replace(/^tab-/, '') : ''; };
     function go(t) { try { if (typeof W.goTab === 'function') W.goTab(t); else { const b = $('#tabbar .tb[data-tab="' + t + '"]'); if (b) b.click(); } } catch (e) { console.error(e); } }
@@ -212,6 +212,14 @@
     });
     /* Move (Oct 16): the Leaderboard is a card right under the Move title, above the Start card, in the same card style.
        The odd Safety shield in the header is gone; its notes now sit as a quiet "Safety notes" line under the tiles. */
+    /* Oct 17: the board ranks the care Misty got (care-board-core.js), so the card reads "Care board" and shows your
+       sunbeams this week. Read at most every 4 s: tick() runs on every DOM change. */
+    let careTxt = '', careAt = 0;
+    function careLine() {
+        const n = Date.now(); if (n - careAt < 4000) return careTxt; careAt = n;
+        try { const m = W.LowiR3 && W.LowiR3.me && W.LowiR3.me(), w = m && m.care && m.care.w; careTxt = w && w.key ? ' \u00b7 \u2600 ' + w.pts : ''; } catch (e) { careTxt = ''; }
+        return careTxt;
+    }
     function moveCard() {
         const head = $('#mv-screen .mv-head'); if (!head) return;
         let c = head.parentElement.querySelector(':scope > .nm-lbcard');
@@ -220,7 +228,7 @@
             c.innerHTML = '<span class="mv-ic nm-lbic">' + ICO.lb + '</span><span class="nm-lbtx"><span class="tiny gold"></span><b class="h3"></b></span><svg class="nm-lbgo" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
         }
         if (c.previousElementSibling !== head) head.after(c);
-        const tg = T('This week', 'Diese Woche', 'Esta semana'), nm = SPOTS.lb.label();
+        const tg = T('This week', 'Diese Woche', 'Esta semana') + careLine(), nm = SPOTS.lb.label();
         if (c.querySelector('.tiny').textContent !== tg) c.querySelector('.tiny').textContent = tg;
         if (c.querySelector('b').textContent !== nm) { c.querySelector('b').textContent = nm; c.setAttribute('aria-label', nm); }
         const tl = head.parentElement.querySelector(':scope > .g2-tiles');

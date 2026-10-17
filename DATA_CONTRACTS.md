@@ -131,19 +131,27 @@ The client currently references these Supabase resources:
 
 | Resource | Use |
 |---|---|
-| `profiles` | Public/member profile and leaderboard fields. |
+| `profiles` | Public/member profile and care board fields (see below). |
 | `user_state` | General per-user backup/restore after private keys are removed. |
 | `posts`, `post_likes` | Community posts and likes. |
 | `messages`, `reactions` | Community chat and reactions. |
 | `swipe_foods` | Shared food swipe submissions. |
 | `products`, `product_catches`, `product_reports` | Product catalogue, Pokédex catches, and reports. |
 | `app_admins` | Checks administrative access for gated management UI. |
-| `vip_messages`, `course_modules`, `mentoring_requests` | Level 7/8/9 unlock features. |
+| `vip_messages`, `course_modules`, `mentoring_requests` | No longer used by the client: the Level 7/8/9 unlocks were removed on Oct 17, 2026. Data left in place. |
 | `cycle_sync` | Explicit opt-in cycle synchronization, separate from general state. |
 | Storage bucket `media` | Community photo/video uploads. |
 | Edge function `n1-push` | Saves/removes push subscriptions and reminder snapshots. |
 
 Server authorization depends on Supabase Row Level Security and edge-function validation. Client-side hiding is not authorization. Schema/RLS changes are not present in this repository; confirm the live backend before changing a payload.
+
+### Care board fields on `profiles` (since Oct 17, 2026)
+
+The XP leaderboard and the Bronze / Silver / Gold unlocks (VIP channel, courses and video modules, 1:1 mentoring at Levels 7 to 9, which nobody could reach because levels stop at 6) were removed. The board in Move ranks care instead: the sunbeams Misty got from you, the same daily points as her sun on Today (`sun-meter.js` `model()`, at most 12 a day). `care-board-core.js` (`LowiCareBoard`) holds the math.
+
+No column was added. `xp_week` / `xp_month` carry this week's / this month's sunbeams, and `wk` / `mo` carry `care1:<period>:<full-sun days>` (period `YYYY-MM-DD` for the Monday, `YYYY-MM` for the month). A row whose key is not tagged for the current period counts 0, so builds before the care board (bare-date keys, weekly XP) and new builds never mix numbers. `xp` (all-time XP) and `lv` are unchanged and still drive levels. The client stops writing these four fields until the sun meter has loaded, so an early push never blanks a good row.
+
+The server tables `vip_messages`, `course_modules` and `mentoring_requests` were left untouched; no screen reads or writes them any more.
 
 ## Privacy boundaries
 

@@ -3101,9 +3101,9 @@ html.g2c-on.g2c-t6 #shelf.tabmode #shBody .r5-shuf .r5-go{margin-top:12px;min-he
 #g2dTiles{display:none}
 html.g2d-on #cmPaneBoard{overflow:hidden;overscroll-behavior:contain;padding-top:6px;padding-bottom:0}
 html.g2d-on #cmPaneBoard .r3f-board .r3-lb > .r2-p{display:none}
-html.g2d-on #cmPaneBoard .r3m-lbme{margin:0 0 10px}
-html.g2d-on #cmPaneBoard .r3m-lbp{margin-bottom:0}
-html.g2d-on #cmPaneBoard .r3m-tcs3{display:none}
+
+
+
 html.g2d-on #cmPaneBoard .r3-lbseg{position:static;margin-bottom:12px}
 html.g2d-on #cmPaneBoard .r3-lbseg button{min-height:40px}
 html.g2d-on #cmPaneBoard .g2d-hid{display:none!important}
@@ -3136,7 +3136,7 @@ html.g2d-on #cmPaneBoard .g2d-tile small:empty{display:none}
 html.g2d-on #cmPaneBoard .g2d-tile:has(small:empty) b{grid-row:1/span 2;align-self:center}
 /* tighten when space is short */
 html.g2d-on.g2d-t1 #cmPaneBoard .r3-lbseg{margin-bottom:8px}
-html.g2d-on.g2d-t1 #cmPaneBoard .r3m-lbme{margin-bottom:8px}
+
 html.g2d-on.g2d-t1 #cmPaneBoard .g2d-tile{min-height:48px;padding:7px 10px}
 html.g2d-on.g2d-t1 .g2d-tile .g2h-ic{width:22px;height:22px;border-radius:8px}
 html.g2d-on.g2d-t1 .g2d-tile .g2h-ic svg{width:15px;height:15px}
@@ -3146,8 +3146,8 @@ html.g2d-on.g2d-t2 #cmPaneBoard .r3-lbrow.t1{padding-top:12px}
 /* the sheets */
 .g2d-ov .g2d-pt{margin:0 0 4px;padding-right:44px}
 .g2d-ov .g2d-ps{margin:0 0 14px}
-.g2d-ov .g2d-unlb{margin:0}
-.g2d-ov .g2d-unlb .r3m-tc{min-height:150px}
+
+
 </style>
 <style id="g2eCss">/* G2 part 5: Profile is one game screen on a phone (hero + level + streak + tiles; each tile opens its part with Back) */
 #g2eTiles,#g2eHead{display:none}
@@ -8109,7 +8109,7 @@ function cards(){
     {id:"cook", h:"Any meal, rebuilt.", p:"Send a photo to the LOWiSPIKE GPT. Get the swap as a carousel, ready to cook or post.",
      v:'<div class="a2-cook"><div class="a2-photo" aria-hidden="true">🍝</div><div class="a2-to" aria-hidden="true">→</div>' +
        '<div class="a2-car"><div class="a2-sl"><b>1</b><span>Swap</span></div><div class="a2-sl"><b>2</b><span>Ingredients</span></div><div class="a2-sl"><b>3</b><span>Steps</span></div></div></div>'},
-    {id:"tribe", h:"Climb with your tribe.", p:"Daily quests, XP and a leaderboard. Post your swaps to For You.",
+    {id:"tribe", h:"Climb with your tribe.", p:"Daily quests, XP and a care board for who looks after their companion best. Post your swaps to For You.",
      v:'<div class="a2-tribe"><div class="a2-q"><span>Daily quest</span><b>4 / 6</b><div class="a2-bar"><i></i></div></div>' +
        '<div class="a2-lb"><div class="a2-lr"><span class="a2-rk">1</span><span class="a2-av">M</span><span class="a2-nm">Mira</span><b>1,240 XP</b></div>' +
        '<div class="a2-lr me"><span class="a2-rk">2</span><span class="a2-av">✦</span><span class="a2-nm">You</span><b>1,180 XP</b></div>' +
@@ -8180,7 +8180,7 @@ function addLang(){ if (!window.LowiLang || !LowiLang.add) return setTimeout(add
   ["Ingredients", "Zutaten", "Ingredientes"],
   ["Steps", "Schritte", "Pasos"],
   ["Climb with your tribe.", "Steig mit deinem Tribe auf.", "Sube con tu tribu."],
-  ["Daily quests, XP and a leaderboard. Post your swaps to For You.", "Tägliche Quests, XP und eine Bestenliste. Poste deine Tausche auf For You.", "Misiones diarias, XP y una clasificación. Publica tus cambios en For You."],
+  ["Daily quests, XP and a care board for who looks after their companion best. Post your swaps to For You.", "Tägliche Quests, XP und ein Fürsorge-Board: Wer kümmert sich am besten um seinen Begleiter? Poste deine Tausche auf For You.", "Misiones diarias, XP y una tabla de cuidado: quién cuida mejor a su compañera. Publica tus cambios en For You."],
   ["Daily quest", "Tägliche Quest", "Misión diaria"],
   ["You", "Du", "Tú"]
 ]); }
@@ -12653,29 +12653,29 @@ html[data-ui=light] .r3m{--t-bronze:#9a5a26;--t-bronze2:#c98a52;--t-silver:#5f6a
 .r3m-bar{height:8px;border-radius:4px;background:rgba(127,127,127,.18);overflow:hidden;margin:12px 0 8px}
 .r3m-bar i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--t-gold),var(--t-gold2))}
 .r3m-psub{font-size:13px;color:var(--r2-mut);font-weight:600}
-.r3m-tn{display:inline-block;font-weight:750;font-size:12px;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:1px solid currentColor;line-height:1.35}
-.r3m-tn.t-bronze{color:var(--t-bronze)}.r3m-tn.t-silver{color:var(--t-silver)}.r3m-tn.t-gold{color:var(--t-gold)}.r3m-tn.t-sun{color:var(--t-sun)}
+
+
 .r3m-h3{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--r2-mut);font-weight:700;margin:20px 2px 10px}
-.r3m-adm{margin-top:12px;padding:12px 14px;border-radius:16px;border:1px solid rgba(202,161,90,.45);background:rgba(202,161,90,.1);display:flex;flex-direction:column;gap:3px;font-size:14px}
-.r3m-adm span{color:var(--r2-mut)}
+
+
 /* the three tier cards */
-.r3m-tcs3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.r3m-tc{--c:var(--t-gold);--c2:var(--t-gold2);position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:12px 10px 11px;border-radius:18px;border:1px solid var(--r2-line);background:var(--r2-field);color:var(--r2-ink);font:inherit;cursor:pointer;min-height:132px;overflow:hidden;-webkit-tap-highlight-color:transparent;transition:transform .12s}
-.r3m-tc:active{transform:scale(.97)}
-.r3m-tc.t-bronze{--c:var(--t-bronze);--c2:var(--t-bronze2)}.r3m-tc.t-silver{--c:var(--t-silver);--c2:var(--t-silver2)}
-.r3m-tc::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,var(--c),var(--c2));opacity:.55}
-.r3m-tc.got{border-color:color-mix(in srgb,var(--c) 55%,transparent);background:linear-gradient(160deg,color-mix(in srgb,var(--c) 16%,transparent),var(--r2-field) 70%)}
-.r3m-tc.got::before{opacity:1}
-.r3m-tcl{font-size:11px;font-weight:700;color:var(--r2-mut);letter-spacing:.03em;text-transform:uppercase}
-.r3m-tcm{position:absolute;top:9px;right:9px;font-size:12px;line-height:1}
-.r3m-tc.got .r3m-tcm{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--c);color:#14100a;font-weight:800;font-size:12px}
-.r3m-tcn{font-size:17px;font-weight:800;color:var(--c);margin-top:2px}
-.r3m-tcu{font-size:13px;font-weight:650;line-height:1.25;min-height:2.5em}
-.r3m-tcx{font-size:12px;color:var(--r2-mut);margin-top:auto}
-.r3m-tcs{font-size:12px;font-weight:700;color:var(--r2-mut)}
-.r3m-tc.got .r3m-tcs{color:var(--c)}
-.r3m-tcs3.sm .r3m-tc{min-height:118px;padding:10px 9px}
-.r3m-tcs3.sm .r3m-tcn{font-size:15px}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 .r3m-next{margin-top:12px;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;padding:12px 14px;border-radius:16px;background:var(--r2-field);border:1px dashed var(--r2-line)}
 .r3m-next small{width:100%;font-size:12px;color:var(--r2-mut);font-weight:650;text-transform:uppercase;letter-spacing:.06em}
 .r3m-next b{display:flex;gap:6px;flex-wrap:wrap;font-size:15px}
@@ -12686,13 +12686,13 @@ html[data-ui=light] .r3m{--t-bronze:#9a5a26;--t-bronze2:#c98a52;--t-silver:#5f6a
 .r3m-row{position:relative;margin:0 0 6px}
 .r3m-rb{width:100%;display:flex;align-items:center;gap:12px;padding:8px 10px 8px 2px;border:0;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer;border-radius:16px;-webkit-tap-highlight-color:transparent;min-height:52px}
 .r3m-rb:active{background:var(--r2-field)}
-.r3m-rb:focus-visible,.r3m-tc:focus-visible,.r3m-lbp:focus-visible,.r3m-tap:focus-visible,.lvchip:focus-visible{outline:2px solid var(--t-gold,#caa15a);outline-offset:2px}
+.r3m-rb:focus-visible,.r3m-tap:focus-visible,.lvchip:focus-visible{outline:2px solid var(--t-gold,#caa15a);outline-offset:2px}
 .r3m-node{position:relative;z-index:1;flex:0 0 auto;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:14px;background:var(--r2-sheet);border:2px solid var(--r2-line);color:var(--r2-mut)}
 .r3m-row.got .r3m-node{border-color:color-mix(in srgb,var(--t-gold) 60%,transparent);color:var(--t-gold)}
 .r3m-row.cur .r3m-node{background:linear-gradient(180deg,var(--t-gold2),var(--t-gold));color:#14100a;border-color:transparent;box-shadow:0 0 0 4px color-mix(in srgb,var(--t-gold) 25%,transparent)}
 .r3m-row.big .r3m-node{width:44px;height:44px;margin-left:-2px;margin-right:-2px}
-.r3m-row.big.t-bronze .r3m-node{border-color:var(--t-bronze)}.r3m-row.big.t-silver .r3m-node{border-color:var(--t-silver)}.r3m-row.big.t-gold .r3m-node{border-color:var(--t-gold)}
-.r3m-row.big.got.t-bronze .r3m-node{background:var(--t-bronze);color:#14100a}.r3m-row.big.got.t-silver .r3m-node{background:var(--t-silver);color:#14100a}.r3m-row.big.got.t-gold .r3m-node{background:var(--t-gold);color:#14100a}
+
+
 .r3m-rt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .r3m-rt b{font-size:15px;font-weight:700;display:flex;gap:5px;align-items:baseline;flex-wrap:wrap}
 .r3m-rt b em{font-style:normal}
@@ -12713,50 +12713,50 @@ html[data-ui=light] .r3m{--t-bronze:#9a5a26;--t-bronze2:#c98a52;--t-silver:#5f6a
 .r3m-rw li{font-size:14px;font-weight:600;padding-left:22px;position:relative}
 .r3m-rw li::before{content:"✦";position:absolute;left:2px;color:var(--t-gold)}
 .r3m-rw li.k-unlock::before{content:"🔓";font-size:12px;top:1px}
-.r3m-np{margin:10px 0 0;font-size:13px;color:var(--r2-mut)}
-.r3m-open{width:100%;margin-top:12px}
-.r3m-more{text-align:center;color:var(--r2-mut);font-size:13px;margin:6px 0 0}
+
+
+
 .r3m-earn{margin-top:18px;padding:14px;border-radius:18px;background:var(--r2-field);border:1px solid var(--r2-line)}
 .r3m-earn b{font-size:15px}
 .r3m-earn ul{margin:8px 0 8px;padding-left:18px;display:grid;gap:4px;font-size:14px}
 .r3m-earn small{color:var(--r2-mut);font-size:12px}
 /* unlock detail + panes */
-.r3m-ulh{text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;margin:6px 0 14px}
-.r3m-ulm{font-size:40px;line-height:1;margin-bottom:4px}
-.r3m-ulh small{font-size:12px;font-weight:750;letter-spacing:.06em;text-transform:uppercase;color:var(--t-gold)}
-.r3m-ul.t-bronze .r3m-ulh small{color:var(--t-bronze)}.r3m-ul.t-silver .r3m-ulh small{color:var(--t-silver)}
-.r3m-ulh p{margin:4px 0 0;color:var(--r2-mut);font-size:15px;line-height:1.4}
-.r3m-lockbox{display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:16px;background:var(--r2-field);border:1px solid var(--r2-line)}
-.r3m-lockbox>span{font-size:22px}
-.r3m-lockbox div{display:flex;flex-direction:column;gap:2px}
-.r3m-lockbox small{color:var(--r2-mut);font-size:13px}
-.r3m-ph2{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin:2px 40px 12px 0}
-.r3m-ph2 p{margin:0;color:var(--r2-mut);font-size:14px;line-height:1.4}
-.r3m-empty{padding:18px 14px;text-align:center;color:var(--r2-mut);font-size:14px;line-height:1.45;border:1px dashed var(--r2-line);border-radius:16px}
-.r3m-msgs{display:flex;flex-direction:column;gap:8px;max-height:min(52vh,460px);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:2px 2px 6px;overscroll-behavior:contain}
-.r3m-msg{align-self:flex-start;max-width:86%;padding:9px 12px;border-radius:16px 16px 16px 6px;background:var(--r2-field);border:1px solid var(--r2-line)}
-.r3m-msg.me{align-self:flex-end;border-radius:16px 16px 6px 16px;background:color-mix(in srgb,var(--t-bronze) 16%,var(--r2-field));border-color:color-mix(in srgb,var(--t-bronze) 35%,transparent)}
-.r3m-mh{display:flex;align-items:baseline;gap:8px}
-.r3m-mh b{font-size:13px}
-.r3m-mh small{font-size:11px;color:var(--r2-mut)}
-.r3m-msg p,.r3m-req p{margin:3px 0 0;font-size:15px;line-height:1.38;white-space:pre-wrap;word-break:break-word}
-.r3m-del{margin-left:auto;border:0;background:transparent;color:var(--r2-mut);font-size:18px;line-height:1;cursor:pointer;min-width:32px;min-height:28px}
-.r3m-cmp{display:flex;gap:8px;align-items:flex-end;margin-top:10px;padding-bottom:max(4px,env(safe-area-inset-bottom))}
-.r3m-cmp textarea,.r3m-addf input,.r3m-addf textarea{flex:1;font:inherit;font-size:16px;color:var(--r2-ink);background:var(--r2-field);border:1px solid var(--r2-line);border-radius:16px;padding:11px 13px;resize:none;min-height:46px;width:100%;box-sizing:border-box}
-.r3m-cmp .r2-btn{flex:0 0 auto}
-.r3m-addf{display:flex;flex-direction:column;gap:8px;margin-top:14px;padding:14px;border-radius:18px;border:1px solid var(--r2-line);background:var(--r2-field)}
-.r3m-addf input,.r3m-addf textarea{background:var(--r2-sheet)}
-.r3m-mods{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
-.r3m-mods li{display:flex;gap:12px;padding:12px;border-radius:16px;background:var(--r2-field);border:1px solid var(--r2-line)}
-.r3m-mn{flex:0 0 auto;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:13px;background:color-mix(in srgb,var(--t-silver) 30%,transparent)}
-.r3m-mods li>div{flex:1;min-width:0}
-.r3m-mods p{margin:4px 0 0;color:var(--r2-mut);font-size:14px;line-height:1.4;white-space:pre-wrap}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 .r3m-ma{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 .r3m-ma .r2-btn{height:38px;padding:0 14px;font-size:14px;text-decoration:none}
-.r3m-req{padding:12px;border-radius:16px;background:var(--r2-field);border:1px solid var(--r2-line);margin-bottom:8px}
-.r3m-req small{display:block;color:var(--r2-mut);font-size:12px;margin-top:3px}
-.r3m-st{margin-left:auto;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:2px 8px;border-radius:999px;border:1px solid var(--r2-line);color:var(--r2-mut)}
-.r3m-st.s-planned{color:var(--t-gold);border-color:currentColor}.r3m-st.s-done{color:#3fae6a;border-color:currentColor}
+
+
+
+
 /* tappable level spots */
 .lvchip[data-r3m-t]{cursor:pointer;-webkit-tap-highlight-color:transparent}
 .r3m-tap{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .12s}
@@ -12766,22 +12766,22 @@ html[data-ui=light] .r3m-hint{color:#8a6420}
 .r3m-hint>span:nth-child(2){flex:1;min-width:0}
 .r3m-hb{display:flex;gap:4px}
 .r3m-hb i{width:10px;height:10px;border-radius:50%;border:1.5px solid;opacity:.7}
-.r3m-hb i.t-bronze{border-color:#c98a52}.r3m-hb i.t-silver{border-color:#aeb7c6}.r3m-hb i.t-gold{border-color:#caa15a}
-.r3m-hb i.got.t-bronze{background:#c98a52}.r3m-hb i.got.t-silver{background:#aeb7c6}.r3m-hb i.got.t-gold{background:#caa15a}
+
+
 .r3m-ch{font-size:18px;line-height:1;opacity:.8}
 /* leaderboard card */
-.r3m-lbme{margin:6px 0 14px}
-.r3m-lbme .r3m{display:contents}
-.r3m-lbp{display:block;width:100%;padding:0;border:0;background:transparent;font:inherit;color:inherit;text-align:left;cursor:pointer;margin-bottom:8px}
-.r3m-lbme{--t-bronze:#c98a52;--t-bronze2:#e7b07c;--t-silver:#aeb7c6;--t-silver2:#e4e9f1;--t-gold:#caa15a;--t-gold2:#f1d494}
-html[data-ui=light] .r3m-lbme{--t-bronze:#9a5a26;--t-bronze2:#c98a52;--t-silver:#5f6a7c;--t-silver2:#a9b2c2;--t-gold:#8a6220;--t-gold2:#caa15a}
+
+
+
+
+
 /* bubble rims (glass edge in the tier colour, the liquid inside is untouched) */
 
-.r3m-rim{position:absolute;inset:calc(var(--sz,60px) * -0.05);border-radius:50%;pointer-events:none;z-index:3;box-sizing:border-box;padding:max(1.5px,calc(var(--sz,60px) * .03));background:conic-gradient(from 210deg,var(--rc1),var(--rc2),var(--rc1),var(--rc2),var(--rc1));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;opacity:.95}
-.lb3[data-r3m-tier=bronze] .r3m-rim{--rc1:#a8662f;--rc2:#f0bf8c}
-.lb3[data-r3m-tier=silver] .r3m-rim{--rc1:#8f99aa;--rc2:#f4f7fb}
-.lb3[data-r3m-tier=gold] .r3m-rim{--rc1:#b98d45;--rc2:#ffe7a8}
-.lb3[data-r3m-tier=sun] .r3m-rim{--rc1:#ff9f1c;--rc2:#fff1b0;box-shadow:0 0 calc(var(--sz,60px)*.18) rgba(255,190,80,.55)}
+
+
+
+
+
 /* level-up pop */
 .r3m-pop{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translate(-50%,20px);opacity:0;z-index:9500;display:grid;grid-template-columns:1fr auto;align-items:center;gap:0 12px;width:min(92vw,400px);padding:12px 16px;border-radius:20px;border:1px solid rgba(202,161,90,.55);background:rgba(18,16,12,.92);color:#f8f5ed;font:inherit;text-align:left;cursor:pointer;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);box-shadow:0 14px 40px rgba(0,0,0,.35);transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .35s}
 html[data-ui=light] .r3m-pop{background:rgba(255,255,255,.95);color:#161c2e}
@@ -12789,16 +12789,50 @@ html[data-ui=light] .r3m-pop{background:rgba(255,255,255,.95);color:#161c2e}
 .r3m-pop small{grid-column:1;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#caa15a}
 .r3m-pop b{grid-column:1;font-size:15px}
 .r3m-pop .r3m-ch{grid-column:2;grid-row:1 / span 2}
-.r3m-pop.t-bronze{border-color:#c98a52}.r3m-pop.t-silver{border-color:#aeb7c6}
-@media (prefers-reduced-motion:reduce){.r3m-pop,.r3m-tc,.r3m-tap{transition:none}}
-@media (max-width:360px){.r3m-tcs3{gap:6px}.r3m-tc{padding:10px 8px}.r3m-tcn{font-size:15px}.r3m-tcu{font-size:12px}}
+
+@media (prefers-reduced-motion:reduce){.r3m-pop,.r3m-tap{transition:none}}
+
+</style>
+<style id="carecss">
+/* Oct 17, 2026: Misty's growth map (r3mjs) + the care board (care-board-core.js) */
+.r3m-hb i{border-color:#caa15a}
+.r3m-hb i.got{background:#caa15a}
+.r3m-rw li{padding-left:0;display:flex;gap:10px;align-items:flex-start}
+.r3m-rw li::before{content:none}
+.r3m-ri{flex:0 0 22px;text-align:center;font-size:15px;line-height:1.3;color:var(--t-gold)}
+.r3m-rw li.k-glow .r3m-ri{font-size:18px;line-height:1.05;text-shadow:0 0 8px currentColor}
+.r3m-rtx{display:flex;flex-direction:column;gap:2px;min-width:0}
+.r3m-rtx b{font-size:14px;font-weight:700}
+.r3m-rtx small{font-size:12.5px;font-weight:500;color:var(--r2-mut)}
+.r3m-lk{opacity:.6;font-size:12px;font-weight:700;white-space:nowrap}
+.r3m-care{border-color:color-mix(in srgb,#ffc23d 35%,var(--r2-line))}
+.r3-cbme{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;width:100%;margin:6px 0 12px;padding:12px 14px;border-radius:20px;border:1px solid color-mix(in srgb,#ffc23d 35%,var(--r2-line,rgba(255,255,255,.14)));background:var(--r2-field,rgba(255,255,255,.06));color:var(--r2-ink,inherit);font:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.r3-cbsun{font-size:26px;line-height:1;filter:drop-shadow(0 0 8px rgba(255,194,61,.55))}
+.r3-cbt{display:flex;flex-direction:column;gap:4px;min-width:0}
+.r3-cbt small{font-size:11.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#e0a92e}
+.r3-cbt b{font-size:15px;font-weight:700}
+.r3-cbt b i{font-style:normal;opacity:.5;margin:0 2px}
+.r3-cbbar{display:block;height:6px;border-radius:4px;background:color-mix(in srgb,var(--r2-ink,#fff) 12%,transparent);overflow:hidden}
+.r3-cbbar i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,#ffc23d,#fff2a8)}
+.r3-cbtd{font-size:12px;color:var(--r2-mut,rgba(255,255,255,.65))}
+.r3-cbch{font-size:22px;opacity:.5}
+.r3-cbme:focus-visible{outline:2px solid #ffc23d;outline-offset:2px}
+.r3-cbnote{margin:12px 2px 0;font-size:12px;line-height:1.4;color:var(--r2-mut,rgba(255,255,255,.6))}
+html.g2d-on #cmPaneBoard .r3-cbnote{display:none}
+html.g2d-on #cmPaneBoard .r3-cbme{margin:0 0 10px}
 </style>
 <script id="r3mjs">
-/* ===== LOWiSPIKE · Levels & unlocks (Oct 10, 2026) =====
-   Tap your level anywhere (Today chip, Profile level card, member level card, leaderboard) to open the level map.
-   Unlocks, as in the old community app: Level 7 Bronze = VIP channel, Level 8 Silver = courses & video modules, Level 9 Gold = 1:1 mentoring.
-   The XP curve, the titles and everyone's earned XP are untouched; this only reads S.xp through levelOf().
-   Server side (round3m/schema_levels.sql): vip_messages, course_modules, mentoring_requests, gated by row level security on the member's level. */
+/* ===== LOWiSPIKE · Misty's growth (Oct 17, 2026; was "Levels & unlocks", Oct 10) =====
+   E-man: the old Bronze / Silver / Gold unlocks (Level 7 VIP channel, Level 8 courses & video modules, Level 9 1:1
+   mentoring) are gone. Levels stop at 6 (levelOf / HERB_XP), so nobody could reach them anyway. Tapping a level (Today
+   chip, Profile level card, a member's level card, the care board tile) opens this map, and every row shows what that
+   level really gives, read from the code that gates it:
+     - Misty's form             LowiWorldHomeCore.STAGES (the Misty card's "Level n · name")
+     - how far Adventure goes   LowiAdventureTiers.core.TIERS (gated by the same level)
+     - glows for her bubble     LowiWorldHomeCore.AURAS (owns(id, xp))
+   plus daily care (the sun meter: a full sun is +10 XP and a trip with a find).
+   The server tables vip_messages / course_modules / mentoring_requests are left as they are; no screen opens them now.
+   XP, levels and the ledger are only read here. */
 (function(){
 "use strict";
 if (window.LowiLevels) return;
@@ -12806,100 +12840,71 @@ const R2 = () => window.LowiR2 || null, R3 = () => window.LowiR3 || null;
 const E = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const N = n => { try { return Math.round(n).toLocaleString("en-US"); } catch(e){ return String(n); } };
 const reduce = (() => { try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch(e){ return false; } })();
-const MAP_TO = 30;
-
-/* the three unlocks (levels as in the old app's Your Progress card) */
-const UNLOCKS = [
-  {L:7, tier:"bronze", tn:"Bronze", n:"VIP channel", ico:"💬", act:"vip",
-   d:"A members-only chat for everyone at Level 7 and up. Smaller room, closer to Emmanuel, real talk."},
-  {L:8, tier:"silver", tn:"Silver", n:"Courses & video modules", ico:"🎬", act:"courses",
-   d:"Emmanuel's course and video modules, opened for everyone at Level 8 and up."},
-  {L:9, tier:"gold", tn:"Gold", n:"1:1 mentoring", ico:"🌟", act:"mentor",
-   d:"Ask Emmanuel for a 1:1 mentoring session. Opens at Level 9."}
-];
-/* small looks you collect on the way (badges on the map, rim on your bubble) */
-const BADGE = {3:"🌱", 5:"🪴", 8:"🌸", 12:"✨", 17:"🏆", 23:"💫", 30:"☀️"};
+const lang = () => { try { return String((window.LowiLang && LowiLang.get && LowiLang.get()) || document.documentElement.lang || "en").slice(0, 2); } catch(e){ return "en"; } };
+const pk = a => Array.isArray(a) ? (a[({de:1, es:2})[lang()] || 0] || a[0]) : String(a || "");
+const HC = () => window.LowiWorldHomeCore || null;
+const AT = () => (window.LowiAdventureTiers && LowiAdventureTiers.core) || null;
 
 function xpNow(){ try { return Math.max(0, +S.xp || 0); } catch(e){ return 0; } }
 function lvOf(xp){ try { return levelOf(xp); } catch(e){ return {L:1, into:0, need:100, left:100, pct:0}; } }
-function startOf(L){ try { return levelStart(L); } catch(e){ return 0; } }
-function titleAt(L){ try { return titleOf(L); } catch(e){ return ""; } }
-function titleStarts(){ try { return TITLES.map(t => t[0]); } catch(e){ return [1,3,5,8,12,17,23,30]; } }
-function tierOf(L){ return L >= 30 ? "sun" : L >= 9 ? "gold" : L >= 8 ? "silver" : L >= 7 ? "bronze" : ""; }
-const TIER_NAME = {bronze:"Bronze", silver:"Silver", gold:"Gold", sun:"Sun"};
-function unlockAt(L){ return UNLOCKS.find(u => u.L === L) || null; }
-function rewardsAt(L){ const r = [], u = unlockAt(L), ts = titleStarts();
-  if (u) r.push({k:"unlock", u, t:u.tn + " · " + u.n});
-  if (L === 7) r.push({k:"look", t:"Bronze rim on your bubble"});
-  if (L === 8) r.push({k:"look", t:"Silver rim on your bubble"});
-  if (L === 9) r.push({k:"look", t:"Gold rim on your bubble"});
-  if (L === 30) r.push({k:"look", t:"Sun halo on your bubble"});
-  if (L > 1 && ts.indexOf(L) >= 0) r.push({k:"title", t:"New title: " + titleAt(L) + " " + (BADGE[L] || "")});
-  return r; }
+function startOf(L){ try { return HERB_XP[Math.max(0, Math.min(HERB_XP.length - 1, L - 1))]; } catch(e){ return [0,100,300,700,1500,3000][Math.max(0, Math.min(5, L - 1))]; } }
+function maxL(){ try { return HERB_XP.length; } catch(e){ return 6; } }
 
-/* ---------- cloud ---------- */
-function X(){ return window.LOWI_CLOUD_X || null; }
-function cstate(){ try { const x = X(); return x ? x.state() : {}; } catch(e){ return {}; } }
-function online(){ const s = cstate(); return !!(s.live && s.uid); }
-async function sb(){ const x = X(); if (!x) throw new Error("no cloud"); return x.client(); }
-let ADMIN = null;
-async function isAdmin(){
-  if (ADMIN !== null) return ADMIN; if (!online()) return false;
-  try { const c = await sb(); const r = await c.from("app_admins").select("user_id").eq("user_id", cstate().uid).maybeSingle(); ADMIN = !!(r && r.data); } catch(e){ return false; }
-  return ADMIN; }
-function myName(){ try { return (S.user && S.user.name) || "Member"; } catch(e){ return "Member"; } }
-function syncLevel(){ try { const x = X(); x && x.pushProfile(); } catch(e){} }
-const wait = ms => new Promise(r => setTimeout(r, ms));
+/* ---------- what each level gives (real definitions only) ---------- */
+function formAt(n){ const h = HC(), s = h && h.STAGES && h.STAGES[n - 1]; if (s) return {n:pk(s.n), d:pk(s.d)}; try { return {n:titleOf(n), d:""}; } catch(e){ return {n:"", d:""}; } }
+function tripAt(n){ const a = AT(), t = a && a.TIERS && a.TIERS.find(x => x.lv === n); return t ? {n:pk(t.n), d:pk(t.d)} : null; }
+function glowsAt(n){ const h = HC(); if (!h || !h.AURAS) return [];
+  const lo = startOf(n), hi = n < maxL() ? startOf(n + 1) : Infinity;
+  return h.AURAS.filter(a => a.xp >= lo && a.xp < hi).map(a => ({n:pk(a.n), xp:a.xp, c:a.a, c2:a.b})); }
+function rewardsAt(L){ const r = [], f = formAt(L), t = tripAt(L);
+  if (L > 1 && f.n) r.push({k:"form", t:f.n, d:f.d});
+  if (t) r.push({k:"trip", t:t.n, d:t.d});
+  glowsAt(L).filter(g => L > 1 || g.xp > 0).forEach(g => r.push({k:"glow", t:g.n, xp:g.xp, c:g.c}));
+  return r; }
+function nextUp(xp){ const L = lvOf(xp).L; for (let n = L + 1; n <= maxL(); n++) { const r = rewardsAt(n); if (r.length) return {L:n, r}; } return null; }
 
 /* ---------- sheets ---------- */
 function sheet(html, cls){ const r = R2(); if (r && r.sheet) return r.sheet(html, {cls:"r3-ov r3m-ov" + (cls ? " " + cls : "")}); return null; }
-function toastMsg(m){ try { const r = R2(); if (r && r.toast) return r.toast(m); } catch(e){} try { toast(m, 2600); } catch(e){} }
 function myBubble(size){ try { const r = R3(); if (r && r.bubble && r.me) return r.bubble(r.me(), size, {badge:false}); } catch(e){} return ""; }
 
-/* ---------- the level map ---------- */
-function tierCard(u, xp, adm){
-  const L = lvOf(xp).L, got = L >= u.L, at = startOf(u.L), away = Math.max(0, at - xp);
-  return '<button class="r3m-tc t-' + u.tier + (got ? " got" : "") + '" data-r3m="unlock" data-l="' + u.L + '" aria-label="' + E("Level " + u.L + ", " + u.tn + ", " + u.n + ", " + (got ? "reached" : N(away) + " XP away")) + '">' +
-    '<span class="r3m-tcl">Level ' + u.L + '</span><span class="r3m-tcm" aria-hidden="true">' + (got ? "✓" : "🔒") + '</span>' +
-    '<b class="r3m-tcn">' + u.tn + '</b><span class="r3m-tcu">' + E(u.n) + '</span><span class="r3m-tcx num">' + N(at) + ' XP</span>' +
-    '<span class="r3m-tcs">' + (got ? "Reached" : (adm ? "Open for you" : N(away) + " XP away")) + '</span></button>';
-}
+/* ---------- the growth map ---------- */
 function progressHTML(xp, who){
-  const lv = lvOf(xp), t = tierOf(lv.L);
+  const lv = lvOf(xp), f = formAt(lv.L), top = lv.L >= maxL();
   return '<div class="r3m-prog"><div class="r3m-ph">' + (who ? "" : '<small>Your progress</small>') +
-    '<b><span>Level ' + lv.L + '</span><i>·</i><span>' + E(titleAt(lv.L)) + '</span>' + (t ? '<i>·</i><span class="r3m-tn t-' + t + '">' + TIER_NAME[t] + '</span>' : "") + '</b>' +
+    '<b><span>Level ' + lv.L + '</span><i>\u00b7</i><span>' + E(f.n) + '</span></b>' +
     '<span class="num r3m-xpn">' + N(xp) + ' XP</span></div>' +
     '<div class="r3m-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.round(lv.pct * 100) + '" aria-label="Progress to the next level"><i style="width:' + Math.round(Math.max(.03, Math.min(1, lv.pct)) * 100) + '%"></i></div>' +
-    '<div class="r3m-psub"><span>' + N(lv.left) + ' XP to Level ' + (lv.L + 1) + '</span></div></div>';
+    '<div class="r3m-psub"><span>' + (top ? "Top level reached" : N(lv.left) + ' XP to Level ' + (lv.L + 1)) + '</span></div></div>';
 }
-function nextUp(xp){ const L = lvOf(xp).L;
-  for (let n = L + 1; n <= Math.max(MAP_TO, L + 1); n++) { const r = rewardsAt(n); if (r.length) return {L:n, r}; }
-  return null; }
+const ICO = {form:"\u2728", trip:"\ud83e\udded", glow:"\u25cf"};
+function rwLI(x){ return '<li class="k-' + x.k + '"><span class="r3m-ri" aria-hidden="true"' + (x.k === "glow" && x.c ? ' style="color:' + E(x.c) + '"' : "") + '>' + ICO[x.k] + '</span><span class="r3m-rtx"><b>' +
+  (x.k === "form" ? '<span>Misty becomes</span> ' : x.k === "trip" ? '<span>Adventure reaches</span> ' : '<span>New glow</span> ') + '<span>' + E(x.t) + '</span></b>' +
+  (x.k === "glow" ? '<small><span>at ' + N(x.xp) + ' XP</span></small>' : x.d ? '<small>' + E(x.d) + '</small>' : "") + '</span></li>'; }
 function rowHTML(n, xp){
-  const lv = lvOf(xp), L = lv.L, at = startOf(n), got = L >= n, cur = L === n, r = rewardsAt(n), t = tierOf(n), u = unlockAt(n);
+  const lv = lvOf(xp), L = lv.L, at = startOf(n), got = L >= n, cur = L === n, f = formAt(n), r = rewardsAt(n), t = tripAt(n);
   const st = cur ? "cur" : got ? "got" : "lock";
-  const sub = cur ? N(lv.left) + " XP to Level " + (n + 1) : got ? "Reached" : N(at - xp) + " XP to go";
-  return '<li class="r3m-row ' + st + (t ? " t-" + t : "") + (u ? " big" : "") + '" data-n="' + n + '">' +
-    '<button class="r3m-rb" data-r3m="row" aria-expanded="false" aria-controls="r3mD' + n + '">' +
-      '<span class="r3m-node num" aria-hidden="true">' + (got && !cur ? "✓" : n) + '</span>' +
-      '<span class="r3m-rt"><b><span>Level ' + n + '</span><i>·</i><span>' + E(titleAt(n)) + '</span>' + (BADGE[n] ? ' <em aria-hidden="true">' + BADGE[n] + '</em>' : "") + '</b>' +
-        '<small>' + (u ? '<span class="r3m-tn t-' + u.tier + '">' + u.tn + '</span> <span>' + E(u.n) + '</span>' : r.length ? '<span>' + E(r[0].t) + '</span>' : '<span>' + sub + '</span>') + '</small></span>' +
-      '<span class="r3m-rs">' + (cur ? '<span class="r3m-you">You</span>' : got ? '<span class="r3m-ok">✓</span>' : '<span class="r3m-lk" aria-hidden="true">🔒</span>') + '</span>' +
+  const sub = t ? '<span>Adventure: ' + E(t.n) + '</span>' : r.find(x => x.k === "glow") ? '<span>New glow: ' + E(r.find(x => x.k === "glow").t) + '</span>' : '<span>' + E(f.d) + '</span>';
+  return '<li class="r3m-row ' + st + '" data-n="' + n + '">' +
+    '<button class="r3m-rb" data-r3m="row" aria-expanded="' + (cur ? "true" : "false") + '" aria-controls="r3mD' + n + '">' +
+      '<span class="r3m-node num" aria-hidden="true">' + n + '</span>' +
+      '<span class="r3m-rt"><b><span>Level ' + n + '</span><i>\u00b7</i><span>' + E(f.n) + '</span></b><small>' + sub + '</small></span>' +
+      '<span class="r3m-rs">' + (cur ? '<span class="r3m-you">You</span>' : got ? '<span class="r3m-ok">\u2713</span>' : '<span class="r3m-lk num">' + N(at) + ' XP</span>') + '</span>' +
     '</button>' +
-    '<div class="r3m-det" id="r3mD' + n + '" hidden>' + detailHTML(n, xp) + '</div></li>';
+    '<div class="r3m-det" id="r3mD' + n + '"' + (cur ? "" : " hidden") + '>' + detailHTML(n, xp) + '</div></li>';
 }
 function detailHTML(n, xp){
-  const lv = lvOf(xp), L = lv.L, at = startOf(n), step = n > 1 ? startOf(n) - startOf(n - 1) : 0, r = rewardsAt(n), u = unlockAt(n);
-  let h = '<div class="r3m-dl">';
-  h += '<div><small>Reached at</small><b class="num">' + N(at) + ' XP</b></div>';
-  if (n > 1) h += '<div><small>This step</small><b class="num">' + N(step) + ' XP</b></div>';
-  h += '<div><small>' + (L >= n ? "Status" : "Still to go") + '</small><b class="num">' + (L === n ? "You are here" : L > n ? "Reached" : N(at - xp) + " XP") + '</b></div></div>';
-  if (L === n) h += '<div class="r3m-mini"><div class="r3m-bar"><i style="width:' + Math.round(Math.max(.03, lv.pct) * 100) + '%"></i></div><span>' + N(lv.into) + ' / ' + N(lv.need) + ' XP into this level</span></div>';
-  if (r.length) h += '<ul class="r3m-rw">' + r.map(x => '<li class="k-' + x.k + '"><span>' + E(x.t) + '</span></li>').join("") + '</ul>';
-  else { const nx = (() => { for (let m = n + 1; m <= n + 40; m++) if (rewardsAt(m).length) return m; return 0; })();
-    h += '<p class="r3m-np">' + (nx ? '<span>Next reward at Level ' + nx + '</span>' : '<span>Every level counts toward the next reward.</span>') + '</p>'; }
-  if (u) h += '<button class="r2-btn ' + (L >= u.L ? "pri" : "ghost") + ' r3m-open" data-r3m="unlock" data-l="' + u.L + '">' + (L >= u.L ? "Open " + E(u.n) : "What " + E(u.n) + " gives you") + '</button>';
+  const lv = lvOf(xp), L = lv.L, at = startOf(n), r = rewardsAt(n), f = formAt(n);
+  let h = '<div class="r3m-dl"><div><small>Reached at</small><b class="num">' + N(at) + ' XP</b></div>' +
+    '<div><small>' + (L >= n ? "Status" : "Still to go") + '</small><b class="num">' + (L === n ? "You are here" : L > n ? "Reached" : N(at - xp) + " XP") + '</b></div></div>';
+  if (L === n && n < maxL()) h += '<div class="r3m-mini"><div class="r3m-bar"><i style="width:' + Math.round(Math.max(.03, lv.pct) * 100) + '%"></i></div><span>' + N(lv.into) + ' / ' + N(lv.need) + ' XP into this level</span></div>';
+  if (n === 1) h += '<ul class="r3m-rw"><li class="k-form"><span class="r3m-ri" aria-hidden="true">' + ICO.form + '</span><span class="r3m-rtx"><b><span>Misty starts as</span> <span>' + E(f.n) + '</span></b><small>' + E(f.d) + '</small></span></li>' + r.map(rwLI).join("") + '</ul>';
+  else if (r.length) h += '<ul class="r3m-rw">' + r.map(rwLI).join("") + '</ul>';
   return h;
+}
+function careHTML(){
+  return '<div class="r3m-earn r3m-care"><b>Every day: fill Misty\'s sun</b><ul>' +
+    ['Meals, water, Moves and scans give her sunbeams. 12 fill her sun.', 'A full sun: +10 XP, and Misty heads out for an hour and brings back a find.', 'Full of energy when she leaves: a second find.', 'Your sunbeams put you on the care board in Community.']
+      .map(t => '<li><span>' + t + '</span></li>').join("") + '</ul></div>';
 }
 function earnHTML(){
   return '<div class="r3m-earn"><b>How you earn XP</b><ul>' +
@@ -12907,124 +12912,24 @@ function earnHTML(){
       .map(t => '<li><span>' + t + '</span></li>').join("") + '</ul><small>XP never comes from eating less or fasting longer.</small></div>';
 }
 function mapHTML(opts){
-  opts = opts || {}; const xp = opts.xp != null ? opts.xp : xpNow(), lv = lvOf(xp), adm = !!opts.admin, who = opts.who || "";
-  const nu = nextUp(xp), top = Math.max(MAP_TO, lv.L);
-  let rows = ""; for (let n = 1; n <= top; n++) rows += rowHTML(n, xp);
+  opts = opts || {}; const xp = opts.xp != null ? opts.xp : xpNow(), who = opts.who || "", nu = nextUp(xp);
+  let rows = ""; for (let n = 1; n <= maxL(); n++) rows += rowHTML(n, xp);
   return '<div class="r3m"' + (who ? ' data-who="' + E(who) + '"' : "") + '>' +
-    '<div class="r3m-hd">' + (who ? "" : '<div class="r3m-bub">' + myBubble(92) + '</div>') + '<h2>' + (who ? E(who) + "'s levels" : "Levels & unlocks") + '</h2></div>' +
+    '<div class="r3m-hd">' + (who ? "" : '<div class="r3m-bub">' + myBubble(92) + '</div>') + '<h2>' + (who ? E(who) + "'s growth" : "Misty's growth") + '</h2></div>' +
     progressHTML(xp, who) +
-    (adm && !who ? '<div class="r3m-adm"><b>You run this community</b><span>All three unlocks are open for you. You add the course modules and see every mentoring request.</span></div>' : "") +
-    '<div class="r3m-h3">What levels unlock</div>' +
-    '<div class="r3m-tcs3">' + UNLOCKS.map(u => tierCard(u, xp, adm && !who)).join("") + '</div>' +
-    (nu && !who ? '<div class="r3m-next"><small>Next up</small><b><span>Level ' + nu.L + '</span><i>·</i><span>' + E(nu.r[0].t) + '</span></b><span class="num">' + N(startOf(nu.L) - xp) + ' XP to go</span></div>' : "") +
-    '<div class="r3m-h3">All levels</div>' +
+    (nu && !who ? '<div class="r3m-next"><small>Next up</small><b><span>Level ' + nu.L + '</span><i>\u00b7</i><span>' + E(nu.r[0].t) + '</span></b><span class="num">' + N(startOf(nu.L) - xp) + ' XP to go</span></div>' : "") +
+    '<div class="r3m-h3">What each level gives</div>' +
     '<ol class="r3m-path">' + rows + '</ol>' +
-    (lv.L >= MAP_TO ? "" : '<p class="r3m-more">Levels keep going after 30.</p>') +
-    (who ? "" : earnHTML()) + '</div>';
+    (who ? "" : careHTML() + earnHTML()) + '</div>';
 }
-async function openMap(opts){
+function openMap(opts){
   opts = opts || {};
-  const adm = opts.who ? false : await Promise.race([isAdmin(), wait(900).then(() => false)]);
-  const ov = sheet(mapHTML(Object.assign({admin:adm}, opts)), "r3m-mapov"); if (!ov) return;
+  const ov = sheet(mapHTML(opts), "r3m-mapov"); if (!ov) return null;
   const xp = opts.xp != null ? opts.xp : xpNow(), L = lvOf(xp).L;
   setTimeout(() => { const row = ov.querySelector('.r3m-row[data-n="' + L + '"]'), sh = ov.querySelector(".r2-sh");
-    if (row && sh) { const y = row.getBoundingClientRect().top - sh.getBoundingClientRect().top + sh.scrollTop - sh.clientHeight * .45; if (opts.scrollToMe) sh.scrollTo({top:Math.max(0, y), behavior:reduce ? "auto" : "smooth"}); }
+    if (row && sh && opts.scrollToMe) { const y = row.getBoundingClientRect().top - sh.getBoundingClientRect().top + sh.scrollTop - sh.clientHeight * .3; sh.scrollTo({top:Math.max(0, y), behavior:reduce ? "auto" : "smooth"}); }
   }, 380);
   return ov;
-}
-
-/* ---------- unlock detail ---------- */
-async function openUnlock(L){
-  const u = unlockAt(+L); if (!u) return;
-  const xp = xpNow(), lv = lvOf(xp), adm = await Promise.race([isAdmin(), wait(900).then(() => false)]), open = lv.L >= u.L || adm;
-  if (open) { if (u.act === "vip") return openVip(); if (u.act === "courses") return openCourses(); if (u.act === "mentor") return openMentor(); }
-  const away = Math.max(0, startOf(u.L) - xp);
-  sheet('<div class="r3m r3m-ul t-' + u.tier + '"><div class="r3m-ulh"><span class="r3m-ulm" aria-hidden="true">' + u.ico + '</span><small><span>Level ' + u.L + '</span> · <span>' + u.tn + '</span></small><h2>' + E(u.n) + '</h2><p>' + E(u.d) + '</p></div>' +
-    '<div class="r3m-lockbox"><span aria-hidden="true">🔒</span><div><b><span>Opens at Level ' + u.L + '</span></b><small><span>' + N(away) + ' XP to go</span> · <span>you are Level ' + lv.L + '</span></small></div></div>' +
-    '<div class="r3m-bar"><i style="width:' + Math.round(Math.max(.03, Math.min(1, xp / Math.max(1, startOf(u.L)))) * 100) + '%"></i></div>' +
-    earnHTML() + '<button class="r2-btn ghost r3m-open" data-r3m="map">See all levels</button></div>');
-}
-function needOnline(title){
-  return '<div class="r3m r3m-pane"><h2>' + E(title) + '</h2><div class="r3m-empty">You need to be online and signed in for this. Check your connection and open it again.</div></div>';
-}
-function fmtTime(ts){ try { const d = new Date(ts); return d.toLocaleDateString(undefined, {day:"numeric", month:"short"}) + " · " + d.toLocaleTimeString(undefined, {hour:"2-digit", minute:"2-digit"}); } catch(e){ return ""; } }
-
-/* ---------- Level 7 · VIP channel ---------- */
-let vipT = 0;
-async function openVip(){
-  if (!online()) { sheet(needOnline("VIP channel")); return; }
-  const ov = sheet('<div class="r3m r3m-pane r3m-vip"><div class="r3m-ph2"><span class="r3m-tn t-bronze">Bronze</span><h2>VIP channel</h2><p>Members at Level 7 and up.</p></div>' +
-    '<div class="r3m-msgs" id="r3mVipList" aria-live="polite"><div class="r3m-empty">Loading…</div></div>' +
-    '<form class="r3m-cmp" id="r3mVipForm"><textarea id="r3mVipIn" rows="1" maxlength="2000" placeholder="Message the VIP channel" aria-label="Message the VIP channel"></textarea><button class="r2-btn pri" type="submit" id="r3mVipSend">Send</button></form></div>', "r3m-vipov");
-  if (!ov) return;
-  let last = "";
-  async function load(first){
-    const el = ov.querySelector("#r3mVipList"); if (!el || !el.isConnected) { clearInterval(vipT); return; }
-    try { const c = await sb(); const r = await c.from("vip_messages").select("id,user_id,who,body,created_at").order("created_at", {ascending:false}).limit(150);
-      if (r.error) throw r.error; const L = (r.data || []).reverse(), key = L.map(m => m.id).join(","); if (key === last && !first) return; last = key;
-      const me = cstate().uid, nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
-      el.innerHTML = L.length ? L.map(m => '<div class="r3m-msg' + (m.user_id === me ? " me" : "") + '"><div class="r3m-mh"><b>' + E(m.who || "Member") + '</b><small>' + fmtTime(m.created_at) + '</small>' + (m.user_id === me ? '<button class="r3m-del" data-r3m="vipdel" data-id="' + E(m.id) + '" aria-label="Delete message">×</button>' : "") + '</div><p>' + E(m.body) + '</p></div>').join("") :
-        '<div class="r3m-empty">No messages yet. Say hi to the other Level 7+ members.</div>';
-      if (first || nearBottom) el.scrollTop = el.scrollHeight;
-    } catch(e){ if (first) el.innerHTML = '<div class="r3m-empty">Could not load the channel. Check your connection.</div>'; }
-  }
-  syncLevel(); await load(true); clearInterval(vipT); vipT = setInterval(() => { if (!document.hidden) load(false); }, 5000);
-  ov.querySelector("#r3mVipForm").addEventListener("submit", async e => { e.preventDefault();
-    const i = ov.querySelector("#r3mVipIn"), b = ov.querySelector("#r3mVipSend"), body = i.value.trim(); if (!body) return; b.disabled = true;
-    const send = async () => { const c = await sb(); return c.from("vip_messages").insert({user_id:cstate().uid, who:myName(), body}); };
-    try { let r = await send(); if (r.error) { syncLevel(); await wait(2200); r = await send(); } if (r.error) throw r.error; i.value = ""; await load(true); }
-    catch(err){ toastMsg("Not sent. Try again in a moment."); }
-    b.disabled = false; });
-  ov.querySelector("#r3mVipIn").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); ov.querySelector("#r3mVipForm").requestSubmit(); } });
-}
-
-/* ---------- Level 8 · courses & video modules ---------- */
-const okUrl = u => /^https?:\/\/[^\s]+$/i.test(String(u || "").trim());
-async function openCourses(){
-  if (!online()) { sheet(needOnline("Courses & video modules")); return; }
-  const adm = await isAdmin();
-  const ov = sheet('<div class="r3m r3m-pane"><div class="r3m-ph2"><span class="r3m-tn t-silver">Silver</span><h2>Courses & video modules</h2><p>For members at Level 8 and up.</p></div><div id="r3mCList"><div class="r3m-empty">Loading…</div></div>' +
-    (adm ? '<form class="r3m-addf" id="r3mCAdd"><b>Add a module</b><input id="r3mCT" maxlength="140" placeholder="Title" aria-label="Module title" required><textarea id="r3mCB" rows="3" maxlength="4000" placeholder="What it covers (optional)" aria-label="What it covers"></textarea><input id="r3mCU" type="url" inputmode="url" placeholder="Video or course link, https://…" aria-label="Video or course link"><button class="r2-btn pri" type="submit">Add module</button></form>' : "") + '</div>');
-  if (!ov) return;
-  async function load(){ const el = ov.querySelector("#r3mCList");
-    try { const c = await sb(); const r = await c.from("course_modules").select("*").order("sort", {ascending:true}).order("created_at", {ascending:true}); if (r.error) throw r.error;
-      const L = r.data || [];
-      el.innerHTML = L.length ? '<ol class="r3m-mods">' + L.map((m, i) => '<li><span class="r3m-mn num">' + (i + 1) + '</span><div><b>' + E(m.title) + '</b>' + (m.body ? '<p>' + E(m.body) + '</p>' : "") +
-        '<div class="r3m-ma">' + (okUrl(m.url) ? '<a class="r2-btn pri" href="' + E(m.url) + '" target="_blank" rel="noopener">Watch</a>' : "") + (adm ? '<button class="r2-btn ghost" data-r3m="cdel" data-id="' + E(m.id) + '">Remove</button>' : "") + '</div></div></li>').join("") + '</ol>' :
-        '<div class="r3m-empty">' + (adm ? "No modules yet. Add the first one below. Members at Level 8 and up see it right away." : "Emmanuel hasn't added modules here yet. They show up here as soon as he does.") + '</div>';
-    } catch(e){ el.innerHTML = '<div class="r3m-empty">Could not load the modules. Check your connection.</div>'; } }
-  ov.__r3mLoad = load; syncLevel(); await load();
-  const f = ov.querySelector("#r3mCAdd");
-  if (f) f.addEventListener("submit", async e => { e.preventDefault();
-    const t = ov.querySelector("#r3mCT").value.trim(), b = ov.querySelector("#r3mCB").value.trim(), u = ov.querySelector("#r3mCU").value.trim();
-    if (!t) return; if (u && !okUrl(u)) { toastMsg("The link needs to start with https://"); return; }
-    try { const c = await sb(); const r = await c.from("course_modules").insert({title:t, body:b, url:u, sort:Date.now() % 2147483647}); if (r.error) throw r.error; f.reset(); toastMsg("Module added"); load(); }
-    catch(err){ toastMsg("Could not add the module."); } });
-}
-
-/* ---------- Level 9 · 1:1 mentoring ---------- */
-const ST = {new:"Sent", planned:"Planned", done:"Done"};
-async function openMentor(){
-  if (!online()) { sheet(needOnline("1:1 mentoring")); return; }
-  const adm = await isAdmin();
-  const ov = sheet('<div class="r3m r3m-pane"><div class="r3m-ph2"><span class="r3m-tn t-gold">Gold</span><h2>1:1 mentoring</h2><p>' + (adm ? "Requests from members at Level 9 and up." : "Ask Emmanuel for a 1:1 session. Tell him what you want to work on and how to reach you.") + '</p></div>' +
-    (adm ? "" : '<form class="r3m-addf" id="r3mMF"><textarea id="r3mMN" rows="3" maxlength="2000" placeholder="What do you want to work on?" aria-label="What do you want to work on" required></textarea><input id="r3mMC" maxlength="200" placeholder="How to reach you (email, Instagram, phone)" aria-label="How to reach you"><button class="r2-btn pri" type="submit">Request a session</button></form>') +
-    '<div class="r3m-h3">' + (adm ? "Requests" : "Your requests") + '</div><div id="r3mML"><div class="r3m-empty">Loading…</div></div></div>');
-  if (!ov) return;
-  async function load(){ const el = ov.querySelector("#r3mML");
-    try { const c = await sb(); const r = await c.from("mentoring_requests").select("*").order("created_at", {ascending:false}).limit(100); if (r.error) throw r.error; const L = r.data || [];
-      el.innerHTML = L.length ? L.map(m => '<div class="r3m-req"><div class="r3m-mh"><b>' + E(adm ? m.who || "Member" : fmtTime(m.created_at)) + '</b><span class="r3m-st s-' + E(m.status) + '">' + (ST[m.status] || "Sent") + '</span></div>' +
-        (adm ? '<small>' + fmtTime(m.created_at) + '</small>' : "") + '<p>' + E(m.note) + '</p>' + (m.contact ? '<small>' + E(m.contact) + '</small>' : "") +
-        (adm ? '<div class="r3m-ma">' + (m.status !== "planned" ? '<button class="r2-btn ghost" data-r3m="mst" data-st="planned" data-id="' + E(m.id) + '">Planned</button>' : "") + (m.status !== "done" ? '<button class="r2-btn ghost" data-r3m="mst" data-st="done" data-id="' + E(m.id) + '">Done</button>' : "") + '</div>' : "") + '</div>').join("") :
-        '<div class="r3m-empty">' + (adm ? "No requests yet." : "No requests yet.") + '</div>';
-    } catch(e){ el.innerHTML = '<div class="r3m-empty">Could not load. Check your connection.</div>'; } }
-  ov.__r3mLoad = load; syncLevel(); await load();
-  const f = ov.querySelector("#r3mMF");
-  if (f) f.addEventListener("submit", async e => { e.preventDefault();
-    const note = ov.querySelector("#r3mMN").value.trim(), contact = ov.querySelector("#r3mMC").value.trim(); if (!note) return;
-    const send = async () => { const c = await sb(); return c.from("mentoring_requests").insert({user_id:cstate().uid, who:myName(), note, contact}); };
-    try { let r = await send(); if (r.error) { syncLevel(); await wait(2200); r = await send(); } if (r.error) throw r.error; f.reset(); toastMsg("Request sent to Emmanuel"); load(); }
-    catch(err){ toastMsg("Not sent. Try again in a moment."); } });
 }
 
 /* ---------- clicks ---------- */
@@ -13039,10 +12944,6 @@ function onClick(e){
     if (v === "row") { e.preventDefault(); rowToggle(b); return; }
     e.preventDefault(); e.stopPropagation();
     if (v === "map") { openMap({scrollToMe:true}); return; }
-    if (v === "unlock") { openUnlock(b.getAttribute("data-l")); return; }
-    if (v === "vipdel") { (async () => { try { const c = await sb(); await c.from("vip_messages").delete().eq("id", b.getAttribute("data-id")); const m = b.closest(".r3m-msg"); if (m) m.remove(); } catch(err){} })(); return; }
-    if (v === "cdel") { (async () => { try { const c = await sb(); await c.from("course_modules").delete().eq("id", b.getAttribute("data-id")); const ov = b.closest(".r2-ov"); ov && ov.__r3mLoad && ov.__r3mLoad(); } catch(err){} })(); return; }
-    if (v === "mst") { (async () => { try { const c = await sb(); await c.from("mentoring_requests").update({status:b.getAttribute("data-st")}).eq("id", b.getAttribute("data-id")); const ov = b.closest(".r2-ov"); ov && ov.__r3mLoad && ov.__r3mLoad(); } catch(err){} })(); return; }
     return; }
   /* level spots that open the map */
   if (t.closest(".lvchip")) { e.preventDefault(); e.stopPropagation(); openMap({scrollToMe:true}); return; }
@@ -13059,50 +12960,36 @@ function onKey(e){ if ((e.key === "Enter" || e.key === " ") && e.target && e.tar
 function tapable(el, label){ if (el.getAttribute("aria-label") !== label) el.setAttribute("aria-label", label); if (el.getAttribute("data-r3m-t")) return; el.setAttribute("data-r3m-t", "1"); el.setAttribute("role", "button"); el.setAttribute("tabindex", "0"); }
 function decorate(root){
   root = root || document;
-  root.querySelectorAll(".lvchip").forEach(c => tapable(c, "Your level: " + (c.textContent || "").trim() + ". Open levels and unlocks"));
+  root.querySelectorAll(".lvchip").forEach(c => tapable(c, "Your level: " + (c.textContent || "").trim() + ". Open Misty's growth"));
   const card = document.getElementById("lvCard");
-  if (card) { tapable(card, "Level " + lvOf(xpNow()).L + ", " + N(xpNow()) + " XP. Open levels and unlocks"); card.classList.add("r3m-tap");
+  if (card) { tapable(card, "Level " + lvOf(xpNow()).L + ", " + N(xpNow()) + " XP. Open Misty's growth"); card.classList.add("r3m-tap");
     const h = hintHTML(), ex = card.querySelector(".r3m-hint"); if (!ex) card.insertAdjacentHTML("beforeend", h); else if (ex.getAttribute("data-k") !== hintKey()) ex.outerHTML = h; }
   root.querySelectorAll(".r3-lvcard").forEach(c => { c.classList.add("r3m-tap");
     const mp = c.closest(".r3-mp"), mine = !mp || !!(mp.querySelector('[data-r3="edit"]'));
     if (!mine && !c.getAttribute("data-r3m-xp")) { const nm = mp && mp.querySelector("h2") ? mp.querySelector("h2").childNodes[0].textContent.trim() : "Member"; let xp = 0;
       try { const x = c.querySelector(".r3-xp"); xp = parseInt((x ? x.textContent : "0").replace(/\D/g, ""), 10) || 0; } catch(e){} c.setAttribute("data-r3m-xp", String(xp)); c.setAttribute("data-r3m-who", nm); }
-    tapable(c, "Open levels");
-    if (!c.querySelector(".r3m-hint")) { const lk = c.querySelector(".r3-link"); const h = document.createElement("div"); h.innerHTML = mine ? hintHTML() : '<div class="r3m-hint"><span>See all levels</span><span aria-hidden="true">›</span></div>'; lk ? c.insertBefore(h.firstChild, lk) : c.appendChild(h.firstChild); } });
+    tapable(c, "Open Misty's growth");
+    if (!c.querySelector(".r3m-hint")) { const lk = c.querySelector(".r3-link"); const h = document.createElement("div"); h.innerHTML = mine ? hintHTML() : '<div class="r3m-hint"><span>See all levels</span><span aria-hidden="true">\u203a</span></div>'; lk ? c.insertBefore(h.firstChild, lk) : c.appendChild(h.firstChild); } });
 }
-function hintKey(){ return String(lvOf(xpNow()).L); }
-function hintHTML(){ const nu = nextUp(xpNow());
-  return '<div class="r3m-hint" data-k="' + hintKey() + '"><span class="r3m-hb">' + UNLOCKS.map(u => '<i class="t-' + u.tier + (lvOf(xpNow()).L >= u.L ? " got" : "") + '" aria-hidden="true"></i>').join("") + '</span>' +
-    '<span>' + (nu ? '<span>Next: Level ' + nu.L + '</span> · <span>' + E(nu.r[0].k === "unlock" ? nu.r[0].u.n : nu.r[0].t) + '</span>' : '<span>See all levels</span>') + '</span><span class="r3m-ch" aria-hidden="true">›</span></div>'; }
+function hintKey(){ return String(lvOf(xpNow()).L) + "|" + lang(); }
+function hintHTML(){ const L = lvOf(xpNow()).L, nu = nextUp(xpNow()); let dots = ""; for (let n = 1; n <= maxL(); n++) dots += '<i class="' + (L >= n ? "got" : "") + '" aria-hidden="true"></i>';
+  return '<div class="r3m-hint" data-k="' + hintKey() + '"><span class="r3m-hb">' + dots + '</span>' +
+    '<span>' + (nu ? '<span>Next: Level ' + nu.L + '</span> \u00b7 <span>' + E(nu.r[0].t) + '</span>' : '<span>See all levels</span>') + '</span><span class="r3m-ch" aria-hidden="true">\u203a</span></div>'; }
 
-/* leaderboard: your progress + the three unlocks, like the old app */
-function boardCard(lb){
-  if (lb.querySelector(".r3m-lbme")) return;
-  const xp = xpNow(), d = document.createElement("div"); d.className = "r3m-lbme";
-  d.innerHTML = '<button class="r3m-lbp" data-r3m="map" aria-label="Your progress. Open levels and unlocks">' + progressHTML(xp) + '</button><div class="r3m-tcs3 sm">' + UNLOCKS.map(u => tierCard(u, xp, false)).join("") + '</div>';
-  const seg = lb.querySelector(".r3-lbseg"); if (seg) seg.parentNode.insertBefore(d, seg); else lb.insertBefore(d, lb.children[2] || null);
-}
-
-/* bubble rims: Bronze from 7, Silver from 8, Gold from 9, Sun halo at 30 */
-function rim(el){ if (!el || el.querySelector(":scope > .r3m-rim")) return;
-  const m = /level (\d+)/i.exec(el.getAttribute("aria-label") || ""); if (!m) return; const t = tierOf(+m[1]); if (!t) return;
-  el.setAttribute("data-r3m-tier", t); const i = document.createElement("i"); i.className = "r3m-rim"; i.setAttribute("aria-hidden", "true"); el.appendChild(i); }
 function scan(root){ if (!root || root.nodeType !== 1) return;
-  if (root.classList.contains("lb3")) rim(root); root.querySelectorAll(".lb3").forEach(rim);
-  if (root.matches(".r3-lb")) boardCard(root); root.querySelectorAll(".r3-lb").forEach(boardCard);
   if (root.closest(".r3m-hint")) return;
   if (root.querySelector(".lvchip,#lvCard,.r3-lvcard") || root.closest(".lvchip,#lvCard,.r3-lvcard")) decorate(document); }
 let pend = new Set(), raf = 0;
 function flush(){ raf = 0; const L = Array.from(pend); pend = new Set(); L.forEach(n => { try { if (n.isConnected) scan(n); } catch(e){} }); }
 
-/* level-up: say what just opened */
+/* level-up: say what just opened (Misty's new form first, else the Adventure reach, else a glow) */
 function pop(L){
-  const r = rewardsAt(L); if (!r.length) return; const u = r.find(x => x.k === "unlock");
-  const d = document.createElement("button"); d.className = "r3m-pop t-" + (tierOf(L) || "none"); d.setAttribute("data-r3m", u ? "unlock" : "map"); if (u) d.setAttribute("data-l", String(u.u.L));
-  d.innerHTML = '<small><span>Level ' + L + '</span> · <span>' + (u ? "Unlocked" : "New reward") + '</span></small><b>' + E(u ? u.u.tn + " · " + u.u.n : r[0].t) + '</b><span class="r3m-ch" aria-hidden="true">›</span>';
+  const r = rewardsAt(L); if (!r.length) return; const t = r.find(x => x.k === "trip");
+  const d = document.createElement("button"); d.className = "r3m-pop"; d.setAttribute("data-r3m", "map");
+  d.innerHTML = '<small><span>Level ' + L + '</span> \u00b7 <span>' + E(r[0].t) + '</span></small><b>' + (t ? '<span>Adventure reaches</span> <span>' + E(t.t) + '</span>' : '<span>New glow</span> <span>' + E((r.find(x => x.k === "glow") || r[0]).t) + '</span>') + '</b><span class="r3m-ch" aria-hidden="true">\u203a</span>';
   d.setAttribute("role", "status"); document.body.appendChild(d);
   requestAnimationFrame(() => requestAnimationFrame(() => d.classList.add("on")));
-  setTimeout(() => { d.classList.remove("on"); setTimeout(() => d.remove(), 400); }, 4000); /* Oct 17: a small chip of Misty's glass (beta.css), 4 s, not a 7 s bar */
+  setTimeout(() => { d.classList.remove("on"); setTimeout(() => d.remove(), 400); }, 4000); /* Oct 17: a small chip of Misty's glass (beta.css), 4 s */
 }
 function hookAward(){
   try { if (typeof award !== "function" || award.__r3m) return; const _a = award;
@@ -13118,32 +13005,36 @@ function boot(){
   new MutationObserver(ms => { ms.forEach(m => m.addedNodes.forEach(n => { if (n.nodeType === 1) pend.add(n); })); if (!raf) raf = requestAnimationFrame(flush); }).observe(document.body, {childList:true, subtree:true});
   scan(document.body);
   setTimeout(hookAward, 0); setTimeout(hookAward, 1500);
-  document.addEventListener("visibilitychange", () => { if (document.hidden) clearInterval(vipT); });
 }
-window.LowiLevels = {open:openMap, unlock:openUnlock, vip:openVip, courses:openCourses, mentor:openMentor, UNLOCKS, rewardsAt, tierOf, mapHTML, isAdmin:() => isAdmin()};
+window.LowiLevels = {open:openMap, rewardsAt, formAt, tripAt, glowsAt, mapHTML, maxL};
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
 })();
 
-/* Levels & unlocks translations */
+/* Misty's growth + care board translations */
 (function(){
   if (!window.LowiLang || !LowiLang.add) return;
   LowiLang.add([
-    ["Levels & unlocks", "Level & Freischaltungen", "Niveles y desbloqueos"],
+    ["Misty's growth", "Mistys Wachstum", "El crecimiento de Misty"],
     ["Your progress", "Dein Fortschritt", "Tu progreso"],
-    ["What levels unlock", "Was Level freischalten", "Qué desbloquean los niveles"],
-    ["All levels", "Alle Level", "Todos los niveles"],
+    ["Top level reached", "Höchstes Level erreicht", "Nivel máximo alcanzado"],
+    ["What each level gives", "Was jedes Level bringt", "Qué da cada nivel"],
     ["Next up", "Als Nächstes", "Lo siguiente"],
     ["Reached", "Erreicht", "Alcanzado"],
-    ["Open for you", "Für dich offen", "Abierto para ti"],
     ["You", "Du", "Tú"],
     ["You are here", "Du bist hier", "Estás aquí"],
     ["Reached at", "Erreicht bei", "Se alcanza con"],
-    ["This step", "Diese Stufe", "Este paso"],
     ["Status", "Status", "Estado"],
     ["Still to go", "Noch offen", "Falta"],
-    ["Levels keep going after 30.", "Nach Level 30 geht es weiter.", "Los niveles siguen después del 30."],
-    ["Every level counts toward the next reward.", "Jedes Level bringt dich der nächsten Belohnung näher.", "Cada nivel cuenta para la siguiente recompensa."],
     ["See all levels", "Alle Level ansehen", "Ver todos los niveles"],
+    ["Misty becomes", "Misty wird zur", "Misty se convierte en"],
+    ["Misty starts as", "Misty beginnt als", "Misty empieza como"],
+    ["Adventure reaches", "Abenteuer erreicht", "La aventura llega a"],
+    ["New glow", "Neues Leuchten", "Nuevo brillo"],
+    ["Every day: fill Misty's sun", "Jeden Tag: Mistys Sonne füllen", "Cada día: llena el sol de Misty"],
+    ["Meals, water, Moves and scans give her sunbeams. 12 fill her sun.", "Mahlzeiten, Wasser, Moves und Scans geben ihr Sonnenstrahlen. 12 füllen ihre Sonne.", "Comidas, agua, Moves y escaneos le dan rayos de sol. 12 llenan su sol."],
+    ["A full sun: +10 XP, and Misty heads out for an hour and brings back a find.", "Volle Sonne: +10 XP, und Misty zieht eine Stunde los und bringt einen Fund mit.", "Sol lleno: +10 XP, y Misty sale una hora y trae un hallazgo."],
+    ["Full of energy when she leaves: a second find.", "Voller Energie beim Losziehen: ein zweiter Fund.", "Con toda su energía al salir: un segundo hallazgo."],
+    ["Your sunbeams put you on the care board in Community.", "Deine Sonnenstrahlen bringen dich aufs Fürsorge-Board in der Community.", "Tus rayos de sol te ponen en la tabla de cuidado de la Comunidad."],
     ["How you earn XP", "So sammelst du XP", "Cómo ganas XP"],
     ["Daily check-in", "Täglicher Check-in", "Check-in diario"],
     ["Check a meal", "Mahlzeit abhaken", "Marcar una comida"],
@@ -13154,61 +13045,33 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
     ["Weekly glow check-in", "Wöchentlicher Glow-Check-in", "Check-in semanal de brillo"],
     ["Share to For You", "In Für dich teilen", "Compartir en Para ti"],
     ["XP never comes from eating less or fasting longer.", "XP gibt es nie fürs Wenigeressen oder längeres Fasten.", "Los XP nunca vienen de comer menos o ayunar más."],
-    ["You run this community", "Du leitest diese Community", "Diriges esta comunidad"],
-    ["All three unlocks are open for you. You add the course modules and see every mentoring request.", "Alle drei Freischaltungen sind für dich offen. Du fügst die Kursmodule hinzu und siehst jede Mentoring-Anfrage.", "Los tres desbloqueos están abiertos para ti. Tú añades los módulos y ves cada solicitud de mentoría."],
-    ["VIP channel", "VIP-Kanal", "Canal VIP"],
-    ["Courses & video modules", "Kurse & Videomodule", "Cursos y módulos de vídeo"],
-    ["1:1 mentoring", "1:1-Mentoring", "Mentoría 1:1"],
-    ["A members-only chat for everyone at Level 7 and up. Smaller room, closer to Emmanuel, real talk.", "Ein Chat nur für Mitglieder ab Level 7. Kleinerer Raum, näher an Emmanuel, echte Gespräche.", "Un chat solo para miembros desde el nivel 7. Sala más pequeña, más cerca de Emmanuel, conversación real."],
-    ["Emmanuel's course and video modules, opened for everyone at Level 8 and up.", "Emmanuels Kurs- und Videomodule, offen für alle ab Level 8.", "Los cursos y módulos de vídeo de Emmanuel, abiertos para todos desde el nivel 8."],
-    ["Ask Emmanuel for a 1:1 mentoring session. Opens at Level 9.", "Frag Emmanuel nach einer 1:1-Mentoring-Session. Ab Level 9.", "Pide a Emmanuel una sesión de mentoría 1:1. Se abre en el nivel 9."],
-    ["Bronze rim on your bubble", "Bronze-Rand an deiner Blase", "Borde de bronce en tu burbuja"],
-    ["Silver rim on your bubble", "Silber-Rand an deiner Blase", "Borde de plata en tu burbuja"],
-    ["Gold rim on your bubble", "Gold-Rand an deiner Blase", "Borde de oro en tu burbuja"],
-    ["Sun halo on your bubble", "Sonnen-Schein um deine Blase", "Halo de sol en tu burbuja"],
-    ["Members at Level 7 and up.", "Mitglieder ab Level 7.", "Miembros desde el nivel 7."],
-    ["For members at Level 8 and up.", "Für Mitglieder ab Level 8.", "Para miembros desde el nivel 8."],
-    ["Ask Emmanuel for a 1:1 session. Tell him what you want to work on and how to reach you.", "Frag Emmanuel nach einer 1:1-Session. Sag ihm, woran du arbeiten willst und wie er dich erreicht.", "Pide a Emmanuel una sesión 1:1. Dile en qué quieres trabajar y cómo contactarte."],
-    ["Requests from members at Level 9 and up.", "Anfragen von Mitgliedern ab Level 9.", "Solicitudes de miembros desde el nivel 9."],
-    ["Send", "Senden", "Enviar"],
-    ["Loading…", "Lädt…", "Cargando…"],
-    ["No messages yet. Say hi to the other Level 7+ members.", "Noch keine Nachrichten. Sag Hallo zu den anderen ab Level 7.", "Aún no hay mensajes. Saluda a los demás miembros de nivel 7+."],
-    ["Add a module", "Modul hinzufügen", "Añadir un módulo"],
-    ["Add module", "Modul hinzufügen", "Añadir módulo"],
-    ["Watch", "Ansehen", "Ver"],
-    ["Remove", "Entfernen", "Quitar"],
-    ["No modules yet. Add the first one below. Members at Level 8 and up see it right away.", "Noch keine Module. Füge unten das erste hinzu. Mitglieder ab Level 8 sehen es sofort.", "Aún no hay módulos. Añade el primero abajo. Los miembros desde el nivel 8 lo ven al instante."],
-    ["Emmanuel hasn't added modules here yet. They show up here as soon as he does.", "Emmanuel hat hier noch keine Module hinzugefügt. Sie erscheinen hier, sobald er es tut.", "Emmanuel aún no ha añadido módulos. Aparecerán aquí en cuanto lo haga."],
-    ["Request a session", "Session anfragen", "Pedir una sesión"],
-    ["Your requests", "Deine Anfragen", "Tus solicitudes"],
-    ["Requests", "Anfragen", "Solicitudes"],
-    ["No requests yet.", "Noch keine Anfragen.", "Aún no hay solicitudes."],
-    ["Sent", "Gesendet", "Enviada"],
-    ["Planned", "Geplant", "Planificada"],
-    ["Done", "Erledigt", "Hecha"],
-    ["Request sent to Emmanuel", "Anfrage an Emmanuel gesendet", "Solicitud enviada a Emmanuel"],
-    ["Module added", "Modul hinzugefügt", "Módulo añadido"],
-    ["Not sent. Try again in a moment.", "Nicht gesendet. Versuch es gleich nochmal.", "No enviado. Inténtalo en un momento."],
-    ["You need to be online and signed in for this. Check your connection and open it again.", "Dafür musst du online und angemeldet sein. Prüf deine Verbindung und öffne es erneut.", "Para esto necesitas estar en línea y con sesión iniciada. Revisa tu conexión y vuelve a abrirlo."],
-    ["Bronze", "Bronze", "Bronce"],
-    ["Silver", "Silber", "Plata"],
-    ["Gold", "Gold", "Oro"],
-    ["Unlocked", "Freigeschaltet", "Desbloqueado"],
-    ["New reward", "Neue Belohnung", "Nueva recompensa"],
-    ["you are Level", "du bist Level", "eres nivel"],
+    /* care board */
+    ["Care board", "Fürsorge-Board", "Tabla de cuidado"],
+    ["Who looks after their companion best. Meals, water, Moves and scans give Misty sunbeams, up to 12 a day.", "Wer sich am besten um seinen Begleiter kümmert. Mahlzeiten, Wasser, Moves und Scans geben Misty Sonnenstrahlen, bis zu 12 am Tag.", "Quién cuida mejor a su compañera. Comidas, agua, Moves y escaneos dan rayos de sol a Misty, hasta 12 al día."],
+    ["Your care this week", "Deine Fürsorge diese Woche", "Tu cuidado esta semana"],
+    ["Your care this month", "Deine Fürsorge diesen Monat", "Tu cuidado este mes"],
+    ["sunbeams", "Sonnenstrahlen", "rayos de sol"],
+    ["sunbeam", "Sonnenstrahl", "rayo de sol"],
+    ["full-sun days", "Tage mit voller Sonne", "días de sol lleno"],
+    ["full-sun day", "Tag mit voller Sonne", "día de sol lleno"],
+    ["This week", "Diese Woche", "Esta semana"],
+    ["This month", "Diesen Monat", "Este mes"],
+    ["Each habit has a daily cap, so a mix fills her sun, not one thing over and over. Eating less never counts. Bots show made-up numbers.", "Jede Gewohnheit hat ein Tageslimit, also füllt eine Mischung ihre Sonne, nicht immer dasselbe. Wenigeressen zählt nie. Bots zeigen erfundene Zahlen.", "Cada hábito tiene un límite diario, así que una mezcla llena su sol, no lo mismo una y otra vez. Comer menos nunca cuenta. Los bots muestran números inventados."],
+    ["Look after Misty this week to get on it", "Kümmer dich diese Woche um Misty, um draufzukommen", "Cuida a Misty esta semana para aparecer"],
+    ["Misty's growth", "Mistys Wachstum", "El crecimiento de Misty"],
+    ["Forms, glows, adventures", "Formen, Leuchten, Abenteuer", "Formas, brillos, aventuras"],
+    [/^No sunbeams yet this (week|month)\. Log a meal, a glass of water or a Move and Misty's sun starts to fill\.$/, "Noch keine Sonnenstrahlen. Trag eine Mahlzeit, ein Glas Wasser oder einen Move ein, dann füllt sich Mistys Sonne.", "Aún no hay rayos de sol. Registra una comida, un vaso de agua o un Move y el sol de Misty empieza a llenarse."],
+    [/^You're #(\d+) on the care board this week$/, "Du bist #$1 auf dem Fürsorge-Board diese Woche", "Eres el #$1 en la tabla de cuidado esta semana"],
+    [/^\u2600 (\d+) full days?$/, "\u2600 $1 volle Tage", "\u2600 $1 días llenos"],
     [/^Level (\d+)$/, "Level $1", "Nivel $1"],
-    [/^Opens at Level (\d+)$/, "Ab Level $1", "Se abre en el nivel $1"],
-    [/^you are Level (\d+)$/, "du bist Level $1", "eres nivel $1"],
-    [/^Next reward at Level (\d+)$/, "Nächste Belohnung bei Level $1", "Siguiente recompensa en el nivel $1"],
     [/^Next: Level (\d+)$/, "Nächstes: Level $1", "Siguiente: nivel $1"],
-    [/^New title: (.+)$/, "Neuer Titel: $1", "Nuevo título: $1"],
-    [/^([\d,.]+) XP away$/, "noch $1 XP", "faltan $1 XP"],
+    [/^at ([\d,.]+) XP$/, "bei $1 XP", "con $1 XP"],
+    [/^Adventure: (.+)$/, "Abenteuer: $1", "Aventura: $1"],
+    [/^New glow: (.+)$/, "Neues Leuchten: $1", "Nuevo brillo: $1"],
     [/^([\d,.]+) XP to go$/, "noch $1 XP", "faltan $1 XP"],
     [/^([\d,.]+) XP to Level (\d+)$/, "$1 XP bis Level $2", "$1 XP para el nivel $2"],
     [/^([\d,.]+) \/ ([\d,.]+) XP into this level$/, "$1 / $2 XP in diesem Level", "$1 / $2 XP en este nivel"],
-    [/^(.+)'s levels$/, "Level von $1", "Niveles de $1"],
-    [/^Open (VIP channel|Courses & video modules|1:1 mentoring)$/, "$1 öffnen", "Abrir $1"],
-    [/^What (.+) gives you$/, "Was $1 dir bringt", "Qué te da $1"]
+    [/^(.+)'s growth$/, "Wachstum von $1", "Crecimiento de $1"]
   ]);
 })();
 
@@ -15033,14 +14896,18 @@ function daysToBday(b){ if (!b || !/^\d{4}-\d{2}-\d{2}$/.test(b)) return null; c
   let n = new Date(t.getFullYear(), p[1] - 1, p[2]); if (n < t) n = new Date(t.getFullYear() + 1, p[1] - 1, p[2]); return Math.round((n - t) / 864e5); }
 function bdayLong(b){ const p = b.split("-").map(Number); const M = ["January","February","March","April","May","June","July","August","September","October","November","December"]; return p[2] + " " + M[p[1] - 1] + " " + p[0]; }
 
-/* ---------- XP by period (for the weekly and monthly leaderboard) ---------- */
-const pad = n => String(n).padStart(2, "0");
-function weekStart(){ const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d; }
-const WK = () => { const d = weekStart(); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); };
-const MO = () => { const d = new Date(); return d.getFullYear() + "-" + pad(d.getMonth() + 1); };
-function periodXP(kind){ const S_ = R2.S(); if (!S_ || !Array.isArray(S_.ledger)) return 0;
-  const from = kind === "w" ? weekStart().getTime() : new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
-  return S_.ledger.reduce((t, e) => t + (e && e.ts >= from ? (+e.amt || 0) : 0), 0); }
+/* ---------- care by period (Oct 17, 2026): the care board ranks the sunbeams Misty got from you, care-board-core.js ---------- */
+const CB = () => window.LowiCareBoard || null;
+let careMemo = {k:"", v:null};
+function myCare(){
+  const S_ = R2.S() || {}, c = CB(), sun = window.LowiSun, z = {pts:0, full:0, days:0, today:0, key:""};
+  if (!c || !sun || typeof sun.model !== "function") return {w:z, m:z};
+  const L = Array.isArray(S_.ledger) ? S_.ledger : [], last = L.length ? (L[L.length - 1] && L[L.length - 1].ts) || 0 : 0, now = Date.now();
+  const k = L.length + "|" + last + "|" + c.dayKey(now);
+  if (careMemo.k === k && careMemo.v) return careMemo.v;
+  const v = {w:c.care(L, "w", now, sun.model), m:c.care(L, "m", now, sun.model)};
+  careMemo = {k, v}; return v;
+}
 
 /* ---------- people ---------- */
 function myUid(){ try { const x = R2.X(); return (x && x.state().uid) || ""; } catch(e){ return ""; } }
@@ -15049,7 +14916,7 @@ function me(){
   try { lv = levelOf(S_.xp || 0).L; } catch(e){} try { st = streakNow(); } catch(e){} try { mb = (LowiFood.state() || {}).mbti || ""; } catch(e){}
   const w = (u.showWeight && S_.health && S_.health.weight) ? String(S_.health.weight).slice(0, 8) : "";
   return {n:u.name || "You", s:signOf(u.bday), t:mb, lv, xp:S_.xp || 0, streak:st, bday:u.bday || "", avatar:safeImg(u.avatar) || safeImg(u.avatarUrl), w,
-    me:true, uid:myUid(), xpw:periodXP("w"), xpm:periodXP("m"), wk:WK(), mo:MO(), supporter:false};
+    me:true, uid:myUid(), care:myCare(), supporter:false};
 }
 const live = () => { try { return !!(window.LOWI_CLOUD && LOWI_CLOUD.live()); } catch(e){ return false; } };
 function others(){
@@ -15151,7 +15018,7 @@ function commHTML(){
     '<div class="r3-prev"><small>Next to your messages</small><div class="r3-prevrow">' + bubble(m, 36) + '<div><b>' + esc(m.n) + '</b><span>' + (bits.length ? esc(bits.join(" · ")) : "Add birthday and type to show more") + '</span></div></div></div>' +
     '<div class="r3-set"><div><b>Show my weight</b><small>' + (hw ? (u.showWeight ? "On · others see " + esc(String(S_.health.weight)) + " kg next to your name" : "Off · only you see it") : "Off · add your weight first") + '</small></div>' +
       '<button class="toggle' + (u.showWeight && hw ? " on" : "") + '" data-r3="showweight" role="switch" aria-checked="' + (u.showWeight && hw ? "true" : "false") + '" aria-label="Show my weight"></button></div>' +
-    '<button class="r3-boardrow" data-r3="board"><span class="r3-ti">🏆</span><div><b>Leaderboard</b><small>' + (rk ? "You're #" + rk + " this week" : "Earn XP this week to get on it") + '</small></div>' + R2.ico.chev + '</button></div>';
+    '<button class="r3-boardrow" data-r3="board"><span class="r3-ti">🏆</span><div><b>Care board</b><small>' + (rk ? "You're #" + rk + " on the care board this week" : "Look after Misty this week to get on it") + '</small></div>' + R2.ico.chev + '</button></div>';
 }
 function decorate(){
   const tab = document.getElementById("tab-profile"); if (!tab) return;
@@ -15243,27 +15110,39 @@ function aboutHTML(s){ const a = ABOUT[s]; if (!a) return ""; const n = sameSign
   return '<div class="r3-mp" style="--b1:' + pal(s)[0] + ';--b2:' + pal(s)[1] + ';--b1r:' + rgb(pal(s)[0]) + '"><div class="r3-about solo"><div class="r3-abh"><span class="r3-abg big">' + gl(s) + '</span><div><small>About</small><b>' + esc(s) + '</b><span>' + a[0] + ' sign · ' + a[1] + ' · colour: ' + esc(pal(s)[2]) + '</span></div></div><p>' + esc(a[2]) + '</p>' +
     '<button class="r3-same" data-r3="same" data-sign="' + esc(s) + '"><div><b>Same sign in the community</b><small>' + n + (n === 1 ? " member" : " members") + '</small></div><span>See everyone ' + R2.ico.chev + '</span></button></div></div>'; }
 
-/* ---------- leaderboard ---------- */
+/* ---------- care board (Oct 17, 2026, E-man: "nuke it and create a new one that is connected to how good we treat our
+   companion"). Replaces the XP leaderboard. Rank = sunbeams Misty got from you this week / this month (the same daily points
+   as her sun on Today, at most 12 a day); ties go to more full-sun days, then the higher level. Your XP and level are untouched. */
 let LB = "w";
-function score(p, k){ if (k === "a") return xpOf(p);
-  if (p.me) return k === "w" ? p.xpw : p.xpm;
-  if (!live() || p.bot || p.demo) { const r = hash(p.n + (k === "w" ? WK() : MO())); return 20 + (r % (k === "w" ? 260 : 900)); }
-  return k === "w" ? (p.wk === WK() ? p.xpw || 0 : 0) : (p.mo === MO() ? p.xpm || 0 : 0); }
-function ranked(k){ return everyone().map(p => ({p, v:score(p, k)})).filter(x => x.v > 0 || (k === "a" && x.p.me)).sort((a, b) => b.v - a.v || (b.p.lv || 1) - (a.p.lv || 1)); }
-function rankOf(m, k){ const L = ranked(k); const i = L.findIndex(x => x.p.me); return i >= 0 && L[i].v > 0 ? i + 1 : 0; }
+const lbK = () => LB === "m" ? "m" : "w";
+function ranked(k){ const c = CB(); if (!c) return []; return c.rank(everyone(), k === "m" ? "m" : "w", Date.now(), me().care); }
+function rankOf(m, k){ const L = ranked(k); const i = L.findIndex(x => x.p.me); return i >= 0 ? i + 1 : 0; }
+function careCardHTML(care){
+  const k = lbK(), c = care[k] || {pts:0, full:0, today:0}, w = care.w || c, G = (CB() && CB().GOAL) || 12, pct = Math.round(Math.max(0, Math.min(1, (w.today || 0) / G)) * 100);
+  return '<button type="button" class="r3-cbme" data-r3cb="sun" aria-label="' + esc("Your care: " + c.pts + " sunbeams, " + c.full + " full-sun days. How sunbeams work") + '">' +
+    '<span class="r3-cbsun" aria-hidden="true">\u2600\uFE0F</span><span class="r3-cbt"><small>' + (k === "m" ? "Your care this month" : "Your care this week") + '</small>' +
+    '<b><span class="num">' + fmtN(c.pts) + '</span> <span>' + (c.pts === 1 ? "sunbeam" : "sunbeams") + '</span> <i>\u00b7</i> <span class="num">' + c.full + '</span> <span>' + (c.full === 1 ? "full-sun day" : "full-sun days") + '</span></b>' +
+    '<span class="r3-cbbar" role="progressbar" aria-valuemin="0" aria-valuemax="' + G + '" aria-valuenow="' + (w.today || 0) + '" aria-label="Misty\'s sun today"><i style="width:' + Math.max(3, pct) + '%"></i></span>' +
+    '<span class="r3-cbtd"><span>Today</span> <span class="num">' + (w.today || 0) + ' / ' + G + '</span></span></span><span class="r3-cbch" aria-hidden="true">\u203a</span></button>';
+}
 function boardHTML(){
-  const L = ranked(LB), mi = L.findIndex(x => x.p.me), top = L.slice(0, 50);
+  const k = lbK(), m = me(), L = ranked(k), mi = L.findIndex(x => x.p.me), top = L.slice(0, 50);
   const row = (x, i) => { const p = x.p, bits = detailsBits(p);
     return '<button class="r3-lbrow' + (p.me ? " me" : "") + (i < 3 ? " t" + (i + 1) : "") + '"' + who(p) + '><span class="r3-rk num">' + (i + 1) + '</span>' + bubble(p, 42) +
-      '<div class="r3-lbm"><b>' + esc(p.n) + (p.me ? ' <em>you</em>' : "") + (p.supporter ? '<span class="r3-sup">Supporter</span>' : "") + '</b><small>' + esc(bits.join(" · ")) + (bits.length ? " · " : "") + 'Lv ' + (p.lv || 1) + ' · 🔥 ' + (p.streak || 0) + '</small></div>' +
-      '<span class="r3-lbx num">' + fmtN(x.v) + '<small>XP</small></span></button>'; };
-  return '<div class="r3-lb"><h2>Leaderboard</h2><p class="r2-p">XP from check-ins, meals and swaps.</p>' +
-    '<div class="r2-seg r3-lbseg" role="tablist">' + [["w", "This week"], ["m", "This month"], ["a", "All time"]].map(o => '<button role="tab" data-r3lb="' + o[0] + '" class="' + (LB === o[0] ? "on" : "") + '">' + o[1] + '</button>').join("") + '</div>' +
-    '<div class="r3-lbl">' + (top.length ? top.map(row).join("") : '<div class="r3-empty">No XP yet ' + (LB === "w" ? "this week" : "this month") + '. Check in today and take the lead.</div>') + '</div>' +
-    (mi >= 50 ? '<div class="r3-lbme">' + row(L[mi], mi) + '</div>' : "") + '</div>';
+      '<div class="r3-lbm"><b>' + esc(p.n) + (p.me ? ' <em>you</em>' : "") + (p.supporter ? '<span class="r3-sup">Supporter</span>' : "") + '</b><small>' + esc(bits.join(" \u00b7 ")) + (bits.length ? " \u00b7 " : "") + 'Lv ' + (p.lv || 1) +
+      (x.full ? ' \u00b7 <span>\u2600 ' + x.full + (x.full === 1 ? " full day" : " full days") + '</span>' : "") + '</small></div>' +
+      '<span class="r3-lbx num">' + fmtN(x.pts) + '<small>\u2600</small></span></button>'; };
+  return '<div class="r3-lb r3-cb"><h2>Care board</h2><p class="r2-p">Who looks after their companion best. Meals, water, Moves and scans give Misty sunbeams, up to 12 a day.</p>' +
+    careCardHTML(m.care) +
+    '<div class="r2-seg r3-lbseg" role="tablist">' + [["w", "This week"], ["m", "This month"]].map(o => '<button role="tab" data-r3lb="' + o[0] + '" class="' + (k === o[0] ? "on" : "") + '">' + o[1] + '</button>').join("") + '</div>' +
+    '<div class="r3-lbl">' + (top.length ? top.map(row).join("") : '<div class="r3-empty">' + (k === "w" ? "No sunbeams yet this week." : "No sunbeams yet this month.") + ' Log a meal, a glass of water or a Move and Misty\'s sun starts to fill.</div>') + '</div>' +
+    (mi >= 50 ? '<div class="r3-lbme">' + row(L[mi], mi) + '</div>' : "") +
+    '<p class="r3-cbnote">Each habit has a daily cap, so a mix fills her sun, not one thing over and over. Eating less never counts. Bots show made-up numbers.</p></div>';
 }
 function openBoard(){ R2.sheet(boardHTML(), {cls:"r3-ov r3-lbov"}); }
 R3.board = openBoard; R3.boardHTML = boardHTML;
+document.addEventListener("click", e => { const b = e.target && e.target.closest && e.target.closest("[data-r3cb=sun]"); if (!b) return;
+  e.preventDefault(); e.stopPropagation(); try { if (window.LowiSun && LowiSun.info) LowiSun.info(); } catch(err){} }, true);
 
 /* ---------- share + deep link ---------- */
 async function share(uid, name){
@@ -15355,7 +15234,12 @@ function openPost(id){ try { goTab("foryou"); } catch(e){}
   setTimeout(() => { try { if (typeof cmSeg === "function") cmSeg("feed"); } catch(e){} setTimeout(() => { const el = document.querySelector('#cmFeed [data-id="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]'); const sec = el && el.closest("section"); if (sec) sec.scrollIntoView({behavior:reduce ? "auto" : "smooth", block:"start"}); }, 300); }, 120); }
 
 /* ---------- boot ---------- */
-R3.profileExtra = function(){ const m = me(); return {bday:m.bday || "", xp:Math.max(0, Math.round(m.xp || 0)), xp_week:Math.max(0, Math.round(m.xpw)), wk:m.wk, xp_month:Math.max(0, Math.round(m.xpm)), mo:m.mo, weight:m.w || ""}; };
+/* the care board rides the old xp_week / xp_month columns with a tagged period key (see care-board-core.js) */
+const careTag = c => { const b = CB(); return b && c && c.key ? b.tag(c.key, c.full) : ""; };
+R3.profileExtra = function(){ const m = me(), o = {bday:m.bday || "", xp:Math.max(0, Math.round(m.xp || 0)), weight:m.w || ""};
+  /* sunbeams only once the sun meter has loaded, so an early push never blanks a good row */
+  if (m.care && m.care.w && m.care.w.key) Object.assign(o, {xp_week:Math.max(0, Math.round(m.care.w.pts || 0)), wk:careTag(m.care.w), xp_month:Math.max(0, Math.round(m.care.m.pts || 0)), mo:careTag(m.care.m)});
+  return o; };
 function hookAward(){ if (typeof award !== "function" || award.__r3) return; const _a = award;
   const w = function(){ const r = _a.apply(this, arguments); pushSoon(); return r; }; w.__r3 = true; award = w; }
 R3.boot = function(){
@@ -17248,7 +17132,7 @@ html[data-ui=light] .r3m-t{opacity:1!important}
 html[data-ui=light] .fs-card .tiny.muted,html[data-ui=light] .fs-card .muted{opacity:1!important;color:#454f68!important}
 html[data-ui=light] .lockline svg{color:#8a6420!important}
 html[data-ui=light] .lc-note,html[data-ui=light] .lc-shelf .dim,html[data-ui=light] .small.dim,html[data-ui=light] .tiny.dim{color:#4d5772!important}
-html[data-ui=light] .r3m-tcn{filter:brightness(.72) saturate(1.2)}
+
 html[data-ui=light] .fs-card .fs-tx{opacity:1!important}
 </style>
 <style id="fixcss">
@@ -18606,9 +18490,9 @@ if (D.readyState === "loading") D.addEventListener("DOMContentLoaded", boot); el
 })();
 </script>
 <script id="g2dJs">/* ===== LOWiSPIKE G2 part 4 (Oct 11, 2026): Community Leaderboard is one game screen, no scrolling (phone) =====
-   On a phone the Leaderboard tab shows: your progress card, This week / This month / All time, a podium for the
+   On a phone the Leaderboard tab shows: your care card (sunbeams, Oct 17), This week / This month, a podium for the
    top 3, as many places after that as fit, and two tiles: Full ranking (all 50 in a sheet, with the period switch)
-   and Unlocks (the VIP channel, courses and mentoring cards in a sheet). If you are ranked but not on screen, your
+   and Misty's growth (Oct 17: was Unlocks, the old VIP / courses / mentoring cards). If you are ranked but not on screen, your
    own row takes the last place. Chat already fits: header, message list (scrolls inside), composer above the tab bar.
    The For You feed stays a scroll feed. iPad and desktop keep their layout. html.g2d-full shows the full board (tests). */
 (function(){
@@ -18617,9 +18501,8 @@ if (window.LowiG2D) return;
 const D = document, H = D.documentElement;
 const L = [
   ["Full ranking", "Rangliste", "Ranking"],
-  ["Unlocks", "Belohnungen", "Desbloqueos"],
-  ["VIP, courses, 1:1", "VIP, Kurse, 1:1", "VIP, cursos, 1:1"],
-  ["Levels and what they unlock", "Level und was sie freischalten", "Niveles y lo que desbloquean"],
+  ["Misty's growth", "Mistys Wachstum", "El crecimiento de Misty"],
+  ["Forms, glows, adventures", "Formen, Leuchten, Abenteuer", "Formas, brillos, aventuras"],
   [/^Top (\d+)$/, "Top $1", "Top $1"]
 ];
 let lAdded = false;
@@ -18628,7 +18511,8 @@ const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&":"&amp;
 const sv = p => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>';
 const IC = {
   all: sv('<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0z"/><path d="M7 6H4v1.5A3.5 3.5 0 007.3 11M17 6h3v1.5a3.5 3.5 0 01-3.3 3.5"/>'),
-  unl: sv('<rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 017.6-1.7"/><circle cx="12" cy="15.5" r="1.4"/>')
+  /* Oct 17: the old padlock (VIP / courses / 1:1 unlocks) became a sprout: Misty's growth */
+  unl: sv('<path d="M12 21v-8"/><path d="M12 13c0-4 3-6.5 7-6.5 0 4-3 6.5-7 6.5z"/><path d="M12 15c0-3.2-2.4-5.2-5.6-5.2 0 3.2 2.4 5.2 5.6 5.2z"/>')
 };
 const q = (r, s) => r ? r.querySelector(s) : null;
 const qa = (r, s) => r ? Array.from(r.querySelectorAll(s)) : [];
@@ -18641,7 +18525,7 @@ function cmShown(){ try { return !window.LowiHost || !LowiHost.tab || LowiHost.t
 function tilesHTML(p){
   const n = qa(p, ".r3-lbl .r3-lbrow").length, unl = true;
   let h = '<button type="button" class="g2h-tile g2d-tile g2d-all" data-g2d-open="all" data-sfx="open"><span class="g2h-ic">' + IC.all + '</span><b>Full ranking</b><small>' + (n ? "Top " + n : "") + '</small></button>';
-  if (unl) h += '<button type="button" class="g2h-tile g2d-tile g2d-unl" data-g2d-open="unl" data-sfx="open"><span class="g2h-ic">' + IC.unl + '</span><b>Unlocks</b><small>VIP, courses, 1:1</small></button>';
+  if (unl) h += '<button type="button" class="g2h-tile g2d-tile g2d-unl" data-g2d-open="unl" data-sfx="open"><span class="g2h-ic">' + IC.unl + '</span><b>Misty\'s growth</b><small>Forms, glows, adventures</small></button>';
   return h;
 }
 
@@ -18652,12 +18536,8 @@ function openPanel(k){
   addL(); closePanel();
   let html = "", cls = "g2d-ov";
   if (k === "all") { try { html = R3 && R3.boardHTML ? R3.boardHTML() : ""; } catch(e){ console.error(e); } if (!html) return; cls += " r3-ov r3-lbov g2d-ov-all"; }
-  else if (k === "unl") {
-    const c = q(p, ".r3m-tcs3"); if (!c) { const m = q(p, ".r3m-lbp"); if (m) m.click(); return; }
-    const x = c.cloneNode(true); x.classList.remove("sm");
-    html = '<div class="h2 g2h-pt g2d-pt">Unlocks</div><p class="r2-p g2d-ps">Levels and what they unlock</p><div class="r3m-lbme g2d-unlb">' + x.outerHTML + '</div>';
-    cls += " g2d-ov-unl";
-  } else return;
+  else if (k === "unl") { try { if (window.LowiLevels && LowiLevels.open) LowiLevels.open({scrollToMe:true}); } catch(e){ console.error(e); } return; }
+  else return;
   openKey = k;
   const me = ov = R2.sheet(html, {cls, onClose:() => { if (ov === me) { ov = null; openKey = null; } try { if (k === "all" && window.LowiR3F && LowiR3F.paintBoard) LowiR3F.paintBoard(); } catch(e){} schedule(); setTimeout(schedule, 450); }});
   /* a tap on a row or an unlock card opens its own sheet on top; this one stays underneath */
@@ -20060,6 +19940,7 @@ window.LowiCommunityHost = {
 <script src="community-spirit.js?v=20261017-225833"></script>
 <script src="galaxy-zoom.js?v=20261017-225833"></script>
 <link rel="stylesheet" id="mhCss" href="misty-hub.css?v=20261017-225833">
+<script src="care-board-core.js?v=20261017-225833"></script>
 <script src="adventure-tiers.js?v=20261017-225833"></script>
 <script src="misty-hub.js?v=20261017-225833"></script>
 <link rel="stylesheet" id="mpCss" href="misty-pad.css?v=20261017-225833">

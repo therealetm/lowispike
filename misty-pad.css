@@ -51,5 +51,6 @@ html.wh-padfly #spBubble .tmg-plant, html.wh-padfly #spBubble .sp-bubble-name { 
    stretch around her: the flat DOM wall lines step aside, and her cell's DOM bits follow the 3D cell when the camera follows her. */
 html.mf-on #spHome #spBubble .cw-wall, html.mf-on #spHome #spBubble .cw-cilia { opacity: 0 !important; transition: opacity .3s ease; }
 html.mf-roam #spHome #spBubble { translate: var(--mf-bx, 0px) var(--mf-by, 0px); }
-/* inside a place she flew into, the controller stays so you can keep steering her there */
-html.mf-in.wh-away .wh-hud .wh-pad, html.mf-in.wh-away.wh-r2-on .wh-hud .wh-pad { opacity: 1 !important; pointer-events: auto !important; }
+/* inside a place she flew into, the controller stays so you can keep steering her there. Oct 17 (Emmanuel): never on autopilot
+   while the clean flight view is on (lw-clean-auto): there it fades completely, whatever the specificity of the clean-view rule */
+html.mf-in.wh-away:not(.lw-clean-auto) .wh-hud .wh-pad, html.mf-in.wh-away.wh-r2-on:not(.lw-clean-auto) .wh-hud .wh-pad { opacity: 1 !important; pointer-events: auto !important; }

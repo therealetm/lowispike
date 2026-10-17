@@ -92,6 +92,7 @@
                 '</div>' +
             '</header>' +
             (say ? '<p class="mh-say" role="status" aria-live="polite">' + esc(say) + '</p>' : '<p class="mh-say" role="status" aria-live="polite" hidden></p>') +
+            scaleHtml() +
             (s ? '<section class="mh-card mh-xp" aria-label="' + esc(T('Level and XP', 'Level und XP', 'Nivel y XP')) + '">' +
                 '<div class="mh-row"><b>' + esc(s.name) + '</b><span class="num">' + xp + ' XP</span></div>' +
                 '<i class="mh-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.round(s.pct * 100) + '" aria-label="' + esc(T('Progress to the next level', 'Fortschritt zum n\u00e4chsten Level', 'Progreso al siguiente nivel')) + '"><i style="width:' + Math.round(s.pct * 100) + '%"></i></i>' +
@@ -109,6 +110,8 @@
             '</nav>' +
         '</div>';
     }
+    /* Oct 17: Misty's energy scale and her way back (misty-scale.js), right under her words */
+    function scaleHtml() { try { return W.LowiMistyScale && W.LowiMistyScale.html ? W.LowiMistyScale.html() : ''; } catch (e) { return ''; } }
     function sheet() { return D.getElementById('mistyHub'); }
     function open(sayOverride) {
         const R2 = W.LowiR2; if (!R2 || !R2.sheet) return false;

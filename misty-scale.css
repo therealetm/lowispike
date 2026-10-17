@@ -1,0 +1,66 @@
+/* LOWiSPIKE Misty's energy scale (Oct 17, 2026). Lives inside existing pieces only: a thin ring on Misty's own bubble rim,
+   her tier word on her name tag, and a card in her long-press card / the sun sheet. No new buttons, nothing that moves layout. */
+
+/* ring: absolutely inside the bubble box, never takes space, never takes a tap */
+#spBubble > .ms-ring { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; overflow: visible; }
+.ms-ring circle { fill: none; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.ms-ring .ms-rt { stroke: rgba(190, 228, 255, .16); stroke-width: 3; }
+.ms-ring .ms-rf, .ms-ring .ms-rb { stroke-width: 3.5; transition: stroke-dasharray .9s cubic-bezier(.2, .8, .2, 1); }
+.ms-ring .ms-rb { stroke: rgba(255, 236, 160, .95); }
+.ms-ring .ms-tick { stroke: rgba(235, 247, 255, .75); stroke-width: 1.6; vector-effect: non-scaling-stroke; stroke-linecap: round; }
+.ms-ring[data-ms-tier="weak"] .ms-rf { stroke: #ff8a8a; }
+.ms-ring[data-ms-tier="tired"] .ms-rf { stroke: #ffc27a; }
+.ms-ring[data-ms-tier="ok"] .ms-rf { stroke: #7fd8ff; }
+.ms-ring[data-ms-tier="thriving"] .ms-rf { stroke: #8ff0c4; }
+/* hide while she isn't in her bubble (pad flight, map, adventure trip) */
+html.wh-padfly #spBubble > .ms-ring, html.wh-mapview #spBubble > .ms-ring, #spHome[data-misty-out] #spBubble > .ms-ring { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .ms-ring .ms-rf, .ms-ring .ms-rb { transition: none; } }
+
+/* her tier word right after her name, same tag, same font */
+#spBubble .sp-bubble-name::after { content: var(--ms-tag, ""); white-space: nowrap; font-weight: 700; opacity: .82; }
+#spBubble[data-ms-tier="weak"] .sp-bubble-name::after { color: #ffd0d0; }
+#spBubble[data-ms-tier="tired"] .sp-bubble-name::after { color: #ffe2b8; }
+
+/* the card (in Misty's card it also gets .mh-card; in the sun sheet it stands alone) */
+.ms-card { display: block; margin: 0 0 12px; padding: 14px 14px 12px; border-radius: 20px; color: #eaf6ff;
+    background: linear-gradient(160deg, rgba(120, 190, 255, .14), rgba(40, 80, 160, .10)); border: 1px solid rgba(170, 220, 255, .22);
+    -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3); text-align: left; }
+.ms-card h3 { margin: 0; font-size: 15px; font-weight: 800; letter-spacing: .01em; }
+.ms-card h4 { margin: 12px 0 6px; font-size: 12px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; opacity: .75; }
+.ms-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.ms-now { font-size: 13px; font-weight: 800; white-space: nowrap; }
+.ms-card[data-ms-tier="weak"] .ms-now { color: #ffb4b4; }
+.ms-card[data-ms-tier="tired"] .ms-now { color: #ffd59c; }
+.ms-card[data-ms-tier="ok"] .ms-now { color: #9fe2ff; }
+.ms-card[data-ms-tier="thriving"] .ms-now { color: #a6f5d2; }
+
+.ms-scale { position: relative; margin: 12px 0 22px; }
+.ms-track { position: relative; display: block; height: 12px; border-radius: 99px; background: rgba(255, 255, 255, .08); box-shadow: inset 0 0 0 1px rgba(190, 228, 255, .16); }
+.ms-z { position: absolute; top: 0; bottom: 0; }
+.ms-z + .ms-z { border-left: 2px solid rgba(235, 247, 255, .55); }
+.ms-z em { position: absolute; top: 17px; left: 0; right: 0; text-align: center; font-style: normal; font-size: 11px; font-weight: 700; opacity: .7; white-space: nowrap; }
+.ms-z.low { background: rgba(255, 150, 140, .10); border-radius: 99px 0 0 99px; }
+.ms-z.ok { background: rgba(127, 216, 255, .10); }
+.ms-z.full { background: rgba(143, 240, 196, .10); border-radius: 0 99px 99px 0; }
+.ms-fill, .ms-boost { position: absolute; top: 2px; bottom: 2px; left: 2px; border-radius: 99px; }
+.ms-fill { width: calc((100% - 4px) * var(--ms-v)); background: #7fd8ff; box-shadow: 0 0 10px rgba(127, 216, 255, .35); }
+.ms-card[data-ms-tier="weak"] .ms-fill { background: #ff8a8a; }
+.ms-card[data-ms-tier="tired"] .ms-fill { background: #ffc27a; }
+.ms-card[data-ms-tier="thriving"] .ms-fill { background: #8ff0c4; }
+.ms-boost { left: calc(2px + (100% - 4px) * (var(--ms-v) - var(--ms-b))); width: calc((100% - 4px) * var(--ms-b)); background: rgba(255, 236, 160, .95); }
+.ms-dot { position: absolute; top: 50%; left: calc(2px + (100% - 4px) * var(--ms-v)); width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%;
+    background: #fff; box-shadow: 0 0 0 3px rgba(40, 90, 170, .55), 0 0 12px rgba(255, 255, 255, .6); }
+
+.ms-togo { margin: 0 0 4px; font-size: 14px; }
+.ms-line { margin: 4px 0 0; font-size: 13px; line-height: 1.4; opacity: .92; }
+.ms-then { font-weight: 600; }
+.ms-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; counter-reset: ms; }
+.ms-steps li { counter-increment: ms; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; border-radius: 14px; background: rgba(255, 255, 255, .07); font-size: 13px; }
+.ms-steps li span::before { content: counter(ms); display: inline-grid; place-items: center; width: 20px; height: 20px; margin-right: 8px; border-radius: 50%; background: rgba(127, 216, 255, .22); font-size: 11px; font-weight: 800; }
+.ms-steps li b { color: #a6f5d2; font-weight: 800; white-space: nowrap; }
+.ms-note { margin: 8px 0 0; font-size: 11.5px; line-height: 1.4; opacity: .62; }
+.ms-power { margin-top: 10px; padding: 8px 10px; border-radius: 14px; background: rgba(255, 236, 160, .08); border: 1px solid rgba(255, 236, 160, .18); }
+.ms-prow { display: flex; justify-content: space-between; gap: 8px; font-size: 12.5px; font-weight: 700; }
+.ms-pbar { display: block; height: 6px; margin-top: 6px; border-radius: 99px; background: rgba(255, 255, 255, .1); overflow: hidden; }
+.ms-pbar > i { display: block; height: 100%; border-radius: 99px; background: rgba(255, 236, 160, .9); }
+.ms-power small { display: block; margin-top: 5px; font-size: 11.5px; opacity: .8; }

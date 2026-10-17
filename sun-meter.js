@@ -101,7 +101,9 @@
        0.15 resting base + food 40% + water 30% + Move 30%. Food = mean app verdict of today's logged meals (same rule as
        LowiWorldHealth.verdict: low 1, mid .55, unknown .6, spike .15). Water = glasses / 4. Move = any Move logged.
        tiers: thriving >= .75, ok >= .4, below: 'weak' if a spiky meal was logged, else 'tired'. Travel needs >= .4. */
-    const ENERGY = { base: 0.15, food: 0.4, water: 0.3, move: 0.3, waterGoal: 4, travel: 0.4, strong: 0.75 };
+    /* Oct 17: + boost = energy from hunt power-ups today (window.LowiMistyPower.read().boost, COORDINATOR "SHARED API: Misty power"),
+       capped at boostMax; the hunt game applies its own fair rules. No boost = exactly the formula above. */
+    const ENERGY = { base: 0.15, food: 0.4, water: 0.3, move: 0.3, waterGoal: 4, travel: 0.4, strong: 0.75, boostMax: 0.2 };
     function verdict(l) {
         const r = String(l && l.r != null ? l.r : '').toLowerCase(), v = String(l && l.lvl || '').toLowerCase();
         if (r === 'ja' || v === 'low' || r === 'low' || r === 'yes') return 1;
@@ -125,9 +127,10 @@
         const spikes = logs.filter(l => verdict(l) <= 0.15).length;
         const food = logs.length ? logs.reduce((a, l) => a + verdict(l), 0) / logs.length : 0;
         const parts = { food, water: Math.min(1, water / ENERGY.waterGoal), move: moves ? 1 : 0 };
-        const value = Math.max(0, Math.min(1, ENERGY.base + (1 - ENERGY.base) * (ENERGY.food * parts.food + ENERGY.water * parts.water + ENERGY.move * parts.move)));
+        const boost = Math.max(0, Math.min(ENERGY.boostMax, +input.boost || 0));
+        const value = Math.max(0, Math.min(1, ENERGY.base + (1 - ENERGY.base) * (ENERGY.food * parts.food + ENERGY.water * parts.water + ENERGY.move * parts.move) + boost));
         const tier = value >= ENERGY.strong ? 'thriving' : value >= ENERGY.travel ? 'ok' : spikes ? 'weak' : 'tired';
-        return { value, tier, canTravel: value >= ENERGY.travel, meals: logs.length, spikes, water, moves, parts, known: { food: logs.length > 0, water: water > 0, move: moves > 0 } };
+        return { value, tier, canTravel: value >= ENERGY.travel, meals: logs.length, spikes, water, moves, boost, parts, known: { food: logs.length > 0, water: water > 0, move: moves > 0 } };
     }
     /* a trip may start today only once the sun bonus is in, nothing is out, and Misty has the energy */
     const mayDepart = (v, en) => !!(v && v.fullDone && !v.trip && !v.away && en && en.canTravel);
@@ -219,7 +222,8 @@
     function garden() { const s = S(); if (!s.garden || typeof s.garden !== 'object') s.garden = { trips: {}, items: [] }; s.garden.trips = s.garden.trips || {}; s.garden.items = s.garden.items || []; return s.garden; }
     const live = () => { const s = S(); return model({ now: Date.now(), ledger: s.ledger || [], garden: s.garden }); };
     function waterToday(now) { try { const f = JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}') || {}; return +((f.water || {})[dayKey(now)]) || 0; } catch (e) { return 0; } }
-    const energyNow = () => { const s = S(), now = Date.now(); return energy({ now, logs: s.logs || [], ledger: s.ledger || [], water: waterToday(now) }); };
+    const powerBoost = () => { try { const P = W.LowiMistyPower, r = P && P.read && P.read(); return r ? +r.boost || 0 : 0; } catch (e) { return 0; } };
+    const energyNow = () => { const s = S(), now = Date.now(); return energy({ now, logs: s.logs || [], ledger: s.ledger || [], water: waterToday(now), boost: powerBoost() }); };
 
     /* ---------- bar on Today ---------- */
     let row = null, last = '';
@@ -325,13 +329,15 @@
             '<p class="ls-note">' + esc(tr('eNote')) + (v0().away || en.canTravel ? '' : ' ' + esc(tr('tiredTap'))) + '</p>';
     }
     const v0 = () => live();
+    /* Oct 17: the full energy scale + her way back (misty-scale.js) replaces the short energy block when it is loaded */
+    const scaleOr = () => { try { const h = W.LowiMistyScale && W.LowiMistyScale.html && W.LowiMistyScale.html(); if (h) return h; } catch (e) {} return energyHtml(energyNow()); };
     function infoSheet() {
         if (!R() || !R().sheet) return;
         const v = live(), g = garden();
         const how = ['meal', 'scan', 'move', 'fast', 'macro', 'water'].map(k => '<li><span>' + esc(tr(k)) + '</span><b class="num">+' + PTS[k] + ' <small>/ ' + CAP[k] + '</small></b></li>').join('');
         const finds = g.items.length ? '<ul class="ls-finds">' + g.items.slice(-12).reverse().map(i => '<li>' + itemSvg(i.id) + '<span>' + esc(itemName(i.id)) + '</span></li>').join('') + '</ul>' : '<p class="ls-note">' + esc(tr('none')) + '</p>';
         R().sheet('<div class="ls-sheet ls-info"><div class="ls-head">' + sunSvg(v.ratio) + '<div><h2>' + esc(v.away ? tr('away') : v.full ? tr('full') : tr('sun')) + '</h2><p class="num">' + (v.away ? esc(tr('back')) + ' ' + fmtLeft(v.left) : v.points + '/' + v.goal) + '</p></div></div>' +
-            '<div class="ls-track big" style="--ls-fill:' + v.ratio.toFixed(3) + '"><i class="ls-fill"></i></div>' + '<p class="ls-note ls-reset num">' + esc(tr('resetAt')) + ' ' + fmtHM(msToMidnight(Date.now())) + '.</p>' + partsHtml(v) + energyHtml(energyNow()) +
+            '<div class="ls-track big" style="--ls-fill:' + v.ratio.toFixed(3) + '"><i class="ls-fill"></i></div>' + '<p class="ls-note ls-reset num">' + esc(tr('resetAt')) + ' ' + fmtHM(msToMidnight(Date.now())) + '.</p>' + partsHtml(v) + scaleOr() +
             '<h3>' + esc(tr('how')) + '</h3><p class="ls-note">' + esc(tr('howTx')) + '</p><ul class="ls-parts how">' + how + '</ul>' +
             '<h3>' + esc(tr('finds')) + '</h3>' + finds + '</div>', { cls: 'ls-ov' });
     }
@@ -406,7 +412,7 @@
     let queued = 0;
     const schedule = () => { if (queued) return; queued = requestAnimationFrame(() => { queued = 0; try { render(); } catch (e) {} }); };
     W.addEventListener('lowi:reward', e => { try { check(e); } catch (x) {} });
-    ['lowi:lang', 'lowi:state', 'storage', 'focus'].forEach(n => W.addEventListener(n, schedule));
+    ['lowi:lang', 'lowi:state', 'lowi:misty-power', 'storage', 'focus'].forEach(n => W.addEventListener(n, schedule));
     D.addEventListener('visibilitychange', () => { schedule(); setTimeout(collect, 600); });
     function boot() {
         if (!D.getElementById('lsCss')) {

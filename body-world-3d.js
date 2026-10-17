@@ -170,6 +170,9 @@
     }
     /* Oct 16 (E-man): map gestures. opts.onLong(x, y) fires on a still ~0.5 s press (then no tap follows); opts.onDouble(x, y)
        fires on the second of two quick taps in the same spot (the first tap still did its own thing). */
+    /* Oct 17 energy shot: is a finger on Misty's controller right now (misty-pad.js)? */
+    function padHeld() { try { return !!(W.LowiPad && W.LowiPad.held && W.LowiPad.held()); } catch (e) { return false; } }
+    function padDouble() { try { W.dispatchEvent(new CustomEvent('lowi:pad-double')); } catch (e) { } }
     function bindGestures(el, onTap, allowPinch, opts) {
         opts = opts || {};
         const pts = new Map(); let start = null, pinch0 = 0, moved = 0, lastX = 0, lastY = 0, vx = 0, vy = 0, lastT = 0, lpT = 0, lpFired = false, lastTap = null;
@@ -179,7 +182,7 @@
             try { el.setPointerCapture(e.pointerId); } catch (err) {}
             if (pts.size === 1) { start = { x: e.clientX, y: e.clientY, t: e.timeStamp }; moved = 0; lastX = e.clientX; lastY = e.clientY; vx = vy = 0; lastT = e.timeStamp;
                 lpFired = false; clearTimeout(lpT);
-                if (opts.onLong) { const sx = e.clientX, sy = e.clientY; lpT = setTimeout(() => { if (!start || moved >= 10 || pts.size !== 1) return; lpFired = true; const r = el.getBoundingClientRect(); try { navigator.vibrate && navigator.vibrate(12); } catch (err) {} opts.onLong(sx - r.left, sy - r.top); }, 520); } }
+                if (opts.onLong) { const sx = e.clientX, sy = e.clientY; lpT = setTimeout(() => { if (!start || moved >= 10 || pts.size !== 1 || padHeld()) return; lpFired = true; const r = el.getBoundingClientRect(); try { navigator.vibrate && navigator.vibrate(12); } catch (err) {} opts.onLong(sx - r.left, sy - r.top); }, 520); } }
             if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch0 = Math.hypot(a.x - b.x, a.y - b.y); clearTimeout(lpT); }
         });
         el.addEventListener('pointermove', e => {
@@ -205,7 +208,10 @@
                 else if (moved < 10 && e.type === 'pointerup' && e.timeStamp - start.t < 450) {
                     const r = el.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
                     const dbl = opts.onDouble && lastTap && e.timeStamp - lastTap.t < 330 && Math.hypot(x - lastTap.x, y - lastTap.y) < 40;
-                    if (dbl) { lastTap = null; opts.onDouble(x, y); } else { lastTap = { x, y, t: e.timeStamp }; onTap(x, y); }
+                    /* Oct 17 energy shot: with a finger on Misty's controller, this second finger's taps never warp, pet or toggle the map;
+                       two of them ask for her energy shot (misty-turn.js listens). Without the controller held nothing changes. */
+                    if (padHeld()) { if (dbl) { lastTap = null; padDouble(); } else lastTap = { x, y, t: e.timeStamp }; }
+                    else if (dbl) { lastTap = null; opts.onDouble(x, y); } else { lastTap = { x, y, t: e.timeStamp }; onTap(x, y); }
                 }
                 else if (world && e.timeStamp - lastT < 90) world.release(vx, vy);
                 start = null;

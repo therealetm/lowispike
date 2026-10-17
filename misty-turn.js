@@ -10,7 +10,13 @@
      press and hold = she backs up. While holding, sliding the controller left / right steers (turns her) and up / down climbs
      or dives, like a steering wheel. Going forward, the camera swings in behind her, so you see what she is heading for.
    - It all only counts as YOUR steering (misty-hunt eats crumbs only then); the autopilot never uses any of it.
-   No new buttons: the controller and Misty herself are the controls. Nothing runs per frame unless Misty is out and drawn. */
+   No new buttons: the controller and Misty herself are the controls. Nothing runs per frame unless Misty is out and drawn.
+   Energy shot (Oct 17, E-man, "Kamehameha"): while one finger holds the controller (dragging or held still in the middle), a
+   double tap with another finger (on the world or on Misty) shoots her energy the way she is aiming: her heading, tilted up or
+   down by the controller. It uses the Community energy rate limit (community-energy.js bucket) as its cooldown, and when it lands
+   inside a world it heals that world a little: its murk and fog thin (body-world-regions applyLook reads heal()). Healing is capped
+   per world per day and spaced out, it never gives XP, crumbs or energy, and the autopilot never shoots. Without the controller
+   held, a double tap on the world does exactly what it did before (World map toggle / out of a world). */
 (function () {
     'use strict';
     const W = typeof window !== 'undefined' ? window : null, D = W && W.document;
@@ -58,7 +64,47 @@
     const tapChain = (last, n, now) => (last && now - last < K.TAP_GAP ? (n || 0) + 1 : 1);
     /* a still hold on the controller: right after a tap = back, else forward */
     const holdDir = (lastUp, downAt) => (lastUp && downAt - lastUp < K.TAP_GAP ? -1 : 1);
-    const core = { K, wrap, turnBy, fwdOf, hitR, hits, steer, tapChain, holdDir };
+    /* ---- energy shot (pure) ---- */
+    const SHOT = {
+        MAX: 3, WIN: 8000, GAP: 900,   /* cooldown: at most 3 shots in 8 s, never closer than 0.9 s (community-energy bucket) */
+        RANGE: 9, DUR: 0.45, LIFE: 1.0, /* flies 9 of her sizes in 0.45 s, the burst is gone after 1 s */
+        PITCH: 0.45,                    /* how much the controller's up / down tilts the shot */
+        HEAL: 0.12, HEAL_MAX: 0.6, HEAL_GAP: 5000 /* one shot heals 12% of a world, at most 60% a day per world, 5 s apart */
+    };
+    let EC = null;
+    try { EC = (W && W.LowiEnergyCore) || (typeof require === 'function' ? require('./community-energy.js') : null); } catch (e) { EC = null; }
+    function ownBucket(st, now, max, win, gap) {
+        const ts = ((st && st.ts) || []).filter(t => now - t < win), last = ts.length ? ts[ts.length - 1] : 0;
+        if (ts.length >= max || (last && now - last < gap)) return { ok: false, st: { ts } };
+        ts.push(now); return { ok: true, st: { ts } };
+    }
+    /* may she shoot now? st = the gate state ({ ts }), t = ms */
+    const shotGate = (st, t) => ((EC && typeof EC.bucket === 'function') ? EC.bucket : ownBucket)(st, +t || Date.now(), SHOT.MAX, SHOT.WIN, SHOT.GAP);
+    /* a double tap on the world: with the controller held it is a shot, without it everything stays as it was */
+    const dblAction = held => (held ? 'shot' : 'zoom');
+    /* where the shot points: her heading f, tilted by the controller's up / down (vy -1..1), unit length */
+    function shotDir(f, vy) {
+        const d = [+f[0] || 0, clamp(+vy || 0, -1, 1) * SHOT.PITCH, +f[2] || 0], L = Math.hypot(d[0], d[1], d[2]) || 1;
+        return [d[0] / L, d[1] / L, d[2] / L];
+    }
+    /* the ball at k (0..1 of its flight): eases out, so it leaves her fast */
+    function shotAt(from, d, range, k) { k = clamp(+k || 0, 0, 1); const e = 1 - (1 - k) * (1 - k), s = range * e; return [from[0] + d[0] * s, from[1] + d[1] * s, from[2] + d[2] * s]; }
+    const pad2 = n => (n < 10 ? '0' : '') + n;
+    const dayKey = t => { const d = new Date(+t || Date.now()); return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); };
+    const worldId = id => String(id || '').replace(/[^a-z0-9_-]/gi, '').slice(0, 24);
+    /* a shot landed in world id: how much it heals. h = { day, w: { id: healed 0..HEAL_MAX }, at: { id: ms } }; resets at midnight */
+    function healAdd(h, id, t) {
+        t = +t || Date.now(); const day = dayKey(t);
+        if (!h || h.day !== day || typeof h.w !== 'object' || typeof h.at !== 'object') h = { day, w: {}, at: {} };
+        id = worldId(id); if (!id || id === 'hub') return { h, add: 0 };
+        const have = clamp(+h.w[id] || 0, 0, SHOT.HEAL_MAX), last = +h.at[id] || 0;
+        if (last && t - last < SHOT.HEAL_GAP && t >= last) return { h, add: 0 };
+        const add = Math.round(Math.min(SHOT.HEAL, SHOT.HEAL_MAX - have) * 1000) / 1000; if (add <= 0) return { h, add: 0 };
+        h.w[id] = Math.round((have + add) * 1000) / 1000; h.at[id] = t;
+        return { h, add };
+    }
+    const healOf = (h, id, t) => (h && h.w && h.day === dayKey(t) ? clamp(+h.w[worldId(id)] || 0, 0, SHOT.HEAL_MAX) : 0);
+    const core = { K, wrap, turnBy, fwdOf, hitR, hits, steer, tapChain, holdDir, SHOT, shotGate, dblAction, shotDir, shotAt, healAdd, healOf, dayKey, usesEnergyCore: () => !!(EC && EC.bucket) };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!D || !D.addEventListener || W.LowiMistyTurn) return;
 
@@ -66,6 +112,27 @@
     const S = { off: 0, bank: 0, th: 0, own: null, cueT: 0, drawnT: 0, alpha: 0, sparkle: false, pts: null, turns: 0, worldOk: true };
     const MF = () => W.LowiMistyFlight || null;
     const now = () => (W.performance ? performance.now() : Date.now());
+    /* energy shot state: the cooldown gate, a shot asked for (spawned on her next drawn frame), shots in flight, today's healing */
+    const SHOT_KEY = 'lowi.misty-shot.v1';
+    const SH = { gate: {}, req: false, list: [], obj: null, vy: 0, mTap: 0, fired: 0, heal: null };
+    try { SH.heal = JSON.parse(localStorage.getItem(SHOT_KEY) || 'null'); } catch (e) { SH.heal = null; }
+    const padHeld = () => { try { return !!(W.LowiPad && W.LowiPad.held && W.LowiPad.held()); } catch (e) { return false; } };
+    const emit = d => { try { W.dispatchEvent(new CustomEvent('lowi:misty-shot', { detail: d })); } catch (e) { } };
+    function shoot(why) {
+        if (now() - S.drawnT > K.DRAWN_MS || S.alpha < 0.3) return { ok: false, why: 'hidden' };
+        const g = shotGate(SH.gate, Date.now()); SH.gate = g.st;
+        if (!g.ok) { emit({ ok: false, why: 'cooldown' }); return { ok: false, why: 'cooldown' }; }
+        SH.req = true; SH.fired++;
+        try { navigator.vibrate && navigator.vibrate([8, 30, 14]); } catch (e) { }
+        return { ok: true, why: why || '' };
+    }
+    function healNow() {
+        const R = W.LowiWorldRegions; let id = null;
+        try { id = R && R.current ? R.current() : (R && R.state ? R.state.cur : null); } catch (e) { id = null; }
+        const o = healAdd(SH.heal, id, Date.now()); SH.heal = o.h;
+        if (o.add) { try { localStorage.setItem(SHOT_KEY, JSON.stringify(o.h)); } catch (e) { } }
+        emit({ ok: true, healed: o.add, world: worldId(id) || 'hub', heal: healOf(SH.heal, id, Date.now()) });
+    }
     function spot() {
         if (now() - S.drawnT > K.DRAWN_MS || S.alpha < 0.3) return null;
         const m = MF(); if (!m || !m.touchSpot) return null;
@@ -80,7 +147,12 @@
     function release(e) {
         const o = S.own; if (!o) return;
         clearTimeout(o.lp);
-        if (e && e.type === 'pointerup' && !o.turned && !o.long && now() - o.t0 < K.TAP_MS) S.sparkle = true;
+        if (e && e.type === 'pointerup' && !o.turned && !o.long && now() - o.t0 < K.TAP_MS) {
+            S.sparkle = true;
+            /* energy shot: two quick taps on her with another finger while the controller is held */
+            const t = now();
+            if (padHeld()) { if (SH.mTap && t - SH.mTap < K.TAP_GAP) { SH.mTap = 0; shoot('misty'); } else SH.mTap = t; } else SH.mTap = 0;
+        }
         try { if (o.el && o.el.releasePointerCapture) o.el.releasePointerCapture(o.id); } catch (er) { }
         S.own = null; H.classList.remove('mt-turning');
     }
@@ -119,6 +191,57 @@
         p.name = 'mt-facing'; p.userData.lwKeep = true; p.renderOrder = 60; p.frustumCulled = false; p.visible = false; a.scene.add(p);
         return p;
     }
+    /* the energy shot, drawn in the 3D world (one Points object for every ball, trail and burst; no DOM, nothing while none fly) */
+    const TRAIL = 7, SPARKS = 12, PER = TRAIL + SPARKS, SLOTS = 3;
+    function shotBuild(a) {
+        const THREE = a.THREE, n = PER * SLOTS, geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3).fill(-999), 3));
+        geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
+        const p = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.12, vertexColors: true, transparent: true, opacity: 1, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, fog: false, sizeAttenuation: true }));
+        p.name = 'mt-shot'; p.userData.lwKeep = true; p.renderOrder = 61; p.frustumCulled = false; p.visible = false; a.scene.add(p);
+        return p;
+    }
+    function shotFrame(i, dt) {
+        if (SH.req) {
+            SH.req = false;
+            const r = i.rig || {}, hs = Math.max(0.05, +i.hs || 0.5), f = fwdOf(wrap((+r.yaw || 0) + (+r.gy || 0) + S.off)), d = shotDir(f, SH.vy);
+            SH.list.push({ from: [i.p.x + d[0] * hs * 0.6, i.p.y + d[1] * hs * 0.6, i.p.z + d[2] * hs * 0.6], d, range: hs * SHOT.RANGE, hs, t: 0, hit: false });
+            if (SH.list.length > SLOTS) SH.list.shift();
+            S.cueT = Math.max(S.cueT, 0.8);
+        }
+        if (!SH.list.length) { if (SH.obj) SH.obj.visible = false; return; }
+        if (!SH.obj || !SH.obj.parent) SH.obj = shotBuild(i.a);
+        const pos = SH.obj.geometry.attributes.position, col = SH.obj.geometry.attributes.color, sparks = i.reduced ? 0 : SPARKS;
+        let hsMax = 0.05;
+        SH.list = SH.list.filter(s => { s.t += dt; if (s.t >= SHOT.DUR && !s.hit) { s.hit = true; healNow(); } return s.t < SHOT.LIFE; });
+        for (let k = 0; k < SLOTS; k++) {
+            const s = SH.list[k], b = k * PER;
+            for (let j = 0; j < PER; j++) { pos.setXYZ(b + j, -999, -999, -999); col.setXYZ(b + j, 0, 0, 0); }
+            if (!s) continue;
+            hsMax = Math.max(hsMax, s.hs);
+            if (s.t < SHOT.DUR) {
+                /* the ball and its trail: white-hot head, blue tail (the Community energy colours) */
+                const kk = s.t / SHOT.DUR;
+                for (let j = 0; j < TRAIL; j++) {
+                    const q = shotAt(s.from, s.d, s.range, kk - j * 0.05), g = j === 0 ? 1 : (1 - j / TRAIL) * 0.75;
+                    pos.setXYZ(b + j, q[0], q[1], q[2]); col.setXYZ(b + j, (j ? 0.47 : 0.94) * g, (j ? 0.82 : 0.98) * g, g);
+                }
+            } else {
+                /* the burst where it lands: sparks fly out and fade */
+                const e = shotAt(s.from, s.d, s.range, 1), u = (s.t - SHOT.DUR) / (SHOT.LIFE - SHOT.DUR), fade = Math.max(0, 1 - u);
+                pos.setXYZ(b, e[0], e[1], e[2]); col.setXYZ(b, 0.6 * fade, 0.88 * fade, fade);
+                for (let j = 0; j < sparks; j++) {
+                    const y = 1 - (j + 0.5) * 2 / SPARKS, rr = Math.sqrt(Math.max(0, 1 - y * y)), th = j * 2.39996, dist = s.hs * (0.4 + 1.6 * (1 - (1 - u) * (1 - u)));
+                    pos.setXYZ(b + TRAIL + j, e[0] + Math.cos(th) * rr * dist, e[1] + y * dist, e[2] + Math.sin(th) * rr * dist);
+                    col.setXYZ(b + TRAIL + j, 0.55 * fade, 0.85 * fade, fade);
+                }
+            }
+        }
+        pos.needsUpdate = true; col.needsUpdate = true;
+        SH.obj.material.size = hsMax * 0.22; SH.obj.visible = true;
+    }
+    /* body-world-3d.js: a double tap on the world with a second finger while the controller is held */
+    W.addEventListener('lowi:pad-double', () => { shoot('double'); });
     W.LowiMistyTurn = {
         core,
         thrust: v => { if (v === undefined) return S.th; S.th = clamp(Math.round(+v || 0), -1, 1); if (S.th) S.cueT = Math.max(S.cueT, 0.6); return S.th; },
@@ -126,6 +249,7 @@
         /* misty-flight.js, once a frame while she is out: the stick, thrust and heading to use */
         steer: i => {
             i = i || {}; const r = i.rig || {};
+            SH.vy = i.mode === 'drive' ? clamp(+i.vy || 0, -1, 1) : 0;
             const o = steer(S, { dt: i.dt, mode: i.mode, vx: i.vx, vy: i.vy, th: S.th, camYaw: (+r.yaw || 0) + (+r.gy || 0), busy: i.busy });
             if (o.cam && r && typeof r.yaw === 'number') { r.yaw += o.cam; r.vy = 0; }
             if (o.th) S.cueT = Math.max(S.cueT, 0.6);
@@ -138,6 +262,7 @@
             S.drawnT = now(); S.alpha = +i.alpha || 0;
             if (!S.own || !S.own.turned) S.bank *= Math.exp(-dt * 5);
             const out = { bank: S.bank, sparkle: S.sparkle }; S.sparkle = false;
+            try { shotFrame(i, dt); } catch (e) { SH.list = []; if (SH.obj) SH.obj.visible = false; }
             S.cueT = Math.max(0, S.cueT - dt);
             const show = (S.cueT > 0 || (S.own && S.own.turned)) && !i.reduced && S.alpha > 0.3;
             if (!show) { if (S.pts) S.pts.visible = false; return out; }
@@ -150,6 +275,10 @@
             S.pts.visible = true;
             return out;
         },
-        state: () => ({ off: +S.off.toFixed(3), th: S.th, turning: !!(S.own && S.own.turned), touching: !!S.own, turns: S.turns, cue: S.pts ? !!S.pts.visible : false })
+        /* energy shot: body-world-3d.js (a double tap on the world while the controller is held) and probes */
+        shoot: why => shoot(why),
+        /* how much today's shots healed world id (0..SHOT.HEAL_MAX): body-world-regions.js thins its fog by it */
+        heal: id => healOf(SH.heal, id, Date.now()),
+        state: () => ({ off: +S.off.toFixed(3), th: S.th, turning: !!(S.own && S.own.turned), touching: !!S.own, turns: S.turns, cue: S.pts ? !!S.pts.visible : false, shots: SH.list.length, fired: SH.fired })
     };
 })();

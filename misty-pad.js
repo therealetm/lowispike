@@ -46,7 +46,7 @@
     }
     function label() {
         if (st.mode === 'auto') return low() ? T('Autopilot, Misty is drifting sleepily. Tap to steer', 'Autopilot, Misty treibt m\u00fcde. Tippen zum Steuern', 'Piloto autom\u00e1tico, Misty flota con sue\u00f1o. Toca para dirigir') : T('Autopilot, Misty flies on its own. Tap to steer', 'Autopilot, Misty fliegt allein. Tippen zum Steuern', 'Piloto autom\u00e1tico, Misty vuela por su cuenta. Toca para dirigir');
-        return T('Controller: drag to fly Misty, hold the middle to go forward, tap then hold to go back, three taps for autopilot', 'Steuerung: ziehen, um Misty zu fliegen, Mitte halten f\u00fcr vorw\u00e4rts, tippen und halten f\u00fcr r\u00fcckw\u00e4rts, dreimal tippen f\u00fcr Autopilot', 'Control: arrastra para volar con Misty, mant\u00e9n el centro para avanzar, toca y mant\u00e9n para retroceder, tres toques para piloto autom\u00e1tico');
+        return T('Controller: drag to fly Misty, hold the middle to go forward, tap then hold to go back, three taps for autopilot. While you hold it, double tap the world with another finger to shoot energy', 'Steuerung: ziehen, um Misty zu fliegen, Mitte halten f\u00fcr vorw\u00e4rts, tippen und halten f\u00fcr r\u00fcckw\u00e4rts, dreimal tippen f\u00fcr Autopilot. W\u00e4hrend du sie h\u00e4ltst, mit einem anderen Finger zweimal auf die Welt tippen f\u00fcr einen Energiesto\u00df', 'Control: arrastra para volar con Misty, mant\u00e9n el centro para avanzar, toca y mant\u00e9n para retroceder, tres toques para piloto autom\u00e1tico. Mientras lo mantienes, toca dos veces el mundo con otro dedo para disparar energ\u00eda');
     }
     function paint() {
         const b = st.el; if (!b) return;
@@ -218,5 +218,15 @@
     setInterval(tick, 500);
     W.addEventListener('resize', () => setTimeout(place, 60));
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', tick); else tick();
-    W.LowiPad = { state: () => Object.assign({ pad: st.mode, tier: st.tier, energy: +st.value.toFixed(2) }, send(null) || {}), mode: m => setMode(m), steer: (vx, vy) => send({ vx, vy }), thrust: v => (v ? startHold(v > 0 ? 1 : -1) : thrust(0)) };
+    /* Oct 17 energy shot (misty-turn.js): a short word on the controller when it fires, heals a world or is still charging */
+    let shotSaid = 0;
+    W.addEventListener('lowi:misty-shot', e => {
+        const d = e.detail || {}, t = Date.now();
+        if (!d.ok) { if (d.why === 'cooldown' && t - shotSaid > 1500) { shotSaid = t; chip(T('Energy is charging', 'Energie l\u00e4dt', 'La energ\u00eda se est\u00e1 cargando'), 1000); } return; }
+        shotSaid = t;
+        chip(d.healed > 0 ? T('Energy shot \u00b7 the world heals', 'Energiesto\u00df \u00b7 die Welt heilt', 'Disparo de energ\u00eda \u00b7 el mundo sana') : T('Energy shot', 'Energiesto\u00df', 'Disparo de energ\u00eda'), 1100);
+    });
+    W.LowiPad = { state: () => Object.assign({ pad: st.mode, tier: st.tier, energy: +st.value.toFixed(2), held: st.id != null }, send(null) || {}), mode: m => setMode(m), steer: (vx, vy) => send({ vx, vy }), thrust: v => (v ? startHold(v > 0 ? 1 : -1) : thrust(0)),
+        /* a finger is on the controller right now (dragging or held still): body-world-3d.js turns a double tap into the energy shot */
+        held: () => st.id != null };
 })();

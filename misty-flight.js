@@ -98,6 +98,16 @@
         if (from && Math.hypot((x - from.x) / w, (y - from.y) / h) < 0.34) x = from.x < (Z.x0 + Z.x1) / 2 ? Z.x1 - 0.1 * w : Z.x0 + 0.1 * w;
         return { x, y };
     }
+    /* Oct 17 (E-man, on autopilot, dragging the world round: "as I move the world around, I still keep getting her back"): her roam
+       spot is picked on screen but then stays put in the world, so turning the world turns her path with it and you see her from a
+       new side. She only picks a new spot when your turn has carried the old one out of the view (or behind you): sx, sy = the
+       spot's place now as fractions of the view, front = in front of the camera. A loose box round the safe zone, so a small turn
+       never makes her change her mind. */
+    const ROAM_HOLD = 0.1;
+    function roamHold(sx, sy, front) {
+        const Z = K.SAFE, m = ROAM_HOLD; sx = +sx; sy = +sy;
+        return !!front && isFinite(sx) && isFinite(sy) && sx >= Z.x0 - m && sx <= Z.x1 + m && sy >= Z.y0 - m && sy <= Z.y1 + m;
+    }
     /* her roaming pace on screen, px per second: calm, slower when tired, a little quicker on a big screen */
     const roamPx = (k, minSide) => (55 + 85 * clamp(+k || 0, 0, 1)) * clamp((+minSide || 390) / 390, 0.85, 1.6);
     /* world-exit (Oct 17, E-man): "When my companion is clearly trying to fly out of the world by hitting the corner of the world
@@ -217,7 +227,7 @@
     function orbitSpin(rad, sleepy) { return ORBIT.W * Math.pow(1 / Math.max(+rad || 0, ORBIT.R_END), 1.2) * (sleepy ? 0.7 : 1); }
     /* at the door: fling her back out (true) or let her in (false). tries = flings so far; refuse = the world's bounce rule said no */
     function orbitFling(tries, refuse) { return tries < ORBIT.MIN_FLINGS || (!!refuse && tries < ORBIT.TRIES - 1); }
-    const core = { K, inReach, freeReach, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, roams, autoLeave, roamSpot, roamPx, pullAt, fallAt, EXIT, exitHold, MIST, angWrap, exitGaps, inMist, gapToward, DARK, darkSpots, inDark, darkReach, darkAmt, darkGlow, HOME, homeGlow, homeAt, veilAt, exitTent, wallToward, outAt, ORBIT, orbitAt, orbitSpin, orbitFling };
+    const core = { K, inReach, freeReach, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, roams, autoLeave, roamSpot, roamHold, roamPx, pullAt, fallAt, EXIT, exitHold, MIST, angWrap, exitGaps, inMist, gapToward, DARK, darkSpots, inDark, darkReach, darkAmt, darkGlow, HOME, homeGlow, homeAt, veilAt, exitTent, wallToward, outAt, ORBIT, orbitAt, orbitSpin, orbitFling };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!D || !D.addEventListener || W.LowiMistyFlight) return;
 
@@ -236,10 +246,17 @@
     function vecs(THREE) {
         if (V) return V;
         V = { rt: new THREE.Vector3(), up: new THREE.Vector3(), fw: new THREE.Vector3(), c: new THREE.Vector3(), a: new THREE.Vector3(), b: new THREE.Vector3(),
-            want: new THREE.Vector3(), m4: new THREE.Matrix4(), q: new THREE.Vector3(), h: new THREE.Vector3(), h2: new THREE.Vector3() };
+            want: new THREE.Vector3(), m4: new THREE.Matrix4(), q: new THREE.Vector3(), h: new THREE.Vector3(), h2: new THREE.Vector3(), wu: new THREE.Vector3(0, 1, 0), ws: new THREE.Vector3() };
         S.p = new THREE.Vector3(); S.v = new THREE.Vector3(); S.wobDir = new THREE.Vector3(0, 1, 0); S.pushDir = new THREE.Vector3(0, 1, 0);
         S.warpFrom = new THREE.Vector3(); S.warpTo = new THREE.Vector3(); S.pullRel = new THREE.Vector3(); S.pullC = new THREE.Vector3(); S.fallTo = new THREE.Vector3(); S.outPos = new THREE.Vector3(); S.inC = new THREE.Vector3(); S.cell0 = { x: 0, y: 0 };
         return V;
+    }
+    /* Oct 17 (camera-relative autopilot fix): her soft meander sways round the world's up and the side of her own path, not the
+       camera's right / up, so a drag round the world does not swing her path with the view. dir = her path (any length). */
+    function swayAxes(dir) {
+        V.wu.set(0, 1, 0); V.ws.crossVectors(dir, V.wu);
+        if (V.ws.lengthSq() < 1e-8) V.ws.copy(V.rt); else V.ws.normalize();
+        return V.ws;
     }
     function canvasRect(a) { const cv = a.renderer && a.renderer.domElement; const q = cv && cv.getBoundingClientRect ? cv.getBoundingClientRect() : null; return q && q.width ? q : { left: 0, top: 0, width: W.innerWidth, height: W.innerHeight }; }
     function toScreen(a, p, out) {
@@ -602,12 +619,12 @@
                     return;
                 }
                 V.want.copy(V.a).multiplyScalar(Math.min(1, d / 1.5) * 0.8 / d);
-                V.want.addScaledVector(V.up, Math.sin(S.t * 0.7) * 0.3).addScaledVector(V.rt, Math.cos(S.t * 0.45) * 0.25);
+                swayAxes(V.a); V.want.addScaledVector(V.wu, Math.sin(S.t * 0.7) * 0.3).addScaledVector(V.ws, Math.cos(S.t * 0.45) * 0.25);
                 return;
             }
         }
         const g = regs[S.wp % regs.length]; V.b.subVectors(V.c, g.pos).normalize();
-        V.a.copy(g.pos).addScaledVector(V.b, 2.9).addScaledVector(V.up, 0.4);
+        V.a.copy(g.pos).addScaledVector(V.b, 2.9).addScaledVector(V.wu.set(0, 1, 0), 0.4); /* a little above the door, in the world (not the camera's up) */
         V.a.sub(S.p); const d = V.a.length();
         if (d < 0.5) {
             if (S.wpWait <= 0) { S.wpWait = 2.2 + 1.5 * (1 - k); V.b.copy(S.p).addScaledVector(V.up, -0.2 * S.hs); ctx.burst(V.b, Math.round(5 + 15 * k), 0.3 + 0.4 * k); ring(ctx, k); }
@@ -615,7 +632,7 @@
             return;
         }
         V.want.copy(V.a).multiplyScalar(Math.min(1, d / 1.5) * (k < 0.4 ? 0.6 : 0.85) / d);
-        if (!ctx.reduced) V.want.addScaledVector(V.up, Math.sin(S.t * 1.3) * 0.15);
+        if (!ctx.reduced) V.want.addScaledVector(V.wu.set(0, 1, 0), Math.sin(S.t * 1.3) * 0.15);
     }
     function ring(ctx, k) {
         const A = ctx.A; if (!A || !A.ring || ctx.reduced) return;
@@ -770,20 +787,31 @@
         V.b.copy(S.p); fromScreen(a, q.left + q.width * (0.35 + 0.3 * Math.random()), q.top + q.height * 1.04, V.b, S.p);
         S.idle = 99; S.joined = 1; note('join ' + S.flew);
     }
-    /* misty-roam: one frame of free roaming inside a place. Her spots are fractions of the view, turned into world points each
-       frame, so whatever the camera does (your pan or pinch, its own slow drift) she stays in view and keeps travelling */
+    /* misty-roam: one frame of free roaming inside a place. Her spot is picked as a fraction of the view, then fixed in the world
+       (Oct 17: was re-aimed on screen every frame, so a drag round the world turned her path with the camera and she kept the same
+       side to you). Turn the world and her path stays where it is in the world: you see her side, front or back from your new angle.
+       If your turn carries the spot out of the view she picks a new one in view, so she never wanders off screen. */
+    function rwPick(a, r, q, s) {
+        const dz = (Math.random() - 0.5) * 0.5;
+        const depth = V.b.copy(r.target).addScaledVector(V.fw, Math.min(1.1, r.dist * 0.42) + dz * Math.min(1, r.dist * 0.2));
+        const p = fromScreen(a, q.left + s.x * q.width, q.top + s.y * q.height, depth, new a.THREE.Vector3());
+        return { x: s.x, y: s.y, dz, p };
+    }
     function roamFrame(ctx, k, still) {
         const a = ctx.a, r = ctx.r, dt = ctx.dt, q = canvasRect(a), me = toScreen(a, S.p, {});
         const fx = (me.x - q.left) / q.width, fy = (me.y - q.top) / q.height;
-        if (!S.rw) { const s = roamSpot(Math.random(), Math.random(), { x: fx, y: fy }); S.rw = { x: s.x, y: s.y, dz: (Math.random() - 0.5) * 0.5 }; S.rwT = 0; }
+        if (!S.rw || !S.rw.p) { S.rw = rwPick(a, r, q, roamSpot(Math.random(), Math.random(), { x: fx, y: fy })); S.rwT = 0; }
         S.rwT += dt;
-        const depth = V.b.copy(r.target).addScaledVector(V.fw, Math.min(1.1, r.dist * 0.42) + S.rw.dz * Math.min(1, r.dist * 0.2));
-        const tgt = fromScreen(a, q.left + S.rw.x * q.width, q.top + S.rw.y * q.height, depth, V.a);
-        const ppu = pxPerUnit(a, S.p), dPx = Math.hypot(S.rw.x * q.width - (me.x - q.left), S.rw.y * q.height - (me.y - q.top));
+        let ts = toScreen(a, S.rw.p, {});
+        if (S.rwWait <= 0 && !roamHold((ts.x - q.left) / q.width, (ts.y - q.top) / q.height, ts.z > -1 && ts.z < 1)) {
+            S.rw = rwPick(a, r, q, roamSpot(Math.random(), Math.random(), { x: fx, y: fy })); S.rwT = 0; ts = toScreen(a, S.rw.p, ts);
+        }
+        const tgt = S.rw.p;
+        const ppu = pxPerUnit(a, S.p), dPx = Math.hypot(ts.x - me.x, ts.y - me.y);
         V.want.set(0, 0, 0);
         if (S.rwWait > 0) {
             /* a short pause at a spot: she hovers, now and then tending it with a ring of light */
-            S.rwWait -= dt; if (S.rwWait <= 0) { const s = roamSpot(Math.random(), Math.random(), S.rw); S.rw = { x: s.x, y: s.y, dz: (Math.random() - 0.5) * 0.5 }; S.rwT = 0; }
+            S.rwWait -= dt; if (S.rwWait <= 0) { S.rw = rwPick(a, r, q, roamSpot(Math.random(), Math.random(), { x: fx, y: fy })); S.rwT = 0; }
         } else if (dPx < 16 || S.rwT > 14) {
             S.rwN++; S.rwWait = (still ? 2.5 : 0.9 + Math.random() * 1.6) * (k < 0.4 ? 1.5 : 1);
             if (S.rwN % 3 === 0) { V.q.copy(S.p).addScaledVector(V.up, -0.2 * S.hs); ctx.burst(V.q.clone(), Math.round(4 + 10 * k), (0.25 + 0.3 * k) * S.hs); ring(ctx, k); }
@@ -792,7 +820,7 @@
             const v = roamPx(k, Math.min(q.width, q.height)) * (still ? 0.4 : 1) / ppu;
             if (d > 1e-5) V.want.multiplyScalar(Math.min(1, dPx / 60) * v / d);
             /* a soft meander across her path, so she curves like something alive, not a cursor */
-            if (!still) V.want.addScaledVector(V.up, Math.sin(S.t * 1.1) * 0.18 * v).addScaledVector(V.rt, Math.cos(S.t * 0.7) * 0.1 * v);
+            if (!still) { swayAxes(V.want); V.want.addScaledVector(V.wu, Math.sin(S.t * 1.1) * 0.18 * v).addScaledVector(V.ws, Math.cos(S.t * 0.7) * 0.1 * v); }
         }
         S.v.lerp(V.want, Math.min(1, dt * (S.rwWait > 0 ? 2.5 : 1.6)));
         S.p.addScaledVector(S.v, dt);

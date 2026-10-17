@@ -32,7 +32,14 @@
         SOFT: 0.35,       /* her face is round: the face plane turns this much less than her look (no edge-on line) */
         CROP: { x: -34, y: -16, w: 68, h: 38 }, /* the face's box in the art (units round the face's own origin) */
         FACE_PX: 3,       /* face texture resolution (px per art unit): crisp on a retina phone, still tiny */
-        STALE_MS: 250     /* not placed for this long = she is not drawn by misty-flight: hide the face */
+        STALE_MS: 250,    /* not placed for this long = she is not drawn by misty-flight: hide the face */
+        /* Oct 17 (E-man, on autopilot: "she shouldn't be showing us her back all the time. That becomes boring ... sometimes ... a
+           little look"): flying away from you on her own for a while, she glances back over her shoulder at you, then flies on */
+        PEEK_AFTER: [3.5, 7],   /* seconds of flying away from you before she looks back ... */
+        PEEK_GAP: [6, 11],      /* ... and between looks after that */
+        PEEK_HOLD: [1.1, 1.7],  /* how long the look back lasts (s) */
+        PEEK_MIX: 0.7,          /* the look: this far from her path toward you (1 = straight at you) */
+        PEEK_AWAY: -0.2         /* her path counts as "away from you" below this (dot of path and toward-you) */
     };
     /* ---------- tiny vector helpers (plain arrays, so node can test them) ---------- */
     const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
@@ -111,6 +118,25 @@
         if (right) v = rot(v, right, pitch);
         return { dir: unit(v) || base, hold: 2.0 + rnd() * 2.8, at: 'side' };
     }
+    /* the look back over her shoulder: her path v turned PEEK_MIX of the way toward you (cf). Unit vectors in and out. */
+    function peekDir(v, cf, mix) {
+        cf = unit(cf) || [0, 0, 1]; v = unit(v || cf) || cf;
+        const m = clamp(mix == null ? K.PEEK_MIX : +mix, 0, 1);
+        return unit(add(scale(v, 1 - m), scale(cf, m))) || cf.slice();
+    }
+    /* the clock of those looks back. P = { away, wait, left } (kept between frames); away = her path leads away from you this
+       frame. Time flying away adds up (and drains slowly when she flies across or toward you); once it reaches wait she looks back
+       for PEEK_HOLD seconds, then the clock starts over with a PEEK_GAP wait. Returns true while she is looking back. */
+    function peekStep(P, away, dt, rnd) {
+        rnd = rnd || Math.random; dt = clamp(+dt || 0, 0, 0.1);
+        const pick = R => R[0] + rnd() * (R[1] - R[0]);
+        if (!(P.wait > 0)) P.wait = pick(K.PEEK_AFTER);
+        P.away = +P.away || 0; P.left = +P.left || 0;
+        if (P.left > 0) { P.left -= dt; if (P.left > 0) return true; P.left = 0; P.away = 0; P.wait = pick(K.PEEK_GAP); return false; }
+        P.away = away ? P.away + dt : Math.max(0, P.away - dt * 0.5);
+        if (P.away >= P.wait) { P.left = pick(K.PEEK_HOLD); return true; }
+        return false;
+    }
     /* moving or not, with a gap between the two thresholds; speed in world units/s, hs = her height in world units */
     function movingNow(was, speed, hs) {
         const h = Math.max(1e-3, +hs || 1), q = (+speed || 0) / h;
@@ -139,14 +165,14 @@
         const face = '<svg xmlns="http://www.w3.org/2000/svg" width="' + C.w * px + '" height="' + C.h * px + '" viewBox="' + C.x + ' ' + C.y + ' ' + C.w + ' ' + C.h + '">' + inner + '</svg>';
         return { body: svg.slice(0, start) + svg.slice(end), face, fx, fy, rx, ry };
     }
-    const core = { K, dot, cross, unit, rot, turnToward, faceFrame, faceVis, pickDir, glance, movingNow, splitArt, sideAxis };
+    const core = { K, dot, cross, unit, rot, turnToward, faceFrame, faceVis, pickDir, glance, movingNow, splitArt, sideAxis, peekDir, peekStep };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!D || !W || W.LowiMistyFace) return;
 
     /* ---------- live ---------- */
     const now = () => (W.performance ? performance.now() : Date.now());
     const S = { L: null, vel: [0, 0, 0], pp: null, moving: false, hdT: -1e9, base: null, look: null, lookT: 0, at: 'base',
-        art: null, src: null, pending: false, body: null, faceTex: null, mesh: null, wand: null, a: null, drawnT: -1e9, lastT: 0, why: 'hold' };
+        art: null, src: null, pending: false, body: null, faceTex: null, mesh: null, wand: null, a: null, drawnT: -1e9, lastT: 0, why: 'hold', pk: { away: 0, wait: 0, left: 0 } };
     function srcMap() { const WH = W.LowiWorldHome, m = WH && WH.state && WH.state.misty; return m && m.material ? m.material.map : null; }
     /* her art changed (mood, stage, look): split it and make the two textures, once */
     function ensureArt(THREE) {
@@ -271,7 +297,11 @@
                 idleDir = S.look;
             }
         } else { S.look = null; S.lookT = 0; }
-        const pk = pickDir({ drive, hd, th, turning, recentHd, moving: S.moving, vdir, idleDir, base: S.base });
+        let pk = pickDir({ drive, hd, th, turning, recentHd, moving: S.moving, vdir, idleDir, base: S.base });
+        /* flying on her own (never while you steer), away from you for a while: a short look back over her shoulder at you. Her
+           path is in the world, so whether it leads away from you depends on where you turned the world to. */
+        if (pk.why === 'move' && !drive && !i.reduced && vdir) { if (peekStep(S.pk, dot(vdir, cb.cf) < K.PEEK_AWAY, dt)) pk = { d: peekDir(vdir, cb.cf), why: 'peek' }; }
+        else if (S.pk.left > 0) { S.pk.left = 0; S.pk.away = 0; S.pk.wait = 0; }
         S.why = pk.why;
         let want = pk.d || S.L;
         /* flying, she is alive: a slow little sway of the look, never in reduced motion */

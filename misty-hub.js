@@ -98,6 +98,7 @@
                 '<i class="mh-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.round(s.pct * 100) + '" aria-label="' + esc(T('Progress to the next level', 'Fortschritt zum n\u00e4chsten Level', 'Progreso al siguiente nivel')) + '"><i style="width:' + Math.round(s.pct * 100) + '%"></i></i>' +
                 '<small>' + esc(s.next ? T(s.left + ' XP to ' + s.next, 'Noch ' + s.left + ' XP bis ' + s.next, 'Faltan ' + s.left + ' XP para ' + s.next) : T('Top level reached', 'H\u00f6chstes Level erreicht', 'Nivel m\u00e1ximo alcanzado')) + '</small>' +
             '</section>' : '') +
+            advHtml() +
             '<section class="mh-card mh-mood" aria-label="' + esc(cellCopy('feel') || 'How do you feel?') + '">' +
                 '<h3>' + esc(cellCopy('feel') || T('How do you feel?', 'Wie f\u00fchlst du dich?', '\u00bfC\u00f3mo te sientes?')) + '</h3>' +
                 '<div class="mh-moods">' + moods.map(m => '<button type="button" data-mh="mood" data-mood="' + m + '" aria-pressed="' + (mood === m) + '">' + esc(cellCopy('m_' + m) || m) + '</button>').join('') + '</div>' +
@@ -111,6 +112,8 @@
         '</div>';
     }
     /* Oct 17: Misty's energy scale and her way back (misty-scale.js), right under her words */
+    /* adventure tiers (adventure-tiers.js): what her timed adventure reaches at this level; autopilot is never gated */
+    function advHtml() { try { return W.LowiAdventureTiers && W.LowiAdventureTiers.html ? W.LowiAdventureTiers.html() : ''; } catch (e) { return ''; } }
     function scaleHtml() { try { return W.LowiMistyScale && W.LowiMistyScale.html ? W.LowiMistyScale.html() : ''; } catch (e) { return ''; } }
     function sheet() { return D.getElementById('mistyHub'); }
     function open(sayOverride) {

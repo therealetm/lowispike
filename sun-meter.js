@@ -380,7 +380,7 @@
         const v = live(), g = garden();
         const how = ['meal', 'scan', 'move', 'fast', 'macro', 'water'].map(k => '<li><span>' + esc(tr(k)) + '</span><b class="num">+' + PTS[k] + ' <small>/ ' + CAP[k] + '</small></b></li>').join('');
         const finds = g.items.length ? '<ul class="ls-finds">' + g.items.slice(-12).reverse().map(i => '<li>' + itemSvg(i.id) + '<span>' + esc(itemName(i.id)) + '</span></li>').join('') + '</ul>' : '<p class="ls-note">' + esc(tr('none')) + '</p>';
-        R().sheet('<div class="ls-sheet ls-info"><div class="ls-head">' + sunSvg(v.ratio) + '<div><h2>' + esc(v.away ? tr('away') : v.full ? tr('full') : tr('sun')) + '</h2><p class="num">' + (v.away ? esc(tr('back')) + ' ' + fmtLeft(v.left) : v.points + '/' + v.goal) + '</p></div></div>' +
+        R().sheet('<div class="ls-sheet ls-info"><div class="ls-head">' + sunSvg(v.ratio) + '<div><h2>' + esc(v.away ? tr('away') : v.full ? tr('full') : tr('sun')) + '</h2><p class="num">' + (v.away ? esc(tr('back')) + ' ' + fmtLeft(v.left) : v.points + '/' + v.goal) + '</p>' + (v.away ? '<p class="ls-note ls-adv">' + esc(advLine('')) + '</p>' : '') + '</div></div>' +
             '<div class="ls-track big" style="--ls-fill:' + v.ratio.toFixed(3) + '"><i class="ls-fill"></i></div>' + '<p class="ls-note ls-reset num">' + esc(tr('resetAt')) + ' ' + fmtHM(msToMidnight(Date.now())) + '.</p>' + partsHtml(v) + scaleOr() +
             '<h3>' + esc(tr('how')) + '</h3><p class="ls-note">' + esc(tr('howTx')) + '</p><ul class="ls-parts how">' + how + '</ul>' +
             (v.away ? recallBlock(v) : '') +
@@ -534,7 +534,7 @@
         if (bub) {
             const v = live();
             /* ambience only: the trip never blocks the herb world or anything in it */
-            if (v.away && W.LowiPraise && LowiPraise.say) LowiPraise.say(tr('awayTap') + ' ' + fmtBack(v.left) + '.');
+            if (v.away && W.LowiPraise && LowiPraise.say) LowiPraise.say(tr('awayTap') + ' ' + fmtBack(v.left) + '.' + advLine(' '));
             else if (v.fullDone && !v.trip && !energyNow().canTravel && W.LowiPraise && LowiPraise.say) LowiPraise.say(tr('tiredTap'));
         }
     }, true);
@@ -562,6 +562,11 @@
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 
     const tendedNow = () => { const v = live(); return tended(v.trip, Date.now()); };
+    /* adventure tiers (adventure-tiers.js): how far this trip reaches at her level, and that autopilot is never gated */
+    function advLine(pre) {
+        try { const A = W.LowiAdventureTiers; if (!A) return ''; const l = lang(), T = (en, de, es) => l === 'de' ? de : l === 'es' ? es : en;
+            return pre + T('Exploring up to: ', 'Erkundet bis: ', 'Explora hasta: ') + A.line() + '.'; } catch (e) { return ''; }
+    }
     W.LowiSun = Object.assign({}, core, { tendedNow, render, live, energyNow, info: infoSheet, collect, depart, recall, recallSheet });
     if (typeof module !== 'undefined' && module.exports) module.exports = W.LowiSun;
 })();

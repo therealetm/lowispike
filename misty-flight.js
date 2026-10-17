@@ -254,6 +254,8 @@
     const w3 = () => W.LowiWorld3D || null;
     const R = () => W.LowiWorldRegions || null;
     const ADV = () => !!(W.LowiAdventure && W.LowiAdventure.on);
+    /* adventure tiers (Oct 17): her timed adventure (LowiSun away, S.trip) now flies the same tour as autopilot, gated by level */
+    const ADVX = () => ADV() || !!S.trip;
     function curRegion() { try { const r = R(); return r && r.current ? r.current() : 'hub'; } catch (e) { return 'hub'; } }
     function regionsBusy() { const r = R(), s = r && r.state; return !!(s && (s.busy || s.warp)); }
     const norm = id => id === 'muscles' ? 'muscle' : id === 'blood' ? 'hub' : id;
@@ -356,7 +358,7 @@
         S.st = S.p.distanceTo(V.c) < K.CR * 0.95 ? 'exit' : 'free';
         /* adventure: coming back out of a world she does not pop back into her cell: she rises out of the world she just
            left, small, and grows as she drifts away from it (the fall in, reversed) */
-        if (S.outT && performance.now() - S.outT < 20000 && (ADV() || S.recallOut)) {
+        if (S.outT && performance.now() - S.outT < 20000 && (ADVX() || S.recallOut)) {
             V.b.subVectors(V.c, S.outPos); if (V.b.lengthSq() < 1e-6) V.b.copy(V.fw); V.b.normalize();
             S.p.copy(S.outPos).addScaledVector(V.b, K.ENTRY * 0.75); S.ks = 0.12; S.st = 'free'; S.emerge = K.EMERGE; S.fade = 0.45;
             S.v.copy(V.b).multiplyScalar(0.5); note('emerge');
@@ -366,7 +368,7 @@
     }
     function end(ctx, why) {
         const a = ctx && ctx.a, r = ctx && ctx.r;
-        note('end ' + why); if (W.LowiMistyGalaxy) W.LowiMistyGalaxy.reset(ctx, S); S.huntFly = false; S.outReq = false; S.exH = null; S.exP = 0; S.exD0 = 0; S.autoX = null; S.orb = null; if (ctx && ctx.wand) dropDraw(ctx.wand);
+        note('end ' + why); if (W.LowiMistyGalaxy) W.LowiMistyGalaxy.reset(ctx, S); if (EXP()) EXP().off(S); S.huntFly = false; S.outReq = false; S.exH = null; S.exP = 0; S.exD0 = 0; S.autoX = null; S.orb = null; if (ctx && ctx.wand) dropDraw(ctx.wand);
         if (r && a && (why === 'abort' || why === 'home') && !regionsBusy() && curRegion() === 'hub') { r.target.set(0, 0, 0); if (why === 'abort' && S.dHome && S.dollyOut) r.dist = S.dHome; }
         S.st = 'idle'; S.flew = null; S.dolly = 0; S.deep = false; S.dk = 0; S.dkT = 0; veilOff(); hold(false); classes(false, false, false); H.classList.remove('mf-transit');
         /* autopilot heading out of a place keeps flying: she slips back into her cell and goes on to the next place */
@@ -399,7 +401,8 @@
         const a = ctx.a, r = ctx.r, PD = ctx.PD; if (!a || !a.THREE || !a.camera || !r) return false;
         vecs(a.THREE);
         const homeTab = H.classList.contains('wh-home') && H.classList.contains('wh-world-live');
-        const ok = r.mode === 'home' && homeTab && !ctx.A.away && !D.hidden && !D.querySelector('.bw3-full');
+        /* adventure tiers: her timed trip (ctx.A.away) no longer hands her to the old Oct 16 loop round her cell, and no longer cuts an autopilot flight short */
+        const ok = r.mode === 'home' && homeTab && !D.hidden && !D.querySelector('.bw3-full');
         transitSync(ok);
         /* the membrane settles back on its own even when nobody flies */
         if (S.st === 'idle') {
@@ -410,7 +413,7 @@
            briefly not live), and ending snaps the camera straight home: far out that looked like the whole app starting over with
            Misty back in her bubble. Short blinks now only pause her where she is (offGrace); leaving Home for real still ends it. */
         if (!ok) {
-            const blink = D.hidden || (H.classList.contains('wh-home') && r.mode === 'home' && !ctx.A.away && !D.querySelector('.bw3-full'));
+            const blink = D.hidden || (H.classList.contains('wh-home') && r.mode === 'home' && !D.querySelector('.bw3-full'));
             S.offT = (+S.offT || 0) + (D.hidden ? 0 : ctx.dt);
             if (S.st !== 'idle' && !offGrace(blink, S.offT)) end(ctx, 'abort');
             S.joinT = 0; return false;
@@ -424,6 +427,13 @@
             return false;
         }
         S.joinT = 0;
+        /* adventure tiers: her timed trip flies the autopilot tour, gated by level (misty-explore.js); autopilot (three taps) takes
+           over while it is on, and when the trip ends she flies home */
+        const trip = !!ctx.A.away && !ADV();
+        if (S.trip && !trip && !ADV() && S.st !== 'idle' && PD.mode === 'auto') { padMode(ctx, 'home'); note('trip over'); }
+        if (S.trip !== trip && EXP()) EXP().reset(S);
+        S.trip = trip;
+        if (S.st === 'idle' && trip && !PD.mode && !ctx.inRegion && !ctx.awayHome && !regionsBusy()) padMode(ctx, 'auto');
         /* adventure: back on Today (or after a tap took her somewhere) the tour simply goes on */
         if (S.st === 'idle' && !PD.mode) { S.recallOut = false; S.recallFast = false; }
         if (S.st === 'idle' && ADV() && !PD.mode && !ctx.inRegion && !ctx.awayHome && !regionsBusy()) padMode(ctx, 'auto');
@@ -470,7 +480,7 @@
            restarts, I'm back in a bubble"): letting go of the stick to turn the view round counted as doing nothing, so 20 s into
            looking she was raced home into her bubble. Turning or pinching the view now counts as being busy too (lookIdle). */
         S.lookIdle = lookBusy(r) ? 0 : (+S.lookIdle || 0) + dt;
-        if (mode === 'drive' && homeIdle(S.idle, S.lookIdle, K.IDLE_HOME) && (S.st === 'free' || S.st === 'exit')) { padMode(ctx, 'home'); note('idle home'); }
+        if (mode === 'drive' && homeIdle(S.idle, S.lookIdle, K.IDLE_HOME) && (S.st === 'free' || S.st === 'exit')) { padMode(ctx, S.trip ? 'auto' : 'home'); note(S.trip ? 'idle trip' : 'idle home'); }
         const camFree = !r.fly;
 
         if (S.st === 'pull') { pullFrame(ctx, k); return; }
@@ -484,6 +494,7 @@
         if (mode === 'drive') { V.want.addScaledVector(V.rt, vx).addScaledVector(V.up, vy); thrustWant(); }
         else if (mode === 'home') { V.a.subVectors(homeP, S.p); const d = V.a.length(); if (d > 1e-4) V.want.copy(V.a).multiplyScalar(Math.min(1, d / 0.9) / d); }
         else if (mode === 'auto') tourWant(ctx, k);
+        if (mode !== 'auto' && EXP()) EXP().off(S); /* adventure tiers: steering or a recall drops any excursion plan */
 
         const off = V.a.subVectors(S.p, V.c).length();
         if (S.st === 'exit') {
@@ -522,9 +533,9 @@
                 if (!ctx.reduced && startOrbit(ctx, g)) return;
                 startWarp(ctx, { id: g.id, pos: g.pos }); return;
             }
-            const adv = ADV() && mode === 'auto';
+            const adv = ADVX() && mode === 'auto';
             const GX = W.LowiMistyGalaxy; /* galaxy breakout (misty-galaxy.js): out there she is faster, so on screen she keeps her pace */
-            const sp = (GX ? GX.speed(ctx, S) : 1) * speed(k, 'out') * (1 - 0.55 * S.ap) * (mode === 'auto' && k < 0.4 ? 0.5 : 1) * (mode === 'home' ? 1.25 * (S.recallFast ? K.RECALL : 1) : 1) * (adv ? K.ADV_SPEED : 1);
+            const sp = (GX ? GX.speed(ctx, S) : 1) * speed(k, 'out') * (1 - 0.55 * S.ap) * (mode === 'auto' && k < 0.4 ? 0.5 : 1) * (mode === 'home' ? 1.25 * (S.recallFast ? K.RECALL : 1) : 1) * (adv ? K.ADV_SPEED : 1) * (adv && (S.gx || S.exOut) ? 2 : 1); /* adventure tiers: heading out to and through the spirit world the tour cruises at her normal speed */
             S.v.lerp(V.b.copy(V.want).multiplyScalar(sp), Math.min(1, dt * 3.2));
             S.p.addScaledVector(S.v, dt);
             /* galaxy breakout: push long enough on the edge of your world and it gives way (misty-galaxy.js); otherwise the edge holds */
@@ -533,7 +544,7 @@
             if (W.LowiMistyBump && !S.gx && !S.gxBack) { try { W.LowiMistyBump.step(ctx, S, mode, K); } catch (e) { } }
             /* back into her own cell */
             const offN = V.a.subVectors(S.p, V.c).length();
-            if (offN < K.CR * 0.92 && (mode === 'home' || (V.want.dot(V.a) < 0 && !(ADV() && mode === 'auto')))) { /* adventure: no dipping back into her cell mid-tour */ S.st = 'exit'; S.wob = -0.25; S.wobT = 0; S.wobDir.copy(V.a).normalize(); note('back in'); }
+            if (offN < K.CR * 0.92 && (mode === 'home' || (V.want.dot(V.a) < 0 && !(ADVX() && mode === 'auto')))) { /* adventure: no dipping back into her cell mid-tour */ S.st = 'exit'; S.wob = -0.25; S.wobT = 0; S.wobDir.copy(V.a).normalize(); note('back in'); }
             /* at a place's atmosphere: the tap's own warp takes her in */
             if (nb && nb.d < K.ENTRY && mode === 'drive' && !regionsBusy()) {
                 /* misty-hunt: on a weak day the world's pull is weak, she bounces off its edge once or twice before she gets in */
@@ -631,10 +642,14 @@
         }
         return out;
     }
+    const EXP = () => W.LowiMistyExplore || null;
+    function capsNow() { try { return W.LowiAdventureTiers ? W.LowiAdventureTiers.caps(S.trip && !ADV() ? 'trip' : 'auto') : { cells: true }; } catch (e) { return { cells: true }; } }
     function tourWant(ctx, k) {
+        /* adventure tiers: an excursion out to the spirit world, its bubbles and its streams (misty-explore.js) steers while it runs */
+        if (EXP() && EXP().want(ctx, S, V, K, capsNow(), note)) return;
         const a = ctx.a, regs = a.regions || []; if (!regs.length) return;
         if (S.wp < 0) { let bi = 0, bd = 1e9; regs.forEach((g, i) => { const d = S.p.distanceTo(g.pos); if (d < bd) { bd = d; bi = i; } }); S.wp = bi; }
-        if (ADV() && !ctx.reduced) {
+        if (ADVX() && !ctx.reduced) {
             if (S.driftFor !== S.wp || !S.drift) { S.driftFor = S.wp; S.drift = driftPts(ctx); S.driftI = 0; S.lostT = 0; }
             if (S.driftI < S.drift.length) {
                 V.a.subVectors(S.drift[S.driftI], S.p); const d = V.a.length();
@@ -659,7 +674,8 @@
         V.a.sub(S.p); const d = V.a.length();
         if (d < 0.5) {
             if (S.wpWait <= 0) { S.wpWait = 2.2 + 1.5 * (1 - k); V.b.copy(S.p).addScaledVector(V.up, -0.2 * S.hs); ctx.burst(V.b, Math.round(5 + 15 * k), 0.3 + 0.4 * k); ring(ctx, k); }
-            S.wpWait -= ctx.dt; if (S.wpWait <= 0.01) { S.wpNext = (S.wp + 1) % regs.length; S.wpWait = 0; S.tourGo = g; }
+            /* adventure tiers: below Level 3 her timed trip only visits the door and moves on to the next place */
+            S.wpWait -= ctx.dt; if (S.wpWait <= 0.01) { S.wpNext = (S.wp + 1) % regs.length; S.wpWait = 0; if (capsNow().cells) S.tourGo = g; else { S.wp = S.wpNext; note('door only (level)'); } }
             return;
         }
         V.want.copy(V.a).multiplyScalar(Math.min(1, d / 1.5) * (k < 0.4 ? 0.6 : 0.85) / d);
@@ -778,7 +794,7 @@
     /* ---------- into a place ---------- */
     function startWarp(ctx, nb) {
         const a = w3(); if (!a || !a.flyTo) return;
-        S.advWarp = ADV() && !ctx.reduced;
+        S.advWarp = ADVX() && !ctx.reduced;
         S.st = 'warp'; S.flew = norm(nb.id); S.warpT = 0; S.entered = 0; S.warpFrom.copy(S.p); S.warpTo.copy(nb.pos); S.v.set(0, 0, 0);
         setPush(ctx.a, S.wobDir, 0); hold(false); note('warp ' + nb.id);
         try { a.flyTo(nb.id); } catch (e) { }
@@ -869,7 +885,7 @@
             place(ctx, k, still, S.fade); trail(ctx, k, 0.3);
             return;
         }
-        if (ADV()) S.advIn = (S.advIn || 0) + dt; /* her cell is far away: no flying home from here (World map takes you both back) */
+        if (ADVX()) S.advIn = (S.advIn || 0) + dt; /* her cell is far away: no flying home from here (World map takes you both back) */
         S.inT = (S.inT || 0) + dt;
         /* misty-roam: on her own (not steered, or let go a while ago) she roams the whole view freely */
         const free = roams(mode, S.idle);
@@ -878,7 +894,7 @@
                world-exit (Oct 17, E-man: "even on autopilot ... she's supposed to actually try to get out of that world by going
                to the corner and then pushing against it"): she flies to the nearest corner of the world, presses against its
                edge for the same 3 seconds you would, and only then flies out, the camera with her */
-            const adv = ADV();
+            const adv = ADVX();
             if (S.autoX && (mode !== 'auto' || (+r.idle || 0) < 0.4 || regionsBusy() || r.fly)) { S.autoX = null; exitReset(ctx); S.inT = 0; note('auto exit cancelled'); }
             if (!S.autoX && autoLeave(mode, S.inT, +r.idle || 0, adv ? K.ADV_STAY : K.STAY_IN) && !regionsBusy() && !r.fly) {
                 /* cloud walls (item 3): she heads for the nearest stretch of the cloud wall, well clear of the dark zones */
@@ -1386,10 +1402,10 @@
         const a = ctx.a, regs = a.regions || [];
         if (regs.length && S.wp < 0) { let bi = 0, bd = 1e9; regs.forEach((g, i) => { const d = S.p.distanceTo(g.pos); if (d < bd) { bd = d; bi = i; } }); S.wp = bi; }
         let to = null;
-        if (ADV() && !ctx.reduced && regs.length) { S.driftFor = S.wp; S.drift = driftPts(ctx); S.driftI = 0; S.lostT = 0; to = S.drift[0]; }
+        if (ADVX() && !ctx.reduced && regs.length) { S.driftFor = S.wp; S.drift = driftPts(ctx); S.driftI = 0; S.lostT = 0; to = S.drift[0]; }
         else if (regs.length) to = regs[S.wp % regs.length].pos;
         if (to) acrossScreen(V.a, V.e.subVectors(to, S.p));
-        const cruise = speed(k, 'out') * (k < 0.4 ? 0.5 : 1) * (ADV() ? K.ADV_SPEED : 1) * 0.8;
+        const cruise = speed(k, 'out') * (k < 0.4 ? 0.5 : 1) * (ADVX() ? K.ADV_SPEED : 1) * 0.8;
         S.v.copy(V.a).multiplyScalar(cruise);
         S.outHd.copy(V.a);
     }

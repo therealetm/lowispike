@@ -88,7 +88,7 @@ test('a bubble stays solid when she only grazes it, drifts into it, or autopilot
 test('the touch margin only widens the press, the glass itself stays where it was', () => {
     const src = read('galaxy-bubbles.js');
     assert.match(src, /TOUCH: 0\.5/);
-    assert.match(src, /pushK = drive && pushOf\(mag, S\.th\) >= GB\.MAG/);
+    assert.match(src, /pushK = \(drive && pushOf\(mag, S\.th\) >= GB\.MAG && wl > 1e-4\) \|\| \(aimB >= 0 && wl > 0\.2\)/);
     assert.match(src, /if \(d >= rr \+ hs \* GB\.TOUCH \|\| d < 1e-4\) continue;/);
     assert.match(src, /if \(d >= rr\) continue;\s*\/\* solid until it gives: slide round \*\//);
 });

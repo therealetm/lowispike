@@ -97,10 +97,12 @@ test('wired in: galaxy step hands over to it, cam asks it, resets reach it, the 
     assert.match(read('sw.js'), /"galaxy-bubbles\.js"/);
 });
 
-test('honest: it gives no XP, crumbs or energy, and only YOUR steering is carried (autopilot and the way home never)', () => {
+test('honest: it gives no XP, crumbs or energy; only YOUR steering or a planned ride on the tour is carried (the way home never)', () => {
     const src = read('galaxy-bubbles.js');
     assert.ok(!/LowiXP|addXP|award|LowiMistyHunt|crumb\(|energy\.add/i.test(src.replace(/\/\*[\s\S]*?\*\//g, '')));
     assert.match(src, /drive = mode === 'drive'/);
-    assert.match(src, /if \(drive && !ctx\.reduced\)/);
-    assert.match(src, /mode === 'home' \|\| mode === 'auto'\) \{ leave\(/);
+    /* adventure tiers (Oct 17): the tour (autopilot / Level 6 adventure) rides a current only while it means to (S.exRide) */
+    assert.match(src, /ride = auto && !!S\.exRide/);
+    assert.match(src, /if \(\(drive \|\| ride\) && !ctx\.reduced\)/);
+    assert.match(src, /mode === 'home' \|\| \(auto && aimB !== B\.gb\)\) \{ leave\(/);
 });

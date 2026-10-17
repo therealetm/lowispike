@@ -203,7 +203,9 @@
         }
         /* pushing on the edge */
         const wl = V.want.length(), out = L > 1e-4 && wl > 1e-4 ? V.want.dot(S.p) / (L * wl) : 0;
-        const h = breakHold(G.h, { dt, mode, mag, out, edge: L / reach, busy: busy() || !!ctx.r.fly || !!ctx.reduced || !!(W.LowiAdventure && W.LowiAdventure.on) });
+        /* adventure tiers (misty-explore.js): on autopilot, or on her timed adventure from Level 4, she may push out by herself (S.exOut) */
+        const ax = mode === 'auto' && !!S.exOut;
+        const h = breakHold(G.h, { dt, mode: ax ? 'drive' : mode, mag: ax ? 1 : mag, out, edge: L / reach, busy: busy() || !!ctx.r.fly || !!ctx.reduced || (!ax && !!(W.LowiAdventure && W.LowiAdventure.on)) });
         G.h = h.s; G.p = h.p;
         if (h.p <= 0) { if (G.shown) { G.shown = false; paintSkin(a, reach, 0, 0); } G.beat = 0; return false; }
         if (!G.tmp) skin(a, reach);

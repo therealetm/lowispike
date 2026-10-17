@@ -5,7 +5,7 @@
      Close to a thread she is caught: carried along it (strongest mid-thread, softer near the membranes) and drawn gently to its
      core. With the flow she flies fast; against it she still gets through at full push, but slowly, and a weak push is carried
      back. Steering sideways gets her out (the pull to the core is always weaker than her own speed). Only while YOU steer
-     (drive): autopilot and the way home (recall, 20 s without steering) are never carried, so home is always reachable.
+     (drive), or on the tour when it means to ride one (autopilot, Level 6 adventure: S.exRide); the way home is never carried.
    - BUBBLES: every other world out there is a living bubble she can go into. Touch its membrane and keep pushing in for a moment
      (a little longer on a tired day): it gives, she slips through, and the camera comes in close so the bubble surrounds her (its
      inside walls glow). Inside she roams freely; pushing out against the membrane for a moment lets her out again; the way home
@@ -129,7 +129,10 @@
         /* turn with the galaxy */
         if (B.rot != null && th !== B.rot) { const dr = th - B.rot; toWorld(S.p, B.l.copy(S.p), dr); toWorld(S.v, B.l.copy(S.v), dr); }
         B.rot = th;
-        const pl = toLocal(B.l, S.p, th), drive = mode === 'drive', pushK = drive && pushOf(mag, S.th) >= GB.MAG && wl > 1e-4;
+        /* adventure tiers (misty-explore.js): on autopilot or her timed adventure she may go into the one bubble she aims for (S.exB),
+           stay in it until she is done (S.exLeave), and ride a current only while she means to (S.exRide). Otherwise unchanged. */
+        const auto = mode === 'auto', aimB = auto && S.exB != null && S.exB >= 0 ? S.exB : -1, ride = auto && !!S.exRide;
+        const pl = toLocal(B.l, S.p, th), drive = mode === 'drive', pushK = (drive && pushOf(mag, S.th) >= GB.MAG && wl > 1e-4) || (aimB >= 0 && wl > 0.2);
         let glowI = -1, glowP = 0;
         if (B.gb >= 0) {
             const o = B.others[B.gb]; if (!o) { B.gb = -1; return false; }
@@ -137,7 +140,8 @@
             B.v.subVectors(pl, o.position); const d = B.v.length() || 1e-4; B.v.divideScalar(d); /* outward, group space */
             toWorld(B.w, B.v, th); /* outward, world space */
             const out = pushK ? V.want.dot(B.w) / wl : 0;
-            if (mode === 'home' || mode === 'auto') { leave(ctx, S, o, r, hs, th, 'way home'); return true; }
+            if (auto && aimB === B.gb && S.exLeave) { leave(ctx, S, o, r, hs, th, 'out'); return true; }
+            if (mode === 'home' || (auto && aimB !== B.gb)) { leave(ctx, S, o, r, hs, th, 'way home'); return true; }
             if (d > lim - hs * 0.15) {
                 const h = pressHold(B.pressI === -2 ? B.press : null, { dt, pushing: out >= GB.IN, k: ctx.k });
                 B.press = h.s; B.pressI = -2; glowI = B.gb; glowP = h.p;
@@ -153,7 +157,7 @@
         }
         /* the currents */
         let want = null, best = null, bestK = 0;
-        if (drive && !ctx.reduced) {
+        if ((drive || ride) && !ctx.reduced) {
             const cap = capOf(hs);
             for (let i = 0; i < B.paths.length; i++) {
                 const pa = B.paths[i], dx = pl.x - pa.cx, dy = pl.y - pa.cy, dz = pl.z - pa.cz, rr = pa.rad + cap;
@@ -183,7 +187,7 @@
             if (d >= rr + hs * GB.TOUCH || d < 1e-4) continue;
             B.v.divideScalar(d); toWorld(B.w, B.v, th); /* outward */
             const inward = pushK ? -V.want.dot(B.w) / wl : 0;
-            if (drive && !ctx.reduced) {
+            if ((drive || i === aimB) && !ctx.reduced) {
                 touched = i;
                 const h = pressHold(B.pressI === i ? B.press : null, { dt, pushing: inward >= GB.IN, k: ctx.k });
                 B.press = h.s; B.pressI = i; glowI = i; glowP = h.p;
@@ -245,6 +249,28 @@
         const r = ctx && ctx.r; if (r && r.cosmosMin) r.cosmosMin = 0;
         if (was) note('reset');
     }
-    W.LowiGalaxyBubbles = { core, step, camDist, reset,
+    /* misty-explore.js: the bubbles and currents out there in world space right now (currents from where they start flowing) */
+    function targets(ctx) {
+        const g = ctx && ctx.a && scan(ctx.a); if (!g || !B.T) return null;
+        const th = g.rotation.y, T = B.T, w = p => toWorld(new T.Vector3(), p, th);
+        const bubbles = B.others.map((o, i) => ({ i, p: w(o.position), r: o.userData.r }));
+        const streams = B.paths.map((pa, i) => {
+            const A = pa.arr, n = A.length / 3, f = pa.dir > 0, at = k => w(new T.Vector3(A[k * 3], A[k * 3 + 1], A[k * 3 + 2]));
+            const k0 = f ? Math.min(n - 1, 1) : Math.max(0, n - 2), k1 = f ? n - 1 : 0, mid = at(Math.floor(n / 2));
+            return { i, from: at(k0), to: at(k1), mid };
+        });
+        return { bubbles, streams, inside: B.gb, riding: B.riding };
+    }
+    /* one current, flow-ordered, in world space, with the first point where she can get onto it (outside every bubble) */
+    function stream(ctx, i) {
+        const g = ctx && ctx.a && scan(ctx.a), pa = g && B.paths[i]; if (!pa || !B.T) return null;
+        const th = g.rotation.y, T = B.T, A = pa.arr, n = A.length / 3, pts = [];
+        for (let k = 0; k < n; k++) { const j = pa.dir > 0 ? k : n - 1 - k; pts.push(new T.Vector3(A[j * 3], A[j * 3 + 1], A[j * 3 + 2])); }
+        const clear = q => B.others.every(o => q.distanceTo(o.position) > o.userData.r + 1.5);
+        let entry = pts.findIndex(clear); if (entry < 0) entry = Math.floor(n / 3);
+        let end = n - 1; while (end > entry && !clear(pts[end])) end--;
+        return { pts: pts.map(q => toWorld(new T.Vector3(), q, th)), entry, end };
+    }
+    W.LowiGalaxyBubbles = { core, step, camDist, reset, targets, stream,
         state: () => ({ inside: B.gb, riding: B.riding, current: B.cur ? +B.cur.length().toFixed(2) : 0, press: B.press ? +(B.press.t || 0).toFixed(2) : 0, worlds: B.others.length, currents: B.paths.length, floor: B.floor, log: B.log.slice(-8) }) };
 })();

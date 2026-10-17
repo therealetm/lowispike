@@ -159,9 +159,10 @@
             dash.className = 'lv-dash';
             dash.setAttribute('role', 'group');
         }
-        dash.setAttribute('aria-label', tr('dash'));
+        /* write only on change: a same-value write still wakes every observer watching these nodes */
+        if (dash.getAttribute('aria-label') !== tr('dash')) dash.setAttribute('aria-label', tr('dash'));
         if (dash.parentNode !== log) { log.appendChild(dash); last = ''; }
-        D.documentElement.classList.add('lv-on');
+        if (!D.documentElement.classList.contains('lv-on')) D.documentElement.classList.add('lv-on');
         return dash;
     }
     function render() {
@@ -170,8 +171,9 @@
         const sig = JSON.stringify(v) + lang();
         const home = D.getElementById('spHome');
         if (home) {
-            home.style.setProperty('--lv-day', v.dayDone.toFixed(2));
-            home.dataset.lvPeriod = v.period;
+            const day = v.dayDone.toFixed(2);
+            if (home.style.getPropertyValue('--lv-day') !== day) home.style.setProperty('--lv-day', day);
+            if (home.dataset.lvPeriod !== v.period) home.dataset.lvPeriod = v.period;
         }
         dash.dataset.period = v.period;
         if (sig === last) return;

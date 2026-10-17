@@ -136,7 +136,7 @@ function ensureGift(){const hud=D.getElementById('whHud');let b=D.querySelector(
   b.setAttribute('aria-label',L('Misty\'s gift of the day','Mistys Geschenk des Tages','El regalo del día de Misty'));
   b.innerHTML='<span class="hs-gift-core" aria-hidden="true"></span>';hud.appendChild(b);}
  /* iPad: the tab bar is a rail on the left, so the spot sits just right of it */
- try{const tb=D.getElementById('tabbar'),r=tb&&tb.getBoundingClientRect();const rail=r&&r.height>r.width&&r.left<root.innerWidth/3;b.style.setProperty('--hs-gl',rail?Math.round(r.right+16)+'px':'');if(G.pop)G.pop.style.setProperty('--hs-gl',rail?Math.round(r.right+16)+'px':'');}catch(e){}
+ try{const tb=D.getElementById('tabbar'),r=tb&&tb.getBoundingClientRect();const rail=r&&r.height>r.width&&r.left<root.innerWidth/3;const gl=rail?Math.round(r.right+16)+'px':'';/* write only on change */if(b.style.getPropertyValue('--hs-gl')!==gl)b.style.setProperty('--hs-gl',gl);if(G.pop&&G.pop.style.getPropertyValue('--hs-gl')!==gl)G.pop.style.setProperty('--hs-gl',gl);}catch(e){}
  return b;}
 function closeGift(){if(!G.pop)return;clearTimeout(G.t);G.pop.remove();G.pop=null;ensureGift();}
 function openGift(){const now=Date.now();if(G.pop||flying())return;

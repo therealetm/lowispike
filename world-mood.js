@@ -19,11 +19,13 @@
     let cur = { level: 0, tier: 'clear', why: [] }, lastSig = null;
     function apply() {
         const lk = C.look(cur.level);
-        H.dataset.wm = cur.tier;
-        H.style.setProperty('--wm', String(cur.level));
-        H.style.setProperty('--wm-filter', lk.filter);
-        H.style.setProperty('--wm-veil', String(lk.veil));
-        H.style.setProperty('--wm-beat', beat + 's');
+        /* write only on change: a same-value write on <html> still wakes every observer watching its style */
+        const setV = (k, v) => { if (H.style.getPropertyValue(k) !== v) H.style.setProperty(k, v); };
+        if (H.dataset.wm !== cur.tier) H.dataset.wm = cur.tier;
+        setV('--wm', String(cur.level));
+        setV('--wm-filter', lk.filter);
+        setV('--wm-veil', String(lk.veil));
+        setV('--wm-beat', beat + 's');
         D.querySelectorAll('.bw3-stage, .bw3-full').forEach(host => {
             /* the veil sits right above the world picture and below labels, buttons and the top bar (DOM order) */
             let v = host.querySelector(':scope > .wm-veil');

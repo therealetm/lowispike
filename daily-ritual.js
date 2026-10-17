@@ -348,8 +348,10 @@
         if (!c) { c = D.createElement('button'); c.type = 'button'; c.id = 'drChip'; c.className = 'dr-chip'; c.setAttribute('data-dr', 'chip'); c.setAttribute('data-noi18n', ''); const hb = head.querySelector('.sp-habits'); head.insertBefore(c, hb || null); force = true; }
         if (force || c.__h !== html) { c.innerHTML = html; c.__h = html; }
         if (c.getAttribute('aria-label') !== label) { c.setAttribute('aria-label', label); c.title = label; }
-        if (r && r.goal) { const pr = gp(r.goal, activeKeys(), dayKey()); c.classList.toggle('won', !!(pr && pr.reached)); c.style.setProperty('--dr-p', pr ? Math.round(pr.done / pr.n * 100) + '%' : '0%'); }
-        else { c.classList.remove('won'); c.style.setProperty('--dr-p', '0%'); }
+        /* write only on change: a same-value write still queues a mutation record for every observer */
+        const setP = v => { if (c.style.getPropertyValue('--dr-p') !== v) c.style.setProperty('--dr-p', v); };
+        if (r && r.goal) { const pr = gp(r.goal, activeKeys(), dayKey()); c.classList.toggle('won', !!(pr && pr.reached)); setP(pr ? Math.round(pr.done / pr.n * 100) + '%' : '0%'); }
+        else { if (c.classList.contains('won')) c.classList.remove('won'); setP('0%'); }
     }
 
     /* ===== events ===== */

@@ -60,9 +60,18 @@
     function rank(people, kind, now, mine) {
         return (people || []).map(p => Object.assign({ p }, scoreOf(p, kind, now, mine)))
             .filter(x => x.pts > 0)
-            .sort((a, b) => b.pts - a.pts || b.full - a.full || (b.p.lv || 1) - (a.p.lv || 1) || String(a.p.n).localeCompare(String(b.p.n)));
+            .sort((a, b) => b.pts - a.pts || b.full - a.full || shownLevel(b.p) - shownLevel(a.p) || String(a.p.n).localeCompare(String(b.p.n)));
     }
-    const api = { GOAL, TAG, dayKey, periodStart, periodKey, daysSoFar, care, tag, untag, demo, scoreOf, rank };
+    /* levels stop at 6. Demo bots carry the galaxy's companion scale (Mateo 1, Jonas 18, Samir 43); shown here as the
+       matching Misty level from their companion stage (community-galaxy.js stageForLevel: newborn 1 ... fully grown 6). */
+    const MAX_L = 6;
+    function botLevel(lv) { lv = +lv || 1; return 1 + (lv < 3 ? 0 : lv < 7 ? 1 : lv < 13 ? 2 : lv < 20 ? 3 : lv < 30 ? 4 : 5); }
+    function shownLevel(p) {
+        if (!p) return 1;
+        if (p.bot || p.demo) return Math.max(1, Math.min(MAX_L, +p.shownLv || botLevel(p.lv)));
+        return Math.max(1, Math.min(MAX_L, Math.round(+p.lv || 1)));
+    }
+    const api = { GOAL, TAG, MAX_L, dayKey, periodStart, periodKey, daysSoFar, care, tag, untag, demo, scoreOf, rank, botLevel, shownLevel };
     if (typeof module === 'object' && module.exports) module.exports = api;
     root.LowiCareBoard = api;
 })(typeof window !== 'undefined' ? window : globalThis);

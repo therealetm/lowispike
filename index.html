@@ -8934,8 +8934,8 @@ const pal = s => (window.LowiGlass && LowiGlass.palette ? LowiGlass.palette(Stri
 function bubbleHTML(p, size){
   const c = pal(p.s), L = p.lv || 1, sz = size || Math.min(176, 104 + L * 2.6), tier = L >= 20 ? 3 : L >= 10 ? 2 : L >= 5 ? 1 : 0, z = sgn(p.s);
   const fill = L >= 30 ? 1 : .10 + .82 * Math.min(1, (L - 1) / 29);
-  return '<div class="r5-bub t' + tier + (L >= 30 ? ' r5-max' : '') + '" style="--b1:' + c[0] + ';--b2:' + c[1] + ';--sz:' + Math.round(sz) + 'px;--fill:' + (100 - fill * 100).toFixed(0) + '%" aria-label="' + esc((z ? z.n + " bubble, " : "") + "level " + L) + '"><i class="r5-glow"></i><span class="r5-water"><i class="w1"></i><i class="w2"></i></span><i class="r5-shine"></i>' +
-    '<span class="r5-bg">' + (p.avatar ? '<img alt="" src="' + p.avatar + '">' : z ? z.g : esc(p.n.charAt(0))) + '</span><span class="r5-lv num">Lv ' + L + '</span></div>';
+  return '<div class="r5-bub t' + tier + (L >= 30 ? ' r5-max' : '') + '" style="--b1:' + c[0] + ';--b2:' + c[1] + ';--sz:' + Math.round(sz) + 'px;--fill:' + (100 - fill * 100).toFixed(0) + '%" aria-label="' + esc((z ? z.n + " bubble, " : "") + "level " + (window.LowiCareBoard ? LowiCareBoard.shownLevel(p) : L)) + '"><i class="r5-glow"></i><span class="r5-water"><i class="w1"></i><i class="w2"></i></span><i class="r5-shine"></i>' +
+    '<span class="r5-bg">' + (p.avatar ? '<img alt="" src="' + p.avatar + '">' : z ? z.g : esc(p.n.charAt(0))) + '</span><span class="r5-lv num">Lv ' + (window.LowiCareBoard ? LowiCareBoard.shownLevel(p) : L) + '</span></div>';
 }
 const PST = [];
 function openProfile(name, me, push){
@@ -8943,11 +8943,11 @@ function openProfile(name, me, push){
   if (!push) PST.length = 0; PST.push({k:"p", name, me:!!(me || p.me)});
   const nS = z ? all.filter(x => x.s === p.s && x.n !== p.n).length + (p.me ? 0 : (meP().s === p.s ? 1 : 0)) : 0;
   const nT = t ? all.filter(x => x.t === t && x.n !== p.n).length + (p.me ? 0 : (R5.mbti === t ? 1 : 0)) : 0;
-  let title = ""; try { title = titleOf(p.lv); } catch(e){}
+  let title = ""; try { title = titleOf(window.LowiCareBoard ? LowiCareBoard.shownLevel(p) : p.lv); } catch(e){}
   sheet('<button class="xbtn" data-act="close-sheet" aria-label="Close">' + ICO.x + '</button>' + (PST.length > 1 ? '<button class="r5-sback" data-r5="pback" aria-label="Back">' + R5IC.back + '</button>' : "") +
     '<div class="sheetbody r5-prof" id="r5Prof" data-who="' + esc(p.n) + '">' + bubbleHTML(p) +
     '<div class="h2" style="margin-top:14px">' + esc(p.n) + (p.founder ? ' <span class="cm-tag">founder</span>' : "") + (p.bot ? ' <span class="cm-tag r3z-bot">demo bot</span>' : "") + (p.me ? ' <span class="small gold">· you</span>' : "") + '</div>' +
-    '<div class="small muted">Level ' + p.lv + (title ? " · " + esc(title) : "") + ' · ' + (p.streak || 0) + '-day streak</div>' + (p.bio ? '<div class="p r5-bio">' + esc(p.bio) + '</div>' : "") +
+    '<div class="small muted">Level ' + (window.LowiCareBoard ? LowiCareBoard.shownLevel(p) : p.lv) + (title ? " · " + esc(title) : "") + ' · ' + (p.streak || 0) + '-day streak</div>' + (p.bio ? '<div class="p r5-bio">' + esc(p.bio) + '</div>' : "") +
     '<div class="r5-tags">' +
       (z ? '<button class="r5-tag" data-r5="sign" data-v="' + esc(z.n) + '" id="r5SignTag"><span class="r5-tg">' + z.g + '</span><span><b>' + esc(z.n) + '</b><small>' + nS + ' ' + (nS === 1 ? esc(z.n) + ' is' : esc(z.n) + ' are') + ' also members</small></span><span class="dim">›</span></button>'
         : p.me ? '<button class="r5-tag" data-act="setupprofile"><span class="r5-tg">✦</span><span><b>Add your birthday</b><small>Shows your sign and who shares it</small></span></button>' : "") +
@@ -12915,7 +12915,7 @@ function mapHTML(opts){
   opts = opts || {}; const xp = opts.xp != null ? opts.xp : xpNow(), who = opts.who || "", nu = nextUp(xp);
   let rows = ""; for (let n = 1; n <= maxL(); n++) rows += rowHTML(n, xp);
   return '<div class="r3m"' + (who ? ' data-who="' + E(who) + '"' : "") + '>' +
-    '<div class="r3m-hd">' + (who ? "" : '<div class="r3m-bub">' + myBubble(92) + '</div>') + '<h2>' + (who ? E(who) + "'s growth" : "Misty's growth") + '</h2></div>' +
+    '<div class="r3m-hd">' + (who ? "" : '<div class="r3m-bub">' + myBubble(92) + '</div>') + '<h2>' + (who ? E(who) + "'s growth" : "Misty's growth") + ((who && (window.LOWI_BOTS || []).some(b => b.n === who)) ? ' <span class="cm-tag r3z-bot">demo bot</span>' : "") + '</h2></div>' +
     progressHTML(xp, who) +
     (nu && !who ? '<div class="r3m-next"><small>Next up</small><b><span>Level ' + nu.L + '</span><i>\u00b7</i><span>' + E(nu.r[0].t) + '</span></b><span class="num">' + N(startOf(nu.L) - xp) + ' XP to go</span></div>' : "") +
     '<div class="r3m-h3">What each level gives</div>' +
@@ -13219,11 +13219,12 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
   /* Oct 17, 2026: the same three bots as the Community galaxy (LowiGalaxy BOT_KEEP), one low, one medium, one at the
      highest level, so the leaderboard and chat show the range of companion growth. Signs and types match the galaxy. */
   const BOTS = window.LOWI_BOTS = [
-    {n:"Mateo", s:"Libra", t:"INFP", lv:1, xp:0, streak:3, bot:true, c:"#f6b8d8", bio:"Just hatched my companion Nori. Morning stretch, then oats. Day three."},
-    {n:"Jonas", s:"Libra", t:"ISFP", lv:18, xp:0, streak:41, bot:true, c:"#9fd8ff", bio:"Swapping white rice for lentils. Fennel and I are halfway grown."},
-    {n:"Samir", s:"Taurus", t:"INTP", lv:43, xp:0, streak:180, bot:true, c:"#9fd59a", bio:"Learning to love bitter greens. Rune is fully grown and so am I, mostly."}
+    {n:"Mateo", s:"Libra", t:"INFP", lv:1, shownLv:1, xp:0, streak:3, bot:true, c:"#f6b8d8", bio:"Just hatched my companion Nori. Morning stretch, then oats. Day three."},
+    {n:"Jonas", s:"Libra", t:"ISFP", lv:18, shownLv:4, xp:0, streak:41, bot:true, c:"#9fd8ff", bio:"Swapping white rice for lentils. Fennel and I are halfway grown."},
+    {n:"Samir", s:"Taurus", t:"INTP", lv:43, shownLv:6, xp:0, streak:180, bot:true, c:"#9fd59a", bio:"Learning to love bitter greens. Rune is fully grown and so am I, mostly."}
   ];
-  try { BOTS.forEach(b => { b.xp = levelStart(b.lv) + Math.round(stepXP(b.lv) * .4); }); } catch(e){}
+  /* lv is the galaxy's companion scale; shownLv is the matching Misty level (levels stop at 6), used for XP and every level label */
+  try { BOTS.forEach(b => { b.xp = levelStart(b.shownLv) + Math.round(stepXP(b.shownLv) * .4); }); } catch(e){}
   try { BOTS.forEach(b => { if (!CM_MEMBERS.find(m => m.n === b.n)) CM_MEMBERS.push({n:b.n, c:b.c, tag:"demo bot"}); }); } catch(e){}
   const SAY = [["Samir", "Morning check: walked 9k steps yesterday and had bitter greens with lunch. Slow and steady.", 52, {"👏":["Jonas"]}],
     ["Jonas", "Lentils instead of white rice again. Honestly I don't miss it anymore.", 40, {"❤️":["Mateo", "Samir"]}],
@@ -14898,6 +14899,8 @@ function bdayLong(b){ const p = b.split("-").map(Number); const M = ["January","
 
 /* ---------- care by period (Oct 17, 2026): the care board ranks the sunbeams Misty got from you, care-board-core.js ---------- */
 const CB = () => window.LowiCareBoard || null;
+const lvShow = p => { const c = CB(); if (c && c.shownLevel) return c.shownLevel(p); return Math.max(1, Math.min(6, (p && (p.shownLv || p.lv)) || 1)); };
+const botTag = p => (p && (p.bot || p.demo)) ? '<span class="cm-tag r3z-bot">demo bot</span>' : "";
 let careMemo = {k:"", v:null};
 function myCare(){
   const S_ = R2.S() || {}, c = CB(), sun = window.LowiSun, z = {pts:0, full:0, days:0, today:0, key:""};
@@ -14955,7 +14958,7 @@ function bubble(p, size, o){
   const bb = lite ? "" : '<i class="lb3-bb" aria-hidden="true"><b></b><b></b><b></b><b></b><b></b></i>';
   const sg = g && size >= 28 && o.badge !== false ? '<span class="lb3-sg"' + (o.signTap ? ' data-r3="sign" data-sign="' + esc(p.s) + '" role="button" tabindex="0" aria-label="About ' + esc(p.s) + '"' : ' aria-hidden="true"') + '>' + g + '</span>' : "";
   /* Oct 9 (round 3A): the water inside shows level progress: fuller = closer to the next level */
-  let lvl = 0.15, lvN = 1; try { const lo = levelOf(xpOf(p)); lvN = Math.max(lo.L, p.lv || 1); lvl = 0.16 + 0.74 * Math.max(0, Math.min(1, lo.pct || 0)); } catch(e){}
+  let lvl = 0.15, lvN = 1; try { const lo = levelOf(xpOf(p)); lvN = Math.max(lo.L, lvShow(p)); lvl = 0.16 + 0.74 * Math.max(0, Math.min(1, lo.pct || 0)); } catch(e){}
   const lvPct = Math.round(lvl * 100), lvTxt = (p.n || "Member") + (p.s ? ", " + p.s : "") + ", level " + lvN;
   return '<span class="lb3 lb3-glow' + (lite ? " lite" : "") + (o.cls ? " " + o.cls : "") + '" style="' + st + ';--lvl:' + lvPct + '%" role="img" aria-label="' + esc(lvTxt) + '">' +
     '<span class="lb3-in">' + ph + '<i class="lb3-w"></i><i class="lb3-lvl" aria-hidden="true"><i class="lb3-wave"></i><i class="lb3-wave w2"></i></i><i class="lb3-c"></i>' + bb + '<i class="lb3-g"></i></span>' + sg + '</span>';
@@ -15072,7 +15075,7 @@ function tileHTML(x){
     (x.vid ? '<i class="r3-tp-v">' + R2.ico.play + '</i>' : "") + (cap ? '<span class="r3-tp-c">' + esc(cap.slice(0, 60)) + '</span>' : "") + '</button>';
 }
 function levelBlock(p){
-  const xp = xpOf(p); let L = p.lv || 1, pct = 0, left = 0, title = "";
+  const xp = xpOf(p); let L = lvShow(p), pct = 0, left = 0, title = "";
   try { const lv = levelOf(xp); L = Math.max(L, lv.L); pct = lv.pct; left = lv.left; title = titleOf(L); } catch(e){}
   return '<div class="r3-lvcard"><div class="r3-lvtop"><span class="r3-lvb num">Lv ' + L + '</span><b>' + esc(title) + '</b><span class="r3-xp num">' + fmtN(xp) + ' XP</span></div>' +
     '<div class="r3-bar"><i style="width:' + Math.round(Math.max(.03, Math.min(1, pct)) * 100) + '%"></i></div>' +
@@ -15105,7 +15108,7 @@ function sameHTML(s){
   return '<div class="r3-list"><h2>' + gl(s) + ' ' + esc(s) + '</h2><p class="r2-p">' + L.length + (L.length === 1 ? " member" : " members") + ' with this sign</p>' + L.slice(0, 120).map(rowHTML).join("") + '</div>';
 }
 function rowHTML(p){ const bits = detailsBits(p);
-  return '<button class="r3-prow"' + who(p) + '>' + bubble(p, 44) + '<div><b>' + esc(p.n) + (p.me ? ' <em>you</em>' : "") + '</b><small>' + esc(bits.join(" · ") || "Member") + '</small></div><span class="r3-lvs num">Lv ' + (p.lv || 1) + '</span></button>'; }
+  return '<button class="r3-prow"' + who(p) + '>' + bubble(p, 44) + '<div><b>' + esc(p.n) + (p.me ? ' <em>you</em>' : "") + botTag(p) + '</b><small>' + esc(bits.join(" · ") || "Member") + '</small></div><span class="r3-lvs num">Lv ' + lvShow(p) + '</span></button>'; }
 function aboutHTML(s){ const a = ABOUT[s]; if (!a) return ""; const n = sameSign(s).length;
   return '<div class="r3-mp" style="--b1:' + pal(s)[0] + ';--b2:' + pal(s)[1] + ';--b1r:' + rgb(pal(s)[0]) + '"><div class="r3-about solo"><div class="r3-abh"><span class="r3-abg big">' + gl(s) + '</span><div><small>About</small><b>' + esc(s) + '</b><span>' + a[0] + ' sign · ' + a[1] + ' · colour: ' + esc(pal(s)[2]) + '</span></div></div><p>' + esc(a[2]) + '</p>' +
     '<button class="r3-same" data-r3="same" data-sign="' + esc(s) + '"><div><b>Same sign in the community</b><small>' + n + (n === 1 ? " member" : " members") + '</small></div><span>See everyone ' + R2.ico.chev + '</span></button></div></div>'; }
@@ -15129,7 +15132,7 @@ function boardHTML(){
   const k = lbK(), m = me(), L = ranked(k), mi = L.findIndex(x => x.p.me), top = L.slice(0, 50);
   const row = (x, i) => { const p = x.p, bits = detailsBits(p);
     return '<button class="r3-lbrow' + (p.me ? " me" : "") + (i < 3 ? " t" + (i + 1) : "") + '"' + who(p) + '><span class="r3-rk num">' + (i + 1) + '</span>' + bubble(p, 42) +
-      '<div class="r3-lbm"><b>' + esc(p.n) + (p.me ? ' <em>you</em>' : "") + (p.supporter ? '<span class="r3-sup">Supporter</span>' : "") + '</b><small>' + esc(bits.join(" \u00b7 ")) + (bits.length ? " \u00b7 " : "") + 'Lv ' + (p.lv || 1) +
+      '<div class="r3-lbm"><b>' + esc(p.n) + (p.me ? ' <em>you</em>' : "") + (p.supporter ? '<span class="r3-sup">Supporter</span>' : "") + botTag(p) + '</b><small>' + esc(bits.join(" \u00b7 ")) + (bits.length ? " \u00b7 " : "") + 'Lv ' + lvShow(p) +
       (x.full ? ' \u00b7 <span>\u2600 ' + x.full + (x.full === 1 ? " full day" : " full days") + '</span>' : "") + '</small></div>' +
       '<span class="r3-lbx num">' + fmtN(x.pts) + '<small>\u2600</small></span></button>'; };
   return '<div class="r3-lb r3-cb"><h2>Care board</h2><p class="r2-p">Who looks after their companion best. Meals, water, Moves and scans give Misty sunbeams, up to 12 a day.</p>' +

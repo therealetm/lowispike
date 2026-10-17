@@ -78,3 +78,19 @@ test('wired in: the core loads, the offline cache has it, the board and profile 
   /* the compact Community tile now opens Misty's growth */
   assert.ok(h.includes('<b>Misty\\\'s growth</b><small>Forms, glows, adventures</small>') && h.includes('LowiLevels.open({scrollToMe:true})'));
 });
+
+test('bots show a Misty level 1-6 that matches their companion stage, and stay labelled as bots', () => {
+  assert.strictEqual(CB.shownLevel({ n: 'Mateo', lv: 1, bot: true }), 1);
+  assert.strictEqual(CB.shownLevel({ n: 'Jonas', lv: 18, bot: true }), 4);
+  assert.strictEqual(CB.shownLevel({ n: 'Samir', lv: 43, bot: true }), 6);
+  assert.strictEqual(CB.shownLevel({ n: 'Real', lv: 9 }), 6);
+  assert.strictEqual(CB.shownLevel({ n: 'Real', lv: 3 }), 3);
+  const html = R('index.html');
+  assert.match(html, /n:"Mateo"[^}]*lv:1, shownLv:1/);
+  assert.match(html, /n:"Jonas"[^}]*lv:18, shownLv:4/);
+  assert.match(html, /n:"Samir"[^}]*lv:43, shownLv:6/);
+  assert.match(html, /levelStart\(b\.shownLv\)/);
+  assert.match(html, /'Lv ' \+ lvShow\(p\)/);
+  assert.match(html, /botTag\(p\) \+ '<\/b><small>'/);
+  assert.doesNotMatch(html, /'Lv ' \+ \(p\.lv \|\| 1\)/);
+});

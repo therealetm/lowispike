@@ -72,6 +72,9 @@
     /* misty-roam: does she come into the place you are in by herself? Only once the warp and the place's own hero turn have
        finished and the view has been still for K.JOIN s; never with reduced motion. */
     function joinOk(o) { return !!(o && o.inRegion && !o.busy && !o.hero && !o.reduced && (+o.settled || 0) >= K.JOIN); }
+    /* Oct 17 (E-man: "the movement is a bit limited"): inside a world she reaches far out into its corners (was maxD * .32) */
+    const inReach = maxD => Math.max(K.IN_R, (+maxD || 10) * 0.62);
+    const power = () => { try { return W.LowiMistyPower && W.LowiMistyPower.strength ? W.LowiMistyPower.strength() : 1; } catch (e) { return 1; } };
     /* inside a place: she roams on her own unless you are steering her (or let go less than K.HANDBACK s ago) */
     const roams = (mode, idle) => mode !== 'drive' || (+idle || 0) > K.HANDBACK;
     /* autopilot: after K.STAY_IN s inside she heads out to the next place, but never while you are touching the world */
@@ -92,13 +95,13 @@
     }
     /* her roaming pace on screen, px per second: calm, slower when tired, a little quicker on a big screen */
     const roamPx = (k, minSide) => (55 + 85 * clamp(+k || 0, 0, 1)) * clamp((+minSide || 390) / 390, 0.85, 1.6);
-    const core = { K, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, roams, autoLeave, roamSpot, roamPx, pullAt, fallAt };
+    const core = { K, inReach, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, roams, autoLeave, roamSpot, roamPx, pullAt, fallAt };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!D || !D.addEventListener || W.LowiMistyFlight) return;
 
     /* ---------- browser ---------- */
     const H = D.documentElement;
-    const S = { st: 'idle', p: null, v: null, base: 0, ks: 1, hs: 1, held: false, d0: 0, dHome: 0, dolly: 0, flew: null, idle: 0,
+    const S = { scr: { x: 0, y: 0 }, scrT: 0, st: 'idle', p: null, v: null, base: 0, ks: 1, hs: 1, held: false, d0: 0, dHome: 0, dolly: 0, flew: null, idle: 0,
         wob: 0, wobT: 9, wobDir: null, push: 0, pushDir: null, mem: null, patched: false, domT: 0, dom: null, warpT: 0, warpFrom: null, warpTo: null,
         inC: null, inHs: 0, fade: 1, wp: -1, wpWait: 0, t: 0, trail: 0, cell0: null, near: null, ap: 0, entered: 0, log: [] };
     let V = null; /* temp vectors, made once THREE is known */
@@ -209,7 +212,7 @@
     }
     function end(ctx, why) {
         const a = ctx && ctx.a, r = ctx && ctx.r;
-        note('end ' + why);
+        note('end ' + why); S.huntFly = false;
         if (r && a && (why === 'abort' || why === 'home') && !regionsBusy() && curRegion() === 'hub') { r.target.set(0, 0, 0); if (why === 'abort' && S.dHome && S.dollyOut) r.dist = S.dHome; }
         S.st = 'idle'; S.flew = null; S.dolly = 0; hold(false); classes(false, false, false);
         /* autopilot heading out of a place keeps flying: she slips back into her cell and goes on to the next place */
@@ -332,7 +335,11 @@
             const offN = V.a.subVectors(S.p, V.c).length();
             if (offN < K.CR * 0.92 && (mode === 'home' || (V.want.dot(V.a) < 0 && !(ADV() && mode === 'auto')))) { /* adventure: no dipping back into her cell mid-tour */ S.st = 'exit'; S.wob = -0.25; S.wobT = 0; S.wobDir.copy(V.a).normalize(); note('back in'); }
             /* at a place's atmosphere: the tap's own warp takes her in */
-            if (nb && nb.d < K.ENTRY && mode === 'drive' && !regionsBusy()) { startWarp(ctx, nb); return; }
+            if (nb && nb.d < K.ENTRY && mode === 'drive' && !regionsBusy()) {
+                /* misty-hunt: on a weak day the world's pull is weak, she bounces off its edge once or twice before she gets in */
+                if (W.LowiMistyHunt && !W.LowiMistyHunt.gate(norm(nb.id))) { V.a.subVectors(S.p, nb.pos); if (V.a.lengthSq() < 1e-6) V.a.copy(V.fw); V.a.normalize(); S.p.copy(nb.pos).addScaledVector(V.a, K.ENTRY * 1.5); S.v.copy(V.a).multiplyScalar(1.8); S.wob = -0.35; S.wobT = 0; note('bounce ' + nb.id); return; }
+                S.huntFly = true; startWarp(ctx, nb); return;
+            }
             /* the camera follows her, easing in as she nears a place (and giving back your zoom when she leaves it) */
             if (camFree) {
                 if (mode === 'home') { r.target.lerp(V.c, 1 - Math.exp(-dt * 1.6)); r.dist += (S.dHome - r.dist) * Math.min(1, dt * 1.6); }
@@ -510,7 +517,7 @@
         /* in front of you, a little below the middle, about as big as she was at the door */
         S.p.copy(r.target).addScaledVector(V.fw, Math.min(1.1, r.dist * 0.42)).addScaledVector(V.up, -0.15);
         S.inHs = S.base * K.MIN_K / pxPerUnit(a, S.p); S.hs = S.inHs; S.fade = 0; S.v.set(0, 0, 0); S.wp = -1;
-        S.st = 'inside'; S.inT = 0; S.advIn = 0; S.rw = null; S.rwWait = 0; S.rwN = 0; hold(false); classes(true, false, true); note('inside ' + S.flew);
+        S.st = 'inside'; S.inT = 0; S.advIn = 0; /* misty-hunt: getting in by YOUR steering powers her up (once per world per day); a tap or the autopilot does not */ try { if (S.huntFly && W.LowiMistyHunt) W.LowiMistyHunt.entered(S.flew); } catch (e) { } S.huntFly = false; S.rw = null; S.rwWait = 0; S.rwN = 0; hold(false); classes(true, false, true); note('inside ' + S.flew);
         /* adventure: she falls into the world from above, small, growing as she lands (continuous with the pull) */
         S.fallT = -1; if (S.advWarp && !ctx.reduced) { S.fallT = 0; S.fallTo.copy(S.p); S.fade = 0.45; }
         S.advWarp = false;
@@ -553,7 +560,7 @@
         S.p.addScaledVector(S.v, dt);
     }
     function insideFrame(ctx, k, mode, vx, vy, mag, still) {
-        const a = ctx.a, r = ctx.r, dt = ctx.dt, zs = clamp(r.dist / 2.6, 1, 8), inR = Math.max(K.IN_R, (r.maxD || 10) * 0.32);
+        const a = ctx.a, r = ctx.r, dt = ctx.dt, zs = clamp(r.dist / 2.6, 1, 8), inR = inReach(r.maxD);
         /* the place opens on its widest view (body-world-regions.js): her pace and reach scale with how far out you are */
         if (mode === 'home' && !S.recallOut) { padMode(ctx, 'drive'); mode = 'drive'; }
         if (S.fallT >= 0 && S.fallT < K.FALL) {
@@ -589,7 +596,7 @@
             S.rw = null; S.rwWait = 0;
             V.want.set(0, 0, 0);
             V.want.addScaledVector(V.rt, vx).addScaledVector(V.up, vy);
-            S.v.lerp(V.b.copy(V.want).multiplyScalar(speed(k, 'in') * zs), Math.min(1, dt * 4));
+            S.v.lerp(V.b.copy(V.want).multiplyScalar(speed(k, 'in') * zs * power()), Math.min(1, dt * 4));
             S.p.addScaledVector(S.v, dt);
             /* soft edge: right after she roamed far, she is eased back into reach instead of jumping */
             V.a.subVectors(S.p, S.inC); const L = V.a.length(); if (L > inR) S.p.copy(S.inC).addScaledVector(V.a, (L - (L - inR) * Math.min(1, dt * 3)) / L);
@@ -605,10 +612,15 @@
         S.hs = S.base * K.MIN_K / pxPerUnit(a, S.p); /* the size she had at the door, whatever the zoom */
         place(ctx, k, still, S.fade);
         trail(ctx, k, free ? (S.rwWait > 0 ? 0 : 0.5) : mag);
+        /* misty-hunt: the hidden crumbs of this world; only YOUR steering eats them (the autopilot never farms) */
+        try { if (W.LowiMistyHunt) W.LowiMistyHunt.frame(ctx, S.p, !free, inR); } catch (e) { }
+        toScreen(a, S.p, S.scr); S.scrT = performance.now();
     }
 
     W.addEventListener('lowi:world-warp', e => { const d = e && e.detail; if (d && d.phase === 'arrive' && S.st === 'warp' && norm(d.id) === S.flew) S.entered = 1; });
     W.LowiMistyFlight = {
+        /* where she is on screen while inside a world (the explainer cell flies next to her, region-pals.js) */
+        screen: () => (S.st === 'inside' && S.scrT && performance.now() - S.scrT < 400 ? { x: S.scr.x, y: S.scr.y } : null),
         recall: () => { if (S.st === 'idle') { try { if (W.LowiPad) W.LowiPad.mode(''); } catch (e) { } } else S.recallReq = true; },
         wants, frame, core,
         state: () => ({ st: S.st, flew: S.flew, joined: !!S.joined, roam: !!S.rw, inT: +(S.inT || 0).toFixed(1), wpNext: S.wpNext, ap: +S.ap.toFixed(3), near: S.near ? S.near.id : null, nearD: S.near ? +S.near.d.toFixed(2) : null, px: Math.round(S.base), ks: +S.ks.toFixed(3),

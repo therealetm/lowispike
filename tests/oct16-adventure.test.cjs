@@ -70,7 +70,8 @@ test('wiring: no button of its own (started from the controller), other companio
     assert.ok(/if \(m === 'auto'\) A\.start\(\); else if \(A\.on\) A\.stop\('abort'\)/.test(pad));
     assert.ok(/userMode\(st\.mode === 'auto' \? 'drive' : 'auto'\)/.test(pad), 'double-tap toggles through userMode');
     assert.ok(/A\.stop\('recall'\)/.test(pad), 'tapping her empty cell calls her back');
-    assert.ok(/lw-adv'\)\) \{ hide\(\); return null; \}/.test(fs.readFileSync(path.join(ROOT, 'region-pals.js'), 'utf8')));
+    /* Oct 17 (E-man): the explainer cell comes along as Misty's sidekick (it follows LowiMistyFlight.screen()), also on an adventure */
+    assert.ok(/MF\.screen \? MF\.screen\(\)/.test(fs.readFileSync(path.join(ROOT, 'region-pals.js'), 'utf8')));
     assert.ok(/classList\.contains\('lw-adv'\)\) return null;/.test(fs.readFileSync(path.join(ROOT, 'arrival-cards.js'), 'utf8')));
     const mf = fs.readFileSync(path.join(ROOT, 'misty-flight.js'), 'utf8');
     assert.ok(/S\.advWarp \? 1 - 0\.55 \* q : 1 - q/.test(mf), 'during the warp she stays at least 45% visible');

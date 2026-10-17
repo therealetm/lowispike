@@ -78,6 +78,16 @@
         el.style.setProperty('--tilt', C.tilt(st.v) + 'deg');
         el.classList.toggle('rp-flip', st.p[0] > 0.55);
     }
+    /* Misty's sidekick: a little above her and to her side (the side with more room), in host fractions; null = she is not in */
+    function sidekickAt() {
+        const MF = W.LowiMistyFlight, m = MF && MF.screen ? MF.screen() : null, h = st.host; if (!m || !h) return null;
+        const now = performance.now(); if (!st.rect || now - st.rectT > 1000) { st.rect = h.getBoundingClientRect(); st.rectT = now; }
+        const q = st.rect; if (!q || !q.width || !q.height) return null;
+        const fx = (m.x - q.left) / q.width, fy = (m.y - q.top) / q.height;
+        if (fx < -0.1 || fx > 1.1 || fy < -0.1 || fy > 1.1) return null;
+        const side = fx > 0.5 ? -1 : 1;
+        return [Math.max(0.08, Math.min(0.8, fx + side * 0.13 - 0.06)), Math.max(0.12, Math.min(0.74, fy - 0.1))];
+    }
     function loop() {
         st.raf = 0;
         if (!st.el || !st.el.isConnected || D.hidden) return;
@@ -85,7 +95,8 @@
         if (!st.drag && performance.now() > st.steerT) st.off = C.relax(st.off);
         /* frame-rate independent: a slow phone takes up to three spring steps per frame */
         const now = performance.now(), n = Math.max(1, Math.min(3, Math.round((now - (st.lastF || now - 16.7)) / 16.7))); st.lastF = now;
-        for (let k = 0; k < n; k++) { const r = C.step(st.p, st.v, C.target(C.FOLLOW.home, st.off), red ? 0 : t, red); st.p = r.p; st.v = r.v; }
+        const home = sidekickAt() || C.FOLLOW.home;
+        for (let k = 0; k < n; k++) { const r = C.step(st.p, st.v, C.target(home, st.off), red ? 0 : t, red); st.p = r.p; st.v = r.v; }
         place();
         st.raf = requestAnimationFrame(loop);
     }
@@ -107,8 +118,8 @@
     function show(id) {
         id = C.pid(id); const h = host();
         if (!id || !h) { hide(); return null; }
-        /* Oct 16 (E-man): on an adventure HER companion is the one we watch: no other companion pops up to introduce the place */
-        if (D.documentElement.classList.contains('lw-adv')) { hide(); return null; }
+        /* Oct 17 (E-man): the explainer cell is Misty's sidekick now, "like an elf flying next to her": it comes along on an
+           adventure too and flies beside her (sidekickAt), instead of popping up at a fixed spot */
         if (st.el && st.id === id && st.host === h && st.el.isConnected) { sayLine(st.i, false); return st.el; }
         hide();
         const el = build(id); if (!el) return null;

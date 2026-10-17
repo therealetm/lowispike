@@ -187,7 +187,7 @@
             pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
             if (pts.size >= 2 && allowPinch) {
                 const [a, b] = [...pts.values()], d = Math.hypot(a.x - b.x, a.y - b.y);
-                world.zoom(pinchFactor(pinch0, d)); pinch0 = d; moved = 99; e.preventDefault(); return;
+                world.zoom(pinchFactor(pinch0, d), (a.x + b.x) / 2, (a.y + b.y) / 2); pinch0 = d; moved = 99; e.preventDefault(); return;
             }
             if (pts.size !== 1) return;
             const dx = e.clientX - lastX, dy = e.clientY - lastY, dt = Math.max(1, e.timeStamp - lastT);
@@ -212,7 +212,7 @@
             }
         };
         el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
-        if (allowPinch) el.addEventListener('wheel', e => { if (!world) return; e.preventDefault(); world.zoom(e.deltaY > 0 ? 1.08 : 1 / 1.08); }, { passive: false });
+        if (allowPinch) el.addEventListener('wheel', e => { if (!world) return; e.preventDefault(); world.zoom(e.deltaY > 0 ? 1.08 : 1 / 1.08, e.clientX, e.clientY); }, { passive: false });
     }
 
     /* ---------- gyroscope ---------- */

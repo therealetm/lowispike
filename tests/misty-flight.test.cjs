@@ -61,7 +61,7 @@ test('pointing the stick at a place you can see picks it (and ignores places beh
 test('flying into a place uses the tap\'s own warp; a tap on a place still warps you in first (she follows: misty-roam)', () => {
     const js = read('misty-flight.js');
     assert.match(js, /a\.flyTo\(nb\.id\)/, 'same call as a tap on the place (LowiWorld3D.flyTo)');
-    assert.match(js, /mode === 'drive' && !regionsBusy\(\)\) \{ startWarp/, 'steering her into a place still warps on contact');
+    assert.match(js, /mode === 'drive' && !regionsBusy\(\)\) \{[\s\S]{0,600}?startWarp\(ctx, nb\); return;/, 'steering her into a place still warps on contact (after the weak-day bounce check, misty-hunt)');
     assert.match(js, /end\(ctx, 'tapped-away'\)/, 'a tap on a place takes you in first; she comes in by herself after (tests/misty-roam)');
     assert.match(js, /she smiles only when full/, 'her face comes from the same art as the DOM Misty');
 });

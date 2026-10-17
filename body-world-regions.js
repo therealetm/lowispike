@@ -309,7 +309,7 @@
     function applyLook() {
         const a = w3(); if (!look || !a || !a.scene) return;
         if (a.scene.background && a.scene.background.copy) a.scene.background.copy(look.bg);
-        if (a.scene.fog) { a.scene.fog.color.copy(look.bg); a.scene.fog.density = look.fog; }
+        if (a.scene.fog) { a.scene.fog.color.copy(look.bg); a.scene.fog.density = look.fog * (1 + 0.9 * Math.max(0, Math.min(1, +st.murk || 0))); } /* misty-hunt: murk thins as Misty eats */
     }
     function centerOf(id) {
         const a = w3(), THREE = a.THREE, r = (a.regions || []).find(x => x.id === baseId(id));
@@ -512,6 +512,9 @@
         if (st.warp) { try { stepWarp(w, dt); } catch (e) { const q = st.warp; st.warp = null; clean(q); if (q.id !== st.cur) enter(q.id); q.done && q.done(); } }
         if (st.region && st.region.tick) { try { st.region.tick(t, Math.min(0.05, dt || 0.016), reduced()); } catch (e) { } }
         applyLook();
+        /* Oct 17 (E-man: "in some cells we should be able to really zoom in, fly in or fly out"): while you are in a place the camera
+           knows it (body-world-3d-scene.js zoom: closer minimum, the pinch flies toward your fingers, bounded to the place) */
+        const a3 = w3(); if (a3 && a3.rig) a3.rig.place = st.region && st.cur !== 'hub' && !st.warp ? (st.place || (st.place = { c: st.region.group.position.clone(), R: 9 })) : null;
     }
     function hook() {
         if (st.off) return true;
@@ -522,6 +525,7 @@
     function enter(id) {
         const w = wo(); if (!w) return;
         if (st.region) { st.region.dispose(); st.region = null; }
+        st.murk = 0; st.place = null;
         if (id === 'hub') { w.setLook(null); w.setHubVisible(true); }
         else {
             st.tier = st.tier || tier({ w: W.innerWidth, h: W.innerHeight, mem: navigator.deviceMemory, save: navigator.connection && navigator.connection.saveData });

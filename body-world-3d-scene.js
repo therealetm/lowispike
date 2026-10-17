@@ -190,7 +190,8 @@ export function createWorld(THREE, canvas, opts) {
     }
     function drag(dx, dy) { rig.yaw -= dx * 0.0062; rig.pitch += dy * 0.005; rig.vy = -dx * 0.0062; rig.vp = dy * 0.005; rig.idle = 0; }
     function release(vx, vy) { rig.vy = -vx * 0.0062 * 16; rig.vp = vy * 0.005 * 16; }
-    function zoom(f) {
+    const zv = new THREE.Vector3(), zp = new THREE.Vector3(), PLACE_MIN = 0.75;
+    function zoom(f, sx, sy) {
         /* past the World Map (Home only, while rig.outer is on): the same pinch keeps going, like Google Earth, and moves faster the
            farther out it is, so the spirit world is one or two pinches away and not twenty */
         if (rig.mode === 'home' && rig.outer && (rig.dist >= rig.maxD * 0.999 && f > 1 || rig.dist > rig.maxD)) {
@@ -198,7 +199,19 @@ export function createWorld(THREE, canvas, opts) {
             const nd = rig.dist * Math.pow(f, g);
             rig.dist = Math.min(COSMOS.OUT, nd < rig.maxD && f < 1 ? Math.max(rig.minD, Math.max(rig.maxD * 0.999, nd)) : Math.max(rig.minD, nd)); rig.idle = 0; return;
         }
-        rig.dist = Math.min(rig.maxD, Math.max(rig.minD, rig.dist * f)); rig.idle = 0;
+        /* Oct 17: inside a body place you can come much closer, and the pinch flies toward the spot under your fingers (zooming out
+           drifts back to the place's middle), always inside the place: one continuous camera, no jumps */
+        const pl = rig.mode === 'home' && rig.place && rig.place.c ? rig.place : null;
+        rig.dist = Math.min(rig.maxD, Math.max(pl ? Math.min(rig.minD, PLACE_MIN) : rig.minD, rig.dist * f)); rig.idle = 0;
+        if (pl && isFinite(sx) && isFinite(sy) && !rig.fly) {
+            const q = canvas.getBoundingClientRect ? canvas.getBoundingClientRect() : null;
+            if (q && q.width) {
+                zv.set((sx - q.left) / q.width * 2 - 1, -((sy - q.top) / q.height * 2 - 1), 0.5).unproject(camera).sub(camera.position).normalize();
+                zp.copy(camera.position).addScaledVector(zv, camera.position.distanceTo(rig.target));
+                if (f < 1) rig.target.lerp(zp, Math.min(0.5, (1 - f) * 1.2)); else if (f > 1) rig.target.lerp(pl.c, Math.min(0.4, (f - 1) * 0.6));
+                zv.subVectors(rig.target, pl.c); const L = zv.length(); if (L > pl.R) rig.target.copy(pl.c).addScaledVector(zv, pl.R / L);
+            }
+        }
     }
     function setGyro(y, p) { rig.gyT = y; rig.gpT = p; }
     function setGlow(g) { glowT = Math.max(0, Math.min(1, g)); }

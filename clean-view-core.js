@@ -4,7 +4,10 @@
    - autopilot: everything fades, the controller too.
    - steering: everything fades except the controller (you are holding it).
    - restoring never stops the flight and nothing fades again by itself: only a new autopilot start or a new steering
-     move on the controller hides it again. When she goes home, stops, or you leave Home, everything is back. */
+     move on the controller hides it again.
+   - Oct 17 (E-man: "the menu comes back by itself about a second after leaving a world"): nothing comes back by itself
+     either. She leaving a world, floating home, stopping, the autopilot ending or a world warp keep the view clean; only
+     your tap (or a key) brings the menu back. Switching to another tab is the one exception (nothing hidden on another page). */
 (function (root) {
     'use strict';
     /* faded in both views (Home and inside a world). The controller (#whPad + its chip) is extra in autopilot. */
@@ -31,13 +34,14 @@
             s.mode = m;
             if (m === 'auto' && prev !== 'auto') { act = s.clean ? (s.view !== 'auto' ? 'view' : null) : 'hide'; s.clean = true; s.view = 'auto'; }
             else if (m === 'drive') { if (s.clean && s.view !== 'drive') { s.view = 'drive'; act = 'view'; } }
-            else if (!FLY[m]) { if (s.clean) act = 'show'; s.clean = false; s.view = ''; }
+            /* she stopped, went home or left a world: the view stays as it is until you tap (no automatic return) */
+            else if (!FLY[m]) { act = null; }
         } else if (ev.type === 'steer') {
             /* a real steering move on the controller: a drag, a hold or an arrow key */
             if (s.mode !== 'auto') s.mode = 'drive';
             if (!s.clean) act = 'hide'; else if (s.view !== 'drive') act = 'view';
             s.clean = true; s.view = 'drive';
-        } else if (ev.type === 'tap' || ev.type === 'leave') {
+        } else if (ev.type === 'tap' || ev.type === 'leave') {   /* leave = another tab, never a world transition */
             if (s.clean) act = 'show';
             s.clean = false; s.view = '';
             if (ev.type === 'leave') s.mode = ev.mode || '';   /* where she is now: coming back to Home never fades by itself */

@@ -61,8 +61,10 @@
         try { const P = W.LowiPad, s = P && P.state && P.state(); if (s) return (s.pad && s.pad.mode) || s.mode || ''; } catch (e) { }
         return null;
     }
+    /* Home is the screen (its tab is active). Flying out of a world, into a place, into the spirit world (wh-cosmos) or a
+       warp is still Home: only a real switch to another tab counts as leaving, so no world transition restores the menu. */
     function onHome() {
-        if (!H.classList.contains('wh-home') || H.classList.contains('wh-cosmos')) return false;
+        if (!H.classList.contains('wh-home')) return false;
         const t = D.getElementById('tab-home');
         return !t || !t.classList || t.classList.contains('active');
     }

@@ -39,11 +39,19 @@ test('core: steering fades everything except the controller; a new steering move
     assert.equal(d.s.view, 'drive'); assert.equal(C.padLive(d.s), true);
 });
 
-test('core: everything is back when she goes home, stops or you leave Home; coming back does not fade it again', () => {
+test('core: the menu never comes back by itself (she leaves a world, goes home, stops); only a tap or another tab restores', () => {
     for (const m of ['', 'home']) {
         const r = run([{ type: 'mode', mode: 'auto' }, { type: 'mode', mode: m }]);
-        assert.deepEqual(r.acts, ['hide', 'show']); assert.equal(r.s.clean, false);
+        assert.deepEqual(r.acts, ['hide', null], 'no automatic return when the flight ends: ' + JSON.stringify(m)); assert.equal(r.s.clean, true);
+        const t = run([{ type: 'tap' }], r.s);
+        assert.deepEqual(t.acts, ['show'], 'your tap brings it back'); assert.equal(t.s.clean, false);
+        const d = run([{ type: 'steer' }, { type: 'mode', mode: m }, { type: 'mode', mode: m }]);
+        assert.deepEqual(d.acts, ['hide', null, null], 'steering, then she floats home: still clean'); assert.equal(C.padLive(d.s), true, 'the controller stays usable');
     }
+    /* leaving a world on autopilot: auto -> '' -> auto again (she goes on to the next place) never flashes the menu */
+    const w = run([{ type: 'mode', mode: 'auto' }, { type: 'mode', mode: '' }, { type: 'mode', mode: 'auto' }, { type: 'mode', mode: 'drive' }]);
+    assert.deepEqual(w.acts, ['hide', null, null, 'view']);
+    assert.equal(w.s.clean, true);
     const l = run([{ type: 'mode', mode: 'auto' }, { type: 'leave', mode: 'auto' }, { type: 'mode', mode: 'auto' }]);
     assert.deepEqual(l.acts, ['hide', 'show', null], 'back on Home while she still flies: no surprise fade');
     assert.equal(C.isTap(4, 200), true); assert.equal(C.isTap(14, 200), false); assert.equal(C.isTap(2, 600), false);
@@ -175,6 +183,49 @@ test('steering: a still press on the world reveals before the long press opens h
     assert.ok(f.cls.has('lw-clean'));
     f.cls.delete('wh-home'); f.W.LowiClean.check();
     assert.ok(!f.cls.has('lw-clean'), 'never leaks to another screen');
+});
+
+test('leaving a world: no automatic return a second later; world transitions and release touches never restore; only a tap does', () => {
+    const f = fakeWorld();
+    f.setMode('auto');
+    assert.ok(f.cls.has('lw-clean'));
+    /* she flies out of a world: misty-flight ends the inside flight (lowi:pad mode ''), the controller goes idle */
+    f.W.dispatchEvent({ type: 'lowi:pad', detail: { mode: '' } });
+    f.pad.dataset.mode = 'idle'; f.W.LowiClean.check();
+    f.flush(1200); f.W.LowiClean.check();
+    assert.ok(f.cls.has('lw-clean'), 'still hidden about a second after leaving the world');
+    /* the camera following her out into the spirit world, a warp, the adventure ending: still Home, still hidden */
+    f.cls.add('wh-cosmos'); f.W.LowiClean.check();
+    f.W.dispatchEvent({ type: 'lowi:adventure', detail: { on: false, why: 'left' } });
+    f.W.dispatchEvent({ type: 'lowi:autopilot', detail: { on: false } });
+    f.flush(1000);
+    assert.ok(f.cls.has('lw-clean'), 'world transitions never bring the menu back');
+    f.cls.delete('wh-cosmos');
+    /* she floats home and slips into her cell */
+    f.pad.dataset.mode = 'home'; f.W.LowiClean.check(); f.pad.dataset.mode = 'idle'; f.W.LowiClean.check(); f.flush(25000); f.W.LowiClean.check();
+    assert.ok(f.cls.has('lw-clean'));
+    /* your tap: everything is back, and that tap does nothing else */
+    const d = f.ev('pointerdown', f.water, { pointerId: 9 });
+    assert.ok(d.stopped, 'the reveal tap is swallowed');
+    assert.ok(!f.cls.has('lw-clean') && !f.cls.has('lw-clean-auto'));
+    f.ev('pointerup', f.water, { pointerId: 9 }); f.flush(600);
+    /* steering, letting go of the controller (a release touch) and she stops: still hidden, controller still works */
+    f.ev('pointerdown', f.pad, { pointerId: 10, clientX: 50, clientY: 50 }); f.pad.dataset.mode = 'drive';
+    f.ev('pointermove', f.pad, { pointerId: 10, clientX: 80, clientY: 50 });
+    assert.ok(f.cls.has('lw-clean'));
+    f.ev('pointerup', f.pad, { pointerId: 10 }); f.pad.dataset.mode = 'idle'; f.flush(1500); f.W.LowiClean.check();
+    assert.ok(f.cls.has('lw-clean'), 'letting go never restores it');
+    assert.ok(!f.ev('pointerdown', f.pad, { pointerId: 11 }).stopped, 'the controller is still yours');
+    f.ev('pointerup', f.pad, { pointerId: 11 }); f.flush(600);
+    /* another tab: nothing hidden leaks to another page */
+    f.cls.delete('wh-home'); f.W.LowiClean.check();
+    assert.ok(!f.cls.has('lw-clean'));
+});
+
+test('the cell guide and Misty\'s speech are never part of the fade', () => {
+    const bare = C.HIDE.concat(C.HIDE_AUTO).join(' ').replace(/:not\([^)]*\)/g, '');
+    assert.ok(!/\.rp-|#mhNudge|#spBubble/.test(bare));
+    assert.ok(C.KEEP.includes('.rp-body') && C.KEEP.includes('.rp-say'));
 });
 
 test('movement bubble stays anchored to her HOME cell while the camera follows her flight', () => {

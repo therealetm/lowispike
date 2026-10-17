@@ -469,6 +469,8 @@
             S.p.addScaledVector(S.v, dt);
             /* galaxy breakout: push long enough on the edge of your world and it gives way (misty-galaxy.js); otherwise the edge holds */
             if (!(GX && GX.step(ctx, S, V, mode, mag, K))) { const L = S.p.length(); if (L > K.ROAM) { S.p.multiplyScalar(K.ROAM / L); const out = S.v.dot(V.b.copy(S.p).normalize()); if (out > 0) S.v.addScaledVector(V.b, -out); } }
+            /* misty-bump.js: the bloodstream's cells can bump her (true 3D contact) or, on autopilot, be dodged */
+            if (W.LowiMistyBump && !S.gx && !S.gxBack) { try { W.LowiMistyBump.step(ctx, S, mode, K); } catch (e) { } }
             /* back into her own cell */
             const offN = V.a.subVectors(S.p, V.c).length();
             if (offN < K.CR * 0.92 && (mode === 'home' || (V.want.dot(V.a) < 0 && !(ADV() && mode === 'auto')))) { /* adventure: no dipping back into her cell mid-tour */ S.st = 'exit'; S.wob = -0.25; S.wobT = 0; S.wobDir.copy(V.a).normalize(); note('back in'); }
@@ -502,6 +504,7 @@
         S.hs = S.base * S.ks / pxPerUnit(a, S.p);
         place(ctx, k, still, S.emerge > 0 || S.fade < 1 ? (S.fade = Math.min(1, S.fade + dt * 0.7)) : 1);
         if (S.st === 'free') turnDraw(ctx, S.fade);
+        if (S.st === 'free' && W.LowiMistyBump) { try { W.LowiMistyBump.draw(ctx, S, still); } catch (e) { } } /* misty-bump.js: dizzy after a bump, a flinch on a near miss */
         bubbleFollow(a);
         trail(ctx, k, mode === 'drive' ? mag : 0.6);
     }

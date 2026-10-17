@@ -85,6 +85,7 @@ export function createWorld(THREE, canvas, opts) {
         rb.push({ x: (rnd() * 2 - 1) * 40, y, z, s: 0.75 + rnd() * 0.5, v: 0.55 + rnd() * 0.5 + (1 - rr / VR) * 0.6, ax: rnd() * 6, ay: rnd() * 6, w: (rnd() - 0.5) * 0.8 });
     }
     scene.add(rbc);
+    rbc.name = 'lowi-rbc'; rbc.userData.cells = rb; /* misty-bump.js reads the cells' flow (true 3D contact with Misty) and knocks a bumped cell into a new lane */
     /* a few white cells and platelets */
     const wbcMat = new THREE.MeshStandardMaterial({ color: '#e8eef8', roughness: 0.7, emissive: '#7d8fb8', emissiveIntensity: 0.25 });
     const wbcs = [];

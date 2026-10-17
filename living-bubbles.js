@@ -150,7 +150,10 @@
     }
     function homeShown() {
         if (!H.classList.contains('wh-home') || !H.classList.contains('wh-world-live')) return false;
-        if (/(^|\s)(wh-away|wh-cosmos|wb-on)(\s|$)/.test(H.className)) return false;
+        /* Oct 17 (Emmanuel, inside the heart world: "that's still the old design ... not the water liquid design that we had going on
+           in the homepage"): inside a cell world (wh-away) the same membrane is drawn around whatever control is still shown there,
+           so nothing drops back to the old flat glass shell. Each control's own visibility still decides (effOpacity). */
+        if (/(^|\s)(wh-cosmos|wb-on)(\s|$)/.test(H.className)) return false;
         try { if (W.LowiWorld3D && W.LowiWorld3D.isOpen && W.LowiWorld3D.isOpen()) return false; } catch (e) {}
         const t = D.getElementById('tab-home'); return !t || t.classList.contains('active');
     }

@@ -596,7 +596,12 @@
                 st.farGo = Date.now(); try { if (W.goTab) W.goTab('foryou'); } catch (e) { }
             }
             /* One world: while Home travels to a place (and stays there), Misty's cell, water and fasting step aside */
-            const aw = awayHome(); if (H.classList.contains('wh-away') !== aw) { H.classList.toggle('wh-away', aw); syncX(); }
+            const aw = awayHome(); if (H.classList.contains('wh-away') !== aw) {
+                H.classList.toggle('wh-away', aw);
+                /* Oct 17 (Emmanuel: no Home panels inside a cell world): Today never rides along into a world */
+                if (aw && st.today) { try { openToday(false); } catch (e) { } }
+                syncX();
+            }
             const k = Math.max(0.12, Math.min(1.4, (r.homeDist || 3.2) / Math.max(0.1, r.dist))), kv = k.toFixed(3);
             if (kv !== st.mz) { st.mz = kv; const b = D.getElementById('spBubble'); if (b) b.style.setProperty('--wh-mz', kv); H.classList.toggle('wh-mapview', k < 0.6); }
             if (++st.zf % 20 === 0) { paintZoom(); paintHint(); }

@@ -24,6 +24,8 @@
         el.textContent = hideSel + ' { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; transition: opacity .45s ease, visibility 0s linear .45s !important; }\n' +
             outSel + ' { transition: opacity .3s ease, visibility 0s !important; }\n' +
             '@media (prefers-reduced-motion: reduce) {\n' + hideSel + ',\n' + outSel + ' { transition: none !important; }\n}\n' +
+            /* inside a cell world Home's menus and panels are never shown (clean-view-core.js WORLD_HIDE), whatever the clean state */
+            C.worldCss() + ' { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; transition: opacity .3s ease, visibility 0s linear .3s !important; }\n' +
             '.lw-clean-sr { position: fixed; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; left: 0; top: 0; }\n';
         (D.head || H).appendChild(el);
     }

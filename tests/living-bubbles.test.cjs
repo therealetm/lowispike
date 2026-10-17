@@ -32,7 +32,8 @@ test('no new loop, no new WebGL context, drawn on top of the world, hidden off H
     assert.ok(!/requestAnimationFrame\(/.test(js), 'no own animation loop');
     assert.ok(!/getContext\(|new\s+\w*\.?WebGLRenderer/.test(js), 'no own WebGL context');
     assert.ok(js.includes('depthTest: false') && js.includes('renderOrder = 20'));
-    assert.ok(js.includes("(wh-away|wh-cosmos|wb-on)") && js.includes('isOpen()'), 'off when you leave Home or open the full 3D world');
+    assert.ok(js.includes("(wh-cosmos|wb-on)") && js.includes('isOpen()'), 'off when you leave Home or open the full 3D world');
+    assert.ok(!js.includes("(wh-away|"), 'inside a cell world the living membrane stays (no fallback to the old flat shell)');
     assert.ok(js.includes('userData.lwKeep = true'), 'stays when you are inside a world');
 });
 

@@ -107,6 +107,7 @@
     function redCells(THREE, n, r, area, color) {
         const geo = new THREE.SphereGeometry(0.42, 12, 8); geo.scale(1, 0.38, 1);
         const st = []; const m = inst(THREE, geo, lambert(THREE, color || 0xc8324a, 0x7a1830, 0.45), n, (o, i) => { const v = area(i); st.push({ p: v, a: r() * 6.28, s: 0.4 + r() * 0.8 }); o.position.set(v[0], v[1], v[2]); o.rotation.set(r() * 3, r() * 3, 0); });
+        m.userData.flow = st; m.userData.flowR = 0.42; /* solids: moving cells bump Misty in 3D (world-solids.js) */
         return { mesh: m, st };
     }
 
@@ -207,7 +208,7 @@
             for (let i = 0; i < c.microbes; i++) {
                 const col = hues[i % hues.length], t = texCanvas(THREE, 96, (x, s) => { const gr = x.createRadialGradient(s / 2, s / 2, s * 0.18, s / 2, s / 2, s / 2); gr.addColorStop(0, col); gr.addColorStop(0.62, col); gr.addColorStop(0.64, 'rgba(255,255,255,.55)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = gr; x.beginPath(); x.ellipse(s / 2, s / 2, s * 0.44, s * 0.36, 0, 0, 7); x.fill(); x.fillStyle = '#0b102a'; x.beginPath(); x.arc(s * 0.4, s * 0.46, s * 0.05, 0, 7); x.arc(s * 0.6, s * 0.46, s * 0.05, 0, 7); x.fill(); });
                 const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, depthWrite: false })); const a = r() * 6.28, rad = 3.5 + r() * 6;
-                sp.position.set(Math.cos(a) * rad, Math.sin(a) * rad, -3 - r() * 12); sp.scale.setScalar(1.3 + r() * 0.6); sp.userData = { y: sp.position.y, p: r() * 6 }; bugs.push(sp); g.add(sp);
+                sp.position.set(Math.cos(a) * rad, Math.sin(a) * rad, -3 - r() * 12); sp.scale.setScalar(1.3 + r() * 0.6); sp.userData = { y: sp.position.y, p: r() * 6, bump: 0.32 /* solids: microbes bump Misty */ }; bugs.push(sp); g.add(sp);
             }
             return { group: g, bugs, tick(t, dt) { const a = food.geometry.attributes.position; for (let i = 0; i < a.count; i++) { let z = a.getZ(i) + dt * 1.4; if (z > 30) z = -30; a.setZ(i, z); } a.needsUpdate = true; bugs.forEach(b => { b.position.y = b.userData.y + Math.sin(t * 1.3 + b.userData.p) * 0.35; }); } };
         },

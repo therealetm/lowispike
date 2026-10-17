@@ -410,6 +410,7 @@
             S.p.addScaledVector(S.v, dt);
             /* galaxy breakout: push long enough on the edge of your world and it gives way (misty-galaxy.js); otherwise the edge holds */
             if (!(GX && GX.step(ctx, S, V, mode, mag, K))) { const L = S.p.length(); if (L > K.ROAM) { S.p.multiplyScalar(K.ROAM / L); const out = S.v.dot(V.b.copy(S.p).normalize()); if (out > 0) S.v.addScaledVector(V.b, -out); } }
+            solidHit(ctx, k, still, true, mode === 'auto'); /* Oct 17 solids: the gray blood cells bump her when they really meet her in 3D */
             /* back into her own cell */
             const offN = V.a.subVectors(S.p, V.c).length();
             if (offN < K.CR * 0.92 && (mode === 'home' || (V.want.dot(V.a) < 0 && !(ADV() && mode === 'auto')))) { /* adventure: no dipping back into her cell mid-tour */ S.st = 'exit'; S.wob = -0.25; S.wobT = 0; S.wobDir.copy(V.a).normalize(); note('back in'); }
@@ -533,6 +534,26 @@
         V.b.copy(S.p).addScaledVector(V.up, -0.25 * S.hs); ctx.burst(V.b, 1 + Math.round(2 * k), 0.12 * Math.max(0.3, S.hs));
     }
     /* draw her: position, size, tilt, energy tint (the face comes from the DOM Misty's art: she smiles only when full) */
+    /* Oct 17 solids: one call into world-solids.js after she moved. A real knock gives a small squash and a few sparks
+       (bounded, cooled down, none with reduced motion); no energy or health penalty, ever. */
+    function solidHit(ctx, k, still, hub, free) {
+        const LS = W.LowiWorldSolids; if (!LS || !LS.misty || !S.p || !S.v) return;
+        const dt = ctx.dt || 0.016, rad = clamp((S.hs || 0.5) * 0.3, 0.06, 1.6);
+        S.bumpCd = Math.max(0, (S.bumpCd || 0) - dt);
+        let h = null; try { h = LS.misty(S.p, S.v, rad, { hub }); } catch (e) { h = null; }
+        if (!h) { S.blockT = 0; return; }
+        S.blockT = (S.blockT || 0) + dt;
+        /* autopilot: pressing on a wall for over a second? pick another spot instead of grinding (no loops, no trapped spawns) */
+        if (free && !hub && S.blockT > 1.2) { S.rw = null; S.rwWait = 0; S.blockT = 0; }
+        if (h.impact > (h.kind === 'cell' ? Math.max(0.25, rad * 0.8) : rad * 2.2) && S.bumpCd <= 0) { /* a passing cell knocks softer than a wall */
+            S.bumpCd = 0.45;
+            if (!still) {
+                S.bumpK = clamp(h.impact / (rad * 9), 0.35, 1);
+                try { V.q.set(S.p.x - h.n[0] * rad, S.p.y - h.n[1] * rad, S.p.z - h.n[2] * rad); ctx.burst(V.q.clone(), Math.round(3 + 4 * S.bumpK), 0.2 * (S.hs || 0.5)); } catch (e) { }
+            }
+            S.bumps = (S.bumps || 0) + 1;
+        }
+    }
     function place(ctx, k, still, alpha) {
         const wand = ctx.wand; if (!wand.material.map) alpha = 0; /* never a blank square before her art is ready */
         /* Oct 17: she is the one you see in every world; if anything parked her on a hidden layer, she comes back */
@@ -543,7 +564,9 @@
         const xp = S.st === 'inside' ? S.exP || 0 : 0;
         if (xp > 0 && !still) wand.position.addScaledVector(V.rt, Math.sin(S.t * 47) * 0.02 * S.hs * xp).addScaledVector(V.up, Math.cos(S.t * 39) * 0.012 * S.hs * xp);
         const br = still ? 1 : 1 + Math.sin(S.t * 2.2) * 0.02;
-        wand.scale.set(S.hs * 260 / 310 * br, S.hs * br, 1);
+        if (S.bumpK > 0) S.bumpK = Math.max(0, S.bumpK - (ctx.dt || 0.016) * 4); /* solids: the knock's squash fades in ~0.25 s */
+        const bk = still ? 0 : (S.bumpK || 0);
+        wand.scale.set(S.hs * 260 / 310 * br * (1 + 0.14 * bk), S.hs * br * (1 - 0.12 * bk), 1);
         const lean = still ? 0 : clamp(-S.v.dot(V.rt) * 0.06, -0.3, 0.3);
         wand.material.rotation = (still ? 0 : Math.sin(S.t * 0.9) * 0.08) - (1 - k) * 0.18 + lean - (xp > 0 ? (S.exVx || 0) * 0.28 * xp : 0);
         if (wand.material.color) wand.material.color.setRGB(1, 0.78 + 0.22 * k, 0.78 + 0.22 * k);
@@ -763,6 +786,9 @@
             /* world-exit: keep pushing outward at the edge for 3 s and you both fly out */
             if (exitCheck(ctx, k, mode, vx, vy, mag, inR)) return;
         }
+        /* Oct 17 solids ("I can just float through it like a ghost"): fibres, walls and floating cells are physical now; she slides
+           along them and bounces off, never through. Steering, the move/turn-the-world navigation and the autopilot are unchanged. */
+        solidHit(ctx, k, still, false, free);
         /* the camera keeps her in view once the place has settled (its own hero turn first) */
         const WH = W.LowiWorldHome, heroBusy = !!(WH && WH.state && WH.state.heroAnim);
         if (!free && !r.fly && !heroBusy && !regionsBusy()) {
@@ -1009,6 +1035,6 @@
         recall: () => { if (S.st === 'idle') { try { if (W.LowiPad) W.LowiPad.mode(''); } catch (e) { } } else S.recallReq = true; },
         wants, frame, core,
         state: () => ({ st: S.st, flew: S.flew, joined: !!S.joined, roam: !!S.rw, inT: +(S.inT || 0).toFixed(1), wpNext: S.wpNext, ap: +S.ap.toFixed(3), near: S.near ? S.near.id : null, nearD: S.near ? +S.near.d.toFixed(2) : null, px: Math.round(S.base), ks: +S.ks.toFixed(3),
-            hs: +S.hs.toFixed(3), exP: +(S.exP || 0).toFixed(3), exE: +(S.exE || 0).toFixed(2), exO: +(S.exO || 0).toFixed(2), mist: !!S.inMist, lost: +(S.lost || 0).toFixed(2), exLost: !!S.exLost, mistAng: S.mistAng == null ? null : +S.mistAng.toFixed(2), gaps: S.flew ? exitGaps(S.flew).map(g => +g.a.toFixed(2)) : null, autoX: S.autoX ? S.autoX.ph : null, orb: S.orb ? { q: +S.orb.q.toFixed(2), tries: S.orb.tries, fling: S.orb.fling > 0 } : null, outPh: S.st === 'out' ? S.oPh : null, push: S.mem && w3() && w3().memU && w3().memU.uPushA ? +w3().memU.uPushA.value.toFixed(3) : 0, p: S.p ? [+S.p.x.toFixed(2), +S.p.y.toFixed(2), +S.p.z.toFixed(2)] : null, log: S.log.slice(-12) })
+            hs: +S.hs.toFixed(3), bumps: S.bumps || 0, exP: +(S.exP || 0).toFixed(3), exE: +(S.exE || 0).toFixed(2), exO: +(S.exO || 0).toFixed(2), mist: !!S.inMist, lost: +(S.lost || 0).toFixed(2), exLost: !!S.exLost, mistAng: S.mistAng == null ? null : +S.mistAng.toFixed(2), gaps: S.flew ? exitGaps(S.flew).map(g => +g.a.toFixed(2)) : null, autoX: S.autoX ? S.autoX.ph : null, orb: S.orb ? { q: +S.orb.q.toFixed(2), tries: S.orb.tries, fling: S.orb.fling > 0 } : null, outPh: S.st === 'out' ? S.oPh : null, push: S.mem && w3() && w3().memU && w3().memU.uPushA ? +w3().memU.uPushA.value.toFixed(3) : 0, p: S.p ? [+S.p.x.toFixed(2), +S.p.y.toFixed(2), +S.p.z.toFixed(2)] : null, log: S.log.slice(-12) })
     };
 })();

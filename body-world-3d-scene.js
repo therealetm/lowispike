@@ -75,6 +75,7 @@ export function createWorld(THREE, canvas, opts) {
     const rbc = new THREE.InstancedMesh(rbcGeo, rbcMat, RBC);
     rbc.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     const rb = [];
+    rbc.userData.hubFlow = rb; rbc.userData.hubFlowR = 0.42; /* solids: the gray blood cells are real 3D bodies that bump Misty (world-solids.js) */
     let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
     for (let i = 0; i < RBC; i++) {
         let y, z, rr;
@@ -85,7 +86,7 @@ export function createWorld(THREE, canvas, opts) {
     /* a few white cells and platelets */
     const wbcMat = new THREE.MeshStandardMaterial({ color: '#e8eef8', roughness: 0.7, emissive: '#7d8fb8', emissiveIntensity: 0.25 });
     const wbcs = [];
-    for (let i = 0; i < (small ? 3 : 5); i++) { const m = new THREE.Mesh(new THREE.IcosahedronGeometry(0.55, 2), wbcMat); const a = rnd() * 6.28, d = 4 + rnd() * 8; m.position.set((rnd() * 2 - 1) * 40, Math.cos(a) * d, Math.sin(a) * d); m.userData.v = 0.35 + rnd() * 0.2; scene.add(m); wbcs.push(m); }
+    for (let i = 0; i < (small ? 3 : 5); i++) { const m = new THREE.Mesh(new THREE.IcosahedronGeometry(0.55, 2), wbcMat); const a = rnd() * 6.28, d = 4 + rnd() * 8; m.position.set((rnd() * 2 - 1) * 40, Math.cos(a) * d, Math.sin(a) * d); m.userData.v = 0.35 + rnd() * 0.2; m.userData.hubBump = 0.55; scene.add(m); wbcs.push(m); }
     const platMat = new THREE.MeshStandardMaterial({ color: '#d9e3f1', roughness: 0.6, emissive: '#7f97bf', emissiveIntensity: 0.3 });
     const PLT = small ? 30 : 50, plat = new THREE.InstancedMesh(new THREE.SphereGeometry(0.09, 6, 4), platMat, PLT), pl = [];
     plat.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
@@ -548,6 +549,8 @@ export function createWorld(THREE, canvas, opts) {
         const yaw = rig.yaw + rig.gy, pitch = Math.max(-1.35, Math.min(1.35, rig.pitch + rig.gp));
         camera.position.set(rig.target.x + rig.dist * Math.cos(pitch) * Math.sin(yaw), rig.target.y + rig.dist * Math.sin(pitch), rig.target.z + rig.dist * Math.cos(pitch) * Math.cos(yaw));
         camera.lookAt(rig.target);
+        /* Oct 17 solids: inside a world the camera never slips into a fibre/wall (that is what made them vanish up close) */
+        const LWS = window.LowiWorldSolids; if (LWS && LWS.camera) LWS.camera(camera, rig.target, dt);
         /* flow */
         for (let i = 0; i < RBC; i++) {
             const c = rb[i]; c.x += c.v * wdt; if (c.x > 40) c.x -= 80;

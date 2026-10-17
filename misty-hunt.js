@@ -194,6 +194,8 @@
             if (done.includes(p.i)) continue;
             const m = new T.SpriteMaterial({ map: tex[p.kind], transparent: true, depthWrite: false, fog: true, opacity: 0.6 });
             const sp = new T.Sprite(m), q = new T.Vector3(p.x, p.y, p.z).multiplyScalar(p.rad * reach);
+            /* Oct 17 solids: a crumb that would sit inside a fibre / wall moves just outside it, so every crumb stays reachable (count unchanged) */
+            try { if (W.LowiWorldSolids) W.LowiWorldSolids.clearPoint(reg, q, 0.5); } catch (e) { }
             sp.position.copy(q); sp.scale.setScalar(0.5); sp.renderOrder = 3;
             const mm = new T.SpriteMaterial({ map: tex.murk, transparent: true, depthWrite: false, fog: true, opacity: 0.5 });
             const cloud = new T.Sprite(mm); cloud.position.copy(q); cloud.scale.setScalar(2.4); cloud.renderOrder = 2;

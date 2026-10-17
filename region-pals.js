@@ -107,7 +107,12 @@
     function nextUnseen() { const k = C.nextFact(st.lines.length, seen[st.id], 1); return k == null ? (st.i + 1) % st.lines.length : k; }
 
     /* ---------- the bubble never sits on the Daily Quest, the top row, the controls, the tab bar or Misty ---------- */
-    const AVOID = '#f3Board, #tab-home .sp-top, #whHud button, #whHud .wh-water, #spFast, #whPad, #tabbar, .wh-hint.wh-say, #lpPraise.on, .bw3-full button, [data-guide-avoid]';
+    const AVOID = '#f3Board, #hcLine.on, #hqSlot.arr-on, #tab-home .sp-top, #whHud button, #whHud .wh-water, #spFast, #whPad, #tabbar, .wh-hint.wh-say, #lpPraise.on, .bw3-full button, [data-guide-avoid]';
+    /* clean flight view (Oct 17, handoff item 7): while Misty flies, the Daily Quest band and the controller only fade (layout
+       stays) and one tap brings them back. So the bubble keeps clear of where they are even while they are faded: a reveal tap
+       never finds the bubble sitting on the Daily Quest. */
+    const FADED_KEEP_CLEAR = '#f3Board, #hcLine.on:not(.hc-away), #hqSlot.arr-on, #whPad';
+    const cleanOn = () => H.classList.contains('lw-clean');
     function visible(e) {
         try { if (e.checkVisibility && !e.checkVisibility({ opacityProperty: true, visibilityProperty: true })) return false; } catch (x) { }
         const cs = getComputedStyle(e); return cs.visibility !== 'hidden' && cs.display !== 'none' && +cs.opacity > 0.05;
@@ -118,8 +123,8 @@
         D.querySelectorAll(AVOID).forEach(e => {
             if (st.el && st.el.contains(e)) return;
             const q = e.getBoundingClientRect(); if (q.width < 4 || q.height < 4 || q.bottom < 0 || q.top > vh || q.right < 0 || q.left > vw) return;
-            if (!visible(e)) return;
-            out.push({ l: q.left - 6, t: q.top - 6, r: q.right + 6, b: q.bottom + 6, w: e.id === 'f3Board' ? 5 : 2, k: e.id || '' });
+            if (!visible(e) && !(cleanOn() && e.matches && e.matches(FADED_KEEP_CLEAR))) return;
+            out.push({ l: q.left - 6, t: q.top - 6, r: q.right + 6, b: q.bottom + 6, w: C.QUEST_IDS.indexOf(e.id) >= 0 ? C.QUEST_W : 2, k: e.id || '' });
         });
         st.obs = out; st.obsT = now; return out;
     }
@@ -134,9 +139,11 @@
         const obs = obstacles().slice();
         const MF = W.LowiMistyFlight, m = MF && MF.screen ? MF.screen() : null;
         if (m) obs.push({ l: m.x - 46, t: m.y - 46, r: m.x + 46, b: m.y + 46, w: 4 });
-        obs.push({ l: pal.x - 30, t: pal.y - 30, r: pal.x + 30, b: pal.y + 30, w: 2 }); /* never over the guide that is talking */
+        const orb = st.side ? C.ORB_R.side : C.ORB_R.full;
+        obs.push({ l: pal.x - orb - 3, t: pal.y - orb - 3, r: pal.x + orb + 3, b: pal.y + orb + 3, w: 2 }); /* never over the guide that is talking */
         const view = { w: W.innerWidth, h: W.innerHeight, top: 6, bottom: 6 };
-        const r = C.place(pal, st.size, obs, view, force ? null : st.spot);
+        /* the tail ends right at the orb's rim, for the full guide and the small sidekick alike: it visibly comes out of it */
+        const r = C.place(pal, st.size, obs, view, force ? null : st.spot, C.gapFor(orb));
         if (!r) return;
         if (r.spot !== st.spot) { el.classList.remove('rp-s-' + st.spot.slice(0, 2)); st.spot = r.spot; }
         el.classList.add('rp-placed');
@@ -172,9 +179,9 @@
         if (fx < -0.1 || fx > 1.1 || fy < -0.1 || fy > 1.1) return null;
         const side = fx > 0.5 ? -1 : 1;
         let lo = 0.12, hi = 0.74;
-        const quest = (st.obs || []).find(o => o.k === 'f3Board');
+        const qb = C.questBottom(st.obs);   /* the whole Daily Quest band: board, crumb line, arrival slot (faded or not) */
         /* while it talks it keeps low enough that its bubble fits between the Daily Quest and itself */
-        if (quest) lo = Math.max(lo, Math.min(0.55, (quest.b + 34 + (st.cur && st.size ? st.size.h + 12 : 0) - q.top) / q.height));
+        if (qb != null) lo = Math.max(lo, Math.min(0.55, (qb + 34 + (st.cur && st.size ? st.size.h + 12 : 0) - q.top) / q.height));
         return [Math.max(0.08, Math.min(0.8, fx + side * 0.13 - 0.06)), Math.max(lo, Math.min(hi, fy - 0.1))];
     }
     function loop() {
@@ -186,7 +193,7 @@
         const now = performance.now(), n = Math.max(1, Math.min(3, Math.round((now - (st.lastF || now - 16.7)) / 16.7))); st.lastF = now;
         const ska = sidekickAt(), home = ska || C.FOLLOW.home;
         /* Oct 17: beside Misty it is clearly her small helper (smaller orb, same tap target), never a stand-in for her */
-        if (!!ska !== !!st.side) { st.side = !!ska; st.el.classList.toggle('rp-side', st.side); }
+        if (!!ska !== !!st.side) { st.side = !!ska; st.el.classList.toggle('rp-side', st.side); st.placeT = 0; }
         for (let k = 0; k < n; k++) { const r = C.step(st.p, st.v, C.target(home, st.off), red ? 0 : t, red); st.p = r.p; st.v = r.v; }
         place();
         st.raf = requestAnimationFrame(loop);
@@ -269,6 +276,8 @@
     W.addEventListener('lowi:region-steer', e => { const d = e && e.detail || {}; steer(d.vx, d.vy); });
     W.addEventListener('lowi:lang', () => { if (st.id) { const id = st.id; hide(); show(id); } });
     W.addEventListener('resize', () => { st.rect = null; st.obs = null; st.size = null; if (st.el) placeSay(true); }, { passive: true });
+    /* the menus faded or came back: look again at once (the guide itself stays; clean-view-core keeps #rpPal) */
+    W.addEventListener('lowi:clean-view', () => { st.obs = null; if (st.el) { obstacles(); placeSay(true); } });
     D.addEventListener('visibilitychange', () => { if (!D.hidden) kick(); });
     /* the world closed, the host changed or Community zoomed out: the companion leaves with it */
     setInterval(() => {

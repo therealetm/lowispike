@@ -14,12 +14,14 @@
     const HIDE = [
         '#tabbar', '#tbTheme', '#pfBtn', '#tab-home .sp-top',
         '#spFast', '#f3Board', '#hcLine', '#whHint',
-        '#whHud > :not(#whPad):not(#whPadChip):not(#mhNudge):not(.wh-scrim):not([data-clean-keep])',
+        '#whHud > :not(#whPad):not(#whPadChip):not(#mhNudge):not(#rpPal):not(.wh-scrim):not([data-clean-keep])',
         '.wh-move', '.wm-float', '#bwrMapBtn', '#bwrLabel', '#arrCard', '#hqSlot', '[data-clean-hide]'
     ];
     const HIDE_AUTO = ['#whPad', '#whPadChip'];
-    /* never faded: Misty, her cell, the world, the speech bubbles (cell guide .rp-*, Misty's nudge) */
-    const KEEP = ['#spBubble', '#bw3Stage', '.bw3-canvas', '.rp-body', '.rp-say', '#mhNudge'];
+    /* never faded: Misty, her cell, the world, the speech bubbles (cell guide .rp-*, Misty's nudge).
+       Oct 17 (handoff item 7): the cell guide (#rpPal) lives inside #whHud on Home, so the HUD rule used to fade it with the
+       rest; it is excluded there now, so the guide and its bubble stay while she flies. */
+    const KEEP = ['#spBubble', '#bw3Stage', '.bw3-canvas', '#rpPal', '.rp-body', '.rp-say', '#mhNudge'];
 
     const FLY = { auto: 1, drive: 1 };
     function init() { return { mode: '', clean: false, view: '' }; }

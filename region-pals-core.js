@@ -114,9 +114,19 @@
         const tail = s[0] === 's' ? Math.max(16, Math.min(b.h - 16, pal.y - t)) : Math.max(18, Math.min(b.w - 18, pal.x - l));
         return { spot: s, l, t, r: l + b.w, b: t + b.h, shift, tail };
     }
-    function place(pal, b, obs, view, prev) {
+    /* how far the bubble sits from the guide's centre so its tail (7 px) ends just at the orb's rim: a real speech bubble that
+       touches the guide, for the full orb (r 28) and the small sidekick orb beside Misty (r 17). */
+    function gapFor(r) { r = Math.max(10, +r || 28); const g = Math.round(r + 9); return { up: g, down: g, side: 26, beside: g }; }
+    /* the orb's radius in px: full guide (64 px button, 4 px inset) and the small sidekick beside Misty (15 px inset) */
+    const ORB_R = { full: 28, side: 17 };
+    /* the Daily Quest band: the board, the crumb line under it and the arrival slot. Its lowest edge (screen px) or null. */
+    const QUEST_IDS = ['f3Board', 'hcLine', 'hqSlot'];
+    /* its weight against other things to keep clear (Misty 4, controls 2): the Daily Quest always wins */
+    const QUEST_W = 12;
+    function questBottom(obs) { let b = null; for (const o of obs || []) if (o && QUEST_IDS.indexOf(o.k) >= 0) b = b == null ? o.b : Math.max(b, o.b); return b; }
+    function place(pal, b, obs, view, prev, gap) {
         const all = SPOTS.map(s => {
-            const q = spotRect(s, pal, b, view);
+            const q = spotRect(s, pal, b, view, gap);
             let score = 0;
             for (const o of obs || []) score += overlap(q, o) * (o.w || 1);
             const top = view.top || 0, bot = view.h - (view.bottom || 0);
@@ -169,7 +179,8 @@
     /* tilt (degrees) from velocity: it leans into the way it swims */
     function tilt(v) { return clamp(Math.round((v && v[0] || 0) * 900), -18, 18); }
     const api = { PALS, IDS, pid, li3, COPY, tr, pal, lines, FOLLOW, target, step, relax, tilt, awardsXp: false,
-        MORE, GUIDE, DIRS, HUNT, dirIndex, guide, huntLine, showMs, minRead, nextFact, SPOTS, overlap, spotRect, place };
+        MORE, GUIDE, DIRS, HUNT, dirIndex, guide, huntLine, showMs, minRead, nextFact, SPOTS, overlap, spotRect, place,
+        gapFor, QUEST_IDS, QUEST_W, questBottom, ORB_R };
     if (typeof module === 'object' && module.exports) module.exports = api;
     root.LowiRegionPalsCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

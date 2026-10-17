@@ -53,13 +53,22 @@
             const water = hud.querySelector('.wh-water');
             if (water && water.nextSibling) hud.insertBefore(el, water.nextSibling); else hud.appendChild(el);
             wire(el);
-            try { if (W.LowiLivingBubble && typeof W.LowiLivingBubble.attach === 'function') W.LowiLivingBubble.attach(el, { kind: 'move' }); } catch (e) {}
             try { W.dispatchEvent(new CustomEvent('lowi:home-bubble-added', { detail: { el, kind: 'move' } })); } catch (e) {}
         }
         return el;
     }
+    /* the shared living bubble (living-bubbles.js, loads after this file): Misty's 3D membrane, her squish and spring, and
+       its long press, which here opens today's estimates */
+    let living = false, longAt = 0, downAt = 0;   /* a long press, however long it is held, never also opens the bloom */
+    function attachLiving(b) {
+        if (living || !b) return;
+        try { if (W.LowiLivingBubble && typeof W.LowiLivingBubble.attach === 'function') { W.LowiLivingBubble.attach(b, { kind: 'move', onLong: () => { longAt = performance.now(); editSheet(); return true; } }); living = true; } } catch (e) {}
+    }
+    const shared = () => !!(W.LowiBubbles && el && el.classList.contains('lb-bub'));
     function paint() {
         const b = ensure(); if (!b) return;
+        if (!b.classList.contains('lb-bub')) living = false;
+        attachLiving(b);
         const day = dayKey(); lastDay = day;
         const v = C.view(ledger(), day);
         const fill = String(Math.round(v.fill * 100) / 100);
@@ -87,7 +96,7 @@
         const water = vis(hud.querySelector('.wh-water')), fast = vis(D.getElementById('spFast'));
         const circles = [{ x: mcx, y: mcy, r: mR }];
         ['#spFast', '#whHud .wh-water'].forEach(sel => { const q = vis(D.querySelector(sel)); if (q) circles.push({ x: q.left + q.width / 2, y: q.top + q.height / 2, r: q.width / 2 }); });
-        const rects = ['#f3Board', '.sp-top', '.fe-bub', '#whHud .wh-todaybtn', '#whHud .wh-vr', '#whHud .wh-zoom', '#tabbar', '.tabbar'].map(sel => vis(D.querySelector(sel))).filter(Boolean);
+        const rects = ['#f3Board', '#hcLine', '.sp-top', '.fe-bub', '#whHud .wh-todaybtn', '#whHud .wh-vr', '#whHud .wh-zoom', '#tabbar', '.tabbar'].map(sel => vis(D.querySelector(sel))).filter(Boolean);
         const sx = water ? water.left + water.width / 2 - mcx : mR * 1.35, sy = water ? water.top + water.height / 2 - mcy : mR;
         const cands = [
             [mcx + sx, mcy - sy], [mcx + mR + gap + r, mcy],
@@ -123,7 +132,8 @@
         let down = 0, held = false, sx = 0, sy = 0;
         const clear = () => { if (down) clearTimeout(down); down = 0; b.classList.remove('wm-holding'); };
         b.addEventListener('pointerdown', e => {
-            if (e.button > 0) return;
+            downAt = performance.now();
+            if (e.button > 0 || shared()) return;   /* the living bubble does the press and the long press */
             held = false; sx = e.clientX; sy = e.clientY;
             b.classList.add('wm-press');
             clear(); b.classList.add('wm-holding');
@@ -131,10 +141,11 @@
         });
         b.addEventListener('pointermove', e => { if (down && Math.hypot(e.clientX - sx, e.clientY - sy) > 12) { clear(); b.classList.remove('wm-press'); } });
         ['pointerup', 'pointercancel', 'pointerleave'].forEach(n => b.addEventListener(n, () => { clear(); b.classList.remove('wm-press'); }));
-        b.addEventListener('contextmenu', e => e.preventDefault());
+        b.addEventListener('contextmenu', e => { e.preventDefault(); if (shared()) return; });
         b.addEventListener('click', e => {
             e.preventDefault(); e.stopPropagation();
             if (held) { held = false; return; }
+            if (longAt && longAt >= downAt) { longAt = 0; return; }
             if (bloom) closeBloom(); else openBloom();
         });
         b.addEventListener('keydown', e => { if (e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10')) { e.preventDefault(); editSheet(); } });

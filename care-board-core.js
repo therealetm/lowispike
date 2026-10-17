@@ -71,7 +71,27 @@
         if (p.bot || p.demo) return Math.max(1, Math.min(MAX_L, +p.shownLv || botLevel(p.lv)));
         return Math.max(1, Math.min(MAX_L, Math.round(+p.lv || 1)));
     }
-    const api = { GOAL, TAG, MAX_L, dayKey, periodStart, periodKey, daysSoFar, care, tag, untag, demo, scoreOf, rank, botLevel, shownLevel };
+    /* Oct 18, 2026 (Emmanuel saw "eman" three times on the board): one row per name, like Community (community-galaxy.js
+       uniqueNames). Your own name is yours alone, other accounts with one name collapse into the highest level, and a demo
+       bot steps aside when a real person has its name. Rows without a name are left out. The input list is not changed. */
+    const nameKey = p => String((p && p.n) || '').trim().toLocaleLowerCase();
+    function roster(list) {
+        list = (list || []).filter(Boolean);
+        const self = list.find(p => p.me) || null, own = self ? nameKey(self) : '', best = new Map(), bots = [];
+        for (const p of list) {
+            if (p === self) continue;
+            const k = nameKey(p);
+            if (!k || (own && k === own)) continue;
+            if (p.bot || p.demo) { bots.push(p); continue; }
+            const cur = best.get(k);
+            if (!cur || (+p.lv || 0) > (+cur.lv || 0) || ((+p.lv || 0) === (+cur.lv || 0) && (+p.xp || 0) > (+cur.xp || 0))) best.set(k, p);
+        }
+        const out = [...best.values()];
+        for (const b of bots) { const k = nameKey(b); if (!best.has(k)) { best.set(k, b); out.push(b); } }
+        if (self) out.push(self);
+        return out;
+    }
+    const api = { GOAL, TAG, MAX_L, dayKey, periodStart, periodKey, daysSoFar, care, tag, untag, demo, scoreOf, rank, roster, botLevel, shownLevel };
     if (typeof module === 'object' && module.exports) module.exports = api;
     root.LowiCareBoard = api;
 })(typeof window !== 'undefined' ? window : globalThis);

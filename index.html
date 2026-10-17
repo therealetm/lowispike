@@ -15129,7 +15129,7 @@ function aboutHTML(s){ const a = ABOUT[s]; if (!a) return ""; const n = sameSign
    as her sun on Today, at most 12 a day); ties go to more full-sun days, then the higher level. Your XP and level are untouched. */
 let LB = "w";
 const lbK = () => LB === "m" ? "m" : "w";
-function ranked(k){ const c = CB(); if (!c) return []; return c.rank(everyone(), k === "m" ? "m" : "w", Date.now(), me().care); }
+function ranked(k){ const c = CB(); if (!c) return []; const all = everyone(); return c.rank(c.roster ? c.roster(all) : all, k === "m" ? "m" : "w", Date.now(), me().care); }
 function rankOf(m, k){ const L = ranked(k); const i = L.findIndex(x => x.p.me); return i >= 0 ? i + 1 : 0; }
 function careCardHTML(care){
   const k = lbK(), c = care[k] || {pts:0, full:0, today:0}, w = care.w || c, G = (CB() && CB().GOAL) || 12, pct = Math.round(Math.max(0, Math.min(1, (w.today || 0) / G)) * 100);

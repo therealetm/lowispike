@@ -120,6 +120,6 @@ test('total freedom: your own flying reaches to just inside the visible walls, c
     const f = read('misty-flight.js');
     assert.ok(/freeR = freeReach\(r\.maxD, curRegion\(\)\)/.test(f));
     assert.ok(/baseR = free \? inR : freeR/.test(f), 'the soft edge uses the big reach while you steer');
-    assert.ok(/mistReach\(inR, misty, pushOut\)/.test(f) && /exitCheck\(ctx, k, mode, vx, vy, magX, baseR\)/.test(f), 'mist rule kept; the 3 s exit sees the free edge and a held forward');
+    assert.ok(/mistReach\(baseR, dark, pushOut\)/.test(f) && /exitCheck\(ctx, k, mode, vx, vy, magX, baseR\)/.test(f), 'cloud walls (item 3): the dark of a black hole is the forbidden edge; the 3 s exit sees the free edge and a held forward');
     assert.ok(/W\.LowiMistyHunt\.frame\(ctx, S\.p, !free, inR\)/.test(f), 'crumbs keep their old spread');
 });

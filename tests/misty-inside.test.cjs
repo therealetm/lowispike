@@ -68,7 +68,7 @@ test('inside, Misty is the controlled and camera-followed actor in autopilot AND
     /* she is drawn every frame inside and pulled back onto the camera\'s layer if anything ever parks her */
     assert.match(f, /if \(ctx\.a && ctx\.a\.camera && !wand\.layers\.test\(ctx\.a\.camera\.layers\)\) wand\.layers\.mask = ctx\.a\.camera\.layers\.mask;/);
     /* steering: the camera target is her own position; autopilot / tap-in roam: the camera drifts after her too (not only adventures) */
-    assert.match(f, /V\.b\.copy\(S\.inC\)\.lerp\(S\.p, 0\.35\); r\.target\.lerp\(V\.b/);
+    assert.match(f, /V\.b\.copy\(S\.inC\)\.lerp\(S\.p, S\.autoX \? 0\.9 : 0\.35\); r\.target\.lerp\(V\.b/); /* item 3: all the way to the cloud wall on a way out */
     assert.doesNotMatch(f, /if \(adv && !r\.fly && !regionsBusy\(\)/, 'camera follow is no longer adventure-only');
     assert.match(f, /if \(off2 > hv\) r\.target\.addScaledVector\(V\.b, 1 - hv \/ off2\)/, 'steering: a hard leash keeps her on screen');
     /* the hunt eats with HER position, and only while you steer */

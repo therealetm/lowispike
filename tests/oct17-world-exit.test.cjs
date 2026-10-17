@@ -94,77 +94,154 @@ test('wiring: leaving a world takes her along (no snap back into the bubble), au
     assert.ok(/S\.huntFly = false/.test(mf.slice(mf.indexOf('function startOut'), mf.indexOf('function outDraw'))));
 });
 
-/* mist rule (Oct 17, E-man): inside a world the mist/clouds are the forbidden edge. Pushing into them only lets Misty explore and
-   get lost; only pushing outward into clear space (a gap in the mist) starts the 3-second exit. */
-test('mist rule: pushing outward into the mist never starts the exit, however long you push', () => {
-    const mist = Object.assign({}, push, { mist: true });
-    let r = hold(null, 10, mist);
-    assert.strictEqual(r.fires, 0, 'no exit into the mist');
-    assert.strictEqual(r.p, 0, 'no progress builds up in the mist');
-    const h = MF.exitHold(null, Object.assign({ dt: 1 / 60 }, mist));
-    assert.strictEqual(h.lost, true, 'pushing into the mist at the edge = exploring / getting lost');
-    assert.strictEqual(MF.exitHold(null, Object.assign({ dt: 1 / 60 }, push, { mist: false })).lost, false);
-    assert.strictEqual(MF.exitHold(null, Object.assign({ dt: 1 / 60 }, mist, { edge: 0.5 })).lost, false, 'only at the edge');
-});
-
-test('mist rule: pushing outward into a clear gap starts the 3-second exit as before', () => {
-    const clear = Object.assign({}, push, { mist: false });
-    let r = hold(null, 2.9, clear);
+/* cloud walls & black holes (Oct 17, E-man handoff item 3; replaces the mist rule of 115010): the Misty-style cloudy wall round a
+   world is the way out (push into it for 3 s: it stretches, Home shows through, it bursts). The dark spots (where the clear gaps
+   were) are black holes: their dark sector never lets you out, their pull drags Misty into a forbidden area that is hard to leave. */
+test('cloud walls: pushing outward into the cloudy wall starts the 3-second exit', () => {
+    const wall = Object.assign({}, push, { hole: false });
+    let r = hold(null, 2.9, wall);
     assert.strictEqual(r.fires, 0);
-    r = hold(r.s, 0.2, clear);
-    assert.strictEqual(r.fires, 1, 'out after 3 s in clear space');
+    r = hold(r.s, 0.2, wall);
+    assert.strictEqual(r.fires, 1, 'out after 3 s pushing into the cloud wall');
+    assert.strictEqual(MF.exitHold(null, Object.assign({ dt: 1 / 60 }, wall)).lost, false);
 });
 
-test('mist rule: sliding from a clear gap into the mist resets the count (a wisp shorter than the grace keeps it)', () => {
-    const clear = Object.assign({}, push, { mist: false }), mist = Object.assign({}, push, { mist: true });
-    let r = hold(null, 2, clear);
-    r = hold(r.s, 0.1, mist);
-    assert.ok(r.p > 0.6, 'a wisp of mist for a moment keeps the count: ' + r.p);
-    r = hold(r.s, 0.5, mist);
-    assert.strictEqual(r.p, 0, 'staying in the mist resets it');
-    r = hold(r.s, 2.9, clear);
-    assert.strictEqual(r.fires, 0, 'counts again from zero in the clear');
-    r = hold(r.s, 0.2, clear);
+test('black holes: pushing outward into a dark spot never starts the exit, however long you push', () => {
+    const dark = Object.assign({}, push, { hole: true });
+    const r = hold(null, 10, dark);
+    assert.strictEqual(r.fires, 0, 'no way out through a black hole');
+    assert.strictEqual(r.p, 0, 'no progress builds up there');
+    assert.strictEqual(MF.exitHold(null, Object.assign({ dt: 1 / 60 }, dark)).lost, true, 'that is the forbidden edge');
+    assert.strictEqual(MF.exitHold(null, Object.assign({ dt: 1 / 60 }, dark, { edge: 0.5 })).lost, false, 'only at the edge');
+});
+
+test('cloud walls: sliding from the wall into a dark spot resets the count (a moment shorter than the grace keeps it)', () => {
+    const wall = Object.assign({}, push, { hole: false }), dark = Object.assign({}, push, { hole: true });
+    let r = hold(null, 2, wall);
+    r = hold(r.s, 0.1, dark);
+    assert.ok(r.p > 0.6, 'a brush past the dark keeps the count: ' + r.p);
+    r = hold(r.s, 0.5, dark);
+    assert.strictEqual(r.p, 0, 'staying at the dark spot resets it');
+    r = hold(r.s, 2.9, wall);
+    assert.strictEqual(r.fires, 0, 'counts again from zero at the wall');
+    r = hold(r.s, 0.2, wall);
     assert.strictEqual(r.fires, 1);
 });
 
-test('mist rule: every world has the same two clear gaps each time; most of the edge is mist; never straight down', () => {
+test('black holes: every world has the same two dark spots each time; most of the edge is cloud wall; never straight down', () => {
     const ids = ['brain', 'lung', 'heart', 'liver', 'pancreas', 'gut', 'muscle'];
     ids.forEach(id => {
-        const g = MF.exitGaps(id);
-        assert.deepStrictEqual(g, MF.exitGaps(id), id + ': same gaps every time');
+        const g = MF.holeSpots(id);
+        assert.deepStrictEqual(g, MF.holeSpots(id), id + ': same spots every time');
+        assert.deepStrictEqual(g.map(x => x.a), MF.exitGaps(id).map(x => x.a), id + ': where the old gaps were');
         assert.strictEqual(g.length, MF.MIST.GAPS);
-        assert.ok(Math.abs(MF.angWrap(g[0].a - g[1].a)) > 1.5, id + ': the gaps are apart');
+        assert.ok(Math.abs(MF.angWrap(g[0].a - g[1].a)) > 1.5, id + ': the holes are apart');
         g.forEach(x => {
-            assert.strictEqual(MF.inMist(x.a, g), false, id + ': a gap centre is clear');
-            assert.strictEqual(MF.inMist(x.a + x.w / 2 + 0.05, g), true, id + ': just past the gap is mist');
-            assert.ok(Math.abs(MF.angWrap(x.a + Math.PI / 2)) >= 0.44, id + ': no gap straight down where the controller is');
+            assert.strictEqual(MF.inHole(x.a, g), true, id + ': a dark spot centre');
+            assert.strictEqual(MF.inHole(x.a + x.w / 2 + 0.05, g), false, id + ': just past it is cloud wall');
+            assert.strictEqual(MF.inMist(x.a, g), !MF.inHole(x.a, g));
+            assert.ok(Math.abs(MF.angWrap(x.a + Math.PI / 2)) >= 0.44, id + ': no hole straight down where the controller is');
         });
-        let clear = 0; const N = 720;
-        for (let j = 0; j < N; j++) if (!MF.inMist(j / N * 2 * Math.PI, g)) clear++;
-        assert.ok(clear / N > 0.2 && clear / N < 0.4, id + ': clear share ' + (clear / N).toFixed(2));
+        let wall = 0; const N = 720;
+        for (let j = 0; j < N; j++) if (!MF.inHole(j / N * 2 * Math.PI, g)) wall++;
+        assert.ok(wall / N > 0.6 && wall / N < 0.8, id + ': wall share ' + (wall / N).toFixed(2));
     });
-    assert.notDeepStrictEqual(MF.exitGaps('brain'), MF.exitGaps('heart'), 'worlds differ');
+    assert.notDeepStrictEqual(MF.holeSpots('brain'), MF.holeSpots('heart'), 'worlds differ');
 });
 
-test('mist rule: autopilot heads for the nearest clear gap; reach grows only while pushing into the mist', () => {
-    const g = [{ a: 1, w: 0.95 }, { a: -2, w: 0.95 }];
-    assert.strictEqual(MF.gapToward(0.6, g), 1);
-    assert.strictEqual(MF.gapToward(-2.5, g), -2);
-    assert.strictEqual(MF.gapToward(3, g), -2, 'wraps around');
+test('black holes: the pull grows toward the middle, easy at the outskirts, caught at the core', () => {
+    const R = 20, H = MF.HOLE;
+    assert.strictEqual(MF.holePull(H.R * R + 0.01, R), 0, 'outside its reach: no pull');
+    assert.strictEqual(MF.holePull(0, R), 1, 'full pull at its middle');
+    assert.ok(MF.holePull(H.R * R * 0.9, R) < 0.02, 'barely a tug at the outskirts');
+    assert.ok(MF.holePull(H.R * R * 0.5, R) > 0.2 && MF.holePull(H.R * R * 0.5, R) < 0.3, 'halfway in: a fight');
+    assert.ok(MF.holePull(H.R * R * 0.3, R) > MF.holePull(H.R * R * 0.6, R), 'stronger closer in');
+    assert.ok(H.SUCK > 1, 'at the core it is faster than she can fly: caught');
+    assert.ok(H.SUCK * MF.holePull(H.R * R * 0.5, R) < 1, 'halfway in she can still fly out if you fight it');
+    assert.strictEqual(MF.holeCaught(H.CORE * R, R), true);
+    assert.strictEqual(MF.holeCaught(H.CORE * R + 0.01, R), false);
+    assert.strictEqual(MF.holeCaught(0, 0), false, 'no world, no hole');
+    assert.ok(H.CORE < H.R && H.DEEP > 1 && H.AT < 1, 'the hole sits just inside the wall, the forbidden dark lies beyond it');
+});
+
+test('black holes: getting out takes ESC seconds of pushing away; letting go loses ground faster; never farmable by tapping', () => {
+    const H = MF.HOLE, away = { mag: 1, away: 1 };
+    let s = null, r;
+    for (let t = 0; t < H.ESC - 0.1; t += 1 / 60) { r = MF.holeEscape(s, Object.assign({ dt: 1 / 60 }, away)); s = r.s; assert.strictEqual(r.free, false); }
+    for (let t = 0; t < 0.2; t += 1 / 60) { r = MF.holeEscape(s, Object.assign({ dt: 1 / 60 }, away)); s = r.s; if (r.free) break; }
+    assert.strictEqual(r.free, true, 'out after ' + H.ESC + ' s of pushing away');
+    s = null;
+    for (let t = 0; t < 1.5; t += 1 / 60) s = MF.holeEscape(s, Object.assign({ dt: 1 / 60 }, away)).s;
+    const before = s.t;
+    for (let t = 0; t < 0.5; t += 1 / 60) s = MF.holeEscape(s, { dt: 1 / 60, mag: 0, away: 0 }).s;
+    assert.ok(Math.abs(before - s.t - 0.5 * H.DECAY) < 0.05, 'letting go loses ground ' + H.DECAY + 'x as fast');
+    s = null;
+    for (let t = 0; t < 10; t += 1 / 60) { r = MF.holeEscape(s, { dt: 1 / 60, mag: 1, away: -1 }); s = r.s; }
+    assert.strictEqual(r.free, false, 'pushing deeper in never gets her out');
+    for (let t = 0; t < 10; t += 1 / 60) { r = MF.holeEscape(s, { dt: 1 / 60, mag: 0.3, away: 1 }); s = r.s; }
+    assert.strictEqual(r.free, false, 'a weak nudge is not enough');
+    r = MF.holeEscape(null, { dt: 5, mag: 1, away: 1 });
+    assert.strictEqual(r.free, false, 'one long frame cannot jump the count');
+});
+
+test('cloud walls: the autopilot heads for the nearest stretch of wall, well clear of the black holes', () => {
+    const g = [{ a: 1, w: 0.95 }, { a: -2, w: 0.95 }], H = MF.HOLE;
+    assert.strictEqual(MF.wallToward(0, g), 0, 'already at the wall: straight out');
+    [1, 1.2, 0.7, -2, -1.6, 3, -2.4].forEach(a0 => {
+        const x = MF.wallToward(a0, g);
+        g.forEach(h => assert.ok(Math.abs(MF.angWrap(x - h.a)) >= h.w / 2 + H.CLEAR - 1e-9, a0 + ' -> ' + x + ' clear of ' + h.a));
+        assert.ok(Math.abs(MF.angWrap(x - a0)) <= g[0].w / 2 + H.CLEAR + 1e-9, a0 + ': the nearest side');
+    });
     assert.strictEqual(MF.angWrap(3 * Math.PI).toFixed(6), Math.PI.toFixed(6));
-    assert.strictEqual(MF.mistReach(10, true, true), 10 * MF.MIST.LOST, 'out into the mist while you push');
+    assert.strictEqual(MF.mistReach(10, true, true), 10 * MF.MIST.LOST, 'out into the dark while you push there');
     assert.strictEqual(MF.mistReach(10, true, false), 10, 'let go: eased back');
-    assert.strictEqual(MF.mistReach(10, false, true), 10, 'clear space: the usual edge (that is where the exit counts)');
-    assert.ok(MF.MIST.LOST > 1.15 && MF.MIST.LOST < 1.6);
+    assert.strictEqual(MF.mistReach(10, false, true), 10, 'at the wall: the usual edge (that is where the exit counts)');
     assert.strictEqual(MF.lostAmt(0.9), 0); assert.strictEqual(MF.lostAmt(MF.MIST.LOST), 1);
 });
 
-test('mist rule wiring: the exit check knows about the mist, autopilot seeks a gap, mist is drawn only inside a world', () => {
-    assert.match(mf, /exitHold\(S\.exH, \{[^}]*mist: !!S\.inMist/);
-    assert.match(mf, /gapToward\(Math\.atan2\(V\.a\.dot\(V\.up\), V\.a\.dot\(V\.rt\)\), exitGaps\(S\.flew\)\)/);
-    assert.match(mf, /mistReach\(inR, misty, pushOut\)/);
+test('cloud walls wiring: exit knows the dark spots, autopilot seeks the wall, wall stretches and bursts, Home shows through', () => {
+    assert.match(mf, /exitHold\(S\.exH, \{[^}]*hole: !!S\.inHole/);
+    assert.match(mf, /wallToward\(Math\.atan2\(V\.a\.dot\(V\.up\), V\.a\.dot\(V\.rt\)\), holeSpots\(S\.flew\)\)/);
+    assert.ok(!/gapToward\(Math\.atan2/.test(mf), 'the autopilot no longer heads for a gap');
+    assert.match(mf, /mistReach\(baseR, dark, pushOut\)/);
     assert.match(mf, /if \(S\.st !== 'inside'\) mistFrame\(ctx, 0, false\)/);
-    assert.match(mf, /mistFrame\(ctx, inR, true\)/);
-    assert.match(mf, /LowiMistyHints\.lost\(\)/, 'coming back out of the mist she says she was lost');
+    assert.match(mf, /mistFrame\(ctx, freeR, true\)/, 'the wall sits at the edge your own flying reaches');
+    const auto = mf.slice(mf.indexOf('function autoExitFrame'), mf.indexOf('function startOut'));
+    assert.match(auto, /inR = freeReach\(r\.maxD, curRegion\(\)\)/, 'the autopilot presses on that same wall');
+    const draw = mf.slice(mf.indexOf('function mistDraw'), mf.indexOf('function holeAt'));
+    assert.match(draw, /inHole\(th, holes\)/, 'no cloud over a black hole');
+    assert.match(draw, /\(1 \+ 0\.22 \* p \* w\)/, 'the wall stretches outward where she presses');
+    assert.match(draw, /\* \(1 - be \* wb\)/, 'and bursts open there');
+    assert.match(draw, /MS\.hm\.material\.opacity = MS\.f \* 0\.75 \* hp \* hp/, 'Home shows through behind it');
+    assert.match(mf.slice(mf.indexOf('function exitGo'), mf.indexOf('function autoExitFrame')), /wallBurst\(/, 'the burst fires with the way out');
+    assert.match(mf, /'#b9d4ff', '#cdbbff', '#bff3ff'/, 'the wall wears Misty\'s blue, violet and cyan');
+    assert.match(mf, /LowiMistyHints\.lost\(\)/, 'coming back she says she was lost');
+    assert.match(mf, /LowiMistyHints\.hole\(\)/, 'caught, she says what to do');
+});
+
+test('black holes wiring: only your steering is caught, the camera follows her into the dark, World map always gets you out', () => {
+    const hf = mf.slice(mf.indexOf('function holeFrame'), mf.indexOf('/* ---------- world-exit: out of a world'));
+    assert.match(hf, /if \(roams\(mode, S\.idle\) \|\| S\.bhCool > 0\)/, 'the autopilot and her roaming steer clear');
+    assert.match(hf, /if \(regionsBusy\(\) \|\| r\.fly/, 'travelling (World map, X) lets go of her at once');
+    assert.match(hf, /const self = mode !== 'drive' \|\| \(\+S\.idle \|\| 0\) > 8/, 'left alone she slowly works her own way out: never stuck for good');
+    assert.match(hf, /S\.bhCool = HOLE\.COOL/, 'a breather after escaping');
+    const inside = mf.slice(mf.indexOf('function insideFrame'), mf.indexOf('function holeAt'));
+    assert.match(inside, /const caught = holeFrame\(ctx, k, mode, vx, vy, mag, freeR, zs\)/);
+    assert.match(inside, /const free = !caught && roams\(mode, S\.idle\)/, 'caught = not free: the steering camera keeps following her');
+    assert.ok(/W\.LowiMistyHunt\.frame\(ctx, S\.p, !free, inR\)/.test(inside), 'crumbs untouched');
+});
+
+test('guide quiet during transit: hints and speech bubbles hush while she travels between worlds', () => {
+    assert.match(mf, /function transitOn\(ok\)/);
+    const t = mf.slice(mf.indexOf('function transitOn'), mf.indexOf('function transitSync'));
+    ['out', 'warp', 'pull', 'orbit'].forEach(st => assert.ok(t.indexOf("st === '" + st + "'") >= 0, st + ' is transit'));
+    assert.match(t, /S\.exP \|\| 0\) > 0/, 'pushing through the wall is transit');
+    assert.match(mf, /transitSync\(ok\);/, 'checked every frame');
+    assert.match(mf, /html\.mf-transit #whHint,html\.mf-transit \.lp-praise,html\.mf-transit \.rp-say\{opacity:0/);
+    assert.match(mf, /H\.classList\.remove\('mf-transit'\)/, 'never left hushed after a flight ends');
+    const hints = fs.readFileSync(path.join(ROOT, 'misty-hints.js'), 'utf8');
+    assert.match(hints, /if \(H\.classList\.contains\('mf-transit'\)\) return;/);
+    const MH = require(path.join(ROOT, 'misty-hints.js'));
+    assert.ok(MH);
+    assert.match(hints, /hole: \['A black hole![^']*', 'Ein Schwarzes Loch![^']*', '¡Un agujero negro![^']*'\]/, 'caught line in English, German and Spanish');
 });

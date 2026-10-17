@@ -50,7 +50,7 @@
         });
         fair.ledger.forEach((e, i) => {
             const k = wh.kind(e);
-            if (k === 'water' || k === 'move' || k === 'macro') ev.push({ k, t: +e.ts || 0, i: 1e6 + i });
+            if (k === 'water' || k === 'move' || k === 'macro') ev.push({ k, t: +e.ts || 0, i: 1e6 + i, f: (k === 'move' && e.mq != null) ? Math.max(0, Math.min(4, +e.mq || 0)) / 4 : 1 }); /* Oct 17: movement estimates calm by their quarters */
         });
         ev.sort((a, b) => (a.t - b.t) || (a.i - b.i));
         const base = trend(state, now, wh), used = { good: 0, water: 0, move: 0, macro: 0 };
@@ -58,7 +58,7 @@
         for (const e of ev) {
             if (PUSH[e.k]) { lv += PUSH[e.k]; out[e.k]++; }
             else {
-                const k = e.k === 'move' ? 'move' : e.k, step = k === 'move' ? CALM.move[Math.min(out.moves, CALM.move.length - 1)] : CALM[k];
+                const k = e.k === 'move' ? 'move' : e.k, step = (k === 'move' ? CALM.move[Math.min(out.moves, CALM.move.length - 1)] : CALM[k]) * (e.f == null ? 1 : e.f);
                 const d = Math.max(0, Math.min(step, CAP[k] - used[k]));
                 used[k] += d; lv -= d; out.calm += d > 0 ? 1 : 0;
                 if (k === 'move') out.moves++; else out[k]++;

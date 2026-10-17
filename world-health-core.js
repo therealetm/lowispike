@@ -70,7 +70,7 @@
     function dayParts(state, key) {
         const fair = fairDay(state, key), logs = fair.logs, led = fair.ledger;
         const n = { move: 0, water: 0, macro: 0, xp: 0 };
-        for (const e of led) { const k = kind(e); if (n[k] != null) n[k]++; if (+e.amt > 0) n.xp += +e.amt; }
+        for (const e of led) { const k = kind(e); if (n[k] != null) n[k] += (k === 'move' && e.mq != null) ? Math.max(0, Math.min(4, +e.mq || 0)) / 4 : 1; if (+e.amt > 0) n.xp += +e.amt; } /* Oct 17: a Home movement estimate counts its quarters (mq/4) */
         if (!logs.length && !led.length) return null;
         const food = logs.length ? logs.reduce((s, l) => s + verdict(l), 0) / logs.length : 0.6;
         const p = { food, move: clamp(n.move / FULL.move, 0, 1), water: clamp(n.water / FULL.water, 0, 1), macro: clamp(n.macro / FULL.macro, 0, 1), xp: clamp(n.xp / FULL.xp, 0, 1) };

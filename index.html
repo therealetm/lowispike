@@ -5722,7 +5722,7 @@ const titleOf = L => HERB_TITLES[Math.max(0,Math.min(5,L-1))];
 function award(amt, label, el, src, eventId){
   if (!Number.isFinite(+amt) || +amt <= 0 || eventId && S.ledger.some(e => e.eventId === eventId)) return 0;
   const beforeXP = S.xp, before = levelOf(S.xp).L; S.xp += +amt;
-  const entry = {ts:Date.now(), day:today(), amt:+amt, label, src:src || ""}; if (eventId) entry.eventId = eventId; S.ledger.push(entry);
+  const entry = {ts:Date.now(), day:today(), amt:+amt, label, src:src || ""}; if (eventId) entry.eventId = eventId; if (arguments[5] && arguments[5].extra) Object.assign(entry, arguments[5].extra, {ts:entry.ts, day:entry.day, amt:entry.amt, label, src:entry.src}); S.ledger.push(entry);
   if (window.LowiHerbCore) LowiHerbCore.sync(S); save();
   try { window.dispatchEvent(new CustomEvent("lowi:reward", {detail:{entry,beforeXP,afterXP:S.xp}})); } catch(e){}
   const after = levelOf(S.xp).L;
@@ -19635,6 +19635,10 @@ html.q4b-off #lcA2hs{display:none!important}
 /* Companion bridge: native state, single XP ledger, stable IDs for completed actions. */
 window.LowiVitalsBridge = {
   state:() => S, profile:() => S.user, save:() => save(), cookRecipe:id=>LowiP2.cook(id),
+  /* Oct 17 movement bubble (move-bubble.js): award with extra ledger fields ({mq, lvl}), and take an entry back (XP and the entry go together, so log/remove loops net zero) */
+  awardWith:(amt,label,src,eventId,extra,quiet)=>award(amt,label,null,src,eventId,{extra,quiet}),
+  unaward(eventId){const i=eventId?S.ledger.findIndex(e=>e.eventId===eventId):-1;if(i<0)return 0;const e=S.ledger[i],amt=Math.max(0,+e.amt||0);S.ledger.splice(i,1);S.xp=Math.max(0,(+S.xp||0)-amt);
+    if(window.LowiHerbCore)LowiHerbCore.sync(S);save();try{window.dispatchEvent(new CustomEvent("lowi:state",{detail:{unaward:e}}));}catch(x){}$$(".lvchip").forEach(c=>{c.classList.remove("pulse");void c.offsetWidth;c.classList.add("pulse");});return amt;},
   /* meal points: 15 XP for each of the first MEAL_CAP different meals a day; the same product (barcode) or the same meal title twice a day is blocked (no second log, no XP) */
   MEAL_CAP:8,
   mealKey:t=>String(t||"").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g,"").split(/\s+[\u00b7|-]\s+/)[0].replace(/[^a-z0-9\u00df]+/g,""),
@@ -19995,6 +19999,9 @@ window.LowiCommunityHost = {
 <script src="misty-hints.js?v=20261017-104319"></script>
 <link rel="stylesheet" id="msCss" href="misty-scale.css?v=20261017-104319">
 <script src="misty-scale.js?v=20261017-104319"></script>
+<link rel="stylesheet" id="mbCss" href="move-bubble.css?v=20261017-104319">
+<script src="move-estimate-core.js?v=20261017-104319"></script>
+<script src="move-bubble.js?v=20261017-104319"></script>
 <script src="adventure.js?v=20261017-104319"></script>
 <link rel="stylesheet" id="csoCss" href="community-standout.css?v=20261017-104319">
 <link rel="stylesheet" id="tsgCss" href="today-sheet.css?v=20261017-104319">

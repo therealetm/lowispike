@@ -36,7 +36,10 @@
         if (/fast/.test(txt)) return 'fast';
         return 'other';
     }
-    const points = e => (e && +e.amt > 0) ? (PTS[classify(e)] || 0) : 0;
+    /* Oct 17: a Home movement estimate (src move:est) carries mq = quarters of today's Move part it really added (1-4);
+       its sun points and its Move energy scale with it. Any other Move log has no mq and counts in full, as before. */
+    const mqOf = e => (e && e.mq != null) ? Math.max(0, Math.min(4, +e.mq || 0)) / 4 : 1;
+    const points = e => (e && +e.amt > 0) ? Math.round((PTS[classify(e)] || 0) * (classify(e) === 'move' ? mqOf(e) : 1)) : 0;
     /* meal logs: their own day decides (a meal can be logged for another day) */
     const isDay = (e, key) => (e.day ? e.day === key : dayKey(+e.ts || 0) === key);
     /* Oct 16 (E-man: "Sun is full 12/12... did it even reset?"): XP ledger entries count for the sun on the local day
@@ -123,10 +126,11 @@
         const tapped = Math.max(0, Math.floor(+input.water || 0));
         /* glasses past the daily water XP limit still count (the counter knows them), rapid-fire repeats the ledger caught do not */
         const water = tapped ? (raw ? Math.min(tapped, counted + Math.max(0, tapped - raw)) : tapped) : counted;
-        const moves = ledger.filter(e => +e.amt > 0 && classify(e) === 'move').length;
+        const moveList = ledger.filter(e => +e.amt > 0 && classify(e) === 'move'), moves = moveList.length;
+        const moveSum = Math.min(1, moveList.reduce((n, e) => n + mqOf(e), 0));
         const spikes = logs.filter(l => verdict(l) <= 0.15).length;
         const food = logs.length ? logs.reduce((a, l) => a + verdict(l), 0) / logs.length : 0;
-        const parts = { food, water: Math.min(1, water / ENERGY.waterGoal), move: moves ? 1 : 0 };
+        const parts = { food, water: Math.min(1, water / ENERGY.waterGoal), move: moveSum };
         const boost = Math.max(0, Math.min(ENERGY.boostMax, +input.boost || 0));
         const value = Math.max(0, Math.min(1, ENERGY.base + (1 - ENERGY.base) * (ENERGY.food * parts.food + ENERGY.water * parts.water + ENERGY.move * parts.move) + boost));
         const tier = value >= ENERGY.strong ? 'thriving' : value >= ENERGY.travel ? 'ok' : spikes ? 'weak' : 'tired';

@@ -1,0 +1,86 @@
+/* move-bubble.css — Oct 17: the movement bubble on Home (move-bubble.js) and its Quick / Medium / Long / Epic bloom.
+   The bubble is a .wh-cell like the water bubble and uses the same Misty-membrane shell; only its fill colour differs (mint = moving).
+   It sits upper-right of Misty, mirroring the fasting (lower-left) and water (lower-right) bubbles. All text stays inside it. */
+#whHud .wh-move { left: var(--wm-x, calc(50% + var(--wh-sx))); top: var(--wm-y, calc(var(--wh-cy) - var(--wh-sy))); -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: manipulation; }
+#whHud .wh-move .wh-cell-fill { background: linear-gradient(180deg, rgba(150, 255, 210, .5), rgba(30, 190, 150, .78)); }
+#whHud .wh-move .wh-cell-tx { z-index: 2; pointer-events: none; }
+#whHud .wh-move .wh-cell-tx small { max-width: calc(var(--wh-fs) * .8); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* same shell as Misty's membrane (copied from the water bubble rules in world-home.css) */
+html.wh-home #whHud .wh-move,
+html[data-theme="light"].wh-home #whHud .wh-move {
+    border: 1px solid rgba(143, 231, 255, .5) !important;
+    background: radial-gradient(circle at 34% 26%, rgba(255, 255, 255, .34), rgba(255, 255, 255, 0) 22%),
+                radial-gradient(circle at 50% 50%, rgba(58, 159, 224, .1) 0%, rgba(58, 159, 224, .14) 54%, rgba(155, 135, 210, .34) 80%, rgba(143, 231, 255, .58) 97%) !important;
+    box-shadow: 0 0 24px 3px rgba(143, 231, 255, .26), inset 0 0 14px rgba(155, 135, 210, .42), inset 0 0 3px 1px rgba(143, 231, 255, .55) !important;
+    overflow: hidden; isolation: isolate; transition: opacity .35s ease; }
+html.wh-home #whHud .wh-move::after {
+    content: ""; position: absolute; inset: -30%; border-radius: inherit; pointer-events: none; z-index: 3; mix-blend-mode: screen; opacity: .5;
+    background: repeating-linear-gradient(172deg, rgba(143, 231, 255, 0) 0 9%, rgba(143, 231, 255, .09) 12%, rgba(143, 231, 255, 0) 15% 24%); }
+@media (prefers-reduced-motion: no-preference) {
+    html.wh-home #whHud .wh-move { animation: wh-float 7.4s ease-in-out -4.1s infinite, wh-mem-swell 3.9s ease-in-out -2.2s infinite, wh-mem-morph 5.7s ease-in-out -0.8s infinite; }
+    html.wh-home #whHud .wh-move::after { animation: wh-mem-shimmer 7.8s linear -3s infinite; }
+}
+html.wh-home.wh-away #whHud .wh-move { opacity: 0 !important; pointer-events: none !important; }
+
+/* touch: press in like Misty's bubble, spring back; a pick pops a ring of light out of it */
+#whHud .wh-move.wm-press { transform: translate(-50%, -50%) scale(.92); transition: transform .12s ease-out; }
+#whHud .wh-move:not(.wm-press) { transition: transform .45s cubic-bezier(.34, 1.9, .5, 1), opacity .35s ease; }
+#whHud .wh-move .wm-pop { position: absolute; inset: 0; border-radius: 50%; pointer-events: none; z-index: 4; opacity: 0; box-shadow: inset 0 0 0 2px rgba(170, 255, 220, .9), 0 0 26px 6px rgba(120, 255, 200, .55); }
+#whHud .wh-move.wm-pop-on .wm-pop { animation: wm-ring .7s ease-out; }
+#whHud .wh-move.wm-pop-on { animation: wm-surge .6s cubic-bezier(.3, 1.7, .5, 1) !important; }
+#whHud .wh-move.wm-nope { animation: wm-nope .45s ease-in-out !important; }
+#whHud .wh-move.wm-open { z-index: 60; }
+@keyframes wm-ring { 0% { opacity: 1; transform: scale(.8); } 100% { opacity: 0; transform: scale(1.5); } }
+@keyframes wm-surge { 0% { scale: 1; } 35% { scale: 1.14; } 65% { scale: .97; } 100% { scale: 1; } }
+@keyframes wm-nope { 0%, 100% { translate: 0 0; } 25% { translate: -4px 0; } 75% { translate: 4px 0; } }
+
+/* the bloom */
+.wm-bloom { position: fixed; inset: 0; z-index: 9000; pointer-events: none; }
+.wm-bloom .wm-scrim { position: absolute; inset: 0; border: 0; padding: 0; margin: 0; background: rgba(4, 10, 30, .32); opacity: 0; transition: opacity .25s ease; pointer-events: auto; cursor: default; -webkit-tap-highlight-color: transparent; }
+.wm-bloom.on .wm-scrim { opacity: 1; }
+.wm-orb { position: absolute; width: var(--wm-orb, 72px); height: var(--wm-orb, 72px); margin: calc(var(--wm-orb, 72px) / -2) 0 0 calc(var(--wm-orb, 72px) / -2); border-radius: 50%; padding: 0; color: #fff;
+    pointer-events: auto; overflow: hidden; isolation: isolate; display: flex; align-items: center; justify-content: center; font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent;
+    border: 1px solid rgba(143, 231, 255, .55);
+    background: radial-gradient(circle at 34% 26%, rgba(255, 255, 255, .34), rgba(255, 255, 255, 0) 22%),
+                radial-gradient(circle at 50% 50%, rgba(20, 60, 120, .5) 0%, rgba(30, 70, 140, .5) 54%, rgba(155, 135, 210, .45) 80%, rgba(143, 231, 255, .6) 97%);
+    box-shadow: 0 0 22px 2px rgba(143, 231, 255, .3), inset 0 0 12px rgba(155, 135, 210, .45);
+    transform: translate(var(--wm-dx, 0), var(--wm-dy, 0)) scale(.2); opacity: 0;
+    transition: transform .42s cubic-bezier(.3, 1.6, .5, 1) calc(var(--wm-i, 0) * 40ms), opacity .2s ease calc(var(--wm-i, 0) * 40ms); }
+.wm-bloom.on .wm-orb { transform: none; opacity: 1; }
+.wm-bloom.off .wm-orb { transform: translate(var(--wm-dx, 0), var(--wm-dy, 0)) scale(.2); opacity: 0; transition-duration: .3s, .25s; transition-delay: 0s; }
+.wm-bloom.off .wm-orb.wm-chosen { transform: translate(var(--wm-dx, 0), var(--wm-dy, 0)) scale(.55); opacity: 0; transition: transform .32s cubic-bezier(.5, 0, .8, .4), opacity .32s ease-in; }
+.wm-orb:active { scale: .9; transition: scale .1s; }
+.wm-orb:focus-visible { outline: 2px solid #9fffe0; outline-offset: 3px; }
+.wm-orb-fill { position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--wm-q, .25) * 100%); background: linear-gradient(180deg, rgba(150, 255, 210, .45), rgba(30, 190, 150, .7)); z-index: -1; }
+.wm-orb-tx { display: flex; flex-direction: column; align-items: center; line-height: 1.1; text-shadow: 0 1px 6px rgba(0, 30, 80, .7); padding: 0 6px; text-align: center; }
+.wm-orb-tx b { font-size: 15px; font-weight: 700; }
+.wm-orb-tx small { font-size: 10px; opacity: .92; margin-top: 2px; max-width: calc(var(--wm-orb, 72px) - 10px); }
+.wm-note { position: absolute; margin: 0; padding: 7px 12px; border-radius: 14px; font-size: 12px; line-height: 1.3; text-align: center; color: #eaf6ff;
+    background: rgba(10, 24, 60, .62); border: 1px solid rgba(143, 231, 255, .3); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    opacity: 0; transition: opacity .3s ease .15s; pointer-events: none; }
+.wm-bloom.on .wm-note { opacity: 1; }
+.wm-bloom.off .wm-note { opacity: 0; transition-delay: 0s; }
+
+/* what a pick really added, rising out of the bubble */
+.wm-float { position: fixed; z-index: 9001; text-align: center; pointer-events: none; font-size: 13px; font-weight: 700; color: #eafff6; text-shadow: 0 1px 8px rgba(0, 40, 30, .8); animation: wm-rise 2.4s ease-out forwards; }
+.wm-float.soft { font-weight: 600; color: #eaf6ff; }
+@keyframes wm-rise { 0% { opacity: 0; transform: translateY(8px) scale(.9); } 12% { opacity: 1; transform: none; } 75% { opacity: 1; } 100% { opacity: 0; transform: translateY(-26px); } }
+
+/* long press sheet */
+.wm-sheet h3 { margin: 0 0 8px; font-size: 18px; }
+.wm-sheet .wm-why { margin: 0 0 10px; font-size: 13px; line-height: 1.4; opacity: .85; }
+.wm-list { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 8px; }
+.wm-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 14px; background: rgba(140, 200, 255, .1); border: 1px solid rgba(143, 231, 255, .2); }
+.wm-row span { display: flex; flex-direction: column; }
+.wm-row small { opacity: .75; font-size: 12px; }
+.wm-row.wm-empty { justify-content: center; opacity: .75; font-size: 13px; }
+.wm-rm { min-height: 44px; min-width: 44px; padding: 0 14px; border-radius: 22px; border: 1px solid rgba(255, 170, 170, .45); background: rgba(255, 120, 120, .12); color: inherit; font: inherit; font-size: 13px; cursor: pointer; }
+
+@media (prefers-reduced-motion: reduce) {
+    .wm-orb, .wm-bloom .wm-scrim, .wm-note { transition: none !important; }
+    .wm-orb { transform: none; }
+    #whHud .wh-move.wm-pop-on, #whHud .wh-move.wm-nope, #whHud .wh-move.wm-pop-on .wm-pop { animation: none !important; }
+    .wm-float { animation: wm-fade 2.6s linear forwards; }
+    @keyframes wm-fade { 0%, 85% { opacity: 1; } 100% { opacity: 0; } }
+}

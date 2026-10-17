@@ -631,6 +631,10 @@
         if (wand.material.color) wand.material.color.setRGB(1, 0.78 + 0.22 * k, 0.78 + 0.22 * k);
         wand.material.opacity = (0.55 + 0.43 * k) * clamp(alpha, 0, 1);
         wand.visible = wand.material.opacity > 0.01;
+        /* misty-face (Oct 17, E-man: "Misty is basically just staring you down"): her round body turns in 3D, her face goes
+           where she looks (along her path, her heading when you steer, glances when idle); you see her back when she flies away */
+        const MFc = W.LowiMistyFace;
+        if (MFc && MFc.draw) { try { MFc.draw({ a: ctx.a, wand, p: S.p, hs: S.hs, mode: ctx.PD && ctx.PD.mode, hd: S.hd, st: S.st, reduced: ctx.reduced }); } catch (e) { } }
     }
     /* the DOM parts of her cell (wall lines, name) follow the 3D cell when the camera leaves it */
     function bubbleFollow(a) {

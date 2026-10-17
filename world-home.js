@@ -685,7 +685,8 @@
         let mf = false; try { mf = !!(mfx && MF.wants(mfx)); } catch (e) { mf = false; }
         if (!A.wand) { if (!show && !mf) return; advBuild(a); if (mfx) mfx.wand = A.wand; }
         const wand = A.wand, pm = A.pts.material, k = A.vigor;
-        if (st.misty && st.misty.material.map && wand.material.map !== st.misty.material.map) { wand.material.map = st.misty.material.map; wand.material.needsUpdate = true; }
+        /* misty-face: while her face is drawn on its own (she turns in 3D), the wand carries her faceless body; never bake the face back on */
+        if (st.misty && st.misty.material.map && wand.material.map !== st.misty.material.map && !(wand.userData.mfFaceT > performance.now() - 400)) { wand.material.map = st.misty.material.map; wand.material.needsUpdate = true; }
         if (!wand.material.map) ensureMisty3D3();
         const fade = (show || mf) && wand.material.map ? 1 : 0;
         wand.material.opacity += ((fade ? 0.55 + 0.43 * k : 0) - wand.material.opacity) * Math.min(1, dt * 2.5);
@@ -1045,7 +1046,10 @@
         setInterval(() => { tabs(); tick(); }, 700);
         tabs(); tick();
     }
+    /* misty-face.js: the art her 3D sprite is made from (svg text + aura colour), to split into body and face */
+    function mistyFaceArt() { const txt = mistySvg(); if (!txt) return null; let aura = ''; try { aura = C.aura(auraId()).a; } catch (e) { aura = ''; } return { svg: txt, aura }; }
     W.LowiWorldHome = { pullOut, diveIn, settle, waterReset, openToday, openMisty, toggleZoom, zoomOutWhole, closeTop, openDetails, heroTurn, state: st, auraId, syncX, rig };
+    W.LowiWorldHome.mistyFaceArt = mistyFaceArt;
     W.LowiWorldHome.pad = pad;
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 })();

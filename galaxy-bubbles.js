@@ -18,12 +18,12 @@
 
     /* ---------- pure helpers ---------- */
     /* PRESS: seconds of pushing on a membrane to go in or out (WEAK: extra share on a tired day); GRACE: a short slip is forgiven;
-       IN: how straight the stick must point through the membrane; MAG: how hard; CAP_*: how close to a thread she is caught (her
+       TOUCH: how far off the glass (her sizes) a push still counts; IN: how straight the stick must point through the membrane; MAG: how hard; CAP_*: how close to a thread she is caught (her
        size times CAP_K, clamped, world units); FLOW: the current's speed as a share of her own top speed mid-thread; END: its share
        at the membranes; PULL: the draw to the thread's core (share of her top speed, always < 1); EASE: how fast a current takes
        hold / lets go; CAM_K / CAM_MIN: camera distance inside a bubble (share of its radius / floor); FLOOR: the galaxy's own camera
        distance (misty-galaxy GAL.D), kept for the spirit world's look while the camera is inside */
-    const GB = { PRESS: 0.5, WEAK: 0.8, GRACE: 0.25, IN: 0.35, MAG: 0.3, CAP_K: 2.4, CAP_MIN: 4, CAP_MAX: 16, FLOW: 0.6, END: 0.25, PULL: 0.28, EASE: 2.5, CAM_K: 1.1, CAM_MIN: 9, CAM_MAX: 105, FLOOR: 64 };
+    const GB = { TOUCH: 0.5, PRESS: 0.5, WEAK: 0.8, GRACE: 0.25, IN: 0.35, MAG: 0.3, CAP_K: 2.4, CAP_MIN: 4, CAP_MAX: 16, FLOW: 0.6, END: 0.25, PULL: 0.28, EASE: 2.5, CAM_K: 1.1, CAM_MIN: 9, CAM_MAX: 105, FLOOR: 64 };
     const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
     function smooth(e0, e1, x) { const t = clamp((x - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t); }
     /* the closest point of a polyline (flat xyz array) to p: distance, share along it (0..1), the point and the unit tangent */
@@ -54,6 +54,11 @@
         if (hit.d > 1e-6) { const pull = GB.PULL * top * ck * smooth(0, cap * 0.5, hit.d) / hit.d; x += (hit.cx - px) * pull; y += (hit.cy - py) * pull; z += (hit.cz - pz) * pull; }
         return { x, y, z, k: ck };
     }
+    /* how hard she pushes: the stick, or holding the controller still (misty-turn thrust, -1 back / 1 forward). Oct 17 fix (E-man:
+       "I flew at the moon with the forward button, bounced off, and on the next try I was back in my bubble"): only the stick
+       counted, so the forward hold never pressed into any bubble and she just slid round it; holding forward now counts, like
+       misty-flight already does inside a world (magX) */
+    const pushOf = (mag, th) => Math.max(+mag || 0, Math.abs(+th || 0));
     /* pushing on a membrane: s = { t, miss, fired }; i = { dt, pushing, k (her energy 0..1) }; fire once when it gives */
     function pressHold(s, i) {
         s = s || { t: 0, miss: 0, fired: false }; i = i || {};
@@ -67,7 +72,7 @@
     const camInside = (r, d0) => clamp((+r || 10) * GB.CAM_K, Math.max(GB.CAM_MIN, +d0 || 0), GB.CAM_MAX);
     /* how far from its middle she can roam inside a bubble of radius r, for her size hs */
     const insideLimit = (r, hs) => Math.max((+r || 10) * 0.4, (+r || 10) - (+hs || 1) * 0.6);
-    const core = { GB, nearestOnPath, flowProfile, captureK, capOf, currentAt, pressHold, camInside, insideLimit, smooth };
+    const core = { GB, pushOf, nearestOnPath, flowProfile, captureK, capOf, currentAt, pressHold, camInside, insideLimit, smooth };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!D || !D.addEventListener || W.LowiGalaxyBubbles) return;
 
@@ -124,7 +129,7 @@
         /* turn with the galaxy */
         if (B.rot != null && th !== B.rot) { const dr = th - B.rot; toWorld(S.p, B.l.copy(S.p), dr); toWorld(S.v, B.l.copy(S.v), dr); }
         B.rot = th;
-        const pl = toLocal(B.l, S.p, th), drive = mode === 'drive', pushK = drive && mag >= GB.MAG && wl > 1e-4;
+        const pl = toLocal(B.l, S.p, th), drive = mode === 'drive', pushK = drive && pushOf(mag, S.th) >= GB.MAG && wl > 1e-4;
         let glowI = -1, glowP = 0;
         if (B.gb >= 0) {
             const o = B.others[B.gb]; if (!o) { B.gb = -1; return false; }
@@ -173,7 +178,9 @@
             const o = B.others[i], r = o.userData.r, rr = r * 1.04 + hs * 0.4;
             B.v.subVectors(pl, o.position); const d = B.v.length();
             if (i === B.exitI) { if (d >= rr) B.exitI = -1; else continue; } /* on the way home she just leaves the one she was in */
-            if (d >= rr || d < 1e-4) continue;
+            /* touching counts a hair beyond the glass (TOUCH): each slide nudges her off it for a frame, and every lost frame used to
+               stall the press, so a steady push (forward hold, a pull from a current) often never got through */
+            if (d >= rr + hs * GB.TOUCH || d < 1e-4) continue;
             B.v.divideScalar(d); toWorld(B.w, B.v, th); /* outward */
             const inward = pushK ? -V.want.dot(B.w) / wl : 0;
             if (drive && !ctx.reduced) {
@@ -183,6 +190,7 @@
                 if (h.fire) { enter(ctx, S, o, i, r, hs, th); return true; }
                 if (h.p > 0 && (B.puff -= dt) <= 0 && ctx.burst) { B.puff = 0.15; B.v2.copy(o.position).addScaledVector(B.v, r); toWorld(B.w, B.v2, th); ctx.burst(B.w, 1 + Math.round(2 * h.p), 0.25 * hs); toWorld(B.w, B.v, th); }
             }
+            if (d >= rr) continue;
             /* solid until it gives: slide round */
             B.v2.copy(o.position).addScaledVector(B.v, rr); toWorld(S.p, B.v2, th);
             const v = S.v.dot(B.w); if (v < 0) S.v.addScaledVector(B.w, -v * 1.3);

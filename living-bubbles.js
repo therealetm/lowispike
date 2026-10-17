@@ -1,0 +1,235 @@
+/* LOWiSPIKE living Home bubbles (Oct 17, 2026, Emmanuel: "I wanted exactly that bubble [Misty's] for every other thing that we are
+   about to put into the home screen" + "all this stuff should be inside the bubble, like Misty is inside hers; when we click on it,
+   it's like clicking the bubble" + "why is there an extra Edit button above the fasting bubble?" + "very good with the long press").
+
+   Misty's real bubble is the 3D membrane of the world (body-world-3d-scene.js: memMat, fresnel #3a9fe0 -> #9b87d2 -> #8fe7ff, vertex
+   wobble, shimmer, breathing, uGlow, theme colours). This file draws THAT membrane - the same shaders and the very same uniform values
+   (one shared clock, glow and theme) - around every registered Home bubble: fasting (#spFast), water (#whHud .wh-water) and anything
+   added later (LowiBubbles.add(el), class "lw-bub", [data-hb], or the 'lowi:home-bubble-added' event, e.g. the movement bubble).
+   - No new loop and no new WebGL context: the meshes live in the world's own scene and are placed in its own frame callback.
+   - Each membrane sits exactly on its DOM bubble (it follows the bubble's box every drawn frame, so the float and the press squish move
+     the membrane and the text inside together), breathes and turns like Misty's cell, and fades with the Home HUD.
+   - The DOM shell becomes clear (html.lb3d); the content (text, water, progress) stays inside it, on top of the membrane.
+   - Press = squish like Misty's bubble. Long press on fasting = edit the start time (replaces the separate "Edit" button).
+   - Without the 3D world (reduced capability, failure) nothing changes: the CSS bubble in world-home.css stays as the fallback.
+   Pure helpers are exported for node tests (tests/living-bubbles.test.cjs). */
+(function (root) {
+    'use strict';
+    const CORE = {
+        /* the membrane radius for a DOM bubble of width w (Misty's is 0.54 x her bubble; a hair tighter here so the water inside meets the rim) */
+        radiusFor(w) { return Math.max(0, +w || 0) * 0.52; },
+        /* the same breathing as Misty's cell (body-world-3d-scene.js step(): 1 + 0.015 sin(1.55 t)) */
+        breath(t, phase, still) { return still ? 1 : 1 + 0.015 * Math.sin((+t || 0) * 1.55 + (phase || 0)); },
+        /* Misty's fragment shader with one extra uniform (uO) so each bubble can fade with the HUD; returns null if the shader changed */
+        fadeShader(src) {
+            if (typeof src !== 'string' || src.indexOf('clamp(a,0.0,0.95)') < 0) return null;
+            return 'uniform float uO;' + src.replace('clamp(a,0.0,0.95)', 'clamp(a,0.0,0.95)*uO');
+        },
+        /* where a DOM point lands in the canvas, in normalised device coords */
+        ndc(cx, cy, W, H) { return { x: (cx / W) * 2 - 1, y: -((cy / H) * 2 - 1) }; },
+        /* world units per CSS pixel at camera distance d (fov in degrees, canvas height H in CSS px) */
+        unitsPerPx(d, fovDeg, H) { return (2 * d * Math.tan((fovDeg * Math.PI / 180) / 2)) / Math.max(1, H); },
+        /* long press: held long enough and the finger hardly moved */
+        isLong(ms, moved) { return ms >= 520 && moved < 12; },
+        AUTO: ['#spFast', '#whHud .wh-water', '#whHud .wh-move', '#whHud [data-hb]', '.lw-bub']
+    };
+    if (typeof module !== 'undefined' && module.exports) module.exports = CORE;
+    if (!root || !root.document) return;
+
+    const W = root, D = root.document, H = D.documentElement;
+    const reduceMq = W.matchMedia ? W.matchMedia('(prefers-reduced-motion: reduce)') : null;
+    const still = () => !!(reduceMq && reduceMq.matches);
+    const list = new Map(); /* el -> { mesh, mat, phase, spin, o, oT, opts } */
+    let api = null, mem = null, group = null, offFrame = null, geo = null, vs = '', fs = '', lastVis = 0, tmp = null;
+
+    function css() {
+        if (D.getElementById('lbCss')) return;
+        const me = D.querySelector('script[src*="living-bubbles.js"]'), l = D.createElement('link');
+        l.id = 'lbCss'; l.rel = 'stylesheet';
+        l.href = me && me.getAttribute('src') ? me.getAttribute('src').replace('living-bubbles.js', 'living-bubbles.css') : 'living-bubbles.css';
+        D.head.appendChild(l);
+    }
+
+    /* ---------- the membrane: Misty's own shader, her uniform values ---------- */
+    function findMembrane(a) {
+        let m = null;
+        try { a.scene.traverse(o => { if (!m && o.isMesh && o.material && o.material.uniforms && o.material.uniforms === a.memU) m = o; }); } catch (e) {}
+        return m;
+    }
+    function makeMat(THREE) {
+        const U = api.memU;
+        return new THREE.ShaderMaterial({
+            uniforms: { uIn: U.uIn, uRim: U.uRim, uHi: U.uHi, uGlow: U.uGlow, uBase: U.uBase, uT: U.uT, uO: { value: 0 } },
+            vertexShader: vs, fragmentShader: fs, transparent: true, depthWrite: false, depthTest: false
+        });
+    }
+    function build(el) {
+        const s = list.get(el); if (!s || s.mesh || !group) return;
+        const THREE = api.THREE;
+        s.mat = makeMat(THREE);
+        s.mesh = new THREE.Mesh(geo, s.mat);
+        s.mesh.renderOrder = 20; s.mesh.frustumCulled = false; s.mesh.visible = false;
+        s.mesh.userData.lwKeep = true; /* body-world-regions setHubVisible leaves it alone */
+        group.add(s.mesh);
+    }
+    function attach3d(a) {
+        if (api || !a || !a.THREE || !a.scene || !a.memU || !a.camera) return false;
+        const m = findMembrane(a); if (!m) return false;
+        const f = CORE.fadeShader(m.material.fragmentShader); if (!f) return false;
+        api = a; mem = m; vs = m.material.vertexShader; fs = f; geo = m.geometry;
+        const THREE = a.THREE; tmp = { v: new THREE.Vector3(), f: new THREE.Vector3(), q: new THREE.Quaternion(), y: new THREE.Vector3(0, 1, 0) };
+        group = new THREE.Group(); group.name = 'lowi-living-bubbles'; group.userData.lwKeep = true; a.scene.add(group);
+        list.forEach((s, el) => build(el));
+        offFrame = a.onFrame(frame);
+        H.classList.add('lb3d');
+        return true;
+    }
+
+    /* ---------- visibility: the bubble is on screen and the HUD is showing ---------- */
+    function effOpacity(el) {
+        if (!el.isConnected) return 0;
+        let o = 1;
+        for (let e = el; e && e !== D.body; e = e.parentElement) {
+            const c = getComputedStyle(e);
+            if (c.display === 'none' || c.visibility === 'hidden') return 0;
+            o *= +c.opacity;
+            if (o < 0.02) return 0;
+        }
+        return o;
+    }
+    function homeShown() {
+        if (!H.classList.contains('wh-home') || !H.classList.contains('wh-world-live')) return false;
+        if (/(^|\s)(wh-away|wh-cosmos|wb-on)(\s|$)/.test(H.className)) return false;
+        try { if (W.LowiWorld3D && W.LowiWorld3D.isOpen && W.LowiWorld3D.isOpen()) return false; } catch (e) {}
+        const t = D.getElementById('tab-home'); return !t || t.classList.contains('active');
+    }
+    function refreshVis(now) {
+        lastVis = now;
+        const on = homeShown();
+        list.forEach((s, el) => { s.oT = on ? effOpacity(el) : 0; });
+    }
+
+    /* ---------- every drawn frame of the world (its own loop) ---------- */
+    function frame(dt, now) {
+        if (!api || !list.size) return;
+        now = now || performance.now();
+        if (now - lastVis > 180) refreshVis(now);
+        const cam = api.camera, cv = api.renderer && api.renderer.domElement; if (!cv) return;
+        const cr = cv.getBoundingClientRect(); if (!cr.width || !cr.height) return;
+        const t = api.memU.uT.value, calm = still(), D0 = 1.2;
+        const upp = CORE.unitsPerPx(D0, cam.fov, cr.height);
+        cam.getWorldDirection(tmp.f);
+        list.forEach((s, el) => {
+            if (!s.mesh) return;
+            s.o += (s.oT - s.o) * Math.min(1, dt * 9);
+            if (s.oT <= 0 && s.o < 0.01) { s.o = 0; s.mesh.visible = false; return; }
+            const r = el.getBoundingClientRect();
+            if (!r.width) { s.mesh.visible = false; return; }
+            const n = CORE.ndc(r.left + r.width / 2 - cr.left, r.top + r.height / 2 - cr.top, cr.width, cr.height);
+            tmp.v.set(n.x, n.y, 0.5).unproject(cam).sub(cam.position).normalize();
+            const k = D0 / Math.max(0.2, tmp.v.dot(tmp.f));
+            s.mesh.position.copy(cam.position).addScaledVector(tmp.v, k);
+            if (!calm) s.spin += dt * 0.12;
+            s.mesh.quaternion.copy(cam.quaternion).multiply(tmp.q.setFromAxisAngle(tmp.y, s.spin));
+            /* the mesh sits at depth D0 on the camera axis, so one CSS px is upp world units there; the box already carries the press
+               squish and the float */
+            const R = CORE.radiusFor(r.width) * upp, gR = (geo && geo.parameters && geo.parameters.radius) || 1.4;
+            s.mesh.scale.setScalar((R / gR) * CORE.breath(t, s.phase, calm));
+            s.mat.uniforms.uO.value = s.o;
+            s.mesh.visible = true;
+        });
+    }
+
+    /* ---------- press squish + long press (generic), like Misty's bubble ---------- */
+    let press = null, swallow = 0;
+    function bubbleOf(t) {
+        if (!t || !t.closest) return null;
+        for (const el of list.keys()) if (el.contains(t)) return el;
+        return null;
+    }
+    function haptic(ms) { if (still()) return; try { W.navigator.vibrate && W.navigator.vibrate(ms); } catch (e) {} }
+    function endPress(ok) {
+        if (!press) return;
+        const el = press.el; clearTimeout(press.timer);
+        delete el.dataset.pressed;
+        if (ok && !still()) { el.dataset.pop = '1'; setTimeout(() => delete el.dataset.pop, 460); }
+        press = null;
+    }
+    D.addEventListener('pointerdown', e => {
+        const el = bubbleOf(e.target); if (!el || (e.button != null && e.button !== 0)) return;
+        endPress(false);
+        const s = list.get(el);
+        press = { el, id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now(), moved: 0, timer: 0 };
+        el.dataset.pressed = '1';
+        if (s && s.opts && typeof s.opts.onLong === 'function') {
+            press.timer = setTimeout(() => {
+                if (!press || press.el !== el || !CORE.isLong(performance.now() - press.t, press.moved)) return;
+                let used = false;
+                try { used = s.opts.onLong(el) !== false; } catch (err) { console.warn('living bubble long press', err && err.message); }
+                if (used) { swallow = performance.now(); haptic(14); endPress(false); }
+            }, 540);
+        }
+    }, { passive: true, capture: true });
+    D.addEventListener('pointermove', e => {
+        if (!press || e.pointerId !== press.id) return;
+        press.moved = Math.max(press.moved, Math.hypot(e.clientX - press.x, e.clientY - press.y));
+        if (press.moved > 14) endPress(false);
+    }, { passive: true, capture: true });
+    D.addEventListener('pointerup', e => { if (press && e.pointerId === press.id) endPress(true); }, { passive: true, capture: true });
+    D.addEventListener('pointercancel', e => { if (press && e.pointerId === press.id) endPress(false); }, { passive: true, capture: true });
+    /* the tap that ends a long press must not also do the bubble's tap action, nor press whatever just opened under the finger */
+    D.addEventListener('click', e => {
+        if (swallow && performance.now() - swallow < 900) { e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); swallow = 0; }
+    }, true);
+    D.addEventListener('contextmenu', e => { const el = bubbleOf(e.target); if (el && list.get(el).opts.onLong) e.preventDefault(); }, true);
+
+    /* ---------- registry ---------- */
+    let seq = 0;
+    function add(el, opts) {
+        if (!el || !el.nodeType) return false;
+        const prev = list.get(el);
+        if (prev) { if (opts) prev.opts = Object.assign(prev.opts, opts); return true; }
+        const s = { mesh: null, mat: null, phase: (seq * 2.1) % 6.28, spin: 0.9 + seq * 1.7, o: 0, oT: 0, opts: Object.assign({}, opts || {}) };
+        seq++;
+        list.set(el, s);
+        el.classList.add('lb-bub');
+        if (s.opts.kind) el.setAttribute('data-lb', s.opts.kind);
+        if (api) build(el);
+        lastVis = 0;
+        return true;
+    }
+    function remove(el) {
+        const s = list.get(el); if (!s) return false;
+        if (s.mesh) { group && group.remove(s.mesh); try { s.mat.dispose(); } catch (e) {} }
+        el.classList.remove('lb-bub'); el.removeAttribute('data-lb');
+        list.delete(el); return true;
+    }
+    /* Home is rebuilt now and then: drop bubbles that left the page, pick up new ones */
+    function fastLong() {
+        const FE = W.LowiFastEdit;
+        if (!FE || typeof FE.open !== 'function') return false;
+        try { const st = FE.startOf ? +FE.startOf() : 1; if (!(st > 0) || st > Date.now()) return false; } catch (e) { return false; } /* no fast running: a normal tap */
+        return FE.open() !== false;
+    }
+    function scan() {
+        list.forEach((s, el) => { if (!el.isConnected) remove(el); });
+        CORE.AUTO.forEach(sel => D.querySelectorAll(sel).forEach(el => {
+            if (list.has(el)) return;
+            const kind = el.id === 'spFast' ? 'fast' : el.classList.contains('wh-water') ? 'water' : (el.getAttribute('data-hb') || (el.classList.contains('wh-move') ? 'move' : 'bubble'));
+            add(el, kind === 'fast' ? { kind, onLong: fastLong } : { kind });
+        }));
+        if (!api && W.LowiWorld3D && W.LowiWorld3D.ready) attach3d(W.LowiWorld3D);
+    }
+    W.addEventListener('lowi:world3d-ready', e => { attach3d((e && e.detail) || W.LowiWorld3D); scan(); });
+    W.addEventListener('lowi:home-bubble-added', e => { const d = e && e.detail; if (d && d.el) add(d.el, { kind: d.kind || 'bubble' }); });
+    /* only while Home is the page you see (no measuring behind Community) */
+    setInterval(() => { if (!D.hidden && homeShown()) scan(); }, 1500);
+    D.addEventListener('visibilitychange', () => { if (!D.hidden) scan(); });
+    css();
+    setTimeout(scan, 400);
+
+    const API = { add, remove, attach: add, scan, list: () => [...list.keys()], active: () => !!api, core: CORE,
+        look: () => [...list.entries()].map(([el, s]) => ({ kind: s.opts.kind || '', visible: !!(s.mesh && s.mesh.visible), opacity: +s.o.toFixed(2), sameUniforms: !!(s.mat && api && s.mat.uniforms.uT === api.memU.uT && s.mat.uniforms.uGlow === api.memU.uGlow && s.mat.uniforms.uIn === api.memU.uIn), sameShader: !!(s.mat && mem && s.mat.vertexShader === mem.material.vertexShader), scale: s.mesh ? +s.mesh.scale.x.toFixed(4) : 0 })) };
+    W.LowiBubbles = API;
+    W.LowiLivingBubble = { attach: (el, o) => add(el, o) };
+})(typeof window !== 'undefined' ? window : null);

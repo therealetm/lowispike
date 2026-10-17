@@ -1,0 +1,115 @@
+/* LOWiSPIKE living Home bubbles (Oct 17) - see living-bubbles.js.
+   html.lb3d = Misty's 3D membrane is drawn around every Home bubble, so the DOM shell turns clear exactly like Misty's own bubble
+   (world-home.css: "#spBubble border transparent on the live world") and only the content stays: text, water, progress - inside it. */
+
+/* 1. the shell: clear, no CSS membrane, no second glow; the content stays clipped to the circle */
+html.lb3d.wh-home #spHome #spFast.lb-bub,
+html.lb3d.wh-home #whHud .wh-cell.lb-bub,
+html.lb3d.wh-home #whHud .lb-bub {
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    border-radius: 50% !important;
+    overflow: hidden !important;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+}
+html.lb3d.wh-home #spHome #spFast.lb-bub::after,
+html.lb3d.wh-home #whHud .lb-bub::after { display: none !important; }
+
+/* Misty's glass glint (her #spBubble::before: a soft white oval, 30% x 9% of the bubble, tilted -28deg) on every bubble that lacks it */
+html.lb3d.wh-home #whHud .lb-bub::before {
+    content: "";
+    position: absolute;
+    left: 15.6%;
+    top: 11.7%;
+    width: 30.2%;
+    height: 8.8%;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .376);
+    transform: rotate(-28deg);
+    pointer-events: none;
+    z-index: 3;
+}
+html.lb3d.wh-home[data-ui=light] #whHud .lb-bub::before { background: rgba(255, 255, 255, .55); }
+
+/* the float stays (the membrane follows the box every frame, so text and membrane drift together); the CSS swell/morph/shimmer go -
+   the breathing and the wobble are Misty's, drawn by the 3D membrane */
+@media (prefers-reduced-motion: no-preference) {
+    html.lb3d.wh-home #spHome #spFast.lb-bub { animation: wh-float 6s ease-in-out infinite !important; }
+    html.lb3d.wh-home #whHud .lb-bub { animation: wh-float 6s ease-in-out -2s infinite !important; }
+    html.lb3d.wh-home #whHud .wh-water.lb-bub.wh-holding { animation: wh-float 6s ease-in-out -2s infinite, wh-hold .6s linear forwards !important; }
+}
+
+/* 2. everything INSIDE the bubble, like Misty inside hers: fasting label, time, goal and end time sit in the circle */
+html.wh-home #spHome #spFast.lb-bub .sp-fast-copy {
+    position: absolute;
+    inset: 9%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    line-height: 1.12;
+    text-align: center;
+    white-space: nowrap;
+    z-index: 4;
+}
+html.wh-home #spHome #spFast.lb-bub .sp-fast-copy small,
+html.wh-home #spHome #spFast.lb-bub .sp-fast-copy span {
+    font-size: max(9px, calc(var(--wh-fs, 94px) * .105));
+    margin: 0;
+    opacity: .92;
+}
+html.wh-home #spHome #spFast.lb-bub .sp-fast-copy small:first-child {
+    font-size: max(9px, calc(var(--wh-fs, 94px) * .11));
+    letter-spacing: .2px;
+}
+html.wh-home #spHome #spFast.lb-bub .sp-fast-copy b {
+    font-size: max(14px, calc(var(--wh-fs, 94px) * .185));
+    font-weight: 760;
+    letter-spacing: -.4px;
+    margin: 1px 0;
+}
+html.wh-home #spHome #spFast.lb-bub .sp-fast-copy .sp-u {
+    font-style: normal;
+    font-size: .56em;
+    font-weight: 650;
+    letter-spacing: 0;
+    opacity: .85;
+}
+html.wh-home #spHome #spFast.lb-bub .sp-fast-copy>small:last-child {
+    margin-top: 1px;
+    gap: 2px;
+}
+html.wh-home #spHome #spFast.lb-bub .sp-fast-copy .sp-symbol { width: .95em; height: .95em; }
+/* water / later bubbles: the same type scale */
+html.wh-home #whHud .lb-bub .wh-cell-tx { line-height: 1.12; white-space: nowrap; z-index: 2; }
+html.wh-home #whHud .lb-bub .wh-cell-tx small { font-size: max(9px, calc(var(--wh-fs, 94px) * .11)); }
+html.wh-home #whHud .lb-bub .wh-cell-tx b { font-size: max(14px, calc(var(--wh-fs, 94px) * .2)); font-weight: 760; }
+
+/* 3. the old separate Edit button never shows on Home again (long press the bubble instead) */
+html.wh-home #spHome .fe-bub,
+#spHome #feBub { display: none !important; }
+
+/* 4. touch: the same squish and spring as Misty's bubble (herb-touch.css #spBubble[data-pressed]); the membrane follows the box */
+html.wh-home .lb-bub { transition: scale .5s cubic-bezier(.34, 1.9, .5, 1), filter .25s ease; }
+html.wh-home .lb-bub[data-pressed] { scale: .92; filter: brightness(1.1); transition: scale .12s ease-out, filter .12s ease-out; }
+html.wh-home #whHud .wh-cell.lb-bub:active { transform: translate(-50%, -50%); }
+@media (prefers-reduced-motion: no-preference) {
+    html.wh-home .lb-bub[data-pop] :is(.sp-fast-copy, .wh-cell-tx) { animation: lbJiggle .45s cubic-bezier(.3, 1.6, .5, 1); }
+}
+@keyframes lbJiggle {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.06, .95); }
+    65% { transform: scale(.97, 1.03); }
+    100% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+    html.wh-home .lb-bub, html.wh-home .lb-bub[data-pressed] { transition: none; scale: none; }
+}

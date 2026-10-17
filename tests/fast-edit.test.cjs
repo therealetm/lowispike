@@ -83,19 +83,17 @@ test('loaded after the arrival cards and cached by the service worker', () => {
     assert.strictEqual(n('fast-edit-core.js'), 2); assert.strictEqual(n('fast-edit.js'), 2); assert.strictEqual(n('fast-edit.css'), 2);
 });
 
-test('Home: a real button on the water bubble rim opens the same card; the bubble itself is not rebuilt', () => {
-    assert.ok(js.includes("pill = D.createElement('button')"), 'a real button');
-    assert.ok(js.includes("f.insertAdjacentElement('afterend', pill)"), 'a sibling of #spFast, never inside the bubble button');
-    assert.ok(js.includes("pill.setAttribute('data-fse', 'open')"), 'opens the same LowiFastEdit card');
+test('Home: no separate Edit button any more (Oct 17) - long press the fasting bubble opens the same card', () => {
+    assert.ok(!js.includes("pill = D.createElement('button')"), 'the pill above the bubble is retired');
+    assert.ok(js.includes("const old = D.getElementById('feBub'); if (old) old.remove();"), 'an old pill is cleared');
+    assert.ok(js.includes("f.setAttribute('aria-description', w('holdAria', { t: at(start) }))"), 'screen readers hear about the long press');
+    assert.ok(js.includes("startOf: () => curStart()"), 'the bubble asks whether a fast runs before a long press edits it');
     assert.ok(!/getElementById\('spFast'\)\.(innerHTML|appendChild)/.test(js), 'bubble content untouched');
-    assert.ok(css.includes('.fe-bub') && /\.fe-bub \{[^}]*background: none/.test(css), 'a plain Edit, no pill');
-    assert.ok(js.includes("function pillHTML() { return '<span class=\"fe-el\">' + esc(w('editHome')) + '</span>'; }"), 'just the word Edit');
-    assert.ok(js.includes("editHome: 'Edit'") && js.includes("editHome: 'Editar'"), 'Edit, not "Edit start"');
-    assert.ok(js.includes('lab.top') && js.includes('y = top - ph - 1'), 'right above the first label line (Fasting)');
-    for (const l of ["startAt: 'Start {t}'", "since: 'seit {t}'", "since: 'desde {t}'"]) assert.ok(js.includes(l), l);
+    assert.ok(js.includes("editHome: 'Edit'") && js.includes("editHome: 'Editar'"), 'strings kept');
+    for (const l of ["holdAria: 'Long press to change when your fast started, now since {t}'", "startAt: 'Start {t}'", "since: 'seit {t}'", "since: 'desde {t}'"]) assert.ok(js.includes(l), l);
 });
 
-test('tap XP is off for the edit button, the Home pill and the card', () => {
+test('tap XP is off for the edit button and the card', () => {
     assert.ok(js.includes(`class="fe-chip" data-fse="open" data-xtp="off"`));
-    assert.ok(js.includes("pill.setAttribute('data-xtp', 'off')") && js.includes("ov.setAttribute('data-xtp', 'off')"));
+    assert.ok(js.includes("ov.setAttribute('data-xtp', 'off')"));
 });

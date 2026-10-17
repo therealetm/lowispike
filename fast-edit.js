@@ -18,19 +18,19 @@
     const C = () => W.LowiFastEditCore;
     const KEY = 'lowi_fast_v1';
     const T = {
-        en: { editHome: 'Edit', startAt: 'Start {t}', since: 'since {t}', bubAria: 'Edit when your fast started, now since {t}', edit: 'Edit start', set: 'Set start', title: 'When did your fast start?', sub: 'Your last meal. Fix it if the clock started at the wrong time.',
+        en: { editHome: 'Edit', startAt: 'Start {t}', since: 'since {t}', bubAria: 'Edit when your fast started, now since {t}', holdAria: 'Long press to change when your fast started, now since {t}', edit: 'Edit start', set: 'Set start', title: 'When did your fast start?', sub: 'Your last meal. Fix it if the clock started at the wrong time.',
             saved: 'Saved now: {t}', date: 'Date', time: 'Time', makes: 'That makes {d} of fasting so far.', tz: 'Times in your phone\u2019s time zone ({z}).',
             future: 'That\u2019s in the future. Pick a time that has passed.', overlap: 'Your last fast ended at {t}. This one can\u2019t start earlier.',
             old: 'You can go back up to 7 days.', invalid: 'Pick a date and a time.', same: 'That\u2019s already your start.',
             keep: 'Your fast keeps running. Points come when you end it.', save: 'Save start', cancel: 'Cancel', done: 'Fast start set to {t}.',
             yesterday: 'yesterday', h: 'h', m: 'min', aria: 'Edit when your fast started' },
-        de: { editHome: '\u00c4ndern', startAt: 'Start {t}', since: 'seit {t}', bubAria: '\u00c4ndern, wann dein Fasten begonnen hat, gerade seit {t}', edit: 'Start \u00e4ndern', set: 'Start setzen', title: 'Wann hat dein Fasten begonnen?', sub: 'Deine letzte Mahlzeit. Korrigier sie, wenn die Uhr zur falschen Zeit gestartet ist.',
+        de: { editHome: '\u00c4ndern', startAt: 'Start {t}', since: 'seit {t}', bubAria: '\u00c4ndern, wann dein Fasten begonnen hat, gerade seit {t}', holdAria: 'Lange dr\u00fccken, um den Fastenbeginn zu \u00e4ndern, gerade seit {t}', edit: 'Start \u00e4ndern', set: 'Start setzen', title: 'Wann hat dein Fasten begonnen?', sub: 'Deine letzte Mahlzeit. Korrigier sie, wenn die Uhr zur falschen Zeit gestartet ist.',
             saved: 'Gespeichert: {t}', date: 'Datum', time: 'Uhrzeit', makes: 'Damit fastest du schon {d}.', tz: 'Zeiten in der Zeitzone deines Handys ({z}).',
             future: 'Das liegt in der Zukunft. W\u00e4hl eine Zeit, die schon vorbei ist.', overlap: 'Dein letztes Fasten endete um {t}. Dieses kann nicht fr\u00fcher beginnen.',
             old: 'Du kannst bis zu 7 Tage zur\u00fcckgehen.', invalid: 'W\u00e4hl Datum und Uhrzeit.', same: 'Das ist schon dein Start.',
             keep: 'Dein Fasten l\u00e4uft weiter. Punkte gibt es, wenn du es beendest.', save: 'Start speichern', cancel: 'Abbrechen', done: 'Fasten-Start auf {t} gesetzt.',
             yesterday: 'gestern', h: 'h', m: 'min', aria: '\u00c4ndern, wann dein Fasten begonnen hat' },
-        es: { editHome: 'Editar', startAt: 'Inicio {t}', since: 'desde {t}', bubAria: 'Cambiar cu\u00e1ndo empez\u00f3 tu ayuno, ahora desde {t}', edit: 'Cambiar inicio', set: 'Poner inicio', title: '\u00bfCu\u00e1ndo empez\u00f3 tu ayuno?', sub: 'Tu \u00faltima comida. C\u00e1mbiala si el reloj empez\u00f3 a la hora equivocada.',
+        es: { editHome: 'Editar', startAt: 'Inicio {t}', since: 'desde {t}', bubAria: 'Cambiar cu\u00e1ndo empez\u00f3 tu ayuno, ahora desde {t}', holdAria: 'Mant\u00e9n pulsado para cambiar cu\u00e1ndo empez\u00f3 tu ayuno, ahora desde {t}', edit: 'Cambiar inicio', set: 'Poner inicio', title: '\u00bfCu\u00e1ndo empez\u00f3 tu ayuno?', sub: 'Tu \u00faltima comida. C\u00e1mbiala si el reloj empez\u00f3 a la hora equivocada.',
             saved: 'Guardado: {t}', date: 'Fecha', time: 'Hora', makes: 'As\u00ed llevas {d} de ayuno.', tz: 'Horas en la zona horaria de tu m\u00f3vil ({z}).',
             future: 'Eso est\u00e1 en el futuro. Elige una hora que ya pas\u00f3.', overlap: 'Tu \u00faltimo ayuno termin\u00f3 a las {t}. Este no puede empezar antes.',
             old: 'Puedes volver hasta 7 d\u00edas atr\u00e1s.', invalid: 'Elige fecha y hora.', same: 'Ese ya es tu inicio.',
@@ -221,26 +221,19 @@
         pill.style.left = Math.round(x - hr.left - host.clientLeft) + 'px';
         pill.style.top = Math.round(y - hr.top - host.clientTop) + 'px';
     }
+    /* Oct 17 (Emmanuel): "why do we have an extra Edit button above the fasting bubble?" - the pill is retired. Editing the start lives
+       IN the bubble now: long press the fasting bubble (living-bubbles.js calls open()), and the Edit chip in the fasting sheet stays.
+       This only clears an old pill and tells screen readers about the long press. */
     function ensurePill() {
+        if (pill) { pill.remove(); pill = null; pillKey = ''; }
+        const old = D.getElementById('feBub'); if (old) old.remove();
         const f = bubble(), start = f ? curStart() : 0;
-        if (!f || !start || start > Date.now()) { if (pill) { pill.remove(); pill = null; pillKey = ''; } return; }
-        if (!pill || pill.parentElement !== f.parentElement) {
-            if (pill) pill.remove();
-            pill = D.createElement('button');
-            pill.type = 'button'; pill.className = 'fe-bub'; pill.id = 'feBub';
-            pill.setAttribute('data-fse', 'open'); pill.setAttribute('data-noi18n', ''); pill.setAttribute('data-xtp', 'off');
-            if (getComputedStyle(f.parentElement).position === 'static') f.parentElement.style.position = 'relative';
-            f.insertAdjacentElement('afterend', pill);
-            pillKey = '';
-            if (W.ResizeObserver && roEl !== f) { try { ro && ro.disconnect(); ro = new ResizeObserver(() => place()); ro.observe(f); ro.observe(f.parentElement); roEl = f; } catch (e) {} }
-        }
+        if (!f) return;
         const key = lang() + '|' + start + '|' + new Date().getDate();
-        if (key !== pillKey) {
-            pillKey = key;
-            pill.innerHTML = pillHTML();
-            pill.setAttribute('aria-label', w('bubAria', { t: at(start) }));
-        }
-        place();
+        if (key === pillKey) return;
+        pillKey = key;
+        if (start && start <= Date.now()) f.setAttribute('aria-description', w('holdAria', { t: at(start) }));
+        else f.removeAttribute('aria-description');
     }
     /* only while Home is the page you see: behind Community this measured Home every 1.5 s for nothing (Oct 16, the spirit-world hitches) */
     const homeOn = () => { const t = D.getElementById('tab-home'); return !t || t.classList.contains('active'); };
@@ -251,7 +244,7 @@
     D.addEventListener('visibilitychange', () => { if (!D.hidden) ensurePill(); });
     setTimeout(ensurePill, 300);
 
-    W.LowiFastEdit = { open, close: () => close(), isOpen, chip, sinceRow, save, at, w, pill: ensurePill, _orig: () => orig };
+    W.LowiFastEdit = { open, close: () => close(), isOpen, chip, sinceRow, save, at, w, pill: ensurePill, startOf: () => curStart(), _orig: () => orig };
     /* the fasting sheet may already be open (it was built before this file ran): drop the button in now */
     try { if (D.getElementById('fstSheet') && W.LowiFastStop && LowiFastStop.paint) LowiFastStop.paint(); } catch (e) {}
 })();

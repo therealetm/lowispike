@@ -475,7 +475,7 @@
         el.style.setProperty('--sp-fill', (f.pct * 100) + '%');
         el.classList.toggle('done', !!f.start && f.elapsed >= f.goal * 36e5);
         const reached = f.start && f.elapsed >= f.goal * 36e5;
-        const h = f.start ? '<small>' + esc(tr('fast')) + '</small><b>' + hours + ' h ' + String(min).padStart(2, '0') + ' min</b><span>' + esc(tr('goal')) + ' ' + f.goal + ' h</span><small>' + (reached ? icon('check') + esc(tr('goalReached')) : esc(tr('ends')) + ' ' + clock(f.end)) + '</small>' : '<b>' + esc(tr('noFast')) + '</b>' + icon('clock');
+        const h = f.start ? '<small>' + esc(tr('fast')) + '</small><b>' + hours + '<i class="sp-u"> h </i>' + String(min).padStart(2, '0') + '<i class="sp-u"> min</i></b><span>' + esc(tr('goal')) + ' ' + f.goal + ' h</span><small>' + (reached ? icon('check') + esc(tr('goalReached')) : esc(tr('ends')) + ' ' + clock(f.end)) + '</small>' : '<b>' + esc(tr('noFast')) + '</b>' + icon('clock');
         const t = el.querySelector('.sp-fast-copy');
         if (t.innerHTML !== h) t.innerHTML = h;
     }

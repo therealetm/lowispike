@@ -10290,7 +10290,9 @@ R2.onboard = function(opts){
   paintOb();
   return ov;
 };
-function dots(){ return '<div class="r2-dots">' + [0,1,2].map(i => '<i class="' + (i === ob.step ? "on" : i < ob.step ? "done" : "") + '"></i>').join("") + '</div>'; }
+/* Oct 17: a 4th setup step, the person's own grocery shopping rhythm (shop-plan.js), when that module is loaded */
+const obShop = () => !!(window.LowiShopPlan && LowiShopPlan.formHTML);
+function dots(){ return '<div class="r2-dots">' + (obShop() ? [0,1,2,3] : [0,1,2]).map(i => '<i class="' + (i === ob.step ? "on" : i < ob.step ? "done" : "") + '"></i>').join("") + '</div>'; }
 function signReveal(){
   const z = signOf(ob.bday);
   if (!z) return '<div class="r2-sign empty"><div class="r2-sg">✦</div><div class="r2-sn">Your star sign shows up here</div><div class="r2-sc">It shapes your companion and the colour of your app.</div></div>';
@@ -10311,14 +10313,18 @@ function paintOb(){
     h = dots() + '<div class="r2-obt">Add a photo</div><div class="r2-obs">People in Community see it next to your messages.</div>' +
       '<button class="r2-bigav" data-r2o="photo" aria-label="Add photo">' + (ob.avatar ? '<img src="' + ob.avatar + '" alt="">' : '<span>' + esc((ob.name || "?").charAt(0).toUpperCase()) + '</span>') + '<b>' + R2.ico.cam + '</b></button>' +
       '<div class="r2-obacts"><button class="r2-btn pri big" data-r2o="' + (ob.avatar ? "next" : "photo") + '">' + (ob.avatar ? "Looks good" : "Choose a photo") + '</button><button class="r2-btn ghost big" data-r2o="' + (ob.avatar ? "photo" : "initial") + '">' + (ob.avatar ? "Choose another" : "Use my initial") + '</button></div>';
-  } else {
+  } else if (ob.step === 2 || !obShop()) {
     h = dots() + '<div class="r2-obt">What do you want most?</div><div class="r2-obs">Pick any. You can change it in Profile.</div>' +
       /* round 3A: gender, and PCOS for women (tailors tips; stays on this phone) */
       '<div class="r2-obsub">I am</div><div class="r2-chips r2-gender">' + [["f", "A woman"], ["m", "A man"], ["x", "Prefer not to say"]].map(g => '<button type="button" class="r2-chip' + (ob.gender === g[0] ? " on" : "") + '" aria-pressed="' + (ob.gender === g[0]) + '" data-r2g="' + g[0] + '">' + g[1] + '</button>').join("") + '</div>' +
       '<div class="r2-obsub">I want</div>' +
       '<div class="r2-chips r2-goals">' + goalList().map(t => '<button type="button" class="r2-chip' + (ob.tags.includes(t[0]) ? " on" : "") + '" aria-pressed="' + ob.tags.includes(t[0]) + '" data-r2tag="' + esc(t[0]) + '">' + esc(t[1]) + '</button>').join("") + '</div>' +
       condBlock("data-r2tag", "data-r2none", ob.tags, ob.noCond, ob.gender) +
-      '<div class="r2-obacts"><button class="r2-btn pri big" data-r2o="finish">Let\'s go</button></div>';
+      '<div class="r2-obacts"><button class="r2-btn pri big" data-r2o="' + (obShop() ? "next" : "finish") + '">' + (obShop() ? "Next" : "Let\'s go") + '</button></div>';
+  } else {
+    /* step 3 (Oct 17): grocery shopping rhythm. The person types their own number; weekdays and shop are optional; Later skips */
+    h = dots() + LowiShopPlan.formHTML(null, { prefix: "r2obSp" }) +
+      '<div class="r2-obacts"><button class="r2-btn pri big" data-r2o="shopdone">Let\'s go</button><button class="r2-btn ghost big spl-later" data-r2o="shoplater">Later</button></div>';
   }
   el.innerHTML = '<div class="r2-obpane">' + h + '</div>';
   const b = $("#r2obB"); if (b) b.addEventListener("input", () => { ob.bday = b.value; $("#r2obSign").innerHTML = signReveal(); });
@@ -10546,6 +10552,8 @@ document.addEventListener("click", e => {
         LowiBirthCompanion.reveal($("#r2obRev"), { bday: ob.bday, btime: ob.btime || "" }, () => { ob.step = 1; paintOb(); }); return; }
       ob.step++; paintOb(); return; }
     if (v === "finish") return finishOb();
+    if (v === "shopdone") { const pane = $("#r2ob"); const r = LowiShopPlan.readForm(pane); if (!r.ok) return LowiShopPlan.showErr(pane); LowiShopPlan.saveForm(pane); return finishOb(); }
+    if (v === "shoplater") { try { const r = LowiShopPlan.readForm($("#r2ob")); if (r.ok) LowiShopPlan.saveForm($("#r2ob")); else if (!LowiShopPlan.isSet()) LowiShopPlan.set({ skipped: true }); } catch(x){} return finishOb(); }
   }
   const gg = e.target.closest("[data-r2g]");
   if (gg && ob) { ob.gender = gg.getAttribute("data-r2g"); if (ob.gender !== "f") ob.pcos = false; const sc = ($("#r2ob .r2-obpane") || {}).scrollTop || 0; paintOb(); const pn = $("#r2ob .r2-obpane"); if (pn) pn.scrollTop = sc; return; }
@@ -20082,6 +20090,10 @@ window.LowiCommunityHost = {
 <link rel="stylesheet" id="stpCss" href="store-picks.css?v=20261017-224944">
 <script src="store-picks-core.js?v=20261017-224944"></script>
 <script src="store-picks.js?v=20261017-224944"></script>
+<!-- Oct 17: the person's own grocery shopping rhythm (setup step 4 + Profile > About you). ONE source of truth: shop-plan-core.js -->
+<link rel="stylesheet" id="splCss" href="shop-plan.css?v=20261017-224944">
+<script src="shop-plan-core.js?v=20261017-224944"></script>
+<script src="shop-plan.js?v=20261017-224944"></script>
 <link rel="stylesheet" id="ghCss" href="grocery-hunt.css?v=20261017-224944">
 <script src="grocery-hunt-core.js?v=20261017-224944"></script>
 <script src="grocery-hunt.js?v=20261017-224944"></script>

@@ -1,0 +1,33 @@
+/* LOWiSPIKE shopping rhythm form (shop-plan.js), Oct 17 2026. Same see-through blue glass and round bubble controls as the
+   Move panel and the onboarding world. Light buttons keep dark text. */
+.spl-form{display:flex;flex-direction:column;gap:12px;text-align:left}
+.spl-over{margin:0;font-size:12px;font-weight:800;letter-spacing:.14em;color:var(--r2-mut,rgba(214,232,255,.78))}
+.spl-h{margin:0}
+.spl-p{margin:0 0 4px}
+.spl-every{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;font-size:18px;font-weight:700;color:var(--r2-ink,#f4f9ff)}
+.spl-num{width:96px;height:96px;border-radius:50%;border:1.5px solid var(--r2-line,rgba(160,220,255,.32));
+  background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.28),rgba(120,180,255,.14) 46%,rgba(16,40,90,.30));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 14px 34px -16px rgba(30,110,255,.6);color:var(--r2-ink,#f4f9ff);
+  font:inherit;font-size:38px;font-weight:800;text-align:center;-moz-appearance:textfield;appearance:textfield;outline:none;transition:border-color .2s,transform .2s}
+.spl-num::-webkit-outer-spin-button,.spl-num::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.spl-num:focus{border-color:rgba(160,220,255,.9);transform:scale(1.04)}
+.spl-sub{margin-top:4px}
+.spl-sub span{font-weight:500;opacity:.7}
+.spl-days{display:flex;flex-wrap:wrap;gap:8px}
+.spl-days .r2-chip{min-width:52px;height:44px;border-radius:22px;padding:0 12px}
+.spl-note{margin:2px 0 0;font-size:13.5px;line-height:1.4;color:var(--r2-mut,rgba(214,232,255,.78))}
+.spl-err:empty{display:none}
+.spl-later{margin-top:2px}
+/* Profile card: same layout as the starter plan card */
+.spl-pcard{display:flex;flex-direction:column;gap:10px}
+.spl-pch{display:flex;align-items:center;gap:12px}
+.spl-pch b{display:block;font-size:16px}
+.spl-pch small{display:block;opacity:.75;font-size:13px;margin-top:2px}
+.spl-ic{width:44px;height:44px;flex:0 0 44px;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.3),rgba(120,180,255,.18) 50%,rgba(20,50,110,.3));border:1px solid rgba(160,220,255,.35)}
+.spl-ic svg{width:22px;height:22px}
+.spl-pcb{display:flex;gap:8px}
+.spl-sheet{padding:6px 2px 4px}
+@media (max-height:760px){.spl-num{width:76px;height:76px;font-size:30px}.spl-form{gap:8px}.spl-every{font-size:16px}.spl-days .r2-chip{min-width:44px;height:40px;padding:0 9px}.spl-note{font-size:12.5px}}
+@media (max-height:600px),(orientation:landscape) and (max-height:520px){.spl-over{display:none}.spl-p{font-size:13.5px}.spl-num{width:64px;height:64px;font-size:26px}.spl-days{gap:6px}.spl-days .r2-chip{min-width:40px;height:36px}}
+@media (prefers-reduced-motion:reduce){.spl-num{transition:none}.spl-num:focus{transform:none}}

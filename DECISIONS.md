@@ -299,3 +299,11 @@ The user explicitly requested deploying the recovered Home implementation withou
 **Decision:** `misty-turn.js` no longer lights the facing dots for a forward / back hold or a shot. While she is held forward, her own thin travelling bubble skin shows round her (the same glass look as Home's membrane and the cloud wall's skin) and tents out ahead where she presses, tilted with the controller's up / down exactly like the shot aim, so you can still read where she is going. A spring drives it: it stretches a little past full as she gets going, holds while you hold, and wobbles back (one small dent) and fades when you let go. Backing up tents it behind her. A shot punches the tip out and it wobbles back. The facing dots stay only for a drag on Misty with no hold. Home's own membrane and its breakout are unchanged: the travelling skin is only drawn once she is out of Home or inside a world.
 
 **Consequences:** One small sphere mesh with a shader, built on first use and moved from the existing draw(); no loop or renderer of its own, hidden whenever she is not drawn. Reduced motion: it stretches and relaxes with no overshoot, wobble or ripple. The energy shot (controller hold + double tap, cooldown, healing) is unchanged. `tests/misty-flight-skin.test.cjs` guards it.
+
+## 2026-10-17 Onboarding stays current; the shopping rhythm is typed by the person
+
+- E-man: healthy habits start in the grocery shop, and people "should type it in themselves. We can have that in the onboarding somewhere." Setup now ends with a 4th step where the person types how often they shop (1 to 60 days); weekdays and a shop name are optional; Later skips. There is no default interval anywhere.
+- One source of truth: `shop-plan-core.js` / `shop-plan.js`, localStorage `lowispike.shopplan.v1`. Grocery check-ins and world bonuses read it; they never build a second cadence.
+- Existing users are never sent through setup again; they set or change it in Profile > About you > Grocery shopping.
+- The sign-in gate gained a "How you play" step (controller, autopilot, bubbles, worlds, barcode estimate) and "Shop & scan" leads the habit list.
+- `ONBOARDING.md` maps every onboarding screen to the code it describes; `tests/onboarding-current.test.cjs` fails when they drift or when a new shopping feature ships without an onboarding entry.

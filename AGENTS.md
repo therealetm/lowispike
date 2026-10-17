@@ -99,6 +99,7 @@ The complete inline-module, screen, persistence, backend, asset, and test invent
 - Any new durable product decision is appended to `DECISIONS.md`; architecture/context changes update `CONTEXT.md`; remaining work becomes a scoped entry in `TICKETS.md`.
 - The final handoff names the exact commit/build and distinguishes automated, browser, simulator, and physical-device results.
 - `ARCHITECTURE.md`, `SCREEN_MAP.md`, `DATA_CONTRACTS.md`, `TESTING.md`, and `RELEASE.md` still describe reality after the change.
+- Onboarding is still true: if the release changes anything a new person sees or is told (controls, bubbles, worlds, shopping, scanner), update the onboarding copy (EN/DE/ES) and `ONBOARDING.md` in the same commit. `tests/onboarding-current.test.cjs` checks it.
 
 ## Release lessons
 

@@ -30,7 +30,7 @@ test('the unlock list marks what is on and what still needs a level', () => {
     assert.ok(l.every(x => x.n.length === 3 && x.d.length === 3), 'EN/DE/ES names and descriptions');
 });
 test('excursions only start when the sky is unlocked and she is free in her own world', () => {
-    const E = { tour: 100, done: true }, free = { gx: false, gxBack: false, wait: false, going: false, reduced: false };
+    const E = { tour: X.X.EVERY, done: true }, free = { gx: false, gxBack: false, wait: false, going: false, reduced: false };
     assert.strictEqual(X.due(A.capsOf(1), E, free), false);
     assert.strictEqual(X.due(A.capsOf(2), E, free), true);
     assert.strictEqual(X.due(A.capsOf(2), E, Object.assign({}, free, { wait: true })), false);

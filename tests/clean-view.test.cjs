@@ -130,8 +130,12 @@ test('reveal tap during autopilot: eaten whole (down, up, click, touch), UI back
     assert.ok(f.cls.has('lw-clean') && f.cls.has('lw-clean-auto'));
     const d = f.ev('pointerdown', f.water);
     assert.ok(d.stopped && d.prevented, 'the press never reaches water / quest / sheet / world');
+    assert.ok(f.cls.has('lw-clean'), 'a touch-down alone is not a tap');
+    assert.ok(f.ev('touchstart', f.water).stopped);
+    f.W._t += 120;
+    assert.ok(f.ev('pointerup', f.water).stopped);
     assert.ok(!f.cls.has('lw-clean'), 'everything is back');
-    for (const t of ['touchstart', 'pointerup', 'touchend', 'mouseup', 'click']) assert.ok(f.ev(t, f.water).stopped, t + ' of the reveal tap is eaten');
+    for (const t of ['touchend', 'mouseup', 'click']) assert.ok(f.ev(t, f.water).stopped, t + ' of the reveal tap is eaten');
     f.flush(500);
     assert.ok(!f.ev('click', f.water).stopped, 'later taps work normally');
     assert.equal(f.W.LowiClean.state().mode, 'auto');
@@ -169,20 +173,156 @@ test('steering: controller works and fades the rest; world drag passes through; 
     assert.equal(f.W.LowiClean.state().mode, 'drive', 'steering mode kept');
 });
 
-test('steering: a still press on the world reveals before the long press opens her sheet; leaving Home restores', () => {
+test('steering: a still hold on the world is not a tap (the menu stays away, the world keeps its own long press); leaving Home restores', () => {
     const f = fakeWorld();
     f.pad.dataset.mode = 'drive'; f.W.LowiClean.check();
     f.W.LowiClean._feed({ type: 'steer' });
     assert.ok(f.cls.has('lw-clean'));
-    f.ev('pointerdown', f.canvas, { pointerId: 7 });
-    f.flush(400);                                   /* before the world's 500 ms long press */
-    assert.ok(!f.cls.has('lw-clean'));
-    assert.ok((f.canvas._got || []).includes('pointercancel'));
-    assert.ok(f.ev('pointerup', f.canvas, { pointerId: 7 }).stopped);
-    f.W.LowiClean._feed({ type: 'steer' });
+    assert.ok(!f.ev('pointerdown', f.canvas, { pointerId: 7 }).stopped);
+    f.flush(700);
+    assert.ok(f.cls.has('lw-clean'), 'holding still never brings the menu back');
+    assert.ok(!(f.canvas._got || []).includes('pointercancel'), 'the world keeps its gesture');
+    assert.ok(!f.ev('pointerup', f.canvas, { pointerId: 7 }).stopped);
     assert.ok(f.cls.has('lw-clean'));
     f.cls.delete('wh-home'); f.W.LowiClean.check();
     assert.ok(!f.cls.has('lw-clean'), 'never leaks to another screen');
+});
+
+/* Oct 17 (E-man): "on autopilot, every time I touch the screen to move the world around, the whole panel comes back" (main world) */
+test('autopilot, main world: touching and dragging the world turns it and keeps the menu hidden', () => {
+    const f = fakeWorld();
+    f.setMode('auto');
+    assert.ok(f.cls.has('lw-clean') && f.cls.has('lw-clean-auto'));
+    /* touch-down alone: the world gets the press, nothing comes back */
+    const d = f.ev('pointerdown', f.canvas, { pointerId: 21, isPrimary: true, clientX: 100, clientY: 100, timeStamp: 5000 });
+    assert.ok(!d.stopped && !d.prevented, 'the world gets the press so it can turn');
+    assert.ok(f.cls.has('lw-clean') && f.cls.has('lw-clean-auto'), 'touching the screen keeps the clean view');
+    /* drag: passes through, clean view and autopilot kept */
+    for (const x of [104, 120, 160, 220]) assert.ok(!f.ev('pointermove', f.canvas, { pointerId: 21, clientX: x, clientY: 100 }).stopped);
+    assert.ok(f.cls.has('lw-clean'));
+    const u = f.ev('pointerup', f.canvas, { pointerId: 21, clientX: 220, clientY: 100, timeStamp: 5200 });
+    assert.ok(!u.stopped, 'the end of the drag is the world\'s (its spin carries on)');
+    assert.ok(!(f.canvas._got || []).includes('pointercancel'));
+    f.flush(2000); f.W.LowiClean.check();
+    assert.ok(f.cls.has('lw-clean') && f.cls.has('lw-clean-auto'), 'still hidden after the drag');
+    assert.ok(!f.ev('click', f.canvas).stopped, 'nothing is swallowed after a drag');
+    assert.equal(f.W.LowiClean.state().mode, 'auto', 'autopilot kept');
+    /* a drag that comes back to where it started is still a drag */
+    f.ev('pointerdown', f.canvas, { pointerId: 22, isPrimary: true, clientX: 100, clientY: 100, timeStamp: 6000 });
+    f.ev('pointermove', f.canvas, { pointerId: 22, clientX: 140, clientY: 100 });
+    f.ev('pointermove', f.canvas, { pointerId: 22, clientX: 101, clientY: 100 });
+    f.ev('pointerup', f.canvas, { pointerId: 22, clientX: 101, clientY: 100, timeStamp: 6150 });
+    assert.ok(f.cls.has('lw-clean'));
+});
+
+test('autopilot, main world: a hold, a cancelled touch and a pinch never bring the menu back', () => {
+    const f = fakeWorld();
+    f.setMode('auto');
+    /* hold: a still press longer than a tap */
+    f.ev('pointerdown', f.canvas, { pointerId: 31, isPrimary: true, timeStamp: 1000 });
+    f.flush(900);
+    assert.ok(f.cls.has('lw-clean'), 'holding never restores');
+    assert.ok(!f.ev('pointerup', f.canvas, { pointerId: 31, timeStamp: 1900 }).stopped);
+    assert.ok(f.cls.has('lw-clean'), 'letting go of a hold never restores');
+    /* cancelled: the system takes the touch (a swipe from the edge, a call) */
+    f.ev('pointerdown', f.canvas, { pointerId: 32, isPrimary: true, timeStamp: 3000 });
+    f.ev('pointercancel', f.canvas, { pointerId: 32, timeStamp: 3080 });
+    assert.ok(f.cls.has('lw-clean'), 'a cancelled touch never restores');
+    /* pinch: two still-ish fingers, lifted quickly, are a zoom, not two taps */
+    assert.ok(!f.ev('pointerdown', f.canvas, { pointerId: 33, isPrimary: true, clientX: 100, timeStamp: 4000 }).stopped);
+    assert.ok(!f.ev('pointerdown', f.canvas, { pointerId: 34, isPrimary: false, clientX: 200, timeStamp: 4020 }).stopped);
+    f.ev('pointermove', f.canvas, { pointerId: 34, clientX: 230 });
+    assert.ok(!f.ev('pointerup', f.canvas, { pointerId: 33, clientX: 100, timeStamp: 4100 }).stopped);
+    assert.ok(!f.ev('pointerup', f.canvas, { pointerId: 34, clientX: 230, timeStamp: 4110 }).stopped);
+    assert.ok(f.cls.has('lw-clean'), 'a pinch never restores');
+    /* the first finger dragged, then a second finger lands: still the world's */
+    f.ev('pointerdown', f.canvas, { pointerId: 35, isPrimary: true, clientX: 100, timeStamp: 5000 });
+    f.ev('pointermove', f.canvas, { pointerId: 35, clientX: 150 });
+    assert.ok(!f.ev('pointerdown', f.canvas, { pointerId: 36, isPrimary: false, clientX: 250, timeStamp: 5100 }).stopped);
+    f.ev('pointerup', f.canvas, { pointerId: 36, timeStamp: 5150 }); f.ev('pointerup', f.canvas, { pointerId: 35, timeStamp: 5160 });
+    assert.ok(f.cls.has('lw-clean'));
+    assert.equal(f.W.LowiClean.state().mode, 'auto');
+});
+
+test('autopilot, main world: a completed still tap brings the menu back and does nothing else; a late frame never makes it a hold', () => {
+    const f = fakeWorld();
+    f.setMode('auto');
+    f.ev('pointerdown', f.canvas, { pointerId: 41, isPrimary: true, timeStamp: 2000 });
+    assert.ok(f.cls.has('lw-clean'), 'nothing yet on touch-down');
+    f.ev('pointermove', f.canvas, { pointerId: 41, clientX: 104, clientY: 103 });   /* a finger always wobbles a little */
+    f.W._t += 700;                                   /* the page was busy: the up is handled late, but it happened 160 ms after the down */
+    const up = f.ev('pointerup', f.canvas, { pointerId: 41, timeStamp: 2160 });
+    assert.ok(up.stopped && up.prevented, 'the world never sees the tap (no warp, no petting, no map toggle)');
+    assert.ok((f.canvas._got || []).includes('pointercancel'), 'the world\'s gesture is cancelled');
+    assert.ok(!f.cls.has('lw-clean') && !f.cls.has('lw-clean-auto'), 'menu and controller back');
+    assert.ok(f.ev('click', f.canvas).stopped, 'the tap\'s click is eaten too');
+    assert.equal(f.W.LowiClean.state().mode, 'auto', 'she keeps flying');
+    /* the next autopilot start hides it again, and the old rule stands */
+    f.setMode('idle'); f.flush(600); f.setMode('auto');
+    assert.ok(f.cls.has('lw-clean'));
+});
+
+test('anything but the world (her empty cell, the guide): a drag, a hold or a cancel is eaten and never brings the menu back', () => {
+    const f = fakeWorld();
+    f.setMode('auto');
+    let d = f.ev('pointerdown', f.water, { pointerId: 61, timeStamp: 1000 });
+    assert.ok(d.stopped, 'her empty cell never recalls her on this touch');
+    assert.ok(f.ev('pointermove', f.water, { pointerId: 61, clientX: 170 }).stopped);
+    assert.ok(f.ev('pointerup', f.water, { pointerId: 61, clientX: 170, timeStamp: 1150 }).stopped);
+    assert.ok(f.cls.has('lw-clean'), 'a drag that started on her cell keeps the clean view');
+    f.flush(600);
+    f.ev('pointerdown', f.water, { pointerId: 62, timeStamp: 3000 }); f.flush(800);
+    f.ev('pointerup', f.water, { pointerId: 62, timeStamp: 3800 });
+    assert.ok(f.cls.has('lw-clean'), 'a hold keeps the clean view');
+    f.flush(600);
+    f.ev('pointerdown', f.water, { pointerId: 63, timeStamp: 5000 }); f.ev('pointercancel', f.water, { pointerId: 63, timeStamp: 5050 });
+    assert.ok(f.cls.has('lw-clean'), 'a cancelled touch keeps the clean view');
+});
+
+/* Oct 17 (E-man): "in the spirit world, tapping the screen also brings all panels back" (unwanted) */
+for (const sp of ['mf-galaxy', 'wh-cosmos', 'gx-out']) test('spirit world (' + sp + '): a tap never brings the panels back; on autopilot it only brings back the controller', () => {
+    const f = fakeWorld();
+    f.setMode('auto'); f.cls.add(sp);
+    /* a drag turns the world, nothing comes back */
+    f.ev('pointerdown', f.canvas, { pointerId: 71, isPrimary: true, timeStamp: 1000 });
+    f.ev('pointermove', f.canvas, { pointerId: 71, clientX: 180 });
+    f.ev('pointerup', f.canvas, { pointerId: 71, clientX: 180, timeStamp: 1200 });
+    assert.ok(f.cls.has('lw-clean') && f.cls.has('lw-clean-auto'));
+    /* a still tap: panels stay hidden, the controller comes back so you can take over; the tap does nothing else */
+    f.ev('pointerdown', f.canvas, { pointerId: 72, isPrimary: true, timeStamp: 2000 });
+    const up = f.ev('pointerup', f.canvas, { pointerId: 72, timeStamp: 2100 });
+    assert.ok(up.stopped, 'that tap never warps or pets');
+    assert.ok(f.cls.has('lw-clean'), 'the panels stay hidden in the spirit world');
+    assert.ok(!f.cls.has('lw-clean-auto'), 'the controller is back');
+    assert.equal(f.W.LowiClean.state().mode, 'auto', 'she keeps flying on autopilot');
+    f.flush(600);
+    /* the controller already shows: more taps are the world's own and the panels still stay away */
+    f.ev('pointerdown', f.canvas, { pointerId: 73, isPrimary: true, timeStamp: 3000 });
+    assert.ok(!f.ev('pointerup', f.canvas, { pointerId: 73, timeStamp: 3100 }).stopped, 'the world gets its tap');
+    f.ev('pointerdown', f.water, { pointerId: 74, timeStamp: 4000 }); f.ev('pointerup', f.water, { pointerId: 74, timeStamp: 4100 });
+    f.ev('keydown', f.water, { key: 'a' });
+    assert.ok(f.cls.has('lw-clean'), 'no tap or key brings the panels back out there');
+    /* back on Home's own world: a tap brings everything back */
+    f.cls.delete(sp); f.flush(600);
+    f.ev('pointerdown', f.canvas, { pointerId: 75, isPrimary: true, timeStamp: 6000 });
+    assert.ok(f.ev('pointerup', f.canvas, { pointerId: 75, timeStamp: 6100 }).stopped);
+    assert.ok(!f.cls.has('lw-clean'), 'in the main world a tap brings the panels back');
+});
+
+test('autopilot inside a cell world: turning the world keeps everything hidden; Home\'s menus never show there even after a tap', () => {
+    const f = fakeWorld();
+    f.cls.add('wh-away');
+    f.setMode('auto');
+    assert.ok(f.cls.has('lw-clean'));
+    f.ev('pointerdown', f.canvas, { pointerId: 51, isPrimary: true, timeStamp: 1000 });
+    f.ev('pointermove', f.canvas, { pointerId: 51, clientX: 60, clientY: 140 });
+    f.ev('pointermove', f.canvas, { pointerId: 51, clientX: 20, clientY: 180 });
+    assert.ok(!f.ev('pointerup', f.canvas, { pointerId: 51, clientX: 20, clientY: 180, timeStamp: 1300 }).stopped);
+    assert.ok(f.cls.has('lw-clean') && f.cls.has('lw-clean-auto'), 'camera rotation in a cell world keeps the clean view');
+    /* the cell-world rule is CSS that ignores the clean state: Home's menus stay away inside a world */
+    const css = C.worldCss();
+    for (const s of ['#tabbar', '#spFast', '#f3Board', '#arrCard']) assert.ok(css.includes('html.wh-home.wh-away ' + s), s);
+    assert.ok(/C\.worldCss\(\) \+ ' \{ opacity: 0 !important; visibility: hidden !important; pointer-events: none !important;/.test(read('clean-view.js')));
 });
 
 test('leaving a world: no automatic return a second later; world transitions and release touches never restore; only a tap does', () => {
@@ -207,8 +347,9 @@ test('leaving a world: no automatic return a second later; world transitions and
     /* your tap: everything is back, and that tap does nothing else */
     const d = f.ev('pointerdown', f.water, { pointerId: 9 });
     assert.ok(d.stopped, 'the reveal tap is swallowed');
+    assert.ok(f.ev('pointerup', f.water, { pointerId: 9 }).stopped);
     assert.ok(!f.cls.has('lw-clean') && !f.cls.has('lw-clean-auto'));
-    f.ev('pointerup', f.water, { pointerId: 9 }); f.flush(600);
+    f.flush(600);
     /* steering, letting go of the controller (a release touch) and she stops: still hidden, controller still works */
     f.ev('pointerdown', f.pad, { pointerId: 10, clientX: 50, clientY: 50 }); f.pad.dataset.mode = 'drive';
     f.ev('pointermove', f.pad, { pointerId: 10, clientX: 80, clientY: 50 });

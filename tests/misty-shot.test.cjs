@@ -81,6 +81,6 @@ test('the healed amount thins the world fog and murk; the shot is drawn with no 
 
 test('clean flight view lets the second finger through while the controller is held', () => {
     const cv = read('clean-view.js');
-    const i = cv.indexOf('if (worldTarget(e.target) && padHeld()) return;'), j = cv.indexOf("if (st.view === 'drive' && !watch && worldTarget(e.target))");
+    const i = cv.indexOf('if (worldTarget(e.target) && padHeld()) return;'), j = cv.indexOf('if (worldTarget(e.target)) {');
     assert.ok(i > 0 && i < j);
 });

@@ -109,7 +109,8 @@
 
     /* ---------- the reveal tap ---------- */
     let swallowing = false, swallowIds = new Set(), swallowUntil = 0;
-    let watch = null;                        /* steering view: a press on the world, not yet a drag or a tap */
+    let watch = null;                        /* a press on the world while the view is clean: not yet a drag, a hold or a tap */
+    const worldPtrs = new Set();             /* fingers on the world while the view is clean (a drag, a pinch): left to the world */
     const now = () => (W.performance ? performance.now() : Date.now());
     function eat(e) { if (e.cancelable) e.preventDefault(); e.stopImmediatePropagation(); e.stopPropagation(); }
     function swallowStart(id) { swallowing = true; if (id != null) swallowIds.add(id); swallowUntil = Infinity; }
@@ -119,6 +120,18 @@
         try { const ev = new PointerEvent('pointercancel', { pointerId: w.id, pointerType: w.type, isPrimary: true, bubbles: true, cancelable: false, clientX: w.x, clientY: w.y }); ev.lwClean = true; (w.target.isConnected ? w.target : D).dispatchEvent(ev); } catch (e) { }
     }
     function reveal() { feed({ type: 'tap', inWorld: H.classList.contains('wh-away') }); }
+    /* Oct 17 (E-man: "in the spirit world, tapping the screen brings all the panels back", unwanted): out in the spirit world
+       (the galaxy breakout, mf-galaxy; the camera far out past the World Map, wh-cosmos; the zoom out to Community, gx-out)
+       Home's panels never come back on a tap. On autopilot a still tap only brings back the controller, so you can take over;
+       when the controller already shows, the tap is the world's own. The panels come back with a tap on Home's own world. */
+    const inSpirit = () => !H.classList.contains('wh-away') && (H.classList.contains('mf-galaxy') || H.classList.contains('wh-cosmos') || H.classList.contains('gx-out'));
+    /* a completed still tap (or a key) while the view is clean; returns false when the tap is left to the world */
+    function tapped() {
+        if (!inSpirit()) { reveal(); return true; }
+        if (st.view === 'auto') { feed({ type: 'steer' }); return true; }   /* the controller only, the rest stays hidden */
+        return false;
+    }
+    let pend = null;                         /* a press on anything but the world while clean: eaten, a tap only when let go still and soon */
     const padHeld = () => { try { return !!(W.LowiPad && W.LowiPad.held && W.LowiPad.held()); } catch (e) { return false; } };
     function worldTarget(t) {
         if (!t || !t.closest) return false;
@@ -137,30 +150,47 @@
         if (!st.clean) return;
         /* Oct 17 energy shot (misty-turn.js): with a finger on the controller, taps on the world are her energy shot, not the reveal tap */
         if (worldTarget(e.target) && padHeld()) return;
-        if (st.view === 'drive' && !watch && worldTarget(e.target)) {
-            /* steering: a drag still turns the world; only a still tap or press is the reveal tap */
-            const w = watch = { id: e.pointerId, type: e.pointerType, x: e.clientX, y: e.clientY, t: now(), target: e.target, moved: 0 };
-            w.timer = setTimeout(() => { if (watch === w && C.isTap(w.moved, 0)) { watch = null; cancelFor(w); swallowStart(w.id); reveal(); } }, 380);
+        /* Oct 17 (E-man: "on autopilot, every time I touch the screen to move the world around, the whole panel comes back"):
+           on autopilot and while steering alike, a finger on the world is left to the world. A drag turns it, two fingers zoom,
+           a hold or a cancelled touch does nothing, and the view stays clean. Only a completed still tap brings the menu back,
+           and that tap is eaten (the world gets a cancel: no warp, no petting, no map toggle). */
+        if (worldTarget(e.target)) {
+            if (e.isPrimary === true) { worldPtrs.clear(); watch = null; }   /* a first finger: nothing else is down (a lost up never sticks) */
+            if (worldPtrs.size || watch) {   /* a second finger: a pinch, leave it to the world */
+                if (watch) { worldPtrs.add(watch.id); watch = null; }
+                worldPtrs.add(e.pointerId); return;
+            }
+            watch = { id: e.pointerId, type: e.pointerType, x: e.clientX, y: e.clientY, t: now(), ts: e.timeStamp || 0, target: e.target, moved: 0 };
             return;
         }
-        if (watch) { clearTimeout(watch.timer); watch = null; return; }   /* a second finger: a pinch, leave it to the world */
-        eat(e); swallowStart(e.pointerId); reveal();
+        /* anything else (her empty cell, the cell guide): nothing under the finger acts; only a completed still tap counts */
+        eat(e); swallowStart(e.pointerId);
+        pend = { id: e.pointerId, x: e.clientX, y: e.clientY, t: now(), ts: e.timeStamp || 0, moved: 0 };
     }, { capture: true, passive: false });
 
     W.addEventListener('pointermove', e => {
         if (e.lwClean) return;
         if (padP && e.pointerId === padP.id && Math.hypot(e.clientX - padP.x, e.clientY - padP.y) > 6) { clearTimeout(padP.hold); padP = null; steer(); return; }
-        if (watch && e.pointerId === watch.id) { watch.moved = Math.max(watch.moved, Math.hypot(e.clientX - watch.x, e.clientY - watch.y)); if (watch.moved >= 10) { clearTimeout(watch.timer); watch = null; } return; }
+        if (watch && e.pointerId === watch.id) { watch.moved = Math.max(watch.moved, Math.hypot(e.clientX - watch.x, e.clientY - watch.y)); if (watch.moved >= 10) { worldPtrs.add(watch.id); watch = null; } return; }
+        if (pend && e.pointerId === pend.id) pend.moved = Math.max(pend.moved, Math.hypot(e.clientX - pend.x, e.clientY - pend.y));
         if (swallowOn() && swallowIds.has(e.pointerId)) eat(e);
     }, { capture: true, passive: false });
 
     function up(e) {
         if (e.lwClean) return;
         if (padP && e.pointerId === padP.id) { clearTimeout(padP.hold); padP = null; soon(); }
+        if (worldPtrs.delete(e.pointerId)) return;   /* the end of a drag or a pinch: the world's own */
         if (watch && e.pointerId === watch.id) {
-            const w = watch; watch = null; clearTimeout(w.timer);
-            if (e.type === 'pointerup' && C.isTap(w.moved, 0)) {   /* any still press is the reveal tap, even on a busy, late frame */ eat(e); cancelFor(w); swallowStart(null); swallowEnd(null); reveal(); }
+            const w = watch; watch = null;
+            /* the press time from the events' own stamps, so a busy, late frame never turns a quick tap into a hold */
+            const ms = (w.ts && e.timeStamp) ? e.timeStamp - w.ts : now() - w.t;
+            if (e.type === 'pointerup' && st.clean && C.isTap(w.moved, ms) && (!inSpirit() || st.view === 'auto')) { eat(e); cancelFor(w); swallowStart(null); swallowEnd(null); tapped(); }
             return;
+        }
+        if (pend && e.pointerId === pend.id) {
+            const p = pend; pend = null;
+            const ms = (p.ts && e.timeStamp) ? e.timeStamp - p.ts : now() - p.t;
+            if (e.type === 'pointerup' && st.clean && C.isTap(p.moved, ms)) tapped();
         }
         if (swallowIds.has(e.pointerId)) { eat(e); swallowEnd(e.pointerId); }
     }
@@ -176,7 +206,7 @@
             soon(); if (!st.clean || C.padLive(st)) return;
         }
         if (!st.clean) return;
-        eat(e); reveal();
+        if (tapped()) eat(e);
     }, { capture: true });
 
     styles();

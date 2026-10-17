@@ -1,0 +1,135 @@
+/* misty-panels.css - Oct 17, 2026 (E-man's list, item 5: "style Fasting, Meals, Today and Weather like the Move panel, main
+   actions reachable by the right thumb, one-handed and uncluttered").
+
+   The Move panel (move-bubble.js, long press on the movement bubble) is the model:
+   - the sheet: the app's sheet colour at 86 % over the world, blur 22 px, a 28 px radius and one hairline rim
+     (world-home.css glassSheet + apple-ui.css), white ink;
+   - a short title (18 px, bold) and one calm note line (13 px, 85 %);
+   - every card, row and tile is one Misty row: 14 px radius, a faint blue fill and her cyan rim (move-bubble.css .wm-row);
+   - every button is at least 44 px tall and round-ended; the one main action is the app's blue pill.
+   Right thumb: the Weather panel's Refresh and Close move from the top right corner down to the bottom right, next to the
+   thumb. Fasting's End fast, Meals' Log a meal and Today's next step were already full width or on the right.
+
+   Paint and placement only: no JavaScript, no new animation, no handler, no tap target is removed, so every panel keeps
+   what it does (the Meals behaviour is owned by a separate fix). Scoped to the four panels; the Move panel itself is the
+   reference and is not touched. Loaded after the older per-panel looks (today-sheet.css, scan-screens.css, top-bar.css,
+   the fasting styles in index.html); the doubled roots outweigh liquid-glass.css, which moves itself to the very end. */
+:root {
+  --mpn-sheet: rgba(28, 28, 30, .86); /* --r2-sheet (#1c1c1e, liquid-glass.css) at 86 %, exactly what glassSheet gives the Move panel */
+  --mpn-blur: blur(22px) saturate(1.3);
+  --mpn-edge: rgba(224, 235, 255, .13);
+  --mpn-r: 28px;
+  --mpn-ink: #fff;
+  --mpn-ink2: rgba(235, 242, 255, .78);
+  --mpn-row: rgba(140, 200, 255, .1);
+  --mpn-rim: rgba(143, 231, 255, .2);
+  --mpn-row-r: 14px;
+  --mpn-acc: #8fe7ff;
+  --mpn-pri: var(--r2-pri, linear-gradient(180deg, #2f95ff, #0a7aff));
+}
+
+/* ---------- 1. one sheet ---------- */
+html:root body #sheetwrap #sheet:has(> .fst-sh),
+html:root body .r2-ov.ss-sheet:not(.full):has(.sp-quick-log) .r2-sh,
+html:root.wh-home body #whToday.wh-today,
+html:root body #tbWx .tbw-sheet,
+html:root body #tbWx[data-night] .tbw-sheet,
+html:root body #tbWx[data-k] .tbw-sheet,
+html:root[data-ui=light] body #tbWx .tbw-sheet {
+  background: var(--mpn-sheet) !important;
+  background-image: none !important;
+  -webkit-backdrop-filter: var(--mpn-blur) !important;
+  backdrop-filter: var(--mpn-blur) !important;
+  border: 1px solid var(--mpn-edge) !important;
+  box-shadow: 0 -8px 48px rgba(0, 0, 0, .27) !important;
+  color: var(--mpn-ink) !important;
+  text-shadow: none !important;
+}
+/* the edge-docked sheets keep their place at the bottom: only the top corners round */
+html:root body #sheetwrap #sheet:has(> .fst-sh),
+html:root.wh-home body #whToday.wh-today,
+html:root body #tbWx .tbw-sheet { border-bottom: 0 !important; border-radius: var(--mpn-r) var(--mpn-r) 0 0 !important; }
+html:root body .r2-ov.ss-sheet:not(.full):has(.sp-quick-log) .r2-sh { border-radius: var(--mpn-r) !important; }
+/* Day (light) keeps the panels dark, like the Move panel: --r2-sheet is the same graphite in both */
+html:root[data-theme="light"].wh-home body #whToday.wh-today,
+html:root[data-ui=light] body #tbWx .tbw-sheet { color: var(--mpn-ink) !important; }
+@media (min-width: 700px) {
+  html:root body #tbWx .tbw-sheet { border-radius: var(--mpn-r) !important; border-bottom: 1px solid var(--mpn-edge) !important; }
+}
+/* the grab handle: one quiet bar */
+html:root body #sheetwrap #sheet:has(> .fst-sh) > .grab,
+html:root body .r2-ov.ss-sheet:not(.full):has(.sp-quick-log) .r2-grab,
+html:root.wh-home body #whToday .wh-today-grab { background: rgba(235, 242, 255, .45) !important; opacity: 1 !important; }
+
+/* ---------- 2. one title, one note line ---------- */
+html:root body #sheet .fst-sh .fst-title,
+html:root body .r2-ov.ss-sheet:not(.full):has(.sp-quick-log) h2,
+html:root body #tbWx .tbw-top h2 {
+  font-size: 18px !important; font-weight: 700 !important; letter-spacing: -.01em !important; line-height: 1.25 !important;
+  color: var(--mpn-ink) !important; -webkit-text-fill-color: currentColor !important; margin: 2px 0 10px !important;
+}
+html:root body #tbWx .tbw-top h2 { margin: 0 !important; }
+html:root body #sheet .fst-sh :is(.fst-hint, .fst-next, .fst-since, .fst-hh),
+html:root body .r2-ov.ss-sheet:not(.full):has(.sp-quick-log) :is(.sp-note, .sp-quick-h),
+html:root body #tbWx :is(.tbw-cellline, .tbw-msg, .tbw-fine, .tbw-sub, .tbw-hh) {
+  color: var(--mpn-ink2) !important; opacity: 1 !important; font-size: 13px !important; line-height: 1.4 !important;
+}
+
+/* ---------- 3. one Misty row for every card, row and tile ---------- */
+html:root body #sheet .fst-sh :is(.fst-sum, .fst-time, .fst-earn, .fst-earn.none),
+html:root body .r2-ov.ss-sheet:not(.full):has(.sp-quick-log) :is(.sp-quick-cap button, .sp-quick-item, .sp-herb-tip, details.sp-manual),
+html:root body #tbWx :is(.tbw-hr, .tbw-facts > div, .tbw-note) {
+  background: var(--mpn-row) !important; background-image: none !important;
+  border: 1px solid var(--mpn-rim) !important; border-radius: var(--mpn-row-r) !important;
+  box-shadow: none !important; color: var(--mpn-ink) !important; text-shadow: none !important;
+}
+/* Today already draws every card from its own tokens (today-sheet.css): point them at the Move row */
+html:root.wh-home body #whToday {
+  --ts-glass: var(--mpn-row);
+  --ts-glass-sh: none;
+  --ts-rim: var(--mpn-rim);
+  --ts-r: var(--mpn-row-r);
+  --ts-ink: var(--mpn-ink);
+  --ts-ink2: var(--mpn-ink2);
+  --ts-acc: var(--mpn-acc);
+}
+html:root.wh-home body #whToday#whToday .wh-tiles.wh-tiles .g2h-tile { border-radius: var(--mpn-row-r) !important; }
+/* small accents in Misty's cyan, not gold or green */
+html:root body #sheet .fst-sh .fst-hr em,
+html:root body #sheet .fst-sh .fst-goal.ok,
+html:root body #sheet .fst-sh .fst-hr i,
+html:root body .r2-ov.ss-sheet:not(.full):has(.sp-quick-log) .sp-herb-tip small,
+html:root body #tbWx .tbw-hr small { color: var(--mpn-acc) !important; }
+html:root body #sheet .fst-sh .fst-hist { border-top-color: var(--mpn-rim) !important; }
+html:root body #sheet .fst-sh .fst-msl i { background: var(--mpn-row) !important; border-color: var(--mpn-rim) !important; }
+html:root body #tbWx .tbw-nico { background: rgba(140, 200, 255, .16) !important; color: var(--mpn-acc) !important; }
+
+/* ---------- 4. buttons: 44 px and round-ended; one blue main action ---------- */
+html:root body #sheet .fst-sh .fst-chips .chip {
+  min-height: 44px !important; padding: 0 16px !important; border-radius: 22px !important;
+  background: var(--mpn-row) !important; border: 1px solid var(--mpn-rim) !important; color: var(--mpn-ink) !important;
+}
+html:root body #sheet .fst-sh .fst-chips .chip.on { background: rgba(143, 231, 255, .24) !important; border-color: rgba(143, 231, 255, .7) !important; }
+html:root body #sheet .fst-sh .fst-go,
+html:root body .r2-ov.ss-sheet:not(.full):has(.sp-quick-log) :is(.r2-btn.pri, .sp-primary),
+html:root.wh-home body #whToday .sp-next {
+  background: var(--mpn-pri) !important; border: 0 !important; color: #fff !important; border-radius: 999px !important;
+  box-shadow: none !important; text-shadow: none !important;
+}
+html:root body #sheet .fst-sh .fst-go { min-height: 50px !important; }
+html:root body .r2-ov.ss-sheet:not(.full):has(.sp-quick-log) .sp-quick-item { min-height: 52px; }
+html:root body .r2-ov.ss-sheet:not(.full):has(.sp-quick-log) .sp-quick-item em { color: var(--mpn-acc) !important; }
+html:root body .r2-ov.ss-sheet:not(.full):has(.sp-quick-log) details.sp-manual summary { min-height: 44px; }
+
+/* ---------- 5. right thumb: Weather's Refresh and Close sit at the bottom right ---------- */
+html:root body #tbWx .tbw-top { padding: 18px 20px 6px !important; }
+html:root body #tbWx .tbw-top .tbw-btn {
+  position: absolute; z-index: 2; bottom: calc(var(--sab, env(safe-area-inset-bottom, 0px)) + 14px);
+  width: 52px !important; height: 52px !important;
+  background: var(--mpn-row) !important; border: 1px solid var(--mpn-rim) !important; color: var(--mpn-ink) !important;
+  -webkit-backdrop-filter: var(--mpn-blur); backdrop-filter: var(--mpn-blur);
+}
+html:root body #tbWx .tbw-top .tbw-btn[data-tbw="close"] { right: max(16px, env(safe-area-inset-right, 0px)); }
+html:root body #tbWx .tbw-top .tbw-btn[data-tbw="refresh"] { right: calc(max(16px, env(safe-area-inset-right, 0px)) + 62px); }
+/* the readings scroll clear of the two buttons */
+html:root body #tbWx .tbw-body { padding-bottom: calc(var(--sab, env(safe-area-inset-bottom, 0px)) + 82px) !important; }

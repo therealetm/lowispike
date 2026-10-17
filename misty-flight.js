@@ -77,7 +77,7 @@
     /* misty-turn (Oct 17, E-man): "total freedom to fly to any corner of anything that I see ... fly down into the dark and get lost".
        Your own flying reaches out to just inside the world's visible walls (a heart / organ shell ~20-26, the gut tube 15.5), not the
        old camera-sized bubble. The hunt's crumbs and the autopilot's tour stay in the core (inReach). */
-    const FREE_R = 18, FREE_R_GUT = 13;
+    const FREE_R = 20, FREE_R_GUT = 13;
     const freeReach = (maxD, id) => Math.max(inReach(maxD), String(id || '') === 'gut' ? FREE_R_GUT : FREE_R);
     const power = () => { try { return W.LowiMistyPower && W.LowiMistyPower.strength ? W.LowiMistyPower.strength() : 1; } catch (e) { return 1; } };
     /* inside a place: she roams on her own unless you are steering her (or let go less than K.HANDBACK s ago) */

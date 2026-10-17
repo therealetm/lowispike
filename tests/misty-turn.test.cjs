@@ -111,7 +111,7 @@ test('ships: loaded after the flight, precached, no new buttons, only paint on t
 test('total freedom: your own flying reaches to just inside the visible walls, crumbs and the autopilot tour stay in the core', () => {
     const F = require('../misty-flight.js');
     for (const maxD of [8, 14, 20]) {
-        assert.ok(F.freeReach(maxD, 'heart') >= 18 && F.freeReach(maxD, 'heart') >= F.inReach(maxD));
+        assert.ok(F.freeReach(maxD, 'heart') >= 20 && F.freeReach(maxD, 'heart') < 22 && F.freeReach(maxD, 'heart') >= F.inReach(maxD));
         assert.ok(F.freeReach(maxD, 'gut') < 15.5 || F.freeReach(maxD, 'gut') === F.inReach(maxD), 'never through the gut tube wall');
     }
     const f = read('misty-flight.js');

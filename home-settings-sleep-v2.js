@@ -68,29 +68,56 @@
         return { band, done: true, fill: FILL[band], value: t.short[band], aria: t.sleep + ', ' + t[band] };
     }
 
-    /* chips on an arc outward from the bubble, away from Misty: first layout that keeps every chip on screen,
-       clear of Misty's disk and of each other. o: {mx,my,mr} Misty, {bx,by,br} bubble, n, c (chip diameter), vw, vh, safe {t,r,b,l} */
+    /* chips outward from the bubble, away from Misty: the first layout that keeps every chip on screen, clear of Misty's disk,
+       clear of the other ring controls (o.avoid: [{x,y,r}]) and of each other, and at least as far from Misty as the bubble.
+       Tries, in order: an arc round the bubble, an arc on an outer ring round Misty, then rows in the free band past the ring
+       (a phone's ring nearly fills the width, so its blooms land in the band below or above it). Chips shrink to 54 px before giving up.
+       o: {mx,my,mr} Misty, {bx,by,br} bubble, n, c (chip diameter), vw, vh, safe {t,r,b,l}, avoid */
     function fan(o) {
-        const n = Math.max(1, o.n | 0), c = o.c, s = o.safe || { t: 0, r: 0, b: 0, l: 0 }, m = 8;
+        const n = Math.max(1, o.n | 0), s = o.safe || { t: 0, r: 0, b: 0, l: 0 }, m = 8, avoid = o.avoid || [];
         const a0 = Math.atan2(o.by - o.my, o.bx - o.mx), bd = Math.hypot(o.bx - o.mx, o.by - o.my);
-        /* outward: every chip at least as far from Misty as the bubble it grows from */
-        const ok = p => Math.hypot(p.x - o.mx, p.y - o.my) >= bd && p.x - c / 2 >= s.l + m && p.x + c / 2 <= o.vw - s.r - m && p.y - c / 2 >= s.t + m && p.y + c / 2 <= o.vh - s.b - m &&
-            Math.hypot(p.x - o.mx, p.y - o.my) >= o.mr + c / 2 + 6;
         const rots = [0]; for (let r = 12; r <= 108; r += 12) rots.push(r, -r);
-        for (let k = 0; k < 6; k++) {
-            const dist = o.br + c / 2 + 10 + k * c * 0.45;
-            const step = 2 * Math.asin(Math.min(1, (c + 8) / (2 * dist)));
-            if (step * (n - 1) > Math.PI * 1.15) continue;
-            for (const r of rots) {
-                const base = a0 + r * Math.PI / 180, pts = [];
-                for (let i = 0; i < n; i++) { const a = base + (i - (n - 1) / 2) * step; pts.push({ x: o.bx + dist * Math.cos(a), y: o.by + dist * Math.sin(a) }); }
-                if (pts.every(ok)) return { pts, rot: r, dist, fit: true };
+        function tryC(c) {
+            const ok = p => p.x - c / 2 >= s.l + m && p.x + c / 2 <= o.vw - s.r - m && p.y - c / 2 >= s.t + m && p.y + c / 2 <= o.vh - s.b - m &&
+                Math.hypot(p.x - o.mx, p.y - o.my) >= Math.max(bd, o.mr + c / 2 + 6) && avoid.every(q => Math.hypot(p.x - q.x, p.y - q.y) >= q.r + c / 2 + 3);
+            const pass = pts => pts.every(ok) && pts.every((p, i) => pts.slice(i + 1).every(q => Math.hypot(p.x - q.x, p.y - q.y) >= c + 4 - 0.01));
+            /* 1: arc round the bubble */
+            for (let k = 0; k < 6; k++) {
+                const dist = o.br + c / 2 + 10 + k * c * 0.45, step = 2 * Math.asin(Math.min(1, (c + 8) / (2 * dist)));
+                if (step * (n - 1) > Math.PI * 1.15) continue;
+                for (const r of rots) {
+                    const base = a0 + r * Math.PI / 180, pts = [];
+                    for (let i = 0; i < n; i++) { const a = base + (i - (n - 1) / 2) * step; pts.push({ x: o.bx + dist * Math.cos(a), y: o.by + dist * Math.sin(a) }); }
+                    if (pass(pts)) return { pts, how: 'arc', c };
+                }
             }
+            /* 2: outer ring round Misty, centred on the bubble's angle */
+            for (let k = 0; k < 4; k++) {
+                const dist = bd + o.br + c / 2 + 8 + k * c * 0.6, step = 2 * Math.asin(Math.min(1, (c + 8) / (2 * dist)));
+                for (const r of rots) {
+                    const base = a0 + r * Math.PI / 180, pts = [];
+                    for (let i = 0; i < n; i++) { const a = base + (i - (n - 1) / 2) * step; pts.push({ x: o.mx + dist * Math.cos(a), y: o.my + dist * Math.sin(a) }); }
+                    if (pass(pts)) return { pts, how: 'ring', c };
+                }
+            }
+            /* 3: rows in the band past the ring, on the bubble's side of Misty */
+            const down = o.by >= o.my, per = Math.max(1, Math.floor((o.vw - s.l - s.r - 2 * m + 8) / (c + 8)));
+            const edge = avoid.concat([{ x: o.bx, y: o.by, r: o.br }]).reduce((e, q) => down ? Math.max(e, q.y + q.r) : Math.min(e, q.y - q.r), down ? o.my + o.mr : o.my - o.mr);
+            const pts = [];
+            for (let i = 0; i < n; i++) {
+                const line = Math.floor(i / per), inLine = Math.min(per, n - line * per), col = i - line * per, w = inLine * c + (inLine - 1) * 8;
+                const x0 = Math.min(o.vw - s.r - m - w, Math.max(s.l + m, o.bx - w / 2)) + c / 2;
+                const y = down ? edge + 10 + c / 2 + line * (c + 8) : edge - 10 - c / 2 - line * (c + 8);
+                pts.push({ x: x0 + col * (c + 8), y });
+            }
+            if (pass(pts)) return { pts, how: 'rows', c };
+            return null;
         }
-        /* nothing fits cleanly (tiny window): a straight row clamped on screen, on Misty's far side of the bubble */
-        const dir = o.by >= o.my ? 1 : -1, y = Math.min(o.vh - s.b - m - c / 2, Math.max(s.t + m + c / 2, o.by + dir * (o.br + c / 2 + 10)));
+        for (let c = o.c; c >= Math.min(o.c, 54); c -= 6) { const r = tryC(c); if (r) return Object.assign(r, { fit: true }); }
+        /* nothing fits cleanly (tiny window): one clamped row on the bubble's far side, smallest chips */
+        const c = Math.min(o.c, 54), dir = o.by >= o.my ? 1 : -1, y = Math.min(o.vh - s.b - m - c / 2, Math.max(s.t + m + c / 2, o.by + dir * (o.br + c / 2 + 10)));
         const w = n * c + (n - 1) * 8, x0 = Math.min(o.vw - s.r - m - w, Math.max(s.l + m, o.bx - w / 2)) + c / 2;
-        return { pts: Array.from({ length: n }, (_, i) => ({ x: x0 + i * (c + 8), y })), rot: null, dist: null, fit: false };
+        return { pts: Array.from({ length: n }, (_, i) => ({ x: x0 + i * (c + 8), y })), how: 'clamp', c, fit: false };
     }
 
     /* the hidden Home entry points: env.has(id) says whether its real route exists right now */
@@ -255,8 +282,9 @@
                 '<div class="ss2-head"><button type="button" class="ss2-back" data-ss2="back">' + T.back + '</button><b>' + T.moreTitle + '</b><button type="button" class="ss2-back" data-ss2="close" aria-label="' + T.close + '">\u00d7</button></div>' +
                 '<div class="ss2-grid">' + ids.map(id => chipHTML('more', id)).join('') + '</div></div>';
         } else {
-            const c = Math.round(Math.max(54, Math.min(88, q.width * 0.8)));
-            const F = fan({ mx: M.x, my: M.y, mr: M.r, bx, by, br, n: ids.length, c, vw, vh, safe });
+            const avoid = [...D.querySelectorAll('[data-orbit]')].filter(e => e !== b).map(e => e.getBoundingClientRect()).filter(r => r.width > 2)
+                .map(r => ({ x: r.left + r.width / 2, y: r.top + r.height / 2, r: Math.max(r.width, r.height) / 2 }));
+            const F = fan({ mx: M.x, my: M.y, mr: M.r, bx, by, br, n: ids.length, c: Math.round(Math.max(54, Math.min(88, q.width * 0.8))), vw, vh, safe, avoid }), c = F.c;
             const label = kind === 'sleep' ? T.ask : T.settings;
             L.innerHTML = '<div class="ss2-fan" role="' + (kind === 'sleep' ? 'radiogroup' : 'group') + '" aria-label="' + label + '" style="--ss2-c:' + c + 'px">' +
                 ids.map((id, i) => chipHTML(kind, id).replace('<button ', '<button style="left:' + F.pts[i].x.toFixed(1) + 'px;top:' + F.pts[i].y.toFixed(1) + 'px;--ss2-fx:' + (bx - F.pts[i].x).toFixed(1) + 'px;--ss2-fy:' + (by - F.pts[i].y).toFixed(1) + 'px;--ss2-i:' + i + '" ')).join('') +
@@ -349,7 +377,7 @@
         ['lowi:home-orbit', 'lowi:home-bubble-added'].forEach(n => { D.addEventListener(n, claim); root.addEventListener(n, claim); });
         /* the ring moved (menu bar switched, rotation): an open bloom follows its bubble */
         D.addEventListener('lowi:home-orbit', () => { if (!open) return; const k = open, a = D.activeElement, id = a && layer && layer.contains(a) ? a.getAttribute('data-ss2') : null; show(k); const f = id && layer.querySelector('[data-ss2="' + id + '"]'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } } });
-        D.addEventListener('lowi:tab', () => close(false));
+        D.addEventListener('lowi:tab', () => { close(false); setTimeout(claim, 400); });
         root.addEventListener('lowi:state', paintSleep);
         root.addEventListener('resize', () => { if (open) close(false); }, { passive: true });
         D.addEventListener('visibilitychange', () => { if (!D.hidden) claim(); });

@@ -60,27 +60,40 @@ test('sleep gives no XP and no sun energy: the module never awards', () => {
 });
 
 const inside = (p, c, o) => p.x - c / 2 >= 8 && p.x + c / 2 <= o.vw - 8 && p.y - c / 2 >= 8 && p.y + c / 2 <= o.vh - 8;
-function ring(vw, vh, d, R) {
-    const mx = vw / 2, my = vh * 0.47, deg = { settings: 45, sleep: 135, fuel: -135, water: -45 };
-    const o = {};
-    for (const k in deg) { const a = deg[k] * Math.PI / 180; o[k] = { bx: mx + R * Math.cos(a), by: my + R * Math.sin(a), br: d / 2 }; }
-    return { mx, my, o };
-}
-test('fan: chips bloom outward from Sleep and Settings, on screen, clear of Misty and of each other (iPhone 390x844, iPad 820x1180, 1024x768)', () => {
-    for (const [vw, vh, d, R, mr] of [[390, 844, 78, 150, 92], [820, 1180, 112, 260, 150], [1024, 768, 104, 240, 140], [1180, 820, 110, 250, 145]]) {
-        const g = ring(vw, vh, d, R);
+/* ring geometry measured from the shipped shell (home-orbit-v2, build 20261018-165646): [key, x, y, diameter] */
+const RINGS = {
+    'iphone 390x844': { vw: 390, vh: 844, mx: 195, my: 388, mr: 88, ring: [['fuel', 93, 286, 88], ['scan', 195, 244, 88], ['water', 297, 286, 88], ['move', 340, 388, 88], ['settings', 297, 491, 88], ['joy', 195, 533, 88], ['sleep', 93, 491, 88], ['gap', 51, 388, 88]] },
+    'ipad 820x1180': { vw: 820, vh: 1180, mx: 410, my: 543, mr: 151, ring: [['fuel', 244, 377, 124], ['scan', 410, 308, 124], ['water', 576, 377, 124], ['move', 645, 543, 124], ['settings', 576, 709, 124], ['joy', 410, 778, 124], ['sleep', 244, 709, 124], ['gap', 175, 543, 124]] }
+};
+test('fan: chips bloom outward from Sleep and Settings: on screen, clear of Misty, of the other ring bubbles and of each other (iPhone, iPad)', () => {
+    for (const name in RINGS) {
+        const g = RINGS[name];
         for (const k of ['sleep', 'settings']) for (const n of [3, 4, 5]) {
-            const c = Math.round(Math.max(54, Math.min(88, d * 0.8)));
-            const o = Object.assign({ mx: g.mx, my: g.my, mr, n, c, vw, vh }, g.o[k]);
-            const F = C.fan(o);
-            assert.ok(F.fit, `${vw}x${vh} ${k} n=${n} fits`);
+            const b = g.ring.find(x => x[0] === k), avoid = g.ring.filter(x => x[0] !== k).map(x => ({ x: x[1], y: x[2], r: x[3] / 2 }));
+            const o = { mx: g.mx, my: g.my, mr: g.mr, bx: b[1], by: b[2], br: b[3] / 2, n, c: Math.round(Math.min(88, b[3] * 0.8)), vw: g.vw, vh: g.vh, avoid };
+            const F = C.fan(o), c = F.c, bd = Math.hypot(o.bx - o.mx, o.by - o.my);
+            assert.ok(F.fit, `${name} ${k} n=${n} fits`);
+            assert.ok(c >= 54, 'chips stay at least 54 px');
             assert.strictEqual(F.pts.length, n);
             F.pts.forEach((p, i) => {
-                assert.ok(inside(p, c, o), `${vw}x${vh} ${k} chip ${i} on screen`);
-                assert.ok(Math.hypot(p.x - o.mx, p.y - o.my) >= mr + c / 2 + 6, `${vw}x${vh} ${k} chip ${i} clear of Misty`);
-                assert.ok(Math.hypot(p.x - o.mx, p.y - o.my) > Math.hypot(o.bx - o.mx, o.by - o.my) - 1, `${vw}x${vh} ${k} chip ${i} is farther from Misty than its bubble (outward)`);
+                const at = `${name} ${k} n=${n} chip ${i}`;
+                assert.ok(inside(p, c, o), at + ' on screen');
+                assert.ok(Math.hypot(p.x - o.mx, p.y - o.my) >= o.mr + c / 2 + 6, at + ' clear of Misty');
+                assert.ok(Math.hypot(p.x - o.mx, p.y - o.my) >= bd - 0.01, at + ' at least as far from Misty as its bubble (outward)');
+                avoid.forEach(q => assert.ok(Math.hypot(p.x - q.x, p.y - q.y) >= q.r + c / 2, at + ' clear of another ring bubble'));
                 F.pts.slice(i + 1).forEach(q => assert.ok(Math.hypot(p.x - q.x, p.y - q.y) >= c + 4 - 0.01, 'chips do not overlap'));
             });
+        }
+    }
+});
+test('fan: landscape iPad and a desktop window also fit without avoid data', () => {
+    for (const [vw, vh, d, R, mr] of [[1180, 820, 110, 230, 130], [1024, 768, 104, 220, 125]]) {
+        const mx = vw / 2, my = vh / 2;
+        for (const deg of [45, 135]) {
+            const a = deg * Math.PI / 180, o = { mx, my, mr, bx: mx + R * Math.cos(a), by: my + R * Math.sin(a), br: d / 2, n: 5, c: 84, vw, vh };
+            const F = C.fan(o);
+            assert.ok(F.fit, `${vw}x${vh} ${deg}`);
+            F.pts.forEach(p => assert.ok(inside(p, F.c, o) && Math.hypot(p.x - mx, p.y - my) >= mr + F.c / 2 + 6));
         }
     }
 });
@@ -119,4 +132,5 @@ test('real routes only: profile tiles, tabs and Home controls the app has today;
     for (const k of ['look', 'acct']) assert.match(html, new RegExp('"' + k + '"'), 'profile tile ' + k + ' exists');
     assert.match(html, /data-tab="profile"/); assert.match(html, /openBoardTab/);
     assert.doesNotMatch(src, /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u);
+    assert.doesNotMatch(read('home-settings-sleep-v2.js'), /\bfetch\s*\(|XMLHttpRequest|supabase/i, 'the module never talks to the backend');
 });

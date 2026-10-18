@@ -105,10 +105,18 @@
             if (el.getAttribute('data-orbit') !== k) el.setAttribute('data-orbit', k);
             if ((k === 'fuel' || k === 'water' || k === 'move' || k === 'gap') && el.getAttribute('data-home-bubble') !== k) el.setAttribute('data-home-bubble', k);
         });
+        joyBubble();
         const m = D.getElementById('spBubble');
         if (m && !m.hasAttribute('data-home-misty')) m.setAttribute('data-home-misty', '');
         paintSleep();
         return true;
+    }
+    /* Oct 18 (Emmanuel: "The steering wheel doesn't have the same water style, I mean bubble style, as the other bubbles"): the
+       joystick gets Misty's membrane like the seven others, registered as a control so its own drag, taps and hold stay untouched
+       (no squish, no float). living-bubbles.js drops it if the node is rebuilt; the class check re-adds it. Look only. */
+    function joyBubble() {
+        const j = FIND.joy(), LB = root.LowiBubbles;
+        if (j && LB && typeof LB.add === 'function' && !j.classList.contains('lb-ctl')) { try { LB.add(j, { kind: 'joy', ctl: true }); } catch (e) { } }
     }
     function paintSleep() {
         const b = FIND.sleep(); if (!b || b.dataset.o8Adapter) return;

@@ -95,6 +95,31 @@ html.o8.wh-home #whHud .wh-pad:not(.mp-fwd):not(.mp-back) .mp-knob { box-shadow:
 html.o8.wh-home #spBubble .tmg-plant { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--tmg-a, #8fe7ff) 28%, transparent)); }
 html.o8.wh-home #spBubble .lh-reflection { display: none; }
 
+/* ---- the joystick is one of the eight bubbles (Oct 18 2026, Emmanuel: "The steering wheel doesn't have the same water style, I mean
+   bubble style, as the other bubbles"). It was a dark blurred disc with a blue energy arc, a dashed well and a grey knob. Now:
+   - the same glass shell as Scan / Sleep / Settings (.o8-cell above), and with the 3D world Misty's membrane drawn around it
+     (home-orbit-v2.js joyBubble -> living-bubbles.js, kind 'joy', a control: its own drag), the shell clear like theirs
+   - the same glint as every ring bubble; no radar arc, no dashed well; the knob is a small glass bubble (tinted by Misty's energy
+     tier, mint on autopilot, pressed colours from misty-pad.css)
+   - the same look while steering, on autopilot and inside a world (o8 and wh-home stay on in worlds). Look only: size, place, when it shows (misty-pad.css) unchanged.
+   tests/joystick-bubble-style*.cjs ---- */
+html.o8.wh-home #whHud #whPad {
+    background: radial-gradient(circle at 34% 28%, rgba(255,255,255,.34), rgba(255,255,255,.06) 42%, rgba(120,190,255,.08) 70%, rgba(255,255,255,.16)) !important;
+    border: 1px solid rgba(255,255,255,.42) !important; box-shadow: inset 0 0 18px rgba(255,255,255,.18) !important;
+    -webkit-backdrop-filter: none !important; backdrop-filter: none !important; border-radius: 50% !important; animation: none !important; }
+html.o8.wh-home.lb3d #whHud #whPad.lb-live { background: transparent !important; border-color: transparent !important; box-shadow: none !important; }
+html.o8.wh-home.lb3d #whHud #whPad.lb-live::before { content: ""; position: absolute; left: 15.6%; top: 11.7%; width: 30.2%; height: 8.8%; border-radius: 50%;
+    background: rgba(255, 255, 255, .376); transform: rotate(-28deg); pointer-events: none; z-index: 3; }
+html.o8.wh-home.lb3d[data-ui=light] #whHud #whPad.lb-live::before { background: rgba(255, 255, 255, .55); }
+html.o8.wh-home #whHud #whPad .mp-ring, html.o8.wh-home #whHud #whPad .mp-well { display: none !important; }
+html.o8.wh-home #whHud #whPad .mp-knob { z-index: 2; color: #fff; border: 1px solid rgba(255,255,255,.5);
+    background-image: radial-gradient(circle at 34% 28%, rgba(255,255,255,.55), rgba(255,255,255,.08) 46%, rgba(120,190,255,.1) 72%, rgba(255,255,255,.22));
+    background-color: color-mix(in srgb, var(--mp-c, #7fe3ff) 20%, transparent); box-shadow: inset 0 0 8px rgba(255,255,255,.22); }
+html.o8.wh-home #whHud #whPad[data-mode="auto"] .mp-knob { background-color: rgba(46,248,182,.28); border-color: rgba(190,255,232,.75); }
+html.o8.wh-home #whHud #whPad.mp-fwd .mp-knob { background-color: rgba(46,248,182,.26); box-shadow: inset 0 0 8px rgba(255,255,255,.22), 0 0 0 3px rgba(168,255,216,.35), 0 0 14px rgba(120,255,210,.55); }
+html.o8.wh-home #whHud #whPad.mp-back .mp-knob { background-color: rgba(150,120,255,.24); box-shadow: inset 0 0 8px rgba(255,255,255,.22), 0 0 0 3px rgba(196,170,255,.35), 0 0 14px rgba(170,140,255,.5); }
+html.o8.wh-home #whHud #whPad .mp-knob svg { filter: drop-shadow(0 1px 3px rgba(0,30,80,.6)); }
+
 /* ---- fallback sheets (Settings list, Sleep) until home-settings-sleep-v2.js owns them ---- */
 .o8-sheet { position: fixed; inset: 0; z-index: 9000; display: flex; align-items: flex-end; justify-content: center; }
 .o8-sheet .o8-scrim { position: absolute; inset: 0; background: rgba(4,10,30,.42); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }

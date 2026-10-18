@@ -48,6 +48,35 @@
 .ss2-chip.ss2-row[aria-checked="true"] { background: radial-gradient(circle at 30% 20%, rgba(255,255,255,.3), rgba(160,255,215,.14) 55%, rgba(60,200,150,.3)); border-color: rgba(170,255,220,.8); }
 .ss2-chip.ss2-row:active { transform: scale(.97); }
 
+/* The full Settings page (one tap on the Settings bubble, Oct 18 2026): a modal page that grows out of the bubble. A deep blue dimming
+   layer instead of a full-screen blur, so the moving world behind costs nothing extra (phone heat); rows use the same glass as the
+   More panel. One column on a phone, two on an iPad; only the list scrolls when a short window needs it. x at the bottom right. */
+.ss2-page { position: absolute; inset: 0; display: flex; flex-direction: column; box-sizing: border-box; pointer-events: auto; color: #fff;
+    padding: calc(env(safe-area-inset-top, 0px) + 18px) calc(env(safe-area-inset-right, 0px) + 16px) 0 calc(env(safe-area-inset-left, 0px) + 16px);
+    background: radial-gradient(120% 70% at 50% 0%, rgba(140,200,255,.2), rgba(255,255,255,0) 60%), linear-gradient(180deg, rgba(14,30,72,.88), rgba(8,18,48,.92));
+    text-shadow: 0 1px 3px rgba(0,25,70,.55); animation: ss2-page-in .3s cubic-bezier(.2,.9,.25,1) both; }
+@keyframes ss2-page-in { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
+.ss2-page-in { flex: 1 1 auto; min-height: 0; width: 100%; max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; }
+.ss2-page-title { flex: none; margin: 0 4px 12px; font-size: 28px; line-height: 34px; font-weight: 700; letter-spacing: .01em; }
+.ss2-page-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 92px); }
+.ss2-page .ss2-group + .ss2-group { margin-top: 18px; }
+.ss2-page .ss2-gl { margin: 0 6px 8px; font-size: 12px; line-height: 16px; }
+.ss2-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+@media (min-width: 700px) { .ss2-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .ss2-page-title { font-size: 34px; line-height: 40px; } }
+.ss2-page .ss2-chip.ss2-row { min-height: 50px; padding: 8px 14px; gap: 12px; justify-content: flex-start; font-size: 16px; font-weight: 600; border-radius: 25px; }
+.ss2-page .ss2-row .ss2-ico { width: 24px; height: 24px; flex: none; }
+.ss2-page .ss2-row .ss2-lbl { flex: 1 1 auto; min-width: 0; }
+.ss2-page .ss2-row small { font-size: 14px; font-weight: 500; }
+.ss2-page .ss2-row .ss2-chev { width: 18px; height: 18px; flex: none; opacity: .7; }
+.ss2-page-x { position: absolute; right: calc(env(safe-area-inset-right, 0px) + 18px); bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
+    width: 56px; height: 56px; padding: 0; border-radius: 50%; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 34% 28%, rgba(255,255,255,.36), rgba(255,255,255,.08) 42%, rgba(120,190,255,.12) 70%, rgba(255,255,255,.18)), rgba(20,34,74,.6);
+    border: 1px solid rgba(255,255,255,.45); box-shadow: inset 0 0 16px rgba(255,255,255,.18); -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.ss2-page-x svg { width: 24px; height: 24px; }
+.ss2-page-x:active { transform: scale(.94); }
+.ss2-page-x:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+
 /* the Sleep bubble face: its fill follows the logged band (empty until logged) */
 html.o8.wh-home #whHud .o8-sleep[data-o8-adapter="settings-sleep"] .wh-cell-fill { height: calc(var(--wh-fill, 0) * 100%); transition: height .6s cubic-bezier(.2,.8,.2,1); }
 /* a short nod of the label when a choice lands (inner content only: the shell holds the control box still) */
@@ -57,3 +86,4 @@ html.o8.wh-home #whHud .o8-sleep[data-o8-adapter="settings-sleep"] .wh-cell-fill
 html.ss2-open #whHud [data-orbit][aria-expanded="true"] { box-shadow: 0 0 0 2px rgba(255,255,255,.55), 0 0 24px rgba(160,210,255,.45) !important; }
 
 @media (prefers-reduced-motion: reduce) { .ss2-face, .ss2-ask, .ss2-panel, .wh-cell-tx.ss2-pulse { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { .ss2-page { animation: ss2-fade .2s ease both !important; } }

@@ -5,6 +5,9 @@
      It gives no XP and no sun energy: progression is not touched until the plan aligns it.
    Settings: Me, Look & sound, Account, the bottom menu bar switch, and More (every Home entry point the ring hid).
      Every chip runs a route that exists in the app right now; a route that is missing is not shown.
+     Since 18 Oct 2026 21:30 (Emmanuel: "a single tap opens the full page") one tap on Settings opens ONE full Settings page with all of
+     these on it (tapIntent, pageGroups); the chip bloom and the More panel stay reachable through the API (open('settings'|'more'))
+     for the queued double tap / hold tasks.
    window.LowiHomeSettingsSleepV2.mount(root) is idempotent. Pure helpers (sleep store, fan geometry, entries) are exported for tests. */
 (function (root) {
     'use strict';
@@ -176,7 +179,20 @@
         return [];
     }
 
-    const core = { BANDS, FILL, SHELL_TOKEN, KEEP_DAYS, MENU_KEY, MORE, MORE_GROUPS, MORE_REMOVED, moreGroups, placePanel, TX, dayKey, readSleep, writeSleep, clearSleep, sleepView, fan, entries };
+    /* what one tap on a bubble does, given what is open now: Settings opens its full page (not the chip bloom), Sleep its bloom;
+       a tap on a bubble whose surface is already open closes it. -> 'page' | 'sleep' | 'close' */
+    function tapIntent(bubble, open) {
+        if (bubble === 'settings') return open === 'page' || open === 'settings' || open === 'more' ? 'close' : 'page';
+        if (bubble === 'sleep') return open === 'sleep' ? 'close' : 'sleep';
+        return 'close';
+    }
+    /* the full Settings page: the Settings choices first (no More chip: More is on the page), then every More entry; empty groups drop */
+    function pageGroups(env) {
+        const has = id => !!(env && env.has && env.has(id));
+        return [{ key: 'main', ids: ['me', 'look', 'account', 'menubar'].filter(has) }, { key: 'more', ids: MORE.filter(has) }].filter(g => g.ids.length);
+    }
+
+    const core = { BANDS, FILL, SHELL_TOKEN, KEEP_DAYS, MENU_KEY, MORE, MORE_GROUPS, MORE_REMOVED, moreGroups, placePanel, TX, dayKey, readSleep, writeSleep, clearSleep, sleepView, fan, entries, tapIntent, pageGroups };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!root || !root.document) return;
 
@@ -301,17 +317,54 @@
     function close(refocus) {
         if (!open) return;
         const was = open; open = null;
-        H.classList.remove('ss2-open');
+        H.classList.remove('ss2-open', 'ss2-page-open');
         if (layer) { layer.innerHTML = ''; layer.removeAttribute('data-kind'); }
         if (lastBubble) lastBubble.setAttribute('aria-expanded', 'false');
         if (refocus && lastBubble && lastBubble.focus) { try { lastBubble.focus({ preventScroll: true }); } catch (e) { } }
         D.dispatchEvent(new CustomEvent('lowi:bloom-v2', { detail: { kind: was, open: false, owner: 'settings-sleep' } }));
     }
+    /* one row of the full Settings page: icon (Settings choices), label, then on/off for a switch or a chevron for a place */
+    function pageRow(id) {
+        const T = t(), R = ROUTES[id], tog = R && R.toggle, label = T[id] || id, ico = ICON[id] ? svg(id) : '';
+        const chev = '<svg class="ss2-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 6l6 6-6 6" ' + P + '/></svg>';
+        if (tog) { const on = !!tog(); return '<button type="button" class="ss2-chip ss2-row" role="switch" data-ss2="' + id + '" aria-checked="' + on + '" aria-label="' + label + '">' + ico + '<span class="ss2-lbl">' + label + '</span><small>' + (on ? T.on : T.off) + '</small></button>'; }
+        return '<button type="button" class="ss2-chip ss2-row" data-ss2="' + id + '">' + ico + '<span class="ss2-lbl">' + label + '</span>' + chev + '</button>';
+    }
+    function showPage(b) {
+        const groups = pageGroups(env); if (!groups.length) return false;
+        const B = root.LowiHomeBloomsV2; if (B && fn(B, 'isOpen') && B.isOpen() && fn(B, 'close')) { try { B.close(); } catch (e) { } }
+        if (lastBubble && lastBubble !== b) lastBubble.setAttribute('aria-expanded', 'false');
+        const L = ensureLayer(), T = t(), q = b.getBoundingClientRect();
+        open = 'page'; lastBubble = b;
+        H.classList.add('ss2-open', 'ss2-page-open'); L.setAttribute('data-kind', 'page');
+        b.setAttribute('aria-expanded', 'true');
+        const sec = g => g.key === 'more'
+            ? '<section class="ss2-group" aria-labelledby="ss2PageMore"><h3 class="ss2-gl" id="ss2PageMore">' + T.more + '</h3><div class="ss2-list">' + g.ids.map(pageRow).join('') + '</div></section>'
+            : '<section class="ss2-group" aria-label="' + T.settings + '"><div class="ss2-list">' + g.ids.map(pageRow).join('') + '</div></section>';
+        /* it grows out of the Settings bubble (transform-origin), so the page reads as coming from what was tapped */
+        L.innerHTML = '<div class="ss2-page" role="dialog" aria-modal="true" aria-labelledby="ss2PageTitle" style="transform-origin:' + (q.left + q.width / 2).toFixed(0) + 'px ' + (q.top + q.height / 2).toFixed(0) + 'px">' +
+            '<div class="ss2-page-in"><h2 class="ss2-page-title" id="ss2PageTitle">' + T.settings + '</h2>' +
+            '<div class="ss2-page-body">' + groups.map(sec).join('') + '</div></div>' +
+            '<button type="button" class="ss2-page-x" data-ss2="close" aria-label="' + T.close + '">' +
+            '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" ' + P + ' stroke-width="2.2"/></svg></button></div>';
+        const f = L.querySelector('.ss2-page-body button'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } }
+        D.dispatchEvent(new CustomEvent('lowi:bloom-v2', { detail: { kind: 'page', open: true, owner: 'settings-sleep' } }));
+        return true;
+    }
+    /* Tab and Shift+Tab stay inside the open page (it is modal) */
+    function trapTab(e) {
+        if (open !== 'page' || !layer || e.key !== 'Tab') return;
+        const bs = [...layer.querySelectorAll('button')]; if (!bs.length) return;
+        const i = bs.indexOf(D.activeElement), last = bs.length - 1;
+        if (e.shiftKey && i <= 0) { e.preventDefault(); bs[last].focus(); } else if (!e.shiftKey && (i === last || i < 0)) { e.preventDefault(); bs[0].focus(); }
+    }
     function show(kind) {
-        const bubbleKey = kind === 'more' ? 'settings' : kind;
+        const bubbleKey = kind === 'more' || kind === 'page' ? 'settings' : kind;
         const b = findBubble(bubbleKey); if (!b) return false;
+        if (kind === 'page') return showPage(b);
         const ids = entries(kind, { has: env.has, logged: kind === 'sleep' && !!sleepToday() });
         if (!ids.length) return false;
+        if (lastBubble && lastBubble !== b) lastBubble.setAttribute('aria-expanded', 'false');
         /* one bloom at a time across the Home */
         const B = root.LowiHomeBloomsV2; if (B && fn(B, 'isOpen') && B.isOpen() && fn(B, 'close')) { try { B.close(); } catch (e) { } }
         const L = ensureLayer(), T = t(), q = b.getBoundingClientRect(), M = misty();
@@ -400,14 +453,15 @@
     function claim() {
         const s = findBubble('sleep'), g = findBubble('settings');
         if (s && bridge()) { if (s.dataset.o8Adapter !== 'settings-sleep') s.dataset.o8Adapter = 'settings-sleep'; if (!s.hasAttribute('aria-expanded')) s.setAttribute('aria-expanded', 'false'); paintSleep(); }
-        if (g) { if (g.dataset.o8Adapter !== 'settings-sleep') g.dataset.o8Adapter = 'settings-sleep'; if (!g.hasAttribute('aria-expanded')) g.setAttribute('aria-expanded', 'false'); }
+        if (g) { if (g.dataset.o8Adapter !== 'settings-sleep') g.dataset.o8Adapter = 'settings-sleep'; if (!g.hasAttribute('aria-expanded')) g.setAttribute('aria-expanded', 'false'); if (g.getAttribute('aria-haspopup') !== 'dialog') g.setAttribute('aria-haspopup', 'dialog'); }
     }
     function onTap(e) {
         const el = e.target && e.target.closest && e.target.closest('[data-orbit="sleep"],[data-orbit="settings"]');
         if (!el || el.dataset.o8Adapter !== 'settings-sleep') return;
         const k = el.getAttribute('data-orbit');
         e.preventDefault();
-        if (open === k || (k === 'settings' && open === 'more')) close(true); else show(k);
+        const i = tapIntent(k, open);
+        if (i === 'close') close(true); else show(i);
     }
     function onDown(e) {
         if (!open) return;
@@ -423,14 +477,15 @@
         mounted = true;
         D.addEventListener('click', onTap, true);
         D.addEventListener('pointerdown', onDown, true);
-        D.addEventListener('keydown', e => { if (e.key === 'Escape' && open) close(true); });
+        D.addEventListener('keydown', e => { if (e.key === 'Escape' && open) close(true); else trapTab(e); });
         D.addEventListener('lowi:bloom-v2', e => { const d = e && e.detail; if (d && d.open && d.owner !== 'settings-sleep') close(false); });
         ['lowi:home-orbit', 'lowi:home-bubble-added'].forEach(n => { D.addEventListener(n, claim); root.addEventListener(n, claim); });
         /* the ring moved (menu bar switched, rotation): an open bloom follows its bubble */
-        D.addEventListener('lowi:home-orbit', () => { if (!open) return; const k = open, a = D.activeElement, id = a && layer && layer.contains(a) ? a.getAttribute('data-ss2') : null; show(k); const f = id && layer.querySelector('[data-ss2="' + id + '"]'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } } });
+        D.addEventListener('lowi:home-orbit', () => { if (!open || open === 'page') return; const k = open, a = D.activeElement, id = a && layer && layer.contains(a) ? a.getAttribute('data-ss2') : null; show(k); const f = id && layer.querySelector('[data-ss2="' + id + '"]'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } } });
         D.addEventListener('lowi:tab', () => { close(false); setTimeout(claim, 400); });
         root.addEventListener('lowi:state', paintSleep);
-        root.addEventListener('resize', () => { if (open) close(false); }, { passive: true });
+        /* a bloom is placed round its bubble, so it closes when the window changes; the full page lays itself out and stays */
+        root.addEventListener('resize', () => { if (open && open !== 'page') close(false); }, { passive: true });
         D.addEventListener('visibilitychange', () => { if (!D.hidden) claim(); });
         /* Home leaves (another tab, Misty flies off): the bloom goes with it; a new day empties the Sleep bubble */
         setInterval(() => { if (D.hidden) return; claim(); if (open && (!H.classList.contains('wh-home') || H.classList.contains('wh-away'))) close(false); }, 1500);

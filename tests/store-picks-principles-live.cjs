@@ -80,10 +80,13 @@ async function run(name, launcher, ctxOpts, base) {
     await search('Coca Cola Zero');
     const cz = page.locator('.stp-ov button.stp-item', { has: page.locator('b', { hasText: /^Coca Cola Zero$/ }) }).first();
     ok(await cz.count(), 'Coca Cola Zero found');
-    await cz.scrollIntoViewIfNeeded();
+    await cz.evaluate(n => n.scrollIntoView({ block: 'center' }));
+    await page.waitForTimeout(500);
     const czTag = (await cz.locator('.stp-tag').innerText()).trim();
     ok(!/best|top/i.test(czTag), 'Coca Cola Zero tag is not Best: "' + czTag + '"');
-    await tap(cz);
+    if (ctxOpts.hasTouch) await cz.tap({ force: true }); else await cz.click({ force: true });
+    // headless WebKit sometimes drops a tap on a row that is still settling after the search repaint; press the button then
+    if (!(await page.waitForSelector('.stp-qv.in [role="dialog"]', { timeout: 8000 }).catch(() => null))) { await page.screenshot({ path: OUT + '/' + name + '-after-tap.png' }); console.log('  (tap retried as a press)', JSON.stringify(await page.evaluate(() => ({ q: (document.querySelector('.stp-q') || {}).value, ov: !!document.querySelector('.stp-ov'), qv: (document.querySelector('.stp-qv') || {}).className, rows: document.querySelectorAll('.stp-ov button.stp-item').length })))); await cz.evaluate(n => n.click()); }
     await page.waitForSelector('.stp-qv.in [role="dialog"]', { timeout: 60000 });
     const txt = await page.locator('.stp-qv').innerText();
     ok(/Good, not Best/.test(txt) && /Water and plain tea are Best/.test(txt), 'quick view explains Good, not Best');

@@ -73,6 +73,12 @@
 
     function today() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
     function sleepToday() { try { return (JSON.parse(ls.get(SLEEP_KEY) || '{}') || {})[today()] || ''; } catch (e) { return ''; } }
+    /* once home-settings-sleep-v2 owns the Sleep bubble, its private hours log is the answer; lowi.sleep.v1 words are never converted */
+    function sleepNow() {
+        const S = root.LowiHomeSettingsSleepV2, b = FIND.sleep();
+        if (S && S.sleep && typeof S.sleep.today === 'function' && b && b.dataset && b.dataset.o8Adapter === 'settings-sleep') { try { return S.sleep.today(); } catch (e) { } }
+        return sleepToday();
+    }
     const SLEEP_TX = { good: () => T('Good', 'Gut', 'Bien'), ok: () => T('Okay', 'Okay', 'Regular'), short: () => T('Short', 'Kurz', 'Corta') };
 
     function make(key, label, inner) {
@@ -253,6 +259,6 @@
         try { new MutationObserver(soon).observe(H, { attributes: true, attributeFilter: ['class', 'lang'] }); } catch (e) { }
         setInterval(() => { if (!D.hidden) layout(false); }, 1500);
     }
-    root.LowiHomeOrbitV2 = Object.assign({}, core, { layout: () => layout(true), current: () => last, entries, openSettings, openSleep, closeSheet, menuBar, setMenuBar, sleepToday });
+    root.LowiHomeOrbitV2 = Object.assign({}, core, { layout: () => layout(true), current: () => last, entries, openSettings, openSleep, closeSheet, menuBar, setMenuBar, sleepToday: sleepNow });
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot, { once: true }); else boot();
 })(typeof window !== 'undefined' ? window : globalThis);

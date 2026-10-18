@@ -108,23 +108,55 @@ function geometry(r) {
             act.move = await page.evaluate(b => ({ open: !!document.querySelector('.wh-move[aria-expanded="true"], .mb-dock.on, .mb-dock.open, .wm-float, .mb-open, html.mb-open') || document.documentElement.className.match(/\b(mb|wm)-[a-z-]*open\b/), buttonsAdded: document.querySelectorAll('button').length - b, html: document.documentElement.className.split(' ').filter(c => /bloom|mb-|wm-/.test(c)).join(' ') }), before);
             await page.keyboard.press('Escape'); await page.mouse.click(r.misty.x, Math.min(r.vh - 4, r.misty.y + r.layout.R + r.layout.d)); await sleep(700);
             await page.evaluate(() => { try { window.LowiMoveBubble && LowiMoveBubble.close && LowiMoveBubble.close(); } catch (e) { } });
-            /* Settings: the hidden entry points + the menu bar switch */
-            await page.evaluate(() => document.querySelector('[data-orbit="settings"]').click()); await sleep(500);
-            act.settings = await page.evaluate(() => [...document.querySelectorAll('.o8-sheet .o8-row')].map(b => b.getAttribute('data-o8-row')));
-            for (const id of ['profile', 'today', 'map', 'menubar', 'community', 'cook']) if (!act.settings.includes(id)) P.push('settings missing ' + id);
-            await page.screenshot({ path: `${OUT}/${TAG}-${v}-settings.png` });
-            await page.evaluate(() => document.querySelector('.o8-sheet [data-o8-row="menubar"]').click()); await sleep(900);
-            act.menubarOn = await page.evaluate(() => { const t = document.getElementById('tabbar'); return !!t && getComputedStyle(t).display !== 'none'; });
-            if (!act.menubarOn) P.push('menu bar switch did not show the tab bar');
-            await page.evaluate(() => window.LowiHomeOrbitV2.setMenuBar(false)); await sleep(600);
-            act.menubarOff = await page.evaluate(() => getComputedStyle(document.getElementById('tabbar')).display === 'none');
-            if (!act.menubarOff) P.push('menu bar switch did not hide the tab bar again');
-            /* Sleep: a local log */
-            await page.evaluate(() => document.querySelector('[data-orbit="sleep"]').click()); await sleep(400);
-            await page.evaluate(() => { const b = document.querySelector('.o8-sleep-sheet [data-o8-row="good"]'); if (b) b.click(); }); await sleep(400);
-            act.sleep = await page.evaluate(() => ({ label: document.querySelector('[data-orbit="sleep"]').innerText.replace(/\s+/g, ' '), store: localStorage.getItem('lowi.sleep.v1') }));
-            if (!/good/.test(act.sleep.store || '') && !document) P.push('sleep not logged');
-            if (!/good/.test(act.sleep.store || '')) P.push('sleep not logged: ' + JSON.stringify(act.sleep));
+            /* Settings + Sleep: once home-settings-sleep-v2 owns a control (data-o8-adapter), its bloom is checked just as strictly as the fallback */
+            act.adapter = await page.evaluate(() => ({ settings: document.querySelector('[data-orbit="settings"]').dataset.o8Adapter || '', sleep: document.querySelector('[data-orbit="sleep"]').dataset.o8Adapter || '' }));
+            const ss2ids = () => page.evaluate(() => [...document.querySelectorAll('#ss2Bloom [data-ss2]')].map(b => b.getAttribute('data-ss2')));
+            const ss2press = id => page.evaluate(id => { const b = document.querySelector('#ss2Bloom [data-ss2="' + id + '"]'); if (b) b.click(); return !!b; }, id);
+            if (act.adapter.settings === 'settings-sleep') {
+                await page.evaluate(() => document.querySelector('[data-orbit="settings"]').click()); await sleep(700);
+                act.settings = await ss2ids();
+                for (const id of ['me', 'look', 'account', 'menubar', 'more']) if (!act.settings.includes(id)) P.push('settings missing ' + id);
+                await page.screenshot({ path: `${OUT}/${TAG}-${v}-settings.png` });
+                await ss2press('more'); await sleep(700);
+                act.more = await ss2ids();
+                for (const id of ['today', 'map', 'community', 'cook']) if (!act.more.includes(id)) P.push('settings > more missing ' + id);
+                await page.keyboard.press('Escape'); await sleep(400);
+                await page.evaluate(() => document.querySelector('[data-orbit="settings"]').click()); await sleep(700);
+                if (!(await ss2press('menubar'))) P.push('settings menu bar switch not found');
+                await sleep(900);
+                act.menubarOn = await page.evaluate(() => { const t = document.getElementById('tabbar'); return !!t && getComputedStyle(t).display !== 'none'; });
+                if (!act.menubarOn) P.push('menu bar switch did not show the tab bar');
+                await page.keyboard.press('Escape'); await sleep(300);
+                await page.evaluate(() => window.LowiHomeOrbitV2.setMenuBar(false)); await sleep(600);
+                act.menubarOff = await page.evaluate(() => getComputedStyle(document.getElementById('tabbar')).display === 'none');
+                if (!act.menubarOff) P.push('menu bar switch did not hide the tab bar again');
+            } else {
+                await page.evaluate(() => document.querySelector('[data-orbit="settings"]').click()); await sleep(500);
+                act.settings = await page.evaluate(() => [...document.querySelectorAll('.o8-sheet .o8-row')].map(b => b.getAttribute('data-o8-row')));
+                for (const id of ['profile', 'today', 'map', 'menubar', 'community', 'cook']) if (!act.settings.includes(id)) P.push('settings missing ' + id);
+                await page.screenshot({ path: `${OUT}/${TAG}-${v}-settings.png` });
+                await page.evaluate(() => document.querySelector('.o8-sheet [data-o8-row="menubar"]').click()); await sleep(900);
+                act.menubarOn = await page.evaluate(() => { const t = document.getElementById('tabbar'); return !!t && getComputedStyle(t).display !== 'none'; });
+                if (!act.menubarOn) P.push('menu bar switch did not show the tab bar');
+                await page.evaluate(() => window.LowiHomeOrbitV2.setMenuBar(false)); await sleep(600);
+                act.menubarOff = await page.evaluate(() => getComputedStyle(document.getElementById('tabbar')).display === 'none');
+                if (!act.menubarOff) P.push('menu bar switch did not hide the tab bar again');
+            }
+            if (act.adapter.sleep === 'settings-sleep') {
+                /* Sleep: hours, saved in the private health store, shown on the bubble */
+                await page.evaluate(() => document.querySelector('[data-orbit="sleep"]').click()); await sleep(700);
+                act.sleepChips = await ss2ids();
+                if (act.sleepChips.slice(0, 3).join() !== 'under6,6to7,7plus') P.push('sleep chips: ' + act.sleepChips);
+                await ss2press('6to7'); await sleep(700);
+                act.sleep = await page.evaluate(() => { const d = new Date(), k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); const S = window.LowiVitalsBridge.state(); const e = S.health && S.health.sleepDays && S.health.sleepDays[k]; return { label: document.querySelector('[data-orbit="sleep"]').innerText.replace(/\s+/g, ' '), band: e ? e.band : null, shell: window.LowiHomeOrbitV2.sleepToday() }; });
+                if (act.sleep.band !== '6to7' || !/6\u20137/.test(act.sleep.label) || !act.sleep.shell || act.sleep.shell.band !== '6to7') P.push('sleep not logged: ' + JSON.stringify(act.sleep));
+            } else {
+                await page.evaluate(() => document.querySelector('[data-orbit="sleep"]').click()); await sleep(400);
+                await page.evaluate(() => { const b = document.querySelector('.o8-sleep-sheet [data-o8-row="good"]'); if (b) b.click(); }); await sleep(400);
+                act.sleep = await page.evaluate(() => ({ label: document.querySelector('[data-orbit="sleep"]').innerText.replace(/\s+/g, ' '), store: localStorage.getItem('lowi.sleep.v1') }));
+                if (!/good/.test(act.sleep.store || '') && !document) P.push('sleep not logged');
+                if (!/good/.test(act.sleep.store || '')) P.push('sleep not logged: ' + JSON.stringify(act.sleep));
+            }
             /* Gap and Fuel answer a tap (the hit test above proved they are on top); record what opened */
             /* Scan: the real scanner (LowiLiving.scan) */
             await page.evaluate(() => { window.__o8scan = []; const L = window.LowiLiving; if (L && L.scan && !L.__o8) { const s = L.scan.bind(L); L.scan = m => { window.__o8scan.push(m); return s(m); }; L.__o8 = 1; } });

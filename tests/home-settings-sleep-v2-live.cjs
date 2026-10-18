@@ -6,7 +6,8 @@
    Shell: index.html once integrated; else --shell DIR (the integrator's home-orbit-v2.js/css); else a tiny stand-in that only
    creates the two ring buttons the shell would create.
    Production Supabase and every non-GET request are blocked (counted, never sent); a local fixture session only, no account.
-     node tests/home-settings-sleep-v2-live.cjs [--root DIR] [--shell DIR] [--views a,b] [--out DIR]
+     node tests/home-settings-sleep-v2-live.cjs [--root DIR] [--shell DIR] [--views a,b] [--out DIR] [--url https://therealetm.github.io/lowispike/]
+   With --url (or once index.html loads the module) the module must come from the page itself, never injected.
    Exit 0 = pass. */
 const http = require('http'), fs = require('fs'), path = require('path');
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
@@ -19,7 +20,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 function serve() { return new Promise(r => { const s = http.createServer((q, res) => { let u = decodeURIComponent(q.url.split('?')[0]); if (u === '/') u = '/index.html'; const f = path.join(ROOT, u); if (!f.startsWith(ROOT)) { res.writeHead(403); res.end(); return; } fs.readFile(f, (e, b) => { if (e) { res.writeHead(404); res.end(); return; } res.writeHead(200, { 'Content-Type': TYPES[path.extname(f)] || 'application/octet-stream' }); res.end(b); }); }); s.listen(0, '127.0.0.1', () => r(s)); }); }
 const IPAD = (w, h) => ({ viewport: { width: w, height: h }, screen: { width: w, height: h }, deviceScaleFactor: 2, hasTouch: true, isMobile: true, userAgent: 'Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1' });
 const VIEWS = { iphone_chromium: ['chromium', { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true }], iphone13_webkit: ['webkit', 'iPhone 13'],
-    ipad_portrait_webkit: ['webkit', IPAD(820, 1180)], ipad_landscape_webkit: ['webkit', IPAD(1180, 820)] };
+    ipad_portrait_webkit: ['webkit', IPAD(820, 1180)], ipad_landscape_webkit: ['webkit', IPAD(1180, 820)], ipad_landscape_chromium: ['chromium', IPAD(1180, 820)] };
 const INIT = `try {
   const d = new Date(), k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   localStorage.setItem('lowi.daily.seen', k); sessionStorage.setItem('lowi.a2hs.x', '1'); localStorage.setItem('lowi.gate', 'done'); localStorage.setItem('lowi.news.seen', '99999');
@@ -67,7 +68,9 @@ const STORE = () => {
 };
 
 async function center(page, sel) { return page.evaluate(s => { const e = document.querySelector(s); if (!e) return null; const r = e.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }, sel); }
-const MISSING = [];
+const MISSING = [], MOD_SRC = [];
+const MUST_INDEX = !!arg('url', '') || /home-settings-sleep-v2\.js/.test(fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8'));
+const EMOJI = () => { const L = document.getElementById('ss2Bloom'); const txt = (L ? L.textContent : '') + [...document.querySelectorAll('[data-orbit="sleep"],[data-orbit="settings"]')].map(b => b.textContent).join(' '); return (txt.match(/\p{Extended_Pictographic}/gu) || []).join(''); };
 async function tap(page, sel) { if (sel.startsWith('#ss2Bloom')) await sleep(250); const c = await center(page, sel); if (!c) { MISSING.push(sel); return false; } await page.touchscreen.tap(c.x, c.y); await sleep(450); return true; }
 
 async function boot(page, url) {
@@ -79,7 +82,9 @@ async function boot(page, url) {
     if (!(await page.evaluate(() => !!window.LowiHomeOrbitV2))) {
         if (SHELL) { await page.addStyleTag({ path: path.join(SHELL, 'home-orbit-v2.css') }); await page.addScriptTag({ path: path.join(SHELL, 'home-orbit-v2.js') }); shell = 'shell:' + SHELL; await sleep(1500); }
     }
-    if (!(await page.evaluate(() => !!window.LowiHomeSettingsSleepV2))) { await page.addStyleTag({ path: path.join(MOD, 'home-settings-sleep-v2.css') }); await page.addScriptTag({ path: path.join(MOD, 'home-settings-sleep-v2.js') }); }
+    const fromPage = await page.evaluate(() => !!window.LowiHomeSettingsSleepV2);
+    if (MUST_INDEX && !fromPage) MOD_SRC.push('module was not loaded by the page');
+    if (!fromPage) { await page.addStyleTag({ path: path.join(MOD, 'home-settings-sleep-v2.css') }); await page.addScriptTag({ path: path.join(MOD, 'home-settings-sleep-v2.js') }); }
     if (!SHELL && shell === 'index') shell = await page.evaluate(SHIM);
     /* idempotent: mounting twice must not double the tap handler (a doubled handler would open then close) */
     await page.evaluate(() => { window.LowiHomeSettingsSleepV2.mount(document); window.LowiHomeSettingsSleepV2.mount(document); });
@@ -89,7 +94,8 @@ async function boot(page, url) {
 
 (async () => {
     fs.mkdirSync(OUT, { recursive: true });
-    const srv = await serve(), url = `http://127.0.0.1:${srv.address().port}/index.html`, host = new URL(url).host;
+    const srv = arg('url', '') ? null : await serve();
+    const url = arg('url', '') || `http://127.0.0.1:${srv.address().port}/index.html`, host = new URL(url).host;
     let fail = 0;
     for (const v of arg('views', Object.keys(VIEWS).join(',')).split(',')) {
         const [eng, d] = VIEWS[v];
@@ -141,6 +147,7 @@ async function boot(page, url) {
         /* correct to 7 h or more, then clear */
         await tap(page, '[data-orbit="sleep"]');
         g = await page.evaluate(GEO);
+        { const em = await page.evaluate(EMOJI); ok(!em, 'no emoji on Sleep/Settings or their blooms: ' + em); }
         ok(g.chips.map(c => c.id).join() === 'under6,6to7,7plus,clear', 'logged sleep bloom should offer Clear: ' + g.chips.map(c => c.id));
         ok((g.chips.find(c => c.id === '6to7') || {}).checked === 'true', 'today\'s choice should show as checked');
         geoOK(g, 'sleep logged');
@@ -177,6 +184,7 @@ async function boot(page, url) {
         await page.evaluate(() => window.LowiHomeSettingsSleepV2.close()); await sleep(1500);
         /* More: the hidden Home entry points, in a panel clear of Misty */
         await tap(page, '[data-orbit="settings"]'); await tap(page, '#ss2Bloom [data-ss2="more"]');
+        { const em = await page.evaluate(EMOJI); ok(!em, 'no emoji in the More panel: ' + em); }
         g = await page.evaluate(GEO);
         ok(g.panel && g.panel.gap >= g.mr - 1, 'More panel overlaps Misty: ' + JSON.stringify(g.panel) + ' mr ' + g.mr);
         ok(g.panel && g.panel.top >= 0 && g.panel.bottom <= g.vh + 1, 'More panel off screen');
@@ -208,14 +216,15 @@ async function boot(page, url) {
         await tap(page, '[data-orbit="settings"]'); await tap(page, '#ss2Bloom [data-ss2="me"]'); await sleep(900);
         ok(await page.evaluate(() => { const t = document.getElementById('tab-profile'); return !!t && t.classList.contains('active'); }), 'Me should open Profile');
         await home();
+        if (MOD_SRC.length) P.push(MOD_SRC.splice(0)[0]);
         if (MISSING.length) P.push('could not find to tap: ' + MISSING.splice(0).join(', '));
         const mine = errs.filter(e => /settings-sleep|ss2|LowiHomeSettingsSleepV2/.test(e));
         ok(!mine.length, 'page errors from the module: ' + mine.join(' | '));
-        console.log(JSON.stringify({ view: v, shell, pass: !P.length, problems: P, blocked, pageErrors: errs.slice(0, 4) }));
+        console.log(JSON.stringify({ view: v, url: url.replace(/\?.*/, ''), shell, pass: !P.length, problems: P, blocked, pageErrors: errs.slice(0, 4) }));
         if (P.length) fail++;
         await browser.close();
     }
-    srv.close();
+    if (srv) srv.close();
     console.log(fail ? 'FAIL ' + fail : 'PASS all views');
     process.exit(fail ? 1 : 0);
 })().catch(e => { console.error(e); process.exit(2); });

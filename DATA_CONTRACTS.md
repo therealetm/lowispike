@@ -157,6 +157,7 @@ The server tables `vip_messages`, `course_modules` and `mentoring_requests` were
 
 - `health` is removed from `lowispike.v2` before general `user_state` backup.
 - Body diary data lives under `S.health.body` and remains local through that exclusion.
+- Sleep log (Home ring Sleep bubble, home-settings-sleep-v2.js): `S.health.sleepDays = { 'YYYY-MM-DD': { band: 'under6'|'6to7'|'7plus', ts } }`, written only through `LowiVitalsBridge.state()/save()`, 120 days kept, local through the same exclusion. It pays no XP and no sun energy. The shell's earlier fallback key `lowi.sleep.v1` (`good`/`ok`/`short`) is left as it was and is never converted into hours. Document event `lowi:sleep` `{day, band|null, value, source}` on every change.
 - Cycle sync is off by default and isolated in `cycle_sync`; enabling it must be explicit.
 - Camera and notification permissions are requested in context, never on every launch.
 - Photos/videos can be large or identifying. Upload only after the user explicitly posts or contributes them.

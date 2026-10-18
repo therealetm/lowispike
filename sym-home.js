@@ -256,6 +256,8 @@
         }
     }
     function orbFrame(dt) {
+        /* Oct 18: the one-page ring (home-orbit-v2.js, html.o8) places all eight controls on a still circle: the turning ring steps aside */
+        if (D.documentElement.classList.contains('o8')) { if (ORB.on) setOn(false); return; }
         const now = performance.now();
         if (now - ORB.lastM > 300) {
             ORB.lastM = now;

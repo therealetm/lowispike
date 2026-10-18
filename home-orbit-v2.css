@@ -1,0 +1,98 @@
+/* home-orbit-v2.css: the one-page Home ring (Oct 18 2026, Emmanuel). Eight controls, ONE true circle centred on Misty,
+   one shared diameter (--o8-d), 45 degrees apart; positions come from home-orbit-v2.js (--o8-x/--o8-y per control).
+   Only active under html.o8 (set by the shell when the circle fits); without it the old Home is untouched. */
+html.o8 { --o8-i-scan: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16M8 9v6M11 9v6M14 9v6M17 9v6'/%3E%3C/svg%3E"); }
+html.o8 { --o8-i-fuel: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 3v18M4.5 3v5a2.5 2.5 0 0 0 5 0V3M19 21V3c-2.8 1.6-4.5 4.6-4.5 8.5H19'/%3E%3C/svg%3E"); }
+html.o8 { --o8-i-water: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3.5c3.6 4.4 6 7.4 6 10.3a6 6 0 0 1-12 0c0-2.9 2.4-5.9 6-10.3z'/%3E%3C/svg%3E"); }
+html.o8 { --o8-i-move: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 12h4l2.2-5.5 4.6 11 2.2-5.5h5'/%3E%3C/svg%3E"); }
+html.o8 { --o8-i-gap: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 9v4.5l3 2M9.5 2.5h5M12 21.5a7.5 7.5 0 1 0 0-15 7.5 7.5 0 0 0 0 15z'/%3E%3C/svg%3E"); }
+html.o8 { --o8-i-sleep: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19.5 14.6A7.8 7.8 0 1 1 9.4 4.5a6.2 6.2 0 0 0 10.1 10.1z'/%3E%3C/svg%3E"); }
+html.o8 { --o8-i-settings: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 7h9M17 7h3M4 17h3M11 17h9M15 5v4M9 15v4'/%3E%3C/svg%3E"); }
+/* ---- the ring: every control on its spot, all the same size ---- */
+html.o8.wh-home #whHud [data-orbit],
+html.o8.wh-home #spHome #spFast[data-orbit] {
+    position: absolute !important; left: var(--o8-x) !important; top: var(--o8-y) !important; right: auto !important; bottom: auto !important;
+    width: var(--o8-d) !important; height: var(--o8-d) !important; min-width: 0 !important; min-height: 0 !important; margin: 0 !important;
+}
+/* the gentle float bob would pull controls off the circle at different phases: on the ring they hold their exact spot */
+html.o8.wh-home #whHud [data-orbit], html.o8.wh-home #spHome #spFast[data-orbit] { translate: none !important; }
+html.o8.wh-home #whHud .wh-pad[data-orbit] { transform: translate(-50%, -50%) !important; z-index: 3; }
+html.o8.wh-home #whHud .wh-pad[data-orbit] .mp-knob { width: calc(var(--o8-d) * .42); height: calc(var(--o8-d) * .42); margin: calc(var(--o8-d) * -.21) 0 0 calc(var(--o8-d) * -.21); }
+html.o8.wh-home #whHud .wh-pad[data-orbit] .mp-well { inset: calc(var(--o8-d) * .14); }
+/* the first-run controller hint sits just under the joystick, never across the ring */
+html.o8.wh-home #whHud #whPadChip { left: var(--o8-cx) !important; top: calc(var(--o8-joy-y) + var(--o8-d) / 2 + 8px) !important; bottom: auto !important; transform: translateX(-50%) !important; }
+
+/* ---- the three new glass bubbles (Scan, Sleep, Settings): same glass as Water, membrane from living-bubbles.js ---- */
+#whHud .o8-cell { display: none; }
+html.o8.wh-home #whHud .o8-cell { display: flex; align-items: center; justify-content: center; position: absolute; border-radius: 50%; overflow: hidden; padding: 0;
+    color: #fff; font: inherit; cursor: pointer; z-index: 2; pointer-events: auto; transform: translate(-50%, -50%);
+    -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+    background: radial-gradient(circle at 34% 28%, rgba(255,255,255,.34), rgba(255,255,255,.06) 42%, rgba(120,190,255,.08) 70%, rgba(255,255,255,.16));
+    border: 1px solid rgba(255,255,255,.42); box-shadow: inset 0 0 18px rgba(255,255,255,.18), 0 6px 22px rgba(0,20,60,.28); }
+html.o8.wh-home.lb3d #whHud .o8-cell { background: transparent; border-color: transparent; box-shadow: none; }
+html.o8.wh-home #whHud .o8-sleep .wh-cell-fill { background: linear-gradient(180deg, rgba(190,170,255,.45), rgba(120,100,230,.7)); height: 0; }
+html.o8.wh-home #whHud .o8-sleep.done .wh-cell-fill { height: 100%; }
+html.o8.wh-home #whHud .o8-cell .wh-cell-tx { pointer-events: none; z-index: 2; }
+html.o8.wh-home #whHud .o8-cell .o8-ico { width: calc(var(--o8-d) * .26); height: calc(var(--o8-d) * .26); display: block; margin-bottom: 2px; filter: drop-shadow(0 1px 4px rgba(0,30,80,.6)); }
+html.o8.wh-home #whHud .o8-cell .wh-cell-tx small { font-size: calc(var(--o8-d) * .125); }
+html.o8.wh-home #whHud .o8-cell .wh-cell-tx b { font-size: calc(var(--o8-d) * .14); font-weight: 650; }
+html.o8.wh-home.wh-away #whHud .o8-cell, html.o8.wh-home.wh-away #whHud [data-orbit] { opacity: 0 !important; pointer-events: none !important; }
+@media (hover: hover) { html.o8.wh-home #whHud .o8-cell:hover { box-shadow: inset 0 0 22px rgba(255,255,255,.28), 0 6px 22px rgba(0,20,60,.3); } }
+html.o8.wh-home #whHud .o8-cell:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+
+/* ---- white line icons and permanent labels on the reused bubbles (CSS only, so their own painters keep their text) ---- */
+html.o8.wh-home #whHud [data-orbit="fuel"] .wh-cell-tx::before,
+html.o8.wh-home #whHud [data-orbit="water"] .wh-cell-tx::before,
+html.o8.wh-home #whHud [data-orbit="move"] .wh-cell-tx::before,
+html.o8.wh-home #spHome #spFast[data-orbit] .sp-fast-copy::before {
+    content: ''; display: block; order: -2; flex: none; width: calc(var(--o8-d) * .22); height: calc(var(--o8-d) * .22); margin-bottom: 1px;
+    background: #fff; -webkit-mask: var(--o8-i) center / contain no-repeat; mask: var(--o8-i) center / contain no-repeat;
+    filter: drop-shadow(0 1px 3px rgba(0,30,80,.6));
+}
+html.o8 #whHud [data-orbit="fuel"] { --o8-i: var(--o8-i-fuel); }
+html.o8 #whHud [data-orbit="water"] { --o8-i: var(--o8-i-water); }
+html.o8 #whHud [data-orbit="move"] { --o8-i: var(--o8-i-move); }
+html.o8 #spHome #spFast[data-orbit] { --o8-i: var(--o8-i-gap); }
+/* Meals reads "Fuel", Fasting reads "Gap" (Emmanuel's names), in the bubble's own label slot */
+html.o8.wh-home #whHud [data-orbit="fuel"] .wh-cell-tx > small:first-of-type,
+html.o8.wh-home #spHome #spFast[data-orbit] .sp-fast-copy > small:first-child { display: none; }
+html.o8.wh-home #whHud [data-orbit="fuel"] .wh-cell-tx::after,
+html.o8.wh-home #spHome #spFast[data-orbit] .sp-fast-copy::after { order: -1; font-size: 11px; opacity: .9; line-height: 1.1; }
+html.o8.wh-home #whHud [data-orbit="fuel"] .wh-cell-tx::after { content: 'Fuel'; }
+html.o8.wh-home #spHome #spFast[data-orbit] .sp-fast-copy::after { content: 'Gap'; }
+html.o8.wh-home[lang^="de"] #whHud [data-orbit="fuel"] .wh-cell-tx::after { content: 'Essen'; }
+html.o8.wh-home[lang^="de"] #spHome #spFast[data-orbit] .sp-fast-copy::after { content: 'Pause'; }
+html.o8.wh-home[lang^="es"] #whHud [data-orbit="fuel"] .wh-cell-tx::after { content: 'Comida'; }
+html.o8.wh-home[lang^="es"] #spHome #spFast[data-orbit] .sp-fast-copy::after { content: 'Pausa'; }
+html.o8-wide.wh-home #whHud [data-orbit="fuel"] .wh-cell-tx::after,
+html.o8-wide.wh-home #spHome #spFast[data-orbit] .sp-fast-copy::after { font-size: 13px; }
+
+/* ---- one page: the old Home chrome steps back (every one of these stays reachable from the Settings bubble) ---- */
+html.o8.wh-home:not(.o8-quest) #f3Board,
+html.o8.wh-home:not(.o8-quest) #tab-home #f3Board,
+html.o8.wh-home:not(.o8-quest) #hcLine,
+html.o8.wh-home #tab-home .sp-top,
+html.o8.wh-home #tab-home #spHome .sp-top,
+html.o8.wh-home #whHud .wh-todaybtn,
+html.o8.wh-home #whHud .wh-vr,
+html.o8.wh-home #whHud .wh-zoom,
+html.o8.wh-home #whHud .wa-btn,
+html.o8.wh-home #tbTheme,
+html.o8.wh-home .hs-gift,
+html.o8.wh-home #pfBtn,
+html.o8.wh-home #fxHint,
+html.o8.wh-home:not(.o8-menubar) #tabbar { display: none !important; }
+
+/* ---- fallback sheets (Settings list, Sleep) until home-settings-sleep-v2.js owns them ---- */
+.o8-sheet { position: fixed; inset: 0; z-index: 9000; display: flex; align-items: flex-end; justify-content: center; }
+.o8-sheet .o8-scrim { position: absolute; inset: 0; background: rgba(4,10,30,.42); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.o8-sheet .o8-panel { position: relative; width: min(440px, calc(100% - 24px)); max-height: 78vh; overflow: auto; margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+    padding: 16px 14px 12px; border-radius: 26px; color: #fff; background: rgba(28,40,78,.72); border: 1px solid rgba(255,255,255,.22);
+    -webkit-backdrop-filter: blur(18px) saturate(1.3); backdrop-filter: blur(18px) saturate(1.3); box-shadow: 0 18px 50px rgba(0,10,40,.45); }
+.o8-sheet .o8-ttl { display: block; font-size: 17px; font-weight: 700; margin: 2px 6px 10px; }
+.o8-sheet .o8-rows { display: flex; flex-direction: column; gap: 6px; }
+.o8-sheet .o8-row, .o8-sheet .o8-close { display: block; width: 100%; text-align: left; font: inherit; font-size: 15px; color: #fff; padding: 13px 14px; border-radius: 16px;
+    border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.08); cursor: pointer; }
+.o8-sheet .o8-row[aria-checked="true"] { background: rgba(120,220,180,.22); border-color: rgba(120,220,180,.5); }
+.o8-sheet .o8-close { margin-top: 10px; text-align: center; background: transparent; }
+@media (min-width: 700px) { .o8-sheet { align-items: center; } }

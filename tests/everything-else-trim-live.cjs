@@ -91,8 +91,9 @@ async function tap(page, sel) { const c = await center(page, sel); if (!c) retur
             /* a scroll attempt must not move the header */
             await page.evaluate(() => { const p = document.querySelector('.ss2-panel'), b = p.querySelector('.ss2-body'); p.scrollTop = 999; if (b) b.scrollTop = 999; });
             const c = await center(page, '.ss2-panel .ss2-body'); if (c) { await page.mouse.move(c.x, c.y); await page.mouse.wheel(0, 600).catch(() => { }); } await sleep(300);
-            const h2 = await page.evaluate(() => { const q = document.querySelector('.ss2-panel .ss2-head').getBoundingClientRect(); return q.top; });
-            ok(Math.abs(h2 - g.head.t) < 1, 'header moved on scroll: ' + g.head.t + ' -> ' + h2);
+            /* the panel follows its bubble as the ring drifts, so compare the header against the panel's own top edge */
+            const h2 = await page.evaluate(() => { const p = document.querySelector('.ss2-panel'), q = p.querySelector('.ss2-head').getBoundingClientRect(); return { off: q.top - p.getBoundingClientRect().top, top: q.top, vh: innerHeight }; });
+            ok(Math.abs(h2.off - (g.head.t - g.panel.t)) < 1 && h2.top >= 0 && h2.top < h2.vh, 'header scrolled inside the panel: ' + (g.head.t - g.panel.t) + ' -> ' + h2.off);
             /* Back returns to the Settings bloom; x closes */
             await tap(page, '#ss2Bloom [data-ss2="back"]'); await sleep(300);
             const back = await page.evaluate(() => !document.querySelector('#ss2Bloom .ss2-panel') && !!document.querySelector('#ss2Bloom [data-ss2="more"]'));

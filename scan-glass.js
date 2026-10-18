@@ -36,9 +36,26 @@
         measure(cam);
         requestAnimationFrame(() => measure(cam));
     }
+    /* Oct 18 (Emmanuel, Home decisions: "Scanner: X bottom right. Keep barcode, snap, flash and manual barcode entry."): the X leaves
+       the top bar and sits at the bottom right of the capture panel, at the right end of the Deep analyze row, where the thumb is.
+       Same node, so the app's data-b3="camclose" tap, its label and the tab-bar close above keep working. The torch stays in the top
+       bar. Not inside Misty's world (#spWorld hides this X; the world has its own close). Once per scanner (openScanner builds a new one). */
+    function dockX(cam) {
+        if (!cam || cam.__sgx) return;
+        if (cam.closest && cam.closest('#spWorld')) return;
+        const x = cam.querySelector('.b3-cx[data-b3="camclose"]'), bot = cam.querySelector('.b3-cbot');
+        if (!x || !bot || !D.createElement) return;
+        cam.__sgx = 1;
+        const row = D.createElement('div'); row.className = 'sg-xrow';
+        const deep = bot.querySelector('.b3-deep');
+        if (deep && deep.parentElement === bot) { bot.insertBefore(row, deep); row.appendChild(deep); } else bot.appendChild(row);
+        row.appendChild(x);
+        cam.classList.add('sg-xbot');
+    }
     function sync() {
         const cam = D.getElementById('b3Cam');
         if (cam && cam.parentElement === D.body) adopt(cam);
+        if (cam && !cam.__sgx) dockX(cam);
         const docked = !!(cam && cam.classList.contains('sg-docked') && H.classList.contains('b3-camon'));
         /* Scan is the current page while the camera is open (the lit tab is scan-glass.css) */
         const sb = D.querySelector('#tabbar .tb.scan'), open = !!(cam && H.classList.contains('b3-camon'));
@@ -76,5 +93,5 @@
         window.addEventListener('orientationchange', () => setTimeout(re, 250));
     }
     if (D.body) boot(); else D.addEventListener('DOMContentLoaded', boot, { once: true });
-    window.LowiScanGlass = { sync, measure };
+    window.LowiScanGlass = { sync, measure, dockX };
 })();

@@ -15,6 +15,22 @@ html.lg .b3-cam .b3-ctitle { font-family: var(--lg-font) !important; font-size: 
 html.lg .b3-cam :is(.b3-cx, .b3-torch) { background: rgba(255, 255, 255, .12) !important; color: #fff !important; border: .5px solid rgba(255, 255, 255, .2) !important; -webkit-backdrop-filter: var(--lg-blur) !important; backdrop-filter: var(--lg-blur) !important; box-shadow: var(--lg-edge), 0 6px 18px -8px rgba(0, 0, 0, .6) !important; }
 html.lg .b3-cam .b3-torch.on { background: var(--lg-blue) !important; color: #fff !important; border-color: rgba(255, 255, 255, .3) !important; }
 
+/* Oct 18 (Emmanuel: "Scanner: X bottom right"): the X sits at the bottom right of the capture panel, at the right end of the
+   Deep analyze row (scan-glass.js dockX), same round glass as the torch. The top bar keeps the title centred over the torch side. */
+.b3-cam.sg-xbot .b3-ctop { padding-left: calc(env(safe-area-inset-left, 0px) + 68px) !important; }
+.b3-cam.sg-xbot .sg-xrow { display: flex; align-items: center; justify-content: flex-end; gap: 8px; min-width: 0; }
+.b3-cam.sg-xbot .sg-xrow > .b3-deep { flex: 1 1 auto; min-width: 0; }
+.b3-cam.sg-xbot .sg-xrow > .b3-cx { flex: none; width: 46px; height: 46px; min-width: 46px; padding: 0; margin: 0; }
+/* shopping mode: Deep analyze steps aside, so the X joins the right end of the name / cart row instead of taking a row of its own.
+   Only when that row is there (:has); otherwise the X keeps its own row under the barcode field. While a shopping result card is
+   open the panel and this X step aside for the card (shop-scan.css .ss-open), whose own X shows. While typing a code the X stays. */
+html.lg .b3-cam.sg-xbot.b3-shop .b3-cbot:has(> .ss-row) > .sg-xrow { position: absolute; right: 12px; bottom: 12px; }
+html.lg .b3-cam.sg-xbot.b3-shop .b3-cbot:has(> .ss-row) > .ss-row { box-sizing: border-box; padding-right: 54px; }
+@media (max-height: 720px) {
+    html.lg .b3-cam.sg-xbot.sg-docked .sg-xrow > .b3-cx { width: 42px; height: 42px; min-width: 42px; }
+    html.lg .b3-cam.sg-xbot.sg-docked.b3-shop .b3-cbot:has(> .ss-row) > .sg-xrow { right: 10px; bottom: 12px; }
+}
+
 /* the viewfinder: Misty-blue corners and a blue scan line (green only for a caught code) */
 html.lg .b3-cam .b3-frame i[class^=c] { border-color: var(--lg-blue-2) !important; filter: drop-shadow(0 0 6px rgba(10, 132, 255, .65)); }
 html.lg .b3-cam .b3-laser { background: linear-gradient(90deg, transparent, var(--lg-blue-2), transparent) !important; box-shadow: 0 0 14px var(--lg-blue) !important; }

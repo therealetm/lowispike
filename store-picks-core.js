@@ -150,6 +150,25 @@
         return null;
     }
 
+    /* Oct 18, 2026 (E-man relaying his custom lowiSPIKE GPT and the ebook behind his 55 kg loss: avoid big spikes and high carb
+       loads, favour minimally processed, protein-forward, LOW-STARCH food, judge the food and the whole portion, not one nutrient;
+       swap fries for crunchy veggie sticks, pasta for zucchini or konjac). An audit of the Lidl list found potato salad, fries,
+       crisps, microwave rice, muesli and sweetcorn marked Good (rated as low-GI vegetables or 30 g handfuls), cake, churros and a
+       Magnum bar marked Good as a 25 g bite, and zero-sugar colas marked Best like water. These rules close those gaps. */
+    const STARCH_NAME = /kartoffel|potato|pommes|frites|\bfries\b|kroket|rösti|gnocchi|chips|crisps|popcorn|\breis|[^p]reis\b|\brice\b|risotto|nudel|spaghetti|\bpenne\b|fusilli|tortellini|ravioli|lasagne|couscous|bulgur|polenta|\bmais\b|zuckermais|maiskolben|sweetcorn|\bcorn\b|müsli|muesli|granola|cornflakes|porridge|haferflocken|\bpasta\b/;
+    const STARCH_TAG = /\|potatoes\||prepared-potatoes|potato-(crisps|dishes|salads|purees)|fried-potatoes|\|fries\||frozen-fries|\|rices\||precooked-rices|\|pastas\||breakfast-cereals|\|mueslis|popcorn|canned-corn|sweet-corn|sweetcorn/;
+    /* not starchy staples: vegetable and legume swaps, seasonings and sauces that only carry the word */
+    const NOT_STARCH = /blumenkohl|cauliflower|brokkoli|broccoli|konjac|konjak|shirataki|zucchini|gemüse-?nudel|linsen|lentil|kichererbse|chickpea|erbse|bohne|\bbean|soja|edamame|kokos|coconut|salami|parmesan|käsli|crispsalat|squash|kürbis|spegepølse|essig|vinegar|reiswein|gewürz|würz|seasoning|sauce|soße|sosse|sugo|pesto|dressing|\bdip\b/;
+    const SNACK_STARCH = /chips|crisps|popcorn|tortilla|waffel|waffeln/;
+    const CEREAL = /müsli|muesli|granola|cornflakes|porridge|haferflocken|breakfast-cereals|mueslis/;
+    /* a slice of cake, a pastry, a pancake or churros is eaten as a portion, not as a 25 g bite (Lebkuchen stay a piece) */
+    const CAKE = /kuchen|torte|\bcake|cakes\b|muffin|donut|doughnut|berliner|croissant|plunder|strudel|churros|waffel|waffle|pancake|pfannkuchen|cr[eèê]pe|windbeutel|bienenstich|brownie|tiramisu|eclair|éclair|cheesecake|profiterole/;
+    const CAKE_TAG = /\|cakes\||cheesecakes|\|pancakes\||crepes|tiramisu|frozen-cakes/;
+    /* chocolate bars whose label is per bar, entered as per 100 g (real chocolate is 400+ kcal per 100 g) */
+    const CHOC_BAR = /chocolates|chocolate-candies|bars-covered-with-chocolate/;
+    /* sweetened zero / light / energy drinks: no sugar load, but processed, so Good at most; water and plain tea stay Best */
+    const SWEETENED_DRINK = /artificially-sweetened|diet-beverages|diet-sodas|energy-drinks|energy drink|sugar.?free|zuckerfrei|ohne zucker|\bzero\b|\blight\b|\bmax\b|\bultra\b|\bcola\b|\blimo|sodas/;
+
     const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
     const r1 = v => Math.round(v * 10) / 10;
     const nz = v => (typeof v === 'number' && isFinite(v) ? v : 0);
@@ -168,24 +187,36 @@
         if (!typ && typeof prod.kcal === 'number' && prod.kcal > 80 && (4 * nz(prod.c) + 4 * nz(prod.p) + 9 * nz(prod.fat) + 2 * nz(prod.f)) < prod.kcal * 0.5) return { group, rated: false, incomplete: true };
         /* all zeros on food that cannot be zero (cake mix, bread, cheese ...) is an empty label, not a free food */
         if (!typ && !nz(prod.c) && !nz(prod.p) && !nz(prod.fat) && !nz(prod.kcal) && /sweets|bread|snacks|meals|dairy|cheese|meat|fish/.test(group)) return { group, rated: false, incomplete: true };
+        const name = String(prod.n || '').toLowerCase(), tags = '|' + String(prod.k || '').toLowerCase() + '|', txt = name + ' ' + tags;
+        /* see CHOC_BAR: a chocolate bar cannot have under 300 kcal per 100 g; the label online is per bar */
+        if (!typ && group === 'sweets' && CHOC_BAR.test(tags) && typeof prod.kcal === 'number' && prod.kcal > 0 && prod.kcal < 300) return { group, rated: false, incomplete: true };
         const g = G[group];
         const liquid = prod.u === 'ml' || group === 'drinks';
         let serve = g.serve;
         if (group === 'dairy' && liquid) serve = 200;          /* a glass of milk */
         if (group === 'drinks') serve = 250;
-        /* a pudding, mousse or ice cream is eaten by the bowl, not by the 25 g piece */
-        if (group === 'sweets' && /budding|pudding|dessert|mousse|\bis\b|isvaffel|eis\b|ice cream|yoghurt|joghurt|skyr|creme|cr\u00e8me/i.test(String(prod.n) + ' ' + String(prod.k))) serve = 125;
+        /* a pudding, mousse or ice cream is eaten by the bowl, not by the 25 g piece (Open Food Facts writes "ice-creams") */
+        if (group === 'sweets' && !/frozen-fruits/.test(tags) && /budding|pudding|dessert|mousse|\bis\b|isvaffel|eis\b|ice.?cream|yoghurt|joghurt|skyr|creme|cr\u00e8me/i.test(String(prod.n) + ' ' + String(prod.k))) serve = 125;
+        else if (group === 'sweets' && !/lebkuchen|gingerbread|(linsen|reis|mais|dinkel|hirse|quinoa)waffel|cookie|keks|konfekt/.test(name) && (CAKE.test(name) || CAKE_TAG.test(tags))) serve = 80;
+        /* starchy staples (see STARCH_NAME): a starchy GI base, and a plate for ready potato, fries, rice or pasta */
+        const starch = group !== 'drinks' && (STARCH_NAME.test(name) || STARCH_TAG.test(tags)) && !NOT_STARCH.test(name);
+        if (starch) {
+            const cv = nz(nu.c);
+            if (CEREAL.test(txt)) serve = Math.max(serve, 45);
+            else if ((/pommes|frites|\bfries\b|kroket/.test(name) || (!SNACK_STARCH.test(name) && !/potato-crisps|\|crisps\||popcorn|corn-chips/.test(tags))) && cv < 40) serve = Math.max(serve, 150);
+        }
         const c = Math.max(0, nz(nu.c)), s = Math.max(0, nz(nu.s)), f = Math.max(0, nz(nu.f)), p = Math.max(0, nz(nu.p)), fat = Math.max(0, nz(nu.fat));
-        let base = g.gi;
+        let base = starch ? Math.max(g.gi, 70) : g.gi;
         /* milk drinks behave like dairy, not like soda */
         if (group === 'drinks' && /mælk|milk|milch|kefir|skyr|protein/.test(String(prod.n + ' ' + prod.k).toLowerCase())) base = 35;
         const gi = Math.round(clamp(base - Math.min(20, 2.5 * f) - Math.min(12, 0.4 * p) - Math.min(10, 0.25 * fat), 20, 90));
         const carbs = c * serve / 100, sugar = s * serve / 100;
         const gl = r1(carbs * gi / 100);
         const pass = gl <= LIMIT.gl && sugar <= LIMIT.sugar;
+        const sweetened = group === 'drinks' && SWEETENED_DRINK.test(txt) && !/\|waters\||mineral|wasser|\|teas\||herbal-teas|coffees|kaffee/.test(txt);
         return {
             group, rated: true, typical: typ, serve, unit: liquid ? 'ml' : 'g', gi, gl, carbs: r1(carbs), sugar: r1(sugar),
-            protein: r1(p * serve / 100), fibre: r1(f * serve / 100), pass, best: pass && gl <= LIMIT.best,
+            protein: r1(p * serve / 100), fibre: r1(f * serve / 100), pass, best: pass && gl <= LIMIT.best && !sweetened, sweetened, starch,
             fail: pass ? '' : (gl > LIMIT.gl ? 'gl' : 'sugar')
         };
     }
@@ -225,7 +256,7 @@
         return {
             verdict: r.best ? 'best' : r.pass ? 'good' : r.fail === 'sugar' ? 'sugar' : 'spikes',
             gl: r.gl, gi: r.gi, serve: r.serve, unit: r.unit, carbs: r.carbs, sugar: r.sugar, protein: r.protein, fibre: r.fibre,
-            typical: !!r.typical, estimatedGI: true, limits: { best: LIMIT.best, gl: LIMIT.gl, sugar: LIMIT.sugar }
+            typical: !!r.typical, sweetened: !!r.sweetened, starch: !!r.starch, estimatedGI: true, limits: { best: LIMIT.best, gl: LIMIT.gl, sugar: LIMIT.sugar }
         };
     }
 

@@ -120,6 +120,11 @@
         if (e.verdict === 'best') return T('Best: about ' + g + ' glycemic load in a ' + sv + ' portion. 2 or less is Best.',
             'Top: etwa ' + g + ' glykämische Last in einer Portion von ' + sv + '. Bis 2 heißt Top.',
             'Mejor: unos ' + g + ' de carga glucémica en una porción de ' + sv + '. 2 o menos es Mejor.');
+        /* Oct 18, 2026 (lowiSPIKE principles audit): a zero-sugar cola or energy drink has no sugar load, but it is not minimally
+           processed, so it is Good, never Best */
+        if (e.verdict === 'good' && e.sweetened) return T('Good, not Best: about ' + g + ' glycemic load in a ' + sv + ' portion, so no real sugar load, but it is a sweetened, processed drink. Water and plain tea are Best.',
+            'Gut, nicht Top: etwa ' + g + ' glykämische Last in einer Portion von ' + sv + ', also kaum Zuckerlast, aber ein gesüßtes, verarbeitetes Getränk. Wasser und purer Tee sind Top.',
+            'Bien, no Mejor: unos ' + g + ' de carga glucémica en una porción de ' + sv + ', casi sin carga de azúcar, pero es una bebida endulzada y procesada. El agua y el té solo son Mejor.');
         if (e.verdict === 'good') return T('Good: about ' + g + ' glycemic load in a ' + sv + ' portion and ' + su + ' g sugar. It passes at 5 or less with at most 6 g sugar; Best needs 2 or less.',
             'Gut: etwa ' + g + ' glykämische Last in einer Portion von ' + sv + ' und ' + su + ' g Zucker. Bestanden bis 5 mit höchstens 6 g Zucker; Top braucht bis 2.',
             'Bien: unos ' + g + ' de carga glucémica en una porción de ' + sv + ' y ' + su + ' g de azúcar. Pasa con 5 o menos y como mucho 6 g de azúcar; Mejor necesita 2 o menos.');

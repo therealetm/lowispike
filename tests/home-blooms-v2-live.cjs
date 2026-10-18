@@ -7,7 +7,8 @@
    - Water +1 cup adds one cup, Undo takes one off, never below 0, water XP never above the cups
    - Gap: Ate earlier opens the when-did-you-eat sheet, I just ate moves the last-meal time to now
    - Move: Quick logs a move estimate
-   - Fuel: Today's step / Snack / Swap / Cook each open their existing screen; labels plain, no emoji
+   - Fuel (since Oct 18 evening): Shop / Cook / Log meal each open their existing screen, no Swap, no Today's step; labels
+     plain, no emoji; the meal log orb is visible and fully inside its circle (label not clipped); hold still opens the log
    Usage: node tests/home-blooms-v2-live.cjs [--root DIR | --url https://therealetm.github.io/lowispike/] [--out DIR] [--view NAME].
    With --url (or when index.html already loads the module) it uses the page's own copy and the ring shell's data-orbit tags;
    on a live URL only GETs to that host pass, every non-GET and every other host (Supabase included) is aborted. Exit 0 = pass. */
@@ -180,7 +181,11 @@ const fastStore = () => JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}')
             checkGeo(g, 'fuel');
             await page.screenshot({ path: path.join(OUT, name + '-fuel.png') });
             const fuelTxt = g.orbs.map(o => o.text).join(' | ');
-            ok(g.orbs.map(o => o.id).join() === 'step,snack,swap,cook', P + "fuel orbs = Today's step, Snack, Swap, Cook (" + fuelTxt + ')');
+            ok(g.orbs.map(o => o.id).join() === 'shop,cook,log', P + 'fuel orbs = Shop, Cook, Log meal (' + fuelTxt + ')');
+            ok(!/\bSwap\b|Today's step|\bSnack\b/.test(fuelTxt), P + 'no Swap / Today\'s step / Snack in Fuel');
+            /* the meal log is a real visible button: its label sits inside the orb and is not cut by the round edge */
+            const logVis = await page.evaluate(() => { const o = document.querySelector('#hb2Bloom [data-id="log"]'); if (!o) return { ok: false, why: 'missing' }; const r = o.getBoundingClientRect(), b = o.querySelector('b').getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, R = r.width / 2; const corners = [[b.left, b.top], [b.right, b.top], [b.left, b.bottom], [b.right, b.bottom]]; const inside = corners.every(([x, y]) => Math.hypot(x - cx, y - cy) <= R + 1); const cs = getComputedStyle(o); return { ok: inside && cs.visibility !== 'hidden' && +cs.opacity > 0.9 && !o.disabled, inside, op: cs.opacity, text: o.innerText.replace(/\s+/g, ' ') }; });
+            ok(logVis.ok, P + 'Log meal orb visible, enabled, label inside the circle ' + JSON.stringify(logVis));
             ok(!/\bAgain\b|\bPhoto\b/.test(fuelTxt), P + 'no Again / Photo labels');
             const fuelCase = async (id, check, what) => {
                 await closeAll();
@@ -191,9 +196,8 @@ const fastStore = () => JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}')
                 ok(r, P + what);
                 await page.screenshot({ path: path.join(OUT, name + '-fuel-' + id + '.png') });
             };
-            await fuelCase('swap', () => { const s = document.getElementById('sos'); return !!(s && s.classList.contains('open')); }, 'Swap opens Craving SOS');
-            await fuelCase('snack', () => !!document.querySelector('.stp-ov'), 'Snack opens What can I buy here?');
-            await fuelCase('step', () => !!document.querySelector('.sp-pick'), "Today's step opens Misty's pick (Cook it / Log this)");
+            await fuelCase('shop', () => !!document.querySelector('.stp-ov'), 'Shop opens What can I buy here?');
+            await fuelCase('log', () => !document.getElementById('hb2Bloom') && [...document.querySelectorAll('.r3-ov,.r2-ov,.bt-ov,[role="dialog"]')].some(e => e.offsetWidth && /meal|Mahlzeit|photo|Foto|scan/i.test(e.innerText)), 'Log meal opens the meal log sheet');
             await fuelCase('cook', () => { const t = document.getElementById('tab-shelf'); return !!(t && t.classList.contains('active')); }, 'Cook opens the Cook tab');
             await page.evaluate(() => window.goTab && window.goTab('home')); await sleep(900);
             await closeAll();

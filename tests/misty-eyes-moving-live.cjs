@@ -11,6 +11,7 @@
      - her face is actually shown in a fair share of frames (she looks where she flies, and looks back now and then)
    Production Supabase and every non-GET request are blocked; a local fixture session only.
      node tests/misty-eyes-moving-live.cjs [--root DIR | --url https://therealetm.github.io/lowispike/] [--out DIR] [--tag after] [--views a,b]
+       [--auto ms] [--explore ms] [--wait ms] [--dpr 1]  (slow software-GL WebKit: longer phases)
    Exit 0 = pass. */
 const http = require('http'), fs = require('fs'), path = require('path');
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
@@ -65,7 +66,9 @@ function judge(fr, info) {
     if (out.length < 60) P.push('too few frames of her flying: ' + out.length);
     const settled = out.filter(f => f.wo >= 0.999).length, ghostBody = out.filter(f => f.wo > 0.02 && f.wo < 0.999);
     if (out.length && settled / out.length < 0.85) P.push('body see-through in ' + ghostBody.length + '/' + out.length + ' frames, e.g. opacity ' + (ghostBody[0] && ghostBody[0].wo));
-    const showing = out.filter(f => f.fv && f.seen > 0);
+    /* state().faceSeen is worked out from the camera at read time, the face's opacity at the last render: right at her edge
+       (seen < 0.05, the face shrunk to under 5% of its size) the two can be a frame apart, so the edge band is not judged */
+    const showing = out.filter(f => f.fv && f.seen >= 0.05);
     const ghost = showing.filter(f => Math.abs(f.fo - f.wo) > 0.002);
     if (ghost.length) P.push('face not as solid as her body in ' + ghost.length + '/' + showing.length + ' frames, e.g. face ' + ghost[0].fo + ' body ' + ghost[0].wo + ' seen ' + ghost[0].seen);
     const solid = showing.filter(f => f.wo >= 0.999 && f.fo >= 0.999).length;
@@ -86,7 +89,8 @@ function judge(fr, info) {
     for (const v of arg('views', 'iphone_chromium,iphone13_webkit,ipad_landscape_webkit').split(',')) {
         const [eng, dd] = VIEWS[v];
         const browser = await pw[eng].launch(eng === 'chromium' ? { args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] } : {});
-        const dev = typeof dd === 'string' ? Object.assign({}, pw.devices[dd]) : dd;
+        const dev = Object.assign({}, typeof dd === 'string' ? pw.devices[dd] : dd);
+        if (arg('dpr', '')) dev.deviceScaleFactor = +arg('dpr', ''); /* a loaded test machine renders 1x faster; layout (CSS px) is the same */
         const ctx = await browser.newContext(Object.assign({}, dev, { serviceWorkers: 'block' }));
         const writes = [];
         await ctx.route('**/*', r => { const q = r.request(), u = new URL(q.url()); if (u.protocol === 'data:' || u.protocol === 'blob:' || (u.host === host && q.method() === 'GET')) return r.continue(); if (q.method() !== 'GET') writes.push(q.method() + ' ' + u.host); return r.abort(); });
@@ -105,7 +109,7 @@ function judge(fr, info) {
         const shots = []; let snapWhy = '';
         const snap = async (name) => {
             const s = await page.evaluate(() => ({ spot: window.LowiMistyFlight.touchSpot(), m: window.LowiMistyFace.state() }));
-            if (!s.spot || !(s.m.faceSeen > 0.6) || !s.m.on) { snapWhy = JSON.stringify({ spot: !!s.spot, seen: s.m.faceSeen, on: s.m.on }); return false; }
+            if (!s.spot || !(s.m.faceSeen > 0.6) || !(s.m.on || s.m.faceOp >= 0.99)) { snapWhy = JSON.stringify({ spot: !!s.spot, seen: s.m.faceSeen, on: s.m.on }); return false; }
             const vw = dev.viewport.width, vh = dev.viewport.height, h = Math.max(70, s.spot.h * 1.5), cl = (q, a, b) => Math.max(a, Math.min(b, q));
             if (!(s.spot.x > 0 && s.spot.x < vw && s.spot.y > 0 && s.spot.y < vh)) { snapWhy = 'off screen ' + Math.round(s.spot.x) + ',' + Math.round(s.spot.y); return false; }
             const x0 = cl(s.spot.x - h, 0, vw - 40), y0 = cl(s.spot.y - h, 0, vh - 40);

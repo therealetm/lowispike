@@ -176,9 +176,9 @@
         const A = [];
         if (kind === 'fuel') {
             /* only Shop, Cook and a visible meal log (E-man, Oct 18): no Swap, no Today's step */
-            if (fn(W.LowiStorePicks, 'open')) A.push({ id: 'shop', label: T('Shop', 'Einkaufen', 'Comprar'), sub: T('what can I buy?', 'was kann ich kaufen?', '¿qué compro?'), icon: 'shop', run: () => W.LowiStorePicks.open('home-bloom') });
+            if (fn(W.LowiStorePicks, 'open')) A.push({ id: 'shop', label: T('Shop', 'Einkaufen', 'Comprar'), sub: T('what to buy', 'was kaufen?', '¿qué compro?'), icon: 'shop', run: () => W.LowiStorePicks.open('home-bloom') });
             if (fn(W.LowiHost, 'go')) A.push({ id: 'cook', label: T('Cook', 'Kochen', 'Cocinar'), sub: T('recipes', 'Rezepte', 'recetas'), icon: 'cook', run: () => W.LowiHost.go('shelf') });
-            if (fn(W.LowiSpirit, 'meal')) A.push({ id: 'log', label: T('Log meal', 'Mahlzeit eintragen', 'Anotar comida'), sub: T('what you ate', 'was du gegessen hast', 'lo que comiste'), icon: 'log', run: mealLog });
+            if (fn(W.LowiSpirit, 'meal')) A.push({ id: 'log', label: T('Log meal', 'Mahlzeit eintragen', 'Anotar comida'), icon: 'log', run: mealLog });
         } else if (kind === 'water') {
             const n = cupsToday();
             if (fn(W.LowiSpirit, 'water') || fn(W.LowiVitalsBridge, 'water')) A.push({ id: 'add', label: T('+1 cup', '+1 Glas', '+1 vaso'), sub: n + ' / ' + WATER_GOAL, icon: 'cup', keep: true, q: Math.min(1, n / WATER_GOAL),

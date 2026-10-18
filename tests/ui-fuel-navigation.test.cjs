@@ -90,7 +90,9 @@ test('Fuel orbs use the same plain words in English, German and Spanish', () => 
     for (const lang of Object.keys(LABELS)) {
         const { api } = page({ lang });
         assert.deepStrictEqual(api.actions('fuel').map(a => a.label), LABELS[lang], lang);
-        api.actions('fuel').forEach(a => assert.ok(a.sub && a.sub.length <= 22, lang + ' ' + a.id + ' has a short subline: ' + a.sub));
+        /* sublines are 9px and one line in a 71px orb (375-wide phones): longer than about 12 characters gets cut with an
+           ellipsis (seen live: "was kann ich kaufen?", "was du gegessen hast", "what can I buy?" at 375), so short or none */
+        api.actions('fuel').forEach(a => assert.ok(!a.sub || a.sub.length <= 12, lang + ' ' + a.id + ' subline short enough to show whole: ' + a.sub));
     }
 });
 
@@ -100,6 +102,13 @@ test('Swap and Today\'s step are gone from Fuel in every language, even when Cra
         const acts = api.actions('fuel');
         assert.ok(!acts.some(a => a.id === 'swap' || a.id === 'step' || a.id === 'snack'), lang + ' ids ' + acts.map(a => a.id));
         assert.ok(!acts.some(a => /swap|tauschen|cambiar|today|heute|hoy/i.test(a.label + ' ' + a.sub)), lang + ' words ' + acts.map(a => a.label + '/' + a.sub));
+    }
+});
+
+test('Log meal carries no subline: its label already says it, and German / Spanish labels need both lines', () => {
+    for (const lang of Object.keys(LABELS)) {
+        const log = page({ lang }).api.actions('fuel').find(a => a.id === 'log');
+        assert.ok(log && !log.sub, lang + ' log sub: ' + (log && log.sub));
     }
 });
 

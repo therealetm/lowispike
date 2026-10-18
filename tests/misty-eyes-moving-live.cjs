@@ -5,9 +5,11 @@
    case that made her most see-through). Phases: autopilot tour, driving with the joystick, her timed adventure (exploration) if
    her energy allows it. Every animation frame records her body (wand) opacity, her face plane's opacity / visibility, how much of
    her face points at you, and (every 6th frame) any visible transparent layer drawn after her face. Then:
-     - her body is fully opaque (1) in the frames she is settled out in the world (only fade in / out may dim her, <= 12% of frames)
-     - whenever any of her face points at you, the face's opacity equals her body's: 1 when she is there, never a ghost
-     - nothing translucent is drawn over her face (render order + depth test off), the inner layer behind her face is >= 85% opaque
+     - Oct 18 evening (E-man: "All I wanted is to keep her eyes basically the same"): her body looks as before Oct 18: in every
+       flying frame its opacity is (0.55 + 0.43 x energy) x presence (energy read back from her tint), no pale inner layer
+     - whenever any of her face points at you, the face's opacity equals her presence: 1 once she is there (even over her ~70%
+       glass body), never a ghost
+     - nothing translucent is drawn over her face (render order + depth test off)
      - her face is actually shown in a fair share of frames (she looks where she flies, and looks back now and then)
    Production Supabase and every non-GET request are blocked; a local fixture session only.
      node tests/misty-eyes-moving-live.cjs [--root DIR | --url https://therealetm.github.io/lowispike/] [--out DIR] [--tag after] [--views a,b]
@@ -49,7 +51,7 @@ function setup() {
         if (!R.on) return; requestAnimationFrame(tick);
         if (!wand || !wand.parent || !face || !face.parent) { if (n++ % 15 === 0) find(); if (!wand) return; }
         const F = window.LowiMistyFlight, MF = window.LowiMistyFace, fs = F && F.state ? F.state() : {}, m = MF && MF.state ? MF.state() : {};
-        const r = { p: R.phase, st: fs.st, dk: fs.dk || 0, wv: !!wand.visible, wo: +wand.material.opacity.toFixed(3), fv: !!(face && face.visible), fo: face ? +face.material.opacity.toFixed(3) : null, seen: m.faceSeen, fd: m.faceD, why: m.why, on: !!m.on };
+        const r = { p: R.phase, st: fs.st, dk: fs.dk || 0, wv: !!wand.visible, wo: +wand.material.opacity.toFixed(3), wg: wand.material.color ? +wand.material.color.g.toFixed(4) : null, pr: wand.userData.mfPresence == null ? null : +(+wand.userData.mfPresence).toFixed(3), fv: !!(face && face.visible), fo: face ? +face.material.opacity.toFixed(3) : null, seen: m.faceSeen, fd: m.faceD, why: m.why, on: !!m.on };
         if (face && (n++ % 6 === 0)) {
             const ro = face.renderOrder, over = [];
             A.scene.traverseVisible(o => { const mt = o.material; if (o === face || !mt || !mt.transparent || o.name === 'test-bokeh') return; if ((o.renderOrder || 0) > ro && (mt.opacity || 0) > 0.02) over.push(o.name || o.type); });
@@ -64,24 +66,33 @@ function setup() {
 function judge(fr, info) {
     const P = [], out = fr.filter(f => f.wv && f.p !== 'rest' && f.st && f.st !== 'idle');
     if (out.length < 60) P.push('too few frames of her flying: ' + out.length);
-    const settled = out.filter(f => f.wo >= 0.999).length, ghostBody = out.filter(f => f.wo > 0.02 && f.wo < 0.999);
-    if (out.length && settled / out.length < 0.85) P.push('body see-through in ' + ghostBody.length + '/' + out.length + ' frames, e.g. opacity ' + (ghostBody[0] && ghostBody[0].wo));
+    /* her body: the pre-Oct-18 look, (0.55 + 0.43 k) x presence, k from her tint g = 0.78 + 0.22 k */
+    const exp = f => (0.55 + 0.43 * Math.max(0, Math.min(1, (f.wg - 0.78) / 0.22))) * (f.pr == null ? 1 : f.pr);
+    const offLook = out.filter(f => f.wg != null && Math.abs(f.wo - exp(f)) > 0.01);
+    if (offLook.length > out.length * 0.03) P.push('body not her old look in ' + offLook.length + '/' + out.length + ' frames, e.g. ' + JSON.stringify(offLook[0]) + ' expected ' + (offLook[0] && exp(offLook[0]).toFixed(3)));
+    const settledF = out.filter(f => f.pr != null && f.pr >= 0.999), settled = settledF.length;
+    const tiredSolid = settledF.filter(f => f.wg != null && f.wg < 0.978 && f.wo >= 0.99);
+    if (tiredSolid.length) P.push('a tired Misty drawn fully solid (pale) in ' + tiredSolid.length + ' frames');
+    if (out.length && settled / out.length < 0.85) P.push('presence below 1 in ' + (out.length - settled) + '/' + out.length + ' frames');
     /* judged against faceD: her look toward you exactly as the face was last drawn (same render as its opacity). state().faceSeen
        is only an estimate from the camera's forward axis, which differs when she is off the middle of the screen. Any part of her
        face toward you = faceD > -0.3 (where faceVis reaches 0). */
+    const pres = f => (f.pr == null ? f.wo : f.pr);
     const showing = out.filter(f => f.fv && (f.fd != null ? f.fd > -0.3 : f.seen >= 0.05));
-    const realGhost = out.filter(f => f.fv && f.fo > 0.002 && f.fo < f.wo - 0.002);
-    if (realGhost.length) P.push('face drawn half see-through (between gone and her body) in ' + realGhost.length + ' frames');
-    const ghost = showing.filter(f => Math.abs(f.fo - f.wo) > 0.002);
-    if (ghost.length) P.push('face not as solid as her body in ' + ghost.length + '/' + showing.length + ' frames, e.g. ' + JSON.stringify(ghost[0]));
-    const solid = showing.filter(f => f.wo >= 0.999 && f.fo >= 0.999).length;
+    const realGhost = out.filter(f => f.fv && f.fo > 0.002 && f.fo < pres(f) - 0.002);
+    if (realGhost.length) P.push('face drawn half see-through (between gone and her presence) in ' + realGhost.length + ' frames');
+    const ghost = showing.filter(f => Math.abs(f.fo - pres(f)) > 0.002);
+    if (ghost.length) P.push('face not as solid as her presence in ' + ghost.length + '/' + showing.length + ' frames, e.g. ' + JSON.stringify(ghost[0]));
+    const solid = showing.filter(f => pres(f) >= 0.999 && f.fo >= 0.999).length;
+    const solidOverGlass = showing.filter(f => pres(f) >= 0.999 && f.fo >= 0.999 && f.wo < 0.999).length;
     if (showing.length < 20) P.push('her face was shown in only ' + showing.length + ' frames');
     const covered = out.filter(f => f.over && f.over.length && !(f.dk > 0.05));
     if (covered.length) P.push('a translucent layer is drawn over her face: ' + [...new Set(covered.flatMap(f => f.over))].join(','));
     const ro = out.find(f => f.ro); if (ro && !(ro.ro[1] > ro.ro[0] && ro.dt === false)) P.push('face not on top of her body: ' + JSON.stringify(ro));
-    if (!(info.backA >= 0.85)) P.push('the body behind her face is only ' + info.backA + ' opaque');
+    if (info.back !== false) P.push('a pale inner layer is still under her body (state().back = ' + info.back + ')');
+    const wos = settledF.map(f => f.wo).sort((x, y) => x - y), med = wos.length ? wos[wos.length >> 1] : null;
     const by = {}; out.forEach(f => { const k = f.p + ':' + f.st; by[k] = (by[k] || 0) + 1; });
-    return { problems: P, frames: out.length, bodySolidPct: out.length ? +(100 * settled / out.length).toFixed(1) : 0, faceShown: showing.length, faceSolid: solid, ghostFace: ghost.length, states: by };
+    return { problems: P, frames: out.length, bodyOpMedian: med, bodyOffLook: offLook.length, faceShown: showing.length, faceSolid: solid, faceSolidOverGlass: solidOverGlass, ghostFace: ghost.length, states: by };
 }
 
 (async () => {
@@ -147,7 +158,7 @@ function judge(fr, info) {
         if (!shots.length) P.push('no screenshot with her face toward you: ' + snapWhy);
         /* non-GET requests never leave the browser (aborted above); reported, not a failure */
         if (errs.length) P.push('page errors: ' + errs.slice(0, 3).join(' | '));
-        console.log(JSON.stringify({ view: v, ok: !P.length, problems: P, frames: j.frames, bodySolidPct: j.bodySolidPct, faceShown: j.faceShown, faceSolid: j.faceSolid, ghostFace: j.ghostFace, adventure: adv, travel: tr, states: j.states, blockedWrites: writes.length, backA: info.backA, shots }));
+        console.log(JSON.stringify({ view: v, ok: !P.length, problems: P, frames: j.frames, bodyOpMedian: j.bodyOpMedian, bodyOffLook: j.bodyOffLook, faceShown: j.faceShown, faceSolid: j.faceSolid, faceSolidOverGlass: j.faceSolidOverGlass, ghostFace: j.ghostFace, adventure: adv, travel: tr, states: j.states, blockedWrites: writes.length, backA: info.backA, shots }));
         if (P.length) fail++;
         await browser.close();
     }

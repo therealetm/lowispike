@@ -40,11 +40,10 @@
         PEEK_GAP: [6, 11],      /* ... and between looks after that */
         PEEK_HOLD: [1.1, 1.7],  /* how long the look back lasts (s) */
         PEEK_MIX: 0.7,          /* the look: this far from her path toward you (1 = straight at you) */
-        PEEK_AWAY: -0.2,        /* her path counts as "away from you" below this (dot of path and toward-you) */
-        /* Oct 18 (E-man, iPad: "when it move we don't see its eyes bc it's transparent"): her cell body is glass (the cytoplasm is
-           12-16% opaque), so out in a dark world her dark eyes had nothing behind them. Out of Home her body art gets a solid inner
-           layer under the glass, and her face is drawn solid on top of it whenever any of it points at you. */
-        BACK: { fill: '#e4f6fa', a: 0.9 }  /* the inner layer: a pale glass tone, 90% opaque (any world: eyes contrast > 7:1) */
+        PEEK_AWAY: -0.2         /* her path counts as "away from you" below this (dot of path and toward-you) */
+        /* Oct 18 evening (E-man: "That doesn't make sense that she changes when she's out of the bubble. All I wanted is to keep her
+           eyes basically the same"): no extra layer under her body any more; out of Home she is her own glass self, only her face
+           (eyes, cheeks, mouth) is drawn solid on top whenever any of it points at you. */
     };
     /* ---------- tiny vector helpers (plain arrays, so node can test them) ---------- */
     const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
@@ -172,18 +171,12 @@
         const rx = rm ? +rm[1] : 40, ry = rym ? +rym[1] : rx + 9;
         const C = K.CROP, px = K.FACE_PX;
         const face = '<svg xmlns="http://www.w3.org/2000/svg" width="' + C.w * px + '" height="' + C.h * px + '" viewBox="' + C.x + ' ' + C.y + ' ' + C.w + ' ' + C.h + '">' + inner + '</svg>';
-        let body = svg.slice(0, start) + svg.slice(end);
-        const bb = bm && /<ellipse\b[^>]*\bclass="[^"]*\blh-body\b[^"]*"[^>]*>/.exec(body);
-        if (bb) body = body.slice(0, bb.index) + backLayer(bb[0]) + body.slice(bb.index);
-        return { body, face, fx, fy, rx, ry, back: !!bb };
-    }
-    /* the solid inner layer: the same ellipse as her glass body (same place, size, transform), filled, drawn just under it */
-    function backLayer(el) {
-        const a = n => { const r = new RegExp('\\b' + n + '="([^"]*)"').exec(el); return r ? ' ' + n + '="' + r[1] + '"' : ''; };
-        return '<ellipse class="mf-body-back"' + a('cx') + a('cy') + a('rx') + a('ry') + a('transform') + ' fill="' + K.BACK.fill + '" fill-opacity="' + K.BACK.a + '"/>';
+        /* her body exactly as her own art draws it, minus the face: nothing added under or over it */
+        const body = svg.slice(0, start) + svg.slice(end);
+        return { body, face, fx, fy, rx, ry, back: false };
     }
     /* how her face is drawn this frame, from d (her look toward you) and presence (her body's own fade in / out: 1 once she is
-       there). op: solid (= presence) whenever any of her face points at you, 0 when you only see her back; never a ghost in between.
+       there; NOT her body's opacity, which her energy lowers: a tired Misty's glass body is ~70% opaque, her face stays solid). op: solid (= presence) whenever any of her face points at you, 0 when you only see her back; never a ghost in between.
        k: past her edge the face shrinks into the rim (instead of fading), so turning away still has no pop. */
     function faceLook(d, presence) {
         const v = faceVis(d), p = clamp(presence == null ? 1 : +presence || 0, 0, 1);
@@ -260,7 +253,7 @@
         }
         const F = faceFrame(S.L, cr, cu, cf, w.material.rotation || 0);
         /* solid whenever any of her face points at you (only her own fade in / out lowers it), gone when you see her back */
-        const look = faceLook(F.d, w.material.opacity || 0), op = look.op < 0.01 ? 0 : look.op, k = look.k;
+        const pr = w.userData && w.userData.mfPresence, look = faceLook(F.d, pr == null ? (w.material.opacity || 0) : pr), op = look.op < 0.01 ? 0 : look.op, k = look.k;
         S.fd = F.d; /* her look toward you as really drawn (state().faceD; checks compare the face's opacity with this) */
         if (m.material.opacity !== op) m.material.opacity = op;
         if (w.material.color && m.material.color && !m.material.color.equals(w.material.color)) m.material.color.copy(w.material.color);
@@ -357,7 +350,7 @@
             return { on: !!(S.mesh && S.mesh.visible && now() - S.drawnT < K.STALE_MS), why: S.why, moving: S.moving, glance: S.at,
                 towardYou: d == null ? null : +d.toFixed(2), faceSeen: d == null ? null : +faceVis(d).toFixed(2), art: !!S.art,
                 faceOp: S.mesh ? +S.mesh.material.opacity.toFixed(3) : null, bodyOp: S.wand ? +S.wand.material.opacity.toFixed(3) : null,
-                back: !!(S.art && S.art.back), backA: S.backA, faceD: S.fd == null ? null : +S.fd.toFixed(3) };
+                back: !!(S.art && S.art.back), backA: S.backA, presence: S.wand && S.wand.userData.mfPresence != null ? +S.wand.userData.mfPresence.toFixed(3) : null, faceD: S.fd == null ? null : +S.fd.toFixed(3) };
         }
     };
 })();

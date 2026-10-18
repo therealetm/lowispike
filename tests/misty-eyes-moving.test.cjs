@@ -16,28 +16,22 @@ const SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 310"><g cl
     + '<ellipse class="lh-body cw-wall" cx="130" cy="170" rx="62" ry="59.5" fill="url(#cyto)" stroke="#1cf7f9"/><g class="cw-inside"><circle r="3"/></g></g>'
     + '<g class="lh-face" transform="translate(130 165)"><g class="lh-eyes"><ellipse cx="-11" cy="-2" rx="4.1" ry="6" fill="#183d42"/></g></g></g></svg>';
 
-test('her flying body art gets a solid inner layer right under the glass body: same ellipse, filled, at least 85% opaque', () => {
+/* Oct 18 evening (E-man, after 20261018-190146 made her glow pale white out of the bubble: "All I wanted is to keep her eyes
+   basically the same"): the solid inner layer is gone again; these two checks now hold the opposite, stricter line. */
+test('her flying body art gets NO extra layer: it is exactly her own art minus the face (her glass look, as before Oct 18)', () => {
     const s = F.splitArt(SVG);
-    assert.ok(s && s.back, 'inner layer added');
-    const back = /<ellipse class="mf-body-back"[^>]*\/>/.exec(s.body);
-    assert.ok(back, 'the layer is in the body art');
-    assert.ok(s.body.indexOf(back[0]) < s.body.indexOf('lh-body'), 'drawn under her glass body (her membrane, glow and inside stay on top)');
-    for (const [n, v] of [['cx', '130'], ['cy', '170'], ['rx', '62'], ['ry', '59.5']]) assert.ok(back[0].includes(n + '="' + v + '"'), n + ' matches her body');
-    const a = +/fill-opacity="([\d.]+)"/.exec(back[0])[1];
-    assert.ok(a >= 0.85, 'opaque enough that the world does not show through her face: ' + a);
-    assert.ok(!/mf-body-back/.test(s.face), 'the face itself is untouched');
+    assert.ok(s, 'split');
+    assert.equal(s.back, false, 'no inner layer');
+    assert.ok(!/mf-body-back/.test(s.body) && !/mf-body-back/.test(s.face));
+    const fs0 = SVG.indexOf('<g class="lh-face"'), fe = SVG.indexOf('</g></g></g></svg>') + '</g></g>'.length;
+    assert.equal(s.body, SVG.slice(0, fs0) + SVG.slice(fe), 'body art = her art with only the face group taken out, byte for byte');
+    assert.equal((s.body.match(/<ellipse/g) || []).length, 1, 'no ellipse added (only her own glass body)');
 });
 
-test('the inner layer is light enough that her dark eyes read on it over ANY world (contrast > 4.5:1, black or white world)', () => {
-    const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255);
-    const lin = c => c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
-    const lum = rgb => 0.2126 * lin(rgb[0]) + 0.7152 * lin(rgb[1]) + 0.0722 * lin(rgb[2]);
-    const eye = lum(hex('#183d42')), b = hex(F.K.BACK.fill), A = F.K.BACK.a;
-    for (const world of [[0, 0, 0], [0.16, 0.1, 0.03], [1, 1, 1]]) {
-        const c = lum(b.map((x, i) => x * A + world[i] * (1 - A)));
-        const ratio = (Math.max(c, eye) + 0.05) / (Math.min(c, eye) + 0.05);
-        assert.ok(ratio > 4.5, 'eyes vs body over world ' + world + ': ' + ratio.toFixed(1));
-    }
+test('no pale fill anywhere in misty-face: no inner-layer colour, no backLayer helper', () => {
+    const mf = read('misty-face.js');
+    assert.ok(!/mf-body-back|backLayer|#e4f6fa|BACK\s*:/.test(mf), 'the pale under-layer code is gone');
+    assert.ok(!('BACK' in F.K));
 });
 
 test('her face is solid (opacity 1) whenever any of it points at you, never a ghost; only her back hides it', () => {
@@ -67,15 +61,16 @@ test('only her own fade in / out lowers the face, and the face follows it exactl
     assert.equal(F.faceLook(0.5, 1).op, 1);
 });
 
-test('wiring: her energy no longer fades her body; the face is drawn by faceLook, on top, unshaded by depth', () => {
+test('wiring: her body keeps its energy look (as before Oct 18), only the face ignores it; the face is drawn by faceLook, on top, unshaded by depth', () => {
     const fl = read('misty-flight.js'), wh = read('world-home.js'), mf = read('misty-face.js');
     const place = fl.slice(fl.indexOf('function place(ctx'), fl.indexOf('function place(ctx') + 3000);
-    assert.ok(!/0\.55 \+ 0\.43 \* k/.test(place), 'misty-flight place(): no energy-scaled opacity');
-    assert.ok(/const op = clamp\(alpha, 0, 1\);/.test(place), 'body opacity = her fade only');
-    assert.ok(!/0\.55 \+ 0\.43 \* k/.test(wh), 'world-home: no energy-scaled opacity either');
+    /* Oct 18 evening: her body is back to its energy look (as before 183729); only the face ignores it (presence, below) */
+    assert.ok(/const pr = clamp\(alpha, 0, 1\), op = \(0\.55 \+ 0\.43 \* k\) \* pr;/.test(place), 'body opacity = (0.55 + 0.43 x energy) x her fade, as before');
+    assert.ok(/wand\.userData\.mfPresence = pr/.test(place), 'her presence (fade only) handed to the face');
+    assert.ok(/\(fade \? 0\.55 \+ 0\.43 \* k : 0\)/.test(wh), 'world-home: the same energy look as before');
     assert.ok(!/advWarp \? 1 - 0\.55/.test(fl), 'adventure warp: she no longer turns see-through');
     const fr = mf.slice(mf.indexOf('function faceRender('), mf.indexOf('function camBasis('));
-    assert.ok(/faceLook\(F\.d, w\.material\.opacity/.test(fr), 'faceRender uses faceLook');
+    assert.ok(/faceLook\(F\.d, pr == null \? \(w\.material\.opacity \|\| 0\) : pr\)/.test(fr), 'faceRender uses faceLook with her presence, not her body opacity');
     assert.ok(!/F\.vis \* \(w\.material\.opacity/.test(fr), 'no more fading the face by how far she has turned');
     const ro = +/m\.renderOrder = (\d+)/.exec(mf)[1];
     assert.ok(ro > 61, 'face drawn after her body (wand renderOrder 61): ' + ro);

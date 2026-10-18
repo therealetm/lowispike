@@ -49,7 +49,7 @@ function setup() {
         if (!R.on) return; requestAnimationFrame(tick);
         if (!wand || !wand.parent || !face || !face.parent) { if (n++ % 15 === 0) find(); if (!wand) return; }
         const F = window.LowiMistyFlight, MF = window.LowiMistyFace, fs = F && F.state ? F.state() : {}, m = MF && MF.state ? MF.state() : {};
-        const r = { p: R.phase, st: fs.st, dk: fs.dk || 0, wv: !!wand.visible, wo: +wand.material.opacity.toFixed(3), fv: !!(face && face.visible), fo: face ? +face.material.opacity.toFixed(3) : null, seen: m.faceSeen, why: m.why, on: !!m.on };
+        const r = { p: R.phase, st: fs.st, dk: fs.dk || 0, wv: !!wand.visible, wo: +wand.material.opacity.toFixed(3), fv: !!(face && face.visible), fo: face ? +face.material.opacity.toFixed(3) : null, seen: m.faceSeen, fd: m.faceD, why: m.why, on: !!m.on };
         if (face && (n++ % 6 === 0)) {
             const ro = face.renderOrder, over = [];
             A.scene.traverseVisible(o => { const mt = o.material; if (o === face || !mt || !mt.transparent || o.name === 'test-bokeh') return; if ((o.renderOrder || 0) > ro && (mt.opacity || 0) > 0.02) over.push(o.name || o.type); });
@@ -66,11 +66,14 @@ function judge(fr, info) {
     if (out.length < 60) P.push('too few frames of her flying: ' + out.length);
     const settled = out.filter(f => f.wo >= 0.999).length, ghostBody = out.filter(f => f.wo > 0.02 && f.wo < 0.999);
     if (out.length && settled / out.length < 0.85) P.push('body see-through in ' + ghostBody.length + '/' + out.length + ' frames, e.g. opacity ' + (ghostBody[0] && ghostBody[0].wo));
-    /* state().faceSeen is worked out from the camera at read time, the face's opacity at the last render: right at her edge
-       (seen < 0.05, the face shrunk to under 5% of its size) the two can be a frame apart, so the edge band is not judged */
-    const showing = out.filter(f => f.fv && f.seen >= 0.05);
+    /* judged against faceD: her look toward you exactly as the face was last drawn (same render as its opacity). state().faceSeen
+       is only an estimate from the camera's forward axis, which differs when she is off the middle of the screen. Any part of her
+       face toward you = faceD > -0.3 (where faceVis reaches 0). */
+    const showing = out.filter(f => f.fv && (f.fd != null ? f.fd > -0.3 : f.seen >= 0.05));
+    const realGhost = out.filter(f => f.fv && f.fo > 0.002 && f.fo < f.wo - 0.002);
+    if (realGhost.length) P.push('face drawn half see-through (between gone and her body) in ' + realGhost.length + ' frames');
     const ghost = showing.filter(f => Math.abs(f.fo - f.wo) > 0.002);
-    if (ghost.length) P.push('face not as solid as her body in ' + ghost.length + '/' + showing.length + ' frames, e.g. face ' + ghost[0].fo + ' body ' + ghost[0].wo + ' seen ' + ghost[0].seen);
+    if (ghost.length) P.push('face not as solid as her body in ' + ghost.length + '/' + showing.length + ' frames, e.g. ' + JSON.stringify(ghost[0]));
     const solid = showing.filter(f => f.wo >= 0.999 && f.fo >= 0.999).length;
     if (showing.length < 20) P.push('her face was shown in only ' + showing.length + ' frames');
     const covered = out.filter(f => f.over && f.over.length && !(f.dk > 0.05));
@@ -111,7 +114,7 @@ function judge(fr, info) {
             const s = await page.evaluate(() => ({ spot: window.LowiMistyFlight.touchSpot(), m: window.LowiMistyFace.state() }));
             if (!s.spot || !(s.m.faceSeen > 0.6) || !(s.m.on || s.m.faceOp >= 0.99)) { snapWhy = JSON.stringify({ spot: !!s.spot, seen: s.m.faceSeen, on: s.m.on }); return false; }
             const vw = dev.viewport.width, vh = dev.viewport.height, h = Math.max(70, s.spot.h * 1.5), cl = (q, a, b) => Math.max(a, Math.min(b, q));
-            if (!(s.spot.x > 0 && s.spot.x < vw && s.spot.y > 0 && s.spot.y < vh)) { snapWhy = 'off screen ' + Math.round(s.spot.x) + ',' + Math.round(s.spot.y); return false; }
+            const m = s.spot.h * 0.35; if (!(s.spot.x > -m && s.spot.x < vw + m && s.spot.y > -m && s.spot.y < vh + m)) { snapWhy = 'off screen ' + Math.round(s.spot.x) + ',' + Math.round(s.spot.y); return false; }
             const x0 = cl(s.spot.x - h, 0, vw - 40), y0 = cl(s.spot.y - h, 0, vh - 40);
             const clip = { x: x0, y: y0, width: Math.min(2 * h, vw - x0), height: Math.min(2 * h, vh - y0) };
             await page.screenshot({ path: `${OUT}/${TAG}-${v}-${name}-face.png`, clip });

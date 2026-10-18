@@ -196,7 +196,7 @@
     /* ---------- live ---------- */
     const now = () => (W.performance ? performance.now() : Date.now());
     const S = { L: null, vel: [0, 0, 0], pp: null, moving: false, hdT: -1e9, base: null, look: null, lookT: 0, at: 'base',
-        art: null, src: null, pending: false, backA: null, body: null, faceTex: null, mesh: null, wand: null, a: null, drawnT: -1e9, lastT: 0, why: 'hold', pk: { away: 0, wait: 0, left: 0 } };
+        art: null, src: null, pending: false, backA: null, fd: null, body: null, faceTex: null, mesh: null, wand: null, a: null, drawnT: -1e9, lastT: 0, why: 'hold', pk: { away: 0, wait: 0, left: 0 } };
     function srcMap() { const WH = W.LowiWorldHome, m = WH && WH.state && WH.state.misty; return m && m.material ? m.material.map : null; }
     /* her art changed (mood, stage, look): split it and make the two textures, once */
     function ensureArt(THREE) {
@@ -261,6 +261,7 @@
         const F = faceFrame(S.L, cr, cu, cf, w.material.rotation || 0);
         /* solid whenever any of her face points at you (only her own fade in / out lowers it), gone when you see her back */
         const look = faceLook(F.d, w.material.opacity || 0), op = look.op < 0.01 ? 0 : look.op, k = look.k;
+        S.fd = F.d; /* her look toward you as really drawn (state().faceD; checks compare the face's opacity with this) */
         if (m.material.opacity !== op) m.material.opacity = op;
         if (w.material.color && m.material.color && !m.material.color.equals(w.material.color)) m.material.color.copy(w.material.color);
         if (w.layers && m.layers.mask !== w.layers.mask) m.layers.mask = w.layers.mask;
@@ -356,7 +357,7 @@
             return { on: !!(S.mesh && S.mesh.visible && now() - S.drawnT < K.STALE_MS), why: S.why, moving: S.moving, glance: S.at,
                 towardYou: d == null ? null : +d.toFixed(2), faceSeen: d == null ? null : +faceVis(d).toFixed(2), art: !!S.art,
                 faceOp: S.mesh ? +S.mesh.material.opacity.toFixed(3) : null, bodyOp: S.wand ? +S.wand.material.opacity.toFixed(3) : null,
-                back: !!(S.art && S.art.back), backA: S.backA };
+                back: !!(S.art && S.art.back), backA: S.backA, faceD: S.fd == null ? null : +S.fd.toFixed(3) };
         }
     };
 })();

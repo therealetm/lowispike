@@ -76,6 +76,12 @@ html:root body .r2-ov:not(.full) .r2-sh.mb-on {
   margin: 0 auto calc(env(safe-area-inset-bottom, 0px) + 10px) !important;
   max-height: calc(100% - max(env(safe-area-inset-top, 0px), 20px) - 34px - env(safe-area-inset-bottom, 0px)) !important;
 }
+/* Oct 18: iPad / desktop — a panel from the Meals or Move bubble opens beside Misty, near its bubble, not over her in the
+   middle (misty-bloom.js dock() sets the spot; phones keep the floating sheet above) */
+html:root body .r2-ov:not(.full) .r2-sh.mb-on.mb-dock {
+  position: fixed !important; left: var(--mb-l, 10px) !important; top: var(--mb-t, 10px) !important; right: auto !important; bottom: auto !important;
+  width: var(--mb-w, 480px) !important; max-width: none !important; max-height: var(--mb-h, calc(100% - 20px)) !important; margin: 0 !important;
+}
 html:root body #sheetwrap #sheet:has(> .fst-sh) {
   left: 10px !important; right: 10px !important; bottom: calc(var(--sab, env(safe-area-inset-bottom, 0px)) + 10px) !important;
   max-height: calc(88% - 10px) !important;

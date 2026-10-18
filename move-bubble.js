@@ -4,8 +4,97 @@
    (XP and the Move energy change read back from LowiSun.energyNow, so the number always matches what was applied, caps included).
    Long press: today's estimates, each can be removed again (XP and energy go back with it). No separate edit button.
    Rules live in move-estimate-core.js. Only time on your feet or on a bike counts, never sitting on a bus or train. */
+/* Oct 18 (E-man, iPad: "Move keeps moving into the middle"): the four choices used to aim at the screen middle. On a
+   phone that was beside Misty, but on iPad and desktop Misty IS the middle, so Quick / Medium / Long / Epic landed on her.
+   fan() aims them away from Misty instead: the direction from her centre through the bubble, turned only as far as needed
+   to keep every orb on screen, clear of Misty, and as far as it can off the other Home bubbles and cards. Pure, tested
+   in tests/bloom-anchor.test.cjs. g: {cx, cy, r (bubble radius), orb, n, vw, vh, top, bottom, misty {x, y, r}, avoid [rects]} */
+(function (root) {
+    'use strict';
+    const TAU = Math.PI * 2;
+    function lay(g, base, dist) {
+        const step = (g.orb + 12) / dist, out = [];
+        for (let i = 0; i < g.n; i++) { const a = base + (i - (g.n - 1) / 2) * step; out.push({ x: g.cx + Math.cos(a) * dist, y: g.cy + Math.sin(a) * dist }); }
+        return out;
+    }
+    /* how far the layout breaks the hard rules: off the usable screen, or into Misty (px) */
+    function breaks(g, pts) {
+        const h = g.orb / 2, m = 6; let bad = 0;
+        for (const p of pts) {
+            bad += Math.max(0, m + h - p.x) + Math.max(0, p.x - (g.vw - m - h)) + Math.max(0, g.top + h - p.y) + Math.max(0, p.y - (g.vh - g.bottom - h));
+            if (g.misty) bad += Math.max(0, g.misty.r + h + 8 - Math.hypot(p.x - g.misty.x, p.y - g.misty.y));
+        }
+        return bad;
+    }
+    /* how much the orbs cover the other Home bubbles (weight 2) and cards (lighter: they sit under the veil anyway), in orb areas */
+    function covers(g, pts) {
+        const h = g.orb / 2; let s = 0;
+        for (const p of pts) for (const q of (g.avoid || [])) {
+            const w = Math.min(p.x + h, q.r) - Math.max(p.x - h, q.l), t = Math.min(p.y + h, q.b) - Math.max(p.y - h, q.t);
+            if (w > 0 && t > 0) s += (q.w == null ? 2 : q.w) * (w * t) / (g.orb * g.orb);
+        }
+        return s;
+    }
+    function fan(g) {
+        g = Object.assign({ n: 4, top: 6, bottom: 6, avoid: [] }, g);
+        const away = g.misty ? Math.atan2(g.cy - g.misty.y, g.cx - g.misty.x) : Math.atan2(g.vh * 0.5 - g.cy, g.vw * 0.5 - g.cx);
+        const d0 = g.r + g.orb / 2 + 22;
+        let best = null, worst = null;
+        for (let k = 0; k <= 4; k++) {
+            const dist = d0 + k * g.orb * 0.5;
+            for (let t = 0; t <= 60; t++) {
+                for (const sgn of t ? [1, -1] : [1]) {
+                    const dev = sgn * t * Math.PI / 60, base = away + dev, pts = lay(g, base, dist);
+                    const bad = breaks(g, pts);
+                    if (bad > 0.5) { if (!worst || bad < worst.bad) worst = { pts, bad, base, dist }; continue; }
+                    const score = Math.abs(dev) / Math.PI + k * 0.25 + covers(g, pts);
+                    if (!best || score < best.score - 1e-9) best = { pts, score, base, dist };
+                }
+            }
+        }
+        const pick = best || worst, h = g.orb / 2;
+        const clamp = p => { p.x = Math.max(h + 6, Math.min(g.vw - h - 6, p.x)); p.y = Math.max(g.top + h, Math.min(g.vh - g.bottom - h, p.y)); return p; };
+        const pts = pick.pts.map(p => clamp({ x: p.x, y: p.y }));
+        /* no clean spot at all (a tiny screen): keep clamped orbs from sitting on each other */
+        if (!best) for (let k = 0; k < 6; k++) for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
+            const p = pts[i], q = pts[j], dx = q.x - p.x, dy = q.y - p.y, d = Math.hypot(dx, dy) || 1, need = g.orb + 6;
+            if (d < need) { const m = (need - d) / 2, ux = dx / d, uy = dy / d; p.x -= ux * m; p.y -= uy * m; q.x += ux * m; q.y += uy * m; clamp(p); clamp(q); }
+        }
+        return { pts, ok: !!best, angle: ((pick.base % TAU) + TAU) % TAU, dist: pick.dist, away };
+    }
+    /* the line under the orbs: below them, else above, else beside, wherever it stays on screen and off Misty */
+    function noteSpot(g, pts, w, hgt) {
+        const h = g.orb / 2, minY = Math.min(...pts.map(p => p.y)), maxY = Math.max(...pts.map(p => p.y));
+        const midX = pts.reduce((s, p) => s + p.x, 0) / pts.length, midY = (minY + maxY) / 2;
+        const minX = Math.min(...pts.map(p => p.x)), maxX = Math.max(...pts.map(p => p.x));
+        const cl = (l, t) => ({ l: Math.max(12, Math.min(g.vw - w - 12, l)), t: Math.max(g.top, Math.min(g.vh - g.bottom - hgt, t)) });
+        const tries = [cl(midX - w / 2, maxY + h + 10), cl(midX - w / 2, minY - h - 10 - hgt), cl(maxX + h + 10, midY - hgt / 2), cl(minX - h - 10 - w, midY - hgt / 2)];
+        const hits = s => {
+            let n = 0;
+            if (g.misty) { const nx = Math.max(s.l, Math.min(g.misty.x, s.l + w)), ny = Math.max(s.t, Math.min(g.misty.y, s.t + hgt)); if (Math.hypot(nx - g.misty.x, ny - g.misty.y) < g.misty.r) n += 10; }
+            for (const p of pts) { const nx = Math.max(s.l, Math.min(p.x, s.l + w)), ny = Math.max(s.t, Math.min(p.y, s.t + hgt)); if (Math.hypot(nx - p.x, ny - p.y) < h) n += 1; }
+            return n;
+        };
+        let pick = tries[0], low = Infinity;
+        for (const s of tries) { const n = hits(s); if (n < low) { low = n; pick = s; } if (!n) break; }
+        /* nowhere next to the orbs: the free spot nearest to them, scanning down the screen */
+        if (low > 0) {
+            let near = Infinity;
+            for (let t = g.top; t <= g.vh - g.bottom - hgt; t += 12) for (const l of [midX - w / 2, 12, g.vw - w - 12]) {
+                const s = cl(l, t), dd = Math.abs(s.t + hgt / 2 - midY) + Math.abs(s.l + w / 2 - midX) * 0.5;
+                if (dd < near && !hits(s)) { near = dd; pick = s; low = 0; }
+            }
+        }
+        return pick;
+    }
+    const API = { fan, noteSpot, _breaks: breaks };
+    if (typeof module === 'object' && module.exports) module.exports = API;
+    if (root) root.LowiMoveFan = API;
+})(typeof window !== 'undefined' ? window : null);
+
 (function () {
     'use strict';
+    if (typeof window === 'undefined') return;
     const W = window, D = document;
     if (W.LowiMoveBubble) return;
     const C = W.LowiMoveEstimateCore;
@@ -184,22 +273,7 @@
         const vw = W.innerWidth, vh = W.innerHeight;
         const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
         const orb = Math.round(Math.max(64, Math.min(84, Math.min(vw, vh) * 0.19)));
-        const dist = r.width / 2 + orb / 2 + 22;
-        const toward = Math.atan2(vh * 0.5 - cy, vw * 0.5 - cx);
-        const step = (orb + 12) / dist;
-        const pts = C.LEVELS.map((L, i) => {
-            const a = toward + (i - 1.5) * step;
-            let x = cx + Math.cos(a) * dist, y = cy + Math.sin(a) * dist;
-            x = Math.max(orb / 2 + 6, Math.min(vw - orb / 2 - 6, x));
-            y = Math.max(orb / 2 + 6, Math.min(vh - orb / 2 - 6, y));
-            return { L, x, y };
-        });
-        /* keep clamped bubbles from sitting on each other */
-        for (let k = 0; k < 6; k++) for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
-            const p = pts[i], q = pts[j], dx = q.x - p.x, dy = q.y - p.y, d = Math.hypot(dx, dy) || 1, need = orb + 6;
-            if (d < need) { const m = (need - d) / 2, ux = dx / d, uy = dy / d; p.x -= ux * m; p.y -= uy * m; q.x += ux * m; q.y += uy * m; }
-        }
-        pts.forEach(p => { p.x = Math.max(orb / 2 + 6, Math.min(vw - orb / 2 - 6, p.x)); p.y = Math.max(orb / 2 + 6, Math.min(vh - orb / 2 - 6, p.y)); });
+        const pts = W.LowiMoveFan.fan(fanGeom(b, r, cx, cy, orb, vw, vh)).pts.map((p, i) => ({ L: C.LEVELS[i], x: p.x, y: p.y }));
         const v = C.view(ledger(), dayKey());
         const ov = D.createElement('div');
         ov.className = 'wm-bloom';
@@ -209,7 +283,7 @@
         ov.innerHTML = '<button type="button" class="wm-scrim" data-wm="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '"></button>' +
             pts.map((p, i) => '<button type="button" class="wm-orb wm-' + p.L.id + '" data-wm="pick" data-lvl="' + p.L.id + '" style="left:' + Math.round(p.x) + 'px;top:' + Math.round(p.y) + 'px;--wm-dx:' + Math.round(cx - p.x) + 'px;--wm-dy:' + Math.round(cy - p.y) + 'px;--wm-i:' + i + '" aria-label="' + esc(NAMES[p.L.id]() + ', ' + HINTS[p.L.id]() + ', +' + p.L.q + '/4') + '">' +
                 '<span class="wm-orb-fill" style="--wm-q:' + (p.L.q / 4) + '" aria-hidden="true"></span><span class="wm-orb-tx"><b>' + esc(NAMES[p.L.id]()) + '</b><small>' + esc(HINTS[p.L.id]()) + '</small></span></button>').join('') +
-            '<p class="wm-note" style="' + noteSpot(pts, orb, vw, vh) + '">' + esc(v.q >= C.FULL
+            '<p class="wm-note" style="' + noteSpot(pts, orb, vw, vh, b, r) + '">' + esc(v.q >= C.FULL
                 ? T('Move is full for today. Nice!', 'Bewegung ist heute voll. Stark!', 'Movimiento completo hoy. ¡Genial!')
                 : T('Estimate, not steps · only walking or cycling counts, not sitting on a bus', 'Schätzung, keine Schritte · nur Gehen oder Radfahren zählt, nicht Sitzen im Bus', 'Estimación, no pasos · solo cuenta caminar o pedalear, no ir sentado en el bus')) + '</p>';
         D.body.appendChild(ov);
@@ -219,13 +293,21 @@
         ov.addEventListener('click', onBloomClick);
         ov.addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); closeBloom(true); } });
     }
-    function noteSpot(pts, orb, vw, vh) {
-        const minY = Math.min(...pts.map(p => p.y)), maxY = Math.max(...pts.map(p => p.y));
-        const midX = pts.reduce((s, p) => s + p.x, 0) / pts.length;
-        const below = maxY + orb / 2 + 10, above = minY - orb / 2 - 44;
-        const top = below + 40 < vh ? below : Math.max(8, above);
-        const w = Math.min(260, vw - 24), left = Math.max(12, Math.min(vw - w - 12, midX - w / 2));
-        return 'left:' + Math.round(left) + 'px;top:' + Math.round(top) + 'px;width:' + Math.round(w) + 'px';
+    /* where Misty is right now (her glass on Home), the usable screen and what the orbs should keep off */
+    function fanGeom(b, r, cx, cy, orb, vw, vh) {
+        const box = e => { if (!e || e === b) return null; const q = e.getBoundingClientRect(); return q.width > 1 && q.height > 1 ? { l: q.left, t: q.top, r: q.right, b: q.bottom } : null; };
+        const sp = D.getElementById('spBubble'), m = sp && sp.getBoundingClientRect();
+        const misty = m && m.width > 1 ? { x: m.left + m.width / 2, y: m.top + m.height / 2, r: Math.min(m.width, m.height) / 2 } : null;
+        const avoid = Array.from(D.querySelectorAll('#whHud [data-hb], #spFast')).map(box).filter(Boolean)
+            .concat(Array.from(D.querySelectorAll('#f3Board, #spHome .sp-top, #tabbar')).map(box).filter(Boolean).map(q => Object.assign(q, { w: 0.4 })));
+        let top = 6;
+        try { top = Math.max(6, parseFloat(getComputedStyle(D.documentElement).getPropertyValue('--sat')) || 0); } catch (e) { }
+        return { cx, cy, r: r.width / 2, orb, n: C.LEVELS.length, vw, vh, top, bottom: 6, misty, avoid };
+    }
+    function noteSpot(pts, orb, vw, vh, b, r) {
+        const w = Math.min(260, vw - 24), g = fanGeom(b, r, 0, 0, orb, vw, vh);
+        const s = W.LowiMoveFan.noteSpot(g, pts, w, 48);
+        return 'left:' + Math.round(s.l) + 'px;top:' + Math.round(s.t) + 'px;width:' + Math.round(w) + 'px';
     }
     function onBloomClick(e) {
         const t = e.target.closest && e.target.closest('[data-wm]'); if (!t) return;

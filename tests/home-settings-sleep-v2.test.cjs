@@ -60,10 +60,11 @@ test('sleep gives no XP and no sun energy: the module never awards', () => {
 });
 
 const inside = (p, c, o) => p.x - c / 2 >= 8 && p.x + c / 2 <= o.vw - 8 && p.y - c / 2 >= 8 && p.y + c / 2 <= o.vh - 8;
-/* ring geometry measured from the shipped shell (home-orbit-v2, build 20261018-165646): [key, x, y, diameter] */
+/* ring geometry measured from the shipped shell (home-orbit-v2, build 20261018-165646): [key, x, y, diameter].
+   Since 18 Oct 18:20 ("Let's put scan where setting is") Settings has the top slot and Scan the lower right one. */
 const RINGS = {
-    'iphone 390x844': { vw: 390, vh: 844, mx: 195, my: 388, mr: 88, ring: [['fuel', 93, 286, 88], ['scan', 195, 244, 88], ['water', 297, 286, 88], ['move', 340, 388, 88], ['settings', 297, 491, 88], ['joy', 195, 533, 88], ['sleep', 93, 491, 88], ['gap', 51, 388, 88]] },
-    'ipad 820x1180': { vw: 820, vh: 1180, mx: 410, my: 543, mr: 151, ring: [['fuel', 244, 377, 124], ['scan', 410, 308, 124], ['water', 576, 377, 124], ['move', 645, 543, 124], ['settings', 576, 709, 124], ['joy', 410, 778, 124], ['sleep', 244, 709, 124], ['gap', 175, 543, 124]] }
+    'iphone 390x844': { vw: 390, vh: 844, mx: 195, my: 388, mr: 88, ring: [['fuel', 93, 286, 88], ['settings', 195, 244, 88], ['water', 297, 286, 88], ['move', 340, 388, 88], ['scan', 297, 491, 88], ['joy', 195, 533, 88], ['sleep', 93, 491, 88], ['gap', 51, 388, 88]] },
+    'ipad 820x1180': { vw: 820, vh: 1180, mx: 410, my: 543, mr: 151, ring: [['fuel', 244, 377, 124], ['settings', 410, 308, 124], ['water', 576, 377, 124], ['move', 645, 543, 124], ['scan', 576, 709, 124], ['joy', 410, 778, 124], ['sleep', 244, 709, 124], ['gap', 175, 543, 124]] }
 };
 test('fan: chips bloom outward from Sleep and Settings: on screen, clear of Misty, of the other ring bubbles and of each other (iPhone, iPad)', () => {
     for (const name in RINGS) {
@@ -89,7 +90,7 @@ test('fan: chips bloom outward from Sleep and Settings: on screen, clear of Mist
 test('fan: landscape iPad and a desktop window also fit without avoid data', () => {
     for (const [vw, vh, d, R, mr] of [[1180, 820, 110, 230, 130], [1024, 768, 104, 220, 125]]) {
         const mx = vw / 2, my = vh / 2;
-        for (const deg of [45, 135]) {
+        for (const deg of [-90, 135]) { /* Settings on top, Sleep lower left */
             const a = deg * Math.PI / 180, o = { mx, my, mr, bx: mx + R * Math.cos(a), by: my + R * Math.sin(a), br: d / 2, n: 5, c: 84, vw, vh };
             const F = C.fan(o);
             assert.ok(F.fit, `${vw}x${vh} ${deg}`);

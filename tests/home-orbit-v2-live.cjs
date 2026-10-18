@@ -1,9 +1,9 @@
 'use strict';
-/* Browser check for the one-page Home ring (home-orbit-v2.js, Oct 18 2026). Chromium 390x844, WebKit iPhone 13, WebKit iPad 1180x820.
-   Measures the eight controls on screen: ONE circle round Misty's centre, one diameter, 45 degree steps, Scan on top, joystick
-   at the bottom, nothing overlapping or clipped, the old chrome hidden. Then taps them: Scan reaches the real scanner
+/* Browser check for the one-page Home ring (home-orbit-v2.js, Oct 18 2026). Chromium 390x844, WebKit iPhone 13, WebKit iPad 1180x820 and 820x1180.
+   Measures the eight controls on screen: ONE circle round Misty's centre, one diameter, 45 degree steps, Settings on top, Scan at
+   the lower right (45 degrees, Emmanuel 18 Oct: "Let's put scan where setting is"), joystick at the bottom, nothing overlapping or clipped, the old chrome hidden. Then taps them: Scan reaches the real scanner
    (the #b3Cam camera opens, or LowiLiving.scan), the joystick drag sends real steering to the world (LowiWorldHome.pad), Water adds a cup, Move opens its
-   bloom, Settings lists the hidden entry points and switches the bottom menu bar, Sleep logs locally.
+   bloom, Settings opens its bloom on screen and clear of Misty, lists the hidden entry points and switches the bottom menu bar, Sleep logs locally.
    Production Supabase and every non-GET request are blocked; no account is created (a local fixture session only).
      node tests/home-orbit-v2-live.cjs [--root DIR | --url https://therealetm.github.io/lowispike/] [--out DIR] [--tag after] [--views a,b]
    Exit 0 = pass. */
@@ -15,7 +15,8 @@ const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/cs
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 function serve() { return new Promise(r => { const s = http.createServer((q, res) => { let u = decodeURIComponent(q.url.split('?')[0]); if (u === '/') u = '/index.html'; const f = path.join(ROOT, u); if (!f.startsWith(ROOT) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': TYPES[path.extname(f)] || 'application/octet-stream', 'Cache-Control': 'no-store' }); fs.createReadStream(f).pipe(res); }); s.listen(0, '127.0.0.1', () => r(s)); }); }
 const IPAD = { viewport: { width: 1180, height: 820 }, screen: { width: 1180, height: 820 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true, userAgent: 'Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1' };
-const VIEWS = { iphone_chromium: ['chromium', { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true }], iphone13_webkit: ['webkit', 'iPhone 13'], ipad_landscape_webkit: ['webkit', IPAD], ipad_chromium: ['chromium', IPAD] };
+const IPAD_P = Object.assign({}, IPAD, { viewport: { width: 820, height: 1180 }, screen: { width: 820, height: 1180 } });
+const VIEWS = { iphone_chromium: ['chromium', { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true }], iphone13_webkit: ['webkit', 'iPhone 13'], ipad_landscape_webkit: ['webkit', IPAD], ipad_chromium: ['chromium', IPAD], ipad_portrait_webkit: ['webkit', IPAD_P], ipad_portrait_chromium: ['chromium', IPAD_P] };
 
 const INIT = `try {
   const d = new Date(), k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
@@ -25,7 +26,7 @@ const INIT = `try {
   if (!sessionStorage.getItem('o8.fx')) { sessionStorage.setItem('o8.fx', '1'); const w = {}; w[k] = 3; localStorage.setItem('lowi_fast_v1', JSON.stringify({ last: Date.now() - (10 * 60 + 53) * 60e3, target: 16, water: w })); localStorage.removeItem('lowi.home.menubar'); localStorage.removeItem('lowi.sleep.v1'); }
 } catch (e) { }`;
 
-const KEYS = ['scan', 'water', 'move', 'settings', 'joy', 'sleep', 'gap', 'fuel'];
+const KEYS = ['settings', 'water', 'move', 'scan', 'joy', 'sleep', 'gap', 'fuel'];
 const PROBE = (KEYS) => {
     const H = document.documentElement;
     const eff = e => { let n = e; while (n && n.nodeType === 1) { const c = getComputedStyle(n); if (c.display === 'none' || c.visibility === 'hidden' || +c.opacity < 0.05) return false; n = n.parentElement; } return true; };
@@ -56,7 +57,8 @@ function geometry(r) {
     if (Math.max(...ds) - Math.min(...ds) > 1.5) P.push('diameters differ: ' + ds.map(Math.round).join(','));
     if (Math.max(...rs) - Math.min(...rs) > 2) P.push('radial distances differ: ' + rs.map(x => x.toFixed(1)).join(','));
     steps.forEach((s, i) => { if (Math.abs(s - 45) > 1.5) P.push('angle step ' + KEYS[i] + ' = ' + s.toFixed(1)); });
-    if (Math.abs(ang[0] + 90) > 1.5) P.push('scan not straight above Misty: ' + ang[0].toFixed(1));
+    if (Math.abs(ang[0] + 90) > 1.5) P.push('settings not straight above Misty: ' + ang[0].toFixed(1));
+    if (Math.abs(ang[3] - 45) > 1.5) P.push('scan not at the lower right (45 deg): ' + ang[3].toFixed(1));
     if (Math.abs(ang[4] - 90) > 1.5) P.push('joystick not straight below Misty: ' + ang[4].toFixed(1));
     /* no overlap: neighbours, and every control vs Misty; none clipped by the viewport */
     for (let i = 0; i < 8; i++) { const a = c[KEYS[i]], b = c[KEYS[(i + 1) % 8]]; if (Math.hypot(a.x - b.x, a.y - b.y) < d) P.push('overlap ' + KEYS[i] + '/' + KEYS[(i + 1) % 8]); }
@@ -72,7 +74,7 @@ function geometry(r) {
     const srv = arg('url', '') ? null : await serve();
     const url = arg('url', '') || `http://127.0.0.1:${srv.address().port}/index.html`, host = new URL(url).host;
     let fail = 0;
-    for (const v of arg('views', 'iphone_chromium,iphone13_webkit,ipad_landscape_webkit').split(',')) {
+    for (const v of arg('views', 'iphone_chromium,iphone13_webkit,ipad_landscape_webkit,ipad_portrait_webkit').split(',')) {
         const [eng, dd] = VIEWS[v];
         const browser = await pw[eng].launch(eng === 'chromium' ? { args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] } : {});
         const dev = typeof dd === 'string' ? Object.assign({}, pw.devices[dd]) : dd;
@@ -135,6 +137,16 @@ function geometry(r) {
                 await page.evaluate(() => document.querySelector('[data-orbit="settings"]').click()); await sleep(700);
                 act.settings = await ss2ids();
                 for (const id of ['me', 'look', 'account', 'menubar', 'more']) if (!act.settings.includes(id)) P.push('settings missing ' + id);
+                /* the Settings bloom from its top slot: every choice on screen, none over Misty (disk or hit test at her centre) */
+                act.settingsBloom = await page.evaluate(() => {
+                    const m = document.getElementById('spBubble').getBoundingClientRect(), mx = m.left + m.width / 2, my = m.top + m.height / 2, mr = Math.min(m.width, m.height) / 2;
+                    const chips = [...document.querySelectorAll('#ss2Bloom [data-ss2]')].filter(b => { const q = b.getBoundingClientRect(); return q.width > 2 && q.height > 2; }).map(b => { const q = b.getBoundingClientRect(); return { id: b.getAttribute('data-ss2'), l: q.left, t: q.top, r: q.right, b: q.bottom, x: q.left + q.width / 2, y: q.top + q.height / 2, rad: Math.max(q.width, q.height) / 2 }; });
+                    const top = document.elementFromPoint(mx, my);
+                    return { n: chips.length, offscreen: chips.filter(c => c.l < -0.5 || c.t < -0.5 || c.r > innerWidth + 0.5 || c.b > innerHeight + 0.5).map(c => c.id), overMisty: chips.filter(c => Math.hypot(c.x - mx, c.y - my) < mr + c.rad - 2).map(c => c.id), centreCovered: !!(top && top.closest && top.closest('#ss2Bloom')), above: chips.length ? chips.every(c => c.y < my) : null };
+                });
+                if (!act.settingsBloom.n) P.push('settings bloom showed no choices');
+                if (act.settingsBloom.offscreen.length) P.push('settings bloom runs off the screen: ' + act.settingsBloom.offscreen);
+                if (act.settingsBloom.overMisty.length || act.settingsBloom.centreCovered) P.push('settings bloom covers Misty: ' + JSON.stringify(act.settingsBloom));
                 await page.screenshot({ path: `${OUT}/${TAG}-${v}-settings.png` });
                 await ss2press('more'); await sleep(700);
                 act.more = await ss2ids();

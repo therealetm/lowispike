@@ -1,7 +1,8 @@
 /* home-orbit-v2.js: the one-page Home ring (Oct 18 2026, Emmanuel).
    "Circles ... have them all at the same size ... circle math ... just implement it in our app."
    Eight controls sit on ONE true circle centred on Misty, all the same diameter, 45 degrees apart:
-   Scan on top, then clockwise Water, Move, Settings, the joystick at the bottom, Sleep, Gap, Fuel.
+   Settings on top, then clockwise Water, Move, Scan, the joystick at the bottom, Sleep, Gap, Fuel
+   (18 Oct 18:20, Emmanuel: "Let's put scan where setting is": Scan and Settings swapped slots).
    x = cx + R cos(t), y = cy + R sin(t). R and the diameter scale together with the space round Misty (safe areas included).
    - Reuses the real nodes: Meals (Fuel), Water, Move, #spFast (Gap) and the controller #whPad (joystick, real movement).
      Scan, Sleep and Settings are new glass bubbles in #whHud with [data-hb], so living-bubbles.js gives them the same membrane.
@@ -12,7 +13,7 @@
    - Writes only when a value changes, on layout events and a slow 1.5 s check; no frame loop. Contract: COORD-eight-home.md. */
 (function (root) {
     'use strict';
-    const ORDER = ['scan', 'water', 'move', 'settings', 'joy', 'sleep', 'gap', 'fuel'];
+    const ORDER = ['settings', 'water', 'move', 'scan', 'joy', 'sleep', 'gap', 'fuel'];
     const angleOf = k => -90 + 45 * ORDER.indexOf(k);
     const SIN = Math.sin(Math.PI / 8);
 

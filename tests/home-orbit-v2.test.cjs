@@ -1,7 +1,7 @@
 'use strict';
 /* Oct 18 2026 (Emmanuel: "circles ... have them all at the same size ... circle math ... just implement it in our app"):
-   the one-page Home puts eight controls on ONE true circle round Misty, all the same diameter, 45 degrees apart, Scan on top and
-   the joystick at the bottom. These tests pin the geometry numerically and the wiring structurally (home-orbit-v2.js). */
+   the one-page Home puts eight controls on ONE true circle round Misty, all the same diameter, 45 degrees apart, Settings on top,
+   Scan at the lower right (Emmanuel, Oct 18 2026 18:20: "Let's put scan where setting is") and the joystick at the bottom. These tests pin the geometry numerically and the wiring structurally (home-orbit-v2.js). */
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
@@ -19,8 +19,10 @@ const VIEWS = {
 };
 const near = (a, b, eps, msg) => assert.ok(Math.abs(a - b) <= eps, msg + ': ' + a + ' vs ' + b);
 
-test('order is clockwise from the top in 45 degree steps: Scan top, joystick bottom', () => {
-    assert.deepStrictEqual(O.ORDER, ['scan', 'water', 'move', 'settings', 'joy', 'sleep', 'gap', 'fuel']);
+test('order is clockwise from the top in 45 degree steps: Settings top, Scan lower right, joystick bottom', () => {
+    assert.deepStrictEqual(O.ORDER, ['settings', 'water', 'move', 'scan', 'joy', 'sleep', 'gap', 'fuel']);
+    assert.strictEqual(O.angleOf('settings'), -90, 'Settings straight up');
+    assert.strictEqual(O.angleOf('scan'), 45, 'Scan at the lower right, where Settings was');
     O.ORDER.forEach((k, i) => assert.strictEqual(O.angleOf(k), -90 + 45 * i, k));
 });
 
@@ -39,8 +41,9 @@ for (const [name, v] of Object.entries(VIEWS)) {
         /* equal angular increments of exactly 45 degrees, measured from the placed points */
         const ang = keys.map(k => Math.atan2(L.spots[k].y - v.cy, L.spots[k].x - v.cx) * 180 / Math.PI);
         for (let i = 0; i < 8; i++) { let step = ang[(i + 1) % 8] - ang[i]; step = ((step % 360) + 360) % 360; near(step, 45, 0.01, 'step ' + keys[i]); }
-        /* Scan straight above Misty, joystick straight below */
-        near(L.spots.scan.x, v.cx, 0.01, 'scan x'); assert.ok(L.spots.scan.y < v.cy, 'scan above');
+        /* Settings straight above Misty, Scan at the lower right (45 degrees), joystick straight below */
+        near(L.spots.settings.x, v.cx, 0.01, 'settings x'); assert.ok(L.spots.settings.y < v.cy, 'settings above');
+        near(L.spots.scan.x - v.cx, L.spots.scan.y - v.cy, 0.01, 'scan on the 45 degree diagonal'); assert.ok(L.spots.scan.x > v.cx && L.spots.scan.y > v.cy, 'scan lower right');
         near(L.spots.joy.x, v.cx, 0.01, 'joy x'); assert.ok(L.spots.joy.y > v.cy, 'joy below');
         near(L.spots.gap.y, v.cy, 0.01, 'gap level with Misty'); near(L.spots.move.y, v.cy, 0.01, 'move level with Misty');
         /* neighbours never touch: chord between adjacent centres >= diameter */

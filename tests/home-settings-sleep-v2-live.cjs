@@ -34,7 +34,7 @@ const SHIM = () => {
     const m = document.getElementById('spBubble'); if (!m) return 'no misty';
     m.setAttribute('data-home-misty', '');
     const q = m.getBoundingClientRect(), cx = q.left + q.width / 2, cy = q.top + q.height / 2, d = Math.round(Math.min(112, Math.max(74, innerWidth * 0.2))), R = q.width / 2 + d / 2 + 14;
-    [['sleep', 135], ['settings', 45]].forEach(([k, deg]) => {
+    [['sleep', 135], ['settings', -90]].forEach(([k, deg]) => {
         const b = document.createElement('button'); b.type = 'button'; b.className = 'wh-cell o8-cell o8-' + k; b.dataset.orbit = k; b.dataset.hb = k; b.setAttribute('aria-label', k);
         b.innerHTML = (k === 'sleep' ? '<span class="wh-cell-fill" aria-hidden="true"></span>' : '') + '<span class="wh-cell-tx"><small>' + k + '</small>' + (k === 'sleep' ? '<b class="o8-val"></b>' : '') + '</span>';
         const a = deg * Math.PI / 180;

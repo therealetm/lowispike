@@ -3,7 +3,7 @@
     border-radius: 50%; border: 1.5px solid var(--wh-glass-rim, rgba(225,248,255,.42)); background: var(--wh-glass-bg, rgba(255,255,255,.08)); box-shadow: var(--wh-glass-sh, 0 8px 24px -14px rgba(0,0,0,.45));
     backdrop-filter: blur(10px) saturate(1.4); -webkit-backdrop-filter: blur(10px) saturate(1.4); color: var(--wh-glass-ink, #fff);
     touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; cursor: grab; z-index: 4; pointer-events: auto;
-    transition: opacity .25s ease, box-shadow .3s ease, border-color .3s ease; --mp-en: .6; --mp-c: #7fe3ff; }
+    transition: opacity .25s ease, box-shadow .3s ease, border-color .3s ease; --mp-en: .6; --mp-c: #7fe3ff; --mp-steer-o: .4; }
 .wh-hud .wh-pad:active { transform: translateX(-50%); }
 .wh-hud .wh-pad[data-tier="thriving"] { --mp-c: #7ff3c4; }
 .wh-hud .wh-pad[data-tier="tired"] { --mp-c: #b7c2d6; }
@@ -54,3 +54,16 @@ html.mf-roam #spHome #spBubble { translate: var(--mf-bx, 0px) var(--mf-by, 0px);
 /* inside a place she flew into, the controller stays so you can keep steering her there. Oct 17 (Emmanuel): never on autopilot
    while the clean flight view is on (lw-clean-auto): there it fades completely, whatever the specificity of the clean-view rule */
 html.mf-in.wh-away:not(.lw-clean-auto) .wh-hud .wh-pad, html.mf-in.wh-away.wh-r2-on:not(.lw-clean-auto) .wh-hud .wh-pad { opacity: 1 !important; pointer-events: auto !important; }
+
+/* Oct 18 (Emmanuel, Home handoff "Joystick": fades while you steer but keeps working, comes back afterwards). misty-pad.js puts
+   .mp-steer on the controller only while a finger actively steers (a drag, or the forward / back hold) and takes it off when
+   steering ends. See-through, never invisible: you still see where your thumb is, and it keeps taking every touch. The soft
+   cross-fade is the base transition (opacity .25s). Look only: same bubble, icon, size and place. On Home it is not !important,
+   so every hide rule above (Today, sheets, places, the autopilot clean view) still wins; inside a world it outweighs the
+   keep-steering rule, scoped the same way (never on autopilot). The 3D membrane round the joystick follows this opacity
+   (living-bubbles.js reads the computed opacity). tests/ui-joystick-fade.test.cjs */
+.wh-hud .wh-pad.mp-steer { opacity: var(--mp-steer-o, .4); }
+html.mf-in.wh-away:not(.lw-clean-auto) .wh-hud .wh-pad.mp-steer, html.mf-in.wh-away.wh-r2-on:not(.lw-clean-auto) .wh-hud .wh-pad.mp-steer { opacity: var(--mp-steer-o, .4) !important; }
+/* asked for more contrast or less see-through glass: a lighter fade */
+@media (prefers-contrast: more) { .wh-hud .wh-pad { --mp-steer-o: .7; } }
+@media (prefers-reduced-transparency: reduce) { .wh-hud .wh-pad { --mp-steer-o: .7; } }

@@ -229,7 +229,7 @@ const PROBE = () => {
                Shop with the new header, plainly, and its own close shuts it */
             await bloom('snack'); s = await settle();
             /* first time, the panel asks which shop; pick the first chain like a person would, then the list shows its header */
-            if (s.title === 'Which shop?') { await page.locator('.stp-ov [data-stp-range]').first().click({ timeout: 15000, noWaitAfter: true }); await sleep(900); s = await settle(); }
+            if (s.title === 'Which shop?') { const c = await page.evaluate(() => { const b = document.querySelector('.stp-ov [data-stp-range]'); if (!b) return null; b.scrollIntoView({ block: 'center' }); const r = b.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }); await sleep(400); if (c) await page.mouse.click(c.x, c.y); await sleep(900); s = await settle(); } /* coordinate tap: WebKit's locator.click hung on 'scrolling into view' here */
             await shot('6-shop');
             if (!SHOOT) {
                 log.push('     ' + P + 'Shop: ' + JSON.stringify({ rect: s.rect, title: s.title, closers: s.closers }));

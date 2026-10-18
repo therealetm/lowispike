@@ -28,7 +28,7 @@ html.o8.wh-home #whHud .o8-cell { display: flex; align-items: center; justify-co
     color: #fff; font: inherit; cursor: pointer; z-index: 2; pointer-events: auto; transform: translate(-50%, -50%);
     -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
     background: radial-gradient(circle at 34% 28%, rgba(255,255,255,.34), rgba(255,255,255,.06) 42%, rgba(120,190,255,.08) 70%, rgba(255,255,255,.16));
-    border: 1px solid rgba(255,255,255,.42); box-shadow: inset 0 0 18px rgba(255,255,255,.18), 0 6px 22px rgba(0,20,60,.28); }
+    border: 1px solid rgba(255,255,255,.42); box-shadow: inset 0 0 18px rgba(255,255,255,.18); }
 html.o8.wh-home.lb3d #whHud .o8-cell { background: transparent; border-color: transparent; box-shadow: none; }
 html.o8.wh-home #whHud .o8-sleep .wh-cell-fill { background: linear-gradient(180deg, rgba(190,170,255,.45), rgba(120,100,230,.7)); height: 0; }
 html.o8.wh-home #whHud .o8-sleep.done .wh-cell-fill { height: 100%; }
@@ -37,7 +37,7 @@ html.o8.wh-home #whHud .o8-cell .o8-ico { width: calc(var(--o8-d) * .26); height
 html.o8.wh-home #whHud .o8-cell .wh-cell-tx small { font-size: calc(var(--o8-d) * .125); }
 html.o8.wh-home #whHud .o8-cell .wh-cell-tx b { font-size: calc(var(--o8-d) * .14); font-weight: 650; }
 html.o8.wh-home.wh-away #whHud .o8-cell, html.o8.wh-home.wh-away #whHud [data-orbit] { opacity: 0 !important; pointer-events: none !important; }
-@media (hover: hover) { html.o8.wh-home #whHud .o8-cell:hover { box-shadow: inset 0 0 22px rgba(255,255,255,.28), 0 6px 22px rgba(0,20,60,.3); } }
+@media (hover: hover) { html.o8.wh-home #whHud .o8-cell:hover { box-shadow: inset 0 0 22px rgba(255,255,255,.28); } }
 html.o8.wh-home #whHud .o8-cell:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 
 /* ---- white line icons and permanent labels on the reused bubbles (CSS only, so their own painters keep their text) ---- */
@@ -82,6 +82,18 @@ html.o8.wh-home .hs-gift,
 html.o8.wh-home #pfBtn,
 html.o8.wh-home #fxHint,
 html.o8.wh-home:not(.o8-menubar) #tabbar { display: none !important; }
+
+/* ---- clean glass: no shadow under any ring bubble or under Misty (Oct 18 2026, Emmanuel on iPad: "All bubbles have a shadow bottom.
+   Remove that weird bottom."). Top highlight, rim and labels stay; only the offset drop shadows and the ellipse under Misty go.
+   Scoped to the ring Home: worlds, blooms and the old Home keep their own depth. tests/bubble-bottom-shadow*.cjs ---- */
+/* the joystick: its glass shadow variable (misty-pad.css: ... 0 8px 26px -12px, light theme 0 8px 24px -12px) keeps only the inner glow */
+html.o8.wh-home #whHud #whPad { --wh-glass-sh: inset 0 0 18px rgba(140,210,255,.32); }
+html.o8.wh-home[data-theme="light"] #whHud #whPad { --wh-glass-sh: inset 0 0 16px rgba(255,255,255,.4); }
+html.o8.wh-home #whHud .wh-pad:not(.mp-fwd):not(.mp-back) .mp-knob { box-shadow: inset 0 0 8px rgba(200,240,255,.35); }
+/* Misty: her sprite's drop-shadow(0 6px 12px black) (world-home.css) becomes the centred glow every other sprite has; the
+   .lh-reflection ellipse under her cell (the grey oval on her name line) is not drawn */
+html.o8.wh-home #spBubble .tmg-plant { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--tmg-a, #8fe7ff) 28%, transparent)); }
+html.o8.wh-home #spBubble .lh-reflection { display: none; }
 
 /* ---- fallback sheets (Settings list, Sleep) until home-settings-sleep-v2.js owns them ---- */
 .o8-sheet { position: fixed; inset: 0; z-index: 9000; display: flex; align-items: flex-end; justify-content: center; }

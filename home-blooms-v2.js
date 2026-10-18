@@ -1,13 +1,13 @@
 /* home-blooms-v2.js (Oct 18, 2026, E-man's eight-bubble Home: "tapping a bubble blooms its options out, away from Misty,
-   Misty never covered" and plain words: "Today's step, Snack, Swap, Cook", no confusing "Again" / "Photo").
+   Misty never covered" and plain words, no confusing "Again" / "Photo").
    The bloom actions for four of the habit bubbles on the new Home ring. Adapters only: every button calls an action the app
    already has, nothing new is stored, no backend call is made here.
-   - Fuel:  Today's step  -> Misty's pick for now (LowiSpiritCore.pickFor over the recipe catalog, shown by LowiSpirit.showPick:
-                            Cook it / Log this). No pick available -> the meal log sheet.
-            Snack        -> the "What can I buy here?" panel (LowiStorePicks.open).
-            Swap         -> Craving SOS (craving -> low-spike fix that keeps the taste / crunch), the app's existing data-act="sos".
-            Cook         -> the Cook tab (LowiHost.go('shelf')).
-            Hold Fuel    -> the meal log sheet (LowiSpirit.meal: photo, barcode, recent meals), so history and photo logging stay.
+   - Fuel (Oct 18 evening, E-man: "only Shop and Cook, plus a meal log button you can actually see"; Swap removed for good,
+           Today's step left Fuel with it):
+            Shop         -> the "What can I buy here?" panel (LowiStorePicks.open), the same place the old Snack orb went.
+            Cook         -> the Cook tab (LowiHost.go('shelf')). The right-side Cook panel is a separate, later change.
+            Log meal     -> the meal log sheet (LowiSpirit.meal: photo, barcode, recent meals), now a visible orb.
+            Hold Fuel    -> still the meal log sheet, as a shortcut only.
    - Water: +1 cup       -> LowiSpirit.water() (same as the old Water cell: one cup, XP through the existing per-day cap).
             Undo         -> takes ONE cup off today (never below 0, never another day) and, if today's water XP entries are now
                             more than today's cups, takes back the newest one (unaward), so add / undo loops net zero.
@@ -136,9 +136,8 @@
 
     /* drawn icons, white line art, no emoji */
     const P = {
-        step: '<path d="M12 3c3.5 3 5 6 5 9a5 5 0 0 1-10 0c0-3 1.5-6 5-9z"/><path d="M9.5 13.5l2 2 3.5-4"/>',
-        snack: '<path d="M5 8h14l-1.4 10.2a2 2 0 0 1-2 1.8H8.4a2 2 0 0 1-2-1.8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><path d="M12 11.5v3.5"/><circle cx="12" cy="17" r=".6"/>',
-        swap: '<path d="M4 8h13l-3-3"/><path d="M20 16H7l3 3"/>',
+        shop: '<path d="M5 8h14l-1.4 10.2a2 2 0 0 1-2 1.8H8.4a2 2 0 0 1-2-1.8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><path d="M12 11.5v3.5"/><circle cx="12" cy="17" r=".6"/>',
+        log: '<rect x="5" y="3.5" width="14" height="17" rx="2.5"/><path d="M9 8.5h6M9 12h6M9 15.5h3"/>',
         cook: '<path d="M4 11h16v2a6 6 0 0 1-6 6h-4a6 6 0 0 1-6-6z"/><path d="M2 11h2M20 11h2"/><path d="M9 7c0-1 1-1.5 1-2.5M13 7c0-1 1-1.5 1-2.5"/>',
         cup: '<path d="M6 4h12l-1.6 15a2 2 0 0 1-2 1.8H9.6a2 2 0 0 1-2-1.8z"/><path d="M6.6 9.5h10.8"/><path d="M12 12.5v4M10 14.5h4"/>',
         undo: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',
@@ -153,14 +152,6 @@
     const cupsToday = () => Math.max(0, Math.floor(+((fastStore().water || {})[dayKey()]) || 0));
     const appState = () => { try { return W.LowiVitalsBridge && W.LowiVitalsBridge.state ? W.LowiVitalsBridge.state() : null; } catch (e) { return null; } };
     const gapStart = () => { try { const F = W.LowiFastStop; return F && fn(F, 'startOf') ? +F.startOf(fn(F, '_st') ? F._st() : undefined) || 0 : 0; } catch (e) { return 0; } };
-    function todaysPick() {
-        try {
-            const K = W.LowiSpiritCore, B = W.LowiSwafloBridge;
-            if (!fn(K, 'pickFor') || !fn(B, 'catalog')) return null;
-            return K.pickFor((B.catalog() || []).filter(r => r && !r.drink && (r.ing || []).length), Date.now());
-        } catch (e) { return null; }
-    }
-    const pickName = pk => { try { const r = pk && pk.recipe; if (!r) return ''; const n = (W.LowiLang && W.LowiLang.tr && W.LowiLang.tr(r.n)) || r.n || r.name || ''; return String(n); } catch (e) { return ''; } };
     const moveView = () => { try { const C = W.LowiMoveEstimateCore, s = appState(); return C && fn(C, 'view') && s ? C.view(s.ledger || [], dayKey()) : null; } catch (e) { return null; } };
 
     /* ---------- actions (each one calls an existing module) ---------- */
@@ -175,15 +166,6 @@
         try { W.dispatchEvent(new CustomEvent('lowi:water', { detail: { undo: true, cups: plan.cups } })); } catch (e) { }
         return true;
     }
-    function openSOS() {
-        /* the app's own Craving SOS lives behind a delegated data-act="sos" click on document */
-        if (!D.getElementById('sos')) return false;
-        const b = D.createElement('button');
-        b.type = 'button'; b.hidden = true; b.setAttribute('data-act', 'sos'); b.setAttribute('data-c', 'sweet');
-        D.body.appendChild(b);
-        try { b.click(); } finally { b.remove(); }
-        return true;
-    }
     function mealLog() { if (fn(W.LowiSpirit, 'meal')) { W.LowiSpirit.meal(); return true; } return false; }
 
     const MOVE_NAMES = { quick: () => T('Quick', 'Kurz', 'Rápido'), medium: () => T('Medium', 'Mittel', 'Medio'), long: () => T('Long', 'Lang', 'Largo'), epic: () => T('Epic', 'Episch', 'Épico') };
@@ -193,12 +175,10 @@
     function actionsFor(kind) {
         const A = [];
         if (kind === 'fuel') {
-            const pk = todaysPick();
-            if (pk && fn(W.LowiSpirit, 'showPick')) A.push({ id: 'step', label: T("Today's step", 'Heute', 'Hoy'), sub: pickName(pk) || T('Misty\'s pick', 'Mistys Tipp', 'Idea de Misty'), icon: 'step', run: () => { const p = todaysPick() || pk; W.LowiSpirit.showPick(p.recipe, p.why); } });
-            else if (fn(W.LowiSpirit, 'meal')) A.push({ id: 'step', label: T("Today's step", 'Heute', 'Hoy'), sub: T('log a meal', 'Mahlzeit eintragen', 'anotar comida'), icon: 'step', run: mealLog });
-            if (fn(W.LowiStorePicks, 'open')) A.push({ id: 'snack', label: T('Snack', 'Snack', 'Snack'), sub: T('what can I buy?', 'was kann ich kaufen?', '¿qué compro?'), icon: 'snack', run: () => W.LowiStorePicks.open('home-bloom') });
-            if (D.getElementById('sos')) A.push({ id: 'swap', label: T('Swap', 'Tauschen', 'Cambiar'), sub: T('craving fix', 'Heißhunger-Fix', 'antojo'), icon: 'swap', run: openSOS });
+            /* only Shop, Cook and a visible meal log (E-man, Oct 18): no Swap, no Today's step */
+            if (fn(W.LowiStorePicks, 'open')) A.push({ id: 'shop', label: T('Shop', 'Einkaufen', 'Comprar'), sub: T('what can I buy?', 'was kann ich kaufen?', '¿qué compro?'), icon: 'shop', run: () => W.LowiStorePicks.open('home-bloom') });
             if (fn(W.LowiHost, 'go')) A.push({ id: 'cook', label: T('Cook', 'Kochen', 'Cocinar'), sub: T('recipes', 'Rezepte', 'recetas'), icon: 'cook', run: () => W.LowiHost.go('shelf') });
+            if (fn(W.LowiSpirit, 'meal')) A.push({ id: 'log', label: T('Log meal', 'Mahlzeit eintragen', 'Anotar comida'), sub: T('what you ate', 'was du gegessen hast', 'lo que comiste'), icon: 'log', run: mealLog });
         } else if (kind === 'water') {
             const n = cupsToday();
             if (fn(W.LowiSpirit, 'water') || fn(W.LowiVitalsBridge, 'water')) A.push({ id: 'add', label: T('+1 cup', '+1 Glas', '+1 vaso'), sub: n + ' / ' + WATER_GOAL, icon: 'cup', keep: true, q: Math.min(1, n / WATER_GOAL),

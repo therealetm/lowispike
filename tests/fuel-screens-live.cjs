@@ -167,7 +167,10 @@ const PROBE = () => {
                 ok(!s.emoji, pre + 'no emoji (' + s.emoji + ')');
             };
             const closeByX = async k => {
-                const n = await page.evaluate(() => { const b = [...document.querySelectorAll('.fs-panel .pf-x, .fs-panel .fs-x')].find(b => b.getBoundingClientRect().width > 2); if (!b) return 0; b.click(); return 1; });
+                /* tap the close a person can see: the one on top at its own centre (a closed #sos keeps its .fs-x in the
+                   DOM at opacity 0, and clicking that one in script did nothing - Oct 18 "Log a meal" false fail) */
+                const pt = await page.evaluate(() => { const b = [...document.querySelectorAll('.fs-panel .pf-x, .fs-panel .fs-x')].find(b => { const r = b.getBoundingClientRect(); if (r.width < 3) return false; const h = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return h && (h === b || b.contains(h)); }); if (!b) return null; const r = b.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
+                const n = pt ? 1 : 0; if (pt) await page.mouse.click(pt.x, pt.y);
                 const after = await settle(false);
                 ok(n === 1 && (after.none || !after.fs), P + k + ': the close control closes it' + (after.none ? '' : ' (still open: ' + after.cls + '; r2 sheets: ' + JSON.stringify(await page.evaluate(() => [...document.querySelectorAll('.r2-ov')].map(o => o.className.slice(-20) + '/' + o.querySelector('.r2-sh').className.slice(-30)))) + ')'));
                 ok(!(await page.evaluate(() => document.documentElement.classList.contains('fs-open'))), P + k + ': the Home X comes back after closing');
@@ -222,7 +225,7 @@ const PROBE = () => {
                Shop with the new header, plainly, and its own close shuts it */
             await bloom('snack'); s = await settle();
             /* first time, the panel asks which shop; pick the first chain like a person would, then the list shows its header */
-            if (s.title === 'Which shop?') { await page.locator('.stp-ov [data-stp-range]').first().click({ timeout: 8000 }); await sleep(900); s = await settle(); }
+            if (s.title === 'Which shop?') { await page.locator('.stp-ov [data-stp-range]').first().click({ timeout: 15000, noWaitAfter: true }); await sleep(900); s = await settle(); }
             await shot('6-shop');
             if (!SHOOT) {
                 log.push('     ' + P + 'Shop: ' + JSON.stringify({ rect: s.rect, title: s.title, closers: s.closers }));

@@ -105,9 +105,9 @@ const PROBE = () => {
             const build = await page.evaluate(() => fetch('version.json?t=' + Date.now()).then(r => r.json()).then(j => j.build).catch(() => '?'));
             log.push(P + 'build ' + build);
             const closeAll = async () => {
-                /* the What's New tour (#g1Tour, top z-index) can pop up again mid-run on a fresh test account, notably in WebKit,
-                   and then covers whatever is open: it is not a Fuel screen, so keep it away for the whole run */
-                await page.evaluate(() => { if (window.__fsNoTour) return; window.__fsNoTour = new MutationObserver(() => { const t = document.getElementById('g1Tour'); if (t) t.remove(); }); window.__fsNoTour.observe(document.body, { childList: true }); });
+                /* the first-run guide (#g1Tour, appended to <html>, top z-index) pops up on a fresh test account, e.g. when "What did
+                   you eat?" opens, and covers whatever is open: it is not a Fuel screen, so keep it away for the whole run */
+                await page.evaluate(() => { if (window.__fsNoTour) return; window.__fsNoTour = new MutationObserver(() => { const t = document.getElementById('g1Tour'); if (t) t.remove(); }); window.__fsNoTour.observe(document.body, { childList: true }); window.__fsNoTour.observe(document.documentElement, { childList: true }); document.querySelectorAll('#g1Tour').forEach(t => t.remove()); });
                 /* close the way the app does first (its own close / LowiR2.close), so no sheet manager is left thinking a sheet is open */
                 await page.evaluate(() => {
                     try { window.LowiHomeBloomsV2.close(); } catch (e) { }

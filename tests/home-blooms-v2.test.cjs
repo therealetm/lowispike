@@ -100,7 +100,7 @@ test('iPad ring: every bubble around Misty gets a clean outward fan', () => {
 });
 
 test('labels are the plain words E-man asked for, no Again / Photo, no emoji anywhere', () => {
-  for (const w of ["Today's step", "'Snack'", "'Swap'", "'Cook'", "'+1 cup'", "'Undo'", "'I just ate'", "'Ate earlier'", "'Quick'", "'Medium'", "'Long'", "'Epic'"]) assert.ok(src.includes(w), w);
+  for (const w of ["Today's step", "'Shop'", "'Swap'", "'Cook'", "'+1 cup'", "'Undo'", "'I just ate'", "'Ate earlier'", "'Quick'", "'Medium'", "'Long'", "'Epic'"]) assert.ok(src.includes(w), w);
   assert.doesNotMatch(src, /T\('Again'|T\('Photo'|label: *'Again'|label: *'Photo'/);
   assert.doesNotMatch(src + css, /\p{Extended_Pictographic}/u, 'no emoji: icons are drawn SVG');
 });

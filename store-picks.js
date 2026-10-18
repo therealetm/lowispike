@@ -58,7 +58,7 @@
     }
 
     function shell(inner) {
-        return '<div class="stp-card" role="dialog" aria-modal="true" aria-label="' + esc(T('What can I buy here?', 'Was kann ich hier kaufen?', '¿Qué puedo comprar aquí?')) + '">' + inner + '</div>';
+        return '<div class="stp-card" role="dialog" aria-modal="true" aria-label="' + esc(T('Low-Spike Finds', 'Low-Spike-Funde', 'Hallazgos Low-Spike')) + '">' + inner + '</div>';
     }
     function footBtns(left) {
         return '<div class="stp-foot">' + (left || '<span></span>') + '<button type="button" class="stp-orb stp-close" data-stp="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '">' + ic.x + '</button></div>';
@@ -267,7 +267,7 @@
                 '<p>' + esc(T('Source: ', 'Quelle: ', 'Fuente: ') + (data && data.source || '') + ' · ' + (data && data.built || '')) + '</p></details>';
         }
         const r = RANGE[S.range];
-        return shell('<div class="stp-head"><h3>' + esc(T('What can I buy here?', 'Was kann ich hier kaufen?', '¿Qué puedo comprar aquí?')) + '</h3>' +
+        return shell('<div class="stp-head"><h3>' + esc(T('Low-Spike Finds', 'Low-Spike-Funde', 'Hallazgos Low-Spike')) + '</h3>' +
             '<button type="button" class="stp-shop" data-stp="pick">' + ic.cart + '<span>' + esc(storeLine() || (r && r.label) || '') + '</span><i>' + esc(T('Change', 'Ändern', 'Cambiar')) + '</i></button>' +
             '<div class="stp-tools"><input type="search" class="stp-q" enterkeyhint="search" autocomplete="off" placeholder="' + esc(T('Search this shop', 'In diesem Laden suchen', 'Buscar en esta tienda')) + '" value="' + esc(q) + '">' +
             '<label class="stp-tog"><input type="checkbox" data-stp="fails"' + (showFail ? ' checked' : '') + '><span>' + esc(T('Show left out', 'Aussortierte zeigen', 'Ver excluidos')) + '</span></label></div></div>' +

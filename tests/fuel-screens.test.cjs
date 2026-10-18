@@ -120,3 +120,13 @@ test('What did you eat? shows XP once and never mentions the removed Today scree
     for (const s of ['back to Today', 'Back to Today', 'zurück zu Heute', 'Zurück zu Heute', 'volver a Hoy', 'Volver a Hoy']) assert.ok(!new RegExp(':"[^"]*' + s + '[^"]*"').test(html), s);
     assert.ok(html.includes('later:"Not now"') && html.includes('later:"Jetzt nicht"') && html.includes('later:"Ahora no"'));
 });
+
+test('Fuel bloom says Shop (not Snack) and the shop panel is titled Low-Spike Finds (E-man, Oct 18 evening)', () => {
+    const hb = read('home-blooms-v2.js'), sp = read('store-picks.js');
+    const snackRow = hb.split('\n').find(l => /id: 'snack'/.test(l)) || '';
+    assert.ok(/label: T\('Shop', /.test(snackRow), 'the Fuel bloom option reads Shop');
+    assert.ok(!/label: T\('Snack'/.test(hb), 'no Snack label left in the Fuel bloom');
+    assert.ok(sp.includes("<h3>' + esc(T('Low-Spike Finds', "), 'the panel header reads Low-Spike Finds');
+    assert.ok(/aria-label="' \+ esc\(T\('Low-Spike Finds', /.test(sp), 'the dialog is announced as Low-Spike Finds');
+    assert.ok(!/<h3>' \+ esc\(T\('What can I buy here\?'/.test(sp), 'the old header is gone');
+});

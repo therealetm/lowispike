@@ -180,7 +180,7 @@ const fastStore = () => JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}')
             checkGeo(g, 'fuel');
             await page.screenshot({ path: path.join(OUT, name + '-fuel.png') });
             const fuelTxt = g.orbs.map(o => o.text).join(' | ');
-            ok(g.orbs.map(o => o.id).join() === 'step,snack,swap,cook', P + "fuel orbs = Today's step, Snack, Swap, Cook (" + fuelTxt + ')');
+            ok(g.orbs.map(o => o.id).join() === 'step,snack,swap,cook', P + "fuel orbs = Today's step, Shop, Swap, Cook (" + fuelTxt + ')');
             ok(!/\bAgain\b|\bPhoto\b/.test(fuelTxt), P + 'no Again / Photo labels');
             const fuelCase = async (id, check, what) => {
                 await closeAll();
@@ -192,7 +192,7 @@ const fastStore = () => JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}')
                 await page.screenshot({ path: path.join(OUT, name + '-fuel-' + id + '.png') });
             };
             await fuelCase('swap', () => { const s = document.getElementById('sos'); return !!(s && s.classList.contains('open')); }, 'Swap opens Craving SOS');
-            await fuelCase('snack', () => !!document.querySelector('.stp-ov'), 'Snack opens What can I buy here?');
+            await fuelCase('snack', () => !!document.querySelector('.stp-ov'), 'Shop opens Low-Spike Finds');
             await fuelCase('step', () => !!document.querySelector('.sp-pick'), "Today's step opens Misty's pick (Cook it / Log this)");
             await fuelCase('cook', () => { const t = document.getElementById('tab-shelf'); return !!(t && t.classList.contains('active')); }, 'Cook opens the Cook tab');
             await page.evaluate(() => window.goTab && window.goTab('home')); await sleep(900);

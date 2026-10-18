@@ -67,7 +67,7 @@ const PROBE = () => {
     const text = p.innerText;
     const emoji = (text.match(/\p{Extended_Pictographic}/gu) || []).filter(c => !/[©®™↕↔›‹]/.test(c));
     return {
-        id: p.id, cls: String(p.className).slice(0, 120), fs: p.classList.contains('fs-panel'), kind: p.dataset.fs || '', dock: p.classList.contains('fs-dock'),
+        id: p.id, op: +cs.opacity, cls: String(p.className).slice(0, 120), fs: p.classList.contains('fs-panel'), kind: p.dataset.fs || '', dock: p.classList.contains('fs-dock'),
         rect: [r.left, r.top, r.width, r.height].map(Math.round), vw: innerWidth, vh: innerHeight,
         radius: cs.borderTopLeftRadius, glass: /gradient/.test(cs.backgroundImage), titleSize: h ? getComputedStyle(h).fontSize : '', title: h ? h.textContent.trim().slice(0, 60) : '',
         empty: Math.round(r.bottom - maxB), scrolls: p.scrollHeight > p.clientHeight + 2, sideways: p.scrollWidth > p.clientWidth + 2,
@@ -114,6 +114,14 @@ const PROBE = () => {
                 });
                 await sleep(700);
             };
+            /* the bloom orbs fly out from Fuel: tap one only once it has stopped moving, as a person would */
+            const orbStill = async id => {
+                let last = '', same = 0; const t0 = Date.now();
+                while (Date.now() - t0 < 5000 && same < 2) {
+                    const r = await page.evaluate(id => { const e = document.querySelector('#hb2Bloom [data-id="' + id + '"]'); if (!e) return ''; const q = e.getBoundingClientRect(); return [q.left, q.top, q.width].map(Math.round).join(','); }, id);
+                    same = r && r === last ? same + 1 : 0; last = r; await sleep(150);
+                }
+            };
             const bloom = async id => {
                 await closeAll();
                 await page.locator('[data-orbit="fuel"]').first().click({ force: true });
@@ -121,10 +129,17 @@ const PROBE = () => {
                 const has = await page.evaluate(id => !!document.querySelector('#hb2Bloom [data-id="' + id + '"]'), id);
                 if (!has) await page.evaluate(() => window.LowiHomeBloomsV2.open('fuel'));
                 await sleep(500);
-                await page.locator('#hb2Bloom [data-id="' + id + '"]').click({ force: true, timeout: 8000 });
-                await sleep(1300);
+                await orbStill(id);
+                await page.locator('#hb2Bloom [data-id="' + id + '"]').click({ force: true, timeout: 8000, noWaitAfter: true });
             };
             const probe = () => page.evaluate(PROBE);
+            /* the VM's software GPU makes frames slow: a .2s fade can take over a second here. Poll instead of fixed sleeps
+               (Oct 18: "Your pick" and "Swap step 1" were probed mid-fade at opacity 0 and read as "no panel"). */
+            const settle = async (open = true, ms = 9000) => {
+                const t0 = Date.now(); let s;
+                while (Date.now() - t0 < ms) { s = await probe(); if (open ? (!s.none && s.op >= 0.99) : (s.none || !s.fs)) break; await sleep(200); }
+                await sleep(250); return probe();
+            };
             const titleSizes = [];
             const check = (k, s) => {
                 const pre = P + k + ': ';
@@ -146,21 +161,20 @@ const PROBE = () => {
             };
             const closeByX = async k => {
                 const n = await page.evaluate(() => { const b = [...document.querySelectorAll('.fs-panel .pf-x, .fs-panel .fs-x')].find(b => b.getBoundingClientRect().width > 2); if (!b) return 0; b.click(); return 1; });
-                await sleep(900);
-                const after = await probe();
+                const after = await settle(false);
                 ok(n === 1 && (after.none || !after.fs), P + k + ': the close control closes it');
                 ok(!(await page.evaluate(() => document.documentElement.classList.contains('fs-open'))), P + k + ': the Home X comes back after closing');
             };
 
             /* Today's step -> Your pick */
-            await bloom('step'); let s = await probe(); check('Your pick', s); await shot('1-your-pick'); if (!SHOOT) await closeByX('Your pick');
+            await bloom('step'); let s = await settle(); check('Your pick', s); await shot('1-your-pick'); if (!SHOOT) await closeByX('Your pick');
             /* Swap: step 1, tile, step 2, show another, back */
-            await bloom('swap'); s = await probe(); check('Swap step 1', s); await shot('2-swap-step1');
+            await bloom('swap'); s = await settle(); check('Swap step 1', s); await shot('2-swap-step1');
             if (!SHOOT) {
                 ok(s.step === '1' && /What are you craving\?/.test(s.title), P + 'Swap step 1 asks "What are you craving?" ' + s.title);
                 ok(s.tiles.length >= 5 && s.tiles.every(Boolean), P + 'every craving tile visible at once, inside the panel ' + JSON.stringify(s.tiles));
-                await page.locator('#sos .fs-tile[data-c="chocolate"]').click({ timeout: 8000 }); await sleep(900);
-                s = await probe(); check('Swap step 2', s); await shot('3-swap-step2');
+                await page.locator('#sos .fs-tile[data-c="chocolate"]').click({ timeout: 8000 }); await sleep(600);
+                s = await settle(); check('Swap step 2', s); await shot('3-swap-step2');
                 ok(s.step === '2' && /Craving/.test(s.card) && /Chocolate/.test(s.card) && /Have instead/.test(s.card), P + 'Swap step 2 is one card: Craving Chocolate -> Have instead ' + JSON.stringify(s.card));
                 const btns = await page.evaluate(() => [...document.querySelectorAll('#sos button')].filter(b => b.getBoundingClientRect().width > 2).map(b => b.textContent.trim()));
                 ok(btns.includes('I had it') && btns.includes('Show another') && btns.includes('I ate the craving anyway, log it'), P + 'I had it / Show another / log link ' + JSON.stringify(btns));
@@ -179,26 +193,26 @@ const PROBE = () => {
                 const sosOpen = await page.evaluate(() => document.getElementById('sos').classList.contains('open'));
                 ok(!sosOpen && xp1 === xp0 + 20, P + 'I had it closes Swap and gives +20 XP as before (' + xp0 + ' -> ' + xp1 + ')');
                 /* the log link opens the Fuel meal log in the same style */
-                await bloom('swap'); await page.locator('#sos .fs-tile[data-c="sweet"]').click(); await sleep(600);
-                await page.locator('#sos [data-act="sosgave"]').click(); await sleep(1400);
-                s = await probe(); ok(s.kind === 'log', P + '"I ate the craving anyway, log it" opens the meal log (' + s.kind + ' ' + s.title + ')');
+                await bloom('swap'); await settle(); await page.locator('#sos .fs-tile[data-c="sweet"]').click(); await sleep(600);
+                await page.locator('#sos [data-act="sosgave"]').click();
+                s = await settle(); ok(s.kind === 'log', P + '"I ate the craving anyway, log it" opens the meal log (' + s.kind + ' ' + s.title + ')');
                 await closeAll();
-                await bloom('swap'); await closeByX('Swap');
+                await bloom('swap'); await settle(); await closeByX('Swap');
             }
             /* Log a meal (hold Fuel) */
-            await closeAll(); await page.evaluate(() => window.LowiSpirit && LowiSpirit.meal()); await sleep(1300);
-            s = await probe(); check('Log a meal', s); await shot('4-log-a-meal'); if (!SHOOT) await closeByX('Log a meal');
+            await closeAll(); await page.evaluate(() => window.LowiSpirit && LowiSpirit.meal());
+            s = await settle(); check('Log a meal', s); await shot('4-log-a-meal'); if (!SHOOT) await closeByX('Log a meal');
             /* What did you eat? (F2) */
-            await closeAll(); await page.evaluate(() => window.LowiF2 && LowiF2.start({})); await sleep(1300);
-            s = await probe(); check('What did you eat?', s); await shot('5-what-did-you-eat');
+            await closeAll(); await page.evaluate(() => window.LowiF2 && LowiF2.start({}));
+            s = await settle(); check('What did you eat?', s); await shot('5-what-did-you-eat');
             if (!SHOOT) {
                 ok(s.xpLines === 1, P + 'What did you eat? shows XP once (' + s.xpLines + ')');
                 ok(/Not now/.test(s.text), P + '"Not now" instead of "Skip for now · back to Today"');
                 await closeByX('What did you eat?');
             }
-            /* Snack: What can I buy here? */
-            await bloom('snack'); s = await probe(); check('What can I buy here?', s); await shot('6-snack');
-            if (!SHOOT) await closeByX('What can I buy here?');
+            /* Shop: Low-Spike Finds (was Snack / What can I buy here?) */
+            await bloom('snack'); s = await settle(); check('Low-Spike Finds', s); await shot('6-snack');
+            if (!SHOOT) await closeByX('Low-Spike Finds');
             ok(new Set(titleSizes.filter(Boolean)).size === 1, P + 'one title size on every Fuel screen ' + JSON.stringify(titleSizes));
             ok(errs.length === 0, P + 'no page errors ' + errs.slice(0, 3).join(' / '));
             log.push('     ' + P + 'blocked non-GET/other-host requests: ' + blocked);

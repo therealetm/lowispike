@@ -4,7 +4,7 @@
    already has, nothing new is stored, no backend call is made here.
    - Fuel:  Today's step  -> Misty's pick for now (LowiSpiritCore.pickFor over the recipe catalog, shown by LowiSpirit.showPick:
                             Cook it / Log this). No pick available -> the meal log sheet.
-            Snack        -> the "What can I buy here?" panel (LowiStorePicks.open).
+            Shop         -> the "Low-Spike Finds" panel (LowiStorePicks.open).
             Swap         -> Craving SOS (craving -> low-spike fix that keeps the taste / crunch), the app's existing data-act="sos".
             Cook         -> the Cook tab (LowiHost.go('shelf')).
             Hold Fuel    -> the meal log sheet (LowiSpirit.meal: photo, barcode, recent meals), so history and photo logging stay.
@@ -197,7 +197,7 @@
             const pk = todaysPick();
             if (pk && fn(W.LowiSpirit, 'showPick')) A.push({ id: 'step', label: T("Today's step", 'Heute', 'Hoy'), sub: pickName(pk) || T('Misty\'s pick', 'Mistys Tipp', 'Idea de Misty'), icon: 'step', run: () => { const p = todaysPick() || pk; W.LowiSpirit.showPick(p.recipe, p.why); } });
             else if (fn(W.LowiSpirit, 'meal')) A.push({ id: 'step', label: T("Today's step", 'Heute', 'Hoy'), sub: T('log a meal', 'Mahlzeit eintragen', 'anotar comida'), icon: 'step', run: mealLog });
-            if (fn(W.LowiStorePicks, 'open')) A.push({ id: 'snack', label: T('Snack', 'Snack', 'Snack'), sub: T('what can I buy?', 'was kann ich kaufen?', '¿qué compro?'), icon: 'snack', run: () => W.LowiStorePicks.open('home-bloom') });
+            if (fn(W.LowiStorePicks, 'open')) A.push({ id: 'snack', label: T('Shop', 'Shop', 'Tienda'), sub: T('what can I buy?', 'was kann ich kaufen?', '¿qué compro?'), icon: 'snack', run: () => W.LowiStorePicks.open('home-bloom') });
             if (D.getElementById('sos')) A.push({ id: 'swap', label: T('Swap', 'Tauschen', 'Cambiar'), sub: T('craving fix', 'Heißhunger-Fix', 'antojo'), icon: 'swap', run: openSOS });
             if (fn(W.LowiHost, 'go')) A.push({ id: 'cook', label: T('Cook', 'Kochen', 'Cocinar'), sub: T('recipes', 'Rezepte', 'recetas'), icon: 'cook', run: () => W.LowiHost.go('shelf') });
         } else if (kind === 'water') {

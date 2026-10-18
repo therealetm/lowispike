@@ -188,10 +188,11 @@ async function boot(page, url) {
         g = await page.evaluate(GEO);
         ok(g.panel && g.panel.gap >= g.mr - 1, 'More panel overlaps Misty: ' + JSON.stringify(g.panel) + ' mr ' + g.mr);
         ok(g.panel && g.panel.top >= 0 && g.panel.bottom <= g.vh + 1, 'More panel off screen');
-        for (const id of ['today', 'community', 'care', 'cook', 'workouts']) ok(g.panel && g.panel.rows.includes(id), 'More is missing ' + id + ': ' + (g.panel && g.panel.rows));
+        for (const id of ['community', 'care', 'workouts', 'map']) ok(g.panel && g.panel.rows.includes(id), 'More is missing ' + id + ': ' + (g.panel && g.panel.rows));
+        for (const id of ['today', 'cook', 'theme', 'quest']) ok(g.panel && !g.panel.rows.includes(id), 'More should no longer list ' + id + ' (a bubble reaches it, or it was dropped): ' + (g.panel && g.panel.rows));
         ok(!g.mistyCovered, 'More: Misty centre covered');
         await page.screenshot({ path: `${OUT}/${v}-more.png` });
-        await page.evaluate(() => { window.__care = 0; const R = window.LowiR3F, o = R.openBoardTab; R.openBoardTab = function () { window.__care++; return o.apply(this, arguments); }; window.__today = 0; document.querySelector('#whHud .wh-todaybtn').addEventListener('click', () => window.__today++); });
+        await page.evaluate(() => { window.__care = 0; const R = window.LowiR3F, o = R.openBoardTab; R.openBoardTab = function () { window.__care++; return o.apply(this, arguments); }; window.__map = 0; document.querySelector('#whHud .wh-zoom').addEventListener('click', () => window.__map++); });
         await tap(page, '#ss2Bloom [data-ss2="community"]'); await sleep(900);
         const comm = await page.evaluate(() => { const t = document.getElementById('tab-foryou'); return !!t && t.classList.contains('active'); });
         ok(comm, 'Community route did not open the Community tab');
@@ -201,8 +202,8 @@ async function boot(page, url) {
         await tap(page, '[data-orbit="settings"]'); await tap(page, '#ss2Bloom [data-ss2="more"]'); await tap(page, '#ss2Bloom [data-ss2="care"]'); await sleep(900);
         ok(await page.evaluate(() => window.__care === 1), 'Care board route did not run LowiR3F.openBoardTab once');
         await home();
-        await tap(page, '[data-orbit="settings"]'); await tap(page, '#ss2Bloom [data-ss2="more"]'); await tap(page, '#ss2Bloom [data-ss2="today"]'); await sleep(700);
-        ok(await page.evaluate(() => window.__today === 1), 'Today & history route did not press the existing Today control');
+        await tap(page, '[data-orbit="settings"]'); await tap(page, '#ss2Bloom [data-ss2="more"]'); await tap(page, '#ss2Bloom [data-ss2="map"]'); await sleep(700);
+        ok(await page.evaluate(() => window.__map === 1), 'World map route did not press the existing world map control');
         await page.keyboard.press('Escape'); await home();
         /* Profile tiles: Look & sound, Account, Me */
         for (const [id, k] of [['look', 'look'], ['account', 'acct']]) {

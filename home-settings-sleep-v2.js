@@ -20,17 +20,17 @@
             short: { under6: '<6 h', '6to7': '6\u20137 h', '7plus': '7 h+' }, notLogged: 'not logged', clear: 'Clear', clearLong: 'Clear today\u2019s sleep',
             settings: 'Settings', me: 'Me', look: 'Look & sound', account: 'Account', menubar: 'Menu bar', on: 'on', off: 'off', more: 'More', back: 'Back', close: 'Close',
             moreTitle: 'Everything else', today: 'Today & history', community: 'Community', care: 'Care board', cook: 'Cook', workouts: 'Workouts', map: 'World map',
-            vr: 'VR', worldSound: 'World sound', theme: 'Day / night', gift: 'Gift of the day', weather: 'Weather', quest: 'Daily quest' },
+            vr: 'VR', worldSound: 'World sound', theme: 'Day / night', gift: 'Gift of the day', weather: 'Weather', quest: 'Daily quest', goTo: 'Go to', settingsGroup: 'Settings' },
         de: { sleep: 'Schlaf', log: 'Eintragen', ask: 'Wie lange hast du letzte Nacht geschlafen?', under6: 'Unter 6 Std.', '6to7': '6\u20137 Std.', '7plus': '7 Std. oder mehr',
             short: { under6: '<6 Std.', '6to7': '6\u20137 Std.', '7plus': '7 Std.+' }, notLogged: 'nicht eingetragen', clear: 'L\u00f6schen', clearLong: 'Heutigen Schlaf l\u00f6schen',
             settings: 'Einstellungen', me: 'Ich', look: 'Aussehen & Ton', account: 'Konto', menubar: 'Men\u00fcleiste', on: 'an', off: 'aus', more: 'Mehr', back: 'Zur\u00fcck', close: 'Schlie\u00dfen',
             moreTitle: 'Alles andere', today: 'Heute & Verlauf', community: 'Community', care: 'Care-Board', cook: 'Kochen', workouts: 'Workouts', map: 'Weltkarte',
-            vr: 'VR', worldSound: 'Weltklang', theme: 'Tag / Nacht', gift: 'Geschenk des Tages', weather: 'Wetter', quest: 'Tagesquest' },
+            vr: 'VR', worldSound: 'Weltklang', theme: 'Tag / Nacht', gift: 'Geschenk des Tages', weather: 'Wetter', quest: 'Tagesquest', goTo: 'Gehe zu', settingsGroup: 'Einstellungen' },
         es: { sleep: 'Sue\u00f1o', log: 'Anotar', ask: '\u00bfCu\u00e1nto dormiste anoche?', under6: 'Menos de 6 h', '6to7': '6\u20137 h', '7plus': '7 h o m\u00e1s',
             short: { under6: '<6 h', '6to7': '6\u20137 h', '7plus': '7 h+' }, notLogged: 'sin anotar', clear: 'Borrar', clearLong: 'Borrar el sue\u00f1o de hoy',
             settings: 'Ajustes', me: 'Yo', look: 'Aspecto y sonido', account: 'Cuenta', menubar: 'Barra de men\u00fa', on: 's\u00ed', off: 'no', more: 'M\u00e1s', back: 'Atr\u00e1s', close: 'Cerrar',
             moreTitle: 'Todo lo dem\u00e1s', today: 'Hoy e historial', community: 'Comunidad', care: 'Tablero Care', cook: 'Cocinar', workouts: 'Entrenos', map: 'Mapa del mundo',
-            vr: 'RV', worldSound: 'Sonido del mundo', theme: 'D\u00eda / noche', gift: 'Regalo del d\u00eda', weather: 'Tiempo', quest: 'Misi\u00f3n diaria' }
+            vr: 'RV', worldSound: 'Sonido del mundo', theme: 'D\u00eda / noche', gift: 'Regalo del d\u00eda', weather: 'Tiempo', quest: 'Misi\u00f3n diaria', goTo: 'Ir a', settingsGroup: 'Ajustes' }
     };
     const pick = l => TX[l] || TX.en;
 
@@ -120,8 +120,54 @@
         return { pts: Array.from({ length: n }, (_, i) => ({ x: x0 + i * (c + 8), y })), how: 'clamp', c, fit: false };
     }
 
-    /* the hidden Home entry points: env.has(id) says whether its real route exists right now */
-    const MORE = ['today', 'community', 'care', 'cook', 'workouts', 'map', 'vr', 'worldSound', 'theme', 'gift', 'weather', 'quest'];
+    /* the hidden Home entry points that no bubble reaches (Oct 18 2026, Emmanuel: "some of the everything is redundant").
+       Go to = places, Settings = switches. env.has(id) says whether its real route exists right now. */
+    const MORE_GROUPS = { go: ['community', 'care', 'workouts', 'map', 'vr', 'gift', 'weather'], set: ['worldSound'] };
+    const MORE = MORE_GROUPS.go.concat(MORE_GROUPS.set);
+    /* out of the panel, and where each one is still reached (their routes and features stay in the app):
+       today: Emmanuel dropped Today from Home; cook: Fuel bubble > Cook; theme: Settings > Look & sound > Day & night;
+       quest: Emmanuel dropped Daily quest */
+    const MORE_REMOVED = { today: 'removed', cook: 'fuel', theme: 'look', quest: 'removed' };
+    function moreGroups(env) {
+        const has = id => !!(env && env.has && env.has(id));
+        return { go: MORE_GROUPS.go.filter(has), set: MORE_GROUPS.set.filter(has) };
+    }
+    /* where the More panel goes: the first free band round the ring (beside it on a wide screen, below or above it on a tall one),
+       on the Settings bubble's side first, clear of Misty and of every ring control, at the fewest columns that fit with no scrolling.
+       A phone's ring fills the screen, so it then sits right under (or over) Misty, over the outer bubbles but never on her.
+       o: {vw, vh, safe {t,r,b,l}, misty {x,y,r}, bubble {x,y}, rects [{l,t,r,b}] ring controls, measure(width, cols) -> height}
+       -> {left, top, width, height, cols, side, fit}; fit false = nothing fits: the body scrolls under a header that stays. */
+    function placePanel(o) {
+        const s = o.safe || { t: 0, r: 0, b: 0, l: 0 }, m = 10, M = o.misty, rects = o.rects || [];
+        const box = rects.reduce((a, q) => ({ l: Math.min(a.l, q.l), t: Math.min(a.t, q.t), r: Math.max(a.r, q.r), b: Math.max(a.b, q.b) }), { l: M.x - M.r, t: M.y - M.r, r: M.x + M.r, b: M.y + M.r });
+        const L = s.l + m, R = o.vw - s.r - m, T = s.t + m, B = o.vh - s.b - m;
+        let dx = (o.bubble ? o.bubble.x : M.x + 1) - M.x, dy = (o.bubble ? o.bubble.y : M.y) - M.y; const dl = Math.hypot(dx, dy) || 1; dx /= dl; dy /= dl;
+        const byDir = list => list.map((g, i) => Object.assign(g, { score: g.nx * dx + g.ny * dy - i * 1e-3 })).sort((a, b) => b.score - a.score);
+        const clean = byDir([
+            { side: 'right', l: box.r + m, r: R, t: T, b: B, nx: 1, ny: 0, maxW: 420 },
+            { side: 'left', l: L, r: box.l - m, t: T, b: B, nx: -1, ny: 0, maxW: 420 },
+            { side: 'below', l: L, r: R, t: box.b + m, b: B, nx: 0, ny: 1, maxW: 640 },
+            { side: 'above', l: L, r: R, t: T, b: box.t - m, nx: 0, ny: -1, maxW: 640 }]);
+        const tight = byDir([
+            { side: 'under-misty', l: L, r: R, t: M.y + M.r + m, b: B, nx: 0, ny: 1, maxW: 640 },
+            { side: 'over-misty', l: L, r: R, t: T, b: M.y - M.r - m, nx: 0, ny: -1, maxW: 640 }]);
+        const MINC = 88;
+        const put = (g, w, h, cols, fit) => {
+            const vert = g.side === 'left' || g.side === 'right';
+            const left = vert ? (g.side === 'right' ? g.l : g.r - w) : Math.max(g.l, Math.min(g.r - w, M.x - w / 2));
+            const top = vert ? Math.max(g.t, Math.min(g.b - h, M.y - h / 2)) : (g.ny > 0 ? g.t : g.b - h);
+            return { left: Math.round(left), top: Math.round(top), width: Math.round(w), height: Math.round(h), cols, side: g.side, fit };
+        };
+        for (const g of clean.concat(tight)) {
+            const W = g.r - g.l, Hh = g.b - g.t; if (W < 220 || Hh < 120) continue;
+            const w = Math.min(W, g.maxW);
+            for (let cols = 1; cols <= 4 && w / cols >= MINC; cols++) { const h = o.measure(w, cols); if (h <= Hh) return put(g, w, h, cols, true); }
+        }
+        /* nothing fits: the tallest spot next to Misty, widest grid; the list scrolls, the header stays */
+        const g = tight.slice().sort((a, b) => (b.b - b.t) - (a.b - a.t))[0], W = Math.max(160, g.r - g.l), w = Math.min(W, g.maxW);
+        const cols = Math.max(1, Math.min(4, Math.floor(w / MINC))), h = Math.max(120, Math.min(o.measure(w, cols), B - T));
+        const P = put(g, w, h, cols, false); P.top = Math.max(T, Math.min(B - P.height, P.top)); return P;
+    }
     function entries(kind, env) {
         const has = id => !!(env && env.has && env.has(id));
         if (kind === 'settings') return ['me', 'look', 'account', 'menubar', 'more'].filter(id => id === 'more' ? MORE.some(has) : has(id));
@@ -130,7 +176,7 @@
         return [];
     }
 
-    const core = { BANDS, FILL, SHELL_TOKEN, KEEP_DAYS, MENU_KEY, MORE, TX, dayKey, readSleep, writeSleep, clearSleep, sleepView, fan, entries };
+    const core = { BANDS, FILL, SHELL_TOKEN, KEEP_DAYS, MENU_KEY, MORE, MORE_GROUPS, MORE_REMOVED, moreGroups, placePanel, TX, dayKey, readSleep, writeSleep, clearSleep, sleepView, fan, entries };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!root || !root.document) return;
 
@@ -210,6 +256,7 @@
         weather: { has: () => !!(root.LowiTopBar && fn(root.LowiTopBar, 'openWeather')), run: () => root.LowiTopBar.openWeather() },
         quest: { has: () => !!$('#f3Board'), run: () => H.classList.toggle('o8-quest'), toggle: () => H.classList.contains('o8-quest') }
     };
+    /* today, cook, theme and quest stay as routes (nothing deleted) but are out of More: see MORE_REMOVED */
     const env = { has: id => !!(ROUTES[id] && (() => { try { return ROUTES[id].has(); } catch (e) { return false; } })()) };
 
     /* ---- bloom ---- */
@@ -274,13 +321,17 @@
         H.classList.add('ss2-open'); L.setAttribute('data-kind', kind);
         b.setAttribute('aria-expanded', 'true');
         if (kind === 'more') {
-            /* the long list: a glass panel in the free band above or below Misty, never across her */
-            const below = vh - safe.b - 10 - (M.y + M.r + 12), above = (M.y - M.r - 12) - (safe.t + 10);
-            const useBelow = below >= Math.min(260, above);
-            const top = useBelow ? M.y + M.r + 12 : safe.t + 10, h = Math.max(140, useBelow ? below : above);
-            L.innerHTML = '<div class="ss2-panel" role="dialog" aria-label="' + T.moreTitle + '" style="top:' + top.toFixed(0) + 'px;max-height:' + h.toFixed(0) + 'px">' +
+            /* two short groups in a glass panel beside, below or above the ring: never on Misty, no scrolling, header always in view */
+            const G = moreGroups(env), grp = (label, ids) => ids.length ? '<section class="ss2-group" aria-label="' + label + '"><h3 class="ss2-gl">' + label + '</h3><div class="ss2-grid">' + ids.map(id => chipHTML('more', id)).join('') + '</div></section>' : '';
+            L.innerHTML = '<div class="ss2-panel" role="dialog" aria-label="' + T.moreTitle + '">' +
                 '<div class="ss2-head"><button type="button" class="ss2-back" data-ss2="back">' + T.back + '</button><b>' + T.moreTitle + '</b><button type="button" class="ss2-back" data-ss2="close" aria-label="' + T.close + '">\u00d7</button></div>' +
-                '<div class="ss2-grid">' + ids.map(id => chipHTML('more', id)).join('') + '</div></div>';
+                '<div class="ss2-body">' + grp(T.goTo, G.go) + grp(T.settingsGroup, G.set) + '</div></div>';
+            const pn = L.querySelector('.ss2-panel');
+            const rects = [...D.querySelectorAll('[data-orbit]')].map(e => e.getBoundingClientRect()).filter(r => r.width > 2).map(r => ({ l: r.left, t: r.top, r: r.right, b: r.bottom }));
+            const measure = (w, cols) => { pn.style.cssText = 'top:0;left:0;width:' + w + 'px;max-height:none;visibility:hidden;--ss2-cols:' + cols; return Math.ceil(pn.getBoundingClientRect().height); };
+            const P = placePanel({ vw, vh, safe, misty: { x: M.x, y: M.y, r: M.r }, bubble: { x: bx, y: by }, rects, measure });
+            pn.style.cssText = 'left:' + P.left + 'px;top:' + P.top + 'px;width:' + P.width + 'px;' + (P.fit ? '' : 'height:' + P.height + 'px;') + '--ss2-cols:' + P.cols;
+            pn.setAttribute('data-side', P.side); pn.setAttribute('data-fit', String(P.fit));
         } else {
             const avoid = [...D.querySelectorAll('[data-orbit]')].filter(e => e !== b).map(e => e.getBoundingClientRect()).filter(r => r.width > 2)
                 .map(r => ({ x: r.left + r.width / 2, y: r.top + r.height / 2, r: Math.max(r.width, r.height) / 2 }));

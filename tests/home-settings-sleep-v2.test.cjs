@@ -114,7 +114,8 @@ test('entries: only routes that exist are offered, More appears only with someth
     assert.deepStrictEqual(C.entries('more', { has: id => id === 'care' || id === 'community' }), ['community', 'care']);
     assert.deepStrictEqual(C.entries('sleep', {}), ['under6', '6to7', '7plus']);
     assert.deepStrictEqual(C.entries('sleep', { logged: true }), ['under6', '6to7', '7plus', 'clear']);
-    assert.ok(C.MORE.includes('today') && C.MORE.includes('community') && C.MORE.includes('care'), 'history, Community and Care stay reachable');
+    assert.ok(C.MORE.includes('community') && C.MORE.includes('care') && C.MORE.includes('map'), 'Community, Care board and World map stay reachable');
+    assert.ok(!C.MORE.includes('today'), 'Today was dropped from Home (Emmanuel, Oct 18 2026): see everything-else-trim.test.cjs');
 });
 
 test('menu bar contract matches the shell: lowi.home.menubar 1|0 and window lowi:home-menubar', () => {

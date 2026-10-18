@@ -339,3 +339,11 @@ The user explicitly requested deploying the recovered Home implementation withou
 **Decision:** Scan and Settings swap slots. `home-orbit-v2.js` ORDER is now, clockwise from the top: Settings (-90), Water, Move, Scan (45), joystick (90), Sleep, Gap, Fuel. Nothing else moves: same `fit()`, one diameter, one radius, exact 45 degree steps, joystick at the bottom. Scan still opens the real scanner; the Settings bloom (home-settings-sleep-v2 `fan()`) now opens from the top slot, outward and away from Misty.
 
 **Consequences:** Checks: `tests/home-orbit-v2.test.cjs` (order and slots), `tests/home-orbit-v2-live.cjs` (live ring geometry incl. iPad 820x1180, Scan at 45 degrees opens the scanner, Settings straight up and its bloom on screen and clear of Misty), `tests/home-settings-sleep-v2.test.cjs` (fan from the top slot).
+
+## 2026-10-18 Fuel bloom: Shop, Cook and Log meal
+
+**Context:** Emmanuel: "only Shop and Cook, plus a meal log button you can actually see"; Swap is removed for good. The Fuel bloom showed Today's step, Snack, Swap and Cook, and meal logging was only behind a hold.
+
+**Decision:** `home-blooms-v2.js` Fuel blooms exactly three orbs: Shop (the "What can I buy here?" panel, `LowiStorePicks.open`), Cook (the Cook tab, `LowiHost.go('shelf')`) and Log meal (the meal log sheet, `LowiSpirit.meal`). Today's step and Swap left Fuel; Craving SOS itself stays in the app. Holding Fuel still opens the meal log as a shortcut. The right-side Cook panel and the craving title/tiles are separate, later changes.
+
+**Consequences:** Checks: `tests/ui-fuel-navigation.test.cjs`, `tests/ui-fuel-live.cjs`, `tests/home-blooms-v2.test.cjs` and `tests/home-blooms-v2-live.cjs` (their old Today's step/Snack/Swap assertions were replaced by Shop/Cook/Log meal assertions, none deleted or skipped).

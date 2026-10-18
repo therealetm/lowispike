@@ -63,7 +63,7 @@ const PROBE = () => {
     const sp = document.getElementById('spBubble'), m = sp && sp.getBoundingClientRect();
     const mistyHit = m && m.width > 2 ? Math.max(0, Math.min(r.right, m.right) - Math.max(r.left, m.left)) * Math.max(0, Math.min(r.bottom, m.bottom) - Math.max(r.top, m.top)) / (m.width * m.height) : 0;
     const ct = document.elementFromPoint(r.left + r.width / 2, r.top + Math.min(r.height / 2, 60));
-    const h = p.querySelector('.fs-title, .f2-t, .sp-pick h2, .r2-shb > h2, .stp-title, h2');
+    const h = p.querySelector('.fs-title, .f2-t, .sp-pick h2, .r2-shb > h2, .stp-title, .stp-head h3, h2');
     const text = p.innerText;
     const emoji = (text.match(/\p{Extended_Pictographic}/gu) || []).filter(c => !/[©®™↕↔›‹]/.test(c));
     return {
@@ -73,9 +73,9 @@ const PROBE = () => {
         empty: Math.round(r.bottom - maxB), scrolls: p.scrollHeight > p.clientHeight + 2, sideways: p.scrollWidth > p.clientWidth + 2,
         closers, mistyHit: +mistyHit.toFixed(3), onTop: !!(ct && p.contains(ct)),
         xpPills: [...p.querySelectorAll('.f2-xpp, .xp-pill')].filter(vis).length, xpLines: [...p.querySelectorAll('.fs-xp')].filter(vis).length,
-        today: /back to Today|Back to Today/.test(text), ja: /(^|\s)JA(\s|$)/.test(text), emoji: emoji.join(''),
+        later: [...p.querySelectorAll('.f2-later')].filter(vis).map(b => b.textContent.trim()), today: /back to Today|Back to Today/.test(text), ja: /(^|\s)JA(\s|$)/.test(text), emoji: emoji.join(''),
         tiles: [...p.querySelectorAll('.fs-tile')].map(t => { const q = t.getBoundingClientRect(); return vis(t) && q.left >= r.left - 1 && q.right <= r.right + 1 && q.top >= r.top - 1 && q.bottom <= r.bottom + 1; }),
-        step: p.getAttribute('data-step') || '', card: (p.querySelector('.fs-card') || {}).innerText || '', text: text.replace(/\s+/g, ' ').slice(0, 260)
+        step: p.getAttribute('data-step') || '', card: ((p.querySelector('.fs-card') || {}).textContent || '').replace(/\s+/g, ' ').trim(), text: text.replace(/\s+/g, ' ').slice(0, 260)
     };
 };
 
@@ -105,6 +105,13 @@ const PROBE = () => {
             const build = await page.evaluate(() => fetch('version.json?t=' + Date.now()).then(r => r.json()).then(j => j.build).catch(() => '?'));
             log.push(P + 'build ' + build);
             const closeAll = async () => {
+                /* close the way the app does first (its own close / LowiR2.close), so no sheet manager is left thinking a sheet is open */
+                await page.evaluate(() => {
+                    try { window.LowiHomeBloomsV2.close(); } catch (e) { }
+                    document.querySelectorAll('.r2-ov:not(.off)').forEach(o => { try { window.LowiR2.close(o); } catch (e) { } });
+                    const x = document.querySelector('#sos.open [data-act="closesos"], .stp-ov [data-stp="close"]'); if (x) x.click();
+                });
+                await sleep(900);
                 await page.evaluate(() => {
                     try { window.LowiHomeBloomsV2.close(); } catch (e) { }
                     document.querySelectorAll('.r3-ov,.r3m-ov,.stp-ov,.r2-ov,.bt-ov,#g1Tour,.ob-ov,.lw-ov').forEach(e => e.remove());
@@ -162,7 +169,7 @@ const PROBE = () => {
             const closeByX = async k => {
                 const n = await page.evaluate(() => { const b = [...document.querySelectorAll('.fs-panel .pf-x, .fs-panel .fs-x')].find(b => b.getBoundingClientRect().width > 2); if (!b) return 0; b.click(); return 1; });
                 const after = await settle(false);
-                ok(n === 1 && (after.none || !after.fs), P + k + ': the close control closes it');
+                ok(n === 1 && (after.none || !after.fs), P + k + ': the close control closes it' + (after.none ? '' : ' (still open: ' + after.cls + ')'));
                 ok(!(await page.evaluate(() => document.documentElement.classList.contains('fs-open'))), P + k + ': the Home X comes back after closing');
             };
 
@@ -207,12 +214,25 @@ const PROBE = () => {
             s = await settle(); check('What did you eat?', s); await shot('5-what-did-you-eat');
             if (!SHOOT) {
                 ok(s.xpLines === 1, P + 'What did you eat? shows XP once (' + s.xpLines + ')');
-                ok(/Not now/.test(s.text), P + '"Not now" instead of "Skip for now · back to Today"');
+                ok(s.later.includes('Not now'), P + JSON.stringify(s.later) + '"Not now" instead of "Skip for now · back to Today"');
                 await closeByX('What did you eat?');
             }
             /* Shop: Low-Spike Finds (was Snack / What can I buy here?) */
-            await bloom('snack'); s = await settle(); check('Low-Spike Finds', s); await shot('6-snack');
-            if (!SHOOT) await closeByX('Low-Spike Finds');
+            /* it keeps its own look in this release (the shared style needs its bottom close moved first): check it opens from
+               Shop with the new header, plainly, and its own close shuts it */
+            await bloom('snack'); s = await settle(); await shot('6-shop');
+            if (!SHOOT) {
+                log.push('     ' + P + 'Shop: ' + JSON.stringify({ rect: s.rect, title: s.title, closers: s.closers }));
+                ok(!s.none && /stp-card/.test(s.cls || ''), P + 'Shop opens the shop panel (' + (s.cls || 'none') + ')');
+                ok(s.title === 'Low-Spike Finds', P + 'the shop panel header reads Low-Spike Finds (' + s.title + ')');
+                ok(!s.none && s.onTop && s.rect[0] >= -1 && s.rect[0] + s.rect[2] <= s.vw + 1 && s.rect[1] + s.rect[3] <= s.vh + 1, P + 'Shop panel on top and on screen ' + JSON.stringify(s.rect));
+                ok(!s.emoji, P + 'Shop: no emoji (' + s.emoji + ')');
+                const lbl = await page.evaluate(() => { try { window.LowiHomeBloomsV2.close(); window.LowiHomeBloomsV2.open('fuel'); } catch (e) { } const b = document.querySelector('#hb2Bloom [data-id="snack"]'); return b ? b.textContent.replace(/\s+/g, ' ').trim() : ''; });
+                ok(/^Shop\b/.test(lbl) && !/Snack/.test(lbl), P + 'the Fuel bloom option reads Shop (' + lbl + ')');
+                await page.evaluate(() => { try { window.LowiHomeBloomsV2.close(); } catch (e) { } const x = document.querySelector('.stp-ov [data-stp="close"]'); if (x) x.click(); });
+                await sleep(1200);
+                ok(!(await page.evaluate(() => !!document.querySelector('.stp-ov .stp-card'))), P + 'Shop: its close shuts it');
+            }
             ok(new Set(titleSizes.filter(Boolean)).size === 1, P + 'one title size on every Fuel screen ' + JSON.stringify(titleSizes));
             ok(errs.length === 0, P + 'no page errors ' + errs.slice(0, 3).join(' / '));
             log.push('     ' + P + 'blocked non-GET/other-host requests: ' + blocked);

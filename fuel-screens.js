@@ -24,7 +24,8 @@
         if (!el || !el.classList) return '';
         if (el.id === 'sos') return 'swap';
         if (el.id === 'sheet') return el.querySelector && el.querySelector('#f2Sheet') ? 'eat' : '';
-        if (el.classList.contains('stp-card')) return 'snack';
+        /* Shop (store-picks .stp-card) keeps its own look for now: its bottom close and its paged list need their own small
+           change in store-picks.js/.css (second release). Do not tag it here until that ships. */
         if (el.classList.contains('r2-sh') && el.querySelector) {
             if (el.querySelector('.sp-pick')) return 'pick';
             if (el.querySelector('.sp-quick-log')) return 'log';

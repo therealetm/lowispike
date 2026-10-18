@@ -18,11 +18,13 @@ const { dockSpot } = require('../misty-bloom.js');
 const openSOS = html.slice(html.indexOf('function openSOS(c)'), html.indexOf('let sosT; function sosTimer()'));
 const SOSsrc = html.slice(html.indexOf('const SOS = {'), html.indexOf('};', html.indexOf('const SOS = {')) + 2);
 
-test('the Fuel screens are loaded once, after everything else, and precached', () => {
+test('the Fuel screens are loaded once, right after the Home blooms (cook-shop + sym-home keep the pinned tail), and precached', () => {
     assert.strictEqual((html.match(/<link[^>]+href="fuel-screens\.css/g) || []).length, 1);
     assert.strictEqual((html.match(/<script src="fuel-screens\.js/g) || []).length, 1);
-    const tail = html.slice(html.lastIndexOf('<script src='));
-    assert.ok(/fuel-screens\.js/.test(tail), 'fuel-screens.js is the last script');
+    const at = k => html.indexOf(k);
+    assert.ok(at('<script src="home-blooms-v2.js') < at('id="fsCss"') && at('id="fsCss"') < at('<script src="fuel-screens.js'), 'after the Home blooms, css before js');
+    assert.ok(at('<script src="fuel-screens.js') < at('id="gnCss"') && at('<script src="fuel-screens.js') < at('id="cshCss"'), 'before the glass-nav / cook-shop / sym-home tail that other tests pin');
+    assert.ok(at('<script src="fuel-screens.js') > at('<script src="store-picks.js'), 'after the screens it styles');
     assert.ok(sw.includes('"fuel-screens.js"') && sw.includes('"fuel-screens.css"'));
 });
 
@@ -34,7 +36,7 @@ test('each Fuel screen is recognised, other sheets are not', () => {
     assert.strictEqual(core.kindOf(el({ cls: ['r2-sh'], has: ['.sp-pick'] })), 'pick');
     assert.strictEqual(core.kindOf(el({ cls: ['r2-sh'], has: ['.sp-quick-log'] })), 'log');
     assert.strictEqual(core.kindOf(el({ cls: ['r2-sh'] })), '', 'Settings, Move and other R2 sheets keep their own look');
-    assert.strictEqual(core.kindOf(el({ cls: ['stp-card'] })), 'snack');
+    assert.strictEqual(core.kindOf(el({ cls: ['stp-card'] })), '', 'Shop (Low-Spike Finds) keeps its own look until its close moves (second release)');
     assert.strictEqual(core.kindOf(null), '');
 });
 

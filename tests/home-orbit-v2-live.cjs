@@ -150,7 +150,8 @@ function geometry(r) {
                 await page.screenshot({ path: `${OUT}/${TAG}-${v}-settings.png` });
                 await ss2press('more'); await sleep(700);
                 act.more = await ss2ids();
-                for (const id of ['today', 'map', 'community', 'cook']) if (!act.more.includes(id)) P.push('settings > more missing ' + id);
+                for (const id of ['map', 'community']) if (!act.more.includes(id)) P.push('settings > more missing ' + id);
+                for (const id of ['today', 'cook']) if (act.more.includes(id)) P.push('settings > more should no longer list ' + id + ' (trimmed Oct 18 2026)');
                 await page.keyboard.press('Escape'); await sleep(400);
                 await page.evaluate(() => document.querySelector('[data-orbit="settings"]').click()); await sleep(700);
                 if (!(await ss2press('menubar'))) P.push('settings menu bar switch not found');

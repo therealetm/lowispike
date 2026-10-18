@@ -86,7 +86,7 @@ test('reduced motion: still frame, no loop, no ripples; CSS calms down too', () 
 
 test('accessible: decoration is hidden, the next marker is read out, text keeps its contrast', () => {
   assert.match(src, /cv\.setAttribute\('aria-hidden', 'true'\)/);
-  assert.match(src, /mk\.setAttribute\('aria-hidden', 'true'\)/);
+  assert.doesNotMatch(src, /className = 'fb-marks'|<i class="fb-tick|<b class="fb-lab/, 'no tick layer drawn inside the glass (removed Oct 18)');
   assert.match(src, /Nächste Marke/);
   assert.match(src, /Siguiente marca/);
   assert.match(css, /#spFast\.fb-on \.sp-fast-copy \{[^}]*z-index: 4;[^}]*text-shadow/);

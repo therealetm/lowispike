@@ -11,8 +11,7 @@
    - Hunt power-ups: the hunt game publishes window.LowiMistyPower.read() -> {level, xp, next, boost, label} and the window event
      'lowi:misty-power' (COORDINATOR.md "SHARED API: Misty power"). energy() already adds boost (capped .2), the scale shows it
      as its own lighter segment plus the hunt level.
-   - Where it lives (design rule: no new controls): a thin energy ring on Misty's own bubble rim with ticks at the tier lines,
-     her tier word on her name tag, and the full scale as a card in Misty's long-press card and in the sun sheet on Today.
+   - Where it lives (design rule: no new controls): her % on her name tag (the thin ring on her bubble rim went on Oct 18), and the full scale as a card in Misty's long-press card and in the sun sheet on Today.
    - Kind wording, game world only, no health claims. No per-frame loop and no timer: it repaints on app events only. */
 (function () {
     'use strict';
@@ -169,7 +168,7 @@
     const name = () => { try { const t = W.LowiHerbTamagotchi, c = t && t.current && t.current(); return c ? String(t.name(c.p, c.m) || 'Misty') : 'Misty'; } catch (e) { return 'Misty'; } };
     const state = () => { try { return W.LowiVitalsBridge.state() || {}; } catch (e) { return {}; } };
     function waterToday(now) { try { const f = JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}') || {}; return +((f.water || {})[dayKey(now)]) || 0; } catch (e) { return 0; } }
-    /* quick = only where she is now (for the ring); the full read also simulates the way back (for the card) */
+    /* quick = only where she is now (for the name tag); the full read also simulates the way back (for the card) */
     function read(quick) {
         const S = W.LowiSun; if (!S || !S.energy || !S.ENERGY) return null;
         const s = state(), now = Date.now(), pw = power(W);
@@ -181,28 +180,21 @@
     }
     function html() { const p = read(); return p ? cardHTML(p, p.power, { lang: lang(), name: name(), E: W.LowiSun.ENERGY }) : ''; }
 
-    /* the ring on Misty's bubble rim + her tier word on the name tag (inside her bubble: nothing else moves) */
-    const R = 47.6, C = 2 * Math.PI * R;
-    let ring = null, lastSig = '';
+    /* her tier word + % on the name tag (inside her bubble: nothing else moves).
+       Oct 18 (E-man, iPad screenshot: "straight lines ... the old design is still inside of the new design"): the thin energy ring
+       with its two tier ticks is gone. Her bubble is the 3D living glass now (its membrane turns reddish when she is weak), so the
+       ring was an old arc drawn inside it and the tick at "full of energy" showed as a straight line on her left. The reading itself
+       stays: "Misty Moon \u00b7 55%" on the name tag and the whole scale in her long-press card. */
+    let lastSig = '', lastBub = null;
     function paint() {
         const bub = D.getElementById('spBubble');
         if (!bub) return;
         const p = read(true); if (!p) return;
-        const E = W.LowiSun.ENERGY, l = lang(), v = Math.max(0, Math.min(1, p.value)), b = Math.min(v, p.boost || 0);
-        if (!ring || ring.parentNode !== bub) {
-            ring = D.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            ring.setAttribute('class', 'ms-ring'); ring.setAttribute('viewBox', '0 0 100 100'); ring.setAttribute('aria-hidden', 'true');
-            const tick = f => { const a = (f * 360 - 90) * Math.PI / 180, x1 = 50 + 45.4 * Math.cos(a), y1 = 50 + 45.4 * Math.sin(a), x2 = 50 + 49.8 * Math.cos(a), y2 = 50 + 49.8 * Math.sin(a); return '<line class="ms-tick" x1="' + x1.toFixed(2) + '" y1="' + y1.toFixed(2) + '" x2="' + x2.toFixed(2) + '" y2="' + y2.toFixed(2) + '"/>'; };
-            ring.innerHTML = '<circle class="ms-rt" cx="50" cy="50" r="' + R + '"/><circle class="ms-rb" cx="50" cy="50" r="' + R + '" transform="rotate(-90 50 50)"/><circle class="ms-rf" cx="50" cy="50" r="' + R + '" transform="rotate(-90 50 50)"/>' + tick(E.travel) + tick(E.strong);
-            bub.appendChild(ring); lastSig = '';
-        }
+        const l = lang(), v = Math.max(0, Math.min(1, p.value)), b = Math.min(v, p.boost || 0);
+        if (bub !== lastBub) { lastBub = bub; lastSig = ''; }
         const sig = [p.tier, v.toFixed(3), b.toFixed(3), l, name(), (p.power && [p.power.level, p.power.xp].join()) || ''].join('|');
         if (sig === lastSig) return;
         lastSig = sig;
-        ring.setAttribute('data-ms-tier', p.tier);
-        const f = ring.querySelector('.ms-rf'), bb = ring.querySelector('.ms-rb');
-        f.setAttribute('stroke-dasharray', ((v - b) * C).toFixed(2) + ' ' + C.toFixed(2));
-        bb.setAttribute('stroke-dasharray', (v * C).toFixed(2) + ' ' + C.toFixed(2));
         /* her name tag gets the reading: "Clover Leaf · 20%" (non-breaking, so it never splits off her name) */
         bub.style.setProperty('--ms-tag', '"\u00a0\u00b7\u00a0' + pct(v) + '"');
         bub.setAttribute('data-ms-tier', p.tier);
@@ -214,11 +206,11 @@
     const schedule = () => { if (soon) return; soon = setTimeout(() => { soon = 0; try { paint(); } catch (e) { } }, 120); };
     ['lowi:reward', 'lowi:state', 'lowi:care', 'lowi:lang', 'lowi:fast', 'lowi:water', 'lowi:meal', 'lowi:meal-logged', 'lowi:world-mood', 'lowi:misty-power', 'storage', 'focus'].forEach(n => { W.addEventListener(n, schedule); if (n.indexOf('lowi:') === 0) D.addEventListener(n, schedule); });
     D.addEventListener('visibilitychange', () => { if (!D.hidden) schedule(); });
-    /* a rebuilt Home (after Community etc.) gets its ring back: one cheap check per rebuild, no polling */
+    /* a rebuilt Home (after Community etc.) gets its name tag reading back: one cheap check per rebuild, no polling */
     function boot() {
         schedule();
         const tab = D.getElementById('tab-home');
-        if (tab && W.MutationObserver) new MutationObserver(() => { if (!ring || !ring.isConnected) schedule(); }).observe(tab, { childList: true, subtree: true });
+        if (tab && W.MutationObserver) new MutationObserver(() => { const bub = D.getElementById('spBubble'); if (bub && (bub !== lastBub || !bub.style.getPropertyValue('--ms-tag'))) schedule(); }).observe(tab, { childList: true, subtree: true });
     }
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
     W.LowiMistyScale = Object.assign({}, pure, { read, html, paint });

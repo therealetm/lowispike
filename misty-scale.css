@@ -1,20 +1,8 @@
-/* LOWiSPIKE Misty's energy scale (Oct 17, 2026). Lives inside existing pieces only: a thin ring on Misty's own bubble rim,
-   her tier word on her name tag, and a card in her long-press card / the sun sheet. No new buttons, nothing that moves layout. */
+/* LOWiSPIKE Misty's energy scale (Oct 17, 2026). Lives inside existing pieces only:
+   her tier word and %  on her name tag, and a card in her long-press card / the sun sheet. No new buttons, nothing that moves layout. */
 
-/* ring: absolutely inside the bubble box, never takes space, never takes a tap */
-#spBubble > .ms-ring { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; overflow: visible; }
-.ms-ring circle { fill: none; stroke-linecap: round; vector-effect: non-scaling-stroke; }
-.ms-ring .ms-rt { stroke: rgba(190, 228, 255, .16); stroke-width: 3; }
-.ms-ring .ms-rf, .ms-ring .ms-rb { stroke-width: 3.5; transition: stroke-dasharray .9s cubic-bezier(.2, .8, .2, 1); }
-.ms-ring .ms-rb { stroke: rgba(255, 236, 160, .95); }
-.ms-ring .ms-tick { stroke: rgba(235, 247, 255, .75); stroke-width: 1.6; vector-effect: non-scaling-stroke; stroke-linecap: round; }
-.ms-ring[data-ms-tier="weak"] .ms-rf { stroke: #ff8a8a; }
-.ms-ring[data-ms-tier="tired"] .ms-rf { stroke: #ffc27a; }
-.ms-ring[data-ms-tier="ok"] .ms-rf { stroke: #7fd8ff; }
-.ms-ring[data-ms-tier="thriving"] .ms-rf { stroke: #8ff0c4; }
-/* hide while she isn't in her bubble (pad flight, map, adventure trip) */
-html.wh-padfly #spBubble > .ms-ring, html.wh-mapview #spBubble > .ms-ring, #spHome[data-misty-out] #spBubble > .ms-ring { opacity: 0; }
-@media (prefers-reduced-motion: reduce) { .ms-ring .ms-rf, .ms-ring .ms-rb { transition: none; } }
+/* Oct 18 (E-man, iPad: "the old design is still inside of the new design"): the thin energy ring and its two tier ticks are gone.
+   Misty's bubble is the 3D living glass now; her reading stays on her name tag below and in her card. */
 
 /* her tier word right after her name, same tag, same font */
 #spBubble .sp-bubble-name::after { content: var(--ms-tag, ""); white-space: nowrap; font-weight: 700; opacity: .82; }

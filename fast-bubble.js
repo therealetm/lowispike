@@ -1,7 +1,7 @@
 /* ===== Water bubble fasting timer (Oct 14, 2026) =====
    Turns the Home fasting hero (#spFast, painted by spirit.js paintFast) into a liquid bubble:
-   a canvas of real-feeling water at the fill level paintFast already sets (--sp-fill), the body-stage
-   markers (LowiFast.stages) as ticks inside the glass, and gentle water movement when you touch it.
+   a canvas of real-feeling water at the fill level paintFast already sets (--sp-fill), the next body-stage
+   marker (LowiFast.stages) for screen readers, and gentle water movement when you touch it (stage ticks removed Oct 18).
    Read-only on purpose: it never writes lowi_fast_v1 or any health data, never starts/stops a fast and
    never changes the bubble's text. Tap still opens the fasting sheet; a drag only plays with the water.
    Reduced motion: one calm still frame, no loop, no ripples. Re-attaches when Home is rebuilt. */
@@ -119,16 +119,12 @@
         const cv = D.createElement('canvas');
         cv.className = 'fb-cv';
         cv.setAttribute('aria-hidden', 'true');
-        const mk = D.createElement('span');
-        mk.className = 'fb-marks';
-        mk.setAttribute('aria-hidden', 'true');
         const sr = D.createElement('span');
         sr.className = 'fb-sr';
         el.insertBefore(cv, el.firstChild);
-        el.appendChild(mk);
         el.appendChild(sr);
         el.classList.add('fb-on');
-        B = { el, cv, mk, sr, ctx: cv.getContext('2d'), s: surface(32), W: 0, H: 0, dpr: 1, lv: -1, target: MIN_LEVEL, done: false, running: false,
+        B = { el, cv, sr, ctx: cv.getContext('2d'), s: surface(32), W: 0, H: 0, dpr: 1, lv: -1, target: MIN_LEVEL, done: false, running: false,
             t: 0, last: 0, raf: 0, idle: 0, key: '', sync: 0, drops: [], bub: [], ptr: null, dragged: false, visible: true, io: null, ro: null, lastPoke: 0 };
         if (!B.ctx) { detach(); return; }
         bind(B);
@@ -143,7 +139,7 @@
         clearTimeout(B.idle);
         try { B.io && B.io.disconnect(); } catch (e) {}
         try { B.ro && B.ro.disconnect(); } catch (e) {}
-        try { B.cv.remove(); B.mk.remove(); B.sr.remove(); B.el.classList.remove('fb-on', 'fb-touch'); } catch (e) {}
+        try { B.cv.remove(); B.sr.remove(); B.el.classList.remove('fb-on', 'fb-touch'); } catch (e) {}
         B = null;
     }
 
@@ -175,39 +171,12 @@
         paintMarks(b, m);
     }
 
-    /* marker ticks on the right inner rim, labels only where they leave the bubble's text alone */
+    /* the next body-stage marker, for screen readers (and the fasting sheet has the full list).
+       Oct 18 (E-man, iPad screenshot: "some of the bubbles there are straight lines and the old design is still inside of the new
+       design"): the stage ticks and hour labels on the right inner rim are gone. They were short white dashes from the flat design,
+       drawn inside the 3D living glass. The fast itself still shows as the water level and the "10h 53min of 16h" text. */
     function paintMarks(b, m) {
-        const W = b.W, H = b.H;
-        if (!W || !H) return;
         const c = COPY[lang()];
-        const list = m.start ? marks(m.stages, m.goal, m.el) : [];
-        const box = b.el.getBoundingClientRect(), bl = b.el.clientLeft || 0, bt = b.el.clientTop || 0;
-        const copy = b.el.querySelector('.sp-fast-copy');
-        const txt = copy ? [...copy.children].map(n => n.getBoundingClientRect()).filter(r => r.width && r.height)
-            .map(r => ({ x: r.left - box.left - bl, y: r.top - box.top - bt, w: r.width, h: r.height })) : [];
-        const R = Math.min(W, H) / 2, cx = W / 2, cy = H / 2;
-        let html = '';
-        list.forEach(mk => {
-            const y = H * (1 - mk.y);
-            const dy = y - cy;
-            if (Math.abs(dy) > R - 6) return;
-            const half = Math.sqrt(Math.max(0, R * R - dy * dy));
-            const tick = mk.next ? 9 : 6;
-            const lab = mk.h + 'h', lw = lab.length * 5.6 + 2;
-            /* right rim first; the left rim when the text is in the way there */
-            const sides = [{ x: cx + half - 3 - tick, lx: cx + half - 3 - tick - 3 - lw, al: 'right' }, { x: cx - half + 3, lx: cx - half + 3 + tick + 3, al: 'left' }];
-            let pick = null;
-            for (const sd of sides) {
-                const lr = { x: sd.lx, y: y - 6, w: lw, h: 12 };
-                const inside = Math.hypot(Math.max(Math.abs(lr.x - cx), Math.abs(lr.x + lw - cx)), Math.max(Math.abs(lr.y - cy), Math.abs(lr.y + 12 - cy))) < R - 1;
-                if (inside && !overlaps(lr, txt, 2)) { pick = sd; break; }
-            }
-            const sd = pick || sides[0];
-            const cls = (mk.past ? ' past' : '') + (mk.next ? ' next' : '');
-            html += '<i class="fb-tick' + cls + '" style="left:' + sd.x.toFixed(1) + 'px;top:' + y.toFixed(1) + 'px;width:' + tick + 'px"></i>' +
-                (pick ? '<b class="fb-lab' + cls + '" style="left:' + sd.lx.toFixed(1) + 'px;top:' + (y - 6).toFixed(1) + 'px;width:' + lw.toFixed(1) + 'px;text-align:' + sd.al + '">' + lab + '</b>' : '');
-        });
-        if (b.mk.innerHTML !== html) b.mk.innerHTML = html;
         let sr = '';
         if (m.start) {
             const nx = nextStage(m.stages, m.goal, m.el);
@@ -276,10 +245,10 @@
 
     /* ---------- drawing ---------- */
     const PAL = {
-        dark: { top: [118, 210, 238], bot: [52, 92, 188], a1: 0.76, a2: 0.92, back: 0.3, line: 0.75 },
-        light: { top: [150, 222, 245], bot: [92, 146, 222], a1: 0.62, a2: 0.74, back: 0.26, line: 0.9 },
-        doneDark: { top: [158, 240, 214], bot: [56, 150, 170], a1: 0.8, a2: 0.92, back: 0.34, line: 0.8 },
-        doneLight: { top: [170, 238, 214], bot: [80, 170, 176], a1: 0.64, a2: 0.78, back: 0.28, line: 0.9 }
+        dark: { top: [118, 210, 238], bot: [52, 92, 188], a1: 0.76, a2: 0.92, back: 0.3 },
+        light: { top: [150, 222, 245], bot: [92, 146, 222], a1: 0.62, a2: 0.74, back: 0.26 },
+        doneDark: { top: [158, 240, 214], bot: [56, 150, 170], a1: 0.8, a2: 0.92, back: 0.34 },
+        doneLight: { top: [170, 238, 214], bot: [80, 170, 176], a1: 0.64, a2: 0.78, back: 0.28 }
     };
     const rgba = (c, a) => 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')';
 
@@ -366,12 +335,11 @@
             }
         }
         ctx.restore();
-        /* the surface line: the meniscus that sells it as water */
+        /* the surface: a soft glow along the water's edge */
         ctx.beginPath();
         for (let i = 0; i < n; i++) { const x = i * stepX; if (i) ctx.lineTo(x, ys[i]); else ctx.moveTo(x, ys[i]); }
-        ctx.lineWidth = 1.4;
-        ctx.strokeStyle = 'rgba(255,255,255,' + P.line + ')';
-        ctx.stroke();
+        /* Oct 18: soft glow only. The hard 1.4px white line was the flat design's meniscus: on calm water it read as a straight
+           line across the new glass bubble (E-man's iPad screenshot). The water keeps its colour edge, waves and touch ripples. */
         ctx.lineWidth = 3.5;
         ctx.strokeStyle = 'rgba(255,255,255,0.12)';
         ctx.stroke();
@@ -435,7 +403,7 @@
         if (mq) { const f = () => { if (!B) return; cancelAnimationFrame(B.raf); B.raf = 0; B.drops = []; B.bub = []; B.s = surface(32); readState(B, true); B.lv = B.target; draw(B, 0); kick(); }; try { mq.addEventListener('change', f); } catch (e) { try { mq.addListener(f); } catch (x) {} } }
     }
     root.LowiFastBubble = {
-        attach, state: () => B ? { on: true, level: +B.lv.toFixed(3), target: +B.target.toFixed(3), running: B.running, done: B.done, marks: B.mk.querySelectorAll('.fb-tick').length, labels: B.mk.querySelectorAll('.fb-lab').length, sr: B.sr.textContent, looping: !!B.raf, energy: +energy(B.s).toFixed(4) } : { on: false },
+        attach, state: () => B ? { on: true, level: +B.lv.toFixed(3), target: +B.target.toFixed(3), running: B.running, done: B.done, marks: B.el.querySelectorAll('.fb-tick').length, labels: B.el.querySelectorAll('.fb-lab').length, sr: B.sr.textContent, looping: !!B.raf, energy: +energy(B.s).toFixed(4) } : { on: false },
         poke: (x, a) => { if (B && !reduced()) { poke(B.s, x == null ? 0.5 : x, a == null ? 1 : a); kick(); } }
     };
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();

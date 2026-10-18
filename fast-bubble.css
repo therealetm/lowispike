@@ -40,53 +40,6 @@ html.spirit-app #spHome #spFast.fb-on .sp-fast-water {
     font-variant-numeric: tabular-nums
 }
 
-#spFast .fb-marks {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 2
-}
-
-#spFast .fb-tick {
-    position: absolute;
-    height: 1.5px;
-    margin-top: -.75px;
-    border-radius: 2px;
-    background: rgba(255, 255, 255, .42);
-    box-shadow: 0 0 2px rgba(4, 10, 28, .35)
-}
-
-#spFast .fb-tick.past {
-    background: rgba(255, 255, 255, .9)
-}
-
-#spFast .fb-tick.next {
-    height: 2px;
-    margin-top: -1px;
-    background: #fff;
-    box-shadow: 0 0 6px rgba(190, 245, 255, .95), 0 0 2px rgba(4, 10, 28, .4);
-    animation: fbNext 2.6s ease-in-out infinite
-}
-
-#spFast .fb-lab {
-    position: absolute;
-    height: 12px;
-    font: 650 9px/12px system-ui, -apple-system, "SF Pro Text", sans-serif;
-    letter-spacing: .1px;
-    text-align: right;
-    white-space: nowrap;
-    color: rgba(255, 255, 255, .62);
-    text-shadow: 0 1px 2px rgba(4, 10, 28, .7)
-}
-
-#spFast .fb-lab.past {
-    color: rgba(255, 255, 255, .92)
-}
-
-#spFast .fb-lab.next {
-    color: #fff
-}
-
 #spFast .fb-sr {
     position: absolute;
     width: 1px;
@@ -104,11 +57,6 @@ html.spirit-app #spHome #spFast.fb-on .sp-fast-water {
     animation: fbGlow 3.2s ease-in-out infinite
 }
 
-@keyframes fbNext {
-    0%, 100% { opacity: .75 }
-    50% { opacity: 1 }
-}
-
 @keyframes fbGlow {
     0%, 100% { box-shadow: 0 0 18px rgba(150, 240, 214, .32), inset 0 3px 6px #ffffffaa }
     50% { box-shadow: 0 0 30px rgba(150, 240, 214, .55), inset 0 3px 6px #ffffffaa }
@@ -119,25 +67,9 @@ html[data-ui=light] #spFast.fb-on .sp-fast-copy {
     text-shadow: 0 0 2px rgba(255, 255, 255, .95), 0 0 8px rgba(255, 255, 255, .8)
 }
 
-html[data-ui=light] #spFast .fb-tick {
-    background: rgba(17, 35, 63, .35);
-    box-shadow: none
-}
 
-html[data-ui=light] #spFast .fb-tick.past,
-html[data-ui=light] #spFast .fb-tick.next {
-    background: #11233f
-}
 
-html[data-ui=light] #spFast .fb-lab {
-    color: rgba(17, 35, 63, .6);
-    text-shadow: 0 0 3px rgba(255, 255, 255, .95)
-}
 
-html[data-ui=light] #spFast .fb-lab.past,
-html[data-ui=light] #spFast .fb-lab.next {
-    color: #11233f
-}
 
 @media (prefers-contrast: more) {
     #spFast.fb-on .sp-fast-copy {
@@ -146,15 +78,11 @@ html[data-ui=light] #spFast .fb-lab.next {
     html[data-ui=light] #spFast.fb-on .sp-fast-copy {
         text-shadow: 0 0 3px #fff, 0 0 3px #fff
     }
-    #spFast .fb-tick, #spFast .fb-lab {
-        opacity: 1
-    }
 }
 
 @media (prefers-reduced-motion: reduce) {
     #spFast.fb-on,
-    #spFast.fb-on.done,
-    #spFast .fb-tick.next {
+    #spFast.fb-on.done {
         animation: none !important;
         transition: none !important
     }

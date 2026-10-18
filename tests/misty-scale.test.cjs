@@ -108,7 +108,8 @@ test('design + speed: no new buttons, no timers or frame loops, loaded and cache
     assert.ok(!/requestAnimationFrame|setInterval/.test(src), 'no per-frame loop or polling');
     assert.ok(!/createElement\(['"]button/.test(src) && !/<button/.test(src), 'no new buttons');
     const css = fs.readFileSync(path.join(root, 'misty-scale.css'), 'utf8');
-    assert.ok(/#spBubble > \.ms-ring \{ position: absolute; inset: 0;[^}]*pointer-events: none/.test(css), 'ring sits inside the bubble and takes no taps');
+    assert.ok(!/\.ms-ring/.test(css) && !/ms-ring/.test(src), 'no ring drawn over Misty\'s 3D glass (removed Oct 18, tests/today-bubbles-no-legacy.test.cjs)');
+    assert.ok(/#spBubble \.sp-bubble-name::after \{ content: var\(--ms-tag/.test(css), 'her % stays on the name tag');
     const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
     assert.ok(html.includes('misty-scale.js?v=') && html.includes('misty-scale.css?v='));
     const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');

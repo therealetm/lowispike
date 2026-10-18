@@ -1,0 +1,47 @@
+/* home-blooms-v2.css (Oct 18, 2026): the bloom orbs for Fuel / Water / Move / Gap on the eight-bubble Home.
+   Same membrane glass as the Move bloom (move-bubble.css .wm-orb), so every bubble opens the same way.
+   The scrim stays light so Misty is always visible; the orbs never sit on her (layout in home-blooms-v2.js). */
+.hb2-bloom { position: fixed; inset: 0; z-index: 9000; pointer-events: none; }
+.hb2-bloom .hb2-scrim { position: absolute; inset: 0; border: 0; padding: 0; margin: 0; background: rgba(4, 10, 30, .28); opacity: 0; transition: opacity .25s ease;
+    pointer-events: auto; cursor: default; -webkit-tap-highlight-color: transparent; }
+.hb2-bloom.on .hb2-scrim { opacity: 1; }
+/* while it folds away, taps already belong to whatever the chosen orb opened */
+.hb2-bloom.off, .hb2-bloom.off * { pointer-events: none !important; }
+.hb2-orb { position: absolute; width: var(--hb2-orb, 72px); height: var(--hb2-orb, 72px); margin: calc(var(--hb2-orb, 72px) / -2) 0 0 calc(var(--hb2-orb, 72px) / -2);
+    border-radius: 50%; padding: 0; color: #fff; pointer-events: auto; overflow: hidden; isolation: isolate; display: flex; align-items: center; justify-content: center;
+    font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent;
+    border: 1px solid rgba(143, 231, 255, .55);
+    background: radial-gradient(circle at 34% 26%, rgba(255, 255, 255, .34), rgba(255, 255, 255, 0) 22%),
+                radial-gradient(circle at 50% 50%, rgba(20, 60, 120, .5) 0%, rgba(30, 70, 140, .5) 54%, rgba(155, 135, 210, .45) 80%, rgba(143, 231, 255, .6) 97%);
+    box-shadow: 0 0 22px 2px rgba(143, 231, 255, .3), inset 0 0 12px rgba(155, 135, 210, .45);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    transform: translate(var(--hb2-dx, 0), var(--hb2-dy, 0)) scale(.2); opacity: 0;
+    transition: transform .42s cubic-bezier(.3, 1.6, .5, 1) calc(var(--hb2-i, 0) * 40ms), opacity .2s ease calc(var(--hb2-i, 0) * 40ms); }
+.hb2-bloom.on .hb2-orb { transform: none; opacity: 1; }
+.hb2-bloom.off .hb2-orb { transform: translate(var(--hb2-dx, 0), var(--hb2-dy, 0)) scale(.2); opacity: 0; transition-duration: .3s, .25s; transition-delay: 0s; }
+.hb2-bloom.off .hb2-orb.hb2-chosen { transform: translate(var(--hb2-dx, 0), var(--hb2-dy, 0)) scale(.55); transition: transform .32s cubic-bezier(.5, 0, .8, .4), opacity .32s ease-in; }
+.hb2-orb:active { scale: .9; transition: scale .1s; }
+.hb2-orb:focus-visible { outline: 2px solid #9fffe0; outline-offset: 3px; }
+.hb2-orb[disabled] { cursor: default; filter: saturate(.4); }
+.hb2-bloom.on .hb2-orb[disabled] { opacity: .55; }
+/* liquid level inside an orb (water cups so far, Move size): fills from the bottom inside the orb's own edge */
+.hb2-fill { position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--hb2-q, 0) * 100%); z-index: -1; border-radius: 0 0 50% 50% / 0 0 18% 18%;
+    background: linear-gradient(180deg, rgba(150, 255, 210, .45), rgba(30, 190, 150, .7)); transition: height .35s ease; }
+.hb2-water .hb2-fill { background: linear-gradient(180deg, rgba(150, 220, 255, .5), rgba(40, 130, 230, .75)); }
+.hb2-tx { display: flex; flex-direction: column; align-items: center; line-height: 1.1; text-shadow: 0 1px 6px rgba(0, 30, 80, .7); padding: 0 6px; text-align: center; }
+.hb2-ic { width: 18px; height: 18px; margin-bottom: 1px; flex: none; filter: drop-shadow(0 1px 3px rgba(0, 30, 80, .6)); }
+/* long labels ("Today's step", "Gerade gegessen") wrap to two short lines instead of being cut by the round edge */
+.hb2-tx b { font-size: 12.5px; line-height: 1.05; font-weight: 700; max-width: calc(var(--hb2-orb, 72px) - 16px); overflow-wrap: anywhere; text-wrap: balance; }
+.hb2-tx small { font-size: 9px; opacity: .92; margin-top: 2px; max-width: calc(var(--hb2-orb, 72px) - 12px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hb2-note { position: absolute; margin: 0; padding: 7px 12px; border-radius: 14px; font-size: 12px; line-height: 1.3; text-align: center; color: #eaf6ff; max-width: 220px;
+    transform: translate(-50%, -50%);
+    background: rgba(10, 24, 60, .62); border: 1px solid rgba(143, 231, 255, .3); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    opacity: 0; transition: opacity .3s ease .15s; pointer-events: none; }
+.hb2-bloom.on .hb2-note { opacity: 1; }
+.hb2-bloom.off .hb2-note { opacity: 0; transition-delay: 0s; }
+/* the bubble the bloom came from stays lit */
+.hb2-src { filter: brightness(1.15); }
+@media (prefers-reduced-motion: reduce) {
+    .hb2-orb, .hb2-bloom .hb2-scrim, .hb2-note, .hb2-fill { transition: none !important; }
+    .hb2-orb { transform: none; }
+}

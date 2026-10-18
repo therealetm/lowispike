@@ -97,17 +97,36 @@ function geometry(r) {
             /* Water: a tap adds a cup (local) */
             const w0 = await page.evaluate(() => (document.querySelector('[data-orbit="water"]').innerText || '').replace(/\s+/g, ' '));
             const wtxt = () => page.evaluate(() => (document.querySelector('[data-orbit="water"]').innerText || '').replace(/\s+/g, ' '));
+            /* with the Fuel/Water/Move/Gap blooms loaded (home-blooms-v2), a tap only opens the Water bloom and its +1 cup adds the cup */
+            const hb2 = await page.evaluate(() => !!window.LowiHomeBloomsV2);
+            const hb2Open = () => page.evaluate(() => { const o = document.getElementById('hb2Bloom'); return o && !o.classList.contains('off') ? o.dataset.kind : null; });
             await tapAt(...centre('water')); await sleep(1500);
+            if (hb2) {
+              /* the first touch after load is sometimes swallowed by the page's own first-gesture handling: one retry, recorded */
+              act.waterTaps = 1; if (!(await hb2Open())) { await tapAt(...centre('water')); await sleep(1500); act.waterTaps = 2; }
+              act.waterBloom = await hb2Open();
+              if (act.waterBloom !== 'water') P.push('water tap did not open the Water bloom: ' + act.waterBloom);
+              if ((await wtxt()) !== w0) P.push('tapping the Water bubble logged a cup by itself: ' + w0 + ' -> ' + (await wtxt()));
+              await page.evaluate(() => { const b = document.querySelector('#hb2Bloom [data-id="add"]'); if (b) b.click(); }); await sleep(1200);
+              act.water = [w0, await wtxt()];
+              await page.evaluate(() => window.LowiHomeBloomsV2.close()); await sleep(500);
+              if (act.water[0] === act.water[1]) P.push('Water bloom +1 cup changed nothing: ' + act.water.join(' -> '));
+            } else {
             act.water = [w0, await wtxt()]; act.waterTaps = 1;
             /* the first touch after load is sometimes swallowed by the page's own first-gesture handling: one retry, recorded */
             if (act.water[0] === act.water[1]) { await tapAt(...centre('water')); await sleep(1500); act.water[1] = await wtxt(); act.waterTaps = 2; }
             if (act.water[0] === act.water[1]) P.push('water tap changed nothing: ' + act.water.join(' -> '));
+            }
             /* Move: the bloom opens */
             const before = await page.evaluate(() => document.querySelectorAll('button').length);
             await tapAt(...centre('move')); await sleep(900);
+            if (hb2) { const k = await hb2Open(); await page.evaluate(k => { window.__o8hb2move = k; }, k); if (k !== 'move') P.push('Move tap did not open the Move bloom: ' + k); }
             act.move = await page.evaluate(b => ({ open: !!document.querySelector('.wh-move[aria-expanded="true"], .mb-dock.on, .mb-dock.open, .wm-float, .mb-open, html.mb-open') || document.documentElement.className.match(/\b(mb|wm)-[a-z-]*open\b/), buttonsAdded: document.querySelectorAll('button').length - b, html: document.documentElement.className.split(' ').filter(c => /bloom|mb-|wm-/.test(c)).join(' ') }), before);
-            await page.keyboard.press('Escape'); await page.mouse.click(r.misty.x, Math.min(r.vh - 4, r.misty.y + r.layout.R + r.layout.d)); await sleep(700);
+            /* with home-blooms-v2, Escape closes the Move bloom; a click on the empty world below the ring would toggle the clean view and hide the ring */
+            if (hb2) { await page.keyboard.press('Escape'); await sleep(700); if (await hb2Open()) P.push('Escape did not close the Move bloom'); }
+            else { await page.keyboard.press('Escape'); await page.mouse.click(r.misty.x, Math.min(r.vh - 4, r.misty.y + r.layout.R + r.layout.d)); await sleep(700); }
             await page.evaluate(() => { try { window.LowiMoveBubble && LowiMoveBubble.close && LowiMoveBubble.close(); } catch (e) { } });
+            if (hb2) { act.moveBloom = await page.evaluate(() => window.__o8hb2move || null); await page.evaluate(() => window.LowiHomeBloomsV2.close()); await sleep(500); }
             /* Settings + Sleep: once home-settings-sleep-v2 owns a control (data-o8-adapter), its bloom is checked just as strictly as the fallback */
             act.adapter = await page.evaluate(() => ({ settings: document.querySelector('[data-orbit="settings"]').dataset.o8Adapter || '', sleep: document.querySelector('[data-orbit="sleep"]').dataset.o8Adapter || '' }));
             const ss2ids = () => page.evaluate(() => [...document.querySelectorAll('#ss2Bloom [data-ss2]')].map(b => b.getAttribute('data-ss2')));
@@ -162,6 +181,7 @@ function geometry(r) {
             await page.evaluate(() => { window.__o8scan = []; const L = window.LowiLiving; if (L && L.scan && !L.__o8) { const s = L.scan.bind(L); L.scan = m => { window.__o8scan.push(m); return s(m); }; L.__o8 = 1; } });
             await page.evaluate(() => { try { window.goTab('home'); } catch (e) { } }); await sleep(1500);
             const sc = await page.evaluate(() => { const e = document.querySelector('[data-orbit="scan"]'); const r = e.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; });
+            act.scanTop = await page.evaluate(([x, y]) => { const t = document.elementFromPoint(x, y); return t ? (t.closest('[data-orbit]') ? 'orbit:' + t.closest('[data-orbit]').dataset.orbit : (t.id || '') + '.' + String(t.className).slice(0, 50)) : 'nothing'; }, sc);
             await tapAt(sc[0], sc[1]); await sleep(1800);
             act.scan = await page.evaluate(() => ({ calls: window.__o8scan || [], camera: !!(document.documentElement.classList.contains('b3-camon') && document.getElementById('b3Cam')), scanWorld: document.documentElement.classList.contains('rw-scanworld') }));
             await page.screenshot({ path: `${OUT}/${TAG}-${v}-scan.png` });

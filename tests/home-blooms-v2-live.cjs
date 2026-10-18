@@ -195,13 +195,11 @@ const fastStore = () => JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}')
             /* hold Fuel = meal log sheet (photo / scan / recent), the deeper food route */
             const fb = await page.locator('[data-orbit="fuel"]').first().boundingBox();
             if (fb) {
-                if (await covered('[data-orbit="fuel"]')) {
-                    log.push('     ' + P + 'fuel bubble under another element (old Home layout), holding via element pointer events');
-                    await page.evaluate(() => { const e = document.querySelector('[data-orbit="fuel"]'), r = e.getBoundingClientRect(), o = { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2, pointerId: 1 }; e.dispatchEvent(new PointerEvent('pointerdown', o)); setTimeout(() => { e.dispatchEvent(new PointerEvent('pointerup', o)); e.dispatchEvent(new MouseEvent('click', o)); }, 800); });
-                    await sleep(1700);
-                } else { await page.mouse.move(fb.x + fb.width / 2, fb.y + fb.height / 2); await page.mouse.down(); await sleep(800); await page.mouse.up(); await sleep(800); }
+                /* hold via pointer events on the element itself: the old Home's bubbles drift, so a fixed mouse point can slide off it */
+                await page.evaluate(() => { const e = document.querySelector('[data-orbit="fuel"]'), r = e.getBoundingClientRect(), o = { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2, pointerId: 1 }; e.dispatchEvent(new PointerEvent('pointerdown', o)); setTimeout(() => { e.dispatchEvent(new PointerEvent('pointerup', o)); e.dispatchEvent(new MouseEvent('click', o)); }, 800); });
+                await sleep(1700);
                 const held = await page.evaluate(() => ({ bloom: !!document.getElementById('hb2Bloom'), sheet: [...document.querySelectorAll('.r3-ov,.r2-ov,.bt-ov,[role="dialog"]')].some(e => e.offsetWidth && /meal|Mahlzeit|photo|Foto|scan/i.test(e.innerText)) }));
-                ok(!held.bloom && held.sheet, P + 'hold Fuel opens the meal log (history/photo stays reachable)');
+                ok(!held.bloom && held.sheet, P + 'hold Fuel opens the meal log (history/photo stays reachable) ' + JSON.stringify(held));
                 await page.screenshot({ path: path.join(OUT, name + '-fuel-hold.png') });
             }
             ok(errs.filter(e => /hb2|HomeBlooms|home-blooms/i.test(e)).length === 0, P + 'no page errors from the module ' + errs.slice(0, 3).join(' / '));

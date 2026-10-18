@@ -74,7 +74,8 @@ test('wiring: no button of its own (started from the controller), other companio
     assert.ok(/MF\.screen \? MF\.screen\(\)/.test(fs.readFileSync(path.join(ROOT, 'region-pals.js'), 'utf8')));
     assert.ok(/classList\.contains\('lw-adv'\)\) return null;/.test(fs.readFileSync(path.join(ROOT, 'arrival-cards.js'), 'utf8')));
     const mf = fs.readFileSync(path.join(ROOT, 'misty-flight.js'), 'utf8');
-    assert.ok(/S\.advWarp \? 1 - 0\.55 \* q : 1 - q/.test(mf), 'during the warp she stays at least 45% visible');
+    /* Oct 18 (E-man: "when it move we don't see its eyes bc it's transparent"): tightened from "at least 45% visible" to fully solid */
+    assert.ok(/S\.advWarp \? 1 : 1 - q/.test(mf), 'during the warp she stays fully visible (never see-through, so her face stays readable)');
     assert.ok(/W\.LowiAdventure\.stop\('steer'\)/.test(mf), 'steering the controller ends the adventure');
     assert.ok(/W\.LowiAdventure\.visited\(S\.flew, S\.advIn/.test(mf), 'finds come only from completed watched visits');
     assert.ok(/prefers-reduced-motion/.test(adv), 'reduced motion: no adventure');

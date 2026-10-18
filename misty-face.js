@@ -40,7 +40,11 @@
         PEEK_GAP: [6, 11],      /* ... and between looks after that */
         PEEK_HOLD: [1.1, 1.7],  /* how long the look back lasts (s) */
         PEEK_MIX: 0.7,          /* the look: this far from her path toward you (1 = straight at you) */
-        PEEK_AWAY: -0.2         /* her path counts as "away from you" below this (dot of path and toward-you) */
+        PEEK_AWAY: -0.2,        /* her path counts as "away from you" below this (dot of path and toward-you) */
+        /* Oct 18 (E-man, iPad: "when it move we don't see its eyes bc it's transparent"): her cell body is glass (the cytoplasm is
+           12-16% opaque), so out in a dark world her dark eyes had nothing behind them. Out of Home her body art gets a solid inner
+           layer under the glass, and her face is drawn solid on top of it whenever any of it points at you. */
+        BACK: { fill: '#e4f6fa', a: 0.9 }  /* the inner layer: a pale glass tone, 90% opaque (any world: eyes contrast > 7:1) */
     };
     /* ---------- tiny vector helpers (plain arrays, so node can test them) ---------- */
     const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
@@ -168,16 +172,31 @@
         const rx = rm ? +rm[1] : 40, ry = rym ? +rym[1] : rx + 9;
         const C = K.CROP, px = K.FACE_PX;
         const face = '<svg xmlns="http://www.w3.org/2000/svg" width="' + C.w * px + '" height="' + C.h * px + '" viewBox="' + C.x + ' ' + C.y + ' ' + C.w + ' ' + C.h + '">' + inner + '</svg>';
-        return { body: svg.slice(0, start) + svg.slice(end), face, fx, fy, rx, ry };
+        let body = svg.slice(0, start) + svg.slice(end);
+        const bb = bm && /<ellipse\b[^>]*\bclass="[^"]*\blh-body\b[^"]*"[^>]*>/.exec(body);
+        if (bb) body = body.slice(0, bb.index) + backLayer(bb[0]) + body.slice(bb.index);
+        return { body, face, fx, fy, rx, ry, back: !!bb };
     }
-    const core = { K, dot, cross, unit, rot, turnToward, faceFrame, faceVis, pickDir, glance, movingNow, slowFlight, splitArt, sideAxis, peekDir, peekStep };
+    /* the solid inner layer: the same ellipse as her glass body (same place, size, transform), filled, drawn just under it */
+    function backLayer(el) {
+        const a = n => { const r = new RegExp('\\b' + n + '="([^"]*)"').exec(el); return r ? ' ' + n + '="' + r[1] + '"' : ''; };
+        return '<ellipse class="mf-body-back"' + a('cx') + a('cy') + a('rx') + a('ry') + a('transform') + ' fill="' + K.BACK.fill + '" fill-opacity="' + K.BACK.a + '"/>';
+    }
+    /* how her face is drawn this frame, from d (her look toward you) and presence (her body's own fade in / out: 1 once she is
+       there). op: solid (= presence) whenever any of her face points at you, 0 when you only see her back; never a ghost in between.
+       k: past her edge the face shrinks into the rim (instead of fading), so turning away still has no pop. */
+    function faceLook(d, presence) {
+        const v = faceVis(d), p = clamp(presence == null ? 1 : +presence || 0, 0, 1);
+        return v > 0 ? { op: p, k: v } : { op: 0, k: 0 };
+    }
+    const core = { K, dot, cross, unit, rot, turnToward, faceFrame, faceVis, faceLook, pickDir, glance, movingNow, slowFlight, splitArt, sideAxis, peekDir, peekStep };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!D || !W || W.LowiMistyFace) return;
 
     /* ---------- live ---------- */
     const now = () => (W.performance ? performance.now() : Date.now());
     const S = { L: null, vel: [0, 0, 0], pp: null, moving: false, hdT: -1e9, base: null, look: null, lookT: 0, at: 'base',
-        art: null, src: null, pending: false, body: null, faceTex: null, mesh: null, wand: null, a: null, drawnT: -1e9, lastT: 0, why: 'hold', pk: { away: 0, wait: 0, left: 0 } };
+        art: null, src: null, pending: false, backA: null, body: null, faceTex: null, mesh: null, wand: null, a: null, drawnT: -1e9, lastT: 0, why: 'hold', pk: { away: 0, wait: 0, left: 0 } };
     function srcMap() { const WH = W.LowiWorldHome, m = WH && WH.state && WH.state.misty; return m && m.material ? m.material.map : null; }
     /* her art changed (mood, stage, look): split it and make the two textures, once */
     function ensureArt(THREE) {
@@ -206,6 +225,8 @@
         load(sp.body, 260, 310, (x, img) => {
             if (art.aura) { const g = x.createRadialGradient(130, 150, 10, 130, 150, 128); g.addColorStop(0, art.aura + '55'); g.addColorStop(1, art.aura + '00'); x.fillStyle = g; x.fillRect(0, 0, 260, 310); }
             x.drawImage(img, 0, 0, 260, 310);
+            /* how solid her body is right behind her face (read once per art change, never per frame) */
+            try { S.backA = +(x.getImageData(Math.round(sp.fx), Math.round(sp.fy), 1, 1).data[3] / 255).toFixed(3); } catch (e) { S.backA = null; }
         }, 'body');
         const C = K.CROP;
         load(sp.face, C.w * K.FACE_PX, C.h * K.FACE_PX, (x, img) => x.drawImage(img, 0, 0, C.w * K.FACE_PX, C.h * K.FACE_PX), 'face');
@@ -238,11 +259,12 @@
             if (ray && r2) { cf = ray; cr = r2; cu = cross(ray, r2); }
         }
         const F = faceFrame(S.L, cr, cu, cf, w.material.rotation || 0);
-        const vis = F.vis * (w.material.opacity || 0);
-        m.material.opacity = vis;
-        if (w.material.color && m.material.color) m.material.color.copy(w.material.color);
+        /* solid whenever any of her face points at you (only her own fade in / out lowers it), gone when you see her back */
+        const look = faceLook(F.d, w.material.opacity || 0), op = look.op < 0.01 ? 0 : look.op, k = look.k;
+        if (m.material.opacity !== op) m.material.opacity = op;
+        if (w.material.color && m.material.color && !m.material.color.equals(w.material.color)) m.material.color.copy(w.material.color);
         if (w.layers && m.layers.mask !== w.layers.mask) m.layers.mask = w.layers.mask;
-        if (vis < 0.01) { m.material.opacity = 0; return; }
+        if (op === 0) return;
         const u = Math.abs(w.scale.y) / 310, C = K.CROP;
         /* rolled screen right / up of the sprite */
         const c = Math.cos(w.material.rotation || 0), s = Math.sin(w.material.rotation || 0);
@@ -255,8 +277,8 @@
         p = add(p, add(scale(rp, F.sx * art.rx * u * K.FACE_K), scale(up, F.sy * art.ry * u * K.FACE_K)));
         /* the face box's own middle is a little below the face origin (art y down) */
         const mx = C.x + C.w / 2, my = C.y + C.h / 2;
-        p = add(p, add(scale(F.x, mx * u), scale(F.y, -my * u)));
-        const sw = C.w * u, sh = C.h * u, me = m.matrixWorld.elements;
+        p = add(p, add(scale(F.x, mx * u * k), scale(F.y, -my * u * k)));
+        const sw = C.w * u * k, sh = C.h * u * k, me = m.matrixWorld.elements;
         me[0] = F.x[0] * sw; me[1] = F.x[1] * sw; me[2] = F.x[2] * sw; me[3] = 0;
         me[4] = F.y[0] * sh; me[5] = F.y[1] * sh; me[6] = F.y[2] * sh; me[7] = 0;
         me[8] = F.z[0]; me[9] = F.z[1]; me[10] = F.z[2]; me[11] = 0;
@@ -332,7 +354,9 @@
         state: () => {
             const cb = camBasis(S.a), d = S.L && cb && cb.cf ? dot(S.L, cb.cf) : null;
             return { on: !!(S.mesh && S.mesh.visible && now() - S.drawnT < K.STALE_MS), why: S.why, moving: S.moving, glance: S.at,
-                towardYou: d == null ? null : +d.toFixed(2), faceSeen: d == null ? null : +faceVis(d).toFixed(2), art: !!S.art };
+                towardYou: d == null ? null : +d.toFixed(2), faceSeen: d == null ? null : +faceVis(d).toFixed(2), art: !!S.art,
+                faceOp: S.mesh ? +S.mesh.material.opacity.toFixed(3) : null, bodyOp: S.wand ? +S.wand.material.opacity.toFixed(3) : null,
+                back: !!(S.art && S.art.back), backA: S.backA };
         }
     };
 })();

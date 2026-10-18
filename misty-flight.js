@@ -720,7 +720,10 @@
         const lean = still ? 0 : clamp(-S.v.dot(V.rt) * 0.06, -0.3, 0.3);
         wand.material.rotation = (still ? 0 : Math.sin(S.t * 0.9) * 0.08) - (1 - k) * 0.18 + lean - (xp > 0 ? (S.exVx || 0) * 0.28 * xp : 0);
         if (wand.material.color) wand.material.color.setRGB(1, 0.78 + 0.22 * k, 0.78 + 0.22 * k);
-        wand.material.opacity = (0.55 + 0.43 * k) * clamp(alpha, 0, 1);
+        /* Oct 18 (E-man: "when it move we don't see its eyes bc it's transparent"): her energy no longer fades her body (a tired
+           Misty was 70% opaque, her face with it). Energy shows in her tint, droop and eyes; only her own fade in / out dims her. */
+        const op = clamp(alpha, 0, 1);
+        if (wand.material.opacity !== op) wand.material.opacity = op;
         wand.visible = wand.material.opacity > 0.01;
         /* misty-face (Oct 17, E-man: "Misty is basically just staring you down"): her round body turns in 3D, her face goes
            where she looks (along her path, her heading when you steer, glances when idle); you see her back when she flies away */
@@ -820,7 +823,7 @@
         const q = Math.min(1, S.warpT / 0.55);
         S.p.lerpVectors(S.warpFrom, S.warpTo, q * 0.8);
         S.hs = Math.max(1e-3, S.base * S.ks * (1 - 0.7 * q) / pxPerUnit(a, S.p));
-        place(ctx, k, ctx.reduced, S.advWarp ? 1 - 0.55 * q : 1 - q); /* adventure: she never vanishes, she stays readable */
+        place(ctx, k, ctx.reduced, S.advWarp ? 1 : 1 - q); /* adventure: she never vanishes or turns see-through, she just gets smaller */
         if (S.entered && !busy) { enterInside(ctx); return; }
         if (S.warpT > 9) end(ctx, 'warp-timeout');
     }

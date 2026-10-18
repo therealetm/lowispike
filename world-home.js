@@ -705,7 +705,8 @@
         if (st.misty && st.misty.material.map && wand.material.map !== st.misty.material.map && !(wand.userData.mfFaceT > performance.now() - 400)) { wand.material.map = st.misty.material.map; wand.material.needsUpdate = true; }
         if (!wand.material.map) ensureMisty3D3();
         const fade = (show || mf) && wand.material.map ? 1 : 0;
-        wand.material.opacity += ((fade ? 0.55 + 0.43 * k : 0) - wand.material.opacity) * Math.min(1, dt * 2.5);
+        wand.material.opacity += ((fade ? 1 : 0) - wand.material.opacity) * Math.min(1, dt * 2.5); /* Oct 18: energy no longer makes her see-through */
+        if (fade && wand.material.opacity > 0.995) wand.material.opacity = 1;
         wand.visible = wand.material.opacity > 0.01;
         /* sparkles keep falling even while she fades out */
         const pos = A.pts.geometry.attributes.position, v = A.pts.userData.v, life = A.pts.userData.life; let alive = 0;

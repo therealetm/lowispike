@@ -84,8 +84,24 @@ test("Misty's Home bubble: no drop shadow under her and no reflection ellipse un
     assert.ok(/html\.wh-home #spBubble \.tmg-plant \{ filter: drop-shadow\(0 6px 12px/.test(read('world-home.css')), 'world-home.css unchanged');
 });
 
+test('the liquid in a part-full bubble has no inner shade along the glass edge (it sat at the bottom: a dark band)', () => {
+    const L = require('../living-bubbles.js');
+    const scene = read('body-world-3d-scene.js');
+    const EDGE = scene.match(/const EDGE_AA = '([^']*)'/)[1].replace(/\\n/g, '\n');
+    const fs0 = L.fadeShader('uniform vec3 uIn;varying vec3 vN;varying vec3 vV;varying vec3 vP;' + EDGE + 'void main(){float nv=abs(dot(normalize(vN),normalize(vV)));float a=0.5*lwEdge(nv);gl_FragColor=vec4(vec3(1.0),clamp(a,0.0,0.95));\n#include <colorspace_fragment>\n}');
+    const src = L.liquidShader(fs0);
+    assert.ok(src, 'liquid shader builds');
+    const main = src.slice(src.indexOf('void main(){'));
+    /* the colour may not be pulled toward a darker tone by the facing term (1-nv): that is the shade where the glass curves away */
+    assert.ok(!/c\s*=\s*mix\(\s*c\s*,[^;]*1\.0\s*-\s*nv/.test(main), 'no rim darkening of the liquid colour: ' + (main.match(/c\s*=\s*mix\(\s*c\s*,[^;]*;/) || [''])[0]);
+    assert.ok(!/c\s*\*=\s*[^;]*nv/.test(main), 'no facing-based dimming either');
+    /* what stays: the light band under the surface, the colour from the fill, the glass's own edge softening */
+    assert.ok(main.includes('c+=vec3(0.2)*smoothstep(0.12,0.0,d)'), 'light band under the surface kept');
+    assert.ok(main.includes('vec3 c=mix(uBot,uTop,k)'), "the fill's own colours kept");
+    assert.ok(/lwEdge\(nv\)\s*\*\s*uO/.test(main), 'same edge as the glass');
+});
+
 test('everything is scoped to the ring Home: worlds, blooms and the old Home keep their own depth', () => {
     const added = O8.filter(r => /--wh-glass-sh|lh-reflection|tmg-plant|mp-knob/.test(r.sel + r.body));
     for (const r of added) for (const s of r.sel.split(',')) assert.ok(/^html\.o8\.wh-home/.test(s.trim()) || /^html\.o8\.wh-home\[data-theme="light"\]/.test(s.trim()), 'scoped: ' + s.trim());
 });
-

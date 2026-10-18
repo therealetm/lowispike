@@ -92,8 +92,9 @@
                 'float s=uLv+uTilt*x+uWave*(0.6*sin(x*2.6+uT*1.15+uPh)+0.4*sin(x*4.6-uT*1.7+uPh*1.7));' +
                 'float d=s-y;float w=lqW(y);float under=smoothstep(-w,w,d);if(under<=0.0)discard;' +
                 'float k=clamp((y+1.0)/max(0.1,min(s,1.0)+1.0),0.0,1.0);vec3 c=mix(uBot,uTop,k);float a=mix(uA2,uA1,k);' +
-                /* a band of light just under the surface, and deeper colour where the glass curves away */
-                'c+=vec3(0.2)*smoothstep(0.12,0.0,d)*step(s,1.05);c=mix(c,uBot*0.82,pow(1.0-nv,3.0)*0.3);' +
+                /* a band of light just under the surface. No deeper colour where the glass curves away: on a part-full bubble that read as a
+                   dark band along its lower edge (Emmanuel: "All bubbles have a shadow bottom. Remove that weird bottom.") */
+                'c+=vec3(0.2)*smoothstep(0.12,0.0,d)*step(s,1.05);' +
                 'gl_FragColor=vec4(c,clamp(a*under,0.0,0.95)*lwEdge(nv)*uO);' + cs + '}';
         },
         /* the liquid's colour from the bubble's own fill gradient (water blue, move green, fuel amber, sleep violet), a touch stronger

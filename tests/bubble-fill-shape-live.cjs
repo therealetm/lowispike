@@ -97,14 +97,15 @@ function measure() {
     /* side walls: in every row the liquid has (away from its surface and the glass's flat top/bottom), its edges sit on the glass edges */
     let wall = 0, rows = 0;
     const skip = Math.round(4 * sy);
-    /* rows fully under the surface: below the lowest point of the (tilted, rippling) surface across the middle of the glass */
-    let cl = w, cR = -1; for (let i = 0; i < w * h; i++) if (comp[i]) { cl = Math.min(cl, i % w); cR = Math.max(cR, i % w); }
-    let surfLow = liqTop; for (let x = Math.round(cl + (cR - cl) * 0.2); x <= Math.round(cl + (cR - cl) * 0.8); x++) { for (let y = 0; y < h; y++) if (liq[y * w + x]) { surfLow = Math.max(surfLow, y); break; } }
-    for (let y = Math.max(surfLow + skip, memTop + skip); y <= memBot - skip; y++) {
+    /* a row's liquid edge may stop short of the glass only where that is the (tilted, rippling) surface: the liquid does not go on
+       straight up there. Where it does go on up, the gap to the glass is a real gap between liquid and glass. */
+    const up = (x, y) => y >= 2 && liq[(y - 1) * w + x] && liq[(y - 2) * w + x];
+    for (let y = Math.max(liqTop + skip, memTop + skip); y <= memBot - skip; y++) {
       let ml = -1, mr = -1, ll = -1, lr = -1;
-      for (let x = 0; x < w; x++) { if (comp[y * w + x]) { if (ml < 0) ml = x; mr = x; } if (liq[y * w + x]) { if (ll < 0) ll = x; lr = x; } }
+      for (let x = 0; x < w; x++) { if (mAll[y * w + x] && near[y * w + x]) { if (ml < 0) ml = x; mr = x; } if (liq[y * w + x]) { if (ll < 0) ll = x; lr = x; } }
       if (ml < 0 || ll < 0) continue; rows++;
-      wall = Math.max(wall, Math.abs(ml - ll), Math.abs(mr - lr));
+      if (ml - ll > 0) wall = Math.max(wall, ml - ll); else if (ll - ml > tol && up(ll, y)) wall = Math.max(wall, ll - ml);
+      if (lr - mr > 0) wall = Math.max(wall, lr - mr); else if (mr - lr > tol && up(lr, y)) wall = Math.max(wall, mr - lr);
     }
     let fullIntent = false;
     if (src === 'dom') { if (domShown(fillEl)) fullIntent = fillEl.offsetHeight >= el.clientHeight - 0.5; else if (domShown(fbc)) { const st = window.LowiFastBubble && window.LowiFastBubble.state && window.LowiFastBubble.state(); fullIntent = !!(st && st.level >= 0.999); } }

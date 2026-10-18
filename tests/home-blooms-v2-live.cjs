@@ -7,7 +7,7 @@
    - Water +1 cup adds one cup, Undo takes one off, never below 0, water XP never above the cups
    - Gap: Ate earlier opens the when-did-you-eat sheet, I just ate moves the last-meal time to now
    - Move: Quick logs a move estimate
-   - Fuel: Today's step / Snack / Swap / Cook each open their existing screen; labels plain, no emoji
+   - Fuel: Today's step / Log meal / Shop / Swap / Cook each open their existing screen; labels plain, no emoji
    Usage: node tests/home-blooms-v2-live.cjs [--root DIR | --url https://therealetm.github.io/lowispike/] [--out DIR] [--view NAME].
    With --url (or when index.html already loads the module) it uses the page's own copy and the ring shell's data-orbit tags;
    on a live URL only GETs to that host pass, every non-GET and every other host (Supabase included) is aborted. Exit 0 = pass. */
@@ -180,7 +180,7 @@ const fastStore = () => JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}')
             checkGeo(g, 'fuel');
             await page.screenshot({ path: path.join(OUT, name + '-fuel.png') });
             const fuelTxt = g.orbs.map(o => o.text).join(' | ');
-            ok(g.orbs.map(o => o.id).join() === 'step,snack,swap,cook', P + "fuel orbs = Today's step, Shop, Swap, Cook (" + fuelTxt + ')');
+            ok(g.orbs.map(o => o.id).join() === 'step,log,snack,swap,cook', P + "fuel orbs = Today's step, Log meal, Shop, Swap, Cook (" + fuelTxt + ')');
             ok(!/\bAgain\b|\bPhoto\b/.test(fuelTxt), P + 'no Again / Photo labels');
             const fuelCase = async (id, check, what) => {
                 await closeAll();
@@ -193,18 +193,19 @@ const fastStore = () => JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}')
             };
             await fuelCase('swap', () => { const s = document.getElementById('sos'); return !!(s && s.classList.contains('open')); }, 'Swap opens Craving SOS');
             await fuelCase('snack', () => !!document.querySelector('.stp-ov'), 'Shop opens Low-Spike Finds');
+            await fuelCase('log', () => !!document.querySelector('.r2-ov:not(.off) .sp-quick-log'), 'Log meal opens the meal log (photo / scan / recent)');
             await fuelCase('step', () => !!document.querySelector('.sp-pick'), "Today's step opens Misty's pick (Cook it / Log this)");
             await fuelCase('cook', () => { const t = document.getElementById('tab-shelf'); return !!(t && t.classList.contains('active')); }, 'Cook opens the Cook tab');
             await page.evaluate(() => window.goTab && window.goTab('home')); await sleep(900);
             await closeAll();
-            /* hold Fuel = meal log sheet (photo / scan / recent), the deeper food route */
+            /* hold Fuel used to open the meal log; since Oct 18 evening Log meal is an orb and a hold is just a tap (opens the bloom) */
             const fb = await page.locator('[data-orbit="fuel"]').first().boundingBox();
             if (fb) {
                 /* hold via pointer events on the element itself: the old Home's bubbles drift, so a fixed mouse point can slide off it */
                 await page.evaluate(() => { const e = document.querySelector('[data-orbit="fuel"]'), r = e.getBoundingClientRect(), o = { bubbles: true, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2, pointerId: 1 }; e.dispatchEvent(new PointerEvent('pointerdown', o)); setTimeout(() => { e.dispatchEvent(new PointerEvent('pointerup', o)); e.dispatchEvent(new MouseEvent('click', o)); }, 800); });
                 await sleep(1700);
-                const held = await page.evaluate(() => ({ bloom: !!document.getElementById('hb2Bloom'), sheet: [...document.querySelectorAll('.r3-ov,.r2-ov,.bt-ov,[role="dialog"]')].some(e => e.offsetWidth && /meal|Mahlzeit|photo|Foto|scan/i.test(e.innerText)) }));
-                ok(!held.bloom && held.sheet, P + 'hold Fuel opens the meal log (history/photo stays reachable) ' + JSON.stringify(held));
+                const held = await page.evaluate(() => ({ bloom: !!document.getElementById('hb2Bloom'), sheet: [...document.querySelectorAll('.r3-ov,.r2-ov,.bt-ov,[role="dialog"]')].some(e => e.offsetWidth && !e.closest('#hb2Bloom') && /meal|Mahlzeit|photo|Foto|scan/i.test(e.innerText)) }));
+                ok(held.bloom && !held.sheet, P + 'holding Fuel no longer logs a meal: it opens the bloom, Log meal is the orb ' + JSON.stringify(held));
                 await page.screenshot({ path: path.join(OUT, name + '-fuel-hold.png') });
             }
             /* ---- ring integration: Sleep / Settings and these blooms never stay open together ---- */

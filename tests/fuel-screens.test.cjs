@@ -132,3 +132,34 @@ test('Fuel bloom says Shop (not Snack) and the shop panel is titled Low-Spike Fi
     assert.ok(/aria-label="' \+ esc\(T\('Low-Spike Finds', /.test(sp), 'the dialog is announced as Low-Spike Finds');
     assert.ok(!/<h3>' \+ esc\(T\('What can I buy here\?'/.test(sp), 'the old header is gone');
 });
+
+test('Fuel bloom shows Log meal as its own orb; holding Fuel no longer logs (E-man, Oct 18 evening)', () => {
+    const hb = read('home-blooms-v2.js');
+    const fuel = hb.slice(hb.indexOf("if (kind === 'fuel') {"), hb.indexOf("} else if (kind === 'water')"));
+    assert.ok(/A\.push\(\{ id: 'log', label: T\('Log meal', /.test(fuel), 'a visible Log meal orb');
+    assert.ok(/id: 'log'[^\n]*run: mealLog/.test(fuel), 'Log meal opens the existing meal log (LowiSpirit.meal)');
+    const ids = (fuel.match(/id: '(\w+)'/g) || []).map(s => s.slice(5, -1));
+    assert.deepStrictEqual([...new Set(ids)], ['step', 'log', 'snack', 'swap', 'cook'], "Today's step, Log meal, Shop, Swap, Cook");
+    const down = hb.slice(hb.indexOf('function onDown(e)'), hb.indexOf('function onMove(e)'));
+    assert.ok(!/mealLog\(\)/.test(down), 'no hold-to-log on Fuel');
+    assert.ok(/kind !== 'move'\) return;/.test(down), 'only Move keeps a hold (today\'s moves)');
+});
+
+test('five Fuel orbs (with Log meal) still fan cleanly: on screen, clear of Misty, not overlapping (phone ring + iPad ring)', () => {
+    const hbc = require('../home-blooms-v2.js');
+    const inside = (p, orb, vw, vh) => p.x - orb / 2 >= 0 && p.y - orb / 2 >= 0 && p.x + orb / 2 <= vw && p.y + orb / 2 <= vh;
+    const clearOf = (p, c, orb) => Math.hypot(p.x - c.x, p.y - c.y) >= c.r + orb / 2;
+    const apart = (pts, orb) => pts.every((p, i) => pts.every((q, j) => i >= j || Math.hypot(p.x - q.x, p.y - q.y) >= orb));
+    const phone = { vw: 390, vh: 844, m: { x: 195, y: 430, r: 85 }, b: { x: 52, y: 300, r: 38 }, orb: 72 };
+    const L = hbc.layout(phone.b, phone.m, 5, phone.orb, phone.vw, phone.vh);
+    assert.strictEqual(L.pts.length, 5);
+    L.pts.forEach(p => { assert.ok(inside(p, phone.orb, phone.vw, phone.vh), 'phone inside'); assert.ok(clearOf(p, phone.m, phone.orb), 'phone clear of Misty'); });
+    assert.ok(apart(L.pts, phone.orb), 'phone orbs apart');
+    const m = { x: 590, y: 410, r: 120 };
+    for (let i = 0; i < 8; i++) {
+        const a = -Math.PI / 2 + i * Math.PI / 4, b = { x: 590 + Math.cos(a) * 260, y: 410 + Math.sin(a) * 260, r: 48 };
+        const Q = hbc.layout(b, m, 5, 84, 1180, 820);
+        Q.pts.forEach(p => { assert.ok(inside(p, 84, 1180, 820), 'iPad inside ' + i); assert.ok(clearOf(p, m, 84), 'iPad clear of Misty ' + i); });
+        assert.ok(apart(Q.pts, 84), 'iPad orbs apart ' + i);
+    }
+});

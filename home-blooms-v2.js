@@ -7,7 +7,7 @@
             Shop         -> the "Low-Spike Finds" panel (LowiStorePicks.open).
             Swap         -> Craving SOS (craving -> low-spike fix that keeps the taste / crunch), the app's existing data-act="sos".
             Cook         -> the Cook tab (LowiHost.go('shelf')).
-            Hold Fuel    -> the meal log sheet (LowiSpirit.meal: photo, barcode, recent meals), so history and photo logging stay.
+            Log meal     -> the meal log sheet (LowiSpirit.meal: photo, barcode, recent meals); was hold-Fuel until Oct 18 evening.
    - Water: +1 cup       -> LowiSpirit.water() (same as the old Water cell: one cup, XP through the existing per-day cap).
             Undo         -> takes ONE cup off today (never below 0, never another day) and, if today's water XP entries are now
                             more than today's cups, takes back the newest one (unaward), so add / undo loops net zero.
@@ -144,6 +144,7 @@
         undo: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',
         walk: '<circle cx="13" cy="4.5" r="1.8"/><path d="M11 21l2-6-2.5-2.5L12 8l3 3h3"/><path d="M10.5 12.5L8 15H5"/>',
         ate: '<path d="M7 3v8a2 2 0 0 0 2 2v8M7 3v5M11 3v8a2 2 0 0 1-2 2"/><path d="M17 3c-2 2-2.5 5-2.5 7.5H17V21"/>',
+        log: '<rect x="5" y="3.5" width="14" height="17" rx="2.2"/><path d="M9 8.5h6M9 12h6M9 15.5h3.5"/>',
         clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M4.5 4.5l2 2"/>'
     };
     const svg = k => '<svg class="hb2-ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' + (P[k] || '') + '</svg>';
@@ -196,7 +197,8 @@
         if (kind === 'fuel') {
             const pk = todaysPick();
             if (pk && fn(W.LowiSpirit, 'showPick')) A.push({ id: 'step', label: T("Today's step", 'Heute', 'Hoy'), sub: pickName(pk) || T('Misty\'s pick', 'Mistys Tipp', 'Idea de Misty'), icon: 'step', run: () => { const p = todaysPick() || pk; W.LowiSpirit.showPick(p.recipe, p.why); } });
-            else if (fn(W.LowiSpirit, 'meal')) A.push({ id: 'step', label: T("Today's step", 'Heute', 'Hoy'), sub: T('log a meal', 'Mahlzeit eintragen', 'anotar comida'), icon: 'step', run: mealLog });
+            /* Log meal is its own orb now (E-man, Oct 18 evening: "so we don't have to hold on the bubble for it to appear") */
+            if (fn(W.LowiSpirit, 'meal')) A.push({ id: 'log', label: T('Log meal', 'Eintragen', 'Anotar'), sub: T('photo, scan, recent', 'Foto, Scan, zuletzt', 'foto, escáner, recientes'), icon: 'log', run: mealLog });
             if (fn(W.LowiStorePicks, 'open')) A.push({ id: 'snack', label: T('Shop', 'Shop', 'Tienda'), sub: T('what can I buy?', 'was kann ich kaufen?', '¿qué compro?'), icon: 'snack', run: () => W.LowiStorePicks.open('home-bloom') });
             if (D.getElementById('sos')) A.push({ id: 'swap', label: T('Swap', 'Tauschen', 'Cambiar'), sub: T('craving fix', 'Heißhunger-Fix', 'antojo'), icon: 'swap', run: openSOS });
             if (fn(W.LowiHost, 'go')) A.push({ id: 'cook', label: T('Cook', 'Kochen', 'Cocinar'), sub: T('recipes', 'Rezepte', 'recetas'), icon: 'cook', run: () => W.LowiHost.go('shelf') });
@@ -337,11 +339,11 @@
         const el = bubbleOf(e.target);
         if (!el) return;
         const kind = el.getAttribute('data-orbit');
-        if (kind !== 'fuel' && kind !== 'move') return;
+        if (kind !== 'move') return; /* Fuel: no hold any more, Log meal is an orb */
         clearTimeout(st.hold && st.hold.t);
         st.hold = { el, x: e.clientX, y: e.clientY, t: setTimeout(() => {
             st.hold = null; st.swallow = Date.now() + 900; buzz(20); close(true);
-            if (kind === 'fuel') mealLog(); else if (fn(W.LowiMoveBubble, 'edit')) W.LowiMoveBubble.edit();
+            if (fn(W.LowiMoveBubble, 'edit')) W.LowiMoveBubble.edit();
         }, HOLD_MS) };
     }
     function onMove(e) { if (st.hold && Math.hypot(e.clientX - st.hold.x, e.clientY - st.hold.y) > 12) { clearTimeout(st.hold.t); st.hold = null; } }

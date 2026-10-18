@@ -169,7 +169,7 @@ const PROBE = () => {
             const closeByX = async k => {
                 const n = await page.evaluate(() => { const b = [...document.querySelectorAll('.fs-panel .pf-x, .fs-panel .fs-x')].find(b => b.getBoundingClientRect().width > 2); if (!b) return 0; b.click(); return 1; });
                 const after = await settle(false);
-                ok(n === 1 && (after.none || !after.fs), P + k + ': the close control closes it' + (after.none ? '' : ' (still open: ' + after.cls + ')'));
+                ok(n === 1 && (after.none || !after.fs), P + k + ': the close control closes it' + (after.none ? '' : ' (still open: ' + after.cls + '; r2 sheets: ' + JSON.stringify(await page.evaluate(() => [...document.querySelectorAll('.r2-ov')].map(o => o.className.slice(-20) + '/' + o.querySelector('.r2-sh').className.slice(-30)))) + ')'));
                 ok(!(await page.evaluate(() => document.documentElement.classList.contains('fs-open'))), P + k + ': the Home X comes back after closing');
             };
 
@@ -206,8 +206,8 @@ const PROBE = () => {
                 await closeAll();
                 await bloom('swap'); await settle(); await closeByX('Swap');
             }
-            /* Log a meal (hold Fuel) */
-            await closeAll(); await page.evaluate(() => window.LowiSpirit && LowiSpirit.meal());
+            /* Log a meal: the Log meal orb in the Fuel bloom (was hold-Fuel until Oct 18 evening) */
+            await bloom('log');
             s = await settle(); check('Log a meal', s); await shot('4-log-a-meal'); if (!SHOOT) await closeByX('Log a meal');
             /* What did you eat? (F2) */
             await closeAll(); await page.evaluate(() => window.LowiF2 && LowiF2.start({}));
@@ -220,15 +220,18 @@ const PROBE = () => {
             /* Shop: Low-Spike Finds (was Snack / What can I buy here?) */
             /* it keeps its own look in this release (the shared style needs its bottom close moved first): check it opens from
                Shop with the new header, plainly, and its own close shuts it */
-            await bloom('snack'); s = await settle(); await shot('6-shop');
+            await bloom('snack'); s = await settle();
+            /* first time, the panel asks which shop; pick the first chain like a person would, then the list shows its header */
+            if (s.title === 'Which shop?') { await page.locator('.stp-ov [data-stp-range]').first().click({ timeout: 8000 }); await sleep(900); s = await settle(); }
+            await shot('6-shop');
             if (!SHOOT) {
                 log.push('     ' + P + 'Shop: ' + JSON.stringify({ rect: s.rect, title: s.title, closers: s.closers }));
                 ok(!s.none && /stp-card/.test(s.cls || ''), P + 'Shop opens the shop panel (' + (s.cls || 'none') + ')');
                 ok(s.title === 'Low-Spike Finds', P + 'the shop panel header reads Low-Spike Finds (' + s.title + ')');
                 ok(!s.none && s.onTop && s.rect[0] >= -1 && s.rect[0] + s.rect[2] <= s.vw + 1 && s.rect[1] + s.rect[3] <= s.vh + 1, P + 'Shop panel on top and on screen ' + JSON.stringify(s.rect));
                 ok(!s.emoji, P + 'Shop: no emoji (' + s.emoji + ')');
-                const lbl = await page.evaluate(() => { try { window.LowiHomeBloomsV2.close(); window.LowiHomeBloomsV2.open('fuel'); } catch (e) { } const b = document.querySelector('#hb2Bloom [data-id="snack"]'); return b ? b.textContent.replace(/\s+/g, ' ').trim() : ''; });
-                ok(/^Shop\b/.test(lbl) && !/Snack/.test(lbl), P + 'the Fuel bloom option reads Shop (' + lbl + ')');
+                const lbl = await page.evaluate(() => { try { window.LowiHomeBloomsV2.close(); window.LowiHomeBloomsV2.open('fuel'); } catch (e) { } const b = document.querySelector('#hb2Bloom [data-id="snack"] b'); return b ? b.textContent.trim() : ''; });
+                ok(lbl === 'Shop', P + 'the Fuel bloom option reads Shop (' + lbl + ')');
                 await page.evaluate(() => { try { window.LowiHomeBloomsV2.close(); } catch (e) { } const x = document.querySelector('.stp-ov [data-stp="close"]'); if (x) x.click(); });
                 await sleep(1200);
                 ok(!(await page.evaluate(() => !!document.querySelector('.stp-ov .stp-card'))), P + 'Shop: its close shuts it');

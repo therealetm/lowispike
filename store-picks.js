@@ -85,7 +85,6 @@
     }
 
     /* ---------------- the list ---------------- */
-    const rowsShown = 40;
     function reason(it) {
         const r = it.r, u = r.unit;
         const parts = [T('GL', 'GL', 'CG') + ' ' + dec(r.gl) + ' ' + T('per', 'pro', 'por') + ' ' + r.serve + ' ' + u, dec(r.carbs) + ' g ' + T('carbs', 'KH', 'carbohidratos')];
@@ -219,21 +218,27 @@
         const name = meta[['en', 'de', 'es'][li()]];
         const total = g.pass.length + g.fail.length + g.unrated;
         if (!total) return '';
-        const lim = open[g.id] ? 1e9 : rowsShown;
+        const pg = C.page(g.pass.length, open[g.id]);
         let body;
         if (g.pass.length) {
-            body = '<ul class="stp-items">' + g.pass.slice(0, lim).map(it => itemHTML(it)).join('') + '</ul>' +
-                (g.pass.length > lim ? '<button type="button" class="stp-more" data-stp-more="' + g.id + '">' + esc(T('Show all ' + fmt(g.pass.length), 'Alle ' + fmt(g.pass.length) + ' zeigen', 'Ver los ' + fmt(g.pass.length))) + '</button>' : '');
+            body = '<ul class="stp-items">' + g.pass.slice(0, pg.show).map(it => itemHTML(it)).join('') + '</ul>' + moreHTML(g.id, pg);
         } else {
             body = '<p class="stp-none">' + esc(T('None of the ' + fmt(total) + ' products here pass.', 'Keins der ' + fmt(total) + ' Produkte hier besteht.', 'Ninguno de los ' + fmt(total) + ' productos de aquí pasa.')) + '</p>';
         }
+        const pf = C.page(g.fail.length, open[g.id + ':f']);
         if (showFail && g.fail.length) {
             body += '<h5 class="stp-h5">' + esc(T('Left out', 'Aussortiert', 'Excluidos')) + ' · ' + fmt(g.fail.length) + '</h5><ul class="stp-items">' +
-                g.fail.slice(0, open[g.id + ':f'] ? 1e9 : 15).map(it => itemHTML(it, true)).join('') + '</ul>' +
-                (g.fail.length > 15 && !open[g.id + ':f'] ? '<button type="button" class="stp-more" data-stp-more="' + g.id + ':f">' + esc(T('Show all left out', 'Alle aussortierten zeigen', 'Ver todos los excluidos')) + '</button>' : '');
+                g.fail.slice(0, pf.show).map(it => itemHTML(it, true)).join('') + '</ul>' + moreHTML(g.id + ':f', pf);
         }
         return '<section class="stp-group" id="stpg-' + g.id + '"><h4 class="stp-gh"><span aria-hidden="true">' + meta.ic + '</span>' + esc(name) +
             '<i>' + esc(fmt(g.pass.length)) + ' / ' + esc(fmt(total)) + '</i></h4>' + body + '</section>';
+    }
+    /* a page at a time (C.page): "Show 40 more · 610 left", never the whole range at once */
+    function moreHTML(id, pg) {
+        if (!pg.left) return '';
+        const n = fmt(pg.next), l = fmt(pg.left);
+        return '<button type="button" class="stp-more" data-stp-more="' + id + '" data-stp-ask="' + pg.ask + '">' +
+            esc(T('Show ' + n + ' more · ' + l + ' left', 'Noch ' + n + ' zeigen · ' + l + ' übrig', 'Ver ' + n + ' más · quedan ' + l)) + '</button>';
     }
     function listHTML(state, err) {
         let inner = '';
@@ -319,7 +324,7 @@
             S = { range: s.chain, store: { id: s.id, brand: s.brand, town: C.town(s), km: where ? Math.round(C.km(where, s) * 10) / 10 : null } }; save(); q = ''; open = {};
             return showList();
         }
-        if (b.hasAttribute('data-stp-more')) { open[b.getAttribute('data-stp-more')] = true; return paint('keep'); }
+        if (b.hasAttribute('data-stp-more')) { open[b.getAttribute('data-stp-more')] = +b.getAttribute('data-stp-ask') || 0; return paint('keep'); }
         if (b.hasAttribute('data-stp-jump')) {
             const g = ov.querySelector('#stpg-' + b.getAttribute('data-stp-jump')), sc = ov.querySelector('.stp-scroll');
             if (g && sc) sc.scrollTo({ top: g.offsetTop - sc.offsetTop - 6, behavior: 'smooth' });
@@ -347,6 +352,8 @@
         ov.addEventListener('change', onChange);
         D.addEventListener('keydown', onKey);
         D.body.appendChild(ov);
+        /* the panel covers the screen: body-world-3d.js draws no world frames under it (html.stp-open), like Mirror mode */
+        D.documentElement.classList.add('stp-open');
         requestAnimationFrame(() => { if (ov) ov.classList.add('in'); });
         q = ''; showFail = false; open = {};
         if (S.range) showList(); else { view = 'pick'; paint(); }
@@ -356,6 +363,8 @@
         if (!ov) return;
         const o = ov; ov = null; qv = null;
         if (io) { io.disconnect(); io = null; }
+        D.documentElement.classList.remove('stp-open');
+        data = null; built = null; shown = []; /* the rows are gone with the panel: keep nothing of them while it is closed */
         D.removeEventListener('keydown', onKey);
         o.classList.remove('in'); o.classList.add('out');
         setTimeout(() => { try { o.remove(); } catch (e) {} }, 260);

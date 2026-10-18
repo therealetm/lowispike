@@ -287,5 +287,14 @@
         return (stores || []).filter(s => (s.brand + ' ' + s.name + ' ' + (s.addr || '') + ' ' + town(s)).toLowerCase().indexOf(t) >= 0);
     }
 
-    return { LIMIT, GROUPS, G, groupOf, typical, rate, rows, build, km, nearest, town, findStore, photo, link, explain };
+    /* Oct 18, 2026 (E-man: "I clicked on cook, and then what can I buy? And the app crashed and sent me back to the beginning").
+       The list is shown a page at a time: 15 rows per group when it opens, 40 more per tap, never the whole range in one go
+       ("Show all" put up to 1,012 rows of one group, 35,000+ elements and a 510,000 px tall list on the phone at once). */
+    const PAGE = { first: 15, more: 40 };
+    function page(total, asked) {
+        const n = Math.max(0, total | 0), want = Math.max(PAGE.first, asked | 0), show = Math.min(n, want), left = n - show;
+        return { show, left, next: Math.min(PAGE.more, left), ask: show + Math.min(PAGE.more, left) };
+    }
+
+    return { LIMIT, GROUPS, G, groupOf, typical, rate, rows, build, km, nearest, town, findStore, photo, link, explain, PAGE, page };
 });

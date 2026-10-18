@@ -176,6 +176,7 @@
     function shouldRender() {
         if (D.hidden) return false;
         if (H.classList.contains('mm-open')) return false;   /* Mirror mode covers the screen: no world frames behind it */
+        if (H.classList.contains('stp-open')) return false;  /* "What can I buy here?" covers it too (Oct 18 Cook -> shop crash): no frames re-blurred under its list */
         if (mode === 'full') return !!full;
         if (mode === 'back') return !!(back && back.isConnected);
         if (!visibleHome || !stage || !stage.isConnected) return false;

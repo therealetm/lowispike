@@ -71,7 +71,7 @@
         auto: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12c-2.2-3-6.6-3-6.6 0s4.4 3 6.6 0 6.6-3 6.6 0-4.4 3-6.6 0z"/><circle cx="18.6" cy="12" r="1.3" class="mp-dot"/></svg>',
         sleepy: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9h5l-5 6h5M13 6h4l-4 4.5h4"/></svg>'
     };
-    const st = { el: null, knob: null, chip: null, mode: '', id: null, x0: 0, y0: 0, moved: false, lastUp: 0, taps: 0, holdT: 0, backT: 0, thr: 0, downT: 0, ignoreDbl: 0, chipT: 0, enT: 0, tier: '', value: 0, R: 22, hinted: false };
+    const st = { el: null, knob: null, chip: null, mode: '', id: null, x0: 0, y0: 0, moved: false, lastUp: 0, taps: 0, holdT: 0, backT: 0, thr: 0, downT: 0, ignoreDbl: 0, chipT: 0, enT: 0, tier: '', value: 0, R: 22, hinted: false, fade: false };
     const wh = () => W.LowiWorldHome && W.LowiWorldHome.pad ? W.LowiWorldHome : null;
     function send(cmd) { const w = wh(); if (!w) return null; try { return w.pad(cmd); } catch (e) { return null; } }
     function low() { return st.tier === 'weak' || st.tier === 'tired'; }
@@ -87,7 +87,7 @@
         let c = D.getElementById('whPadChip');
         if (!c) { c = D.createElement('span'); c.id = 'whPadChip'; c.className = 'wh-pad-chip'; c.setAttribute('aria-live', 'polite'); c.setAttribute('data-noi18n', ''); }
         hud.appendChild(b); hud.appendChild(c);
-        st.el = b; st.knob = b.querySelector('.mp-knob'); st.chip = c;
+        st.el = b; st.knob = b.querySelector('.mp-knob'); st.chip = c; st.fade = b.classList.contains('mp-steer');
         delete b.dataset.icon; paint(); energy(true);
         return b;
     }
@@ -136,6 +136,16 @@
         const A = W.LowiAdventure; if (!A) return;
         try { if (m === 'auto') A.start(); else if (A.on) A.stop('abort'); } catch (e) { }
     }
+    /* Oct 18 (Emmanuel, Home handoff "Joystick": fades while you steer but keeps working, comes back afterwards): while a finger
+       actively steers (a drag past the dead zone, or the forward / back hold) the controller turns see-through (.mp-steer,
+       misty-pad.css) and keeps taking input. Lifting, a cancelled or lost pointer, the app hidden or the window blurred bring it
+       back. A tap, the keyboard (focus stays visible) and the back burst after the finger is gone never fade it. Look only.
+       Written only when it changes (compared with the last written value). tests/ui-joystick-fade.test.cjs */
+    function fade(on) {
+        on = !!(on && st.el);
+        if (st.fade === on) return;
+        st.fade = on; if (st.el) st.el.classList.toggle('mp-steer', on);
+    }
     function knob(dx, dy) { if (st.knob) st.knob.style.transform = dx || dy ? 'translate(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px)' : ''; }
     function steer(dx, dy) {
         const R = st.R, d = Math.hypot(dx, dy), k = d > R ? R / d : 1, kx = dx * k, ky = dy * k;
@@ -153,7 +163,7 @@
     function startHold(v) {
         if (st.mode !== 'drive') setMode('drive', true);
         try { if (W.LowiAdventure && W.LowiAdventure.on) W.LowiAdventure.stop('steer'); } catch (e) { }
-        thrust(v); hintDone();
+        thrust(v); hintDone(); if (st.id != null) fade(true);
         try { navigator.vibrate && navigator.vibrate(10); } catch (e) { }
         chip(v > 0 ? T('Forward', 'Vorw\u00e4rts', 'Adelante') : T('Backwards', 'R\u00fcckw\u00e4rts', 'Atr\u00e1s'), 1200);
     }
@@ -187,12 +197,12 @@
             const dx = e.clientX - st.x0, dy = e.clientY - st.y0;
             if (!st.moved && Math.hypot(dx, dy) < 6) return;
             if (!st.moved) { st.moved = true; clearTimeout(st.holdT); if (st.mode !== 'drive') setMode('drive'); hintDone(); }
-            steer(dx, dy);
+            fade(true); steer(dx, dy);
         }, { passive: false });
         const up = e => {
             if (e.pointerId !== st.id) return;
             e.stopPropagation();
-            st.id = null; b.classList.remove('mp-down'); knob(0, 0); send({ vx: 0, vy: 0 }); clearTimeout(st.holdT);
+            st.id = null; fade(false); b.classList.remove('mp-down'); knob(0, 0); send({ vx: 0, vy: 0 }); clearTimeout(st.holdT);
             const held = !!st.thr; if (held) thrust(0);
             if (held || st.moved || e.type === 'pointercancel') { st.lastUp = 0; st.taps = 0; return; }
             const now = performance.now();
@@ -211,7 +221,7 @@
         };
         b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up);
         b.addEventListener('lostpointercapture', e => { if (e.pointerId === st.id) up({ pointerId: e.pointerId, type: 'pointercancel', stopPropagation() { } }); });
-        D.addEventListener('visibilitychange', () => { if (D.hidden && st.thr) thrust(0); });
+        D.addEventListener('visibilitychange', () => { if (D.hidden) { fade(false); if (st.thr) thrust(0); } });
         b.addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); });
         b.addEventListener('dblclick', e => { e.stopPropagation(); e.preventDefault(); });
         b.addEventListener('contextmenu', e => e.preventDefault());
@@ -236,6 +246,7 @@
         if (e.type === 'pointerdown') { const A = W.LowiAdventure; let rec = false; if (A && A.on) { try { A.stop('recall'); rec = true; } catch (er) { } } if (!rec) setMode('home', true); chip(T('Misty is flying home', 'Misty fliegt nach Hause', 'Misty vuelve a casa'), 1600); }
     }
     ['pointerdown', 'click'].forEach(n => D.addEventListener(n, callHome, true));
+    W.addEventListener('blur', () => fade(false)); /* the window lost focus: the joystick comes back (a finger still moving fades it again) */
     W.addEventListener('lowi:pad', e => { const m = e.detail ? e.detail.mode : null; if (m != null && m !== st.mode) { st.mode = m; paint(); if (!m) chip(''); } });
 
     /* placement: centred above Today, clear of Sound, VR, World map, Kometa's gift, fasting and water.
@@ -263,6 +274,7 @@
         const hud = D.getElementById('whHud');
         if (hud && (!st.el || !st.el.isConnected || st.el.parentNode !== hud)) build();
         if (!st.el) return;
+        if (st.fade && st.id == null) fade(false); /* never left faded without a finger on it */
         place();
         const now = Date.now(); if (now - st.enT > 2000) { st.enT = now; energy(); }
         /* the world can end a flight itself (she floated home): keep the controller in step */
@@ -286,7 +298,7 @@
         shotSaid = t;
         chip(d.healed > 0 ? T('Energy shot \u00b7 the world heals', 'Energiesto\u00df \u00b7 die Welt heilt', 'Disparo de energ\u00eda \u00b7 el mundo sana') : T('Energy shot', 'Energiesto\u00df', 'Disparo de energ\u00eda'), 1100);
     });
-    W.LowiPad = { state: () => Object.assign({ pad: st.mode, tier: st.tier, energy: +st.value.toFixed(2), held: st.id != null }, send(null) || {}), mode: m => setMode(m), steer: (vx, vy) => send({ vx, vy }), thrust: v => (v ? startHold(v > 0 ? 1 : -1) : thrust(0)),
+    W.LowiPad = { state: () => Object.assign({ pad: st.mode, tier: st.tier, energy: +st.value.toFixed(2), held: st.id != null, faded: st.fade }, send(null) || {}), mode: m => setMode(m), steer: (vx, vy) => send({ vx, vy }), thrust: v => (v ? startHold(v > 0 ? 1 : -1) : thrust(0)),
         /* a finger is on the controller right now (dragging or held still): body-world-3d.js turns a double tap into the energy shot */
         held: () => st.id != null };
 })();

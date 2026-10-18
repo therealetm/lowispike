@@ -359,6 +359,7 @@
     /* ---------- the loop: runs only while something moves and the bubble is on screen ---------- */
     function paused(b) {
         if (D.hidden || !b.visible || !b.el.isConnected) return true;
+        if (b.el.classList.contains('lb-liq')) return true; /* the living membrane draws this water in 3D (living-bubbles.js): no 2D loop */
         const w = D.getElementById('spWorld');
         return !!(w && !w.hidden);
     }

@@ -66,7 +66,68 @@
             const nx = g(px), ny = g(py), nz = g(pz), L = Math.hypot(nx, ny, nz) || 1;
             return { x: px, y: py, z: pz, nx: nx / L, ny: ny / L, nz: nz / L };
         },
-        capsuleLen(w, h, gR, rx) { w = +w || 0; h = +h || 0; if (!(h > 0)) return 0; const r = rx > 0 ? CORE.cornerOf(w, h, rx) : h / 2; return Math.max(0, w - 2 * r) * gR / (1.04 * r); }
+        capsuleLen(w, h, gR, rx) { w = +w || 0; h = +h || 0; if (!(h > 0)) return 0; const r = rx > 0 ? CORE.cornerOf(w, h, rx) : h / 2; return Math.max(0, w - 2 * r) * gR / (1.04 * r); },
+
+        /* ---------- the liquid inside (Oct 18, Emmanuel on his iPad: "The liquid in the bubble still doesn't match." Asked before:
+           like water inside a balloon - the same boundary as the bubble, clipped by it, sloshing as it moves).
+           The fill used to be a flat DOM layer clipped to a CSS circle (and the fasting water its own 2D canvas), while the glass is
+           this 3D membrane: 0.52 x the width, vertex wobble, breathing, perspective - two outlines that never matched. Now the
+           membrane mesh draws the liquid itself: a child mesh with the SAME geometry, the SAME vertex shader (same wobble, same clock)
+           and the same edge softening, so the liquid's outline IS the glass outline. Only its surface line is the liquid's own. */
+        SLOSH_MAX: 0.42,
+        /* progress 0..1 -> surface height in the glass, -1 (bottom) .. +1 (top), on the view-space normal; full sits far above the top
+           so no slosh ever shows a surface on a full glass (Water 8/6 is full); nothing to draw when empty */
+        liquidLevel(f) { f = +f; if (!(f > 0.002)) return null; if (f >= 0.999) return 1.75; return -1 + 2 * f; },
+        /* Misty's membrane fragment shader -> the liquid's fragment shader, with the membrane's own lwEdge(); null if it changed */
+        liquidShader(fs) {
+            if (typeof fs !== 'string') return null;
+            const a = fs.indexOf('\n#if __VERSION__ >= 300'), b = a >= 0 ? fs.indexOf('#endif\n', a) : -1;
+            if (a < 0 || b < 0 || fs.indexOf('float lwEdge(float nv)', a) < 0) return null;
+            const edge = fs.slice(a, b + 7), cs = fs.indexOf('#include <colorspace_fragment>') >= 0 ? '\n#include <colorspace_fragment>\n' : '';
+            return 'uniform float uO;uniform float uT;uniform float uLv;uniform float uTilt;uniform float uWave;uniform float uPh;' +
+                'uniform vec3 uTop;uniform vec3 uBot;uniform float uA1;uniform float uA2;varying vec3 vN;varying vec3 vV;varying vec3 vP;' + edge +
+                '\n#if __VERSION__ >= 300 || defined(GL_OES_standard_derivatives)\nfloat lqW(float y){return fwidth(y)*1.2+0.002;}\n#else\nfloat lqW(float y){return 0.02;}\n#endif\n' +
+                'void main(){vec3 n=normalize(vN);float nv=abs(dot(n,normalize(vV)));float x=n.x,y=n.y;' +
+                /* the surface: level + slosh tilt + two soft waves (the fasting water's own wave shape) */
+                'float s=uLv+uTilt*x+uWave*(0.6*sin(x*2.6+uT*1.15+uPh)+0.4*sin(x*4.6-uT*1.7+uPh*1.7));' +
+                'float d=s-y;float w=lqW(y);float under=smoothstep(-w,w,d);if(under<=0.0)discard;' +
+                'float k=clamp((y+1.0)/max(0.1,min(s,1.0)+1.0),0.0,1.0);vec3 c=mix(uBot,uTop,k);float a=mix(uA2,uA1,k);' +
+                /* a band of light just under the surface, and deeper colour where the glass curves away */
+                'c+=vec3(0.2)*smoothstep(0.12,0.0,d)*step(s,1.05);c=mix(c,uBot*0.82,pow(1.0-nv,3.0)*0.3);' +
+                'gl_FragColor=vec4(c,clamp(a*under,0.0,0.95)*lwEdge(nv)*uO);' + cs + '}';
+        },
+        /* the liquid's colour from the bubble's own fill gradient (water blue, move green, fuel amber, sleep violet), a touch stronger
+           under the glass so a full glass reads full */
+        parseGradient(bg) {
+            const m = String(bg || '').match(/rgba?\([^)]*\)/g); if (!m || m.length < 2) return null;
+            const p = t => { const v = t.replace(/[^\d.,]/g, '').split(',').map(Number); return { c: [v[0], v[1], v[2]], a: v.length > 3 ? v[3] : 1 }; };
+            const t = p(m[0]), b = p(m[m.length - 1]), up = a => Math.min(0.92, a * 1.1 + 0.08);
+            return { top: t.c, bot: b.c, a1: up(t.a), a2: up(b.a) };
+        },
+        /* the fasting water keeps its own colours (fast-bubble.js PAL): blue while it runs, sea green when the goal is reached */
+        liquidColors(kind, light, done) {
+            const P = done ? (light ? { top: [170, 238, 214], bot: [80, 170, 176], a1: 0.64, a2: 0.78 } : { top: [158, 240, 214], bot: [56, 150, 170], a1: 0.8, a2: 0.92 })
+                : (light ? { top: [150, 222, 245], bot: [92, 146, 222], a1: 0.62, a2: 0.74 } : { top: [118, 210, 238], bot: [52, 92, 188], a1: 0.76, a2: 0.92 });
+            return kind === 'fast' ? P : { top: [110, 200, 255], bot: [40, 120, 240], a1: 0.69, a2: 0.92 };
+        },
+        /* slosh: the water lags the bubble. dx, dy = how far the bubble moved this frame, in bubble radii. Water answers to a change of
+           speed (steady motion leaves it flat): the bubble's speed is smoothed, and each change of it pushes a damped spring for the
+           surface tilt (sideways) and bob (up and down); a touch adds a ripple that dies away. Reduced motion: flat and still. */
+        sloshState() { return { tilt: 0, tv: 0, bob: 0, bv: 0, wave: 0, kick: 0, svx: 0, svy: 0 }; },
+        slosh(st, dx, dy, dt, calm) {
+            if (calm) { st.tilt = st.tv = st.bob = st.bv = st.wave = st.kick = st.svx = st.svy = 0; return st; }
+            dt = Math.min(0.05, Math.max(0, +dt || 0)); if (!dt) return st;
+            const M = CORE.SLOSH_MAX, c = v => Math.max(-M, Math.min(M, v)), cl = v => Math.max(-20, Math.min(20, v)), k = Math.min(1, dt * 12);
+            const vx = cl((+dx || 0) / dt), vy = cl((+dy || 0) / dt), px = st.svx, py = st.svy;
+            st.svx += (vx - st.svx) * k; st.svy += (vy - st.svy) * k;
+            st.tv -= (st.svx - px) * 5;                           /* speeding up to the right: water piles up on the left */
+            st.bv += (st.svy - py) * 3;                           /* speeding up downward: the water rises */
+            st.tv += (-38 * st.tilt - 3.2 * st.tv) * dt; st.tilt = c(st.tilt + st.tv * dt);
+            st.bv += (-44 * st.bob - 3.6 * st.bv) * dt; st.bob = c(st.bob + st.bv * dt);
+            st.kick *= Math.exp(-dt * 2.4);
+            st.wave = 0.012 + Math.min(0.06, Math.abs(st.tilt) * 0.12 + Math.abs(st.tv) * 0.01) + st.kick;
+            return st;
+        }
     };
     if (typeof module !== 'undefined' && module.exports) module.exports = CORE;
     if (!root || !root.document) return;
@@ -75,7 +136,7 @@
     const reduceMq = W.matchMedia ? W.matchMedia('(prefers-reduced-motion: reduce)') : null;
     const still = () => !!(reduceMq && reduceMq.matches);
     const list = new Map(); /* el -> { mesh, mat, phase, spin, o, oT, opts } */
-    let api = null, mem = null, group = null, offFrame = null, geo = null, vs = '', fs = '', lastVis = 0, tmp = null;
+    let api = null, mem = null, group = null, offFrame = null, geo = null, vs = '', fs = '', lfs = '', lastVis = 0, tmp = null;
 
     function css() {
         if (D.getElementById('lbCss')) return;
@@ -122,12 +183,56 @@
         s.mesh.renderOrder = 20; s.mesh.frustumCulled = false; s.mesh.visible = false;
         s.mesh.userData.lwKeep = true; /* body-world-regions setHubVisible leaves it alone */
         group.add(s.mesh);
+        buildLiquid(s);
     }
+    /* the liquid inside: same geometry, same vertex shader, same clock as the glass, and a child of it, so it shares the glass's exact
+       outline every frame (wobble, turn, breathing, press squish, perspective) - only round Home bubbles that carry a fill */
+    function buildLiquid(s) {
+        if (s.liq || !lfs || !s.mesh || s.opts.ctl || s.opts.shape) return;
+        const THREE = api.THREE;
+        s.lmat = new THREE.ShaderMaterial({
+            uniforms: { uT: s.mat.uniforms.uT, uO: { value: 0 }, uLv: { value: -2 }, uTilt: { value: 0 }, uWave: { value: 0 }, uPh: { value: s.phase },
+                uTop: { value: new THREE.Color() }, uBot: { value: new THREE.Color() }, uA1: { value: 0.7 }, uA2: { value: 0.9 } },
+            vertexShader: s.mat.vertexShader, fragmentShader: lfs, transparent: true, depthWrite: false, depthTest: false,
+            extensions: { derivatives: true }
+        });
+        s.liq = new THREE.Mesh(s.mesh.geometry, s.lmat);
+        s.liq.renderOrder = 19; s.liq.frustumCulled = false; s.liq.visible = false;
+        s.liq.userData.lbLiquid = true; s.liq.userData.lwKeep = true;
+        s.sl = CORE.sloshState(); s.lv = null; s.lvT = null; s.colKey = '';
+        s.mesh.add(s.liq);
+    }
+    function setCol(s, P) {
+        const k = P.top.join() + P.bot.join() + P.a1 + P.a2; if (k === s.colKey) return; s.colKey = k;
+        const U = s.lmat.uniforms;
+        U.uTop.value.setRGB(P.top[0] / 255, P.top[1] / 255, P.top[2] / 255, api.THREE.SRGBColorSpace);
+        U.uBot.value.setRGB(P.bot[0] / 255, P.bot[1] / 255, P.bot[2] / 255, api.THREE.SRGBColorSpace);
+        U.uA1.value = P.a1; U.uA2.value = P.a2;
+    }
+    /* how full the bubble is, as its own fill shows it (any bubble: water, move, fuel, sleep, ...; read with the 180 ms pass) */
+    function readFill(el, s) {
+        if (!s.liq) return;
+        if (s.opts.kind === 'fast') {
+            let st = null; try { st = W.LowiFastBubble && W.LowiFastBubble.state && W.LowiFastBubble.state(); } catch (e) {}
+            if (!st || !st.on) { s.lvT = null; return; }
+            s.lvT = CORE.liquidLevel(st.target >= 0.999 ? 0.999 : st.target);
+            setCol(s, CORE.liquidColors('fast', H.getAttribute('data-theme') === 'light', !!st.done));
+            return;
+        }
+        if (!s.fillEl || !s.fillEl.isConnected || !el.contains(s.fillEl)) s.fillEl = el.querySelector('.wh-cell-fill');
+        const f = s.fillEl, hh = el.clientHeight; /* the fill sits inside the border: 122 of 122 px is full */
+        if (!f || !hh) { s.lvT = null; return; }
+        s.lvT = CORE.liquidLevel(f.offsetHeight / hh);
+        const bg = getComputedStyle(f).backgroundImage;
+        if (bg !== s.bg) { s.bg = bg; setCol(s, CORE.parseGradient(bg) || CORE.liquidColors('water')); }
+    }
+    /* while the 3D liquid draws, the flat fill / fasting 2D water hide under it (written only when it changes) */
+    function liqClass(el, s, on) { if (s.liqOn !== on) { s.liqOn = on; el.classList.toggle('lb-liq', on); } }
     function attach3d(a) {
         if (api || !a || !a.THREE || !a.scene || !a.memU || !a.camera) return false;
         const m = findMembrane(a); if (!m) return false;
         const f = CORE.fadeShader(m.material.fragmentShader); if (!f) return false;
-        api = a; mem = m; vs = m.material.vertexShader; fs = f; geo = m.geometry;
+        api = a; mem = m; vs = m.material.vertexShader; fs = f; geo = m.geometry; lfs = CORE.liquidShader(f) || '';
         const THREE = a.THREE; tmp = { v: new THREE.Vector3(), f: new THREE.Vector3(), q: new THREE.Quaternion(), y: new THREE.Vector3(0, 1, 0), x: new THREE.Vector3(1, 0, 0) };
         group = new THREE.Group(); group.name = 'lowi-living-bubbles'; group.userData.lwKeep = true; a.scene.add(group);
         list.forEach((s, el) => build(el));
@@ -163,6 +268,7 @@
         list.forEach((s, el) => {
             s.oT = on ? effOpacity(el) : 0;
             if (s.opts.ctl) live(el, s.oT > 0 && !!s.mesh);
+            if (s.liq && s.oT > 0) readFill(el, s);
             if (s.oT > 0 && s.opts.shape === 'box') {
                 const v = parseFloat(getComputedStyle(el).borderTopLeftRadius); if (v > 0) s.rx = v; /* its corner, as styled now */
                 const j = el.classList.contains('hc-joined') ? D.getElementById('hcLine') : null; /* hunt-count.js joins its line under it */
@@ -187,9 +293,9 @@
         list.forEach((s, el) => {
             if (!s.mesh) return;
             s.o += (s.oT - s.o) * Math.min(1, dt * 9);
-            if (s.oT <= 0 && s.o < 0.01) { s.o = 0; s.mesh.visible = false; return; }
+            if (s.oT <= 0 && s.o < 0.01) { s.o = 0; s.mesh.visible = false; if (s.liq) liqClass(el, s, false); return; }
             let r = el.getBoundingClientRect();
-            if (!r.width) { s.mesh.visible = false; return; }
+            if (!r.width) { s.mesh.visible = false; if (s.liq) liqClass(el, s, false); return; }
             if (s.join) { /* Daily Quest + the hunt count line it carries inside a world: one membrane around both, as one box */
                 const j = s.join.getBoundingClientRect();
                 if (j.height > 0 && j.bottom > r.bottom) r = { left: r.left, top: r.top, width: r.width, height: j.bottom - r.top };
@@ -216,7 +322,20 @@
             }
             s.mat.uniforms.uO.value = s.o;
             s.mesh.visible = true;
+            if (s.liq) liquidFrame(el, s, r, dt, calm);
         });
+    }
+    function liquidFrame(el, s, r, dt, calm) {
+        const cx = r.left + r.width / 2, cy = r.top + r.height / 2, rad = Math.max(1, r.width / 2);
+        if (s.lvT == null) { s.lv = null; s.liq.visible = false; liqClass(el, s, false); s.pcx = null; return; }
+        s.lv = (s.lv == null || calm) ? s.lvT : s.lv + (s.lvT - s.lv) * Math.min(1, dt * 2.2);
+        if (s.pcx == null) { s.pcx = cx; s.pcy = cy; }
+        CORE.slosh(s.sl, (cx - s.pcx) / rad, (cy - s.pcy) / rad, dt, calm);
+        s.pcx = cx; s.pcy = cy;
+        const U = s.lmat.uniforms;
+        U.uLv.value = s.lv + s.sl.bob; U.uTilt.value = s.sl.tilt; U.uWave.value = s.lv > 1.2 ? 0 : s.sl.wave; U.uO.value = s.o;
+        s.liq.visible = true;
+        liqClass(el, s, s.o > 0.05);
     }
 
     /* ---------- press squish + long press (generic), like Misty's bubble ---------- */
@@ -241,6 +360,7 @@
         const s = list.get(el);
         press = { el, id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now(), moved: 0, timer: 0 };
         el.dataset.pressed = '1';
+        if (s && s.sl && !still()) s.sl.kick = 0.05; /* a touch sets the water rippling */
         if (s && s.opts && typeof s.opts.onLong === 'function') {
             press.timer = setTimeout(() => {
                 if (!press || press.el !== el || !CORE.isLong(performance.now() - press.t, press.moved)) return;
@@ -282,8 +402,8 @@
     }
     function remove(el) {
         const s = list.get(el); if (!s) return false;
-        if (s.mesh) { group && group.remove(s.mesh); try { s.mat.dispose(); } catch (e) {} }
-        el.classList.remove('lb-bub', 'lb-ctl', 'lb-live'); el.removeAttribute('data-lb'); el.removeAttribute('data-lb-shape');
+        if (s.mesh) { group && group.remove(s.mesh); try { s.mat.dispose(); s.lmat && s.lmat.dispose(); } catch (e) {} }
+        el.classList.remove('lb-bub', 'lb-ctl', 'lb-live'); el.classList.remove('lb-liq'); el.removeAttribute('data-lb'); el.removeAttribute('data-lb-shape');
         list.delete(el); return true;
     }
     /* Home is rebuilt now and then: drop bubbles that left the page, pick up new ones */
@@ -315,7 +435,11 @@
     setTimeout(scan, 400);
 
     const API = { add, remove, attach: add, scan, list: () => [...list.keys()], active: () => !!api, core: CORE,
-        look: () => [...list.entries()].map(([el, s]) => ({ kind: s.opts.kind || '', visible: !!(s.mesh && s.mesh.visible), opacity: +s.o.toFixed(2), sameUniforms: !!(s.mat && api && s.mat.uniforms.uT === api.memU.uT && s.mat.uniforms.uGlow === api.memU.uGlow && s.mat.uniforms.uIn === api.memU.uIn), sameShader: !!(s.mat && mem && s.mat.vertexShader === mem.material.vertexShader), ctl: !!s.opts.ctl, shape: s.opts.shape || 'round', live: !!(s.opts.ctl && el.classList.contains('lb-live')), drop: !!(s.mesh && s.mesh.geometry !== geo), scale: s.mesh ? +s.mesh.scale.x.toFixed(4) : 0 })) };
+        look: () => [...list.entries()].map(([el, s]) => ({ kind: s.opts.kind || '', visible: !!(s.mesh && s.mesh.visible), opacity: +s.o.toFixed(2), sameUniforms: !!(s.mat && api && s.mat.uniforms.uT === api.memU.uT && s.mat.uniforms.uGlow === api.memU.uGlow && s.mat.uniforms.uIn === api.memU.uIn), sameShader: !!(s.mat && mem && s.mat.vertexShader === mem.material.vertexShader), ctl: !!s.opts.ctl, shape: s.opts.shape || 'round', live: !!(s.opts.ctl && el.classList.contains('lb-live')), drop: !!(s.mesh && s.mesh.geometry !== geo), scale: s.mesh ? +s.mesh.scale.x.toFixed(4) : 0,
+            liquid: s.liq ? { on: !!(s.liq.visible && s.mesh.visible), cls: el.classList.contains('lb-liq'), level: s.lv == null ? null : +s.lv.toFixed(3), target: s.lvT == null ? null : +s.lvT.toFixed(3),
+                tilt: +s.sl.tilt.toFixed(3), wave: +s.sl.wave.toFixed(3), child: s.liq.parent === s.mesh,
+                sameGeometry: s.liq.geometry === s.mesh.geometry, sameVertexShader: s.liq.material.vertexShader === s.mat.vertexShader, sameClock: s.lmat.uniforms.uT === s.mat.uniforms.uT,
+                ownTransform: !(s.liq.position.lengthSq() === 0 && s.liq.scale.x === 1 && s.liq.scale.y === 1 && s.liq.scale.z === 1 && s.liq.quaternion.w === 1) } : null })) };
     W.LowiBubbles = API;
     W.LowiLivingBubble = { attach: (el, o) => add(el, o) };
 })(typeof window !== 'undefined' ? window : null);

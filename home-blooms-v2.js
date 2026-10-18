@@ -179,7 +179,8 @@
         /* the app's own Craving SOS lives behind a delegated data-act="sos" click on document */
         if (!D.getElementById('sos')) return false;
         const b = D.createElement('button');
-        b.type = 'button'; b.hidden = true; b.setAttribute('data-act', 'sos'); b.setAttribute('data-c', 'sweet');
+        /* no craving given: Swap opens on its first step, "What are you craving?" (fuel-screens, Oct 18) */
+        b.type = 'button'; b.hidden = true; b.setAttribute('data-act', 'sos');
         D.body.appendChild(b);
         try { b.click(); } finally { b.remove(); }
         return true;

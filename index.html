@@ -6111,15 +6111,81 @@ const SOS = {
   bread:{l:"Bread or carbs", e:"🥖", fix:[["Lettuce wrap with turkey & cream cheese", "Something to hold and bite."], ["Jammy eggs with salt & chili", "Warm and filling."]]},
   fizzy:{l:"Fizzy drink", e:"🥤", fix:[["Sparkling water, lime & mint", "Cold and fizzy, no sugar, no sweetener."], ["Iced matcha lime water", "A bit of a kick."]]},
   night:{l:"Late-night snack", e:"🌙", fix:[["Cheese cubes & cucumber", "Quick, savoury, done."], ["Warm herbal tea + a few walnuts", "A ritual to close the kitchen."]]}};
-function openSOS(c){ c = SOS[c] ? c : "sweet"; const s = SOS[c];
-  $("#sos").innerHTML = '<div class="ovhead"><button class="xbtn" data-act="closesos">' + ICO.x + '</button><span class="tiny" style="color:var(--hi)">Craving SOS</span></div><div class="h1">' + s.e + ' ' + esc(s.l) + ', right now?</div><div class="small muted" style="margin-top:6px">Got you. Here\'s an instant low-spike fix.</div>' +
-    '<div class="hscroll" style="margin-top:14px">' + Object.keys(SOS).map(k => '<button class="chip' + (k === c ? " on" : "") + '" data-act="sos" data-c="' + k + '">' + SOS[k].e + " " + SOS[k].l + '</button>').join("") + '</div>' +
-    '<div class="card goldline" style="margin-top:14px" id="sosFix"><div class="tiny gold">Do this now</div><div class="h2" style="margin-top:6px">' + esc(s.fix[0][0]) + '</div><div class="small muted" style="margin-top:4px">' + esc(s.fix[0][1]) + '</div>' + badge("ja") + '</div>' +
-    s.fix.slice(1).map(f => '<div class="card" style="margin-top:10px"><div class="h3">' + esc(f[0]) + '</div><div class="small muted" style="margin-top:3px">' + esc(f[1]) + '</div></div>').join("") +
-    '<div class="card" style="margin-top:14px"><div class="h3">The 10-minute wave</div><div class="small muted" style="margin-top:4px">Drink a glass of water, have the fix, then wait ten minutes. Cravings often ease off.</div><div class="h1 num gold" id="sosTimer" style="margin-top:8px">10:00</div><button class="btn ghost sm" style="margin-top:8px" data-act="sostimer">Start timer</button></div>' +
-    '<button class="btn primary" style="margin-top:14px" data-act="sosbeat" id="sosBeat">I had the fix · +20 XP</button><button class="btn ghost sm" style="margin-top:10px" data-act="sosgave">I ate the craving. Log it, no shame</button>';
-  $("#sos").scrollTop = 0; $("#sos").classList.add("open"); }
-let sosT; function sosTimer(){ clearInterval(sosT); let s = 600; sosT = setInterval(() => { s--; const el = $("#sosTimer"); if (!el || s < 0) { clearInterval(sosT); if (el) el.textContent = "Wave passed?"; return; } el.textContent = Math.floor(s / 60) + ":" + pad(s % 60); }, 1000); }
+/* Oct 18 2026 (Emmanuel, iPad: "I don't understand the swap feature"): Swap in two steps, in the Fuel panel family
+   (fuel-screens.css). Step 1 asks what you're craving: one big tile per craving, all visible without scrolling sideways.
+   Step 2 is one card, "Craving X -> have Y", with a one-line reason, "I had it", "Show another" and a small "I ate the
+   craving anyway, log it" link; the 10-minute wave timer is an optional link. Same SOS foods and the same XP rules
+   (sosbeat), translated, no new foods. The research tag ("JA") is gone from the screen. */
+const SOS_WHY = {sweet:["Same creamy sweetness, with protein.", "Same sweet, cold bite.", "Something to sip and enjoy instead."], chocolate:["Same chocolate taste and creaminess.", "Same cocoa taste, with crunch."],
+  salty:["Same salty crunch.", "Same salt and crunch."], bread:["Same wrap to hold and bite.", "Same warm, filling comfort."], fizzy:["Same cold fizz, no sugar.", "Same cold kick."],
+  night:["Same savoury snack, quick.", "Same evening ritual, calmer."]};
+const SOS_TX = {
+  de:{t:{close:"Schließen", eyebrow:"Tauschen", ask:"Worauf hast du Lust?", askSub:"Tippe an, was du gerade willst. Du bekommst eine Alternative mit wenig Spitze, die genauso schmeckt oder knuspert.", craving:"Lust auf", have:"Nimm stattdessen", had:"Hab ich gegessen", another:"Andere zeigen", gave:"Ich hab's trotzdem gegessen, eintragen", wave:"10-Minuten-Timer starten", back:"Andere Lust", passed:"Welle vorbei?", xp:"+20 XP, wenn du es isst"},
+    l:{sweet:"Süßes", chocolate:"Schokolade", salty:"Salzig & knusprig", bread:"Brot & Kohlenhydrate", fizzy:"Sprudelgetränk", night:"Später Snack"},
+    fix:{sweet:[["Griechischer Joghurt, Zimt & 5 Himbeeren", "Cremig, leicht süß, Eiweiß. In einer Minute fertig."], ["Gefrorene Joghurt-Beeren-Platte", "Aus dem Rezeptbuch. Ein Blech machen, ein Stück abbrechen."], ["Gurken-Minz-Sprudelwasser", "Wenn es eher Gewohnheit als Hunger ist."]],
+      chocolate:[["Kakao-Hüttenkäse-Pudding", "Hüttenkäse, ungesüßter Kakao, Zimt. Mixen oder rühren."], ["1 kleine Handvoll Mandeln mit Kakao bestäubt", "Knusprig, mit Kakaogeschmack."]],
+      salty:[["Gebackene Parmesan-Chips", "Geriebener Parmesan, 6 Minuten im Ofen. Purer Crunch."], ["Oliven & Paprikasticks", "Salzig, knackig, null Aufwand."]],
+      bread:[["Salatwrap mit Pute & Frischkäse", "Etwas zum Halten und Reinbeißen."], ["Wachsweiche Eier mit Salz & Chili", "Warm und sättigend."]],
+      fizzy:[["Sprudelwasser, Limette & Minze", "Kalt und sprudelnd, ohne Zucker, ohne Süßstoff."], ["Eis-Matcha mit Limettenwasser", "Gibt einen kleinen Kick."]],
+      night:[["Käsewürfel & Gurke", "Schnell, herzhaft, fertig."], ["Warmer Kräutertee + ein paar Walnüsse", "Ein Ritual, das die Küche schließt."]]},
+    why:{sweet:["Dieselbe cremige Süße, mit Eiweiß.", "Derselbe süße, kalte Biss.", "Etwas Besonderes zum Trinken."], chocolate:["Derselbe Schokogeschmack, genauso cremig.", "Derselbe Kakaogeschmack, mit Crunch."],
+      salty:["Derselbe salzige Crunch.", "Dasselbe Salzige und Knackige."], bread:["Derselbe Wrap zum Halten und Reinbeißen.", "Dieselbe warme, sättigende Wohltat."], fizzy:["Dasselbe kalte Sprudeln, ohne Zucker.", "Derselbe kalte Kick."],
+      night:["Derselbe herzhafte Snack, schnell.", "Dasselbe Abendritual, ruhiger."]}},
+  es:{t:{close:"Cerrar", eyebrow:"Cambio", ask:"¿Qué te apetece?", askSub:"Toca lo que te apetece ahora. Te damos una opción de pico bajo con el mismo sabor o el mismo crujido.", craving:"Te apetece", have:"Toma mejor", had:"Me lo comí", another:"Ver otra", gave:"Me lo comí igual, registrarlo", wave:"Iniciar temporizador de 10 minutos", back:"Otro antojo", passed:"¿Pasó la ola?", xp:"+20 XP al comerlo"},
+    l:{sweet:"Dulce", chocolate:"Chocolate", salty:"Salado y crujiente", bread:"Pan o carbohidratos", fizzy:"Refresco", night:"Picoteo nocturno"},
+    fix:{sweet:[["Yogur griego, canela y 5 frambuesas", "Cremoso, algo dulce, proteína. Listo en un minuto."], ["Placa helada de yogur y frutos rojos", "Del recetario. Haz una bandeja y parte un trozo."], ["Agua con gas de pepino y menta", "Si es más costumbre que hambre."]],
+      chocolate:[["Pudin de requesón y cacao", "Requesón, cacao sin azúcar, canela. Bátelo o remueve."], ["1 puñadito de almendras con cacao espolvoreado", "Crujiente y con sabor a cacao."]],
+      salty:[["Crujientes de parmesano al horno", "Parmesano rallado, 6 minutos al horno. Puro crujido."], ["Aceitunas y bastones de pimiento", "Salado, crujiente, cero esfuerzo."]],
+      bread:[["Wrap de lechuga con pavo y queso crema", "Algo para sujetar y morder."], ["Huevos melosos con sal y chile", "Caliente y saciante."]],
+      fizzy:[["Agua con gas, lima y menta", "Fría y con gas, sin azúcar ni edulcorante."], ["Agua de matcha y lima con hielo", "Da un pequeño empujón."]],
+      night:[["Dados de queso y pepino", "Rápido, salado, listo."], ["Infusión caliente + unas nueces", "Un ritual para cerrar la cocina."]]},
+    why:{sweet:["El mismo dulzor cremoso, con proteína.", "El mismo bocado dulce y frío.", "Algo especial para beber."], chocolate:["El mismo sabor a chocolate, igual de cremoso.", "El mismo sabor a cacao, con crujido."],
+      salty:["El mismo crujido salado.", "Lo mismo salado y crujiente."], bread:["El mismo wrap para sujetar y morder.", "El mismo consuelo caliente y saciante."], fizzy:["Las mismas burbujas frías, sin azúcar.", "El mismo empujón frío."],
+      night:["El mismo picoteo salado, rápido.", "El mismo ritual de noche, más tranquilo."]}}};
+const SOS_EN = {close:"Close", eyebrow:"Swap", ask:"What are you craving?", askSub:"Tap what you want right now. You get a low-spike food with the same taste or crunch.", craving:"Craving", have:"Have instead", had:"I had it", another:"Show another", gave:"I ate the craving anyway, log it", wave:"Start a 10-minute wave timer", back:"Another craving", passed:"Wave passed?", xp:"+20 XP when you have it"};
+const SOS_IC = {
+  sweet:'<path d="M8.5 12a3.5 3.5 0 1 0 7 0 3.5 3.5 0 1 0-7 0z"/><path d="M8.5 12L4 9.5v5zM15.5 12l4.5-2.5v5z"/>',
+  chocolate:'<rect x="6" y="3.5" width="12" height="17" rx="2"/><path d="M6 9.2h12M6 14.8h12M12 3.5v17"/>',
+  salty:'<path d="M5 19l2.2-12.5A2 2 0 0 1 9.2 5h5.6a2 2 0 0 1 2 1.5L19 19z"/><path d="M9.5 9.5l.01 0M14 11l.01 0M11 14l.01 0M14.5 15.5l.01 0"/>',
+  bread:'<path d="M5 11a4 4 0 0 1 1-7.5c2-.6 4 .2 6 .2s4-.8 6-.2a4 4 0 0 1 1 7.5V19a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 19z"/><path d="M9 10l1.5 1.5M13 10l1.5 1.5"/>',
+  fizzy:'<path d="M6.5 8h11l-1.4 11.2a1.5 1.5 0 0 1-1.5 1.3H9.4a1.5 1.5 0 0 1-1.5-1.3z"/><path d="M13 8l2-5h2.5M10 12.5h.01M13.5 15h.01M11 17h.01"/>',
+  night:'<path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10z"/>'};
+let sosC = "", sosI = 0;
+function sosLang(){ try { const l = ((window.LowiLang && LowiLang.get ? LowiLang.get() : localStorage.getItem("lowispike.lang")) || "en").slice(0, 2); return SOS_TX[l] ? l : "en"; } catch(e){ return "en"; } }
+function sosT_(k){ const x = SOS_TX[sosLang()]; return (x && x.t[k]) || SOS_EN[k]; }
+const SOS_TILE = {sweet:"Sweet", chocolate:"Chocolate", salty:"Salty & crunchy", bread:"Bread & carbs", fizzy:"Fizzy drink", night:"Late-night snack"};
+function sosLabel(c){ const x = SOS_TX[sosLang()]; return (x && x.l[c]) || SOS_TILE[c] || SOS[c].l; }
+function sosFix(c, i){ const x = SOS_TX[sosLang()], f = (x && x.fix[c] && x.fix[c][i]) || SOS[c].fix[i]; return {n:f[0], how:f[1], why:(x && x.why[c] && x.why[c][i]) || (SOS_WHY[c] || [])[i] || ""}; }
+const sosIco = (c, cls) => '<span class="fs-ic' + (cls ? " " + cls : "") + '" aria-hidden="true"><svg viewBox="0 0 24 24">' + (SOS_IC[c] || SOS_IC.sweet) + '</svg></span>';
+function openSOS(c){ const el = $("#sos"); if (!el) return;
+  el.classList.add("fs-panel", "fs-swap"); el.setAttribute("data-noi18n", ""); el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true");
+  const head = (eyebrow, title) => '<div class="fs-xwrap"><button type="button" class="xbtn fs-x" data-act="closesos" aria-label="' + esc(sosT_("close")) + '">' + ICO.x + '</button></div>' +
+    '<div class="fs-eyebrow">' + esc(eyebrow) + '</div><div class="fs-title" id="sosTitle">' + esc(title) + '</div>';
+  if (!SOS[c]) {
+    el.setAttribute("data-step", "1");
+    el.innerHTML = head(sosT_("eyebrow"), sosT_("ask")) + '<p class="fs-sub">' + esc(sosT_("askSub")) + '</p><div class="fs-tiles" role="list">' +
+      Object.keys(SOS).map(k => '<button type="button" class="fs-tile" role="listitem" data-act="sos" data-c="' + k + '">' + sosIco(k) + '<span>' + esc(sosLabel(k)) + '</span></button>').join("") + '</div>';
+  } else {
+    if (c !== sosC) { sosC = c; sosI = 0; }
+    const n = SOS[c].fix.length, i = sosI % n, f = sosFix(c, i);
+    el.setAttribute("data-step", "2");
+    el.innerHTML = head(sosT_("eyebrow"), sosLabel(c)) +
+      '<div class="fs-card" id="sosFix" data-c="' + c + '" data-i="' + i + '"><div class="fs-swap-line">' + sosIco(c) + '<span><small>' + esc(sosT_("craving")) + '</small><b>' + esc(sosLabel(c)) + '</b></span></div>' +
+      '<div class="fs-swap-arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4v15M6 13l6 6 6-6"/></svg></div>' +
+      '<div class="fs-swap-line"><span class="fs-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span><small>' + esc(sosT_("have")) + '</small><b class="fs-swap-to">' + esc(f.n) + '</b></span></div>' +
+      (f.why ? '<p class="fs-why">' + esc(f.why) + '</p>' : "") + '<p class="fs-how">' + esc(f.how) + '</p></div>' +
+      '<div class="fs-actions"><button type="button" class="fs-btn pri" data-act="sosbeat" id="sosBeat">' + esc(sosT_("had")) + '</button>' +
+      (n > 1 ? '<button type="button" class="fs-btn" data-act="sosnext">' + esc(sosT_("another")) + '</button>' : "") + '</div>' +
+      '<div class="fs-xp">' + esc(sosT_("xp")) + '</div>' +
+      '<div class="fs-links"><button type="button" class="fs-link" data-act="sostimer" id="sosTimerBtn">' + esc(sosT_("wave")) + '</button><span class="fs-timer" id="sosTimer" hidden>10:00</span>' +
+      '<button type="button" class="fs-link" data-act="sosgave">' + esc(sosT_("gave")) + '</button>' +
+      '<button type="button" class="fs-link" data-act="sos">‹ ' + esc(sosT_("back")) + '</button></div>';
+  }
+  el.setAttribute("aria-labelledby", "sosTitle");
+  el.scrollTop = 0; el.classList.add("open");
+  try { window.LowiFuelScreens && LowiFuelScreens.burst(); } catch(e){} }
+let sosT; function sosTimer(){ clearInterval(sosT); let s = 600; const tb = $("#sosTimer"); if (tb) { tb.hidden = false; tb.textContent = "10:00"; } const bt = $("#sosTimerBtn"); if (bt) bt.hidden = true;
+  sosT = setInterval(() => { s--; const el = $("#sosTimer"); if (!el || s < 0) { clearInterval(sosT); if (el) el.textContent = sosT_("passed"); return; } el.textContent = Math.floor(s / 60) + ":" + pad(s % 60); }, 1000); }
 
 /* For You (feed lives in foryou.js), Shelf (shelf.js), brands (now in Scan), Profile */
 /* Brands: demo data. Verified = passed the community health check. Sponsored = paid placement, never verification. */
@@ -6560,9 +6626,10 @@ document.addEventListener("click", e => {
     case "closesheet": case "close-sheet": closeSheet(); break;
     case "sos": openSOS(d.c); break;
     case "closesos": clearInterval(sosT); $("#sos").classList.remove("open"); break;
-    case "sostimer": sosTimer(); a.textContent = "Timer running"; break;
+    case "sostimer": sosTimer(); break;
+    case "sosnext": sosI++; openSOS(sosC); break;
     case "sosbeat": { clearInterval(sosT); $("#sos").classList.remove("open"); const sosN = S.ledger.filter(e => e.day === today() && e.label === "Craving handled").length; if (sosN < 3) award(20, "Craving handled", null, "", "sos:" + today() + ":" + sosN); /* xpm: max 3 a day */ renderAll(); break; }
-    case "sosgave": clearInterval(sosT); $("#sos").classList.remove("open"); goTab("home"); setTimeout(() => { const t = $("#eatText"); if (t) { t.focus(); t.placeholder = "What did you have? No judgement."; } }, 300); break;
+    case "sosgave": clearInterval(sosT); $("#sos").classList.remove("open"); /* Oct 18: opens the Fuel meal log (the old Today box is gone from the ring Home) */ if (window.LowiSpirit && LowiSpirit.meal) setTimeout(() => LowiSpirit.meal(), 60); else { goTab("home"); setTimeout(() => { const t = $("#eatText"); if (t) { t.focus(); t.placeholder = "What did you have? No judgement."; } }, 300); } break;
     case "glow": glowSheet(); break;
     case "glowpick": glowPick(d.g, d.v); break;
     case "glowsave": glowSave(); break;
@@ -17291,7 +17358,7 @@ const SEEN = "lowi.f2.v1", BONUS = 10;
 const W = {
   en: {tag:"Next up", quest:"Log your meal", title:"What did you eat?", sub:"Log it while it's fresh. A photo, a barcode or a few words all count.",
     snap:"Snap it", snapS:"Photo of your plate", bc:"Scan barcode", bcS:"Packaged food", type:"Type it", typeS:"Already eaten? No photo needed",
-    pickQ:"Not eaten yet?", pick:"Help me pick", later:"Skip for now · back to Today", close:"Close", back:"Back",
+    pickQ:"Not eaten yet?", pick:"Help me pick", later:"Not now", xpOnce:"+{n} XP when you log it", close:"Close", back:"Back",
     fairy:"Nice! Now tell me what you ate. Photo, barcode or a few words, each one gets you XP.", guide:"Your guide",
     typeT:"What was it?", typeSub:"A few words is enough. I'll work out the spike.", ph:"e.g. salmon, broccoli and rice", recent:"Tap one or type your own", check:"Check the spike",
     bad:"I couldn't read that one. Try simple words, like chicken, rice and salad.", photoT:"Nice shot. What's on the plate?", photoSub:"Name the main things so I can work out the spike.",
@@ -17300,11 +17367,11 @@ const W = {
     doneT:"Meal logged!", low:"Low spike", medium:"Medium spike", high:"High spike",
     lowL:"Clean refuel. Steady energy ahead.", mediumL:"Solid. A short walk after it helps.", highL:"Big spike. A 10-minute walk now softens it.",
     xpBreak:"Logged the meal that broke your fast", xpNone:"No meal XP: 5 meals a day is the max.", share:"Share to For You", shareS:"Show the community what you ate",
-    skipShare:"Skip · back to Today", today:"Back to Today", nextFast:"Your next fast is running since {t}.", cap:"Just ate: {m}",
+    skipShare:"Skip", today:"Done", nextFast:"Your next fast is running since {t}.", cap:"Just ate: {m}",
     ate:"I ate this · log it", other:"Something else", typeIt:"Can't rate it? Type it instead", meal:"Meal checked"},
   de: {tag:"Als Nächstes", quest:"Mahlzeit eintragen", title:"Was hast du gegessen?", sub:"Trag es ein, solange du es noch weißt. Foto, Barcode oder ein paar Worte, alles zählt.",
     snap:"Foto machen", snapS:"Foto von deinem Teller", bc:"Barcode scannen", bcS:"Verpacktes Essen", type:"Eintippen", typeS:"Schon gegessen? Kein Foto nötig",
-    pickQ:"Noch nicht gegessen?", pick:"Hilf mir beim Aussuchen", later:"Später · zurück zu Heute", close:"Schließen", back:"Zurück",
+    pickQ:"Noch nicht gegessen?", pick:"Hilf mir beim Aussuchen", later:"Jetzt nicht", xpOnce:"+{n} XP, wenn du es einträgst", close:"Schließen", back:"Zurück",
     fairy:"Stark! Jetzt sag mir, was du gegessen hast. Foto, Barcode oder ein paar Worte, alles bringt dir XP.", guide:"Dein Guide",
     typeT:"Was war es?", typeSub:"Ein paar Worte reichen. Den Spike rechne ich aus.", ph:"z. B. Lachs, Brokkoli und Reis", recent:"Tipp eins an oder schreib selbst", check:"Spike prüfen",
     bad:"Das konnte ich nicht lesen. Versuch einfache Wörter, wie Hähnchen, Reis und Salat.", photoT:"Schönes Foto. Was ist auf dem Teller?", photoSub:"Nenn die Hauptsachen, dann rechne ich den Spike aus.",
@@ -17313,11 +17380,11 @@ const W = {
     doneT:"Mahlzeit eingetragen!", low:"Niedriger Spike", medium:"Mittlerer Spike", high:"Hoher Spike",
     lowL:"Sauber getankt. Ruhige Energie voraus.", mediumL:"Solide. Ein kurzer Spaziergang danach hilft.", highL:"Großer Spike. 10 Minuten gehen jetzt dämpft ihn.",
     xpBreak:"Die Mahlzeit nach dem Fasten eingetragen", xpNone:"Keine Mahlzeit-XP: 5 Mahlzeiten am Tag sind das Maximum.", share:"Auf For You teilen", shareS:"Zeig der Community, was du gegessen hast",
-    skipShare:"Überspringen · zurück zu Heute", today:"Zurück zu Heute", nextFast:"Dein nächstes Fasten läuft seit {t}.", cap:"Gerade gegessen: {m}",
+    skipShare:"Überspringen", today:"Fertig", nextFast:"Dein nächstes Fasten läuft seit {t}.", cap:"Gerade gegessen: {m}",
     ate:"Hab ich gegessen · eintragen", other:"Etwas anderes", typeIt:"Keine Bewertung? Dann tipp es ein", meal:"Mahlzeit geprüft"},
   es: {tag:"Lo siguiente", quest:"Registra tu comida", title:"¿Qué comiste?", sub:"Regístralo ahora que lo recuerdas. Una foto, un código de barras o unas palabras, todo cuenta.",
     snap:"Hazle una foto", snapS:"Foto de tu plato", bc:"Escanear código", bcS:"Comida envasada", type:"Escríbelo", typeS:"¿Ya comiste? Sin foto",
-    pickQ:"¿Aún no has comido?", pick:"Ayúdame a elegir", later:"Ahora no · volver a Hoy", close:"Cerrar", back:"Atrás",
+    pickQ:"¿Aún no has comido?", pick:"Ayúdame a elegir", later:"Ahora no", xpOnce:"+{n} XP al registrarlo", close:"Cerrar", back:"Atrás",
     fairy:"¡Genial! Ahora dime qué comiste. Foto, código o unas palabras, todo te da XP.", guide:"Tu guía",
     typeT:"¿Qué era?", typeSub:"Con unas palabras basta. Yo calculo el pico.", ph:"p. ej. salmón, ensalada y huevos", recent:"Toca uno o escribe el tuyo", check:"Ver el pico",
     bad:"No pude leer eso. Prueba con palabras sencillas, como pollo, arroz y ensalada.", photoT:"Buena foto. ¿Qué hay en el plato?", photoSub:"Di lo principal y calculo el pico.",
@@ -17326,7 +17393,7 @@ const W = {
     doneT:"¡Comida registrada!", low:"Pico bajo", medium:"Pico medio", high:"Pico alto",
     lowL:"Recarga limpia. Energía estable por delante.", mediumL:"Bien. Un paseo corto después ayuda.", highL:"Pico alto. Caminar 10 minutos ahora lo suaviza.",
     xpBreak:"Registraste la comida que rompió tu ayuno", xpNone:"Sin XP de comida: 5 comidas al día es el máximo.", share:"Compartir en For You", shareS:"Muestra a la comunidad lo que comiste",
-    skipShare:"Saltar · volver a Hoy", today:"Volver a Hoy", nextFast:"Tu próximo ayuno corre desde las {t}.", cap:"Acabo de comer: {m}",
+    skipShare:"Saltar", today:"Listo", nextFast:"Tu próximo ayuno corre desde las {t}.", cap:"Acabo de comer: {m}",
     ate:"Me lo comí · registrar", other:"Otra cosa", typeIt:"¿Sin valoración? Escríbelo", meal:"Comida revisada"}
 };
 /* Spanish words the meal checker doesn't know yet */
@@ -17380,9 +17447,11 @@ function mem(){ try { return JSON.parse(localStorage.getItem(SEEN) || "{}") || {
 function remember(o){ try { localStorage.setItem(SEEN, JSON.stringify(Object.assign(mem(), o))); } catch(e){} }
 
 function stepEat(){ F.step = "eat"; F.mode = ""; const x = mealXP() + (bonusOpen() ? BONUS : 0);
-  const opt = (k, ic, t, s, cls) => '<button type="button" class="f2-opt ' + cls + '" data-f2="' + k + '"><span class="f2-orb">' + ic + '</span><span class="f2-ot"><b>' + e_(t) + '</b><small>' + e_(s) + '</small></span>' + (x ? xpPill(x) : "") + '<i class="f2-chev" aria-hidden="true">›</i></button>';
+  const opt = (k, ic, t, s, cls) => '<button type="button" class="f2-opt ' + cls + '" data-f2="' + k + '"><span class="f2-orb">' + ic + '</span><span class="f2-ot"><b>' + e_(t) + '</b><small>' + e_(s) + '</small></span><i class="f2-chev" aria-hidden="true">›</i></button>';
   put(head(w("title"), w("sub"), w("tag") + " · " + w("quest")) +
     '<div class="f2-opts">' + opt("snap", IC.cam, w("snap"), w("snapS"), "snap") + opt("bc", IC.bc, w("bc"), w("bcS"), "bc") + opt("type", IC.pen, w("type"), w("typeS"), "type") + '</div>' +
+    /* Oct 18 (one Fuel style): the XP shows once, small, instead of a pill on every row; same amount */
+    (x ? '<div class="fs-xp f2-xpone">' + e_(w("xpOnce").replace("{n}", x)) + '</div>' : "") +
     '<button type="button" class="f2-pick" data-f2="go" data-to="pick"><span class="f2-pi">' + IC.dice + '</span><span class="f2-ot"><small>' + e_(w("pickQ")) + '</small><b>' + e_(w("pick")) + '</b></span><i class="f2-chev" aria-hidden="true">›</i></button>' +
     laterBtn());
   fairyOnce(); }
@@ -20049,6 +20118,9 @@ window.LowiCommunityHost = {
 <link rel="stylesheet" id="cshCss" href="cook-shop.css?v=20261018-175840">
 <link rel="stylesheet" id="symCss" href="sym-home.css?v=20261018-175840">
 <script src="sym-home.js?v=20261018-175840"></script>
+<!-- Oct 18: the Fuel screens (Log a meal, What did you eat?, Your pick, Swap, What can I buy here?) as one panel family in the Home bubble glass, one close top right, docked beside Misty (COORD-fuel-screens-style.md) -->
+<link rel="stylesheet" id="fsCss" href="fuel-screens.css?v=20261018-175840">
+<script src="fuel-screens.js?v=20261018-175840"></script>
 </body>
 </html>
 

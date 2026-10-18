@@ -1,0 +1,240 @@
+/* fuel-screens.css - Oct 18 2026. One family for every screen the Fuel bubble opens (see fuel-screens.js for which):
+   the Home bubble glass (var(--wh-glass-*) from world-home.css, read only) over a deep tint so text stays readable,
+   one radius, one type scale, one button style, one icon circle, and exactly one close control: a glass circle in the
+   panel's top-right corner. Panels size to their content (no empty bottom), dock beside Misty on wide screens
+   (fuel-screens.js sets --fs-l/t/w/h) and float as a bottom sheet on phones.
+   Every rule is scoped under P = :is(.fs-panel, #fs-a#fs-b#fs-c): the never-matching id list lifts each rule above the
+   stacked older panel skins (liquid-glass.css, misty-panels.css, beta.css, inline) without touching them. */
+:root {
+    --fs-r: 26px;
+    --fs-base: rgba(8, 22, 52, .84);
+    --fs-ink: #f4fbff;
+    --fs-ink2: rgba(214, 234, 255, .80);
+    --fs-tile: rgba(255, 255, 255, .07);
+    --fs-tile-hi: rgba(255, 255, 255, .14);
+    --fs-line: var(--wh-glass-rim, rgba(170, 225, 255, .5));
+    --fs-go-bg: #f4fbff;
+    --fs-go-ink: #0b1d3f;
+    --fs-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+}
+html[data-theme="light"] {
+    --fs-base: rgba(240, 246, 253, .93);
+    --fs-ink: #0b1d3f;
+    --fs-ink2: rgba(11, 29, 63, .72);
+    --fs-tile: rgba(11, 29, 63, .05);
+    --fs-tile-hi: rgba(11, 29, 63, .10);
+    --fs-go-bg: #0b1d3f;
+    --fs-go-ink: #f4fbff;
+}
+
+/* ---------- the panel ---------- */
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) {
+    background: var(--wh-glass-wide, linear-gradient(transparent, transparent)), var(--fs-base) !important;
+    -webkit-backdrop-filter: blur(22px) saturate(1.35) !important;
+    backdrop-filter: blur(22px) saturate(1.35) !important;
+    border: 1.5px solid var(--fs-line) !important;
+    border-radius: var(--fs-r) !important;
+    box-shadow: var(--wh-glass-sh, none), 0 22px 54px -18px rgba(0, 8, 30, .62) !important;
+    color: var(--fs-ink) !important;
+    font-family: var(--fs-font) !important;
+    text-shadow: none !important;
+    padding: 18px 18px 16px !important;
+    box-sizing: border-box !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    outline: none !important;
+}
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c)::before,
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c)::after { display: none !important; }
+/* inner wrappers carry no skin of their own */
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) :is(.r2-shb, .sheetbody.f2, .sp-pick, .stp-body) {
+    background: none !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important;
+    max-height: none !important; height: auto !important; min-height: 0 !important; overflow: visible !important; color: inherit !important;
+}
+/* the measuring pass (fuel-screens.js): natural height, no motion */
+html:root body :is(.fs-panel.fs-measure, #fs-a#fs-b#fs-c) { max-height: none !important; animation: none !important; transition: none !important; }
+
+/* ---------- wide screens: docked beside Misty, near the Fuel bubble ---------- */
+html:root body :is(.fs-panel.fs-dock, #fs-a#fs-b#fs-c) {
+    position: fixed !important;
+    inset: var(--fs-t) auto auto var(--fs-l) !important;
+    width: var(--fs-w) !important;
+    max-width: none !important;
+    max-height: var(--fs-h) !important;
+    margin: 0 !important;
+    transform: none !important;
+    translate: none !important;
+    scale: none !important;
+}
+/* ---------- phones: a floating sheet at the bottom, as tall as its content ---------- */
+html:root body :is(#sos.fs-panel:not(.fs-dock), #fs-a#fs-b#fs-c) {
+    position: fixed !important;
+    inset: auto 10px calc(var(--sab, 0px) + 10px) 10px !important;
+    width: auto !important;
+    max-width: 560px !important;
+    margin: 0 auto !important;
+    max-height: calc(100% - var(--sat, 0px) - 40px) !important;
+}
+html:root body :is(.r2-sh.fs-panel:not(.fs-dock), #fs-a#fs-b#fs-c) { max-height: calc(100% - var(--sat, 0px) - 40px) !important; }
+
+/* #sos opens and closes by fading (it used to slide in from the side) */
+html:root body :is(#sos.fs-panel, #fs-a#fs-b#fs-c) {
+    z-index: 255 !important;
+    display: block !important;
+    transition: opacity .2s ease, transform .2s ease, visibility 0s linear .2s !important;
+}
+html:root body :is(#sos.fs-panel:not(.open), #fs-a#fs-b#fs-c) { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
+html:root body :is(#sos.fs-panel.open, #fs-a#fs-b#fs-c) { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; transition-delay: 0s !important; }
+html:root body :is(#sos.fs-panel:not(.open):not(.fs-dock), #fs-a#fs-b#fs-c) { transform: translateY(16px) !important; }
+@media (prefers-reduced-motion: reduce) { html:root body :is(#sos.fs-panel, #fs-a#fs-b#fs-c) { transition: none !important; } }
+
+/* the veil behind a Fuel panel stays light so Misty and the bubbles read through it */
+html.fs-open:root body :is(#sheetwrap.open:has(> #sheet.fs-panel), #fs-a#fs-b#fs-c) { background: rgba(2, 8, 28, .28) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+html.fs-open:root body :is(.r2-ov:has(> .r2-sh.fs-panel) > .r2-scrim, #fs-a#fs-b#fs-c) { background: rgba(2, 8, 28, .28) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+
+/* ---------- exactly one close control: the glass circle top right ---------- */
+html.fs-open:root body :is(#whX, #fs-a#fs-b#fs-c) { display: none !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) :is(.pf-hd, .fs-xwrap) {
+    position: sticky !important; top: 0 !important; display: block !important;
+    height: 0 !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important;
+    background: none !important; border: 0 !important; box-shadow: none !important; z-index: 8 !important;
+}
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) :is(.pf-hd, .fs-xwrap)::before,
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) :is(.pf-hd, .fs-xwrap)::after { display: none !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) :is(.r2-grab, .grab, .pf-grab) { display: none !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) :is(.pf-hd, .fs-xwrap) > :is(.pf-x, .fs-x, .xbtn, .r2-x):first-of-type {
+    position: absolute !important; top: -6px !important; right: -6px !important; left: auto !important; bottom: auto !important;
+    width: 38px !important; height: 38px !important; min-width: 0 !important; min-height: 0 !important; padding: 0 !important; margin: 0 !important;
+    display: grid !important; place-items: center !important; border-radius: 50% !important;
+    background: var(--wh-glass-bg, rgba(255, 255, 255, .12)) !important;
+    border: 1.5px solid var(--fs-line) !important; box-shadow: none !important;
+    color: var(--fs-ink) !important; opacity: 1 !important; transform: none !important; cursor: pointer;
+}
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) :is(.pf-hd, .fs-xwrap) > :is(.pf-x, .fs-x, .xbtn, .r2-x):first-of-type svg {
+    width: 16px !important; height: 16px !important; fill: none !important; stroke: currentColor !important; stroke-width: 2.4 !important; stroke-linecap: round !important;
+}
+/* any second close (a sheet's own button that was not moved into the header, the old foot orb) goes */
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) :is(.pf-hd, .fs-xwrap) > :is(.pf-x, .fs-x, .xbtn, .r2-x) ~ :is(.pf-x, .fs-x, .xbtn, .r2-x),
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) > :is(.r2-x, .xbtn.f2-x, .pf-addx),
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .ovhead .xbtn { display: none !important; }
+
+/* ---------- type ---------- */
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) :is(.fs-eyebrow, .f2-tag, .sp-pick > small) {
+    display: block !important; margin: 0 50px 4px 0 !important; padding: 0 !important; background: none !important; border: 0 !important;
+    font: 600 12px/1.3 var(--fs-font) !important; letter-spacing: .08em !important; text-transform: uppercase !important; color: var(--fs-ink2) !important;
+}
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .f2-tag span { background: none !important; padding: 0 !important; border: 0 !important; color: inherit !important; font: inherit !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) :is(.fs-title, .f2-t, .sp-pick h2, .r2-shb > h2) {
+    margin: 0 50px 6px 0 !important; padding: 0 !important;
+    font: 700 21px/1.22 var(--fs-font) !important; letter-spacing: -.01em !important; color: var(--fs-ink) !important; text-align: left !important;
+}
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) :is(.fs-sub, .f2-sub, .sp-pick p, .sp-note, .sp-quick-h, .f2-ch-l) {
+    margin: 0 0 12px !important; font: 400 15px/1.4 var(--fs-font) !important; color: var(--fs-ink2) !important; opacity: 1 !important;
+}
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .sp-quick-h { margin: 14px 0 6px !important; font-size: 13px !important; font-weight: 600 !important; }
+/* XP: one small line, never a pill on every row */
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .f2-xpp { display: none !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .fs-xp {
+    display: block !important; margin: 10px 0 0 !important; font: 600 13px/1.3 var(--fs-font) !important; color: var(--fs-ink2) !important; text-align: center !important;
+}
+
+/* ---------- rows, tiles, icon circles ---------- */
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) :is(.f2-opts, .sp-quick-list) { display: grid !important; gap: 8px !important; margin: 0 !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) :is(.f2-opt, .f2-pick, .sp-quick-item, .sp-herb-tip) {
+    display: flex !important; align-items: center !important; gap: 12px !important; width: 100% !important; box-sizing: border-box !important;
+    min-height: 58px !important; padding: 9px 12px !important; margin: 0 !important; text-align: left !important;
+    background: var(--fs-tile) !important; border: 1px solid var(--fs-line) !important; border-radius: 18px !important; box-shadow: none !important;
+    color: var(--fs-ink) !important; font: 600 16px/1.25 var(--fs-font) !important; opacity: 1 !important;
+}
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) :is(.f2-opt, .f2-pick, .sp-quick-item, .sp-herb-tip, .fs-tile, .fs-btn):active { background: var(--fs-tile-hi) !important; transform: scale(.985) !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) :is(.f2-opt, .f2-pick) :is(small, .f2-os, .muted) { color: var(--fs-ink2) !important; font-weight: 400 !important; font-size: 13px !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) :is(.f2-orb, .f2-pi, .fs-ic) {
+    flex: none !important; width: 40px !important; height: 40px !important; display: grid !important; place-items: center !important;
+    border-radius: 50% !important; background: var(--wh-glass-bg, rgba(255, 255, 255, .12)) !important; border: 1.5px solid var(--fs-line) !important;
+    color: var(--fs-ink) !important; box-shadow: none !important; filter: none !important;
+}
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) :is(.f2-orb, .f2-pi, .fs-ic) svg { width: 20px !important; height: 20px !important; fill: none !important; stroke: currentColor !important; stroke-width: 1.8 !important; stroke-linecap: round !important; stroke-linejoin: round !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .f2-chev { color: var(--fs-ink2) !important; margin-left: auto !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) :is(.sp-quick-item, .sp-herb-tip) svg { color: var(--fs-ink) !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .sp-quick-item em { color: var(--fs-ink) !important; }
+
+/* ---------- buttons ---------- */
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) :is(.fs-btn, .f2-go, .r2-btn, .sp-quick-cap button, .sp-pick-actions button, .stp-foot button) {
+    display: flex !important; align-items: center !important; justify-content: center !important; gap: 8px !important;
+    width: 100% !important; min-height: 48px !important; padding: 10px 16px !important; margin: 0 !important; box-sizing: border-box !important;
+    border-radius: 999px !important; border: 1px solid var(--fs-line) !important; background: var(--fs-tile) !important; box-shadow: none !important;
+    color: var(--fs-ink) !important; font: 600 16px/1.2 var(--fs-font) !important; text-shadow: none !important; opacity: 1 !important; filter: none !important;
+}
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) :is(.fs-btn.pri, .f2-go, .r2-btn.pri, .sp-pick-actions button:first-child) {
+    background: var(--fs-go-bg) !important; color: var(--fs-go-ink) !important; border-color: transparent !important;
+}
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) :is(.fs-btn, .f2-go, .r2-btn, .sp-quick-cap button, .sp-pick-actions button) svg { width: 20px !important; height: 20px !important; flex: none !important; color: inherit !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) :is(.fs-actions, .sp-pick-actions, .sp-quick-cap) { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px !important; margin: 14px 0 0 !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) :is(.fs-link, .f2-later, .f2-back) {
+    display: inline-flex !important; align-items: center !important; justify-content: center !important; min-height: 40px !important;
+    padding: 8px 6px !important; margin: 0 !important; background: none !important; border: 0 !important; box-shadow: none !important;
+    color: var(--fs-ink2) !important; font: 500 14px/1.3 var(--fs-font) !important; text-decoration: none !important; opacity: 1 !important; width: auto !important;
+}
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) :is(.fs-links, .f2-foot) {
+    display: flex !important; flex-wrap: wrap !important; justify-content: center !important; gap: 2px 14px !important; margin: 8px 0 0 !important; padding: 0 !important;
+    background: none !important; border: 0 !important; position: static !important;
+}
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) :is(.fs-link, .f2-later, .f2-back):focus-visible,
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) :is(.fs-btn, .fs-tile, .f2-opt, .pf-x, .fs-x):focus-visible { outline: 2px solid var(--fs-ink) !important; outline-offset: 2px !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) :is(input, textarea, select, .input) {
+    background: var(--fs-tile) !important; border: 1px solid var(--fs-line) !important; border-radius: 14px !important; color: var(--fs-ink) !important;
+    font: 400 16px/1.3 var(--fs-font) !important; box-shadow: none !important;
+}
+
+/* ---------- Your pick (Today's step) ---------- */
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .sp-pick-photo { display: block !important; width: 100% !important; height: 150px !important; max-height: 150px !important; object-fit: cover !important; border-radius: 18px !important; margin: 4px 0 10px !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .sp-pick-mini { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; margin: 0 0 10px !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .sp-pick-m { background: var(--fs-tile) !important; border: 1px solid var(--fs-line) !important; border-radius: 14px !important; padding: 6px 4px !important; color: var(--fs-ink) !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .sp-pick-m small { color: var(--fs-ink2) !important; opacity: 1 !important; }
+/* the three info buttons read as one segmented switch for the text under it */
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .sp-pick-tabs {
+    display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 0 !important; padding: 3px !important; margin: 0 0 8px !important;
+    background: var(--fs-tile) !important; border: 1px solid var(--fs-line) !important; border-radius: 999px !important;
+}
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .sp-pick-tabs button {
+    display: flex !important; align-items: center !important; justify-content: center !important; gap: 6px !important; min-height: 36px !important; padding: 4px 8px !important; margin: 0 !important;
+    background: none !important; border: 0 !important; border-radius: 999px !important; box-shadow: none !important;
+    color: var(--fs-ink2) !important; font: 600 14px/1.2 var(--fs-font) !important;
+}
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .sp-pick-tabs button svg { width: 16px !important; height: 16px !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .sp-pick-tabs button:is([aria-pressed="true"], [aria-selected="true"], .on, .active) { background: var(--fs-tile-hi) !important; color: var(--fs-ink) !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .sp-pick section { margin: 0 !important; padding: 0 !important; min-height: 0 !important; height: auto !important; background: none !important; border: 0 !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .sp-pick section :is(p, li) { font: 400 15px/1.45 var(--fs-font) !important; color: var(--fs-ink2) !important; margin: 0 0 4px !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .sp-pick section ul { margin: 0 !important; padding-left: 18px !important; }
+
+/* ---------- Swap: step 1 "What are you craving?" ---------- */
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .fs-tiles { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 10px !important; margin: 0 !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .fs-tile {
+    display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; gap: 8px !important;
+    min-height: 104px !important; padding: 12px 6px !important; margin: 0 !important; box-sizing: border-box !important; min-width: 0 !important;
+    background: var(--fs-tile) !important; border: 1px solid var(--fs-line) !important; border-radius: 20px !important; box-shadow: none !important;
+    color: var(--fs-ink) !important; font: 600 15px/1.2 var(--fs-font) !important; text-align: center !important; cursor: pointer;
+}
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .fs-tile .fs-ic { width: 46px !important; height: 46px !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .fs-tile .fs-ic svg { width: 24px !important; height: 24px !important; }
+@media (max-width: 430px) { html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .fs-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .fs-tile { min-height: 84px !important; flex-direction: row !important; justify-content: flex-start !important; padding: 10px 12px !important; text-align: left !important; } }
+
+/* ---------- Swap: step 2, one card ---------- */
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .fs-card {
+    display: block !important; margin: 4px 0 0 !important; padding: 14px 16px !important; box-sizing: border-box !important;
+    background: var(--fs-tile) !important; border: 1px solid var(--fs-line) !important; border-radius: 20px !important; box-shadow: none !important; color: var(--fs-ink) !important;
+}
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .fs-swap-line { display: flex !important; align-items: center !important; gap: 10px !important; margin: 0 0 10px !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .fs-swap-line > span:not(.fs-ic) { display: grid !important; gap: 1px !important; min-width: 0 !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .fs-swap-line small { font: 600 12px/1.3 var(--fs-font) !important; letter-spacing: .06em !important; text-transform: uppercase !important; color: var(--fs-ink2) !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .fs-swap-line b { font: 700 18px/1.25 var(--fs-font) !important; color: var(--fs-ink) !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .fs-swap-arrow { display: block !important; margin: -4px 0 6px 13px !important; color: var(--fs-ink2) !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .fs-swap-arrow svg { width: 16px !important; height: 16px !important; fill: none !important; stroke: currentColor !important; stroke-width: 2 !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .fs-why { margin: 2px 0 2px !important; font: 600 15px/1.4 var(--fs-font) !important; color: var(--fs-ink) !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .fs-how { margin: 0 !important; font: 400 14px/1.4 var(--fs-font) !important; color: var(--fs-ink2) !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) .fs-timer { font: 600 14px/1.3 var(--fs-font) !important; font-variant-numeric: tabular-nums !important; color: var(--fs-ink) !important; padding: 8px 6px !important; }
+html:root body :is(.fs-panel, #fs-a#fs-b#fs-c) [hidden] { display: none !important; }

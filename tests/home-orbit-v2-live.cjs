@@ -3,7 +3,7 @@
    Measures the eight controls on screen: ONE circle round Misty's centre, one diameter, 45 degree steps, Settings on top, Scan at
    the lower right (45 degrees, Emmanuel 18 Oct: "Let's put scan where setting is"), joystick at the bottom, nothing overlapping or clipped, the old chrome hidden. Then taps them: Scan reaches the real scanner
    (the #b3Cam camera opens, or LowiLiving.scan), the joystick drag sends real steering to the world (LowiWorldHome.pad), Water adds a cup, Move opens its
-   bloom, Settings opens its bloom on screen and clear of Misty, lists the hidden entry points and switches the bottom menu bar, Sleep logs locally.
+   bloom, Settings opens its full page on one tap (since 18 Oct 2026; the kept chip bloom, opened through the API, stays on screen and clear of Misty), lists the hidden entry points and switches the bottom menu bar, Sleep logs locally.
    Production Supabase and every non-GET request are blocked; no account is created (a local fixture session only).
      node tests/home-orbit-v2-live.cjs [--root DIR | --url https://therealetm.github.io/lowispike/] [--out DIR] [--tag after] [--views a,b]
    Exit 0 = pass. */
@@ -134,7 +134,17 @@ function geometry(r) {
             const ss2ids = () => page.evaluate(() => [...document.querySelectorAll('#ss2Bloom [data-ss2]')].map(b => b.getAttribute('data-ss2')));
             const ss2press = id => page.evaluate(id => { const b = document.querySelector('#ss2Bloom [data-ss2="' + id + '"]'); if (b) b.click(); return !!b; }, id);
             if (act.adapter.settings === 'settings-sleep') {
+                /* one tap opens the full Settings page since 18 Oct 2026 (Emmanuel): Settings choices first, then the More entries */
                 await page.evaluate(() => document.querySelector('[data-orbit="settings"]').click()); await sleep(700);
+                act.settingsPage = await page.evaluate(() => { const L = document.getElementById('ss2Bloom'), p = L && L.querySelector('.ss2-page'); return { page: !!p, fan: !!(L && L.querySelector('.ss2-fan')), groups: p ? [...p.querySelectorAll('.ss2-group')].map(g => [...g.querySelectorAll('[data-ss2]')].map(r => r.dataset.ss2)) : [] }; });
+                if (!act.settingsPage.page || act.settingsPage.fan) P.push('one tap on Settings should open the full page: ' + JSON.stringify(act.settingsPage));
+                for (const id of ['me', 'look', 'account', 'menubar']) if (!(act.settingsPage.groups[0] || []).includes(id)) P.push('settings page missing ' + id);
+                for (const id of ['map', 'community']) if (!(act.settingsPage.groups[1] || []).includes(id)) P.push('settings page More group missing ' + id);
+                for (const id of ['today', 'cook']) if ((act.settingsPage.groups[1] || []).includes(id)) P.push('settings page More group should not list ' + id);
+                await page.screenshot({ path: `${OUT}/${TAG}-${v}-settings-page.png` });
+                await page.keyboard.press('Escape'); await sleep(400);
+                /* the chip bloom and More panel stay for the queued double tap / hold gestures: opened through the API, checked as strictly as before */
+                await page.evaluate(() => window.LowiHomeSettingsSleepV2.open('settings')); await sleep(700);
                 act.settings = await ss2ids();
                 for (const id of ['me', 'look', 'account', 'menubar', 'more']) if (!act.settings.includes(id)) P.push('settings missing ' + id);
                 /* the Settings bloom from its top slot: every choice on screen, none over Misty (disk or hit test at her centre) */

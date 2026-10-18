@@ -2,7 +2,9 @@
 /* Live check for the trimmed Settings > More ("Everything else") panel, Oct 18 2026.
    node tests/everything-else-trim-live.cjs [--url=https://therealetm.github.io/lowispike/] [--out=/tmp/eet-shots] [--views=a,b] [--prefix=after]
    Without --url it serves this checkout. Every non-GET request and Supabase is blocked: nothing reaches production.
-   For each view: tap Settings, tap More, then check the panel lists exactly the kept entries in two groups (Go to / Settings),
+   Since 18 Oct 2026 one tap on Settings opens the full Settings page: the tap checks the page lists the kept entries, then the
+   More panel (kept for the queued hold gesture) is opened from the chip bloom through LowiHomeSettingsSleepV2.open('settings').
+   For each view: open the Settings bloom, tap More, then check the panel lists exactly the kept entries in two groups (Go to / Settings),
    fits with no scrolling, keeps Back and x in view (also after a scroll attempt), is fully on screen, is glass, never covers
    Misty, and on iPad is clear of every ring control. Back returns to Settings, x closes. A screenshot per view. */
 const fs = require('fs'), path = require('path'), http = require('http');
@@ -70,7 +72,17 @@ async function tap(page, sel) { const c = await center(page, sel); if (!c) retur
         await page.waitForFunction(() => document.documentElement.classList.contains('wh-home') && window.LowiHomeSettingsSleepV2 && document.querySelector('[data-orbit="settings"]'), null, { timeout: 90000 });
         await sleep(+arg('wait', 16000)); /* Misty settles (shrinks once) about 15 s after load */
         const build = await page.evaluate(() => fetch('version.json?x=' + Date.now()).then(r => r.json()).then(j => j.build).catch(() => ''));
+        /* since 18 Oct 2026 one tap on Settings opens the full Settings page (Emmanuel): the kept More entries are its second group */
         await tap(page, '[data-orbit="settings"]'); await sleep(300);
+        { const pg = await page.evaluate(() => { const p = document.querySelector('#ss2Bloom .ss2-page'); return p ? [...p.querySelectorAll('.ss2-group')].map(g => [...g.querySelectorAll('[data-ss2]')].map(r => r.dataset.ss2)) : null; });
+          ok(!!pg, 'one tap on Settings should open the full Settings page');
+          const more = (pg && pg[1]) || [];
+          ok(GONE.every(id => !more.includes(id)), 'Settings page still lists a removed entry: ' + more);
+          ok(['community', 'care', 'workouts', 'map', 'worldSound'].every(id => more.includes(id)), 'Settings page is missing a kept entry: ' + more);
+          await page.screenshot({ path: `${OUT}/${PREFIX}-${v}-page.png` });
+          await page.keyboard.press('Escape'); await sleep(400); }
+        /* the More panel is kept for the queued hold gesture: reached from the kept chip bloom (opened through the API), checked as before */
+        await page.evaluate(() => window.LowiHomeSettingsSleepV2.open('settings')); await sleep(300);
         await tap(page, '#ss2Bloom [data-ss2="more"]'); await sleep(700);
         const g = await page.evaluate(PANEL);
         await page.screenshot({ path: `${OUT}/${PREFIX}-${v}.png` });

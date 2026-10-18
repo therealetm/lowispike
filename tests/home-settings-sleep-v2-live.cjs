@@ -3,6 +3,8 @@
    Real taps on the Sleep and Settings bubbles; chips must bloom outward, stay on screen and never cover Misty; Sleep logs, corrects
    and clears today's entry, survives a reload; Settings runs the real routes (Profile, Look & sound, Account, Community, Care board,
    Today) and the menu bar switch follows the shell contract (localStorage lowi.home.menubar + window lowi:home-menubar).
+   Since 18 Oct 2026 one tap on Settings opens the full Settings page (Emmanuel's call): the real tap checks the page, and the chip
+   bloom and More panel, kept for the queued double tap and hold gestures, are opened through LowiHomeSettingsSleepV2.open().
    Shell: index.html once integrated; else --shell DIR (the integrator's home-orbit-v2.js/css); else a tiny stand-in that only
    creates the two ring buttons the shell would create.
    Production Supabase and every non-GET request are blocked (counted, never sent); a local fixture session only, no account.
@@ -49,7 +51,7 @@ const GEO = async () => {
     await new Promise(r => setTimeout(r, 350));
     const L = document.getElementById('ss2Bloom'), m = document.querySelector('[data-home-misty]') || document.getElementById('spBubble');
     const mq = m.getBoundingClientRect(), mx = mq.left + mq.width / 2, my = mq.top + mq.height / 2, mr = Math.max(mq.width, mq.height) / 2;
-    const kind = L && L.getAttribute('data-kind'), b = document.querySelector('[data-orbit="' + (kind === 'more' ? 'settings' : kind) + '"]');
+    const kind = L && L.getAttribute('data-kind'), b = document.querySelector('[data-orbit="' + (kind === 'more' || kind === 'page' ? 'settings' : kind) + '"]');
     const bq = b && b.getBoundingClientRect(), bd = bq ? Math.hypot(bq.left + bq.width / 2 - mx, bq.top + bq.height / 2 - my) : 0;
     const chips = L ? [...L.querySelectorAll('.ss2-fan .ss2-chip')].map(c => { const x = parseFloat(c.style.left), y = parseFloat(c.style.top), w = c.offsetWidth, hit = document.elementFromPoint(x, y); return { id: c.dataset.ss2, x, y, w, onTop: !!(hit && hit.closest && hit.closest('[data-ss2]') === c), hit: hit ? hit.tagName + '#' + hit.id + '.' + String(hit.className && hit.className.baseVal != null ? hit.className.baseVal : hit.className).slice(0, 40) : 'none', role: c.getAttribute('role'), checked: c.getAttribute('aria-checked'), dm: Math.hypot(x - mx, y - my) }; }) : [];
     const p = L && L.querySelector('.ss2-panel'), pr = p && p.getBoundingClientRect();
@@ -58,6 +60,12 @@ const GEO = async () => {
     return { kind, open: document.documentElement.classList.contains('ss2-open'), vw: innerWidth, vh: innerHeight, mx, my, mr, bd, chips,
         panel: pr ? { top: pr.top, bottom: pr.bottom, left: pr.left, right: pr.right, gap: Math.hypot(nx - mx, ny - my), rows: [...p.querySelectorAll('.ss2-row')].map(r => r.dataset.ss2) } : null,
         mistyCovered: !!(top && top.closest && top.closest('#ss2Bloom')), expanded: b && b.getAttribute('aria-expanded') };
+};
+/* the full Settings page (one tap on Settings since 18 Oct 2026): is it there, its groups and rows, is the old bloom gone */
+const PAGE = () => {
+    const L = document.getElementById('ss2Bloom'), p = L && L.querySelector('.ss2-page'), b = document.querySelector('[data-orbit="settings"]');
+    return { page: !!p, kind: L && L.getAttribute('data-kind'), fan: !!(L && L.querySelector('.ss2-fan')), panel: !!(L && L.querySelector('.ss2-panel')), expanded: b && b.getAttribute('aria-expanded'),
+        groups: p ? [...p.querySelectorAll('.ss2-group')].map(g => [...g.querySelectorAll('[data-ss2]')].map(r => r.dataset.ss2)) : [] };
 };
 const FACE = () => { const b = document.querySelector('[data-orbit="sleep"]'); return b && { val: (b.querySelector('.o8-val') || {}).textContent, aria: b.getAttribute('aria-label'), fill: b.style.getPropertyValue('--wh-fill'), done: b.classList.contains('done'), adapter: b.dataset.o8Adapter }; };
 const STORE = () => {
@@ -159,8 +167,16 @@ async function boot(page, url) {
         ok(s.band === null && f.val === 'Log' && !f.done, 'clear: ' + JSON.stringify({ s, f }));
         const xp = await page.evaluate(() => window.LowiVitalsBridge.state().xp);
         ok(xp === 900, 'sleep must not change XP (got ' + xp + ')');
-        /* Settings */
+        /* Settings: one tap opens the full Settings page (Emmanuel, 18 Oct 2026), not the chip bloom */
         await tap(page, '[data-orbit="settings"]');
+        { const pg = await page.evaluate(PAGE);
+          ok(pg.page && pg.kind === 'page' && !pg.fan && !pg.panel, 'one tap on Settings should open the full page: ' + JSON.stringify(pg));
+          ok(pg.expanded === 'true', 'settings page: bubble aria-expanded not true');
+          ok((pg.groups[0] || []).join() === 'me,look,account,menubar', 'settings page first group: ' + JSON.stringify(pg.groups));
+          await page.screenshot({ path: `${OUT}/${v}-settings-page.png` });
+          await page.keyboard.press('Escape'); await sleep(200); }
+        /* the chip bloom is kept for the queued double tap; it is opened through the API now that a single tap opens the page */
+        await page.evaluate(() => window.LowiHomeSettingsSleepV2.open('settings')); await sleep(300);
         g = await page.evaluate(GEO);
         geoOK(g, 'settings');
         ok(g.chips.map(c => c.id).join() === 'me,look,account,menubar,more', 'settings chips: ' + g.chips.map(c => c.id));
@@ -182,8 +198,16 @@ async function boot(page, url) {
         mb = await page.evaluate(() => ({ ls: localStorage.getItem('lowi.home.menubar'), ev: window.__mb.slice() }));
         ok(mb.ls === '0' && mb.ev[mb.ev.length - 1] === false, 'menu bar off: ' + JSON.stringify(mb));
         await page.evaluate(() => window.LowiHomeSettingsSleepV2.close()); await sleep(1500);
-        /* More: the hidden Home entry points, in a panel clear of Misty */
-        await tap(page, '[data-orbit="settings"]'); await tap(page, '#ss2Bloom [data-ss2="more"]');
+        /* More: since 18 Oct 2026 its entries sit on the full Settings page (one tap), in a group after the Settings choices */
+        await tap(page, '[data-orbit="settings"]');
+        { const pg = await page.evaluate(PAGE), more = pg.groups[1] || [];
+          for (const id of ['community', 'care', 'workouts', 'map']) ok(more.includes(id), 'Settings page More group is missing ' + id + ': ' + more);
+          for (const id of ['today', 'cook', 'theme', 'quest']) ok(!more.includes(id), 'Settings page More group should not list ' + id + ': ' + more);
+          ok(!(pg.groups[0] || []).includes('more'), 'Settings page should have no More row (More is on the page)');
+          const em = await page.evaluate(EMOJI); ok(!em, 'no emoji on the Settings page: ' + em); }
+        await page.evaluate(() => window.LowiHomeSettingsSleepV2.close()); await sleep(300);
+        /* the More panel is kept for the queued hold gesture; opened through the API, it must still sit clear of Misty */
+        await page.evaluate(() => window.LowiHomeSettingsSleepV2.open('more')); await sleep(300);
         { const em = await page.evaluate(EMOJI); ok(!em, 'no emoji in the More panel: ' + em); }
         g = await page.evaluate(GEO);
         ok(g.panel && g.panel.gap >= g.mr - 1, 'More panel overlaps Misty: ' + JSON.stringify(g.panel) + ' mr ' + g.mr);
@@ -199,10 +223,10 @@ async function boot(page, url) {
         ok(!(await page.evaluate(GEO)).open, 'bloom should close when a route runs');
         const home = async () => { await page.evaluate(() => window.goTab('home')); await page.waitForFunction(() => document.documentElement.classList.contains('wh-home') && (document.getElementById('tab-home') || {}).classList.contains('active') && !document.documentElement.classList.contains('wb-comm'), null, { timeout: 20000 }).catch(() => { }); await page.waitForFunction(() => { const b = document.querySelector('[data-orbit="settings"]'); if (!b || b.dataset.o8Adapter !== 'settings-sleep') return false; const r = b.getBoundingClientRect(), e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return r.width > 20 && e && e.closest && e.closest('[data-orbit="settings"]') === b; }, null, { timeout: 20000 }).catch(() => P.push('settings bubble not back and tappable on Home')); await sleep(1200); };
         await home();
-        await tap(page, '[data-orbit="settings"]'); await tap(page, '#ss2Bloom [data-ss2="more"]'); await tap(page, '#ss2Bloom [data-ss2="care"]'); await sleep(900);
+        await tap(page, '[data-orbit="settings"]'); await tap(page, '#ss2Bloom [data-ss2="care"]'); await sleep(900);
         ok(await page.evaluate(() => window.__care === 1), 'Care board route did not run LowiR3F.openBoardTab once');
         await home();
-        await tap(page, '[data-orbit="settings"]'); await tap(page, '#ss2Bloom [data-ss2="more"]'); await tap(page, '#ss2Bloom [data-ss2="map"]'); await sleep(700);
+        await tap(page, '[data-orbit="settings"]'); await tap(page, '#ss2Bloom [data-ss2="map"]'); await sleep(700);
         ok(await page.evaluate(() => window.__map === 1), 'World map route did not press the existing world map control');
         await page.keyboard.press('Escape'); await home();
         /* Profile tiles: Look & sound, Account, Me */

@@ -163,3 +163,9 @@ test('five Fuel orbs (with Log meal) still fan cleanly: on screen, clear of Mist
         assert.ok(apart(Q.pts, 84), 'iPad orbs apart ' + i);
     }
 });
+
+test('while a Fuel panel is open, the screens keep re-checking, so the Home X comes back even when the close fade outlasts the burst (WebKit on a slow device)', () => {
+    const js = read('fuel-screens.js');
+    const sync = js.slice(js.indexOf('function sync() {'), js.indexOf('function soon()'));
+    assert.ok(/if \(open > 0\) setTimeout\(soon, \d{3}\);/.test(sync), 'a light re-check is scheduled only while a panel is open');
+});

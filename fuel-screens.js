@@ -111,6 +111,9 @@
             }
         });
         H.classList.toggle('fs-open', open > 0);
+        /* a close can finish after the last burst (slow frames, a sheet removed outside <body>): keep a light re-check
+           going only while a panel is open, so the Home X always comes back */
+        if (open > 0) setTimeout(soon, 400);
     }
     function soon() { if (!raf) raf = requestAnimationFrame(sync); }
     function burst() { soon(); setTimeout(soon, 60); setTimeout(soon, 260); setTimeout(soon, 700); }

@@ -105,6 +105,9 @@ const PROBE = () => {
             const build = await page.evaluate(() => fetch('version.json?t=' + Date.now()).then(r => r.json()).then(j => j.build).catch(() => '?'));
             log.push(P + 'build ' + build);
             const closeAll = async () => {
+                /* the What's New tour (#g1Tour, top z-index) can pop up again mid-run on a fresh test account, notably in WebKit,
+                   and then covers whatever is open: it is not a Fuel screen, so keep it away for the whole run */
+                await page.evaluate(() => { if (window.__fsNoTour) return; window.__fsNoTour = new MutationObserver(() => { const t = document.getElementById('g1Tour'); if (t) t.remove(); }); window.__fsNoTour.observe(document.body, { childList: true }); });
                 /* close the way the app does first (its own close / LowiR2.close), so no sheet manager is left thinking a sheet is open */
                 await page.evaluate(() => {
                     try { window.LowiHomeBloomsV2.close(); } catch (e) { }
@@ -173,7 +176,8 @@ const PROBE = () => {
                 const n = pt ? 1 : 0; if (pt) await page.mouse.click(pt.x, pt.y);
                 const after = await settle(false);
                 ok(n === 1 && (after.none || !after.fs), P + k + ': the close control closes it' + (after.none ? '' : ' (still open: ' + after.cls + '; r2 sheets: ' + JSON.stringify(await page.evaluate(() => [...document.querySelectorAll('.r2-ov')].map(o => o.className.slice(-20) + '/' + o.querySelector('.r2-sh').className.slice(-30)))) + ')'));
-                ok(!(await page.evaluate(() => document.documentElement.classList.contains('fs-open'))), P + k + ': the Home X comes back after closing');
+                let xBack = false; for (let i = 0; i < 12 && !xBack; i++) { xBack = !(await page.evaluate(() => document.documentElement.classList.contains('fs-open'))); if (!xBack) await sleep(250); }
+                ok(xBack, P + k + ': the Home X comes back after closing (within 3 s)');
             };
 
             /* Today's step -> Your pick */

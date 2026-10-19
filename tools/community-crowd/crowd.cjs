@@ -221,6 +221,34 @@ async function logMealFor(st, p, now) {
   st.meals = (st.meals || 0) + 1; return log;
 }
 
+/* ---------- real energy balls ----------
+   The app sends energy balls as broadcast events ("energy") on the shared realtime channel "lowi-all" (index.html
+   energyShot(), community-energy.js remote()). Members send the same compact shot through Supabase's realtime REST
+   broadcast, aimed from their own spot on the receiver's map (the receiver always sits at 0,0; spots come from
+   community-galaxy.js mapLayout over the profiles, so the aim is close but not guaranteed). */
+let GAL = null; function galaxy() { if (!GAL) GAL = require(path.join(__dirname, '..', '..', 'community-galaxy.js')); return GAL; }
+function shotAt(byUid, toUid, uids, r = Math.random) {
+  const L = galaxy().mapLayout(uids.filter(u => u && u !== toUid).map(uid => ({ uid })), toUid), sp = L.spots.find(s => s.uid === byUid);
+  if (!sp) return null;
+  const a = Math.atan2(-sp.y, -sp.x) + (r() - 0.5) * 0.12;
+  return { v: 1, id: 'c' + crypto.randomBytes(6).toString('hex'), by: byUid, a: +a.toFixed(3), p: +(0.7 + r() * 0.3).toFixed(2), to: toUid, ht: 300 + Math.round(r() * 300), t: Date.now() };
+}
+async function broadcast(tok, payloads) {
+  await call('POST', '/realtime/v1/api/broadcast', tok, { messages: payloads.map(p => ({ topic: 'lowi-all', event: 'energy', payload: p, private: false })) });
+  return payloads.length;
+}
+const nap = ms => new Promise(r => setTimeout(r, ms));
+let UIDS = null, UIDS_AT = 0;
+async function mapUids(tok) { if (!UIDS || Date.now() - UIDS_AT > 5 * 60e3) { const rows = await get(tok, 'profiles?select=id,name&limit=1000'); UIDS = rows.filter(x => x && x.id && x.name).map(x => x.id); UIDS_AT = Date.now(); } return UIDS; }
+/* a burst of 1 to 3 real balls from member p at a person (uid), spaced like a thumb on the joystick */
+async function energyBalls(st, p, toUid) {
+  const tok = await session(st, p), by = st.bots[p.i].id, uids = await mapUids(tok);
+  if (!uids.includes(by)) uids.push(by);
+  const n = 1 + Math.floor(Math.random() * 3); let sent = 0;
+  for (let k = 0; k < n; k++) { const s = shotAt(by, toUid, uids); if (!s) break; await broadcast(tok, [s]); sent++; if (k < n - 1) await nap(350 + Math.random() * 500); }
+  st.balls = (st.balls || 0) + sent; return sent;
+}
+
 /* ---------- reading the room ---------- */
 function botIndex(st) { const m = new Map(); Object.keys(st.bots).forEach(i => st.bots[i].id && m.set(st.bots[i].id, people()[+i])); return m; }
 function langOf(text) { const s = ' ' + String(text).toLowerCase() + ' '; if (/ (und|ich|nicht|heute|hast|danke|gibt|wie|moin|hallo|energie geschickt) /.test(s)) return 'de'; if (/ (que|qué|hola|gracias|para|está|te envió|yo |cómo|buenas) /.test(s)) return 'es'; return 'en'; }
@@ -369,8 +397,11 @@ async function ambient(st, room, now, minutes) {
     try { const lg = await logMealFor(st, p, now); if (!lg) continue; out.meals++; if (Math.random() < 0.15) { await say(st, p, line(p, 'meal', { food: lg.t })); out.chat++; } }
     catch (e) { log('meal', e.message); }
   }
+  out.balls = 0;
   for (let k = 0; k < Math.min(n.energy, 5); k++) {
-    const p = pickBot(), toHuman = humans.length && Math.random() < 0.6, target = toHuman ? weighted(humans, x => x.eman ? 3 : 1).name : pick(all.filter(x => x !== p)).name;
+    /* Emmanuel asked for the members to send HIM energy too (19 Oct, 10 PM): humans get 75% of energy, Emmanuel the biggest share */
+    const p = pickBot(), toHuman = humans.length && Math.random() < 0.75, hu = toHuman ? weighted(humans, x => x.eman ? 6 : 1) : null, target = hu ? hu.name : pick(all.filter(x => x !== p)).name;
+    if (hu) { try { out.balls += await energyBalls(st, p, hu.id); } catch (e) { log('balls', e.message); } }
     try { await say(st, p, '@' + target + ' ' + fill(p, K.L[p.lang].energy, { n: p.name })); out.energy++; } catch (e) { log('energy', e.message); }
   }
   const recent = room.msgs.filter(m => now - Date.parse(m.created_at) < 6 * 36e5 && !/^bot:/.test(m.user_id));
@@ -415,4 +446,4 @@ async function main() {
   do { await once({ spawn: +(process.env.CROWD_SPAWN || 6) }); if (Date.now() < until) await new Promise(r => setTimeout(r, 60e3)); } while (Date.now() < until);
 }
 if (require.main === module) main().catch(e => { console.error('crowd failed:', e.message); process.exit(1); });
-module.exports = { people, voice, line, topicOf, langOf, hourIn, awake, lvOf, look, _t: { load, save, session, say, chatPhoto, mealPost, ins, products, stats, slotAt, dayIn, mealTitle, mealLog, addMeal, logMealFor } };
+module.exports = { people, voice, line, topicOf, langOf, hourIn, awake, lvOf, look, _t: { load, save, session, say, chatPhoto, mealPost, ins, products, stats, slotAt, dayIn, mealTitle, mealLog, addMeal, logMealFor, shotAt, broadcast, energyBalls, mapUids } };

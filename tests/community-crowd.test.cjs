@@ -87,3 +87,14 @@ test('crowd: nobody logs a meal in the middle of their night, and the day follow
   const tokyo = a.find(p => p.tz === 'Asia/Tokyo');
   if (tokyo) assert.strictEqual(T.dayIn(tokyo.tz, Date.UTC(2026, 9, 19, 20, 0)), '2026-10-20');
 });
+
+test('crowd: real energy balls use the app\'s shot shape and aim at the receiver, who sits at 0,0 on their own map', () => {
+  const T = crowd._t, G = require('../community-galaxy.js');
+  const uids = Array.from({ length: 40 }, (_, i) => 'u' + i + '-' + 'x'.repeat(30));
+  const s = T.shotAt(uids[3], uids[0], uids, () => 0.5);
+  assert.ok(s && s.v === 1 && s.by === uids[3] && s.to === uids[0]);
+  assert.ok(s.id.length <= 24 && s.p >= 0 && s.p <= 1 && s.ht >= 0 && s.ht <= 5000 && Math.abs(s.a) <= 7);
+  const L = G.mapLayout(uids.filter(u => u !== uids[0]).map(uid => ({ uid })), uids[0]), sp = L.spots.find(x => x.uid === uids[3]);
+  assert.ok(Math.abs(s.a - Math.atan2(-sp.y, -sp.x)) < 0.01); // straight at the receiver
+  assert.strictEqual(T.shotAt('nobody', uids[0], uids), null);
+});

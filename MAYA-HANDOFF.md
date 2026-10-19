@@ -362,6 +362,38 @@ logging", picking up from 98f0954e, which stopped out of budget).** Checked with
   the 100-at-once stress test as a separate manual workflow or script, and raise the activity rate if Emmanuel wants
   the room busier.
 - Check script: `tools/community-crowd/db-check.cjs` (read-only, run on the VM).
+- **10 PM check:** still no run started by the schedule (polled 9:38 to 9:58 PM; workflow `active`, no `CROWD_OFF`).
+  Second manual run 39314039836 (on 79c61e1, with meal logging): 36 to 42 members, 107 calls, 12 errors all HTTP 400
+  (one per join, expected), no 429/5xx, maxMs 2345, `meals` 0 in all rounds (expected rate is about 1 per run at 42
+  members). Supabase at 9:58 PM: 42 crowd profiles, 31 crowd messages since 21:15 CEST, 2 chat photos, 1 product
+  exchange between members ("Wo kriegst du das?" / "Ja, gibts bei famila"), 14 replies between members. Emmanuel
+  ("eman") sent energy to three members at 21:57 CEST. Third manual run 39315336437 started at about 9:58 PM.
+
+**20. New from Emmanuel, about 10 PM (chat, voice): crash when sending energy, crowd sends him energy, crowd on
+Home.** REQUESTED, nothing built yet. His words: "It crashed again. It's almost [always when] sending energy. And
+also, I want the simulated bot to also be sending me energy. And then, when they messaging, how come I don't see it
+in my main page? Didn't we say that? Their companion basically appears in our homepage with the message in the
+message bubble."
+   - (a) **Crash when sending energy in Community, again.** The earlier fix (20261019-184741, `community-energy.js`
+     caps and throttles, `COORD-community-crash.md`) did not stop it. New factor since then: about 40 crowd members
+     in the galaxy, so many more bubbles while energy balls fly. He sent energy to Thiago M., Paolo H. and uche_96 at
+     21:57 CEST. Broken thing he can feel: top priority. Ask him for device (iPhone or iPad), whether the page went
+     white, reloaded or froze, if it isn't clear from a repro.
+   - (b) **Crowd members send energy to Emmanuel** (and his friends), not only to each other. `ambient()` already
+     sends `@name ⚡ ... sent you energy` lines to humans seen in the room with 60% odds; check they reach him and
+     raise his share.
+     **Built 10:20 PM (crowd task):** `energyBalls()` in `crowd.cjs` sends 1 to 3 real balls through Supabase's realtime
+     REST broadcast (`/realtime/v1/api/broadcast`, topic `lowi-all`, event `energy`, the app's shot shape), aimed at
+     the receiver; 75% of crowd energy now goes to real people who wrote in the room, Emmanuel weighted 6x. Live proof:
+     a fresh guest on the live site (WebKit iPhone 13) received all 3 balls from Wanjiru A. addressed to it, energy
+     stats `got` and `shown` went up, no errors. Aim is close but not guaranteed (the receiver's map may hold other
+     members). Not proven yet on Emmanuel's own phone.
+   - (c) **Crowd messages on his Home screen.** He expects the sender's companion to appear on Home with the message
+     in a speech bubble, and says this was agreed earlier. Check `living-home.js`, `community-*` and the old
+     `lowi.demobots` Home behaviour (`DATA_CONTRACTS.md`) before building; find what exists and why crowd messages
+     don't show. 10:20 PM: nothing in MAYA-HANDOFF.md, DECISIONS.md or COMMUNITY_CHAT.md records this agreement, and no
+     Home file reads Community messages today. Not built: it touches the Home scene other tasks own; ask him what
+     exactly (every message or only ones to him, how long it stays) and claim the Home files in a COORD file first.
 
 **21. Energy bursts should play like billiards: whoever gets hit stays where they land.** REQUESTED 9:5x PM call,
 task running, nothing released yet.
@@ -904,3 +936,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 - 2026-10-19 21:45 Crowd members now log meals into their own user_state (one per slot per local day), verified live on one member; tools/community-crowd/db-check.cjs added. No app build change.
 - 2026-10-19 22:00 Item 20 recorded under 0.5: energy crash again, crowd should send Emmanuel energy, crowd messages with their companion on Home. Still no scheduled crowd run; db-check counts replies to the human testers.
 - 2026-10-19 22:05 Item 21 recorded under 0.5: energy bursts should play like billiards (hit companions stay where they land, chain hits); task "persistent billiard-style energy burst physics" started.
+- 2026-10-19 22:20 Crowd members send real energy balls to Emmanuel and other humans (item 20b), proven live on a guest; soak tool gets --net. Item 20c (crowd on Home) not built, no earlier agreement found.

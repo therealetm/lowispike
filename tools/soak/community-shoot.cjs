@@ -24,7 +24,7 @@ const INIT = () => { try { const d = new Date(), k = d.getFullYear() + '-' + Str
     const browser = await pw[ENGINE].launch({ args: ENGINE === 'chromium' ? ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info', '--js-flags=--expose-gc'] : [] });
     const dev = ENGINE === 'webkit' ? Object.assign({}, pw.devices['iPhone 13']) : { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true };
     const ctx = await browser.newContext(Object.assign(dev, { serviceWorkers: 'block' }));
-    await ctx.route('**/*', r => { const q = r.request(), u = new URL(q.url()); if (u.protocol === 'data:' || u.protocol === 'blob:' || (u.host === host && q.method() === 'GET')) return r.continue(); return r.abort(); });
+    if (!arg('net', false)) await ctx.route('**/*', r => { const q = r.request(), u = new URL(q.url()); if (u.protocol === 'data:' || u.protocol === 'blob:' || (u.host === host && q.method() === 'GET')) return r.continue(); return r.abort(); });
     await ctx.addInitScript(INIT); await ctx.addInitScript({ content: PROBE });
     const page = await ctx.newPage(); const errs = []; let loads = 0, crashed = false;
     page.on('pageerror', e => errs.push({ at: el(), m: (e.message || '').slice(0, 300), st: String(e.stack || '').split('\n').slice(0, 4).join(' | ').slice(0, 500) }));

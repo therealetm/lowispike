@@ -18,7 +18,11 @@ This reverses the earlier rule in COMMUNITY_CHAT.md that the room shows no inven
 - Log meals the way the app saves them (added 19 Oct, 9:45 PM): one entry per breakfast, lunch, snack or dinner window
   in their own time zone, at most one per slot per local day, written to `S.logs` in the `lowispike.v2` key of their own
   `user_state` backup row (macros left unknown). About 15% of logged meals are also mentioned in the room.
-- Send energy, react with the five chat emoji, like posts.
+- Send energy, react with the five chat emoji, like posts. Since 19 Oct, 10 PM (Emmanuel asked for it) energy to a
+  real person who wrote in the room is also 1 to 3 REAL energy balls: the same broadcast the app sends (event `energy`
+  on channel `lowi-all`, via Supabase's realtime REST broadcast), aimed from the member's spot at the receiver, who
+  sits at 0,0 on their own map. 75% of energy goes to real people, Emmanuel with the biggest share. Each run's log
+  line carries `balls`.
 - Answer people: Emmanuel's messages get a reply about 85% of the time, other testers about 60%, and an @mention of a
   member always gets that member. Members welcome newcomers, ask where to buy a product and answer each other.
   Replies are written from fixed lines, not by an AI model, so they can be repetitive or miss the point.

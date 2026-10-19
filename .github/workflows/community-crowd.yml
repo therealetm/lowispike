@@ -1,0 +1,44 @@
+# Community crowd simulation (Emmanuel, 19 Oct 2026): up to 100 simulated members chat, post meal photos,
+# talk about products and answer the beta testers, around the clock. See tools/community-crowd/README.md.
+# Switch it off: Actions > community crowd > Disable workflow, or set the repository variable CROWD_OFF to 1.
+name: community crowd
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: community-crowd
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  crowd:
+    if: vars.CROWD_OFF != '1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .crowd
+          key: crowd-state-${{ github.run_id }}
+          restore-keys: crowd-state-
+      - name: Run the crowd for about nine minutes
+        env:
+          CROWD_SEED: ${{ secrets.CROWD_SEED }}
+          CROWD_STATE: ${{ github.workspace }}/.crowd/state.json
+          CROWD_MINUTES: '8'
+          CROWD_MAX: ${{ vars.CROWD_MAX || '100' }}
+        run: node tools/community-crowd/crowd.cjs once
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: always()
+        with:
+          path: .crowd
+          key: crowd-state-${{ github.run_id }}

@@ -450,7 +450,7 @@ question).** REQUESTED 10:1x PM call, task "LOWiSPIKE: incoming-message companio
      history never replayed as new, no pile-up when several people write. Reduced motion, three languages, message
      shown as text only. Must stay light: Community is still crashing on his iPhone (items 20a, crash task 9472a9a4).
    - Notes in `/home/sprite/COORD-home-visit.md`, branch `home-visit`, worktree `/home/sprite/wt-home-visit`.
-   - **SHIPPED** (build in the Log line below): home-visit.js + home-visit.css, `LowiCommunity.directed()` / `face` / `colorOf` /
+   - **SHIPPED in build 20261019-224516**: home-visit.js + home-visit.css, `LowiCommunity.directed()` / `face` / `colorOf` /
      `openMessage` in community-chat.js, tests/home-visit.test.cjs. All choices in DECISIONS.md 2026-10-19 23:15. Tested on simulated
      iPhone 13, iPad (both ways), Android Chrome and reduced motion with mocked messages; not yet with a real message on his phone.
 
@@ -1102,3 +1102,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 - 2026-10-19 22:40 Release 20261019-223855 (item 22 follow-up): Forms / Food journal / Glow moved above the companion's words, right under the name, so they are fully in view when the card opens on a simulated iPhone 13 (doors 435-539 px of 664). 1,789 tests pass. Live-checked on simulated iPhone 13 (WebKit) and Android Chrome: places read Home world / Cell worlds / Galaxy / Other worlds / Streams with "Go there yourself" / "Level 5 + go there", no "spirit" on the card, Food journal opens, no errors. Not checked on a real phone; autopilot could not be started in the test browser, so "autopilot never counts as your visit" is covered by unit tests only.
 - 2026-10-19 22:45 Item 27 recorded under 0.5 (before merging): food paths (Scan, Gap, Fuel, Cook, Shop) get one clear job each and one shared meal-logging flow; scanning a product not yet in the database catches it (Pathfinder, item 24; XP adds to the normal total). Branch food-paths, follow-up task finishing it.
 - 2026-10-19 22:55 Item 28: picked aura now shows on Home Misty and her card at once and follows the account (lowispike.aura.v1); Rename under the name on her card (1-24 chars, empty = generated name), her name reaches the controller, Next journey, zoom and gift labels; tutorial step 'rename'. Branch aura-rename.
+- 2026-10-19 23:30 Item 23 SHIPPED, build 20261019-224516: a message to Emmanuel (mention or reply) arrives on Home as the sender's own companion flying in, hologram + speech bubble; tap opens it in Community. Live checks pass on simulated iPhone 13 and Android Chrome with mocked messages; not yet seen with a real message on his phone. Choices in DECISIONS.md.

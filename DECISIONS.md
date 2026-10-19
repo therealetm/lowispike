@@ -636,3 +636,6 @@ Shop gets "Snacks to buy" at the top: only snacks still to buy ("nicht die schon
 
 ## Oct 19, 2026: Starter questions survive a reload (bug hunt BH-010)
 The few questions after setup were kept only in memory, so a reload or iOS closing the app before "Let’s do it" / "Not now" lost them for good. afterSetup now marks them pending (lowispike.hs-pending.v1) until a plan or "Not now" is saved; the next start reopens them once Home is quiet (no sheet, gate, tour). Accounts that finished setup earlier have no mark and are never asked. No design change.
+
+## Oct 19, 2026: Setup resumes at the birthday step until the companion exists (bug hunt BH-011)
+The companion is saved only when Continue is tapped on the reveal, but the birthday and setupMid are saved before the reveal plays. A reload or iOS closing the app during the reveal resumed setup at step 1, so the reveal never came back and the account stayed on the standard Misty. R2.onboard now resumes at step 0 (birthday filled in) while LowiBirthCompanion.has() is false; once the companion exists it resumes at step 1 as before (BH-009). The optional birth time is not stored by setup, so after such a reload it has to be typed again.

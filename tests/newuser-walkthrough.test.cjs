@@ -33,7 +33,7 @@ test('onboarding names the bubbles the way the ring does: Fuel (not Meals), Gap 
     const hs = read('herb-start.js');
     assert(!/like Meals or Move/.test(hs), 'old EN copy');
     assert(/Tap a bubble like Fuel or Move/.test(hs));
-    assert(/como \\u00abComida\\u00bb o \\u00abMoverse\\u00bb|como «Comida» o «Moverse»/.test(hs) && !/como Comidas o/.test(hs), 'ES uses the ring labels Comida and Moverse');
+    assert(/como \\u00abComida\\u00bb o \\u00abMovimiento\\u00bb|como «Comida» o «Movimiento»/.test(hs) && !/como Comidas o/.test(hs), 'ES uses the Home bubble names Comida and Movimiento');
     assert(/'Fuel \(meals\)'/.test(hs) && /'Gap \(fasting\)'/.test(hs));
     assert(/'Pause \(Fasten\)'/.test(hs) && /'Pausa \(ayuno\)'/.test(hs));
     assert(!/'Shop & scan','Meals'/.test(hs));

@@ -19,7 +19,7 @@ const es = en => { const r = rows().filter(x => x[0] === en); assert.ok(r.length
 test('word-for-word Spanish from onboarding and setup is gone', () => {
     const banned = ['Tu compañía ya está aquí', 'Da forma a tu compañía', 'Tu compañía y tu app', '¿Qué quieres más?', 'Sin el pico.',
         'Tres campos. Eso es todo.', 'Move para abrirla', 'mundo espíritu', 'Escribe tu propio número', 'Cada uno abre la parte de la app que lo hace',
-        'Low spike, hecho por ti', 'cambio low-spike', 'ni siquiera LOWiSPIKE puede', 'Se ve bien"', '"No OK"'];
+        'Low spike, hecho por ti', 'cambio low-spike', 'ni siquiera LOWiSPIKE puede', 'Se ve bien"', '"No OK"', 'Solo cambia tus consejos', 'como «Comida» o «Moverse»'];
     for (const [f, s] of all()) for (const b of banned) assert.ok(!s.includes(b), f + ' still says: ' + b);
 });
 
@@ -68,9 +68,9 @@ test('rewritten setup rows keep their English keys, all three languages and ever
 
 test('first screens: Spanish bubble names match the real bubbles, and the shopping step asks plainly', () => {
     const s = decode(read('herb-start.js'));
-    assert.match(s, /'Toca una burbuja, como «Comida» o «Moverse», para abrirla\.'/);
-    assert.match(s, /'Moverse','Pausa \(ayuno\)'/);
-    assert.match(decode(read('home-orbit-v2.js')), /T\('Move', 'Bewegen', 'Moverse'\)/, 'the ring calls the Move bubble "Moverse"');
+    assert.match(s, /'Toca una burbuja, como «Comida» o «Movimiento», para abrirla\.'/);
+    assert.match(s, /'Movimiento','Pausa \(ayuno\)'/);
+    assert.match(decode(read('move-bubble.js')), /'Move', 'Bewegung', 'Movimiento'/, 'the Move bubble on Home reads "Movimiento"');
     const shop = decode(read('shop-plan.js'));
     assert.match(shop, /¿Cada cuántos días sueles hacer la compra\? Escribe el número\./);
 });

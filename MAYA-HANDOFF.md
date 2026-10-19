@@ -489,7 +489,16 @@ branch `evo-more`, worktree `/home/sprite/wt-evo-more`, notes `/home/sprite/COOR
    - Parallel tasks today: companion panel / non-mystical world names / discovery gates (0d494df4), aura colour fix and
      companion renaming (ce74d1af), Community crash round 2 (9472a9a4), billiard energy (34bb0a32).
 
-**26. Care gestures are free; sparks are removed.** REQUESTED 10:2x PM call (19 Oct), recorded 10:35 PM before building.
+**26. Care gestures are free; sparks are removed.** RELEASED in 20261019-224045 (main 38c68a3; still live in
+20261019-224907). Requested on the 10:2x PM call (19 Oct), recorded 10:35 PM before building.
+   - Done: micro-book-core.js (no `sparks()`, `SPARK_BASE/MAX`, CARE `cost`, canCare 'sparks'), micro-book.js (no counter,
+     prices, noSpark note; Friends intro says it is free in EN/DE/ES; old `S.care.spent` deleted on read), .mb-sparks/.mb-spk
+     CSS gone. tests/free-care.test.cjs (11 tests, 10 fail on the old code); full suite 1800/1800 at release. DECISIONS.md.
+   - Checked live (build 20261019-224907, writes to Supabase blocked, a crowd member session with two made-up friends):
+     simulated iPhone 13 in EN/DE/ES and Chrome 390 px: no spark word or element on the Friends tab or care sheet, Send is
+     a plain button, 8 real taps went out with no logs today (old budget 3), care XP +15 (5 x 3 cap), no page errors.
+     NOT checked: Emmanuel's real iPhone, the Community profile button and friends tree tapped by hand (they call the same
+     LowiMicroBook.openCare), a real friend receiving it.
 Task "LOWiSPIKE: free care gestures and remove sparks", branch `free-care`, worktree `/home/sprite/wt-free-care`, notes
 `/home/sprite/COORD-free-care.md`.
    - Context: a code check (task "verify currencies and progression resources") found sparks are the only spendable
@@ -1115,3 +1124,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 - 2026-10-19 23:30 Item 23 SHIPPED, build 20261019-224516: a message to Emmanuel (mention or reply) arrives on Home as the sender's own companion flying in, hologram + speech bubble; tap opens it in Community. Live checks pass on simulated iPhone 13 and Android Chrome with mocked messages; not yet seen with a real message on his phone. Choices in DECISIONS.md.
 - 2026-10-19 22:55 Item 27 (food paths + Pathfinder count) merged from branch food-paths and released; e2e 11/11 on WebKit iPhone 13 EN/DE/ES and iPad Pro 11 DE/ES (shopping camera reached via Fuel > Shop > Scan in the shop, lookup stubbed); not on a real phone. Item 24 (Catch/Pathfinder) ships in the same build.
 - 2026-10-19 23:05 Item 27 live in 20261019-230341 (verify-live bytes match; live e2e 11/11 WebKit iPhone 13 ES). Item 24 Catch/Pathfinder in the same build, now with the found-first count.
+- 2026-10-19 22:58 Item 26 released in 20261019-224045 (care free, sparks gone), checked live on simulated iPhone 13 EN/DE/ES + Chrome.

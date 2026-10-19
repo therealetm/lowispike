@@ -48,32 +48,33 @@
 .ss2-chip.ss2-row[aria-checked="true"] { background: radial-gradient(circle at 30% 20%, rgba(255,255,255,.3), rgba(160,255,215,.14) 55%, rgba(60,200,150,.3)); border-color: rgba(170,255,220,.8); }
 .ss2-chip.ss2-row:active { transform: scale(.97); }
 
-/* The full Settings page (one tap on the Settings bubble, Oct 18 2026): a modal page that grows out of the bubble. A deep blue dimming
-   layer instead of a full-screen blur, so the moving world behind costs nothing extra (phone heat); rows use the same glass as the
-   More panel. One column on a phone, two on an iPad; only the list scrolls when a short window needs it. x at the bottom right. */
-.ss2-page { position: absolute; inset: 0; display: flex; flex-direction: column; box-sizing: border-box; pointer-events: auto; color: #fff;
-    padding: calc(env(safe-area-inset-top, 0px) + 18px) calc(env(safe-area-inset-right, 0px) + 16px) 0 calc(env(safe-area-inset-left, 0px) + 16px);
-    background: radial-gradient(120% 70% at 50% 0%, rgba(140,200,255,.2), rgba(255,255,255,0) 60%), linear-gradient(180deg, rgba(14,30,72,.88), rgba(8,18,48,.92));
-    text-shadow: 0 1px 3px rgba(0,25,70,.55); animation: ss2-page-in .3s cubic-bezier(.2,.9,.25,1) both; }
-@keyframes ss2-page-in { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
-.ss2-page-in { flex: 1 1 auto; min-height: 0; width: 100%; max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; }
-.ss2-page-title { flex: none; margin: 0 4px 12px; font-size: 28px; line-height: 34px; font-weight: 700; letter-spacing: .01em; }
-.ss2-page-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y;
-    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 92px); }
-.ss2-page .ss2-group + .ss2-group { margin-top: 18px; }
-.ss2-page .ss2-gl { margin: 0 6px 8px; font-size: 12px; line-height: 16px; }
-.ss2-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
-@media (min-width: 700px) { .ss2-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .ss2-page-title { font-size: 34px; line-height: 40px; } }
-.ss2-page .ss2-chip.ss2-row { min-height: 50px; padding: 8px 14px; gap: 12px; justify-content: flex-start; font-size: 16px; font-weight: 600; border-radius: 25px; }
-.ss2-page .ss2-row .ss2-ico { width: 24px; height: 24px; flex: none; }
+/* The Settings panel (one tap on the Settings bubble). Oct 19 2026, Emmanuel: "why do you have a whole page? ... This could have been
+   just like the design of when the sound menu bar appears." So it is no longer a full-screen page: it is one glass panel in the Body
+   sound panel's look (misty-panels.css membrane surface, rim, glow, 34 px corners), placed by placePage() in the free space beside or
+   under Misty, so she and Home stay in view. No dimming layer behind it. Its own surface carries no backdrop blur (the membrane surface
+   is opaque enough; nothing extra over the moving world for phone heat). The title never scrolls, only the list does when a short
+   window needs it; the x sits at the panel's bottom right. Rows keep their 44 px. */
+.ss2-page { position: absolute; display: flex; flex-direction: column; box-sizing: border-box; max-height: calc(100% - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 20px); pointer-events: auto; color: var(--mb-ink, #fff);
+    padding: 12px 12px 10px; background: var(--mb-surface, linear-gradient(160deg, rgba(40,110,210,.6), rgba(8,20,58,.92)));
+    border: 1px solid var(--mb-rim, rgba(143,231,255,.55)); border-radius: var(--mb-r, 34px); box-shadow: var(--mb-glow, 0 0 30px 3px rgba(143,231,255,.24));
+    text-shadow: 0 1px 6px rgba(0,30,80,.45); animation: ss2-page-in .28s cubic-bezier(.2,.9,.25,1.12) both; }
+@keyframes ss2-page-in { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: none; } }
+.ss2-page-title { flex: none; margin: 2px 8px 10px; font-size: 17px; line-height: 22px; font-weight: 700; letter-spacing: .01em; }
+.ss2-page-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+.ss2-page .ss2-group + .ss2-group { margin-top: 12px; }
+.ss2-page .ss2-gl { margin: 0 8px 6px; font-size: 11px; line-height: 14px; }
+.ss2-list { display: grid; grid-template-columns: repeat(var(--ss2-cols, 1), minmax(0, 1fr)); gap: 6px; }
+.ss2-page .ss2-chip.ss2-row { min-height: 44px; padding: 6px 12px; gap: 8px; justify-content: flex-start; font-size: 14px; font-weight: 600; border-radius: 22px;
+    background: var(--mb-pill, rgba(255,255,255,.08)); border: 1px solid var(--mb-pill-rim, rgba(143,231,255,.42)); box-shadow: var(--mb-pill-sh, none); }
+.ss2-page .ss2-chip.ss2-row[aria-checked="true"] { background: var(--mb-chosen, rgba(60,200,150,.4)); border-color: rgba(170,255,220,.8); }
+.ss2-page .ss2-row .ss2-ico { width: 20px; height: 20px; flex: none; }
 .ss2-page .ss2-row .ss2-lbl { flex: 1 1 auto; min-width: 0; }
-.ss2-page .ss2-row small { font-size: 14px; font-weight: 500; }
-.ss2-page .ss2-row .ss2-chev { width: 18px; height: 18px; flex: none; opacity: .7; }
-.ss2-page-x { position: absolute; right: calc(env(safe-area-inset-right, 0px) + 18px); bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
-    width: 56px; height: 56px; padding: 0; border-radius: 50%; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center;
-    background: radial-gradient(circle at 34% 28%, rgba(255,255,255,.36), rgba(255,255,255,.08) 42%, rgba(120,190,255,.12) 70%, rgba(255,255,255,.18)), rgba(20,34,74,.6);
-    border: 1px solid rgba(255,255,255,.45); box-shadow: inset 0 0 16px rgba(255,255,255,.18); -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-.ss2-page-x svg { width: 24px; height: 24px; }
+.ss2-page .ss2-row small { font-size: 12px; font-weight: 500; }
+.ss2-page .ss2-row .ss2-chev { width: 16px; height: 16px; flex: none; opacity: .7; }
+.ss2-page-foot { flex: none; display: flex; justify-content: flex-end; padding-top: 8px; }
+.ss2-page-x { flex: none; width: 48px; height: 48px; padding: 0; border-radius: 50%; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    background: var(--mb-orb, rgba(20,34,74,.6)); border: 1px solid var(--mb-rim, rgba(255,255,255,.45)); box-shadow: var(--mb-orb-sh, none); -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.ss2-page-x svg { width: 22px; height: 22px; }
 .ss2-page-x:active { transform: scale(.94); }
 .ss2-page-x:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 

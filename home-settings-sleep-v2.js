@@ -5,8 +5,9 @@
      It gives no XP and no sun energy: progression is not touched until the plan aligns it.
    Settings: Me, Look & sound, Account, the bottom menu bar switch, and More (every Home entry point the ring hid).
      Every chip runs a route that exists in the app right now; a route that is missing is not shown.
-     Since 18 Oct 2026 21:30 (Emmanuel: "a single tap opens the full page") one tap on Settings opens ONE full Settings page with all of
-     these on it (tapIntent, pageGroups); the chip bloom and the More panel stay reachable through the API (open('settings'|'more'))
+     Since 18 Oct 2026 21:30 (Emmanuel: "a single tap opens the full page") one tap on Settings opens ONE Settings surface with all of
+     these on it (tapIntent, pageGroups); since 19 Oct 2026 07:30 (Emmanuel: "why do you have a whole page? ... like the design of when
+     the sound menu bar appears") that surface is a glass side panel in the Body sound panel's look, not a full page (placePage); the chip bloom and the More panel stay reachable through the API (open('settings'|'more'))
      for the queued double tap / hold tasks.
    window.LowiHomeSettingsSleepV2.mount(root) is idempotent. Pure helpers (sleep store, fan geometry, entries) are exported for tests. */
 (function (root) {
@@ -154,7 +155,7 @@
         const tight = byDir([
             { side: 'under-misty', l: L, r: R, t: M.y + M.r + m, b: B, nx: 0, ny: 1, maxW: 640 },
             { side: 'over-misty', l: L, r: R, t: T, b: M.y - M.r - m, nx: 0, ny: -1, maxW: 640 }]);
-        const MINC = 88;
+        const MINC = o.minCol || 88, MAXC = o.maxCols || 4;
         const put = (g, w, h, cols, fit) => {
             const vert = g.side === 'left' || g.side === 'right';
             const left = vert ? (g.side === 'right' ? g.l : g.r - w) : Math.max(g.l, Math.min(g.r - w, M.x - w / 2));
@@ -164,11 +165,11 @@
         for (const g of clean.concat(tight)) {
             const W = g.r - g.l, Hh = g.b - g.t; if (W < 220 || Hh < 120) continue;
             const w = Math.min(W, g.maxW);
-            for (let cols = 1; cols <= 4 && w / cols >= MINC; cols++) { const h = o.measure(w, cols); if (h <= Hh) return put(g, w, h, cols, true); }
+            for (let cols = 1; cols <= MAXC && w / cols >= MINC; cols++) { const h = o.measure(w, cols); if (h <= Hh) return put(g, w, h, cols, true); }
         }
-        /* nothing fits: the tallest spot next to Misty, widest grid; the list scrolls, the header stays */
+        /* nothing fits: the tallest spot next to Misty, widest grid, no taller than that spot (so it stays off Misty); the list scrolls, the header stays */
         const g = tight.slice().sort((a, b) => (b.b - b.t) - (a.b - a.t))[0], W = Math.max(160, g.r - g.l), w = Math.min(W, g.maxW);
-        const cols = Math.max(1, Math.min(4, Math.floor(w / MINC))), h = Math.max(120, Math.min(o.measure(w, cols), B - T));
+        const cols = Math.max(1, Math.min(MAXC, Math.floor(w / MINC))), h = Math.max(120, Math.min(o.measure(w, cols), g.b - g.t, B - T));
         const P = put(g, w, h, cols, false); P.top = Math.max(T, Math.min(B - P.height, P.top)); return P;
     }
     function entries(kind, env) {
@@ -186,13 +187,18 @@
         if (bubble === 'sleep') return open === 'sleep' ? 'close' : 'sleep';
         return 'close';
     }
-    /* the full Settings page: the Settings choices first (no More chip: More is on the page), then every More entry; empty groups drop */
+    /* what a row on the Settings panel does (Oct 19 2026, Emmanuel: the sound panel opened BEHIND Settings):
+       'toggle' flips in place and Settings stays; 'panel' opens another panel, so Settings steps aside first and that panel is in front;
+       'go' closes Settings and runs its route */
+    const PANEL_ROWS = ['worldSound'], TOGGLE_ROWS = ['menubar', 'quest'];
+    function rowAction(id) { return PANEL_ROWS.includes(id) ? 'panel' : TOGGLE_ROWS.includes(id) ? 'toggle' : 'go'; }
+    /* the Settings panel (one tap): the Settings choices first (no More chip: More is on the panel), then every More entry; empty groups drop */
     function pageGroups(env) {
         const has = id => !!(env && env.has && env.has(id));
         return [{ key: 'main', ids: ['me', 'look', 'account', 'menubar'].filter(has) }, { key: 'more', ids: MORE.filter(has) }].filter(g => g.ids.length);
     }
 
-    const core = { BANDS, FILL, SHELL_TOKEN, KEEP_DAYS, MENU_KEY, MORE, MORE_GROUPS, MORE_REMOVED, moreGroups, placePanel, TX, dayKey, readSleep, writeSleep, clearSleep, sleepView, fan, entries, tapIntent, pageGroups };
+    const core = { BANDS, FILL, SHELL_TOKEN, KEEP_DAYS, MENU_KEY, MORE, MORE_GROUPS, MORE_REMOVED, moreGroups, placePanel, TX, dayKey, readSleep, writeSleep, clearSleep, sleepView, fan, entries, tapIntent, pageGroups, rowAction };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!root || !root.document) return;
 
@@ -266,7 +272,7 @@
         workouts: { has: () => tabExists('move'), run: goTab('move') },
         map: { has: () => !!$('#whHud .wh-zoom'), run: clickSel('#whHud .wh-zoom') },
         vr: { has: () => !!$('#whHud .wh-vr'), run: clickSel('#whHud .wh-vr') },
-        worldSound: { has: () => !!$('#whHud .wa-btn'), run: clickSel('#whHud .wa-btn'), toggle: () => !!(root.LowiWorldAudio && fn(root.LowiWorldAudio, 'on') && root.LowiWorldAudio.on()) },
+        worldSound: { has: () => !!$('#whHud .wa-btn'), run: () => { if (fn(root.LowiWorldAudio, 'open')) root.LowiWorldAudio.open(); else clickSel('#whHud .wa-btn')(); }, toggle: () => !!(root.LowiWorldAudio && fn(root.LowiWorldAudio, 'on') && root.LowiWorldAudio.on()) },
         theme: { has: () => !!(root.LowiTopBar && fn(root.LowiTopBar, 'toggleTheme')), run: () => root.LowiTopBar.toggleTheme() },
         gift: { has: () => !!$('.hs-gift'), run: clickSel('.hs-gift') },
         weather: { has: () => !!(root.LowiTopBar && fn(root.LowiTopBar, 'openWeather')), run: () => root.LowiTopBar.openWeather() },
@@ -327,6 +333,8 @@
     function pageRow(id) {
         const T = t(), R = ROUTES[id], tog = R && R.toggle, label = T[id] || id, ico = ICON[id] ? svg(id) : '';
         const chev = '<svg class="ss2-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 6l6 6-6 6" ' + P + '/></svg>';
+        /* a row that opens another panel (World sound -> Body sound): shows its state, says it opens a dialog, no switch role */
+        if (rowAction(id) === 'panel') { const on = !!(tog && tog()), st = on ? T.on : T.off; return '<button type="button" class="ss2-chip ss2-row" data-ss2="' + id + '" aria-haspopup="dialog" aria-label="' + label + ': ' + st + '">' + ico + '<span class="ss2-lbl">' + label + '</span><small>' + st + '</small>' + chev + '</button>'; }
         if (tog) { const on = !!tog(); return '<button type="button" class="ss2-chip ss2-row" role="switch" data-ss2="' + id + '" aria-checked="' + on + '" aria-label="' + label + '">' + ico + '<span class="ss2-lbl">' + label + '</span><small>' + (on ? T.on : T.off) + '</small></button>'; }
         return '<button type="button" class="ss2-chip ss2-row" data-ss2="' + id + '">' + ico + '<span class="ss2-lbl">' + label + '</span>' + chev + '</button>';
     }
@@ -341,17 +349,31 @@
         const sec = g => g.key === 'more'
             ? '<section class="ss2-group" aria-labelledby="ss2PageMore"><h3 class="ss2-gl" id="ss2PageMore">' + T.more + '</h3><div class="ss2-list">' + g.ids.map(pageRow).join('') + '</div></section>'
             : '<section class="ss2-group" aria-label="' + T.settings + '"><div class="ss2-list">' + g.ids.map(pageRow).join('') + '</div></section>';
-        /* it grows out of the Settings bubble (transform-origin), so the page reads as coming from what was tapped */
-        L.innerHTML = '<div class="ss2-page" role="dialog" aria-modal="true" aria-labelledby="ss2PageTitle" style="transform-origin:' + (q.left + q.width / 2).toFixed(0) + 'px ' + (q.top + q.height / 2).toFixed(0) + 'px">' +
-            '<div class="ss2-page-in"><h2 class="ss2-page-title" id="ss2PageTitle">' + T.settings + '</h2>' +
-            '<div class="ss2-page-body">' + groups.map(sec).join('') + '</div></div>' +
-            '<button type="button" class="ss2-page-x" data-ss2="close" aria-label="' + T.close + '">' +
-            '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" ' + P + ' stroke-width="2.2"/></svg></button></div>';
+        /* Oct 19 2026 (Emmanuel): not a whole page but a glass side panel in the Body sound panel's look, beside / under Misty so she and
+           Home stay in view; it grows out of the Settings bubble; the x sits at its bottom right */
+        L.innerHTML = '<div class="ss2-page" role="dialog" aria-modal="true" aria-labelledby="ss2PageTitle">' +
+            '<h2 class="ss2-page-title" id="ss2PageTitle">' + T.settings + '</h2>' +
+            '<div class="ss2-page-body">' + groups.map(sec).join('') + '</div>' +
+            '<div class="ss2-page-foot"><button type="button" class="ss2-page-x" data-ss2="close" aria-label="' + T.close + '">' +
+            '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" ' + P + ' stroke-width="2.2"/></svg></button></div></div>';
+        placePage(L.querySelector('.ss2-page'), b);
         const f = L.querySelector('.ss2-page-body button'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } }
         D.dispatchEvent(new CustomEvent('lowi:bloom-v2', { detail: { kind: 'page', open: true, owner: 'settings-sleep' } }));
         return true;
     }
-    /* Tab and Shift+Tab stay inside the open page (it is modal) */
+    /* where the Settings panel goes: the same free-space rule as the More panel (placePanel), clear of Misty and the ring where it can */
+    function placePage(pn, b, still) {
+        if (!pn) return;
+        const q = b.getBoundingClientRect(), M = misty(), vw = H.clientWidth || root.innerWidth, vh = root.innerHeight, safe = safeArea();
+        const rects = [...D.querySelectorAll('[data-orbit]')].map(e => e.getBoundingClientRect()).filter(r => r.width > 2).map(r => ({ l: r.left, t: r.top, r: r.right, b: r.bottom }));
+        const measure = (w, cols) => { pn.style.cssText = 'top:0;left:0;width:' + w + 'px;max-height:none;visibility:hidden;animation:none;--ss2-cols:' + cols; return Math.ceil(pn.getBoundingClientRect().height); };
+        /* at most two columns of readable rows (each at least 150 px wide); when even that does not fit, the list scrolls inside the panel */
+        const Pl = placePanel({ vw, vh, safe, misty: { x: M.x, y: M.y, r: M.r }, bubble: { x: q.left + q.width / 2, y: q.top + q.height / 2 }, rects, measure, maxCols: 2, minCol: 150 });
+        const ox = (q.left + q.width / 2 - Pl.left).toFixed(0), oy = (q.top + q.height / 2 - Pl.top).toFixed(0);
+        pn.style.cssText = 'left:' + Pl.left + 'px;top:' + Pl.top + 'px;width:' + Pl.width + 'px;' + (Pl.fit ? '' : 'height:' + Pl.height + 'px;') + '--ss2-cols:' + Pl.cols + ';transform-origin:' + ox + 'px ' + oy + 'px' + (still ? ';animation:none' : '');
+        pn.setAttribute('data-side', Pl.side); pn.setAttribute('data-fit', String(Pl.fit)); pn.setAttribute('data-cols', String(Pl.cols));
+    }
+    /* Tab and Shift+Tab stay inside the open panel (it is modal) */
     function trapTab(e) {
         if (open !== 'page' || !layer || e.key !== 'Tab') return;
         const bs = [...layer.querySelectorAll('button')]; if (!bs.length) return;
@@ -424,6 +446,8 @@
         }
         if (id === 'more') { show('more'); return; }
         const R = ROUTES[id]; if (!R) return;
+        /* a row that opens another panel: Settings steps aside first, so that panel is in front and usable (never behind Settings) */
+        if (rowAction(id) === 'panel') { close(false); try { R.run(); } catch (err) { console.warn('[settings-sleep]', id, err); } return; }
         if (R.toggle) {
             try { R.run(); } catch (err) { console.warn('[settings-sleep]', id, err); }
             /* switches stay open and show their new state in place */
@@ -481,11 +505,11 @@
         D.addEventListener('lowi:bloom-v2', e => { const d = e && e.detail; if (d && d.open && d.owner !== 'settings-sleep') close(false); });
         ['lowi:home-orbit', 'lowi:home-bubble-added'].forEach(n => { D.addEventListener(n, claim); root.addEventListener(n, claim); });
         /* the ring moved (menu bar switched, rotation): an open bloom follows its bubble */
-        D.addEventListener('lowi:home-orbit', () => { if (!open || open === 'page') return; const k = open, a = D.activeElement, id = a && layer && layer.contains(a) ? a.getAttribute('data-ss2') : null; show(k); const f = id && layer.querySelector('[data-ss2="' + id + '"]'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } } });
+        D.addEventListener('lowi:home-orbit', () => { if (!open || open === 'page') return; /* the Settings panel stays where it is: it never jumps under a finger */ const k = open, a = D.activeElement, id = a && layer && layer.contains(a) ? a.getAttribute('data-ss2') : null; show(k); const f = id && layer.querySelector('[data-ss2="' + id + '"]'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } } });
         D.addEventListener('lowi:tab', () => { close(false); setTimeout(claim, 400); });
         root.addEventListener('lowi:state', paintSleep);
         /* a bloom is placed round its bubble, so it closes when the window changes; the full page lays itself out and stays */
-        root.addEventListener('resize', () => { if (open && open !== 'page') close(false); }, { passive: true });
+        root.addEventListener('resize', () => { if (open && open !== 'page') close(false); else if (open === 'page' && layer && lastBubble) placePage(layer.querySelector('.ss2-page'), lastBubble, true); }, { passive: true });
         D.addEventListener('visibilitychange', () => { if (!D.hidden) claim(); });
         /* Home leaves (another tab, Misty flies off): the bloom goes with it; a new day empties the Sleep bubble */
         setInterval(() => { if (D.hidden) return; claim(); if (open && (!H.classList.contains('wh-home') || H.classList.contains('wh-away'))) close(false); }, 1500);

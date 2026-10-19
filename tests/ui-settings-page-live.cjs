@@ -1,7 +1,9 @@
 'use strict';
-/* Browser proof for "one tap on Settings opens the full Settings page" (Oct 18 2026, Emmanuel). Real app from this checkout, backend
-   blocked, service worker off. Real touch taps on the Settings bubble:
-   - opens ONE full page (no chip bloom, no second More panel) that covers the screen and sits on top of everything,
+/* Browser proof for "one tap on Settings opens the Settings panel" (Oct 18 2026, Emmanuel; since Oct 19 2026 07:30 a glass SIDE PANEL
+   in the Body sound panel's look, not a full page: "why do you have a whole page?"). Real app from this checkout, backend blocked,
+   service worker off. Real touch taps on the Settings bubble:
+   - opens ONE panel (no chip bloom, no second More panel) that sits on top where it is, stays off Misty (she and Home stay in view),
+   - World sound opens the Body sound panel IN FRONT and usable: Settings steps aside first (the Oct 19 layering bug),
    - lists Me, Look & sound, Account, Menu bar and the More entries (Community, Care board, Workouts, World map ...), rows >= 44 px,
    - every row reachable (the list scrolls if a short window needs it), the x at the bottom right on top of everything,
    - x and Escape close it and focus goes back to the bubble; the menu bar switch flips in place and the page stays open,
@@ -17,7 +19,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 function serve() { return new Promise(r => { const s = http.createServer((q, res) => { let u = decodeURIComponent(q.url.split('?')[0]); if (u === '/') u = '/index.html'; const f = path.join(ROOT, u); if (!f.startsWith(ROOT)) { res.writeHead(403); res.end(); return; } fs.readFile(f, (e, b) => { if (e) { res.writeHead(404); res.end(); return; } res.writeHead(200, { 'Content-Type': TYPES[path.extname(f)] || 'application/octet-stream' }); res.end(b); }); }); s.listen(0, '127.0.0.1', () => r(s)); }); }
 const IPAD = (w, h) => ({ viewport: { width: w, height: h }, screen: { width: w, height: h }, deviceScaleFactor: 2, hasTouch: true, isMobile: true, userAgent: 'Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1' });
 const VIEWS = { iphone_chromium: ['chromium', { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true }], iphone13_webkit: ['webkit', 'iPhone 13'], iphone_webkit_844: ['webkit', 'iPhone 13', { width: 390, height: 844 }],
-    iphone_se_webkit: ['webkit', 'iPhone SE'], ipad_portrait_webkit: ['webkit', IPAD(820, 1180)], ipad_landscape_webkit: ['webkit', IPAD(1180, 820)] };
+    iphone_se_webkit: ['webkit', 'iPhone SE'], ipad_portrait_webkit: ['webkit', IPAD(820, 1180)], ipad_landscape_webkit: ['webkit', IPAD(1180, 820)], ipad_chromium: ['chromium', IPAD(820, 1180)] };
 const INIT = `try {
   const d = new Date(), k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   localStorage.setItem('lowi.daily.seen', k); sessionStorage.setItem('lowi.a2hs.x', '1'); localStorage.setItem('lowi.gate', 'done'); localStorage.setItem('lowi.news.seen', '99999');
@@ -30,12 +32,14 @@ const PAGE = () => {
     const L = document.getElementById('ss2Bloom'), p = L && L.querySelector('.ss2-page'), A = window.LowiHomeSettingsSleepV2;
     const vw = document.documentElement.clientWidth || innerWidth, vh = innerHeight;
     const top = (x, y) => { const e = document.elementFromPoint(x, y); return !!(e && e.closest && e.closest('.ss2-page')); };
+    const me = document.querySelector('[data-home-misty]') || document.getElementById('spBubble'), mq = me ? me.getBoundingClientRect() : null;
     if (!p) return { open: A && A.isOpen(), page: false, fan: !!(L && L.querySelector('.ss2-fan')), panel: !!(L && L.querySelector('.ss2-panel')), vw, vh };
     const r = p.getBoundingClientRect(), x = p.querySelector('.ss2-page-x'), xr = x.getBoundingClientRect(), xe = document.elementFromPoint(xr.left + xr.width / 2, xr.top + xr.height / 2);
     const rows = [...p.querySelectorAll('.ss2-page-body [data-ss2]')].map(b => { const q = b.getBoundingClientRect(); return { id: b.dataset.ss2, h: q.height, l: q.left, r: q.right, t: q.top, b: q.bottom, role: b.getAttribute('role'), checked: b.getAttribute('aria-checked') }; });
     const cs = getComputedStyle(p);
     return { open: A.isOpen(), page: true, fan: !!L.querySelector('.ss2-fan'), panel: !!L.querySelector('.ss2-panel'), vw, vh, box: [r.left, r.top, r.right, r.bottom].map(Math.round),
-        onTop: [[8, 8], [vw / 2, vh / 2], [vw - 8, vh * 0.25], [8, vh - 8]].every(([a, b]) => top(a, b)), title: (p.querySelector('.ss2-page-title') || {}).textContent,
+        onTop: [[r.left + 24, r.top + 24], [(r.left + r.right) / 2, (r.top + r.bottom) / 2], [r.right - 24, r.top + 24], [r.left + 24, r.bottom - 24]].every(([a, b]) => top(a, b)),
+        misty: mq ? (() => { const cx = mq.left + mq.width / 2, cy = mq.top + mq.height / 2, rr = Math.min(mq.width, mq.height) / 2 * 0.8, nx = Math.max(r.left, Math.min(cx, r.right)), ny = Math.max(r.top, Math.min(cy, r.bottom)); return { cx: Math.round(cx), cy: Math.round(cy), r: Math.round(rr), clear: Math.hypot(cx - nx, cy - ny) >= rr - 2, centerFree: !top(cx, cy) }; })() : null, title: (p.querySelector('.ss2-page-title') || {}).textContent,
         role: p.getAttribute('role'), modal: p.getAttribute('aria-modal'), rows, x: { l: xr.left, t: xr.top, r: xr.right, b: xr.bottom, w: xr.width, onTop: !!(xe && xe.closest && xe.closest('.ss2-page-x') === x) },
         anim: cs.animationName, blur: (cs.backdropFilter || cs.webkitBackdropFilter || 'none'), focusIn: p.contains(document.activeElement),
         groups: [...p.querySelectorAll('.ss2-group')].map(g => g.getAttribute('aria-label') || (g.querySelector('.ss2-gl') || {}).textContent) };
@@ -59,7 +63,7 @@ async function center(page, sel) { return page.evaluate(s => { const e = documen
             await ctx.addInitScript(INIT);
             const page = await ctx.newPage();
             page.on('pageerror', e => errs.push(e.message.slice(0, 160)));
-            const tap = async sel => { const c = await center(page, sel); if (!c) { MISSING.push(sel); return false; } await page.touchscreen.tap(c.x, c.y); await sleep(500); return true; };
+            const tap = async sel => { const c = await center(page, sel); if (!c) { MISSING.push(sel); return false; } await page.touchscreen.tap(c.x, c.y); await sleep(500); await page.waitForFunction(() => { const p = document.querySelector('#ss2Bloom .ss2-page'); return !p || p.getAnimations().every(a => a.playState !== 'running'); }, null, { timeout: 8000 }).catch(() => { }); return true; };
             await page.goto(url + (url.includes('?') ? '&' : '?') + 'tb=' + Date.now(), { waitUntil: 'load', timeout: 120000 });
             await page.waitForFunction(() => typeof window.goTab === 'function' && window.LowiHomeSettingsSleepV2 && document.documentElement.classList.contains('wh-home'), null, { timeout: 90000 });
             /* known on main (badebb0), not this change: when the 3D world falls back (bw3-off, seen on WebKit iPhone SE with reduced
@@ -83,8 +87,10 @@ async function center(page, sel) { return page.evaluate(s => { const e = documen
             ok(g.page && g.open === 'page', 'one tap did not open the full page: ' + JSON.stringify({ open: g.open, fan: g.fan, panel: g.panel }));
             if (g.page) {
                 ok(!g.fan && !g.panel, 'no chip bloom and no second More panel with the page');
-                ok(g.box[0] <= 0 && g.box[1] <= 0 && g.box[2] >= g.vw - 1 && g.box[3] >= g.vh - 1, 'page should fill the screen: ' + g.box + ' vs ' + g.vw + 'x' + g.vh);
-                ok(g.onTop, 'something sits on top of the page');
+                ok(!(g.box[0] <= 0 && g.box[1] <= 0 && g.box[2] >= g.vw - 1 && g.box[3] >= g.vh - 1), 'Settings must not be a full-screen page any more: ' + g.box + ' vs ' + g.vw + 'x' + g.vh);
+                ok(g.box[0] >= 0 && g.box[1] >= 0 && g.box[2] <= g.vw + 0.5 && g.box[3] <= g.vh + 0.5, 'panel should be on screen: ' + g.box);
+                ok(g.misty && g.misty.clear && g.misty.centerFree, 'panel should stay off Misty: ' + JSON.stringify({ box: g.box, misty: g.misty }));
+                ok(g.onTop, 'something sits on top of the panel');
                 ok(g.role === 'dialog' && g.modal === 'true' && g.focusIn, 'page should be a focused modal dialog');
                 ok(/^(Settings|Einstellungen|Ajustes)$/.test(g.title || ''), 'title: ' + g.title);
                 ok(g.blur === 'none', 'no full-screen blur: ' + g.blur);
@@ -92,7 +98,7 @@ async function center(page, sel) { return page.evaluate(s => { const e = documen
                 for (const id of ['me', 'look', 'account', 'menubar', 'community', 'care', 'workouts', 'map']) ok(ids.includes(id), 'page is missing ' + id + ': ' + ids);
                 for (const id of ['more', 'today', 'cook', 'theme', 'quest', 'back']) ok(!ids.includes(id), 'page should not list ' + id);
                 g.rows.forEach(r => { ok(r.h >= 44, r.id + ' row under 44 px: ' + r.h); ok(r.l >= 0 && r.r <= g.vw + 0.5, r.id + ' row off screen sideways'); });
-                ok(g.x.onTop && g.x.w >= 44 && g.x.r <= g.vw && g.x.b <= g.vh && g.x.l > g.vw / 2 && g.x.t > g.vh / 2, 'x should be bottom right, on screen and on top: ' + JSON.stringify(g.x));
+                ok(g.x.onTop && g.x.w >= 44 && g.x.r <= g.box[2] + 1 && g.x.b <= g.box[3] + 1 && g.x.l > (g.box[0] + g.box[2]) / 2 && g.x.t > (g.box[1] + g.box[3]) / 2, 'x should be at the panel\'s bottom right and on top: ' + JSON.stringify({ x: g.x, box: g.box }));
                 ok(!(await page.evaluate(EMOJI)), 'no emoji on the page');
                 summary.rows = ids.join(' '); summary.groups = g.groups; summary.box = g.box;
                 await page.screenshot({ path: `${OUT}/${v}-page.png` });
@@ -122,6 +128,17 @@ async function center(page, sel) { return page.evaluate(s => { const e = documen
             mb = await page.evaluate(() => ({ open: window.LowiHomeSettingsSleepV2.isOpen(), ls: localStorage.getItem('lowi.home.menubar'), chk: document.querySelector('#ss2Bloom [data-ss2="menubar"]').getAttribute('aria-checked') }));
             ok(mb.open === 'page' && mb.ls === '0' && mb.chk === 'false', 'menu bar switch off again: ' + JSON.stringify(mb));
             await page.keyboard.press('Escape'); await sleep(300);
+            /* 5b. World sound: Settings steps aside and the Body sound panel opens in front, fully usable (Oct 19 layering bug) */
+            await tap('[data-orbit="settings"]');
+            if (await page.evaluate(() => !!document.querySelector('#ss2Bloom [data-ss2="worldSound"]'))) {
+                await page.waitForFunction(() => { const p = document.querySelector('#ss2Bloom .ss2-page'); return p && p.getAnimations().every(a => a.playState !== 'running'); }, null, { timeout: 8000 }).catch(() => { });
+                await page.evaluate(() => document.querySelector('#ss2Bloom [data-ss2="worldSound"]').scrollIntoView({ block: 'center' })); await sleep(300);
+                await tap('#ss2Bloom [data-ss2="worldSound"]'); await sleep(600);
+                const ws = await page.evaluate(() => { const w = document.getElementById('waPanel'), A = window.LowiHomeSettingsSleepV2; if (!w) return { open: A.isOpen(), wa: false }; const q = w.getBoundingClientRect(), pts = [[q.left + q.width / 2, q.top + q.height / 2], [q.left + 30, q.top + 30], [q.right - 30, q.bottom - 30]]; const hits = pts.map(([x, y]) => { const e = document.elementFromPoint(x, y); return !!(e && e.closest && e.closest('#waPanel')); }); const ctl = [...w.querySelectorAll('button, input')].filter(e => { const r = e.getBoundingClientRect(); if (r.width < 2) return false; const h = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return h === e || (h && e.contains(h)); }).length; return { open: A.isOpen(), wa: true, hits, ctl, box: [q.left, q.top, q.right, q.bottom].map(Math.round), ss2: !!document.querySelector('#ss2Bloom .ss2-page') }; });
+                await page.screenshot({ path: `${OUT}/${v}-${reduced ? 'rm-' : ''}body-sound.png` });
+                ok(ws.wa && !ws.open && !ws.ss2 && ws.hits.every(Boolean) && ws.ctl >= 3, 'World sound should open Body sound in front of everything, with Settings out of the way: ' + JSON.stringify(ws));
+                await page.evaluate(() => { const c = document.querySelector('#waPanel [data-wa-close], #waPanel .wa-x, #waPanel button[aria-label]'); if (window.LowiWorldAudio && window.LowiWorldAudio.close) window.LowiWorldAudio.close(); else if (c) c.click(); }); await sleep(400);
+            } else { await page.keyboard.press('Escape'); await sleep(300); }
             /* 6. places run their real routes and close the page */
             await tap('[data-orbit="settings"]'); await tap('#ss2Bloom [data-ss2="community"]'); await sleep(900);
             ok(await page.evaluate(() => { const t = document.getElementById('tab-foryou'); return !!t && t.classList.contains('active') && !window.LowiHomeSettingsSleepV2.isOpen(); }), 'Community should open the Community tab and close the page');

@@ -1,0 +1,34 @@
+/* Companion visits on Home (home-visit.js, MAYA-HANDOFF item 23). Compositor-only motion: transform + opacity. */
+.hv-safe{position:fixed;left:0;top:0;width:0;height:0;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);visibility:hidden;pointer-events:none}
+.hv-layer{position:fixed;inset:0;z-index:60;pointer-events:none;--hv-c:#9fe8ff;contain:layout style}
+.hv-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
+.hv-flier{position:absolute;width:64px;height:64px;transform:translate(-50%,-50%);will-change:transform,opacity}
+.hv-orb{position:absolute;inset:0;border-radius:50%}
+.hv-face{position:absolute;inset:8%;display:grid;place-items:center;font:700 26px/1 system-ui,sans-serif;color:#fff}
+.hv-face svg{width:100%;height:100%;display:block;overflow:visible}
+/* in flight: their companion inside a small glass bubble, like the other worlds out there */
+.hv-glass{position:absolute;inset:-6px;border-radius:50%;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.55),rgba(255,255,255,.08) 34%,rgba(255,255,255,.02) 62%,color-mix(in srgb,var(--hv-c) 38%,transparent) 100%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.35),0 0 18px color-mix(in srgb,var(--hv-c) 45%,transparent);transition:opacity .35s ease,transform .45s cubic-bezier(.2,.7,.3,1)}
+.hv-scan{position:absolute;inset:0;border-radius:50%;opacity:0;background:repeating-linear-gradient(180deg,rgba(255,255,255,.22) 0 1px,transparent 1px 4px);-webkit-mask:radial-gradient(circle,#000 58%,transparent 72%);mask:radial-gradient(circle,#000 58%,transparent 72%);transition:opacity .4s ease;pointer-events:none}
+/* arrived: the bubble breaks, they stand in your world as a light hologram */
+.hv-here .hv-glass{opacity:0;transform:scale(1.5)}
+.hv-here .hv-scan{opacity:.55}
+.hv-here .hv-face{opacity:.9;filter:drop-shadow(0 0 6px color-mix(in srgb,var(--hv-c) 70%,transparent))}
+.hv-ripple{position:absolute;width:96px;height:96px;border-radius:50%;opacity:0;transform:translate(-50%,-50%);border:2px solid #bff3ff;border:2px solid color-mix(in srgb,var(--hv-c) 80%,#fff);box-shadow:0 0 22px color-mix(in srgb,var(--hv-c) 50%,transparent)}
+.hv-base{position:absolute;width:74px;height:16px;margin-top:26px;opacity:0;transform:translate(-50%,0);border-radius:50%;background:radial-gradient(ellipse at center,color-mix(in srgb,var(--hv-c) 70%,transparent),transparent 70%)}
+.hv-base::before{content:"";position:absolute;left:14%;right:14%;bottom:50%;height:58px;background:linear-gradient(0deg,color-mix(in srgb,var(--hv-c) 26%,transparent),transparent);clip-path:polygon(12% 100%,88% 100%,100% 0,0 0)}
+/* the speech bubble: glass, their colour, the real message as text */
+.hv-card{position:absolute;display:flex;align-items:flex-start;gap:2px;opacity:0;pointer-events:none;border-radius:18px;background:rgba(14,20,38,.78);border:1px solid rgba(255,255,255,.2);-webkit-backdrop-filter:blur(12px) saturate(140%);backdrop-filter:blur(12px) saturate(140%);border:1px solid color-mix(in srgb,var(--hv-c) 45%,rgba(255,255,255,.18));box-shadow:0 10px 30px rgba(0,0,0,.35),0 0 18px color-mix(in srgb,var(--hv-c) 22%,transparent);color:#f2f6ff}
+.hv-card.on{opacity:1;pointer-events:auto}
+.hv-card::before{content:"";position:absolute;left:var(--hv-tail,50%);top:-7px;width:12px;height:12px;margin-left:-6px;transform:rotate(45deg);background:rgba(14,20,38,.78);border-left:1px solid color-mix(in srgb,var(--hv-c) 45%,rgba(255,255,255,.18));border-top:1px solid color-mix(in srgb,var(--hv-c) 45%,rgba(255,255,255,.18))}
+.hv-card[data-up]::before{top:auto;bottom:-7px;transform:rotate(225deg)}
+.hv-open{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;text-align:left;padding:10px 4px 10px 14px;margin:0;border:0;background:none;color:inherit;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.hv-open:focus-visible,.hv-x:focus-visible{outline:2px solid var(--hv-c);outline-offset:2px;border-radius:14px}
+.hv-name{font-size:13px;font-weight:700;color:var(--hv-c);letter-spacing:.01em}
+.hv-text{font-size:15px;line-height:1.32;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.hv-foot{display:flex;gap:10px;align-items:center;margin-top:2px;font-size:12px;opacity:.82}
+.hv-reply{font-weight:600;color:var(--hv-c)}
+.hv-more:empty{display:none}
+.hv-x{flex:none;width:36px;height:36px;margin:4px 4px 0 0;border:0;border-radius:50%;background:rgba(255,255,255,.08);color:#f2f6ff;font:400 20px/1 system-ui,sans-serif;cursor:pointer;display:grid;place-items:center}
+html[data-lay=tablet] .hv-flier,html[data-lay=desktop] .hv-flier{width:84px;height:84px}
+html[data-lay=tablet] .hv-text,html[data-lay=desktop] .hv-text{font-size:16px}
+@media (prefers-reduced-motion:reduce){.hv-glass,.hv-scan{transition:none}.hv-here .hv-glass{transform:none}}

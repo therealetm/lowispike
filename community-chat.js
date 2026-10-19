@@ -395,10 +395,18 @@ function dmCheck(ms){if(!scope||!G)return;const idx=nameIdx(),list=ms.filter(m=>
  if(active()&&!D.hidden&&list.length&&list[list.length-1].ts>prefs.dmSeen){prefs.dmSeen=list[list.length-1].ts;persist();}
  const fresh=list.filter(m=>m.ts>prefs.dmSeen);dmBadge(isQuiet()?0:fresh.length);
  for(const m of fresh){if(dmLive.has(m.id))continue;dmLive.add(m.id);if(m.ts<dmBoot-60000||isQuiet())continue;dmAlert(m);}}
+/* Oct 19 (Emmanuel, item 23): home-visit.js reads the messages addressed to you (same test as dmCheck) so the sender's companion can fly into Home.
+   Read-only: it never moves dmSeen, so nothing is marked seen behind your back; the room and the badge stay the truth. */
+function directed(){ensureScope();if(!scope||!G)return {scope:'',list:[]};const ms=messages(),idx=nameIdx(),list=[];
+ for(const m of ms){if(!m.uid||m.uid===scope||m.status||m.demo||m.bot||blocked(m.uid)||hiddenAcct(m.uid))continue;const t=G.targetOf(m,ms,idx);if(!t||t.uid!==scope)continue;
+  list.push({id:m.id,uid:m.uid,by:m.by||'',ts:m.ts,text:(voiceOf(m)||photoOf(m))?plain(m):G.bubbleText(m,t)});}
+ if(prefs.dmSeen==null){prefs.dmSeen=list.length?list[list.length-1].ts:Date.now();persist();} /* the room's own first-run rule (dmCheck): history before this device first looked is not new */
+ for(const m of list)m.seen=m.ts<=prefs.dmSeen;
+ return {scope,quiet:isQuiet(),quietSet:prefs.quietEnabled===true,list};}
 function dmBadge(n){const tb=D.querySelector('#tabbar .tb[data-tab="foryou"]');if(!tb||!tb.querySelector)return;let d=tb.querySelector('.cg-dm');if(!n){if(d)d.remove();return;}if(!d){d=D.createElement('span');d.className='cg-dm';d.setAttribute('aria-hidden','true');tb.appendChild(d);}d.textContent=n>9?'9+':String(n);}
 function dmAlert(m){const title=fill('dmTitle',m.by||'Member'),body=plain(m).slice(0,140);
  if(D.hidden){try{if(W.Notification&&Notification.permission==='granted'&&navigator.serviceWorker)navigator.serviceWorker.ready.then(r=>r.showNotification(title,{body,icon:'icon-192.png',badge:'icon-192.png',tag:'lowi-dm-'+m.id,data:{q:'',tab:'foryou'}})).catch(()=>{});}catch(e){}return;}
- if(active())return;
+ if(active()||(W.LowiHomeVisit&&W.LowiHomeVisit.has(m.id)))return; /* on Home the sender's companion visits instead (home-visit.js) */
  let t=D.getElementById('cgToast');if(!t){t=D.createElement('div');t.id='cgToast';t.className='cg-toast-wrap';t.setAttribute('role','status');D.body.appendChild(t);}
  t.innerHTML=button('open-galaxy','<span class="cg-torb">'+mate(m.uid,'t'+sid(m.id))+'</span><span class="cg-tt"><b>'+esc(title)+'</b><span>'+text(body)+'</span></span>','data-uid="'+esc(m.uid)+'"','cg-toast');t.setAttribute('data-on','1');
  clearTimeout(toastT);toastT=setTimeout(()=>{t.removeAttribute('data-on');},6500);}
@@ -779,5 +787,5 @@ try{if(navigator.serviceWorker&&navigator.serviceWorker.addEventListener)navigat
 /* Oct 16 (task 1 rework): who lives out in the spirit world, for the 3D world (body-world-3d-scene.js dresses each outer bubble with
    one person's companion and cells, and gathers everyone's companions in the far Community realm). Same companions as the map here. */
 function people(){try{ensureScope();const r=[...roster().values()];const me={uid:scope||'me',n:'You',lv:(W.LowiCompanion&&W.LowiCompanion.level&&+W.LowiCompanion.level())||1,me:true};return [me].concat(r).map((p,i)=>({uid:p.uid,name:p.n,lv:+p.lv||1,me:!!p.me,color:hueColor(p.uid,p.me),form:mate(p.me?scope:p.uid,'cw'+i)}));}catch(e){return [];}}
-W.LowiCommunity={mount,refresh,send,comment,isQuiet,unread,messageHTML:renderMessage,mentions,fit,settings,bots:()=>botList().slice(),people,select:uid=>{sel=uid||'';refresh();},thread:(o,id)=>{thread(o,id);refresh();}};H.install(W.LowiCommunity);ensureScope();refresh();setInterval(()=>{if(active()){refresh();loadExtras(true);}},60000);
+W.LowiCommunity={mount,refresh,send,comment,isQuiet,unread,messageHTML:renderMessage,mentions,fit,settings,bots:()=>botList().slice(),people,select:uid=>{sel=uid||'';refresh();},thread:(o,id)=>{thread(o,id);refresh();},directed,face:(uid,key)=>mate(uid,key),colorOf:uid=>hueColor(uid,false),openMessage:(uid,id)=>{openGalaxy(uid);thread(true,id);refresh();}};H.install(W.LowiCommunity);ensureScope();refresh();setInterval(()=>{if(active()){refresh();loadExtras(true);}},60000);
 })(window,document);

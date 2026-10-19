@@ -46,7 +46,11 @@
 .rp-hunt .rp-say small { display: none; }
 /* lesson recall check (Oct 18, 2026): "Remember when I told you ...?" with Yes / No glass buttons inside the bubble, only while
    asking. Same clear glass and rim as the bubbles around Misty, no shadow, Apple tap size. */
-.rp-ask { display: none; gap: 10px; margin-top: 9px; }
+.rp-ask { display: none; gap: 10px; margin-top: 7px; }
+/* docked clear of Misty and the joystick: no tail pointing at the guide */
+.rp-dock.rp-dock .rp-say::before, .rp-dock.rp-dock .rp-say::after { display: none; }
+/* a little wider while asking, so the question wraps into fewer lines and the taller bubble still fits beside Misty */
+.rp-asking .rp-say { max-width: min(300px, calc(100vw - 40px)); }
 .rp-asking .rp-ask { display: flex; }
 .rp-asking .rp-say small { display: none; }
 .rp-ask button { flex: 1 1 0; min-height: 44px; min-width: 64px; padding: 0 16px; border-radius: 22px; cursor: pointer;

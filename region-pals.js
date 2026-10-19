@@ -42,9 +42,10 @@
     };
     const st = { id: null, el: null, host: null, lines: [], i: 0, p: C.FOLLOW.home.slice(), v: [0, 0], off: [0, 0], drag: null, steerT: 0, raf: 0, t0: 0, sayT: 0, nextT: 0, shown: 0,
         /* cell-guide: what is showing now, one waiting line, quiet time, this visit's count, where the bubble sits */
-        cur: null, asking: null, told0: null, wait: null, waitT: 0, endT: 0, visit: 0, spot: 'ar', placeT: 0, obs: null, obsT: 0, size: null, lastKind: '' };
+        cur: null, asking: null, told0: null, askWait: false, pendAsk: null, wait: null, waitT: 0, endT: 0, visit: 0, spot: 'ar', placeT: 0, obs: null, obsT: 0, size: null, lastKind: '' };
     /* this session only (no storage): which lines each place has already said, and the places greeted this session */
     const seen = {}, greeted = {}, told0 = {};
+    let askLeft = null;   /* the "Remember?" question of this visit until it is answered or has had its time */
     /* on this device (Oct 18, 2026): which guides you have met, so each says hello only the very first time
        (shape in region-pals-core.js memory(); key in DATA_CONTRACTS.md) */
     const MEM_KEY = 'lowi.guides.v1';
@@ -76,6 +77,11 @@
     function speak(line, user) {
         if (!st.el || !line || !line.text) return false;
         const now = performance.now(), c = st.cur && st.el.classList.contains('rp-talk') ? st.cur : null;
+        /* a "Remember?" question is never cut off by chatter: other lines wait until it is answered or quietly goes */
+        if (c && !user && st.asking) {
+            if (!st.wait || line.prio >= st.wait.prio) { st.wait = line; clearTimeout(st.waitT); }
+            return true;
+        }
         if (c && !user) {
             const until = c.t + C.minRead(c.text, c.prio, line.prio);
             if (now < until) {
@@ -116,14 +122,37 @@
     }
     function quiet() {
         clearTimeout(st.sayT); clearTimeout(st.nextT);
+        if (st.asking && st.el && D.contains(st.el)) askLeft = null;   /* it had its time unanswered: no answer changes nothing */
         if (st.el) st.el.classList.remove('rp-talk', 'rp-asking');
         st.cur = null; st.asking = null; st.endT = performance.now();
+        if (st.pendAsk && st.el) {
+            const L = st.pendAsk; st.pendAsk = null; clearTimeout(st.waitT);
+            st.waitT = setTimeout(() => { if (st.el && !st.cur && !(seen[st.id] && seen[st.id].has(L.ask))) show1(L, false); else if (st.el && !st.cur && st.wait) flush(); }, 380);
+            return;
+        }
         if (st.wait) { clearTimeout(st.waitT); st.waitT = setTimeout(flush, 380); }
     }
     /* tap: the next line in order (greeting, facts, today), then round again */
+    /* the question waits until Misty has swum in and is on screen (she rises through the middle, past the joystick): until she
+       holds still, or at most 6 s once she is on screen, since she may roam; the bubble then docks clear of her if it must */
+    function whenStill(el, fn) {
+        clearTimeout(st.stillT); const t0 = performance.now(); let last = null, still = 0;
+        (function check() {
+            if (st.el !== el) return;
+            const MF = W.LowiMistyFlight, m = MF && MF.screen ? MF.screen() : null;
+            const on = m && m.y > 40 && m.y < W.innerHeight - 60 && m.x > 20 && m.x < W.innerWidth - 20;   /* she is fully on screen */
+            if (on && last && Math.hypot(m.x - last.x, m.y - last.y) < 4) still++; else still = 0;
+            last = m ? { x: m.x, y: m.y } : null;
+            if (still >= 2 || reduced()) { fn(); return; }
+            /* she never settled (you kept steering): no question this visit, the normal lessons carry on */
+            if (performance.now() - t0 > 6000 && on) { fn(); return; }   /* she roams: once she is on screen, ask anyway (it docks clear of her) */
+            if (performance.now() - t0 > 45000) { st.askWait = false; askLeft = null; const mm = memLoad(); if (mm.since) { mm.since[st.id] = 1; memSave(); } return; }
+            st.stillT = setTimeout(check, 250);   /* its own timer: lines that come meanwhile never cancel it */
+        })();
+    }
     function reply(yes) {
         if (!st.el || !st.asking) return;
-        const r = C.answer(memLoad(), st.id, st.asking, !!yes, lang(), st.lines, seen[st.id], W.LowiArrivalCore); memSave();
+        const r = C.answer(memLoad(), st.id, st.asking, !!yes, lang(), st.lines, seen[st.id], W.LowiArrivalCore); memSave(); askLeft = null;
         st.asking = null; st.el.classList.remove('rp-asking');
         speak(r.i != null ? { text: r.text, prio: 3, kind: 'fact', i: r.i } : { text: r.text, prio: 3, kind: 'back' }, true);
     }
@@ -167,8 +196,23 @@
         obs.push({ l: pal.x - orb - 3, t: pal.y - orb - 3, r: pal.x + orb + 3, b: pal.y + orb + 3, w: 2 }); /* never over the guide that is talking */
         const view = { w: W.innerWidth, h: W.innerHeight, top: 6, bottom: 6 };
         /* the tail ends right at the orb's rim, for the full guide and the small sidekick alike: it visibly comes out of it */
-        const r = C.place(pal, st.size, obs, view, force ? null : st.spot, C.gapFor(orb));
+        let r = C.place(pal, st.size, obs, view, force ? null : st.spot, C.gapFor(orb));
         if (!r) return;
+        /* the "Remember?" question with its buttons never sits on Misty or the joystick: when no spot beside the guide is
+           clear (she roams right past the joystick), it docks clear of both at the top or bottom of the screen, without a tail */
+        let dock = false;
+        if (st.asking) {
+            const hard = obs.slice(0, obs.length - 1), sz = st.size, vw = W.innerWidth, vh = W.innerHeight;
+            const cost = q => { let c = 0; const R = { l: q.l, t: q.t, r: q.l + sz.w, b: q.t + sz.h }; for (const o of hard) c += C.overlap(R, o); return c; };
+            if (cost(r) > 0) {
+                const x = Math.max(10, Math.min(vw - 10 - sz.w, pal.x - sz.w / 2));
+                const cand = [{ l: x, t: 56 }, { l: x, t: vh - sz.h - 28 }, { l: (vw - sz.w) / 2, t: 56 }, { l: (vw - sz.w) / 2, t: vh - sz.h - 28 }];
+                let best = null, bc = cost(r);
+                for (const q of cand) { const c = cost(q); if (c < bc) { bc = c; best = q; } }
+                if (best) { r = { l: best.l, t: best.t, tail: 0, spot: r.spot }; dock = true; }
+            }
+        }
+        el.classList.toggle('rp-dock', dock);
         if (r.spot !== st.spot) { el.classList.remove('rp-s-' + st.spot.slice(0, 2)); st.spot = r.spot; }
         el.classList.add('rp-placed');
         el.classList.add('rp-s-' + r.spot.slice(0, 2));
@@ -231,7 +275,7 @@
     function steer(vx, vy) { if (!st.el) return false; st.off = [Math.max(-1, Math.min(1, +vx || 0)), Math.max(-1, Math.min(1, +vy || 0))]; st.steerT = performance.now() + 250; kick(); return true; }
 
     function hide() {
-        quiet(); clearTimeout(st.waitT); st.wait = null; cancelAnimationFrame(st.raf); st.raf = 0;
+        const keep = askLeft; quiet(); askLeft = keep;   /* hidden or rebuilt mid-question: it is asked again next time */ clearTimeout(st.waitT); st.wait = null; cancelAnimationFrame(st.raf); st.raf = 0;
         const el = st.el, h = st.host; st.el = null; st.id = null; st.drag = null; st.cur = null; st.obs = null;
         if (h) h.classList.remove('rp-on');
         W.removeEventListener('pointerdown', onDown, true); W.removeEventListener('pointermove', onMove, true);
@@ -245,7 +289,7 @@
         if (st.el && st.id === id && st.host === h && st.el.isConnected) return st.el;
         hide();
         const el = build(id); if (!el) return null;
-        st.id = id; st.el = el; st.host = h; st.i = 0; st.shown = 0; st.visit = 0; st.off = [0, 0]; st.v = [0, 0]; st.t0 = performance.now(); st.endT = performance.now();
+        st.askWait = false; st.pendAsk = null; st.id = id; st.el = el; st.host = h; st.i = 0; st.shown = 0; st.visit = 0; st.off = [0, 0]; st.v = [0, 0]; st.t0 = performance.now(); st.endT = performance.now();
         st.p = [C.FOLLOW.home[0] - 0.12, C.FOLLOW.home[1] + 0.08];   /* swims in from the lower left */
         st.lines = C.lines(id, lang(), W.LowiArrivalCore, todayText(id));
         /* lessons told on earlier visits, snapshot once a session: nothing told today is asked about today */
@@ -262,10 +306,21 @@
             if (st.el !== el) return;
             greeted[id] = 1;
             const A = W.LowiArrivalCore;
-            const o = C.opening(memLoad(), id, lang(), st.lines, seen[id], null, st.told0, A); memSave();
+            /* the guide is rebuilt now and then (the HUD it lives in changes): a question not yet answered is asked again, not lost */
+            const o = askLeft && askLeft.id === id ? askLeft.o : C.opening(memLoad(), id, lang(), st.lines, seen[id], null, st.told0, A); memSave();
             if (o.intro) { speak({ text: o.text, prio: 0, kind: 'fact', i: 0 }, false); return; }
             /* every other later visit: "Remember when I told you ...?" with Yes / No in the bubble */
-            if (o.ask) { speak({ text: o.text, prio: 1, kind: 'ask', ask: o.ask }, false); return; }
+            if (o.ask) {
+                st.askWait = true;   /* nothing else teaches while the question waits */
+                askLeft = { id, o };
+                whenStill(el, () => {
+                    st.askWait = false; if (seen[id] && seen[id].has(o.ask)) { askLeft = null; return; }
+                    const L = { text: o.text, prio: 1, kind: 'ask', ask: o.ask };
+                    /* something else is up (a hunt hint): the question comes right after it, and no other line can bump it */
+                    if (st.cur && st.el.classList.contains('rp-talk')) st.pendAsk = L; else speak(L, false);
+                });
+                return;
+            }
             speak(o.i != null ? { text: o.text, prio: 0, kind: 'fact', i: o.i } : { text: o.text, prio: 0, kind: 'back' }, false);
         }, reduced() ? 200 : 900);
         return el;
@@ -289,7 +344,7 @@
     /* keeps teaching while you're in a world, without chatter: only after a quiet spell, only something new, a few per visit.
        While you steer and crumbs are left: a nudge towards the nearest one. Otherwise: the next fact it hasn't told you yet. */
     function teach() {
-        if (!st.el || st.cur || st.wait || D.hidden) return;
+        if (!st.el || st.cur || st.wait || st.askWait || D.hidden) return;
         const now = performance.now();
         if (now - st.endT < (st.visit <= 1 ? 7000 : 26000) || st.visit >= 7) return;
         const Hn = W.LowiMistyHunt, tw = Hn && Hn.toward ? Hn.toward() : null;

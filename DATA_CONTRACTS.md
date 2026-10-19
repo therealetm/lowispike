@@ -76,7 +76,7 @@ Do not change the meaning of an existing `src` or `eventId` prefix without migra
 | `lowi.g1`, `lowi.g1.go`, `lowi.g1.bn`, `lowi.g1.auto` | Legacy guide/news | Guide progress, destination, seen release news, and automatic behavior. Do not use it for routine companion speech. |
 | `lowi.gate`, `lowi.a1.skip`, `lowi.a2hs` | Onboarding/install | Account gate, skipped intro, and dismissed install prompt. |
 | `lowi.f2.v1` | Meal continuation | Seen/completed post-fast meal continuation state. |
-| `lowi.guides.v1` | Cell guides (`region-pals.js`) | `{v:1, met:{<world id>: firstMeetingMs}, lastBack:<index>}`: which cell guides you have met on this device (each says hello only the first time) and the last welcome-back line, so it is never said twice in a row. Device only, not backed up. |
+| `lowi.guides.v1` | Cell guides (`region-pals.js`) | `{v:1, met:{<world id>: firstMeetingMs}, lastBack:<index>, told:{<world id>: [lesson numbers]}, ok:{<world id>: [lesson numbers]}, since:{<world id>: visits}}`: which cell guides you have met on this device (each says hello only the first time), the last welcome-back line (never said twice in a row), which lessons each guide told you, which ones you answered Yes to in its "Remember?" check (never asked again), and later visits since its last question. Device only, not backed up. |
 | `lowi.f3.open`, `lowi.f3.paid`, `lowi.f3.morn` | Daily Quest | Expansion, awarded quest IDs/bonus, and compact check-in section state. |
 | `lowi.e1` | End of day | Daily close ritual and once-per-day reward state. |
 | `lowi.n1`, `lowi.n1.log`, `lowi.n1p` | Reminders/push | In-app reminder settings/log and push subscription/settings snapshot. |

@@ -633,3 +633,6 @@ The user explicitly requested deploying the recovered Home implementation withou
 ## Oct 19, 2026: Log meal asks Breakfast / Lunch / Dinner / Snacks first (E-man, German voice message)
 "Ich habe keine Zeit. Ich habe Pop-up. Zack, Mahlzeit-Eintrag." Log meal now pops four big tiles (the slot for the time of day marked "now"), then the slot's sheet with Write / Scan / Snap and that slot's usual meals first for one tap. This supersedes the Oct 19 meal-names decision that Scan and Snap live only in Scan: they are back in Log meal as two of the three ways to add a meal, as he asked. Photo checks are unchanged (3 a day, Snap is the existing flow). The same food in another slot the same day counts as a new meal.
 Shop gets "Snacks to buy" at the top: only snacks still to buy ("nicht die schon bereits drin waren"); ticking moves one off the list into "Again?" for next time.
+
+## Oct 19, 2026: Starter questions survive a reload (bug hunt BH-010)
+The few questions after setup were kept only in memory, so a reload or iOS closing the app before "Let’s do it" / "Not now" lost them for good. afterSetup now marks them pending (lowispike.hs-pending.v1) until a plan or "Not now" is saved; the next start reopens them once Home is quiet (no sheet, gate, tour). Accounts that finished setup earlier have no mark and are never asked. No design change.

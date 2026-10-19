@@ -186,11 +186,11 @@ function ivPaint(){const el=D.getElementById('hsIv');if(!el||!IV)return;const he
 function ivNext(){if(!IV)return;IV.step++;if(IV.step===C.QUESTIONS.length){IV.plan=C.newPlan(IV.answers);ivPaint();setTimeout(()=>{if(IV){IV.step++;ivPaint();}},reduce()?250:1300);return;}ivPaint();}
 function onIvClick(e){const b=e.target.closest('[data-hsi]');if(!b||!IV)return;const a=b.getAttribute('data-hsi');e.preventDefault();
  if(a==='start'){IV.step=0;ivPaint();return;}
- if(a==='later'){const p=plan();if(!p){const s=S();if(s){s.starter={v:2,skipped:true,actions:[],asked:{},created:Date.now(),hidden:true};save();}}ivClose();try{R().toast&&R().toast(t('skipped'));}catch(e){}refresh();return;}
+ if(a==='later'){pendClear();const p=plan();if(!p){const s=S();if(s){s.starter={v:2,skipped:true,actions:[],asked:{},created:Date.now(),hidden:true};save();}}ivClose();try{R().toast&&R().toast(t('skipped'));}catch(e){}refresh();return;}
  if(a==='back'){IV.step=Math.max(-1,IV.step-1);ivPaint();return;}
  if(a==='skip'){delete IV.answers[C.QUESTIONS[IV.step].id];ivNext();return;}
  if(a==='opt'){IV.answers[C.QUESTIONS[IV.step].id]=b.getAttribute('data-v');b.parentNode.querySelectorAll('.hs-opt').forEach(x=>{x.classList.toggle('on',x===b);x.setAttribute('aria-checked',x===b);});setTimeout(ivNext,reduce()?60:220);return;}
- if(a==='done'){const p=IV.plan;p.asked={};setPlan(p);try{const ft=C.fastTarget&&C.fastTarget(IV.answers),FK='lowi_fast_v1';if(ft){const fs=JSON.parse(localStorage.getItem(FK)||'{}')||{};fs.target=ft;localStorage.setItem(FK,JSON.stringify(fs));window.LowiFast&&LowiFast.refresh&&LowiFast.refresh();}}catch(e){}ivClose();try{window.LowiHost&&LowiHost.go('home');}catch(e){}try{R().toast&&R().toast(t('saved'));}catch(e){}refresh();setTimeout(refresh,400);setTimeout(refresh,1000);return;}}
+ if(a==='done'){const p=IV.plan;p.asked={};setPlan(p);pendClear();try{const ft=C.fastTarget&&C.fastTarget(IV.answers),FK='lowi_fast_v1';if(ft){const fs=JSON.parse(localStorage.getItem(FK)||'{}')||{};fs.target=ft;localStorage.setItem(FK,JSON.stringify(fs));window.LowiFast&&LowiFast.refresh&&LowiFast.refresh();}}catch(e){}ivClose();try{window.LowiHost&&LowiHost.go('home');}catch(e){}try{R().toast&&R().toast(t('saved'));}catch(e){}refresh();setTimeout(refresh,400);setTimeout(refresh,1000);return;}}
 
 /* Today: one row; the sheet holds the steps, "Why this?", Go, Change, and the friction question when it's due */
 function rowHTML(p){const f=facts(),st=status(p,f),done=st.filter(x=>x.done).length,next=st.find(x=>!x.done),q=C.frictionDue(p,f),n=st.length,herb=herbName();
@@ -241,7 +241,29 @@ function refresh(){if(busy)return;busy=true;try{
 let RT=0;const soon=()=>{clearTimeout(RT);RT=setTimeout(refresh,120);};
 
 /* after the first-run setup: offer the questions once (never for people who already finished setup before) */
-function afterSetup(){try{localStorage.removeItem(KEY);}catch(e){}if(plan()||(S()||{}).starter)return;setTimeout(ivOpen,reduce()?150:650);}
+/* BH-010 (Oct 19 2026): the questions only lived in memory, so a reload (or iOS dropping the app) between the end of setup and
+   "Make my plan" / "Not now" lost them for good: setupDone was saved, no plan, and nothing ever offered them again. Now afterSetup marks
+   them pending (a lowispike.* key, so it is in the account backup) until a plan or "Not now" is saved, and the next start reopens them
+   once Home is quiet. Accounts that finished setup before this have no mark and are never asked. */
+const PEND='lowispike.hs-pending.v1';
+function pendGet(){try{return !!localStorage.getItem(PEND);}catch(e){return false;}}
+function pendSet(){try{localStorage.setItem(PEND,String(Date.now()));}catch(e){}}
+function pendClear(){try{localStorage.removeItem(PEND);}catch(e){}}
+function afterSetup(){try{localStorage.removeItem(KEY);}catch(e){}pendSet();if(plan()||(S()||{}).starter)return;setTimeout(ivOpen,reduce()?150:650);}
+function resumeQuiet(){if(D.hidden)return false;try{if(R().gateUp&&R().gateUp())return false;}catch(e){}
+ const home=D.getElementById('tab-home');if(home&&!home.classList.contains('active'))return false;
+ if(D.querySelector('.r2-ov:not(.off),#ltTour'))return false;
+ try{const T=window.LowiTutorial;if(T&&T.isOn&&T.isOn())return false;if(T&&T.busyBy&&T.busyBy())return false;}catch(e){}
+ return true;}
+let RQ=0;
+/* true = nothing more to do (stop polling) */
+function resumeTick(now){if(!pendGet())return true;const s=S();if(!s)return false;
+ if(s.starter){pendClear();return true;}
+ if(!s.setupDone)return false;
+ if(IV&&IV.ov&&IV.ov.isConnected)return true;
+ if(!resumeQuiet()){RQ=0;return false;}
+ now=now||Date.now();if(!RQ){RQ=now;return false;}if(now-RQ<800)return false;
+ ivOpen();return !!(IV&&IV.ov);}
 
 /* ---------- wiring ---------- */
 D.addEventListener('click',e=>{onGateClick(e);onIvClick(e);onSheetClick(e);const o=e.target.closest('[data-hs-open]');if(o){e.preventDefault();const k=o.getAttribute('data-hs-open');if(k==='plan')openSheet();else if(k==='redo')ivOpen();}},false);
@@ -252,7 +274,9 @@ try{new MutationObserver(ms=>{if(busy)return;for(const m of ms){const tg=m.targe
 try{new MutationObserver(()=>{if(D.querySelector('.r2-start.hs'))paint(false);if(IV)ivPaint();if(D.getElementById('hsSheet'))sheetPaint();soon();}).observe(H,{attributes:true,attributeFilter:['lang']});}catch(e){}
 setInterval(()=>{if(!D.hidden&&D.getElementById('hsPlan'))refresh();},60000);
 
-window.LowiHerbStart={want,html,paint,afterSetup,openInterview:ivOpen,openPlan:openSheet,refresh,facts,go,plan};
+window.LowiHerbStart={want,html,paint,afterSetup,openInterview:ivOpen,openPlan:openSheet,refresh,facts,go,plan,resumeTick};
+/* BH-010: questions cut off by a reload come back on the next start */
+{const t0=Date.now();const RI=setInterval(()=>{let stop=true;try{stop=resumeTick();}catch(e){}if(stop||Date.now()-t0>600000)clearInterval(RI);},400);}
 /* the gate may already be up with the old start page: repaint it herb-first */
 try{const g=gate();if(g&&R().gateUp&&R().gateUp()&&g.querySelector('.r2-start')&&!g.querySelector('.r2-start.form,.r2-start.hs,input')&&want(!!(S()&&S().user&&S().user.name)))R().showGate('home');}catch(e){}
 soon();

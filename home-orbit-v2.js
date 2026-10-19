@@ -31,7 +31,21 @@
             R = Math.max(mistyR + gap + d / 2, (d + 6) / (2 * SIN));
             if (R + d / 2 <= A) break;
         }
-        if (d < 56) return { ok: false, cx: v.cx, cy: v.cy, R: 0, d: 0, spots: {} };
+        /* Oct 19 old-design purge, round 4: a short screen (a phone on its side, 568x320 or 480x320) used to drop the ring and show the
+           old Home (greeting, weather, VR, Meals, tab bar...). Before giving up, the ring tightens: a 6px gap and bubbles down to 44px
+           (the smallest comfortable tap). It still never overlaps Misty; only a screen that cannot hold even that says so. */
+        if (d < 56 && v.compact !== false) {
+            const t = fit(Object.assign({}, v, { gap: Math.min(gap, 6), margin: Math.min(margin, 4), compact: false, floor: 44 }));
+            if (t.ok) return Object.assign(t, { tight: true });
+        }
+        const floor = v.floor || 56;
+        if (d < 56) {
+            for (d = Math.min(55, Math.floor(Math.min(cap, A - mistyR - gap))); d >= floor; d--) {
+                R = Math.max(mistyR + gap + d / 2, (d + 6) / (2 * SIN));
+                if (R + d / 2 <= A) break;
+            }
+        }
+        if (d < floor) return { ok: false, cx: v.cx, cy: v.cy, R: 0, d: 0, spots: {} };
         const spots = {};
         ORDER.forEach(k => {
             const t = angleOf(k) * Math.PI / 180;

@@ -139,3 +139,10 @@ html.o8.wh-home #whHud #whPad.mp-back .mp-knob svg { filter: drop-shadow(0 0 6px
 .o8-sheet .o8-row[aria-checked="true"] { background: rgba(120,220,180,.22); border-color: rgba(120,220,180,.5); }
 .o8-sheet .o8-close { margin-top: 10px; text-align: center; background: transparent; }
 @media (min-width: 700px) { .o8-sheet { align-items: center; } }
+
+/* Oct 19 old-design purge, round 4: on a short screen (a phone on its side) Misty's Home bubble shrinks with the height and sits in the
+   middle, so the 8-bubble ring always fits around her. Before, world-home.css kept her at 190px minimum on a 320px-tall screen, the
+   ring could not fit and Home fell back to the old layout (greeting, weather, VR, Meals, Daily Quest card, tab bar). */
+@media (max-height: 420px) and (orientation: landscape) {
+    :root { --wh-bs: clamp(116px, 42vh, 190px); --wh-cy: 50%; }
+}

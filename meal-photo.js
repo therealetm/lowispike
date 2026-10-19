@@ -47,18 +47,18 @@
             go: 'Mahlzeit fotografieren', later: 'Später'
         },
         es: {
-            left: 'Te quedan {n} de {max} análisis de foto hoy', none: 'Hoy no te quedan análisis de foto. Vuelven a medianoche. Escribir lo que comiste siempre funciona.',
+            left: 'Te quedan {n} de {max} análisis de foto hoy', left1: 'Te queda 1 de {max} análisis de foto hoy', none: 'Hoy no te quedan análisis de foto. Vuelven a medianoche. Escribir lo que comiste siempre funciona.',
             shareT: 'Compartir también en la Comunidad', shareS: 'Tu foto con el nombre, ingredientes, nutrición y estimación de azúcar en sangre. Sin escribir.',
             remT: 'Recuérdame fotografiar mis comidas', remS: 'Un aviso a las {times}. Cámbialo en Avisos.',
-            read: 'Leer esta comida con IA', readFree: 'Añadir los detalles de la comida (ya leída)', reading: 'Leyendo tu comida…', removeMeal: 'Quitar detalles de la comida',
-            readFail: 'No pude leer esta foto. Aun así puedes publicarla.',
-            ing: 'Ingredientes estimados', bsL: 'Respuesta probable de azúcar en sangre', low: 'Subida suave', mid: 'Subida moderada', high: 'Probable pico',
+            read: 'Analizar esta comida con IA', readFree: 'Añadir los detalles de la comida (ya analizada)', reading: 'Analizando tu comida…', removeMeal: 'Quitar detalles de la comida',
+            readFail: 'No he podido analizar esta foto. Aun así puedes publicarla.',
+            ing: 'Ingredientes estimados', bsL: 'Respuesta probable de azúcar en sangre', low: 'Subida suave', mid: 'Subida moderada', high: 'Probable pico de azúcar',
             note: 'Estimado a partir de la nutrición de la foto, no medido. Tu respuesta puede ser distinta.', noteS: 'Estimación de la foto, no medida.',
             foot: 'Se comparte: la foto, el nombre de la comida, los ingredientes y la nutrición estimados y la estimación de azúcar en sangre. Nada más sobre tu salud u objetivos.',
-            kcal: 'kcal', protein: 'proteína', carbs: 'carbos', sugar: 'azúcar', fiber: 'fibra', fat: 'grasa',
+            kcal: 'kcal', protein: 'proteína', carbs: 'carbohidratos', sugar: 'azúcar', fiber: 'fibra', fat: 'grasa',
             remH: 'Recordatorios de fotos de comida', remSub: 'Un aviso a la hora de comer para fotografiar tu plato. Se salta si ya registraste esa comida o no te quedan análisis.',
             on: 'Sí', off: 'No', b: 'Desayuno', l: 'Almuerzo', d: 'Cena',
-            nudge: 'Hora del {meal}. Fotografía tu plato y lo leo: te quedan {n} de {max} análisis hoy.', nudgeU: 'Hora del {meal}. Fotografía tu plato y lo leo.',
+            nudge: '{meal}: fotografía tu plato y lo analizo. Te quedan {n} de {max} análisis hoy.', nudge1: '{meal}: fotografía tu plato y lo analizo. Te queda 1 de {max} análisis hoy.', nudgeU: '{meal}: fotografía tu plato y lo analizo.',
             go: 'Fotografiar mi comida', later: 'Luego'
         }
     };
@@ -151,7 +151,8 @@
         try { root.dispatchEvent && root.CustomEvent && root.dispatchEvent(new CustomEvent('lowi:photo-left', { detail: { left, limit: limit || DAY_MAX } })); } catch (e) {}
     }
     function left() { try { const o = JSON.parse(root.localStorage.getItem(QK) || 'null'); if (o && o.day === dayKey()) return { left: o.left, limit: o.limit || DAY_MAX }; } catch (e) {} return null; }
-    function leftText(l) { const q = left(); return q ? (q.left > 0 ? t('left', l, { n: q.left, max: q.limit }) : t('none', l)) : ''; }
+    const one = (k, l, n) => (n === 1 && (STR[l || lang()] || {})[k + '1']) ? k + '1' : k; /* Spanish: 'Te queda 1', not 'Te quedan 1' */
+    function leftText(l) { const q = left(); return q ? (q.left > 0 ? t(one('left', l, q.left), l, { n: q.left, max: q.limit }) : t('none', l)) : ''; }
 
     /* ---------- mealtime reminders (off until turned on) ---------- */
     const RK = 'lowi.mealsnap.rem', LK = 'lowi.mealsnap.log', MEALS = ['b', 'l', 'd'];
@@ -180,7 +181,7 @@
         return '';
     }
     const timesText = (s, l) => MEALS.filter(k => s[k].on).map(k => s[k].h).join(', ');
-    function nudgeText(k, l) { const q = left(), meal = t(k, l); return q ? t('nudge', l, { meal, n: q.left, max: q.limit }) : t('nudgeU', l, { meal }); }
+    function nudgeText(k, l) { const q = left(), meal = t(k, l); return q ? t(one('nudge', l, q.left), l, { meal, n: q.left, max: q.limit }) : t('nudgeU', l, { meal }); }
     function tick() {
         try {
             if (!root.document || document.hidden) return;
@@ -262,6 +263,6 @@
         document.addEventListener('visibilitychange', () => { if (!document.hidden) setTimeout(tick, 4000); });
     }
 
-    return { DAY_MAX, KEYS, strings: STR, t, bloodSugar, meal, clean, cardHTML, remember, recall, hash, setLeft, left, leftText,
+    return { DAY_MAX, KEYS, strings: STR, t, bloodSugar, meal, clean, cardHTML, remember, recall, hash, setLeft, left, leftText, nudgeText,
         getRem, setRem, due, rowHTML, snapExtras, share, tick, dayKey, _reads: reads };
 });

@@ -144,6 +144,11 @@ function suggestName(core,seed,avoid){const pool=namePool(core);if(!pool.length)
  let i=Math.abs(Math.floor(Number(seed)||0))%pool.length;for(let k=0;k<pool.length&&avoid&&pool[i]===avoid;k++)i=(i+7)%pool.length;return pool[i];}
 function cleanName(v,max){return String(v==null?'':v).replace(/[<>\u0000-\u001f]/g,'').replace(/\s+/g,' ').trim().slice(0,max||24);}
 
-const api={QUESTIONS,FRICTION,ACTIONS,WHY,clean,size,buildPlan,newPlan,alternatives,replace,addAction,removeAction,isDone,frictionDue,answerFriction,actionText,whyText,questionText,frictionText,namePool,suggestName,cleanName,L,fmt};
+/* Oct 19 (new-user walkthrough): the fasting goal follows the "Do you fast?" answer. A first-timer who said "never" was told
+   "fast 12 hours overnight" by the plan but the Gap bubble counted toward 16 h. never -> 12, 12 h -> 14 (one step up), 16 h -> 16,
+   longer -> 18. No answer (skipped) -> null: the fasting timer keeps its own default. */
+function fastTarget(ans){const v=ans&&ans.fast;return {never:12,f12:14,f16:16,long:18}[v]||null;}
+
+const api={fastTarget,QUESTIONS,FRICTION,ACTIONS,WHY,clean,size,buildPlan,newPlan,alternatives,replace,addAction,removeAction,isDone,frictionDue,answerFriction,actionText,whyText,questionText,frictionText,namePool,suggestName,cleanName,L,fmt};
 if(typeof module==='object'&&module.exports)module.exports=api;else root.LowiStarterCore=api;
 })(typeof window!=='undefined'?window:globalThis);

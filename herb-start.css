@@ -226,3 +226,15 @@ html body .r2-ov.hs-ivov .hs-opt.on{border-color:#8fdcff}
  html body .r2-gate .r2-start.form .r2-fl input{height:42px;font-size:16px}
  html body .r2-gate .r2-start.form .r2-form .r2-btn{min-height:44px}
 }
+
+/* Oct 19 new-user walkthrough: on short screens (Safari with its toolbars, ~664px) the speech bubble + Misty were taller than the 190px scene,
+   so the bubble spilled up over the back button and the step dots. The scene now takes the free height and Misty really shrinks
+   (the old 132px rule above lost to the later 184px redesign rule). */
+@media (max-height:700px){
+ html body .r2-start.hs .hs-scene:not(.sm){max-height:none;min-height:0}
+ html body .r2-start.hs .hs-scene:not(.sm) .hs-misty:not(.mini){--hs-m:min(36vw,132px)}
+}
+@media (max-height:600px){
+ html body .r2-start.hs .hs-scene:not(.sm) .hs-misty:not(.mini){--hs-m:min(28vw,100px)}
+ html body .r2-start.hs .hs-scene .hs-bubble{font-size:13.5px;padding:8px 12px;margin-bottom:8px}
+}

@@ -498,3 +498,6 @@ html.wh-home #spHome #spFast::after, html.wh-home #whHud .wh-water::after {
 html.spirit-app.wh-home:is([data-lay=tablet],[data-lay=desktop]) #tab-home #spHome .sp-top > .sp-weather { transform: translateX(-50px); }
 html.spirit-app.wh-home:is([data-lay=tablet],[data-lay=desktop]) #tab-home #spHome .sp-top > .sp-weather:active { transform: translateX(-50px) scale(.96); }
 html.spirit-app.wh-home:is([data-lay=tablet],[data-lay=desktop]) #main #pfBtn#pfBtn { top: calc(var(--b-top, 0px) + 59px) !important; right: auto !important; left: calc(50% + 52px) !important; width: 44px !important; height: 44px !important; }
+
+/* Oct 19 (new-user walkthrough): Misty's first-timer hint docks to the top / bottom of the screen when the spot above her head is on a bubble; docked it has no tail */
+.wh-hint.wh-say.wh-dock::after { display: none; }

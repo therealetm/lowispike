@@ -74,7 +74,7 @@
     const T = (en, de, es) => [en, de, es][lang()];
     const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const state = () => { try { return W.LowiVitalsBridge && W.LowiVitalsBridge.state(); } catch (e) { return null; } };
-    const label = () => T('Meals', 'Essen', 'Comidas');
+    const label = () => T('Fuel', 'Essen', 'Comida'); /* Oct 19 (new-user walkthrough): the ring calls this bubble Fuel, so VoiceOver says Fuel too */
     let el = null, living = false, longAt = 0, downAt = 0;   /* a long press, however long it is held, never also opens Log a meal */
 
     function ensure() {

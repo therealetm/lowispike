@@ -409,11 +409,24 @@
             if (h.classList.contains('wh-say') !== say) h.classList.toggle('wh-say', say);
             const tv = Math.round(say ? mr.top - h.offsetHeight - 10 : Math.max(top + 10, 70)) + 'px'; if (h.style.top !== tv) h.style.top = tv;
             const lv = say ? Math.round(mr.left + mr.width / 2) + 'px' : ''; if (h.style.left !== lv) h.style.left = lv;
-            const hr = h.getBoundingClientRect();
-            D.querySelectorAll('#spFast, #whHud .wh-water, #whHud .wh-zoom, #whHud .wh-vr, #whHud .wa-btn, #whHud .wh-todaybtn, .fe-bub, #spHome .sp-top, #spHome .f3-board, #f3Board, ' + (say ? '' : '#spBubble, ') + '#tabbar').forEach(el => {
-                const r = el.getBoundingClientRect(); if (!r.width) return;
-                if (r.left < hr.right - 1 && r.right > hr.left + 1 && r.top < hr.bottom - 1 && r.bottom > hr.top + 1) blk = true;
-            });
+            if (h.classList.contains('wh-dock')) h.classList.remove('wh-dock');
+            const OBS = '#spFast, #whHud .wh-water, #whHud .wh-zoom, #whHud .wh-vr, #whHud .wa-btn, #whHud .wh-todaybtn, .fe-bub, #spHome .sp-top, #spHome .f3-board, #f3Board, [data-orbit], #whPad, #mhNudge.on, ' + (say ? '' : '#spBubble, ') + '#tabbar';
+            const hits = hr => { let n = false; D.querySelectorAll(OBS).forEach(el => {
+                const r = el.getBoundingClientRect(); if (!r.width || !r.height || getComputedStyle(el).visibility === 'hidden') return;
+                if (r.left < hr.right - 1 && r.right > hr.left + 1 && r.top < hr.bottom - 1 && r.bottom > hr.top + 1) n = true;
+            }); return n; };
+            blk = hits(h.getBoundingClientRect());
+            /* Oct 19 (new-user walkthrough): on the ring Home the spot above Misty's head is always on the Settings / Water / Fuel bubbles,
+               so first-timers never saw "Drag to look around". Like Misty's notes (BH-002), it now docks to the top or bottom of the
+               screen with no tail when the head spot is taken; it only stays hidden when neither spot is clear. */
+            if (blk && say) {
+                const hh = h.offsetHeight || 34;
+                for (const t of [Math.max(56, top + 10), innerHeight - hh - 28]) {
+                    h.style.top = Math.round(t) + 'px'; h.style.left = ''; h.classList.add('wh-dock');
+                    if (!hits(h.getBoundingClientRect())) { blk = false; break; }
+                }
+                if (blk) { h.classList.remove('wh-dock'); h.style.top = tv; h.style.left = lv; }
+            }
         }
         if (h.classList.contains('blk') !== blk) h.classList.toggle('blk', blk);
     }

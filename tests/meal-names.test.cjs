@@ -119,7 +119,8 @@ test('saving a typed meal (Manual or the Scanner\'s "What is it?") fills the bla
 
 test('Log meal panel: Manual, Eaten recently and Misty suggestions only', () => {
   const js = read('spirit.js');
-  const i = js.indexOf("const html = '<h2>' + esc(tr('meal')) + '</h2><div class=\"sp-quick-log\">");
+  // Oct 19: the slot head (Breakfast/Lunch/Dinner/Snacks, then Write / Scan / Snap, E-man's ask) sits above this panel in `how`
+  const i = js.indexOf("const html = how + '<div class=\"sp-quick-log\">");
   assert.ok(i > 0);
   const panel = js.slice(i, i + 1400);
   assert.doesNotMatch(panel, /button\('photo'|button\('scan'|sp-quick-cap/, 'Snap food and Scan product live in Scan');

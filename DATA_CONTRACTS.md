@@ -207,3 +207,10 @@ Home reads canonical XP, companion and fasting state through the existing bridge
 ## Store ranges (`data/shop/<range>.json`, Oct 17-18 2026)
 
 `{chain, name, country, source, sourceUrl, scope, note, built, count, cols:[n,b,k,c,s,f,p,fat,kcal,u,q,g,im], rows:[[...]], images:{source, base, withPhoto, built, note?}}`. Built by `tools/shop-data/build.py`, then `tools/shop-data/add-images.py` fills `im`: the Open Food Facts front photo for barcode `g`, stored without `https://images.openfoodfacts.org/images/products/` and `.200.jpg` (only the file part when the folder is the usual 3/3/3 barcode split). `LowiStorePicksCore.photo(p, 200|400)` turns it back into the exact URL OFF returned and accepts nothing else; `link(p, data)` gives the OFF product page; `explain(r)` gives the numbers behind Best/Good. Ranges are chain-wide catalogue tags, never one shop's stock. Store-picks state `lowi.storePicks.v1` is unchanged.
+
+## Meal slot (Oct 19, 2026, Log meal: Breakfast / Lunch / Dinner / Snacks)
+- `S.logs[i].slot`: optional, one of `"breakfast" | "lunch" | "dinner" | "snack"`. Missing = unknown (older logs, plan meals, other entry points).
+- Set by `LowiVitalsBridge.logMeal()` from `data.slot`, else from `window.LowiMealSlot` (`{slot, at}`, set when the user picks a slot in Log meal; valid for 10 minutes so the Scan and Snap flows log into it).
+- `mealDup()`: the same food in a different slot today is not a duplicate; a log without a slot matches any slot.
+- `lowi:meal-logged` event detail carries `slot` ("" when none).
+- Snacks to buy: `localStorage["lowi.snackBuy.v1"]` = `[{id, n, at, got}]` (got = 0 while still to buy, else the time it was ticked). Device only.

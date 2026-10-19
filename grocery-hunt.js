@@ -78,7 +78,7 @@
         let sum = 0;
         res.awards.forEach(a => {
             const txt = a.label === 'trip' ? T('Shopping check-in', 'Einkaufs-Check-in', 'Check-in de compra') : a.label === 'combo' ? T('Power combo', 'Power-Kombi', 'Combo de poder') :
-                a.label === 'find' ? T('New find', 'Neuer Fund', 'Nuevo hallazgo') : T('Hunt catch', 'Jagd-Fang', 'Captura');
+                a.label === 'find' ? T('New find', 'Neuer Fund', 'Nuevo hallazgo') : T('Shop find', 'Ladenfund', 'Hallazgo');
             try { sum += b.awardWith(a.amt, txt + (label ? ' · ' + label : ''), 'grocery', a.eventId, { grocery: a.kind }, true) || 0; } catch (e) {}
         });
         return sum;
@@ -96,7 +96,7 @@
         if (res.renewed && !res.awards.some(a => a.label === 'trip')) out.push(T('Shopping check-in: your world glows brighter', 'Einkaufs-Check-in: deine Welt leuchtet heller', 'Check-in de compra: tu mundo brilla más'));
         if (!res.renewed && res.tripNeed > 0 && !res.again) out.push(T('1 more different product today for your shopping check-in', 'Noch 1 anderes Produkt heute für deinen Einkaufs-Check-in', '1 producto distinto más hoy para tu check-in'));
         res.combos.forEach(x => out.push(x.paid ? '⚡ ' + T('Power combo! ', 'Power-Kombi! ', '¡Combo de poder! ') + comboName(x.combo) + ' +' + C.XP.combo + ' XP' : comboName(x.combo) + ' · ' + T('combo again from ', 'Kombi wieder ab ', 'combo de nuevo el ') + dateS(x.againAt)));
-        if (res.ok && !res.awards.length && !res.again && !res.renewed && !res.combos.length && C.xpLeft(S, Date.now()) === 0) out.push(T('Hunt XP for today is used up. Catches still count for your check-in and combos.', 'Jagd-XP für heute sind aufgebraucht. Fänge zählen weiter für Check-in und Kombis.', 'Los XP de caza de hoy se agotaron. Las capturas siguen contando.'));
+        if (res.ok && !res.awards.length && !res.again && !res.renewed && !res.combos.length && C.xpLeft(S, Date.now()) === 0) out.push(T('Shop-find XP for today is used up. Catches still count for your check-in and combos.', 'Ladenfund-XP für heute sind aufgebraucht. Fänge zählen weiter für Check-in und Kombis.', 'Los XP de hallazgos de hoy se agotaron. Las capturas siguen contando.'));
         return out;
     }
     function doCatch(p) {
@@ -119,10 +119,10 @@
         const card = d.card; if (!card || !res.ok) return;
         const sheet = card.querySelector('.ss-sheet'); if (!sheet) return;
         const ls = lines(res);
-        if (!S.plan.store) ls.push(T('Pick your shop in the hunt so your finds glimmer there next time.', 'Wähl in der Jagd deinen Laden, dann schimmern deine Funde dort beim nächsten Mal.', 'Elige tu tienda en la caza para que tus hallazgos brillen allí.'));
+        if (!S.plan.store) ls.push(T('Pick your shop in Shop finds so your finds glimmer there next time.', 'Wähl in Ladenfunde deinen Laden, dann schimmern deine Funde dort beim nächsten Mal.', 'Elige tu tienda en Hallazgos para que tus hallazgos brillen allí.'));
         const box = D.createElement('div'); box.className = 'gh-chip';
-        box.innerHTML = '<b>' + IC.star + '<span>' + esc(T('Shopping hunt', 'Einkaufsjagd', 'Caza de compras')) + '</span></b>' + ls.map(l => '<small>' + esc(l) + '</small>').join('') +
-            '<button type="button" class="gh-chip-open" data-gh="open">' + esc(T('Open the hunt', 'Jagd öffnen', 'Abrir la caza')) + '</button>';
+        box.innerHTML = '<b>' + IC.star + '<span>' + esc(T('Shop finds', 'Ladenfunde', 'Hallazgos en la tienda')) + '</span></b>' + ls.map(l => '<small>' + esc(l) + '</small>').join('') +
+            '<button type="button" class="gh-chip-open" data-gh="open">' + esc(T('Open finds', 'Funde öffnen', 'Ver hallazgos')) + '</button>';
         const add = sheet.querySelector('.ss-add'); if (add) sheet.insertBefore(box, add); else sheet.appendChild(box);
     });
 
@@ -153,7 +153,7 @@
     /* ---------- the panel ---------- */
     let ov = null, view = 'home', msg = '', stores = null, where = null, q = '', picking = null, lastRes = null;
     function shell(inner, foot) {
-        return '<div class="stp-card gh-card" role="dialog" aria-modal="true" aria-label="' + esc(T('Shopping hunt', 'Einkaufsjagd', 'Caza de compras')) + '">' + inner +
+        return '<div class="stp-card gh-card" role="dialog" aria-modal="true" aria-label="' + esc(T('Shop finds', 'Ladenfunde', 'Hallazgos en la tienda')) + '">' + inner +
             '<div class="stp-foot">' + (foot || '') + '<button type="button" class="stp-orb" data-gh="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '">' + IC.x + '</button></div></div>';
     }
     function storeName(st) { return st ? (st.brand && st.name && st.name.toLowerCase().indexOf(st.brand.toLowerCase()) < 0 ? st.brand + ' ' + st.name : st.name || st.brand) + (st.town ? ' · ' + st.town : '') : ''; }
@@ -248,7 +248,7 @@
     function homeHTML() {
         load();
         const now = Date.now(), st = S.plan.store, todays = C.catchesOn(S, C.dayOf(now)), sh = shared();
-        let h = '<div class="stp-head"><h3>' + esc(T('Shopping hunt', 'Einkaufsjagd', 'Caza de compras')) + '</h3><p>' + esc(T('Healthy days start at the shop. Catch good products by scanning their barcode or taking a photo, and your world glows.', 'Gesunde Tage fangen im Laden an. Fang gute Produkte, indem du den Barcode scannst oder ein Foto machst, und deine Welt leuchtet.', 'Los días sanos empiezan en la tienda. Captura buenos productos escaneando el código o con una foto, y tu mundo brilla.')) + '</p>' +
+        let h = '<div class="stp-head"><h3>' + esc(T('Shop finds', 'Ladenfunde', 'Hallazgos en la tienda')) + '</h3><p>' + esc(T('Scan products while you shop to see if they\'re likely to spike your blood sugar. Good ones glow here on your next trip.', 'Scanne Produkte beim Einkaufen und sieh, ob sie deinen Blutzucker wahrscheinlich hochtreiben. Gute leuchten hier beim nächsten Einkauf.', 'Escanea productos mientras compras y mira si es probable que te suban el azúcar. Los buenos brillan aquí en tu próxima compra.')) + '</p>' +
             '<button type="button" class="stp-shop" data-gh="shops" style="margin-top:10px">' + IC.pin + '<span>' + esc(st ? storeName(st) : T('Pick your shop', 'Wähl deinen Laden', 'Elige tu tienda')) + '</span><i>' + esc(T('Change', 'Ändern', 'Cambiar')) + '</i></button></div>';
         h += '<div class="stp-scroll">';
         if (msg) h += '<p class="stp-msg gh-msg">' + esc(msg) + '</p>';
@@ -271,8 +271,8 @@
             '<p class="stp-none">' + esc(T('Nothing yet today.', 'Heute noch nichts.', 'Nada todavía hoy.')) + '</p>';
         h += rhythmHTML(now);
         h += '<h4 class="stp-h4">' + esc(T('Sharing', 'Teilen', 'Compartir')) + '</h4>' + shareHTML();
-        h += '<details class="stp-how"><summary>' + esc(T('How the hunt works', 'So funktioniert die Jagd', 'Cómo funciona la caza')) + '</summary><p>' +
-            esc(T('A shopping check-in is 2 different products caught on one day, by barcode in the shopping scanner or by a photo here. It makes your world and your world in the spirit realm glow brighter for your rhythm plus a day, then the extra glow fades slowly back to the normal look. It never goes below normal and says nothing about what you eat. A glimmer pays once a week, a combo once a week, the same photo never counts twice, and hunt XP is capped at ', 'Ein Einkaufs-Check-in sind 2 verschiedene Produkte an einem Tag, per Barcode im Einkaufs-Scanner oder per Foto hier. Dann leuchten deine Welt und deine Welt im Geisterreich heller, für deinen Rhythmus plus einen Tag, danach verblasst das Extra-Leuchten langsam zurück zum normalen Aussehen. Es geht nie unter normal und sagt nichts darüber, was du isst. Ein Schimmer zählt einmal pro Woche, eine Kombi einmal pro Woche, dasselbe Foto nie zweimal, und Jagd-XP sind auf ', 'Un check-in son 2 productos distintos capturados en un día, con el código en el escáner de compra o con una foto aquí. Tu mundo y tu mundo en el reino espíritu brillan más durante tu ritmo más un día, y luego el brillo extra vuelve poco a poco a lo normal. Nunca baja de lo normal y no dice nada de lo que comes. Un destello cuenta una vez por semana, un combo una vez por semana, la misma foto nunca dos veces, y los XP de caza tienen un tope de ') + C.XP_DAY_CAP + T(' a day.', ' pro Tag begrenzt.', ' al día.')) + '</p></details>';
+        h += '<details class="stp-how"><summary>' + esc(T('How finds work', 'So funktionieren Funde', 'Cómo funcionan los hallazgos')) + '</summary><p>' +
+            esc(T('A shopping check-in is 2 different products caught on one day, by barcode in the shopping scanner or by a photo here. It makes your world and your world in the spirit realm glow brighter for your rhythm plus a day, then the extra glow fades slowly back to the normal look. It never goes below normal and says nothing about what you eat. A glimmer pays once a week, a combo once a week, the same photo never counts twice, and shop-find XP is capped at ', 'Ein Einkaufs-Check-in sind 2 verschiedene Produkte an einem Tag, per Barcode im Einkaufs-Scanner oder per Foto hier. Dann leuchten deine Welt und deine Welt im Geisterreich heller, für deinen Rhythmus plus einen Tag, danach verblasst das Extra-Leuchten langsam zurück zum normalen Aussehen. Es geht nie unter normal und sagt nichts darüber, was du isst. Ein Schimmer zählt einmal pro Woche, eine Kombi einmal pro Woche, dasselbe Foto nie zweimal, und Ladenfund-XP sind auf ', 'Un check-in son 2 productos distintos capturados en un día, con el código en el escáner de compra o con una foto aquí. Tu mundo y tu mundo en el reino espíritu brillan más durante tu ritmo más un día, y luego el brillo extra vuelve poco a poco a lo normal. Nunca baja de lo normal y no dice nada de lo que comes. Un destello cuenta una vez por semana, un combo una vez por semana, la misma foto nunca dos veces, y los XP de hallazgos tienen un tope de ') + C.XP_DAY_CAP + T(' a day.', ' pro Tag begrenzt.', ' al día.')) + '</p></details>';
         h += '<p class="stp-fine">' + esc(T('Ratings are estimates from the label, not a promise about your blood sugar or insulin. Portion size and your own body make a difference. A glimmer means someone found it in this shop before; it may be sold out or moved.', 'Bewertungen sind Schätzungen vom Etikett, kein Versprechen für deinen Blutzucker oder dein Insulin. Portionsgröße und dein Körper machen einen Unterschied. Ein Schimmer heißt, jemand hat es früher in diesem Laden gefunden; es kann ausverkauft oder umgeräumt sein.', 'Las valoraciones son estimaciones de la etiqueta, no una promesa sobre tu azúcar o tu insulina. La porción y tu cuerpo influyen. Un destello significa que alguien lo encontró antes en esta tienda; puede estar agotado o en otro sitio.')) + '</p>';
         h += '</div>';
         return shell(h);
@@ -431,7 +431,7 @@
         const hs = store ? C.hints(S, store, shared().finds, now).filter(h => !h.cooling).length : 0;
         const sub = st.phase === 'none' ? T('Catch good products, light up your world', 'Fang gute Produkte, bring deine Welt zum Leuchten', 'Captura buenos productos e ilumina tu mundo') :
             (st.phase === 'paused' ? T('Paused', 'Pausiert', 'En pausa') : T('Glow ', 'Leuchten ', 'Brillo ') + st.pct + '%') + (store ? ' · ' + hs + ' ' + T('glimmers here', 'Schimmer hier', 'destellos aquí') : '');
-        return '<span class="gh-entry-dot" aria-hidden="true">' + IC.star + '</span><span class="stp-sos-t"><b>' + esc(T('Shopping hunt', 'Einkaufsjagd', 'Caza de compras')) + '</b><small>' + esc(sub) + '</small></span>';
+        return '<span class="gh-entry-dot" aria-hidden="true">' + IC.star + '</span><span class="stp-sos-t"><b>' + esc(T('Shop finds', 'Ladenfunde', 'Hallazgos en la tienda')) + '</b><small>' + esc(sub) + '</small></span>';
     }
     function decorate() {
         D.querySelectorAll('.ss-entry').forEach(en => {
@@ -440,7 +440,7 @@
             if (!b) { b = D.createElement('button'); b.type = 'button'; b.className = 'gh-entry'; b.setAttribute('data-gh', 'open'); let after = en; const nx = en.nextElementSibling; if (nx && nx.classList.contains('stp-sos')) after = nx; after.insertAdjacentElement('afterend', b); }
             const h = entryHTML(); if (b.__h !== h) { b.innerHTML = h; b.__h = h; }
         });
-        D.querySelectorAll('#b3Cam .ss-row').forEach(r => { if (r.querySelector('.gh-hunt')) return; r.insertAdjacentHTML('beforeend', '<button type="button" class="ss-chip gh-hunt" data-gh="open">' + IC.star + '<span>' + esc(T('Hunt', 'Jagd', 'Caza')) + '</span></button>'); });
+        D.querySelectorAll('#b3Cam .ss-row').forEach(r => { if (r.querySelector('.gh-hunt')) return; r.insertAdjacentHTML('beforeend', '<button type="button" class="ss-chip gh-hunt" data-gh="open">' + IC.star + '<span>' + esc(T('Finds', 'Funde', 'Hallazgos')) + '</span></button>'); });
     }
     let pend = 0;
     function soon() { if (pend) return; pend = requestAnimationFrame(() => { pend = 0; try { decorate(); } catch (e) {} }); }

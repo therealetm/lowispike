@@ -1491,3 +1491,6 @@ html.spirit-app body {
         color: inherit
     }
 }
+/* Oct 19 food paths: the shared meal logger opened from the Gap bubble (time saved, logging optional) */
+.sp-gap-q { color: rgba(236, 255, 246, .92); }
+.sp-gap-skip { display: block; margin: 14px auto 0; min-height: 44px; padding: 10px 22px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, .22); background: rgba(255, 255, 255, .08); color: inherit; font: inherit; font-weight: 700; }

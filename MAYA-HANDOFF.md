@@ -334,8 +334,8 @@ scripts/release.sh "what users get, in one line" --news news.json
 
 ## 6. Status board (19 Oct 2026, about 7 PM CEST)
 
-**Live:** https://therealetm.github.io/lowispike/ served **20261019-172632** at 6:50 PM. `main` was already at
-**20261019-175128** (commit 3110dfa, product card), waiting for GitHub's Pages deploy during the Actions incident.
+**Live:** https://therealetm.github.io/lowispike/ served **20261019-183920** at 6:45 PM; `main` was at
+**20261019-184058** plus this file. (Earlier in the evening a GitHub Actions incident kept CI and Pages queued.)
 
 Released today (newest first, all on `main`):
 

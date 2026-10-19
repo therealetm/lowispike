@@ -14224,7 +14224,9 @@ function cardHTML(p, anim){
     (why.length ? '<ul class="b3-why">' + why.map(w => '<li>' + esc(w) + '</li>').join("") + '</ul>' : "") + factsHTML(p.facts) + fillNoteHTML(p) + storeCmp +
     '<div class="tiny dim b3-meta">' + [by, p.id ? (p.catches > 1 ? t("catches", p.catches) : t("catches1")) : "", p.barcode ? t("bcFound", p.barcode) : "", p.source === "off" ? t("r_off") : ""].filter(Boolean).map(esc).join(" · ") + '</div></div>'; }
 /* Oct 16 simple spike card: photo + name, one big spike verdict (an estimate), one action: Catch it.
-   Cheaper at other stores and community deals right under it; everything else folded into Details. */
+   Oct 19 (owner's call): order is header > spike estimate > cheaper at other stores > Catch it > Details (OPEN by default)
+   > community deals > spike lists. Details and the store prices sit high so people see them at once; posting a deal is lower.
+   tests/product-card-order.test.cjs holds this order. */
 const SC_TX = {
   spike: ["Will likely spike insulin", "Treibt Insulin wahrscheinlich hoch", "Probablemente sube la insulina"],
   ok: ["Likely won't spike insulin", "Treibt Insulin wahrscheinlich nicht hoch", "Probablemente no sube la insulina"],
@@ -14247,14 +14249,14 @@ function simpleCardHTML(p){
     '<div class="sc-top"><div class="sc-img">' + (p.img ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(p.img) + '">' : '<i>' + (CAT_E[p.cat] || CAT_E.other) + '</i>') + '</div>' +
     '<div class="sc-nm"><div class="b3-name">' + esc(p.name) + '</div>' + (p.brand ? '<div class="sc-brand">' + esc(p.brand) + (p.facts && p.facts.q ? " · " + esc(p.facts.q) : "") + '</div>' : "") + '</div></div>' +
     '<div class="sc-verd v-' + v + '" role="status"><small>' + esc(sct("est")) + '</small><strong>' + esc(sct(v)) + '</strong>' + (why[0] ? '<span>' + esc(why[0]) + '</span>' : "") + '</div>' +
+    '<section class="sc-sec sc-prices"><h4>' + esc(sct("cheaper")) + '</h4>' + (storeCmp || '<p class="sc-none">' + esc(sct("noPrices")) + '</p>') + '</section>' +
     '<div class="b3-acts sc-acts">' + (mine ? '<div class="b3-have sc-have">' + esc(sct("caughtHave")) + ' ✓' + (m && m.pending ? '<small>' + esc(t("pending")) + '</small>' : "") + '</div>' :
       '<button class="r2-btn pri big b3-catch sc-catch" data-b3="catch" id="b3Catch"><span class="b3-pb" aria-hidden="true"></span>' + esc(t("catch")) + ' <small>' + esc(sct("catchXP")) + '</small></button>') + '</div>' +
-    '<section class="sc-sec sc-prices"><h4>' + esc(sct("cheaper")) + '</h4>' + (storeCmp || '<p class="sc-none">' + esc(sct("noPrices")) + '</p>') + '</section>' + deals +
-    '<details class="sc-more"><summary>' + esc(sct("details")) + '</summary>' +
+    '<details class="sc-more" open><summary>' + esc(sct("details")) + '</summary>' +
       (why.length ? '<ul class="b3-why">' + why.map(w => '<li>' + esc(w) + '</li>').join("") + '</ul>' : "") + factsHTML(p.facts) + fillNoteHTML(p) +
       '<div class="tiny dim b3-meta">' + [p.id ? (p.catches > 1 ? t("catches", p.catches) : t("catches1")) : "", p.barcode ? t("bcFound", p.barcode) : "", p.source === "off" ? t("r_off") : ""].filter(Boolean).map(esc).join(" · ") + '</div>' +
       (window.LowiDiscovery ? '<button type="button" class="r2-link b3-label" data-b3="label">' + esc(["Label details & evidence", "Etikett-Details & Belege", "Detalles de la etiqueta"][LI()]) + '</button>' : "") +
-      '<div class="tiny dim b3-legal">' + esc(t("legal")) + '</div></details>' +
+      '<div class="tiny dim b3-legal">' + esc(t("legal")) + '</div></details>' + deals +
     '<button type="button" class="sc-lists" data-sc="lists">' + esc(sct("lists")) + '</button></div>'; }
 function actsHTML(p){ const mine = isMine(p);
   if (p.verdict === "unknown") return "";

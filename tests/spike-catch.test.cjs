@@ -55,7 +55,7 @@ test('the app uses the estimator and re-rates saved verdicts', () => {
     assert.match(html, /<script src="spike-core\.js\?v=/);
     assert.match(html, /<script src="spike-catch\.js\?v=/);
 });
-test('simple card: photo, name, one verdict marked as an estimate, Catch it, prices, deals, details folded', () => {
+test('simple card: photo, name, one verdict marked as an estimate, Catch it, prices, deals, details (open since Oct 19)', () => {
     const fn = html.slice(html.indexOf('function simpleCardHTML(p)'), html.indexOf('function actsHTML(p)'));
     assert.ok(fn.length > 500);
     for (const bit of ['sc-verd', 'sct("est")', 'data-b3="catch"', 'priceCompareHTML', 'LowiDeals.cardHTML', '<details class="sc-more"', 'data-sc="lists"']) assert.ok(fn.includes(bit), bit);

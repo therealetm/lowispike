@@ -26,14 +26,15 @@ test('energy pings: once per person per few minutes, and a cap across people',()
 
 const spots=()=>[{uid:'me',me:true,x:0,y:0,r:27},{uid:'a',x:200,y:0,r:23},{uid:'b',x:260,y:0,r:23},{uid:'c',x:0,y:300,r:23}];
 
-test('a burst that hits a companion knocks it, it chains into the next one billiard-style, then all settle and go home',()=>{
+test('a burst that hits a companion knocks it, it chains into the next one billiard-style, and everyone stays where they stopped (Oct 19)',()=>{
   const t=E.table();t.sync(spots(),600);assert.equal(t.busy(),false,'idle table does no work');
   t.fire({x:0,y:0,uid:'me'},0,1,27);assert.ok(t.busy());
   const ev=run(t,.5);const hit=ev.find(e=>e.type==='hit');assert.ok(hit,'burst hits');assert.equal(hit.uid,'a');
   assert.ok(ev.some(e=>e.type==='bump'&&[e.a,e.b].sort().join()==='a,b'),'a rolls into b');
   const pb=t.pos('b');assert.ok(pb.x>260+5,'b was knocked further out: '+pb.x);
   assert.equal(t.offset('c'),null,'a companion nobody touched stays put');assert.equal(t.offset('me'),null,'my companion does not move');
-  run(t,12);assert.equal(t.busy(),false,'everyone stopped rolling and eased back home');assert.equal(t.offset('a'),null);assert.equal(t.offset('b'),null);
+  run(t,12);assert.equal(t.busy(),false,'everyone stopped rolling');const ra=t.pos('a'),rb=t.pos('b');assert.ok(t.offset('a')&&t.offset('b'),'nobody went back to their old spot');
+  run(t,30);assert.deepEqual(t.pos('a'),ra);assert.deepEqual(t.pos('b'),rb);assert.equal(t.busy(),false,'and resting costs nothing');
 });
 
 test('a miss fizzles at the end of its range and leaves nobody moved',()=>{
@@ -50,10 +51,11 @@ test('reduced motion: shorter range and a calmer, shorter roll',()=>{
   const t=E.table({reduced:true});t.sync(spots(),600);t.fire({x:0,y:0},0,1,27);run(t,5);assert.equal(t.busy(),false,'and is over quickly');
 });
 
-test('gentle bounds: a knocked companion never leaves its neighbourhood or the map',()=>{
+test('bounds: the edge of the map is the only wall (a cushion), a knocked companion never leaves the map',()=>{
   const t=E.table();t.sync([{uid:'me',me:true,x:0,y:0,r:27},{uid:'a',x:60,y:0,r:23}],120);t.fire({x:0,y:0},0,1,27);
-  let max=0,maxR=0;for(let i=0;i<240;i++){t.step(1/60);const o=t.offset('a'),p=t.pos('a');if(o)max=Math.max(max,Math.hypot(o.x,o.y));maxR=Math.max(maxR,Math.hypot(p.x,p.y));}
-  assert.ok(max<=t.tune.maxOff+1e-6);assert.ok(maxR<=120+90+1e-6);
+  let maxR=0;for(let i=0;i<600;i++){t.step(1/60);const p=t.pos('a');maxR=Math.max(maxR,Math.hypot(p.x,p.y));}
+  assert.ok(maxR<=120+90+1e-6,'stays on the map: '+maxR);assert.ok(maxR>200,'and can roll all the way to the edge, no pull back to its spot: '+maxR);
+  assert.equal(t.busy(),false);assert.ok(t.offset('a'),'it rests where the cushion left it');
 });
 
 test('sync follows the map: removed companions drop out, offsets survive a refresh',()=>{

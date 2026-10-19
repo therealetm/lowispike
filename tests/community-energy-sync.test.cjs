@@ -31,12 +31,12 @@ test('network delay is caught up: a shot received 100 ms late is already 100 ms 
   assert.ok(late.step(1/60).some(e=>e.type==='hit'&&e.uid==='C'&&e.late===true&&isFinite(e.fx)),'arrives after impact: the hit still shows at once, with a streak from the shooter');
 });
 
-test('a miss is a miss everywhere, and a shot at me knocks my companion on my own screen, then it settles home',()=>{
+test('a miss is a miss everywhere, and a shot at me knocks my companion on my own screen, where it stays (Oct 19)',()=>{
   const b=E.table();b.sync(viewB(),600);const at=b.pos('A');b.fire({x:at.x,y:at.y,uid:'A'},Math.PI/2,1,20,{id:'m',remote:true});
   let ev=[];for(let i=0;i<120;i++)ev.push(...b.step(1/60));assert.ok(!ev.some(e=>e.type==='hit'));assert.ok(ev.some(e=>e.type==='fizzle'));
   const t=E.table();t.sync(viewB(),600);t.fire({x:at.x,y:at.y,uid:'A'},0,1,20,{id:'me',to:'B',ht:300,remote:true});
   ev=[];for(let i=0;i<40;i++)ev.push(...t.step(1/60));assert.ok(ev.some(e=>e.type==='hit'&&e.uid==='B'));assert.ok(t.offset('B'),'my companion takes the hit');
-  for(let i=0;i<900;i++)t.step(1/60);assert.equal(t.busy(),false);assert.equal(t.offset('B'),null);
+  for(let i=0;i<900;i++)t.step(1/60);assert.equal(t.busy(),false);assert.ok(t.offset('B'),'I stay where I was knocked to');
   const own=E.table();own.sync(viewB(),600);own.fire({x:0,y:0,uid:'B'},0,1,24);for(let i=0;i<200;i++)own.step(1/60);assert.equal(own.offset('B'),null,'my own shot never moves me');
 });
 

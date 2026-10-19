@@ -309,7 +309,8 @@ function place(){
   const lab=G.mapLabels(items,{w:v.w,h:v.hb||v.h});
   for(const it of items){const r=lab.get(it.id),el=bodies.get(it.id),b=bubs.get(it.id);if(!r||!el)continue;el.classList.toggle('cg-nn',!r.name);el.classList.toggle('cg-dot',!!r.dot);
    if(!b)continue;if(r.bub){b.style.display='';b.style.left=r.bub.x+'px';b.style.setProperty('top',r.bub.y+'px','important');b.style.setProperty('bottom','auto','important');b.style.setProperty('--tail',r.bub.tail+'px');b.setAttribute('data-side',r.bub.side);}else b.style.display='none';}
-  const me=gx.me&&gx.spot.get(gx.me.uid),mp=me?scr(me):{x:cx,y:cy};
+  /* Oct 19: knocked by an energy burst, YOU stay where you landed too, so your glow and rings follow your companion */
+  const me=gx.me&&epos(gx.spot.get(gx.me.uid),gx.me.uid),mp=me?scr(me):{x:cx,y:cy};
   gal.style.setProperty('--me-x',Math.round(mp.x)+'px');gal.style.setProperty('--me-y',Math.round(mp.y)+'px');
   gx.lines=gx.lineDefs.map(d=>{const A=epos(gx.spot.get(d.a),d.a),B=epos(gx.spot.get(d.b),d.b);if(!A||!B)return null;const a=scr(A),b=scr(B),bs=(B.me?(v.w>=640?64:54):(v.w>=640?56:46))*f,as=(A.me?(v.w>=640?64:54):(v.w>=640?56:46))*f;return {a,b,rb:bs/2,ra:as/2,ame:!!A.me,alpha:1,sel:d.sel,arrow:d.arrow,from:d.from,to:d.to};}).filter(Boolean);
   gx.orbits={cx:mp.x,cy:mp.y,r:[]};

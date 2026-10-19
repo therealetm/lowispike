@@ -314,9 +314,9 @@
             id: 'send-energy', area: 'together', target: ['#whHud .o8-settings'], covers: ['community-energy'],
             title: { en: 'Send energy', de: 'Energie schicken', es: 'Enviar energía' },
             text: {
-                en: 'In the Community galaxy, pull the small blue joystick to aim me, then let go. Whoever my energy burst hits gets energy, never damage.',
-                de: 'Zieh in der Community-Galaxie am kleinen blauen Joystick, um mich zu zielen, und lass los. Wen mein Energiestoß trifft, der bekommt Energie, nie Schaden.',
-                es: 'En la galaxia de la Comunidad, tira del pequeño joystick azul para apuntarme y suelta. A quien alcance mi energía recibe energía, nunca daño.'
+                en: 'In the Community galaxy, pull the small blue joystick to aim me, then let go. Whoever my energy burst hits gets energy, never damage. They roll like a billiard ball, knock into others and stay where they stop.',
+                de: 'Zieh in der Community-Galaxie am kleinen blauen Joystick, um mich zu zielen, und lass los. Wen mein Energiestoß trifft, der bekommt Energie, nie Schaden. Er rollt wie eine Billardkugel, stößt andere an und bleibt da, wo er anhält.',
+                es: 'En la galaxia de la Comunidad, tira del pequeño joystick azul para apuntarme y suelta. A quien alcance mi energía recibe energía, nunca daño. Rueda como una bola de billar, choca con otros y se queda donde se detiene.'
             }
         },
         /* ---------- part: settings ---------- */

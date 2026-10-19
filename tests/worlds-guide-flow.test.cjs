@@ -81,3 +81,53 @@ test('the guide calls her by the companion name (Misty), never the herb identity
     assert.ok(!/LowiHerbTamagotchi/.test(fn), 'not the old herb identity ("Moss Leaf")');
     assert.ok(/'Misty'/.test(fn), 'Misty when there is no companion of her own');
 });
+
+/* 4. Gossip (E-man, Oct 19: "I want them to gossip about each other sometimes, that would be funny ... as they're trying to teach
+   things, they're also being funny"). */
+test('every guide gossips about another guide, in English, German and Spanish, short enough to read', () => {
+    assert.ok(C.GOSSIP && typeof C.gossipPick === 'function' && typeof C.gossip === 'function', 'gossip lines exist');
+    const names = IDS.map(id => C.pal(id, 'en').name);
+    for (const id of IDS) {
+        const own = C.pal(id, 'en').name, a = C.GOSSIP[id];
+        assert.ok(Array.isArray(a) && a.length >= 2, id + ' has at least two');
+        for (const row of a) {
+            assert.strictEqual(row.length, 3, 'en, de, es');
+            for (const t of row) {
+                assert.ok(t && t.length <= 130, 'short: ' + t);
+                assert.ok(names.some(n => n !== own && t.indexOf(n) >= 0), 'about another guide by name: ' + t);
+                assert.ok(t.indexOf(own) < 0, 'not about itself: ' + t);
+            }
+        }
+    }
+});
+
+test('gossip is shuffled and never the same line twice in a row, and remembered on the device', () => {
+    let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    for (const id of IDS) {
+        const m = C.memory(null), got = [];
+        for (let i = 0; i < 40; i++) got.push(C.gossipPick(m, id, rnd));
+        for (let i = 1; i < got.length; i++) assert.notStrictEqual(got[i], got[i - 1], id + ': same gossip twice in a row');
+        assert.strictEqual(new Set(got).size, C.GOSSIP[id].length, id + ': every line comes up');
+        const kept = C.memory(JSON.parse(JSON.stringify(m)));
+        assert.deepStrictEqual(kept.gos[id], m.gos[id], 'kept on the device');
+    }
+    assert.deepStrictEqual(C.memory({ gos: { liver: [0, 9, 0, 'x'], nowhere: [1] } }).gos, { liver: [0] }, 'stored values are cleaned');
+    assert.strictEqual(C.relang({ t: 'gossip', k: 1 }, 'liver', 'es', []), C.GOSSIP.liver[1][2], 'switching language keeps the same gossip');
+});
+
+test('the guide gossips at most once a visit, only after a lesson this visit', () => {
+    const s = read('region-pals.js');
+    const t = s.slice(s.indexOf('function teach()'), s.indexOf('function teach()') + 2600);
+    assert.ok(/!st\.gossiped && st\.hadFact && st\.lastKind !== 'ask'/.test(t), 'once a visit, once a lesson was told, never right after a question');
+    assert.ok(/if \(line\.kind === 'fact'\) st\.hadFact = true/.test(s) && /st\.hadFact = false/.test(s), 'a lesson told this visit (a hunt hint in between does not block it)');
+    assert.ok(/C\.gossipPick\(memLoad\(\), st\.id\)/.test(t) && /memSave\(\)/.test(t), 'picked from the device memory and saved');
+    assert.ok(/kind: 'gossip', src: \{ t: 'gossip', k: g \}/.test(t), 'carries its source (language switch)');
+    assert.ok(/st\.gossiped = false/.test(s), 'reset on every visit');
+});
+
+test('autopilot finds name her the same way as the guides (Misty), not the herb identity', () => {
+    const s = read('adventure.js');
+    const fn = s.slice(s.indexOf('const name = () =>'), s.indexOf('const name = () =>') + 300);
+    assert.ok(/LowiBirthCompanion/.test(fn) && /'Misty'/.test(fn));
+    assert.ok(!/LowiHerbTamagotchi/.test(fn), 'not "Moss Leaf found ..."');
+});

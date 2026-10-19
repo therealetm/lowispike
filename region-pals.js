@@ -96,7 +96,7 @@
     function flush() { const w = st.wait; st.wait = null; if (w && st.el) show1(w, false); }
     function show1(line, user, again) {
         const b = st.el.querySelector('.rp-say'), tx = b.querySelector('.rp-tx');
-        st.line = line;
+        st.line = line; if (line.kind === 'fact') st.hadFact = true;
         tx.textContent = line.text;
         st.el.classList.toggle('rp-hunt', line.kind === 'hunt');
         st.asking = line.kind === 'ask' ? line.ask : null;
@@ -294,7 +294,7 @@
         if (st.el && st.id === id && st.host === h && st.el.isConnected) return st.el;
         hide();
         const el = build(id); if (!el) return null;
-        st.askWait = false; st.pendAsk = null; st.id = id; st.el = el; st.host = h; st.i = 0; st.shown = 0; st.visit = 0; st.off = [0, 0]; st.v = [0, 0]; st.t0 = performance.now(); st.endT = performance.now();
+        st.askWait = false; st.pendAsk = null; st.id = id; st.el = el; st.host = h; st.i = 0; st.shown = 0; st.visit = 0; st.gossiped = false; st.hadFact = false; st.off = [0, 0]; st.v = [0, 0]; st.t0 = performance.now(); st.endT = performance.now();
         st.p = [C.FOLLOW.home[0] - 0.12, C.FOLLOW.home[1] + 0.08];   /* swims in from the lower left */
         st.lines = C.lines(id, lang(), W.LowiArrivalCore, todayText(id));
         /* lessons told on earlier visits, snapshot once a session: nothing told today is asked about today */
@@ -365,6 +365,12 @@
         /* only something it hasn't told you: not this session, and no lesson from an earlier visit (those come back only as a
            "Remember?" question; Yes means never again). Oct 19, 2026: it used to re-tell lesson 1 right after asking about it. */
         const k = C.nextNew(memLoad(), st.id, st.lines, seen[st.id], W.LowiArrivalCore);
+        /* gossip (Oct 19, 2026): once a visit at most, only once a lesson has been told this visit (never as the first thing,
+           never right after a question), half the time while lessons are left, always when none are left */
+        if (!st.gossiped && st.hadFact && st.lastKind !== 'ask' && (k == null || Math.random() < 0.5)) {
+            const g = C.gossipPick(memLoad(), st.id), t = g != null ? C.gossip(st.id, g, lang()) : null;
+            if (t) { memSave(); st.gossiped = true; speak({ text: t, prio: 0, kind: 'gossip', src: { t: 'gossip', k: g } }, false); return; }
+        }
         if (k != null) speak({ text: st.lines[k], prio: 0, kind: 'fact', i: k, src: { t: 'fact', i: k } }, false);
         else if (steering && tw.left > 0) { const v = { d: [tw.x, tw.y] }, L = C.huntLine('dir', lang(), v); if (L) speak({ text: L.text, prio: L.prio, kind: 'tip', src: { t: 'hunt', key: 'dir', v } }, false); }
     }

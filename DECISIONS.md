@@ -480,3 +480,11 @@ The user explicitly requested deploying the recovered Home implementation withou
 **Decision:** `mineSVG()` uses `LowiHerbTamagotchi.plantHTML` (the same Misty cell as Home), tagged `cr-own`; the Oct 15 cell is only a last resort if the renderer is missing. `companion.js` skips the mini-blob swap when the spot already shows `svg.cr-own`. `curArt()` in `herb-tamagotchi.js` routes room/dock/level-up art through the wrapped `plantHTML` (cell-world), falling back to `plant()` only before it loads.
 
 **Consequences:** Checks: `tests/oct19-old-design-purge-2.test.cjs` (4; 3 failed on 20261019-134704, the 4th guards the census probe). No test removed or loosened. Suite 1529/1529.
+
+## 2026-10-19 Cell guides gossip about each other (worlds playtest W-004)
+
+**Context:** Emmanuel, Oct 19: "I want them to gossip about each other sometimes, that would be funny ... as they're trying to teach things, they're also being funny." Planned as the last companion step after the "Remember?" buttons, never built (no gossip anywhere in the code).
+
+**Decision:** `GOSSIP` in region-pals-core.js: two lines per guide in EN/DE/ES, each one a real bit of body science told as a jab at another guide by name (Hexa on Isla: glucagon makes the liver open its sugar store; Puff on Pulse: she fills his blood with oxygen). `gossipPick(m, id, rnd)` shuffles: random among the lines not said yet on this device (`m.gos`), and a new round never starts with the line said last, so the same line never comes twice in a row. The shell's `teach()` says it at most one per visit, only once a lesson has been told this visit and never right after a question, half the time while lessons are left (always when none are left), with the same reading time as a lesson; it carries `src` so a language switch re-says it in the new language.
+
+**Consequences:** `tests/worlds-guide-flow.test.cjs` +3 (all failed before: no gossip). Memory shape gains `gos` (old memories load unchanged). Browser: tests/worlds-gossip-live.cjs. Same release, W-003 sibling: adventure.js autopilot finds ("Moss Leaf found ...") now use the companion name too (Misty).

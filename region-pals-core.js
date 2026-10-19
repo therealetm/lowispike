@@ -99,13 +99,14 @@
     }
     /* what the guide remembers about you: { v: 1, met: { liver: firstMeetingMs }, lastBack: index of the last welcome-back line } */
     function memory(raw) {
-        const m = { v: 1, met: {}, lastBack: -1, told: {}, ok: {}, since: {} };
+        const m = { v: 1, met: {}, lastBack: -1, told: {}, ok: {}, since: {}, gos: {} };
         const obj = o => o && typeof o === 'object' && !Array.isArray(o);
         if (obj(raw)) {
             if (obj(raw.met)) for (const k of Object.keys(raw.met)) if (PALS[k] && +raw.met[k] > 0) m.met[k] = +raw.met[k];
             if (Number.isInteger(raw.lastBack) && raw.lastBack >= 0) m.lastBack = raw.lastBack;
             /* lesson progress (recall check): lessons told, lessons you said you remember, later visits since the last question */
             for (const f of ['told', 'ok']) if (obj(raw[f])) for (const k of Object.keys(raw[f])) if (PALS[k]) { const a = ints(raw[f][k]); if (a.length) m[f][k] = Array.from(new Set(a)); }
+            if (obj(raw.gos)) for (const k of Object.keys(raw.gos)) if (GOSSIP[k] && Array.isArray(raw.gos[k])) { const a = Array.from(new Set(raw.gos[k].filter(i => Number.isInteger(i) && i >= 0 && i < GOSSIP[k].length))); if (a.length) m.gos[k] = a; }
             if (obj(raw.since)) for (const k of Object.keys(raw.since)) if (PALS[k] && Number.isInteger(raw.since[k]) && raw.since[k] >= 0) m.since[k] = Math.min(raw.since[k], 99);
         }
         return m;
@@ -204,13 +205,61 @@
         const okAll = ((m.ok && m.ok[pid(id)]) || []).length >= n;
         return { i: null, text: COPY[okAll ? 'allDone' : 'goodShort'][li3(li)], src: { t: 'copy', key: okAll ? 'allDone' : 'goodShort' } };
     }
+    /* ---------- gossip (Oct 19, 2026; E-man, Oct 19: "I want them to gossip about each other sometimes, that would be funny ...
+       as they're trying to teach things, they're also being funny") ----------
+       Each guide has a few lines about another guide, each one a real piece of body science told as a little jab (Hexa about
+       Isla: glucagon makes the liver release sugar). At most one per visit, only after a lesson, never the same line twice in a row
+       on this device: picked at random from the ones not said yet (m.gos[id]), and when all have been said the round starts over
+       without the one said last. [en, de, es] */
+    const GOSSIP = {
+        brain: [
+            ['Don’t tell Hexa, but I’m her biggest customer. She keeps sugar coming all night, mostly for me.', 'Verrat’s Hexa nicht, aber ich bin ihr bester Kunde. Sie liefert die ganze Nacht Zucker, vor allem für mich.', 'No se lo digas a Hexa, pero soy su mejor cliente. Manda azúcar toda la noche, sobre todo para mí.'],
+            ['Flex loves to brag about lifting things. Who do you think tells every muscle when to move? Me.', 'Flex prahlt gern damit, was er alles hebt. Wer sagt wohl jedem Muskel, wann er sich bewegen soll? Ich.', 'A Flex le encanta presumir de lo que levanta. ¿Quién crees que le dice a cada músculo cuándo moverse? Yo.']
+        ],
+        lung: [
+            ['Pulse thinks he’s the star. Who fills his blood with oxygen on every breath? Me.', 'Pulse hält sich für den Star. Wer füllt sein Blut bei jedem Atemzug mit Sauerstoff? Ich.', 'Pulse se cree la estrella. ¿Quién le llena la sangre de oxígeno en cada respiración? Yo.'],
+            ['When Flex starts showing off on a run, guess who has to pant to keep up. Me.', 'Wenn Flex beim Laufen angibt, rate mal, wer hecheln muss, um mitzuhalten. Ich.', 'Cuando Flex se pone a presumir corriendo, adivina quién tiene que jadear para seguirle. Yo.']
+        ],
+        heart: [
+            ['Puff still brings it up: her left lung is smaller, to make room for me. I say it suits her.', 'Puff erwähnt es ständig: Ihr linker Lungenflügel ist kleiner, damit ich Platz habe. Ich finde, es steht ihr.', 'Puff siempre lo saca: su pulmón izquierdo es más pequeño para dejarme sitio. Yo digo que le queda bien.'],
+            ['Villo eats like there’s no tomorrow. After every big meal I have to send extra blood down to the gut.', 'Villo isst, als gäb’s kein Morgen. Nach jeder großen Mahlzeit muss ich extra Blut in den Darm schicken.', 'Villo come como si no hubiera mañana. Después de cada comida grande tengo que mandar sangre extra al intestino.']
+        ],
+        liver: [
+            ['Isla is so bossy. Your sugar dips, she sends glucagon, and I have to open my sugar store. Every time.', 'Isla ist so herrisch. Dein Zucker sinkt, sie schickt Glukagon, und ich muss meinen Zuckervorrat öffnen. Jedes Mal.', 'Isla es una mandona. Te baja el azúcar, ella manda glucagón y yo tengo que abrir mi reserva de azúcar. Siempre.'],
+            ['Villo sends me everything from your meals first. Every. Single. Thing. And I have to check it all.', 'Villo schickt mir alles aus deinen Mahlzeiten zuerst. Wirklich. Alles. Und ich muss alles prüfen.', 'Villo me manda primero todo lo que comes. Todo. Absolutamente. Todo. Y yo tengo que revisarlo.']
+        ],
+        pancreas: [
+            ['Flex is my favourite. Take a walk after a meal and his muscles soak up sugar, so my insulin has an easy day.', 'Flex ist mein Liebling. Ein Spaziergang nach dem Essen, und seine Muskeln saugen Zucker auf. Mein Insulin hat frei.', 'Flex es mi favorito. Un paseo después de comer y sus músculos absorben azúcar, así mi insulina tiene un día tranquilo.'],
+            ['Hexa calls me bossy. I only send glucagon when your sugar drops. She’s the one hoarding it.', 'Hexa nennt mich herrisch. Ich schicke nur Glukagon, wenn dein Zucker fällt. Sie ist doch die, die ihn hortet.', 'Hexa dice que soy mandona. Yo solo mando glucagón cuando te baja el azúcar. La que lo acapara es ella.']
+        ],
+        gut: [
+            ['Hexa complains I send her too much. She gets the first look at everything you eat. A thank-you would be nice.', 'Hexa beschwert sich, dass ich ihr zu viel schicke. Sie sieht alles, was du isst, als Erste. Ein Danke wäre nett.', 'Hexa se queja de que le mando demasiado. Ella ve primero todo lo que comes. Un gracias no estaría mal.'],
+            ['Spark calls me the second brain like it’s a joke. I have millions of nerve cells of my own, thank you.', 'Spark nennt mich das zweite Gehirn, als wär’s ein Witz. Ich habe Millionen eigene Nervenzellen, danke auch.', 'Spark me llama el segundo cerebro como si fuera una broma. Tengo millones de neuronas propias, gracias.']
+        ],
+        muscle: [
+            ['Isla loves it when I move. One short walk after a meal and I pull sugar out of your blood for her.', 'Isla liebt es, wenn ich mich bewege. Ein kurzer Spaziergang nach dem Essen, und ich hole für sie Zucker aus deinem Blut.', 'A Isla le encanta que me mueva. Un paseo corto después de comer y le saco azúcar de la sangre.'],
+            ['Puff gets out of breath every time I do anything. Lightweight.', 'Puff kommt jedes Mal außer Atem, wenn ich irgendwas mache. Leichtgewicht.', 'Puff se queda sin aliento cada vez que hago algo. Qué floja.']
+        ]
+    };
+    /* the next gossip line for this guide (index), or null when it has none; rnd() in [0, 1). Records it in m.gos. */
+    function gossipPick(m, id, rnd) {
+        id = pid(id); const all = id && GOSSIP[id]; if (!all || !all.length) return null;
+        const said = (m && m.gos && m.gos[id]) || [], last = said.length ? said[said.length - 1] : -1;
+        let left = all.map((_, i) => i).filter(i => said.indexOf(i) < 0);
+        let fresh = said;
+        if (!left.length) { left = all.map((_, i) => i).filter(i => i !== last || all.length === 1); fresh = []; }
+        const k = left[Math.min(left.length - 1, Math.floor((typeof rnd === 'function' ? rnd() : Math.random()) * left.length))];
+        if (m) { m.gos = m.gos || {}; m.gos[id] = fresh.concat([k]); }
+        return k;
+    }
+    function gossip(id, k, li) { const a = GOSSIP[pid(id)]; return a && a[k] ? a[k][li3(li)] : null; }
     /* ---------- switching language mid-lesson (Oct 19, 2026) ----------
        The app language can change while a guide is talking (Settings, inside a world). The guide used to be torn down and rebuilt,
        which ran the arrival again: a second "welcome back" and the NEXT lesson, so the lesson you were reading was skipped (and
        remembered as told). Now every line carries where it came from (src), and the shell re-says the SAME line in the new
        language: relang(src, id, li, lines) is that line's text in language li (lines = the guide's lines in li), or null when it
        can't be rebuilt. src: {t:'fact', i} | {t:'back', b, i?} | {t:'ask', b?, ask} | {t:'again', i} | {t:'good', k} |
-       {t:'copy', key} | {t:'hunt', key, v}. */
+       {t:'copy', key} | {t:'hunt', key, v} | {t:'gossip', k}. */
     function relang(src, id, li, lines) {
         if (!src || typeof src !== 'object' || !pid(id)) return null;
         const L = Array.isArray(lines) ? lines : [], at = i => (Number.isInteger(i) && i >= 0 && i < L.length ? L[i] : null);
@@ -223,6 +272,7 @@
             case 'good': { const f = at(src.k); return f && topic(id, src.k, li) ? recallGood(id, src.k, li) + ' ' + f : null; }
             case 'copy': return COPY[src.key] && COPY[src.key][li3(li)] || null;
             case 'hunt': { const h = huntLine(src.key, li, src.v); return h ? h.text : null; }
+            case 'gossip': return gossip(id, src.k, li);
         }
         return null;
     }
@@ -365,7 +415,7 @@
     const api = { PALS, IDS, pid, li3, COPY, tr, pal, lines, FOLLOW, target, step, relax, tilt, awardsXp: false,
         MORE, GUIDE, DIRS, HUNT, dirIndex, guide, huntLine, showMs, minRead, nextFact, SPOTS, overlap, spotRect, place,
         gapFor, QUEST_IDS, QUEST_W, questBottom, PAD_IDS, dockSpot, ORB_R, BACK, backLine, memory, met, meet, opening, cycle,
-        TOPICS, lessonCount, topic, recallAsk, recallGood, askMs, tell, remember, toldBefore, nextNew, answer, relang };
+        TOPICS, lessonCount, topic, recallAsk, recallGood, askMs, tell, remember, toldBefore, nextNew, answer, relang, GOSSIP, gossipPick, gossip };
     if (typeof module === 'object' && module.exports) module.exports = api;
     root.LowiRegionPalsCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

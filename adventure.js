@@ -86,7 +86,9 @@
     const tr = (k, o) => { let s = T[k][L()] || T[k][0]; if (o) Object.keys(o).forEach(x => { s = s.split('{' + x + '}').join(o[x]); }); return s; };
     const S = () => { try { return (W.LowiVitalsBridge && W.LowiVitalsBridge.state && W.LowiVitalsBridge.state()) || W.S || null; } catch (e) { return null; } };
     const save = () => { try { W.LowiVitalsBridge.save(); } catch (e) { } };
-    const name = () => { try { const M = W.LowiHerbTamagotchi, c = M && M.current && M.current(); return c ? String(M.name(c.p, c.m) || 'Misty') : 'Misty'; } catch (e) { return 'Misty'; } };
+    /* Oct 19, 2026 (worlds playtest W-003): her name is the user's companion (LowiBirthCompanion: Misty unless they brought their
+       own to life), the same as the cell guides use; never the old herb identity name from the star sign ("Moss Leaf found ..."). */
+    const name = () => { try { const B = W.LowiBirthCompanion, c = B && B.get ? B.get() : null, n = c && c.name ? String(c.name).trim() : ''; return n ? n.slice(0, 24) : 'Misty'; } catch (e) { return 'Misty'; } };
     const reduced = () => { try { return W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
     const live = () => H.classList.contains('wh-world-live');
     const say = s => { try { if (W.LowiPraise && W.LowiPraise.say) W.LowiPraise.say(s); } catch (e) { } };

@@ -534,7 +534,7 @@ reached main (25 is now the ten forms), recorded here at 10:45 PM before the mer
      barcode, photo and deep analysis, review/correction, the Breakfast/Lunch/Dinner/Snacks tiles, backdated times,
      recipes, the shopping list and Snacks to buy, account data and safety copy. Never claim a meal estimate measures
      blood sugar; blood sugar is not insulin.
-   - **Status (10:55 PM): merged and releasing** (see the Log for the build). Fuel > Shop shows two plain buttons, Scan in
+   - **Status: DONE, live in 20261019-230341** (11 PM; live e2e 11/11 on WebKit iPhone 13 in Spanish). Fuel > Shop shows two plain buttons, Scan in
      the shop and Shopping list; the Scan camera has no Shopping switch; the shopping camera's card never offers "I ate
      this", logs nothing and leaves the Gap clock alone; any other product card has "I ate this · log it" (one meal even on
      a double tap); Gap > I just ate opens the shared meal logger with "Gap time saved ... You can skip this" and Not now;
@@ -1114,3 +1114,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 - 2026-10-19 22:55 Item 28: picked aura now shows on Home Misty and her card at once and follows the account (lowispike.aura.v1); Rename under the name on her card (1-24 chars, empty = generated name), her name reaches the controller, Next journey, zoom and gift labels; tutorial step 'rename'. Branch aura-rename.
 - 2026-10-19 23:30 Item 23 SHIPPED, build 20261019-224516: a message to Emmanuel (mention or reply) arrives on Home as the sender's own companion flying in, hologram + speech bubble; tap opens it in Community. Live checks pass on simulated iPhone 13 and Android Chrome with mocked messages; not yet seen with a real message on his phone. Choices in DECISIONS.md.
 - 2026-10-19 22:55 Item 27 (food paths + Pathfinder count) merged from branch food-paths and released; e2e 11/11 on WebKit iPhone 13 EN/DE/ES and iPad Pro 11 DE/ES (shopping camera reached via Fuel > Shop > Scan in the shop, lookup stubbed); not on a real phone. Item 24 (Catch/Pathfinder) ships in the same build.
+- 2026-10-19 23:05 Item 27 live in 20261019-230341 (verify-live bytes match; live e2e 11/11 WebKit iPhone 13 ES). Item 24 Catch/Pathfinder in the same build, now with the found-first count.

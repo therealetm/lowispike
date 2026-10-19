@@ -339,6 +339,8 @@ scripts/release.sh "what users get, in one line" --news news.json
 
 Released today (newest first, all on `main`):
 
+- 20261019-184058 Setup resumes after a reload past the birthday step (bug hunt round 9, BH-009)
+- 20261019-183920 Nutrition stats as game stats, portion line on the product card
 - 20261019-175128 Product card: Details open right away, cheaper stores higher, community deals lower
 - 20261019-172632 Tutorial no longer flickers
 - 20261019-171941 Settings > Tutorial (14-card tour, Skip, Skip all)
@@ -370,10 +372,10 @@ Released today (newest first, all on `main`):
 - Community shooting crash (`community-crash`, commit f1d177e: caps hit effects, throttles layout while balls fly,
   plus a soak tool): waiting for the release lock.
 - Product card reorder: landed on `main`, waiting for Pages.
-- Hourly bug hunt round 9 (`bughunt-202610191502`): release 20261019-182247, "setup picks up where you left off
-  after a reload", CI queued.
-- Nutrition stats (`nutrition-stats`): portion card nutrition and today's totals against targets in
-  `S.user.macroGoals`, game-style.
+- Hourly bug hunt round 9 (`bughunt-202610191502`): landed on `main` as 20261019-184058 at 6:45 PM, "setup picks
+  up where you left off after a reload past the birthday step" (BH-009).
+- Nutrition stats (`nutrition-stats`): released as 20261019-183920 (portion line on the product card, today's
+  stats as game stats against `S.user.macroGoals`); live at 6:45 PM.
 - Weight, BMI and body stats (`body-stats`): Settings row opens a weigh-in sheet with BMI and WHO band; releasing.
 - Log meal as Breakfast/Lunch/Dinner/Snacks, snacks to buy on the shopping list (`meal-slots`).
 - Evolutions get bigger each stage (`evolution-escalate`): tests 1676/1676, releasing.
@@ -453,3 +455,5 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 
 - 2026-10-19 19:20 Handoff written: MAYA-HANDOFF.md on main; `agent-harness` branch (probes, bug memory, COORD and
   HANDOFF notes); 18 `wip/*` snapshots of unmerged or uncommitted work. Live 20261019-172632, main 20261019-175128.
+- 2026-10-19 18:45 Shipped: 20261019-183920 nutrition stats (live), 20261019-184058 setup resume BH-009 (on main).
+  MAYA-HANDOFF.md landed on main (25192c4).

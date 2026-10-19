@@ -1,0 +1,290 @@
+{
+ "findings": [
+  {
+   "tag": "escape did not close after move",
+   "open": [
+    "#hb2Bloom.hb2-bloom.hb2-move"
+   ]
+  },
+  {
+   "tag": "two panels open after race sleep>fuel",
+   "open": [
+    ".apple-ui.lg",
+    "#hb2Bloom.hb2-bloom.hb2-fuel"
+   ]
+  }
+ ],
+ "steps": [
+  {
+   "tag": "load",
+   "stalls": [
+    950
+   ]
+  },
+  {
+   "centers": {
+    "settings": [
+     195,
+     242
+    ],
+    "water": [
+     298,
+     285
+    ],
+    "move": [
+     341,
+     388
+    ],
+    "scan": [
+     298,
+     492
+    ],
+    "joy": [
+     195,
+     535
+    ],
+    "sleep": [
+     92,
+     492
+    ],
+    "gap": [
+     52,
+     388
+    ],
+    "fuel": [
+     94,
+     287
+    ]
+   }
+  },
+  {
+   "tap": "settings",
+   "open": [
+    ".ss2-page"
+   ],
+   "html": "tb-scanok wh-world-live ss2-open ss2-page-open"
+  },
+  {
+   "tap": "water",
+   "open": [
+    ".apple-ui.lg",
+    "#hb2Bloom.hb2-bloom.hb2-water"
+   ],
+   "html": "tb-scanok wh-world-live hb2-open"
+  },
+  {
+   "tap": "move",
+   "open": [
+    ".apple-ui.lg",
+    "#hb2Bloom.hb2-bloom.hb2-move"
+   ],
+   "html": "tb-scanok wh-world-live hb2-open"
+  },
+  {
+   "tap": "scan",
+   "open": [
+    "#b3Cam.b3-cam.rw-scan"
+   ],
+   "html": "tb-scanok wh-world-live rw-scanworld"
+  },
+  {
+   "tag": "tap scan",
+   "stalls": [
+    1000,
+    750
+   ]
+  },
+  {
+   "tap": "sleep",
+   "open": [],
+   "html": "tb-scanok wh-world-live ss2-open"
+  },
+  {
+   "tap": "gap",
+   "open": [
+    ".apple-ui.lg",
+    "#hb2Bloom.hb2-bloom.hb2-gap"
+   ],
+   "html": "tb-scanok wh-world-live hb2-open"
+  },
+  {
+   "tap": "fuel",
+   "open": [
+    ".apple-ui.lg",
+    "#hb2Bloom.hb2-bloom.hb2-fuel"
+   ],
+   "html": "tb-scanok wh-world-live hb2-open"
+  },
+  {
+   "spam": "settings",
+   "open": []
+  },
+  {
+   "spam": "water",
+   "open": []
+  },
+  {
+   "spam": "move",
+   "open": []
+  },
+  {
+   "spam": "scan",
+   "open": [
+    "#b3Cam.b3-cam.rw-scan"
+   ]
+  },
+  {
+   "spam": "sleep",
+   "open": []
+  },
+  {
+   "spam": "gap",
+   "open": []
+  },
+  {
+   "spam": "fuel",
+   "open": []
+  },
+  {
+   "race": "fuel>fuel",
+   "open": []
+  },
+  {
+   "race": "fuel>gap",
+   "open": []
+  },
+  {
+   "race": "settings>settings",
+   "open": []
+  },
+  {
+   "race": "move>fuel",
+   "open": []
+  },
+  {
+   "race": "fuel>sleep",
+   "open": []
+  },
+  {
+   "race": "sleep>fuel",
+   "open": [
+    ".apple-ui.lg",
+    "#hb2Bloom.hb2-bloom.hb2-fuel"
+   ]
+  },
+  {
+   "race": "fuel>water",
+   "open": []
+  },
+  {
+   "race": "settings>scan",
+   "open": [
+    ".ss2-page"
+   ]
+  },
+  {
+   "rotate": "settings",
+   "rotated": [
+    ".ss2-page"
+   ],
+   "back": [
+    ".ss2-page"
+   ],
+   "misty": {
+    "x": 195,
+    "y": 388,
+    "w": 150,
+    "on": true,
+    "top": "spBubble",
+    "vis": true
+   }
+  },
+  {
+   "rotate": "fuel",
+   "rotated": [],
+   "back": [],
+   "misty": {
+    "x": 195,
+    "y": 388,
+    "w": 150,
+    "on": true,
+    "top": "spBubble",
+    "vis": true
+   }
+  },
+  {
+   "rotate": "sleep",
+   "rotated": [],
+   "back": [],
+   "misty": {
+    "x": 195,
+    "y": 388,
+    "w": 150,
+    "on": true,
+    "top": "spBubble",
+    "vis": true
+   }
+  },
+  {
+   "rotate": "scan",
+   "rotated": [
+    "#b3Cam.b3-cam.rw-scan"
+   ],
+   "back": [
+    "#b3Cam.b3-cam.rw-scan"
+   ],
+   "misty": {
+    "x": 195,
+    "y": 388,
+    "w": 25,
+    "on": false,
+    "top": "b3-cbtn ghost",
+    "vis": false
+   }
+  },
+  {
+   "hide": "settings",
+   "open": [
+    ".ss2-page"
+   ]
+  },
+  {
+   "hide": "fuel",
+   "open": [
+    ".apple-ui.lg",
+    "#hb2Bloom.hb2-bloom.hb2-fuel"
+   ]
+  },
+  {
+   "final": {
+    "open": [],
+    "misty": {
+     "x": 195,
+     "y": 388,
+     "w": 150,
+     "on": true,
+     "top": "spBubble",
+     "vis": true
+    },
+    "tab": 1,
+    "html": "tb-scanok wh-world-live"
+   }
+  },
+  {
+   "finalCtrls": [
+    "settings:195,260,88",
+    "water:286,297,88",
+    "move:324,388,88",
+    "scan:286,479,88",
+    "joy:195,517,88",
+    "sleep:104,479,88",
+    "gap:66,388,88",
+    "fuel:104,297,88"
+   ]
+  }
+ ],
+ "view": "chromium390",
+ "scenario": "home-abuse",
+ "seed": 1,
+ "sec": 174
+}

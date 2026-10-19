@@ -1,0 +1,84 @@
+{
+ "view": "iphone13",
+ "who": "new",
+ "build": "20261019-140135",
+ "worlds": {
+  "lung": {
+   "enterMs": 21166,
+   "exitMs": 3995,
+   "lines": [
+    {
+     "t": 0,
+     "name": "Puff",
+     "text": "When Flex starts showing off on a run, guess who has to pant to keep up. Me.",
+     "asking": false,
+     "dock": false,
+     "fs": 14
+    },
+    {
+     "t": 7.6,
+     "name": "Puff",
+     "text": "I can feel 4 sugar crumbs hiding in this world’s corners. Steer Misty right up to one and she gobbles it.",
+     "asking": false,
+     "dock": false,
+     "fs": 14
+    }
+   ],
+   "issues": [
+    "other text up: Drag to look around · two fingers to zoom"
+   ],
+   "after": {
+    "cur": "hub",
+    "st": "out",
+    "pal": false,
+    "cls": "bwr-warping"
+   }
+  }
+ },
+ "rp": [
+  {
+   "t": 17069,
+   "region": "lung"
+  },
+  {
+   "t": 18009,
+   "id": "lung",
+   "line": 0,
+   "kind": "fact",
+   "text": "Hi, I’m Puff, a little air sac. I’ll swim along with you here.",
+   "user": false,
+   "prio": 0
+  },
+  {
+   "t": 31308,
+   "id": "lung",
+   "line": -1,
+   "kind": "gossip",
+   "text": "When Flex starts showing off on a run, guess who has to pant to keep up. Me.",
+   "user": false,
+   "prio": 0
+  },
+  {
+   "t": 38408,
+   "id": "lung",
+   "line": -1,
+   "kind": "hunt",
+   "text": "I can feel 4 sugar crumbs hiding in this world’s corners. Steer Misty right up to one and she gobbles it.",
+   "user": false,
+   "prio": 2
+  }
+ ],
+ "errors": [],
+ "console": [],
+ "stalls": [
+  3845,
+  1006,
+  789,
+  3664,
+  833,
+  926,
+  759,
+  3693,
+  791
+ ]
+}

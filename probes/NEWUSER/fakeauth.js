@@ -1,0 +1,3 @@
+await page.evaluate(() => { localStorage.setItem('lowi.auth', JSON.stringify({ access_token: 'local.fixture.token', refresh_token: 'local-fixture', token_type: 'bearer', expires_in: 86400, expires_at: Math.floor(Date.now() / 1000) + 86400 * 30, user: { id: '00000000-0000-4000-8000-0000000000aa', email: 'newuser@example.invalid' } })); localStorage.setItem('lowi.gate', 'done'); sessionStorage.setItem('lowi.a2hs.x','1'); });
+await page.reload({ waitUntil: 'load' }); await L.sleep(7000);
+return [await S('07-after-auth'), await A(), Object.keys(await page.evaluate(()=>Object.fromEntries(Object.keys(localStorage).map(k=>[k,1]))))];

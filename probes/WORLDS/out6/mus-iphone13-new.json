@@ -1,0 +1,78 @@
+{
+ "view": "iphone13",
+ "who": "new",
+ "build": "20261019-143513",
+ "worlds": {
+  "muscle": {
+   "enterMs": 18597,
+   "exitMs": 3295,
+   "lines": [
+    {
+     "t": 2.1,
+     "name": "Flex",
+     "text": "Isla loves it when I move. One short walk after a meal and I pull sugar out of your blood for her.",
+     "asking": false,
+     "dock": true,
+     "fs": 14
+    },
+    {
+     "t": 10.3,
+     "name": "Flex",
+     "text": "I can feel 4 sugar crumbs hiding in this world’s corners. Steer Misty right up to one and she gobbles it.",
+     "asking": false,
+     "dock": false,
+     "fs": 14
+    }
+   ],
+   "issues": [
+    "other text up: Drag to look around · two fingers to zoom"
+   ],
+   "after": {
+    "cur": "hub",
+    "st": "out",
+    "pal": false,
+    "cls": "bwr-warping"
+   }
+  }
+ },
+ "rp": [
+  {
+   "t": 15463,
+   "region": "muscle"
+  },
+  {
+   "t": 16480,
+   "id": "muscle",
+   "line": 0,
+   "kind": "fact",
+   "text": "Hi, I’m Flex, a little muscle fibre. I’ll swim along with you here.",
+   "user": false,
+   "prio": 0
+  },
+  {
+   "t": 29790,
+   "id": "muscle",
+   "line": -1,
+   "kind": "gossip",
+   "text": "Isla loves it when I move. One short walk after a meal and I pull sugar out of your blood for her.",
+   "user": false,
+   "prio": 0
+  },
+  {
+   "t": 38381,
+   "id": "muscle",
+   "line": -1,
+   "kind": "hunt",
+   "text": "I can feel 4 sugar crumbs hiding in this world’s corners. Steer Misty right up to one and she gobbles it.",
+   "user": false,
+   "prio": 2
+  }
+ ],
+ "errors": [],
+ "console": [],
+ "stalls": [
+  2357,
+  759,
+  719
+ ]
+}

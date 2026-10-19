@@ -1,0 +1,83 @@
+{
+ "view": "chromium390",
+ "who": "new",
+ "build": "20261019-130951",
+ "worlds": {
+  "liver": {
+   "enterMs": 23177,
+   "exitMs": 4416,
+   "lines": [
+    {
+     "t": 2.7,
+     "name": "Hexa",
+     "text": "I can feel 4 sugar crumbs hiding in this world’s corners. Steer Moss Leaf right up to one and she gobbles it.",
+     "asking": false,
+     "dock": false,
+     "fs": 14
+    }
+   ],
+   "issues": [
+    "other text up: Drag to look around · two fingers to zoom",
+    "wrong name: I can feel 4 sugar crumbs hiding in this world’s corners. Steer Moss Leaf right up to one and she gobbles it.",
+    "bubble on Misty 1580.6660780184727",
+    "bubble on Misty 2351.19929102498",
+    "bubble on Misty 2968.3201335841136"
+   ],
+   "after": {
+    "cur": "hub",
+    "st": "out",
+    "pal": false,
+    "cls": "bwr-warping"
+   }
+  },
+  "heart": {
+   "enterMs": 62805,
+   "exitMs": 3913,
+   "lines": [
+    {
+     "t": 2.6,
+     "name": "Pulse",
+     "text": "I can feel 4 sugar crumbs hiding in this world’s corners. Steer Moss Leaf right up to one and she gobbles it.",
+     "asking": false,
+     "dock": false,
+     "fs": 14
+    }
+   ],
+   "issues": [
+    "other text up: Drag to look around · two fingers to zoom",
+    "wrong name: I can feel 4 sugar crumbs hiding in this world’s corners. Steer Moss Leaf right up to one and she gobbles it.",
+    "bubble on Misty 1125.7539284322775",
+    "bubble on Misty 1569.1603022149047",
+    "bubble on Misty 1934.3889871255215",
+    "bubble on Misty 2142.046631455396",
+    "bubble on Misty 2272.7941033831485",
+    "bubble on Misty 2407.326576295409"
+   ],
+   "after": {
+    "cur": "hub",
+    "st": "out",
+    "pal": false,
+    "cls": "bwr-warping"
+   }
+  }
+ },
+ "errors": [],
+ "console": [
+  "Failed to load resource: net::ERR_FAILED",
+  "Failed to load resource: net::ERR_FAILED",
+  "Failed to load resource: net::ERR_FAILED",
+  "Failed to load resource: net::ERR_FAILED",
+  "Failed to load resource: net::ERR_FAILED",
+  "Failed to load resource: net::ERR_FAILED",
+  "Failed to load resource: net::ERR_FAILED",
+  "Failed to load resource: net::ERR_FAILED"
+ ],
+ "stalls": [
+  933,
+  950,
+  817,
+  983,
+  900,
+  933
+ ]
+}

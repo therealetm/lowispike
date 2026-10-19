@@ -1,0 +1,36 @@
+{
+ "engine": "webkit",
+ "build": "20261019-134704",
+ "hung": 0,
+ "url": "local",
+ "plan": "cycles:9",
+ "seed": 7,
+ "seconds": 860,
+ "loads": 1,
+ "crashed": false,
+ "errors": [],
+ "warnings": [],
+ "verdict": {
+  "problems": [],
+  "growth": {
+   "ctxBy": {
+    "2d fast-bubble.js:127": 1,
+    "webgl2 body-world-3d.js:102": 1,
+    "webgl2 three-0.160.1.module.min.js:6": 1,
+    "2d body-world-3d-scene.js:29": 2,
+    "2d body-world-3d-scene.js:38": 1,
+    "2d body-world-3d-scene.js:54": 1,
+    "2d body-world-3d-scene.js:325": 1,
+    "2d body-world-regions.js:72": 12,
+    "2d world-home.js:652": 1,
+    "2d misty-flight.js:1007": 2,
+    "2d misty-flight.js:1014": 1,
+    "2d misty-hunt.js:165": 3,
+    "2d world-home.js:545": 1,
+    "2d misty-face.js:213": 2,
+    "2d body-world-regions.js:477": 5
+   }
+  },
+  "samples": 4
+ }
+}

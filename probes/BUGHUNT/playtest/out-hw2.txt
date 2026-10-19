@@ -1,0 +1,418 @@
+{
+ "findings": [
+  {
+   "tag": "two panels open after race settings>water",
+   "open": [
+    ".apple-ui.lg",
+    "#hb2Bloom.hb2-bloom.hb2-water"
+   ]
+  }
+ ],
+ "steps": [
+  {
+   "tag": "load",
+   "stalls": [
+    3493,
+    812
+   ]
+  },
+  {
+   "centers": {
+    "settings": [
+     195,
+     129
+    ],
+    "water": [
+     301,
+     173
+    ],
+    "move": [
+     345,
+     279
+    ],
+    "scan": [
+     301,
+     385
+    ],
+    "joy": [
+     195,
+     429
+    ],
+    "sleep": [
+     89,
+     385
+    ],
+    "gap": [
+     45,
+     279
+    ],
+    "fuel": [
+     89,
+     173
+    ]
+   }
+  },
+  {
+   "tap": "settings",
+   "open": [
+    ".ss2-page"
+   ],
+   "html": "g1-home wh-home wh-world-live ss2-open ss2-page-open"
+  },
+  {
+   "tag": "tap settings",
+   "stalls": [
+    740,
+    1019,
+    1057
+   ]
+  },
+  {
+   "tap": "water",
+   "open": [
+    ".apple-ui.lg",
+    "#hb2Bloom.hb2-bloom.hb2-water"
+   ],
+   "html": "g1-home wh-home wh-world-live hb2-open"
+  },
+  {
+   "tag": "tap water",
+   "stalls": [
+    777
+   ]
+  },
+  {
+   "tap": "move",
+   "open": [
+    ".apple-ui.lg",
+    "#hb2Bloom.hb2-bloom.hb2-move"
+   ],
+   "html": "g1-home wh-home wh-world-live hb2-open"
+  },
+  {
+   "tag": "tap move",
+   "stalls": [
+    888
+   ]
+  },
+  {
+   "tap": "scan",
+   "open": [
+    "#b3Cam.b3-cam.rw-scan"
+   ],
+   "html": "g1-home wh-home wh-world-live b3-camon rw-scanworld rw-page wb-on wh-cosmos wh-mapview"
+  },
+  {
+   "tag": "tap scan",
+   "stalls": [
+    706,
+    1175
+   ]
+  },
+  {
+   "tap": "sleep",
+   "open": [],
+   "html": "g1-home wh-home wh-world-live wh-mapview"
+  },
+  {
+   "tap": "gap",
+   "open": [
+    ".apple-ui.lg",
+    "#hb2Bloom.hb2-bloom.hb2-gap"
+   ],
+   "html": "g1-home wh-home wh-world-live hb2-open"
+  },
+  {
+   "tap": "fuel",
+   "open": [
+    ".apple-ui.lg",
+    "#hb2Bloom.hb2-bloom.hb2-fuel"
+   ],
+   "html": "g1-home wh-home wh-world-live hb2-open"
+  },
+  {
+   "tag": "tap fuel",
+   "stalls": [
+    774
+   ]
+  },
+  {
+   "spam": "settings",
+   "open": [],
+   "html": "g1-home wh-home wh-world-live",
+   "tabOn": "tab-home",
+   "mv": true
+  },
+  {
+   "tag": "spam settings",
+   "stalls": [
+    754
+   ]
+  },
+  {
+   "spam": "water",
+   "open": [],
+   "html": "g1-home wh-home wh-world-live",
+   "tabOn": "tab-home",
+   "mv": true
+  },
+  {
+   "spam": "move",
+   "open": [],
+   "html": "g1-home wh-home wh-world-live",
+   "tabOn": "tab-home",
+   "mv": true
+  },
+  {
+   "spam": "scan",
+   "open": [
+    "#b3Cam.b3-cam.rw-scan"
+   ],
+   "html": "g1-home wh-home wh-world-live b3-camon rw-scanworld rw-page wb-on wh-cosmos wh-mapview",
+   "tabOn": "tab-home",
+   "mv": false
+  },
+  {
+   "tag": "spam scan",
+   "stalls": [
+    982,
+    1162
+   ]
+  },
+  {
+   "spam": "sleep",
+   "open": [],
+   "html": "g1-home wh-home wh-world-live wh-mapview",
+   "tabOn": "tab-home",
+   "mv": true
+  },
+  {
+   "spam": "gap",
+   "open": [],
+   "html": "g1-home wh-home wh-world-live",
+   "tabOn": "tab-home",
+   "mv": true
+  },
+  {
+   "spam": "fuel",
+   "open": [],
+   "html": "g1-home wh-home wh-world-live",
+   "tabOn": "tab-home",
+   "mv": true
+  },
+  {
+   "race": "fuel>move",
+   "open": [],
+   "html": "g1-home wh-home wh-world-live",
+   "tabOn": "tab-home",
+   "mv": true
+  },
+  {
+   "race": "move>scan",
+   "open": [],
+   "html": "g1-home wh-home wh-world-live",
+   "tabOn": "tab-home",
+   "mv": true
+  },
+  {
+   "race": "settings>water",
+   "open": [
+    ".apple-ui.lg",
+    "#hb2Bloom.hb2-bloom.hb2-water"
+   ],
+   "html": "g1-home wh-home wh-world-live hb2-open",
+   "tabOn": "tab-home",
+   "mv": true
+  },
+  {
+   "race": "gap>gap",
+   "open": [],
+   "html": "g1-home wh-home wh-world-live",
+   "tabOn": "tab-home",
+   "mv": true
+  },
+  {
+   "race": "scan>sleep",
+   "open": [
+    "#b3Cam.b3-cam.rw-scan"
+   ],
+   "html": "g1-home wh-home wh-world-live b3-camon rw-scanworld rw-page wb-on wh-cosmos wh-mapview",
+   "tabOn": "tab-home",
+   "mv": false
+  },
+  {
+   "tag": "race scan>sleep",
+   "stalls": [
+    782,
+    1129
+   ]
+  },
+  {
+   "race": "sleep>gap",
+   "open": [],
+   "html": "g1-home wh-home wh-world-live wh-mapview",
+   "tabOn": "tab-home",
+   "mv": true
+  },
+  {
+   "race": "fuel>gap",
+   "open": [],
+   "html": "g1-home wh-home wh-world-live",
+   "tabOn": "tab-home",
+   "mv": true
+  },
+  {
+   "race": "fuel>scan",
+   "open": [],
+   "html": "g1-home wh-home wh-world-live",
+   "tabOn": "tab-home",
+   "mv": true
+  },
+  {
+   "rotate": "settings",
+   "rotated": [
+    ".ss2-page"
+   ],
+   "back": [
+    ".ss2-page"
+   ],
+   "misty": {
+    "x": 195,
+    "y": 279,
+    "w": 150,
+    "on": true,
+    "top": "spBubble",
+    "vis": true,
+    "why": null
+   }
+  },
+  {
+   "tag": "rotate settings",
+   "stalls": [
+    1007,
+    1240
+   ]
+  },
+  {
+   "rotate": "fuel",
+   "rotated": [],
+   "back": [],
+   "misty": {
+    "x": 195,
+    "y": 279,
+    "w": 150,
+    "on": true,
+    "top": "spBubble",
+    "vis": true,
+    "why": null
+   }
+  },
+  {
+   "tag": "rotate fuel",
+   "stalls": [
+    866,
+    720
+   ]
+  },
+  {
+   "rotate": "sleep",
+   "rotated": [],
+   "back": [],
+   "misty": {
+    "x": 195,
+    "y": 279,
+    "w": 150,
+    "on": true,
+    "top": "spBubble",
+    "vis": true,
+    "why": null
+   }
+  },
+  {
+   "tag": "rotate sleep",
+   "stalls": [
+    714
+   ]
+  },
+  {
+   "rotate": "scan",
+   "rotated": [
+    "#b3Cam.b3-cam.rw-scan"
+   ],
+   "back": [
+    "#b3Cam.b3-cam.rw-scan"
+   ],
+   "misty": {
+    "x": 195,
+    "y": 279,
+    "w": 34,
+    "on": false,
+    "top": "SMALL",
+    "vis": false,
+    "why": "spBubble d=block v=hidden o=0"
+   }
+  },
+  {
+   "tag": "rotate scan",
+   "stalls": [
+    818,
+    822,
+    1102
+   ]
+  },
+  {
+   "tag": "resize storm",
+   "stalls": [
+    1088,
+    765
+   ]
+  },
+  {
+   "hide": "settings",
+   "open": [
+    ".ss2-page"
+   ]
+  },
+  {
+   "hide": "fuel",
+   "open": [
+    ".apple-ui.lg",
+    "#hb2Bloom.hb2-bloom.hb2-fuel"
+   ]
+  },
+  {
+   "final": {
+    "open": [],
+    "misty": {
+     "x": 195,
+     "y": 279,
+     "w": 145,
+     "on": true,
+     "top": "spBubble",
+     "vis": true,
+     "why": null
+    },
+    "tab": 1,
+    "html": "g1-home wh-home wh-world-live",
+    "tabOn": "tab-home",
+    "wr": "hub/idle"
+   }
+  },
+  {
+   "finalCtrls": [
+    "settings:195,153,88",
+    "water:284,190,88",
+    "move:321,279,88",
+    "scan:284,368,88",
+    "joy:195,405,88",
+    "sleep:106,368,88",
+    "gap:69,279,88",
+    "fuel:106,190,88"
+   ]
+  }
+ ],
+ "view": "iphone13",
+ "scenario": "home-abuse",
+ "seed": 4,
+ "sec": 99
+}

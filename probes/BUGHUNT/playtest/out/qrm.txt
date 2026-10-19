@@ -1,0 +1,32 @@
+{
+ "settings300": {
+  "html": "ss2-open ss2-page-open",
+  "els": [
+   "ss2-page 370x266 [\"ss2-page op=0 vis=visible d=flex anim=ss2-fade\"]"
+  ]
+ },
+ "settings1300": {
+  "html": "ss2-open ss2-page-open",
+  "els": [
+   "ss2-page 370x266 []"
+  ]
+ },
+ "settings3000": {
+  "html": "ss2-open ss2-page-open",
+  "els": [
+   "ss2-page 370x266 []"
+  ]
+ },
+ "sleep300": {
+  "html": "ss2-open",
+  "els": []
+ },
+ "sleep1300": {
+  "html": "ss2-open",
+  "els": []
+ },
+ "sleep3000": {
+  "html": "ss2-open",
+  "els": []
+ }
+}

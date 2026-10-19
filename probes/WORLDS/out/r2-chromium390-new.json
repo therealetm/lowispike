@@ -1,0 +1,98 @@
+{
+ "view": "chromium390",
+ "who": "new",
+ "build": "20261019-130951",
+ "worlds": {
+  "liver": {
+   "enterMs": 23927,
+   "exitMs": 4834,
+   "lines": [
+    {
+     "t": 2.6,
+     "name": "Hexa",
+     "text": "I can feel 4 sugar crumbs hiding in this world’s corners. Steer Moss Leaf right up to one and she gobbles it.",
+     "asking": false,
+     "dock": false,
+     "fs": 14
+    },
+    {
+     "t": 37.5,
+     "name": "Hexa",
+     "text": "Your liver stores sugar as glycogen and releases it between meals and overnight to keep your blood sugar steady.",
+     "asking": false,
+     "dock": false,
+     "fs": 14
+    }
+   ],
+   "issues": [
+    "other text up: Drag to look around · two fingers to zoom",
+    "wrong name: I can feel 4 sugar crumbs hiding in this world’s corners. Steer Moss Leaf right up to one and she gobbles it.",
+    "bubble on Misty 1551.504088113843",
+    "bubble on Misty 2011.8934275850825",
+    "bubble on Misty 2423.8473220921333",
+    "bubble on Misty 2644.3336588410593"
+   ],
+   "after": {
+    "cur": "hub",
+    "st": "out",
+    "pal": false,
+    "cls": "bwr-warping"
+   }
+  }
+ },
+ "rp": [
+  {
+   "t": 25991,
+   "region": "liver"
+  },
+  {
+   "t": 27009,
+   "id": "liver",
+   "line": 0,
+   "kind": "fact",
+   "text": "Hi, I’m Hexa, a little liver cell. I’ll swim along with you here.",
+   "user": false,
+   "prio": 0
+  },
+  {
+   "t": 36963,
+   "id": "liver",
+   "line": -1,
+   "kind": "hunt",
+   "text": "I can feel 4 sugar crumbs hiding in this world’s corners. Steer Moss Leaf right up to one and she gobbles it.",
+   "user": false,
+   "prio": 2
+  },
+  {
+   "t": 71892,
+   "id": "liver",
+   "line": 1,
+   "kind": "fact",
+   "text": "Your liver stores sugar as glycogen and releases it between meals and overnight to keep your blood sugar steady.",
+   "user": false,
+   "prio": 0
+  }
+ ],
+ "errors": [],
+ "console": [
+  "Failed to load resource: net::ERR_FAILED",
+  "Failed to load resource: net::ERR_FAILED",
+  "Failed to load resource: net::ERR_FAILED",
+  "Failed to load resource: net::ERR_FAILED",
+  "Failed to load resource: net::ERR_FAILED",
+  "Failed to load resource: net::ERR_FAILED",
+  "Failed to load resource: net::ERR_FAILED",
+  "Failed to load resource: net::ERR_FAILED"
+ ],
+ "stalls": [
+  1900,
+  1100,
+  883,
+  800,
+  733,
+  1117,
+  833,
+  867,
+  850
+ ]
+}

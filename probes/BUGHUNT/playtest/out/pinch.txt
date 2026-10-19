@@ -1,0 +1,6 @@
+cdpSession.send: Target page, context or browser has been closed
+    at T (/home/sprite/BUGHUNT/playtest/probe-pinch.cjs:14:34)
+    at pinch (/home/sprite/BUGHUNT/playtest/probe-pinch.cjs:22:19)
+    at async /home/sprite/BUGHUNT/playtest/probe-pinch.cjs:47:30 {
+  log: []
+}

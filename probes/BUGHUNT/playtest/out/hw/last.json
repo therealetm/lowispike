@@ -1,0 +1,328 @@
+[
+ {
+  "findings": [],
+  "steps": [
+   {
+    "tag": "load",
+    "stalls": [
+     787
+    ]
+   },
+   {
+    "centers": {
+     "settings": [
+      195,
+      137
+     ],
+     "water": [
+      296,
+      178
+     ],
+     "move": [
+      337,
+      279
+     ],
+     "scan": [
+      296,
+      379
+     ],
+     "joy": [
+      195,
+      421
+     ],
+     "sleep": [
+      94,
+      379
+     ],
+     "gap": [
+      53,
+      279
+     ],
+     "fuel": [
+      94,
+      178
+     ]
+    }
+   },
+   {
+    "tap": "settings",
+    "open": [
+     ".ss2-page"
+    ],
+    "html": "g1-home wh-home wh-world-live ss2-open ss2-page-open"
+   },
+   {
+    "tap": "water",
+    "open": [
+     "#hb2Bloom.hb2-bloom.hb2-water"
+    ],
+    "html": "g1-home wh-home wh-world-live hb2-open"
+   },
+   {
+    "tap": "move",
+    "open": [
+     "#hb2Bloom.hb2-bloom.hb2-move"
+    ],
+    "html": "g1-home wh-home wh-world-live hb2-open"
+   },
+   {
+    "tap": "scan",
+    "open": [
+     "#b3Cam.b3-cam.rw-scan"
+    ],
+    "html": "g1-home wh-home wh-world-live b3-camon rw-scanworld rw-page wb-on wh-cosmos wh-mapview"
+   },
+   {
+    "tag": "tap scan",
+    "stalls": [
+     721
+    ]
+   },
+   {
+    "tap": "sleep",
+    "open": [],
+    "html": "g1-home wh-home wh-world-live"
+   },
+   {
+    "tap": "gap",
+    "open": [
+     "#hb2Bloom.hb2-bloom.hb2-gap"
+    ],
+    "html": "g1-home wh-home wh-world-live hb2-open"
+   },
+   {
+    "tap": "fuel",
+    "open": [
+     "#hb2Bloom.hb2-bloom.hb2-fuel"
+    ],
+    "html": "g1-home wh-home wh-world-live hb2-open"
+   },
+   {
+    "spam": "settings",
+    "open": [],
+    "html": "g1-home wh-home wh-world-live",
+    "tabOn": "tab-home",
+    "mv": true
+   },
+   {
+    "spam": "water",
+    "open": [],
+    "html": "g1-home wh-home wh-world-live",
+    "tabOn": "tab-home",
+    "mv": true
+   },
+   {
+    "spam": "move",
+    "open": [],
+    "html": "g1-home wh-home wh-world-live",
+    "tabOn": "tab-home",
+    "mv": true
+   },
+   {
+    "spam": "scan",
+    "open": [
+     "#b3Cam.b3-cam.rw-scan"
+    ],
+    "html": "g1-home wh-home wh-world-live b3-camon rw-scanworld rw-page wb-on wh-cosmos wh-mapview",
+    "tabOn": "tab-home",
+    "mv": false
+   },
+   {
+    "spam": "sleep",
+    "open": [],
+    "html": "g1-home wh-home wh-world-live wh-mapview ss2-open",
+    "tabOn": "tab-home",
+    "mv": true
+   },
+   {
+    "spam": "gap",
+    "open": [],
+    "html": "g1-home wh-home wh-world-live",
+    "tabOn": "tab-home",
+    "mv": true
+   },
+   {
+    "spam": "fuel",
+    "open": [],
+    "html": "g1-home wh-home wh-world-live",
+    "tabOn": "tab-home",
+    "mv": true
+   },
+   {
+    "race": "water>scan",
+    "open": [],
+    "html": "g1-home wh-home wh-world-live",
+    "tabOn": "tab-home",
+    "mv": true
+   },
+   {
+    "race": "gap>water",
+    "open": [],
+    "html": "g1-home wh-home wh-world-live",
+    "tabOn": "tab-home",
+    "mv": true
+   },
+   {
+    "race": "water>sleep",
+    "open": [],
+    "html": "g1-home wh-home wh-world-live",
+    "tabOn": "tab-home",
+    "mv": true
+   },
+   {
+    "race": "fuel>move",
+    "open": [],
+    "html": "g1-home wh-home wh-world-live",
+    "tabOn": "tab-home",
+    "mv": true
+   },
+   {
+    "race": "sleep>fuel",
+    "open": [
+     "#hb2Bloom.hb2-bloom.hb2-fuel"
+    ],
+    "html": "g1-home wh-home wh-world-live hb2-open",
+    "tabOn": "tab-home",
+    "mv": true
+   },
+   {
+    "race": "sleep>sleep",
+    "open": [],
+    "html": "g1-home wh-home wh-world-live",
+    "tabOn": "tab-home",
+    "mv": true
+   },
+   {
+    "race": "move>sleep",
+    "open": [],
+    "html": "g1-home wh-home wh-world-live",
+    "tabOn": "tab-home",
+    "mv": true
+   },
+   {
+    "race": "move>sleep",
+    "open": [],
+    "html": "g1-home wh-home wh-world-live",
+    "tabOn": "tab-home",
+    "mv": true
+   },
+   {
+    "rotate": "settings",
+    "rotated": [
+     ".ss2-page"
+    ],
+    "back": [
+     ".ss2-page"
+    ],
+    "misty": {
+     "x": 195,
+     "y": 279,
+     "w": 150,
+     "on": true,
+     "top": "spBubble",
+     "vis": true,
+     "why": null
+    }
+   },
+   {
+    "rotate": "fuel",
+    "rotated": [],
+    "back": [],
+    "misty": {
+     "x": 195,
+     "y": 279,
+     "w": 150,
+     "on": true,
+     "top": "spBubble",
+     "vis": true,
+     "why": null
+    }
+   },
+   {
+    "rotate": "sleep",
+    "rotated": [],
+    "back": [],
+    "misty": {
+     "x": 195,
+     "y": 279,
+     "w": 150,
+     "on": true,
+     "top": "spBubble",
+     "vis": true,
+     "why": null
+    }
+   },
+   {
+    "rotate": "scan",
+    "rotated": [
+     "#b3Cam.b3-cam.rw-scan"
+    ],
+    "back": [
+     "#b3Cam.b3-cam.rw-scan"
+    ],
+    "misty": {
+     "x": 195,
+     "y": 279,
+     "w": 25,
+     "on": false,
+     "top": "SMALL",
+     "vis": false,
+     "why": "spBubble d=block v=hidden o=0"
+    }
+   },
+   {
+    "tag": "resize storm",
+    "stalls": [
+     775,
+     967
+    ]
+   },
+   {
+    "hide": "settings",
+    "open": [
+     ".ss2-page"
+    ]
+   },
+   {
+    "hide": "fuel",
+    "open": [
+     "#hb2Bloom.hb2-bloom.hb2-fuel"
+    ]
+   },
+   {
+    "final": {
+     "open": [],
+     "misty": {
+      "x": 195,
+      "y": 279,
+      "w": 150,
+      "on": true,
+      "top": "spBubble",
+      "vis": true,
+      "why": null
+     },
+     "tab": 1,
+     "html": "g1-home wh-home wh-world-live",
+     "tabOn": "tab-home",
+     "wr": "hub/idle"
+    }
+   },
+   {
+    "finalCtrls": [
+     "settings:195,152,88",
+     "water:285,189,88",
+     "move:322,279,88",
+     "scan:285,369,88",
+     "joy:195,406,88",
+     "sleep:105,369,88",
+     "gap:68,279,88",
+     "fuel:105,189,88"
+    ]
+   }
+  ],
+  "view": "iphone13",
+  "scenario": "home-abuse",
+  "seed": 13,
+  "sec": 87
+ }
+]

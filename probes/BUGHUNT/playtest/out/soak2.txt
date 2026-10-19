@@ -1,0 +1,14 @@
+WARN Service Worker registration blocked by Playwright
+start {"pad":true,"mode":"auto"}
+final {"mfErr":"","f":{"st":"free","flew":null,"joined":false,"roam":false,"inT":0,"wpNext":-1,"ap":0,"near":"brain","nearD":97.26,"px":165,"ks":1,"hs":0.54,"exP":0,"exE":0,"exO":0,"mist":false,"dk":0,"deep":false,"glow":0,"guideGlow":0,"home":0,"exDark":false,"skin":0,"mistAng":null,"gaps":null,"dark":false,"transit":false,"autoX":null,"orb":null,"outPh":null,"push":0,"p":[-15.83,7.61,101.88],"log":["227903 explore ride","231460 explore visit","236185 explore plan","236393 explore hook","289632 explore ride","314738 explore visit","318933 explore plan","319060 explore hook","332278 explore ride","361298 explore plan","361370 explore hook","373669 explore ride"]},"ex":{"d":5.9,"left":10,"seen":[10,30,5,23],"at":10,"tt":155.8,"hops":6,"up":false,"ph":"ride","t":10.5,"tour":4,"aim":-1,"si":17,"rode":true,"rid":16.3,"j":11,"n":[2,37,40],"log":["ride","visit","plan","hook","ride","visit","plan","hook","ride","plan","hook","ride"]}}
+explore log: ride,visit,plan,hook,ride,visit,plan,hook,ride,plan,hook,ride
+PINNED >8 s: hook string 1 point 6 for 64.0 s from 76 s | hook string 18 point 5 for 8.5 s from 156.5 s | hook string 11 point 17 for 16.0 s from 188 s | hook string 34 point 4 for 49.0 s from 212 s | hook string 33 point 3 for 12.0 s from 289 s | hook string 17 point 2 for 12.0 s from 329 s
+galaxy log: 231460 off current | 285218 current 34 - | 314738 off current | 324600 current 33 + | 361298 off current | 367270 current 17 - | 367467 off current | 367702 current 17 -
+loads 1 crashed false
+errors [
+ "console: Failed to load resource: net::ERR_FAILED"
+]
+warnings [
+ "1x Service Worker registration blocked by Playwright"
+]
+growth geo 19 -> 50 tex 8 -> 8 progs 24 -> 26 glLive {"tex":12,"buf":68,"prog":24,"fb":0,"rb":0} -> {"tex":12,"buf":181,"prog":26,"fb":0,"rb":0} compiles 48 -> 54 heap 29 -> 26 nodes 2173 -> 2171

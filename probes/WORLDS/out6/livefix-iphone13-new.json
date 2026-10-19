@@ -1,0 +1,77 @@
+{
+ "view": "iphone13",
+ "who": "new",
+ "build": "20261019-142930",
+ "worlds": {
+  "lung": {
+   "enterMs": 34400,
+   "exitMs": 3028,
+   "lines": [
+    {
+     "t": 2.5,
+     "name": "Puff",
+     "text": "I can feel 4 sugar crumbs hiding in this world’s corners. Steer Misty right up to one and she gobbles it.",
+     "asking": false,
+     "dock": true,
+     "fs": 14
+    }
+   ],
+   "issues": [
+    "other text up: Drag to look around · two fingers to zoom"
+   ],
+   "after": {
+    "cur": "hub",
+    "st": "out",
+    "pal": false,
+    "cls": "bwr-warping"
+   }
+  }
+ },
+ "rp": [
+  {
+   "t": 19807,
+   "region": "lung"
+  },
+  {
+   "t": 20758,
+   "id": "lung",
+   "line": 0,
+   "kind": "fact",
+   "text": "Hi, I’m Puff, a little air sac. I’ll swim along with you here.",
+   "user": false,
+   "prio": 0
+  },
+  {
+   "t": 33946,
+   "id": "lung",
+   "line": 1,
+   "kind": "fact",
+   "text": "Your lungs hold hundreds of millions of tiny air sacs, the alveoli, where oxygen slips into your blood.",
+   "user": false,
+   "prio": 0
+  },
+  {
+   "t": 47395,
+   "id": "lung",
+   "line": -1,
+   "kind": "hunt",
+   "text": "I can feel 4 sugar crumbs hiding in this world’s corners. Steer Misty right up to one and she gobbles it.",
+   "user": false,
+   "prio": 2
+  }
+ ],
+ "errors": [],
+ "console": [],
+ "stalls": [
+  1426,
+  1209,
+  741,
+  844,
+  852,
+  1131,
+  986,
+  986,
+  908,
+  701
+ ]
+}

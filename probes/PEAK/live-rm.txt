@@ -1,0 +1,2 @@
+PASS iphone13_webkit (Reduce Motion) | NEW 1 thriving face=thriving pace=null peak=null shaft=null mote=null worldRate=null fps=0 heap=nullMB | RESTING 0.15 tired face=tired pace=null peak=null shaft=null mote=null worldRate=null fps=0 heap=nullMB
+PASS iphone_chromium (Reduce Motion) | NEW 1 thriving face=thriving pace=null peak=null shaft=null mote=null worldRate=null fps=0 heap=17MB | RESTING 0.15 tired face=tired pace=null peak=null shaft=null mote=null worldRate=null fps=0 heap=16MB

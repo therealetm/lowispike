@@ -1,0 +1,32 @@
+{
+ "engine": "chromium",
+ "build": "20261019-130951",
+ "url": "local",
+ "plan": "cycles:4",
+ "seed": 7,
+ "seconds": 474,
+ "loads": 1,
+ "crashed": false,
+ "errors": [],
+ "warnings": [
+  "1x [.WebGL-0x3b8c02731e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+ ],
+ "verdict": {
+  "problems": [
+   "webglcontextlost fired 1 times"
+  ],
+  "growth": {
+   "frameGaps": [
+    [
+     168,
+     48237
+    ],
+    [
+     168,
+     48237
+    ]
+   ]
+  },
+  "samples": 3
+ }
+}

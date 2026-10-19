@@ -1,0 +1,6 @@
+{"slug": "lung-join", "go": {"tab": "home"},
+ "lead": {"en": "Misty comes into the lung world", "de": "Misty kommt mit in die Lunge", "es": "Misty entra en el mundo de los pulmones"},
+ "text": {"en": "When you opened the lung world from the World map, Misty never came in. Puff the air sac talked away to an empty world. Now Misty swims into the lungs by herself, just like in every other world, and you can steer her there and fly her back out.",
+          "de": "Wenn du die Lunge über die Weltkarte geöffnet hast, kam Misty nie mit hinein. Puff, das Luftbläschen, redete mit einer leeren Welt. Jetzt schwimmt Misty von selbst in die Lunge, genau wie in jede andere Welt, und du kannst sie dort steuern und wieder hinausfliegen.",
+          "es": "Cuando abrías el mundo de los pulmones desde el mapa, Misty nunca entraba. Puff, el alveolo, le hablaba a un mundo vacío. Ahora Misty entra nadando sola en los pulmones, como en todos los demás mundos, y puedes guiarla allí y volver a salir volando."},
+ "steps": [{"tab": "home", "sel": "#whPad", "text": {"en": "Open the World map and tap the Lungs. Wait a moment and Misty swims in.", "de": "Öffne die Weltkarte und tippe auf die Lunge. Warte kurz, dann schwimmt Misty herein.", "es": "Abre el mapa del mundo y toca los Pulmones. Espera un momento y Misty entra nadando."}}]}

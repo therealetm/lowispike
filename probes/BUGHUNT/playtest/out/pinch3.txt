@@ -1,0 +1,18 @@
+start {"tabs":["tab-home"],"home":{"tf":"","op":"","cop":"1","ctf":"none"},"f":null,"html":"","e":[]}
+burst 0 kind 3 {"tabs":["tab-home"],"home":{"tf":"","op":"","cop":"1","ctf":"none"},"f":null,"html":"","e":[]}
+burst 1 kind 2 {"tabs":["tab-home"],"home":{"tf":"","op":"","cop":"1","ctf":"none"},"f":null,"html":"","e":[]}
+burst 2 kind 0 {"tabs":["tab-home"],"home":{"tf":"","op":"","cop":"1","ctf":"none"},"f":null,"html":"","e":[]}
+burst 3 kind 4 {"tabs":["tab-home"],"home":{"tf":"","op":"","cop":"1","ctf":"none"},"f":null,"html":"","e":[]}
+burst 4 kind 0 {"tabs":["tab-home"],"home":{"tf":"","op":"","cop":"1","ctf":"none"},"f":null,"html":"","e":[]}
+burst 5 kind 4 {"tabs":["tab-home"],"home":{"tf":"","op":"","cop":"1","ctf":"none"},"f":null,"html":"","e":[]}
+burst 6 kind 3 {"tabs":["tab-home"],"home":{"tf":"","op":"","cop":"1","ctf":"none"},"f":null,"html":"","e":[]}
+burst 7 kind 1 {"tabs":["tab-home"],"home":{"tf":"","op":"","cop":"1","ctf":"none"},"f":null,"html":"","e":[]}
+during warp out {"tabs":["tab-foryou"],"home":{"tf":"","op":"","cop":"0","ctf":"none"},"f":"","html":"","e":[]}
+galaxy burst 0 {"tabs":["tab-foryou"],"home":{"tf":"","op":"","cop":"0","ctf":"none"},"f":"","html":"","e":[]}
+galaxy burst 1 {"tabs":["tab-foryou"],"home":{"tf":"","op":"","cop":"0","ctf":"none"},"f":"","html":"","e":[]}
+galaxy burst 2 {"tabs":["tab-foryou"],"home":{"tf":"","op":"","cop":"0","ctf":"none"},"f":"","html":"","e":[]}
+galaxy burst 3 {"tabs":["tab-foryou"],"home":{"tf":"","op":"","cop":"0","ctf":"none"},"f":"","html":"","e":[]}
+end on home {"tabs":["tab-home"],"home":{"tf":"","op":"","cop":"1","ctf":"none"},"f":"","html":"","e":[]}
+[{"t":"start","tabs":["tab-home"],"home":{"tf":"","op":"","cop":"1","ctf":"none"},"field":null,"html":""},{"t":"burst 0 kind 3","tabs":["tab-home"],"home":{"tf":"","op":"","cop":"1","ctf":"none"},"field":null,"html":""},{"t":"burst 1 kind 2","tabs":["tab-home"],"home":{"tf":"","op":"","cop":"1","ctf":"none"},"field":null,"html":""},{"t":"burst 2 kind 0","tabs":["tab-home"],"home":{"tf":"","op":"","cop":"1","ctf":"none"},"field":null,"html":""},{"t":"burst 3 kind 4","tabs":["tab-home"],"home":{"tf":"","op":"","cop":"1","ctf":"none"},"field":null,"html":""},{"t":"burst 4 kind 0","tabs":["tab-home"],"home":{"tf":"","op":"","cop":"1","ctf":"none"},"field":null,"html":""},{"t":"burst 5 kind 4","tabs":["tab-home"],"home":{"tf":"","op":"","cop":"1","ctf":"none"},"field":null,"html":""},{"t":"burst 6 kind 3","tabs":["tab-home"],"home":{"tf":"","op":"","cop":"1","ctf":"none"},"field":null,"html":""},{"t":"burst 7 kind 1","tabs":["tab-home"],"home":{"tf":"","op":"","cop":"1","ctf":"none"},"field":null,"html":""},{"t":"during warp out","tabs":["tab-foryou"],"home":{"tf":"","op":"","cop":"0","ctf":"none"},"field":"","html":""},{"t":"galaxy burst 0","tabs":["tab-foryou"],"home":{"tf":"","op":"","cop":"0","ctf":"none"},"field":"","html":""},{"t":"galaxy burst 1","tabs":["tab-foryou"],"home":{"tf":"","op":"","cop":"0","ctf":"none"},"field":"","html":""},{"t":"galaxy burst 2","tabs":["tab-foryou"],"home":{"tf":"","op":"","cop":"0","ctf":"none"},"field":"","html":""},{"t":"galaxy burst 3","tabs":["tab-foryou"],"home":{"tf":"","op":"","cop":"0","ctf":"none"},"field":"","html":""},{"t":"end on home","tabs":["tab-home"],"home":{"tf":"","op":"","cop":"1","ctf":"none"},"field":"","html":""}]
+PASS
+page closed after end on home

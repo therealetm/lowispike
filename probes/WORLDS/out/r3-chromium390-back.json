@@ -1,0 +1,150 @@
+{
+ "view": "chromium390",
+ "who": "back",
+ "build": "20261019-130951",
+ "worlds": {
+  "liver": {
+   "enterMs": 32280,
+   "exitMs": 5668,
+   "lines": [
+    {
+     "t": 0.4,
+     "name": "Hexa",
+     "text": "Welcome back. I kept your seat warm. Remember when I told you how your liver stores sugar and keeps your blood sugar steady?",
+     "asking": true,
+     "dock": false,
+     "fs": 14
+    },
+    {
+     "t": 17.8,
+     "name": "Hexa",
+     "text": "I can feel 4 sugar crumbs hiding in this world’s corners. Steer Moss Leaf right up to one and she gobbles it.",
+     "asking": false,
+     "dock": true,
+     "fs": 14
+    },
+    {
+     "t": 53.7,
+     "name": "Hexa",
+     "text": "Your liver stores sugar as glycogen and releases it between meals and overnight to keep your blood sugar steady.",
+     "asking": false,
+     "dock": false,
+     "fs": 14
+    }
+   ],
+   "issues": [
+    "other text up: Drag to look around · two fingers to zoom",
+    "wrong name: I can feel 4 sugar crumbs hiding in this world’s corners. Steer Moss Leaf right up to one and she gobbles it."
+   ],
+   "after": {
+    "cur": "hub",
+    "st": "out",
+    "pal": false,
+    "cls": "bwr-warping"
+   }
+  },
+  "heart": {
+   "enterMs": 110803,
+   "exitMs": 4734,
+   "lines": [
+    {
+     "t": 0,
+     "name": "Pulse",
+     "text": "Oh, you’re back! Remember when I told you how often your heart beats in a day?",
+     "asking": true,
+     "dock": false,
+     "fs": 14
+    },
+    {
+     "t": 11.8,
+     "name": "Pulse",
+     "text": "I can feel 4 sugar crumbs hiding in this world’s corners. Steer Moss Leaf right up to one and she gobbles it.",
+     "asking": false,
+     "dock": false,
+     "fs": 14
+    },
+    {
+     "t": 46.8,
+     "name": "Pulse",
+     "text": "Your heart beats about 100,000 times a day.",
+     "asking": false,
+     "dock": false,
+     "fs": 14
+    }
+   ],
+   "issues": [
+    "other text up: Drag to look around · two fingers to zoom",
+    "wrong name: I can feel 4 sugar crumbs hiding in this world’s corners. Steer Moss Leaf right up to one and she gobbles it.",
+    "bubble on joystick 1320",
+    "bubble on Misty 2239.701248573774",
+    "bubble on Misty 964.8486593539292"
+   ],
+   "after": {
+    "cur": "hub",
+    "st": "out",
+    "pal": false,
+    "cls": "bwr-warping"
+   }
+  }
+ },
+ "rp": [
+  {
+   "t": 119885,
+   "region": "hub"
+  },
+  {
+   "t": 219900,
+   "region": "heart"
+  },
+  {
+   "t": 227311,
+   "id": "heart",
+   "line": -1,
+   "kind": "ask",
+   "text": "Oh, you’re back! Remember when I told you how often your heart beats in a day?",
+   "user": false,
+   "prio": 1
+  },
+  {
+   "t": 246986,
+   "id": "heart",
+   "line": -1,
+   "kind": "hunt",
+   "text": "I can feel 4 sugar crumbs hiding in this world’s corners. Steer Moss Leaf right up to one and she gobbles it.",
+   "user": false,
+   "prio": 2
+  },
+  {
+   "t": 282178,
+   "id": "heart",
+   "line": 1,
+   "kind": "fact",
+   "text": "Your heart beats about 100,000 times a day.",
+   "user": false,
+   "prio": 0
+  }
+ ],
+ "errors": [],
+ "console": [
+  "Failed to load resource: net::ERR_FAILED",
+  "Failed to load resource: net::ERR_FAILED",
+  "Failed to load resource: net::ERR_FAILED",
+  "Failed to load resource: net::ERR_FAILED",
+  "Failed to load resource: net::ERR_FAILED",
+  "Failed to load resource: net::ERR_FAILED",
+  "Failed to load resource: net::ERR_FAILED",
+  "Failed to load resource: net::ERR_FAILED"
+ ],
+ "stalls": [
+  1550,
+  833,
+  733,
+  817,
+  783,
+  917,
+  733,
+  717,
+  1383,
+  900
+ ]
+}

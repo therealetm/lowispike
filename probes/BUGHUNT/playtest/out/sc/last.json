@@ -1,0 +1,51 @@
+[
+ {
+  "findings": [
+   {
+    "tag": "corrupt storage world: garbage",
+    "w": "hub",
+    "err": [],
+    "rej": [],
+    "pageerror": []
+   },
+   {
+    "tag": "corrupt storage world: wrongtype",
+    "w": "hub",
+    "err": [],
+    "rej": [],
+    "pageerror": []
+   },
+   {
+    "tag": "corrupt storage world: quota",
+    "w": "hub",
+    "err": [],
+    "rej": [],
+    "pageerror": []
+   }
+  ],
+  "steps": [
+   {
+    "mode": "garbage",
+    "keys": 15,
+    "homeOk": true,
+    "world": "hub"
+   },
+   {
+    "mode": "wrongtype",
+    "keys": 15,
+    "homeOk": true,
+    "world": "hub"
+   },
+   {
+    "mode": "quota",
+    "keys": 16,
+    "homeOk": true,
+    "world": "hub"
+   }
+  ],
+  "view": "chromium390",
+  "scenario": "storage-corrupt",
+  "seed": 3,
+  "sec": 98
+ }
+]

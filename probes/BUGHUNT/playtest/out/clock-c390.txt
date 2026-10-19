@@ -1,0 +1,104 @@
+[
+ {
+  "label": "23:58 start",
+  "clock": "Mon Oct 19 2026 23:57:39",
+  "water": "Water0/6 cups | Water 0/6 cups, +1 cup",
+  "gap": "Fasting3 h 57 minof 16 hEnds 12:00 · Next marker 8 h: Liver  | ",
+  "move": "Move0/4",
+  "sleep": "SleepLog | Sleep, not logged",
+  "fuel": "Fuel0/3 | Fuel 0/3. Tap to log a meal, long press to see today.",
+  "bad": []
+ },
+ {
+  "label": "after water ",
+  "clock": "Mon Oct 19 2026 23:57:48",
+  "water": "Water2/6 cups | Water 2/6 cups, +1 cup",
+  "gap": "Fasting3 h 57 minof 16 hEnds 12:00 · Next marker 8 h: Liver  | ",
+  "move": "Move0/4",
+  "sleep": "SleepLog | Sleep, not logged",
+  "fuel": "Fuel0/3 | Fuel 0/3. Tap to log a meal, long press to see today.",
+  "bad": []
+ },
+ {
+  "label": "00:01 visible",
+  "clock": "Tue Oct 20 2026 00:00:52",
+  "water": "Water0/6 cups | Water 0/6 cups, +1 cup",
+  "gap": "Fasting4 h 00 minof 16 hEnds 12:00 · Next marker 8 h: Liver  | ",
+  "move": "Move0/4",
+  "sleep": "SleepLog | Sleep, not logged",
+  "fuel": "Fuel0/3 | Fuel 0/3. Tap to log a meal, long press to see today.",
+  "bad": []
+ },
+ {
+  "label": "07:01 after hidden night",
+  "clock": "Tue Oct 20 2026 07:00:59",
+  "water": "Water0/6 cups | Water 0/6 cups, +1 cup",
+  "gap": "Fasting11 h 00 minof 16 hEnds 12:00 · Next marker 12 h: Fat  | ",
+  "move": "Move0/4",
+  "sleep": "SleepLog | Sleep, not logged",
+  "fuel": "Fuel0/3 | Fuel 0/3. Tap to log a meal, long press to see today.",
+  "bad": []
+ },
+ {
+  "label": "07:xx open gap",
+  "clock": "Tue Oct 20 2026 07:01:01",
+  "water": "Water0/6 cups | Water 0/6 cups, +1 cup",
+  "gap": "Fasting11 h 00 minof 16 hEnds 12:00 · Next marker 12 h: Fat  | ",
+  "move": "Move0/4",
+  "sleep": "SleepLog | Sleep, not logged",
+  "fuel": "Fuel0/3 | Fuel 0/3. Tap to log a meal, long press to see today.",
+  "bad": []
+ },
+ {
+  "label": "07:xx open water",
+  "clock": "Tue Oct 20 2026 07:01:04",
+  "water": "Water0/6 cups | Water 0/6 cups, +1 cup",
+  "gap": "Fasting11 h 00 minof 16 hEnds 12:00 · Next marker 12 h: Fat  | ",
+  "move": "Move0/4",
+  "sleep": "SleepLog | Sleep, not logged",
+  "fuel": "Fuel0/3 | Fuel 0/3. Tap to log a meal, long press to see today.",
+  "bad": []
+ },
+ {
+  "label": "07:xx open fuel",
+  "clock": "Tue Oct 20 2026 07:01:08",
+  "water": "Water0/6 cups | Water 0/6 cups, +1 cup",
+  "gap": "Fasting11 h 00 minof 16 hEnds 12:00 · Next marker 12 h: Fat  | ",
+  "move": "Move0/4",
+  "sleep": "SleepLog | Sleep, not logged",
+  "fuel": "Fuel0/3 | Fuel 0/3. Tap to log a meal, long press to see today.",
+  "bad": []
+ },
+ {
+  "label": "07:xx open move",
+  "clock": "Tue Oct 20 2026 07:01:12",
+  "water": "Water0/6 cups | Water 0/6 cups, +1 cup",
+  "gap": "Fasting11 h 00 minof 16 hEnds 12:00 · Next marker 12 h: Fat  | ",
+  "move": "Move0/4",
+  "sleep": "SleepLog | Sleep, not logged",
+  "fuel": "Fuel0/3 | Fuel 0/3. Tap to log a meal, long press to see today.",
+  "bad": []
+ },
+ {
+  "label": "07:xx open sleep",
+  "clock": "Tue Oct 20 2026 07:01:16",
+  "water": "Water0/6 cups | Water 0/6 cups, +1 cup",
+  "gap": "Fasting11 h 00 minof 16 hEnds 12:00 · Next marker 12 h: Fat  | ",
+  "move": "Move0/4",
+  "sleep": "SleepLog | Sleep, not logged",
+  "fuel": "Fuel0/3 | Fuel 0/3. Tap to log a meal, long press to see today.",
+  "bad": []
+ },
+ {
+  "label": "next-next day 09:xx",
+  "clock": "Wed Oct 21 2026 09:01:22",
+  "water": "Water0/6 cups | Water 0/6 cups, +1 cup",
+  "gap": "Fasting37 h 01 minof 16 hGoal reached · Goal reached | ",
+  "move": "Move0/4",
+  "sleep": "SleepLog | Sleep, not logged",
+  "fuel": "Fuel0/3 | Fuel 0/3. Tap to log a meal, long press to see today.",
+  "bad": []
+ }
+]
+PASS (check water reset by eye)
+exit 0

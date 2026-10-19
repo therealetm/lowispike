@@ -1,0 +1,180 @@
+{
+ "view": "iphone13",
+ "who": "new",
+ "build": "20261019-140135",
+ "worlds": {
+  "lung": {
+   "enterMs": 240037,
+   "exitMs": 3399,
+   "lines": [],
+   "issues": [
+    "other text up: Drag to look around · two fingers to zoom"
+   ],
+   "after": {
+    "cur": "hub",
+    "st": "idle",
+    "pal": false,
+    "cls": "bwr-warping"
+   }
+  },
+  "brain": {
+   "enterMs": 102657,
+   "exitMs": 3417,
+   "lines": [
+    {
+     "t": 2.4,
+     "name": "Spark",
+     "text": "I can feel 4 sugar crumbs hiding in this world’s corners. Steer Misty right up to one and she gobbles it.",
+     "asking": false,
+     "dock": false,
+     "fs": 14
+    }
+   ],
+   "issues": [
+    "other text up: Drag to look around · two fingers to zoom"
+   ],
+   "after": {
+    "cur": "hub",
+    "st": "out",
+    "pal": false,
+    "cls": "bwr-warping"
+   }
+  },
+  "pancreas": {
+   "enterMs": 105836,
+   "exitMs": 3777,
+   "lines": [
+    {
+     "t": 0,
+     "name": "Isla",
+     "text": "Hi, I’m Isla, a little islet. I’ll swim along with you here.",
+     "asking": false,
+     "dock": false,
+     "fs": 14
+    },
+    {
+     "t": 8.4,
+     "name": "Isla",
+     "text": "Tiny islands of cells in your pancreas, the islets of Langerhans, release insulin when your blood sugar rises.",
+     "asking": false,
+     "dock": false,
+     "fs": 14
+    },
+    {
+     "t": 16.5,
+     "name": "Isla",
+     "text": "I can feel 4 sugar crumbs hiding in this world’s corners. Steer Misty right up to one and she gobbles it.",
+     "asking": false,
+     "dock": true,
+     "fs": 14
+    }
+   ],
+   "issues": [
+    "other text up: Drag to look around · two fingers to zoom"
+   ],
+   "after": {
+    "cur": "hub",
+    "st": "out",
+    "pal": false,
+    "cls": "bwr-warping"
+   }
+  },
+  "gut": {
+   "enterMs": 93043,
+   "exitMs": 4023,
+   "lines": [
+    {
+     "t": 7.8,
+     "name": "Villo",
+     "text": "Spark calls me the second brain like it’s a joke. I have millions of nerve cells of my own, thank you.",
+     "asking": false,
+     "dock": false,
+     "fs": 14
+    }
+   ],
+   "issues": [
+    "other text up: Drag to look around · two fingers to zoom"
+   ],
+   "after": {
+    "cur": "hub",
+    "st": "idle",
+    "pal": false,
+    "cls": "bwr-warping"
+   }
+  },
+  "muscle": {
+   "enterMs": 145662,
+   "exitMs": 3905,
+   "lines": [
+    {
+     "t": 2.6,
+     "name": "Flex",
+     "text": "I can feel 4 sugar crumbs hiding in this world’s corners. Steer Misty right up to one and she gobbles it.",
+     "asking": false,
+     "dock": false,
+     "fs": 14
+    }
+   ],
+   "issues": [
+    "other text up: Drag to look around · two fingers to zoom"
+   ],
+   "after": {
+    "cur": "hub",
+    "st": "out",
+    "pal": false,
+    "cls": "bwr-warping"
+   }
+  }
+ },
+ "rp": [
+  {
+   "t": 644715,
+   "region": "hub"
+  },
+  {
+   "t": 761022,
+   "region": "muscle"
+  },
+  {
+   "t": 761950,
+   "id": "muscle",
+   "line": 0,
+   "kind": "fact",
+   "text": "Hi, I’m Flex, a little muscle fibre. I’ll swim along with you here.",
+   "user": false,
+   "prio": 0
+  },
+  {
+   "t": 775054,
+   "id": "muscle",
+   "line": -1,
+   "kind": "gossip",
+   "text": "Isla loves it when I move. One short walk after a meal and I pull sugar out of your blood for her.",
+   "user": false,
+   "prio": 0
+  },
+  {
+   "t": 796365,
+   "id": "muscle",
+   "line": -1,
+   "kind": "hunt",
+   "text": "I can feel 4 sugar crumbs hiding in this world’s corners. Steer Misty right up to one and she gobbles it.",
+   "user": false,
+   "prio": 2
+  }
+ ],
+ "errors": [],
+ "console": [],
+ "stalls": [
+  2039,
+  3044,
+  937,
+  1503,
+  1333,
+  714,
+  929,
+  1423,
+  1288,
+  1675
+ ]
+}

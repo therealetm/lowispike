@@ -1,0 +1,44 @@
+{
+ "engine": "chromium",
+ "build": "20261019-130951",
+ "hung": 1,
+ "url": "local",
+ "plan": "cycles:30",
+ "seed": 11,
+ "seconds": 597,
+ "loads": 1,
+ "crashed": false,
+ "errors": [],
+ "warnings": [
+  "1x [.WebGL-0x195400186600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+ ],
+ "verdict": {
+  "problems": [],
+  "growth": {
+   "ctxBy": {
+    "2d fast-bubble.js:127": 1,
+    "webgl2 body-world-3d.js:102": 1,
+    "webgl2 three-0.160.1.module.min.js:6": 1,
+    "2d body-world-3d-scene.js:29": 2,
+    "2d body-world-3d-scene.js:38": 1,
+    "2d body-world-3d-scene.js:54": 1,
+    "2d body-world-3d-scene.js:325": 1,
+    "2d body-world-regions.js:72": 3,
+    "2d world-home.js:652": 1,
+    "2d misty-flight.js:1007": 2,
+    "2d misty-flight.js:1014": 1,
+    "2d misty-hunt.js:165": 3,
+    "2d world-home.js:545": 1,
+    "2d misty-face.js:213": 2,
+    "2d body-world-regions.js:486": 1
+   },
+   "frameGaps": [
+    [
+     363,
+     176763
+    ]
+   ]
+  },
+  "samples": 2
+ }
+}

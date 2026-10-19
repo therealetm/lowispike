@@ -1,0 +1,11 @@
+start {"pad":true,"mode":"auto"}
+final {"mfErr":"","f":{"st":"free","flew":null,"joined":false,"roam":false,"inT":0,"wpNext":-1,"ap":0,"near":"gut","nearD":186.29,"px":162,"ks":1,"hs":0.556,"exP":0,"exE":0,"exO":0,"mist":false,"dk":0,"deep":false,"glow":0,"guideGlow":0,"home":0,"exDark":false,"skin":0,"mistAng":null,"gaps":null,"dark":false,"transit":false,"autoX":null,"orb":null,"outPh":null,"push":0,"p":[77.74,-36,173.41],"log":["279334 explore ride","304862 explore visit","310864 explore plan","310933 explore hook","328157 explore ride","332851 explore visit","337890 explore plan","337968 explore hook","407217 explore ride","447067 explore visit","453105 explore plan","453307 explore hook"]},"ex":{"d":11.7,"left":10,"seen":[10,30,5,23],"at":23,"tt":114.7,"hops":4,"up":false,"ph":"hook","t":5.6,"tour":4,"aim":-1,"si":33,"rode":true,"rid":14.9,"j":3,"n":[4,35,40],"log":["ride","visit","plan","hook","ride","visit","plan","hook","ride","visit","plan","hook"]}}
+explore log: ride,visit,plan,hook,ride,visit,plan,hook,ride,visit,plan,hook
+PINNED >8 s: hook string 1 point 6 for 92.5 s from 119.5 s | hook string 18 point 5 for 11.0 s from 236 s | hook string 11 point 17 for 15.5 s from 277 s | hook string 34 point 4 for 63.0 s from 301.5 s
+galaxy log: 271282 off current | 271502 current 18 + | 304862 off current | 319913 current 11 + | 332851 off current | 397010 current 34 - | 447067 off current | 460471 current 33 +
+loads 1 crashed false
+errors [
+ "console: Failed to load resource: net::ERR_FAILED"
+]
+warnings []
+growth geo 19 -> 50 tex 8 -> 8 progs 24 -> 26 glLive {"tex":12,"buf":68,"prog":24,"fb":0,"rb":0} -> {"tex":12,"buf":181,"prog":26,"fb":0,"rb":0} compiles 48 -> 54 heap 31 -> 25 nodes 2171 -> 2169

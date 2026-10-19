@@ -1,0 +1,7 @@
+{
+ "harnessError": "page.evaluate: Target page, context or browser has been closed\n    at st (/home/sprite/BUGHUNT/playtest/scenarios.cjs:61:28)\n    at waitIdle (/home/sprite/BUGHUNT/playtest/scenarios.cjs:62:110)\n    at async world-churn (/home/sprite/BUGHUNT/playtest/scenarios.cjs:72:115)\n    at async /home/sprite/BUGHUNT/playtest/run.cjs:16:19",
+ "view": "chromium390",
+ "scenario": "world-churn",
+ "seed": 2,
+ "sec": 797
+}

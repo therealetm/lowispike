@@ -1,0 +1,2 @@
+global.LAY = async () => h.page.evaluate(() => [...document.body.children].map(e => { const r = e.getBoundingClientRect(), c = getComputedStyle(e); if (c.display === 'none' || r.width < 2 || r.height < 2 || +c.opacity < 0.05 || c.visibility === 'hidden') return null; return (e.id ? '#' + e.id : e.tagName.toLowerCase() + '.' + String(e.className).split(' ').slice(0, 2).join('.')) + ' z=' + c.zIndex + ' [' + [r.left, r.top, r.width, r.height].map(Math.round) + '] ' + (e.innerText || '').replace(/\s+/g, ' ').slice(0, 70); }).filter(Boolean));
+return 'ok';

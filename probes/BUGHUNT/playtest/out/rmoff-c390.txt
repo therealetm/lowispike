@@ -1,0 +1,339 @@
+{
+ "findings": [
+  {
+   "tag": "rm-on: world trip",
+   "a": {
+    "cur": "hub",
+    "busy": false
+   },
+   "b": {
+    "cur": "hub",
+    "busy": false
+   }
+  },
+  {
+   "tag": "rm-flip-mid: world trip",
+   "a": {
+    "cur": "hub",
+    "busy": false
+   },
+   "b": {
+    "cur": "hub",
+    "busy": false
+   }
+  },
+  {
+   "tag": "offline: world trip",
+   "a": {
+    "cur": "hub",
+    "busy": false
+   },
+   "b": {
+    "cur": "hub",
+    "busy": false
+   }
+  },
+  {
+   "tag": "back-online: world trip",
+   "a": {
+    "cur": "hub",
+    "busy": false
+   },
+   "b": {
+    "cur": "hub",
+    "busy": false
+   }
+  }
+ ],
+ "steps": [
+  {
+   "tag": "load",
+   "stalls": [
+    1067
+   ]
+  },
+  {
+   "tag": "rm-on",
+   "tap": "settings",
+   "open": [
+    ".ss2-page"
+   ]
+  },
+  {
+   "tag": "rm-on",
+   "tap": "water",
+   "open": [
+    "#hb2Bloom.hb2-bloom.hb2-water"
+   ]
+  },
+  {
+   "tag": "rm-on",
+   "tap": "move",
+   "open": [
+    "#hb2Bloom.hb2-bloom.hb2-move"
+   ]
+  },
+  {
+   "tag": "rm-on",
+   "tap": "scan",
+   "open": [
+    "#b3Cam.b3-cam.rw-scan"
+   ]
+  },
+  {
+   "tag": "rm-on",
+   "tap": "sleep",
+   "open": []
+  },
+  {
+   "tag": "rm-on",
+   "note": "nothing opened for sleep",
+   "html": "g1-home wh-home bw3-off ss2-open"
+  },
+  {
+   "tag": "rm-on",
+   "tap": "gap",
+   "open": [
+    "#hb2Bloom.hb2-bloom.hb2-gap"
+   ]
+  },
+  {
+   "tag": "rm-on",
+   "tap": "fuel",
+   "open": [
+    "#hb2Bloom.hb2-bloom.hb2-fuel"
+   ]
+  },
+  {
+   "tag": "rm-on",
+   "world": [
+    {
+     "cur": "hub",
+     "busy": false
+    },
+    {
+     "cur": "hub",
+     "busy": false
+    }
+   ]
+  },
+  {
+   "tag": "rm-flip-mid",
+   "tap": "settings",
+   "open": [
+    ".ss2-page"
+   ]
+  },
+  {
+   "tag": "rm-flip-mid",
+   "tap": "water",
+   "open": [
+    "#hb2Bloom.hb2-bloom.hb2-water"
+   ]
+  },
+  {
+   "tag": "rm-flip-mid",
+   "tap": "move",
+   "open": [
+    "#hb2Bloom.hb2-bloom.hb2-move"
+   ]
+  },
+  {
+   "tag": "rm-flip-mid",
+   "tap": "scan",
+   "open": [
+    "#b3Cam.b3-cam.rw-scan"
+   ]
+  },
+  {
+   "tag": "rm-flip-mid",
+   "tap": "sleep",
+   "open": []
+  },
+  {
+   "tag": "rm-flip-mid",
+   "note": "nothing opened for sleep",
+   "html": "g1-home wh-home bw3-off ss2-open"
+  },
+  {
+   "tag": "rm-flip-mid",
+   "tap": "gap",
+   "open": [
+    "#hb2Bloom.hb2-bloom.hb2-gap"
+   ]
+  },
+  {
+   "tag": "rm-flip-mid",
+   "tap": "fuel",
+   "open": [
+    "#hb2Bloom.hb2-bloom.hb2-fuel"
+   ]
+  },
+  {
+   "tag": "rm-flip-mid",
+   "world": [
+    {
+     "cur": "hub",
+     "busy": false
+    },
+    {
+     "cur": "hub",
+     "busy": false
+    }
+   ]
+  },
+  {
+   "tag": "offline",
+   "tap": "settings",
+   "open": [
+    ".ss2-page"
+   ]
+  },
+  {
+   "tag": "offline",
+   "tap": "water",
+   "open": [
+    "#hb2Bloom.hb2-bloom.hb2-water"
+   ]
+  },
+  {
+   "tag": "offline",
+   "tap": "move",
+   "open": [
+    "#hb2Bloom.hb2-bloom.hb2-move"
+   ]
+  },
+  {
+   "tag": "offline",
+   "tap": "scan",
+   "open": [
+    "#b3Cam.b3-cam.rw-scan"
+   ]
+  },
+  {
+   "tag": "offline",
+   "tap": "sleep",
+   "open": []
+  },
+  {
+   "tag": "offline",
+   "note": "nothing opened for sleep",
+   "html": "g1-home wh-home bw3-off ss2-open"
+  },
+  {
+   "tag": "offline",
+   "tap": "gap",
+   "open": [
+    "#hb2Bloom.hb2-bloom.hb2-gap"
+   ]
+  },
+  {
+   "tag": "offline",
+   "tap": "fuel",
+   "open": [
+    "#hb2Bloom.hb2-bloom.hb2-fuel"
+   ]
+  },
+  {
+   "tag": "offline",
+   "world": [
+    {
+     "cur": "hub",
+     "busy": false
+    },
+    {
+     "cur": "hub",
+     "busy": false
+    }
+   ]
+  },
+  {
+   "tag": "back-online",
+   "tap": "settings",
+   "open": [
+    ".ss2-page"
+   ]
+  },
+  {
+   "tag": "back-online",
+   "tap": "water",
+   "open": [
+    "#hb2Bloom.hb2-bloom.hb2-water"
+   ]
+  },
+  {
+   "tag": "back-online",
+   "tap": "move",
+   "open": [
+    "#hb2Bloom.hb2-bloom.hb2-move"
+   ]
+  },
+  {
+   "tag": "back-online",
+   "tap": "scan",
+   "open": [
+    "#b3Cam.b3-cam.rw-scan"
+   ]
+  },
+  {
+   "tag": "back-online",
+   "tap": "sleep",
+   "open": []
+  },
+  {
+   "tag": "back-online",
+   "note": "nothing opened for sleep",
+   "html": "g1-home wh-home bw3-off ss2-open"
+  },
+  {
+   "tag": "back-online",
+   "tap": "gap",
+   "open": [
+    "#hb2Bloom.hb2-bloom.hb2-gap"
+   ]
+  },
+  {
+   "tag": "back-online",
+   "tap": "fuel",
+   "open": [
+    "#hb2Bloom.hb2-bloom.hb2-fuel"
+   ]
+  },
+  {
+   "tag": "back-online",
+   "world": [
+    {
+     "cur": "hub",
+     "busy": false
+    },
+    {
+     "cur": "hub",
+     "busy": false
+    }
+   ]
+  },
+  {
+   "final": {
+    "open": [],
+    "misty": {
+     "x": 195,
+     "y": 388,
+     "w": 182,
+     "on": true,
+     "top": "spBubble",
+     "vis": true,
+     "why": null
+    },
+    "tab": 1,
+    "html": "g1-home wh-home bw3-off",
+    "tabOn": "tab-home",
+    "wr": "hub/idle"
+   }
+  }
+ ],
+ "view": "chromium390",
+ "scenario": "rm-offline",
+ "seed": 7,
+ "sec": 104
+}
+exit 0

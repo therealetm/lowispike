@@ -413,7 +413,7 @@
             D.head.appendChild(l);
         }
         wrap();
-        ['lowi:reward', 'lowi:state', 'lowi:meal-logged', 'lowi:care', 'storage'].forEach(ev => { W.addEventListener(ev, () => schedule()); D.addEventListener(ev, () => schedule()); });
+        ['lowi:reward', 'lowi:state', 'lowi:meal-logged', 'lowi:care', 'lowi:lang', 'storage'].forEach(ev => { W.addEventListener(ev, () => schedule()); D.addEventListener(ev, () => schedule()); });
         D.addEventListener('visibilitychange', () => { if (!D.hidden) schedule(true); });
         D.addEventListener('click', e => { if (e.target.closest && e.target.closest('[data-sp="open"],#spBubble,[data-sp="water"],#tabbar .tb')) setTimeout(() => schedule(), 120); }, true);
         const tab = D.getElementById('tab-home');

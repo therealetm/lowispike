@@ -7933,6 +7933,9 @@ function setLang(l){
   try { localStorage.setItem(LANG_KEY, LANG); } catch (e) {}
   document.documentElement.lang = LANG;
   restoreAll(); if (LANG !== "en") doNode(document.body); paintPickers();
+  /* BH-004: tell every module that builds its own strings (ring bubbles, blooms, joystick, guides...) to repaint. ~20 modules listen
+     for lowi:lang; nothing fired it, so they stayed in the old language until a reload. Bubbles from document to window. */
+  try { document.dispatchEvent(new CustomEvent("lowi:lang", { bubbles: true, detail: { lang: LANG } })); } catch (e) {}
 }
 let pend = new Set(), raf = 0;
 const mo = new MutationObserver(ms => {
@@ -7958,7 +7961,7 @@ function addProfileRow(){
   if (LANG !== "en") doNode(document.getElementById("profLang"));
 }
 const moP = new MutationObserver(() => addProfileRow());
-document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-lang]"); if (b) { e.preventDefault(); e.stopPropagation(); setLang(b.dataset.lang); } }, true);
+document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-lang]"); if (b) { e.preventDefault(); e.stopPropagation(); const f = window.LowiLang && window.LowiLang.set; (typeof f === "function" ? f : setLang)(b.dataset.lang); } }, true); /* BH-004: through LowiLang.set so every module's set() wrapper repaints too */
 function bootLang(){
   const ob = document.getElementById("obLang"); if (ob && !ob.children.length) ob.innerHTML = pickerHTML();
   mo.observe(document.body, {subtree:true, childList:true, characterData:true, attributes:true, attributeFilter:["placeholder"]});

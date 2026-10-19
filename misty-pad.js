@@ -258,6 +258,8 @@
     }
     ['pointerdown', 'click'].forEach(n => D.addEventListener(n, callHome, true));
     W.addEventListener('blur', () => fade(false)); /* the window lost focus: the joystick comes back (a finger still moving fades it again) */
+    /* BH-004: a language switch without a reload repaints the joystick's VoiceOver label and the autopilot chip */
+    W.addEventListener('lowi:lang', () => { paint(); if (st.mode === 'auto' && st.chip && st.chip.classList.contains('on')) chip(autoText()); });
     W.addEventListener('lowi:pad', e => { const m = e.detail ? e.detail.mode : null; if (m != null && m !== st.mode) { st.mode = m; paint(); if (!m) chip(''); } });
 
     /* placement: centred above Today, clear of Sound, VR, World map, Kometa's gift, fasting and water.

@@ -424,6 +424,12 @@
         const dots = home.querySelector('.sp-habits');
         if (dots.innerHTML !== days) dots.innerHTML = days;
         D.documentElement.dataset.spPeriod = m.period;
+        /* BH-004: Misty's VoiceOver name was written once in the boot language; keep its head in the current one (cell-world.js adds " · <state>") */
+        const sb = home.querySelector('#spBubble');
+        if (sb) {
+            const a = sb.getAttribute('aria-label') || '', i = a.indexOf(' \u00b7 '), cur = i < 0 ? a : a.slice(0, i), head = tr('world');
+            if (cur !== head && (copy.world || []).indexOf(cur) >= 0) sb.setAttribute('aria-label', head + (i < 0 ? '' : a.slice(i)));
+        }
         paintFast();
         paintTiles();
         identityColors();
@@ -1981,6 +1987,7 @@
     /* every meal log (also plan meals and logs past the daily XP cap, which fire no reward) checks the macro bonus; once per day per goal via the ledger eventId */
     window.addEventListener('lowi:meal-logged', () => setTimeout(() => checkBonuses(false), 0));
     window.addEventListener('lowi:state', refresh);
+    window.addEventListener('lowi:lang', refresh); /* BH-004: the fasting bubble and Home lines follow a language switch without a reload */
     window.addEventListener('lowi:goodnight', refresh);
     window.addEventListener('lowi:misty-power', refresh); /* hunt power-ups move her energy: the status line follows */
     window.addEventListener('resize', refresh);

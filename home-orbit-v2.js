@@ -95,11 +95,34 @@
         D.dispatchEvent(new CustomEvent('lowi:home-bubble-added', { detail: { el: b, kind: key } }));
         return b;
     }
+    /* BH-004: the three bubbles this module builds keep their words in every language, so a language switch without a reload
+       can repaint them. [aria-label, small label] per language (en, de, es). */
+    const WORDS = {
+        scan: [['Scan a product', 'Scan'], ['Produkt scannen', 'Scannen'], ['Escanear un producto', 'Escanear']],
+        sleep: [['Sleep', 'Sleep'], ['Schlaf', 'Schlaf'], ['Sueño', 'Sueño']],
+        settings: [['Settings', 'Settings'], ['Einstellungen', 'Optionen'], ['Ajustes', 'Ajustes']]
+    };
+    const LI = { en: 0, de: 1, es: 2 };
+    const words = k => WORDS[k][LI[lang()]];
+    let labelLang = '';
+    /* repaint only our own words: a value that is none of our three languages belongs to someone else (an adapter) and stays */
+    function relabel() {
+        const hud = D.getElementById('whHud'); if (!hud) return;
+        Object.keys(WORDS).forEach(k => {
+            const b = hud.querySelector('.o8-' + k); if (!b) return;
+            const w = words(k), all = WORDS[k];
+            const a = b.getAttribute('aria-label');
+            if (a !== w[0] && all.some(x => x[0] === a)) b.setAttribute('aria-label', w[0]);
+            const sm = b.querySelector('.wh-cell-tx > small');
+            if (sm && sm.textContent !== w[1] && all.some(x => x[1] === sm.textContent)) sm.textContent = w[1];
+        });
+    }
     function ensure() {
         if (!D.getElementById('whHud')) return false;
-        make('scan', T('Scan a product', 'Produkt scannen', 'Escanear un producto'), '<span class="wh-cell-tx">' + svg('scan') + '<small>' + T('Scan', 'Scannen', 'Escanear') + '</small></span>');
-        make('sleep', T('Sleep', 'Schlaf', 'Sueño'), '<span class="wh-cell-fill" aria-hidden="true"></span><span class="wh-cell-tx">' + svg('sleep') + '<small>' + T('Sleep', 'Schlaf', 'Sueño') + '</small><b class="o8-val"></b></span>');
-        make('settings', T('Settings', 'Einstellungen', 'Ajustes'), '<span class="wh-cell-tx">' + svg('settings') + '<small>' + T('Settings', 'Optionen', 'Ajustes') + '</small></span>');
+        make('scan', words('scan')[0], '<span class="wh-cell-tx">' + svg('scan') + '<small>' + words('scan')[1] + '</small></span>');
+        make('sleep', words('sleep')[0], '<span class="wh-cell-fill" aria-hidden="true"></span><span class="wh-cell-tx">' + svg('sleep') + '<small>' + words('sleep')[1] + '</small><b class="o8-val"></b></span>');
+        make('settings', words('settings')[0], '<span class="wh-cell-tx">' + svg('settings') + '<small>' + words('settings')[1] + '</small></span>');
+        if (labelLang !== lang()) { if (labelLang) relabel(); labelLang = lang(); }
         ORDER.forEach(k => {
             const el = FIND[k](); if (!el) return;
             if (el.getAttribute('data-orbit') !== k) el.setAttribute('data-orbit', k);
@@ -262,6 +285,7 @@
         root.addEventListener('orientationchange', soon, { passive: true });
         if (root.visualViewport) root.visualViewport.addEventListener('resize', soon, { passive: true });
         ['lowi:layout', 'lowi:home-bubble-added', 'world3d-ready', 'lowi:tab'].forEach(n => D.addEventListener(n, soon));
+        D.addEventListener('lowi:lang', () => { relabel(); labelLang = lang(); paintSleep(); }); /* BH-004 */
         root.addEventListener('storage', e => { if (e.key === MENU_KEY) applyMenuBar(); });
         root.addEventListener('lowi:home-menubar', applyMenuBar);
         D.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });

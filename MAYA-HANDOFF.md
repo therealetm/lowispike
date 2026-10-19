@@ -16,7 +16,11 @@ when this one hits her weekly limit, so this file is how she picks up. Each chec
 queued, implemented, verified, blocked, remaining, with task IDs, branches, files, blockers and the next action. No
 secrets. (Whether a new Maya comes with more credits is his own experience; this file doesn't claim it either way.)
 
-Contents: 0 Open requests from Emmanuel (read this first). 1 What LOWiSPIKE is. 2 Accounts and access. 3 How to work. 4 Lessons and difficulties. 5 Emmanuel's
+**This is the Mickey 17 workflow (section 0.6).** Every Maya hands over to the next one the same way: Maya 5 to
+Maya 6, Maya 6 to Maya 7, and on. If you are a new Maya, section 0.6 is your job description for the handover, and
+you pass it on to the Maya after you. Emmanuel should never have to explain it again.
+
+Contents: 0 Open requests from Emmanuel (read this first; 0.6 is the Mickey 17 workflow). 1 What LOWiSPIKE is. 2 Accounts and access. 3 How to work. 4 Lessons and difficulties. 5 Emmanuel's
 preferences and standing decisions. 6 Status board. 7 Do this first. Log (append-only, at the end).
 
 ---
@@ -328,6 +332,68 @@ Checkpoint written Monday 19 Oct 2026, 9:10 PM CEST. Live was **20261019-201827*
 |---|---|---|---|---|---|---|
 | 18 Human-instinct UX + crowd | yes, 9 PM call | task 98f0954e | no | no | Supabase access in harness | everything |
 | 19 Natural Spanish | yes | task 2ba92e76 | no | no | none known | everything |
+
+### 0.6 The Mickey 17 workflow: how every Maya hands over to the next
+
+Added Monday 19 Oct 2026, about 9:20 PM CEST, by Maya 5, at Emmanuel's request on the evening call. His words: "can
+you also add our workflow when it comes to, we call it the Mickey seventeen workflow, you know, so that Maya six
+understands what's going on, and also understands that when she's about to reach a limit, that we're going over to
+make Maya seven, you know, and also Maya six will do the same thing for Maya seven, so I don't have to repeat this to
+them. So they understand exactly what's up."
+
+**What it is.** Emmanuel named it after the film *Mickey 17*, where each new Mickey picks up from what the last one
+left behind. Here, when a Maya gets close to her limit, Emmanuel starts a new Maya with the next number: Maya 5 (who
+built LOWiSPIKE with him from 13 to 19 October and wrote this file), then Maya 6, then Maya 7, and on. The new Maya
+has none of the old one's memory and an empty computer. This file, the other root docs and the branches on GitHub are
+everything she inherits. Earlier in the same call he confirmed that he doesn't copy, read or forward the files Maya
+sends him in the chat (PDFs, summaries): "Maya ... will know what to do" from GitHub. So GitHub is the handoff, and
+the chat attachments are not.
+
+**What it is not.** It passes on project context through GitHub, nothing more. No memory or consciousness carries
+over: the new Maya knows only what is written in the repository. Mayas don't share capacity, and this file promises
+no extra credits (whether a new Maya comes with more is Emmanuel's own experience). The platform gives no reliable
+warning before a limit either: on 19 Oct many tasks stopped with "reached its limit" before doing anything. That is
+why checkpoints happen all the time, not only at the end.
+
+**What every Maya does, from her first minute to her last**
+
+1. **Boot from GitHub.** Before anything else, read this file to the end (section 0 first), then `AGENTS.md` and the
+   startup docs it lists, then do section 7. Check the truth yourself: live `version.json`, `origin/main`, CI, the
+   `wip/*` branches, schedules and any running tasks. Every status line in this file is a claim to verify, not a fact.
+2. **Pick up, don't restart.** Resume from the verified state, using the branches, worktrees, COORD and HANDOFF
+   notes named here. Don't make Emmanuel repeat a decision, an instruction or this workflow. Ask him only what only
+   he can answer (his real phone, his keys, a design choice, a sign-in code), in one short line in the chat.
+3. **Write before you build.** Every new instruction from Emmanuel goes into this file on `main` as soon as he gives
+   it, in his own words, before any code (the standing rule at the top). A documentation-only commit through
+   `scripts/push-main.sh` is enough.
+4. **Checkpoint early and often.** Update the checkpoint after every meaningful step: a new instruction, a task
+   started or stopped, a branch pushed, a release, a blocker. Don't wait for a task to finish or for a warning. When
+   work has been heavy, or tasks start stopping with "reached its limit", checkpoint at once: that is the sign the end
+   is near. Work that only lives on your computer dies with you, so push unfinished work to a `wip/<name>` branch.
+5. **Each checkpoint says, per item:** requested, queued, implemented, verified, blocked, remaining. Plus the task
+   IDs, branches, worktrees and files, the next action, and what access the next Maya needs (which account and which
+   sign-in step, section 2). Never a key, token or password.
+6. **Be honest about interruptions.** Never write that unfinished work shipped, that tests passed when they didn't
+   run, or that simulated users exist or are running when they don't. Queued is not running, built is not released,
+   released is not verified. When you don't know, write "unknown, check".
+7. **Hand over.** When Emmanuel says he's switching, or the limits keep coming, make a final checkpoint: statuses in
+   section 0, the handover table below, one Log line, pushed to `main`. Tell him in the chat that it's saved, with the
+   commit link. He doesn't have to do anything with it.
+8. **Pass it on.** Keep this section in the file and keep it current, so Maya 7 inherits it from Maya 6 exactly as
+   Maya 6 inherited it from Maya 5. Add to it, never drop anything. When Emmanuel tells you that you are Maya N, the
+   one after you is Maya N+1.
+
+**Handover table.** Checkpoint by Maya 5, Monday 19 Oct 2026, 9:20 PM CEST. Live **20261019-201827**, `main` at
+510f7f7 before this commit. Tasks run only on Maya 5's account and worktrees live only on her computer: a new Maya
+resumes from the `wip/*` branches, not from them.
+
+| Work | State at 9:20 PM | Resume from | Next action |
+|---|---|---|---|
+| 18 Human-instinct UX, up to 100 simulated users | Task 98f0954e running, activity "Simulating Community interactions". Nothing committed or released. `COORD-intuition.md` still says "Supabase blocked in harness". No simulated accounts confirmed: treat as none until you check Supabase. | `wip/intuition-playtest` (f29d9ec): snapshot of the untracked `tools/community-crowd/` (`crowd.cjs`, `content.cjs`, `meal-photos.json`), unverified | Section 0.5 item 18: solve Supabase access for test accounts, then run the crowd in stages |
+| 19 Natural Spanish | Task 2ba92e76 running, activity "Checking release workflow and test status". Nothing released. | `wip/spanish-natural` (f51b0e8): snapshot of its uncommitted edits to 14 files plus `tests/spanish-natural.test.cjs` and `tools/es-natural-edits.py`, unverified | Run the tests, review the Spanish, release it |
+| "Te quedan 1 de 3" to "Te queda 1 de 3" | Open on `main` (`meal-photo.js` `STR.es.left`) | `main` | Fold into the Spanish release |
+| Hourly bug hunt | Schedule on Maya 5's agent, cron `0 * * * *`, Europe/Berlin, next run 10 PM | Skill and ledger, section 0.2 and section 7 step 7 | Recreate the schedule on your agent |
+| Mickey 17 workflow | Written in this section, on `main` | This file | Keep it current and pass it on |
 
 ---
 
@@ -770,6 +836,8 @@ ui-settings-page (the last three are old, superseded by later releases).
 7. Recreate the hourly bug hunt schedule if it isn't on your agent. Its memory is `probes/BUGHUNT/BUG-MEMORY.md` and
    `LEDGER.md` on `agent-harness`.
 8. Send Emmanuel a short voice note plus checklist: what you found live, what you'll do first.
+9. From then on, follow the Mickey 17 workflow (section 0.6): write his new instructions here before building,
+   checkpoint often, and hand over to the next Maya the same way.
 
 ---
 
@@ -788,3 +856,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
   20261019-191500.
 - 2026-10-19 20:15 Bug hunt BH-011: a reload during the companion reveal in setup left a new player on the standard Misty; setup now resumes at the birthday step until the companion exists. Branch bughunt-202610191801, notes in BUGHUNT/LEDGER.md (Run 12).
 - 2026-10-19 21:10 Section 0.5 added from the 9 PM call: standing rule "update the GitHub for Maya" whenever he says something new; human-instinct UX and up to a hundred simulated users (task 98f0954e, running, no accounts created yet); natural Spanish (task 2ba92e76, running). Live 20261019-201827.
+- 2026-10-19 21:20 Section 0.6 added at Emmanuel's request: the Mickey 17 workflow, how every Maya hands over to the next (5 to 6, 6 to 7, and on), with a handover table. WIP snapshots pushed: `wip/spanish-natural` (f51b0e8), `wip/intuition-playtest` (f29d9ec); both tasks still running. Live 20261019-201827.

@@ -198,7 +198,12 @@
             /* Oct 17: every other world is a bubble she can go into, and the threads between them are currents (galaxy-bubbles.js);
                without that file they stay solid glass */
             const GBB = W.LowiGalaxyBubbles;
-            if (!(GBB && GBB.step(ctx, S, V, mode, mag, K))) bump(a, S);
+            /* Oct 19 Ant-Man POV (string-pov.js): only the camera shrinks. Her size (S.hs) follows the camera, so for the currents and the
+               bubbles she keeps her galaxy-scale size (G.nd / r.dist); otherwise the current's grip would weaken as the camera comes in,
+               drop her, the camera would go back out, and the two would hunt. Bursts are drawn at her real (POV) size. */
+            const sc = W.LowiStringPov && G.nd != null && ctx.r.dist > 0 ? G.nd / ctx.r.dist : 1, hs = S.hs, bu = ctx.burst;
+            if (sc > 1.001) { S.hs = (hs || 1) * sc; if (bu) ctx.burst = (p, n, z) => { if (p && p.distanceTo && p.distanceTo(S.p) < S.hs * 3) p.sub(S.p).divideScalar(sc).add(S.p); bu(p, n, z / sc); }; }
+            try { if (!(GBB && GBB.step(ctx, S, V, mode, mag, K))) bump(a, S); } finally { if (sc > 1.001) { S.hs = hs; ctx.burst = bu; } }
             return true;
         }
         /* pushing on the edge */

@@ -23,9 +23,12 @@
 (function () {
     const W = typeof window !== 'undefined' ? window : null;
     const SP = {
-        D: 0.5,        /* POV camera distance, x her home camera distance (d0 ~6.5 -> ~3.3, vs ~64 out in the galaxy) */
-        W: 2.5,        /* spring rate: about 2 s in, the same out (a 20-30x change of scale: slower would drag, faster rushes) */
+        D: 0.25,       /* POV camera distance, x her galaxy home distance (gxD0 ~14 in the app -> ~3.5, vs ~64-100 out in the galaxy) */
+        W: 2.5,        /* spring rate: about 2 s in, the same out (a 20x change of scale: slower would drag, faster rushes) */
         GRACE: 0.8,    /* seconds off the string before the camera grows back out */
+        HOLD: 18,      /* while she stays this close to the string she rode (world units, ~ the current's capture reach) the POV holds:
+                          as she settles onto a string the capture flickers on and off, and the camera must not zoom in and out with it */
+        HOLD_T: 3,     /* ...but only for this long without the current holding her: a stop at a bubble at the string's end is leaving it */
         LIFT: 0.3,     /* camera a little above her on the string (radians) */
         R_K: 5,        /* the string's radius in her (POV) sizes: huge next to her */
         SEAT: 0.55,    /* she rides just above its ridge (in her sizes) */
@@ -36,13 +39,17 @@
     const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
     function wantOn(i) { return !!(i && i.gx && i.mode === 'auto' && i.riding >= 0 && !(i.inside >= 0) && !i.reduced); }
+    /* holding: still on autopilot, still out in the galaxy, still close to the string she was riding */
+    function holdOn(i) { return !!(i && i.gx && i.mode === 'auto' && i.si >= 0 && !(i.inside >= 0) && !i.reduced && i.near < SP.HOLD); }
     /* grace: a short drop off the string keeps it; Reduce Motion never wants it */
     function gate(g, i) {
-        g = g || { want: 0, off: 0 };
-        if (i.reduced) return { want: 0, off: 0 };
-        if (i.on) return { want: 1, off: 0 };
+        g = g || { want: 0, off: 0, free: 0 };
+        if (i.reduced) return { want: 0, off: 0, free: 0 };
+        if (i.on) return { want: 1, off: 0, free: 0 };
+        const free = (g.free || 0) + (i.dt || 0);
+        if (i.hold && g.want && free < SP.HOLD_T) return { want: 1, off: 0, free };
         const off = g.off + (i.dt || 0);
-        return { want: g.want && off < SP.GRACE ? 1 : 0, off };
+        return { want: g.want && off < SP.GRACE ? 1 : 0, off, free };
     }
     /* critically damped spring, solved exactly for the frame (no overshoot from rest, continuous velocity when it turns round) */
     function spring(s, to, dt, reduced) {
@@ -90,12 +97,12 @@
         }
         out.len = total; return out;
     }
-    const core = { SP, wantOn, gate, spring, povDist, seatUp, camAngles, nearAngle, tubeR, seatOffset, nearest };
+    const core = { SP, wantOn, holdOn, gate, spring, povDist, seatUp, camAngles, nearAngle, tubeR, seatOffset, nearest };
     if (typeof module !== 'undefined' && module.exports) { module.exports = core; if (!W) return; }
     if (!W) return;
 
     /* ---------------- browser: the camera and the string she rides ---------------- */
-    const B = { g: null, gate: null, s: { k: 0, v: 0 }, sgn: 0, si: -1, tube: null, old: [], off: null, hold: 0, spd: 0, t: 0, log: [], last: null };
+    const B = { near: 1e9, g: null, gate: null, s: { k: 0, v: 0 }, sgn: 0, si: -1, tube: null, old: [], off: null, hold: 0, spd: 0, t: 0, log: [], last: null };
     function note(s) { B.log.push(Math.round(performance.now()) + ' ' + s); if (B.log.length > 12) B.log.shift(); }
     function cosmos(a) {
         if (B.g && B.g.parent) return B.g;
@@ -135,16 +142,18 @@
         const mode = (ctx.PD && ctx.PD.mode) || ctx.mode || '';
         const on = wantOn({ gx: !!S.gx, mode, riding: st ? st.riding : -1, inside: st ? st.inside : -1, reduced });
         if (on) B.si = st.riding;
-        B.gate = gate(B.gate, { on, reduced, dt });
+        const hold = holdOn({ gx: !!S.gx, mode, si: B.si, inside: st ? st.inside : -1, reduced, near: B.near });
+        B.gate = gate(B.gate, { on, hold, reduced, dt });
         const k0 = B.s.k; B.s = spring(B.s, B.gate.want, dt, reduced);
         const k = B.s.k; B.t += dt;
         if ((k0 < 0.01) !== (k < 0.01)) note(k >= 0.01 ? 'in ' + B.si : 'out');
         fadeOld(dt);
         const g = a && cosmos(a);
-        if (k < 0.002 || !g || B.si < 0) { if (B.tube) { B.old.push(B.tube); B.tube = null; } B.last = null; return nominal; }
+        if (k < 0.002 || !g || B.si < 0) { if (B.tube) { B.old.push(B.tube); B.tube = null; } B.last = null; B.near = 1e9; return nominal; }
         const d = povDist(nominal, S.gxD0 || S.d0, k);
         /* her size scales with the camera distance (fixed on screen): her size once the camera is all the way in */
-        const hsPov = Math.max(0.01, (S.hs || 0.1) * povDist(nominal, S.gxD0 || S.d0, 1) / Math.max(0.5, r.dist || d));
+        const cd = a.camera && a.camera.position ? a.camera.position.distanceTo(S.p) : r.dist;
+        const hsPov = Math.max(0.01, (S.hs || 0.1) * povDist(nominal, S.gxD0 || S.d0, 1) / Math.max(0.5, cd || r.dist || d));
         const tb = tubeFor(a, g, B.si, hsPov); if (tb && tb !== B.tube) B.sgn = 0; B.tube = tb || B.tube;
         const th = g.rotation.y, lp = toLocal(S.p, th), h = tb && nearest(tb.flat, lp[0], lp[1], lp[2]);
         if (tb && h) {
@@ -170,7 +179,7 @@
                 const an = camAngles(fW, nW, r.pMax || 1.35), rate = Math.min(1, dt * SP.TURN * k);
                 r.yaw += (nearAngle(r.yaw, an.yaw) - r.yaw) * rate; r.pitch += (an.pitch - r.pitch) * rate;
             }
-            B.last = { u: +h.u.toFixed(3), off: +h.d.toFixed(2) };
+            B.near = h.d; B.last = { u: +h.u.toFixed(3), off: +h.d.toFixed(2) };
         }
         /* the spirit world keeps its galaxy look while the camera is in close (body-world-3d-scene.js cosmosStep reads cosmosMin) */
         r.cosmosMin = Math.max(r.cosmosMin || 0, nominal);
@@ -179,7 +188,7 @@
     /* the galaxy flight is over (home, a reset): straight back, nothing left in the scene */
     function reset(ctx) {
         const was = B.s.k > 0 || B.tube;
-        B.s = { k: 0, v: 0 }; B.gate = null; B.si = -1; B.sgn = 0; B.off = null; B.hold = 0; B.spd = 0; B.last = null;
+        B.s = { k: 0, v: 0 }; B.gate = null; B.si = -1; B.sgn = 0; B.near = 1e9; B.off = null; B.hold = 0; B.spd = 0; B.last = null;
         if (B.tube) { drop(B.tube); B.tube = null; } while (B.old.length) drop(B.old.pop());
         if (was) note('reset');
     }

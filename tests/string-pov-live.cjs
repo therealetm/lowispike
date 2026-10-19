@@ -46,7 +46,7 @@ const SIZES = (ENGINE === 'webkit' ? [['iPhone 13'], ['iPad (gen 7)']] : [[390, 
             /* C: she leaves the string (flies herself across a gap): back to the normal view */
             st.set({ exRide: false, swim: -1, want: [0.3, 1, 0.2] });
             st.run(0.4, true); out.C0 = st.state();
-            st.run(4.6, true); out.C = st.state(); out.C.tubes = st.tubes(); out.Cf = st.frames(); out.C.loom = st.loom();
+            st.run(6.6, true); out.C = st.state(); out.C.tubes = st.tubes(); out.Cf = st.frames(); out.C.loom = st.loom();
             return out;
         });
         if (process.env.SHOTS) await page.screenshot({ path: path.join(process.env.SHOTS, tag.replace(/\W+/g, '-') + '-after.png'), timeout: 180000 });

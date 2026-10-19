@@ -30,6 +30,19 @@ test('a short drop off the string does not flicker the POV; a real gap lets it g
     assert.strictEqual(P.gate(g, { on: true, reduced: true, dt: 0.05 }).want, 0, 'Reduce Motion never wants it');
 });
 
+test('settling onto a string (the capture flickers on and off) never zooms the camera in and out: close to the string it holds', () => {
+    const near = { gx: true, mode: 'auto', si: 2, inside: -1, reduced: false, near: P.SP.HOLD - 1 };
+    assert.strictEqual(P.holdOn(near), true);
+    for (const bad of [{ near: P.SP.HOLD + 1 }, { mode: 'drive' }, { inside: 0 }, { reduced: true }, { si: -1 }, { gx: false }]) assert.strictEqual(P.holdOn(Object.assign({}, near, bad)), false, JSON.stringify(bad));
+    let g = P.gate(null, { on: true, dt: 0.05 });
+    for (let t = 0; t < 10; t += 0.05) { g = P.gate(g, { on: Math.sin(t * 7) > 0.6, hold: true, dt: 0.05 }); assert.strictEqual(g.want, 1, 'held at ' + t.toFixed(2)); }
+    assert.strictEqual(P.gate({ want: 0, off: 5 }, { on: false, hold: true, dt: 0.05 }).want, 0, 'holding alone never starts it: only riding does');
+    /* close to the string but no longer carried (a stop at the bubble at its end): that is leaving the string, so it lets go */
+    g = P.gate(null, { on: true, dt: 0.05 }); let t = 0;
+    while (g.want && t < 20) { g = P.gate(g, { on: false, hold: true, dt: 0.05 }); t += 0.05; }
+    assert.ok(t > P.SP.HOLD_T && t < P.SP.HOLD_T + P.SP.GRACE + 0.2, 'let go after ' + t.toFixed(2) + ' s');
+});
+
 test('the shift is a spring: smooth in and out, no overshoot, no jump, and it can turn round mid-way without a jolt', () => {
     const dt = 1 / 60; let s = { k: 0, v: 0 }, t = 0, maxStep = 0;
     while (s.k < 0.97 && t < 5) { const k0 = s.k; s = P.spring(s, 1, dt); maxStep = Math.max(maxStep, Math.abs(s.k - k0)); t += dt; }
@@ -100,6 +113,8 @@ test('wiring: loaded after galaxy-bubbles.js, cached offline, and the galaxy cam
     assert.ok(/LowiStringPov/.test(cam), 'cam() asks the POV');
     const speed = g.slice(g.indexOf('function speed(ctx, S)'), g.indexOf('function reset(ctx, S)'));
     assert.ok(/G\.nd/.test(speed), 'her pace uses the galaxy distance, not the POV camera, so she does not slow to a crawl on the string');
+    const step = g.slice(g.indexOf('function step('), g.indexOf('function cam(ctx, S)'));
+    assert.ok(/G\.nd \/ ctx\.r\.dist/.test(step) && /S\.hs = hs/.test(step), 'the currents see her galaxy-scale size, so the camera coming in never weakens the grip (no hunting)');
     const reset = g.slice(g.indexOf('function reset(ctx, S)'), g.indexOf('W.LowiMistyGalaxy = {'));
     assert.ok(/LowiStringPov[^;]*reset/.test(reset), 'a reset never leaves the camera in close');
 });

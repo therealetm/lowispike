@@ -15,7 +15,7 @@ const errors = []; window.addEventListener('error', e => errors.push(String(e.me
 const w = createWorld(THREE, document.getElementById('c'), { places: [], small: innerWidth < 380, dprCap: 2, theme: 'dark' });
 w.setMode && w.setMode('home');
 w.rig.mode = 'home'; w.rig.maxD = 14; w.rig.dist = 64;
-const S = { st: 'free', p: new THREE.Vector3(), v: new THREE.Vector3(), hs: 1, d0: 6.5, gxD0: 6.5, gx: true, exRide: true, exB: -1 }, V = { want: new THREE.Vector3() };
+const S = { st: 'free', p: new THREE.Vector3(), v: new THREE.Vector3(), hs: 1, d0: 14, gxD0: 14, gx: true, exRide: true, exB: -1 }, V = { want: new THREE.Vector3() };
 document.documentElement.classList.add('mf-galaxy');
 let mode = 'auto', mag = 1, k = 0.8, reduced = false, swim = -1, frames = [];
 const K = { ROAM: 11 };
@@ -31,7 +31,7 @@ function tick(dt) {
     w.rig.target.lerp(S.p.clone().addScaledVector(S.v, 0.3), Math.min(1, dt * 2.4));
     W.LowiMistyGalaxy.cam(ctx, S);
     /* misty-flight: her on-screen size stays constant, so her world size follows the camera distance */
-    S.hs = w.rig.dist * 0.037;
+    S.hs = w.rig.dist * 0.144; /* as measured in the app (hs ~1.0 at camera 7) */
     mist.position.copy(S.p); mist.scale.setScalar(S.hs * 0.5);
 }
 function screen(p) { w.camera.updateMatrixWorld(); const v = p.clone().project(w.camera); return [+v.x.toFixed(3), +v.y.toFixed(3), +v.z.toFixed(3)]; }

@@ -1,0 +1,38 @@
+/* Oct 19 2026 meal photos (meal-photo.js): the meal card under a shared photo, the Snap food extras
+   (checks left today, "Also share to Community", reminder offer) and the reminder row in Reminders. */
+.ms-card { margin: 10px 0 2px; padding: 10px 12px; border-radius: 14px; background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .14); font-size: 13px; line-height: 1.35; text-align: left; }
+.ms-card .ms-name { display: block; font-size: 15px; margin-bottom: 4px; }
+.ms-card .ms-ing { margin: 0 0 6px; opacity: .9; }
+.ms-card .ms-ing span { font-weight: 600; }
+.ms-card .ms-ing small { opacity: .75; }
+.ms-nut { display: flex; flex-wrap: wrap; gap: 4px 6px; margin: 4px 0 6px; }
+.ms-n { padding: 2px 8px; border-radius: 999px; background: rgba(255, 255, 255, .12); font-size: 12px; white-space: nowrap; }
+.ms-bs { display: flex; align-items: center; gap: 6px; margin: 2px 0; font-weight: 500; }
+.ms-bs i { width: 10px; height: 10px; border-radius: 50%; flex: none; background: #7bd389; box-shadow: 0 0 0 3px rgba(123, 211, 137, .25); }
+.ms-bs-mid i { background: #f2c14e; box-shadow: 0 0 0 3px rgba(242, 193, 78, .25); }
+.ms-bs-high i { background: #f07167; box-shadow: 0 0 0 3px rgba(240, 113, 103, .25); }
+.ms-note { margin: 2px 0 0; font-size: 11px; opacity: .7; }
+/* For You slide: the card sits on the photo, so it stays small and readable */
+.fy-meta .ms-card.ms-compact { background: rgba(0, 0, 0, .38); border-color: rgba(255, 255, 255, .18); color: #fff; padding: 8px 10px; margin-top: 6px; max-width: min(100%, 420px); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.ms-card.ms-compact .ms-ing { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ms-card.ms-compact .ms-n { font-size: 11px; padding: 1px 7px; }
+/* light sheets (the post composer) */
+.sheet .ms-card, .r3f-post .ms-card { background: rgba(127, 127, 127, .08); border-color: rgba(127, 127, 127, .22); }
+.sheet .ms-n, .r3f-post .ms-n { background: rgba(127, 127, 127, .14); }
+.ms-post { margin-top: 10px; }
+.ms-post > button.small { margin-top: 4px; background: none; border: 0; padding: 4px 0; text-decoration: underline; color: inherit; }
+.ms-post .ms-left { margin-left: 6px; }
+/* Snap food extras */
+.ms-extra { margin: 10px 0 4px; display: grid; gap: 8px; text-align: left; }
+.ms-left { margin: 0; font-size: 13px; opacity: .85; }
+.ms-opt { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 14px; background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .14); cursor: pointer; }
+.ms-opt input { width: 20px; height: 20px; margin: 2px 0 0; flex: none; accent-color: #7bd389; }
+.ms-opt b { display: block; font-size: 14px; }
+.ms-opt small { display: block; font-size: 12px; opacity: .75; margin-top: 2px; }
+/* Reminders sheet row */
+.ms-rem .ms-times { display: grid; gap: 8px; margin-top: 10px; }
+.ms-rem .ms-times.dis { opacity: .45; }
+.ms-time { display: flex; align-items: center; gap: 10px; }
+.ms-time span { flex: 1; }
+.ms-time input[type="checkbox"] { width: 20px; height: 20px; }
+.ms-time input[type="time"] { width: 7.5em; flex: none; }

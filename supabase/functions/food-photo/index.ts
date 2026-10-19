@@ -3,16 +3,24 @@
 // photo to Google's Gemini API (free tier, Flash-Lite) and returns the dishes it sees with an estimated portion and
 // kcal, protein, carbs, sugar, fiber and fat per dish. The Gemini key lives ONLY here, as the Supabase secret
 // GEMINI_API_KEY; the browser never sees it.
-//   GET                                   -> { ok, configured }      (the app asks once whether photo AI is switched on)
-//   POST { image: <base64 jpeg>, lang }   -> { dishes:[...], confidence, note, is_food, model }
+//   GET [?tz=Europe/Berlin]               -> { ok, configured, limit, used?, left? }  (used/left only with a user token)
+//   POST { image: <base64 jpeg>, lang, tz } -> { dishes:[...], confidence, note, is_food, model, limit, left }
 // Rules: only callers with a LOWiSPIKE sign-in (any Supabase session, guests included) and only from the app's origin.
-// Per user at most 12 photos per 10 minutes and 60 a day (soft, per worker). Max 1.5 MB image. Images and keys are never
+// Oct 19 (Emmanuel: "people only get to unlock three meals and pictures a day, so that we don't reach that limit"):
+// every signed-in user gets DAY_MAX = 3 photo reads per day, Snap food and Community together. The day is the user's own
+// calendar day (tz from the app, checked; UTC when missing), and never more than 2 x DAY_MAX in any 24 hours, so
+// changing the phone's time zone buys nothing real. The count is durable: it lives in the user's auth app_metadata
+// (food_photo.t = timestamps of the last 24 h), written with the service role key that Supabase gives every function.
+// A photo is counted when the read starts and handed back if Google fails (busy / error), so a failed read costs nothing.
+// Sharing a photo to Community reuses the read the app already has and never calls this function again.
+// Typed meals never come here and stay unlimited. All users still share one Google project quota: 3 a day per person
+// lowers the load, it does not guarantee Google never says busy. Max 1.5 MB image. Images and keys are never
 // logged or stored. Deploy: Supabase dashboard > Edge Functions > Deploy a new function > name "food-photo" > paste this file.
 // Optional secret GEMINI_MODEL picks the model; default tries gemini-3.5-flash-lite, then 3.1, then 2.5 Flash-Lite.
 
 const ORIGINS = [/^https:\/\/therealetm\.github\.io$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/];
 const MAX_B64 = 1_500_000;
-const WIN_MS = 10 * 60 * 1000, WIN_MAX = 12, DAY_MAX = 60;
+const WIN_MS = 10 * 60 * 1000, WIN_MAX = 12, DAY_MAX = 3, ROLL_MAX = DAY_MAX * 2, DAY_MS = 24 * 3600 * 1000;
 const MODELS = (Deno.env.get("GEMINI_MODEL") || "gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-2.5-flash-lite")
   .split(",").map((s) => s.trim()).filter(Boolean);
 const hits = new Map<string, number[]>();
@@ -32,27 +40,64 @@ function out(req: Request, status: number, body: unknown) {
   return new Response(JSON.stringify(body), { status, headers: { ...cors(req), "Content-Type": "application/json" } });
 }
 
-async function userId(req: Request): Promise<string> {
+type Who = { id: string; anon: boolean; stamps: number[] };
+async function who(req: Request): Promise<Who | null> {
   const auth = req.headers.get("authorization") || "";
-  if (!/^Bearer\s+\S+/.test(auth)) return "";
+  if (!/^Bearer\s+\S+/.test(auth)) return null;
   const url = Deno.env.get("SUPABASE_URL"), anon = Deno.env.get("SUPABASE_ANON_KEY");
-  if (!url || !anon) return "";
+  if (!url || !anon) return null;
   try {
     const r = await fetch(url + "/auth/v1/user", { headers: { apikey: anon, Authorization: auth } });
-    if (!r.ok) return "";
+    if (!r.ok) return null;
     const u = await r.json();
-    return u && typeof u.id === "string" ? u.id : "";
-  } catch (_e) { return ""; }
+    if (!u || typeof u.id !== "string") return null;
+    const t = u.app_metadata && u.app_metadata.food_photo && Array.isArray(u.app_metadata.food_photo.t) ? u.app_metadata.food_photo.t : [];
+    return { id: u.id, anon: !!u.is_anonymous, stamps: t.map(Number).filter((x: number) => isFinite(x) && x > 0) };
+  } catch (_e) { return null; }
 }
 
-function allowed(uid: string): boolean {
+// The user's calendar day for a moment, in their time zone (checked), else UTC.
+export function zone(tz: unknown): string {
+  const z = typeof tz === "string" ? tz.slice(0, 64) : "";
+  if (!z || !/^[A-Za-z_]+(\/[A-Za-z0-9_+\-]+){0,2}$|^UTC$/.test(z)) return "UTC";
+  try { new Intl.DateTimeFormat("en-CA", { timeZone: z }); return z; } catch (_e) { return "UTC"; }
+}
+export function dayOf(ms: number, tz: string): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(ms));
+}
+// Pure rule (unit tested): how many photo reads were used today, and may one more start now?
+export function tally(stamps: number[], now: number, tz: string) {
+  const recent = stamps.filter((t) => t <= now + 60000 && now - t < DAY_MS);
+  const today = dayOf(now, tz);
+  const used = recent.filter((t) => dayOf(t, tz) === today).length;
+  const ok = used < DAY_MAX && recent.length < ROLL_MAX;
+  return { recent, used: Math.min(DAY_MAX, used), left: ok ? DAY_MAX - used : 0, ok };
+}
+
+async function store(uid: string, stamps: number[]): Promise<boolean> {
+  const url = Deno.env.get("SUPABASE_URL"), svc = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!url || !svc) return false;
+  try {
+    const r = await fetch(url + "/auth/v1/admin/users/" + encodeURIComponent(uid), {
+      method: "PUT",
+      headers: { apikey: svc, Authorization: "Bearer " + svc, "Content-Type": "application/json" },
+      body: JSON.stringify({ app_metadata: { food_photo: { t: stamps.slice(-ROLL_MAX) } } }),
+    });
+    if (!r.ok) console.error("food-photo: count write failed", r.status);
+    return r.ok;
+  } catch (_e) { console.error("food-photo: count write failed"); return false; }
+}
+
+// Per worker: a burst guard, and the fallback count when the durable write is not possible.
+function burst(uid: string, durable: boolean): boolean {
   const now = Date.now();
-  const list = (hits.get(uid) || []).filter((t) => now - t < 24 * 3600 * 1000);
+  const list = (hits.get(uid) || []).filter((t) => now - t < DAY_MS);
   const recent = list.filter((t) => now - t < WIN_MS).length;
-  if (recent >= WIN_MAX || list.length >= DAY_MAX) { hits.set(uid, list); return false; }
+  if (recent >= WIN_MAX || (!durable && list.length >= DAY_MAX)) { hits.set(uid, list); return false; }
   list.push(now); hits.set(uid, list);
   return true;
 }
+function unburst(uid: string) { const l = hits.get(uid) || []; l.pop(); hits.set(uid, l); }
 
 const LANGS: Record<string, string> = { en: "English", de: "German", es: "Spanish" };
 function prompt(lang: string): string {
@@ -118,25 +163,48 @@ async function gemini(key: string, image: string, mime: string, lang: string) {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors(req) });
   const key = Deno.env.get("GEMINI_API_KEY") || "";
-  if (req.method === "GET") return out(req, 200, { ok: true, configured: !!key });
+  if (req.method === "GET") {
+    const base = { ok: true, configured: !!key, limit: DAY_MAX };
+    const u = await who(req);
+    if (!u) return out(req, 200, base);
+    const tz = zone(new URL(req.url).searchParams.get("tz"));
+    const c = tally(u.stamps, Date.now(), tz);
+    return out(req, 200, { ...base, used: c.used, left: c.left });
+  }
   if (req.method !== "POST") return out(req, 405, { error: "method" });
   const o = req.headers.get("origin") || "";
   if (o && !ORIGINS.some((r) => r.test(o))) return out(req, 403, { error: "origin" });
   if (!key) return out(req, 503, { error: "not_configured" });
-  const uid = await userId(req);
-  if (!uid) return out(req, 401, { error: "sign_in" });
-  let body: { image?: string; mime?: string; lang?: string };
+  const u = await who(req);
+  if (!u) return out(req, 401, { error: "sign_in" });
+  let body: { image?: string; mime?: string; lang?: string; tz?: string };
   try { body = await req.json(); } catch (_e) { return out(req, 400, { error: "bad_request" }); }
   const image = String(body.image || "").replace(/^data:[^,]*,/, "");
   const mime = /^image\/(jpeg|png|webp)$/.test(String(body.mime)) ? String(body.mime) : "image/jpeg";
   const lang = ["en", "de", "es"].includes(String(body.lang)) ? String(body.lang) : "en";
   if (!image || image.length > MAX_B64 || !/^[A-Za-z0-9+/=]+$/.test(image)) return out(req, 400, { error: "bad_image" });
-  if (!allowed(uid)) return out(req, 429, { error: "limit" });
+  const tz = zone(body.tz), now = Date.now();
+  const c = tally(u.stamps, now, tz);
+  if (!c.ok) return out(req, 429, { error: "limit", limit: DAY_MAX, left: 0 });
+  // Count it before Google is asked (a second phone cannot slip in between), hand it back if the read fails.
+  const durable = await store(u.id, c.recent.concat(now));
+  if (!burst(u.id, durable)) {
+    if (durable) await store(u.id, c.recent);
+    return out(req, 429, { error: durable ? "busy" : "limit", limit: DAY_MAX, left: durable ? c.left : 0 });
+  }
+  const left = Math.max(0, c.left - 1);
   try {
     const r = await gemini(key, image, mime, lang);
-    return out(req, r.status, r.body);
+    if (r.status !== 200) {
+      if (durable) await store(u.id, c.recent);
+      unburst(u.id);
+      return out(req, r.status, { ...r.body, limit: DAY_MAX, left: c.left });
+    }
+    return out(req, 200, { ...r.body, limit: DAY_MAX, left });
   } catch (_e) {
     console.error("food-photo: request failed");
-    return out(req, 502, { error: "ai_failed" });
+    if (durable) await store(u.id, c.recent);
+    unburst(u.id);
+    return out(req, 502, { error: "ai_failed", limit: DAY_MAX, left: c.left });
   }
 });

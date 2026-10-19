@@ -14,9 +14,9 @@
     const KEYS = ['kcal', 'protein', 'carbs', 'sugar', 'fiber', 'fat'];
     const LIMIT = { kcal: 3000, protein: 200, carbs: 400, sugar: 300, fiber: 100, fat: 250, grams: 3000 };
     const STR = {
-        en: { look: 'Looking at your plate…', found: 'Here’s what I see', est: 'Estimates from your photo. Change the name if I got it wrong.', total: 'Total', remove: 'Remove', off: 'Photo recognition isn’t switched on yet, so type what it is.', fail: 'I couldn’t read this photo, so type what it is.', busy: 'Too many photos right now. Type what it is, or try again in a few minutes.', none: 'I don’t see food in this photo. Type what it is if I’m wrong.', low: 'Not sure about this one, so check the name.', kcal: 'kcal', protein: 'Protein', carbs: 'Carbs', sugar: 'Sugar', fiber: 'Fiber', fat: 'Fat', and: 'and' },
-        de: { look: 'Ich schaue mir deinen Teller an…', found: 'Das sehe ich', est: 'Schätzungen aus deinem Foto. Ändere den Namen, wenn ich falsch liege.', total: 'Gesamt', remove: 'Entfernen', off: 'Die Fotoerkennung ist noch nicht eingeschaltet. Schreib bitte, was es ist.', fail: 'Ich konnte das Foto nicht lesen. Schreib bitte, was es ist.', busy: 'Gerade zu viele Fotos. Schreib, was es ist, oder versuch es in ein paar Minuten nochmal.', none: 'Ich sehe kein Essen auf dem Foto. Schreib, was es ist, falls ich falsch liege.', low: 'Da bin ich unsicher, prüf den Namen.', kcal: 'kcal', protein: 'Eiweiß', carbs: 'Kohlenhydrate', sugar: 'Zucker', fiber: 'Ballaststoffe', fat: 'Fett', and: 'und' },
-        es: { look: 'Mirando tu plato…', found: 'Esto es lo que veo', est: 'Estimaciones de tu foto. Cambia el nombre si me equivoqué.', total: 'Total', remove: 'Quitar', off: 'El reconocimiento de fotos aún no está activado, así que escribe qué es.', fail: 'No pude leer esta foto, así que escribe qué es.', busy: 'Demasiadas fotos ahora mismo. Escribe qué es o inténtalo en unos minutos.', none: 'No veo comida en esta foto. Escribe qué es si me equivoco.', low: 'No estoy seguro, revisa el nombre.', kcal: 'kcal', protein: 'Proteína', carbs: 'Carbohidratos', sugar: 'Azúcar', fiber: 'Fibra', fat: 'Grasa', and: 'y' }
+        en: { limit: 'You’ve used today’s 3 photo checks. New ones at midnight. Type what it is: typed meals are unlimited.', look: 'Looking at your plate…', found: 'Here’s what I see', est: 'Estimates from your photo. Change the name if I got it wrong.', total: 'Total', remove: 'Remove', off: 'Photo recognition isn’t switched on yet, so type what it is.', fail: 'I couldn’t read this photo, so type what it is.', busy: 'Too many photos right now. Type what it is, or try again in a few minutes.', none: 'I don’t see food in this photo. Type what it is if I’m wrong.', low: 'Not sure about this one, so check the name.', kcal: 'kcal', protein: 'Protein', carbs: 'Carbs', sugar: 'Sugar', fiber: 'Fiber', fat: 'Fat', and: 'and' },
+        de: { limit: 'Du hast heute deine 3 Foto-Checks genutzt. Neue gibt es um Mitternacht. Schreib, was es ist: Getippte Mahlzeiten sind unbegrenzt.', look: 'Ich schaue mir deinen Teller an…', found: 'Das sehe ich', est: 'Schätzungen aus deinem Foto. Ändere den Namen, wenn ich falsch liege.', total: 'Gesamt', remove: 'Entfernen', off: 'Die Fotoerkennung ist noch nicht eingeschaltet. Schreib bitte, was es ist.', fail: 'Ich konnte das Foto nicht lesen. Schreib bitte, was es ist.', busy: 'Gerade zu viele Fotos. Schreib, was es ist, oder versuch es in ein paar Minuten nochmal.', none: 'Ich sehe kein Essen auf dem Foto. Schreib, was es ist, falls ich falsch liege.', low: 'Da bin ich unsicher, prüf den Namen.', kcal: 'kcal', protein: 'Eiweiß', carbs: 'Kohlenhydrate', sugar: 'Zucker', fiber: 'Ballaststoffe', fat: 'Fett', and: 'und' },
+        es: { limit: 'Ya usaste tus 3 análisis de foto de hoy. Vuelven a medianoche. Escribe qué es: las comidas escritas no tienen límite.', look: 'Mirando tu plato…', found: 'Esto es lo que veo', est: 'Estimaciones de tu foto. Cambia el nombre si me equivoqué.', total: 'Total', remove: 'Quitar', off: 'El reconocimiento de fotos aún no está activado, así que escribe qué es.', fail: 'No pude leer esta foto, así que escribe qué es.', busy: 'Demasiadas fotos ahora mismo. Escribe qué es o inténtalo en unos minutos.', none: 'No veo comida en esta foto. Escribe qué es si me equivoco.', low: 'No estoy seguro, revisa el nombre.', kcal: 'kcal', protein: 'Proteína', carbs: 'Carbohidratos', sugar: 'Azúcar', fiber: 'Fibra', fat: 'Grasa', and: 'y' }
     };
     const lang = () => { try { const l = root.LowiLang && root.LowiLang.get ? root.LowiLang.get() : (root.document && document.documentElement.lang) || 'en'; return STR[l] ? l : 'en'; } catch (e) { return 'en'; } };
     const t = (k, l) => (STR[l || lang()] || STR.en)[k] || STR.en[k] || k;
@@ -78,6 +78,8 @@
         const id = c ? setTimeout(() => c.abort(), ms) : 0;
         return { signal: c ? c.signal : undefined, done: () => clearTimeout(id) };
     }
+    const zone = () => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) { return ''; } };
+    const snap = () => root.LowiMealSnap || null;
     let probe = null, probeAt = 0;
     // One cheap GET per session: is the function deployed and does it have its key? A miss is re-checked after 10 min.
     function available() {
@@ -101,6 +103,20 @@
             return (s && s.access_token) || '';
         } catch (e) { return ''; }
     }
+    // Oct 19: 3 photo checks per person per day (Snap food + Community), counted by the server. This asks how many are left
+    // today (needs the user's token) and keeps it in LowiMealSnap for the sheets. Resolves {limit,left} or null.
+    async function allowance() {
+        const url = endpoint();
+        if (!url || typeof fetch !== 'function') return null;
+        const tok = await token(); if (!tok) return null;
+        const tm = timed(6000);
+        try {
+            const r = await fetch(url + '?tz=' + encodeURIComponent(zone()), { method: 'GET', headers: headers(tok), signal: tm.signal, cache: 'no-store' });
+            const j = r.ok ? await r.json() : null;
+            if (j && typeof j.left === 'number') { if (snap()) snap().setLeft(j.left, j.limit); return { limit: j.limit, left: j.left }; }
+        } catch (e) {} finally { tm.done(); }
+        return null;
+    }
     // Photo (data URL) -> {dishes,total,...}. Throws Error with .code: off | sign_in | limit | busy | failed.
     async function analyse(dataURL, opts) {
         opts = opts || {};
@@ -111,13 +127,15 @@
         const tm = timed(opts.timeout || 30000);
         let r;
         try {
-            r = await fetch(url, { method: 'POST', headers: headers(opts.token != null ? opts.token : await token()), signal: tm.signal, body: JSON.stringify({ image: m[2], mime: m[1], lang: opts.lang || lang() }) });
+            r = await fetch(url, { method: 'POST', headers: headers(opts.token != null ? opts.token : await token()), signal: tm.signal, body: JSON.stringify({ image: m[2], mime: m[1], lang: opts.lang || lang(), tz: zone() }) });
         } catch (err) { tm.done(); const e = new Error('failed'); e.code = 'failed'; throw e; }
         tm.done();
         let j = null;
         try { j = await r.json(); } catch (err) { j = null; }
+        if (j && typeof j.left === 'number' && snap()) snap().setLeft(j.left, j.limit);
         if (!r.ok) {
             const code = r.status === 503 || r.status === 404 ? 'off' : r.status === 401 ? 'sign_in' : r.status === 429 ? (j && j.error === 'limit' ? 'limit' : 'busy') : 'failed';
+            if (code === 'limit' && snap()) snap().setLeft(0, j && j.limit);
             if (code === 'off') { probe = Promise.resolve(false); probeAt = Date.now(); }
             const e = new Error(code); e.code = code; throw e;
         }
@@ -161,6 +179,9 @@
         };
         box.className = 'sp-ai fai fai-wait';
         box.innerHTML = '<p class="fai-msg" role="status"><i class="fai-spin" aria-hidden="true"></i>' + esc(t('look', l)) + '</p>';
+        const MS = snap();
+        const q = MS && MS.left ? MS.left() : null;
+        if (q && q.left === 0) { say('fai-err fai-limit', t('limit', l)); return Promise.resolve(null); }
         return available().then(on => {
             if (!on) { say('fai-off', t('off', l)); return null; }
             return analyse(dataURL, { lang: l }).then(res => {
@@ -168,6 +189,16 @@
                 if (!res.isFood) { say('fai-none', t('none', l)); return res; }
                 dishes = res.dishes.slice();
                 setHidden(); paint(res);
+                /* Oct 19: the read is remembered by photo (sharing never asks the AI again); under it: checks left today,
+                   "Also share to Community" (opt-in, after Log as meal) and the optional mealtime reminder offer. */
+                if (MS) {
+                    try {
+                        MS.remember(dataURL, { dishes: res.dishes, name: title(res.dishes, l) });
+                        const host = document.createElement('div'); host.className = 'ms-host';
+                        form.parentNode.insertBefore(host, form.nextSibling);
+                        MS.snapExtras(host, form, dataURL, () => MS.meal({ dishes, name: (titleIn && titleIn.value.trim()) || title(dishes, l) }));
+                    } catch (e) { console.warn(e); }
+                }
                 box.addEventListener('click', ev => {
                     const b = ev.target.closest && ev.target.closest('[data-fai-rm]');
                     if (!b) return;
@@ -178,10 +209,10 @@
                 });
                 return res;
             }, err => {
-                say('fai-err', err && (err.code === 'limit' || err.code === 'busy') ? t('busy', l) : err && err.code === 'off' ? t('off', l) : t('fail', l));
+                say('fai-err', err && err.code === 'limit' ? t('limit', l) : err && err.code === 'busy' ? t('busy', l) : err && err.code === 'off' ? t('off', l) : t('fail', l));
                 return null;
             });
         }).catch(() => { say('fai-err', t('fail', l)); return null; });
     }
-    return { KEYS, normalize, totals, title, endpoint, available, analyse, mount, strings: STR, _reset() { probe = null; probeAt = 0; } };
+    return { KEYS, normalize, totals, title, endpoint, available, allowance, analyse, mount, strings: STR, _reset() { probe = null; probeAt = 0; } };
 });

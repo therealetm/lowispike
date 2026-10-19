@@ -4286,6 +4286,7 @@ function postHTML(p){
     (p.cap ? '<div class="tr-cap">' + esc(p.cap) + '</div>' : '') +
     (p.url ? '<button class="tr-link" data-tr="open" data-id="' + p.id + '">' + mediaHTML(p) + '<div class="tr-lk"><div class="tiny dim">' + esc(byline(p.meta, p.plat)) + '</div>' + (d.line ? '<div class="tr-ttl">' + esc(d.line) + '</div>' : '') + (d.tags.length ? '<div class="tr-tags">' + d.tags.map(t => '<span>' + esc(t) + '</span>').join("") + '</div>' : '') + '</div></button>' : '') +
     (p.photo ? '<div class="tr-photo"><img src="' + p.photo + '" alt=""></div>' : '') +
+    (p.meta && p.meta.meal && window.LowiMealSnap ? LowiMealSnap.cardHTML(p.meta.meal) : '') +
     '<div class="tr-acts"><button class="tr-heart' + (liked ? " on" : "") + '" data-tr="like" data-id="' + p.id + '">' + IC.heart + '<span class="num">' + n + '</span></button>' + (p.url ? '<button class="tr-open" data-tr="open" data-id="' + p.id + '">' + pl.open + ' ' + IC.ext + '</button>' : '<span style="flex:1"></span>') + (p.mine ? '<button class="tr-more" data-tr="post-menu" data-id="' + p.id + '" aria-label="More">' + IC.more + '</button>' : '') + '</div></article>';
 }
 /* ---------- Oct 8 fix round: For You is a TikTok-style feed. One post per screen, vertical snap, a slim side rail. No chips, no pills. ---------- */
@@ -4322,6 +4323,7 @@ function slideHTML(p){
       '<button class="fy-act fy-more" data-tr="post-menu" data-id="' + p.id + '" aria-label="More">' + IC.more + '</button></div>' +
     '<div class="fy-meta"><div class="fy-by" data-r5="profile" data-who="' + esc(p.me ? (u.name || "You") : p.who) + '"' + (p.me ? ' data-me="1"' : "") + ' role="button" tabindex="0">' + (p.me ? h.avatar(30, u.name, u.avatar) : h.avatar(30, p.who, p.avatar)) + '<b>' + esc(name) + '</b><span>· ' + ago(p.ts) + '</span>' + (p.mine ? '<span class="fy-orig">' + IC.gem + '</span>' : "") + '</div>' +
       (cap && !textOnly ? '<div class="fy-cap">' + esc(cap) + '</div>' : "") +
+      (p.meta && p.meta.meal && window.LowiMealSnap ? LowiMealSnap.cardHTML(p.meta.meal, {compact:true, noName:!!cap && cap === p.meta.meal.name}) : "") +
       (p.rec && window.FYV ? FYV.recChip(p) : "") +
       (p.url ? '<button class="fy-src" data-tr="open" data-id="' + p.id + '">' + PICON[p.plat || "web"] + '<span>' + esc(byline(p.meta, p.plat || "web")) + '</span></button>' : "") +
     '</div></section>';
@@ -4410,14 +4412,32 @@ function paintRest(){
   const link = !!C.p, need = link && !(C.meta && C.meta.title), pl = link ? PLAT[C.p.plat] : {};
   el.innerHTML = (link ? '<div class="field"><label for="trCap">' + (need ? "One line about it (needed)" : "Add your take (optional)") + '</label><input class="input" id="trCap" maxlength="' + CAPTION_MAX + '" placeholder="' + (need ? "What is it and why is it good?" : "Why you're sharing it") + '" value="' + esc(C.cap) + '"></div>'
       : '<div class="field"><label for="trCap">Or just write a post</label><textarea class="input" id="trCap" rows="3" maxlength="' + TEXT_MAX + '" placeholder="A swap, a win, a question…" style="height:84px;padding:12px 14px;resize:none">' + esc(C.cap) + '</textarea></div>' +
-        '<div class="tr-row" style="margin-top:10px;gap:10px"><button class="chip" data-tr="photo">' + (C.photo ? "Change photo" : "Add a photo") + '</button>' + (C.photo ? '<img class="tr-thumbsm" src="' + C.photo + '" alt=""><button class="small dim" data-tr="nophoto">Remove</button>' : '') + '</div>') +
+        '<div class="tr-row" style="margin-top:10px;gap:10px"><button class="chip" data-tr="photo">' + (C.photo ? "Change photo" : "Add a photo") + '</button>' + (C.photo ? '<img class="tr-thumbsm" src="' + C.photo + '" alt=""><button class="small dim" data-tr="nophoto">Remove</button>' : '') + '</div>' + (C.photo ? mealRowHTML() : '')) +
     postRecField() +
     '<div class="card" style="margin-top:14px;padding:4px 14px">' +
       '<div class="trow" style="padding:10px 0"><span><span style="display:block;font-weight:600">Show it in For You</span><span class="small muted">' + (C.vis === "tribe" ? "The whole tribe can see it." : "Only you. It stays on your phone.") + '</span></span><button class="toggle' + (C.vis === "tribe" ? " on" : "") + '" data-tr="vis" aria-label="Visible to the tribe"></button></div>' +
       (link && pl.mine ? '<div class="trow" style="padding:10px 0;border-top:1px solid var(--line2)"><span><span style="display:block;font-weight:600">This is my own video</span><span class="small muted">It gets the <span class="tr-holo-t" style="font-weight:700">Tribe Original</span> highlight.</span></span><button class="toggle holo' + (C.mine ? " on" : "") + '" data-tr="mine" aria-label="This is my own video"></button></div>' : '') +
-    '</div>' + (C.vis === "tribe" ? '<p class="foot" style="margin-top:10px">' + (link ? "Only the link, the title it comes with and your line are shared." : "Only what you write here is shared.") + ' Nothing about your health or goals.</p>' : '');
+    '</div>' + (C.vis === "tribe" ? '<p class="foot" style="margin-top:10px">' + (C.meal && window.LowiMealSnap && !link ? esc(LowiMealSnap.t("foot")) : (link ? "Only the link, the title it comes with and your line are shared." : "Only what you write here is shared.") + ' Nothing about your health or goals.') + '</p>' : '');
   updPost();
 }
+/* Oct 19 meal photos: a photo in a post can carry its meal card (name, estimated ingredients, nutrition, likely blood
+   sugar response). A photo already read in Snap food is reused for free; a new one costs 1 of the 3 photo checks a day. */
+function mealRowHTML(){ const M = window.LowiMealSnap; if (!M || !C || !C.photo) return "";
+  if (C.meal) return '<div class="ms-post">' + M.cardHTML(C.meal) + '<button class="small dim" data-tr="meal-x">' + esc(M.t("removeMeal")) + '</button></div>';
+  if (C.mealBusy) return '<p class="small muted ms-post" role="status">' + esc(M.t("reading")) + '</p>';
+  const known = M.recall(C.photo), q = M.left(), out = !known && q && q.left === 0;
+  return '<div class="ms-post">' + (C.mealErr ? '<p class="small muted" role="status">' + esc(C.mealErr) + '</p>' : '') +
+    (out ? '<p class="small muted">' + esc(M.leftText()) + '</p>' : '<button class="chip ms-read" data-tr="meal-read">' + esc(known ? M.t("readFree") : M.t("read")) + '</button>' + (!known && q ? '<span class="small muted ms-left"> ' + esc(M.leftText()) + '</span>' : '')) + '</div>'; }
+async function readMeal(){ const M = window.LowiMealSnap, A = window.LowiFoodAI; if (!M || !C || !C.photo || C.mealBusy) return;
+  const c0 = C, ph = C.photo, known = M.recall(ph);
+  if (known) { C.meal = known; paintRest(); return; }
+  if (!A || !A.analyse) return;
+  C.mealBusy = true; C.mealErr = ""; paintRest();
+  let meal = null, err = "";
+  try { const r = await A.analyse(ph); if (r && r.isFood) meal = M.remember(ph, {dishes:r.dishes, name:A.title(r.dishes)}); else err = A.strings[(window.LowiLang && LowiLang.get && A.strings[LowiLang.get()]) ? LowiLang.get() : "en"].none; }
+  catch(e){ const L = A.strings[(window.LowiLang && LowiLang.get && A.strings[LowiLang.get()]) ? LowiLang.get() : "en"]; err = e && e.code === "limit" ? M.leftText() || L.limit : e && e.code === "busy" ? L.busy : M.t("readFail"); }
+  if (C !== c0 || C.photo !== ph) return;
+  C.mealBusy = false; C.meal = meal; C.mealErr = err; paintRest(); }
 function updPost(){ const b = $("#trPost"); if (!b || !C) return; const need = !(C.meta && C.meta.title), cap = C.cap.trim();
   b.disabled = C.loading || (C.p ? need && !cap : (C.raw.trim() || (!cap && !C.photo && !C.rec))); b.textContent = C.vis === "tribe" ? "Post" : "Save for me"; }
 function doPost(btn){
@@ -4429,7 +4449,8 @@ function doPost(btn){
     p = {id:"t" + uid(), ts:Date.now(), plat:C.p.plat, url:C.p.url, meta, cap:C.cap.trim().slice(0, CAPTION_MAX), rec:C.rec || "", vis:C.vis, mine:!!(C.mine && PLAT[C.p.plat].mine), art:["✨", 40, 280]};
   } else {
     if (!C.cap.trim() && !C.photo && !C.rec) return;
-    p = {id:"t" + uid(), ts:Date.now(), plat:"", url:"", meta:null, cap:C.cap.trim().slice(0, TEXT_MAX), photo:C.photo || "", rec:C.rec || "", vis:C.vis, mine:false};
+    const meal = C.photo && C.meal ? C.meal : null; /* Oct 19: the meal card rides in meta.meal; no caption needed */
+    p = {id:"t" + uid(), ts:Date.now(), plat:"", url:"", meta:meal ? {meal} : null, cap:(C.cap.trim() || (meal ? meal.name : "")).slice(0, TEXT_MAX), photo:C.photo || "", rec:C.rec || "", vis:C.vis, mine:false};
   }
   T.posts.unshift(p); if (T.posts.length > 80) T.posts.length = 80;
   if (p.vis !== "tribe") T.filter = "mine"; else if (T.filter === "orig" && !p.mine) T.filter = "all";
@@ -4482,9 +4503,11 @@ document.addEventListener("click", e => {
     case "report": T.reported.push(id); save(); h.closeSheet(); rerender(); h.toast("Reported. It's hidden for you."); break;
     case "block": if (T.blocked.indexOf(b.dataset.who) < 0) T.blocked.push(b.dataset.who); save(); h.closeSheet(); rerender(); h.toast("You won't see " + b.dataset.who + " anymore."); break;
     case "photo": { let f = $("#trPhotoIn"); if (!f) { f = document.createElement("input"); f.type = "file"; f.accept = "image/*"; f.id = "trPhotoIn"; f.className = "hidden"; document.body.appendChild(f);
-        f.addEventListener("change", async () => { const x = f.files[0]; f.value = ""; if (!x || !C) return; C.photo = await h.resizeImage(x, 640); paintRest(); }); }
+        f.addEventListener("change", async () => { const x = f.files[0]; f.value = ""; if (!x || !C) return; C.photo = await h.resizeImage(x, 640); C.meal = null; C.mealErr = ""; paintRest(); }); }
       f.click(); break; }
-    case "nophoto": if (C) { C.photo = ""; paintRest(); } break;
+    case "nophoto": if (C) { C.photo = ""; C.meal = null; C.mealErr = ""; paintRest(); } break;
+    case "meal-read": readMeal(); break;
+    case "meal-x": if (C) { C.meal = null; paintRest(); } break;
   }
 });
 document.addEventListener("change", e => { if (!C || e.target.id !== "trRec") return; C.rec = e.target.value || ""; paintRest(); });
@@ -4508,7 +4531,9 @@ function showFeed(){ const h = H(); if (!h) return;
   if (nm && nm.open) { if (nm.isOpen && nm.isOpen("fy") && h.tab() === "shelf" && $("#cmFeed")) renderForYou(); else nm.open("fy"); return; }
   if (window.cmSetView) cmSetView("feed"); h.go("foryou"); }
 window.TRIBE = {
-  renderForYou, compose, showFeed, composeInto, setPhoto:ph => { if (C) { C.photo = ph || ""; paintRest(); } } /* f2-photo */,
+  renderForYou, compose, showFeed, composeInto, setPhoto:ph => { if (C) { C.photo = ph || ""; C.meal = null; C.mealErr = ""; paintRest(); } } /* f2-photo */,
+  /* Oct 19 meal photos (meal-photo.js): Snap food's "Also share to Community" attaches the read it already has */
+  setMeal:m => { if (C) { C.meal = m && window.LowiMealSnap ? LowiMealSnap.clean(m) : null; C.mealErr = ""; paintRest(); } },
   addPost:p => { load(); T.posts.unshift(p); while (T.posts.length > 80) { const x = T.posts.pop(); if (x && x.vid && window.FYV) FYV.remove(x.id); } try { localStorage.setItem(KEY, JSON.stringify(T)); return true; } catch(e){ T.posts.shift(); const h = H(); if (h) h.toast("Storage is full on this phone."); return false; } }, checkShareHash, profileHTML, shareRecipe,
   post:id => T.posts.map(x => Object.assign({me:true}, x)).find(x => x.id === id) || DEMO.find(x => x.id === id) || (window.LOWI_CLOUD && LOWI_CLOUD.post(id)), imgKey:id => FY_IMG[id] || "", demoNames:() => DEMO.map(x => x.who),
   reset:() => { localStorage.removeItem(KEY); },
@@ -19334,6 +19359,7 @@ function sheetHTML(){ const s = get();
     '<div class="n1-row n1-dim' + (s.on ? "" : " dis") + '"><b>' + esc(w("freqL")) + '</b><div class="n1-opts n1-freq" data-n1g="freq">' + ["few", "normal", "more"].map(k => opt(k, esc(w(k)) + '<small>' + esc(w(k + "S")) + '</small>', s.freq === k)).join("") + '</div></div>' +
     '<div class="n1-row n1-dim' + (s.on ? "" : " dis") + '"><b>' + esc(w("quietL")) + '</b><div class="n1-q"><span>' + esc(w("from")) + '</span>' + sel("qs", 18, 24, s.qs) + '<span>' + esc(w("to")) + '</span>' + sel("qe", 4, 11, s.qe) + '</div></div>' +
     (window.LowiN1P ? LowiN1P.rowHTML() : "") +
+    (window.LowiMealSnap ? LowiMealSnap.rowHTML() : "") +
     '</div><div class="sheetfoot n1-foot"><button class="btn ghost" data-n1="try">' + esc(w("try")) + '</button><button class="btn primary" data-act="close-sheet">' + esc(w("done")) + '</button></div>'; }
 function openSet(){ hide(true); try { if (window.LowiHost && LowiHost.openSheet) LowiHost.openSheet(sheetHTML()); } catch(e){} }
 function repaintSheet(){ const sh = D.querySelector(".n1-sheet"); if (!sh) return; const t = D.createElement("div"); t.innerHTML = sheetHTML(); const nb = t.querySelector(".n1-sheet"); sh.innerHTML = nb.innerHTML; }
@@ -20008,6 +20034,7 @@ window.LowiCommunityHost = {
 <script src="spike-catch.js?v=20261019-160738"></script>
 <script src="living-bubbles.js?v=20261019-160738"></script>
 <link rel="stylesheet" id="scrCss" href="scan-screens.css?v=20261019-160738">
+<link rel="stylesheet" href="meal-photo.css?v=20261019-160738">
 <link rel="stylesheet" id="mpopCss" href="misty-pop.css?v=20261019-160738">
 <link rel="stylesheet" id="mpnCss" href="misty-panels.css?v=20261019-160738">
 <!-- Oct 18: owner tools (kick / delete members). Server-checked: supabase/proposals/owner_admin_20261018.sql -->

@@ -75,7 +75,7 @@ test('analyse() sends the photo with the user token (never a Gemini key) and ret
     assert.strictEqual(sent.opt.method, 'POST');
     assert.strictEqual(sent.opt.headers.Authorization, 'Bearer user-jwt');
     const body = JSON.parse(sent.opt.body);
-    assert.deepStrictEqual(body, { image: 'QUJD', mime: 'image/jpeg', lang: 'de' });
+    assert.deepStrictEqual(body, { image: 'QUJD', mime: 'image/jpeg', lang: 'de', tz: Intl.DateTimeFormat().resolvedOptions().timeZone || '' } /* Oct 19: tz for the user's own day (3 a day) */);
     for (const [status, err, code] of [[503, { error: 'not_configured' }, 'off'], [401, { error: 'sign_in' }, 'sign_in'], [429, { error: 'limit' }, 'limit'], [429, { error: 'busy' }, 'busy'], [502, { error: 'ai_failed' }, 'failed']]) {
         await withFetch(async () => {
             await assert.rejects(A.analyse('data:image/jpeg;base64,QUJD', { token: 't' }), e => e.code === code);

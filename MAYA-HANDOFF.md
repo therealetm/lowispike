@@ -409,7 +409,7 @@ message bubble."
      task 9472a9a4 (COORD-community-crash-2.md) and crowd task e80fcb1e; notes in `/home/sprite/COORD-billiard.md`.
 
 **22. The companion card (long press on the companion) has to make sense: no "spirit", worlds you earn, nothing
-hidden.** REQUESTED 10:0x PM call, task running.
+hidden.** REQUESTED 10:0x PM call. **RELEASED 20261019-222926** (see the Log).
    - He likes the card in general (level, energy, "Legend"). He said, reading it out: "spirit world sky should be named
      something different. Don't use the word spirit. Spirit bubbles. Yes, different name because we don't use the word
      spirit." A friend said "spirit" sounds too mystical for an app scientists, doctors and schools will use. Rule:
@@ -450,6 +450,20 @@ question).** REQUESTED 10:1x PM call, task "LOWiSPIKE: incoming-message companio
      history never replayed as new, no pile-up when several people write. Reduced motion, three languages, message
      shown as text only. Must stay light: Community is still crashing on his iPhone (items 20a, crash task 9472a9a4).
    - Notes in `/home/sprite/COORD-home-visit.md`, branch `home-visit`, worktree `/home/sprite/wt-home-visit`.
+
+**24. Grocery shopping discovery: Catch a product nobody has added yet, be its Pathfinder.** REQUESTED 19 Oct
+evening (same walkthrough as 22). **Built by the food-paths task 4e961904** (it owns doCatch()/pushOne() and the
+product card in index.html, notes `/home/sprite/COORD-food-paths.md`); the item 22 task recorded it and stays out of
+those files so there are never two versions. (Restored: a later merge had dropped this item.)
+   - When you scan a product in the shop, products already in the community database still just show their
+     information (verdict, facts, ingredients) like today.
+   - A product NOT yet in the community database gets a **Catch** button. The first person to catch it gets
+     first-discoverer credit (their companion's name on the product) and a substantial one-time reward.
+   - He let Maya decide the reward. Decision: a permanent **Pathfinder** badge, plus a bounded one-time evolution-XP
+     bonus per product, paid only after the server checks a real, unique barcode (valid check digit, not already in
+     the database) and useful product details (name, brand, and label facts or a label photo). Duplicates, made-up
+     barcodes, junk names and repeat submissions never pay; a daily cap stops farming.
+   - Same rules as always: plain language, no "spirit", gender-neutral companion copy.
 
 **25. More levels and more evolutions: "it should really, truly evolve into something majestic".** REQUESTED 10:1x PM
 call, task running (forked task "LOWiSPIKE: extend meaningful companion levels and majestic evolution", started 10:11 PM,
@@ -1030,3 +1044,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 - 2026-10-19 22:40 Item 25: ten companion forms released (Nova 4500, Titan 7000, Monarch 10000, Majesty 14000 XP; new mane/crown, twin tails + third wings, power spikes + inner horns, star ring + gold edges). Evolution stays XP only; Collection and Catch never gate it. Branch evo-more.
 - 2026-10-19 22:30 Item 21 live (20261019-221603 + 20261019-222646): community-energy.js no longer eases knocked companions home (no 'back' phase, no soft wall/240 px tether); they roll on, chain into others, bounce only off the map edge and stay where they stop. Resting spots kept as map positions across pin moves, leaving Community (halt, not reset), app close (pagehide/visibilitychange) and reload (localStorage lowi.energy.land.v1:<uid>, max 400). busy() = motion only. Your own companion stays knocked too and fires from there. Tutorial step send-energy + What's New "billiard-energy" updated. Tests 1,770/1,770; probe-billiard.cjs passes on chromium390 local + live (fixture galaxy, 4 local bots); WebKit iPhone 13 ran at 0-1 fps on the loaded VM (old build too), so no WebKit verdict. Limit: each phone keeps its own resting positions; positions never expire.
 - 2026-10-19 22:35 Item 26 recorded under 0.5: care gestures (hug, water, good morning, sweet dreams, gratitude, encouragement) become free and the sparks currency and counter are removed; XP and energy unchanged. Task free-care started.
+- 2026-10-19 22:30 Release 20261019-222926 (item 22): companion card without "spirit" (Home world, Cell worlds, Galaxy, Other worlds, Streams; also onboarding, the tutorial galaxy step, the "Community galaxy" title), the timed adventure reaches a place only with her level AND your own visit (S.advSeen + device copy, ledger seed; autopilot and your own flying ungated), Forms / Food journal / Glow first on the card, mood check-in explained and last, Collection is now a Food journal (foods you logged or scanned, how those meals went, never needed to evolve). Item 24 restored and handed to the food-paths task 4e961904.

@@ -27,6 +27,15 @@ function tune(reduced){return reduced?{speed:.45,range:.5,friction:4.2,roll:60,r
    companion to the same target and lands it at the same moment, catching up for network delay. Physics runs on a fixed 1/120 s
    step so every phone integrates the same way. */
 const STEP=1/120,MAX_BALLS=24,MAX_AGE=1500;
+/* Oct 19 (E-man: "we were both playing, shooting each other, and then it crashed ... in the community section"): a two-person
+   shoot-out kept the screen at full load for minutes on end. Every frame re-laid out the whole map (place(): every companion,
+   bubble and stream line, about 8 ms a frame even in a small galaxy) on top of the live 3D world, and the hit effects list had no
+   ceiling, so a slow frame made the next one slower. Now: at most MAX_FX effects (oldest sparks go first), the map follows the
+   balls at most every PLACE_MS, and once frames run slow (SLOW_DT) balls are drawn without canvas blur and hits make fewer sparks. */
+const MAX_FX=160,PLACE_MS=33,SLOW_DT=1/30;
+function capFx(list,max){max=max==null?MAX_FX:max;if(list.length<=max)return list;let over=list.length-max;const out=[];
+ for(const f of list){if(over>0&&f.k==='spark'){over--;continue;}out.push(f);}return out.length>max?out.slice(out.length-max):out;}
+function placeDue(last,now,force){return !!force||!(last>0)||now-last>=PLACE_MS||now<last;}
 function table(opts){
  const T=Object.assign(tune(opts&&opts.reduced),opts&&opts.tune||{});const bodies=new Map();let shots=[],mode='home',still=0,bound=1e9,acc=0,pend=[],catching=false;
  function sync(spots,radius){const seen=new Set();if(radius!=null)bound=(+radius||0)+90;
@@ -104,7 +113,7 @@ function unpack(m){if(!m||typeof m!=='object'||m.v!==1)return null;const id=type
 function shotAge(t,now,base){const d=(+now||Date.now())-(+t||0);
  if(d>-1500&&d<4000)return {age:Math.max(0,Math.min(MAX_AGE,d)),stale:d>=MAX_AGE*2};
  if(base==null||!isFinite(base))return {age:60,stale:false};const k=d-base;return {age:Math.max(0,Math.min(MAX_AGE,k+60)),stale:k>MAX_AGE*2};}
-const api={aim,canPing,notePing,table,tune,bucket,pack,unpack,shotAge,PING_GAP,PING_WINDOW,PING_MAX,DEAD,STEP,MAX_BALLS,MAX_AGE,SEND,RECV,INBOX};
+const api={aim,canPing,notePing,table,tune,bucket,pack,unpack,shotAge,PING_GAP,PING_WINDOW,PING_MAX,DEAD,STEP,MAX_BALLS,MAX_AGE,SEND,RECV,INBOX,MAX_FX,PLACE_MS,SLOW_DT,capFx,placeDue};
 if(typeof module==='object'&&module.exports){module.exports=api;return;}
 root.LowiEnergyCore=api;
 
@@ -119,7 +128,7 @@ function tr(k,n){return String(COPY[k][lang()]||COPY[k][0]).replace('{n}',n||'')
 const reduced=()=>!!(W.matchMedia&&W.matchMedia('(prefers-reduced-motion: reduce)').matches);
 function load(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){return {};}}
 function store(st){try{localStorage.setItem(KEY,JSON.stringify(st));}catch(e){}}
-let gal=null,joy=null,knob=null,fx=null,ctx=null,live=null,tb=null,tbReduced=null,raf=0,lastT=0,drag=null,aimNow=null,fxList=[],dpr=1;
+let gal=null,joy=null,knob=null,fx=null,ctx=null,live=null,tb=null,tbReduced=null,raf=0,lastT=0,drag=null,aimNow=null,fxList=[],lastPlace=0,slow=false,dpr=1;
 /* real-time sync state: my send bucket, per-shooter buckets, the inbox cap, ids already seen, each sender's smallest clock delta */
 let sendSt={},inboxSt={},recvSt=new Map(),seenIds=new Map(),bases=new Map(),stats={sent:0,got:0,shown:0,dropped:0,lat:[]};
 const map=()=>W.LowiCgMap;
@@ -181,12 +190,12 @@ function kick(){if(raf)return;lastT=0;raf=requestAnimationFrame(frame);}
 function size(){const w=gal.clientWidth,h=gal.clientHeight;dpr=Math.min(2,W.devicePixelRatio||1);if(fx.width!==Math.round(w*dpr)||fx.height!==Math.round(h*dpr)){fx.width=Math.round(w*dpr);fx.height=Math.round(h*dpr);}return {w,h};}
 function frame(now){raf=0;if(!visible()){if(tb)tb.reset();fxList=[];if(ctx&&fx)ctx.clearRect(0,0,fx.width,fx.height);const m=map();if(m&&m.place)m.place();return;}
  const dt=lastT?Math.min(.25,(now-lastT)/1000):1/60;lastT=now;const g=geom();const t=ensureTable();if(g)t.sync(g.spots,g.radius);
- const was=t.busy(),ev=t.step(dt);for(const e of ev)onEvent(e,g);
- if(was||t.busy()){const m=map();if(m&&m.place)m.place();}
+ slow=dt>SLOW_DT;const was=t.busy(),ev=t.step(dt);for(const e of ev)onEvent(e,g);fxList=capFx(fxList);
+ const nowBusy=t.busy();if((was||nowBusy)&&placeDue(lastPlace,now,!nowBusy)){lastPlace=now;const m=map();if(m&&m.place)m.place();}
  draw(g,now,dt);
  if(t.busy()||drag||fxList.length)raf=requestAnimationFrame(frame);else if(ctx)ctx.clearRect(0,0,fx.width,fx.height);}
 function onEvent(e,g){if(!g)return;
- if(e.type==='hit'){const p=scr(g,{x:e.x,y:e.y});if(e.late&&isFinite(e.fx))fxList.push({k:'streak',x:e.x,y:e.y,fx:e.fx,fy:e.fy,t:0,life:.35});fxList.push({k:'ring',x:e.x,y:e.y,t:0,life:reduced()?.35:.7});if(!reduced())for(let i=0;i<12;i++){const a=Math.random()*6.283,s=60+Math.random()*160;fxList.push({k:'spark',x:e.x,y:e.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,t:0,life:.5+Math.random()*.4});}
+ if(e.type==='hit'){const p=scr(g,{x:e.x,y:e.y});if(e.late&&isFinite(e.fx))fxList.push({k:'streak',x:e.x,y:e.y,fx:e.fx,fy:e.fy,t:0,life:.35});fxList.push({k:'ring',x:e.x,y:e.y,t:0,life:reduced()?.35:.7});if(!reduced())for(let i=0,n=slow?4:12;i<n;i++){const a=Math.random()*6.283,s=60+Math.random()*160;fxList.push({k:'spark',x:e.x,y:e.y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,t:0,life:.5+Math.random()*.4});}
   plus(e.uid,g);if(e.own)ping(e.uid);}
  else if(e.type==='bump'){const A=tb.pos(e.a),B=tb.pos(e.b);if(A&&B&&!reduced())fxList.push({k:'ring',x:(A.x+B.x)/2,y:(A.y+B.y)/2,t:0,life:.35,small:1});}
  else if(e.type==='fizzle')fxList.push({k:'ring',x:e.x,y:e.y,t:0,life:.4,small:1});}
@@ -209,7 +218,7 @@ function draw(g,now,fdt){if(!ctx||!g)return;const {w,h}=size();ctx.setTransform(
   const fl=red?0:Math.sin(now/90)*2;ctx.fillStyle='rgba(255,255,255,.9)';ctx.beginPath();ctx.arc(tip-6+fl,0,2.2+pw*1.4,0,6.283);ctx.fill();ctx.restore();}
  /* the bursts in flight: mine and everyone else's (capped at MAX_BALLS). In a crowd (more than 6 at once) each ball is drawn the cheap
     way: a short trail and a soft halo instead of a canvas shadow blur, so the frame rate holds. */
- const flying=tb?tb.shots():[],cheap=flying.length>6;
+ const flying=tb?tb.shots():[],cheap=flying.length>6||slow;
  for(const sh of flying){const tr=cheap?sh.trail.slice(-4):sh.trail,pts=tr.concat([{x:sh.x,y:sh.y}]).map(q=>scr(g,q));ctx.lineCap='round';
   for(let i=1;i<pts.length;i++){const k=i/pts.length;ctx.globalAlpha=k*.7;ctx.strokeStyle='rgba(120,210,255,1)';ctx.lineWidth=2+k*7;ctx.beginPath();ctx.moveTo(pts[i-1].x,pts[i-1].y);ctx.lineTo(pts[i].x,pts[i].y);ctx.stroke();}
   const hd=pts[pts.length-1],rr=6+sh.power*3;ctx.globalAlpha=1;

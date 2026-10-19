@@ -69,6 +69,6 @@ test('wiring: the same shared realtime channel as chat, one compact event per sh
   assert.match(sub,/\.on\("broadcast", \{event:"energy"\}[^\n]*lowi:energy-shot/,'listens on lowi-all, no second subscription');
   assert.match(html,/energyShot\(p\)\{ if \(!chan \|\| chatRealtime !== "SUBSCRIBED"[^\n]*type:"broadcast", event:"energy"/);
   assert.match(js,/D\.addEventListener\('lowi:energy-shot'/);assert.match(js,/c\.energyShot\(pack\(\{id,by,a:ang,p:power,to:pr\.to,ht:pr\.ht,t:now\}\)\)/);
-  assert.match(js,/if\(e\.own\)ping\(e\.uid\)/,'only the shooter sends the energy line');assert.match(js,/const flying=tb\?tb\.shots\(\):\[\],cheap=flying\.length>6;/);assert.match(js,/for\(const sh of flying\)/);
+  assert.match(js,/if\(e\.own\)ping\(e\.uid\)/,'only the shooter sends the energy line');assert.match(js,/const flying=tb\?tb\.shots\(\):\[\],cheap=flying\.length>6(\|\|slow)?;/);assert.match(js,/for\(const sh of flying\)/);
   assert.match(js,/flash\(bodyEl\(m\.by\)\)/,'the shooter\'s own companion flashes on everyone\'s map');
 });

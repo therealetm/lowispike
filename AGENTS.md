@@ -41,7 +41,7 @@ Vocabulary note (18 Oct 2026): these rules were written when the companion was a
 | App shell and major screens | `index.html` | Large legacy single-file app containing state and substantial inline Home, Scan, Cook, and Move code. Search before editing and make narrow changes. |
 | Shared UI layer | `apple-ui.css`, `apple-ui.js`, `appearance.js` | Visual/accessibility layer, app chrome, and dynamic feature loading. Herb asset versions are loaded from `apple-ui.js`. |
 | Herb companion | `herb-config.js`, `herb-core.js`, `herb-tamagotchi-core.js`, `herb-tamagotchi.js`, `herb-tamagotchi.css`, `herb-tamagotchi-mount-fix.js`, `herb-tamagotchi-polish.js` | Companion rules, state, rendering, animation, reactions, room, evolution, cosmetics, and mounting. Preserve the single XP ledger. |
-| Older body companion code | `body-companion.js`, `body-companion.css` | Legacy/support code. Do not expose it as another creature or parallel companion. |
+| Older body companion code | (deleted Oct 19) | `body-companion.js/.css` were never loaded and were removed in the old-design purge. Do not bring back a second creature or parallel companion. |
 | Food shuffle and swaps | `swaflo-config.js`, `swaflo-core.js`, `swaflo.js`, `swaflo.css` | Cook/Buy/Sweet snacks behavior. Shuffle must visibly cycle through multiple candidates before settling. |
 | Discovery | `discovery-config.js`, `discovery-core.js`, `discovery.js`, `discovery.css` | Community/product discovery surfaces. |
 | Recipes | `recipe-book.js` | Recipe book behavior. |

@@ -115,7 +115,7 @@ Most legacy modules are IIFEs or ordered script blocks inside `index.html`. Sear
 | `R3W`, `T` | “Learn while you move” audiobook, session progress, speech, and evidence list. |
 | `LowiCycle` | Period/cycle education and optional isolated `cycle_sync`. No diagnosis, fertility, or contraception claims. |
 | `body-core.js` | Pure derivation for self-reported feelings, sleep, weight, movement context, and early personal patterns. It does not produce glucose curves or causal claims. |
-| `body-companion.js` | Body diary/timeline UI. It may coexist as health UI but cannot render a second creature. |
+| `body-companion.js` | Deleted Oct 19 (old-design purge): never loaded by `index.html`. |
 
 ### Community and social
 

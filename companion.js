@@ -323,11 +323,16 @@
 
     /* entry button next to the wardrobe, and the friends tree */
     /* where people really look: the herb path sheet (herb world > Entwicklung), the wardrobe sheet (> Kleiderschrank), and the old wardrobe grid */
+    /* Oct 19 old-design purge: the entry shows the real Misty cell, not the old mini-blob */
+    function ownArt(g) {
+        try { const T = HT(), c = T && T.current && T.current(); if (c && T.plantHTML) { const s = T.plantHTML(c.m, 'node', c.p); if (s) return s; } } catch (e) { }
+        return g ? C.miniSVG(g, 'entry') : '';
+    }
     function entryBtn() {
         const b = D.createElement('button');
         b.type = 'button'; b.className = 'cf-entry'; b.setAttribute('data-cf', 'open');
         const g = myGenome();
-        b.innerHTML = '<span class="cf-entry-i">' + (g ? C.miniSVG(g, 'entry') : '') + '</span><span><b>' + esc(L('Your companion\u2019s forms', 'Formen deines Begleiters', 'Formas de tu compa\u00f1ero')) + '</b><small>' + esc(g ? C.formName(g.st, g.el, lang()) : '') + '</small></span>';
+        b.innerHTML = '<span class="cf-entry-i">' + ownArt(g) + '</span><span><b>' + esc(L('Your companion\u2019s forms', 'Formen deines Begleiters', 'Formas de tu compa\u00f1ero')) + '</b><small>' + esc(g ? C.formName(g.st, g.el, lang()) : '') + '</small></span>';
         return b;
     }
     function entries() {

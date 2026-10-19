@@ -152,7 +152,8 @@
         try { if (W.LowiHerbIdentity && LowiHerbIdentity.name) { const n = LowiHerbIdentity.name(); if (n) return String(n); } } catch (e) {}
         const b = $('.sp-bubble-name'); return (b && b.textContent.trim()) || T('Your herb', 'Dein Kraut', 'Tu hierba');
     }
-    function herbSVG() { const h = $('#spBubble .sp-home-herb svg'); return h ? h.outerHTML : '<svg viewBox="0 0 64 64"><path d="M32 52V30" stroke="#7ad97a" stroke-width="3" fill="none"/><path d="M32 32c-10-2-14-10-12-18 9 1 14 8 12 18zM32 30c8-4 16-2 18 6-8 3-15 0-18-6z" fill="#7ad97a"/><rect x="20" y="48" width="24" height="10" rx="4" fill="#a58cff"/></svg>'; }
+    /* Oct 19 old-design purge: never the old potted herb. Home's Misty if she is on screen, else the same cell drawn fresh, else a plain glass cell. */
+    function herbSVG() { const h = $('#spBubble .sp-home-herb svg'); if (h) return h.outerHTML; try { const T = W.LowiHerbTamagotchi, c = T && T.current && T.current(); if (c && T.plantHTML) { const s = T.plantHTML(c.m, 'node', c.p); if (s) return s; } } catch (e) {} return '<svg class="dr-cell" viewBox="0 0 64 64" aria-hidden="true"><defs><radialGradient id="drCellG" cx=".38" cy=".34" r=".7"><stop stop-color="#fff" stop-opacity=".55"/><stop offset=".6" stop-color="#8fd8ff" stop-opacity=".22"/><stop offset="1" stop-color="#3a7bd5" stop-opacity=".35"/></radialGradient></defs><circle cx="32" cy="32" r="26" fill="url(#drCellG)" stroke="rgba(255,255,255,.7)" stroke-width="1.5"/><ellipse cx="25" cy="31" rx="3.4" ry="4.4" fill="#0d1b3d"/><ellipse cx="39" cy="31" rx="3.4" ry="4.4" fill="#0d1b3d"/></svg>'; }
     function activeKeys() {
         const s = S(); if (!s) return [];
         const out = {};

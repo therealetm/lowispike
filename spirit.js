@@ -30,7 +30,8 @@
         meal: ['Log a meal', 'Mahlzeit eintragen', 'Registrar comida'],
         water: ['Log water', 'Wasser eintragen', 'Registrar agua'],
         wardrobe: ['Wardrobe', 'Kleiderschrank', 'Armario'],
-        collection: ['Collection', 'Sammlung', 'Colección'],
+        collection: ['Food journal', 'Essens-Tagebuch', 'Diario de comidas'],
+        yourScans: ['Your scans', 'Deine Scans', 'Tus escaneos'],
         profile: ['Your herb', 'Dein Kraut', 'Tu ser de luz'],
         evolution: ['Evolution', 'Entwicklung', 'Evolución'],
         healthy: ['Bright and awake', 'Frisch und wach', 'Fresca y despierta'],
@@ -134,7 +135,7 @@
         fast: ['Fasting', 'Fasten', 'Ayuno'],
         noFast: ['—', '—', '—'], /* nofake Oct 19: no meal known yet = no number (was "Start a fast"); fits the 70 px ring bubble, the Gap bloom asks when you ate */
         storage: ['Could not save. Please free some space and try again.', 'Speichern nicht möglich. Schaffe etwas Platz und versuche es erneut.', 'No se pudo guardar. Libera espacio e inténtalo de nuevo.'],
-        emptyCollection: ['Capture your first product.', 'Fang dein erstes Produkt ein.', 'Captura tu primer producto.'],
+        emptyCollection: ['Scan a product and it shows up here, with its result.', 'Scanne ein Produkt, dann steht es hier mit seinem Ergebnis.', 'Escanea un producto y aparecer\u00e1 aqu\u00ed con su resultado.'],
         leafHelp: ['Drag to throw. Hold to squeeze. Use two fingers to stretch.', 'Ziehen zum Werfen. Halten zum Drücken. Mit zwei Fingern dehnen.', 'Arrastra para lanzar. Mantén para apretar. Usa dos dedos para estirar.'],
         todayLog: ['Today', 'Heute', 'Hoy'],
         recent: ['Eaten recently · one tap', 'Zuletzt gegessen · ein Tipp', 'Comido hace poco · un toque'],
@@ -306,7 +307,7 @@
                 sub = L('A few minutes give energy', 'Ein paar Minuten geben Energie', 'Unos minutos dan energía');
                 next = pick('move', 'move', L('Move', 'Bewegen', 'Moverse'));
             } else if (!day.scanned) {
-                sub = L('New card for your collection', 'Neue Karte für die Sammlung', 'Nueva carta para tu colección');
+                sub = L('Adds it to your food journal', 'Kommt in dein Essens-Tagebuch', 'Se a\u00f1ade a tu diario de comidas');
                 next = pick('scan', 'scan', L('Scan', 'Scannen', 'Escanear'));
             } else {
                 mood = 'glow';
@@ -1611,7 +1612,7 @@
     function collection() {
         const items = Object.values(LowiDex.state().mine || {});
         const HQ = window.LowiHerbQuests;
-        showSheet('<h2>' + esc(tr('collection')) + '</h2>' + (HQ ? HQ.collectionHTML() + '<h3 class="hq-prodh">' + esc(tr('collection')) + ' \u00b7 ' + items.length + '</h3>' : '') + '<div class="sp-collection">' + (items.length ? items.map(p => '<button data-sp="product" data-key="' + esc(p.barcode || p.id || p.name) + '">' + (p.img ? '<img alt="" src="' + esc(p.img) + '">' : icon('leaf')) + '<b>' + esc(p.name || p.barcode) + '</b></button>').join('') : '<p>' + esc(tr('emptyCollection')) + '</p>' + button('scan', 'scan', 'scan')) + '</div>');
+        showSheet('<h2>' + esc(tr('collection')) + '</h2>' + (HQ ? HQ.collectionHTML() + '<h3 class="hq-prodh">' + esc(tr('yourScans')) + ' \u00b7 ' + items.length + '</h3>' : '') + '<div class="sp-collection">' + (items.length ? items.map(p => '<button data-sp="product" data-key="' + esc(p.barcode || p.id || p.name) + '">' + (p.img ? '<img alt="" src="' + esc(p.img) + '">' : icon('leaf')) + '<b>' + esc(p.name || p.barcode) + '</b></button>').join('') : '<p>' + esc(tr('emptyCollection')) + '</p>' + button('scan', 'scan', 'scan')) + '</div>');
         paginate(ownedSheet.querySelector('.r2-sh'));
     }
 

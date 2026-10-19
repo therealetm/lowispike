@@ -105,7 +105,7 @@ const lines={
  foryou:['Ooh, other humans have snack ideas. I am listening.','Borrow an idea. I will borrow the sunshine.'],
  scan:['My detective leaves are ready. What is on that label?','A tiny food mystery? Hand me my imaginary magnifying glass.'],
  shelf:['You pick dinner. I will be the tiny kitchen supervisor.','Same craving, new ingredients. I call dibs on the windowsill.'],
- move:['I have no legs, so you will have to dance for both of us.','Take me on a little walk. I travel in spirit.'],
+ move:['I have no legs, so you will have to dance for both of us.','Take me on a little walk. I will ride along in your pocket.'],
  profile:['A new pot? For me? You should not have. Actually, you should.','This constellation is our little signature.']
 };
 const wiltLines=['I had a leafy little nap. One small action and I perk right up.','Missed your face. No rush; I kept all our leaves.','A meal log would be lovely. I am feeling a bit floppy.'];

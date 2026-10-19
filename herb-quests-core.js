@@ -76,6 +76,24 @@ function discover(logs,products){
   const found=FOODS.filter(f=>first[f.id]).map(f=>({id:f.id,ts:first[f.id]}));
   return{first,found,n:found.length,total:FOODS.length};
 }
+/* Oct 19 (E-man let Maya decide): the Collection becomes a FOOD JOURNAL, a place to look back at the foods you logged or
+   scanned and how those meals went. Nothing here gives XP or gates evolution (STEPS never read it).
+   resultOf: the likely blood sugar response a meal log carries (lvl from the app's assessment, r = LOWiSPIKE yes/no). */
+function resultOf(l){
+  const v=String(l&&l.lvl||'').toLowerCase(),r=String(l&&l.r||'').toLowerCase();
+  if(/^(high|spike|red|r|bad)$/.test(v)||(!v&&r==='nein'))return'spike';
+  if(/^(mild|medium|mid|mittel|yellow|y|moderate)$/.test(v))return'mild';
+  if(/^(low|green|g|good|none)$/.test(v)||(!v&&r==='ja'))return'low';
+  return'';
+}
+/* one row per food you really logged or scanned, newest first: first/last time, how often, and the meals' results */
+function journal(logs,products){
+  const rows={};const row=f=>rows[f.id]||(rows[f.id]={id:f.id,cat:f.cat,names:f.names,first:0,last:0,times:0,scans:0,res:{low:0,mild:0,spike:0}});
+  const seen=(r,ts)=>{ts=+ts||1;if(!r.first||ts<r.first)r.first=ts;if(ts>r.last)r.last=ts;};
+  (logs||[]).forEach(l=>{const tx=logText(l);if(!tx)return;const res=resultOf(l);for(const f of FOODS)if(f.re.test(tx)){const r=row(f);r.times++;seen(r,l&&l.ts);if(res)r.res[res]++;}});
+  (products||[]).forEach(p=>{const tx=norm(p&&(p.name||p.title));if(!tx)return;for(const f of FOODS)if(f.re.test(tx)){const r=row(f);r.scans++;seen(r,p&&(p.ts||p.at));}});
+  return Object.values(rows).sort((a,b)=>b.last-a.last);
+}
 /* which foods one new log adds to the collection (for the "new in your collection" moment) */
 function newFoods(before,after){return after.found.filter(f=>!before.first[f.id]).map(f=>f.id);}
 
@@ -181,6 +199,6 @@ function goalsToday(list,st,now){
 /* mark one-off goals reached today so they leave tomorrow (mutates and returns whether anything changed) */
 function settleGoals(list,st,now){let ch=false;const day=dayKey(now);(list||[]).forEach(g=>{if(g&&!g.daily&&!g.doneDay&&todayValue(g.action,st,now)>=g.n){g.doneDay=day;ch=true;}});return ch;}
 
-const api={MEAL_XP,QUEST_XP,SPECIAL_XP,MISSION_XP,MAX_MISSIONS,MAX_GOALS,FOODS,CATS,STEPS,MISSIONS,CHIPS,ACTIONS,KINDS,dayKey,evolution,stageStart,discover,newFoods,counts,variety,specialQuests,weekStart,weekKey,weekResetIn,pickMission,missions,resetIn,addGoal,removeGoal,todayValue,goalsToday,settleGoals,cleanText};
+const api={MEAL_XP,QUEST_XP,SPECIAL_XP,MISSION_XP,MAX_MISSIONS,MAX_GOALS,FOODS,CATS,STEPS,MISSIONS,CHIPS,ACTIONS,KINDS,dayKey,evolution,stageStart,discover,newFoods,resultOf,journal,counts,variety,specialQuests,weekStart,weekKey,weekResetIn,pickMission,missions,resetIn,addGoal,removeGoal,todayValue,goalsToday,settleGoals,cleanText};
 if(typeof module==='object'&&module.exports)module.exports=api;else root.LowiHerbQuestsCore=api;
 })(typeof window!=='undefined'?window:globalThis);

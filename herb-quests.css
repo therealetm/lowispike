@@ -141,3 +141,12 @@ html:is([data-theme="light"], [data-ui="light"]) .hq-pop.hq-chip b { color: #0e1
 html:is([data-theme="light"], [data-ui="light"]) .hq-chip .hq-ring { background: conic-gradient(#2a8fd8 calc(var(--hq-p, 0) * 360deg), rgba(20, 40, 80, .16) 0); }
 html.lw-clean .hq-pop.hq-chip { opacity: 0 !important; pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { .hq-pop.hq-chip, html.lg .hq-pop.hq-chip { transition: opacity .01s; transform: translate(-50%, 0); } }
+/* Oct 19: the Food journal (was the Collection): a list of foods you tried and how those meals went */
+.hq-journal-list{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.hq-jrow{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}
+.hq-jrow>div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.hq-jrow b{font-size:14px;line-height:1.25}
+.hq-jrow small{font-size:12px;line-height:1.3;opacity:.7;overflow-wrap:anywhere}
+.hq-jrow .hq-jres{opacity:.9}
+.hq-empty{font-size:13px;opacity:.75;margin:6px 0}
+.hq-ideas{font-size:13px;line-height:1.35;opacity:.8;margin:10px 0 0}

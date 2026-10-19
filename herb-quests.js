@@ -58,7 +58,7 @@
             '<p class="hq-evo-more"><b class="num">' + esc(t(ev.left + ' XP more', 'noch ' + ev.left + ' XP', 'faltan ' + ev.left + ' XP')) + '</b><span>' + esc(t('≈ ' + ev.meals + ' meals or ' + ev.specials + ' quest steps', '≈ ' + ev.meals + ' Mahlzeiten oder ' + ev.specials + ' Quest-Schritte', '≈ ' + ev.meals + ' comidas o ' + ev.specials + ' pasos de misión')) + '</span></p>';
         if (step) h += '<div class="hq-next"><span>' + esc(step.done ? t('Ready to claim', 'Bereit zum Abholen', 'Listo para reclamar') : t('Next step', 'Nächster Schritt', 'Siguiente paso')) + '</span><b>' + esc(step.title) + ' <em class="num">' + step.n + '/' + step.goal + '</em></b>' +
             (step.done ? '<button type="button" class="hq-btn hq-claim" data-hq="claimStep" data-id="' + step.id + '">' + esc(t('Claim', 'Abholen', 'Reclamar')) + ' +' + step.xp + '</button>' : '<button type="button" class="hq-btn" data-hq-go="' + step.go + '">' + esc(goLabel(step.go)) + ico('arrow') + '</button>') + '</div>';
-        if (compact) h += '<button type="button" class="hq-link" data-sp="path">' + esc(t('Quests & collection', 'Quests & Sammlung', 'Misiones y colección')) + ico('arrow') + '</button>';
+        if (compact) h += '<button type="button" class="hq-link" data-sp="path">' + esc(t('Quests & food journal', 'Quests & Essens-Tagebuch', 'Misiones y diario de comidas')) + ico('arrow') + '</button>';
         return h + '</section>';
     }
 
@@ -120,22 +120,41 @@
     }
 
     /* ---------- food collection ---------- */
+    /* Oct 19 (E-man: "I don't even understand what collection is for"; he let Maya decide): a FOOD JOURNAL. The foods you
+       really logged or scanned, newest first, with how often and how those meals went (likely blood sugar response), plus a
+       few ideas to try. No "???" tiles, no discovered n / total, no completion: nothing here is needed to evolve. Your scanned
+       products follow underneath (spirit.js), tap one to see its result again. */
     function dexHTML() {
-        const st = stores(), d = C.discover(st.s.logs, st.products), F = C.FOODS;
-        const known = F.filter(f => d.first[f.id]), unknown = F.filter(f => !d.first[f.id]);
-        const suggest = ['lentils', 'broccoli', 'berries', 'almonds', 'salmon', 'yogurt', 'egg', 'oats'].map(id => unknown.find(f => f.id === id)).filter(Boolean).slice(0, 4);
-        const shown = showAll ? F : known.concat(suggest.length ? suggest : unknown.slice(0, 4));
-        const cell = f => { const k = !!d.first[f.id]; return '<li class="hq-food ' + (k ? 'known' : 'sil') + ' c-' + f.cat + '">' + ico(f.cat, 'big') + '<b>' + esc(k ? f.names[li()] : '???') + '</b><small>' + esc(C.CATS[f.cat][li()]) + '</small></li>'; };
-        return '<section class="hq-sec hq-dex"><h3>' + esc(t('Food collection', 'Lebensmittel-Sammlung', 'Colección de alimentos')) + '<span class="num">' + esc(t('discovered ', 'entdeckt ', 'descubiertos ') + d.n + ' / ' + d.total) + '</span></h3>' + bar(d.n / d.total, 'thin') +
-            '<p class="hq-note">' + esc(t('Fills in from what you really log or scan. No XP per find: it is about trying, not collecting.', 'Füllt sich mit dem, was du wirklich einträgst oder scannst. Keine XP pro Fund: Es geht ums Ausprobieren, nicht ums Sammeln.', 'Se llena con lo que de verdad registras o escaneas. Sin XP por hallazgo: se trata de probar, no de coleccionar.')) + '</p>' +
-            (!showAll && known.length ? '' : '') + '<ul class="hq-foods">' + shown.map(cell).join('') + '</ul>' +
-            '<button type="button" class="hq-link" data-hq="all" aria-expanded="' + showAll + '">' + esc(showAll ? t('Show less', 'Weniger zeigen', 'Ver menos') : t('Show all ' + d.total, 'Alle ' + d.total + ' zeigen', 'Ver los ' + d.total)) + '</button></section>';
+        const st = stores(), rows = C.journal(st.s.logs, st.products), F = C.FOODS, L = li(), loc = ['en', 'de', 'es'][L] || 'en';
+        const day = ts => { try { return ts > 1 ? new Date(ts).toLocaleDateString(loc, { day: 'numeric', month: 'short' }) : ''; } catch (e) { return ''; } };
+        const shown = showAll ? rows : rows.slice(0, 12);
+        const resLine = r => {
+            const n = r.res, parts = [];
+            if (n.low) parts.push(n.low + ' ' + t('low spike', 'niedrige Spitze', 'pico bajo'));
+            if (n.mild) parts.push(n.mild + ' ' + t('mild rise', 'leichter Anstieg', 'subida leve'));
+            if (n.spike) parts.push(n.spike + ' ' + t('likely blood sugar spike', 'wahrscheinliche Blutzuckerspitze', 'probable pico de az\u00facar'));
+            return parts.join(' \u00b7 ');
+        };
+        const often = r => [r.times ? t(r.times === 1 ? 'Logged once' : 'Logged ' + r.times + ' times', r.times === 1 ? 'Einmal eingetragen' : r.times + '-mal eingetragen', r.times === 1 ? 'Registrado una vez' : 'Registrado ' + r.times + ' veces') : '',
+            r.scans ? t(r.scans === 1 ? 'scanned once' : 'scanned ' + r.scans + ' times', r.scans === 1 ? 'einmal gescannt' : r.scans + '-mal gescannt', r.scans === 1 ? 'escaneado una vez' : 'escaneado ' + r.scans + ' veces') : ''].filter(Boolean).join(', ');
+        const item = r => '<li class="hq-jrow c-' + r.cat + '" data-food="' + esc(r.id) + '">' + ico(r.cat) + '<div><b>' + esc(r.names[L] || r.names[0]) + '</b>' +
+            '<small>' + esc(often(r) + (r.first > 1 ? ' \u00b7 ' + t('first ', 'zuerst ', 'primero ') + day(r.first) : '')) + '</small>' +
+            (resLine(r) ? '<small class="hq-jres">' + esc(resLine(r)) + '</small>' : '') + '</div></li>';
+        const known = {}; rows.forEach(r => { known[r.id] = 1; });
+        const ideas = ['lentils', 'broccoli', 'berries', 'almonds', 'salmon', 'yogurt', 'egg', 'oats'].map(id => F.find(f => f.id === id && !known[id])).filter(Boolean).slice(0, 4);
+        return '<section class="hq-sec hq-dex hq-journal"><h3>' + esc(t('Foods you have tried', 'Was du probiert hast', 'Lo que has probado')) + (rows.length ? '<span class="num">' + rows.length + '</span>' : '') + '</h3>' +
+            '<p class="hq-note">' + esc(t('Every food you log or scan lands here, so you can look back at how those meals went for you.', 'Jedes Essen, das du eintr\u00e4gst oder scannst, landet hier. So siehst du sp\u00e4ter, wie diese Mahlzeiten f\u00fcr dich liefen.', 'Cada comida que registras o escaneas aparece aqu\u00ed, para que puedas ver c\u00f3mo te sentaron esas comidas.')) + '</p>' +
+            (rows.length ? '<ul class="hq-journal-list">' + shown.map(item).join('') + '</ul>' +
+                (rows.length > 12 ? '<button type="button" class="hq-link" data-hq="all" aria-expanded="' + showAll + '">' + esc(showAll ? t('Show less', 'Weniger zeigen', 'Ver menos') : t('Show all ' + rows.length, 'Alle ' + rows.length + ' zeigen', 'Ver los ' + rows.length)) + '</button>' : '')
+                : '<p class="hq-empty">' + esc(t('Nothing yet. Log a meal or scan a food and it shows up here.', 'Noch nichts. Trag eine Mahlzeit ein oder scanne etwas, dann erscheint es hier.', 'A\u00fan nada. Registra una comida o escanea algo y aparecer\u00e1 aqu\u00ed.')) + '</p>') +
+            (ideas.length ? '<p class="hq-ideas"><b>' + esc(t('Ideas to try', 'Ideen zum Ausprobieren', 'Ideas para probar')) + '</b> ' + esc(ideas.map(f => f.names[L] || f.names[0]).join(', ')) + '</p>' : '') +
+            '</section>';
     }
 
     function pathHTML() {
         if (view === 'add') return '<div class="hq-root" data-view="add" data-noi18n>' + addHTML() + '</div>';
         return '<div class="hq-root" data-view="path" data-noi18n><h2>' + esc(t('Herb path', 'Kraut-Pfad', 'Camino de tu ser de luz')) + '</h2>' + evoHTML(false) + specialsHTML() + dailyHTML() + goalsHTML() + missionsHTML() +
-            '<button type="button" class="hq-link hq-dexlink" data-sp="collection">' + ico('veg') + esc(t('Food collection', 'Lebensmittel-Sammlung', 'Colección de alimentos')) + ' <span class="num">' + (() => { const st = stores(), d = C.discover(st.s.logs, st.products); return d.n + ' / ' + d.total; })() + '</span>' + ico('arrow') + '</button></div>';
+            '<button type="button" class="hq-link hq-dexlink" data-sp="collection">' + ico('veg') + esc(t('Food journal', 'Essens-Tagebuch', 'Diario de comidas')) + ' <span class="num">' + (() => { const st = stores(); return C.journal(st.s.logs, st.products).length; })() + '</span>' + ico('arrow') + '</button></div>';
     }
     function collectionHTML() { return '<div class="hq-root hq-dexroot" data-view="dex" data-noi18n>' + dexHTML() + '</div>'; }
 
@@ -263,7 +282,7 @@
     /* the first time a food from the collection is logged, say so (no XP) */
     function foodCheck() {
         const st = stores(), d = C.discover(st.s.logs, st.products);
-        if (lastFood) { const fresh = C.newFoods(lastFood, d); if (fresh.length) { const f = C.FOODS.find(x => x.id === fresh[0]); setTimeout(() => toast(t('New in your collection: ', 'Neu in deiner Sammlung: ', 'Nuevo en tu colección: ') + f.names[li()] + ' · ' + d.n + '/' + d.total), 2600); } }
+        if (lastFood) { const fresh = C.newFoods(lastFood, d); if (fresh.length) { const f = C.FOODS.find(x => x.id === fresh[0]); setTimeout(() => toast(t('New in your food journal: ', 'Neu in deinem Essens-Tagebuch: ', 'Nuevo en tu diario de comidas: ') + f.names[li()]), 2600); } }
         lastFood = d;
     }
     D.addEventListener('lowi:meal-logged', () => setTimeout(foodCheck, 50));

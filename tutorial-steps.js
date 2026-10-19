@@ -247,11 +247,11 @@
         },
         {
             id: 'spirit', area: 'play', target: null, covers: ['spirit-world'],
-            title: { en: 'The spirit world', de: 'Die Geisterwelt', es: 'El mundo espiritual' },
+            title: { en: 'The galaxy', de: 'Die Galaxie', es: 'La galaxia' },
             text: {
-                en: 'Out in space I can ride the glowing strings of the spirit world. Fly me onto one and enjoy the ride.',
-                de: 'Draußen im All kann ich auf den leuchtenden Saiten der Geisterwelt reiten. Flieg mich auf eine und genieß die Fahrt.',
-                es: 'En el espacio puedo montar las cuerdas brillantes del mundo espiritual. Llévame a una y disfruta el viaje.'
+                en: 'Out in space I can ride the glowing strings of the galaxy. Fly me onto one and enjoy the ride.',
+                de: 'Draußen im All kann ich auf den leuchtenden Saiten der Galaxie reiten. Flieg mich auf eine und genieß die Fahrt.',
+                es: 'En el espacio puedo montar las cuerdas brillantes de la galaxia. Llévame a una y disfruta el viaje.'
             }
         },
         {

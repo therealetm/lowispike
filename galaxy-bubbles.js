@@ -206,7 +206,7 @@
         if (B.cur.lengthSq() < 1e-8) B.cur.set(0, 0, 0);
         S.p.addScaledVector(B.cur, dt);
         const riding = best && bestK > 0.3 ? best.i : -1;
-        if (riding !== B.riding) { if (riding >= 0) note('current ' + riding + (best.pa.dir > 0 ? ' +' : ' -')); else if (B.riding >= 0) note('off current'); B.riding = riding; }
+        if (riding !== B.riding) { if (riding >= 0) { note('current ' + riding + (best.pa.dir > 0 ? ' +' : ' -')); /* adventure-tiers.js: you rode a stream (your own visit counts only off autopilot) */ try { W.dispatchEvent(new CustomEvent('lowi:galaxy-stream', { detail: { i: riding, drive: !!drive } })); } catch (e) { } } else if (B.riding >= 0) note('off current'); B.riding = riding; }
         /* a few bubbles stream past her while she rides */
         const cs = B.cur.length();
         if (cs > 0.5 && (B.puff -= dt) <= 0 && ctx.burst) { B.puff = 0.22; B.v2.copy(S.p).addScaledVector(B.cur, -0.35 / Math.max(0.5, cs) * hs * 2); ctx.burst(B.v2, 1, 0.3 * hs); }

@@ -73,3 +73,5 @@ html[data-theme="light"].wh-home .wh-tiles .g2h-tile small, html[data-theme="lig
 /* Community chat (dark glass): the send arrow while the box is empty was grey on grey (still disabled, now readable); small meta line and chips at full secondary ink */
 html.lg #cmSend:disabled, html #cmPaneChat #cmSend:disabled { opacity: 1 !important; color: rgba(235, 235, 245, .80) !important; background: rgba(118, 118, 128, .36) !important; }
 html #cmPaneChat .cs-compose-meta, html #cmPaneChat[data-spirit-chat] .cg-chip:not(.on), html #cmPaneChat :is(.cm-chip, .cm-mini) { color: rgba(235, 235, 245, .82) !important; opacity: 1; }
+.mh-mood-sub { font-size: 13px; line-height: 1.35; color: var(--mh-ink-2); margin: -4px 0 10px; }
+.mh-adv li[data-been="1"] span { color: var(--mh-ink); }

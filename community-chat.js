@@ -6,7 +6,7 @@ const K=W.LowiChatCore, H=W.LowiCommunityHost;if(!K||!H||!W.LowiCommunityCloud)r
 const esc=K.esc;
 const deviceStorage={getItem:k=>localStorage.getItem(k),setItem:(k,v)=>localStorage.setItem(k,v)};
 const COPY={
- square:['Spirit galaxy','Geister-Galaxie','Galaxia de espíritus'],
+ square:['Community galaxy','Community-Galaxie','Galaxia de la comunidad'],
  welcome:['Everyone floats here as their companion. Tap someone to talk to them directly.','Alle schweben hier als ihr Begleiter. Tippe jemanden an, um direkt mit ihm zu sprechen.','Todos flotan aquí como su compañero. Toca a alguien para hablarle directamente.'],
  onPlanet:['In the galaxy','In der Galaxie','En la galaxia'],
  you:['You','Du','Tú'],

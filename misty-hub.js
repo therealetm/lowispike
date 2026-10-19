@@ -94,6 +94,14 @@
                 '</div>' +
             '</header>' +
             (say ? '<p class="mh-say" role="status" aria-live="polite">' + esc(say) + '</p>' : '<p class="mh-say" role="status" aria-live="polite" hidden></p>') +
+            /* Oct 19 (E-man): Forms and the Food journal were at the very bottom: "that's hidden ... needs to be not hidden".
+               The three doors now come first, right under her words. */
+            '<nav class="mh-doors" aria-label="' + esc(name()) + '">' +
+                '<button type="button" data-mh="forms">' + ICO.forms + '<b>' + esc(T('Forms', 'Formen', 'Formas')) + '</b><small>' + esc(T('How it evolves', 'Wie es sich entwickelt', 'C\u00f3mo evoluciona')) + '</small></button>' +
+                '<button type="button" data-mh="collection">' + ICO.col + '<b>' + esc(T('Food journal', 'Essens-Tagebuch', 'Diario de comidas')) + '</b><small>' + esc(T('Foods you have tried', 'Was du probiert hast', 'Lo que has probado')) + '</small></button>' +
+                '<button type="button" data-mh="glow">' + ICO.glow + '<b>' + esc(T('Glow', 'Leuchten', 'Brillo')) + '</b><small>' + esc(T('Aura and finds', 'Aura und Funde', 'Aura y hallazgos')) + '</small></button>' +
+            '</nav>' +
+            (night ? '<button type="button" class="mh-pri" data-mh="goodnight"' + (gn ? ' aria-pressed="true"' : '') + '>' + ICO.moon + '<span>' + esc(gn ? T('Tucked in for the night', 'F\u00fcr die Nacht eingekuschelt', 'Arropada para la noche') : T('Say goodnight', 'Gute Nacht sagen', 'Dar las buenas noches')) + '</span></button>' : '') +
             scaleHtml() +
             (s ? '<section class="mh-card mh-xp" aria-label="' + esc(T('Level and XP', 'Level und XP', 'Nivel y XP')) + '">' +
                 '<div class="mh-row"><b>' + esc(s.name) + '</b><span class="num">' + xp + ' XP</span></div>' +
@@ -101,16 +109,13 @@
                 '<small>' + esc(s.next ? T(s.left + ' XP to ' + s.next, 'Noch ' + s.left + ' XP bis ' + s.next, 'Faltan ' + s.left + ' XP para ' + s.next) : T('Top level reached', 'H\u00f6chstes Level erreicht', 'Nivel m\u00e1ximo alcanzado')) + '</small>' +
             '</section>' : '') +
             advHtml() +
-            '<section class="mh-card mh-mood" aria-label="' + esc(cellCopy('feel') || 'How do you feel?') + '">' +
-                '<h3>' + esc(cellCopy('feel') || T('How do you feel?', 'Wie f\u00fchlst du dich?', '\u00bfC\u00f3mo te sientes?')) + '</h3>' +
+            /* Oct 19 (E-man): "How do you feel? Why is that there? ... what is that supposed to do?" It is an optional check-in:
+               she mirrors your mood for MOOD_H (8) hours, nothing else reads it. So it says that, and sits last. */
+            '<section class="mh-card mh-mood" aria-label="' + esc(T('Tell ' + name() + ' how you feel', 'Sag ' + name() + ', wie du dich f\u00fchlst', 'Dile a ' + name() + ' c\u00f3mo te sientes')) + '">' +
+                '<h3>' + esc(T('Tell ' + name() + ' how you feel', 'Sag ' + name() + ', wie du dich f\u00fchlst', 'Dile a ' + name() + ' c\u00f3mo te sientes')) + '</h3>' +
+                '<p class="mh-mood-sub">' + esc(T('Optional. For the next 8 hours ' + name() + ' mirrors it: tired or unwell brings a calm, resting look, feeling good a brighter glow. Tap it again to clear it. No XP, it only changes the look and mood.', 'Freiwillig. Die n\u00e4chsten 8 Stunden spiegelt ' + name() + ' das: m\u00fcde oder unwohl bringt ein ruhiges, ausruhendes Aussehen, gut ein helleres Leuchten. Nochmal tippen hebt es auf. Keine XP, es \u00e4ndert nur Aussehen und Stimmung.', 'Opcional. Durante las pr\u00f3ximas 8 horas ' + name() + ' lo refleja: con sue\u00f1o o malestar, un aspecto tranquilo y de descanso; si te sientes bien, un brillo m\u00e1s intenso. Toca otra vez para quitarlo. Sin XP, solo cambia el aspecto y el \u00e1nimo.')) + '</p>' +
                 '<div class="mh-moods">' + moods.map(m => '<button type="button" data-mh="mood" data-mood="' + m + '" aria-pressed="' + (mood === m) + '">' + esc(cellCopy('m_' + m) || m) + '</button>').join('') + '</div>' +
             '</section>' +
-            (night ? '<button type="button" class="mh-pri" data-mh="goodnight"' + (gn ? ' aria-pressed="true"' : '') + '>' + ICO.moon + '<span>' + esc(gn ? T('Tucked in for the night', 'F\u00fcr die Nacht eingekuschelt', 'Arropada para la noche') : T('Say goodnight', 'Gute Nacht sagen', 'Dar las buenas noches')) + '</span></button>' : '') +
-            '<nav class="mh-doors" aria-label="' + esc(name()) + '">' +
-                '<button type="button" data-mh="forms">' + ICO.forms + '<b>' + esc(T('Forms', 'Formen', 'Formas')) + '</b><small>' + esc(T('How it evolves', 'Wie es sich entwickelt', 'C\u00f3mo evoluciona')) + '</small></button>' +
-                '<button type="button" data-mh="collection">' + ICO.col + '<b>' + esc(T('Collection', 'Sammlung', 'Colecci\u00f3n')) + '</b><small>' + esc(T('Your scanned cards', 'Deine Scan-Karten', 'Tus cartas')) + '</small></button>' +
-                '<button type="button" data-mh="glow">' + ICO.glow + '<b>' + esc(T('Glow', 'Leuchten', 'Brillo')) + '</b><small>' + esc(T('Aura and finds', 'Aura und Funde', 'Aura y hallazgos')) + '</small></button>' +
-            '</nav>' +
         '</div>';
     }
     /* Oct 17: Misty's energy scale and her way back (misty-scale.js), right under her words */

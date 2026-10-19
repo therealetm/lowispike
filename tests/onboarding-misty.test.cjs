@@ -16,7 +16,7 @@ test('onboarding copy tells the Misty story in all three languages, with no herb
   assert.ok(tx.includes("plantH:'Someone is waiting for you.'") && tx.includes("plantH:'Jemand wartet auf dich.'") && tx.includes("plantH:'Alguien te est\\u00e1 esperando.'"));
   assert.ok(!/Misty/.test(tx.slice(0, tx.indexOf('ivOver'))), 'no Misty in the gate copy');
   assert.ok(/metabolic world/.test(tx) && /Stoffwechselwelt/.test(tx) && /mundo metab/.test(tx));
-  assert.ok(/spirit world/.test(tx) && /Geisterwelt/.test(tx) && /mundo espiritual/.test(tx));
+  assert.ok(/to the galaxy/.test(tx) && /Galaxie/.test(tx) && /galaxia/.test(tx)); assert.ok(!/spirit world|Geisterwelt|mundo espiritual/.test(tx), 'Oct 19: never "spirit"');
   assert.ok(!/glow-up|Plant my herb|Every glow/i.test(read('index.html')));
 });
 

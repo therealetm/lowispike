@@ -40,7 +40,9 @@
     /* ---------- herb/cell state ---------- */
     function cur() { try { return W.LowiHerbTamagotchi && W.LowiHerbTamagotchi.current ? W.LowiHerbTamagotchi.current() : null; } catch (e) { return null; } }
     function xpNow() { const c = cur(); return c && c.m ? +c.m.xp || 0 : 0; }
-    function mistyName() { const c = cur(); try { return c ? String(W.LowiHerbTamagotchi.name(c.p, c.m) || 'Misty') : 'Misty'; } catch (e) { return 'Misty'; } }
+    /* BH-006: the companion's name = own companion's name, else a name the user typed, else Misty; never the old herb auto name ("Moss Leaf") */
+    function companionName() { const w = typeof window !== 'undefined' ? window : globalThis; const pick = v => { v = v == null ? '' : String(v).trim(); return v ? v.slice(0, 24) : ''; }; let auto = ''; try { auto = pick(w.LowiHerbIdentity && w.LowiHerbIdentity.autoName && w.LowiHerbIdentity.autoName()); } catch (e) { } const typed = v => { v = pick(v); return v && v !== auto ? v : ''; }; let n = ''; try { const B = w.LowiBirthCompanion; if (B && B.has && B.has()) { const c = B.get(); n = pick(c && c.name); } } catch (e) { } if (!n) try { const t = w.LowiHerbTamagotchi, p = t && t.readPrefs && t.readPrefs(); n = typed(p && p.name); } catch (e) { } if (!n) try { const R = w.LowiR2, s = R && R.S && R.S(); n = typed(s && s.herb && s.herb.name); } catch (e) { } return n || 'Misty'; }
+    function mistyName() { return companionName(); }
     function auraId() { let v = ''; try { v = localStorage.getItem(AKEY) || ''; } catch (e) { } return C.cleanAura(v, xpNow()); }
     function applyAura() {
         const a = C.aura(auraId());

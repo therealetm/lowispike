@@ -5,7 +5,9 @@
    - Calm glow between meals from lowi_fast_v1 (rises from 3 h, full at 12 h, flat after that).
    - Evolution sheet (button in the herb path sheet; the wardrobe is retired since Oct 15): the forms, what shapes them, optional style picker, share toggle.
    - Friends tree: each friend shows their own published look (profiles.look, a visual-only code); no look -> the old cell.
-   Local prefs: localStorage "lowispike.companion.v1" {share, traits, born}. */
+   Local prefs: localStorage "lowispike.companionprefs.v1" {share, traits, born}. "lowispike.companion.v1" belongs to companion-birth.js
+   (the user's own companion: bday, name); BH-007 (Oct 19 2026): writing prefs there wiped it within seconds, so it is only read once, to carry
+   over old prefs, and never written here. */
 (function () {
     'use strict';
     const W = window, D = document, H = D.documentElement;
@@ -18,7 +20,7 @@
         l.href = me && me.getAttribute('src') ? me.getAttribute('src').replace('companion.js', 'companion.css') : 'companion.css';
         D.head.appendChild(l);
     }
-    const KEY = 'lowispike.companion.v1', FKEY = 'lowispike.friendlooks.v1';
+    const KEY = 'lowispike.companionprefs.v1', BIRTH_KEY = 'lowispike.companion.v1', FKEY = 'lowispike.friendlooks.v1';
     const RM = () => { try { return W.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
     const lang = () => { try { return (W.LowiLang.get() || 'de').slice(0, 2); } catch (e) { return (H.lang || 'de').slice(0, 2); } };
     const L = (en, de, es) => ({ de, es }[lang()] || en);
@@ -26,7 +28,8 @@
     const read = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k) || 'null'); return v && typeof v === 'object' ? v : d; } catch (e) { return d; } };
     const write = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } };
     function prefs() {
-        const p = read(KEY, {}) || {};
+        let p = read(KEY, null);
+        if (!p) { const o = read(BIRTH_KEY, {}) || {}; p = o.bday ? {} : o; } /* old prefs carried over; a birth record is not prefs */
         return { share: p.share !== false, traits: p.traits !== false, born: +p.born || 0 };
     }
     function savePrefs(p) { write(KEY, { share: !!p.share, traits: !!p.traits, born: +p.born || 0 }); }

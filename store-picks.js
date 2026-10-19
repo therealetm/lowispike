@@ -376,7 +376,7 @@
     }
 
     /* put the button where food decisions happen: under Cook it / Shop it, in the shopping list and cart, in the Meals sheets */
-    const SPOTS = [['#csHub', 'cook'], ['.ss-entry', 'shop'], ['.sp-quick-cap', 'meal'], ['.wme-sheet .wme-log', 'meals']];
+    const SPOTS = [['#csHub', 'cook'], ['.ss-entry', 'shop'], ['.wme-sheet .wme-log', 'meals']];
     function decorate() {
         SPOTS.forEach(([sel, from]) => {
             D.querySelectorAll(sel).forEach(el => {

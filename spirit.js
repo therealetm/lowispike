@@ -138,7 +138,14 @@
         leafHelp: ['Drag to throw. Hold to squeeze. Use two fingers to stretch.', 'Ziehen zum Werfen. Halten zum Drücken. Mit zwei Fingern dehnen.', 'Arrastra para lanzar. Mantén para apretar. Usa dos dedos para estirar.'],
         todayLog: ['Today', 'Heute', 'Hoy'],
         recent: ['Eaten recently · one tap', 'Zuletzt gegessen · ein Tipp', 'Comido hace poco · un toque'],
-        recentEmpty: ['Snap or scan your meal, or type it in below.', 'Fotografiere oder scanne dein Essen, oder trag es unten ein.', 'Fotografía o escanea tu comida, o escríbela abajo.'],
+        recentEmpty: ['Meals you log show up here for one tap next time.', 'Deine Mahlzeiten erscheinen hier, beim nächsten Mal mit einem Tipp.', 'Tus comidas aparecen aquí para registrarlas con un toque.'],
+        mealAsk: ['What did you eat?', 'Was hast du gegessen?', '¿Qué comiste?'],
+        mealPh: ['e.g. chicken stew, fish and chips', 'z. B. Hähnchen-Eintopf, Fisch mit Pommes', 'p. ej. guiso de pollo, pescado con papas'],
+        ownNumbers: ['Add your own numbers (optional)', 'Eigene Werte eintragen (optional)', 'Añadir tus propios valores (opcional)'],
+        understood: ['Understood as', 'Erkannt als', 'Entendido como'],
+        roughMeal: ['A typical meal (rough estimate)', 'Eine typische Mahlzeit (grobe Schätzung)', 'Una comida típica (estimación aproximada)'],
+        ingr: ['Ingredients', 'Zutaten', 'Ingredientes'],
+        estSrc: ['Estimated for one serving from USDA food data. Your own numbers always win.', 'Für eine Portion aus USDA-Nährwertdaten geschätzt. Deine eigenen Werte gehen immer vor.', 'Estimado para una porción con datos de USDA. Tus propios valores siempre mandan.'],
         oneTap: ['Log again', 'Nochmal eintragen', 'Registrar de nuevo'],
         manual: ['Manual', 'Manuell', 'Manual'],
         waterLabel: ['Water', 'Wasser', 'Agua'],
@@ -156,7 +163,7 @@
         since: ['at', 'um', 'a las'],
         weatherOn: ['Weather', 'Wetter', 'Tiempo'],
         left: ['left', 'übrig', 'restante'],
-        macroOptional: ['Optional: use the label or your own portion values. Empty stays unknown.', 'Optional: Werte vom Etikett oder für deine Portion. Leer bleibt unbekannt.', 'Opcional: usa la etiqueta o tus valores de porción. Vacío sigue desconocido.']
+        macroOptional: ['Optional: use the label or your own portion values. Empty ones are estimated from the meal name.', 'Optional: Werte vom Etikett oder für deine Portion. Leere Felder werden aus dem Namen geschätzt.', 'Opcional: usa la etiqueta o tus valores de porción. Los vacíos se estiman con el nombre de la comida.']
     };
     const tr = k => (copy[k] || [k])[{
         de: 1,
@@ -706,10 +713,68 @@
         refresh();
     }
 
-    function macroHTML(m) {
-        const values = K.macros(m);
-        return '<div class="sp-macro-grid">' + Object.keys(values).map(k => '<div><small>' + esc(tr(k)) + '</small><b>' + esc(values[k] === null ? tr('missing') : Math.round(values[k] * 10) / 10 + (k === 'kcal' ? ' kcal' : ' g')) + '</b></div>').join('') + '</div>';
+    /* Meal names understood (meal-db-core.js + data/meals/fndds.json, USDA FNDDS): a typed name always gets estimated values. */
+    const MDB = window.LowiMealDB;
+    let mealDbLoad = null;
+    function mealDb() {
+        if (!MDB) return Promise.resolve(false);
+        if (MDB.ready()) return Promise.resolve(true);
+        if (!mealDbLoad) {
+            const v = (D.querySelector('meta[name="lowi-build"]') || {}).content || '';
+            mealDbLoad = fetch('data/meals/fndds.json' + (v ? '?v=' + encodeURIComponent(v) : ''))
+                .then(r => r.ok ? r.json() : null).then(j => { if (j) MDB.load(j); return MDB.ready(); })
+                .catch(() => { mealDbLoad = null; return false; });
+        }
+        return mealDbLoad;
     }
+    function mealGuess(title) {
+        return MDB && String(title || '').trim() ? MDB.parse(title) : null;
+    }
+    /* fills only the macros the user left blank; the log keeps what was estimated and from what */
+    function withEstimate(title, macros) {
+        const est = mealGuess(title);
+        if (!est) return { macros: macros, est: null };
+        const f = MDB.fill(macros, est);
+        if (!f.filled.length) return { macros: f.macros, est: null };
+        return { macros: f.macros, est: { n: est.name, g: est.grams, how: est.how, ing: est.ingredients, f: f.filled } };
+    }
+    function macroHTML(m) {
+        let values = K.macros(m);
+        let filled = (m && m.est && m.est.f) || [];
+        if (Object.keys(values).some(k => values[k] === null)) {   // older logs saved blanks: estimate them now, never show "not provided"
+            const w = withEstimate(m && (m.t || m.n), values);
+            values = K.macros({ macros: w.macros });
+            filled = filled.concat((w.est && w.est.f) || []);
+        }
+        return '<div class="sp-macro-grid">' + Object.keys(values).map(k => {
+            const v = values[k] === null ? 0 : Math.round(values[k] * 10) / 10;
+            return '<div' + (filled.indexOf(k) >= 0 ? ' class="est"' : '') + '><small>' + esc(tr(k)) + '</small><b>' + (filled.indexOf(k) >= 0 ? '\u2248 ' : '') + esc(v + (k === 'kcal' ? ' kcal' : ' g')) + '</b></div>';
+        }).join('') + '</div>';
+    }
+    function estHTML(log) {
+        const e = log && log.est;
+        if (!e) return '';
+        const what = e.how === 'rough' ? tr('roughMeal') : e.n + (e.g ? ' \u00b7 \u2248 ' + e.g + ' g' : '');
+        return '<p class="sp-est"><small>' + esc(tr('understood')) + '</small> <b>' + esc(what) + '</b></p>' +
+            (e.ing && e.ing.length ? '<p class="sp-est-ing"><small>' + esc(tr('ingr')) + ':</small> ' + esc(e.ing.slice(0, 6).join(', ')) + '</p>' : '') +
+            '<p class="sp-note">' + esc(tr('estSrc')) + '</p>';
+    }
+    function guessLine(title) {
+        const e = mealGuess(title);
+        if (!e) return '';
+        const name = e.how === 'rough' ? tr('roughMeal') : e.name;
+        return name + ' \u00b7 \u2248 ' + e.kcal + ' kcal \u00b7 ' + Math.round(e.protein) + ' g ' + tr('protein') + ' \u00b7 ' + Math.round(e.fiber) + ' g ' + tr('fiber') + ' \u00b7 ' + Math.round(e.sugar) + ' g ' + tr('sugar');
+    }
+    let guessTimer = 0;
+    D.addEventListener('input', ev => {
+        const t = ev.target;
+        if (!t || t.name !== 'title' || !t.closest || !t.closest('#spMeal')) return;
+        clearTimeout(guessTimer);
+        guessTimer = setTimeout(() => mealDb().then(() => {
+            const out = t.closest('#spMeal') && t.closest('#spMeal').querySelector('.sp-meal-guess');
+            if (out) out.textContent = String(t.value).trim() ? guessLine(t.value) : '';
+        }), 220);
+    });
 
     function gptHTML() {
         return '<a class="sp-gpt" href="' + esc(V.gpt) + '" target="_blank" rel="noopener">' + icon('star') + '<span>' + esc(tr('gpt')) + '</span>' + icon('arrow') + '</a>';
@@ -787,13 +852,15 @@
     function quickMeal(i) {
         const src = recentMeals()[+i];
         if (!src) return;
+        const qt = String(src.t || src.n).trim(), qw = withEstimate(qt, K.macros(src));
         const seed = {
             id: uid(),
-            t: String(src.t || src.n).trim(),
-            macros: K.macros(src),
+            t: qt,
+            macros: qw.macros,
             photo: '',
             via: 'quick'
         };
+        if (qw.est || src.est) seed.est = qw.est || src.est;
         const result = V.logMeal(seed);
         if (!result) {
             R.toast(tr('storage'));
@@ -824,27 +891,36 @@
                     const m = K.macros(l);
                     return m.kcal != null ? Math.round(m.kcal) + ' kcal' : m.protein != null ? Math.round(m.protein) + ' g ' + tr('protein') : '';
                 };
-            const fields = '<label>' + esc(tr('title')) + '<input name="title" required maxlength="100" autocomplete="off"></label><small>' + esc(tr('portion')) + '</small><div class="sp-form-macros">' + Object.keys(values).map(k => '<label>' + esc(tr(k)) + '<input name="' + k + '" inputmode="decimal" type="number" min="0" max="10000" step="0.1" placeholder="—"></label>').join('') + '</div><p class="sp-note">' + esc(tr('macroOptional')) + '</p><button class="r2-btn pri" type="submit">' + esc(tr('save')) + '</button>';
+            mealDb();
+            const fields = '<label>' + esc(tr('mealAsk')) + '<input name="title" required maxlength="100" autocomplete="off" placeholder="' + esc(tr('mealPh')) + '"></label><p class="sp-meal-guess" aria-live="polite"></p><button class="r2-btn pri" type="submit">' + esc(tr('save')) + '</button><details class="sp-own"><summary>' + esc(tr('ownNumbers')) + '</summary><small>' + esc(tr('portion')) + '</small><div class="sp-form-macros">' + Object.keys(values).map(k => '<label>' + esc(tr(k)) + '<input name="' + k + '" inputmode="decimal" type="number" min="0" max="10000" step="0.1" placeholder="\u2248"></label>').join('') + '</div><p class="sp-note">' + esc(tr('macroOptional')) + '</p></details>';
             const pk = herbPick(),
                 tip = pk ? '<button type="button" class="sp-herb-tip" data-sp="herbPick">' + (pk.recipe.img ? '<img src="' + esc(pk.recipe.img) + '" alt="">' : icon('plate')) + '<span><small>' + esc(tr('herbTip')) + '</small><b>' + esc(recipeName(pk.recipe)) + '</b><i>' + esc(whyLine(pk.why.slice(0, 2), null) || tr('whyText')) + '</i></span>' + icon('arrow') + '</button>' : '';
-            const html = '<h2>' + esc(tr('meal')) + '</h2><div class="sp-quick-log"><div class="sp-quick-cap">' + button('photo', 'camera', 'photo') + button('scan', 'scan', 'scan') + '</div>' + (recent.length ? '<small class="sp-quick-h">' + esc(tr('recent')) + '</small><div class="sp-quick-list">' + recent.map((l, i) => { const done = V.mealDup && V.mealDup({t: l.t || l.n, code: l.code}); return '<button type="button" class="sp-quick-item' + (done ? ' done' : '') + '" data-sp="quickMeal" data-q="' + i + '">' + icon('plate') + '<span><b>' + esc(l.t || l.n) + '</b><small>' + esc(done ? tr('doneToday') : (kc(l) || tr('oneTap'))) + '</small></span><em>' + (done ? '\u2713' : '+') + '</em></button>'; }).join('') + '</div>' : '<p class="sp-note">' + esc(tr('recentEmpty')) + '</p>') + tip + '<details class="sp-manual"><summary>' + esc(tr('manual')) + '</summary><form id="spMeal" data-id="' + esc(lastMealId) + '">' + fields + '</form></details></div>';
+            const html = '<h2>' + esc(tr('meal')) + '</h2><div class="sp-quick-log"><div class="sp-manual"><small class="sp-quick-h">' + esc(tr('manual')) + '</small><form id="spMeal" data-id="' + esc(lastMealId) + '">' + fields + '</form></div>' + (recent.length ? '<small class="sp-quick-h">' + esc(tr('recent')) + '</small><div class="sp-quick-list">' + recent.map((l, i) => { const done = V.mealDup && V.mealDup({t: l.t || l.n, code: l.code}); return '<button type="button" class="sp-quick-item' + (done ? ' done' : '') + '" data-sp="quickMeal" data-q="' + i + '">' + icon('plate') + '<span><b>' + esc(l.t || l.n) + '</b><small>' + esc(done ? tr('doneToday') : (kc(l) || tr('oneTap'))) + '</small></span><em>' + (done ? '\u2713' : '+') + '</em></button>'; }).join('') + '</div>' : '<p class="sp-note">' + esc(tr('recentEmpty')) + '</p>') + tip + '</div>';
             showSheet(html);
             return;
         }
-        const html = '<h2>' + esc(tr('meal')) + '</h2><form id="spMeal" data-id="' + esc(lastMealId) + '" ' + (editing ? 'data-edit="1"' : '') + '><label>' + esc(tr('title')) + '<input name="title" required maxlength="100" value="' + esc(seed.t || seed.n || seed.name || '') + '"></label><small>' + esc(tr('portion')) + '</small><div class="sp-form-macros">' + Object.keys(values).map(k => '<label>' + esc(tr(k)) + '<input name="' + k + '" inputmode="decimal" type="number" min="0" max="10000" step="0.1" value="' + (values[k] === null ? '' : values[k]) + '" placeholder="—"></label>').join('') + '</div><p class="sp-note">' + esc(tr('macroOptional')) + '</p><button class="r2-btn pri" type="submit">' + esc(tr(editing ? 'rename' : 'save')) + '</button></form>';
+        const html = '<h2>' + esc(tr('meal')) + '</h2><form id="spMeal" data-id="' + esc(lastMealId) + '" ' + (editing ? 'data-edit="1"' : '') + '><label>' + esc(tr('title')) + '<input name="title" required maxlength="100" value="' + esc(seed.t || seed.n || seed.name || '') + '"></label><small>' + esc(tr('portion')) + '</small><div class="sp-form-macros">' + Object.keys(values).map(k => '<label>' + esc(tr(k)) + '<input name="' + k + '" inputmode="decimal" type="number" min="0" max="10000" step="0.1" value="' + (values[k] === null ? '' : values[k]) + '" placeholder="\u2248"></label>').join('') + '</div><p class="sp-meal-guess" aria-live="polite"></p><p class="sp-note">' + esc(tr('macroOptional')) + '</p><button class="r2-btn pri" type="submit">' + esc(tr(editing ? 'rename' : 'save')) + '</button></form>';
         showSheet(html);
+        mealDb().then(() => {
+            const out = D.querySelector('#spMeal .sp-meal-guess'), t = (seed.t || seed.n || seed.name || '');
+            if (out && t) out.textContent = guessLine(t);
+        });
     }
     async function finishMeal(form) {
         const data = new FormData(form),
             values = {};
         for (const k of Object.keys(K.macros({}))) values[k] = data.get(k) == null || data.get(k) === '' ? null : +data.get(k);
+        const title = String(data.get('title')).trim();
+        await Promise.race([mealDb(), new Promise(r => setTimeout(r, 2500))]);
+        const w = withEstimate(title, values);
         const seed = {
             id: form.dataset.id,
-            t: String(data.get('title')).trim(),
-            macros: values,
+            t: title,
+            macros: w.macros,
             photo: photoURL,
             via: photoURL ? 'photo' : 'spirit'
         };
+        if (w.est) seed.est = w.est;
         const result = form.dataset.edit ? V.editMeal(seed) : V.logMeal(seed);
         if (!result) {
             R.toast(tr('storage'));
@@ -868,7 +944,7 @@
         feedback('eat', tr('saved') + whyNote(result), result.xp);
         checkBonuses(false);
         const log = result.log;
-        showSheet('<h2>' + esc(tr('saved')) + '</h2><p>' + esc(log.t) + '</p>' + macroHTML(log) + '<p class="sp-earned">' + (result.xp ? '+' + result.xp + ' XP' : esc(result.reason || (form.dataset.edit ? '' : '0 XP'))) + '</p>' + gptHTML());
+        showSheet('<h2>' + esc(tr('saved')) + '</h2><p>' + esc(log.t) + '</p>' + estHTML(log) + macroHTML(log) + '<p class="sp-earned">' + (result.xp ? '+' + result.xp + ' XP' : esc(result.reason || (form.dataset.edit ? '' : '0 XP'))) + '</p>' + gptHTML());
     }
 
     function checkBonuses(closed) {

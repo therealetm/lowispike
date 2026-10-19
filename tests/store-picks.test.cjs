@@ -160,7 +160,7 @@ test('wiring: the emergency button, Move-style panel, medical note, cache list a
     const js = read('store-picks.js');
     assert.match(js, /#csHub/);
     assert.match(js, /\.ss-entry/);
-    assert.match(js, /\.sp-quick-cap/);
+    assert.doesNotMatch(js, /\.sp-quick-cap/, 'no "What can I buy here?" in Log meal: it has its own section');
     assert.match(js, /not medical advice/);
     assert.match(js, /keine medizinische Beratung/);
     assert.match(js, /no consejo médico/);

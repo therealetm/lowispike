@@ -1047,11 +1047,17 @@ html[data-ckview="swipe"] #tab-shelf #r3kSwipe .r3k-btns { margin-top: 12px !imp
 .sp-quick-item small { font-size: 12px; color: var(--muted, #9aa6b2); }
 .sp-quick-item em { font-style: normal; font-size: 22px; line-height: 1; color: var(--tmg-a, #9de6b8); }
 .sp-quick-item:active { transform: scale(.98); }
-.sp-manual { border-top: 1px solid var(--b-edge); padding-top: 8px; }
-.sp-manual summary { cursor: pointer; list-style: none; min-height: 40px; display: flex; align-items: center; gap: 6px; font-weight: 600; color: var(--muted, #9aa6b2); }
-.sp-manual summary::-webkit-details-marker { display: none; }
-.sp-manual summary::before { content: ""; width: 7px; height: 7px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg); transition: transform .2s; }
-.sp-manual[open] summary::before { transform: rotate(45deg); }
+.sp-manual { padding-bottom: 6px; }
+.sp-manual input[name="title"] { font-size: 17px; min-height: 48px; }
+.sp-meal-guess { margin: 0; min-height: 1.2em; font-size: 13px; color: var(--muted, #9aa6b2); }
+.sp-own summary, .sp-quick-log details.sp-own summary { cursor: pointer; list-style: none; min-height: 40px; display: flex; align-items: center; gap: 6px; font-weight: 600; color: var(--muted, #9aa6b2); }
+.sp-own summary::-webkit-details-marker { display: none; }
+.sp-own summary::before { content: ""; width: 7px; height: 7px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg); transition: transform .2s; }
+.sp-own[open] summary::before { transform: rotate(45deg); }
+.sp-own { display: grid; gap: 8px; }
+.sp-est, .sp-est-ing { margin: 2px 0; font-size: 14px; }
+.sp-est small, .sp-est-ing small { color: var(--muted, #9aa6b2); }
+.sp-macro-grid .est b { color: var(--text, #eef3f0); opacity: .92; }
 .sp-manual form { display: grid; gap: 8px; }
 
 /* ===== Beta part 2a: workout player fits one iPhone screen, pause fully in frame ===== */

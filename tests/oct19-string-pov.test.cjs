@@ -128,3 +128,34 @@ test('cheap: the big string is built once per string (not per frame), never cast
     assert.ok(/dispose\(\)/.test(src), 'the old string is freed');
     assert.ok(/reduced/.test(src));
 });
+
+/* Release rebase (Oct 19, on top of build 20261019-091732, the string-freeze fix): the tour now cuts each string to the points she can
+   reach for her size (galaxy-bubbles span/rest with S.hs). While the POV camera is in, S.hs shrinks about 20x with it (she stays the
+   same size on screen), but the currents and the membranes keep her galaxy-scale size. A string cut for the tiny size ends inside the
+   far bubble's push for her real size: she could not reach its last point and would hang there for the 3 s no-progress limit at the
+   end of every ride. So the tour reads her galaxy-scale size too (S.hsG, kept by misty-galaxy.js), the same one the currents see. */
+test('POV + string tour: the tour plans with her galaxy-scale size, so the end of every string stays reachable with the camera in close', () => {
+    const B = require(path.join(ROOT, 'galaxy-bubbles.js'));
+    const R = 23, HS = 15.2, k = 22; /* the POV camera is ~22x closer than the galaxy camera */
+    const a = { x: 0, y: 120, z: 0, r: R }, b = { x: 2 * R + 80, y: 120, z: 0, r: R }, pts = [];
+    for (let i = 0; i < 40; i++) pts.push({ x: R * 0.98 + (b.x - 2 * R * 0.98) * i / 39, y: 120, z: 0 });
+    const reach = hs => { const sp = B.span(pts, [a, b], hs), q = pts[sp.end]; return Math.hypot(q.x - b.x, q.y - b.y, q.z - b.z) - B.slide(R, HS); };
+    assert.ok(reach(HS / k) < 0, 'cut for the tiny POV size, the last point sits inside the membrane push she really has (the bug)');
+    assert.ok(reach(HS) > 0, 'cut for her galaxy-scale size it is off the push');
+    /* the size the tour uses: galaxy-scale out in the galaxy, her own anywhere else */
+    const X = require(path.join(ROOT, 'misty-explore.js'));
+    assert.strictEqual(typeof X.hsOf, 'function', 'misty-explore core.hsOf: the size the tour plans with');
+    assert.strictEqual(X.hsOf({ gx: true, hs: HS / k, hsG: HS }), HS);
+    assert.strictEqual(X.hsOf({ gx: false, hs: 0.4, hsG: HS }), 0.4, 'outside the galaxy a stale galaxy size is ignored');
+    assert.strictEqual(X.hsOf({ gx: true, hs: 3 }), 3, 'without misty-galaxy.js her own size');
+    /* wired: every strand / rest in the tour goes through it, and misty-galaxy keeps S.hsG every galaxy frame and clears it on reset */
+    const e = read('misty-explore.js');
+    assert.ok(!/G\.strand\([^)]*S\.hs\)|rest\([^)]*S\.hs\)/.test(e), 'no strand() or rest() call in the tour reads the camera-scaled S.hs');
+    assert.strictEqual((e.match(/G\.strand\([^)]*hsOf\(S\)\)/g) || []).length, 2);
+    assert.strictEqual((e.match(/rest\([^)]*hsOf\(S\)\)/g) || []).length, 3);
+    const g = read('misty-galaxy.js');
+    const step = g.slice(g.indexOf('function step('), g.indexOf('function cam(ctx, S)'));
+    assert.match(step, /S\.hsG = \(hs \|\| 1\) \* sc;/);
+    const reset = g.slice(g.indexOf('function reset(ctx, S)'), g.indexOf('W.LowiMistyGalaxy = {'));
+    assert.match(reset, /S\.hsG = 0/);
+});

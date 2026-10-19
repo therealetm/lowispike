@@ -202,6 +202,7 @@
                bubbles she keeps her galaxy-scale size (G.nd / r.dist); otherwise the current's grip would weaken as the camera comes in,
                drop her, the camera would go back out, and the two would hunt. Bursts are drawn at her real (POV) size. */
             const sc = W.LowiStringPov && G.nd != null && ctx.r.dist > 0 ? G.nd / ctx.r.dist : 1, hs = S.hs, bu = ctx.burst;
+            S.hsG = (hs || 1) * sc; /* the tour (misty-explore.js) plans with this size too */
             if (sc > 1.001) { S.hs = (hs || 1) * sc; if (bu) ctx.burst = (p, n, z) => { if (p && p.distanceTo && p.distanceTo(S.p) < S.hs * 3) p.sub(S.p).divideScalar(sc).add(S.p); bu(p, n, z / sc); }; }
             try { if (!(GBB && GBB.step(ctx, S, V, mode, mag, K))) bump(a, S); } finally { if (sc > 1.001) { S.hs = hs; ctx.burst = bu; } }
             return true;
@@ -277,7 +278,7 @@
         /* LIMITLESS: the flight ended far out (a tab, a tap away): never leave the camera out in the deep, glide it home */
         if (r && r.target && was && !r.fly && r.target.length() > 60) { r.fly = { from: { t: r.target.clone(), d: r.dist }, to: { t: r.target.clone().set(0, 0, 0), d: S.gxD0 || r.dist }, t: 0, dur: 1.6 }; r.flyYaw = null; r.idle = 0; }
         if (W.LowiGalaxyBubbles) W.LowiGalaxyBubbles.reset(ctx, S);
-        if (W.LowiStringPov) W.LowiStringPov.reset(ctx); G.nd = null;
+        if (W.LowiStringPov) W.LowiStringPov.reset(ctx); G.nd = null; S.hsG = 0;
         S.gx = false; S.gxBack = false; G.h = null; G.p = 0; G.ring = 0; G.shown = false; G.shown0 = false; cls(false);
         if (ctx && ctx.a && G.skin) paintSkin(ctx.a, 11, 0, 0);
         if (was) { note('reset'); try { W.dispatchEvent(new CustomEvent('lowi:galaxy', { detail: { on: false } })); } catch (e) { } }

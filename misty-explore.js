@@ -83,7 +83,11 @@
         if (+prog > s.best + (+eps || 0)) { s.best = +prog; s.still = 0; } else s.still += +dt || 0;
         return s;
     }
-    const core = { X, due, after, nextLeg, firstHook, pin };
+    /* Oct 19 Ant-Man POV (string-pov.js): while the camera is in close on a string her size S.hs shrinks with it (she keeps her size on
+       screen), but the currents and the membranes keep her galaxy-scale size (S.hsG, kept by misty-galaxy.js). The tour plans with that
+       one, or a string would be cut for a tiny Misty and its last point would sit inside the far bubble's push for her real size */
+    function hsOf(S) { return S && S.gx && S.hsG > 0 ? S.hsG : S.hs; }
+    const core = { X, due, after, nextLeg, firstHook, pin, hsOf };
     const TOUR = { plan: 1, hook: 1, ride: 1, visit: 1, fly: 1 };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (typeof window === 'undefined' || W.LowiMistyExplore) return;
@@ -105,9 +109,9 @@
     }
     function targets(ctx) { try { return W.LowiGalaxyBubbles && W.LowiGalaxyBubbles.targets ? W.LowiGalaxyBubbles.targets(ctx) : null; } catch (e) { return null; } }
     /* the string she is on, in the order she travels it, cached for a second (its points only move as the galaxy turns slowly) */
-    function line(ctx, S) { const G = W.LowiGalaxyBubbles; if (!G || !G.strand || !E.leg || E.si < 0) return null; const now = Date.now(); if (!E.line || E.line.si !== E.si || now - E.line.at > 1000) { const st = G.strand(ctx, E.si, E.leg.aToB, S.hs); E.line = st ? Object.assign(st, { si: E.si, at: now }) : null; } return E.line; }
+    function line(ctx, S) { const G = W.LowiGalaxyBubbles; if (!G || !G.strand || !E.leg || E.si < 0) return null; const now = Date.now(); if (!E.line || E.line.si !== E.si || now - E.line.at > 1000) { const st = G.strand(ctx, E.si, E.leg.aToB, hsOf(S)); E.line = st ? Object.assign(st, { si: E.si, at: now }) : null; } return E.line; }
     /* her distance to string i right now (closest of its points) */
-    function nearTo(ctx, S, i) { const G = W.LowiGalaxyBubbles, st = G && G.strand ? G.strand(ctx, i, true, S.hs) : null; if (!st) return Infinity; let d = Infinity; for (let k = st.entry; k <= st.end; k++) d = Math.min(d, st.pts[k].distanceTo(S.p)); return d; }
+    function nearTo(ctx, S, i) { const G = W.LowiGalaxyBubbles, st = G && G.strand ? G.strand(ctx, i, true, hsOf(S)) : null; if (!st) return Infinity; let d = Infinity; for (let k = st.entry; k <= st.end; k++) d = Math.min(d, st.pts[k].distanceTo(S.p)); return d; }
     /* pick the next leg of the string tour and start it */
     function plan(ctx, S, tg, c, note) {
         if (!tg || !S.gx) { go(S, 'home', note); return; }
@@ -201,7 +205,7 @@
                 let bj = E.j, bd = 1e9; for (let j = Math.max(st.entry, bj - 2); j <= Math.min(st.end, bj + 8); j++) { const d = st.pts[j].distanceTo(S.p); if (d < bd) { bd = d; bj = j; } }
                 E.j = Math.max(E.j, bj);
                 const ahead = Math.min(st.end, E.j + 2); toward(S, V, st.pts[ahead], bd > 2.5 ? 0.75 : st.up ? 0.8 : X.RIDE);
-                const tb = tg && tg.bubbles[st.to], atB = tb ? tb.p.distanceTo(S.p) < rest(tb.r, S.hs) + 6 : st.pts[st.end].distanceTo(S.p) < 6;
+                const tb = tg && tg.bubbles[st.to], atB = tb ? tb.p.distanceTo(S.p) < rest(tb.r, hsOf(S)) + 6 : st.pts[st.end].distanceTo(S.p) < 6;
                 /* round 2: no progress along the string for PIN seconds (the far membrane pushing her back): at the bubble that is arriving,
                    anywhere else she lets go of this leg; never the frozen minute the probe caught */
                 E.pin = pin(E.pin, E.j, dt); const pinned = E.pin.still > X.PIN;
@@ -218,7 +222,7 @@
                 /* a slow swim part way round its membrane, just off the glass (the membrane slides her round; she is never pulled in) */
                 if (!E.pts) { const o = S.p.clone().sub(b.p).normalize(), t = o.clone().cross(V.rt).normalize(); if (t.lengthSq() < 0.5) t.set(0, 1, 0); E.pts = [o, t]; }
                 const ang = Math.min(1, E.t / X.LOOK) * 0.9, o = E.pts[0].clone().multiplyScalar(Math.cos(ang)).addScaledVector(E.pts[1], Math.sin(ang));
-                toward(S, V, o.multiplyScalar(rest(b.r, S.hs) + 0.5).add(b.p), 0.55);
+                toward(S, V, o.multiplyScalar(rest(b.r, hsOf(S)) + 0.5).add(b.p), 0.55);
                 if (E.t > X.LOOK) { S.exVisit = -1; go(S, 'plan', note); }
                 return true;
             }
@@ -226,7 +230,7 @@
                 const b = tg && tg.bubbles[E.aim]; if (!b || !S.gx) { go(S, 'home', note); break; }
                 S.exSi = -1; S.exB = -1;
                 V.a.subVectors(S.p, b.p); const L = V.a.length() || 1;
-                E.d = toward(S, V, V.a.multiplyScalar((rest(b.r, S.hs) + 0.5) / L).add(b.p), 1); wide(S, V, reach); if (E.d < X.NEAR * 1.5) { E.at = E.aim; E.seen.push(E.aim); E.left.delete(E.aim); E.pts = null; go(S, 'visit', note); }
+                E.d = toward(S, V, V.a.multiplyScalar((rest(b.r, hsOf(S)) + 0.5) / L).add(b.p), 1); wide(S, V, reach); if (E.d < X.NEAR * 1.5) { E.at = E.aim; E.seen.push(E.aim); E.left.delete(E.aim); E.pts = null; go(S, 'visit', note); }
                 return true;
             }
             case 'home': {

@@ -138,15 +138,15 @@ test('wired in: the ride, the hook, the visit and the flight all use her size, a
     assert.match(g, /const o = B\.others\[i\], r = o\.userData\.r, rr = slide\(r, hs\);/);
     assert.match(g, /function strand\(ctx, i, aToB, hs\)/);
     assert.match(g, /span\(pts, ws, hs\)/);
-    assert.match(e, /G\.strand\(ctx, E\.si, E\.leg\.aToB, S\.hs\)/);
+    assert.match(e, /G\.strand\(ctx, E\.si, E\.leg\.aToB, hsOf\(S\)\)/); /* hsOf(S): her size, galaxy-scale while the Ant-Man POV camera is in (string-pov) */
     const ride = e.slice(e.indexOf("case 'ride':"), e.indexOf("case 'visit':"));
     assert.match(ride, /E\.pin = pin\(E\.pin, E\.j, dt\)/);
     assert.match(ride, /E\.pin\.still > X\.PIN/);
     const hook = e.slice(e.indexOf("case 'hook':"), e.indexOf("case 'ride':"));
     assert.match(hook, /E\.pin\.still > X\.PIN \* 2/);
     /* finishing at a bubble, visiting it and flying to it: just off its membrane for her size */
-    assert.match(ride, /atB = tb \? tb\.p\.distanceTo\(S\.p\) < rest\(tb\.r, S\.hs\) \+ 6/);
-    assert.match(e.slice(e.indexOf("case 'visit':"), e.indexOf("case 'home':")), /rest\(b\.r, S\.hs\)/);
+    assert.match(ride, /atB = tb \? tb\.p\.distanceTo\(S\.p\) < rest\(tb\.r, hsOf\(S\)\) \+ 6/);
+    assert.match(e.slice(e.indexOf("case 'visit':"), e.indexOf("case 'home':")), /rest\(b\.r, hsOf\(S\)\)/);
 });
 
 test('wired in: one hooked string holds her, a crossing one never snatches her, and the tour never pulls her into a bubble', () => {

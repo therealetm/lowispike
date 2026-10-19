@@ -173,6 +173,7 @@
             : '<li class="wm-row wm-empty">' + esc(T('No meals logged today yet.', 'Heute noch kein Essen eingetragen.', 'Hoy aún no has registrado comidas.')) + '</li>';
         const html = '<div class="wm-sheet wme-sheet"><h3>' + esc(label() + ' · ' + v.text) + '</h3>' +
             '<p class="wm-why">' + esc(T('Every meal you log charges Misty. Three meals fill this bubble for today.', 'Jede eingetragene Mahlzeit lädt Misty auf. Drei Mahlzeiten füllen diese Blase für heute.', 'Cada comida que registras carga a Misty. Tres comidas llenan esta burbuja hoy.')) + '</p>' +
+            (W.LowiNutriStats && W.LowiNutriStats.stripHTML ? W.LowiNutriStats.stripHTML() : '') +   /* Today's stats (nutri-stats.js) */
             '<ul class="wm-list">' + rows + '</ul><button type="button" class="r2-btn pri wme-log">' + esc(T('Log a meal', 'Essen eintragen', 'Registrar comida')) + '</button></div>';
         const ov = R.sheet(html, { cls: 'wm-sheet-ov' });
         if (!ov) return;

@@ -13955,7 +13955,7 @@ async function offProduct(code){
     if (!r.ok) return r.status === 404 ? {barcode:code, notFound:true} : null; const j = await r.json(); if (!j || j.status !== 1 || !j.product) return {barcode:code, notFound:true};
     const P = j.product, n = P.nutriments || {}, nm = P["product_name_" + ["en", "de", "es"][LI()]] || P.product_name_de || P.product_name || P.product_name_en || P.generic_name || "";
     if (!nm) return {barcode:code, notFound:true, partial:P};
-    const facts = {c:num(n.carbohydrates_100g), s:num(n.sugars_100g), f:num(n.fiber_100g), p:num(n.proteins_100g), fat:num(n.fat_100g), q:String(P.quantity || "").slice(0, 30)};
+    const facts = {c:num(n.carbohydrates_100g), s:num(n.sugars_100g), f:num(n.fiber_100g), p:num(n.proteins_100g), fat:num(n.fat_100g), kcal:num(n['energy-kcal_100g']), q:String(P.quantity || "").slice(0, 30)};
     Object.keys(facts).forEach(k => facts[k] == null && delete facts[k]);
     let img = String(P.image_front_small_url || P.image_front_url || ""); if (!/^https:\/\/(images|static)\.openfoodfacts\.org\//.test(img)) img = "";
     const cat = catOf(P.categories_tags, nm); if (cat === "drink") facts.drink = 1;
@@ -14249,6 +14249,7 @@ function simpleCardHTML(p){
     '<div class="sc-top"><div class="sc-img">' + (p.img ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(p.img) + '">' : '<i>' + (CAT_E[p.cat] || CAT_E.other) + '</i>') + '</div>' +
     '<div class="sc-nm"><div class="b3-name">' + esc(p.name) + '</div>' + (p.brand ? '<div class="sc-brand">' + esc(p.brand) + (p.facts && p.facts.q ? " · " + esc(p.facts.q) : "") + '</div>' : "") + '</div></div>' +
     '<div class="sc-verd v-' + v + '" role="status"><small>' + esc(sct("est")) + '</small><strong>' + esc(sct(v)) + '</strong>' + (why[0] ? '<span>' + esc(why[0]) + '</span>' : "") + '</div>' +
+    (window.LowiNutriStats ? LowiNutriStats.portionHTML(p) : "") +
     '<section class="sc-sec sc-prices"><h4>' + esc(sct("cheaper")) + '</h4>' + (storeCmp || '<p class="sc-none">' + esc(sct("noPrices")) + '</p>') + '</section>' +
     '<div class="b3-acts sc-acts">' + (mine ? '<div class="b3-have sc-have">' + esc(sct("caughtHave")) + ' ✓' + (m && m.pending ? '<small>' + esc(t("pending")) + '</small>' : "") + '</div>' :
       '<button class="r2-btn pri big b3-catch sc-catch" data-b3="catch" id="b3Catch"><span class="b3-pb" aria-hidden="true"></span>' + esc(t("catch")) + ' <small>' + esc(sct("catchXP")) + '</small></button>') + '</div>' +
@@ -14324,7 +14325,7 @@ function eatCur(btn){
   const p = CUR; if (!p || !window.LowiVitalsBridge || btn.disabled) return; btn.disabled = true;
   const meta = LV_B3[p.verdict] || ["", 0];
   const code = String(p.code || p.barcode || "");
-  const res = LowiVitalsBridge.logMeal({id:"bc:" + (code || "x") + ":" + Date.now(), t:p.name || p.brand || "Produkt", macros:null, via:"barcode", code, lvl:meta[0]});
+  const res = LowiVitalsBridge.logMeal({id:"bc:" + (code || "x") + ":" + Date.now(), t:p.name || p.brand || "Produkt", macros:(window.LowiNutriStats ? LowiNutriStats.logMacros(p) : null), via:"barcode", code, lvl:meta[0]});
   if (res && res.log && !res.dup) { res.log.lvl = meta[0]; res.log.r = meta[1]; res.log.code = code; try { LowiVitalsBridge.save(); } catch(e){} }
   buzz(12); sfx(res && res.dup ? "tap" : "soft");
   const text = res && res.dup ? res.reason : ["Logged", "Eingetragen", "Registrado"][LI()] + (res && !res.xp && res.reason ? " · " + res.reason.split(" · ").slice(1).join(" · ") : "");
@@ -17454,7 +17455,7 @@ function bcAte(){ const p = window.LowiDex && LowiDex.cur ? LowiDex.cur() : null
   const title = (p.name || "").trim() + (p.brand && (p.name || "").indexOf(p.brand) < 0 ? " · " + p.brand : "");
   /* Oct 14: one meal path for every log (duplicate rule, daily cap, reason when 0 XP) */
   const VB = window.LowiVitalsBridge;
-  if (VB && VB.logMeal) { const bcode = String(p.code || p.barcode || ""); const res = VB.logMeal({id:"bc:" + (bcode || "x") + ":" + Date.now(), t:title, macros:null, via:"barcode", code:bcode, lvl:m[0]});
+  if (VB && VB.logMeal) { const bcode = String(p.code || p.barcode || ""); const res = VB.logMeal({id:"bc:" + (bcode || "x") + ":" + Date.now(), t:title, macros:(window.LowiNutriStats ? LowiNutriStats.logMacros(p) : null), via:"barcode", code:bcode, lvl:m[0]});
     if (res && res.dup) { F.mode = ""; try { LowiR2.closeAll(); } catch(e){} if (window.LowiSpirit && LowiSpirit.afterScan) LowiSpirit.afterScan(0, res.reason, "curious"); else toast(res.reason); return; }
     if (res && res.log) { res.log.lvl = m[0]; res.log.r = m[1]; res.log.e = "🏷️"; try { VB.save(); } catch(e){} }
     if (res && !res.xp && res.reason) toast(res.reason); }
@@ -20058,6 +20059,9 @@ window.LowiCommunityHost = {
 <link rel="stylesheet" id="ltCss" href="tutorial.css?v=20261019-175128">
 <script src="tutorial-steps.js?v=20261019-175128"></script>
 <script src="tutorial.js?v=20261019-175128"></script>
+<link rel="stylesheet" id="nsCss" href="nutri-stats.css?v=20261019-175128">
+<script src="nutri-stats-core.js?v=20261019-175128"></script>
+<script src="nutri-stats.js?v=20261019-175128"></script>
 <link rel="stylesheet" id="gnCss" href="glass-nav.css?v=20261019-175128">
 <link rel="stylesheet" id="cshCss" href="cook-shop.css?v=20261019-175128">
 <link rel="stylesheet" id="symCss" href="sym-home.css?v=20261019-175128">

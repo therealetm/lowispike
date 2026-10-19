@@ -125,6 +125,8 @@
     border: 1.5px solid var(--wh-glass-rim, rgba(160,220,255,.55)); pointer-events: none; }
 .lp-praise.lp-up::after { bottom: -8px; background: rgba(18, 50, 124, .86); border-top: 0; border-left: 0; border-radius: 0 0 4px 0; }
 .lp-praise.lp-down::after { top: -8px; background: rgba(60, 140, 240, .5); border-bottom: 0; border-right: 0; border-radius: 4px 0 0 0; }
+.lp-praise.lp-said.lp-dock { transform-origin: 50% 50%; }
+.lp-praise.lp-said.lp-dock::after { display: none; } /* docked away from Misty (BH-003): no tail */
 html[data-ui=light] .lp-praise.lp-said::after { background: rgba(255, 255, 255, .95); border-color: rgba(40, 110, 120, .25); }
 html[data-ui=light] .lp-praise { background: rgba(255, 255, 255, .95); color: #10131f; border-color: rgba(40, 110, 120, .25); }
 html[data-ui=light] .ls-sun { color: #10131f; }

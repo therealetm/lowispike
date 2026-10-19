@@ -418,6 +418,14 @@ The user explicitly requested deploying the recovered Home implementation withou
 
 **Consequences:** Checks: `tests/guide-bubble-joystick.test.cjs` (7, six failed on the old code; the measured scene is in it), browser `tests/guide-bubble-joystick-live.cjs` (samples every 250 ms after entering a world; failed on the live build with 4 s of overlap, passes after: liver in Chromium 390x844, WebKit iPhone 13 and iPad landscape, heart in Chromium). `tests/guide-recall-live.cjs` still passes. Ordinary lines can now sit at the top or bottom of the screen without a tail while the guide is near the joystick.
 
+## 2026-10-19 Misty's praise line never covers a ring bubble or the joystick
+
+**Context:** Bug hunt (scheduled QA run 3, BH-003, same class as BH-002). After every logged action Misty says a praise line (`#lpPraise` in `praise.js`, "I'm so proud of you!", at least 4.5 s, longer lines longer). `place()` put it right above her head and only kept clear of the Daily Quest. On the 8-bubble ring that spot is on Settings, Water and Fuel. Measured on the live build 20261019-101824 in Chromium 390x844: 42 to 44% of Settings and 10 to 15% of Water and Fuel hidden for the whole reading time. It never took taps (pointer-events none), so visual only.
+
+**Decision:** `LowiPraise.place(a, size, quest, view, gap, obs)` takes the controls as a sixth argument. Without it, placement is exactly as before. With it: keep the spot beside Misty when it touches no control; else try the other side of her; else dock at the top (56 px) or bottom of the screen, whichever covers less (Daily Quest counted), with `.lp-dock` and no tail. `show()` passes every visible `[data-orbit]` bubble and `#whPad` (faded included), 4 px margin, read once per line (no frame loop).
+
+**Consequences:** Checks: `tests/praise-ring-clear.test.cjs` (4, all failed on the old code). Browser probe (bug-hunt playtest `probe-praise.cjs`): before, FAIL on the live build; after, no overlap on Chromium 390x844, WebKit iPhone 13, iPad portrait and landscape (docks), and inside the liver world it is still a speech bubble beside Misty with its tail. Still queued: the Move bloom note (`home-blooms-v2.js` `moveNote`) sits over the Move bubble while that bloom is open.
+
 ## 2026-10-19 Misty's Home nudge never covers a ring bubble or the joystick
 
 **Context:** Bug hunt (scheduled QA run 2, sibling of the guide bubble above). Misty's Home nudge (`#mhNudge` in `misty-hub.js`, e.g. "My sun is full! Peek in Today.", up to four times a day) is placed right above her head with no keep-clear check. On the 8-bubble ring that spot is on Settings, Water and Fuel. Measured on build 20261019-095111 in Chromium 390x844: the nudge (a button, z-index 6) took 9 to 10 of 25 tap points on each of the three for as long as it showed, and a tap on the upper third of Water opened Today instead of Water.

@@ -34,15 +34,32 @@
         return !(ledger || []).some(e => e && e !== entry && +e.amt > 0 && classify(e) === type);
     }
     /* the speech bubble's spot next to Misty (a: {x, top, bottom}): above her unless that covers the Daily Quest or leaves the
-       screen; kept on screen sideways, the tail (px from the bubble's left) always points back at her */
-    function place(a, b, quest, view, gap) {
+       screen; kept on screen sideways, the tail (px from the bubble's left) always points back at her.
+       obs (bug hunt BH-003, Oct 19): the controls it must never cover, as rects ({left, top, right, bottom}): the ring bubbles and
+       the joystick. On the 8-bubble ring the spot above Misty's head is on Settings, Water and Fuel, so when neither above nor below
+       her is clear of them, the line docks at the top or bottom of the screen with no tail (dock: true), like Misty's nudge. */
+    function place(a, b, quest, view, gap, obs) {
         gap = gap || 14;
         const m = 10, l = Math.max(m, Math.min(view.w - m - b.w, a.x - b.w / 2));
         const upT = a.top - gap - b.h, downT = a.bottom + gap;
         const hits = t => !!quest && t < quest.bottom && t + b.h > quest.top && l < quest.right && l + b.w > quest.left;
+        const ov = (L, t, o) => Math.max(0, Math.min(L + b.w, o.right) - Math.max(L, o.left)) * Math.max(0, Math.min(t + b.h, o.bottom) - Math.max(t, o.top));
+        const list = (obs || []).filter(Boolean);
+        const blocked = (L, t) => list.some(o => ov(L, t, o) > 0);
         let up = upT >= (view.top || 8) && !hits(upT);
         if (!up && (hits(downT) || downT + b.h > view.h - 8) && upT >= (view.top || 8)) up = true; /* below is worse: stay above */
-        return { l, t: up ? upT : downT, up, tail: Math.max(18, Math.min(b.w - 18, a.x - l)) };
+        const tail = Math.max(18, Math.min(b.w - 18, a.x - l));
+        if (!list.length || !blocked(l, up ? upT : downT)) return { l, t: up ? upT : downT, up, tail, dock: false };
+        /* the other side of Misty, if that one is clear and on screen */
+        const alt = up ? downT : upT;
+        if (alt >= (view.top || 8) && alt + b.h <= view.h - 8 && !hits(alt) && !blocked(l, alt)) return { l, t: alt, up: !up, tail, dock: false };
+        /* dock: top or bottom of the screen, centred on Misty's side, whichever covers the least (Daily Quest counts too) */
+        const dl = Math.max(m, Math.min(view.w - m - b.w, a.x - b.w / 2));
+        const all = quest ? list.concat([quest]) : list;
+        const cost = t => all.reduce((c, o) => c + ov(dl, t, o), 0);
+        let best = null;
+        for (const t of [Math.max(56, (view.top || 8) + 8), view.h - b.h - 28]) { const c = cost(t); if (!best || c < best.c) best = { t, c }; }
+        return { l: dl, t: best.t, up: false, tail, dock: true };
     }
     const core = { POOL, FIRST, TYPES, SHOW_MS, showMs, pick, isFirst, place };
     if (!D) {
@@ -68,6 +85,18 @@
         return r ? { x: r.left + r.width / 2, top: r.top, bottom: r.bottom } : null;
     }
     show.mistyAt = mistyAt;
+    /* the controls the line must never cover (BH-003): the ring bubbles that are showing, and the joystick even while it is faded
+       (it comes straight back under the thumb). Padded 4 px so the line never touches a rim. */
+    function controls() {
+        const out = [];
+        D.querySelectorAll('[data-orbit], #whPad').forEach(e => {
+            const r = e.getBoundingClientRect(); if (r.width < 4 || r.height < 4 || r.bottom <= 0 || r.top >= W.innerHeight) return;
+            const cs = getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden') return;
+            if (e.id !== 'whPad' && e.checkVisibility && !e.checkVisibility({ opacityProperty: true, visibilityProperty: true })) return;
+            out.push({ left: r.left - 4, top: r.top - 4, right: r.right + 4, bottom: r.bottom + 4 });
+        });
+        return out;
+    }
     function show(text, tag) {
         if (!el || !el.isConnected) {
             el = D.createElement('div');
@@ -84,16 +113,16 @@
            it is Misty talking, so it is a speech bubble coming out of Misty: above her (below when that would cover the Daily Quest
            or leave the screen), with a tail pointing at her. Only when she is nowhere on screen does it fall back to top centre,
            and even then never on the Daily Quest. */
-        el.style.top = ''; el.style.left = ''; el.classList.remove('lp-said', 'lp-up', 'lp-down');
+        el.style.top = ''; el.style.left = ''; el.classList.remove('lp-said', 'lp-up', 'lp-down', 'lp-dock');
         try {
-            const vw = W.innerWidth, vh = W.innerHeight, quest = visRect(D.getElementById('f3Board'));
+            const vw = W.innerWidth, vh = W.innerHeight, quest = visRect(D.getElementById('f3Board')), obs = controls();
             const a = mistyAt(vw, vh);
             if (a) {
                 el.classList.add('lp-said');
                 const w = el.offsetWidth, h = el.offsetHeight, gap = 14;
-                const p = place(a, { w, h }, quest, { w: vw, h: vh, top: 8 + safeTop() }, gap);
+                const p = place(a, { w, h }, quest, { w: vw, h: vh, top: 8 + safeTop() }, gap, obs);
                 el.style.left = Math.round(p.l) + 'px'; el.style.top = Math.round(p.t) + 'px';
-                el.style.setProperty('--tail', Math.round(p.tail) + 'px'); el.classList.add(p.up ? 'lp-up' : 'lp-down');
+                el.style.setProperty('--tail', Math.round(p.tail) + 'px'); el.classList.add(p.dock ? 'lp-dock' : (p.up ? 'lp-up' : 'lp-down'));
             } else if (quest) {
                 const t = el.getBoundingClientRect(); if (t.bottom > quest.top && t.top < quest.bottom) el.style.top = Math.round(quest.bottom + 8) + 'px';
             }

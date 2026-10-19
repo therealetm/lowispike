@@ -30,7 +30,11 @@ const PROBE = fs.readFileSync(path.join(__dirname, 'crash-probe.js'), 'utf8');
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.json': 'application/json', '.svg': 'image/svg+xml', '.webmanifest': 'application/json', '.mp3': 'audio/mpeg', '.glb': 'model/gltf-binary', '.wasm': 'application/wasm' };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const t0 = Date.now(), el = () => ((Date.now() - t0) / 1000).toFixed(0).padStart(5) + 's';
-const log = (...a) => { if (!QUIET) console.log(el(), ...a); };
+let lastLog = Date.now(), doing = 'start';
+const log = (...a) => { lastLog = Date.now(); if (!QUIET) console.log(el(), ...a); };
+const beat = setInterval(() => { if (Date.now() - lastLog > 60000) log('... still ' + doing); }, 30000); beat.unref();
+/* a call into the page that never comes back (frozen WebContent process) must not hang the soak: give up after ms */
+const within = (p, ms, what) => { let tm; return Promise.race([p, new Promise(r => { tm = setTimeout(() => { log('NO ANSWER in ' + ms / 1000 + ' s: ' + what); r('__timeout'); }, ms); })]).finally(() => clearTimeout(tm)); };
 function serve() {
     return new Promise(r => {
         const s = http.createServer((q, res) => {
@@ -53,7 +57,9 @@ const INIT = () => {
     let srv = null, url = URL0;
     if (!url) { srv = await serve(); url = `http://127.0.0.1:${srv.address().port}/index.html`; }
     const host = new URL(url).host;
+    let bpid = 0;
     const browser = await pw[ENGINE].launch({ args: ENGINE === 'chromium' ? ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info', '--js-flags=--expose-gc'] : [] });
+    try { const out = require('child_process').execSync('ps -eo pid,etimes,args', { encoding: 'utf8' }); const me = out.split('\n').map(l => l.trim().split(/\s+/)).filter(x => x[2] && /chrome-headless-shell$|headless_shell$/.test(x[2]) && !x.join(' ').includes('--type=')).sort((a, b) => +a[1] - +b[1])[0]; if (me) bpid = +me[0]; } catch (e) { }
     const dev = ENGINE === 'webkit' ? Object.assign({}, pw.devices['iPhone 13']) : { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true };
     const ctx = await browser.newContext(Object.assign(dev, { serviceWorkers: 'block' }));
     await ctx.route('**/*', r => { const q = r.request(), u = new URL(q.url()); if (u.protocol === 'data:' || u.protocol === 'blob:' || (u.host === host && q.method() === 'GET')) return r.continue(); return r.abort(); });
@@ -85,25 +91,28 @@ const INIT = () => {
         if (cdp) { try { await cdp.send('HeapProfiler.collectGarbage'); const h = await cdp.send('Runtime.getHeapUsage'); heapGC = +(h.usedSize / 1048576).toFixed(1); } catch (e) { } }
         const s = await ev(() => window.__cs.snap());
         const st = await state();
-        const row = Object.assign({ at: +((Date.now() - t0) / 1000).toFixed(0), tag, heapGC, loads, errs: errs.length }, s, { state: st }, extra || {});
+        let gpuProcMB = null;
+        if (ENGINE === 'chromium') { try { const bp = browser.process && browser.process(); const out = require('child_process').execSync('ps -eo pid,ppid,rss,args', { encoding: 'utf8' }); const L = out.split('\n').map(l => l.trim().split(/\s+/)); const kids = new Set([String(bpid)]); for (let k = 0; k < 4; k++) L.forEach(x => { if (kids.has(x[1])) kids.add(x[0]); }); const g = L.find(x => kids.has(x[0]) && x.join(' ').includes('type=gpu-process')); if (g) gpuProcMB = Math.round(+g[2] / 1024); } catch (e) { } }
+        const row = Object.assign({ at: +((Date.now() - t0) / 1000).toFixed(0), tag, heapGC, gpuProcMB, loads, errs: errs.length }, s, { state: st }, extra || {});
         rows.push(row); if (OUT) fs.appendFileSync(OUT, JSON.stringify(row) + '\n');
         const th = row.three || {};
-        log(tag.padEnd(22), `geo ${th.geo} tex ${th.tex} prog ${th.progs} objs ${th.objs} | glLive ${row.live && Object.values(row.live).join('/')} ctx ${row.ctxGL}/${row.ctxMade} lost ${row.lost} | raf ${row.raf} iv ${row.iv} to ${row.to} lis ${row.lis} nodes ${row.nodes} | heap ${heapGC != null ? heapGC : row.heap} | gap ${row.maxGap} long ${row.long} | ${st.st}/${st.cur}${st.busy ? '*' : ''} ${st.pad} | err ${errs.length} loads ${loads}${row.glCopies && row.glCopies.length ? ' | glCopy ' + row.glCopies.map(c => c.ms + 'ms@' + c.w + 'x' + c.h).join(',') : ''} canvMB ${row.canvMB}`);
+        log(tag.padEnd(22), `geo ${th.geo} tex ${th.tex} prog ${th.progs} objs ${th.objs} | glLive ${row.live && Object.values(row.live).join('/')} ctx ${row.ctxGL}/${row.ctxMade} lost ${row.lost} | raf ${row.raf} iv ${row.iv} to ${row.to} lis ${row.lis} nodes ${row.nodes} | heap ${heapGC != null ? heapGC : row.heap} gpu ${row.gpuMB ? row.gpuMB.buf + '/' + row.gpuMB.tex + '/' + row.gpuMB.rb : ''} up ${row.upMBs}MB/s gpuProc ${gpuProcMB} | gap ${row.maxGap} long ${row.long} | ${st.st}/${st.cur}${st.busy ? '*' : ''} ${st.pad} | err ${errs.length} loads ${loads}${row.glCopies && row.glCopies.length ? ' | glCopy ' + row.glCopies.map(c => c.ms + 'ms@' + c.w + 'x' + c.h).join(',') : ''} canvMB ${row.canvMB}${row.geo && row.geo.orphanCount ? ' | orphanGeo ' + row.geo.orphanCount : ''}`);
         return row;
     }
     const pad = () => ev(() => { const b = document.getElementById('whPad'); if (!b) return null; const r = b.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, r: r.width / 2 }; });
     /* one joystick gesture: press, drag to (dx, dy) in steps, hold, let go */
     async function drag(dx, dy, holdMs) {
         const p = await pad(); if (!p || p.evalErr) return;
-        await page.mouse.move(p.x, p.y); await page.mouse.down();
-        for (let i = 1; i <= 4; i++) { await page.mouse.move(p.x + dx * i / 4, p.y + dy * i / 4); await sleep(40); }
+        doing = `drag ${Math.round(dx)},${Math.round(dy)} ${holdMs} ms`;
+        if (await within(page.mouse.move(p.x, p.y).then(() => page.mouse.down()), 30000, 'mouse down') === '__timeout') return;
+        for (let i = 1; i <= 4; i++) { await within(page.mouse.move(p.x + dx * i / 4, p.y + dy * i / 4), 30000, 'mouse move'); await sleep(40); }
         const end = Date.now() + holdMs;
         while (Date.now() < end && !crashed && !closed) { await sleep(Math.min(700, end - Date.now())); const j = (rnd() - 0.5) * 14; await page.mouse.move(p.x + dx + j, p.y + dy - j).catch(() => { }); }
-        await page.mouse.up().catch(() => { });
+        await within(page.mouse.up().catch(() => { }), 30000, 'mouse up');
     }
-    async function hold(ms) { const p = await pad(); if (!p || p.evalErr) return; await page.mouse.move(p.x, p.y); await page.mouse.down(); await sleep(ms); await page.mouse.up().catch(() => { }); }
-    async function taps(n) { const p = await pad(); if (!p || p.evalErr) return; for (let i = 0; i < n; i++) { await page.mouse.click(p.x, p.y); await sleep(120); } }
-    async function waitFor(fn, a, ms) { const end = Date.now() + ms; while (Date.now() < end && !crashed && !closed) { const v = await ev(fn, a); if (v === true) return true; await sleep(400); } return false; }
+    async function hold(ms) { const p = await pad(); if (!p || p.evalErr) return; doing = 'hold ' + ms; await within(page.mouse.move(p.x, p.y).then(() => page.mouse.down()), 30000, 'hold down'); await sleep(ms); await within(page.mouse.up().catch(() => { }), 30000, 'hold up'); }
+    async function taps(n) { const p = await pad(); if (!p || p.evalErr) return; doing = 'taps ' + n; for (let i = 0; i < n; i++) { await within(page.mouse.click(p.x, p.y), 30000, 'tap'); await sleep(120); } }
+    async function waitFor(fn, a, ms) { doing = 'waiting: ' + String(fn).slice(6, 120); const end = Date.now() + ms; while (Date.now() < end && !crashed && !closed) { const v = await ev(fn, a); if (v === true) return true; await sleep(400); } return false; }
     const outside = () => waitFor(() => { const s = window.LowiMistyFlight.state(), R = window.LowiWorldRegions; return R.current() === 'hub' && !R.state.busy && s.st !== 'warp' && s.st !== 'out' && s.st !== 'inside'; }, null, 240000);
     async function randomFly(ms) {
         const end = Date.now() + ms;
@@ -121,6 +130,8 @@ const INIT = () => {
         if (step.k === 'cycles') {
             for (let i = 0; i < step.v && !crashed && !closed; i++, cyc++) {
                 const w = ROUTE[cyc % ROUTE.length], how = ['steer', 'map', 'weak'][cyc % 3];
+                /* she only comes along on a trip when she is out flying: get her up first, like he does */
+                for (let k = 0; k < 4; k++) { const s0 = await state(); if (s0.st === 'free') break; await drag(0, -40, 1500); await sleep(500); }
                 const ts = Date.now();
                 await ev(w => window.LowiWorldRegions.travel(w), w);
                 const inOk = await waitFor(w => { try { return window.LowiWorldRegions.current() === w && window.LowiMistyFlight.state().st === 'inside'; } catch (e) { return false; } }, w, 240000);
@@ -220,7 +231,7 @@ function verdict(rows) {
     }
     trend('geometries', r => r.three.geo, 2); trend('textures', r => r.three.tex, 2); trend('programs', r => r.three.progs, 1); trend('sceneObjects', r => r.three.objs, 4);
     trend('glTextures', r => r.live.tex, 2); trend('glBuffers', r => r.live.buf, 6); trend('glPrograms', r => r.live.prog, 1); trend('glFramebuffers', r => r.live.fb, 1);
-    trend('intervals', r => r.iv, 1); trend('listeners', r => r.lis, 3); trend('rafPerSec', r => r.raf, 25); trend('domNodes', r => r.nodes, 40); trend('heapMB', r => r.heapGC, 6);
+    trend('intervals', r => r.iv, 1); trend('listeners', r => r.lis, 3); trend('rafPerSec', r => r.raf, 25); trend('domNodes', r => r.nodes, 40); trend('heapMB', r => r.heapGC, 6); trend('gpuBufMB', r => r.gpuMB && r.gpuMB.buf, 2); trend('gpuTexMB', r => r.gpuMB && r.gpuMB.tex, 2); trend('gpuProcMB', r => r.gpuProcMB, 80);
     const maxCtx = Math.max(0, ...good.map(r => r.ctxGL)); if (maxCtx > 2) problems.push('live WebGL contexts reached ' + maxCtx);
     const lost = Math.max(0, ...good.map(r => r.lost)); if (lost) problems.push('webglcontextlost fired ' + lost + ' times on the live canvas');
     const last = good[good.length - 1]; if (last) growth.ctxBy = last.ctxBy;

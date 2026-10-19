@@ -1,5 +1,7 @@
 # LOWiSPIKE successor handoff
 
+> Superseded on 19 Oct 2026 by `MAYA-HANDOFF.md` (newer state, preferences and Log). Kept for its 18 Oct detail.
+
 Snapshot written 18 Oct 2026, about 01:25 CEST (Europe/Berlin), against `origin/main` 7b7e18c, live build
 20261018-011214; refreshed at 01:29 CEST after build 20261018-012739 (commit 45141bc) landed. Everything marked
 "snapshot" below was true at that moment and will go stale. Re-check it before you act on it (see "Refresh

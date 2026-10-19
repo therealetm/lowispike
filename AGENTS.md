@@ -1,5 +1,7 @@
 # LOWiSPIKE agent guide
 
+> New agent with no memory of this project? Read `MAYA-HANDOFF.md` first: accounts and access, how to work, lessons, the owner's preferences, the status board and an append-only Log. When something ships, breaks or is cancelled, append one line to its Log.
+
 This is the operational source of truth for any AI or engineer changing LOWiSPIKE. It governs the entire application, not only the latest feature.
 
 ## Required startup sequence

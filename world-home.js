@@ -46,6 +46,8 @@
     /* BH-006: the companion's name = own companion's name, else a name the user typed, else Misty; never the old herb auto name ("Moss Leaf") */
     function companionName() { const w = typeof window !== 'undefined' ? window : globalThis; const pick = v => { v = v == null ? '' : String(v).trim(); return v ? v.slice(0, 24) : ''; }; let auto = ''; try { auto = pick(w.LowiHerbIdentity && w.LowiHerbIdentity.autoName && w.LowiHerbIdentity.autoName()); } catch (e) { } const typed = v => { v = pick(v); return v && v !== auto ? v : ''; }; let n = ''; try { const B = w.LowiBirthCompanion; if (B && B.has && B.has()) { const c = B.get(); n = pick(c && c.name); } } catch (e) { } if (!n) try { const t = w.LowiHerbTamagotchi, p = t && t.readPrefs && t.readPrefs(); n = typed(p && p.name); } catch (e) { } if (!n) try { const R = w.LowiR2, s = R && R.S && R.S(); n = typed(s && s.herb && s.herb.name); } catch (e) { } return n || 'Misty'; }
     function mistyName() { return companionName(); }
+    /* Oct 19 (aura-rename task): a fixed line that says "Misty" ("Mistys") says the companion's own name */
+    function withNm(t) { const n = companionName(); return n === 'Misty' ? t : String(t).replace(/\bMisty(s?)\b/g, (m, s) => n + (s ? (/[sxz\u00df]$/i.test(n) ? '\u2019' : 's') : '')); }
     function auraRaw() {
         let v = null;
         try {
@@ -387,12 +389,12 @@
         const hb = D.querySelector('#whHud .wh-zoom'); if (!hb) return;
         const out = homeWorld() && isOut, tx = out ? 'Misty' : T('World map', 'Weltkarte', 'Mapa');
         const key = (out ? 'o' : 'i') + tx;
-        if (hb.dataset.k !== key) {
+        if (hb.dataset.k !== key + '|' + companionName()) {
             /* Oct 16 (task 3): the World map button is a small glass zoom stick now (Google Earth style). Push the knob up to fly out
                (Misty -> World map -> out through our bubble -> Community), down to come back to Misty; a plain tap still toggles. */
-            hb.dataset.k = key; hb.innerHTML = '<span class="wh-stk-track" aria-hidden="true"><i class="wh-stk-up"></i><i class="wh-stk-dn"></i></span><span class="wh-stk-knob" aria-hidden="true">' + (out ? ICO.inn : ICO.out) + '</span><span class="wh-zoom-tx">' + tx + '</span>';
+            hb.dataset.k = key + '|' + companionName(); hb.innerHTML = '<span class="wh-stk-track" aria-hidden="true"><i class="wh-stk-up"></i><i class="wh-stk-dn"></i></span><span class="wh-stk-knob" aria-hidden="true">' + (out ? ICO.inn : ICO.out) + '</span><span class="wh-zoom-tx">' + tx + '</span>';
             hb.classList.add('wh-stick', 'no-page-swipe');
-            hb.setAttribute('aria-label', (out ? T('Back to Misty', 'Zurück zu Misty', 'Volver a Misty') : T('World map: show the whole world', 'Weltkarte: ganze Welt zeigen', 'Mapa del mundo: ver todo el mundo')) + '. ' + T('Zoom stick: push up to zoom out to Community, down to zoom in to Misty', 'Zoom-Stick: nach oben schieben zoomt bis zur Community, nach unten zurück zu Misty', 'Palanca de zoom: hacia arriba aleja hasta Comunidad, hacia abajo vuelve a Misty'));
+            hb.setAttribute('aria-label', withNm((out ? T('Back to Misty', 'Zurück zu Misty', 'Volver a Misty') : T('World map: show the whole world', 'Weltkarte: ganze Welt zeigen', 'Mapa del mundo: ver todo el mundo')) + '. ' + T('Zoom stick: push up to zoom out to Community, down to zoom in to Misty', 'Zoom-Stick: nach oben schieben zoomt bis zur Community, nach unten zurück zu Misty', 'Palanca de zoom: hacia arriba aleja hasta Comunidad, hacia abajo vuelve a Misty')));
             hb.classList.toggle('is-out', out);
         }
     }

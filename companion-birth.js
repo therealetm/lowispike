@@ -56,6 +56,13 @@ function rename(v){const chk=C.renameCheck(v);if(!chk.ok)return{ok:false,why:chk
  cache=null;const c=getCompanion();const name=s?c.name:(chk.name||'Misty');
  try{window.dispatchEvent(new CustomEvent('lowi:companion',{detail:Object.assign({},c,{renamed:true,displayName:name})}));}catch(e){}
  setTimeout(mountProfile,0);return{ok:true,name,reset:!!chk.reset};}
+/* Oct 19 (aura-rename task): the name to show for the user's companion anywhere (same chain as world-home companionName():
+   own companion > typed herb name > Misty), and withName() to put it into a fixed line that says "Misty" ("Mistys" in German). */
+function displayName(){const pick=v=>{v=v==null?'':String(v).trim();return v?v.slice(0,24):'';};let auto='';try{auto=pick(window.LowiHerbIdentity&&LowiHerbIdentity.autoName&&LowiHerbIdentity.autoName());}catch(e){}
+ const typed=v=>{v=pick(v);return v&&v!==auto?v:'';};let n='';try{if(has())n=pick(getCompanion().name);}catch(e){}
+ if(!n)try{const t=window.LowiHerbTamagotchi,pr=t&&t.readPrefs&&t.readPrefs();n=typed(pr&&pr.name);}catch(e){}
+ if(!n)try{const R=window.LowiR2,st=R&&R.S&&R.S();n=typed(st&&st.herb&&st.herb.name);}catch(e){}return n||'Misty';}
+function withName(str){const n=displayName();return n==='Misty'?String(str):String(str).replace(/\bMisty(s?)\b/g,(m,s)=>n+(s?(/[sxz\u00df]$/i.test(n)?'\u2019':'s'):''));}
 function personality(c,l){return C.personality(c||getCompanion(),l||lang());}
 function svg(c,o){return C.svg(c||getCompanion(),o);}
 
@@ -109,7 +116,7 @@ try{new MutationObserver(ms=>{for(const m of ms){const tg=m.target;if(!tg||!tg.c
 window.addEventListener('lowi:lang',soon);
 if(D.readyState!=='loading')soon();else D.addEventListener('DOMContentLoaded',soon);
 
-window.LowiBirthCompanion={KEY,get:getCompanion,getCompanion,has,save,rename,personality,svg,mysterySVG:C.mysterySVG,reveal,openCreator,core:C,
+window.LowiBirthCompanion={KEY,get:getCompanion,getCompanion,has,save,personality,svg,mysterySVG:C.mysterySVG,reveal,openCreator,core:C,rename,displayName,withName,
  clear(){try{localStorage.removeItem(KEY);}catch(e){}cache=null;soon();}};
 /* the one-call way for any feature: window.getCompanion() (LowiCompanion is the older Misty forms/evolution module in companion.js) */
 window.getCompanion=getCompanion;

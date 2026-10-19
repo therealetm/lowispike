@@ -92,7 +92,10 @@
         delete b.dataset.icon; paint(); energy(true);
         return b;
     }
-    function label() {
+    /* Oct 19 (aura-rename task): the lines say the user's companion's own name, not always "Misty" */
+    function nm(t) { try { const B = window.LowiBirthCompanion; return B && B.withName ? B.withName(t) : t; } catch (e) { return t; } }
+    function label() { return nm(label0()); }
+    function label0() {
         if (st.mode === 'auto') return low() ? T('Autopilot, Misty is drifting sleepily. Tap to steer', 'Autopilot, Misty treibt m\u00fcde. Tippen zum Steuern', 'Piloto autom\u00e1tico, Misty flota con sue\u00f1o. Toca para dirigir') : T('Autopilot, Misty flies on its own. Tap to steer', 'Autopilot, Misty fliegt allein. Tippen zum Steuern', 'Piloto autom\u00e1tico, Misty vuela por su cuenta. Toca para dirigir');
         return T('Controller: drag to fly Misty, hold the middle to go forward, tap then hold to go back, three taps for autopilot. While you hold it, double tap the world with another finger to shoot energy', 'Steuerung: ziehen, um Misty zu fliegen, Mitte halten f\u00fcr vorw\u00e4rts, tippen und halten f\u00fcr r\u00fcckw\u00e4rts, dreimal tippen f\u00fcr Autopilot. W\u00e4hrend du sie h\u00e4ltst, mit einem anderen Finger zweimal auf die Welt tippen f\u00fcr einen Energiesto\u00df', 'Control: arrastra para volar con Misty, mant\u00e9n el centro para avanzar, toca y mant\u00e9n para retroceder, tres toques para piloto autom\u00e1tico. Mientras lo mantienes, toca dos veces el mundo con otro dedo para disparar energ\u00eda');
     }
@@ -259,6 +262,7 @@
     ['pointerdown', 'click'].forEach(n => D.addEventListener(n, callHome, true));
     W.addEventListener('blur', () => fade(false)); /* the window lost focus: the joystick comes back (a finger still moving fades it again) */
     /* BH-004: a language switch without a reload repaints the joystick's VoiceOver label and the autopilot chip */
+    W.addEventListener('lowi:companion', () => paint()); /* Oct 19: a rename shows in the controller's label */
     W.addEventListener('lowi:lang', () => { paint(); if (st.mode === 'auto' && st.chip && st.chip.classList.contains('on')) chip(autoText()); });
     W.addEventListener('lowi:pad', e => { const m = e.detail ? e.detail.mode : null; if (m != null && m !== st.mode) { st.mode = m; paint(); if (!m) chip(''); } });
 
@@ -294,7 +298,7 @@
         const s = send(null); if (s && s.mode !== st.mode && st.id == null) { st.mode = s.mode; paint(); if (!s.mode) chip(''); }
         if (!st.hinted && H.classList.contains('wh-world-live') && H.classList.contains('wh-home')) {
             st.hinted = true; let seen = false; try { seen = !!localStorage.getItem(HINT_KEY); } catch (e) { }
-            if (!seen) setTimeout(() => { if (!st.mode) chip(T('New: drag to fly Misty \u00b7 hold: forward \u00b7 3 taps: autopilot', 'Neu: ziehen, um Misty zu fliegen \u00b7 halten: vorw\u00e4rts \u00b7 3\u00d7 tippen: Autopilot', 'Nuevo: arrastra para volar con Misty \u00b7 mant\u00e9n: adelante \u00b7 3 toques: autom\u00e1tico'), 5200); hintDone(); }, 2500);
+            if (!seen) setTimeout(() => { if (!st.mode) chip(nm(T('New: drag to fly Misty \u00b7 hold: forward \u00b7 3 taps: autopilot', 'Neu: ziehen, um Misty zu fliegen \u00b7 halten: vorw\u00e4rts \u00b7 3\u00d7 tippen: Autopilot', 'Nuevo: arrastra para volar con Misty \u00b7 mant\u00e9n: adelante \u00b7 3 toques: autom\u00e1tico')), 5200); hintDone(); }, 2500);
         }
     }
     setInterval(tick, 500);

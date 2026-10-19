@@ -423,7 +423,7 @@
                 right = tr('nextIn') + ' ' + fmtHM(nx.inMs);
                 aria = label + ', ' + right;
             } else {
-                label = tr('nextTired');
+                label = tr('nextTired'); try { const B = window.LowiBirthCompanion; if (B && B.withName) label = B.withName(label); } catch (e) { } /* Oct 19: her own name */
                 right = v.visited + '/' + PLACES.length;
                 aria = label + ', ' + right + ' ' + tr('places');
             }
@@ -614,7 +614,7 @@
     W.addEventListener('lowi:meal-logged', e => { try { onMeal(e); } catch (x) {} });
     D.addEventListener('lowi:meal-logged', e => { try { onMeal(e); } catch (x) {} });
     W.addEventListener('lowi:reward', e => { try { onReward(e); } catch (x) {} });
-    ['lowi:lang', 'lowi:state', 'storage', 'focus'].forEach(n => W.addEventListener(n, schedule));
+    ['lowi:lang', 'lowi:state', 'lowi:companion', 'storage', 'focus'].forEach(n => W.addEventListener(n, schedule));
     D.addEventListener('visibilitychange', schedule);
     function tick() {
         if (D.hidden) return;

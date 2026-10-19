@@ -7,6 +7,8 @@ const D=root.document,K=root.LowiHerbShopCore,WC=root.LowiHerbTamagotchiCore;if(
 const mq=root.matchMedia?root.matchMedia('(prefers-reduced-motion: reduce)'):null,reduced=()=>!!(mq&&mq.matches);
 const li=()=>{try{const l=String(root.LowiLang&&LowiLang.get?LowiLang.get():(D.documentElement.lang||'en')).slice(0,2);return l==='de'?1:l==='es'?2:0;}catch(e){return 0;}};
 const L=(e,d,s)=>[e,d,s][li()];
+/* Oct 19 (aura-rename task): "Misty's gift" says the user's companion's own name */
+const nmL=t=>{try{const B=root.LowiBirthCompanion;return B&&B.withName?B.withName(t):t;}catch(e){return t;}};
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const icon=(n,f)=>{try{return root.LowiIcons&&LowiIcons.has(n)?LowiIcons.svg(n):(f||'');}catch(e){return f||'';}};
 const nm=c=>c?(c.names||[c.name])[li()]||c.name:'';
@@ -133,8 +135,8 @@ function ensureGift(){const hud=D.getElementById('whHud');let b=D.querySelector(
  if(!hud||giftTaken()){if(b&&!G.pop)b.remove();return null;}
  if(b&&b.parentNode!==hud){b.remove();b=null;}
  if(!b){b=D.createElement('button');b.type='button';b.className='hs-gift';b.setAttribute('data-shop','gift');
-  b.setAttribute('aria-label',L('Misty\'s gift of the day','Mistys Geschenk des Tages','El regalo del día de Misty'));
   b.innerHTML='<span class="hs-gift-core" aria-hidden="true"></span>';hud.appendChild(b);}
+ {const gl=nmL(L('Misty\'s gift of the day','Mistys Geschenk des Tages','El regalo del día de Misty'));if(b.getAttribute('aria-label')!==gl)b.setAttribute('aria-label',gl);}
  /* iPad: the tab bar is a rail on the left, so the spot sits just right of it */
  try{const tb=D.getElementById('tabbar'),r=tb&&tb.getBoundingClientRect();const rail=r&&r.height>r.width&&r.left<root.innerWidth/3;const gl=rail?Math.round(r.right+16)+'px':'';/* write only on change */if(b.style.getPropertyValue('--hs-gl')!==gl)b.style.setProperty('--hs-gl',gl);if(G.pop&&G.pop.style.getPropertyValue('--hs-gl')!==gl)G.pop.style.setProperty('--hs-gl',gl);}catch(e){}
  return b;}
@@ -143,7 +145,7 @@ function openGift(){const now=Date.now();if(G.pop||flying())return;
  const b=D.querySelector('.hs-gift');if(b)b.classList.add('is-open');
  const pop=D.createElement('div');pop.className='hs-giftpop';pop.setAttribute('role','dialog');pop.setAttribute('aria-labelledby','hsGiftT');
  pop.className='hs-giftpop mpop';
- pop.innerHTML='<b id="hsGiftT">'+esc(L('Misty\'s gift of the day','Mistys Geschenk des Tages','El regalo del día de Misty'))+'</b>'+
+ pop.innerHTML='<b id="hsGiftT">'+esc(nmL(L('Misty\'s gift of the day','Mistys Geschenk des Tages','El regalo del día de Misty')))+'</b>'+
   '<p>'+esc(giftFact(now))+'</p>'+
   '<div class="hs-giftrow"><button type="button" class="hs-giftok" data-shop="giftok">'+esc(L('Nice','Schön','Genial'))+'</button>'+
   '<button type="button" class="hs-giftkofi" data-shop="giftkofi">'+icon('heart','♥')+'<span>'+esc(L('Support LOWiSPIKE','LOWiSPIKE unterstützen','Apoyar LOWiSPIKE'))+'</span></button></div>';

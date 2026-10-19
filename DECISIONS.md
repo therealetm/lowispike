@@ -718,3 +718,16 @@ community database does not have; the first checked one pays +100 XP into the no
 Pathfinder badge shows how many products you found first.
 
 **Consequences:** the count lives on the phone (D.pf) until it syncs; the e2e lives in /home/sprite/FOODPATHS/e2e.cjs.
+
+## 2026-10-19 23:30 CEST: forms 7-10 reuse the Legendary drawing; an unseen evolution survives a reload (bug hunt BH-012/013)
+
+**Context:** the ten-form release kept six-step drawing tables in herb-tamagotchi.js plant(), so the standard Misty at 4,500 XP and
+up drew her face at translate(130 undefined), outside her body (live 20261019-224907, simulated iPhone 13 and Chrome). And refresh()
+saved lastSeenStage before the evolution was on screen; it waits while a card is open, so a reload in that wait lost it for good.
+
+**Decision:** plant() reads its tables with the form clamped to Legendary (index 5); halo, sparkles and float apply from index 5 on.
+refresh() also saves `evoFrom` with lastSeenStage and replays the evolution on the next refresh while it is set; closing the evolution
+clears it.
+
+**Consequences:** a reload during the evolution animation plays it again once (better than never). Tests:
+tests/bughunt-high-forms.test.cjs.

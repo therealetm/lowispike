@@ -1299,8 +1299,14 @@
     function exitGo(ctx, k, why, L) {
         const Rg = R(); let ok = false;
         S.outWhy0 = why;
-        try { ok = !!(Rg && Rg.travel && Rg.travel('hub', false, 0)); } catch (e) { ok = false; }
+        /* Oct 19 (E-man): weak Misty can't break free. Below half energy (misty-hunt's tries rule, the same one that bounces her off
+           a world on the way in) the rings pull her back in when she flies out herself. The X and the World map always get you
+           out, and so does autopilot; with Reduce Motion there is no launch to fail. */
+        let weak = false;
+        if (why === 'hold' && !ctx.reduced) { try { const Hn = W.LowiMistyHunt; weak = !!(Hn && Hn.gateOut && !Hn.gateOut(S.flew)); } catch (e) { weak = false; } }
+        try { ok = !!(Rg && Rg.travel && (weak ? Rg.travel('hub', false, 0, { weak: true }) : Rg.travel('hub', false, 0))); } catch (e) { ok = false; }
         if (!ok) { S.outWhy0 = ''; return false; }
+        S.oHeld = weak;
         if (L > 1e-4) { V.b.copy(S.inC).addScaledVector(V.a, (L + 0.3 * S.hs) / L); ctx.burst(V.b, 14 + Math.round(10 * k), 0.5 + 0.4 * k); wallBurst(Math.atan2(V.a.dot(V.up), V.a.dot(V.rt))); skinPop(); } /* item 3: the cloud wall bursts open there, its bubble skin rings out */
         ring(ctx, k); if (why === 'hold') try { if (navigator.vibrate) navigator.vibrate(40); } catch (e) { }
         note('exit ' + why);
@@ -1349,6 +1355,7 @@
         S.oFrom = { x: clamp((S.scr.x - q.left) / q.width, 0.08, 0.92), y: clamp((S.scr.y - q.top) / q.height, 0.12, 0.9) };
         S.oCur = { x: S.oFrom.x, y: S.oFrom.y };
         V.b.subVectors(S.p, a.camera.position); S.oD0 = Math.max(0.6, -V.b.dot(V.fw)); S.oDcur = S.oD0;
+        S.oP0 = (S.oP0 || S.p.clone()).copy(S.p); /* where a weak Misty is pulled back to */
         S.oPh = 'A'; S.oT0 = performance.now(); S.oTB = -1; S.oGame = 0; S.oWhy = why; S.oKs = S.ks = clamp(S.inK || K.MIN_K, K.MIN_K, 1); S.oPrev = (S.oPrev || S.p.clone()).copy(S.p);
         /* Oct 17 (E-man: out of a world on autopilot "for like three seconds she just stares at us"): on the way out the camera
            pulls back and carries her along, so in the world she moves straight at you; misty-face read that as her flying at you
@@ -1411,9 +1418,22 @@
         if (ctx.wand && ctx.wand.onBeforeRender !== outDraw) { ctx.wand.frustumCulled = false; ctx.wand.onBeforeRender = outDraw; }
         S.oGame = (S.oGame || 0) + dt;
         if (S.oPh === 'A' && cur === 'hub') outB();
+        /* the warp was cancelled before the place went: she is still in it. Or (Oct 19) weak Misty: the rings pulled her back in,
+           so this check comes before the landing outside */
+        if (!busy && cur !== 'hub') {
+            dropDraw(ctx.wand); S.st = 'inside'; S.fade = 1;
+            if (S.oHeld && S.oP0) {
+                /* back where she pushed out, a little way in, still drifting inwards with the pull, and she says so */
+                S.p.copy(S.oP0).lerp(S.inC, 0.25); V.a.subVectors(S.inC, S.p);
+                if (V.a.lengthSq() > 1e-8) S.v.copy(V.a).setLength(0.8); else S.v.set(0, 0, 0);
+                S.exH = null; S.exP = 0; S.exBeat = 0; S.exD0 = 0; S.oHeld = false;
+                hold(false); classes(true, false, true);
+                try { const Hn = W.LowiMistyHunt; if (Hn && Hn.heldSay) Hn.heldSay(); } catch (e) { }
+                note('out held back'); return;
+            }
+            note('out cancelled'); return;
+        }
         if (S.oPh === 'B' && !busy && !r.fly) { outLand(ctx, k); return; }
-        /* the warp was cancelled before the place went: she is still in it */
-        if (!busy && cur !== 'hub') { dropDraw(ctx.wand); S.st = 'inside'; S.fade = 1; note('out cancelled'); return; }
         if (S.oGame > 12) { dropDraw(ctx.wand); end(ctx, 'out-timeout'); return; }
         S.v.subVectors(S.p, S.oPrev).divideScalar(Math.max(1e-3, dt)); S.oPrev.copy(S.p);
         if (S.v.lengthSq() > 64) S.v.setLength(8);

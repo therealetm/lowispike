@@ -272,7 +272,9 @@
     }
     /* s0: from the core's centre, between the core (r 0.32) and its ring (r 0.62): the core fills the picture.
        near: the outside view of that world when the pull-back ends (planet-size on screen, Misty above it). */
-    const PULL = { ms: 1800, s0: 0.55, near: 5, wideP: 0.42 };
+    /* Oct 19 (E-man: "it was still coming out real fast ... like a rocket trying to exit a world, like that perspective from
+       Interstellar"): slower, ms 1800 -> 4800, and a launch, not the fly-in played backwards (escapeAt). */
+    const PULL = { ms: 4800, s0: 0.55, near: 5, wideP: 0.42 };
     /* distance from the world at pull-back progress k (0..1): even zoom (log scale), slow in the ring band, soft landing */
     function backAt(k, s0, s1) {
         if (!(k > 0)) return s0;
@@ -280,7 +282,47 @@
         const f = 0.5 - 0.5 * Math.cos(Math.PI * k);
         return s0 * Math.pow(s1 / s0, f);
     }
-    const API = { PULL, backAt, REGIONS, HUB, ROUTE, norm, byId, neighbours, regionForJourney, tier, counts, travelMs, WARP, warpPose, buildRegion, buildWarp, BUILD };
+    /* Oct 19, the launch (escapeAt): the camera rides out with Misty like the camera bolted to a rocket in Interstellar.
+       1 the burn (0 .. free): heavy and slow, the world's pull fights back, thrust comes in surges (never backwards), the
+         picture shakes a little and leans (roll), and the camera looks up, out to space, with the world's surface and its rings
+         under it (tilt);
+       2 breaking free (free): the shaking stops at once, the camera kicks out fast and swings over the top to look back down at
+         the world falling away, its rings opening up (rise: pitch up and back);
+       3 the quiet of space: it glides to a stop on the same outside view as before, level, nothing tilted.
+       Weak Misty (weak = true, below half energy, misty-hunt's tries rule): the same burn, but at the rings the thrust gives
+       out, she stalls, shakes harder, and the pull drags her back down to the core (f back to 0): then she is back inside.
+       f: 0..1 of the way out (log distance), tilt/roll/rise in their own units, shake 0..1. All end at exactly 0 (k = 1). */
+    const ESC = { free: 0.62, fFree: 0.38, surge: 0.55, n: 3, tilt: 0.3, roll: 0.1, shake: 0.012, yaw: 0.35, peak: 0.75, weakMs: 4300, stall: 0.5, fall: 0.68, reach: 0.8 };
+    function escapeAt(k, weak) {
+        k = Math.max(0, Math.min(1, +k || 0));
+        const g = u => u - ESC.surge * Math.sin(2 * Math.PI * ESC.n * u) / (2 * Math.PI * ESC.n); /* surging thrust, always forward */
+        const burn = u => ESC.fFree * Math.pow(Math.max(0, Math.min(1, g(u))), 1.6);
+        if (!weak) {
+            let f;
+            if (k <= ESC.free) f = burn(k / ESC.free);
+            else { const v = (k - ESC.free) / (1 - ESC.free); f = ESC.fFree + (1 - ESC.fFree) * (1 - Math.pow(1 - v, 3)); }
+            if (k >= 1) f = 1;
+            return {
+                f, shake: smooth(0.04, 0.3, k) * (1 - smooth(ESC.free - 0.02, ESC.free + 0.06, k)),
+                tilt: ESC.tilt * smooth(0, 0.28, k) * (1 - smooth(ESC.free, ESC.free + 0.22, k)),
+                roll: ESC.roll * smooth(0.05, 0.4, k) * (1 - smooth(ESC.free, ESC.free + 0.2, k)),
+                rise: smooth(ESC.free - 0.04, ESC.free + 0.18, k) * (1 - smooth(0.8, 0.96, k))
+            };
+        }
+        const a = ESC.stall, b = ESC.fall, top = burn(ESC.reach);
+        let f;
+        if (k <= a) f = burn(ESC.reach * k / a);
+        else if (k <= b) f = top * (1 - 0.06 * smooth(a, b, k)); /* the thrust gives out: she hangs there */
+        else { const v = (k - b) / (1 - b); f = top * 0.94 * (1 - v * v); } /* and the pull drags her down, faster and faster */
+        if (k >= 1) f = 0;
+        return {
+            f, shake: smooth(0.04, 0.3, k) * (1 + 0.4 * smooth(a - 0.1, a + 0.05, k)) * (1 - smooth(b + 0.1, 1, k)),
+            tilt: ESC.tilt * smooth(0, 0.28, k) * (1 - smooth(a, b + 0.1, k)),
+            roll: ESC.roll * smooth(0.05, 0.4, k) * (1 + 0.8 * smooth(a, b, k)) * (1 - smooth(b + 0.05, 1, k)),
+            rise: 0
+        };
+    }
+    const API = { PULL, ESC, escapeAt, backAt, REGIONS, HUB, ROUTE, norm, byId, neighbours, regionForJourney, tier, counts, travelMs, WARP, warpPose, buildRegion, buildWarp, BUILD };
     if (typeof module !== 'undefined' && module.exports) module.exports = API;
     W.LowiWorldRegions = API;
     if (!D || !D.addEventListener) return;
@@ -303,7 +345,7 @@
     const st = { cur: 'hub', target: null, next: null, region: null, warp: null, busy: false, tier: null, off: null, label: null, mapBtn: null, veil: null, host: null, lt: 0 };
     const w3 = () => W.LowiWorld3D || null;
     /* read-only, for the browser checks (tests/world-exit-reverse-live.cjs): where the way out is */
-    API.pullState = () => { const q = st.warp; return q && q.rev ? { phase: q.phase, pk: q.pk == null ? null : +q.pk.toFixed(3), B: q.B ? [q.B.x, q.B.y, q.B.z] : null } : null; };
+    API.pullState = () => { const q = st.warp; return q && q.rev ? { phase: q.phase, pk: q.pk == null ? null : +q.pk.toFixed(3), k: q.k == null ? null : +q.k.toFixed(3), weak: !!q.weak, B: q.B ? [q.B.x, q.B.y, q.B.z] : null } : null; };
     const baseId = id => id === 'muscle' ? 'muscles' : id;
     const parked = []; let look = null, fogWas = null;
     function setHubVisible(on) {
@@ -464,6 +506,7 @@
                 q.home = to ? { t: to.t.clone(), d: q.wide && r.maxD ? r.maxD : to.d } : null;
                 r.yaw = ang + Math.round((r.yaw - ang) / (Math.PI * 2)) * Math.PI * 2; /* the side the fly-in came from, facing the world */
                 r.pitch = q.p0 = Math.max(-0.3, Math.min(0.3, r.pitch));
+                q.yaw0 = r.yaw;
                 r.target.copy(q.B); r.dist = PULL.s0;
                 camFromRig(r, w.camera);
             }
@@ -472,19 +515,51 @@
         }
         /* the close-up has been drawn at least once under the copy: let the copy go */
         if (st.snap && !st.snap.classList.contains('go')) snapDrop(false);
-        const k = Math.max(0, Math.min(1, (now - q.t0) / PULL.ms));
-        q.pk = k;
+        const k = Math.max(0, Math.min(1, (now - q.t0) / (q.weak ? ESC.weakMs : PULL.ms)));
+        const e = escapeAt(k, q.weak);
+        q.k = k; q.pk = e.f; q.esc = e; /* Misty rises (and on a weak day sinks back) with the camera's own progress */
         if (r) {
             r.fly = null; r.idle = 0;
+            const s1 = q.wide && q.home ? q.home.d : PULL.near;
+            r.dist = e.f >= 1 ? s1 : PULL.s0 * Math.pow(s1 / PULL.s0, e.f);
+            r.yaw = (q.yaw0 != null ? q.yaw0 : r.yaw) + ESC.yaw * Math.sin(Math.PI * e.f); /* a gravity turn: the rings sweep past as she climbs, and it ends facing the world from the side she came in */
+            let p = q.p0 || 0;
             if (q.wide && q.home) {
-                const g = smooth(0.3, 1, k);
+                const g = smooth(0.4, 1, e.f);
                 r.target.copy(q.B).lerp(q.home.t, g);
-                r.dist = backAt(k, PULL.s0, q.home.d);
-                r.pitch = g >= 1 ? PULL.wideP : q.p0 + (PULL.wideP - q.p0) * g;
-            } else { r.target.copy(q.B); r.dist = backAt(k, PULL.s0, PULL.near); }
+                p = g >= 1 ? PULL.wideP : q.p0 + (PULL.wideP - q.p0) * g;
+            } else r.target.copy(q.B);
+            r.pitch = p + (ESC.peak - p) * e.rise;
+            camFromRig(r, w.camera);
+            launchCam(w.camera, e, now);
+        }
+        if (k >= 1) { if (q.weak) backIn(q, w, a); else finish(); }
+    }
+    /* the rocket camera on top of the rig's view: look up (tilt), lean (roll), and shake while the engine fights the pull.
+       Turns only (a few degrees), drawn fresh every frame after the rig's lookAt, so nothing adds up and it ends level. */
+    function launchCam(cam, e, now) {
+        if (!cam || !cam.rotateX || !e) return;
+        const t = now / 1000, s = e.shake * ESC.shake;
+        if (!(e.tilt || e.roll || s)) return;
+        cam.rotateX(e.tilt + s * (Math.sin(t * 37) + 0.5 * Math.sin(t * 61 + 1.3)));
+        cam.rotateY(s * (Math.sin(t * 29 + 0.7) + 0.5 * Math.sin(t * 53)));
+        cam.rotateZ(e.roll * (1 + 0.15 * Math.sin(t * 2.1)));
+        cam.updateMatrixWorld();
+    }
+    /* weak Misty: the pull won. Down at the core again (the screen is the world's colour), the place comes back under a copy of
+       that close-up, the camera is where it was inside, and the trip out is called off ('cancel': no arrival, no sound) */
+    function backIn(q, w, a) {
+        const r = a && a.rig;
+        snapNow(a);
+        enter(q.from, true);
+        if (r && q.inRig) {
+            r.fly = null; r.flyYaw = null; r.vy = 0; r.vp = 0; r.idle = 0;
+            r.target.copy(q.inRig.t); r.dist = q.inRig.d; r.yaw = q.inRig.yaw; r.pitch = q.inRig.pitch;
             camFromRig(r, w.camera);
         }
-        if (k >= 1) finish();
+        st.warp = null; clean(q);
+        q.held = true; warpEv('cancel', q.id, q.from);
+        q.done && q.done();
     }
     function stepWarp(w, dt) {
         const q = st.warp, a = w3(), cam = w.camera, THREE = w.three, d = Math.max(1 / 240, Math.min(0.05, dt || 0.016));
@@ -578,7 +653,7 @@
         st.off = a.onFrame((dt, now) => frame((now || performance.now()) / 1000, dt)); return true;
     }
     function lightMode() { return D.documentElement.dataset.theme === 'light'; }
-    function enter(id) {
+    function enter(id, quiet) {
         const w = wo(); if (!w) return;
         if (st.region) { st.region.dispose(); st.region = null; }
         st.murk = 0; st.place = null;
@@ -590,7 +665,7 @@
             const bg = new w.three.Color(reg.bg); if (lightMode()) bg.lerp(new w.three.Color(0xcfe4f7), 0.22);
             w.setLook({ bg, fog: 0.026 }); st.region = reg;
         }
-        st.cur = id; renderUi(); if (id === 'lung' && !st.warp) lungCard(); say(id);
+        st.cur = id; renderUi(); if (id === 'lung' && !st.warp) lungCard(); if (!quiet) say(id);
         try { W.dispatchEvent(new CustomEvent('lowi:world-region', { detail: { id, place: id === 'hub' ? 'blood' : id } })); } catch (e) { }
     }
     /* fromBase: the base world already started its glide (its labels, beacon taps or the card's Back) */
@@ -615,9 +690,10 @@
         if (reduced()) { enter(id); lungCard(); done(); return true; }
         const R = byId(id), from = byId(st.cur), src = rev && from ? from : R, hue = src.hue != null ? src.hue : 0xe0475a;
         if (rev) {
-            const q = { id, phase: 'cut', seam: true, rev: true, wide: !!(opts && opts.wide), tu: 0, t0: 0, clock: 0, last: null, hue, css: src.css, fov0: w.camera.fov, done };
+            const q = { id, phase: 'cut', seam: true, rev: true, wide: !!(opts && opts.wide), weak: !!(opts && opts.weak && !opts.wide), tu: 0, t0: 0, clock: 0, last: null, hue, css: src.css, fov0: w.camera.fov, done };
             const bp = (a.regions || []).find(x => x.id === baseId(from.id));
             q.B = bp && bp.pos ? bp.pos.clone() : new THREE.Vector3();
+            q.inRig = { t: a.rig.target.clone(), d: a.rig.dist, yaw: a.rig.yaw, pitch: a.rig.pitch }; /* where a weak Misty comes back to */
             a.rig.fly = null; a.rig.flyYaw = null; a.rig.vy = 0; a.rig.vp = 0;
             st.warp = q; warpOn(true);
             warpEv('start', id, q.from = from ? from.id : st.cur);

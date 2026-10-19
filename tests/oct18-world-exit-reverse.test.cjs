@@ -36,7 +36,8 @@ test('the pull-back starts inside the ring, right at the core: the screen is the
   const halfV = 27.5 * Math.PI / 180;
   assert.ok(Math.asin(CORE_R / P.s0) > halfV, 'the core fills the screen at the start');
   assert.ok(P.near >= 4 && P.near <= 6.5, 'ends on the outside view of that world (planet-size on screen), not the zoomed-out whole world');
-  assert.ok(P.ms >= 1400 && P.ms <= 2200, 'long enough to see the rings, short enough not to drag: ' + P.ms);
+  // Oct 19 (E-man: "it was still coming out real fast"): the way out is a slow launch now (tests/oct19-exit-interstellar.test.cjs)
+  assert.ok(P.ms >= 4000 && P.ms <= 6500, 'slow enough to feel the climb out, short enough not to drag: ' + P.ms);
 });
 
 test('backAt: continuous, only ever pulling back, slow through the ring band, settling softly at the end', () => {
@@ -83,6 +84,8 @@ function runOut(opts) {
   const src = ['const smooth = ' + regions.match(/const smooth = (\([^\n]*\});/)[1] + ';',
     'const SEAM = ' + regions.match(/const SEAM = (\{[^}]*\});/)[1] + ';',
     'const PULL = ' + regions.match(/const PULL = (\{[^}]*\});/)[1] + ';', fnSrc(regions, 'function backAt('),
+    // Oct 19: the pull-back is a launch now (escapeAt paces it, launchCam turns the camera, backIn is weak Misty's way back in)
+    'const ESC = ' + regions.match(/const ESC = (\{[^}]*\});/)[1] + ';', fnSrc(regions, 'function escapeAt('), fnSrc(regions, 'function launchCam('), fnSrc(regions, 'function backIn('),
     fnSrc(regions, 'function camFromRig(r, cam)'), fnSrc(regions, 'function snapNow(a)'), fnSrc(regions, 'function snapDrop(now)'), fnSrc(regions, 'function seamStep(q, w, a, now)'),
     'out.seamStep = seamStep; out.PULL = PULL;'].join('\n');
   vm.runInContext(src, ctx);

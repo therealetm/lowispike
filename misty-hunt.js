@@ -99,7 +99,29 @@
         const s = norm(st, now), L = levelOf(s.xp);
         return { level: L.level, xp: L.xp, next: L.next, boost: s.boost, label: L.level > 0 ? tr('label', lang) + L.level : '', total: s.xp, today: s.today, cap: RULES.xpDay };
     }
-    const core = { RULES, dayKey, count, need, levelOf, tries, strength, spots, norm, eat, enter, read, STR, tr };
+    /* Oct 19 (E-man): weak Misty can't break free of a world's rings and gets pulled back in. What she says then: short, warm, her
+       own voice, never a lecture. He is "not a fan of text repeating itself too often", so they come out of a shuffle bag (bagNext):
+       every line once before any comes back, and never the same line twice in a row, also when the bag is refilled. */
+    const HELD = {
+        en: ['Whoa, the rings pulled me right back in! Let me catch my breath and try again.', 'So close! This world wants me to stay a little longer.', 'My little engine sputtered. One more push?', 'The pull is strong today and I am running low. Next try!', 'Back in! I will build up speed and break free next time.', 'Oof, the rings hugged me back in. I am not giving up!', 'A little more energy and I will fly right out of here.', 'I almost touched the stars! Let us try that again.'],
+        de: ['Huch, die Ringe haben mich zurückgezogen! Kurz durchatmen, dann nochmal.', 'So knapp! Diese Welt will, dass ich noch ein bisschen bleibe.', 'Mein kleiner Antrieb hat gestottert. Noch ein Anlauf?', 'Der Sog ist heute stark und meine Kraft knapp. Nächster Versuch!', 'Wieder drin! Ich hole Schwung und breche beim nächsten Mal durch.', 'Uff, die Ringe haben mich zurückgeholt. Ich gebe nicht auf!', 'Noch etwas mehr Energie, dann fliege ich hier raus.', 'Fast hätte ich die Sterne berührt! Versuchen wir es nochmal.'],
+        es: ['¡Uy, los anillos me arrastraron de vuelta! Respiro un momento y lo intento otra vez.', '¡Casi! Este mundo quiere que me quede un poquito más.', 'Mi pequeño motor tosió. ¿Otro empujón?', 'Hoy la atracción es fuerte y me queda poca energía. ¡Siguiente intento!', '¡Otra vez dentro! Tomo impulso y la próxima vez me escapo.', 'Uf, los anillos me abrazaron de vuelta. ¡No me rindo!', 'Con un poco más de energía salgo volando de aquí.', '¡Casi toco las estrellas! Probemos otra vez.']
+    };
+    function bagNext(bag, n, rnd) {
+        n = Math.max(0, Math.floor(+n || 0)); rnd = typeof rnd === 'function' ? rnd : Math.random;
+        if (!n) return { i: -1, bag: { left: [], last: -1 } };
+        const last = bag && Number.isInteger(bag.last) && bag.last < n ? bag.last : -1;
+        let left = bag && Array.isArray(bag.left) ? bag.left.filter((i, j, a) => Number.isInteger(i) && i >= 0 && i < n && a.indexOf(i) === j && i !== last) : [];
+        if (!left.length) {
+            left = []; for (let i = 0; i < n; i++) left.push(i);
+            for (let i = n - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)) % (i + 1); const t = left[i]; left[i] = left[j]; left[j] = t; }
+            if (n > 1 && left[0] === last) { const j = 1 + (Math.floor(rnd() * (n - 1)) % (n - 1)); const t = left[0]; left[0] = left[j]; left[j] = t; }
+        }
+        const i = left.shift();
+        return { i, bag: { left, last: i } };
+    }
+    const heldLine = (i, lang) => { const L = HELD[String(lang || 'de').slice(0, 2)] || HELD.de; return L[i] || L[0]; };
+    const core = { RULES, dayKey, count, need, levelOf, tries, strength, spots, norm, eat, enter, read, STR, tr, HELD, bagNext, heldLine };
     if (typeof module !== 'undefined' && module.exports) module.exports = core;
     root.LowiMistyHuntCore = core;
 
@@ -273,6 +295,26 @@
         if ((bounced[key] || 0) < need) { bounced[key] = (bounced[key] || 0) + 1; say('bounce', {}, true); return false; }
         return true;
     }
+    /* getting out by your own steering (Oct 19): false = weak Misty, the rings pull her back in (same tries rule as getting in,
+       counted on its own per world and day, so she gets out on the next try or the one after); true = out */
+    const heldBack = {};
+    function gateOut(id) {
+        id = cleanId(id); if (!id || id === 'hub') return true;
+        let en = null; try { en = W.LowiSun && W.LowiSun.energyNow && W.LowiSun.energyNow(); } catch (e) { }
+        const need = tries(en && en.value), key = dayKey() + id;
+        if ((heldBack[key] || 0) < need) { heldBack[key] = (heldBack[key] || 0) + 1; return false; }
+        return true;
+    }
+    /* what she says once she is back inside: the next line from the bag (kept across visits, so a restart doesn't replay them) */
+    const BAG_KEY = 'lowi-misty-held-bag';
+    function heldSay() {
+        let bag = null; try { bag = JSON.parse(W.localStorage.getItem(BAG_KEY) || 'null'); } catch (e) { bag = null; }
+        const r = bagNext(bag, HELD.en.length);
+        try { W.localStorage.setItem(BAG_KEY, JSON.stringify(r.bag)); } catch (e) { }
+        const text = heldLine(r.i, lang());
+        try { if (W.LowiPraise && W.LowiPraise.say) W.LowiPraise.say(text); } catch (e) { }
+        return text;
+    }
     function entered(id) {
         const st = S(); if (!st) return;
         const r = enter(mine(), { world: id });
@@ -290,6 +332,6 @@
         const a = best.w.clone().project(cam), m = p.clone().project(cam);
         return { x: +(a.x - m.x).toFixed(3), y: +(a.y - m.y).toFixed(3), left: live.length, behind: a.z > 1, steerAgo: performance.now() - (H.steerAt || 0) };
     }
-    W.LowiMistyHunt = Object.assign({}, core, { frame, gate, entered, clear, toward, tally, state: () => ({ id: H.id, n: H.n, left: H.bits.filter(b => !b.gone).length, spots: H.bits.filter(b => !b.gone).map(b => { b.sp.getWorldPosition(b.w); return [+b.w.x.toFixed(2), +b.w.y.toFixed(2), +b.w.z.toFixed(2)]; }) }) });
+    W.LowiMistyHunt = Object.assign({}, core, { frame, gate, gateOut, heldSay, entered, clear, toward, tally, state: () => ({ id: H.id, n: H.n, left: H.bits.filter(b => !b.gone).length, spots: H.bits.filter(b => !b.gone).map(b => { b.sp.getWorldPosition(b.w); return [+b.w.x.toFixed(2), +b.w.y.toFixed(2), +b.w.z.toFixed(2)]; }) }) });
     setTimeout(() => pub(), 1500);
 })(typeof window !== 'undefined' ? window : globalThis);

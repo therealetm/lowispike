@@ -88,6 +88,8 @@ function runCut(opts) {
   vm.createContext(ctx);
   const src = ['const SEAM = ' + regions.match(/const SEAM = (\{[^}]*\});/)[1] + ';',
     'const smooth = ' + regions.match(/const smooth = (\([^\n]*\});/)[1] + ';', 'const PULL = ' + regions.match(/const PULL = (\{[^}]*\});/)[1] + ';', fnSrc(regions, 'function backAt('),
+    // Oct 19: the pull-back is a launch now (escapeAt paces it, launchCam turns the camera, backIn is weak Misty's way back in)
+    'const ESC = ' + regions.match(/const ESC = (\{[^}]*\});/)[1] + ';', fnSrc(regions, 'function escapeAt('), fnSrc(regions, 'function launchCam('), fnSrc(regions, 'function backIn('),
     fnSrc(regions, 'function camFromRig(r, cam)'), fnSrc(regions, 'function snapNow(a)'), fnSrc(regions, 'function snapDrop(now)'), fnSrc(regions, 'function seamStep(q, w, a, now)'),
     'out.seamStep = seamStep; out.SEAM = SEAM; out.PULL = PULL;'].join('\n');
   vm.runInContext(src, ctx);
@@ -134,7 +136,8 @@ test('frame 2 on: the copy fades only after the outside has had a frame, and the
   t.step(16 + t.PULL.ms + 1);
   assert.ok(t.log.includes('finish'));
   assert.strictEqual(t.rig.dist, t.PULL.near, 'the outside view of that world');
-  assert.ok(t.PULL.ms <= 2200 && t.SEAM.fade <= 450, 'the copy goes quickly; the pull-back is under 2.2 s');
+  // Oct 19 (E-man: "it was still coming out real fast"): the pull-back is a slow launch now (tests/oct19-exit-interstellar.test.cjs); the copy still goes quickly
+  assert.ok(t.PULL.ms <= 6500 && t.SEAM.fade <= 450, 'the copy goes quickly; the pull-back is under 6.5 s');
   assert.ok(!t.log.includes('VEIL'));
 });
 

@@ -25,7 +25,8 @@ test('World map out of a place: one seamless cut to the whole world, no in-betwe
     // World map ends on the whole world. Oct 18 (E-man: the way out is the fly-in in reverse): no longer at once; the pull-back
     // from the world she left carries on out to the widest view (tests/oct18-world-exit-reverse.test.cjs runs it frame by frame)
     assert.match(rj, /q\.home = to \? \{ t: to\.t\.clone\(\), d: q\.wide && r\.maxD \? r\.maxD : to\.d \} : null;/);
-    assert.match(rj, /if \(q\.wide && q\.home\) \{[\s\S]*?r\.dist = backAt\(k, PULL\.s0, q\.home\.d\);/);
+    // Oct 19 (the launch, escapeAt): the same pull-back out to the whole world's distance, now paced by the launch curve
+    assert.match(rj, /const s1 = q\.wide && q\.home \? q\.home\.d : PULL\.near;\s*r\.dist = e\.f >= 1 \? s1 : PULL\.s0 \* Math\.pow\(s1 \/ PULL\.s0, e\.f\);/);
     // World map asks for the wide ending instead of a second zoom 1.9 s later
     assert.match(wh, /R\.travel\('hub', false, 0, \{ wide: true \}\)/);
     const R = require(path.join(root, 'body-world-regions.js')), P = R.warpPose;

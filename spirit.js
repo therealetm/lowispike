@@ -1947,7 +1947,7 @@
         }
         /* Type it on the food camera: the camera closes, the meal sheet opens over Scan */
         const fromCam = !!(foodCam && foodCam.contains(b));
-        if (a === 'meal' && fromCam) cancelCapture();
+        if (a === 'meal' && foodCam && foodCam.contains(b)) cancelCapture();
         if (a === 'open') open();
         else if (a === 'close') close();
         else if (a === 'scan') scan();

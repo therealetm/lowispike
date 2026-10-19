@@ -35,7 +35,9 @@
         if (vis($('#r2ob')) || vis($('.hs-ivov.on'))) return 'setup';
         if (H.classList.contains('mf-on')) return 'flight';
         const list = (W.LowiRitualCore && LowiRitualCore.BUSY) || [];
-        for (const s of list) { let el = null; try { el = $(s); } catch (e) { } if (el && vis(el)) return s; }
+        /* the Day card's BUSY list names the tour itself ('#ltTour:not(.lt-held)', so the Day card waits for it): never count our own
+           overlay, or the tour hides itself, finds nothing, shows again, and flickers every tick (Oct 19 2026, Emmanuel's iPhone) */
+        for (const s of list) { let el = null; try { el = $(s); } catch (e) { } if (el && !el.closest(OWN) && vis(el)) return s; }
         for (const el of D.querySelectorAll('[aria-modal="true"], [role="dialog"].on, [role="dialog"].open')) { if (el.closest(OWN)) continue; if (vis(el)) return '#' + (el.id || el.className || 'dialog'); }
         if (H.classList.contains('ss2-open')) return 'settings';
         return '';
@@ -108,10 +110,15 @@
         if (afterClaim) { afterClaim = false; go(i + 1, 'claim-closed'); return; }
         render();
     }
+    /* hide at once, but come back only after QUIET_TICKS quiet ticks in a row, so a sheet's closing animation can't blink it */
+    const QUIET_TICKS = 2;
+    let quiet = 0;
     function tick() {
         if (!on) return;
         const why = busyBy();
-        if (why) hold(why); else if (held) unhold(); else place();
+        if (why) { quiet = 0; hold(why); }
+        else if (held) { if (++quiet >= QUIET_TICKS) { quiet = 0; unhold(); } }
+        else place();
     }
     function go(n, how) {
         if (n >= list.length) { stop('finished'); return; }

@@ -262,6 +262,29 @@
     const QUEST_IDS = ['f3Board', 'hcLine', 'hqSlot'];
     /* its weight against other things to keep clear (Misty 4, controls 2): the Daily Quest always wins */
     const QUEST_W = 12;
+    /* Docking (Oct 19, 2026, bug hunt): beside the guide there is not always a clear spot. On a phone the bubble is 260 px wide,
+       and the sidekick swims right under the joystick with Misty just below it, so the cheapest spot beside it covered the
+       joystick for seconds at a time. Nothing beside the guide may cover the joystick (any line), and nothing beside it may
+       cover Misty, the joystick or the top row while the "Remember?" question asks. When the chosen spot does, the bubble
+       docks at the top or bottom of the screen, without a tail, at the least-covered of four spots, and only if that covers
+       less than the spot beside the guide.
+       r = the chosen spot {l, t, spot}; b = {w, h}; hard = rects to keep clear (not the guide's own orb); view = {w, h};
+       pal = {x, y}; must = the rects that may never be covered (null: all of hard; the shell adds a 16 px margin once docked).
+       Returns the docked spot, or null. */
+    const PAD_IDS = ['whPad'];
+    function dockSpot(r, b, hard, view, pal, must) {
+        if (!r || !b) return null;
+        const R = q => ({ l: q.l, t: q.t, r: q.l + b.w, b: q.t + b.h });
+        /* the rects that may never be covered count twice: once in hard, once more here (with any margin the shell added) */
+        const cost = q => { let c = 0; for (const o of hard || []) c += overlap(R(q), o); for (const o of must || []) c += overlap(R(q), o); return c; };
+        const hit = (must || hard || []).some(o => overlap(R(r), o) > 0);
+        if (!hit) return null;
+        const x = Math.max(10, Math.min(view.w - 10 - b.w, pal.x - b.w / 2));
+        const cand = [{ l: x, t: 56 }, { l: x, t: view.h - b.h - 28 }, { l: (view.w - b.w) / 2, t: 56 }, { l: (view.w - b.w) / 2, t: view.h - b.h - 28 }];
+        let best = null, bc = cost(r);
+        for (const q of cand) { const c = cost(q); if (c < bc) { bc = c; best = q; } }
+        return best ? { l: best.l, t: best.t, tail: 0, spot: r.spot } : null;
+    }
     function questBottom(obs) { let b = null; for (const o of obs || []) if (o && QUEST_IDS.indexOf(o.k) >= 0) b = b == null ? o.b : Math.max(b, o.b); return b; }
     function place(pal, b, obs, view, prev, gap) {
         const all = SPOTS.map(s => {
@@ -319,7 +342,7 @@
     function tilt(v) { return clamp(Math.round((v && v[0] || 0) * 900), -18, 18); }
     const api = { PALS, IDS, pid, li3, COPY, tr, pal, lines, FOLLOW, target, step, relax, tilt, awardsXp: false,
         MORE, GUIDE, DIRS, HUNT, dirIndex, guide, huntLine, showMs, minRead, nextFact, SPOTS, overlap, spotRect, place,
-        gapFor, QUEST_IDS, QUEST_W, questBottom, ORB_R, BACK, backLine, memory, met, meet, opening, cycle,
+        gapFor, QUEST_IDS, QUEST_W, questBottom, PAD_IDS, dockSpot, ORB_R, BACK, backLine, memory, met, meet, opening, cycle,
         TOPICS, lessonCount, topic, recallAsk, recallGood, askMs, tell, remember, toldBefore, nextNew, answer };
     if (typeof module === 'object' && module.exports) module.exports = api;
     root.LowiRegionPalsCore = api;

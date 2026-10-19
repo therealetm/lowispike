@@ -177,7 +177,9 @@
         D.querySelectorAll(AVOID).forEach(e => {
             if (st.el && st.el.contains(e)) return;
             const q = e.getBoundingClientRect(); if (q.width < 4 || q.height < 4 || q.bottom < 0 || q.top > vh || q.right < 0 || q.left > vw) return;
-            if (!visible(e) && !(cleanOn() && e.matches && e.matches(FADED_KEEP_CLEAR))) return;
+            /* the joystick is kept clear even while it is faded in or out (as Misty swims into a world, or while you steer):
+               it comes back where it was, and the bubble must not be sitting on it then */
+            if (C.PAD_IDS.indexOf(e.id) < 0) if (!visible(e) && !(cleanOn() && e.matches && e.matches(FADED_KEEP_CLEAR))) return;
             out.push({ l: q.left - 6, t: q.top - 6, r: q.right + 6, b: q.bottom + 6, w: C.QUEST_IDS.indexOf(e.id) >= 0 ? C.QUEST_W : 2, k: e.id || '' });
         });
         st.obs = out; st.obsT = now; return out;
@@ -199,19 +201,20 @@
         /* the tail ends right at the orb's rim, for the full guide and the small sidekick alike: it visibly comes out of it */
         let r = C.place(pal, st.size, obs, view, force ? null : st.spot, C.gapFor(orb));
         if (!r) return;
-        /* the "Remember?" question with its buttons never sits on Misty or the joystick: when no spot beside the guide is
-           clear (she roams right past the joystick), it docks clear of both at the top or bottom of the screen, without a tail */
+        /* the "Remember?" question with its buttons never sits on Misty or the joystick, and no line ever sits on the joystick
+           (Oct 19 bug hunt: the sidekick swims right under it, so the cheapest spot beside it covered the joystick for seconds).
+           When no spot beside the guide is clear, it docks at the top or bottom of the screen, without a tail (C.dockSpot).
+           Once docked, a line stays docked until the spot beside the guide is 16 px clear of the joystick: no flapping. */
         let dock = false;
-        if (st.asking) {
-            const hard = obs.slice(0, obs.length - 1), sz = st.size, vw = W.innerWidth, vh = W.innerHeight;
-            const cost = q => { let c = 0; const R = { l: q.l, t: q.t, r: q.l + sz.w, b: q.t + sz.h }; for (const o of hard) c += C.overlap(R, o); return c; };
-            if (cost(r) > 0) {
-                const x = Math.max(10, Math.min(vw - 10 - sz.w, pal.x - sz.w / 2));
-                const cand = [{ l: x, t: 56 }, { l: x, t: vh - sz.h - 28 }, { l: (vw - sz.w) / 2, t: 56 }, { l: (vw - sz.w) / 2, t: vh - sz.h - 28 }];
-                let best = null, bc = cost(r);
-                for (const q of cand) { const c = cost(q); if (c < bc) { bc = c; best = q; } }
-                if (best) { r = { l: best.l, t: best.t, tail: 0, spot: r.spot }; dock = true; }
-            }
+        const hard = obs.slice(0, obs.length - 1);
+        let must = null;
+        if (!st.asking) {
+            const m0 = el.classList.contains('rp-dock') ? 16 : 0;
+            must = hard.filter(o => C.PAD_IDS.indexOf(o.k) >= 0).map(o => ({ l: o.l - m0, t: o.t - m0, r: o.r + m0, b: o.b + m0 }));
+        }
+        if (st.asking || must.length) {
+            const d = C.dockSpot(r, st.size, hard, { w: W.innerWidth, h: W.innerHeight }, pal, must);
+            if (d) { r = d; dock = true; }
         }
         el.classList.toggle('rp-dock', dock);
         if (r.spot !== st.spot) { el.classList.remove('rp-s-' + st.spot.slice(0, 2)); st.spot = r.spot; }

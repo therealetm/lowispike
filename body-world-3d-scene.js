@@ -290,11 +290,14 @@ export function createWorld(THREE, canvas, opts) {
        edges, many small far ones, soft curving threads of light with beads travelling along them, fine sparkling dust and a dark starry
        deep. Base stays dark blue and Misty blue; cyan, green, purple, magenta and gold only as glows inside the cells, like his picture. */
     const reduceMq = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+    /* Oct 19 2026 (Emmanuel, iPad screenshot): no shading crescent on any bubble. The old fixed upper-left glint lobe
+       (pow(dot(n, (-0.45,0.6,0.65)), 22)) sat at 0.75 R towards 11 o'clock on every cell and read as a shadow arc, so it is gone.
+       The symmetric fresnel rim, the veins and the colours are the glass look and stay. */
     function membraneMat(col, rim, rim2) {
         return new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.FrontSide, extensions: { derivatives: true },
             uniforms: { uCol: { value: new THREE.Color(col) }, uRim: { value: new THREE.Color(rim) }, uRim2: { value: new THREE.Color(rim2 || rim) }, uO: { value: 0 }, uT: { value: 0 } },
             vertexShader: 'varying vec3 vN; varying vec3 vV; varying vec3 vP; void main(){ vec4 mv = modelViewMatrix * vec4(position,1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); vP = position; gl_Position = projectionMatrix * mv; }',
-            fragmentShader: 'uniform vec3 uCol; uniform vec3 uRim; uniform vec3 uRim2; uniform float uO; uniform float uT; varying vec3 vN; varying vec3 vV; varying vec3 vP;' + EDGE_AA + 'void main(){ float f = 1.0 - abs(dot(vN, vV)); float nv = abs(dot(normalize(vN), normalize(vV))); float rim = pow(f, 2.3); float veins = 0.5 + 0.5 * sin(vP.x * 7.0 + uT * 0.4) * sin(vP.y * 6.0 - uT * 0.3) * sin(vP.z * 6.5 + uT * 0.25); vec3 rc = mix(uRim, uRim2, 0.5 + 0.5 * vN.y); float hl = pow(max(dot(vN, normalize(vec3(-0.45, 0.6, 0.65))), 0.0), 22.0); vec3 c = uCol * 0.10 + rc * rim * 0.85 + rc * veins * rim * 0.35 + vec3(0.8, 0.92, 1.0) * hl * 0.3; gl_FragColor = vec4(c, (0.035 + rim * 0.9 + hl * 0.25) * uO * lwEdge(nv)); }' });
+            fragmentShader: 'uniform vec3 uCol; uniform vec3 uRim; uniform vec3 uRim2; uniform float uO; uniform float uT; varying vec3 vN; varying vec3 vV; varying vec3 vP;' + EDGE_AA + 'void main(){ float f = 1.0 - abs(dot(vN, vV)); float nv = abs(dot(normalize(vN), normalize(vV))); float rim = pow(f, 2.3); float veins = 0.5 + 0.5 * sin(vP.x * 7.0 + uT * 0.4) * sin(vP.y * 6.0 - uT * 0.3) * sin(vP.z * 6.5 + uT * 0.25); vec3 rc = mix(uRim, uRim2, 0.5 + 0.5 * vN.y); vec3 c = uCol * 0.10 + rc * rim * 0.85 + rc * veins * rim * 0.35; gl_FragColor = vec4(c, (0.035 + rim * 0.9) * uO * lwEdge(nv)); }' });
     }
     /* glowing points: one shader for inner cells, organelles, beads, dust and the starry deep (size in world units, own distance fade,
        optional slow orbit around a centre so cells drift inside their sphere, optional twinkle) */

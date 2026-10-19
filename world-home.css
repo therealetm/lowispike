@@ -15,7 +15,8 @@ html.wh-home #spHome .bw3-open { display: none !important; }
 html.wh-home #spHome #spBubble { position: absolute !important; left: 50% !important; top: var(--wh-cy) !important; width: var(--wh-bs) !important; height: var(--wh-bs) !important; max-width: none !important; margin: 0 !important; transform: translate(-50%, -50%) scale(var(--wh-mz, 1)) !important; z-index: 2; pointer-events: auto;
     /* one simple bubble (no 3D yet / reduced motion): a thin clear rim, no glow shells */
     border: 1.5px solid rgba(225,248,255,.42) !important; background: radial-gradient(circle at 30% 22%, rgba(255,255,255,.16), transparent 42%) !important; box-shadow: none !important; }
-html.wh-home #spBubble .tmg-plant { filter: drop-shadow(0 6px 12px rgba(0,0,0,.22)); }
+/* Oct 19 2026: no dark drop shadow under Misty in any Home layout (was 0 6px 12px black); a centred soft glow keeps her lifted */
+html.wh-home #spBubble .tmg-plant { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--tmg-a, #8fe7ff) 28%, transparent)); }
 /* the fasting cell floats next to Misty (same node, same tap: the fasting sheet) */
 html.wh-home #spHome #spFast { position: absolute !important; width: var(--wh-fs) !important; height: var(--wh-fs) !important; margin: 0 !important;
     left: calc(50% - var(--wh-sx)) !important; top: calc(var(--wh-cy) + var(--wh-sy)) !important; transform: translate(-50%, -50%) !important; z-index: 2; pointer-events: auto; }

@@ -515,7 +515,7 @@
         } catch (e) { }
         c.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
         c.removeAttribute('class'); c.setAttribute('width', '260'); c.setAttribute('height', '310');
-        c.querySelectorAll('.lh-acc,.lh-pot-fx,.lh-constellation').forEach(n => n.remove());
+        c.querySelectorAll('.lh-acc,.lh-pot-fx,.lh-constellation,.lh-reflection').forEach(n => n.remove()); /* Oct 19: no oval "ground shadow" baked into the 3D sprite, flight body or face */
         /* the live markup can carry a stray attribute (e.g. a lone quote) that HTML tolerates and XML does not: drop it or the image never loads */
         [c, ...c.querySelectorAll('*')].forEach(n => [...n.attributes].forEach(at => { if (!/^[A-Za-z_][-A-Za-z0-9_.:]*$/.test(at.name)) { try { n.removeAttributeNode(at); } catch (e) { } } }));
         const sty = s.getAttribute('style') || '';

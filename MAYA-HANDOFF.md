@@ -537,6 +537,28 @@ reached main (25 is now the ten forms), recorded here at 10:45 PM before the mer
    - **Task** 4e961904 built it on branch `food-paths` (worktree `/home/sprite/wt-food-paths`, notes
      `/home/sprite/COORD-food-paths.md`) and ran out of budget before merging; the follow-up task "finish food navigation
      and unified meal logging" (10:42 PM) fixes e2e, tests in DE/ES on simulated iPhone/iPad, merges and releases.
+**28. The aura you pick shows on your companion; rename your companion by hand.** REQUESTED 10:0x PM call (19 Oct),
+task "LOWiSPIKE: working aura customization and companion renaming" (ce74d1af) started 10:11 PM, branch `aura-rename`,
+worktree `/home/sprite/wt-aura-rename`, notes `/home/sprite/COORD-aura-rename.md`. DONE, see the Log for the build.
+   - He said (voice): "So I've changed the color of the aura, and now I click back to my Misty and nothing changed. So
+     that doesn't make sense." And: "my friend said ... it would be nice to change the name manually ... when their
+     companion gets a name."
+   - Found: the pick was saved (`lowi.aura`), but Home Misty's glow always used her star-sign colour, and Misty's card
+     under the Glow sheet never repainted, so nothing visible changed. The 3D flying sprite already used the aura.
+     The key was also device-wide (not in the account backup, and kept by the next account on that phone).
+   - Built: once you pick an aura, Home Misty's glow takes its colours (her body colours stay; without a pick she keeps
+     the star-colour glow); the card repaints on `lowi:aura`; the toast says her own name. Aura key is now
+     `lowispike.aura.v1` (account backup, swapped on sign-in), old `lowi.aura` moved over once.
+   - Rename: a "Rename" button under the name and level on her card (not beside the name: the sheet's grab handle owns
+     that strip when the card is pulled up). Field with Save / Cancel, Enter saves, Escape cancels only the field,
+     1 to 24 characters with at least one letter or number, empty goes back to the generated name (or Misty).
+     `LowiBirthCompanion.rename()` changes only the name (look comes from bday/btime/n), saved in
+     `lowispike.companion.v1` or the herb name for Misty, fires `lowi:companion`. `displayName()` / `withName()`
+     put her name into fixed lines that said "Misty": the controller label and its first-time chip, "Next journey",
+     the zoom stick label, the gift-of-the-day label. New tutorial step `rename` (covers rename, aura).
+   - Tests: tests/aura-rename.test.cjs; probe playtest/probe-aura-rename.cjs (iPhone 13 WebKit and Android Chrome).
+   - Left: other places that still hard-code "Misty" in fixed text were not swept here; renaming the Misty fallback
+     does not change Misty's look.
 
 ### 0.6 The Mickey 17 workflow: how every Maya hands over to the next
 
@@ -1079,3 +1101,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 - 2026-10-19 22:30 Release 20261019-222926 (item 22): companion card without "spirit" (Home world, Cell worlds, Galaxy, Other worlds, Streams; also onboarding, the tutorial galaxy step, the "Community galaxy" title), the timed adventure reaches a place only with her level AND your own visit (S.advSeen + device copy, ledger seed; autopilot and your own flying ungated), Forms / Food journal / Glow first on the card, mood check-in explained and last, Collection is now a Food journal (foods you logged or scanned, how those meals went, never needed to evolve). Item 24 restored and handed to the food-paths task 4e961904.
 - 2026-10-19 22:40 Release 20261019-223855 (item 22 follow-up): Forms / Food journal / Glow moved above the companion's words, right under the name, so they are fully in view when the card opens on a simulated iPhone 13 (doors 435-539 px of 664). 1,789 tests pass. Live-checked on simulated iPhone 13 (WebKit) and Android Chrome: places read Home world / Cell worlds / Galaxy / Other worlds / Streams with "Go there yourself" / "Level 5 + go there", no "spirit" on the card, Food journal opens, no errors. Not checked on a real phone; autopilot could not be started in the test browser, so "autopilot never counts as your visit" is covered by unit tests only.
 - 2026-10-19 22:45 Item 27 recorded under 0.5 (before merging): food paths (Scan, Gap, Fuel, Cook, Shop) get one clear job each and one shared meal-logging flow; scanning a product not yet in the database catches it (Pathfinder, item 24; XP adds to the normal total). Branch food-paths, follow-up task finishing it.
+- 2026-10-19 22:55 Item 28: picked aura now shows on Home Misty and her card at once and follows the account (lowispike.aura.v1); Rename under the name on her card (1-24 chars, empty = generated name), her name reaches the controller, Next journey, zoom and gift labels; tutorial step 'rename'. Branch aura-rename.

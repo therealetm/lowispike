@@ -282,6 +282,16 @@
                 es: 'En mi tarjeta también está mi casa: un cuartito en tu sangre. Decóralo como quieras.'
             }
         },
+        {
+            /* Oct 19 (aura-rename task): a name of your own and a glow colour, both on my card */
+            id: 'rename', area: 'companion', target: ['[data-home-misty]', '#spBubble'], covers: ['rename', 'aura'],
+            title: { en: 'My name and glow', de: 'Mein Name und Leuchten', es: 'Mi nombre y mi brillo' },
+            text: {
+                en: 'Want to call me something else? Hold me and tap Rename under my name. In Glow you can also pick the colour of my light.',
+                de: 'Willst du mich anders nennen? Halt mich gedrückt und tipp unter meinem Namen auf Umbenennen. Unter Leuchten suchst du auch die Farbe meines Lichts aus.',
+                es: '¿Quieres llamarme de otra forma? Mantenme pulsado y toca Cambiar nombre debajo de mi nombre. En Brillo también eliges el color de mi luz.'
+            }
+        },
         /* ---------- part: together (community) ---------- */
         {
             id: 'community', area: 'together', target: ['#whHud .o8-settings'], covers: ['community'],

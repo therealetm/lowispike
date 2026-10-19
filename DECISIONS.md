@@ -696,3 +696,15 @@ Emmanuel (call): "Their companions appear ... on my homepage ... one of those ou
 - Never replayed: only messages you have not seen in the room, under 12 hours old, and never twice per account on this device (remembered ids, `lowispike.homeVisit.v1`). After a reload or time away only the two newest unseen come by. Opening Community drops everything waiting (it is in front of you there). The room's toast is skipped only while Home actually takes the visit.
 - When it waits: Home must be in front with nothing on top (setup, Day card, tutorial, sheets, dialogs, Settings, galaxy zoom); a sheet opening mid-visit sends them away (back in the queue if you had not really seen it yet). Quiet hours you set yourself in Community hold visits back; the default 22:00 to 08:00 hours do not, because a visit is silent and only happens while you are looking at Home.
 - Light on the iPhone: plain DOM, one layer while visiting, transform/opacity animations only, no WebGL, no animation loop, one small timer only while a visit waits or shows; everything removed afterwards. Reduced motion: no flight or flicker, they fade in in place. English, German, Spanish.
+
+## 2026-10-19: The picked aura is visible on the companion; companions can be renamed by hand
+
+**Context:** Emmanuel changed the aura colour and "nothing changed" on Misty; a friend wanted to rename their companion.
+
+**Decision:** an aura you pick replaces Home Misty's star-colour glow (body colours never change) and repaints her card at
+once; with no pick the old look stays. The aura is saved per account (`lowispike.aura.v1`). A Rename button under the name
+on her card renames her: only the name changes, never the look; empty goes back to the generated name; 1 to 24 characters
+with a letter or number. Fixed lines that say "Misty" use her name through `LowiBirthCompanion.withName()`.
+
+**Consequences:** her name is the user's choice and syncs with the account; more fixed "Misty" lines can adopt withName()
+later. Tests: tests/aura-rename.test.cjs. MAYA-HANDOFF item 28.

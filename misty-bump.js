@@ -120,7 +120,9 @@
         cool: 0, dz: null, fl: null, flGap: 0, enc: new Map(), knocked: [], cur: null, curT: B.CUR_MIN, last: 0, now: 0, bumps: 0, dodged: 0, missed: 0, soft: 0, log: [] };
     const P = [0, 0, 0], C = [0, 0, 0], R = [0, 0, 0], Wv = [0, 0, 0], VM = [0, 0, 0], VC = [0, 0, 0];
     function note(s) { M.log.push(Math.round(M.now * 10) / 10 + ' ' + s); if (M.log.length > 20) M.log.shift(); }
-    const worldSpeed = () => { const v = +W.LowiWorldSpeed; return v > 0 ? Math.min(3, Math.max(0.1, v)) : 1; };
+    /* Oct 19: the world moves at the user's speed x her energy pace (window.LowiVigorFeel, same clamp as body-world-3d-scene.js) */
+    const energyPace = () => { const f = W.LowiVigorFeel, p = f ? +f.pace : 0; return p > 0 ? Math.min(1.8, Math.max(0.6, p)) : 1; };
+    const worldSpeed = () => { const v = +W.LowiWorldSpeed; return (v > 0 ? Math.min(3, Math.max(0.1, v)) : 1) * energyPace(); };
     function find(a) {
         if (M.scene !== a.scene || !M.mesh) {
             M.scene = a.scene; M.mesh = a.scene && a.scene.getObjectByName ? a.scene.getObjectByName('lowi-rbc') : null;

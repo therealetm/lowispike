@@ -107,6 +107,43 @@
     /* Oct 17: + boost = energy from hunt power-ups today (window.LowiMistyPower.read().boost, COORDINATOR "SHARED API: Misty power"),
        capped at boostMax; the hunt game applies its own fair rules. No boost = exactly the formula above. */
     const ENERGY = { base: 0.15, food: 0.4, water: 0.3, move: 0.3, waterGoal: 4, travel: 0.4, strong: 0.75, boostMax: 0.2 };
+    /* Oct 19 (E-man, fresh account: "I just started and my companion already looks tired and I'm at fifty percent ... at least when
+       they begin, let them see themselves at a hundred percent ... then when their power goes down, they notice"): WELCOME energy.
+       A NEW account starts full: we assume they treated themselves well. For HOLD_H hours from the moment they planted their
+       companion (the synced ledger entry 'herb-first:planted', written once per account by herb-start.js) energy is 100%; over
+       the next FADE_H hours the welcome eases out and only what they track is left (it never resets, never comes back).
+       It fills the gap above what they tracked: value = real + (1 - real) * k, so every glass / meal / Move still raises it while
+       it fades. Old accounts never get it: any ledger entry or meal log older than the planting (minus 1 h) = not a new account. */
+    const WELCOME = { eventId: 'herb-first:planted', HOLD_H: 12, FADE_H: 12, GRACE_MS: 3600e3 };
+    const tsOf = e => { const t = +(e && (e.ts || e.t)); if (t > 1e11) return t; const d = e && typeof e.day === 'string' ? Date.parse(e.day + 'T12:00:00') : NaN; return d > 0 ? d : 0; };
+    function welcomeStart(ledger, logs) {
+        ledger = Array.isArray(ledger) ? ledger : []; logs = Array.isArray(logs) ? logs : [];
+        const h = ledger.find(e => e && e.eventId === WELCOME.eventId), t = h ? +h.ts : 0;
+        if (!(t > 1e11)) return 0;
+        const t0 = t - WELCOME.GRACE_MS, d0 = dayKey(t0);
+        const old = e => { if (!e) return false; const x = tsOf(e); if (x) return x < t0; return typeof e.day === 'string' && e.day < d0; };
+        if (ledger.some(old) || logs.some(old)) return 0;
+        return t;
+    }
+    /* 1 for HOLD_H h, then a smooth ease to 0 over FADE_H h; 0 for no start / clock before the start by more than the grace */
+    function welcomeK(start, now) {
+        start = +start || 0; now = +now || Date.now();
+        if (!start || now < start - WELCOME.GRACE_MS) return 0;
+        const h = Math.max(0, now - start) / 36e5;
+        if (h <= WELCOME.HOLD_H) return 1;
+        const u = Math.min(1, (h - WELCOME.HOLD_H) / WELCOME.FADE_H);
+        return u >= 1 ? 0 : 1 - u * u * (3 - 2 * u);
+    }
+    /* how energy FEELS (shared by world pace, flight speed and the peak look): peak = 0..1 above ~82%, pace = world motion
+       multiplier (0.8 heavy and slow when resting, 1 at the old mid, up to 1.6 alive at the peak). Reduce Motion: pace 1. */
+    const FEEL = { peakFrom: 0.82, paceLow: 0.8, paceMid: 1, paceTop: 1.6 };
+    function feel(k, reduced) {
+        k = Math.max(0, Math.min(1, +k || 0));
+        const sm = (a, b, x) => { const u = Math.max(0, Math.min(1, (x - a) / (b - a))); return u * u * (3 - 2 * u); };
+        const peak = sm(FEEL.peakFrom, 1, k);
+        const pace = reduced ? 1 : FEEL.paceLow + (FEEL.paceMid - FEEL.paceLow) * sm(ENERGY.base, 0.6, k) + (FEEL.paceTop - FEEL.paceMid) * peak;
+        return { k, peak, pace: +pace.toFixed(4) };
+    }
     function verdict(l) {
         const r = String(l && l.r != null ? l.r : '').toLowerCase(), v = String(l && l.lvl || '').toLowerCase();
         if (r === 'ja' || v === 'low' || r === 'low' || r === 'yes') return 1;
@@ -132,9 +169,14 @@
         const food = logs.length ? logs.reduce((a, l) => a + verdict(l), 0) / logs.length : 0;
         const parts = { food, water: Math.min(1, water / ENERGY.waterGoal), move: moveSum };
         const boost = Math.max(0, Math.min(ENERGY.boostMax, +input.boost || 0));
-        const value = Math.max(0, Math.min(1, ENERGY.base + (1 - ENERGY.base) * (ENERGY.food * parts.food + ENERGY.water * parts.water + ENERGY.move * parts.move) + boost));
+        const real = Math.max(0, Math.min(1, ENERGY.base + (1 - ENERGY.base) * (ENERGY.food * parts.food + ENERGY.water * parts.water + ENERGY.move * parts.move) + boost));
+        /* welcome energy (new accounts only, see WELCOME): input.welcome (0..1) overrides, for tests / tools */
+        const wStart = input.welcome != null ? 0 : welcomeStart(input.ledger, input.logs);
+        const welcome = input.welcome != null ? Math.max(0, Math.min(1, +input.welcome || 0)) : welcomeK(wStart, now);
+        const value = welcome > 0 ? Math.min(1, real + (1 - real) * welcome) : real;
         const tier = value >= ENERGY.strong ? 'thriving' : value >= ENERGY.travel ? 'ok' : spikes ? 'weak' : 'tired';
-        return { value, tier, canTravel: value >= ENERGY.travel, meals: logs.length, spikes, water, moves, boost, parts, known: { food: logs.length > 0, water: water > 0, move: moves > 0 } };
+        const welcomeEnd = welcome > 0 && wStart ? wStart + (WELCOME.HOLD_H + WELCOME.FADE_H) * 36e5 : 0;
+        return { value, tier, canTravel: value >= ENERGY.travel, meals: logs.length, spikes, water, moves, boost, parts, known: { food: logs.length > 0, water: water > 0, move: moves > 0 }, real, welcome, welcomeEnd };
     }
     /* a trip may start today only once the sun bonus is in, nothing is out, and Misty has the energy */
     const mayDepart = (v, en) => !!(v && v.fullDone && !v.trip && !v.away && en && en.canTravel);
@@ -187,7 +229,7 @@
         if (!p.keep) { t.lost = [trip.item, trip.item2].filter(Boolean); delete t.item; delete t.item2; }
         return { trip: t, finds, keep: p.keep, plan: p };
     }
-    const core = { GOAL, AWAY_MS, BONUS, PTS, CAP, ITEMS, ENERGY, RECALL_KEEP, tended, classify, points, model, pickItem, fmtLeft, fmtBack, fmtHM, msToMidnight, dayKey, verdict, energy, mayDepart, tripFinds, makeTrip, recallPlan, recallTrip };
+    const core = { GOAL, AWAY_MS, BONUS, PTS, CAP, ITEMS, ENERGY, RECALL_KEEP, tended, classify, points, model, pickItem, fmtLeft, fmtBack, fmtHM, msToMidnight, dayKey, verdict, energy, WELCOME, welcomeStart, welcomeK, FEEL, feel, mayDepart, tripFinds, makeTrip, recallPlan, recallTrip };
     if (!D) {
         if (typeof module !== 'undefined' && module.exports) module.exports = core;
         return;

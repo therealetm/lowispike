@@ -105,6 +105,8 @@
         calms: ['The storm in your world calms down too.', 'Der Sturm in deiner Welt beruhigt sich dabei auch.', 'La tormenta de tu mundo tambi\u00e9n se calma.'],
         top: ['She\u2019s at the top. On trips she brings back a bonus find.', 'Sie ist ganz oben. Von Ausfl\u00fcgen bringt sie einen Extra-Fund mit.', 'Est\u00e1 arriba del todo. De sus viajes trae un hallazgo extra.'],
         drag: ['A spiky meal is weighing on her today. Low-spike meals lift her back up.', 'Eine Spike-Mahlzeit zieht sie heute runter. Mahlzeiten ohne Spike heben sie wieder an.', 'Una comida con pico la frena hoy. Las comidas sin pico la levantan.'],
+        /* Oct 19: a new account's welcome energy (sun-meter.js WELCOME): honest about where her power comes from and that it fades */
+        welcome: ['{n} starts out full: welcome energy for your first day. It fades out over the next {h} h, and what you track keeps her up.', '{n} startet voller Energie: Willkommensenergie f\u00fcr deinen ersten Tag. Sie l\u00e4sst in den n\u00e4chsten {h} Std. langsam nach, und was du eintr\u00e4gst, h\u00e4lt sie oben.', '{n} empieza llena: energ\u00eda de bienvenida para tu primer d\u00eda. Se desvanece en las pr\u00f3ximas {h} h, y lo que registras la mantiene arriba.'],
         nothing: ['Nothing tracked yet today, so she\u2019s resting.', 'Heute ist noch nichts eingetragen, also ruht sie.', 'Hoy a\u00fan no hay nada registrado, as\u00ed que descansa.'],
         travel: ['From \u201cOkay\u201d she can go on adventures.', 'Ab \u201eOkay\u201c kann sie auf Abenteuer gehen.', 'Desde \u00abBien\u00bb puede irse de aventura.'],
         fair: ['Fair play: each glass counts once (up to 4 a day), a Move once a day, the same meal twice counts once, and quick repeat taps add nothing. Her day starts fresh at midnight.', 'Fair Play: Jedes Glas z\u00e4hlt einmal (bis 4 am Tag), eine Bewegung einmal am Tag, dieselbe Mahlzeit doppelt z\u00e4hlt einmal, schnelle Wiederholungen bringen nichts. Um Mitternacht f\u00e4ngt ihr Tag neu an.', 'Juego limpio: cada vaso cuenta una vez (hasta 4 al d\u00eda), un Movimiento una vez al d\u00eda, la misma comida dos veces cuenta una vez y los toques repetidos no suman. Su d\u00eda empieza de nuevo a medianoche.'],
@@ -139,10 +141,12 @@
             '<div class="ms-scale" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.round(v * 100) + '" aria-valuetext="' + esc(tName + ', ' + pct(v)) + '" aria-label="' + esc(tr('title', l, { n })) + '" style="--ms-v:' + v.toFixed(3) + ';--ms-b:' + boost.toFixed(3) + ';--ms-ok:' + E.travel + ';--ms-full:' + E.strong + '">' +
             '<span class="ms-track">' + zone(0, E.travel, 'zLow', 'low') + zone(E.travel, E.strong, 'zOk', 'ok') + zone(E.strong, 1, 'zFull', 'full') +
             '<i class="ms-fill"></i>' + (boost > 0.004 ? '<i class="ms-boost"></i>' : '') + '<i class="ms-dot"></i></span></div>';
+        const wel = p.cur && p.cur.welcome > 0 && p.cur.welcomeEnd ? Math.max(1, Math.ceil((p.cur.welcomeEnd - Date.now()) / 36e5)) : 0;
+        if (wel) h += '<p class="ms-line ms-welcome">' + esc(tr('welcome', l, { n, h: wel })) + '</p>';
         if (p.full) h += '<p class="ms-line">' + esc(tr('top', l)) + '</p>';
         else {
             h += '<p class="ms-togo num"><b>' + esc(tr('toGo', l, { p: pctUp(p.need), t: tr(p.next, l) })) + '</b></p>';
-            const why = p.cur && p.cur.spikes ? tr('drag', l) : (p.cur && !p.cur.meals && !p.cur.water && !p.cur.moves ? tr('nothing', l) : '');
+            const why = p.cur && p.cur.spikes ? tr('drag', l) : (p.cur && !wel && !p.cur.meals && !p.cur.water && !p.cur.moves ? tr('nothing', l) : '');
             if (why) h += '<p class="ms-line">' + esc(why) + '</p>';
             if (p.steps.length) {
                 h += '<h4>' + esc(tr('way', l)) + '</h4><ol class="ms-steps">' + p.steps.map(s => '<li data-ms-step="' + s.k + '"><span>' + esc(stepText(s, l)) + '</span><b class="num">+' + pctR(s.gain) + '</b></li>').join('') + '</ol>';

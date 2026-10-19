@@ -39,11 +39,16 @@
     /* her on-screen size factor: 1 everywhere, shrinking only as she nears a place */
     const sizeK = ap => 1 - (1 - K.MIN_K) * clamp(ap, 0, 1);
     /* world units per second; tired is slower but never stuck. where: 'out' (the world), 'exit' (pushing her bubble), 'in' (a place) */
+    /* Oct 19 (E-man: "at a hundred percent it should be really fast, really strong"): PEAK = the top ~18% of her energy
+       (same curve as LowiSun.feel). At the peak she flies up to 30% faster out in the world, 25% faster breaking out of her
+       bubble, 20% faster inside a world; below ~82% nothing changes, so low energy stays exactly as heavy as before. */
+    const PEAK = { FROM: 0.82, OUT: 0.3, EXIT: 0.25, IN: 0.2 };
+    const peakOf = k => smooth(PEAK.FROM, 1, clamp(+k || 0, 0, 1));
     function speed(k, where) {
-        k = clamp(+k || 0, 0, 1);
-        if (where === 'in') return 0.55 + 1.05 * k;
-        if (where === 'exit') return 0.8 + 1.3 * k;
-        return 1.5 + 2.7 * k;
+        k = clamp(+k || 0, 0, 1); const pk = peakOf(k);
+        if (where === 'in') return (0.55 + 1.05 * k) * (1 + PEAK.IN * pk);
+        if (where === 'exit') return (0.8 + 1.3 * k) * (1 + PEAK.EXIT * pk);
+        return (1.5 + 2.7 * k) * (1 + PEAK.OUT * pk);
     }
     /* how far the membrane is tented out by her, and how much it holds her back */
     const stretchOf = (off, rin, smax) => clamp(off - rin, 0, smax);
@@ -277,7 +282,7 @@
     /* a blink of Home (in the background, world briefly not live) pauses a flight for up to OFF_GRACE s of screen time; anything else ends it */
     const OFF_GRACE = 4;
     const offGrace = (blink, offT) => !!blink && (+offT || 0) < OFF_GRACE;
-    const core = { IN_SIZE, inSizeK, lookBusy, homeIdle, OFF_GRACE, offGrace, K, inReach, freeReach, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, placeOk, roams, autoLeave, roamSpot, roamHold, roamPx, pullAt, fallAt, EXIT, exitHold, MIST, angWrap, exitGaps, inMist, gapToward, DARK, darkSpots, inDark, darkReach, darkAmt, darkGlow, GUIDE, guideLight, HOME, homeGlow, homeAt, veilAt, exitTent, wallToward, outAt, riseDepth, ORBIT, orbitAt, orbitSpin, orbitFling };
+    const core = { PEAK, peakOf, IN_SIZE, inSizeK, lookBusy, homeIdle, OFF_GRACE, offGrace, K, inReach, freeReach, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, placeOk, roams, autoLeave, roamSpot, roamHold, roamPx, pullAt, fallAt, EXIT, exitHold, MIST, angWrap, exitGaps, inMist, gapToward, DARK, darkSpots, inDark, darkReach, darkAmt, darkGlow, GUIDE, guideLight, HOME, homeGlow, homeAt, veilAt, exitTent, wallToward, outAt, riseDepth, ORBIT, orbitAt, orbitSpin, orbitFling };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!D || !D.addEventListener || W.LowiMistyFlight) return;
 
@@ -724,10 +729,12 @@
     function trail(ctx, k, m) {
         if (m < 0.08 || S.v.lengthSq() < 0.04) return;
         if ((S.trail -= ctx.dt) > 0) return;
-        S.trail = 0.14 / (0.5 + k);
+        const pk = ctx.reduced ? 0 : peakOf(k);
+        S.trail = 0.14 / (0.5 + k) / (1 + 0.6 * pk);
         const A = ctx.A, pm = A && A.pts && A.pts.material;
-        if (pm) { pm.color.set(A.tier === 'weak' || A.tier === 'tired' ? '#9aa3b2' : '#9fe3ff'); pm.opacity = 0.45 + 0.4 * k; }
-        V.b.copy(S.p).addScaledVector(V.up, -0.25 * S.hs); ctx.burst(V.b, 1 + Math.round(2 * k), 0.12 * Math.max(0.3, S.hs));
+        /* at the peak her sparkle trail turns warm and bright (ice blue -> sunlit gold) and comes thicker */
+        if (pm) { if (A.tier === 'weak' || A.tier === 'tired') pm.color.set('#9aa3b2'); else pm.color.setRGB((159 + 96 * pk) / 255, (227 + 17 * pk) / 255, (255 - 55 * pk) / 255); pm.opacity = Math.min(1, 0.45 + 0.4 * k + 0.12 * pk); }
+        V.b.copy(S.p).addScaledVector(V.up, -0.25 * S.hs); ctx.burst(V.b, 1 + Math.round(2 * k + 2 * pk), 0.12 * Math.max(0.3, S.hs) * (1 + 0.4 * pk));
     }
     /* draw her: position, size, tilt, energy tint (the face comes from the DOM Misty's art: she smiles only when full) */
     function place(ctx, k, still, alpha) {

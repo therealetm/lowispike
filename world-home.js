@@ -694,6 +694,12 @@
     function adventure(dt, r) {
         const a = w3(), A = st.adv; if (!a || !a.THREE || !a.scene || !a.camera) return;
         if ((A.chk += dt) > 1) { A.chk = 0; advRead(); }
+        /* Oct 19 (E-man: "at a hundred percent ... really fast, really strong, the world should be moving ... when their power goes
+           down, they notice"): how her energy FEELS (LowiSun.feel: world pace 0.8 resting .. 1.6 at the peak, peak 0..1 above ~82%),
+           eased over ~1 s so it never jumps, published once for the world (body-world-3d-scene.js) and misty-bump.js. */
+        { const LS = W.LowiSun, f = LS && LS.feel ? LS.feel(A.vigor, reduced()) : null;
+            if (f) { const q = Math.min(1, dt * 0.9), F = A.feel || (A.feel = { k: f.k, pace: f.pace, peak: f.peak });
+                F.k = f.k; F.pace += (f.pace - F.pace) * q; F.peak += (f.peak - F.peak) * q; W.LowiVigorFeel = F; } }
         /* her bubble turns reddish when she is weak (and goes back to the brand blue when she is not) */
         const mu = a.memU;
         if (mu && !A.red) { A.red = new a.THREE.Color('#c4505f'); A.redRim = new a.THREE.Color('#e08a96'); A.rim0 = mu.uRim.value.clone(); }

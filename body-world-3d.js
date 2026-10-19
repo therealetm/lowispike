@@ -111,7 +111,7 @@
         D.head.appendChild(l);
     }
 
-    const api = Object.assign({}, core, { ready: false, state: 'idle', why: '', fps: () => (world ? world.fps() : 0), look: () => (world && world.beaconLook ? world.beaconLook() : null), open, close, flyTo: id => { if (flyHome(id)) return; open(); setTimeout(() => go(id), 50); }, setGlow: g => { glowOverride = g; if (world) world.setGlow(g); }, places: () => PLACES.slice(),
+    const api = Object.assign({}, core, { ready: false, state: 'idle', why: '', fps: () => (world ? world.fps() : 0), look: () => (world && world.beaconLook ? world.beaconLook() : null), feelLook: () => (world && world.feelLook ? world.feelLook() : null), open, close, flyTo: id => { if (flyHome(id)) return; open(); setTimeout(() => go(id), 50); }, setGlow: g => { glowOverride = g; if (world) world.setGlow(g); }, places: () => PLACES.slice(),
         THREE: null, scene: null, camera: null, renderer: null, hub: null, regions: [],
         isOpen: () => !!full,
         /* One world (Oct 15): Home's own VR / motion button drives the same gyro as the full window */

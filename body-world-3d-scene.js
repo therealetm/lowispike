@@ -268,6 +268,18 @@ export function createWorld(THREE, canvas, opts) {
     /* Oct 16 (E-man): a speed control for the world's own motion (cells drifting, platelets, mitochondria...). The camera, gestures,
        glow fades and Misty (DOM, her own animations) keep real time. Set by atmosphere.js as window.LowiWorldSpeed (0.25..3). */
     function worldSpeed() { const v = +(typeof window !== 'undefined' && window.LowiWorldSpeed); return v > 0 ? Math.min(3, Math.max(0.1, v)) : 1; }
+    /* Oct 19 (E-man: "at a hundred percent ... the world should be moving, everything should be looking extremely beautiful ...
+       when their power goes down, they notice"): her energy's feel (world-home.js publishes window.LowiVigorFeel from
+       LowiSun.feel, eased): pace = how fast the whole world moves (0.8 resting .. 1 mid .. 1.6 peak, 1 with Reduce Motion),
+       peak = 0..1 above ~82%: the cell glows warmer, light shafts and drifting motes shine brighter, places pulse bigger.
+       No new objects, textures or lights: only existing values move, so it costs nothing on iPhone. No feel = exactly as before. */
+    function energyFeel() {
+        const f = typeof window !== 'undefined' && window.LowiVigorFeel;
+        const pace = f && +f.pace > 0 ? Math.min(1.8, Math.max(0.6, +f.pace)) : 1, peak = f ? Math.max(0, Math.min(1, +f.peak || 0)) : 0;
+        return { pace, peak };
+    }
+    const pSize0 = pMat.size; let peakNow = 0, clockT = 0; /* clockT: unscaled seconds stepped, so a check can read world time per real second */
+    function feelLook() { return { pace: energyFeel().pace, peak: +peakNow.toFixed(3), glow: +glow.toFixed(3), shaft: +shaftMat.opacity.toFixed(3), mote: +pMat.size.toFixed(3), t: +t.toFixed(3), clock: +clockT.toFixed(3) }; }
     /* Oct 16, 2026 (handoff task 3, E-man: "pinch out like Google Maps / Google Earth ... we're not just inside our one, we now see
        all the other ones around us"; "the bubbles are membranes: inside each is the sanctuary where the cells and companions live,
        the space outside is the connective tissue of the spirit world"). The world goes on past the World Map: keep pulling out and
@@ -611,8 +623,8 @@ export function createWorld(THREE, canvas, opts) {
         scene.fog.density = baseFog + (0.0011 - baseFog) * walls;
     }
     function step(dt) {
-        const wdt = dt * worldSpeed();
-        t += wdt;
+        const ef = energyFeel(), wdt = dt * worldSpeed() * ef.pace;
+        t += wdt; clockT += dt; peakNow = ef.peak;
         /* camera */
         if (rig.fly) {
             rig.fly.t += dt; const k = ease(Math.min(1, rig.fly.t / rig.fly.dur));
@@ -652,15 +664,17 @@ export function createWorld(THREE, canvas, opts) {
         shafts.children.forEach(m => { m.material.opacity = m.material.opacity; m.rotation.y = Math.sin(t * 0.1 + m.userData.p) * 0.3; });
         shafts.position.x = Math.sin(t * 0.05) * 2;
         /* cell */
-        glow += (glowT - glow) * Math.min(1, dt * 2); memU.uGlow.value = glow; memU.uT.value = t;
-        const br = 1 + 0.015 * Math.sin(t * 1.55); cell.scale.setScalar(br); cell.rotation.y += wdt * 0.12; cell.position.y = Math.sin(t * 0.7) * 0.06;
-        halo.material.opacity = (theme === 'light' ? 0.16 : 0.24) + glow * 0.18;
+        const pk = peakNow;
+        glow += (Math.min(1, glowT + 0.3 * pk) - glow) * Math.min(1, dt * 2); memU.uGlow.value = glow; memU.uT.value = t;
+        const br = 1 + (0.015 + 0.012 * pk) * Math.sin(t * 1.55); cell.scale.setScalar(br); cell.rotation.y += wdt * 0.12; cell.position.y = Math.sin(t * 0.7) * 0.06;
+        halo.material.opacity = (theme === 'light' ? 0.16 : 0.24) + glow * 0.18 + 0.14 * pk;
+        { const P = PAL[theme]; shaftMat.opacity = Math.min(1, P.shaft * (1 + 0.8 * pk)); pMat.opacity = Math.min(1, P.part * (1 + 0.3 * pk)); pMat.size = pSize0 * (1 + 0.35 * pk); }
         mitos.forEach(m => { const u = m.userData; const a = u.a + t * u.s; m.position.set(Math.cos(a) * u.r, u.y + Math.sin(t * 0.9 + u.a) * 0.06, Math.sin(a) * u.r); m.rotation.set(a, a * 0.7, 0.4); });
         vesicles.forEach(m => { const u = m.userData; const a = u.a - t * u.s; m.position.set(Math.cos(a) * u.r, u.y + Math.sin(t + u.a) * 0.05, Math.sin(a) * u.r); });
         tend += (tendT - tend) * Math.min(1, dt * 1.2);
         Object.values(beacons).forEach((b, i) => {
-            b.ring.rotation.x = t * 0.6 + i; b.ring.rotation.y = t * 0.4; const s = (2.2 + Math.sin(t * 1.6 + i) * 0.25) * (1 + 0.45 * tend); b.glow.scale.set(s, s, 1);
-            b.glow.material.opacity = 0.85 + 0.15 * tend; b.ring.material.opacity = 0.7 + 0.3 * tend; const rs = 1 + 0.3 * tend; b.ring.scale.set(rs, rs, rs);
+            b.ring.rotation.x = t * 0.6 + i; b.ring.rotation.y = t * 0.4; const s = (2.2 + Math.sin(t * 1.6 + i) * 0.25) * (1 + 0.45 * tend) * (1 + 0.15 * pk); b.glow.scale.set(s, s, 1);
+            b.glow.material.opacity = Math.min(1, 0.85 + 0.15 * tend + 0.1 * pk); b.ring.material.opacity = 0.7 + 0.3 * tend; const rs = 1 + 0.3 * tend; b.ring.scale.set(rs, rs, rs);
             b.core.material.color.copy(b.hue).lerp(tendWhite, 0.4 * tend);
         });
         /* place tint */
@@ -752,5 +766,5 @@ export function createWorld(THREE, canvas, opts) {
     }
     function dispose() { stop(); renderer.dispose(); }
     setTheme(opts.theme || 'dark');
-    return { scene, camera, hub, regions, onFrame, memU, resize, setFocus, setMode, drag, release, zoom, setGyro, setGlow, setTend, beaconLook, setTheme, flyTo, pick, project, start, stop, fps, renderOnce, warm, get warmed() { return warmed; }, dispose, get running() { return running; }, get dpr() { return dpr; }, rig, renderer };
+    return { scene, camera, hub, regions, onFrame, memU, resize, setFocus, setMode, drag, release, zoom, setGyro, setGlow, setTend, beaconLook, feelLook, setTheme, flyTo, pick, project, start, stop, fps, renderOnce, warm, get warmed() { return warmed; }, dispose, get running() { return running; }, get dpr() { return dpr; }, rig, renderer };
 }

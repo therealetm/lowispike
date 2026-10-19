@@ -28,10 +28,10 @@
             need: 'Trag eine Zahl von 1 bis 60 ein oder tippe auf Sp\u00e4ter.', save: 'Speichern', later: 'Sp\u00e4ter', saved: 'Einkaufsrhythmus gespeichert.', profT: 'Einkaufen', profSet: 'Rhythmus eintragen', profEdit: '\u00c4ndern', close: 'Schlie\u00dfen'
         },
         es: {
-            over: 'LA COMPRA', h: 'Los d\u00edas sanos empiezan en la tienda', p: '\u00bfCada cu\u00e1nto sueles hacer la compra? Escribe tu propio n\u00famero.',
+            over: 'LA COMPRA', h: 'Los d\u00edas sanos empiezan en la tienda', p: '\u00bfCada cu\u00e1ntos d\u00edas sueles hacer la compra? Escribe el n\u00famero.',
             every: 'Compro cada', days: 'd\u00edas', daysQ: 'D\u00edas habituales', opt: '(opcional)', store: 'Tu tienda', storePh: 'p. ej. Edeka de la calle Mayor',
-            does: 'Escanea dos productos distintos un d\u00eda de compra y tus mundos brillar\u00e1n m\u00e1s hasta un d\u00eda despu\u00e9s de tu pr\u00f3xima compra; luego vuelven poco a poco a la normalidad.',
-            note: 'Saltarte una compra nunca significa que comiste mal. C\u00e1mbialo cuando quieras en Perfil \u203a Sobre ti.',
+            does: 'Si escaneas dos productos distintos el d\u00eda de la compra, tus mundos brillar\u00e1n m\u00e1s hasta un d\u00eda despu\u00e9s de tu siguiente compra. Luego vuelven poco a poco a la normalidad.',
+            note: 'Saltarte una compra no significa que hayas comido mal. Puedes cambiarlo cuando quieras en Perfil \u203a Sobre ti.',
             need: 'Escribe un n\u00famero del 1 al 60, o toca M\u00e1s tarde.', save: 'Guardar', later: 'M\u00e1s tarde', saved: 'Ritmo de compra guardado.', profT: 'La compra', profSet: 'Definir mi ritmo', profEdit: 'Cambiar', close: 'Cerrar'
         }
     };

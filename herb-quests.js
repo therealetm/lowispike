@@ -51,7 +51,7 @@
     }
     function evoHTML(compact) {
         const s = S() || {}, ev = C.evolution(s.xp);
-        if (!ev.next) return '<section class="hq-evo hq-max"><span class="hq-over">' + esc(t('Final form', 'Endform', 'Forma final')) + '</span><b class="hq-evo-name">' + esc(sname(ev.current)) + '</b><p class="hq-evo-rule">' + esc(t('Your herb is fully grown. Every action still keeps it lively.', 'Dein Kraut ist ausgewachsen. Jede Aktion hält es weiter lebendig.', 'Tu hierba está completa. Cada acción la mantiene viva.')) + '</p></section>';
+        if (!ev.next) return '<section class="hq-evo hq-max"><span class="hq-over">' + esc(t('Final form', 'Endform', 'Forma final')) + '</span><b class="hq-evo-name">' + esc(sname(ev.current)) + '</b><p class="hq-evo-rule">' + esc(t('Your herb is fully grown. Every action still keeps it lively.', 'Dein Kraut ist ausgewachsen. Jede Aktion hält es weiter lebendig.', 'Tu ser de luz ya está en su forma final. Cada acción lo mantiene lleno de vida.')) + '</p></section>';
         const step = nextStep();
         let h = '<section class="hq-evo' + (compact ? ' hq-compact' : '') + '"><div class="hq-evo-top"><span class="hq-over">' + esc(t('Next form', 'Nächste Form', 'Siguiente forma')) + '</span><b class="hq-evo-name">' + esc(sname(ev.next)) + '</b></div>' +
             '<p class="hq-evo-rule">' + esc(t('Rule: reach ', 'Regel: ', 'Regla: llegar a ') + ev.next.xp + t(' XP', ' XP erreichen', ' XP') + ' · ' + t('you have ', 'du hast ', 'tienes ') + ev.xp) + '</p>' + bar(ev.progress) +
@@ -134,7 +134,7 @@
 
     function pathHTML() {
         if (view === 'add') return '<div class="hq-root" data-view="add" data-noi18n>' + addHTML() + '</div>';
-        return '<div class="hq-root" data-view="path" data-noi18n><h2>' + esc(t('Herb path', 'Kraut-Pfad', 'Camino de la hierba')) + '</h2>' + evoHTML(false) + specialsHTML() + dailyHTML() + goalsHTML() + missionsHTML() +
+        return '<div class="hq-root" data-view="path" data-noi18n><h2>' + esc(t('Herb path', 'Kraut-Pfad', 'Camino de tu ser de luz')) + '</h2>' + evoHTML(false) + specialsHTML() + dailyHTML() + goalsHTML() + missionsHTML() +
             '<button type="button" class="hq-link hq-dexlink" data-sp="collection">' + ico('veg') + esc(t('Food collection', 'Lebensmittel-Sammlung', 'Colección de alimentos')) + ' <span class="num">' + (() => { const st = stores(), d = C.discover(st.s.logs, st.products); return d.n + ' / ' + d.total; })() + '</span>' + ico('arrow') + '</button></div>';
     }
     function collectionHTML() { return '<div class="hq-root hq-dexroot" data-view="dex" data-noi18n>' + dexHTML() + '</div>'; }

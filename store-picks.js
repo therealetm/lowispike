@@ -47,7 +47,7 @@
     function sosHTML(where) {
         return '<button type="button" class="stp-sos" data-stp-open="1" data-stp-from="' + esc(where || '') + '"><span class="stp-sos-dot" aria-hidden="true">!</span><span class="stp-sos-t"><b>' +
             esc(T('What can I buy here?', 'Was kann ich hier kaufen?', '¿Qué puedo comprar aquí?')) + '</b><small>' +
-            esc(T('Every insulin-friendly product in your shop', 'Alle insulinfreundlichen Produkte in deinem Laden', 'Todos los productos amigables con la insulina de tu tienda')) + '</small></span></button>';
+            esc(T('Every insulin-friendly product in your shop', 'Alle insulinfreundlichen Produkte in deinem Laden', 'Todos los productos de tu tienda que no disparan el azúcar')) + '</small></span></button>';
     }
 
     function storeLine() {

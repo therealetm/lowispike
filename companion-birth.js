@@ -26,7 +26,7 @@ const TX={
  de:{waking:'Etwas erwacht\u2026',over:'Dein Begleiter ist da',sign:'{sign} \u00b7 {colour}',myth:'Geboren aus {myth}, deiner Sternfarbe und der Energie deiner Zellen.',shuffle:'Neuer Name',go:'Weiter',keep:'{name} behalten',
   profT:'Dein Begleiter',profNone:'Erwecke deinen eigenen Begleiter mit deinem Geburtstag zum Leben.',profHas:'{sign} \u00b7 {type}',profBtn:'Zum Leben erwecken',profSee:'\u00d6ffnen',bdayL:'Dein Geburtstag',timeL:'Geburtszeit (optional)',timeHint:'Macht deinen Begleiter noch pers\u00f6nlicher.',
   create:'Zum Leben erwecken',close:'Schlie\u00dfen',need:'Trag zuerst deinen Geburtstag ein.',ally:'{name}, dein Begleiter'},
- es:{waking:'Algo est\u00e1 despertando\u2026',over:'Tu compa\u00f1\u00eda ya est\u00e1 aqu\u00ed',sign:'{sign} \u00b7 {colour}',myth:'Nace de {myth}, tu color estelar y la energ\u00eda de tus c\u00e9lulas.',shuffle:'Otro nombre',go:'Continuar',keep:'Quedarme con {name}',
+ es:{waking:'Algo est\u00e1 despertando\u2026',over:'Tu compa\u00f1ero ya est\u00e1 aqu\u00ed',sign:'{sign} \u00b7 {colour}',myth:'Nace de {myth}, de tu color estelar y de la energ\u00eda de tus c\u00e9lulas.',shuffle:'Otro nombre',go:'Continuar',keep:'Quedarme con {name}',
   profT:'Tu compa\u00f1\u00eda',profNone:'Da vida a tu propia compa\u00f1\u00eda con tu fecha de nacimiento.',profHas:'{sign} \u00b7 {type}',profBtn:'Darle vida',profSee:'Abrir',bdayL:'Tu cumplea\u00f1os',timeL:'Hora de nacimiento (opcional)',timeHint:'Hace tu compa\u00f1\u00eda a\u00fan m\u00e1s tuya.',
   create:'Darle vida',close:'Cerrar',need:'A\u00f1ade primero tu cumplea\u00f1os.',ally:'{name}, tu compa\u00f1\u00eda'}};
 const t=(k,o)=>String((TX[lang()]||TX.en)[k]||TX.en[k]||k).replace(/\{(\w+)\}/g,(_,x)=>o&&o[x]!=null?o[x]:'');
@@ -54,7 +54,7 @@ function reveal(host,o,onDone){o=o||{};if(!host)return;let c=C.generate({bday:o.
   '<div class="lc-btns"><button type="button" class="lc-glass" data-lc="shuffle" disabled>'+esc(t('shuffle'))+'</button><button type="button" class="lc-cta" data-lc="go" disabled>'+esc(o.goLabel||t('go'))+'</button></div></div>';
  const R=host.querySelector('.lc-rev'),q=s=>R.querySelector(s),L=lang();
  const paintText=()=>{const p=C.personality(c,L);q('.lc-name').textContent=c.name;q('.lc-sign').innerHTML='<span class="lc-glyph" style="color:'+c.palette.a+'">'+c.glyph+'</span> '+esc(t('sign',{sign:C.signLabel(c.sign,L),colour:C.colourName(c.sign,L)}));
-  q('.lc-pers').innerHTML='<b>'+esc(p.title)+'</b> '+esc(p.line);q('.lc-myth').textContent=t('myth',{myth:C.myth(c.sign,L)});
+  q('.lc-pers').innerHTML='<b>'+esc(p.title)+'</b> '+esc(p.line);q('.lc-myth').textContent=t('myth',{myth:C.myth(c.sign,L)}).replace(/\bde el /g,'del ');
   q('.lc-art svg')&&q('.lc-art svg').setAttribute('aria-label',t('ally',{name:c.name}));};
  const alive=()=>{R.style.setProperty('--lc-a',c.palette.a);R.style.setProperty('--lc-b',c.palette.b);q('.lc-art').innerHTML=C.svg(c,{size:200,cls:'lc-born',label:t('ally',{name:c.name})});
   q('.lc-over').textContent=t('over');paintText();R.classList.add('lc-alive');R.querySelectorAll('button').forEach(b=>b.disabled=false);};

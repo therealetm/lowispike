@@ -457,3 +457,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
   HANDOFF notes); 18 `wip/*` snapshots of unmerged or uncommitted work. Live 20261019-172632, main 20261019-175128.
 - 2026-10-19 18:45 Shipped: 20261019-183920 nutrition stats (live), 20261019-184058 setup resume BH-009 (on main).
   MAYA-HANDOFF.md landed on main (25192c4).
+- 2026-10-19 19:25 Weight & BMI released: Settings > Weight & BMI sheet (weigh-in, BMI + WHO band, body-fat estimate, Then/Now level track), Stats sheet section via LowiStatsPlugins, tutorial step 'body'; branch body-stats, notes in COORD-stats.md

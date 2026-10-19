@@ -983,7 +983,11 @@
         if (!photoURL) return mealForm();
         lastMealId = uid();
         /* one clear flow: the photo, what it is, Log as meal; Retake / Save photo / deeper analysis below it */
-        showSheet('<h2>' + esc(tr('photoTitle')) + '</h2><img class="sp-photo-prev" alt="" src="' + esc(photoURL) + '"><form id="spMeal" class="sp-photo-form" data-id="' + esc(lastMealId) + '"><label>' + esc(tr('photoName')) + '<input name="title" required maxlength="100" autocomplete="off" enterkeyhint="done" placeholder="' + esc(tr('photoPh')) + '"></label><button type="submit" class="sp-action sp-primary">' + icon('plate') + '<span>' + esc(tr('photoLog')) + '</span></button></form><div class="sp-photo-acts">' + button('retake', 'camera', 'photo') + button('savePhoto', 'arrow', 'savePhoto') + '</div>' + gptHTML() + '<p class="sp-note small">' + esc(tr('photoGptHint')) + '</p>', { cls: 'sp-sheet ss-sheet' });
+        showSheet('<h2>' + esc(tr('photoTitle')) + '</h2><img class="sp-photo-prev" alt="" src="' + esc(photoURL) + '"><div class="sp-ai" aria-live="polite"></div><form id="spMeal" class="sp-photo-form" data-id="' + esc(lastMealId) + '"><label>' + esc(tr('photoName')) + '<input name="title" required maxlength="100" autocomplete="off" enterkeyhint="done" placeholder="' + esc(tr('photoPh')) + '"></label><button type="submit" class="sp-action sp-primary">' + icon('plate') + '<span>' + esc(tr('photoLog')) + '</span></button></form><div class="sp-photo-acts">' + button('retake', 'camera', 'photo') + button('savePhoto', 'arrow', 'savePhoto') + '</div>' + gptHTML() + '<p class="sp-note small">' + esc(tr('photoGptHint')) + '</p>', { cls: 'sp-sheet ss-sheet' });
+        /* Oct 19 2026 food photo AI: the photo goes to LowiFoodAI (Supabase function food-photo, Gemini). It fills the
+           dishes, the name and hidden macro inputs; when it is off or fails, the plain "What is it?" form above still works. */
+        const aiForm = document.querySelector('form#spMeal.sp-photo-form[data-id="' + lastMealId + '"]');
+        if (aiForm && window.LowiFoodAI && window.LowiFoodAI.mount) window.LowiFoodAI.mount(aiForm.previousElementSibling, aiForm, photoURL);
     }
     function photoAsFile() {
         if (photoFile) return photoFile;

@@ -67,3 +67,15 @@ test('onboarding on short screens (Safari with toolbars): Misty and her speech b
     /* the later redesign rule that used to win must come before the fix */
     assert(css.indexOf('.hs-misty{--hs-m:min(46vw,184px)') < css.lastIndexOf('--hs-m:min(36vw,132px)'));
 });
+
+test('a build that goes live during setup waits: no "I\'ve got something new" update bubble over the birthday step or the starter plan', () => {
+    const html = read('index.html');
+    const m = html.match(/const setupBusy = \(\) => ([^;]+);/); assert(m, 'setupBusy() exists in the g1 update code');
+    for (const k of ['gate-up', '#r2ob', '.hs-ivov.on']) assert(m[1].includes(k), 'setup includes ' + k);
+    const i = html.indexOf('function decorate(){ const d = $("#lcUpd")'); assert(i > 0);
+    const body = html.slice(i, html.indexOf('\n}\n', i));
+    const hold = body.indexOf('if (setupBusy())'), show = body.indexOf('obShow({kind:"update"');
+    assert(hold > 0 && show > hold, 'the hold comes before the update bubble is shown');
+    assert(/if \(setupBusy\(\)\) \{ updHeld = true;[^}]*return; \}/.test(body), 'held update returns without showing or marking news seen');
+    assert(/setInterval\(\(\) => \{ if \(updHeld && !document\.hidden && !setupBusy\(\)\) redeco\(\); \}, 1500\)/.test(html), 'a held update shows once setup closes');
+});

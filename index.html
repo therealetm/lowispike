@@ -2651,9 +2651,16 @@ function obPlace(){ const r = $("#g1Ob"); if (!r || !OB) return; const bub = r.q
   if (r.dataset.mode !== "fixed") r.dataset.mode = "fixed"; if (r.dataset.side !== "") r.dataset.side = "";
   const sp = $("#spBubble"); if (sp) sp.classList.remove("g1ob-talk"); }
 addEventListener("resize", () => { if (OB) obPlace(); });
-function decorate(){ const d = $("#lcUpd"); if (!d) { if (OB && OB.kind === "update") obClose(); return; }
+/* Oct 19 (new-user walkthrough): a build that went live while a brand-new user was still setting up popped "I've got something
+   new for you!" (with Update = reload) right over the birthday step or the starter plan, on top of their answers. While setup is
+   on screen the update waits; a 1.5 s check in init() shows it as soon as setup is closed. */
+let updHeld = false;
+const setupBusy = () => H.classList.contains("gate-up") || H.classList.contains("gate-boot") || vis($("#r2ob")) || vis($(".hs-ivov.on"));
+function decorate(){ const d = $("#lcUpd"); if (!d) { updHeld = false; if (OB && OB.kind === "update") obClose(); return; }
   d.classList.add("g1-upd", "g1-ob"); d.setAttribute("aria-hidden", "true"); d.tabIndex = -1;
   const b = d.dataset.build || ""; if (laterFor(b)) { d.remove(); if (OB && OB.kind === "update") obClose(true); return; }
+  if (setupBusy()) { updHeld = true; if (OB && OB.kind === "update") obClose(true); return; }
+  updHeld = false;
   const n = upNews && typeof upNews === "object" && upBuild === b ? NT(upNews.text) : "";
   obShow({kind:"update", build:b, head:T("news"), text:n || T("newsfb")});
   if (n && upNews && upNews.id) { try { if (localStorage.getItem("lowi.g1.bn") !== upNews.id) localStorage.setItem("lowi.g1.bn", upNews.id); } catch(e){} markSeen(upNews.id); } /* b2-bn */
@@ -2680,6 +2687,7 @@ function init(){ H.classList.add("g1"); helpBtn(); helpPlace(); decorate(); load
   const watch = () => { const d = $("#lcUpd"); if (d) { redeco(); if (!d.__g1) { d.__g1 = 1; new MutationObserver(redeco).observe(d, {childList:true}); } } else if (OB && OB.kind === "update") redeco(); };
   new MutationObserver(watch).observe(H, {childList:true}); watch();
   setInterval(tick, 1500);
+  setInterval(() => { if (updHeld && !document.hidden && !setupBusy()) redeco(); }, 1500); /* a held update shows once setup is closed */
   document.addEventListener("visibilitychange", () => { if (document.visibilityState !== "visible") hush(); }); }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 

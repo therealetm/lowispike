@@ -506,6 +506,35 @@ Task "LOWiSPIKE: free care gestures and remove sparks", branch `free-care`, work
      XP reward (5 XP, up to 3 a day, xp-tap-core.js), which is earned, not spent.
    - Not a rename of the "Spark" companion form (first evolution stage); that word stays.
 
+**27. Food paths (Scan, Gap, Fuel, Cook, Shop) must make sense and stop repeating each other; scanning a new product
+"catches" it, Pokemon-style.** REQUESTED 10:1x PM call (19 Oct). First written as "item 25" on a side branch that never
+reached main (25 is now the ten forms), recorded here at 10:45 PM before the merge. Catch/Pathfinder details: item 24.
+   - He said (voice, walking through the app on his iPhone): "When I click scan, I get to the scan page ... I can scan
+     the barcode. I can snap a photo. I can log a meal. I can deep analyze ... And then at the top there, it says
+     shopping. Which I don't even know ... It says search, and then ... Checklist. I don't even know what that is ...
+     And then it says, hunt ... I can't even read that page ... It's very confusing. Shop shopping hunt. Healthy days
+     start at a shop. Catch good products by scanning their barcodes or taking a photo. Pick your shop. Scan product
+     ... It's just so complicated and so hidden." Then: Gap offers "I ate earlier / pick a time" or "I just ate",
+     which opens "What did you eat? Snap it, Scan barcode, Type it, Help me pick"; Fuel has Log meal; "then we also
+     have cook ... then we also have ... a shop. So ... those three are kind of redundant ... you're gonna have to fix
+     it logically so that that makes sense and not so confusing and not so redundant."
+   - He wants it to feel like a game, like Pokemon: scanning a product that is not in the database yet catches it and
+     earns a big community reward; each unique first discovery gives credit and XP, and a Pathfinder badge counts the
+     total number of discoveries. Pathfinder XP adds to the normal XP total (so it counts toward the ten forms, item 25).
+   - His intuition rule applies: nothing may overwhelm or confuse a user; it must feel native in English, German and
+     Spanish.
+   - Maya's direction (he delegated the UX choices): each entry gets one clear job. One shared meal-logging flow that
+     every "I ate this" shortcut opens (Fuel > Log meal, Gap > I just ate / I ate earlier, Scan's Log meal). Gap stays
+     about timing; logging food there stays optional. Cook = meal ideas and recipes. Shop = planning and products, with
+     plain readable labels instead of "Hunt" / "Checklist". Checking a product (scan to see if it's good) is clearly
+     different from logging food you ate: a shopping scan never logs a meal and never resets the Gap timer. Keep
+     barcode, photo and deep analysis, review/correction, the Breakfast/Lunch/Dinner/Snacks tiles, backdated times,
+     recipes, the shopping list and Snacks to buy, account data and safety copy. Never claim a meal estimate measures
+     blood sugar; blood sugar is not insulin.
+   - **Task** 4e961904 built it on branch `food-paths` (worktree `/home/sprite/wt-food-paths`, notes
+     `/home/sprite/COORD-food-paths.md`) and ran out of budget before merging; the follow-up task "finish food navigation
+     and unified meal logging" (10:42 PM) fixes e2e, tests in DE/ES on simulated iPhone/iPad, merges and releases.
+
 ### 0.6 The Mickey 17 workflow: how every Maya hands over to the next
 
 Added Monday 19 Oct 2026, about 9:20 PM CEST, by Maya 5, at Emmanuel's request on the evening call. His words: "can
@@ -1046,3 +1075,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 - 2026-10-19 22:35 Item 26 recorded under 0.5: care gestures (hug, water, good morning, sweet dreams, gratitude, encouragement) become free and the sparks currency and counter are removed; XP and energy unchanged. Task free-care started.
 - 2026-10-19 22:30 Release 20261019-222926 (item 22): companion card without "spirit" (Home world, Cell worlds, Galaxy, Other worlds, Streams; also onboarding, the tutorial galaxy step, the "Community galaxy" title), the timed adventure reaches a place only with her level AND your own visit (S.advSeen + device copy, ledger seed; autopilot and your own flying ungated), Forms / Food journal / Glow first on the card, mood check-in explained and last, Collection is now a Food journal (foods you logged or scanned, how those meals went, never needed to evolve). Item 24 restored and handed to the food-paths task 4e961904.
 - 2026-10-19 22:40 Release 20261019-223855 (item 22 follow-up): Forms / Food journal / Glow moved above the companion's words, right under the name, so they are fully in view when the card opens on a simulated iPhone 13 (doors 435-539 px of 664). 1,789 tests pass. Live-checked on simulated iPhone 13 (WebKit) and Android Chrome: places read Home world / Cell worlds / Galaxy / Other worlds / Streams with "Go there yourself" / "Level 5 + go there", no "spirit" on the card, Food journal opens, no errors. Not checked on a real phone; autopilot could not be started in the test browser, so "autopilot never counts as your visit" is covered by unit tests only.
+- 2026-10-19 22:45 Item 27 recorded under 0.5 (before merging): food paths (Scan, Gap, Fuel, Cook, Shop) get one clear job each and one shared meal-logging flow; scanning a product not yet in the database catches it (Pathfinder, item 24; XP adds to the normal total). Branch food-paths, follow-up task finishing it.

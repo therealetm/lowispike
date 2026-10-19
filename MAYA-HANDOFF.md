@@ -363,6 +363,19 @@ logging", picking up from 98f0954e, which stopped out of budget).** Checked with
   the room busier.
 - Check script: `tools/community-crowd/db-check.cjs` (read-only, run on the VM).
 
+**21. Energy bursts should play like billiards: whoever gets hit stays where they land.** REQUESTED 9:5x PM call,
+task running, nothing released yet.
+   - He said (voice, playing Community on his iPhone): "whenever I shoot them ... they ... just get back to the places
+     where they were ... That's not fun ... It doesn't feel like a real ... billiard ... where when you shoot it, they
+     move, and then whatever they move, that's ... where it's supposed to stay. I shoot them away. They shouldn't be
+     coming back. They should be hitting other people."
+   - Wanted: a hit companion keeps its new position (no spring back to its old spot), carries momentum, and knocks
+     into other companions it runs into (chain hits), inside the normal galaxy bounds; the player's own joystick
+     control stays intact. Check the sibling paths that can snap positions back (layout/place(), network sync,
+     interpolation of remote players, autopilot).
+   - **Task** "LOWiSPIKE: persistent billiard-style energy burst physics" (started 10:00 PM). Coordinates with crash
+     task 9472a9a4 (COORD-community-crash-2.md) and crowd task e80fcb1e; notes in `/home/sprite/COORD-billiard.md`.
+
 ### 0.6 The Mickey 17 workflow: how every Maya hands over to the next
 
 Added Monday 19 Oct 2026, about 9:20 PM CEST, by Maya 5, at Emmanuel's request on the evening call. His words: "can
@@ -890,3 +903,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 - 2026-10-19 21:35 Crowd checkpoint under 0.5: one manual run, no scheduled run yet, 30 members, 12 messages, 1 photo post, 400s are expected sign-in misses, no stress test yet.
 - 2026-10-19 21:45 Crowd members now log meals into their own user_state (one per slot per local day), verified live on one member; tools/community-crowd/db-check.cjs added. No app build change.
 - 2026-10-19 22:00 Item 20 recorded under 0.5: energy crash again, crowd should send Emmanuel energy, crowd messages with their companion on Home. Still no scheduled crowd run; db-check counts replies to the human testers.
+- 2026-10-19 22:05 Item 21 recorded under 0.5: energy bursts should play like billiards (hit companions stay where they land, chain hits); task "persistent billiard-style energy burst physics" started.

@@ -1098,13 +1098,15 @@
         cv.height = Math.round(v.videoHeight * scale);
         cv.getContext('2d').drawImage(v, 0, 0, cv.width, cv.height);
         photoURL = cv.toDataURL('image/jpeg', .65);
+        /* BH-014: hand the bitmap back now; iOS frees an unused canvas only when the garbage collector gets to it */
+        cv.width = 0; cv.height = 0;
         photoFile = null;
         try {
             const big = D.createElement('canvas'), s2 = Math.min(1, 1600 / v.videoWidth);
             big.width = Math.round(v.videoWidth * s2);
             big.height = Math.round(v.videoHeight * s2);
             big.getContext('2d').drawImage(v, 0, 0, big.width, big.height);
-            big.toBlob(b => { if (b) photoFile = new File([b], 'lowispike-' + Date.now() + '.jpg', { type: 'image/jpeg' }); }, 'image/jpeg', .9);
+            big.toBlob(b => { big.width = 0; big.height = 0; if (b) photoFile = new File([b], 'lowispike-' + Date.now() + '.jpg', { type: 'image/jpeg' }); }, 'image/jpeg', .9);
         } catch (e) {}
         cancelCapture();
         flight(photoURL).then(() => photoSheet());

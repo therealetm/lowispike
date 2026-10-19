@@ -172,6 +172,9 @@ test('room: while Home takes the visit, the "is talking to you" toast stays away
     f.host.active = () => false;
     f.host.people = () => [{ uid: 'b', n: 'Bea', lv: 1 }];
     let ms = [{ id: '1', uid: 'b', by: 'Bea', t: 'hi', ts: now - 9000 }];
+    /* bug hunt run 16: pin quiet hours off. Without this the test read the machine clock and failed every night from 22:00 to
+       08:00 (standard quiet hours keep the toast away), which also blocked night releases. */
+    f.storage['lowi.community.prefs.v1:a'] = JSON.stringify({ quietEnabled: false });
     f.host.messages = () => ms; f.scope('a');
     const asked = []; f.win.LowiHomeVisit = { has: id => { asked.push(id); return true; } };
     ms = ms.concat([{ id: '2', uid: 'b', by: 'Bea', t: '@Fixture A look at Home', ts: Date.now() }]);

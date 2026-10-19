@@ -282,7 +282,9 @@
     function tick() {
         if (D.visibilityState === 'hidden') return;
         const k = dayKey();
-        if ($('#drDay')) { if ($('#g1Ob:not(.out)') || $('#lcUpd') || D.documentElement.classList.contains('gate-up') || D.documentElement.classList.contains('mf-on')) { dayClose(false); quiet = 0; } return; }
+        /* BH-008 (Oct 19): the card sits on the top layer, so it gives way to ANYTHING that opens after it (setup after a slow sign-in
+           restore, any sheet, a tour), not just the orb bubble; it comes back, unseen, once things are quiet again */
+        if ($('#drDay')) { if ($('#g1Ob:not(.out)') || $('#lcUpd') || D.documentElement.classList.contains('gate-up') || D.documentElement.classList.contains('mf-on') || busy()) { dayClose(false); quiet = 0; } return; }
         if (!shouldShowDaily(seenDay(), k) || !S()) { quiet = 0; return; }
         /* Oct 17: not while Misty flies (autopilot or steering); it waits, unseen, until she is home */
         if (!$('#spHome') || busy() || D.documentElement.classList.contains('mf-on')) { quiet = 0; return; }

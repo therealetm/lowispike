@@ -408,6 +408,29 @@ task running, nothing released yet.
    - **Task** "LOWiSPIKE: persistent billiard-style energy burst physics" (started 10:00 PM). Coordinates with crash
      task 9472a9a4 (COORD-community-crash-2.md) and crowd task e80fcb1e; notes in `/home/sprite/COORD-billiard.md`.
 
+**25. Food paths (Scan, Gap, Fuel, Cook, Shop) must make sense and stop repeating each other.** REQUESTED 10:1x PM
+call, task running. (Numbered 25 because parallel tasks were writing 22 to 24 at the same minute.)
+   - He said (voice, walking through the app on his iPhone): "When I click scan, I get to the scan page ... I can scan
+     the barcode. I can snap a photo. I can log a meal. I can deep analyze ... And then at the top there, it says
+     shopping. Which I don't even know ... It says search, and then ... Checklist. I don't even know what that is ...
+     And then it says, hunt ... I can't even read that page ... It's very confusing. Shop shopping hunt. Healthy days
+     start at a shop. Catch good products by scanning their barcodes or taking a photo. Pick your shop. Scan product
+     ... It's just so complicated and so hidden." Then: Gap offers "I ate earlier / pick a time" or "I just ate",
+     which opens "What did you eat? Snap it, Scan barcode, Type it, Help me pick"; Fuel has Log meal; "then we also
+     have cook ... then we also have ... a shop. So ... those three are kind of redundant ... you're gonna have to fix
+     it logically so that that makes sense and not so confusing and not so redundant."
+   - Maya's direction (decided on the call, he delegated the UX choices): each entry gets one clear job. One shared
+     meal-logging flow that every "I ate this" shortcut opens (Fuel > Log meal, Gap > I just ate / I ate earlier, Scan's
+     Log meal). Gap stays about timing and logging food there stays optional. Cook = meal ideas and recipes. Shop =
+     planning and products, with plain readable labels instead of "Hunt" / "Checklist". Checking a product (scan to
+     see if it's good) is clearly different from logging food you ate: a shopping scan never logs a meal and never
+     resets the Gap timer. Keep barcode, photo and deep analysis, review/correction, the Breakfast/Lunch/Dinner/Snacks
+     tiles, backdated times, recipes, the shopping list and Snacks to buy, account data and safety copy. Never claim a
+     meal estimate measures blood sugar; blood sugar is not insulin. Small commits, not one giant redesign.
+   - **Task** 4e961904 "LOWiSPIKE: simplify food navigation and unify meal logging" (started 10:14 PM). Notes in
+     `/home/sprite/COORD-food-paths.md`. Coordinates with the companion-panel / Collection food journal task
+     (0d494df4), aura (ce74d1af), evolution (8ac28dff), crash (9472a9a4), billiard (34bb0a32) and the hourly bug hunt.
+
 ### 0.6 The Mickey 17 workflow: how every Maya hands over to the next
 
 Added Monday 19 Oct 2026, about 9:20 PM CEST, by Maya 5, at Emmanuel's request on the evening call. His words: "can
@@ -938,3 +961,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 - 2026-10-19 22:05 Item 21 recorded under 0.5: energy bursts should play like billiards (hit companions stay where they land, chain hits); task "persistent billiard-style energy burst physics" started.
 - 2026-10-19 22:20 Crowd members send real energy balls to Emmanuel and other humans (item 20b), proven live on a guest; soak tool gets --net. Item 20c (crowd on Home) not built, no earlier agreement found.
 - 2026-10-19 22:30 Crowd fix: an @mention now reaches only the member it names (Emmanuel's ping to "Thiago M." got thank-yous from Thiago AND Thiago M.; same for Luis/Luis A., paolo/Paolo H.). My 22:15 --net soak (guest "Soak", uid ...858f71) posted two real '@Thiago / @paolo sent you energy' lines in the room and Emmanuel answered '@Soak Yooo'; --net now blocks room writes. Those 2 lines are still in the room (needs a service-role delete or Emmanuel in Supabase). Still no scheduled crowd run at 22:11.
+- 2026-10-19 22:35 Item 25 recorded under 0.5: food paths (Scan, Gap, Fuel, Cook, Shop) must make sense and stop repeating each other; one shared meal-logging flow, plain Shop labels (task 4e961904, running). No build change.

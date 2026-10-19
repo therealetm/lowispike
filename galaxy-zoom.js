@@ -89,6 +89,10 @@
             warpKeep.warm = true;
         } catch (e) { }
     }
+    /* Oct 19 (bug hunt run 14, CS-001 sibling): the streak canvas is made per warp, so it is kept within ~1.4 megapixels (a normal
+       iPhone keeps 2x; an iPad drops from 22 MB to ~5.6 MB) and its bitmap is handed back (width = height = 0) when the warp ends.
+       Leaving it to the garbage collector piled up canvas memory on iPhone/iPad until iOS killed the page. */
+    const WARP_PX = 1.4e6;
     function warpFx(dir, m, y, pv) {
         const fx = { offs: [] }, out = dir === 'out', t0 = performance.now(), fovX = pv && pv.dir === dir && pv.fov > 0 ? pv.fov : 0;
         try { W.dispatchEvent(new CustomEvent('lowi:world-warp', { detail: { phase: 'start', id: 'community', from: out ? 'hub' : 'community' } })); } catch (e) { }
@@ -108,8 +112,9 @@
         const main = D.getElementById('main'), c = D.createElement('canvas'), ctx = c.getContext && c.getContext('2d');
         if (main && ctx) {
             c.id = 'gxWarp'; c.setAttribute('aria-hidden', 'true'); c.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:6'; main.appendChild(c);
-            const dpr = Math.min(2, W.devicePixelRatio || 1), w = main.clientWidth || innerWidth, h = main.clientHeight || innerHeight, mr = main.getBoundingClientRect();
-            c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+            const w = main.clientWidth || innerWidth, h = main.clientHeight || innerHeight, mr = main.getBoundingClientRect();
+            const dpr = Math.min(Math.min(2, W.devicePixelRatio || 1), Math.sqrt(WARP_PX / Math.max(1, w * h)));
+            c.width = Math.max(1, Math.round(w * dpr)); c.height = Math.max(1, Math.round(h * dpr));
             const st = []; let seed = 9173; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
             for (let i = 0; i < 110; i++) st.push({ a: rnd() * 6.283, z: 0.15 + rnd() * 0.85, w: 0.6 + rnd() * 0.8 });
             let raf = 0, last = t0;
@@ -129,7 +134,7 @@
                 raf = requestAnimationFrame(draw);
             };
             raf = requestAnimationFrame(draw);
-            fx.offs.push(() => { if (raf) cancelAnimationFrame(raf); c.remove(); });
+            fx.offs.push(() => { if (raf) cancelAnimationFrame(raf); raf = 0; c.remove(); c.width = 0; c.height = 0; });
         }
         fx.stop = () => { fx.offs.splice(0).forEach(f => { try { f(); } catch (e) { } }); try { W.dispatchEvent(new CustomEvent('lowi:world-warp', { detail: { phase: 'arrive', id: out ? 'community' : 'hub', from: out ? 'hub' : 'community' } })); } catch (e) { } };
         return fx;

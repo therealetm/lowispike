@@ -205,7 +205,7 @@
             if (g) swap(card, g, 'sel');
         }
         const mine = tree.querySelector('.cr-mine');
-        if (mine && prefs().traits) { const g = myGenome(); if (g) swap(mine, g, 'me'); }
+        if (mine && prefs().traits && !mine.querySelector('svg.cr-own')) { const g = myGenome(); if (g) swap(mine, g, 'me'); } /* Oct 19: Misty's own cell stays; no mini-blob over her */
         fetchLooks(uids);
     }
 

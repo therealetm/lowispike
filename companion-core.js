@@ -125,11 +125,36 @@
     /* traits per stage and element: [angle, length (x R), half width (x R)] */
     const EARS = { fire: [24, .5, .2], water: [92, .5, .24], air: [30, .62, .16], earth: [20, .46, .2], spirit: [28, .42, .16] };
     const WINGS = { fire: [68, .62, .36], water: [110, .58, .34], air: [66, .66, .34], earth: [58, .5, .32], spirit: [70, .58, .3] };
-    const PAD = [0, 0, .04, .08, .14, .18];
+    const PAD = [0, 0, .04, .08, .14, .18]; /* kept for old callers; the frame now comes from FRAME below */
+    /* Oct 19 2026 (Eman: "aus diesen kleinen Flossen kriegt er richtig dicke Dinger, kriegt er noch mehr Stein ... es soll immer
+       heftiger werden"): every form is clearly more powerful than the last. POWER per form:
+       grow   length of ears/fins, tail and wings (x the base size), capped so nothing leaves the frame
+       thick  width of the same traits: the little fins turn into big, heavy ones
+       stones armour stones round the lower rim and the shoulders (count), stone = their size (x R)
+       horn   a pair of pointed shoulder horns from the fifth form (length x R)
+       frame  how much room the picture gives round the body (x the cell's own tight frame): young forms sit small in their
+              frame, later forms fill it with fins, wings, stones and horns. Pure SVG paths: no new filters or scene effects. */
+    const POWER = [
+        { grow: 1, thick: 1, stones: 0, stone: 0, horn: 0, frame: 1.22 },
+        { grow: 1, thick: 1, stones: 0, stone: 0, horn: 0, frame: 1.15 },
+        { grow: 1, thick: 1, stones: 2, stone: .07, horn: 0, frame: 1.08 },
+        { grow: 1.3, thick: 1.45, stones: 4, stone: .09, horn: 0, frame: 1.08 },
+        { grow: 1.5, thick: 1.8, stones: 6, stone: .11, horn: .3, frame: 1.12 },
+        { grow: 1.9, thick: 2.2, stones: 9, stone: .13, horn: .46, frame: 1.2 }
+    ];
+    const power = st => Object.assign({}, POWER[clampStage(st)]);
+    const EAR_MAX = .8; /* ear/fin length cap (x R) so the last form still fits its frame */
+    /* stone angles (deg from straight up): lower rim first, then the shoulders; the face (centre) stays clear */
+    const STONE_AT = [150, 210, 125, 235, 180, 100, 260, 75, 285];
+    function stone(x, y, s, rot, g, k) {
+        const p = [[0, -1], [.82, -.5], [.9, .45], [.2, 1], [-.7, .7], [-.92, -.2]].map(q => f1(q[0] * s) + ' ' + f1(q[1] * s)).join('L');
+        return '<g class="cf-stone" style="--k:' + k + '" transform="translate(' + f1(x) + ' ' + f1(y) + ') rotate(' + f1(rot) + ')"><path d="M' + p + 'Z" fill="' + g.b + '" fill-opacity=".92" stroke="#1b1035" stroke-opacity=".55" stroke-width="1.3" stroke-linejoin="round"/>' +
+            '<path d="M' + f1(-.5 * s) + ' ' + f1(-.45 * s) + 'L' + f1(.15 * s) + ' ' + f1(-.7 * s) + 'L' + f1(.5 * s) + ' ' + f1(-.2 * s) + '" fill="none" stroke="#ffffff" stroke-opacity=".8" stroke-width="1.2" stroke-linecap="round"/></g>';
+    }
     function layers(g, R, opts) {
         opts = opts || {};
         if (!g) return { back: '', front: '', defs: '' };
-        const st = clampStage(g.st), id = (opts.id || 'cf') + 'g', rr = rnd(97 + g.sd);
+        const st = clampStage(g.st), id = (opts.id || 'cf') + 'g', rr = rnd(97 + g.sd), P = POWER[st];
         const defs = '<linearGradient id="' + id + '" x1="0" y1="1" x2="0" y2="0"><stop stop-color="' + g.a + '" stop-opacity=".9"/><stop offset="1" stop-color="' + g.b + '" stop-opacity=".85"/></linearGradient>' +
             '<radialGradient id="' + id + 'h"><stop offset=".5" stop-color="' + g.b + '" stop-opacity=".28"/><stop offset="1" stop-color="' + g.b + '" stop-opacity="0"/></radialGradient>';
         let back = '', front = '';
@@ -143,12 +168,14 @@
         }
         /* calm glow while the body is between meals (driven by CSS var --cf-calm) */
         back += '<ellipse class="cf-calm" cx="' + CX + '" cy="' + CY + '" rx="' + f1(R * 1.3) + '" ry="' + f1(R * 1.26) + '" fill="none" stroke="#9ff7ff" stroke-width="3"/>';
-        /* creature traits, oldest behind */
-        if (st >= 5) back += pair(g, 'cf-wing2', (WINGS[g.el][0] + 40), WINGS[g.el][1] * .62, WINGS[g.el][2] * .7, R, id);
-        if (st >= 4) back += pair(g, 'cf-wing', WINGS[g.el][0], WINGS[g.el][1], WINGS[g.el][2], R, id);
-        if (st >= 3) back += piece(g, 'cf-tail', g.sy === 'free' ? 158 : 180, g.el === 'water' ? .55 : .6, g.el === 'air' ? .2 : .24, R, 0, id);
-        if (st >= 2) back += pair(g, 'cf-ear', EARS[g.el][0], EARS[g.el][1], EARS[g.el][2], R, id);
-        else if (st === 1) back += pair(g, 'cf-nub', 34, .2, .12, R, id);
+        /* creature traits, oldest behind; each form makes them longer and much thicker */
+        const W = WINGS[g.el], E = EARS[g.el], wg = st >= 5 ? 1.25 : 1, ww = st >= 5 ? 1.35 : 1;
+        if (st >= 5) back += pair(g, 'cf-wing2', (W[0] + 40), W[1] * .62 * 1.2, W[2] * .7 * 1.25, R, id);
+        if (st >= 4) back += pair(g, 'cf-wing', W[0], W[1] * wg, W[2] * ww, R, id);
+        if (st >= 3) back += piece(g, 'cf-tail', g.sy === 'free' ? 158 : 180, (g.el === 'water' ? .55 : .6) * Math.min(1.5, P.grow * .8 + .2), (g.el === 'air' ? .2 : .24) * Math.min(1.6, P.thick * .7 + .3), R, 0, id);
+        if (st >= 4 && P.horn) back += pair(g, 'cf-horn', 58, P.horn, P.horn * .36, R, id);
+        if (st >= 2) back += pair(g, 'cf-ear', E[0], Math.min(EAR_MAX, E[1] * P.grow), E[2] * P.thick, R, id);
+        else if (st === 1) back += pair(g, 'cf-nub', 34, .26, .15, R, id);
         /* markings (S/N) on the membrane from the third form */
         if (st >= 2 && g.pt === 'band') {
             let b = '';
@@ -167,6 +194,12 @@
             let m = '';
             for (let k = 0; k < 5; k++) { const p = put(-60 + k * 30, R * 1.32, R); m += '<circle style="--k:' + k + '" cx="' + f1(p.x) + '" cy="' + f1(p.y) + '" r="' + f1(R * .045) + '"/>'; }
             front += '<g class="cf-crown" fill="#ffe6a2" stroke="#fff6d8" stroke-width=".8">' + m + '</g>';
+        }
+        /* armour stones from the third form: more and bigger each form, round the rim, never on the face */
+        if (P.stones) {
+            let sg = '';
+            for (let k = 0; k < P.stones; k++) { const p = put(STONE_AT[k], R * .9, R); sg += stone(p.x, p.y, R * P.stone * (1 + ((k * 37 + g.sd) % 5) * .06), STONE_AT[k] + (rr() * 30 - 15), g, k); }
+            front += '<g class="cf-stones">' + sg + '</g>';
         }
         /* reactions: hidden until html[data-cf-react] says so */
         const sx = CX + R * .66, sy = CY - R * .5;
@@ -189,16 +222,18 @@
         const L = layers(g, R, { id, hat: hat || (opts && opts.hat) });
         const open = svg.slice(0, svg.indexOf('>') + 1);
         let tag = open.replace('class="tmg-plant', 'class="tmg-plant cf-form cf-el-' + g.el);
-        /* evolved traits reach past the tight cell frame: widen the viewBox a little per form */
-        const pad = R * PAD[clampStage(g.st)];
-        if (pad > 0) tag = tag.replace(/viewBox="([-\d.]+) ([-\d.]+) ([\d.]+) ([\d.]+)"/, (m0, x, y, w, h) => 'viewBox="' + f1(+x - pad) + ' ' + f1(+y - pad) + ' ' + f1(+w + 2 * pad) + ' ' + f1(+h + 2 * pad) + '"');
+        /* Oct 19 2026: the frame round the cell scales per form (POWER.frame) about the body's centre: young forms sit small,
+           later forms fill it with their big traits (each user's own body, colours and face stay as they are) */
+        const fr = POWER[clampStage(g.st)].frame;
+        tag = tag.replace(/viewBox="([-\d.]+) ([-\d.]+) ([\d.]+) ([\d.]+)"/, (m0, x, y, w, h) => { x = +x; y = +y; w = +w; h = +h; const nw = w * fr, nh = h * fr; return 'viewBox="' + f1(CX - (CX - x) * fr) + ' ' + f1(CY - (CY - y) * fr) + ' ' + f1(nw) + ' ' + f1(nh) + '"'; });
+        tag = tag.replace('class="tmg-plant cf-form', 'data-cf-st="' + clampStage(g.st) + '" class="tmg-plant cf-form');
         return tag + svg.slice(open.length, defsEnd) + L.defs + svg.slice(defsEnd, bodyAt) + L.back + svg.slice(bodyAt, faceAt) + L.front + svg.slice(faceAt);
     }
 
     /* a small stand-alone companion for friends (their own shared look) */
     function miniSVG(g, id) {
         if (!g) return '';
-        const st = clampStage(g.st), R = CELL_R[st], pad = 46, L = layers(g, R, { id: String(id || 'm').replace(/[^a-z0-9]/gi, '') + 'm' });
+        const st = clampStage(g.st), R = CELL_R[st], pad = st >= 3 ? Math.round((R + 46) * 1.18 - R) : 46, L = layers(g, R, { id: String(id || 'm').replace(/[^a-z0-9]/gi, '') + 'm' });
         const gid = String(id || 'm').replace(/[^a-z0-9]/gi, '') + 'mb';
         const vb = (CX - R - pad) + ' ' + (CY - R - pad) + ' ' + (2 * (R + pad)) + ' ' + (2 * (R + pad));
         const ey = CY + R * .08, ex = R * .26, er = R * .085;
@@ -249,7 +284,7 @@
         }));
     }
 
-    const api = { ELS, CELL_R, PAD, HAT_IDS, normType, genome, encode, decode, layers, apply, miniSVG, reaction, merge, calm, fastHours, formName, traitName, path, clampStage };
+    const api = { ELS, CELL_R, PAD, POWER, power, STONE_AT, HAT_IDS, normType, genome, encode, decode, layers, apply, miniSVG, reaction, merge, calm, fastHours, formName, traitName, path, clampStage };
     if (typeof module !== 'undefined' && module.exports) module.exports = api;
     root.LowiCompanionCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

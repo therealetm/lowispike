@@ -472,6 +472,26 @@ branch `evo-more`, worktree `/home/sprite/wt-evo-more`, notes `/home/sprite/COOR
    - Parallel tasks today: companion panel / non-mystical world names / discovery gates (0d494df4), aura colour fix and
      companion renaming (ce74d1af), Community crash round 2 (9472a9a4), billiard energy (34bb0a32).
 
+**26. Care gestures are free; sparks are removed.** REQUESTED 10:2x PM call (19 Oct), recorded 10:35 PM before building.
+Task "LOWiSPIKE: free care gestures and remove sparks", branch `free-care`, worktree `/home/sprite/wt-free-care`, notes
+`/home/sprite/COORD-free-care.md`.
+   - Context: a code check (task "verify currencies and progression resources") found sparks are the only spendable
+     balance: 3 a day + 1 per logged meal/water/Move, up to 8, reset at midnight; Hug, Drink water, Good morning, Sweet
+     dreams cost 1, Gratitude (lv 3) and Encouragement (lv 5) cost 2 ("Send energy" on a Community profile or a friend in
+     the friends tree opens this care sheet). Galaxy energy balls cost nothing.
+   - He said (voice): "I don't understand the point systems ... It's a bit much ... It's confusing." "What do you think is
+     the best?" On the energy boost: "Yeah, sending an energy boost is obviously free." Maya suggested making the care
+     gestures free too and deleting sparks and their counter; he said "Okay" and, on whether care should even be a
+     thing, "You pick if it should even be a thing." Maya's pick: keep the care gestures (a kind, real-friends-only
+     touch) but free.
+   - Wanted: no spark cost, no spark counter ("3/5 sparks today"), no "Not enough sparks" block, no earning or midnight
+     reset, no spark copy in EN/DE/ES, on every entry point (Community profile "Send energy", friends tree, Adventure log
+     Friends tab). Galaxy energy balls stay free. **XP stays the permanent evolution track and energy stays today's
+     vitality, unchanged and separate**; social actions never drain health or progression. Level unlocks (Gratitude lv
+     3, Encouragement lv 5), time windows and one send per friend, kind and day stay (anti-spam). Care keeps its small
+     XP reward (5 XP, up to 3 a day, xp-tap-core.js), which is earned, not spent.
+   - Not a rename of the "Spark" companion form (first evolution stage); that word stays.
+
 ### 0.6 The Mickey 17 workflow: how every Maya hands over to the next
 
 Added Monday 19 Oct 2026, about 9:20 PM CEST, by Maya 5, at Emmanuel's request on the evening call. His words: "can
@@ -1009,3 +1029,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 - 2026-10-19 22:50 Crash reports (9:5x PM call, iPhone): Community chat scrolling kicked him out; aiming/sending an energy burst in the zoomed-out galaxy kicked him out (3x, once while trying to see who was shooting). Cause found in simulation: every paint rebuilt the whole galaxy + chat list (counter ids in companion SVGs). Fixed in community-chat.js (stableIds + patchKids); "sent you energy" chat line removed and hidden (his call). Notes: BUGHUNT/LEDGER.md "Community crashes round 2", DECISIONS.md. Crowd task asked to stop posting energy text lines.
 - 2026-10-19 22:40 Item 25: ten companion forms released (Nova 4500, Titan 7000, Monarch 10000, Majesty 14000 XP; new mane/crown, twin tails + third wings, power spikes + inner horns, star ring + gold edges). Evolution stays XP only; Collection and Catch never gate it. Branch evo-more.
 - 2026-10-19 22:30 Item 21 live (20261019-221603 + 20261019-222646): community-energy.js no longer eases knocked companions home (no 'back' phase, no soft wall/240 px tether); they roll on, chain into others, bounce only off the map edge and stay where they stop. Resting spots kept as map positions across pin moves, leaving Community (halt, not reset), app close (pagehide/visibilitychange) and reload (localStorage lowi.energy.land.v1:<uid>, max 400). busy() = motion only. Your own companion stays knocked too and fires from there. Tutorial step send-energy + What's New "billiard-energy" updated. Tests 1,770/1,770; probe-billiard.cjs passes on chromium390 local + live (fixture galaxy, 4 local bots); WebKit iPhone 13 ran at 0-1 fps on the loaded VM (old build too), so no WebKit verdict. Limit: each phone keeps its own resting positions; positions never expire.
+- 2026-10-19 22:35 Item 26 recorded under 0.5: care gestures (hug, water, good morning, sweet dreams, gratitude, encouragement) become free and the sparks currency and counter are removed; XP and energy unchanged. Task free-care started.

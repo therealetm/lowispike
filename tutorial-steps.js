@@ -19,7 +19,7 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 2;
+    const VERSION = 3;
     const AREAS = ['you', 'home', 'food', 'play', 'companion', 'together', 'settings', 'extras', 'end'];
     const STEPS = [
         /* ---------- part: you (your companion) ---------- */
@@ -336,6 +336,15 @@
                 en: 'Me is your profile. Look & sound changes colors, day or night and sound. Account keeps you signed in on any phone.',
                 de: 'Ich ist dein Profil. Aussehen & Ton ändert Farben, Tag oder Nacht und Ton. Konto hält dich auf jedem Handy angemeldet.',
                 es: 'Yo es tu perfil. Aspecto y sonido cambia colores, día o noche y sonido. Cuenta te mantiene conectado en cualquier móvil.'
+            }
+        },
+        {
+            id: 'body', area: 'settings', target: ['#whHud .o8-settings'], covers: ['body', 'weight', 'bmi'],
+            title: { en: 'Weight & BMI', de: 'Gewicht & BMI', es: 'Peso e IMC' },
+            text: {
+                en: 'In Settings, Weight & BMI is where you weigh in. You get your BMI, an estimate of your body fat, and a Then and Now picture that levels up as you make progress.',
+                de: 'Unter Einstellungen, Gewicht & BMI trägst du dein Gewicht ein. Du bekommst deinen BMI, eine Schätzung deines Körperfetts und ein Damals-und-Jetzt-Bild, das mit deinem Fortschritt im Level steigt.',
+                es: 'En Ajustes, Peso e IMC es donde te pesas. Ves tu IMC, una estimación de tu grasa corporal y una imagen de Antes y Ahora que sube de nivel con tu progreso.'
             }
         },
         {

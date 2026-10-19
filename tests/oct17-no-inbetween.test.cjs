@@ -53,7 +53,7 @@ test('the cut runs before any warp drawing: no streaks, no lens change, no glow'
 
 test('the copy of the inside is a real frame, stays through the menu fade, and is always cleaned up', () => {
   const sn = fnSrc(regions, 'function snapNow(a)');
-  assert.match(sn, /ren\.render\(a\.scene, a\.camera\);[\s\S]*x\.drawImage\(cv, 0, 0\);/);
+  assert.match(sn, /ren\.render\(a\.scene, a\.camera\);[\s\S]*x\.drawImage\(cv, 0, 0, s\.width, s\.height\);/); // Oct 19 crash squad: the copy is scaled down (tests/crash-snap-memory.test.cjs)
   assert.match(sn, /s\.setAttribute\('data-clean-keep', ''\)/);
   assert.match(fnSrc(regions, 'function clean(q)'), /snapDrop\(false\)/);
   assert.match(fnSrc(regions, 'function reset()'), /snapDrop\(true\)/);

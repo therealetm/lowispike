@@ -466,29 +466,39 @@
         cam.position.set(r.target.x + r.dist * Math.cos(pitch) * Math.sin(yaw), r.target.y + r.dist * Math.sin(pitch), r.target.z + r.dist * Math.cos(pitch) * Math.cos(yaw));
         cam.lookAt(r.target); cam.updateMatrixWorld();
     }
-    /* the real last frame of the place, drawn now (same task as the copy, so the drawing buffer is still there) */
+    /* the real last frame of the place, drawn now (same task as the copy, so the drawing buffer is still there).
+       Crash squad, Oct 19 (E-man: "I fly around and I fly out, the app crashes"): the copy used to be a new 2D canvas the full size
+       of the 3D buffer on every way out (and twice on a weak pull-back), up to 22 MB each on an iPad, left for the garbage collector.
+       A 2D canvas on iPhone is a GPU surface and Safari caps the memory all canvases may hold, so flying in and out over and over
+       piled them up until iOS killed the tab (blank page, reload, no error). Now the copy is at most MAX_PX pixels (it is only
+       on screen for the 0.38 s fade, scaled up it looks the same) and its bitmap is handed back the moment it leaves the page
+       (Safari frees a canvas's memory at once when it is sized to nothing). Tests: tests/crash-snap-memory.test.cjs */
     function snapNow(a) {
+        const MAX_PX = 500000;
         snapDrop(true);
         const h = st.host, ren = a && a.renderer, cv = ren && ren.domElement;
         if (!h || !cv || !cv.width || !cv.height || !D.createElement) return null;
+        let s = null;
         try {
             ren.render(a.scene, a.camera);
-            const s = D.createElement('canvas'); s.width = cv.width; s.height = cv.height;
-            const x = s.getContext && s.getContext('2d'); if (!x) return null;
-            x.drawImage(cv, 0, 0);
+            const k = Math.min(1, Math.sqrt(MAX_PX / (cv.width * cv.height)));
+            s = D.createElement('canvas'); s.width = Math.max(1, Math.floor(cv.width * k)); s.height = Math.max(1, Math.floor(cv.height * k));
+            const x = s.getContext && s.getContext('2d'); if (!x) { s.width = 0; s.height = 0; return null; }
+            x.drawImage(cv, 0, 0, s.width, s.height);
             const r = cv.getBoundingClientRect();
             s.className = 'bwr-snap'; s.setAttribute('aria-hidden', 'true'); s.setAttribute('data-clean-keep', '');
             s.style.left = r.left + 'px'; s.style.top = r.top + 'px'; s.style.width = r.width + 'px'; s.style.height = r.height + 'px';
             try { const f = W.getComputedStyle && W.getComputedStyle(cv).filter; if (f && f !== 'none') s.style.filter = f; } catch (e) { } /* the world mood tint, so the copy looks exactly like the screen */
             if (st.veil && st.veil.parentNode === h) h.insertBefore(s, st.veil); else h.appendChild(s);
             st.snap = s; return s;
-        } catch (e) { return null; }
+        } catch (e) { if (s) { try { s.remove(); } catch (er) { } try { s.width = 0; s.height = 0; } catch (er) { } } return null; }
     }
-    /* fade the copy away (now = gone at once) */
+    /* fade the copy away (now = gone at once); off the page, its bitmap is handed back at once */
     function snapDrop(now) {
         const s = st.snap; if (!s) return; st.snap = null;
-        if (now || reduced()) { try { s.remove(); } catch (e) { } return; }
-        s.classList.add('go'); setTimeout(() => { try { s.remove(); } catch (e) { } }, SEAM.fade + 120);
+        const free = () => { try { s.remove(); } catch (e) { } try { s.width = 0; s.height = 0; } catch (e) { } };
+        if (now || reduced()) { free(); return; }
+        s.classList.add('go'); setTimeout(free, SEAM.fade + 120);
     }
     function seamStep(q, w, a, now) {
         const r = a && a.rig;

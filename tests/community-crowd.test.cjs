@@ -98,3 +98,13 @@ test('crowd: real energy balls use the app\'s shot shape and aim at the receiver
   assert.ok(Math.abs(s.a - Math.atan2(-sp.y, -sp.x)) < 0.01); // straight at the receiver
   assert.strictEqual(T.shotAt('nobody', uids[0], uids), null);
 });
+
+test('crowd: an @mention reaches only the member it names, never a shorter name inside it', () => {
+  const m = crowd._t.mentions, L = [{ name: 'Thiago' }, { name: 'Thiago M.' }, { name: 'Luis' }, { name: 'Luis A.' }, { name: 'paolo' }, { name: 'Paolo H.' }];
+  assert.deepStrictEqual(m('@Thiago M. \u26a1 eman sent you energy', L).map(p => p.name), ['Thiago M.']);
+  assert.deepStrictEqual(m('@Thiago got it', L).map(p => p.name), ['Thiago']);
+  assert.deepStrictEqual(m('@Paolo H. Yo', L).map(p => p.name), ['Paolo H.']);
+  assert.deepStrictEqual(m('@paolo thanks', L).map(p => p.name), ['paolo']);
+  assert.deepStrictEqual(m('@Luisa hi', L).map(p => p.name), []);
+  assert.deepStrictEqual(m('@Luis A. and @Thiago hi', L).map(p => p.name).sort(), ['Luis A.', 'Thiago']);
+});

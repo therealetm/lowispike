@@ -264,7 +264,14 @@ function topicOf(text) {
   return 'generic';
 }
 const REPLY_TOPIC = { greet: 'rGreet', how: 'rHow', food: 'rFood', comp: 'rComp', app: 'rApp', q: 'rQ', generic: 'rGeneric', energy: 'rEnergy' };
-function mentions(body, list) { const s = String(body).toLowerCase(); return list.filter(p => s.indexOf('@' + p.name.toLowerCase()) >= 0); }
+/* who an @mention is for. Longest name wins, and the name must end there: "@Thiago M." is Thiago M., not also Thiago
+   (19 Oct, 10 PM: one energy ping from Emmanuel got thank-yous from both Thiago and Thiago M.). */
+function mentions(body, list) {
+  const s = String(body).toLowerCase(), hits = [];
+  for (const p of list) { const n = '@' + p.name.toLowerCase(); let i = s.indexOf(n);
+    while (i >= 0) { const nx = s.charAt(i + n.length); if (!nx || !/[\p{L}\p{N}_]/u.test(nx)) { hits.push({ p, i, len: n.length }); break; } i = s.indexOf(n, i + 1); } }
+  return hits.filter(h => !hits.some(o => o !== h && o.i === h.i && o.len > h.len)).map(h => h.p);
+}
 
 async function readRoom(tok) {
   const since = new Date(Date.now() - 3 * 864e5).toISOString();
@@ -446,4 +453,4 @@ async function main() {
   do { await once({ spawn: +(process.env.CROWD_SPAWN || 6) }); if (Date.now() < until) await new Promise(r => setTimeout(r, 60e3)); } while (Date.now() < until);
 }
 if (require.main === module) main().catch(e => { console.error('crowd failed:', e.message); process.exit(1); });
-module.exports = { people, voice, line, topicOf, langOf, hourIn, awake, lvOf, look, _t: { load, save, session, say, chatPhoto, mealPost, ins, products, stats, slotAt, dayIn, mealTitle, mealLog, addMeal, logMealFor, shotAt, broadcast, energyBalls, mapUids } };
+module.exports = { people, voice, line, topicOf, langOf, hourIn, awake, lvOf, look, _t: { mentions, load, save, session, say, chatPhoto, mealPost, ins, products, stats, slotAt, dayIn, mealTitle, mealLog, addMeal, logMealFor, shotAt, broadcast, energyBalls, mapUids } };

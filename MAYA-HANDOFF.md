@@ -395,8 +395,8 @@ message bubble."
      Home file reads Community messages today. Not built: it touches the Home scene other tasks own; ask him what
      exactly (every message or only ones to him, how long it stays) and claim the Home files in a COORD file first.
 
-**21. Energy bursts should play like billiards: whoever gets hit stays where they land.** REQUESTED 9:5x PM call,
-task running, nothing released yet.
+**21. Energy bursts should play like billiards: whoever gets hit stays where they land.** DONE, live in 20261019-221603
+(+ 20261019-222646: also kept when the app is closed mid-roll). Not yet confirmed by Emmanuel on his iPhone.
    - He said (voice, playing Community on his iPhone): "whenever I shoot them ... they ... just get back to the places
      where they were ... That's not fun ... It doesn't feel like a real ... billiard ... where when you shoot it, they
      move, and then whatever they move, that's ... where it's supposed to stay. I shoot them away. They shouldn't be
@@ -1008,3 +1008,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 - 2026-10-19 23:00 Item 24 recorded under 0.5: grocery Catch for products not yet in the community database, first-discoverer credit, Pathfinder badge + capped one-time evolution XP after server checks (unique valid barcode, useful details). Built by the companion-panel task.
 - 2026-10-19 22:50 Crash reports (9:5x PM call, iPhone): Community chat scrolling kicked him out; aiming/sending an energy burst in the zoomed-out galaxy kicked him out (3x, once while trying to see who was shooting). Cause found in simulation: every paint rebuilt the whole galaxy + chat list (counter ids in companion SVGs). Fixed in community-chat.js (stableIds + patchKids); "sent you energy" chat line removed and hidden (his call). Notes: BUGHUNT/LEDGER.md "Community crashes round 2", DECISIONS.md. Crowd task asked to stop posting energy text lines.
 - 2026-10-19 22:40 Item 25: ten companion forms released (Nova 4500, Titan 7000, Monarch 10000, Majesty 14000 XP; new mane/crown, twin tails + third wings, power spikes + inner horns, star ring + gold edges). Evolution stays XP only; Collection and Catch never gate it. Branch evo-more.
+- 2026-10-19 22:30 Item 21 live (20261019-221603 + 20261019-222646): community-energy.js no longer eases knocked companions home (no 'back' phase, no soft wall/240 px tether); they roll on, chain into others, bounce only off the map edge and stay where they stop. Resting spots kept as map positions across pin moves, leaving Community (halt, not reset), app close (pagehide/visibilitychange) and reload (localStorage lowi.energy.land.v1:<uid>, max 400). busy() = motion only. Your own companion stays knocked too and fires from there. Tutorial step send-energy + What's New "billiard-energy" updated. Tests 1,770/1,770; probe-billiard.cjs passes on chromium390 local + live (fixture galaxy, 4 local bots); WebKit iPhone 13 ran at 0-1 fps on the loaded VM (old build too), so no WebKit verdict. Limit: each phone keeps its own resting positions; positions never expire.

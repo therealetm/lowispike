@@ -113,7 +113,34 @@
         return best;
     }
 
-    const core = { KINDS, WATER_GOAL, dayKey, gapText, waterUndo, layout };
+    /* where the Move note goes (bug hunt BH-005, Oct 19): s = its size {w, h}, first = the spot beyond the orbs (centre), obs = rects it
+       must never cover (ring bubbles, Misty, the joystick, the bloom's own orbs), view = {w, h, top}, orbs = the box around the orbs.
+       On a phone Move sits at the right edge, so "beyond the orbs, away from Misty" is off screen and clamping it back put the note on
+       the Move bubble. Now: the first spot when it is clear; else just above, below or beside the orbs; else docked at the top or bottom of the
+       screen (dock: true); with nothing clear, the least covered of those. Always fully on screen. Centre coordinates. */
+    function noteSpot(s, first, obs, view, orbs) {
+        const m = 8, top = Math.max(8, (view && view.top) || 8);
+        const cx = x => Math.max(m + s.w / 2, Math.min(view.w - m - s.w / 2, x));
+        const cy = y => Math.max(top + s.h / 2, Math.min(view.h - m - s.h / 2, y));
+        const list = (obs || []).filter(Boolean);
+        const cost = p => list.reduce((c, o) => c + Math.max(0, Math.min(p.x + s.w / 2, o.right) - Math.max(p.x - s.w / 2, o.left)) *
+            Math.max(0, Math.min(p.y + s.h / 2, o.bottom) - Math.max(p.y - s.h / 2, o.top)), 0);
+        const p0 = { x: cx(first.x), y: cy(first.y), dock: false };
+        if (!cost(p0)) return p0;
+        const cand = [];
+        if (orbs) {
+            const ox = cx((orbs.left + orbs.right) / 2), oy = cy(first.y);
+            cand.push({ x: ox, y: cy(orbs.top - 8 - s.h / 2), dock: false }, { x: ox, y: cy(orbs.bottom + 8 + s.h / 2), dock: false },
+                { x: cx(orbs.right + 8 + s.w / 2), y: oy, dock: false }, { x: cx(orbs.left - 8 - s.w / 2), y: oy, dock: false });
+        }
+        const dx = cx(view.w / 2);
+        cand.push({ x: dx, y: cy(Math.max(56, top + 8) + s.h / 2), dock: true }, { x: dx, y: cy(view.h - 28 - s.h / 2), dock: true });
+        let best = null;
+        for (const c of cand) { const k = cost(c); if (!k) return c; if (!best || k < best.k) best = { c, k }; }
+        return best.c;
+    }
+
+    const core = { KINDS, WATER_GOAL, dayKey, gapText, waterUndo, layout, noteSpot };
     if (typeof module === 'object' && module.exports) { module.exports = core; return; }
     if (!root || !root.document) return;
 
@@ -254,6 +281,38 @@
         x = Math.max(110, Math.min(vw - 110, x)); y = Math.max(24, Math.min(vh - 24, y));
         return '<p class="hb2-note" style="left:' + Math.round(x) + 'px;top:' + Math.round(y) + 'px">' + esc(txt) + '</p>';
     }
+    /* BH-005: once the note is in the page (so its real size is known), keep it off every ring bubble, Misty, the joystick (even
+       faded), the Daily Quest and the bloom's own orbs (their resting spots, not mid-animation) */
+    function placeNote(ov) {
+        const n = ov && ov.querySelector('.hb2-note');
+        if (!n) return;
+        const s = { w: n.offsetWidth, h: n.offsetHeight };
+        if (!s.w || !s.h) return;
+        const vw = W.innerWidth || 390, vh = W.innerHeight || 844, pad = 4, obs = [];
+        const add = r => obs.push({ left: r.left - pad, top: r.top - pad, right: r.right + pad, bottom: r.bottom + pad });
+        D.querySelectorAll('[data-orbit], #whPad, #f3Board').forEach(e => {
+            if (ov.contains(e)) return;
+            const r = e.getBoundingClientRect();
+            if (r.width < 4 || r.height < 4) return;
+            if (e.id !== 'whPad' && e.checkVisibility && !e.checkVisibility({ opacityProperty: true, visibilityProperty: true })) return;
+            add(r);
+        });
+        let orbs = null;
+        const lay = ov.__layout;
+        if (lay && lay.pts) {
+            const h = lay.orb / 2;
+            lay.pts.forEach(p => {
+                const r = { left: p.x - h, top: p.y - h, right: p.x + h, bottom: p.y + h };
+                add(r);
+                orbs = orbs ? { left: Math.min(orbs.left, r.left), top: Math.min(orbs.top, r.top), right: Math.max(orbs.right, r.right), bottom: Math.max(orbs.bottom, r.bottom) } : r;
+            });
+            if (lay.misty) add({ left: lay.misty.x - lay.misty.r, top: lay.misty.y - lay.misty.r, right: lay.misty.x + lay.misty.r, bottom: lay.misty.y + lay.misty.r });
+        }
+        let sat = 0; try { sat = parseFloat(getComputedStyle(D.documentElement).getPropertyValue('--sat')) || 0; } catch (e) { }
+        const p = noteSpot(s, { x: parseFloat(n.style.left) || 0, y: parseFloat(n.style.top) || 0 }, obs, { w: vw, h: vh, top: 8 + sat }, orbs);
+        n.style.left = Math.round(p.x) + 'px'; n.style.top = Math.round(p.y) + 'px';
+        n.classList.toggle('hb2-note-dock', !!p.dock);
+    }
 
     function open(kind, src) {
         if (KINDS.indexOf(kind) < 0) return false;
@@ -264,6 +323,7 @@
         st.ov = null;
         const ov = render(kind, src);
         D.body.appendChild(ov);
+        try { placeNote(ov); } catch (e) { }
         st.ov = ov; st.open = kind; st.src = src;
         src.classList.add('hb2-src'); src.setAttribute('aria-expanded', 'true');
         D.documentElement.classList.add('hb2-open');
@@ -280,6 +340,7 @@
         if (!st.open || !st.ov || !st.src) return;
         const kind = st.open, focusId = (D.activeElement && D.activeElement.dataset && D.activeElement.dataset.id) || '';
         render(kind, st.src);
+        try { placeNote(st.ov); } catch (e) { }
         const f = focusId && st.ov.querySelector('[data-id="' + focusId + '"]');
         if (f && !f.disabled) try { f.focus({ preventScroll: true }); } catch (e) { }
     }

@@ -189,7 +189,21 @@ function particles(k,p,r){const out=[],A=p.a,B=p.b;for(let i=0;i<7;i++){const t=
   else if(k===3)out.push('<circle class="lc-tw"'+st+' cx="'+x+'" cy="'+y+'" r="'+(.6+r()*.9).toFixed(1)+'" fill="#fff"/>');
   else out.push('<path class="lc-tw"'+st+' transform="translate('+x+' '+y+') rotate(45)" d="M-1.6 -1.6h3.2v3.2h-3.2z" fill="'+c+'" opacity=".8"/>');}
  return out.join('');}
-function svg(c,o){o=o||{};c=c||MISTY;const p=c.palette,lk=c.look,id='lc'+(++UID)+'x'+(c.seed%9973),R=+(22*lk.size).toFixed(1),r=rng((c.seed||7)^0xabcdef),ink='#0b1d3f';
+/* Oct 19 (E-man: "why wasn't the version shown in onboarding given to me?"): the companion's own pieces, in one place, so the
+   reveal (svg below) and Home / Forms / care room / 3D sprite (cell-world.js compose) draw the very same companion: body shape,
+   colours, sign motif, marks, cheeks, eyes, mouth, accessory, particles. Body pieces are in body units round (0,0) (R = its
+   radius), particles round (60,60) of the 120 box. The rng is drawn in svg()'s old order (particles, then marks). */
+function parts(c,id){c=c||MISTY;const p=c.palette,lk=c.look,R=+(22*lk.size).toFixed(1),r=rng((c.seed||7)^0xabcdef),ink='#0b1d3f';
+ const pts=particles(lk.parts,p,r);
+ return {R,ink,palette:p,sign:c.sign,
+  grad:'<radialGradient id="'+id+'b" cx=".38" cy=".32" r=".85"><stop offset="0" stop-color="#ffffff"/><stop offset=".35" stop-color="'+p.a+'"/><stop offset="1" stop-color="'+p.deep+'"/></radialGradient>'+
+   '<linearGradient id="'+id+'t" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+p.a+'"/><stop offset="1" stop-color="'+p.b+'" stop-opacity="0"/></linearGradient>',
+  parts:pts,motif:motif(c.sign,R,p,id),
+  shape:'<path class="lc-shape" d="'+bodyPath(lk,R)+'" fill="url(#'+id+'b)" stroke="rgba(255,255,255,.55)" stroke-width="1"/>',
+  marks:marks(lk.marks,p,R,r,c.glyph),
+  cheeks:'<ellipse cx="-12.5" cy="5" rx="3.4" ry="2" fill="#ff9ec8" opacity=".4"/><ellipse cx="12.5" cy="5" rx="3.4" ry="2" fill="#ff9ec8" opacity=".4"/>',
+  eyes:eyes(lk.eyes,ink),mouth:mouth(lk.mouth,ink),acc:accessory(lk.acc,p,R,id)};}
+function svg(c,o){o=o||{};c=c||MISTY;const p=c.palette,lk=c.look,id='lc'+(++UID)+'x'+(c.seed%9973),q=parts(c,id);
  const aura=['<circle cx="60" cy="60" r="56" fill="url(#'+id+'g)"/>','<circle cx="60" cy="60" r="55" fill="none" stroke="'+p.a+'" stroke-width="1.4" opacity=".55"/>',
   '<circle cx="60" cy="60" r="55" fill="none" stroke="'+p.a+'" stroke-width="1" opacity=".5"/><circle cx="60" cy="60" r="58.5" fill="none" stroke="'+p.b+'" stroke-width=".8" opacity=".4"/>',
   Array.from({length:12},(_,i)=>{const t=i/12*Math.PI*2;return '<path d="M'+(60+Math.cos(t)*53).toFixed(1)+' '+(60+Math.sin(t)*53).toFixed(1)+'L'+(60+Math.cos(t)*59).toFixed(1)+' '+(60+Math.sin(t)*59).toFixed(1)+'" stroke="'+(i%2?p.a:p.b)+'" stroke-width="1.6" stroke-linecap="round" opacity=".6"/>';}).join(''),
@@ -199,16 +213,13 @@ function svg(c,o){o=o||{};c=c||MISTY;const p=c.palette,lk=c.look,id='lc'+(++UID)
   '<defs><radialGradient id="'+id+'g"><stop offset=".55" stop-color="'+p.a+'" stop-opacity="0"/><stop offset=".85" stop-color="'+p.a+'" stop-opacity=".28"/><stop offset="1" stop-color="'+p.a+'" stop-opacity="0"/></radialGradient>'+
   '<radialGradient id="'+id+'w" cx=".38" cy=".3" r=".8"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset=".7" stop-color="'+p.a+'" stop-opacity=".06"/><stop offset="1" stop-color="'+p.b+'" stop-opacity=".22"/></radialGradient>'+
   '<linearGradient id="'+id+'r" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+p.a+'"/><stop offset="1" stop-color="'+p.b+'"/></linearGradient>'+
-  '<radialGradient id="'+id+'b" cx=".38" cy=".32" r=".85"><stop offset="0" stop-color="#ffffff"/><stop offset=".35" stop-color="'+p.a+'"/><stop offset="1" stop-color="'+p.deep+'"/></radialGradient>'+
-  '<linearGradient id="'+id+'t" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+p.a+'"/><stop offset="1" stop-color="'+p.b+'" stop-opacity="0"/></linearGradient></defs>'+
+  q.grad+'</defs>'+
   '<g class="lc-aura">'+aura+'</g>'+
   '<circle class="lc-bubble" cx="60" cy="60" r="50" fill="url(#'+id+'w)" stroke="url(#'+id+'r)" stroke-width="1.6" stroke-opacity=".8"/>'+
   '<path d="M30 34a36 36 0 0 1 22-14" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".45"/>'+
-  '<g class="lc-parts">'+particles(lk.parts,p,r)+'</g>'+
-  '<g class="lc-body" transform="translate(60 '+(o.still?62:62)+')"><g class="lc-motif">'+motif(c.sign,R,p,id)+'</g>'+
-  '<path class="lc-shape" d="'+bodyPath(lk,R)+'" fill="url(#'+id+'b)" stroke="rgba(255,255,255,.55)" stroke-width="1"/>'+
-  marks(lk.marks,p,R,r,c.glyph)+'<ellipse cx="-12.5" cy="5" rx="3.4" ry="2" fill="#ff9ec8" opacity=".4"/><ellipse cx="12.5" cy="5" rx="3.4" ry="2" fill="#ff9ec8" opacity=".4"/>'+
-  '<g class="lc-face">'+eyes(lk.eyes,ink)+mouth(lk.mouth,ink)+'</g>'+accessory(lk.acc,p,R,id)+'</g></svg>';}
+  '<g class="lc-parts">'+q.parts+'</g>'+
+  '<g class="lc-body" transform="translate(60 62)"><g class="lc-motif">'+q.motif+'</g>'+q.shape+q.marks+q.cheeks+
+  '<g class="lc-face">'+q.eyes+q.mouth+'</g>'+q.acc+'</g></svg>';}
 /* before the birthday: an entity nobody has seen yet. A spark of light in a bubble, no face, no colour, no name. */
 function mysterySVG(o){o=o||{};return '<svg class="lc-svg lc-mystery'+(o.cls?' '+o.cls:'')+'" viewBox="0 0 120 120" width="'+(o.size||120)+'" height="'+(o.size||120)+'" aria-hidden="true">'+
  '<defs><radialGradient id="lcmS"><stop offset="0" stop-color="#fff"/><stop offset=".25" stop-color="#dff3ff" stop-opacity=".9"/><stop offset=".6" stop-color="#9fd8ff" stop-opacity=".25"/><stop offset="1" stop-color="#9fd8ff" stop-opacity="0"/></radialGradient>'+
@@ -217,7 +228,7 @@ function mysterySVG(o){o=o||{};return '<svg class="lc-svg lc-mystery'+(o.cls?' '
  '<g class="lc-seedling"><circle cx="60" cy="62" r="26" fill="url(#lcmS)"/><path d="M60 46l2.6 13.4L76 62l-13.4 2.6L60 78l-2.6-13.4L44 62l13.4-2.6z" fill="#fff" opacity=".9"/></g>'+
  [[38,40],[84,44],[80,84],[40,82],[60,30]].map((q,i)=>'<circle class="lc-tw" style="animation-delay:-'+(i*.6)+'s" cx="'+q[0]+'" cy="'+q[1]+'" r="1.1" fill="#fff"/>').join('')+'</svg>';}
 
-const api={SIGNS,SIGN_KEYS,LANGS,META,TAILS,ENDS,MISTY,fnv,rng,validDate,validTime,signOf,rhythmOf,seedOf,generate,nameFor,cleanName,personality,signLabel,myth,colourName,svg,mysterySVG,shift};
+const api={SIGNS,SIGN_KEYS,LANGS,META,TAILS,ENDS,MISTY,fnv,rng,validDate,validTime,signOf,rhythmOf,seedOf,generate,nameFor,cleanName,personality,signLabel,myth,colourName,svg,parts,mysterySVG,shift};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 if(root)root.LowiBirthCompanionCore=api;
 })(typeof window!=='undefined'?window:(typeof self!=='undefined'?self:null));

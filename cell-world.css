@@ -261,3 +261,11 @@ html[data-theme=light] .cw-panel { background: color-mix(in srgb, var(--cw-glow)
     html[data-cell=night] .cw-zz { opacity: .7; }
 }
 #spBubble .sp-home-herb .cw-cell { transform: translateY(3%) scale(1.12); transform-origin: 50% 50%; }
+
+/* Oct 19: the user's own companion (onboarding reveal) drawn by cell-world.js ownParts(): its particles twinkle and its
+   pulse accessories breathe as they do in the reveal; nothing moves with Reduce Motion */
+@media (prefers-reduced-motion: no-preference) {
+    .cw-own-cell .lc-tw { animation: lcTw 3.2s ease-in-out infinite; }
+    .cw-own-cell .lc-pulse { animation: lcPulse 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    .cw-own-cell .lc-spin { animation: lcSpin 9s linear infinite; transform-origin: 0 0; }
+}

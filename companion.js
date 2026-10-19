@@ -196,7 +196,7 @@
             const T = HT(), f = T && T.plantHTML, base = f && f.cell ? (f.cf ? f.original : f) : null, c = T && T.current && T.current();
             if (base && c && c.m) {
                 const st = g ? C.clampStage(g.st) : 0;
-                const out = String(base(Object.assign({}, c.m, { index: st, dim: false, mood: 'happy' }), 'node', Object.assign({}, c.p, { equipment: {} }), { hidden: true }) || '');
+                const out = String(base(Object.assign({}, c.m, { index: st, dim: false, mood: 'happy' }), 'node', Object.assign({}, c.p, { equipment: {} }), { hidden: true, own: false }) || ''); /* own:false: a friend never wears your own companion (Oct 19) */
                 const s = g ? C.apply(out, Object.assign({}, g, { st })) : out;
                 if (g ? s.indexOf('cf-back') >= 0 : s.indexOf('cw-wall') >= 0) return uniq(s.replace('class="tmg-plant', 'class="cf-friend tmg-plant').replace(/ role="img"/, ' aria-hidden="true"').replace(/ aria-label="[^"]*"/, ''), id);
             }

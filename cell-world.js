@@ -150,6 +150,45 @@
         return { defs, back, body, faceT, R, s };
     }
     /* Rebuild the herb SVG string as a cell. Everything the wardrobe draws is kept. */
+    /* Oct 19 (E-man: "why wasn't the version shown in onboarding given to me?"): a user whose own companion came to life in the
+       onboarding reveal (companion-birth.js) keeps THAT companion everywhere the cell is drawn (Home, Forms, care room, dock,
+       the 3D sprite): its body shape, colours, sign motif, marks, cheeks, eyes, mouth, accessory and particles, from
+       LowiBirthCompanionCore.parts(), the very strings the reveal draws, at this stage's size in place of the shared cell. The
+       face keeps the mood parts (sleepy eyes, the energy mouths Home shows since Oct 16). No own companion: the cell as before.
+       q = parts(companion, id). */
+    const OWN_FACE_MAX = 2.3; /* own face units -> herb face units: the reveal's face/body proportion, capped to misty-face's crop */
+    function groupEnd(str, at) {
+        const re = /<g\b[^>]*?(\/?)>|<\/g\s*>/g; re.lastIndex = at; let depth = 0, t;
+        while ((t = re.exec(str))) { if (t[0][1] === '/') { if (--depth === 0) return t.index + t[0].length; } else if (t[1] !== '/') depth++; }
+        return -1;
+    }
+    function ownParts(i, id, q) {
+        i = Math.max(0, Math.min(5, i | 0));
+        const R = CELL_R[i], f = n => (+n).toFixed(1), k = R / 22, kp = (R + 30) / 42, p = q.palette || {};
+        const a = p.a || '#8fdcff', b = p.b || '#a9b8ff';
+        const defs = q.grad + '<radialGradient id="' + id + 'aura"><stop offset=".55" stop-color="' + a + '" stop-opacity=".22"/><stop offset=".8" stop-color="' + b + '" stop-opacity=".1"/><stop offset="1" stop-color="' + b + '" stop-opacity="0"/></radialGradient>';
+        const back = '<ellipse class="cw-aura" cx="' + CX + '" cy="' + CY + '" rx="' + f(R * 1.62) + '" ry="' + f(R * 1.55) + '" fill="url(#' + id + 'aura)"/>' +
+            (i >= 4 ? '<ellipse class="cw-ring" cx="' + CX + '" cy="' + CY + '" rx="' + f(R + 22) + '" ry="' + f(R + 20) + '" fill="none" stroke="' + b + '" stroke-opacity=".35" stroke-dasharray="1 6" stroke-linecap="round" stroke-width="2"/>' : '') +
+            '<g class="cw-own-parts" transform="translate(' + CX + ' ' + CY + ') scale(' + kp.toFixed(3) + ') translate(-60 -60)">' + q.parts + '</g>';
+        /* the wall ellipse stays (invisible) as the anchor other code measures her by: companion-core apply(), misty-face splitArt() */
+        const body = '<g class="cw-membrane cw-own" style="transform-origin:' + CX + 'px ' + CY + 'px">' +
+            '<ellipse class="lh-body cw-wall" cx="' + CX + '" cy="' + CY + '" rx="' + R + '" ry="' + f(R * 0.96) + '" fill="none" stroke="none" style="visibility:hidden"/>' +
+            '<g class="cw-own-body" transform="translate(' + CX + ' ' + CY + ') scale(' + k.toFixed(3) + ')"><g class="lc-motif">' + q.motif + '</g>' + q.shape + q.marks + q.acc + '</g></g>';
+        const s = 1.0 * R / (HEAD_R[i] + 9), fy = CY + R * 0.2;
+        const faceT = 'translate(' + CX + ' ' + f(fy) + ') scale(' + s.toFixed(3) + ') translate(-130 ' + (-FACE_Y[i]) + ')';
+        /* own face origin on the body centre, as in the reveal; same scale as the body up to the crop cap */
+        const kf = Math.min(OWN_FACE_MAX, (HEAD_R[i] + 9) / 22), faceY = FACE_Y[i] - 0.2 * (HEAD_R[i] + 9), ink = q.ink || '#0b1d3f';
+        const st = ' fill="none" stroke="' + ink + '" stroke-width="1.8" stroke-linecap="round"';
+        const face = '<g class="lh-face cw-own-face" transform="translate(130 ' + f(faceY) + ')"><g transform="scale(' + kf.toFixed(3) + ')">' +
+            '<g class="lh-eyes">' + q.eyes + '</g>' +
+            '<g class="lh-sleep-eyes"><path d="M-11 -1q3 2.6 6 0M5 -1q3 2.6 6 0"' + st + '/></g>' +
+            '<g class="lh-dizzy-eyes"><path d="M-8 -2m-1 0a1 1 0 1 1 2 0a2 2 0 1 1-4 0a3 3 0 1 1 6 0M8 -2m-1 0a1 1 0 1 1 2 0a2 2 0 1 1-4 0a3 3 0 1 1 6 0" fill="none" stroke="' + ink + '" stroke-width="1.4" stroke-linecap="round"/></g>' +
+            '<ellipse class="lh-blush" cx="-12.5" cy="5" rx="3.4" ry="2" fill="#ff9ec8" opacity=".4"/><ellipse class="lh-blush" cx="12.5" cy="5" rx="3.4" ry="2" fill="#ff9ec8" opacity=".4"/>' +
+            '<g class="lh-smile">' + q.mouth + '</g>' +
+            '<path class="lh-flat" d="M-3 7h6"' + st + '/><path class="lh-calm" d="M-2 7.2h4"' + st + '/><path class="lh-frown" d="M-3.4 8.8q3.4-2.8 6.8 0"' + st + '/>' +
+            '<ellipse class="lh-ooh" cy="7.4" rx="2" ry="2.5" fill="' + ink + '"/></g></g>';
+        return { defs, back, body, faceT, R, s, face };
+    }
     function compose(orig, i, opts) {
         opts = opts || {};
         if (typeof orig !== 'string' || orig.indexOf('<g class="lh-foliage">') < 0 || orig.indexOf('<g class="lh-pot">') < 0) return orig;
@@ -159,7 +198,7 @@
         const fol = orig.indexOf('<g class="lh-foliage">'), pot = orig.indexOf('<g class="lh-pot">');
         const faceAt = orig.indexOf('<g class="lh-face"', fol);
         const foliage = orig.slice(faceAt > 0 && faceAt < pot ? faceAt : pot, pot);
-        const faceAndPieces = foliage.slice(0, foliage.lastIndexOf('</g>'));
+        let faceAndPieces = foliage.slice(0, foliage.lastIndexOf('</g>'));
         const cometAt = orig.indexOf('<g class="lh-comet-orbit">'), fxAt = orig.indexOf('<g class="lh-care-fx">');
         const after = cometAt > 0 ? cometAt : fxAt > 0 ? fxAt : orig.lastIndexOf('</svg>');
         const potPart = orig.slice(pot, after), potFxAt = potPart.indexOf('<g class="lh-pot-fx">');
@@ -167,19 +206,21 @@
         const tail = orig.slice(after, orig.lastIndexOf('</svg>'));
         const halo = (/<g class="lh-halo">[\s\S]*?<\/g>/.exec(orig) || [''])[0];
         const stars = (/<g class="lh-constellation">[\s\S]*?<\/g>/.exec(orig) || [''])[0];
-        const c = cellParts(i, id, ca, cb);
+        const q = opts.own && typeof opts.own === 'object' && opts.own.shape ? opts.own : null;
+        const c = q ? ownParts(i, id, q) : cellParts(i, id, ca, cb);
+        if (q) { const at = faceAndPieces.indexOf('<g class="lh-face"'), end = at >= 0 ? groupEnd(faceAndPieces, at) : -1; faceAndPieces = end > 0 ? faceAndPieces.slice(0, at) + c.face + faceAndPieces.slice(end) : c.face + faceAndPieces; }
         /* a pot from the wardrobe becomes a small glowing dock the cell floats above */
         const potId = (/lh-pot-([a-z0-9-]+)/.exec(open) || [])[1] || 'ceramic';
         const dock = potFx || potId !== 'ceramic' ? '<g class="lh-pot cw-dock" transform="translate(130 ' + (CY + c.R + 24) + ') scale(.72) translate(-130 -262)"><ellipse cx="130" cy="262" rx="44" ry="10" fill="' + cb + '" fill-opacity=".22" stroke="#ffffff" stroke-opacity=".5"/>' + potFx + '</g>' : '<g class="lh-pot cw-dock"></g>';
         const haloT = halo ? '<g transform="translate(0 ' + Math.round(CY - c.R - 30 - 48) + ')">' + halo + '</g>' : '';
         /* frame the cell tightly (room for a hat above and the dock below), so it fills the bubble like the herb did */
         const vx = 130 - (c.R + 36), vy = CY - c.R - 50, vw = 2 * (c.R + 36), vh = 2 * c.R + 50 + 46;
-        const cls = open.replace('class="tmg-plant', 'class="tmg-plant cw-cell').replace(/viewBox="[^"]*"/, 'viewBox="' + vx + ' ' + vy + ' ' + vw + ' ' + vh + '"');
+        const cls = open.replace('class="tmg-plant', 'class="tmg-plant cw-cell' + (q ? ' cw-own-cell' : '')).replace(/viewBox="[^"]*"/, 'viewBox="' + vx + ' ' + vy + ' ' + vw + ' ' + vh + '"');
         return cls + orig.slice(open.length, defsEnd) + c.defs + '</defs>' + (stars ? '<g class="cw-stars" opacity=".45">' + stars + '</g>' : '') + c.back + haloT +
             '<g class="lh-creature"><g class="lh-foliage cw-float">' + c.body + '<g class="cw-face" transform="' + c.faceT + '">' + faceAndPieces + '</g></g>' + dock + '</g>' + tail + '</svg>';
     }
 
-    const core = { STATES, MOODS, SPIKE_H, MOVE_H, MOOD_H, WATER_GOAL, verdict, kindOf, model, cellParts, compose, dayKey };
+    const core = { STATES, MOODS, SPIKE_H, MOVE_H, MOOD_H, WATER_GOAL, verdict, kindOf, model, cellParts, ownParts, compose, dayKey };
     if (!D) { if (typeof module !== 'undefined' && module.exports) module.exports = core; return; }
 
     /* ---------- copy ---------- */
@@ -252,6 +293,19 @@
     }
 
     /* ---------- herb SVG becomes the cell ---------- */
+    /* Oct 19: the user's own companion (onboarding reveal) is what the cell draws. Friends' art passes { own: false }. */
+    function ownOpts(opts, out) {
+        if (opts && opts.own === false) return opts;
+        let q = null;
+        try {
+            const B = W.LowiBirthCompanion, K = W.LowiBirthCompanionCore;
+            if (B && K && K.parts && B.has && B.has()) {
+                const c = B.get(), idm = /id="([a-z0-9]+)glow"/.exec(out || '');
+                if (c && c.look && c.palette) q = K.parts(c, (idm ? idm[1] : 'cwo') + 'o');
+            }
+        } catch (e) { q = null; }
+        return q ? Object.assign({}, opts || {}, { own: q }) : opts;
+    }
     function wrap() {
         const T = W.LowiHerbTamagotchi;
         if (!T || !T.plantHTML || T.plantHTML.cell) return !!(T && T.plantHTML && T.plantHTML.cell);
@@ -260,7 +314,7 @@
             const out = orig.apply(this, arguments);
             /* wardrobe thumbnails crop onto one piece: keep those as they are */
             if (opts && opts.crop) return out;
-            try { return compose(out, m && m.index | 0, opts); } catch (e) { return out; }
+            try { return compose(out, m && m.index | 0, ownOpts(opts, out)); } catch (e) { return out; }
         };
         cellHTML.cell = true;
         cellHTML.original = orig;
@@ -414,6 +468,8 @@
         }
         wrap();
         ['lowi:reward', 'lowi:state', 'lowi:meal-logged', 'lowi:care', 'lowi:lang', 'storage'].forEach(ev => { W.addEventListener(ev, () => schedule()); D.addEventListener(ev, () => schedule()); });
+        /* Oct 19: the onboarding reveal saved (or renamed) the user's own companion: Home / dock / sheets redraw with it now */
+        W.addEventListener('lowi:companion', () => { try { if (W.LowiHerbIdentity && W.LowiHerbIdentity.refresh) W.LowiHerbIdentity.refresh(); else if (W.LowiHerbTamagotchi && W.LowiHerbTamagotchi.refresh) W.LowiHerbTamagotchi.refresh(true); } catch (e) {} schedule(true); });
         D.addEventListener('visibilitychange', () => { if (!D.hidden) schedule(true); });
         D.addEventListener('click', e => { if (e.target.closest && e.target.closest('[data-sp="open"],#spBubble,[data-sp="water"],#tabbar .tb')) setTimeout(() => schedule(), 120); }, true);
         const tab = D.getElementById('tab-home');

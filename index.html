@@ -10293,10 +10293,12 @@ function condBlock(attr, noneAttr, sel, none, gender){
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
 let ob = null;
+/* BH-009 (Oct 19): setup still to do. setupMid marks a setup that got past the birthday step, so a reload (or iOS dropping the app mid-setup) resumes it instead of losing the remaining steps. Older accounts with a birthday and no marker are left alone. */
+function setupPending(s){ return !!s && !s.setupDone && (!(s.user && s.user.bday) || !!s.setupMid); }
 R2.onboard = function(opts){
   opts = opts || {};
   const s = R2.S(); s.user = s.user || {};
-  ob = { step: 0, bday: s.user.bday || "", avatar: s.user.avatar || "", tags: (s.user.tags || []).slice(), noCond: !!s.user.noCond, name: s.user.name || "", gender: s.user.gender || "", pcos: !!(s.health && s.health.pcos), askName: !s.user.name || opts.askName };
+  ob = { step: (s.setupMid && !s.setupDone && s.user.bday) ? 1 : 0, bday: s.user.bday || "", avatar: s.user.avatar || "", tags: (s.user.tags || []).slice(), noCond: !!s.user.noCond, name: s.user.name || "", gender: s.user.gender || "", pcos: !!(s.health && s.health.pcos), askName: !s.user.name || opts.askName };
   if (ob.pcos && ob.gender === "f" && !ob.tags.includes("PCOS")) ob.tags.push("PCOS");   /* old PCOS checkbox -> PCOS condition */
   const ov = R2.sheet('<div class="r2-ob" id="r2ob"></div>', { full: true, noClose: true, cls: "r2-obov" });
   paintOb();
@@ -10352,7 +10354,8 @@ function saveOb(final){
   s.user.noCond = !!ob.noCond && !ob.tags.some(isCond);
   if (ob.gender) s.user.gender = ob.gender;
   s.health = s.health || {}; s.health.pcos = ob.gender === "f" && ob.tags.includes("PCOS");
-  if (final) { s.setupDone = true; s.onboarded = true; delete s.autoSkipped; }
+  if (final) { s.setupDone = true; s.onboarded = true; delete s.autoSkipped; delete s.setupMid; }
+  else if (!s.setupDone) s.setupMid = 1;
   R2.save();
   try { window.LowiGlass && LowiGlass.apply(); } catch(e){}
   R2.applyTheme();
@@ -10603,8 +10606,8 @@ R2.authBoot = function(){
   if (needsGate()) showGate("home");
   const w = sessionStorage.getItem("r2.welcome");
   if (w) { sessionStorage.removeItem("r2.welcome"); const s = R2.S();
-    setTimeout(() => { if (!s.setupDone && !(s.user && s.user.bday)) R2.onboard(); else R2.toast(w === "back" ? "Welcome back" + (s.user && s.user.name ? ", " + s.user.name : "") : "Signed in"); }, 600); }
-  else if (isAccount()) { const s = R2.S(); if (s && !s.setupDone && !(s.user && s.user.bday)) setTimeout(() => R2.onboard(), 900); }
+    setTimeout(() => { if (setupPending(s)) R2.onboard(); else R2.toast(w === "back" ? "Welcome back" + (s.user && s.user.name ? ", " + s.user.name : "") : "Signed in"); }, 600); }
+  else if (isAccount()) { const s = R2.S(); if (setupPending(s)) setTimeout(() => R2.onboard(), 900); }
   /* an open app whose account went away (signed out elsewhere, session gone) goes back to the gate */
   const recheck = () => { if (needsGate() && !gateEl) { try { R2.closeAll(); } catch(e){} showGate("home"); } };
   document.addEventListener("visibilitychange", () => { if (!document.hidden) recheck(); });

@@ -709,3 +709,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 - 2026-10-19 19:45 Section 0 added at Emmanuel's request (voice, 19:22): every request from today with his words, Maya's
   thinking and status, what the current Maya is doing, and "verify first, then build what's missing". Live
   20261019-191500.
+- 2026-10-19 20:15 Bug hunt BH-011: a reload during the companion reveal in setup left a new player on the standard Misty; setup now resumes at the birthday step until the companion exists. Branch bughunt-202610191801, notes in BUGHUNT/LEDGER.md (Run 12).

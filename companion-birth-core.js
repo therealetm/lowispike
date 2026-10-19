@@ -112,6 +112,12 @@ function generate(o){o=o||{};const bday=validDate(o.bday);if(!bday)return null;c
  return {v:1,bday,btime,seed,n,sign,element:S[0],modality:S[1],glyph:S[2],rhythm:rh,type:S[0]+'-'+rh+'-'+S[1],palette:{a,b,deep,base:[S[3],S[4]]},look,
   name:o.name?cleanName(o.name):nameFor(seed,sign,n),autoName:nameFor(seed,sign,n)};}
 function cleanName(v){return String(v||'').replace(/[<>"'`\\]/g,'').replace(/\s+/g,' ').trim().slice(0,24);}
+/* Oct 19 (Emmanuel's friend: "change the name manually ... when their companion gets a name"): a typed rename.
+   '' = go back to the generated name; otherwise 1..24 characters with at least one letter or number. Pure. */
+function renameCheck(v){const raw=String(v==null?'':v);const n=cleanName(raw);if(!raw.trim())return{ok:true,name:'',reset:true};
+  if(!n)return{ok:false,name:'',why:'empty'};
+  let has=false;try{has=/[\p{L}\p{N}]/u.test(n);}catch(e){has=/[A-Za-z0-9\u00C0-\u024F]/.test(n);}
+  if(!has)return{ok:false,name:n,why:'letters'};return{ok:true,name:n,reset:false,cut:raw.trim().replace(/\s+/g,' ').length>24};}
 function personality(c,lang){lang=L(lang);if(!c)return null;const co=CORE[lang][c.element],rh=RHYTHM[lang][c.rhythm],mo=MODAL[lang][c.modality];
  const title=lang==='de'?rh[0]+co[0]:lang==='es'?co[0]+' '+rh[0]:rh[0]+' '+co[0];
  return {title,line:co[1]+' '+rh[1]+' '+mo,code:c.type};}
@@ -228,7 +234,7 @@ function mysterySVG(o){o=o||{};return '<svg class="lc-svg lc-mystery'+(o.cls?' '
  '<g class="lc-seedling"><circle cx="60" cy="62" r="26" fill="url(#lcmS)"/><path d="M60 46l2.6 13.4L76 62l-13.4 2.6L60 78l-2.6-13.4L44 62l13.4-2.6z" fill="#fff" opacity=".9"/></g>'+
  [[38,40],[84,44],[80,84],[40,82],[60,30]].map((q,i)=>'<circle class="lc-tw" style="animation-delay:-'+(i*.6)+'s" cx="'+q[0]+'" cy="'+q[1]+'" r="1.1" fill="#fff"/>').join('')+'</svg>';}
 
-const api={SIGNS,SIGN_KEYS,LANGS,META,TAILS,ENDS,MISTY,fnv,rng,validDate,validTime,signOf,rhythmOf,seedOf,generate,nameFor,cleanName,personality,signLabel,myth,colourName,svg,parts,mysterySVG,shift};
+const api={SIGNS,SIGN_KEYS,LANGS,META,TAILS,ENDS,MISTY,fnv,rng,validDate,validTime,signOf,rhythmOf,seedOf,generate,nameFor,cleanName,renameCheck,personality,signLabel,myth,colourName,svg,parts,mysterySVG,shift};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 if(root)root.LowiBirthCompanionCore=api;
 })(typeof window!=='undefined'?window:(typeof self!=='undefined'?self:null));

@@ -43,6 +43,19 @@ function save(c){if(!c||!c.bday)return;const rec={v:1,bday:c.bday,btime:c.btime|
  try{if(window.LowiHerbIdentity&&LowiHerbIdentity.setCustomName)LowiHerbIdentity.setCustomName(rec.name);}catch(e){}
  cache=null;try{window.dispatchEvent(new CustomEvent('lowi:companion',{detail:getCompanion()}));}catch(e){}
  setTimeout(mountProfile,0);return rec;}
+/* Oct 19 (aura-rename task): rename the companion by hand, any time after it got its name. Only the name changes: the look comes
+   from bday/btime/n and stays exactly the same. '' brings back the generated name (own companion) or Misty (no own companion yet).
+   Returns {ok, name} or {ok:false, why}. Saved in lowispike.companion.v1 (own companion) or the herb name (Misty), both of
+   which the account backup syncs; fires 'lowi:companion' so Home, Misty's card, Community and the tutorial redraw. */
+function rename(v){const chk=C.renameCheck(v);if(!chk.ok)return{ok:false,why:chk.why};
+ const s=stored();
+ if(s){const g=C.generate({bday:s.bday,btime:s.btime,n:s.n});const nm=chk.name||(g&&g.autoName)||s.name;
+  const rec=Object.assign({},s,{name:C.cleanName(nm)});try{localStorage.setItem(KEY,JSON.stringify(rec));}catch(e){return{ok:false,why:'save'};}
+  try{if(window.LowiHerbIdentity&&LowiHerbIdentity.setCustomName)LowiHerbIdentity.setCustomName(rec.name);}catch(e){}}
+ else{try{if(!(window.LowiHerbIdentity&&LowiHerbIdentity.setCustomName))return{ok:false,why:'save'};LowiHerbIdentity.setCustomName(chk.name);}catch(e){return{ok:false,why:'save'};}}
+ cache=null;const c=getCompanion();const name=s?c.name:(chk.name||'Misty');
+ try{window.dispatchEvent(new CustomEvent('lowi:companion',{detail:Object.assign({},c,{renamed:true,displayName:name})}));}catch(e){}
+ setTimeout(mountProfile,0);return{ok:true,name,reset:!!chk.reset};}
 function personality(c,l){return C.personality(c||getCompanion(),l||lang());}
 function svg(c,o){return C.svg(c||getCompanion(),o);}
 
@@ -96,7 +109,7 @@ try{new MutationObserver(ms=>{for(const m of ms){const tg=m.target;if(!tg||!tg.c
 window.addEventListener('lowi:lang',soon);
 if(D.readyState!=='loading')soon();else D.addEventListener('DOMContentLoaded',soon);
 
-window.LowiBirthCompanion={KEY,get:getCompanion,getCompanion,has,save,personality,svg,mysterySVG:C.mysterySVG,reveal,openCreator,core:C,
+window.LowiBirthCompanion={KEY,get:getCompanion,getCompanion,has,save,rename,personality,svg,mysterySVG:C.mysterySVG,reveal,openCreator,core:C,
  clear(){try{localStorage.removeItem(KEY);}catch(e){}cache=null;soon();}};
 /* the one-call way for any feature: window.getCompanion() (LowiCompanion is the older Misty forms/evolution module in companion.js) */
 window.getCompanion=getCompanion;

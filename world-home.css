@@ -17,6 +17,10 @@ html.wh-home #spHome #spBubble { position: absolute !important; left: 50% !impor
     border: 1.5px solid rgba(225,248,255,.42) !important; background: radial-gradient(circle at 30% 22%, rgba(255,255,255,.16), transparent 42%) !important; box-shadow: none !important; }
 /* Oct 19 2026: no dark drop shadow under Misty in any Home layout (was 0 6px 12px black); a centred soft glow keeps her lifted */
 html.wh-home #spBubble .tmg-plant { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--tmg-a, #8fe7ff) 28%, transparent)); }
+/* Oct 19 (aura-rename task, Emmanuel: "I've changed the color of the aura ... click back to my Misty and nothing changed"): once an
+   aura is picked in Glow, Home Misty wears it: her glow takes the aura colours. Her own body colours (star sign)
+   stay; without a pick she keeps the soft star-colour glow above. */
+html.wh-home[data-wh-aura-set] #spHome #spBubble .tmg-plant { filter: drop-shadow(0 0 7px color-mix(in srgb, var(--wh-aura-a) 70%, transparent)) drop-shadow(0 0 18px color-mix(in srgb, var(--wh-aura-b) 45%, transparent)); }
 /* the fasting cell floats next to Misty (same node, same tap: the fasting sheet) */
 html.wh-home #spHome #spFast { position: absolute !important; width: var(--wh-fs) !important; height: var(--wh-fs) !important; margin: 0 !important;
     left: calc(50% - var(--wh-sx)) !important; top: calc(var(--wh-cy) + var(--wh-sy)) !important; transform: translate(-50%, -50%) !important; z-index: 2; pointer-events: auto; }

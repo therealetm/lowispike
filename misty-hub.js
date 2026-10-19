@@ -77,7 +77,8 @@
         forms: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18c2-6 5-9 8-9s6 3 8 9"/><circle cx="6" cy="18" r="1.6"/><circle cx="12" cy="9" r="2.4"/><circle cx="18" cy="18" r="1.6"/></svg>',
         col: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="7" height="9" rx="2"/><rect x="13" y="5" width="7" height="9" rx="2"/><path d="M4 18h16"/></svg>',
         glow: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/></svg>',
-        moon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>'
+        moon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>',
+        pen: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>'
     };
     function html(sayOverride) {
         const xp = xpNow(), s = stageOf(xp), a = aura(), v = cell(), st = status();
@@ -88,9 +89,11 @@
         return '<div class="mh" id="mistyHub" data-noi18n style="--a:' + esc(a.a) + ';--b:' + esc(a.b) + '">' +
             '<header class="mh-head">' +
                 '<div class="mh-art"><span class="mh-glow" aria-hidden="true"></span>' + art() + '</div>' +
-                '<div class="mh-id"><h2>' + esc(name()) + '</h2>' +
+                '<div class="mh-id"><div class="mh-name"><h2>' + esc(name()) + '</h2></div>' +
                     (s ? '<p class="mh-lv">' + esc(T('Level ', 'Level ', 'Nivel ') + s.level + ' \u00b7 ' + s.name) + '</p>' : '') +
                     '<p class="mh-st"><b>' + esc(st.title) + '</b>' + (st.sub ? '<span>' + esc(st.sub) + '</span>' : '') + '</p>' +
+                    /* Oct 19: below the name, not beside it: the sheet's grab handle owns the top strip when the card is pulled up */
+                    '<button type="button" class="mh-rn" data-mh="rename" aria-label="' + esc(T('Rename ' + name(), name() + ' umbenennen', 'Cambiar el nombre de ' + name())) + '">' + ICO.pen + '<span>' + esc(T('Rename', 'Umbenennen', 'Cambiar nombre')) + '</span></button>' +
                 '</div>' +
             '</header>' +
             /* Oct 19 (E-man): Forms and the Food journal were at the very bottom: "that's hidden ... needs to be not hidden".
@@ -155,9 +158,53 @@
         else if (k === 'forms') { try { if (W.LowiCompanion && W.LowiCompanion.open && W.LowiCompanion.open()) return; } catch (x) { } openDetails('grow'); }
         else if (k === 'collection') { const t = D.createElement('button'); t.type = 'button'; t.dataset.sp = 'collection'; t.hidden = true; D.body.appendChild(t); t.click(); t.remove(); }
         else if (k === 'glow') openDetails('aura');
+        else if (k === 'rename') renameOpen();
     });
+
+    /* ---------- rename (Oct 19, aura-rename task; Emmanuel's friend: "change the name manually ... when their companion gets a
+       name"). The pencil next to the name turns it into a small field: Save / Cancel, Enter saves, Escape cancels. Only the name
+       changes (LowiBirthCompanion.rename): the look stays. Empty goes back to the generated name. ---------- */
+    function autoName() { try { const B = W.LowiBirthCompanion; if (B && B.has && B.has()) { const c = B.get(); return (c && (c.autoName || c.name)) || 'Misty'; } } catch (e) { } return 'Misty'; }
+    function renaming() { return !!D.querySelector('#mistyHub .mh-rnf'); }
+    function renameOpen() {
+        const box = D.querySelector('#mistyHub .mh-name'); if (!box || renaming()) return;
+        const cur = name(), auto = autoName();
+        box.insertAdjacentHTML('afterend', '<form class="mh-rnf" novalidate><label class="mh-rnl"><span>' + esc(T('Name', 'Name', 'Nombre')) + '</span><input name="n" type="text" maxlength="24" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="done" value="' + esc(cur) + '"></label>' +
+            '<div class="mh-rnb"><button type="submit" class="mh-rns">' + esc(T('Save', 'Speichern', 'Guardar')) + '</button><button type="button" class="mh-rnx" data-mhrnx>' + esc(T('Cancel', 'Abbrechen', 'Cancelar')) + '</button></div>' +
+            (auto && auto !== cur ? '<small class="mh-rnh">' + esc(T('Leave it empty to go back to ' + auto + '.', 'Leer lassen, dann hei\u00dft es wieder ' + auto + '.', 'D\u00e9jalo en blanco para volver a ' + auto + '.')) + '</small>' : '') +
+            '<p class="mh-rne" role="alert" hidden></p></form>');
+        box.hidden = true; const pen = D.querySelector('#mistyHub .mh-rn'); if (pen) pen.hidden = true;
+        const inp = D.querySelector('#mistyHub .mh-rnf input');
+        if (inp) { try { inp.focus({ preventScroll: true }); inp.select(); } catch (e) { } }
+    }
+    function renameClose(focusPen) {
+        const f = D.querySelector('#mistyHub .mh-rnf'), box = D.querySelector('#mistyHub .mh-name');
+        if (f) f.remove(); if (box) box.hidden = false;
+        const pen = D.querySelector('#mistyHub .mh-rn'); if (pen) pen.hidden = false;
+        if (focusPen) { const b = D.querySelector('#mistyHub .mh-rn'); if (b) try { b.focus({ preventScroll: true }); } catch (e) { } }
+    }
+    function renameSave(f) {
+        const inp = f.querySelector('input'), err = f.querySelector('.mh-rne');
+        const B = W.LowiBirthCompanion;
+        const r = B && B.rename ? B.rename(inp ? inp.value : '') : { ok: false, why: 'save' };
+        if (!r.ok) {
+            if (err) { err.hidden = false; err.textContent = r.why === 'save' ? T('Couldn\u2019t save the name. Please try again.', 'Der Name lie\u00df sich nicht speichern. Bitte nochmal versuchen.', 'No se pudo guardar el nombre. Int\u00e9ntalo de nuevo.') : T('Use at least one letter or number.', 'Mindestens ein Buchstabe oder eine Zahl, bitte.', 'Usa al menos una letra o un n\u00famero.'); }
+            if (inp) inp.setAttribute('aria-invalid', 'true');
+            return;
+        }
+        repaint();
+        const b = D.querySelector('#mistyHub .mh-rn'); if (b) try { b.focus({ preventScroll: true }); } catch (e) { }
+        try { navigator.vibrate && navigator.vibrate(8); } catch (e) { }
+        try { W.LowiR2.toast(r.reset ? T('Back to ' + r.name, 'Hei\u00dft wieder ' + r.name, 'Vuelve a llamarse ' + r.name) : T('Now called ' + r.name, 'Hei\u00dft jetzt ' + r.name, 'Ahora se llama ' + r.name)); } catch (e) { }
+    }
+    D.addEventListener('submit', e => { const f = e.target && e.target.closest && e.target.closest('#mistyHub .mh-rnf'); if (!f) return; e.preventDefault(); renameSave(f); });
+    D.addEventListener('click', e => { if (e.target.closest && e.target.closest('#mistyHub [data-mhrnx]')) { e.preventDefault(); renameClose(true); } });
+    /* Escape cancels the rename, not the whole card */
+    D.addEventListener('keydown', e => { if (e.key !== 'Escape' || !e.target || !e.target.closest || !e.target.closest('#mistyHub .mh-rnf')) return; e.preventDefault(); e.stopImmediatePropagation(); renameClose(true); }, true);
     function openDetails(tab) { try { if (W.LowiWorldHome && W.LowiWorldHome.openDetails) return W.LowiWorldHome.openDetails(tab); } catch (e) { } return false; }
-    ['lowi:herb-xp', 'lowi:cell-state', 'lowi:meal-logged', 'lowi:lang'].forEach(ev => W.addEventListener(ev, () => { if (sheet()) repaint(); }));
+    /* lowi:aura / lowi:companion (Oct 19): a new aura or name shows on the card right away; a background repaint never wipes a
+       half-typed rename */
+    ['lowi:herb-xp', 'lowi:cell-state', 'lowi:meal-logged', 'lowi:lang', 'lowi:aura', 'lowi:companion'].forEach(ev => W.addEventListener(ev, () => { if (sheet() && !renaming()) repaint(); }));
 
     /* ---------- Misty's nudges on Home ---------- */
     const NUDGE_GAP = 90e3, NUDGE_SHOW = 11e3, NUDGE_DAY_MAX = 4, SETTLE = 3500;

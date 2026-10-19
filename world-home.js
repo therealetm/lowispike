@@ -11,7 +11,10 @@
     'use strict';
     const W = window, D = document, H = D.documentElement, C = W.LowiWorldHomeCore;
     if (!C || W.LowiWorldHome) return;
-    const AKEY = 'lowi.aura';
+    /* Oct 19 (aura-rename task): the chosen aura lives in a lowispike.* key, so the account backup (user_state) carries it to the
+       user's other devices and a sign-in to another account on this phone restores that account's own aura (restore() swaps every
+       lowispike.* key). The old device-wide 'lowi.aura' is moved over once. */
+    const AKEY = 'lowispike.aura.v1', AKEY_OLD = 'lowi.aura';
     const lang = () => { try { return ((W.LowiLang && W.LowiLang.get && W.LowiLang.get()) || H.lang || 'de').slice(0, 2); } catch (e) { return 'de'; } };
     const T = (en, de, es) => ({ de, es })[lang()] || en;
     const P = arr => C.pick(arr, lang());
@@ -43,7 +46,17 @@
     /* BH-006: the companion's name = own companion's name, else a name the user typed, else Misty; never the old herb auto name ("Moss Leaf") */
     function companionName() { const w = typeof window !== 'undefined' ? window : globalThis; const pick = v => { v = v == null ? '' : String(v).trim(); return v ? v.slice(0, 24) : ''; }; let auto = ''; try { auto = pick(w.LowiHerbIdentity && w.LowiHerbIdentity.autoName && w.LowiHerbIdentity.autoName()); } catch (e) { } const typed = v => { v = pick(v); return v && v !== auto ? v : ''; }; let n = ''; try { const B = w.LowiBirthCompanion; if (B && B.has && B.has()) { const c = B.get(); n = pick(c && c.name); } } catch (e) { } if (!n) try { const t = w.LowiHerbTamagotchi, p = t && t.readPrefs && t.readPrefs(); n = typed(p && p.name); } catch (e) { } if (!n) try { const R = w.LowiR2, s = R && R.S && R.S(); n = typed(s && s.herb && s.herb.name); } catch (e) { } return n || 'Misty'; }
     function mistyName() { return companionName(); }
-    function auraId() { let v = ''; try { v = localStorage.getItem(AKEY) || ''; } catch (e) { } return C.cleanAura(v, xpNow()); }
+    function auraRaw() {
+        let v = null;
+        try {
+            v = localStorage.getItem(AKEY);
+            if (v == null) { const o = localStorage.getItem(AKEY_OLD); if (o) { localStorage.setItem(AKEY, o); v = o; } if (o != null) localStorage.removeItem(AKEY_OLD); }
+        } catch (e) { }
+        return v || '';
+    }
+    function auraId() { return C.cleanAura(auraRaw(), xpNow()); }
+    /* true once the user picked an aura (and still owns it): only then does Home Misty's glow switch from her star colour to it */
+    function auraChosen() { const v = auraRaw(); return !!v && C.cleanAura(v, xpNow()) === v; }
     function applyAura() {
         const a = C.aura(auraId());
         /* Oct 18 game-perf: tick() calls this every 700 ms; a write with the same value still wakes every <html>/<body> observer,
@@ -51,6 +64,9 @@
         if (H.style.getPropertyValue('--wh-aura-a') !== a.a) H.style.setProperty('--wh-aura-a', a.a);
         if (H.style.getPropertyValue('--wh-aura-b') !== a.b) H.style.setProperty('--wh-aura-b', a.b);
         if (H.dataset.whAura !== a.id) H.dataset.whAura = a.id;
+        const set = auraChosen();
+        if (set && H.dataset.whAuraSet !== '1') H.dataset.whAuraSet = '1';
+        else if (!set && H.dataset.whAuraSet) delete H.dataset.whAuraSet;
     }
 
     /* ---------- Home: wrap today's log into the sheet, build the HUD ---------- */
@@ -891,7 +907,11 @@
         }
         try { localStorage.setItem(AKEY, id); } catch (e) { }
         applyAura(); repaintMisty(); st.mistyKey = '';
-        try { W.LowiR2.toast(T('Misty glows in ' + P(a.n), 'Misty leuchtet jetzt in ' + P(a.n), 'Misty brilla en ' + P(a.n))); } catch (e) { }
+        /* Oct 19 (Emmanuel: "I've changed the color of the aura ... click back to my Misty and nothing changed"): Misty's card under
+           this sheet and anything else showing her glow redraw now */
+        try { W.dispatchEvent(new CustomEvent('lowi:aura', { detail: { id } })); } catch (e) { }
+        const nm = companionName();
+        try { W.LowiR2.toast(T(nm + ' glows in ' + P(a.n), nm + ' leuchtet jetzt in ' + P(a.n), nm + ' brilla en ' + P(a.n))); } catch (e) { }
     }
 
     /* ---------- clicks ---------- */

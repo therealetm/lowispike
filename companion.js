@@ -1,6 +1,6 @@
 /* LOWiSPIKE companion evolution, DOM layer (Oct 15, 2026). Pure logic in companion-core.js.
    - Misty's cell (LowiHerbTamagotchi.plantHTML after cell-world) gets her fused form: element traits from the star sign,
-     body language from the personality type, six forms from the existing retained herb stage. No XP is awarded here.
+     body language from the personality type, ten forms from the existing retained herb stage. No XP is awarded here.
    - Reactions: a logged meal or a scanned product makes Misty brace (high spike), nod (medium) or cheer (low spike).
    - Calm glow between meals from lowi_fast_v1 (rises from 3 h, full at 12 h, flat after that).
    - Evolution sheet (button in the herb path sheet; the wardrobe is retired since Oct 15): the forms, what shapes them, optional style picker, share toggle.
@@ -243,7 +243,7 @@
     const pick3 = a => a[({ de: 1, es: 2 }[lang()] || 0)];
     function curType() { try { const m = model(); return C.normType(m && m.profile && m.profile.personality); } catch (e) { return ''; } }
     function stages() { try { return (W.LOWI_HERB_CONFIG && LOWI_HERB_CONFIG.stages) || null; } catch (e) { return null; } }
-    const FALLBACK = [{ xp: 0 }, { xp: 100 }, { xp: 300 }, { xp: 700 }, { xp: 1500 }, { xp: 3000 }];
+    const FALLBACK = [{ xp: 0 }, { xp: 100 }, { xp: 300 }, { xp: 700 }, { xp: 1500 }, { xp: 3000 }, { xp: 4500 }, { xp: 7000 }, { xp: 10000 }, { xp: 14000 }];
     /* Misty's view (Oct 15 evening): tapping Misty opens THIS, the Pokémon route. Her picture is the same render as on Home
        (plantHTML 'hero' through cell-world + the form wrapper, inside the same glass bubble), then XP to the next evolution,
        the six forms drawn with the same render code (locked ones as silhouettes), the optional style picker and sharing. */
@@ -282,7 +282,7 @@
         const typeBtns = AX.map((a, i) => '<div class="cf-ax" role="group">' + [0, 1].map(j => '<button type="button" data-cf="ax" data-i="' + i + '" data-v="' + a[j] + '" aria-pressed="' + (sel[i] === a[j]) + '">' + esc(pick3(a[2 + j])) + '</button>').join('') + '</div>').join('');
         return '<div class="cf-panel cf-misty" role="dialog" aria-modal="true" aria-labelledby="cfTitle"><header class="cf-head"><h2 id="cfTitle">' + esc(nm) + '</h2>' + xBtn + '</header><div class="cf-scroll">' +
             '<div class="cf-hero"><div class="cf-bub" style="--tmg-a:' + esc(pal.a || '#92ddd7') + ';--tmg-b:' + esc(pal.b || '#b8b0ff') + '"><span class="cf-bub-water" aria-hidden="true"></span><span class="cf-bub-herb"><span class="cf-bub-c" style="--sp-dry:' + esc(dry) + '">' + heroArt(m, hp) + '</span></span></div>' +
-            '<b class="cf-fname">' + esc(now.name) + '</b><small class="cf-sub">' + esc(L('Form ' + (ci + 1) + ' of 6', 'Form ' + (ci + 1) + ' von 6', 'Forma ' + (ci + 1) + ' de 6') + (sign ? ' · ' + signTxt + ' · ' + fam : '')) + '</small>' +
+            '<b class="cf-fname">' + esc(now.name) + '</b><small class="cf-sub">' + esc(L('Form ' + (ci + 1) + ' of ' + steps.length, 'Form ' + (ci + 1) + ' von ' + steps.length, 'Forma ' + (ci + 1) + ' de ' + steps.length) + (sign ? ' · ' + signTxt + ' · ' + fam : '')) + '</small>' +
             '<i class="cf-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '" aria-label="' + esc(L('XP to the next evolution', 'XP bis zur nächsten Entwicklung', 'XP hasta la próxima evolución')) + '"><i style="width:' + pct + '%"></i></i>' +
             '<small class="cf-next"><b>' + xp + ' XP</b> · ' + esc(nextTxt) + '</small></div>' +
             '<h3>' + esc(L('Evolution path', 'Entwicklungsweg', 'Camino de evolución')) + '</h3><ol class="cf-path">' + forms + '</ol>' +

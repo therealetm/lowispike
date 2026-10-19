@@ -34,6 +34,28 @@ The thresholds were kept on purpose: Forms unlocks, cosmetics and the world-home
 - Stones sit on the rim (angles 75-285 deg from straight up, at 0.9R), never on the face.
 - The user's own body, colours, name and face stay as generated. Home choices kept: no smile, mouth follows energy, no glow ring.
 
+## Ten forms (Oct 19 2026, 10 PM: four more after Legendary)
+Emmanuel reached Legendary (level 6, "Legend") during testing: "we need to add more evolutions ... it should really,
+truly evolve into something majestic looking". Forms 7-10 follow, with longer XP steps (an active day earns roughly
+80-150 XP, so Nova is about two weeks after Legendary and Majesty several months of steady use):
+
+| Form | XP | Level name | Form name (companion-core) | What's new |
+|---|---|---|---|---|
+| 7 | 4500 | Nova | <element> Nova | a mane of blades round the upper body, a gold crown of 4 spikes, 11 stones, bigger wings |
+| 8 | 7000 | Titan | <element> Titan | twin tails, a third pair of wings fanned between the others, 13 stones |
+| 9 | 10000 | Monarch | <element> Monarch | a burst of power spikes behind everything, a second inner pair of horns, the tall 6-spike crown |
+| 10 | 14000 | Majesty | <element> Majesty | a tilted ring of stars (far half behind, near half in front), golden edges on every piece |
+
+- The body (cell-world.js) stops growing at form 6 (`CELL_R` 94); later forms grow in traits, and `POWER.frame` widens
+  (1.27, 1.32, 1.40, 1.46) so nothing is cut off. `playtest/probe-evo-forms10.cjs` renders all ten and checks the frame.
+- Evolving is XP only: no food, no Collection progress, no Catch. `herb-config.js` stages carry only id, xp and names.
+- Earned progress is kept: retained `highestStage` and XP are untouched; anyone already past 4500 XP evolves on the next
+  open (the moment plays the highest new tier once).
+- Evolution moment tiers 6-9: gold rays (rose-gold at tier 8, white-gold at tier 9), double shake from tier 8, ray length
+  and glow capped for small phones.
+- The Forms path shows two rows of five; the four forms after Legendary have a gold tint.
+- The look code (`1.<form>.`) now accepts forms 0-9.
+
 ## Evolution moment (herb-tamagotchi.js evolve, herb-tamagotchi.css #lhEvolution)
 
 Tier t = the new form (1..5). The old form charges up for 0.5 + 0.22t s, shaking harder each tier, then a flash, and the new

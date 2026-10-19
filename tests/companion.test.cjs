@@ -41,7 +41,8 @@ t('six forms: markings from form 3, crown only at form 6', () => {
   assert.ok(out.every(s => s.length > 0));
   for (let i = 1; i < 6; i++) assert.ok(out[i].length >= out[i - 1].length * 0.9, 'form ' + i + ' grows');
   assert.ok(!/cf-crown/.test(out[4]) && /cf-crown/.test(out[5]), 'crown at form 6 only');
-  assert.strictEqual(C.clampStage(9), 5);
+  assert.strictEqual(C.clampStage(9), 9);
+  assert.strictEqual(C.clampStage(12), 9);
   assert.strictEqual(C.clampStage(-2), 0);
 });
 

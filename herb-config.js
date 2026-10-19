@@ -9,7 +9,13 @@
       {id:'young',xp:300,name:['Young Comet','Junger Komet','Cometa joven']},
       {id:'flourishing',xp:700,name:['Bright Comet','Heller Komet','Cometa brillante']},
       {id:'radiant',xp:1500,name:['Radiant Comet','Strahlender Komet','Cometa radiante']},
-      {id:'legendary',xp:3000,name:['Legendary Comet','Legendärer Komet','Cometa legendario']}
+      {id:'legendary',xp:3000,name:['Legendary Comet','Legendärer Komet','Cometa legendario']},
+      /* Oct 19 2026 night (Eman reached Legendary: "we need to add more evolutions"): four longer steps after it. XP only:
+         no specific food and no Collection progress is ever needed to evolve. */
+      {id:'nova',xp:4500,name:['Nova Comet','Nova-Komet','Cometa nova']},
+      {id:'titan',xp:7000,name:['Titan Comet','Titanen-Komet','Cometa titán']},
+      {id:'monarch',xp:10000,name:['Monarch Comet','Monarchen-Komet','Cometa monarca']},
+      {id:'majesty',xp:14000,name:['Majestic Comet','Majestätischer Komet','Cometa majestuoso']}
     ],
     gentleDimAfterHours:48,
     body: {

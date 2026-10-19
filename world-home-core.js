@@ -21,7 +21,12 @@
         { xp: 300, n: ['Glow cell', 'Leuchtzelle', 'Célula brillante'], d: ['Stronger light, calmer flow.', 'Stärkeres Licht, ruhigerer Fluss.', 'Más luz, flujo más tranquilo.'] },
         { xp: 700, n: ['Bright cell', 'Strahlende Zelle', 'Célula radiante'], d: ['Your glow reaches further.', 'Dein Leuchten reicht weiter.', 'Tu brillo llega más lejos.'] },
         { xp: 1500, n: ['Star cell', 'Sternzelle', 'Célula estelar'], d: ['A whole halo of light.', 'Ein ganzer Lichtkranz.', 'Todo un halo de luz.'] },
-        { xp: 3000, n: ['Legend', 'Legende', 'Leyenda'], d: ['The brightest cell in your body.', 'Die hellste Zelle in deinem Körper.', 'La célula más brillante de tu cuerpo.'] }
+        { xp: 3000, n: ['Legend', 'Legende', 'Leyenda'], d: ['The brightest cell in your body.', 'Die hellste Zelle in deinem Körper.', 'La célula más brillante de tu cuerpo.'] },
+        /* Oct 19 2026 night: four more levels after Legend, same XP as herb-config.js stages (XP only, never a food or the Collection) */
+        { xp: 4500, n: ['Nova', 'Nova', 'Nova'], d: ['Your light breaks out in a mane of blades and a gold crown.', 'Dein Licht bricht als Klingenmähne mit Goldkrone hervor.', 'Tu luz estalla en una melena de cuchillas y una corona dorada.'] },
+        { xp: 7000, n: ['Titan', 'Titan', 'Titán'], d: ['Twin tails and a third pair of wings.', 'Zwei Schwänze und ein drittes Flügelpaar.', 'Dos colas y un tercer par de alas.'] },
+        { xp: 10000, n: ['Monarch', 'Monarch', 'Monarca'], d: ['Power spikes all around you and a second pair of horns.', 'Kraftzacken rund um dich und ein zweites Hörnerpaar.', 'Picos de poder a tu alrededor y un segundo par de cuernos.'] },
+        { xp: 14000, n: ['Majesty', 'Majestät', 'Majestad'], d: ['The highest form: a tall gold crown and a ring of stars.', 'Die höchste Form: eine hohe Goldkrone und ein Sternenring.', 'La forma más alta: una gran corona dorada y un anillo de estrellas.'] }
     ];
     const ix = l => ({ de: 1, es: 2 })[l] || 0;
     const pick = (arr, l) => arr[ix(l)] || arr[0];

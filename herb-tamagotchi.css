@@ -119,9 +119,16 @@ html.herb-room #g1Z,html.herb-evolving #g1Z{display:none!important}
 #lhEvolution .lh-evo-ray{position:absolute;left:-2px;top:0;width:4px;height:calc(70px + 14px * var(--t,1));border-radius:4px;background:linear-gradient(180deg,rgba(255,240,170,.9),rgba(120,220,255,0));transform-origin:50% 0;transform:rotate(var(--a)) translateY(calc(26px + 4px * var(--t,1)))}
 #lhEvolution .lh-evo-rays{animation:lh-evo-rays-in .5s ease-out var(--c,1s) forwards,lh-evo-spin 14s linear var(--c,1s) infinite}
 #lhEvolution .lh-evo-glow{transform:scale(calc(.9 + .18 * var(--t,1)))}
-#lhEvolution.lh-evo-t3 .lh-evolution-content,#lhEvolution.lh-evo-t4 .lh-evolution-content,#lhEvolution.lh-evo-t5 .lh-evolution-content{animation:lh-evo-in .42s cubic-bezier(.2,.8,.2,1) both,lh-evo-shake .5s ease-out var(--c,1s) 1}
+#lhEvolution.lh-evo-t3 .lh-evolution-content,#lhEvolution.lh-evo-t4 .lh-evolution-content,#lhEvolution.lh-evo-t5 .lh-evolution-content,#lhEvolution.lh-evo-t6 .lh-evolution-content,#lhEvolution.lh-evo-t7 .lh-evolution-content,#lhEvolution.lh-evo-t8 .lh-evolution-content,#lhEvolution.lh-evo-t9 .lh-evolution-content{animation:lh-evo-in .42s cubic-bezier(.2,.8,.2,1) both,lh-evo-shake .5s ease-out var(--c,1s) 1}
 #lhEvolution.lh-evo-t4 .lh-evo-ray,#lhEvolution.lh-evo-t5 .lh-evo-ray{width:6px;left:-3px}
 #lhEvolution.lh-evo-t5 .lh-evo-ray{background:linear-gradient(180deg,rgba(255,214,90,1),rgba(255,160,60,0))}
+/* Oct 19 2026 night: tiers 6-9 = the four forms after Legendary. Gold rays (rose-gold, then white-gold for the last form), a
+   double shake; ray length and glow are capped so the burst stays inside small phones. */
+#lhEvolution.lh-evo-t6 .lh-evo-ray,#lhEvolution.lh-evo-t7 .lh-evo-ray,#lhEvolution.lh-evo-t8 .lh-evo-ray,#lhEvolution.lh-evo-t9 .lh-evo-ray{width:6px;left:-3px;height:150px;transform:rotate(var(--a)) translateY(50px);background:linear-gradient(180deg,rgba(255,214,90,1),rgba(255,160,60,0))}
+#lhEvolution.lh-evo-t8 .lh-evo-ray{background:linear-gradient(180deg,rgba(255,226,140,1),rgba(255,120,190,0))}
+#lhEvolution.lh-evo-t9 .lh-evo-ray{width:7px;left:-3.5px;background:linear-gradient(180deg,rgba(255,255,255,1),rgba(255,214,90,.7) 45%,rgba(255,214,90,0))}
+#lhEvolution.lh-evo-t6 .lh-evo-glow,#lhEvolution.lh-evo-t7 .lh-evo-glow,#lhEvolution.lh-evo-t8 .lh-evo-glow,#lhEvolution.lh-evo-t9 .lh-evo-glow{transform:scale(2)}
+#lhEvolution.lh-evo-t8 .lh-evolution-content,#lhEvolution.lh-evo-t9 .lh-evolution-content{animation:lh-evo-in .42s cubic-bezier(.2,.8,.2,1) both,lh-evo-shake .5s ease-out var(--c,1s) 2}
 #lhEvolution .lh-evo-power{display:inline-block;margin:0 0 10px;padding:4px 12px;border-radius:999px;background:rgba(255,214,120,.14);border:.5px solid rgba(255,214,120,.5);color:#ffe6a8;font-size:14px;font-weight:650}
 @keyframes lh-evo-charge{0%{transform:none;opacity:1}20%{transform:translateX(calc(-1px * var(--t,1))) scale(1.01)}40%{transform:translateX(calc(1.4px * var(--t,1))) scale(1.03)}60%{transform:translateX(calc(-1.8px * var(--t,1))) scale(1.05)}80%{transform:translateX(calc(2.2px * var(--t,1))) scale(1.08);opacity:1}100%{transform:scale(1.12);opacity:0}}
 @keyframes lh-evo-burst{0%{opacity:0;transform:scale(.5)}55%{opacity:1;transform:scale(calc(1.06 + .05 * var(--t,1)))}100%{opacity:1;transform:none}}

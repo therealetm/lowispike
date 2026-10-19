@@ -654,3 +654,9 @@ Emmanuel's iPhone closed the app three times in one evening: scrolling the Commu
 
 ## Oct 19, 2026: No "sent you energy" chat line (owner's call)
 Emmanuel: "why the it says [Damon] sent you energy? ... That's a useless text message ... Remove that specific line from the app." LowiCgMap.energy() no longer posts "@Name ⚡ X sent you energy"; the burst itself is the message. Lines shaped like it (older app pings, crowd members) are hidden from the chat, bubbles and unread counts by messages() (ENERGY_LINE, EN/DE/ES). The crowd script should stop posting them too (note left for the crowd task).
+
+## Oct 19, 2026: Ten companion forms, evolution stays XP only
+Emmanuel reached the last of six forms in testing and asked for more levels and evolutions that become "something majestic".
+Four forms follow Legendary at 4500, 7000, 10000 and 14000 XP (Nova, Titan, Monarch, Majesty), each adding a new silhouette
+piece; the first six thresholds and every user's own look and earned progress are unchanged. Following his Collection
+decision, evolving never requires a specific food, a full Collection or a Catch: XP thresholds only. Details: EVOLUTION.md.

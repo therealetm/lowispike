@@ -1,7 +1,14 @@
 /* LOWiSPIKE companion evolution (Oct 15, 2026): Misty's creature form, reactions, calm glow, evolution sheet, friend minis. */
 .cf-part path { transform-box: fill-box; transform-origin: 50% 100%; }
-.cf-wing > path:first-child, .cf-wing2 > path:first-child { animation: cfFlap 3.6s ease-in-out infinite; }
-.cf-wing[style*="--side:1"] > path:first-child, .cf-wing2[style*="--side:1"] > path:first-child { animation-delay: -.4s; }
+.cf-wing > path:first-child, .cf-wing2 > path:first-child, .cf-wing3 > path:first-child { animation: cfFlap 3.6s ease-in-out infinite; }
+.cf-wing[style*="--side:1"] > path:first-child, .cf-wing2[style*="--side:1"] > path:first-child, .cf-wing3[style*="--side:1"] > path:first-child { animation-delay: -.4s; }
+.cf-wing3 > path:first-child { animation-delay: -1.2s; }
+/* forms 7-10 (Oct 19 2026 night): mane ripples, power spikes breathe, orbit stars twinkle; the last form gets gold edges */
+.cf-mane path { transform-box: fill-box; transform-origin: 50% 100%; animation: cfMane 3.2s ease-in-out infinite; animation-delay: calc(var(--k, 0) * -.23s); }
+.cf-flare { transform-box: view-box; transform-origin: 130px 158px; animation: cfFlare 4.8s ease-in-out infinite; }
+.cf-orbit path[style] { transform-box: fill-box; transform-origin: center; animation: cfTwinkle 2.6s ease-in-out infinite; animation-delay: calc(var(--k, 0) * -.33s); }
+.cf-st9 .cf-part > path:first-child, .cf-st9 .cf-mane path { stroke: #ffe6a2; stroke-opacity: .95; stroke-width: 1.7; }
+.cf-st9 .cf-stone > path:first-child { stroke: #b8862a; stroke-opacity: .9; }
 .cf-ear > path:first-child { animation: cfTwitch 5.2s ease-in-out infinite; }
 .cf-tail > path:first-child { animation: cfSway 4.4s ease-in-out infinite; }
 .cf-el-fire .cf-ear > path:first-child, .cf-el-fire .cf-crest > path:first-child { animation: cfFlick 1.8s ease-in-out infinite; }
@@ -24,6 +31,8 @@ html[data-cf-react="brace"] .cf-rx-brace path:first-child { animation: cfDrip 1.
 @keyframes cfSway { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
 @keyframes cfFlick { 0%, 100% { transform: scaleY(1) skewX(0); } 50% { transform: scaleY(1.08) skewX(4deg); } }
 @keyframes cfTwinkle { 0%, 100% { opacity: .35; transform: scale(.7); } 50% { opacity: 1; transform: scale(1.15); } }
+@keyframes cfMane { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(1.1); } }
+@keyframes cfFlare { 0%, 100% { transform: scale(.97); opacity: .85; } 50% { transform: scale(1.03); opacity: 1; } }
 @keyframes cfBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
 @keyframes cfBreathe { 0%, 100% { stroke-opacity: .6; } 50% { stroke-opacity: 1; } }
 @keyframes cfBrace { 0%, 100% { transform: translateX(0) scale(1, 1); } 25% { transform: translateX(-2.5px) scale(1.03, .96); } 75% { transform: translateX(2.5px) scale(1.03, .96); } }
@@ -64,7 +73,8 @@ html[data-ui=light] .cf-panel { background: #f6f7fd; color: #16204a; }
 .cf-ax button { min-height: 44px; border-radius: 12px; border: 1px solid rgba(127, 140, 190, .35); background: transparent; color: inherit; font: inherit; font-size: 14px; cursor: pointer; padding: 6px 8px; }
 .cf-ax button[aria-pressed="true"] { background: rgba(255, 214, 120, .22); border-color: #ffd36e; font-weight: 600; }
 .cf-link { margin-top: 8px; border: 0; background: none; color: inherit; text-decoration: underline; font: inherit; font-size: 13px; cursor: pointer; min-height: 44px; padding: 0; }
-.cf-path { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.cf-path { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; } /* ten forms: two rows of five */
+.cf-step:nth-child(n+7) { background: linear-gradient(180deg, rgba(255, 214, 120, .12), rgba(127, 140, 190, .1)); } /* the four forms after Legendary */
 .cf-step { display: grid; justify-items: center; text-align: center; gap: 2px; padding: 8px 6px 10px; border-radius: 16px; background: rgba(127, 140, 190, .1); border: 1px solid transparent; min-width: 0; }
 .cf-step.cur { border-color: #ffd36e; background: rgba(255, 214, 120, .14); }
 .cf-step b { font-size: 12.5px; line-height: 1.2; overflow-wrap: anywhere; }
@@ -83,7 +93,6 @@ html[data-ui=light] .cf-panel { background: #f6f7fd; color: #16204a; }
 @media (min-width: 700px) {
     .cf-ov { align-items: center; }
     .cf-panel { border-radius: 26px; max-height: min(86vh, 86dvh); }
-    .cf-path { grid-template-columns: repeat(6, minmax(0, 1fr)); }
     .cf-big { width: 150px; height: 150px; }
 }
 @keyframes cfFade { from { opacity: 0; } }
@@ -93,7 +102,7 @@ html[data-ui=light] .cf-panel { background: #f6f7fd; color: #16204a; }
 svg.cr-fc.cf-mini { overflow: visible; }
 
 @media (prefers-reduced-motion: reduce) {
-    .cf-part path, .cf-aura-wide path, .cf-crown circle, .cf-calm, .cf-rx path, .cf-ov, .cf-panel,
+    .cf-part path, .cf-aura-wide path, .cf-crown circle, .cf-mane path, .cf-flare, .cf-orbit path, .cf-calm, .cf-rx path, .cf-ov, .cf-panel,
     html[data-cf-react] .cw-cell .lh-creature, html[data-cf-react] .cw-cell .cf-front, html[data-cf-react] .cw-cell .cf-back { animation: none !important; transition: none !important; }
 }
 svg.cf-form { overflow: visible; }
@@ -119,7 +128,8 @@ svg.cf-form { overflow: visible; }
 .cf-next { display: block; font-size: 13px; opacity: .85; }
 .cf-next b { font-weight: 700; }
 .cf-misty .cf-path { gap: 6px; }
-.cf-misty .cf-step { position: relative; padding: 6px 4px 8px; }
+.cf-misty .cf-step { position: relative; padding: 6px 3px 8px; }
+.cf-misty .cf-step b { font-size: 11.5px; }
 .cf-misty .cf-sm { width: 58px; height: 64px; }
 .cf-misty .cf-sm .lh-reflection, .cf-misty .cf-sm .lh-care-fx { display: none; }
 .cf-misty .cf-locked .cf-sm { filter: brightness(0) drop-shadow(0 0 1px rgba(170, 190, 255, .7)); opacity: .45; }

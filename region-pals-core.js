@@ -117,7 +117,7 @@
     /* With told0 (lessons told on earlier visits) and A: on every other later visit, or whenever nothing new is left, it asks
        about the first earlier lesson you haven't confirmed yet instead ({ask: lesson}); the shell shows Yes / No. */
     function opening(m, id, li, lines, seen, rnd, told0, A) {
-        if (!met(m, id)) { meet(m, id); return { i: 0, text: lines[0], intro: true }; }
+        if (!met(m, id)) { meet(m, id); return { i: 0, text: lines[0], intro: true, src: { t: 'fact', i: 0 } }; }
         const b = backLine(li, m.lastBack, rnd); m.lastBack = b.i;
         const k = A ? nextNew(m, id, lines, seen, A) : nextFact(lines.length, seen, 1);
         if (A && told0) {
@@ -125,10 +125,10 @@
             const okd = (m.ok && m.ok[id]) || [], n = lessonCount(id, A);
             const past = Array.from(told0).filter(i => i >= 1 && i <= n && okd.indexOf(i) < 0 && !has(seen, i)).sort((x, y) => x - y);
             const newLesson = k != null && k <= n, since = m.since[id] || 0;
-            if (past.length && (!newLesson || since >= 1)) { m.since[id] = 0; return { i: null, ask: past[0], text: b.text + ' ' + recallAsk(id, past[0], li), back: b.i }; }
+            if (past.length && (!newLesson || since >= 1)) { m.since[id] = 0; return { i: null, ask: past[0], text: b.text + ' ' + recallAsk(id, past[0], li), back: b.i, src: { t: 'ask', b: b.i, ask: past[0] } }; }
             m.since[id] = since + 1;
         }
-        return { i: k, text: k != null ? b.text + ' ' + lines[k] : b.text, back: b.i };
+        return { i: k, text: k != null ? b.text + ' ' + lines[k] : b.text, back: b.i, src: { t: 'back', b: b.i, i: k } };
     }
     /* tapping through the lines: round and round, but once you've met, the hello is skipped */
     function cycle(i, total, metYet) {
@@ -196,13 +196,35 @@
     }
     /* Yes: remembered, never asked again, on to the next lesson ("Good, because now it's about ..."). No: that lesson again. */
     function answer(m, id, i, yes, li, lines, seen, A) {
-        if (!yes) return { i, text: COPY.again[li3(li)] + ' ' + lines[i] };
+        if (!yes) return { i, text: COPY.again[li3(li)] + ' ' + lines[i], src: { t: 'again', i } };
         remember(m, id, i);
         const n = lessonCount(id, A);
         const k = nextNew(m, id, lines, seen, A, i);
-        if (k != null && k <= n) return { i: k, text: recallGood(id, k, li) + ' ' + lines[k] };
+        if (k != null && k <= n) return { i: k, text: recallGood(id, k, li) + ' ' + lines[k], src: { t: 'good', k } };
         const okAll = ((m.ok && m.ok[pid(id)]) || []).length >= n;
-        return { i: null, text: COPY[okAll ? 'allDone' : 'goodShort'][li3(li)] };
+        return { i: null, text: COPY[okAll ? 'allDone' : 'goodShort'][li3(li)], src: { t: 'copy', key: okAll ? 'allDone' : 'goodShort' } };
+    }
+    /* ---------- switching language mid-lesson (Oct 19, 2026) ----------
+       The app language can change while a guide is talking (Settings, inside a world). The guide used to be torn down and rebuilt,
+       which ran the arrival again: a second "welcome back" and the NEXT lesson, so the lesson you were reading was skipped (and
+       remembered as told). Now every line carries where it came from (src), and the shell re-says the SAME line in the new
+       language: relang(src, id, li, lines) is that line's text in language li (lines = the guide's lines in li), or null when it
+       can't be rebuilt. src: {t:'fact', i} | {t:'back', b, i?} | {t:'ask', b?, ask} | {t:'again', i} | {t:'good', k} |
+       {t:'copy', key} | {t:'hunt', key, v}. */
+    function relang(src, id, li, lines) {
+        if (!src || typeof src !== 'object' || !pid(id)) return null;
+        const L = Array.isArray(lines) ? lines : [], at = i => (Number.isInteger(i) && i >= 0 && i < L.length ? L[i] : null);
+        const back = b => { const a = BACK[li3(li)]; return Number.isInteger(b) && b >= 0 && b < a.length ? a[b] : null; };
+        switch (src.t) {
+            case 'fact': return at(src.i);
+            case 'back': { const b = back(src.b); if (!b) return null; if (src.i == null) return b; const f = at(src.i); return f ? b + ' ' + f : null; }
+            case 'ask': { const q = recallAsk(id, src.ask, li); if (!topic(id, src.ask, li)) return null; if (src.b == null) return q; const b = back(src.b); return b ? b + ' ' + q : q; }
+            case 'again': { const f = at(src.i); return f ? COPY.again[li3(li)] + ' ' + f : null; }
+            case 'good': { const f = at(src.k); return f && topic(id, src.k, li) ? recallGood(id, src.k, li) + ' ' + f : null; }
+            case 'copy': return COPY[src.key] && COPY[src.key][li3(li)] || null;
+            case 'hunt': { const h = huntLine(src.key, li, src.v); return h ? h.text : null; }
+        }
+        return null;
     }
     /* screen directions, clockwise from up (0) in 45 degree steps */
     const DIRS = [['up', 'up and to the right', 'to the right', 'down and to the right', 'down', 'down and to the left', 'to the left', 'up and to the left'],
@@ -343,7 +365,7 @@
     const api = { PALS, IDS, pid, li3, COPY, tr, pal, lines, FOLLOW, target, step, relax, tilt, awardsXp: false,
         MORE, GUIDE, DIRS, HUNT, dirIndex, guide, huntLine, showMs, minRead, nextFact, SPOTS, overlap, spotRect, place,
         gapFor, QUEST_IDS, QUEST_W, questBottom, PAD_IDS, dockSpot, ORB_R, BACK, backLine, memory, met, meet, opening, cycle,
-        TOPICS, lessonCount, topic, recallAsk, recallGood, askMs, tell, remember, toldBefore, nextNew, answer };
+        TOPICS, lessonCount, topic, recallAsk, recallGood, askMs, tell, remember, toldBefore, nextNew, answer, relang };
     if (typeof module === 'object' && module.exports) module.exports = api;
     root.LowiRegionPalsCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

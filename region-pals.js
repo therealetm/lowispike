@@ -94,8 +94,9 @@
         return true;
     }
     function flush() { const w = st.wait; st.wait = null; if (w && st.el) show1(w, false); }
-    function show1(line, user) {
+    function show1(line, user, again) {
         const b = st.el.querySelector('.rp-say'), tx = b.querySelector('.rp-tx');
+        st.line = line;
         tx.textContent = line.text;
         st.el.classList.toggle('rp-hunt', line.kind === 'hunt');
         st.asking = line.kind === 'ask' ? line.ask : null;
@@ -107,7 +108,7 @@
             /* a lesson told is remembered on this device, so a later visit can ask about it */
             if (line.i >= 1 && line.i <= C.lessonCount(st.id, W.LowiArrivalCore)) { C.tell(memLoad(), st.id, line.i); memSave(); }
         }
-        st.el.classList.add('rp-talk'); st.shown++; st.visit++;
+        st.el.classList.add('rp-talk'); if (!again) { st.shown++; st.visit++; }
         st.size = null; st.obsT = 0; placeSay(true);
         clearTimeout(st.sayT); clearTimeout(st.nextT);
         const ms = st.asking ? C.askMs(line.text) /* time to read and decide; no answer changes nothing */
@@ -118,13 +119,13 @@
     function sayLine(i, user) {
         if (!st.el || !st.lines.length) return;
         i = C.cycle(i, st.lines.length, metYet(st.id)); /* round and round, but the hello only once, ever */
-        speak({ text: st.lines[i], prio: user ? 3 : 0, kind: 'fact', i }, user);
+        speak({ text: st.lines[i], prio: user ? 3 : 0, kind: 'fact', i, src: { t: 'fact', i } }, user);
     }
     function quiet() {
         clearTimeout(st.sayT); clearTimeout(st.nextT);
         if (st.asking && st.el && D.contains(st.el)) askLeft = null;   /* it had its time unanswered: no answer changes nothing */
         if (st.el) st.el.classList.remove('rp-talk', 'rp-asking');
-        st.cur = null; st.asking = null; st.endT = performance.now();
+        st.cur = null; st.line = null; st.asking = null; st.endT = performance.now();
         if (st.pendAsk && st.el) {
             const L = st.pendAsk; st.pendAsk = null; clearTimeout(st.waitT);
             st.waitT = setTimeout(() => { if (st.el && !st.cur && !(seen[st.id] && seen[st.id].has(L.ask))) show1(L, false); else if (st.el && !st.cur && st.wait) flush(); }, 380);
@@ -155,7 +156,7 @@
         if (!st.el || !st.asking) return;
         const r = C.answer(memLoad(), st.id, st.asking, !!yes, lang(), st.lines, seen[st.id], W.LowiArrivalCore); memSave(); askLeft = null;
         st.asking = null; st.el.classList.remove('rp-asking');
-        speak(r.i != null ? { text: r.text, prio: 3, kind: 'fact', i: r.i } : { text: r.text, prio: 3, kind: 'back' }, true);
+        speak(r.i != null ? { text: r.text, prio: 3, kind: 'fact', i: r.i, src: r.src } : { text: r.text, prio: 3, kind: 'back', src: r.src }, true);
     }
     function next(user) { if (st.el) sayLine(st.shown && st.cur && st.cur.kind === 'fact' ? st.i + 1 : nextUnseen(), !!user); }
     function nextUnseen() { const k = C.nextFact(st.lines.length, seen[st.id], 1); return k == null ? (st.i + 1) % st.lines.length : k; }
@@ -313,20 +314,20 @@
             const A = W.LowiArrivalCore;
             /* the guide is rebuilt now and then (the HUD it lives in changes): a question not yet answered is asked again, not lost */
             const o = askLeft && askLeft.id === id ? askLeft.o : C.opening(memLoad(), id, lang(), st.lines, seen[id], null, st.told0, A); memSave();
-            if (o.intro) { speak({ text: o.text, prio: 0, kind: 'fact', i: 0 }, false); return; }
+            if (o.intro) { speak({ text: o.text, prio: 0, kind: 'fact', i: 0, src: o.src }, false); return; }
             /* every other later visit: "Remember when I told you ...?" with Yes / No in the bubble */
             if (o.ask) {
                 st.askWait = true;   /* nothing else teaches while the question waits */
                 askLeft = { id, o };
                 whenStill(el, () => {
                     st.askWait = false; if (seen[id] && seen[id].has(o.ask)) { askLeft = null; return; }
-                    const L = { text: o.text, prio: 1, kind: 'ask', ask: o.ask };
+                    const L = { text: o.text, prio: 1, kind: 'ask', ask: o.ask, src: o.src };
                     /* something else is up (a hunt hint): the question comes right after it, and no other line can bump it */
                     if (st.cur && st.el.classList.contains('rp-talk')) st.pendAsk = L; else speak(L, false);
                 });
                 return;
             }
-            speak(o.i != null ? { text: o.text, prio: 0, kind: 'fact', i: o.i } : { text: o.text, prio: 0, kind: 'back' }, false);
+            speak(o.i != null ? { text: o.text, prio: 0, kind: 'fact', i: o.i, src: o.src } : { text: o.text, prio: 0, kind: 'back', src: o.src }, false);
         }, reduced() ? 200 : 900);
         return el;
     }
@@ -340,12 +341,15 @@
         if (world && C.pid(world) !== st.id) return false;
         v = v || {}; v = Object.assign({}, v, { n: mistyName(), k: v.k != null ? v.k : v.n });
         const L = C.huntLine(key, lang(), v); if (!L) return false;
-        speak({ text: L.text, prio: L.prio, kind: 'hunt' }, false);
+        speak({ text: L.text, prio: L.prio, kind: 'hunt', src: { t: 'hunt', key, v } }, false);
         /* once per session, after the first catch: the crumbs are a game, not your body */
-        if (key === 'found' && !realSaid) { realSaid = true; const R = C.huntLine('real', lang(), v); if (R) setTimeout(() => { if (st.el) speak({ text: R.text, prio: R.prio, kind: 'hunt' }, false); }, 400); }
+        if (key === 'found' && !realSaid) { realSaid = true; const R = C.huntLine('real', lang(), v); if (R) setTimeout(() => { if (st.el) speak({ text: R.text, prio: R.prio, kind: 'hunt', src: { t: 'hunt', key: 'real', v } }, false); }, 400); }
         return true;
     }
-    function mistyName() { try { const T = W.LowiHerbTamagotchi, c = T && T.current ? T.current() : null; const n = c && T.name ? T.name(c.p, c.m) : ''; return n ? String(n).slice(0, 24) : 'Misty'; } catch (e) { return 'Misty'; } }
+    /* her name in the guide's lines (Oct 19, 2026; E-man: the guide must call her Misty): the user's companion from the shared
+       companion API (LowiBirthCompanion: Misty, unless the user brought their own companion to life and named it), never the old
+       herb identity name from the star sign ("Steer Moss Leaf ..."). */
+    function mistyName() { try { const B = W.LowiBirthCompanion, c = B && B.get ? B.get() : null; const n = c && c.name ? String(c.name).trim() : ''; return n ? n.slice(0, 24) : 'Misty'; } catch (e) { return 'Misty'; } }
     /* keeps teaching while you're in a world, without chatter: only after a quiet spell, only something new, a few per visit.
        While you steer and crumbs are left: a nudge towards the nearest one. Otherwise: the next fact it hasn't told you yet. */
     function teach() {
@@ -355,17 +359,35 @@
         const Hn = W.LowiMistyHunt, tw = Hn && Hn.toward ? Hn.toward() : null;
         const steering = tw && tw.steerAgo < 5000;
         if (steering && tw.left > 0 && st.lastKind !== 'tip') {
-            const L = C.huntLine(tw.behind ? 'behind' : 'dir', lang(), { d: [tw.x, tw.y] });
-            if (L) { speak({ text: L.text, prio: L.prio, kind: 'tip' }, false); st.lastKind = 'tip'; return; }
+            const key = tw.behind ? 'behind' : 'dir', v = { d: [tw.x, tw.y] }, L = C.huntLine(key, lang(), v);
+            if (L) { speak({ text: L.text, prio: L.prio, kind: 'tip', src: { t: 'hunt', key, v } }, false); st.lastKind = 'tip'; return; }
         }
-        const k = C.nextFact(st.lines.length, seen[st.id], 1);
-        if (k != null) speak({ text: st.lines[k], prio: 0, kind: 'fact', i: k }, false);
-        else if (steering && tw.left > 0) { const L = C.huntLine('dir', lang(), { d: [tw.x, tw.y] }); if (L) speak({ text: L.text, prio: L.prio, kind: 'tip' }, false); }
+        /* only something it hasn't told you: not this session, and no lesson from an earlier visit (those come back only as a
+           "Remember?" question; Yes means never again). Oct 19, 2026: it used to re-tell lesson 1 right after asking about it. */
+        const k = C.nextNew(memLoad(), st.id, st.lines, seen[st.id], W.LowiArrivalCore);
+        if (k != null) speak({ text: st.lines[k], prio: 0, kind: 'fact', i: k, src: { t: 'fact', i: k } }, false);
+        else if (steering && tw.left > 0) { const v = { d: [tw.x, tw.y] }, L = C.huntLine('dir', lang(), v); if (L) speak({ text: L.text, prio: L.prio, kind: 'tip', src: { t: 'hunt', key: 'dir', v } }, false); }
     }
     W.addEventListener('pointerup', onUp, { passive: true }); W.addEventListener('pointercancel', onUp, { passive: true });
     W.addEventListener('lowi:world-region', e => { try { const id = e && e.detail && e.detail.id; if (C.pid(id) && takes(id)) show(id); else hide(); } catch (err) { } });
     W.addEventListener('lowi:region-steer', e => { const d = e && e.detail || {}; steer(d.vx, d.vy); });
-    W.addEventListener('lowi:lang', () => { if (st.id) { const id = st.id; hide(); show(id); } });
+    /* language switch (Oct 19, 2026): the guide used to be torn down and rebuilt here, which ran the arrival again (a second
+       "welcome back" plus the NEXT lesson): the lesson you were reading was skipped. Now it stays where it is and re-says the
+       same line in the new language, with its full reading time; the waiting line, a pending question and the labels follow. */
+    function relang() {
+        if (!st.el || !st.id) return;
+        const id = st.id, li = lang(), p = C.pal(id, li); if (!p) return;
+        st.lines = C.lines(id, li, W.LowiArrivalCore, todayText(id));
+        const q = s => st.el.querySelector(s), set = (s, t) => { const e = q(s); if (e) e.textContent = t; };
+        set('.rp-say > b', p.name); set('.rp-say > small', C.tr('tap', li)); set('.rp-yes', C.tr('yes', li)); set('.rp-no', C.tr('no', li));
+        const body = q('.rp-body'); if (body) body.setAttribute('aria-label', C.tr('aria', li, p.name));
+        const re = L => { if (!L || !L.src) return L; const t = C.relang(L.src, id, li, st.lines); return t ? Object.assign({}, L, { text: t }) : null; };
+        if (st.wait) st.wait = re(st.wait);
+        if (st.pendAsk) st.pendAsk = re(st.pendAsk);
+        if (askLeft && askLeft.id === id && askLeft.o && askLeft.o.src) { const t = C.relang(askLeft.o.src, id, li, st.lines); if (t) askLeft = { id, o: Object.assign({}, askLeft.o, { text: t }) }; }
+        if (st.cur && st.line && st.el.classList.contains('rp-talk')) { const L = re(st.line); if (L) show1(L, false, true); }
+    }
+    W.addEventListener('lowi:lang', () => { try { relang(); } catch (e) { } });
     W.addEventListener('resize', () => { st.rect = null; st.obs = null; st.size = null; if (st.el) placeSay(true); }, { passive: true });
     /* the menus faded or came back: look again at once (the guide itself stays; clean-view-core keeps #rpPal) */
     W.addEventListener('lowi:clean-view', () => { st.obs = null; if (st.el) { obstacles(); placeSay(true); } });

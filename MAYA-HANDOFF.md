@@ -408,6 +408,26 @@ task running, nothing released yet.
    - **Task** "LOWiSPIKE: persistent billiard-style energy burst physics" (started 10:00 PM). Coordinates with crash
      task 9472a9a4 (COORD-community-crash-2.md) and crowd task e80fcb1e; notes in `/home/sprite/COORD-billiard.md`.
 
+**22. More levels and more evolutions: "it should really, truly evolve into something majestic".** REQUESTED 10:1x PM
+call, task running (forked task "LOWiSPIKE: extend meaningful companion levels and majestic evolution", started 10:11 PM,
+branch `evo-more`, worktree `/home/sprite/wt-evo-more`, notes `/home/sprite/COORD-evo-more.md`). Nothing released yet.
+   - He said (voice, long-press on Misty, his Misty shows level 6 "Legend"): "we thought you were adding more, and more
+     ... levels to this"; on the evolution path: "I've already reached the last one, which obviously we need to add more
+     evolutions in there ... so that we're really doing this dragon ball thing ... a pokemon ... a demon thing ... It
+     should really, truly evolve ... into ... something majestic looking."
+   - Today there are 6 forms (herb-config.js `stages`, last at 3000 XP, about a month of use), so testers hit the end.
+     Plan: add 4 more forms after Legendary (indices 6-9) with longer XP steps, each with clearly new, bigger traits drawn
+     in companion-core.js (original designs, not copied from any franchise), a stronger evolution moment per tier, and the
+     level names / evolution path showing all 10. Each user's own generated body, colours, name and face stay; earned XP
+     and the retained form (`highestStage`) are kept, nobody loses or skips a form. Energy (today's %) stays separate from
+     level and form.
+   - Collection (his follow-up, same call, delegated to Maya): give it a clear purpose as a food-discovery journal for
+     revisiting what you scanned or logged and how it went, with simpler copy. **Specific foods or completing the
+     Collection must NOT be required to evolve.** The Collection copy and entry point belong to the companion-panel task
+     (0d494df4); this task only makes sure evolution never depends on it.
+   - Parallel tasks today: companion panel / non-mystical world names / discovery gates (0d494df4), aura colour fix and
+     companion renaming (ce74d1af), Community crash round 2 (9472a9a4), billiard energy (34bb0a32).
+
 ### 0.6 The Mickey 17 workflow: how every Maya hands over to the next
 
 Added Monday 19 Oct 2026, about 9:20 PM CEST, by Maya 5, at Emmanuel's request on the evening call. His words: "can
@@ -938,3 +958,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 - 2026-10-19 22:05 Item 21 recorded under 0.5: energy bursts should play like billiards (hit companions stay where they land, chain hits); task "persistent billiard-style energy burst physics" started.
 - 2026-10-19 22:20 Crowd members send real energy balls to Emmanuel and other humans (item 20b), proven live on a guest; soak tool gets --net. Item 20c (crowd on Home) not built, no earlier agreement found.
 - 2026-10-19 22:30 Crowd fix: an @mention now reaches only the member it names (Emmanuel's ping to "Thiago M." got thank-yous from Thiago AND Thiago M.; same for Luis/Luis A., paolo/Paolo H.). My 22:15 --net soak (guest "Soak", uid ...858f71) posted two real '@Thiago / @paolo sent you energy' lines in the room and Emmanuel answered '@Soak Yooo'; --net now blocks room writes. Those 2 lines are still in the room (needs a service-role delete or Emmanuel in Supabase). Still no scheduled crowd run at 22:11.
+- 2026-10-19 22:25 Item 22 recorded under 0.5: more levels and more majestic evolutions after Legendary (task running, branch evo-more); Collection must never gate evolution.

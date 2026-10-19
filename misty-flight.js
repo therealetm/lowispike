@@ -72,6 +72,14 @@
     /* misty-roam: does she come into the place you are in by herself? Only once the warp and the place's own hero turn have
        finished and the view has been still for K.JOIN s; never with reduced motion. */
     function joinOk(o) { return !!(o && o.inRegion && !o.busy && !o.hero && !o.reduced && (+o.settled || 0) >= K.JOIN); }
+    /* Oct 19 worlds playtest W-005: is this a place she can join? A hub beacon (regs, muscles = muscle) OR any world the World map
+       knows (known(id)). The lung world has no beacon, and the beacon-only check left its guide talking to an empty world. */
+    function placeOk(id, regs, known) {
+        if (!id || id === 'hub' || id === 'blood') return false;
+        const n = x => x === 'muscles' ? 'muscle' : x;
+        if ((regs || []).some(g => g && n(g.id) === n(id))) return true;
+        try { return !!(known && known(id)); } catch (e) { return false; }
+    }
     /* Oct 17 (E-man: "the movement is a bit limited"): inside a world she reaches far out into its corners (was maxD * .32) */
     const inReach = maxD => Math.max(K.IN_R, (+maxD || 10) * 0.62);
     /* misty-turn (Oct 17, E-man): "total freedom to fly to any corner of anything that I see ... fly down into the dark and get lost".
@@ -269,7 +277,7 @@
     /* a blink of Home (in the background, world briefly not live) pauses a flight for up to OFF_GRACE s of screen time; anything else ends it */
     const OFF_GRACE = 4;
     const offGrace = (blink, offT) => !!blink && (+offT || 0) < OFF_GRACE;
-    const core = { IN_SIZE, inSizeK, lookBusy, homeIdle, OFF_GRACE, offGrace, K, inReach, freeReach, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, roams, autoLeave, roamSpot, roamHold, roamPx, pullAt, fallAt, EXIT, exitHold, MIST, angWrap, exitGaps, inMist, gapToward, DARK, darkSpots, inDark, darkReach, darkAmt, darkGlow, GUIDE, guideLight, HOME, homeGlow, homeAt, veilAt, exitTent, wallToward, outAt, riseDepth, ORBIT, orbitAt, orbitSpin, orbitFling };
+    const core = { IN_SIZE, inSizeK, lookBusy, homeIdle, OFF_GRACE, offGrace, K, inReach, freeReach, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, placeOk, roams, autoLeave, roamSpot, roamHold, roamPx, pullAt, fallAt, EXIT, exitHold, MIST, angWrap, exitGaps, inMist, gapToward, DARK, darkSpots, inDark, darkReach, darkAmt, darkGlow, GUIDE, guideLight, HOME, homeGlow, homeAt, veilAt, exitTent, wallToward, outAt, riseDepth, ORBIT, orbitAt, orbitSpin, orbitFling };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!D || !D.addEventListener || W.LowiMistyFlight) return;
 
@@ -451,7 +459,7 @@
         if (S.st === 'idle' && ctx.inRegion) {
             const WH = W.LowiWorldHome, hero = !!(WH && WH.state && WH.state.heroAnim), busy = regionsBusy() || !!r.fly;
             S.joinT = busy || hero ? 0 : (S.joinT || 0) + ctx.dt;
-            if (joinOk({ inRegion: true, busy, hero, reduced: ctx.reduced, settled: S.joinT }) && (a.regions || []).some(g => norm(g.id) === curRegion())) { join(ctx); return true; }
+            if (joinOk({ inRegion: true, busy, hero, reduced: ctx.reduced, settled: S.joinT }) && placeOk(curRegion(), a.regions, id => { const Rg = R(); return !!(Rg && Rg.byId && Rg.byId(id)); })) { join(ctx); return true; }
             return false;
         }
         S.joinT = 0;

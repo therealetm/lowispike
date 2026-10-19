@@ -8,8 +8,254 @@ hunt ledger, the Supabase project and today's task reports, not from memory.
 
 No key, token or password is written anywhere in this file, and none may ever be added.
 
-Contents: 1 What LOWiSPIKE is. 2 Accounts and access. 3 How to work. 4 Lessons and difficulties. 5 Emmanuel's
+Contents: 0 Open requests from Emmanuel (read this first). 1 What LOWiSPIKE is. 2 Accounts and access. 3 How to work. 4 Lessons and difficulties. 5 Emmanuel's
 preferences and standing decisions. 6 Status board. 7 Do this first. Log (append-only, at the end).
+
+---
+
+## 0. Open requests from Emmanuel: verify first, then build what's missing
+
+Written Monday 19 Oct 2026, 7:25 to 8 PM CEST. Live was **20261019-191500** (version.json checked 7:40 PM), `main`
+at e8c0b2c plus this file.
+
+**Why this section exists.** Emmanuel, voice message, 7:22 PM: "update the file for the next Misty [he means the next
+Maya] so that she understands what I just wanted, and what you are currently doing, and then she should check if you
+were able to have done it. And if she checks and you haven't been able to do it, that's basically her goal to
+implement. But she needs to know what I said, you know, with the examples and your thoughts of it." He was worried the
+current Maya would hit her limit. Many tasks today did: seven ended with "reached its limit" before doing anything.
+
+### 0.1 Your job, in order
+
+1. **Verify every item below yourself. Don't trust the status lines.** For each one: read `version.json` on the live
+   site, grep the live files or `main` for the code named, and open the feature on the live site in a simulated
+   iPhone 13 (WebKit) and an iPad held both ways. Then look at the server side where it matters (Supabase edge logs,
+   function version). "A task said it shipped" is not proof. A task report that "did not pass the final check" is
+   weaker still.
+2. **If it isn't live and working, building it is your job.** Pick up from the `wip/*` branch, worktree and COORD or
+   HANDOFF file named on the item. Don't start from scratch when a branch exists, and read its COORD file first.
+3. **Priority the way Emmanuel would want it:** (a) broken things he can feel on his phone, (b) work that was built or
+   started but never released, (c) polish and new features. Section 0.3 is in that order.
+4. Ship small: one release per fix, `scripts/release.sh`, wait for CI, check live, then a voice note plus a
+   ✅ / ⏳ / 📝 checklist to Emmanuel that keeps the done items (section 5). Add one Log line at the end of this file
+   per release.
+5. If something can only be answered by Emmanuel (his real iPhone, his Google key, a design choice), ask him in the
+   chat in one short line and keep working on the rest.
+
+### 0.2 What the current Maya is doing right now (7:40 PM)
+
+- **The hourly bug hunt** (schedule "LOWiSPIKE hourly bug hunt", cron `0 * * * *`, Europe/Berlin, next run 8 PM; skill
+  `LOWiSPIKE hourly bug hunt`). It plays the game, fixes one bug per round and keeps `BUGHUNT/LEDGER.md` and
+  `BUGHUNT/BUG-MEMORY.md`. Round 10 (task 2d51fde9) finished at about 7:30 PM: BH-010, starter questions lost after a
+  reload, **live in 20261019-191500**. The open items from round 8 are done: the full new-user run with a reload
+  mid-setup became BH-009 (live 20261019-184058, live iPhone 13 check passed in round 10); the evolution card covering
+  other sheets was fixed by the evolution task (`EVO_BUSY` in herb-tamagotchi.js); the mirror-move screen only opens
+  on a tap, so it's clean.
+  **Its next run starts at** LEDGER "Next run: start here": (1) a reload in the middle of "bring to life" in
+  companion-birth.js: is the companion lost or doubled? (2) Home pinch to Community warp at the widest camera; the Gap
+  bubble aria-label; the "Your herb's world" names (item 0.3-6). Check the ledger to see whether these got done.
+- **This handoff update** (task "update MAYA-HANDOFF.md for the next Maya").
+- Nothing else was running at 7:40 PM. Every other task from today has either shipped or stopped (listed below).
+
+### 0.3 Every request from today, with his words, Maya's thinking and the status
+
+Where his exact words are in the repo (DECISIONS.md, COORD files) they're quoted. Where only a task's summary of his
+request survived, it says "(his request, as the task summed it up)". All times are CEST, Monday 19 Oct.
+
+**(a) Broken, or the fix is unconfirmed**
+
+1. **Snap food stopped reading photos on his iPad.** NOT FIXED. Highest priority.
+   - He said (4:19 PM, two iPad photos of sesame chicken on rice in the "Your photo" sheet): "It's not working anymore.
+     We already hit a limit?"
+   - Maya's thinking: not a limit. The 3-a-day cap wasn't live yet then, and the server allowed 60 a day. First guess
+     was his Google (Gemini) key: he'd been told to replace the key he had pasted in chat. But at 4:50 PM the photo-cap
+     task did 3 real reads through the live server fine, so the key worked then. The edge logs showed the iPad never
+     reached food-photo at all; his iPhone did 8 good reads between 3:45 and 3:57 PM, then a GET at 4:11 with no POST.
+     So the likely fault is on the phone side: `food-photo-ai.js` `token()` waiting for the sign-in token eats the whole
+     30-second budget, then a generic "I couldn't read this photo".
+   - Also asked for in the same fix: the iPad layout of the photo sheet, where the "What is it?" box, **Log as meal**,
+     **Save photo** and **Retake** sit on top of each other; and honest error messages (key problem, AI down, no
+     network, daily limit reached) instead of "couldn't read this photo".
+   - Status: the task "Snap food photo stopped working" stopped at its limit. Nothing released. Pick up from branch
+     `wip/snap-fix` (worktree /home/sprite/wt-snap-fix, COORD-snap-fix.md). Since 18:53 Snap lives inside Log meal
+     (item 10), so test it there too. When you redeploy food-photo, deploy the file from `main` with your change
+     merged: it must keep `DAY_MAX=3`, `tally()`/`store()` and the `limit`/`left` fields (COORD-photo-cap.md).
+   - Still unanswered from Emmanuel: did he delete or replace his Google key? Ask once if the logs point at the key.
+   - Verify: iPad portrait and landscape, Log meal > Snap, real photo, with the edge logs open. Then ask him to try on
+     his real iPad.
+
+2. **Community crashed while two people shot at each other.** Fix live, cause not proven.
+   - He said (voice): "We were both playing, shooting each other, and then it crashed ... in the community section."
+   - Maya's thinking: couldn't make it crash in simulators. The most likely cause is overload: during a shoot-out the
+     whole Community map was laid out again every frame (8 to 13 ms, even with 4 companions), on top of the 3D world,
+     with no limit on hit sparkles. One overloaded test ran under 1 frame a second for minutes.
+   - Status: **live in 20261019-184741** (map updates at most ~30 times a second while balls fly, at most 160
+     sparkles, a lighter look when the phone slows). Branch `wip/community-crash`, COORD-community-crash.md,
+     DECISIONS.md. Its report did not pass the final check.
+   - Server errors found in the logs (5:30 to 6:15 PM), NOT fixed: (1) the companion-looks request fails on every app
+     start: Postgres logged "invalid input syntax for type uuid: bot:jonas" 7 times, so bot ids are being sent as user
+     ids; filter them out on the client. (2) Tables `community_blocks` and `community_identities` don't exist on the
+     server. (3) Column `product_deals.product_key` doesn't exist; the deals request failed twice on a Mac.
+     Schema changes need Emmanuel's Supabase owner session (section 2), so prepare the SQL and ask.
+   - Verify: open Community as two users, shoot nonstop for 5 minutes on WebKit iPhone 13. Ask Emmanuel and his friend
+     to retest on the same devices, and if it crashes, get the devices, the time, and whether it reloaded, went white
+     or froze.
+
+3. **Community chat room: keyboard bugs and the iPad layout.** NOT FIXED.
+   - His request (as the tasks summed it up): when you type, the room must fit above the keyboard and stay pinned to the
+     latest message, and the "Recent voices" strip shouldn't cover it (rounds 2 and 3); on iPad the room must look
+     right in landscape and portrait, with properly sized voice faces, readable messages and everything inside the room.
+   - Status: "chat room keyboard fixes, round 2", "round 3" and "iPad chat room layout fix" all stopped at their
+     limit. Uncommitted work in `wip/chat-room-kb` (worktree /home/sprite/wt-chat-room-kb: community-chat.js `fit()`,
+     community-room.css, COORD-chat-room-kb.md).
+   - Verify: Community > Chat, tap the message box on WebKit iPhone 13 and iPad both ways.
+
+**(b) Asked for, built or started, but never released**
+
+4. **Everyone gets their own companion** (accounts still stuck with the standard Misty). NOT RELEASED.
+   - He said (fresh German test account, birthday October 1997): "why wasn't the version shown in onboarding given to
+     me?" That part is fixed and live (20261019-155424). The follow-up (his request, as the task summed it up): let
+     every account that still has the standard Misty enter birthday, birth time and personality type once and unlock
+     their own unique companion with its own name and look. His friend's account was one of them.
+   - Maya's thinking: cause found at 4:50 PM. The friend's account was made on 10 Oct, before the reveal existed
+     (16 Oct), and until 20261019-143513 companion.js wrote Community settings over `lowispike.companion.v1` for 422 of
+     440 backups, so they fall back to Misty. On the server only 1 of 37 email accounts has its own companion. Plan:
+     a claim step (`LowiBirthCompanion.claim()`, `needsClaim()`, a one-time prompt after the update that never opens
+     over another dialog), the personality type only changes the seed when it's given, so nobody's existing companion
+     changes.
+   - Status: the task stopped at its limit. Uncommitted code in `wip/own-companion` (worktree
+     /home/sprite/wt-own-companion, COORD-own-companion.md). The tutorial already has the claim hook, switched off
+     (`tutorial-steps.js`); switch it on when this ships.
+
+5. **Old-design purge.**
+   - He said: "Any old UI should be deleted, any old design. I'm seeing that some still have old logos or old companion
+     design."
+   - Status: rounds 1 to 4 are on `main` and were live (20261019-134704, -135912, -141244, -142359; see
+     HANDOFF-old-design-purge.md). The bug hunt's reports keep saying "round 2 still needs a new task to release it":
+     that came from a task that ran out of budget earlier. git shows it shipped, so check it on the live site and close
+     that line. Leftovers: the ring-off old Home code itself (only reachable on impossible screen sizes), the Move
+     screen's gold line card, the tab bar still showing on Community/Cook/Move sub-screens in the census fixture, and
+     the first-run mystery seedling. Census probe: `playtest/probe-old-design.cjs` on `agent-harness`.
+
+6. **World names that still say "Your herb's world".** NOT DONE.
+   - Part of the old-design purge: the companion is a glass cell called Misty (or her own name) now, not an herb.
+   - Checked at 7:40 PM: `spirit.js` on `main` still has `world: ['Your herb’s world', 'Die Welt deines Krauts',
+     'El mundo de tu hierba']`, plus `scanHead` ("your herb is watching") and `profile: ['Your herb', ...]`. Grep the
+     whole repo for herb / Kraut / hierba in user-facing strings and rename them to the companion's name, in all three
+     languages.
+
+7. **Meal names understood + Log meal panel cleanup.** Live, one loose end.
+   - His request (as the task summed it up): "Chicken stew" should be understood as chicken stew, not just chicken;
+     never show "not provided" for nutrition.
+   - Status: **live in 20261019-151237** (USDA FNDDS meal database, `meal-db-core.js`). The live check script
+     `tests/meal-names-live.cjs` is only on `wip/meal-names`, not on `main`: land it with your next release.
+     HANDOFF-meal-names.md. Note: the panel cleanup that moved Snap into Scan was later reversed on purpose by
+     item 10 (Log meal now offers Write / Scan / Snap per meal).
+
+**(c) Shipped today: verify each, then do the polish**
+
+8. **Three food photos per person a day, BeReal-style, shared to the community with the AI analysis.** Live.
+   - He said (call, about 4:05 PM; his idea, summed up from the call): limit everyone to unlocking three meal photos a
+     day so the shared Google pool (about 1,500 reads a day for all users together) never runs out; snap or upload; a
+     reminder notification to take the photo, "like BeReal"; post it to the community and press a button so the AI
+     analyses the meal, so nobody has to write a caption, list ingredients or say whether it spiked; the analysis shows
+     **under the photo**. He then decided the person **sees the analysis first**, can correct ingredients and
+     portions and choose what goes public, and only then posts. Not post-then-reveal.
+   - Maya's rules: never say a photo measures glucose, only "likely blood sugar response". Sharing a photo that was
+     already read doesn't use another of the 3. Typing a meal is always unlimited.
+   - Status: **live in 20261019-162849** (server-enforced, `DAY_MAX=3`; reminders under Reminders; "Also share to
+     Community" after Snap reads the plate). The later task "three food photos per person daily" failed three times on
+     budget, but the work had already shipped in 162849; server check at 4:50 PM: 3 reads, then 429. COORD-photo-cap.md.
+   - Verify: can you **upload** from the photo library as well as snap? Can you **edit** the AI's ingredients and
+     portions before posting? Is the analysis under the photo in the feed? If any of these is missing, build it.
+   - Small open things: Spanish "Te quedan 1 de 3" should be "Te queda 1 de 3" (`meal-photo.js` `STR.es.left`, still
+     wrong on `main`); one test guest user (3392f841-...) left in auth.users.
+
+9. **Interstellar community chat room.** Live; keyboard and iPad bugs are item 3.
+   - He said (call): "you can click on chat, and then you can see the chat. But the chat looks so boring ... when they
+     click on chat ... it actually takes them to ... a community chat room." He picked "semi-transparent glass panels
+     and glowing accents, like a tactical display or a star chart rather than just a list of messages", and said to
+     use the existing UI design principles to get that energy.
+   - Status: **live in 20261019-163105** (full-screen room, glass messages lit in each person's colour, Today and
+     Yesterday markers, recent voices at the top, live count). COORD-chat-room.md, DECISIONS.md.
+
+10. **Log meal asks Breakfast / Lunch / Dinner / Snacks first, and Shop has "Snacks to buy".** Live.
+    - He said (German voice message, about 6:10 PM): "Ich habe keine Zeit. Ich habe Pop-up. Zack, Mahlzeit-Eintrag."
+      Pick the meal, then write, scan or snap it, with that meal's usual food one tap away. And a snack shopping list
+      in Shop with only snacks still to buy, "nicht die schon bereits drin waren".
+    - Maya's decisions (DECISIONS.md): Scan and Snap are back in Log meal, which overrides the earlier meal-names
+      decision; the same food in another slot the same day counts as a new meal; ticking a snack moves it to "Again?".
+    - Status: **live in 20261019-185352**. Branch `wip/meal-slots`, COORD-meal-slots.md.
+    - Open: the tutorial's Log meal and Shop cards don't mention the four tiles or Snacks to buy yet
+      (`tutorial-steps.js`, see the tutorial rule in section 3). Typing just "Paprika" was guessed at 500 kcal: look at
+      the calorie guesser.
+
+11. **Weight, BMI and body stats.** Live.
+    - His request (as the task summed it up): track weight and BMI, with a body-fat estimate, and see progress like a
+      game: a Then and Now figure and levels.
+    - Maya's decisions: body fat is shown as a range and called an estimate, never for under-18s or without a birthday;
+      a level per full kilo toward the healthy range (gaining counts if underweight), then one per 4 weigh-ins in the
+      healthy range; weight stays on the phone only.
+    - Status: **live in 20261019-185002** (Settings > Weight & BMI; a section on the Stats sheet). COORD-stats.md
+      (weight/BMI part), branch `wip/body-stats`.
+    - Open polish: the Stats section says "Weight & BMI" twice (`cardHTML(true)` without the label fixes it); the Stats
+      sheet opens at half height, so check by hand that you can reach the section; the "change" link next to height is
+      43 px tall, 1 px under the minimum tap size. `tools/probe-body-in-stats.cjs` is uncommitted in wt-body-stats.
+
+12. **Nutrition stats: portion card and today's stats as game stats.** Live.
+    - His request (as the task summed it up, with his examples): the scanned product card shows your portion ("Last time
+      200 g") with protein, fiber, sugar, carbs, fat and calories for that amount; your day as character stats
+      (Strength = protein, Defense = fiber, Stamina = carbs, Reserve = fat, Power = calories, Spike guard = sugar); your
+      own targets, for example a sugar limit from your doctor; when everything is on track, you can go to bed with a
+      clear conscience. He also wants to ask by voice: "Zeig mir, wie viel Zucker ich heute gegessen habe".
+    - Status: **live in 20261019-183920**. Branch `wip/nutrition-stats`, COORD-stats.md.
+    - NOT BUILT: the voice question (answer from `LowiNutriStatsCore.rows(...)`), and one sentence about Stats in the
+      tutorial's Fuel step.
+
+13. **Evolutions get bigger and more powerful every stage.** Live.
+    - He said (German voice note): the companion is "mein Investment"; "aus diesen kleinen Flossen kriegt er richtig
+      dicke Dinger, kriegt er noch mehr Stein ... es soll immer heftiger werden".
+    - Status: **live in 20261019-185115** (fins grow into heavy ones, stone armour from 2 to 9 stones, wings, horns and a
+      crown later; a bigger evolution moment each tier; first evolution on day one). Branch `wip/evolution-escalate`.
+    - Open: on iPad the stage-5 fin tip clips by about 1%. Needs a real eye check.
+
+14. **Product card reorder.** Live.
+    - His request (as the task summed it up): Details open right away at the top, cheaper prices at other stores
+      higher, community deals lower, nothing hidden behind the close button on a phone.
+    - Status: **live in 20261019-175128**. Branch `wip/product-card-order`.
+
+15. **Tutorial: Settings button, flicker fix, automatic tour for new accounts.** Live.
+    - He said (voice): "there's a lot of updates and then it gets confusing... There should be a tutorial button ... our
+      companion takes you through everything from the beginning, as if you were new. Obviously, you can skip if you
+      already know this. So, with every new update, the tutorial also needs to be updated." Then (as the tasks summed it
+      up): stop the flicker, and new accounts get the tour by themselves after setup, with skip and resume later.
+    - Status: Settings > Tutorial **live 20261019-171941**; flicker fix **20261019-172632**; automatic tour with 40
+      short cards **20261019-184516** (branch `wip/tutorial-auto`). **Standing rule:** every release that changes a
+      Home control or a Settings row updates `tutorial-steps.js` or says why not in the news `tutorial` field.
+    - Separate task "replay tutorial from Settings" stopped at its limit, but the feature itself is live: verify it.
+
+16. **Earlier today, live: just verify.** Each has a DECISIONS.md entry.
+    - Misty's half-energy rule, shuffled lines and the escape: he said the exit was "still too fast", the camera didn't
+      show escaping, he wants "a rocket fighting to leave a world", like the Interstellar launch. A weak Misty (below
+      half energy, the existing rule) fails at the rings and gets pulled back, with a shuffled, no-repeat pool of lines.
+      COORD-world-exit-interstellar.md. The tiny-scale POV beside Misty while she rides a string on autopilot:
+      COORD-string-pov.md.
+    - No fake 19-hour fast for new accounts ("fasting for nineteen hours, doesn't make sense"): live 20261019-154642.
+    - New accounts start at 100% energy ("my companion already looks tired ... let them see themselves at a hundred
+      percent ... really fast, really strong"): live 20261019-154834.
+    - The companion from the reveal is the one on Home, in Forms and in flight: live 20261019-155424.
+    - Food photo recognition on the server (Gemini key set by him at 3:32 PM, food-photo deployed): live.
+    - Bug hunt rounds 1 to 10 (section 6 and BUGHUNT/LEDGER.md).
+
+**(d) Mentioned, never started**
+
+17. A personalised Higgsfield inside the app (he mentioned it in the afternoon). There is no spec in the repo: ask
+    him what he wants before building anything.
+
+### 0.4 Unfinished release chores
+
+- Section 6 below was written at about 7 PM. Today's later builds: 20261019-184516 (auto tour), -184741 (Community
+  crash), -185002 (weight & BMI), -185115 (evolutions), -185352 (meal slots), -191500 (bug hunt BH-010).
+- The `wip/*` branches are snapshots. Before you reuse one, rebase it on `main`: many of them are hours behind.
 
 ---
 
@@ -334,6 +580,8 @@ scripts/release.sh "what users get, in one line" --news news.json
 
 ## 6. Status board (19 Oct 2026, about 7 PM CEST)
 
+Newer: section 0 at the top has the state at 7:40 PM (live 20261019-191500) and every open request.
+
 **Live:** https://therealetm.github.io/lowispike/ served **20261019-183920** at 6:45 PM; `main` was at
 **20261019-184058** plus this file. (Earlier in the evening a GitHub Actions incident kept CI and Pages queued.)
 
@@ -458,3 +706,6 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 - 2026-10-19 18:45 Shipped: 20261019-183920 nutrition stats (live), 20261019-184058 setup resume BH-009 (on main).
   MAYA-HANDOFF.md landed on main (25192c4).
 - 2026-10-19 19:25 Weight & BMI released: Settings > Weight & BMI sheet (weigh-in, BMI + WHO band, body-fat estimate, Then/Now level track), Stats sheet section via LowiStatsPlugins, tutorial step 'body'; branch body-stats, notes in COORD-stats.md
+- 2026-10-19 19:45 Section 0 added at Emmanuel's request (voice, 19:22): every request from today with his words, Maya's
+  thinking and status, what the current Maya is doing, and "verify first, then build what's missing". Live
+  20261019-191500.

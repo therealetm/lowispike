@@ -93,14 +93,14 @@
                     '<p class="mh-st"><b>' + esc(st.title) + '</b>' + (st.sub ? '<span>' + esc(st.sub) + '</span>' : '') + '</p>' +
                 '</div>' +
             '</header>' +
-            (say ? '<p class="mh-say" role="status" aria-live="polite">' + esc(say) + '</p>' : '<p class="mh-say" role="status" aria-live="polite" hidden></p>') +
             /* Oct 19 (E-man): Forms and the Food journal were at the very bottom: "that's hidden ... needs to be not hidden".
-               The three doors now come first, right under her words. */
+               The three doors now come first, right under the name and level, before the companion's words (fully in view when the card opens on an iPhone 13). */
             '<nav class="mh-doors" aria-label="' + esc(name()) + '">' +
                 '<button type="button" data-mh="forms">' + ICO.forms + '<b>' + esc(T('Forms', 'Formen', 'Formas')) + '</b><small>' + esc(T('How it evolves', 'Wie es sich entwickelt', 'C\u00f3mo evoluciona')) + '</small></button>' +
                 '<button type="button" data-mh="collection">' + ICO.col + '<b>' + esc(T('Food journal', 'Essens-Tagebuch', 'Diario de comidas')) + '</b><small>' + esc(T('Foods you have tried', 'Was du probiert hast', 'Lo que has probado')) + '</small></button>' +
                 '<button type="button" data-mh="glow">' + ICO.glow + '<b>' + esc(T('Glow', 'Leuchten', 'Brillo')) + '</b><small>' + esc(T('Aura and finds', 'Aura und Funde', 'Aura y hallazgos')) + '</small></button>' +
             '</nav>' +
+            (say ? '<p class="mh-say" role="status" aria-live="polite">' + esc(say) + '</p>' : '<p class="mh-say" role="status" aria-live="polite" hidden></p>') +
             (night ? '<button type="button" class="mh-pri" data-mh="goodnight"' + (gn ? ' aria-pressed="true"' : '') + '>' + ICO.moon + '<span>' + esc(gn ? T('Tucked in for the night', 'F\u00fcr die Nacht eingekuschelt', 'Arropada para la noche') : T('Say goodnight', 'Gute Nacht sagen', 'Dar las buenas noches')) + '</span></button>' : '') +
             scaleHtml() +
             (s ? '<section class="mh-card mh-xp" aria-label="' + esc(T('Level and XP', 'Level und XP', 'Nivel y XP')) + '">' +

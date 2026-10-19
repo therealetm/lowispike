@@ -64,7 +64,9 @@ test('the card shows what each place still needs and whether you have been there
 
 test('companion card: Forms and the Food journal come first, the mood check-in says what it does and comes last', () => {
     const js = R('misty-hub.js'), h = js.slice(js.indexOf('function html('), js.indexOf('function advHtml'));
-    const doors = h.indexOf('mh-doors'), scale = h.indexOf('scaleHtml()'), adv = h.indexOf('advHtml()'), mood = h.indexOf('mh-mood"');
+    const doors = h.indexOf('mh-doors'), say = h.indexOf('mh-say');
+    assert.ok(doors > 0 && doors < say, 'doors come before her words, right under the name');
+    const scale = h.indexOf('scaleHtml()'), adv = h.indexOf('advHtml()'), mood = h.indexOf('mh-mood"');
     assert.ok(doors > 0 && doors < scale && scale < adv && adv < mood, 'doors, then energy, level, adventures, mood');
     assert.match(h, /Food journal/); assert.doesNotMatch(h, /Your scanned cards/);
     assert.match(h, /mirrors it: tired or unwell brings a calm, resting look/); assert.doesNotMatch(h.match(/'Optional\. For the next 8 hours ' \+ name\(\) \+ '[^']*'/)[0], /\b(she|her)\b/i, 'gender-neutral'); assert.match(h, /No XP/);

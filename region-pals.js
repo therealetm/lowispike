@@ -42,9 +42,9 @@
     };
     const st = { id: null, el: null, host: null, lines: [], i: 0, p: C.FOLLOW.home.slice(), v: [0, 0], off: [0, 0], drag: null, steerT: 0, raf: 0, t0: 0, sayT: 0, nextT: 0, shown: 0,
         /* cell-guide: what is showing now, one waiting line, quiet time, this visit's count, where the bubble sits */
-        cur: null, wait: null, waitT: 0, endT: 0, visit: 0, spot: 'ar', placeT: 0, obs: null, obsT: 0, size: null, lastKind: '' };
+        cur: null, asking: null, told0: null, wait: null, waitT: 0, endT: 0, visit: 0, spot: 'ar', placeT: 0, obs: null, obsT: 0, size: null, lastKind: '' };
     /* this session only (no storage): which lines each place has already said, and the places greeted this session */
-    const seen = {}, greeted = {};
+    const seen = {}, greeted = {}, told0 = {};
     /* on this device (Oct 18, 2026): which guides you have met, so each says hello only the very first time
        (shape in region-pals-core.js memory(); key in DATA_CONTRACTS.md) */
     const MEM_KEY = 'lowi.guides.v1';
@@ -60,10 +60,14 @@
         const p = C.pal(id, lang()); if (!p) return null;
         const el = D.createElement('div'); el.className = 'rp-pal'; el.id = 'rpPal'; el.dataset.pal = p.id; el.style.setProperty('--rgb', p.rgb);
         el.innerHTML = '<button type="button" class="rp-body" aria-label="' + esc(C.tr('aria', lang(), p.name)) + '"><span class="rp-orb"><svg viewBox="0 0 64 64" aria-hidden="true">' + SHAPES[p.shape] + '</svg><i class="rp-eye"></i><i class="rp-eye rp-r"></i></span></button>' +
-            '<div class="rp-say" role="status" aria-live="polite"><b>' + esc(p.name) + '</b><span class="rp-tx"></span><small>' + esc(C.tr('tap', lang())) + '</small></div>';
+            '<div class="rp-say" role="status" aria-live="polite"><b>' + esc(p.name) + '</b><span class="rp-tx"></span><small>' + esc(C.tr('tap', lang())) + '</small>' +
+            '<span class="rp-ask" role="group"><button type="button" class="rp-yes">' + esc(C.tr('yes', lang())) + '</button><button type="button" class="rp-no">' + esc(C.tr('no', lang())) + '</button></span></div>';
         ['pointerdown', 'touchstart', 'mousedown'].forEach(t => el.addEventListener(t, e => e.stopPropagation(), { passive: true }));
         el.querySelector('.rp-body').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); next(true); });
         el.querySelector('.rp-say').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); quiet(); });
+        /* lesson recall check (Oct 18, 2026): Yes = remembered, on to the next lesson; No = that lesson again */
+        el.querySelector('.rp-yes').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); reply(true); });
+        el.querySelector('.rp-no').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); reply(false); });
         return el;
     }
     /* one bubble, one voice. A line: {text, prio, kind ('hunt' | 'fact' | 'tip'), i (index into lines for facts)}.
@@ -88,13 +92,20 @@
         const b = st.el.querySelector('.rp-say'), tx = b.querySelector('.rp-tx');
         tx.textContent = line.text;
         st.el.classList.toggle('rp-hunt', line.kind === 'hunt');
+        st.asking = line.kind === 'ask' ? line.ask : null;
+        st.el.classList.toggle('rp-asking', !!st.asking);
         st.cur = { text: line.text, prio: line.prio || 0, kind: line.kind || 'fact', t: performance.now() };
         st.lastKind = line.kind || 'fact';
-        if (line.i != null) { st.i = line.i; said(st.id, line.i); }
+        if (line.i != null) {
+            st.i = line.i; said(st.id, line.i);
+            /* a lesson told is remembered on this device, so a later visit can ask about it */
+            if (line.i >= 1 && line.i <= C.lessonCount(st.id, W.LowiArrivalCore)) { C.tell(memLoad(), st.id, line.i); memSave(); }
+        }
         st.el.classList.add('rp-talk'); st.shown++; st.visit++;
         st.size = null; st.obsT = 0; placeSay(true);
         clearTimeout(st.sayT); clearTimeout(st.nextT);
-        const ms = C.showMs(line.text, line.kind === 'hunt' ? 'hunt' : 'fact') + (user ? 1500 : 0); /* reading time, read-time-core.js */
+        const ms = st.asking ? C.askMs(line.text) /* time to read and decide; no answer changes nothing */
+            : C.showMs(line.text, line.kind === 'hunt' ? 'hunt' : 'fact') + (user ? 1500 : 0); /* reading time, read-time-core.js */
         st.sayT = setTimeout(quiet, ms);
         try { W.dispatchEvent(new CustomEvent('lowi:region-pal', { detail: { id: st.id, line: line.i != null ? line.i : -1, kind: st.lastKind, text: line.text, user: !!user, prio: line.prio || 0 } })); } catch (e) { }
     }
@@ -105,11 +116,17 @@
     }
     function quiet() {
         clearTimeout(st.sayT); clearTimeout(st.nextT);
-        if (st.el) st.el.classList.remove('rp-talk');
-        st.cur = null; st.endT = performance.now();
+        if (st.el) st.el.classList.remove('rp-talk', 'rp-asking');
+        st.cur = null; st.asking = null; st.endT = performance.now();
         if (st.wait) { clearTimeout(st.waitT); st.waitT = setTimeout(flush, 380); }
     }
     /* tap: the next line in order (greeting, facts, today), then round again */
+    function reply(yes) {
+        if (!st.el || !st.asking) return;
+        const r = C.answer(memLoad(), st.id, st.asking, !!yes, lang(), st.lines, seen[st.id], W.LowiArrivalCore); memSave();
+        st.asking = null; st.el.classList.remove('rp-asking');
+        speak(r.i != null ? { text: r.text, prio: 3, kind: 'fact', i: r.i } : { text: r.text, prio: 3, kind: 'back' }, true);
+    }
     function next(user) { if (st.el) sayLine(st.shown && st.cur && st.cur.kind === 'fact' ? st.i + 1 : nextUnseen(), !!user); }
     function nextUnseen() { const k = C.nextFact(st.lines.length, seen[st.id], 1); return k == null ? (st.i + 1) % st.lines.length : k; }
 
@@ -231,6 +248,8 @@
         st.id = id; st.el = el; st.host = h; st.i = 0; st.shown = 0; st.visit = 0; st.off = [0, 0]; st.v = [0, 0]; st.t0 = performance.now(); st.endT = performance.now();
         st.p = [C.FOLLOW.home[0] - 0.12, C.FOLLOW.home[1] + 0.08];   /* swims in from the lower left */
         st.lines = C.lines(id, lang(), W.LowiArrivalCore, todayText(id));
+        /* lessons told on earlier visits, snapshot once a session: nothing told today is asked about today */
+        st.told0 = told0[id] = told0[id] || C.toldBefore(memLoad(), id);
         h.appendChild(el); h.classList.add('rp-on');
         /* the 3D canvas sits under the HUD host on Home, so drags are watched on the window (passive, capture: never blocks the world) */
         W.addEventListener('pointerdown', onDown, { passive: true, capture: true }); W.addEventListener('pointermove', onMove, { passive: true, capture: true });
@@ -242,8 +261,11 @@
         clearTimeout(st.nextT); st.nextT = setTimeout(() => {
             if (st.el !== el) return;
             greeted[id] = 1;
-            const o = C.opening(memLoad(), id, lang(), st.lines, seen[id]); memSave();
+            const A = W.LowiArrivalCore;
+            const o = C.opening(memLoad(), id, lang(), st.lines, seen[id], null, st.told0, A); memSave();
             if (o.intro) { speak({ text: o.text, prio: 0, kind: 'fact', i: 0 }, false); return; }
+            /* every other later visit: "Remember when I told you ...?" with Yes / No in the bubble */
+            if (o.ask) { speak({ text: o.text, prio: 1, kind: 'ask', ask: o.ask }, false); return; }
             speak(o.i != null ? { text: o.text, prio: 0, kind: 'fact', i: o.i } : { text: o.text, prio: 0, kind: 'back' }, false);
         }, reduced() ? 200 : 900);
         return el;

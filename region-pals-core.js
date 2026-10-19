@@ -23,6 +23,14 @@
     const COPY = {
         hi: ['Hi, I\u2019m {n}, {k}. I\u2019ll swim along with you here.', 'Hallo, ich bin {n}, {k}. Ich schwimme hier mit dir mit.', 'Hola, soy {n}, {k}. Nadar\u00e9 contigo por aqu\u00ed.'],
         tap: ['Tap me for more.', 'Tipp mich an f\u00fcr mehr.', 'T\u00f3came para saber m\u00e1s.'],
+        /* lesson recall check (Oct 18, 2026): {t} is the lesson's topic from TOPICS */
+        ask: ['Remember when I told you {t}?', 'Wei\u00dft du noch, als ich dir erz\u00e4hlt habe, {t}?', '\u00bfRecuerdas cuando te cont\u00e9 {t}?'],
+        good: ['Good, because now it\u2019s about {t}.', 'Gut, denn jetzt geht es darum, {t}.', 'Bien, porque ahora te cuento {t}.'],
+        again: ['No problem, here it is again:', 'Kein Problem, hier nochmal:', 'No pasa nada, aqu\u00ed va otra vez:'],
+        goodShort: ['Good, glad that one stuck!', 'Gut, sch\u00f6n, dass das h\u00e4ngen geblieben ist!', '\u00a1Bien, me alegra que se te quedara!'],
+        allDone: ['Good! Then you know everything I\u2019ve got.', 'Gut! Dann wei\u00dft du alles, was ich wei\u00df.', '\u00a1Bien! Entonces ya sabes todo lo que s\u00e9.'],
+        yes: ['Yes', 'Ja', 'S\u00ed'],
+        no: ['No', 'Nein', 'No'],
         aria: ['{n}, your guide here. Tap for a fact.', '{n}, dein Guide hier. Tippen f\u00fcr einen Fakt.', '{n}, tu gu\u00eda aqu\u00ed. Toca para un dato.'],
         bye: ['See you next time.', 'Bis zum n\u00e4chsten Mal.', 'Hasta la pr\u00f3xima.']
     };
@@ -91,10 +99,14 @@
     }
     /* what the guide remembers about you: { v: 1, met: { liver: firstMeetingMs }, lastBack: index of the last welcome-back line } */
     function memory(raw) {
-        const m = { v: 1, met: {}, lastBack: -1 };
-        if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
-            if (raw.met && typeof raw.met === 'object' && !Array.isArray(raw.met)) for (const k of Object.keys(raw.met)) if (PALS[k] && +raw.met[k] > 0) m.met[k] = +raw.met[k];
+        const m = { v: 1, met: {}, lastBack: -1, told: {}, ok: {}, since: {} };
+        const obj = o => o && typeof o === 'object' && !Array.isArray(o);
+        if (obj(raw)) {
+            if (obj(raw.met)) for (const k of Object.keys(raw.met)) if (PALS[k] && +raw.met[k] > 0) m.met[k] = +raw.met[k];
             if (Number.isInteger(raw.lastBack) && raw.lastBack >= 0) m.lastBack = raw.lastBack;
+            /* lesson progress (recall check): lessons told, lessons you said you remember, later visits since the last question */
+            for (const f of ['told', 'ok']) if (obj(raw[f])) for (const k of Object.keys(raw[f])) if (PALS[k]) { const a = ints(raw[f][k]); if (a.length) m[f][k] = Array.from(new Set(a)); }
+            if (obj(raw.since)) for (const k of Object.keys(raw.since)) if (PALS[k] && Number.isInteger(raw.since[k]) && raw.since[k] >= 0) m.since[k] = Math.min(raw.since[k], 99);
         }
         return m;
     }
@@ -102,10 +114,20 @@
     function meet(m, id, ts) { id = pid(id); if (m && id && !m.met[id]) m.met[id] = ts || Date.now(); return m; }
     /* the first thing a guide says when you arrive: its hello the very first time, after that a welcome back plus something it
        hasn't told you yet (or just the welcome back when it has told you everything). Updates m; the shell saves it. */
-    function opening(m, id, li, lines, seen, rnd) {
+    /* With told0 (lessons told on earlier visits) and A: on every other later visit, or whenever nothing new is left, it asks
+       about the first earlier lesson you haven't confirmed yet instead ({ask: lesson}); the shell shows Yes / No. */
+    function opening(m, id, li, lines, seen, rnd, told0, A) {
         if (!met(m, id)) { meet(m, id); return { i: 0, text: lines[0], intro: true }; }
         const b = backLine(li, m.lastBack, rnd); m.lastBack = b.i;
-        const k = nextFact(lines.length, seen, 1);
+        const k = A ? nextNew(m, id, lines, seen, A) : nextFact(lines.length, seen, 1);
+        if (A && told0) {
+            id = pid(id);
+            const okd = (m.ok && m.ok[id]) || [], n = lessonCount(id, A);
+            const past = Array.from(told0).filter(i => i >= 1 && i <= n && okd.indexOf(i) < 0 && !has(seen, i)).sort((x, y) => x - y);
+            const newLesson = k != null && k <= n, since = m.since[id] || 0;
+            if (past.length && (!newLesson || since >= 1)) { m.since[id] = 0; return { i: null, ask: past[0], text: b.text + ' ' + recallAsk(id, past[0], li), back: b.i }; }
+            m.since[id] = since + 1;
+        }
         return { i: k, text: k != null ? b.text + ' ' + lines[k] : b.text, back: b.i };
     }
     /* tapping through the lines: round and round, but once you've met, the hello is skipped */
@@ -113,6 +135,74 @@
         if (!total) return 0;
         i = ((i % total) + total) % total;
         return metYet && i === 0 && total > 1 ? 1 : i;
+    }
+    /* ---------- lesson recall check (Oct 18, 2026) ----------
+       E-man: "instead of assuming that the person remembered everything ... 'Oh, remember when I told you this and this and that?'
+       And there's a button that says 'yes' ... it doesn't repeat that lesson again and goes on to the next one, and it says 'Good,
+       because now it's about blah blah blah.' If the person clicks 'no', it repeats that lesson."
+       A lesson is one of a guide's facts: lines 1..lessonCount (not the hello, not today's line). TOPICS[id][lang][lesson-1] is a
+       short clause that reads after "Remember when I told you ..." and "Good, because now it's about ..." in each language. */
+    const TOPICS = {
+        brain: [
+            ['how much of your energy your brain uses', 'how many nerve cells your brain has', 'why your brain needs a steady supply of sugar from your blood', 'how your brain can run partly on ketones', 'how sleep helps your brain clear away waste'],
+            ['wie viel deiner Energie dein Gehirn verbraucht', 'wie viele Nervenzellen dein Gehirn hat', 'warum dein Gehirn st\u00e4ndig Zucker aus dem Blut braucht', 'wie dein Gehirn teilweise mit Ketonen laufen kann', 'wie Schlaf deinem Gehirn hilft, Abfall wegzur\u00e4umen'],
+            ['cu\u00e1nta de tu energ\u00eda usa tu cerebro', 'cu\u00e1ntas neuronas tiene tu cerebro', 'por qu\u00e9 tu cerebro necesita un aporte constante de az\u00facar de la sangre', 'c\u00f3mo tu cerebro puede funcionar en parte con cetonas', 'c\u00f3mo el sue\u00f1o ayuda a tu cerebro a limpiar desechos']],
+        lung: [
+            ['how oxygen slips into your blood through tiny air sacs', 'how big the inside of your lungs is', 'how often you breathe at rest', 'how every breath out carries away carbon dioxide', 'why your left lung is smaller than your right'],
+            ['wie Sauerstoff \u00fcber winzige Lungenbl\u00e4schen ins Blut gelangt', 'wie gro\u00df die Innenfl\u00e4che deiner Lunge ist', 'wie oft du in Ruhe atmest', 'wie jedes Ausatmen Kohlendioxid hinausbringt', 'warum deine linke Lunge kleiner ist als die rechte'],
+            ['c\u00f3mo el ox\u00edgeno pasa a tu sangre por unos sacos de aire diminutos', 'lo grande que es el interior de tus pulmones', 'cu\u00e1ntas veces respiras en reposo', 'c\u00f3mo cada vez que exhalas sacas di\u00f3xido de carbono', 'por qu\u00e9 tu pulm\u00f3n izquierdo es m\u00e1s peque\u00f1o que el derecho']],
+        heart: [
+            ['how often your heart beats in a day', 'how much blood each heartbeat pushes out', 'which fuel your heart muscle uses at rest', 'how your heart\u2019s own pacemaker starts every beat', 'how fast your blood makes a full loop around your body'],
+            ['wie oft dein Herz am Tag schl\u00e4gt', 'wie viel Blut jeder Herzschlag hinauspumpt', 'welchen Brennstoff dein Herzmuskel in Ruhe nutzt', 'wie der eigene Taktgeber deines Herzens jeden Schlag startet', 'wie schnell dein Blut einmal durch den ganzen K\u00f6rper flie\u00dft'],
+            ['cu\u00e1ntas veces late tu coraz\u00f3n al d\u00eda', 'cu\u00e1nta sangre empuja cada latido', 'qu\u00e9 combustible usa tu coraz\u00f3n en reposo', 'c\u00f3mo el marcapasos propio de tu coraz\u00f3n inicia cada latido', 'lo r\u00e1pido que tu sangre da una vuelta completa por tu cuerpo']],
+        liver: [
+            ['how your liver stores sugar and keeps your blood sugar steady', 'how many jobs your liver does', 'how your liver makes new sugar when you haven\u2019t eaten for a while', 'why your liver gets the first look at what you absorb', 'how your liver can regrow lost tissue'],
+            ['wie deine Leber Zucker speichert und deinen Blutzucker stabil h\u00e4lt', 'wie viele Aufgaben deine Leber erledigt', 'wie deine Leber neuen Zucker macht, wenn du eine Weile nichts gegessen hast', 'warum deine Leber als Erste sieht, was du aufnimmst', 'wie deine Leber verlorenes Gewebe nachwachsen lassen kann'],
+            ['c\u00f3mo tu h\u00edgado guarda az\u00facar y mantiene estable tu az\u00facar en sangre', 'cu\u00e1ntos trabajos hace tu h\u00edgado', 'c\u00f3mo tu h\u00edgado fabrica az\u00facar nuevo cuando llevas un rato sin comer', 'por qu\u00e9 tu h\u00edgado es el primero en ver lo que absorbes', 'c\u00f3mo tu h\u00edgado puede regenerar tejido perdido']],
+        pancreas: [
+            ['how the islets release insulin when your blood sugar rises', 'how much digestive juice your pancreas makes', 'how glucagon tells your liver to release sugar', 'how small a part of your pancreas the islets are', 'where your pancreas sits'],
+            ['wie die Inselzellen Insulin freisetzen, wenn dein Blutzucker steigt', 'wie viel Verdauungssaft deine Bauchspeicheldr\u00fcse macht', 'wie Glukagon deiner Leber sagt, Zucker freizugeben', 'wie klein der Anteil der Inselzellen an deiner Bauchspeicheldr\u00fcse ist', 'wo deine Bauchspeicheldr\u00fcse sitzt'],
+            ['c\u00f3mo los islotes liberan insulina cuando sube tu az\u00facar en sangre', 'cu\u00e1nto jugo digestivo produce tu p\u00e1ncreas', 'c\u00f3mo el glucag\u00f3n le dice a tu h\u00edgado que libere az\u00facar', 'qu\u00e9 parte tan peque\u00f1a de tu p\u00e1ncreas son los islotes', 'd\u00f3nde est\u00e1 tu p\u00e1ncreas']],
+        gut: [
+            ['how your gut turns fibre into food for its own wall', 'how long your small intestine is', 'how fibre slows down how fast sugar reaches your blood', 'how often your gut lining renews itself', 'why your gut is sometimes called the second brain'],
+            ['wie dein Darm Ballaststoffe in Futter f\u00fcr seine eigene Wand verwandelt', 'wie lang dein D\u00fcnndarm ist', 'wie Ballaststoffe bremsen, wie schnell Zucker ins Blut kommt', 'wie oft sich deine Darmschleimhaut erneuert', 'warum dein Darm manchmal zweites Gehirn genannt wird'],
+            ['c\u00f3mo tu intestino convierte la fibra en alimento para su propia pared', 'lo largo que es tu intestino delgado', 'c\u00f3mo la fibra frena la llegada del az\u00facar a tu sangre', 'cada cu\u00e1nto se renueva el revestimiento de tu intestino', 'por qu\u00e9 a tu intestino a veces lo llaman el segundo cerebro']],
+        muscle: [
+            ['how your muscles take up most of the sugar after a meal', 'how working muscles pull sugar from your blood even without much insulin', 'how your muscles keep their own sugar store', 'why a short walk after a meal helps', 'how much of your body weight is muscle'],
+            ['wie deine Muskeln nach dem Essen den Gro\u00dfteil des Zuckers aufnehmen', 'wie arbeitende Muskeln Zucker aus dem Blut ziehen, sogar ohne viel Insulin', 'wie deine Muskeln ihren eigenen Zuckervorrat anlegen', 'warum ein kurzer Spaziergang nach dem Essen hilft', 'wie viel deines K\u00f6rpergewichts Muskeln sind'],
+            ['c\u00f3mo tus m\u00fasculos absorben la mayor parte del az\u00facar despu\u00e9s de comer', 'c\u00f3mo los m\u00fasculos en acci\u00f3n sacan az\u00facar de tu sangre incluso sin mucha insulina', 'c\u00f3mo tus m\u00fasculos guardan su propia reserva de az\u00facar', 'por qu\u00e9 ayuda un paseo corto despu\u00e9s de comer', 'cu\u00e1nto de tu peso corporal es m\u00fasculo']]
+    };
+    function lessonCount(id, A) { id = pid(id); if (!id) return 0; const P = A && A.PLACES && A.PLACES[id]; return ((P && P.f) || []).length + (MORE[id] || []).length; }
+    function topic(id, i, li) { const T = TOPICS[pid(id)]; const a = T && T[li3(li)]; return a && i >= 1 && a[i - 1] ? a[i - 1] : ''; }
+    function recallAsk(id, i, li) { return COPY.ask[li3(li)].replace('{t}', topic(id, i, li)); }
+    function recallGood(id, i, li) { return COPY.good[li3(li)].replace('{t}', topic(id, i, li)); }
+    /* a question stays up its reading time plus time to decide, then quietly goes (no answer changes nothing) */
+    function askMs(text) { const RT = rt(); return Math.min(40000, (RT ? RT.ms(text, { max: 30000 }) : 8000) + 12000); }
+    const ints = a => Array.isArray(a) ? a.filter(x => Number.isInteger(x) && x >= 1 && x < 100) : [];
+    function tell(m, id, i) { id = pid(id); if (!m || !id || !(i >= 1)) return m; const a = m.told[id] = m.told[id] || []; if (a.indexOf(i) < 0) a.push(i); return m; }
+    function remember(m, id, i) { id = pid(id); if (!m || !id || !(i >= 1)) return m; const a = m.ok[id] = m.ok[id] || []; if (a.indexOf(i) < 0) a.push(i); return m; }
+    const has = (s, i) => !!(s && (s.has ? s.has(i) : s[i]));
+    /* the lessons told on earlier visits: snapshot taken once a session, so nothing told today is asked about today */
+    function toldBefore(m, id) { return new Set((m && m.told && m.told[pid(id)]) || []); }
+    /* the next thing worth saying: a lesson it never told you (or not this session), then today's line if not said this session */
+    function nextNew(m, id, lines, seen, A, skip) {
+        const n = A ? lessonCount(id, A) : lines.length, told = (m && m.told && m.told[pid(id)]) || [];
+        for (let i = 1; i < lines.length; i++) {
+            if (i === skip || has(seen, i)) continue;
+            if (i <= n && A && told.indexOf(i) >= 0) continue;
+            return i;
+        }
+        return null;
+    }
+    /* Yes: remembered, never asked again, on to the next lesson ("Good, because now it's about ..."). No: that lesson again. */
+    function answer(m, id, i, yes, li, lines, seen, A) {
+        if (!yes) return { i, text: COPY.again[li3(li)] + ' ' + lines[i] };
+        remember(m, id, i);
+        const n = lessonCount(id, A);
+        const k = nextNew(m, id, lines, seen, A, i);
+        if (k != null && k <= n) return { i: k, text: recallGood(id, k, li) + ' ' + lines[k] };
+        const okAll = ((m.ok && m.ok[pid(id)]) || []).length >= n;
+        return { i: null, text: COPY[okAll ? 'allDone' : 'goodShort'][li3(li)] };
     }
     /* screen directions, clockwise from up (0) in 45 degree steps */
     const DIRS = [['up', 'up and to the right', 'to the right', 'down and to the right', 'down', 'down and to the left', 'to the left', 'up and to the left'],
@@ -229,7 +319,8 @@
     function tilt(v) { return clamp(Math.round((v && v[0] || 0) * 900), -18, 18); }
     const api = { PALS, IDS, pid, li3, COPY, tr, pal, lines, FOLLOW, target, step, relax, tilt, awardsXp: false,
         MORE, GUIDE, DIRS, HUNT, dirIndex, guide, huntLine, showMs, minRead, nextFact, SPOTS, overlap, spotRect, place,
-        gapFor, QUEST_IDS, QUEST_W, questBottom, ORB_R, BACK, backLine, memory, met, meet, opening, cycle };
+        gapFor, QUEST_IDS, QUEST_W, questBottom, ORB_R, BACK, backLine, memory, met, meet, opening, cycle,
+        TOPICS, lessonCount, topic, recallAsk, recallGood, askMs, tell, remember, toldBefore, nextNew, answer };
     if (typeof module === 'object' && module.exports) module.exports = api;
     root.LowiRegionPalsCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

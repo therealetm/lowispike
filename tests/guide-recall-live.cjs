@@ -53,14 +53,9 @@ const askLi = t => { for (let li = 0; li < 3; li++) if (t.indexOf(C.COPY.ask[li]
             await page.waitForFunction(w => { try { return window.LowiWorldRegions.current() === w && window.LowiMistyFlight.state().st === 'inside'; } catch (e) { return false; } }, WORLD, { timeout: 60000 });
             await page.waitForFunction(() => window.__rp.length > 0, null, { timeout: 30000 }).catch(() => { });
             /* the question waits until Misty has swum in; other lines (a hunt hint) may come first */
-            steps['swim' + n] = [];   /* where Misty is while the question waits (every 3 s) */
-            for (let k = 0; k < 20; k++) {
-                const r = await page.evaluate(() => { const m = window.LowiMistyFlight.screen && window.LowiMistyFlight.screen(); return { a: !!document.querySelector('#rpPal.rp-asking'), m: m ? [Math.round(m.x), Math.round(m.y)] : null }; });
-                steps['swim' + n].push(r.m ? r.m.join(',') : '-');
-                if (r.a) break;
-                await sleep(3000);
-            }
-            await sleep(1200);
+            /* in-page polling: cheap even when a software-rendered engine makes every round trip slow */
+            await page.waitForFunction(() => document.querySelector('#rpPal.rp-asking'), null, { timeout: 90000, polling: 200 }).catch(() => { });
+            await sleep(600);
             steps['rp' + n] = await page.evaluate(() => window.__rp.map(x => Math.round(x.t) + ' ' + x.text.slice(0, 50)));
             return page.evaluate(() => { const a = document.querySelector('#rpPal.rp-asking .rp-tx'); return a ? a.textContent : ((window.__rp[0] || {}).text || ''); });
         }

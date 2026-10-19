@@ -145,7 +145,8 @@
             last = m ? { x: m.x, y: m.y } : null;
             if (still >= 2 || reduced()) { fn(); return; }
             /* she never settled (you kept steering): no question this visit, the normal lessons carry on */
-            if (performance.now() - t0 > 6000 && on) { fn(); return; }   /* she roams: once she is on screen, ask anyway (it docks clear of her) */
+            /* she roams: after 6 s ask anyway once she is on screen, or when her spot can't be read (it docks clear of the joystick) */
+            if (performance.now() - t0 > 6000 && (on || !m)) { fn(); return; }
             if (performance.now() - t0 > 45000) { st.askWait = false; askLeft = null; const mm = memLoad(); if (mm.since) { mm.since[st.id] = 1; memSave(); } return; }
             st.stillT = setTimeout(check, 250);   /* its own timer: lines that come meanwhile never cancel it */
         })();
@@ -302,7 +303,8 @@
         kick();
         /* the very first meeting (remembered on this device): hello. Every visit after that: a short welcome back from a pool,
            never the same one twice in a row, then something it hasn't told you yet. */
-        clearTimeout(st.nextT); st.nextT = setTimeout(() => {
+        /* its own timer: a hunt hint that comes first must not cancel the hello / welcome back / question */
+        clearTimeout(st.openT); st.openT = setTimeout(() => {
             if (st.el !== el) return;
             greeted[id] = 1;
             const A = W.LowiArrivalCore;

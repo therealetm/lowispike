@@ -408,6 +408,29 @@ task running, nothing released yet.
    - **Task** "LOWiSPIKE: persistent billiard-style energy burst physics" (started 10:00 PM). Coordinates with crash
      task 9472a9a4 (COORD-community-crash-2.md) and crowd task e80fcb1e; notes in `/home/sprite/COORD-billiard.md`.
 
+**22. The companion card (long press on the companion) has to make sense: no "spirit", worlds you earn, nothing
+hidden.** REQUESTED 10:0x PM call, task running.
+   - He likes the card in general (level, energy, "Legend"). He said, reading it out: "spirit world sky should be named
+     something different. Don't use the word spirit. Spirit bubbles. Yes, different name because we don't use the word
+     spirit." A friend said "spirit" sounds too mystical for an app scientists, doctors and schools will use. Rule:
+     **never the word spirit (or Geist / espiritu) anywhere the user can read it.** Plain words, not jargon.
+   - Adventure unlocks: "These should only be unlocked if the person went there themselves ... and also depending on
+     ... at what level their companion is." So her timed adventure reaches a place only when **both** are true: you
+     went there yourself once (your steering or your tap, not autopilot or her own trip) **and** her level is high
+     enough. Your own flying and autopilot stay ungated, so there is no lock that stops a first visit.
+   - "How do you feel? Why is that there? ... what is that supposed to do?" The mood check-in had no explanation.
+   - Forms (evolution) and Collection were at the bottom of the card, below everything: "that's hidden ... that needs to
+     be not hidden." Put them up front.
+   - Collection: "I don't even understand what collection is for ... No XP per find. It's about trying, not
+     collecting. I don't get it." He let Maya decide: make it a **food journal** to look back at the foods you scanned
+     or logged and how they went (likely blood sugar response), simple copy. Foods or a full collection must **never**
+     be needed to evolve the companion.
+   - Separate requests from the same walkthrough, handled by other tasks: aura colour change doesn't show on the
+     companion, a friend wants to rename the companion by hand, more levels and more majestic evolutions ("really
+     truly evolve"). Also: typing into the Community chat room crashed it (passed to crash task 9472a9a4).
+   - **Task** "LOWiSPIKE: clear companion panel, world names and discovery gates"; notes in
+     `/home/sprite/COORD-companion-panel.md`, branch `companion-panel`.
+
 ### 0.6 The Mickey 17 workflow: how every Maya hands over to the next
 
 Added Monday 19 Oct 2026, about 9:20 PM CEST, by Maya 5, at Emmanuel's request on the evening call. His words: "can
@@ -938,3 +961,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 - 2026-10-19 22:05 Item 21 recorded under 0.5: energy bursts should play like billiards (hit companions stay where they land, chain hits); task "persistent billiard-style energy burst physics" started.
 - 2026-10-19 22:20 Crowd members send real energy balls to Emmanuel and other humans (item 20b), proven live on a guest; soak tool gets --net. Item 20c (crowd on Home) not built, no earlier agreement found.
 - 2026-10-19 22:30 Crowd fix: an @mention now reaches only the member it names (Emmanuel's ping to "Thiago M." got thank-yous from Thiago AND Thiago M.; same for Luis/Luis A., paolo/Paolo H.). My 22:15 --net soak (guest "Soak", uid ...858f71) posted two real '@Thiago / @paolo sent you energy' lines in the room and Emmanuel answered '@Soak Yooo'; --net now blocks room writes. Those 2 lines are still in the room (needs a service-role delete or Emmanuel in Supabase). Still no scheduled crowd run at 22:11.
+- 2026-10-19 22:35 Item 22 recorded under 0.5: companion card without "spirit", adventure places need your own visit plus her level, mood check-in explained, Forms and Collection up front, Collection becomes a food journal. Task companion-panel running.

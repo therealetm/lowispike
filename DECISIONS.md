@@ -718,4 +718,3 @@ community database does not have; the first checked one pays +100 XP into the no
 Pathfinder badge shows how many products you found first.
 
 **Consequences:** the count lives on the phone (D.pf) until it syncs; the e2e lives in /home/sprite/FOODPATHS/e2e.cjs.
-

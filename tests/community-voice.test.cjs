@@ -58,7 +58,7 @@ test('playback: one shared audio, play buttons in the Chat room and in the galax
  assert.match(js,/a==='voice'\)\{voicePlay\(b\);\}/);
  assert.match(js,/function voiceHtml\(vo,by,cls\)/);
  assert.match(js,/function msgBody\(m\)\{const vo=voiceOf\(m\);if\(vo\)return voiceHtml/);
- assert.match(js,/html\+=vo\?button\('voice',inner/);
+ assert.match(js,/(html\+=|parts\.push\()vo\?button\('voice',inner/);
  assert.match(js,/class="cg-thumb"/,'a photo shows a thumbnail in its galaxy bubble');
 });
 

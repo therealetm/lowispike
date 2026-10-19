@@ -184,7 +184,10 @@ function ensureScope(){const id=H.state().uid||'';if(id===scope&&(store||!id))re
  store=scope?K.session({scope,storage:deviceStorage,id:()=> 'm'+crypto.randomUUID(),send:transport.send,changed:()=>refresh()}):null;
  if(scope){const c=K.read(deviceStorage,cacheKey(),{});cache=Array.isArray(c.messages)?c.messages.map(K.message).filter(m=>m&&!m.demo&&!m.bot):[];transport.reload();}
 }
-function messages(){const live=transport.state().phase==='ready'||H.messages().length?H.messages():cache;return K.visible(live,draftState().outbox,prefs.blocks||{},scope);}
+/* Oct 19: "@Name ⚡ X sent you energy" lines (old app pings, crowd members) are hidden everywhere: chat, bubbles, unread counts */
+const ENERGY_LINE=/^(@\S[^\n]*?\s)?\u26a1\s[^\n]+\s(sent you energy|hat dir Energie geschickt|te envi\u00f3 energ\u00eda)[\s!.]*$/u;
+function energyLine(m){return !!(m&&typeof m.t==='string'&&ENERGY_LINE.test(m.t.trim()));}
+function messages(){const live=transport.state().phase==='ready'||H.messages().length?H.messages():cache;return K.visible(live,draftState().outbox,prefs.blocks||{},scope).filter(m=>!energyLine(m));}
 function profile(id,name){const m=own(),base=id===scope?m:H.people().find(p=>p.uid===id)||{};const shared=K.identity(identities.get(id));return {uid:id,n:name||base.n||'Member',avatar:K.image(base.avatar),s:shared.s,t:shared.t,lv:base.lv||1,xp:base.xp||0};}
 function bubble(p,size=34){return H.bubble({...p,bday:'',w:'',streak:0},size);}
 /* Companions: a member's herb form, drawn from the visual-only look code they chose to share (profiles.look).
@@ -196,7 +199,12 @@ function spirit(id,key){const h=hue(id);return '<svg class="cp-spirit" viewBox="
 /* Oct 19 old-design purge: your own orb is the real Misty (the same cell as Home), not the old mini-blob with a smile. Round 3: friends and bots are the same glass cell with their own form (LowiCompanion.friendSVG); the mini-blob is only the fallback before it loads. */
 let ownArt={at:0,svg:''};
 function ownMisty(){const now=Date.now();if(ownArt.svg&&now-ownArt.at<4000)return ownArt.svg;let svg='';const T=W.LowiHerbTamagotchi;try{const c=T&&T.current&&T.current();if(c&&T.plantHTML)svg=T.plantHTML(c.m,'node',c.p,{label:String(own().n||'Misty')})||'';}catch(e){svg='';}if(!svg){const el=D.querySelector('#spBubble .tmg-plant');svg=el?el.outerHTML:'';}ownArt={at:now,svg};return svg;}
-function mate(id,key){if(id&&(id===scope||id==='me')){const ms=ownMisty();if(ms)return '<span class="cp-form cp-own">'+ms+'</span>';}const g=genomeFor(id),C=W.LowiCompanionCore,F=W.LowiCompanion&&W.LowiCompanion.friendSVG;let svg='';if(g&&F){try{svg=F(g,key)||'';}catch(e){svg='';}}if(!svg&&g&&C&&C.miniSVG){try{svg=C.miniSVG(g,key);}catch(e){svg='';}}return '<span class="cp-form'+(svg?'':' cp-plain')+'">'+(svg||spirit(id,key))+'</span>';}
+/* Oct 19, crash round 2 (E-man: kicked out while scrolling the chat / sending energy with ~58 people in the galaxy): plantHTML numbers
+   every drawing with a global counter ('lh'+(++seq)), so the same companion came out as different HTML on every paint, the
+   `__html` guards in paint() never held, and every paint rebuilt the WHOLE galaxy and the WHOLE chat list (~22k SVG nodes) several
+   times a minute. Each drawing gets ids from who it is instead; the key suffix still keeps two drawings on one page apart. */
+function stableIds(svg,id){return String(svg||'').replace(/\blh\d+/g,'lhc'+String(id||'me').replace(/[^a-z0-9]/gi,'').slice(-12));}
+function mate(id,key){if(id&&(id===scope||id==='me')){const ms=ownMisty();if(ms)return stableIds('<span class="cp-form cp-own">'+ms+'</span>',id);}const g=genomeFor(id),C=W.LowiCompanionCore,F=W.LowiCompanion&&W.LowiCompanion.friendSVG;let svg='';if(g&&F){try{svg=F(g,key)||'';}catch(e){svg='';}}if(!svg&&g&&C&&C.miniSVG){try{svg=C.miniSVG(g,key);}catch(e){svg='';}}return stableIds('<span class="cp-form'+(svg?'':' cp-plain')+'">'+(svg||spirit(id,key))+'</span>',id);}
 const G=W.LowiGalaxy;
 let sel='',threadOpen=false,sk=null,wasOn=false,introT=0,gxIds=[],dmLive=new Set(),dmBoot=Date.now(),toastT=0,watching=false;
 function hueColor(id,me){return me?'#9cdac7':'hsl('+hue(id)+' 78% 74%)';}
@@ -242,7 +250,7 @@ function galaxy(ms,w,h,quiet){
   try{const bs=botStore();for(const u in bs){const arr=bs[u];const m=arr&&arr[arr.length-1];if(!m||!m.t)continue;const k=m.from==='me'?scope:u,cur=last.get(k);if(!cur||(+cur.ts||0)<=(+m.ts||0))last.set(k,{id:'',uid:k,t:m.t,ts:m.ts||now});}}catch(e){}
   if(sel&&!spot.has(sel))sel='';
   const cv=convo(ms,idx);
-  let html='';
+  const parts=[];
   /* drawing order only (real people before bots); the spots themselves never depend on it */
   const drawOrder=L.spots.slice().sort((a,b)=>(b.me?1:0)-(a.me?1:0)||((r.get(a.uid)||{}).bot?1:0)-((r.get(b.uid)||{}).bot?1:0));
   drawOrder.forEach((x,i)=>{const me=x.me,p=me?{uid:scope,n:own().n||tr('you')}:r.get(x.uid);if(!p)return;const label=me?tr('you'):p.n;names.push(label);
@@ -250,7 +258,7 @@ function galaxy(ms,w,h,quiet){
    const aria=me?(sel?tr('toEveryone'):tr('youAll')):(picked?fill('talking',p.n):fill('talkTo',p.n));
    const attrs='data-uid="'+esc(x.uid)+'" data-name="'+esc(me?own().n||'':p.n)+'" aria-label="'+esc(aria)+'"'+(me?'':' aria-pressed="'+picked+'"')+' style="--s:'+size+'px;--i:'+(i%24)+';--c:'+hueColor(x.uid,me)+'"';
    const inner='<span class="cg-orb">'+mate(me?(scope||'me'):x.uid,'g'+i)+'</span><span class="cg-name">'+esc(label)+'</span>';
-   html+=button(me?'to-all':'person',inner,attrs,'cg-body'+(me?' me':'')+(picked?' sel':'')+(talking?' speaking':'')+(p.bot?' bot':'')+(me&&!scope?' cg-off':''));
+   parts.push(button(me?'to-all':'person',inner,attrs,'cg-body'+(me?' me':'')+(picked?' sel':'')+(talking?' speaking':'')+(p.bot?' bot':'')+(me&&!scope?' cg-off':'')));
    /* Oct 16 (E-man: "like Snapchat's map"): every companion's newest message sits in one small bubble next to their round avatar:
       their name, then the words (or "New picture" for a photo, which opens it). Your own words always sit next to YOUR avatar.
       place() picks the side so a bubble never covers another person or name; when there is no room it shrinks to a dot. */
@@ -264,10 +272,10 @@ function galaxy(ms,w,h,quiet){
     const inner='<b class="cg-bn">'+esc(label)+'</b><span class="cg-t'+(typing?' cg-typing':'')+(pic?' cg-pict':'')+(vo?' cg-vo':'')+'">'+(typing?esc(words):pic?'<img class="cg-thumb" alt="" loading="lazy" decoding="async" src="'+esc(pic)+'">'+esc(words):vo?'<span class="cg-vplay" aria-hidden="true"></span><span class="cs-vt">'+esc(mmss(vo.dur))+'</span> '+esc(tr('voiceNote'))+'<span class="cg-vbar" aria-hidden="true"></span>':text(words))+'</span>'+st;
     const style='width:'+bw+'px;--o:'+(m&&m.status||typing?1:o)+';--c:'+hueColor(x.uid,me);
     const cls='cg-bub cg-snap'+(me?' mine':'')+(toMe?' tome':'')+(talking||typing?' pop':'')+(pic?' pic':'')+(vo?' voice':''),fr=' data-for="'+esc(x.uid)+'"';
-    html+=vo?button('voice',inner,'data-id="'+esc(m.id)+'" data-src="'+esc(vo.src)+'" data-dur="'+vo.dur+'" aria-pressed="false" aria-label="'+esc(fill('voicePlay',label)+', '+mmss(vo.dur))+'" style="'+style+'"'+fr,cls)
+    parts.push(vo?button('voice',inner,'data-id="'+esc(m.id)+'" data-src="'+esc(vo.src)+'" data-dur="'+vo.dur+'" aria-pressed="false" aria-label="'+esc(fill('voicePlay',label)+', '+mmss(vo.dur))+'" style="'+style+'"'+fr,cls)
      :pic?button('photo',inner,'data-id="'+esc(m.id)+'" data-src="'+esc(pic)+'" data-name="'+esc(label)+'" aria-label="'+esc(fill('photoOf',label))+'" style="'+style+'"'+fr,cls)
      :m&&m.id?button('thread',inner,'data-id="'+esc(m.id)+'" aria-label="'+esc(label+': '+(m.t||''))+' · '+tr('openThread')+'" style="'+style+'"'+fr,cls)
-     :'<div class="'+cls+'" role="status" style="'+style+'"'+fr+'>'+inner+'</div>';}
+     :'<div class="'+cls+'" role="status" style="'+style+'"'+fr+'>'+inner+'</div>');}
    labels.push({id:x.uid,pri:picked?0:me?1:(typing||talking)?2:3,ts:m?(+m.ts||0):0,bw,size});
   });
   if(sel&&spot.has(sel)){const cvTheirs=!!(cv&&!cv.fromMe)||botTyping===sel,A=cvTheirs?sel:meSpot.uid,B=cvTheirs?meSpot.uid:sel;
@@ -276,7 +284,7 @@ function galaxy(ms,w,h,quiet){
   }
   labels.sort((a,b)=>a.pri-b.pri||b.ts-a.ts);
   gxIds=L.spots.map(x=>x.uid).filter(u=>u&&u!=='me');
-  return {html,map:L,spot,labels,lineDefs,lines:[],names,me:meSpot};
+  return {html:parts.join(''),parts,map:L,spot,labels,lineDefs,lines:[],names,me:meSpot};
 }
 /* ---- the map camera: pins stay put, the camera moves ---- */
 let cam=null,camFrozen=null,placeRaf=0,camAnim=0;
@@ -366,10 +374,12 @@ W.LowiCgMap={atMax(){const gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(!gx||
   /* Oct 16 (energy hits): the camera and every companion's home spot and radius in map units, for community-energy.js */
   geom(){const gx=W.__lgGx,gal=D.getElementById('cgGalaxy');if(!G||!gx||!gx.map||!gal||!cam)return null;const v=mapView(gal),Z=mapZ(gx,v),f=Math.max(.68,Math.min(1.2,Math.sqrt(cam.z/Z.z0))),big=v.w>=640,sz=new Map((gx.labels||[]).map(L=>[L.id,L.size]));
    return {cam:{...cam},w:v.w,h:v.h,cx:v.w/2,cy:v.h*.5,f,radius:gx.map.radius,spots:gx.map.spots.filter(s=>gx.spot.has(s.uid)).map(s=>({uid:s.uid,me:!!s.me,x:s.x,y:s.y,r:((sz.get(s.uid)||(s.me?(big?64:54):(big?56:46)))*f/2)/cam.z}))};},
-  /* an energy hit on a real member sends one short directed line ("@Name ⚡ Eman sent you energy"); community-energy.js rate-limits it */
+  /* an energy hit on a real member: checks only (Oct 19: the "@Name ⚡ Eman sent you energy" chat line is gone) */
   energy(uid){if(!uid||uid===scope||uid==='me')return 'self';if(botOf(uid))return 'bot';const p=roster().get(uid);if(!p||!G)return 'gone';if(blocked(uid))return 'blocked';
    if(!store||!store.submitLine||!scope||navigator.onLine===false)return 'offline';const name=String(own().n||'').trim();if(!name)return 'name';
-   store.submitLine(name,G.direct(fill('energyPing',name),p.n)).catch(()=>{}).then(()=>refresh());refresh();return 'sent';}};
+   /* Oct 19 (E-man: "it says [Damon] sent you energy ... That's a useless text message ... Remove that specific line"): the hit
+      itself is the message; no chat line is posted any more. */
+   return 'sent';}};
 function skyStart(){const c=D.getElementById('cgSky');if(!G||!c||!c.getContext)return;if(!sk||sk.canvas!==c){if(sk)sk.stop();sk=G.sky(c);if(sk){sk.canvas=c;const g0=W.__lgGx;if(g0)sk.set(g0.lines,false,g0.orbits);}}if(sk&&active()&&!D.hidden)sk.start();}
 /* Arriving in Community: coming from Home, galaxy-zoom.js pulls the one camera out of Misty's world into the galaxy (no boxed
    snapshot of Home any more). From anywhere else the galaxy just settles in from a little closer. */
@@ -447,6 +457,20 @@ function renderMessage(m,all,prev,next){
  (pending?'<div class="cs-delivery" role="status">'+tr(m.status==='sending'?'sending':'unconfirmed')+(m.status==='sending'?'':button('retry-send',tr('checkRetry'),'data-id="'+esc(m.id)+'"','')+button('discard',tr('discard'),'data-id="'+esc(m.id)+'"',''))+'</div>':(reacts?'<div class="cm-rx">'+reacts+'</div>':''))+acts+
  (!pending&&pick===m.id?'<div class="cm-picker" aria-label="'+tr('react')+'">'+K.EMOJI.map(em=>button('react',esc(em),'data-id="'+esc(m.id)+'" data-emoji="'+esc(em)+'" aria-label="'+tr('react')+' '+esc(em)+'"','')).join('')+'</div>':'')+'</div></article>';
 }
+/* Oct 19, crash round 2: update a long list (the chat, the galaxy) piece by piece. parts are HTML strings (one or two elements
+   each); a piece whose HTML is unchanged keeps its live elements (no new SVG, no image reload, no relayout of 100 rows); only
+   new or changed pieces are parsed, the rest are only moved into order. Replacing innerHTML on every paint is what closed the
+   app on iPhones with a big crowd in the room. */
+function patchKids(el,parts){
+ if(!el.childNodes||!D.createElement('template').content){el.innerHTML=parts.join('');el.__parts=null;return;}
+ const pool=new Map(),old=el.__parts||[];
+ for(const o of old){if(!o.nodes.length||!o.nodes.every(n=>n.parentNode===el))continue;const a=pool.get(o.h);if(a)a.push(o);else pool.set(o.h,[o]);}
+ const next=[];let tpl=null;
+ for(const h of parts){if(!h)continue;const a=pool.get(h);let o=a&&a.shift();if(!o){if(!tpl)tpl=D.createElement('template');tpl.innerHTML=h;o={h,nodes:[...tpl.content.childNodes]};}next.push(o);}
+ const keep=new Set();for(const o of next)for(const n of o.nodes)keep.add(n);
+ for(const n of [...el.childNodes])if(!keep.has(n))el.removeChild(n);
+ let cur=el.firstChild;for(const o of next)for(const n of o.nodes){if(n===cur)cur=cur.nextSibling;else el.insertBefore(n,cur);}
+ el.__parts=next;}
 function mount(el){if(!el)return;ensureScope();if(!el.hasAttribute('data-spirit-chat')){
  el.setAttribute('data-spirit-chat','');el.setAttribute('data-planet','normal');el.setAttribute('data-noi18n','');
  el.innerHTML='<header class="cp-bar"><div class="cp-head"><h2 id="cpTitle"></h2><p id="cpSub"></p></div><div id="csControls"></div></header><div class="cs-status" id="csStatus" role="status"></div><section class="cp-room cg-room" id="cpRoom"><div class="cg-galaxy" id="cgGalaxy" role="group"><canvas class="cg-sky" id="cgSky" aria-hidden="true"></canvas><svg class="cg-stream" id="cgStream" aria-hidden="true" focusable="false" data-on="0"></svg><div class="cg-field" id="cgField"></div></div><section class="cg-thread cr-room" id="cgThread" role="region" aria-labelledby="cgThreadTitle"><div class="cr-sky" aria-hidden="true"></div><header class="cg-thead cr-head"><button type="button" class="cg-x cr-back" data-sfx="none" data-chat="close-thread" id="cgClose"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M14.5 5.5L8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="cr-id"><b id="cgThreadTitle"></b><span class="cr-meta" id="crMeta"></span></div><span class="cr-link" id="crLink" data-state="loading"></span></header><div class="cr-crew" id="crCrew"></div><div class="cm-list" id="cmList" role="log" aria-live="off" tabindex="0"></div><div id="csJump"></div></section></section><div class="cm-compose"><div class="cg-torow" id="cgTo"></div><div id="csReply"></div><div class="cm-mention" id="cmMention"></div><div id="csPhoto"></div><div id="csMic"></div><div class="cm-inrow"><button type="button" id="cmPhoto" class="cs-photo-btn" data-chat="photo-pick" data-sfx="none"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.6l1.2-1.6A1.5 1.5 0 0 1 10.5 4h3a1.5 1.5 0 0 1 1.2.6L15.9 6h1.6A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="12.4" r="3.4" fill="none" stroke="currentColor" stroke-width="1.7"/></svg></button><input type="file" id="cmPhotoFile" accept="image/*" class="cs-file" tabindex="-1" aria-hidden="true"><textarea id="cmInput" rows="1" maxlength="600" enterkeyhint="send"></textarea><button type="button" id="cmMic" class="cs-mic-btn" data-chat="mic" data-sfx="none"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><rect x="9" y="3.5" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M5.8 11.5a6.2 6.2 0 0 0 12.4 0M12 17.7V20.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button><div class="cs-rec-host" id="csRec"></div><button type="button" id="cmSend" data-chat="send" data-sfx="none">↑</button></div><div class="cs-compose-meta"><span id="csDraft"></span><span id="csCount"></span></div><p class="cs-notice" id="csNotice" role="status"></p></div><span id="csAnnounce" class="sr-only" aria-live="polite"></span>';
@@ -472,8 +496,8 @@ function paint(el){
  const tw=q('#cgTo');if(tw&&tw.innerHTML!==toRow)tw.innerHTML=toRow;
  const room=q('#cpRoom'),gw=(room&&room.clientWidth)||(el.clientWidth||0)||360,gh=(room&&room.clientHeight)||420,quietRoom=!ms.some(x=>!x.demo&&!x.bot&&!blocked(x.uid));el.dataset.planet=W.innerWidth>=700&&W.innerHeight>=700?'tall':W.innerHeight<700?'compact':'normal';
  const gx=galaxy(ms,gw,gh,quietRoom),field=q('#cgField'),gal=q('#cgGalaxy');
- const fieldHTML=gx.html+(quietRoom?'<div class="cg-empty"><span class="cs-lantern" aria-hidden="true">✧</span><b>'+tr('emptyTitle')+'</b><p>'+(st.phase==='ready'?(Object.values(prefs.blocks).some(x=>x.blocked)?tr('filtered'):tr('empty')):tr('waiting'))+'</p>'+(st.phase==='ready'?button('hello',tr('hi'),'','cs-action cg-hello'):'')+'</div>':'');
- if(field&&field.__html!==fieldHTML){field.innerHTML=fieldHTML;field.__html=fieldHTML;}
+ const emptyHTML=(quietRoom?'<div class="cg-empty"><span class="cs-lantern" aria-hidden="true">✧</span><b>'+tr('emptyTitle')+'</b><p>'+(st.phase==='ready'?(Object.values(prefs.blocks).some(x=>x.blocked)?tr('filtered'):tr('empty')):tr('waiting'))+'</p>'+(st.phase==='ready'?button('hello',tr('hi'),'','cs-action cg-hello'):'')+'</div>':''),fieldHTML=gx.html+emptyHTML;
+ if(field&&field.__html!==fieldHTML){patchKids(field,(gx.parts||[gx.html]).concat(emptyHTML?[emptyHTML]:[]));field.__html=fieldHTML;}
  if(gal){gal.setAttribute('aria-label',tr('onPlanet')+': '+gx.names.join(', '));gal.setAttribute('data-streams',String(gx.lineDefs.length));}
  W.__lgGx=gx;place();watch();if(active()&&!D.hidden){if(!wasOn)onShow();else{if(gal&&!gal.__intro&&Date.now()-enterAt<600)intro();skyStart();}}
  if(room&&W.ResizeObserver&&ro!==room.__ro){if(ro)ro.disconnect();let lastSz='';ro=new W.ResizeObserver(()=>{const sz=room.clientWidth+'x'+room.clientHeight;if(sz===lastSz)return;lastSz=sz;clearTimeout(W.__cgRo);W.__cgRo=setTimeout(()=>{if(active()){refresh();if(sk)sk.resize();}},90);});ro.observe(room);room.__ro=ro;}
@@ -482,8 +506,8 @@ function paint(el){
  if(!W.LowiCompanionCore&&mateTries<20){mateTries++;setTimeout(refresh,1500);}
  const empty=st.phase==='ready'?(Object.values(prefs.blocks).some(x=>x.blocked)?tr('filtered'):tr('empty')):tr('waiting');
  const shown=ms.filter(x=>!x.demo&&!x.bot&&!blocked(x.uid)).concat(botLines()).sort((a,b)=>(+a.ts||0)-(+b.ts||0));
- const html=shown.length?shown.map((m,i)=>dayLine(m,shown[i-1])+renderMessage(m,ms,shown[i-1],shown[i+1])).join(''):'<div class="cs-empty"><span class="cs-lantern" aria-hidden="true">✧</span><b>'+tr('emptyTitle')+'</b><p>'+empty+'</p>'+(st.phase==='ready'?button('hello',tr('hi')):'')+'</div>';
- if(list.__html!==html){list.innerHTML=html;list.__html=html;if(near||ownNew)list.scrollTop=list.scrollHeight;else list.scrollTop=y;if(fk){const b=[...list.querySelectorAll('[data-chat]')].find(b=>b.dataset.chat===fk.a&&b.dataset.id===fk.id&&b.dataset.uid===fk.uid&&b.dataset.emoji===fk.em);if(b)b.focus({preventScroll:true});}}
+ const rows=shown.map((m,i)=>dayLine(m,shown[i-1])+renderMessage(m,ms,shown[i-1],shown[i+1])),html=shown.length?rows.join(''):'<div class="cs-empty"><span class="cs-lantern" aria-hidden="true">✧</span><b>'+tr('emptyTitle')+'</b><p>'+empty+'</p>'+(st.phase==='ready'?button('hello',tr('hi')):'')+'</div>';
+ if(list.__html!==html){patchKids(list,shown.length?rows:[html]);list.__html=html;if(near||ownNew)list.scrollTop=list.scrollHeight;else if(list.scrollTop!==y)list.scrollTop=y;if(fk&&!list.contains(D.activeElement)){const b=[...list.querySelectorAll('[data-chat]')].find(b=>b.dataset.chat===fk.a&&b.dataset.id===fk.id&&b.dataset.uid===fk.uid&&b.dataset.emoji===fk.em);if(b)b.focus({preventScroll:true});}}
  if(ownNew)newCount=0;if(ms.length>lastCount&&!near&&!ownNew){newCount+=ms.length-lastCount;if(!isQuiet())q('#csAnnounce').textContent=tr('newMessages');}lastCount=ms.length;
  q('#csJump').innerHTML=newCount&&!near&&!ownNew?button('latest',tr('newMessages'),'','cs-jump'):'';
  const parent=ms.find(x=>x.id===ds.draft.reply);q('#csReply').innerHTML=ds.draft.reply?'<div class="cm-replybar"><span>'+tr('replying')+' <b>'+esc(parent?parent.by:tr('gone'))+'</b></span>'+button('noreply','×','aria-label="'+tr('cancel')+'"','')+'</div>':'';

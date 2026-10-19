@@ -431,6 +431,26 @@ hidden.** REQUESTED 10:0x PM call, task running.
    - **Task** "LOWiSPIKE: clear companion panel, world names and discovery gates"; notes in
      `/home/sprite/COORD-companion-panel.md`, branch `companion-panel`.
 
+**23. A message to you arrives on Home as the sender's companion flying into your world (replaces item 20c's open
+question).** REQUESTED 10:1x PM call, task "LOWiSPIKE: incoming-message companion visits on Home" started 10:17 PM.
+   - He said (voice): "Their companions appear ... on my homepage ... almost like ... one of those ... outer bubbles
+     ... we see them flying ... towards ... the homepage. And then we see the text bubble." Asked whose messages and
+     how long: "Whoever messaged me, right? Like, if a friend messaged me, like a hologram ... just like a hologram
+     appearing, but instead of it just appearing out of nowhere ... it should look like they just entered my world
+     ... and appeared."
+   - So: **only messages addressed to him** (an @mention of him or a reply to his message, the same test the app's
+     existing "directed at you" alert uses: `dmCheck()` / `LowiCommunityGalaxy.targetOf()`), not all room chatter.
+     The sender's **own** companion travels in from outside (an outer bubble, out where everyone else's world is),
+     visibly flies toward his Home world, enters it, appears there like a light hologram, and then a speech bubble
+     shows the real message. No pop-in out of nowhere. ("World breach" was the assistant's word on the call, not app
+     wording.)
+   - Same path for his friends and for crowd members (real accounts, real messages); never invent a message or a
+     sender. Duration, dismissal and queueing were left to Maya (he didn't want more design questions): readable,
+     not in the way, tap opens the message in the room, nothing marked read behind his back, nothing lost, old
+     history never replayed as new, no pile-up when several people write. Reduced motion, three languages, message
+     shown as text only. Must stay light: Community is still crashing on his iPhone (items 20a, crash task 9472a9a4).
+   - Notes in `/home/sprite/COORD-home-visit.md`, branch `home-visit`, worktree `/home/sprite/wt-home-visit`.
+
 ### 0.6 The Mickey 17 workflow: how every Maya hands over to the next
 
 Added Monday 19 Oct 2026, about 9:20 PM CEST, by Maya 5, at Emmanuel's request on the evening call. His words: "can
@@ -963,3 +983,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 - 2026-10-19 22:30 Crowd fix: an @mention now reaches only the member it names (Emmanuel's ping to "Thiago M." got thank-yous from Thiago AND Thiago M.; same for Luis/Luis A., paolo/Paolo H.). My 22:15 --net soak (guest "Soak", uid ...858f71) posted two real '@Thiago / @paolo sent you energy' lines in the room and Emmanuel answered '@Soak Yooo'; --net now blocks room writes. Those 2 lines are still in the room (needs a service-role delete or Emmanuel in Supabase). Still no scheduled crowd run at 22:11.
 - 2026-10-19 22:35 Item 22 recorded under 0.5: companion card without "spirit", adventure places need your own visit plus her level, mood check-in explained, Forms and Collection up front, Collection becomes a food journal. Task companion-panel running.
 - 2026-10-19 22:35 Bug hunt run 14: Home<->Community warp streak canvas capped (~1.4 MP) and zeroed when the warp ends (CS-001 sibling, possible iPhone/iPad memory kill when zooming in and out). Not proven as the cause of the Community crashes.
+- 2026-10-19 22:25 Item 23 recorded under 0.5: a message addressed to Emmanuel arrives on Home as the sender's own companion flying in from outside his world, appearing like a hologram, then a speech bubble with the message. Task home-visit started; answers item 20c's open question (only messages to him).

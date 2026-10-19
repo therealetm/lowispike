@@ -249,7 +249,11 @@
     function cam(ctx, S) {
         const r = ctx.r, dt = ctx.dt;
         if (S.gx) { const gb = W.LowiGalaxyBubbles && W.LowiGalaxyBubbles.camDist(ctx, S); /* inside a bubble: in close */
-            r.dist += ((gb || camDist(S.p.length(), (S.gxD0 || S.d0) * 1.16, ctx.K.ROAM)) - r.dist) * Math.min(1, dt * 1.4); return true; }
+            /* G.nd is the galaxy's own camera distance; string-pov.js (Oct 19, Ant-Man POV) shrinks the real camera in from it while she rides a string */
+            if (G.nd == null) G.nd = r.dist;
+            G.nd += ((gb || camDist(S.p.length(), (S.gxD0 || S.d0) * 1.16, ctx.K.ROAM)) - G.nd) * Math.min(1, dt * 1.4);
+            r.dist = W.LowiStringPov ? W.LowiStringPov.cam(ctx, S, G.nd) : G.nd; return true; }
+        if (G.nd != null) { G.nd = null; if (W.LowiStringPov) W.LowiStringPov.reset(ctx); }
         if (S.gxBack) {
             const d0 = S.gxD0 || S.d0; r.dist += (d0 - r.dist) * Math.min(1, dt * 1.4);
             if (Math.abs(r.dist - d0) < d0 * 0.02) { r.dist = d0; S.d0 = d0; S.gxBack = false; }
@@ -260,7 +264,7 @@
         if (G.shown0) { r.dist += (S.gxD0 - r.dist) * Math.min(1, dt * 5); if (Math.abs(r.dist - S.gxD0) < 0.02) { r.dist = S.gxD0; G.shown0 = false; } return true; }
         return false;
     }
-    function speed(ctx, S) { if (!(S.gx || S.gxBack)) return 1; const home = !!(ctx.PD && ctx.PD.mode === 'home'); return speedK(ctx.r.dist, S.gxD0 || S.d0) * (home ? homeK(S.p.length()) : 1); }
+    function speed(ctx, S) { if (!(S.gx || S.gxBack)) return 1; const home = !!(ctx.PD && ctx.PD.mode === 'home'); return speedK(S.gx && G.nd != null ? G.nd : ctx.r.dist, S.gxD0 || S.d0) * (home ? homeK(S.p.length()) : 1); }
     /* the flight ended (home, tab switch, tap away): never leave the camera out in the galaxy */
     function reset(ctx, S) {
         const r = ctx && ctx.r, was = S.gx || S.gxBack || G.shown0;
@@ -268,6 +272,7 @@
         /* LIMITLESS: the flight ended far out (a tab, a tap away): never leave the camera out in the deep, glide it home */
         if (r && r.target && was && !r.fly && r.target.length() > 60) { r.fly = { from: { t: r.target.clone(), d: r.dist }, to: { t: r.target.clone().set(0, 0, 0), d: S.gxD0 || r.dist }, t: 0, dur: 1.6 }; r.flyYaw = null; r.idle = 0; }
         if (W.LowiGalaxyBubbles) W.LowiGalaxyBubbles.reset(ctx, S);
+        if (W.LowiStringPov) W.LowiStringPov.reset(ctx); G.nd = null;
         S.gx = false; S.gxBack = false; G.h = null; G.p = 0; G.ring = 0; G.shown = false; G.shown0 = false; cls(false);
         if (ctx && ctx.a && G.skin) paintSkin(ctx.a, 11, 0, 0);
         if (was) { note('reset'); try { W.dispatchEvent(new CustomEvent('lowi:galaxy', { detail: { on: false } })); } catch (e) { } }

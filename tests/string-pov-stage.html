@@ -1,0 +1,62 @@
+<!doctype html>
+<!-- Stage for string-pov.js (not part of the offline suite): the real 3D world with the real galaxy modules and the Ant-Man POV,
+     Misty as a small glowing stand-in driven by a tiny autopilot loop that swims along the string she rides (misty-flight's
+     free-flight formula, the camera target eased to her like misty-flight). tests/string-pov-live.cjs drives it. -->
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}canvas{width:100vw;height:100vh;display:block}</style></head>
+<body><canvas id="c"></canvas>
+<script src="../misty-galaxy.js"></script>
+<script src="../galaxy-bubbles.js"></script>
+<script src="../string-pov.js"></script>
+<script type="module">
+import * as THREE from '../vendor/three-0.160.1.module.min.js';
+import { createWorld } from '../body-world-3d-scene.js';
+const errors = []; window.addEventListener('error', e => errors.push(String(e.message)));
+const w = createWorld(THREE, document.getElementById('c'), { places: [], small: innerWidth < 380, dprCap: 2, theme: 'dark' });
+w.setMode && w.setMode('home');
+w.rig.mode = 'home'; w.rig.maxD = 14; w.rig.dist = 64;
+const S = { st: 'free', p: new THREE.Vector3(), v: new THREE.Vector3(), hs: 1, d0: 6.5, gxD0: 6.5, gx: true, exRide: true, exB: -1 }, V = { want: new THREE.Vector3() };
+document.documentElement.classList.add('mf-galaxy');
+let mode = 'auto', mag = 1, k = 0.8, reduced = false, swim = -1, frames = [];
+const K = { ROAM: 11 };
+const mist = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 12), new THREE.MeshBasicMaterial({ color: 0xbff7e6 })); mist.name = 'stage-misty'; mist.renderOrder = 3; w.scene.add(mist);
+const W = window, P = W.LowiStringPov;
+function tick(dt) {
+    const ctx = { a: { scene: w.scene, THREE, camera: w.camera }, r: w.rig, dt, k, K, reduced, PD: { mode }, burst: () => { } };
+    /* her own swim: along the string she means to ride (autopilot), or straight on */
+    if (swim >= 0) { const st = W.LowiGalaxyBubbles.stream(ctx, swim); if (st) { const flat = []; st.pts.forEach(q => flat.push(q.x, q.y, q.z)); const h = P.core.nearest(flat, S.p.x, S.p.y, S.p.z); if (h) V.want.set(h.tx + (h.cx - S.p.x) * 0.2, h.ty + (h.cy - S.p.y) * 0.2, h.tz + (h.cz - S.p.z) * 0.2).normalize(); } }
+    const sp = W.LowiMistyGalaxy.speed(ctx, S) * (1.5 + 2.7 * k) * 0.5;
+    S.v.lerp(V.want.clone().multiplyScalar(sp * mag), Math.min(1, dt * 3.2)); S.p.addScaledVector(S.v, dt);
+    W.LowiMistyGalaxy.step(ctx, S, V, mode, mag, K);
+    w.rig.target.lerp(S.p.clone().addScaledVector(S.v, 0.3), Math.min(1, dt * 2.4));
+    W.LowiMistyGalaxy.cam(ctx, S);
+    /* misty-flight: her on-screen size stays constant, so her world size follows the camera distance */
+    S.hs = w.rig.dist * 0.037;
+    mist.position.copy(S.p); mist.scale.setScalar(S.hs * 0.5);
+}
+function screen(p) { w.camera.updateMatrixWorld(); const v = p.clone().project(w.camera); return [+v.x.toFixed(3), +v.y.toFixed(3), +v.z.toFixed(3)]; }
+function world(i) { const g = w.scene.getObjectByName('cosmos'); const o = g.children.filter(o => o.isMesh && o.userData && o.userData.r && o.position.lengthSq() > 1)[i]; g.updateMatrixWorld(); return { p: o.getWorldPosition(new THREE.Vector3()), r: o.userData.r }; }
+/* how big the world looks: the largest bubble on screen, as a share of the screen height */
+function loom() {
+    const g = w.scene.getObjectByName('cosmos'); g.updateMatrixWorld(); w.camera.updateMatrixWorld(); let big = 0;
+    const fov = w.camera.fov * Math.PI / 180;
+    g.children.forEach(o => { if (!(o.isMesh && o.userData && o.userData.r && o.position.lengthSq() > 1)) return; const p = o.getWorldPosition(new THREE.Vector3()); const v = p.clone().applyMatrix4(w.camera.matrixWorldInverse); if (v.z > -1) return; const nd = p.clone().project(w.camera); if (Math.abs(nd.x) > 1.3 || Math.abs(nd.y) > 1.3) return; const a = Math.atan(o.userData.r / -v.z) * 2 / fov; big = Math.max(big, a); });
+    return +big.toFixed(3);
+}
+W.stage = {
+    errors, S, V, w, THREE,
+    set(o) { if (o.mode) mode = o.mode; if (o.mag != null) mag = o.mag; if (o.reduced != null) reduced = o.reduced; if (o.swim != null) swim = o.swim; if (o.exRide != null) S.exRide = o.exRide; if (o.want) V.want.set(...o.want).normalize(); },
+    run(secs, rec) { const dt = 1 / 30; for (let t = 0; t < secs; t += dt) { tick(dt); w.renderOnce(); if (rec) frames.push(this.snap()); } return this.state(); },
+    snap() { return { dist: w.rig.dist, cam: w.camera.position.toArray(), her: screen(S.p), k: P.state().k, riding: W.LowiGalaxyBubbles.state().riding }; },
+    frames() { const f = frames; frames = []; return f; },
+    timing(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { tick(1 / 30); w.renderOnce(); } w.renderer.getContext().finish(); return (performance.now() - t0) / n; },
+    world, loom, screen,
+    paths() { const g = w.scene.getObjectByName('cosmos'); const t = g && g.getObjectByName('cosmos-threads'); return t ? t.userData.paths.map(p => ({ n: p.arr.length / 3, dir: p.dir })) : []; },
+    stream(i) { const st = W.LowiGalaxyBubbles.stream({ a: { scene: w.scene, THREE } }, i); return st && { pts: st.pts.map(q => q.toArray()), entry: st.entry, end: st.end }; },
+    put(x, y, z) { S.p.set(x, y, z); S.v.set(0, 0, 0); w.rig.target.copy(S.p); },
+    tubes() { let n = 0; w.scene.traverse(o => { if (o.name === 'string-pov-tube') n++; }); return n; },
+    state() { return Object.assign({ p: S.p.toArray().map(v => +v.toFixed(2)), dist: +w.rig.dist.toFixed(3), hs: +S.hs.toFixed(3), cosmosMin: w.rig.cosmosMin, errors: errors.slice(), pov: P.state() }, W.LowiGalaxyBubbles.state()); },
+    ready: false
+};
+w.renderOnce(); W.stage.ready = true;
+</script></body></html>

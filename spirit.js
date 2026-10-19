@@ -132,7 +132,7 @@
         ends: ['Ends', 'Ende', 'Termina'],
         goal: ['of', 'von', 'de'],
         fast: ['Fasting', 'Fasten', 'Ayuno'],
-        noFast: ['Start a fast', 'Fasten starten', 'Empezar ayuno'],
+        noFast: ['—', '—', '—'], /* nofake Oct 19: no meal known yet = no number (was "Start a fast"); fits the 70 px ring bubble, the Gap bloom asks when you ate */
         storage: ['Could not save. Please free some space and try again.', 'Speichern nicht möglich. Schaffe etwas Platz und versuche es erneut.', 'No se pudo guardar. Libera espacio e inténtalo de nuevo.'],
         emptyCollection: ['Capture your first product.', 'Fang dein erstes Produkt ein.', 'Captura tu primer producto.'],
         leafHelp: ['Drag to throw. Hold to squeeze. Use two fingers to stretch.', 'Ziehen zum Werfen. Halten zum Drücken. Mit zwei Fingern dehnen.', 'Arrastra para lanzar. Mantén para apretar. Usa dos dedos para estirar.'],

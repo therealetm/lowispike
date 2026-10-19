@@ -36,7 +36,7 @@ const SIZES = (ENGINE === 'webkit' ? [['iPhone 13'], ['iPad (gen 7)']] : [[390, 
             /* B: she gets onto the string and rides it */
             st.put(e[0], e[1] + 0.6, e[2]); st.set({ exRide: true });
             st.run(0.1); out.B0 = st.state();
-            st.run(3.6, true); out.B = st.state(); out.B.loom = st.loom(); out.B.her = st.screen(st.S.p); out.B.tubes = st.tubes();
+            st.run(3.6, true); out.B = st.state(); out.B.loom = st.loom(); out.B.her = st.screen(st.S.p); out.B.tubes = st.tubes(); out.B.look = st.look();
             out.Bf = st.frames(); out.B.ms = st.timing(30);
             return out;
         });
@@ -56,6 +56,7 @@ const SIZES = (ENGINE === 'webkit' ? [['iPhone 13'], ['iPad (gen 7)']] : [[390, 
         ok(B.riding >= 0 && B.pov.k > 0.95, tag + ': riding the string, the POV is all the way in (k ' + B.pov.k + ')');
         ok(B.dist <= A.dist / 12, tag + ': it is a shift to tiny scale: ' + B.dist + ' vs ' + A.dist);
         ok(B.tubes === 1 && B.pov.tube && B.pov.tube.R >= B.hs * 4, tag + ': the string she rides is a huge cable next to her');
+        ok(B.look > 0.6, tag + ': the camera is behind her, looking the way she is carried (' + B.look + ')');
         ok(B.loom > A.loom * 1.15, tag + ': the world looms bigger (largest bubble ' + B.loom + ' vs ' + A.loom + ' of the screen)');
         const onScreen = r.Bf.filter(f => f.k > 0.5).every(f => Math.abs(f.her[0]) < 0.75 && Math.abs(f.her[1]) < 0.75 && f.her[2] < 1);
         ok(onScreen, tag + ': Misty stays on screen the whole ride');

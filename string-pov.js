@@ -95,7 +95,7 @@
     if (!W) return;
 
     /* ---------------- browser: the camera and the string she rides ---------------- */
-    const B = { g: null, gate: null, s: { k: 0, v: 0 }, si: -1, tube: null, old: [], off: null, hold: 0, spd: 0, t: 0, log: [], last: null };
+    const B = { g: null, gate: null, s: { k: 0, v: 0 }, sgn: 0, si: -1, tube: null, old: [], off: null, hold: 0, spd: 0, t: 0, log: [], last: null };
     function note(s) { B.log.push(Math.round(performance.now()) + ' ' + s); if (B.log.length > 12) B.log.shift(); }
     function cosmos(a) {
         if (B.g && B.g.parent) return B.g;
@@ -145,18 +145,22 @@
         const d = povDist(nominal, S.gxD0 || S.d0, k);
         /* her size scales with the camera distance (fixed on screen): her size once the camera is all the way in */
         const hsPov = Math.max(0.01, (S.hs || 0.1) * povDist(nominal, S.gxD0 || S.d0, 1) / Math.max(0.5, r.dist || d));
-        const tb = tubeFor(a, g, B.si, hsPov); B.tube = tb || B.tube;
+        const tb = tubeFor(a, g, B.si, hsPov); if (tb && tb !== B.tube) B.sgn = 0; B.tube = tb || B.tube;
         const th = g.rotation.y, lp = toLocal(S.p, th), h = tb && nearest(tb.flat, lp[0], lp[1], lp[2]);
         if (tb && h) {
-            const fL = [h.tx, h.ty, h.tz], nL = seatUp(fL, [0, 1, 0]), so = seatOffset(tb.R, tb.hs);
+            /* the way she is going along it: with the flow, or up it against the flow (the Oct 19 string tour also rides strings
+               upstream), read from her velocity with a little hysteresis so the camera never flips on a wobble */
+            const fW0 = toWorldV([h.tx, h.ty, h.tz], g.rotation.y), va = S.v ? S.v.x * fW0[0] + S.v.y * fW0[1] + S.v.z * fW0[2] : 0;
+            if (B.sgn === 0 || (B.sgn > 0 && va < -0.25) || (B.sgn < 0 && va > 0.25)) B.sgn = va < 0 ? -1 : 1;
+            const fL = [h.tx * B.sgn, h.ty * B.sgn, h.tz * B.sgn], nL = seatUp(fL, [0, 1, 0]), so = seatOffset(tb.R, tb.hs);
             /* the cable sits just under her ridge: shifted down by its radius where she is (smoothed, so it never jumps sideways) */
             const want = [-nL[0] * so, -nL[1] * so, -nL[2] * so];
             if (!B.off) B.off = want.slice(); else for (let i = 0; i < 3; i++) B.off[i] += (want[i] - B.off[i]) * Math.min(1, dt * 3);
             tb.m.position.set(B.off[0], B.off[1], B.off[2]);
             tb.op = k; const u = tb.m.material.uniforms; u.uO.value = 0.85 * k * k;
             /* the glow bands drift with the current a little slower than her: the water carries her, the string slides by gently */
-            const fW = toWorldV(fL, th), nW = toWorldV(nL, th), v = S.v ? S.v.x * fW[0] + S.v.y * fW[1] + S.v.z * fW[2] : 0;
-            B.spd += (v * 0.65 - B.spd) * Math.min(1, dt * 2); u.uT.value += B.spd * dt;
+            const fW = toWorldV(fL, th), nW = toWorldV(nL, th);
+            B.spd += (va * 0.65 - B.spd) * Math.min(1, dt * 2); u.uT.value += B.spd * dt; /* uv runs with the flow */
             /* lock on her, a little ahead along the string */
             const lead = tb.hs * SP.LEAD, tx = S.p.x + fW[0] * lead, ty = S.p.y + fW[1] * lead, tz = S.p.z + fW[2] * lead;
             r.target.set(r.target.x + (tx - r.target.x) * k, r.target.y + (ty - r.target.y) * k, r.target.z + (tz - r.target.z) * k);
@@ -175,7 +179,7 @@
     /* the galaxy flight is over (home, a reset): straight back, nothing left in the scene */
     function reset(ctx) {
         const was = B.s.k > 0 || B.tube;
-        B.s = { k: 0, v: 0 }; B.gate = null; B.si = -1; B.off = null; B.hold = 0; B.spd = 0; B.last = null;
+        B.s = { k: 0, v: 0 }; B.gate = null; B.si = -1; B.sgn = 0; B.off = null; B.hold = 0; B.spd = 0; B.last = null;
         if (B.tube) { drop(B.tube); B.tube = null; } while (B.old.length) drop(B.old.pop());
         if (was) note('reset');
     }

@@ -79,6 +79,8 @@ html[data-theme=light] .cr-treeb{color:#245a6b}
 .cr-leaf{fill:#bff4ff;opacity:.7}.cr-l1{fill:#ffd6ec}.cr-l2{fill:#fff3c4}
 .cr-spot{position:absolute;transform:translate(-50%,-50%);width:23%;display:flex;flex-direction:column;align-items:center;gap:1px;padding:0;border:0;background:none;color:inherit;font:inherit;cursor:pointer;text-align:center;-webkit-tap-highlight-color:transparent}
 .cr-spot .cr-fc{width:70%;height:auto;overflow:visible;filter:drop-shadow(0 0 8px #9fe6ff59)}
+/* Oct 19 purge round 3: friends who share no look are the current cell in their own hue */
+svg.cr-fc.cr-cur{filter:hue-rotate(var(--cr-hue,0deg)) drop-shadow(0 0 8px #9fe6ff59)}
 .cr-spot b{font-size:12px;line-height:1.15;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cr-spot small{font-size:11px;opacity:.75;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cr-spot.sel .cr-fc{filter:drop-shadow(0 0 12px #ffe6a2)}

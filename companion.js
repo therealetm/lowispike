@@ -176,6 +176,30 @@
             }
         } catch (e) { } finally { fetching = false; }
     }
+    /* Oct 19 old-design purge, round 3: a friend is drawn with the current glass cell (cell-world, the same render as Misty on Home)
+       carrying THEIR shared form (element traits, stage), never the old mini-blob with a smile. Ids are made unique per friend so two
+       friends on one screen never borrow each other's gradients. The mini-blob is only the last resort before cell-world has loaded. */
+    function uniq(svg, key) {
+        const k = String(key || 'f').replace(/[^a-z0-9]/gi, '') || 'f', ids = [];
+        svg.replace(/\bid="([^"]+)"/g, (_, x) => { ids.push(x); return _; });
+        if (!ids.length) return svg;
+        const set = new Set(ids);
+        return svg.replace(/\bid="([^"]+)"/g, (_, x) => 'id="' + x + '_' + k + '"')
+            .replace(/(url\(#|href="#)([^)"]+)/g, (all, a, x) => set.has(x) ? a + x + '_' + k : all);
+    }
+    /* g = the friend's shared look; null = a friend who shares none: the plain current cell (cell-room tints it to their hue) */
+    function friendSVG(g, id) {
+        try {
+            const T = HT(), f = T && T.plantHTML, base = f && f.cell ? (f.cf ? f.original : f) : null, c = T && T.current && T.current();
+            if (base && c && c.m) {
+                const st = g ? C.clampStage(g.st) : 0;
+                const out = String(base(Object.assign({}, c.m, { index: st, dim: false, mood: 'happy' }), 'node', Object.assign({}, c.p, { equipment: {} }), { hidden: true }) || '');
+                const s = g ? C.apply(out, Object.assign({}, g, { st })) : out;
+                if (g ? s.indexOf('cf-back') >= 0 : s.indexOf('cw-wall') >= 0) return uniq(s.replace('class="tmg-plant', 'class="cf-friend tmg-plant').replace(/ role="img"/, ' aria-hidden="true"').replace(/ aria-label="[^"]*"/, ''), id);
+            }
+        } catch (e) { }
+        return g ? C.miniSVG(g, id) : '';
+    }
     function swap(host, g, id) {
         if (!host || !g) return;
         const old = host.querySelector('svg.cr-fc');
@@ -183,10 +207,10 @@
         const code = C.encode(g);
         if (old.getAttribute('data-cf') === code) return;
         const t = D.createElement('div');
-        t.innerHTML = C.miniSVG(g, id);
+        t.innerHTML = friendSVG(g, id);
         const svg = t.firstChild;
         if (!svg) return;
-        svg.setAttribute('class', 'cr-fc cf-mini cf-el-' + g.el);
+        svg.setAttribute('class', 'cr-fc ' + (svg.getAttribute('class') || '').replace(/\bcf-mini\b/, '').trim() + ' cf-mini cf-el-' + g.el);
         svg.setAttribute('data-cf', code);
         old.replaceWith(svg);
     }
@@ -367,6 +391,6 @@
 
     W.LowiCompanion = {
         open, close, isOpen: () => !!V.ov, tick: () => { tickCalm(); return calmNow; }, genome: () => myGenome(), look: () => lookNow || myLook(), react, calm: () => { tickCalm(); return calmNow; },
-        friendLooks: () => Object.assign({}, looks), prefs, wrap
+        friendLooks: () => Object.assign({}, looks), prefs, wrap, friendSVG
     };
 })();

@@ -40,3 +40,11 @@ Example news.json:
 ```json
 {"slug": "water-goal", "tutorial": "water", "text": {"en": "...", "de": "...", "es": "..."}}
 ```
+
+## Auto-start for new accounts (Oct 19 2026, tutorial-auto.js)
+Emmanuel: "when someone makes a new account, they should automatically be taken through a tutorial phase ... with a skippable option".
+- Setup's `finishOb()` fires `lowi:setup-done`; only then is the account marked `pending` in `localStorage['lowispike.tutorial-auto.v1']`
+  (a lowispike.* key, so the account backup carries it to reload, sign-in and other devices). Older accounts never get the event.
+- Starts once Home is in front and nothing else (busyBy(), the Day card) has been up for 2.5 s. Finished / Skip all = never again.
+- Left halfway (app closed mid-tour): one "Pick up the tour?" offer that continues at that step (`LowiTutorial.start({at})`).
+- Steps are many short cards in parts (you, home, food, play, companion, together, settings, extras). Add new controls as new cards.

@@ -178,7 +178,9 @@
         H.classList.add('lt-on'); if (reduced()) root.classList.add('lt-rm');
         store.set(Object.assign(store.get(), { v: S.VERSION, at: new Date().toISOString(), done: false, from: o.from || '' }));
         clearInterval(timer); timer = setInterval(tick, 350);
-        go(0, 'start');
+        /* opts.at: begin at that step id (tutorial-auto.js: continue a tour that was left halfway) */
+        let at = 0; if (o.at) { const k = list.findIndex(x => x.id === o.at); if (k > 0) at = k; }
+        go(at, 'start');
         return true;
     }
     function stop(reason) {

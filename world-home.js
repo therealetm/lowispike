@@ -886,19 +886,23 @@
         try { if (W.LowiCompanion && W.LowiCompanion.open && W.LowiCompanion.open()) return true; } catch (e) { }
         return openDetails(st.sheetTab);
     }
+    /* BH-017 (run 17): a Glow sheet that is still sliding away (.off) is not open; tapping Glow again in that moment repainted
+       the closing sheet and opened nothing */
+    function liveMs() { return Array.from(D.querySelectorAll('#whMs')).find(e => !(e.closest && e.closest('.r2-ov.off'))) || null; }
     /* the aura / growth / discoveries sheet, opened from the Glow door in Misty's card */
     function openDetails(tab) {
         st.sheetTab = tab || 'aura';
         const R2 = W.LowiR2; if (!R2 || !R2.sheet) return false;
-        const ex = D.getElementById('whMs'); if (ex) { repaintMisty(); return true; }
+        const ex = liveMs(); if (ex) { repaintMisty(); return true; }
         R2.sheet(mistyHTML(st.sheetTab), { cls: 'wh-ms-ov' });
         setTimeout(syncX, 20);
         return true;
     }
     function repaintMisty(preview) {
-        const ex = D.getElementById('whMs'); if (!ex) return;
+        const ex = liveMs(); if (!ex) return;
         const t = D.createElement('div'); t.innerHTML = mistyHTML(st.sheetTab, preview);
-        ex.replaceWith(t.firstChild);
+        /* BH-016: an aura pick repaints this sheet; focus stays on the aura you picked */
+        if (W.LowiR2 && W.LowiR2.keepFocus) W.LowiR2.keepFocus(ex, t.firstChild); else ex.replaceWith(t.firstChild);
     }
     function pickAura(id) {
         const xp = xpNow(), a = C.AURAS.find(x => x.id === id); if (!a) return;
@@ -992,7 +996,7 @@
         else if (k === 'today') { e.preventDefault(); openToday(!st.today); }
         else if (k === 'scrim') { e.preventDefault(); openToday(false); }
         else if (k === 'zoom') { e.preventDefault(); if (Date.now() - (st.stickUsed || 0) < 450 || Date.now() - (st.stickTap || 0) < 700) return; zoomTap(); }
-        else if (k === 'mstab') { e.preventDefault(); st.sheetTab = b.dataset.tab; repaintMisty(); const nb = D.querySelector('#whMs [data-tab="' + st.sheetTab + '"]'); nb && nb.focus({ preventScroll: true }); }
+        else if (k === 'mstab') { e.preventDefault(); st.sheetTab = b.dataset.tab; repaintMisty(); const lm = liveMs(), nb = lm && lm.querySelector('[data-tab="' + st.sheetTab + '"]'); nb && nb.focus({ preventScroll: true }); }
         else if (k === 'aura') { e.preventDefault(); pickAura(b.dataset.id); }
         else if (k === 'room') { e.preventDefault(); try { W.LowiR2.close(W.LowiR2.top()); } catch (x) { } setTimeout(() => { try { W.LowiCellRoom.openRoom(); } catch (x) { } }, 200); }
         else if (k === 'scan') { e.preventDefault(); try { W.LowiR2.closeAll(); } catch (x) { } const s = D.querySelector('#tabbar [data-tab="scan"]'); s && s.click(); }

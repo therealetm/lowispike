@@ -79,11 +79,60 @@ R2.sheet=function(html,opts){
   });
   return ov;
 };
+/* Oct 20, bug hunt run 17 (BH-016): a sheet closing over another sheet (Glow over the companion card, any sheet opened from a
+   sheet) left keyboard focus on the closing sheet and then on <body>, because focus only went back when no sheet was left.
+   With focus on <body> the card underneath no longer got Escape or Tab (iPad with a keyboard, VoiceOver lost its place).
+   Now focus goes straight back into the sheet that is on top again: to the button that opened the closing sheet when it is
+   still there, else to that sheet itself. */
+function refocusTop(closing,trigger){
+  const top=R2.top();if(!top||top===closing)return false;
+  const a=D.activeElement;if(a&&a!==D.body&&a!==H&&top.contains(a))return false;
+  const sh=top.querySelector('.r2-sh');if(!sh)return false;
+  const t=trigger&&trigger.isConnected&&!trigger.hidden&&sh.contains(trigger)?trigger:sh;
+  try{t.focus({preventScroll:true});}catch(e){}
+  return true;
+}
 R2.motionClose=function(ov,remove){
   const s=states.get(ov);if(!s)return false;s.closing=true;
-  if(s.bloom&&s.y<12&&LowiBloom.close(s.sh,()=>{remove();states.delete(ov);if(!R2.top()&&s.trigger&&s.trigger.isConnected)s.trigger.focus({preventScroll:true});}))return true;
-  settle(s,s.sh.getBoundingClientRect().height+40,s.v,()=>{remove();states.delete(ov);if(!R2.top()&&s.trigger&&s.trigger.isConnected)s.trigger.focus({preventScroll:true});});return true;
+  const a=D.activeElement;if(!a||a===D.body||a===H||ov.contains(a))refocusTop(ov,s.trigger);
+  const gone=()=>{remove();states.delete(ov);if(!R2.top()){if(s.trigger&&s.trigger.isConnected)s.trigger.focus({preventScroll:true});}else refocusTop(ov,s.trigger);};
+  if(s.bloom&&s.y<12&&LowiBloom.close(s.sh,gone))return true;
+  settle(s,s.sh.getBoundingClientRect().height+40,s.v,gone);return true;
 };
+/* BH-016: a sheet that repaints itself (the companion card after a mood tap, the Glow sheet after an aura pick) swapped its
+   whole content and dropped focus to <body>. keepFocus swaps the old element for the new one and puts focus back on the same
+   control (same data-* keys), or on the sheet when that control is gone. */
+function focusKey(el){
+  if(!el||!el.getAttribute)return '';
+  const k=['data-mh','data-mood','data-wh','data-tab','data-id','data-mhrnx','name'].map(n=>{const v=el.getAttribute(n);return v==null?'':n+'='+v;}).filter(Boolean).join('|');
+  return k?(el.tagName||'')+'|'+k:'';
+}
+R2.keepFocus=function(oldEl,newEl){
+  if(!oldEl||!newEl)return newEl;
+  const a=D.activeElement,had=!!(a&&a!==oldEl&&oldEl.contains(a))||a===oldEl,key=had&&a!==oldEl?focusKey(a):'';
+  oldEl.replaceWith(newEl);
+  if(!had)return newEl;
+  let t=null;
+  if(key)t=Array.from(newEl.querySelectorAll('*')).find(n=>focusKey(n)===key&&!n.hidden&&!n.disabled)||null;
+  if(!t){const ov=newEl.closest&&newEl.closest('.r2-ov');t=(ov&&ov.querySelector('.r2-sh'))||null;}
+  if(t)try{t.focus({preventScroll:true});}catch(e){}
+  return newEl;
+};
+/* BH-016 safety net: focus fell to <body> while a closable sheet is the top layer and nothing covers it (another app layer,
+   the tutorial card, the scanner): Escape closes that sheet and Tab steps back into it, like it does from inside. */
+function bodyKey(e){
+  if(e.key!=='Escape'&&e.key!=='Tab')return;
+  if(e.defaultPrevented)return;
+  const a=D.activeElement;if(a&&a!==D.body&&a!==H)return;
+  const top=R2.top();if(!top||!states.has(top))return;
+  const sh=top.querySelector('.r2-sh');if(!sh)return;
+  const r=sh.getBoundingClientRect();if(!r.width||!r.height)return;
+  let hit=null;try{hit=D.elementFromPoint(r.left+r.width/2,r.top+Math.min(r.height/2,48));}catch(x){}
+  if(!hit||!top.contains(hit))return;
+  e.preventDefault();
+  if(e.key==='Escape')R2.close(top);else refocusTop(null,null);
+}
+D.addEventListener('keydown',bodyKey);
 const toast=D.getElementById('toast');if(toast){toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');toast.setAttribute('aria-atomic','true');}
 const nav=D.getElementById('tabbar');
 if(nav){

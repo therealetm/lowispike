@@ -125,7 +125,9 @@
     /* adventure tiers (adventure-tiers.js): what her timed adventure reaches at this level; autopilot is never gated */
     function advHtml() { try { return W.LowiAdventureTiers && W.LowiAdventureTiers.html ? W.LowiAdventureTiers.html() : ''; } catch (e) { return ''; } }
     function scaleHtml() { try { return W.LowiMistyScale && W.LowiMistyScale.html ? W.LowiMistyScale.html() : ''; } catch (e) { return ''; } }
-    function sheet() { return D.getElementById('mistyHub'); }
+    /* BH-017 (run 17): a card that is still sliding away (its overlay is .off) is not open; holding Misty again in that moment
+       used to repaint the closing card and open nothing */
+    function sheet() { return Array.from(D.querySelectorAll('#mistyHub')).find(e => !(e.closest && e.closest('.r2-ov.off'))) || null; }
     function open(sayOverride) {
         const R2 = W.LowiR2; if (!R2 || !R2.sheet) return false;
         if (sheet()) { repaint(sayOverride); return true; }
@@ -138,7 +140,8 @@
     function repaint(sayOverride) {
         const ex = sheet(); if (!ex) return;
         const t = D.createElement('div'); t.innerHTML = html(sayOverride);
-        ex.replaceWith(t.firstChild);
+        /* BH-016: keep focus on the same button (mood, Glow, ...) instead of dropping it to the page */
+        if (W.LowiR2 && W.LowiR2.keepFocus) W.LowiR2.keepFocus(ex, t.firstChild); else ex.replaceWith(t.firstChild);
     }
     function close() { const ex = sheet(); const ov = ex && ex.closest('.r2-ov'); try { if (ov && W.LowiR2 && W.LowiR2.close) W.LowiR2.close(ov); else if (ov) ov.remove(); } catch (e) { ov && ov.remove(); } }
     function goodnight() {
@@ -165,23 +168,24 @@
        name"). The pencil next to the name turns it into a small field: Save / Cancel, Enter saves, Escape cancels. Only the name
        changes (LowiBirthCompanion.rename): the look stays. Empty goes back to the generated name. ---------- */
     function autoName() { try { const B = W.LowiBirthCompanion; if (B && B.has && B.has()) { const c = B.get(); return (c && (c.autoName || c.name)) || 'Misty'; } } catch (e) { } return 'Misty'; }
-    function renaming() { return !!D.querySelector('#mistyHub .mh-rnf'); }
+    const q = sel => { const h = sheet(); return h ? h.querySelector(sel) : null; };   /* BH-017: only the open card, never one sliding away */
+    function renaming() { return !!q('.mh-rnf'); }
     function renameOpen() {
-        const box = D.querySelector('#mistyHub .mh-name'); if (!box || renaming()) return;
+        const box = q('.mh-name'); if (!box || renaming()) return;
         const cur = name(), auto = autoName();
         box.insertAdjacentHTML('afterend', '<form class="mh-rnf" novalidate><label class="mh-rnl"><span>' + esc(T('Name', 'Name', 'Nombre')) + '</span><input name="n" type="text" maxlength="24" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="done" value="' + esc(cur) + '"></label>' +
             '<div class="mh-rnb"><button type="submit" class="mh-rns">' + esc(T('Save', 'Speichern', 'Guardar')) + '</button><button type="button" class="mh-rnx" data-mhrnx>' + esc(T('Cancel', 'Abbrechen', 'Cancelar')) + '</button></div>' +
             (auto && auto !== cur ? '<small class="mh-rnh">' + esc(T('Leave it empty to go back to ' + auto + '.', 'Leer lassen, dann hei\u00dft es wieder ' + auto + '.', 'D\u00e9jalo en blanco para volver a ' + auto + '.')) + '</small>' : '') +
             '<p class="mh-rne" role="alert" hidden></p></form>');
-        box.hidden = true; const pen = D.querySelector('#mistyHub .mh-rn'); if (pen) pen.hidden = true;
-        const inp = D.querySelector('#mistyHub .mh-rnf input');
+        box.hidden = true; const pen = q('.mh-rn'); if (pen) pen.hidden = true;
+        const inp = q('.mh-rnf input');
         if (inp) { try { inp.focus({ preventScroll: true }); inp.select(); } catch (e) { } }
     }
     function renameClose(focusPen) {
-        const f = D.querySelector('#mistyHub .mh-rnf'), box = D.querySelector('#mistyHub .mh-name');
+        const f = q('.mh-rnf'), box = q('.mh-name');
         if (f) f.remove(); if (box) box.hidden = false;
-        const pen = D.querySelector('#mistyHub .mh-rn'); if (pen) pen.hidden = false;
-        if (focusPen) { const b = D.querySelector('#mistyHub .mh-rn'); if (b) try { b.focus({ preventScroll: true }); } catch (e) { } }
+        const pen = q('.mh-rn'); if (pen) pen.hidden = false;
+        if (focusPen) { const b = q('.mh-rn'); if (b) try { b.focus({ preventScroll: true }); } catch (e) { } }
     }
     function renameSave(f) {
         const inp = f.querySelector('input'), err = f.querySelector('.mh-rne');
@@ -193,7 +197,7 @@
             return;
         }
         repaint();
-        const b = D.querySelector('#mistyHub .mh-rn'); if (b) try { b.focus({ preventScroll: true }); } catch (e) { }
+        const b = q('.mh-rn'); if (b) try { b.focus({ preventScroll: true }); } catch (e) { }
         try { navigator.vibrate && navigator.vibrate(8); } catch (e) { }
         try { W.LowiR2.toast(r.reset ? T('Back to ' + r.name, 'Hei\u00dft wieder ' + r.name, 'Vuelve a llamarse ' + r.name) : T('Now called ' + r.name, 'Hei\u00dft jetzt ' + r.name, 'Ahora se llama ' + r.name)); } catch (e) { }
     }

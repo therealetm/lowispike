@@ -450,6 +450,9 @@ question).** REQUESTED 10:1x PM call, task "LOWiSPIKE: incoming-message companio
      history never replayed as new, no pile-up when several people write. Reduced motion, three languages, message
      shown as text only. Must stay light: Community is still crashing on his iPhone (items 20a, crash task 9472a9a4).
    - Notes in `/home/sprite/COORD-home-visit.md`, branch `home-visit`, worktree `/home/sprite/wt-home-visit`.
+   - **SHIPPED** (build in the Log line below): home-visit.js + home-visit.css, `LowiCommunity.directed()` / `face` / `colorOf` /
+     `openMessage` in community-chat.js, tests/home-visit.test.cjs. All choices in DECISIONS.md 2026-10-19 23:15. Tested on simulated
+     iPhone 13, iPad (both ways), Android Chrome and reduced motion with mocked messages; not yet with a real message on his phone.
 
 **24. Grocery shopping discovery: Catch a product nobody has added yet, be its Pathfinder.** REQUESTED 19 Oct
 evening (same walkthrough as 22). **Built by the food-paths task 4e961904** (it owns doCatch()/pushOne() and the

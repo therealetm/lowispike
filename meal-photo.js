@@ -49,7 +49,7 @@
         es: {
             left: 'Te quedan {n} de {max} análisis de foto hoy', none: 'Hoy no te quedan análisis de foto. Vuelven a medianoche. Escribir lo que comiste siempre funciona.',
             shareT: 'Compartir también en la Comunidad', shareS: 'Tu foto con el nombre, ingredientes, nutrición y estimación de azúcar en sangre. Sin escribir.',
-            remT: 'Recuérdame fotografiar mis comidas', remS: 'Un aviso a las {times}. Cámbialo en Recordatorios.',
+            remT: 'Recuérdame fotografiar mis comidas', remS: 'Un aviso a las {times}. Cámbialo en Avisos.',
             read: 'Leer esta comida con IA', readFree: 'Añadir los detalles de la comida (ya leída)', reading: 'Leyendo tu comida…', removeMeal: 'Quitar detalles de la comida',
             readFail: 'No pude leer esta foto. Aun así puedes publicarla.',
             ing: 'Ingredientes estimados', bsL: 'Respuesta probable de azúcar en sangre', low: 'Subida suave', mid: 'Subida moderada', high: 'Probable pico',

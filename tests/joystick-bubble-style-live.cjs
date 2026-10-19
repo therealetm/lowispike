@@ -7,7 +7,7 @@
      visible) and its DOM shell is as clear as the ring bubble's (no dark disc, no blur)
    - without it (flat fallback): the same glass shell as the ring bubble: background, rim, inner glow (computed styles equal)
    - the same glass glint (::before) as the ring bubbles
-   - no radar look: the energy arc (.mp-ring) and the dashed well (.mp-well) are not drawn; the knob is a small glass bubble
+   - no radar look: the energy arc (.mp-ring) and the dashed well (.mp-well) are not drawn; the knob is only the white icon (no inner glass bubble or rim, Oct 19)
    - the same shell while steering or on autopilot, and inside a world (html.wh-away.mf-in)
    - still a joystick: dragging it switches to steering (data-mode="drive")
    Views: Chromium 390x844, WebKit devices['iPhone 13'], iPad 1180x820 in WebKit and Chromium.
@@ -78,7 +78,10 @@ function judge(r, mode) {
     if (!eq(r.padGlint, r.refGlint)) P.push(`${mode} glint: joystick "${r.padGlint}" vs ring bubble "${r.refGlint}"`);
     if (r.ring) P.push(mode + ' radar energy arc (.mp-ring) still drawn');
     if (r.well) P.push(mode + ' dashed radar well (.mp-well) still drawn');
-    if (!/radial-gradient\(circle at \d+% \d+%, rgba\(255, 255, 255/.test(r.knobBg)) P.push(mode + ' knob is not a glass bubble (no white top highlight): ' + r.knobBg.slice(0, 90));
+    /* Oct 19 2026: "the same simple white-icon bubble, with no silver inner ring": no glass knob inside the bubble any more */
+    if (r.knobBg && r.knobBg !== 'none') P.push(mode + ' knob still has a fill (inner glass bubble): ' + r.knobBg.slice(0, 90));
+    if (!/^none|transparent|rgba\(\d+, \d+, \d+, 0\)/.test(r.knobBorder)) P.push(mode + ' knob still has a rim (silver inner ring): ' + r.knobBorder);
+    if (r.knobShadow && r.knobShadow !== 'none') P.push(mode + ' knob still has a ring / glow: ' + r.knobShadow);
     if (/dashed/.test(r.knobBorder)) P.push(mode + ' knob rim is dashed');
     return P;
 }

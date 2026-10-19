@@ -60,13 +60,17 @@ test('with the 3D world the joystick gets Misty\'s membrane and the ring bubbles
     assert.match(js, /joyBubble\(\);/, 'joyBubble() must run from ensure()');
 });
 
-test('no radar look: arc and dashed well hidden, glass knob, no deep icon shadow', () => {
+/* Oct 19 2026: the knob was "a small glass bubble" (radial highlight, white rim). Emmanuel's spec is "the same simple white-icon
+   bubble, with no silver inner ring", so the knob now has no fill and no rim at all, only the white icon (stricter than before;
+   tests/ui-joystick-vanish.test.cjs checks every state). */
+test('no radar look: arc and dashed well hidden, no inner glass knob or rim, no deep icon shadow', () => {
     const hide = R.find(r => /#whPad \.mp-ring/.test(r.sel) && /#whPad \.mp-well/.test(r.sel));
     assert.ok(hide && /display:\s*none/.test(hide.body), '.mp-ring / .mp-well must be hidden');
     const knob = R.find(r => r.sel === 'html.o8.wh-home #whHud #whPad .mp-knob');
     assert.ok(knob, 'knob rule missing');
-    assert.match(decl(knob.body, 'background-image'), /^radial-gradient\(circle at 34% 28%, rgba\(255,255,255,\.55\)/);
-    assert.ok(!/dashed/.test(knob.body));
+    assert.match(decl(knob.body, 'background'), /^none\b/, 'no fill behind the icon');
+    assert.match(decl(knob.body, 'border'), /^0\b/, 'no rim round the icon');
+    assert.ok(!/dashed|background-image/.test(knob.body));
     for (const r of R.filter(r => /#whPad/.test(r.sel))) {
         assert.deepStrictEqual(dropShadowsBelow(r.body, 1), [], 'deep drop shadow in ' + r.sel);
         for (const L of shadowLayers(decl(r.body, 'box-shadow'))) assert.ok(L.y <= 0 || L.inset, 'bottom shadow in ' + r.sel + ': ' + L.raw);

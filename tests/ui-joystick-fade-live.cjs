@@ -163,7 +163,7 @@ function look() {
                     const r = S.wRest.r, wx = r[0] + r[2] / 2, wy = r[1] + r[3] / 2, p0 = S.wRest.mf;
                     await page.mouse.move(wx, wy); await page.mouse.down();
                     for (let i = 1; i <= 8; i++) { await page.mouse.move(wx + 3 * i, wy - 3 * i); await sleep(60); }
-                    await sleep(1200); await dim();
+                    await sleep(400); await dim(); /* read before misty-pad.js VANISH_MS (Oct 19: then it is gone, tests/ui-joystick-vanish-live.cjs) */
                     S.wDrag = await L();
                     await page.screenshot({ path: `${OUT}/${TAG}-${v}-world-steer.png` });
                     await page.mouse.up(); await sleep(300);

@@ -57,13 +57,18 @@ html.mf-in.wh-away:not(.lw-clean-auto) .wh-hud .wh-pad, html.mf-in.wh-away.wh-r2
 
 /* Oct 18 (Emmanuel, Home handoff "Joystick": fades while you steer but keeps working, comes back afterwards). misty-pad.js puts
    .mp-steer on the controller only while a finger actively steers (a drag, or the forward / back hold) and takes it off when
-   steering ends. See-through, never invisible: you still see where your thumb is, and it keeps taking every touch. The soft
+   steering ends. See-through at first, so you still see where your thumb is (Oct 19: gone after VANISH_MS, below), and it keeps taking every touch. The soft
    cross-fade is the base transition (opacity .25s). Look only: same bubble, icon, size and place. On Home it is not !important,
    so every hide rule above (Today, sheets, places, the autopilot clean view) still wins; inside a world it outweighs the
    keep-steering rule, scoped the same way (never on autopilot). The 3D membrane round the joystick follows this opacity
    (living-bubbles.js reads the computed opacity). tests/ui-joystick-fade.test.cjs */
 .wh-hud .wh-pad.mp-steer { opacity: var(--mp-steer-o, .4); }
 html.mf-in.wh-away:not(.lw-clean-auto) .wh-hud .wh-pad.mp-steer, html.mf-in.wh-away.wh-r2-on:not(.lw-clean-auto) .wh-hud .wh-pad.mp-steer { opacity: var(--mp-steer-o, .4) !important; }
+/* Oct 19 2026 (Emmanuel: "And also with it disappearing"): after misty-pad.js VANISH_MS of steering without a break the
+   joystick is gone completely (.mp-gone drops the fade level to 0, so the Home and the in-world steering rules above both
+   reach 0, and a lighter accessibility fade too). Still under the finger, still steering; lifting brings it back (the .25s
+   cross-fade). Opacity only: no pointer-events, size or place change. tests/ui-joystick-vanish.test.cjs */
+.wh-hud .wh-pad.mp-steer.mp-gone { --mp-steer-o: 0; }
 /* asked for more contrast or less see-through glass: a lighter fade */
 @media (prefers-contrast: more) { .wh-hud .wh-pad { --mp-steer-o: .7; } }
 @media (prefers-reduced-transparency: reduce) { .wh-hud .wh-pad { --mp-steer-o: .7; } }

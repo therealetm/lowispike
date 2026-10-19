@@ -16,7 +16,8 @@
 // Typed meals never come here and stay unlimited. All users still share one Google project quota: 3 a day per person
 // lowers the load, it does not guarantee Google never says busy. Max 1.5 MB image. Images and keys are never
 // logged or stored. Deploy: Supabase dashboard > Edge Functions > Deploy a new function > name "food-photo" > paste this file.
-// Optional secret GEMINI_MODEL picks the model; default tries gemini-3.5-flash-lite, then 3.1, then 2.5 Flash-Lite.
+// Optional secret GEMINI_MODEL picks the model; default tries gemini-3.5-flash-lite, then 3.1, then 2.5 Flash-Lite
+// (2.5 answers 404 since Oct 2026 and is skipped in a fraction of a second).
 
 const ORIGINS = [/^https:\/\/therealetm\.github\.io$/, /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/];
 const MAX_B64 = 1_500_000;
@@ -129,35 +130,101 @@ const SCHEMA = {
   required: ["is_food", "dishes", "confidence", "note"],
 };
 
-async function gemini(key: string, image: string, mime: string, lang: string) {
-  let last = 0;
-  for (const model of MODELS) {
-    const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent", {
+// Oct 19 (Emmanuel, iPad: "It's not working anymore. We already hit a limit?"): no limit was hit. Gemini had become slow
+// (25-50 s for a new photo, 2-4 s earlier the same day) and the app gave up at 30 s with "couldn't read this photo",
+// while this function still finished and counted the read. Now: Gemini 3.x is asked for minimal thinking (2.5: none),
+// each model gets its own deadline, a slow or broken model hands over to the next one, the whole read stops at BUDGET_MS
+// (well under the app's wait) and an unfinished read is handed back. Errors say what really happened: ai_slow (504),
+// ai_key (503, the GEMINI_API_KEY secret is missing, wrong or deleted), ai_quota (429, Google's free daily quota for the
+// whole project is used up), busy (429, Google rate limit), ai_failed (502). Logs carry status and ms, never images or keys.
+const BUDGET_MS = 26_000, MODEL_MS = 20_000, HEDGE_MS = 8_000;
+function think(model: string): Record<string, unknown> {
+  if (/^gemini-3/.test(model)) return { thinkingConfig: { thinkingLevel: "minimal" } };
+  if (/^gemini-2\.5/.test(model)) return { thinkingConfig: { thinkingBudget: 0 } };
+  return {};
+}
+type Out = { status: number; body: Record<string, unknown> };
+async function ask(key: string, model: string, image: string, mime: string, lang: string, ms: number, thinking: boolean) {
+  const gen: Record<string, unknown> = { temperature: 0.2, maxOutputTokens: 2048, responseMimeType: "application/json", responseSchema: SCHEMA };
+  if (thinking) Object.assign(gen, think(model));
+  // A plain timer plus abort, raced: AbortSignal.timeout() fired 10+ s late in the edge runtime (seen Oct 19).
+  const c = new AbortController();
+  let id: ReturnType<typeof setTimeout> | undefined;
+  const late = new Promise<never>((_r, reject) => { id = setTimeout(() => { c.abort(); reject(new Error("timeout")); }, ms); });
+  try {
+    return await Promise.race([fetch("https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent", {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ inline_data: { mime_type: mime, data: image } }, { text: prompt(lang) }] }],
-        generationConfig: { temperature: 0.2, maxOutputTokens: 2048, responseMimeType: "application/json", responseSchema: SCHEMA },
-      }),
-    });
-    last = r.status;
-    if (r.status === 404 || r.status === 400 && /not found|not supported|unknown model/i.test(await r.clone().text())) {
-      console.error("food-photo: model unavailable", model, r.status);
-      continue;
+      signal: c.signal,
+      body: JSON.stringify({ contents: [{ role: "user", parts: [{ inline_data: { mime_type: mime, data: image } }, { text: prompt(lang) }] }], generationConfig: gen }),
+    }), late]);
+  } finally { clearTimeout(id); }
+}
+// One model, one try. Returns the final answer (200 or a key error, which no other model can fix) or a "move on" result.
+async function attempt(key: string, model: string, image: string, mime: string, lang: string, ms: number): Promise<Out & { next?: boolean }> {
+  const t1 = Date.now();
+  let r: Response, text = "";
+  try {
+    r = await ask(key, model, image, mime, lang, ms, true);
+    if (r.status === 400) {
+      text = await r.text();
+      if (/thinking/i.test(text)) { r = await ask(key, model, image, mime, lang, Math.max(2000, ms - (Date.now() - t1)), false); text = ""; }
     }
-    if (r.status === 429) return { status: 429, body: { error: "busy" } };
-    if (!r.ok) { console.error("food-photo: gemini status", r.status); return { status: 502, body: { error: "ai_failed" } }; }
-    const j = await r.json();
-    const text = j?.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text || "").join("") || "";
-    try {
-      const data = JSON.parse(text);
-      return { status: 200, body: { ...data, model } };
-    } catch (_e) {
+  } catch (_e) {
+    console.error("food-photo: gemini slow", model, Date.now() - t1, "ms");
+    return { status: 504, body: { error: "ai_slow" }, next: true };
+  }
+  if (!text && !r.ok) text = await r.text().catch(() => "");
+  console.log("food-photo: gemini", model, r.status, Date.now() - t1, "ms");
+  if (r.ok) {
+    const j = await r.json().catch(() => null);
+    const out = j?.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text || "").join("") || "";
+    try { return { status: 200, body: { ...JSON.parse(out), model } }; } catch (_e) {
       console.error("food-photo: unreadable answer", model);
-      return { status: 502, body: { error: "ai_failed" } };
+      return { status: 502, body: { error: "ai_failed" }, next: true };
     }
   }
-  return { status: 502, body: { error: "no_model", status: last } };
+  if (r.status === 404 || r.status === 400 && /not found|not supported|unknown model/i.test(text)) {
+    console.error("food-photo: model unavailable", model, r.status);
+    return { status: 502, body: { error: "no_model" }, next: true };
+  }
+  if (r.status === 401 || r.status === 403 || r.status === 400 && /API_KEY|api key|PERMISSION_DENIED/i.test(text)) {
+    console.error("food-photo: gemini key rejected", r.status);
+    return { status: 503, body: { error: "ai_key" } };
+  }
+  if (r.status === 429) {
+    const daily = /per ?day|PerDay|daily/i.test(text);
+    console.error("food-photo: gemini 429", model, daily ? "daily quota" : "rate");
+    return { status: 429, body: { error: daily ? "ai_quota" : "busy" }, next: true }; // another model has its own quota
+  }
+  console.error("food-photo: gemini status", model, r.status);
+  return { status: 502, body: { error: "ai_failed" }, next: r.status >= 500 };
+}
+// Models in order. If the current one has not answered after HEDGE_MS, the next one is asked as well and the first good
+// answer wins (Google's slow spells hit one model at a time). A model that fails fast hands over at once.
+async function gemini(key: string, image: string, mime: string, lang: string): Promise<Out> {
+  const t0 = Date.now();
+  const left = () => BUDGET_MS - (Date.now() - t0);
+  let i = 0, running = 0, last: Out = { status: 502, body: { error: "no_model" } };
+  const rank = (o: Out) => ({ ai_quota: 5, busy: 4, ai_slow: 3, ai_failed: 2, no_model: 1 } as Record<string, number>)[String(o.body.error)] || 0;
+  return await new Promise<Out>((resolve) => {
+    let done = false, hedge: ReturnType<typeof setTimeout> | undefined;
+    const finish = (o: Out) => { if (done) return; done = true; clearTimeout(hedge); resolve(o); };
+    const start = () => {
+      if (done || i >= MODELS.length || left() < 2500) { if (!running) finish(last); return; }
+      const model = MODELS[i++];
+      running++;
+      clearTimeout(hedge);
+      hedge = setTimeout(start, HEDGE_MS);
+      attempt(key, model, image, mime, lang, Math.min(MODEL_MS, left())).then((o) => {
+        running--;
+        if (!o.next) return finish(o);
+        if (rank(o) >= rank(last)) last = { status: o.status, body: o.body };
+        start();
+      }, () => { running--; start(); });
+    };
+    start();
+  });
 }
 
 Deno.serve(async (req) => {

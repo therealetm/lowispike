@@ -19644,8 +19644,11 @@ window.LowiVitalsBridge = {
   /* meal points: 15 XP for each of the first MEAL_CAP different meals a day; the same product (barcode) or the same meal title twice a day is blocked (no second log, no XP) */
   MEAL_CAP:8,
   mealKey:t=>String(t||"").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g,"").split(/\s+[\u00b7|-]\s+/)[0].replace(/[^a-z0-9\u00df]+/g,""),
-  mealDup(data){data=data||{};const day=today(),code=String(data.code||"").trim(),k=this.mealKey(data.t);
-    return S.logs.find(l=>l.day===day&&((code&&String(l.code||"")===code)||(k&&this.mealKey(l.t)===k)))||null;},
+  mealDup(data){data=data||{};const day=today(),code=String(data.code||"").trim(),k=this.mealKey(data.t),sl=data.slot||"";
+    /* meal slots (Oct 19): the same food in another slot today (Paprika as a snack, then at dinner) is a new meal, not a duplicate; a log without a slot still blocks */
+    return S.logs.find(l=>l.day===day&&(!sl||!l.slot||l.slot===sl)&&((code&&String(l.code||"")===code)||(k&&this.mealKey(l.t)===k)))||null;},
+  /* the Log meal slot: breakfast | lunch | dinner | snack, from the log itself or the slot picked in Log meal in the last 10 minutes (Scan and Snap log through here) */
+  mealSlot(data){const ok=s=>/^(breakfast|lunch|dinner|snack)$/.test(String(s||""))?String(s):"",p=window.LowiMealSlot;return ok(data&&data.slot)||(p&&Date.now()-(+p.at||0)<6e5?ok(p.slot):"");},
   /* Oct 16 (E-man): a meal the app already rates as a spike (same rule as LowiWorldHealth.verdict <= .15) is logged and kept,
      but earns no XP and completes no quest. Never minus points. */
   spiky(l){const r=String(l&&l.r!=null?l.r:"").toLowerCase(),v=String(l&&l.lvl||"").toLowerCase();if(r==="ja"||v==="low"||r==="low"||r==="yes")return false;return r==="nein"||v==="high"||r==="high"||r==="no";},
@@ -19655,17 +19658,18 @@ window.LowiVitalsBridge = {
     return why==="dup"?["Already logged today · no XP","Heute schon eingetragen · keine XP","Ya registrado hoy · sin XP"][i]:why==="spike"?["Logged · spiky meals earn no XP, and never cost any","Eingetragen · Spike-Mahlzeiten geben keine XP, ziehen aber auch nichts ab","Registrado · las comidas con pico no dan XP, pero tampoco restan"][i]:why==="cap"?["Logged · daily XP limit ("+this.MEAL_CAP+" meals) reached","Eingetragen · Tageslimit ("+this.MEAL_CAP+" Mahlzeiten) erreicht, keine XP","Registrado · límite diario ("+this.MEAL_CAP+" comidas), sin XP"][i]:"";},
   gpt:"https://chatgpt.com/g/g-69481a874bf08191b8118f8d88c9c90e-lowispike",
   logMeal(data){
+    {const sl=this.mealSlot(data);data=Object.assign({},data);if(sl)data.slot=sl;else delete data.slot;}
     const id="meal:"+data.id, found=S.logs.find(l=>l.eventId===id);if(found)return {log:found,xp:0,why:"dup",reason:this.mealReason("dup"),dup:true};
     const twin=this.mealDup(data);if(twin)return {log:null,xp:0,why:"dup",reason:this.mealReason("dup"),dup:true,twin};
     let lvl=data.lvl||"",rr=data.r!=null&&data.r!==""?data.r:"unknown";
     /* a typed/photo meal gets the app's own verdict when analyseMeal knows the foods; unknown foods stay unknown (no guess) */
     if(!data.lvl&&(data.r==null||data.r==="")&&data.via!=="barcode"&&data.t&&typeof analyseMeal==="function")try{const a=analyseMeal(String(data.t),{trig:S.trig||[]});if(a&&a.ok){lvl=a.lvl||"";rr=a.r||rr;}}catch(e){}
     const n=S.logs.filter(l=>l.day===today()).length,log={id:data.id,eventId:id,ts:Date.now(),day:today(),t:data.t,macros:data.macros,photo:data.photo||"",via:data.via||"spirit",r:rr,e:"",lvl};if(data.est)log.est=data.est;
-    if(data.code)log.code=String(data.code);
+    if(data.code)log.code=String(data.code);if(data.slot)log.slot=data.slot;
     S.logs.push(log);if(!save()){S.logs.pop();return false;}
     const spike=this.spiky(log),xp=!spike&&n<this.MEAL_CAP?award(15,"Meal logged",null,"meal:spirit",id):0,why=xp?"":spike?"spike":"cap";
     if(!xp)window.dispatchEvent(new CustomEvent("lowi:care",{detail:{kind:"water",reaction:"eat",id}}));
-    if(!spike)questDone("eat",true);window.dispatchEvent(new CustomEvent("lowi:meal-logged",{detail:{id,title:log.t,macros:log.macros,xp,via:log.via,photo:!!log.photo,spike}}));return{log,xp,why,reason:this.mealReason(why),spike};
+    if(!spike)questDone("eat",true);window.dispatchEvent(new CustomEvent("lowi:meal-logged",{detail:{id,title:log.t,macros:log.macros,xp,via:log.via,photo:!!log.photo,spike,slot:log.slot||""}}));return{log,xp,why,reason:this.mealReason(why),spike};
   },
   editMeal(data){const log=S.logs.find(l=>l.id===data.id||l.eventId===data.id||String(l.ts)===data.id);if(!log)return false;const previous={t:log.t,macros:log.macros,est:log.est};log.t=data.t;log.macros=data.macros;if(data.est)log.est=data.est;else delete log.est;if(!save()){Object.assign(log,previous);return false;}return{log,xp:0};},
   bonus(id,amt,label){return award(amt,label,null,"macro-goal",id);},

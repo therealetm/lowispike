@@ -57,6 +57,51 @@
         return r ? r.label : S.range;
     }
 
+    /* ---------------- Snacks to buy (Oct 19, own key; logged Snacks from Log meal are offered under "Again?") ---------------- */
+    const SKEY = 'lowi.snackBuy.v1';
+    let snacks = [];
+    try { snacks = JSON.parse(localStorage.getItem(SKEY) || '[]') || []; } catch (e) { snacks = []; }
+    if (!Array.isArray(snacks)) snacks = [];
+    function saveSnacks(next) { snacks = next; try { localStorage.setItem(SKEY, JSON.stringify(snacks)); } catch (e) {} }
+    function loggedSnacks() {
+        try { const st = W.LowiVitalsBridge && W.LowiVitalsBridge.state && W.LowiVitalsBridge.state(); return ((st && st.logs) || []).filter(l => l && l.slot === 'snack').slice().reverse().map(l => l.t || l.n); } catch (e) { return []; }
+    }
+    function snackHTML() {
+        const v = C.snackView(snacks, loggedSnacks());
+        const rows = v.buy.map(i => '<li class="stp-snack"><button type="button" class="stp-snack-tick" data-stp-snack-got="' + esc(i.id) + '" aria-label="' + esc(T('Bought ', 'Gekauft: ', 'Comprado: ') + i.n) + '"><span aria-hidden="true"></span></button><b>' + esc(i.n) + '</b>' +
+            '<button type="button" class="stp-snack-x" data-stp-snack-drop="' + esc(i.id) + '" aria-label="' + esc(T('Remove ', 'Entfernen: ', 'Quitar: ') + i.n) + '">' + ic.x + '</button></li>').join('');
+        const again = v.again.length ? '<div class="stp-snack-again"><small>' + esc(T('Again?', 'Wieder?', '¿Otra vez?')) + '</small>' + v.again.map(n => '<button type="button" class="stp-chip" data-stp-snack-again="' + esc(n) + '">+ ' + esc(n) + '</button>').join('') + '</div>' : '';
+        return '<section class="stp-snacks" aria-label="' + esc(T('Snacks to buy', 'Snacks zum Einkaufen', 'Snacks para comprar')) + '"><h4 class="stp-h4">\u{1F95C} ' + esc(T('Snacks to buy', 'Snacks zum Einkaufen', 'Snacks para comprar')) + (v.buy.length ? ' <i>' + v.buy.length + '</i>' : '') + '</h4>' +
+            (rows ? '<ul class="stp-snack-list">' + rows + '</ul>' : '<p class="stp-snack-none">' + esc(T('Only snacks you still need to buy. Tick one when it’s in your bag.', 'Nur Snacks, die du noch kaufen willst. Hak sie ab, wenn sie in der Tasche sind.', 'Solo los snacks que aún vas a comprar. Márcalos cuando estén en tu bolsa.')) + '</p>') +
+            '<form class="stp-snack-add" data-stp-snack-form="1"><input type="text" name="snack" maxlength="60" autocomplete="off" enterkeyhint="done" placeholder="' + esc(T('Add a snack, like bell pepper', 'Snack hinzufügen, z. B. Paprika', 'Añade un snack, p. ej. pimiento')) + '" aria-label="' + esc(T('Add a snack to buy', 'Snack zum Einkaufen hinzufügen', 'Añadir snack para comprar')) + '"><button type="submit" class="stp-pill">' + esc(T('Add', 'Hinzufügen', 'Añadir')) + '</button></form>' + again + '</section>';
+    }
+    function repaintSnacks() {
+        const el = ov && ov.querySelector('.stp-snacks');
+        if (!el) return;
+        const w = D.createElement('div'); w.innerHTML = snackHTML();
+        el.replaceWith(w.firstChild);
+    }
+    function onSubmit(e) {
+        const f = e.target;
+        if (!f || !f.getAttribute || !f.getAttribute('data-stp-snack-form')) return;
+        e.preventDefault();
+        const inp = f.querySelector('input[name="snack"]'), v = inp ? inp.value : '';
+        if (!String(v).trim()) return;
+        saveSnacks(C.snackAdd(snacks, v));
+        repaintSnacks();
+        const ni = ov && ov.querySelector('.stp-snack-add input'); if (ni) ni.focus();
+    }
+    function snackClick(t) {
+        const b = t.closest('[data-stp-snack-got],[data-stp-snack-drop],[data-stp-snack-again],[data-stp-snack-qv]');
+        if (!b) return false;
+        if (b.hasAttribute('data-stp-snack-got')) saveSnacks(C.snackGot(snacks, b.getAttribute('data-stp-snack-got')));
+        else if (b.hasAttribute('data-stp-snack-drop')) saveSnacks(C.snackDrop(snacks, b.getAttribute('data-stp-snack-drop')));
+        else if (b.hasAttribute('data-stp-snack-again')) saveSnacks(C.snackAdd(snacks, b.getAttribute('data-stp-snack-again')));
+        else { saveSnacks(C.snackAdd(snacks, b.getAttribute('data-stp-snack-qv'))); b.disabled = true; b.textContent = T('✓ On your snack list', '✓ Auf deiner Snackliste', '✓ En tu lista de snacks'); }
+        repaintSnacks();
+        return true;
+    }
+
     function shell(inner) {
         return '<div class="stp-card" role="dialog" aria-modal="true" aria-label="' + esc(T('What can I buy here?', 'Was kann ich hier kaufen?', '¿Qué puedo comprar aquí?')) + '">' + inner + '</div>';
     }
@@ -75,7 +120,7 @@
         const chains = RANGES.map(r => '<button type="button" class="stp-chip' + (S.range === r.id && !S.store ? ' on' : '') + '" data-stp-range="' + r.id + '">' + esc(r.label) + '</button>').join('');
         return shell('<div class="stp-head"><h3>' + esc(T('Which shop?', 'Welcher Laden?', '¿Qué tienda?')) + '</h3><p>' +
             esc(T('Pick a shop near you, or a chain to look before you go.', 'Wähl einen Laden in deiner Nähe oder eine Kette, um vorher zu schauen.', 'Elige una tienda cercana o una cadena para mirar antes de ir.')) + '</p></div>' +
-            '<div class="stp-scroll"><button type="button" class="stp-go" data-stp="locate">' + ic.pin + '<span>' + esc(T('Use my location', 'Meinen Standort nutzen', 'Usar mi ubicación')) + '</span></button>' +
+            '<div class="stp-scroll">' + snackHTML() + '<button type="button" class="stp-go" data-stp="locate">' + ic.pin + '<span>' + esc(T('Use my location', 'Meinen Standort nutzen', 'Usar mi ubicación')) + '</span></button>' +
             (msg ? '<p class="stp-msg">' + esc(msg) + '</p>' : '') + list +
             '<h4 class="stp-h4">' + esc(T('Or pick a chain', 'Oder eine Kette wählen', 'O elige una cadena')) + '</h4><div class="stp-chips stp-wrap">' + chains + '</div>' +
             '<p class="stp-fine">' + esc(T('There is no Føtex in Germany. The nearest to Flensburg are in Aabenraa and Sønderborg. Føtex, Bilka and Danish Netto share one Salling Group range here.',
@@ -176,6 +221,7 @@
             '<p class="stp-fine">' + esc(T('General food guidance from the label, not medical advice. How your own blood sugar reacts can be different; check with your doctor for your own limits.',
                 'Allgemeine Ernährungshilfe vom Etikett, keine medizinische Beratung. Dein eigener Blutzucker kann anders reagieren; deine Grenzen klärst du mit deiner Ärztin oder deinem Arzt.',
                 'Orientación general a partir de la etiqueta, no consejo médico. Tu azúcar en sangre puede reaccionar distinto; consulta tus límites con tu médico.')) + '</p></div>' +
+            (/^(snacks|sweets|fruit)$/.test(r.group || '') ? '<button type="button" class="stp-go stp-snack-qv" data-stp-snack-qv="' + esc(p.n) + '">' + esc(T('+ Snacks to buy', '+ Snacks zum Einkaufen', '+ Snacks para comprar')) + '</button>' : '') +
             '<div class="stp-foot"><button type="button" class="stp-pill" data-stp="qv-close">' + esc(T('‹ Back to list', '‹ Zurück zur Liste', '‹ Volver a la lista')) + '</button>' +
             '<button type="button" class="stp-orb stp-close" data-stp="qv-close" aria-label="' + esc(T('Close product', 'Produkt schließen', 'Cerrar producto')) + '">' + ic.x + '</button></div></div>';
     }
@@ -271,7 +317,7 @@
             '<button type="button" class="stp-shop" data-stp="pick">' + ic.cart + '<span>' + esc(storeLine() || (r && r.label) || '') + '</span><i>' + esc(T('Change', 'Ändern', 'Cambiar')) + '</i></button>' +
             '<div class="stp-tools"><input type="search" class="stp-q" enterkeyhint="search" autocomplete="off" placeholder="' + esc(T('Search this shop', 'In diesem Laden suchen', 'Buscar en esta tienda')) + '" value="' + esc(q) + '">' +
             '<label class="stp-tog"><input type="checkbox" data-stp="fails"' + (showFail ? ' checked' : '') + '><span>' + esc(T('Show left out', 'Aussortierte zeigen', 'Ver excluidos')) + '</span></label></div></div>' +
-            '<div class="stp-scroll">' + inner + '</div>' +
+            '<div class="stp-scroll">' + snackHTML() + inner + '</div>' +
             '<p class="stp-note">' + esc(T('General food guidance, not medical advice.', 'Allgemeine Ernährungshilfe, keine medizinische Beratung.', 'Orientación general sobre alimentos, no consejo médico.')) + '</p>' +
             footBtns(''));
     }
@@ -310,7 +356,8 @@
     function onClick(e) {
         const t = e.target.closest ? e.target : null; if (!t) return;
         if (qv && (e.target === qv || (t.closest('[data-stp="qv-close"]') && qv.contains(t)))) { closeQuick(); return; }
-        if (qv && qv.contains(t)) return;
+        if (qv && qv.contains(t)) { snackClick(t); return; }
+        if (snackClick(t)) return;
         if (e.target === ov) { close(); return; }
         const row = t.closest('[data-stp-item]');
         if (row) { openQuick(+row.getAttribute('data-stp-item')); return; }
@@ -355,6 +402,7 @@
         ov.addEventListener('click', onClick);
         ov.addEventListener('input', onInput);
         ov.addEventListener('change', onChange);
+        ov.addEventListener('submit', onSubmit);
         D.addEventListener('keydown', onKey);
         D.body.appendChild(ov);
         /* the panel covers the screen: body-world-3d.js draws no world frames under it (html.stp-open), like Mirror mode */
@@ -402,5 +450,5 @@
     }
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 
-    W.LowiStorePicks = { open: openPanel, close, sosHTML, state: () => JSON.parse(JSON.stringify(S)), isOpen: () => !!ov };
+    W.LowiStorePicks = { open: openPanel, close, sosHTML, state: () => JSON.parse(JSON.stringify(S)), isOpen: () => !!ov, snacks: () => JSON.parse(JSON.stringify(snacks)) };
 })(typeof window !== 'undefined' ? window : null, typeof document !== 'undefined' ? document : null);

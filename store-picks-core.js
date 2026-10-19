@@ -327,5 +327,33 @@
         return { show, left, next: Math.min(PAGE.more, left), ask: show + Math.min(PAGE.more, left) };
     }
 
-    return { LIMIT, GROUPS, G, groupOf, typical, rate, rows, build, km, nearest, town, findStore, photo, link, explain, PAGE, page };
+    /* Oct 19, 2026 (E-man: in Einkaufen a Snacks spot for "Snacks, die ich einkaufen werde", "nicht die schon bereits drin waren").
+       A small list of snacks TO BUY. Ticking one = bought: it leaves the list (it is at home now) and waits under "Again?" for one tap
+       next time ("du isst jedes Mal die gleiche Paprika"). Pure: every call returns a new list, the page stores it. */
+    const SNACK_MAX = 40;
+    const snackName = n => String(n == null ? '' : n).replace(/\s+/g, ' ').trim().slice(0, 60);
+    function snackAdd(list, name, now) {
+        list = Array.isArray(list) ? list : [];
+        const n = snackName(name), k = n.toLowerCase();
+        if (!n) return list;
+        now = +now || Date.now();
+        const rest = list.filter(i => !(i.got && i.n.toLowerCase() === k));
+        if (rest.some(i => !i.got && i.n.toLowerCase() === k)) return list;
+        return rest.concat([{ id: 'sn' + now.toString(36) + rest.length, n, at: now, got: 0 }]).slice(-SNACK_MAX);
+    }
+    function snackGot(list, id, now) {
+        return (Array.isArray(list) ? list : []).map(i => i.id === id ? Object.assign({}, i, { got: i.got ? 0 : (+now || Date.now()) }) : i);
+    }
+    function snackDrop(list, id) { return (Array.isArray(list) ? list : []).filter(i => i.id !== id); }
+    /* buy = still to buy (oldest first, the order you added them); again = bought before or snacked lately, newest first, never one already on the list */
+    function snackView(list, logged, max) {
+        list = Array.isArray(list) ? list : []; max = max || 6;
+        const buy = list.filter(i => !i.got), on = new Set(buy.map(i => i.n.toLowerCase())), seen = new Set(), again = [];
+        const push = n => { n = snackName(n); const k = n.toLowerCase(); if (!n || on.has(k) || seen.has(k) || again.length >= max) return; seen.add(k); again.push(n); };
+        list.filter(i => i.got).sort((a, b) => b.got - a.got).forEach(i => push(i.n));
+        (logged || []).forEach(push);
+        return { buy, again };
+    }
+
+    return { LIMIT, GROUPS, G, groupOf, typical, rate, rows, build, km, nearest, town, findStore, photo, link, explain, PAGE, page, SNACK_MAX, snackAdd, snackGot, snackDrop, snackView };
 });

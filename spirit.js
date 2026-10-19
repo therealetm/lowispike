@@ -138,6 +138,20 @@
         leafHelp: ['Drag to throw. Hold to squeeze. Use two fingers to stretch.', 'Ziehen zum Werfen. Halten zum Drücken. Mit zwei Fingern dehnen.', 'Arrastra para lanzar. Mantén para apretar. Usa dos dedos para estirar.'],
         todayLog: ['Today', 'Heute', 'Hoy'],
         recent: ['Eaten recently · one tap', 'Zuletzt gegessen · ein Tipp', 'Comido hace poco · un toque'],
+        /* Oct 19 (E-man: "Ich habe Pop-up. Zack, Mahlzeit-Eintrag." Breakfast, lunch, dinner, and snacks, then write, scan or snap) */
+        slotQ: ['Which meal is it?', 'Welche Mahlzeit?', '¿Qué comida es?'],
+        breakfast: ['Breakfast', 'Frühstück', 'Desayuno'],
+        lunch: ['Lunch', 'Mittagessen', 'Almuerzo'],
+        dinner: ['Dinner', 'Abendessen', 'Cena'],
+        snack: ['Snacks', 'Snacks', 'Snacks'],
+        slotNow: ['now', 'jetzt', 'ahora'],
+        slotDone: ['logged today', 'heute eingetragen', 'registrado hoy'],
+        slotChange: ['Change', 'Ändern', 'Cambiar'],
+        slotHow: ['How do you want to add it?', 'Wie willst du es eintragen?', '¿Cómo quieres añadirlo?'],
+        slotWrite: ['Write', 'Schreiben', 'Escribir'],
+        slotScan: ['Scan', 'Scannen', 'Escanear'],
+        slotSnap: ['Snap', 'Foto', 'Foto'],
+        slotRecent: ['Your usual · one tap', 'Wie immer · ein Tipp', 'Lo de siempre · un toque'],
         recentEmpty: ['Meals you log show up here for one tap next time.', 'Deine Mahlzeiten erscheinen hier, beim nächsten Mal mit einem Tipp.', 'Tus comidas aparecen aquí para registrarlas con un toque.'],
         mealAsk: ['What did you eat?', 'Was hast du gegessen?', '¿Qué comiste?'],
         mealPh: ['e.g. chicken stew, fish and chips', 'z. B. Hähnchen-Eintopf, Fisch mit Pommes', 'p. ej. guiso de pollo, pescado con papas'],
@@ -829,6 +843,7 @@
 
     // one-tap meal logging: recent meals first, photo/scan next, manual fields tucked behind "Manuell"
     function recentMeals() {
+        if (K.slotRecent) return K.slotRecent(V.state().logs || [], mealSlot, 6);
         const seen = new Set(),
             out = [];
         for (const l of (V.state().logs || []).slice().reverse()) {
@@ -840,6 +855,29 @@
             if (out.length >= 6) break;
         }
         return out;
+    }
+    /* the meal slot picked in Log meal: kept for 10 minutes so Scan and Snap (their own flows) log into it too (index.html logMeal reads window.LowiMealSlot) */
+    let mealSlot = '';
+    const SLOT_IC = { breakfast: 'sun', lunch: 'plate', dinner: 'moon', snack: 'star' };
+    function setSlot(s) {
+        mealSlot = (K.slotOk && K.slotOk(s)) || '';
+        window.LowiMealSlot = mealSlot ? { slot: mealSlot, at: Date.now() } : null;
+    }
+    function pendingSlot() {
+        const p = window.LowiMealSlot;
+        return p && Date.now() - p.at < 6e5 && K.slotOk && K.slotOk(p.slot) ? p.slot : '';
+    }
+    function slotPicker() {
+        const now = K.slotFor ? K.slotFor() : 'lunch',
+            day = K.day(),
+            logs = (V.state().logs || []).filter(l => l.day === day);
+        const tiles = (K.SLOTS || ['breakfast', 'lunch', 'dinner', 'snack']).map((s, i) => {
+            const n = logs.filter(l => l.slot === s).length;
+            return '<button type="button" class="sp-slot sp-slot-' + s + (s === now ? ' now' : '') + (n ? ' has' : '') + '" data-sp="slot" data-slot="' + s + '" style="--i:' + i + '">' +
+                '<span class="sp-slot-ic">' + icon(SLOT_IC[s]) + '</span><b>' + esc(tr(s)) + '</b>' +
+                '<small>' + esc(n ? n + ' ' + tr('slotDone') : s === now ? tr('slotNow') : '\u00a0') + '</small></button>';
+        }).join('');
+        showSheet('<h2>' + esc(tr('meal')) + '</h2><p class="sp-slot-q">' + esc(tr('slotQ')) + '</p><div class="sp-slots" role="group" aria-label="' + esc(tr('slotQ')) + '">' + tiles + '</div>');
     }
 
     /* a log that earns 0 XP always says why (daily limit); a blocked duplicate never gets here */
@@ -860,6 +898,7 @@
             photo: '',
             via: 'quick'
         };
+        if (mealSlot) seed.slot = mealSlot;
         if (qw.est || src.est) seed.est = qw.est || src.est;
         const result = V.logMeal(seed);
         if (!result) {
@@ -880,11 +919,16 @@
         refresh();
     }
 
-    function mealForm(seed, editing) {
+    function mealForm(seed, editing, slot) {
         seed = seed || {};
         lastMealId = editing || uid();
         const values = K.macros(seed);
         const quick = !editing && !(seed.t || seed.n || seed.name);
+        if (quick && K.slotOk && !K.slotOk(slot)) {
+            slotPicker();
+            return;
+        }
+        if (quick && slot) setSlot(slot);
         if (quick) {
             const recent = recentMeals(),
                 kc = l => {
@@ -895,7 +939,9 @@
             const fields = '<label>' + esc(tr('mealAsk')) + '<input name="title" required maxlength="100" autocomplete="off" placeholder="' + esc(tr('mealPh')) + '"></label><p class="sp-meal-guess" aria-live="polite"></p><button class="r2-btn pri" type="submit">' + esc(tr('save')) + '</button><details class="sp-own"><summary>' + esc(tr('ownNumbers')) + '</summary><small>' + esc(tr('portion')) + '</small><div class="sp-form-macros">' + Object.keys(values).map(k => '<label>' + esc(tr(k)) + '<input name="' + k + '" inputmode="decimal" type="number" min="0" max="10000" step="0.1" placeholder="\u2248"></label>').join('') + '</div><p class="sp-note">' + esc(tr('macroOptional')) + '</p></details>';
             const pk = herbPick(),
                 tip = pk ? '<button type="button" class="sp-herb-tip" data-sp="herbPick">' + (pk.recipe.img ? '<img src="' + esc(pk.recipe.img) + '" alt="">' : icon('plate')) + '<span><small>' + esc(tr('herbTip')) + '</small><b>' + esc(recipeName(pk.recipe)) + '</b><i>' + esc(whyLine(pk.why.slice(0, 2), null) || tr('whyText')) + '</i></span>' + icon('arrow') + '</button>' : '';
-            const html = '<h2>' + esc(tr('meal')) + '</h2><div class="sp-quick-log"><div class="sp-manual"><small class="sp-quick-h">' + esc(tr('manual')) + '</small><form id="spMeal" data-id="' + esc(lastMealId) + '">' + fields + '</form></div>' + (recent.length ? '<small class="sp-quick-h">' + esc(tr('recent')) + '</small><div class="sp-quick-list">' + recent.map((l, i) => { const done = V.mealDup && V.mealDup({t: l.t || l.n, code: l.code}); return '<button type="button" class="sp-quick-item' + (done ? ' done' : '') + '" data-sp="quickMeal" data-q="' + i + '">' + icon('plate') + '<span><b>' + esc(l.t || l.n) + '</b><small>' + esc(done ? tr('doneToday') : (kc(l) || tr('oneTap'))) + '</small></span><em>' + (done ? '\u2713' : '+') + '</em></button>'; }).join('') + '</div>' : '<p class="sp-note">' + esc(tr('recentEmpty')) + '</p>') + tip + '</div>';
+            const how = mealSlot ? '<div class="sp-slot-head"><span class="sp-slot-ic">' + icon(SLOT_IC[mealSlot]) + '</span><h2>' + esc(tr(mealSlot)) + '</h2><button type="button" class="sp-slot-change" data-sp="slotPick">' + esc(tr('slotChange')) + '</button></div>' +
+                '<div class="sp-slot-how" role="group" aria-label="' + esc(tr('slotHow')) + '"><button type="button" class="sp-how" data-sp="slotWrite">' + icon('book') + '<span>' + esc(tr('slotWrite')) + '</span></button><button type="button" class="sp-how" data-sp="scan">' + icon('scan') + '<span>' + esc(tr('slotScan')) + '</span></button><button type="button" class="sp-how" data-sp="photo">' + icon('camera') + '<span>' + esc(tr('slotSnap')) + '</span></button></div>' : '<h2>' + esc(tr('meal')) + '</h2>';
+            const html = how + '<div class="sp-quick-log"><div class="sp-manual"><small class="sp-quick-h">' + esc(tr('manual')) + '</small><form id="spMeal" data-id="' + esc(lastMealId) + '">' + fields + '</form></div>' + (recent.length ? '<small class="sp-quick-h">' + esc(tr(mealSlot ? 'slotRecent' : 'recent')) + '</small><div class="sp-quick-list">' + recent.map((l, i) => { const done = V.mealDup && V.mealDup({t: l.t || l.n, code: l.code, slot: mealSlot}); return '<button type="button" class="sp-quick-item' + (done ? ' done' : '') + '" data-sp="quickMeal" data-q="' + i + '">' + icon('plate') + '<span><b>' + esc(l.t || l.n) + '</b><small>' + esc(done ? tr('doneToday') : (kc(l) || tr('oneTap'))) + '</small></span><em>' + (done ? '\u2713' : '+') + '</em></button>'; }).join('') + '</div>' : '<p class="sp-note">' + esc(tr('recentEmpty')) + '</p>') + tip + '</div>';
             showSheet(html);
             return;
         }
@@ -920,6 +966,8 @@
             photo: photoURL,
             via: photoURL ? 'photo' : 'spirit'
         };
+        const fs = pendingSlot();
+        if (fs && !form.dataset.edit) seed.slot = fs;
         if (w.est) seed.est = w.est;
         const result = form.dataset.edit ? V.editMeal(seed) : V.logMeal(seed);
         if (!result) {
@@ -944,7 +992,7 @@
         feedback('eat', tr('saved') + whyNote(result), result.xp);
         checkBonuses(false);
         const log = result.log;
-        showSheet('<h2>' + esc(tr('saved')) + '</h2><p>' + esc(log.t) + '</p>' + estHTML(log) + macroHTML(log) + '<p class="sp-earned">' + (result.xp ? '+' + result.xp + ' XP' : esc(result.reason || (form.dataset.edit ? '' : '0 XP'))) + '</p>' + gptHTML());
+        showSheet('<h2>' + esc(tr('saved')) + '</h2><p>' + (log.slot ? '<span class="sp-slot-tag">' + esc(tr(log.slot)) + '</span> ' : '') + esc(log.t) + '</p>' + estHTML(log) + macroHTML(log) + '<p class="sp-earned">' + (result.xp ? '+' + result.xp + ' XP' : esc(result.reason || (form.dataset.edit ? '' : '0 XP'))) + '</p>' + gptHTML());
     }
 
     function checkBonuses(closed) {
@@ -1898,13 +1946,17 @@
             ownedSheet = null;
         }
         /* Type it on the food camera: the camera closes, the meal sheet opens over Scan */
-        if (a === 'meal' && foodCam && foodCam.contains(b)) cancelCapture();
+        const fromCam = !!(foodCam && foodCam.contains(b));
+        if (a === 'meal' && fromCam) cancelCapture();
         if (a === 'open') open();
         else if (a === 'close') close();
         else if (a === 'scan') scan();
         else if (a === 'toBarcode') scan(); /* the food camera's Barcode switch (living-home.js takes plain data-sp=scan clicks first) */
         else if (a === 'photo') photo();
-        else if (a === 'meal') mealForm();
+        else if (a === 'meal') mealForm(null, null, b.dataset.slot || (fromCam ? pendingSlot() : ''));
+        else if (a === 'slot') mealForm(null, null, b.dataset.slot);
+        else if (a === 'slotPick') slotPicker();
+        else if (a === 'slotWrite') { const inp = ownedSheet && ownedSheet.querySelector('#spMeal input[name="title"]'); if (inp) { inp.scrollIntoView({ block: 'center', behavior: 'smooth' }); inp.focus(); } }
         else if (a === 'quickMeal') quickMeal(b.dataset.q);
         else if (a === 'water') water();
         else if (a === 'weather') weather(true);

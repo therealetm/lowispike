@@ -10368,6 +10368,7 @@ function finishOb(){
   el.innerHTML = '<div class="r2-obpane done"><div class="r2-burst" aria-hidden="true">' + Array.from({length: 14}, (_, i) => '<i style="--i:' + i + '"></i>').join("") + '</div>' +
     '<div class="r2-donecheck">' + R2.ico.check + '</div><div class="r2-obt">You\'re all set' + (s.user.name ? ", " + esc(s.user.name) : "") + '</div>' +
     '<div class="r2-obs">' + (z ? z.g + " " + esc(z.n) + " · " : "") + 'Saved to your account.</div></div>';
+  try { window.dispatchEvent(new CustomEvent("lowi:setup-done")); } catch(e){}   /* tutorial-auto.js: a NEW account gets the tour once */
   setTimeout(() => { const ov = el.closest(".r2-ov"); R2.close(ov); try { goTab("home"); } catch(e){} try { window.LowiHerbStart && LowiHerbStart.afterSetup(); } catch(e){} }, 1500);   /* hs-hook: starter plan */
 }
 function pickPhoto(cb){

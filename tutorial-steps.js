@@ -19,9 +19,10 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 1;
-    const AREAS = ['you', 'home', 'food', 'play', 'together', 'settings', 'end'];
+    const VERSION = 2;
+    const AREAS = ['you', 'home', 'food', 'play', 'companion', 'together', 'settings', 'extras', 'end'];
     const STEPS = [
+        /* ---------- part: you (your companion) ---------- */
         {
             /* HOOK (claim-your-own-companion): OFF until the own-companion task ships LowiBirthCompanion.claim(opts).
                tutorial.js only plans this step when that function exists (ctx.claimReady), so the tour never depends on it. */
@@ -38,36 +39,91 @@
             id: 'hello', area: 'you', target: ['[data-home-misty]', '#spBubble'], covers: ['companion', 'misty'],
             title: { en: 'Hi, I’m {name}', de: 'Hi, ich bin {name}', es: 'Hola, soy {name}' },
             text: {
-                en: 'I live here on Home and I mirror how you take care of yourself. Tap me to play. Hold me to open my card.',
-                de: 'Ich wohne hier auf Home und spiegle, wie du auf dich achtest. Tipp mich an zum Spielen. Halt mich gedrückt für meine Karte.',
-                es: 'Vivo aquí en Inicio y reflejo cómo te cuidas. Tócame para jugar. Manténme pulsado para abrir mi tarjeta.'
+                en: 'I’m your companion and I live here on Home. Let me show you around, one small thing at a time. Skip jumps past a whole part, Skip all ends the tour.',
+                de: 'Ich bin dein Begleiter und wohne hier auf Home. Ich zeig dir alles, Stück für Stück. Überspringen springt über einen ganzen Teil, Alles überspringen beendet die Tour.',
+                es: 'Soy tu compañero y vivo aquí en Inicio. Te lo enseño todo, poco a poco. Saltar pasa una parte entera y Saltar todo termina el recorrido.'
+            }
+        },
+        {
+            id: 'touch', area: 'you', target: ['[data-home-misty]', '#spBubble'], covers: ['companion-card'],
+            title: { en: 'Tap or hold me', de: 'Tipp oder halt mich', es: 'Tócame o mantenme' },
+            text: {
+                en: 'Tap me to play. Hold me to open my card: my energy, my forms and my home are all in there.',
+                de: 'Tipp mich an zum Spielen. Halt mich gedrückt für meine Karte: Da sind meine Energie, meine Formen und mein Zuhause.',
+                es: 'Tócame para jugar. Mantenme pulsado para abrir mi tarjeta: ahí están mi energía, mis formas y mi casa.'
             }
         },
         {
             id: 'energy', area: 'you', target: ['[data-home-misty]', '#spBubble'], covers: ['energy'],
             title: { en: 'My energy', de: 'Meine Energie', es: 'Mi energía' },
             text: {
-                en: 'What you track today fills my energy: water, meals, moves and sleep. At 100% I fly faster and my trail turns gold. Below half I’m too tired to get into worlds.',
-                de: 'Was du heute einträgst, füllt meine Energie: Wasser, Essen, Bewegung und Schlaf. Bei 100 % fliege ich schneller und meine Spur wird golden. Unter der Hälfte bin ich zu müde für die Welten.',
-                es: 'Lo que registras hoy llena mi energía: agua, comidas, movimiento y sueño. Al 100 % vuelo más rápido y mi estela se vuelve dorada. Por debajo de la mitad estoy demasiado cansado para entrar en los mundos.'
+                en: 'What you track today fills my energy: water, meals, moves and sleep. The more you take care of yourself, the more I have.',
+                de: 'Was du heute einträgst, füllt meine Energie: Wasser, Essen, Bewegung und Schlaf. Je besser du auf dich achtest, desto mehr habe ich.',
+                es: 'Lo que registras hoy llena mi energía: agua, comidas, movimiento y sueño. Cuanto mejor te cuidas, más energía tengo.'
+            }
+        },
+        {
+            id: 'mood', area: 'you', target: ['[data-home-misty]', '#spBubble'], covers: ['mood'],
+            title: { en: 'My face', de: 'Mein Gesicht', es: 'Mi cara' },
+            text: {
+                en: 'My face follows my energy. Full, and I look lively and happy. Low, and I look tired. One look tells you how your day is going.',
+                de: 'Mein Gesicht folgt meiner Energie. Voll, und ich sehe munter und froh aus. Niedrig, und ich sehe müde aus. Ein Blick zeigt dir, wie dein Tag läuft.',
+                es: 'Mi cara sigue mi energía. Llena, y me ves animado y feliz. Baja, y me ves cansado. Con un vistazo sabes cómo va tu día.'
+            }
+        },
+        {
+            id: 'energy-peak', area: 'you', target: ['[data-home-misty]', '#spBubble'], covers: ['energy-peak', 'welcome-energy'],
+            title: { en: 'Full power', de: 'Volle Kraft', es: 'A tope' },
+            text: {
+                en: 'At 100% I fly faster, the world glows brighter and my trail turns gold. New accounts start at 100% for 12 hours, then it fades over the next 12.',
+                de: 'Bei 100 % fliege ich schneller, die Welt leuchtet heller und meine Spur wird golden. Neue Konten starten 12 Stunden mit 100 %, dann sinkt es über die nächsten 12.',
+                es: 'Al 100 % vuelo más rápido, el mundo brilla más y mi estela se vuelve dorada. Las cuentas nuevas empiezan 12 horas al 100 % y luego baja en las 12 siguientes.'
+            }
+        },
+        /* ---------- part: home (the bubbles) ---------- */
+        {
+            id: 'bubbles', area: 'home', target: null, covers: ['home-ring'],
+            title: { en: 'Your day, in bubbles', de: 'Dein Tag in Blasen', es: 'Tu día en burbujas' },
+            text: {
+                en: 'The bubbles around me are your day. Each one opens with a single tap. Let’s go through them.',
+                de: 'Die Blasen um mich herum sind dein Tag. Jede öffnet sich mit einem Tipp. Gehen wir sie durch.',
+                es: 'Las burbujas a mi alrededor son tu día. Cada una se abre con un toque. Vamos a verlas.'
             }
         },
         {
             id: 'gap', area: 'home', target: ['#spFast'], covers: ['gap'],
             title: { en: 'Gap', de: 'Gap', es: 'Gap' },
             text: {
-                en: 'Gap counts the hours since your last real meal. It shows a dash until your first meal. Tap it, then I just ate or Ate earlier.',
-                de: 'Gap zählt die Stunden seit deiner letzten echten Mahlzeit. Bis zur ersten Mahlzeit steht dort ein Strich. Tipp drauf und sag, wann du zuletzt gegessen hast.',
-                es: 'Gap cuenta las horas desde tu última comida de verdad. Muestra un guion hasta tu primera comida. Tócalo para decir cuándo comiste por última vez.'
+                en: 'Gap counts the hours since your last real meal. It shows a dash until your first meal.',
+                de: 'Gap zählt die Stunden seit deiner letzten echten Mahlzeit. Bis zur ersten Mahlzeit steht dort ein Strich.',
+                es: 'Gap cuenta las horas desde tu última comida de verdad. Muestra un guion hasta tu primera comida.'
             }
         },
         {
-            id: 'fuel', area: 'home', target: ['#whHud .wh-meals'], covers: ['fuel', 'log-meal'],
-            title: { en: 'Fuel and Log meal', de: 'Essen und Mahlzeit eintragen', es: 'Comida y registrar comida' },
+            id: 'gap-tap', area: 'home', target: ['#spFast'], covers: ['fasting'],
+            title: { en: 'Starting the clock', de: 'Die Uhr starten', es: 'Poner el reloj' },
             text: {
-                en: 'Tap Fuel for Log meal, Shop and Cook. In Log meal, type what you ate, like “chicken stew”, or tap a recent meal. I fill in calories, protein, carbs, fat, fiber and sugar.',
-                de: 'Tipp auf Essen für Mahlzeit eintragen, Einkaufen und Kochen. Tipp dort ein, was du gegessen hast, etwa „Hühnereintopf“, oder wähl eine letzte Mahlzeit. Die Nährwerte trage ich ein.',
-                es: 'Toca Comida para Registrar comida, Comprar y Cocinar. Escribe lo que comiste, como “guiso de pollo”, o toca una comida reciente. Yo relleno calorías, proteína, carbohidratos, grasa, fibra y azúcar.'
+                en: 'Tap Gap and say when you last ate: I just ate, or Ate earlier. Logging a meal starts the clock too.',
+                de: 'Tipp auf Gap und sag, wann du zuletzt gegessen hast: gerade eben oder früher. Eine eingetragene Mahlzeit startet die Uhr auch.',
+                es: 'Toca Gap y di cuándo comiste por última vez: ahora mismo o antes. Registrar una comida también pone el reloj en marcha.'
+            }
+        },
+        {
+            id: 'fuel', area: 'home', target: ['#whHud .wh-meals'], covers: ['fuel', 'cook', 'shop'],
+            title: { en: 'Fuel', de: 'Essen', es: 'Comida' },
+            text: {
+                en: 'Fuel is everything about food. Tap it for Log meal, Shop and Cook.',
+                de: 'Essen ist alles rund ums Essen. Tipp drauf für Mahlzeit eintragen, Einkaufen und Kochen.',
+                es: 'Comida es todo lo relacionado con comer. Tócala para Registrar comida, Comprar y Cocinar.'
+            }
+        },
+        {
+            id: 'log-meal', area: 'home', target: ['#whHud .wh-meals'], covers: ['log-meal'],
+            title: { en: 'Log meal', de: 'Mahlzeit eintragen', es: 'Registrar comida' },
+            text: {
+                en: 'In Log meal, type what you ate, like “chicken stew”, or tap a recent meal. I fill in calories, protein, carbs, fat, fiber and sugar.',
+                de: 'Tipp bei Mahlzeit eintragen ein, was du gegessen hast, etwa „Hühnereintopf“, oder wähl eine letzte Mahlzeit. Kalorien, Eiweiß, Kohlenhydrate und Co. trage ich ein.',
+                es: 'En Registrar comida, escribe lo que comiste, como “guiso de pollo”, o toca una comida reciente. Yo relleno calorías, proteína, carbohidratos, grasa, fibra y azúcar.'
             }
         },
         {
@@ -80,84 +136,261 @@
             }
         },
         {
-            id: 'move', area: 'home', target: ['#whHud .wh-move'], covers: ['move', 'workouts'],
+            id: 'move', area: 'home', target: ['#whHud .wh-move'], covers: ['move'],
             title: { en: 'Move', de: 'Bewegung', es: 'Movimiento' },
             text: {
-                en: 'Tap Move after anything active and pick Quick, Medium, Long or Epic. Whole workouts are under Settings, Workouts.',
-                de: 'Tipp nach allem Aktiven auf Bewegung und wähl kurz, mittel, lang oder episch. Ganze Trainings findest du unter Einstellungen, Workouts.',
-                es: 'Toca Movimiento después de algo activo y elige corto, medio, largo o épico. Los entrenamientos completos están en Ajustes, Entrenos.'
+                en: 'Tap Move after anything active, a walk, stairs, dancing, and pick Quick, Medium, Long or Epic.',
+                de: 'Tipp nach allem Aktiven auf Bewegung, ob Spaziergang, Treppen oder Tanzen, und wähl kurz, mittel, lang oder episch.',
+                es: 'Toca Movimiento después de algo activo, un paseo, escaleras, bailar, y elige corto, medio, largo o épico.'
             }
         },
         {
             id: 'sleep', area: 'home', target: ['#whHud .o8-sleep'], covers: ['sleep'],
             title: { en: 'Sleep', de: 'Schlaf', es: 'Sueño' },
             text: {
-                en: 'Once a day, tell me how long you slept last night. It stays private on your account.',
-                de: 'Einmal am Tag sagst du mir, wie lange du letzte Nacht geschlafen hast. Das bleibt privat in deinem Konto.',
-                es: 'Una vez al día, dime cuánto dormiste anoche. Se queda privado en tu cuenta.'
+                en: 'Once a day, tap Sleep and tell me how last night went: slept well, okay or a short night. It stays private on your account.',
+                de: 'Einmal am Tag tippst du auf Schlaf und sagst mir, wie die Nacht war: gut, okay oder kurz. Das bleibt privat in deinem Konto.',
+                es: 'Una vez al día, toca Sueño y dime qué tal la noche: bien, regular o corta. Se queda privado en tu cuenta.'
             }
         },
+        /* ---------- part: food (scan and photos) ---------- */
         {
-            id: 'scan', area: 'food', target: ['#whHud .o8-scan'], covers: ['scan', 'snap-food', 'barcode', 'photo-checks'],
-            title: { en: 'Scan and Snap food', de: 'Scannen und Essen fotografieren', es: 'Escanear y foto de comida' },
+            id: 'scan', area: 'food', target: ['#whHud .o8-scan'], covers: ['scan', 'barcode'],
+            title: { en: 'Scan', de: 'Scannen', es: 'Escanear' },
             text: {
-                en: 'Scan reads a product’s barcode. Snap food looks at a photo of your plate and fills in the name and the numbers for you, three photo checks a day. Meal lets you type it instead, as often as you like.',
-                de: 'Scannen liest den Barcode eines Produkts. „Essen fotografieren“ schaut sich ein Foto deines Tellers an und trägt Name und Werte für dich ein, drei Foto-Checks pro Tag. Bei „Mahlzeit“ tippst du es einfach ein, so oft du willst.',
-                es: 'Escanear lee el código de barras de un producto. Foto de comida mira una foto de tu plato y rellena el nombre y los números por ti, tres fotos al día. En Comida puedes escribirlo, todas las veces que quieras.'
+                en: 'Tap Scan and point it at a product’s barcode. I read what’s inside and how it fits your day.',
+                de: 'Tipp auf Scannen und halt es auf den Barcode eines Produkts. Ich lese, was drin ist und wie es zu deinem Tag passt.',
+                es: 'Toca Escanear y apunta al código de barras de un producto. Leo lo que lleva y cómo encaja en tu día.'
             }
         },
         {
-            id: 'joystick', area: 'play', target: ['#whPad'], covers: ['joy', 'autopilot'],
+            id: 'snap', area: 'food', target: ['#whHud .o8-scan'], covers: ['snap-food'],
+            title: { en: 'Snap food', de: 'Essen fotografieren', es: 'Foto de comida' },
+            text: {
+                en: 'In Scan, Snap food looks at a photo of your plate and fills in the name and the numbers. Check them, then tap Log as meal.',
+                de: 'In Scannen schaut sich „Essen fotografieren“ ein Foto deines Tellers an und trägt Name und Werte ein. Prüf sie und tipp auf Als Mahlzeit eintragen.',
+                es: 'En Escanear, Foto de comida mira una foto de tu plato y rellena el nombre y los números. Revísalos y toca Registrar como comida.'
+            }
+        },
+        {
+            id: 'photo-checks', area: 'food', target: ['#whHud .o8-scan'], covers: ['photo-checks'],
+            title: { en: '3 photo checks a day', de: '3 Foto-Checks am Tag', es: '3 fotos al día' },
+            text: {
+                en: 'Everyone gets 3 photo checks a day, and new ones come at midnight. Typing what you ate always works, as often as you like.',
+                de: 'Jeder hat 3 Foto-Checks am Tag, neue gibt es um Mitternacht. Eintippen, was du gegessen hast, geht immer, so oft du willst.',
+                es: 'Todos tienen 3 fotos al día, y a medianoche llegan nuevas. Escribir lo que comiste siempre funciona, todas las veces que quieras.'
+            }
+        },
+        /* ---------- part: play (flying and worlds) ---------- */
+        {
+            id: 'joystick', area: 'play', target: ['#whPad'], covers: ['joy'],
             title: { en: 'Fly me', de: 'Lass mich fliegen', es: 'Hazme volar' },
             text: {
-                en: 'Drag the joystick to fly me. Hold the middle to go forward, tap then hold to go back. Three quick taps turn on autopilot and I go exploring on my own.',
-                de: 'Zieh am Joystick, um mich fliegen zu lassen. Halt die Mitte für vorwärts, tipp und halt für zurück. Dreimal schnell tippen schaltet den Autopiloten an, dann erkunde ich allein.',
-                es: 'Arrastra el joystick para hacerme volar. Mantén el centro para avanzar, toca y mantén para retroceder. Tres toques rápidos activan el piloto automático y exploro por mi cuenta.'
+                en: 'This is the joystick. Drag it and I fly where you point.',
+                de: 'Das ist der Joystick. Zieh daran und ich fliege dahin, wo du hinzeigst.',
+                es: 'Este es el joystick. Arrástralo y vuelo hacia donde apuntes.'
             }
         },
         {
-            id: 'worlds', area: 'play', target: ['#whHud .wh-zoom', '#whPad'], covers: ['worlds', 'map', 'vr', 'worldSound', 'spirit-world'],
+            id: 'joystick-hold', area: 'play', target: ['#whPad'], covers: ['joy-hold'],
+            title: { en: 'Forward and back', de: 'Vor und zurück', es: 'Adelante y atrás' },
+            text: {
+                en: 'Hold the middle of the joystick to go forward. Tap, then hold, to go back.',
+                de: 'Halt die Mitte des Joysticks für vorwärts. Tipp und halt dann für rückwärts.',
+                es: 'Mantén el centro del joystick para avanzar. Toca y luego mantén para retroceder.'
+            }
+        },
+        {
+            id: 'autopilot', area: 'play', target: ['#whPad'], covers: ['autopilot'],
+            title: { en: 'Autopilot', de: 'Autopilot', es: 'Piloto automático' },
+            text: {
+                en: 'Tap the joystick three times quickly and autopilot turns on. Then I go exploring on my own.',
+                de: 'Tipp dreimal schnell auf den Joystick und der Autopilot geht an. Dann erkunde ich alles allein.',
+                es: 'Toca el joystick tres veces rápido y se activa el piloto automático. Entonces exploro por mi cuenta.'
+            }
+        },
+        {
+            id: 'zoom', area: 'play', target: ['#whHud .wh-zoom', '#whPad'], covers: ['zoom', 'map'],
+            title: { en: 'Zoom and World map', de: 'Zoom und Weltkarte', es: 'Zoom y mapa' },
+            text: {
+                en: 'Pinch to zoom in and out. The World map shows every world at once and takes you straight to the one you pick.',
+                de: 'Zieh mit zwei Fingern, um zu zoomen. Die Weltkarte zeigt alle Welten auf einmal und bringt dich direkt in die, die du wählst.',
+                es: 'Pellizca para acercar y alejar. El mapa del mundo muestra todos los mundos a la vez y te lleva directo al que elijas.'
+            }
+        },
+        {
+            id: 'fly-out', area: 'play', target: ['[data-home-misty]', '#spBubble'], covers: ['fly-out'],
+            title: { en: 'Out of my bubble', de: 'Raus aus meiner Blase', es: 'Fuera de mi burbuja' },
+            text: {
+                en: 'Fly me out of my bubble and into space. Out there, every glowing bubble is a world you can visit.',
+                de: 'Flieg mich aus meiner Blase hinaus ins All. Da draußen ist jede leuchtende Blase eine Welt, die du besuchen kannst.',
+                es: 'Sácame de mi burbuja y llévame al espacio. Ahí fuera, cada burbuja brillante es un mundo que puedes visitar.'
+            }
+        },
+        {
+            id: 'worlds', area: 'play', target: ['#whHud .wh-zoom', '#whPad'], covers: ['worlds'],
             title: { en: 'Worlds', de: 'Welten', es: 'Mundos' },
             text: {
-                en: 'Fly me into a glowing bubble to visit a body world: lungs, brain, gut, muscle and more. Out in space I can ride the strings of the spirit world. The World map takes you straight to any world.',
-                de: 'Flieg mich in eine leuchtende Blase, um eine Körperwelt zu besuchen: Lunge, Gehirn, Darm, Muskeln und mehr. Draußen im All kann ich auf den Saiten der Geisterwelt reiten. Die Weltkarte bringt dich direkt in jede Welt.',
-                es: 'Llévame a una burbuja brillante para visitar un mundo del cuerpo: pulmones, cerebro, intestino, músculo y más. En el espacio puedo montar las cuerdas del mundo espíritu. El mapa del mundo te lleva directo a cualquier mundo.'
+                en: 'Fly into a glowing bubble to visit a body world: lungs, brain, gut, muscle and more.',
+                de: 'Flieg in eine leuchtende Blase, um eine Körperwelt zu besuchen: Lunge, Gehirn, Darm, Muskeln und mehr.',
+                es: 'Vuela dentro de una burbuja brillante para visitar un mundo del cuerpo: pulmones, cerebro, intestino, músculo y más.'
             }
         },
         {
-            id: 'forms', area: 'play', target: ['[data-home-misty]', '#spBubble'], covers: ['forms', 'evolution'],
+            id: 'world-energy', area: 'play', target: ['[data-home-misty]', '#spBubble'], covers: ['half-energy'],
+            title: { en: 'Too tired to fly in', de: 'Zu müde für Welten', es: 'Demasiado cansado' },
+            text: {
+                en: 'Below half energy I’m too tired to get into worlds. A glass of water or a meal gets me going again.',
+                de: 'Unter der Hälfte Energie bin ich zu müde für die Welten. Ein Glas Wasser oder eine Mahlzeit bringt mich wieder in Schwung.',
+                es: 'Por debajo de la mitad de energía estoy demasiado cansado para entrar en los mundos. Un vaso de agua o una comida me reactivan.'
+            }
+        },
+        {
+            id: 'spirit', area: 'play', target: null, covers: ['spirit-world'],
+            title: { en: 'The spirit world', de: 'Die Geisterwelt', es: 'El mundo espiritual' },
+            text: {
+                en: 'Out in space I can ride the glowing strings of the spirit world. Fly me onto one and enjoy the ride.',
+                de: 'Draußen im All kann ich auf den leuchtenden Saiten der Geisterwelt reiten. Flieg mich auf eine und genieß die Fahrt.',
+                es: 'En el espacio puedo montar las cuerdas brillantes del mundo espiritual. Llévame a una y disfruta el viaje.'
+            }
+        },
+        {
+            id: 'vr-sound', area: 'play', target: ['#whHud .o8-settings'], covers: ['vr', 'worldSound'],
+            title: { en: 'VR and world sound', de: 'VR und Weltklang', es: 'RV y sonido' },
+            text: {
+                en: 'In Settings, VR shows the worlds in a headset, and World sound gives every world its own sound.',
+                de: 'In den Einstellungen zeigt VR die Welten in einer Brille, und Weltklang gibt jeder Welt ihren eigenen Klang.',
+                es: 'En Ajustes, RV muestra los mundos en unas gafas, y Sonido del mundo da a cada mundo su propio sonido.'
+            }
+        },
+        /* ---------- part: companion (forms and home) ---------- */
+        {
+            id: 'forms', area: 'companion', target: ['[data-home-misty]', '#spBubble'], covers: ['forms', 'evolution'],
             title: { en: 'Forms', de: 'Formen', es: 'Formas' },
             text: {
                 en: 'Hold me, then tap Forms to see how I evolve the longer you keep going.',
-                de: 'Halt mich gedrückt und tipp auf Formen, dann siehst du, wie ich mich entwickle, je länger du dranbleibst.',
-                es: 'Manténme pulsado y toca Formas para ver cómo evoluciono cuanto más sigas.'
+                de: 'Halt mich gedrückt und tipp auf Formen, um zu sehen, wie ich mich entwickle, je länger du dranbleibst.',
+                es: 'Mantenme pulsado y toca Formas para ver cómo evoluciono cuanto más constante seas.'
             }
         },
         {
-            id: 'community', area: 'together', target: ['#whHud .o8-settings'], covers: ['community', 'community-chat'],
+            id: 'care-room', area: 'companion', target: ['[data-home-misty]', '#spBubble'], covers: ['care-room', 'cell-room'],
+            title: { en: 'My home', de: 'Mein Zuhause', es: 'Mi casa' },
+            text: {
+                en: 'On my card you’ll also find my home: a little room in your bloodstream. Decorate it however you like.',
+                de: 'Auf meiner Karte findest du auch mein Zuhause: ein kleines Zimmer in deinem Blutkreislauf. Richte es ein, wie du magst.',
+                es: 'En mi tarjeta también está mi casa: un cuartito en tu sangre. Decóralo como quieras.'
+            }
+        },
+        /* ---------- part: together (community) ---------- */
+        {
+            id: 'community', area: 'together', target: ['#whHud .o8-settings'], covers: ['community'],
             title: { en: 'Community', de: 'Community', es: 'Comunidad' },
             text: {
-                en: 'Settings, Community is where you meet everyone else. Share a meal, and tap Chat for the community room.',
-                de: 'Unter Einstellungen, Community triffst du alle anderen. Teile eine Mahlzeit und tipp auf Chat für den Community-Raum.',
-                es: 'En Ajustes, Comunidad conoces a todos los demás. Comparte una comida y toca Chat para la sala de la comunidad.'
+                en: 'Community is where you meet everyone else and their companions. It’s in Settings, under Everything else.',
+                de: 'In der Community triffst du alle anderen und ihre Begleiter. Du findest sie in den Einstellungen unter Alles andere.',
+                es: 'En Comunidad conoces a todos los demás y a sus compañeros. Está en Ajustes, en Todo lo demás.'
             }
         },
         {
-            id: 'settings', area: 'settings', target: ['#whHud .o8-settings'], covers: ['settings', 'me', 'look', 'account', 'menubar', 'tutorial', 'care'],
+            id: 'post', area: 'together', target: ['#whHud .o8-settings'], covers: ['community-post'],
+            title: { en: 'Share a meal', de: 'Mahlzeit teilen', es: 'Comparte una comida' },
+            text: {
+                en: 'Post a photo of your meal so everyone can see what you’re eating. Photo posts use the same 3 photo checks a day.',
+                de: 'Teil ein Foto deiner Mahlzeit, damit alle sehen, was du isst. Foto-Posts nutzen dieselben 3 Foto-Checks am Tag.',
+                es: 'Publica una foto de tu comida para que todos vean lo que comes. Las fotos usan las mismas 3 fotos al día.'
+            }
+        },
+        {
+            id: 'chat', area: 'together', target: ['#whHud .o8-settings'], covers: ['community-chat'],
+            title: { en: 'Community chat', de: 'Community-Chat', es: 'Chat de la comunidad' },
+            text: {
+                en: 'Tap Chat in Community to open the community room and talk with everyone. You can see who talked recently at the top.',
+                de: 'Tipp in der Community auf Chat, um den Community-Raum zu öffnen und mit allen zu reden. Oben siehst du, wer zuletzt geschrieben hat.',
+                es: 'Toca Chat en Comunidad para abrir la sala y hablar con todos. Arriba ves quién habló hace poco.'
+            }
+        },
+        {
+            id: 'send-energy', area: 'together', target: ['#whHud .o8-settings'], covers: ['community-energy'],
+            title: { en: 'Send energy', de: 'Energie schicken', es: 'Enviar energía' },
+            text: {
+                en: 'In the Community galaxy, pull the small blue joystick to aim me, then let go. Whoever my energy burst hits gets energy, never damage.',
+                de: 'Zieh in der Community-Galaxie am kleinen blauen Joystick, um mich zu zielen, und lass los. Wen mein Energiestoß trifft, der bekommt Energie, nie Schaden.',
+                es: 'En la galaxia de la Comunidad, tira del pequeño joystick azul para apuntarme y suelta. A quien alcance mi energía recibe energía, nunca daño.'
+            }
+        },
+        /* ---------- part: settings ---------- */
+        {
+            id: 'settings', area: 'settings', target: ['#whHud .o8-settings'], covers: ['settings'],
             title: { en: 'Settings', de: 'Einstellungen', es: 'Ajustes' },
             text: {
-                en: 'Settings has you, look and sound, your account, the menu bar, the care board and everything else. Tutorial is in here too, so you can replay this tour any time.',
-                de: 'In den Einstellungen findest du dich, Aussehen und Ton, dein Konto, die Menüleiste, das Care-Board und alles andere. Auch das Tutorial ist hier, damit du diese Tour jederzeit wiederholen kannst.',
-                es: 'En Ajustes están tu perfil, aspecto y sonido, tu cuenta, la barra de menú, el tablero Care y todo lo demás. El tutorial también está aquí, para repetir este recorrido cuando quieras.'
+                en: 'Tap Settings for everything that isn’t a bubble. Here’s what’s inside.',
+                de: 'Tipp auf Einstellungen für alles, was keine Blase ist. Das hier ist drin.',
+                es: 'Toca Ajustes para todo lo que no es una burbuja. Esto es lo que hay dentro.'
+            }
+        },
+        {
+            id: 'settings-me', area: 'settings', target: ['#whHud .o8-settings'], covers: ['me', 'look', 'account'],
+            title: { en: 'Me, Look & sound, Account', de: 'Ich, Aussehen & Ton, Konto', es: 'Yo, Aspecto y sonido, Cuenta' },
+            text: {
+                en: 'Me is your profile. Look & sound changes colors, day or night and sound. Account keeps you signed in on any phone.',
+                de: 'Ich ist dein Profil. Aussehen & Ton ändert Farben, Tag oder Nacht und Ton. Konto hält dich auf jedem Handy angemeldet.',
+                es: 'Yo es tu perfil. Aspecto y sonido cambia colores, día o noche y sonido. Cuenta te mantiene conectado en cualquier móvil.'
+            }
+        },
+        {
+            id: 'menubar', area: 'settings', target: ['#whHud .o8-settings'], covers: ['menubar'],
+            title: { en: 'Menu bar', de: 'Menüleiste', es: 'Barra de menú' },
+            text: {
+                en: 'Menu bar turns a bar on or off at the bottom of the screen, if you like having every section one tap away.',
+                de: 'Menüleiste schaltet eine Leiste unten am Bildschirm an oder aus, falls du jeden Bereich mit einem Tipp erreichen willst.',
+                es: 'Barra de menú activa o quita una barra abajo en la pantalla, por si quieres cada sección a un toque.'
+            }
+        },
+        {
+            id: 'settings-more', area: 'settings', target: ['#whHud .o8-settings'], covers: ['care', 'workouts'],
+            title: { en: 'Everything else', de: 'Alles andere', es: 'Todo lo demás' },
+            text: {
+                en: 'Everything else holds Community, the Care board, Workouts for whole training sessions, the World map, VR and more.',
+                de: 'Unter Alles andere findest du Community, das Care-Board, Workouts für ganze Trainings, die Weltkarte, VR und mehr.',
+                es: 'En Todo lo demás están Comunidad, el tablero Care, Entrenos para sesiones completas, el mapa del mundo, RV y más.'
+            }
+        },
+        {
+            id: 'tutorial', area: 'settings', target: ['#whHud .o8-settings'], covers: ['tutorial'],
+            title: { en: 'This tour, any time', de: 'Diese Tour, jederzeit', es: 'Este recorrido, cuando quieras' },
+            text: {
+                en: 'Tutorial is in Settings too. Tap it whenever you want to see this tour again.',
+                de: 'Das Tutorial ist auch in den Einstellungen. Tipp drauf, wann immer du diese Tour nochmal sehen willst.',
+                es: 'El tutorial también está en Ajustes. Tócalo cuando quieras volver a ver este recorrido.'
+            }
+        },
+        /* ---------- part: extras (things that show up on their own) ---------- */
+        {
+            id: 'day-card', area: 'extras', target: null, covers: ['day-card'],
+            title: { en: 'The Day card', de: 'Die Tageskarte', es: 'La tarjeta del día' },
+            text: {
+                en: 'The first time you open me each day, a Day card shows which day you’re on and one goal for today. Tap Let’s go to close it.',
+                de: 'Wenn du mich jeden Tag zum ersten Mal öffnest, zeigt eine Tageskarte deinen Tag und ein Ziel für heute. Tipp auf Los geht’s, um sie zu schließen.',
+                es: 'La primera vez que me abres cada día, una tarjeta muestra en qué día vas y una meta para hoy. Toca ¡Vamos! para cerrarla.'
+            }
+        },
+        {
+            id: 'whats-new', area: 'extras', target: null, covers: ['whats-new', 'update'],
+            title: { en: 'What’s new', de: 'Was ist neu', es: 'Novedades' },
+            text: {
+                en: 'When an update is ready, a banner says New version, tap it to update. After that I tell you once what’s new.',
+                de: 'Wenn ein Update bereit ist, erscheint ein Banner „Neue Version“. Tipp drauf zum Aktualisieren. Danach sag ich dir einmal, was neu ist.',
+                es: 'Cuando hay una actualización, aparece un aviso de Nueva versión. Tócalo para actualizar. Después te cuento una vez las novedades.'
             }
         },
         {
             id: 'done', area: 'end', target: null, covers: [],
             title: { en: 'That’s everything', de: 'Das war alles', es: 'Eso es todo' },
             text: {
-                en: 'You’re all set. When something new arrives, I add it to this tour, so it’s always up to date.',
-                de: 'Du bist startklar. Wenn etwas Neues kommt, nehme ich es in diese Tour auf, damit sie immer aktuell ist.',
-                es: 'Ya está todo listo. Cuando llegue algo nuevo, lo añado a este recorrido, así siempre está al día.'
+                en: 'You’re all set. Start small: a glass of water, then log your next meal. When something new arrives, I add it to this tour.',
+                de: 'Du bist startklar. Fang klein an: ein Glas Wasser, dann deine nächste Mahlzeit eintragen. Wenn etwas Neues kommt, nehme ich es in diese Tour auf.',
+                es: 'Ya está todo listo. Empieza poco a poco: un vaso de agua y luego registra tu próxima comida. Cuando llegue algo nuevo, lo añado a este recorrido.'
             },
             cta: { en: 'Done', de: 'Fertig', es: 'Listo' }
         }

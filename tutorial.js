@@ -178,7 +178,9 @@
         H.classList.add('lt-on'); if (reduced()) root.classList.add('lt-rm');
         store.set(Object.assign(store.get(), { v: S.VERSION, at: new Date().toISOString(), done: false, from: o.from || '' }));
         clearInterval(timer); timer = setInterval(tick, 350);
-        go(0, 'start');
+        /* opts.at: begin at that step id (tutorial-auto.js: continue a tour that was left halfway) */
+        let at = 0; if (o.at) { const k = list.findIndex(x => x.id === o.at); if (k > 0) at = k; }
+        go(at, 'start');
         return true;
     }
     function stop(reason) {
@@ -194,5 +196,7 @@
     W.addEventListener('lowi:lang', () => { if (on && !held) render(); });
     W.addEventListener('lowi:companion', () => { if (on && !held) render(); });
     if (!D.getElementById('ltCss') && !D.querySelector('link[href^="tutorial.css"]')) { const m = $('meta[name="lowi-build"]'), l = D.createElement('link'); l.id = 'ltCss'; l.rel = 'stylesheet'; l.href = 'tutorial.css?v=' + encodeURIComponent(m ? m.content : '1'); D.head.appendChild(l); }
+    /* tutorial-auto.js (new accounts get the tour once) loads from here, so index.html's versioned script list stays untouched */
+    if (!W.LowiTutorialAuto && !D.querySelector('script[src^="tutorial-auto.js"]')) { const m = $('meta[name="lowi-build"]'), sc = D.createElement('script'); sc.src = 'tutorial-auto.js?v=' + encodeURIComponent((m && m.content) || '1'); sc.defer = true; D.head.appendChild(sc); }
     W.LowiTutorial = { start, stop, isOn: () => on, step: () => (step() || {}).id || null, held: () => held, busyBy, core: S };
 })();

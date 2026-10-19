@@ -58,6 +58,7 @@ test('wiring: hidden Community halts instead of resetting, resting spots are sav
   assert.doesNotMatch(js,/mode='back'|T\.ret|maxOff/,'no ease-back phase, no home tether');
   assert.match(js,/if\(!visible\(\)\)\{if\(tb\)\{tb\.halt\(\);saveLand\(\);\}/);assert.doesNotMatch(js.slice(js.indexOf('function frame(')),/tb\.reset\(\)/);
   assert.match(js,/if\(was&&!nowBusy\)saveLand\(\);/,'saved once when everything stops, not every frame');
+  assert.match(js,/W\.addEventListener\('pagehide',saveLand\);D\.addEventListener\('visibilitychange',\(\)=>\{if\(D\.visibilityState==='hidden'\)saveLand\(\);\}\);/,'and when the app is closed or hidden mid-roll');
   assert.match(js,/tb\.restore\(old\|\|loadLand\(\)\)/);assert.match(js,/function offset\(uid\)\{if\(!tb\|\|\(!tb\.has\(uid\)&&tb\.landed\(uid\)\)\)/);
   assert.match(chat,/const me=gx\.me&&epos\(gx\.spot\.get\(gx\.me\.uid\),gx\.me\.uid\)/);
 });

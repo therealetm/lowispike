@@ -160,6 +160,8 @@ const LAND_KEY='lowi.energy.land.v1';
 function landKey(){const c=W.LOWI_CLOUD_X,st=c&&c.state?c.state():null;return LAND_KEY+':'+((st&&st.uid)||'me');}
 function loadLand(){try{const o=JSON.parse(localStorage.getItem(landKey())||'{}');return o&&typeof o==='object'?o:{};}catch(e){return {};}}
 function saveLand(){if(!tb)return;try{const o=tb.snap();if(Object.keys(o).length)localStorage.setItem(landKey(),JSON.stringify(o));else localStorage.removeItem(landKey());}catch(e){}}
+/* closing the app or switching away mid-roll keeps where everyone is at that moment, not the last time everything stopped */
+try{W.addEventListener('pagehide',saveLand);D.addEventListener('visibilitychange',()=>{if(D.visibilityState==='hidden')saveLand();});}catch(e){}
 function ensureTable(){const r=reduced();if(!tb||tbReduced!==r){const old=tb?tb.snap():null;tb=table({reduced:r});tbReduced=r;tb.restore(old||loadLand());}return tb;}
 function visible(){return !!(gal&&gal.isConnected&&gal.offsetParent!==null&&!D.hidden&&gal.clientWidth>0);}
 function mount(g){if(!g||!g.appendChild)return;if(gal===g&&joy&&joy.isConnected)return;gal=g;

@@ -26,11 +26,15 @@ const SINCE = process.argv[2] || '2026-10-19T19:15:00Z';
   const prod = cm.filter(m => /zucker|sugar|azúcar|g\/100|per 100|pro 100|REWE|EDEKA|Lidl|ALDI|Kaufland|famila|Netto|Penny/i.test(m.body));
   const replies = cm.filter(m => m.reply_to);
   const toHumans = replies.filter(m => { const t = byId.get(m.reply_to); return t && !crowd.has(t.user_id); });
-  const atHumans = cm.filter(m => /^@/.test(m.body) && !names.has((m.body.match(/^@(.+?)\s/) || [])[1]));
+  const nameList = [...names].sort((a, b) => b.length - a.length);
+  const atName = b => { if (!/^@/.test(b)) return null; const rest = b.slice(1); return nameList.find(n => rest.toLowerCase().startsWith(n.toLowerCase() + ' ')) || rest.split(' ')[0]; };
+  const atHumans = cm.filter(m => { const n = atName(m.body); return n && !names.has(n); });
+  const humanMsgs = msgs.filter(m => !crowd.has(m.user_id));
+  const answersToHumans = cm.filter(m => humanMsgs.some(h => m.reply_to === h.id || (m.body.toLowerCase().startsWith('@' + String(h.who).toLowerCase() + ' '))));
   console.log('crowd chat photos:', photos.length, '| product talk:', prod.length, '| replies:', replies.length, '| replies to non-crowd people:', toHumans.length, '| @messages to non-crowd:', atHumans.length);
   const show = (lab, arr) => { console.log('--- ' + lab); arr.slice(0, 6).forEach(m => { const t = m.reply_to && byId.get(m.reply_to); console.log(m.created_at.slice(11, 19), m.who + ':', m.body.slice(0, 160).replace(/https:\/\/\S+/, '[photo link]'), t ? ' <- reply to ' + t.who : ''); }); };
   show('all crowd messages (first 6)', cm);
-  show('photos', photos); show('product talk', prod); show('replies to non-crowd people', toHumans); show('@ to non-crowd', atHumans);
+  show('photos', photos); show('product talk', prod); show('replies to non-crowd people', toHumans); show('@ to non-crowd', atHumans); show('crowd answers to the human testers', answersToHumans);
   show('non-crowd messages since launch', msgs.filter(m => !crowd.has(m.user_id)));
   let posts = [];
   try { posts = await SB.get(tok, 'posts?select=id,user_id,who,cap,photo_url,created_at&created_at=gte.' + SINCE + '&order=created_at.asc&limit=500'); } catch (e) { console.log('posts read failed:', e.message); }

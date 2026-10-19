@@ -80,8 +80,12 @@ test("Misty's Home bubble: no drop shadow under her and no reflection ellipse un
     for (const r of plant) assert.deepStrictEqual(dropShadowsBelow(decl(r.body, 'filter'), 0), [], r.sel);
     const refl = O8.filter(r => /html\.o8\.wh-home/.test(r.sel) && /#spBubble/.test(r.sel) && /\.lh-reflection/.test(r.sel));
     assert.ok(refl.some(r => decl(r.body, 'display') === 'none'), 'the reflection ellipse is not drawn on the ring Home');
-    /* the source it overrides is still there (so the override is needed and stays scoped to the ring Home) */
-    assert.ok(/html\.wh-home #spBubble \.tmg-plant \{ filter: drop-shadow\(0 6px 12px/.test(read('world-home.css')), 'world-home.css unchanged');
+    /* Oct 19 2026: Emmanuel asked for no shadow on any bubble, so the source rule itself lost its dark drop shadow
+       (it used to be drop-shadow(0 6px 12px black) and the ring Home override hid it). Stricter than before: the
+       source must now have no drop shadow below Misty in any layout, and the ring Home override stays. */
+    const src = read('world-home.css').match(/html\.wh-home #spBubble \.tmg-plant \{([^}]*)\}/);
+    assert.ok(src, 'world-home.css still styles the sprite');
+    assert.deepStrictEqual(dropShadowsBelow(decl(src[1], 'filter'), 0), [], 'world-home.css: no drop shadow under Misty in any Home layout');
 });
 
 test('the liquid in a part-full bubble has no inner shade along the glass edge (it sat at the bottom: a dark band)', () => {

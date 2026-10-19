@@ -25,7 +25,8 @@ html.herb-living #tabbar .tb[data-tab="scan"]{background-image:linear-gradient(9
 .lh-sleep-eyes,.lh-dizzy-eyes,.lh-ooh,.lh-flat,.lh-calm,.lh-frown{display:none}
 .lh-particle{animation:lh-drift 5.5s ease-in-out infinite;animation-delay:var(--delay);opacity:.6}
 .lh-constellation{opacity:.58}.lh-halo{animation:lh-halo 6s ease-in-out infinite;transform-origin:130px 48px}
-.lh-reflection{transform-origin:center;animation:lh-reflect 4.4s ease-in-out infinite}
+/* Oct 19 2026 (Emmanuel): the oval reflection under a companion cell reads as a ground shadow. Hidden on every bubble, every screen. */
+.lh-reflection{display:none!important}
 .lh-blossom{filter:drop-shadow(0 0 3px #ffffff55)}.lh-stage-5 .lh-foliage{animation:lh-float 5s ease-in-out infinite;transform-origin:130px 200px}
 .lh-pot-glass .lh-pot>path{fill:#b4edf747;stroke:#c4fcff;stroke-width:2}
 .lh-pot-porcelain .lh-pot>path{fill:#f3e3ff;stroke:#cbb6e6}.lh-pot-porcelain .lh-pot>text{fill:#9880b3}

@@ -708,3 +708,14 @@ with a letter or number. Fixed lines that say "Misty" use her name through `Lowi
 
 **Consequences:** her name is the user's choice and syncs with the account; more fixed "Misty" lines can adopt withName()
 later. Tests: tests/aura-rename.test.cjs. MAYA-HANDOFF item 28.
+
+## 2026-10-19 Food paths: one job per entry, Pathfinder counts first finds (MAYA-HANDOFF items 24 and 27)
+
+**Decision:** Fuel > Log meal is for what you ate; Shop is for checking products in the shop (Scan in the shop) and the
+Shopping list; Cook is meal ideas. Every "I ate this" shortcut opens the one shared meal logger (Gap > I just ate adds an
+optional "Not now"). A shopping scan never logs a meal and never touches the Gap clock. Catch only shows for products the
+community database does not have; the first checked one pays +100 XP into the normal XP total (max 3 a day), and the
+Pathfinder badge shows how many products you found first.
+
+**Consequences:** the count lives on the phone (D.pf) until it syncs; the e2e lives in /home/sprite/FOODPATHS/e2e.cjs.
+

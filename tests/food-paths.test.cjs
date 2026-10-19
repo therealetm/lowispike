@@ -23,7 +23,7 @@ function card(opts) {
     ctx.window = ctx;
     if (opts.shop) ctx.CAM = { shop: true };
     vm.createContext(ctx);
-    vm.runInContext(cardSrc + '\nthis.out = simpleCardHTML(P); this.K = {eanOk, pfUseful, pfVerifiable, pfToday};', Object.assign(ctx, { P: opts.p }));
+    vm.runInContext(cardSrc + '\nthis.out = simpleCardHTML(P); this.K = {eanOk, pfUseful, pfVerifiable, pfToday, pfCountText};', Object.assign(ctx, { P: opts.p }));
     return ctx;
 }
 const OFF = { name: 'Bio Haferflocken', brand: 'Kölln', barcode: '4000540000108', verdict: 'ok', why: ['fiber'], facts: { c: 58, s: 1.2, f: 10, p: 13 }, source: 'off' };
@@ -145,4 +145,15 @@ test('Gap "I just ate" / "I ate earlier" open the one shared meal logger, option
 
 test('a meal log never restarts a running Gap clock (shopping scans do not log at all)', () => {
     assert.match(html, /function firstMeal\(at\)\{ const s = st\(\); if \(startOf\(s\)\) return false;/);
+});
+
+test('the Pathfinder badge counts every product you found first, in three languages', () => {
+    let K = card({ p: { name: 'x' } }).K;
+    assert.equal(K.pfCountText(), 'Pathfinder badge · your first find');
+    const pf = { a: { ts: 1, xp: 100 }, b: { ts: 2, xp: 0 }, c: { ts: 3, xp: 100 } };
+    K = card({ p: { name: 'x' }, pf }).K;
+    assert.equal(K.pfCountText(), 'Pathfinder badge · 3 found first', 'past the daily cap still counts');
+    const tx = html.slice(html.indexOf('pfCount:'), html.indexOf('pfCount1:'));
+    assert.equal((tx.match(/\{n\}/g) || []).length, 3, 'EN, DE and ES all show the number');
+    assert.match(html, /\(first \? '<div class="sc-pfn">' \+ esc\(pfCountText\(\)\)/, 'shown on the You\'re the Pathfinder screen');
 });

@@ -13487,6 +13487,7 @@ html[data-ui=light] .b3-q{background:radial-gradient(circle,#59607a,#2a2f40)}
 .b3-catch.throw .b3-pb{animation:b3throw .7s cubic-bezier(.3,.6,.4,1) both}
 @keyframes b3throw{0%{transform:none}40%{transform:translateY(-26px) rotate(-200deg)}70%{transform:translateY(0) rotate(-340deg)}85%{transform:rotate(-320deg)}100%{transform:rotate(-360deg)}}
 .b3-catch:disabled{opacity:.6}
+.sc-pfn{margin-top:6px;font-size:13px;font-weight:600;letter-spacing:.01em;opacity:.9}
 .b3-have{width:100%;text-align:center;padding:12px;border-radius:16px;background:var(--r2-field);font-weight:650}
 .b3-have small{display:block;font-weight:500;opacity:.7;margin-top:4px}
 .b3-caught{text-align:center;margin-top:16px;padding:18px 14px;border-radius:20px;background:color-mix(in srgb,var(--b3-ok) 14%,transparent);animation:b3pop .5s cubic-bezier(.2,.9,.3,1.3) both}
@@ -14264,6 +14265,8 @@ const SC_TX = {
   pfFirst: ["Be the first to add it", "Füg es als Erste:r hinzu", "Sé el primero en añadirlo"],
   pfXP: ["Pathfinder badge · +{x} XP", "Pathfinder-Abzeichen · +{x} XP", "Insignia Pathfinder · +{x} XP"],
   pfBadge: ["Pathfinder badge", "Pathfinder-Abzeichen", "Insignia Pathfinder"],
+  pfCount: ["Pathfinder badge · {n} found first", "Pathfinder-Abzeichen · {n} zuerst gefunden", "Insignia Pathfinder · {n} descubiertos primero"],
+  pfCount1: ["Pathfinder badge · your first find", "Pathfinder-Abzeichen · dein erster Fund", "Insignia Pathfinder · tu primer descubrimiento"],
   pfNew: ["Not in LOWiSPIKE yet", "Noch nicht in LOWiSPIKE", "Aún no está en LOWiSPIKE"],
   pfSave: ["Save it", "Speichern", "Guardarlo"],
   pfCheckNote: ["We couldn't check this barcode's label details, so it's saved on your phone. Pathfinder needs a checked product.", "Die Etikettdaten zu diesem Barcode ließen sich nicht prüfen, deshalb ist es nur auf deinem Handy gespeichert. Pathfinder gibt es nur für geprüfte Produkte.", "No pudimos comprobar los datos de la etiqueta de este código, así que se guarda en tu móvil. Pathfinder es solo para productos comprobados."],
@@ -14286,6 +14289,8 @@ function pfUseful(p){ const nm = String(p && p.name || "").trim(); if (nm.length
   const f = p.facts || {}, nums = ["c", "s", "f", "p"].filter(k => typeof f[k] === "number" && isFinite(f[k])).length;
   return nums >= 2 || String(p.ingredients || "").trim().length >= 15; }
 function pfVerifiable(p){ return !!p && !p.id && p.source === "off" && eanOk(p.barcode) && pfUseful(p) && p.verdict !== "unknown"; }
+/* the Pathfinder badge counts every product you were first to add (D.pf keeps one entry per barcode, paid or past the daily cap) */
+function pfCountText(){ const n = Object.keys(D.pf || {}).length; return n <= 1 ? sct("pfCount1") : sct("pfCount").replace("{n}", n); }
 function pfToday(){ const d = new Date().toDateString(); return Object.values(D.pf || {}).filter(x => x && new Date(x.ts).toDateString() === d && x.xp).length; }
 /* Oct 19 food paths: checking a product and logging food you ate are two different buttons. "I ate this · log it" logs it as a meal
    (the main button when the scan came from Log meal); it never shows in the shopping camera, so a shopping scan never logs a meal
@@ -14418,7 +14423,7 @@ async function catchCur(btn, p){
   try { window.dispatchEvent(new CustomEvent("lowi:product-caught", {detail:{product:slim(Object.assign({}, p, m)), verdict:p.verdict, xp:cxp}})); } catch(e){}
   sfx(first ? "catchFirst" : "catch"); buzz(first ? [30, 60, 30, 60, 80] : [30, 50, 40]);
   const acts = btn.closest(".b3-acts, .b3-man"); const card = REV && $("#b3Card", REV);
-  const burst = '<div class="b3-caught' + (first ? " first" : "") + '"><div class="b3-cbig">' + esc(first ? sct("pfWin") : t("caught")) + '</div><div class="small">' + esc(first ? sct("pfWinSub") : res.draft ? sct("pfDraft") : res.pending ? t("pending") : m.byName && m.byName !== myName() ? t("addedSub", m.byName) : t("inYours")) + '</div>' + (cxp ? '<div class="sc-xp">+' + cxp + ' XP</div>' : "") +
+  const burst = '<div class="b3-caught' + (first ? " first" : "") + '"><div class="b3-cbig">' + esc(first ? sct("pfWin") : t("caught")) + '</div><div class="small">' + esc(first ? sct("pfWinSub") : res.draft ? sct("pfDraft") : res.pending ? t("pending") : m.byName && m.byName !== myName() ? t("addedSub", m.byName) : t("inYours")) + '</div>' + (cxp ? '<div class="sc-xp">+' + cxp + ' XP</div>' : "") + (first ? '<div class="sc-pfn">' + esc(pfCountText()) + '</div>' : "") +
     '<button class="r2-btn ghost" data-b3="dex" style="margin-top:12px">' + esc(t("openDex")) + '</button></div>';
   if (acts && acts.classList.contains("b3-man")) { const q = Object.assign({}, p, m); const st = REV && $(".b3-rev", REV); if (st) st.innerHTML = '<div class="b3-stage show">' + cardHTML(q, false) + burst + swapsHTML(q) + '</div>'; }
   else if (acts) { acts.outerHTML = burst; if (card && m.dex) { const no = $(".b3-no", card); if (no) no.textContent = t("dexNo") + " " + String(m.dex).padStart(3, "0"); } }
@@ -14516,7 +14521,7 @@ function boot(){
   try { if (curTab() === "scan") renderTab(); } catch(e){}
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => setTimeout(boot, 0)); else setTimeout(boot, 0);
-window.LowiDex = {open:openDex, scan:openScanner, reveal, rate, rateName, validCode, enrich, showProduct, vtext:v => [t("vl_" + v), t("vs_" + v)], whyText, /* prod-verdict */ render:renderTab, state:() => D, stop:() => closeScanner(true), load:loadComm, lookup:byBarcode, search:searchName, shopMode, shopResume, shopOn:() => !!(CAM && CAM.shop), collect:doCatch, items:() => D.comm.concat(mineList()), cur:() => CUR || (window.LowiDiscovery ? LowiDiscovery.cur() : null)} /* f2-cur */;
+window.LowiDex = {open:openDex, scan:openScanner, reveal, rate, rateName, validCode, enrich, showProduct, vtext:v => [t("vl_" + v), t("vs_" + v)], whyText, /* prod-verdict */ render:renderTab, state:() => D, stop:() => closeScanner(true), load:loadComm, lookup:byBarcode, search:searchName, shopMode, shopResume, shopOn:() => !!(CAM && CAM.shop), collect:doCatch, pfCount:() => Object.keys(D.pf || {}).length, items:() => D.comm.concat(mineList()), cur:() => CUR || (window.LowiDiscovery ? LowiDiscovery.cur() : null)} /* f2-cur */;
 })();
 </script>
 <style id="r3kcss">

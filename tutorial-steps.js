@@ -112,9 +112,9 @@
             id: 'fuel', area: 'home', target: ['#whHud .wh-meals'], covers: ['fuel', 'cook', 'shop'],
             title: { en: 'Fuel', de: 'Essen', es: 'Comida' },
             text: {
-                en: 'Fuel is everything about food. Tap it for Log meal, Shop and Cook.',
-                de: 'Essen ist alles rund ums Essen. Tipp drauf für Mahlzeit eintragen, Einkaufen und Kochen.',
-                es: 'Comida es todo lo relacionado con comer. Tócala para Registrar comida, Comprar y Cocinar.'
+                en: 'Fuel is everything about food. Log meal is for what you ate, Shop checks products in the shop and keeps your list, Cook has meal ideas.',
+                de: 'Essen ist alles rund ums Essen. Mahlzeit eintragen ist für das, was du gegessen hast, Einkaufen prüft Produkte im Laden und führt deine Liste, Kochen hat Ideen fürs Essen.',
+                es: 'Comida es todo lo relacionado con comer. Registrar comida es para lo que comiste, Comprar revisa productos en la tienda y guarda tu lista, Cocinar tiene ideas de comidas.'
             }
         },
         {

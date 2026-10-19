@@ -333,6 +333,27 @@ Checkpoint written Monday 19 Oct 2026, 9:10 PM CEST. Live was **20261019-201827*
 | 18 Human-instinct UX + crowd | yes, 9 PM call | task 98f0954e | no | no | Supabase access in harness | everything |
 | 19 Natural Spanish | yes | task 2ba92e76 | no | no | none known | everything |
 
+**Crowd checkpoint, Monday 19 Oct 2026, 9:35 PM CEST (task "LOWiSPIKE: check simulated crowd runs and add meal
+logging", picking up from 98f0954e, which stopped out of budget).** Checked with tool output, not task reports:
+- The crowd was built and committed in 3e1db70 (`tools/community-crowd/`, `.github/workflows/community-crowd.yml`,
+  cron every 10 minutes, about 9 minutes per run). Spanish was released separately as 20261019-212227 (04d6908).
+- **Runs:** at 9:31 PM there was exactly one run, 39310230692, triggered by **workflow_dispatch**, not the schedule.
+  No scheduled run had started yet (the workflow landed at 9:19 PM; GitHub often starts new schedules late).
+  Its log: 27 to 30 members, 116 Supabase calls, 5 errors, all HTTP 400, no 429 or 5xx, no network errors, no slow
+  calls, maxMs 1039. The 400s match the joins one for one: `session()` tries a password sign-in first and gets 400
+  for an account that doesn't exist yet, then signs up. So nothing broke, but the run was quiet: 1 chat line, 0
+  photos, 0 posts in 9 minutes.
+- **Supabase (read with the reader account in `BOTS/sb.cjs`, reachable):** 30 crowd profiles, all with their own
+  companion look. Since 21:15 CEST: 12 messages in the room, all from crowd members (1 meal photo in chat, 3 replies
+  between members, 0 product messages, 0 replies or @messages to Emmanuel or his friends, because none of the
+  humans wrote in the room since launch). 1 feed post with a photo ("Just ate: Hot cumin lamb wrap..."). Both
+  photo files load (HTTP 200, image/jpeg).
+- **Not done yet:** the 100-at-once stress test does not exist; `crowd.cjs` writes one message at a time with a 2.5
+  to 11.5 s gap. Activity rate is low by design (`ambient()`: about 0.13 chat lines per minute per 100 awake members
+  times 1.4). Meal logging is being added next (branch `crowd-meals`, worktree `/home/sprite/wt-crowd-meals`).
+- Check script: `/home/sprite/CROWDCHECK/db-check.cjs` (read-only; copied to the `crowd-meals` branch as
+  `tools/community-crowd/db-check.cjs`).
+
 ### 0.6 The Mickey 17 workflow: how every Maya hands over to the next
 
 Added Monday 19 Oct 2026, about 9:20 PM CEST, by Maya 5, at Emmanuel's request on the evening call. His words: "can
@@ -857,3 +878,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 - 2026-10-19 20:15 Bug hunt BH-011: a reload during the companion reveal in setup left a new player on the standard Misty; setup now resumes at the birthday step until the companion exists. Branch bughunt-202610191801, notes in BUGHUNT/LEDGER.md (Run 12).
 - 2026-10-19 21:10 Section 0.5 added from the 9 PM call: standing rule "update the GitHub for Maya" whenever he says something new; human-instinct UX and up to a hundred simulated users (task 98f0954e, running, no accounts created yet); natural Spanish (task 2ba92e76, running). Live 20261019-201827.
 - 2026-10-19 21:20 Section 0.6 added at Emmanuel's request: the Mickey 17 workflow, how every Maya hands over to the next (5 to 6, 6 to 7, and on), with a handover table. WIP snapshots pushed: `wip/spanish-natural` (f51b0e8), `wip/intuition-playtest` (f29d9ec); both tasks still running. Live 20261019-201827.
+- 2026-10-19 21:35 Crowd checkpoint under 0.5: one manual run, no scheduled run yet, 30 members, 12 messages, 1 photo post, 400s are expected sign-in misses, no stress test yet.

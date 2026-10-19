@@ -610,3 +610,11 @@ The user explicitly requested deploying the recovered Home implementation withou
 **Decision:** a new spotlight tour, not the old `LowiG1` first-run guide (its steps point at the retired Today screen). `tutorial-steps.js` is the one data file (steps, EN/DE/ES, which features each step covers); `tutorial.js` plays it: a round glow spotlight on the real Home control plus one glass card with the user's own companion (`LowiBirthCompanion.svg`), Back / Skip (the rest of this part) / Next, Skip all on every step. It never opens panels and reads or writes no app data (one key, `lowi.tutorial.v1`). It hides completely while setup, any other dialog, the Day card's sheets, Settings or Misty's flight is up (bug hunt round 8), and the Day card waits for it. First step for accounts with the standard Misty: the own-companion task's claim step. Keep-current rule: news.json `"tutorial"` enforced by bump-build and release-check; ring controls and Settings rows enforced by `tests/tutorial-steps.test.cjs`.
 
 **Consequences:** every later release must name its tutorial step or say why none is needed; the first one or two after this may trip on it and get a clear message.
+
+## 2026-10-19: evolutions escalate every form (EVOLUTION.md)
+
+**Context:** Emmanuel (German voice note): the companion is "mein Investment"; the young one looks small, later "aus diesen kleinen Flossen kriegt er richtig dicke Dinger, kriegt er noch mehr Stein ... es soll immer heftiger werden". The cell frame was tight round the body, so every form looked the same size, and traits barely grew.
+
+**Decision:** `companion-core.js POWER` per form: fins/ears grow up to 1.9x long and 2.2x thick, 0/0/2/4/6/9 armour stones on the rim, shoulder horns on the last two forms, and a per-form frame (young forms sit small, later forms fill it). XP thresholds unchanged (0/100/300/700/1500/3000). The evolution card escalates with tier t = new form: charge, flash, burst, 4+3t rays, card shake from tier 3, power line in EN/DE/ES; it waits while another dialog/sheet/setup/tour/Day card is open. transform/opacity only; cell-world.js (Home face, mouth, no glow ring) untouched.
+
+**Consequences:** each user's own generated companion keeps its body, colours, name and face; only the trait layers and the frame change.

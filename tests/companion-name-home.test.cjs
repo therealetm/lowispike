@@ -1,10 +1,10 @@
 'use strict';
 /* BH-006 (Oct 19 2026): Home called Misty by the old herb identity name ("Moss Leaf", made from the star sign) in the Misty hub title,
-   the energy card ("Moss Leaf's energy"), the Misty card and the name under her bubble. The name shown must be the user's own
+   the energy card ("Moss Leaf's energy"), the Misty card, the name under her bubble, and your spot on the friends tree (also sent to friends). The name shown must be the user's own
    companion's name, else a name the user typed, else "Misty". Never the herb auto name. */
 const test = require('node:test'), assert = require('node:assert'), fs = require('fs'), path = require('path'), vm = require('vm');
 const ROOT = path.join(__dirname, '..');
-const FILES = ['world-home.js', 'misty-hub.js', 'misty-scale.js', 'spirit.js'];
+const FILES = ['world-home.js', 'misty-hub.js', 'misty-scale.js', 'spirit.js', 'cell-room.js'];
 const src = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
 
 function helper(f) {

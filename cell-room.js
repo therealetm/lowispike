@@ -15,7 +15,9 @@ const read=(k,clean)=>{try{return clean(JSON.parse(localStorage.getItem(k)||'nul
 const write=(k,v)=>{try{localStorage.setItem(k,JSON.stringify({...v,ts:Date.now()}));}catch(e){}};
 function herb(){try{return root.LowiHerbTamagotchi.current();}catch(e){return null;}}
 function xpNow(){const h=herb();return h&&h.m?+h.m.xp||0:0;}
-function cellName(){try{const h=herb();if(h)return String(root.LowiHerbTamagotchi.name(h.p,h.m)||'').slice(0,24)||'Lumi';}catch(e){}return'Lumi';}
+/* BH-006: the companion's name = own companion's name, else a name the user typed, else Misty; never the old herb auto name ("Moss Leaf") */
+function companionName() { const w = typeof window !== 'undefined' ? window : globalThis; const pick = v => { v = v == null ? '' : String(v).trim(); return v ? v.slice(0, 24) : ''; }; let auto = ''; try { auto = pick(w.LowiHerbIdentity && w.LowiHerbIdentity.autoName && w.LowiHerbIdentity.autoName()); } catch (e) { } const typed = v => { v = pick(v); return v && v !== auto ? v : ''; }; let n = ''; try { const B = w.LowiBirthCompanion; if (B && B.has && B.has()) { const c = B.get(); n = pick(c && c.name); } } catch (e) { } if (!n) try { const t = w.LowiHerbTamagotchi, p = t && t.readPrefs && t.readPrefs(); n = typed(p && p.name); } catch (e) { } if (!n) try { const R = w.LowiR2, s = R && R.S && R.S(); n = typed(s && s.herb && s.herb.name); } catch (e) { } return n || 'Misty'; }
+function cellName(){return companionName();}
 function myUid(){try{return root.LOWI_CLOUD&&LOWI_CLOUD.uid?String(LOWI_CLOUD.uid()||''):'';}catch(e){return'';}}
 function myName(){try{return String((root.LowiHost&&LowiHost.user()||{}).name||'');}catch(e){return'';}}
 function live(){try{return!!(root.LOWI_CLOUD&&LOWI_CLOUD.live&&LOWI_CLOUD.live());}catch(e){return false;}}

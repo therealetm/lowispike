@@ -139,8 +139,8 @@
         { grow: 1, thick: 1, stones: 0, stone: 0, horn: 0, frame: 1.15 },
         { grow: 1, thick: 1, stones: 2, stone: .07, horn: 0, frame: 1.08 },
         { grow: 1.3, thick: 1.45, stones: 4, stone: .09, horn: 0, frame: 1.08 },
-        { grow: 1.5, thick: 1.8, stones: 6, stone: .11, horn: .3, frame: 1.12 },
-        { grow: 1.9, thick: 2.2, stones: 9, stone: .13, horn: .46, frame: 1.2 }
+        { grow: 1.5, thick: 1.8, stones: 6, stone: .11, horn: .3, frame: 1.15 },
+        { grow: 1.9, thick: 2.2, stones: 9, stone: .13, horn: .46, frame: 1.23 }
     ];
     const power = st => Object.assign({}, POWER[clampStage(st)]);
     const EAR_MAX = .8; /* ear/fin length cap (x R) so the last form still fits its frame */

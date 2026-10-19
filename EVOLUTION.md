@@ -25,8 +25,8 @@ The thresholds were kept on purpose: Forms unlocks, cosmetics and the world-home
 | 1 | little nubs | - | 0 | - | - | 1.15 |
 | 2 | 1 (first fins) | 1 | 2 | .07 | - | 1.08 |
 | 3 | 1.3 + tail | 1.45 | 4 | .09 | - | 1.08 |
-| 4 | 1.5 + wings + crest | 1.8 | 6 | .11 | .30 | 1.12 |
-| 5 | 1.9 (capped .8R) + bigger wings x1.25/1.35, second wings, crown | 2.2 | 9 | .13 | .46 | 1.2 |
+| 4 | 1.5 + wings + crest | 1.8 | 6 | .11 | .30 | 1.15 |
+| 5 | 1.9 (capped .8R) + bigger wings x1.25/1.35, second wings, crown | 2.2 | 9 | .13 | .46 | 1.23 |
 
 - frame: how much room the picture leaves round the body. Young forms sit small; later forms fill the frame with traits.
   Probe check (playtest/probe-evo-stages.cjs): no trait leaves the frame for four birthdays/elements; painted area grows

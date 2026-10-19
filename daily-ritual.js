@@ -130,7 +130,7 @@
             : L(lang, 'Open LOWiSPIKE from your Home Screen. Your herb can now remind you.', '\u00d6ffne LOWiSPIKE vom Home-Bildschirm. Jetzt kann dein Kraut dich erinnern.', 'Abre LOWiSPIKE desde inicio. Ahora tu hierba puede recordarte cosas.');
         return [s1, s2, s3];
     }
-    const BUSY = ['#brOv', '#g1Ob:not(.out)', '#lcUpd', '.g1-ov', '.r3g1-ov', '.r2-ov.on:not(.off)', '#sheetwrap.open', '#rsSheet.open', '#mv-player.on', '#hofSheet', '#drA2', '#drPick', 'body > .b3-cam', '#spWorld:not([hidden])'];
+    const BUSY = ['#brOv', '#g1Ob:not(.out)', '#lcUpd', '.g1-ov', '.r3g1-ov', '.r2-ov.on:not(.off)', '#sheetwrap.open', '#rsSheet.open', '#mv-player.on', '#hofSheet', '#drA2', '#drPick', 'body > .b3-cam', '#spWorld:not([hidden])', '#ltTour:not(.lt-held)'];
     const Core = { dayKey, addDays, diffDays, weekStart, monthStart, monthEnd, WEEKDAY, WEEKDAY_PLAIN, LINES, weekdayName, weekdayLine, firstDay, dayNumber, shouldShowDaily, GOALS, goalById, goalText, period, progress, previous, pickGoal, a2Steps, BUSY, A2HS_X: 'lowi.a2hs.x', SEEN: 'lowi.daily.seen' };
     if (typeof module !== 'undefined' && module.exports) module.exports = Core;
     if (!root || !root.document) return;

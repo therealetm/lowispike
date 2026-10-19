@@ -4,7 +4,7 @@
 // Replaces the bump block that was copy-pasted into each one-off release script.
 // Usage:
 //   node scripts/bump-build.cjs [--build YYYYMMDD-HHMMSS] [--live URL|--no-live] [--news news.json] [--dry-run]
-// news.json: {"slug":"care-board","go":{"tab":"home"},"lead":{en,de,es},"steps":[...],"text":{"en":"..","de":"..","es":".."}}
+// news.json: {"slug":"care-board","tutorial":"<step id>"|{"none":"why"},"go":{"tab":"home"},"lead":{en,de,es},"steps":[...],"text":{"en":"..","de":"..","es":".."}}
 // Prints the new build id on the last line.
 const fs = require('fs');
 const path = require('path');
@@ -25,6 +25,21 @@ function nextBuild(repo, live, now) {
   let t = toDate(now);
   for (const x of [repo, live]) if (x && BUILD_RE.test(x)) { const after = new Date(toDate(x).getTime() + 1000); if (after > t) t = after; }
   return fromDate(t);
+}
+
+// Oct 19 2026 (Emmanuel: "with every new update, the tutorial also needs to be updated"): every What's New entry says how the
+// replayable tutorial covers it. news.json "tutorial": "<step id in tutorial-steps.js>" or {"none": "why no step is needed"}.
+// Returns an error string, or '' when the entry is fine. See TUTORIAL.md.
+function checkTutorial(root, news) {
+  if (!news) return '';
+  let S = null;
+  try { S = require(path.resolve(root, 'tutorial-steps.js')); } catch (e) { return ''; }
+  const ids = S.STEPS.map(s => s.id).join(', ');
+  if (news.tutorial == null) return 'news.json has no "tutorial" field. Every release must keep the tutorial current (TUTORIAL.md):\n' +
+    '  add "tutorial": "<step id>" when a step explains this change (update that step in tutorial-steps.js if the feature changed;\n' +
+    '  add a new step for a new feature), or "tutorial": {"none": "why no tutorial step is needed"}. Step ids: ' + ids;
+  if (!S.newsOk(news.tutorial)) return 'news.json "tutorial" must be an existing step id (' + ids + ') or {"none": "a reason of at least 8 characters"}; got ' + JSON.stringify(news.tutorial);
+  return '';
 }
 
 function applyBump(root, oldId, newId, news) {
@@ -52,6 +67,7 @@ function applyBump(root, oldId, newId, news) {
     n.date = newId.slice(0, 4) + '-' + newId.slice(4, 6) + '-' + newId.slice(6, 8);
     if (news.lead) n.lead = news.lead;
     if (news.steps) n.steps = news.steps;
+    if (news.tutorial) n.tutorial = news.tutorial; else delete n.tutorial;
   }
   fs.writeFileSync(vp, JSON.stringify(d) + (raw.endsWith('\n') ? '\n' : ''));
   changed.push('version.json');
@@ -75,6 +91,8 @@ async function main() {
   if (!BUILD_RE.test(newId)) { console.error('bad --build ' + newId); process.exit(2); }
   if (newId <= oldId || (live && newId <= live)) { console.error('new build ' + newId + ' must be after repo ' + oldId + ' and live ' + live); process.exit(2); }
   const news = opt('--news') ? JSON.parse(fs.readFileSync(opt('--news'), 'utf8')) : null;
+  const tutErr = checkTutorial(root, news);
+  if (tutErr) { console.error('BLOCKER: ' + tutErr); process.exit(5); }
   console.log('repo=' + oldId + ' live=' + live + ' new=' + newId);
   if (args.includes('--dry-run')) { console.log(newId); return; }
   const changed = applyBump(root, oldId, newId, news);
@@ -85,5 +103,5 @@ async function main() {
   console.log(newId);
 }
 
-module.exports = { nextBuild, berlinNow, applyBump, toDate, fromDate };
+module.exports = { nextBuild, berlinNow, applyBump, checkTutorial, toDate, fromDate };
 if (require.main === module) main();

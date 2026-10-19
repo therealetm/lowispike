@@ -8,6 +8,7 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 
 const BUILD_RE = /^\d{8}-\d{6}$/;
+const TUTORIAL_RULE_FROM = '20261019-164000'; // the first release that ships the replayable tutorial; every later What's New must name its tutorial step
 const STRAY_RE = [
   /(^|\/)\.DS_Store$/, /\.log$/, /\.orig$/, /\.rej$/, /\.bak$/, /\.swp$/, /~$/,
   /(^|\/)node_modules\//, /(^|\/)\.env(\.|$)/, /\.pem$/, /(^|\/)id_(rsa|ed25519)(\.pub)?$/,
@@ -79,6 +80,13 @@ function check(root) {
         if (!n.text || typeof n.text[l] !== 'string' || !n.text[l].trim()) errors.push('version.json news.text.' + l + ' missing (What\'s New must ship in EN/DE/ES)');
       }
       if (build && n.id && !String(n.id).endsWith(build)) warnings.push('news.id "' + n.id + '" does not end with the build id; What\'s New may not reappear for this release');
+      /* Oct 19 2026: every What's New entry from the tutorial release on says how tutorial-steps.js covers it (TUTORIAL.md) */
+      const nb = (String(n.id || '').match(/(\d{8}-\d{6})$/) || [])[1] || '';
+      if (nb && nb >= TUTORIAL_RULE_FROM) {
+        let S = null; try { S = require(path.resolve(root, 'tutorial-steps.js')); } catch (e) { }
+        if (!S) errors.push('tutorial-steps.js is missing or broken (the tutorial must ship with every release)');
+        else if (!S.newsOk(n.tutorial)) errors.push('version.json news.tutorial must be a tutorial step id or {"none": "why"}: release with news.json "tutorial" set (TUTORIAL.md)');
+      }
       const kb = Buffer.byteLength(verText) / 1024;
       info.push('version.json ' + kb.toFixed(0) + ' KB');
       if (kb > 100) warnings.push('version.json is ' + kb.toFixed(0) + ' KB and every update check downloads it; consider moving older What\'s New entries out of it');

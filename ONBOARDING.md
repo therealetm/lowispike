@@ -54,3 +54,7 @@ old version of the app). The wordmark is the live `LOWiSPIKE` text, not an image
 1. Did this release add, rename or remove anything a new person is told about? Update the copy (EN, DE, ES) and this file.
 2. Did it change a control, a bubble name or a world? Check screen 3 ("How you play").
 3. Run `node --test tests/onboarding-current.test.cjs`.
+
+## Replay tutorial (19 Oct 2026)
+
+Settings > Tutorial replays a guided tour (`tutorial.js`, steps ONLY in `tutorial-steps.js`) as if the person were new, without touching their data. Its first step, for accounts that still have the standard Misty, opens the claim-your-own-companion step (owned by the own-companion work, `LowiBirthCompanion.claim` / `openCreator`). When onboarding copy changes, check that the matching tutorial step still says the same thing: every release's news.json names its `"tutorial"` step or `{"none": "why"}` (TUTORIAL.md).

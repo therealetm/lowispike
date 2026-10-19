@@ -117,3 +117,9 @@ The complete inline-module, screen, persistence, backend, asset, and test invent
 - Parallel agents: one task, one worktree, one branch (`git worktree add ../wt-<topic> -b <topic> origin/main`). Two tasks never edit the same files; split by file before starting. Write who owns what in `/home/sprite/COORD-<topic>.md` when tasks overlap.
 - Keep releases small and one at a time: each one is one user-visible change, its What's New and its tests.
 
+## The tutorial stays current (rule since 19 Oct 2026, Emmanuel)
+
+Settings > Tutorial replays a guided tour where the user's own companion walks them through every main feature (`tutorial.js`). Its content lives ONLY in `tutorial-steps.js`. Every release keeps it current:
+- `news.json` carries `"tutorial": "<step id>"` (the step that explains the change; update its text in EN/DE/ES when the feature changed, add a new step for a new feature) or `"tutorial": {"none": "why no step is needed"}`. `scripts/bump-build.cjs` refuses the release without it, and `scripts/release-check.cjs` fails a published What's New that lacks it.
+- A new Home ring control (`home-orbit-v2.js` ORDER) or Settings row (`home-settings-sleep-v2.js` pageGroups / MORE) needs a step in `tutorial-steps.js` (its `covers`) or a `NO_TUTORIAL` reason. `tests/tutorial-steps.test.cjs` fails otherwise.
+- Bump `VERSION` in `tutorial-steps.js` when you change steps. Never make the tour open panels or sit over setup; it hides while anything else is up. Details: `TUTORIAL.md`.

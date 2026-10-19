@@ -10,6 +10,13 @@ human developer can pick up where the last one stopped. It does not carry an ass
 conversation history, and a successor will not automatically have the same tools, sign-ins or access. Check what
 you can actually do before you promise anything (see "Access you need").
 
+## The tutorial stays current (rule since 19 Oct 2026, Emmanuel)
+
+Settings > Tutorial replays a guided tour where the user's own companion walks them through every main feature (`tutorial.js`). Its content lives ONLY in `tutorial-steps.js`. Every release keeps it current:
+- `news.json` carries `"tutorial": "<step id>"` (the step that explains the change; update its text in EN/DE/ES when the feature changed, add a new step for a new feature) or `"tutorial": {"none": "why no step is needed"}`. `scripts/bump-build.cjs` refuses the release without it, and `scripts/release-check.cjs` fails a published What's New that lacks it.
+- A new Home ring control (`home-orbit-v2.js` ORDER) or Settings row (`home-settings-sleep-v2.js` pageGroups / MORE) needs a step in `tutorial-steps.js` (its `covers`) or a `NO_TUTORIAL` reason. `tests/tutorial-steps.test.cjs` fails otherwise.
+- Bump `VERSION` in `tutorial-steps.js` when you change steps. Never make the tour open panels or sit over setup; it hides while anything else is up. Details: `TUTORIAL.md`.
+
 ## 1. Boot sequence (do this first, in order)
 
 1. `git fetch origin && git log --oneline -5 origin/main`. Work from a fresh worktree on `origin/main`, never from

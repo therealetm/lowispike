@@ -22,8 +22,10 @@
        size times CAP_K, clamped, world units); FLOW: the current's speed as a share of her own top speed mid-thread; END: its share
        at the membranes; PULL: the draw to the thread's core (share of her top speed, always < 1); EASE: how fast a current takes
        hold / lets go; CAM_K / CAM_MIN: camera distance inside a bubble (share of its radius / floor); FLOOR: the galaxy's own camera
-       distance (misty-galaxy GAL.D), kept for the spirit world's look while the camera is inside */
-    const GB = { TOUCH: 0.5, PRESS: 0.5, WEAK: 0.8, GRACE: 0.25, IN: 0.35, MAG: 0.3, CAP_K: 2.4, CAP_MIN: 4, CAP_MAX: 16, FLOW: 0.6, END: 0.25, PULL: 0.28, EASE: 2.5, CAM_K: 1.1, CAM_MIN: 9, CAM_MAX: 105, FLOOR: 64 };
+       distance (misty-galaxy GAL.D), kept for the spirit world's look while the camera is inside; HOOK: on the autopilot string tour the
+       one string she is hooked onto holds her from this much further out; COOL: seconds after she leaves a bubble before the tour may
+       take her into that same bubble again (Oct 19, E-man: "the bubble pulled her in twice, then it crashed") */
+    const GB = { TOUCH: 0.5, PRESS: 0.5, WEAK: 0.8, GRACE: 0.25, IN: 0.35, MAG: 0.3, CAP_K: 2.4, CAP_MIN: 4, CAP_MAX: 16, FLOW: 0.6, END: 0.25, PULL: 0.28, EASE: 2.5, CAM_K: 1.1, CAM_MIN: 9, CAM_MAX: 105, FLOOR: 64, HOOK: 1.6, COOL: 6 };
     const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
     function smooth(e0, e1, x) { const t = clamp((x - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t); }
     /* the closest point of a polyline (flat xyz array) to p: distance, share along it (0..1), the point and the unit tangent */
@@ -49,7 +51,8 @@
     function currentAt(hit, dir, cap, top, px, py, pz) {
         if (!hit) return { x: 0, y: 0, z: 0, k: 0 };
         const ck = captureK(hit.d, cap); if (ck <= 0) return { x: 0, y: 0, z: 0, k: 0 };
-        const along = (dir < 0 ? -1 : 1) * GB.FLOW * top * flowProfile(hit.u) * ck;
+        /* dir 0 (Oct 19, the string tour going up a string against its flow): only the draw to the core, no carry either way */
+        const along = (dir < 0 ? -1 : dir > 0 ? 1 : 0) * GB.FLOW * top * flowProfile(hit.u) * ck;
         let x = hit.tx * along, y = hit.ty * along, z = hit.tz * along;
         if (hit.d > 1e-6) { const pull = GB.PULL * top * ck * smooth(0, cap * 0.5, hit.d) / hit.d; x += (hit.cx - px) * pull; y += (hit.cy - py) * pull; z += (hit.cz - pz) * pull; }
         return { x, y, z, k: ck };
@@ -72,12 +75,36 @@
     const camInside = (r, d0) => clamp((+r || 10) * GB.CAM_K, Math.max(GB.CAM_MIN, +d0 || 0), GB.CAM_MAX);
     /* how far from its middle she can roam inside a bubble of radius r, for her size hs */
     const insideLimit = (r, hs) => Math.max((+r || 10) * 0.4, (+r || 10) - (+hs || 1) * 0.6);
-    const core = { GB, pushOf, nearestOnPath, flowProfile, captureK, capOf, currentAt, pressHold, camInside, insideLimit, smooth };
+    /* Oct 19 string tour: which world each end of a string meets. A string starts and ends just inside a membrane (0.98 of the radius,
+       body-world-3d-scene.js), so an end belongs to the bubble whose membrane it sits on; none = her own world (-1, at the centre).
+       ends: [x, y, z]; worlds: [{ x, y, z, r }] */
+    function endOf(x, y, z, worlds) {
+        let bi = -1, bs = 0.12;
+        for (let i = 0; i < worlds.length; i++) { const w = worlds[i], q = Math.hypot(x - w.x, y - w.y, z - w.z) / (w.r || 1), sc = Math.abs(q - 0.98); if (sc < bs) { bs = sc; bi = i; } }
+        return bi;
+    }
+    /* Round 2 (Oct 19, the freeze right after a string caught her): the membrane slides her round at this distance from a bubble's
+       middle, for her size hs (out in the galaxy she is big, hs ~15). rest = the nearest she can really be to it, a little off that */
+    const slide = (r, hs) => (+r || 10) * 1.04 + (+hs || 1) * 0.4;
+    const rest = (r, hs) => slide(r, hs) + 2;
+    /* the part of a string she can ride: its first and last points outside every membrane's push for her size (and out of her own
+       world, |q| > 50). pts: [{ x, y, z }] in group space, worlds: [{ x, y, z, r }]. None clear (two bubbles closer together than she
+       is big): the one point with the most room, clear false. The old cut (r * 1.06 + 2) ignored her size, so on string 11 of the
+       default world (bubbles 5 and 30, glass 16 apart) the point she had to reach to finish sat inside the far bubble's push */
+    function span(pts, worlds, hs) {
+        const room = q => { let m = Math.hypot(q.x, q.y, q.z) - 50; for (let i = 0; i < worlds.length; i++) { const w = worlds[i]; m = Math.min(m, Math.hypot(q.x - w.x, q.y - w.y, q.z - w.z) - rest(w.r, hs)); } return m; };
+        const rm = pts.map(room), n = pts.length;
+        let entry = rm.findIndex(m => m > 0);
+        if (entry < 0) { let bk = Math.floor(n / 2), bm = -Infinity; rm.forEach((m, k) => { if (m > bm + 1e-9) { bm = m; bk = k; } }); return { entry: bk, end: bk, clear: false }; }
+        let end = n - 1; while (end > entry && !(rm[end] > 0)) end--;
+        return { entry, end, clear: true };
+    }
+    const core = { GB, endOf, slide, rest, span, pushOf, nearestOnPath, flowProfile, captureK, capOf, currentAt, pressHold, camInside, insideLimit, smooth };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!D || !D.addEventListener || W.LowiGalaxyBubbles) return;
 
     /* ---------- browser ---------- */
-    const B = { exitI: -1, g: null, others: [], paths: [], scanT: 0, rot: null, gb: -1, press: null, pressI: -1, cur: null, curK: 0, riding: -1, floor: false, skin: null, skinOf: -1, puff: 0, glowI: -1, glow: 0, log: [], T: null, v: null, v2: null, w: null };
+    const B = { exitI: -1, g: null, others: [], paths: [], scanT: 0, rot: null, gb: -1, press: null, pressI: -1, cur: null, curK: 0, riding: -1, floor: false, skin: null, skinOf: -1, puff: 0, glowI: -1, glow: 0, outI: -1, outT: -1e9, log: [], T: null, v: null, v2: null, w: null };
     function note(s) { B.log.push(Math.round(performance.now()) + ' ' + s); if (B.log.length > 16) B.log.shift(); }
     function emit(on, i) { try { W.dispatchEvent(new CustomEvent('lowi:galaxy-bubble', { detail: { in: on, i } })); } catch (e) { } }
     function buzz(p) { try { if (navigator.vibrate) navigator.vibrate(p); } catch (e) { } }
@@ -90,11 +117,14 @@
             B.g = g; B.others = []; B.paths = []; B.rot = null;
             g.children.forEach(o => { if (o.isMesh && o.userData && o.userData.r && o.position.lengthSq() > 1) B.others.push(o); });
             const th = g.getObjectByName('cosmos-threads'), ps = th && th.userData && th.userData.paths || [];
+            const ws = B.others.map(o => ({ x: o.position.x, y: o.position.y, z: o.position.z, r: o.userData.r }));
             /* a bounding sphere per thread, so each frame only the threads near her are walked point by point */
             ps.forEach(pa => {
                 const A = pa.arr, n = A.length / 3; let x0 = 1e9, y0 = 1e9, z0 = 1e9, x1 = -1e9, y1 = -1e9, z1 = -1e9;
                 for (let k = 0; k < n; k++) { const x = A[k * 3], y = A[k * 3 + 1], z = A[k * 3 + 2]; x0 = Math.min(x0, x); y0 = Math.min(y0, y); z0 = Math.min(z0, z); x1 = Math.max(x1, x); y1 = Math.max(y1, y); z1 = Math.max(z1, z); }
-                B.paths.push({ arr: A, dir: pa.dir < 0 ? -1 : 1, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, cz: (z0 + z1) / 2, rad: Math.hypot(x1 - x0, y1 - y0, z1 - z0) / 2 });
+                let len = 0; for (let k = 1; k < n; k++) len += Math.hypot(A[k * 3] - A[k * 3 - 3], A[k * 3 + 1] - A[k * 3 - 2], A[k * 3 + 2] - A[k * 3 - 1]);
+                B.paths.push({ arr: A, dir: pa.dir < 0 ? -1 : 1, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, cz: (z0 + z1) / 2, rad: Math.hypot(x1 - x0, y1 - y0, z1 - z0) / 2, len,
+                    a: endOf(A[0], A[1], A[2], ws), b: endOf(A[n * 3 - 3], A[n * 3 - 2], A[n * 3 - 1], ws) });
             });
             note('scan ' + B.others.length + ' worlds ' + B.paths.length + ' currents');
         }
@@ -131,7 +161,11 @@
         B.rot = th;
         /* adventure tiers (misty-explore.js): on autopilot or her timed adventure she may go into the one bubble she aims for (S.exB),
            stay in it until she is done (S.exLeave), and ride a current only while she means to (S.exRide). Otherwise unchanged. */
-        const auto = mode === 'auto', aimB = auto && S.exB != null && S.exB >= 0 ? S.exB : -1, ride = auto && !!S.exRide;
+        /* Oct 19 string tour (misty-explore.js): S.exSi = the one string she is hooked onto (only that one holds her, a crossing string
+           never snatches her), S.exUp = she goes up it against its flow (held to it, not carried), S.exVisit = the bubble she is visiting
+           (its membrane glows softly; she never goes in) */
+        const hook = mode === 'auto' && S.exSi != null && S.exSi >= 0 && B.paths[S.exSi] ? S.exSi : -1;
+        const auto = mode === 'auto', aimB = auto && S.exB != null && S.exB >= 0 ? S.exB : -1, ride = auto && !!S.exRide || hook >= 0;
         const pl = toLocal(B.l, S.p, th), drive = mode === 'drive', pushK = (drive && pushOf(mag, S.th) >= GB.MAG && wl > 1e-4) || (aimB >= 0 && wl > 0.2);
         let glowI = -1, glowP = 0;
         if (B.gb >= 0) {
@@ -158,14 +192,15 @@
         /* the currents */
         let want = null, best = null, bestK = 0;
         if ((drive || ride) && !ctx.reduced) {
-            const cap = capOf(hs);
+            const cap = capOf(hs) * (hook >= 0 ? GB.HOOK : 1);
             for (let i = 0; i < B.paths.length; i++) {
+                if (hook >= 0 && i !== hook) continue;
                 const pa = B.paths[i], dx = pl.x - pa.cx, dy = pl.y - pa.cy, dz = pl.z - pa.cz, rr = pa.rad + cap;
                 if (dx * dx + dy * dy + dz * dz > rr * rr) continue;
                 const hit = nearestOnPath(pa.arr, pl.x, pl.y, pl.z); if (!hit || hit.d >= cap) continue;
                 const ck = captureK(hit.d, cap); if (ck > bestK) { bestK = ck; best = { hit, pa, i }; }
             }
-            if (best) { const c = currentAt(best.hit, best.pa.dir, cap, topSpeed(ctx, S), pl.x, pl.y, pl.z); want = toWorld(B.v2, B.v.set(c.x, c.y, c.z), th); }
+            if (best) { const c = currentAt(best.hit, hook >= 0 && S.exUp ? 0 : best.pa.dir, cap, topSpeed(ctx, S), pl.x, pl.y, pl.z); want = toWorld(B.v2, B.v.set(c.x, c.y, c.z), th); }
         }
         if (want) B.cur.lerp(want, Math.min(1, dt * GB.EASE)); else B.cur.multiplyScalar(Math.max(0, 1 - dt * GB.EASE));
         if (B.cur.lengthSq() < 1e-8) B.cur.set(0, 0, 0);
@@ -179,7 +214,7 @@
         toLocal(pl, S.p, th);
         let touched = -1;
         for (let i = 0; i < B.others.length; i++) {
-            const o = B.others[i], r = o.userData.r, rr = r * 1.04 + hs * 0.4;
+            const o = B.others[i], r = o.userData.r, rr = slide(r, hs);
             B.v.subVectors(pl, o.position); const d = B.v.length();
             if (i === B.exitI) { if (d >= rr) B.exitI = -1; else continue; } /* on the way home she just leaves the one she was in */
             /* touching counts a hair beyond the glass (TOUCH): each slide nudges her off it for a frame, and every lost frame used to
@@ -187,7 +222,8 @@
             if (d >= rr + hs * GB.TOUCH || d < 1e-4) continue;
             B.v.divideScalar(d); toWorld(B.w, B.v, th); /* outward */
             const inward = pushK ? -V.want.dot(B.w) / wl : 0;
-            if ((drive || i === aimB) && !ctx.reduced) {
+            const cool = !drive && i === B.outI && performance.now() - B.outT < GB.COOL * 1000;
+            if ((drive || i === aimB) && !ctx.reduced && !cool) {
                 touched = i;
                 const h = pressHold(B.pressI === i ? B.press : null, { dt, pushing: inward >= GB.IN, k: ctx.k });
                 B.press = h.s; B.pressI = i; glowI = i; glowP = h.p;
@@ -203,6 +239,7 @@
         }
         if (touched < 0 && B.pressI >= 0) { const h = pressHold(B.press, { dt, pushing: false }); B.press = h.s; if (h.p <= 0) B.pressI = -1; else { glowI = B.pressI; glowP = h.p; } }
         glow(glowI >= 0 ? B.others[glowI] : null, glowP);
+        if (auto && S.exVisit != null && S.exVisit >= 0 && S.exVisit !== glowI) glow(B.others[S.exVisit], 0.25);
         paintSkin(null, 0);
         floor(ctx);
         return true;
@@ -221,7 +258,7 @@
         floor(ctx);
     }
     function leave(ctx, S, o, r, hs, th, why) {
-        B.exitI = why === 'way home' ? B.others.indexOf(o) : -1; B.gb = -1; B.press = null; B.pressI = -1;
+        B.exitI = why === 'way home' ? B.others.indexOf(o) : -1; B.outI = B.others.indexOf(o); B.outT = performance.now(); B.gb = -1; B.press = null; B.pressI = -1;
         B.v.subVectors(toLocal(B.l, S.p, th), o.position); const d = B.v.length(); if (d < 1e-4) B.v.set(0, 1, 0); else B.v.divideScalar(d);
         toWorld(B.w, B.v, th);
         if (why !== 'way home') { B.v2.copy(o.position).addScaledVector(B.v, r * 1.04 + hs * 0.45); toWorld(S.p, B.v2, th); S.v.addScaledVector(B.w, 1.2 * hs); }
@@ -253,13 +290,14 @@
     function targets(ctx) {
         const g = ctx && ctx.a && scan(ctx.a); if (!g || !B.T) return null;
         const th = g.rotation.y, T = B.T, w = p => toWorld(new T.Vector3(), p, th);
-        const bubbles = B.others.map((o, i) => ({ i, p: w(o.position), r: o.userData.r }));
+        const bubbles = B.others.map((o, i) => ({ i, p: w(o.position), r: o.userData.r, far: o.position.length() }));
+        const links = B.paths.map((pa, i) => ({ i, a: pa.a, b: pa.b, dir: pa.dir, len: pa.len }));
         const streams = B.paths.map((pa, i) => {
             const A = pa.arr, n = A.length / 3, f = pa.dir > 0, at = k => w(new T.Vector3(A[k * 3], A[k * 3 + 1], A[k * 3 + 2]));
             const k0 = f ? Math.min(n - 1, 1) : Math.max(0, n - 2), k1 = f ? n - 1 : 0, mid = at(Math.floor(n / 2));
             return { i, from: at(k0), to: at(k1), mid };
         });
-        return { bubbles, streams, inside: B.gb, riding: B.riding };
+        return { bubbles, streams, links, inside: B.gb, riding: B.riding };
     }
     /* one current, flow-ordered, in world space, with the first point where she can get onto it (outside every bubble) */
     function stream(ctx, i) {
@@ -271,6 +309,17 @@
         let end = n - 1; while (end > entry && !clear(pts[end])) end--;
         return { pts: pts.map(q => toWorld(new T.Vector3(), q, th)), entry, end };
     }
-    W.LowiGalaxyBubbles = { core, step, camDist, reset, targets, stream,
+    /* Oct 19 string tour: one string ordered from its a end to its b end (aToB) or back, in world space, with the first and last points
+       outside every bubble (where she hooks on and where she lets go at the far bubble) */
+    function strand(ctx, i, aToB, hs) {
+        const g = ctx && ctx.a && scan(ctx.a), pa = g && B.paths[i]; if (!pa || !B.T) return null;
+        const th = g.rotation.y, T = B.T, A = pa.arr, n = A.length / 3, pts = [];
+        for (let k = 0; k < n; k++) { const j = aToB ? k : n - 1 - k; pts.push(new T.Vector3(A[j * 3], A[j * 3 + 1], A[j * 3 + 2])); }
+        /* off every membrane's push for her size (round 2: the old cut was r * 1.06 + 2, glass + 3.4, inside the push for big Misty) */
+        const ws = B.others.map(o => ({ x: o.position.x, y: o.position.y, z: o.position.z, r: o.userData.r }));
+        const sp = span(pts, ws, hs);
+        return { pts: pts.map(q => toWorld(new T.Vector3(), q, th)), entry: sp.entry, end: sp.end, clear: sp.clear, from: aToB ? pa.a : pa.b, to: aToB ? pa.b : pa.a, up: (aToB ? pa.dir : -pa.dir) < 0 };
+    }
+    W.LowiGalaxyBubbles = { core, step, camDist, reset, targets, stream, strand,
         state: () => ({ inside: B.gb, riding: B.riding, current: B.cur ? +B.cur.length().toFixed(2) : 0, press: B.press ? +(B.press.t || 0).toFixed(2) : 0, worlds: B.others.length, currents: B.paths.length, floor: B.floor, log: B.log.slice(-8) }) };
 })();

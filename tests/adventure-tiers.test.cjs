@@ -42,11 +42,14 @@ test('after the sky she goes into bubbles only from Level 5 and rides streams on
     assert.strictEqual(X.after('atmos', A.capsOf(2)), 'home');
     assert.strictEqual(X.after('atmos', A.capsOf(3)), 'toBubble');
     assert.strictEqual(X.after('leave', A.capsOf(3), false), 'home');
-    assert.strictEqual(X.after('leave', A.capsOf(4), false), 'toStream');
-    assert.strictEqual(X.after('leave', A.capsOf(4), true), 'home');
+    /* Oct 19 (E-man): from Level 6 the string tour replaces going into a bubble: after the sky she plans her first string, and a bubble
+       she did go into always ends in home, never a second dip */
+    assert.strictEqual(X.after('atmos', A.capsOf(4)), 'plan');
+    assert.strictEqual(X.after('leave', A.capsOf(4)), 'home');
+    assert.strictEqual(X.after('leave', A.capsOf(3)), 'home');
 });
 test('every excursion step has a time limit so she can never get stuck out there', () => {
-    ['edge', 'atmos', 'toBubble', 'inside', 'leave', 'toStream', 'ride', 'home'].forEach(p => assert.ok(X.X.LIM[p] > 0 && X.X.LIM[p] <= 60, p));
+    ['edge', 'atmos', 'toBubble', 'inside', 'leave', 'hook', 'ride', 'visit', 'fly', 'home'].forEach(p => assert.ok(X.X.LIM[p] > 0 && X.X.LIM[p] <= 60, p));
 });
 test('the timed trip no longer hands her to the old loop or cuts autopilot short', () => {
     const ok = mf.match(/const ok = [^\n]+/)[0], blink = mf.match(/const blink = [^\n]+/)[0];

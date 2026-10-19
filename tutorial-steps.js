@@ -19,7 +19,7 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 1;
+    const VERSION = 2;
     const AREAS = ['you', 'home', 'food', 'play', 'together', 'settings', 'end'];
     const STEPS = [
         {
@@ -140,6 +140,15 @@
                 en: 'Settings, Community is where you meet everyone else. Share a meal, and tap Chat for the community room.',
                 de: 'Unter Einstellungen, Community triffst du alle anderen. Teile eine Mahlzeit und tipp auf Chat für den Community-Raum.',
                 es: 'En Ajustes, Comunidad conoces a todos los demás. Comparte una comida y toca Chat para la sala de la comunidad.'
+            }
+        },
+        {
+            id: 'body', area: 'settings', target: ['#whHud .o8-settings'], covers: ['body', 'weight', 'bmi'],
+            title: { en: 'Weight & BMI', de: 'Gewicht & BMI', es: 'Peso e IMC' },
+            text: {
+                en: 'In Settings, Weight & BMI is where you weigh in. You get your BMI, an estimate of your body fat, and a Then and Now picture that levels up as you make progress.',
+                de: 'Unter Einstellungen, Gewicht & BMI trägst du dein Gewicht ein. Du bekommst deinen BMI, eine Schätzung deines Körperfetts und ein Damals-und-Jetzt-Bild, das mit deinem Fortschritt im Level steigt.',
+                es: 'En Ajustes, Peso e IMC es donde te pesas. Ves tu IMC, una estimación de tu grasa corporal y una imagen de Antes y Ahora que sube de nivel con tu progreso.'
             }
         },
         {

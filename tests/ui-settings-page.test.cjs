@@ -26,7 +26,7 @@ test('the page holds Me, Look & sound, Account, Menu bar and every More entry, e
     assert.strictEqual(typeof C.pageGroups, 'function', 'pageGroups(env) is exported');
     const all = C.pageGroups({ has: () => true });
     assert.deepStrictEqual(all.map(g => g.key), ['main', 'more']);
-    assert.deepStrictEqual(all[0].ids, ['me', 'look', 'account', 'menubar', 'tutorial'], 'no separate More chip: More lives on the page itself');
+    assert.deepStrictEqual(all[0].ids, ['me', 'body', 'look', 'account', 'menubar', 'tutorial'], 'no separate More chip: More lives on the page itself');
     assert.deepStrictEqual(all[1].ids, C.MORE, 'every More entry, in the same order as the More panel');
     assert.ok(all[1].ids.includes('community') && all[1].ids.includes('care') && all[1].ids.includes('map') && all[1].ids.includes('worldSound'));
     assert.deepStrictEqual(C.pageGroups({ has: () => false }), [], 'nothing to show: no empty groups');

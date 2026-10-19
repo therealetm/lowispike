@@ -42,8 +42,12 @@ test('it keeps teaching: three more facts per place, said once each, then quiet'
     assert.strictEqual(C.nextFact(3, new Set([1, 2]), 1), null, 'all said: nothing new, so it stays quiet');
     const js = read('region-pals.js');
     assert.ok(/st\.visit <= 1 \? 7000 : 26000\) \|\| st\.visit >= 7/.test(js), 'only after a quiet spell, a few per visit');
-    assert.ok(/if \(!greeted\[id\]\)/.test(js), 'one hello per place per session; coming back starts with something new');
-    assert.ok(!/localStorage/.test(js), 'session memory only');
+    /* Oct 18, 2026 (Emmanuel): a guide introduces itself only the first time you ever meet it, not once per session. So the
+       meeting is now remembered on the device (lowi.guides.v1, tests/guide-intro-once.test.cjs); what each guide has said stays
+       session memory. Nothing else is stored. */
+    assert.ok(/C\.opening\(memLoad\(\), id, lang\(\), st\.lines, seen\[id\]\)/.test(js), 'one hello per place ever; coming back starts with a welcome back and something new');
+    assert.deepStrictEqual((js.match(/localStorage\.\w+\([^)]*\)/g) || []).map(s => s.replace(/\(.*/, '')), ['localStorage.getItem', 'localStorage.setItem'], 'only the meeting memory is stored');
+    assert.ok(/localStorage\.getItem\(MEM_KEY/.test(js) && /localStorage\.setItem\(MEM_KEY/.test(js) && /const MEM_KEY = 'lowi\.guides\.v1'/.test(js));
 });
 
 test('direction words: screen x right / y up into eight directions', () => {

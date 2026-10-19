@@ -70,6 +70,50 @@
         left: ['{k} crumbs are still hiding here.', 'Hier verstecken sich noch {k} Kr\u00fcmel.', 'Aqu\u00ed a\u00fan se esconden {k} migas.'],
         back: ['Back in here! Here\u2019s one more thing:', 'Wieder hier! Noch etwas f\u00fcr dich:', '\u00a1De vuelta! Una cosa m\u00e1s:']
     };
+    /* ---------- meeting once (Oct 18, 2026) ----------
+       E-man: "They introduce themselves once, obviously, the first time seeing them. But the rest of the time it's 'Oh, you're back,'
+       or 'Glad you're back,' or 'Nice being back,' or 'Oh, we're back to business.'" Each guide remembers it has met you (the shell
+       keeps this in localStorage lowi.guides.v1). Later visits open with a line from this pool, never the same one twice in a row. */
+    const BACK = [
+        ['Oh, you\u2019re back!', 'Glad you\u2019re back.', 'Nice to have you back.', 'Back to business, then.', 'There you are again!',
+            'Look who\u2019s back!', 'Welcome back. I kept your seat warm.', 'Oh hey, you again. Good!'],
+        ['Oh, du bist wieder da!', 'Sch\u00f6n, dass du wieder da bist.', 'Gut, dich wieder hier zu haben.', 'Zur\u00fcck an die Arbeit, dann.', 'Da bist du ja wieder!',
+            'Schau mal, wer wieder da ist!', 'Willkommen zur\u00fcck. Ich hab dir den Platz warmgehalten.', 'Oh, hey, du schon wieder. Sch\u00f6n!'],
+        ['\u00a1Oh, has vuelto!', 'Me alegra que hayas vuelto.', 'Qu\u00e9 bien tenerte de vuelta.', 'Pues, de vuelta al trabajo.', '\u00a1Ah\u00ed est\u00e1s otra vez!',
+            '\u00a1Mira qui\u00e9n volvi\u00f3!', 'Qu\u00e9 bueno verte de nuevo. Te guard\u00e9 el sitio.', 'Oh, hola, t\u00fa otra vez. \u00a1Qu\u00e9 bien!']
+    ];
+    /* a welcome-back line, never the one said last time (last = its index, -1 for none) */
+    function backLine(li, last, rnd) {
+        const L = BACK[li3(li)], n = L.length, r = Math.min(0.999999, Math.max(0, +(rnd || Math.random)() || 0));
+        let i;
+        if (last >= 0 && last < n && n > 1) { i = Math.floor(r * (n - 1)); if (i >= last) i++; } else i = Math.floor(r * n);
+        return { i, text: L[i] };
+    }
+    /* what the guide remembers about you: { v: 1, met: { liver: firstMeetingMs }, lastBack: index of the last welcome-back line } */
+    function memory(raw) {
+        const m = { v: 1, met: {}, lastBack: -1 };
+        if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+            if (raw.met && typeof raw.met === 'object' && !Array.isArray(raw.met)) for (const k of Object.keys(raw.met)) if (PALS[k] && +raw.met[k] > 0) m.met[k] = +raw.met[k];
+            if (Number.isInteger(raw.lastBack) && raw.lastBack >= 0) m.lastBack = raw.lastBack;
+        }
+        return m;
+    }
+    function met(m, id) { return !!(m && m.met && m.met[pid(id)]); }
+    function meet(m, id, ts) { id = pid(id); if (m && id && !m.met[id]) m.met[id] = ts || Date.now(); return m; }
+    /* the first thing a guide says when you arrive: its hello the very first time, after that a welcome back plus something it
+       hasn't told you yet (or just the welcome back when it has told you everything). Updates m; the shell saves it. */
+    function opening(m, id, li, lines, seen, rnd) {
+        if (!met(m, id)) { meet(m, id); return { i: 0, text: lines[0], intro: true }; }
+        const b = backLine(li, m.lastBack, rnd); m.lastBack = b.i;
+        const k = nextFact(lines.length, seen, 1);
+        return { i: k, text: k != null ? b.text + ' ' + lines[k] : b.text, back: b.i };
+    }
+    /* tapping through the lines: round and round, but once you've met, the hello is skipped */
+    function cycle(i, total, metYet) {
+        if (!total) return 0;
+        i = ((i % total) + total) % total;
+        return metYet && i === 0 && total > 1 ? 1 : i;
+    }
     /* screen directions, clockwise from up (0) in 45 degree steps */
     const DIRS = [['up', 'up and to the right', 'to the right', 'down and to the right', 'down', 'down and to the left', 'to the left', 'up and to the left'],
         ['nach oben', 'nach oben rechts', 'nach rechts', 'nach unten rechts', 'nach unten', 'nach unten links', 'nach links', 'nach oben links'],
@@ -185,7 +229,7 @@
     function tilt(v) { return clamp(Math.round((v && v[0] || 0) * 900), -18, 18); }
     const api = { PALS, IDS, pid, li3, COPY, tr, pal, lines, FOLLOW, target, step, relax, tilt, awardsXp: false,
         MORE, GUIDE, DIRS, HUNT, dirIndex, guide, huntLine, showMs, minRead, nextFact, SPOTS, overlap, spotRect, place,
-        gapFor, QUEST_IDS, QUEST_W, questBottom, ORB_R };
+        gapFor, QUEST_IDS, QUEST_W, questBottom, ORB_R, BACK, backLine, memory, met, meet, opening, cycle };
     if (typeof module === 'object' && module.exports) module.exports = api;
     root.LowiRegionPalsCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

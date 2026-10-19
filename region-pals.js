@@ -43,8 +43,15 @@
     const st = { id: null, el: null, host: null, lines: [], i: 0, p: C.FOLLOW.home.slice(), v: [0, 0], off: [0, 0], drag: null, steerT: 0, raf: 0, t0: 0, sayT: 0, nextT: 0, shown: 0,
         /* cell-guide: what is showing now, one waiting line, quiet time, this visit's count, where the bubble sits */
         cur: null, wait: null, waitT: 0, endT: 0, visit: 0, spot: 'ar', placeT: 0, obs: null, obsT: 0, size: null, lastKind: '' };
-    /* this session only (no storage): which lines each place has already said, and the places greeted */
+    /* this session only (no storage): which lines each place has already said, and the places greeted this session */
     const seen = {}, greeted = {};
+    /* on this device (Oct 18, 2026): which guides you have met, so each says hello only the very first time
+       (shape in region-pals-core.js memory(); key in DATA_CONTRACTS.md) */
+    const MEM_KEY = 'lowi.guides.v1';
+    let mem = null;
+    function memLoad() { if (!mem) { let raw = null; try { raw = JSON.parse(localStorage.getItem(MEM_KEY) || 'null'); } catch (e) { } mem = C.memory(raw); } return mem; }
+    function memSave() { try { localStorage.setItem(MEM_KEY, JSON.stringify(memLoad())); } catch (e) { } }
+    const metYet = id => C.met(memLoad(), id);
     const said = (id, i) => { (seen[id] = seen[id] || new Set()).add(i); };
 
     function todayText(id) { try { const A = W.LowiArrival; const d = A && A.data ? A.data(id) : null; return d && d.today ? d.today : ''; } catch (e) { return ''; } }
@@ -93,7 +100,7 @@
     }
     function sayLine(i, user) {
         if (!st.el || !st.lines.length) return;
-        i = ((i % st.lines.length) + st.lines.length) % st.lines.length;
+        i = C.cycle(i, st.lines.length, metYet(st.id)); /* round and round, but the hello only once, ever */
         speak({ text: st.lines[i], prio: user ? 3 : 0, kind: 'fact', i }, user);
     }
     function quiet() {
@@ -230,12 +237,14 @@
         place();
         requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('rp-in')));
         kick();
-        /* first visit this session: hello. Coming back: no second hello, straight to something it hasn't told you yet. */
+        /* the very first meeting (remembered on this device): hello. Every visit after that: a short welcome back from a pool,
+           never the same one twice in a row, then something it hasn't told you yet. */
         clearTimeout(st.nextT); st.nextT = setTimeout(() => {
             if (st.el !== el) return;
-            if (!greeted[id]) { greeted[id] = 1; sayLine(0, false); return; }
-            const k = C.nextFact(st.lines.length, seen[id], 1);
-            if (k != null) speak({ text: C.guide('back', lang()) + ' ' + st.lines[k], prio: 0, kind: 'fact', i: k }, false);
+            greeted[id] = 1;
+            const o = C.opening(memLoad(), id, lang(), st.lines, seen[id]); memSave();
+            if (o.intro) { speak({ text: o.text, prio: 0, kind: 'fact', i: 0 }, false); return; }
+            speak(o.i != null ? { text: o.text, prio: 0, kind: 'fact', i: o.i } : { text: o.text, prio: 0, kind: 'back' }, false);
         }, reduced() ? 200 : 900);
         return el;
     }

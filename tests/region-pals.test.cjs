@@ -23,7 +23,10 @@ test('guides, not pets: no XP, no collection, no microbe buddies, Misty untouche
     assert.strictEqual(C.awardsXp, false);
     for (const src of [strip(js), strip(read('region-pals-core.js')).replace('awardsXp: false', '')]) {
         assert.ok(!/LowiXp|xpAward|award\(|ledger|addXp|LowiXP/i.test(src), 'no XP calls');
-        assert.ok(!/collect\w*\(|localStorage/.test(src), 'nothing collected or stored');
+        /* Oct 18, 2026: the one thing stored is which guides you have met (lowi.guides.v1), so each says hello only once.
+           Still nothing collected, and no other storage. */
+        assert.ok(!/collect\w*\(/.test(src), 'nothing collected');
+        assert.ok(!/localStorage/.test(src.replace(/localStorage\.(getItem|setItem)\(MEM_KEY/g, '')), 'nothing stored but the meeting memory');
     }
     const all = JSON.stringify(C.PALS).toLowerCase() + JSON.stringify(C.COPY).toLowerCase();
     for (const w of ['microbe', 'mikrobe', 'microbio', 'bacteri', 'buddy', 'buddies', 'xp']) assert.ok(!all.includes(w), w);

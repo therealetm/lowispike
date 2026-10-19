@@ -54,6 +54,8 @@ html .r2-ov.mh-ov .r2-sh, html.wh-on .r2-ov.mh-ov:not(.full) .r2-sh { background
 .wh-hint.mh-nudge { pointer-events: none; cursor: pointer; border: 1.5px solid var(--wh-glass-rim, rgba(255, 255, 255, .3)); font: inherit; font-size: 13.5px; font-weight: 600; line-height: 1.3; color: var(--wh-glass-ink, #fff); z-index: 6; }
 .wh-hint.mh-nudge.on { pointer-events: auto; }
 html.wh-today-open .wh-hint.mh-nudge { opacity: 0; pointer-events: none; }
+/* docked at the top or bottom because the spot above Misty would cover a control (BH-002): no tail pointing at her */
+.wh-hint.mh-nudge.mh-dock::after { display: none; }
 /* the row in Today it points at */
 .mh-point { box-shadow: 0 0 0 2px var(--wh-aura-a, #6ee7c8), 0 0 18px color-mix(in srgb, var(--wh-aura-a, #6ee7c8) 55%, transparent) !important; border-radius: 14px; transition: box-shadow .3s ease; }
 

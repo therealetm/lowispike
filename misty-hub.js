@@ -190,13 +190,39 @@
         const b = D.getElementById('spBubble'); if (!b || !b.getBoundingClientRect().width) return 'no-misty';
         return '';
     }
+    /* Oct 19 (bug hunt BH-002): on the ring Home the spot right above Misty's head sits on Settings, Water and Fuel, so the nudge
+       covered them and a tap on their upper half opened Today instead. Controls are never covered: when the head spot touches one,
+       the nudge moves to the top (or bottom) of the screen with no tail, like the guides' speech bubbles inside worlds (BH-001).
+       Pure: m = Misty's rect {l, t, w}, b = nudge size {w, h}, obs = control rects {l, t, r, b}, view = {w, h}. */
+    function nudgeSpot(m, b, obs, view) {
+        const ov = (q, o) => Math.max(0, Math.min(q.l + b.w, o.r) - Math.max(q.l, o.l)) * Math.max(0, Math.min(q.t + b.h, o.b) - Math.max(q.t, o.t));
+        const cost = q => (obs || []).reduce((c, o) => c + ov(q, o), 0);
+        const cx = m.l + m.w / 2, half = b.w / 2;
+        const head = { l: cx - half, t: Math.max(8, m.t - b.h - 10) };
+        if (!cost(head)) return { x: cx, t: head.t, dock: false };
+        const x = Math.max(10 + half, Math.min(view.w - 10 - half, cx));
+        let best = null, bc = cost(head);
+        for (const t of [56, view.h - b.h - 28]) { const q = { l: x - half, t }; const c = cost(q); if (c < bc) { bc = c; best = { x, t, dock: true }; } }
+        return best || { x: cx, t: head.t, dock: false };
+    }
+    function nudgeObstacles() {
+        const out = [];
+        D.querySelectorAll('[data-orbit], #whPad').forEach(e => {
+            const r = e.getBoundingClientRect(); if (r.width < 4 || r.height < 4) return;
+            const cs = getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden') return;
+            out.push({ l: r.left - 4, t: r.top - 4, r: r.right + 4, b: r.bottom + 4 }); /* faded controls too: they come straight back */
+        });
+        return out;
+    }
     function place() {
         if (!nudgeEl) return;
         const b = D.getElementById('spBubble'); if (!b) return;
-        /* same spot as Misty's own speech line (world-home paintHint): right above her head, tail on her */
+        /* same spot as Misty's own speech line (world-home paintHint): right above her head, tail on her, unless that covers a control */
         const r = b.getBoundingClientRect();
-        nudgeEl.style.left = Math.round(r.left + r.width / 2) + 'px';
-        nudgeEl.style.top = Math.max(8, Math.round(r.top - nudgeEl.offsetHeight - 10)) + 'px';
+        const s = nudgeSpot({ l: r.left, t: r.top, w: r.width }, { w: nudgeEl.offsetWidth, h: nudgeEl.offsetHeight }, nudgeObstacles(), { w: W.innerWidth, h: W.innerHeight });
+        nudgeEl.style.left = Math.round(s.x) + 'px';
+        nudgeEl.style.top = Math.round(s.t) + 'px';
+        if (nudgeEl.classList.contains('mh-dock') !== s.dock) nudgeEl.classList.toggle('mh-dock', s.dock);
     }
     function showNudge(n) {
         const hud = D.getElementById('whHud') || (D.getElementById('whHint') || {}).parentElement || D.body;
@@ -245,5 +271,5 @@
     function boot() { setInterval(tick, 1500); W.addEventListener('resize', place); }
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 
-    W.LowiMistyHub = { open, close, repaint, goodnight, saidGoodnight, nightKey, candidates, tick, quiet, _html: html };
+    W.LowiMistyHub = { open, close, repaint, goodnight, saidGoodnight, nightKey, candidates, tick, quiet, nudgeSpot, _html: html };
 })();

@@ -120,8 +120,7 @@ html body .hs-tl-remind::before { border-color: var(--ms-accent) !important; }
 html body .hs-must { background: rgba(120, 190, 255, .12) !important; border-color: var(--ms-line-soft) !important; }
 
 /* ---------- gold accents -> Misty blue ---------- */
-html body :is(.mb-over, .mb-go, .mb-kind small .mb-spk) { color: var(--ms-accent) !important; }
-html body .mb-sparks { background: rgba(120, 190, 255, .14) !important; color: var(--ms-accent-hi) !important; }
+html body :is(.mb-over, .mb-go) { color: var(--ms-accent) !important; }
 html body .mb-kind.act { border-color: var(--ms-accent) !important; box-shadow: 0 0 0 1px var(--ms-accent) inset, 0 0 14px rgba(100, 210, 255, .25) !important; }
 html body .hs-ask { background: rgba(120, 190, 255, .08) !important; border-color: var(--ms-line) !important; }
 html body .hs-askh .hs-over { color: var(--ms-accent) !important; }

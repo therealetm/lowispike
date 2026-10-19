@@ -56,11 +56,11 @@ t('heart bubble after care is sent today; incoming care still wins', () => {
 });
 t('daily limits unchanged: the same kind cannot go to the same friend twice a day', () => {
   const f = { uid: 'abcdef12', n: 'Anna' }, k = C.CARE.find(x => !x.lv || x.lv <= 1) || C.CARE[0];
-  const ctx = { day: '2026-10-15', level: 99, hour: 12, left: 99, sp: { key: '2026-10-15', left: 99, total: 99 } };
-  const st = { sent: {}, spent: {}, out: [], seen: {}, inbox: {} };
+  const ctx = { day: '2026-10-15', level: 99, hour: 12 };
+  const st = { sent: {}, out: [], seen: {}, inbox: {} };
   const r = C.canCare(st, f, k, ctx);
   if (r.ok) { st.sent[r.id] = Date.now(); assert.strictEqual(C.canCare(st, f, k, ctx).why, 'sent'); }
-  else assert.ok(['time', 'locked', 'sparks'].includes(r.why));
+  else assert.ok(['time', 'locked'].includes(r.why));
 });
 t('syntax', () => { new Function(mb); new Function(cr); });
 

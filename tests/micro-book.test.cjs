@@ -39,16 +39,13 @@ t('journey text from events is cleaned', () => {
     const j = C.journeys([], [{ id: 'x1', saw: '<b>die Milz</b>', ts }]);
     assert.ok(!/[<>]/.test(C.journeyLine(j[0], 1, true)));
 });
-t('sparks: 3 a day + 1 per counted action today, max 8, spent subtracts', () => {
-    const led = [e('meal', 'meal:1'), e('r3a_water', 'w', 'Water'), e('f1', 'q', 'Quest')];
-    assert.deepStrictEqual(C.sparks(led, {}, ts), { total: 5, used: 0, left: 5, key: DAY });
-    assert.strictEqual(C.sparks(led, { [DAY]: 4 }, ts).left, 1);
-    const many = []; for (let i = 0; i < 20; i++) many.push(e('meal', 'meal:' + i));
-    assert.strictEqual(C.sparks(many, {}, ts).total, 8);
+t('care is free (Oct 19): no sparks budget exported, no cost on any kind', () => {
+    assert.strictEqual(C.sparks, undefined); assert.strictEqual(C.SPARK_BASE, undefined); assert.strictEqual(C.SPARK_MAX, undefined);
+    assert.ok(C.CARE.every(k => !('cost' in k)));
 });
-t('care: one per friend, kind and day; level locks; time windows; sparks', () => {
+t('care: one per friend, kind and day; level locks; time windows; free', () => {
     const f = { uid: 'friendLena01', n: 'Lena' }, hug = C.CARE.find(k => k.id === 'hug'), night = C.CARE.find(k => k.id === 'night'), cheer = C.CARE.find(k => k.id === 'cheer');
-    const ctx = { day: DAY, level: 1, hour: 10, left: 5 };
+    const ctx = { day: DAY, level: 1, hour: 10 };
     const r = C.canCare({ sent: {} }, f, hug, ctx);
     assert.ok(r.ok); assert.strictEqual(r.id, 'care:friendLena01:hug:' + DAY);
     assert.strictEqual(C.canCare({ sent: { [r.id]: 1 } }, f, hug, ctx).why, 'sent');
@@ -56,7 +53,7 @@ t('care: one per friend, kind and day; level locks; time windows; sparks', () =>
     assert.strictEqual(C.canCare({}, f, night, ctx).why, 'time');
     assert.ok(C.canCare({}, f, night, Object.assign({}, ctx, { hour: 23 })).ok);
     assert.ok(C.canCare({}, f, night, Object.assign({}, ctx, { hour: 2 })).ok);
-    assert.strictEqual(C.canCare({}, f, hug, Object.assign({}, ctx, { left: 0 })).why, 'sparks');
+    assert.ok(C.canCare({}, f, hug, Object.assign({}, ctx, { left: 0 })).ok, 'an old zero balance no longer blocks');
     assert.strictEqual(C.canCare({}, { uid: 'x', n: 'bad' }, hug, ctx).why, 'none');
 });
 t('care ids parse back; junk ids rejected', () => {

@@ -6,7 +6,8 @@
    - Care: tap a friend (Freunde tab, or any [data-care-uid] / [data-friend-uid] node the friends tree renders) to send
      something kind. Delivered through the reactions table when signed in; otherwise it waits on this phone and goes out
      once the cloud is live. Incoming care from friends shows as a heart bubble on their cell.
-   State: S.adventures {log, seen}, S.care {sent, spent, out, seen, inbox} (account data). */
+   State: S.adventures {log, seen}, S.care {sent, out, seen, inbox} (account data). Care is free since Oct 19 (no sparks:
+   no counter, no cost, no "not enough" block; the old S.care.spent is dropped on read). */
 (function () {
     'use strict';
     const W = window, D = document, H = D.documentElement;
@@ -25,14 +26,12 @@
         trips: T('{n} journeys completed', '{n} Reisen geschafft', '{n} viajes completados'), trip1: T('1 journey completed', '1 Reise geschafft', '1 viaje completado'),
         noTrips: T('No body journey finished yet. When your cell comes back from one, it lands here with what it discovered.', 'Noch keine Körperreise beendet. Wenn deine Zelle von einer zurückkommt, steht hier, was sie entdeckt hat.', 'Aún no has terminado ningún viaje. Cuando tu célula vuelva de uno, aquí verás lo que descubrió.'),
         today: T('Today', 'Heute', 'Hoy'), great: T('Great', 'Super', 'Genial'), logBtn: T('Adventure log', 'Reisetagebuch', 'Diario de viajes'),
-        fIntro: T('Send your friends something kind. Each send costs a few sparks; you get more with every counted action today.', 'Schick deinen Freunden etwas Liebes. Jedes Senden kostet Funken, mit jeder gezählten Aktion heute bekommst du mehr.', 'Envía algo bonito a tus amigos. Cada envío cuesta chispas; consigues más con cada acción contada hoy.'),
-        sparks: T('{l}/{t} sparks today', '{l}/{t} Funken heute', '{l}/{t} chispas hoy'),
+        fIntro: T('Send your friends something kind. It’s free: each kind of message once a day per friend.', 'Schick deinen Freunden etwas Liebes. Es kostet nichts: jede Art einmal am Tag pro Freund.', 'Envía algo bonito a tus amigos. Es gratis: cada tipo una vez al día por amigo.'),
         noFr: T('No friends here yet. Friends join through your friends tree with your invite link, only real people.', 'Noch keine Freunde hier. Freunde kommen über deinen Freundesbaum mit deinem Einladungslink dazu, nur echte Menschen.', 'Aún no hay amigos. Se unen desde tu árbol de amigos con tu enlace de invitación, solo personas reales.'),
         tree: T('Open friends tree', 'Freundesbaum öffnen', 'Abrir árbol de amigos'),
         sendKind: T('Send something kind', 'Etwas Liebes senden', 'Enviar algo bonito'),
         send: T('Send', 'Senden', 'Enviar'), sent: T('Sent', 'Gesendet', 'Enviado'),
         lockLv: T('from level {n}', 'ab Level {n}', 'desde nivel {n}'), from: T('from {h}:00', 'ab {h} Uhr', 'desde las {h}:00'), until: T('until {h}:00', 'bis {h} Uhr', 'hasta las {h}:00'),
-        noSpark: T('Not enough sparks today. Log a meal, water or Move to get more.', 'Heute nicht genug Funken. Trag Essen, Wasser oder Bewegung ein, dann gibt es mehr.', 'Hoy no tienes chispas suficientes. Registra comida, agua o movimiento para conseguir más.'),
         live: T('Arrives with {n} right away.', 'Kommt sofort bei {n} an.', 'Le llega a {n} enseguida.'),
         wait: T('You’re offline or not signed in: it waits on this phone and goes out as soon as you are.', 'Du bist offline oder nicht angemeldet: Es wartet auf diesem Handy und geht raus, sobald du es bist.', 'Estás sin conexión o sin sesión: espera en este móvil y se envía en cuanto la tengas.'),
         sentTo: T('{k} sent to {n}', '{k} an {n} gesendet', '{k} enviado a {n}'), queued: T('{k} for {n} is waiting to go out', '{k} für {n} wartet aufs Senden', '{k} para {n} espera para enviarse'),
@@ -47,7 +46,7 @@
     const save = () => { try { B().save(); } catch (e) {} };
     const obj = (s, k, d) => { if (!s[k] || typeof s[k] !== 'object') s[k] = d; for (const x in d) if (s[k][x] == null) s[k][x] = d[x]; return s[k]; };
     const adv = () => obj(S(), 'adventures', { log: [], seen: {} });
-    const care = () => obj(S(), 'care', { sent: {}, spent: {}, out: [], seen: {}, inbox: {} });
+    const care = () => { const c = obj(S(), 'care', { sent: {}, out: [], seen: {}, inbox: {} }); if ('spent' in c) delete c.spent; return c; };
     const ledger = () => S().ledger || [];
     const trips = () => C.journeys(ledger(), adv().log);
     const level = () => { try { return W.LowiHost.level() || 1; } catch (e) { return 1; } };
@@ -93,7 +92,6 @@
     }
     const cellIco = () => '<svg class="mb-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="10" cy="10.5" r="3" fill="currentColor" opacity=".85"/><circle cx="15.5" cy="14.5" r="1.6" fill="currentColor" opacity=".6"/><circle cx="14.5" cy="8" r="1" fill="currentColor" opacity=".5"/></svg>';
     const heartIco = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.5-9.2C1.2 8.6 3.2 5 6.6 5c2 0 3.5 1.1 4.4 2.5h2C13.9 6.1 15.4 5 17.4 5c3.4 0 5.4 3.6 4.1 6.8C19.5 16.4 12 21 12 21z"/></svg>';
-    const sparkIco = '<svg class="mb-spk" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg>';
     const pin = '<svg class="mb-pin" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" d="M12 21s-6-5.7-6-11a6 6 0 0 1 12 0c0 5.3-6 11-6 11z"/><circle cx="12" cy="10" r="2.2" fill="currentColor"/></svg>';
     const lock = '<svg class="mb-lock" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2" fill="currentColor"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
 
@@ -112,9 +110,9 @@
         return '<li><button type="button" class="mb-fr" data-mb="care" data-uid="' + esc(f.uid) + '"><span class="mb-fc">' + cellSvg('blob', hueOf(f.uid), false) + (hearts ? '<i class="mb-heart" aria-hidden="true">' + heartIco + (hearts > 1 ? '<b>' + hearts + '</b>' : '') + '</i>' : '') + '</span><span class="mb-fn"><b>' + esc(f.n) + '</b><small>' + esc(hearts ? tr('gotToday') : (f.c || '')) + '</small></span><span class="mb-go">' + esc(tr('sendKind')) + '</span></button></li>';
     }
     function frHTML() {
-        const list = friends(), sp = C.sparks(ledger(), care().spent, Date.now());
+        const list = friends();
         const tree = W.LowiCellRoom && W.LowiCellRoom.openTree ? '<button type="button" class="mb-cta ghost" data-mb="tree">' + esc(tr('tree')) + '</button>' : '';
-        return '<div class="mb-sparks">' + sparkIco + '<span class="num">' + esc(tr('sparks', { l: sp.left, t: sp.total })) + '</span></div><p class="mb-intro">' + esc(tr('fIntro')) + '</p>' +
+        return '<p class="mb-intro">' + esc(tr('fIntro')) + '</p>' +
             (list.length ? '<ul class="mb-frs">' + list.map(friendRow).join('') + '</ul>' : '<div class="mb-empty">' + cellSvg('blob', 200, true) + '<p>' + esc(tr('noFr')) + '</p>' + tree + '</div>');
     }
     function bookHTML() {
@@ -135,19 +133,18 @@
 
     /* ---------- care sheet ---------- */
     let cov = null, cf = null, ck = '';
-    function careCtx() { const sp = C.sparks(ledger(), care().spent, Date.now()), now = new Date(); return { day: sp.key, level: level(), hour: now.getHours(), left: sp.left, sp }; }
+    function careCtx() { const now = new Date(); return { day: C.dayKey(now.getTime()), level: level(), hour: now.getHours() }; }
     function careHTML() {
         const f = cf, ctx = careCtx(), st = care();
         const states = C.CARE.map(k => ({ k, r: C.canCare(st, f, k, ctx) }));
         if (!ck || !states.some(s => s.k.id === ck)) { const first = states.find(s => s.r.ok) || states.find(s => s.r.why !== 'locked' && s.r.why !== 'time') || states[0]; ck = first.k.id; }
         const cur = states.find(s => s.k.id === ck), live = cloudLive();
-        const why = s => s.r.why === 'sent' ? '✓ ' + tr('sent') : s.r.why === 'locked' ? tr('lockLv', { n: s.k.lv }) : s.r.why === 'time' ? (s.k.id === 'night' ? tr('from', { h: s.k.from }) : tr('until', { h: s.k.to })) : s.k.cost + ' ';
-        const btn = cur.r.ok ? '<button type="button" class="mb-cta" data-mb="send">' + esc(tr('send')) + ' · ' + cur.k.cost + ' ' + sparkIco + '</button>' : '<button type="button" class="mb-cta" disabled>' + esc(cur.r.why === 'sent' ? tr('sent') : tr('send')) + '</button>';
+        const why = s => s.r.why === 'sent' ? '✓ ' + tr('sent') : s.r.why === 'locked' ? tr('lockLv', { n: s.k.lv }) : s.r.why === 'time' ? (s.k.id === 'night' ? tr('from', { h: s.k.from }) : tr('until', { h: s.k.to })) : '';
+        const btn = cur.r.ok ? '<button type="button" class="mb-cta" data-mb="send">' + esc(tr('send')) + '</button>' : '<button type="button" class="mb-cta" disabled>' + esc(cur.r.why === 'sent' ? tr('sent') : tr('send')) + '</button>';
         return '<div class="mb-sheet mb-care" data-noi18n><div class="mb-over">' + esc(tr('tFr').toUpperCase()) + '</div><h2>' + esc(f.n) + '</h2>' +
             '<div class="mb-duo"><div class="mb-me">' + cellSvg('blob', 160, false, reduced() ? '' : 'live') + '<small>' + esc(tr('you')) + '</small></div><p class="mb-say" role="status" aria-live="polite">' + esc(P(cur.k.say).replace('{n}', f.n)) + '</p><div class="mb-them">' + cellSvg('blob', hueOf(f.uid), false) + '<small>' + esc(f.n) + '</small></div></div>' +
-            '<div class="mb-sparks">' + sparkIco + '<span class="num">' + esc(tr('sparks', { l: ctx.left, t: ctx.sp.total })) + '</span></div>' +
-            '<div class="mb-kinds" role="radiogroup">' + states.map(s => '<button type="button" role="radio" aria-checked="' + (s.k.id === ck) + '" class="mb-kind' + (s.k.id === ck ? ' act' : '') + (s.r.ok ? '' : ' off ' + s.r.why) + '" data-mb="kind" data-k="' + s.k.id + '"><span class="mb-ke">' + (s.r.why === 'locked' ? lock : s.k.e) + '</span><b>' + esc(P(s.k.n)) + '</b><small class="num">' + (s.r.why === 'sparks' || s.r.ok ? s.k.cost + ' ' + sparkIco : esc(why(s))) + '</small></button>').join('') + '</div>' +
-            (cur.r.why === 'sparks' ? '<p class="mb-note">' + esc(tr('noSpark')) + '</p>' : '') + btn + '<p class="mb-note">' + esc(live ? tr('live', { n: f.n }) : tr('wait')) + '</p></div>';
+            '<div class="mb-kinds" role="radiogroup">' + states.map(s => '<button type="button" role="radio" aria-checked="' + (s.k.id === ck) + '" class="mb-kind' + (s.k.id === ck ? ' act' : '') + (s.r.ok ? '' : ' off ' + s.r.why) + '" data-mb="kind" data-k="' + s.k.id + '"><span class="mb-ke">' + (s.r.why === 'locked' ? lock : s.k.e) + '</span><b>' + esc(P(s.k.n)) + '</b>' + (s.r.ok ? '' : '<small class="num">' + esc(why(s)) + '</small>') + '</button>').join('') + '</div>' +
+            btn + '<p class="mb-note">' + esc(live ? tr('live', { n: f.n }) : tr('wait')) + '</p></div>';
     }
     function cpaint() { if (!cov || !cov.isConnected) { cov = null; return; } const box = cov.querySelector('.mb-care'); if (box) box.outerHTML = careHTML(); }
     const treeUp = () => { try { return !!(W.LowiCellRoom && W.LowiCellRoom.isOpen && W.LowiCellRoom.isOpen()); } catch (e) { return false; } };
@@ -168,7 +165,6 @@
         const ctx = careCtx(), st = care(), k = C.CARE.find(x => x.id === ck), r = C.canCare(st, cf, k, ctx);
         if (!r.ok) { cpaint(); return false; }
         st.sent[r.id] = Date.now();
-        st.spent[ctx.day] = (+st.spent[ctx.day] || 0) + k.cost;
         st.out.push({ id: r.id, e: k.e, ts: Date.now() });
         save();
         const live = cloudLive();
@@ -337,6 +333,6 @@
     }
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 
-    W.LowiMicroBook = { open, openCare, trips, logTrip, friends, sparks: () => C.sparks(ledger(), care().spent, Date.now()), flush, poll, badges, isOpen: () => !!(ov && ov.isConnected) };
+    W.LowiMicroBook = { open, openCare, trips, logTrip, friends, flush, poll, badges, isOpen: () => !!(ov && ov.isConnected) };
     W.LowiCare = { open: openCare, badges };
 })();

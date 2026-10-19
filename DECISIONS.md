@@ -668,3 +668,22 @@ Emmanuel walked through the companion card (long press on the companion) on a ca
 **Decision:** the places are Home world, Cell worlds, Galaxy, Other worlds, Streams (the space outside your world is the galaxy, as the Community title says). The timed adventure reaches a place only when the companion's level is high enough AND you have been there yourself once (your steering or your tap; autopilot and the timed trip never count). Your own flying and autopilot stay ungated, so nothing locks a first visit. Visits live in S.advSeen (account) with a device copy; first cell-world arrivals already in the XP ledger count. The card shows, per place, what is still missing (level, your visit, the place before it) and whether you have been there. Forms, Food journal and Glow come first on the card; the mood check-in comes last and says what it does (the companion mirrors it for 8 hours, no XP, only the look and mood change); the stored mood is untouched. The Collection is now a Food journal: foods you logged or scanned, newest first, how often, first date, and how those meals went (likely blood sugar response), then your scanned products. No "???" tiles, no n / total, nothing in it is needed to evolve.
 
 **Consequences:** existing players at level 4+ see Galaxy / Other worlds / Streams as "Go there yourself" until they fly there once; autopilot still shows them everything. Remaining "spirit" wording was also removed from onboarding, the tutorial's galaxy step, the Community title (now "Community galaxy") and one companion line. Code identifiers (spirit.js, LowiSpirit) stay; users never read them.
+
+
+## Oct 19, 2026: Care is free, the sparks currency is gone
+A code check found sparks were the only thing in the app you could spend: 3 a day plus 1 per logged meal, water or Move (up
+to 8, reset at midnight), paying 1 for a Hug, Drink water, Good morning or Sweet dreams and 2 for Gratitude or
+Encouragement on the care sheet ("Send energy" on a Community profile, the friends tree, the Adventure log Friends tab).
+Galaxy energy bursts were already free. Emmanuel, on a call: "I don't understand the point systems ... It's a bit much ...
+It's confusing"; "sending an energy boost is obviously free"; he agreed to make care free too and left to Maya whether care
+should stay ("You pick if it should even be a thing").
+
+**Decision:** care stays (a kind, real-friends-only touch) and is free. No balance, counter, cost, "not enough" block,
+earning or reset (micro-book-core.js `sparks()`, `SPARK_BASE/MAX`, the CARE `cost` fields and canCare's 'sparks' reason are
+removed; micro-book.js drops the counter, prices, the noSpark note and `S.care.spent`, which is deleted from saved data on
+read). Kept as anti-spam: one send per friend, kind and day, level unlocks (Gratitude lv 3, Encouragement lv 5), time
+windows. XP stays the permanent evolution track and energy today's vitality, both unchanged; caring never takes either.
+Caring still earns its small XP (5 XP, up to 3 a day, xp-tap-core.js). The "Spark" companion form is unrelated and stays.
+
+**Consequences:** the app has nothing to spend any more; everything you earn (XP, forms, energy, sunbeams, streaks) only
+goes up or reflects today. Tests: tests/free-care.test.cjs. MAYA-HANDOFF item 26.

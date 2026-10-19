@@ -451,6 +451,27 @@ question).** REQUESTED 10:1x PM call, task "LOWiSPIKE: incoming-message companio
      shown as text only. Must stay light: Community is still crashing on his iPhone (items 20a, crash task 9472a9a4).
    - Notes in `/home/sprite/COORD-home-visit.md`, branch `home-visit`, worktree `/home/sprite/wt-home-visit`.
 
+**25. More levels and more evolutions: "it should really, truly evolve into something majestic".** REQUESTED 10:1x PM
+call, task running (forked task "LOWiSPIKE: extend meaningful companion levels and majestic evolution", started 10:11 PM,
+branch `evo-more`, worktree `/home/sprite/wt-evo-more`, notes `/home/sprite/COORD-evo-more.md`). Nothing released yet.
+   - He said (voice, long-press on Misty, his Misty shows level 6 "Legend"): "we thought you were adding more, and more
+     ... levels to this"; on the evolution path: "I've already reached the last one, which obviously we need to add more
+     evolutions in there ... so that we're really doing this dragon ball thing ... a pokemon ... a demon thing ... It
+     should really, truly evolve ... into ... something majestic looking."
+   - Today there are 6 forms (herb-config.js `stages`, last at 3000 XP, about a month of use), so testers hit the end.
+     Plan: add 4 more forms after Legendary (indices 6-9) with longer XP steps, each with clearly new, bigger traits drawn
+     in companion-core.js (original designs, not copied from any franchise), a stronger evolution moment per tier, and the
+     level names / evolution path showing all 10. Each user's own generated body, colours, name and face stay; earned XP
+     and the retained form (`highestStage`) are kept, nobody loses or skips a form. Energy (today's %) stays separate from
+     level and form.
+   - Collection (his follow-up, same call, delegated to Maya, see also item 22 and item 24): give it a clear purpose as a food-discovery journal for
+     revisiting what you scanned or logged and how it went, with simpler copy. **Specific foods or completing the
+     Collection must NOT be required to evolve.** The Collection copy and entry point belong to the companion-panel task
+     (0d494df4); this task only makes sure evolution never depends on it. Grocery Catch (item 24) is built by the companion-panel task;
+     its XP bonus must go through the normal XP total so it counts toward these forms like any other XP.
+   - Parallel tasks today: companion panel / non-mystical world names / discovery gates (0d494df4), aura colour fix and
+     companion renaming (ce74d1af), Community crash round 2 (9472a9a4), billiard energy (34bb0a32).
+
 ### 0.6 The Mickey 17 workflow: how every Maya hands over to the next
 
 Added Monday 19 Oct 2026, about 9:20 PM CEST, by Maya 5, at Emmanuel's request on the evening call. His words: "can
@@ -985,3 +1006,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 - 2026-10-19 22:35 Bug hunt run 14: Home<->Community warp streak canvas capped (~1.4 MP) and zeroed when the warp ends (CS-001 sibling, possible iPhone/iPad memory kill when zooming in and out). Not proven as the cause of the Community crashes.
 - 2026-10-19 22:25 Item 23 recorded under 0.5: a message addressed to Emmanuel arrives on Home as the sender's own companion flying in from outside his world, appearing like a hologram, then a speech bubble with the message. Task home-visit started; answers item 20c's open question (only messages to him).
 - 2026-10-19 23:00 Item 24 recorded under 0.5: grocery Catch for products not yet in the community database, first-discoverer credit, Pathfinder badge + capped one-time evolution XP after server checks (unique valid barcode, useful details). Built by the companion-panel task.
+- 2026-10-19 23:05 Item 25 recorded under 0.5: more levels and more majestic evolutions after Legendary (evolution task, branch evo-more); Collection and Catch never gate evolution.

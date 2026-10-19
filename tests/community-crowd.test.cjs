@@ -55,3 +55,35 @@ test('crowd: reading what people wrote', () => {
   assert.strictEqual(crowd.topicOf('@Q \u26a1 eman sent you energy'), 'energy');
   assert.strictEqual(crowd.lvOf(0), 1); assert.strictEqual(crowd.lvOf(3000), 6);
 });
+
+test('crowd: meal logs use the app shape, one per slot per local day, in the member\'s own time zone', () => {
+  const T = crowd._t, p = crowd.people().find(x => x.tz === 'Europe/Berlin') || crowd.people()[0];
+  const lunch = Date.UTC(2026, 9, 20, 10, 30) + (p.tz === 'Europe/Berlin' ? 0 : 0);
+  const slot = T.slotAt(p, lunch);
+  if (p.tz === 'Europe/Berlin') assert.strictEqual(slot, 'lunch'); // 12:30 in Berlin
+  const log = T.mealLog(p, lunch, 'Linsensuppe', 'lunch', 'crowd-test1');
+  assert.deepStrictEqual(Object.keys(log).sort(), ['day', 'e', 'eventId', 'id', 'lvl', 'macros', 'photo', 'r', 'slot', 't', 'ts', 'via'].sort());
+  assert.strictEqual(log.eventId, 'meal:crowd-test1');
+  assert.strictEqual(log.macros, null); // unknown, never zero
+  assert.match(log.day, /^\d{4}-\d{2}-\d{2}$/);
+  assert.strictEqual(log.day, T.dayIn(p.tz, lunch));
+  const s = { logs: [] };
+  assert.strictEqual(T.addMeal(s, log), true);
+  assert.strictEqual(T.addMeal(s, T.mealLog(p, lunch + 60e3, 'Pizza', 'lunch', 'crowd-test2')), false); // same slot, same day
+  assert.strictEqual(T.addMeal(s, T.mealLog(p, lunch + 6 * 36e5, 'Pizza', 'dinner', 'crowd-test3')), true);
+  assert.strictEqual(s.logs.length, 2);
+  const big = { logs: Array.from({ length: 130 }, (_, i) => ({ day: '2026-01-01', slot: 'x' + i })) };
+  T.addMeal(big, log); assert.strictEqual(big.logs.length, 120); assert.strictEqual(big.logs[119], log);
+  assert.strictEqual(T.addMeal({}, log), true); // a member with no saved state yet
+});
+
+test('crowd: nobody logs a meal in the middle of their night, and the day follows their own clock', () => {
+  const T = crowd._t, a = crowd.people();
+  for (const p of a) {
+    const t = Date.UTC(2026, 9, 20, 12, 0), h = crowd.hourIn(p.tz, t);
+    if (h >= 2 && h <= 5) assert.strictEqual(T.slotAt(p, t), '', p.name + ' ' + p.tz);
+    const title = T.mealTitle(p, 'dinner'); assert.ok(typeof title === 'string' && title.length > 0 && !/[{}]/.test(title));
+  }
+  const tokyo = a.find(p => p.tz === 'Asia/Tokyo');
+  if (tokyo) assert.strictEqual(T.dayIn(tokyo.tz, Date.UTC(2026, 9, 19, 20, 0)), '2026-10-20');
+});

@@ -350,9 +350,18 @@ logging", picking up from 98f0954e, which stopped out of budget).** Checked with
   photo files load (HTTP 200, image/jpeg).
 - **Not done yet:** the 100-at-once stress test does not exist; `crowd.cjs` writes one message at a time with a 2.5
   to 11.5 s gap. Activity rate is low by design (`ambient()`: about 0.13 chat lines per minute per 100 awake members
-  times 1.4). Meal logging is being added next (branch `crowd-meals`, worktree `/home/sprite/wt-crowd-meals`).
-- Check script: `/home/sprite/CROWDCHECK/db-check.cjs` (read-only; copied to the `crowd-meals` branch as
-  `tools/community-crowd/db-check.cjs`).
+  times 1.4).
+- **Meal logging added (9:45 PM, this commit):** `logMealFor()` in `crowd.cjs` writes one `S.logs` entry per meal
+  window (breakfast 6-10, lunch 11-14, snack 15-17, dinner 18-21, night owls a late snack) in the member's own time
+  zone and local day, at most one per slot per day, into `lowispike.v2` in the member's own `user_state` row, the
+  shape `LowiVitalsBridge.logMeal` writes (macros null). About 15% are mentioned in the room. Verified live at 9:33 PM
+  on one member (Ashleys86, New York, snack): HTTP 200, read back from `user_state`, and a second try in the same slot
+  was skipped. Tests in `tests/community-crowd.test.cjs`. The next workflow run picks it up from `main`.
+- **Next action:** confirm a run started by the schedule (`gh run list -R therealetm/lowispike --workflow
+  community-crowd.yml`, event `schedule`), read its log (`meals`, `errors`, `maxMs`), run `db-check.cjs`, then build
+  the 100-at-once stress test as a separate manual workflow or script, and raise the activity rate if Emmanuel wants
+  the room busier.
+- Check script: `tools/community-crowd/db-check.cjs` (read-only, run on the VM).
 
 ### 0.6 The Mickey 17 workflow: how every Maya hands over to the next
 
@@ -879,3 +888,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 - 2026-10-19 21:10 Section 0.5 added from the 9 PM call: standing rule "update the GitHub for Maya" whenever he says something new; human-instinct UX and up to a hundred simulated users (task 98f0954e, running, no accounts created yet); natural Spanish (task 2ba92e76, running). Live 20261019-201827.
 - 2026-10-19 21:20 Section 0.6 added at Emmanuel's request: the Mickey 17 workflow, how every Maya hands over to the next (5 to 6, 6 to 7, and on), with a handover table. WIP snapshots pushed: `wip/spanish-natural` (f51b0e8), `wip/intuition-playtest` (f29d9ec); both tasks still running. Live 20261019-201827.
 - 2026-10-19 21:35 Crowd checkpoint under 0.5: one manual run, no scheduled run yet, 30 members, 12 messages, 1 photo post, 400s are expected sign-in misses, no stress test yet.
+- 2026-10-19 21:45 Crowd members now log meals into their own user_state (one per slot per local day), verified live on one member; tools/community-crowd/db-check.cjs added. No app build change.

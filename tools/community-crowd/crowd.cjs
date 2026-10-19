@@ -187,6 +187,40 @@ async function mealPost(st, p) {
   st.posts = (st.posts || 0) + 1; return id;
 }
 
+/* ---------- meal logging ----------
+   Members log what they eat the way the app saves it: one entry in S.logs inside the `lowispike.v2` key of their
+   own `user_state` backup row (the shape LowiVitalsBridge.logMeal writes, DATA_CONTRACTS.md "Meal slot"). At most
+   one meal per slot per local day, in the member's own time zone; macros stay null (unknown, never zero). */
+const SLOTS = [['breakfast', 6, 10], ['lunch', 11, 14], ['snack', 15, 17], ['dinner', 18, 21]];
+function slotAt(p, t) { const h = hourIn(p.tz, t); for (const [s, a, b] of SLOTS) if (h >= a && h <= b) return s; return p.owl && (h >= 22 || h <= 1) ? 'snack' : ''; }
+function dayIn(tz, t) { return new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).format(t); }
+function mealTitle(p, slot, r = Math.random) {
+  const foods = K.FOODS[p.code] || K.FOODS[p.lang] || K.FOODS.de;
+  return slot === 'snack' || r() < 0.55 ? pick(foods, r) : pick(MEALS.meals, r)[0];
+}
+function mealLog(p, t, title, slot, id) {
+  id = id || 'crowd-' + crypto.randomBytes(5).toString('hex');
+  return { id, eventId: 'meal:' + id, ts: t, day: dayIn(p.tz, t), t: String(title).slice(0, 80), macros: null, photo: '', via: 'spirit', r: 'unknown', e: '', lvl: '', slot };
+}
+/* Adds the log to a lowispike.v2 state object; false when that slot is already logged that day. Keeps the newest 120. */
+function addMeal(s, log) {
+  s.logs = Array.isArray(s.logs) ? s.logs : [];
+  if (s.logs.some(l => l && l.day === log.day && l.slot === log.slot)) return false;
+  s.logs.push(log); if (s.logs.length > 120) s.logs = s.logs.slice(-120); return true;
+}
+async function logMealFor(st, p, now) {
+  const slot = slotAt(p, now); if (!slot) return null;
+  const tok = await session(st, p), uid = st.bots[p.i].id;
+  const rows = await get(tok, 'user_state?select=data&id=eq.' + uid);
+  const data = rows && rows[0] && rows[0].data && typeof rows[0].data === 'object' ? rows[0].data : {};
+  let s = {}; try { s = JSON.parse(data['lowispike.v2'] || '{}') || {}; } catch (e) { s = {}; }
+  const log = mealLog(p, now, mealTitle(p, slot), slot);
+  if (!addMeal(s, log)) return null;
+  data['lowispike.v2'] = JSON.stringify(s);
+  await ins(tok, 'user_state', { id: uid, data, updated_at: new Date(now).toISOString() }, 'resolution=merge-duplicates,return=minimal');
+  st.meals = (st.meals || 0) + 1; return log;
+}
+
 /* ---------- reading the room ---------- */
 function botIndex(st) { const m = new Map(); Object.keys(st.bots).forEach(i => st.bots[i].id && m.set(st.bots[i].id, people()[+i])); return m; }
 function langOf(text) { const s = ' ' + String(text).toLowerCase() + ' '; if (/ (und|ich|nicht|heute|hast|danke|gibt|wie|moin|hallo|energie geschickt) /.test(s)) return 'de'; if (/ (que|qué|hola|gracias|para|está|te envió|yo |cómo|buenas) /.test(s)) return 'es'; return 'en'; }
@@ -328,6 +362,13 @@ async function ambient(st, room, now, minutes) {
     } catch (e) { log('chat', topic, e.message); }
   }
   for (let k = 0; k < Math.min(n.post, 4); k++) { try { await mealPost(st, pickBot()); out.posts++; } catch (e) { log('post', e.message); } }
+  /* meal logs: each awake member in a meal window logs with a small chance per minute (about 1.4 per window, one per slot) */
+  out.meals = 0;
+  const eaters = all.filter(p => slotAt(p, now) && Math.random() < Math.min(0.5, minutes * 0.006 * Math.min(1, awake(p, now)))).slice(0, 8);
+  for (const p of eaters) {
+    try { const lg = await logMealFor(st, p, now); if (!lg) continue; out.meals++; if (Math.random() < 0.15) { await say(st, p, line(p, 'meal', { food: lg.t })); out.chat++; } }
+    catch (e) { log('meal', e.message); }
+  }
   for (let k = 0; k < Math.min(n.energy, 5); k++) {
     const p = pickBot(), toHuman = humans.length && Math.random() < 0.6, target = toHuman ? weighted(humans, x => x.eman ? 3 : 1).name : pick(all.filter(x => x !== p)).name;
     try { await say(st, p, '@' + target + ' ' + fill(p, K.L[p.lang].energy, { n: p.name })); out.energy++; } catch (e) { log('energy', e.message); }
@@ -367,11 +408,11 @@ async function once(opts) {
 
 async function main() {
   const cmd = process.argv[2] || 'once';
-  if (cmd === 'status') { const st = load(); console.log(JSON.stringify({ members: Object.keys(st.bots).length, said: st.said || 0, posts: st.posts || 0 })); return; }
+  if (cmd === 'status') { const st = load(); console.log(JSON.stringify({ members: Object.keys(st.bots).length, said: st.said || 0, posts: st.posts || 0, meals: st.meals || 0 })); return; }
   if (cmd === 'people') { people().forEach(p => console.log(p.i, p.name, p.code, p.age, p.band, p.city, p.comp)); return; }
   if (cmd === 'serve') { for (;;) { try { await once({ repliesOnly: true, spawn: 0 }); } catch (e) { log('serve', e.message); } await new Promise(r => setTimeout(r, 40e3)); } }
   const until = Date.now() + (+(process.env.CROWD_MINUTES || 0)) * 60e3;
   do { await once({ spawn: +(process.env.CROWD_SPAWN || 6) }); if (Date.now() < until) await new Promise(r => setTimeout(r, 60e3)); } while (Date.now() < until);
 }
 if (require.main === module) main().catch(e => { console.error('crowd failed:', e.message); process.exit(1); });
-module.exports = { people, voice, line, topicOf, langOf, hourIn, awake, lvOf, look, _t: { load, save, session, say, chatPhoto, mealPost, ins, products, stats } };
+module.exports = { people, voice, line, topicOf, langOf, hourIn, awake, lvOf, look, _t: { load, save, session, say, chatPhoto, mealPost, ins, products, stats, slotAt, dayIn, mealTitle, mealLog, addMeal, logMealFor } };

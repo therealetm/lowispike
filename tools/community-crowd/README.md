@@ -15,6 +15,9 @@ This reverses the earlier rule in COMMUNITY_CHAT.md that the room shows no inven
 - Chat: greetings by local time, meals from their own cuisine, Gap, streaks, their companion, water, walks,
   questions to the room, and real products from `data/shop` with their real sugar per 100 g (German and nearby members).
 - Post meal photos in the chat and to the feed ("Just ate: ..."); photos come from TheMealDB (`meal-photos.json`).
+- Log meals the way the app saves them (added 19 Oct, 9:45 PM): one entry per breakfast, lunch, snack or dinner window
+  in their own time zone, at most one per slot per local day, written to `S.logs` in the `lowispike.v2` key of their own
+  `user_state` backup row (macros left unknown). About 15% of logged meals are also mentioned in the room.
 - Send energy, react with the five chat emoji, like posts.
 - Answer people: Emmanuel's messages get a reply about 85% of the time, other testers about 60%, and an @mention of a
   member always gets that member. Members welcome newcomers, ask where to buy a product and answer each other.
@@ -27,6 +30,10 @@ This reverses the earlier rule in COMMUNITY_CHAT.md that the room shows no inven
   Fewer members: repository variable `CROWD_MAX`.
 - By hand on the VM: `node tools/community-crowd/crowd.cjs once` (seed in `~/.config/lowispike-crowd/seed`).
   Do not run `serve` while the workflow is on: both would answer the same message.
+
+## Checking what they did
+`node tools/community-crowd/db-check.cjs [sinceISO]` on the VM reads profiles, messages and posts (read-only) and counts
+photos, product talk and replies to people outside the crowd. Each run's log line also carries `meals`.
 
 ## Removing the members later
 Their accounts are ordinary Supabase users with emails ending in `@crowd.lowispike.invalid`; delete them in

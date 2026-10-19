@@ -270,7 +270,17 @@
         if (phase === 'out') return { fwd: 0, speed: 0, veil: 1 - smooth(0, 1, k), scale: 1 };
         return { fwd: 0, speed: 0, veil: 0, scale: 1 };
     }
-    const API = { REGIONS, HUB, ROUTE, norm, byId, neighbours, regionForJourney, tier, counts, travelMs, WARP, warpPose, buildRegion, buildWarp, BUILD };
+    /* s0: from the core's centre, between the core (r 0.32) and its ring (r 0.62): the core fills the picture.
+       near: the outside view of that world when the pull-back ends (planet-size on screen, Misty above it). */
+    const PULL = { ms: 1800, s0: 0.55, near: 5, wideP: 0.42 };
+    /* distance from the world at pull-back progress k (0..1): even zoom (log scale), slow in the ring band, soft landing */
+    function backAt(k, s0, s1) {
+        if (!(k > 0)) return s0;
+        if (k >= 1) return s1;
+        const f = 0.5 - 0.5 * Math.cos(Math.PI * k);
+        return s0 * Math.pow(s1 / s0, f);
+    }
+    const API = { PULL, backAt, REGIONS, HUB, ROUTE, norm, byId, neighbours, regionForJourney, tier, counts, travelMs, WARP, warpPose, buildRegion, buildWarp, BUILD };
     if (typeof module !== 'undefined' && module.exports) module.exports = API;
     W.LowiWorldRegions = API;
     if (!D || !D.addEventListener) return;
@@ -292,6 +302,8 @@
     const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     const st = { cur: 'hub', target: null, next: null, region: null, warp: null, busy: false, tier: null, off: null, label: null, mapBtn: null, veil: null, host: null, lt: 0 };
     const w3 = () => W.LowiWorld3D || null;
+    /* read-only, for the browser checks (tests/world-exit-reverse-live.cjs): where the way out is */
+    API.pullState = () => { const q = st.warp; return q && q.rev ? { phase: q.phase, pk: q.pk == null ? null : +q.pk.toFixed(3), B: q.B ? [q.B.x, q.B.y, q.B.z] : null } : null; };
     const baseId = id => id === 'muscle' ? 'muscles' : id;
     const parked = []; let look = null, fogWas = null;
     function setHubVisible(on) {
@@ -392,14 +404,20 @@
         const E = D.documentElement; if (!E) return;
         if (on) E.classList.add('bwr-warping'); else E.classList.remove('bwr-warping');
     }
-    /* ---------- leaving a place: inside -> outside, no in-between ----------
-       Oct 17 (E-man on his iPhone after the warp build: "can you just delete the in-between world? ... So it goes from inside to
-       outside, seamlessly"). There is no glow screen, no portal disc, no streaks, no wider lens and no camera trip through the
-       glowing door any more. In one frame: the place is drawn one last time and that real picture is copied (.bwr-snap), the
-       place goes, and the camera is put straight on the outside view the old pull-back used to end on (facing the world she left,
-       Misty beside it). The copy of the inside lies over the outside, which is already drawn under it, and fades away once the
-       outside has had a frame of its own, so neither a blank canvas nor a made-up screen can ever show. */
-    const SEAM = { fade: 380, hold: 760 };
+    /* ---------- leaving a place: the fly-in, played backwards ----------
+       Oct 17 (E-man): "delete the in-between world ... inside to outside, seamlessly": no glow screen, no portal disc, no streaks,
+       no wider lens, no colour wash. That all still holds. In one frame the place is drawn one last time and that real picture is
+       copied (.bwr-snap), the place goes, and the copy lies over the bloodstream, which is already drawn under it, so neither a
+       blank canvas nor a made-up screen can ever show.
+       Oct 18 (E-man): "when it exits the world ... all of a sudden she just spawns out with the camera being zoomed out. I want to
+       see the same animation but the reverse ... we start almost blended by that world's color because we're so zoomed in ... the
+       worlds have rings, so just like a planet that has a ring when you're so close to it, that perspective." So under the copy
+       the camera no longer sits on the zoomed-out view: it sits right at the world's own core, inside its ring, on the side the
+       fly-in came from (the screen is that world's colour, from the real 3D world, not a wash). Then it pulls back along the
+       fly-in's line, slowly through the ring band (the huge close-up ring sweeping past), out to the outside view of that world,
+       while Misty rises out of it through the rings (misty-flight.js outAt 'R'). The World map carries the same pull-back on out
+       to the whole world. Only the rig is moved (target, distance, pitch), so the free camera takes over without a jump. */
+    const SEAM = { fade: 380 };
     function camFromRig(r, cam) {
         if (!r || !cam) return;
         const yaw = r.yaw + (r.gy || 0), pitch = Math.max(-1.35, Math.min(1.35, r.pitch + (r.gp || 0)));
@@ -438,21 +456,35 @@
             if (r) {
                 const ang = Math.atan2(q.B.x, q.B.z);
                 r.fly = null; r.flyYaw = null; r.vy = 0; r.vp = 0; r.idle = 0;
-                /* where the base's glide home would end (also resets the place's hue tint), taken at once instead of flown */
+                /* where the base's glide home would end (also resets the place's hue tint): the World map's end, and the glide
+                   back after the pull-back on the full-screen view */
                 let to = null;
                 if (a.flyTo) { st.ownFly = true; try { a.flyTo(null); } finally { st.ownFly = false; } to = r.fly && r.fly.to; }
                 r.fly = null; r.flyYaw = null;
-                if (to) { r.target.copy(to.t); r.dist = q.wide && r.maxD ? r.maxD : to.d; }
-                r.yaw = ang + Math.round((r.yaw - ang) / (Math.PI * 2)) * Math.PI * 2; /* facing the world she just left */
-                r.pitch = q.wide ? 0.42 : Math.max(-0.5, Math.min(0.5, r.pitch));
+                q.home = to ? { t: to.t.clone(), d: q.wide && r.maxD ? r.maxD : to.d } : null;
+                r.yaw = ang + Math.round((r.yaw - ang) / (Math.PI * 2)) * Math.PI * 2; /* the side the fly-in came from, facing the world */
+                r.pitch = q.p0 = Math.max(-0.3, Math.min(0.3, r.pitch));
+                r.target.copy(q.B); r.dist = PULL.s0;
                 camFromRig(r, w.camera);
             }
-            q.reveal = true; q.phase = 'out'; q.t0 = now; q.cutAt = now;
+            q.reveal = true; q.phase = 'pull'; q.t0 = now; q.cutAt = now; q.pk = 0;
             return;
         }
-        /* the outside has been drawn at least once under the copy: let the copy go */
+        /* the close-up has been drawn at least once under the copy: let the copy go */
         if (st.snap && !st.snap.classList.contains('go')) snapDrop(false);
-        if (now - q.t0 >= SEAM.hold) finish();
+        const k = Math.max(0, Math.min(1, (now - q.t0) / PULL.ms));
+        q.pk = k;
+        if (r) {
+            r.fly = null; r.idle = 0;
+            if (q.wide && q.home) {
+                const g = smooth(0.3, 1, k);
+                r.target.copy(q.B).lerp(q.home.t, g);
+                r.dist = backAt(k, PULL.s0, q.home.d);
+                r.pitch = g >= 1 ? PULL.wideP : q.p0 + (PULL.wideP - q.p0) * g;
+            } else { r.target.copy(q.B); r.dist = backAt(k, PULL.s0, PULL.near); }
+            camFromRig(r, w.camera);
+        }
+        if (k >= 1) finish();
     }
     function stepWarp(w, dt) {
         const q = st.warp, a = w3(), cam = w.camera, THREE = w.three, d = Math.max(1 / 240, Math.min(0.05, dt || 0.016));
@@ -504,6 +536,8 @@
         st.warp = null; clean(q);
         if (q.id === 'hub' && st.cur !== 'hub') enter('hub');
         if (q.rev && q.wide) { const r0 = w3() && w3().rig; if (r0 && !r0.fly) r0.pitch = 0.42; }
+        /* full-screen view (not Home, where Misty's own camera takes over): the fly-in's glide, backwards, to the overview */
+        if (q.rev && !q.wide && q.home && q.seam) { const r1 = w3() && w3().rig; if (r1 && !r1.fly && r1.mode !== 'home') { r1.fly = { from: { t: r1.target.clone(), d: r1.dist }, to: q.home, t: 0, dur: WARP.glide / 1000 }; r1.flyYaw = null; } }
         lungCard(); warpEv('arrive', q.id, q.from);
         q.done && q.done();
         /* Oct 16 (E-man): "when entering a world, start from the most zoomed-out view": right after the dive the camera glides

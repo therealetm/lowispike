@@ -217,8 +217,24 @@
     function outAt(phase, k, from, door) {
         const e = smooth(0, 1, clamp(+k || 0, 0, 1));
         if (phase === 'A') return { x: from.x + (0.5 - from.x) * 0.45 * e, y: from.y + (0.56 - from.y) * 0.45 * e, e };
+        if (phase === 'R') {
+            /* Oct 18 (E-man: the way out should be the fly-in in reverse): while the camera pulls back from the world's core through
+               its rings, she rises out of it, slowly through the ring band, and ends just above it, outside (k = the pull-back's own
+               progress, so she and the camera stay in step) */
+            const er = smooth(0.06, 0.9, clamp(+k || 0, 0, 1));
+            const rx = clamp(door.x + (from.x - door.x) * 0.2, 0.16, 0.84), ry = clamp(door.y - 0.22, 0.16, 0.8);
+            return { x: from.x + (rx - from.x) * er, y: from.y + (ry - from.y) * er, e: er };
+        }
         const tx = clamp(door.x + (0.5 - door.x) * 0.3, 0.16, 0.84), ty = clamp(door.y + (0.52 - door.y) * 0.3, 0.24, 0.8);
         return { x: from.x + (tx - from.x) * e, y: from.y + (ty - from.y) * e, e };
+    }
+    /* how far in front of the camera she is while she rises out (dB = how far in front of the camera the world's core is):
+       always in front of the core (she comes out of it, never from behind it) and of the lens; at the end ~2.4 in front of the
+       world, out of its pull (more than K.ENTRY), so the stick cannot fly her straight back in */
+    function riseDepth(dB, k) {
+        const er = smooth(0.06, 0.9, clamp(+k || 0, 0, 1));
+        const dIn = Math.max(0.12, dB - 0.4), dOut = Math.max(0.9, dB - 2.4);
+        return clamp(dIn + (dOut - dIn) * er, 0.1, Math.max(0.1, dB - 0.35));
     }
     /* orbit-in (Oct 17, E-man: autopilot "feels like cheating ... lacks the struggle"; "Interstellar-style: orbit the world,
        getting smaller and smaller ... a sense of vast distance and perspective, rather than just flying straight in").
@@ -253,7 +269,7 @@
     /* a blink of Home (in the background, world briefly not live) pauses a flight for up to OFF_GRACE s of screen time; anything else ends it */
     const OFF_GRACE = 4;
     const offGrace = (blink, offT) => !!blink && (+offT || 0) < OFF_GRACE;
-    const core = { IN_SIZE, inSizeK, lookBusy, homeIdle, OFF_GRACE, offGrace, K, inReach, freeReach, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, roams, autoLeave, roamSpot, roamHold, roamPx, pullAt, fallAt, EXIT, exitHold, MIST, angWrap, exitGaps, inMist, gapToward, DARK, darkSpots, inDark, darkReach, darkAmt, darkGlow, GUIDE, guideLight, HOME, homeGlow, homeAt, veilAt, exitTent, wallToward, outAt, ORBIT, orbitAt, orbitSpin, orbitFling };
+    const core = { IN_SIZE, inSizeK, lookBusy, homeIdle, OFF_GRACE, offGrace, K, inReach, freeReach, smooth, approach, sizeK, speed, stretchOf, resist, wobble, aimAt, spritePx, joinOk, roams, autoLeave, roamSpot, roamHold, roamPx, pullAt, fallAt, EXIT, exitHold, MIST, angWrap, exitGaps, inMist, gapToward, DARK, darkSpots, inDark, darkReach, darkAmt, darkGlow, GUIDE, guideLight, HOME, homeGlow, homeAt, veilAt, exitTent, wallToward, outAt, riseDepth, ORBIT, orbitAt, orbitSpin, orbitFling };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!D || !D.addEventListener || W.LowiMistyFlight) return;
 
@@ -1277,12 +1293,13 @@
         const beat = Math.floor(h.p * EXIT.HOLD + 1e-6);
         if (beat > (S.exBeat || 0) && beat < EXIT.HOLD) { S.exBeat = beat; ring(ctx, k); if (S.exVib !== false) try { if (navigator.vibrate) navigator.vibrate(12); } catch (e) { } }
     }
-    /* out through the edge: the World map's own reversed warp (one continuous camera move out to the whole universe), and she
-       flies out with it (startOut). V.a = her offset from the world's middle, L its length. */
+    /* out through the edge: the way out of a world (Oct 18, E-man: the fly-in in reverse: the camera pulls back from the world's
+       core through its rings to the outside view of that world, not out to the whole universe), and she rises out with it
+       (startOut). V.a = her offset from the world's middle, L its length. */
     function exitGo(ctx, k, why, L) {
         const Rg = R(); let ok = false;
         S.outWhy0 = why;
-        try { ok = !!(Rg && Rg.travel && Rg.travel('hub', false, 0, { wide: true })); } catch (e) { ok = false; }
+        try { ok = !!(Rg && Rg.travel && Rg.travel('hub', false, 0)); } catch (e) { ok = false; }
         if (!ok) { S.outWhy0 = ''; return false; }
         if (L > 1e-4) { V.b.copy(S.inC).addScaledVector(V.a, (L + 0.3 * S.hs) / L); ctx.burst(V.b, 14 + Math.round(10 * k), 0.5 + 0.4 * k); wallBurst(Math.atan2(V.a.dot(V.up), V.a.dot(V.rt))); skinPop(); } /* item 3: the cloud wall bursts open there, its bubble skin rings out */
         ring(ctx, k); if (why === 'hold') try { if (navigator.vibrate) navigator.vibrate(40); } catch (e) { }
@@ -1353,37 +1370,47 @@
         /* paced by the warp's own clock (capped frame time), so on a slow phone she and the camera stay in step */
         const clk = wq && wq.rev ? wq.clock : 1e9;
         let P, depth;
+        if (S.oPh === 'A' && wq && wq.rev && wq.phase === 'pull') outB();
         if (S.oPh === 'A') {
             P = outAt('A', wq && wq.rev ? (clk - (wq.tu || 0)) / 640 : 1, S.oFrom); depth = S.oD0;
         } else {
             toScreen(a, S.outPos, V.dS = V.dS || {});
             const door = { x: (V.dS.x - q.left) / q.width, y: (V.dS.y - q.top) / q.height };
-            if (V.dS.z > 1) { door.x = 1 - door.x; door.y = 1 - door.y; } /* behind the camera at the start of the back-out */
-            if (S.oTB < 0 && wq && wq.rev) S.oTB = clk;
-            /* Oct 17: after the seamless cut out of a world (no pull-back any more) she drifts from her spot to beside the door in
-               a short moment, while the picture of the inside fades away over her */
-            P = outAt('B', S.oTB >= 0 && clk < 1e9 ? (clk - S.oTB) / (wq && wq.seam ? 720 : 1870) : 1, S.oA, door);
+            if (V.dS.z > 1) { door.x = 1 - door.x; door.y = 1 - door.y; } /* behind the camera (only if the view was turned away) */
+            /* Oct 18: she rises out of the world through its rings as the camera pulls back (body-world-regions.js PULL),
+               paced by the pull-back's own progress wq.pk; once the warp is over she is at the end of it */
+            const kk = wq && wq.rev && wq.pk != null ? wq.pk : 1;
+            P = outAt('R', kk, S.oA, door);
+            if (!S.oHdOk) {
+                /* her heading on the way out: up out of the world, across the screen */
+                const P1 = outAt('R', 1, S.oA, door);
+                acrossScreen(S.outHd, V.a.copy(V.rt).multiplyScalar(P1.x - S.oA.x).addScaledVector(V.up, S.oA.y - P1.y));
+                S.oHdOk = true;
+            }
             V.b.subVectors(S.outPos, cam.position); const dB = -V.b.dot(V.fw);
-            depth = S.oDA + (Math.max(0.8, dB * 0.9) - S.oDA) * P.e;
+            depth = riseDepth(dB, kk);
         }
         V.b.copy(cam.position).addScaledVector(V.fw, -depth);
         fromScreen(a, q.left + P.x * q.width, q.top + P.y * q.height, V.b, S.p);
-        if (S.oPh === 'B' && P.e > 0) {
-            /* never left inside the door of the world she just left (the stick would fly her straight back in) */
-            V.a.subVectors(S.p, S.outPos); const d = V.a.length(), need = K.ENTRY * 1.6;
-            if (d < need && d > 1e-4) S.p.copy(S.outPos).addScaledVector(V.a, (d + (need - d) * P.e) / d);
+        if (S.oPh === 'B') {
+            /* never left inside the door of the world she just left (the stick would fly her straight back in): the rise already
+               ends out of its pull; this only matters if the view was turned during the pull-back, and only at its very end */
+            V.a.subVectors(S.p, S.outPos); const d = V.a.length(), need = K.ENTRY * 1.6, wEnd = smooth(0.85, 1, wq && wq.rev && wq.pk != null ? wq.pk : 1);
+            if (wEnd > 0 && d < need && d > 1e-4) S.p.copy(S.outPos).addScaledVector(V.a, (d + (need - d) * wEnd) / d);
             S.ks = S.oKs + (sizeK(approach(Math.max(d, need))) - S.oKs) * P.e;
         }
         S.oCur.x = P.x; S.oCur.y = P.y; S.oDcur = depth;
         S.hs = S.base * S.ks / pxPerUnit(a, S.p);
         w.position.copy(S.p); w.scale.set(S.hs * 260 / 310, S.hs, 1); w.updateMatrixWorld();
     }
+    /* the place has gone: from here she rises out of the world with the pull-back */
+    function outB() { S.oPh = 'B'; S.oTB = -1; S.oA = { x: S.oCur.x, y: S.oCur.y }; S.oDA = S.oDcur; S.oKs = S.ks; S.oHdOk = false; note('out B'); }
     function dropDraw(w) { if (w && w.onBeforeRender === outDraw) { w.onBeforeRender = function () { }; w.frustumCulled = true; } }
     function outFrame(ctx, k) {
         const a = ctx.a, r = ctx.r, dt = ctx.dt, cur = curRegion(), busy = regionsBusy(), now = performance.now();
         if (ctx.wand && ctx.wand.onBeforeRender !== outDraw) { ctx.wand.frustumCulled = false; ctx.wand.onBeforeRender = outDraw; }
         S.oGame = (S.oGame || 0) + dt;
-        if (S.oPh === 'A' && cur === 'hub') { S.oPh = 'B'; S.oTB = -1; S.oA = { x: S.oCur.x, y: S.oCur.y }; S.oDA = S.oDcur; S.oKs = S.ks; note('out B'); }
+        if (S.oPh === 'A' && cur === 'hub') outB();
         if (S.oPh === 'B' && !busy && !r.fly) { outLand(ctx, k); return; }
         /* the warp was cancelled before the place went: she is still in it */
         if (!busy && cur !== 'hub') { dropDraw(ctx.wand); S.st = 'inside'; S.fade = 1; note('out cancelled'); return; }

@@ -72,7 +72,8 @@ function runCut(opts) {
   };
   const glCanvas = mkCanvas('gl');
   const host = { insertBefore(e) { log.push('insert ' + e.className); }, appendChild(e) { log.push('append ' + e.className); } };
-  const V = (x, y, z) => ({ x, y, z, copy(o) { this.x = o.x; this.y = o.y; this.z = o.z; return this; }, lengthSq() { return this.x * this.x + this.y * this.y + this.z * this.z; } });
+  const V = (x, y, z) => ({ x, y, z, copy(o) { this.x = o.x; this.y = o.y; this.z = o.z; return this; }, lengthSq() { return this.x * this.x + this.y * this.y + this.z * this.z; },
+    clone() { return V(this.x, this.y, this.z); }, lerp(o, k) { this.x += (o.x - this.x) * k; this.y += (o.y - this.y) * k; this.z += (o.z - this.z) * k; return this; } });
   const rig = { fly: opts.backFly || null, flyYaw: null, vy: 1, vp: 1, idle: 3, target: V(5, 0, 5), dist: 9, yaw: 0.3, pitch: 0.1, maxD: 26, gy: 0, gp: 0 };
   const cam = { position: { set(x, y, z) { this.x = x; this.y = y; this.z = z; } }, lookAt() { }, updateMatrixWorld() { } };
   const a = { rig, renderer: { domElement: glCanvas, render: () => log.push('render ' + (ctx.st.cur)) }, scene: {}, camera: cam,
@@ -85,15 +86,22 @@ function runCut(opts) {
     veil: () => log.push('VEIL'), out: {}
   };
   vm.createContext(ctx);
-  const src = ['const SEAM = ' + regions.match(/const SEAM = (\{[^}]*\});/)[1] + ';', fnSrc(regions, 'function camFromRig(r, cam)'), fnSrc(regions, 'function snapNow(a)'), fnSrc(regions, 'function snapDrop(now)'), fnSrc(regions, 'function seamStep(q, w, a, now)'),
-    'out.seamStep = seamStep; out.SEAM = SEAM;'].join('\n');
+  const src = ['const SEAM = ' + regions.match(/const SEAM = (\{[^}]*\});/)[1] + ';',
+    'const smooth = ' + regions.match(/const smooth = (\([^\n]*\});/)[1] + ';', 'const PULL = ' + regions.match(/const PULL = (\{[^}]*\});/)[1] + ';', fnSrc(regions, 'function backAt('),
+    fnSrc(regions, 'function camFromRig(r, cam)'), fnSrc(regions, 'function snapNow(a)'), fnSrc(regions, 'function snapDrop(now)'), fnSrc(regions, 'function seamStep(q, w, a, now)'),
+    'out.seamStep = seamStep; out.SEAM = SEAM; out.PULL = PULL;'].join('\n');
   vm.runInContext(src, ctx);
   const q = { phase: 'cut', seam: true, rev: true, wide: !!opts.wide, B: V(4, 0, 6), clock: 0 };
   const w = { camera: cam };
-  return { log, q, rig, cam, ctx, step: (now) => ctx.out.seamStep(q, w, a, now), SEAM: ctx.out.SEAM };
+  return { log, q, rig, cam, ctx, step: (now) => ctx.out.seamStep(q, w, a, now), SEAM: ctx.out.SEAM, PULL: ctx.out.PULL };
 }
 
-test('frame 1: the inside is drawn and copied first, then the outside replaces it in the same frame, camera on the outside view', () => {
+/* Oct 18 (E-man): "when it exits the world ... all of a sudden she just spawns out with the camera being zoomed out. I want to see
+   the same animation but the reverse". The cut itself stays exactly as Oct 17 asked (real copy of the inside, no glow screen, no
+   wash, no blank frame); only where the camera sits under the copy changed: right at the world she left, then a pull-back from
+   it (tests/oct18-world-exit-reverse.test.cjs). These two tests checked the Oct 17 "straight to the zoomed-out view" camera and
+   the 760 ms hold; they now check the Oct 18 camera and timing, with every no-in-between check kept. */
+test('frame 1: the inside is drawn and copied first, then the outside replaces it in the same frame, camera right at the world she left', () => {
   const t = runCut({ wide: true });
   t.step(16);
   const L = t.log;
@@ -101,24 +109,32 @@ test('frame 1: the inside is drawn and copied first, then the outside replaces i
   assert.ok(iR >= 0 && iC > iR && iE > iC, 'render inside -> copy -> leave: ' + L.join(' | '));
   assert.ok(L.includes('insert bwr-snap') || L.includes('append bwr-snap'), 'the copy is on screen');
   assert.ok(!L.includes('VEIL') && !L.includes('class go'), 'no glow, and the copy is not fading yet: ' + L.join(' | '));
-  // straight to the widest outside view, facing the world she just left (no pull-back from the glowing door)
-  assert.strictEqual(t.rig.dist, 26); assert.strictEqual(t.rig.fly, null); assert.strictEqual(t.rig.pitch, 0.42);
-  assert.deepStrictEqual([t.rig.target.x, t.rig.target.y, t.rig.target.z], [0, 0, 0]);
+  // Oct 18: under the copy the camera is at the world she just left (its colour fills the screen), facing it, on the fly-in side
+  assert.strictEqual(t.rig.dist, t.PULL.s0); assert.strictEqual(t.rig.fly, null);
+  assert.deepStrictEqual([t.rig.target.x, t.rig.target.y, t.rig.target.z], [4, 0, 6]);
   assert.ok(Math.abs(t.rig.yaw - Math.atan2(4, 6)) < 1e-9);
-  assert.ok(Math.hypot(t.cam.position.x, t.cam.position.y, t.cam.position.z) > 25, 'camera moved for this very frame');
-  assert.strictEqual(t.q.phase, 'out'); assert.strictEqual(t.q.reveal, true);
+  assert.ok(Math.abs(Math.hypot(t.cam.position.x - 4, t.cam.position.y, t.cam.position.z - 6) - t.PULL.s0) < 1e-9, 'camera moved for this very frame');
+  assert.strictEqual(t.q.phase, 'pull'); assert.strictEqual(t.q.reveal, true);
+  // World map: the pull-back goes on out to the widest outside view, facing the world she just left
+  let now = 16; while (!L.includes('finish') && now < 5000) t.step(now += 16);
+  assert.strictEqual(t.rig.dist, 26); assert.strictEqual(t.rig.pitch, 0.42);
+  assert.deepStrictEqual([t.rig.target.x, t.rig.target.y, t.rig.target.z].map(v => Math.round(v * 1e9) / 1e9), [0, 0, 0]);
+  assert.ok(Math.abs(t.rig.yaw - Math.atan2(4, 6)) < 1e-9);
 });
 
-test('frame 2 on: the copy fades only after the outside has had a frame, and the move ends after the short hold', () => {
+test('frame 2 on: the copy fades only after the outside has had a frame, and the move ends when the pull-back is done', () => {
   const t = runCut({});
   t.step(16);
-  assert.strictEqual(t.rig.dist, 6.5, 'Back / X: Misty\'s own outside framing');
+  assert.strictEqual(t.rig.dist, t.PULL.s0, 'Back / X: from the world she left too');
   t.step(33);
   assert.ok(t.log.includes('class go'), 'fade starts on the next frame');
   assert.ok(!t.log.includes('finish'));
-  t.step(16 + t.SEAM.hold + 1);
+  t.step(16 + t.PULL.ms - 50);
+  assert.ok(!t.log.includes('finish'), 'not cut short');
+  t.step(16 + t.PULL.ms + 1);
   assert.ok(t.log.includes('finish'));
-  assert.ok(t.SEAM.hold <= 900 && t.SEAM.fade <= 450, 'short: no lingering in-between');
+  assert.strictEqual(t.rig.dist, t.PULL.near, 'the outside view of that world');
+  assert.ok(t.PULL.ms <= 2200 && t.SEAM.fade <= 450, 'the copy goes quickly; the pull-back is under 2.2 s');
   assert.ok(!t.log.includes('VEIL'));
 });
 
@@ -139,6 +155,9 @@ test('the live 3D world is never faded away: the spirit-world rule leaves the st
   assert.match(R('world-home.js'), /const far = r\.dist > \(r\.maxD \|\| 13\) \* 1\.06 && !gx && !inRegion\(\);/);
 });
 
-test('Misty drifts from her spot to beside the door in the same short moment, no long pull-back pacing', () => {
-  assert.match(flight, /\(clk - S\.oTB\) \/ \(wq && wq\.seam \? 720 : 1870\)/);
+/* Oct 18: she no longer drifts beside the door in a fixed 720 ms; she rises out of the world with the pull-back, paced by its own
+   progress (so on a slow phone she and the camera stay in step, which the 720 ms clock was for) */
+test('Misty rises out with the pull-back, paced by the pull-back\'s own progress, never by a separate clock', () => {
+  assert.match(flight, /const kk = wq && wq\.rev && wq\.pk != null \? wq\.pk : 1;\s*P = outAt\('R', kk, S\.oA, door\);/);
+  assert.doesNotMatch(flight, /wq\.seam \? 720 : 1870/);
 });

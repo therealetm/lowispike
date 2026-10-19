@@ -84,7 +84,10 @@ test('wiring: leaving a world takes her along (no snap back into the bubble), au
     assert.ok(/if \(S\.st === 'out'\) \{ outFrame\(ctx, k\); return; \}/.test(mf), 'the fly-out runs before the tapped-away / left checks that used to hide her');
     assert.ok(/onBeforeRender = outDraw/.test(mf), 'drawn after the warp moved the camera: never a frame behind');
     assert.ok(/S\.st = 'free'/.test(mf.slice(mf.indexOf('function outLand'))), 'she lands out in the universe flying, not in her cell');
-    assert.ok(/travel\('hub', false, 0, \{ wide: true \}\)/.test(mf.slice(mf.indexOf('function exitGo'))), 'out to the whole universe, with the World map warp');
+    /* Oct 18 (E-man: "all of a sudden she just spawns out with the camera being zoomed out"): out through the edge now ends on
+       the outside view of the world she left (the pull-back from its core through its rings), not on the whole universe */
+    const eg = mf.slice(mf.indexOf('function exitGo'), mf.indexOf('function autoExitFrame'));
+    assert.ok(/Rg\.travel\('hub', false, 0\)/.test(eg) && !/wide: true/.test(eg), 'out with the reversed fly-in, ending at that world');
     const auto = mf.slice(mf.indexOf('function autoExitFrame'), mf.indexOf('function startOut'));
     assert.ok(/ph === 'seek'/.test(auto) && /'press'/.test(auto) && /X\.t \/ EXIT\.HOLD/.test(auto), 'autopilot seeks the corner, presses for the same 3 s, then goes');
     assert.ok(!/Rg\.travel\('hub'\)\); \} catch/.test(mf.slice(mf.indexOf('function roamFrame'), mf.indexOf('function exitReset'))), 'autopilot no longer warps out from wherever she is');

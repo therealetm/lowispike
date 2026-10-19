@@ -48,7 +48,8 @@ test('Again also offers the snacks you logged in Log meal, never one already on 
 
 test('the Shop panel shows Snacks to buy at the top, with its own storage, in three languages', () => {
     assert.match(sp, /const SKEY = 'lowi\.snackBuy\.v1';/);
-    assert.strictEqual((sp.match(/'<div class="stp-scroll">' \+ snackHTML\(\) \+/g) || []).length, 2, 'store choice and product list');
+    // Oct 19 food paths: the two plain Shop buttons (Scan in the shop, Shopping list) sit just above Snacks to buy
+    assert.strictEqual((sp.match(/'<div class="stp-scroll">' \+ (shopActs\(\) \+ )?snackHTML\(\) \+/g) || []).length, 2, 'store choice and product list');
     assert.match(sp, /T\('Snacks to buy', 'Snacks zum Einkaufen', 'Snacks para comprar'\)/);
     assert.match(sp, /l\.slot === 'snack'/, 'logged snacks from Log meal');
     assert.match(sp, /ov\.addEventListener\('submit', onSubmit\);/);

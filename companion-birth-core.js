@@ -81,7 +81,11 @@ function validTime(t){t=String(t||'').trim();const m=/^(\d{1,2}):(\d{2})/.exec(t
 function signOf(b){b=validDate(b);if(!b)return '';const [,m,d]=b.split('-').map(Number);return d<=EDGES[m-1][2]?EDGES[m-1][0]:EDGES[m][0];}
 function rhythmOf(b,t){t=validTime(t);if(t){const h=+t.slice(0,2);return h>=5&&h<=10?'dawn':h>=11&&h<=16?'day':h>=17&&h<=22?'dusk':'night';}
  const [y,m,d]=validDate(b).split('-').map(Number);const dow=new Date(y,m-1,d).getDay();return ['night','dawn','day','dusk'][dow%4];}
-function seedOf(b,t){return fnv(validDate(b)+'|'+validTime(t));}
+/* Oct 19: the optional personality type (16 types, MBTI letters) is a third input. Without a type the seed is exactly
+   the old one, so every companion born before keeps its look and name; with a type, same-birthday twins split 16 ways. */
+const TYPES=['INTJ','INTP','ENTJ','ENTP','INFJ','INFP','ENFJ','ENFP','ISTJ','ISFJ','ESTJ','ESFJ','ISTP','ISFP','ESTP','ESFP'];
+function validType(t){t=String(t||'').trim().toUpperCase().slice(0,4);return TYPES.indexOf(t)>=0?t:'';}
+function seedOf(b,t,m){m=validType(m);return fnv(validDate(b)+'|'+validTime(t)+(m?'|'+m:''));}
 
 /* ---------- colour ---------- */
 function hexToHsl(h){const r=parseInt(h.substr(1,2),16)/255,g=parseInt(h.substr(3,2),16)/255,b=parseInt(h.substr(5,2),16)/255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b);let H=0,S=0;const Lg=(mx+mn)/2;
@@ -104,12 +108,12 @@ function nameFor(seed,sign,n){const r=rng((seed^Math.imul((n|0)+1,0x9E3779B1))>>
  return cap(roots[0]);}
 
 /* ---------- the companion ---------- */
-function generate(o){o=o||{};const bday=validDate(o.bday);if(!bday)return null;const btime=validTime(o.btime),sign=signOf(bday),S=SIGNS[sign];
- const seed=seedOf(bday,btime),r=rng(seed);
+function generate(o){o=o||{};const bday=validDate(o.bday);if(!bday)return null;const btime=validTime(o.btime),mbti=validType(o.mbti),sign=signOf(bday),S=SIGNS[sign];
+ const seed=seedOf(bday,btime,mbti),r=rng(seed);
  const look={body:pickI(r,8),eyes:pickI(r,7),mouth:pickI(r,4),marks:pickI(r,7),aura:pickI(r,5),acc:pickI(r,8),parts:pickI(r,5),hue:pickI(r,29)-14,size:+(0.88+r()*0.2).toFixed(3),squish:+(0.9+r()*0.2).toFixed(3),wob:+(r()*6.283).toFixed(3)};
  const a=shift(S[3],look.hue,0),b=shift(S[4],look.hue*.6,0),deep=shift(S[3],look.hue,-.18);
  const n=Math.max(0,o.n|0),rh=rhythmOf(bday,btime);
- return {v:1,bday,btime,seed,n,sign,element:S[0],modality:S[1],glyph:S[2],rhythm:rh,type:S[0]+'-'+rh+'-'+S[1],palette:{a,b,deep,base:[S[3],S[4]]},look,
+ return {v:1,bday,btime,mbti,seed,n,sign,element:S[0],modality:S[1],glyph:S[2],rhythm:rh,type:S[0]+'-'+rh+'-'+S[1],palette:{a,b,deep,base:[S[3],S[4]]},look,
   name:o.name?cleanName(o.name):nameFor(seed,sign,n),autoName:nameFor(seed,sign,n)};}
 function cleanName(v){return String(v||'').replace(/[<>"'`\\]/g,'').replace(/\s+/g,' ').trim().slice(0,24);}
 function personality(c,lang){lang=L(lang);if(!c)return null;const co=CORE[lang][c.element],rh=RHYTHM[lang][c.rhythm],mo=MODAL[lang][c.modality];
@@ -228,7 +232,7 @@ function mysterySVG(o){o=o||{};return '<svg class="lc-svg lc-mystery'+(o.cls?' '
  '<g class="lc-seedling"><circle cx="60" cy="62" r="26" fill="url(#lcmS)"/><path d="M60 46l2.6 13.4L76 62l-13.4 2.6L60 78l-2.6-13.4L44 62l13.4-2.6z" fill="#fff" opacity=".9"/></g>'+
  [[38,40],[84,44],[80,84],[40,82],[60,30]].map((q,i)=>'<circle class="lc-tw" style="animation-delay:-'+(i*.6)+'s" cx="'+q[0]+'" cy="'+q[1]+'" r="1.1" fill="#fff"/>').join('')+'</svg>';}
 
-const api={SIGNS,SIGN_KEYS,LANGS,META,TAILS,ENDS,MISTY,fnv,rng,validDate,validTime,signOf,rhythmOf,seedOf,generate,nameFor,cleanName,personality,signLabel,myth,colourName,svg,parts,mysterySVG,shift};
+const api={SIGNS,SIGN_KEYS,LANGS,META,TAILS,ENDS,MISTY,fnv,rng,validDate,validTime,validType,TYPES,signOf,rhythmOf,seedOf,generate,nameFor,cleanName,personality,signLabel,myth,colourName,svg,parts,mysterySVG,shift};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 if(root)root.LowiBirthCompanionCore=api;
 })(typeof window!=='undefined'?window:(typeof self!=='undefined'?self:null));

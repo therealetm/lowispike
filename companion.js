@@ -48,10 +48,17 @@
     }
     function cur() { try { return HT() && HT().current ? HT().current() : null; } catch (e) { return null; } }
     function model() { const c = cur(); return c ? (c.m && c.m.profile ? c.m : c.profile ? c : null) : null; }
+    /* Oct 19: with the user's own birth companion, evolution grows from IT: its element, its colours, its seed and its
+       personality type (from the claim step; else the Community type). Without one, Misty's evolution is unchanged. */
+    function ownBirth() { try { const B = W.LowiBirthCompanion; if (B && B.has && B.has()) { const c = B.get(); return c && !c.misty && c.palette ? c : null; } } catch (e) { } return null; }
     function myGenome(m) {
         m = m && m.profile ? m : model();
         if (!m) return null;
-        return C.genome(m.profile, m.index | 0, seed());
+        const bc = ownBirth();
+        if (!bc) return C.genome(m.profile, m.index | 0, seed());
+        const pr = m.profile || {}, sg = pr.sign && typeof pr.sign === 'object' ? pr.sign : {};
+        const prof = Object.assign({}, pr, { sign: Object.assign({}, sg, { element: bc.element }), palette: { a: bc.palette.a, b: bc.palette.b }, personality: bc.mbti || pr.personality || '' });
+        return C.genome(prof, m.index | 0, (bc.seed >>> 0) % 65536, true);
     }
 
     /* ---------- Misty's form inside the cell ---------- */

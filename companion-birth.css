@@ -62,7 +62,7 @@
 .lc-form{display:flex;flex-direction:column;align-items:stretch;gap:10px;padding-top:8px}
 .lc-form .lc-art{align-self:center}
 .lc-l{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:650;color:#d6ecff;text-align:left}
-.lc-l input{min-height:48px;border-radius:14px;padding:0 14px;font:inherit;font-size:17px;color:#fff;background:rgba(10,20,44,.7);border:1px solid rgba(160,220,255,.45);color-scheme:dark}
+.lc-l input,.lc-l select{min-height:48px;width:100%;box-sizing:border-box;border-radius:14px;padding:0 14px;font:inherit;font-size:17px;color:#fff;background:rgba(10,20,44,.7);border:1px solid rgba(160,220,255,.45);color-scheme:dark}
 .lc-hint{margin-top:-4px;color:rgba(200,220,245,.7);font-size:12.5px}
 .lc-err{margin:0;color:#ffb3c1;font-size:14px}
 .lc-form .lc-cta{flex:none;margin-top:6px}
@@ -84,3 +84,18 @@
 .hs-misty.hs-own .hs-orb,.hs-misty.hs-mys .hs-orb{background:none!important;border:0!important;box-shadow:none!important;overflow:visible!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 .hs-misty.hs-own .hs-orb::after,.hs-misty.hs-mys .hs-orb::after,.hs-misty.hs-own .hs-orb::before,.hs-misty.hs-mys .hs-orb::before{display:none!important}
 .hs-misty.hs-own .lc-svg,.hs-misty.hs-mys .lc-svg{width:118%;height:118%;flex:none}
+
+/* claim step (Oct 19): existing accounts with the standard Misty claim their own companion */
+.lc-kick{align-self:center;font-size:12px;font-weight:750;letter-spacing:.08em;text-transform:uppercase;color:var(--lc-a,#9fd8ff)}
+.lc-h{margin:0;text-align:center;font-size:22px;line-height:1.2;font-weight:800;color:#fff}
+.lc-h-s{font-size:20px}
+.lc-intro{margin:0 0 4px;text-align:center;font-size:14.5px;line-height:1.45;color:rgba(220,236,255,.86)}
+.lc-l select{-webkit-appearance:none;appearance:none;font-size:16px;background-image:linear-gradient(45deg,transparent 50%,#cfe6ff 50%),linear-gradient(135deg,#cfe6ff 50%,transparent 50%);background-position:calc(100% - 20px) 21px,calc(100% - 14px) 21px;background-size:6px 6px;background-repeat:no-repeat;padding-right:36px}
+.lc-later{align-self:center;min-height:44px;padding:0 18px;border:0;background:none;font:inherit;font-size:15px;font-weight:650;color:rgba(214,236,255,.8);cursor:pointer}
+.lc-claim .lc-art.lc-small svg{filter:drop-shadow(0 0 18px color-mix(in srgb,var(--lc-a,#8fdcff) 50%,transparent))}
+.lc-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:10px;align-items:start}
+.lc-col{display:flex;flex-direction:column;gap:8px;min-width:0}
+.lc-col .lc-hint{margin-top:0;line-height:1.3}
+.lc-l select{text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+.lc-claim .lc-form{gap:9px;padding-top:2px}
+@media (max-height:700px){.lc-claim .lc-art.lc-small svg{width:80px;height:80px}.lc-intro{font-size:13.5px;line-height:1.4}.lc-claim .lc-h{font-size:20px}}

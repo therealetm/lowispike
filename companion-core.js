@@ -45,19 +45,23 @@
     function traitName(el, stage, lang) { return TRAITS[ELS.includes(el) ? el : 'spirit'][clampStage(stage)][LI(lang)]; }
 
     /* ---------- genome: one coherent design from sign + type + stage + seed ---------- */
-    function genome(profile, stage, seed) {
+    /* Oct 19: `own` = this is the user's own birth companion. With no personality type its body language is then
+       read from the companion's own seed (bits of the birth seed), so two companions of one element no longer evolve
+       identically. Misty (own=false, no type) keeps the old fixed soft/even/plain/mid look. */
+    function genome(profile, stage, seed, own) {
         profile = profile || {};
         const sign = profile.sign && typeof profile.sign === 'object' ? profile.sign : null;
         const el = sign && ELS.indexOf(sign.element) >= 0 && sign.element !== 'spirit' ? sign.element : 'spirit';
         const t = normType(profile.personality);
         const pal = profile.palette || {};
+        const k = Math.abs(+seed | 0) % 65536, f = own && !t;
         return {
             v: 1, st: clampStage(stage), el,
             a: hex(pal.a) || '#9de6b8', b: hex(pal.b) || '#c7b0ff',
-            sh: t ? (t[2] === 'T' ? 'edge' : 'soft') : 'soft',
-            sy: t ? (t[3] === 'J' ? 'even' : 'free') : 'even',
-            pt: t ? (t[1] === 'S' ? 'band' : 'star') : 'none',
-            au: t ? (t[0] === 'E' ? 'wide' : 'close') : 'mid',
+            sh: t ? (t[2] === 'T' ? 'edge' : 'soft') : f ? (k & 1 ? 'edge' : 'soft') : 'soft',
+            sy: t ? (t[3] === 'J' ? 'even' : 'free') : f ? (k & 2 ? 'free' : 'even') : 'even',
+            pt: t ? (t[1] === 'S' ? 'band' : 'star') : f ? ['none', 'band', 'star'][(k >> 2) % 3] : 'none',
+            au: t ? (t[0] === 'E' ? 'wide' : 'close') : f ? ['mid', 'wide', 'close'][(k >> 4) % 3] : 'mid',
             sd: (Math.abs(+seed | 0) % 65536),
             hasSign: !!sign, hasType: !!t
         };

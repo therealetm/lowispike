@@ -60,14 +60,14 @@
         return el;
     }
     /* one bubble, one voice. A line: {text, prio, kind ('hunt' | 'fact' | 'tip'), i (index into lines for facts)}.
-       A new line replaces the one showing only once that one has been readable for a moment (sooner if the new one matters more);
+       A new line replaces the one showing only once that one has been up its reading time (a more important one: at least the floor);
        otherwise it waits in a single slot (a newer or more important line takes the slot). Nothing piles up, nothing goes stale. */
     function speak(line, user) {
         if (!st.el || !line || !line.text) return false;
         const now = performance.now(), c = st.cur && st.el.classList.contains('rp-talk') ? st.cur : null;
         if (c && !user) {
             const until = c.t + C.minRead(c.text, c.prio, line.prio);
-            if (now < until && line.prio <= c.prio + 1) {
+            if (now < until) {
                 if (!st.wait || line.prio >= st.wait.prio) { st.wait = line; clearTimeout(st.waitT); st.waitT = setTimeout(flush, Math.max(60, until - now)); }
                 return true;
             }
@@ -87,9 +87,9 @@
         st.el.classList.add('rp-talk'); st.shown++; st.visit++;
         st.size = null; st.obsT = 0; placeSay(true);
         clearTimeout(st.sayT); clearTimeout(st.nextT);
-        const ms = C.showMs(line.text, line.kind === 'hunt' ? 'hunt' : 'fact') + (user ? 1500 : 0);
+        const ms = C.showMs(line.text, line.kind === 'hunt' ? 'hunt' : 'fact') + (user ? 1500 : 0); /* reading time, read-time-core.js */
         st.sayT = setTimeout(quiet, ms);
-        try { W.dispatchEvent(new CustomEvent('lowi:region-pal', { detail: { id: st.id, line: line.i != null ? line.i : -1, kind: st.lastKind, text: line.text, user: !!user } })); } catch (e) { }
+        try { W.dispatchEvent(new CustomEvent('lowi:region-pal', { detail: { id: st.id, line: line.i != null ? line.i : -1, kind: st.lastKind, text: line.text, user: !!user, prio: line.prio || 0 } })); } catch (e) { }
     }
     function sayLine(i, user) {
         if (!st.el || !st.lines.length) return;

@@ -46,8 +46,10 @@ test('"First time!" only on the first-ever action of a type', () => {
     assert.equal(P.isFirst('meal', a, [zero, a], {}, SUN.classify), true, 'an uncounted entry is not a first');
 });
 
-test('toast is under 2 s, never takes taps, skips the sun bonus and is loaded', () => {
-    assert.ok(P.SHOW_MS < 2000);
+/* Oct 18, 2026: E-man said the bubbles were too fast to read. The line used to vanish under 2 s; now it stays its reading
+   time (at least 4.5 s, about 200 words a minute, read-time-core.js) and is still capped so it never stays forever. */
+test('toast stays up its reading time (never forever), never takes taps, skips the sun bonus and is loaded', () => {
+    assert.ok(P.SHOW_MS >= 4500 && P.showMs('Nice!') >= 4500 && P.showMs('x '.repeat(500)) <= 24000);
     const css = fs.readFileSync(path.join(root, 'sun-meter.css'), 'utf8');
     assert.match(css, /\.lp-praise \{[^}]*pointer-events: none/);
     const src = fs.readFileSync(path.join(root, 'praise.js'), 'utf8');

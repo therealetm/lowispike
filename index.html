@@ -5925,7 +5925,7 @@ const CLASSIC_IMG = {"apfelschorle":"data:image/webp;base64,UklGRkQHAABXRUJQVlA4
 
 /* UI helpers, Home, check-in, glow */
 let toastT;
-function toast(msg, ms){ const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), ms || 2200); }
+function toast(msg, ms){ const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), window.LowiReadTime ? LowiReadTime.atLeast(msg, ms || 2200, {kind:"toast"}) : (ms || 2200)); }
 function sheet(html){ $("#sheet").innerHTML = '<div class="grab"></div>' + html; try{ window.LowiBloom && LowiBloom.prep($("#sheet")); }catch(e){} $("#sheetwrap").classList.add("open"); }
 function closeSheet(){ $("#sheetwrap").classList.remove("open"); }
 const ICO = {x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
@@ -8389,7 +8389,7 @@ function setStep(i, user){ step = (i + 3) % 3; const r = document.querySelector(
 function auto(){ if (!live()) { clearInterval(timer); timer = 0; return; } if (document.hidden) return; setStep(step + 1); }
 function tick(){ clearInterval(timer); timer = setInterval(auto, 2600); }
 function paintBip(){ const b = document.querySelector('#r2gate .a1-android [data-a1="added"]'); if (b && bip) { b.dataset.a1 = "install"; b.textContent = T("Install app"); } }
-function toast(t){ const el = document.querySelector("#r2gate .a1-toast"); if (!el) return; el.textContent = t; el.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("on"), 2200); }
+function toast(t){ const el = document.querySelector("#r2gate .a1-toast"); if (!el) return; el.textContent = t; el.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("on"), window.LowiReadTime ? LowiReadTime.atLeast(t, 2200, {kind:"toast"}) : 2200); }
 function url(){ return location.origin + location.pathname; }
 async function copy(){ const u = url(); let okk = false;
   try { if (navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText(u); okk = true; } } catch(e){}
@@ -9044,6 +9044,7 @@ window.LowiFood = {fitDeck:ckFitDeck, source:fSrc, setSource:ckSource, category:
 .lc-upd{justify-content:center;font-weight:600;cursor:pointer;text-align:center}
 .lc-newpill{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:30;padding:8px 14px;border-radius:999px;border:0;background:#fff;color:#000;font-weight:700;font-size:13px;box-shadow:0 6px 20px rgba(0,0,0,.4);cursor:pointer}
 </style>
+<script src="read-time-core.js?v=20261018-225254"></script>
 <script src="community-chat-core.js?v=20261018-225254"></script>
 <script>
 window.LOWI_CFG = {"url": "https://vnfwmifmsfecascwaody.supabase.co", "key": "sb_publishable_iVA3wCYxzfWu2q8SSgieWw_adXbx4Qd"};

@@ -1,13 +1,17 @@
 /* LOWiSPIKE praise pool (Oct 15, 2026): after every action the XP ledger counted, the herb says one short line in
    first person. 12 lines each in de/en/es, never the same line twice in a row. A "First time!" tag shows only on the
    first-ever action of each type (meal, scan, water, move, fasting, macro goal), read from the whole ledger and kept
-   in S.praise.first. The toast lives 1.7 s and never takes taps (pointer-events:none). Pure parts are tested in
+   in S.praise.first. The toast stays up its reading time (read-time-core.js; Oct 18: it was 1.7 s, too fast to read) and never takes taps (pointer-events:none). Pure parts are tested in
    tests/praise.test.cjs. */
 (function () {
     'use strict';
     const W = typeof window !== 'undefined' ? window : globalThis, D = W.document;
     if (W.LowiPraise) return;
-    const SHOW_MS = 1700;
+    /* how long the line stays: its reading time (about 200 words a minute plus a lead, never under 4.5 s). SHOW_MS is the
+       floor for the shortest line; longer lines (Misty's hints come through here too) stay longer. */
+    const RT = () => W.LowiReadTime || (typeof require === 'function' ? require('./read-time-core.js') : null);
+    const SHOW_MS = 4500;
+    function showMs(text) { const r = RT(); return r ? r.ms(text) : Math.max(SHOW_MS, 2000 + String(text || '').length * 60); }
     const POOL = {
         en: ['I’m so proud of you!', 'That made my bubble glow.', 'You and me, we’re on a roll.', 'I felt that one right in my core!', 'Look at us grow!', 'Another sunbeam for me, thank you!', 'You take such good care of us.', 'My bubble is wobbling with joy.', 'Tiny step, big glow.', 'I knew you’d do it.', 'Stars are jealous of us today.', 'That’s my human!'],
         de: ['Ich bin so stolz auf dich!', 'Davon glüht meine Blase.', 'Wir zwei sind gerade richtig gut drauf.', 'Das spür ich bis in meinen Kern!', 'Schau, wie wir wachsen!', 'Noch ein Sonnenstrahl für mich, danke!', 'Du kümmerst dich so gut um uns.', 'Meine Blase wackelt vor Freude.', 'Kleiner Schritt, großes Leuchten.', 'Ich wusste, dass du das schaffst.', 'Die Sterne sind heute neidisch auf uns.', 'Das ist mein Mensch!'],
@@ -40,7 +44,7 @@
         if (!up && (hits(downT) || downT + b.h > view.h - 8) && upT >= (view.top || 8)) up = true; /* below is worse: stay above */
         return { l, t: up ? upT : downT, up, tail: Math.max(18, Math.min(b.w - 18, a.x - l)) };
     }
-    const core = { POOL, FIRST, TYPES, SHOW_MS, pick, isFirst, place };
+    const core = { POOL, FIRST, TYPES, SHOW_MS, showMs, pick, isFirst, place };
     if (!D) {
         if (typeof module !== 'undefined' && module.exports) module.exports = core;
         return;
@@ -96,7 +100,7 @@
         } catch (e) { }
         el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
         clearTimeout(timer);
-        timer = setTimeout(() => { if (el) el.classList.remove('on'); }, SHOW_MS);
+        timer = setTimeout(() => { if (el) el.classList.remove('on'); }, showMs(text));
     }
     function praise(type, first) {
         const pool = POOL[lang()], i = pick(pool.length, lastIdx);

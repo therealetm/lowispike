@@ -336,7 +336,7 @@
         sp.textContent = text;
         sp.classList.add('cw-say');
         clearTimeout(speak.t);
-        speak.t = setTimeout(() => sp.classList.remove('cw-say'), 4200);
+        speak.t = setTimeout(() => sp.classList.remove('cw-say'), W.LowiReadTime ? W.LowiReadTime.atLeast(text, 4200) : 4200); /* reading time */
     }
     function render(force) {
         if (!wrap()) return;

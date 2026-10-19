@@ -91,9 +91,14 @@
         return { key: k, prio: HUNT[key], text: guide(k, li, { n, k: num, d: v.d }) };
     }
     /* how long a line stays: readable at a calm pace, never forever; hunt lines are short and go faster */
-    function showMs(text, kind) { const n = String(text || '').length; return kind === 'hunt' ? clamp0(2600 + n * 50, 3000, 7000) : clamp0(4000 + n * 45, 4500, 11000); }
-    /* the shortest time a line stays before another line may replace it (a higher-priority one cuts in sooner) */
-    function minRead(text, prio, newPrio) { const n = String(text || '').length; const base = clamp0(1400 + n * 22, 1600, 4200); return newPrio > prio ? Math.min(base, 1200) : base; }
+    /* reading time (Oct 18, 2026; E-man: "the bubbles are too fast, I can barely read what it says"): every line stays up for
+       about 200 words a minute plus a lead (read-time-core.js), never under the minimum, never forever. Hunt lines use the same rule. */
+    let RT0 = null;
+    const rt = () => RT0 || (RT0 = root.LowiReadTime || (typeof require === 'function' ? require('./read-time-core.js') : null));
+    function showMs(text, kind) { const RT = rt(); return RT ? RT.ms(text) : clamp0(4000 + String(text || '').length * 60, 4500, 24000); }
+    /* how long a line stays before another one may replace it automatically: its full reading time. Only a big moment
+       (priority 3: level up, world clean) may cut in sooner, and even then not before the floor and 60% of it. Nothing cuts in instantly. */
+    function minRead(text, prio, newPrio) { const RT = rt(), big = newPrio >= 3 && newPrio > prio; return RT ? RT.holdMs(text, prio, big ? newPrio : prio) : (big ? 3000 : showMs(text)); }
     function clamp0(v, a, b) { return Math.max(a, Math.min(b, v)); }
     /* next line the guide teaches: the first fact (index into lines) not said yet this session; null when all are said */
     function nextFact(total, seen, from) { for (let k = 0; k < total; k++) { const i = (from || 0) + k; if (i < total && !(seen && seen.has ? seen.has(i) : seen && seen[i])) return i; } return null; }

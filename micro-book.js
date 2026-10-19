@@ -246,7 +246,7 @@
         el.innerHTML = cellIco() + '<span>' + esc(msg) + '</span>';
         el.classList.toggle('mb-top', treeUp());
         el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
-        setTimeout(() => { el.classList.remove('on'); setTimeout(nextToast, 260); }, 2600);
+        setTimeout(() => { el.classList.remove('on'); setTimeout(nextToast, 260); }, W.LowiReadTime ? W.LowiReadTime.atLeast(msg, 2600, { kind: 'toast' }) : 2600); /* reading time */
     }
 
 

@@ -347,3 +347,11 @@ The user explicitly requested deploying the recovered Home implementation withou
 **Decision:** `home-blooms-v2.js` Fuel blooms exactly three orbs: Shop (the "What can I buy here?" panel, `LowiStorePicks.open`), Cook (the Cook tab, `LowiHost.go('shelf')`) and Log meal (the meal log sheet, `LowiSpirit.meal`). Today's step and Swap left Fuel; Craving SOS itself stays in the app. Holding Fuel still opens the meal log as a shortcut. The right-side Cook panel and the craving title/tiles are separate, later changes.
 
 **Consequences:** Checks: `tests/ui-fuel-navigation.test.cjs`, `tests/ui-fuel-live.cjs`, `tests/home-blooms-v2.test.cjs` and `tests/home-blooms-v2-live.cjs` (their old Today's step/Snack/Swap assertions were replaced by Shop/Cook/Log meal assertions, none deleted or skipped).
+
+## 2026-10-18 Reading time for every text bubble
+
+**Context:** Emmanuel: "the bubbles are too fast, actually all bubbles are too fast. I can barely read what it says." Misty's line (praise.js) vanished after 1.7 s, toasts after 2.2 s, and inside a world a hunt line replaced the cell guide's lesson after about 1.2 s.
+
+**Decision:** One rule in `read-time-core.js` (`window.LowiReadTime`): about 200 words a minute (300 ms a word, or 55 ms a character for long German words, whichever is longer) plus a 2 s lead, at least 4.5 s for speech and 3 s for a short toast, capped at 24 s. A caller's own longer duration is kept (`atLeast`). Used by the cell guides (`region-pals-core.js` showMs/minRead), Misty's line and hints (`praise.js`), the Misty hub nudge, arrival lines, the cell-world speech, micro-book toasts and both `toast()` functions in index.html. A guide line is never replaced automatically before its reading time; only a level-up or clean world (priority 3) may cut in sooner, and not before 3 s. Tapping the guide still gives the next line, tapping its bubble closes it. Animation speed is unchanged.
+
+**Consequences:** Checks: `tests/read-time.test.cjs`, `tests/read-time-live.cjs` (toast, Misty's line and the liver guide timed in Chromium/WebKit). The old caps in `tests/cell-guide.test.cjs` (7 s hunt, 11 s fact) and `tests/praise.test.cjs` (under 2 s) were moved to the new rule, nothing deleted or skipped.

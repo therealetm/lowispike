@@ -144,7 +144,7 @@
         const el = inQuest(c, 'arr-line'); if (!el) return false;
         el.innerHTML = '<div class="arr-hd"><span class="arr-orb" aria-hidden="true"></span><div class="arr-tt"><b>' + esc(c.name) + '</b></div>' +
             '<button type="button" class="arr-x" data-arr-x aria-label="Close">' + XSVG + '</button></div>' + (line ? '<p class="arr-fact">' + esc(line) + '</p>' : '');
-        if (cur) { cur.line = true; clearTimeout(cur.t); const me = cur; cur.t = setTimeout(() => { if (cur === me) close(); }, ms || 3600); }
+        if (cur) { cur.line = true; clearTimeout(cur.t); const me = cur; cur.t = setTimeout(() => { if (cur === me) close(); }, W.LowiReadTime ? W.LowiReadTime.atLeast((title || '') + ' ' + (line || ''), ms || 3600) : (ms || 3600)); } /* reading time */
         return true;
     }
     function inRide(id, tries) {

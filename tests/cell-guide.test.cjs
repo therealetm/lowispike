@@ -107,9 +107,11 @@ test('Misty\'s own line is a speech bubble coming out of her, never on the Daily
     assert.ok(/getElementById\('spBubble'\)/.test(js) && /LowiMistyFlight/.test(js));
 });
 
+/* Oct 18, 2026: E-man said every bubble was too fast to read, so the caps moved from 7 s (hunt) / 11 s (fact) to the shared
+   reading time (about 200 words a minute, read-time-core.js), still capped so nothing stays forever (tests/read-time.test.cjs). */
 test('timing: readable, never forever; a more important line can cut in sooner', () => {
-    assert.ok(C.showMs('Warmer! One is close, keep going.', 'hunt') >= 3000 && C.showMs('x'.repeat(400), 'hunt') <= 7000);
-    assert.ok(C.showMs('x'.repeat(400), 'fact') <= 11000);
+    assert.ok(C.showMs('Warmer! One is close, keep going.', 'hunt') >= 3000 && C.showMs('x'.repeat(400), 'hunt') <= 24000);
+    assert.ok(C.showMs('x'.repeat(400), 'fact') <= 24000);
     assert.ok(C.minRead('a line here', 1, 3) < C.minRead('a line here', 1, 1));
 });
 

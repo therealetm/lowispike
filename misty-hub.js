@@ -213,7 +213,7 @@
         nudgeEl.setAttribute('aria-label', n.text + ' \u00b7 ' + T('Open Today', 'Heute \u00f6ffnen', 'Abrir Hoy'));
         place();
         requestAnimationFrame(() => { nudgeEl && nudgeEl.classList.add('on'); });
-        clearTimeout(hideT); hideT = setTimeout(hideNudge, NUDGE_SHOW);
+        clearTimeout(hideT); hideT = setTimeout(hideNudge, W.LowiReadTime ? W.LowiReadTime.atLeast(n.text, NUDGE_SHOW) : NUDGE_SHOW); /* never shorter than its reading time */
     }
     function hideNudge() { clearTimeout(hideT); if (nudgeEl) nudgeEl.classList.remove('on'); nudge = null; }
     function tapNudge() {

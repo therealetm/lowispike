@@ -8,6 +8,14 @@ hunt ledger, the Supabase project and today's task reports, not from memory.
 
 No key, token or password is written anywhere in this file, and none may ever be added.
 
+**Standing rule from Emmanuel (call, about 9 PM, 19 Oct): "When I tell you something new, you have to update the
+GitHub for Maya."** Every new instruction goes into this file on `main` as soon as he gives it, before any building
+starts and before a task can run out of budget, not only when the work is finished. He asked because a task can stop
+at its weekly limit at any moment, and anything not written here is then lost. He plans to switch to the next Maya
+when this one hits her weekly limit, so this file is how she picks up. Each checkpoint says, per item: requested,
+queued, implemented, verified, blocked, remaining, with task IDs, branches, files, blockers and the next action. No
+secrets. (Whether a new Maya comes with more credits is his own experience; this file doesn't claim it either way.)
+
 Contents: 0 Open requests from Emmanuel (read this first). 1 What LOWiSPIKE is. 2 Accounts and access. 3 How to work. 4 Lessons and difficulties. 5 Emmanuel's
 preferences and standing decisions. 6 Status board. 7 Do this first. Log (append-only, at the end).
 
@@ -256,6 +264,70 @@ request survived, it says "(his request, as the task summed it up)". All times a
 - Section 6 below was written at about 7 PM. Today's later builds: 20261019-184516 (auto tour), -184741 (Community
   crash), -185002 (weight & BMI), -185115 (evolutions), -185352 (meal slots), -191500 (bug hunt BH-010).
 - The `wip/*` branches are snapshots. Before you reuse one, rebase it on `main`: many of them are hours behind.
+
+### 0.5 New from the evening call (about 9 PM): human-instinct UX, a hundred simulated users, natural Spanish
+
+Checkpoint written Monday 19 Oct 2026, 9:10 PM CEST. Live was **20261019-201827** (version.json checked 9:10 PM),
+`main` at 4e8beda. Task states below were checked at 9:10 PM; re-check them, don't trust them.
+
+**18. The app must make sense from human instinct, everywhere.** REQUESTED, simulation task running, nothing built.
+   - He said: "the most important thing is when someone uses our app, they shouldn't feel overwhelmed or confused at
+     all. It should make sense completely natively from a human instinct." This is app-wide, not only Spanish.
+   - What he wants: genuine new-user journeys simulated, not only code and crash tests. Varied people: ages,
+     countries, languages, technical confidence, writing styles and slang (Maya's examples on the call: "a tech savvy
+     teen in Seoul to a retiree in rural Italy"). He said "you're free to simulate anything" and "the whole world is
+     fair game". He doesn't want to script personalities or messages himself.
+   - **Up to a hundred simulated users** actually sign up, finish onboarding, use the features, play, log meals, post
+     food photos and what they ate, find products and discuss them.
+   - **They talk to each other in the live Community most of all.** His words: "Someone sent pictures of their food
+     ... What they ate, logging stuff ... Finding products in discussions with each other, very important, even more
+     important than with me because I might [not] always reply. But they should be talking to each other." Some also
+     message Emmanuel, and some message his friends: "Not just texting me, right? They text into the communities ...
+     some might message me, some might message my friends." His friends are his **three informed human beta testers,
+     who live with him**.
+   - They behave like real people: ask questions when lost, complain, like, love, support, or whatever fits the moment.
+     A polite "this is a bit confusing" counts as much as a meltdown.
+   - **Around the clock:** activity goes on "twenty four hours", spread across countries and time zones, not everyone
+     online at once.
+   - **Load:** "maybe if hundred people are in the chat constantly active, maybe that will break something. We have to
+     really like push it." So also deliberate concurrency stress at up to a hundred active users, to find chat and
+     message failures. A clean hundred-user run does not prove the app is ready for every real-world load; say so.
+   - **Unlabelled accounts, informed testers only.** He asked for the simulated accounts to be unlabelled so they feel
+     real, and his three beta testers know they are simulated. `COMMUNITY_CHAT.md` has a standing rule: no demo bots or
+     invented participants in chat, profiles or mentions, and no invented online counts. His exception covers only
+     this test with his informed testers. It does **not** extend to unsuspecting public users: before any real
+     outside user can see Community, the simulated accounts must be removed, hidden or labelled, and the rule applies
+     again. An earlier pending question about labelled bots (request toolu_vrtx_01BdWZEAkoSJ2PpmVZHoX6H6) was
+     superseded by his informed-beta answer; labelled bots were never chosen.
+   - Maya's rules: never claim real human or native-speaker testing; this is simulation. Write down what really
+     happened (app behaviour, UX friction, load evidence). Fix in small, coherent releases, one per fix, not one giant
+     change. Respect the real provider limits (Supabase, the shared Google photo pool of about 1,500 reads a day and
+     the 3-a-day photo cap) and coordinate with other running tasks.
+   - **Task 98f0954e-f364-4270-99cf-e4ec1e500720** ("LOWiSPIKE: intuitive new-user flow playtest") holds these
+     requirements as they grew during the call. At 9:10 PM: **running**, activity "Simulating new-user flow". Branch
+     `intuition-playtest`, worktree `/home/sprite/wt-intuition`, notes in `COORD-intuition.md` (started 8:59 PM,
+     probing on a local server, "Supabase blocked in harness", no files claimed). Nothing committed; one untracked
+     file, `tools/community-crowd/meal-photos.json`. **No simulated accounts have been created and none are running.**
+     Instructions queued is not bots running. Don't start a competing simulation while it runs.
+   - Next action if that task stops: read `COORD-intuition.md` and the worktree, solve Supabase access for test
+     accounts (the cloud browser signs in with "Continue with GitHub", section 2; ask Emmanuel in the chat if a code is
+     needed), then build the crowd under `tools/community-crowd/` and run it in stages: a few users, then dozens, then
+     up to a hundred, watching edge logs and the chat.
+
+**19. Natural Spanish.** REQUESTED, task running, nothing released.
+   - His Spanish friend found the onboarding and app translations literal and confusing in context. Wanted: natural,
+     meaningful Spanish that keeps blood sugar and insulin clearly apart, with regression tests and a verified
+     deployment.
+   - **Task 2ba92e76-f551-48cb-b56a-f36c034dc97a** ("LOWiSPIKE: natural Spanish localization"). At 9:10 PM:
+     **running**, activity "Auditing Spanish strings". Branch `spanish-natural`, worktree
+     `/home/sprite/wt-spanish-natural`, clean, nothing committed yet. It owns the Spanish strings; task 98f0954e stays
+     out of them. Don't duplicate it.
+   - Still open on `main`: "Te quedan 1 de 3" should be "Te queda 1 de 3" (`meal-photo.js` `STR.es.left`, item 8).
+
+| Item | Requested | Queued | Implemented | Verified | Blocked | Remaining |
+|---|---|---|---|---|---|---|
+| 18 Human-instinct UX + crowd | yes, 9 PM call | task 98f0954e | no | no | Supabase access in harness | everything |
+| 19 Natural Spanish | yes | task 2ba92e76 | no | no | none known | everything |
 
 ---
 
@@ -539,6 +611,9 @@ scripts/release.sh "what users get, in one line" --news news.json
   the list. This is his current instruction (19 Oct) and replaces the older "no voice recordings" line.
 - **Post anything that needs him right in the chat** (approvals, sign-ins, GitHub codes, task updates), not only in
   the activity feed.
+- **"When I tell you something new, you have to update the GitHub for Maya."** Write each new instruction into this
+  file on `main` right away, before building (rule at the top of this file).
+- **Human instinct first:** nobody should feel overwhelmed or confused; the app should make sense natively (0.5, item 18).
 - Plain, short words. He often speaks by voice and mixes English and German. Name the build, say what changed for
   the user, and give one exact thing to try on his iPhone or iPad.
 - He tests on his own iPhone and iPad. Don't ask questions the repo, the site or the data can answer.
@@ -571,6 +646,8 @@ scripts/release.sh "what users get, in one line" --news news.json
 - Chat room: the **tactical star chart** look, semi-transparent glass, glowing accents, using the existing UI design
   principles.
 - Gap shows a dash until a real meal is known. No invented data, no fake activity, honest wording, no health claims.
+  One exception: unlabelled simulated users for his test with his three informed beta testers (0.5, item 18). Never
+  for unsuspecting public users.
 - The tutorial stays current with every release (rule in section 3). The "claim your own companion" step is in
   `tutorial-steps.js` but switched off until that feature exists.
 - Any old UI or old design (old logos, old companion art, the potted herb, the old blob with a smile) gets deleted.
@@ -710,3 +787,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
   thinking and status, what the current Maya is doing, and "verify first, then build what's missing". Live
   20261019-191500.
 - 2026-10-19 20:15 Bug hunt BH-011: a reload during the companion reveal in setup left a new player on the standard Misty; setup now resumes at the birthday step until the companion exists. Branch bughunt-202610191801, notes in BUGHUNT/LEDGER.md (Run 12).
+- 2026-10-19 21:10 Section 0.5 added from the 9 PM call: standing rule "update the GitHub for Maya" whenever he says something new; human-instinct UX and up to a hundred simulated users (task 98f0954e, running, no accounts created yet); natural Spanish (task 2ba92e76, running). Live 20261019-201827.

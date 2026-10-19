@@ -127,6 +127,8 @@
    'based ingredient form either both').split(' ').forEach(function (w) { WEAK[w] = 1; });
   var STOP = {};
   ('i had ate eaten eat a an the some my for lunch dinner breakfast supper snack brunch plate bowl portion serving of homemade little bit bisschen ' +
+   'dish dishes meal meals food foods thing things stuff something mystery leftover leftovers grandma grandmas granny mom moms mum mums mother mothers ' +
+   'gericht essen sachen reste oma omas mama mamas plato platos comida cosa cosas sobras abuela mama ' +
    'ich habe hatte gegessen ein eine einen etwas zum mittag abend fruhstuck comi una un unos unas el la los las de del para almuerzo cena desayuno').split(' ').forEach(function (w) { STOP[w] = 1; });
   var CONNECT = /\s*(?:,|\+|&|\bplus\b|\band\b|\bwith\b|\bmit\b|\bund\b|\bcon\b|\by\b|\bthen\b)\s*/;
 

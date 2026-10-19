@@ -16,6 +16,16 @@ M.load(data);
 const KEYS = ['kcal', 'protein', 'carbs', 'fat', 'fiber', 'sugar'];
 const full = r => KEYS.every(k => typeof r[k] === 'number' && Number.isFinite(r[k]) && r[k] >= 0);
 
+test('a vague name ("grandma\'s mystery dish") is a rough typical meal, not a random food that shares the word "dish"', () => {
+  for (const t of ['grandmas mystery dish', 'leftovers', 'Omas Gericht', 'comida de mi abuela']) {
+    const r = M.parse(t);
+    assert.equal(r.how, 'rough', t + ' -> ' + r.name);
+    assert.ok(full(r), t + ' still gets every value');
+  }
+  assert.equal(M.parse('chicken stew').name, 'Chicken stew', 'real meals are unaffected');
+  assert.equal(M.parse('fish and chips').name, 'Fish and chips');
+});
+
 test('the meal database is built from USDA FNDDS and is a real size', () => {
   assert.match(data.src, /FNDDS/);
   assert.ok(data.f.length > 4500, 'thousands of foods and dishes: ' + data.f.length);

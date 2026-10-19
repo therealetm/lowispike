@@ -56,14 +56,15 @@ test('the app uses the estimator and re-rates saved verdicts', () => {
     assert.match(html, /<script src="spike-catch\.js\?v=/);
 });
 test('simple card: photo, name, one verdict marked as an estimate, Catch it, prices, deals, details (open since Oct 19)', () => {
-    const fn = html.slice(html.indexOf('function simpleCardHTML(p)'), html.indexOf('function actsHTML(p)'));
+    const fn = html.slice(html.indexOf('function scActsHTML(p, mine, m)'), html.indexOf('function actsHTML(p)'));
     assert.ok(fn.length > 500);
-    for (const bit of ['sc-verd', 'sct("est")', 'data-b3="catch"', 'priceCompareHTML', 'LowiDeals.cardHTML', '<details class="sc-more"', 'data-sc="lists"']) assert.ok(fn.includes(bit), bit);
+    for (const bit of ['sc-verd', 'sct("est")', 'data-b3="catch"', 'scActsHTML(p, mine, m)', 'priceCompareHTML', 'LowiDeals.cardHTML', '<details class="sc-more"', 'data-sc="lists"']) assert.ok(fn.includes(bit), bit);
     for (const gone of ['herbHTML', 'eatHTML', 'meterHTML', 'data-b3="skip"', 'swapsHTML']) assert.ok(!fn.includes(gone), gone + ' removed from the card');
     assert.match(html, /const body = p\.notFound \|\| p\.verdict === "unknown" \? manualHTML\(p\) : '<div class="b3-stage sc-stage show">' \+ simpleCardHTML\(p\)/);
 });
-test('catching earns XP for spiky and non-spiky products, scanning no longer auto-catches or stacks the GPT card', () => {
-    assert.match(html, /LowiVitalsBridge\.complete\("vitamin", "catch:" \+ k, \{amt:10/);
+test('Oct 19: catching pays only the first verified finder (Pathfinder); scanning no longer auto-catches or stacks the GPT card', () => {
+    assert.ok(!/LowiVitalsBridge\.complete\("vitamin", "catch:" \+ k, \{amt:10/.test(html), 'no +10 XP for saving a product the community already has');
+    assert.match(html, /let cxp = 0; if \(first\) cxp = pfAward\(/);
     const cap = spirit.slice(spirit.indexOf('async function captureProduct'), spirit.indexOf('// one-tap meal logging'));
     assert.ok(!/LowiDex\.collect|gptHTML|insertAdjacentHTML/.test(cap), 'no auto collect, no dashed GPT card on the result');
 });

@@ -28,7 +28,7 @@ test('Spanish never calls the companion "tu hierba" (it reads as slang for weed)
 });
 
 test('scanner verdicts in Spanish talk about blood sugar, not an insulin spike', () => {
-    for (const en of ['Will likely spike insulin', "Likely won't spike insulin"]) {
+    for (const en of ['Likely blood sugar spike', 'Likely no blood sugar spike']) {
         const t = es(en);
         assert.match(t, /azúcar/, en);
         assert.doesNotMatch(t, /insulina/, en);

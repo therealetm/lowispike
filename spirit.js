@@ -140,6 +140,8 @@
         recent: ['Eaten recently · one tap', 'Zuletzt gegessen · ein Tipp', 'Comido hace poco · un toque'],
         /* Oct 19 (E-man: "Ich habe Pop-up. Zack, Mahlzeit-Eintrag." Breakfast, lunch, dinner, and snacks, then write, scan or snap) */
         slotQ: ['Which meal is it?', 'Welche Mahlzeit?', '¿Qué comida es?'],
+        gapQ: ['Gap time saved. Want to log what you ate? You can skip this.', 'Pausenzeit gespeichert. Willst du eintragen, was du gegessen hast? Du kannst das auch überspringen.', 'Hora de la pausa guardada. ¿Quieres anotar lo que comiste? Puedes saltártelo.'],
+        gapSkip: ['Not now', 'Jetzt nicht', 'Ahora no'],
         breakfast: ['Breakfast', 'Frühstück', 'Desayuno'],
         lunch: ['Lunch', 'Mittagessen', 'Almuerzo'],
         dinner: ['Dinner', 'Abendessen', 'Cena'],
@@ -868,7 +870,10 @@
         return p && Date.now() - p.at < 6e5 && K.slotOk && K.slotOk(p.slot) ? p.slot : '';
     }
     function slotPicker() {
-        const now = K.slotFor ? K.slotFor() : 'lunch',
+        /* Oct 19 food paths: opened right after the Gap bubble saved a time -> say so, offer Not now, and suggest that time's meal */
+        let gc = window.LowiMealCtx && window.LowiMealCtx.from === 'gap' && Date.now() - window.LowiMealCtx.at < 20 * 60000 ? window.LowiMealCtx : null;
+        if (gc && gc.shown) gc = null; else if (gc) gc.shown = true;
+        const now = K.slotFor ? K.slotFor(gc ? gc.ateAt : undefined) : 'lunch',
             day = K.day(),
             logs = (V.state().logs || []).filter(l => l.day === day);
         const tiles = (K.SLOTS || ['breakfast', 'lunch', 'dinner', 'snack']).map((s, i) => {
@@ -877,7 +882,8 @@
                 '<span class="sp-slot-ic">' + icon(SLOT_IC[s]) + '</span><b>' + esc(tr(s)) + '</b>' +
                 '<small>' + esc(n ? n + ' ' + tr('slotDone') : s === now ? tr('slotNow') : '\u00a0') + '</small></button>';
         }).join('');
-        showSheet('<h2>' + esc(tr('meal')) + '</h2><p class="sp-slot-q">' + esc(tr('slotQ')) + '</p><div class="sp-slots" role="group" aria-label="' + esc(tr('slotQ')) + '">' + tiles + '</div>');
+        showSheet('<h2>' + esc(tr('meal')) + '</h2><p class="sp-slot-q' + (gc ? ' sp-gap-q' : '') + '">' + esc(tr(gc ? 'gapQ' : 'slotQ')) + '</p><div class="sp-slots" role="group" aria-label="' + esc(tr('slotQ')) + '">' + tiles + '</div>' +
+            (gc ? '<button type="button" class="sp-ghost sp-gap-skip" data-sp="gapskip">' + esc(tr('gapSkip')) + '</button>' : ''));
     }
 
     /* a log that earns 0 XP always says why (daily limit); a blocked duplicate never gets here */
@@ -1956,6 +1962,7 @@
         else if (a === 'meal') mealForm(null, null, b.dataset.slot || (fromCam ? pendingSlot() : ''));
         else if (a === 'slot') mealForm(null, null, b.dataset.slot);
         else if (a === 'slotPick') slotPicker();
+        else if (a === 'gapskip') { window.LowiMealCtx = null; if (ownedSheet) R.close(ownedSheet); }
         else if (a === 'slotWrite') { const inp = ownedSheet && ownedSheet.querySelector('#spMeal input[name="title"]'); if (inp) { inp.scrollIntoView({ block: 'center', behavior: 'smooth' }); inp.focus(); } }
         else if (a === 'quickMeal') quickMeal(b.dataset.q);
         else if (a === 'water') water();

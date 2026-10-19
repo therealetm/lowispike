@@ -39,7 +39,8 @@ assert.equal(K.validateContribution('evidence',product,{note:'Label added'},[],n
 assert.equal(K.safeURL('javascript:alert(1)'),'');assert.equal(K.safeURL('https://user:pass@example.com/label'),'');
 assert.equal(C.points.first,100);assert.equal(C.points.evidence,20);assert.equal(C.points.price,10);assert.equal(C.points.highestTierBonus,0);
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
-assert(!html.includes('c.from("products").insert(ins)'));assert(!html.includes('const amt = first ? 25 : 10'));assert(!html.includes('rarity(p.catches)'));
+/* Oct 19 (E-man): new products can be added again, but only verified ones (Pathfinder) - never an unreviewed raw claim */
+assert(!html.includes('c.from("products").insert(ins)') || /if \(!pfVerifiable\(p\)\) throw new Error\("Unverified product; saved as a local draft\."\);\s*const ins =/.test(html));assert(!html.includes('const amt = first ? 25 : 10'));assert(!html.includes('rarity(p.catches)'));
 for(const m of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)){if(/src=|application\//i.test(m[1]))continue;new vm.Script(m[2]);}
 for(const f of ['discovery-config.js','discovery-core.js','discovery.js','sw.js'])new vm.Script(fs.readFileSync(path.join(root,f),'utf8'));
 console.log('Discovery focused checks passed: label completeness, zero values, EU/US fiber basis, tiers, no fake review/bonus, barcode/size identity, reward caps, stale/future/duplicate prices, source URLs, draft acceptance, scan integration and script syntax.');

@@ -13975,9 +13975,17 @@ async function searchName(q){ const k = nkey(q); if (k.length < 2) return [];
     const out = (r.data || []).map(fromRow); loc.forEach(p => { if (!out.some(x => pkey(x) === pkey(p))) out.push(p); }); return out.slice(0, 8); } catch(e){ return loc.slice(0, 8); } }
 
 /* catch: local first, then the shared dex. Returns {first, pending} */
+/* Pathfinder (Oct 19, E-man delegated the reward): the first person to add a product that is not in the community database yet
+   gets a permanent Pathfinder badge (their name on the product: products.caught_by / caught_by_name) and a one-time +100 XP bonus.
+   Anti-farming: only verified products can be added (pfVerifiable), the server's unique barcode lets exactly one person be first
+   ever, the XP has a stable event id per barcode, and at most 3 Pathfinder bonuses pay out per day. Re-adding, renaming, made-up
+   barcodes and empty or nonsense names earn nothing. */
+function pfAward(p){ const bc = String(p.barcode || "").replace(/\D/g, ""); if (!bc) return 0; D.pf = D.pf || {}; if (D.pf[bc]) return 0;
+  let xp = 0; if (pfToday() < PF_DAY) { try { xp = window.LowiHost && LowiHost.award ? LowiHost.award("scan:pathfinder", null, {amt:PF_XP, perDay:PF_XP * PF_DAY, label:"Pathfinder", eventId:"pathfinder:" + bc}) || 0 : 0; } catch(e){ xp = 0; } }
+  D.pf[bc] = {ts:Date.now(), name:String(p.name || "").slice(0, 80), xp}; save(); return xp; }
 async function doCatch(p){
   const k = pkey(p); const was = D.mine[k];
-  if (!p.id) { D.mine[k] = Object.assign(slim(p), {ts:Date.now(), pending:false, localDraft:true, first:false}); save(); return {pending:true, first:false}; }
+  if (!p.id && !pfVerifiable(p)) { D.mine[k] = Object.assign(slim(p), {ts:Date.now(), pending:false, localDraft:true, first:false}); save(); return {pending:true, first:false, draft:true}; }
   D.mine[k] = Object.assign(slim(p), {ts:Date.now(), pending:true, first:false}); save();
   const c = await sb(); if (!c) return {pending:true, first:false};
   try { const r = await pushOne(c, p); D.mine[k] = Object.assign(D.mine[k], r.p ? slim(r.p) : {}, {pending:false, first:r.first, ts:Date.now()}); save(); return {pending:false, first:r.first}; }
@@ -13987,8 +13995,18 @@ async function pushOne(c, p){
   if (p.id) row = {id:p.id};
   else if (p.barcode) { const r = await c.from("products").select("id").eq("barcode", p.barcode).limit(1); if (r.data && r.data[0]) row = r.data[0]; }
   else { const r = await c.from("products").select("id").eq("name_key", nkey(p.name)).eq("barcode", "").eq("store_key", "").limit(1); if (r.data && r.data[0]) row = r.data[0]; }
-  // New records require an acceptance service. Never publish unreviewed local claims directly.
-  if (!row) throw new Error("Product acceptance is not connected; saved as a local draft.");
+  // Oct 19 (E-man: Catch only for products not in the community database yet; first finder gets the credit): a new product is
+  // published only when it passes pfVerifiable() (valid barcode check digit, Open Food Facts data for that exact barcode, a real name
+  // and real nutrition facts or ingredients). products_barcode_u (unique barcode) makes the server decide who was first, once ever.
+  // Anything else stays a local draft: never publish unreviewed manual claims directly.
+  if (!row) {
+    if (!pfVerifiable(p)) throw new Error("Unverified product; saved as a local draft.");
+    const ins = {barcode:String(p.barcode).replace(/\D/g, ""), name:String(p.name).trim().slice(0, 80), name_key:nkey(p.name) || "product", brand:(p.brand || "").slice(0, 60), cat:p.cat || "other", verdict:p.verdict,
+      reason:packWhy(p.why), facts:Object.assign({}, p.facts || {}, {score:p.score || null, est:p.est ? 1 : 0}), ingredients:(p.ingredients || "").slice(0, 3000), front_url:p.img || "", source:"off", caught_by_name:myName().slice(0, 40)};
+    const r = await c.from("products").insert(ins).select(COLS).single();
+    if (r.error) { const r2 = await c.from("products").select("id").eq("barcode", ins.barcode).limit(1); if (r2.data && r2.data[0]) row = r2.data[0]; else throw r.error; }
+    else { row = r.data; first = true; }
+  }
   const cr = await c.from("product_catches").insert({product_id:row.id, first});
   if (cr.error && !/duplicate|23505/.test(cr.error.message + cr.error.code)) throw cr.error;
   const full = await c.from("products").select(COLS).eq("id", row.id).limit(1);
@@ -14078,7 +14096,7 @@ function openScanner(mode){
   closeScanner(true);
   const el = document.createElement("div"); el.className = "b3-cam"; el.id = "b3Cam"; el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true");
   el.innerHTML = '<video id="b3Vid" playsinline webkit-playsinline muted autoplay disablepictureinpicture></video><div class="b3-shade"></div>' +
-    '<div class="b3-ctop"><button class="b3-cx" data-b3="camclose" aria-label="' + esc(t("close")) + '">' + IC.x + '</button><span class="b3-ctitle">' + esc(t("scanBig")) + '</span>' + (window.LowiShopScan ? LowiShopScan.pill() : "") + '<button class="b3-torch" data-b3="torch" hidden aria-label="' + esc(t("torch")) + '">' + IC.bolt + '</button></div>' +
+    '<div class="b3-ctop"><button class="b3-cx" data-b3="camclose" aria-label="' + esc(t("close")) + '">' + IC.x + '</button><span class="b3-ctitle">' + esc(t("scanBig")) + '</span>' + (window.LowiShopScan && mode === "shop" ? LowiShopScan.pill() : "") + '<button class="b3-torch" data-b3="torch" hidden aria-label="' + esc(t("torch")) + '">' + IC.bolt + '</button></div>' +
     '<div class="b3-frame" id="b3Frame"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><i class="b3-laser"></i></div>' +
     '<div class="b3-cmsg" id="b3CMsg"></div>' +
     '<div class="b3-cbot"><div class="b3-chint" id="b3Hint">' + esc(t("aim")) + '</div>' +
@@ -14087,7 +14105,9 @@ function openScanner(mode){
   /* Oct 16 in-store scan: shopping mode (from Shop / the cart) opens as its own full-screen layer, not inside Misty's world */
   if(window.LowiSpirit && mode !== "shop"){LowiSpirit.scannerHost().appendChild(el);el.removeAttribute("aria-modal");}else { document.body.appendChild(el); if (mode === "shop") el.classList.add("lv-solo"); } document.documentElement.classList.add("b3-camon");
   CAM = {el, stream:null, raf:0, det:null, reader:null, done:false, last:0};
-  if (window.LowiShopScan) shopMode(LowiShopScan.want(mode));
+  /* Oct 19 food paths (E-man: "at the top there, it says shopping ... so complicated and so hidden"): the Scan camera checks a product
+     and logs food; shopping (Shopping pill, Search by name, Shopping list, Finds) lives only in the camera opened from Shop. */
+  if (window.LowiShopScan) shopMode(mode === "shop" ? LowiShopScan.want(mode) : false);
   kbWire(el);
   $("#b3BcF", el).addEventListener("submit", e => { e.preventDefault(); const v = $("#b3Bc", el).value, c = validCode(v); if (!c) { msg(t("bcBad"), "warn"); sfx("error"); return; } found(c); });
   requestAnimationFrame(() => el.classList.add("on"));
@@ -14234,10 +14254,22 @@ function cardHTML(p, anim){
    > community deals > spike lists. Details and the store prices sit high so people see them at once; posting a deal is lower.
    tests/product-card-order.test.cjs holds this order. */
 const SC_TX = {
-  spike: ["Will likely spike insulin", "Treibt Insulin wahrscheinlich hoch", "Probablemente te sube el azúcar"],
-  ok: ["Likely won't spike insulin", "Treibt Insulin wahrscheinlich nicht hoch", "Probablemente no te sube el azúcar"],
+  spike: ["Likely blood sugar spike", "Wahrscheinlich ein Blutzucker-Spike", "Probablemente te sube el azúcar"],
+  ok: ["Likely no blood sugar spike", "Wahrscheinlich kein Blutzucker-Spike", "Probablemente no te sube el azúcar"],
   est: ["Spike estimate", "Spike-Schätzung", "Estimación de pico"],
   catchXP: ["+10 XP", "+10 XP", "+10 XP"],
+  ate: ["I ate this · log it", "Gegessen · eintragen", "Me lo comí · anotarlo"],
+  known: ["Already in LOWiSPIKE", "Schon in LOWiSPIKE", "Ya está en LOWiSPIKE"],
+  pfBy: ["Pathfinder: {n}", "Pathfinder: {n}", "Pathfinder: {n}"],
+  pfFirst: ["Be the first to add it", "Füg es als Erste:r hinzu", "Sé el primero en añadirlo"],
+  pfXP: ["Pathfinder badge · +{x} XP", "Pathfinder-Abzeichen · +{x} XP", "Insignia Pathfinder · +{x} XP"],
+  pfBadge: ["Pathfinder badge", "Pathfinder-Abzeichen", "Insignia Pathfinder"],
+  pfNew: ["Not in LOWiSPIKE yet", "Noch nicht in LOWiSPIKE", "Aún no está en LOWiSPIKE"],
+  pfSave: ["Save it", "Speichern", "Guardarlo"],
+  pfCheckNote: ["We couldn't check this barcode's label details, so it's saved on your phone. Pathfinder needs a checked product.", "Die Etikettdaten zu diesem Barcode ließen sich nicht prüfen, deshalb ist es nur auf deinem Handy gespeichert. Pathfinder gibt es nur für geprüfte Produkte.", "No pudimos comprobar los datos de la etiqueta de este código, así que se guarda en tu móvil. Pathfinder es solo para productos comprobados."],
+  pfDraft: ["Saved on your phone. It isn't checked yet, so no Pathfinder badge for now.", "Auf deinem Handy gespeichert. Noch nicht geprüft, darum vorerst kein Pathfinder-Abzeichen.", "Guardado en tu móvil. Aún no está comprobado, así que por ahora no hay insignia Pathfinder."],
+  pfWin: ["You're the Pathfinder!", "Du bist Pathfinder!", "¡Eres Pathfinder!"],
+  pfWinSub: ["Nobody had added this product yet. Your name stays on it for good.", "Dieses Produkt hatte noch niemand hinzugefügt. Dein Name bleibt für immer daran.", "Nadie había añadido este producto. Tu nombre se queda en él para siempre."],
   caughtHave: ["Caught", "Gefangen", "Atrapado"],
   cheaper: ["Cheaper at other stores", "Woanders günstiger", "Más barato en otras tiendas"],
   noPrices: ["No prices from other stores for this product yet.", "Für dieses Produkt gibt es noch keine Preise aus anderen Läden.", "Aún no hay precios de otras tiendas para este producto."],
@@ -14246,6 +14278,27 @@ const SC_TX = {
   per100: ["Per 100 g", "Pro 100 g", "Por 100 g"]
 };
 const sct = k => (SC_TX[k] || [k])[LI()] || SC_TX[k][0];
+const PF_XP = 100, PF_DAY = 3;
+function eanOk(code){ const c = String(code || "").replace(/\D/g, ""); if (![8, 12, 13, 14].includes(c.length) || /^(\d)\1+$/.test(c)) return false;
+  const d = c.split("").map(Number), chk = d.pop(); let sum = 0; d.reverse().forEach((n, i) => { sum += n * (i % 2 === 0 ? 3 : 1); }); return (10 - sum % 10) % 10 === chk; }
+function pfUseful(p){ const nm = String(p && p.name || "").trim(); if (nm.length < 3 || (nm.match(/[\p{L}]/gu) || []).length < 3) return false;
+  if (/^(test|asdf|qwer|xxx+|aaa+|product|produkt|producto|unknown|n\/?a|none|food)\b/i.test(nm)) return false;
+  const f = p.facts || {}, nums = ["c", "s", "f", "p"].filter(k => typeof f[k] === "number" && isFinite(f[k])).length;
+  return nums >= 2 || String(p.ingredients || "").trim().length >= 15; }
+function pfVerifiable(p){ return !!p && !p.id && p.source === "off" && eanOk(p.barcode) && pfUseful(p) && p.verdict !== "unknown"; }
+function pfToday(){ const d = new Date().toDateString(); return Object.values(D.pf || {}).filter(x => x && new Date(x.ts).toDateString() === d && x.xp).length; }
+/* Oct 19 food paths: checking a product and logging food you ate are two different buttons. "I ate this · log it" logs it as a meal
+   (the main button when the scan came from Log meal); it never shows in the shopping camera, so a shopping scan never logs a meal
+   or touches the Gap clock. Catch only appears for products the community database doesn't have yet (Pathfinder). */
+function scActsHTML(p, mine, m){
+  const ms = window.LowiMealSlot, shop = !!(typeof CAM !== "undefined" && CAM && CAM.shop), logging = !shop && !!(ms && Date.now() - ms.at < 6e5);
+  const eat = shop ? "" : '<button type="button" class="r2-btn big sc-eat' + (logging ? " pri" : " ghost") + '" data-b3="eat">' + esc(sct("ate")) + '</button>';
+  let cat = "";
+  if (mine) cat = '<div class="b3-have sc-have">' + esc(sct("caughtHave")) + ' ✓' + (m && (m.pending || m.localDraft) ? '<small>' + esc(m.localDraft ? sct("pfDraft") : t("pending")) + '</small>' : "") + '</div>';
+  else if (p.id) cat = '<div class="sc-known">' + esc(sct("known")) + (p.byName ? ' <span class="sc-pf">' + esc(sct("pfBy").replace("{n}", p.byName)) + '</span>' : "") + '</div>';
+  else if (pfVerifiable(p)) cat = '<button class="r2-btn' + (logging ? "" : " pri") + ' big b3-catch sc-catch" data-b3="catch" id="b3Catch"><span class="b3-pb" aria-hidden="true"></span>' + esc(sct("pfFirst")) + ' <small>' + esc(pfToday() < PF_DAY ? sct("pfXP").replace("{x}", PF_XP) : sct("pfBadge")) + '</small></button>';
+  else cat = '<div class="sc-known sc-new">' + esc(sct("pfNew")) + '<small>' + esc(sct("pfCheckNote")) + '</small></div><button class="r2-btn ghost b3-catch sc-catch" data-b3="catch" id="b3Catch">' + esc(sct("pfSave")) + '</button>';
+  return '<div class="b3-acts sc-acts">' + (logging ? eat + cat : cat + eat) + '</div>'; }
 function simpleCardHTML(p){
   const v = p.verdict === "spike" ? "spike" : "ok", mine = isMine(p), m = mine ? D.mine[pkey(p)] : null;
   let storeCmp = ""; try { storeCmp = window.LOWI_SHELF && LOWI_SHELF.priceCompareHTML ? LOWI_SHELF.priceCompareHTML(p.name, p.barcode, true) : ""; } catch(e){}
@@ -14257,8 +14310,7 @@ function simpleCardHTML(p){
     '<div class="sc-verd v-' + v + '" role="status"><small>' + esc(sct("est")) + '</small><strong>' + esc(sct(v)) + '</strong>' + (why[0] ? '<span>' + esc(why[0]) + '</span>' : "") + '</div>' +
     (window.LowiNutriStats ? LowiNutriStats.portionHTML(p) : "") +
     '<section class="sc-sec sc-prices"><h4>' + esc(sct("cheaper")) + '</h4>' + (storeCmp || '<p class="sc-none">' + esc(sct("noPrices")) + '</p>') + '</section>' +
-    '<div class="b3-acts sc-acts">' + (mine ? '<div class="b3-have sc-have">' + esc(sct("caughtHave")) + ' ✓' + (m && m.pending ? '<small>' + esc(t("pending")) + '</small>' : "") + '</div>' :
-      '<button class="r2-btn pri big b3-catch sc-catch" data-b3="catch" id="b3Catch"><span class="b3-pb" aria-hidden="true"></span>' + esc(t("catch")) + ' <small>' + esc(sct("catchXP")) + '</small></button>') + '</div>' +
+    scActsHTML(p, mine, m) +
     '<details class="sc-more" open><summary>' + esc(sct("details")) + '</summary>' +
       (why.length ? '<ul class="b3-why">' + why.map(w => '<li>' + esc(w) + '</li>').join("") + '</ul>' : "") + factsHTML(p.facts) + fillNoteHTML(p) +
       '<div class="tiny dim b3-meta">' + [p.id ? (p.catches > 1 ? t("catches", p.catches) : t("catches1")) : "", p.barcode ? t("bcFound", p.barcode) : "", p.source === "off" ? t("r_off") : ""].filter(Boolean).map(esc).join(" · ") + '</div>' +
@@ -14268,7 +14320,8 @@ function simpleCardHTML(p){
 function actsHTML(p){ const mine = isMine(p);
   if (p.verdict === "unknown") return "";
   return '<div class="b3-acts">' + (mine ? '<div class="b3-have">' + esc(t("already")) + (D.mine[pkey(p)] && D.mine[pkey(p)].pending ? '<small>' + esc(t("pending")) + '</small>' : "") + '</div>' :
-    '<button class="r2-btn pri big b3-catch" data-b3="catch" id="b3Catch"><span class="b3-pb" aria-hidden="true"></span>' + esc(p.id ? t("catchHave") : t("catch")) + '</button>' +
+    p.id ? '<div class="sc-known">' + esc(sct("known")) + (p.byName ? ' <span class="sc-pf">' + esc(sct("pfBy").replace("{n}", p.byName)) + '</span>' : "") + '</div>' : /* Oct 19: Catch only for products the community doesn't have yet */
+    '<button class="r2-btn pri big b3-catch" data-b3="catch" id="b3Catch"><span class="b3-pb" aria-hidden="true"></span>' + esc(pfVerifiable(p) ? sct("pfFirst") : t("catch")) + '</button>' +
     '<button class="r2-link b3-skip" data-b3="close">' + esc(t("dontSave")) + '</button>') +
     (p.id ? '<button class="r2-link b3-rep" data-b3="report">' + esc(t("report")) + '</button>' : "") + '</div>'; }
 function manualHTML(p){
@@ -14360,12 +14413,12 @@ async function catchCur(btn, p){
   if (!p || btn.disabled) return; btn.disabled = true; btn.classList.add("throw"); sfx("tap");
   const res = await doCatch(p);
   const first = res.first, k = pkey(p), m = D.mine[k] || p;
-  // Oct 16: catching earns XP for spiky and non-spiky products alike (the owner's call: knowing is the point).
-  let cxp = 0; try { if (window.LowiVitalsBridge) cxp = LowiVitalsBridge.complete("vitamin", "catch:" + k, {amt:10, perDay:10, label:"Product caught", src:"scan:catch"}) || 0; } catch(e){}
+  // Oct 19: no XP for saving a product the community already has or for a local draft; the first verified finder gets Pathfinder.
+  let cxp = 0; if (first) cxp = pfAward(Object.assign({}, p, m));
   try { window.dispatchEvent(new CustomEvent("lowi:product-caught", {detail:{product:slim(Object.assign({}, p, m)), verdict:p.verdict, xp:cxp}})); } catch(e){}
   sfx(first ? "catchFirst" : "catch"); buzz(first ? [30, 60, 30, 60, 80] : [30, 50, 40]);
   const acts = btn.closest(".b3-acts, .b3-man"); const card = REV && $("#b3Card", REV);
-  const burst = '<div class="b3-caught' + (first ? " first" : "") + '"><div class="b3-cbig">' + esc(first ? t("firstCatch") : t("caught")) + '</div><div class="small">' + esc(first ? t("firstCatchSub") : res.pending ? t("pending") : m.byName && m.byName !== myName() ? t("addedSub", m.byName) : t("inYours")) + '</div>' + (cxp ? '<div class="sc-xp">+' + cxp + ' XP</div>' : "") +
+  const burst = '<div class="b3-caught' + (first ? " first" : "") + '"><div class="b3-cbig">' + esc(first ? sct("pfWin") : t("caught")) + '</div><div class="small">' + esc(first ? sct("pfWinSub") : res.draft ? sct("pfDraft") : res.pending ? t("pending") : m.byName && m.byName !== myName() ? t("addedSub", m.byName) : t("inYours")) + '</div>' + (cxp ? '<div class="sc-xp">+' + cxp + ' XP</div>' : "") +
     '<button class="r2-btn ghost" data-b3="dex" style="margin-top:12px">' + esc(t("openDex")) + '</button></div>';
   if (acts && acts.classList.contains("b3-man")) { const q = Object.assign({}, p, m); const st = REV && $(".b3-rev", REV); if (st) st.innerHTML = '<div class="b3-stage show">' + cardHTML(q, false) + burst + swapsHTML(q) + '</div>'; }
   else if (acts) { acts.outerHTML = burst; if (card && m.dex) { const no = $(".b3-no", card); if (no) no.textContent = t("dexNo") + " " + String(m.dex).padStart(3, "0"); } }
@@ -17483,7 +17536,25 @@ function fairyCheck(){ if (!F.on || document.hidden) return; try { const s = win
 setInterval(fairyCheck, 1200);
 
 /* ---------- start / finish ---------- */
-function start(o){ o = o || {}; F = {on:true, step:"", fast:o.rec || o.fast || null, photo:"", text:"", mode:"", err:"", last:null};
+/* Oct 19 food paths (E-man: Gap "I just ate" opened its own "What did you eat? Snap it, Scan barcode, Type it, Help me pick" while Fuel
+   and Scan had Log meal: "those three are kind of redundant ... fix it logically"). There is ONE meal logger now: LowiSpirit.meal
+   (Breakfast / Lunch / Dinner / Snacks, then Write / Scan / Snap). After the Gap bubble sets the time, that same logger opens with a
+   line saying the time is saved and logging is optional; closing it keeps the time. The break-fast bonus still comes with the first
+   meal logged in the next 20 minutes (not for a high-spike pick). This chain's own sheet stays only as the fallback. */
+let SHARED = null;
+function sharedOff(){ if (!SHARED) return; try { window.removeEventListener("lowi:meal-logged", SHARED.fn); } catch(e){} clearTimeout(SHARED.tm); SHARED = null; }
+function startShared(o){
+  if (!(window.LowiSpirit && typeof LowiSpirit.meal === "function")) return false;
+  sharedOff(); F = {on:false, step:"shared", fast:o.rec || o.fast || null, photo:"", text:"", mode:"shared", err:"", last:null};
+  const fast = F.fast, fn = ev => { const d = ev && ev.detail || {}; sharedOff(); if (fast && !d.spike && !d.dup) { const keep = F; F = Object.assign({}, F, {fast}); try { giveBonus(); } catch(e){} F = keep; } };
+  SHARED = {fn, tm:setTimeout(sharedOff, 20 * 60000)}; window.addEventListener("lowi:meal-logged", fn);
+  try { if (window.LowiR2 && LowiR2.closeAll) LowiR2.closeAll(); } catch(e){}
+  window.LowiMealCtx = {from:"gap", at:Date.now(), ateAt:+(o.at || (fast && fast.e) || Date.now())};
+  try { LowiSpirit.meal(); } catch(e){ console.error(e); sharedOff(); window.LowiMealCtx = null; return false; }
+  return true; }
+function start(o){ o = o || {};
+  if (!o.own && startShared(o)) return;
+  F = {on:true, step:"", fast:o.rec || o.fast || null, photo:"", text:"", mode:"", err:"", last:null};
   try { if (window.LowiR2 && LowiR2.closeAll) LowiR2.closeAll(); } catch(e){}
   stepEat(); sfx("open"); }
 function finish(toToday){ F.on = false; F.mode = ""; clearInterval(POLL); try { closeSheet(); } catch(e){}
@@ -19666,7 +19737,9 @@ window.LowiVitalsBridge = {
     let lvl=data.lvl||"",rr=data.r!=null&&data.r!==""?data.r:"unknown";
     /* a typed/photo meal gets the app's own verdict when analyseMeal knows the foods; unknown foods stay unknown (no guess) */
     if(!data.lvl&&(data.r==null||data.r==="")&&data.via!=="barcode"&&data.t&&typeof analyseMeal==="function")try{const a=analyseMeal(String(data.t),{trig:S.trig||[]});if(a&&a.ok){lvl=a.lvl||"";rr=a.r||rr;}}catch(e){}
-    const n=S.logs.filter(l=>l.day===today()).length,log={id:data.id,eventId:id,ts:Date.now(),day:today(),t:data.t,macros:data.macros,photo:data.photo||"",via:data.via||"spirit",r:rr,e:"",lvl};if(data.est)log.est=data.est;
+    /* Oct 19 food paths: a meal logged right after Gap "I ate earlier" keeps the time picked there (same day, within 18 h), once */
+    let mts=Date.now();try{const mc=window.LowiMealCtx;if(mc&&mc.from==="gap"&&Date.now()-mc.at<20*60000){const at=+mc.ateAt;if(at&&at<mts&&mts-at<18*3600000&&new Date(at).toDateString()===new Date(mts).toDateString())mts=at;window.LowiMealCtx=null;}}catch(e){}
+    const n=S.logs.filter(l=>l.day===today()).length,log={id:data.id,eventId:id,ts:mts,day:today(),t:data.t,macros:data.macros,photo:data.photo||"",via:data.via||"spirit",r:rr,e:"",lvl};if(data.est)log.est=data.est;
     if(data.code)log.code=String(data.code);if(data.slot)log.slot=data.slot;
     S.logs.push(log);if(!save()){S.logs.pop();return false;}
     const spike=this.spiky(log),xp=!spike&&n<this.MEAL_CAP?award(15,"Meal logged",null,"meal:spirit",id):0,why=xp?"":spike?"spike":"cap";

@@ -47,7 +47,7 @@
     function sosHTML(where) {
         return '<button type="button" class="stp-sos" data-stp-open="1" data-stp-from="' + esc(where || '') + '"><span class="stp-sos-dot" aria-hidden="true">!</span><span class="stp-sos-t"><b>' +
             esc(T('What can I buy here?', 'Was kann ich hier kaufen?', '¿Qué puedo comprar aquí?')) + '</b><small>' +
-            esc(T('Every insulin-friendly product in your shop', 'Alle insulinfreundlichen Produkte in deinem Laden', 'Todos los productos de tu tienda que no disparan el azúcar')) + '</small></span></button>';
+            esc(T('Every low-spike product in your shop', 'Alle Produkte mit wenig Blutzucker-Spike in deinem Laden', 'Todos los productos de tu tienda que no disparan el azúcar')) + '</small></span></button>';
     }
 
     function storeLine() {
@@ -105,6 +105,15 @@
     function shell(inner) {
         return '<div class="stp-card" role="dialog" aria-modal="true" aria-label="' + esc(T('What can I buy here?', 'Was kann ich hier kaufen?', '¿Qué puedo comprar aquí?')) + '">' + inner + '</div>';
     }
+    /* Oct 19 food paths (E-man: Shop "so complicated and so hidden"): Shop is the one place for shopping. Two plain ways on from
+       here: scan products in the shop (the shopping camera: check and add to your list, it never logs a meal) and your shopping list. */
+    function shopActs() {
+        const scan = W.LowiShopScan && W.LowiShopScan.open, list = typeof W.tdShopOpen === 'function';
+        if (!scan && !list) return '';
+        return '<div class="stp-foot-acts">' +
+            (scan ? '<button type="button" class="stp-go stp-scanshop" data-stp="scanshop">' + ic.cart + '<span>' + esc(T('Scan in the shop', 'Im Laden scannen', 'Escanear en la tienda')) + '</span></button>' : '') +
+            (list ? '<button type="button" class="stp-pill stp-mylist" data-stp="mylist"><span>' + esc(T('Shopping list', 'Einkaufsliste', 'Lista de compra')) + '</span></button>' : '') + '</div>';
+    }
     function footBtns(left) {
         return '<div class="stp-foot">' + (left || '<span></span>') + '<button type="button" class="stp-orb stp-close" data-stp="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '">' + ic.x + '</button></div>';
     }
@@ -120,7 +129,7 @@
         const chains = RANGES.map(r => '<button type="button" class="stp-chip' + (S.range === r.id && !S.store ? ' on' : '') + '" data-stp-range="' + r.id + '">' + esc(r.label) + '</button>').join('');
         return shell('<div class="stp-head"><h3>' + esc(T('Which shop?', 'Welcher Laden?', '¿Qué tienda?')) + '</h3><p>' +
             esc(T('Pick a shop near you, or a chain to look before you go.', 'Wähl einen Laden in deiner Nähe oder eine Kette, um vorher zu schauen.', 'Elige una tienda cercana o una cadena para mirar antes de ir.')) + '</p></div>' +
-            '<div class="stp-scroll">' + snackHTML() + '<button type="button" class="stp-go" data-stp="locate">' + ic.pin + '<span>' + esc(T('Use my location', 'Meinen Standort nutzen', 'Usar mi ubicación')) + '</span></button>' +
+            '<div class="stp-scroll">' + shopActs() + snackHTML() + '<button type="button" class="stp-go" data-stp="locate">' + ic.pin + '<span>' + esc(T('Use my location', 'Meinen Standort nutzen', 'Usar mi ubicación')) + '</span></button>' +
             (msg ? '<p class="stp-msg">' + esc(msg) + '</p>' : '') + list +
             '<h4 class="stp-h4">' + esc(T('Or pick a chain', 'Oder eine Kette wählen', 'O elige una cadena')) + '</h4><div class="stp-chips stp-wrap">' + chains + '</div>' +
             '<p class="stp-fine">' + esc(T('There is no Føtex in Germany. The nearest to Flensburg are in Aabenraa and Sønderborg. Føtex, Bilka and Danish Netto share one Salling Group range here.',
@@ -317,7 +326,7 @@
             '<button type="button" class="stp-shop" data-stp="pick">' + ic.cart + '<span>' + esc(storeLine() || (r && r.label) || '') + '</span><i>' + esc(T('Change', 'Ändern', 'Cambiar')) + '</i></button>' +
             '<div class="stp-tools"><input type="search" class="stp-q" enterkeyhint="search" autocomplete="off" placeholder="' + esc(T('Search this shop', 'In diesem Laden suchen', 'Buscar en esta tienda')) + '" value="' + esc(q) + '">' +
             '<label class="stp-tog"><input type="checkbox" data-stp="fails"' + (showFail ? ' checked' : '') + '><span>' + esc(T('Show left out', 'Aussortierte zeigen', 'Ver excluidos')) + '</span></label></div></div>' +
-            '<div class="stp-scroll">' + snackHTML() + inner + '</div>' +
+            '<div class="stp-scroll">' + shopActs() + snackHTML() + inner + '</div>' +
             '<p class="stp-note">' + esc(T('General food guidance, not medical advice.', 'Allgemeine Ernährungshilfe, keine medizinische Beratung.', 'Orientación general sobre alimentos, no consejo médico.')) + '</p>' +
             footBtns(''));
     }
@@ -365,6 +374,8 @@
         if (!b || b.tagName === 'INPUT') return;
         const a = b.getAttribute('data-stp');
         if (a === 'close') return close();
+        if (a === 'scanshop') { close(); setTimeout(() => { try { W.LowiShopScan.open(); } catch (x) {} }, 200); return; }
+        if (a === 'mylist') { close(); setTimeout(() => { try { W.tdShopOpen(); } catch (x) {} }, 200); return; }
         if (a === 'pick') { view = 'pick'; return paint(); }
         if (a === 'list') return showList();
         if (a === 'locate') return locate();

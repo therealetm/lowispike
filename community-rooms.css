@@ -1,0 +1,28 @@
+/* Community top bar: Room | Chat tabs + room chip + knock banner, and the rooms sheet (20 Oct 2026, community-rooms-ui.js) */
+#cmPaneChat[data-spirit-chat]>.rm-bar{position:relative;z-index:30;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 8px;padding:0 2px}
+.rm-tabs{display:inline-flex;padding:3px;border-radius:999px;background:rgba(10,14,40,.55);border:1px solid rgba(255,255,255,.14);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.rm-tab{appearance:none;border:0;background:transparent;color:rgba(255,255,255,.78);font:600 14px/1 inherit;font-family:inherit;padding:9px 18px;min-height:36px;border-radius:999px;cursor:pointer}
+.rm-tab[aria-selected=true]{background:#fff;color:#141836}
+.rm-chip{appearance:none;margin-left:auto;display:inline-flex;align-items:baseline;gap:6px;border:1px solid rgba(255,255,255,.16);background:rgba(10,14,40,.55);color:#fff;font:500 13px/1 inherit;font-family:inherit;padding:10px 14px;min-height:36px;border-radius:999px;cursor:pointer;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.rm-chip b{font-weight:700}.rm-chip span{opacity:.75}
+.rm-banner{display:none;flex-basis:100%;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 12px;border-radius:14px;background:rgba(20,26,70,.9);color:#fff;font-size:13px;border:1px solid rgba(255,255,255,.14)}
+.rm-banner[data-on]{display:flex}.rm-banner span{flex:1 1 160px}
+.rm-banner button{appearance:none;border:0;border-radius:999px;padding:8px 14px;min-height:34px;font:600 13px/1 inherit;font-family:inherit;cursor:pointer}
+.rm-yes{background:#7cf0c4;color:#0b2a20}.rm-no{background:rgba(255,255,255,.14);color:#fff}
+/* Chat tab: the galaxy game is not drawn at all underneath (its energy loop sees it hidden and stops) */
+#cmPaneChat[data-spirit-chat][data-room] #cgGalaxy{display:none}
+/* Rooms sheet */
+.rm-sheet{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:flex-end;justify-content:center;background:rgba(4,6,20,.55)}
+.rm-card{width:min(560px,100%);max-height:min(78vh,640px);display:flex;flex-direction:column;gap:10px;padding:16px 16px calc(16px + var(--sab,0px));border-radius:22px 22px 0 0;background:#141a3e;color:#fff;box-shadow:0 -10px 40px rgba(0,0,0,.4)}
+.rm-card header{display:flex;align-items:center;justify-content:space-between}.rm-h{margin:0;font-size:19px}
+.rm-x{appearance:none;border:0;background:rgba(255,255,255,.1);color:#fff;width:40px;height:40px;border-radius:50%;font-size:22px;cursor:pointer}
+.rm-you{margin:0;opacity:.85;font-size:14px}.rm-crew{display:flex;flex-wrap:wrap;gap:6px;font-size:12px}.rm-lab{opacity:.65;flex-basis:100%}
+.rm-p{padding:5px 9px;border-radius:999px;background:rgba(255,255,255,.1)}
+.rm-find{appearance:none;width:100%;box-sizing:border-box;padding:12px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#fff;font:16px/1.2 inherit;font-family:inherit}
+.rm-list{list-style:none;margin:0;padding:0;overflow:auto;display:flex;flex-direction:column;gap:6px}
+.rm-list li{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.05)}
+.rm-list li.rm-mine{background:rgba(124,240,196,.12)}
+.rm-who{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.rm-who small{opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rm-list button{appearance:none;border:0;border-radius:999px;padding:9px 16px;min-height:36px;background:#fff;color:#141836;font:600 13px/1 inherit;font-family:inherit;cursor:pointer}
+.rm-list em{font-style:normal;opacity:.7;font-size:13px}
+html.light .rm-card{background:#fff;color:#141836}

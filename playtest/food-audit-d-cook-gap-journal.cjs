@@ -28,7 +28,10 @@ const { open, sleep } = require('./food-audit-lib.cjs');
   await closeAll(); await sleep(800);
   // Ate earlier
   await H.tap('[data-orbit="gap"]'); await sleep(1500); await H.tap('#hb2Bloom [data-id="earlier"]'); await sleep(2000); await H.shot('gap-earlier');
-  log('D6 Ate earlier sheet', { text: (await H.text()).split('\n').slice(-25).join(' | '), controls: (await top(40)).slice(0, 25) });
+  log('D6 Ate earlier sheet', { text: (await H.text()).split('\n').slice(-25).join(' | '), controls: (await H.dump(80)).filter(x => /fst|fse|fe-|chip|close|primary|Other|time/i.test(x)).slice(0, 25) });
+  const oth = await p.$('[data-fst="other"], [data-fst="custom"]'); log('D6b Other time button', oth ? 'present' : 'none');
+  const cs = await p.$('[data-act="close-sheet"]'); if (cs) { await cs.tap().catch(() => { }); await sleep(1200); }
+  log('D6c after Close', { sheetOpen: await p.evaluate(() => !!document.querySelector('.sheet.open, .sheet-ov.open, [data-act=close-sheet]:not([hidden])')), logs: (await H.state()).logs.length });
   await closeAll(); await sleep(800);
   // log a meal, then look for it in the Food journal
   await H.tap('[data-orbit="fuel"]'); await sleep(1300); await H.tap('#hb2Bloom [data-id="log"]'); await sleep(1800);

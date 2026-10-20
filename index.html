@@ -13757,6 +13757,8 @@ Object.assign(B3_TX, {
   lookup: ["Looking it up…", "Wird nachgeschlagen…", "Buscando…"],
   wild: ["A wild product appears!", "Ein wildes Produkt erscheint!", "¡Aparece un producto salvaje!"],
   notFound: ["Not in any database yet", "Noch in keiner Datenbank", "Aún no está en ninguna base de datos"],
+  noReach: ["I couldn't check this product right now", "Ich konnte das Produkt gerade nicht prüfen", "No pude comprobar este producto ahora"],
+  noReachS: ["The product database didn't answer (no connection?). Close this and scan again in a moment, or name it and tick what the label says.", "Die Produktdatenbank hat nicht geantwortet (keine Verbindung?). Schließ das hier und scanne gleich nochmal, oder gib ihm einen Namen und tippe an, was auf dem Etikett steht.", "La base de datos no respondió (¿sin conexión?). Cierra esto y vuelve a escanear en un momento, o ponle nombre y marca lo que dice la etiqueta."],
   notFoundS: ["Be the first to add it. Name it and tick what the label says.", "Sei die oder der Erste. Gib ihm einen Namen und tippe an, was auf dem Etikett steht.", "Sé el primero en añadirlo. Ponle nombre y marca lo que dice la etiqueta."],
   meter: ["Blood sugar and insulin impact", "Wirkung auf Blutzucker und Insulin", "Efecto en el azúcar y la insulina"],
   m_low: ["Low", "Niedrig", "Bajo"],
@@ -14217,7 +14219,8 @@ async function found(code){ if (!CAM) return;
   let p = null; try { p = await byBarcode(code); } catch(e){}
   if (p && !p.notFound && window.LowiSpirit) { closeScanner(true); await LowiSpirit.captureProduct(p); return; }
   if (p && !p.notFound && window.LowiVitalsBridge) LowiVitalsBridge.complete("vitamin","scan:"+code,{amt:5,perDay:5,label:"Product scanned"});
-  closeScanner(); reveal(p || {barcode:code, notFound:true, offline:!navigator.onLine}); }
+  /* Oct 20 food audit: no answer at all (p null: weak signal, time out) is "couldn't check", not "not in any database" */
+  closeScanner(); reveal(p || {barcode:code, notFound:true, offline:true}); }
 /* photo of a barcode */
 let fileIn = null;
 function pickPhoto(){ if (!fileIn) { fileIn = document.createElement("input"); fileIn.type = "file"; fileIn.accept = "image/*"; fileIn.setAttribute("capture", "environment"); fileIn.id = "b3File"; fileIn.style.display = "none"; document.body.appendChild(fileIn);
@@ -14348,7 +14351,7 @@ function actsHTML(p){ const mine = isMine(p);
     '<button class="r2-link b3-skip" data-b3="close">' + esc(t("dontSave")) + '</button>') +
     (p.id ? '<button class="r2-link b3-rep" data-b3="report">' + esc(t("report")) + '</button>' : "") + '</div>'; }
 function manualHTML(p){
-  return '<div class="b3-man"><div class="b3-name">' + esc(t("notFound")) + '</div><div class="small muted">' + esc(p.offline ? t("offline") : t("notFoundS")) + '</div>' +
+  return '<div class="b3-man"><div class="b3-name">' + esc(t(p.offline ? "noReach" : "notFound")) + '</div><div class="small muted">' + esc(p.offline ? t("noReachS") : t("notFoundS")) + '</div>' +
     (p.barcode ? '<div class="tiny dim" style="margin-top:6px">' + esc(t("bcFound", p.barcode)) + '</div>' : "") +
     '<label class="tiny dim b3-fl">' + esc(t("nameQ")) + '</label><input class="input" id="b3MName" maxlength="80" placeholder="' + esc(t("namePh")) + '" value="' + esc(p.name || "") + '">' +
     '<input class="input" id="b3MBrand" maxlength="60" style="margin-top:8px" placeholder="' + esc(t("brandPh")) + '" value="' + esc(p.brand || "") + '">' +

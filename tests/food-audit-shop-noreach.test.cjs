@@ -13,6 +13,15 @@ test('the strings exist in every language', () => {
     assert.notStrictEqual(C.tx('noReachT', 0), C.tx('unknownT', 0));
 });
 
+test('Log meal > Scan: no answer is "couldn\'t check", not "Not in any database yet, be the first to add it"', () => {
+    const h = src('index.html');
+    assert.ok(h.includes('closeScanner(); reveal(p || {barcode:code, notFound:true, offline:true}); }'), 'a lookup with no answer is marked offline');
+    assert.ok(!h.includes('offline:!navigator.onLine}'), 'navigator.onLine stays true on a weak signal');
+    assert.match(h, /esc\(t\(p\.offline \? "noReach" : "notFound"\)\)/);
+    assert.match(h, /noReach: \["I couldn't check this product right now", "[^"]+", "[^"]+"\]/);
+    assert.match(h, /noReachS: \["[^"]+", "[^"]+", "[^"]+"\]/);
+});
+
 test('no answer is not "unknown product"; only notFound is', () => {
     const s = src('shop-scan.js');
     const f = s.slice(s.indexOf('async function found('), s.indexOf('function verdictHTML('));

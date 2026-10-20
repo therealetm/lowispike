@@ -5724,6 +5724,8 @@ function load(){ try { S = JSON.parse(localStorage.getItem(KEY)) || fresh(); } c
     if (S.buddies !== undefined) { delete S.buddies; S.budGone = 1; }
     if (S.microbes !== undefined) { delete S.microbes; S.budGone = 1; } /* the microbe collection went with them */
     if (S.budGone) { delete S.budGone; save(); } } catch(e){}
+  /* Oct 20 (regression run W1): a saved profile without a tags list made every Profile render throw "S.user.tags.map". */
+  try { if (S.user && !Array.isArray(S.user.tags)) S.user.tags = []; } catch(e){}
   /* Oct 15: goals vs conditions split. Old fallback labels map to today's keys; an old PCOS checkbox becomes the PCOS condition. Nothing is dropped. */
   try { const OLD = {"Less sugar cravings":"Cravings","Steady energy":"Energy","Eat healthier":"Just eat better","Lose weight":"Weight","Feel better":"Just eat better"};
     if (S.user && Array.isArray(S.user.tags)) { const out = []; S.user.tags.forEach(t => { const k = OLD[t] || t; if (out.indexOf(k) < 0) out.push(k); });

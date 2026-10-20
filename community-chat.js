@@ -219,7 +219,9 @@ function botSave(){try{localStorage.setItem('lowi.galaxy.botchat.v1',JSON.string
 function botSay(uid,from,t){const st=botStore(),arr=st[uid]=st[uid]||[];arr.push({id:'b'+Date.now().toString(36)+arr.length,from,t:String(t).slice(0,500),ts:Date.now()});if(arr.length>30)arr.splice(0,arr.length-30);botSave();}
 /* Oct 18, 2026: leftover test accounts (hidden-accounts.js, by account id) get no body in the galaxy; nothing is deleted */
 function hiddenAcct(uid){const A=W.LowiHiddenAccounts;return !!(A&&A.isHidden(uid));}
-function roster(){const real=[];for(const p of (H.people&&H.people())||[]){if(p&&p.uid&&p.uid!==scope&&p.n&&!blocked(p.uid)&&!hiddenAcct(p.uid))real.push({uid:p.uid,n:String(p.n).trim(),lv:p.lv||1});}
+/* support rooms (20 Oct): the galaxy shows the people in this room (here now, or who wrote in this room), not everybody who ever joined */
+function inRoom(id){const R=W.LowiRooms;return !(R&&R.active&&R.active())||R.has(id);}
+function roster(){const real=[];for(const p of (H.people&&H.people())||[]){if(p&&p.uid&&p.uid!==scope&&p.n&&!blocked(p.uid)&&!hiddenAcct(p.uid)&&inRoom(p.uid))real.push({uid:p.uid,n:String(p.n).trim(),lv:p.lv||1});}
  const have=new Set(real.map(p=>p.uid));for(const m of messages()){if(m&&m.uid&&!m.demo&&!m.bot&&m.uid!==scope&&!blocked(m.uid)&&!hiddenAcct(m.uid)&&!have.has(m.uid)){have.add(m.uid);real.push({uid:m.uid,n:String(m.by||'Member').trim(),lv:1});}}
  const last=new Map();for(const m of messages())if(m&&m.uid)last.set(m.uid,+m.ts||0);
  const ownName=scope?String(own().n||'').trim():'',uniq=G&&G.uniqueNames?G.uniqueNames(real,ownName,last):real,map=new Map();
@@ -794,7 +796,7 @@ D.addEventListener('click',async e=>{const b=e.target.closest&&e.target.closest(
   if(armed!==id){armed=id;clearTimeout(armTimer);armTimer=setTimeout(()=>{armed='';refresh();},3500);refresh();return;}armed='';b.disabled=true;b.textContent=tr('deleting');try{await transport.remove(id);}catch(x){notice=tr('deleteFailed');}refresh();}
 });
 D.addEventListener('focusin',fit);D.addEventListener('focusout',()=>requestAnimationFrame(fit));W.addEventListener('resize',()=>{fit();clearTimeout(W.__cpResize);W.__cpResize=setTimeout(()=>{if(active()){refresh();if(sk)sk.resize();}},120);});if(W.visualViewport){W.visualViewport.addEventListener('resize',fit);W.visualViewport.addEventListener('scroll',fit);}
-D.addEventListener('lowi:chat',e=>{ensureScope();transport.notify(e.detail);if(e.detail&&['ready','reconnect'].includes(e.detail.type)){transport.reload();loadExtras(true);}refresh();});
+D.addEventListener('lowi:chat',e=>{ensureScope();transport.notify(e.detail);if(e.detail&&['ready','reconnect','room'].includes(e.detail.type)){transport.reload();loadExtras(true);}refresh();});
 W.addEventListener('online',()=>{if(notice===tr('sendOffline')||notice===tr('offline'))notice='';ensureScope();transport.reload();loadExtras(true);});W.addEventListener('offline',refresh);W.addEventListener('storage',e=>{if(e.key===prefsKey()){prefs=K.read(deviceStorage,prefsKey(),{});prefs.blocks=prefs.blocks||{};refresh();}});
 D.addEventListener('visibilitychange',()=>{onShow();if(!D.hidden){transport.reload();loadExtras(true);refresh();}});
 try{if(navigator.serviceWorker&&navigator.serviceWorker.addEventListener)navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.cgTab==='foryou')openGalaxy('');});}catch(e){}

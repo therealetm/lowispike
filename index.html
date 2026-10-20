@@ -9072,6 +9072,14 @@ const PRIVATE_KEYS = ["health"];             // health stays on this phone, as P
 let sb = null, uid = "", email = "", live = false, booting = false, chan = null;
 let POSTS = [], LIKES = {}, MSGS = [], RX = {}, PEOPLE = [];
 let chatRealtime = "connecting";
+/* 20 Oct (support rooms, community-rooms.js): chat and the energy game run per room; ROOM() is the room this phone is in */
+let msgsRoom = "all";
+function ROOM(){ try { return (window.LowiRooms && LowiRooms.room()) || "all"; } catch(e){ return "all"; } }
+function startRooms(tries){ tries = tries || 0; if (!window.LowiRooms) { if (tries < 50) setTimeout(() => startRooms(tries + 1), 100); return; }
+  LowiRooms.start({client:() => client(), uid:() => uid, name:() => { try { return (S.user && S.user.name) || ""; } catch(e){ return ""; } },
+    onInsert:r => onMsg(r), onEnergy:p => { try { document.dispatchEvent(new CustomEvent("lowi:energy-shot", {detail:p || null})); } catch(e){} },
+    onSwitch:id => { if (id !== msgsRoom) { msgsRoom = id; MSGS.length = 0; applyChat(); } chatNotify("room", id); },
+    onStatus:st => { chatRealtime = st; chatNotify(st === "SUBSCRIBED" ? "reconnect" : "status"); }}).catch(() => {}); }
 function chatNotify(type, id){ document.dispatchEvent(new CustomEvent("lowi:chat", {detail:{type, id:id || ""}})); }
 const $ = s => document.querySelector(s);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -9166,7 +9174,7 @@ async function start(){
   const q = await Promise.all([
     sb.from("posts").select("*").order("created_at", {ascending:false}).limit(150),
     sb.from("post_likes").select("post_id,user_id").limit(10000),
-    sb.from("messages").select("id,user_id,who,body,reply_to,created_at,room").eq("room", "all").order("created_at", {ascending:false}).limit(300),
+    sb.from("messages").select("id,user_id,who,body,reply_to,created_at,room").eq("room", ROOM()).order("created_at", {ascending:false}).limit(300),
     sb.from("reactions").select("message_id,user_id,who,emoji").limit(10000),
     sb.from("profiles").select("id,name,sign,mbti,lv,streak,bio,avatar,bday,xp,xp_week,wk,xp_month,mo,weight").neq("name", "").limit(2000)
   ]);
@@ -9177,11 +9185,11 @@ async function start(){
   AVATARS = {}; (q[4].data || []).forEach(r => { if (r.avatar) AVATARS[r.id] = r.avatar; });
   PEOPLE = (q[4].data || []).filter(r => r.id !== uid).map(mapPerson);
   POSTS = (q[0].data || []).map(mapPost);
-  MSGS.length = 0; q[2].data.slice().reverse().map(mapMsg).forEach(m => MSGS.push(m));
+  MSGS.length = 0; msgsRoom = ROOM(); q[2].data.slice().reverse().map(mapMsg).forEach(m => MSGS.push(m));
   PEOPLE = q[4].data.filter(r => r.id !== uid).map(mapPerson);
   live = true;
   applyChat(); applyMembers(); syncMyLikes(); chatNotify("ready");
-  subscribe(); pushProfile(); backupSoon(800);
+  subscribe(); startRooms(); pushProfile(); backupSoon(800);
   refreshUI();
   /* a photo picked before the cloud existed never left the phone: upload it once so others see it */
   setTimeout(() => { try { if (S.user && /^data:image\//.test(S.user.avatar || "") && !S.user.avatarUrl && window.LowiR2 && LowiR2.syncAvatar) LowiR2.syncAvatar(); } catch(e){} }, 2500);
@@ -9190,18 +9198,21 @@ async function start(){
 /* ---------- realtime ---------- */
 function subscribe(){
   if (chan) { try { sb.removeChannel(chan); } catch(e){} }
-  chan = sb.channel("lowi-all")
-    .on("postgres_changes", {event:"INSERT", schema:"public", table:"messages"}, p => onMsg(p.new))
+  /* 20 Oct: with support rooms the chat INSERTs and the energy balls come from this phone's room channel (community-rooms.js),
+     so a phone no longer receives every message and every shot of everybody. lowi-all keeps the shared tables. */
+  const rooms = !!window.LowiRoomsCore;
+  chan = sb.channel("lowi-all");
+  if (!rooms) chan = chan.on("postgres_changes", {event:"INSERT", schema:"public", table:"messages"}, p => onMsg(p.new))
+    .on("broadcast", {event:"energy"}, m => { try { document.dispatchEvent(new CustomEvent("lowi:energy-shot", {detail:(m && m.payload) || null})); } catch(e){} });
+  chan = chan
     .on("postgres_changes", {event:"DELETE", schema:"public", table:"messages"}, p => { const i = MSGS.findIndex(m => m.id === (p.old || {}).id); if (i >= 0) { MSGS.splice(i, 1); const el = document.getElementById("cm-" + p.old.id); if (el) el.remove(); chatNotify("delete", p.old.id); } })
     .on("postgres_changes", {event:"*", schema:"public", table:"reactions"}, p => onRx(p))
     .on("postgres_changes", {event:"*", schema:"public", table:"posts"}, p => onPost(p))
     .on("postgres_changes", {event:"*", schema:"public", table:"post_likes"}, p => onLike(p))
     .on("postgres_changes", {event:"*", schema:"public", table:"profiles"}, p => onProfile(p))
-    /* Community energy balls: compact shot events on this same shared channel (broadcast, no database rows); community-energy.js simulates them */
-    .on("broadcast", {event:"energy"}, m => { try { document.dispatchEvent(new CustomEvent("lowi:energy-shot", {detail:(m && m.payload) || null})); } catch(e){} })
-    .subscribe(status => { chatRealtime = status; chatNotify(status === "SUBSCRIBED" ? "reconnect" : "status"); });
+    .subscribe(status => { if (!rooms) { chatRealtime = status; chatNotify(status === "SUBSCRIBED" ? "reconnect" : "status"); } });
 }
-function onMsg(r){ if (!r || !r.id || (r.room && r.room !== "all")) return; const have = MSGS.find(m => m.id === r.id);
+function onMsg(r){ if (!r || !r.id || (r.room || "all") !== ROOM()) return; const have = MSGS.find(m => m.id === r.id);
   if (have) { Object.assign(have, mapMsg(r)); have.pending = false; chatNotify("message", r.id); return; }
   const m = mapMsg(r); MSGS.push(m); MSGS.sort((a, b) => a.ts - b.ts); saveChat();
   chatNotify("message", r.id);
@@ -9461,7 +9472,7 @@ window.LowiUpd = {check: () => checkUpdate(true), go: doUpdate, build: BUILD};
 
 
 /* ---------- round 2: accounts ---------- */
-function switchUser(){ MSGS.length = 0; RX = {}; PEOPLE = []; chatRealtime = "connecting"; chatNotify("auth"); clearTimeout(backT); clearTimeout(profT); lastBack = ""; lastProf = ""; live = false; try { if (chan) { sb.removeChannel(chan); chan = null; } } catch(e){} }
+function switchUser(){ try { if (window.LowiRooms) LowiRooms.stop(); } catch(e){} MSGS.length = 0; RX = {}; PEOPLE = []; chatRealtime = "connecting"; chatNotify("auth"); clearTimeout(backT); clearTimeout(profT); lastBack = ""; lastProf = ""; live = false; try { if (chan) { sb.removeChannel(chan); chan = null; } } catch(e){} }
 async function client(){ await loadLib(); if (!sb) {
   sb = window.supabase.createClient(CFG.url, CFG.key, {auth:{persistSession:true, autoRefreshToken:true, detectSessionInUrl:false, storageKey:"lowi.auth", storage:window.localStorage}});
   sb.auth.onAuthStateChange((ev, session) => { const u = session && session.user; if (u) { if (uid && u.id !== uid) switchUser(); uid = u.id; email = u.email || ""; chatNotify("auth"); } else { switchUser(); uid = ""; email = ""; chatNotify("auth"); } }); }
@@ -9479,7 +9490,8 @@ window.LOWI_CLOUD_X = {
   },
   setUser(u){ if (!u) return; if (uid && u.id !== uid) switchUser(); uid = u.id; email = u.email || ""; chatNotify("auth"); },
   pushProfile(){ try { pushProfile(); } catch(e){} },
-  energyShot(p){ if (!chan || chatRealtime !== "SUBSCRIBED" || !p) return false; try { Promise.resolve(chan.send({type:"broadcast", event:"energy", payload:p})).catch(() => {}); return true; } catch(e){ return false; } },
+  room:() => ROOM(),
+  energyShot(p){ if (window.LowiRooms) return LowiRooms.sendEnergy(p); if (!chan || chatRealtime !== "SUBSCRIBED" || !p) return false; try { Promise.resolve(chan.send({type:"broadcast", event:"energy", payload:p})).catch(() => {}); return true; } catch(e){ return false; } },
   async backupNow(){ if (!live || !uid) return false; const o = snapshot(), j = JSON.stringify(o); if (j.length > 4e6) return false;
     const r = await sb.from("user_state").upsert({id:uid, data:o, updated_at:new Date().toISOString()}); if (r.error) return false; lastBack = j; return true; },
   paint(){ try { paintCard(); } catch(e){} try { refreshUI(); } catch(e){} },
@@ -20070,7 +20082,7 @@ window.LowiCommunityHost = {
   messages:() => LOWI_CLOUD_X.community.messages(), reactions:() => LOWI_CLOUD_X.community.reactions(),
   replace:(m,r) => LOWI_CLOUD_X.community.replace(m,r), upsert:m => LOWI_CLOUD_X.community.upsert(m),
   remove:id => LOWI_CLOUD_X.community.remove(id), setReactions:r => LOWI_CLOUD_X.community.setReactions(r),
-  people:() => LOWI_CLOUD.people(),
+  people:() => LOWI_CLOUD.people(), room:() => LOWI_CLOUD_X.room ? LOWI_CLOUD_X.room() : "all",
   identity(){ const p = LowiR3.me(), u = S.user || {}; return {n:u.name || "", s:p.s, t:u.mbti || u.personality || p.t || "", avatar:p.avatar, lv:p.lv, xp:p.xp, bday:/^\d{4}-\d{2}-\d{2}$/.test(u.bday || "") ? u.bday : ""}; }, /* bday: own person card only, never synced */
   bubble:(p,size) => LowiR3.bubble(p,size), color:sign => LowiGlass.palette(String(sign || "none").toLowerCase())[0],
   typeLabel:(type,lang) => window.LowiHerbIdentityCore ? LowiHerbIdentityCore.typeLabel(type,lang) : "",
@@ -20084,7 +20096,9 @@ window.LowiCommunityHost = {
   }
 };
 </script>
-<script src="community-chat-cloud.js?v=community-1"></script>
+<script src="community-chat-cloud.js?v=rooms-1"></script>
+<script src="community-rooms-core.js?v=rooms-1"></script>
+<script src="community-rooms.js?v=rooms-1"></script>
 <script src="hidden-accounts.js?v=20261020-121221"></script>
 <script src="community-galaxy.js?v=galaxy-3"></script>
 <script src="community-chat.js?v=20261020-121221"></script>

@@ -1,10 +1,12 @@
-/* Uses the existing auth client and single shared realtime channel. No second subscription. */
+/* Uses the existing auth client. Messages are read and written in this phone's support room (host.room(), community-rooms.js). */
 (function(root){
 'use strict';
 function create(host, changed){
  let phase='idle',error='',flight=null,epoch=0,edits=[],reactionBusy=new Set();
  const uid=()=>host.state().uid||'';
  const still=id=>id&&id===uid();
+ const room=()=>{try{const r=host.room&&host.room();return typeof r==='string'&&r?r:'all';}catch(e){return 'all';}};
+ let flightRoom='';
  const state=()=>({uid:uid(),phase,error,realtime:host.state().chatRealtime||'connecting'});
  async function request(query){const ctl=new AbortController();let timer;try{return await Promise.race([typeof query.abortSignal==='function'?query.abortSignal(ctl.signal):query,new Promise((_,reject)=>{timer=setTimeout(()=>{ctl.abort();reject(new Error('timeout'));},12000);})]);}finally{clearTimeout(timer);}}
  const result=async q=>{const r=await request(q);if(r.error)throw r.error;return r.data;};
@@ -13,12 +15,12 @@ function create(host, changed){
  function notify(event){if(flight&&event&&event.id){const m=host.messages().find(m=>m.id===event.id);edits.push({id:event.id,type:event.type,message:m||null});}changed();}
  function reset(){epoch++;flight=null;edits=[];phase='idle';error='';reactionBusy.clear();}
  async function reload(){
-  const id=uid();if(!id)return false;if(flight)return flight;
+  const id=uid();if(!id)return false;if(flight&&flightRoom===room())return flight;if(flight){epoch++;flight=null;}const rm=room();flightRoom=rm;
   const turn=epoch;phase='loading';error='';edits=[];changed();
   const task=(async()=>{try{
    const sb=await host.client();
-   const [rows,rx]=await Promise.all([result(sb.from('messages').select(fields).eq('room','all').order('created_at',{ascending:false}).limit(300)),result(sb.from('reactions').select('message_id,user_id,who,emoji').limit(10000))]);
-   if(!still(id)||turn!==epoch)return false;
+   const [rows,rx]=await Promise.all([result(sb.from('messages').select(fields).eq('room',rm).order('created_at',{ascending:false}).limit(300)),result(sb.from('reactions').select('message_id,user_id,who,emoji').limit(10000))]);
+   if(!still(id)||turn!==epoch||rm!==room())return false;
    const merged=new Map((rows||[]).slice().reverse().map(r=>[r.id,map(r,rx)]));
    for(const e of edits){if(e.message)merged.set(e.id,e.message);else merged.delete(e.id);}
    const touched=new Set(edits.map(e=>e.id)),current=host.reactions();
@@ -31,7 +33,7 @@ function create(host, changed){
   const id=uid();if(!still(m.uid)||!id)throw new Error('auth');const sb=await host.client();if(!still(id))throw new Error('auth');
   // A prior insert may have committed even when its response never arrived.
   let row=await result(sb.from('messages').select(fields).eq('id',m.id).eq('user_id',id).maybeSingle());
-  if(!row){row=await result(sb.from('messages').insert({id:m.id,user_id:id,room:'all',who:m.by.slice(0,40),body:m.t,reply_to:m.re}).select(fields).single());}
+  if(!row){row=await result(sb.from('messages').insert({id:m.id,user_id:id,room:room(),who:m.by.slice(0,40),body:m.t,reply_to:m.re}).select(fields).single());}
   if(!still(id)||!row||row.id!==m.id||row.user_id!==id||row.body!==m.t||row.reply_to!==(m.re||null))throw new Error('missing-ack');
   const msg=map(row,host.reactions());host.upsert(msg);changed();return msg;
  }

@@ -21,6 +21,13 @@ function directory(entries){const out=new Map();for(const e of entries||[]){if(!
 function choose(dir,cap,rnd){cap=cap||CAP;rnd=rnd||Math.random;const open=[...(dir instanceof Map?dir.values():directory(dir).values())].filter(r=>r.c>0);
  const roomy=open.filter(r=>r.c<cap);if(roomy.length)return roomy[Math.floor(rnd()*roomy.length)%roomy.length].n;
  const used=new Set(open.map(r=>r.n));for(let n=1;n<=MAX_ROOMS;n++)if(!used.has(n))return n;return MAX_ROOMS;}
+/* After being moved on: rooms that just turned me away count as full for a while, and when no open room has space the movers
+   spread over as many new rooms as they need (excess = how many were over the cap), so a burst of arrivals settles in a few
+   rounds instead of everyone piling into the same next room. */
+function chooseAfterMove(dir,cap,tried,excess,rnd){cap=cap||CAP;rnd=rnd||Math.random;const m=new Map(dir instanceof Map?dir:directory(dir));for(const n of tried||[])m.set(n,{n,c:Math.max(cap,(m.get(n)||{}).c||0),u:[],t:0});
+ const open=[...m.values()].filter(r=>r.c>0),roomy=open.filter(r=>r.c<cap);if(roomy.length)return roomy[Math.floor(rnd()*roomy.length)%roomy.length].n;
+ const used=new Set(open.map(r=>r.n)),fresh=[],k=Math.max(1,Math.ceil((+excess||1)/cap));for(let n=1;n<=MAX_ROOMS&&fresh.length<k;n++)if(!used.has(n))fresh.push(n);
+ return fresh.length?fresh[Math.floor(rnd()*fresh.length)%fresh.length]:MAX_ROOMS;}
 /* Who must move on when a room went over its cap because several people joined at the same moment. Everybody's phone sees
    the same presence list and sorts it the same way (join time, then id), so they all agree. The first `cap` regular members
    stay; up to GUESTS people let in by someone who is still present stay too. members = [{k, at, guestOf}]. */
@@ -37,6 +44,6 @@ function findPerson(dir,uid){if(!uid)return null;for(const r of (dir instanceof 
 function joinMode(room,cap,guestCount){cap=cap||CAP;if(!room)return 'gone';if(room.c<cap)return 'join';return (guestCount||0)<GUESTS?'knock':'full';}
 /* Presence payloads carry nothing personal: the account id (already public in chat), join time, and who let you in. */
 function flatten(state){const out=[];for(const k in state||{}){const arr=state[k]||[];const p=arr[arr.length-1]||{};out.push({k,at:+p.at||0,guestOf:typeof p.g==='string'?p.g:''});}return out;}
-const api={CAP,GUESTS,MAX_ROOMS,roomId,roomNum,validRoom,channelName,directory,choose,seated,mustLeave,lead,findPerson,joinMode,flatten};
+const api={CAP,GUESTS,MAX_ROOMS,roomId,roomNum,validRoom,channelName,directory,choose,chooseAfterMove,seated,mustLeave,lead,findPerson,joinMode,flatten};
 if(typeof module==='object'&&module.exports)module.exports=api;else root.LowiRoomsCore=api;
 })(typeof window==='object'?window:globalThis);

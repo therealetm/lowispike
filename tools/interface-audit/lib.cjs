@@ -15,7 +15,7 @@ function existingSeed(o) {
   o = o || {};
   const build = fs.readFileSync(path.join(REPO, 'version.json'), 'utf8').match(/"build":"([^"]+)"/)[1];
   const newsId = (fs.readFileSync(path.join(REPO, 'version.json'), 'utf8').match(/"id":"([^"]+)"/) || [])[1] || '';
-  const S = Object.assign({ v: 2, setupDone: true, onboarded: true, user: { name: 'Fixture', bday: '1990-01-01' }, xp: 900, ledger: [], logs: [], settings: { lang: o.lang || 'en' } }, o.state || {});
+  const S = Object.assign({ v: 2, setupDone: true, onboarded: true, user: { name: 'Fixture', bday: '1990-01-01', avatar: '', tags: ['steady'] }, xp: 900, ledger: [], logs: [], settings: { lang: o.lang || 'en' } }, o.state || {});
   const kv = Object.assign({
     'lowi.daily.seen': dayKey(), 'lowi.gate': 'done',
     'lowi.news.seen': JSON.stringify([newsId]), 'lowi.g1.bn': newsId, 'lowi.news.toured': newsId,

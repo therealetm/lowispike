@@ -10215,7 +10215,7 @@ function errMsg(e){
   if (/password/i.test(m) && /(6|8|short|weak|least)/i.test(m)) return "Password needs at least 8 characters.";
   if (/email/i.test(m) && /invalid|valid/i.test(m)) return "That email doesn't look right.";
   if (/rate|too many/i.test(m)) return "Too many tries. Wait a minute and try again.";
-  if (/fetch|network|failed to load|offline/i.test(m)) return "No connection. Check your internet and try again.";
+  if (/fetch|network|failed to load|load failed|timed out|offline/i.test(m)) return "No connection. Check your internet and try again."; /* "Load failed" is how Safari/iOS words a fetch that never reached the server */
   return m || "Something went wrong. Try again.";
 }
 function busy(form, on, label){ const b = form.querySelector('button[type="submit"]'); if (!b) return; if (on) { b.dataset.t = b.textContent; b.textContent = label || "One moment…"; b.disabled = true; b.classList.add("busy"); } else { b.textContent = b.dataset.t || b.textContent; b.disabled = false; b.classList.remove("busy"); } }

@@ -7,9 +7,10 @@ const out = { steps: [] };
 const log = (k, v) => { out.steps.push({ k, v }); console.log('## ' + k + '\n' + JSON.stringify(v, null, 0).slice(0, 3000)); };
 (async () => {
   const h = await L.launch({ device: process.argv[2] || 'iPhone 13' });
+  const SKIP_INV = !!process.env.ROWS;
   const { page } = h;
   await L.openApp(h);
-  log('home-top', await L.top(page));
+  if (!SKIP_INV) log('home-top', await L.top(page));
   const homeCtl = await L.controls(page);
   log('home-controls', homeCtl.map(c => [c.name || '(NO NAME)', c.tag + (c.id ? '#' + c.id : '') + '.' + c.cls, c.w + 'x' + c.h, c.covered ? 'COVERED by ' + c.coveredBy : '']));
   await L.shot(page, 'p1-home');
@@ -29,7 +30,8 @@ const log = (k, v) => { out.steps.push({ k, v }); console.log('## ' + k + '\n' +
   await page.keyboard.press('Escape'); await L.sleep(700);
   log('after-escape', await L.top(page));
   // each row
-  for (const id of rowIds) {
+  const only = (process.env.ROWS || '').split(',').filter(Boolean);
+  for (const id of (only.length ? only : rowIds)) {
     if (!id || id === 'close') continue;
     await page.evaluate(() => { try { goTab('home'); } catch (e) { } }); await L.sleep(1200);
     await L.tap(page, '[data-orbit="settings"]');

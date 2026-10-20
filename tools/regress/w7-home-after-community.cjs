@@ -31,7 +31,7 @@ const homeCheck = async (R, label) => {
 (async () => {
     const res = { engine: ENGINE, runs: [] };
     for (const [w, h] of [[390, 664], [375, 667]]) {
-        const R = await open({ engine: ENGINE });
+        const R = await open({ engine: ENGINE, url: arg('url', '') });
         if (ENGINE === 'chromium') await R.page.setViewportSize({ width: w, height: h });
         await R.goto(); await N.sleep(3500);
         const run = { size: w + 'x' + h, steps: [] };

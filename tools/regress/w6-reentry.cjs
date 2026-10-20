@@ -17,7 +17,7 @@ const state = R => R.page.evaluate(() => {
     return { trackTransform: t && t.style.transform, seg: document.querySelector('#cmSeg [aria-selected="true"], #cmSeg .on') && (document.querySelector('#cmSeg [aria-selected="true"], #cmSeg .on').dataset.v || ''), paneInert: pane ? pane.hasAttribute('inert') : null, paneId: pane && pane.id, active: document.activeElement && (document.activeElement.id || document.activeElement.tagName), solo: !!document.querySelector('#tab-foryou.nm-solo'), pe: i && getComputedStyle(i).pointerEvents, panePE: pane && getComputedStyle(pane).pointerEvents };
 }).catch(e => ({ err: e.message }));
 (async () => {
-    const R = await open({ engine: ENGINE });
+    const R = await open({ engine: ENGINE, url: arg('url', '') });
     const res = { engine: ENGINE, visits: [], double: [] };
     await R.goto(); await N.sleep(2500);
     for (let v = 1; v <= VISITS; v++) {

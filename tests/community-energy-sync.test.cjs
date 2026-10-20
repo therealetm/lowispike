@@ -63,11 +63,13 @@ test('events: garbage is ignored, sizes are bounded, and timestamps tolerate wro
   const skew=E.shotAge(0,600000+90,600000);assert.equal(skew.age,150);assert.equal(skew.stale,false);
 });
 
-test('wiring: the same shared realtime channel as chat, one compact event per shot, remote shots drawn and never pinging',()=>{
-  const html=read('index.html'),js=read('community-energy.js');
-  const sub=html.slice(html.indexOf('chan = sb.channel("lowi-all")'),html.indexOf('.subscribe(status => { chatRealtime'));
-  assert.match(sub,/\.on\("broadcast", \{event:"energy"\}[^\n]*lowi:energy-shot/,'listens on lowi-all, no second subscription');
-  assert.match(html,/energyShot\(p\)\{ if \(!chan \|\| chatRealtime !== "SUBSCRIBED"[^\n]*type:"broadcast", event:"energy"/);
+test('wiring: energy rides the room channel (support rooms, 20 Oct), one compact event per shot, remote shots drawn and never pinging',()=>{
+  const html=read('index.html'),js=read('community-energy.js'),rooms=read('community-rooms.js');
+  assert.ok(rooms.includes("on('broadcast',{event:'energy'},m=>{if(ch===chan&&hooks.onEnergy)hooks.onEnergy(m&&m.payload);})"),'the room channel carries the energy balls');
+  assert.ok(rooms.includes("function sendEnergy(p){if(!chan||status!=='in'||!p)return false;"));
+  assert.ok(html.includes('onEnergy:p => { try { document.dispatchEvent(new CustomEvent("lowi:energy-shot"'));
+  assert.ok(html.includes('energyShot(p){ if (window.LowiRooms) return LowiRooms.sendEnergy(p);'));
+  assert.ok(html.includes('if (!rooms) chan = chan.on("postgres_changes", {event:"INSERT"'),'lowi-all only carries chat/energy for an app without rooms');
   assert.match(js,/D\.addEventListener\('lowi:energy-shot'/);assert.match(js,/c\.energyShot\(pack\(\{id,by,a:ang,p:power,to:pr\.to,ht:pr\.ht,t:now\}\)\)/);
   assert.match(js,/if\(e\.own\)ping\(e\.uid\)/,'only the shooter sends the energy line');assert.match(js,/const flying=tb\?tb\.shots\(\):\[\],cheap=flying\.length>6(\|\|slow)?;/);assert.match(js,/for\(const sh of flying\)/);
   assert.match(js,/flash\(bodyEl\(m\.by\)\)/,'the shooter\'s own companion flashes on everyone\'s map');

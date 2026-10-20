@@ -157,11 +157,17 @@ async function profile(st, p, tok, force) {
   b.prof = day; b.lv = lv;
 }
 const newId = () => 'm' + crypto.randomUUID();
+/* Support rooms (20 Oct): the app puts people into rooms ('all' = room 1, r2, r3, ...). The crowd answers in the room of the message
+   it answers, and its own chatter goes to a room where a person wrote in the last 30 minutes (room 1 when nobody did). */
+let SAY_ROOM = 'all'; const HUMAN_ROOM = new Map();
+const okRoom = r => (r === 'all' || /^r\d{1,3}$/.test(String(r || ''))) ? r : 'all';
+function noteRooms(msgs, bots) { const now = Date.now(); HUMAN_ROOM.clear(); for (const m of msgs.slice().reverse()) if (m && m.user_id && !(bots && bots.has(m.user_id)) && now - Date.parse(m.created_at || 0) < 30 * 60e3) HUMAN_ROOM.set(m.user_id, okRoom(m.room || 'all')); }
+function liveRoom() { const rs = [...new Set(HUMAN_ROOM.values())]; return rs.length ? rs[Math.floor(Math.random() * rs.length)] : 'all'; }
 let lastSay = 0;
 async function say(st, p, body, reply) {
   const tok = await session(st, p); const id = newId();
   const gap = 2500 + Math.random() * 9000 - (Date.now() - lastSay); if (lastSay && gap > 0) await new Promise(r => setTimeout(r, gap)); lastSay = Date.now();
-  await ins(tok, 'messages', { id, user_id: st.bots[p.i].id, room: 'all', who: p.name.slice(0, 40), body: String(body).slice(0, 600), reply_to: reply || null });
+  await ins(tok, 'messages', { id, user_id: st.bots[p.i].id, room: okRoom(SAY_ROOM), who: p.name.slice(0, 40), body: String(body).slice(0, 600), reply_to: reply || null });
   st.said = (st.said || 0) + 1; return id;
 }
 async function photoBytes(meal) {
@@ -233,8 +239,9 @@ function shotAt(byUid, toUid, uids, r = Math.random) {
   const a = Math.atan2(-sp.y, -sp.x) + (r() - 0.5) * 0.12;
   return { v: 1, id: 'c' + crypto.randomBytes(6).toString('hex'), by: byUid, a: +a.toFixed(3), p: +(0.7 + r() * 0.3).toFixed(2), to: toUid, ht: 300 + Math.round(r() * 300), t: Date.now() };
 }
-async function broadcast(tok, payloads) {
-  await call('POST', '/realtime/v1/api/broadcast', tok, { messages: payloads.map(p => ({ topic: 'lowi-all', event: 'energy', payload: p, private: false })) });
+async function broadcast(tok, payloads, room) {
+  const topics = ['lowi-room-' + okRoom(room || 'all'), 'lowi-all']; /* the person's room channel; lowi-all for apps from before rooms */
+  await call('POST', '/realtime/v1/api/broadcast', tok, { messages: payloads.flatMap(p => topics.map(topic => ({ topic, event: 'energy', payload: p, private: false }))) });
   return payloads.length;
 }
 const nap = ms => new Promise(r => setTimeout(r, ms));
@@ -245,7 +252,7 @@ async function energyBalls(st, p, toUid) {
   const tok = await session(st, p), by = st.bots[p.i].id, uids = await mapUids(tok);
   if (!uids.includes(by)) uids.push(by);
   const n = 1 + Math.floor(Math.random() * 3); let sent = 0;
-  for (let k = 0; k < n; k++) { const s = shotAt(by, toUid, uids); if (!s) break; await broadcast(tok, [s]); sent++; if (k < n - 1) await nap(350 + Math.random() * 500); }
+  for (let k = 0; k < n; k++) { const s = shotAt(by, toUid, uids); if (!s) break; await broadcast(tok, [s], HUMAN_ROOM.get(toUid) || 'all'); sent++; if (k < n - 1) await nap(350 + Math.random() * 500); }
   st.balls = (st.balls || 0) + sent; return sent;
 }
 
@@ -275,7 +282,7 @@ function mentions(body, list) {
 
 async function readRoom(tok) {
   const since = new Date(Date.now() - 3 * 864e5).toISOString();
-  const msgs = await get(tok, 'messages?select=id,user_id,who,body,reply_to,created_at&room=eq.all&order=created_at.desc&limit=300');
+  const msgs = await get(tok, 'messages?select=id,user_id,who,body,reply_to,created_at,room&order=created_at.desc&limit=300');
   const posts = await get(tok, 'posts?select=id,user_id,who,created_at&created_at=gte.' + since + '&order=created_at.desc&limit=200');
   return { msgs: msgs.reverse(), posts };
 }
@@ -328,7 +335,9 @@ async function replies(st, room, now) {
   const answered = new Set(room.msgs.filter(m => bots.has(m.user_id) && m.reply_to).map(m => m.reply_to + '|' + m.user_id));
   const depth = m => { let d = 0, x = m; while (x && x.reply_to && d < 5) { x = byId.get(x.reply_to); d++; } return d; };
   const awakeBots = seed => { const r = rng(seed); return all.filter(p => awake(p, now) > 0.25).sort(() => r() - 0.5); };
+  noteRooms(room.msgs, bots);
   for (const m of room.msgs) {
+    SAY_ROOM = okRoom(m.room || 'all');
     const age = now - Date.parse(m.created_at); if (age > 45 * 60e3 || handled.has(m.id) || Date.parse(m.created_at) < LAUNCH) continue;
     const wait = (40 + roll(m.id, 'wait') * 200) * 1000; if (age < wait) continue;
     const fromBot = bots.get(m.user_id), toBots = mentions(m.body, all).filter(p => p !== fromBot);
@@ -380,6 +389,7 @@ function topicFor(p, now, humans) {
 
 async function ambient(st, room, now, minutes) {
   const bots = botIndex(st), all = [...bots.values()]; if (!all.length) return {};
+  noteRooms(room.msgs || [], bots); SAY_ROOM = liveRoom();
   const humans = humansOf(room, bots), scale = all.length / 100, out = { chat: 0, photos: 0, posts: 0, energy: 0, reacts: 0, likes: 0 };
   const avgAwake = all.reduce((s, p) => s + awake(p, now), 0) / all.length;
   const pickBot = () => weighted(all, p => awake(p, now) * p.chat);

@@ -54,6 +54,14 @@ function session(options){
  function discard(id){if(busy.has(id))return;outbox=outbox.filter(m=>m.id!==id);if(draft.retryId===id)draft={text:'',reply:null};save();}
  return {setDraft,confirm,submit,submitPhoto,submitLine,discard,state:()=>({draft:{...draft},outbox:outbox.map(m=>({...m})),storageOK,busy:busy.size>0})};
 }
-const api={EMOJI,SIGNS,type,esc,image,photo,photoBody,voice,voiceBody,identity,quiet,message,visible,read,write,session};
+/* Oct 20 (bug hunt BH-020): a photo upload takes seconds and the composer stays usable meanwhile. When it lands, only what went out
+ with the photo leaves the composer: its caption (also as the start of a longer text) and the reply it answered. Anything typed or
+ picked during the upload stays. sent/cur = {text, reply}. */
+function afterCaption(sent, cur){
+ const st=String(sent&&sent.text||''),ct=String(cur&&cur.text||''),sr=sent&&sent.reply||null,cr=cur&&cur.reply||null;
+ let text=ct;if(st.trim()){if(ct===st||ct.trim()===st.trim())text='';else if(ct.startsWith(st))text=ct.slice(st.length).replace(/^\s+/,'');}
+ return {text,reply:cr&&cr!==sr?cr:null};
+}
+const api={EMOJI,SIGNS,type,esc,image,photo,photoBody,voice,voiceBody,identity,quiet,message,visible,read,write,session,afterCaption};
 if(typeof module==='object'&&module.exports)module.exports=api;else root.LowiChatCore=api;
 })(typeof window==='object'?window:globalThis);

@@ -764,3 +764,20 @@ Community voice) already guard their own start: checked.
 
 **Consequences:** tests/mirror-cam-race.test.cjs (6 tests, 5 fail on the old code; the first guards the normal start). Not testable
 on a real iPhone from here; the camera light is the thing to watch.
+
+## 2026-10-20 04:30 CEST: A message you type while a Community photo uploads stays in the box (bug hunt BH-020)
+
+**Context:** a Community photo with a caption takes seconds to upload and the text box stays usable while "Sending photo…" shows.
+When the upload landed, sendPhoto cleared the whole draft and the input from its snapshot taken before the upload, so whatever you
+typed meanwhile (the next message, or more after the caption) was erased (live 20261020-030834, Chrome 390, probe
+BUGHUNT/playtest/probe-photo-caption.cjs with the upload answered after 5 s and every write blocked: typed "Is the soup any good?"
+during the upload, box empty afterwards).
+
+**Decision:** pattern "async result painted into stale UI" (stale snapshot flavour). LowiChatCore.afterCaption(sent, current) decides
+what leaves the composer after the upload: only the caption that went out (also when it is the start of a longer text) and the reply
+the photo answered. Text typed or a reply picked during the upload stays; sendPhoto reads the composer again after the await.
+
+**Consequences:** tests/photo-caption-typing.test.cjs (6 tests, all fail on the old code; 5 exercise the new helper, 1 checks sendPhoto
+no longer clears blindly). Checked siblings: voice notes never touch the draft; the For You composer photo (index.html trPhotoIn) and
+the food snap (f2File) assign after an await without re-checking the open composer: logged in the bug ledger, low (needs closing and
+reopening inside ~300 ms).

@@ -567,7 +567,7 @@ async function sendPhoto(){if(photoBusy||!pendingPhoto)return;const bot=sel&&bot
  photoBusy=true;notice=tr('photoSending');refresh();
  try{const path=scope+'/chat-'+pin.id+'.jpg';if(!pin.src)pin.src=await mediaUpload(path,pin.blob,['image/jpeg']);
   const body=(tag?tag+' ':'')+K.photoBody(pin.src,cap);if(!K.photo(body,scope))throw new Error('url');
-  if(pendingPhoto===pin)clearPhoto();if(ds.draft.text)draft('',null);const inp=D.getElementById('cmInput');if(inp)inp.value='';notice='';photoBusy=false;
+  if(pendingPhoto===pin)clearPhoto();const left=K.afterCaption(ds.draft,draftState().draft);draft(left.text,left.reply);const inp=D.getElementById('cmInput');if(inp)inp.value=left.text;notice='';photoBusy=false;
   if(bot){botSay(bot.uid,'me',body);botAnswer(bot,tr('botPicR'));}else await store.submitPhoto(name,body,pin.id,ds.draft.reply||null);}
  catch(e){photoBusy=false;notice=tr('photoFailed');}
  photoBusy=false;refresh();}

@@ -8,7 +8,9 @@ const [engine = 'webkit', cycles = '6', where = ''] = process.argv.slice(2);
   const o = { engine, keyboard: true }; if (/^https?:/.test(where)) o.url = where; else if (where) o.root = where;
   const R = await H.open(o); const P = R.page; const rows = [];
   const row = async (tag) => { const s = await R.snap(); const r = { tag, nodes: s.nodes, lis: s.lis, iv: s.iv, to: s.to, raf: s.raf, canv: s.canv, ctx: s.ctxAll, gl: s.ctxGL, lost: s.lost, imgs: s.imgs, heap: s.heap, errs: R.errs.length, loads: R.loads, rss: R.rss() }; rows.push(r); console.log(R.el(), JSON.stringify(r)); };
-  const toCommunity = async () => { for (let k = 0; k < 4; k++) { await R.tap('.o8-settings'); await H.sleep(2500); const c = P.locator('.ss2-chip', { hasText: /^Community$/ }).first(); await c.evaluate(e => e.scrollIntoView({ block: 'center' })); await H.sleep(600); await R.tapEl(c); await H.sleep(3500); if (await P.locator('#cmInput').isVisible().catch(() => false)) return true; console.log('retry community'); } return false; };
+  const toCommunity = async () => { for (let k = 0; k < 3; k++) { try { await R.tap('.o8-settings'); await H.sleep(2500); const c = P.locator('.ss2-chip', { hasText: /^Community$/ }).first(); await c.evaluate(e => e.scrollIntoView({ block: 'center' }), null, { timeout: 8000 }); await H.sleep(600); await R.tapEl(c); await H.sleep(3500); } catch (e) { console.log('settings path failed:', e.message.slice(0, 80)); await R.shot('/tmp/sim/soak-fail-' + k + '.png'); console.log('VISFAIL', JSON.stringify((await R.vis()).slice(0, 25))); await P.keyboard.press('Escape'); await H.sleep(800); }
+      if (await P.locator('#cmInput').isVisible().catch(() => false)) return true; console.log('retry community'); }
+    await P.evaluate(() => window.goTab('foryou')); await H.sleep(3500); return P.locator('#cmInput').isVisible().catch(() => false); };
   try {
     R.step = 'home'; await R.goto(); await H.sleep(6000); await row('start');
     for (let c = 1; c <= +cycles; c++) {

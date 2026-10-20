@@ -178,7 +178,7 @@ function wire(){
  joy.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0)return;e.preventDefault();e.stopPropagation();if(drag)return;
   drag={id:e.pointerId,c:centre()};try{joy.setPointerCapture(e.pointerId);}catch(x){}joy.classList.add('on');move(e);kick();});
  joy.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;e.preventDefault();e.stopPropagation();move(e);});
- const end=e=>{if(!drag||e.pointerId!==drag.id)return;e.stopPropagation();const a=aimNow;drag=null;aimNow=null;joy.classList.remove('on');knob.style.transform='';setAim(null);
+ const end=e=>{if(!drag||e.pointerId!==drag.id)return;e.stopPropagation();const a=aimNow;drag=null;aimNow=null;joy.classList.remove('on','armed');knob.style.transform='';setAim(null);
   if(e.type==='pointerup'&&a&&a.ok)fireAt(a.ang,a.power);kick();};
  joy.addEventListener('pointerup',end);joy.addEventListener('pointercancel',end);joy.addEventListener('lostpointercapture',end);
  ['click','dblclick','touchstart','touchmove','touchend','mousedown','contextmenu'].forEach(t=>joy.addEventListener(t,e=>{stop(e);if(t==='contextmenu'||t==='dblclick')e.preventDefault();},{passive:false}));

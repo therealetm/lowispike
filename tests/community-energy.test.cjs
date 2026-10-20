@@ -83,3 +83,8 @@ test('wiring: Community only, loaded and cached, joystick kept clear of labels, 
   assert.match(css,/prefers-reduced-motion/);assert.doesNotMatch(css,/#(?:c9a|d4af|e6c|f5e6|ffd27a|daa520)/i,'no gold or beige');
   assert.doesNotMatch(read('world-home.js'),/LowiEnergy/);
 });
+
+test('ship sweep Oct 20 (galaxy audit G-3): letting go of the joystick drops its armed glow, after a shot or a cancel', () => {
+    const js = require('fs').readFileSync(require('path').join(__dirname, '..', 'community-energy.js'), 'utf8');
+    assert.match(js, /const end=e=>\{[^\n]*joy\.classList\.remove\('on','armed'\)/);
+});

@@ -70,7 +70,7 @@ function herbReminderClaim(now){
 self.addEventListener("push", e => {
   e.waitUntil(herbReminderClaim(Date.now()).then(config=>{
     if(!config)return;
-    return self.registration.showNotification(config.name||"Your herb",{body:self.LowiHerbTamagotchiCore.reminder(config),icon:"icon-192.png",badge:"icon-192.png",tag:"lowi-herb-daily",data:{q:"",herbHome:true}});
+    return self.registration.showNotification(config.name||"Your companion",{body:self.LowiHerbTamagotchiCore.reminder(config),icon:"icon-192.png",badge:"icon-192.png",tag:"lowi-herb-daily",data:{q:"",herbHome:true}});
   }));
 });
 self.addEventListener("notificationclick", e => {

@@ -58,7 +58,12 @@
         if (a.ok !== b.ok) return true;
         return Math.abs(a.cx - b.cx) > 2.5 || Math.abs(a.cy - b.cy) > 2.5 || Math.abs(a.R - b.R) > 2.5 || Math.abs(a.d - b.d) > 2;
     }
-    const core = { ORDER, angleOf, fit, moved };
+    /* Oct 20 interface audit (IA-05): coming back Home from another screen, Misty's bubble is still parked off the screen
+       (left -292px, 194px wide in WebKit) for the first seconds of the camera's return. Measuring her there made fit() fail and
+       dropped the ring, so the old Home (tab bar, no Scan / Sleep / Settings bubbles) flashed for up to ~4 s. A Misty that is not
+       fully on the screen is a Misty in transit, never a short screen. */
+    function offscreen(r, vw, vh) { return !r || r.width < 40 || r.left < -1 || r.top < -1 || r.left + r.width > vw + 1 || r.top + r.height > vh + 1; }
+    const core = { ORDER, angleOf, fit, moved, offscreen };
     if (typeof module === 'object' && module.exports) { module.exports = core; return; }
 
     const D = root.document, H = D.documentElement;
@@ -85,6 +90,7 @@
         settings: () => $('#whHud .o8-settings')
     };
     let last = null, mounted = { blooms: false, ss: false }, safe = null, safeEl = null;
+    let transitAt = 0; /* when Misty was first seen off the screen during a return (IA-05); the hold gives up after 6 s */
 
     function today() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
     function sleepToday() { try { return (JSON.parse(ls.get(SLEEP_KEY) || '{}') || {})[today()] || ''; } catch (e) { return ''; } }
@@ -244,7 +250,9 @@
         /* the menu bar, when the user switched it on, takes its strip at the bottom */
         const tb = H.classList.contains('o8-menubar') ? D.getElementById('tabbar') : null, tr = tb && tb.getBoundingClientRect();
         if (tr && tr.height > 0 && tr.width > vw * 0.5 && tr.top > vh * 0.6) s.b = Math.max(s.b, vh - tr.top);
-        return fit({ vw, vh, cx: r.left + r.width / 2, cy: r.top + r.height / 2, mistyR: r.width / 2, safe: s });
+        const L = fit({ vw, vh, cx: r.left + r.width / 2, cy: r.top + r.height / 2, mistyR: r.width / 2, safe: s });
+        if (!L.ok && offscreen(r, vw, vh)) L.transit = true;
+        return L;
     }
     function setVar(el, k, v) { if (el.style.getPropertyValue(k) !== v) el.style.setProperty(k, v); }
     function place(L) {
@@ -268,6 +276,9 @@
         if (busy() && last && last.ok && !force) return last;
         const L = measure(); if (!L) return last;
         const wasOn = H.classList.contains('o8');
+        /* Misty still flying back in: keep the last good ring and look again shortly, instead of flashing the old Home */
+        if (!(L.ok === false && L.transit)) transitAt = 0;
+        else if (wasOn && last && last.ok) { if (!transitAt) transitAt = Date.now(); if (Date.now() - transitAt < 6000) { soon(); return last; } }
         if (!L.ok) { if (wasOn) { H.classList.remove('o8', 'o8-wide'); soon(); } last = L; return L; }
         if (!wasOn) H.classList.add('o8');
         const wide = L.d >= 104;

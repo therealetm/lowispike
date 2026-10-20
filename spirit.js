@@ -22,8 +22,8 @@
         }
     };
     const copy = {
-        world: ['Your herb’s world', 'Die Welt deines Krauts', 'El mundo de tu ser de luz'],
-        scanHead: ['Scan · your herb is watching', 'Scannen · dein Kraut schaut zu', 'Escanear · tu ser de luz mira'],
+        world: ['Your companion’s world', 'Die Welt deines Begleiters', 'El mundo de tu ser de luz'],
+        scanHead: ['Scan · your companion is watching', 'Scannen · dein Begleiter schaut zu', 'Escanear · tu ser de luz mira'],
         close: ['Close', 'Schließen', 'Cerrar'],
         scan: ['Scan a product', 'Produkt scannen', 'Escanear producto'],
         photo: ['Snap food', 'Essen fotografieren', 'Fotografiar comida'],
@@ -32,7 +32,7 @@
         wardrobe: ['Wardrobe', 'Kleiderschrank', 'Armario'],
         collection: ['Food journal', 'Essens-Tagebuch', 'Diario de comidas'],
         yourScans: ['Your scans', 'Deine Scans', 'Tus escaneos'],
-        profile: ['Your herb', 'Dein Kraut', 'Tu ser de luz'],
+        profile: ['Your companion', 'Dein Begleiter', 'Tu ser de luz'],
         evolution: ['Evolution', 'Entwicklung', 'Evolución'],
         healthy: ['Bright and awake', 'Frisch und wach', 'Fresca y despierta'],
         tired: ['Leaves need a drink', 'Die Blätter brauchen Wasser', 'Las hojas necesitan agua'],
@@ -300,7 +300,7 @@
         }
         if (!next) {
             if (!day.meals) {
-                sub = L('Feeds your herb +15 XP', 'Füttert dein Kraut +15 XP', 'Da energía a tu ser de luz +15 XP');
+                sub = L('Feeds your companion +15 XP', 'Füttert deinen Begleiter +15 XP', 'Da energía a tu ser de luz +15 XP');
                 next = pick('meal', 'plate', L('Log meal', 'Essen eintragen', 'Registrar comida'));
             } else if (day.water < WATER_GOAL) {
                 sub = L('Keeps the leaves fresh +2 XP', 'Hält die Blätter frisch +2 XP', 'Mantiene las hojas frescas +2 XP');

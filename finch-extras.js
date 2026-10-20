@@ -11,7 +11,7 @@
     const STREAKS = [3, 7, 14, 30, 60, 100, 200, 365];
     const HINTS = [
         { id: 'scan', sel: ['#lhDock', '#tabbar .tb.scan'], txt: ['TAP TO SCAN', 'TIPPEN ZUM SCANNEN', 'TOCA PARA ESCANEAR'] },
-        { id: 'herb', sel: ['#spBubble'], txt: ['PRESS YOUR HERB', 'DRÜCK DEIN KRAUT', 'TOCA A TU COMPAÑERO'] },
+        { id: 'herb', sel: ['#spBubble'], txt: ['TAP YOUR COMPANION', 'TIPP DEINEN BEGLEITER AN', 'TOCA A TU COMPAÑERO'] },
         /* 'wear' (open the wardrobe) removed Oct 15: dress-up is retired */
         { id: 'fast', sel: ['#spFast'], txt: ['TAP FOR YOUR FAST', 'TIPP FÜRS FASTEN', 'TOCA PARA TU AYUNO'] },
         { id: 'miles', sel: ['#fxMilesBtn'], txt: ['SEE MILESTONES', 'MEILENSTEINE ANSEHEN', 'VER LOGROS'] },
@@ -82,7 +82,7 @@
     const toast = (m, ms) => { try { (root.LowiHost && root.LowiHost.toast || root.toast)(m, ms || 2200); } catch (e) {} };
     const C = {
         miles: ['Milestones', 'Meilensteine', 'Logros'],
-        sub: ['From your herb and the people in the room. Tap to send good vibes.', 'Von deinem Kraut und den Leuten im Raum. Tippe, um gute Vibes zu senden.', 'De tu ser de luz y de la gente de la sala. Toca para enviar buena energía.'],
+        sub: ['From your companion and the people in the room. Tap to send good vibes.', 'Von deinem Begleiter und den Leuten im Raum. Tippe, um gute Vibes zu senden.', 'De tu ser de luz y de la gente de la sala. Toca para enviar buena energía.'],
         lv: ['herb reached level', 'Kraut hat Level', 'ser de luz llegó al nivel'],
         lvEnd: ['', 'erreicht', ''],
         st: ['-day streak', '-Tage-Serie', ' días de racha'],

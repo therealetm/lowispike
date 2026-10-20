@@ -73,7 +73,7 @@ function kofiUrl(){return KOFI.url;}
 /* Legacy pay-what-you-want preview model (kept for stored state + tests; the screen no longer shows tiers, trials or perks). */
 const PWYW={amounts:[0,3,5,8,12],trialDays:7,remindBefore:2,
  tiers:[
-  {min:0,names:['Everything that matters: scan, log, fasting, your herb, the XP wardrobe, the shop and the daily gift','Alles Wichtige: Scan, Loggen, Fasten, dein Kraut, der XP-Kleiderschrank, der Laden und das Tagesgeschenk','Todo lo importante: escanear, registrar comidas, ayunar, tu ser de luz, el armario con XP, la tienda y el regalo diario']},
+  {min:0,names:['Everything that matters: scan, log, fasting, your companion, the XP wardrobe, the shop and the daily gift','Alles Wichtige: Scan, Loggen, Fasten, dein Begleiter, der XP-Kleiderschrank, der Laden und das Tagesgeschenk','Todo lo importante: escanear, registrar comidas, ayunar, tu ser de luz, el armario con XP, la tienda y el regalo diario']},
   {min:3,names:['The premium wardrobe: Tidal glass, Forest cap, Opal glow, Comet orbit','Die Premium-Garderobe: Gezeitenglas, Waldhut, Opalglanz, Kometenbahn','El armario premium: Cristal de marea, Sombrero del bosque, Brillo de ópalo, Órbita de cometa']},
   {min:5,names:['Seasonal drops three days early and a second free gift each week','Saison-Drops drei Tage früher und ein zweites Gratis-Geschenk pro Woche','Drops de temporada tres días antes y un segundo regalo gratis cada semana']},
   {min:8,names:['A supporter mark on your Community profile and a say in what we build next','Ein Unterstützer-Zeichen im Community-Profil und Mitsprache, was wir als Nächstes bauen','Una marca de apoyo en tu perfil de Comunidad y voz en lo próximo que construimos']},

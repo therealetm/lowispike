@@ -40,8 +40,8 @@
     };
     /* one line per weekday, encouraging, no promises about the body */
     const LINES = {
-        en: ['Easy pace today. One small thing is plenty.', 'New week, clean page. Start small.', 'Small steps still count. Every single one.', 'Halfway through the week. Your herb noticed.', 'You have been showing up. Keep the rhythm.', 'Friday. Pick one thing you will be glad you did.', 'Weekend mode. Same you, more time.'],
-        de: ['Ruhig angehen. Eine kleine Sache reicht.', 'Neue Woche, leere Seite. Fang klein an.', 'Kleine Schritte z\u00e4hlen. Jeder einzelne.', 'Halbzeit der Woche. Dein Kraut hat\u2019s gemerkt.', 'Du bist drangeblieben. Bleib im Rhythmus.', 'Freitag. Mach eine Sache, \u00fcber die du dich nachher freust.', 'Wochenende. Gleiches Du, mehr Zeit.'],
+        en: ['Easy pace today. One small thing is plenty.', 'New week, clean page. Start small.', 'Small steps still count. Every single one.', 'Halfway through the week. Your companion noticed.', 'You have been showing up. Keep the rhythm.', 'Friday. Pick one thing you will be glad you did.', 'Weekend mode. Same you, more time.'],
+        de: ['Ruhig angehen. Eine kleine Sache reicht.', 'Neue Woche, leere Seite. Fang klein an.', 'Kleine Schritte z\u00e4hlen. Jeder einzelne.', 'Halbzeit der Woche. Dein Begleiter hat\u2019s gemerkt.', 'Du bist drangeblieben. Bleib im Rhythmus.', 'Freitag. Mach eine Sache, \u00fcber die du dich nachher freust.', 'Wochenende. Gleiches Du, mehr Zeit.'],
         es: ['Con calma hoy. Una cosa peque\u00f1a basta.', 'Semana nueva, p\u00e1gina limpia. Empieza peque\u00f1o.', 'Los pasos peque\u00f1os cuentan. Todos.', 'Mitad de semana. Tu ser de luz lo ha notado.', 'Sigues apareciendo. Mant\u00e9n el ritmo.', 'Viernes. Haz una cosa que te alegre despu\u00e9s.', 'Fin de semana. Mismo t\u00fa, m\u00e1s tiempo.']
     };
     function weekdayName(date, lang) { const l = LANGS.indexOf(lang) >= 0 ? lang : 'en'; return WEEKDAY[l][date.getDay()]; }
@@ -127,7 +127,7 @@
         const s2 = ios ? L(lang, 'Choose Add to Home Screen, then Add.', 'W\u00e4hle Zum Home-Bildschirm, dann Hinzuf\u00fcgen.', 'Elige A\u00f1adir a pantalla de inicio y luego A\u00f1adir.')
             : L(lang, 'Choose Install app or Add to Home screen.', 'W\u00e4hle App installieren oder Zum Startbildschirm.', 'Elige Instalar app o A\u00f1adir a pantalla de inicio.');
         const s3 = signed ? L(lang, 'Open LOWiSPIKE from your Home Screen and tap Paste sign-in.', '\u00d6ffne LOWiSPIKE vom Home-Bildschirm und tippe Anmeldung einf\u00fcgen.', 'Abre LOWiSPIKE desde inicio y toca Pegar acceso.')
-            : L(lang, 'Open LOWiSPIKE from your Home Screen. Your herb can now remind you.', '\u00d6ffne LOWiSPIKE vom Home-Bildschirm. Jetzt kann dein Kraut dich erinnern.', 'Abre LOWiSPIKE desde la pantalla de inicio. Ahora tu ser de luz puede recordarte cosas.');
+            : L(lang, 'Open LOWiSPIKE from your Home Screen. Your companion can now remind you.', '\u00d6ffne LOWiSPIKE vom Home-Bildschirm. Jetzt kann dein Begleiter dich erinnern.', 'Abre LOWiSPIKE desde la pantalla de inicio. Ahora tu ser de luz puede recordarte cosas.');
         return [s1, s2, s3];
     }
     const BUSY = ['#brOv', '#g1Ob:not(.out)', '#lcUpd', '.g1-ov', '.r3g1-ov', '.r2-ov.on:not(.off)', '#sheetwrap.open', '#rsSheet.open', '#mv-player.on', '#hofSheet', '#drA2', '#drPick', 'body > .b3-cam', '#spWorld:not([hidden])', '#ltTour:not(.lt-held)', '#bsOv'];
@@ -150,7 +150,7 @@
     const ritual = () => { const s = S(); if (!s) return null; if (!s.ritual || typeof s.ritual !== 'object') s.ritual = {}; return s.ritual; };
     function herbName() {
         try { if (W.LowiHerbIdentity && LowiHerbIdentity.name) { const n = LowiHerbIdentity.name(); if (n) return String(n); } } catch (e) {}
-        const b = $('.sp-bubble-name'); return (b && b.textContent.trim()) || T('Your herb', 'Dein Kraut', 'Tu ser de luz');
+        const b = $('.sp-bubble-name'); return (b && b.textContent.trim()) || T('Your companion', 'Dein Begleiter', 'Tu ser de luz');
     }
     /* Oct 19 old-design purge: never the old potted herb. Home's Misty if she is on screen, else the same cell drawn fresh, else a plain glass cell. */
     function herbSVG() { const h = $('#spBubble .sp-home-herb svg'); if (h) return h.outerHTML; try { const T = W.LowiHerbTamagotchi, c = T && T.current && T.current(); if (c && T.plantHTML) { const s = T.plantHTML(c.m, 'node', c.p); if (s) return s; } } catch (e) {} return '<svg class="dr-cell" viewBox="0 0 64 64" aria-hidden="true"><defs><radialGradient id="drCellG" cx=".38" cy=".34" r=".7"><stop stop-color="#fff" stop-opacity=".55"/><stop offset=".6" stop-color="#8fd8ff" stop-opacity=".22"/><stop offset="1" stop-color="#3a7bd5" stop-opacity=".35"/></radialGradient></defs><circle cx="32" cy="32" r="26" fill="url(#drCellG)" stroke="rgba(255,255,255,.7)" stroke-width="1.5"/><ellipse cx="25" cy="31" rx="3.4" ry="4.4" fill="#0d1b3d"/><ellipse cx="39" cy="31" rx="3.4" ry="4.4" fill="#0d1b3d"/></svg>'; }
@@ -217,7 +217,7 @@
         o.innerHTML = '<div class="dr-card dr-a2"><button type="button" class="dr-x" data-dr="a2close" aria-label="' + esc(T('Close', 'Schlie\u00dfen', 'Cerrar')) + '">' + ICON.x + '</button>' +
             '<h3 id="drA2H">' + esc(T('Make LOWiSPIKE an app', 'Mach LOWiSPIKE zur App', 'Convierte LOWiSPIKE en app')) + '</h3>' +
             '<p class="dr-why">' + esc(A2.signed ? T('Full screen, one tap to open, and you stay signed in.', 'Vollbild, mit einem Tipp offen, und du bleibst angemeldet.', 'Pantalla completa, se abre con un toque y sigues con tu sesi\u00f3n.')
-                : T('Full screen, one tap to open, and your herb can remind you.', 'Vollbild, mit einem Tipp offen, und dein Kraut kann dich erinnern.', 'Pantalla completa, se abre con un toque y tu ser de luz puede recordarte cosas.')) + '</p><div class="dr-a2-body"></div></div>';
+                : T('Full screen, one tap to open, and your companion can remind you.', 'Vollbild, mit einem Tipp offen, und dein Begleiter kann dich erinnern.', 'Pantalla completa, se abre con un toque y tu ser de luz puede recordarte cosas.')) + '</p><div class="dr-a2-body"></div></div>';
         D.body.appendChild(o); a2Render();
         if (!reduced()) o.classList.add('dr-in');
         return true;

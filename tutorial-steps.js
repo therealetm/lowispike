@@ -315,9 +315,9 @@
             id: 'chat', area: 'together', target: ['#whHud .o8-settings'], covers: ['community-chat'],
             title: { en: 'Community chat', de: 'Community-Chat', es: 'Chat de la comunidad' },
             text: {
-                en: 'Tap Chat in Community to open the community room and talk with everyone. You can see who talked recently at the top.',
-                de: 'Tipp in der Community auf Chat, um den Community-Raum zu öffnen und mit allen zu reden. Oben siehst du, wer zuletzt geschrieben hat.',
-                es: 'Toca Chat en Comunidad para abrir la sala y hablar con todos. Arriba ves quién habló hace poco.'
+                en: 'Tap Chat in Community to open your room of up to 30 people. At the top, Room shows the galaxy game and Chat shows the messages; tap the room chip to find someone and join their room.',
+                de: 'Tipp in der Community auf Chat, um deinen Raum mit bis zu 30 Personen zu öffnen. Oben zeigt Raum das Galaxie-Spiel und Chat die Nachrichten; tipp auf das Raum-Schild, um jemanden zu finden und seinem Raum beizutreten.',
+                es: 'Toca Chat en Comunidad para abrir tu sala de hasta 30 personas. Arriba, Sala muestra el juego de la galaxia y Chat los mensajes; toca la etiqueta de la sala para buscar a alguien y unirte a su sala.'
             }
         },
         {

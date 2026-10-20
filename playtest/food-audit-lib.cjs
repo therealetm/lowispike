@@ -30,7 +30,7 @@ async function open(opts) {
   await ctx.route('**/*', r => { const q = r.request(), u = new URL(q.url()); if (u.protocol === 'data:' || u.protocol === 'blob:' || (u.host === host && q.method() === 'GET')) return r.continue(); const k = u.host + ' ' + q.method() + ' ' + u.pathname.slice(0, 40); blocked[k] = (blocked[k] || 0) + 1; if (opts.route) { const h = opts.route(q, u); if (h) return r.fulfill(h); } return r.abort(); });
   await ctx.addInitScript(INIT(opts.lang));
   if (opts.init) await ctx.addInitScript(opts.init);
-  const page = await ctx.newPage();
+  const page = await ctx.newPage(); page.setDefaultTimeout(60000);
   const errs = []; page.on('pageerror', e => errs.push(String(e && e.message || e).slice(0, 240)));
   page.on('console', m => { if (m.type() === 'error') errs.push('console: ' + m.text().slice(0, 200)); });
   await page.goto(url + '?x=' + Date.now(), { waitUntil: 'load', timeout: 120000 });
@@ -57,6 +57,8 @@ async function open(opts) {
     sleep,
     /* a finger tap at the element's centre (the bubbles float, so Playwright's 'stable' wait can time out) */
     async tap(sel) { for (let i = 0; i < 30; i++) { const el = await page.$(sel); const r = el && await el.boundingBox().catch(() => null); if (r && r.width > 1) { await sleep(250); const r2 = await el.boundingBox().catch(() => null) || r; await page.touchscreen.tap(r2.x + r2.width / 2, r2.y + r2.height / 2); return true; } await sleep(300); } throw new Error('tap: not visible ' + sel); },
+    /* Fuel bubble > one of its bloom items, tapping the bubble again if the bloom did not open (slow machine) */
+    async bloom(orbit, id) { for (let k = 0; k < 4; k++) { await this.tap('[data-orbit="' + orbit + '"]'); for (let i = 0; i < 12; i++) { await sleep(500); const ok = await page.evaluate(s => { const e = document.querySelector(s); if (!e) return false; const r = e.getBoundingClientRect(); return r.width > 1; }, '#hb2Bloom [data-id="' + id + '"]'); if (ok) { await sleep(400); return this.tap('#hb2Bloom [data-id="' + id + '"]'); } } await page.evaluate(() => { try { LowiR2.closeAll(); } catch (e) { } }); await sleep(800); } throw new Error('bloom did not open: ' + orbit + '/' + id); },
     async reload() { await page.reload({ waitUntil: 'load', timeout: 120000 }); await page.waitForFunction(() => !!(window.LowiHomeBloomsV2 && window.LowiSpirit && window.LowiDex && document.querySelector('[data-orbit="fuel"]')), null, { timeout: 120000 }); await sleep(3000); },
     sheets: () => page.evaluate(() => [...document.querySelectorAll('.r2-ov')].filter(o => !o.classList.contains('off')).map(o => (o.querySelector('h2,h3') || {}).innerText || o.className).slice(0, 8)),
   };

@@ -9,7 +9,7 @@ const N = +(process.env.N || 5);
   const H = await open({ tag: 'F', engine: 'chromium', device: 'iPhone 13', init }); const p = H.page;
   const log = (k, v) => console.log('\n### ' + k + '\n' + (Array.isArray(v) ? v.join('\n') : typeof v === 'string' ? v : JSON.stringify(v)));
   const live = () => p.evaluate(() => ({ opened: (window.__streams || []).length, live: (window.__streams || []).reduce((a, s) => a + s.getTracks().filter(t => t.readyState === 'live').length, 0), videos: document.querySelectorAll('video').length }));
-  const openLog = async (slot) => { await H.tap('[data-orbit="fuel"]'); await sleep(1200); await H.tap('#hb2Bloom [data-id="log"]'); await sleep(1500); await p.tap('[data-sp="slot"][data-slot="' + slot + '"]'); await sleep(1000); };
+  const openLog = async (slot) => { await H.bloom('fuel', 'log'); await sleep(1500); await p.tap('[data-sp="slot"][data-slot="' + slot + '"]'); await sleep(1000); };
   const res = {};
   // 1. Log meal > Scan, close with the X
   for (let i = 0; i < N; i++) {
@@ -35,7 +35,7 @@ const N = +(process.env.N || 5);
   await p.evaluate(() => { try { LowiR2.closeAll(); } catch (e) { } }); await sleep(800);
   // 4. Shop > Scan in the shop, close
   for (let i = 0; i < N; i++) {
-    await H.tap('[data-orbit="fuel"]'); await sleep(1200); await H.tap('#hb2Bloom [data-id="shop"]'); await sleep(2200);
+    await H.bloom('fuel', 'shop'); await sleep(2200);
     await p.tap('[data-stp="scanshop"]'); await sleep(3000);
     if (i === 0) res.shopOpen = await live();
     const x = await p.$('.b3-cam [data-b3="camclose"]'); if (x) await x.tap({ force: true }).catch(() => { }); await sleep(1500);

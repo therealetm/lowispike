@@ -941,7 +941,7 @@
             if (!st.lpOpened || (pid != null && e.pointerId !== pid)) return;
             eat = ev => { ev.preventDefault(); ev.stopPropagation(); if (ev.stopImmediatePropagation) ev.stopImmediatePropagation(); unEat(); };
             D.addEventListener('click', eat, true);
-            eatT = setTimeout(unEat, 1000);   /* a busy phone can deliver that click 700+ ms after the lift (seen in the probe) */
+            eatT = setTimeout(unEat, 1000);   /* a busy device can deliver that click 700+ ms after the lift (seen on a loaded test machine) */
         }, true);
         D.addEventListener('pointercancel', () => { stop(); unEat(); }, true);
         D.addEventListener('contextmenu', e => { if (e.target && e.target.closest && e.target.closest('#spBubble')) e.preventDefault(); }, true);

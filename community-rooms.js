@@ -40,7 +40,7 @@ function onSync(){if(!chan)return;members=C.flatten(chan.presenceState());guests
  if(status==='in'&&!moving&&C.mustLeave(members,me,cap())){moving=true;const was=C.roomNum(room),excess=members.length-cap();setTimeout(()=>reassign(was,excess),150+Math.random()*700);return;}
  const lead=C.lead(members)===me;if(lead)publishSoon();else if(leading)unlead();emit('members');}
 /* The lead keeps its room's entry in the directory current (debounced; one update per second at most). */
-function publishSoon(){clearTimeout(pubT);pubT=setTimeout(publish,600);}
+function publishSoon(){if(pubT)return;pubT=setTimeout(()=>{pubT=0;publish();},400);}  /* throttle, not debounce: a busy room syncs constantly */
 async function publish(){if(!chan||status!=='in')return;const entry={n:C.roomNum(room),c:members.length,g:guestsHere,u:members.map(m=>m.k).slice(0,cap()+C.GUESTS),t:Date.now()};
  if(!dirChan){const ch=sb.channel(DIR,{config:{presence:{key:'l-'+me}}});dirChan=ch;leading=true;const ok=await subscribe(ch,()=>{if(ch===dirChan&&leading)publish();});if(!ok||ch!==dirChan)return;}
  try{await dirChan.track(entry);}catch(e){}}
@@ -70,7 +70,7 @@ async function joinRoom(n){n=Math.floor(+n||0);if(!sb||n<1)return {ok:false};if(
  if(r&&r.c>=cap())return {ok:false,why:'full'};await join(n);return {ok:true,why:'joined',n};}
 function sendEnergy(p){if(!chan||status!=='in'||!p)return false;try{Promise.resolve(chan.send({type:'broadcast',event:'energy',payload:p})).catch(()=>{});return true;}catch(e){return false;}}
 async function start(h){if(!h||!h.client||!h.uid)return false;const id=h.uid();if(!id)return false;if(me===id&&chan)return true;stop();hooks=h;me=id;sb=await h.client();return assign();}
-function stop(){epoch++;tried=new Map();clearTimeout(pubT);clearTimeout(leaveCheckT);if(chan)drop(chan);chan=null;unlead();members=[];room='';status='idle';knocks=[];moving=false;emit('left');}
+function stop(){epoch++;tried=new Map();clearTimeout(pubT);pubT=0;clearTimeout(leaveCheckT);if(chan)drop(chan);chan=null;unlead();members=[];room='';status='idle';knocks=[];moving=false;emit('left');}
 function rooms(){return [...dir.values()].sort((a,b)=>a.n-b.n);}
 W.LowiRooms={start,stop,joinPerson,joinRoom,letIn,dismiss,sendEnergy,readDirectory,rooms,
  room:()=>room||'all',num:()=>C.roomNum(room||'all'),active:()=>status==='in'&&!!chan,status:()=>status,cap,

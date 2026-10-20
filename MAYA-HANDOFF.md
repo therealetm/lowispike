@@ -639,6 +639,11 @@ REQUESTED Tue 20 Oct 2026, about 9:38 AM CEST (call). Task "LOWiSPIKE unify plan
      and galaxy glows derive lighter/deeper/softer tones from them, keeping gradients, translucency and depth. Dry
      controls (Scan, Settings, joystick) stay dry: no liquid added. Misty's own blue stays. No logo redesign, no fasting
      logic change. A design change, so a branch + preview for his OK before release.
+   - AMENDED about 9:55 AM (call): "we give scan also liquid. So every time someone scans something ... the liquid fills up."
+     Scan gets a liquid fill from real successful scans (a product found); cancelled, not-found and failed scans do not fill. No
+     reward, no quota. Joystick and Settings stay dry. Six liquids (Water, Move, Fuel, Sleep, Gap, Scan) = six planets, one each.
+     His logo idea (creative direction only, not for everyday UI): the real interface silhouette with partly filled liquid; the
+     liquid fills, leaves the bubbles and becomes the six coloured planets orbiting into the hexagon; one bubble can become many.
 
 ### 0.6 The Mickey 17 workflow: how every Maya hands over to the next
 
@@ -1196,3 +1201,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 - 2026-10-20 09:25 Item 31 recorded (before building): Emmanuel (call, about 9:10 AM) wants the app played like a user (Home -> Community -> chat -> typing first, then the whole app), every crash noted and fixed, then a click-through of everything listing what is inconvenient or illogical, split across agents. Branch chat-sim-20261020, worktree /home/sprite/wt-chat-sim, ledger playtest/SIM-LEDGER.md. The earlier chat-crash-3 sweep (item 29) never reached GitHub.
 - 2026-10-20 09:45 Item 32 recorded (before building): Emmanuel (call, about 9:38 AM) wants the six planet colours to be the brand colours: Home bubble liquids and galaxy bubble glows derive from them; dry controls (joystick, Scan, Settings) stay without liquid. Branch brand-palette-20261020, worktree /home/sprite/wt-brand-palette. Preview for his OK before release.
 - 2026-10-20 09:42 Item 30 RELEASED: 20261020-092921 (main 54af958) the Home message visitor stays until Reply or x, comes back after Home was covered, others wait ("{k} more waiting"); 20261020-093754 (main 7750b6c) the 0.9 s check also re-places them after a missed resize (the live WebKit check on 092921 left the card at its landscape spot once). Live files match main; live WebKit iPhone 13 check of 093754 passed all 14 steps (/tmp/pw/visit-check.cjs); a browser on 20261020-090200 got the update card (Later / Update) and Update loaded 20261020-093754. Needs Emmanuel's confirmation on his iPhone. Item 29 crash untouched.
+- 2026-10-20 09:58 Item 32 amended (before building it): Scan gets liquid too, filled only by successful scans; six liquids map one-to-one onto the six planets; joystick and Settings stay dry. Logo animation idea noted as creative direction only.

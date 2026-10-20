@@ -64,9 +64,9 @@ test('the ring repaints its own bubbles (Scan, Sleep, Settings) in all three lan
     assert.ok(/scan: \[\['Scan a product', 'Scan'\], \['Produkt scannen', 'Scannen'\], \['Escanear un producto', 'Escanear'\]\]/.test(js));
     assert.ok(/settings: \[\['Settings', 'Settings'\], \['Einstellungen', 'Optionen'\], \['Ajustes', 'Ajustes'\]\]/.test(js));
     assert.ok(/if \(labelLang !== lang\(\)\)/.test(js), 'also catches a language change without the event (compares with the last language written)');
-    /* the core export (node) is unchanged */
+    /* the core export (node): offscreen added for the ring-return fix (Misty flying back in) */
     const core = require('../home-orbit-v2.js');
-    assert.deepEqual(Object.keys(core).sort(), ['ORDER', 'angleOf', 'fit', 'moved']);
+    assert.deepEqual(Object.keys(core).sort(), ['ORDER', 'angleOf', 'fit', 'moved', 'offscreen']);
 });
 
 test('joystick label, fasting bubble and Misty\'s VoiceOver name follow a switch without a reload', () => {

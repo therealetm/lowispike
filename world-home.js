@@ -922,16 +922,28 @@
 
     /* ---------- clicks ---------- */
     /* long press on Misty's bubble (~0.5 s, finger still) opens her sheet; the click that follows is swallowed */
+    /* galaxy-audit G-1 (Oct 20): the hold opens Misty's card while the finger is still down. The click that follows the lift was
+       hit-tested on whatever now lies under the finger: the card's dimmed backdrop (it closed the card straight away, so the card
+       slid in and out again) or a spot inside the card. After a hold that opened the card, the one click of that lift is swallowed,
+       however long the hold was (the old 900 ms window let a longer hold pet Misty or hit the backdrop). */
     function wireMistyHold() {
-        let t = 0, sx = 0, sy = 0;
+        let t = 0, sx = 0, sy = 0, pid = null, eatT = 0, eat = null;
         const stop = () => { clearTimeout(t); t = 0; };
+        const unEat = () => { clearTimeout(eatT); eatT = 0; if (eat) { D.removeEventListener('click', eat, true); eat = null; } st.lpOpened = false; };
         D.addEventListener('pointerdown', e => {
             const b = e.target && e.target.closest && e.target.closest('#spBubble'); if (!b || !H.classList.contains('wh-on')) return;
-            sx = e.clientX; sy = e.clientY; stop(); st.lpOpened = false;
-            t = setTimeout(() => { t = 0; st.lpOpened = true; try { navigator.vibrate && navigator.vibrate(14); } catch (err) { } openMisty('aura'); setTimeout(() => { st.lpOpened = false; }, 900); }, 520);
+            sx = e.clientX; sy = e.clientY; stop(); unEat(); pid = e.pointerId;
+            t = setTimeout(() => { t = 0; st.lpOpened = true; try { navigator.vibrate && navigator.vibrate(14); } catch (err) { } openMisty('aura'); }, 520);
         }, true);
         D.addEventListener('pointermove', e => { if (t && Math.hypot(e.clientX - sx, e.clientY - sy) > 10) stop(); }, true);
-        D.addEventListener('pointerup', stop, true); D.addEventListener('pointercancel', stop, true);
+        D.addEventListener('pointerup', e => {
+            stop();
+            if (!st.lpOpened || (pid != null && e.pointerId !== pid)) return;
+            eat = ev => { ev.preventDefault(); ev.stopPropagation(); if (ev.stopImmediatePropagation) ev.stopImmediatePropagation(); unEat(); };
+            D.addEventListener('click', eat, true);
+            eatT = setTimeout(unEat, 700);
+        }, true);
+        D.addEventListener('pointercancel', () => { stop(); unEat(); }, true);
         D.addEventListener('contextmenu', e => { if (e.target && e.target.closest && e.target.closest('#spBubble')) e.preventDefault(); }, true);
     }
     /* a tap = a pet: a little heart floats up from Misty (the squish itself is herb-touch.js) */

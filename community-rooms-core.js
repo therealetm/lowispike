@@ -6,7 +6,9 @@
    No network, no DOM here: community-rooms.js does the realtime part. */
 (function(root){
 'use strict';
-/* CAP: people per room. Set from the load test (tools/sim/rooms-load.cjs, playtest/ROOMS-LOAD-20261020.md), not a guess. */
+/* CAP: people per room. Set from the load test (tools/sim/rooms-load.cjs, playtest/ROOMS-LOAD-20261020.md), not a guess:
+   at 30, each phone gets ~3.3 live items/s at 100 and at 1000 people online (one shared room: 11.6 and 116.5/s), and the galaxy
+   draws at most ~30 bodies. */
 const CAP=30,GUESTS=4,MAX_ROOMS=999;
 function roomId(n){n=Math.floor(+n||1);return n<=1?'all':'r'+Math.min(MAX_ROOMS,n);}
 function roomNum(id){if(id==='all'||id==null||id==='')return 1;const m=/^r(\d{1,3})$/.exec(String(id));return m?Math.max(1,+m[1]):0;}

@@ -795,3 +795,23 @@ Emmanuel (call, on the live build 20261020-090200): "The hologram appeared, and 
 - Others wait their turn; the card says "{k} more waiting" (EN/DE/ES) so you know the x brings the next one.
 - Kept light for the open iPhone crash (item 29): no new timer, animation or listener; the existing 0.9 s check runs while a visitor stands there (as before, just longer) and stops when nobody is waiting; text is only rewritten when it changed.
 - Checks: `tests/home-visit.test.cjs` (3 new), browser `/tmp/pw/visit-check.cjs` (WebKit iPhone: still there after 28 s, rotate, Reply opens that message, two people one at a time, Settings over Home and back, Escape, nothing left running).
+
+## 2026-10-20 10:00 CEST: The six glowing places settle into a hidden hexagon when you zoom out
+Emmanuel (voice, on his own zoomed-out Home screenshots): "the planet, that looked random, at one angle actually looks like a hexagon"
+and "No, but we should definitely lock that in and make this make it purposeful." It was an accident: the six beacons always sat 60
+degrees apart around Misty's cell, but alternately raised and lowered (and so at two slightly different reaches), so from far away they
+were only almost a hexagon (alternate corners bumped up and down).
+- `placeAt(i, n, k)` in `body-world-3d-scene.js`: k = 0 is exactly the old layout (close up and at Home's resting view nothing changes);
+  k = 1 puts the same six on one plane at one reach (their average height and reach, the least travel, at most ~1.7 units each): a true
+  regular hexagon centred on Misty. `hexagonK(dist, rest, maxD)` eases k from 0 just past Home's resting view to 1 at the World Map
+  and stays 1 further out (where the whole ring first fits on a phone screen). The planets glide over about a second; reduced motion
+  places them without the glide.
+- Nothing is drawn: no outline, no lines, no new mesh. Only the real planets move, so the hexagon is something you notice, not an overlay.
+  From the World Map angle it is a tilted hexagon (like a hex tile on a table); tilt to look down and it is nearly face on.
+- The beacon, its place name (`b.pos`) and its world (`regions[].pos`, used by the fly-to, the place builds and Misty's flight) always
+  move together, and they hold still during any trip: a fly-to (`rig.fly`), `bwr-warping`, `mf-transit`, `mf-on`, `mf-in`, `mf-galaxy`,
+  `wh-away`, or a camera target away from Misty. Per frame it costs one class check; positions are only rewritten while k changes.
+- Not done (not asked): no logo change, no hexagonal shell on the logo (that was only an idea from the voice agent).
+- Checks: `tests/hexagon-places.test.cjs` (6). Browser renders before/after (Chromium 390x844, SwiftShader WebGL, tools/hexagon):
+  close-up identical; zoomed out (45 units) the outline's distance from a hexagon fell from 42-85% to 8-15% (what remains is
+  perspective). Not yet checked on a real iPhone.

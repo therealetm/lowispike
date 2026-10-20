@@ -594,6 +594,24 @@ real iPhone, find all bugs", branch `chat-crash-3`, worktree `/home/sprite/wt-ch
      energy burst while zoomed out, tapping to see who was shooting, typing into the chat room.
    - What he wants: a full sweep of Community and the chat for every crash cause and every bug, siblings included, until
      it holds up on a real iPhone. Status: IN PROGRESS, see the Log.
+   - 20 Oct 09:25: the chat-crash-3 branch/worktree never reached GitHub (no `chat-crash-3` ref, no worktree on this new
+     computer), so that sweep's work is lost. Picked up again as item 31.
+
+**31. Simulate the whole app like a player, note every crash and fix it; then click through everything and list what is
+inconvenient or illogical.** REQUESTED Tue 20 Oct 2026, about 9:10 AM CEST (call). Task "LOWiSPIKE full-app simulated
+usage and crash fixes", branch `chat-sim-20261020`, worktree `/home/sprite/wt-chat-sim`, notes
+`/home/sprite/COORD-chat-sim.md`, ledger `playtest/SIM-LEDGER.md` (scenarios, findings, fixes, what each check proves).
+   - He said: "can you simulate just opening the chat because I can't be bothered to do it anymore. Every time I write
+     out, it crashes ... simulate like playing the app, playing the whole app, and noting all the crashes and then fixing
+     the crashes, because I really can't be bothered to do that." Then: "click through the whole app ... every interface,
+     every click, every flying misty to the end of galaxy, every gesture, every taking a photo of the product or scanning
+     or typing or logging ... and then noting all the stuff that are inconvenient and doesn't make sense or illogical and
+     are bad ... there are multiple tasks, multiple agents to do this, so that is not one long task, or else you will
+     reach timeout."
+   - Order: (1) Home -> Community -> chat -> typing/sending (item 29), (2) the rest of the app for crashes, (3) the UX
+     audit, split by area so several agents can each take one (see the ledger's "Areas" table). Simulation runs on
+     local state with Supabase blocked or mocked: no real messages, no real records touched.
+   - Never call an emulator result a fix on his phone; only he can confirm the real iPhone.
 
 ### 0.6 The Mickey 17 workflow: how every Maya hands over to the next
 
@@ -1148,3 +1166,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 - 2026-10-20 09:20 Recorded before building: Emmanuel's agent asked to show the pipeline test inside the live app for an existing user, without production data (Supabase blocked, local state only). Result: the update card renders the note text, but the lead "A small check that updates reach your phone" never shows (its offer waits for the menu bar, hidden on world-first Home). So, as asked, a minimal visible change ships: the Settings panel shows "Version <build>" in its foot, beside the x (home-settings-sleep-v2.js/.css, test in tests/home-settings-sleep-v2.test.cjs). No other app change; item 29 crash untouched.
 - 2026-10-20 09:10 Verified live: release 20261020-090200 (commit 677ed88, Settings shows "Version <build>" beside the x) is served by the live site; Emmanuel saw a Home message visit (item 23) arrive on his phone ("I just saw a hologram up here. It worked.").
 - 2026-10-20 09:15 Item 30 recorded (before building): Emmanuel (call, about 9:05 AM): "The hologram appeared, and then it disappeared way too fast for me to even click on reply ... update that." So the item 23 visit must stay until he taps Reply (opens the message in Community) or the x, instead of leaving after its 6.5 to 15 s reading time; it must not be lost when Home is covered for a moment (comes back), must not block Home, and other people's visits wait their turn. Branch visit-stay-20261020, worktree /home/sprite/wt-visit-stay, files home-visit.js/.css + tests/home-visit.test.cjs. Item 29 crash untouched.
+- 2026-10-20 09:25 Item 31 recorded (before building): Emmanuel (call, about 9:10 AM) wants the app played like a user (Home -> Community -> chat -> typing first, then the whole app), every crash noted and fixed, then a click-through of everything listing what is inconvenient or illogical, split across agents. Branch chat-sim-20261020, worktree /home/sprite/wt-chat-sim, ledger playtest/SIM-LEDGER.md. The earlier chat-crash-3 sweep (item 29) never reached GitHub.

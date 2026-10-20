@@ -56,7 +56,7 @@ async function open(opts) {
     },
     sleep,
     /* a finger tap at the element's centre (the bubbles float, so Playwright's 'stable' wait can time out) */
-    async tap(sel) { const el = await page.waitForSelector(sel, { state: 'visible', timeout: 15000 }); const r = await el.boundingBox(); await page.touchscreen.tap(r.x + r.width / 2, r.y + r.height / 2); },
+    async tap(sel) { for (let i = 0; i < 30; i++) { const el = await page.$(sel); const r = el && await el.boundingBox().catch(() => null); if (r && r.width > 1) { await sleep(250); const r2 = await el.boundingBox().catch(() => null) || r; await page.touchscreen.tap(r2.x + r2.width / 2, r2.y + r2.height / 2); return true; } await sleep(300); } throw new Error('tap: not visible ' + sel); },
     async reload() { await page.reload({ waitUntil: 'load', timeout: 120000 }); await page.waitForFunction(() => !!(window.LowiHomeBloomsV2 && window.LowiSpirit && window.LowiDex && document.querySelector('[data-orbit="fuel"]')), null, { timeout: 120000 }); await sleep(3000); },
     sheets: () => page.evaluate(() => [...document.querySelectorAll('.r2-ov')].filter(o => !o.classList.contains('off')).map(o => (o.querySelector('h2,h3') || {}).innerText || o.className).slice(0, 8)),
   };

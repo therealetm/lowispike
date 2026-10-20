@@ -597,6 +597,18 @@ real iPhone, find all bugs", branch `chat-crash-3`, worktree `/home/sprite/wt-ch
    - 20 Oct 09:25: the chat-crash-3 branch/worktree never reached GitHub (no `chat-crash-3` ref, no worktree on this new
      computer), so that sweep's work is lost. Picked up again as item 31.
 
+**30. The Home message visitor (item 23) stays until he answers.** RELEASED 20 Oct in 20261020-092921 (main 54af958)
+and 20261020-093754 (main 7750b6c, rotation follow-up).
+   - He said (call, about 9:05 AM, right after seeing one on his phone): "The hologram appeared, and then it disappeared
+     way too fast for me to even click on reply ... update that." No duration given.
+   - Done: no reading timer; the visitor stays until Reply (whole bubble, Reply now drawn as a button) or x / Escape.
+     Something covering Home (sheet, Settings, other tab, app in background, quiet hours) makes them step out and fade
+     back in place afterwards (max 8 times). Rotation moves them. Others wait; the card says "{k} more waiting".
+     Remembered as done only on Reply / x. Details: DECISIONS.md "A Home message visitor stays until you answer".
+   - Checked: tests 1878/1878; live WebKit iPhone 13 (mocked messages, Supabase blocked): still there 25 s after
+     landing, Reply opens that message, two people one at a time, Settings over Home and back, rotate, Escape, nothing
+     left running. Still open: his confirmation on the real iPhone. Item 29 crash untouched.
+
 **31. Simulate the whole app like a player, note every crash and fix it; then click through everything and list what is
 inconvenient or illogical.** REQUESTED Tue 20 Oct 2026, about 9:10 AM CEST (call). Task "LOWiSPIKE full-app simulated
 usage and crash fixes", branch `chat-sim-20261020`, worktree `/home/sprite/wt-chat-sim`, notes
@@ -1183,3 +1195,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 - 2026-10-20 09:15 Item 30 recorded (before building): Emmanuel (call, about 9:05 AM): "The hologram appeared, and then it disappeared way too fast for me to even click on reply ... update that." So the item 23 visit must stay until he taps Reply (opens the message in Community) or the x, instead of leaving after its 6.5 to 15 s reading time; it must not be lost when Home is covered for a moment (comes back), must not block Home, and other people's visits wait their turn. Branch visit-stay-20261020, worktree /home/sprite/wt-visit-stay, files home-visit.js/.css + tests/home-visit.test.cjs. Item 29 crash untouched.
 - 2026-10-20 09:25 Item 31 recorded (before building): Emmanuel (call, about 9:10 AM) wants the app played like a user (Home -> Community -> chat -> typing first, then the whole app), every crash noted and fixed, then a click-through of everything listing what is inconvenient or illogical, split across agents. Branch chat-sim-20261020, worktree /home/sprite/wt-chat-sim, ledger playtest/SIM-LEDGER.md. The earlier chat-crash-3 sweep (item 29) never reached GitHub.
 - 2026-10-20 09:45 Item 32 recorded (before building): Emmanuel (call, about 9:38 AM) wants the six planet colours to be the brand colours: Home bubble liquids and galaxy bubble glows derive from them; dry controls (joystick, Scan, Settings) stay without liquid. Branch brand-palette-20261020, worktree /home/sprite/wt-brand-palette. Preview for his OK before release.
+- 2026-10-20 09:42 Item 30 RELEASED: 20261020-092921 (main 54af958) the Home message visitor stays until Reply or x, comes back after Home was covered, others wait ("{k} more waiting"); 20261020-093754 (main 7750b6c) the 0.9 s check also re-places them after a missed resize (the live WebKit check on 092921 left the card at its landscape spot once). Live files match main; live WebKit iPhone 13 check of 093754 passed all 14 steps (/tmp/pw/visit-check.cjs); a browser on 20261020-090200 got the update card (Later / Update) and Update loaded 20261020-093754. Needs Emmanuel's confirmation on his iPhone. Item 29 crash untouched.

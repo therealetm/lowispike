@@ -14,7 +14,7 @@ const [engine = 'webkit', cycles = '6', where = ''] = process.argv.slice(2);
     for (let c = 1; c <= +cycles; c++) {
       R.step = 'c' + c + ' community'; if (!await toCommunity()) { console.log('could not open community'); break; }
       if (c === 1) console.log('VIS', JSON.stringify(await R.vis()));
-      R.step = 'c' + c + ' room'; const hb = P.locator('.cg-hist:visible').first(); if (await hb.count()) { await R.tapEl(hb); await H.sleep(1500); }
+      R.step = 'c' + c + ' room'; const hb = P.locator('#cgTo .cg-hist').first(); if (await hb.evaluate(e => !!e.getBoundingClientRect().width).catch(() => false)) { await R.tapEl(hb); await H.sleep(1500); }
       R.step = 'c' + c + ' type'; await R.tap('#cmInput'); await P.keyboard.type('cycle ' + c + ' hello', { delay: 40 }); await P.keyboard.press('Enter'); await H.sleep(800);
       R.step = 'c' + c + ' live'; for (let i = 0; i < 8; i++) { const m = i === 3 ? R.sim.photoSay() : R.sim.say(); if (i % 3 === 0) R.sim.react(m.id); await H.sleep(250); }
       R.step = 'c' + c + ' scroll'; await P.evaluate(() => { const l = document.getElementById('cmList'); if (l) { l.scrollTop = 0; } }); await H.sleep(500); const more = P.locator('[data-chat=earlier]:visible').first(); if (await more.count()) { await R.tapEl(more); await H.sleep(800); }

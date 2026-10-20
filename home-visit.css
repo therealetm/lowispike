@@ -25,8 +25,11 @@
 .hv-open:focus-visible,.hv-x:focus-visible{outline:2px solid var(--hv-c);outline-offset:2px;border-radius:14px}
 .hv-name{font-size:13px;font-weight:700;color:var(--hv-c);letter-spacing:.01em}
 .hv-text{font-size:15px;line-height:1.32;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
-.hv-foot{display:flex;gap:10px;align-items:center;margin-top:2px;font-size:12px;opacity:.82}
-.hv-reply{font-weight:600;color:var(--hv-c)}
+.hv-foot{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-top:4px;font-size:12px}
+/* item 30: Reply reads as a real button (the whole bubble still opens it), and the visitor waits for it */
+.hv-reply{display:inline-flex;align-items:center;min-height:30px;padding:0 14px;border-radius:15px;font-size:13px;font-weight:600;color:#fff;background:rgba(159,232,255,.2);background:color-mix(in srgb,var(--hv-c) 28%,transparent);border:1px solid color-mix(in srgb,var(--hv-c) 60%,transparent)}
+.hv-open:active .hv-reply{background:color-mix(in srgb,var(--hv-c) 45%,transparent)}
+.hv-more{opacity:.82}
 .hv-more:empty{display:none}
 .hv-x{flex:none;width:36px;height:36px;margin:4px 4px 0 0;border:0;border-radius:50%;background:rgba(255,255,255,.08);color:#f2f6ff;font:400 20px/1 system-ui,sans-serif;cursor:pointer;display:grid;place-items:center}
 html[data-lay=tablet] .hv-flier,html[data-lay=desktop] .hv-flier{width:84px;height:84px}

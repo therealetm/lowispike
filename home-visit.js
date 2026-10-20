@@ -6,11 +6,16 @@
    So: when someone writes TO you (an @mention of you or a reply to your message: the same test as the Community
    "is talking to you" alert) and you are looking at Home, their own companion flies in from outside your world inside a
    small glass bubble, the bubble breaks on arrival, the companion stands there like a light hologram, and a speech bubble
-   shows their real message. Tap it to open that message in Community (the reply goes to them); x or waiting lets them go.
+   shows their real message. Tap it (Reply) to open that message in Community (the reply goes to them); x lets them go.
+   Item 30 (20 Oct 2026), Emmanuel: "The hologram appeared, and then it disappeared way too fast for me to even click on
+   reply ... update that." So a visitor no longer leaves on a reading timer: they stay until you tap Reply or the x (or
+   Escape). If Home is covered for a moment (a sheet, another tab, the app in the background, a rotation mid-flight) they
+   step out and come back when Home is in front again, without flying in a second time. Others wait their turn behind them.
 
    Rules: only real messages from the room (community-chat.js LowiCommunity.directed()), never invented; one visitor at a
    time, several messages from one person become one visit, at most 4 waiting, the rest is a "+N more" line; old history
-   is never replayed (only messages you have not seen yet, under 12 hours old, and never twice per account on this device);
+   is never replayed (only messages you have not seen yet, under 12 hours old, and never again on this device once you
+   answered or closed the visit);
    nothing is marked read (the room and the Community badge stay as they were). Light: plain DOM + compositor-only
    animations, no WebGL, no animation loop, one small timer only while a visit is waiting or showing, all removed after. */
 (function (root) {
@@ -20,13 +25,14 @@
     const BACKLOG_MAX = 2;            /* after a reload / time away: at most the two newest come by, the rest is "+N more" */
     const QUEUE_MAX = 4;              /* visitors waiting at once; more people than that become "+N more" */
     const PENDING_MS = 10 * 60e3;     /* a visit that could not happen within 10 minutes stays in the room only */
+    const TRIES_MAX = 8;              /* a visitor sent away by something covering Home comes back at most this often */
     const KEEP = 120;                 /* remembered visit ids per account */
     /* old app / crowd pings "@Name ⚡ X sent you energy" are hidden in Community; never fly one in either */
     const ENERGY_LINE = /^(@\S[^\n]*?\s)?\u26a1\s[^\n]+\s(sent you energy|hat dir Energie geschickt|te envi\u00f3 energ\u00eda)[\s!.]*$/u;
     const UI = {
-        en: { came: '{n} came into your world', open: 'Open the message from {n} in Community', reply: 'Reply', close: 'Close', more: '+{k} more for you in Community', count: '{k} messages' },
-        de: { came: '{n} ist in deine Welt gekommen', open: 'Nachricht von {n} in der Community öffnen', reply: 'Antworten', close: 'Schließen', more: '+{k} weitere für dich in der Community', count: '{k} Nachrichten' },
-        es: { came: '{n} ha entrado en tu mundo', open: 'Abrir el mensaje de {n} en Comunidad', reply: 'Responder', close: 'Cerrar', more: '+{k} más para ti en Comunidad', count: '{k} mensajes' }
+        en: { came: '{n} came into your world', open: 'Open the message from {n} in Community', reply: 'Reply', close: 'Close', more: '+{k} more for you in Community', count: '{k} messages', waiting: '{k} more waiting' },
+        de: { came: '{n} ist in deine Welt gekommen', open: 'Nachricht von {n} in der Community öffnen', reply: 'Antworten', close: 'Schließen', more: '+{k} weitere für dich in der Community', count: '{k} Nachrichten', waiting: '{k} weitere warten' },
+        es: { came: '{n} ha entrado en tu mundo', open: 'Abrir el mensaje de {n} en Comunidad', reply: 'Responder', close: 'Cerrar', more: '+{k} más para ti en Comunidad', count: '{k} mensajes', waiting: '{k} más esperando' }
     };
 
     /* ---------- pure core (tests/home-visit.test.cjs) ---------- */
@@ -65,10 +71,12 @@
         return out;
     }
     /* pending visits that waited too long stay in the room only (and are remembered, so a reload does not bring them back) */
+    /* a visitor you already saw (stepped out because Home was covered) keeps waiting as long as the message is fresh (12 h) */
+    function stale(q, now) { return q.back ? now - (+q.ts || 0) >= BACKLOG_MS : now - q.noted > PENDING_MS; }
     function expire(st, now) {
-        const old = st.queue.filter(q => now - q.noted > PENDING_MS);
+        const old = st.queue.filter(q => stale(q, now));
         if (!old.length) return 0;
-        st.queue = st.queue.filter(q => now - q.noted <= PENDING_MS);
+        st.queue = st.queue.filter(q => !stale(q, now));
         for (const q of old) visit(st, q.ids);
         if (!st.queue.length && !st.current && st.more) { visit(st, st.moreIds); st.more = 0; st.moreIds = []; }
         return old.length;
@@ -76,6 +84,14 @@
     /* Community is open: everything waiting is in front of you there */
     function drop(st) { for (const q of st.queue) visit(st, q.ids); visit(st, st.moreIds); st.queue = []; st.more = 0; st.moreIds = []; }
     function next(st) { const e = st.queue.shift() || null; if (e) e.more = st.queue.length ? 0 : st.more; return e; }
+    /* something covered Home while they were here: they step out and are first in line again (no second flight if you had
+       already seen them). Only after TRIES_MAX comebacks, or while leaving, do they stay in the room only. */
+    function requeue(st, e, now) {
+        if (!e) return false;
+        if (e.leaving || e.tries >= TRIES_MAX) { visit(st, e.ids); return false; }
+        e.back = e.back || !!e.shownAt; e.shownAt = 0; e.noted = now; e.updated = 0; e.filled = 0; e.fill = null; e.layout = null; e.from = null;
+        st.queue.unshift(e); return true;
+    }
     /* the room is about to show its own "is talking to you" toast for this message: true = Home takes it instead */
     function claim(st, id, homeFront) {
         if (st.current && st.current.ids.indexOf(id) >= 0) return true;
@@ -131,7 +147,7 @@
     function words(l, k, vars) { let s = (UI[lang(l)] || UI.en)[k] || UI.en[k] || ''; for (const v in vars || {}) s = s.split('{' + v + '}').join(String(vars[v])); return s; }
     function short(text, max) { const t = String(text || '').replace(/\s+/g, ' ').trim(); max = max || 160; return t.length > max ? t.slice(0, max - 1).replace(/\s+\S*$/, '') + '\u2026' : t; }
 
-    const api = { KEY, BACKLOG_MS, BACKLOG_MAX, QUEUE_MAX, PENDING_MS, UI, energy, fresh, intake, add, expire, drop, next, claim, visit, place, origin, path, words, short, hash };
+    const api = { KEY, BACKLOG_MS, BACKLOG_MAX, QUEUE_MAX, PENDING_MS, TRIES_MAX, UI, energy, fresh, intake, add, expire, drop, next, requeue, claim, visit, place, origin, path, words, short, hash };
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (!root || !root.document) return;
 
@@ -139,7 +155,7 @@
     const W = root, D = W.document, H = D.documentElement;
     if (W.LowiHomeVisit) return;
     const st = fresh();
-    let layer = null, tickT = 0, readT = 0, scanT = 0, readLeft = 0, readFrom = 0, keyFn = null, anims = [];
+    let layer = null, tickT = 0, scanT = 0, sizeT = 0, keyFn = null, anims = [];
     const C = () => W.LowiCommunity || null;
     const L = () => { let l = 'en'; try { l = (W.LowiLang && LowiLang.get && LowiLang.get()) || H.lang || 'en'; } catch (e) { } return lang(l); };
     const vis = el => { if (!el || !el.isConnected) return false; const r = el.getBoundingClientRect(); if (r.width < 2 || r.height < 2) return false; const cs = getComputedStyle(el); return cs.display !== 'none' && cs.visibility !== 'hidden' && +cs.opacity > 0.05; };
@@ -169,10 +185,7 @@
         intake(st, d, Date.now(), load);
         if (st.reset) { st.reset = false; if (before !== st.scope) { clear(); } }
         const cur = st.current;
-        if (cur && cur.updated && cur.updated !== cur.filled && cur.fill) {   /* the same person wrote again while visiting: new words, a fresh read */
-            cur.filled = cur.updated; cur.fill();
-            if (cur.shownAt) { done(cur.ids); clearTimeout(readT); readT = 0; readLeft = W.LowiReadTime && LowiReadTime.ms ? LowiReadTime.ms(cur.by + ' ' + short(cur.text, 160), { min: 6500, max: 15000 }) : 9000; if (!(layer && layer.matches && layer.querySelector('.hv-card:hover'))) { readFrom = Date.now(); readT = setTimeout(() => leave(false), readLeft); } }
-        }
+        if (cur && cur.fill) cur.fill();   /* the same person wrote again (new words in place), or someone else is now waiting */
         /* quiet hours you set yourself in Community also hold the visits back (the default hours do not: a visit is silent and only
            happens while you are looking at Home) */
         st.hold = !!(d && d.quiet && d.quietSet);
@@ -185,7 +198,11 @@
     function tick() {
         const now = Date.now();
         if (communityFront() && (st.queue.length || st.more)) { drop(st); save(); }
-        if (st.current) { if (!homeFront() || st.hold) interrupt(); return; }
+        if (st.current) {   /* the ones waiting behind a visitor are not "could not happen": their 10 minutes start when it is their turn */
+            for (const q of st.queue) if (!q.back) q.noted = now;
+            if (!homeFront() || st.hold) interrupt();
+            return;
+        }
         if (expire(st, now)) save();
         if (!st.queue.length) { if (st.more && !st.current) { done(st.moreIds); st.more = 0; st.moreIds = []; } disarm(); return; }
         if (st.hold || !homeFront()) return;
@@ -238,30 +255,25 @@
         const who = el('b', 'hv-name', open), msg = el('span', 'hv-text', open), foot = el('span', 'hv-foot', open);
         const reply = el('span', 'hv-reply', foot), more = el('span', 'hv-more', foot);
         const x = el('button', 'hv-x', card); x.type = 'button'; x.textContent = '\u00d7';
+        const set = (node, t) => { if (node.textContent !== t) node.textContent = t; };   /* unchanged words stay untouched (no re-announcement) */
         const fill = () => {
-            who.textContent = name; msg.textContent = short(e.text, 160);
-            reply.textContent = words(l, 'reply');
-            more.textContent = e.more ? words(l, 'more', { k: e.more }) : (e.count > 1 ? words(l, 'count', { k: e.count }) : '');
-            open.setAttribute('aria-label', words(l, 'open', { n: name }) + ': ' + short(e.text, 160));
-            x.setAttribute('aria-label', words(l, 'close'));
-            sr.textContent = words(l, 'came', { n: name }) + ': ' + short(e.text, 160);
+            const L2 = L();
+            set(who, name); set(msg, short(e.text, 160));
+            set(reply, words(L2, 'reply'));
+            /* someone else waiting behind them is said on the card, so you know the x brings the next one */
+            set(more, st.queue.length ? words(L2, 'waiting', { k: st.queue.length }) : st.more ? words(L2, 'more', { k: st.more }) : (e.count > 1 ? words(L2, 'count', { k: e.count }) : ''));
+            const lab = words(L2, 'open', { n: name }) + ': ' + short(e.text, 160);
+            if (open.getAttribute('aria-label') !== lab) open.setAttribute('aria-label', lab);
+            if (x.getAttribute('aria-label') !== words(L2, 'close')) x.setAttribute('aria-label', words(L2, 'close'));
+            set(sr, words(L2, 'came', { n: name }) + ': ' + short(e.text, 160));
         };
         fill(); e.fill = fill;
         D.body.appendChild(layer);
-        const p = layout(card.offsetHeight || 96);
-        layer.dataset.mode = p.mode;
-        const pos = (node, x0, y0) => { node.style.left = Math.round(x0) + 'px'; node.style.top = Math.round(y0) + 'px'; };
-        pos(flier, p.x, p.y); pos(ripple, p.x, p.y); pos(base, p.x, p.y);
-        card.style.left = Math.round(p.cardLeft) + 'px'; card.style.width = Math.round(p.cardW) + 'px';
-        if (p.cardBottom != null) { card.style.bottom = Math.round(p.cardBottom) + 'px'; card.dataset.up = '1'; } else card.style.top = Math.round(p.cardTop) + 'px';
-        card.style.setProperty('--hv-tail', Math.round(Math.max(18, Math.min(p.cardW - 18, p.x - p.cardLeft))) + 'px');
-        e.layout = p;
+        e.nodes = { flier, ripple, base, card };
+        const p = placeNodes(e);
 
-        open.addEventListener('click', () => { const ids = e.ids.slice(), id = e.id, uid = e.uid; done(ids.concat(e.more ? st.moreIds : [])); if (e.more) { st.more = 0; st.moreIds = []; } remove(); try { if (c && c.openMessage) c.openMessage(uid, id); } catch (y) { } schedule(); });
+        open.addEventListener('click', () => { const ids = e.ids.slice(), id = e.id, uid = e.uid; done(ids); remove(); try { if (c && c.openMessage) c.openMessage(uid, id); } catch (y) { } schedule(); });
         x.addEventListener('click', () => leave(true));
-        card.addEventListener('pointerenter', pause); card.addEventListener('pointerleave', resume);
-        card.addEventListener('focusin', pause); card.addEventListener('focusout', resume);
-        card.addEventListener('pointerdown', pause);
         keyFn = ev => { if (ev.key === 'Escape' && st.current === e) leave(true); };
         D.addEventListener('keydown', keyFn);
 
@@ -277,12 +289,10 @@
             const ca = anim(card, [{ opacity: 0, transform: 'translateY(' + (card.dataset.up ? -8 : 8) + 'px) scale(.96)' }, { opacity: 1, transform: 'none' }], { duration: 260, delay: reduce ? 0 : 260, easing: 'cubic-bezier(.2,.9,.3,1.1)', fill: 'backwards' });
             card.classList.add('on');
             e.shownAt = Date.now() + (reduce ? 0 : 260);
-            done(e.ids);   /* it has been shown: never again on this device (still unread in the room until you open it there) */
-            const rt = W.LowiReadTime && LowiReadTime.ms ? LowiReadTime.ms(name + ' ' + short(e.text, 160), { min: 6500, max: 15000 }) : 9000;
-            readLeft = rt + (reduce ? 0 : 260); readFrom = Date.now(); readT = setTimeout(() => leave(false), readLeft);
+            /* no reading timer (item 30): they stay until Reply, x or Escape; remembered as done only then */
             void ca;
         };
-        if (reduce) {
+        if (reduce || e.back) {   /* reduced motion, or coming back after Home was covered: fade in in place, no second flight */
             anim(flier, [{ opacity: 0, transform: 'translate(-50%,-50%) scale(.92)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1)' }], { duration: 320, easing: 'ease-out', fill: 'backwards' });
             arrive();
         } else {
@@ -295,14 +305,26 @@
         }
         arm();
     }
-    function pause() { if (!readT || !st.current) return; clearTimeout(readT); readT = 0; readLeft = Math.max(2500, readLeft - (Date.now() - readFrom)); }
-    function resume() { if (readT || !st.current || st.current.leaving || !st.current.shownAt) return; const a = D.activeElement; if (layer && a && layer.contains(a)) return; readFrom = Date.now(); readT = setTimeout(() => leave(false), Math.max(2500, readLeft)); }
+    /* landing spot for the flier, ripple, beam and card; again in place when the screen size changes while they stand there */
+    function placeNodes(e) {
+        const n = e.nodes; if (!n || !layer) return null;
+        const card = n.card;
+        card.style.top = ''; card.style.bottom = ''; delete card.dataset.up;
+        const p = layout(card.offsetHeight || 96);
+        layer.dataset.mode = p.mode;
+        const pos = (node, x0, y0) => { node.style.left = Math.round(x0) + 'px'; node.style.top = Math.round(y0) + 'px'; };
+        pos(n.flier, p.x, p.y); pos(n.ripple, p.x, p.y); pos(n.base, p.x, p.y);
+        card.style.left = Math.round(p.cardLeft) + 'px'; card.style.width = Math.round(p.cardW) + 'px';
+        if (p.cardBottom != null) { card.style.bottom = Math.round(p.cardBottom) + 'px'; card.dataset.up = '1'; } else card.style.top = Math.round(p.cardTop) + 'px';
+        card.style.setProperty('--hv-tail', Math.round(Math.max(18, Math.min(p.cardW - 18, p.x - p.cardLeft))) + 'px');
+        e.layout = p;
+        return p;
+    }
     /* they go back the way they came */
     function leave(fast) {
         const e = st.current; if (!e || e.leaving) return;
-        e.leaving = true; clearTimeout(readT); readT = 0;
+        e.leaving = true;
         done(e.ids);
-        if (e.more) { done(st.moreIds); st.more = 0; st.moreIds = []; }
         const node = layer;
         if (!node) { st.current = null; schedule(); return; }
         const card = node.querySelector('.hv-card'), flier = node.querySelector('.hv-flier'), base = node.querySelector('.hv-base');
@@ -319,18 +341,17 @@
     /* Home went away mid-visit (another tab, a sheet, the app in the background) */
     function interrupt() {
         const e = st.current; if (!e) return;
-        clearTimeout(readT); readT = 0;
-        const shown = e.shownAt && Date.now() - e.shownAt >= 1500;
         remove();
-        if (!shown && !e.leaving && e.tries < 3) { e.shownAt = 0; st.queue.unshift(e); }   /* not really seen yet: comes back when Home is in front again */
-        else { done(e.ids); if (e.more) { done(st.moreIds); st.more = 0; st.moreIds = []; } }
+        requeue(st, e, Date.now());   /* first in line again: comes back when Home is in front (no second flight once seen) */
+        save();
         arm();
     }
     function remove() {
         for (const a of anims) { try { a.onfinish = null; a.cancel(); } catch (e) { } }
         anims = [];
         if (keyFn) { D.removeEventListener('keydown', keyFn); keyFn = null; }
-        clearTimeout(readT); readT = 0;
+        clearTimeout(sizeT); sizeT = 0;
+        if (st.current) st.current.nodes = null;
         if (layer) { const f = D.activeElement; if (f && layer.contains(f) && f.blur) f.blur(); layer.remove(); }
         layer = null; st.current = null;
     }
@@ -340,12 +361,17 @@
 
     D.addEventListener('lowi:chat', later);
     D.addEventListener('visibilitychange', () => { if (D.hidden) { if (st.current) interrupt(); } else later(); });
-    W.addEventListener('resize', () => { if (st.current && st.current.shownAt) leave(true); else if (st.current) interrupt(); });
+    /* a rotation or the iOS bars changing size: a visitor standing there moves to the new spot; one still flying steps out and comes back */
+    W.addEventListener('resize', () => {
+        const e = st.current; if (!e) return;
+        if (!e.shownAt) { interrupt(); return; }
+        clearTimeout(sizeT); sizeT = setTimeout(() => { sizeT = 0; if (st.current === e && e.shownAt) placeNodes(e); }, 150);
+    });
     D.addEventListener('lowi:lang', () => { if (st.current && st.current.fill) st.current.fill(); });
     setTimeout(scan, 1500);
     W.LowiHomeVisit = {
         has(id) { scan(); const r = claim(st, id, homeFront() && !st.hold); save(); return r; },
-        scan, state: () => ({ scope: st.scope, queue: st.queue.map(q => ({ id: q.id, ids: q.ids.slice(), uid: q.uid, by: q.by, count: q.count })), current: st.current ? { id: st.current.id, ids: st.current.ids.slice(), uid: st.current.uid, by: st.current.by, mode: st.current.layout && st.current.layout.mode, shown: !!st.current.shownAt } : null, more: st.more, visited: st.visited.length, timer: !!tickT, hold: !!st.hold }),
+        scan, state: () => ({ scope: st.scope, queue: st.queue.map(q => ({ id: q.id, ids: q.ids.slice(), uid: q.uid, by: q.by, count: q.count })), current: st.current ? { id: st.current.id, ids: st.current.ids.slice(), uid: st.current.uid, by: st.current.by, mode: st.current.layout && st.current.layout.mode, shown: !!st.current.shownAt, back: !!st.current.back } : null, more: st.more, visited: st.visited.length, timer: !!tickT, hold: !!st.hold }),
         homeFront, dismiss: () => leave(true)
     };
 })(typeof window !== 'undefined' ? window : null);

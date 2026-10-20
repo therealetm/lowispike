@@ -88,6 +88,55 @@ test('visits that could not happen for 10 minutes, or that Community shows anywa
     V.drop(st); assert.equal(st.queue.length, 0); assert(st.visited.includes('b'));
 });
 
+test('item 30: a visitor sent away by something covering Home is first in line again, without a second flight once seen', () => {
+    const st = booted('me');
+    V.intake(st, { scope: 'me', list: [msg('a', 'u1', 'Bea', 'hi', NOW + 1000), msg('b', 'u2', 'Cy', 'yo', NOW + 2000)] }, NOW + 2000);
+    const e = V.next(st); st.current = e; e.tries = 1;
+    assert.equal(e.id, 'a'); assert.equal(st.queue.length, 1);
+    /* covered while still flying in: back first in line, flies in again (not seen yet) */
+    st.current = null; assert.equal(V.requeue(st, e, NOW + 3000), true);
+    assert.equal(st.queue[0].id, 'a'); assert.equal(st.queue[1].id, 'b'); assert.equal(e.back, false);
+    assert(!st.visited.includes('a'), 'not remembered as done: it was never answered');
+    /* shown, then covered (a sheet, another tab, the app in the background): back first in line, marked to fade in in place */
+    V.next(st); e.shownAt = NOW + 4000; e.tries = 2; e.fill = () => { };
+    assert.equal(V.requeue(st, e, NOW + 9000), true);
+    assert.equal(st.queue[0], e); assert.equal(e.back, true); assert.equal(e.shownAt, 0); assert.equal(e.fill, null);
+    assert(!st.visited.includes('a'));
+    /* it keeps waiting longer than the 10 minutes a never-seen visit gets, until the message is 12 hours old */
+    assert.equal(V.expire(st, NOW + 60 * 60e3), 1, 'only the never-seen one (b) timed out');
+    assert.equal(st.queue.length, 1); assert.equal(st.queue[0].id, 'a'); assert(st.visited.includes('b'));
+    assert.equal(V.expire(st, NOW + 1000 + V.BACKLOG_MS), 1); assert.equal(st.queue.length, 0); assert(st.visited.includes('a'));
+});
+
+test('item 30: a visitor that keeps getting sent away, or was already leaving, stays in the room only (no endless comebacks)', () => {
+    const st = booted('me');
+    V.intake(st, { scope: 'me', list: [msg('a', 'u1', 'Bea', 'hi', NOW + 1000), msg('c', 'u3', 'Dee', 'hey', NOW + 1500)] }, NOW + 2000);
+    const e = V.next(st); e.tries = V.TRIES_MAX;
+    assert.equal(V.requeue(st, e, NOW + 3000), false); assert(st.visited.includes('a')); assert(!st.queue.includes(e));
+    const f = V.next(st); f.tries = 1; f.leaving = true;
+    assert.equal(V.requeue(st, f, NOW + 3000), false); assert(st.visited.includes('c'));
+    assert.equal(V.requeue(st, null, NOW), false);
+});
+
+test('item 30: no reading timer: the visit stays until Reply, x or Escape; a resize moves it instead of sending it away', () => {
+    const js = read('home-visit.js');
+    assert.doesNotMatch(js, /LowiReadTime|readT\b|leave\(false\)/, 'nothing makes the visitor leave on a clock');
+    assert.match(js, /x\.addEventListener\('click', \(\) => leave\(true\)\)/);
+    assert.match(js, /ev\.key === 'Escape' && st\.current === e\) leave\(true\)/);
+    assert.match(js, /open\.addEventListener\('click', \(\) => \{[^}]*done\(ids\); remove\(\); try \{ if \(c && c\.openMessage\) c\.openMessage\(uid, id\)/);
+    /* answered or closed is remembered; being shown alone is not (a reload before you answer brings them back) */
+    const arrive = js.slice(js.indexOf('const arrive = () => {'), js.indexOf('if (reduce || e.back)'));
+    assert(arrive.length > 50); assert.doesNotMatch(arrive, /done\(|setTimeout/);
+    assert.match(js, /function leave\(fast\) \{[\s\S]{0,200}done\(e\.ids\)/);
+    const rs = js.slice(js.indexOf("W.addEventListener('resize'"), js.indexOf("D.addEventListener('lowi:lang'"));
+    assert.match(rs, /placeNodes\(e\)/); assert.doesNotMatch(rs, /leave\(/);
+    assert.match(js, /if \(reduce \|\| e\.back\)/, 'coming back fades in in place, no second flight');
+    assert.match(js, /function interrupt\(\) \{[\s\S]{0,120}requeue\(st, e, Date\.now\(\)\)/);
+    assert.equal(V.words('en', 'waiting', { k: 2 }), '2 more waiting');
+    assert.equal(V.words('de', 'waiting', { k: 2 }), '2 weitere warten');
+    assert.equal(V.words('es', 'waiting', { k: 2 }), '2 m\u00e1s esperando');
+});
+
 test('landing spot: the free band under the Home ring on iPhone and iPad, beside it in landscape, never off screen', () => {
     /* ring rects measured on the local build: iPhone 13 (390x664) and iPad portrait (820x1180) */
     const phone = V.place({ vw: 390, vh: 664, ring: { left: 7, top: 91, right: 383, bottom: 467 }, cardH: 92 });
@@ -132,7 +181,8 @@ test('words in English, German and Spanish; long messages are shortened, never c
 test('the page shows the message as text and animates only transform and opacity (light on the iPhone)', () => {
     const js = read('home-visit.js');
     assert.doesNotMatch(js.replace(/face\.innerHTML = svg/, ''), /innerHTML\s*=/, 'only the room\'s own companion drawing goes in as markup');
-    assert.match(js, /msg\.textContent = short\(e\.text/); assert.match(js, /who\.textContent = name/);
+    assert.match(js, /const set = \(node, t\) => \{ if \(node\.textContent !== t\) node\.textContent = t; \}/, 'text only, and unchanged words stay untouched');
+    assert.match(js, /set\(msg, short\(e\.text/); assert.match(js, /set\(who, name\)/);
     for (const m of js.matchAll(/anim\(\w+, (\[[^\]]*\])/g)) assert.doesNotMatch(m[1], /left|top|width|height|filter|box-shadow/, m[1]);
     assert.doesNotMatch(js, /requestAnimationFrame|getContext\(|THREE/, 'no animation loop, no canvas, no WebGL');
     assert.match(js, /prefers-reduced-motion: reduce/);

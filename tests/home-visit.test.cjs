@@ -130,6 +130,7 @@ test('item 30: no reading timer: the visit stays until Reply, x or Escape; a res
     assert.match(js, /function leave\(fast\) \{[\s\S]{0,200}done\(e\.ids\)/);
     const rs = js.slice(js.indexOf("W.addEventListener('resize'"), js.indexOf("D.addEventListener('lowi:lang'"));
     assert.match(rs, /placeNodes\(e\)/); assert.doesNotMatch(rs, /leave\(/);
+    assert.match(js, /if \(e\.shownAt && e\.nodes && !sizeT && \(W\.innerWidth !== e\.vw \|\| W\.innerHeight !== e\.vh\)\) placeNodes\(e\)/, 'a missed or early resize event is caught by the next check');
     assert.match(js, /if \(reduce \|\| e\.back\)/, 'coming back fades in in place, no second flight');
     assert.match(js, /function interrupt\(\) \{[\s\S]{0,120}requeue\(st, e, Date\.now\(\)\)/);
     assert.equal(V.words('en', 'waiting', { k: 2 }), '2 more waiting');

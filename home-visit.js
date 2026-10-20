@@ -200,7 +200,10 @@
         if (communityFront() && (st.queue.length || st.more)) { drop(st); save(); }
         if (st.current) {   /* the ones waiting behind a visitor are not "could not happen": their 10 minutes start when it is their turn */
             for (const q of st.queue) if (!q.back) q.noted = now;
-            if (!homeFront() || st.hold) interrupt();
+            if (!homeFront() || st.hold) { interrupt(); return; }
+            /* a resize event that came too early or never came (seen on a slow WebKit): the next check moves them on screen */
+            const e = st.current;
+            if (e.shownAt && e.nodes && !sizeT && (W.innerWidth !== e.vw || W.innerHeight !== e.vh)) placeNodes(e);
             return;
         }
         if (expire(st, now)) save();
@@ -317,7 +320,7 @@
         card.style.left = Math.round(p.cardLeft) + 'px'; card.style.width = Math.round(p.cardW) + 'px';
         if (p.cardBottom != null) { card.style.bottom = Math.round(p.cardBottom) + 'px'; card.dataset.up = '1'; } else card.style.top = Math.round(p.cardTop) + 'px';
         card.style.setProperty('--hv-tail', Math.round(Math.max(18, Math.min(p.cardW - 18, p.x - p.cardLeft))) + 'px');
-        e.layout = p;
+        e.layout = p; e.vw = W.innerWidth; e.vh = W.innerHeight;
         return p;
     }
     /* they go back the way they came */

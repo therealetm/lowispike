@@ -54,7 +54,9 @@ const COPY={
  unconfirmed:['Delivery not confirmed · draft recoverable','Zustellung nicht bestätigt · Entwurf wiederherstellbar','Entrega sin confirmar · borrador recuperable'],
  checkRetry:['Check & retry','Prüfen & erneut senden','Comprobar y reintentar'],
  discard:['Dismiss draft','Entwurf verwerfen','Descartar borrador'],
- sendFailed:['Delivery not confirmed. Check & retry uses the same message ID.','Zustellung nicht bestätigt. Prüfen & erneut senden nutzt dieselbe Nachrichten-ID.','Entrega sin confirmar. Comprobar y reintentar usa el mismo ID de mensaje.'],
+ /* Oct 20 (ship sweep): plain words; a retry still reuses the same message id, so it can never post twice */
+ sendFailed:['Not sent yet. Your message is still here: tap send to try again.','Noch nicht gesendet. Deine Nachricht ist noch da: Tippe auf Senden, um es erneut zu versuchen.','Aún no enviado. Tu mensaje sigue aquí: toca enviar para intentarlo de nuevo.'],
+ sendOffline:['You are offline. Your message stays here: send it when you are back online.','Du bist offline. Deine Nachricht bleibt hier: Sende sie, wenn du wieder online bist.','Estás sin conexión. Tu mensaje se queda aquí: envíalo cuando vuelvas a tener conexión.'],
  reactFailed:['Reaction not confirmed. Please try again.','Reaktion nicht bestätigt. Bitte erneut versuchen.','Reacción sin confirmar. Vuelve a intentarlo.'],
  name:['Add your profile name before sending.','Ergänze vor dem Senden deinen Profilnamen.','Añade tu nombre de perfil antes de enviar.'],
  newMessages:['New messages','Neue Nachrichten','Mensajes nuevos'],earlier:['Show earlier messages','Ältere Nachrichten zeigen','Ver mensajes anteriores'],
@@ -544,7 +546,7 @@ function focusInput(){const i=D.getElementById('cmInput');if(i)i.focus({preventS
 function botSend(b){const ds=draftState(),inp=D.getElementById('cmInput'),t=String(ds.draft.text||(inp&&inp.value)||'').trim();if(!t)return;botSay(b.uid,'me',t);draft('',null);if(inp)inp.value='';notice='';
  clearTimeout(botTimer);botTyping='';refresh();const wait=900+Math.min(1600,t.length*25);
  botTimer=setTimeout(()=>{botTyping=b.uid;refresh();botTimer=setTimeout(()=>{botTyping='';botSay(b.uid,'bot',G.botReply(b,t,lang()));speak=b.uid;clearTimeout(speakTimer);speakTimer=setTimeout(()=>{speak='';refresh();},3400);refresh();},1100+Math.min(1400,t.length*18));},wait);}
-async function send(retryId){if(!retryId&&pendingPhoto){await sendPhoto();return;}if(!retryId&&sel&&botOf(sel)){botSend(botOf(sel));return;}if(!store||navigator.onLine===false){notice=tr('offline');refresh();return;}const m=own(),name=String(m.n||'').trim();if(!name){notice=tr('name');refresh();return;}notice='';if(!retryId&&sel&&G){const ds=draftState(),p=roster().get(sel);if(p&&ds.draft.text.trim()){const t=G.direct(ds.draft.text,p.n);if(t!==ds.draft.text)draft(t,ds.draft.reply);}}try{await store.submit(name,retryId);}catch(e){notice=tr('sendFailed');}refresh();}
+async function send(retryId){if(!retryId&&pendingPhoto){await sendPhoto();return;}if(!retryId&&sel&&botOf(sel)){botSend(botOf(sel));return;}if(!store||navigator.onLine===false){notice=tr(navigator.onLine===false?'sendOffline':'offline');refresh();return;}const m=own(),name=String(m.n||'').trim();if(!name){notice=tr('name');refresh();return;}notice='';if(!retryId&&sel&&G){const ds=draftState(),p=roster().get(sel);if(p&&ds.draft.text.trim()){const t=G.direct(ds.draft.text,p.n);if(t!==ds.draft.text)draft(t,ds.draft.reply);}}try{await store.submit(name,retryId);}catch(e){notice=tr(navigator.onLine===false?'sendOffline':'sendFailed');}refresh();}
 /* ---- Oct 16 (E-man, handoff Task 11): photos in Community chat ----
    A photo is shrunk on the device (longest edge 1600 px, JPEG): re-encoding drops EXIF location and camera data.
    It is uploaded to the app's own media bucket at <uid>/chat-<message id>.jpg, and the message carries its public link.
@@ -793,7 +795,7 @@ D.addEventListener('click',async e=>{const b=e.target.closest&&e.target.closest(
 });
 D.addEventListener('focusin',fit);D.addEventListener('focusout',()=>requestAnimationFrame(fit));W.addEventListener('resize',()=>{fit();clearTimeout(W.__cpResize);W.__cpResize=setTimeout(()=>{if(active()){refresh();if(sk)sk.resize();}},120);});if(W.visualViewport){W.visualViewport.addEventListener('resize',fit);W.visualViewport.addEventListener('scroll',fit);}
 D.addEventListener('lowi:chat',e=>{ensureScope();transport.notify(e.detail);if(e.detail&&['ready','reconnect'].includes(e.detail.type)){transport.reload();loadExtras(true);}refresh();});
-W.addEventListener('online',()=>{ensureScope();transport.reload();loadExtras(true);});W.addEventListener('offline',refresh);W.addEventListener('storage',e=>{if(e.key===prefsKey()){prefs=K.read(deviceStorage,prefsKey(),{});prefs.blocks=prefs.blocks||{};refresh();}});
+W.addEventListener('online',()=>{if(notice===tr('sendOffline')||notice===tr('offline'))notice='';ensureScope();transport.reload();loadExtras(true);});W.addEventListener('offline',refresh);W.addEventListener('storage',e=>{if(e.key===prefsKey()){prefs=K.read(deviceStorage,prefsKey(),{});prefs.blocks=prefs.blocks||{};refresh();}});
 D.addEventListener('visibilitychange',()=>{onShow();if(!D.hidden){transport.reload();loadExtras(true);refresh();}});
 try{if(navigator.serviceWorker&&navigator.serviceWorker.addEventListener)navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.cgTab==='foryou')openGalaxy('');});}catch(e){}
 /* Oct 16 (task 1 rework): who lives out in the spirit world, for the 3D world (body-world-3d-scene.js dresses each outer bubble with

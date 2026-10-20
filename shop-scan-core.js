@@ -56,6 +56,9 @@
         lookup: ['Looking it up…', 'Suche das Produkt…', 'Buscando…'],
         unknownT: ['We don\'t know this product yet', 'Dieses Produkt kennen wir noch nicht', 'Aún no conocemos este producto'],
         offlineT: ['No internet right now', 'Gerade kein Internet', 'Sin internet ahora'],
+        /* Oct 20 food audit: a lookup that got no answer (weak signal in the shop, a time out) is not an unknown product */
+        noReachT: ['I couldn\'t check this one right now', 'Ich konnte das gerade nicht prüfen', 'No pude comprobarlo ahora'],
+        retry: ['Try again', 'Nochmal versuchen', 'Reintentar'],
         unknownS: ['Type its name for a quick estimate.', 'Tipp den Namen ein für eine schnelle Schätzung.', 'Escribe su nombre para una estimación rápida.'],
         namePh: ['Product name, e.g. skyr', 'Produktname, z. B. Skyr', 'Nombre, p. ej. skyr'],
         search: ['Search', 'Suchen', 'Buscar'],

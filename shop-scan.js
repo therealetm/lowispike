@@ -109,7 +109,10 @@
         let p = null;
         try { p = await timeout(X().lookup(code), 11000); } catch (e) { p = null; }
         if (cam() !== el) return;
-        if (!p || p.notFound) { unknown(el, code, !p && !navigator.onLine); return; }
+        /* Oct 20 food audit: no answer at all (p null: offline, weak signal, the 11 s time out) used to say "We don't know this
+           product yet". Only a real "not found" says that now; no answer says so and offers Try again. */
+        if (!p) { unknown(el, code, navigator.onLine === false ? 'offline' : 'noreach'); return; }
+        if (p.notFound) { unknown(el, code, false); return; }
         result(el, p, { code });
     }
     function verdictHTML(lvl, est) {
@@ -151,9 +154,10 @@
         cur = null;
         const c = card(el);
         c.innerHTML = '<div class="ss-sheet ss-v-unknown ss-unk">' +
-            '<div class="ss-head"><span class="ss-img">' + IC.unknown + '</span><div class="ss-name"><b>' + esc(T(offline ? 'offlineT' : (code ? 'unknownT' : 'byName'))) + '</b><small>' + esc(code ? T('bc', code) + ' · ' + T('unknownS') : T('unknownS')) + '</small></div>' +
+            '<div class="ss-head"><span class="ss-img">' + IC.unknown + '</span><div class="ss-name"><b>' + esc(T(offline === 'noreach' ? 'noReachT' : offline ? 'offlineT' : (code ? 'unknownT' : 'byName'))) + '</b><small>' + esc(code ? T('bc', code) + ' · ' + T('unknownS') : T('unknownS')) + '</small></div>' +
             '<button type="button" class="ss-x" data-ss="next" aria-label="' + esc(T('next')) + '">' + IC.x + '</button></div>' +
             '<form class="ss-find" autocomplete="off"><input class="input" name="q" maxlength="80" enterkeyhint="search" placeholder="' + esc(T('namePh')) + '" aria-label="' + esc(T('namePh')) + '"><button class="ss-go" aria-label="' + esc(T('search')) + '">' + IC.search + '</button></form>' +
+            (offline && code ? '<button type="button" class="b3-cbtn ghost ss-retry" data-ss="retry" data-code="' + esc(code) + '">' + esc(T('retry')) + '</button>' : '') +
             '<div class="ss-results" data-code="' + esc(code || '') + '"></div></div>';
         const f = c.querySelector('.ss-find');
         f.addEventListener('submit', e => { e.preventDefault(); search(el, f.q.value, code); });
@@ -238,6 +242,7 @@
         else if (k === 'undo') undo(el);
         else if (k === 'cart') goCart();
         else if (k === 'name') { if (X() && X().shopMode && !el.classList.contains('b3-shop')) { X().shopMode(true); stamp(true); attach(el, true); } unknown(el, '', false); }
+        else if (k === 'retry') { if (b.dataset.code) found(b.dataset.code, el); }
         else if (k === 'pick') { const p = found_[+b.dataset.i]; if (p) result(el, p, {}); }
         else if (k === 'plain') plain(el, b.dataset.q, (el.querySelector('.ss-results') || {}).dataset ? el.querySelector('.ss-results').dataset.code : '');
     });

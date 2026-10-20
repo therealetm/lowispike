@@ -812,6 +812,6 @@ were only almost a hexagon (alternate corners bumped up and down).
   move together, and they hold still during any trip: a fly-to (`rig.fly`), `bwr-warping`, `mf-transit`, `mf-on`, `mf-in`, `mf-galaxy`,
   `wh-away`, or a camera target away from Misty. Per frame it costs one class check; positions are only rewritten while k changes.
 - Not done (not asked): no logo change, no hexagonal shell on the logo (that was only an idea from the voice agent).
-- Checks: `tests/hexagon-places.test.cjs` (6). Browser renders before/after (Chromium 390x844, SwiftShader WebGL, tools/hexagon):
+- Checks: `tests/hexagon-places.test.cjs` (6); full suite 1884/1884. Browser renders before/after (Chromium 390x844, SwiftShader WebGL, tools/hexagon):
   close-up identical; zoomed out (45 units) the outline's distance from a hexagon fell from 42-85% to 8-15% (what remains is
   perspective). Not yet checked on a real iPhone.

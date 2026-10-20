@@ -24,19 +24,22 @@
             short: { under6: '<6 h', '6to7': '6\u20137 h', '7plus': '7 h+' }, notLogged: 'not logged', clear: 'Clear', clearLong: 'Clear today\u2019s sleep',
             settings: 'Settings', me: 'Me', look: 'Look & sound', account: 'Account', menubar: 'Menu bar', on: 'on', off: 'off', more: 'More', back: 'Back', close: 'Close',
             moreTitle: 'Everything else', today: 'Today & history', community: 'Community', care: 'Care board', cook: 'Cook', workouts: 'Workouts', map: 'World map',
-            vr: 'VR', worldSound: 'World sound', theme: 'Day / night', gift: 'Gift of the day', weather: 'Weather', quest: 'Daily quest', goTo: 'Go to', settingsGroup: 'Settings', tutorial: 'Tutorial', body: 'Weight & BMI' },
+            vr: 'VR', worldSound: 'World sound', theme: 'Day / night', gift: 'Gift of the day', weather: 'Weather', quest: 'Daily quest', goTo: 'Go to', settingsGroup: 'Settings', tutorial: 'Tutorial', body: 'Weight & BMI', version: 'Version' },
         de: { sleep: 'Schlaf', log: 'Eintragen', ask: 'Wie lange hast du letzte Nacht geschlafen?', under6: 'Unter 6 Std.', '6to7': '6\u20137 Std.', '7plus': '7 Std. oder mehr',
             short: { under6: '<6 Std.', '6to7': '6\u20137 Std.', '7plus': '7 Std.+' }, notLogged: 'nicht eingetragen', clear: 'L\u00f6schen', clearLong: 'Heutigen Schlaf l\u00f6schen',
             settings: 'Einstellungen', me: 'Ich', look: 'Aussehen & Ton', account: 'Konto', menubar: 'Men\u00fcleiste', on: 'an', off: 'aus', more: 'Mehr', back: 'Zur\u00fcck', close: 'Schlie\u00dfen',
             moreTitle: 'Alles andere', today: 'Heute & Verlauf', community: 'Community', care: 'Care-Board', cook: 'Kochen', workouts: 'Workouts', map: 'Weltkarte',
-            vr: 'VR', worldSound: 'Weltklang', theme: 'Tag / Nacht', gift: 'Geschenk des Tages', weather: 'Wetter', quest: 'Tagesquest', goTo: 'Gehe zu', settingsGroup: 'Einstellungen', tutorial: 'Tutorial', body: 'Gewicht & BMI' },
+            vr: 'VR', worldSound: 'Weltklang', theme: 'Tag / Nacht', gift: 'Geschenk des Tages', weather: 'Wetter', quest: 'Tagesquest', goTo: 'Gehe zu', settingsGroup: 'Einstellungen', tutorial: 'Tutorial', body: 'Gewicht & BMI', version: 'Version' },
         es: { sleep: 'Sue\u00f1o', log: 'Anotar', ask: '\u00bfCu\u00e1nto dormiste anoche?', under6: 'Menos de 6 h', '6to7': '6\u20137 h', '7plus': '7 h o m\u00e1s',
             short: { under6: '<6 h', '6to7': '6\u20137 h', '7plus': '7 h+' }, notLogged: 'sin anotar', clear: 'Borrar', clearLong: 'Borrar el sue\u00f1o de hoy',
             settings: 'Ajustes', me: 'Yo', look: 'Aspecto y sonido', account: 'Cuenta', menubar: 'Barra de men\u00fa', on: 's\u00ed', off: 'no', more: 'M\u00e1s', back: 'Atr\u00e1s', close: 'Cerrar',
             moreTitle: 'Todo lo dem\u00e1s', today: 'Hoy e historial', community: 'Comunidad', care: 'Tablero Care', cook: 'Cocinar', workouts: 'Entrenos', map: 'Mapa del mundo',
-            vr: 'RV', worldSound: 'Sonido del mundo', theme: 'D\u00eda / noche', gift: 'Regalo del d\u00eda', weather: 'Tiempo', quest: 'Misi\u00f3n diaria', goTo: 'Ir a', settingsGroup: 'Ajustes', tutorial: 'Tutorial', body: 'Peso e IMC' }
+            vr: 'RV', worldSound: 'Sonido del mundo', theme: 'D\u00eda / noche', gift: 'Regalo del d\u00eda', weather: 'Tiempo', quest: 'Misi\u00f3n diaria', goTo: 'Ir a', settingsGroup: 'Ajustes', tutorial: 'Tutorial', body: 'Peso e IMC', version: 'Versi\u00f3n' }
     };
     const pick = l => TX[l] || TX.en;
+    /* Oct 20 2026 (Emmanuel: prove a GitHub change reaches the live app): the Settings panel names the running build, read from the
+       page's lowi-build tag, as plain text beside the x; an empty or malformed id shows nothing */
+    const versionLabel = (build, l) => { const b = String(build || '').trim(); return /^\d{8}-\d{6}$/.test(b) ? pick(l).version + ' ' + b : ''; };
 
     function dayKey(t) {
         const d = t instanceof Date ? t : new Date(t == null ? Date.now() : t);
@@ -198,7 +201,7 @@
         return [{ key: 'main', ids: ['me', 'body', 'look', 'account', 'menubar', 'tutorial'].filter(has) }, { key: 'more', ids: MORE.filter(has) }].filter(g => g.ids.length);
     }
 
-    const core = { BANDS, FILL, SHELL_TOKEN, KEEP_DAYS, MENU_KEY, MORE, MORE_GROUPS, MORE_REMOVED, moreGroups, placePanel, TX, dayKey, readSleep, writeSleep, clearSleep, sleepView, fan, entries, tapIntent, pageGroups, rowAction };
+    const core = { BANDS, FILL, SHELL_TOKEN, KEEP_DAYS, MENU_KEY, MORE, MORE_GROUPS, MORE_REMOVED, moreGroups, placePanel, TX, dayKey, readSleep, writeSleep, clearSleep, sleepView, fan, entries, tapIntent, pageGroups, rowAction, versionLabel };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!root || !root.document) return;
 
@@ -349,6 +352,7 @@
         const B = root.LowiHomeBloomsV2; if (B && fn(B, 'isOpen') && B.isOpen() && fn(B, 'close')) { try { B.close(); } catch (e) { } }
         if (lastBubble && lastBubble !== b) lastBubble.setAttribute('aria-expanded', 'false');
         const L = ensureLayer(), T = t(), q = b.getBoundingClientRect();
+        const bm = D.querySelector('meta[name="lowi-build"]'), ver = versionLabel(bm && bm.content, lang());
         open = 'page'; lastBubble = b;
         H.classList.add('ss2-open', 'ss2-page-open'); L.setAttribute('data-kind', 'page');
         b.setAttribute('aria-expanded', 'true');
@@ -360,7 +364,7 @@
         L.innerHTML = '<div class="ss2-page" role="dialog" aria-modal="true" aria-labelledby="ss2PageTitle">' +
             '<h2 class="ss2-page-title" id="ss2PageTitle">' + T.settings + '</h2>' +
             '<div class="ss2-page-body">' + groups.map(sec).join('') + '</div>' +
-            '<div class="ss2-page-foot"><button type="button" class="ss2-page-x" data-ss2="close" aria-label="' + T.close + '">' +
+            '<div class="ss2-page-foot">' + (ver ? '<small class="ss2-ver">' + ver + '</small>' : '') + '<button type="button" class="ss2-page-x" data-ss2="close" aria-label="' + T.close + '">' +
             '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" ' + P + ' stroke-width="2.2"/></svg></button></div></div>';
         placePage(L.querySelector('.ss2-page'), b);
         const f = L.querySelector('.ss2-page-body button'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } }

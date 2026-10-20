@@ -136,3 +136,15 @@ test('real routes only: profile tiles, tabs and Home controls the app has today;
     assert.doesNotMatch(src, /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u);
     assert.doesNotMatch(read('home-settings-sleep-v2.js'), /\bfetch\s*\(|XMLHttpRequest|supabase/i, 'the module never talks to the backend');
 });
+
+test('settings panel: names the running build beside the x, in each language; a missing or malformed id shows nothing', () => {
+    assert.strictEqual(C.versionLabel('20261020-084655', 'en'), 'Version 20261020-084655');
+    assert.strictEqual(C.versionLabel(' 20261020-084655 ', 'de'), 'Version 20261020-084655');
+    assert.strictEqual(C.versionLabel('20261020-084655', 'es'), 'Versi\u00f3n 20261020-084655');
+    assert.strictEqual(C.versionLabel('20261020-084655', 'xx'), 'Version 20261020-084655', 'unknown language falls back to English');
+    ['', null, undefined, 'dev', '2026-10-20', '<b>20261020-084655</b>'].forEach(b => assert.strictEqual(C.versionLabel(b, 'en'), ''));
+    const src = read('home-settings-sleep-v2.js'), css = read('home-settings-sleep-v2.css');
+    assert.ok(/meta\[name="lowi-build"\]/.test(src), 'reads the page build tag');
+    assert.ok(/ss2-page-foot">' \+ \(ver \? '<small class="ss2-ver">'/.test(src), 'plain text in the panel foot, before the x');
+    assert.ok(/\.ss2-ver \{[^}]*margin-right: auto/.test(css), 'sits at the left of the foot, the x stays at the bottom right');
+});

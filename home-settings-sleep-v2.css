@@ -72,6 +72,7 @@
 .ss2-page .ss2-row small { font-size: 12px; font-weight: 500; }
 .ss2-page .ss2-row .ss2-chev { width: 16px; height: 16px; flex: none; opacity: .7; }
 .ss2-page-foot { flex: none; display: flex; justify-content: flex-end; padding-top: 8px; }
+.ss2-ver { margin-right: auto; align-self: center; padding-left: 8px; font-size: 12px; line-height: 16px; font-weight: 500; opacity: .75; }
 .ss2-page-x { flex: none; width: 48px; height: 48px; padding: 0; border-radius: 50%; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center;
     background: var(--mb-orb, rgba(20,34,74,.6)); border: 1px solid var(--mb-rim, rgba(255,255,255,.45)); box-shadow: var(--mb-orb-sh, none); -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .ss2-page-x svg { width: 22px; height: 22px; }

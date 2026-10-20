@@ -171,6 +171,24 @@
             s.__nm = true; W.cmSeg = s;
             try { cmSeg = s; } catch (e) { } // eslint-disable-line no-undef
         }
+        /* Oct 20 (regression run W6/W8): with the galaxy alone, solo() moves the feed and board panes out of #cmTrack, so
+           the chat pane is the only pane left (index 0). cmSeg('chat') and R3A's fixCm() still count Chat as index 1 of
+           [feed, chat, board] and call cmPanesInert(1), which marked the chat pane inert on the 2nd and later visits:
+           the box showed but a tap went to #cmTrack, no keyboard came up and typed letters went nowhere. In solo mode
+           the chat pane is the one on screen, so it is never inert. */
+        if (typeof W.cmPanesInert === 'function' && !W.cmPanesInert.__nm) {
+            const p0 = W.cmPanesInert;
+            const p = function (i) {
+                const el = D.getElementById('tab-foryou');
+                if (el && el.classList.contains('nm-solo')) {
+                    D.querySelectorAll('#cmTrack > .ls-pane').forEach(x => { if (x.id === 'cmPaneChat') x.removeAttribute('inert'); else x.setAttribute('inert', ''); });
+                    return;
+                }
+                return p0.apply(this, arguments);
+            };
+            p.__nm = true; W.cmPanesInert = p;
+            try { cmPanesInert = p; } catch (e) { } // eslint-disable-line no-undef
+        }
     }
 
     /* ---------- events ---------- */

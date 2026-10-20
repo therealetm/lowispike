@@ -32,6 +32,18 @@ test('old For You / Leaderboard routes land in Cook / Move; a galaxy drag never 
     assert.match(js, /W\.renderCommunity = r;/);
 });
 
+test('Oct 20: with the galaxy alone the chat pane is never made inert (2nd visit: box could not be tapped)', () => {
+    const js = read('nav-moves.js');
+    assert.match(js, /if \(typeof W\.cmPanesInert === 'function' && !W\.cmPanesInert\.__nm\)/);
+    assert.match(js, /if \(x\.id === 'cmPaneChat'\) x\.removeAttribute\('inert'\); else x\.setAttribute\('inert', ''\);/);
+    assert.match(js, /try \{ cmPanesInert = p; \} catch \(e\) \{ \}/);
+    // the original is still a plain global the wrapper can replace, and both callers use the bare name
+    const html = read('index.html');
+    assert.match(html, /\nfunction cmPanesInert\(i\)\{/);
+    assert.match(html, /cmPanesInert\(i\);\s*\n\s*\$\$\("#cmSeg button"\)/);
+    assert.match(html, /try \{ cmPanesInert\(i\); \} catch\(e\)\{\}/);
+});
+
 test('Community shows the galaxy alone: no tabs, no big title, no Privacy & quiet button', () => {
     const css = read('nav-moves.css');
     assert.match(css, /#tab-foryou\.nm-solo \.ls-phd \{ display: none !important; \}/);

@@ -1,0 +1,21 @@
+'use strict';
+const { open, sleep } = require('./harness.cjs');
+const OUT = __dirname + '/out/';
+(async () => {
+  const R = await open({ engine: process.argv[2] || 'chromium' });
+  await R.goto(); await sleep(2500);
+  await R.page.locator('.o8-settings').first().click({ timeout: 8000 });
+  await sleep(1200);
+  console.log('SHEET', JSON.stringify(await R.page.evaluate(() => [...document.querySelectorAll('button,[role=button]')].filter(b=>/community/i.test(b.textContent||'')||/community/i.test(b.getAttribute('aria-label')||'')).map(b => b.outerHTML.slice(0,200)))));
+  await R.shot(OUT + 'x-settings.png');
+  const row = R.page.getByRole('button', { name: /^Community/ }).first();
+  await row.click({ timeout: 8000 });
+  await sleep(3000);
+  await R.shot(OUT + 'x-community.png');
+  console.log('TAB', await R.page.evaluate(() => (window.LowiHost && LowiHost.tab && LowiHost.tab()) + ' cmv=' + (typeof CMV !== 'undefined' ? CMV.view : '?') + ' solo=' + !!document.querySelector('#tab-foryou.nm-solo')));
+  const vb = await R.visibleButtons(); console.log('BTNS', JSON.stringify(vb.filter(b => b.y < 844)));
+  console.log('INPUT', await R.page.evaluate(() => { const i = document.getElementById('cmInput'); if (!i) return 'none'; const r = i.getBoundingClientRect(); return JSON.stringify({ x: r.x, y: r.y, w: r.width, h: r.height, vis: getComputedStyle(i).visibility }); }));
+  console.log('ERRS', JSON.stringify(R.errs));
+  console.log('SNAP', JSON.stringify(await R.snap()));
+  await R.close();
+})().catch(e => { console.error('FATAL', e); process.exit(1); });

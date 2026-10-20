@@ -781,3 +781,7 @@ the photo answered. Text typed or a reply picked during the upload stays; sendPh
 no longer clears blindly). Checked siblings: voice notes never touch the draft; the For You composer photo (index.html trPhotoIn) and
 the food snap (f2File) assign after an await without re-checking the open composer: logged in the bug ledger, low (needs closing and
 reopening inside ~300 ms).
+- 2026-10-20 bug hunt run 21 (BH-021, pattern "async result painted into stale UI"): the For You post photo and the food-flow snap are
+  shrunk with an await; each now only goes to the composer/flow it was picked for (trPhotoPick / f2Pick capture C / F first). Fixes
+  a TypeError when Post was tapped while the photo was still shrinking, and an old snap landing in a reopened food flow.
+  tests/photo-pick-stale.test.cjs (6; 4 fail on the old logic).

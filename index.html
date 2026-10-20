@@ -4473,6 +4473,12 @@ function postMenu(id){
   h.openSheet(b + '</div></div>');
 }
 
+/* Oct 20 bug hunt run 21 (BH-021, pattern "async result painted into stale UI"): the photo for a post is shrunk first (await).
+   If the post went out meanwhile (C = null) the old code threw a TypeError; if the composer was closed and opened again, the old
+   photo landed in the new, empty post. The photo now only goes into the composer it was picked for. */
+async function trPhotoPick(x, h){ const c0 = C; if (!x || !c0 || !h) return; let src = "";
+  try { src = await h.resizeImage(x, 640); } catch(e){ console.error(e); }
+  if (C !== c0) return; c0.photo = src || ""; c0.meal = null; c0.mealErr = ""; paintRest(); }
 /* ---------- events (own namespace: data-tr) ---------- */
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-tr]"); if (!b) return; const h = H(); if (!h) return;
@@ -4503,7 +4509,7 @@ document.addEventListener("click", e => {
     case "report": T.reported.push(id); save(); h.closeSheet(); rerender(); h.toast("Reported. It's hidden for you."); break;
     case "block": if (T.blocked.indexOf(b.dataset.who) < 0) T.blocked.push(b.dataset.who); save(); h.closeSheet(); rerender(); h.toast("You won't see " + b.dataset.who + " anymore."); break;
     case "photo": { let f = $("#trPhotoIn"); if (!f) { f = document.createElement("input"); f.type = "file"; f.accept = "image/*"; f.id = "trPhotoIn"; f.className = "hidden"; document.body.appendChild(f);
-        f.addEventListener("change", async () => { const x = f.files[0]; f.value = ""; if (!x || !C) return; C.photo = await h.resizeImage(x, 640); C.meal = null; C.mealErr = ""; paintRest(); }); }
+        f.addEventListener("change", () => { const x = f.files[0]; f.value = ""; trPhotoPick(x, H()); }); }
       f.click(); break; }
     case "nophoto": if (C) { C.photo = ""; C.meal = null; C.mealErr = ""; paintRest(); } break;
     case "meal-read": readMeal(); break;
@@ -17587,9 +17593,14 @@ function cook(then){ F.on = false; try { closeSheet(); } catch(e){}
   setTimeout(() => { try { if (window.LOWI_SHELF) LOWI_SHELF.open("kochen"); } catch(e){} }, 120);
   setTimeout(then, 520); }
 
+/* Oct 20 bug hunt run 21 (BH-021): the snapped meal photo is shrunk first (await). If the food flow was closed and opened again
+   meanwhile (F is a new object, on again), the old code dropped the old snap into the new flow. It now belongs to the flow that asked. */
+async function f2Pick(f){ const f0 = F; if (!f || !f0.on) return; let src = "";
+  try { src = await resizeImage(f, 900); } catch(e){ console.error(e); }
+  if (!src || F !== f0 || !F.on) return; F.photo = src; F.text = ""; F.err = ""; stepPhoto(true); }
 let fileIn = null;
 function snap(){ if (!fileIn) { fileIn = document.createElement("input"); fileIn.type = "file"; fileIn.accept = "image/*"; fileIn.setAttribute("capture", "environment"); fileIn.id = "f2File"; fileIn.style.display = "none"; document.body.appendChild(fileIn);
-    fileIn.addEventListener("change", async () => { const f = fileIn.files && fileIn.files[0]; fileIn.value = ""; if (!f || !F.on) return; let src = ""; try { src = await resizeImage(f, 900); } catch(e){ console.error(e); } if (!src) return; F.photo = src; F.text = ""; F.err = ""; stepPhoto(true); }); }
+    fileIn.addEventListener("change", () => { const f = fileIn.files && fileIn.files[0]; fileIn.value = ""; f2Pick(f); }); }
   fileIn.click(); }
 
 /* ---------- clicks ---------- */

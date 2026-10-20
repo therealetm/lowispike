@@ -57,7 +57,14 @@ function world(opts) {
 async function install(ctx, opts) {
     opts = opts || {};
     const W = world(opts);
-    const sim = { W, writes: [], sockets: new Set(), topics: new Map(), log: [], counts: { rest: 0, ws: 0, storage: 0 }, rest: {} };
+    const sim = { W, writes: [], sockets: new Set(), topics: new Map(), presence: new Map(), log: [], counts: { rest: 0, ws: 0, storage: 0, frames: 0 }, rest: {} };
+    /* presence (support rooms, 20 Oct): topic -> Map(key -> meta); fake members can be seated in a room with sim.seat() */
+    const P = topic => { let m = sim.presence.get(topic); if (!m) { m = new Map(); sim.presence.set(topic, m); } return m; };
+    const pstate = topic => { const o = {}; for (const [k, meta] of P(topic)) o[k] = { metas: [Object.assign({ phx_ref: 'r' + k.slice(-6) }, meta)] }; return o; };
+    const pdiff = (topic, joins, leaves) => { for (const [t, v] of sim.topics) if (t === topic) { try { v.ws.send(JSON.stringify([v.jr, null, t, 'presence_diff', { joins, leaves }])); sim.counts.frames++; } catch (e) { } } };
+    sim.seat = (room, n, at) => { const topic = 'realtime:lowi-room-' + room; const m = P(topic), joins = {}; let i = 0; for (const o of W.others) { if (i >= n) break; if (m.has(o.id)) { i++; continue; } const meta = { at: (at || Date.now() - 600000) + i }; m.set(o.id, meta); joins[o.id] = { metas: [Object.assign({ phx_ref: 'r' + i }, meta)] }; i++; } pdiff(topic, joins, {}); return m.size; };
+    sim.shoot = (room, payload) => { const topic = 'realtime:lowi-room-' + room; let n = 0; for (const [t, v] of sim.topics) if (t === topic || (room === '*' && t === 'realtime:lowi-all')) { try { v.ws.send(JSON.stringify([v.jr, null, t, 'broadcast', { type: 'broadcast', event: 'energy', payload }])); n++; sim.counts.frames++; } catch (e) { } } return n; };
+    sim.unseatAll = room => { const topic = 'realtime:lowi-room-' + room; const m = P(topic), leaves = {}; for (const [k, meta] of m) leaves[k] = { metas: [meta] }; m.clear(); pdiff(topic, {}, leaves); };
     const photos = fs.readdirSync(path.join(__dirname, 'fixtures')).filter(f => /\.jpg$/.test(f)).map(f => fs.readFileSync(path.join(__dirname, 'fixtures', f)));
     const exp = Math.floor(Date.now() / 1000) + 30 * 86400;
     const user = { id: W.me.id, aud: 'authenticated', role: 'authenticated', email: 'sim@example.invalid', app_metadata: { provider: 'email' }, user_metadata: {}, created_at: '2026-09-01T00:00:00Z', is_anonymous: false };
@@ -100,6 +107,7 @@ async function install(ctx, opts) {
             sim.rest[m + ' ' + t] = (sim.rest[m + ' ' + t] || 0) + 1;
             if (m === 'GET' || m === 'HEAD') {
                 let rows = table(t);
+                const eqRoom = u.searchParams.get('room'); if (eqRoom && /^eq\./.test(eqRoom)) rows = rows.filter(r => (r.room || 'all') === eqRoom.slice(3));
                 const lim = +u.searchParams.get('limit'); if (lim) rows = rows.slice(0, lim);
                 const eqId = u.searchParams.get('id'); if (eqId && /^eq\./.test(eqId)) rows = rows.filter(r => r.id === eqId.slice(3));
                 const accept = q.headers()['accept'] || '';
@@ -128,12 +136,15 @@ async function install(ctx, opts) {
             if (ev === 'heartbeat') return ws.send(JSON.stringify([null, ref, 'phoenix', 'phx_reply', { status: 'ok', response: {} }]));
             if (ev === 'phx_join') {
                 const pc = ((payload && payload.config && payload.config.postgres_changes) || []).map((b, i) => Object.assign({ id: 1000 + i }, b));
-                sim.topics.set(topic, { ws, jr, pc });
+                const pkey = (payload && payload.config && payload.config.presence && payload.config.presence.key) || '';
+                sim.topics.set(topic, { ws, jr, pc, pkey });
                 ws.send(JSON.stringify([jr, ref, topic, 'phx_reply', { status: 'ok', response: { postgres_changes: pc } }]));
+                setTimeout(() => { try { ws.send(JSON.stringify([jr, null, topic, 'presence_state', pstate(topic)])); } catch (e) { } }, 80);
                 setTimeout(() => { try { ws.send(JSON.stringify([jr, null, topic, 'system', { channel: topic.replace(/^realtime:/, ''), extension: 'postgres_changes', message: 'Subscribed to PostgreSQL', status: 'ok' }])); } catch (e) { } }, 50);
                 return;
             }
-            if (ev === 'phx_leave') { sim.topics.delete(topic); return ws.send(JSON.stringify([jr, ref, topic, 'phx_reply', { status: 'ok', response: {} }])); }
+            if (ev === 'presence') { const t = sim.topics.get(topic); if (t && t.pkey && payload) { if (payload.event === 'track') { const meta = Object.assign({}, payload.payload || {}); P(topic).set(t.pkey, meta); pdiff(topic, { [t.pkey]: { metas: [Object.assign({ phx_ref: 'me' }, meta)] } }, {}); } else if (payload.event === 'untrack') { const old = P(topic).get(t.pkey); if (old) { P(topic).delete(t.pkey); pdiff(topic, {}, { [t.pkey]: { metas: [old] } }); } } } if (ref) ws.send(JSON.stringify([jr, ref, topic, 'phx_reply', { status: 'ok', response: {} }])); return; }
+            if (ev === 'phx_leave') { const t0 = sim.topics.get(topic); if (t0 && t0.pkey && P(topic).has(t0.pkey)) { const old = P(topic).get(t0.pkey); P(topic).delete(t0.pkey); setTimeout(() => pdiff(topic, {}, { [t0.pkey]: { metas: [old] } }), 0); } sim.topics.delete(topic); return ws.send(JSON.stringify([jr, ref, topic, 'phx_reply', { status: 'ok', response: {} }])); }
             if (ev === 'broadcast') { sim.writes.push({ m: 'BROADCAST', t: topic, body: payload, at: Date.now() }); if (ref) ws.send(JSON.stringify([jr, ref, topic, 'phx_reply', { status: 'ok', response: {} }])); return; }
             if (ref) ws.send(JSON.stringify([jr, ref, topic, 'phx_reply', { status: 'ok', response: {} }]));
         });
@@ -141,14 +152,14 @@ async function install(ctx, opts) {
     });
     sim.change = (tbl, type, rec, old) => {
         for (const [topic, t] of sim.topics) {
-            const ids = t.pc.filter(b => b.table === tbl && (b.event === '*' || b.event === type)).map(b => b.id);
+            const ids = t.pc.filter(b => b.table === tbl && (b.event === '*' || b.event === type) && (!b.filter || !rec || (() => { const m = /^(\w+)=eq\.(.*)$/.exec(b.filter); return !m || String(rec[m[1]]) === m[2]; })())).map(b => b.id);
             if (!ids.length) continue;
             try { t.ws.send(JSON.stringify([t.jr, null, topic, 'postgres_changes', { ids, data: { schema: 'public', table: tbl, commit_timestamp: new Date().toISOString(), type, eventType: type, columns: [], record: rec || {}, old_record: old || {}, errors: null } }])); } catch (e) { }
         }
     };
     sim.broadcast = (event, payload) => { for (const [topic, t] of sim.topics) { try { t.ws.send(JSON.stringify([t.jr, null, topic, 'broadcast', { type: 'broadcast', event, payload }])); } catch (e) { } } };
     let n = 0;
-    sim.say = (text, who) => { const p = who || W.pick(W.others); const r = { id: uuid(700000 + (n++)), user_id: p.id, who: p.name, body: text || W.pick(LINES), reply_to: null, created_at: new Date().toISOString(), room: 'all' }; W.messages.push(r); sim.change('messages', 'INSERT', r); return r; };
+    sim.say = (text, who, room) => { const p = who || W.pick(W.others); const r = { id: uuid(700000 + (n++)), user_id: p.id, who: p.name, body: text || W.pick(LINES), reply_to: null, created_at: new Date().toISOString(), room: room || sim.room || 'all' }; W.messages.push(r); sim.change('messages', 'INSERT', r); return r; };
     sim.react = (msgId, emoji) => { const p = W.pick(W.others); const r = { message_id: msgId, user_id: p.id, who: p.name, emoji: emoji || '❤️' }; W.reactions.push(r); sim.change('reactions', 'INSERT', r); };
     sim.profileTick = () => { const p = W.pick(W.others); p.xp += 5; p.lv = Math.min(10, p.lv); sim.change('profiles', 'UPDATE', p, { id: p.id }); };
     sim.photoSay = (who) => { const p = who || W.pick(W.others); return sim.say('\u{1F4F7} https://' + HOST + '/storage/v1/object/public/media/' + p.id + '/chat-live' + (n + 1) + '.jpg', p); };

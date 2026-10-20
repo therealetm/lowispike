@@ -221,8 +221,10 @@ function botSay(uid,from,t){const st=botStore(),arr=st[uid]=st[uid]||[];arr.push
 function hiddenAcct(uid){const A=W.LowiHiddenAccounts;return !!(A&&A.isHidden(uid));}
 /* support rooms (20 Oct): the galaxy shows the people in this room (here now, or who wrote in this room), not everybody who ever joined */
 function inRoom(id){const R=W.LowiRooms;return !(R&&R.active&&R.active())||R.has(id);}
+/* in a room, people who wrote count as "in the room" for 30 minutes (the crowd and older apps do not hold presence); at most the room cap of them */
+function recentWriter(m){const R=W.LowiRooms;return !(R&&R.active&&R.active())||Date.now()-(+m.ts||0)<30*60e3;}
 function roster(){const real=[];for(const p of (H.people&&H.people())||[]){if(p&&p.uid&&p.uid!==scope&&p.n&&!blocked(p.uid)&&!hiddenAcct(p.uid)&&inRoom(p.uid))real.push({uid:p.uid,n:String(p.n).trim(),lv:p.lv||1});}
- const have=new Set(real.map(p=>p.uid));for(const m of messages()){if(m&&m.uid&&!m.demo&&!m.bot&&m.uid!==scope&&!blocked(m.uid)&&!hiddenAcct(m.uid)&&!have.has(m.uid)){have.add(m.uid);real.push({uid:m.uid,n:String(m.by||'Member').trim(),lv:1});}}
+ const have=new Set(real.map(p=>p.uid)),wcap=W.LowiRooms&&W.LowiRooms.active&&W.LowiRooms.active()?W.LowiRooms.cap():1e9;let wn=0;const ms=messages();for(let i=ms.length-1;i>=0;i--){const m=ms[i];if(m&&m.uid&&!m.demo&&!m.bot&&m.uid!==scope&&!blocked(m.uid)&&!hiddenAcct(m.uid)&&!have.has(m.uid)&&recentWriter(m)&&wn<wcap){wn++;have.add(m.uid);real.push({uid:m.uid,n:String(m.by||'Member').trim(),lv:1});}}
  const last=new Map();for(const m of messages())if(m&&m.uid)last.set(m.uid,+m.ts||0);
  const ownName=scope?String(own().n||'').trim():'',uniq=G&&G.uniqueNames?G.uniqueNames(real,ownName,last):real,map=new Map();
  for(const p of uniq)map.set(p.uid,p);

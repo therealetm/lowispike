@@ -14,9 +14,9 @@
     const KEYS = ['kcal', 'protein', 'carbs', 'sugar', 'fiber', 'fat'];
     const LIMIT = { kcal: 3000, protein: 200, carbs: 400, sugar: 300, fiber: 100, fat: 250, grams: 3000 };
     const STR = {
-        en: { limit: 'You’ve used today’s 3 photo checks. New ones at midnight. Type what it is: typed meals are unlimited.', look: 'Looking at your plate…', found: 'Here’s what I see', est: 'Estimates from your photo. Change the name if I got it wrong.', total: 'Total', remove: 'Remove', off: 'Photo recognition isn’t switched on yet, so type what it is.', fail: 'I couldn’t read this photo, so type what it is.', busy: 'Too many photos right now. Type what it is, or try again in a few minutes.', none: 'I don’t see food in this photo. Type what it is if I’m wrong.', low: 'Not sure about this one, so check the name.', kcal: 'kcal', protein: 'Protein', carbs: 'Carbs', sugar: 'Sugar', fiber: 'Fiber', fat: 'Fat', and: 'and' },
-        de: { limit: 'Du hast heute deine 3 Foto-Checks genutzt. Neue gibt es um Mitternacht. Schreib, was es ist: Getippte Mahlzeiten sind unbegrenzt.', look: 'Ich schaue mir deinen Teller an…', found: 'Das sehe ich', est: 'Schätzungen aus deinem Foto. Ändere den Namen, wenn ich falsch liege.', total: 'Gesamt', remove: 'Entfernen', off: 'Die Fotoerkennung ist noch nicht eingeschaltet. Schreib bitte, was es ist.', fail: 'Ich konnte das Foto nicht lesen. Schreib bitte, was es ist.', busy: 'Gerade zu viele Fotos. Schreib, was es ist, oder versuch es in ein paar Minuten nochmal.', none: 'Ich sehe kein Essen auf dem Foto. Schreib, was es ist, falls ich falsch liege.', low: 'Da bin ich unsicher, prüf den Namen.', kcal: 'kcal', protein: 'Eiweiß', carbs: 'Kohlenhydrate', sugar: 'Zucker', fiber: 'Ballaststoffe', fat: 'Fett', and: 'und' },
-        es: { limit: 'Ya usaste tus 3 análisis de foto de hoy. Vuelven a medianoche. Escribe qué es: las comidas escritas no tienen límite.', look: 'Mirando tu plato…', found: 'Esto es lo que veo', est: 'Estimaciones de tu foto. Cambia el nombre si me equivoqué.', total: 'Total', remove: 'Quitar', off: 'El reconocimiento de fotos aún no está activado, así que escribe qué es.', fail: 'No pude leer esta foto, así que escribe qué es.', busy: 'Demasiadas fotos ahora mismo. Escribe qué es o inténtalo en unos minutos.', none: 'No veo comida en esta foto. Escribe qué es si me equivoco.', low: 'No estoy seguro, revisa el nombre.', kcal: 'kcal', protein: 'Proteína', carbs: 'Carbohidratos', sugar: 'Azúcar', fiber: 'Fibra', fat: 'Grasa', and: 'y' }
+        en: { net: 'I can’t reach the photo check right now (no connection?). Type what it is, or close this and try again.', slow: 'The photo check took too long. Type what it is, or close this and try again.', sign_in: 'Your sign-in ran out, so I can’t check the photo. Type what it is: that always works.', limit: 'You’ve used today’s 3 photo checks. New ones at midnight. Type what it is: typed meals are unlimited.', look: 'Looking at your plate…', found: 'Here’s what I see', est: 'Estimates from your photo. Change the name if I got it wrong.', total: 'Total', remove: 'Remove', off: 'Photo recognition isn’t switched on yet, so type what it is.', fail: 'I couldn’t read this photo, so type what it is.', busy: 'Too many photos right now. Type what it is, or try again in a few minutes.', none: 'I don’t see food in this photo. Type what it is if I’m wrong.', low: 'Not sure about this one, so check the name.', kcal: 'kcal', protein: 'Protein', carbs: 'Carbs', sugar: 'Sugar', fiber: 'Fiber', fat: 'Fat', and: 'and' },
+        de: { net: 'Ich erreiche die Foto-Prüfung gerade nicht (keine Verbindung?). Schreib, was es ist, oder schließ das hier und versuch es nochmal.', slow: 'Die Foto-Prüfung hat zu lange gedauert. Schreib, was es ist, oder schließ das hier und versuch es nochmal.', sign_in: 'Deine Anmeldung ist abgelaufen, deshalb kann ich das Foto nicht prüfen. Schreib, was es ist: Das klappt immer.', limit: 'Du hast heute deine 3 Foto-Checks genutzt. Neue gibt es um Mitternacht. Schreib, was es ist: Getippte Mahlzeiten sind unbegrenzt.', look: 'Ich schaue mir deinen Teller an…', found: 'Das sehe ich', est: 'Schätzungen aus deinem Foto. Ändere den Namen, wenn ich falsch liege.', total: 'Gesamt', remove: 'Entfernen', off: 'Die Fotoerkennung ist noch nicht eingeschaltet. Schreib bitte, was es ist.', fail: 'Ich konnte das Foto nicht lesen. Schreib bitte, was es ist.', busy: 'Gerade zu viele Fotos. Schreib, was es ist, oder versuch es in ein paar Minuten nochmal.', none: 'Ich sehe kein Essen auf dem Foto. Schreib, was es ist, falls ich falsch liege.', low: 'Da bin ich unsicher, prüf den Namen.', kcal: 'kcal', protein: 'Eiweiß', carbs: 'Kohlenhydrate', sugar: 'Zucker', fiber: 'Ballaststoffe', fat: 'Fett', and: 'und' },
+        es: { net: 'No puedo conectar con el análisis de fotos ahora (¿sin conexión?). Escribe qué es, o cierra esto y vuelve a intentarlo.', slow: 'El análisis de la foto tardó demasiado. Escribe qué es, o cierra esto y vuelve a intentarlo.', sign_in: 'Tu sesión caducó, así que no puedo analizar la foto. Escribe qué es: eso siempre funciona.', limit: 'Ya usaste tus 3 análisis de foto de hoy. Vuelven a medianoche. Escribe qué es: las comidas escritas no tienen límite.', look: 'Mirando tu plato…', found: 'Esto es lo que veo', est: 'Estimaciones de tu foto. Cambia el nombre si me equivoqué.', total: 'Total', remove: 'Quitar', off: 'El reconocimiento de fotos aún no está activado, así que escribe qué es.', fail: 'No pude leer esta foto, así que escribe qué es.', busy: 'Demasiadas fotos ahora mismo. Escribe qué es o inténtalo en unos minutos.', none: 'No veo comida en esta foto. Escribe qué es si me equivoco.', low: 'No estoy seguro, revisa el nombre.', kcal: 'kcal', protein: 'Proteína', carbs: 'Carbohidratos', sugar: 'Azúcar', fiber: 'Fibra', fat: 'Grasa', and: 'y' }
     };
     const lang = () => { try { const l = root.LowiLang && root.LowiLang.get ? root.LowiLang.get() : (root.document && document.documentElement.lang) || 'en'; return STR[l] ? l : 'en'; } catch (e) { return 'en'; } };
     const t = (k, l) => (STR[l || lang()] || STR.en)[k] || STR.en[k] || k;
@@ -80,7 +80,8 @@
     }
     const zone = () => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) { return ''; } };
     const snap = () => root.LowiMealSnap || null;
-    let probe = null, probeAt = 0;
+    let probe = null, probeAt = 0, probeWhy = '';
+    const why = () => probeWhy;
     // One cheap GET per session: is the function deployed and does it have its key? A miss is re-checked after 10 min.
     function available() {
         const url = endpoint();
@@ -88,12 +89,19 @@
         if (probe && (Date.now() - probeAt < 600000)) return probe;
         probeAt = Date.now();
         const tm = timed(6000);
+        /* Oct 20 food audit: a phone without a connection (or a probe that times out) used to show "Photo recognition isn't
+           switched on yet" and kept that answer for 10 minutes. Now the reason is kept (probeWhy: 'net' | 'off') and a
+           network miss is asked again on the next photo. */
         probe = fetch(url, { method: 'GET', headers: headers(), signal: tm.signal, cache: 'no-store' })
-            .then(r => r.ok ? r.json() : null).then(j => !!(j && j.ok && j.configured)).catch(() => false)
-            .then(v => { tm.done(); if (v) probeAt = Infinity; return v; });
+            .then(r => r.ok ? r.json() : null).then(j => { probeWhy = 'off'; return !!(j && j.ok && j.configured); }).catch(() => { probeWhy = 'net'; return false; })
+            .then(v => { tm.done(); if (v) { probeAt = Infinity; probeWhy = ''; } else if (probeWhy === 'net') probeAt = 0; return v; });
         return probe;
     }
-    async function token() {
+    /* a session refresh that never answers must not keep "Looking at your plate…" spinning: 8 s, then no token */
+    function token() {
+        return Promise.race([tokenNow(), new Promise(ok => setTimeout(() => ok(''), 8000))]);
+    }
+    async function tokenNow() {
         try {
             const cx = root.LOWI_CLOUD_X;
             if (!cx || !cx.client) return '';
@@ -117,7 +125,7 @@
         } catch (e) {} finally { tm.done(); }
         return null;
     }
-    // Photo (data URL) -> {dishes,total,...}. Throws Error with .code: off | sign_in | limit | busy | failed.
+    // Photo (data URL) -> {dishes,total,...}. Throws Error with .code: off | sign_in | limit | busy | net | slow | failed.
     async function analyse(dataURL, opts) {
         opts = opts || {};
         const url = endpoint();
@@ -128,7 +136,7 @@
         let r;
         try {
             r = await fetch(url, { method: 'POST', headers: headers(opts.token != null ? opts.token : await token()), signal: tm.signal, body: JSON.stringify({ image: m[2], mime: m[1], lang: opts.lang || lang(), tz: zone() }) });
-        } catch (err) { tm.done(); const e = new Error('failed'); e.code = 'failed'; throw e; }
+        } catch (err) { tm.done(); const code = tm.signal && tm.signal.aborted ? 'slow' : 'net'; const e = new Error(code); e.code = code; throw e; }
         tm.done();
         let j = null;
         try { j = await r.json(); } catch (err) { j = null; }
@@ -183,7 +191,7 @@
         const q = MS && MS.left ? MS.left() : null;
         if (q && q.left === 0) { say('fai-err fai-limit', t('limit', l)); return Promise.resolve(null); }
         return available().then(on => {
-            if (!on) { say('fai-off', t('off', l)); return null; }
+            if (!on) { if (why() === 'net') say('fai-err fai-net', t('net', l)); else say('fai-off', t('off', l)); return null; }
             return analyse(dataURL, { lang: l }).then(res => {
                 if (!box.isConnected) return res;
                 if (!res.isFood) { say('fai-none', t('none', l)); return res; }
@@ -209,10 +217,11 @@
                 });
                 return res;
             }, err => {
-                say('fai-err', err && err.code === 'limit' ? t('limit', l) : err && err.code === 'busy' ? t('busy', l) : err && err.code === 'off' ? t('off', l) : t('fail', l));
+                const c = err && err.code;
+                say('fai-err', ['limit', 'busy', 'off', 'net', 'slow', 'sign_in'].includes(c) ? t(c, l) : t('fail', l));
                 return null;
             });
         }).catch(() => { say('fai-err', t('fail', l)); return null; });
     }
-    return { KEYS, normalize, totals, title, endpoint, available, allowance, analyse, mount, strings: STR, _reset() { probe = null; probeAt = 0; } };
+    return { KEYS, normalize, totals, title, endpoint, available, allowance, analyse, mount, strings: STR, _reset() { probe = null; probeAt = 0; probeWhy = ''; }, _why: why };
 });

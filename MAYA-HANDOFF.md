@@ -579,6 +579,22 @@ worktree `/home/sprite/wt-aura-rename`, notes `/home/sprite/COORD-aura-rename.md
    - Left: other places that still hard-code "Misty" in fixed text were not swept here; renaming the Misty fallback
      does not change Misty's look.
 
+**29. Opening Community and then the chat crashes Safari on his real iPhone ("A problem repeatedly occurred").**
+REPORTED Tue 20 Oct 2026, about 5:25 AM CEST (voice message + screenshot). Task "LOWiSPIKE: Community + chat crash on
+real iPhone, find all bugs", branch `chat-crash-3`, worktree `/home/sprite/wt-chat-crash-3`, notes
+`/home/sprite/COORD-chat-crash-3.md`.
+   - He said, word for word: "I opened community and then the chat and then this happened. So, you can have to run all
+     the errors updates according to community and chat. To find out all the bugs that are there."
+   - His screenshot (real iPhone, Safari): black screen, "A problem repeatedly occurred on
+     'https://therealetm.github.io/lowispike/'." That is the iOS WebKit page crash (web content process killed, usually
+     memory or GPU/WebGL). Battery 14% and charging, so Low Power Mode may have been on. Live build was 20261020-051313
+     or newer. Steps: open the app, open Community, open the chat, crash.
+   - So the earlier fixes did NOT stop it on a real phone: Community redraw fix (20261019-222537), warp canvas leak
+     (bug hunt 14, 20261019-221918) and photo canvas leaks (bug hunt 16). Earlier reports from him: scrolling the chat,
+     energy burst while zoomed out, tapping to see who was shooting, typing into the chat room.
+   - What he wants: a full sweep of Community and the chat for every crash cause and every bug, siblings included, until
+     it holds up on a real iPhone. Status: IN PROGRESS, see the Log.
+
 ### 0.6 The Mickey 17 workflow: how every Maya hands over to the next
 
 Added Monday 19 Oct 2026, about 9:20 PM CEST, by Maya 5, at Emmanuel's request on the evening call. His words: "can
@@ -1125,4 +1141,5 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 - 2026-10-19 22:55 Item 27 (food paths + Pathfinder count) merged from branch food-paths and released; e2e 11/11 on WebKit iPhone 13 EN/DE/ES and iPad Pro 11 DE/ES (shopping camera reached via Fuel > Shop > Scan in the shop, lookup stubbed); not on a real phone. Item 24 (Catch/Pathfinder) ships in the same build.
 - 2026-10-19 23:05 Item 27 live in 20261019-230341 (verify-live bytes match; live e2e 11/11 WebKit iPhone 13 ES). Item 24 Catch/Pathfinder in the same build, now with the found-first count.
 - 2026-10-19 22:58 Item 26 released in 20261019-224045 (care free, sparks gone), checked live on simulated iPhone 13 EN/DE/ES + Chrome.
+- 2026-10-20 05:30 Item 29 recorded (before building): Community then chat crashes Safari on his real iPhone ("A problem repeatedly occurred"); full Community + chat crash and bug sweep started, branch chat-crash-3.
 - 2026-10-20 03:20 Bug hunt run 19 (BH-019): Mirror mode camera start can no longer leave the camera on (Without camera / tracker failed / close+restart / resume+close); discovery label photo double tap opens one sheet. tests/mirror-cam-race.test.cjs. Release build in the release commit.

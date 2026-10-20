@@ -2,6 +2,28 @@
    Look: VISUAL-MASTER.md (navy fog depth from Cellscape VR, friendly cell from "What is a Cell?", glow language from Kurzgesagt).
    The user's see-through cell floats in the middle of a 360 bloodstream: flowing red cells (instanced), plasma particles,
    light shafts, exponential fog. Orbit with drag, pinch/wheel zoom, gyro offsets, glides to body places. */
+/* The six glowing places: the hidden hexagon (Oct 20, E-man, zoomed out on his iPhone: "the planets that looked random, at one angle,
+   actually looks like a hexagon ... we should definitely lock that in and make it purposeful").
+   They always sat 60 degrees apart around Misty's cell, but alternately raised and lowered (and so at two slightly different reaches),
+   which is what makes them feel scattered up close and only *almost* a hexagon from far away. placeAt(i, n, k) is that same layout at
+   k = 0 (close up: exactly the positions they always had) and, at k = 1, the same six on one plane at one reach: a true regular hexagon,
+   centred on Misty. Nothing is drawn: no outline, no lines, just the real planets. Self-contained (tests evaluate it from the source). */
+export function placeAt(i, n, k) {
+    const R = 7.2, ELA = 0.35, ELB = -0.25, YS = 0.8;
+    const a = (i / n) * Math.PI * 2 + 0.4, el = (i % 2 ? ELA : ELB);
+    const t = Math.max(0, Math.min(1, +k || 0));
+    const reach0 = Math.cos(el) * R, y0 = Math.sin(el) * R * YS;
+    const reach1 = (Math.cos(ELA) + Math.cos(ELB)) / 2 * R, y1 = (Math.sin(ELA) + Math.sin(ELB)) / 2 * R * YS; /* the average: the least travel */
+    const reach = reach0 + (reach1 - reach0) * t, y = y0 + (y1 - y0) * t;
+    return { x: Math.sin(a) * reach, y, z: Math.cos(a) * reach };
+}
+/* how far the six have settled into the hexagon for a camera at `dist`: 0 at (and inside) Home's resting view, so the close-up
+   galaxy never changes; easing in as you zoom out past it; 1 from the World Map on out (where the whole ring first fits on screen) */
+export function hexagonK(dist, rest, maxD) {
+    const a = Math.max(0.1, rest || 0) * 1.12, b = Math.max(a + 1, (maxD || 14) * 0.95);
+    const t = Math.max(0, Math.min(1, ((+dist || 0) - a) / (b - a)));
+    return t * t * (3 - 2 * t);
+}
 export function createWorld(THREE, canvas, opts) {
     opts = opts || {};
     const small = !!opts.small, places = opts.places || [];
@@ -145,8 +167,8 @@ export function createWorld(THREE, canvas, opts) {
     const beacons = {}, hitMeshes = [];
     places.forEach((p, i) => {
         const g = new THREE.Group(), col = new THREE.Color(p.hue);
-        const a = (i / places.length) * Math.PI * 2 + 0.4, el = (i % 2 ? 0.35 : -0.25), r = 7.2;
-        g.position.set(Math.sin(a) * Math.cos(el) * r, Math.sin(el) * r * 0.8, Math.cos(a) * Math.cos(el) * r);
+        const p0 = placeAt(i, places.length, 0);
+        g.position.set(p0.x, p0.y, p0.z);
         const core = new THREE.Mesh(new THREE.SphereGeometry(0.32, 20, 14), new THREE.MeshBasicMaterial({ color: col, fog: true }));
         const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: col, transparent: true, opacity: 0.85, depthWrite: false, blending: THREE.AdditiveBlending }));
         glow.scale.set(2.4, 2.4, 1);
@@ -154,11 +176,33 @@ export function createWorld(THREE, canvas, opts) {
         const hit = new THREE.Mesh(new THREE.SphereGeometry(1.0, 8, 6), new THREE.MeshBasicMaterial({ visible: false }));
         hit.userData.place = p.id;
         g.add(glow, core, ring, hit); scene.add(g); hitMeshes.push(hit);
-        beacons[p.id] = { g, ring, glow, core, hue: col, pos: g.position.clone() };
+        beacons[p.id] = { g, ring, glow, core, hue: col, pos: g.position.clone(), i };
     });
     /* hub for other builds (regions, cell ride, living cell) to add their meshes */
     const hub = new THREE.Group(); hub.name = 'lowi-hub'; scene.add(hub);
     const regions = places.map(p => ({ id: p.id, pos: beacons[p.id].pos.clone(), hue: p.hue }));
+    /* the hidden hexagon (placeAt above): zooming out past Home's resting view, the six glide (at most ~1.7 units, about a second) onto
+       one plane at one reach; zooming back in, they drift back to where they always were. The beacon, its place name (b.pos) and the
+       place's own world (regions[].pos, used by the fly-to, the place builds and Misty's flight) always move together, and they hold still
+       during anything that is going somewhere: a fly-to, a world transition, Misty flying or inside a place, Misty out in the galaxy. */
+    let hexK = 0;
+    const hexHold = () => {
+        if (rig.mode !== 'home' || rig.fly || rig.target.lengthSq() > 0.04) return true;
+        const E = typeof document !== 'undefined' && document.documentElement; if (!E) return false;
+        return /(^|\s)(mf-on|mf-in|mf-galaxy|mf-transit|bwr-warping|wh-away)(\s|$)/.test(E.className);
+    };
+    function hexStep(dt) {
+        if (!places.length || hexHold()) return;
+        const want = hexagonK(Math.max(rig.dist, rig.cosmosMin || 0), rig.homeRest || rig.homeDist * 1.4, rig.maxD);
+        const still = !!(reduceMq && reduceMq.matches);
+        const k = still || Math.abs(want - hexK) < 0.002 ? want : hexK + (want - hexK) * Math.min(1, dt * 3.2);
+        if (k === hexK) return;
+        hexK = k;
+        places.forEach((p, i) => {
+            const b = beacons[p.id], q = placeAt(i, places.length, k);
+            b.g.position.set(q.x, q.y, q.z); b.pos.set(q.x, q.y, q.z); regions[i].pos.set(q.x, q.y, q.z);
+        });
+    }
     const frameFns = new Set();
     function onFrame(fn) { if (typeof fn !== 'function') return () => {}; frameFns.add(fn); return () => frameFns.delete(fn); }
     /* (the little microbe buddies that bobbed next to the gut were removed Oct 16, user decision) */
@@ -682,6 +726,7 @@ export function createWorld(THREE, canvas, opts) {
         curBg.copy(baseBg); if (tint && tintAmt > 0.001) curBg.lerp(tint, tintAmt * (theme === 'light' ? 0.5 : 0.35));
         scene.background.copy(curBg); scene.fog.color.copy(curBg);
         cosmosStep(t, dt);
+        hexStep(dt);
     }
     function frame(now) {
         raf = 0; if (!running) return;

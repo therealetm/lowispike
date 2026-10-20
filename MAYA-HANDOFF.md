@@ -613,6 +613,21 @@ usage and crash fixes", branch `chat-sim-20261020`, worktree `/home/sprite/wt-ch
      local state with Supabase blocked or mocked: no real messages, no real records touched.
    - Never call an emulator result a fix on his phone; only he can confirm the real iPhone.
 
+**32. The six planet colours become the brand colours; Home bubble liquids and galaxy bubble glows come from them.**
+REQUESTED Tue 20 Oct 2026, about 9:38 AM CEST (call). Task "LOWiSPIKE unify planet-based brand palette", branch
+`brand-palette-20261020`, worktree `/home/sprite/wt-brand-palette`, notes `/home/sprite/COORD-brand-palette.md`.
+   - Background: a read-only check (9:30 AM) found the planets (Gut #2EF8B6, Liver #E78631, Pancreas #F8EA40, Muscles
+     #9FEB25, Heart #F14770, Brain #1CF7F9, body-world-3d.js) share no colour with the Home bubble liquids (own blue,
+     mint, amber, violet gradients) or the nine pastel galaxy-bubble glows (body-world-3d-scene.js SPC). He wants the
+     planet colours as the logo/brand base.
+   - He said: "So what can we do here? ... to align those and then to make those our brand color." Then: "our interface
+     doesn't have water liquid in everything. Like the joystick doesn't have a water liquid. The scanner doesn't have a
+     water liquid. Settings doesn't have water liquid."
+   - So: planet colours stay exactly as they are and become shared tokens; the liquids (Water, Move, Fuel, Sleep, Gap)
+     and galaxy glows derive lighter/deeper/softer tones from them, keeping gradients, translucency and depth. Dry
+     controls (Scan, Settings, joystick) stay dry: no liquid added. Misty's own blue stays. No logo redesign, no fasting
+     logic change. A design change, so a branch + preview for his OK before release.
+
 ### 0.6 The Mickey 17 workflow: how every Maya hands over to the next
 
 Added Monday 19 Oct 2026, about 9:20 PM CEST, by Maya 5, at Emmanuel's request on the evening call. His words: "can
@@ -1167,3 +1182,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 - 2026-10-20 09:10 Verified live: release 20261020-090200 (commit 677ed88, Settings shows "Version <build>" beside the x) is served by the live site; Emmanuel saw a Home message visit (item 23) arrive on his phone ("I just saw a hologram up here. It worked.").
 - 2026-10-20 09:15 Item 30 recorded (before building): Emmanuel (call, about 9:05 AM): "The hologram appeared, and then it disappeared way too fast for me to even click on reply ... update that." So the item 23 visit must stay until he taps Reply (opens the message in Community) or the x, instead of leaving after its 6.5 to 15 s reading time; it must not be lost when Home is covered for a moment (comes back), must not block Home, and other people's visits wait their turn. Branch visit-stay-20261020, worktree /home/sprite/wt-visit-stay, files home-visit.js/.css + tests/home-visit.test.cjs. Item 29 crash untouched.
 - 2026-10-20 09:25 Item 31 recorded (before building): Emmanuel (call, about 9:10 AM) wants the app played like a user (Home -> Community -> chat -> typing first, then the whole app), every crash noted and fixed, then a click-through of everything listing what is inconvenient or illogical, split across agents. Branch chat-sim-20261020, worktree /home/sprite/wt-chat-sim, ledger playtest/SIM-LEDGER.md. The earlier chat-crash-3 sweep (item 29) never reached GitHub.
+- 2026-10-20 09:45 Item 32 recorded (before building): Emmanuel (call, about 9:38 AM) wants the six planet colours to be the brand colours: Home bubble liquids and galaxy bubble glows derive from them; dry controls (joystick, Scan, Settings) stay without liquid. Branch brand-palette-20261020, worktree /home/sprite/wt-brand-palette. Preview for his OK before release.

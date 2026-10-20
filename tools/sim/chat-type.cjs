@@ -24,7 +24,7 @@ const [engine = 'webkit', members = '45', messages = '300', where = ''] = proces
     await R.shot('/tmp/sim/ct-' + engine + '-sent.png');
     R.step = 'live-while-typing'; await P.keyboard.type('typing while', { delay: 110 }); for (let i = 0; i < 6; i++) { R.sim.say(); await H.sleep(500); } await mark('6 incoming while typing');
     R.step = 'blur'; await P.evaluate(() => document.activeElement && document.activeElement.blur()); await H.sleep(1500); await mark('keyboard down');
-    R.step = 'room'; const hb = P.locator('.cg-hist').first(); if (await hb.isVisible().catch(() => false)) { await R.tapEl(hb); await H.sleep(2000); await mark('chat room open'); await R.tap('#cmInput'); await H.sleep(1200); await mark('room: keyboard up'); await P.keyboard.type('and from the room', { delay: 110 }); await P.keyboard.press('Enter'); await H.sleep(2000); await mark('room: sent'); await R.shot('/tmp/sim/ct-' + engine + '-room.png'); } else console.log('NO CHAT BUTTON');
+    R.step = 'room'; const hb = P.locator('.cg-hist:visible').first(); if (await hb.isVisible().catch(() => false)) { await R.tapEl(hb); await H.sleep(2000); await mark('chat room open'); await R.tap('#cmInput'); await H.sleep(1200); await mark('room: keyboard up'); await P.keyboard.type('and from the room', { delay: 110 }); await P.keyboard.press('Enter'); await H.sleep(2000); await mark('room: sent'); await R.shot('/tmp/sim/ct-' + engine + '-room.png'); } else console.log('NO CHAT BUTTON');
   } catch (e) { console.log('ERR', R.step, e.message.slice(0, 300)); }
   console.log('RESULT', JSON.stringify({ engine, members, messages, out, errs: R.errs, crashed: R.crashed, loads: R.loads, sent: R.sim.writes.filter(w => w.t === 'messages').map(w => w.body && w.body.body) }));
   await R.close();

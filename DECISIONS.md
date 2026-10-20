@@ -746,3 +746,21 @@ while it is still the open one. The Pathfinder reward itself is unchanged and st
 
 **Consequences:** tests/stale-async-ui.test.cjs (5 of its 6 tests fail on the old code). Playtest probe
 BUGHUNT/playtest/probe-search-dbl.cjs.
+
+## 2026-10-20 03:20 CEST: Mirror mode never leaves the camera on after a start you overruled (bug hunt BH-019)
+
+**Context:** Move > Mirror mode waits for the camera (and the first time for the 9 MB tracker) before it starts, and whatever you did
+while "Starting the camera…" showed was overruled when the camera answered (live 20261020-020848, Chrome 390 with a slow fake camera,
+probe BUGHUNT/playtest/probe-mirror-cam.cjs): tapping "Without camera" left the camera running through the camera-free routine; the
+tracker failing (offline) while the iPhone permission prompt was up showed "Camera not available" and then turned the camera on
+behind it after Allow; closing and starting again opened two cameras and one stayed on after close (camera light until the app is
+closed); "Turn camera back on" after the background, then close while it starts, threw a TypeError and left html.mm-cam on.
+
+**Decision:** pattern "async result painted into stale UI" (camera flavour): every camera start takes a number (camGen) and
+stopCamera() moves it on. A start whose number moved on stops its own camera tracks as soon as they arrive and paints nothing;
+resumeCam got the same "closed while starting" check goCamera had. Sibling: a double tap on a discovery label photo opened two photo
+sheets, now only the newest tap paints (PH_SEQ) and replaces an open one. Other getUserMedia sites (food snap, barcode scanner,
+Community voice) already guard their own start: checked.
+
+**Consequences:** tests/mirror-cam-race.test.cjs (6 tests, 5 fail on the old code; the first guards the normal start). Not testable
+on a real iPhone from here; the camera light is the thing to watch.

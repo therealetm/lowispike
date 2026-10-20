@@ -74,7 +74,12 @@ function input(key,label,value,type,required){return '<label class="dg-field">'+
 function select(key,label,options,value){return '<label class="dg-field">'+esc(label)+'<select class="input" name="'+key+'">'+options.map(([v,t])=>'<option value="'+esc(v)+'"'+(v===value?' selected':'')+'>'+esc(t)+'</option>').join('')+'</select></label>';}
 function photoDb(){return new Promise((resolve,reject)=>{const q=indexedDB.open('lowi-discovery-images',1);q.onupgradeneeded=()=>q.result.createObjectStore('images');q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error);});}
 async function savePhoto(file){if(!file)return '';if(!/^image\//.test(file.type)||file.size>15*1024*1024)throw Error('Use an image smaller than 15 MB.');const value=await LowiHost.resizeImage(file,1100),key=activeScope+':'+id(),db=await photoDb();await new Promise((res,rej)=>{const tx=db.transaction('images','readwrite');tx.objectStore('images').put(value,key);tx.oncomplete=res;tx.onerror=()=>rej(tx.error);});db.close();return key;}
-async function showPhoto(key){if(!String(key).startsWith(activeScope+':'))return;const db=await photoDb(),value=await new Promise((res,rej)=>{const q=db.transaction('images').objectStore('images').get(key);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});db.close();if(value)sheet('<img class="dg-label-photo" src="'+esc(value)+'" alt="'+esc(tr('photo'))+'">');}
+/* Bug hunt BH-019 sibling (pattern "async result painted into stale UI"): a double tap on a label photo opened two photo sheets, one per
+   IndexedDB read. Only the newest tap paints, and it replaces a photo sheet that is still open. */
+let PH_SEQ=0,PH_OV=null;
+async function showPhoto(key){if(!String(key).startsWith(activeScope+':'))return;const my=++PH_SEQ;const db=await photoDb(),value=await new Promise((res,rej)=>{const q=db.transaction('images').objectStore('images').get(key);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});db.close();if(my!==PH_SEQ||!value)return;
+  if(PH_OV&&PH_OV.isConnected&&!PH_OV.classList.contains('off')){try{window.LowiR2.close(PH_OV);}catch(e){}}
+  PH_OV=sheet('<img class="dg-label-photo" src="'+esc(value)+'" alt="'+esc(tr('photo'))+'">');}
 function openForm(kind,p){p=record(p||currentProduct||{});currentProduct=p;const f=p.facts||{},isPrice=kind==='price';
   let body='<h2>'+esc(tr(kind==='first'?'newProduct':kind))+'</h2><p class="small">'+esc(tr('local'))+'</p>';
   body+='<form class="dg-form" data-kind="'+kind+'">'+input('name',tr('name'),p.name,'text',true)+input('brand',tr('brand'),p.brand,'text',true);

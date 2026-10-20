@@ -35,6 +35,9 @@
 
     /* ---------- state ---------- */
     let ov = null, stage = null, video = null, cv = null, ctx = null, live = null, flow = null, routine = 'chair';
+    /* camGen: every camera start gets a number; stopCamera() moves it on. A start that finishes after its number moved on (closed,
+       "Without camera", the tracker failed, or a newer start) stops its own camera at once and paints nothing (bug hunt BH-019). */
+    let camGen = 0;
     let stream = null, lmk = null, lmkP = null, delegate = 'GPU', triedGPU = false, nDet = 0, running = false, raf = 0, detT = 0, briT = 0, lastDraw = 0, lastVT = -1;
     let lms = null, sm = null, costAvg = 30, interval = 66, voiceOn = true, lastMoveSpoken = -1, lastHint = '', lastCount = 0, hiddenStop = false, dpr = 1, vw = 640, vh = 480;
     const say = (s, force) => {
@@ -105,6 +108,7 @@
     }
     function onKey(e) { if (e.key === 'Escape') close(); }
     function stopCamera() {
+        camGen++;
         clearTimeout(detT); clearInterval(briT); detT = 0; briT = 0;
         if (stream) { stream.getTracks().forEach(t => { try { t.stop(); } catch (e) {} }); stream = null; }
         if (video) { try { video.pause(); } catch (e) {} video.srcObject = null; }
@@ -129,25 +133,30 @@
         }).catch(e => { lmkP = null; throw e; });
         return lmkP;
     }
-    async function startCamera() {
+    async function startCamera(gen) {
         const md = navigator.mediaDevices;
         if (!W.isSecureContext || !md || !md.getUserMedia) { const e = new Error('unsupported'); e.name = 'Unsupported'; throw e; }
         if (typeof WebAssembly !== 'object') { const e = new Error('nowasm'); e.name = 'Unsupported'; throw e; }
-        stream = await md.getUserMedia({ audio: false, video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30, max: 30 } } });
+        const s = await md.getUserMedia({ audio: false, video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30, max: 30 } } });
+        if (gen !== camGen) { s.getTracks().forEach(t => { try { t.stop(); } catch (e) {} }); const e = new Error('stale'); e.name = 'Stale'; throw e; }
+        if (stream && stream !== s) stream.getTracks().forEach(t => { try { t.stop(); } catch (e) {} });
+        stream = s;
         video.srcObject = stream; video.muted = true; video.playsInline = true;
         await video.play().catch(() => {});
         if (!video.videoWidth) await new Promise(r => { video.onloadedmetadata = r; setTimeout(r, 2500); });
         vw = video.videoWidth || 640; vh = video.videoHeight || 480;
-        const tr = stream.getVideoTracks()[0]; if (tr) tr.onended = () => { if (flow && flow.mode === 'camera') problem('ended'); };
+        const tr = s.getVideoTracks()[0]; if (tr) tr.onended = () => { if (flow && flow.mode === 'camera') problem('ended'); };
     }
     async function goCamera() {
         build(); stage.hidden = false; H.classList.add('mm-cam');
         flow = new C.Flow({ routine, mode: 'camera', lang: lang() });
         say(T('Get into the outline', 'Stell dich in den Umriss', 'Ponte dentro de la silueta'), true);    /* speaks inside the tap, which unlocks voice on iPhone */
         showSheet('<div class="mm-wait"><span class="mm-spin" aria-hidden="true"></span><b>' + esc(T('Starting the camera…', 'Kamera startet…', 'Iniciando la cámara…')) + '</b><small>' + esc(T('The first time loads the tracker (about 9 MB), then it is quick.', 'Beim ersten Mal lädt der Tracker (etwa 9 MB), danach geht es schnell.', 'La primera vez se carga el detector (unos 9 MB), luego es rápido.')) + '</small></div>');
+        const gen = ++camGen;
         try {
-            await Promise.all([startCamera(), loadModel()]);
-        } catch (e) { stopCamera(); return problem(e && e.name); }
+            await Promise.all([startCamera(gen), loadModel()]);
+        } catch (e) { if (gen !== camGen) return; stopCamera(); return problem(e && e.name); }
+        if (gen !== camGen) return;                                  /* closed, "Without camera" or a newer start meanwhile */
         if (!ov || ov.hidden || !flow) { stopCamera(); return; }   /* closed while starting */
         sheet().hidden = true; sheet().innerHTML = '';
         running = true; hiddenStop = false; lastMoveSpoken = -1; lastHint = ''; lastCount = 0;
@@ -328,7 +337,10 @@
     async function resumeCam() {
         if (!flow) return goCamera();
         showSheet('<div class="mm-wait"><span class="mm-spin" aria-hidden="true"></span><b>' + esc(T('Starting the camera…', 'Kamera startet…', 'Iniciando la cámara…')) + '</b></div>');
-        try { await Promise.all([startCamera(), loadModel()]); } catch (e) { stopCamera(); return problem(e && e.name); }
+        const gen = ++camGen;
+        try { await Promise.all([startCamera(gen), loadModel()]); } catch (e) { if (gen !== camGen) return; stopCamera(); return problem(e && e.name); }
+        if (gen !== camGen) return;
+        if (!ov || ov.hidden || !flow) { stopCamera(); return; }   /* closed while starting */
         sheet().hidden = true; sheet().innerHTML = ''; H.classList.add('mm-cam');
         flow.pause(false); running = true; loopDetect(); briT = setInterval(brightness, 1500); if (!raf) raf = requestAnimationFrame(draw);
     }

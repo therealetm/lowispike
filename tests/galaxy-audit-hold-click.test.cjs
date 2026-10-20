@@ -45,14 +45,16 @@ test('a hold that opened the card swallows the click of that lift, wherever it l
     }
 });
 
-test('a short tap is not swallowed and does not open the card; a lift with no click un-arms after 700 ms', () => {
+test('a short tap is not swallowed and does not open the card; a lift with no click un-arms after 1 s', () => {
     const b = boot();
     b.fire('pointerdown', { target: b.misty }); b.advance(120); b.fire('pointerup', { target: b.misty });
     assert.strictEqual(b.ctx.opened, 0);
     assert.ok(!b.fire('click', { target: b.misty }).stopped, 'a tap still pets Misty');
     const c = boot();
     c.fire('pointerdown', { target: c.misty }); c.advance(800); c.fire('pointerup', { target: c.misty });
-    c.advance(800);
+    c.advance(600);
+    assert.strictEqual(c.L.click.length, 1, 'still armed 600 ms after the lift');
+    c.advance(500);
     assert.strictEqual(c.L.click.length, 0, 'the swallow listener is gone when no click came (iOS may send none)');
     assert.ok(!c.fire('click', { target: { closest: () => null } }).stopped, 'a later real tap goes through');
 });

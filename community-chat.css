@@ -198,3 +198,7 @@ html.cs-chat-map-typing #cmPaneChat[data-spirit-chat] .cm-compose{transform:tran
 .cp-row b.cp-muted{color:rgba(223,242,255,.55);font-weight:500}
 .cs-sheet .cp-note{font-size:12.5px;line-height:1.45;color:rgba(223,242,255,.66);margin:12px 2px 6px}
 @media (prefers-reduced-motion:reduce){#cmPaneChat .cs-photo-btn:active{transform:none}}
+
+/* item 31: the room shows the newest 60 messages; this button adds the next 60 above */
+.cm-more{display:flex;justify-content:center;padding:8px 0 6px}
+.cm-more .cm-morebtn{min-height:44px;padding:0 16px;font-size:14px}

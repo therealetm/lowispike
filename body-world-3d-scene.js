@@ -341,11 +341,16 @@ export function createWorld(THREE, canvas, opts) {
         x.fillStyle = g; x.fillRect(0, 0, S, S);
         [[h + 20, h + 14, 6], [h + 10, h - 26, 4], [h - 22, h + 24, 5], [h + 28, h - 6, 3]].forEach(d => { const q = x.createRadialGradient(d[0], d[1], 0, d[0], d[1], d[2]); q.addColorStop(0, 'rgba(255,255,255,.9)'); q.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = q; x.fillRect(d[0] - d[2], d[1] - d[2], d[2] * 2, d[2] * 2); });
         const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })();
-    const SPC = { cyan: '#7fe6ff', blue: '#5aa8ff', misty: '#8fd0ff', teal: '#5fe0c8', green: '#8ff0a0', purple: '#a98cff', magenta: '#ff80d6', gold: '#ffcf7a', white: '#e8f6ff' };
+    /* item 32 (20 Oct, Emmanuel: the planet colours are the brand colours): the galaxy glows are the six planets softened 30 % toward
+       white (brand-palette.js LowiBrand.GALAXY), plus Misty's own blue and the star white. The literals are the same numbers for when
+       brand-palette.js is not loaded; tests/brand-palette.test.cjs keeps them equal. */
+    const SPC = (typeof window !== 'undefined' && window.LowiBrand && window.LowiBrand.GALAXY) ||
+        { brain: '#60f9fb', gut: '#6dfacc', liver: '#eeaa6f', pancreas: '#faf079', muscles: '#bcf166', heart: '#f57e9b', misty: '#8fd0ff', white: '#e8f6ff' };
     const SPK = Object.keys(SPC).reduce((o, k) => { o[k] = new THREE.Color(SPC[k]); return o; }, {});
-    /* rims: mostly Misty blue and cyan; a few green, purple, magenta or gold glows, like the spheres in his picture */
-    const RIMS = ['cyan', 'blue', 'purple', 'misty', 'cyan', 'magenta', 'blue', 'teal', 'gold', 'misty', 'green', 'cyan', 'purple', 'blue', 'misty', 'teal'];
-    const ACC = ['purple', 'magenta', 'gold', 'green', 'cyan', 'teal'];
+    /* rims: every planet's glow appears; the blues (the Brain's cyan and Misty's blue) still lead (7 of 16), so the galaxy keeps its
+       blue air. Accents: the six planets. */
+    const RIMS = ['brain', 'misty', 'heart', 'gut', 'brain', 'liver', 'misty', 'muscles', 'pancreas', 'brain', 'gut', 'misty', 'heart', 'brain', 'muscles', 'liver'];
+    const ACC = ['heart', 'pancreas', 'liver', 'muscles', 'gut', 'brain'];
     /* one living cell-sphere's inside: drifting inner cells (orbit), organelle nodes joined in a glowing web, a nucleus glow */
     function fillCell(rnd, cellsA, nodesA, webV, webC, cx, cy, cz, r, colA, colB, nCells, nNodes) {
         for (let k = 0; k < nCells; k++) {
@@ -405,7 +410,7 @@ export function createWorld(THREE, canvas, opts) {
         const mineGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: '#6fc8ff', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending })); mineGlow.scale.set(COSMOS.R * 1.6, COSMOS.R * 1.6, 1); g.add(mineGlow);
         const cellsA = ptsBuf(), nodesA = ptsBuf(), webV = [], webC = [];
         /* the other worlds: glass cell-spheres of every size, scattered in depth, never on the camera's orbit (no sphere ever fills the view) */
-        const worlds = [{ x: 0, y: 0, z: 0, r: COSMOS.R, colA: SPK.misty, colB: SPK.cyan }];
+        const worlds = [{ x: 0, y: 0, z: 0, r: COSMOS.R, colA: SPK.misty, colB: SPK.brain }];
         const others = [];
         for (let i = 0, tries = 0; i < COSMOS.N && tries < 1500; tries++) {
             const big = i < 5, r = big ? 30 + rnd() * 26 : 6 + Math.pow(rnd(), 1.5) * 24;
@@ -422,7 +427,7 @@ export function createWorld(THREE, canvas, opts) {
             i++;
         }
         /* our own bubble is alive too: its cells glow faintly from outside */
-        fillCell(rnd, cellsA, nodesA, webV, webC, 0, 0, 0, COSMOS.R, SPK.misty, SPK.cyan, small ? 18 : 28, small ? 20 : 30);
+        fillCell(rnd, cellsA, nodesA, webV, webC, 0, 0, 0, COSMOS.R, SPK.misty, SPK.brain, small ? 18 : 28, small ? 20 : 30);
         const cells = ptsObj(cellsA, cellTex, true, 650, 1250, 0); g.add(cells);
         const nodes = ptsObj(nodesA, glowTex, false, 650, 1250, 0.35); g.add(nodes);
         const web = webObj(webV, webC); g.add(web);
@@ -465,12 +470,12 @@ export function createWorld(THREE, canvas, opts) {
         /* fine sparkling dust drifting slowly between the worlds, and the dark starry deep far beyond */
         const dustA = ptsBuf(), DN = small ? 650 : 1100;
         for (let i = 0; i < DN; i++) { const rr = 60 + Math.pow(rnd(), 0.8) * 700, th = rnd() * 6.283, ph = Math.acos(2 * rnd() - 1), pick = rnd();
-            const col = (pick < 0.62 ? SPK.white : pick < 0.8 ? SPK.cyan : pick < 0.88 ? SPK.gold : pick < 0.95 ? SPK.magenta : SPK.green).clone().multiplyScalar(0.55 + rnd() * 0.45);
+            const col = (pick < 0.62 ? SPK.white : pick < 0.8 ? SPK.brain : pick < 0.88 ? SPK.pancreas : pick < 0.95 ? SPK.heart : SPK.muscles).clone().multiplyScalar(0.55 + rnd() * 0.45);
             ptPush(dustA, rr * Math.sin(ph) * Math.cos(th), rr * Math.cos(ph) * 0.7, rr * Math.sin(ph) * Math.sin(th), 0.9 + rnd() * 2.2, col, rnd(), [0, 0, 0, (0.004 + rnd() * 0.01) * (rnd() > 0.3 ? 1 : -1)]); }
         const motes = ptsObj(dustA, dotTex, true, 600, 1200, 0.6); g.add(motes);
         const starA = ptsBuf(), SN = small ? 500 : 800;
         for (let i = 0; i < SN; i++) { const rr = 950 + rnd() * 200, th = rnd() * 6.283, ph = Math.acos(2 * rnd() - 1);
-            ptPush(starA, rr * Math.sin(ph) * Math.cos(th), rr * Math.cos(ph), rr * Math.sin(ph) * Math.sin(th), 1.6 + Math.pow(rnd(), 3) * 4, (rnd() < 0.85 ? SPK.white : SPK.cyan).clone().multiplyScalar(0.5 + rnd() * 0.5), rnd()); }
+            ptPush(starA, rr * Math.sin(ph) * Math.cos(th), rr * Math.cos(ph), rr * Math.sin(ph) * Math.sin(th), 1.6 + Math.pow(rnd(), 3) * 4, (rnd() < 0.85 ? SPK.white : SPK.brain).clone().multiplyScalar(0.5 + rnd() * 0.5), rnd()); }
         const stars = ptsObj(starA, dotTex, false, 5000, 6000, 0.5); g.add(stars);
         const farA = ptsBuf(), FN = small ? 140 : 240;
         for (let i = 0; i < FN; i++) { const rr = 720 + rnd() * 230, th = rnd() * 6.283, ph = Math.acos((2 * rnd() - 1) * 0.85);
@@ -497,7 +502,7 @@ export function createWorld(THREE, canvas, opts) {
         freqGeo.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array((FREQ_SEG + 1) * 2 * 3), 3));
         freqGeo.setAttribute('aU', new THREE.Float32BufferAttribute(fU, 1)); freqGeo.setAttribute('aSide', new THREE.Float32BufferAttribute(fS, 1)); freqGeo.setIndex(fIdx);
         const freq = new THREE.Group(); freq.name = 'light-frequency';
-        [[1.6, 7.5, 0.55, 0.0, 1.5, 'cyan', 'misty'], [2.3, 5.5, -0.42, 1.9, 1.2, 'misty', 'purple'], [3.1, 4.0, 0.7, 3.7, 1.0, 'teal', 'cyan'], [1.2, 9.5, -0.3, 5.1, 1.8, 'blue', 'purple']].slice(0, small ? 3 : 4).forEach(s => {
+        [[1.6, 7.5, 0.55, 0.0, 1.5, 'brain', 'misty'], [2.3, 5.5, -0.42, 1.9, 1.2, 'misty', 'heart'], [3.1, 4.0, 0.7, 3.7, 1.0, 'gut', 'brain'], [1.2, 9.5, -0.3, 5.1, 1.8, 'misty', 'liver']].slice(0, small ? 3 : 4).forEach(s => {
             const m = new THREE.Mesh(freqGeo, new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
                 uniforms: { uT: { value: 0 }, uO: { value: 0 }, uLen: { value: COSMOS.R * 1.5 }, uK: { value: s[0] }, uAmp: { value: s[1] }, uSpd: { value: s[2] }, uPh: { value: s[3] }, uW: { value: s[4] }, uA: { value: SPK[s[5]].clone() }, uB: { value: SPK[s[6]].clone() } },
                 vertexShader: FREQ_V, fragmentShader: FREQ_F }));
@@ -507,7 +512,7 @@ export function createWorld(THREE, canvas, opts) {
         scene.add(g);
         /* a few huge cell-spheres right in front of the camera, cut off by the screen edges (deepest parallax), placed in screen space */
         const near = new THREE.Group(); near.visible = false; near.name = 'cosmos-near';
-        const NEAR = [[-1.02, 0.62, 0.62, 'misty', 'purple'], [1.08, -0.42, 0.55, 'cyan', 'gold'], [0.92, 1.05, 0.3, 'purple', 'cyan'], [-0.78, -1.08, 0.36, 'teal', 'magenta']].slice(0, small ? 3 : 4);
+        const NEAR = [[-1.02, 0.62, 0.62, 'misty', 'heart'], [1.08, -0.42, 0.55, 'brain', 'pancreas'], [0.92, 1.05, 0.3, 'liver', 'brain'], [-0.78, -1.08, 0.36, 'gut', 'muscles']].slice(0, small ? 3 : 4);
         const giants = NEAR.map((n, i) => {
             const gi = new THREE.Group(), colA = SPK[n[3]], colB = SPK[n[4]];
             const m = new THREE.Mesh(sphere, membraneMat(colA.clone().multiplyScalar(0.5), colA, colB)); gi.add(m);

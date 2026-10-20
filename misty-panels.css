@@ -41,7 +41,7 @@
   --mb-go: radial-gradient(120% 140% at 26% 0%, rgba(255, 255, 255, .3), rgba(255, 255, 255, 0) 36%),
            linear-gradient(180deg, rgba(52, 196, 158, .92), rgba(12, 124, 104, .96));
   --mb-chosen: radial-gradient(circle at 34% 26%, rgba(255, 255, 255, .4), rgba(255, 255, 255, 0) 24%),
-               linear-gradient(180deg, rgba(150, 255, 210, .5), rgba(30, 170, 140, .82));
+               linear-gradient(180deg, rgba(202, 244, 135, .5), rgba(159, 235, 37, .82)); /* item 32: Move = the Muscles' lime (brand-palette.js) */
 }
 
 /* ---------- 1. one membrane surface ---------- */

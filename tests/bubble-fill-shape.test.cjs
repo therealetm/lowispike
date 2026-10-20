@@ -60,13 +60,13 @@ test('slosh: the water lags the bubble\'s motion, springs back and settles; stil
     assert.strictEqual(calm.tilt, 0); assert.strictEqual(calm.bob, 0); assert.strictEqual(calm.wave, 0);
 });
 
-test('colours: each bubble keeps its own liquid colour, read from its own fill (water blue, move green, fuel amber, sleep violet)', () => {
-    const c = L.parseGradient('linear-gradient(rgba(110, 200, 255, 0.55), rgba(40, 120, 240, 0.8))');
-    assert.deepStrictEqual(c.top, [110, 200, 255]); assert.deepStrictEqual(c.bot, [40, 120, 240]);
+test('colours: each bubble keeps its own liquid colour, read from its own fill (item 32: each liquid is a planet, brand-palette.js)', () => {
+    const c = L.parseGradient('linear-gradient(rgba(130, 251, 252, 0.55), rgba(28, 247, 249, 0.8))');
+    assert.deepStrictEqual(c.top, [130, 251, 252]); assert.deepStrictEqual(c.bot, [28, 247, 249]);
     assert.ok(c.a1 > 0.55 && c.a2 > 0.8 && c.a2 <= 0.92, 'a touch stronger under the glass so a full glass reads full');
     assert.strictEqual(L.parseGradient('none'), null);
     const f = L.liquidColors('fast', false, false), d = L.liquidColors('fast', false, true);
-    assert.deepStrictEqual(f.top, [118, 210, 238]); assert.deepStrictEqual(d.top, [158, 240, 214]);
+    assert.deepStrictEqual(f.top, [251, 243, 150]); assert.deepStrictEqual(d.top, [252, 247, 182]); /* the Pancreas liquid: running, goal reached */
 });
 
 test('while the 3D liquid is drawn the flat fill and the fasting 2D water hide, and the fasting water loop sleeps (no extra heat)', () => {

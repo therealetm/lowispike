@@ -6,7 +6,8 @@
 
 /* 1. Meals bubble */
 #whHud .wh-meals { left: var(--wme-x, calc(50% - var(--wh-sx))); top: var(--wme-y, calc(var(--wh-cy) - var(--wh-sy))); -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: manipulation; }
-#whHud .wh-meals .wh-cell-fill { background: linear-gradient(180deg, rgba(255, 214, 150, .5), rgba(236, 150, 70, .78)); }
+/* item 32: Fuel = the Liver's orange (brand-palette.js) */
+#whHud .wh-meals .wh-cell-fill { background: linear-gradient(180deg, rgba(242, 188, 142, .5), rgba(231, 134, 49, .78)); }
 #whHud .wh-meals .wh-cell-tx { z-index: 2; pointer-events: none; }
 #whHud .wh-meals .wh-cell-tx small { max-width: calc(var(--wh-fs) * .8); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 html.wh-home:not(.lb3d) #whHud .wh-meals,

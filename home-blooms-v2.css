@@ -26,8 +26,8 @@
 .hb2-bloom.on .hb2-orb[disabled] { opacity: .55; }
 /* liquid level inside an orb (water cups so far, Move size): fills from the bottom inside the orb's own edge */
 .hb2-fill { position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--hb2-q, 0) * 100%); z-index: -1; border-radius: 0 0 50% 50% / 0 0 18% 18%;
-    background: linear-gradient(180deg, rgba(150, 255, 210, .45), rgba(30, 190, 150, .7)); transition: height .35s ease; }
-.hb2-water .hb2-fill { background: linear-gradient(180deg, rgba(150, 220, 255, .5), rgba(40, 130, 230, .75)); }
+    background: linear-gradient(180deg, rgba(202, 244, 135, .45), rgba(159, 235, 37, .7)); transition: height .35s ease; } /* item 32: Move = Muscles, Water = Brain (brand-palette.js) */
+.hb2-water .hb2-fill { background: linear-gradient(180deg, rgba(130, 251, 252, .5), rgba(28, 247, 249, .75)); }
 .hb2-tx { display: flex; flex-direction: column; align-items: center; line-height: 1.1; text-shadow: 0 1px 6px rgba(0, 30, 80, .7); padding: 0 6px; text-align: center; }
 .hb2-ic { width: 18px; height: 18px; margin-bottom: 1px; flex: none; filter: drop-shadow(0 1px 3px rgba(0, 30, 80, .6)); }
 /* long labels ("Mahlzeit eintragen", "Gerade gegessen") wrap to two short lines instead of being cut by the round edge */

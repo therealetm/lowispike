@@ -9050,6 +9050,8 @@ window.LowiFood = {fitDeck:ckFitDeck, source:fSrc, setSource:ckSource, category:
 .lc-upd{justify-content:center;font-weight:600;cursor:pointer;text-align:center}
 .lc-newpill{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:30;padding:8px 14px;border-radius:999px;border:0;background:#fff;color:#000;font-weight:700;font-size:13px;box-shadow:0 6px 20px rgba(0,0,0,.4);cursor:pointer}
 </style>
+<script src="brand-palette.js?v=20261020-093754"></script>
+<script src="scan-fill.js?v=20261020-093754"></script>
 <script src="read-time-core.js?v=20261020-093754"></script>
 <script src="community-chat-core.js?v=20261020-093754"></script>
 <script>
@@ -14213,6 +14215,8 @@ async function found(code){ if (!CAM) return;
   CAM.done = true; stopStream(); buzz(30); sfx("check");
   CAM.el.classList.add("got"); msgState("lookup"); msg(t("bcFound", code));
   let p = null; try { p = await byBarcode(code); } catch(e){}
+  /* item 32: a product found fills the Scan bubble (scan-fill.js); cancel, notFound and a failed lookup never get here with a product */
+  if (p && !p.notFound && window.LowiScanFill) { try { LowiScanFill.record(code); } catch(e){} }
   if (p && !p.notFound && window.LowiSpirit) { closeScanner(true); await LowiSpirit.captureProduct(p); return; }
   if (p && !p.notFound && window.LowiVitalsBridge) LowiVitalsBridge.complete("vitamin","scan:"+code,{amt:5,perDay:5,label:"Product scanned"});
   closeScanner(); reveal(p || {barcode:code, notFound:true, offline:!navigator.onLine}); }

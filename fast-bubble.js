@@ -244,12 +244,19 @@
     }
 
     /* ---------- drawing ---------- */
+    /* item 32 (20 Oct, brand colours): the fasting water is the Pancreas liquid from brand-palette.js (LowiBrand.fast): its gold while
+       the gap runs, the same planet lit up when the goal is reached. These literals are the same numbers, for when brand-palette.js
+       is not loaded (node tests); tests/brand-palette.test.cjs keeps them equal. */
     const PAL = {
-        dark: { top: [118, 210, 238], bot: [52, 92, 188], a1: 0.76, a2: 0.92, back: 0.3 },
-        light: { top: [150, 222, 245], bot: [92, 146, 222], a1: 0.62, a2: 0.74, back: 0.26 },
-        doneDark: { top: [158, 240, 214], bot: [56, 150, 170], a1: 0.8, a2: 0.92, back: 0.34 },
-        doneLight: { top: [170, 238, 214], bot: [80, 170, 176], a1: 0.64, a2: 0.78, back: 0.28 }
+        dark: { top: [251, 243, 150], bot: [200, 191, 61], a1: 0.76, a2: 0.92, back: 0.3 },
+        light: { top: [252, 245, 171], bot: [211, 204, 100], a1: 0.62, a2: 0.74, back: 0.26 },
+        doneDark: { top: [252, 247, 182], bot: [248, 234, 64], a1: 0.8, a2: 0.92, back: 0.34 },
+        doneLight: { top: [253, 249, 197], bot: [249, 238, 102], a1: 0.64, a2: 0.78, back: 0.28 }
     };
+    try {
+        const B = root && root.LowiBrand;
+        if (B && typeof B.fast === 'function') { PAL.dark = B.fast(false, false); PAL.light = B.fast(false, true); PAL.doneDark = B.fast(true, false); PAL.doneLight = B.fast(true, true); }
+    } catch (e) { }
     const rgba = (c, a) => 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')';
 
     function surfY(b, i, base, amp, t) {

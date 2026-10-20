@@ -2,7 +2,8 @@
    The bubble is a .wh-cell like the water bubble and uses the same Misty-membrane shell; only its fill colour differs (mint = moving).
    It sits upper-right of Misty, mirroring the fasting (lower-left) and water (lower-right) bubbles. All text stays inside it. */
 #whHud .wh-move { left: var(--wm-x, calc(50% + var(--wh-sx))); top: var(--wm-y, calc(var(--wh-cy) - var(--wh-sy))); -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: manipulation; }
-#whHud .wh-move .wh-cell-fill { background: linear-gradient(180deg, rgba(150, 255, 210, .5), rgba(30, 190, 150, .78)); }
+/* item 32: Move = the Muscles' lime (brand-palette.js) */
+#whHud .wh-move .wh-cell-fill { background: linear-gradient(180deg, rgba(202, 244, 135, .5), rgba(159, 235, 37, .78)); }
 #whHud .wh-move .wh-cell-tx { z-index: 2; pointer-events: none; }
 #whHud .wh-move .wh-cell-tx small { max-width: calc(var(--wh-fs) * .8); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
@@ -53,7 +54,7 @@ html.wh-home.wh-away #whHud .wh-move { opacity: 0 !important; pointer-events: no
 .wm-bloom.off .wm-orb.wm-chosen { transform: translate(var(--wm-dx, 0), var(--wm-dy, 0)) scale(.55); opacity: 0; transition: transform .32s cubic-bezier(.5, 0, .8, .4), opacity .32s ease-in; }
 .wm-orb:active { scale: .9; transition: scale .1s; }
 .wm-orb:focus-visible { outline: 2px solid #9fffe0; outline-offset: 3px; }
-.wm-orb-fill { position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--wm-q, .25) * 100%); background: linear-gradient(180deg, rgba(150, 255, 210, .45), rgba(30, 190, 150, .7)); z-index: -1; }
+.wm-orb-fill { position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--wm-q, .25) * 100%); background: linear-gradient(180deg, rgba(202, 244, 135, .45), rgba(159, 235, 37, .7)); z-index: -1; }
 .wm-orb-tx { display: flex; flex-direction: column; align-items: center; line-height: 1.1; text-shadow: 0 1px 6px rgba(0, 30, 80, .7); padding: 0 6px; text-align: center; }
 .wm-orb-tx b { font-size: 15px; font-weight: 700; }
 .wm-orb-tx small { font-size: 10px; opacity: .92; margin-top: 2px; max-width: calc(var(--wm-orb, 72px) - 10px); }

@@ -105,11 +105,16 @@
             const t = p(m[0]), b = p(m[m.length - 1]), up = a => Math.min(0.92, a * 1.1 + 0.08);
             return { top: t.c, bot: b.c, a1: up(t.a), a2: up(b.a) };
         },
-        /* the fasting water keeps its own colours (fast-bubble.js PAL): blue while it runs, sea green when the goal is reached */
+        /* the fasting water: the same colours as fast-bubble.js PAL, item 32: the Pancreas liquid (brand-palette.js LowiBrand.fast),
+           gold while the gap runs, lit up when the goal is reached. Any other bubble without a readable fill: Water = the Brain's cyan.
+           The literals equal brand-palette.js (tests/brand-palette.test.cjs) for when it is not loaded. */
         liquidColors(kind, light, done) {
-            const P = done ? (light ? { top: [170, 238, 214], bot: [80, 170, 176], a1: 0.64, a2: 0.78 } : { top: [158, 240, 214], bot: [56, 150, 170], a1: 0.8, a2: 0.92 })
-                : (light ? { top: [150, 222, 245], bot: [92, 146, 222], a1: 0.62, a2: 0.74 } : { top: [118, 210, 238], bot: [52, 92, 188], a1: 0.76, a2: 0.92 });
-            return kind === 'fast' ? P : { top: [110, 200, 255], bot: [40, 120, 240], a1: 0.69, a2: 0.92 };
+            if (kind === 'fast') {
+                try { const B = typeof window !== 'undefined' && window.LowiBrand; if (B && B.fast) { const f = B.fast(!!done, !!light); return { top: f.top, bot: f.bot, a1: f.a1, a2: f.a2 }; } } catch (e) { }
+                return done ? (light ? { top: [253, 249, 197], bot: [249, 238, 102], a1: 0.64, a2: 0.78 } : { top: [252, 247, 182], bot: [248, 234, 64], a1: 0.8, a2: 0.92 })
+                    : (light ? { top: [252, 245, 171], bot: [211, 204, 100], a1: 0.62, a2: 0.74 } : { top: [251, 243, 150], bot: [200, 191, 61], a1: 0.76, a2: 0.92 });
+            }
+            return { top: [130, 251, 252], bot: [28, 247, 249], a1: 0.69, a2: 0.92 };
         },
         /* slosh: the water lags the bubble. dx, dy = how far the bubble moved this frame, in bubble radii. Water answers to a change of
            speed (steady motion leaves it flat): the bubble's speed is smoothed, and each change of it pushes a damped spring for the

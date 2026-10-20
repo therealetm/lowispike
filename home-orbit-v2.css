@@ -30,7 +30,10 @@ html.o8.wh-home #whHud .o8-cell { display: flex; align-items: center; justify-co
     background: radial-gradient(circle at 34% 28%, rgba(255,255,255,.34), rgba(255,255,255,.06) 42%, rgba(120,190,255,.08) 70%, rgba(255,255,255,.16));
     border: 1px solid rgba(255,255,255,.42); box-shadow: inset 0 0 18px rgba(255,255,255,.18); }
 html.o8.wh-home.lb3d #whHud .o8-cell { background: transparent; border-color: transparent; box-shadow: none; }
-html.o8.wh-home #whHud .o8-sleep .wh-cell-fill { background: linear-gradient(180deg, rgba(190,170,255,.45), rgba(120,100,230,.7)); height: 0; }
+/* item 32 (brand-palette.js): Sleep = the Heart's red-pink; Scan = the Gut's mint, filled by products found today (scan-fill.js) */
+html.o8.wh-home #whHud .o8-sleep .wh-cell-fill { background: linear-gradient(180deg, rgba(247, 154, 176, .45), rgba(241, 71, 112, .72)); height: 0; }
+html.o8.wh-home #whHud .o8-scan .wh-cell-fill { background: linear-gradient(180deg, rgba(140, 251, 215, .5), rgba(46, 248, 182, .78)); }
+html.o8.wh-home #whHud .o8-cell .o8-val:empty { display: none; }
 html.o8.wh-home #whHud .o8-sleep.done .wh-cell-fill { height: 100%; }
 html.o8.wh-home #whHud .o8-cell .wh-cell-tx { pointer-events: none; z-index: 2; }
 html.o8.wh-home #whHud .o8-cell .o8-ico { width: calc(var(--o8-d) * .26); height: calc(var(--o8-d) * .26); display: block; margin-bottom: 2px; filter: drop-shadow(0 1px 4px rgba(0,30,80,.6)); }

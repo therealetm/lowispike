@@ -133,7 +133,7 @@
     }
     function ensure() {
         if (!D.getElementById('whHud')) return false;
-        make('scan', words('scan')[0], '<span class="wh-cell-tx">' + svg('scan') + '<small>' + words('scan')[1] + '</small></span>');
+        make('scan', words('scan')[0], '<span class="wh-cell-fill" aria-hidden="true"></span><span class="wh-cell-tx">' + svg('scan') + '<small>' + words('scan')[1] + '</small><b class="o8-val"></b></span>');
         make('sleep', words('sleep')[0], '<span class="wh-cell-fill" aria-hidden="true"></span><span class="wh-cell-tx">' + svg('sleep') + '<small>' + words('sleep')[1] + '</small><b class="o8-val"></b></span>');
         make('settings', words('settings')[0], '<span class="wh-cell-tx">' + svg('settings') + '<small>' + words('settings')[1] + '</small></span>');
         if (labelLang !== lang()) { if (labelLang) relabel(); labelLang = lang(); }
@@ -146,7 +146,23 @@
         const m = D.getElementById('spBubble');
         if (m && !m.hasAttribute('data-home-misty')) m.setAttribute('data-home-misty', '');
         paintSleep();
+        paintScan();
         return true;
+    }
+    /* item 32 (20 Oct, Emmanuel: we give scan also liquid): the Scan bubble fills with each different product found today
+       (scan-fill.js counts only scans that found a product; five fill it). The count shows, no target. Joystick and Settings stay dry. */
+    function paintScan() {
+        const b = FIND.scan(), F = root.LowiScanFill; if (!b) return;
+        let f = b.querySelector('.wh-cell-fill');
+        if (!f) { f = D.createElement('span'); f.className = 'wh-cell-fill'; f.setAttribute('aria-hidden', 'true'); b.insertBefore(f, b.firstChild); }
+        let v = b.querySelector('.wh-cell-tx > .o8-val');
+        if (!v) { const tx = b.querySelector('.wh-cell-tx'); if (tx) { v = D.createElement('b'); v.className = 'o8-val'; tx.appendChild(v); } }
+        let n = 0; try { n = F && typeof F.today === 'function' ? F.today() : 0; } catch (e) { }
+        const q = F && F.frac ? F.frac(n) : 0, qs = String(+q.toFixed(3));
+        if (b.style.getPropertyValue('--wh-fill') !== qs) b.style.setProperty('--wh-fill', qs);
+        const tx = n ? n + ' ' + T('today', 'heute', 'hoy') : '';
+        if (v && v.textContent !== tx) v.textContent = tx;
+        b.classList.toggle('o8-has', n > 0);
     }
     /* Oct 18 (Emmanuel: "The steering wheel doesn't have the same water style, I mean bubble style, as the other bubbles"): the
        joystick gets Misty's membrane like the seven others, registered as a control so its own drag, taps and hold stay untouched
@@ -299,7 +315,8 @@
         root.addEventListener('orientationchange', soon, { passive: true });
         if (root.visualViewport) root.visualViewport.addEventListener('resize', soon, { passive: true });
         ['lowi:layout', 'lowi:home-bubble-added', 'world3d-ready', 'lowi:tab'].forEach(n => D.addEventListener(n, soon));
-        D.addEventListener('lowi:lang', () => { relabel(); labelLang = lang(); paintSleep(); }); /* BH-004 */
+        D.addEventListener('lowi:lang', () => { relabel(); labelLang = lang(); paintSleep(); paintScan(); }); /* BH-004 */
+        D.addEventListener('lowi:scan-fill', paintScan);
         root.addEventListener('storage', e => { if (e.key === MENU_KEY) applyMenuBar(); });
         root.addEventListener('lowi:home-menubar', applyMenuBar);
         D.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });

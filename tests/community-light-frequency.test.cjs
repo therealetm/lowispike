@@ -34,7 +34,7 @@ test('a soft light frequency takes the tube\'s place inside our bubble', () => {
     assert.ok(mats.includes('depthWrite: false') && mats.includes('blending: THREE.AdditiveBlending') && mats.includes('m.frustumCulled = false'), 'additive light, no depth write');
     assert.ok(build.includes('exp(-vS * vS * 4.0)') && build.includes('pow(sin(3.14159 * vU), 1.6)'), 'soft across the width, fades to nothing at both ends');
     assert.ok(build.includes('uLen: { value: COSMOS.R * 1.5 }'), 'stays inside our membrane (its visible part is well within the radius)');
-    for (const c of ["'cyan'", "'misty'", "'purple'"]) assert.ok(mats.includes(c), 'palette colour ' + c);
+    for (const c of ["'brain'", "'misty'", "'heart'"]) assert.ok(mats.includes(c), 'palette colour ' + c);
     assert.ok(stepFn.includes('const fo = smoothC(0.3, 1, walls) * 0.6 * calm;'), 'appears as the tube fades, calmer on Community');
     assert.ok(stepFn.includes('m.material.uniforms.uT.value = tt;') && stepFn.includes('tt = still ? 0 : t'), 'reduced motion holds the waves still');
     assert.ok(stepFn.includes('C.freq.visible = fo > 0.005'), 'hidden (free) inside the World Map');

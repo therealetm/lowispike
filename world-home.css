@@ -43,11 +43,12 @@ html.wh-home .wh-hud { display: block; position: fixed; inset: 0; z-index: 3; po
 .wh-name-tx small { font-size: 11.5px; opacity: .78; white-space: nowrap; }
 .wh-name-bar { position: absolute; left: 41px; right: 14px; bottom: 5px; height: 3px; border-radius: 2px; background: rgba(255,255,255,.16); overflow: hidden; }
 .wh-name-bar > i { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, var(--wh-aura-a), var(--wh-aura-b)); }
-/* the water cell: a little special cell on Misty's other side */
+/* the water cell: a little special cell on Misty's other side. Item 32: every liquid comes from a planet (brand-palette.js),
+   the default fill below is Water = the Brain's cyan */
 .wh-cell { width: var(--wh-fs); height: var(--wh-fs); border-radius: 50%; left: calc(50% + var(--wh-sx)); top: calc(var(--wh-cy) + var(--wh-sy)); transform: translate(-50%, -50%); overflow: hidden; padding: 0;
     border: 1.5px solid rgba(160,220,255,.55); background: radial-gradient(circle at 34% 28%, rgba(255,255,255,.42), rgba(255,255,255,0) 32%), radial-gradient(circle at 50% 60%, rgba(80,170,255,.22), rgba(20,60,140,.42));
     box-shadow: inset 0 0 18px rgba(140,210,255,.35), 0 8px 26px -10px rgba(40,120,255,.6); display: flex; align-items: center; justify-content: center; }
-.wh-cell-fill { position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--wh-fill, 0) * 100%); background: linear-gradient(180deg, rgba(110,200,255,.55), rgba(40,120,240,.8)); transition: height .6s cubic-bezier(.2,.8,.2,1); }
+.wh-cell-fill { position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--wh-fill, 0) * 100%); background: linear-gradient(180deg, rgba(130, 251, 252, .55), rgba(28, 247, 249, .8)); transition: height .6s cubic-bezier(.2,.8,.2,1); }
 .wh-cell-tx { position: relative; display: flex; flex-direction: column; align-items: center; line-height: 1.1; text-shadow: 0 1px 6px rgba(0,30,80,.6); }
 .wh-cell-tx small { font-size: 11px; opacity: .9; }
 .wh-cell-tx b { font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; }

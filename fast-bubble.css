@@ -57,9 +57,10 @@ html.spirit-app #spHome #spFast.fb-on .sp-fast-water {
     animation: fbGlow 3.2s ease-in-out infinite
 }
 
+/* item 32: goal reached = the Pancreas liquid lit up (brand-palette.js LowiBrand.fast(true).top), and it pulses */
 @keyframes fbGlow {
-    0%, 100% { box-shadow: 0 0 18px rgba(150, 240, 214, .32), inset 0 3px 6px #ffffffaa }
-    50% { box-shadow: 0 0 30px rgba(150, 240, 214, .55), inset 0 3px 6px #ffffffaa }
+    0%, 100% { box-shadow: 0 0 18px rgba(252, 247, 182, .32), inset 0 3px 6px #ffffffaa }
+    50% { box-shadow: 0 0 30px rgba(252, 247, 182, .55), inset 0 3px 6px #ffffffaa }
 }
 
 /* light look: dark text keeps a white halo so it reads on the water */

@@ -14048,16 +14048,23 @@ function renderTab(){
 const curTab = () => { try { return typeof TAB !== "undefined" ? TAB : ""; } catch(e){ return ""; } };
 
 /* typed product name */
-async function nameSearch(q){ q = String(q || "").trim(); const out = $("#b3NameOut"); if (!out) return; if (q.length < 2) { out.innerHTML = ""; return; }
+/* Oct 20, bug hunt run 18 (BH-018, pattern "async result painted into stale UI"): pressing Search twice (double Enter, a second tap
+   while "Searching…" waits on the network) or fixing a typo and searching again opened one results sheet PER search, stacked, so
+   you had to close the same results twice, and on a slow network the older search could land on top. Only the newest search may
+   open its sheet, and it replaces a results sheet that is still open. */
+let NS_SEQ = 0, NS_OV = null;
+async function nameSearch(q){ q = String(q || "").trim(); const out = $("#b3NameOut"); if (!out) return; const my = ++NS_SEQ; if (q.length < 2) { out.innerHTML = ""; return; }
   out.innerHTML = '<div class="small muted b3-sr">' + esc(t("searching")) + '</div>';
   const found = await searchName(q), est = rateName(q);
+  if (my !== NS_SEQ) return;
   let h = "";
   if (found.length) h += '<div class="tiny dim b3-sh">' + esc(t("t_comm")) + '</div><div class="b3-strip">' + found.map(cardMini).join("") + '</div>';
   if (est) h += '<div class="b3-est v-' + est.verdict + '"><span class="b3-vb v-' + est.verdict + '">' + esc(t("vl_" + est.verdict)) + '</span><div><div class="tiny dim">' + esc(t("t_est")) + '</div><b>' + esc(q) + '</b><div class="small">' + esc(whyText(est.why[0])) + '</div><div class="tiny dim">' + esc(t("w_name")) + '</div></div></div>';
   if (!found.length && !est) h += '<div class="small muted b3-sr">' + esc(t("t_none")) + '</div>';
   if (window.LowiDiscovery) h += '<button class="r2-btn ghost" data-dg="new">' + esc(["Document a product label", "Produktetikett dokumentieren", "Documentar etiqueta"][LI()]) + '</button>';
   h += '<div class="b3-two"><button class="b3-pill" data-b3="scan">' + IC.bc + '<span>' + esc(t("scanIt")) + '</span></button><button class="b3-pill" data-b3="asmeal" data-q="' + esc(q) + '">' + IC.plate + '<span>' + esc(t("t_meal_go")) + '</span></button></div>';
-  out.innerHTML = ""; R2.sheet('<div class="h2">'+esc(q)+'</div><div class="b3-search-results">'+h+'</div>', {cls:"b3-search-ov"}); }
+  out.innerHTML = ""; if (NS_OV && NS_OV.isConnected && !NS_OV.classList.contains("off")) { try { R2.close(NS_OV); } catch(e){} }
+  const ov = NS_OV = R2.sheet('<div class="h2">'+esc(q)+'</div><div class="b3-search-results">'+h+'</div>', {cls:"b3-search-ov", onClose:() => { if (NS_OV === ov) NS_OV = null; }}); }
 
 /* =====================================================================
    Scanner: own full-screen layer, camera permission flow, photo + typed fallbacks
@@ -14419,16 +14426,21 @@ function reveal(p, quiet){
 function manualReady(){ if (!REV) return; const n = ($("#b3MName", REV) || {}).value || "", any = $$(".b3-tick[aria-pressed=true]", REV).length; const b = $("#b3MCatch", REV); if (b) b.disabled = !(n.trim().length >= 2 && any); }
 async function catchCur(btn, p){
   if (!p || btn.disabled) return; btn.disabled = true; btn.classList.add("throw"); sfx("tap");
+  const rev = REV;
   const res = await doCatch(p);
+  /* BH-018 sibling: the catch waits on the server. If you closed this product's card, or scanned the next product meanwhile, REV is
+     another product's card: the old code stamped "caught" on it, and a manual add even painted the old product over the new card
+     (while "I ate this" still logged the new one). The reward is still paid; the burst only goes into the card that asked for it. */
+  const here = rev && REV === rev && rev.isConnected && !rev.classList.contains("off") && rev.contains(btn) ? rev : null;
   const first = res.first, k = pkey(p), m = D.mine[k] || p;
   // Oct 19: no XP for saving a product the community already has or for a local draft; the first verified finder gets Pathfinder.
   let cxp = 0; if (first) cxp = pfAward(Object.assign({}, p, m));
   try { window.dispatchEvent(new CustomEvent("lowi:product-caught", {detail:{product:slim(Object.assign({}, p, m)), verdict:p.verdict, xp:cxp}})); } catch(e){}
   sfx(first ? "catchFirst" : "catch"); buzz(first ? [30, 60, 30, 60, 80] : [30, 50, 40]);
-  const acts = btn.closest(".b3-acts, .b3-man"); const card = REV && $("#b3Card", REV);
+  const acts = here && btn.closest(".b3-acts, .b3-man"); const card = here && $("#b3Card", here);
   const burst = '<div class="b3-caught' + (first ? " first" : "") + '"><div class="b3-cbig">' + esc(first ? sct("pfWin") : t("caught")) + '</div><div class="small">' + esc(first ? sct("pfWinSub") : res.draft ? sct("pfDraft") : res.pending ? t("pending") : m.byName && m.byName !== myName() ? t("addedSub", m.byName) : t("inYours")) + '</div>' + (cxp ? '<div class="sc-xp">+' + cxp + ' XP</div>' : "") + (first ? '<div class="sc-pfn">' + esc(pfCountText()) + '</div>' : "") +
     '<button class="r2-btn ghost" data-b3="dex" style="margin-top:12px">' + esc(t("openDex")) + '</button></div>';
-  if (acts && acts.classList.contains("b3-man")) { const q = Object.assign({}, p, m); const st = REV && $(".b3-rev", REV); if (st) st.innerHTML = '<div class="b3-stage show">' + cardHTML(q, false) + burst + swapsHTML(q) + '</div>'; }
+  if (acts && acts.classList.contains("b3-man")) { const q = Object.assign({}, p, m); const st = here && $(".b3-rev", here); if (st) st.innerHTML = '<div class="b3-stage show">' + cardHTML(q, false) + burst + swapsHTML(q) + '</div>'; }
   else if (acts) { acts.outerHTML = burst; if (card && m.dex) { const no = $(".b3-no", card); if (no) no.textContent = t("dexNo") + " " + String(m.dex).padStart(3, "0"); } }
   if (card) card.classList.add("caught");
   if (curTab() === "scan") renderTab(); }

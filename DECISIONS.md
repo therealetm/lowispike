@@ -731,3 +731,18 @@ clears it.
 
 **Consequences:** a reload during the evolution animation plays it again once (better than never). Tests:
 tests/bughunt-high-forms.test.cjs.
+
+## 2026-10-20 02:20 CEST: only the newest product search opens its results; a late catch answer stays on its own card (bug hunt BH-018)
+
+**Context:** the Scan tab's "Or find a product…" search waits on the community database, then opens a results sheet. Pressing Search
+twice (double Enter, or tapping again while "Searching…" waits) or fixing a typo and searching again opened one sheet per search,
+stacked (live 20261020-011459, Chrome 390 and simulated iPhone 13: double Enter = 2 identical "apfel" sheets). Same class in
+"Be the first to add it": the catch waits on the server, and the old code painted its result into whatever card was open by then
+(the next product's card got the "caught" stamp; a manual add painted the old product over it while "I ate this" logged the new one).
+
+**Decision:** pattern "async result painted into stale UI": nameSearch keeps a sequence number and only the newest search opens a
+sheet, replacing a results sheet that is still open. catchCur remembers the card that asked and paints the burst only into that card
+while it is still the open one. The Pathfinder reward itself is unchanged and still paid.
+
+**Consequences:** tests/stale-async-ui.test.cjs (5 of its 6 tests fail on the old code). Playtest probe
+BUGHUNT/playtest/probe-search-dbl.cjs.

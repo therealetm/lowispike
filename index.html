@@ -13927,7 +13927,9 @@ function unpackWhy(s){ try { const a = JSON.parse(s || "[]"); return Array.isArr
 
 /* ---------- categories ---------- */
 function catOf(tags, name){ const s = (tags || []).filter(x => !/foods-and-beverages/.test(String(x))).join(" ") + " " + nkey(name);
-  if (/beverage|drink|soda|water|juice|getränk|getraenk|cola|limo|tea-based|coffee/.test(s)) return "drink";
+  /* Oct 20 food audit: "cola" matched choCOLAte and "water" matched WATERmelon, so every chocolate (dark 85 % too) and every
+     watermelon was a drink: "Liquid sugar, 14 g per 100 ml" and a spike. Whole words now. */
+  if (/beverage|drink|soda|(?:^|[^a-z])waters?(?![a-z])|juice|getränk|getraenk|(?:^|[^a-z])colas?(?![a-z])|(?:^|[^a-z])limo(?:nade|nada|nadas|nades|s)?(?![a-z])|tea-based|coffee/.test(s)) return "drink";
   if (/breakfast-cereal|muesli|granola|cornflakes|porridge/.test(s)) return "cereal";
   if (/chocolate|candies|confection|sweet-spread|biscuit|cake|sweet-snack|ice-cream|dessert|gummi|cookie|schoko/.test(s)) return "sweets";
   if (/dairies|yogurt|yoghurt|cheese|milk|skyr|quark|joghurt|kase/.test(s)) return "dairy";

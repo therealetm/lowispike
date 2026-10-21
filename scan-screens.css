@@ -205,6 +205,18 @@ html:root body .r2-ov.ss-sheet:not(.full) .mr-add-row input { flex: 1; min-width
 html:root body .r2-ov.ss-sheet:not(.full) :is(.mr-save, .mr-cancel, .mr-chip, .mr-add-btn) { min-height: 44px; border-radius: 999px !important; padding: 0 18px; font: inherit; font-weight: 700; font-size: 15px; cursor: pointer; color: #fff !important; }
 html:root body .r2-ov.ss-sheet:not(.full) .mr-save { background: linear-gradient(180deg, #2f8cff, #0a5bd6) !important; border: 1px solid rgba(143, 216, 255, .7) !important; box-shadow: 0 0 14px -4px rgba(10, 132, 255, .8) !important; }
 html:root body .r2-ov.ss-sheet:not(.full) .mr-ed-acts .mr-save { flex: 1; }
+/* Fix field suggestions (Oct 21): products the app already knows, dark glass list under "What is it really?" */
+html:root body .r2-ov.ss-sheet:not(.full) .mr-sug { display: flex; flex-direction: column; margin-top: -4px; border-radius: 14px !important; overflow: hidden; background: rgba(6, 14, 34, .94) !important; border: 1px solid rgba(143, 216, 255, .38) !important; box-shadow: 0 0 18px -6px rgba(10, 132, 255, .75), 0 10px 24px -12px rgba(0, 0, 0, .8) !important; }
+html:root body .r2-ov.ss-sheet:not(.full) .mr-sug[hidden] { display: none; }
+html:root body .r2-ov.ss-sheet:not(.full) .mr-opt { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 52px; width: 100%; padding: 8px 14px; margin: 0; text-align: left; font: inherit; color: #fff !important; background: transparent !important; border: 0 !important; border-top: 1px solid rgba(170, 214, 255, .14) !important; border-radius: 0 !important; cursor: pointer; }
+html:root body .r2-ov.ss-sheet:not(.full) .mr-opt:first-child { border-top: 0 !important; }
+html:root body .r2-ov.ss-sheet:not(.full) .mr-opt:is(:hover, :focus-visible, [aria-selected="true"]) { background: rgba(47, 140, 255, .2) !important; outline: none; }
+html:root body .r2-ov.ss-sheet:not(.full) .mr-opt-n { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+html:root body .r2-ov.ss-sheet:not(.full) .mr-opt-n b { font-size: 15px; font-weight: 700; color: #fff !important; overflow-wrap: anywhere; }
+html:root body .r2-ov.ss-sheet:not(.full) .mr-opt-n small { font-size: 12px; font-weight: 500; color: rgba(205, 228, 255, .78) !important; }
+html:root body .r2-ov.ss-sheet:not(.full) .mr-opt-k { flex: none; font-size: 13px; font-weight: 700; color: rgb(143, 216, 255) !important; white-space: nowrap; }
+html:root body .r2-ov.ss-sheet:not(.full) .mr-live { margin: -2px 0 0; font-size: 14px; font-weight: 700; color: rgb(143, 216, 255) !important; }
+html:root body .r2-ov.ss-sheet:not(.full) .mr-live[hidden] { display: none; }
 html:root body .r2-ov.ss-sheet:not(.full) :is(.mr-cancel, .mr-chip) { background: rgba(255, 255, 255, .1) !important; border: 1px solid var(--ms-line-soft, rgba(170, 214, 255, .26)) !important; font-weight: 600; }
 html:root body .r2-ov.ss-sheet:not(.full) .mr-add { display: flex; flex-direction: column; gap: 8px; }
 html:root body .r2-ov.ss-sheet:not(.full) .mr-chips { display: flex; flex-wrap: wrap; gap: 8px; }

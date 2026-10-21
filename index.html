@@ -14100,11 +14100,11 @@ async function byBarcode(code){
 async function offProduct(code){
   const ctl = typeof AbortController !== "undefined" ? new AbortController() : null; const tm = setTimeout(() => { try { ctl && ctl.abort(); } catch(e){} }, 9000);
   try {
-    const r = await fetch("https://world.openfoodfacts.org/api/v0/product/" + code + ".json?fields=product_name,product_name_de,product_name_en,product_name_es,generic_name,brands,nutriments,ingredients_text,ingredients_text_de,ingredients_text_en,categories_tags,image_front_small_url,image_front_url,quantity", {signal:ctl ? ctl.signal : undefined});
+    const r = await fetch("https://world.openfoodfacts.org/api/v0/product/" + code + ".json?fields=product_name,product_name_de,product_name_en,product_name_es,generic_name,brands,nutriments,ingredients_text,ingredients_text_de,ingredients_text_en,categories_tags,image_front_small_url,image_front_url,quantity,serving_quantity", {signal:ctl ? ctl.signal : undefined});
     if (!r.ok) return r.status === 404 ? {barcode:code, notFound:true} : null; const j = await r.json(); if (!j || j.status !== 1 || !j.product) return {barcode:code, notFound:true};
     const P = j.product, n = P.nutriments || {}, nm = P["product_name_" + ["en", "de", "es"][LI()]] || P.product_name_de || P.product_name || P.product_name_en || P.generic_name || "";
     if (!nm) return {barcode:code, notFound:true, partial:P};
-    const facts = {c:num(n.carbohydrates_100g), s:num(n.sugars_100g), f:num(n.fiber_100g), p:num(n.proteins_100g), fat:num(n.fat_100g), kcal:num(n['energy-kcal_100g']), q:String(P.quantity || "").slice(0, 30)};
+    const facts = {c:num(n.carbohydrates_100g), s:num(n.sugars_100g), f:num(n.fiber_100g), p:num(n.proteins_100g), fat:num(n.fat_100g), kcal:num(n['energy-kcal_100g']), q:String(P.quantity || "").slice(0, 30), sv:(+P.serving_quantity > 0 && +P.serving_quantity <= 1000) ? Math.round(+P.serving_quantity) : null};   /* sv: serving grams, the Fix field's piece/serving size (meal-result.js) */
     Object.keys(facts).forEach(k => facts[k] == null && delete facts[k]);
     let img = String(P.image_front_small_url || P.image_front_url || ""); if (!/^https:\/\/(images|static)\.openfoodfacts\.org\//.test(img)) img = "";
     const cat = catOf(P.categories_tags, nm); if (cat === "drink") facts.drink = 1;

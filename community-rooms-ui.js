@@ -20,6 +20,8 @@ const T={room:['Room','Raum','Sala'],chat:['Chat','Chat','Chat'],rooms:['Rooms',
  channels:['Channels','Kanäle','Canales'],chGalaxy:['Galaxy chat','Galaxie-Chat','Chat de la galaxia'],chGalaxyEmpty:['No messages yet. Say hi to everyone.','Noch keine Nachrichten. Sag allen Hallo.','Aún no hay mensajes. Saluda a todos.'],
  chReplies:['Replies & mentions','Antworten & Erwähnungen','Respuestas y menciones'],chRepliesEmpty:['Nothing for you yet.','Noch nichts für dich.','Todavía nada para ti.'],chRoomOut:['Find your room and the people in it.','Finde deinen Raum und die Leute darin.','Encuentra tu sala y a la gente que hay.'],
  chAff:['Video template (Webdesign or UGC) and what you earn per level.','Video-Template (Webdesign oder UGC) und was du pro Level verdienst.','Plantilla de vídeo (Webdesign o UGC) y lo que ganas por nivel.'],chCreate:['AI studio for creators, being built.','KI-Studio für Creator, im Aufbau.','Estudio de IA para creadores, en construcción.'],
+ lHead:['Your galaxy','Deine Galaxie','Tu galaxia'],lSub:['Talk with everyone, see who’s in your room and pick up where you left off.','Schreib mit allen, sieh, wer in deinem Raum ist, und mach da weiter, wo du warst.','Habla con todos, mira quién está en tu sala y sigue donde lo dejaste.'],
+ lGo:['Open galaxy chat','Galaxie-Chat öffnen','Abrir el chat de la galaxia'],back:['Back to channels','Zurück zu den Kanälen','Volver a los canales'],members:['Members','Mitglieder','Miembros'],
  you:['You','Du','Tú'],now:['now','jetzt','ahora'],min:[' min',' Min.',' min'],hr:[' h',' Std.',' h'],unreadN:['{c} unread','{c} ungelesen','{c} sin leer'],people:['People in your room','Leute in deinem Raum','Gente en tu sala']};
 function lang(){try{return Math.max(0,['en','de','es'].indexOf((W.LowiLang&&W.LowiLang.get())||localStorage.getItem('lowispike.lang')||'en'));}catch(e){return 0;}}
 function tr(k,v){let s=(T[k]||[k])[lang()]||T[k][0];for(const x in v||{})s=s.split('{'+x+'}').join(String(v[x]));return s;}
@@ -81,10 +83,12 @@ function paint(){const b=ensure();if(!b)return;const r=R(),chat=open();
  const pane=b.parentNode,sel=view==='chans'?'chat':view||(chat?'chat':'room');
  const tabs=b.querySelectorAll('.rm-tab');tabs.forEach(t=>{t.textContent=tr(t.dataset.rm);});b.querySelector('.rm-tabs').setAttribute('aria-label',tr('tabs'));
  tabs.forEach(t=>{const on=t.dataset.rm===sel;t.setAttribute('aria-selected',on?'true':'false');t.tabIndex=on?0:-1;});
+ /* Phase E: one glowing pill slides under the open section (CSS .rm-tabs::before reads --rm-i) */
+ const ti=[...tabs].findIndex(t=>t.dataset.rm===sel),tl=b.querySelector('.rm-tabs');if(tl.__i!==ti){tl.__i=ti;tl.style.setProperty('--rm-i',String(Math.max(0,ti)));}
  if(view){pane.setAttribute('data-rm-view',view);D.documentElement.classList.add('rm-view');if(VIEWS[view])ensureView(pane);else{const bx=pane.querySelector(':scope>.rm-view');if(bx)ensureView(pane);}}
  else{pane.removeAttribute('data-rm-view');D.documentElement.classList.remove('rm-view');if(pane.querySelector(':scope>.rm-view'))ensureView(pane);}
  paintChans(pane);
- const cr=b.querySelector('.rm-crumb');cr.hidden=!(chat&&!view);if(!cr.hidden){const bk=cr.querySelector('.rm-back');if(bk.textContent!=='‹ '+tr('channels'))bk.textContent='‹ '+tr('channels');cr.querySelector('.rm-crumb-t').textContent='🌌 '+tr('chGalaxy');}
+ const cr=b.querySelector('.rm-crumb');cr.hidden=!(chat&&!view);if(!cr.hidden){const bk=cr.querySelector('.rm-back');if(bk.getAttribute('aria-label')!==tr('back')){bk.innerHTML='<i aria-hidden="true"></i>';bk.setAttribute('aria-label',tr('back'));}cr.querySelector('.rm-crumb-t').textContent=tr('chGalaxy');}
  const nm=b.querySelector('.rm-name');if(nm.textContent!==tr('community'))nm.textContent=tr('community');
  const lv=b.querySelector('.rm-live'),lh=liveHTML();if(lv.__h!==lh){lv.innerHTML=lh;lv.__h=lh;}
  const st=r&&C()?r.status():'';b.querySelector('.rm-menu-btn').setAttribute('aria-label',tr('menu')+' · '+(st==='in'?tr('youIn',{n:r.num(),c:r.members().length,cap:r.cap()}):tr('community')));
@@ -115,7 +119,15 @@ function paintChans(pane){let box=pane.querySelector(':scope>.rm-chans');if(view
    if(k==='galaxy')openThread();else if(k==='replies'){let d=null;try{d=c.directed();}catch(x){}const m=d&&d.list&&d.list[d.list.length-1];if(m&&c.openMessage){view='';c.openMessage(m.uid,m.id);paint();}}
    else if(k==='room')openSheet();else showView(k);});}
  box.hidden=false;
- const h='<h2 class="rm-ch-h">'+esc(tr('channels'))+'</h2><ul class="rm-ch-list">'+chanRows().map(x=>'<li><button type="button" class="rm-ch" data-ch="'+x.k+'"'+(x.dis?' disabled':'')+'><span class="rm-ch-ic" aria-hidden="true">'+x.ic+'</span><span class="rm-ch-txt"><span class="rm-ch-top"><b>'+esc(x.t)+'</b>'+(x.ts?'<time>'+esc(ago(x.ts))+'</time>':'')+'</span><span class="rm-ch-p">'+esc(String(x.p||'').replace(/\s+/g,' ').slice(0,140))+'</span></span>'+(x.n?'<span class="rm-ch-n" aria-label="'+esc(tr('unreadN',{c:x.n}))+'">'+(x.n>99?'99+':x.n)+'</span>':'')+'</button></li>').join('')+'</ul>';
+ /* Phase E (21 Oct 2026, Eman: "rebuild the whole Community, I don't like how it looks at all"; Eden's Plan screen in LOWiSPIKE's
+    dark galaxy): one clear thing on this view. A small live pill, one big headline, a muted line, ONE glass card with the three
+    community channels (icon tile, name, last line, thin dividers), and one big button into the galaxy chat. Creation and
+    Affiliates are their own sections in the pill control above, so they are not repeated here. */
+ const r=R(),inRoom=!!(r&&C()&&r.status()==='in'),pill=inRoom?'<i class="rm-l-dot" aria-hidden="true"></i>'+esc(tr('hereNow',{c:r.members().length})+' · '+tr('roomN',{n:r.num()})):esc(tr('community'));
+ const row=x=>'<li><button type="button" class="rm-ch" data-ch="'+x.k+'"'+(x.dis?' disabled':'')+'><span class="rm-ch-ic" data-ic="'+x.k+'" aria-hidden="true">'+x.ic+'</span><span class="rm-ch-txt"><span class="rm-ch-top"><b>'+esc(x.t)+'</b>'+(x.ts?'<time>'+esc(ago(x.ts))+'</time>':'')+'</span><span class="rm-ch-p">'+esc(String(x.p||'').replace(/\s+/g,' ').slice(0,140))+'</span></span>'+(x.n?'<span class="rm-ch-n" aria-label="'+esc(tr('unreadN',{c:x.n}))+'">'+(x.n>99?'99+':x.n)+'</span>':'<span class="rm-ch-go" aria-hidden="true"></span>')+'</button></li>';
+ const h='<div class="rm-l-hero"><span class="rm-l-pill">'+pill+'</span><h2 class="rm-l-h">'+esc(tr('lHead'))+'</h2><p class="rm-l-sub">'+esc(tr('lSub'))+'</p></div>'
+  +'<h3 class="rm-ch-h">'+esc(tr('channels'))+'</h3><ul class="rm-ch-list">'+chanRows().filter(x=>x.k==='galaxy'||x.k==='replies'||x.k==='room').map(row).join('')+'</ul>'
+  +'<button type="button" class="rm-l-go" data-ch="galaxy">'+esc(tr('lGo'))+'</button>';
  if(box.__h!==h){box.innerHTML=h;box.__h=h;}}
 /* Community menu (Eden's dropdown): only things that really work here. */
 function menuItems(){const it=[['people','👥',tr('mPeople')],['find','🔎',tr('find')]];
@@ -153,21 +165,22 @@ function fit(b){if(!b||!b.getBoundingClientRect)return;const head=b.querySelecto
  const v=need+'px';if(b.__fit!==v){b.__fit=v;b.style.setProperty('--rm-tr',v);}}
 /* Rooms sheet */
 function openSheet(){if(!R())return;if(!sheet){sheet=D.createElement('div');sheet.className='rm-sheet';sheet.setAttribute('role','dialog');sheet.setAttribute('aria-modal','true');sheet.setAttribute('data-noi18n','');
-  sheet.innerHTML='<div class="rm-card"><header><h2 class="rm-h"></h2><button type="button" class="rm-x" data-rs="close">×</button></header><p class="rm-you"></p><div class="rm-crew"></div><input class="rm-find" type="search" autocomplete="off" enterkeyhint="search"><ul class="rm-list"></ul></div>';
+  sheet.innerHTML='<div class="rm-card"><i class="rm-grab" aria-hidden="true"></i><header><h2 class="rm-h"></h2><button type="button" class="rm-x" data-rs="close">×</button></header><p class="rm-you"></p><div class="rm-crew"></div><input class="rm-find" type="search" autocomplete="off" enterkeyhint="search"><ul class="rm-list"></ul></div>';
   sheet.addEventListener('click',e=>{if(e.target===sheet){closeSheet();return;}const b=e.target.closest('[data-rs]');if(!b)return;const a=b.dataset.rs;
    if(a==='close')closeSheet();else if(a==='join'){b.disabled=true;R().joinRoom(+b.dataset.n).then(res=>{if(res.ok){closeSheet();note(tr('moved',{n:R().num()}));}else{note(tr('full'));refreshDir();}});}
    else if(a==='person'){b.disabled=true;const uid=b.dataset.uid,nm=b.dataset.name;if(b.dataset.mode==='knock')note(tr('knocking',{name:nm}));closeSheet();
     R().joinPerson(uid).then(res=>{if(res.ok){note(res.why==='here'?'':tr('moved',{n:R().num()}));}else note(res.why==='no-answer'?tr('noAnswer',{name:nm}):res.why==='full'?tr('full'):tr('nobody'));});}});
   sheet.querySelector('.rm-find').addEventListener('input',e=>{q=e.target.value.trim().toLowerCase();paintSheet();});
   sheet.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();closeSheet();}});}
- D.body.appendChild(sheet);sheet.querySelector('.rm-h').textContent=tr('rooms');sheet.querySelector('.rm-x').setAttribute('aria-label',tr('close'));const f=sheet.querySelector('.rm-find');f.placeholder=tr('find');f.setAttribute('aria-label',tr('find'));
+ D.body.appendChild(sheet);sheet.querySelector('.rm-h').textContent=tr('mPeople');sheet.querySelector('.rm-x').setAttribute('aria-label',tr('close'));const f=sheet.querySelector('.rm-find');f.placeholder=tr('find');f.setAttribute('aria-label',tr('find'));
  paintSheet();refreshDir();setTimeout(()=>{const x=sheet.querySelector('.rm-x');if(x)x.focus({preventScroll:true});},30);}
 function closeSheet(){if(sheet&&sheet.parentNode)sheet.parentNode.removeChild(sheet);q='';const b=bar&&bar.querySelector('.rm-menu-btn');if(b)b.focus({preventScroll:true});}
 let dirBusy=false;function refreshDir(){if(dirBusy||!R())return;dirBusy=true;R().readDirectory().catch(()=>{}).then(()=>{dirBusy=false;paintSheet();});}
 function paintSheet(){if(!sheet||!sheet.isConnected)return;const r=R(),cap=r.cap(),mine=r.num(),id=me();
  sheet.querySelector('.rm-you').textContent=r.status()==='in'?tr('youIn',{n:mine,c:r.members().length,cap}):tr(r.status()==='joining'?'joining':'offline');
- const crew=r.members().filter(u=>u!==id).map(u=>nameOf(u)).filter(Boolean).slice(0,24);
- sheet.querySelector('.rm-crew').innerHTML=crew.length?'<span class="rm-lab">'+esc(tr('people'))+'</span> '+crew.map(n=>'<span class="rm-p">'+esc(n)+'</span>').join(''):'';
+ const crew=r.members().filter(u=>u!==id).map(u=>({u,n:nameOf(u)})).filter(x=>x.n).slice(0,24);
+ /* Phase E: the people in your room as avatar chips (initials in their chat colour), Eden's members row */
+ sheet.querySelector('.rm-crew').innerHTML=crew.length?'<span class="rm-lab">'+esc(tr('people'))+'</span> '+crew.map(x=>'<span class="rm-p"><i aria-hidden="true" style="'+(colorOf(x.u)?'--fc:'+esc(colorOf(x.u)):'')+'">'+esc(initials(x.n))+'</i>'+esc(x.n)+'</span>').join(''):'';
  let rows=[];const list=r.rooms();
  if(q){for(const room of list)for(const u of room.u){if(u===id)continue;const n=nameOf(u);if(!n||n.toLowerCase().indexOf(q)<0)continue;const mode=room.n===mine?'here':C().joinMode(room,cap,room.g);
    rows.push('<li><span class="rm-who"><b>'+esc(n)+'</b><small>'+esc(tr('roomN',{n:room.n}))+'</small></span>'+(mode==='here'?'<em>'+esc(tr('yours'))+'</em>':mode==='full'?'<em>'+esc(tr('full'))+'</em>':'<button type="button" data-rs="person" data-mode="'+mode+'" data-uid="'+esc(u)+'" data-name="'+esc(n)+'">'+esc(tr(mode==='knock'?'knock':'join'))+'</button>')+'</li>');if(rows.length>=30)break;}}

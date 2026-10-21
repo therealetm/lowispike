@@ -939,3 +939,12 @@ Eman on the simplified page: "No, it looks shit. I wanted to be like this. It sh
 - Then three screens, each with a round back button: 1 Skript (series switch, on-screen text, scenes as rows, "Skript kopieren"), 2 Aufnahme (shot list, caption with "Caption kopieren", the personality/HeyGen/Higgsfield tip), 3 Verdienst (four levels, example totals, terms). The address keeps series and screen (#ugc, #ugc/shots, #webdesign/earn).
 - Look: dark blue galaxy with two glowing rings and a faint dot grid; cards and buttons are dark glass with a glowing cyan-to-green gradient edge (no white borders); the Start button is the brand cyan-green glow with dark text.
 - `tools/blueprint/check.cjs` walks the new flow and, on every screen (standalone and inside the in-app frame), fails on overlaps, stacked blocks closer than 8 px, icon touching text, text leaving its card, a headline under 30 px, sideways overflow or small tap targets. In the frame it taps the real point and fails if anything covers it.
+## 2026-10-21 — "What can I buy here?" has one entry point: Home's Fuel bubble
+
+**Status:** Accepted
+
+**Context:** Eman on the Cook screen: "The What can I buy emergency button already exists in the homepage, right? Does it make sense to also have it in there again? If not, remove it." store-picks.js injected the card under Cook it / Shop it, in the shopping list, the cart and the Meals sheets, on top of the Shop orb in Home's Fuel bubble.
+
+**Decision:** One entry point only: the Shop orb in Home's Fuel bubble (home-blooms-v2.js). It is an in-store feature, so it stays with Home, not Cook. The injected card, its MutationObserver, sosHTML and the .stp-sos styles are removed. tests/what-can-i-buy-once.test.cjs keeps it to exactly one caller of LowiStorePicks.open.
+
+**Consequences:** Cook it / Shop it flow straight into the recipe cards. A new place for the panel needs a new decision entry and an update to that test.

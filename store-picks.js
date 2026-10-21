@@ -2,7 +2,8 @@
    all the bread" and "even before entering the shop, be able to see every product that I can buy if I only eat insulin-friendly food").
    The "What can I buy here?" button and its Move-style panel. Logic and the formula live in store-picks-core.js; product ranges in
    data/shop/<range>.json; shop locations in data/shop/stores.json (both built by tools/shop-data/build.py, no keys on the phone).
-   The button sits under Cook it / Shop it, in the shopping list and cart, and in the Meals sheets. */
+   Oct 21, 2026 (Eman: "Does it make sense to also have it in there again? If not, remove it."): one entry point only, the Shop orb
+   in Home's Fuel bubble (home-blooms-v2.js). The old card under Cook it / Shop it, in the shopping list, cart and Meals sheets is gone. */
 (function (W, D) {
     'use strict';
     if (!W || !D || W.LowiStorePicks) return;
@@ -43,12 +44,6 @@
         pin: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="9.5" r="2.5" fill="currentColor"/></svg>',
         cart: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.5l2.2 10.5h10.6L21 7H7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.5" cy="19" r="1.6" fill="currentColor"/><circle cx="17" cy="19" r="1.6" fill="currentColor"/></svg>'
     };
-
-    function sosHTML(where) {
-        return '<button type="button" class="stp-sos" data-stp-open="1" data-stp-from="' + esc(where || '') + '"><span class="stp-sos-dot" aria-hidden="true">!</span><span class="stp-sos-t"><b>' +
-            esc(T('What can I buy here?', 'Was kann ich hier kaufen?', '¿Qué puedo comprar aquí?')) + '</b><small>' +
-            esc(T('Every low-spike product in your shop', 'Alle Produkte mit wenig Blutzucker-Spike in deinem Laden', 'Todos los productos de tu tienda que no disparan el azúcar')) + '</small></span></button>';
-    }
 
     function storeLine() {
         if (!S.range) return '';
@@ -434,32 +429,10 @@
         setTimeout(() => { try { o.remove(); } catch (e) {} }, 260);
     }
 
-    /* put the button where food decisions happen: under Cook it / Shop it, in the shopping list and cart, in the Meals sheets */
-    const SPOTS = [['#csHub', 'cook'], ['.ss-entry', 'shop'], ['.wme-sheet .wme-log', 'meals']];
-    function decorate() {
-        SPOTS.forEach(([sel, from]) => {
-            D.querySelectorAll(sel).forEach(el => {
-                const nx = el.nextElementSibling;
-                if (nx && nx.classList && nx.classList.contains('stp-sos')) return;
-                const w = D.createElement('div'); w.innerHTML = sosHTML(from);
-                el.insertAdjacentElement('afterend', w.firstChild);
-            });
-        });
-    }
-    let pend = 0;
-    function soon() { if (pend) return; pend = requestAnimationFrame(() => { pend = 0; try { decorate(); } catch (e) {} }); }
-    D.addEventListener('click', e => {
-        const b = e.target && e.target.closest && e.target.closest('[data-stp-open]');
-        if (!b) return;
-        e.preventDefault(); e.stopPropagation();
-        openPanel(b.getAttribute('data-stp-from'));
-    }, true);
     function boot() {
-        decorate();
-        try { new MutationObserver(soon).observe(D.body, { childList: true, subtree: true }); } catch (e) {}
-        W.addEventListener('lowi:lang', () => { D.querySelectorAll('.stp-sos').forEach(b => b.remove()); decorate(); if (ov) paint(data ? 'keep' : undefined); });
+        W.addEventListener('lowi:lang', () => { if (ov) paint(data ? 'keep' : undefined); });
     }
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 
-    W.LowiStorePicks = { open: openPanel, close, sosHTML, state: () => JSON.parse(JSON.stringify(S)), isOpen: () => !!ov, snacks: () => JSON.parse(JSON.stringify(snacks)) };
+    W.LowiStorePicks = { open: openPanel, close, state: () => JSON.parse(JSON.stringify(S)), isOpen: () => !!ov, snacks: () => JSON.parse(JSON.stringify(snacks)) };
 })(typeof window !== 'undefined' ? window : null, typeof document !== 'undefined' ? document : null);

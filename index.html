@@ -1949,7 +1949,7 @@ html[data-ui=light] #lcUpd.lc-upd .lc-ud{background:#fff}
 const KEY = "lowi_fast_v1";
 const PER_H = 2, CAP_H = 16, /* xpm: hourly fast points stop at 16 h, longer fasts earn nothing extra */ GOAL_X = 20, MIN_H = 4, MEAL_MIN_H = 8;
 const MS = [{h:8, x:5, i:2}, {h:12, x:5, i:3}, {h:14, x:5, i:4}, {h:16, x:10, i:5}];
-const MS_EN = {8:"Liver takes over", 12:"Fat burning ramps up", 14:"Ketones start to rise", 16:"Cell cleanup, maybe"};
+const MS_EN = {8:"Liver often takes over", 12:"Fat burning often picks up", 14:"Ketones may start rising", 16:"Cell cleanup, maybe"}; /* soft-ms (Oct 21): typical, not promised */
 const W = {
   en: {stop:"Stop", stopAria:"Stop fast: I just ate", btnNow:"I just ate · end fast", btnAt:"I ate at {t} · end fast", title:"End your fast", fasted:"You fasted", since:"since {t}",
     when:"When did you eat?", hint:"Ate earlier? Tap a time, or tap the clock to pick your own.", now:"Just now", agoM:"{n} min ago", agoH:"{n} h ago", other:"Other time",
@@ -5501,40 +5501,41 @@ var FAST_IMG={"rise":"data:image/webp;base64,UklGRggTAABXRUJQVlA4IPwSAAAQfgCdASo
 const KEY = "lowi_fast_v1";
 const STAGES = [
   {id:"rise", h:0, n:"Blood sugar rises", t:"Right after your last meal",
-   x:"Carbs from your meal turn into glucose, so your <b>blood sugar rises</b>. <b>Insulin</b> moves it into your cells. Smaller rises here are what LOWiSPIKE is all about."},
-  {id:"settle", h:3, n:"Blood sugar settles", t:"Begins around 3 h after your last meal",
-   x:"Most of the meal is handled, and blood sugar drifts back toward your <b>baseline</b>. <b>Insulin falls</b> with it. A big or sugary meal can take longer."},
-  {id:"liver", h:8, n:"Liver takes over", t:"Begins around 8 h after your last meal",
-   x:"With no new food coming in, your liver keeps blood sugar steady from its <b>stored glucose (glycogen)</b>. The hormone <b>glucagon</b> helps signal this."},
-  {id:"fat", h:12, n:"Fat burning ramps up", t:"Begins around 12 h after your last meal",
-   x:"As those stores run lower, your body leans more on <b>fat for fuel</b>. It's a gradual shift, not a switch, and the timing varies by person."},
-  {id:"ketones", h:14, n:"Ketones start to rise", t:"Begins around 14 h after your last meal",
-   x:"Your liver turns some fat into <b>ketones</b>, an extra fuel for brain and muscles. Levels are still low now and climb more after a day or so. Some people feel <b>steadier energy</b>."},
-  {id:"cleanup", h:16, n:"Cell cleanup, maybe", t:"Roughly 16 h and beyond",
+   x:"Carbs from your meal turn into glucose, so your <b>blood sugar rises</b>. How high depends on the meal and on you. <b>Insulin</b> moves it into your cells. Smaller rises right here, that's what LOWiSPIKE is all about."},
+  /* soft-ms (Oct 21, Eman's OK): the markers below are typical, not promised. Same hours, but no line says your body WILL do X at a fixed hour. */
+  {id:"settle", h:3, n:"Blood sugar often settles", t:"For most people, around 3 h in",
+   x:"For most people, the meal is mostly handled by now and blood sugar drifts back toward your <b>baseline</b>, with <b>insulin falling</b> too. A big or sugary meal can take longer. Your body, your pace."},
+  {id:"liver", h:8, n:"Liver often takes over", t:"For many people, around 8 h in",
+   x:"No new food coming in, so your liver usually keeps blood sugar steady from its <b>stored glucose (glycogen)</b>, with the hormone <b>glucagon</b> giving the signal. When that kicks in is different for everyone."},
+  {id:"fat", h:12, n:"Fat burning often picks up", t:"For many people, around 12 h in",
+   x:"For many people, <b>fat</b> starts doing more of the work around here as those stores run lower. It's a slow shift, not a switch, and your body sets its own clock. Stay with it."},
+  {id:"ketones", h:14, n:"Ketones may start rising", t:"For some people, around 14 h in",
+   x:"Your liver can start turning some fat into <b>ketones</b>, an extra fuel for brain and muscles. If it happens this early, levels are still low, and they usually climb more after a day or so. Some people feel <b>steadier energy</b>. Notice what you feel."},
+  {id:"cleanup", h:16, n:"Cell cleanup, maybe", t:"Maybe from about 16 h, nobody knows exactly",
    x:"<b>Autophagy</b> is your cells recycling worn-out parts. Longer fasts seem to boost it, but in people the timing <b>isn't well measured</b>. Treat this as a rough marker, not a promise."}
 ];
-const HEDGE = "Rough timings. Your last meal, activity and body all shift them. On diabetes medication? Ask your doctor before fasting.";
+const HEDGE = "Every body runs its own clock. Your last meal, how you move and your body all shift these times. On diabetes medication? Ask your doctor before fasting.";
 /* fs-l10n */
 const FS_EN = STAGES.map(s => ({n:s.n, t:s.t, x:s.x}));
 const FS_UI = {
   en: {of:"of", now:"Fasting · your body now", next:(n, d) => "Next: " + n.toLowerCase() + " in about " + d, past:"Past the last marker. Listen to your body.", last:"Last meal", water:"+ Water", waterAria:"Add a cup of water", status:"Body status", here:d => "You are here · " + d + " in", inAbout:"In about", hedge:HEDGE, when:"When did you last eat?", justNow:"Just now", m:"m"},
-  de: {of:"von", now:"Fasten · dein Körper gerade", next:(n, d) => "Als Nächstes: " + n + " in etwa " + d, past:"Über die letzte Marke hinaus. Hör auf deinen Körper.", last:"Letzte Mahlzeit", water:"+ Wasser", waterAria:"Ein Glas Wasser hinzufügen", status:"Körperstatus", here:d => "Du bist hier · seit " + d, inAbout:"In etwa", hedge:"Grobe Zeiten. Deine letzte Mahlzeit, Bewegung und dein Körper verschieben sie. Du nimmst Diabetes-Medikamente? Frag vor dem Fasten deine Ärztin oder deinen Arzt.", when:"Wann hast du zuletzt gegessen?", justNow:"Gerade eben", m:"min",
+  de: {of:"von", now:"Fasten · dein Körper gerade", next:(n, d) => "Als Nächstes: " + n + " in etwa " + d, past:"Über die letzte Marke hinaus. Hör auf deinen Körper.", last:"Letzte Mahlzeit", water:"+ Wasser", waterAria:"Ein Glas Wasser hinzufügen", status:"Körperstatus", here:d => "Du bist hier · seit " + d, inAbout:"In etwa", hedge:"Jeder Körper hat seine eigene Uhr. Deine letzte Mahlzeit, Bewegung und dein Körper verschieben diese Zeiten. Du nimmst Diabetes-Medikamente? Frag vor dem Fasten deine Ärztin oder deinen Arzt.", when:"Wann hast du zuletzt gegessen?", justNow:"Gerade eben", m:"min",
     st:[
-      {n:"Blutzucker steigt", t:"Direkt nach deiner letzten Mahlzeit", x:"Kohlenhydrate aus deiner Mahlzeit werden zu Glukose, deshalb <b>steigt dein Blutzucker</b>. <b>Insulin</b> bringt sie in deine Zellen. Kleinere Anstiege genau hier sind das, worum es bei LOWiSPIKE geht."},
-      {n:"Blutzucker beruhigt sich", t:"Beginnt etwa 3 h nach deiner letzten Mahlzeit", x:"Der Großteil der Mahlzeit ist verarbeitet, und dein Blutzucker sinkt zurück Richtung <b>Ausgangswert</b>. <b>Das Insulin sinkt</b> mit. Nach einer großen oder süßen Mahlzeit kann das länger dauern."},
-      {n:"Die Leber übernimmt", t:"Beginnt etwa 8 h nach deiner letzten Mahlzeit", x:"Ohne neues Essen hält deine Leber den Blutzucker mit <b>gespeicherter Glukose (Glykogen)</b> stabil. Das Hormon <b>Glukagon</b> gibt dafür das Signal."},
-      {n:"Fettverbrennung zieht an", t:"Beginnt etwa 12 h nach deiner letzten Mahlzeit", x:"Wenn diese Speicher leerer werden, nutzt dein Körper mehr <b>Fett als Energie</b>. Das ist ein allmählicher Übergang, kein Schalter, und der Zeitpunkt ist bei jedem anders."},
-      {n:"Ketone steigen", t:"Beginnt etwa 14 h nach deiner letzten Mahlzeit", x:"Deine Leber macht aus etwas Fett <b>Ketone</b>, einen zusätzlichen Treibstoff für Gehirn und Muskeln. Die Werte sind jetzt noch niedrig und steigen nach etwa einem Tag stärker. Manche spüren <b>gleichmäßigere Energie</b>."},
-      {n:"Zellreinigung, vielleicht", t:"Etwa ab 16 h", x:"<b>Autophagie</b> heißt: Deine Zellen recyceln verbrauchte Teile. Längeres Fasten scheint sie zu verstärken, aber beim Menschen ist der Zeitpunkt <b>nicht gut gemessen</b>. Sieh das als groben Anhaltspunkt, nicht als Versprechen."}
+      {n:"Blutzucker steigt", t:"Direkt nach deiner letzten Mahlzeit", x:"Kohlenhydrate aus deiner Mahlzeit werden zu Glukose, deshalb <b>steigt dein Blutzucker</b>. Wie stark, hängt von der Mahlzeit und von dir ab. <b>Insulin</b> bringt sie in deine Zellen. Kleinere Anstiege genau hier, darum geht es bei LOWiSPIKE."},
+      {n:"Blutzucker beruhigt sich oft", t:"Bei den meisten etwa ab 3 h", x:"Bei den meisten ist die Mahlzeit jetzt größtenteils verarbeitet, und der Blutzucker sinkt zurück Richtung <b>Ausgangswert</b>, <b>das Insulin</b> mit. Nach einer großen oder süßen Mahlzeit kann das länger dauern. Dein Körper, dein Tempo."},
+      {n:"Die Leber übernimmt oft", t:"Bei vielen etwa ab 8 h", x:"Ohne neues Essen hält deine Leber den Blutzucker meist mit <b>gespeicherter Glukose (Glykogen)</b> stabil, das Hormon <b>Glukagon</b> gibt das Signal. Wann das losgeht, ist bei jedem anders."},
+      {n:"Fettverbrennung zieht oft an", t:"Bei vielen etwa ab 12 h", x:"Bei vielen übernimmt <b>Fett</b> jetzt mehr von der Arbeit, weil die Speicher leerer werden. Das ist ein langsamer Übergang, kein Schalter, und dein Körper hat seine eigene Uhr. Bleib dran."},
+      {n:"Ketone steigen vielleicht", t:"Bei manchen etwa ab 14 h", x:"Deine Leber kann jetzt anfangen, aus etwas Fett <b>Ketone</b> zu machen, einen zusätzlichen Treibstoff für Gehirn und Muskeln. Wenn, dann sind die Werte noch niedrig und steigen meist erst nach etwa einem Tag stärker. Manche spüren <b>gleichmäßigere Energie</b>. Achte darauf, was du spürst."},
+      {n:"Zellreinigung, vielleicht", t:"Vielleicht ab etwa 16 h, genau weiß das niemand", x:"<b>Autophagie</b> heißt: Deine Zellen recyceln verbrauchte Teile. Längeres Fasten scheint sie zu verstärken, aber beim Menschen ist der Zeitpunkt <b>nicht gut gemessen</b>. Sieh das als groben Anhaltspunkt, nicht als Versprechen."}
     ]},
-  es: {of:"de", now:"Ayuno · tu cuerpo ahora", next:(n, d) => "Siguiente: " + n.toLowerCase() + " en unos " + d, past:"Pasaste la última marca. Escucha a tu cuerpo.", last:"Última comida", water:"+ Agua", waterAria:"Añadir un vaso de agua", status:"Estado del cuerpo", here:d => "Estás aquí · llevas " + d, inAbout:"En unos", hedge:"Tiempos aproximados. Tu última comida, tu actividad y tu cuerpo los cambian. ¿Tomas medicación para la diabetes? Consulta a tu médico antes de ayunar.", when:"¿Cuándo comiste por última vez?", justNow:"Ahora mismo", m:"min",
+  es: {of:"de", now:"Ayuno · tu cuerpo ahora", next:(n, d) => "Siguiente: " + n.toLowerCase() + " en unos " + d, past:"Pasaste la última marca. Escucha a tu cuerpo.", last:"Última comida", water:"+ Agua", waterAria:"Añadir un vaso de agua", status:"Estado del cuerpo", here:d => "Estás aquí · llevas " + d, inAbout:"En unos", hedge:"Cada cuerpo lleva su propio reloj. Tu última comida, tu actividad y tu cuerpo cambian estos tiempos. ¿Tomas medicación para la diabetes? Consulta a tu médico antes de ayunar.", when:"¿Cuándo comiste por última vez?", justNow:"Ahora mismo", m:"min",
     st:[
-      {n:"El azúcar en sangre sube", t:"Justo después de tu última comida", x:"Los carbohidratos de tu comida se convierten en glucosa, así que <b>tu azúcar en sangre sube</b>. La <b>insulina</b> la lleva a tus células. Que estas subidas sean más pequeñas es justo de lo que va LOWiSPIKE."},
-      {n:"El azúcar en sangre se calma", t:"Empieza unas 3 h después de tu última comida", x:"La mayor parte de la comida ya está procesada y el azúcar vuelve hacia tu <b>nivel base</b>. <b>La insulina baja</b> con él. Una comida grande o dulce puede tardar más."},
-      {n:"El hígado toma el relevo", t:"Empieza unas 8 h después de tu última comida", x:"Sin comida nueva, tu hígado mantiene estable el azúcar con su <b>glucosa almacenada (glucógeno)</b>. La hormona <b>glucagón</b> ayuda a dar la señal."},
-      {n:"Se activa la quema de grasa", t:"Empieza unas 12 h después de tu última comida", x:"Cuando esas reservas bajan, tu cuerpo usa más <b>grasa como combustible</b>. Es un cambio gradual, no un interruptor, y el momento varía según la persona."},
-      {n:"Empiezan a subir las cetonas", t:"Empieza unas 14 h después de tu última comida", x:"Tu hígado convierte algo de grasa en <b>cetonas</b>, un combustible extra para el cerebro y los músculos. Los niveles aún son bajos y suben más después de un día o así. Algunas personas notan una <b>energía más estable</b>."},
-      {n:"Limpieza celular, quizá", t:"A partir de unas 16 h de ayuno", x:"La <b>autofagia</b> es tus células reciclando piezas gastadas. Los ayunos largos parecen aumentarla, pero en personas el momento <b>no está bien medido</b>. Tómalo como una referencia aproximada, no como una promesa."}
+      {n:"El azúcar en sangre sube", t:"Justo después de tu última comida", x:"Los carbohidratos de tu comida se convierten en glucosa, así que <b>tu azúcar en sangre sube</b>. Cuánto, depende de la comida y de ti. La <b>insulina</b> la lleva a tus células. Subidas más pequeñas justo aquí, de eso va LOWiSPIKE."},
+      {n:"El azúcar suele calmarse", t:"En la mayoría, hacia las 3 h", x:"En la mayoría, la comida ya está casi procesada y el azúcar vuelve hacia tu <b>nivel base</b>, y <b>la insulina baja</b> con él. Una comida grande o dulce puede tardar más. Tu cuerpo, tu ritmo."},
+      {n:"El hígado suele tomar el relevo", t:"En muchas personas, hacia las 8 h", x:"Sin comida nueva, tu hígado suele mantener estable el azúcar con su <b>glucosa almacenada (glucógeno)</b>, y la hormona <b>glucagón</b> da la señal. Cuándo empieza es distinto en cada persona."},
+      {n:"La quema de grasa suele subir", t:"En muchas personas, hacia las 12 h", x:"En muchas personas, la <b>grasa</b> empieza a hacer más trabajo por aquí, porque esas reservas bajan. Es un cambio lento, no un interruptor, y tu cuerpo lleva su propio reloj. Sigue."},
+      {n:"Las cetonas quizá suban", t:"En algunas personas, hacia las 14 h", x:"Tu hígado puede empezar a convertir algo de grasa en <b>cetonas</b>, un combustible extra para el cerebro y los músculos. Si pasa tan pronto, los niveles aún son bajos y suelen subir más después de un día o así. Algunas personas notan una <b>energía más estable</b>. Fíjate en lo que sientes."},
+      {n:"Limpieza celular, quizá", t:"Quizá desde unas 16 h, nadie lo sabe con exactitud", x:"La <b>autofagia</b> es tus células reciclando piezas gastadas. Los ayunos largos parecen aumentarla, pero en personas el momento <b>no está bien medido</b>. Tómalo como una referencia aproximada, no como una promesa."}
     ]}
 };
 const fsLang = () => { try { const l = window.LowiLang && LowiLang.get ? LowiLang.get() : "en"; return FS_UI[l] ? l : "en"; } catch(e){ return "en"; } };
@@ -8117,7 +8118,7 @@ function cards(){
        '<div class="a2-row good"><div class="a2-ic" aria-hidden="true">🥬</div><div class="a2-rt"><b>Lettuce-wrap burger</b><div>' + SPIKE(1, "Low spike") + '</div></div></div></div>'},
     {id:"fast", h:"Know the exact minute.", p:"Every fasting milestone shows its clock time, from your last meal.",
      v:'<div class="a2-fast"><div class="a2-fh"><span>Last meal</span><b class="a2-clk" data-h="' + meal + '">' + clock(meal) + '</b></div>' +
-       [[12, "Fat burning"], [14, "Ketosis"], [16, "Your goal"]].map((m, i) => '<div class="a2-ms' + (i === 2 ? " goal" : "") + '"><i></i><span class="a2-msh">' + m[0] + ' h</span><span class="a2-msn">' + m[1] + '</span><b class="a2-clk" data-h="' + ((meal + m[0]) % 24) + '">' + clock((meal + m[0]) % 24) + '</b></div>').join("") + '</div>'},
+       [[12, "Fat burn, often"], [14, "Ketones, maybe"], [16, "Your goal"]] /* soft-ms */.map((m, i) => '<div class="a2-ms' + (i === 2 ? " goal" : "") + '"><i></i><span class="a2-msh">' + m[0] + ' h</span><span class="a2-msn">' + m[1] + '</span><b class="a2-clk" data-h="' + ((meal + m[0]) % 24) + '">' + clock((meal + m[0]) % 24) + '</b></div>').join("") + '</div>'},
     {id:"cook", h:"Any meal, rebuilt.", p:"Send a photo to the LOWiSPIKE GPT. Get the swap as a carousel, ready to cook or post.",
      v:'<div class="a2-cook"><div class="a2-photo" aria-hidden="true">🍝</div><div class="a2-to" aria-hidden="true">→</div>' +
        '<div class="a2-car"><div class="a2-sl"><b>1</b><span>Swap</span></div><div class="a2-sl"><b>2</b><span>Ingredients</span></div><div class="a2-sl"><b>3</b><span>Steps</span></div></div></div>'},
@@ -8183,8 +8184,8 @@ function addLang(){ if (!window.LowiLang || !LowiLang.add) return setTimeout(add
   ["Know the exact minute.", "Kenn die genaue Minute.", "Conoce el minuto exacto."],
   ["Every fasting milestone shows its clock time, from your last meal.", "Jeder Fasten-Meilenstein zeigt seine Uhrzeit, ab deiner letzten Mahlzeit.", "Cada hito del ayuno muestra su hora, desde tu última comida."],
   ["Last meal", "Letzte Mahlzeit", "Última comida"],
-  ["Fat burning", "Fettverbrennung", "Quema de grasa"],
-  ["Ketosis", "Ketose", "Cetosis"],
+  ["Fat burn, often", "Fettverbrennung, oft", "Quema de grasa, a menudo"],
+  ["Ketones, maybe", "Ketone, vielleicht", "Cetonas, quizá"],
   ["Your goal", "Dein Ziel", "Tu meta"],
   ["Any meal, rebuilt.", "Jedes Gericht, neu gebaut.", "Cualquier plato, rehecho."],
   ["Send a photo to the LOWiSPIKE GPT. Get the swap as a carousel, ready to cook or post.", "Schick ein Foto an den LOWiSPIKE-GPT. Du bekommst den Tausch als Karussell, fertig zum Kochen oder Posten.", "Envía una foto al GPT de LOWiSPIKE. Recibe el cambio como carrusel, listo para cocinar o publicar."],
@@ -19126,7 +19127,7 @@ function level(){ const c = core(), xp = +c.xp || 0; try { const o = levelOf(xp)
 function streak(){ try { if (window.LowiN1 && LowiN1.streakDays) { const d = LowiN1.streakDays(); if (d) return d; } } catch(e){} const c = core(); return c.streak ? +c.streak.days || 0 : 0; }
 function fstart(){ try { if (window.LowiFastStop && LowiFastStop.startOf) return +LowiFastStop.startOf() || 0; } catch(e){} return +js("lowi_fast_v1").last || 0; }
 function goalH(){ try { if (window.LowiFE && LowiFE.target) return +LowiFE.target() || 16; } catch(e){} return +js("lowi_fast_v1").target || 16; }
-function stages(){ try { if (window.LowiFast && LowiFast.stages) return LowiFast.stages(); } catch(e){} return [{h:3, n:"Blood sugar settles"}, {h:8, n:"Liver takes over"}, {h:12, n:"Fat burning ramps up"}, {h:14, n:"Ketones start to rise"}, {h:16, n:"Cell cleanup, maybe"}]; }
+function stages(){ try { if (window.LowiFast && LowiFast.stages) return LowiFast.stages(); } catch(e){} return [{h:3, n:"Blood sugar often settles"}, {h:8, n:"Liver often takes over"}, {h:12, n:"Fat burning often picks up"}, {h:14, n:"Ketones may start rising"}, {h:16, n:"Cell cleanup, maybe"}]; }
 function clk(ts){ try { if (window.LowiFE && LowiFE.at) return LowiFE.at(ts, 0); } catch(e){} const d = new Date(ts); return p2(d.getHours()) + ":" + p2(d.getMinutes()); }
 function dur(ms){ const m = Math.max(0, Math.round(ms / 6e4)), h = Math.floor(m / 60); return h ? w("hm", {h, m:m % 60}) : w("m", {m}); }
 const hTxt = h => { const m = Math.round(h * 60); return m % 60 ? Math.floor(m / 60) + ":" + p2(m % 60) : String(m / 60); };

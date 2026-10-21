@@ -621,12 +621,10 @@
         if (r.mode === 'home') {
             /* Oct 17 (handoff 6, E-man: zoomed-out Home by default, "like physically pulling back"): the first time Home's world shows,
                the one camera starts at Misty's close-up and glides back to the zoomed-out rest view. Once per session, never with reduced motion. */
-            if (!st.restIntro && r.homeRest && homeActive() && H.classList.contains('wh-world-live')) {
-                st.restIntro = true;
-                if (!reduced() && !st.zoomAnim && !st.pull && !r.fly && !inRegion() && Math.abs(r.dist - r.homeRest) < r.homeRest * 0.02) {
-                    r.dist = r.homeDist; st.zoomAnim = { to: r.homeRest, rel: 1, t: 0, rate: 1.8, log: true };
-                }
-            }
+            /* Oct 21 (E-man: "the moment you open the app, we're there. Good to go"): the opening glide is gone. It took up to 2.5 s of
+               frame time (longer on a busy phone, since each frame counts at most 0.05 s) and the ring controls grew and slid while it ran,
+               so the first taps missed. Home now opens straight at the zoomed-out rest view; the flag stays so nothing else replays it. */
+            if (!st.restIntro && r.homeRest && homeActive() && H.classList.contains('wh-world-live')) st.restIntro = true;
             /* Oct 16 (task 3): past the World Map the world opens into the spirit world (pinch, wheel or the zoom stick). Misty's
                cell, the place names and the hints step aside out there; at its far edge the camera hands over to Community. */
             r.outer = !reduced();

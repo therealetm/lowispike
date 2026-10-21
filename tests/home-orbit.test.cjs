@@ -75,6 +75,7 @@ test('zoomed-out Home is the default: the scene rests pulled back, everything th
     assert.ok(1 / 1.4 > 0.6, 'rest zoom stays above wh-mapview (Misty keeps her name)');
     assert.ok(wh.includes("function baseDist(r) { return r && r.mode === 'home' ? (r.homeRest || r.homeDist || 3.2) : 6.5; }"));
     assert.ok(mf.includes('S.dHome = r.homeRest || r.homeDist || 3.2;'), 'flying back from outer worlds lands on the rest view');
-    assert.ok(wh.includes('r.dist = r.homeDist; st.zoomAnim = { to: r.homeRest, rel: 1, t: 0, rate: 1.8, log: true };'), 'first view glides back from the close-up');
-    assert.ok(wh.includes('if (!reduced() && !st.zoomAnim && !st.pull && !r.fly && !inRegion()'), 'no intro with reduced motion or mid-trip');
+    /* Oct 21 (open instantly): no opening glide from Misty's close-up any more; Home opens at the rest view, ring controls still */
+    assert.ok(!wh.includes('r.dist = r.homeDist; st.zoomAnim = { to: r.homeRest, rel: 1, t: 0, rate: 1.8, log: true };'), 'no opening glide back from the close-up');
+    assert.ok(wh.includes("if (!st.restIntro && r.homeRest && homeActive() && H.classList.contains('wh-world-live')) st.restIntro = true;"), 'the once-per-session flag is still set, so nothing replays an intro');
 });

@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
 <meta name="lowi-build" content="20261021-151646">
+<!-- Oct 21 (open instantly): Home's 3D world (three.js + its scene) starts downloading with the page, not after the app has booted.
+     Same URLs body-world-3d.js imports, so the browser reuses these. -->
+<link rel="modulepreload" href="vendor/three-0.160.1.module.min.js?v=20261021-151646">
+<link rel="modulepreload" href="body-world-3d-scene.js?v=20261021-151646">
 <link rel="manifest" href="manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2412,7 +2416,12 @@ function seenList(){ try { const a = JSON.parse(localStorage.getItem(SEEN) || "[
 function newsSeen(id){ if (!id) return true; if (seenList().indexOf(id) >= 0) return true; try { if (localStorage.getItem("lowi.g1.bn") === id) return true; } catch(e){} return mem().n === id; }
 function markSeen(id){ if (!id) return; const a = seenList().filter(x => x !== id); a.push(id); try { localStorage.setItem(SEEN, JSON.stringify(a.slice(-40))); } catch(e){} if (mem().n !== id) remember({n:id}); }
 let newsLoaded = false, fromBanner = false;
-async function loadNews(){ try { const r = await fetch("version.json?g1n=" + Date.now(), {cache:"no-store"}); if (r.ok) { const v = await r.json(); if (v && v.news && v.news.id && v.news.text && v.build && v.build === BUILD_NOW) NEWS = v.news; } } catch(e){} newsLoaded = true; return NEWS; }
+/* Oct 21 (open instantly): version.json carries every What's New text (about 290 KB, 100 KB gzipped) and this ran on every launch
+   with no-store, so each open downloaded it in full while the app was still starting. Now it waits until the launch screen is gone
+   (plus a moment), and it revalidates instead of re-downloading: an unchanged file is a tiny "not modified" answer. */
+function loadNewsLater(){ let go = false; const run = () => { if (go) return; go = true; setTimeout(loadNews, 1500); };
+  try { if (!window.LowiBoot || (window.LowiBoot.done && window.LowiBoot.done())) run(); else { window.addEventListener("lowi:boot-ready", run, {once:true}); setTimeout(run, 9000); } } catch(e){ run(); } }
+async function loadNews(){ try { const r = await fetch("version.json", {cache:"no-cache"}); if (r.ok) { const v = await r.json(); if (v && v.news && v.news.id && v.news.text && v.build && v.build === BUILD_NOW) NEWS = v.news; } } catch(e){} newsLoaded = true; return NEWS; }
 
 /* ---------- the orb look: a live copy of the scan orb's own styles ---------- */
 function cloneOrbCss(){ if ($("#g1OrbCss")) return; let out = "";
@@ -2759,7 +2768,7 @@ function tick(){ if (document.hidden) return; if (TOUR) { helpPlace(); return; }
   if (NEWS && NEWS.id && newsGo() === "steps" && !toured(NEWS.id)) { offerTour(); return; } /* Oct 16: after an update, "Show me what's new" */
   if (NEWS && NEWS.id && !newsSeen(NEWS.id)) { offerNews(); return; } } /* b2-offer: once per news id */
 
-function init(){ H.classList.add("g1"); helpBtn(); helpPlace(); decorate(); loadNews();
+function init(){ H.classList.add("g1"); helpBtn(); helpPlace(); decorate(); loadNewsLater();
   const watch = () => { const d = $("#lcUpd"); if (d) { redeco(); if (!d.__g1) { d.__g1 = 1; new MutationObserver(redeco).observe(d, {childList:true}); } } else if (OB && OB.kind === "update") redeco(); };
   new MutationObserver(watch).observe(H, {childList:true}); watch();
   setInterval(tick, 1500);
@@ -3717,7 +3726,7 @@ html.n1-talk #n1B .g1-mini .g1-face u{animation:g1Talk .28s ease-in-out 4 altern
 
 
 </style>
-<link rel="stylesheet" href="updates.css">
+<link rel="stylesheet" href="updates.css?v=20261021-151646">
 <link rel="stylesheet" id="obwCss" href="onboarding-world.css?v=20261021-151646">
 </head>
 <body>
@@ -19812,9 +19821,9 @@ html.q4b-off #lcA2hs{display:none!important}
   window.LowiQ4b = {sync};
 })();
 </script>
-<script src="recipe-book.js"></script>
-<script src="appearance.js"></script>
-<link rel="stylesheet" href="apple-ui.css">
+<script src="recipe-book.js?v=20261021-151646"></script>
+<script src="appearance.js?v=20261021-151646"></script>
+<link rel="stylesheet" href="apple-ui.css?v=20261021-151646">
 <script>
 /* Companion bridge: native state, single XP ledger, stable IDs for completed actions. */
 window.LowiVitalsBridge = {
@@ -19884,11 +19893,11 @@ window.LowiVitalsBridge = {
 };
 </script>
 <script>window.LowiSpiritHost={recipeImage:id=>typeof FOOD_IMG!=="undefined"?FOOD_IMG[id]||"":"",recipe:id=>window.LowiP2?LowiP2.rec(id):null,cook:id=>window.LowiP2&&LowiP2.cook?LowiP2.cook(id):null};</script>
-<script src="apple-ui.js"></script>
-<link rel="stylesheet" href="discovery.css">
-<script src="discovery-config.js"></script>
-<script src="discovery-core.js"></script>
-<script src="discovery.js"></script>
+<script src="apple-ui.js?v=20261021-151646"></script>
+<link rel="stylesheet" href="discovery.css?v=20261021-151646">
+<script src="discovery-config.js?v=20261021-151646"></script>
+<script src="discovery-core.js?v=20261021-151646"></script>
+<script src="discovery.js?v=20261021-151646"></script>
 <script>
 /* Bridges into the existing library/storage; no separate swaps or shopping database. */
 window.LowiSwafloBridge = {
@@ -19901,10 +19910,10 @@ window.LowiSwafloBridge = {
   }
 };
 </script>
-<link rel="stylesheet" href="swaflo.css">
-<script src="swaflo-config.js"></script>
-<script src="swaflo-core.js"></script>
-<script src="swaflo.js"></script>
+<link rel="stylesheet" href="swaflo.css?v=20261021-151646">
+<script src="swaflo-config.js?v=20261021-151646"></script>
+<script src="swaflo-core.js?v=20261021-151646"></script>
+<script src="swaflo.js?v=20261021-151646"></script>
 <style id="hofcss">
 /* LOWiSPIKE HOF (Oct 14, 2026): carry the sign-in from Safari into the Home Screen app */
 #hofSheet{position:fixed;inset:0;z-index:320;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55)}

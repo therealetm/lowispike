@@ -20,6 +20,7 @@ self.addEventListener("activate", e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k.indexOf("lowispike-steps") !== 0 && k !== "lowi-handoff").map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
 const scopePath = new URL(self.registration.scope).pathname;
+const PAGE_WAIT = 1500; /* ms a launch waits for the network before it opens the saved page */
 function isPage(req, url){ return req.mode === "navigate" || url.pathname === scopePath || url.pathname === scopePath + "index.html"; }
 async function stampPage(res){
   // The loaded HTML is authoritative; never relabel stale HTML as a new app build.
@@ -38,10 +39,26 @@ self.addEventListener("fetch", e => {
     return;
   }
   if (isPage(req, url)) {
-    e.respondWith(fetch(url.pathname + url.search, {cache:"no-cache", credentials:"same-origin"}).then(stampPage).then(res => {
+    /* Oct 21 (open instantly): still network first, but a launch no longer waits on a slow or half-dead connection. If the network
+       has not answered within PAGE_WAIT, the copy of the page saved on the phone opens, and the network answer still refreshes that
+       copy in the background. The opened page names its own build, so the usual "New version" check takes it from there. A tapped
+       update (?v=<build>) and a first launch with nothing saved still wait for the network. */
+    const net = fetch(url.pathname + url.search, {cache:"no-cache", credentials:"same-origin"}).then(stampPage).then(res => {
       if (res && res.ok) { const cp = res.clone(); caches.open(CACHE).then(c => c.put(scopePath, cp)); }
       return res;
-    }).catch(() => caches.match(scopePath).then(r => r || Response.error())));
+    });
+    const saved = () => caches.match(scopePath).then(r => r || Response.error());
+    if (url.searchParams.has("v")) { e.respondWith(net.catch(saved)); return; }
+    e.respondWith(caches.match(scopePath).then(hit => {
+      if (!hit) return net.catch(saved);
+      let t = 0; const slow = new Promise(r => { t = setTimeout(() => r(null), PAGE_WAIT); });
+      return Promise.race([net.catch(() => null), slow]).then(res => {
+        clearTimeout(t);
+        if (res && res.ok) return res;
+        try { e.waitUntil(net.catch(() => {})); } catch (x) {}
+        return hit;
+      });
+    }).catch(() => net.catch(saved)));
     return;
   }
   e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => {

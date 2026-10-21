@@ -101,6 +101,12 @@ button:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
 .fab{flex:0 0 44px;margin-left:auto;width:44px;height:44px;border-radius:50%;font-size:22px;font-weight:700;color:var(--teal);
   background:var(--glass) padding-box,var(--edge) border-box;border:1.5px solid transparent;box-shadow:0 0 24px rgba(28,247,249,.3),0 10px 24px rgba(0,0,0,.4);z-index:5}
 
+/* Share button: right end of every top bar. On the start screen it sits right after the € button; where there is no € it takes the free space. */
+.fab.share{margin-left:0;display:grid;place-items:center;padding:0}
+.seg+.fab.share{margin-left:auto}
+.fab.share svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+@media (max-width:360px){.bar{gap:8px}.bar .seg button{padding:0 10px;font-size:14.5px}.bar .fab,.bar .back{flex-basis:40px;width:40px;height:40px}}
+
 /* ---------- earnings ---------- */
 table.levels{width:100%;border-collapse:collapse;font-size:16px}
 table.levels th{text-align:left;font-size:12.5px;font-weight:700;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;padding:4px 6px 10px}

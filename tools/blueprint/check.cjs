@@ -62,6 +62,8 @@ async function layout(page, W, tag) {
 async function standalone(base, sz) {
   const browser = await pw[sz.engine].launch();
   const ctx = await browser.newContext(sz.device ? Object.assign({}, pw.devices[sz.device]) : { viewport: sz.vp });
+  /* The text checks below are the German page: pin the app language to German (the page follows the app language since 21 Oct). */
+  await ctx.addInitScript(() => { try { localStorage.setItem('lowispike.lang', 'de'); } catch (e) {} });
   const page = await ctx.newPage();
   const errs = []; page.on('pageerror', e => errs.push(e.message)); page.on('console', m => { if (m.type() === 'error') errs.push('console: ' + m.text()); if (m.type() === 'log') errs.push('console.log: ' + m.text()); });
   const W = 'affiliates@' + sz.name;
@@ -158,7 +160,12 @@ async function appTabs(engine, device) {
     await fr.locator('#scriptView:not([hidden]) #scriptCard').waitFor({ timeout: 5000 });
     await layout(ff, W, 'in-app script');
     const inTxt = await fr.locator('#scriptView').textContent();
-    if (!inTxt.includes('Lead-Skill') || !inTxt.includes('Skript kopieren')) fail(W, 'in-app Webdesign script missing');
+    /* In the app the page follows the app's language: it must match it, and the script must be there in that language. */
+    const langs = await p.evaluate(() => ({ app: String((window.LowiLang && LowiLang.get && LowiLang.get()) || localStorage.getItem('lowispike.lang') || 'en').slice(0, 2) }));
+    const fl = await ff.evaluate(() => document.documentElement.lang);
+    if (B.normLang(langs.app) && fl !== B.normLang(langs.app)) fail(W, 'in-app language ' + fl + ' does not follow the app (' + langs.app + ')');
+    const ws = B.series(fl).webdesign;
+    if (!ws.scenes.every(sc => inTxt.includes(sc.lines[0])) || !inTxt.includes(B.t(fl, 'copyScript'))) fail(W, 'in-app Webdesign script missing');
     await ftap(p, fr.locator('#scriptView .back')); await ftap(p, fr.locator('#fabEarn'));
     if ((await fr.locator('#earnView:not([hidden]) table.levels tbody tr').count()) !== 4) fail(W, 'in-app levels table');
     await layout(ff, W, 'in-app earn');

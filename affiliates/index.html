@@ -32,7 +32,7 @@
       <button type="button" class="fab" id="fabEarn" aria-label="Was du verdienst">€</button>
     </div>
     <div class="hero">
-      <span class="pill">Kostenlos · etwa drei Minuten</span>
+      <span class="pill" id="startPill">Kostenlos · etwa drei Minuten</span>
       <h1 id="startTitle" tabindex="-1">Lass uns dein Video bauen.</h1>
       <p class="lead" id="startLead"></p>
       <div class="card list" id="startList"></div>
@@ -48,8 +48,8 @@
   <section class="view" id="shotView" hidden>
     <div class="bar" id="shotBar"></div>
     <div class="head">
-      <span class="pill">Schritt 2 von 3</span>
-      <h1 tabindex="-1">So nimmst du es auf.</h1>
+      <span class="pill" id="shotPill">Schritt 2 von 3</span>
+      <h1 id="shotTitle" tabindex="-1">So nimmst du es auf.</h1>
       <p class="lead" id="shotLead"></p>
     </div>
     <div class="card list" id="shotCard"></div>
@@ -62,12 +62,12 @@
   <section class="view" id="earnView" aria-labelledby="earnTitle" hidden>
     <div class="bar" id="earnBar"></div>
     <div class="head">
-      <span class="pill">Schritt 3 von 3</span>
+      <span class="pill" id="earnPill">Schritt 3 von 3</span>
       <h1 id="earnTitle" tabindex="-1">Was du verdienst.</h1>
       <p class="lead" id="earnLead"></p>
     </div>
     <div class="card" id="levelTable"></div>
-    <h2 class="label">Beispiele</h2>
+    <h2 class="label" id="exLabel">Beispiele</h2>
     <div id="exampleList"></div>
     <button type="button" class="primary" id="toStart">Fertig</button>
     <footer><p id="terms"></p></footer>

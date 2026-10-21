@@ -68,9 +68,11 @@ test('page: WhatsApp line on top, two cards, tip, earnings; the old tools are go
   assert.ok(html.includes('Deinen pers\u00f6nlichen Affiliate-Link bekommst du direkt von Eman per WhatsApp.'));
   assert.match(html, /id="seriesCards"/); assert.match(html, /id="scriptView"/); assert.match(html, /id="earnView"/);
   assert.ok(/HeyGen/.test(html) && /Higgsfield/.test(html) && /Pers\u00f6nlichkeit/.test(html) && /kostenlos/.test(html));
-  assert.ok(js.includes("'Skript kopieren'") && js.includes("'Caption kopieren'"));
-  for (const gone of ['Link kopieren', 'Beacons', 'shuffle', 'Zufall l\u00e4uft', 'Fakten von heute', 'Tag 1 von 30', 'Als gepostet', 'Meine Zahlen', 'Sponsoren-Agent:', 'localStorage', 'type="url"', 'addSale', 'checklist', 'Noch '])
+  assert.equal(B.t('de', 'copyScript'), 'Skript kopieren'); assert.equal(B.t('de', 'copyCaption'), 'Caption kopieren'); // texts live in blueprint-core STRINGS (EN/DE/ES) since the page follows the app language
+  for (const gone of ['Link kopieren', 'Beacons', 'shuffle', 'Zufall l\u00e4uft', 'Fakten von heute', 'Tag 1 von 30', 'Als gepostet', 'Meine Zahlen', 'Sponsoren-Agent:', 'type="url"', 'addSale', 'checklist', 'Noch '])
     assert.ok(!all.includes(gone), 'still has: ' + gone);
+  // localStorage is back on purpose (21 Oct): it only holds the app language and the affiliate's own id for the share link
+  assert.ok(!/localStorage\.setItem\((?!k)/.test(js), 'no other saved data');
   assert.ok(!/wa\.me|api\.whatsapp/.test(all), 'no invented WhatsApp number');
 });
 

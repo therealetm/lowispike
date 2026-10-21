@@ -78,6 +78,8 @@
             '<button type="button" class="lt-btn lt-go" data-lt="' + (s.action === 'claim' ? 'claim' : 'next') + '">' + esc(cta) + '</button></span></div>';
         root.setAttribute('data-step', s.id);
         place();
+        /* tutorial-voice.js: the companion picture is the speaker; reads the card aloud when sound is on (Oct 21 2026) */
+        try { if (W.LowiTutorialVoice) W.LowiTutorialVoice.render(card, s, { lang: l, name: vars.name, next: list.slice(i + 1, i + 3) }); } catch (e) { }
         try { (card.querySelector('[data-lt="claim"],[data-lt="next"]') || card).focus({ preventScroll: true }); } catch (e) { }
     }
     /* spotlight on the target; the card below it, or above when there is no room, always fully on screen */
@@ -103,7 +105,7 @@
         const left = Math.round(Math.max(m, Math.min(vw - cw - m, cx - cw / 2)));
         card.style.left = left + 'px'; card.style.top = Math.round(top) + 'px';
     }
-    function hold(why) { if (held || !root) return; held = true; root.classList.add('lt-held'); root.setAttribute('aria-hidden', 'true'); root.setAttribute('data-held', why || ''); }
+    function hold(why) { if (held || !root) return; try { if (W.LowiTutorialVoice) W.LowiTutorialVoice.stop(); } catch (e) { } held = true; root.classList.add('lt-held'); root.setAttribute('aria-hidden', 'true'); root.setAttribute('data-held', why || ''); }
     function unhold() {
         if (!held || !root) return; held = false; root.classList.remove('lt-held'); root.removeAttribute('aria-hidden'); root.removeAttribute('data-held');
         if (afterClaim) { afterClaim = false; go(i + 1, 'claim-closed'); return; }
@@ -197,5 +199,7 @@
     if (!D.getElementById('ltCss') && !D.querySelector('link[href^="tutorial.css"]')) { const m = $('meta[name="lowi-build"]'), l = D.createElement('link'); l.id = 'ltCss'; l.rel = 'stylesheet'; l.href = 'tutorial.css?v=' + encodeURIComponent(m ? m.content : '1'); D.head.appendChild(l); }
     /* tutorial-auto.js (new accounts get the tour once) loads from here, so index.html's versioned script list stays untouched */
     if (!W.LowiTutorialAuto && !D.querySelector('script[src^="tutorial-auto.js"]')) { const m = $('meta[name="lowi-build"]'), sc = D.createElement('script'); sc.src = 'tutorial-auto.js?v=' + encodeURIComponent((m && m.content) || '1'); sc.defer = true; D.head.appendChild(sc); }
+    /* tutorial-voice.js (the speaker on every card) loads the same way */
+    if (!W.LowiTutorialVoice && !D.querySelector('script[src^="tutorial-voice.js"]')) { const m = $('meta[name="lowi-build"]'), sc = D.createElement('script'); sc.src = 'tutorial-voice.js?v=' + encodeURIComponent((m && m.content) || '1'); sc.defer = true; D.head.appendChild(sc); }
     W.LowiTutorial = { start, stop, isOn: () => on, step: () => (step() || {}).id || null, held: () => held, busyBy, core: S };
 })();

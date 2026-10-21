@@ -1,0 +1,25 @@
+/* tutorial-voice.css: the speaker on every tutorial card (tutorial-voice.js). The companion picture is the button; a round badge on its
+   corner shows the state: speaker with an x = sound off (tap to listen), speaker with waves = on (the waves move while it talks).
+   The word being said lights up in the card's cyan. Highlighting never changes the layout (no padding, no font change). */
+.lt-speak { position: relative; margin: 0; padding: 0; border: 0; cursor: pointer; color: inherit; font: inherit; -webkit-appearance: none; appearance: none;
+    touch-action: manipulation; transition: box-shadow .2s ease; }
+.lt-speak:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.lt-spk { position: absolute; right: -3px; bottom: -3px; width: 26px; height: 26px; box-sizing: border-box; border-radius: 50%; display: grid; place-items: center;
+    color: #8fe7ff; background: rgba(8, 20, 58, .94); border: 1.5px solid rgba(143, 231, 255, .9); box-shadow: 0 0 10px rgba(143, 231, 255, .55); pointer-events: none; }
+.lt-spk svg { width: 16px; height: 16px; display: block; overflow: visible; }
+.lt-spk .lt-wave1, .lt-spk .lt-wave2 { display: none; }
+.lt-spk-on .lt-spk { color: #04243d; background: linear-gradient(160deg, #b8f6ff, #5fd8f0); border-color: #fff; box-shadow: 0 0 14px rgba(143, 231, 255, .85); }
+.lt-spk-on .lt-spk .lt-wave1, .lt-spk-on .lt-spk .lt-wave2 { display: inline; }
+.lt-spk-on .lt-spk .lt-slash { display: none; }
+/* never tried yet, or the browser wants one more tap: the badge breathes */
+.lt-spk-new .lt-spk, .lt-spk-tap .lt-spk { animation: ltv-breathe 1.6s ease-in-out infinite; }
+/* talking: a soft ring around the companion and moving waves */
+.lt-speaking .lt-speak { box-shadow: 0 0 0 2px rgba(143, 231, 255, .75), 0 0 18px 4px rgba(143, 231, 255, .45); }
+.lt-speaking .lt-spk .lt-wave1 { animation: ltv-wave 1s ease-in-out infinite; }
+.lt-speaking .lt-spk .lt-wave2 { animation: ltv-wave 1s ease-in-out .25s infinite; }
+.lt-w { border-radius: 4px; transition: background-color .12s ease, box-shadow .12s ease; }
+.lt-w.lt-say { background-color: rgba(143, 231, 255, .3); box-shadow: 0 0 0 2px rgba(143, 231, 255, .3), 0 0 12px rgba(143, 231, 255, .45); color: #fff; }
+@keyframes ltv-breathe { 0%, 100% { transform: scale(1); box-shadow: 0 0 8px rgba(143, 231, 255, .5); } 50% { transform: scale(1.14); box-shadow: 0 0 16px 3px rgba(143, 231, 255, .85); } }
+@keyframes ltv-wave { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .lt-spk, .lt-spk path, .lt-w { animation: none !important; transition: none !important; } }
+.lt-tour.lt-rm .lt-spk, .lt-tour.lt-rm .lt-spk path { animation: none; }

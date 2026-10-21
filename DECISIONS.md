@@ -948,3 +948,15 @@ Eman on the simplified page: "No, it looks shit. I wanted to be like this. It sh
 **Decision:** One entry point only: the Shop orb in Home's Fuel bubble (home-blooms-v2.js). It is an in-store feature, so it stays with Home, not Cook. The injected card, its MutationObserver, sosHTML and the .stp-sos styles are removed. tests/what-can-i-buy-once.test.cjs keeps it to exactly one caller of LowiStorePicks.open.
 
 **Consequences:** Cook it / Shop it flow straight into the recipe cards. A new place for the panel needs a new decision entry and an update to that test.
+
+
+## 2026-10-21 — The tutorial reads itself aloud with recorded natural voices
+
+**Status:** Accepted
+
+**Context:** Emmanuel opened the tutorial after the plain-words update and said: "I have to read through it, that's not what drunk grandma likes. Where is the speaker? So I can just listen to it." The device voices (Web Speech) sound robotic on many phones, differ per device and are missing offline on some.
+
+**Decision:** Every tutorial card's companion picture is a speaker button. One tap turns sound on and reads the card; following cards read themselves until it is turned off; the choice is remembered. The voice is recorded ahead of time with Microsoft neural voices (Ava, Seraphina, Ximena), one MP3 per card and language with word timings, so the spoken word lights up. Clips play only when their words match the card exactly; otherwise, or offline before a clip was heard, the device's best voice reads it. No auto-advance: the user still taps Next, so they can look at what is spotlit. The Add to Home Screen guide and companion setup get no speaker for now: their text is short, sound cannot start before the first tap there, and that funnel is owned by the first-visit work.
+
+**Consequences:** Changing tutorial words means recording again with `python3 tools/tutorial-voice/build.py` (only changed cards); `tests/tutorial-voice.test.cjs` fails until the clips match. About 8.6 MB of clips sit in the repo and are fetched only when played (about 60 KB per card), then kept on the phone.
+

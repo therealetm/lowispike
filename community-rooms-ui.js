@@ -28,6 +28,7 @@ function ensure(){const pane=D.getElementById('cmPaneChat');if(!pane||!pane.hasA
  bar=D.createElement('nav');bar.className='rm-bar';bar.setAttribute('data-noi18n','');
  bar.innerHTML='<div class="rm-tabs" role="tablist"><button type="button" role="tab" class="rm-tab" data-rm="room"></button><button type="button" role="tab" class="rm-tab" data-rm="chat"></button></div><button type="button" class="rm-chip" data-rm="sheet" aria-haspopup="dialog"></button><div class="rm-banner" role="status" aria-live="polite"></div>';
  pane.insertBefore(bar,pane.firstChild);banner=bar.querySelector('.rm-banner');
+ for(const ms of [60,250,600,1100])setTimeout(()=>fit(bar),ms);
  bar.addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(!b)return;const a=b.dataset.rm;
   if(a==='room')setTab(false);else if(a==='chat')setTab(true);else if(a==='sheet')openSheet();
   else if(a==='letin'){R()&&R().letIn(b.dataset.uid).then(paint);}else if(a==='notnow'){R()&&R().dismiss(b.dataset.uid);paint();}});
@@ -44,7 +45,22 @@ function paint(){const b=ensure();if(!b)return;const r=R(),c=C(),chat=open();
  if(ks.length){const k=ks[ks.length-1];h='<span>'+esc(tr('wants',{name:k.name||nameOf(k.from)||'Member'}))+'</span><button type="button" class="rm-yes" data-rm="letin" data-uid="'+esc(k.from)+'">'+esc(tr('letIn'))+'</button><button type="button" class="rm-no" data-rm="notnow" data-uid="'+esc(k.from)+'">'+esc(tr('notNow'))+'</button>';}
  else if(msg)h='<span>'+esc(msg)+'</span>';
  if(banner.__h!==h){banner.innerHTML=h;banner.__h=h;}banner.toggleAttribute('data-on',!!h);
+ fit(b);
  if(sheet&&sheet.isConnected)paintSheet();}
+/* 21 Oct 2026 (Eman: the day/night button covers the word "Room"): the Day/Night switch (#tbTheme) and the profile picture
+   (#pfBtn) float over the top right of every page, right where the room chip sat. The chip now keeps clear of them: beside
+   the tabs with an 8 px gap when it fits there, else on its own line right under them (data-rm-wrap), never under them.
+   top-bar.js always puts the switch 10 px left of the picture, so its spot is reserved even before it is placed. */
+function clearLeft(br){let left=Infinity;
+ for(const id of ['tbTheme','pfBtn']){const e=D.getElementById(id);if(!e||!e.getBoundingClientRect)continue;const s=W.getComputedStyle?W.getComputedStyle(e):null;
+  if(s&&(s.display==='none'||s.visibility==='hidden'))continue;const r=e.getBoundingClientRect();
+  if(r.width<1||r.bottom<=br.top||r.top>=br.top+44||r.right<=br.left)continue;left=Math.min(left,r.left,id==='pfBtn'?r.left-52:Infinity);}
+ return left;}
+function fit(b){if(!b||!b.getBoundingClientRect)return;const br=b.getBoundingClientRect();if(br.width<1)return;
+ const tabs=b.querySelector('.rm-tabs'),chip=b.querySelector('.rm-chip');if(!tabs||!chip)return;
+ const left=clearLeft(br),need=left===Infinity?0:Math.max(0,Math.ceil(br.right-left+8));
+ const room=left-8-tabs.getBoundingClientRect().right-8,wrap=!chip.hidden&&need>0&&chip.offsetWidth>room;
+ const v=wrap?'0px':need+'px';if(b.__fit!==v+wrap){b.__fit=v+wrap;b.style.setProperty('--rm-tr',v);b.toggleAttribute('data-rm-wrap',wrap);}}
 /* Rooms sheet */
 function openSheet(){if(!R())return;if(!sheet){sheet=D.createElement('div');sheet.className='rm-sheet';sheet.setAttribute('role','dialog');sheet.setAttribute('aria-modal','true');sheet.setAttribute('data-noi18n','');
   sheet.innerHTML='<div class="rm-card"><header><h2 class="rm-h"></h2><button type="button" class="rm-x" data-rs="close">×</button></header><p class="rm-you"></p><div class="rm-crew"></div><input class="rm-find" type="search" autocomplete="off" enterkeyhint="search"><ul class="rm-list"></ul></div>';
@@ -74,5 +90,11 @@ D.addEventListener('lowi:chat',()=>paint());
 const mo=typeof MutationObserver==='function'?new MutationObserver(()=>paint()):null;
 function watch(){const t=D.getElementById('cgThread');if(t&&mo&&!t.__rmWatch){t.__rmWatch=1;mo.observe(t,{attributes:true,attributeFilter:['data-open']});}paint();}
 setInterval(watch,1500);if(D.readyState!=='loading')watch();else D.addEventListener('DOMContentLoaded',watch);
-W.LowiRoomsUI={paint,openSheet,closeSheet,setTab};
+W.addEventListener('resize',()=>{if(bar&&bar.isConnected)fit(bar);});
+/* the profile picture and the switch appear, move and hide on their own (top-bar.js): re-fit the moment they do */
+let fitRaf=0;const refit=()=>{if(fitRaf||!bar||!bar.isConnected)return;fitRaf=(W.requestAnimationFrame||setTimeout)(()=>{fitRaf=0;fit(bar);});};
+const fmo=typeof MutationObserver==='function'?new MutationObserver(refit):null;
+setInterval(()=>{if(!fmo)return;for(const e of [D.documentElement,D.getElementById('main'),D.getElementById('pfBtn'),D.getElementById('tbTheme')])
+ if(e&&!e.__rmFit){e.__rmFit=1;fmo.observe(e,{attributes:true,attributeFilter:['class','style','hidden']});}},1000);
+W.LowiRoomsUI={paint,openSheet,closeSheet,setTab,fit};
 })(window,document);

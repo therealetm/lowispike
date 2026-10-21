@@ -23,6 +23,11 @@ html.cs-chat-typing #cmPaneChat[data-spirit-chat] .cm-compose{isolation:isolate}
 /* Speech bubbles and names that would sit under the bar fade out while you type (community-composer.js marks them). */
 #cmPaneChat[data-spirit-chat] #cgField .cc-under{opacity:0!important;pointer-events:none!important;transition:opacity .18s ease}
 
+/* 21 Oct 2026 (Eman: the camera and mic cover "Write to the galaxy"): the field comes first and takes the whole left side;
+   camera and mic (or send, once there is text) float to its right as a pair, so the placeholder and what you type always
+   start at the left edge with nothing over them. Order is in the markup (community-chat.js), so focus follows it too. */
+#cmPaneChat[data-spirit-chat] .cm-inrow>textarea#cmInput{order:0}
+
 @media(prefers-reduced-transparency:reduce){
   html #cmPaneChat[data-spirit-chat] textarea#cmInput#cmInput{background:#0a1530!important}
   html.cs-chat-typing #cmPaneChat[data-spirit-chat] .cm-compose::before{background:#040916}}

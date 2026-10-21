@@ -122,6 +122,8 @@ async function standalone(base, sz) {
 /* A real tap at the centre of the element: whatever sits on top there gets it (this is how the theme button swallowed taps on
    Affiliates). page.mouse is used rather than locator.click because WebKit's stability wait never settles on the busy Community page. */
 async function tap(p, sel) { await sleep(400); const b = await p.locator(sel).boundingBox(); if (!b) throw new Error('no box for ' + sel); await p.mouse.click(b.x + b.width / 2, b.y + b.height / 2); }
+/* the same real tap inside the Affiliates frame (scrolled into view first) */
+async function ftap(p, loc) { await sleep(350); await loc.scrollIntoViewIfNeeded({ timeout: 5000 }).catch(() => {}); const b = await loc.boundingBox(); if (!b) throw new Error('no box in frame'); await p.mouse.click(b.x + b.width / 2, b.y + b.height / 2); }
 async function appTabs(engine, device) {
   const W = 'app-tabs@' + engine + '/' + device;
   const R = await H.open({ engine, device, probe: false, url: LIVE ? LIVE + 'index.html' : '' });
@@ -145,15 +147,15 @@ async function appTabs(engine, device) {
     await sleep(400); await R.shot(path.join(OUT, 'app-' + engine + '-' + device.replace(/[^a-z0-9]+/gi, '-').toLowerCase() + '-affiliates-start.png'));
     const ff = p.frames().find(f => /\/affiliates\//.test(f.url()));
     await layout(ff, W, 'in-app start');
-    await fr.locator('#startBtn').click();
+    await ftap(p, fr.locator('#startBtn'));
     await fr.locator('#scriptView:not([hidden]) #scriptCard').waitFor({ timeout: 5000 });
     await layout(ff, W, 'in-app script');
     const inTxt = await fr.locator('#scriptView').textContent();
     if (!inTxt.includes('Lead-Skill') || !inTxt.includes('Skript kopieren')) fail(W, 'in-app Webdesign script missing');
-    await fr.locator('#scriptView .back').click(); await fr.locator('#fabEarn').click();
+    await ftap(p, fr.locator('#scriptView .back')); await ftap(p, fr.locator('#fabEarn'));
     if ((await fr.locator('#earnView:not([hidden]) table.levels tbody tr').count()) !== 4) fail(W, 'in-app levels table');
     await layout(ff, W, 'in-app earn');
-    await fr.locator('#earnView .back').click(); await fr.locator('#startBtn').waitFor({ timeout: 5000 });
+    await ftap(p, fr.locator('#earnView .back')); await fr.locator('#startBtn').waitFor({ timeout: 5000 });
     const fo = await fr.locator('body').evaluate(() => ({ sw: document.documentElement.scrollWidth, w: innerWidth }));
     if (fo.sw > fo.w + 1) fail(W, 'in-app sideways overflow ' + JSON.stringify(fo));
     const tag = engine + '-' + device.replace(/[^a-z0-9]+/gi, '-').toLowerCase();

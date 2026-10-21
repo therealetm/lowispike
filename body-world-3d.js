@@ -553,7 +553,9 @@
         if (!d.ok) { api.state = 'fallback'; api.why = d.why; H.classList.add('bw3-off'); return; }
         mountHome();
         const kick = () => load().then(w => { if (w && mode === 'home') attachHome(); if (w) warmLater(); });
-        if (W.requestIdleCallback) W.requestIdleCallback(kick, { timeout: 1500 }); else setTimeout(kick, 300);
+        /* Oct 21 (open instantly): start building the world right away, while the launch screen is still up (it now waits for the
+           world, at most 1.5 s), instead of waiting for an idle moment (up to 1.5 s) after the app had already shown a flat Home */
+        setTimeout(kick, 0);
         /* only while Home is the page you see (or the Community warp is showing it): behind Community this measured the whole page
            every 1.2 s for a world nobody could see, one of the regular hitches in the spirit world */
         const homeSeen = () => { const t = D.getElementById('tab-home'); return !t || t.classList.contains('active') || /(^|\s)gx-(hold|in)(\s|$)/.test(H.className) || mode === 'full'; };

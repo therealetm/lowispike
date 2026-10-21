@@ -23,7 +23,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 const BASE = '/lowispike/';
 
 function serve() {
-    let free = 0; const stats = { reqs: 0, bytes: 0, n304: 0 };
+    let free = 0; const stats = { reqs: 0, bytes: 0, n304: 0, paths: [] };
     const cache = new Map();
     function body(f) {
         const st = fs.statSync(f), k = f + ':' + st.mtimeMs; let c = cache.get(k);
@@ -42,7 +42,7 @@ function serve() {
     }
     return new Promise(r => {
         const s = http.createServer(async (q, res) => {
-            stats.reqs++;
+            stats.reqs++; stats.paths.push(q.url.split('?')[0].replace(BASE, '') + (/[?&]v=/.test(q.url) ? '?v' : ''));
             if (NET) await sleep(NET.rtt);
             let u = decodeURIComponent(q.url.split('?')[0]);
             if (!u.startsWith(BASE)) { res.writeHead(404); res.end(); return; }
@@ -107,11 +107,12 @@ async function one(browser, srv, dev, warm) {
         const page = page0 || (page0 = await ctx.newPage());
         if (!page.__cdp && ENGINE === 'chromium' && CPU > 1) { page.__cdp = await ctx.newCDPSession(page); await page.__cdp.send('Emulation.setCPUThrottlingRate', { rate: CPU }); }
         const errs = []; const onErr = e => errs.push(String(e.message).slice(0, 160)); page.removeAllListeners('pageerror'); page.on('pageerror', onErr);
-        const b0 = srv.stats.bytes, r0 = srv.stats.reqs, n0 = srv.stats.n304;
+        const b0 = srv.stats.bytes, r0 = srv.stats.reqs, n0 = srv.stats.n304, p0 = srv.stats.paths.length;
         dbg(label, 'goto'); await page.goto(srv.url, { waitUntil: 'commit', timeout: 120000 }); dbg(label, 'committed');
         const t = await page.waitForFunction(() => { const T = window.__startT; return T && T.ringStable != null && T.camRest != null ? T : null; }, null, { timeout: 90000, polling: 200 }).then(h => h.jsonValue()).catch(async () => ({ timeout: true, partial: await page.evaluate(() => window.__startT).catch(() => null) }));
         const nav = await page.evaluate(() => { const n = performance.getEntriesByType('navigation')[0] || {}, p = performance.getEntriesByName('first-contentful-paint')[0]; return { resp: Math.round(n.responseStart || 0), html: Math.round(n.responseEnd || 0), dcl: Math.round(n.domContentLoadedEventEnd || 0), load: Math.round(n.loadEventEnd || 0), fcp: p ? Math.round(p.startTime) : null, sw: !!navigator.serviceWorker.controller }; }).catch(() => ({}));
         const res = Object.assign({ label }, t, nav, { netBytes: srv.stats.bytes - b0, netReqs: srv.stats.reqs - r0, n304: srv.stats.n304 - n0, errs: errs.slice(0, 3) });
+        if (label === 'warm') res.netPaths = srv.stats.paths.slice(p0, p0 + 40);
         if (!t.timeout) res.usable = Math.round(Math.max(t.boot, t.ringStable, t.camRest));
         return { page, res };
     };
@@ -137,6 +138,7 @@ async function one(browser, srv, dev, warm) {
         const [c, w] = await one(browser, srv, dev, true);
         all.cold.push(c); all.warm.push(w);
         console.log(`run ${i + 1}: cold usable ${c.usable}ms (boot ${c.boot && Math.round(c.boot)}, html ${c.html}, dcl ${c.dcl}, intro ${c.introRan}) ${c.netBytes}B/${c.netReqs}req | warm usable ${w.usable}ms (boot ${w.boot && Math.round(w.boot)}, html ${w.html}, sw ${w.sw}, intro ${w.introRan}) ${w.netBytes}B/${w.netReqs}req/${w.n304}x304 ${c.timeout || w.timeout ? 'TIMEOUT ' + JSON.stringify(c.partial || w.partial) : ''} ${(c.errs || []).concat(w.errs || []).join(' | ')}`);
+        if (process.env.PATHS) console.log('  warm network requests:', (w.netPaths || []).join(' '));
     }
     const med = a => { const v = a.filter(x => x != null).sort((x, y) => x - y); return v.length ? v[Math.floor((v.length - 1) / 2)] : null; };
     const sum = k => ({ usable: med(all[k].map(x => x.usable)), boot: med(all[k].map(x => x.boot && Math.round(x.boot))), html: med(all[k].map(x => x.html)), dcl: med(all[k].map(x => x.dcl)), bytes: med(all[k].map(x => x.netBytes)) });

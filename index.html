@@ -1688,8 +1688,24 @@ html[data-ui=light] #lwBoot .lwb-w i{color:#2b7fd6}
           for (k = 0; k < c.children.length; k++) h = (h * 31 + c.children[k].offsetTop * 7 + c.children[k].offsetHeight) | 0; } }
       return h;
     }
+    /* Oct 21 (open instantly): on Home, the launch screen also waits for the 3D world to come up (at most 1.5 s more). Before, it
+       lifted on the flat placeholder and about a second later the world switched on and Misty's ring of buttons jumped to a new size
+       and place, right when you went to tap. Now the first frame you see is the finished Home. No 3D (or not on Home): no wait. */
+    function worldIn(cb){
+      var t0 = Date.now();
+      (function w(){
+        if (done) return;
+        var a = window.LowiWorld3D, coming = !!(a && a.state !== "fallback" && H.classList.contains("wh-home") && !H.classList.contains("bw3-off"));
+        if (coming && !H.classList.contains("wh-world-live") && Date.now() - t0 < 1500) { setTimeout(w, 50); return; }
+        if (coming && H.classList.contains("wh-world-live")) { try { if (window.LowiHomeOrbitV2) window.LowiHomeOrbitV2.layout(); } catch(e){} }
+        cb();
+      })();
+    }
     function go(){
       if (done || go.on) return; go.on = 1;
+      worldIn(goNow);
+    }
+    function goNow(){
       var q = Date.now(), last = null, same = 0;
       function fin(why){ if (fin.d) return; fin.d = 1; window.__LOWI_BOOT_Q = (Date.now() - q) + (why ? " " + why : "");
         requestAnimationFrame(function(){ requestAnimationFrame(function(){ reveal("ready"); }); }); }
@@ -20139,7 +20155,7 @@ setTimeout(tick, 1800); setInterval(tick, 1500);
 window.LowiHandoff = { want, copy, issue, revoke, startHTML, parse, redeem, _state: () => ({ has: !!cur, exp: cur ? cur.exp : 0, pinned }) };
 })();
 </script>
-<link rel="stylesheet" href="community-chat.css?v=galaxy-2">
+<link rel="stylesheet" href="community-chat.css?v=20261021-151646">
 <link rel="stylesheet" href="community-galaxy.css?v=20261021-151646">
 <link rel="stylesheet" href="community-energy.css?v=20261021-151646">
 <link rel="stylesheet" href="community-voice.css?v=20261021-151646">
@@ -20169,7 +20185,7 @@ window.LowiCommunityHost = {
 <script src="community-rooms.js?v=20261021-151646"></script>
 <script src="community-rooms-ui.js?v=20261021-151646"></script>
 <script src="hidden-accounts.js?v=20261021-151646"></script>
-<script src="community-galaxy.js?v=galaxy-3"></script>
+<script src="community-galaxy.js?v=20261021-151646"></script>
 <script src="community-chat.js?v=20261021-151646"></script>
 <script src="community-energy.js?v=20261021-151646"></script>
 <link rel="stylesheet" href="home-visit.css?v=20261021-151646">
@@ -20185,7 +20201,7 @@ window.LowiCommunityHost = {
 <script src="realm-backdrop-core.js?v=20261021-151646"></script>
 <script src="realm-backdrop.js?v=20261021-151646"></script>
 <link rel="stylesheet" href="nav-moves.css?v=20261021-151646">
-<script src="nav-moves.js?v=nav-3"></script>
+<script src="nav-moves.js?v=20261021-151646"></script>
 <script src="back-swipe.js?v=20261021-151646"></script>
 <link rel="stylesheet" id="mvdCss" href="move-durations.css?v=20261021-151646">
 <link rel="stylesheet" id="mvpCss" href="move-player.css?v=20261021-151646">

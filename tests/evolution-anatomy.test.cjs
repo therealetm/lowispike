@@ -77,6 +77,16 @@ test('locked forms are never drawn: mystery orb and ??? until reached', () => {
     assert.ok(/\.cf-mystery \{/.test(css) && !/\.cf-locked \.cf-sm/.test(css), 'no faded silhouette style left');
 });
 
+test('path tiles fit a 320pt iPhone SE: thumbnail and mystery orb shrink with the tile instead of spilling', () => {
+    /* Oct 21 2026 inspection: at 320pt each Misty-sheet tile is ~44px inside; a fixed 58px thumbnail spilled 6px into the
+       next column and the 52px orb + margins overflowed. tools/companion/evo-inspect.cjs measures the same in a browser. */
+    const css = read('companion.css');
+    const rule = sel => { const m = css.match(new RegExp(sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*\\{([^}]*)\\}')); return m ? m[1] : ''; };
+    const sm = rule('.cf-misty .cf-sm'), orb = rule('.cf-misty .cf-mystery'), step = rule('.cf-misty .cf-step');
+    assert.match(sm, /width:\s*100%/); assert.match(sm, /max-width:\s*58px/); assert.match(sm, /aspect-ratio/); assert.doesNotMatch(sm, /(^|;)\s*width:\s*58px/);
+    assert.match(orb, /width:\s*min\(52px/); assert.match(orb, /aspect-ratio:\s*1/);
+    assert.match(step, /grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+});
 test('the evolution moment and the path name the new anatomy in three languages', () => {
     const h = read('herb-tamagotchi.js');
     for (const [k, w] of [[2, 'whip tail'], [3, 'filament swimmer'], [5, 'reef spirit'], [7, 'orbiting organelles'], [9, 'golden edges']]) assert.ok(new RegExp('evoPow' + k + ":\\['[^']*" + w, 'i').test(h), 'evoPow' + k + ' says ' + w);

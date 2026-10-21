@@ -908,3 +908,16 @@ Checks: `tests/affiliates-blueprint.test.cjs` rewritten; browser `tools/blueprin
 **Decision:** Copy follows the grandma test written into `AGENTS.md`: what it is and what you get, at a glance; units on numbers; words in empty states; the question beside the choices; benefits in subtitles. Feature names Emmanuel chose (Fuel, Gap, Scan, Move, Epic, Deep analyze) stay and get explained beside the name. The first-visit funnel (install guide, sign-up, companion setup) is covered by the companion decision from the other video the same day.
 
 **Consequences:** `tests/grandma-test.test.cjs` locks the fixed cases in EN, DE and ES. `tools/grandma/audit.cjs` prints every visible line of Home and of each everyday sheet at phone size, so the next edit can be read the way a stranger reads it.
+
+## 2026-10-21 20:30 CEST: Deep analyze is a one-tap link to the custom GPT again (decided by the agent)
+
+Eman: "I don't know what you did here, but it needs to be brought back. That deep analyze button is simply a shortcut to my custom GPT. It should be very quick. I open the app, I click on Scan, I click on Deep analyze, and I get to the custom GPT really fast." His screenshot showed the in-app Deep analyze photo sheet with the scanner's "The camera is off" card and the Type-the-number sheet piled on it.
+
+What was decided:
+- Deep analyze on the Scan screen and on the not-found product card is a plain `<a href target="_blank" rel="noopener">` to `https://chatgpt.com/g/g-69481a874bf08191b8118f8d88c9c90e-lowispike` (`DEEP_GPT`, the link the Oct 15 scanner bar used, commit 9d517f2; the only chatgpt.com/g/ URL in the whole git history). Built by `deepLink()` in index.html.
+- No question is pre-filled (`?q=` would make ChatGPT send a message for him); it opens the GPT, nothing more.
+- The link has no `data-b3`, so the scanner's delegated click handler (which calls `preventDefault`) never touches it. In the iPhone home-screen app iOS opens a `_blank` link outside the app, and the app stays on the Scan screen.
+- The in-app photo sheet (`deep-analyze.js`, `deep-analyze.css`) is removed, with its service-worker entries; the 2026-10-21 Scan / Fuel / Gap line saying Deep analyze reads a photo in the app is replaced by this. Barcode, Type the number and Fuel's Log meal / Snap are unchanged.
+- Subtitles say where the tap goes: "Opens the LOWiSPIKE GPT in ChatGPT" (DE / ES too).
+
+Checks: `tests/deep-gpt-shortcut.test.cjs` (new), `tests/orb-scan`, `tests/scan-fuel-gap`, `tests/grandma-test`, `tests/ui-scanner-close` updated.

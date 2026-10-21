@@ -4,10 +4,10 @@
 const test = require('node:test'), assert = require('node:assert'), fs = require('node:fs'), path = require('node:path');
 const root = path.join(__dirname, '..');
 const read = f => fs.readFileSync(path.join(root, f), 'utf8');
-const html = read('index.html'), sw = read('sw.js'), blooms = read('home-blooms-v2.js'), gap = read('gap-view.js'), deep = read('deep-analyze.js'), spirit = read('spirit.js');
+const html = read('index.html'), sw = read('sw.js'), blooms = read('home-blooms-v2.js'), gap = read('gap-view.js'), spirit = read('spirit.js');
 
 test('the new files load and are cached for offline use', () => {
-    for (const f of ['gap-view.js', 'gap-view.css', 'deep-analyze.js', 'deep-analyze.css']) {
+    for (const f of ['gap-view.js', 'gap-view.css']) {
         assert.ok(new RegExp(f.replace('.', '\\.') + '\\?v=\\d{8}-\\d{6}').test(html), f + ' is loaded by index.html with the build tag');
         assert.ok(sw.includes('"' + f + '"'), f + ' is in the service worker list');
     }
@@ -49,11 +49,12 @@ test('Scan only identifies: Barcode + Deep analyze; "I ate this" only when the c
     assert.ok(/window\.LowiScanIntent = \{ meal: true, at: Date\.now\(\) \}/.test(spirit), 'Log meal\'s own Scan button sets the intent');
 });
 
-test('Deep analyze reads the pack in the app, never logs a meal, and keeps the GPT as the way out', () => {
-    assert.ok(/W\.LowiFoodAI/.test(deep) && /A\.analyse\(url\)/.test(deep), 'uses the app\'s own photo AI');
-    assert.ok(!/logMeal|lowi:meal-logged/.test(deep), 'never logs anything');
-    assert.ok(/function deepOpen\(code\)\{[\s\S]{0,200}LowiDeep\.open/.test(html));
-    assert.ok(/window\.open\(deepURL\(\)/.test(html), 'falls back to the GPT link, never a dead button');
+test('Deep analyze is a one-tap link to the custom GPT, never an in-app sheet (Oct 21 evening)', () => {
+    assert.ok(!fs.existsSync(path.join(root, 'deep-analyze.js')) && !fs.existsSync(path.join(root, 'deep-analyze.css')), 'the in-app photo sheet is gone');
+    assert.ok(!/deep-analyze|LowiDeep|deepOpen|data-b3="deepnf"/.test(html), 'nothing opens the old sheet');
+    assert.ok(!sw.includes('deep-analyze'), 'not cached any more');
+    assert.ok(/function deepLink\(cls, attrs, title, sub\)\{\n  return '<a class="' \+ cls \+ '" ' \+ attrs \+ ' href="' \+ esc\(deepURL\(\)\) \+ '" target="_blank" rel="noopener">'/.test(html), 'a real link that opens outside the app');
+    assert.ok(/deepLink\("b3-nfdeep", 'id="b3NfDeep"', t\("deepNf"\), t\("deepNfS"\)\)/.test(html), 'the not-found card uses the same link');
 });
 
 test('Fuel\'s "When did you eat?" backdates the meal, and that time is what ends the fast', () => {

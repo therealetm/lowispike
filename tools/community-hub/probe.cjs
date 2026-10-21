@@ -57,7 +57,8 @@ async function run(engine, device, light) {
         if (!th.open || !th.crumb || th.sel !== 'chat') fail(W, 'Galaxy chat channel did not open its thread ' + JSON.stringify(th));
         await scan(p, W, 'thread crumb', '.rm-crumb'); await R.shot(path.join(OUT, tag + '-thread.png'));
         const ov2 = await p.evaluate(overlaps); if (ov2.length) fail(W, 'thread overlaps ' + ov2.join(', '));
-        await tap(p, '.rm-back'); await sleep(700);
+        /* 21 Oct: inside a room the Telegram-style top bar's round back button replaces the crumb on phones */
+        await tap(p, (await p.evaluate(() => { const b = document.querySelector('.rm-back'); return !!b && b.getBoundingClientRect().width > 0; })) ? '.rm-back' : '#cgThread .cr-back'); await sleep(700);
         const bk = await p.evaluate(() => ({ v: document.getElementById('cmPaneChat').getAttribute('data-rm-view'), open: !!document.querySelector('#cgThread[data-open]') })); if (bk.v !== 'chans' || bk.open) fail(W, 'back to channels ' + JSON.stringify(bk));
       }
     }

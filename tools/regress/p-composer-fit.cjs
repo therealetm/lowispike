@@ -30,7 +30,9 @@ const DEVICES = (process.env.DEVICES || 'iPhone SE,iPhone 13,iPhone 14 Pro Max')
                 const overlaps = [];
                 for (const [k, v] of Object.entries(ctl)) if (hit(v, text)) overlaps.push('composer: ' + k + ' over input text');
                 const field = box(inp);
-                for (const k of ['photo', 'mic', 'send']) if (ctl[k] && field && ctl[k].l < field.r) overlaps.push('composer: ' + k + ' not right of the field');
+                /* 21 Oct: inside a room the photo button sits LEFT of the field (Telegram/Eden layout Eman asked for); it must still clear it */
+                const room = document.documentElement.classList.contains('cr-room');
+                for (const k of ['photo', 'mic', 'send']) if (ctl[k] && field) { if (k === 'photo' && room) { if (ctl[k].r > field.l + 1) overlaps.push('composer: photo not left of the field in the room'); } else if (ctl[k].l < field.r) overlaps.push('composer: ' + k + ' not right of the field'); }
                 for (const k of ['photo', 'mic', 'send']) if (ctl[k] && (ctl[k].r > innerWidth || ctl[k].r - ctl[k].l < 44)) overlaps.push('composer: ' + k + ' off screen or under 44 px');
                 /* the room bar: tabs and room chip must be clear of the floating Day/Night switch and profile picture */
                 const floats = [['tbTheme', box(q('#tbTheme'))], ['pfBtn', box(q('#pfBtn'))]];

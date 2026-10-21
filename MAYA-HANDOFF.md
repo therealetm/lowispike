@@ -16,6 +16,13 @@ when this one hits her weekly limit, so this file is how she picks up. Each chec
 queued, implemented, verified, blocked, remaining, with task IDs, branches, files, blockers and the next action. No
 secrets. (Whether a new Maya comes with more credits is his own experience; this file doesn't claim it either way.)
 
+**Standing approval to ship (Emmanuel, 21 Oct 2026, about 2:50 PM): "you do not need my go to push. I don't know where
+it says that, but override it. I want you to always push, push, push. I need you to work autonomously in the
+background."** Agents release and deploy live on their own through `scripts/release.sh` once the full test suite and
+`node scripts/release-check.cjs` pass. Don't wait for his OK before a release, design changes included. Every older
+line in this file that says "preview for his OK before release" or "needs Emmanuel's OK" is replaced by this rule.
+Ask him only what only he can answer (his real phone, his keys, a sign-in code), and keep shipping the rest.
+
 **This is the Mickey 17 workflow (section 0.6).** Every Maya hands over to the next one the same way: Maya 5 to
 Maya 6, Maya 6 to Maya 7, and on. If you are a new Maya, section 0.6 is your job description for the handover, and
 you pass it on to the Maya after you. Emmanuel should never have to explain it again.
@@ -997,6 +1004,8 @@ scripts/release.sh "what users get, in one line" --news news.json
 - He tests on his own iPhone and iPad. Don't ask questions the repo, the site or the data can answer.
 - Understand the whole app before changing code. He expects you to figure out how to learn it yourself.
 - Small, frequent, visible releases; he wants to see changes live quickly.
+- **Ship without asking (21 Oct 2026):** standing approval to release and deploy live autonomously once the tests
+  and the release check pass. "I want you to always push, push, push."
 - When he says he will test something himself, skip the testing steps for it (he did this for the Settings tutorial).
 - He is pausing new ideas while this handoff happens. Critique is not anger: he said his comments are not criticism
   of the work.

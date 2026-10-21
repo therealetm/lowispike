@@ -21,7 +21,7 @@ scripts/release.sh "what users get, in one line" --news news.json
 
 Parts on their own: `node scripts/release-check.cjs` (gate, exit 1 on errors), `node scripts/bump-build.cjs --dry-run` (shows the next id), `node scripts/verify-live.cjs [BUILD] --compare` (is it live, do the bytes match).
 
-`main` is live. Use a branch and pull request for non-trivial work unless the user explicitly asks to ship directly.
+`main` is live. Build on a branch/worktree, then release it with `scripts/release.sh`. **Standing approval from Emmanuel (21 Oct 2026): agents release and deploy live autonomously, without asking for his go-ahead, once the full test suite and `node scripts/release-check.cjs` pass.** The CI gate and the `main` ruleset still apply.
 
 ## Build identifiers
 

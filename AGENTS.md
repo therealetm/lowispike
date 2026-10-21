@@ -89,7 +89,7 @@ The complete inline-module, screen, persistence, backend, asset, and test invent
 
 ## Release workflow
 
-- `main` is the live branch. Use a branch/PR for non-trivial work unless the user explicitly authorizes a live deployment.
+- `main` is the live branch. **Standing approval (Emmanuel, 21 Oct 2026): agents release and deploy live on their own, without asking first, once `node --test tests/*.test.cjs` and `node scripts/release-check.cjs` pass.** His words: "you do not need my go to push ... I want you to always push, push, push. I need you to work autonomously in the background." Work on a branch/worktree, then ship it through `scripts/release.sh`; do not stop to wait for his go-ahead. This replaces the old "only with explicit authorization" rule and the "preview for his OK before release" notes in older handoff entries.
 - Release with `scripts/release.sh "summary" --news news.json` (see `RELEASE.md`). Do not write another one-off release script: it bumps every build id (`index.html`, `version.json`, `sw.js` x2, `apple-ui.js`), runs the gate and the tests, pushes without force under the shared lock and waits until the build is live.
 - If you must release by hand: same build id everywhere (`node scripts/release-check.cjs` proves it), plain `git push origin HEAD:main` (refused unless it fast-forwards), never `--force`.
 - Wait for the GitHub Pages workflow to succeed, then verify the build metadata served by `https://therealetm.github.io/lowispike/` (`node scripts/verify-live.cjs BUILD --compare`). The CI run on `main` also checks this.

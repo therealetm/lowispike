@@ -55,7 +55,8 @@ are now wrong. Fix what you find, or cut it to a ticket.
 
 ## 6. Release
 
-Follow `RELEASE.md`. Only the task that owns runtime files bumps the build id. Land on `main` only while holding
+Follow `RELEASE.md`. Emmanuel gave standing approval (21 Oct 2026) to release and deploy live without asking him first,
+once the tests and `node scripts/release-check.cjs` pass: don't wait for his go-ahead. Only the task that owns runtime files bumps the build id. Land on `main` only while holding
 `/tmp/lowispike-release.lock`, after fetch and rebase, never with force, through `scripts/release.sh` or
 `scripts/push-main.sh`: the main ruleset refuses any commit that has not passed CI first. Then confirm the live `version.json` build
 and that live files match the commit.

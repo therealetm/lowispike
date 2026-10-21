@@ -213,3 +213,7 @@
 #cmPaneChat[data-spirit-chat] .rm-ch-list .rm-ch{min-height:68px;padding-top:11px;padding-bottom:11px}
 @media (max-height:600px){#app #main #cmPaneChat h2.rm-l-h{font-size:clamp(36px,11vw,44px)}.rm-l-hero{padding-top:10px}}
 @media (min-width:700px){.rm-l-hero{padding-top:56px}}
+/* the landing is taller than a short screen: it scrolls inside the pane (the pane clips everything else), the top bar floats */
+#cmPaneChat[data-spirit-chat][data-rm-view=chans]{overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+#cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-bar{position:sticky;top:0;z-index:5}
+#cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-bar{padding-bottom:12px;margin-bottom:4px;background:linear-gradient(180deg,rgba(4,10,28,.97) 0%,rgba(4,10,28,.9) 78%,rgba(4,10,28,0) 100%)}

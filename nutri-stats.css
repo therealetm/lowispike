@@ -81,5 +81,6 @@
 .ns-sm.k-limit i { background: linear-gradient(90deg, var(--ns-warn) calc(var(--f, 0) * 100%), rgba(0, 16, 40, .7) 0); }
 .ns-sm.s-hit i { background: linear-gradient(90deg, var(--ns-hit) calc(var(--f, 0) * 100%), rgba(0, 16, 40, .7) 0); }
 .ns-sm.s-over i { background: var(--ns-over); }
-.ns-sg { flex: 0 0 auto; color: #b9d8ef; } .ns-sg b { color: #fff; font-size: 15px; }
+.ns-sg { flex: 0 0 auto; color: #b9d8ef; white-space: nowrap; } .ns-sg b { color: #fff; font-size: 15px; }
+.ns-sg .ns-ok { font-style: normal; font-weight: 650; font-size: 11px; }
 @media (prefers-reduced-motion: reduce) { .ns-bar i { transition: none; } .ns-sb:active { transform: none; } }

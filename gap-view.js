@@ -95,7 +95,7 @@
             const lit = i <= m.cur, here = i === m.cur;
             return '<g class="gv-pl' + (lit ? ' lit' : '') + (here ? ' here' : '') + '" style="--c:' + COL[i] + '"><circle class="gv-halo" cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="17"/>' +
                 '<circle class="gv-dot" cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="' + (here ? 11 : 8.5) + '"/>' +
-                '<text x="' + p[0].toFixed(1) + '" y="' + (p[1] + 3.6).toFixed(1) + '">' + esc(m.stages[i].h) + '</text></g>';
+                '<text x="' + p[0].toFixed(1) + '" y="' + (p[1] + 3.6).toFixed(1) + '">' + esc(m.stages[i].h) + '<tspan class="gv-u">h</tspan></text></g>'; /* Oct 21 grandma test: a bare 16 on a planet is not obviously hours */
         }).join('');
         return '<svg class="gv-svg" viewBox="0 0 260 260" role="img" aria-label="' + esc(s('hexL')) + '"><defs>' +
             '<radialGradient id="gvGlass" cx="40%" cy="32%" r="75%"><stop offset="0" stop-color="#ffffff" stop-opacity=".22"/><stop offset=".55" stop-color="#8fd8ff" stop-opacity=".08"/><stop offset="1" stop-color="#0a1f4a" stop-opacity=".5"/></radialGradient>' +

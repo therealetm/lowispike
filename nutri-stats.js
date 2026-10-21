@@ -195,9 +195,10 @@
     /* ---------- the small "Today's stats" strip in Log meal and in the Fuel list ---------- */
     function stripHTML() {
         const m = C.rows(state() || {}), pick = ['protein', 'fiber', 'sugar'].map(k => m.rows.find(r => r.k === k));
-        return '<button type="button" class="ns-strip" data-ns="open"><span class="ns-sl">' + esc(T('Today\'s stats', 'Heutige Stats', 'Stats de hoy')) + '</span>' +
+        /* Oct 21 grandma test: a bare "1/6" did not say 1 of 6 what, so it says "on track" and reads the whole sentence aloud */
+        return '<button type="button" class="ns-strip" data-ns="open" aria-label="' + esc(T(m.good + ' of ' + m.total + ' stats on track today. Open today\'s stats.', m.good + ' von ' + m.total + ' Stats heute im Ziel. Heutige Stats öffnen.', m.good + ' de ' + m.total + ' stats en su sitio hoy. Abrir stats de hoy.')) + '"><span class="ns-sl">' + esc(T('Today\'s stats', 'Heutige Stats', 'Stats de hoy')) + '</span>' +
             pick.map(r => '<span class="ns-sm k-' + r.kind + ' s-' + r.state + '"><small>' + esc(SHORT[r.k][lang()]) + '</small><i style="--f:' + r.fill.toFixed(3) + '"></i></span>').join('') +
-            '<span class="ns-sg"><b>' + m.good + '</b>/' + m.total + ' ›</span></button>';
+            '<span class="ns-sg"><b>' + m.good + '</b>/' + m.total + ' <em class="ns-ok">' + esc(T('on track', 'im Ziel', 'bien')) + '</em> ›</span></button>';
     }
     let queued = 0;
     function inject() {

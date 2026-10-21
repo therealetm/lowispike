@@ -23,6 +23,7 @@
 .gv-pl .gv-halo { fill: var(--c); opacity: 0; }
 .gv-pl .gv-dot { fill: #0b1d4a; stroke: color-mix(in srgb, var(--c) 55%, transparent); stroke-width: 1.6; }
 .gv-pl text { font-size: 8.5px; font-weight: 700; text-anchor: middle; fill: rgba(225, 240, 255, .7); }
+.gv-pl .gv-u { font-size: 6.5px; font-weight: 650; }
 .gv-pl.lit .gv-dot { fill: var(--c); stroke: #fff; stroke-width: 1.2; }
 .gv-pl.lit .gv-halo { opacity: .16; }
 .gv-pl.lit text { fill: #06163d; }

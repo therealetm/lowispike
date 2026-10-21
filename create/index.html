@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#03050a">
+<meta name="color-scheme" content="dark">
 <title>LOWiSPIKE Create</title>
 <meta name="description" content="LOWiSPIKE Create: your own AI studio for videos and images. Being built right now.">
 <link rel="canonical" href="https://therealetm.github.io/lowispike/create/">
@@ -19,14 +20,14 @@
 <style>
 /* LOWiSPIKE Create (21 Oct 2026): its own address so it can be shared, and shown inside the app's Creation tab (?embed=1).
    The studio itself is not built yet; this page says so plainly and offers nothing that does not work. */
-:root{--cyan:#8fe7ff;--teal:#1cf7f9;--ink:#eaf6ff;--muted:#a9bfd6}
+:root{color-scheme:dark;--cyan:#8fe7ff;--teal:#1cf7f9;--ink:#f2f8ff;--muted:#b8cce4}/* color-scheme dark: see affiliates/blueprint.css (a frame with another scheme gets a white canvas) */
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%}
-html{overflow-x:hidden;-webkit-text-size-adjust:100%}
+html{overflow-x:hidden;-webkit-text-size-adjust:100%;background:#03060f}
 body{min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:max(24px,env(safe-area-inset-top)) 20px max(24px,env(safe-area-inset-bottom));
   font:16px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);text-align:center;
   background:radial-gradient(ellipse 70% 55% at 50% 38%,#0c265c 0%,#071636 45%,#03050a 100%) fixed,#03050a}
-body.embed{background:transparent}
+body.embed{background:linear-gradient(180deg,#081a40 0%,#050e26 55%,#03060f 100%),#03060f}
 main{width:min(440px,100%)}
 .rings{position:relative;width:min(170px,44vw);aspect-ratio:1;margin:0 auto 30px}
 .rings i{position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(143,231,255,.55);box-shadow:0 0 18px rgba(28,247,249,.35),inset 0 0 18px rgba(28,247,249,.18)}

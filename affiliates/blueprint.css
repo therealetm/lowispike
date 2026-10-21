@@ -1,11 +1,14 @@
 /* LOWiSPIKE Affiliates · Master Blueprint. Same dark galaxy and cyan glow as the app and the 404 page. No animation except the shuffle. */
-:root{--cyan:#8fe7ff;--teal:#1cf7f9;--green:#16b88a;--ink:#eaf6ff;--muted:#a9bfd6;--line:rgba(143,231,255,.32);--card:rgba(10,24,52,.72);--warn:#ffd27a;--bad:#ff9a9a;--r:16px}
+/* 21 Oct 2026 (Eman: white cards, unreadable): color-scheme dark. Inside the app's frame a page whose scheme differs from the app gets an
+   opaque WHITE canvas from the browser, and the see-through cards and pale text sat on that white. Now the page says it is dark and paints
+   its own opaque background in the frame too; cards are near-opaque dark glass. */
+:root{color-scheme:dark;--cyan:#8fe7ff;--teal:#1cf7f9;--green:#16b88a;--ink:#f2f8ff;--muted:#b8cce4;--line:rgba(143,231,255,.34);--card:rgba(12,26,60,.9);--warn:#ffd27a;--bad:#ff9a9a;--r:16px}
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%;overflow-x:hidden}
+html{-webkit-text-size-adjust:100%;overflow-x:hidden;background:#03060f}
 body{margin:0;min-height:100vh;min-height:100dvh;font:16px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);
   background:radial-gradient(ellipse 80% 45% at 50% 0%,#0c265c 0%,#071636 50%,#03050a 100%) fixed,#03050a;overflow-x:hidden;
   padding:max(12px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(28px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left))}
-body.embed{padding-top:10px;background:transparent}
+body.embed{padding-top:10px;background:linear-gradient(180deg,#081a40 0%,#050e26 55%,#03060f 100%),#03060f;min-height:100%}
 body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.45;z-index:-1;
   background-image:radial-gradient(1px 1px at 12% 18%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 78% 12%,#cfe9ff 50%,transparent 51%),
   radial-gradient(1.5px 1.5px at 30% 72%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 88% 64%,#fff 50%,transparent 51%),
@@ -25,7 +28,7 @@ h3{font-size:15px;margin:14px 0 6px;color:var(--cyan)}
 button,.btn{font:inherit;color:var(--ink);min-height:44px;padding:0 16px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;
   background:linear-gradient(180deg,rgba(28,247,249,.16),rgba(22,184,138,.10));border:1.5px solid rgba(143,231,255,.6);box-shadow:0 0 12px rgba(28,247,249,.18)}
 button.ghost{background:transparent;box-shadow:none;border-color:var(--line)}
-button:disabled{opacity:.45;cursor:not-allowed}
+button:disabled{opacity:.55;cursor:not-allowed}
 button:focus-visible,.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 /* tabs */

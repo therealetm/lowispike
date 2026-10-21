@@ -297,9 +297,9 @@
             id: 'community', area: 'together', target: ['#whHud .o8-settings'], covers: ['community'],
             title: { en: 'Community', de: 'Community', es: 'Comunidad' },
             text: {
-                en: 'Community is where you meet everyone else and their companions. It’s in Settings, under Everything else. Its tabs at the top are Room, Chat, Creation and Affiliates.',
-                de: 'In der Community triffst du alle anderen und ihre Begleiter. Du findest sie in den Einstellungen unter Alles andere. Oben sind die Tabs Raum, Chat, Erstellen und Affiliates.',
-                es: 'En Comunidad conoces a todos los demás y a sus compañeros. Está en Ajustes, en Todo lo demás. Arriba están las pestañas Sala, Chat, Crear y Afiliados.'
+                en: 'Community is where you meet everyone else and their companions. It’s in Settings, under Everything else. Its tabs at the top are Room, Chat, Creation and Affiliates. Tap the Community name for rooms, your profile and invite links.',
+                de: 'In der Community triffst du alle anderen und ihre Begleiter. Du findest sie in den Einstellungen unter Alles andere. Oben sind die Tabs Raum, Chat, Erstellen und Affiliates. Tipp auf den Community-Namen für Räume, dein Profil und Einladungslinks.',
+                es: 'En Comunidad conoces a todos los demás y a sus compañeros. Está en Ajustes, en Todo lo demás. Arriba están las pestañas Sala, Chat, Crear y Afiliados. Toca el nombre de Comunidad para ver salas, tu perfil y enlaces de invitación.'
             }
         },
         {

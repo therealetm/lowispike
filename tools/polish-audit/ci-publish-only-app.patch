@@ -1,23 +1,8 @@
-commit eae7572e3fc95e3e6d5192bb533db619e36df69f
-Author: Sprite <noreply@sprites.dev>
-Date:   Wed Oct 21 12:50:07 2026 +0000
-
-    Polish audit: 404 page, share/SEO tags, brand-cyan glass rims, wrapping pad hint, publish only the app
-    
-    - 404.html: branded "drifted out of orbit" page (EN/DE/ES) for missing addresses under /lowispike/
-    - index.html: real title, description, canonical, Open Graph/Twitter share card (og-image.png), sitemap link, hidden h1
-    - manifest: description, lang, categories; robots.txt and sitemap.xml added
-    - liquid-glass.css / scan-glass.css: white glass rims and lines switched to brand cyan (#8fe7ff)
-    - misty-pad.css: long pad hints wrap to two centred lines instead of an ellipsis
-    - CI deploy publishes only the app files (scripts/site-files.cjs), not notes, tests or tools; test added
-    - comment wording cleanups; polish-audit crawl/probe/sweep tools; interface-audit honours IA_ROOT
-
 diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
 index ee5839f..1e39a64 100644
 --- a/.github/workflows/ci.yml
 +++ b/.github/workflows/ci.yml
-@@ -72,11 +72,13 @@ jobs:
-         with:
+@@ -73,9 +73,11 @@ jobs:
            persist-credentials: false
        - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
 -      # The site is the repository root, served as-is (the old branch deploy used .nojekyll).
@@ -32,4 +17,3 @@ index ee5839f..1e39a64 100644
 +          path: _site
        - id: deployment
          uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
- 

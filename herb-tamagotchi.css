@@ -2,8 +2,6 @@
 .dg-home-compact{text-align:center;margin:6px 0 10px}.dg-home-compact button{font-size:12px!important;min-height:44px;color:var(--dim)!important;opacity:.8}
 #lhActionToast{display:flex;align-items:center;gap:10px}.lh-action-creature{display:block;flex:none;width:66px;height:80px;margin:-22px -4px -10px}.lh-action-creature .lh-sprite{overflow:visible}
 html.herb-living #g1Z .g1-fb,html.herb-living #g1Z .g1-face,html.herb-living .g1-uorb,html.herb-living .tmg-guide,html.herb-living .hb-portrait[data-hb="herb"]{display:none!important}
-html.herb-living #tabbar .tb[data-tab="scan"] .orb{display:none!important}
-html.herb-living #tabbar .tb[data-tab="scan"]{background-image:linear-gradient(90deg,transparent 33%,currentColor 33% 36%,transparent 36% 40%,currentColor 40% 42%,transparent 42% 47%,currentColor 47% 50%,transparent 50% 54%,currentColor 54% 56%,transparent 56% 60%,currentColor 60% 63%,transparent 63%);background-size:42px 24px;background-repeat:no-repeat;background-position:center 9px}
 #tmgHomeCard{--tmg-a:#9de6b8;--tmg-b:#c7b0ff;position:relative;display:grid!important;grid-template-columns:132px minmax(0,1fr);gap:2px;width:100%;min-height:158px;margin:18px 0 12px!important;padding:12px 14px 8px 0!important;box-sizing:border-box;border:1px solid #d7d0ff4d;border-radius:26px!important;overflow:visible!important;background:radial-gradient(ellipse at 10% 40%,color-mix(in srgb,var(--tmg-a) 22%,transparent),transparent 66%),linear-gradient(125deg,#242d47,#252b45 58%,#34304d)!important;color:#f6f4ff!important;box-shadow:0 12px 32px #2734521a,inset 0 1px #ffffff12;text-align:left;column-count:initial!important;flex:0 0 auto!important;order:0!important}
 #tmgHomeCard button,#tmgScreen button,#lhEvolution button{font:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .lh-card-herb{position:relative;width:139px;height:168px;margin:-24px -3px -12px;padding:0;border:0;background:none;color:inherit;overflow:visible;align-self:center}
@@ -160,7 +158,6 @@ html.herb-room #g1Z,html.herb-evolving #g1Z{display:none!important}
 
 
 /* The herb lives in the original floating bubble; Home only shows its progress. */
-html.herb-living #tabbar .tb[data-tab="scan"]{background-image:none}
 #lhDock{position:absolute;z-index:3;top:-38px;left:50%;transform:translateX(-50%);width:76px;height:76px;border:1px solid color-mix(in srgb,var(--tmg-a) 65%,white);border-radius:50%;padding:0;background:radial-gradient(circle at 28% 18%,#fff9,transparent 48%),linear-gradient(145deg,#bde9f5e8,#7c8ed8eb);box-shadow:0 0 0 6px #a9d5e21b,0 6px 20px #34657638,inset 0 2px 5px #fff9;cursor:pointer;touch-action:manipulation;transition:opacity .2s,transform .2s;overflow:visible}
 #lhDock .lh-dock-glass{position:absolute;inset:0;border-radius:50%;overflow:hidden;background:radial-gradient(ellipse at 50% 85%,color-mix(in srgb,var(--tmg-a) 60%,transparent),transparent 60%)}
 #lhDock .lh-sprite{width:78px;height:91px;position:absolute;left:-2px;top:-15px;filter:drop-shadow(0 0 4px #b7ffdc90)}

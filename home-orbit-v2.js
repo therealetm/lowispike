@@ -174,7 +174,7 @@
     /* ---- taps (fallbacks when no sibling adapter owns the control) ---- */
     function tap(key, el, e) {
         if (el.dataset.o8Adapter) return;
-        if (key === 'scan') { const t = $('#tabbar [data-tab="scan"]'); if (t) t.click(); return; }
+        if (key === 'scan') { open('scan'); return; }
         /* the bubble is Community: without its adapter a tap still opens Community (the old sheet only if there is no Community tab) */
         if (key === 'settings') { if (typeof root.goTab === 'function' && $('#tab-foryou')) root.goTab('foryou'); else openSettings(); return; }
         if (key === 'sleep') { openSleep(); return; }
@@ -201,25 +201,24 @@
     }
     function closeSheet() { const w = $('.o8-sheet'); if (w) w.remove(); }
     const clickSel = sel => () => { const t = $(sel); if (t) t.click(); };
-    function tabLabel(tab, fb) { const t = $('#tabbar [data-tab="' + tab + '"]'); const s = t && ((t.getAttribute('aria-label') || t.textContent || '').trim()); return s || fb; }
+    /* Oct 21: the bottom menu bar is gone; sections open the way its icons did (index.html lowiOpen) */
+    function open(tab) { try { if (typeof root.lowiOpen === 'function') root.lowiOpen(tab); else if (typeof root.goTab === 'function') root.goTab(tab); } catch (e) { console.error(e); } }
     /* every entry point the ring hides stays one tap away here */
     function entries() {
         const list = [
             { id: 'profile', sel: '#pfBtn', label: T('Profile', 'Profil', 'Perfil') },
             { id: 'today', sel: '#whHud .wh-todaybtn', label: T('Today', 'Heute', 'Hoy') },
-            { id: 'community', sel: '#tabbar [data-tab="foryou"]', label: tabLabel('foryou', T('Community', 'Community', 'Comunidad')) },
-            { id: 'cook', sel: '#tabbar [data-tab="shelf"]', label: tabLabel('shelf', T('Cook', 'Kochen', 'Cocinar')) },
-            { id: 'move', sel: '#tabbar [data-tab="move"]', label: tabLabel('move', T('Move', 'Bewegen', 'Moverse')) },
+            { id: 'community', tab: 'foryou', label: T('Community', 'Community', 'Comunidad') },
+            { id: 'cook', tab: 'shelf', label: T('Cook', 'Kochen', 'Cocinar') },
+            { id: 'move', tab: 'move', label: T('Move', 'Bewegen', 'Moverse') },
             { id: 'map', sel: '#whHud .wh-zoom', label: T('World map', 'Weltkarte', 'Mapa del mundo') },
             { id: 'vr', sel: '#whHud .wh-vr', label: 'VR' },
             { id: 'sound', sel: '#whHud .wa-btn', label: T('Sound', 'Ton', 'Sonido') },
             { id: 'theme', sel: '#tbTheme', label: T('Day / night', 'Tag / Nacht', 'Día / noche') },
             { id: 'gift', sel: '.hs-gift', label: T('Gift of the day', 'Geschenk des Tages', 'Regalo del día') },
             { id: 'weather', sel: '#tab-home .sp-weather', label: T('Weather', 'Wetter', 'Tiempo') }
-        ].filter(e => $(e.sel)).map(e => ({ id: e.id, label: e.label, run: clickSel(e.sel) }));
+        ].filter(e => e.tab || $(e.sel)).map(e => ({ id: e.id, label: e.label, run: e.tab ? () => open(e.tab) : clickSel(e.sel) }));
         if ($('#f3Board')) list.push({ id: 'quest', label: T('Daily quest', 'Tagesquest', 'Misión diaria') + (H.classList.contains('o8-quest') ? ' (' + T('shown', 'sichtbar', 'visible') + ')' : ''), run: () => H.classList.toggle('o8-quest') });
-        const on = menuBar();
-        list.push({ id: 'menubar', on, label: T('Bottom menu bar', 'Menüleiste unten', 'Barra de menú inferior') + ': ' + (on ? T('on', 'an', 'sí') : T('off', 'aus', 'no')), run: () => setMenuBar(!menuBar()) });
         return list;
     }
     function openSettings() { return sheet('o8-settings-sheet', T('Settings', 'Einstellungen', 'Ajustes'), entries()); }
@@ -231,9 +230,8 @@
             { id: 'short', label: T('Short night', 'Kurze Nacht', 'Noche corta'), run: pick('short') }
         ]);
     }
-    function menuBar() { return ls.get(MENU_KEY) === '1'; }
-    function setMenuBar(on) { ls.set(MENU_KEY, on ? '1' : '0'); applyMenuBar(); root.dispatchEvent(new CustomEvent('lowi:home-menubar', { detail: { on } })); }
-    function applyMenuBar() { const on = menuBar(); if (H.classList.contains('o8-menubar') !== on) { H.classList.toggle('o8-menubar', on); soon(); } }
+    /* Oct 21: the bottom menu bar is gone for good: its old switch (lowi.home.menubar) is dropped and its class cleared */
+    function dropMenuBar() { try { ls.set(MENU_KEY, '0'); } catch (e) { } if (H.classList.contains('o8-menubar')) H.classList.remove('o8-menubar'); }
 
     /* ---- geometry ---- */
     function safeArea() {
@@ -250,9 +248,6 @@
         const r = { left: q.left - dx, top: q.top - dy, width: q.width, height: q.height };
         const vw = H.clientWidth || root.innerWidth, vh = root.innerHeight;
         const s = safeArea();
-        /* the menu bar, when the user switched it on, takes its strip at the bottom */
-        const tb = H.classList.contains('o8-menubar') ? D.getElementById('tabbar') : null, tr = tb && tb.getBoundingClientRect();
-        if (tr && tr.height > 0 && tr.width > vw * 0.5 && tr.top > vh * 0.6) s.b = Math.max(s.b, vh - tr.top);
         const L = fit({ vw, vh, cx: r.left + r.width / 2, cy: r.top + r.height / 2, mistyR: r.width / 2, safe: s });
         if (!L.ok && offscreen(r, vw, vh)) L.transit = true;
         return L;
@@ -274,7 +269,7 @@
     const busy = () => ['wh-away', 'mf-roam', 'wh-leave', 'lw-clean', 'lw-clean-out'].some(c => H.classList.contains(c));
     function layout(force) {
         if (!ensure()) return last;
-        applyMenuBar();
+        dropMenuBar();
         if (!H.classList.contains('wh-home')) return last;
         if (busy() && last && last.ok && !force) return last;
         const L = measure(); if (!L) return last;
@@ -314,12 +309,10 @@
         if (root.visualViewport) root.visualViewport.addEventListener('resize', soon, { passive: true });
         ['lowi:layout', 'lowi:home-bubble-added', 'world3d-ready', 'lowi:tab'].forEach(n => D.addEventListener(n, soon));
         D.addEventListener('lowi:lang', () => { relabel(); labelLang = lang(); paintSleep(); }); /* BH-004 */
-        root.addEventListener('storage', e => { if (e.key === MENU_KEY) applyMenuBar(); });
-        root.addEventListener('lowi:home-menubar', applyMenuBar);
         D.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
         try { new MutationObserver(soon).observe(H, { attributes: true, attributeFilter: ['class', 'lang'] }); } catch (e) { }
         setInterval(() => { if (!D.hidden) layout(false); }, 1500);
     }
-    root.LowiHomeOrbitV2 = Object.assign({}, core, { layout: () => layout(true), current: () => last, entries, openSettings, openSleep, closeSheet, menuBar, setMenuBar, sleepToday: sleepNow });
+    root.LowiHomeOrbitV2 = Object.assign({}, core, { layout: () => layout(true), current: () => last, entries, openSettings, openSleep, closeSheet, sleepToday: sleepNow });
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot, { once: true }); else boot();
 })(typeof window !== 'undefined' ? window : globalThis);

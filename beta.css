@@ -744,22 +744,6 @@ html.spirit-app #tab-home #g2hTiles .g2h-tile {
 #spWorld.sp-capture .sp-food-camera>p { right: 60px !important; }
 
 /* ---------- Tab bar: Scan has its own icon ---------- */
-#tabbar .tb.scan .orb {
-    display: none !important;
-}
-
-#tabbar .tb.scan .tbsp {
-    display: grid !important;
-    place-items: center;
-    width: 24px !important;
-    height: 24px !important;
-}
-
-#tabbar .tb.scan .tbsp .b-scan-ic {
-    width: 24px;
-    height: 24px;
-    display: block;
-}
 
 /* ---------- Bottom sheets: solid, nothing bleeds through ---------- */
 .rs-sh,

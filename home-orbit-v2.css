@@ -16,6 +16,10 @@ html.o8.wh-home #spHome #spFast[data-orbit] {
 }
 /* the gentle float bob would pull controls off the circle at different phases: on the ring they hold their exact spot */
 html.o8.wh-home #whHud [data-orbit], html.o8.wh-home #spHome #spFast[data-orbit] { translate: none !important; }
+/* Oct 21 (instant back): Chromium lets a float that restarts (Home shown again after a page) win over the translate rule above, so the
+   ring bubbles bobbed after coming back. Ring bubbles carry no float at all; water keeps its hold fill. */
+html.o8.wh-home #whHud .lb-bub[data-orbit], html.o8.wh-home #spHome #spFast.lb-bub[data-orbit] { animation-name: none !important; }
+html.o8.wh-home #whHud .wh-water.lb-bub.wh-holding[data-orbit] { animation: wh-hold .6s linear forwards !important; }
 html.o8.wh-home #whHud .wh-pad[data-orbit] { transform: translate(-50%, -50%) !important; z-index: 3; }
 html.o8.wh-home #whHud .wh-pad[data-orbit] .mp-knob { width: calc(var(--o8-d) * .42); height: calc(var(--o8-d) * .42); margin: calc(var(--o8-d) * -.21) 0 0 calc(var(--o8-d) * -.21); }
 html.o8.wh-home #whHud .wh-pad[data-orbit] .mp-well { inset: calc(var(--o8-d) * .14); }
@@ -70,20 +74,7 @@ html.o8-wide.wh-home #whHud [data-orbit="fuel"] .wh-cell-tx::after,
 html.o8-wide.wh-home #spHome #spFast[data-orbit] .sp-fast-copy::after { font-size: 13px; }
 
 /* ---- one page: the old Home chrome steps back (every one of these stays reachable from the Settings bubble) ---- */
-html.o8.wh-home:not(.o8-quest) #f3Board,
-html.o8.wh-home:not(.o8-quest) #tab-home #f3Board,
-html.o8.wh-home:not(.o8-quest) #hcLine,
-html.o8.wh-home #tab-home .sp-top,
-html.o8.wh-home #tab-home #spHome .sp-top,
-html.o8.wh-home #whHud .wh-todaybtn,
-html.o8.wh-home #whHud .wh-vr,
-html.o8.wh-home:not(.wh-away) #whHud .wh-zoom, /* inside a world it stays: the World map stick is the way back out */
-html.o8.wh-home #whHud .wa-btn,
-html.o8.wh-home #tbTheme,
-html.o8.wh-home .hs-gift,
-html.o8.wh-home #pfBtn,
-html.o8.wh-home #fxHint,
-html.o8.wh-home:not(.o8-menubar) #tabbar { display: none !important; }
+html.o8.wh-home:not(.o8-quest) #f3Board,html.o8.wh-home:not(.o8-quest) #tab-home #f3Board,html.o8.wh-home:not(.o8-quest) #hcLine,html.o8.wh-home #tab-home .sp-top,html.o8.wh-home #tab-home #spHome .sp-top,html.o8.wh-home #whHud .wh-todaybtn,html.o8.wh-home #whHud .wh-vr,html.o8.wh-home:not(.wh-away) #whHud .wh-zoom,html.o8.wh-home #whHud .wa-btn,html.o8.wh-home #tbTheme,html.o8.wh-home .hs-gift,html.o8.wh-home #pfBtn,html.o8.wh-home #fxHint { display: none !important; }
 
 /* ---- clean glass: no shadow under any ring bubble or under Misty (Oct 18 2026, Emmanuel on iPad: "All bubbles have a shadow bottom.
    Remove that weird bottom."). Top highlight, rim and labels stay; only the offset drop shadows and the ellipse under Misty go.

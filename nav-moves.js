@@ -21,7 +21,7 @@
         lb: { tab: 'move', root: '#tab-move', pane: 'cmPaneBoard', label: () => T('Care board', 'F\u00fcrsorge-Board', 'Tabla de cuidado'), back: () => T('Move', 'Bewegen', 'Moverse') }
     };
     const activeTab = () => { const t = $('.tab.active'); return t ? t.id.replace(/^tab-/, '') : ''; };
-    function go(t) { try { if (typeof W.goTab === 'function') W.goTab(t); else { const b = $('#tabbar .tb[data-tab="' + t + '"]'); if (b) b.click(); } } catch (e) { console.error(e); } }
+    function go(t) { try { if (typeof W.goTab === 'function') W.goTab(t);  } catch (e) { console.error(e); } }
 
     /* ---------- the panes ---------- */
     function ensurePane(k) {
@@ -108,7 +108,7 @@
         const br = body.getBoundingClientRect(), lr = L.getBoundingClientRect(); if (!br.height) return;
         const pb = parseFloat(getComputedStyle(body).paddingBottom) || 0;
         let bottom = Math.min(br.bottom - pb, W.innerHeight);
-        const tb = $('#tabbar'); if (tb) { const tr = tb.getBoundingClientRect(); if (tr.height && tr.top > lr.top + 200 && tr.top < bottom + 8) bottom = Math.min(bottom, tr.top - 8); }
+        { /* Oct 21: no bottom bar to stop above */ }
         const h = Math.round(Math.max(320, Math.min(bottom - lr.top - 4, 900)));
         if (L.style.height !== h + 'px') { L.style.height = h + 'px'; try { if (W.LowiFyEmbed) D.querySelectorAll('.nm-layer-fy .fy-slide.fye-on').forEach(W.LowiFyEmbed.place); } catch (e) { } }
     }

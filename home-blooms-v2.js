@@ -360,9 +360,15 @@
         if (!a || a.disabled) return;
         buzz(10);
         if (a.keep) { try { a.run(); } catch (err) { console.error(err); } refreshOpen(); return; }
-        close(false, a.id);
-        /* run after the bloom starts folding so a sheet opening from it is on top and gets the focus */
-        setTimeout(() => { try { a.run(); } catch (err) { console.error(err); } }, 0);
+        /* Oct 21 (E-man: "go back without the bubbles all of a sudden being closed"): an action that opens a page (Cook, fitness...)
+           leaves this bloom open, hidden under the page (section-nav.css), so the X / back finds Home exactly as it was.
+           Anything else (a sheet, a log) folds the bloom as before, right after the action runs. */
+        const wasHome = homeTab();
+        setTimeout(() => {
+            try { a.run(); } catch (err) { console.error(err); }
+            if (wasHome && !homeTab() && st.ov) return;
+            close(false, a.id);
+        }, 0);
     }
 
     /* taps and holds on the four bubbles (one window capture listener: runs before the old cell handlers) */
@@ -391,8 +397,10 @@
         if (kind === 'gap') { close(true); buzz(8); if (fn(W.LowiGapView, 'open')) W.LowiGapView.open(); return; }
         if (st.open === kind) close(); else open(kind, el);
     }
-    function onKey(e) { if (st.open && e.key === 'Escape' && !(st.ov && st.ov.contains(e.target))) close(); }
-    function onRelayout() { if (st.open) close(true); }
+    function onKey(e) { if (st.open && homeTab() && e.key === 'Escape' && !(st.ov && st.ov.contains(e.target))) close(); }
+    /* a real resize re-lays Home out; while a page is open on top, or as Home comes back unchanged, the bloom stays */
+    function onRelayout() { if (st.open && homeTab() && !(W.LowiSections && W.LowiSections.instant)) close(true); }
+    function homeTab() { const h = D.getElementById('tab-home'); return !h || h.classList.contains('active'); }
     function onData() { if (st.open === 'water' || st.open === 'move') refreshOpen(); }
     /* one bloom on Home at a time: the Sleep / Settings blooms (home-settings-sleep-v2) announce with owner 'settings-sleep' */
     function onOther(e) { const d = e && e.detail; if (d && d.open && d.owner && d.owner !== 'blooms' && st.open) close(true); }

@@ -150,6 +150,8 @@
     }
     function paintHud() {
         const hud = D.getElementById('whHud'); if (!hud) return;
+        /* Oct 21 (no-menubar, instant back): Home's HUD is not repainted while another page covers it, so coming back finds it exactly as it was */
+        if (!homeActive()) return;
         const xp = xpNow(), s = C.stage(xp), l = lang();
         void xp; void s;
         /* Misty's bubble itself is her name card: no second "Misty · stage · XP" pill on Home */
@@ -286,6 +288,9 @@
         const r = rig();
         if (st.pull) { if (r) { r.dist = st.pull.dist; r.pitch = st.pull.pitch; } st.zoomAnim = null; st.pull = null; }
         try { tick(); } catch (e) {}
+        /* Oct 21 (instant back): write Misty's size, the map view and the far classes now, not on the next world frame (seconds on a busy phone),
+           so the ring never lays out for the spirit world's distance after coming back */
+        try { const rr = rig(); if (rr && rr.mode === 'home') frame(0); } catch (e) {}
     }
     /* Oct 17 (handoff 6): Home's usual view is the zoomed-out rest view (scene rig.homeRest), not Misty's close-up */
     function baseDist(r) { return r && r.mode === 'home' ? (r.homeRest || r.homeDist || 3.2) : 6.5; }
@@ -646,7 +651,7 @@
             }
             const k = Math.max(0.12, Math.min(1.4, (r.homeDist || 3.2) / Math.max(0.1, r.dist))), kv = k.toFixed(3);
             if (kv !== st.mz) { st.mz = kv; const b = D.getElementById('spBubble'); if (b) b.style.setProperty('--wh-mz', kv); H.classList.toggle('wh-mapview', k < 0.6); }
-            if (++st.zf % 20 === 0) { paintZoom(); paintHint(); }
+            if (++st.zf % 20 === 0 && homeActive()) { paintZoom(); paintHint(); }
         }
         adventure(dt, r);
         { const wd = st.adv.wand, pf = !!(st.pad.mode && wd && wd.visible && wd.material.opacity > 0.3); if (H.classList.contains('wh-padfly') !== pf) H.classList.toggle('wh-padfly', pf); }
@@ -1009,7 +1014,7 @@
         else if (k === 'mstab') { e.preventDefault(); st.sheetTab = b.dataset.tab; repaintMisty(); const lm = liveMs(), nb = lm && lm.querySelector('[data-tab="' + st.sheetTab + '"]'); nb && nb.focus({ preventScroll: true }); }
         else if (k === 'aura') { e.preventDefault(); pickAura(b.dataset.id); }
         else if (k === 'room') { e.preventDefault(); try { W.LowiR2.close(W.LowiR2.top()); } catch (x) { } setTimeout(() => { try { W.LowiCellRoom.openRoom(); } catch (x) { } }, 200); }
-        else if (k === 'scan') { e.preventDefault(); try { W.LowiR2.closeAll(); } catch (x) { } const s = D.querySelector('#tabbar [data-tab="scan"]'); s && s.click(); }
+        else if (k === 'scan') { e.preventDefault(); try { W.LowiR2.closeAll(); } catch (x) { } try { if (typeof W.lowiOpen === 'function') W.lowiOpen('scan'); else W.goTab('scan'); } catch (x) { } }
     }
     function onKey(e) {
         if (e.key !== 'Escape' || !H.classList.contains('wh-on')) return;

@@ -78,7 +78,7 @@ html[data-ui=light] #cmPaneChat[data-planet]{--cp-sky1:#f4f9ff;--cp-sky2:#dcefff
 #cmPaneChat .cp-corner .cp-ctl{width:44px;height:44px;padding:0;justify-content:center;border-radius:50%}
 #cmPaneChat .cp-corner .cp-ctl span{display:none}
 #cmPaneChat[data-planet] .cm-compose{top:auto!important;bottom:auto!important;margin-bottom:0!important}
-html[data-lay=phone] #tab-foryou #cmPaneChat.ls-pane[data-planet]{padding-bottom:calc(var(--sab,0px) + 114px)!important}
+html[data-lay=phone] #tab-foryou #cmPaneChat.ls-pane[data-planet]{padding-bottom:calc(var(--sab,0px) + 14px)!important}
 #cmPaneChat[data-planet=tall]{--cp-h:128px}
 #cmPaneChat .cp-bar{display:flex;align-items:center;gap:10px;flex:none;padding:2px 2px 8px;min-width:0}
 #cmPaneChat .cp-head{flex:1;min-width:0}

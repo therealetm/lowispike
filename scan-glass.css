@@ -91,15 +91,9 @@ html.lg .b3-cam.sg-docked .b3-frame { top: 24%; }
 /* the dock over the camera: #main stops being its own layer (html.sg-dock, scan-glass.js) and the dock is lifted above the camera.
    Scan is the lit button while the camera is open, the page under it is not. */
 html.lg.sg-dock.b3-camon #app #main { z-index: auto !important; }
-html.lg.sg-dock.b3-camon #app #main #tabbar { z-index: 2147483001 !important; }
-html.lg.sg-dock.b3-camon #app #main #tabbar .tb.active:not(.scan) { background: transparent !important; box-shadow: none !important; color: rgba(235, 235, 245, .62) !important; }
-html.lg.sg-dock.b3-camon #app #main #tabbar .tb.active:not(.scan) :is(.tbl, svg) { color: rgba(235, 235, 245, .62) !important; }
-html.lg.sg-dock.b3-camon #app #main #tabbar .tb.scan .ring { box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .6), inset 0 -2px 6px rgba(0, 0, 0, .25), 0 0 0 2px rgba(255, 255, 255, .85), 0 8px 26px -4px rgba(10, 132, 255, .9) !important; }
 
 /* Oct 16 (E-man, iPhone screenshots: "Scan" lit Community): while the camera is open, Scan is the lit tab and the page under it
    is not. world-home.css paints the active tab with #tabbar#tabbar, so this needs the same weight plus the camera class. */
-html.b3-camon #app #main #tabbar#tabbar .tb.active:not(.scan) { background: transparent !important; box-shadow: none !important; opacity: .72; }
-html.b3-camon #app #main #tabbar#tabbar .tb.scan .ring { box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .6), inset 0 -2px 6px rgba(0, 0, 0, .25), 0 0 0 2px rgba(225, 248, 255, .9), 0 0 22px 2px rgba(110, 190, 255, .75), 0 8px 26px -4px rgba(10, 132, 255, .9) !important; }
 
 /* ---------- Oct 16: the camera states in Misty's blue liquid glass ----------
    E-man (camera blocked screenshot): "It doesn't fit our whole theme." Starting, blocked, no camera and didn't-start use the

@@ -246,7 +246,7 @@
     function goHome() {
         try {
             const home = D.getElementById('tab-home');
-            if (home && !home.classList.contains('active')) { const t = $('#tabbar .tb[data-tab="home"]'); if (t) t.click(); }
+            if (home && !home.classList.contains('active') && typeof window.goTab === 'function') window.goTab('home');
         } catch (e) { }
     }
     function start(opts) {

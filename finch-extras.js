@@ -113,8 +113,8 @@
     /* ---------- 14 · per-tab tint ---------- */
     let tintTab = '';
     function paintTint() {
-        const a = D.querySelector('#tabbar .tb.active');
-        let tab = a ? a.dataset.tab : (root.LowiHost && root.LowiHost.tab ? root.LowiHost.tab() : 'home');
+        const a = D.querySelector('#main > .tab.active, .tab.active');
+        let tab = a && a.id ? a.id.replace(/^tab-/, '') : (root.LowiHost && root.LowiHost.tab ? root.LowiHost.tab() : 'home');
         if (H.classList.contains('sp-open') && !H.classList.contains('herb-room')) tab = 'scan';
         if (tab === tintTab) return;
         tintTab = tab;
@@ -342,8 +342,7 @@
         glow();
         hintLayer();
         paintTint();
-        const tb = D.getElementById('tabbar');
-        if (tb) new MutationObserver(paintTint).observe(tb, { subtree: true, attributes: true, attributeFilter: ['class'] });
+        D.querySelectorAll('.tab').forEach(t => new MutationObserver(paintTint).observe(t, { attributes: true, attributeFilter: ['class'] }));
         new MutationObserver(paintTint).observe(H, { attributes: true, attributeFilter: ['class'] });
         const cm = D.getElementById('tab-foryou');
         if (cm) new MutationObserver(milesBtn).observe(cm, { childList: true });

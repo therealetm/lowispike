@@ -431,7 +431,9 @@
         const nb = home.querySelector('.sp-next');
         if (nb.dataset.sp !== st.action) nb.dataset.sp = st.action;
         const nbh = icon(st.icon) + '<span>' + esc(st.button) + '</span>';
-        if (nb.innerHTML !== nbh) nb.innerHTML = nbh;
+        /* Oct 21 (instant back): compare with what this paint last wrote, never with innerHTML: symbols() swaps emoji for icons, so the
+           page never matched and every paint (each resize, e.g. coming back to Home) rewrote the button and the log rows */
+        if (nb.__spH !== nbh || !nb.firstChild) { nb.innerHTML = nbh; nb.__spH = nbh; }
         setText(home.querySelector('.sp-log header b'), tr('todayLog') + ' · ' + new Intl.DateTimeFormat(locale(), {
             weekday: 'short',
             day: '2-digit',
@@ -440,7 +442,7 @@
         const row = (key, ic, label, value, done, action) => '<button type="button" class="sp-log-row' + (done ? ' done' : '') + '" data-sp="' + action + '" data-log="' + key + '"><i class="sp-bullet" aria-hidden="true"></i>' + icon(ic) + '<span><b>' + esc(label) + '</b><small>' + esc(value) + '</small></span></button>';
         const rows = row('water', 'water', tr('waterLabel'), day.water + ' / ' + WATER_GOAL + ' ' + tr('glasses'), day.water >= WATER_GOAL, 'water') + row('meal', 'plate', tr('mealLabel'), day.meals ? day.meals + ' ' + tr(day.meals === 1 ? 'mealOne' : 'mealMany') : tr('mealNone'), day.meals > 0, 'meal') + row('move', 'move', tr('moveLabel'), day.moved ? tr('moveDone') : tr('moveOpen'), day.moved, 'move') + row('checkin', 'check', tr('checkLabel'), day.checkin || tr('checkOpen'), /^(\d+)\/(\d+)/.test(day.checkin) && RegExp.$1 === RegExp.$2, 'checkin');
         const lr = home.querySelector('.sp-log-rows');
-        if (lr.innerHTML !== rows) lr.innerHTML = rows;
+        if (lr.__spH !== rows || !lr.firstChild) { lr.innerHTML = rows; lr.__spH = rows; }
         const days = Array.from({
             length: 7
         }, (_, i) => {

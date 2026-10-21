@@ -25,15 +25,6 @@ html.apple-ui[data-theme=dark]{color-scheme:dark}
 .apple-ui :is(.r2-seg button,.ls-seg button){min-height:44px;font-weight:650;font-size:.875rem;line-height:1.2;border-radius:.75rem}
 .apple-ui .r2-seg button:not(.on),.apple-ui .ls-seg button:not(.on){color:var(--au-secondary)}
 .apple-ui .r2-seg button.on{background:var(--au-surface);color:var(--text);box-shadow:0 2px 6px #0001}
-.apple-ui #tabbar{background:var(--au-chrome);border-color:var(--au-border);box-shadow:inset 0 1px 0 #ffffff15,0 8px 24px #0003;backdrop-filter:none;-webkit-backdrop-filter:none}
-.apple-ui #tabbar:before{display:none}
-.apple-ui #tabbar .tb{color:var(--au-secondary);gap:4px;transition:color 120ms,background-color 120ms}
-.apple-ui #tabbar .tb.active{color:var(--text);background:rgba(var(--acc-rgb),.14);box-shadow:none}
-.apple-ui #tabbar .tb.active svg{filter:none}
-.apple-ui #tabbar .tb.scan .ring{background:radial-gradient(circle at 28% 20%,#fff9,transparent 42%),radial-gradient(circle at 65% 75%,var(--orb-mood,#705fe0),transparent 62%),linear-gradient(145deg,var(--orb-day,#d3b7ff),var(--orb-deep,#4ebccc))!important;box-shadow:inset 0 2px 5px #fff9,inset 0 -9px 18px #0003,0 6px 18px #0003!important}
-.apple-ui #tabbar .tb.scan.active .ring{box-shadow:inset 0 2px 5px #fff9,inset 0 -9px 18px #0003,0 0 0 2px var(--orb-day),0 6px 18px #0003!important}
-.apple-ui #tabbar .tb.scan .gloss{background:linear-gradient(180deg,#fffc,#fff0)!important}
-.apple-ui #tabbar .tb.scan .liq{background:radial-gradient(ellipse at 25% 30%,var(--orb-day),transparent 45%),radial-gradient(ellipse at 70% 65%,var(--orb-mood),transparent 40%)!important}
 .apple-ui #lsHolo{opacity:.22;filter:saturate(.7)}
 .apple-ui #lsHolo i{animation:none}
 .apple-ui :is(.ls-holo-t,.btn.primary:after,.ls-sheen:after){animation:none}
@@ -99,7 +90,6 @@ html.apple-ui[data-mood-look=energy] :is(.card,.g2-tile,.g2e-tile){border-color:
 /* Performance mode: hidden screens do no layout/paint work and decorative motion stays still. */
 .apple-ui #main .tab:not(.active){content-visibility:hidden!important}
 .apple-ui #lsHolo{display:none!important}
-.apple-ui :is(.tr-holo-t,.tr-compose:after,.tr-post.orig:before,.tr-prev.orig:before,.tr-badge,.tr-liq-fill .sheen,.tr-liq-fill .edge,.tr-orb .wv,.tr-mini i,.mv-pulse,.r2-orbs i,.lb3.lb3-glow,.lb3-wave,.a-breathe,.a-sway,.a-lift,.a-pulse,.a-walk,.r3w-rays,#tabbar:before){animation:none!important}
 .apple-ui :is(.td-card,.cm-roomrow,.tr-post,.tr-compose,.mv-card,.mv-body,.sh-store,.td-meal,.td-extra,.lc-basket,.rs-top,.g2h-tile,.g2d-tile,.g2e-tile,.g2-tile){backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 @media(min-width:700px){
   .apple-ui .r2-ov:not(.full){align-items:center;padding:24px}
@@ -114,13 +104,11 @@ html.apple-ui[data-mood-look=energy] :is(.card,.g2-tile,.g2e-tile){border-color:
   .apple-ui .au-physics>.r2-sh{will-change:auto}
 }
 @media(prefers-reduced-transparency:reduce){
-  .apple-ui :is(#tabbar,#appearanceBtn,.r2-sh,#sheet,.ap-sheet,#toast){background:var(--au-sheet);backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
   .apple-ui #lsHolo{display:none}
 }
 @media(prefers-contrast:more){
   html.apple-ui{--au-border:#96a9c4;--au-surface:#182131;--au-chrome:#182131;--au-sheet:#182131;--au-secondary:#e0e8f6}
   html.apple-ui[data-ui=light]{--au-border:#52627a;--au-surface:#fff;--au-chrome:#fff;--au-sheet:#fff;--au-secondary:#24334a}
-  .apple-ui :is(.card,.g2e-tile,.r2-sh,#tabbar){border-width:2px}
 }
 @media(max-height:650px),(max-width:360px){
   .apple-ui #tab-profile,.apple-ui #tab-home,.apple-ui #tab-move{overflow-y:auto!important}
@@ -187,5 +175,5 @@ html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home .g2h-tile .g2h-ic{
 html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home .g2h-tile .g2h-ic svg{width:15px;height:15px}
 html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home .g2h-tile b{margin:0;font-size:11px;line-height:1.15}
 html[data-lay=phone].apple-ui.g2h-on:not(.g2h-tour) #tab-home .g2h-tile small{display:none}
-html[data-lay=phone].apple-ui #tab-scan:has(.b3-compact){padding-bottom:calc(var(--sab) + 126px)}
+html[data-lay=phone].apple-ui #tab-scan:has(.b3-compact){padding-bottom:calc(var(--sab) + 28px)}
 @media(max-height:740px){html[data-lay=phone].apple-ui #tab-scan .b3-capture-go{min-height:118px;padding:8px}html[data-lay=phone].apple-ui #tab-scan .b3-compact{gap:8px;margin-top:10px}html[data-lay=phone].apple-ui #tab-scan .b3-capture-icon{width:42px;height:42px}html[data-lay=phone].apple-ui.g2h-on #tab-home .td-top .small{display:none}html[data-lay=phone].apple-ui.g2h-on #tab-home .td-top{min-height:36px}html[data-lay=phone].apple-ui.g2h-on #tab-home{gap:6px}}

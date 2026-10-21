@@ -9,7 +9,7 @@
     'use strict';
     if (!W.history || !W.history.pushState || W.LowiBackSwipe) return;
     const H = D.documentElement;
-    const ours = s => !!(s && (s.lowiBack || s.lowiMv));
+    const ours = s => !!(s && (s.lowiBack || s.lowiMv || s.lowiSec));   /* Oct 21: section-nav.js's section entries are ours too */
     function guard() { try { if (!ours(history.state)) history.pushState({ lowiBack: 1 }, ''); } catch (e) { } }
     function activeTab() { const t = D.querySelector('.tab.active'); return t ? t.id.replace(/^tab-/, '') : 'home'; }
     function sig() {
@@ -21,8 +21,8 @@
         try { t.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', keyCode: 27, bubbles: true, cancelable: true })); } catch (e) { }
     }
     function home() {
-        const b = D.querySelector('#tabbar .tb[data-tab="home"]');
-        if (b) b.click(); else if (typeof W.goTab === 'function') W.goTab('home');
+        /* Oct 21: no menu bar any more; section-nav.js brings Home back exactly as it was */
+        if (W.LowiSections && typeof W.LowiSections.close === 'function') W.LowiSections.close(); else if (typeof W.goTab === 'function') W.goTab('home');
     }
     function onPop() {
         if (ours(history.state)) return;                 /* the Move player's own entry popped down to ours: not for us */

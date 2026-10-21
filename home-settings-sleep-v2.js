@@ -18,21 +18,20 @@
     /* the shell's own fallback words, so its 'lowi:sleep' listeners read the same thing */
     const SHELL_TOKEN = { under6: 'short', '6to7': 'ok', '7plus': 'good' };
     const KEEP_DAYS = 120;
-    const MENU_KEY = 'lowi.home.menubar';
     const TX = {
         en: { sleep: 'Sleep', log: 'Log', ask: 'How long did you sleep last night?', under6: 'Under 6 h', '6to7': '6\u20137 h', '7plus': '7 h or more',
             short: { under6: '<6 h', '6to7': '6\u20137 h', '7plus': '7 h+' }, notLogged: 'not logged', clear: 'Clear', clearLong: 'Clear today\u2019s sleep',
-            settings: 'Settings', me: 'Me', look: 'Look & sound', account: 'Account', menubar: 'Menu bar', on: 'on', off: 'off', more: 'More', back: 'Back', close: 'Close',
+            settings: 'Settings', me: 'Me', look: 'Look & sound', account: 'Account', on: 'on', off: 'off', more: 'More', back: 'Back', close: 'Close',
             moreTitle: 'Everything else', today: 'Today & history', community: 'Community', care: 'Care board', cook: 'Cook', workouts: 'Workouts', map: 'World map',
             vr: 'VR', worldSound: 'World sound', theme: 'Day / night', gift: 'Gift of the day', weather: 'Weather', quest: 'Daily quest', goTo: 'Go to', settingsGroup: 'Settings', tutorial: 'Tutorial', body: 'Weight & BMI', version: 'Version' },
         de: { sleep: 'Schlaf', log: 'Eintragen', ask: 'Wie lange hast du letzte Nacht geschlafen?', under6: 'Unter 6 Std.', '6to7': '6\u20137 Std.', '7plus': '7 Std. oder mehr',
             short: { under6: '<6 Std.', '6to7': '6\u20137 Std.', '7plus': '7 Std.+' }, notLogged: 'nicht eingetragen', clear: 'L\u00f6schen', clearLong: 'Heutigen Schlaf l\u00f6schen',
-            settings: 'Einstellungen', me: 'Ich', look: 'Aussehen & Ton', account: 'Konto', menubar: 'Men\u00fcleiste', on: 'an', off: 'aus', more: 'Mehr', back: 'Zur\u00fcck', close: 'Schlie\u00dfen',
+            settings: 'Einstellungen', me: 'Ich', look: 'Aussehen & Ton', account: 'Konto', on: 'an', off: 'aus', more: 'Mehr', back: 'Zur\u00fcck', close: 'Schlie\u00dfen',
             moreTitle: 'Alles andere', today: 'Heute & Verlauf', community: 'Community', care: 'Care-Board', cook: 'Kochen', workouts: 'Workouts', map: 'Weltkarte',
             vr: 'VR', worldSound: 'Weltklang', theme: 'Tag / Nacht', gift: 'Geschenk des Tages', weather: 'Wetter', quest: 'Tagesquest', goTo: 'Gehe zu', settingsGroup: 'Einstellungen', tutorial: 'Tutorial', body: 'Gewicht & BMI', version: 'Version' },
         es: { sleep: 'Sue\u00f1o', log: 'Anotar', ask: '\u00bfCu\u00e1nto dormiste anoche?', under6: 'Menos de 6 h', '6to7': '6\u20137 h', '7plus': '7 h o m\u00e1s',
             short: { under6: '<6 h', '6to7': '6\u20137 h', '7plus': '7 h+' }, notLogged: 'sin anotar', clear: 'Borrar', clearLong: 'Borrar el sue\u00f1o de hoy',
-            settings: 'Ajustes', me: 'Yo', look: 'Aspecto y sonido', account: 'Cuenta', menubar: 'Barra de men\u00fa', on: 's\u00ed', off: 'no', more: 'M\u00e1s', back: 'Atr\u00e1s', close: 'Cerrar',
+            settings: 'Ajustes', me: 'Yo', look: 'Aspecto y sonido', account: 'Cuenta', on: 's\u00ed', off: 'no', more: 'M\u00e1s', back: 'Atr\u00e1s', close: 'Cerrar',
             moreTitle: 'Todo lo dem\u00e1s', today: 'Hoy e historial', community: 'Comunidad', care: 'Tablero Care', cook: 'Cocinar', workouts: 'Entrenos', map: 'Mapa del mundo',
             vr: 'RV', worldSound: 'Sonido del mundo', theme: 'D\u00eda / noche', gift: 'Regalo del d\u00eda', weather: 'Tiempo', quest: 'Misi\u00f3n diaria', goTo: 'Ir a', settingsGroup: 'Ajustes', tutorial: 'Tutorial', body: 'Peso e IMC', version: 'Versi\u00f3n' }
     };
@@ -145,7 +144,7 @@
     const MORE_GROUPS = { go: COMMUNITY_PLACES.you.concat(COMMUNITY_PLACES.places), set: [] };
     const MORE = MORE_GROUPS.go.concat(MORE_GROUPS.set);
     /* the slim Settings (a hold on the Community bubble): the switches, the language and the account, nothing else */
-    const SETTINGS_IDS = ['theme', 'look', 'worldSound', 'language', 'menubar', 'tutorial'], ACCOUNT_IDS = ['account', 'deleteAccount'];
+    const SETTINGS_IDS = ['theme', 'look', 'worldSound', 'language', 'tutorial'], ACCOUNT_IDS = ['account', 'deleteAccount'];
     const HINT_KEY = 'lowi.hint.holdCommunity', HOLD_MS = 480;
     /* out of the panel, and where each one is still reached (their routes and features stay in the app):
        today: Emmanuel dropped Today from Home; cook: Fuel bubble > Cook; theme: Settings > Look & sound > Day & night;
@@ -214,7 +213,7 @@
        'go' closes Settings and runs its route */
     function holdIntent(bubble) { return bubble === 'settings' ? 'page' : null; }
     /* 'lang' = three language buttons in the row; 'confirm' = asks inside the panel first (Delete account) */
-    const PANEL_ROWS = ['worldSound'], TOGGLE_ROWS = ['menubar', 'quest', 'theme'];
+    const PANEL_ROWS = ['worldSound'], TOGGLE_ROWS = ['quest', 'theme'];
     function rowAction(id) { return id === 'language' ? 'lang' : id === 'deleteAccount' ? 'confirm' : PANEL_ROWS.includes(id) ? 'panel' : TOGGLE_ROWS.includes(id) ? 'toggle' : 'go'; }
     /* the Settings panel (one tap): the Settings choices first (no More chip: More is on the panel), then every More entry; empty groups drop */
     function pageGroups(env) {
@@ -222,7 +221,7 @@
         return [{ key: 'main', ids: SETTINGS_IDS.filter(has) }, { key: 'account', ids: ACCOUNT_IDS.filter(has) }].filter(g => g.ids.length);
     }
 
-    const core = { BANDS, FILL, SHELL_TOKEN, KEEP_DAYS, MENU_KEY, MORE, MORE_GROUPS, MORE_REMOVED, COMMUNITY_PLACES, SETTINGS_IDS, ACCOUNT_IDS, HINT_KEY, HOLD_MS, moreGroups, placePanel, TX, dayKey, readSleep, writeSleep, clearSleep, sleepView, fan, entries, tapIntent, holdIntent, pageGroups, rowAction, versionLabel };
+    const core = { BANDS, FILL, SHELL_TOKEN, KEEP_DAYS, MORE, MORE_GROUPS, MORE_REMOVED, COMMUNITY_PLACES, SETTINGS_IDS, ACCOUNT_IDS, HINT_KEY, HOLD_MS, moreGroups, placePanel, TX, dayKey, readSleep, writeSleep, clearSleep, sleepView, fan, entries, tapIntent, holdIntent, pageGroups, rowAction, versionLabel };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!root || !root.document) return;
 
@@ -241,7 +240,6 @@
         me: '<circle cx="12" cy="8.5" r="3.5" ' + P + '/><path d="M5 20a7 7 0 0 1 14 0" ' + P + '/>',
         look: '<path d="M4 10v4h3l4 3.5v-11L7 10H4z" ' + P + '/><path d="M15 9.5a3.5 3.5 0 0 1 0 5M17.5 7a7 7 0 0 1 0 10" ' + P + '/>',
         account: '<rect x="5" y="10.5" width="14" height="9.5" rx="2" ' + P + '/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" ' + P + '/>',
-        menubar: '<rect x="3.5" y="4" width="17" height="16" rx="3" ' + P + '/><path d="M3.5 15.5h17M8 18h.01M12 18h.01M16 18h.01" ' + P + '/>',
         tutorial: '<circle cx="12" cy="12" r="8.5" ' + P + '/><path d="M10 8.8v6.4l5.2-3.2z" ' + P + '/>',
         body: '<rect x="4" y="5" width="16" height="14" rx="4" ' + P + '/><path d="M8.5 10a4.5 4.5 0 0 1 7 0L12 12.5" ' + P + '/>',
         more: '<path d="M6 12h.01M12 12h.01M18 12h.01" ' + P + ' stroke-width="3"/>',
@@ -266,20 +264,12 @@
         return true;
     }
 
-    /* ---- menu bar switch (shell contract: localStorage lowi.home.menubar '1'|'0' + window 'lowi:home-menubar') ---- */
-    const orbit = () => root.LowiHomeOrbitV2 || null;
-    function menuBar() { const O = orbit(); if (O && typeof O.menuBar === 'function') return !!O.menuBar(); return ls.get(MENU_KEY) === '1'; }
-    function setMenuBar(on) {
-        const O = orbit();
-        if (O && typeof O.setMenuBar === 'function') { O.setMenuBar(!!on); return; }
-        ls.set(MENU_KEY, on ? '1' : '0');
-        root.dispatchEvent(new CustomEvent('lowi:home-menubar', { detail: { on: !!on } }));
-    }
+    /* Oct 21: the bottom menu bar is gone app-wide, and so is its switch here */
 
     /* ---- real routes ---- */
     const fn = (o, k) => o && typeof o[k] === 'function';
     const clickSel = sel => () => { const el = $(sel); if (el) el.click(); };
-    const goTab = tab => () => { if (fn(root, 'goTab')) root.goTab(tab); else { const b = $('#tabbar [data-tab="' + tab + '"]'); if (b) b.click(); } };
+    const goTab = tab => () => { if (fn(root, 'lowiOpen')) root.lowiOpen(tab); else if (fn(root, 'goTab')) root.goTab(tab); };
     const profileTile = k => () => {
         goTab('profile')();
         let n = 0; const tryOpen = () => {
@@ -289,12 +279,11 @@
         };
         setTimeout(tryOpen, 30);
     };
-    const tabExists = tab => fn(root, 'goTab') && !!$('#tabbar [data-tab="' + tab + '"], [data-tab="' + tab + '"]');
+    const tabExists = tab => fn(root, 'goTab') && !!D.getElementById('tab-' + tab);
     const ROUTES = {
         me: { has: () => tabExists('profile'), run: goTab('profile') },
         look: { has: () => tabExists('profile') && !!root.LowiG2E, run: profileTile('look') },
         account: { has: () => tabExists('profile') && !!root.LowiG2E, run: profileTile('acct') },
-        menubar: { has: () => !!$('#tabbar'), run: () => setMenuBar(!menuBar()), toggle: () => menuBar() },
         today: { has: () => !!$('#whHud .wh-todaybtn'), run: clickSel('#whHud .wh-todaybtn') },
         community: { has: () => tabExists('foryou'), run: goTab('foryou') },
         care: { has: () => !!(root.LowiR3F && fn(root.LowiR3F, 'openBoardTab')), run: () => root.LowiR3F.openBoardTab() },
@@ -328,9 +317,6 @@
     function safeArea() {
         if (!safeEl || !safeEl.isConnected) { safeEl = D.createElement('div'); safeEl.setAttribute('aria-hidden', 'true'); safeEl.style.cssText = 'position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)'; D.body.appendChild(safeEl); }
         const c = getComputedStyle(safeEl), s = { t: parseFloat(c.paddingTop) || 0, r: parseFloat(c.paddingRight) || 0, b: parseFloat(c.paddingBottom) || 0, l: parseFloat(c.paddingLeft) || 0 };
-        /* the menu bar, when switched on, owns its strip at the bottom */
-        const tb = H.classList.contains('o8-menubar') ? D.getElementById('tabbar') : null, tr = tb && tb.getBoundingClientRect();
-        if (tr && tr.height > 0 && tr.top > root.innerHeight * 0.6) s.b = Math.max(s.b, root.innerHeight - tr.top);
         return s;
     }
     function misty() {
@@ -680,7 +666,7 @@
         has: id => env.has(id), run: id => { const R = ROUTES[id]; if (!R) return false; try { R.run(); return true; } catch (e) { console.warn('[settings-sleep]', id, e); return false; } },
         label: id => t()[id] || id, icon: id => (ICON[id] ? svg(id) : ''), hint: { shown: () => !!ls.get(HINT_KEY), show: () => { ls.set(HINT_KEY, ''); try { root.localStorage.removeItem(HINT_KEY); } catch (e) { } hintSince = 1; maybeHint(); } },
         sleep: { today: () => { const band = sleepToday(); return Object.assign({ day: dayKey() }, sleepView(band, lang())); }, set: band => setSleep(band), clear: () => setSleep(null) },
-        menuBar, setMenuBar, available: () => ({ settings: entries('settings', env), more: entries('more', env) })
+        available: () => ({ settings: entries('settings', env), more: entries('more', env) })
     });
     root.LowiHomeSettingsSleepV2 = api;
 })(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null));

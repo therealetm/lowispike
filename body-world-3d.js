@@ -427,12 +427,15 @@
         backQ = 0; const w = wantBack(), t0 = D.querySelector('.tab.active'), t = H.classList.contains('rw-scanworld') ? { id: 'tab-scan' } : t0;
         H.classList.toggle('wb-comm', !!(t && t.id === 'tab-foryou')); const homeIn = !!(w === true && t && t.id === 'tab-home' && !H.classList.contains('gx-in') && !H.classList.contains('gx-out'));
         /* sliding back to Home with the camera still pulled out (Community was visited): the camera dives home WITH the slide, not after it lands */
-        if (homeIn && !H.classList.contains('wb-home')) { try { const WH = W.LowiWorldHome; if (WH && WH.state && WH.state.pull && WH.diveIn) WH.diveIn(); } catch (e) { } }
+        /* Oct 21: back from a section with the X is instant: the camera snaps to where Home left it instead of diving in */
+        if (homeIn && !H.classList.contains('wb-home')) { try { const WH = W.LowiWorldHome; if (WH && WH.state && WH.state.pull && (W.LowiSections && W.LowiSections.instant) && WH.settle) WH.settle(); else if (WH && WH.state && WH.state.pull && WH.diveIn) WH.diveIn(); } catch (e) { } }
         /* Oct 16 (task 1 rework, E-man: "Cook, Move and Scan share the expanded Community spirit world; Today stays as it is"):
            Community, Cook, Move and Scan, however they are opened, are the live world pulled out past our bubble into the spirit
            world; only Today brings the camera back down into Misty's world (above). Any other page keeps Misty's world. */
         const REALM = ['tab-foryou', 'tab-shelf', 'tab-move', 'tab-scan'];
         const otherIn = !!(w === true && t && t.id !== 'tab-home' && REALM.indexOf(t.id) < 0 && !H.classList.contains('gx-in') && !H.classList.contains('gx-out'));
+        /* Oct 21: an instant X / back to Home has no slide, so homeIn above never fires: put the camera back where Home left it now */
+        if (w === false && t && t.id === 'tab-home') { try { const WH = W.LowiWorldHome; if (WH && WH.state && WH.state.pull) { if (W.LowiSections && W.LowiSections.instant && WH.settle) WH.settle(); else if (WH.diveIn) WH.diveIn(); } } catch (e) { } }
         if (otherIn) { try { const WH = W.LowiWorldHome; if (WH && WH.state && WH.state.pull && WH.diveIn) WH.diveIn(); } catch (e) { } }
         const commIn = !!(w === true && t && REALM.indexOf(t.id) >= 0 && !H.classList.contains('gx-in') && !H.classList.contains('gx-out'));
         if (commIn) { try { const WH = W.LowiWorldHome; if (WH && WH.state && !WH.state.pull && WH.pullOut) WH.pullOut(); } catch (e) { } }

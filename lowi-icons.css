@@ -27,8 +27,7 @@
 }
 
 /* the orb bubble and the tab bar size their own icons; never let the set enlarge them */
-#g1Ob .sp-symbol.li,
-#tabbar .tb .sp-symbol.li {
+#g1Ob .sp-symbol.li {
     max-width: 24px;
     max-height: 24px
 }

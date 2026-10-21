@@ -6,7 +6,6 @@
    everything is scoped to the open room ([data-room] on the pane), so the galaxy map itself is unchanged. */
 
 /* ---- the room takes the screen: tab bar out of the way, the status line folds into the room header ---- */
-html.cr-room[data-lay=phone]:has(#tab-foryou.active) #app #main #tabbar#tabbar{opacity:0!important;visibility:hidden!important;pointer-events:none!important;transform:translateY(24px)!important;transition:opacity .2s ease,transform .2s ease,visibility 0s .2s!important}
 html.cr-room[data-lay=phone] #tab-foryou #cmPaneChat.ls-pane[data-planet][data-room],
 html.cr-room[data-lay=phone] #tab-foryou #cmPaneChat[data-spirit-chat][data-room]{padding-bottom:calc(var(--sab,0px) + 10px)!important}
 #cmPaneChat[data-spirit-chat][data-room] #csStatus:is([data-state=live],[data-state=connecting],[data-state=loading]){display:none!important}
@@ -118,8 +117,7 @@ html.cs-chat-typing:not(.cs-chat-map-typing) #cmPaneChat[data-spirit-chat] .cr-c
 @media(prefers-reduced-motion:reduce){
   html #cmPaneChat[data-spirit-chat] .cg-thread.cr-room[data-open]{animation:none!important}
   #cmPaneChat[data-spirit-chat] .cg-thread[data-open] .cr-sky::after{animation:none!important;opacity:0}
-  #cmPaneChat[data-spirit-chat] .cr-link i{animation:none!important}
-  html.cr-room #app #main #tabbar#tabbar{transition:none!important}}
+  #cmPaneChat[data-spirit-chat] .cr-link i{animation:none!important}}
 @media(prefers-reduced-transparency:reduce),(prefers-contrast:more){
   html #cmPaneChat[data-spirit-chat] .cg-thread.cr-room[data-open]{background:#050a1a!important;-webkit-backdrop-filter:none;backdrop-filter:none}
   #cmPaneChat[data-spirit-chat] .cr-sky{display:none}

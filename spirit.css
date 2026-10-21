@@ -460,9 +460,7 @@ html.spirit-app body {
     display: none !important
 }
 
-.sp-open #tabbar,
-.sp-open #pfBtn,
-.sp-open #header {
+.sp-open #pfBtn,.sp-open #header {
     visibility: hidden
 }
 

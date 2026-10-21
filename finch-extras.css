@@ -8,10 +8,6 @@ html[data-tint=cyan]{--fx-t:79,224,255}
 #fxGlow{position:fixed;left:0;right:0;top:0;height:min(220px,30vh);pointer-events:none;z-index:0;opacity:.24;mix-blend-mode:screen;background:radial-gradient(120% 100% at 50% -30%,rgba(var(--fx-t),.95),rgba(var(--fx-t),.35) 38%,rgba(var(--fx-t),0) 72%);transition:background .6s ease}
 html[data-lay=desktop] #fxGlow{left:var(--fx-side,0)}
 html[data-ui=light] #fxGlow{display:none}
-html:not([data-ui=light])[data-tint] #tabbar .tb.active{color:rgb(var(--fx-t))!important;background:linear-gradient(160deg,rgba(255,255,255,.10),rgba(var(--fx-t),.16))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 0 18px -6px rgba(var(--fx-t),.7)!important;transition:color .35s ease,background .35s ease,box-shadow .35s ease}
-html:not([data-ui=light])[data-tint] #tabbar .tb.active svg{filter:drop-shadow(0 0 6px rgba(var(--fx-t),.75))!important}
-html:not([data-ui=light])[data-tint] #tabbar .tb.active .tbl{color:inherit}
-html:not([data-ui=light]) #tabbar .tb.scan .tbsp{color:rgb(79,224,255)}
 
 #fxHint{position:fixed;left:0;top:0;z-index:9990;pointer-events:none;white-space:nowrap;font:600 10.5px/1.2 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.86);text-shadow:0 0 10px rgba(var(--fx-t),.85),0 1px 2px rgba(0,0,0,.6);padding:4px 2px 4px .24em;opacity:0;visibility:hidden;transition:opacity .5s ease,visibility 0s linear .5s}
 #fxHint.on{opacity:1;visibility:visible;transition:opacity .5s ease;animation:fxBreath 3.2s ease-in-out .5s infinite}
@@ -54,4 +50,4 @@ html[data-ui=light] #fxMilesBtn{color:#4b3a8f}
 .fx-tog i{position:absolute;left:2px;top:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.3);transition:transform .25s}
 .fx-tog.on{background:#7c62e8}
 .fx-tog.on i{transform:translateX(20px)}
-@media (prefers-reduced-motion:reduce){#fxGlow,#fxHint,#fxHint.on,html[data-tint] #tabbar .tb.active,.fx-tog,.fx-tog i{transition:none!important;animation:none!important}.fx-burst{display:none}#fxMilesBtn:active{transform:none}}
+@media (prefers-reduced-motion:reduce){#fxGlow,#fxHint,#fxHint.on,.fx-tog,.fx-tog i{transition:none!important;animation:none!important}.fx-burst{display:none}#fxMilesBtn:active{transform:none}}

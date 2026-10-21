@@ -18,7 +18,7 @@
     function camPage() {
         let el = D.getElementById('lgCamPage'); const main = D.getElementById('main');
         if (!el && main) {
-            const lab = D.querySelector('#tabbar .tb[data-tab="scan"]'), name = ((lab && (lab.getAttribute('aria-label') || lab.textContent)) || 'Scan').trim();
+            const name = 'Scan';
             el = D.createElement('div'); el.id = 'lgCamPage'; el.className = 'lg-campage'; el.setAttribute('aria-hidden', 'true');
             el.innerHTML = '<div class="lg-camframe"><i></i><i></i><i></i><i></i></div><span class="lg-camname"></span>';
             el.querySelector('.lg-camname').textContent = name; main.appendChild(el);
@@ -57,7 +57,7 @@
     function syncTab() {
         const t = activeTab();
         if (H.getAttribute('data-lg-tab') !== t) H.setAttribute('data-lg-tab', t);
-        if (prevTab && prevTab !== t && !quiet) { const d = pendingDx; pendingDx = 0; slide(prevTab, t, d); }
+        if (prevTab && prevTab !== t && !quiet && !(window.LowiSections && window.LowiSections.instant)) { const d = pendingDx; pendingDx = 0; slide(prevTab, t, d); }
         prevTab = t;
     }
     function hScroller(el, stop) {
@@ -70,7 +70,9 @@
     function setX(el, x) { if (el) el.style.transform = x ? 'translate3d(' + x + 'px,0,0)' : ''; }
     const GZ = () => window.LowiGalaxyZoom || null;
     function dragTo(dx) {
-        const cur = pageEl(g.cur), n = PAGES[g.i + (dx < 0 ? 1 : -1)] || null;
+        /* Oct 21 (menu bar removed): the pages no longer sit side by side in bar order. Only Home and Community still page into each
+           other (Community is Home's galaxy); every other section goes back to Home with the X or the left-edge swipe (section-nav.js) */
+        const nn = PAGES[g.i + (dx < 0 ? 1 : -1)] || null, n = (g.cur === 'home' && nn === 'foryou') || (g.cur === 'foryou' && nn === 'home') ? nn : null;
         /* Home <-> Community: no sideways slide, the page pulls back into the warp with the finger */
         const z = n && GZ() && GZ().swipeOk ? GZ().swipeOk(g.cur, n) : '';
         if (g.warp && g.warp !== z) { GZ().swipeEnd(g.warp, 0, false); g.warp = ''; }
@@ -151,6 +153,9 @@
         /* the camera opened from inside a spirit world belongs to that world: no paging there */
         if (cam && cam.closest('#spWorld')) return;
         const cur = curPage(), i = PAGES.indexOf(cur); if (i < 0) return;
+        if (cur !== 'home' && cur !== 'foryou') return;
+        /* the left edge of Community is section-nav.js's swipe back */
+        if (cur === 'foryou' && e.clientX < 28) return;
         if (t.closest('input, textarea, select, [contenteditable], .hscroll, .toggle, .no-page-swipe, form')) return;
         const onBar = !!t.closest('#tabbar'), W = main.clientWidth || innerWidth;
         /* Home is a 3D world you drag to look around: there the pages move from the screen edges or the tab bar */

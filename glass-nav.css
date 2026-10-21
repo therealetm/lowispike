@@ -35,9 +35,7 @@ html:is([data-theme="light"], [data-ui="light"]) {
 }
 
 /* the three surfaces: same fill, same depth, the existing border becomes see-through so the ring can sit on it */
-html body #app #main #tabbar#tabbar,
-html body #tbTheme#tbTheme,
-html.spirit-app.wh-home body #tab-home #spHome .sp-weather.sp-weather {
+html body #tbTheme#tbTheme,html.spirit-app.wh-home body #tab-home #spHome .sp-weather.sp-weather {
     background: var(--gn-fill), var(--gn-base) !important;
     border-color: transparent !important;
     box-shadow: var(--gn-sh) !important;
@@ -47,9 +45,7 @@ html.spirit-app.wh-home body #tab-home #spHome .sp-weather.sp-weather { position
 
 /* the ring (cyan -> blue -> violet -> cyan), drawn exactly over the border; pointer-events none, so taps are unchanged.
    The menu bar's old ::before sheen (lsBar, already hidden by apple-ui) stays off: no animation here. */
-html body #app #main #tabbar#tabbar::before,
-html body #tbTheme#tbTheme::before,
-html.spirit-app.wh-home body #tab-home #spHome .sp-weather.sp-weather::before {
+html body #tbTheme#tbTheme::before,html.spirit-app.wh-home body #tab-home #spHome .sp-weather.sp-weather::before {
     content: ""; display: block; position: absolute; inset: var(--gn-in, -1.5px); padding: 1.5px; border-radius: inherit; box-sizing: border-box;
     background: var(--gn-rim); pointer-events: none; animation: none !important; z-index: 0;
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
@@ -60,22 +56,11 @@ html.spirit-app.wh-home body #tab-home #spHome .sp-weather.sp-weather::before {
 html.spirit-app.wh-home body #tab-home #spHome .sp-weather.sp-weather > * { position: relative; z-index: 1; }
 
 /* the chosen tab: a small bubble of the same glass, with the same ring (Scan keeps its own orb; camera-open keeps scan-glass's rule) */
-html:not(.b3-camon) body #app #main #tabbar#tabbar .tb.active:not(.scan) {
-    background: var(--gn-pick) !important; box-shadow: var(--gn-pick-sh) !important;
-}
-html:not(.b3-camon) body #app #main #tabbar#tabbar .tb.active:not(.scan)::before {
-    content: ""; position: absolute; inset: 0; padding: 1px; border-radius: inherit; box-sizing: border-box;
-    background: var(--gn-rim); opacity: .85; pointer-events: none; z-index: -1;
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
-    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-}
 
 /* a browser without mask compositing would paint the whole ring box: fall back to a plain rim colour */
 @supports not ((mask-composite: exclude) or (-webkit-mask-composite: xor)) {
-    html body #app #main #tabbar#tabbar::before, html body #tbTheme#tbTheme::before,
-    html.spirit-app.wh-home body #tab-home #spHome .sp-weather.sp-weather::before,
-    html body #app #main #tabbar#tabbar .tb.active:not(.scan)::before { display: none !important; }
-    html body #app #main #tabbar#tabbar, html body #tbTheme#tbTheme, html.spirit-app.wh-home body #tab-home #spHome .sp-weather.sp-weather {
+    html body #tbTheme#tbTheme::before,html.spirit-app.wh-home body #tab-home #spHome .sp-weather.sp-weather::before { display: none !important; }
+    html body #tbTheme#tbTheme,html.spirit-app.wh-home body #tab-home #spHome .sp-weather.sp-weather {
         border-color: var(--wh-glass-rim, rgba(160,220,255,.55)) !important; }
 }
 /* Reduce Transparency: a nearly solid deep-blue base under the same light, so labels never depend on the world behind */

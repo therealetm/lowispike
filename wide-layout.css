@@ -84,8 +84,3 @@ html.spirit-app.g2e-on.g2e-open[data-lay=desktop] #tab-profile#tab-profile{paddi
 
 /* ---------- side navigation (desktop / iPad on its side): Scan reads like every other item ---------- */
 /* it used to be a tall centered block left over from the old 88px orb, so the camera floated away from its word */
-html[data-lay=desktop] #tabbar .tb.scan{height:50px!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;gap:14px!important;padding:0 16px!important;margin:0!important;font-size:15px!important;letter-spacing:normal!important;border-radius:16px!important;text-transform:none!important}
-html[data-lay=desktop] #tabbar .tb.scan .tbsp{display:grid!important;place-items:center;flex:0 0 22px;width:22px!important;height:22px!important;margin:0!important;padding:0!important;background:none!important;box-shadow:none!important;border:0!important;transform:none!important;position:static!important}
-html[data-lay=desktop] #tabbar .tb.scan .tbsp svg{width:22px!important;height:22px!important;color:inherit}
-html[data-lay=desktop] #tabbar .tb.scan .orb,html[data-lay=desktop] #tabbar .tb.scan .ring{display:none!important}
-html[data-lay=desktop] #tabbar .tb.scan .tbl{font:inherit!important;font-size:15px!important;font-weight:600!important;letter-spacing:normal!important;text-transform:none!important;margin:0!important;position:static!important;transform:none!important}

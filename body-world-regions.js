@@ -647,6 +647,9 @@
     }
     function frame(t, dt) {
         const h = host();
+        /* Oct 21 (instant back): a page over Home only hides Home's world; at the hub with nothing running, keep the map button,
+           label and veil where they are (no tear-down, no rebuild), so coming back finds Home exactly as it was */
+        if (st.host && !h && st.host.id === 'whHud' && st.host.isConnected && st.cur === 'hub' && !st.warp && !st.region && !D.querySelector('.bw3-full')) return;
         if (st.host && h !== st.host) reset();
         if (h && !st.host) ensureUi();
         const w = wo(); if (!w) return;

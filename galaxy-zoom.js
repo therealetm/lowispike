@@ -197,7 +197,8 @@
             if (inCall) return orig.apply(this, arguments);
             const from = activeTab();
             let dir = '';
-            if (!reduced() && worldHome() && !D.hidden) {
+            /* Oct 21: closing Community with the X / back is instant and puts Home back exactly as it was: no zoom in */
+            if (!reduced() && worldHome() && !D.hidden && !(W.LowiSections && W.LowiSections.instant)) {
                 if (from === 'home' && t === 'foryou') dir = 'out';
                 else if (from === 'foryou' && t === 'home' && D.querySelector('#cgField .cg-body.me')) dir = 'in';
             }

@@ -867,3 +867,23 @@ What was decided:
 - Fix: plain dark `apple-touch-startup-image` PNGs for current iPhones and iPads (`startup/`, made by `tools/brand/make-startup-images.py`, no logo by 1), `<meta name="color-scheme" content="dark">` and `<style id="firstPaint">html,body{background:#03050a}</style>` as the first things in `<head>`. The startup images are not in sw.js STATIC: iOS reads them itself, the service worker never serves them. iOS may keep a home-screen app's old launch picture until the icon is removed and added again.
 
 Checks: `tests/launch-no-splash.test.cjs` (4), `tests/clean-start.test.cjs` and `tests/oct19-old-design-purge.test.cjs` updated. Browser: `node tools/startup/launch-paint-check.cjs` (fresh browser, dark mode, page download held after 1.5 KB, apple-ui.js held 2.5 s) passed 6/6 on WebKit and Chromium at iPhone SE, iPhone 13 and iPad sizes: no launch-screen element was ever added, the body stayed hidden during the gate, the background during the gate was only rgb(3,5,10) / rgb(0,0,0), and Chromium's screenshots during the gate were plain #03050a. Not tested on a physical iPhone; a desktop browser cannot show iOS's own startup image.
+
+## 2026-10-21 19:20 CEST: The Home Settings bubble is Community; a hold opens a slim Settings (decided by the agent)
+
+Emmanuel: Community should hold the profile and everything we built; Settings is only the necessary stuff, opened with a long press; clear out the clutter.
+
+Decision criteria:
+1. One tap from Home to Community, the most used social place.
+2. Settings holds only switches, language and the account; nothing that is a place.
+3. Every place that leaves a menu stays reachable from somewhere (no dead features), and no saved choice is lost.
+4. Account deletion starts inside the app (App Store 5.1.1(v)) and never deletes anything on the phone before the server confirms.
+
+What was decided:
+- The Home Settings bubble (`.o8-settings`) is the Community bubble: a tap opens Community, a hold (480 ms, under 12 px drift; touch, pen and mouse) opens the slim Settings as a centred sheet. A one-time hint teaches the hold.
+- Slim Settings rows: Day & night, Look, World sound, Language (EN / DE / ES in the row), Menu bar, Tutorial, then Account and Delete account.
+- In Community, your picture opens the You panel (`community-me.js`): Profile, Weight & BMI, and For You, Care board, Workouts, World map, Gift of the day, Shopping hunt, plus a gear for Settings.
+- Clutter out of every menu: VR and Weather (their code and saved choices stay), Today, Daily quest; Cook stays under Fuel.
+- Delete account calls the Edge Function `delete-my-account` (`supabase/functions/delete-my-account/index.ts`). It is not deployed yet (no Supabase access token on the agent VM); until it is, the app shows "Nothing was deleted, try again later" and clears nothing.
+- Tutorial: the community step points to the bubble; settings-me shortened to fit 230 characters in German.
+
+Checks: `tests/ui-settings-page.test.cjs`, `tests/everything-else-trim.test.cjs`, `tests/home-settings-sleep-v2.test.cjs` and the tutorial tests updated. Browser: `tools/community-settings/probe.cjs` with `tour.js`.

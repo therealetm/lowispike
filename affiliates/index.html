@@ -21,34 +21,57 @@
 <link rel="stylesheet" href="blueprint.css">
 </head>
 <body>
+<div class="rings" aria-hidden="true"></div>
 <div class="wrap" id="app">
-  <header class="top">
-    <div class="brand">LOWiSPIKE Affiliates</div>
-    <h1>Dein Video-Template</h1>
-  </header>
   <noscript><p class="card">Diese Seite braucht JavaScript.</p></noscript>
-  <p class="card hero linkline" id="linkLine">Deinen persönlichen Affiliate-Link bekommst du direkt von Eman per WhatsApp.</p>
 
-  <section aria-labelledby="pickTitle">
-    <h2 id="pickTitle">Wähle deine Serie</h2>
-    <div class="series" id="seriesCards"></div>
+  <!-- 1 · Start: one calm screen, like Eden's Plan screen. Pick a series, see what you get, Start. -->
+  <section class="view" id="viewStart" aria-labelledby="startTitle">
+    <div class="bar">
+      <div class="seg" id="seriesCards" role="group" aria-label="Serie wählen"></div>
+    </div>
+    <div class="hero">
+      <span class="pill">Kostenlos · etwa drei Minuten</span>
+      <h1 id="startTitle" tabindex="-1">Lass uns dein Video bauen.</h1>
+      <p class="lead" id="startLead"></p>
+      <div class="card list" id="startList"></div>
+      <button type="button" class="primary" id="startBtn">Start <span aria-hidden="true">→</span></button>
+      <p class="linkline" id="linkLine">Deinen persönlichen Affiliate-Link bekommst du direkt von Eman per WhatsApp.</p>
+    </div>
+    <button type="button" class="fab" id="fabEarn" aria-label="Was du verdienst">€</button>
   </section>
 
-  <section id="scriptView" aria-live="polite" hidden></section>
+  <!-- 2 · The script, on its own screen -->
+  <section class="view" id="scriptView" aria-live="polite" hidden></section>
 
-  <p class="card tip" id="tipLine"><b>Das ist dein Template.</b> Bring deine eigene Persönlichkeit rein: Wer sich vor der Kamera besser präsentiert, verkauft mehr. Nimm es selbst auf oder nutze einen KI-Avatar wie HeyGen oder Higgsfield. Das Template ist kostenlos.</p>
+  <!-- 3 · Recording: shot list, caption, the personality tip -->
+  <section class="view" id="shotView" hidden>
+    <div class="bar" id="shotBar"></div>
+    <div class="head">
+      <span class="pill">Schritt 2 von 3</span>
+      <h1 tabindex="-1">So nimmst du es auf.</h1>
+      <p class="lead" id="shotLead"></p>
+    </div>
+    <div class="card list" id="shotCard"></div>
+    <div class="card" id="captionCard"></div>
+    <p class="card tip" id="tipLine"><b>Das ist dein Template.</b> Bring deine eigene Persönlichkeit rein: Wer sich vor der Kamera besser präsentiert, verkauft mehr. Nimm es selbst auf oder nutze einen KI-Avatar wie HeyGen oder Higgsfield. Das Template ist kostenlos.</p>
+    <button type="button" class="primary" id="toEarn">Weiter: Dein Verdienst <span aria-hidden="true">→</span></button>
+  </section>
 
-  <section class="card" id="earnView" aria-labelledby="earnTitle">
-    <h2 id="earnTitle">Was du verdienst</h2>
-    <p class="muted" id="earnLead"></p>
-    <div id="levelTable"></div>
-    <h3>Beispiele</h3>
+  <!-- 4 · Earnings: the four levels and example totals -->
+  <section class="view" id="earnView" aria-labelledby="earnTitle" hidden>
+    <div class="bar" id="earnBar"></div>
+    <div class="head">
+      <span class="pill">Schritt 3 von 3</span>
+      <h1 id="earnTitle" tabindex="-1">Was du verdienst.</h1>
+      <p class="lead" id="earnLead"></p>
+    </div>
+    <div class="card" id="levelTable"></div>
+    <h2 class="label">Beispiele</h2>
     <div id="exampleList"></div>
+    <button type="button" class="primary" id="toStart">Fertig</button>
+    <footer><p id="terms"></p></footer>
   </section>
-
-  <footer>
-    <p id="terms"></p>
-  </footer>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 <script src="blueprint-core.js"></script>

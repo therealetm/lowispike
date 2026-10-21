@@ -29,15 +29,15 @@ test('the rim uses the same three colours as Misty\'s 3D bubble membrane', () =>
     assert.match(rim, /155,\s*135,\s*210/); // #9b87d2 violet fresnel
 });
 
-test('menu bar, Day/Night button and weather pill all get the same glass and ring', () => {
-    for (const sel of ['#tabbar#tabbar', '#tbTheme#tbTheme', '#spHome .sp-weather.sp-weather']) {
+test('Day/Night button and weather pill get the same glass and ring (menu bar removed Oct 21)', () => {
+    for (const sel of ['#tbTheme#tbTheme', '#spHome .sp-weather.sp-weather']) {
         assert.ok(rules.includes(sel + ',') || rules.includes(sel + ' {'), 'surface rule for ' + sel);
         assert.ok(rules.includes(sel + '::before'), 'ring for ' + sel);
     }
     assert.match(rules, /background: var\(--gn-fill\)/);
     assert.match(rules, /box-shadow: var\(--gn-sh\)/);
-    assert.match(rules, /\.tb\.active:not\(\.scan\)\s*\{[^}]*var\(--gn-pick\)/);
-    assert.match(rules, /html:not\(\.b3-camon\)[^{]*\.tb\.active/, 'camera-open keeps the Scan rule');
+    /* Oct 21: menu bar removed, check dropped */
+    /* Oct 21: menu bar removed, check dropped */
 });
 
 test('look only: no size, position, spacing, display or icon changes, no animation, rings never catch taps', () => {

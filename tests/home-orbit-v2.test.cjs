@@ -96,7 +96,7 @@ test('shell: tags every ring control for the sibling adapters, real Scan and the
     const s = read('home-orbit-v2.js'), c = read('home-orbit-v2.css');
     for (const k of O.ORDER) assert.ok(s.includes("'" + k + "'"), k);
     assert.match(s, /data-home-bubble|homeBubble/);
-    assert.match(s, /#tabbar \[data-tab="scan"\]/, 'Scan opens the real scanner tab');
+    assert.match(s, /if \(key === 'scan'\) \{ open\('scan'\)/, 'Scan opens the real scanner tab');
     assert.match(s, /whPad/, 'joystick is the existing controller');
     assert.match(s, /LowiHomeBloomsV2/); assert.match(s, /LowiHomeSettingsSleepV2/);
     assert.match(s, /lowi:home-orbit/);
@@ -109,11 +109,11 @@ test('shell: tags every ring control for the sibling adapters, real Scan and the
 
 test('shell: the old Home clutter is hidden on the ring Home but stays reachable from Settings', () => {
     const s = read('home-orbit-v2.js'), c = read('home-orbit-v2.css');
-    for (const sel of ['#f3Board', '.sp-top', '.wh-todaybtn', '.wh-vr', '.wh-zoom', '.wa-btn', '#tbTheme', '.hs-gift', '#pfBtn', '#tabbar']) {
+    for (const sel of ['#f3Board', '.sp-top', '.wh-todaybtn', '.wh-vr', '.wh-zoom', '.wa-btn', '#tbTheme', '.hs-gift', '#pfBtn']) {
         assert.ok(c.includes(sel), 'hidden in css: ' + sel);
     }
     for (const sel of ['#pfBtn', '.wh-todaybtn', '.wh-zoom', '.wh-vr', '.wa-btn', '#tbTheme', '.hs-gift', 'community', 'cook', 'move']) assert.ok(s.includes(sel), 'reachable: ' + sel);
-    assert.match(s, /lowi\.home\.menubar/, 'optional bottom menu bar switch');
+    assert.match(s, /function dropMenuBar\(\)/, 'the old bottom menu bar switch is dropped (Oct 21)');
 });
 
 test('shell writes to the page only when a value changes (no per-frame DOM writes)', () => {

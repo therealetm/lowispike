@@ -35,6 +35,8 @@ function make({ tab = 'home', sheetOpen = false, mv = false } = {}) {
     const timers = [];
     const W = {
         history, document: D,
+        /* Oct 21: no menu bar; back to Home goes through section-nav.js */
+        LowiSections: { close() { homeBtn.click(); } },
         addEventListener(t, f) { (listeners['w:' + t] = listeners['w:' + t] || []).push(f); },
     };
     const ctx = { window: W, document: D, history, KeyboardEvent: function (t, o) { return Object.assign({ type: t }, o); }, setTimeout: f => timers.push(f) };

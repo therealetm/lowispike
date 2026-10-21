@@ -43,11 +43,11 @@ test('the old gold camera styles are still what it overrides (so the overrides a
 
 test('the dock stays over the camera and the panel ends above it', () => {
     assert.ok(/html\.lg\.sg-dock\.b3-camon #app #main \{ z-index: auto !important; \}/.test(css));
-    assert.ok(/html\.lg\.sg-dock\.b3-camon #app #main #tabbar \{ z-index: 2147483001 !important; \}/.test(css));
+    /* Oct 21: menu bar removed, check dropped */
     assert.ok(/\.b3-cam\.sg-docked \{ z-index: 2147483000;/.test(css));
     assert.ok(/\.sg-docked \.b3-cbot \{[^}]*bottom: calc\(var\(--sg-dock, 96px\) \+ 10px\)/.test(css));
     assert.ok(/\.sg-docked \.b3-cmsg \{ bottom: calc\(var\(--sg-dock, 96px\) \+ 250px\)/.test(css));
-    assert.ok(/\.tb\.active:not\(\.scan\) \{ background: transparent/.test(css), 'Scan is the lit button while the camera is open');
+    /* Oct 21: menu bar removed, check dropped */
 });
 
 /* ---- the glue, in a tiny fake DOM ---- */

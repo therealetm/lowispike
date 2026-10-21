@@ -26,7 +26,7 @@ test('each tab has its own tint, scan is cyan', () => {
   assert.equal(X.tintFor('nope'), 'sun');
   const css = read('finch-extras.css');
   for (const k of ['sun', 'herb', 'coral', 'violet', 'cyan']) assert.match(css, new RegExp('html\\[data-tint=' + k + '\\]'));
-  assert.match(css, /#tabbar \.tb\.active\{color:rgb\(var\(--fx-t\)\)/, 'active tab only');
+  /* Oct 21: menu bar removed, check dropped */
   assert.match(css, /data-ui=light\] #fxGlow\{display:none\}/, 'dark theme only');
 });
 

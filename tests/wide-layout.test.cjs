@@ -51,12 +51,7 @@ body.replace(/([^{}@]+)\{[^{}]*\}/g, (m, sel) => { sel.split(',').forEach(s => {
 assert(selectors.length > 20, 'no rules parsed');
 for (const s of selectors) assert(/\[data-lay=(tablet|desktop)\]/.test(s), 'rule not scoped to iPad/laptop: ' + s);
 
-// 5. Scan in the side navigation is a normal row
-const scan = css.match(/html\[data-lay=desktop\] #tabbar \.tb\.scan\{([^}]*)\}/);
-assert(scan, 'side-nav Scan rule missing');
-for (const d of ['height:50px', 'flex-direction:row', 'justify-content:flex-start', 'gap:14px', 'padding:0 16px', 'font-size:15px', 'letter-spacing:normal']) assert(scan[1].includes(d), 'Scan row needs ' + d);
-assert(/#tabbar \.tb\.scan \.tbsp\{[^}]*width:22px/.test(css), 'Scan icon should be 22px like the others');
-assert(/#tabbar \.tb\.scan \.tbl\{[^}]*font-size:15px/.test(css), 'Scan label should use the same type');
+// 5. (Oct 21) the side navigation / menu bar is gone, so there is no Scan row to check
 
 // 6. Cook tiles never cut off on wide screens
 assert(/#shelf #g2cTiles\.g2c-tiles\{display:grid!important;[^}]*overflow:visible!important/.test(css), 'Cook tiles must be a grid on wide screens');

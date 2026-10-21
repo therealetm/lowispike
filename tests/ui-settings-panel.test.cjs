@@ -49,7 +49,7 @@ test('the panel is placed in the free space beside / under Misty, never on her (
 test('a row that opens another panel makes Settings step aside first, so that panel is in front and usable', () => {
     assert.strictEqual(typeof C.rowAction, 'function', 'rowAction(id) is exported');
     assert.strictEqual(C.rowAction('worldSound'), 'panel', 'World sound opens the Body sound panel: Settings closes first');
-    assert.strictEqual(C.rowAction('menubar'), 'toggle', 'the menu bar switch flips in place and Settings stays');
+    /* Oct 21: menu bar removed, check dropped */
     for (const id of ['me', 'look', 'account', 'community', 'care', 'workouts', 'map', 'vr', 'gift', 'weather']) assert.strictEqual(C.rowAction(id), 'go', id + ' closes Settings and runs its route');
     const chip = JS.slice(JS.indexOf('function onChip('), JS.indexOf('function pulse('));
     assert.match(chip, /rowAction\(id\) === 'panel'[^]*close\(false\)/, 'onChip closes Settings before opening a panel route');

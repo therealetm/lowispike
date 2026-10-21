@@ -30,7 +30,7 @@ test('one palette: black space, glass widgets, iOS blue, no gold / beige / per-t
     assert.ok(css.includes('--gold: #0a84ff !important') && css.includes('--lg-blue: #0a84ff'));
     assert.ok(/#main > \.tab:not\(#tab-home\) \{ background-color: #000/.test(css));
     assert.ok(/backdrop-filter: var\(--lg-blur\)/.test(css));
-    assert.ok(/html\.lg #app #main #tabbar \.tb\.active \{ color: #fff !important; background: rgba\(255, 255, 255, \.16\)/.test(css));
+    /* Oct 21: menu bar removed, check dropped */
     assert.ok(/-apple-system/.test(css));
     assert.ok(!/#caa15a|#ecd08f|#f4dea5|#d8b66f/i.test(css));
 });

@@ -108,9 +108,9 @@ test('fan: a window too small for an arc still returns n on-screen spots', () =>
 
 test('entries: only routes that exist are offered, More appears only with something in it, sleep adds Clear once logged', () => {
     const all = { has: () => true }, none = { has: () => false };
-    assert.deepStrictEqual(C.entries('settings', all), ['theme', 'look', 'worldSound', 'language', 'menubar', 'tutorial', 'account', 'deleteAccount']);
+    assert.deepStrictEqual(C.entries('settings', all), ['theme', 'look', 'worldSound', 'language', 'tutorial', 'account', 'deleteAccount']);
     assert.deepStrictEqual(C.entries('settings', none), []);
-    assert.deepStrictEqual(C.entries('settings', { has: id => id === 'menubar' || id === 'care' }), ['menubar']);
+    assert.deepStrictEqual(C.entries('settings', { has: id => id === 'tutorial' || id === 'care' }), ['tutorial']);
     assert.deepStrictEqual(C.entries('more', { has: id => id === 'care' || id === 'me' }), ['me', 'care']);
     assert.deepStrictEqual(C.entries('sleep', {}), ['under6', '6to7', '7plus']);
     assert.deepStrictEqual(C.entries('sleep', { logged: true }), ['under6', '6to7', '7plus', 'clear']);
@@ -118,12 +118,10 @@ test('entries: only routes that exist are offered, More appears only with someth
     assert.ok(!C.MORE.includes('today'), 'Today was dropped from Home (Emmanuel, Oct 18 2026): see everything-else-trim.test.cjs');
 });
 
-test('menu bar contract matches the shell: lowi.home.menubar 1|0 and window lowi:home-menubar', () => {
+test('no menu bar switch any more (Oct 21): Settings neither stores nor announces one', () => {
     const src = read('home-settings-sleep-v2.js');
-    assert.strictEqual(C.MENU_KEY, 'lowi.home.menubar');
-    assert.match(src, /ls\.set\(MENU_KEY, on \? '1' : '0'\)/);
-    assert.match(src, /root\.dispatchEvent\(new CustomEvent\('lowi:home-menubar'/);
-    assert.match(src, /O\.setMenuBar\(!!on\)/, 'prefers the shell API when it is loaded');
+    assert.doesNotMatch(src, /lowi:home-menubar/);
+    assert.doesNotMatch(src, /setMenuBar/);
 });
 
 test('real routes only: profile tiles, tabs and Home controls the app has today; no emoji in the module', () => {

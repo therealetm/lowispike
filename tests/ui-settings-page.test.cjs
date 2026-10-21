@@ -29,11 +29,11 @@ test('the slim Settings holds only switches, language and the account; places an
     assert.strictEqual(typeof C.pageGroups, 'function', 'pageGroups(env) is exported');
     const all = C.pageGroups({ has: () => true });
     assert.deepStrictEqual(all.map(g => g.key), ['main', 'account']);
-    assert.deepStrictEqual(all[0].ids, ['theme', 'look', 'worldSound', 'language', 'menubar', 'tutorial']);
+    assert.deepStrictEqual(all[0].ids, ['theme', 'look', 'worldSound', 'language', 'tutorial']);
     assert.deepStrictEqual(all[1].ids, ['account', 'deleteAccount'], 'sign-out and account deletion stay reachable (App Store 5.1.1(v))');
     for (const id of ['me', 'body', 'care', 'workouts', 'map', 'gift', 'vr', 'weather', 'community']) assert.ok(!all.some(g => g.ids.includes(id)), id + ' is not in Settings');
     assert.deepStrictEqual(C.pageGroups({ has: () => false }), [], 'nothing to show: no empty groups');
-    assert.deepStrictEqual(C.pageGroups({ has: id => id === 'menubar' || id === 'account' }), [{ key: 'main', ids: ['menubar'] }, { key: 'account', ids: ['account'] }]);
+    assert.deepStrictEqual(C.pageGroups({ has: id => id === 'tutorial' || id === 'account' }), [{ key: 'main', ids: ['tutorial'] }, { key: 'account', ids: ['account'] }]);
     assert.strictEqual(C.rowAction('language'), 'lang'); assert.strictEqual(C.rowAction('deleteAccount'), 'confirm'); assert.strictEqual(C.rowAction('theme'), 'toggle');
     assert.deepStrictEqual(C.COMMUNITY_PLACES.you, ['me', 'body']);
     for (const id of ['care', 'workouts', 'map', 'gift', 'foryou']) assert.ok(C.COMMUNITY_PLACES.places.includes(id), id + ' lives in Community');

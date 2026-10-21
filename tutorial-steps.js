@@ -740,7 +740,7 @@
         G('fix-field', 'scan', 'tap', ['meal-result.js'], 'What is it really?: tap a suggestion, set pieces'),
         G('page-swipe', 'home', 'swipe', ['liquid-glass.js', 'community-spirit.js'], 'swipe sideways: between Home and Community'),
         G('pinch-galaxy', 'home', 'pinch', ['galaxy-zoom.js'], 'pinch in past the widest view: Community galaxy; spread: back'),
-        G('back-swipe', 'any', 'swipe', ['back-swipe.js'], 'swipe in from the left edge: back'),
+        G('back-swipe', 'any', 'swipe', ['back-swipe.js', 'section-nav.js'], 'swipe in from the left edge: back'),
         G('sheet-drag', 'any', 'drag', ['apple-ui.js'], 'drag a sheet\'s top bar down: close it'),
         G('cm-tabs', 'community', 'tap', ['community-rooms-ui.js'], 'tap Room, Chat, Creation, Affiliates'),
         G('cm-tab-order', 'community', 'hold', ['community-tab-order.js'], 'hold a Community tab until it wiggles, slide it: new tab order'),

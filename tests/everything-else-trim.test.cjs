@@ -9,23 +9,23 @@ const C = require('../home-settings-sleep-v2.js');
 const read = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
 const all = { has: () => true };
 
-test('More keeps only what no bubble reaches, in two groups: Go to and Settings', () => {
-    assert.deepStrictEqual(C.MORE_GROUPS.go, ['community', 'care', 'workouts', 'map', 'vr', 'gift', 'weather']);
-    assert.deepStrictEqual(C.MORE_GROUPS.set, ['worldSound']);
+test('Oct 21 2026: what no bubble reaches lives in Community (profile first, then the places); World sound is a Settings row', () => {
+    assert.deepStrictEqual(C.MORE_GROUPS.go, ['me', 'body', 'foryou', 'care', 'workouts', 'map', 'gift', 'hunt']);
+    assert.deepStrictEqual(C.MORE_GROUPS.set, []);
     assert.deepStrictEqual(C.MORE, C.MORE_GROUPS.go.concat(C.MORE_GROUPS.set));
-    assert.deepStrictEqual(C.moreGroups(all), { go: C.MORE_GROUPS.go, set: ['worldSound'] });
-    assert.deepStrictEqual(C.moreGroups({ has: id => id === 'care' || id === 'worldSound' }), { go: ['care'], set: ['worldSound'] });
+    assert.deepStrictEqual(C.moreGroups({ has: id => id === 'care' || id === 'worldSound' }), { go: ['care'], set: [] });
     assert.deepStrictEqual(C.entries('more', all), C.MORE);
+    assert.ok(C.entries('settings', all).includes('worldSound'));
 });
 
 test('redundant entries are out of the panel, and each one says where it is still reached', () => {
-    for (const id of ['today', 'cook', 'theme', 'quest']) assert.ok(!C.entries('more', all).includes(id), id + ' should be out of More');
-    assert.deepStrictEqual(Object.keys(C.MORE_REMOVED).sort(), ['cook', 'quest', 'theme', 'today']);
+    for (const id of ['today', 'cook', 'theme', 'quest', 'vr', 'weather', 'community']) assert.ok(!C.entries('more', all).includes(id), id + ' should be out of More');
+    assert.deepStrictEqual(Object.keys(C.MORE_REMOVED).sort(), ['community', 'cook', 'quest', 'theme', 'today', 'vr', 'weather', 'worldSound']);
     assert.strictEqual(C.MORE_REMOVED.cook, 'fuel');
-    assert.strictEqual(C.MORE_REMOVED.theme, 'look');
+    assert.strictEqual(C.MORE_REMOVED.theme, 'settings');
     /* no feature code deleted: the routes stay in the module */
     const src = read('home-settings-sleep-v2.js');
-    for (const k of ['today:', 'cook:', 'theme:', 'quest:']) assert.ok(src.includes('        ' + k), 'route kept: ' + k);
+    for (const k of ['today:', 'cook:', 'theme:', 'quest:', 'vr:', 'weather:']) assert.ok(src.includes('        ' + k), 'route kept: ' + k);
 });
 
 /* a stand-in for the browser measure: the panel's height at a width and column count (same rhythm as the CSS) */

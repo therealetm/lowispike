@@ -19,7 +19,7 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 6;
+    const VERSION = 7;
     const AREAS = ['you', 'home', 'food', 'play', 'companion', 'together', 'settings', 'extras', 'end'];
     const STEPS = [
         /* ---------- part: you (your companion) ---------- */
@@ -255,12 +255,12 @@
             }
         },
         {
-            id: 'vr-sound', area: 'play', target: ['#whHud .o8-settings'], covers: ['vr', 'worldSound'],
-            title: { en: 'VR and world sound', de: 'VR und Weltklang', es: 'RV y sonido' },
+            id: 'world-sound', area: 'play', target: ['#whHud .o8-settings'], covers: ['worldSound'],
+            title: { en: 'World sound', de: 'Weltklang', es: 'Sonido del mundo' },
             text: {
-                en: 'In Settings, VR shows the worlds in a headset, and World sound gives every world its own sound.',
-                de: 'In den Einstellungen zeigt VR die Welten in einer Brille, und Weltklang gibt jeder Welt ihren eigenen Klang.',
-                es: 'En Ajustes, RV muestra los mundos en unas gafas, y Sonido del mundo da a cada mundo su propio sonido.'
+                en: 'In Settings, World sound gives every world its own sound.',
+                de: 'In den Einstellungen gibt Weltklang jeder Welt ihren eigenen Klang.',
+                es: 'En Ajustes, Sonido del mundo da a cada mundo su propio sonido.'
             }
         },
         /* ---------- part: companion (forms and home) ---------- */
@@ -297,9 +297,9 @@
             id: 'community', area: 'together', target: ['#whHud .o8-settings'], covers: ['community'],
             title: { en: 'Community', de: 'Community', es: 'Comunidad' },
             text: {
-                en: 'Meet everyone else and their companions here. It’s in Settings, under Everything else. Tabs: Room, Chat, Creation, Affiliates. Tap the Community name for rooms, your profile and invite links.',
-                de: 'Hier triffst du alle anderen und ihre Begleiter. Zu finden in Einstellungen, Alles andere. Tabs: Raum, Chat, Erstellen, Affiliates. Tipp auf den Community-Namen für Räume, Profil und Einladungslinks.',
-                es: 'Aquí conoces a los demás y a sus compañeros. Está en Ajustes, en Todo lo demás. Pestañas: Sala, Chat, Crear, Afiliados. Toca el nombre de Comunidad para salas, tu perfil y enlaces de invitación.'
+                en: 'Meet everyone else and their companions here. Tap the Community bubble at the top of Home. Tabs: Room, Chat, Creation, Affiliates. Tap the Community name for rooms, your profile and invite links.',
+                de: 'Hier triffst du alle anderen und ihre Begleiter. Tipp oben auf Home auf die Community-Blase. Tabs: Raum, Chat, Erstellen, Affiliates. Tipp auf den Community-Namen für Räume, Profil und Einladungslinks.',
+                es: 'Aquí conoces a los demás y a sus compañeros. Toca la burbuja Comunidad, arriba en Inicio. Pestañas: Sala, Chat, Crear, Afiliados. Toca el nombre de Comunidad para salas, tu perfil y enlaces de invitación.'
             }
         },
         {
@@ -331,21 +331,21 @@
         },
         /* ---------- part: settings ---------- */
         {
-            id: 'settings', area: 'settings', target: ['#whHud .o8-settings'], covers: ['settings'],
-            title: { en: 'Settings', de: 'Einstellungen', es: 'Ajustes' },
+            id: 'settings', area: 'settings', target: ['#whHud .o8-settings'], covers: ['settings', 'theme', 'language'],
+            title: { en: 'Community and Settings', de: 'Community und Einstellungen', es: 'Comunidad y Ajustes' },
             text: {
-                en: 'Tap Settings for everything that isn’t a bubble. Here’s what’s inside.',
-                de: 'Tipp auf Einstellungen für alles, was keine Blase ist. Das hier ist drin.',
-                es: 'Toca Ajustes para todo lo que no es una burbuja. Esto es lo que hay dentro.'
+                en: 'The top bubble is Community: tap it to go there. Hold it for Settings: day or night, sounds, language and your account.',
+                de: 'Die oberste Blase ist Community: Tipp drauf, um hinzukommen. Halte sie für die Einstellungen: Tag oder Nacht, Töne, Sprache und dein Konto.',
+                es: 'La burbuja de arriba es Comunidad: tócala para ir. Mantenla pulsada para los Ajustes: día o noche, sonidos, idioma y tu cuenta.'
             }
         },
         {
-            id: 'settings-me', area: 'settings', target: ['#whHud .o8-settings'], covers: ['me', 'look', 'account'],
-            title: { en: 'Me, Look & sound, Account', de: 'Ich, Aussehen & Ton, Konto', es: 'Yo, Aspecto y sonido, Cuenta' },
+            id: 'settings-me', area: 'settings', target: ['#whHud .o8-settings'], covers: ['me', 'look', 'account', 'deleteAccount'],
+            title: { en: 'You and your account', de: 'Du und dein Konto', es: 'Tú y tu cuenta' },
             text: {
-                en: 'Me is your profile. Look & sound changes colors, day or night and sound. Account keeps you signed in on any phone.',
-                de: 'Ich ist dein Profil. Aussehen & Ton ändert Farben, Tag oder Nacht und Ton. Konto hält dich auf jedem Handy angemeldet.',
-                es: 'Yo es tu perfil. Aspecto y sonido cambia colores, día o noche y sonido. Cuenta te mantiene conectado en cualquier móvil.'
+                en: 'In Community, tap your picture for your profile, Weight & BMI and the extras. Its gear opens Settings too. In Settings, Account signs you in or out, and Delete account removes it for good.',
+                de: 'Tipp in der Community auf dein Bild für dein Profil, Gewicht & BMI und die Extras. Das Zahnrad dort öffnet auch die Einstellungen. In den Einstellungen meldest du dich unter Konto an oder ab, und Konto löschen entfernt es endgültig.',
+                es: 'En Comunidad, toca tu foto para tu perfil, Peso e IMC y los extras. Su engranaje también abre los Ajustes. En Ajustes, Cuenta inicia o cierra tu sesión, y Eliminar cuenta la borra para siempre.'
             }
         },
         {
@@ -367,21 +367,21 @@
             }
         },
         {
-            id: 'settings-more', area: 'settings', target: ['#whHud .o8-settings'], covers: ['care', 'workouts'],
-            title: { en: 'Everything else', de: 'Alles andere', es: 'Todo lo demás' },
+            id: 'settings-more', area: 'settings', target: ['#whHud .o8-settings'], covers: ['care', 'workouts', 'foryou', 'hunt'],
+            title: { en: 'Explore', de: 'Entdecken', es: 'Explorar' },
             text: {
-                en: 'Everything else holds Community, the Care board, Workouts for whole training sessions, the World map, VR and more.',
-                de: 'Unter Alles andere findest du Community, das Care-Board, Workouts für ganze Trainings, die Weltkarte, VR und mehr.',
-                es: 'En Todo lo demás están Comunidad, el tablero Care, Entrenos para sesiones completas, el mapa del mundo, RV y más.'
+                en: 'Under Explore in your Community profile: For You, the Care board, Workouts for whole training sessions, the World map, Gift of the day and the Shopping hunt.',
+                de: 'Unter Entdecken in deinem Community-Profil: Für dich, das Care-Board, Workouts für ganze Trainings, die Weltkarte, das Tagesgeschenk und die Einkaufsjagd.',
+                es: 'En Explorar, dentro de tu perfil de Comunidad: Para ti, el tablero Care, Entrenos para sesiones completas, el mapa del mundo, el regalo del día y la Caza de compras.'
             }
         },
         {
             id: 'tutorial', area: 'settings', target: ['#whHud .o8-settings'], covers: ['tutorial'],
             title: { en: 'This tour, any time', de: 'Diese Tour, jederzeit', es: 'Este recorrido, cuando quieras' },
             text: {
-                en: 'Tutorial is in Settings too. Tap it whenever you want to see this tour again.',
-                de: 'Das Tutorial ist auch in den Einstellungen. Tipp drauf, wann immer du diese Tour nochmal sehen willst.',
-                es: 'El tutorial también está en Ajustes. Tócalo cuando quieras volver a ver este recorrido.'
+                en: 'Tutorial is in Settings too: hold Community, then tap Tutorial whenever you want to see this tour again.',
+                de: 'Das Tutorial ist auch in den Einstellungen: Halte Community und tipp auf Tutorial, wann immer du diese Tour nochmal sehen willst.',
+                es: 'El tutorial también está en Ajustes: mantén Comunidad y toca Tutorial cuando quieras volver a ver este recorrido.'
             }
         },
         /* ---------- part: extras (things that show up on their own) ---------- */

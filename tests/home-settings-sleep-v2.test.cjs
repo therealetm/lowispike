@@ -108,13 +108,13 @@ test('fan: a window too small for an arc still returns n on-screen spots', () =>
 
 test('entries: only routes that exist are offered, More appears only with something in it, sleep adds Clear once logged', () => {
     const all = { has: () => true }, none = { has: () => false };
-    assert.deepStrictEqual(C.entries('settings', all), ['me', 'look', 'account', 'menubar', 'more']);
+    assert.deepStrictEqual(C.entries('settings', all), ['theme', 'look', 'worldSound', 'language', 'menubar', 'tutorial', 'account', 'deleteAccount']);
     assert.deepStrictEqual(C.entries('settings', none), []);
-    assert.deepStrictEqual(C.entries('settings', { has: id => id === 'menubar' || id === 'care' }), ['menubar', 'more']);
-    assert.deepStrictEqual(C.entries('more', { has: id => id === 'care' || id === 'community' }), ['community', 'care']);
+    assert.deepStrictEqual(C.entries('settings', { has: id => id === 'menubar' || id === 'care' }), ['menubar']);
+    assert.deepStrictEqual(C.entries('more', { has: id => id === 'care' || id === 'me' }), ['me', 'care']);
     assert.deepStrictEqual(C.entries('sleep', {}), ['under6', '6to7', '7plus']);
     assert.deepStrictEqual(C.entries('sleep', { logged: true }), ['under6', '6to7', '7plus', 'clear']);
-    assert.ok(C.MORE.includes('community') && C.MORE.includes('care') && C.MORE.includes('map'), 'Community, Care board and World map stay reachable');
+    assert.ok(C.MORE.includes('care') && C.MORE.includes('map'), 'Care board and World map stay reachable (from Community now)');
     assert.ok(!C.MORE.includes('today'), 'Today was dropped from Home (Emmanuel, Oct 18 2026): see everything-else-trim.test.cjs');
 });
 

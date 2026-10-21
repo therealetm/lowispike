@@ -104,8 +104,7 @@ test('three languages with the same keys', () => {
 
 test('wiring: Settings row, tutorial step, includes in order, offline cache, Day card gives way', () => {
     const SS = require('../home-settings-sleep-v2.js');
-    const rows = [].concat(...SS.pageGroups({ has: () => true }).map(g => g.ids));
-    assert.ok(rows.includes('body'), 'Settings lists Weight & BMI');
+    assert.ok(SS.COMMUNITY_PLACES.you.includes('body'), 'Community (your panel) lists Weight & BMI (Oct 21 2026)');
     assert.strictEqual(SS.rowAction('body'), 'go', 'Settings closes, the sheet opens in front');
     const hs = read('home-settings-sleep-v2.js');
     assert.match(hs, /body: 'Weight & BMI'/); assert.match(hs, /body: 'Gewicht & BMI'/); assert.match(hs, /body: 'Peso e IMC'/);

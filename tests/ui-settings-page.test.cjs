@@ -11,10 +11,13 @@ const C = require('../home-settings-sleep-v2.js');
 const read = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
 const JS = read('home-settings-sleep-v2.js'), CSS = read('home-settings-sleep-v2.css');
 
-test('single tap on Settings opens the full page; a tap while anything of Settings is open closes it', () => {
+test('Oct 21 2026: the bubble is Community: a tap opens Community, a hold opens Settings, a tap while Settings is open closes it', () => {
     assert.strictEqual(typeof C.tapIntent, 'function', 'tapIntent(bubble, open) is exported');
-    assert.strictEqual(C.tapIntent('settings', null), 'page', 'closed: one tap opens the full page, not the chip bloom');
-    assert.strictEqual(C.tapIntent('settings', 'sleep'), 'page', 'Sleep bloom open: Settings still opens its page (one surface at a time)');
+    assert.strictEqual(C.tapIntent('settings', null), 'community', 'closed: one tap opens Community');
+    assert.strictEqual(C.tapIntent('settings', 'sleep'), 'community', 'Sleep bloom open: a tap still goes to Community');
+    assert.strictEqual(C.holdIntent('settings'), 'page', 'a hold opens the slim Settings');
+    assert.strictEqual(C.holdIntent('sleep'), null, 'only the Community bubble has a hold');
+    assert.ok(C.HOLD_MS >= 400 && C.HOLD_MS <= 600, 'hold time like iOS (about half a second)');
     for (const o of ['page', 'settings', 'more']) assert.strictEqual(C.tapIntent('settings', o), 'close', 'open ' + o + ': a second tap closes');
     /* Sleep keeps its own bloom exactly as before */
     assert.strictEqual(C.tapIntent('sleep', null), 'sleep');
@@ -22,24 +25,34 @@ test('single tap on Settings opens the full page; a tap while anything of Settin
     assert.strictEqual(C.tapIntent('sleep', 'sleep'), 'close');
 });
 
-test('the page holds Me, Look & sound, Account, Menu bar and every More entry, each only when its route exists', () => {
+test('the slim Settings holds only switches, language and the account; places and the profile live in Community', () => {
     assert.strictEqual(typeof C.pageGroups, 'function', 'pageGroups(env) is exported');
     const all = C.pageGroups({ has: () => true });
-    assert.deepStrictEqual(all.map(g => g.key), ['main', 'more']);
-    assert.deepStrictEqual(all[0].ids, ['me', 'body', 'look', 'account', 'menubar', 'tutorial'], 'no separate More chip: More lives on the page itself');
-    assert.deepStrictEqual(all[1].ids, C.MORE, 'every More entry, in the same order as the More panel');
-    assert.ok(all[1].ids.includes('community') && all[1].ids.includes('care') && all[1].ids.includes('map') && all[1].ids.includes('worldSound'));
+    assert.deepStrictEqual(all.map(g => g.key), ['main', 'account']);
+    assert.deepStrictEqual(all[0].ids, ['theme', 'look', 'worldSound', 'language', 'menubar', 'tutorial']);
+    assert.deepStrictEqual(all[1].ids, ['account', 'deleteAccount'], 'sign-out and account deletion stay reachable (App Store 5.1.1(v))');
+    for (const id of ['me', 'body', 'care', 'workouts', 'map', 'gift', 'vr', 'weather', 'community']) assert.ok(!all.some(g => g.ids.includes(id)), id + ' is not in Settings');
     assert.deepStrictEqual(C.pageGroups({ has: () => false }), [], 'nothing to show: no empty groups');
-    assert.deepStrictEqual(C.pageGroups({ has: id => id === 'menubar' || id === 'care' }), [{ key: 'main', ids: ['menubar'] }, { key: 'more', ids: ['care'] }]);
-    assert.deepStrictEqual(C.pageGroups({ has: id => id === 'care' }), [{ key: 'more', ids: ['care'] }]);
-    for (const id of Object.keys(C.MORE_REMOVED)) assert.ok(!all.some(g => g.ids.includes(id)), id + ' stays out (Emmanuel trimmed it)');
+    assert.deepStrictEqual(C.pageGroups({ has: id => id === 'menubar' || id === 'account' }), [{ key: 'main', ids: ['menubar'] }, { key: 'account', ids: ['account'] }]);
+    assert.strictEqual(C.rowAction('language'), 'lang'); assert.strictEqual(C.rowAction('deleteAccount'), 'confirm'); assert.strictEqual(C.rowAction('theme'), 'toggle');
+    assert.deepStrictEqual(C.COMMUNITY_PLACES.you, ['me', 'body']);
+    for (const id of ['care', 'workouts', 'map', 'gift', 'foryou']) assert.ok(C.COMMUNITY_PLACES.places.includes(id), id + ' lives in Community');
+    for (const id of ['vr', 'weather']) assert.strictEqual(C.MORE_REMOVED[id], 'removed', id + ' is out of every menu');
+});
+
+test('delete account asks first, calls the server, and only clears the phone after the server said ok', () => {
+    assert.match(JS, /functions\.invoke\('delete-my-account'/);
+    assert.match(JS, /ok = !!\(r && !r\.error && r\.data && r\.data\.ok\)/);
+    assert.match(JS, /if \(ok\) \{[^\n]*wipeDevice\(\)/);
+    assert.match(JS, /T\.delFail/, 'a failed call says nothing was deleted');
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'supabase', 'functions', 'delete-my-account', 'index.ts')), 'the server function is in the repo');
 });
 
 test('the page is a real dialog: labelled, modal, closes with x and Escape, and the bubble announces it', () => {
     assert.match(JS, /role="dialog" aria-modal="true"/, 'page markup is a modal dialog');
     assert.match(JS, /class="ss2-page"/);
     assert.match(JS, /data-ss2="close"/, 'it has a close (x) button');
-    assert.match(JS, /aria-haspopup', 'dialog'|aria-haspopup="dialog"/, 'the Settings bubble says it opens a dialog');
+    assert.match(JS, /g\.removeAttribute\('aria-haspopup'\)/, 'the Community bubble opens a page, not a dialog (Oct 21 2026)');
     assert.match(JS, /tapIntent\(k, open\)/, 'the bubble tap goes through tapIntent');
     assert.match(JS, /'Tab'/, 'Tab keeps focus inside the open page');
     for (const l of ['en', 'de', 'es']) for (const k of Object.keys(C.TX.en)) assert.ok(k in C.TX[l], l + ' has ' + k);
@@ -57,6 +70,6 @@ test('page look: one glass style, a dimming layer (no blur over the moving world
 
 test('the chip bloom code stays for the queued double tap; only the single tap changed', () => {
     assert.match(JS, /function fan\(o\)/);
-    assert.match(JS, /open: k => show\(k\)/, 'show("settings") still blooms through the API');
-    assert.doesNotMatch(JS, /dblclick|contextmenu|long-?press/i, 'double tap and hold are not part of this change');
+    assert.match(JS, /open: k => \{ detached = false; return show\(k\); \}/, 'show("settings") still blooms through the API');
+    assert.doesNotMatch(JS, /dblclick/i, 'no double tap');
 });

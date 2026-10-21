@@ -389,7 +389,7 @@
         const bm = D.querySelector('meta[name="lowi-build"]'), ver = versionLabel(bm && bm.content, lang());
         open = 'page'; lastBubble = b;
         H.classList.add('ss2-open', 'ss2-page-open'); L.setAttribute('data-kind', 'page');
-        b.setAttribute('aria-expanded', 'true');
+        if (b !== D.body && b.getAttribute('data-orbit') !== 'settings') b.setAttribute('aria-expanded', 'true');
         const sec = g => g.key === 'more' || g.key === 'account'
             ? '<section class="ss2-group" aria-labelledby="ss2Page' + g.key + '"><h3 class="ss2-gl" id="ss2Page' + g.key + '">' + (g.key === 'account' ? T.account2 : T.more) + '</h3><div class="ss2-list">' + g.ids.map(pageRow).join('') + '</div></section>'
             : '<section class="ss2-group" aria-label="' + T.settings + '"><div class="ss2-list">' + g.ids.map(pageRow).join('') + '</div></section>';
@@ -447,7 +447,7 @@
         const bx = q.left + q.width / 2, by = q.top + q.height / 2, br = q.width / 2;
         open = kind; lastBubble = b;
         H.classList.add('ss2-open'); L.setAttribute('data-kind', kind);
-        b.setAttribute('aria-expanded', 'true');
+        if (b !== D.body && b.getAttribute('data-orbit') !== 'settings') b.setAttribute('aria-expanded', 'true');
         if (kind === 'more') {
             /* two short groups in a glass panel beside, below or above the ring: never on Misty, no scrolling, header always in view */
             const G = moreGroups(env), grp = (label, ids) => ids.length ? '<section class="ss2-group" aria-label="' + label + '"><h3 class="ss2-gl">' + label + '</h3><div class="ss2-grid">' + ids.map(id => chipHTML('more', id)).join('') + '</div></section>' : '';
@@ -573,7 +573,8 @@
     function claim() {
         const s = findBubble('sleep'), g = findBubble('settings');
         if (s && bridge()) { if (s.dataset.o8Adapter !== 'settings-sleep') s.dataset.o8Adapter = 'settings-sleep'; if (!s.hasAttribute('aria-expanded')) s.setAttribute('aria-expanded', 'false'); paintSleep(); }
-        if (g) { if (g.dataset.o8Adapter !== 'settings-sleep') g.dataset.o8Adapter = 'settings-sleep'; if (!g.hasAttribute('aria-expanded')) g.setAttribute('aria-expanded', 'false'); if (g.getAttribute('aria-haspopup') !== 'dialog') g.setAttribute('aria-haspopup', 'dialog'); }
+        /* Oct 21 2026: a tap on this bubble opens Community (a page), so it no longer says it opens a dialog */
+        if (g) { if (g.dataset.o8Adapter !== 'settings-sleep') g.dataset.o8Adapter = 'settings-sleep'; if (g.hasAttribute('aria-haspopup')) g.removeAttribute('aria-haspopup'); if (g.hasAttribute('aria-expanded')) g.removeAttribute('aria-expanded'); }
     }
     function onTap(e) {
         const el = e.target && e.target.closest && e.target.closest('[data-orbit="sleep"],[data-orbit="settings"]');

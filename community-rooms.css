@@ -52,4 +52,4 @@ html.light .rm-card{background:#fff;color:#141836}
 #cmPaneChat[data-spirit-chat]>.rm-bar>.rm-tabs{order:2;flex:1 1 100%;display:flex}
 #cmPaneChat[data-spirit-chat]>.rm-bar>.rm-tabs>.rm-tab{flex:1 1 auto}
 #cmPaneChat[data-spirit-chat]>.rm-bar>.rm-banner{order:3}
-@media (max-width:360px){.rm-tab{padding:9px 8px;font-size:12.5px}}
+@media (max-width:360px){.rm-tab{padding:9px 6px;font-size:12px}}

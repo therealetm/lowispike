@@ -111,6 +111,9 @@ async function standalone(base, sz) {
   await browser.close();
 }
 
+/* A real tap at the centre of the element: whatever sits on top there gets it (this is how the theme button swallowed taps on
+   Affiliates). page.mouse is used rather than locator.click because WebKit's stability wait never settles on the busy Community page. */
+async function tap(p, sel) { await sleep(400); const b = await p.locator(sel).boundingBox(); if (!b) throw new Error('no box for ' + sel); await p.mouse.click(b.x + b.width / 2, b.y + b.height / 2); }
 async function appTabs(engine, device) {
   const W = 'app-tabs@' + engine + '/' + device;
   const R = await H.open({ engine, device, probe: false });
@@ -122,7 +125,7 @@ async function appTabs(engine, device) {
     if (labels.join('|') !== 'Room|Chat|Creation|Affiliates') fail(W, 'tab labels ' + labels.join('|'));
     const fit = await p.$$eval('.rm-tab', b => b.every(x => { const r = x.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth; }));
     if (!fit) notes.push(W + ': tabs scroll sideways on this width');
-    await p.locator('.rm-tab[data-rm="aff"]').click();
+    await tap(p, '.rm-tab[data-rm="aff"]');
     await p.waitForSelector('#cmPaneChat[data-rm-view="aff"] iframe.rm-frame', { timeout: 8000 });
     const fr = p.frameLocator('iframe.rm-frame[data-view="aff"]');
     await fr.locator('#checkCard h2').waitFor({ timeout: 15000 });
@@ -132,14 +135,14 @@ async function appTabs(engine, device) {
     if (!st.cls || st.sel !== 'aff' || st.composer !== 'hidden' || /shown/.test(st.galaxy)) fail(W, 'view state ' + JSON.stringify(st));
     if (!(await fr.locator('body').getAttribute('class') || '').includes('embed')) fail(W, 'frame not in embed mode');
     await sleep(500); await R.shot(path.join(OUT, 'app-' + engine + '-affiliates.png'));
-    await p.locator('.rm-tab[data-rm="create"]').click();
+    await tap(p, '.rm-tab[data-rm="create"]');
     await p.frameLocator('iframe.rm-frame[data-view="create"]').locator('h1').waitFor({ timeout: 10000 });
     await sleep(400); await R.shot(path.join(OUT, 'app-' + engine + '-creation.png'));
-    await p.locator('.rm-tab[data-rm="room"]').click(); await sleep(500);
+    await tap(p, '.rm-tab[data-rm="room"]'); await sleep(500);
     const back = await p.evaluate(() => ({ view: document.getElementById('cmPaneChat').getAttribute('data-rm-view'), cls: document.documentElement.classList.contains('rm-view'), sel: document.querySelector('.rm-tab[aria-selected="true"]').dataset.rm, galaxy: (document.getElementById('cgGalaxy') || {}).offsetParent ? 'shown' : 'hidden' }));
     if (back.view || back.cls || back.sel !== 'room') fail(W, 'Room did not come back ' + JSON.stringify(back));
-    await p.locator('.rm-tab[data-rm="aff"]').click(); await sleep(300);
-    await p.locator('.rm-tab[data-rm="chat"]').click(); await sleep(800);
+    await tap(p, '.rm-tab[data-rm="aff"]'); await sleep(300);
+    await tap(p, '.rm-tab[data-rm="chat"]'); await sleep(800);
     const chat = await p.evaluate(() => ({ view: document.getElementById('cmPaneChat').getAttribute('data-rm-view'), sel: document.querySelector('.rm-tab[aria-selected="true"]').dataset.rm, open: document.getElementById('cmPaneChat').getAttribute('data-open') }));
     if (chat.view || chat.sel !== 'chat') fail(W, 'Chat from Affiliates ' + JSON.stringify(chat));
     await R.shot(path.join(OUT, 'app-' + engine + '-chat-after.png'));

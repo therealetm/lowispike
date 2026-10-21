@@ -12,6 +12,11 @@ html.cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room] .rm-bar{di
 html.cr-room[data-lay=phone]:has(#tab-foryou.active) #tbTheme,
 html.cr-room[data-lay=phone]:has(#tab-foryou.active) #pfBtn{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
 
+/* full bleed: the room is the screen, not a card inside it */
+html.cr-room[data-lay=phone] body #tab-foryou #cmPaneChat[data-spirit-chat][data-room]{padding-left:0!important;padding-right:0!important}
+html.cr-room[data-lay=phone] body #cmPaneChat[data-spirit-chat][data-room] .cp-room.cg-room#cpRoom{border:0!important;border-radius:0!important;box-shadow:none!important;margin-left:0!important;margin-right:0!important}
+html.cr-room[data-lay=phone] body #cmPaneChat[data-spirit-chat][data-room] .cg-thread.cr-room[data-open]{border-radius:0!important;left:0!important;right:0!important}
+
 /* ---- room canvas: brand galaxy, glowing rings ---- */
 html body #cmPaneChat[data-spirit-chat][data-room] .cg-thread.cr-room[data-open]{
   background:radial-gradient(120% 60% at 50% -10%,rgba(10,132,255,.28),transparent 60%),radial-gradient(80% 45% at 100% 105%,rgba(191,90,242,.18),transparent 70%),linear-gradient(180deg,#071230,#050b20 55%,#08071c)!important}
@@ -35,7 +40,7 @@ html body #cmPaneChat[data-spirit-chat][data-room] .cr-head :is(.cg-x.cr-back,.c
 html body #cmPaneChat[data-spirit-chat][data-room] .cr-head .cr-back{grid-column:1}
 html body #cmPaneChat[data-spirit-chat][data-room] .cr-head .cr-members{grid-column:3;cursor:pointer}
 html body #cmPaneChat[data-spirit-chat][data-room] .cr-head .cr-members[aria-expanded=true]{border-color:#64d2ff!important;box-shadow:0 0 0 1px #64d2ff,0 0 18px -2px rgba(100,210,255,.8)!important}
-html body #cmPaneChat[data-spirit-chat][data-room] .cr-mcount{position:absolute;top:-3px;right:-4px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#0a84ff;color:#fff;font-size:10.5px;font-weight:700;line-height:18px;text-align:center;box-shadow:0 0 8px rgba(10,132,255,.7)}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-mcount{position:absolute;top:-3px;right:-4px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#0058d0;color:#fff;font-size:10.5px;font-weight:700;line-height:18px;text-align:center;box-shadow:0 0 8px rgba(10,132,255,.7)}
 html body #cmPaneChat[data-spirit-chat][data-room] .cr-mcount:empty{display:none}
 html body #cmPaneChat[data-spirit-chat][data-room] .cr-head .cr-id{grid-column:2;justify-self:center;display:flex!important;align-items:center;gap:8px;min-width:0;max-width:100%;height:46px;padding:4px 16px 4px 5px;border-radius:23px;
   background:rgba(14,26,58,.82);border:1px solid rgba(100,210,255,.42);box-shadow:0 0 16px -4px rgba(100,210,255,.55),inset 0 .5px 0 rgba(255,255,255,.14);-webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%)}
@@ -109,6 +114,10 @@ html body #cmPaneChat[data-spirit-chat] .cr-room .cr-sys .cr-wave{display:inline
   background:rgba(10,72,160,.62)!important;border:1px solid rgba(100,210,255,.55)!important;box-shadow:0 0 12px -3px rgba(100,210,255,.6)!important}
 
 /* ---- composer: round photo | wide rounded field | round mic or send ---- */
+/* in the room everything goes to the room: the "To the whole galaxy" chip and the empty-field note step aside (a chosen person still shows) */
+html.cr-room #cmPaneChat[data-spirit-chat][data-room] #cgTo:not(:has(.cg-chip:not(:has(.cg-dotc.all)))){display:none!important}
+html.cr-room #cmPaneChat[data-spirit-chat][data-room] #cgTo .cg-chip:has(.cg-dotc.all){display:none!important}
+html.cr-room #cmPaneChat[data-spirit-chat][data-room] .cm-inrow.cs-empty~.cs-compose-meta{display:none!important}
 html.cr-room #cmPaneChat[data-spirit-chat][data-room] .cm-compose{background:transparent!important;border:0!important;box-shadow:none!important}
 html.cr-room #cmPaneChat[data-spirit-chat][data-room] .cm-compose::before{display:none!important}
 html.cr-room #cmPaneChat[data-spirit-chat][data-room] .cm-inrow{position:relative;display:flex!important;align-items:flex-end!important;gap:8px!important;padding:6px 10px!important;background:none!important;border:0!important;box-shadow:none!important}

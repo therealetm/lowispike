@@ -57,7 +57,13 @@ async function run(engine, device, light) {
     const open = await p.evaluate(() => !!document.querySelector('#cgThread[data-open]'));
     if (!open) { await p.evaluate(() => { const b = document.querySelector('[data-chat="open-thread"]'); if (b) b.click(); }); await sleep(1200); }
     if (!(await p.evaluate(() => !!document.querySelector('#cgThread[data-open]')))) throw new Error('room thread did not open');
+    /* headless WebKit sometimes holds the chat's animation-frame paint; paint once directly so the room is measured with its messages */
+    await p.evaluate(() => { const l = document.getElementById('cmList'); if (l && !l.children.length && window.LowiCommunity) LowiCommunity.mount(document.getElementById('cmPaneChat')); });
     await p.evaluate(() => { const l = document.getElementById('cmList'); if (l) l.scrollTop = l.scrollHeight; }); await sleep(600);
+    /* simulate people walking into the room (the real LowiRooms presence list grows) so the "X and N others joined" pill + Wave show */
+    const joined = await p.evaluate(() => { const R = window.LowiRooms, Hh = window.LowiCommunityHost; if (!R || !Hh) return 'no rooms'; const base = R.members(); const extra = Hh.people().map(x => x.uid).filter(u => u && !base.includes(u)).slice(0, 4); R.active = () => true; R.members = () => base; LowiCommunity.mount(document.getElementById('cmPaneChat')); R.members = () => base.concat(extra); LowiCommunity.mount(document.getElementById('cmPaneChat')); const l = document.getElementById('cmList'); l.scrollTop = l.scrollHeight; return extra.length; });
+    await sleep(300); notes.push(W + ' joined ' + joined);
+    { const wv = await p.evaluate(() => { const s = document.querySelector('#cgThread .cr-sys'); const w = s && s.querySelector('[data-chat=wave]'); return s ? (w ? Math.round(w.getBoundingClientRect().height) + ' ' + w.className : 'no wave: ' + s.outerHTML.slice(0, 300)) : 'no pill'; }); if (!/^(3[6-9]|[4-9]\d)/.test(wv)) fail(W, 'join pill/Wave: ' + wv); }
     const tag = device.replace(/\W+/g, '-').toLowerCase() + (light ? '-day' : '');
     await R.shot(path.join(OUT, tag + '-room.png'));
     const L = await p.evaluate(layout); notes.push(W + ' ' + JSON.stringify({ bubbles: L.bubbles, sys: L.sys, list: L.list }));
@@ -67,7 +73,7 @@ async function run(engine, device, light) {
     const L2 = await p.evaluate(layout); for (const e of L2.errs) if (/field|photo|mic|send/.test(e)) fail(W, 'typing: ' + e);
     await R.shot(path.join(OUT, tag + '-typing.png'));
     await p.fill('#cmInput', '');
-    const mb = await p.$('#cgThread .cr-members'); if (mb) { await mb.click(); await sleep(700); await R.shot(path.join(OUT, tag + '-members.png')); const ok = await p.evaluate(() => !!document.querySelector('.rm-sheet:not([hidden]),.rm-sheet[open],#cgThread .cr-crew[data-open]')); if (!ok) notes.push(W + ' members tap: no sheet seen'); }
+    const mb = await p.$('#cgThread .cr-members'); if (mb) { await p.locator('#crMembers').click({ timeout: 5000, force: true }).catch(e => fail(W, 'members tap: ' + String(e.message).replace(/\s+/g, ' ').slice(-400))); await sleep(700); await R.shot(path.join(OUT, tag + '-members.png')); await p.evaluate(() => { if (window.LowiCommunity) LowiCommunity.mount(document.getElementById('cmPaneChat')); }); await sleep(200); const ok = await p.evaluate(() => { const c = document.querySelector('#cgThread .cr-crew[data-open]'); return !!c && c.getBoundingClientRect().height > 20; }); if (!ok) notes.push(W + ' members tap: no sheet seen'); }
     if (R.errs.length) fail(W, 'page errors ' + JSON.stringify(R.errs.slice(0, 3)));
   } catch (e) { fail(W, 'run: ' + String(e.message).split('\n')[0]); }
   finally { await R.close(); }

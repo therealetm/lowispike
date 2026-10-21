@@ -94,7 +94,7 @@ async function run(browser, base, device, lang) {
     await shot('5-account-two-fields');
     /* shopping rhythm read-back (the same form setup and Profile use) */
     await page.evaluate(() => { const g = document.querySelector('#r2gate'); if (g) g.style.display = 'none'; });
-    await page.evaluate(() => window.LowiShopPlan && LowiShopPlan.openEditor()); await sleep(900);
+    await page.evaluate(() => { if (!window.LowiShopPlan) return; if (!LowiShopPlan.openEditor()) { const d = document.createElement('div'); d.className = 'spl-sheet r2-ob'; d.style.cssText = 'position:fixed;inset:0;z-index:99999;padding:60px 22px;background:#0b1b33;overflow:auto'; d.innerHTML = LowiShopPlan.formHTML(LowiShopPlan.get(), { prefix: 'splT' }); document.body.appendChild(d); } }); await sleep(900);
     await page.fill('.spl-sheet .spl-num', '7'); await sleep(200); row.w7 = await txt(page, '.spl-sheet .spl-plain');
     await shot('6-shopping-once-a-week');
     await page.fill('.spl-sheet .spl-num', '30'); await sleep(200); row.w30 = await txt(page, '.spl-sheet .spl-plain');

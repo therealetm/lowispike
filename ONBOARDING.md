@@ -11,17 +11,16 @@ file and the onboarding copy in the same commit.**
 
 | # | Screen | Code | Explains | Based on |
 |---|--------|------|----------|----------|
-| 1 | Language + "A being of light is waiting for you" | `herb-start.js` step 0 | companion has no name/face until the birthday | `companion-birth.js` |
-| 2 | "Your habits are its energy" | `herb-start.js` step 1 | Shop & scan, Meals, Water, Move, Fasting fill its energy; tired days = rest | `shop-scan.js`, Home bubbles, `adventure.js` energy gate |
-| 3 | "How you play" | `herb-start.js` step 2 | controller, 3 taps autopilot, tap bubbles, cell world + spirit world, scan for a spike estimate + the shopping hunt / power combos | `misty-pad.js` hints, `misty-hints.js`, `cell-world.js`, `spirit-core.js`, `shop-scan-core.js`, `grocery-hunt.js` |
-| 4 | Your name | `herb-start.js` step 3 | it learns your name | `LowiHerbIdentityCore.cleanName` |
-| 5 | First reward | `herb-start.js` step 4 | first XP, spirit world where companions meet | `firstReward()` |
-| 6 | Add to Home Screen + account | `index.html` gate (`LowiA1`, `R2`) | iPhone install, Google/Apple/email sign-in | `index.html` (LOWI_CLOUD) |
-| 7 | Setup 1: birthday | `index.html` `paintOb` step 0 | birthday gives the companion its face and name | `companion-birth.js` |
-| 8 | Setup 2: photo | `paintOb` step 1 | optional avatar | |
-| 9 | Setup 3: goals | `paintOb` step 2 | what you want most | `S.profile.goals` |
-| 10 | Setup 4: grocery shopping | `paintOb` step 3, `shop-plan.js` | the person TYPES how often they shop; weekdays + shop optional; Later skips; what the shopping glow does | `shop-plan-core.js`, `grocery-hunt-core.js` (reads the rhythm) |
-| 11 | Starter plan (optional) | `herb-start.js` `ivOpen` | up to 4 optional questions, first steps on Today | `starter-core.js` |
+| 0 | Add to Home Screen guide (phone browsers only, first) | `index.html` `LowiA1` (start mode) | one plain line first: "Free app: eat smarter and lose weight, as a game." then how to add it | `index.html` |
+| 1 | What it is + why + proof | `herb-start.js` step 0 | headline "Eat smarter and lose weight, as a game.", the five habits (Shop & scan, Fuel, Water, Move, Gap) power the companion, founder proof "Made by Eman, who lost 45 kg in 7 months." Button "Get started" | `shop-scan.js`, Home bubbles, founder bio in `index.html` |
+| 2 | Your first name | `herb-start.js` step 1 | it learns your name. Button "Continue" | `LowiHerbIdentityCore.cleanName` |
+| 3 | First XP + free account | `herb-start.js` step 2 | first spark (+5 XP), "Create free account" | `firstReward()` |
+| 4 | Account form | `index.html` gate (`R2`) | email + password; the name field is only shown when the start didn't get a name ("Two fields. That's it.") | `index.html` (LOWI_CLOUD) |
+| 5 | Setup 1: birthday | `index.html` `paintOb` step 0 | birthday gives the companion its face and name | `companion-birth.js` |
+| 6 | Setup 2: photo | `paintOb` step 1 | optional avatar | |
+| 7 | Setup 3: goals | `paintOb` step 2 | what you want most | `S.profile.goals` |
+| 8 | Setup 4: grocery shopping | `paintOb` step 3, `shop-plan.js` | the person TYPES how often they shop, read back in plain words (7 = "Once a week", 30 = "Once a month", `plainEvery`); weekdays + shop optional; Later skips; what the shopping glow does | `shop-plan-core.js`, `grocery-hunt-core.js` (reads the rhythm) |
+| 9 | Starter plan (optional) | `herb-start.js` `ivOpen` | up to 4 optional questions, first steps on Today | `starter-core.js` |
 
 Existing users never see this flow again (`S.setupDone`). Their shopping rhythm is set or changed in
 Profile > About you > Grocery shopping (`shop-plan.js` card), never forced.
@@ -52,7 +51,7 @@ old version of the app). The wordmark is the live `LOWiSPIKE` text, not an image
 ## Release checklist (onboarding)
 
 1. Did this release add, rename or remove anything a new person is told about? Update the copy (EN, DE, ES) and this file.
-2. Did it change a control, a bubble name or a world? Check screen 3 ("How you play").
+2. Did it change a control, a bubble name or a world? Controls are taught in the app (`misty-hints.js`, `misty-pad.js`, the tutorial), not before the account (21 Oct 2026, simpler conversion screens). Check the habit chips on screen 1.
 3. Run `node --test tests/onboarding-current.test.cjs`.
 
 ## Replay tutorial (19 Oct 2026)

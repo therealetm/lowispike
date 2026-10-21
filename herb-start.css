@@ -179,7 +179,9 @@ html body .r2-gate .hs-chip{background:linear-gradient(165deg,rgba(96,160,255,.3
 html[data-ui=light] .hs-proof{color:#0b1b33;background:rgba(255,255,255,.75);border-color:rgba(0,0,0,.08)}
 html[data-ui=light] .hs-proof svg{color:#c98a00}
 @media (max-height:700px){.r2-start.hs[data-hs-step="0"] .hs-misty{--hs-m:120px}.hs-proof{margin-top:8px;font-size:12.5px;padding:5px 11px}}
-@media (max-height:600px){.r2-start.hs[data-hs-step="0"] .hs-misty{--hs-m:92px}.hs-habits{gap:5px}}
+@media (max-height:700px){.r2-start.hs[data-hs-step="0"] .hs-habits{gap:5px}.r2-start.hs[data-hs-step="0"] .hs-habits li{min-height:28px;font-size:12.5px;padding:0 10px}}
+/* the smallest phones (iPhone SE 1st gen): the headline, line and proof say it all, the habit chips step aside so the buttons stay on screen */
+@media (max-height:600px){.r2-start.hs[data-hs-step="0"] .hs-misty{--hs-m:84px}.r2-start.hs[data-hs-step="0"] .hs-habits{display:none}}
 html body .r2-gate .hs-in:focus{border-color:#8fdcff!important;box-shadow:0 0 0 4px rgba(143,220,255,.22)!important}
 .hs-bar i{background:linear-gradient(90deg,#8fdcff,#a9b8ff)}
 html body .r2-ov.hs-ivov .hs-opt.on{border-color:#8fdcff}

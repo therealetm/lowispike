@@ -127,3 +127,80 @@
 .rm-ob .rm-ob-go:focus-visible,.rm-ob .rm-ob-sec:focus-visible,.rm-ob .rm-chipq:focus-visible,.rm-ob .rm-ob-card:focus-visible{outline:2px solid var(--rm-cyan);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){.rm-ob-bar i{transition:none}}
 
+/* ===== Phase E, Eden rebuild in LOWiSPIKE's galaxy (21 Oct 2026). Eman: "rebuild the design for the whole Community, I don't like
+   how it looks at all". Reference: Eden's Plan screen and room (segmented pill, small pill label, one huge headline, muted line,
+   ONE rounded card with icon tiles and thin dividers, one big primary button, faint dotted grid, round floating buttons).
+   LOWiSPIKE instead of white: dark-blue galaxy with glowing rings, dark glass with glowing cyan edges (never white borders),
+   cyan-to-blue brand gradient for the one primary action, every text >= WCAG AA. Spacious: one clear thing per view. */
+:root{--rm-grad:linear-gradient(135deg,#8ff8f9 0%,#46c8ff 48%,#5b8cff 100%);--rm-stage:radial-gradient(ellipse 130% 60% at 50% 0%,#0f2d6b 0%,#09193f 48%,#040b1f 100%)}
+/* header: Eden's floating pill (logo, name, live line) on the left; the Day/Night switch and picture keep their own spot on the right */
+#cmPaneChat[data-spirit-chat]>.rm-bar{gap:14px;margin:0 0 16px;padding:4px 2px 0}
+#cmPaneChat[data-spirit-chat] .rm-id{border-radius:999px;padding:5px 18px 5px 5px;min-height:54px;gap:12px}
+#cmPaneChat[data-spirit-chat] .rm-name{font-size:17px;font-weight:750;letter-spacing:-.015em}
+#cmPaneChat[data-spirit-chat] .rm-live{font-size:12.5px}
+/* the sections: Eden's segmented pill. One glowing pill slides under the open section (--rm-i from community-rooms-ui.js paint). */
+#cmPaneChat[data-spirit-chat] .rm-tabs{position:relative;isolation:isolate;border-radius:999px;padding:4px;gap:4px}
+#cmPaneChat[data-spirit-chat] .rm-tabs::before{content:'';position:absolute;z-index:-1;top:4px;bottom:4px;left:4px;width:calc((100% - 20px)/4);border-radius:999px;
+ background:linear-gradient(180deg,rgba(28,247,249,.26),rgba(48,120,255,.2));box-shadow:inset 0 0 0 1px rgba(143,231,255,.8),0 0 16px rgba(28,247,249,.34);
+ transform:translateX(calc(var(--rm-i,0) * (100% + 4px)));transition:transform .32s cubic-bezier(.2,.8,.2,1)}
+#cmPaneChat[data-spirit-chat] .rm-tabs .rm-tab{border-radius:999px;min-height:42px;background:transparent}
+#cmPaneChat[data-spirit-chat] .rm-tabs .rm-tab[aria-selected=true]{background:transparent;box-shadow:none}
+@media (prefers-reduced-motion:reduce){#cmPaneChat[data-spirit-chat] .rm-tabs::before{transition:none}}
+/* Chat section = the Community landing (Eden's Plan): dark galaxy stage, faint star dots, glowing rings behind the headline */
+.rm-chans{isolation:isolate}
+#cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-chans:not([hidden]){padding:0 4px calc(var(--sab,0px) + 120px)}
+.rm-chans::before{content:'';position:absolute;z-index:-2;inset:-6px -2px 0;border-radius:32px;pointer-events:none;
+ background:radial-gradient(rgba(190,236,255,.16) .9px,transparent 1.4px) 0 0/22px 22px,var(--rm-stage);border:1px solid rgba(143,231,255,.12)}
+.rm-l-hero{position:relative;text-align:center;padding:40px 10px 30px}
+.rm-l-hero::before,.rm-l-hero::after{content:'';position:absolute;z-index:-1;left:50%;top:50%;border-radius:50%;pointer-events:none;transform:translate(-50%,-56%)}
+.rm-l-hero::before{width:230px;height:230px;border:1px solid rgba(143,231,255,.2);box-shadow:0 0 44px rgba(28,247,249,.12),inset 0 0 36px rgba(28,247,249,.08)}
+.rm-l-hero::after{width:330px;height:330px;border:1px solid rgba(143,231,255,.09);box-shadow:0 0 60px rgba(48,120,255,.08)}
+.rm-l-pill{display:inline-flex;align-items:center;gap:8px;max-width:100%;padding:8px 15px;border-radius:999px;font-size:13px;line-height:1;font-weight:600;color:var(--rm-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+ background:var(--rm-glass);border:1px solid rgba(143,231,255,.4);box-shadow:0 0 14px rgba(28,247,249,.18);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.rm-l-dot{flex:none;width:7px;height:7px;border-radius:50%;background:#3ef0a0;box-shadow:0 0 8px rgba(62,240,160,.85)}
+.rm-l-h{margin:20px 0 12px;font-size:clamp(42px,13vw,60px);line-height:.96;font-weight:800;letter-spacing:-.04em;font-stretch:condensed;color:#fff;text-shadow:0 0 30px rgba(28,247,249,.28)}
+.rm-l-sub{margin:0 auto;max-width:30ch;font-size:15px;line-height:1.5;color:var(--rm-ink2)}
+.rm-chans .rm-ch-h{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* ONE card: the three channels as rows with icon tiles and thin dividers (no box per row) */
+.rm-chans .rm-ch-list{gap:0;overflow:hidden;border-radius:26px;background:var(--rm-glass);border:1px solid var(--rm-edge);
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 14px 34px rgba(0,0,0,.32),0 0 24px rgba(28,247,249,.14);-webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%)}
+.rm-chans .rm-ch-list li{position:relative}
+.rm-chans .rm-ch-list li+li::before{content:'';position:absolute;top:0;left:78px;right:18px;height:1px;background:rgba(143,231,255,.15)}
+#cmPaneChat[data-spirit-chat] .rm-ch-list .rm-ch{min-height:76px;padding:14px 18px 14px 16px;gap:16px;border:0;border-radius:0;background:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+#cmPaneChat[data-spirit-chat] .rm-ch-list .rm-ch:hover,#cmPaneChat[data-spirit-chat] .rm-ch-list .rm-ch:focus-visible{background:rgba(143,231,255,.08);box-shadow:inset 0 0 0 1px rgba(143,231,255,.4)}
+.rm-chans .rm-ch-ic{width:46px;height:46px;border-radius:15px;font-size:22px;background:linear-gradient(145deg,rgba(28,247,249,.34),rgba(48,120,255,.24));box-shadow:inset 0 0 0 1px rgba(143,231,255,.5),0 0 16px rgba(28,247,249,.22)}
+.rm-chans .rm-ch-ic[data-ic=replies]{background:linear-gradient(145deg,rgba(170,128,255,.38),rgba(80,90,255,.24));box-shadow:inset 0 0 0 1px rgba(196,170,255,.55),0 0 16px rgba(150,110,255,.24)}
+.rm-chans .rm-ch-ic[data-ic=room]{background:linear-gradient(145deg,rgba(62,240,160,.32),rgba(28,160,200,.24));box-shadow:inset 0 0 0 1px rgba(124,240,196,.5),0 0 16px rgba(62,240,160,.2)}
+.rm-chans .rm-ch-top b{font-size:16px;font-weight:650}
+.rm-chans .rm-ch-p{font-size:13.5px;-webkit-line-clamp:1}
+.rm-ch-go{flex:none;width:8px;height:8px;margin-right:4px;border-right:2px solid var(--rm-ink2);border-bottom:2px solid var(--rm-ink2);transform:rotate(-45deg);opacity:.8}
+/* the one primary action: big rounded brand button */
+#cmPaneChat[data-spirit-chat] .rm-l-go{appearance:none;display:block;width:100%;min-height:58px;margin:22px 0 0;padding:0 20px;border:0;border-radius:22px;cursor:pointer;
+ font:750 17px/1 inherit;font-family:inherit;letter-spacing:-.01em;color:#03122e;background:var(--rm-grad);
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 12px 30px rgba(48,140,255,.34),0 0 26px rgba(28,247,249,.34);transition:transform .15s,box-shadow .2s}
+#cmPaneChat[data-spirit-chat] .rm-l-go:active{transform:scale(.985)}
+#cmPaneChat[data-spirit-chat] .rm-l-go:focus-visible{outline:3px solid var(--rm-cyan);outline-offset:3px}
+@media (min-width:700px){.rm-chans>.rm-l-hero,.rm-chans>.rm-ch-list,.rm-chans>.rm-l-go{max-width:560px;margin-left:auto;margin-right:auto}.rm-l-hero{padding-top:64px}}
+/* in the galaxy chat: Eden's round floating back button and a centred name pill */
+#cmPaneChat[data-spirit-chat] .rm-crumb{align-self:stretch;gap:10px;padding:0;background:none;border:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+#cmPaneChat[data-spirit-chat] .rm-back{flex:none;display:grid;place-items:center;width:44px;height:44px;min-height:44px;padding:0;border-radius:50%;background:var(--rm-glass);border:1px solid var(--rm-edge);box-shadow:0 0 14px var(--rm-glow);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+.rm-back i{display:block;width:10px;height:10px;margin-left:4px;border-left:2.5px solid var(--rm-ink);border-bottom:2.5px solid var(--rm-ink);transform:rotate(45deg)}
+#cmPaneChat[data-spirit-chat] .rm-crumb-t{padding:12px 20px;border-radius:999px;background:var(--rm-glass);border:1px solid var(--rm-edge);box-shadow:0 0 14px var(--rm-glow);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);font-size:15px}
+/* Creation + Affiliates sit in one rounded glass frame with a soft glowing edge */
+#cmPaneChat[data-spirit-chat] .rm-frame{border-radius:28px;border-color:rgba(143,231,255,.3);box-shadow:0 0 22px rgba(28,247,249,.14)}
+/* menu */
+.rm-menu-card{border-radius:24px;padding:8px}
+.rm-menu-card button{min-height:50px;border-radius:16px}
+/* members (Rooms & people): Eden bottom sheet with a grabber, big title, avatar chips, rooms in ONE card with thin dividers */
+.rm-card{border-radius:30px 30px 0 0;padding:10px 20px calc(20px + var(--sab,0px));gap:14px}
+.rm-grab{display:block;flex:none;width:40px;height:5px;margin:0 auto;border-radius:3px;background:rgba(195,213,236,.45)}
+.rm-h{font-size:26px;font-weight:800;letter-spacing:-.03em}
+.rm-x{border-radius:50%}
+.rm-p{display:inline-flex;align-items:center;gap:7px;padding:4px 12px 4px 4px;font-size:13.5px;color:var(--rm-ink)}
+.rm-p i{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;font:700 10px/1 inherit;font-family:inherit;font-style:normal;color:#06122c;background:var(--fc,#8fe7ff)}
+.rm-find{border-radius:999px;padding:13px 18px}
+.rm-list{gap:0;border-radius:22px;background:rgba(143,231,255,.05);border:1px solid rgba(143,231,255,.2)}
+.rm-list li{border:0;border-radius:0;background:transparent;padding:14px 16px;min-height:64px;box-sizing:border-box}
+.rm-list li+li{box-shadow:inset 0 1px 0 rgba(143,231,255,.14)}
+.rm-list li.rm-mine{background:rgba(124,240,196,.08);border:0}
+.rm-list:empty{display:none}

@@ -1,0 +1,130 @@
+/* 21 Oct 2026, Community room in the exact Eden/Telegram layout (Eman: "for my community copy this exact style, only difference:
+   our theme is not white, our theme is the brand colour"). Loaded last of the community sheets; everything is scoped to the open
+   room (html.cr-room / [data-room] on the pane), so the galaxy map and the channel list are unchanged.
+   Layout copied from the reference: a floating top bar (round back button, centred pill with the room icon + room name and the
+   community name under it, round members button), a pinned-message pill under it, bubbles with the sender name in their colour,
+   reply quotes with an accent bar, the time bottom-right inside the bubble, centred system pills ("X joined" + Wave), and a
+   composer with a round photo button left, a wide rounded field and a round mic/send button right. Instead of white: the dark
+   blue galaxy with rings, dark-glass bubbles with glowing brand-colour edges (Apple-style glowing edge, never white borders). */
+
+/* ---- the room owns the whole screen on phones: Community header/tabs, day/night and profile buttons step aside ---- */
+html.cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room] .rm-bar{display:none!important}
+html.cr-room[data-lay=phone]:has(#tab-foryou.active) #tbTheme,
+html.cr-room[data-lay=phone]:has(#tab-foryou.active) #pfBtn{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+
+/* ---- room canvas: brand galaxy, glowing rings ---- */
+html body #cmPaneChat[data-spirit-chat][data-room] .cg-thread.cr-room[data-open]{
+  background:radial-gradient(120% 60% at 50% -10%,rgba(10,132,255,.28),transparent 60%),radial-gradient(80% 45% at 100% 105%,rgba(191,90,242,.18),transparent 70%),linear-gradient(180deg,#071230,#050b20 55%,#08071c)!important}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-sky{
+  background:
+    radial-gradient(1.2px 1.2px at 8% 14%,rgba(255,255,255,.7),transparent 70%),radial-gradient(1px 1px at 23% 61%,rgba(255,255,255,.5),transparent 70%),
+    radial-gradient(1.4px 1.4px at 41% 27%,rgba(190,230,255,.65),transparent 70%),radial-gradient(1px 1px at 57% 83%,rgba(255,255,255,.45),transparent 70%),
+    radial-gradient(1.2px 1.2px at 72% 9%,rgba(255,255,255,.6),transparent 70%),radial-gradient(1px 1px at 88% 47%,rgba(200,180,255,.55),transparent 70%),
+    radial-gradient(1.3px 1.3px at 93% 76%,rgba(255,255,255,.5),transparent 70%),
+    radial-gradient(circle at 50% 42%,transparent 0 118px,rgba(100,210,255,.16) 119px,transparent 121px,transparent 0),
+    radial-gradient(circle at 50% 42%,transparent 0 196px,rgba(191,90,242,.12) 197px,transparent 199px,transparent 0),
+    radial-gradient(circle at 50% 42%,transparent 0 290px,rgba(100,210,255,.09) 291px,transparent 293px,transparent 0)!important}
+
+/* ---- floating top bar: back | centred name pill | members ---- */
+html body #cmPaneChat[data-spirit-chat][data-room] .cg-thead.cr-head{position:absolute!important;top:0;left:0;right:0;z-index:6!important;display:grid!important;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;gap:10px;
+  min-height:0!important;padding:8px 12px 6px!important;background:linear-gradient(180deg,rgba(5,11,32,.92),rgba(5,11,32,.55) 70%,transparent)!important;border:0!important;box-shadow:none!important}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-head::after{display:none!important}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-head :is(.cg-x.cr-back,.cr-members){position:relative;display:grid!important;place-items:center;width:44px!important;height:44px!important;min-height:44px;padding:0!important;margin:0!important;border-radius:50%!important;
+  color:#e8f4ff!important;background:rgba(14,26,58,.82)!important;border:1px solid rgba(100,210,255,.42)!important;box-shadow:0 0 14px -3px rgba(100,210,255,.55),inset 0 .5px 0 rgba(255,255,255,.14)!important;
+  -webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%)}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-head .cr-back{grid-column:1}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-head .cr-members{grid-column:3;cursor:pointer}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-head .cr-members[aria-expanded=true]{border-color:#64d2ff!important;box-shadow:0 0 0 1px #64d2ff,0 0 18px -2px rgba(100,210,255,.8)!important}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-mcount{position:absolute;top:-3px;right:-4px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#0a84ff;color:#fff;font-size:10.5px;font-weight:700;line-height:18px;text-align:center;box-shadow:0 0 8px rgba(10,132,255,.7)}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-mcount:empty{display:none}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-head .cr-id{grid-column:2;justify-self:center;display:flex!important;align-items:center;gap:8px;min-width:0;max-width:100%;height:46px;padding:4px 16px 4px 5px;border-radius:23px;
+  background:rgba(14,26,58,.82);border:1px solid rgba(100,210,255,.42);box-shadow:0 0 16px -4px rgba(100,210,255,.55),inset 0 .5px 0 rgba(255,255,255,.14);-webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%)}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-ic{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;font-size:19px;line-height:1;background:radial-gradient(circle at 35% 30%,#2b6dff,#0a2a6e 70%);box-shadow:0 0 10px rgba(10,132,255,.6)}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-idt{display:flex;flex-direction:column;min-width:0;line-height:1.15}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-idt #cgThreadTitle{font-size:15.5px;font-weight:700;color:#f2f8ff!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0;text-transform:none}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-sub{display:flex;align-items:center;gap:5px;min-width:0;font-size:11.5px;color:#a9bddb;white-space:nowrap}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-sub .cr-cname{overflow:hidden;text-overflow:ellipsis;min-width:0}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-sub .cr-meta{display:none!important}
+/* connection: just the dot before the community name; its words stay for screen readers */
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-sub .cr-link{position:static!important;display:inline-flex!important;align-items:center;flex:none;width:7px;height:7px;min-width:0;padding:0!important;margin:0!important;border:0!important;background:none!important;box-shadow:none!important;font-size:0!important;overflow:hidden}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-sub .cr-link i{display:block;width:7px;height:7px;border-radius:50%;margin:0;background:#30d158;box-shadow:0 0 6px #30d158}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-sub .cr-link:not([data-state=live]) i{background:#ffd60a;box-shadow:0 0 6px #ffd60a}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-sub .cr-link:is([data-state=offline],[data-state=error],[data-state=auth]) i{background:#ff6b6b;box-shadow:0 0 6px #ff6b6b}
+
+/* ---- pinned message pill ---- */
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-pin{position:absolute!important;top:62px;left:12px;right:12px;z-index:6!important;display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-height:44px;padding:6px 14px 6px 22px;border-radius:16px;text-align:left;cursor:pointer;font:inherit;
+  color:#e8f4ff;background:rgba(14,26,58,.86);border:1px solid rgba(100,210,255,.34);box-shadow:0 0 14px -5px rgba(100,210,255,.5),inset 0 .5px 0 rgba(255,255,255,.12);-webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%)}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-pin::before{content:'';position:absolute;left:11px;top:8px;bottom:8px;width:3px;border-radius:2px;background:linear-gradient(180deg,#64d2ff,#0a84ff);box-shadow:0 0 8px rgba(100,210,255,.8)}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-pinl{font-size:12.5px;font-weight:700;color:#7fdcff}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-pint{display:block;max-width:100%;font-size:13px;color:#dfe9fb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-pin[aria-expanded=true] .cr-pint{white-space:normal}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-pin:focus-visible,html body #cmPaneChat[data-spirit-chat][data-room] .cr-head button:focus-visible{outline:2px solid #64d2ff;outline-offset:2px}
+
+/* ---- members: a dropdown under the pin (recent voices), only when the members button is tapped ---- */
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-crew{display:none!important}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-crew[data-open]{display:flex!important;flex-wrap:wrap;position:absolute!important;top:114px;left:12px;right:12px;z-index:7!important;min-height:0;padding:10px 12px;gap:6px 8px;border-radius:16px;
+  background:rgba(10,20,48,.96);border:1px solid rgba(100,210,255,.4);box-shadow:0 0 18px -4px rgba(100,210,255,.55),0 18px 40px -16px rgba(0,0,0,.8)}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-crew[data-open] .cr-crewl{max-width:none;width:100%;color:#7fdcff;font-size:11px}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-crew[data-open] .cr-crews{flex-wrap:wrap;overflow:visible}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-crew[data-open] .cr-crews::before{display:none}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-crewnone{margin:0;font-size:13px;color:#cfdcf2}
+
+/* ---- message list: scrolls under the floating bar and the pin ---- */
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-room #cmList.cm-list{padding:122px 10px 10px!important;scroll-padding-top:122px;gap:3px!important}
+
+/* ---- bubbles: dark glass, glowing brand edge; name in the sender's colour, time bottom-right inside ---- */
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .cm-msg.cp-msg{align-items:flex-end!important;gap:7px!important;margin:0!important;padding:0!important;background:none!important;border:0!important;box-shadow:none!important}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .cm-msg.cp-msg.cp-start{margin-top:7px!important}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .cp-msg .cp-av{flex:none;width:34px!important;height:34px!important;min-height:34px;align-self:flex-end}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .cp-msg .cp-av .cp-form{width:34px;height:34px;border-radius:50%}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .cp-msg .cm-bub{position:relative;max-width:min(78%,520px)!important;min-width:84px;padding:7px 11px 5px!important;border-radius:18px!important;
+  background:rgba(16,30,64,.84)!important;color:#eef4ff!important;border:1px solid color-mix(in srgb,#64d2ff 40%,transparent)!important;
+  box-shadow:0 0 12px -4px rgba(100,210,255,.45),inset 0 .5px 0 rgba(255,255,255,.12)!important;-webkit-backdrop-filter:blur(14px) saturate(150%);backdrop-filter:blur(14px) saturate(150%)}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .cp-msg.cp-end:not(.mine) .cm-bub{border-bottom-left-radius:6px!important}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .mine.cp-msg .cm-bub{background:rgba(10,72,160,.7)!important;border-color:color-mix(in srgb,#64d2ff 62%,transparent)!important;box-shadow:0 0 14px -3px rgba(100,210,255,.6),inset 0 .5px 0 rgba(255,255,255,.16)!important}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .mine.cp-msg.cp-end .cm-bub{border-bottom-right-radius:6px!important}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .cp-msg .cs-by{display:block!important;margin:0 0 1px!important;padding:0!important;min-height:0!important}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .cp-msg .cs-by:not(:has(.cs-name)){display:contents!important}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .cp-msg .cs-by .cs-name{display:inline;font-size:13.5px!important;font-weight:700;color:color-mix(in srgb,var(--chat-color) 62%,#fff)!important;text-shadow:none!important}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .cp-msg .cm-t,html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .cp-msg .cm-t *{color:#eef4ff;font-size:15px;line-height:1.36}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .cp-msg .cm-bub a{color:#8fe0ff!important;text-decoration:underline!important;text-underline-offset:2px}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .cm-foot{display:flex;justify-content:flex-end;align-items:center;gap:4px;margin:1px -3px 0 0;line-height:1;min-height:16px}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .cm-foot time{font-size:11px;color:#b6c6e2;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .mine .cm-foot time{color:#c9dcf7}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .cm-foot .cp-more{position:relative;display:grid;place-items:center;width:26px!important;height:18px!important;min-height:0!important;padding:0!important;margin:0!important;border:0!important;background:none!important;box-shadow:none!important;color:#b6c6e2!important;font-size:13px;line-height:1}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .cm-foot .cp-more::after{content:'';position:absolute;inset:-13px -9px}
+/* reply quote: tinted block, accent bar left, quoted name in accent, one-line preview */
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .cm-quote{display:block!important;margin:3px 0 5px!important;padding:4px 9px 5px 10px!important;border:0!important;border-left:3px solid #64d2ff!important;border-radius:4px 8px 8px 4px!important;background:rgba(100,210,255,.12)!important;
+  color:#d3e0f5!important;font-size:13px!important;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .cm-quote b{display:block;color:#7fdcff!important;font-size:12.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis}
+/* day marker: a small centred pill, like Telegram's date */
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-day{justify-content:center;margin:10px 0 4px!important;letter-spacing:.02em!important;text-transform:none!important;font-size:12px!important;font-weight:600!important}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-day::before,html body #cmPaneChat[data-spirit-chat][data-room] .cr-day::after{display:none!important}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-day span{padding:4px 11px!important;border-radius:12px!important;color:#e3eeff;background:rgba(14,28,62,.82)!important;border:1px solid rgba(100,210,255,.3)!important}
+
+/* ---- system pills: "X joined" with a Wave button under it ---- */
+html body #cmPaneChat[data-spirit-chat] .cr-room .cr-sys{display:flex;flex-direction:column;align-items:center;gap:6px;margin:10px 0 6px;flex:none}
+html body #cmPaneChat[data-spirit-chat] .cr-room .cr-syst{max-width:88%;padding:4px 12px;border-radius:12px;font-size:12.5px;font-weight:600;color:#e3eeff;text-align:center;background:rgba(14,28,62,.82);border:1px solid rgba(100,210,255,.3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body #cmPaneChat[data-spirit-chat] .cr-room .cr-sys .cr-wave{display:inline-flex;align-items:center;gap:5px;min-height:36px;padding:0 16px!important;border-radius:18px!important;font-size:13.5px;font-weight:700;color:#eef6ff!important;
+  background:rgba(10,72,160,.62)!important;border:1px solid rgba(100,210,255,.55)!important;box-shadow:0 0 12px -3px rgba(100,210,255,.6)!important}
+
+/* ---- composer: round photo | wide rounded field | round mic or send ---- */
+html.cr-room #cmPaneChat[data-spirit-chat][data-room] .cm-compose{background:transparent!important;border:0!important;box-shadow:none!important}
+html.cr-room #cmPaneChat[data-spirit-chat][data-room] .cm-compose::before{display:none!important}
+html.cr-room #cmPaneChat[data-spirit-chat][data-room] .cm-inrow{position:relative;display:flex!important;align-items:flex-end!important;gap:8px!important;padding:6px 10px!important;background:none!important;border:0!important;box-shadow:none!important}
+html.cr-room body #cmPaneChat[data-spirit-chat][data-room] .cm-inrow textarea#cmInput#cmInput{position:static!important;flex:1 1 auto!important;min-width:0;width:auto!important;min-height:44px!important;margin:0!important;padding:11px 16px!important;border-radius:22px!important;font-size:16px!important;line-height:1.35;
+  color:#f1f7ff!important;background:rgba(14,26,58,.88)!important;border:1px solid rgba(100,210,255,.42)!important;box-shadow:0 0 14px -4px rgba(100,210,255,.5),inset 0 .5px 0 rgba(255,255,255,.1)!important}
+html.cr-room body #cmPaneChat[data-spirit-chat][data-room] .cm-inrow textarea#cmInput#cmInput::placeholder{color:#a9bddb!important}
+html.cr-room body #cmPaneChat[data-spirit-chat][data-room] .cm-inrow :is(#cmPhoto,#cmMic,#cmSend){position:static!important;flex:none!important;display:grid;place-items:center;width:44px!important;height:44px!important;min-height:44px!important;margin:0!important;padding:0!important;border-radius:50%!important;transform:none!important;inset:auto!important;
+  color:#e8f4ff!important;background:rgba(14,26,58,.88)!important;border:1px solid rgba(100,210,255,.42)!important;box-shadow:0 0 14px -4px rgba(100,210,255,.55)!important}
+html.cr-room body #cmPaneChat[data-spirit-chat][data-room] .cm-inrow #cmSend:not([hidden]):not([disabled]){background:linear-gradient(180deg,#2a8cff,#0a64d6)!important;border-color:#64d2ff!important;color:#fff!important}
+html.cr-room body #cmPaneChat[data-spirit-chat][data-room] .cm-inrow :is(#cmPhoto,#cmMic,#cmSend)[hidden]{display:none!important}
+
+/* ---- day theme keeps the brand galaxy room: still never white, the text stays light on dark glass ---- */
+@media(prefers-reduced-transparency:reduce){
+  html body #cmPaneChat[data-spirit-chat][data-room] :is(.cr-head .cr-id,.cr-head .cr-back,.cr-head .cr-members,.cr-pin){background:#0e1a3a!important}
+  html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .cp-msg .cm-bub{background:#10203f!important}
+  html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .mine.cp-msg .cm-bub{background:#0d3c80!important}}
+@media(max-height:560px){
+  html body #cmPaneChat[data-spirit-chat][data-room] .cr-pin{display:none!important}
+  html body #cmPaneChat[data-spirit-chat][data-room] .cr-room #cmList.cm-list{padding-top:64px!important}}

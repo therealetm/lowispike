@@ -147,7 +147,7 @@
 #cmPaneChat[data-spirit-chat] .rm-tabs .rm-tab[aria-selected=true]{background:transparent;box-shadow:none}
 @media (prefers-reduced-motion:reduce){#cmPaneChat[data-spirit-chat] .rm-tabs::before{transition:none}}
 /* Chat section = the Community landing (Eden's Plan): dark galaxy stage, faint star dots, glowing rings behind the headline */
-.rm-chans{isolation:isolate}
+.rm-chans{position:relative;isolation:isolate}
 #cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-chans:not([hidden]){padding:0 4px calc(var(--sab,0px) + 120px)}
 .rm-chans::before{content:'';position:absolute;z-index:-2;inset:-6px -2px 0;border-radius:32px;pointer-events:none;
  background:radial-gradient(rgba(190,236,255,.16) .9px,transparent 1.4px) 0 0/22px 22px,var(--rm-stage);border:1px solid rgba(143,231,255,.12)}

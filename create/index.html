@@ -19,50 +19,87 @@
 <link rel="apple-touch-icon" href="/lowispike/icon-180.png">
 <style>
 /* LOWiSPIKE Create (21 Oct 2026): its own address so it can be shared, and shown inside the app's Creation tab (?embed=1).
-   The studio itself is not built yet; this page says so plainly and offers nothing that does not work. */
-:root{color-scheme:dark;--cyan:#8fe7ff;--teal:#1cf7f9;--ink:#f2f8ff;--muted:#b8cce4}/* color-scheme dark: see affiliates/blueprint.css (a frame with another scheme gets a white canvas) */
+   Phase E rebuild (Eman: "rebuild the whole Community"): Eden's Plan screen in LOWiSPIKE's galaxy. A small pill, one huge
+   headline, a muted line, ONE glass card listing what the studio will do, and one big button that does something real today
+   (in the app it opens Affiliates, where the ready-made video scripts already are). The studio itself is not built yet; the page
+   says so plainly and offers nothing that does not work. */
+:root{color-scheme:dark;--cyan:#8fe7ff;--teal:#1cf7f9;--ink:#f2f8ff;--muted:#b8cce4;--card:rgba(9,20,52,.74);--edge:rgba(143,231,255,.42);--grad:linear-gradient(135deg,#8ff8f9 0%,#46c8ff 48%,#5b8cff 100%)}/* color-scheme dark: see affiliates/blueprint.css (a frame with another scheme gets a white canvas) */
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%}
 html{overflow-x:hidden;-webkit-text-size-adjust:100%;background:#03060f}
-body{min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:max(24px,env(safe-area-inset-top)) 20px max(24px,env(safe-area-inset-bottom));
-  font:16px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);text-align:center;
-  background:radial-gradient(ellipse 70% 55% at 50% 38%,#0c265c 0%,#071636 45%,#03050a 100%) fixed,#03050a}
-body.embed{background:linear-gradient(180deg,#081a40 0%,#050e26 55%,#03060f 100%),#03060f}
-main{width:min(440px,100%)}
-.rings{position:relative;width:min(170px,44vw);aspect-ratio:1;margin:0 auto 30px}
-.rings i{position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(143,231,255,.55);box-shadow:0 0 18px rgba(28,247,249,.35),inset 0 0 18px rgba(28,247,249,.18)}
-.rings i:nth-child(2){inset:-16%;border-color:rgba(143,231,255,.26)}
-.rings b{position:absolute;inset:34%;border-radius:50%;background:radial-gradient(circle at 35% 30%,#bff6ff,#1cf7f9 40%,#0a5f8a 100%);box-shadow:0 0 26px rgba(28,247,249,.6)}
-.brand{font-size:13px;letter-spacing:.32em;text-transform:uppercase;color:var(--cyan);margin:0 0 8px;font-weight:600}
-h1{font-size:clamp(26px,7vw,34px);line-height:1.15;margin:0 0 12px}
-p{margin:0 auto 14px;color:var(--muted);max-width:34ch}
-.tag{display:inline-block;margin:6px 0 22px;padding:6px 14px;border-radius:999px;border:1.5px solid rgba(143,231,255,.55);font-size:14px;font-weight:600;color:var(--ink)}
-a.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 26px;border-radius:999px;text-decoration:none;font-weight:600;color:var(--ink);
-  background:linear-gradient(180deg,rgba(28,247,249,.20),rgba(22,184,138,.14));border:1.5px solid rgba(143,231,255,.7);box-shadow:0 0 16px rgba(28,247,249,.35)}
-a.btn:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
-body.embed a.btn{display:none}
+body{position:relative;isolation:isolate;min-height:100vh;min-height:100dvh;padding:max(28px,env(safe-area-inset-top)) 20px max(32px,env(safe-area-inset-bottom));
+  font:16px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);
+  background:radial-gradient(ellipse 130% 60% at 50% 0%,#0f2d6b 0%,#09193f 48%,#03050a 100%) fixed,#03050a}
+body.embed{background:linear-gradient(180deg,#081a40 0%,#050e26 55%,#03060f 100%),#03060f;padding:8px 16px 28px}
+/* faint star dots in place of Eden's dotted grid */
+body::before{content:'';position:fixed;inset:0;z-index:-2;pointer-events:none;background:radial-gradient(rgba(190,236,255,.16) .9px,transparent 1.4px) 0 0/22px 22px;
+  -webkit-mask-image:linear-gradient(180deg,#000 0%,#000 55%,transparent 100%);mask-image:linear-gradient(180deg,#000 0%,#000 55%,transparent 100%)}
+main{max-width:520px;margin:0 auto}
+.hero{position:relative;text-align:center;padding:36px 6px 30px}
+.hero::before,.hero::after{content:'';position:absolute;z-index:-1;left:50%;top:50%;border-radius:50%;pointer-events:none;transform:translate(-50%,-56%)}
+.hero::before{width:230px;height:230px;border:1px solid rgba(143,231,255,.2);box-shadow:0 0 44px rgba(28,247,249,.12),inset 0 0 36px rgba(28,247,249,.08)}
+.hero::after{width:330px;height:330px;border:1px solid rgba(143,231,255,.09)}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:8px 15px;border-radius:999px;font-size:13px;line-height:1;font-weight:600;color:var(--ink);background:var(--card);border:1px solid var(--edge);box-shadow:0 0 14px rgba(28,247,249,.18)}
+.pill i{width:7px;height:7px;border-radius:50%;background:#ffc861;box-shadow:0 0 8px rgba(255,200,97,.85)}
+h1{margin:20px 0 12px;font-size:clamp(42px,13vw,60px);line-height:.96;font-weight:800;letter-spacing:-.04em;font-stretch:condensed;color:#fff;text-shadow:0 0 30px rgba(28,247,249,.28)}
+.sub{margin:0 auto;max-width:30ch;font-size:15px;line-height:1.5;color:var(--muted)}
+.card{list-style:none;margin:0;padding:0;border-radius:26px;background:var(--card);border:1px solid var(--edge);overflow:hidden;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 14px 34px rgba(0,0,0,.32),0 0 24px rgba(28,247,249,.14);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+.card li{position:relative;display:flex;align-items:center;gap:16px;min-height:76px;padding:14px 18px 14px 16px}
+.card li+li::before{content:'';position:absolute;top:0;left:78px;right:18px;height:1px;background:rgba(143,231,255,.15)}
+.ic{flex:none;display:grid;place-items:center;width:46px;height:46px;border-radius:15px;font-size:22px;background:linear-gradient(145deg,rgba(28,247,249,.34),rgba(48,120,255,.24));box-shadow:inset 0 0 0 1px rgba(143,231,255,.5),0 0 16px rgba(28,247,249,.22)}
+.card li:nth-child(2) .ic{background:linear-gradient(145deg,rgba(170,128,255,.38),rgba(80,90,255,.24));box-shadow:inset 0 0 0 1px rgba(196,170,255,.55),0 0 16px rgba(150,110,255,.24)}
+.card li:nth-child(3) .ic{background:linear-gradient(145deg,rgba(62,240,160,.32),rgba(28,160,200,.24));box-shadow:inset 0 0 0 1px rgba(124,240,196,.5),0 0 16px rgba(62,240,160,.2)}
+.tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;text-align:left}
+.tx b{font-size:16px;font-weight:650;line-height:1.25}
+.tx span{font-size:13.5px;line-height:1.4;color:var(--muted)}
+.soon{flex:none;padding:5px 10px;border-radius:999px;font-size:11.5px;font-weight:650;color:var(--cyan);border:1px solid rgba(143,231,255,.38)}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:58px;margin:22px 0 0;padding:0 20px;border:0;border-radius:22px;cursor:pointer;text-decoration:none;
+  font:750 17px/1.2 inherit;font-family:inherit;color:#03122e;background:var(--grad);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 12px 30px rgba(48,140,255,.34),0 0 26px rgba(28,247,249,.34)}
+.btn:active{transform:scale(.985)}
+.btn:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+.hint{margin:14px 0 0;text-align:center;font-size:13.5px;color:var(--muted)}
+body:not(.embed) #go,body:not(.embed) #hint,body.embed #open{display:none}
+@media (min-width:700px){.hero{padding-top:64px}}
 </style>
 </head>
 <body>
 <main>
-  <div class="rings" aria-hidden="true"><i></i><i></i><b></b></div>
-  <div class="brand">LOWiSPIKE</div>
-  <h1>Create</h1>
-  <p id="lead">Your own AI studio for videos and images is being built. It will live right here, in the app and at this link.</p>
-  <div class="tag" id="tag">Coming soon</div>
-  <div><a class="btn" id="open" href="/lowispike/">Open LOWiSPIKE</a></div>
+  <div class="hero">
+    <span class="pill"><i aria-hidden="true"></i><span id="tag">Being built</span></span>
+    <h1 id="h">Your AI studio</h1>
+    <p class="sub" id="lead">Videos and images for your content, made right here in LOWiSPIKE. Here’s what’s coming.</p>
+  </div>
+  <ul class="card">
+    <li><span class="ic" aria-hidden="true">🎬</span><span class="tx"><b data-i="r1">Video ideas</b><span data-i="r1s">Hooks and scripts from your idea, ready to film</span></span><span class="soon" data-i="soon">Soon</span></li>
+    <li><span class="ic" aria-hidden="true">🖼️</span><span class="tx"><b data-i="r2">AI images</b><span data-i="r2s">Covers and thumbnails in your style</span></span><span class="soon" data-i="soon">Soon</span></li>
+    <li><span class="ic" aria-hidden="true">✂️</span><span class="tx"><b data-i="r3">Quick edits</b><span data-i="r3s">Cuts, captions and sound for TikTok</span></span><span class="soon" data-i="soon">Soon</span></li>
+  </ul>
+  <button type="button" class="btn" id="go">Get today’s video script</button>
+  <p class="hint" id="hint">Ready-made scripts are already in Affiliates.</p>
+  <a class="btn" id="open" href="/lowispike/">Open LOWiSPIKE</a>
 </main>
 <script>
 (function(){
-  if (/[?&]embed=1\b/.test(location.search)) document.body.classList.add('embed');
+  var embed = /[?&]embed=1\b/.test(location.search);
+  if (embed) document.body.classList.add('embed');
   var l = '';
   try { l = localStorage.getItem('lowispike.lang') || ''; } catch (e) {}
   if (!l) l = (navigator.language || 'en').slice(0, 2);
   var T = {
-    de: ['Dein eigenes KI-Studio f\u00fcr Videos und Bilder wird gerade gebaut. Es kommt genau hierher, in die App und unter diesen Link.', 'Kommt bald', 'LOWiSPIKE \u00f6ffnen'],
-    es: ['Tu propio estudio de IA para v\u00eddeos e im\u00e1genes se est\u00e1 construyendo. Estar\u00e1 aqu\u00ed mismo, en la app y en este enlace.', 'Muy pronto', 'Abrir LOWiSPIKE']
+    de: { tag: 'Wird gebaut', h: 'Dein KI-Studio', lead: 'Videos und Bilder f\u00fcr deinen Content, direkt hier in LOWiSPIKE. Das kommt:', r1: 'Video-Ideen', r1s: 'Hooks und Skripte aus deiner Idee, bereit zum Drehen', r2: 'KI-Bilder', r2s: 'Cover und Thumbnails in deinem Stil', r3: 'Schnelle Edits', r3s: 'Schnitte, Untertitel und Sound f\u00fcr TikTok', soon: 'Bald', go: 'Heutiges Video-Skript holen', hint: 'Fertige Skripte gibt es schon unter Affiliates.', open: 'LOWiSPIKE \u00f6ffnen' },
+    es: { tag: 'En construcci\u00f3n', h: 'Tu estudio de IA', lead: 'V\u00eddeos e im\u00e1genes para tu contenido, aqu\u00ed mismo en LOWiSPIKE. Esto es lo que viene.', r1: 'Ideas de v\u00eddeo', r1s: 'Ganchos y guiones a partir de tu idea, listos para grabar', r2: 'Im\u00e1genes con IA', r2s: 'Portadas y miniaturas con tu estilo', r3: 'Ediciones r\u00e1pidas', r3s: 'Cortes, subt\u00edtulos y sonido para TikTok', soon: 'Pronto', go: 'Obtener el guion de hoy', hint: 'Los guiones listos ya est\u00e1n en Afiliados.', open: 'Abrir LOWiSPIKE' }
   }[l];
-  if (T) { document.documentElement.lang = l; document.getElementById('lead').textContent = T[0]; document.getElementById('tag').textContent = T[1]; document.getElementById('open').textContent = T[2]; }
+  if (T) {
+    document.documentElement.lang = l;
+    ['tag', 'h', 'lead', 'go', 'hint', 'open'].forEach(function (k) { document.getElementById(k).textContent = T[k]; });
+    [].forEach.call(document.querySelectorAll('[data-i]'), function (n) { n.textContent = T[n.getAttribute('data-i')]; });
+  }
+  /* the one button does something real today: the Affiliates section, where the ready-made video scripts are */
+  document.getElementById('go').addEventListener('click', function () {
+    try { if (parent !== window && parent.LowiRoomsUI) { parent.LowiRoomsUI.showView('aff'); return; } } catch (e) {}
+    location.href = '../affiliates/' + (embed ? '?embed=1' : '');
+  });
 })();
 </script>
 </body>

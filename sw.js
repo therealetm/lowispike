@@ -21,7 +21,11 @@ self.addEventListener("activate", e => {
 });
 const scopePath = new URL(self.registration.scope).pathname;
 const PAGE_WAIT = 1500; /* ms a launch waits for the network before it opens the saved page */
-function isPage(req, url){ return req.mode === "navigate" || url.pathname === scopePath || url.pathname === scopePath + "index.html"; }
+/* Oct 21 (affiliate blueprint): only the app shell address is "the page". Before, every navigation counted, so opening another
+   page of the site (blueprint.html, 404.html) saved THAT page as the app shell, and the next slow or offline launch opened it
+   instead of the app. Other pages now go straight to the network, untouched by this worker. */
+function isShell(url){ return url.pathname === scopePath || url.pathname === scopePath + "index.html"; }
+function isPage(req, url){ return isShell(url); }
 async function stampPage(res){
   // The loaded HTML is authoritative; never relabel stale HTML as a new app build.
   return res;
@@ -38,6 +42,7 @@ self.addEventListener("fetch", e => {
     e.respondWith(fetch(req, {cache:"no-cache"}).then(res => { if (res.ok) { const cp = res.clone(); caches.open(CACHE).then(c => c.put(req, cp)); } return res; }).catch(() => caches.match(req).then(r => r || Response.error())));
     return;
   }
+  if (req.mode === "navigate" && !isShell(url)) return;
   if (isPage(req, url)) {
     /* Oct 21 (open instantly): still network first, but a launch no longer waits on a slow or half-dead connection. If the network
        has not answered within PAGE_WAIT, the copy of the page saved on the phone opens, and the network answer still refreshes that

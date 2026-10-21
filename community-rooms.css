@@ -32,3 +32,24 @@
 .rm-list button{appearance:none;border:0;border-radius:999px;padding:9px 16px;min-height:36px;background:#fff;color:#141836;font:600 13px/1 inherit;font-family:inherit;cursor:pointer}
 .rm-list em{font-style:normal;opacity:.7;font-size:13px}
 html.light .rm-card{background:#fff;color:#141836}
+/* 21 Oct: Creation + Affiliates tabs. The pane shows only the bar and that page (in a frame); the galaxy and chat are hidden, so they pause. */
+#cmPaneChat[data-spirit-chat]>.rm-view{display:none}
+#cmPaneChat[data-spirit-chat][data-rm-view]>*:not(.rm-bar):not(.rm-view){display:none!important}
+#cmPaneChat[data-spirit-chat][data-rm-view]>.rm-view{display:flex;flex-direction:column;gap:8px;position:relative;z-index:20;height:calc(100vh - 210px);height:calc(100dvh - 210px);min-height:380px;margin:0 2px}
+.rm-view-top{display:flex;justify-content:flex-end}
+.rm-copy{appearance:none;font:600 13px/1 inherit;font-family:inherit;color:#eaf6ff;min-height:36px;padding:0 14px;border-radius:999px;cursor:pointer;background:rgba(10,14,40,.55);border:1.5px solid rgba(143,231,255,.55);box-shadow:0 0 10px rgba(28,247,249,.2)}
+.rm-frame{flex:1;width:100%;min-height:0;border:1.5px solid rgba(143,231,255,.45);border-radius:16px;background:#03050a;box-shadow:0 0 16px rgba(28,247,249,.18)}
+.rm-frame[hidden]{display:none}
+.rm-tabs{max-width:100%;overflow-x:auto;scrollbar-width:none}
+.rm-tabs::-webkit-scrollbar{display:none}
+@media (max-width:430px){.rm-tab{padding:9px 9px;font-size:12.5px}}
+.rm-tab{white-space:nowrap;flex:none}
+/* 21 Oct: with four tabs the row reached under the theme button in the top right (#tbTheme), which swallowed taps on Affiliates.
+   So the room chip takes the first row (left, clear of the button) and the tabs get the full second row. A hidden chip still
+   keeps its row, so the tabs never slide up under the button. Same bar height as before. */
+#cmPaneChat[data-spirit-chat]>.rm-bar>.rm-chip{order:1;margin-left:0;margin-right:auto}
+#cmPaneChat[data-spirit-chat]>.rm-bar>.rm-chip[hidden]{display:inline-flex;visibility:hidden;pointer-events:none}
+#cmPaneChat[data-spirit-chat]>.rm-bar>.rm-tabs{order:2;flex:1 1 100%;display:flex}
+#cmPaneChat[data-spirit-chat]>.rm-bar>.rm-tabs>.rm-tab{flex:1 1 auto}
+#cmPaneChat[data-spirit-chat]>.rm-bar>.rm-banner{order:3}
+@media (max-width:360px){.rm-tab{padding:9px 8px;font-size:12.5px}}

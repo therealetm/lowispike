@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#03050a">
+<title>LOWiSPIKE Create</title>
+<meta name="description" content="LOWiSPIKE Create: your own AI studio for videos and images. Being built right now.">
+<link rel="canonical" href="https://therealetm.github.io/lowispike/create/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LOWiSPIKE">
+<meta property="og:title" content="LOWiSPIKE Create">
+<meta property="og:description" content="Your own AI studio for videos and images. Being built right now.">
+<meta property="og:url" content="https://therealetm.github.io/lowispike/create/">
+<meta property="og:image" content="https://therealetm.github.io/lowispike/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="/lowispike/icon-192.png">
+<link rel="apple-touch-icon" href="/lowispike/icon-180.png">
+<style>
+/* LOWiSPIKE Create (21 Oct 2026): its own address so it can be shared, and shown inside the app's Creation tab (?embed=1).
+   The studio itself is not built yet; this page says so plainly and offers nothing that does not work. */
+:root{--cyan:#8fe7ff;--teal:#1cf7f9;--ink:#eaf6ff;--muted:#a9bfd6}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+html{overflow-x:hidden;-webkit-text-size-adjust:100%}
+body{min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:max(24px,env(safe-area-inset-top)) 20px max(24px,env(safe-area-inset-bottom));
+  font:16px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);text-align:center;
+  background:radial-gradient(ellipse 70% 55% at 50% 38%,#0c265c 0%,#071636 45%,#03050a 100%) fixed,#03050a}
+body.embed{background:transparent}
+main{width:min(440px,100%)}
+.rings{position:relative;width:min(170px,44vw);aspect-ratio:1;margin:0 auto 30px}
+.rings i{position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(143,231,255,.55);box-shadow:0 0 18px rgba(28,247,249,.35),inset 0 0 18px rgba(28,247,249,.18)}
+.rings i:nth-child(2){inset:-16%;border-color:rgba(143,231,255,.26)}
+.rings b{position:absolute;inset:34%;border-radius:50%;background:radial-gradient(circle at 35% 30%,#bff6ff,#1cf7f9 40%,#0a5f8a 100%);box-shadow:0 0 26px rgba(28,247,249,.6)}
+.brand{font-size:13px;letter-spacing:.32em;text-transform:uppercase;color:var(--cyan);margin:0 0 8px;font-weight:600}
+h1{font-size:clamp(26px,7vw,34px);line-height:1.15;margin:0 0 12px}
+p{margin:0 auto 14px;color:var(--muted);max-width:34ch}
+.tag{display:inline-block;margin:6px 0 22px;padding:6px 14px;border-radius:999px;border:1.5px solid rgba(143,231,255,.55);font-size:14px;font-weight:600;color:var(--ink)}
+a.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 26px;border-radius:999px;text-decoration:none;font-weight:600;color:var(--ink);
+  background:linear-gradient(180deg,rgba(28,247,249,.20),rgba(22,184,138,.14));border:1.5px solid rgba(143,231,255,.7);box-shadow:0 0 16px rgba(28,247,249,.35)}
+a.btn:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+body.embed a.btn{display:none}
+</style>
+</head>
+<body>
+<main>
+  <div class="rings" aria-hidden="true"><i></i><i></i><b></b></div>
+  <div class="brand">LOWiSPIKE</div>
+  <h1>Create</h1>
+  <p id="lead">Your own AI studio for videos and images is being built. It will live right here, in the app and at this link.</p>
+  <div class="tag" id="tag">Coming soon</div>
+  <div><a class="btn" id="open" href="/lowispike/">Open LOWiSPIKE</a></div>
+</main>
+<script>
+(function(){
+  if (/[?&]embed=1\b/.test(location.search)) document.body.classList.add('embed');
+  var l = '';
+  try { l = localStorage.getItem('lowispike.lang') || ''; } catch (e) {}
+  if (!l) l = (navigator.language || 'en').slice(0, 2);
+  var T = {
+    de: ['Dein eigenes KI-Studio f\u00fcr Videos und Bilder wird gerade gebaut. Es kommt genau hierher, in die App und unter diesen Link.', 'Kommt bald', 'LOWiSPIKE \u00f6ffnen'],
+    es: ['Tu propio estudio de IA para v\u00eddeos e im\u00e1genes se est\u00e1 construyendo. Estar\u00e1 aqu\u00ed mismo, en la app y en este enlace.', 'Muy pronto', 'Abrir LOWiSPIKE']
+  }[l];
+  if (T) { document.documentElement.lang = l; document.getElementById('lead').textContent = T[0]; document.getElementById('tag').textContent = T[1]; document.getElementById('open').textContent = T[2]; }
+})();
+</script>
+</body>
+</html>

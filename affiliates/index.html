@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#03050a">
+<meta name="robots" content="noindex">
+<title>Affiliates · Master Blueprint · LOWiSPIKE</title>
+<meta name="description" content="Dein Tagesvideo für die 30-Tage-Challenge: Skript, Shotliste, Checkliste und deine Zahlen. Alles bleibt auf deinem Gerät.">
+<link rel="canonical" href="https://therealetm.github.io/lowispike/affiliates/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LOWiSPIKE">
+<meta property="og:title" content="LOWiSPIKE Affiliates · Master Blueprint">
+<meta property="og:description" content="Dein Tagesvideo für die 30-Tage-Challenge: Skript, Shotliste, Checkliste und deine Zahlen.">
+<meta property="og:url" content="https://therealetm.github.io/lowispike/affiliates/">
+<meta property="og:image" content="https://therealetm.github.io/lowispike/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="/lowispike/icon-192.png">
+<link rel="apple-touch-icon" href="/lowispike/icon-180.png">
+<link rel="stylesheet" href="blueprint.css">
+</head>
+<body>
+<div class="wrap" id="app">
+  <header class="top">
+    <div class="grow">
+      <div class="brand">LOWiSPIKE Affiliates</div>
+      <h1>Master Blueprint</h1>
+      <p class="sub">Ein Video pro Tag. Produkt wählen, Fakten eintragen, Skript und Shotliste aufnehmen, posten, Zahlen festhalten.</p>
+    </div>
+    <button type="button" class="ghost" id="shareLink">Link teilen</button>
+  </header>
+  <noscript><p class="card">Diese Seite braucht JavaScript.</p></noscript>
+  <div class="tabs" role="tablist" aria-label="Bereiche">
+    <button type="button" role="tab" id="tabToday" aria-controls="viewToday" aria-selected="true">Heutiges Video</button>
+    <button type="button" role="tab" id="tabNumbers" aria-controls="viewNumbers" aria-selected="false">Meine Zahlen</button>
+  </div>
+  <section id="viewToday" role="tabpanel" aria-labelledby="tabToday"></section>
+  <section id="viewNumbers" role="tabpanel" aria-labelledby="tabNumbers" hidden></section>
+  <footer>
+    <p>Alles, was du hier einträgst, bleibt nur auf diesem Gerät in diesem Browser. Diese Seite sieht weder Beacons noch TikTok: Klicks und Verkäufe trägst du selbst ein. Die 30.000 € sind das Ziel der Challenge, kein versprochenes Ergebnis.</p>
+  </footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<script src="blueprint-core.js"></script>
+<script src="blueprint.js"></script>
+</body>
+</html>

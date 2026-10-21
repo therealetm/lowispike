@@ -297,9 +297,9 @@
             id: 'community', area: 'together', target: ['#whHud .o8-settings'], covers: ['community'],
             title: { en: 'Community', de: 'Community', es: 'Comunidad' },
             text: {
-                en: 'Community is where you meet everyone else and their companions. It’s in Settings, under Everything else.',
-                de: 'In der Community triffst du alle anderen und ihre Begleiter. Du findest sie in den Einstellungen unter Alles andere.',
-                es: 'En Comunidad conoces a todos los demás y a sus compañeros. Está en Ajustes, en Todo lo demás.'
+                en: 'Community is where you meet everyone else and their companions. It’s in Settings, under Everything else. Its tabs at the top are Room, Chat, Creation and Affiliates.',
+                de: 'In der Community triffst du alle anderen und ihre Begleiter. Du findest sie in den Einstellungen unter Alles andere. Oben sind die Tabs Raum, Chat, Erstellen und Affiliates.',
+                es: 'En Comunidad conoces a todos los demás y a sus compañeros. Está en Ajustes, en Todo lo demás. Arriba están las pestañas Sala, Chat, Crear y Afiliados.'
             }
         },
         {

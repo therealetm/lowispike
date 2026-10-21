@@ -19,7 +19,7 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 7;
+    const VERSION = 8;
     const AREAS = ['you', 'home', 'food', 'play', 'companion', 'together', 'settings', 'extras', 'end'];
     const STEPS = [
         /* ---------- part: you (your companion) ---------- */
@@ -94,9 +94,9 @@
             id: 'gap', area: 'home', target: ['#spFast'], covers: ['gap'],
             title: { en: 'Gap', de: 'Gap', es: 'Gap' },
             text: {
-                en: 'Gap counts the hours since your last real meal. It shows a dash until your first meal.',
-                de: 'Gap zählt die Stunden seit deiner letzten echten Mahlzeit. Bis zur ersten Mahlzeit steht dort ein Strich.',
-                es: 'Gap cuenta las horas desde tu última comida de verdad. Muestra un guion hasta tu primera comida.'
+                en: 'Gap counts the hours since your last real meal. Until your first meal it says "no meal yet".',
+                de: 'Gap zählt die Stunden seit deiner letzten echten Mahlzeit. Bis zur ersten Mahlzeit steht dort „noch kein Essen“.',
+                es: 'Gap cuenta las horas desde tu última comida de verdad. Hasta tu primera comida dice «sin comida aún».'
             }
         },
         {
@@ -112,9 +112,9 @@
             id: 'fuel', area: 'home', target: ['#whHud .wh-meals'], covers: ['fuel', 'cook', 'shop'],
             title: { en: 'Fuel', de: 'Essen', es: 'Comida' },
             text: {
-                en: 'Fuel is everything about food. Log meal is for what you ate, Shop checks products in the shop and keeps your list, Cook has meal ideas.',
-                de: 'Essen ist alles rund ums Essen. Mahlzeit eintragen ist für das, was du gegessen hast, Einkaufen prüft Produkte im Laden und führt deine Liste, Kochen hat Ideen fürs Essen.',
-                es: 'Comida es todo lo relacionado con comer. Registrar comida es para lo que comiste, Comprar revisa productos en la tienda y guarda tu lista, Cocinar tiene ideas de comidas.'
+                en: 'Fuel is everything about food. "1/3 meals" means one of today\'s three meals is logged. Log meal is for what you ate, Shop checks products in the shop and keeps your list, Cook has meal ideas.',
+                de: 'Essen ist alles rund ums Essen. „1/3 Mahlzeiten“: eine von drei ist drin. Mahlzeit eintragen ist für das, was du gegessen hast, Einkaufen prüft Produkte und führt deine Liste, Kochen hat Ideen.',
+                es: 'Comida es todo lo relacionado con comer. «1/3 comidas»: llevas una de tres. Registrar comida es para lo que comiste, Comprar revisa productos en la tienda y guarda tu lista, Cocinar tiene ideas de comidas.'
             }
         },
         {

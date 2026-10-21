@@ -252,6 +252,8 @@ html:root body .r2-ov.ss-sheet:not(.full) .sp-earned { background: rgba(255, 255
 html:root body .r2-ov.ss-sheet .sp-slot-q { margin: 2px 0 12px; color: rgba(225, 235, 255, .78); font-size: 15px; }
 /* Oct 21 one meal path: while a fast runs, Log meal says saving ends it (and the points). A thin brand-cyan line, no fill, no icon circle. */
 html:root body .r2-ov.ss-sheet .sp-fast-note { margin: -4px 0 12px; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--ms-line-soft, rgba(170, 214, 255, .26)); color: var(--ms-accent, #8fd8ff); font-size: 13.5px; font-weight: 600; line-height: 1.35; }
+/* Oct 21 scanner result on the one meal path: the photo result screen repeats Log meal's fast line right under its XP, same thin cyan rim */
+html:root body .r2-ov.ss-sheet .mr .sp-fast-note.mr-fast { margin: 8px 0 4px; }
 html:root body .r2-ov.ss-sheet .sp-slots { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 html:root body .r2-ov.ss-sheet .sp-slot { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 112px; padding: 14px 8px; border-radius: 24px; border: 1px solid var(--ms-line-soft, rgba(170, 214, 255, .26)); background: rgba(255, 255, 255, .08); color: #fff; font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; animation: spSlotIn .42s cubic-bezier(.2, .9, .3, 1.15) both; animation-delay: calc(var(--i, 0) * 55ms); transition: transform .14s ease, background .2s ease; touch-action: manipulation; }
 html:root body .r2-ov.ss-sheet .sp-slot:active { transform: scale(.94); }

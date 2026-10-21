@@ -163,3 +163,11 @@ test('wiring: photo result mounts it, the log keeps its verdict, edits never sen
     assert.match(html, /if \(!spike\) questDone\("eat"\)/, 'the eat quest rule the preview mirrors');
     assert.doesNotMatch(mr, /fetch\(|XMLHttpRequest|\.analyse\(|LowiFoodAI/, 'fixing a food or adding a drink must not use a photo check');
 });
+
+test('one meal path kept: the result screen repeats the live fast line, never its own fast math', () => {
+    const mr = read('meal-result.js'), css = read('scan-screens.css');
+    assert.match(mr, /window\.LowiFastStop\.mealNote\(\)/, 'uses the same note Log meal shows');
+    assert.match(mr, /fastLine\(\) \+/, 'the fast line sits in the result footer');
+    assert.doesNotMatch(mr, /mealLogged\(|LowiFastStop\.end\(|points\(/, 'ending the fast stays in index.html mealLogged, so nothing pays twice');
+    assert.match(css, /\.mr \.sp-fast-note\.mr-fast/);
+});

@@ -276,6 +276,13 @@
         return { big, small };
     }
 
+    /* one meal path (build 20261021-151646, kept as is): saving any meal while a fast runs ends that fast with its points once.
+       The result screen is where Snap's save happens, so it repeats the same line Log meal shows (LowiFastStop.mealNote), never its own math. */
+    function fastLine() {
+        let n = '';
+        try { n = typeof window !== 'undefined' && window.LowiFastStop && window.LowiFastStop.mealNote ? window.LowiFastStop.mealNote() : ''; } catch (e) { n = ''; }
+        return n ? '<p class="sp-fast-note mr-fast" data-noi18n>' + esc(n) + '</p>' : '';
+    }
     // What Log as meal saves: totals, the verdict level (the log's lvl, so XP matches) and the name.
     function formValues(items, drinks, l) {
         const all = (items || []).concat(drinks || []);
@@ -357,6 +364,7 @@
             const tot = v.total;
             const foot = v.empty ? '<p class="fai-msg mr-empty">' + esc(t('none', l)) + '</p>' :
                 '<div class="mr-xp mr-xp-' + (x.xp ? 'on' : 'zero') + '" aria-live="polite"><b>' + esc(xpText(x, l).big) + '</b><span>' + esc(xpText(x, l).small) + '</span></div>' +
+                fastLine() +
                 '<p class="mr-tot"><b>' + esc(t('total', l)) + '</b> ' + Math.round(tot.kcal) + ' ' + esc(t('kcal', l)) + ' · ' + macroLine(tot, l) + '</p>' +
                 '<p class="fai-msg mr-est">' + esc(opts.low ? t('lowConf', l) + ' ' + t('est', l) : t('est', l)) + (opts.note ? ' ' + esc(opts.note) : '') + '</p>';
             box.className = 'sp-ai fai fai-done mr';

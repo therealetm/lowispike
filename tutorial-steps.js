@@ -19,7 +19,7 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 4;
+    const VERSION = 5;
     const AREAS = ['you', 'home', 'food', 'play', 'companion', 'together', 'settings', 'extras', 'end'];
     const STEPS = [
         /* ---------- part: you (your companion) ---------- */
@@ -167,9 +167,9 @@
             id: 'snap', area: 'food', target: ['#whHud .o8-scan'], covers: ['snap-food'],
             title: { en: 'Snap food', de: 'Essen fotografieren', es: 'Foto de comida' },
             text: {
-                en: 'Snap is inside Log meal (in Fuel, and in Scan next to Barcode): pick the meal, tap Snap, and I read the photo of your plate. Check the numbers, then log it.',
-                de: 'Das Foto steckt in Mahlzeit eintragen (unter Essen und in Scannen neben Barcode): Mahlzeit wählen, Foto tippen, und ich lese das Bild deines Tellers. Prüf die Werte und trag sie ein.',
-                es: 'La foto está dentro de Registrar comida (en Comida y en Escanear junto a Código): elige la comida, toca Foto y leo la imagen de tu plato. Revisa los números y regístrala.'
+                en: 'Snap is inside Log meal (in Fuel, and in Scan next to Barcode): pick the meal, tap Snap. The spike answer comes first, then each food on its own card. Tap one to fix it, then log it.',
+                de: 'Foto steckt in Mahlzeit eintragen (unter Essen und in Scannen): Mahlzeit wählen, Foto tippen. Zuerst kommt die Spike-Antwort, dann jedes Essen als Karte. Antippen zum Korrigieren, dann eintragen.',
+                es: 'La foto está en Registrar comida (en Comida y en Escanear): elige la comida y toca Foto. Primero va la respuesta del pico, luego cada alimento en su tarjeta. Toca uno para corregirlo y regístrala.'
             }
         },
         {

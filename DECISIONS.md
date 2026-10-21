@@ -812,3 +812,22 @@ After, one rule (`LowiFastStop.mealLogged`, the one `lowi:meal-logged` listener 
 UI: Scan's bottom bar is Barcode (check a product) and Log meal (I'm eating). Snap food left the bar; it is the Snap button inside Log meal (same camera, same log). While a fast runs, Log meal (slot picker and the Write / Scan / Snap sheet) shows one brand-line note: "Saving this ends your 16 h fast · +N XP" (under 4 h: "restarts your gap clock"). The Gap chain's question now reads "Fast ended and points saved. Want to add what you ate? A photo or a few words, or skip." The photo result screen itself is untouched (another task is redesigning it); it stays the destination of Snap.
 
 Tutorial steps gap-tap, log-meal and snap updated (VERSION 4). Checks: `tests/one-meal-path.test.cjs` (10, runs the real fasting module), updated no-fake-fast / food-paths / orb-scan; browser `tests/one-meal-path-live.cjs` (Chromium 375/390/820, WebKit iPhone SE / 13 / iPad: Scan bar, the note, saving ends the fast once with the reward, "I just ate" after changes nothing).
+
+## 2026-10-21 15:50 CEST: Scanner result redesign merged onto the one meal path (decided by the agent)
+
+Emmanuel: "Stop asking me questions. Create a decision criteria and make the decision and push it."
+
+Decision criteria, written before the merge, applied in this order:
+1. Keep build 20261021-151646's single Log meal path exactly: saving any meal ends a running fast once, with its points, the +10 break-fast bonus rule and the no-double-pay guards. It is live and tested, so the redesign may not touch that logic.
+2. The redesign owns only the photo result screen layout: spike verdict first and largest, then each detected food as its own editable card (portion, calories), drinks, per-item fixes that move the totals and the XP.
+3. Brand: cyan / brand-blue lines and glow, no gold or beige; amber only as the traffic-light colour of a medium spike.
+4. One question per screen ("Will this spike me?") and numbers that always add up: the XP and totals shown are the ones the log gives.
+5. Where the two overlap, pick whatever keeps one path, fewer taps and consistent totals.
+
+What was decided:
+- Merge conflicts in index.html and sw.js were build-id strings only: live main's ids kept, meal-result.js and `mealQuestXp` re-added.
+- Overlap: the result screen is where Snap's save happens, but it did not say that saving ends the fast. By 1 and 4 it now repeats the same line Log meal shows (`LowiFastStop.mealNote`, e.g. "Saving this ends your 16 h fast · +77 XP") right under the meal XP, in the same thin cyan rim. It shows the line only; the fast still ends in `mealLogged`, so nothing pays twice and the meal XP and the fast XP stay separate, each true.
+- No extra tap and no second save button: Snap inside Log meal ends on the redesigned result screen, "Log as meal" saves, Fast done follows.
+- Scan's bar (Barcode + Log meal) and Log meal's slot picker are unchanged.
+
+Checks: `tests/meal-result.test.cjs` (9, one new for the fast line).

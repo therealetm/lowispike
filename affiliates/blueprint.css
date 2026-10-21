@@ -180,3 +180,18 @@ footer{color:var(--muted);font-size:13px;margin:22px 4px 0;line-height:1.5}
 .card.recruit .label{margin:0 0 6px}
 .recruit-you{margin:8px 0 0;font-weight:650}
 .card.recruit{margin-top:22px}
+/* ---------- third track: LOWiSPIKE 30-day challenge (21 Oct) ---------- */
+.scene .shot.cook{color:#ffd28f}
+/* Three tracks in the top bar: the switch takes the free width and its buttons share it. */
+.bar .seg{flex:1 1 auto;min-width:0;display:flex}
+.bar .seg button{flex:1 1 auto;min-width:0;padding:0 6px;font-size:13px;overflow:hidden;text-overflow:ellipsis}
+.bar .seg+.fab.share{margin-left:0}
+@media (max-width:360px){.bar .seg{padding:3px;gap:1px}.bar .seg button{padding:0 3px;font-size:12px;letter-spacing:-.015em}}
+@media (max-width:300px){.bar{flex-wrap:wrap}.bar .seg{order:9;flex-basis:100%}.bar .seg+.fab.share{margin-left:auto}.bar .seg button{font-size:13.5px}}
+.day-card{display:flex;flex-direction:column;gap:10px}
+.day-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.day-row .fab.day-btn{margin:0;display:grid;place-items:center;font-size:24px;line-height:1}
+.day-row .fab.day-btn:disabled{opacity:.35}
+.day-now{font-size:20px;font-weight:750;letter-spacing:-.01em}
+.day-line{margin:0;font-size:16px;line-height:1.45}
+.day-card .label,.day-card .note{margin:0}

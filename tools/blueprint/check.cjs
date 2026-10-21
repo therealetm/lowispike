@@ -83,8 +83,10 @@ async function standalone(base, sz) {
     if ((await page.$$('#startList .row')).length !== 3) fail(W, 'start card rows');
     if ((await page.getAttribute('#pick-webdesign', 'aria-pressed')) !== 'true') fail(W, 'Webdesign not preselected');
     await layout(page, W, 'start');
+    const cut = await page.evaluate(() => [...document.querySelectorAll('.bar .seg button')].filter(b => b.offsetParent && b.scrollWidth > b.clientWidth + 1).map(b => b.textContent));
+    if (cut.length) fail(W, 'track switch labels cut off: ' + cut.join(', '));
     await page.screenshot({ path: path.join(OUT, sz.name + '-1-start.png'), fullPage: true });
-    for (const [id, must] of [['webdesign', ['Lead-Skill', 'Proposal-Skill', 'Glaubt ihr, dass ich damit den Kunden lande?', '[Branche]', 'Webdesign']], ['ugc', ['[Anzahl] potenzielle Sponsoren', '[Marke]', 'Agency-Skill', 'Sponsor']]]) {
+    for (const [id, must] of [['webdesign', ['Lead-Skill', 'Proposal-Skill', 'Glaubt ihr, dass ich damit den Kunden lande?', '[Branche]', 'Webdesign']], ['ugc', ['[Anzahl] potenzielle Sponsoren', '[Marke]', 'Agency-Skill', 'Sponsor']], ['lowispike', ['Tag [X] von 30', '[Essen]', '\u201eLOWISPIKE\u201c', B.t('de', 'freeTrack')]]]) {
       if (id === 'webdesign') { await page.click('#startBtn'); } else { await page.click('#sw-' + id); }
       await page.waitForSelector('#scriptView:not([hidden]) #scriptCard');
       if ((await page.getAttribute('#sw-' + id, 'aria-pressed')) !== 'true') fail(W, id + ' not pressed');
@@ -92,6 +94,14 @@ async function standalone(base, sz) {
       for (const k of must) if (!txt.includes(k)) fail(W, id + ' script misses ' + k);
       if (/fehlt|FEHLT/.test(txt)) fail(W, id + ' has gaps');
       if (!(await page.isVisible('#copyScript'))) fail(W, id + ' copy script button');
+      if (id === 'lowispike') { /* the 30-day challenge: day stepper fills the day and swaps the follow line */
+        if ((await page.textContent('#dayNow')) !== B.t('de', 'dayOf', { n: 1 }) || !(await page.isDisabled('#dayPrev'))) fail(W, 'day 1 start');
+        await page.click('#dayNext');
+        if ((await page.textContent('#dayNow')) !== B.t('de', 'dayOf', { n: 2 })) fail(W, 'day stepper');
+        const fl = B.followLine('lowispike', 'de', 2).replace(/\[[^\]]+\]/g, '').slice(0, 25);
+        if (!(await page.textContent('#dayLine')).includes(fl)) fail(W, 'follow line of day 2');
+        if ((await page.evaluate(() => document.activeElement && document.activeElement.id)) !== 'dayNext') fail(W, 'day focus lost');
+      }
       await layout(page, W, id + ' script');
       await page.screenshot({ path: path.join(OUT, sz.name + '-2-' + id + '.png'), fullPage: true });
       await page.click('#toShots');

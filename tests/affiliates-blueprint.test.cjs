@@ -7,7 +7,7 @@ const root = path.resolve(__dirname, '..');
 const read = f => fs.readFileSync(path.join(root, f), 'utf8');
 
 test('two series: Webdesign (AI Website Client System) and UGC (AI Sponsoren-Agent), same price, own keyword', () => {
-  assert.deepEqual(B.ORDER, ['webdesign', 'ugc']);
+  assert.deepEqual(B.ORDER, ['webdesign', 'ugc', 'lowispike']); // third track: the 30-day LOWiSPIKE shuffle challenge (21 Oct)
   assert.equal(B.SERIES.webdesign.product, 'AI Website Client System'); assert.equal(B.SERIES.webdesign.keyword, 'Webdesign');
   assert.equal(B.SERIES.ugc.product, 'AI Sponsoren-Agent'); assert.equal(B.SERIES.ugc.keyword, 'Sponsor');
   assert.equal(B.SERIES.webdesign.price, 99); assert.equal(B.SERIES.ugc.price, 99);
@@ -16,9 +16,9 @@ test('two series: Webdesign (AI Website Client System) and UGC (AI Sponsoren-Age
 test('each script is complete: on-screen title, talking head opening, laptop scenes, outro with the keyword CTA', () => {
   for (const id of B.ORDER) {
     const s = B.SERIES[id];
-    assert.match(s.onScreen, /^Tag \[X\] auf dem Weg zu 30\.000/);
+    assert.match(s.onScreen, id === 'lowispike' ? /^Tag \[X\] von 30 Tagen/ : /^Tag \[X\] auf dem Weg zu 30\.000/);
     assert.equal(s.scenes[0].shot, 'talk'); assert.equal(s.scenes.at(-1).shot, 'outro');
-    assert.ok(s.scenes.slice(1, -1).every(x => x.shot === 'screen'));
+    assert.ok(s.scenes.slice(1, -1).every(x => x.shot === 'screen' || (id === 'lowispike' && (x.shot === 'cook' || x.shot === 'talk'))));
     assert.ok(s.scenes.every(x => x.lines.length && x.lines.every(l => l.trim().length > 0)));
     assert.ok(s.scenes.at(-1).lines.join(' ').includes('\u201e' + s.keyword + '\u201c'));
     assert.ok(s.caption.includes('\u201e' + s.keyword + '\u201c') && /#werbung/.test(s.caption), 'caption carries keyword and ad label');
@@ -69,7 +69,7 @@ test('page: WhatsApp line on top, two cards, tip, earnings; the old tools are go
   assert.match(html, /id="seriesCards"/); assert.match(html, /id="scriptView"/); assert.match(html, /id="earnView"/);
   assert.ok(/HeyGen/.test(html) && /Higgsfield/.test(html) && /Pers\u00f6nlichkeit/.test(html) && /kostenlos/.test(html));
   assert.equal(B.t('de', 'copyScript'), 'Skript kopieren'); assert.equal(B.t('de', 'copyCaption'), 'Caption kopieren'); // texts live in blueprint-core STRINGS (EN/DE/ES) since the page follows the app language
-  for (const gone of ['Link kopieren', 'Beacons', 'shuffle', 'Zufall l\u00e4uft', 'Fakten von heute', 'Tag 1 von 30', 'Als gepostet', 'Meine Zahlen', 'Sponsoren-Agent:', 'type="url"', 'addSale', 'checklist', 'Noch '])
+  for (const gone of ['Link kopieren', 'Beacons', 'Zufall l\u00e4uft', 'Fakten von heute', 'Tag 1 von 30', 'Als gepostet', 'Meine Zahlen', 'Sponsoren-Agent:', 'type="url"', 'addSale', 'checklist', 'Noch '])
     assert.ok(!all.includes(gone), 'still has: ' + gone);
   // localStorage is back on purpose (21 Oct): it only holds the app language and the affiliate's own id for the share link
   assert.ok(!/localStorage\.setItem\((?!k)/.test(js), 'no other saved data');

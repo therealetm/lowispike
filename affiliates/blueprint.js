@@ -94,7 +94,7 @@
     return h('button', { type: 'button', class: 'fab share', id, 'aria-label': T('share'), title: T('share'), onclick: share }, svg);
   }
 
-  /* Segmented control (Webdesign | UGC). The one on the start screen keeps the ids pick-<series>. */
+  /* Segmented control (Webdesign | UGC | LOWiSPIKE). The one on the start screen keeps the ids pick-<series>. */
   function seg(prefix, label) {
     return h('div', { class: 'seg', role: 'group', 'aria-label': label || T('pickSeries') }, B.ORDER.map(id => h('button', {
       type: 'button', id: prefix + id, 'aria-pressed': String(pick === id), onclick: () => { if (pick !== id) { pick = id; render(); sync(); } }
@@ -145,6 +145,20 @@
     gateMsg = ''; render(); toast(T('unlocked'));
     const t = $(VIEWS[view]).querySelector('h1'); if (t && t.focus) t.focus({ preventScroll: true });
   }
+  /* LOWiSPIKE 30-day challenge: pick the day you film; the copy fills it in and the day's follow line changes with it. */
+  let day = 1;
+  function dayCard(s) {
+    const set = n => { day = Math.min(30, Math.max(1, n)); renderScript(); const b = $(n < day ? 'dayPrev' : 'dayNext'); if (b) b.focus(); };
+    const vals = { day };
+    return h('div', { class: 'card day-card', id: 'dayCard' },
+      h('div', { class: 'day-row' },
+        h('button', { type: 'button', class: 'fab day-btn', id: 'dayPrev', 'aria-label': T('dayPrev'), disabled: day <= 1 ? '' : null, onclick: () => set(day - 1) }, h('span', { 'aria-hidden': 'true', text: '\u2212' })),
+        h('b', { class: 'day-now', id: 'dayNow', 'aria-live': 'polite', text: T('dayOf', { n: day }) }),
+        h('button', { type: 'button', class: 'fab day-btn', id: 'dayNext', 'aria-label': T('dayNext'), disabled: day >= 30 ? '' : null, onclick: () => set(day + 1) }, h('span', { 'aria-hidden': 'true', text: '+' }))),
+      h('div', { class: 'label', text: day === 30 ? T('outroHead') : T('followToday') }),
+      h('p', { class: 'day-line', id: 'dayLine' }, withPh(B.fill(day === 30 ? s.outro30 : B.followLine(pick, lang, day), s.vars, vals))),
+      h('p', { class: 'note', text: T('freeTrack') }));
+  }
   function renderScript() {
     const v = $('scriptView'); v.textContent = '';
     const s = S[pick], open = isOpen(pick);
@@ -160,9 +174,10 @@
       h('p', { class: 'lead', text: T('scriptLead', { title: s.title, product: s.product, ph: B.placeholders(pick, lang).slice(0, 2).join(T('or')) }) })));
     if (open) v.appendChild(h('div', { class: 'card onscreen-card' }, h('div', { class: 'label', text: T('onScreen') }), h('div', { class: 'onscreen' }, withPh(s.onScreen))));
     else v.appendChild(h('span', { class: 'pill preview', text: T('preview') }));
+    if (open && s.follow) v.appendChild(dayCard(s));
     v.appendChild(h('div', { class: 'card list', id: 'scriptCard' }, scenes));
     if (!open) { v.appendChild(gate('')); return; }
-    v.appendChild(h('button', { type: 'button', class: 'primary', id: 'copyScript', onclick: () => copy(B.scriptText(pick, lang), T('scriptCopied')) }, T('copyScript')));
+    v.appendChild(h('button', { type: 'button', class: 'primary', id: 'copyScript', onclick: () => copy(B.scriptText(pick, lang, s.follow ? { day } : null), T('scriptCopied')) }, T('copyScript')));
     v.appendChild(h('button', { type: 'button', class: 'secondary', id: 'toShots', onclick: () => go('shots') }, T('toShots'), h('span', { 'aria-hidden': 'true', text: '→' })));
   }
   function renderShots() {

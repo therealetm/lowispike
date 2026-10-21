@@ -173,7 +173,7 @@
   const ORDER = ['webdesign', 'ugc', 'lowispike'];
   /* LOWiSPIKE carries its own copy per language (langs.en/de/es). Its top level mirrors the German copy, like the other two
      series, so callers that read SERIES[id].scenes / .shots / .caption keep working. */
-  (function () { const L = SERIES.lowispike, LD = L.langs.de; L.blurb = LD.blurb; L.onScreen = LD.onScreen; L.scenes = LD.scenes; L.shots = LD.shots; L.caption = LD.caption; })();
+  (function () { const L = SERIES.lowispike, LD = L.langs.de; L.blurb = LD.blurb; L.onScreen = LD.onScreen; L.scenes = LD.scenes; L.shots = LD.shots; L.caption = LD.caption; L.vars = LD.vars; L.follow = LD.follow; L.followLead = LD.followLead; L.outro30 = LD.outro30; })();
   function langsOf(id) { const s = SERIES[id]; return s && s.langs ? LANGS.filter(l => s.langs[l]) : LANGS.slice(); }
   function copyOf(id, lang) { const s = SERIES[id]; if (!s) return null; return s.langs ? (s.langs[normLang(lang)] || s.langs.de) : (series(lang)[id]); }
   /* Swap the plug-in variables into a text: { day: 7, food: 'Lachs', rating: 8, spike: 'Low spike' }. Unknown ones stay bracketed. */
@@ -368,7 +368,12 @@
     recruitHow: ['Share any page with the share button: your link is in it. Eman checks the buys and videos and counts your recruits.', 'Teile eine Seite mit dem Teilen-Knopf: dein Link steckt darin. Eman prüft Käufe und Videos und zählt deine Recruits.', 'Comparte cualquier página con el botón de compartir: tu enlace va dentro. Eman revisa compras y vídeos y cuenta tus reclutas.'],
     /* Third track: LOWiSPIKE, the 30-day shuffle challenge (21 Oct 2026). */
     followHead: ['Follow line (a different one each day, before the comment line):', 'Folge-Zeile (jeden Tag eine andere, vor dem Kommentar-Satz):', 'Frase de seguir (una distinta cada d\u00eda, antes de la frase del comentario):'],
-    outroHead: ['Outro for day 30:', 'Outro f\u00fcr Tag 30:', 'Cierre del d\u00eda 30:']
+    outroHead: ['Outro for day 30:', 'Outro f\u00fcr Tag 30:', 'Cierre del d\u00eda 30:'],
+    dayOf: ['Day {n} of 30', 'Tag {n} von 30', 'D\u00eda {n} de 30'],
+    dayPrev: ['Previous day', 'Tag davor', 'D\u00eda anterior'],
+    dayNext: ['Next day', 'N\u00e4chster Tag', 'D\u00eda siguiente'],
+    followToday: ['Today\u2019s follow line:', 'Folge-Zeile f\u00fcr heute:', 'Frase de seguir de hoy:'],
+    freeTrack: ['The app is free for your viewers. You earn when people who join through your link buy inside LOWiSPIKE.', 'Die App ist f\u00fcr deine Zuschauer gratis. Du verdienst, wenn Leute, die \u00fcber deinen Link kommen, in LOWiSPIKE etwas kaufen.', 'La app es gratis para tus espectadores. Ganas cuando quien entra por tu enlace compra dentro de LOWiSPIKE.']
   };
   function t(lang, key, vars) {
     const i = Math.max(0, LANGS.indexOf(normLang(lang)));

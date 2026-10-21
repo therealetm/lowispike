@@ -591,6 +591,19 @@
             el.hidden = !list.length;
             inp.setAttribute('aria-expanded', list.length ? 'true' : 'false');
             inp.removeAttribute('aria-activedescendant');
+            if (list.length) reveal(el, inp);
+        };
+        // the list sits under the field: scroll the sheet so it is above the keyboard, without pushing the field off the top
+        const reveal = (el, inp) => {
+            try {
+                const vv = root.visualViewport, top = vv ? vv.offsetTop : 0, H = vv ? vv.height + vv.offsetTop : root.innerHeight;
+                const over = el.getBoundingClientRect().bottom + 8 - H;
+                if (over <= 0) return;
+                let sc = el.parentElement;
+                while (sc && sc !== document.body) { const cs = getComputedStyle(sc); if (/(auto|scroll)/.test(cs.overflowY) && sc.scrollHeight > sc.clientHeight) break; sc = sc.parentElement; }
+                if (!sc || sc === document.body) return;
+                sc.scrollTop += Math.max(0, Math.min(over, inp.getBoundingClientRect().top - top - 12));
+            } catch (e) { }
         };
         const sugFor = (li, id) => {
             const inp = li && li.querySelector('[data-mr-name]');

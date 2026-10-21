@@ -898,3 +898,13 @@ Eman: "confusing, why is it so complicated". The page (`affiliates/`, also the C
 Removed with their code and tests: niche generator, daily facts forms, checklist and day stepper, posting tracking, "Meine Zahlen" and manual sales, the agent prompt, the monthly-fee line. Nothing is stored on the device any more (the old `lowi.affiliates.v1` key is left alone).
 
 Checks: `tests/affiliates-blueprint.test.cjs` rewritten; browser `tools/blueprint/check.cjs` (LIVE=1 checks the live site).
+
+## 2026-10-21 — The grandma test for every screen and ad
+
+**Status:** Accepted
+
+**Context:** Emmanuel sent a TikTok (Jared Roars reacting to Graydon's Digital Marketing): "Every time you make an edit to your website or an ad, think: would a drunk grandma understand this? If not, simplify it. People need to understand what you're selling and how it benefits them." An audit of the everyday screens at iPhone 13 size found bare numbers and missing words: the Fuel bubble read "1/3" with no unit, an empty Gap bubble was a lone dash with no label for screen readers, the Gap planets carried bare numbers (0, 3, 8, 12, 14, 16) that are hours, the "Today's stats" strip ended in "1/6" with no "of what", the Move note led with a disclaimer instead of the question, the Deep analyze subtitle described the mechanism ("the AI reads it here") instead of the benefit, the first fly hint packed three gestures into one line, and the sleep question could be dropped when it did not fit on one side of the chips.
+
+**Decision:** Copy follows the grandma test written into `AGENTS.md`: what it is and what you get, at a glance; units on numbers; words in empty states; the question beside the choices; benefits in subtitles. Feature names Emmanuel chose (Fuel, Gap, Scan, Move, Epic, Deep analyze) stay and get explained beside the name. The first-visit funnel (install guide, sign-up, companion setup) is covered by the companion decision from the other video the same day.
+
+**Consequences:** `tests/grandma-test.test.cjs` locks the fixed cases in EN, DE and ES. `tools/grandma/audit.cjs` prints every visible line of Home and of each everyday sheet at phone size, so the next edit can be read the way a stranger reads it.

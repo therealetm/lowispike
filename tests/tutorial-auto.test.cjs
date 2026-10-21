@@ -67,7 +67,7 @@ test('tutorial.js can begin at a step (for Continue), and the auto tour never to
 test('the tour explains almost every small part, in short cards grouped into parts', () => {
     assert.ok(S.STEPS.length >= 35, 'many small cards: ' + S.STEPS.length);
     const c = S.covered();
-    for (const f of ['mood', 'energy-peak', 'joy-hold', 'zoom', 'fly-out', 'half-energy', 'care-room', 'community-post', 'community-energy', 'menubar', 'day-card', 'whats-new', 'photo-checks', 'sleep'])
+    for (const f of ['mood', 'energy-peak', 'joy-hold', 'zoom', 'fly-out', 'half-energy', 'care-room', 'community-post', 'community-energy', 'back-x', 'day-card', 'whats-new', 'photo-checks', 'sleep'])
         assert.ok(c[f] && c[f] !== 'none', f + ' has a step');
     for (const s of S.STEPS) for (const l of ['en', 'de', 'es']) assert.ok(s.text[l].length <= 230, s.id + '.' + l + ' short');
     const areas = new Set(S.STEPS.map(s => s.area));

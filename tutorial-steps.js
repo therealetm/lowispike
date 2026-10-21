@@ -606,15 +606,6 @@
             }
         },
         {
-            id: 'menubar', area: 'settings', target: ['#whHud .o8-settings'], covers: ['menubar'],
-            title: { en: 'Menu bar', de: 'Menüleiste', es: 'Barra de menú' },
-            text: {
-                en: 'Menu bar turns a bar on or off at the bottom of the screen, if you like having every section one tap away.',
-                de: 'Menüleiste schaltet eine Leiste unten am Bildschirm an oder aus, falls du jeden Bereich mit einem Tipp erreichen willst.',
-                es: 'Barra de menú activa o quita una barra abajo en la pantalla, por si quieres cada sección a un toque.'
-            }
-        },
-        {
             id: 'settings-more', area: 'settings', target: ['#whHud .o8-settings'], covers: ['care', 'workouts', 'foryou', 'hunt'],
             title: { en: 'Explore', de: 'Entdecken', es: 'Explorar' },
             text: {
@@ -640,6 +631,16 @@
                 en: 'To close a window that slid up, drag the little bar at its top down. Or swipe in from the left edge of the screen to go back.',
                 de: 'Um ein Fenster zu schließen, das hochgefahren ist, zieh den kleinen Balken oben nach unten. Oder wisch vom linken Bildschirmrand rein, um zurückzugehen.',
                 es: 'Para cerrar una ventana que subió, arrastra hacia abajo la barrita de arriba. O desliza desde el borde izquierdo de la pantalla para volver.'
+            }
+        },
+        {
+            /* Oct 21: the bottom menu bar is gone; every page has an X at the top left and the left-edge swipe */
+            id: 'back-x', area: 'extras', target: null, covers: ['back-x'],
+            title: { en: 'Back to Home', de: 'Zurück zu Home', es: 'Volver a Inicio' },
+            text: {
+                en: 'There is no menu bar. On any page, tap the X at the top left or swipe in from the left edge, and Home comes back right away, exactly as you left it.',
+                de: 'Es gibt keine Menüleiste. Tipp auf jeder Seite oben links auf das X oder wisch vom linken Rand rein, und Home ist sofort wieder da, genau so, wie du es verlassen hast.',
+                es: 'No hay barra de menú. En cualquier página, toca la X de arriba a la izquierda o desliza desde el borde izquierdo, y vuelves al instante a Inicio, tal como lo dejaste.'
             }
         },
         {

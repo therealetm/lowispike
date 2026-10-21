@@ -207,3 +207,9 @@
 /* the app's tab headings rule (html.lg #app #main .tab h2) would shrink the landing headline to 20px: this one wins */
 #app #main #cmPaneChat h2.rm-l-h{margin:20px 0 12px;font-size:clamp(42px,13vw,60px);line-height:.96;font-weight:800;letter-spacing:-.04em;color:#fff;text-transform:none}
 #app #main #cmPaneChat p.rm-l-sub{margin:0 auto;font-size:15px;line-height:1.5;color:var(--rm-ink2)}
+/* tighter on short screens (Safari with its bars, iPhone SE): the card and the button come up sooner */
+.rm-l-hero{padding:18px 8px 24px}
+#app #main #cmPaneChat h2.rm-l-h{margin:16px 0 10px}
+#cmPaneChat[data-spirit-chat] .rm-ch-list .rm-ch{min-height:68px;padding-top:11px;padding-bottom:11px}
+@media (max-height:600px){#app #main #cmPaneChat h2.rm-l-h{font-size:clamp(36px,11vw,44px)}.rm-l-hero{padding-top:10px}}
+@media (min-width:700px){.rm-l-hero{padding-top:56px}}

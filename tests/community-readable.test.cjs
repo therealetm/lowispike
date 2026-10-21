@@ -80,3 +80,17 @@ test('channels: real newest message, unread count and replies are shown as they 
   assert.equal(r[0].p, 'Ana: Day 3 done'); assert.equal(r[0].n, 3);
   assert.equal(r[1].p, 'Ben: @you nice'); assert.equal(r[1].n, 1); assert.ok(!r[1].dis);
 });
+
+test('welcome sheet: 5 steps, rules agree, affiliate yes leads to Affiliates, every line in EN/DE/ES, shown once', () => {
+  const js = read('community-rooms-ui.js');
+  assert.match(js, /obStep:\['\{i\} of 5','\{i\} von 5','\{i\} de 5'\]/);
+  assert.match(js, /if\(obI===1\)return/); assert.match(js, /obI===1\?tr\('obAgree'\)/);
+  assert.match(js, /if\(aff\)cards\.unshift\(\['aff'/); assert.match(js, /const aff=obA\.aff==='yes';obClose\(true\);if\(aff\)showView\('aff'\)/);
+  assert.match(js, /function maybeWelcome\(\)\{if\(ob\|\|lsGet\(OBK\)/);
+  const block = js.slice(js.indexOf('const OT={'), js.indexOf('Object.assign(T,OT);'));
+  const keys = block.match(/\b(ob[A-Za-z0-9]+):\[/g).map(k => k.slice(0, -2));
+  assert.ok(keys.length >= 50, 'keys ' + keys.length);
+  for (const k of keys) assert.ok(new RegExp(k + ":\\['(?:[^'\\\\]|\\\\.)+','(?:[^'\\\\]|\\\\.)+','(?:[^'\\\\]|\\\\.)+'\\]").test(block), 'EN/DE/ES ' + k);
+  assert.match(js, /W\.LowiCommunityWelcome=\{open:openWelcome/);
+  assert.match(js, /\['welcome','📜',tr\('mWelcome'\)\]/);
+});

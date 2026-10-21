@@ -26,7 +26,7 @@ function overlaps() { /* header/menu items under the floating Day/Night switch o
   const fl = ['tbTheme', 'pfBtn'].map(id => document.getElementById(id)).filter(e => e && e.getBoundingClientRect().width > 1 && getComputedStyle(e).display !== 'none' && getComputedStyle(e).visibility !== 'hidden');
   const out = []; for (const e of document.querySelectorAll('.rm-bar button,.rm-bar [role=tab],.rm-bar .rm-id,.rm-bar .rm-live,.rm-crumb')) { const r = e.getBoundingClientRect(); if (!r.width || e.closest('[hidden]')) continue; for (const f of fl) { const q = f.getBoundingClientRect(); if (r.left < q.right && r.right > q.left && r.top < q.bottom && r.bottom > q.top) out.push((e.className || e.tagName) + ' x ' + f.id); } } return out;
 }
-async function tap(p, sel) { await sleep(350); const b = await p.locator(sel).first().boundingBox(); if (!b) throw new Error('no box for ' + sel); const hit = await p.evaluate(([x, y, s]) => { const e = document.elementFromPoint(x, y); return !!(e && e.closest(s)); }, [b.x + b.width / 2, b.y + b.height / 2, sel]); if (!hit) throw new Error('centre of ' + sel + ' is covered'); await p.mouse.click(b.x + b.width / 2, b.y + b.height / 2); }
+async function tap(p, sel) { await sleep(350); await p.locator(sel).first().scrollIntoViewIfNeeded().catch(() => { }); await sleep(150); const b = await p.locator(sel).first().boundingBox(); if (!b) throw new Error('no box for ' + sel); const hit = await p.evaluate(([x, y, s]) => { const e = document.elementFromPoint(x, y); return !!(e && e.closest(s)); }, [b.x + b.width / 2, b.y + b.height / 2, sel]); if (!hit) { const who = await p.evaluate(([x, y]) => { const e = document.elementFromPoint(x, y); return e ? (e.className || e.tagName) + ' @' + Math.round(x) + ',' + Math.round(y) + ' vh' + innerHeight : 'none'; }, [b.x + b.width / 2, b.y + b.height / 2]); throw new Error('centre of ' + sel + ' is covered by ' + who); } await p.mouse.click(b.x + b.width / 2, b.y + b.height / 2); }
 async function scan(p, W, label, sel) { const c = await p.evaluate(contrastScan, sel); notes.push(W + ' ' + label + ' texts ' + c.n); if (c.bad.length) fail(W, label + ' low contrast: ' + c.bad.slice(0, 6).join(' | ')); }
 async function frameScan(p, W, view) { let f = null; for (let i = 0; i < 40 && !f; i++) { f = p.frames().find(x => x.url().includes(view === 'aff' ? '/affiliates/' : '/create/')); if (!f) await sleep(250); } if (!f) { fail(W, 'no frame ' + view); return; } await f.waitForSelector(view === 'aff' ? '#checkCard h2' : 'h1', { timeout: 15000 }); const c = await f.evaluate(contrastScan, 'body'); notes.push(W + ' frame ' + view + ' texts ' + c.n); if (c.bad.length) fail(W, 'frame ' + view + ' low contrast: ' + c.bad.slice(0, 6).join(' | ')); const cs = await f.evaluate(() => getComputedStyle(document.documentElement).colorScheme); if (!/dark/.test(cs)) fail(W, 'frame ' + view + ' colour scheme is ' + cs + ' (an iframe whose scheme differs from the app gets an opaque WHITE canvas)'); }
 
@@ -63,7 +63,20 @@ async function run(engine, device, light) {
       }
     }
     if (await p.$('.rm-menu-btn')) { await tap(p, '.rm-menu-btn'); await sleep(500); await scan(p, W, 'menu', '.rm-menu'); await R.shot(path.join(OUT, tag + '-menu.png')); const items = await p.$$eval('.rm-menu [data-rmm]', e => e.map(x => x.dataset.rmm)); notes.push(W + ' menu ' + items.join(',')); await p.keyboard.press('Escape'); await sleep(300); if (await p.$('.rm-menu:not([hidden])')) fail(W, 'menu did not close on Escape'); }
-    if (await p.$('.rm-ob')) { await scan(p, W, 'onboarding', '.rm-ob'); }
+    if (await p.evaluate(() => !!(window.LowiCommunityWelcome && window.LowiCommunityWelcome.open))) {
+      await p.evaluate(() => window.LowiCommunityWelcome.open()); await sleep(500);
+      for (let i = 1; i <= 5; i++) {
+        const st = await p.evaluate(() => (document.querySelector('.rm-ob-step') || {}).textContent || ''); if (!st.includes(String(i))) fail(W, 'welcome step ' + i + ' shows ' + st);
+        await scan(p, W, 'welcome ' + i, '.rm-ob'); if (i === 1 || i === 3 || i === 5) await R.shot(path.join(OUT, tag + '-welcome-' + i + '.png'));
+        const fit = await p.evaluate(() => { const c = document.querySelector('.rm-ob-card-wrap').getBoundingClientRect(), g = document.querySelector('.rm-ob-go').getBoundingClientRect(); return { top: c.top, gb: g.bottom, vh: innerHeight }; }); if (fit.top < 0 || fit.gb > fit.vh + 1) fail(W, 'welcome ' + i + ' does not fit ' + JSON.stringify(fit));
+        if (i === 3) { await tap(p, '.rm-chipq[data-q="work"][data-v="b"]'); await tap(p, '.rm-chipq[data-q="aff"][data-v="yes"]'); const pr = await p.$$eval('.rm-chipq[aria-pressed="true"]', e => e.length); if (pr !== 2) fail(W, 'chips pressed ' + pr); }
+        if (i === 4) { await p.fill('.rm-ob [data-p="working"]', 'my 16 h gaps'); }
+        if (i === 5) { const first = await p.evaluate(() => (document.querySelector('.rm-ob-card') || {}).dataset.ob); if (first !== 'aff') fail(W, 'affiliate yes did not put Affiliates first (' + first + ')'); }
+        await tap(p, '.rm-ob-go'); await sleep(450);
+      }
+      const end = await p.evaluate(() => ({ gone: !document.querySelector('.rm-ob'), v: document.getElementById('cmPaneChat').getAttribute('data-rm-view'), prof: (JSON.parse(localStorage.getItem('lowi.cm.profile.v1') || '{}')).working, seen: !!localStorage.getItem('lowi.cm.welcome.v1') }));
+      if (!end.gone || end.v !== 'aff' || end.prof !== 'my 16 h gaps' || !end.seen) fail(W, 'welcome end ' + JSON.stringify(end));
+    } else fail(W, 'no welcome sheet');
   } catch (e) { fail(W, 'threw ' + String(e.message).split('\n')[0]); await R.shot(path.join(OUT, 'error-' + engine + '.png')); }
   const errs = R.errs.filter(e => !/supabase|realtime|websocket/i.test(e.m)); if (errs.length) fail(W, 'errors ' + errs.slice(0, 3).map(e => e.m).join(' | '));
   await R.close();

@@ -62,7 +62,7 @@ function ensure(){const pane=D.getElementById('cmPaneChat');if(!pane||!pane.hasA
  bar.innerHTML='<div class="rm-head"><button type="button" class="rm-id rm-menu-btn" data-rm="menu" aria-haspopup="menu" aria-expanded="false"><span class="rm-logo" aria-hidden="true"><i></i></span><span class="rm-idt"><b class="rm-name"></b><span class="rm-live"></span></span><span class="rm-chev" aria-hidden="true"></span></button></div>'
   +'<div class="rm-tabs" role="tablist">'+tabOrder().map(k=>'<button type="button" role="tab" class="rm-tab" data-rm="'+k+'"></button>').join('')+'</div><div class="rm-crumb" hidden><button type="button" class="rm-back" data-rm="chat"></button><span class="rm-crumb-t"></span></div><div class="rm-banner" role="status" aria-live="polite"></div>';
  pane.insertBefore(bar,pane.firstChild);banner=bar.querySelector('.rm-banner');
- for(const ms of [60,250,600,1100])setTimeout(()=>fit(bar),ms);
+ for(const ms of [60,250,600,1100])setTimeout(()=>fit(bar),ms);setTimeout(maybeWelcome,1200);
  bar.addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(!b)return;const a=b.dataset.rm;
   if(a==='room')setTab(false);else if(a==='chat')setTab(true);else if(a==='create'||a==='aff')showView(a);else if(a==='copy')copyView();else if(a==='sheet')openSheet();else if(a==='menu')toggleMenu();
   else if(a==='letin'){R()&&R().letIn(b.dataset.uid).then(paint);}else if(a==='notnow'){R()&&R().dismiss(b.dataset.uid);paint();}});
@@ -186,6 +186,82 @@ let fitRaf=0;const refit=()=>{if(fitRaf||!bar||!bar.isConnected)return;fitRaf=(W
 const fmo=typeof MutationObserver==='function'?new MutationObserver(refit):null;
 setInterval(()=>{if(!fmo)return;for(const e of [D.documentElement,D.getElementById('main'),D.getElementById('pfBtn'),D.getElementById('tbTheme')])
  if(e&&!e.__rmFit){e.__rmFit=1;fmo.observe(e,{attributes:true,attributeFilter:['class','style','hidden']});}},1000);
+/* 21 Oct evening, phase C (Eden's onboarding): a 5-step welcome sheet the first time someone opens Community, and again from the
+   menu (Welcome & rules). 1 what this is, 2 numbered rules with "I agree", 3 quick questions as chips (what you're working on,
+   affiliate yes/no, followers), 4 profile (name and photo come from the app profile; the rest is saved on this phone), 5 where to
+   start. Answering "yes" to affiliate makes Affiliates the first card and Done opens it. Nothing is sent anywhere. Automated
+   browsers (navigator.webdriver) never get it on their own, so other checks are not covered by it; they open it explicitly. */
+const OBK='lowi.cm.welcome.v1',OPK='lowi.cm.profile.v1';
+const OT={obStep:['{i} of 5','{i} von 5','{i} de 5'],obClose:['Close','Schließen','Cerrar'],obNext:['Continue','Weiter','Continuar'],obBack:['Back','Zurück','Atrás'],
+ obW1:['Welcome to the LOWiSPIKE Community','Willkommen in der LOWiSPIKE Community','Bienvenido a la Comunidad LOWiSPIKE'],
+ obW2:['People using LOWiSPIKE meet here to share their gaps, meals and wins, and to keep each other steady.','Hier treffen sich Leute, die LOWiSPIKE nutzen, teilen ihre Pausen, Mahlzeiten und Erfolge und halten sich gegenseitig auf Kurs.','Aquí se reúnen quienes usan LOWiSPIKE para compartir sus pausas, comidas y logros, y mantenerse firmes juntos.'],
+ obKnow:['A few things to know','Gut zu wissen','Algunas cosas que saber'],
+ obK1:['Room: your galaxy with the people around you.','Raum: deine Galaxie mit den Leuten um dich herum.','Sala: tu galaxia con la gente a tu alrededor.'],
+ obK2:['Chat: the galaxy chat and your replies, as channels.','Chat: der Galaxie-Chat und deine Antworten, als Kanäle.','Chat: el chat de la galaxia y tus respuestas, como canales.'],
+ obK3:['Creation: an AI studio for creators, being built.','Erstellen: ein KI-Studio für Creator, im Aufbau.','Crear: un estudio de IA para creadores, en construcción.'],
+ obK4:['Affiliates: earn by sharing LOWiSPIKE, with the Master Blueprint.','Affiliates: verdiene, indem du LOWiSPIKE teilst, mit dem Master Blueprint.','Afiliados: gana compartiendo LOWiSPIKE, con el Master Blueprint.'],
+ obR:['Community rules','Community-Regeln','Normas de la comunidad'],
+ obR1:['Be kind. Everyone here is working on something hard.','Sei freundlich. Alle hier arbeiten an etwas Schwerem.','Sé amable. Todos aquí trabajan en algo difícil.'],
+ obR2:['Share experience, not medical advice.','Teile Erfahrungen, keine medizinischen Ratschläge.','Comparte experiencias, no consejos médicos.'],
+ obR3:['No spam or selling. Promotion belongs in Affiliates.','Kein Spam und kein Verkaufen. Werbung gehört zu Affiliates.','Nada de spam ni ventas. La promoción va en Afiliados.'],
+ obR4:['Keep it real: no fake results or edited before-and-afters.','Bleib echt: keine falschen Ergebnisse oder bearbeiteten Vorher-nachher-Bilder.','Sé real: nada de resultados falsos ni antes y después editados.'],
+ obR5:['If someone bothers you, block them from their message.','Wenn dich jemand stört, blockiere ihn über seine Nachricht.','Si alguien te molesta, bloquéalo desde su mensaje.'],
+ obAgree:['I agree','Ich stimme zu','Estoy de acuerdo'],
+ obQ:['A few quick questions','Ein paar kurze Fragen','Unas preguntas rápidas'],obQs:['Optional. It helps you find your people.','Freiwillig. Es hilft dir, deine Leute zu finden.','Opcional. Te ayuda a encontrar a tu gente.'],
+ obQ1:['What are you working on?','Woran arbeitest du?','¿En qué estás trabajando?'],
+ obQ1a:['🔥 Losing weight','🔥 Abnehmen','🔥 Perder peso'],obQ1b:['⏳ Fasting','⏳ Fasten','⏳ Ayuno'],obQ1c:['🩸 Steadier blood sugar','🩸 Stabiler Blutzucker','🩸 Azúcar más estable'],obQ1d:['💪 Energy & fitness','💪 Energie & Fitness','💪 Energía y forma'],obQ1e:['🎬 Creating content','🎬 Content erstellen','🎬 Crear contenido'],
+ obQ2:['Do you want to be an affiliate?','Möchtest du Affiliate werden?','¿Quieres ser afiliado?'],obQ2y:['💸 Yes, show me','💸 Ja, zeig mir wie','💸 Sí, enséñame'],obQ2n:['✋ Not now','✋ Gerade nicht','✋ Ahora no'],
+ obQ3:['How many followers do you have?','Wie viele Follower hast du?','¿Cuántos seguidores tienes?'],obQ3a:['Under 1K','Unter 1K','Menos de 1K'],
+ obP:['Your profile','Dein Profil','Tu perfil'],obPs:['Your name and photo come from your LOWiSPIKE profile.','Name und Foto kommen aus deinem LOWiSPIKE-Profil.','Tu nombre y foto vienen de tu perfil de LOWiSPIKE.'],obPhoto:['Change name or photo','Name oder Foto ändern','Cambiar nombre o foto'],
+ obPw:['What are you working on?','Woran arbeitest du?','¿En qué estás trabajando?'],obPb:['Bio','Bio','Bio'],obPh:['Handles','Profile','Perfiles'],obSaved:['Saved on this phone.','Auf diesem Handy gespeichert.','Guardado en este teléfono.'],
+ obIn:['You\'re in. Where do you want to start?','Du bist drin. Wo willst du anfangen?','Ya estás dentro. ¿Por dónde quieres empezar?'],
+ obC1:['Introduce yourself','Stell dich vor','Preséntate'],obC1s:['Say hi in the galaxy chat.','Sag Hallo im Galaxie-Chat.','Saluda en el chat de la galaxia.'],
+ obC2:['Walkthrough','Rundgang','Recorrido'],obC2s:['A short tour of Community.','Eine kurze Tour durch die Community.','Un breve recorrido por Comunidad.'],
+ obC3:['Get help','Hilfe holen','Pedir ayuda'],obC3s:['Ask the galaxy a question.','Stell der Galaxie eine Frage.','Haz una pregunta a la galaxia.'],
+ obC4:['Open Affiliates','Affiliates öffnen','Abrir Afiliados'],obC4s:['Your Master Blueprint and numbers.','Dein Master Blueprint und deine Zahlen.','Tu Master Blueprint y tus números.'],
+ obDone:['Done','Fertig','Listo'],obHi:['Hi, I\'m new here.','Hi, ich bin neu hier.','Hola, soy nuevo aquí.'],obHelp:['Can someone help me with ','Kann mir jemand helfen bei ','¿Alguien me ayuda con ']};
+Object.assign(T,OT);
+let ob=null,obI=0,obA={};
+function lsGet(k){try{return JSON.parse(localStorage.getItem(k)||'null');}catch(e){return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function chip(group,val,label){const on=group==='work'?(obA.work||[]).includes(val):obA[group]===val;return '<button type="button" class="rm-chipq" data-q="'+group+'" data-v="'+val+'" aria-pressed="'+(on?'true':'false')+'">'+esc(label)+'</button>';}
+function obBody(){const p=Object.assign({},lsGet(OPK)||{}),aff=obA.aff==='yes';
+ if(obI===0)return '<div class="rm-ob-hero" aria-hidden="true"><span class="rm-logo"><i></i></span></div><h2 class="rm-ob-h">'+esc(tr('obW1'))+'</h2><p class="rm-ob-p">'+esc(tr('obW2'))+'</p><h3 class="rm-ob-h3">'+esc(tr('obKnow'))+'</h3><ul class="rm-ob-know">'+['obK1','obK2','obK3','obK4'].map(k=>'<li>'+esc(tr(k))+'</li>').join('')+'</ul>';
+ if(obI===1)return '<h2 class="rm-ob-h">'+esc(tr('obR'))+'</h2><ol class="rm-ob-rules">'+['obR1','obR2','obR3','obR4','obR5'].map(k=>'<li>'+esc(tr(k))+'</li>').join('')+'</ol>';
+ if(obI===2)return '<h2 class="rm-ob-h">'+esc(tr('obQ'))+'</h2><p class="rm-ob-p">'+esc(tr('obQs'))+'</p><h3 class="rm-ob-h3">'+esc(tr('obQ1'))+'</h3><div class="rm-chips">'+['a','b','c','d','e'].map(x=>chip('work',x,tr('obQ1'+x))).join('')+'</div>'
+  +'<h3 class="rm-ob-h3">'+esc(tr('obQ2'))+'</h3><div class="rm-chips">'+chip('aff','yes',tr('obQ2y'))+chip('aff','no',tr('obQ2n'))+'</div>'
+  +'<h3 class="rm-ob-h3">'+esc(tr('obQ3'))+'</h3><div class="rm-chips">'+chip('fol','0',tr('obQ3a'))+chip('fol','1k','1K–10K')+chip('fol','10k','10K–100K')+chip('fol','100k','100K+')+'</div>';
+ if(obI===3){const f=(k,l,ph,big)=>'<label class="rm-fld"><span>'+esc(l)+'</span>'+(big?'<textarea data-p="'+k+'" rows="3" maxlength="280">'+esc(p[k]||'')+'</textarea>':'<input data-p="'+k+'" maxlength="80" value="'+esc(p[k]||'')+'" placeholder="'+esc(ph||'')+'" autocomplete="off" autocapitalize="off">')+'</label>';
+  const nm=nameOf(me())||'';
+  return '<h2 class="rm-ob-h">'+esc(tr('obP'))+'</h2><div class="rm-ob-me"><span class="rm-ob-av" aria-hidden="true">'+esc(initials(nm||'?'))+'</span><div><b>'+esc(nm||tr('obP'))+'</b><small>'+esc(tr('obPs'))+'</small></div></div>'
+   +(D.getElementById('pfBtn')?'<button type="button" class="rm-ob-sec" data-ob="photo">'+esc(tr('obPhoto'))+'</button>':'')
+   +f('working',tr('obPw'),'',false)+f('bio',tr('obPb'),'',true)+'<h3 class="rm-ob-h3">'+esc(tr('obPh'))+'</h3><div class="rm-ob-handles">'+f('x','X','@')+f('ig','Instagram','@')+f('yt','YouTube','@')+f('tt','TikTok','@')+'</div><p class="rm-ob-note">'+esc(tr('obSaved'))+'</p>';}
+ const cards=[['intro','👋','obC1','obC1s'],['walk','🧭','obC2','obC2s'],['help','🆘','obC3','obC3s']];if(aff)cards.unshift(['aff','🚀','obC4','obC4s']);
+ return '<h2 class="rm-ob-h">'+esc(tr('obIn'))+'</h2><div class="rm-ob-cards">'+cards.map(([k,ic,t,s2])=>'<button type="button" class="rm-ob-card'+(k==='aff'?' rm-ob-hot':'')+'" data-ob="'+k+'"><span class="rm-ch-ic" aria-hidden="true">'+ic+'</span><span><b>'+esc(tr(t))+'</b><small>'+esc(tr(s2))+'</small></span></button>').join('')+'</div>';}
+function obPaint(){if(!ob)return;const last=obI===4,next=obI===1?tr('obAgree'):last?tr('obDone'):tr('obNext');
+ ob.innerHTML='<div class="rm-ob-card-wrap" role="dialog" aria-modal="true" aria-labelledby="rmObH"><div class="rm-ob-top"><div class="rm-ob-bar" role="progressbar" aria-valuemin="1" aria-valuemax="5" aria-valuenow="'+(obI+1)+'"><i style="width:'+((obI+1)*20)+'%"></i></div><span class="rm-ob-step">'+esc(tr('obStep',{i:obI+1}))+'</span><button type="button" class="rm-x" data-ob="close" aria-label="'+esc(tr('obClose'))+'">×</button></div>'
+  +'<div class="rm-ob-body">'+obBody()+'</div><div class="rm-ob-foot">'+(obI>0?'<button type="button" class="rm-ob-sec" data-ob="back">'+esc(tr('obBack'))+'</button>':'<span></span>')+'<button type="button" class="rm-ob-go" data-ob="next">'+esc(next)+'</button></div></div>';
+ const h=ob.querySelector('.rm-ob-h');if(h)h.id='rmObH';setTimeout(()=>{const g=ob&&ob.querySelector('.rm-ob-go');if(g)g.focus({preventScroll:true});},40);}
+function obSaveProfile(){if(!ob)return;const p=Object.assign({},lsGet(OPK)||{});ob.querySelectorAll('[data-p]').forEach(i=>{p[i.dataset.p]=String(i.value||'').trim().slice(0,i.tagName==='TEXTAREA'?280:80);});p.ts=Date.now();lsSet(OPK,p);}
+function obClose(done){if(obI===3)obSaveProfile();const st=Object.assign({},lsGet(OBK)||{},{seen:Date.now(),answers:obA});if(done)st.done=Date.now();lsSet(OBK,st);if(ob&&ob.parentNode)ob.parentNode.removeChild(ob);ob=null;}
+function prefill(text){const c=W.LowiCommunity;view='';if(c&&c.thread&&!open())c.thread(true);paint();setTimeout(()=>{const i=D.getElementById('cmInput');if(!i)return;if(!i.value)i.value=text;try{i.dispatchEvent(new Event('input',{bubbles:true}));}catch(e){}i.focus();},350);}
+function openWelcome(){if(ob)return;obI=0;obA=Object.assign({},((lsGet(OBK)||{}).answers)||{});ob=D.createElement('div');ob.className='rm-sheet rm-ob';ob.setAttribute('data-noi18n','');D.body.appendChild(ob);
+ ob.addEventListener('click',e=>{if(e.target===ob){obClose(false);return;}const q=e.target.closest('[data-q]');
+  if(q){const g=q.dataset.q,v=q.dataset.v;if(g==='work'){const a=new Set(obA.work||[]);a.has(v)?a.delete(v):a.add(v);obA.work=[...a];}else obA[g]=obA[g]===v?'':v;
+   q.parentNode.querySelectorAll('[data-q]').forEach(b=>b.setAttribute('aria-pressed',(g==='work'?(obA.work||[]).includes(b.dataset.v):obA[g]===b.dataset.v)?'true':'false'));return;}
+  const b=e.target.closest('[data-ob]');if(!b)return;const k=b.dataset.ob;
+  if(k==='close')obClose(false);else if(k==='back'){if(obI===3)obSaveProfile();obI=Math.max(0,obI-1);obPaint();}
+  else if(k==='next'){if(obI===3)obSaveProfile();if(obI<4){obI++;obPaint();}else{const aff=obA.aff==='yes';obClose(true);if(aff)showView('aff');}}
+  else if(k==='photo'){obSaveProfile();obClose(false);const p=D.getElementById('pfBtn');if(p)p.click();}
+  else if(k==='aff'){obClose(true);showView('aff');}
+  else if(k==='intro'){const p=lsGet(OPK)||{};obClose(true);prefill(tr('obHi')+(p.working?' '+p.working:''));}
+  else if(k==='help'){obClose(true);prefill(tr('obHelp'));}
+  else if(k==='walk'){obClose(true);try{W.LowiTutorial&&W.LowiTutorial.start({at:'community',from:'community-welcome'});}catch(x){}}});
+ ob.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();obClose(false);}});
+ obPaint();}
+function maybeWelcome(){if(ob||lsGet(OBK)||(navigator&&navigator.webdriver))return;const b=bar;if(!b||!b.isConnected||!b.getBoundingClientRect().width)return;
+ if(W.LowiTutorial&&W.LowiTutorial.isOn&&W.LowiTutorial.isOn())return;openWelcome();}
+W.LowiCommunityWelcome={open:openWelcome,close:()=>obClose(false),seen:()=>!!lsGet(OBK)};
 /* Invite links (menu > Copy invite link): …/lowispike/#community opens Community; #community/affiliates and #community/create open that tab. */
 (function deep(){let h='';try{h=location.hash||'';}catch(e){}const m=h.match(/^#community(?:\/(affiliates|create))?$/);if(!m)return;let n=0;
  const tick=()=>{n++;if(typeof W.goTab!=='function'||!D.getElementById('whPad')){if(n<60)setTimeout(tick,500);return;}

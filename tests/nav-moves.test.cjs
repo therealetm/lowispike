@@ -44,6 +44,26 @@ test('Oct 20: with the galaxy alone the chat pane is never made inert (2nd visit
     assert.match(html, /try \{ cmPanesInert\(i\); \} catch\(e\)\{\}/);
 });
 
+test('Community declutter (Oct 21): small privacy icon, labelled friends tree, Milestones in Move', () => {
+    const js = read('nav-moves.js'), css = read('nav-moves.css');
+    // privacy & quiet hours: a small shield icon next to the Community name that opens the same sheet as the Profile row
+    assert.match(js, /s\.className = 'nm-cpriv'; s\.dataset\.nm = 'privacy'/);
+    assert.match(js, /if \(id && s\.previousElementSibling !== id\) id\.after\(s\);/);
+    assert.match(css, /\.rm-head > \.nm-cpriv \{ flex: none; width: 38px; height: 38px;/);
+    // friends tree: a labelled button in the galaxy, opened by cell-room.js through data-cr="tree"
+    assert.match(js, /t\.className = 'nm-ctree'; t\.dataset\.cr = 'tree'/);
+    assert.match(js, /T\('Friends tree', 'Freundesbaum', '\\u00c1rbol de amigos'\)/);
+    assert.match(read('cell-room.js'), /if\(a==='tree'&&/);
+    // Milestones: a row in Move right under the Care board, opened by finch-extras.js through data-fx="miles"
+    assert.match(js, /m\.className = 'card nm-milescard'; m\.dataset\.fx = 'miles'/);
+    assert.match(js, /if \(m\.previousElementSibling !== c\) c\.after\(m\);/);
+    assert.match(read('finch-extras.js'), /if \(a === 'miles'\) \{ e\.preventDefault\(\); e\.stopPropagation\(\); openMiles\(\); \}/);
+    // labels are only written when they change (tick() runs on every DOM change: no endless loop)
+    assert.match(js, /if \(sp\.textContent !== tl\)/);
+    assert.match(js, /if \(s\.getAttribute\('aria-label'\) !== pl\)/);
+    assert.match(js, /raf = 0; hook\(\); align\(\); privacy\(\); communityTools\(\); moveCard\(\);/);
+});
+
 test('Community shows the galaxy alone: no tabs, no big title, no Privacy & quiet button', () => {
     const css = read('nav-moves.css');
     assert.match(css, /#tab-foryou\.nm-solo \.ls-phd \{ display: none !important; \}/);

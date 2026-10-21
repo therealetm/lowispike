@@ -2,6 +2,8 @@
    - For You lives in Cook: a "For You" button top right in Cook opens the feed right there.
    - Leaderboard lives in Move: a "Leaderboard" button top right in Move opens the board right there.
    - Community is the spirit galaxy alone: no For You / Leaderboard tabs, no big title, no Privacy & quiet button.
+   - Oct 21 declutter: privacy & quiet hours is a small shield icon next to the Community name, the friends tree is a labelled
+     "Friends tree" button in the galaxy's lower left corner, and Milestones sit in Move under the Care board.
    A thin layer over the legacy modules. The real panes (#cmPaneFeed, #cmPaneBoard) are moved, not copied, so their
    styles, renderers and listeners keep working. No legacy module is edited or reordered. */
 (function () {
@@ -14,7 +16,10 @@
     const ICO = {
         fy: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="2.8" width="14" height="18.4" rx="3.4"/><path d="M10.3 8.9v6.2l4.9-3.1z" class="nm-fill"/></svg>',
         lb: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5v1.5A3 3 0 0 0 8 10.5M16 6h3v1.5a3 3 0 0 1-3 3M12 13v4M8.5 20h7M9.5 17h5"/></svg>',
-        back: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>'
+        back: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
+        shield: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5.5c0 4.4-3 8-7 9.5-4-1.5-7-5.1-7-9.5V6z"/><path d="M9.2 12.2l2 2 3.8-4"/></svg>',
+        tree: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21v-7M12 14l-3.5-3M12 14l3.5-3M12 10.5V7"/><circle cx="12" cy="5" r="2.2"/><circle cx="7" cy="10" r="2.2"/><circle cx="17" cy="10" r="2.2"/></svg>',
+        miles: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.5 5.2 5.7.8-4.1 4 1 5.6-5.1-2.7-5.1 2.7 1-5.6-4.1-4 5.7-.8z"/></svg>'
     };
     const SPOTS = {
         fy: { tab: 'shelf', root: '#tab-shelf', pane: 'cmPaneFeed', label: () => T('For You', 'F\u00fcr dich', 'Para ti'), back: () => T('Cook', 'Kochen', 'Cocina') },
@@ -234,6 +239,35 @@
         e.preventDefault();
         try { if (W.LowiCommunity && W.LowiCommunity.settings) W.LowiCommunity.settings(); } catch (x) { console.error(x); }
     });
+    /* Oct 21 (E-man, Community clean-up): privacy & quiet hours as a small shield icon next to the Community name (opens the same
+       sheet as the Profile row), and the friends tree as a labelled button in the galaxy's lower left corner, mirroring the
+       energy joystick on the right. Built only when missing; labels are written only when they differ (no DOM loop). */
+    function communityTools() {
+        const pane = D.getElementById('cmPaneChat'); if (!pane) return;
+        const head = pane.querySelector(':scope > .rm-bar > .rm-head');
+        if (head) {
+            let s = head.querySelector(':scope > .nm-cpriv');
+            if (!s) {
+                s = D.createElement('button'); s.type = 'button'; s.className = 'nm-cpriv'; s.dataset.nm = 'privacy'; s.setAttribute('data-noi18n', '');
+                s.innerHTML = ICO.shield;
+            }
+            /* row 1 of the Community header, right after the Community name button (clear of Day/Night and the profile picture) */
+            const id = head.querySelector(':scope > .rm-id');
+            if (id && s.previousElementSibling !== id) id.after(s); else if (!id && s.parentNode !== head) head.appendChild(s);
+            const pl = T('Chat privacy & quiet hours', 'Chat-Privatsph\u00e4re & Ruhezeiten', 'Privacidad del chat y horas de silencio');
+            if (s.getAttribute('aria-label') !== pl) { s.setAttribute('aria-label', pl); s.title = pl; }
+        }
+        const room = pane.querySelector('#cpRoom');
+        if (room) {
+            let t = room.querySelector(':scope > .nm-ctree');
+            if (!t) {
+                t = D.createElement('button'); t.type = 'button'; t.className = 'nm-ctree'; t.dataset.cr = 'tree'; t.setAttribute('data-noi18n', '');
+                t.innerHTML = ICO.tree + '<span></span>'; room.appendChild(t);
+            }
+            const tl = T('Friends tree', 'Freundesbaum', '\u00c1rbol de amigos'), sp = t.querySelector('span');
+            if (sp.textContent !== tl) { sp.textContent = tl; t.setAttribute('aria-label', tl); }
+        }
+    }
     /* Move (Oct 16): the Leaderboard is a card right under the Move title, above the Start card, in the same card style.
        The odd Safety shield in the header is gone; its notes now sit as a quiet "Safety notes" line under the tiles. */
     /* Oct 17: the board ranks the care Misty got (care-board-core.js), so the card reads "Care board" and shows your
@@ -259,6 +293,16 @@
         const tiny = c.querySelector('.tiny');
         if (tiny.__tg !== tg) { tiny.__tg = tg; tiny.textContent = tg; }
         if (c.querySelector('b').textContent !== nm) { c.querySelector('b').textContent = nm; c.setAttribute('aria-label', nm); }
+        /* Oct 21: Milestones (levels & streaks, good vibes) live in Move, a slim row right under the Care board */
+        let m = head.parentElement.querySelector(':scope > .nm-milescard');
+        if (!m) {
+            m = D.createElement('button'); m.type = 'button'; m.className = 'card nm-milescard'; m.dataset.fx = 'miles'; m.setAttribute('data-noi18n', '');
+            m.innerHTML = '<span class="nm-msic">' + ICO.miles + '</span><b></b><small></small><svg class="nm-lbgo" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
+        }
+        if (m.previousElementSibling !== c) c.after(m);
+        const mt = T('Milestones', 'Meilensteine', 'Logros'), ms = T('Levels & streaks', 'Level & Serien', 'Niveles y rachas');
+        if (m.querySelector('b').textContent !== mt) { m.querySelector('b').textContent = mt; m.setAttribute('aria-label', mt + ', ' + ms); }
+        if (m.querySelector('small').textContent !== ms) m.querySelector('small').textContent = ms;
         const tl = head.parentElement.querySelector(':scope > .g2-tiles');
         if (tl && !(tl.nextElementSibling && tl.nextElementSibling.classList.contains('nm-safeline'))) {
             head.parentElement.querySelectorAll(':scope > .nm-safeline').forEach(o => o.remove());
@@ -267,7 +311,7 @@
     }
     let raf = 0;
     function tick() {
-        raf = 0; hook(); align(); privacy(); moveCard();
+        raf = 0; hook(); align(); privacy(); communityTools(); moveCard();
         /* a Cook re-render replaces its page: put the open For You window back under the new top row */
         if (LAY.fy && (!LAY.fy.hidden || LAY.fy.classList.contains('fyw'))) { layer('fy'); marks(); fit(); }
         const el = D.getElementById('tab-foryou');

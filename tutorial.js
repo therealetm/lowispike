@@ -72,7 +72,6 @@
             '<b class="lt-title" id="ltTitle">' + esc(S.text(s, 'title', l, vars)) + '</b></span>' +
             (last ? '' : '<button type="button" class="lt-skipall" data-lt="skipall">' + esc(U.skipAll) + '</button>') + '</div>' +
             '<p class="lt-text" id="ltText">' + esc(S.text(s, 'text', l, vars)) + '</p>' +
-            '<div class="lt-dots" aria-hidden="true">' + list.map((x, k) => '<i class="' + (k === i ? 'on' : k < i ? 'past' : '') + '"></i>').join('') + '</div>' +
             '<div class="lt-btns">' +
             (i > 0 ? '<button type="button" class="lt-btn lt-ghost" data-lt="back">' + esc(U.back) + '</button>' : '<span></span>') +
             '<span class="lt-right">' + (last ? '' : '<button type="button" class="lt-btn lt-ghost" data-lt="skip">' + esc(U.skip) + '</button>') +

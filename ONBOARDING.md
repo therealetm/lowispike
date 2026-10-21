@@ -12,7 +12,7 @@ file and the onboarding copy in the same commit.**
 | # | Screen | Code | Explains | Based on |
 |---|--------|------|----------|----------|
 | 0 | Add to Home Screen guide (phone browsers only, first) | `index.html` `LowiA1` (start mode) | one plain line first: "Free app: eat smarter and lose weight, as a game." then how to add it | `index.html` |
-| 1 | What it is + why + proof | `herb-start.js` step 0 | headline "Eat smarter and lose weight, as a game.", the five habits (Shop & scan, Fuel, Water, Move, Gap) power the companion, founder proof "Made by Eman, who lost 45 kg in 7 months." Button "Get started" | `shop-scan.js`, Home bubbles, founder bio in `index.html` |
+| 1 | What it is + why + proof | `herb-start.js` step 0 | headline "Eat smarter and lose weight, as a game.", the five habits (Shop & scan, Fuel, Water, Move, Gap) power the companion, founder proof "Made by Eman, who lost 45 kg in 7 months." Button "Get started" | `shop-scan.js`, `shop-scan-core.js`, Home bubbles, founder bio in `index.html` |
 | 2 | Your first name | `herb-start.js` step 1 | it learns your name. Button "Continue" | `LowiHerbIdentityCore.cleanName` |
 | 3 | First XP + free account | `herb-start.js` step 2 | first spark (+5 XP), "Create free account" | `firstReward()` |
 | 4 | Account form | `index.html` gate (`R2`) | email + password; the name field is only shown when the start didn't get a name ("Two fields. That's it.") | `index.html` (LOWI_CLOUD) |

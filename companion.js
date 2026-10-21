@@ -277,8 +277,18 @@
             : nx.left > 0 ? L(nx.left + ' XP to ' + nx.name, 'Noch ' + nx.left + ' XP bis ' + nx.name, 'Faltan ' + nx.left + ' XP para ' + nx.name)
                 : L('Ready to evolve into ' + nx.name, 'Bereit für ' + nx.name, 'Lista para ' + nx.name);
         const dry = homeLook().dry;
-        const forms = steps.map((s, i) => '<li class="cf-step' + (s.reached ? ' on' : ' cf-locked') + (s.current ? ' cur' : '') + '"' + (s.current ? ' aria-current="step"' : '') + '>' + (s.reached ? '<span class="cf-sm">' + formArt(m, hp, g, s.i) + '</span><b>' + esc(s.name) + '</b>' : '<span class="cf-mystery" aria-hidden="true">?</span><b aria-hidden="true">???</b>') + '<em>' +
-            esc(s.current ? L('now', 'jetzt', 'ahora') : s.reached ? '✓' : s.xp + ' XP') + '</em><span class="cf-sr">' + esc(L('Form ', 'Form ', 'Forma ') + (i + 1) + ': ' + (s.reached ? s.name : L('not discovered yet', 'noch nicht entdeckt', 'aún sin descubrir') + ', ' + L('from ', 'ab ', 'desde ') + s.xp + ' XP')) + '</span></li>').join('');
+        /* Oct 21 2026 (Eman: "cramped, old, can't read it"): a vertical glass timeline, one roomy row per form instead of ten tiny tiles.
+           Reached forms show their art, name and what they grew; locked forms stay a mystery orb with ??? and only their XP. */
+        const nf = n => { try { return Number(n).toLocaleString({ de: 'de-DE', es: 'es-ES' }[lang()] || 'en-US'); } catch (e) { return String(n); } };
+        const found = steps.filter(s => s.reached).length;
+        const forms = steps.map((s, i) => {
+            const meta = s.reached ? s.trait : (i === ci + 1 && s.left > 0 ? L(nf(s.left) + ' XP to go', 'Noch ' + nf(s.left) + ' XP', 'Faltan ' + nf(s.left) + ' XP') : L('Not discovered yet', 'Noch nicht entdeckt', 'Aún sin descubrir'));
+            const tag = s.current ? L('Now', 'Jetzt', 'Ahora') : s.reached ? L('Reached', 'Erreicht', 'Alcanzada') : nf(s.xp) + ' XP';
+            return '<li class="cf-step' + (s.reached ? ' on' : ' cf-locked') + (s.current ? ' cur' : '') + (i === ci + 1 ? ' cf-nextup' : '') + '"' + (s.current ? ' aria-current="step"' : '') + '>' +
+                (s.reached ? '<span class="cf-sm">' + formArt(m, hp, g, s.i) + '</span><b>' + esc(s.name) + '</b>' : '<span class="cf-mystery" aria-hidden="true">?</span><b aria-hidden="true">???</b>') +
+                '<small class="cf-k" aria-hidden="true">' + esc(L('Form ', 'Form ', 'Forma ') + (i + 1)) + '</small><small class="cf-meta" aria-hidden="true">' + esc(meta) + '</small><em aria-hidden="true">' + esc(tag) + '</em><span class="cf-sr">' +
+                esc(L('Form ', 'Form ', 'Forma ') + (i + 1) + ': ' + (s.reached ? s.name + (s.current ? ', ' + L('now', 'jetzt', 'ahora') : '') : L('not discovered yet', 'noch nicht entdeckt', 'aún sin descubrir') + ', ' + L('from ', 'ab ', 'desde ') + nf(s.xp) + ' XP')) + '</span></li>';
+        }).join('');
         const sel = V.pend || (t ? t.split('') : ['', '', '', '']);
         const typeBtns = AX.map((a, i) => '<div class="cf-ax" role="group">' + [0, 1].map(j => '<button type="button" data-cf="ax" data-i="' + i + '" data-v="' + a[j] + '" aria-pressed="' + (sel[i] === a[j]) + '">' + esc(pick3(a[2 + j])) + '</button>').join('') + '</div>').join('');
         return '<div class="cf-panel cf-misty" role="dialog" aria-modal="true" aria-labelledby="cfTitle"><header class="cf-head"><h2 id="cfTitle">' + esc(nm) + '</h2>' + xBtn + '</header><div class="cf-scroll">' +
@@ -286,7 +296,7 @@
             '<b class="cf-fname">' + esc(now.name) + '</b><small class="cf-sub">' + esc(L('Form ' + (ci + 1) + ' of ' + steps.length, 'Form ' + (ci + 1) + ' von ' + steps.length, 'Forma ' + (ci + 1) + ' de ' + steps.length) + (sign ? ' · ' + signTxt + ' · ' + fam : '')) + '</small>' +
             '<i class="cf-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '" aria-label="' + esc(L('XP to the next evolution', 'XP bis zur nächsten Entwicklung', 'XP hasta la próxima evolución')) + '"><i style="width:' + pct + '%"></i></i>' +
             '<small class="cf-next"><b>' + xp + ' XP</b> · ' + esc(nextTxt) + '</small></div>' +
-            '<h3>' + esc(L('Evolution path', 'Entwicklungsweg', 'Camino de evolución')) + '</h3><ol class="cf-path">' + forms + '</ol>' +
+            '<h3 class="cf-path-h"><span>' + esc(L('Evolution path', 'Entwicklungsweg', 'Camino de evolución')) + '</span><small>' + esc(L(found + ' of ' + steps.length + ' discovered', found + ' von ' + steps.length + ' entdeckt', found + ' de ' + steps.length + ' descubiertas')) + '</small></h3><ol class="cf-path">' + forms + '</ol>' +
             '<p class="cf-tiny">' + esc(L('It evolves with what you log: meals, water, moves, scans. Forms never shrink.', 'Es entwickelt sich mit dem, was du loggst: Essen, Wasser, Bewegung, Scans. Formen schrumpfen nie.', 'Evoluciona con lo que registras: comidas, agua, movimiento, escaneos. Las formas nunca encogen.')) + '</p>' +
             '<details class="cf-pick"' + (V.pickOpen ? ' open' : '') + '><summary>' + esc(L('Style (optional)', 'Stil (optional)', 'Estilo (opcional)')) + (t ? '<span class="cf-pick-t">' + esc(t) + '</span>' : '') + '</summary>' + typeBtns +
             '<p class="cf-tiny">' + esc(L('Only changes how your companion looks and talks. Not a test or a diagnosis.', 'Ändert nur, wie dein Begleiter aussieht und spricht. Kein Test, keine Diagnose.', 'Solo cambia cómo se ve y habla tu compañero. No es un test ni un diagnóstico.')) + '</p>' + (t ? '<button type="button" class="cf-link" data-cf="clear">' + esc(L('Remove style', 'Stil entfernen', 'Quitar estilo')) + '</button>' : '') +

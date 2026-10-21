@@ -77,15 +77,40 @@ test('locked forms are never drawn: mystery orb and ??? until reached', () => {
     assert.ok(/\.cf-mystery \{/.test(css) && !/\.cf-locked \.cf-sm/.test(css), 'no faded silhouette style left');
 });
 
-test('path tiles fit a 320pt iPhone SE: thumbnail and mystery orb shrink with the tile instead of spilling', () => {
-    /* Oct 21 2026 inspection: at 320pt each Misty-sheet tile is ~44px inside; a fixed 58px thumbnail spilled 6px into the
-       next column and the 52px orb + margins overflowed. tools/companion/evo-inspect.cjs measures the same in a browser. */
+test('path rows fit a 320pt iPhone SE: a fixed node column and a shrinking text column, nothing spills', () => {
+    /* Oct 21 2026: the 5-column tile grid (thumbnail spilled 6px at 320pt) became a vertical timeline. Each row is a grid of a
+       fixed node, a minmax(0, 1fr) text column that wraps, and the status pill; at <=340px the node shrinks to 52px.
+       tools/companion/evo-inspect.cjs measures the same in a browser. */
     const css = read('companion.css');
     const rule = sel => { const m = css.match(new RegExp(sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*\\{([^}]*)\\}')); return m ? m[1] : ''; };
-    const sm = rule('.cf-misty .cf-sm'), orb = rule('.cf-misty .cf-mystery'), step = rule('.cf-misty .cf-step');
-    assert.match(sm, /width:\s*100%/); assert.match(sm, /max-width:\s*58px/); assert.match(sm, /aspect-ratio/); assert.doesNotMatch(sm, /(^|;)\s*width:\s*58px/);
-    assert.match(orb, /width:\s*min\(52px/); assert.match(orb, /aspect-ratio:\s*1/);
-    assert.match(step, /grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+    const step = rule('.cf-misty .cf-step'), sm = rule('.cf-misty .cf-sm'), orb = rule('.cf-misty .cf-mystery');
+    assert.match(step, /grid-template-columns:\s*60px minmax\(0,\s*1fr\) auto/);
+    assert.match(sm, /width:\s*60px/); assert.match(sm, /aspect-ratio:\s*1/);
+    assert.match(orb, /width:\s*60px/); assert.match(orb, /aspect-ratio:\s*1/);
+    assert.match(rule('.cf-misty .cf-step > b'), /overflow-wrap:\s*anywhere/);
+    const narrow = css.slice(css.indexOf('@media (max-width: 340px)'));
+    assert.match(narrow, /grid-template-columns:\s*52px minmax\(0,\s*1fr\) auto/);
+});
+test('sleek Evolution path: roomy glass timeline, readable labels, cyan edges, no white borders (Oct 21 2026)', () => {
+    const css = read('companion.css'), js = read('companion.js');
+    const sleek = css.slice(css.indexOf('/* ---------- sleek path'));
+    assert.ok(sleek.length > 1000, 'sleek block present');
+    assert.match(sleek, /\.cf-misty \.cf-path \{[^}]*flex-direction:\s*column/, 'one row per form, not a 5-column grid');
+    assert.doesNotMatch(css, /repeat\(5,/, 'old tile grid gone');
+    assert.doesNotMatch(sleek, /border[^;{}]*(#fff\b|#ffffff|rgba\(255,\s*255,\s*255)/i, 'no white borders');
+    assert.match(sleek, /backdrop-filter:\s*blur/, 'translucent glass');
+    assert.doesNotMatch(css, /html\[data-ui=light\] \.cf-panel \{/, 'always the dark brand glass');
+    for (const k of ['.cf-misty .cf-step > b', '.cf-misty .cf-step > .cf-meta', '.cf-misty .cf-step > .cf-k', '.cf-misty .cf-tiny', '.cf-misty .cf-sub'])
+        assert.doesNotMatch((sleek.match(new RegExp(k.replace(/[.*+?^${}()|[\]\\>]/g, '\\$&') + '\\s*\\{([^}]*)\\}')) || ['', ''])[1], /opacity:\s*\.[0-6]/, k + ' is not faded');
+    /* WCAG AA: every text colour in the path against the darkest glass */
+    const lum = h => { const c = [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16) / 255).map(v => v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4)); return .2126 * c[0] + .7152 * c[1] + .0722 * c[2]; };
+    const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + .05) / (Math.min(x, y) + .05); };
+    for (const fg of ['#f4f8ff', '#8fdcff', '#b9c7e6', '#aab8da', '#aebcdc', '#c9d4ef']) assert.ok(ratio(fg, '#1a3570') >= 4.5, fg + ' AA on the lightest row glass');
+    assert.ok(ratio('#04122b', '#7fe3ff') >= 4.5, 'Now pill AA');
+    assert.match(js, /'<small class="cf-k" aria-hidden="true">'/, 'each row names its form number');
+    assert.match(js, /s\.reached \? s\.trait :/, 'reached rows say what the form grew; locked rows never reveal it');
+    assert.match(js, /class="cf-path-h"/, 'path heading counts the forms discovered');
+    assert.match(css.slice(css.lastIndexOf('@media (prefers-reduced-motion: reduce)')), /\.cf-step\.cur \.cf-sm \{ animation: none/, 'reduced motion stills the current glow');
 });
 test('the evolution moment and the path name the new anatomy in three languages', () => {
     const h = read('herb-tamagotchi.js');

@@ -121,7 +121,7 @@
             canvas = D.createElement('canvas'); canvas.className = 'bw3-canvas'; canvas.setAttribute('aria-hidden', 'true');
             canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); fail('context-lost'); });
             world = S.createWorld(THREE, canvas, { places: PLACES, small: W.innerWidth < 380, dprCap: dprCap({ w: W.innerWidth, mem: navigator.deviceMemory }), theme: themeNow(), shouldRender });
-            Object.assign(api, { THREE, scene: world.scene, camera: world.camera, renderer: world.renderer, hub: world.hub, regions: world.regions, rig: world.rig });
+            Object.assign(api, { THREE, scene: world.scene, camera: world.camera, renderer: world.renderer, hub: world.hub, cell: world.cell, regions: world.regions, rig: world.rig });
             pendingFrames.forEach(fn => { const t = pendingBind.get(fn); const off = world.onFrame(fn); if (t) t.bind(off); }); pendingFrames.clear(); pendingBind.clear();
             api.ready = true; api.state = 'ready'; H.classList.add('bw3-ready');
             try { W.dispatchEvent(new CustomEvent('lowi:world3d-ready', { detail: api })); } catch (e) {}
@@ -133,7 +133,7 @@
     function fail(why) {
         api.state = 'fallback'; api.why = why; api.ready = false; H.classList.remove('bw3-ready'); H.classList.add('bw3-off');
         try { if (world) world.dispose(); } catch (e) {}
-        world = null; Object.assign(api, { scene: null, camera: null, renderer: null, hub: null, regions: [], rig: null });
+        world = null; Object.assign(api, { scene: null, camera: null, renderer: null, hub: null, cell: null, regions: [], rig: null });
         if (stage) { stage.remove(); stage = null; }
         D.querySelectorAll('.bw3-home').forEach(e => e.classList.remove('bw3-home'));
         if (full) close();
@@ -259,7 +259,9 @@
         if (!world || mode !== 'home') return;
         const sr = stage.getBoundingClientRect(), b = els.bubble && els.bubble.getBoundingClientRect(), bw = els.bubble ? (els.bubble.offsetWidth || 0) : 0;
         world.resize(sr.width, sr.height);
-        if (b && b.width) { world.setFocus({ x: b.left + b.width / 2 - sr.left, y: b.top + b.height / 2 - sr.top }); world.setMode('home', { radiusPx: Math.min(sr.height * 0.48, (bw || b.width) * 0.54) }); }
+        /* Misty's walk on Home moves the bubble by a few px (world-home.js keeps the applied offset on it): focus her resting spot */
+        const wkx = els.bubble ? (+els.bubble.dataset.whWx || 0) : 0, wky = els.bubble ? (+els.bubble.dataset.whWy || 0) : 0;
+        if (b && b.width) { world.setFocus({ x: b.left + b.width / 2 - sr.left - wkx, y: b.top + b.height / 2 - sr.top - wky }); world.setMode('home', { radiusPx: Math.min(sr.height * 0.48, (bw || b.width) * 0.54) }); }
         else { world.setFocus(null); world.setMode('home', { radiusPx: sr.height * 0.36 }); }
     }
     /* keep the 3D button clear of the avatar ring / theme switch (phones): float it to the nearest free spot of the window */

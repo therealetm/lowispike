@@ -213,6 +213,19 @@
         const host = f.parentElement, hr = host.getBoundingClientRect(), fr = f.getBoundingClientRect();
         if (!fr.width || !hr.width) { pill.hidden = true; return; }
         pill.hidden = false;
+        /* Home stat bubbles (html.wh-sb): the pill sits inside the fasting cell, under the timer, compact */
+        const de = document.documentElement;
+        if (de.classList.contains('wh-sb') && de.classList.contains('wh-home')) {
+            pill.classList.remove('fe-sm', 'fe-compact', 'fe-tiny');
+            pill.classList.add('fe-in');
+            pill.classList.toggle('fe-in2', fr.width >= 124);
+            if (pill.offsetWidth > fr.width * 0.84) { pill.classList.remove('fe-in2'); if (pill.offsetWidth > fr.width * 0.84) pill.classList.add('fe-tiny'); }
+            const iw = pill.offsetWidth, ih = pill.offsetHeight;
+            pill.style.left = Math.round(fr.left - hr.left + fr.width / 2 - iw / 2) + 'px';
+            pill.style.top = Math.round(fr.top - hr.top + fr.height * 0.62 - ih / 2) + 'px';
+            return;
+        }
+        pill.classList.remove('fe-in', 'fe-in2');
         /* room: from the herb bubble (or whatever sits left of the timer in the row) to the row's right edge */
         let lo = hr.left + 4, hi = hr.right - 4;
         [...host.children].forEach(c => {

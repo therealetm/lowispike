@@ -219,3 +219,56 @@ html[data-theme="light"] .wh-fhint span { background: rgba(255,255,255,.8); colo
 /* small phones: Misty and her two cells sit a touch higher and closer, so nothing meets the Today button or the screen edge */
 @media (max-height: 700px) { :root { --wh-cy: 42%; } }
 @media (max-width: 340px) { :root { --wh-bs: 176px; --wh-fs: 80px; } }
+
+/* ---------- stat bubbles + Misty's walk (Oct 15 late) ----------
+   world-home.js lays out Misty and six clear glass cells (fasting, water, Move, sun, herb, meals) so nothing touches
+   the header, quest card, hint line, thumb row, gift dot or tab bar; html.wh-sb is set once that layout is in. */
+html.wh-home.wh-sb #spHome #spBubble { left: var(--wh-cx) !important; transform: translate(calc(-50% + var(--wh-wx, 0px)), calc(-50% + var(--wh-wy, 0px))) scale(var(--wh-mz, 1)) !important; }
+@media (prefers-reduced-motion: no-preference) {
+    html.wh-home.wh-sb #spBubble.wh-walking .tmg-plant { animation: wh-step 1.3s ease-in-out infinite; transform-origin: 50% 85%; }
+}
+@keyframes wh-step { 0%, 100% { rotate: calc(var(--wh-wd, 1) * -2.5deg); translate: 0 0; } 50% { rotate: calc(var(--wh-wd, 1) * 2.5deg); translate: 0 -2px; } }
+/* the fasting cell: same node and tap, now one of the glass cells; the "since, edit start" pill sits inside it */
+html.wh-home.wh-sb #spHome #spFast { left: var(--wh-fx) !important; top: var(--wh-fy) !important; right: auto !important; bottom: auto !important; width: var(--wh-fsz) !important; height: var(--wh-fsz) !important;
+    animation: none !important; translate: none !important; border: 1.5px solid rgba(225,248,255,.42) !important; box-shadow: none !important; }
+html.wh-home.wh-sb #spFast .sp-fast-copy { justify-content: flex-start !important; padding-top: 19% !important; gap: 0 !important; }
+html.wh-home.wh-sb #spFast .sp-fast-copy > span, html.wh-home.wh-sb #spFast .sp-fast-copy > small:not(:first-child), html.wh-home.wh-sb #spFast .fb-marks { display: none !important; }
+html.wh-home.wh-sb #spFast .sp-fast-copy > small:first-child { font-size: 10.5px !important; opacity: .85; }
+html.wh-home.wh-sb #spFast .sp-fast-copy > b { font-size: clamp(13px, calc(var(--wh-fsz, 100px) * .15), 19px) !important; white-space: nowrap; }
+/* glass cells: a thin clear rim and one soft highlight, like Misty's bubble; a calm fill shows how far each one is */
+.wh-hud > .wh-stat { border-radius: 50%; padding: 0; overflow: hidden; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+    border: 1.5px solid rgba(225,248,255,.42); background: radial-gradient(circle at 32% 24%, rgba(255,255,255,.18), rgba(255,255,255,0) 40%), rgba(120,190,255,.06); box-shadow: none; color: #fff; }
+html.wh-home.wh-sb #whHud > .wh-water.wh-stat { border: 1.5px solid rgba(225,248,255,.42); box-shadow: none; background: radial-gradient(circle at 32% 24%, rgba(255,255,255,.18), rgba(255,255,255,0) 40%), rgba(120,190,255,.06); }
+.wh-hud > .wh-stat:active { transform: translate(-50%, -50%) scale(.95); }
+.wh-st-fill { position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--wh-sf, 0) * 100%); opacity: .5; transition: height .6s cubic-bezier(.2,.8,.2,1); pointer-events: none; }
+.wh-st-move .wh-st-fill { background: linear-gradient(180deg, rgba(130,240,200,.55), rgba(40,170,140,.75)); }
+.wh-st-sun .wh-st-fill { background: linear-gradient(180deg, rgba(255,226,140,.6), rgba(255,170,70,.75)); }
+.wh-st-herb .wh-st-fill { background: linear-gradient(180deg, rgba(170,240,150,.55), rgba(70,170,90,.75)); }
+.wh-st-meal .wh-st-fill { background: linear-gradient(180deg, rgba(255,190,170,.55), rgba(230,110,110,.7)); }
+.wh-st-ic, .wh-st-v { position: relative; pointer-events: none; text-shadow: 0 1px 6px rgba(0,30,80,.6); }
+.wh-hud .wh-st-ic svg { width: 20px; height: 20px; }
+.wh-st-v { font-size: 11.5px; font-weight: 700; line-height: 1.05; font-variant-numeric: tabular-nums; white-space: nowrap; max-width: 92%; overflow: hidden; text-overflow: ellipsis; }
+.wh-stat.wh-st-sm .wh-st-ic svg { width: 17px; height: 17px; }
+.wh-stat.wh-st-sm .wh-st-v { font-size: 10px; }
+.wh-stat.done { border-color: rgba(200,255,230,.7); }
+html[data-theme="light"] .wh-hud > .wh-stat, html[data-theme="light"].wh-home.wh-sb #whHud > .wh-water.wh-stat, html[data-theme="light"].wh-home.wh-sb #spHome #spFast { border-color: rgba(22,64,84,.32) !important; }
+html[data-theme="light"] .wh-hud > .wh-stat { background: radial-gradient(circle at 32% 24%, rgba(255,255,255,.55), rgba(255,255,255,0) 42%), rgba(255,255,255,.28); color: #0b1d3f; }
+html[data-theme="light"] .wh-st-ic, html[data-theme="light"] .wh-st-v { text-shadow: 0 1px 4px rgba(255,255,255,.7); }
+@media (prefers-reduced-motion: no-preference) {
+    html.wh-home.wh-sb #whHud > .wh-st-move { animation: wh-float 7.2s ease-in-out -1.1s infinite; }
+    html.wh-home.wh-sb #whHud > .wh-st-sun { animation: wh-float 6.4s ease-in-out -3.3s infinite; }
+    html.wh-home.wh-sb #whHud > .wh-st-herb { animation: wh-float 7.6s ease-in-out -0.4s infinite; }
+    html.wh-home.wh-sb #whHud > .wh-st-meal { animation: wh-float 6.9s ease-in-out -4.6s infinite; }
+}
+/* before the layout is in (or on a screen too small for it) the four new cells stay out of the way */
+html:not(.wh-sb) .wh-hud > .wh-stat:not(.wh-water) { display: none; }
+/* on the world map the cells step aside so every glow is free to tap */
+html.wh-home.wh-mapview .wh-hud > .wh-stat, html.wh-home.wh-mapview.wh-sb #spHome #spFast, html.wh-home.wh-mapview.wh-sb .fe-bub { opacity: 0 !important; pointer-events: none !important; }
+html.wh-home.wh-sb #spHome #spFast, html.wh-home.wh-sb .fe-bub { transition: opacity .3s; }
+/* the free-gift dot sits just above the Klang button, never on it */
+html.wh-home #spHome #whHud > .hs-gift { left: calc(var(--hs-gl, calc(var(--wh-l, 0px) + max(16px, env(safe-area-inset-left)))) + 7px); bottom: calc(var(--wh-tb, 84px) + 82px); }
+html.wh-home #spHome #whHud > .hs-giftpop { bottom: calc(var(--wh-tb, 84px) + 134px); }
+/* with the stat layout in, the gift dot floats in the ring just under Misty (world-home.js picks a free spot) */
+html.wh-home.wh-sb #spHome #whHud > .hs-gift { left: calc(var(--wh-gx) - 22px); top: calc(var(--wh-gy) - 22px); bottom: auto; }
+html.wh-home.wh-mapview #spHome #whHud > .hs-gift { opacity: 0; pointer-events: none; }
+html.wh-home.wh-sb #spHome .sp-heroes .fe-bub.fe-in { z-index: 4 !important; pointer-events: auto; }

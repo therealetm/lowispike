@@ -298,5 +298,5 @@ export function createWorld(THREE, canvas, opts) {
     function renderOnce() { step(0.016); renderer.render(scene, camera); }
     function dispose() { stop(); renderer.dispose(); }
     setTheme(opts.theme || 'dark');
-    return { scene, camera, hub, regions, onFrame, resize, setFocus, setMode, drag, release, zoom, setGyro, setGlow, setTheme, flyTo, pick, project, start, stop, fps, renderOnce, dispose, get running() { return running; }, get dpr() { return dpr; }, rig, renderer };
+    return { scene, camera, hub, cell, regions, onFrame, resize, setFocus, setMode, drag, release, zoom, setGyro, setGlow, setTheme, flyTo, pick, project, start, stop, fps, renderOnce, dispose, get running() { return running; }, get dpr() { return dpr; }, rig, renderer };
 }

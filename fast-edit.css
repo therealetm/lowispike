@@ -112,3 +112,15 @@ html[data-theme="light"] .fe-ic, html.light .fe-ic { box-shadow: 0 0 14px rgba(6
     .fe-card { transform: none !important; }
     .fst-sum.fe-pop, .fe-shake { animation: none !important; }
 }
+/* Home stat bubbles (html.wh-sb): the pill sits inside the fasting cell, small and quiet; one line "since 20:00 ✎",
+   two lines ("since 20:00" / "✎ Edit start") when the cell is big enough */
+.fe-bub.fe-in { height: 22px; gap: 4px; padding: 0 8px; font-size: 10.5px; z-index: 7; background: rgba(12, 22, 56, .62); box-shadow: none; border-width: 1px; }
+.fe-bub.fe-in .fe-l, .fe-bub.fe-in .fe-bd, .fe-bub.fe-in .fe-el, .fe-bub.fe-in .fe-et { display: none; }
+.fe-bub.fe-in .fe-s { display: inline; }
+.fe-bub.fe-in .fe-bs { opacity: 1; }
+.fe-bub.fe-in .fe-be i { font-size: 11px; }
+.fe-bub.fe-in.fe-in2 { flex-direction: column; justify-content: center; height: auto; gap: 1px; padding: 3px 9px; border-radius: 12px; line-height: 1.15; }
+.fe-bub.fe-in.fe-in2 .fe-el { display: inline; }
+.fe-bub.fe-in.fe-tiny .fe-bs { display: none; }
+.fe-bub.fe-in.fe-tiny .fe-et { display: inline; }
+html[data-theme="light"] .fe-bub.fe-in, html.light .fe-bub.fe-in { background: rgba(255, 255, 255, .82); box-shadow: none; }

@@ -226,6 +226,13 @@
         }
     }
     /* one short hint line with its own spot; shown when Home opens and right after the world map zooms */
+    /* the hint's own line: under the header, and under the quest card where that card spans the middle (phones) */
+    function hintTop() {
+        const l = parseFloat(getComputedStyle(H).getPropertyValue('--wh-l')) || 0, mid = l + ((D.documentElement.clientWidth || W.innerWidth) - l) / 2;
+        let top = 0;
+        D.querySelectorAll('#spHome .sp-top, #tab-home .f3-board, #tab-home .rs-head').forEach(el => { const r = el.getBoundingClientRect(); if (r.width && r.height && r.left < mid && r.right > mid && getComputedStyle(el).visibility !== 'hidden') top = Math.max(top, r.bottom); });
+        return Math.max(top + 10, 70);
+    }
     function paintHint() {
         const h = D.getElementById('whHint'); if (!h) return;
         const live = H.classList.contains('wh-world-live') && homeWorld();
@@ -239,11 +246,9 @@
         let blk = false;
         if (on) {
             /* its own spot: in the open sky between the header / quest card and Misty, far from the thumb row buttons */
-            let top = 0;
-            D.querySelectorAll('#spHome .sp-top, #spHome .f3-board').forEach(el => { const r = el.getBoundingClientRect(); if (r.width && r.height && getComputedStyle(el).visibility !== 'hidden') top = Math.max(top, r.bottom); });
-            const tv = Math.round(Math.max(top + 10, 70)) + 'px'; if (h.style.top !== tv) h.style.top = tv;
+            const tv = Math.round(hintTop()) + 'px'; if (h.style.top !== tv) h.style.top = tv;
             const hr = h.getBoundingClientRect();
-            D.querySelectorAll('#spFast, #whHud .wh-water, #whHud .wh-zoom, #whHud .wa-btn, #whHud .wh-todaybtn, .fe-bub, #spHome .sp-top, #spHome .f3-board, #spBubble, #tabbar').forEach(el => {
+            D.querySelectorAll('#spFast, #whHud .wh-water, #whHud .wh-stat, #whHud .hs-gift, #whHud .wh-zoom, #whHud .wa-btn, #whHud .wh-todaybtn, .fe-bub, #spHome .sp-top, #tab-home .f3-board, #tab-home .rs-head, #spBubble, #tabbar').forEach(el => {
                 const r = el.getBoundingClientRect(); if (!r.width) return;
                 if (r.left < hr.right - 1 && r.right > hr.left + 1 && r.top < hr.bottom - 1 && r.bottom > hr.top + 1) blk = true;
             });
@@ -380,6 +385,7 @@
     }
     function frame(dt) {
         const r = rig(); if (!r) return;
+        try { walkFrame(dt); } catch (e) { }
         if (st.zoomAnim) {
             const z = st.zoomAnim; z.t += dt;
             if ((r.mode !== 'full' && r.mode !== 'home') || Math.abs(r.vy) > 0.02) st.zoomAnim = null;
@@ -507,6 +513,146 @@
         if (st.today && !topR2()) { e.preventDefault(); openToday(false); }
     }
 
+    /* ---------- stat bubbles + Misty's walk (Oct 15 late) ----------
+       Fasting, water, Move, sun, herb and meals float over the world as clear glass cells, the same simple style as
+       Misty's own bubble. Each keeps its old tap: fasting sheet (its "since, edit start" pill now sits inside it), +1 glass,
+       the Move tab, the sun sheet, Misty's growth view, the meal sheet. Misty strolls from cell to cell in between. */
+    const STAT_DEF = {
+        move: { ic: 'move', attr: { 'data-sp': 'move' } },
+        sun: { ic: 'sun', attr: { 'data-ls': 'info' } },
+        herb: { ic: 'leaf', attr: { 'data-sp': 'path' } },
+        meal: { ic: 'plate', attr: { 'data-sp': 'meal' } }
+    };
+    function ico(name) { try { return W.LowiIcons ? W.LowiIcons.svg(name, { cls: 'wh-st-svg' }) : ''; } catch (e) { return ''; } }
+    function ensureStats() {
+        const hud = D.getElementById('whHud'); if (!hud) return null;
+        Object.keys(STAT_DEF).forEach(k => {
+            if (hud.querySelector('.wh-st-' + k)) return;
+            const d = STAT_DEF[k], b = btn('wh-stat wh-st-' + k, k, '<span class="wh-st-fill" aria-hidden="true"></span><span class="wh-st-ic" aria-hidden="true">' + ico(d.ic) + '</span><b class="wh-st-v" aria-hidden="true"></b>');
+            Object.keys(d.attr).forEach(a => b.setAttribute(a, d.attr[a]));
+            b.setAttribute('data-st', k);
+            const w = hud.querySelector('.wh-water'); hud.insertBefore(b, w ? w.nextSibling : null);
+        });
+        const w = hud.querySelector('.wh-water'); if (w) { w.classList.add('wh-stat'); w.setAttribute('data-st', 'water'); }
+        return hud;
+    }
+    function paintStats() {
+        const hud = ensureStats(); if (!hud) return;
+        let v = null, s = null;
+        try { v = W.LowiLiving && W.LowiLiving.live(); } catch (e) { v = null; }
+        try { s = W.LowiSun && W.LowiSun.live(); } catch (e) { s = null; }
+        const set = (k, val, fill, label, done) => {
+            const b = hud.querySelector('.wh-st-' + k); if (!b) return;
+            const sig = [val, fill.toFixed(3), label, done].join('|'); if (b.dataset.sig === sig) return; b.dataset.sig = sig;
+            b.querySelector('.wh-st-v').textContent = val; b.style.setProperty('--wh-sf', fill.toFixed(3));
+            b.classList.toggle('done', !!done); b.setAttribute('aria-label', label); b.title = label;
+        };
+        const moved = !!(v && v.moved), meals = v ? +v.meals || 0 : 0;
+        set('move', moved ? '\u2713' : T('Move', 'Bewegen', 'Mover'), moved ? 1 : 0,
+            moved ? T('Move: done today, open Move', 'Bewegung: heute erledigt, Bewegen öffnen', 'Movimiento: hecho hoy, abrir Mover') : T('Move: not yet today, open Move', 'Bewegung: heute noch offen, Bewegen öffnen', 'Movimiento: pendiente hoy, abrir Mover'), moved);
+        if (s) { const away = !!s.away; set('sun', away ? '\u263E' : s.points + '/' + s.goal, away ? 0 : s.ratio,
+            away ? T('Sun: away for now, open sun', 'Sonne: gerade unterwegs, Sonne öffnen', 'Sol: fuera por ahora, abrir sol') : T('Sun: ' + s.points + ' of ' + s.goal + ', open sun', 'Sonne: ' + s.points + ' von ' + s.goal + ', Sonne öffnen', 'Sol: ' + s.points + ' de ' + s.goal + ', abrir sol'), s.full); }
+        else set('sun', '\u2013', 0, T('Sun', 'Sonne', 'Sol'), false);
+        const xp = v ? +v.xp || 0 : xpNow(), prog = v ? Math.max(0, Math.min(1, +v.progress || 0)) : 0;
+        set('herb', xp + ' XP', prog, T('Herb: ' + xp + ' XP, open Misty\'s growth', 'Kräutlein: ' + xp + ' XP, Mistys Entwicklung öffnen', 'Hierbita: ' + xp + ' XP, abrir la evolución de Misty'), false);
+        set('meal', String(meals), Math.min(1, meals / 3),
+            T(meals + (meals === 1 ? ' meal' : ' meals') + ' today, log a meal', meals + (meals === 1 ? ' Mahlzeit' : ' Mahlzeiten') + ' heute, Mahlzeit eintragen', meals + (meals === 1 ? ' comida' : ' comidas') + ' hoy, anotar comida'), meals >= 3);
+    }
+    function visRect(el, hud) {
+        if (!el) return null;
+        const r = el.getBoundingClientRect(); if (!r.width || !r.height) return null;
+        if (!hud) {
+            try { if (el.checkVisibility && !el.checkVisibility({ opacityProperty: true, visibilityProperty: true })) return null; } catch (e) { }
+            const cs = getComputedStyle(el); if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) return null;
+        } else if (getComputedStyle(el).display === 'none') return null;
+        return { l: r.left, t: r.top, r: r.right, b: r.bottom };
+    }
+    function statObstacles(withHint) {
+        const o = [], add = (sel, hud) => D.querySelectorAll(sel).forEach(e => { const r = visRect(e, hud); if (r && r.b > 0 && r.t < W.innerHeight) o.push(r); });
+        add('#spHome .sp-top'); add('#tab-home .f3-board'); add('#tab-home .rs-head');
+        add('#lcA2hs, .lc-banner');
+        add('#whHud .wh-todaybtn, #whHud .wh-zoom, #whHud .wa-btn, #whHud .wh-x', true);
+        const tb = D.getElementById('tabbar'), tr = visRect(tb, true); if (tr) o.push(tr);
+        if (withHint) {
+            const h = D.getElementById('whHint');
+            if (h && h.offsetWidth) { const top = hintTop(), l = parseFloat(getComputedStyle(H).getPropertyValue('--wh-l')) || 0, cx = l + ((D.documentElement.clientWidth || W.innerWidth) - l) / 2; o.push({ l: cx - h.offsetWidth / 2, t: top, r: cx + h.offsetWidth / 2, b: top + h.offsetHeight }); }
+        }
+        return o;
+    }
+    function layoutStats() {
+        const hud = D.getElementById('whHud'), bub = D.getElementById('spBubble'), fast = D.getElementById('spFast');
+        if (!hud || !bub || !fast || !homeActive() || st.today) return;
+        const vw = D.documentElement.clientWidth || W.innerWidth, vh = W.innerHeight;
+        const hl = Math.max(0, parseFloat(getComputedStyle(H).getPropertyValue('--wh-l')) || 0); /* the iPad side tab bar, if any */
+        /* Misty's own spot and size as the stylesheet gives them (clamped like --wh-bs: 190..320 px) */
+        const R0 = (vw <= 340 ? 176 : Math.max(190, Math.min(320, vw * 0.54, vh * 0.40))) / 2;
+        const cy0 = vh * (vh <= 700 ? 0.42 : 0.46), cx0 = hl + (vw - hl) / 2;
+        const zone = { l: hl + 10, t: 8, r: vw - 10, b: vh - 6 };
+        const base = { zone, cx: cx0, cy: cy0, R0, pad: vw < 360 ? 7 : 9, walk: Math.round(Math.max(10, Math.min(26, R0 * 0.13))), minFast: vw < 360 ? 46 : 50, minSmall: vw < 360 ? 25 : 27, gift: 22 };
+        const key = [vw, vh, Math.round(hl), JSON.stringify(statObstacles(true).map(r => [r.l, r.t, r.r, r.b].map(Math.round)))].join('|');
+        if (key === st.sbKey) return; st.sbKey = key;
+        let lay = C.statLayout(Object.assign({}, base, { obst: statObstacles(true) }));
+        /* a cramped screen: let the hint line give way (it hides itself where it has no room) rather than shrink everything */
+        if (!lay.ok || lay.scale < 0.8) { const l2 = C.statLayout(Object.assign({}, base, { obst: statObstacles(false) })); if (l2.ok && (!lay.ok || l2.scale >= lay.scale + 0.08)) lay = l2; }
+        if (!lay.ok) { st.lay = null; H.classList.remove('wh-sb'); ['--wh-cx', '--wh-cy', '--wh-bs', '--wh-fx', '--wh-fy', '--wh-fsz', '--wh-gx', '--wh-gy'].forEach(v => H.style.removeProperty(v)); return; }
+        st.lay = lay;
+        const px = n => Math.round(n) + 'px', m = lay.misty;
+        H.style.setProperty('--wh-cx', px(m.x)); H.style.setProperty('--wh-cy', px(m.y)); H.style.setProperty('--wh-bs', px(m.r * 2));
+        const g = lay.cells.gift; if (g) { H.style.setProperty('--wh-gx', px(g.x)); H.style.setProperty('--wh-gy', px(g.y)); }
+        const f = lay.cells.fast; H.style.setProperty('--wh-fx', px(f.x)); H.style.setProperty('--wh-fy', px(f.y)); H.style.setProperty('--wh-fsz', px(f.r * 2));
+        ['water', 'move', 'sun', 'herb', 'meal'].forEach(k => {
+            const b = hud.querySelector('[data-st="' + k + '"]'), c = lay.cells[k]; if (!b || !c) return;
+            b.style.left = px(c.x); b.style.top = px(c.y); b.style.width = b.style.height = px(c.r * 2);
+            b.classList.toggle('wh-st-sm', c.r < 30);
+        });
+        if (!H.classList.contains('wh-sb')) H.classList.add('wh-sb');
+        /* Misty moved or resized: the 3D world refocuses on her (and the fasting pill re-seats) on the next resize pass */
+        clearTimeout(st.sbRz); st.sbRz = setTimeout(() => W.dispatchEvent(new Event('resize')), 30);
+    }
+    /* her walk: a few px toward one cell, a rest, on to the next; the 3D cell (her membrane) walks with the bubble */
+    function walkFrame(dt) {
+        const bub = D.getElementById('spBubble'); if (!bub) return;
+        const still = reduced() || !st.lay || !homeActive() || D.hidden || !H.classList.contains('wh-sb');
+        const goal = still ? { x: 0, y: 0, moving: false } : C.walkAt(Date.now(), st.lay);
+        const w = st.walk || (st.walk = { x: 0, y: 0 }), k = Math.min(1, (dt || 0.016) * 3);
+        if (reduced()) { w.x = 0; w.y = 0; } else { w.x += (goal.x - w.x) * k; w.y += (goal.y - w.y) * k; }
+        const mz = parseFloat(st.mz) || 1, ax = +(w.x * mz).toFixed(2), ay = +(w.y * mz).toFixed(2);
+        if (bub.dataset.whWx !== String(ax) || bub.dataset.whWy !== String(ay)) {
+            bub.dataset.whWx = ax; bub.dataset.whWy = ay;
+            bub.style.setProperty('--wh-wx', ax + 'px'); bub.style.setProperty('--wh-wy', ay + 'px');
+        }
+        const moving = !!goal.moving && !reduced();
+        if (bub.classList.contains('wh-walking') !== moving) bub.classList.toggle('wh-walking', moving);
+        if (moving) bub.style.setProperty('--wh-wd', goal.dir < 0 ? '-1' : '1');
+        const a = w3(), cell = a && a.cell, cam = a && a.camera, r = rig();
+        if (!cell || !cam || !r) return;
+        /* the step that ran just before this hook set the cell's bob height; strip what this hook added last frame if it did not */
+        const py = cell.position.y, baseY = (st.cellSetY != null && py === st.cellSetY) ? st.cellBaseY : py;
+        let ox = 0, oy = 0, oz = 0;
+        if (r.mode === 'home' && (w.x || w.y)) {
+            const cv = a.renderer && a.renderer.domElement, ch = (cv && cv.clientHeight) || W.innerHeight;
+            const kk = 2 * r.homeDist * Math.tan((cam.fov || 50) * Math.PI / 360) / ch;
+            const right = cam.position.clone().set(1, 0, 0).applyQuaternion(cam.quaternion), up = cam.position.clone().set(0, 1, 0).applyQuaternion(cam.quaternion);
+            const wx = w.x * kk, wy = -w.y * kk;
+            ox = right.x * wx + up.x * wy; oy = right.y * wx + up.y * wy; oz = right.z * wx + up.z * wy;
+        }
+        cell.position.set(ox, baseY + oy, oz);
+        st.cellBaseY = baseY; st.cellSetY = cell.position.y;
+    }
+    /* without the live 3D world (fallback picture) the walk still runs, on its own frames */
+    function walkLoop() {
+        if (st.wlRaf) return;
+        let last = performance.now();
+        const step = now => {
+            st.wlRaf = 0;
+            if (H.classList.contains('wh-world-live') && st.off) return;
+            const dt = Math.min(0.05, (now - last) / 1000); last = now;
+            walkFrame(dt);
+            if (homeActive() && !D.hidden) st.wlRaf = requestAnimationFrame(step);
+        };
+        st.wlRaf = requestAnimationFrame(step);
+    }
+
     /* ---------- layout + lifecycle ---------- */
     function layout() {
         /* iPad landscape: the tab bar is a side rail, so left-hand Home buttons start where Home starts */
@@ -535,7 +681,8 @@
             /* back on Home: make sure the world is running again (it pauses on other tabs) */
             if (act) { st.hintUntil = Date.now() + 8000; const a = w3(); try { if (a && a.state !== 'fallback' && a.mountHome) a.mountHome(); } catch (e) { } W.dispatchEvent(new Event('resize')); }
         }
-        layout(); paintHud(); syncX();
+        layout(); paintHud(); paintStats(); layoutStats(); syncX();
+        if (act && !(H.classList.contains('wh-world-live') && st.off)) walkLoop();
         const a3 = w3(), live = !!(a3 && a3.state === 'ready' && D.querySelector('#spHome .bw3-stage.bw3-live'));
         if (H.classList.contains('wh-world-live') !== live) { H.classList.toggle('wh-world-live', live); if (live) st.hintUntil = Date.now() + 8000; }
         if (live) hook();

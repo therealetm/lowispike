@@ -84,7 +84,86 @@
         const mid = (homeD + maxD) / 2;
         return dist > mid - 0.01 ? { to: homeD, out: false } : { to: maxD, out: true };
     }
-    const api = { AURAS, STAGES, pick, aura, owns, cleanAura, auraItems, stage, heroView, rigAngles, nearAngle, zoomTarget };
+    /* ---------- Home stat bubbles (Oct 15 late): six glass cells float around Misty ----------
+       Pure layout: Misty's cell plus fasting, water, Move, sun, herb and meals as circles that never touch each other,
+       the screen edge or anything in `obst` (header, quest card, thumb row buttons, gift dot, tab bar, hint line).
+       Misty keeps `walk` px of room on every side, so her slow walk from cell to cell never reaches a stat cell. */
+    const STATS = ['fast', 'water', 'move', 'sun', 'herb', 'meal'];
+    /* angles in degrees clockwise from 12 o'clock: fasting + water low (near the thumb), Move + meals at the sides, sun + herb up top */
+    const STAT_SETS = [
+        { fast: 225, water: 135, move: 90, meal: 270, sun: 315, herb: 45 },
+        { fast: 212, water: 148, move: 70, meal: 290, sun: 330, herb: 30 },
+        { fast: 238, water: 122, move: 100, meal: 260, sun: 300, herb: 60 },
+        { fast: 200, water: 160, move: 62, meal: 298, sun: 338, herb: 22 },
+        /* short, wide room (small phones, landscape): the low pair spreads out to the sides */
+        { fast: 248, water: 112, move: 66, meal: 294, sun: 338, herb: 22 },
+        { fast: 258, water: 102, move: 54, meal: 306, sun: 350, herb: 10 }
+    ];
+    function circRect(x, y, r, b, pad) {
+        const nx = Math.max(b.l, Math.min(x, b.r)), ny = Math.max(b.t, Math.min(y, b.b));
+        const dx = x - nx, dy = y - ny;
+        return dx * dx + dy * dy < (r + pad) * (r + pad);
+    }
+    function statTry(o, s, set, cx, cy) {
+        const z = o.zone, pad = o.pad, obst = o.obst || [];
+        const R = o.R0 * s, walk = Math.max(6, Math.round(o.walk * s));
+        const rr = { fast: Math.max(o.minFast, o.rf * s), water: Math.max(o.minSmall + 6, o.rw * s), move: Math.max(o.minSmall, o.rs * s), sun: Math.max(o.minSmall, o.rs * s), herb: Math.max(o.minSmall, o.rs * s), meal: Math.max(o.minSmall, o.rs * s) };
+        const inZone = (x, y, r) => x - r >= z.l && x + r <= z.r && y - r >= z.t && y + r <= z.b;
+        const hits = (x, y, r) => obst.some(b => circRect(x, y, r, b, pad));
+        if (!inZone(cx, cy, R + walk) || hits(cx, cy, R + walk)) return null;
+        const out = { misty: { x: cx, y: cy, r: R }, walk, scale: s, cells: {} };
+        const placed = [];
+        /* the free-gift dot (o.gift = its radius) floats in the ring too, just under Misty */
+        const keys = o.gift ? STATS.concat('gift') : STATS; rr.gift = o.gift;
+        for (const k of keys) {
+            const r = rr[k], a = (k === 'gift' ? (set.gift != null ? set.gift : 180) : set[k]) * Math.PI / 180, ring = R + walk + pad + r;
+            const x = cx + Math.sin(a) * ring, y = cy - Math.cos(a) * ring;
+            if (!inZone(x, y, r) || hits(x, y, r)) return null;
+            for (const p of placed) { const dx = p.x - x, dy = p.y - y; if (dx * dx + dy * dy < (p.r + r + pad) * (p.r + r + pad)) return null; }
+            const c = { x, y, r }; placed.push(c); out.cells[k] = c;
+        }
+        return out;
+    }
+    /* o: { zone:{l,t,r,b}, obst:[{l,t,r,b}], cx, cy (Misty's preferred centre), R0 (preferred radius), rf/rw/rs (fasting / water / small radius),
+            minFast, minSmall, pad, walk }. Biggest Misty first, then the calmest angles, then the smallest shift from her spot. */
+    function statLayout(o) {
+        o = Object.assign({ pad: 8, walk: 18, minFast: 44, minSmall: 25 }, o || {});
+        if (!o.rf) o.rf = Math.max(48, Math.min(72, o.R0 * 0.5));
+        if (!o.rw) o.rw = Math.max(36, Math.min(56, o.R0 * 0.4));
+        if (!o.rs) o.rs = Math.max(27, Math.min(40, o.R0 * 0.3));
+        const dy = [0, 16, -16, 32, -32, 48, -48, 64, -64, 84, -84], dx = [0, -24, 24, -48, 48, -80, 80];
+        for (let s = 1; s >= 0.5 - 1e-9; s -= 0.04) {
+            for (const set of STAT_SETS) for (const y of dy) for (const x of dx) {
+                const r = statTry(o, s, set, o.cx + x, o.cy + y);
+                if (r) { r.ok = true; return r; }
+            }
+        }
+        /* nothing fits (a tiny or very crowded screen): the smallest ring, flagged so the caller can fall back */
+        const f = { misty: { x: o.cx, y: o.cy, r: o.R0 * 0.5 }, walk: 0, scale: 0.5, cells: {}, ok: false };
+        STATS.forEach(k => { const a = STAT_SETS[0][k] * Math.PI / 180, r = o.minSmall, ring = f.misty.r + o.pad + r; f.cells[k] = { x: o.cx + Math.sin(a) * ring, y: o.cy - Math.cos(a) * ring, r }; });
+        return f;
+    }
+    /* Misty's walk: she drifts toward one stat cell, rests there, then strolls on to the next one round the ring.
+       Offsets in px from her resting centre, never longer than `walk`, so she never touches a cell. Deterministic in time. */
+    const WALK_ORDER = ['sun', 'herb', 'move', 'water', 'fast', 'meal'];
+    function walkAt(tMs, lay, opt) {
+        opt = Object.assign({ travel: 5200, rest: 6800 }, opt || {});
+        if (!lay || !lay.misty || !lay.walk) return { x: 0, y: 0, moving: false, at: null };
+        const pts = WALK_ORDER.filter(k => lay.cells[k]).map(k => {
+            const c = lay.cells[k], dx = c.x - lay.misty.x, dy = c.y - lay.misty.y, d = Math.hypot(dx, dy) || 1;
+            return { k, x: dx / d * lay.walk, y: dy / d * lay.walk };
+        });
+        if (!pts.length) return { x: 0, y: 0, moving: false, at: null };
+        const leg = opt.travel + opt.rest, n = pts.length, t = ((tMs % (leg * n)) + leg * n) % (leg * n), i = Math.floor(t / leg), u = t - i * leg;
+        const from = pts[(i + n - 1) % n], to = pts[i];
+        if (u >= opt.travel) return { x: to.x, y: to.y, moving: false, at: to.k };
+        const k = u / opt.travel, e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+        /* stroll through a point a bit closer to her centre, so the path curves round her spot instead of cutting a chord */
+        const mx = (from.x + to.x) * 0.3, my = (from.y + to.y) * 0.3;
+        const q = 1 - e, x = q * q * from.x + 2 * q * e * mx + e * e * to.x, y = q * q * from.y + 2 * q * e * my + e * e * to.y;
+        return { x, y, moving: true, at: null, dir: Math.sign(to.x - from.x) || 1 };
+    }
+    const api = { AURAS, STAGES, pick, aura, owns, cleanAura, auraItems, stage, heroView, rigAngles, nearAngle, zoomTarget, STATS, STAT_SETS, statLayout, walkAt, WALK_ORDER };
     if (typeof module === 'object' && module.exports) module.exports = api;
     root.LowiWorldHomeCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -123,7 +123,14 @@ async function standalone(base, sz) {
    Affiliates). page.mouse is used rather than locator.click because WebKit's stability wait never settles on the busy Community page. */
 async function tap(p, sel) { await sleep(400); const b = await p.locator(sel).boundingBox(); if (!b) throw new Error('no box for ' + sel); await p.mouse.click(b.x + b.width / 2, b.y + b.height / 2); }
 /* the same real tap inside the Affiliates frame (scrolled into view first) */
-async function ftap(p, loc) { await sleep(350); await loc.scrollIntoViewIfNeeded({ timeout: 5000 }).catch(() => {}); const b = await loc.boundingBox(); if (!b) throw new Error('no box in frame'); await p.mouse.click(b.x + b.width / 2, b.y + b.height / 2); }
+async function ftap(p, loc) {
+  await sleep(350); await loc.evaluate(e => e.scrollIntoView({ block: 'center' })); await sleep(250);
+  const b = await loc.boundingBox(); if (!b) throw new Error('no box in frame');
+  const x = b.x + b.width / 2, y = b.y + b.height / 2;
+  const top = await p.evaluate(([x, y]) => { const e = document.elementFromPoint(x, y); return e ? e.tagName + '#' + e.id + '.' + String(e.className).slice(0, 40) : 'none'; }, [x, y]);
+  if (!/^IFRAME/.test(top)) throw new Error('tap at ' + Math.round(x) + ',' + Math.round(y) + ' lands on ' + top + ' (box ' + JSON.stringify(b) + ')');
+  await p.mouse.click(x, y);
+}
 async function appTabs(engine, device) {
   const W = 'app-tabs@' + engine + '/' + device;
   const R = await H.open({ engine, device, probe: false, url: LIVE ? LIVE + 'index.html' : '' });

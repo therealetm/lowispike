@@ -931,3 +931,11 @@ What was decided:
 - Subtitles say where the tap goes: "Opens the LOWiSPIKE GPT in ChatGPT" (DE / ES too).
 
 Checks: `tests/deep-gpt-shortcut.test.cjs` (new), `tests/orb-scan`, `tests/scan-fuel-gap`, `tests/grandma-test`, `tests/ui-scanner-close` updated.
+
+## 2026-10-21 · Affiliates page: spacious, one thing per screen (after Eden's Plan screen)
+
+Eman on the simplified page: "No, it looks shit. I wanted to be like this. It shouldn't be cramped", with a screenshot of Eden's Plan screen. Decision criteria (no questions, per Eman): copy that structure and spacing exactly, keep every piece of content and both copy buttons, never show more than one thing per screen, and stay in the LOWiSPIKE dark galaxy look instead of Eden's white.
+- Start screen: segmented control top left (Webdesign | UGC, the pick is filled), small pill "Kostenlos · etwa drei Minuten", huge bold condensed headline "Lass uns dein Video bauen.", one muted line, one dark-glass card with three rows (icon tile, bold title, one muted line: Dein Skript, Aufnahme & Caption, Dein Verdienst), one big full-width "Start →" button, the WhatsApp line under it, and a round "€" button bottom right that opens the earnings. The round button sits in the start screen's own bottom space, never over content.
+- Then three screens, each with a round back button: 1 Skript (series switch, on-screen text, scenes as rows, "Skript kopieren"), 2 Aufnahme (shot list, caption with "Caption kopieren", the personality/HeyGen/Higgsfield tip), 3 Verdienst (four levels, example totals, terms). The address keeps series and screen (#ugc, #ugc/shots, #webdesign/earn).
+- Look: dark blue galaxy with two glowing rings and a faint dot grid; cards and buttons are dark glass with a glowing cyan-to-green gradient edge (no white borders); the Start button is the brand cyan-green glow with dark text.
+- `tools/blueprint/check.cjs` walks the new flow and, on every screen (standalone and inside the in-app frame), fails on overlaps, stacked blocks closer than 8 px, icon touching text, text leaving its card, a headline under 30 px, sideways overflow or small tap targets. In the frame it taps the real point and fails if anything covers it.

@@ -143,12 +143,16 @@ async function appTabs(engine, device) {
     if (!st.cls || st.sel !== 'aff' || st.composer !== 'hidden' || /shown/.test(st.galaxy)) fail(W, 'view state ' + JSON.stringify(st));
     if (!(await fr.locator('body').getAttribute('class') || '').includes('embed')) fail(W, 'frame not in embed mode');
     await sleep(400); await R.shot(path.join(OUT, 'app-' + engine + '-' + device.replace(/[^a-z0-9]+/gi, '-').toLowerCase() + '-affiliates-start.png'));
+    const ff = p.frames().find(f => /\/affiliates\//.test(f.url()));
+    await layout(ff, W, 'in-app start');
     await fr.locator('#startBtn').click();
     await fr.locator('#scriptView:not([hidden]) #scriptCard').waitFor({ timeout: 5000 });
+    await layout(ff, W, 'in-app script');
     const inTxt = await fr.locator('#scriptView').textContent();
     if (!inTxt.includes('Lead-Skill') || !inTxt.includes('Skript kopieren')) fail(W, 'in-app Webdesign script missing');
     await fr.locator('#scriptView .back').click(); await fr.locator('#fabEarn').click();
     if ((await fr.locator('#earnView:not([hidden]) table.levels tbody tr').count()) !== 4) fail(W, 'in-app levels table');
+    await layout(ff, W, 'in-app earn');
     await fr.locator('#earnView .back').click(); await fr.locator('#startBtn').waitFor({ timeout: 5000 });
     const fo = await fr.locator('body').evaluate(() => ({ sw: document.documentElement.scrollWidth, w: innerWidth }));
     if (fo.sw > fo.w + 1) fail(W, 'in-app sideways overflow ' + JSON.stringify(fo));

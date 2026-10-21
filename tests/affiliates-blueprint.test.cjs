@@ -74,6 +74,16 @@ test('page: WhatsApp line on top, two cards, tip, earnings; the old tools are go
   assert.ok(!/wa\.me|api\.whatsapp/.test(all), 'no invented WhatsApp number');
 });
 
+test('start screen fits one iPhone screen: the round button sits in the bar, no empty strip kept for it, short-screen rules', () => {
+  const html = read('affiliates/index.html'), css = read('affiliates/blueprint.css');
+  const bar = html.slice(html.indexOf('<div class="bar">'), html.indexOf('<div class="hero">'));
+  assert.ok(bar.includes('id="fabEarn"'), 'the round button is inside the start bar');
+  assert.ok(!/\.fab\{[^}]*position:absolute/.test(css), 'the round button no longer floats over the bottom of the screen');
+  assert.ok(!/\.hero\{[^}]*0 72px\}/.test(css), 'no 72 px strip kept at the bottom');
+  assert.match(css, /@media \(max-height:760px\)\{[^]*#viewStart \.hero/, 'short screens tighten the start screen');
+  assert.match(css, /#viewStart \.linkline\{[^}]*margin-bottom:0/, 'the last line adds no hidden margin below it');
+});
+
 test('pages: shareable, private, branded, and the app tabs point at them', () => {
   const a = read('affiliates/index.html'), c = read('create/index.html');
   for (const [f, html] of [['affiliates', a], ['create', c]]) {

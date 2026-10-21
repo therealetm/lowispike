@@ -30,7 +30,7 @@ body.embed .view{min-height:calc(100vh - 40px)}
 @media (prefers-reduced-motion:no-preference){.view:not([hidden]){animation:in .26s ease-out both}@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}}
 .bar{display:flex;align-items:center;gap:12px;min-height:52px}
 .bartitle{font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
-.hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(18px,4vh,64px) 0 72px}
+.hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(12px,4vh,64px) 0 clamp(8px,3vh,40px)}
 .hero>*+*{margin-top:clamp(14px,2.6vh,24px)}
 .hero h1{margin-top:clamp(16px,3vh,26px)}
 .hero .lead{margin-top:clamp(14px,2.6vh,22px)}
@@ -95,9 +95,10 @@ button:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
 .seg{display:inline-flex;padding:4px;gap:2px;border-radius:999px;background:rgba(8,20,50,.82);border:1px solid rgba(143,231,255,.28);box-shadow:0 0 18px rgba(28,247,249,.08)}
 .seg button{min-height:42px;padding:0 18px;border:1px solid transparent;border-radius:999px;background:none;font-size:15.5px;font-weight:600;color:var(--muted);white-space:nowrap}
 .seg button[aria-pressed="true"]{color:var(--ink);background:linear-gradient(180deg,rgba(28,247,249,.3),rgba(22,184,138,.2));border-color:rgba(143,231,255,.7);box-shadow:0 0 16px rgba(28,247,249,.3)}
-/* the round action button sits in the free space at the bottom right of the start screen, never over its content */
+/* the round action button sits top right in the bar, beside the segmented control (Eden puts its round action there), so the start
+   screen needs no empty strip at the bottom for it and fits one iPhone screen without scrolling */
 #viewStart{position:relative}
-.fab{position:absolute;right:0;bottom:6px;width:56px;height:56px;border-radius:50%;font-size:22px;font-weight:700;color:var(--teal);
+.fab{flex:0 0 44px;margin-left:auto;width:44px;height:44px;border-radius:50%;font-size:22px;font-weight:700;color:var(--teal);
   background:var(--glass) padding-box,var(--edge) border-box;border:1.5px solid transparent;box-shadow:0 0 24px rgba(28,247,249,.3),0 10px 24px rgba(0,0,0,.4);z-index:5}
 
 /* ---------- earnings ---------- */
@@ -123,5 +124,31 @@ footer{color:var(--muted);font-size:13px;margin:22px 4px 0;line-height:1.5}
   body.embed{padding-left:12px;padding-right:12px}.seg button{padding:0 14px}}
 @media (max-width:340px){table.levels .lvw{display:none}table.levels{font-size:13.5px}table.levels th{font-size:10.5px;letter-spacing:0;overflow-wrap:anywhere}
   table.levels td,table.levels th{padding-left:2px;padding-right:2px}#levelTable{padding:12px 10px}body{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}.tile{flex-basis:40px;width:40px;height:40px}ul.examples li{padding:12px}}
-@media (max-height:600px){.hero{padding-top:20px}}
+/* Start screen fits one iPhone screen (SE and 13 in Safari) without scrolling: on shorter screens the air between blocks scales with the
+   height instead of using fixed minimums, the rows get a little slimmer, and only on the very smallest screens the row subtitles go
+   (the row titles say it already). Taller screens keep the full spacious Eden-style layout. */
+#viewStart .linkline{max-width:40ch;margin-bottom:0}
+@media (max-height:760px){
+  .view#viewStart{min-height:calc(100dvh - 42px)}
+  #viewStart .bar{min-height:52px}
+  #viewStart .hero{padding:max(12px,1.2vh) 0 4px}
+  #viewStart .hero>*+*{margin-top:max(10px,1.6vh)}
+  #viewStart .hero h1{margin-top:max(10px,1.6vh)}
+  #viewStart .hero .lead{margin-top:max(10px,1.6vh)}
+  #viewStart .hero .card{margin-top:max(12px,2.6vh)}
+  #viewStart .hero .primary{margin-top:max(12px,2.6vh);min-height:56px}
+  #viewStart .row{min-height:64px;padding-top:11px;padding-bottom:11px}
+  #viewStart .linkline{font-size:13.5px}
+}
+@media (max-height:600px){
+  body{padding-bottom:max(16px,env(safe-area-inset-bottom))}
+  .view#viewStart{min-height:calc(100dvh - 30px)}
+  #viewStart .pill{padding:3px 11px;font-size:12.5px}
+  #viewStart .hero .primary{min-height:52px}
+  #viewStart .row{padding-top:8px;padding-bottom:8px}
+  #viewStart h1{font-size:33px}
+  #viewStart .row .txt>span{display:none}
+  #viewStart .row{min-height:54px}
+  #viewStart .tile{flex-basis:40px;width:40px;height:40px}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}

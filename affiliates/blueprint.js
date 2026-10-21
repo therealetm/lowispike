@@ -69,11 +69,11 @@
   function renderStart() {
     const box = $('seriesCards'); box.textContent = '';
     const g = seg('pick-'); while (g.firstChild) box.appendChild(g.firstChild);
-    $('startLead').textContent = 'Skript holen, aufnehmen, an jedem Verkauf verdienen.';
+    $('startLead').textContent = 'Skript holen, aufnehmen, verdienen.';
     const L = $('startList'); L.textContent = '';
-    L.appendChild(row('script', 'Dein Skript', 'Fertiger Text für jede Szene, mit einem Tipp kopiert.', () => go('script')));
-    L.appendChild(row('camera', 'Aufnahme & Caption', 'Shotliste, Text auf dem Bildschirm und Caption.', () => go('shots')));
-    L.appendChild(row('earn', 'Dein Verdienst', 'Bis zu ' + B.levels().slice(-1)[0].pct + ' pro Verkauf, je nach Level.', () => go('earn')));
+    L.appendChild(row('script', 'Dein Skript', 'Jede Szene fertig zum Kopieren.', () => go('script')));
+    L.appendChild(row('camera', 'Aufnahme & Caption', 'Shotliste und Caption.', () => go('shots')));
+    L.appendChild(row('earn', 'Dein Verdienst', 'Bis zu ' + B.levels().slice(-1)[0].pct + ' pro Verkauf.', () => go('earn')));
   }
   function renderScript() {
     const v = $('scriptView'); v.textContent = '';

@@ -58,6 +58,7 @@
             '<label class="spl-every" for="' + id + 'Every"><span>' + esc(t('every')) + '</span>' +
             '<input id="' + id + 'Every" class="spl-num" type="number" inputmode="numeric" pattern="[0-9]*" min="' + C.MIN + '" max="' + C.MAX + '" step="1" enterkeyhint="done" autocomplete="off" value="' + (p.every || '') + '" aria-describedby="' + id + 'Err">' +
             '<span>' + esc(t('days')) + '</span></label>' +
+            '<p class="spl-plain" aria-live="polite">' + esc(C.plainEvery(p.every, lang())) + '</p>' +
             '<div class="r2-obsub spl-sub">' + esc(t('daysQ')) + ' <span>' + esc(t('opt')) + '</span></div>' +
             '<div class="r2-chips spl-days" role="group" aria-label="' + esc(t('daysQ')) + '">' + order.map(i => '<button type="button" class="r2-chip spl-day' + (p.days.indexOf(i) >= 0 ? ' on' : '') + '" aria-pressed="' + (p.days.indexOf(i) >= 0) + '" data-spl-day="' + i + '">' + esc(names[i]) + '</button>').join('') + '</div>' +
             '<label class="r2-fl spl-store"><span>' + esc(t('store')) + ' ' + esc(t('opt')) + '</span><input id="' + id + 'Store" maxlength="60" autocomplete="off" placeholder="' + esc(t('storePh')) + '" value="' + esc(p.store) + '"></label>' +
@@ -94,6 +95,8 @@
         if (v === 'close') { try { R().close(ov); } catch (x) { } return; }
         if (v === 'open') { e.preventDefault(); openEditor(); }
     }, false);
+    /* the typed number is read back in plain words as you type: 7 -> "Once a week", 30 -> "Once a month" */
+    D.addEventListener('input', e => { const i = e.target; if (!i || !i.classList || !i.classList.contains('spl-num')) return; const f = i.closest('[data-spl-form]'), o = f && f.querySelector('.spl-plain'); if (o) o.textContent = C.plainEvery(i.value, lang()); }, false);
     D.addEventListener('keydown', e => { if (e.key !== 'Enter') return; const i = e.target; if (!i || !i.closest || !i.closest('[data-spl-form]') || i.tagName !== 'INPUT') return; e.preventDefault(); try { i.blur(); } catch (x) { } }, true);
 
     function openEditor() {

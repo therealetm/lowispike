@@ -70,18 +70,25 @@
         de: { none: 'Noch nicht eingetragen', one: 'Jeden Tag', n: 'Alle {n} Tage', on: 'meist {d}', at: 'bei {s}' },
         es: { none: 'Aún sin definir', one: 'Cada día', n: 'Cada {n} días', on: 'normalmente {d}', at: 'en {s}' }
     };
+    /* Oct 21 (TikTok advice: "one month" is easier on the mind than "30 days"): the friendly name for a rhythm, or '' */
+    const PLAIN = {
+        en: { 2: 'Every other day', 7: 'Once a week', 14: 'Every two weeks', 21: 'Every three weeks', 28: 'About once a month', 30: 'Once a month', 31: 'About once a month', 60: 'Every two months' },
+        de: { 2: 'Jeden zweiten Tag', 7: 'Einmal pro Woche', 14: 'Alle zwei Wochen', 21: 'Alle drei Wochen', 28: 'Etwa einmal im Monat', 30: 'Einmal im Monat', 31: 'Etwa einmal im Monat', 60: 'Alle zwei Monate' },
+        es: { 2: 'Un d\u00eda s\u00ed y otro no', 7: 'Una vez por semana', 14: 'Cada dos semanas', 21: 'Cada tres semanas', 28: 'M\u00e1s o menos una vez al mes', 30: 'Una vez al mes', 31: 'M\u00e1s o menos una vez al mes', 60: 'Cada dos meses' }
+    };
+    function plainEvery(n, lang) { const e = parseEvery(n); if (!e) return ''; return e === 1 ? TX[L(lang)].one : (PLAIN[L(lang)][e] || ''); }
     const fmt = (s, o) => String(s).replace(/\{(\w+)\}/g, (_, k) => (o && o[k] != null ? o[k] : ''));
     function dayNames(lang) { return DAYN[L(lang)].slice(); }
-    /* "Every 7 days · usually Sat · at Edeka" */
+    /* "Once a week · usually Sat · at Edeka" ("Every 10 days" when there's no friendlier name) */
     function summary(p, lang) {
         const t = TX[L(lang)];
         p = normalize(p);
         if (!p.every) return t.none;
-        const parts = [p.every === 1 ? t.one : fmt(t.n, { n: p.every })];
+        const parts = [plainEvery(p.every, lang) || fmt(t.n, { n: p.every })];
         if (p.days.length) parts.push(fmt(t.on, { d: p.days.map(i => DAYN[L(lang)][i]).join(', ') }));
         if (p.store) parts.push(fmt(t.at, { s: p.store }));
         return parts.join(' \u00b7 ');
     }
 
-    return { KEY, MIN, MAX, LANGS, parseEvery, normalize, isSet, graceDays, dueState, summary, dayNames, cleanStore };
+    return { KEY, MIN, MAX, LANGS, parseEvery, normalize, isSet, graceDays, dueState, summary, plainEvery, dayNames, cleanStore };
 });

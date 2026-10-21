@@ -39,6 +39,8 @@ main{max-width:520px;margin:0 auto}
 .hero::before,.hero::after{content:'';position:absolute;z-index:-1;left:50%;top:50%;border-radius:50%;pointer-events:none;transform:translate(-50%,-56%)}
 .hero::before{width:230px;height:230px;border:1px solid rgba(143,231,255,.2);box-shadow:0 0 44px rgba(28,247,249,.12),inset 0 0 36px rgba(28,247,249,.08)}
 .hero::after{width:330px;height:330px;border:1px solid rgba(143,231,255,.09)}
+/* the outer ring is 330px wide: on an iPhone SE (320) or a 280 screen it stuck out sideways, so it shrinks to the screen there */
+@media (max-width:360px){.hero::before{width:min(230px,70vw);height:min(230px,70vw)}.hero::after{width:94vw;height:94vw}}
 .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 15px;border-radius:999px;font-size:13px;line-height:1;font-weight:600;color:var(--ink);background:var(--card);border:1px solid var(--edge);box-shadow:0 0 14px rgba(28,247,249,.18)}
 .pill i{width:7px;height:7px;border-radius:50%;background:#ffc861;box-shadow:0 0 8px rgba(255,200,97,.85)}
 h1{margin:20px 0 12px;font-size:clamp(42px,13vw,60px);line-height:.96;font-weight:800;letter-spacing:-.04em;font-stretch:condensed;color:#fff;text-shadow:0 0 30px rgba(28,247,249,.28)}

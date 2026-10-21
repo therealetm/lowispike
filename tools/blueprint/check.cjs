@@ -113,7 +113,8 @@ async function standalone(base, sz) {
     if ((await page.getAttribute('#sh-ugc', 'aria-pressed')) !== 'true') fail(W, 'hash pick not restored');
     /* create page */
     await page.goto(base + 'create/', { waitUntil: 'load' });
-    if ((await page.textContent('h1')) !== 'Create') fail('create@' + sz.name, 'title');
+    /* Creation was rebuilt (Eden Plan screen): the headline is 'Dein KI-Studio' on this German-pinned page */
+    const ct = (await page.textContent('h1')).trim(); if (!['Dein KI-Studio', 'Your AI studio', 'Tu estudio de IA'].includes(ct)) fail('create@' + sz.name, 'title ' + ct);
     const o = await overflow(page); if (o.sw > o.w + 1) fail('create@' + sz.name, 'overflow');
     await page.screenshot({ path: path.join(OUT, sz.name + '-4-create.png') });
   } catch (e) { fail(W, 'threw ' + String(e.message).split('\n')[0]); await page.screenshot({ path: path.join(OUT, sz.name + '-error.png'), fullPage: true }).catch(() => {}); }

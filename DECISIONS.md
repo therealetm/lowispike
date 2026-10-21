@@ -918,3 +918,13 @@ Checks: `tests/affiliates-blueprint.test.cjs` rewritten; browser `tools/blueprin
 **Decision:** The progress dots are removed from the tutorial card on every step and screen size. "Tutorial · X of N" in the card header is the only progress indicator, a little larger (12 px, semibold, tabular figures). No bar or other replacement. The space the dots used is closed; Back / Skip / Next are unchanged.
 
 **Consequences:** `tests/tutorial-nodots.test.cjs` renders every step and fails if dots or `.lt-dots` styling come back. `tools/interface-audit/p10-tutorial.cjs` reports `dotsBack` instead of measuring the dots row.
+
+## 2026-10-21 — "What can I buy here?" has one entry point: Home's Fuel bubble
+
+**Status:** Accepted
+
+**Context:** Eman on the Cook screen: "The What can I buy emergency button already exists in the homepage, right? Does it make sense to also have it in there again? If not, remove it." store-picks.js injected the card under Cook it / Shop it, in the shopping list, the cart and the Meals sheets, on top of the Shop orb in Home's Fuel bubble.
+
+**Decision:** One entry point only: the Shop orb in Home's Fuel bubble (home-blooms-v2.js). It is an in-store feature, so it stays with Home, not Cook. The injected card, its MutationObserver, sosHTML and the .stp-sos styles are removed. tests/what-can-i-buy-once.test.cjs keeps it to exactly one caller of LowiStorePicks.open.
+
+**Consequences:** Cook it / Shop it flow straight into the recipe cards. A new place for the panel needs a new decision entry and an update to that test.

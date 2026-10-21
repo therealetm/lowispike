@@ -66,11 +66,8 @@ async function run(engine, url) {
         let p = await tapPoint('[data-tab="shelf"]', '[data-tab]');
         if (!p || !p.x) { fails.push(lap + 'Cook in the nav bar not tappable ' + JSON.stringify(p)); break; }
         await page.mouse.click(p.x, p.y); await sleep(1800);
-        /* the button sits in the Cook hub; scroll it into view like a thumb if needed */
-        await ev(() => { const b = document.querySelector('#tab-shelf .stp-sos, .stp-sos[data-stp-from="cook"]'); if (b) b.scrollIntoView({ block: 'center', inline: 'center' }); }); await sleep(500);
-        p = await tapPoint('.stp-sos[data-stp-from="cook"], #tab-shelf .stp-sos', '.stp-sos');
-        if (!p || !p.x) { notes.push(lap + '"What can I buy here?" not tappable on Cook (' + JSON.stringify(p) + '), opened from Cook by script'); await ev(() => LowiStorePicks.open('cook')); }
-        else await page.mouse.click(p.x, p.y);
+        /* Oct 21: the card under Cook it / Shop it is gone (Home's Fuel bubble Shop orb is the one entry), so open the panel the way that orb does, on top of Cook */
+        await ev(() => LowiStorePicks.open('home-bloom'));
         const t0 = Date.now();
         try { await page.waitForSelector('.stp-ov .stp-sum', { timeout: 30000 }); } catch (e) { fails.push(lap + 'the list never showed'); break; }
         await sleep(900);

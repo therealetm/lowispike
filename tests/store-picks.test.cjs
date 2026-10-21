@@ -158,8 +158,7 @@ test('wiring: the emergency button, Move-style panel, medical note, cache list a
     const sw = read('sw.js');
     ['store-picks-core.js', 'store-picks.js', 'store-picks.css'].forEach(f => assert.ok(sw.includes('"' + f + '"'), f + ' cached'));
     const js = read('store-picks.js');
-    assert.match(js, /#csHub/);
-    assert.match(js, /\.ss-entry/);
+    assert.doesNotMatch(js, /#csHub|\.ss-entry|wme-log|stp-sos/, 'Oct 21: no card under Cook it / Shop it, shopping list or Meals; Home\'s Shop orb is the one entry');
     assert.doesNotMatch(js, /\.sp-quick-cap/, 'no "What can I buy here?" in Log meal: it has its own section');
     assert.match(js, /not medical advice/);
     assert.match(js, /keine medizinische Beratung/);

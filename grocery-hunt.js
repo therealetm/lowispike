@@ -437,7 +437,7 @@
         D.querySelectorAll('.ss-entry').forEach(en => {
             const par = en.parentNode; if (!par) return;
             let b = par.querySelector(':scope > .gh-entry');
-            if (!b) { b = D.createElement('button'); b.type = 'button'; b.className = 'gh-entry'; b.setAttribute('data-gh', 'open'); let after = en; const nx = en.nextElementSibling; if (nx && nx.classList.contains('stp-sos')) after = nx; after.insertAdjacentElement('afterend', b); }
+            if (!b) { b = D.createElement('button'); b.type = 'button'; b.className = 'gh-entry'; b.setAttribute('data-gh', 'open'); en.insertAdjacentElement('afterend', b); }
             const h = entryHTML(); if (b.__h !== h) { b.innerHTML = h; b.__h = h; }
         });
         D.querySelectorAll('#b3Cam .ss-row').forEach(r => { if (r.querySelector('.gh-hunt')) return; r.insertAdjacentHTML('beforeend', '<button type="button" class="ss-chip gh-hunt" data-gh="open">' + IC.star + '<span>' + esc(T('Finds', 'Funde', 'Hallazgos')) + '</span></button>'); });

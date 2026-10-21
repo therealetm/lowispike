@@ -133,21 +133,22 @@ test('ticking a planned meal follows the same rule and never doubles with its ow
 
 test('Log meal says what saving does while a fast runs', () => {
     const L = host(running(Date.now() - 16 * H)).win.LowiFastStop;
-    assert.match(L.mealNote(), /^Saving this ends your 16 h.* fast · \+\d+ XP$/);
+    assert.match(L.mealNote(), /^Saving this closes your 16 h.* meal gap · \+\d+ XP$/);
     assert.match(host(running(Date.now() - 2 * H)).win.LowiFastStop.mealNote(), /restarts your gap clock/);
     assert.strictEqual(host({}).win.LowiFastStop.mealNote(), '', 'no fast, no line');
     assert.strictEqual(host(running(Date.now() - 5 * MIN)).win.LowiFastStop.mealNote(), '', 'same sitting, no line');
 });
 
 test('wiring: every meal log carries its time, one listener applies the rule, the bonus memory is shared, the scanner has one meal door', () => {
-    assert.match(html, /slot:log\.slot\|\|"",ts:log\.ts\}\}\)\);return\{log,xp,why/, 'logMeal tells the rule when the meal was eaten');
+    assert.match(html, /slot:log\.slot\|\|"",ts:log\.ts,ateSet:!!log\.ateSet\}\}\)\);return\{log,xp,why/, 'logMeal tells the rule when the meal was eaten');
     assert.match(html, /via:"plan",photo:false,spike,ts:log\.ts\}/, 'planned meals too');
     assert.match(html, /window\.addEventListener\("lowi:meal-logged", ev => \{ try \{ mealLogged\(ev && ev\.detail\); \}/);
     assert.ok(!/addEventListener\("lowi:meal-logged", \(\) => \{ try \{ firstMeal\(/.test(html), 'the old start-only listener is gone');
     assert.match(html, /function bonusFor\(rec\)\{ if \(!rec \|\| !rec\.s \|\| bonusDone\(rec\.s\)\) return 0;/);
     assert.match(html, /if \(fast && !d\.spike && !d\.dup\) bonusFor\(fast\); \};/, 'the I-just-ate chain pays through the same memory');
     assert.match(html, /window\.LowiF2 = \{start, finish, bonusFor,/);
-    assert.match(html, /act\("scan", IC\.bc, true\) \+ act\("meal", IC\.plate\) \+ '<\/div>'/, 'scanner: Barcode and Log meal only');
+    assert.match(html, /act\("scan", IC\.bc, true\) \+ '<\/div>'/, 'scanner (Oct 21 Scan / Fuel / Gap): Barcode only, meals are logged in Fuel');
+    assert.ok(!/act\("meal", IC\.plate\)/.test(html), 'Log meal left the scanner');
     assert.match(html, /\(bx \? '<br>' \+ esc\(w\("brk"\)\)/, 'the reward shows the break-fast bonus when a meal ended the fast');
     for (const k of ['byMeal:"Your meal ended the fast"', 'byMeal:"Deine Mahlzeit hat das Fasten beendet"', 'byMeal:"Tu comida terminó el ayuno"']) assert.ok(html.includes(k), k);
     assert.match(spirit, /\(gc \? '' : fastNote\(\)\)/, 'slot picker shows the fast line (not in the Gap chain, the fast already ended there)');

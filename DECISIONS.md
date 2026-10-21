@@ -832,6 +832,25 @@ What was decided:
 
 Checks: `tests/meal-result.test.cjs` (9, one new for the fast line).
 
+## 2026-10-21 16:50 CEST: Scan, Fuel and Gap each do one job (decided by the agent)
+
+Emmanuel: he photographed his food and logged it, but the fasting timer kept running; Scan, Fuel and Gap felt tangled. Standing rule: decide and push.
+
+Decision criteria, in order:
+1. One job per control. Scan identifies a product, Fuel logs a meal, Gap only shows the time since the last meal.
+2. Every meal logged in Fuel (typed, recent, photo, or the Scan button inside Log meal) ends a running fast once, at the time it was eaten, through `LowiFastStop.mealLogged`. No second door may pay XP.
+3. Never a dead button: anything that needs a module or the network falls back (Deep analyze falls back to the GPT link).
+4. Gap is not a fasting app: no goal, no end time, markers framed as typical, never as a measurement.
+
+What was decided:
+- Scan's bar: Barcode and Deep analyze. Log meal left the scanner. Deep analyze reads a pack photo in the app (`deep-analyze.js`, the same food-photo AI and daily allowance as Fuel's Snap) and never logs a meal. The not-found card leads with it.
+- "I ate this" after a barcode scan shows only when the camera was opened from Log meal's own Scan button (`LowiScanIntent`), so shopping scans never log a meal or touch the Gap.
+- Gap on Home has no actions any more: a tap opens the passive Gap view (`gap-view.js`): six markers on the hexagon, a lit trail for the hours, "Fix time" and "Log a meal in Fuel". The old "I just ate" / "Ate earlier" bloom actions are gone (the Gap view's button opens Fuel, which ends the fast through rule 2).
+- Fuel asks "When did you eat?" (Now, 30 min, 1 h, 2 h, 3 h ago, same day). A picked time backdates the meal (`ateSet`) and is the time the fast ends, and such a meal is not treated as a catch-up guess.
+- Wording: "Saving this closes your 16 h meal gap · +77 XP" (was "ends your 16 h fast").
+
+Checks: `tests/scan-fuel-gap.test.cjs` (6 new), `tests/one-meal-path.test.cjs`, `tests/orb-scan.test.cjs` updated.
+
 ## 2026-10-21 16:40 CEST: No launch screen, and the first paint is never white (decided by the agent)
 
 Emmanuel on his iPhone (home-screen app, dark mode): "I opened the app and there was still this for a split second. We don't need it. Remove it. And when I open the app it's white for 1 second. Fix that."

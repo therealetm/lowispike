@@ -17,16 +17,17 @@ test('scanner bottom has no photo-of-barcode button any more', () => {
   assert.ok(/camBar\(\) \+ '<\/div>'/.test(openScanner), 'scanner bottom must render camBar()');
 });
 
-test('no white Back bar: Deep analyze follows the actions (Barcode, Log meal), closing is the round X only', () => {
+test('no white Back bar: Deep analyze follows the actions (Barcode), closing is the round X only', () => {
   const iActs = camBarSrc.indexOf('b3-cacts'), iDeep = camBarSrc.indexOf('id="b3Deep"');
   assert.ok(iActs > 0 && iDeep > iActs, 'order must be actions, then Deep analyze');
   assert.ok(!/b3Back|b3-cback/.test(camBarSrc), 'the white Back bar is gone');
   assert.ok(!/\.b3-cback/.test(html), 'no Back bar styles left');
   assert.ok(/<button class="b3-cx" data-b3="camclose"/.test(openScanner), 'the round X closes the scanner');
-  for (const k of ['scan', 'meal']) assert.ok(camBarSrc.includes('act("' + k + '"'), 'missing action ' + k);
+  assert.ok(camBarSrc.includes('act("scan"'), 'missing action scan');
+  assert.ok(!camBarSrc.includes('act("meal"'), 'Scan / Fuel / Gap (Oct 21): Scan identifies, meals are logged in Fuel');
   assert.ok(!camBarSrc.includes('act("photo"'), 'one meal path (Oct 21): Snap food lives inside Log meal, not beside it');
   assert.ok(!camBarSrc.includes('act("water"'), 'water does not belong in the scanner');
-  assert.ok(/target="_blank" rel="noopener"/.test(camBarSrc));
+  assert.ok(/<button type="button" class="b3-deep" id="b3Deep" data-b3="camact" data-act="deep">/.test(camBarSrc), 'Deep analyze is a real button (in-app AI)');
 });
 
 test('Deep analyze opens the custom GPT already in the codebase, not an invented link', () => {

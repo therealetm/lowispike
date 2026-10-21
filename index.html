@@ -8385,6 +8385,8 @@ html[data-ui=light] .a1-toast{background:#161c2e}
   .a1-cont{min-height:40px}
 }
 @media (max-height:620px){ .a1-why{display:none} }
+/* Oct 21: iPhone SE (1st gen, 320x568) with the longer German in-app steps: "Continue in the browser" fell below the screen */
+@media (max-height:600px){ .a1-stage{min-height:84px;margin:2px 0 0} .a1-h{font-size:19px!important;margin:2px 0 4px!important} .a1-step{min-height:42px;padding:4px 9px} .a1-acts{padding-top:6px;gap:2px} .a1-cont{min-height:38px} }
 /* iPad and wider: centred column */
 @media (min-width:700px){ .r2-start.a1{max-width:460px} .a1-stage{max-height:340px} .a1-phone{max-height:330px} }
 @media (prefers-reduced-motion:reduce){ .a1-hit::after,.a1-mine .a1-icon,.a1-glow .a1-icon{animation:none} .a1-f{transition:none} }
@@ -8412,15 +8414,31 @@ function standalone(){ try { return !!(navigator.standalone || (window.matchMedi
 function ios(){ return /iPhone|iPad|iPod/.test(UA) || (/Macintosh/.test(UA) && (navigator.maxTouchPoints || 0) > 1); }
 function android(){ return /Android/i.test(UA); }
 function inapp(){ return /Instagram|FBAN|FBAV|FB_IAB|FBIOS|TikTok|musical_ly|Bytedance|BytedanceWebview|trill_|Snapchat|LinkedInApp|Pinterest|Line\//i.test(UA); }
+/* Oct 21: Chrome on iPhone has its Share button at the top right, next to the address bar, not at the bottom like Safari */
+function crios(){ return ios() && /CriOS/.test(UA); }
+function iosOther(){ return ios() && /CriOS|FxiOS|EdgiOS|OPiOS|GSA\//.test(UA); }
+/* and Safari on iPad has it at the top right too */
+function ipad(){ return /iPad/.test(UA) || (/Macintosh/.test(UA) && (navigator.maxTouchPoints || 0) > 1); }
 function kind(){
   if (standalone()) return "";
   if (!(ios() || android())) return "";
   if (inapp()) return "inapp";
   return ios() ? "ios" : "android";
 }
-function localData(){ try { const s = window.LowiR2 && LowiR2.S && LowiR2.S(); return !!(s && ((s.user && s.user.name) || (s.logs && s.logs.length) || (s.saved && s.saved.length) || s.setupDone)); } catch(e){ return false; } }
+/* Oct 21: the companion onboarding (herb-start.js) asks a new visitor's first name before "Create account" and saves it as
+   s.user.name. That name alone is not a returning guest, so it no longer hides this guide (it did since Oct 17: no new visitor saw it). */
+function hsName(){ try { const h = JSON.parse(localStorage.getItem("lowi.hs.v1") || "null"); return h && h.user ? String(h.user) : ""; } catch(e){ return ""; } }
+function hsStep(){ try { const h = JSON.parse(localStorage.getItem("lowi.hs.v1") || "null"); return h ? (+h.step || 0) : 0; } catch(e){ return 0; } }
+function localData(){ try { const s = window.LowiR2 && LowiR2.S && LowiR2.S(); if (!s) return false;
+  const nm = s.user && s.user.name ? String(s.user.name) : "", named = !!nm && nm !== hsName();
+  return !!(named || (s.logs && s.logs.length) || (s.saved && s.saved.length) || s.setupDone); } catch(e){ return false; } }
 function skipped(){ try { return sessionStorage.getItem(SKIP) === "1"; } catch(e){ return false; } }
 function want(){ return !!kind() && !skipped() && !localData(); }
+/* Oct 21 ("when someone new opens the link they clearly get the instructions to add this to their home screen"): a brand-new
+   visitor in a phone browser sees this guide FIRST, before the companion onboarding, so the onboarding and sign-up happen once,
+   inside the Home Screen app. "Continue in the browser" goes on to the normal start. Not when the onboarding is already under way. */
+let mode = "signup", startDone = false;
+function wantStart(){ return want() && !startDone && hsStep() === 0; }
 const T = s => s;   /* English in the markup; LowiLang translates the DOM (and back on a language switch) */
 function live(){ return !!document.querySelector("#r2gate .a1"); }
 const IC = {
@@ -8442,7 +8460,8 @@ function phone(k){
     '<div class="a1-f a1-f2"><div class="a1-pagebody">' + ICON + '<b class="a1-mini">LOWiSPIKE</b></div><div class="a1-bar"><span class="a1-hit">' + (android() ? IC.kebab : IC.share) + '</span></div></div>' +
     '</div></div>';
   return '<div class="a1-phone" aria-hidden="true"><div class="a1-scr">' +
-    '<div class="a1-f a1-f0"><div class="a1-pagebody">' + ICON + '<b class="a1-mini">LOWiSPIKE</b></div><div class="a1-bar">' + (k === "android" ? '<span class="a1-url">therealetm.github.io</span><span class="a1-hit">' + IC.kebab + '</span>' : '<span>‹</span><span class="a1-hit">' + IC.share + '</span><span>' + IC.dots + '</span>') + '</div></div>' +
+    (k === "ios" && crios() ? '<div class="a1-f a1-f0"><div class="a1-iab"><span class="a1-url">therealetm.github.io</span><span class="a1-hit">' + IC.share + '</span></div><div class="a1-pagebody">' + ICON + '<b class="a1-mini">LOWiSPIKE</b></div></div>' :
+    '<div class="a1-f a1-f0"><div class="a1-pagebody">' + ICON + '<b class="a1-mini">LOWiSPIKE</b></div><div class="a1-bar">' + (k === "android" ? '<span class="a1-url">therealetm.github.io</span><span class="a1-hit">' + IC.kebab + '</span>' : '<span>‹</span><span class="a1-hit">' + IC.share + '</span><span>' + IC.dots + '</span>') + '</div></div>') +
     '<div class="a1-f a1-f1"><div class="a1-pagebody dim">' + ICON + '</div><div class="a1-sheet"><div class="a1-srow">' + IC.link + '<span>' + T("Copy") + '</span></div><div class="a1-srow a1-hit">' + (k === "android" ? IC.home : IC.add) + '<span>' + T(k === "android" ? "Install app" : "Add to Home Screen") + '</span></div></div></div>' +
     '<div class="a1-f a1-f2"><div class="a1-home">' + apps(7) + '<span class="a1-mine">' + ICON + '<em>LOWiSPIKE</em></span>' + apps(4) + '</div></div>' +
     '</div></div>';
@@ -8457,16 +8476,16 @@ function steps(k){
     [IC.home, "Tap Install app", "or Add to Home screen"],
     [ICON, "Open LOWiSPIKE", "sign up there, you stay signed in"]];
   return [
-    [IC.share, "Tap Share", "bottom of Safari, or behind ⋯"],
+    [IC.share, "Tap Share", crios() || (ipad() && !iosOther()) ? "top right, next to the address bar" : iosOther() ? "in this browser's menu, or open the page in Safari" : "bottom of Safari, or behind ⋯"],
     [IC.add, "Tap Add to Home Screen", "scroll down if you don't see it"],
     [ICON, "Open LOWiSPIKE", "sign up there, you stay signed in"]];
 }
 const HEAD = {ios:["Put LOWiSPIKE on your Home Screen", "Sign up in the app and you stay signed in. In Safari you'd have to sign in again later."],
   android:["Install LOWiSPIKE on your phone", "Full screen like an app, with reminders. Sign up in the app and you stay signed in."],
   inapp:["Open LOWiSPIKE in your browser", "This app's browser can't keep you signed in or add LOWiSPIKE to your Home Screen."]};
-function top(){ return '<div class="a1-top"><button type="button" class="a1-back" data-a1="back" aria-label="' + T("Back") + '">' + IC.back + '</button>' + (window.LowiA2 && LowiA2.picker ? LowiA2.picker() : '') + '<span class="a1-sp"></span></div>'; }
+function top(){ return '<div class="a1-top">' + (mode === "start" ? '<span class="a1-sp"></span>' : '<button type="button" class="a1-back" data-a1="back" aria-label="' + T("Back") + '">' + IC.back + '</button>') + (window.LowiA2 && LowiA2.picker ? LowiA2.picker() : '') + '<span class="a1-sp"></span></div>'; }
 function guideHTML(k){
-  const st = steps(k), hd = HEAD[k];
+  const st = steps(k), hd = k === "ios" && iosOther() ? [HEAD.ios[0], "Sign up in the app and you stay signed in. In the browser you'd have to sign in again later."] : HEAD[k];
   let pri;
   if (k === "inapp") pri = '<button type="button" class="r2-btn pri big" data-a1="open">' + T(android() ? "Open in browser" : "Open in Safari") + '</button><button type="button" class="a1-ghost" data-a1="copy">' + IC.link + '<span>' + T("Copy link") + '</span></button>';
   else if (k === "android") pri = '<button type="button" class="r2-btn pri big" data-a1="' + (bip ? "install" : "added") + '">' + T(bip ? "Install app" : "I added it") + '</button>';
@@ -8489,8 +8508,10 @@ function doneHTML(k){
     '<div class="a1-acts"><button type="button" class="a1-ghost" data-a1="guide">' + T("Show the steps again") + '</button><button type="button" class="a1-cont" data-a1="continue">' + T("Continue in the browser") + '</button></div>' +
     '</div>';
 }
-function html(){ const k = kind() || "ios"; tick(); return view === "done" ? doneHTML(k) : guideHTML(k); }
-function repaint(){ const g = document.getElementById("r2gate"); if (!g || !live()) return; const was = g.querySelector(".a1"); g.innerHTML = html(); if (was && g.firstChild) g.firstChild.classList.add("a1-in"); }
+function html(m){ if (m) mode = m === "start" ? "start" : "signup"; const k = kind() || "ios"; tick(); return view === "done" ? doneHTML(k) : guideHTML(k); }
+function repaint(){ const g = document.getElementById("r2gate"); if (!g || !live()) return; const was = g.querySelector(".a1"); g.innerHTML = html(); tr(); if (was && g.firstChild) g.firstChild.classList.add("a1-in"); }
+/* Oct 21: translate right away (the DOM pass came up to half a second later, so a German visitor saw the English line flash) */
+function tr(){ try { if (window.LowiLang && LowiLang.get && LowiLang.get() !== "en" && LowiLang.add) LowiLang.add([]); } catch(e){} }
 function setStep(i, user){ step = (i + 3) % 3; const r = document.querySelector("#r2gate .a1"); if (!r) return;
   r.classList.remove("a1-s0", "a1-s1", "a1-s2"); r.classList.add("a1-s" + step);
   r.querySelectorAll(".a1-step").forEach(b => b.classList.toggle("on", +b.dataset.i === step));
@@ -8513,8 +8534,8 @@ document.addEventListener("click", e => {
   const a = e.target.closest && e.target.closest("[data-a1]"); if (!a || !a.closest("#r2gate")) return;
   const v = a.dataset.a1;
   if (v === "step") setStep(+a.dataset.i, true);
-  else if (v === "back") { view = "guide"; step = 0; gate("start"); }
-  else if (v === "continue") { try { sessionStorage.setItem(SKIP, "1"); } catch(x){} view = "guide"; gate("signup"); }
+  else if (v === "back") { view = "guide"; step = 0; startDone = true; gate("start"); }
+  else if (v === "continue") { try { sessionStorage.setItem(SKIP, "1"); } catch(x){} view = "guide"; startDone = true; gate(mode === "start" ? "home" : "signup"); }
   else if (v === "added") { view = "done"; repaint(); }
   else if (v === "guide") { view = "guide"; step = 0; repaint(); }
   else if (v === "copy") copy();
@@ -8522,7 +8543,7 @@ document.addEventListener("click", e => {
   else if (v === "install") { const p = bip; if (!p) { view = "done"; repaint(); return; }
     try { p.prompt(); Promise.resolve(p.userChoice).then(c => { bip = null; if (c && c.outcome === "accepted") { view = "done"; repaint(); } else { repaint(); } }).catch(() => {}); } catch(x){ view = "done"; repaint(); } }
 });
-window.LowiA1 = { want, kind, html, setStep, step: () => step, view: () => view, reset(){ view = "guide"; step = 0; try { sessionStorage.removeItem(SKIP); } catch(e){} }, hasPrompt: () => !!bip };
+window.LowiA1 = { want, wantStart, mode: () => mode, kind, html, setStep, step: () => step, view: () => view, reset(){ view = "guide"; step = 0; try { sessionStorage.removeItem(SKIP); } catch(e){} }, hasPrompt: () => !!bip };
 function addLang(){ if (!window.LowiLang || !LowiLang.add) return setTimeout(addLang, 200); LowiLang.add([
   ["Put LOWiSPIKE on your Home Screen", "Hol dir LOWiSPIKE auf den Home-Bildschirm", "Pon LOWiSPIKE en tu pantalla de inicio"],
   ["Sign up in the app and you stay signed in. In Safari you'd have to sign in again later.", "Registrier dich in der App und du bleibst angemeldet. In Safari müsstest du dich später neu anmelden.", "Regístrate en la app y seguirás con la sesión abierta. En Safari tendrías que volver a entrar después."],
@@ -8532,6 +8553,9 @@ function addLang(){ if (!window.LowiLang || !LowiLang.add) return setTimeout(add
   ["This app's browser can't keep you signed in or add LOWiSPIKE to your Home Screen.", "Der Browser dieser App hält dich nicht angemeldet und kann LOWiSPIKE nicht auf den Home-Bildschirm legen.", "El navegador de esta app no mantiene tu sesión ni puede añadir LOWiSPIKE a tu pantalla de inicio."],
   ["Tap Share", "Tippe auf Teilen", "Toca Compartir"],
   ["bottom of Safari, or behind ⋯", "unten in Safari oder hinter ⋯", "abajo en Safari o tras ⋯"],
+  ["top right, next to the address bar", "oben rechts, neben der Adressleiste", "arriba a la derecha, junto a la barra de direcciones"],
+  ["in this browser's menu, or open the page in Safari", "im Menü dieses Browsers, oder öffne die Seite in Safari", "en el menú de este navegador, o abre la página en Safari"],
+  ["Sign up in the app and you stay signed in. In the browser you'd have to sign in again later.", "Registrier dich in der App und du bleibst angemeldet. Im Browser müsstest du dich später neu anmelden.", "Regístrate en la app y seguirás con la sesión abierta. En el navegador tendrías que volver a entrar después."],
   ["Tap Add to Home Screen", "Tippe auf Zum Home-Bildschirm", "Toca Añadir a pantalla de inicio"],
   ["scroll down if you don't see it", "runterscrollen, falls du es nicht siehst", "desliza hacia abajo si no lo ves"],
   ["Open LOWiSPIKE", "Öffne LOWiSPIKE", "Abre LOWiSPIKE"],
@@ -10308,8 +10332,10 @@ function showGate(view){
     document.body.appendChild(gateEl); lockApp(true);
     requestAnimationFrame(() => gateEl.classList.add("on"));
   }
-  const a1 = view === "signup" && window.LowiA1 && LowiA1.want();   /* a1-hook: Add to Home Screen first */
-  gateEl.innerHTML = a1 ? LowiA1.html() : view === "signup" || view === "signin" ? formHTML(view) : startHTML();
+  const a1s = view !== "signup" && view !== "signin" && !!window.LowiA1 && !!LowiA1.wantStart && LowiA1.wantStart();   /* a1-hook: a new visitor sees the guide first */
+  const a1 = a1s || (view === "signup" && window.LowiA1 && LowiA1.want());   /* a1-hook: Add to Home Screen first */
+  gateEl.innerHTML = a1 ? LowiA1.html(a1s ? "start" : "signup") : view === "signup" || view === "signin" ? formHTML(view) : startHTML();
+  if (a1 && window.LowiLang && LowiLang.get && LowiLang.get() !== "en" && LowiLang.add) { try { LowiLang.add([]); } catch(e){} }
   gateEl.firstChild.classList.add("r2-swap");
   if (!a1 && (view === "signup" || view === "signin")) setTimeout(() => { const i = gateEl.querySelector("input"); if (i && !i.value) i.focus(); }, 380);
 }

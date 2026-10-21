@@ -18,7 +18,7 @@ const INIT = `try {
   localStorage.setItem('lowi.daily.seen', k); sessionStorage.setItem('lowi.a2hs.x', '1'); localStorage.setItem('lowi.gate', 'done'); localStorage.setItem('lowi.news.seen', '99999');
   localStorage.setItem('lowi.auth', JSON.stringify({ access_token: 'local.fixture.token', refresh_token: 'local-fixture', token_type: 'bearer', expires_in: 86400, expires_at: Math.floor(Date.now() / 1000) + 86400 * 30, user: { id: '00000000-0000-4000-8000-00000000c0c0', aud: 'authenticated', role: 'authenticated', email: 'fixture@example.invalid', is_anonymous: false } }));
   if (!localStorage.getItem('lowispike.v2')) localStorage.setItem('lowispike.v2', JSON.stringify({ v: 2, setupDone: true, onboarded: true, user: { name: 'Fixture', bday: '1990-01-01', tags: [] }, xp: 900, ledger: [], logs: [], saved: [] }));
-  if (!sessionStorage.getItem('cs.keepHint')) {} 
+
   if (!sessionStorage.getItem('cs.keepTour')) localStorage.setItem('lowi.tutorial.v1', JSON.stringify({ v: 999, at: Date.now(), done: true }));
 } catch (e) { }`;
 (async () => {

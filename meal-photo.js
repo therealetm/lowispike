@@ -71,7 +71,7 @@
 
     /* ---------- blood sugar estimate (never a measurement) ---------- */
     const REFINED = /(white rice|\brice\b|\breis\b|arroz|bread|brot|\bpan\b|toast|bagel|baguette|pasta|spaghetti|noodle|nudel|fideo|potato|kartoffel|patata|pommes|fries|pizza|cake|kuchen|pastel|cookie|keks|galleta|donut|croissant|pastry|cereal|cornflakes|candy|dessert|pancake|waffle|tortilla|couscous|fufu|ugali|cassava|yuca|maniok|ice cream|helado|\beis\b)/i;
-    const DRINK = /(soda|\bcolas?\b|juice|saft|zumo|jugo|lemonade|limonade|smoothie|milkshake|refresco|energy drink|iced tea|eistee)/i; // \b: not choCOLAte (Oct 20 food audit)
+    const DRINK = /(soda|\bcolas?\b|\bcoke\b|\bpepsi\b|\bfanta\b|\bsprite\b|\blimo\b|\benergy\b|red ?bull|juice|saft|zumo|jugo|lemonade|limonade|smoothie|milkshake|refresco|energy drink|iced tea|eistee)/i; // \b: not choCOLAte (Oct 20 food audit)
     // load = net carbs (refined count fully, others 0.8) + some of the sugar, softened by protein, fat and fiber.
     // Whole-meal levels: under 20 gentle, 20-39 moderate, 40+ likely spike; a sugary drink is a likely spike.
     function bloodSugar(total, dishes) {

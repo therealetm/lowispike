@@ -19861,6 +19861,8 @@ window.LowiVitalsBridge = {
   spiky(l){const r=String(l&&l.r!=null?l.r:"").toLowerCase(),v=String(l&&l.lvl||"").toLowerCase();if(r==="ja"||v==="low"||r==="low"||r==="yes")return false;return r==="nein"||v==="high"||r==="high"||r==="no";},
   mealWhy(data){if(data&&this.mealDup(data))return"dup";if(data&&this.spiky(data))return"spike";return S.logs.filter(l=>l.day===today()).length<this.MEAL_CAP?"":"cap";},
   mealXp(data){return this.mealWhy(data)?0:15;},
+  /* meal result preview (meal-result.js): the daily "eat" quest XP this log would also complete; logMeal runs questDone("eat") for any meal that is not a spike or a duplicate */
+  mealQuestXp(data){if(!data||this.mealDup(data)||this.spiky(data))return 0;qReset();if(S.quests.done.eat)return 0;const q=curQuests().find(x=>x.id==="eat");return q&&q.xp||0;},
   mealReason(why){const L=((typeof document!=="undefined"&&document.documentElement.lang)||"en").slice(0,2),i=L==="de"?1:L==="es"?2:0;
     return why==="dup"?["Already logged today · no XP","Heute schon eingetragen · keine XP","Ya registrado hoy · sin XP"][i]:why==="spike"?["Logged · spiky meals earn no XP, and never cost any","Eingetragen · Spike-Mahlzeiten geben keine XP, ziehen aber auch nichts ab","Registrado · las comidas con pico no dan XP, pero tampoco restan"][i]:why==="cap"?["Logged · daily XP limit ("+this.MEAL_CAP+" meals) reached","Eingetragen · Tageslimit ("+this.MEAL_CAP+" Mahlzeiten) erreicht, keine XP","Registrado · límite diario ("+this.MEAL_CAP+" comidas), sin XP"][i]:"";},
   gpt:"https://chatgpt.com/g/g-69481a874bf08191b8118f8d88c9c90e-lowispike",
@@ -20229,6 +20231,7 @@ window.LowiCommunityHost = {
 <script src="misty-explore.js?v=20261021-154835"></script>
 <script src="meal-photo.js?v=20261021-154835"></script>
 <script src="food-photo-ai.js?v=20261021-154835"></script>
+<script src="meal-result.js?v=20261021-154835"></script>
 <script src="string-pov.js?v=20261021-154835"></script>
 <script src="misty-hunt.js?v=20261021-154835"></script>
 <script src="hunt-count.js?v=20261021-154835"></script>

@@ -196,7 +196,13 @@
                 if (!box.isConnected) return res;
                 if (!res.isFood) { say('fai-none', t('none', l)); return res; }
                 dishes = res.dishes.slice();
-                setHidden(); paint(res);
+                /* Oct 21: the result screen is LowiMealResult (meal-result.js): spike verdict first, then each food (tap to
+                   fix it), drinks, the XP. Fixes are estimated on the device, so they never use another photo check.
+                   Without it (old cache), the plain list below still works. */
+                const MR = root.LowiMealResult;
+                let ctl = null;
+                if (MR && MR.mount) { try { ctl = MR.mount(box, form, { dishes, lang: l, low: res.confidence === 'low', note: res.note, photo: dataURL, db: opts.db, dbReady: opts.dbReady }); } catch (e) { console.warn(e); ctl = null; } }
+                if (!ctl) { setHidden(); paint(res); }
                 /* Oct 19: the read is remembered by photo (sharing never asks the AI again); under it: checks left today,
                    "Also share to Community" (opt-in, after Log as meal) and the optional mealtime reminder offer. */
                 if (MS) {
@@ -204,10 +210,10 @@
                         MS.remember(dataURL, { dishes: res.dishes, name: title(res.dishes, l) });
                         const host = document.createElement('div'); host.className = 'ms-host';
                         form.parentNode.insertBefore(host, form.nextSibling);
-                        MS.snapExtras(host, form, dataURL, () => MS.meal({ dishes, name: (titleIn && titleIn.value.trim()) || title(dishes, l) }));
+                        MS.snapExtras(host, form, dataURL, () => { const all = ctl ? ctl.all() : dishes; return MS.meal({ dishes: all, name: (titleIn && titleIn.value.trim()) || title(all, l) }); });
                     } catch (e) { console.warn(e); }
                 }
-                box.addEventListener('click', ev => {
+                if (!ctl) box.addEventListener('click', ev => {
                     const b = ev.target.closest && ev.target.closest('[data-fai-rm]');
                     if (!b) return;
                     ev.preventDefault();

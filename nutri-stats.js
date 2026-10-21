@@ -206,6 +206,9 @@
         if (!sh) return;
         const body = sh.closest('.r2-shb'); if (!body || body.querySelector('.ns-strip')) return;
         const wrap = D.createElement('div'); wrap.innerHTML = stripHTML();
+        /* Oct 21: on the photo result the spike verdict comes first (meal-result.js), so the strip goes with the secondary actions */
+        const acts = body.querySelector('.sp-ai') && body.querySelector('.sp-photo-acts');
+        if (acts && acts.parentNode) { acts.before(wrap.firstChild); return; }
         const h = body.querySelector('h2'); if (h && h.parentNode === body) h.after(wrap.firstChild); else body.prepend(wrap.firstChild);
     }
     try { new MutationObserver(() => { if (!queued) queued = requestAnimationFrame(inject); }).observe(D.body || D.documentElement, { childList: true, subtree: true }); } catch (e) { }

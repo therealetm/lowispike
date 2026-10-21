@@ -980,6 +980,9 @@
             photo: photoURL,
             via: photoURL ? 'photo' : 'spirit'
         };
+        /* Oct 21 meal result: the spike verdict the photo screen showed (lvl) is the one the log keeps, so the XP it promised is the XP it gives */
+        const lvl = String(data.get('lvl') || '');
+        if (/^(low|medium|high)$/.test(lvl)) seed.lvl = lvl;
         const fs = pendingSlot();
         if (fs && !form.dataset.edit) seed.slot = fs;
         if (w.est) seed.est = w.est;
@@ -1127,7 +1130,7 @@
         /* Oct 19 2026 food photo AI: the photo goes to LowiFoodAI (Supabase function food-photo, Gemini). It fills the
            dishes, the name and hidden macro inputs; when it is off or fails, the plain "What is it?" form above still works. */
         const aiForm = document.querySelector('form#spMeal.sp-photo-form[data-id="' + lastMealId + '"]');
-        if (aiForm && window.LowiFoodAI && window.LowiFoodAI.mount) window.LowiFoodAI.mount(aiForm.previousElementSibling, aiForm, photoURL);
+        if (aiForm && window.LowiFoodAI && window.LowiFoodAI.mount) window.LowiFoodAI.mount(aiForm.previousElementSibling, aiForm, photoURL, { db: MDB, dbReady: mealDb });
     }
     function photoAsFile() {
         if (photoFile) return photoFile;

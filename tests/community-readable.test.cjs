@@ -59,3 +59,24 @@ test('the Copy link button moved into the community menu; the menu only offers t
   assert.match(js, /if\(view\)it\.push\(\['copyview'/);
   for (const k of ['community', 'hereNow', 'menu', 'mPeople', 'mProfile', 'mInvite', 'mCopyAff', 'mCopyCreate', 'mSettings', 'mWelcome']) assert.match(js, new RegExp(k + ":\\['[^']+','[^']+','[^']+'\\]"), 'EN/DE/ES ' + k);
 });
+
+/* Channel list: built only from real data; with none it shows honest empty lines, never invented people, counts or messages. */
+function rows(community) {
+  const vm = require('vm');
+  const D = { readyState: 'loading', addEventListener() {}, getElementById: () => null, documentElement: {} };
+  const W = { getComputedStyle: () => ({}), addEventListener() {}, LowiCommunity: community, LowiRooms: null };
+  const ctx = { window: W, document: D, setInterval() {}, setTimeout() {}, location: { hash: '' }, navigator: { language: 'en' } }; vm.createContext(ctx);
+  vm.runInContext(read('community-rooms-ui.js'), ctx); return W.LowiRoomsUI._chanRows();
+}
+test('channels: empty data gives honest empty states, no invented members or counts', () => {
+  const r = rows({ latest: () => null, unread: () => 0, directed: () => ({ list: [] }) });
+  assert.deepEqual(r.map(x => x.k), ['galaxy', 'replies', 'room', 'aff', 'create']);
+  assert.equal(r[0].p, 'No messages yet. Say hi to everyone.'); assert.equal(r[0].n, 0);
+  assert.equal(r[1].p, 'Nothing for you yet.'); assert.equal(r[1].dis, true);
+  assert.ok(!/here now/.test(r[2].p), 'no presence count without a room');
+});
+test('channels: real newest message, unread count and replies are shown as they are', () => {
+  const r = rows({ latest: () => ({ uid: 'u1', by: 'Ana', text: 'Day 3 done', ts: Date.now() - 120000 }), unread: () => 3, directed: () => ({ list: [{ uid: 'u2', by: 'Ben', text: '@you nice', ts: Date.now(), seen: false }, { uid: 'u3', by: 'Cy', text: 'old', ts: 1, seen: true }].reverse() }) });
+  assert.equal(r[0].p, 'Ana: Day 3 done'); assert.equal(r[0].n, 3);
+  assert.equal(r[1].p, 'Ben: @you nice'); assert.equal(r[1].n, 1); assert.ok(!r[1].dis);
+});

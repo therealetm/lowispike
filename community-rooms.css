@@ -66,7 +66,28 @@
 .rm-list em{font-style:normal;color:var(--rm-ink2);font-size:13px}
 /* Creation + Affiliates tabs. The pane shows only the bar and that page (in a frame); the galaxy and chat are hidden, so they pause. */
 #cmPaneChat[data-spirit-chat]>.rm-view{display:none}
-#cmPaneChat[data-spirit-chat][data-rm-view]>*:not(.rm-bar):not(.rm-view){display:none!important}
+#cmPaneChat[data-spirit-chat][data-rm-view]>*:not(.rm-bar):not(.rm-view):not(.rm-chans){display:none!important}
+#cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-view{display:none!important}
 #cmPaneChat[data-spirit-chat][data-rm-view]>.rm-view{display:flex;flex-direction:column;position:relative;z-index:20;height:calc(100vh - 196px);height:calc(100dvh - 196px);min-height:380px;margin:0 2px}
 .rm-frame{flex:1;width:100%;min-height:0;border:1px solid rgba(143,231,255,.4);border-radius:22px;background:#050b1e;color-scheme:dark;box-shadow:0 0 18px rgba(28,247,249,.16)}
 .rm-frame[hidden]{display:none}
+/* Channel list (Eden's channels) in the Chat tab: big glowing icon circles, name, last message with its sender, time, unread badge */
+#cmPaneChat[data-spirit-chat]>.rm-chans{display:none}
+#cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-chans:not([hidden]){display:block;position:relative;z-index:20;margin:0 2px;padding-bottom:calc(var(--sab,0px) + 120px)}
+.rm-ch-h{margin:6px 6px 12px;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--rm-ink2)}
+.rm-ch-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+#cmPaneChat[data-spirit-chat] .rm-ch{appearance:none;display:flex;align-items:center;gap:14px;width:100%;min-height:76px;padding:12px 14px;border-radius:22px;text-align:left;color:var(--rm-ink);cursor:pointer;
+ background:var(--rm-glass);border:1px solid rgba(143,231,255,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 6px 18px rgba(0,0,0,.22);-webkit-backdrop-filter:blur(16px) saturate(140%);backdrop-filter:blur(16px) saturate(140%);transition:border-color .2s,box-shadow .2s}
+#cmPaneChat[data-spirit-chat] .rm-ch:hover,#cmPaneChat[data-spirit-chat] .rm-ch:focus-visible{border-color:rgba(143,231,255,.7);box-shadow:0 0 18px rgba(28,247,249,.25);outline:none}
+#cmPaneChat[data-spirit-chat] .rm-ch:disabled{cursor:default;opacity:1}
+.rm-ch-ic{flex:none;display:grid;place-items:center;width:50px;height:50px;border-radius:50%;font-size:24px;background:radial-gradient(circle at 35% 30%,rgba(143,231,255,.28),rgba(20,50,120,.55) 70%);box-shadow:inset 0 0 0 1px rgba(143,231,255,.4),0 0 14px rgba(28,247,249,.22)}
+.rm-ch-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.rm-ch-top{display:flex;align-items:baseline;gap:8px}.rm-ch-top b{flex:1;min-width:0;font-size:16px;font-weight:650;letter-spacing:-.005em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rm-ch-top time{flex:none;font-size:12px;color:var(--rm-ink2)}
+.rm-ch-p{font-size:14px;line-height:1.35;color:var(--rm-ink2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.rm-ch-n{flex:none;min-width:24px;height:24px;padding:0 7px;border-radius:12px;display:grid;place-items:center;font-size:12px;font-weight:700;color:#04202a;background:#7cf0f2;box-shadow:0 0 10px rgba(28,247,249,.55)}
+/* in a thread: a floating pill with the way back to the channels */
+.rm-crumb{display:flex;align-items:center;gap:10px;align-self:flex-start;max-width:100%;padding:4px 14px 4px 4px;border-radius:999px;background:var(--rm-glass);border:1px solid var(--rm-edge);box-shadow:0 0 12px var(--rm-glow);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+.rm-crumb[hidden]{display:none}
+#cmPaneChat[data-spirit-chat] .rm-back{appearance:none;border:0;min-height:36px;padding:0 12px;border-radius:999px;background:rgba(143,231,255,.14);color:var(--rm-ink);font:600 14px/1 inherit;font-family:inherit;cursor:pointer}
+.rm-crumb-t{font-size:15px;font-weight:650;color:var(--rm-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

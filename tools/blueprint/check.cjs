@@ -144,7 +144,7 @@ async function appTabs(engine, device) {
     await tap(p, '.rm-tab[data-rm="aff"]'); await sleep(300);
     await tap(p, '.rm-tab[data-rm="chat"]'); await sleep(800);
     const chat = await p.evaluate(() => ({ view: document.getElementById('cmPaneChat').getAttribute('data-rm-view'), sel: document.querySelector('.rm-tab[aria-selected="true"]').dataset.rm, open: document.getElementById('cmPaneChat').getAttribute('data-open') }));
-    if (chat.view || chat.sel !== 'chat') fail(W, 'Chat from Affiliates ' + JSON.stringify(chat));
+    if ((chat.view && chat.view !== 'chans') || chat.sel !== 'chat') fail(W, 'Chat from Affiliates ' + JSON.stringify(chat));
     await R.shot(path.join(OUT, 'app-' + engine + '-chat-after.png'));
   } catch (e) { fail(W, 'threw ' + String(e.message).split('\n')[0]); await R.shot(path.join(OUT, 'app-' + engine + '-error.png')); }
   const errs = R.errs.filter(e => !/supabase|realtime|websocket/i.test(e.m));

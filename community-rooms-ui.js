@@ -16,7 +16,11 @@ const T={room:['Room','Raum','Sala'],chat:['Chat','Chat','Chat'],rooms:['Rooms',
  create:['Creation','Erstellen','Crear'],aff:['Affiliates','Affiliates','Afiliados'],copyLink:['Copy link','Link kopieren','Copiar enlace'],copied:['Link copied','Link kopiert','Enlace copiado'],
  tabs:['Community sections','Community-Bereiche','Secciones de la comunidad'],community:['Community','Community','Comunidad'],hereNow:['{c} here now','{c} gerade da','{c} aquí ahora'],
  menu:['Community menu','Community-Menü','Menú de la comunidad'],mPeople:['Rooms & people','Räume & Leute','Salas y gente'],mProfile:['Edit profile','Profil bearbeiten','Editar perfil'],mInvite:['Copy invite link','Einladungslink kopieren','Copiar enlace de invitación'],
- mCopyAff:['Copy Affiliates link','Affiliates-Link kopieren','Copiar enlace de Afiliados'],mCopyCreate:['Copy Creation link','Erstellen-Link kopieren','Copiar enlace de Crear'],mSettings:['Chat settings','Chat-Einstellungen','Ajustes del chat'],mWelcome:['Welcome & rules','Willkommen & Regeln','Bienvenida y normas'],people:['People in your room','Leute in deinem Raum','Gente en tu sala']};
+ mCopyAff:['Copy Affiliates link','Affiliates-Link kopieren','Copiar enlace de Afiliados'],mCopyCreate:['Copy Creation link','Erstellen-Link kopieren','Copiar enlace de Crear'],mSettings:['Chat settings','Chat-Einstellungen','Ajustes del chat'],mWelcome:['Welcome & rules','Willkommen & Regeln','Bienvenida y normas'],
+ channels:['Channels','Kanäle','Canales'],chGalaxy:['Galaxy chat','Galaxie-Chat','Chat de la galaxia'],chGalaxyEmpty:['No messages yet. Say hi to everyone.','Noch keine Nachrichten. Sag allen Hallo.','Aún no hay mensajes. Saluda a todos.'],
+ chReplies:['Replies & mentions','Antworten & Erwähnungen','Respuestas y menciones'],chRepliesEmpty:['Nothing for you yet.','Noch nichts für dich.','Todavía nada para ti.'],chRoomOut:['Find your room and the people in it.','Finde deinen Raum und die Leute darin.','Encuentra tu sala y a la gente que hay.'],
+ chAff:['Master Blueprint: today\'s video and your numbers.','Master Blueprint: heutiges Video und deine Zahlen.','Master Blueprint: el vídeo de hoy y tus números.'],chCreate:['AI studio for creators, being built.','KI-Studio für Creator, im Aufbau.','Estudio de IA para creadores, en construcción.'],
+ you:['You','Du','Tú'],now:['now','jetzt','ahora'],min:[' min',' Min.',' min'],hr:[' h',' Std.',' h'],unreadN:['{c} unread','{c} ungelesen','{c} sin leer'],people:['People in your room','Leute in deinem Raum','Gente en tu sala']};
 function lang(){try{return Math.max(0,['en','de','es'].indexOf((W.LowiLang&&W.LowiLang.get())||localStorage.getItem('lowispike.lang')||'en'));}catch(e){return 0;}}
 function tr(k,v){let s=(T[k]||[k])[lang()]||T[k][0];for(const x in v||{})s=s.split('{'+x+'}').join(String(v[x]));return s;}
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -25,7 +29,9 @@ function people(){try{return (H()&&H().people&&H().people())||[];}catch(e){retur
 function nameOf(uid){const p=people().find(x=>x&&x.uid===uid);return p&&p.n?String(p.n):'';}
 function me(){try{return (H()&&H().uid&&H().uid())||'';}catch(e){return '';}}
 function open(){const t=D.getElementById('cgThread');return !!(t&&t.hasAttribute('data-open'));}
-function setTab(chat){view='';const c=W.LowiCommunity;if(!c||!c.thread){paint();return;}if(chat!==open())c.thread(chat);paint();}
+/* 21 Oct evening (Eden's Chat): the Chat tab opens the channel list; a channel opens its thread, "‹ Channels" comes back. */
+function setTab(chat){view='';const c=W.LowiCommunity;if(!c||!c.thread){if(chat)view='chans';paint();return;}if(open())c.thread(false);if(chat)view='chans';paint();}
+function openThread(){view='';const c=W.LowiCommunity;if(c&&c.thread&&!open())c.thread(true);paint();}
 /* Oct 21: two more tabs, Creation (LOWiSPIKE Create, being built) and Affiliates (the Master Blueprint). Each is its own page with its
    own shareable address (create/, affiliates/); the tab shows that page in a frame, so the app and the shared link are one thing.
    21 Oct evening (Eman: "cramped, old, we can't even see the writing"; inspiration: the Eden app's community): the bar is now an
@@ -34,25 +40,25 @@ function setTab(chat){view='';const c=W.LowiCommunity;if(!c||!c.thread){paint();
    people in it, a green dot, "12 here now"); nothing is invented, so with no room it just says Rooms. Row 2: the four sections as
    one glass segmented control. The old separate "Copy link" button now lives in the menu. The Day/Night switch and the profile
    picture keep floating top right; row 1 reserves their width (--rm-tr), so nothing ever sits under them. */
-const VIEWS={create:'create/',aff:'affiliates/'};let view='';const frames={};
-function showView(v){if(!VIEWS[v])return;const c=W.LowiCommunity;if(open()&&c&&c.thread)c.thread(false);view=v;paint();}
+const VIEWS={create:'create/',aff:'affiliates/'},PANES={chans:1};let view='';const frames={};
+function showView(v){if(!VIEWS[v]&&!PANES[v])return;const c=W.LowiCommunity;if(open()&&c&&c.thread)c.thread(false);view=v;paint();}
 function viewUrl(v){try{return new URL(VIEWS[v],location.href.split('#')[0]).href;}catch(e){return VIEWS[v];}}
 function inviteUrl(){try{return location.href.split('#')[0].split('?')[0]+'#community';}catch(e){return '#community';}}
 function ensureView(pane){let box=pane.querySelector(':scope>.rm-view');
  if(!box){box=D.createElement('section');box.className='rm-view';box.setAttribute('data-noi18n','');pane.appendChild(box);}
- if(view&&!frames[view]){const f=D.createElement('iframe');f.className='rm-frame';f.src=VIEWS[view]+'?embed=1';/* not lazy: it is only made when its tab is opened, and lazy frames in WebKit can wait for a scroll */f.dataset.view=view;frames[view]=f;box.appendChild(f);}
+ if(VIEWS[view]&&!frames[view]){const f=D.createElement('iframe');f.className='rm-frame';f.src=VIEWS[view]+'?embed=1';/* not lazy: it is only made when its tab is opened, and lazy frames in WebKit can wait for a scroll */f.dataset.view=view;frames[view]=f;box.appendChild(f);}
  for(const k in frames)frames[k].hidden=k!==view;
  for(const k in frames)frames[k].title=k==='aff'?tr('aff'):tr('create');
  return box;}
 function copyText(u,label){const done=()=>note(label+': '+u);
  if(navigator.clipboard&&W.isSecureContext)navigator.clipboard.writeText(u).then(done,()=>note(u));else note(u);}
-function copyView(v){v=v||view;if(!VIEWS[v])return copyText(inviteUrl(),tr('copied'));copyText(viewUrl(v),tr('copied'));}
+function copyView(v){v=v||view;if(PANES[v])v='';if(!VIEWS[v])return copyText(inviteUrl(),tr('copied'));copyText(viewUrl(v),tr('copied'));}
 let bar=null,banner=null,sheet=null,menu=null,q='',msg='',msgT=0;
 function ensure(){const pane=D.getElementById('cmPaneChat');if(!pane||!pane.hasAttribute('data-spirit-chat'))return null;
  if(bar&&bar.isConnected&&bar.parentNode===pane)return bar;
  bar=D.createElement('nav');bar.className='rm-bar';bar.setAttribute('data-noi18n','');
  bar.innerHTML='<div class="rm-head"><button type="button" class="rm-id rm-menu-btn" data-rm="menu" aria-haspopup="menu" aria-expanded="false"><span class="rm-logo" aria-hidden="true"><i></i></span><span class="rm-idt"><b class="rm-name"></b><span class="rm-live"></span></span><span class="rm-chev" aria-hidden="true"></span></button></div>'
-  +'<div class="rm-tabs" role="tablist"><button type="button" role="tab" class="rm-tab" data-rm="room"></button><button type="button" role="tab" class="rm-tab" data-rm="chat"></button><button type="button" role="tab" class="rm-tab" data-rm="create"></button><button type="button" role="tab" class="rm-tab" data-rm="aff"></button></div><div class="rm-banner" role="status" aria-live="polite"></div>';
+  +'<div class="rm-tabs" role="tablist"><button type="button" role="tab" class="rm-tab" data-rm="room"></button><button type="button" role="tab" class="rm-tab" data-rm="chat"></button><button type="button" role="tab" class="rm-tab" data-rm="create"></button><button type="button" role="tab" class="rm-tab" data-rm="aff"></button></div><div class="rm-crumb" hidden><button type="button" class="rm-back" data-rm="chat"></button><span class="rm-crumb-t"></span></div><div class="rm-banner" role="status" aria-live="polite"></div>';
  pane.insertBefore(bar,pane.firstChild);banner=bar.querySelector('.rm-banner');
  for(const ms of [60,250,600,1100])setTimeout(()=>fit(bar),ms);
  bar.addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(!b)return;const a=b.dataset.rm;
@@ -67,14 +73,16 @@ function liveHTML(){const r=R(),c=C();if(!r||!c)return '<span class="rm-sub">'+e
  if(st!=='in')return '<span class="rm-sub">'+esc(st==='joining'?tr('joining'):tr('rooms'))+'</span>';
  const ms=r.members(),id=me(),faces=ms.filter(u=>u!==id).map(u=>({u,n:nameOf(u)})).filter(x=>x.n).slice(0,3);
  return (faces.length?'<span class="rm-faces" aria-hidden="true">'+faces.map(f=>'<i style="'+(colorOf(f.u)?'--fc:'+esc(colorOf(f.u)):'')+'">'+esc(initials(f.n))+'</i>').join('')+'</span>':'')
-  +'<span class="rm-dot" aria-hidden="true"></span><span class="rm-sub">'+esc(tr('hereNow',{c:ms.length}))+'<span class="rm-sep"> · </span>'+esc(tr('roomN',{n:r.num()}))+'</span>';}
+  +(ms.length?'<span class="rm-dot" aria-hidden="true"></span><span class="rm-sub">'+esc(tr('hereNow',{c:ms.length}))+'<span class="rm-sep"> · </span>'+esc(tr('roomN',{n:r.num()}))+'</span>':'<span class="rm-sub">'+esc(tr('roomN',{n:r.num()}))+'</span>');}
 function paint(){const b=ensure();if(!b)return;const r=R(),chat=open();
  if(chat&&view)view='';/* the message room was opened by other code: Chat wins */
- const pane=b.parentNode,sel=view||(chat?'chat':'room');
+ const pane=b.parentNode,sel=view==='chans'?'chat':view||(chat?'chat':'room');
  const tabs=b.querySelectorAll('.rm-tab');tabs[0].textContent=tr('room');tabs[1].textContent=tr('chat');tabs[2].textContent=tr('create');tabs[3].textContent=tr('aff');b.querySelector('.rm-tabs').setAttribute('aria-label',tr('tabs'));
  tabs.forEach(t=>{const on=t.dataset.rm===sel;t.setAttribute('aria-selected',on?'true':'false');t.tabIndex=on?0:-1;});
- if(view){pane.setAttribute('data-rm-view',view);D.documentElement.classList.add('rm-view');ensureView(pane);}
+ if(view){pane.setAttribute('data-rm-view',view);D.documentElement.classList.add('rm-view');if(VIEWS[view])ensureView(pane);else{const bx=pane.querySelector(':scope>.rm-view');if(bx)ensureView(pane);}}
  else{pane.removeAttribute('data-rm-view');D.documentElement.classList.remove('rm-view');if(pane.querySelector(':scope>.rm-view'))ensureView(pane);}
+ paintChans(pane);
+ const cr=b.querySelector('.rm-crumb');cr.hidden=!(chat&&!view);if(!cr.hidden){const bk=cr.querySelector('.rm-back');if(bk.textContent!=='‹ '+tr('channels'))bk.textContent='‹ '+tr('channels');cr.querySelector('.rm-crumb-t').textContent='🌌 '+tr('chGalaxy');}
  const nm=b.querySelector('.rm-name');if(nm.textContent!==tr('community'))nm.textContent=tr('community');
  const lv=b.querySelector('.rm-live'),lh=liveHTML();if(lv.__h!==lh){lv.innerHTML=lh;lv.__h=lh;}
  const st=r&&C()?r.status():'';b.querySelector('.rm-menu-btn').setAttribute('aria-label',tr('menu')+' · '+(st==='in'?tr('youIn',{n:r.num(),c:r.members().length,cap:r.cap()}):tr('community')));
@@ -85,6 +93,28 @@ function paint(){const b=ensure();if(!b)return;const r=R(),chat=open();
  fit(b);
  if(menu&&!menu.hidden)paintMenu();
  if(sheet&&sheet.isConnected)paintSheet();}
+/* Channel list (Eden's channels), only from data the app has: the galaxy chat's newest message and unread count, replies and
+   mentions addressed to you (LowiCommunity.directed), the people in your room, and the two pages. Empty means an honest line. */
+function ago(ts){const s=Math.max(0,(Date.now()-(+ts||0))/1000);if(!ts)return '';if(s<60)return tr('now');if(s<3600)return Math.floor(s/60)+tr('min');if(s<86400)return Math.floor(s/3600)+tr('hr');
+ try{return new Date(+ts).toLocaleDateString(undefined,{weekday:'short'});}catch(e){return '';}}
+function chanRows(){const c=W.LowiCommunity,r=R(),rows=[];let last=null,un=0,dm={list:[]};
+ try{last=c&&c.latest?c.latest():null;}catch(e){}try{un=c&&c.unread?c.unread():0;}catch(e){}try{dm=(c&&c.directed&&c.directed())||dm;}catch(e){}
+ rows.push({k:'galaxy',ic:'🌌',t:tr('chGalaxy'),p:last?((last.mine?tr('you'):(last.by||nameOf(last.uid)||'Member'))+': '+last.text):tr('chGalaxyEmpty'),ts:last&&last.ts,n:un});
+ const dl=(dm.list||[]),dn=dl.filter(m=>!m.seen).length,dlast=dl[dl.length-1];
+ rows.push({k:'replies',ic:'💬',t:tr('chReplies'),p:dlast?((dlast.by||nameOf(dlast.uid)||'Member')+': '+dlast.text):tr('chRepliesEmpty'),ts:dlast&&dlast.ts,n:dn,dis:!dlast});
+ if(r&&C()&&r.status()==='in'){const ms=r.members(),id=me(),names=ms.filter(u=>u!==id).map(nameOf).filter(Boolean).slice(0,3);
+  rows.push({k:'room',ic:'🪐',t:tr('roomN',{n:r.num()}),p:ms.length?tr('hereNow',{c:ms.length})+(names.length?' · '+names.join(', '):''):tr('chRoomOut')});}
+ else rows.push({k:'room',ic:'🪐',t:tr('rooms'),p:tr('chRoomOut')});
+ rows.push({k:'aff',ic:'🚀',t:tr('aff'),p:tr('chAff')});rows.push({k:'create',ic:'✨',t:tr('create'),p:tr('chCreate')});
+ return rows;}
+function paintChans(pane){let box=pane.querySelector(':scope>.rm-chans');if(view!=='chans'){if(box)box.hidden=true;return;}
+ if(!box){box=D.createElement('section');box.className='rm-chans';box.setAttribute('data-noi18n','');pane.appendChild(box);
+  box.addEventListener('click',e=>{const b=e.target.closest('[data-ch]');if(!b||b.disabled)return;const k=b.dataset.ch,c=W.LowiCommunity;
+   if(k==='galaxy')openThread();else if(k==='replies'){let d=null;try{d=c.directed();}catch(x){}const m=d&&d.list&&d.list[d.list.length-1];if(m&&c.openMessage){view='';c.openMessage(m.uid,m.id);paint();}}
+   else if(k==='room')openSheet();else showView(k);});}
+ box.hidden=false;
+ const h='<h2 class="rm-ch-h">'+esc(tr('channels'))+'</h2><ul class="rm-ch-list">'+chanRows().map(x=>'<li><button type="button" class="rm-ch" data-ch="'+x.k+'"'+(x.dis?' disabled':'')+'><span class="rm-ch-ic" aria-hidden="true">'+x.ic+'</span><span class="rm-ch-txt"><span class="rm-ch-top"><b>'+esc(x.t)+'</b>'+(x.ts?'<time>'+esc(ago(x.ts))+'</time>':'')+'</span><span class="rm-ch-p">'+esc(String(x.p||'').replace(/\s+/g,' ').slice(0,140))+'</span></span>'+(x.n?'<span class="rm-ch-n" aria-label="'+esc(tr('unreadN',{c:x.n}))+'">'+(x.n>99?'99+':x.n)+'</span>':'')+'</button></li>').join('')+'</ul>';
+ if(box.__h!==h){box.innerHTML=h;box.__h=h;}}
 /* Community menu (Eden's dropdown): only things that really work here. */
 function menuItems(){const it=[['people','👥',tr('mPeople')],['find','🔎',tr('find')]];
  if(D.getElementById('pfBtn'))it.push(['profile','👤',tr('mProfile')]);
@@ -160,5 +190,5 @@ setInterval(()=>{if(!fmo)return;for(const e of [D.documentElement,D.getElementBy
   try{W.goTab('foryou');}catch(e){}const v=m[1]==='affiliates'?'aff':m[1]==='create'?'create':'';
   let k=0;const t2=()=>{k++;if(!ensure()){if(k<30)setTimeout(t2,300);return;}if(v)showView(v);try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}};setTimeout(t2,400);};
  setTimeout(tick,600);})();
-W.LowiRoomsUI={paint,openSheet,closeSheet,setTab,fit,showView,view:()=>view,menu:toggleMenu,copyView,inviteUrl};
+W.LowiRoomsUI={paint,openSheet,closeSheet,setTab,fit,showView,view:()=>view,menu:toggleMenu,copyView,inviteUrl,_chanRows:chanRows};
 })(window,document);

@@ -18,7 +18,7 @@ const DEVICES = (process.env.DEVICES || 'iPhone SE,iPhone 13,iPhone 14 Pro Max')
             await R.page.waitForFunction(() => { const i = document.getElementById('cmInput'); return i && i.getBoundingClientRect().width > 20; }, null, { timeout: 30000 }).catch(() => console.log(device, 'composer never showed'));
             await H.sleep(7000);
             if (process.env.TYPE) { await R.page.locator('#cmInput').fill('Write to the galaxy and some more words'); await H.sleep(800); }
-            if (process.env.THREAD) { await R.page.locator('.rm-tab[data-rm="chat"]').click({ force: true }).catch(() => { }); await H.sleep(2500); }
+            if (process.env.THREAD) { await R.page.locator('.rm-tab[data-rm="chat"]').click({ force: true }).catch(() => { }); await H.sleep(800); await R.page.locator('.rm-ch[data-ch="galaxy"]').click({ force: true }).catch(() => { }); await H.sleep(2000); } /* Chat tab = channel list since 21 Oct; the galaxy channel is the thread */
             const res = await R.page.evaluate(() => {
                 const box = el => { if (!el) return null; const r = el.getBoundingClientRect(), s = getComputedStyle(el); if (r.width < 1 || r.height < 1 || s.visibility === 'hidden' || s.display === 'none' || +s.opacity === 0) return null; return { l: Math.round(r.left), t: Math.round(r.top), r: Math.round(r.right), b: Math.round(r.bottom) }; };
                 const hit = (a, b) => a && b && a.l < b.r - 1 && b.l < a.r - 1 && a.t < b.b - 1 && b.t < a.b - 1;

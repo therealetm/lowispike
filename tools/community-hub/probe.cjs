@@ -24,7 +24,7 @@ function contrastScan(rootSel) {
 }
 function overlaps() { /* header/menu items under the floating Day/Night switch or the profile picture */
   const fl = ['tbTheme', 'pfBtn'].map(id => document.getElementById(id)).filter(e => e && e.getBoundingClientRect().width > 1 && getComputedStyle(e).display !== 'none' && getComputedStyle(e).visibility !== 'hidden');
-  const out = []; for (const e of document.querySelectorAll('.rm-bar button,.rm-bar [role=tab],.rm-bar .rm-id,.rm-bar .rm-live')) { const r = e.getBoundingClientRect(); if (!r.width || e.closest('[hidden]')) continue; for (const f of fl) { const q = f.getBoundingClientRect(); if (r.left < q.right && r.right > q.left && r.top < q.bottom && r.bottom > q.top) out.push((e.className || e.tagName) + ' x ' + f.id); } } return out;
+  const out = []; for (const e of document.querySelectorAll('.rm-bar button,.rm-bar [role=tab],.rm-bar .rm-id,.rm-bar .rm-live,.rm-crumb')) { const r = e.getBoundingClientRect(); if (!r.width || e.closest('[hidden]')) continue; for (const f of fl) { const q = f.getBoundingClientRect(); if (r.left < q.right && r.right > q.left && r.top < q.bottom && r.bottom > q.top) out.push((e.className || e.tagName) + ' x ' + f.id); } } return out;
 }
 async function tap(p, sel) { await sleep(350); const b = await p.locator(sel).first().boundingBox(); if (!b) throw new Error('no box for ' + sel); const hit = await p.evaluate(([x, y, s]) => { const e = document.elementFromPoint(x, y); return !!(e && e.closest(s)); }, [b.x + b.width / 2, b.y + b.height / 2, sel]); if (!hit) throw new Error('centre of ' + sel + ' is covered'); await p.mouse.click(b.x + b.width / 2, b.y + b.height / 2); }
 async function scan(p, W, label, sel) { const c = await p.evaluate(contrastScan, sel); notes.push(W + ' ' + label + ' texts ' + c.n); if (c.bad.length) fail(W, label + ' low contrast: ' + c.bad.slice(0, 6).join(' | ')); }
@@ -48,7 +48,18 @@ async function run(engine, device, light) {
       const sel = await p.evaluate(() => (document.querySelector('.rm-tab[aria-selected="true"]') || {}).dataset.rm); if (sel !== t) fail(W, 'tab ' + t + ' not selected (got ' + sel + ')');
       await scan(p, W, 'header on ' + t, '.rm-bar');
       if (t === 'create' || t === 'aff') { await frameScan(p, W, t); await sleep(500); await R.shot(path.join(OUT, tag + '-' + t + '.png')); }
-      if (t === 'chat') await R.shot(path.join(OUT, tag + '-chat.png'));
+      if (t === 'chat') {
+        const cv = await p.evaluate(() => document.getElementById('cmPaneChat').getAttribute('data-rm-view')); if (cv !== 'chans') fail(W, 'Chat tab did not open the channel list (' + cv + ')');
+        await scan(p, W, 'channels', '.rm-chans'); await R.shot(path.join(OUT, tag + '-chat.png'));
+        const rows = await p.$$eval('.rm-ch', e => e.map(x => x.dataset.ch + ':' + x.querySelector('.rm-ch-p').textContent.slice(0, 40))); notes.push(W + ' channels ' + rows.join(' | '));
+        await tap(p, '.rm-ch[data-ch="galaxy"]'); await sleep(900);
+        const th = await p.evaluate(() => ({ open: !!document.querySelector('#cgThread[data-open]'), crumb: !document.querySelector('.rm-crumb').hidden, sel: (document.querySelector('.rm-tab[aria-selected="true"]') || {}).dataset.rm }));
+        if (!th.open || !th.crumb || th.sel !== 'chat') fail(W, 'Galaxy chat channel did not open its thread ' + JSON.stringify(th));
+        await scan(p, W, 'thread crumb', '.rm-crumb'); await R.shot(path.join(OUT, tag + '-thread.png'));
+        const ov2 = await p.evaluate(overlaps); if (ov2.length) fail(W, 'thread overlaps ' + ov2.join(', '));
+        await tap(p, '.rm-back'); await sleep(700);
+        const bk = await p.evaluate(() => ({ v: document.getElementById('cmPaneChat').getAttribute('data-rm-view'), open: !!document.querySelector('#cgThread[data-open]') })); if (bk.v !== 'chans' || bk.open) fail(W, 'back to channels ' + JSON.stringify(bk));
+      }
     }
     if (await p.$('.rm-menu-btn')) { await tap(p, '.rm-menu-btn'); await sleep(500); await scan(p, W, 'menu', '.rm-menu'); await R.shot(path.join(OUT, tag + '-menu.png')); const items = await p.$$eval('.rm-menu [data-rmm]', e => e.map(x => x.dataset.rmm)); notes.push(W + ' menu ' + items.join(',')); await p.keyboard.press('Escape'); await sleep(300); if (await p.$('.rm-menu:not([hidden])')) fail(W, 'menu did not close on Escape'); }
     if (await p.$('.rm-ob')) { await scan(p, W, 'onboarding', '.rm-ob'); }

@@ -50,7 +50,7 @@ async function run(engine, device, light) {
       if (ind.d > 3 || ind.ww > 3) fail(W, 'segment glow not under ' + t + ' ' + JSON.stringify(ind));
       await scan(p, W, 'header on ' + t, '.rm-bar');
       if (t === 'create' || t === 'aff') { await frameScan(p, W, t); await sleep(500); await R.shot(path.join(OUT, tag + '-' + t + '.png')); }
-      if (t === 'create') { const f = p.frames().find(x => x.url().includes('/create/')); const b = await f.$('#go'); if (!b || !(await b.isVisible())) fail(W, 'Creation button missing'); else { await b.tap().catch(() => b.click()); await sleep(900); const v = await p.evaluate(() => document.getElementById('cmPaneChat').getAttribute('data-rm-view')); if (v !== 'aff') fail(W, 'Creation button did not open Affiliates (' + v + ')'); } }
+      if (t === 'create') { const f = p.frames().find(x => x.url().includes('/create/')); const b = await f.$('#go'); if (!b || !(await b.isVisible())) fail(W, 'Creation button missing'); else { const bb = await b.boundingBox(); await p.touchscreen.tap(bb.x + bb.width / 2, bb.y + bb.height / 2); /* a real tap at its centre, in page coordinates */ await sleep(900); const v = await p.evaluate(() => document.getElementById('cmPaneChat').getAttribute('data-rm-view')); if (v !== 'aff') fail(W, 'Creation button did not open Affiliates (' + v + ')'); } }
       if (t === 'chat') {
         const cv = await p.evaluate(() => document.getElementById('cmPaneChat').getAttribute('data-rm-view')); if (cv !== 'chans') fail(W, 'Chat tab did not open the channel list (' + cv + ')');
         await scan(p, W, 'channels', '.rm-chans'); await R.shot(path.join(OUT, tag + '-chat.png'));

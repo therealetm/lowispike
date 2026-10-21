@@ -32,8 +32,9 @@ test('starter plan wiring: finishing the plan writes that goal into the Gap time
 test('onboarding names the bubbles the way the ring does: Fuel (not Meals), Gap for fasting, in EN/DE/ES', () => {
     const hs = read('herb-start.js');
     assert(!/like Meals or Move/.test(hs), 'old EN copy');
-    assert(/Tap a bubble like Fuel or Move/.test(hs));
-    assert(/como \\u00abComida\\u00bb o \\u00abMovimiento\\u00bb|como «Comida» o «Movimiento»/.test(hs) && !/como Comidas o/.test(hs), 'ES uses the Home bubble names Comida and Movimiento');
+    /* Oct 21 (TikTok advice, simpler conversion): the how-you-play list left the start; the app teaches the bubbles itself */
+    assert(!/play:\[/.test(hs), 'no how-you-play step before the account');
+    assert(!/como Comidas o/.test(hs));
     assert(/'Fuel \(meals\)'/.test(hs) && /'Gap \(fasting\)'/.test(hs));
     assert(/'Pause \(Fasten\)'/.test(hs) && /'Pausa \(ayuno\)'/.test(hs));
     assert(!/'Shop & scan','Meals'/.test(hs));

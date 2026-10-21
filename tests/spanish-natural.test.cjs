@@ -68,7 +68,7 @@ test('rewritten setup rows keep their English keys, all three languages and ever
 
 test('first screens: Spanish bubble names match the real bubbles, and the shopping step asks plainly', () => {
     const s = decode(read('herb-start.js'));
-    assert.match(s, /'Toca una burbuja, como «Comida» o «Movimiento», para abrirla\.'/);
+    assert.match(s, /plantH:'Come mejor y adelgaza jugando\.'/);
     assert.match(s, /'Movimiento','Pausa \(ayuno\)'/);
     assert.match(decode(read('move-bubble.js')), /'Move', 'Bewegung', 'Movimiento'/, 'the Move bubble on Home reads "Movimiento"');
     const shop = decode(read('shop-plan.js'));

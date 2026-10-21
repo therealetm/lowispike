@@ -42,9 +42,16 @@ test('shopping rhythm: due states give real life room and never claim anything w
 
 test('shopping rhythm: summary in English, German and Spanish', () => {
     const p = { every: 7, days: [6], store: 'Edeka' };
-    assert.strictEqual(C.summary(p, 'en'), 'Every 7 days \u00b7 usually Sat \u00b7 at Edeka');
-    assert.strictEqual(C.summary(p, 'de'), 'Alle 7 Tage \u00b7 meist Sa \u00b7 bei Edeka');
-    assert.match(C.summary(p, 'es'), /^Cada 7 d\u00edas/);
+    /* Oct 21 (TikTok advice: "one month" beats "30 days"): a rhythm with a friendlier name says it that way */
+    assert.strictEqual(C.summary(p, 'en'), 'Once a week \u00b7 usually Sat \u00b7 at Edeka');
+    assert.strictEqual(C.summary(p, 'de'), 'Einmal pro Woche \u00b7 meist Sa \u00b7 bei Edeka');
+    assert.match(C.summary(p, 'es'), /^Una vez por semana/);
+    assert.strictEqual(C.summary({ every: 10 }, 'en'), 'Every 10 days');
+    assert.match(C.summary({ every: 9 }, 'es'), /^Cada 9 d\u00edas/);
+    assert.strictEqual(C.plainEvery(30, 'en'), 'Once a month');
+    assert.strictEqual(C.plainEvery(14, 'de'), 'Alle zwei Wochen');
+    assert.strictEqual(C.plainEvery(10, 'en'), '');
+    assert.strictEqual(C.plainEvery('', 'en'), '');
     assert.strictEqual(C.summary({}, 'en'), 'Not set yet');
     assert.strictEqual(C.summary({ every: 1 }, 'de'), 'Jeden Tag');
 });
@@ -71,16 +78,19 @@ test('the shopping form never pre-fills a number and is editable later from Prof
     ['en', 'de', 'es'].forEach(l => assert.ok(new RegExp("\\b" + l + ": \\{").test(s), l));
 });
 
-test('gate explains the current game: shop & scan first, and a how-you-play step in every language', () => {
+test('gate is 3 plain screens (Oct 21 TikTok advice): what it is + why + proof first, shop & scan first in the habits', () => {
     const s = read('herb-start.js');
-    const plays = s.match(/play:\[[^\]]+\]/g) || [];
-    assert.strictEqual(plays.length, 3, 'EN, DE, ES');
-    plays.forEach(p => assert.strictEqual((p.match(/'[^']+'/g) || []).length, 5));
+    assert.ok(!/play:\[/.test(s), 'how-you-play is taught in the app, not before the account');
+    assert.match(s, /plantH:'Eat smarter and lose weight, as a game\.'/);
+    assert.strictEqual((s.match(/proof:'[^']*45 kg[^']*7 /g) || []).length, 3, 'founder proof in EN, DE, ES');
+    for (const cute of ['Say hi', 'Got it', 'Nice to meet you', "Save your companion"]) assert.ok(!s.includes("'" + cute + "'") && !s.includes("'" + cute + ":"), 'plain button words, not cute ones: ' + cute);
+    assert.match(s, /saveBtn:'Create free account'/);
+    assert.match(s, /\[0,1,2\]\.map\(/, '3 dots');
     assert.match(s, /hab:\['Shop & scan'/);
     assert.match(s, /hab:\['Einkaufen & scannen'/);
     assert.match(s, /hab:\['Comprar y escanear'/);
-    assert.match(s, /Math\.min\(4,\+st\.step\|\|0\)/);
-    assert.match(s, /if\(st\.v!==2\)/, 'older saved progress moves past the new step');
+    assert.match(s, /Math\.min\(2,\+st\.step\|\|0\)/);
+    assert.match(s, /if\(st\.v!==3\)/, 'older saved progress moves to the matching new screen');
 });
 
 test('onboarding copy never over-promises', () => {

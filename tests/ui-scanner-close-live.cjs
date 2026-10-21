@@ -88,7 +88,7 @@ function measure() {
             log(v, m && m.overlaps.length === 0, 'X overlaps no other control', m && m.overlaps);
             log(v, m && m.xHit, 'a tap at the X centre hits the X');
             log(v, m && m.rects.torch && m.rects.torch.t < 120 && m.rects.torch.r >= m.vw - 60 && m.hit.torch, 'torch stays top right and tappable', m && m.rects.torch);
-            log(v, m && ['field', 'go', 'scan', 'photo', 'meal', 'deep'].every(k => m.rects[k] && m.hit[k]), 'barcode field, Go, Scan, Photo, Meal, Deep analyze visible and tappable', m && m.hit);
+            log(v, m && ['field', 'go', 'scan', 'meal', 'deep'].every(k => m.rects[k] && m.hit[k]), 'barcode field, Go, Scan, Log meal, Deep analyze visible and tappable', m && m.hit);
             /* manual barcode entry: type, Go submits */
             const sub = await page.evaluate(() => new Promise(res => { const f = document.getElementById('b3BcF'); let n = 0; f.addEventListener('submit', e => { n++; }, { capture: true, once: true }); window.__sgSub = () => n; res(true); }));
             await page.locator('#b3Bc').tap(); await sleep(400);

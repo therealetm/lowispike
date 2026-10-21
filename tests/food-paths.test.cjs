@@ -135,7 +135,7 @@ test('Gap "I just ate" / "I ate earlier" open the one shared meal logger, option
     assert.match(html, /window\.LowiMealCtx = \{from:"gap", at:Date\.now\(\), ateAt:\+\(o\.at \|\| \(fast && fast\.e\) \|\| Date\.now\(\)\)\};\n  try \{ LowiSpirit\.meal\(\); \}/);
     assert.match(html, /if \(fast && !d\.spike && !d\.dup\)/, 'break-fast bonus still for a real meal');
     const sp = read('spirit.js');
-    assert.match(sp, /gapQ: \['Gap time saved\. Want to log what you ate\? You can skip this\.', 'Pausenzeit gespeichert\./);
+    assert.match(sp, /gapQ: \['Fast ended and points saved\. Want to add what you ate\? A photo or a few words, or skip\.', 'Fasten beendet, Punkte gespeichert\./);
     assert.match(sp, /else if \(a === 'gapskip'\) \{ window\.LowiMealCtx = null;/);
     assert.match(sp, /K\.slotFor \? K\.slotFor\(gc \? gc\.ateAt : undefined\)/);
     /* a meal logged right after "I ate earlier" keeps that time, same day only, once */
@@ -143,8 +143,9 @@ test('Gap "I just ate" / "I ate earlier" open the one shared meal logger, option
     assert.match(html, /log=\{id:data\.id,eventId:id,ts:mts,day:today\(\),/);
 });
 
-test('a meal log never restarts a running Gap clock (shopping scans do not log at all)', () => {
+test('a meal log with no clock starts it; with a clock running it ends the fast through the one rule (shopping scans do not log at all)', () => {
     assert.match(html, /function firstMeal\(at\)\{ const s = st\(\); if \(startOf\(s\)\) return false;/);
+    assert.match(html, /if \(!start\) return firstMeal\(t\) \? \{first:true\} : null;/);
 });
 
 test('the Pathfinder badge counts every product you found first, in three languages', () => {

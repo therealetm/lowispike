@@ -795,3 +795,20 @@ Emmanuel (call, on the live build 20261020-090200): "The hologram appeared, and 
 - Others wait their turn; the card says "{k} more waiting" (EN/DE/ES) so you know the x brings the next one.
 - Kept light for the open iPhone crash (item 29): no new timer, animation or listener; the existing 0.9 s check runs while a visitor stands there (as before, just longer) and stops when nobody is waiting; text is only rewritten when it changed.
 - Checks: `tests/home-visit.test.cjs` (3 new), browser `/tmp/pw/visit-check.cjs` (WebKit iPhone: still there after 28 s, rotate, Reply opens that message, two people one at a time, Settings over Home and back, Escape, nothing left running).
+
+## 2026-10-21 15:30 CEST: One meal path: eating is one event, whichever door it came through
+
+Emmanuel: "I'm eating, and I went to the scanner, and then I went to snap photo. I should have probably went to log meal. That's the confusing part. We have scanner and snap photo. We also have log meal. And then we also have the gap with the fasting... If I click on 'I just ate' it gives me points. And then it says 'log meal'... Find a strategy."
+
+Before, four doors and three rules: Log meal, Snap food and the barcode scanner's "Ate it, log it" saved the meal but a running fast kept running; Gap "I just ate" ended the fast and paid its points but saved no meal unless you also went through Log meal; ticking a planned meal ended the fast only past 8 h; the +10 break-fast bonus only came if you went through "I just ate" first.
+
+After, one rule (`LowiFastStop.mealLogged`, the one `lowi:meal-logged` listener in index.html; every log path already fires that event from `LowiVitalsBridge.logMeal` / `planMeal`, which now carry the meal's `ts`):
+- No gap clock yet: the meal starts it (nofake, unchanged).
+- A fast is running: the meal ends it at the meal's time through `end()`: the same record, points, once-per-fast guard (`s.awarded`) and reward as "I just ate". The reward says "Your meal ended the fast" and adds the +10 break-fast bonus (`LowiF2.bonusFor`, the same per-fast memory the I-just-ate chain uses, so both can never pay). A high-spike meal still ends the fast and pays the fast points, no bonus (unchanged bonus rule).
+- Left alone: food within 30 min of the clock's start (same sitting: a second photo, a drink, or Log meal right after "I just ate"), a catch-up log for an earlier slot (breakfast logged after 11:00, lunch after 16:00), a meal time before the clock's start.
+- "I just ate" stays the shortcut for "end it now, details later" and opens the same Log meal. Pressed within 30 min after a meal was logged, it changes nothing and says "Already logged: {meal} at {time}" (no second Log meal, no double log).
+- Supersedes the 2026-10-19 "a running clock is never restarted by Log meal": that guard stopped a fake restart with no record; now the meal ends the fast properly with its record and points, which is what Emmanuel asked for.
+
+UI: Scan's bottom bar is Barcode (check a product) and Log meal (I'm eating). Snap food left the bar; it is the Snap button inside Log meal (same camera, same log). While a fast runs, Log meal (slot picker and the Write / Scan / Snap sheet) shows one brand-line note: "Saving this ends your 16 h fast · +N XP" (under 4 h: "restarts your gap clock"). The Gap chain's question now reads "Fast ended and points saved. Want to add what you ate? A photo or a few words, or skip." The photo result screen itself is untouched (another task is redesigning it); it stays the destination of Snap.
+
+Tutorial steps gap-tap, log-meal and snap updated (VERSION 4). Checks: `tests/one-meal-path.test.cjs` (10, runs the real fasting module), updated no-fake-fast / food-paths / orb-scan; browser `tests/one-meal-path-live.cjs` (Chromium 375/390/820, WebKit iPhone SE / 13 / iPad: Scan bar, the note, saving ends the fast once with the reward, "I just ate" after changes nothing).

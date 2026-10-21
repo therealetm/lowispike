@@ -141,7 +141,7 @@
         recent: ['Eaten recently · one tap', 'Zuletzt gegessen · ein Tipp', 'Comido hace poco · un toque'],
         /* Oct 19 (E-man: "Ich habe Pop-up. Zack, Mahlzeit-Eintrag." Breakfast, lunch, dinner, and snacks, then write, scan or snap) */
         slotQ: ['Which meal is it?', 'Welche Mahlzeit?', '¿Qué comida es?'],
-        gapQ: ['Gap time saved. Want to log what you ate? You can skip this.', 'Pausenzeit gespeichert. Willst du eintragen, was du gegessen hast? Du kannst das auch überspringen.', 'Hora de la pausa guardada. ¿Quieres anotar lo que comiste? Puedes saltártelo.'],
+        gapQ: ['Fast ended and points saved. Want to add what you ate? A photo or a few words, or skip.', 'Fasten beendet, Punkte gespeichert. Willst du eintragen, was du gegessen hast? Foto oder ein paar Worte, oder überspringen.', 'Ayuno terminado y puntos guardados. ¿Quieres añadir lo que comiste? Una foto o unas palabras, o sáltatelo.'],
         gapSkip: ['Not now', 'Jetzt nicht', 'Ahora no'],
         breakfast: ['Breakfast', 'Frühstück', 'Desayuno'],
         lunch: ['Lunch', 'Mittagessen', 'Almuerzo'],
@@ -870,6 +870,13 @@
         const p = window.LowiMealSlot;
         return p && Date.now() - p.at < 6e5 && K.slotOk && K.slotOk(p.slot) ? p.slot : '';
     }
+    /* one meal path (Oct 21): while a fast runs, Log meal says what saving does to it (ends it, with the points), the same rule
+       index.html LowiFastStop.mealLogged applies to every meal log */
+    function fastNote() {
+        let n = '';
+        try { n = window.LowiFastStop && LowiFastStop.mealNote ? LowiFastStop.mealNote() : ''; } catch (e) {}
+        return n ? '<p class="sp-fast-note" data-noi18n>' + esc(n) + '</p>' : '';
+    }
     function slotPicker() {
         /* Oct 19 food paths: opened right after the Gap bubble saved a time -> say so, offer Not now, and suggest that time's meal */
         let gc = window.LowiMealCtx && window.LowiMealCtx.from === 'gap' && Date.now() - window.LowiMealCtx.at < 20 * 60000 ? window.LowiMealCtx : null;
@@ -883,7 +890,7 @@
                 '<span class="sp-slot-ic">' + icon(SLOT_IC[s]) + '</span><b>' + esc(tr(s)) + '</b>' +
                 '<small>' + esc(n ? n + ' ' + tr('slotDone') : s === now ? tr('slotNow') : '\u00a0') + '</small></button>';
         }).join('');
-        showSheet('<h2>' + esc(tr('meal')) + '</h2><p class="sp-slot-q' + (gc ? ' sp-gap-q' : '') + '">' + esc(tr(gc ? 'gapQ' : 'slotQ')) + '</p><div class="sp-slots" role="group" aria-label="' + esc(tr('slotQ')) + '">' + tiles + '</div>' +
+        showSheet('<h2>' + esc(tr('meal')) + '</h2><p class="sp-slot-q' + (gc ? ' sp-gap-q' : '') + '">' + esc(tr(gc ? 'gapQ' : 'slotQ')) + '</p>' + (gc ? '' : fastNote()) + '<div class="sp-slots" role="group" aria-label="' + esc(tr('slotQ')) + '">' + tiles + '</div>' +
             (gc ? '<button type="button" class="sp-ghost sp-gap-skip" data-sp="gapskip">' + esc(tr('gapSkip')) + '</button>' : ''));
     }
 
@@ -947,7 +954,7 @@
             const pk = herbPick(),
                 tip = pk ? '<button type="button" class="sp-herb-tip" data-sp="herbPick">' + (pk.recipe.img ? '<img src="' + esc(pk.recipe.img) + '" alt="">' : icon('plate')) + '<span><small>' + esc(tr('herbTip')) + '</small><b>' + esc(recipeName(pk.recipe)) + '</b><i>' + esc(whyLine(pk.why.slice(0, 2), null) || tr('whyText')) + '</i></span>' + icon('arrow') + '</button>' : '';
             const how = mealSlot ? '<div class="sp-slot-head"><span class="sp-slot-ic">' + icon(SLOT_IC[mealSlot]) + '</span><h2>' + esc(tr(mealSlot)) + '</h2><button type="button" class="sp-slot-change" data-sp="slotPick">' + esc(tr('slotChange')) + '</button></div>' +
-                '<div class="sp-slot-how" role="group" aria-label="' + esc(tr('slotHow')) + '"><button type="button" class="sp-how" data-sp="slotWrite">' + icon('book') + '<span>' + esc(tr('slotWrite')) + '</span></button><button type="button" class="sp-how" data-sp="scan">' + icon('scan') + '<span>' + esc(tr('slotScan')) + '</span></button><button type="button" class="sp-how" data-sp="photo">' + icon('camera') + '<span>' + esc(tr('slotSnap')) + '</span></button></div>' : '<h2>' + esc(tr('meal')) + '</h2>';
+                '<div class="sp-slot-how" role="group" aria-label="' + esc(tr('slotHow')) + '"><button type="button" class="sp-how" data-sp="slotWrite">' + icon('book') + '<span>' + esc(tr('slotWrite')) + '</span></button><button type="button" class="sp-how" data-sp="scan">' + icon('scan') + '<span>' + esc(tr('slotScan')) + '</span></button><button type="button" class="sp-how" data-sp="photo">' + icon('camera') + '<span>' + esc(tr('slotSnap')) + '</span></button></div>' + fastNote() : '<h2>' + esc(tr('meal')) + '</h2>' + fastNote();
             const html = how + '<div class="sp-quick-log"><div class="sp-manual"><small class="sp-quick-h">' + esc(tr('manual')) + '</small><form id="spMeal" data-id="' + esc(lastMealId) + '">' + fields + '</form></div>' + (recent.length ? '<small class="sp-quick-h">' + esc(tr(mealSlot ? 'slotRecent' : 'recent')) + '</small><div class="sp-quick-list">' + recent.map((l, i) => { const done = V.mealDup && V.mealDup({t: l.t || l.n, code: l.code, slot: mealSlot}); return '<button type="button" class="sp-quick-item' + (done ? ' done' : '') + '" data-sp="quickMeal" data-q="' + i + '">' + icon('plate') + '<span><b>' + esc(l.t || l.n) + '</b><small>' + esc(done ? tr('doneToday') : (kc(l) || tr('oneTap'))) + '</small></span><em>' + (done ? '\u2713' : '+') + '</em></button>'; }).join('') + '</div>' : '<p class="sp-note">' + esc(tr('recentEmpty')) + '</p>') + tip + '</div>';
             showSheet(html);
             return;

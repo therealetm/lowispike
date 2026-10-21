@@ -17,13 +17,14 @@ test('scanner bottom has no photo-of-barcode button any more', () => {
   assert.ok(/camBar\(\) \+ '<\/div>'/.test(openScanner), 'scanner bottom must render camBar()');
 });
 
-test('no white Back bar: Deep analyze follows the four actions, closing is the round X only', () => {
+test('no white Back bar: Deep analyze follows the actions (Barcode, Log meal), closing is the round X only', () => {
   const iActs = camBarSrc.indexOf('b3-cacts'), iDeep = camBarSrc.indexOf('id="b3Deep"');
   assert.ok(iActs > 0 && iDeep > iActs, 'order must be actions, then Deep analyze');
   assert.ok(!/b3Back|b3-cback/.test(camBarSrc), 'the white Back bar is gone');
   assert.ok(!/\.b3-cback/.test(html), 'no Back bar styles left');
   assert.ok(/<button class="b3-cx" data-b3="camclose"/.test(openScanner), 'the round X closes the scanner');
-  for (const k of ['scan', 'photo', 'meal']) assert.ok(camBarSrc.includes('act("' + k + '"'), 'missing action ' + k);
+  for (const k of ['scan', 'meal']) assert.ok(camBarSrc.includes('act("' + k + '"'), 'missing action ' + k);
+  assert.ok(!camBarSrc.includes('act("photo"'), 'one meal path (Oct 21): Snap food lives inside Log meal, not beside it');
   assert.ok(!camBarSrc.includes('act("water"'), 'water does not belong in the scanner');
   assert.ok(/target="_blank" rel="noopener"/.test(camBarSrc));
 });
@@ -63,7 +64,7 @@ test('the Home orb opens only the herb game: no action menu, no GPT link in the 
 });
 
 test('bottom bar layout: safe on short screens and reduced motion', () => {
-  assert.ok(/\.b3-cacts\{display:grid;grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/.test(html));
+  assert.ok(/\.b3-cacts\{display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/.test(html));
   assert.ok(/@media \(max-height:720px\)\{\.b3-cam \.b3-frame\{top:21%/.test(html));
   assert.ok(/@media \(prefers-reduced-motion:reduce\)\{\.b3-cact:active,\.b3-deep:active\{transform:none\}\}/.test(html));
 });

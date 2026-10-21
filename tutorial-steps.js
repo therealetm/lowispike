@@ -19,7 +19,7 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 3;
+    const VERSION = 4;
     const AREAS = ['you', 'home', 'food', 'play', 'companion', 'together', 'settings', 'extras', 'end'];
     const STEPS = [
         /* ---------- part: you (your companion) ---------- */
@@ -103,9 +103,9 @@
             id: 'gap-tap', area: 'home', target: ['#spFast'], covers: ['fasting'],
             title: { en: 'Starting the clock', de: 'Die Uhr starten', es: 'Poner el reloj' },
             text: {
-                en: 'Tap Gap and say when you last ate: I just ate, or Ate earlier. Logging a meal starts the clock too.',
-                de: 'Tipp auf Gap und sag, wann du zuletzt gegessen hast: gerade eben oder früher. Eine eingetragene Mahlzeit startet die Uhr auch.',
-                es: 'Toca Gap y di cuándo comiste por última vez: ahora mismo o antes. Registrar una comida también pone el reloj en marcha.'
+                en: 'Tap Gap and say when you last ate: I just ate, or Ate earlier. Logging a meal does the same: it starts the clock, or ends a running fast with its points.',
+                de: 'Tipp auf Gap und sag, wann du zuletzt gegessen hast: gerade eben oder früher. Eine eingetragene Mahlzeit macht dasselbe: Sie startet die Uhr oder beendet ein laufendes Fasten mit seinen Punkten.',
+                es: 'Toca Gap y di cuándo comiste por última vez: ahora mismo o antes. Registrar una comida hace lo mismo: pone el reloj en marcha o termina un ayuno en curso con sus puntos.'
             }
         },
         {
@@ -121,9 +121,9 @@
             id: 'log-meal', area: 'home', target: ['#whHud .wh-meals'], covers: ['log-meal'],
             title: { en: 'Log meal', de: 'Mahlzeit eintragen', es: 'Registrar comida' },
             text: {
-                en: 'In Log meal, type what you ate, like “chicken stew”, or tap a recent meal. I fill in calories, protein, carbs, fat, fiber and sugar.',
-                de: 'Tipp bei Mahlzeit eintragen ein, was du gegessen hast, etwa „Hühnereintopf“, oder wähl eine letzte Mahlzeit. Kalorien, Eiweiß, Kohlenhydrate und Co. trage ich ein.',
-                es: 'En Registrar comida, escribe lo que comiste, como “guiso de pollo”, o toca una comida reciente. Yo relleno calorías, proteína, carbohidratos, grasa, fibra y azúcar.'
+                en: 'Eating? Log meal is the one place for it: snap a photo, type what you ate, like “chicken stew”, or tap a recent meal. I fill in the numbers, and saving ends your fast with its points.',
+                de: 'Du isst? Mahlzeit eintragen ist der eine Ort dafür: Foto machen, eintippen, etwa „Hühnereintopf“, oder eine letzte Mahlzeit wählen. Die Werte trage ich ein, und Speichern beendet dein Fasten mit seinen Punkten.',
+                es: '¿Comiendo? Registrar comida es el único sitio: haz una foto, escribe lo que comiste, como “guiso de pollo”, o toca una comida reciente. Yo relleno los números y al guardar termina tu ayuno con sus puntos.'
             }
         },
         {
@@ -167,9 +167,9 @@
             id: 'snap', area: 'food', target: ['#whHud .o8-scan'], covers: ['snap-food'],
             title: { en: 'Snap food', de: 'Essen fotografieren', es: 'Foto de comida' },
             text: {
-                en: 'In Scan, Snap food looks at a photo of your plate and fills in the name and the numbers. Check them, then tap Log as meal.',
-                de: 'In Scannen schaut sich „Essen fotografieren“ ein Foto deines Tellers an und trägt Name und Werte ein. Prüf sie und tipp auf Als Mahlzeit eintragen.',
-                es: 'En Escanear, Foto de comida mira una foto de tu plato y rellena el nombre y los números. Revísalos y toca Registrar como comida.'
+                en: 'Snap is inside Log meal (in Fuel, and in Scan next to Barcode): pick the meal, tap Snap, and I read the photo of your plate. Check the numbers, then log it.',
+                de: 'Das Foto steckt in Mahlzeit eintragen (unter Essen und in Scannen neben Barcode): Mahlzeit wählen, Foto tippen, und ich lese das Bild deines Tellers. Prüf die Werte und trag sie ein.',
+                es: 'La foto está dentro de Registrar comida (en Comida y en Escanear junto a Código): elige la comida, toca Foto y leo la imagen de tu plato. Revisa los números y regístrala.'
             }
         },
         {

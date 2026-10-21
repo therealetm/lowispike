@@ -178,6 +178,8 @@ html.wh-home #tab-home.p2-tabin > * { animation: none !important; }
 
 /* ---------- Home IS the world: Misty chills in ONE bubble (her 3D cell), no rings, no extra glows ---------- */
 html.wh-home #spHome .sp-heroes > .bw3-stage { touch-action: none; }
+/* a pinch that lands on Misty's bubble zooms the world (body-world-3d.js routes those touches); the browser must not take them over */
+html.wh-home.wh-world-live #spHome #spBubble { touch-action: none; }
 html.wh-home.wh-world-live #spHome #spBubble { border-color: transparent !important; background: none !important; }
 html.wh-home #spBubble .cw-env, html.wh-home #spBubble .sp-bubble-water, html.wh-home #spBubble .cw-pill,
 html.wh-home #spBubble .cw-aura, html.wh-home #spBubble .cf-calm { display: none !important; }
@@ -219,3 +221,22 @@ html[data-theme="light"] .wh-fhint span { background: rgba(255,255,255,.8); colo
 /* small phones: Misty and her two cells sit a touch higher and closer, so nothing meets the Today button or the screen edge */
 @media (max-height: 700px) { :root { --wh-cy: 42%; } }
 @media (max-width: 340px) { :root { --wh-bs: 176px; --wh-fs: 80px; } }
+/* one world (Oct 15): "Use motion" on Home, the same look as Weltkarte and Klang; placed by world-home.js (placeExtras) */
+.wh-hud .wh-motion { position: absolute; pointer-events: auto; z-index: 6; width: 58px; height: 58px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 0; color: #fff; cursor: pointer;
+    border: 1px solid rgba(255,255,255,.24); background: rgba(10,22,52,.58); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 8px 26px -12px rgba(0,0,0,.55); touch-action: manipulation; -webkit-tap-highlight-color: transparent; font: inherit; }
+.wh-hud .wh-motion svg { width: 21px; height: 21px; }
+.wh-hud .wh-motion:not([style*="left"]) { visibility: hidden; }
+.wh-hud .wh-motion[data-state="on"] { border-color: rgba(244,205,126,.75); color: #f4cd7e; background: rgba(40,32,20,.5); }
+.wh-hud .wh-motion[data-state="no"], .wh-hud .wh-motion[data-state="denied"] { opacity: .62; }
+.wh-hud .wh-motion:active { transform: scale(.94); }
+html[data-theme="light"] .wh-hud .wh-motion { background: rgba(255,255,255,.66); color: #0b1d3f; border-color: rgba(11,29,63,.14); }
+html[data-theme="light"] .wh-hud .wh-motion[data-state="on"] { color: #8a5a0c; border-color: rgba(176,120,20,.55); background: rgba(255,244,214,.8); }
+html:not(.wh-world-live) .wh-hud .wh-motion { display: none; }
+html.wh-today-open .wh-hud .wh-motion { opacity: 0; pointer-events: none; }
+.wh-toast { position: absolute; left: 50%; top: var(--wh-top-clear, 120px); transform: translateX(-50%); max-width: min(320px, calc(100vw - 32px)); box-sizing: border-box; padding: 9px 14px; border-radius: 14px; font-size: 13px; line-height: 1.3; text-align: center;
+    background: rgba(10,22,52,.78); color: #fff; border: 1px solid rgba(255,255,255,.2); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 8; }
+.wh-toast.on { opacity: 1; }
+html[data-theme="light"] .wh-toast { background: rgba(255,255,255,.9); color: #0b1d3f; border-color: rgba(11,29,63,.14); }
+/* the daily gift dot never sits under Klang: when Klang has its old spot, it moves to the nearest free spot */
+html.wh-home.wh-gift-moved #whHud > .hs-gift { left: var(--wh-gift-x) !important; top: var(--wh-gift-y) !important; bottom: auto !important; }
+html.wh-home.wh-gift-moved #whHud > .hs-giftpop { left: max(16px, min(var(--wh-gift-x), calc(100vw - 296px))) !important; top: calc(var(--wh-gift-y) + 54px) !important; bottom: auto !important; }

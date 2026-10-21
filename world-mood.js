@@ -24,7 +24,7 @@
         H.style.setProperty('--wm-filter', lk.filter);
         H.style.setProperty('--wm-veil', String(lk.veil));
         H.style.setProperty('--wm-beat', beat + 's');
-        D.querySelectorAll('.bw3-stage, .bw3-full').forEach(host => {
+        D.querySelectorAll('.bw3-stage, .bw3-full:not(.bw3-one)').forEach(host => {
             /* the veil sits right above the world picture and below labels, buttons and the top bar (DOM order) */
             let v = host.querySelector(':scope > .wm-veil');
             if (!v) { v = D.createElement('div'); v.className = 'wm-veil'; v.setAttribute('aria-hidden', 'true'); }

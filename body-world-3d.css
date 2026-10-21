@@ -69,3 +69,17 @@ html[data-theme="light"] .bw3-card b { color: #12345a; }
 .bw3-full.bw3-flash::after { animation: bw3flash .3s ease-out; }
 @keyframes bw3flash { 0% { opacity: .2; } 100% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .bw3-full, .bw3-stage .bw3-canvas { transition: none; } .bw3-loading { animation: none; } .bw3-full.bw3-flash::after { animation: none; } }
+/* one world (Oct 15): the Home world IS the world. While you are away in a place, `.bw3-full.bw3-one` is only a see-through
+   layer on Home (place card, region label, warp veil); the canvas, camera and Misty stay Home's. Home's own chrome rests
+   until you are back in your cell; Weltkarte, Klang and motion stay, the tab bar stays. */
+.bw3-full.bw3-one { position: fixed; inset: 0; z-index: 4; background: none !important; opacity: 1; pointer-events: none; transition: none; }
+.bw3-full.bw3-one > * { pointer-events: none; }
+.bw3-full.bw3-one .bw3-card, .bw3-full.bw3-one .bwr-label.on, .bw3-full.bw3-one .arr-world { pointer-events: auto; }
+.bw3-full.bw3-one .bw3-card, .bw3-full.bw3-one.bwr-on .bw3-card { bottom: max(calc(var(--wh-tb, 104px) + 82px), var(--wh-card-b, 0px)); left: calc(var(--wh-l, 0px) + 16px); }
+.bw3-full.bw3-one .bwr-mapbtn { display: none !important; }
+.bw3-full.bw3-one .bwr-label, .bw3-full.bw3-one .arr-world { top: var(--wh-top-clear, calc(env(safe-area-inset-top, 0px) + 116px)); }
+.bw3-full.bw3-one .bwr-veil { position: fixed; }
+html.bw3-in #spHome > :not(.sp-heroes):not(#whHud):not(.bw3-one),
+html.bw3-in #spHome .sp-heroes > :not(.bw3-stage),
+html.bw3-in #whHud > :not(.wh-zoom):not(.wa-btn):not(.wa-panel):not(.wh-motion) { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; transition: opacity .25s, visibility 0s .25s !important; }
+@media (prefers-reduced-motion: reduce) { html.bw3-in #spHome * { transition: none !important; } }

@@ -169,26 +169,30 @@ export function createWorld(THREE, canvas, opts) {
 
     /* ---------- camera rig ---------- */
     const rig = { yaw: 0.35, pitch: 0.12, dist: 6.5, vy: 0, vp: 0, gy: 0, gp: 0, gyT: 0, gpT: 0, target: new THREE.Vector3(), mode: 'full', minD: 2.4, maxD: 13, pMax: 1.2, homeDist: 3.2, idle: 0, fly: null };
-    let focus = null, W = 1, H = 1, glow = 0.55, glowT = 0.55, tint = null, tintAmt = 0, tintT = 0;
+    let focus = null, focusAmt = 1, focusGoal = 1, W = 1, H = 1, glow = 0.55, glowT = 0.55, tint = null, tintAmt = 0, tintT = 0;
     const tmpM = new THREE.Matrix4(), tmpQ = new THREE.Quaternion(), tmpE = new THREE.Euler(), tmpS = new THREE.Vector3(), tmpP = new THREE.Vector3(), baseBg = new THREE.Color(PAL.dark.bg), curBg = new THREE.Color();
 
     function applyView() {
         camera.aspect = W / H;
-        if (focus && rig.mode === 'home') camera.setViewOffset(W, H, W / 2 - focus.x, H / 2 - focus.y, W, H); else camera.clearViewOffset();
+        /* one world: the Home focus (Misty's bubble) eases to the centre while you are away in a place, and back when you return */
+        if (focus && rig.mode === 'home' && focusAmt > 0.001) camera.setViewOffset(W, H, (W / 2 - focus.x) * focusAmt, (H / 2 - focus.y) * focusAmt, W, H); else camera.clearViewOffset();
         camera.updateProjectionMatrix();
     }
     function resize(w, h) { W = Math.max(1, w | 0); H = Math.max(1, h | 0); renderer.setSize(W, H, false); applyView(); }
     function setFocus(f) { focus = f; applyView(); }
+    function setFocusAmt(v, now) { focusGoal = Math.max(0, Math.min(1, v)); if (now) { focusAmt = focusGoal; applyView(); } }
     function homeDistFor(px) { return CR / ((px / (H / 2)) * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))); }
     function setMode(m, o) {
         o = o || {};
         if (m === 'home') {
             /* Home IS the world: drag orbits freely, two fingers zoom from Misty close-up out to the whole world.
                A re-layout keeps the current zoom (scaled to the new size) instead of snapping back to Misty. */
-            const was = rig.mode === 'home' && rig.homeDist > 0 && rig.lastHome ? rig.dist / rig.homeDist : 1;
+            const again = rig.mode === 'home' && rig.homeDist > 0 && rig.lastHome, was = again ? rig.dist / rig.homeDist : 1;
             rig.homeDist = homeDistFor(o.radiusPx || 100); rig.lastHome = true;
             rig.minD = rig.homeDist * 0.72; rig.maxD = Math.max(14, rig.homeDist * 2.5); rig.pMax = 1.1;
-            rig.dist = Math.min(rig.maxD, Math.max(rig.minD, rig.homeDist * was)); rig.fly = null; rig.target.set(0, 0, 0);
+            /* one world: a re-layout while the camera glides home (back from a place) lets the glide finish */
+            if (again && rig.fly) { if (rig.fly.home) rig.fly.to.d = rig.homeDist; }
+            else { rig.dist = Math.min(rig.maxD, Math.max(rig.minD, rig.homeDist * was)); rig.fly = null; rig.target.set(0, 0, 0); }
             rig.mode = m; inner.visible = false; halo.visible = false; /* one bubble: Misty's own cell, no extra glow shell */
         }
         else { rig.mode = m; rig.lastHome = false; rig.minD = 2.4; rig.maxD = 13; rig.pMax = 1.2; if (rig.dist < 4) rig.dist = 6.5; inner.visible = true; halo.visible = true; }
@@ -212,9 +216,9 @@ export function createWorld(THREE, canvas, opts) {
     function flyTo(id) {
         const b = id && beacons[id];
         const from = { t: rig.target.clone(), d: rig.dist };
-        const to = b ? { t: b.pos.clone().multiplyScalar(0.92), d: 2.6 } : { t: new THREE.Vector3(), d: 6.5 };
+        const to = b ? { t: b.pos.clone().multiplyScalar(0.92), d: 2.6 } : { t: new THREE.Vector3(), d: rig.mode === 'home' ? (rig.homeDist || 3.2) : 6.5 };
         if (b) { const ang = Math.atan2(b.pos.x, b.pos.z); rig.flyYaw = { from: rig.yaw, to: ang + Math.round((rig.yaw - ang) / (Math.PI * 2)) * Math.PI * 2 }; } else rig.flyYaw = null;
-        rig.fly = { from, to, t: 0, dur: 1.45 }; rig.idle = 0;
+        rig.fly = { from, to, t: 0, dur: 1.45, home: !b }; rig.idle = 0;
         tint = b ? b.hue.clone() : null; tintT = b ? 0.2 : 0;
         return !!b || !id;
     }
@@ -237,6 +241,7 @@ export function createWorld(THREE, canvas, opts) {
     let running = false, raf = 0, last = 0, t = 0, frames = [], lowFor = 0;
     function step(dt) {
         t += dt;
+        if (focusAmt !== focusGoal) { const d = focusGoal - focusAmt, s2 = Math.min(Math.abs(d), dt * 1.25); focusAmt = Math.abs(d) < 0.002 ? focusGoal : focusAmt + Math.sign(d) * s2; applyView(); }
         /* camera */
         if (rig.fly) {
             rig.fly.t += dt; const k = ease(Math.min(1, rig.fly.t / rig.fly.dur));
@@ -298,5 +303,5 @@ export function createWorld(THREE, canvas, opts) {
     function renderOnce() { step(0.016); renderer.render(scene, camera); }
     function dispose() { stop(); renderer.dispose(); }
     setTheme(opts.theme || 'dark');
-    return { scene, camera, hub, regions, onFrame, resize, setFocus, setMode, drag, release, zoom, setGyro, setGlow, setTheme, flyTo, pick, project, start, stop, fps, renderOnce, dispose, get running() { return running; }, get dpr() { return dpr; }, rig, renderer };
+    return { scene, camera, hub, regions, onFrame, resize, setFocus, setFocusAmt, get focusAmt() { return focusAmt; }, setMode, drag, release, zoom, setGyro, setGlow, setTheme, flyTo, pick, project, start, stop, fps, renderOnce, dispose, get running() { return running; }, get dpr() { return dpr; }, rig, renderer };
 }

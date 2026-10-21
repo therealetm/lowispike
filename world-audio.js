@@ -33,7 +33,7 @@
     /* the world is "open" as the full window, or as the living Home background (Home is the world now) */
     const homeLive = () => H.classList.contains('wh-world-live') && H.classList.contains('wh-home') && !H.classList.contains('bw3-full-open') && !!D.getElementById('whHud');
     const isOpen = () => (H.classList.contains('bw3-full-open') && !!D.querySelector('.bw3-full')) || homeLive();
-    const uiHost = () => D.querySelector('.bw3-full') || (homeLive() ? D.getElementById('whHud') : null);
+    const uiHost = () => D.querySelector('.bw3-full:not(.bw3-one)') || (homeLive() ? D.getElementById('whHud') : null);
     const running = () => !!(st.ctx && st.ctx.state === 'running');
     let noiseBuf = null;
     function noise(ctx) {

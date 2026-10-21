@@ -162,20 +162,22 @@
             if (pts.size === 1) { start = { x: e.clientX, y: e.clientY, t: e.timeStamp }; moved = 0; lastX = e.clientX; lastY = e.clientY; vx = vy = 0; lastT = e.timeStamp; }
             if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch0 = Math.hypot(a.x - b.x, a.y - b.y); }
         });
-        el.addEventListener('pointermove', e => {
+        const onMove = e => {
             if (!world || !pts.has(e.pointerId)) return;
-            pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+            const ext = pts.get(e.pointerId).ext;
+            pts.set(e.pointerId, { x: e.clientX, y: e.clientY, ext });
             if (pts.size >= 2 && allowPinch) {
                 const [a, b] = [...pts.values()], d = Math.hypot(a.x - b.x, a.y - b.y);
                 world.zoom(pinchFactor(pinch0, d)); pinch0 = d; moved = 99; e.preventDefault(); return;
             }
-            if (pts.size !== 1) return;
+            if (pts.size !== 1 || ext) return;
             const dx = e.clientX - lastX, dy = e.clientY - lastY, dt = Math.max(1, e.timeStamp - lastT);
             moved += Math.abs(dx) + Math.abs(dy);
             world.drag(dx, dy);
             vx = 0.7 * vx + 0.3 * (dx / dt * 16); vy = 0.7 * vy + 0.3 * (dy / dt * 16);
             lastX = e.clientX; lastY = e.clientY; lastT = e.timeStamp;
-        });
+        };
+        el.addEventListener('pointermove', onMove);
         const end = e => {
             if (!pts.has(e.pointerId)) return;
             pts.delete(e.pointerId);
@@ -187,7 +189,16 @@
         };
         el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
         if (allowPinch) el.addEventListener('wheel', e => { if (!world) return; e.preventDefault(); world.zoom(e.deltaY > 0 ? 1.08 : 1 / 1.08); }, { passive: false });
+        /* a finger that lands on something floating over the world (Misty's bubble) still counts as the second finger of a pinch */
+        const extDown = e => { if (!world) return; pts.set(e.pointerId, { x: e.clientX, y: e.clientY, ext: true }); if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch0 = Math.hypot(a.x - b.x, a.y - b.y); moved = 99; } };
+        return { extDown, move: onMove, end };
     }
+    /* Home: touches that start on Misty's bubble join the Home world's pinch (one listener, routed to the current stage) */
+    let homeG = null;
+    if (D.addEventListener) ['pointerdown', 'pointermove', 'pointerup', 'pointercancel'].forEach(n => D.addEventListener(n, e => {
+        if (!homeG || mode !== 'home' || e.pointerType !== 'touch' || !e.target || !e.target.closest || !e.target.closest('#spBubble')) return;
+        if (n === 'pointerdown') homeG.extDown(e); else if (n === 'pointermove') homeG.move(e); else homeG.end(e);
+    }, true));
 
     /* ---------- gyroscope ---------- */
     let gyroOn = false, gyroBase = null, gyroSeen = false;
@@ -207,6 +218,7 @@
         if (btn) paintGyro(btn, on ? 'on' : 'off');
     }
     function paintGyro(btn, st) {
+        if (typeof btn === 'function') { btn(st); return; }   /* Home's motion button paints itself (world-home.js) */
         btn.dataset.state = st;
         btn.setAttribute('aria-pressed', String(st === 'on'));
         btn.querySelector('span').textContent = st === 'on' ? tr('gyroOn') : st === 'no' ? tr('gyroNo') : st === 'denied' ? tr('gyroDenied') : gyroEnv().needsPermission ? tr('gyroAsk') : tr('gyroOff');
@@ -218,6 +230,16 @@
             W.DeviceOrientationEvent.requestPermission().then(r => { if (r === 'granted') setGyro(true, btn); else paintGyro(btn, 'denied'); }).catch(() => paintGyro(btn, 'denied'));
         } else setGyro(true, btn);
     }
+
+    /* Home's own "Use motion" button (world-home.js): same tilt look-around as the old window had. On iOS the permission
+       prompt must come straight out of the tap, so tap() asks synchronously inside the click. paint(state) gets
+       'on' | 'off' | 'no' | 'denied'. */
+    api.motion = {
+        kind: () => gyroKind(gyroEnv()),
+        on: () => gyroOn,
+        label: st => st === 'on' ? tr('gyroOn') : st === 'no' ? tr('gyroNo') : st === 'denied' ? tr('gyroDenied') : gyroEnv().needsPermission ? tr('gyroAsk') : tr('gyroOff'),
+        tap: paint => gyroTap(paint)
+    };
 
     /* ---------- Home window ---------- */
     function homeEls() {
@@ -235,7 +257,7 @@
             els.heroes.classList.add('bw3-on'); els.home.classList.add('bw3-home');
             [...els.heroes.children].forEach(c => { if (c !== stage && getComputedStyle(c).position === 'static') c.style.position = 'relative'; });
             /* Home is the world itself: drag orbits, two fingers zoom, tapping a glowing place warps there; tapping empty space does nothing */
-            bindGestures(stage, (x, y) => { if (!world) return; const id = world.pick(x, y); if (id === 'cell') { try { W.dispatchEvent(new CustomEvent('lowi:misty-open')); } catch (e) {} } else if (id) api.flyTo(id); }, true);
+            homeG = bindGestures(stage, (x, y) => { if (!world) return; const id = world.pick(x, y); if (id === 'cell') { try { W.dispatchEvent(new CustomEvent('lowi:misty-open')); } catch (e) {} } else if (id) api.flyTo(id); }, true);
             if (io) io.disconnect();
             if ('IntersectionObserver' in W) { io = new IntersectionObserver(es => { visibleHome = es.some(x => x.isIntersecting); }, { threshold: 0.01 }); io.observe(stage); }
             if (mode === 'home' && canvas) stage.insertBefore(canvas, stage.firstChild);
@@ -259,8 +281,11 @@
         if (!world || mode !== 'home') return;
         const sr = stage.getBoundingClientRect(), b = els.bubble && els.bubble.getBoundingClientRect(), bw = els.bubble ? (els.bubble.offsetWidth || 0) : 0;
         world.resize(sr.width, sr.height);
-        if (b && b.width) { world.setFocus({ x: b.left + b.width / 2 - sr.left, y: b.top + b.height / 2 - sr.top }); world.setMode('home', { radiusPx: Math.min(sr.height * 0.48, (bw || b.width) * 0.54) }); }
-        else { world.setFocus(null); world.setMode('home', { radiusPx: sr.height * 0.36 }); }
+        /* one world: while you are away in a place (the see-through layer is up) only the size and focus follow the layout;
+           the camera is the warp's until you are back in your cell */
+        const away = !!(full && full.classList.contains('bw3-one'));
+        if (b && b.width) { world.setFocus({ x: b.left + b.width / 2 - sr.left, y: b.top + b.height / 2 - sr.top }); if (!away) world.setMode('home', { radiusPx: Math.min(sr.height * 0.48, (bw || b.width) * 0.54) }); }
+        else { world.setFocus(null); if (!away) world.setMode('home', { radiusPx: sr.height * 0.36 }); }
     }
     /* keep the 3D button clear of the avatar ring / theme switch (phones): float it to the nearest free spot of the window */
     let lastBtn = '';
@@ -301,7 +326,60 @@
     }
 
     /* ---------- full-screen world ---------- */
+    /* ---------- one world (Oct 15) ----------
+       The Home world IS the world. Tapping a glowing place on Home warps right there: same canvas, same camera, same Misty.
+       `full` is then only a see-through layer on Home that carries the place card and the warp veil; "Back to your cell"
+       glides back into the same Home, and the layer goes away when you are home again. The old full-screen window is left
+       only as the stage of a body ride (its own overlay hides everything else anyway). */
+    function onFullClick(e) {
+        const b = e.target.closest('[data-bw3-go]'); if (b) go(b.dataset.bw3Go);
+        const bk = e.target.closest('[data-bw3-back]'); if (bk) go(null);
+        const tp = e.target.closest('[data-bw3-trip]'); if (tp) openTrip(tp.dataset.bw3Trip);
+    }
+    let openedAt = 0;
+    function inPlace() { return !!(full && full.classList.contains('bw3-one')); }
+    function openInPlace() {
+        const host = D.getElementById('spHome'); if (!host) return false;
+        if (!H.classList.contains('wh-home')) { try { if (W.LowiHost && typeof W.LowiHost.go === 'function') W.LowiHost.go('home'); } catch (e) { } }
+        mountHome();
+        if (!stage || !stage.isConnected) return false;
+        full = D.createElement('div'); openedAt = Date.now();
+        full.className = 'bw3-full bw3-one';
+        full.innerHTML = '<div class="bw3-labels" aria-hidden="true"></div><div class="bw3-card" hidden aria-live="polite"></div>';
+        host.appendChild(full);
+        H.classList.add('bw3-in');
+        full.addEventListener('click', onFullClick);
+        D.addEventListener('keydown', onKey);
+        load().then(w => {
+            if (!w || !inPlace()) return;
+            if (canvas && canvas.parentNode !== stage) { lastLay = ''; attachHome(); }
+            full.classList.add('bw3-has');
+            w.setFocusAmt(0);
+            syncGlow(); w.start();
+        }, () => { });
+        return true;
+    }
+    /* back in your cell: the layer goes, Home's own focus (Misty's bubble) eases back, Home layout applies again */
+    function settleHome() {
+        if (!inPlace()) return;
+        const f = full; full = null;
+        try { f.remove(); } catch (e) { }
+        H.classList.remove('bw3-in');
+        D.removeEventListener('keydown', onKey);
+        if (world) { world.setFocusAmt(1); lastLay = ''; layoutHome(); }
+    }
+    function closeInPlace() {
+        const R = W.LowiWorldRegions, away = !!(R && typeof R.current === 'function' && R.current() && R.current() !== 'hub');
+        if (away && !mqReduce.matches) { try { R.travel('hub', true); } catch (e) { } if (world) world.flyTo(null); const c = full.querySelector('.bw3-card'); if (c) c.hidden = true; return; }
+        if (world) { world.flyTo(null); }
+        settleHome();
+    }
     function open() {
+        if (full) return true;
+        if (api.state !== 'fallback' && !H.classList.contains('br-open') && openInPlace()) return true;
+        return openWindow();
+    }
+    function openWindow() {
         if (api.state === 'fallback') return false;
         if (full) return true;
         mode = 'full';
@@ -320,7 +398,7 @@
         const view = full.querySelector('.bw3-view'), labels = full.querySelector('.bw3-labels');
         labels.innerHTML = PLACES.map(p => '<button type="button" class="bw3-lab" data-bw3-go="' + p.id + '" style="--h:' + p.hue + '" tabindex="-1">' + placeText(p, 'name', l) + '</button>').join('');
         full.querySelector('.bw3-x').addEventListener('click', close);
-        full.addEventListener('click', e => { const b = e.target.closest('[data-bw3-go]'); if (b) go(b.dataset.bw3Go); const bk = e.target.closest('[data-bw3-back]'); if (bk) go(null); const tp = e.target.closest('[data-bw3-trip]'); if (tp) openTrip(tp.dataset.bw3Trip); });
+        full.addEventListener('click', onFullClick);
         const gb = full.querySelector('.bw3-gyro');
         if (gb) { paintGyro(gb, gyroOn ? 'on' : 'off'); gb.addEventListener('click', () => gyroTap(gb)); }
         bindGestures(view, (x, y) => { if (!world) return; const id = world.pick(x, y); if (id === 'cell') showCell(); else if (id) go(id); }, true);
@@ -336,6 +414,7 @@
     }
     function close() {
         if (!full) return;
+        if (inPlace()) { closeInPlace(); return; }
         D.removeEventListener('keydown', onKey);
         const f = full; full = null; f.classList.remove('on');
         H.classList.remove('bw3-full-open');
@@ -382,6 +461,14 @@
     }
     function openTrip(id) { try { close(); W.LowiBodyTrips.open(id); } catch (e) {} }
 
+    /* one world: the warp home has landed -> you are back on Home, the layer goes */
+    W.addEventListener && W.addEventListener('lowi:world-warp', e => { const d = e && e.detail || {}; if (d.phase === 'arrive' && d.id === 'hub' && inPlace()) { settleHome(); if (world) world.flyTo(null); } });
+    function homeNow() {
+        if (!inPlace()) return;
+        const R = W.LowiWorldRegions; try { R && R.reset && R.reset(); } catch (e) { }
+        if (world && world.rig) { const r = world.rig; r.fly = null; r.target.set(0, 0, 0); if (r.homeDist) r.dist = r.homeDist; }
+        settleHome(); if (world) world.setFocusAmt(1, true);
+    }
     /* ---------- boot ---------- */
     function boot() {
         const e = env(), d = shouldUse3D(e);
@@ -389,7 +476,7 @@
         mountHome();
         const kick = () => load().then(w => { if (w && mode === 'home') attachHome(); });
         if (W.requestIdleCallback) W.requestIdleCallback(kick, { timeout: 1500 }); else setTimeout(kick, 300);
-        setInterval(() => { if (api.state !== 'fallback' && !D.hidden) { mountHome(); syncGlow(); } }, 1200);
+        setInterval(() => { if (api.state !== 'fallback' && !D.hidden) { mountHome(); syncGlow(); if (inPlace() && (!full.isConnected || (!H.classList.contains('wh-home') && Date.now() - openedAt > 1500))) homeNow(); } }, 1200);
         W.addEventListener('resize', () => { lastLay = ''; if (mode === 'home') layoutHome(); else if (full && world) { const r = full.querySelector('.bw3-view').getBoundingClientRect(); world.resize(r.width, r.height); } });
         new MutationObserver(() => { if (world) world.setTheme(themeNow()); }).observe(H, { attributes: true, attributeFilter: ['data-theme'] });
         D.addEventListener('visibilitychange', () => { if (D.hidden && world) world.stop(); else if (world) world.start(); });

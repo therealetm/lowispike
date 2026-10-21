@@ -31,6 +31,7 @@
         aura: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="8.5" opacity=".55"/></svg>',
         home: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-6.5 8 6.5V20H4z"/><path d="M10 20v-5h4v5"/></svg>',
         lock: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2.4"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>',
+        tilt: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="3.5" width="8" height="15" rx="2" transform="rotate(-14 12 11)"/><path d="M3.6 15.5c1 2.6 3.2 4.5 5.9 5.1M20.4 8.5c-1-2.6-3.2-4.5-5.9-5.1"/><path d="M8.6 20.9l1-1.9-2.1-.4M15.4 3.1l-1 1.9 2.1.4"/></svg>',
         sun: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>',
         check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'
     };
@@ -175,7 +176,9 @@
         r.idle = 0;
     }
     function baseDist(r) { return r && r.mode === 'home' ? (r.homeDist || 3.2) : 6.5; }
-    function homeWorld() { const r = rig(); return !!(r && r.mode === 'home' && homeActive() && !D.querySelector('.bw3-full')); }
+    function homeWorld() { const r = rig(); return !!(r && r.mode === 'home' && homeActive() && !D.querySelector('.bw3-full:not(.bw3-one)')); }
+    /* one world: you are away in a place, warped there right on Home (body-world-3d.js keeps a see-through layer up meanwhile) */
+    function away() { return !!D.querySelector('.bw3-full.bw3-one'); }
     function zoomState() {
         const r = rig(); if (!r || (r.mode !== 'full' && r.mode !== 'home')) return null;
         return C.zoomTarget(r.dist, r.minD, r.maxD, baseDist(r));
@@ -183,6 +186,13 @@
     function inRegion() { try { const R = W.LowiWorldRegions; return !!(R && R.current && R.current() !== 'hub'); } catch (e) { return false; } }
     function zoomOutWhole() {
         const a = w3(); if (!a || a.state === 'fallback' || !a.open) return;
+        if (homeWorld() && away()) {
+            /* Weltkarte while you are in a place: glide home first (same warp back), then zoom out on Home */
+            try { a.close(); } catch (e) { }
+            let n = 0;
+            const wait = () => { const r = rig(); if (away() || !r || r.fly) { if (++n < 120) setTimeout(wait, 100); return; } animateDist(r.maxD, 0.42); st.hintUntil = Date.now() + 7000; paintZoom(); paintHint(); };
+            setTimeout(wait, 150); return;
+        }
         if (homeWorld()) { const r = rig(); animateDist(r.maxD, 0.42); st.hintUntil = Date.now() + 7000; setTimeout(() => { paintZoom(); paintHint(); }, 50); return; }
         if (!a.isOpen || !a.isOpen()) a.open();
         let n = 0;
@@ -197,7 +207,7 @@
     }
     function toggleZoom() {
         const z = zoomState();
-        if (!z || inRegion()) return zoomOutWhole();
+        if (!z || inRegion() || away()) return zoomOutWhole();
         const r = rig();
         if (z.out) animateDist(r.maxD, 0.42); else animateDist(baseDist(r), 0.12);
         if (r.mode === 'home') st.hintUntil = Date.now() + 7000;
@@ -233,44 +243,112 @@
             ? T('Tap a glowing place to travel there', 'Tippe auf ein Leuchten, um hinzureisen', 'Toca un brillo para viajar allí')
             : T('Drag to look around · two fingers to zoom', 'Ziehen zum Umsehen · zwei Finger zum Zoomen', 'Arrastra para mirar · dos dedos para hacer zoom');
         if (h.textContent !== tx) h.textContent = tx;
-        const on = live && !st.today && (Date.now() < (st.hintUntil || 0) || isZoomedOut()); /* on the world map it stays: tap a glow to travel */
+        const on = live && !st.today && !away() && (Date.now() < (st.hintUntil || 0) || isZoomedOut()); /* on the world map it stays: tap a glow to travel */
         if (h.classList.contains('on') !== on) h.classList.toggle('on', on);
         /* never on top of Misty's water / fasting cells or the start pill: on tight screens it simply stays out */
         let blk = false;
         if (on) {
             /* its own spot: in the open sky between the header / quest card and Misty, far from the thumb row buttons */
             let top = 0;
-            D.querySelectorAll('#spHome .sp-top, #spHome .f3-board').forEach(el => { const r = el.getBoundingClientRect(); if (r.width && r.height && getComputedStyle(el).visibility !== 'hidden') top = Math.max(top, r.bottom); });
+            D.querySelectorAll('#spHome .sp-top, #spHome .f3-board, #whHud .wh-motion.wh-mo-top').forEach(el => { const r = el.getBoundingClientRect(); if (r.width && r.height && getComputedStyle(el).visibility !== 'hidden') top = Math.max(top, r.bottom); });
             const tv = Math.round(Math.max(top + 10, 70)) + 'px'; if (h.style.top !== tv) h.style.top = tv;
             const hr = h.getBoundingClientRect();
-            D.querySelectorAll('#spFast, #whHud .wh-water, #whHud .wh-zoom, #whHud .wa-btn, #whHud .wh-todaybtn, .fe-bub, #spHome .sp-top, #spHome .f3-board, #spBubble, #tabbar').forEach(el => {
+            D.querySelectorAll('#spFast, #whHud .wh-water, #whHud .wh-zoom, #whHud .wh-motion, #whHud .hs-gift, #whHud .wa-btn, #whHud .wh-todaybtn, .fe-bub, #spHome .sp-top, #spHome .f3-board, #spBubble, #tabbar').forEach(el => {
                 const r = el.getBoundingClientRect(); if (!r.width) return;
                 if (r.left < hr.right - 1 && r.right > hr.left + 1 && r.top < hr.bottom - 1 && r.bottom > hr.top + 1) blk = true;
             });
         }
         if (h.classList.contains('blk') !== blk) h.classList.toggle('blk', blk);
     }
-    function ensureFullZoom() {
-        const host = D.querySelector('.bw3-full'); if (!host) return;
-        if (host.querySelector('.wh-zoom')) return;
-        const b = btn('wh-zoom wh-zoom-full', T('Show the whole world', 'Ganze Welt zeigen', 'Ver todo el mundo'), ICO.out, { 'data-wh': 'zoomfull' });
-        ['pointerdown', 'touchstart'].forEach(n => b.addEventListener(n, e => e.stopPropagation(), { passive: true }));
-        b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); toggleZoom(); });
-        host.appendChild(b); paintZoom();
-        /* the drag / zoom hint gets its own spot (it used to sit in the header, under the Weltkarte button) */
-        const sm = host.querySelector('.bw3-top small'), fh = D.createElement('p'); fh.className = 'wh-fhint'; fh.setAttribute('data-noi18n', '');
-        const fs = D.createElement('span'); fs.textContent = (sm && sm.textContent.trim()) || T('Drag to look around · two fingers to zoom', 'Ziehen zum Umsehen · zwei Finger zum Zoomen', 'Arrastra para mirar · dos dedos para hacer zoom');
-        fh.appendChild(fs); host.appendChild(fh);
-        setTimeout(() => fh.classList.add('off'), 9000);
-        /* the day & night slider (atmosphere.js mounts its card into any .r2-look) right here in the world */
-        if (W.LowiAtmos) {
-            const ab = btn('wh-atmbtn', T('Day & night', 'Tag & Nacht', 'D\u00eda y noche'), ICO.sun, { 'data-wh': 'atm', 'aria-expanded': 'false' });
-            const pop = D.createElement('div'); pop.className = 'wh-atm-pop'; pop.hidden = true; pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', T('Day & night', 'Tag & Nacht', 'D\u00eda y noche'));
-            pop.innerHTML = '<div class="r2-look"></div>';
-            [ab, pop].forEach(el => ['pointerdown', 'touchstart', 'pointermove', 'touchmove', 'wheel'].forEach(n => el.addEventListener(n, e => e.stopPropagation(), { passive: true })));
-            ab.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); pop.hidden = !pop.hidden; ab.setAttribute('aria-expanded', String(!pop.hidden)); ab.classList.toggle('on', !pop.hidden); });
-            host.append(ab, pop);
+
+    /* ---------- "Use motion" on Home (Oct 15, one world) ----------
+       The tilt look-around used to live only in the old world window. Now it sits on Home, styled like Weltkarte and
+       Klang. The iOS motion permission is asked straight from the tap (body-world-3d.js motion.tap). */
+    const MO_TX = { on: ['Motion on', 'Bewegung an', 'Movimiento sí'], off: ['Motion', 'Bewegung', 'Movimiento'] };
+    function paintMotion(state) {
+        const b = D.querySelector('#whHud .wh-motion'), a = w3(); if (!b) return;
+        const on = state === 'on', key = state + lang();
+        if (b.dataset.k === key) return;
+        b.dataset.k = key; b.dataset.state = state;
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        const full = a && a.motion ? a.motion.label(state) : '';
+        b.setAttribute('aria-label', full); b.title = full;
+        const tx = (on ? MO_TX.on : MO_TX.off)[{ en: 0, de: 1, es: 2 }[lang()] || 0];
+        b.innerHTML = ICO.tilt + '<span class="wh-zoom-tx">' + tx + '</span>';
+        if (state === 'no' || state === 'denied') { const msg = full; setTimeout(() => toast(msg), 0); }
+    }
+    function ensureMotion() {
+        const hud = D.getElementById('whHud'), a = w3(); if (!hud) return;
+        let b = hud.querySelector('.wh-motion');
+        const ok = !!(a && a.motion && a.state === 'ready' && a.motion.kind() !== 'none');
+        if (!ok) { if (b) b.remove(); return; }
+        if (!b) {
+            b = D.createElement('button'); b.type = 'button'; b.className = 'wh-motion';
+            b.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); const w = w3(); if (w && w.motion) w.motion.tap(paintMotion); });
+            hud.appendChild(b);
         }
+        if (b.dataset.mlang !== lang()) { b.dataset.mlang = lang(); b.dataset.k = ''; }
+        if (!b.dataset.k || (b.dataset.state === 'on') !== a.motion.on()) paintMotion(a.motion.on() ? 'on' : (b.dataset.state === 'denied' || b.dataset.state === 'no') ? b.dataset.state : 'off');
+    }
+    let toastT = 0;
+    function toast(msg) {
+        if (!msg) return; let t = D.querySelector('.wh-toast');
+        if (!t) { t = D.createElement('div'); t.className = 'wh-toast'; t.setAttribute('role', 'status'); (D.getElementById('whHud') || D.body).appendChild(t); }
+        t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 3200);
+    }
+    /* free spots for the motion button and the gift dot: never on top of anything else on Home */
+    function boxOf(el) { if (!el) return null; const cs = getComputedStyle(el); if (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) return null; const r = el.getBoundingClientRect(); return r.width && r.height ? r : null; }
+    function clashes(r, list, pad) { return list.some(b => b && r.left < b.right + pad && r.right > b.left - pad && r.top < b.bottom + pad && r.bottom > b.top - pad); }
+    function obstacles(skip) {
+        const out = [];
+        D.querySelectorAll('#whHud > *, #spBubble, #spFast, .fe-bub, #spHome .sp-top > *, #spHome .f3-board, #tabbar').forEach(el => {
+            if (skip.some(s => s === el || (el.classList && (el.classList.contains('hs-giftpop') || el.classList.contains('wa-panel') || el.classList.contains('wh-toast') || el.id === 'whHint' || el.classList.contains('wh-hint'))))) return;
+            const r = boxOf(el); if (r) out.push(r);
+        });
+        return out;
+    }
+    function rr(x, y, w, h) { return { left: x, top: y, right: x + w, bottom: y + h }; }
+    function placeExtras() {
+        const hud = D.getElementById('whHud'); if (!hud) return;
+        const vw = W.innerWidth, vh = W.innerHeight, L = parseFloat(H.style.getPropertyValue('--wh-l')) || 0;
+        const top0 = Math.max(16, (D.getElementById('spHome') && D.querySelector('#spHome .sp-top') ? D.querySelector('#spHome .sp-top').getBoundingClientRect().top : 16));
+        const fits = r => r.left >= L + 4 && r.right <= vw - 4 && r.top >= 8 && r.bottom <= vh - 8;
+        /* gift dot: where it was (bottom left) unless Klang sits there; else beside / above Klang, above the fasting cell, or under the header */
+        const g = hud.querySelector('.hs-gift');
+        if (g) {
+            H.classList.remove('wh-gift-moved');
+            const gr = boxOf(g), k = boxOf(hud.querySelector('.wa-btn')), obs = obstacles([g]);
+            if (gr && clashes(gr, obs, 6)) {
+                const f = boxOf(D.getElementById('spFast')), cand = [];
+                if (k) { cand.push(rr(k.right + 12, k.top + 7, 44, 44)); cand.push(rr(k.left + 7, k.top - 12 - 44, 44, 44)); }
+                if (f) cand.push(rr(f.left, f.top - 14 - 44, 44, 44));
+                cand.push(rr(L + 16, top0 + 70, 44, 44));
+                const c = cand.find(c => fits(c) && !clashes(c, obs, 6));
+                if (c) { H.classList.add('wh-gift-moved'); H.style.setProperty('--wh-gift-x', Math.round(c.left) + 'px'); H.style.setProperty('--wh-gift-y', Math.round(c.top) + 'px'); }
+            }
+        }
+        /* motion button: above Weltkarte when there is room, else the top right corner beside the header */
+        const m = hud.querySelector('.wh-motion');
+        if (m) {
+            const z = boxOf(hud.querySelector('.wh-zoom')), obs = obstacles([m]), sz = 58, cand = [];
+            if (z) cand.push(['up', rr(z.left, z.top - 10 - sz, sz, sz)]);
+            cand.push(['top', rr(vw - 16 - sz, top0, sz, sz)]);
+            if (z) cand.push(['side', rr(z.left - 10 - sz, z.top, sz, sz)]);
+            const c = cand.find(c => fits(c[1]) && !clashes(c[1], obs, 6)) || cand[cand.length - 1];
+            const key = c[0] + Math.round(c[1].left) + ',' + Math.round(c[1].top);
+            if (m.dataset.pos !== key) {
+                m.dataset.pos = key;
+                m.style.left = Math.round(c[1].left) + 'px'; m.style.top = Math.round(c[1].top) + 'px';
+                m.classList.toggle('wh-mo-top', c[0] === 'top');
+            }
+            /* the place card (inside a place) sits above the motion button when that button stands above Weltkarte */
+            const cb = c[0] === 'up' ? Math.round(vh - c[1].top + 10) + 'px' : '0px';
+            if (H.style.getPropertyValue('--wh-card-b') !== cb) H.style.setProperty('--wh-card-b', cb);
+        }
+        /* region label / arrival card while you are in a place: below the header row and the motion button */
+        let clear = 0;
+        D.querySelectorAll('#spHome .sp-top, #whHud .wh-motion.wh-mo-top').forEach(el => { const r = el.getBoundingClientRect(); if (r.height) clear = Math.max(clear, r.bottom); });
+        if (clear) { const v = Math.round(clear + 12) + 'px'; if (H.style.getPropertyValue('--wh-top-clear') !== v) H.style.setProperty('--wh-top-clear', v); }
     }
 
     /* ---------- hero view on arrival in a region ---------- */
@@ -326,50 +404,9 @@
         setTimeout(go, reduced() ? 0 : 120);
     }
 
-    /* ---------- Misty inside her cell in the 3D hub ---------- */
-    function mistySvg() {
-        const s = D.querySelector('#spBubble .tmg-plant') || D.querySelector('.sp-home-herb svg');
-        if (!s) return null;
-        const c = s.cloneNode(true);
-        c.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-        c.removeAttribute('class'); c.setAttribute('width', '260'); c.setAttribute('height', '310');
-        c.querySelectorAll('.lh-acc,.lh-pot-fx,.lh-constellation').forEach(n => n.remove());
-        /* the live markup can carry a stray attribute (e.g. a lone quote) that HTML tolerates and XML does not: drop it or the image never loads */
-        [c, ...c.querySelectorAll('*')].forEach(n => [...n.attributes].forEach(at => { if (!/^[A-Za-z_][-A-Za-z0-9_.:]*$/.test(at.name)) { try { n.removeAttributeNode(at); } catch (e) { } } }));
-        const sty = s.getAttribute('style') || '';
-        let txt = new XMLSerializer().serializeToString(c);
-        /* CSS variables do not resolve inside an <img>: inline the two herb colours */
-        const va = (sty.match(/--tmg-a:\s*([^;]+)/) || [])[1], vb = (sty.match(/--tmg-b:\s*([^;]+)/) || [])[1];
-        if (va) txt = txt.split('var(--tmg-a)').join(va.trim());
-        if (vb) txt = txt.split('var(--tmg-b)').join(vb.trim());
-        return txt;
-    }
-    function ensureMisty3D() {
-        const a = w3(); if (!a || !a.ready || !a.THREE || !a.hub) return;
-        const txt = mistySvg(); if (!txt) return;
-        const key = txt.length + ':' + auraId();
-        if (st.misty && st.misty.parent === a.hub && st.mistyKey === key) return;
-        const THREE = a.THREE;
-        if (!st.misty || st.misty.parent !== a.hub) {
-            if (st.misty && st.misty.parent) st.misty.parent.remove(st.misty);
-            const mat = new THREE.SpriteMaterial({ transparent: true, depthWrite: false, depthTest: false, fog: false, opacity: 0.98 });
-            st.misty = new THREE.Sprite(mat); st.misty.name = 'wh-misty'; st.misty.renderOrder = 60; st.misty.scale.set(1.25, 1.25 * 310 / 260, 1);
-            st.misty.userData.wh = true; st.misty.visible = false; a.hub.add(st.misty);
-        }
-        st.mistyKey = key;
-        const img = new Image(), url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(txt), sp = st.misty;
-        img.onload = () => {
-            try {
-                const cv = D.createElement('canvas'); cv.width = 260; cv.height = 310; const x = cv.getContext('2d');
-                const au = C.aura(auraId()), g = x.createRadialGradient(130, 150, 10, 130, 150, 128);
-                g.addColorStop(0, au.a + '55'); g.addColorStop(1, au.a + '00'); x.fillStyle = g; x.fillRect(0, 0, 260, 310);
-                x.drawImage(img, 0, 0, 260, 310);
-                const old = sp.material.map; sp.material.map = new THREE.CanvasTexture(cv); sp.material.needsUpdate = true; if (old) old.dispose();
-            } catch (e) { }
-        };
-        img.onerror = () => { st.mistyKey = ''; };
-        img.src = url;
-    }
+    /* one world (Oct 15): no second Misty. She is drawn only by Home's own bubble (the same render as her evolution view);
+       the 3D hub holds just her one cell, and the old full-screen window with its Misty sprite is gone. */
+    function dropOldMisty() { const a = w3(); if (!a || !a.hub) return; const o = a.hub.getObjectByName && a.hub.getObjectByName('wh-misty'); if (o && o.parent) o.parent.remove(o); }
 
     /* ---------- per-frame: zoom glide, hero turn, Misty visibility ---------- */
     function hook() {
@@ -404,11 +441,6 @@
             const k = Math.max(0.12, Math.min(1.4, (r.homeDist || 3.2) / Math.max(0.1, r.dist))), kv = k.toFixed(3);
             if (kv !== st.mz) { st.mz = kv; const b = D.getElementById('spBubble'); if (b) b.style.setProperty('--wh-mz', kv); H.classList.toggle('wh-mapview', k < 0.6); }
             if (++st.zf % 20 === 0) { paintZoom(); paintHint(); }
-        }
-        if (st.misty) {
-            const show = r.mode === 'full' && !inRegion();
-            if (st.misty.visible !== show) st.misty.visible = show;
-            if (show && !reduced()) { const t = performance.now() / 1000; st.misty.position.set(0, Math.sin(t * 1.3) * 0.06, 0); }
         }
     }
 
@@ -472,7 +504,7 @@
             return;
         }
         try { localStorage.setItem(AKEY, id); } catch (e) { }
-        applyAura(); repaintMisty(); st.mistyKey = '';
+        applyAura(); repaintMisty();
         try { W.LowiR2.toast(T('Misty glows in ' + P(a.n), 'Misty leuchtet jetzt in ' + P(a.n), 'Misty brilla en ' + P(a.n))); } catch (e) { }
     }
 
@@ -521,6 +553,7 @@
         /* banners that float above the tab bar (add to Home Screen, offline, update) push the thumb row up */
         D.querySelectorAll('#lcA2hs, .lc-banner').forEach(b => { const r = b.getBoundingClientRect(); if (r.height && r.bottom > W.innerHeight * .6 && getComputedStyle(b).display !== 'none' && getComputedStyle(b).visibility !== 'hidden') top = Math.min(top, r.top); });
         H.style.setProperty('--wh-tb', Math.max(0, Math.round(W.innerHeight - top)) + 'px');
+        if (H.classList.contains('wh-world-live') && !away()) placeExtras();
     }
     function tick() {
         const h = home(); if (!h || !h.querySelector('.sp-heroes')) return;
@@ -539,7 +572,8 @@
         const a3 = w3(), live = !!(a3 && a3.state === 'ready' && D.querySelector('#spHome .bw3-stage.bw3-live'));
         if (H.classList.contains('wh-world-live') !== live) { H.classList.toggle('wh-world-live', live); if (live) st.hintUntil = Date.now() + 8000; }
         if (live) hook();
-        if (D.querySelector('.bw3-full')) { ensureFullZoom(); hook(); ensureMisty3D(); }
+        if (D.querySelector('.bw3-full')) hook();
+        if (live) { ensureMotion(); dropOldMisty(); }
     }
     function boot() {
         if (st.wired) return; st.wired = true;

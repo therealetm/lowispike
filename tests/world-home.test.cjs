@@ -60,12 +60,8 @@ test('one X for every sheet, sheets stay see-through, HUD lives in #spHome', () 
     assert.ok(/#spHome[^{]*\{ animation: none !important; transform: none !important/.test(css), 'no transform turns the wrapper into the containing block');
 });
 
-test('Misty goes into the 3D cell even when her SVG carries a stray attribute', () => {
-    assert.ok(js.includes('removeAttributeNode'));
-    assert.ok(js.includes("st.misty.name = 'wh-misty'"));
-});
-
-test('day & night slider sits in the 3D world', () => {
-    assert.ok(js.includes("'wh-atmbtn'") && js.includes('<div class="r2-look"></div>'));
-    assert.ok(css.includes('.wh-atm-pop'));
+test('one world: no second Misty sprite and no extra window buttons (Oct 15)', () => {
+    assert.ok(!js.includes("st.misty.name = 'wh-misty'"), 'Misty is never put into the 3D hub as a sprite');
+    assert.ok(js.includes('function dropOldMisty'), 'a leftover sprite from an old build is removed');
+    assert.ok(!js.includes("'wh-atmbtn'") && !js.includes('function ensureFullZoom'), 'no second set of world buttons in a separate window');
 });

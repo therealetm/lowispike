@@ -30,6 +30,11 @@ async function overflow(page) { return page.evaluate(() => { const w = document.
 async function smallTargets(page) { return page.evaluate(() => [...document.querySelectorAll('button,a.btn,label.btn,input[type=checkbox]')].filter(e => { const r = e.getBoundingClientRect(); return r.width && r.height && e.offsetParent && (e.type === 'checkbox' ? r.height < 20 : r.height < 34); }).map(e => (e.textContent || e.id || e.type).trim().slice(0, 30))); }
 
 const B = require('../../affiliates/blueprint-core.js');
+/* Buy-to-unlock (21 Oct): the content checks run as a member who has unlocked both tracks (one legacy code hash, as the page
+   stores it after a correct code); lockedCheck() below checks the locked page a visitor sees. */
+const ACCESS = require('../../affiliates/access-list.js');
+const MEMBER = (ACCESS.codes.find(c => c.tracks.includes('webdesign') && c.tracks.includes('ugc')) || {}).h;
+const seed = (h) => { try { localStorage.setItem('lowi.aff.unlock.v1', JSON.stringify([h])); } catch (e) {} };
 /* Redesign (21 Oct 2026, "it shouldn't be cramped"): on the screen that is showing, nothing overlaps, stacked blocks keep air between
    them, the rows' icon and text never touch, text stays inside its card, nothing runs off the side and every button is tappable. */
 async function layout(page, W, tag) {
@@ -64,6 +69,7 @@ async function standalone(base, sz) {
   const ctx = await browser.newContext(sz.device ? Object.assign({}, pw.devices[sz.device]) : { viewport: sz.vp });
   /* The text checks below are the German page: pin the app language to German (the page follows the app language since 21 Oct). */
   await ctx.addInitScript(() => { try { localStorage.setItem('lowispike.lang', 'de'); } catch (e) {} });
+  await ctx.addInitScript(seed, MEMBER);
   const page = await ctx.newPage();
   const errs = []; page.on('pageerror', e => errs.push(e.message)); page.on('console', m => { if (m.type() === 'error') errs.push('console: ' + m.text()); if (m.type() === 'log') errs.push('console.log: ' + m.text()); });
   const W = 'affiliates@' + sz.name;
@@ -138,6 +144,7 @@ async function appTabs(engine, device) {
   const W = 'app-tabs@' + engine + '/' + device;
   const R = await H.open({ engine, device, probe: false, url: LIVE ? LIVE + 'index.html' : '' });
   const p = R.page;
+  await p.context().addInitScript(seed, MEMBER);
   try {
     await R.goto(); await N.openCommunity(R);
     await p.waitForSelector('.rm-tab[data-rm="aff"]', { timeout: 10000 });
@@ -192,9 +199,50 @@ async function appTabs(engine, device) {
   await R.close();
 }
 
+/* What a visitor without a code sees: scene 1 as a preview, the rest locked, the unlock card instead of the copy buttons;
+   a wrong code is refused with a message; the earnings page explains recruit levels. One phone in each language. */
+async function lockedCheck(base, sz, lng) {
+  const browser = await pw[sz.engine].launch();
+  const ctx = await browser.newContext(sz.device ? Object.assign({}, pw.devices[sz.device]) : { viewport: sz.vp });
+  await ctx.addInitScript(l => { try { localStorage.setItem('lowispike.lang', l); } catch (e) {} }, lng);
+  const page = await ctx.newPage(); const errs = []; page.on('pageerror', e => errs.push(e.message));
+  const W = 'locked-' + lng + '@' + sz.name;
+  try {
+    for (const id of B.ORDER) {
+      if (B.SERIES[id].free) continue;
+      const n = B.SERIES[id].scenes.length;
+      /* a fresh query each time: a hash-only change is a same-page jump and would not reload the page */
+      await page.goto(base + 'affiliates/?r=' + Date.now() + '#' + id, { waitUntil: 'load' });
+      await page.waitForSelector('#scriptView:not([hidden]) #gateCard');
+      if (await page.$('#copyScript')) fail(W, id + ': copy button shown while locked');
+      const locked = await page.$$eval('#scriptCard .scene.locked', e => e.length);
+      if (locked !== n - 1) fail(W, id + ': ' + locked + ' locked scenes, expected ' + (n - 1));
+      const first = B.series(lng)[id].scenes[0].lines[0], txt = await page.textContent('#scriptCard');
+      if (!txt.includes(first)) fail(W, id + ': free preview scene 1 missing');
+      if (txt.includes(B.series(lng)[id].scenes[1].lines[0])) fail(W, id + ': locked scene text visible');
+      if (!(await page.$('#buyBtn, #buyAsk'))) fail(W, id + ': no buy option');
+      const o = await overflow(page); if (o.sw > o.w + 1) fail(W, id + ': overflow ' + o.bad.join(','));
+      const small = await smallTargets(page); if (small.length) fail(W, id + ': small tap targets ' + small.join(','));
+      await page.fill('#unlockCode', 'WEB-AAAA-BBBB-CCCC'); await page.click('#unlockBtn');
+      await page.waitForFunction(() => { const m = document.getElementById('gateMsg'); return m && m.textContent && !/…$/.test(m.textContent); }, null, { timeout: 15000 });
+      if ((await page.textContent('#gateMsg')) !== B.t(lng, 'codeWrong')) fail(W, id + ': wrong code not refused');
+      await page.screenshot({ path: path.join(OUT, sz.name + '-locked-' + lng + '-' + id + '.png'), fullPage: true });
+      await page.goto(base + 'affiliates/?r=' + Date.now() + '#' + id + '/shots', { waitUntil: 'load' });
+      await page.waitForSelector('#shotView:not([hidden]) #gateCardShots');
+      if (await page.$('#copyCaption')) fail(W, id + ': caption shown while locked');
+    }
+    await page.goto(base + 'affiliates/?r=' + Date.now() + '#webdesign/earn', { waitUntil: 'load' });
+    const rc = await page.textContent('#recruitCard');
+    if (!rc.includes(B.t(lng, 'recruitTitle'))) fail(W, 'recruit levels missing on earnings');
+  } catch (e) { fail(W, 'threw ' + String(e.message).split('\n')[0]); await page.screenshot({ path: path.join(OUT, sz.name + '-locked-error.png'), fullPage: true }).catch(() => {}); }
+  if (errs.length) fail(W, 'page errors: ' + errs.slice(0, 3).join(' | '));
+  await browser.close();
+}
+
 (async () => {
   const srv = LIVE ? null : await serve(); const base = LIVE ? LIVE : 'http://127.0.0.1:' + srv.address().port + '/lowispike/';
   for (const sz of SIZES) { await standalone(base, sz); console.log('done', sz.name); }
+  await lockedCheck(base, SIZES[0], 'de'); await lockedCheck(base, SIZES[3], 'en'); await lockedCheck(base, SIZES[1], 'es'); console.log('done locked');
   if (srv) srv.close();
   await appTabs('webkit', 'iPhone SE'); console.log('done app webkit SE');
   await appTabs('webkit', 'iPhone 13'); console.log('done app webkit 13');

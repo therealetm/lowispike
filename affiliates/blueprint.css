@@ -158,3 +158,25 @@ footer{color:var(--muted);font-size:13px;margin:22px 4px 0;line-height:1.5}
   #viewStart .tile{flex-basis:40px;width:40px;height:40px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+
+/* ---------- buy-to-unlock gate (21 Oct) ---------- */
+.pill.preview{margin:0 0 10px}
+.row.scene.locked{opacity:.62}
+.row.scene.locked .note{margin-top:2px}
+.card.gate{display:flex;flex-direction:column;gap:12px}
+.card.gate .note{margin:0}
+.gate-title{margin:0;font-size:20px;line-height:1.25;font-weight:750;letter-spacing:-.01em}
+.card.gate a.secondary{text-decoration:none;color:inherit;text-align:center}
+.gate-form{display:flex;flex-direction:column;gap:10px;margin:4px 0 0}
+.gate-form .label{margin:0}
+.gate-form input.code{width:100%;min-height:54px;padding:0 16px;border-radius:16px;border:1.5px solid rgba(143,231,255,.38);background:rgba(4,10,30,.55);color:inherit;
+  font:600 18px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase}
+.gate-form input.code:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(28,247,249,.22)}
+.gate-form input.code::placeholder{color:rgba(200,215,255,.42)}
+.gate-form .primary{margin-top:2px}
+.gate-form .primary:disabled{opacity:.6}
+.gate-msg:empty{display:none}
+.gate-host .card.gate{background:none;border:0;padding:0;margin:0}
+.card.recruit .label{margin:0 0 6px}
+.recruit-you{margin:8px 0 0;font-weight:650}
+.card.recruit{margin-top:22px}

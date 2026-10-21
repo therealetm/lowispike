@@ -23,6 +23,16 @@
   if (arrived && !store('lowispike.referredBy')) store('lowispike.referredBy', arrived);
   const myId = () => B.cleanId(store('lowispike.affId'));
 
+  /* Buy-to-unlock (Eman, 21 Oct): scene 1 of each paid track is a free preview; the full script, shot list and caption open
+     with the product's buyer code or a personal invite code. Only code hashes ship (access-list.js); a code is checked here,
+     and its hash is kept on this device. If the access files did not load, nothing is locked (a broken download must not lock buyers out). */
+  const A = window.LowiAffAccess, LIST = window.LOWI_AFF_ACCESS, REC = window.LOWI_AFF_RECRUITS;
+  const gated = !!(A && LIST && Array.isArray(LIST.codes));
+  let opened = gated ? A.saved(localStorage, LIST) : {};
+  const isOpen = id => !gated || !!(B.SERIES[id].free || opened[id]);
+  const buyRef = () => A && A.idFrom ? A.idFrom(arrived || store('lowispike.referredBy') || '') : '';
+  let gateMsg = '';
+
   function h(tag, attrs) {
     const el = document.createElement(tag);
     if (attrs) for (const k of Object.keys(attrs)) {
@@ -110,19 +120,48 @@
     $('startBtn').firstChild.textContent = T('start') + ' ';
     $('linkLine').textContent = T('linkLine');
   }
+  function gate(sfx) {
+    const s = S[pick], url = A.buyUrl(pick, buyRef(), LIST), field = 'unlockCode' + sfx, msgId = 'gateMsg' + sfx;
+    const input = h('input', { id: field, class: 'code', type: 'text', inputmode: 'text', autocomplete: 'one-time-code', autocapitalize: 'characters', spellcheck: 'false', placeholder: 'XXXX-XXXX-XXXX', 'aria-describedby': msgId });
+    const msg = h('p', { class: 'note gate-msg', id: msgId, role: 'status', 'aria-live': 'polite', text: gateMsg });
+    const btn = h('button', { type: 'submit', class: 'primary', id: 'unlockBtn' + sfx }, T('unlockBtn'));
+    const form = h('form', { class: 'gate-form', novalidate: '', onsubmit: e => { e.preventDefault(); tryCode(input, btn, msg); } },
+      h('label', { for: field, class: 'label', text: T('codeLabel') }), input, btn, msg);
+    return h('div', { class: 'card gate', id: 'gateCard' + sfx },
+      h('h2', { class: 'gate-title', text: T('gateTitle', { title: s.title }) }),
+      h('p', { class: 'note', text: T('gateLead') }),
+      url ? h('a', { class: 'secondary', id: 'buyBtn' + sfx, href: url, target: '_blank', rel: 'noopener' }, T('buyFor', { product: s.product, price: B.eur(s.price || B.PRICE, lang) }))
+          : h('p', { class: 'note', id: 'buyAsk' + sfx, text: T('buyAsk') }),
+      h('p', { class: 'note', text: T('afterBuy') }), form);
+  }
+  async function tryCode(input, btn, msg) {
+    const code = input.value; if (!A.normalize(code)) { input.focus(); return; }
+    btn.disabled = true; msg.textContent = T('checking');
+    let r; try { r = await A.check(code, LIST); } catch (e) { btn.disabled = false; msg.textContent = T('checkFail'); return; }
+    btn.disabled = false;
+    if (!r.ok) { gateMsg = T('codeWrong'); msg.textContent = gateMsg; input.select(); return; }
+    A.remember(localStorage, r.h); opened = A.saved(localStorage, LIST);
+    if (r.tracks.indexOf(pick) < 0) { gateMsg = T('codeOther', { title: r.tracks.map(id => S[id] ? S[id].title : id).join(', ') }); render(); return; }
+    gateMsg = ''; render(); toast(T('unlocked'));
+    const t = $(VIEWS[view]).querySelector('h1'); if (t && t.focus) t.focus({ preventScroll: true });
+  }
   function renderScript() {
     const v = $('scriptView'); v.textContent = '';
-    const s = S[pick];
-    const scenes = s.scenes.map((x, i) => h('div', { class: 'row scene' },
+    const s = S[pick], open = isOpen(pick);
+    const scenes = s.scenes.map((x, i) => open || i === 0 ? h('div', { class: 'row scene' },
       h('span', { class: 'tile num', text: String(i + 1) }),
-      h('span', { class: 'txt' }, h('b', { class: 'shot ' + x.shot, text: x.label }), x.lines.map(l => h('p', null, withPh(l))), x.note ? h('span', { class: 'note', text: x.note }) : null)));
+      h('span', { class: 'txt' }, h('b', { class: 'shot ' + x.shot, text: x.label }), x.lines.map(l => h('p', null, withPh(l))), x.note ? h('span', { class: 'note', text: x.note }) : null))
+      : h('div', { class: 'row scene locked' }, h('span', { class: 'tile num', text: String(i + 1) }),
+          h('span', { class: 'txt' }, h('b', { class: 'shot ' + x.shot, text: x.label }), h('span', { class: 'note', text: T('lockedScene') }))));
     v.appendChild(h('div', { class: 'bar' }, backBtn('start'), seg('sw-'), shareBtn('shareScript')));
     v.appendChild(h('div', { class: 'head' },
       h('span', { class: 'pill', text: T('step1') }),
       h('h1', { tabindex: '-1', text: T('scriptTitle') }),
       h('p', { class: 'lead', text: T('scriptLead', { title: s.title, product: s.product, ph: B.placeholders(pick, lang).slice(0, 2).join(T('or')) }) })));
-    v.appendChild(h('div', { class: 'card onscreen-card' }, h('div', { class: 'label', text: T('onScreen') }), h('div', { class: 'onscreen' }, withPh(s.onScreen))));
+    if (open) v.appendChild(h('div', { class: 'card onscreen-card' }, h('div', { class: 'label', text: T('onScreen') }), h('div', { class: 'onscreen' }, withPh(s.onScreen))));
+    else v.appendChild(h('span', { class: 'pill preview', text: T('preview') }));
     v.appendChild(h('div', { class: 'card list', id: 'scriptCard' }, scenes));
+    if (!open) { v.appendChild(gate('')); return; }
     v.appendChild(h('button', { type: 'button', class: 'primary', id: 'copyScript', onclick: () => copy(B.scriptText(pick, lang), T('scriptCopied')) }, T('copyScript')));
     v.appendChild(h('button', { type: 'button', class: 'secondary', id: 'toShots', onclick: () => go('shots') }, T('toShots'), h('span', { 'aria-hidden': 'true', text: '→' })));
   }
@@ -131,14 +170,18 @@
     const bar = $('shotBar'); bar.textContent = ''; bar.appendChild(backBtn('script')); bar.appendChild(seg('sh-')); bar.appendChild(shareBtn('shareShots'));
     $('shotPill').textContent = T('step2'); $('shotTitle').textContent = T('shotsTitle');
     $('shotLead').textContent = T('shotsLead', { title: s.title });
-    const c = $('shotCard'); c.textContent = '';
-    s.shots.forEach((x, i) => c.appendChild(row(i === 0 || i === s.shots.length - 1 ? 'talk' : 'screen', x.title, x.how, null,
-      x.beats ? h('ul', null, x.beats.map(b => h('li', { text: b }))) : null)));
+    const c = $('shotCard'); c.textContent = ''; const open = isOpen(pick);
+    s.shots.forEach((x, i) => c.appendChild(open || i === 0 ? row(i === 0 || i === s.shots.length - 1 ? 'talk' : 'screen', x.title, x.how, null,
+      x.beats ? h('ul', null, x.beats.map(b => h('li', { text: b }))) : null) : row('screen', x.title, T('lockedScene'))));
     c.appendChild(h('p', { class: 'note pad', text: T('shotsNote') }));
     const cap = $('captionCard'); cap.textContent = '';
+    if (!open) { cap.classList.add('gate-host'); cap.appendChild(gate('Shots')); }
+    else cap.classList.remove('gate-host');
+    if (open) {
     cap.appendChild(h('div', { class: 'label', text: T('caption') }));
     cap.appendChild(h('p', { class: 'caption' }, withPh(s.caption)));
     cap.appendChild(h('button', { type: 'button', class: 'secondary', id: 'copyCaption', onclick: () => copy(s.caption, T('captionCopied')) }, T('copyCaption')));
+    }
     const tip = $('tipLine'); tip.textContent = ''; tip.appendChild(h('b', { text: T('tipB') })); tip.appendChild(document.createTextNode(T('tip')));
     $('toEarn').firstChild.textContent = T('toEarn');
   }
@@ -153,6 +196,18 @@
     const ex = h('ul', { class: 'examples' }, B.examples().map(e => h('li', null, h('span', { text: T('salesN', { n: e.sales }) }), h('b', { text: B.eur(e.total, lang) }), h('span', { class: 'tiny', text: T('levelWord') + e.level }))));
     $('exampleList').textContent = ''; $('exampleList').appendChild(ex);
     $('terms').textContent = T('terms', { price: B.eur(B.PRICE, lang) });
+    /* Recruit levels: active recruits (bought through your link AND published a video, checked by Eman in recruits.js) lift your level. */
+    const rc = $('recruitCard'); rc.textContent = '';
+    const R = A && A.RECRUIT ? A.RECRUIT : { salesPerRecruit: 5, recruitsPerLevel: 3 };
+    rc.appendChild(h('h2', { class: 'label', text: T('recruitTitle') }));
+    rc.appendChild(h('p', { class: 'note', text: T('recruitRule', { n: R.salesPerRecruit }) }));
+    if (A && A.progress) {
+      const me = myId(), n = me && REC ? A.recruitsFor(me, REC) : 0;
+      const ex = A.progress(0, 3, B.TIERS), pr = A.progress(0, n, B.TIERS);
+      if (n > 0) rc.appendChild(h('p', { class: 'recruit-you', id: 'recruitYou', text: T('recruitYou', { n, level: pr.level, rate: Math.round(pr.rate * 100) + '%' }) }));
+      rc.appendChild(h('p', { class: 'note', id: 'recruitEx', text: T('recruitEx', { n: ex.credit, level: ex.level, rate: Math.round(ex.rate * 100) + '%' }) }));
+    }
+    rc.appendChild(h('p', { class: 'note', text: T('recruitHow') }));
   }
   function paintDoc() {
     document.documentElement.lang = lang; document.title = T('docTitle');

@@ -231,7 +231,28 @@
     copyFail: ['Copying didn\u2019t work. Press and hold the text to copy it by hand.', 'Kopieren ging nicht. Halte den Text gedr\u00fcckt und kopiere ihn von Hand.', 'No se pudo copiar. Mant\u00e9n pulsado el texto para copiarlo a mano.'],
     share: ['Share this page', 'Diese Seite teilen', 'Compartir esta p\u00e1gina'],
     shareText: ['{title} video template from LOWiSPIKE: ready script, shot list and what you earn per sale.', '{title}-Video-Template von LOWiSPIKE: fertiges Skript, Shotliste und was du pro Verkauf verdienst.', 'Plantilla de v\u00eddeo {title} de LOWiSPIKE: guion listo, lista de tomas y lo que ganas por venta.'],
-    linkCopied: ['Link copied.', 'Link kopiert.', 'Enlace copiado.']
+    linkCopied: ['Link copied.', 'Link kopiert.', 'Enlace copiado.'],
+    /* Buy-to-unlock (21 Oct 2026): scene 1 is a free preview, the rest opens with the product or an invite code. */
+    preview: ['Free preview: scene 1', 'Gratis-Vorschau: Szene 1', 'Vista previa gratis: escena 1'],
+    lockedScene: ['Locked: unlock this track to see it.', 'Gesperrt: schalte diesen Track frei, um sie zu sehen.', 'Bloqueada: desbloquea este track para verla.'],
+    gateTitle: ['Unlock {title}', '{title} freischalten', 'Desbloquear {title}'],
+    gateLead: ['You get the full script, the shot list and the caption once you own the product or have an invite code.', 'Das ganze Skript, die Shotliste und die Caption bekommst du, sobald du das Produkt hast oder einen Einladungscode.', 'Recibes el guion completo, la lista de tomas y el caption cuando tienes el producto o un código de invitación.'],
+    buyFor: ['Get {product} for {price}', '{product} holen für {price}', 'Conseguir {product} por {price}'],
+    buyAsk: ['Ask Eman on WhatsApp for the buy link.', 'Den Kauflink bekommst du von Eman über WhatsApp.', 'Pídele a Eman el enlace de compra por WhatsApp.'],
+    afterBuy: ['After buying you get your unlock code with the purchase. Type it in here.', 'Nach dem Kauf bekommst du deinen Freischaltcode mit der Bestellung. Gib ihn hier ein.', 'Tras la compra recibes tu código con el pedido. Escríbelo aquí.'],
+    codeLabel: ['Unlock or invite code', 'Freischalt- oder Einladungscode', 'Código de desbloqueo o invitación'],
+    unlockBtn: ['Unlock', 'Freischalten', 'Desbloquear'],
+    checking: ['Checking…', 'Prüfe…', 'Comprobando…'],
+    codeWrong: ['That code doesn’t work. Check the spelling, or ask Eman for a new one.', 'Dieser Code passt nicht. Prüf die Schreibweise oder frag Eman nach einem neuen.', 'Ese código no funciona. Revisa cómo lo escribiste o pídele uno nuevo a Eman.'],
+    codeOther: ['That code is for {title}. It’s unlocked now; this track still needs its own code.', 'Dieser Code ist für {title}. Der ist jetzt frei; dieser Track braucht seinen eigenen Code.', 'Ese código es para {title}. Ya está desbloqueado; este track necesita su propio código.'],
+    checkFail: ['Couldn’t check the code on this device. Try again in another browser.', 'Der Code ließ sich auf diesem Gerät nicht prüfen. Versuch es in einem anderen Browser.', 'No se pudo comprobar el código en este dispositivo. Prueba en otro navegador.'],
+    unlocked: ['Unlocked. The whole track is yours.', 'Freigeschaltet. Der ganze Track gehört dir.', 'Desbloqueado. Todo el track es tuyo.'],
+    /* Recruit levels: people you bring in lift your commission level faster. */
+    recruitTitle: ['Level up faster with recruits', 'Schneller aufsteigen mit Recruits', 'Sube más rápido con reclutas'],
+    recruitRule: ['Someone who joins through your link and both buys a product and publishes a video counts as an active recruit. Each active recruit counts like {n} sales toward your level.', 'Wer über deinen Link einsteigt, ein Produkt kauft und ein Video veröffentlicht, zählt als aktiver Recruit. Jeder aktive Recruit zählt wie {n} Verkäufe für dein Level.', 'Quien entra por tu enlace, compra un producto y publica un vídeo cuenta como recluta activo. Cada recluta activo cuenta como {n} ventas para tu nivel.'],
+    recruitYou: ['You have {n} active recruits. That alone puts you on level {level} ({rate}), and every sale of your own adds on top.', 'Du hast {n} aktive Recruits. Das allein bringt dich auf Level {level} ({rate}), und jeder eigene Verkauf kommt obendrauf.', 'Tienes {n} reclutas activos. Solo con eso est\u00e1s en el nivel {level} ({rate}), y cada venta propia suma encima.'],
+    recruitEx: ['Example: 3 active recruits count like {n} sales, that’s level {level} ({rate}) before your own first sale.', 'Beispiel: 3 aktive Recruits zählen wie {n} Verkäufe, also Level {level} ({rate}) noch vor deinem ersten eigenen Verkauf.', 'Ejemplo: 3 reclutas activos cuentan como {n} ventas, o sea nivel {level} ({rate}) antes de tu primera venta propia.'],
+    recruitHow: ['Share any page with the share button: your link is in it. Eman checks the buys and videos and counts your recruits.', 'Teile eine Seite mit dem Teilen-Knopf: dein Link steckt darin. Eman prüft Käufe und Videos und zählt deine Recruits.', 'Comparte cualquier página con el botón de compartir: tu enlace va dentro. Eman revisa compras y vídeos y cuenta tus reclutas.']
   };
   function t(lang, key, vars) {
     const i = Math.max(0, LANGS.indexOf(normLang(lang)));

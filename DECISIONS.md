@@ -887,3 +887,14 @@ What was decided:
 - Tutorial: the community step points to the bubble; settings-me shortened to fit 230 characters in German.
 
 Checks: `tests/ui-settings-page.test.cjs`, `tests/everything-else-trim.test.cjs`, `tests/home-settings-sleep-v2.test.cjs` and the tutorial tests updated. Browser: `tools/community-settings/probe.cjs` with `tour.js`.
+
+## 2026-10-21 19:45 CEST: Affiliates page is a template plus earnings, nothing else (decided by the agent)
+
+Eman: "confusing, why is it so complicated". The page (`affiliates/`, also the Community → Affiliates tab) now has only:
+- One line on top: the personal affiliate link comes from Eman directly on WhatsApp. No link field, no Beacons steps. No WhatsApp button, because no number or link for Eman exists in the repo.
+- Two cards, Webdesign (AI Website Client System, keyword "Webdesign") and UGC (AI Sponsoren-Agent, keyword "Sponsor"). A tap shows the baseline script from Burak's series: on-screen title, spoken lines per scene, CTA, a short shot list, "Skript kopieren", and the caption with its copy button. Placeholders like [Branche] or [Marke] stay inline as bracketed text. The pick is kept in the address (#webdesign, #ugc).
+- One tip line: it is a template, bring your personality, record yourself or use an AI avatar (HeyGen, Higgsfield), it is free.
+- Levels table from the partner dashboard terms (1–10: 10 %, 11–50: 15 %, 51–150: 25 %, 151+: 45 %, at 99 €), € per sale, and totals at 10, 50, 150 and 200 sales (each sale paid at its level's rate).
+Removed with their code and tests: niche generator, daily facts forms, checklist and day stepper, posting tracking, "Meine Zahlen" and manual sales, the agent prompt, the monthly-fee line. Nothing is stored on the device any more (the old `lowi.affiliates.v1` key is left alone).
+
+Checks: `tests/affiliates-blueprint.test.cjs` rewritten; browser `tools/blueprint/check.cjs` (LIVE=1 checks the live site).

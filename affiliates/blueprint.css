@@ -1,4 +1,4 @@
-/* LOWiSPIKE Affiliates · Master Blueprint. Same dark galaxy and cyan glow as the app and the 404 page. No animation except the shuffle. */
+/* LOWiSPIKE Affiliates · Master Blueprint. Same dark galaxy and cyan glow as the app and the 404 page. No animation. */
 /* 21 Oct 2026 (Eman: white cards, unreadable): color-scheme dark. Inside the app's frame a page whose scheme differs from the app gets an
    opaque WHITE canvas from the browser, and the see-through cards and pale text sat on that white. Now the page says it is dark and paints
    its own opaque background in the frame too; cards are near-opaque dark glass. */
@@ -31,92 +31,51 @@ button.ghost{background:transparent;box-shadow:none;border-color:var(--line)}
 button:disabled{opacity:.55;cursor:not-allowed}
 button:focus-visible,.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-/* tabs */
-.tabs{display:flex;gap:6px;margin:0 0 14px;padding:4px;border:1.5px solid var(--line);border-radius:999px;width:max-content;max-width:100%}
-.tabs button{border:0;box-shadow:none;background:transparent;min-height:40px;padding:0 18px}
-.tabs button[aria-selected="true"]{background:rgba(28,247,249,.18);box-shadow:inset 0 0 0 1.5px rgba(143,231,255,.75),0 0 12px rgba(28,247,249,.25)}
-/* product picker */
-.products{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 14px}
-.prod{display:block;text-align:left;border-radius:var(--r);padding:12px 14px;min-height:auto;width:100%;background:rgba(10,24,52,.6);border:1.5px solid var(--line);box-shadow:none}
-.prod[aria-pressed="true"]{border-color:var(--teal);background:rgba(28,247,249,.12);box-shadow:0 0 16px rgba(28,247,249,.3)}
-.prod b{display:block;font-size:15.5px;line-height:1.25}
-.prod span{display:block;font-size:13px;color:var(--muted);margin-top:4px}
-/* day bar */
-.daybar{display:flex;align-items:center;gap:10px;justify-content:space-between;margin:0 0 12px}
-.daybar .day{font-weight:700;font-size:18px;text-align:center;flex:1}
-.daybar button{width:44px;padding:0;font-size:20px}
-.onscreen{font-weight:700;padding:10px 12px;border-radius:12px;background:rgba(0,0,0,.35);border:1px dashed rgba(143,231,255,.45);margin:0 0 6px;overflow-wrap:anywhere}
-/* checklist */
-.progress{height:8px;border-radius:99px;background:rgba(143,231,255,.15);overflow:hidden;margin:6px 0 12px}
-.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--green));border-radius:99px;width:0}
-ul.checks{list-style:none;margin:0;padding:0}
-ul.checks li{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px solid rgba(143,231,255,.12)}
-ul.checks li:first-child{border-top:0}
-ul.checks input{width:22px;height:22px;margin:1px 0 0;accent-color:var(--teal);flex:none}
-ul.checks label{flex:1;min-width:0}
-ul.checks .auto{font-size:12px;color:var(--muted);white-space:nowrap}
-ul.checks li.done label{color:var(--muted);text-decoration:line-through;text-decoration-color:rgba(143,231,255,.5)}
-/* form */
-.fields{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}
-.field{display:flex;flex-direction:column;gap:4px;min-width:0}
-.field.full{grid-column:1/-1}
-.field label{font-size:13.5px;color:var(--muted)}
-input[type=text],input[type=url],input[type=date],input[type=number],select,textarea{font:inherit;color:var(--ink);background:rgba(3,8,20,.7);border:1.5px solid var(--line);border-radius:12px;min-height:44px;padding:8px 12px;width:100%;min-width:0}
-textarea{min-height:64px;resize:vertical}
-.field.missing input,.field.missing select{border-color:rgba(255,210,122,.8)}
-.field .err{font-size:13px;color:var(--warn)}
-.shuffle{display:flex;gap:8px;align-items:stretch}
-.shuffle output{flex:1;display:flex;align-items:center;padding:0 12px;border-radius:12px;border:1.5px solid var(--line);background:rgba(3,8,20,.7);font-weight:700;min-height:44px;min-width:0;overflow-wrap:anywhere}
-.shuffle output.spin{color:var(--teal)}
-.toggle{display:flex;gap:10px;align-items:center;min-height:44px}
-.toggle input{width:22px;height:22px;accent-color:var(--teal)}
-/* script */
-.sec{padding:10px 0;border-top:1px solid rgba(143,231,255,.12)}
-.sec:first-of-type{border-top:0}
-.shot{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.04em;padding:2px 8px;border-radius:99px;margin-bottom:4px;border:1px solid var(--line);color:var(--cyan)}
-.shot.screen{color:#b9c6ff;border-color:rgba(185,198,255,.4)}
-.sec p{margin:2px 0;font-size:16.5px;overflow-wrap:anywhere}
-.gap{background:rgba(255,210,122,.18);color:var(--warn);border-radius:6px;padding:0 4px;font-weight:700}
-.note{font-size:13.5px;color:var(--muted);margin:4px 0 0}
-.status{font-size:14px;margin:8px 0 0;padding:8px 12px;border-radius:12px;border:1px solid var(--line)}
-.status.ok{border-color:rgba(22,184,138,.6);color:#a8f5d8}
-.status.warn{border-color:rgba(255,210,122,.6);color:var(--warn)}
-.status.error{border-color:rgba(255,154,154,.6);color:var(--bad)}
-ol.shots{margin:0;padding-left:20px}
-ol.shots li{margin:0 0 10px}
-ol.shots ul{margin:4px 0 0;padding-left:18px;color:var(--muted)}
-pre.copy{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;background:rgba(3,8,20,.7);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:6px 0}
-/* numbers */
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 10px}
-.stat{border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center;min-width:0}
-.stat b{display:block;font-size:22px;line-height:1.2}
-.stat span{font-size:12.5px;color:var(--muted)}
-.rates{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-table.sales{width:100%;border-collapse:collapse;font-size:14px}
-table.sales th,table.sales td{text-align:left;padding:7px 4px;border-top:1px solid rgba(143,231,255,.14);vertical-align:top}
-table.sales th{color:var(--muted);font-weight:600;font-size:12.5px}
-/* 21 Oct: five columns ran off the side on small phones. Up to 480px wide each sale is a two-line row instead:
-   date and price on top, product and status below, delete on the right. Column names stay for screen readers. */
-@media (max-width:480px){
-  table.sales,table.sales tbody{display:block;width:100%}
-  table.sales thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-  table.sales tr{display:grid;grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"d p x" "n s x";gap:4px 10px;align-items:center;padding:9px 0;border-top:1px solid rgba(143,231,255,.14)}
-  table.sales td{border:0;padding:0;min-width:0;overflow-wrap:anywhere}
-  table.sales td:nth-child(1){grid-area:d;font-weight:600}
-  table.sales td:nth-child(2){grid-area:n;color:var(--muted)}
-  table.sales td:nth-child(3){grid-area:p;text-align:right}
-  table.sales td:nth-child(4){grid-area:s;text-align:right}
-  table.sales td:nth-child(5){grid-area:x}
-}
-.pill{font-size:12px;padding:1px 8px;border-radius:99px;border:1px solid var(--line);white-space:nowrap}
-.pill.ok{border-color:rgba(22,184,138,.6);color:#a8f5d8}
-.pill.warn{border-color:rgba(255,210,122,.6);color:var(--warn)}
+/* 21 Oct 2026 (simplified page): link line, two series cards, the script, the levels table. Generous spacing, readable text. */
+header.top{display:block;margin:6px 0 16px}
+.linkline{font-size:16.5px;font-weight:600;line-height:1.45}
+h2{font-size:19px}
+section{margin:0 0 18px}
+.series{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pickcard{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;width:100%;min-height:150px;padding:18px 16px;border-radius:20px;
+  background:linear-gradient(180deg,rgba(14,32,72,.94),rgba(8,20,48,.94));border:1.5px solid var(--line);box-shadow:0 0 14px rgba(28,247,249,.10)}
+.pickcard b{font-size:22px;line-height:1.15;letter-spacing:-.01em}
+.pickcard span{font-size:14.5px;color:var(--muted);line-height:1.4}
+.pickcard .prod{color:var(--cyan);font-weight:600}
+.pickcard .kw{margin-top:auto;font-size:13px;padding:2px 10px;border-radius:99px;border:1px solid var(--line);color:var(--ink)}
+.pickcard[aria-pressed="true"]{border-color:var(--teal);box-shadow:0 0 22px rgba(28,247,249,.35),inset 0 0 16px rgba(28,247,249,.10)}
+.label{font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px;font-weight:700}
+.onscreen{font-weight:700;font-size:16.5px;padding:12px 14px;border-radius:12px;background:rgba(0,0,0,.35);border:1px dashed rgba(143,231,255,.5);margin:0 0 6px;overflow-wrap:anywhere}
+.scene{padding:14px 0;border-top:1px solid rgba(143,231,255,.14)}
+.scene:first-of-type{border-top:0}
+.shot{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:.03em;padding:3px 10px;border-radius:99px;margin-bottom:8px;border:1px solid var(--line);color:var(--cyan)}
+.shot.screen{color:#c4cfff;border-color:rgba(196,207,255,.45)}
+.scene p{margin:4px 0;font-size:17px;line-height:1.55;overflow-wrap:anywhere}
+.ph{color:var(--teal);font-weight:700}
+.note{font-size:14px;color:var(--muted);margin:6px 0 0}
+button.wide{width:100%;margin-top:12px;font-weight:700}
+ol.shots{margin:0;padding-left:22px}
+ol.shots li{margin:0 0 12px;line-height:1.5}
+ol.shots ul{margin:6px 0 0;padding-left:18px;color:var(--muted)}
+ol.shots ul li{margin:2px 0}
+.caption{font-size:16px;line-height:1.5;margin:0 0 12px;padding:12px 14px;border-radius:12px;background:rgba(0,0,0,.3);border:1px solid var(--line);overflow-wrap:anywhere}
+.tip{font-size:15.5px;line-height:1.55}
+.tip b{color:var(--cyan)}
+table.levels{width:100%;border-collapse:collapse;font-size:16px;margin:6px 0 4px}
+table.levels th{text-align:left;font-size:12.5px;font-weight:700;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;padding:8px 6px}
+table.levels td{padding:12px 6px;border-top:1px solid rgba(143,231,255,.16);white-space:nowrap}
+table.levels .lv{font-weight:700}
+table.levels .rate{color:var(--teal);font-weight:700}
+table.levels .eur{font-weight:600;text-align:right}
+table.levels th:last-child{text-align:right}
+ul.examples{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+ul.examples li{display:flex;flex-direction:column;gap:2px;padding:12px;border-radius:14px;border:1px solid var(--line);background:rgba(0,0,0,.25);min-width:0}
+ul.examples li span{font-size:13.5px;color:var(--muted)}
+ul.examples li b{font-size:19px;line-height:1.25}
 .toast{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%);background:#0b1c3f;border:1.5px solid var(--teal);border-radius:999px;padding:10px 18px;box-shadow:0 0 18px rgba(28,247,249,.35);z-index:10;max-width:calc(100vw - 28px);text-align:center}
 .toast[hidden]{display:none}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-footer{color:var(--muted);font-size:13px;margin:8px 0 0}
-/* layout */
-.cols{display:grid;grid-template-columns:1fr;gap:0 14px}
-@media (min-width:820px){.cols{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.cols>.left{grid-column:1}.cols>.right{grid-column:2}}
-@media (max-width:420px){.fields{grid-template-columns:1fr}.products{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr 1fr}.stat b{font-size:19px}.card{padding:14px}.rates{grid-template-columns:1fr}}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+footer{color:var(--muted);font-size:13px;margin:8px 0 0;line-height:1.5}
+@media (max-width:600px){ul.examples{grid-template-columns:1fr 1fr}}
+@media (max-width:380px){.series{grid-template-columns:1fr}.pickcard{min-height:0}.card{padding:14px 12px}table.levels{font-size:15px}table.levels th{white-space:normal;font-size:11.5px;letter-spacing:.02em}table.levels td,table.levels th{padding-left:3px;padding-right:3px}body.embed{padding-left:8px;padding-right:8px}}
+@media (max-width:340px){table.levels .lvw{display:none}table.levels{font-size:14.5px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}

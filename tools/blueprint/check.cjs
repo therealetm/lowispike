@@ -6,6 +6,7 @@ const H = require('../regress/harness.cjs'), N = require('../regress/nav.cjs');
 const pw = H.pw, sleep = H.sleep;
 const ROOT = path.resolve(__dirname, '..', '..');
 const OUT = path.resolve(process.argv[2] || '/tmp/blueprint-check');
+const LIVE = process.env.LIVE ? 'https://therealetm.github.io/lowispike/' : ''; /* LIVE=1: check the live site instead of this checkout */
 fs.mkdirSync(OUT, { recursive: true });
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.json': 'application/json', '.webp': 'image/webp', '.svg': 'image/svg+xml' };
 const fails = [], notes = [];
@@ -35,72 +36,29 @@ async function standalone(base, sz) {
   const errs = []; page.on('pageerror', e => errs.push(e.message)); page.on('console', m => { if (m.type() === 'error') errs.push('console: ' + m.text()); if (m.type() === 'log') errs.push('console.log: ' + m.text()); });
   const W = 'affiliates@' + sz.name;
   try {
-    await page.goto(base + 'affiliates/', { waitUntil: 'load' });
-    await page.waitForSelector('#checkCard h2');
-    if ((await page.textContent('#checkCard h2')) !== 'Mach dein Tag-1-Video') fail(W, 'checklist title');
-    await page.screenshot({ path: path.join(OUT, sz.name + '-1-empty.png'), fullPage: true });
-    /* website: shuffle, facts, script */
-    await page.click('#f_pickBtn'); await page.waitForFunction(() => !document.getElementById('f_pickBtn').disabled, null, { timeout: 5000 });
-    const pick = await page.textContent('#f_pick');
-    await page.fill('#f_leads', '7'); await page.fill('#f_city', 'Flensburg');
-    let txt = await page.textContent('#scriptCard');
-    if (!txt.includes('Heute entscheidet der Zufall die Branche: ' + pick + '.')) fail(W, 'industry not in script: ' + pick);
-    if (!txt.includes('Er hat sieben Treffer gefunden.')) fail(W, 'lead count not spelled out');
-    if (await page.$('#scriptGaps')) fail(W, 'website script still has gaps');
-    /* the mismatch warning */
-    const clashName = pick === 'Friseursalons' ? 'Juwelier Hansen' : 'Friseur Müller';
-    await page.fill('#f_business', clashName);
-    if (!(await page.textContent('#f_businessErr')).includes('Branche und Geschäft müssen zusammenpassen')) fail(W, 'industry clash not flagged');
-    await page.fill('#f_business', '');
-    /* link check: Sponsoren-Agent link is refused for the website product */
-    await page.fill('#affLink', 'https://shop.beacons.ai/emanuristic/6ff76533-65e2-49bf-b1c0-d4d3d08aab88?affiliateLinkId=11111111-2222-4333-8444-555555555555');
-    if (!(await page.textContent('#linkStatus')).includes('nicht zum AI Website Client System')) fail(W, 'wrong-product link accepted');
-    /* switch product: sponsor */
-    await page.click('[data-product="sponsor"]');
-    txt = await page.textContent('#scriptCard');
-    if (!txt.includes('Erster Tag, an dem ChatGPT autonom') || !txt.includes('fehlt')) fail(W, 'sponsor script shell/gaps');
-    for (const [id, v] of [['f_contacted', '12'], ['f_brand', 'Bohnenwerk'], ['f_idea', 'drei Hooks für ihr Abo'], ['f_price', '250'], ['f_learning', 'Nenne immer einen festen Preis'], ['f_replies', '0']]) await page.fill('#' + id, v);
-    txt = await page.textContent('#scriptCard');
-    for (const k of ['autonom zwölf Sponsoren angeschrieben hat.', 'Heute highlighten wir Bohnenwerk.', 'zweihundertfünfzig Euro', 'Bisher hat noch keine Marke geantwortet.', 'kommentiert „Sponsor“']) if (!txt.includes(k)) fail(W, 'sponsor script missing: ' + k);
-    await page.fill('#affLink', 'https://shop.beacons.ai/emanuristic/6ff76533-65e2-49bf-b1c0-d4d3d08aab88?affiliateLinkId=11111111-2222-4333-8444-555555555555');
-    await page.check('#ck_recOpen');
-    await page.fill('#postUrl', 'https://www.tiktok.com/@test/video/1'); await page.click('#markPosted');
-    const done = await page.textContent('#checkCard .row');
-    if (!/^5 von 10/.test(done.trim())) fail(W, 'checklist count ' + done);
-    await page.screenshot({ path: path.join(OUT, sz.name + '-2-sponsor-day1.png'), fullPage: true });
-    /* persistence */
-    await page.reload({ waitUntil: 'load' }); await page.waitForSelector('#checkCard h2');
-    if ((await page.getAttribute('[data-product="sponsor"]', 'aria-pressed')) !== 'true') fail(W, 'product not remembered');
-    if (!(await page.isChecked('#ck_recOpen'))) fail(W, 'checklist tick lost on reload');
-    if ((await page.inputValue('#f_brand')) !== 'Bohnenwerk') fail(W, 'facts lost on reload');
-    /* day 2 starts clean, with the update field and the "Erneuter Tag" hook */
-    await page.click('button[aria-label="Nächster Tag"]');
-    if ((await page.textContent('#dayLabel')) !== 'Tag 2 von 30') fail(W, 'day nav');
-    if (!(await page.$('#f_update'))) fail(W, 'no update field on day 2');
-    if (!(await page.textContent('#scriptCard')).includes('Erneuter Tag, an dem ChatGPT autonom')) fail(W, 'day 2 hook');
-    /* numbers */
-    await page.click('#tabNumbers');
-    if (!(await page.textContent('#tierLine')).includes('Noch kein bestätigter Verkauf')) fail(W, 'empty tier line');
-    if ((await page.textContent('#fSpc')) !== '–') fail(W, 'rate shown without clicks');
-    for (const [i, d] of [['1', '2026-10-01'], ['2', '2026-10-09'], ['3', '2026-10-14']]) {
-      await page.selectOption('#sProduct', 'website'); await page.fill('#sDate', d); await page.fill('#sRef', 'B-' + i); await page.click('#addSale');
+    await page.goto(base + 'affiliates/' + (LIVE ? '?v=' + Date.now() : ''), { waitUntil: 'load' });
+    await page.waitForSelector('#seriesCards .pickcard');
+    if (!(await page.textContent('#linkLine')).includes('direkt von Eman per WhatsApp')) fail(W, 'WhatsApp line');
+    if (await page.$('input,select,textarea')) fail(W, 'page still has form fields');
+    if (!(await page.isHidden('#scriptView'))) fail(W, 'script shown before a pick');
+    const rows = await page.$$eval('table.levels tbody tr', t => t.map(r => [...r.cells].map(c => c.textContent.replace(/\u00a0/g, ' ')).join('|')));
+    if (rows.join(' / ') !== 'Level 1|1–10|10 %|9,90 € / Level 2|11–50|15 %|14,85 € / Level 3|51–150|25 %|24,75 € / Level 4|ab 151|45 %|44,55 €') fail(W, 'levels ' + rows.join(' / '));
+    const ex = (await page.textContent('#exampleList')).replace(/[\s\u00a0]+/g, ' ');
+    for (const k of ['10 Verkäufe99,00 €', '50 Verkäufe693,00 €', '150 Verkäufe3.168,00 €']) if (!ex.replace(/ /g, '').includes(k.replace(/ /g, ''))) fail(W, 'example ' + k + ' in ' + ex);
+    await page.screenshot({ path: path.join(OUT, sz.name + '-1-start.png'), fullPage: true });
+    for (const [id, must] of [['webdesign', ['Lead-Skill', 'Proposal-Skill', 'Glaubt ihr, dass ich damit den Kunden lande?', '[Branche]', 'Webdesign']], ['ugc', ['[Anzahl] potenzielle Sponsoren', '[Marke]', 'Agency-Skill', 'Sponsor']]]) {
+      await page.click('#pick-' + id);
+      if ((await page.getAttribute('#pick-' + id, 'aria-pressed')) !== 'true') fail(W, id + ' not pressed');
+      const txt = await page.textContent('#scriptView');
+      for (const k of must) if (!txt.includes(k)) fail(W, id + ' script misses ' + k);
+      if (/fehlt|FEHLT/.test(txt)) fail(W, id + ' has gaps');
+      if (!(await page.$('#copyScript')) || !(await page.$('#copyCaption'))) fail(W, id + ' copy buttons');
+      const o = await overflow(page); if (o.sw > o.w + 1 || o.bad.length) fail(W, id + ' sideways overflow ' + JSON.stringify(o));
+      const st = await smallTargets(page); if (st.length) fail(W, id + ' small tap targets ' + st.join(' | '));
+      await page.screenshot({ path: path.join(OUT, sz.name + '-2-' + id + '.png'), fullPage: true });
     }
-    await page.selectOption('#sProduct', 'website'); await page.fill('#sDate', '2026-10-15'); await page.fill('#sRef', 'b-1'); await page.click('#addSale');
-    if (!(await page.textContent('#saleForm .err')).includes('schon eingetragen')) fail(W, 'duplicate order accepted');
-    if ((await page.textContent('#commission')) !== '29,70 €') fail(W, 'commission ' + (await page.textContent('#commission')));
-    if (!(await page.textContent('#tierLine')).includes('Noch 7 Verkäufe bis 15 %')) fail(W, 'tier progress: ' + (await page.textContent('#tierLine')));
-    if (!(await page.textContent('#feeLine')).includes('entfällt laut Konditionen dauerhaft, seit 10/2026')) fail(W, 'fee waiver line');
-    await page.fill('#clicks_website', '150'); await page.press('#clicks_website', 'Tab');
-    await page.fill('#clicks_sponsor', '0'); await page.press('#clicks_sponsor', 'Tab');
-    if ((await page.textContent('#fClicks')) !== '150') fail(W, 'clicks total');
-    if ((await page.textContent('#fSpc')) !== '2,0 %') fail(W, 'sale rate ' + (await page.textContent('#fSpc')));
-    if ((await page.textContent('#fCpp')) !== '150,0') fail(W, 'clicks per post ' + (await page.textContent('#fCpp')));
-    await page.screenshot({ path: path.join(OUT, sz.name + '-3-numbers.png'), fullPage: true });
-    for (const view of ['numbers', 'today']) {
-      if (view === 'today') await page.click('#tabToday');
-      const o = await overflow(page); if (o.sw > o.w + 1 || o.bad.length) fail(W, view + ' sideways overflow ' + JSON.stringify(o));
-      const st = await smallTargets(page); if (st.length) fail(W, view + ' small tap targets ' + st.join(' | '));
-    }
+    await page.reload({ waitUntil: 'load' }); await page.waitForSelector('#scriptCard');
+    if ((await page.getAttribute('#pick-ugc', 'aria-pressed')) !== 'true') fail(W, 'hash pick not restored');
     /* create page */
     await page.goto(base + 'create/', { waitUntil: 'load' });
     if ((await page.textContent('h1')) !== 'Create') fail('create@' + sz.name, 'title');
@@ -116,7 +74,7 @@ async function standalone(base, sz) {
 async function tap(p, sel) { await sleep(400); const b = await p.locator(sel).boundingBox(); if (!b) throw new Error('no box for ' + sel); await p.mouse.click(b.x + b.width / 2, b.y + b.height / 2); }
 async function appTabs(engine, device) {
   const W = 'app-tabs@' + engine + '/' + device;
-  const R = await H.open({ engine, device, probe: false });
+  const R = await H.open({ engine, device, probe: false, url: LIVE ? LIVE + 'index.html' : '' });
   const p = R.page;
   try {
     await R.goto(); await N.openCommunity(R);
@@ -128,7 +86,7 @@ async function appTabs(engine, device) {
     await tap(p, '.rm-tab[data-rm="aff"]');
     await p.waitForSelector('#cmPaneChat[data-rm-view="aff"] iframe.rm-frame', { timeout: 8000 });
     const fr = p.frameLocator('iframe.rm-frame[data-view="aff"]');
-    await fr.locator('#checkCard h2').waitFor({ timeout: 15000 });
+    await fr.locator('#seriesCards .pickcard').first().waitFor({ timeout: 15000 });
     const st = await p.evaluate(() => { const f = document.querySelector('iframe.rm-frame[data-view="aff"]').getBoundingClientRect(); const g = document.getElementById('cgGalaxy'); return { fw: f.width, fh: f.height, vw: innerWidth, vh: innerHeight, galaxy: g ? getComputedStyle(g).display + '/' + (g.offsetParent ? 'shown' : 'hidden') : 'none', cls: document.documentElement.classList.contains('rm-view'), sel: document.querySelector('.rm-tab[aria-selected="true"]').dataset.rm, composer: (document.getElementById('cmInput') || {}).offsetParent ? 'shown' : 'hidden' }; });
     notes.push(W + ' aff frame ' + JSON.stringify(st));
     if (st.fh < 300 || st.fw < st.vw * 0.8) fail(W, 'frame too small ' + JSON.stringify(st));
@@ -153,9 +111,9 @@ async function appTabs(engine, device) {
 }
 
 (async () => {
-  const srv = await serve(); const base = 'http://127.0.0.1:' + srv.address().port + '/lowispike/';
+  const srv = LIVE ? null : await serve(); const base = LIVE ? LIVE : 'http://127.0.0.1:' + srv.address().port + '/lowispike/';
   for (const sz of SIZES) { await standalone(base, sz); console.log('done', sz.name); }
-  srv.close();
+  if (srv) srv.close();
   await appTabs('webkit', 'iPhone SE'); console.log('done app webkit SE');
   await appTabs('webkit', 'iPhone 13'); console.log('done app webkit 13');
   await appTabs('chromium', 'iPhone 13'); console.log('done app chromium');

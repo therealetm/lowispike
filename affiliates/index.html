@@ -6,13 +6,13 @@
 <meta name="theme-color" content="#03050a">
 <meta name="color-scheme" content="dark">
 <meta name="robots" content="noindex">
-<title>Affiliates · Master Blueprint · LOWiSPIKE</title>
-<meta name="description" content="Dein Tagesvideo für die 30-Tage-Challenge: Skript, Shotliste, Checkliste und deine Zahlen. Alles bleibt auf deinem Gerät.">
+<title>Affiliates · Video-Template · LOWiSPIKE</title>
+<meta name="description" content="Wähle Webdesign oder UGC und hol dir das fertige Video-Skript. Dazu siehst du, was du pro Verkauf verdienst und wie du im Level aufsteigst.">
 <link rel="canonical" href="https://therealetm.github.io/lowispike/affiliates/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="LOWiSPIKE">
-<meta property="og:title" content="LOWiSPIKE Affiliates · Master Blueprint">
-<meta property="og:description" content="Dein Tagesvideo für die 30-Tage-Challenge: Skript, Shotliste, Checkliste und deine Zahlen.">
+<meta property="og:title" content="LOWiSPIKE Affiliates · Video-Template">
+<meta property="og:description" content="Webdesign oder UGC wählen, Skript holen, mit deiner Persönlichkeit aufnehmen. Dazu deine Provision pro Level.">
 <meta property="og:url" content="https://therealetm.github.io/lowispike/affiliates/">
 <meta property="og:image" content="https://therealetm.github.io/lowispike/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
@@ -23,22 +23,31 @@
 <body>
 <div class="wrap" id="app">
   <header class="top">
-    <div class="grow">
-      <div class="brand">LOWiSPIKE Affiliates</div>
-      <h1>Master Blueprint</h1>
-      <p class="sub">Ein Video pro Tag. Produkt wählen, Fakten eintragen, Skript und Shotliste aufnehmen, posten, Zahlen festhalten.</p>
-    </div>
-    <button type="button" class="ghost" id="shareLink">Link teilen</button>
+    <div class="brand">LOWiSPIKE Affiliates</div>
+    <h1>Dein Video-Template</h1>
   </header>
   <noscript><p class="card">Diese Seite braucht JavaScript.</p></noscript>
-  <div class="tabs" role="tablist" aria-label="Bereiche">
-    <button type="button" role="tab" id="tabToday" aria-controls="viewToday" aria-selected="true">Heutiges Video</button>
-    <button type="button" role="tab" id="tabNumbers" aria-controls="viewNumbers" aria-selected="false">Meine Zahlen</button>
-  </div>
-  <section id="viewToday" role="tabpanel" aria-labelledby="tabToday"></section>
-  <section id="viewNumbers" role="tabpanel" aria-labelledby="tabNumbers" hidden></section>
+  <p class="card hero linkline" id="linkLine">Deinen persönlichen Affiliate-Link bekommst du direkt von Eman per WhatsApp.</p>
+
+  <section aria-labelledby="pickTitle">
+    <h2 id="pickTitle">Wähle deine Serie</h2>
+    <div class="series" id="seriesCards"></div>
+  </section>
+
+  <section id="scriptView" aria-live="polite" hidden></section>
+
+  <p class="card tip" id="tipLine"><b>Das ist dein Template.</b> Bring deine eigene Persönlichkeit rein: Wer sich vor der Kamera besser präsentiert, verkauft mehr. Nimm es selbst auf oder nutze einen KI-Avatar wie HeyGen oder Higgsfield. Das Template ist kostenlos.</p>
+
+  <section class="card" id="earnView" aria-labelledby="earnTitle">
+    <h2 id="earnTitle">Was du verdienst</h2>
+    <p class="muted" id="earnLead"></p>
+    <div id="levelTable"></div>
+    <h3>Beispiele</h3>
+    <div id="exampleList"></div>
+  </section>
+
   <footer>
-    <p>Alles, was du hier einträgst, bleibt nur auf diesem Gerät in diesem Browser. Diese Seite sieht weder Beacons noch TikTok: Klicks und Verkäufe trägst du selbst ein. Die 30.000 € sind das Ziel der Challenge, kein versprochenes Ergebnis.</p>
+    <p id="terms"></p>
   </footer>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>

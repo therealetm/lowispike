@@ -92,10 +92,18 @@ async function appTabs(engine, device) {
     if (st.fh < 300 || st.fw < st.vw * 0.8) fail(W, 'frame too small ' + JSON.stringify(st));
     if (!st.cls || st.sel !== 'aff' || st.composer !== 'hidden' || /shown/.test(st.galaxy)) fail(W, 'view state ' + JSON.stringify(st));
     if (!(await fr.locator('body').getAttribute('class') || '').includes('embed')) fail(W, 'frame not in embed mode');
-    await sleep(500); await R.shot(path.join(OUT, 'app-' + engine + '-affiliates.png'));
+    await fr.locator('#pick-webdesign').click();
+    await fr.locator('#scriptCard').waitFor({ timeout: 5000 });
+    const inTxt = await fr.locator('#scriptView').textContent();
+    if (!inTxt.includes('Lead-Skill') || !inTxt.includes('Skript kopieren')) fail(W, 'in-app Webdesign script missing');
+    if ((await fr.locator('table.levels tbody tr').count()) !== 4) fail(W, 'in-app levels table');
+    const fo = await fr.locator('body').evaluate(() => ({ sw: document.documentElement.scrollWidth, w: innerWidth }));
+    if (fo.sw > fo.w + 1) fail(W, 'in-app sideways overflow ' + JSON.stringify(fo));
+    const tag = engine + '-' + device.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+    await sleep(500); await R.shot(path.join(OUT, 'app-' + tag + '-affiliates.png'));
     await tap(p, '.rm-tab[data-rm="create"]');
     await p.frameLocator('iframe.rm-frame[data-view="create"]').locator('h1').waitFor({ timeout: 10000 });
-    await sleep(400); await R.shot(path.join(OUT, 'app-' + engine + '-creation.png'));
+    await sleep(400); await R.shot(path.join(OUT, 'app-' + engine + '-' + device.replace(/[^a-z0-9]+/gi, '-').toLowerCase() + '-creation.png'));
     await tap(p, '.rm-tab[data-rm="room"]'); await sleep(500);
     const back = await p.evaluate(() => ({ view: document.getElementById('cmPaneChat').getAttribute('data-rm-view'), cls: document.documentElement.classList.contains('rm-view'), sel: document.querySelector('.rm-tab[aria-selected="true"]').dataset.rm, galaxy: (document.getElementById('cgGalaxy') || {}).offsetParent ? 'shown' : 'hidden' }));
     if (back.view || back.cls || back.sel !== 'room') fail(W, 'Room did not come back ' + JSON.stringify(back));
@@ -116,6 +124,7 @@ async function appTabs(engine, device) {
   if (srv) srv.close();
   await appTabs('webkit', 'iPhone SE'); console.log('done app webkit SE');
   await appTabs('webkit', 'iPhone 13'); console.log('done app webkit 13');
+  await appTabs('webkit', 'iPad (gen 7)'); console.log('done app webkit iPad');
   await appTabs('chromium', 'iPhone 13'); console.log('done app chromium');
   fs.writeFileSync(path.join(OUT, 'report.json'), JSON.stringify({ fails, notes }, null, 1));
   console.log(notes.join('\n'));

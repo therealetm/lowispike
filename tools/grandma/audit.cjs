@@ -26,7 +26,7 @@ const INIT_SRC = msrc.slice(msrc.indexOf('const INIT = () => {') + 'const INIT =
 const PRE = `(() => { try {
   localStorage.setItem('lowispike.v2', JSON.stringify({ v: 2, setupDone: true, onboarded: true, user: { name: 'Tester', bday: '1990-03-05', tags: [] }, xp: 1254, ledger: [], logs: [{ id: 'l1', t: 'Oat porridge', ts: Date.now() - 5 * 36e5, macros: { kcal: 320, protein: 11, carbs: 52, sugar: 6, fiber: 7, fat: 7 } }], saved: [], settings: { lang: '${LANG}' } }));
   localStorage.setItem('lowispike.companion.v1', JSON.stringify({ v: 1, bday: '1990-03-05', btime: '07:45', n: 0, name: 'Misty', created: 1 }));
-  localStorage.setItem('lowi.hint.communityHold', '1');
+  localStorage.setItem('lowi.hint.communityHold', '1'); localStorage.setItem('lowispike.lang', '${LANG}');
   ${arg('nogap', '') ? '' : "localStorage.setItem('lowi_fast_v1', JSON.stringify({ last: Date.now() - 5 * 36e5 - 12 * 6e4 }));"}
 } catch (e) { } })();`;
 function visibleText() {

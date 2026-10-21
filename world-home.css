@@ -54,6 +54,7 @@ html.wh-home .wh-hud { display: block; position: fixed; inset: 0; z-index: 3; po
 /* Oct 17: the water count names its unit, "0/6 cups"; the unit is smaller so it fits inside the bubble */
 .wh-cell-tx b .wh-unit { text-decoration: none; font-size: .62em; font-weight: 650; opacity: .9; letter-spacing: .1px; }
 .wh-cell-tx b .wh-unit:empty { display: none; }
+.wh-cell-tx b .wh-unit.wh-unit-2l { display: block; margin-top: 1px; line-height: 1; }
 .wh-cell:active, .wh-name:active, .wh-todaybtn:active, .wh-zoom:active { transform: translate(-50%, -50%) scale(.95); }
 .wh-name:active { transform: translateX(-50%) scale(.96); }
 /* today + zoom, one thumb row above the tab bar */

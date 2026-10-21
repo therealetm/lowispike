@@ -162,7 +162,6 @@
         noMealYet: ['no meal yet', 'noch kein Essen', 'sin comida aún'],
         gapAria: ['Meal gap: {h} h {m} min since your last meal at {t}. Tap to see more.', 'Essenspause: {h} Std. {m} Min. seit deiner letzten Mahlzeit um {t}. Tippen für mehr.', 'Pausa entre comidas: {h} h {m} min desde tu última comida a las {t}. Toca para ver más.'],
         gapAria0: ['Meal gap: no meal logged yet. Log a meal in Fuel and the time since it shows here.', 'Essenspause: noch keine Mahlzeit eingetragen. Trag eine Mahlzeit bei Essen ein, dann steht hier die Zeit seitdem.', 'Pausa entre comidas: aún no hay comidas. Registra una en Comida y aquí verás el tiempo desde entonces.'],
-        noMealYet: ['No meal yet', 'Noch keine Mahlzeit', 'Aún sin comida'],
         lastAt: ['last meal {t}', 'letzte Mahlzeit {t}', 'última comida {t}'],
         slotRecent: ['Your usual · one tap', 'Wie immer · ein Tipp', 'Lo de siempre · un toque'],
         recentEmpty: ['Meals you log show up here for one tap next time.', 'Deine Mahlzeiten erscheinen hier, beim nächsten Mal mit einem Tipp.', 'Tus comidas aparecen aquí para registrarlas con un toque.'],

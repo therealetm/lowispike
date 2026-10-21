@@ -113,6 +113,7 @@
             if (!num || !u) { bb.innerHTML = '<span class="wh-num"></span> <u class="wh-unit"></u>'; num = bb.querySelector('.wh-num'); u = bb.querySelector('.wh-unit'); }
             if (num.textContent !== v.text) num.textContent = v.text;
             if (u.textContent !== unit) u.textContent = unit;
+            u.classList.toggle('wh-unit-2l', unit.length > 7); /* German "Mahlzeiten" sits under the count, it does not fit beside it */
         }
         b.classList.toggle('wme-full', v.full);
         const aria = label() + ' ' + v.text + (/^\d+\s*\/\s*\d+$/.test(v.text) ? ' ' + T('meals', 'Mahlzeiten', 'comidas') : '') + '. ' + T('Tap to log a meal, long press to see today.', 'Tippen, um Essen einzutragen, lange drücken für heute.', 'Toca para registrar una comida, mantén pulsado para ver hoy.');

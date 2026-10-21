@@ -44,7 +44,7 @@ async function run(browser, engine, dev, lang, url, fails, shots) {
         await sleep(3500);
         await page.evaluate(() => { document.querySelectorAll('[aria-modal="true"]').forEach(d => { if (!d.closest('#ltTour')) d.remove(); }); window.LowiTutorial.start({ from: 'check' }); });
         await page.waitForSelector('#ltTour:not(.lt-held) .lt-speak', { timeout: 8000 }).catch(() => { });
-        await sleep(600);
+        await sleep(1500);   /* fonts settle */
     };
     await open();
     const st = () => page.evaluate(() => { const V = window.LowiTutorialVoice, b = document.querySelector('#ltTour .lt-speak'); return { step: window.LowiTutorial.step(), on: V.isOn(), playing: V.playing(), how: V.how(), paused: V.paused(), word: V.word(), pressed: b && b.getAttribute('aria-pressed'), label: b && b.getAttribute('aria-label'), tour: !!document.querySelector('#ltTour:not(.lt-out)') }; });

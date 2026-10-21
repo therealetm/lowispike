@@ -36,6 +36,16 @@
             moreTitle: 'Todo lo dem\u00e1s', today: 'Hoy e historial', community: 'Comunidad', care: 'Tablero Care', cook: 'Cocinar', workouts: 'Entrenos', map: 'Mapa del mundo',
             vr: 'RV', worldSound: 'Sonido del mundo', theme: 'D\u00eda / noche', gift: 'Regalo del d\u00eda', weather: 'Tiempo', quest: 'Misi\u00f3n diaria', goTo: 'Ir a', settingsGroup: 'Ajustes', tutorial: 'Tutorial', body: 'Peso e IMC', version: 'Versi\u00f3n' }
     };
+    /* Oct 21 2026 (Emmanuel: the Home bubble is Community now, a hold opens a slim Settings with only what is needed) */
+    Object.assign(TX.en, { language: 'Language', deleteAccount: 'Delete account', hint: 'Hold Community for settings', day: 'Day', night: 'Night', foryou: 'For You', hunt: 'Shopping hunt',
+        delTitle: 'Delete your account?', delBody: 'This deletes your LOWiSPIKE account for good: your profile, posts, chats, photos and synced progress. It also clears this phone. It can\u2019t be undone.', delGo: 'Delete my account', delCancel: 'Keep my account',
+        delBusy: 'Deleting\u2026', delFail: 'We couldn\u2019t delete your account right now. Nothing was deleted. Please try again later.', delGuest: 'You\u2019re not signed in, so there is no account in the cloud. Delete everything saved on this phone?', delGuestGo: 'Delete this phone\u2019s data', account2: 'Account' });
+    Object.assign(TX.de, { language: 'Sprache', deleteAccount: 'Konto l\u00f6schen', hint: 'Halte Community f\u00fcr Einstellungen', day: 'Tag', night: 'Nacht', foryou: 'F\u00fcr dich', hunt: 'Einkaufsjagd',
+        delTitle: 'Konto l\u00f6schen?', delBody: 'Damit l\u00f6schst du dein LOWiSPIKE-Konto endg\u00fcltig: Profil, Beitr\u00e4ge, Chats, Fotos und deinen synchronisierten Fortschritt. Auch dieses Handy wird geleert. Das kann man nicht r\u00fcckg\u00e4ngig machen.', delGo: 'Mein Konto l\u00f6schen', delCancel: 'Konto behalten',
+        delBusy: 'Wird gel\u00f6scht\u2026', delFail: 'Dein Konto konnte gerade nicht gel\u00f6scht werden. Es wurde nichts gel\u00f6scht. Bitte versuch es sp\u00e4ter noch einmal.', delGuest: 'Du bist nicht angemeldet, also gibt es kein Konto in der Cloud. Alles l\u00f6schen, was auf diesem Handy gespeichert ist?', delGuestGo: 'Daten auf diesem Handy l\u00f6schen', account2: 'Konto' });
+    Object.assign(TX.es, { language: 'Idioma', deleteAccount: 'Eliminar cuenta', hint: 'Mant\u00e9n Comunidad para los ajustes', day: 'D\u00eda', night: 'Noche', foryou: 'Para ti', hunt: 'Caza de compras',
+        delTitle: '\u00bfEliminar tu cuenta?', delBody: 'Esto elimina tu cuenta de LOWiSPIKE para siempre: tu perfil, publicaciones, chats, fotos y el progreso sincronizado. Tambi\u00e9n vac\u00eda este m\u00f3vil. No se puede deshacer.', delGo: 'Eliminar mi cuenta', delCancel: 'Conservar mi cuenta',
+        delBusy: 'Eliminando\u2026', delFail: 'No pudimos eliminar tu cuenta ahora. No se ha borrado nada. Int\u00e9ntalo m\u00e1s tarde.', delGuest: 'No has iniciado sesi\u00f3n, as\u00ed que no hay cuenta en la nube. \u00bfBorrar todo lo guardado en este m\u00f3vil?', delGuestGo: 'Borrar los datos de este m\u00f3vil', account2: 'Cuenta' });
     const pick = l => TX[l] || TX.en;
     /* Oct 20 2026 (Emmanuel: prove a GitHub change reaches the live app): the Settings panel names the running build, read from the
        page's lowi-build tag, as plain text beside the x; an empty or malformed id shows nothing */
@@ -129,12 +139,20 @@
 
     /* the hidden Home entry points that no bubble reaches (Oct 18 2026, Emmanuel: "some of the everything is redundant").
        Go to = places, Settings = switches. env.has(id) says whether its real route exists right now. */
-    const MORE_GROUPS = { go: ['community', 'care', 'workouts', 'map', 'vr', 'gift', 'weather'], set: ['worldSound'] };
+    /* Oct 21 2026 (Emmanuel: Community holds the profile and the places, Settings only the switches): the places that no bubble reaches
+       now live in Community (community-me.js reads COMMUNITY_PLACES); World sound is a sound setting, so it moved into Settings */
+    const COMMUNITY_PLACES = { you: ['me', 'body'], places: ['foryou', 'care', 'workouts', 'map', 'gift', 'hunt'] };
+    const MORE_GROUPS = { go: COMMUNITY_PLACES.you.concat(COMMUNITY_PLACES.places), set: [] };
     const MORE = MORE_GROUPS.go.concat(MORE_GROUPS.set);
+    /* the slim Settings (a hold on the Community bubble): the switches, the language and the account, nothing else */
+    const SETTINGS_IDS = ['theme', 'look', 'worldSound', 'language', 'menubar', 'tutorial'], ACCOUNT_IDS = ['account', 'deleteAccount'];
+    const HINT_KEY = 'lowi.hint.holdCommunity', HOLD_MS = 480;
     /* out of the panel, and where each one is still reached (their routes and features stay in the app):
        today: Emmanuel dropped Today from Home; cook: Fuel bubble > Cook; theme: Settings > Look & sound > Day & night;
        quest: Emmanuel dropped Daily quest */
-    const MORE_REMOVED = { today: 'removed', cook: 'fuel', theme: 'look', quest: 'removed' };
+    /* Oct 21 2026 cleanup (DECISIONS.md): vr and weather are out of every menu (their code and saved choices stay); community is the
+       Home bubble itself; theme and worldSound are Settings rows now */
+    const MORE_REMOVED = { today: 'removed', cook: 'fuel', theme: 'settings', quest: 'removed', vr: 'removed', weather: 'removed', community: 'bubble', worldSound: 'settings' };
     function moreGroups(env) {
         const has = id => !!(env && env.has && env.has(id));
         return { go: MORE_GROUPS.go.filter(has), set: MORE_GROUPS.set.filter(has) };
@@ -177,7 +195,7 @@
     }
     function entries(kind, env) {
         const has = id => !!(env && env.has && env.has(id));
-        if (kind === 'settings') return ['me', 'look', 'account', 'menubar', 'more'].filter(id => id === 'more' ? MORE.some(has) : has(id));
+        if (kind === 'settings') return SETTINGS_IDS.concat(ACCOUNT_IDS).filter(has);
         if (kind === 'more') return MORE.filter(has);
         if (kind === 'sleep') return env && env.logged ? BANDS.concat('clear') : BANDS.slice();
         return [];
@@ -186,22 +204,25 @@
     /* what one tap on a bubble does, given what is open now: Settings opens its full page (not the chip bloom), Sleep its bloom;
        a tap on a bubble whose surface is already open closes it. -> 'page' | 'sleep' | 'close' */
     function tapIntent(bubble, open) {
-        if (bubble === 'settings') return open === 'page' || open === 'settings' || open === 'more' ? 'close' : 'page';
+        /* Oct 21 2026: the bubble is Community: a tap opens Community, a hold (holdIntent) opens the slim Settings */
+        if (bubble === 'settings') return open === 'page' || open === 'settings' || open === 'more' ? 'close' : 'community';
         if (bubble === 'sleep') return open === 'sleep' ? 'close' : 'sleep';
         return 'close';
     }
     /* what a row on the Settings panel does (Oct 19 2026, Emmanuel: the sound panel opened BEHIND Settings):
        'toggle' flips in place and Settings stays; 'panel' opens another panel, so Settings steps aside first and that panel is in front;
        'go' closes Settings and runs its route */
-    const PANEL_ROWS = ['worldSound'], TOGGLE_ROWS = ['menubar', 'quest'];
-    function rowAction(id) { return PANEL_ROWS.includes(id) ? 'panel' : TOGGLE_ROWS.includes(id) ? 'toggle' : 'go'; }
+    function holdIntent(bubble) { return bubble === 'settings' ? 'page' : null; }
+    /* 'lang' = three language buttons in the row; 'confirm' = asks inside the panel first (Delete account) */
+    const PANEL_ROWS = ['worldSound'], TOGGLE_ROWS = ['menubar', 'quest', 'theme'];
+    function rowAction(id) { return id === 'language' ? 'lang' : id === 'deleteAccount' ? 'confirm' : PANEL_ROWS.includes(id) ? 'panel' : TOGGLE_ROWS.includes(id) ? 'toggle' : 'go'; }
     /* the Settings panel (one tap): the Settings choices first (no More chip: More is on the panel), then every More entry; empty groups drop */
     function pageGroups(env) {
         const has = id => !!(env && env.has && env.has(id));
-        return [{ key: 'main', ids: ['me', 'body', 'look', 'account', 'menubar', 'tutorial'].filter(has) }, { key: 'more', ids: MORE.filter(has) }].filter(g => g.ids.length);
+        return [{ key: 'main', ids: SETTINGS_IDS.filter(has) }, { key: 'account', ids: ACCOUNT_IDS.filter(has) }].filter(g => g.ids.length);
     }
 
-    const core = { BANDS, FILL, SHELL_TOKEN, KEEP_DAYS, MENU_KEY, MORE, MORE_GROUPS, MORE_REMOVED, moreGroups, placePanel, TX, dayKey, readSleep, writeSleep, clearSleep, sleepView, fan, entries, tapIntent, pageGroups, rowAction, versionLabel };
+    const core = { BANDS, FILL, SHELL_TOKEN, KEEP_DAYS, MENU_KEY, MORE, MORE_GROUPS, MORE_REMOVED, COMMUNITY_PLACES, SETTINGS_IDS, ACCOUNT_IDS, HINT_KEY, HOLD_MS, moreGroups, placePanel, TX, dayKey, readSleep, writeSleep, clearSleep, sleepView, fan, entries, tapIntent, holdIntent, pageGroups, rowAction, versionLabel };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!root || !root.document) return;
 
@@ -223,7 +244,11 @@
         menubar: '<rect x="3.5" y="4" width="17" height="16" rx="3" ' + P + '/><path d="M3.5 15.5h17M8 18h.01M12 18h.01M16 18h.01" ' + P + '/>',
         tutorial: '<circle cx="12" cy="12" r="8.5" ' + P + '/><path d="M10 8.8v6.4l5.2-3.2z" ' + P + '/>',
         body: '<rect x="4" y="5" width="16" height="14" rx="4" ' + P + '/><path d="M8.5 10a4.5 4.5 0 0 1 7 0L12 12.5" ' + P + '/>',
-        more: '<path d="M6 12h.01M12 12h.01M18 12h.01" ' + P + ' stroke-width="3"/>'
+        more: '<path d="M6 12h.01M12 12h.01M18 12h.01" ' + P + ' stroke-width="3"/>',
+        theme: '<path d="M19 14.5A7.5 7.5 0 1 1 9.5 5a6 6 0 0 0 9.5 9.5z" ' + P + '/>',
+        worldSound: '<path d="M3 12h2l2-5 3 10 3-12 3 9 2-2h3" ' + P + '/>',
+        language: '<circle cx="12" cy="12" r="8.5" ' + P + '/><path d="M3.5 12h17M12 3.5c2.6 2.4 3.6 5.4 3.6 8.5s-1 6.1-3.6 8.5c-2.6-2.4-3.6-5.4-3.6-8.5s1-6.1 3.6-8.5z" ' + P + '/>',
+        deleteAccount: '<path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12M10.5 10.5v5M13.5 10.5v5" ' + P + '/>'
     };
     const svg = k => '<svg class="ss2-ico" viewBox="0 0 24 24" aria-hidden="true">' + (ICON[k] || '') + '</svg>';
 
@@ -278,7 +303,13 @@
         map: { has: () => !!$('#whHud .wh-zoom'), run: clickSel('#whHud .wh-zoom') },
         vr: { has: () => !!$('#whHud .wh-vr'), run: clickSel('#whHud .wh-vr') },
         worldSound: { has: () => !!$('#whHud .wa-btn'), run: () => { if (fn(root.LowiWorldAudio, 'open')) root.LowiWorldAudio.open(); else clickSel('#whHud .wa-btn')(); }, toggle: () => !!(root.LowiWorldAudio && fn(root.LowiWorldAudio, 'on') && root.LowiWorldAudio.on()) },
-        theme: { has: () => !!(root.LowiTopBar && fn(root.LowiTopBar, 'toggleTheme')), run: () => root.LowiTopBar.toggleTheme() },
+        theme: { has: () => !!(root.LowiTopBar && fn(root.LowiTopBar, 'toggleTheme')), run: () => root.LowiTopBar.toggleTheme(), toggle: () => !(root.LowiTopBar && fn(root.LowiTopBar, 'state') && root.LowiTopBar.state().theme === 'light') },
+        /* Oct 21 2026: EN / DE / ES right in the row (the page's own [data-lang] handler switches it) */
+        language: { has: () => !!(root.LowiLang && fn(root.LowiLang, 'set')), run: () => { } },
+        /* Oct 21 2026 (App Store 5.1.1(v)): deleting the account starts in the app; asks first, inside the panel */
+        deleteAccount: { has: () => true, run: () => { } },
+        foryou: { has: () => !!(root.LowiNavMoves && fn(root.LowiNavMoves, 'open')), run: () => root.LowiNavMoves.open('fy') },
+        hunt: { has: () => !!(root.LowiGrocery && fn(root.LowiGrocery, 'open')), run: () => root.LowiGrocery.open() },
         gift: { has: () => !!$('.hs-gift'), run: clickSel('.hs-gift') },
         weather: { has: () => !!(root.LowiTopBar && fn(root.LowiTopBar, 'openWeather')), run: () => root.LowiTopBar.openWeather() },
         /* Oct 19 2026 (Emmanuel): replay the guided tour (tutorial.js / tutorial-steps.js); Settings closes first, the tour waits for it */
@@ -331,7 +362,7 @@
     }
     function close(refocus) {
         if (!open) return;
-        const was = open; open = null;
+        const was = open; open = null; detached = false;
         H.classList.remove('ss2-open', 'ss2-page-open');
         if (layer) { layer.innerHTML = ''; layer.removeAttribute('data-kind'); }
         if (lastBubble) lastBubble.setAttribute('aria-expanded', 'false');
@@ -343,6 +374,9 @@
         const T = t(), R = ROUTES[id], tog = R && R.toggle, label = T[id] || id, ico = ICON[id] ? svg(id) : '';
         const chev = '<svg class="ss2-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 6l6 6-6 6" ' + P + '/></svg>';
         /* a row that opens another panel (World sound -> Body sound): shows its state, says it opens a dialog, no switch role */
+        if (rowAction(id) === 'lang') { const cur = lang(); return '<div class="ss2-chip ss2-row ss2-langrow" role="group" aria-label="' + label + '">' + ico + '<span class="ss2-lbl">' + label + '</span><span class="ss2-langs">' + ['en', 'de', 'es'].map(l => '<button type="button" data-lang="' + l + '" aria-pressed="' + (l === cur) + '"' + (l === cur ? ' class="on"' : '') + '>' + l.toUpperCase() + '</button>').join('') + '</span></div>'; }
+        if (id === 'theme' && tog) { const dark = !!tog(); return '<button type="button" class="ss2-chip ss2-row" role="switch" data-ss2="theme" aria-checked="' + dark + '" aria-label="' + label + ': ' + (dark ? T.night : T.day) + '">' + ico + '<span class="ss2-lbl">' + label + '</span><small>' + (dark ? T.night : T.day) + '</small></button>'; }
+        if (rowAction(id) === 'confirm') return '<button type="button" class="ss2-chip ss2-row ss2-danger" data-ss2="' + id + '" aria-haspopup="dialog">' + ico + '<span class="ss2-lbl">' + label + '</span>' + chev + '</button>';
         if (rowAction(id) === 'panel') { const on = !!(tog && tog()), st = on ? T.on : T.off; return '<button type="button" class="ss2-chip ss2-row" data-ss2="' + id + '" aria-haspopup="dialog" aria-label="' + label + ': ' + st + '">' + ico + '<span class="ss2-lbl">' + label + '</span><small>' + st + '</small>' + chev + '</button>'; }
         if (tog) { const on = !!tog(); return '<button type="button" class="ss2-chip ss2-row" role="switch" data-ss2="' + id + '" aria-checked="' + on + '" aria-label="' + label + '">' + ico + '<span class="ss2-lbl">' + label + '</span><small>' + (on ? T.on : T.off) + '</small></button>'; }
         return '<button type="button" class="ss2-chip ss2-row" data-ss2="' + id + '">' + ico + '<span class="ss2-lbl">' + label + '</span>' + chev + '</button>';
@@ -356,8 +390,8 @@
         open = 'page'; lastBubble = b;
         H.classList.add('ss2-open', 'ss2-page-open'); L.setAttribute('data-kind', 'page');
         b.setAttribute('aria-expanded', 'true');
-        const sec = g => g.key === 'more'
-            ? '<section class="ss2-group" aria-labelledby="ss2PageMore"><h3 class="ss2-gl" id="ss2PageMore">' + T.more + '</h3><div class="ss2-list">' + g.ids.map(pageRow).join('') + '</div></section>'
+        const sec = g => g.key === 'more' || g.key === 'account'
+            ? '<section class="ss2-group" aria-labelledby="ss2Page' + g.key + '"><h3 class="ss2-gl" id="ss2Page' + g.key + '">' + (g.key === 'account' ? T.account2 : T.more) + '</h3><div class="ss2-list">' + g.ids.map(pageRow).join('') + '</div></section>'
             : '<section class="ss2-group" aria-label="' + T.settings + '"><div class="ss2-list">' + g.ids.map(pageRow).join('') + '</div></section>';
         /* Oct 19 2026 (Emmanuel): not a whole page but a glass side panel in the Body sound panel's look, beside / under Misty so she and
            Home stay in view; it grows out of the Settings bubble; the x sits at its bottom right */
@@ -375,6 +409,15 @@
     function placePage(pn, b, still) {
         if (!pn) return;
         const q = b.getBoundingClientRect(), M = misty(), vw = H.clientWidth || root.innerWidth, vh = root.innerHeight, safe = safeArea();
+        /* opened away from Home (the gear in Community): no bubble to grow from, so a centred sheet */
+        if (q.width < 2 || !H.classList.contains('wh-home') || H.classList.contains('wh-away')) {
+            const w = Math.min(380, vw - 24), mh = vh - safe.t - safe.b - 40;
+            pn.style.cssText = 'top:0;left:0;width:' + w + 'px;max-height:none;visibility:hidden;animation:none;--ss2-cols:1';
+            const h = Math.min(Math.ceil(pn.getBoundingClientRect().height), mh), fit = pn.getBoundingClientRect().height <= mh;
+            pn.style.cssText = 'left:' + Math.round((vw - w) / 2) + 'px;top:' + Math.round(Math.max(safe.t + 20, (vh - h) / 2)) + 'px;width:' + w + 'px;' + (fit ? '' : 'height:' + h + 'px;') + '--ss2-cols:1' + (still ? ';animation:none' : '');
+            pn.setAttribute('data-side', 'center'); pn.setAttribute('data-fit', String(fit)); pn.setAttribute('data-cols', '1');
+            return;
+        }
         const rects = [...D.querySelectorAll('[data-orbit]')].map(e => e.getBoundingClientRect()).filter(r => r.width > 2).map(r => ({ l: r.left, t: r.top, r: r.right, b: r.bottom }));
         const measure = (w, cols) => { pn.style.cssText = 'top:0;left:0;width:' + w + 'px;max-height:none;visibility:hidden;animation:none;--ss2-cols:' + cols; return Math.ceil(pn.getBoundingClientRect().height); };
         /* at most two columns of readable rows (each at least 150 px wide); when even that does not fit, the list scrolls inside the panel */
@@ -392,7 +435,7 @@
     }
     function show(kind) {
         const bubbleKey = kind === 'more' || kind === 'page' ? 'settings' : kind;
-        const b = findBubble(bubbleKey); if (!b) return false;
+        const b = findBubble(bubbleKey) || (kind === 'page' ? D.body : null); if (!b) return false;
         if (kind === 'page') return showPage(b);
         const ids = entries(kind, { has: env.has, logged: kind === 'sleep' && !!sleepToday() });
         if (!ids.length) return false;
@@ -455,6 +498,9 @@
             return;
         }
         if (id === 'more') { show('more'); return; }
+        if (id === 'deleteAccount') { askDelete(); return; }
+        if (id === 'delCancel') { showPage(lastBubble || D.body); return; }
+        if (id === 'delGo') { doDelete(b); return; }
         const R = ROUTES[id]; if (!R) return;
         /* a row that opens another panel: Settings steps aside first, so that panel is in front and usable (never behind Settings) */
         if (rowAction(id) === 'panel') { close(false); try { R.run(); } catch (err) { console.warn('[settings-sleep]', id, err); } return; }
@@ -464,12 +510,52 @@
             setTimeout(() => {
                 if (open !== kind) return;
                 const on = !!R.toggle(), T = t(); b.setAttribute('aria-checked', String(on));
-                const sm = b.querySelector('small'); if (sm) sm.textContent = on ? T.on : T.off;
+                const sm = b.querySelector('small'); if (sm) sm.textContent = id === 'theme' ? (on ? T.night : T.day) : on ? T.on : T.off;
+                if (id === 'theme') b.setAttribute('aria-label', (T.theme || id) + ': ' + (on ? T.night : T.day));
             }, 60);
             return;
         }
         close(false);
         try { R.run(); } catch (err) { console.warn('[settings-sleep]', id, err); }
+    }
+    /* ---- Delete account (Oct 21 2026, App Store 5.1.1(v)): asks inside the panel, then the server deletes the signed-in account
+       (Edge Function delete-my-account: rows, photos, the login itself); only after it says ok is this phone cleared and the app
+       reloaded. A failed call deletes nothing and says so. A guest has no cloud account: it offers to clear this phone only. */
+    function cloud() { const X = root.LOWI_CLOUD_X; try { return X && fn(X, 'state') ? X : null; } catch (e) { return null; } }
+    function signedIn() { const X = cloud(); try { const s = X && X.state(); return !!(s && s.live && s.uid); } catch (e) { return false; } }
+    function askDelete() {
+        const L = layer, pn = L && L.querySelector('.ss2-page'); if (!pn) return;
+        const T = t(), me = signedIn();
+        const body = pn.querySelector('.ss2-page-body'), title = pn.querySelector('.ss2-page-title');
+        title.textContent = T.delTitle;
+        body.innerHTML = '<p class="ss2-del-tx" id="ss2DelTx">' + (me ? T.delBody : T.delGuest) + '</p>' +
+            '<div class="ss2-del-acts"><button type="button" class="ss2-chip ss2-row ss2-del-go" data-ss2="delGo" data-guest="' + !me + '" aria-describedby="ss2DelTx"><span class="ss2-lbl">' + (me ? T.delGo : T.delGuestGo) + '</span></button>' +
+            '<button type="button" class="ss2-chip ss2-row" data-ss2="delCancel"><span class="ss2-lbl">' + T.delCancel + '</span></button></div>';
+        placePage(pn, lastBubble || D.body, true);
+        const c = body.querySelector('[data-ss2="delCancel"]'); if (c) { try { c.focus({ preventScroll: true }); } catch (e) { } }
+    }
+    function wipeDevice() {
+        try { root.localStorage.clear(); } catch (e) { }
+        try { root.sessionStorage.clear(); } catch (e) { }
+        try { if (root.caches && fn(root.caches, 'keys')) root.caches.keys().then(ks => ks.forEach(k => root.caches.delete(k))); } catch (e) { }
+        setTimeout(() => { try { root.location.replace(root.location.pathname); } catch (e) { root.location.reload(); } }, 250);
+    }
+    async function doDelete(btn) {
+        const T = t(), guest = btn.getAttribute('data-guest') === 'true', tx = layer && layer.querySelector('.ss2-del-tx');
+        if (btn.disabled) return;
+        if (guest) { wipeDevice(); return; }
+        btn.disabled = true; const lb = btn.querySelector('.ss2-lbl'); if (lb) lb.textContent = T.delBusy;
+        let ok = false;
+        try {
+            const X = cloud(), c = X && fn(X, 'client') ? X.client() : null;
+            if (c && c.functions && fn(c.functions, 'invoke')) {
+                const r = await c.functions.invoke('delete-my-account', { body: { confirm: 'DELETE' } });
+                ok = !!(r && !r.error && r.data && r.data.ok);
+            }
+        } catch (e) { ok = false; }
+        if (ok) { try { const X = cloud(), c = X.client(); if (c && c.auth) await c.auth.signOut({ scope: 'local' }); } catch (e) { } wipeDevice(); return; }
+        btn.disabled = false; if (lb) lb.textContent = T.delGo;
+        if (tx) { tx.textContent = T.delFail; tx.setAttribute('role', 'alert'); }
     }
     function pulse() { const b = findBubble('sleep'), tx = b && b.querySelector('.wh-cell-tx'); if (!tx) return; tx.classList.remove('ss2-pulse'); void tx.offsetWidth; tx.classList.add('ss2-pulse'); }
 
@@ -494,10 +580,52 @@
         if (!el || el.dataset.o8Adapter !== 'settings-sleep') return;
         const k = el.getAttribute('data-orbit');
         e.preventDefault();
+        /* the click that ends a hold is not a tap (the hold already opened Settings) */
+        if (k === 'settings' && Date.now() < swallowUntil) { e.stopPropagation(); return; }
         const i = tapIntent(k, open);
-        if (i === 'close') close(true); else show(i);
+        if (i === 'close') close(true);
+        else if (i === 'community') { close(false); try { ROUTES.community.run(); } catch (err) { console.warn('[settings-sleep] community', err); } }
+        else show(i);
+    }
+    /* ---- hold the Community bubble for Settings (Oct 21 2026): HOLD_MS still, under 12 px of drift; touch, pen and mouse ---- */
+    let holdT = 0, holdAt = null, swallowUntil = 0, detached = false;
+    function holdCancel() { if (holdT) { clearTimeout(holdT); holdT = 0; } holdAt = null; }
+    function onHoldDown(e) {
+        const el = e.target && e.target.closest && e.target.closest('[data-orbit="settings"]');
+        if (!el || el.dataset.o8Adapter !== 'settings-sleep' || (e.button && e.button !== 0) || e.isPrimary === false) return;
+        holdCancel(); holdAt = { x: e.clientX, y: e.clientY };
+        holdT = setTimeout(() => {
+            holdT = 0; holdAt = null; swallowUntil = Date.now() + 1200;
+            try { if (root.navigator && fn(root.navigator, 'vibrate')) root.navigator.vibrate(12); } catch (err) { }
+            hintDone(); hideHint(); detached = false;
+            show('page');
+        }, HOLD_MS);
+    }
+    function onHoldMove(e) { if (holdAt && Math.hypot(e.clientX - holdAt.x, e.clientY - holdAt.y) > 12) holdCancel(); }
+    /* ---- the one-time hint: "Hold Community for settings", once, the first time Home shows the bubble after this update ---- */
+    let hintEl = null, hintSince = 0;
+    function hintDone() { ls.set(HINT_KEY, String(Date.now())); }
+    function hideHint() { if (hintEl) { const h = hintEl; hintEl = null; h.classList.add('out'); setTimeout(() => h.remove(), 300); } }
+    function maybeHint() {
+        if (hintEl || ls.get(HINT_KEY) || open || D.hidden) return;
+        if (!hintSince) { hintSince = Date.now(); return; }
+        if (Date.now() - hintSince < 3000) return;
+        if (!H.classList.contains('wh-home') || H.classList.contains('wh-away')) return;
+        const T2 = root.LowiTutorial; try { if (T2 && fn(T2, 'isOpen') && T2.isOpen()) return; } catch (e) { }
+        if ([...D.querySelectorAll('[aria-modal="true"]')].some(m => m.getBoundingClientRect().width > 2 && !(layer && layer.contains(m)))) return;
+        const b = findBubble('settings'); if (!b) return; const q = b.getBoundingClientRect(); if (q.width < 2) return;
+        hintDone();
+        const el = D.createElement('div'); el.className = 'ss2-hint'; el.setAttribute('role', 'status'); el.textContent = t().hint;
+        D.body.appendChild(el);
+        const w = el.offsetWidth, h = el.offsetHeight, vw = H.clientWidth || root.innerWidth, below = q.top < h + 70;
+        el.style.left = Math.round(Math.max(10, Math.min(vw - w - 10, q.left + q.width / 2 - w / 2))) + 'px';
+        el.style.top = Math.round(below ? q.bottom + 10 : q.top - h - 10) + 'px';
+        el.style.setProperty('--ss2-hx', Math.round(q.left + q.width / 2 - parseFloat(el.style.left)) + 'px');
+        el.setAttribute('data-side', below ? 'below' : 'above');
+        hintEl = el; setTimeout(hideHint, 6500);
     }
     function onDown(e) {
+        if (hintEl) hideHint();
         if (!open) return;
         const tg = e.target;
         if (layer && layer.contains(tg)) return;
@@ -511,18 +639,25 @@
         mounted = true;
         D.addEventListener('click', onTap, true);
         D.addEventListener('pointerdown', onDown, true);
+        D.addEventListener('pointerdown', onHoldDown, true);
+        D.addEventListener('pointermove', onHoldMove, true);
+        ['pointerup', 'pointercancel', 'scroll'].forEach(n => D.addEventListener(n, holdCancel, true));
+        /* no iOS callout, text selection or desktop menu on a hold */
+        D.addEventListener('contextmenu', e => { if (e.target && e.target.closest && e.target.closest('[data-orbit="settings"][data-o8-adapter="settings-sleep"]')) e.preventDefault(); }, true);
+        /* the language buttons switch the page language: an open Settings redraws in it */
+        try { new MutationObserver(() => { if (open === 'page' && layer && !layer.querySelector('.ss2-del-tx')) showPage(lastBubble || D.body); }).observe(H, { attributes: true, attributeFilter: ['lang'] }); } catch (e) { }
         D.addEventListener('keydown', e => { if (e.key === 'Escape' && open) close(true); else trapTab(e); });
         D.addEventListener('lowi:bloom-v2', e => { const d = e && e.detail; if (d && d.open && d.owner !== 'settings-sleep') close(false); });
         ['lowi:home-orbit', 'lowi:home-bubble-added'].forEach(n => { D.addEventListener(n, claim); root.addEventListener(n, claim); });
         /* the ring moved (menu bar switched, rotation): an open bloom follows its bubble */
         D.addEventListener('lowi:home-orbit', () => { if (!open || open === 'page') return; /* the Settings panel stays where it is: it never jumps under a finger */ const k = open, a = D.activeElement, id = a && layer && layer.contains(a) ? a.getAttribute('data-ss2') : null; show(k); const f = id && layer.querySelector('[data-ss2="' + id + '"]'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } } });
-        D.addEventListener('lowi:tab', () => { close(false); setTimeout(claim, 400); });
+        D.addEventListener('lowi:tab', () => { if (!detached) close(false); setTimeout(claim, 400); });
         root.addEventListener('lowi:state', paintSleep);
         /* a bloom is placed round its bubble, so it closes when the window changes; the full page lays itself out and stays */
         root.addEventListener('resize', () => { if (open && open !== 'page') close(false); else if (open === 'page' && layer && lastBubble) placePage(layer.querySelector('.ss2-page'), lastBubble, true); }, { passive: true });
         D.addEventListener('visibilitychange', () => { if (!D.hidden) claim(); });
         /* Home leaves (another tab, Misty flies off): the bloom goes with it; a new day empties the Sleep bubble */
-        setInterval(() => { if (D.hidden) return; claim(); if (open && (!H.classList.contains('wh-home') || H.classList.contains('wh-away'))) close(false); }, 1500);
+        setInterval(() => { if (D.hidden) return; claim(); maybeHint(); if (open && !detached && (!H.classList.contains('wh-home') || H.classList.contains('wh-away'))) close(false); }, 1500);
         return api;
     }
     function unmount() {
@@ -530,7 +665,12 @@
         ['sleep', 'settings'].forEach(k => { const b = findBubble(k); if (b && b.dataset.o8Adapter === 'settings-sleep') delete b.dataset.o8Adapter; });
     }
     const api = Object.assign({}, core, {
-        mount, unmount, close: () => close(false), isOpen: () => open, open: k => show(k),
+        mount, unmount, close: () => close(false), isOpen: () => open, open: k => { detached = false; return show(k); },
+        /* Oct 21 2026: Settings from anywhere (the gear in Community): a centred sheet that stays open off Home */
+        openSettings: () => { detached = !H.classList.contains('wh-home') || H.classList.contains('wh-away'); return show('page'); },
+        /* Community's profile panel (community-me.js) runs the places through the same routes */
+        has: id => env.has(id), run: id => { const R = ROUTES[id]; if (!R) return false; try { R.run(); return true; } catch (e) { console.warn('[settings-sleep]', id, e); return false; } },
+        label: id => t()[id] || id, icon: id => (ICON[id] ? svg(id) : ''), hint: { shown: () => !!ls.get(HINT_KEY), show: () => { ls.set(HINT_KEY, ''); try { root.localStorage.removeItem(HINT_KEY); } catch (e) { } hintSince = 1; maybeHint(); } },
         sleep: { today: () => { const band = sleepToday(); return Object.assign({ day: dayKey() }, sleepView(band, lang())); }, set: band => setSleep(band), clear: () => setSleep(null) },
         menuBar, setMenuBar, available: () => ({ settings: entries('settings', env), more: entries('more', env) })
     });

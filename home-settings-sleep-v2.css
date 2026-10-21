@@ -89,3 +89,26 @@ html.ss2-open #whHud [data-orbit][aria-expanded="true"] { box-shadow: 0 0 0 2px 
 
 @media (prefers-reduced-motion: reduce) { .ss2-face, .ss2-ask, .ss2-panel, .wh-cell-tx.ss2-pulse { animation: none !important; } }
 @media (prefers-reduced-motion: reduce) { .ss2-page { animation: ss2-fade .2s ease both !important; } }
+
+/* Oct 21 2026: slim Settings (hold the Community bubble): the Day / night switch, the language row, Delete account and the one-time hint */
+.ss2-page .ss2-chip.ss2-row[data-ss2="theme"][aria-checked] { background: var(--mb-pill, rgba(255,255,255,.08)); border-color: var(--mb-pill-rim, rgba(143,231,255,.42)); }
+.ss2-page .ss2-langrow { cursor: default; }
+.ss2-page .ss2-langrow:active { transform: none; }
+.ss2-langs { display: flex; gap: 4px; flex: none; }
+.ss2-langs button { min-width: 40px; min-height: 32px; padding: 0 8px; border-radius: 16px; border: 1px solid var(--mb-pill-rim, rgba(143,231,255,.42)); background: transparent; color: inherit; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.ss2-langs button.on { background: rgba(143,231,255,.28); border-color: rgba(143,231,255,.95); box-shadow: 0 0 10px rgba(143,231,255,.45); }
+.ss2-langs button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.ss2-page .ss2-chip.ss2-row.ss2-danger, .ss2-page .ss2-chip.ss2-row.ss2-del-go { color: #ffb3b8; border-color: rgba(255,140,150,.55); }
+.ss2-page .ss2-chip.ss2-row.ss2-del-go { justify-content: center; background: rgba(200,40,60,.32); color: #fff; }
+.ss2-page .ss2-chip.ss2-row.ss2-del-go[disabled] { opacity: .7; }
+.ss2-del-tx { margin: 0 8px 12px; font-size: 14px; line-height: 1.45; font-weight: 500; }
+.ss2-del-acts { display: grid; gap: 8px; }
+.ss2-del-acts .ss2-chip.ss2-row { justify-content: center; }
+html.o8 #whHud [data-orbit="settings"][data-o8-adapter="settings-sleep"] { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+.ss2-hint { position: fixed; z-index: 8995; max-width: min(280px, calc(100vw - 20px)); padding: 9px 14px; border-radius: 18px; pointer-events: none; color: #fff; font-size: 14px; line-height: 18px; font-weight: 600; text-align: center;
+    background: rgba(10,22,58,.82); border: 1px solid rgba(143,231,255,.75); box-shadow: 0 0 16px rgba(143,231,255,.4), 0 8px 24px rgba(0,10,40,.45);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); animation: ss2-fade .3s ease both; transition: opacity .3s ease; }
+.ss2-hint::after { content: ""; position: absolute; left: calc(var(--ss2-hx, 50%) - 6px); width: 12px; height: 12px; background: inherit; border: inherit; border-width: 0 1px 1px 0; transform: rotate(45deg); }
+.ss2-hint[data-side="above"]::after { bottom: -7px; }
+.ss2-hint[data-side="below"]::after { top: -7px; transform: rotate(225deg); }
+.ss2-hint.out { opacity: 0; }

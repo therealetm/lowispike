@@ -75,7 +75,9 @@
     const ICON = {
         scan: 'M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M16 4h2.5A1.5 1.5 0 0 1 20 5.5V8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M8 20H5.5A1.5 1.5 0 0 1 4 18.5V16M8 9v6M11 9v6M14 9v6M17 9v6',
         sleep: 'M19.5 14.6A7.8 7.8 0 1 1 9.4 4.5a6.2 6.2 0 0 0 10.1 10.1z',
-        settings: 'M4 7h9M17 7h3M4 17h3M11 17h9M15 5v4M9 15v4'
+        /* Oct 21 2026 (Emmanuel): the top bubble is Community (tap); a hold opens Settings. The slot keeps its key 'settings' so every
+           module that finds the bubble by [data-orbit="settings"] still does. Two speech bubbles. */
+        settings: 'M4 6.5A2.5 2.5 0 0 1 6.5 4h7A2.5 2.5 0 0 1 16 6.5v4a2.5 2.5 0 0 1-2.5 2.5H9l-3 2.5V13h0.5A2.5 2.5 0 0 1 4 10.5zM18.5 9.5A1.5 1.5 0 0 1 20 11v4a2 2 0 0 1-2 2h-.5v2.5l-3-2.5H12a2 2 0 0 1-1.6-.8'
     };
     const svg = k => '<svg class="o8-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + ICON[k] + '"/></svg>';
     /* existing nodes the ring reuses */
@@ -120,7 +122,7 @@
     const WORDS = {
         scan: [['Scan a product', 'Scan'], ['Produkt scannen', 'Scannen'], ['Escanear un producto', 'Escanear']],
         sleep: [['Sleep', 'Sleep'], ['Schlaf', 'Schlaf'], ['Sueño', 'Sueño']],
-        settings: [['Settings', 'Settings'], ['Einstellungen', 'Optionen'], ['Ajustes', 'Ajustes']]
+        settings: [['Community. Hold for settings', 'Community'], ['Community. Halten f\u00fcr Einstellungen', 'Community'], ['Comunidad. Mant\u00e9n para los ajustes', 'Comunidad']]
     };
     const LI = { en: 0, de: 1, es: 2 };
     const words = k => WORDS[k][LI[lang()]];

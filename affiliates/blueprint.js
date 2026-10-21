@@ -69,8 +69,7 @@
   function renderStart() {
     const box = $('seriesCards'); box.textContent = '';
     const g = seg('pick-'); while (g.firstChild) box.appendChild(g.firstChild);
-    const s = B.SERIES[pick];
-    $('startLead').textContent = s.blurb + ' Du nimmst es auf, verkaufst „' + s.product + '“ und verdienst an jedem Verkauf.';
+    $('startLead').textContent = 'Skript holen, aufnehmen, an jedem Verkauf verdienen.';
     const L = $('startList'); L.textContent = '';
     L.appendChild(row('script', 'Dein Skript', 'Fertiger Text für jede Szene, mit einem Tipp kopiert.', () => go('script')));
     L.appendChild(row('camera', 'Aufnahme & Caption', 'Shotliste, Text auf dem Bildschirm und Caption.', () => go('shots')));

@@ -138,6 +138,6 @@ test('the stylesheet: X row at the right, Deep analyze takes the rest, title sta
     assert.ok(/\.b3-cam\.ss-open \.b3-cbot/.test(read('shop-scan.css')), 'while a shopping result card is open the panel (and the X) step aside for the card, whose own X shows');
     /* the scanner markup this relies on is still what index.html builds */
     assert.ok(html.includes('<button class="b3-cx" data-b3="camclose"'));
-    assert.ok(html.includes('<div class="b3-cbot">') && html.includes('class="b3-deep" id="b3Deep"'));
+    assert.ok(html.includes('<div class="b3-cbot">') && html.includes('deepLink("b3-deep", \'id="b3Deep"\'') && html.includes('\'<a class="\' + cls + \'" \' + attrs'));
     assert.ok(html.includes('case "camclose": closeScanner(); break;'));
 });

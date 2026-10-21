@@ -53,9 +53,10 @@ test('Sleep: the question tries both sides of the chips and never lands on a bub
     assert.ok(/hitsBubble/.test(s) && /hitsChip/.test(s), 'checks bubbles and chips');
 });
 
-test('Scan: the Deep analyze subtitle names the benefit, not the mechanism', () => {
+test('Scan: the Deep analyze subtitle says where the tap goes (the custom GPT, Oct 21 evening)', () => {
     const s = R('index.html');
-    assert.ok(s.includes('deepS: ["Snap the pack: will it spike you?", "Packung knipsen: macht sie dir einen Spike?", "Foto del envase: ¿te dispara el azúcar?"]'));
+    assert.ok(s.includes('deepS: ["Opens the LOWiSPIKE GPT in ChatGPT", "Öffnet den LOWiSPIKE GPT in ChatGPT", "Abre el GPT de LOWiSPIKE en ChatGPT"]'));
+    assert.ok(!s.includes('Snap the pack: will it spike you?'), 'no photo promise: Deep analyze no longer takes a photo');
     assert.ok(!s.includes('Photo of the pack, the AI reads it here'));
 });
 

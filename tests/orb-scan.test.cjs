@@ -27,7 +27,7 @@ test('no white Back bar: Deep analyze follows the actions (Barcode), closing is 
   assert.ok(!camBarSrc.includes('act("meal"'), 'Scan / Fuel / Gap (Oct 21): Scan identifies, meals are logged in Fuel');
   assert.ok(!camBarSrc.includes('act("photo"'), 'one meal path (Oct 21): Snap food lives inside Log meal, not beside it');
   assert.ok(!camBarSrc.includes('act("water"'), 'water does not belong in the scanner');
-  assert.ok(/<button type="button" class="b3-deep" id="b3Deep" data-b3="camact" data-act="deep">/.test(camBarSrc), 'Deep analyze is a real button (in-app AI)');
+  assert.ok(/deepLink\("b3-deep", 'id="b3Deep"', t\("deep"\), t\("deepS"\)\)/.test(camBarSrc), 'Deep analyze is the one-tap GPT link (Oct 21 evening)');
 });
 
 test('Deep analyze opens the custom GPT already in the codebase, not an invented link', () => {

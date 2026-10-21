@@ -13531,10 +13531,11 @@ html.b3-camon,html.b3-camon body{overflow:hidden}
 .b3-deep span{flex:1;display:flex;flex-direction:column;line-height:1.2;min-width:0;text-align:left}
 .b3-deep b{font-size:15px;font-weight:750}
 .b3-deep small{font-size:12px;opacity:.78;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-/* Oct 21 Scan / Fuel / Gap: Log meal left the bar, Barcode is the one mode button (a row, full width); Deep analyze is a button now (in-app AI) */
+/* Oct 21 Scan / Fuel / Gap: Log meal left the bar, Barcode is the one mode button (a row, full width). Oct 21 evening: Deep analyze is a plain link to the custom GPT again */
 .b3-cacts.b3-one{grid-template-columns:minmax(0,1fr)}
 .b3-cacts.b3-one .b3-cact{flex-direction:row;gap:10px;min-height:48px;font-size:15px}
-button.b3-deep{font:inherit;width:100%;cursor:pointer}
+.b3-deep{font:inherit;width:100%;box-sizing:border-box;cursor:pointer}
+a.b3-deep,a.b3-nfdeep{text-decoration:none;box-sizing:border-box}
 .b3-nfdeep{width:100%;min-height:56px;margin:12px 0 2px;border-radius:16px;border:1px solid rgba(143,216,255,.6);background:rgba(143,216,255,.12);color:#fff;font:inherit;display:flex;align-items:center;gap:10px;padding:8px 12px 8px 14px;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .b3-nfdeep>svg{width:22px;height:22px;color:#8fd8ff;flex:none}
 .b3-nfdeep>svg:last-child{width:16px;height:16px;opacity:.7}
@@ -13892,10 +13893,11 @@ Object.assign(B3_TX, {
   /* Oct 15: scanner bottom bar = all capture actions + Back + Deep analyze (the Home orb is only the herb game now) */
   deep: ["Deep analyze", "Deep analyze", "Deep analyze"],
   /* Oct 21 grandma test: say what you get, not how it works */
-  deepS: ["Snap the pack: will it spike you?", "Packung knipsen: macht sie dir einen Spike?", "Foto del envase: ¿te dispara el azúcar?"],
-  /* Oct 21 Scan / Fuel / Gap: Deep analyze runs in the app (deep-analyze.js); the not-found card leads with it */
-  deepNf: ["Deep analyze with a photo", "Deep analyze mit einem Foto", "Deep analyze con una foto"],
-  deepNfS: ["The AI reads the pack and tells you if it will likely spike", "Die KI liest die Packung und sagt dir, ob sie wahrscheinlich einen Spike macht", "La IA lee el envase y te dice si es probable que dispare tu azúcar"],
+  /* Oct 21 evening (E-man: "That deep analyze button is simply a shortcut to my custom GPT. It should be very quick"): say where the tap goes */
+  deepS: ["Opens the LOWiSPIKE GPT in ChatGPT", "Öffnet den LOWiSPIKE GPT in ChatGPT", "Abre el GPT de LOWiSPIKE en ChatGPT"],
+  /* Oct 21 Scan / Fuel / Gap: the not-found card leads with Deep analyze. Oct 21 evening: it is the same one-tap GPT link as the scanner bar */
+  deepNf: ["Deep analyze", "Deep analyze", "Deep analyze"],
+  deepNfS: ["Ask the LOWiSPIKE GPT in ChatGPT about it", "Frag den LOWiSPIKE GPT in ChatGPT danach", "Pregunta al GPT de LOWiSPIKE en ChatGPT"],
   orAdd: ["Or add it yourself", "Oder trag es selbst ein", "O añádelo tú"],
   actsL: ["What do you want to do?", "Was möchtest du machen?", "¿Qué quieres hacer?"],
   actScan: ["Barcode", "Barcode", "Código"],
@@ -14255,22 +14257,20 @@ const DEEP_GPT = "https://chatgpt.com/g/g-69481a874bf08191b8118f8d88c9c90e-lowis
 const deepURL = () => { try { const g = window.LowiVitalsBridge && LowiVitalsBridge.gpt; if (g && /^https:\/\/chatgpt\.com\/g\//.test(g)) return g; } catch(e){} return DEEP_GPT; };
 const IC_DROP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5c3.2 4 5.5 7.1 5.5 10a5.5 5.5 0 0 1-11 0c0-2.9 2.3-6 5.5-10z"/></svg>';
 const IC_SPARK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.6L19.5 10.5l-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9z"/><path d="M19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg>';
-/* bottom of the scanner. Oct 21 Scan / Fuel / Gap (E-man: "Scan is simply for scanning a product when you go grocery shopping",
-   "remove the 'log meal' option so it's purely for identification", "keep 'deep analyze'... integrate ChatGPT directly into that button"):
-   Barcode (check a product) and Deep analyze (a photo of the pack, read by the in-app AI, deep-analyze.js; the GPT is one tap further
-   with the question written). Log meal left the scanner: meals are logged in Fuel. Earlier: Barcode + Log meal + a Deep analyze link. Oct 21 one meal path (E-man: "We have scanner and snap photo. We also have log meal... confusing"): Snap food left the
-   bar, it is the Snap button inside Log meal (the same camera, the same log). Close = the round X top left, like every other screen */
+/* bottom of the scanner. Oct 21 Scan / Fuel / Gap (E-man: "Scan is simply for scanning a product when you go grocery shopping"):
+   Barcode (check a product) and Deep analyze. Log meal left the scanner: meals are logged in Fuel; Snap food is the Snap button inside Log meal.
+   Oct 21 evening (E-man: "That deep analyze button is simply a shortcut to my custom GPT. It should be very quick. I open the app, I click on
+   Scan, I click on Deep analyze, and I get to the custom GPT really fast."): Deep analyze is a real link again (as on Oct 15), one tap straight to
+   the GPT. No in-app sheet, no photo step, no camera prompt. A plain <a target="_blank"> with no data-b3, so the scanner's click handler never
+   swallows it; in the iPhone home-screen app iOS opens it outside the app (Safari / ChatGPT) and the app stays where it was. Close = the round X */
 function camBar(){
   const act = (k, ic, on) => '<button type="button" class="b3-cact" data-b3="camact" data-act="' + k + '" aria-pressed="' + (on ? "true" : "false") + '" aria-label="' + esc(t("act" + k[0].toUpperCase() + k.slice(1) + "L")) + '">' + ic + '<span>' + esc(t("act" + k[0].toUpperCase() + k.slice(1))) + '</span></button>';
   return '<div class="b3-cacts b3-one" role="group" aria-label="' + esc(t("actsL")) + '">' + act("scan", IC.bc, true) + '</div>' +
-    '<button type="button" class="b3-deep" id="b3Deep" data-b3="camact" data-act="deep">' + IC_SPARK + '<span><b>' + esc(t("deep")) + '</b><small>' + esc(t("deepS")) + '</small></span>' + IC.chev + '</button>'; }
-/* Deep analyze: in the app when deep-analyze.js is there, the GPT link otherwise (never a dead button) */
-function deepOpen(code){
-  sfx("tap");
-  if (window.LowiDeep && LowiDeep.open) { LowiDeep.open({ code: code || "" }); return; }
-  try { window.open(deepURL(), "_blank", "noopener"); } catch(e){} }
+    deepLink("b3-deep", 'id="b3Deep"', t("deep"), t("deepS")); }
+/* Deep analyze = one link to the custom GPT, used by the scanner bar and the not-found card */
+function deepLink(cls, attrs, title, sub){
+  return '<a class="' + cls + '" ' + attrs + ' href="' + esc(deepURL()) + '" target="_blank" rel="noopener">' + IC_SPARK + '<span><b>' + esc(title) + '</b><small>' + esc(sub) + '</small></span>' + IC.chev + '</a>'; }
 function camAct(act){
-  if (act === "deep") { const i = CAM && CAM.el && CAM.el.querySelector("#b3Bc"); deepOpen(i ? String(i.value || "").replace(/\D/g, "") : ""); return; }
   if (!CAM) return;
   if (act === "scan") { sfx("tap"); const el = CAM.el; if (!el.classList.contains("typing") && CAM.stream) { playVid($("#b3Vid", el)); return; }
     el.classList.remove("typing"); if (CAM.stream) return; if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { msgState("nocam"); return; }
@@ -14526,7 +14526,7 @@ function actsHTML(p){ const mine = isMine(p);
 function manualHTML(p){
   return '<div class="b3-man"><div class="b3-name">' + esc(t(p.offline ? "noReach" : "notFound")) + '</div><div class="small muted">' + esc(p.offline ? t("noReachS") : t("notFoundS")) + '</div>' +
     (p.barcode ? '<div class="tiny dim" style="margin-top:6px">' + esc(t("bcFound", p.barcode)) + '</div>' : "") +
-    (p.offline ? "" : '<button type="button" class="b3-nfdeep" data-b3="deepnf" data-code="' + esc(String(p.barcode || "").replace(/\D/g, "")) + '">' + IC_SPARK + '<span><b>' + esc(t("deepNf")) + '</b><small>' + esc(t("deepNfS")) + '</small></span>' + IC.chev + '</button>' +
+    (p.offline ? "" : deepLink("b3-nfdeep", 'id="b3NfDeep"', t("deepNf"), t("deepNfS")) +
       '<div class="tiny dim b3-fl b3-or">' + esc(t("orAdd")) + '</div>') +
     '<label class="tiny dim b3-fl">' + esc(t("nameQ")) + '</label><input class="input" id="b3MName" maxlength="80" placeholder="' + esc(t("namePh")) + '" value="' + esc(p.name || "") + '">' +
     '<input class="input" id="b3MBrand" maxlength="60" style="margin-top:8px" placeholder="' + esc(t("brandPh")) + '" value="' + esc(p.brand || "") + '">' +
@@ -14676,7 +14676,6 @@ document.addEventListener("click", e => {
     case "mode": captureMode = b.dataset.mode === "meal" ? "meal" : "barcode"; renderTab(); break;
     case "camclose": closeScanner(); break;
     case "camact": camAct(b.dataset.act); break;
-    case "deepnf": deepOpen(b.dataset.code); break;
     case "torch": torch(); break;
     case "dex": sfx("open"); openDex(); break;
     case "filt": DEXF.f = b.dataset.f; if (DEXOV) { $$(".b3-filt .chip", DEXOV).forEach(c => c.classList.toggle("on", c === b)); $("#b3DexG", DEXOV).innerHTML = dexGrid(); } break;
@@ -20368,8 +20367,6 @@ window.LowiCommunityHost = {
 <!-- Oct 21 Scan / Fuel / Gap: tapping Gap opens this passive view (time since the last meal, six markers on the hexagon); Deep analyze = in-app AI for a product the barcode did not find -->
 <link rel="stylesheet" id="gvCss" href="gap-view.css?v=20261021-202220">
 <script src="gap-view.js?v=20261021-202220"></script>
-<link rel="stylesheet" id="daCss" href="deep-analyze.css?v=20261021-202220">
-<script src="deep-analyze.js?v=20261021-202220"></script>
 <!-- Oct 19: replayable tutorial from Settings > Tutorial; steps live ONLY in tutorial-steps.js (TUTORIAL.md, COORD-tutorial.md) -->
 <link rel="stylesheet" id="ltCss" href="tutorial.css?v=20261021-202220">
 <!-- Oct 19: Settings > Weight & BMI: weigh-in, BMI, body-fat estimate, Then/Now level-up track (body-stats*.js, COORD-stats.md) -->

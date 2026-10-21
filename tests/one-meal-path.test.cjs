@@ -151,6 +151,6 @@ test('wiring: every meal log carries its time, one listener applies the rule, th
     assert.match(html, /\(bx \? '<br>' \+ esc\(w\("brk"\)\)/, 'the reward shows the break-fast bonus when a meal ended the fast');
     for (const k of ['byMeal:"Your meal ended the fast"', 'byMeal:"Deine Mahlzeit hat das Fasten beendet"', 'byMeal:"Tu comida terminó el ayuno"']) assert.ok(html.includes(k), k);
     assert.match(spirit, /\(gc \? '' : fastNote\(\)\)/, 'slot picker shows the fast line (not in the Gap chain, the fast already ended there)');
-    assert.match(spirit, /tr\('slotSnap'\)\) \+ '<\/span><\/button><\/div>' \+ fastNote\(\)/, 'the Write / Scan / Snap sheet too');
+    assert.match(spirit, /tr\('slotSnap'\)\) \+ '<\/span><\/button><\/div>' \+ whenRow\(\) \+ fastNote\(whenAt\(\)\)/, 'the Write / Scan / Snap sheet too, after "When did you eat?" (Oct 21)');
     assert.match(css, /\.sp-fast-note \{[^}]*border: 1px solid var\(--ms-line-soft/, 'brand-line border, not white');
 });

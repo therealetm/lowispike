@@ -102,14 +102,14 @@ test('iPad ring: every bubble around Misty gets a clean outward fan', () => {
 test('labels are the plain words E-man asked for, no Again / Photo, no emoji anywhere', () => {
   /* Fuel words changed Oct 18 evening (E-man: "only Shop and Cook, plus a meal log button you can actually see", Swap removed
      for good): Today's step / Snack / Swap became Shop / Log meal. Behaviour is checked in tests/ui-fuel-navigation.test.cjs. */
-  for (const w of ["'Shop'", "'Log meal'", "'Cook'", "'+1 cup'", "'Undo'", "'I just ate'", "'Ate earlier'", "'Quick'", "'Medium'", "'Long'", "'Epic'"]) assert.ok(src.includes(w), w);
+  for (const w of ["'Shop'", "'Log meal'", "'Cook'", "'+1 cup'", "'Undo'", "'Quick'", "'Medium'", "'Long'", "'Epic'"]) assert.ok(src.includes(w), w);
   assert.doesNotMatch(src, /T\('Again'|T\('Photo'|label: *'Again'|label: *'Photo'/);
   assert.doesNotMatch(src, /T\('Swap'|T\("Today's step"|T\('Snack'/, 'Swap, Today\'s step and Snack are gone from Fuel');
   assert.doesNotMatch(src + css, /\p{Extended_Pictographic}/u, 'no emoji: icons are drawn SVG');
 });
 
 test('every action calls an existing app API (no invented routes, no placeholder buttons)', () => {
-  for (const call of ['LowiSpirit.meal()', 'LowiStorePicks.open(', "LowiHost.go('shelf')", 'LowiSpirit.water()', 'LowiVitalsBridge.unaward(', 'LowiMoveBubble.pick(', 'LowiMoveBubble.edit()', 'F.end(Date.now(), { chain: true })', 'F.open()'])
+  for (const call of ['LowiSpirit.meal()', 'LowiStorePicks.open(', "LowiHost.go('shelf')", 'LowiSpirit.water()', 'LowiVitalsBridge.unaward(', 'LowiMoveBubble.pick(', 'LowiMoveBubble.edit()', 'W.LowiGapView.open()'])
     assert.ok(src.includes(call), call);
   assert.doesNotMatch(src, /fetch\(|XMLHttpRequest|supabase|sendBeacon/i, 'no backend calls from the bloom');
   /* a missing module leaves its orb out rather than showing a dead button */
@@ -118,9 +118,11 @@ test('every action calls an existing app API (no invented routes, no placeholder
   assert.match(src, /if \(fn\(W\.LowiMoveBubble, 'pick'\)/);
 });
 
-test('Gap bloom never adds a fasting goal or changes the fasting rules', () => {
-  const gap = src.slice(src.indexOf("kind === 'gap'"), src.indexOf('return A;', src.indexOf("kind === 'gap'")));
-  assert.doesNotMatch(gap, /goal|target|16 ?h|must|fast(ing)? ?goal/i);
+test('Gap has no bloom: a tap opens the passive Gap view and never starts, ends or writes a fast (Oct 21 Scan / Fuel / Gap)', () => {
+  /* E-man Oct 21: "gap is just like water and move or sleep... let's not have it formatted like a fasting app" */
+  assert.match(src, /if \(kind === 'gap'\) \{ close\(true\); buzz\(8\); if \(fn\(W\.LowiGapView, 'open'\)\) W\.LowiGapView\.open\(\); return; \}/);
+  assert.doesNotMatch(src, /else if \(kind === 'gap'\)/, 'no Gap actions in the bloom any more');
+  assert.doesNotMatch(src, /'I just ate'|'Ate earlier'|F\.end\(|LowiMealCtx/, 'no start / stop fast workflow from Home');
   assert.doesNotMatch(src, /lowi_fast_v1['"]?, *JSON\.stringify\([^)]*last/, 'the bloom never writes the gap start itself');
 });
 

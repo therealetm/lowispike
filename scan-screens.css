@@ -271,6 +271,15 @@ html:root body .r2-ov.ss-sheet .sp-how { display: flex; flex-direction: column; 
 html:root body .r2-ov.ss-sheet .sp-how:active { transform: scale(.94); }
 html:root body .r2-ov.ss-sheet .sp-how svg { width: 26px; height: 26px; color: var(--ms-accent, #8fd8ff); }
 html:root body .r2-ov.ss-sheet .sp-slot-tag { display: inline-block; padding: 2px 10px; border-radius: 999px; background: rgba(143, 216, 255, .16); color: var(--ms-accent, #8fd8ff); font-size: 13px; font-weight: 600; }
+/* Oct 21 Scan / Fuel / Gap: Log meal asks when you ate (Now default). Chips scroll sideways on 320 px, 44 px tall, same cyan rim */
+html:root body .r2-ov.ss-sheet .sp-when { margin: 0 0 12px; }
+html:root body .r2-ov.ss-sheet .sp-when > small { display: block; margin: 0 0 6px; color: rgba(225, 240, 255, .78); font-size: 13px; font-weight: 600; }
+html:root body .r2-ov.ss-sheet .sp-when-row { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+html:root body .r2-ov.ss-sheet .sp-when-row::-webkit-scrollbar { display: none; }
+html:root body .r2-ov.ss-sheet .sp-when-c { flex: 0 0 auto; min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--ms-line-soft, rgba(170, 214, 255, .26)); background: rgba(255, 255, 255, .06); color: #fff; font: inherit; font-size: 14px; font-weight: 600; white-space: nowrap; }
+html:root body .r2-ov.ss-sheet .sp-when-c[aria-pressed="true"] { border-color: var(--ms-accent, #8fd8ff); background: rgba(143, 216, 255, .18); color: var(--ms-accent, #8fd8ff); }
+html:root body .r2-ov.ss-sheet .sp-when-c:focus-visible { outline: 2px solid var(--ms-accent, #8fd8ff); outline-offset: 2px; }
+html:root body .r2-ov.ss-sheet .sp-fast-note[hidden] { display: none; }
 @keyframes spSlotIn { from { opacity: 0; transform: translateY(14px) scale(.86); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { html:root body .r2-ov.ss-sheet :is(.sp-slot, .sp-how) { animation: none; transition: none; } }
 @media (prefers-reduced-transparency: reduce) { html:root body .r2-ov.ss-sheet :is(.sp-slot, .sp-how, .sp-slot-change) { background: #1b2740; } }

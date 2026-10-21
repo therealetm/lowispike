@@ -18,7 +18,8 @@ function card(opts) {
         LI: () => opts.lang || 0, esc: s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]),
         t: k => k, isMine: () => !!opts.mine, D: { mine: {}, pf: opts.pf || {} }, pkey: p => p.barcode, whyText: w => String(w), CAT_E: { other: '?' },
         factsHTML: () => '', fillNoteHTML: () => '', LowiDeals: { cardHTML: () => '' }, LOWI_SHELF: { priceCompareHTML: () => '' },
-        LowiMealSlot: opts.slot ? { slot: 'lunch', at: Date.now() } : null
+        LowiMealSlot: opts.slot ? { slot: 'lunch', at: Date.now() } : null,
+        LowiScanMeal: !!opts.slot /* Oct 21: openScanner sets it only when Log meal's own Scan button opened the camera */
     };
     ctx.window = ctx;
     if (opts.shop) ctx.CAM = { shop: true };
@@ -50,7 +51,8 @@ test('product already in LOWiSPIKE: information only, no Catch; the first finder
     const h = card({ p: { ...OFF, id: 'p1', byName: 'Eman' } }).out;
     assert.ok(!h.includes('data-b3="catch"'), 'no Catch for a known product');
     assert.match(h, /class="sc-known">Already in LOWiSPIKE <span class="sc-pf">Pathfinder: Eman<\/span>/);
-    assert.match(h, /data-b3="eat">I ate this · log it</);
+    assert.ok(!h.includes('data-b3="eat"'), 'Oct 21: a scan from the Scan tab only identifies');
+    assert.match(card({ p: { ...OFF, id: 'p1', byName: 'Eman' }, slot: true }).out, /data-b3="eat">I ate this · log it</);
 });
 
 test('new verified product: "Be the first to add it" with the Pathfinder bonus; the bonus line drops after 3 today', () => {
@@ -70,10 +72,9 @@ test('new but unverifiable product: saved on the phone only, and the card says w
     assert.match(h, /data-b3="catch" id="b3Catch">Save it</);
 });
 
-test('checking vs eating: "I ate this" is the main button after Log meal, a quiet one otherwise, and never in the shopping camera', () => {
+test('checking vs eating: "I ate this" only when Log meal opened the camera, never from Scan or the shopping camera (Oct 21 Scan / Fuel / Gap)', () => {
     let h = card({ p: OFF }).out;
-    assert.ok(h.indexOf('data-b3="catch"') < h.indexOf('data-b3="eat"'), 'checking: Catch first');
-    assert.match(h, /sc-eat ghost" data-b3="eat"/);
+    assert.ok(h.includes('data-b3="catch"') && !h.includes('data-b3="eat"'), 'checking: Scan identifies, no meal log');
     h = card({ p: OFF, slot: true }).out;
     assert.ok(h.indexOf('data-b3="eat"') < h.indexOf('data-b3="catch"'), 'logging: I ate this first');
     assert.match(h, /sc-eat pri" data-b3="eat"/);
@@ -139,7 +140,8 @@ test('Gap "I just ate" / "I ate earlier" open the one shared meal logger, option
     assert.match(sp, /else if \(a === 'gapskip'\) \{ window\.LowiMealCtx = null;/);
     assert.match(sp, /K\.slotFor \? K\.slotFor\(gc \? gc\.ateAt : undefined\)/);
     /* a meal logged right after "I ate earlier" keeps that time, same day only, once */
-    assert.match(html, /if\(at&&at<mts&&mts-at<18\*3600000&&new Date\(at\)\.toDateString\(\)===new Date\(mts\)\.toDateString\(\)\)mts=at;window\.LowiMealCtx=null;/);
+    assert.match(html, /if\(at&&at<mts&&mts-at<18\*3600000&&new Date\(at\)\.toDateString\(\)===new Date\(mts\)\.toDateString\(\)\)\{mts=at;ateSet=1;\}window\.LowiMealCtx=null;/);
+    assert.match(html, /mc\.from==="gap"\|\|mc\.from==="when"/, 'Oct 21: Log meal\'s "When did you eat?" chips backdate the same way');
     assert.match(html, /log=\{id:data\.id,eventId:id,ts:mts,day:today\(\),/);
 });
 

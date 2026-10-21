@@ -13,8 +13,8 @@
                             more than today's cups, takes back the newest one (unaward), so add / undo loops net zero.
    - Move:  Quick / Medium / Long / Epic -> LowiMoveBubble.pick(id) (the existing estimate log with its own XP rules).
             Hold Move    -> LowiMoveBubble.edit() (today's moves, remove one).
-   - Gap:   I just ate   -> LowiFastStop.end(now, {chain:true}) (the existing end-of-gap log, its rules and XP unchanged).
-            Ate earlier  -> LowiFastStop.open() (pick when you last ate; that sheet also links the start-time fix).
+   - Gap:   no bloom since Oct 21 (Scan / Fuel / Gap): a tap opens the passive Gap view (gap-view.js). Meals are logged in Fuel,
+            which restarts the gap; the old "I just ate" / "Ate earlier" pair is gone from Home.
             Shown as time since your last meal. No goal, no "you must fast" text in the bloom.
    An action whose module is missing is left out of the bloom (never a dead button).
    Geometry: the orbs fan out along the line Misty -> bubble. If that side has no room (a bubble at the screen edge) the fan
@@ -178,7 +178,6 @@
     const fastStore = () => { try { return JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}') || {}; } catch (e) { return {}; } };
     const cupsToday = () => Math.max(0, Math.floor(+((fastStore().water || {})[dayKey()]) || 0));
     const appState = () => { try { return W.LowiVitalsBridge && W.LowiVitalsBridge.state ? W.LowiVitalsBridge.state() : null; } catch (e) { return null; } };
-    const gapStart = () => { try { const F = W.LowiFastStop; return F && fn(F, 'startOf') ? +F.startOf(fn(F, '_st') ? F._st() : undefined) || 0 : 0; } catch (e) { return 0; } };
     const moveView = () => { try { const C = W.LowiMoveEstimateCore, s = appState(); return C && fn(C, 'view') && s ? C.view(s.ledger || [], dayKey()) : null; } catch (e) { return null; } };
 
     /* ---------- actions (each one calls an existing module) ---------- */
@@ -218,11 +217,6 @@
                 if (!MOVE_NAMES[L.id]) return;
                 A.push({ id: L.id, label: MOVE_NAMES[L.id](), sub: MOVE_HINTS[L.id](), icon: 'walk', q: L.q / 4, run: () => W.LowiMoveBubble.pick(L.id) });
             });
-        } else if (kind === 'gap') {
-            const F = W.LowiFastStop, since = gapText(gapStart(), Date.now());
-            if (fn(F, 'end')) A.push({ id: 'ate', label: T('I just ate', 'Gerade gegessen', 'Acabo de comer'), sub: since ? T('gap ' + since, 'Pause ' + since, 'pausa ' + since) : T('starts the gap', 'startet die Pause', 'empieza la pausa'), icon: 'ate',
-                run: () => { const r = F.end(Date.now(), { chain: true }); if (r && r.err) toast(T('That time is before your last meal', 'Das ist vor deiner letzten Mahlzeit', 'Es antes de tu última comida')); } });
-            if (fn(F, 'open')) A.push({ id: 'earlier', label: T('Ate earlier', 'Früher gegessen', 'Comí antes'), sub: T('pick the time', 'Zeit wählen', 'elegir hora'), icon: 'clock', run: () => F.open() });
         }
         return A;
     }
@@ -392,6 +386,9 @@
         e.preventDefault(); e.stopImmediatePropagation();
         if (Date.now() < st.swallow) return;
         const kind = el.getAttribute('data-orbit');
+        /* Oct 21 Scan / Fuel / Gap (E-man: "gap is just like water and move or sleep... not formatted like a fasting app"): Gap has no
+           actions any more. A tap opens the passive Gap view (gap-view.js); meals are logged in Fuel, which is what restarts the gap */
+        if (kind === 'gap') { close(true); buzz(8); if (fn(W.LowiGapView, 'open')) W.LowiGapView.open(); return; }
         if (st.open === kind) close(); else open(kind, el);
     }
     function onKey(e) { if (st.open && e.key === 'Escape' && !(st.ov && st.ov.contains(e.target))) close(); }

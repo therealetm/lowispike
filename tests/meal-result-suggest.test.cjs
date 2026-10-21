@@ -68,6 +68,9 @@ test('How many pieces multiplies real nutrition per piece; servings when the pac
     assert.equal(three.protein, 14.5);
     assert.equal(three.portion, '3 pcs · ~66 g');
     assert.equal(R.itemFrom(bb, '', 'en').count, 1, 'empty count is one piece');
+    assert.equal(R.itemFrom(bb, 1, 'en').portion, '1 pc · ~22 g');
+    const withLog = R.knownList({ mine: MINE, logs: [{ t: 'Babybel Light', macros: { kcal: 42 }, ts: 9 }] });
+    assert.equal(R.suggest('Babyb', withLog)[0].src, 'scan', 'your scan comes before a logged meal that matches as well');
     assert.equal(R.manyLabel(bb, 'en'), 'How many pieces?');
     const skyr = R.suggest('skyr', L)[0];
     assert.equal(R.manyLabel(skyr, 'en'), 'How many servings? (1 = 100 g)');

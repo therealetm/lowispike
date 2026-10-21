@@ -35,7 +35,7 @@
             drinks: 'Drinking anything?', addDrink: 'Add a drink', drinkWhat: 'What are you drinking?', drinkPh: 'e.g. cola, 0.5 l beer', add: 'Add',
             chips: ['Water', 'Coffee', 'Cola', 'Juice', 'Beer', 'Wine'],
             xpOk: 'for logging this meal', xpQuest: '{base} for the meal + {quest} for today\u2019s eat quest', xpSpike: 'Spiky meals earn nothing, and never cost points.', xpDup: 'You already logged this today.', xpCap: 'Daily limit of {cap} meals reached.', xpCapQuest: '{quest} for today\u2019s eat quest. Past {cap} meals a day, the meal itself earns nothing.',
-            total: 'Total', pcs: 'pcs', none: 'Nothing left to check. Type what it is below.', protein: 'protein', carbs: 'carbs', fat: 'fat', kcal: 'kcal'
+            total: 'Total', pcs: 'pcs', pc: 'pc', none: 'Nothing left to check. Type what it is below.', protein: 'protein', carbs: 'carbs', fat: 'fat', kcal: 'kcal'
         },
         de: {
             q: 'Spike-Check', low: 'Kein Spike', mid: 'Leichter Anstieg', high: 'Spike wahrscheinlich',
@@ -50,7 +50,7 @@
             drinks: 'Trinkst du etwas dazu?', addDrink: 'Getränk hinzufügen', drinkWhat: 'Was trinkst du?', drinkPh: 'z. B. Cola, 0,5 l Bier', add: 'Hinzufügen',
             chips: ['Wasser', 'Kaffee', 'Cola', 'Saft', 'Bier', 'Wein'],
             xpOk: 'für diese Mahlzeit', xpQuest: '{base} für die Mahlzeit + {quest} für die heutige Ess-Quest', xpSpike: 'Spike-Mahlzeiten geben nichts, ziehen aber auch nichts ab.', xpDup: 'Heute schon eingetragen.', xpCap: 'Tageslimit von {cap} Mahlzeiten erreicht.', xpCapQuest: '{quest} für die heutige Ess-Quest. Ab {cap} Mahlzeiten am Tag gibt die Mahlzeit selbst nichts.',
-            total: 'Gesamt', pcs: 'Stk.', none: 'Nichts mehr zu prüfen. Schreib unten, was es ist.', protein: 'Eiweiß', carbs: 'KH', fat: 'Fett', kcal: 'kcal'
+            total: 'Gesamt', pcs: 'Stk.', pc: 'Stk.', none: 'Nichts mehr zu prüfen. Schreib unten, was es ist.', protein: 'Eiweiß', carbs: 'KH', fat: 'Fett', kcal: 'kcal'
         },
         es: {
             q: 'Control de pico', low: 'Sin pico', mid: 'Subida leve', high: 'Pico probable',
@@ -65,7 +65,7 @@
             drinks: '¿Bebes algo?', addDrink: 'Añadir bebida', drinkWhat: '¿Qué bebes?', drinkPh: 'p. ej. cola, 0,5 l de cerveza', add: 'Añadir',
             chips: ['Agua', 'Café', 'Cola', 'Zumo', 'Cerveza', 'Vino'],
             xpOk: 'por esta comida', xpQuest: '{base} por la comida + {quest} por la misión de hoy', xpSpike: 'Las comidas con pico no dan nada, pero tampoco restan.', xpDup: 'Ya registrado hoy.', xpCap: 'Límite diario de {cap} comidas.', xpCapQuest: '{quest} por la misión de hoy. Pasadas {cap} comidas al día, la comida en sí no da nada.',
-            total: 'Total', pcs: 'uds.', none: 'No queda nada que revisar. Escribe abajo qué es.', protein: 'proteína', carbs: 'carbs', fat: 'grasa', kcal: 'kcal'
+            total: 'Total', pcs: 'uds.', pc: 'ud.', none: 'No queda nada que revisar. Escribe abajo qué es.', protein: 'proteína', carbs: 'carbs', fat: 'grasa', kcal: 'kcal'
         }
     };
     const lang = () => { try { const l = root.LowiLang && root.LowiLang.get ? root.LowiLang.get() : (root.document && document.documentElement.lang) || 'en'; return STR[l] ? l : 'en'; } catch (e) { return 'en'; } };
@@ -309,6 +309,7 @@
         return e && e.nm && !e.drink ? { key: 'n' + skey(e.nm), code: '', name: e.nm, brand: e.brand || '', per: e.per, piece: e.serve, serve: 0, unit: e.unit || 'g', src: 'table', ts: 0 } : null;
     }
     const SRC_RANK = { scan: 0, log: 1, dex: 2, table: 3 };
+    const tier = (s) => (s >= 90 ? 100 : s);   // "starts with" and "a word starts with" are equally good: then your scans come first
     const rankOf = (p) => (p && p.src in SRC_RANK ? SRC_RANK[p.src] : 9);
     /* everything the app knows, one entry per product: scans first, then logged foods (a log of a scanned barcode is that
        scan), the shared list, then TABLE. src: { mine: [dex products], logs: [S.logs], comm: [dex products] } */
@@ -330,7 +331,7 @@
     function suggest(q, list, max) {
         const a = parseAmount(q), text = a.rest || String(q || '');
         return (list || []).map(p => ({ p, s: matchScore(text, p.name, p.brand) })).filter(x => x.s > 0)
-            .sort((x, y) => y.s - x.s || rankOf(x.p) - rankOf(y.p) || (y.p.ts || 0) - (x.p.ts || 0))
+            .sort((x, y) => tier(y.s) - tier(x.s) || rankOf(x.p) - rankOf(y.p) || y.s - x.s || (y.p.ts || 0) - (x.p.ts || 0))
             .slice(0, max || 5).map(x => x.p);
     }
     // kcal for one piece / one serving, and what that one is ("piece", "30 g", "serving")
@@ -354,7 +355,7 @@
         const n = countOf(count) || 1;
         if (p.each) return Object.assign({ name: p.name, count: n, portion: n + ' ' + t(n === 1 ? 'srvOne' : 'srvMany', l), grams: 0, src: 'known' }, scaled(p.each, n));
         const size = p.piece || p.serve || 100, amount = Math.min(CAP.grams, n * size);
-        const portion = p.piece ? portionOf(n, amount, p.unit, l) : n + ' × ' + Math.round(size) + ' ' + p.unit + (n !== 1 ? ' · ~' + Math.round(amount) + ' ' + p.unit : '');
+        const portion = p.piece ? portionOf(n, amount, p.unit, l, n === 1 ? t('pc', l) : '') : n + ' × ' + Math.round(size) + ' ' + p.unit + (n !== 1 ? ' · ~' + Math.round(amount) + ' ' + p.unit : '');
         return Object.assign({ name: p.name, count: n, portion, grams: Math.round(amount), src: 'known' }, scaled(p.per, amount / 100));
     }
 

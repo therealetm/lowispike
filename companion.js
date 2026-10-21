@@ -255,6 +255,7 @@
         const T = HT(), h = homeLook();
         try { return T.plantHTML(Object.assign({}, m, h.dim ? { dim: true, mood: 'droopy' } : {}), 'hero', hp); } catch (e) { return ''; }
     }
+    /* Oct 21 2026: only reached forms are drawn; a locked form shows a mystery orb and ??? (no art, no silhouette) so evolving is a reveal */
     function formArt(m, hp, g, i) {
         const T = HT();
         try { return T.plantHTML(Object.assign({}, m, { index: i, dim: false, mood: 'happy' }), 'node', hp, { cfStage: i, hidden: true }); } catch (e) { }
@@ -276,8 +277,8 @@
             : nx.left > 0 ? L(nx.left + ' XP to ' + nx.name, 'Noch ' + nx.left + ' XP bis ' + nx.name, 'Faltan ' + nx.left + ' XP para ' + nx.name)
                 : L('Ready to evolve into ' + nx.name, 'Bereit für ' + nx.name, 'Lista para ' + nx.name);
         const dry = homeLook().dry;
-        const forms = steps.map((s, i) => '<li class="cf-step' + (s.reached ? ' on' : ' cf-locked') + (s.current ? ' cur' : '') + '"' + (s.current ? ' aria-current="step"' : '') + '><span class="cf-sm">' + formArt(m, hp, g, s.i) + '</span><b>' + esc(s.name) + '</b><em>' +
-            esc(s.current ? L('now', 'jetzt', 'ahora') : s.reached ? '✓' : s.xp + ' XP') + '</em><span class="cf-sr">' + esc(L('Form ', 'Form ', 'Forma ') + (i + 1) + ': ' + s.name + (s.reached ? '' : ', ' + L('from ', 'ab ', 'desde ') + s.xp + ' XP')) + '</span></li>').join('');
+        const forms = steps.map((s, i) => '<li class="cf-step' + (s.reached ? ' on' : ' cf-locked') + (s.current ? ' cur' : '') + '"' + (s.current ? ' aria-current="step"' : '') + '>' + (s.reached ? '<span class="cf-sm">' + formArt(m, hp, g, s.i) + '</span><b>' + esc(s.name) + '</b>' : '<span class="cf-mystery" aria-hidden="true">?</span><b aria-hidden="true">???</b>') + '<em>' +
+            esc(s.current ? L('now', 'jetzt', 'ahora') : s.reached ? '✓' : s.xp + ' XP') + '</em><span class="cf-sr">' + esc(L('Form ', 'Form ', 'Forma ') + (i + 1) + ': ' + (s.reached ? s.name : L('not discovered yet', 'noch nicht entdeckt', 'aún sin descubrir') + ', ' + L('from ', 'ab ', 'desde ') + s.xp + ' XP')) + '</span></li>').join('');
         const sel = V.pend || (t ? t.split('') : ['', '', '', '']);
         const typeBtns = AX.map((a, i) => '<div class="cf-ax" role="group">' + [0, 1].map(j => '<button type="button" data-cf="ax" data-i="' + i + '" data-v="' + a[j] + '" aria-pressed="' + (sel[i] === a[j]) + '">' + esc(pick3(a[2 + j])) + '</button>').join('') + '</div>').join('');
         return '<div class="cf-panel cf-misty" role="dialog" aria-modal="true" aria-labelledby="cfTitle"><header class="cf-head"><h2 id="cfTitle">' + esc(nm) + '</h2>' + xBtn + '</header><div class="cf-scroll">' +

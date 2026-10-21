@@ -17,22 +17,28 @@ Every form must look clearly more powerful than the one before, and the evolutio
 The first two evolutions come within the first days, so the escalation is felt early. `highestStage` keeps a form once reached.
 The thresholds were kept on purpose: Forms unlocks, cosmetics and the world-home cell stages all read them.
 
-## Power per form (companion-core.js `POWER`, pure SVG paths on top of the user's own generated cell)
+## Body plan per form (Oct 21 2026 redesign, companion-core.js `ANATOMY`, alias `POWER`)
 
-| form (index) | fins/ears length x | thickness x | stones | stone size (xR) | horns (xR) | frame x |
-|---|---|---|---|---|---|---|
-| 0 | - | - | 0 | - | - | 1.22 |
-| 1 | little nubs | - | 0 | - | - | 1.15 |
-| 2 | 1 (first fins) | 1 | 2 | .07 | - | 1.08 |
-| 3 | 1.3 + tail | 1.45 | 4 | .09 | - | 1.08 |
-| 4 | 1.5 + wings + crest | 1.8 | 6 | .11 | .30 | 1.15 |
-| 5 | 1.9 (capped .8R) + bigger wings x1.25/1.35, second wings, crown | 2.2 | 9 | .13 | .46 | 1.23 |
+Eman: the old fins, armour stones and horns on a bubble were "boring ... not very Pokemon like ... you can really go big here ... like Digimon ... in our own design with cellular metabolic". Approved path: a simple glowing cell, then a swimming filament creature, then a many-limbed reef spirit, then a massive celestial organism with orbiting organelles. The user's own generated cell (face, colours, family palette) stays the luminous core at every form; the anatomy round it changes.
 
-- frame: how much room the picture leaves round the body. Young forms sit small; later forms fill the frame with traits.
-  Probe check (playtest/probe-evo-stages.cjs): no trait leaves the frame for four birthdays/elements; painted area grows
-  about 45-75 % from form 1 to form 6.
-- Stones sit on the rim (angles 75-285 deg from straight up, at 0.9R), never on the face.
-- The user's own body, colours, name and face stay as generated. Home choices kept: no smile, mouth follows energy, no glow ring.
+| Form | Phase | What it has |
+|---|---|---|
+| 1 Spark | cell | glowing core, a ring of cilia |
+| 2 Bud | cell | more cilia, two daughter buds |
+| 3 Sprite | first swimmer | one whip tail, small fins |
+| 4 Drifter | filament swimmer | streamlined outer membrane, three tails, bigger fins |
+| 5 Guardian | filament swimmer | five tails, double fins, dorsal membrane sail |
+| 6 Radiant | reef spirit | eight glowing arms, coral crown (3 branches), frilled mantle |
+| 7 Nova | reef spirit | ten arms, coral crown (5), bigger mantle |
+| 8 Titan | celestial | giant bell with rim lights, twelve arms, two long filaments, three organelles on one orbit |
+| 9 Monarch | celestial | two orbits, five organelles (mitochondria, nucleus-planets, vesicles), star corona |
+| 10 Majesty | celestial | fourteen arms, four filaments, seven organelles, golden edges |
+
+- Organelles passing in front stay at the sides, never over the face. Under a hat nothing grows on top of the head (no sail, no coral).
+- `frame` (room round the body) never shrinks from one form to the next; tools/companion/evo-forms.cjs renders all ten in a browser and measures that every piece stays inside it.
+- Pure SVG paths, no filters; motion is transform/opacity only and stops under Reduce Motion.
+- Locked forms are never drawn: the Forms path shows a mystery orb, ??? and the XP needed, so every evolution is a reveal. Reached forms stay viewable.
+- tests/evolution-anatomy.test.cjs covers the phases, counts, face clearance, clean SVG, locked forms, copy and motion.
 
 ## Ten forms (Oct 19 2026, 10 PM: four more after Legendary)
 Emmanuel reached Legendary (level 6, "Legend") during testing: "we need to add more evolutions ... it should really,

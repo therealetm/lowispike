@@ -59,18 +59,17 @@ function traitsAt(st, el) {
 test('each new form adds a new silhouette piece on top of the last', () => {
   for (const el of C.ELS) {
     const s5 = traitsAt(5, el), s6 = traitsAt(6, el), s7 = traitsAt(7, el), s8 = traitsAt(8, el), s9 = traitsAt(9, el);
-    assert.ok(!/cf-mane/.test(s5) && /cf-mane/.test(s6) && /cf-diadem/.test(s6), el + ': form 7 adds mane and crown');
-    assert.ok(/cf-wing3/.test(s7) && (s7.match(/cf-tail/g) || []).length === 2 && !/cf-wing3/.test(s6), el + ': form 8 adds third wings and twin tails');
-    assert.ok(/cf-flare/.test(s8) && /cf-horn2/.test(s8) && !/cf-flare/.test(s7), el + ': form 9 adds power spikes and inner horns');
-    assert.ok(/cf-orbit-far/.test(s9) && /cf-orbit-near/.test(s9) && /cf-st9/.test(s9) && !/cf-orbit/.test(s8), el + ': form 10 adds the star ring and gold edges');
-    assert.ok((s9.match(/class="cf-stone"/g) || []).length >= (s5.match(/class="cf-stone"/g) || []).length, 'stones never drop');
+    assert.ok((s6.match(/<path style="--k/g) || []).length > (s5.match(/<path style="--k/g) || []).length, el + ': form 7 grows more arms');
+    assert.ok(/cf-bell/.test(s7) && /cf-ring-near/.test(s7) && !/cf-bell/.test(s6), el + ': form 8 becomes celestial (bell and orbit)');
+    assert.ok(/cf-corona/.test(s8) && !/cf-corona/.test(s7) && (s8.match(/class="cf-orb /g) || []).length === 5, el + ': form 9 adds the corona and five organelles');
+    assert.ok(/cf-st9/.test(s9) && (s9.match(/class="cf-orb /g) || []).length === 7 && !/cf-st9/.test(s8), el + ': form 10 has seven organelles and gold edges');
   }
 });
 
-test('forms 1-6 render exactly as before the extension (no new pieces leak backwards)', () => {
-  for (let st = 0; st < 6; st++) {
+test('forms 1-7 carry no celestial pieces (nothing leaks backwards)', () => {
+  for (let st = 0; st < 7; st++) {
     const s = traitsAt(st);
-    assert.ok(!/cf-mane|cf-diadem|cf-wing3|cf-flare|cf-horn2|cf-orbit/.test(s), 'form ' + (st + 1));
+    assert.ok(!/cf-bell|cf-orb|cf-ring|cf-corona|cf-st9/.test(s), 'form ' + (st + 1));
   }
 });
 

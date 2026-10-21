@@ -35,12 +35,13 @@ t('shared look code round-trips and carries no birthday, sign name or type', () 
   assert.strictEqual(C.decode(''), null);
 });
 
-t('six forms: markings from form 3, crown only at form 6', () => {
+t('ten forms: markings from form 3, coral crown from form 6, orbits from form 8', () => {
   const out = [];
-  for (let st = 0; st < 6; st++) { const L = C.layers(C.genome(PROF, st, 9), C.CELL_R[st], { id: 't' + st }); out.push(L.back + L.front); }
+  for (let st = 0; st < 10; st++) { const L = C.layers(C.genome(PROF, st, 9), C.CELL_R[st], { id: 't' + st }); out.push(L.back + L.front); }
   assert.ok(out.every(s => s.length > 0));
-  for (let i = 1; i < 6; i++) assert.ok(out[i].length >= out[i - 1].length * 0.9, 'form ' + i + ' grows');
-  assert.ok(!/cf-crown/.test(out[4]) && /cf-crown/.test(out[5]), 'crown at form 6 only');
+  for (let i = 1; i < 10; i++) assert.ok(out[i].length >= out[i - 1].length * 0.9, 'form ' + i + ' grows');
+  assert.ok(!/cf-coral/.test(out[4]) && /cf-coral/.test(out[5]), 'coral crown from form 6');
+  assert.ok(!/cf-orb/.test(out[6]) && /cf-orb/.test(out[7]), 'organelles from form 8');
   assert.strictEqual(C.clampStage(9), 9);
   assert.strictEqual(C.clampStage(12), 9);
   assert.strictEqual(C.clampStage(-2), 0);
@@ -104,7 +105,7 @@ t('tapping Misty opens her evolution view with the same Misty as on Home (Oct 15
   assert.ok(/T\.plantHTML\([^;]*'hero', hp\)/.test(src), 'hero uses the same plantHTML hero render as Home');
   assert.ok(/'node', hp, \{ cfStage: i/.test(src), 'each of the six forms uses the same render code');
   assert.ok(/class="cf-bub"/.test(src) && /\.cf-bub\s*\{[^}]*border-radius: 50%/.test(css), 'same round glass bubble');
-  assert.ok(/cf-locked/.test(src) && /\.cf-locked \.cf-sm \{[^}]*brightness\(0\)/.test(css), 'locked forms as silhouettes');
+  assert.ok(/cf-locked/.test(src) && /\.cf-mystery \{/.test(css) && !/\.cf-locked \.cf-sm/.test(css), 'locked forms as mystery orbs, no silhouettes (Oct 21 2026)');
   assert.ok(/role="progressbar"/.test(src) && /XP bis/.test(src), 'XP to the next evolution');
   assert.ok(/data-cf="share"/.test(src) && /never your birthday/.test(src), 'sharing note: only the look');
   assert.ok(!/data-cf="wardrobe"|Kleiderschrank öffnen/.test(src.slice(src.indexOf('function sheetHTML'), src.indexOf('function paint('))), 'no dress-up in the view');

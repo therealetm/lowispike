@@ -30,20 +30,23 @@
         fire: ['Ember', 'Glut', 'de brasa'], water: ['Tide', 'Flut', 'de marea'], air: ['Breeze', 'Wind', 'de brisa'],
         earth: ['Moss', 'Moos', 'de musgo'], spirit: ['Glow', 'Schimmer', 'de brillo']
     };
-    const TRAITS = {
-        fire: [['Warm core', 'Warmer Kern', 'Núcleo cálido'], ['Ember nubs', 'Glutknubbel', 'Bultos de brasa'], ['Flame tufts', 'Flammenbüschel', 'Penachos de llama'], ['Cinder tail', 'Glutschweif', 'Cola de ceniza'], ['Blaze wings', 'Feuerflügel', 'Alas de fuego'], ['Sun crown', 'Sonnenkrone', 'Corona solar'], ['Flame mane', 'Flammenmähne', 'Melena de llama'], ['Twin flame tails', 'Doppelter Flammenschweif', 'Dos colas de llama'], ['Blaze spikes', 'Feuerzacken', 'Picos de fuego'], ['Sun orbit', 'Sonnenring', 'Anillo solar']],
-        water: [['Dew core', 'Taukern', 'Núcleo de rocío'], ['Ripple nubs', 'Wellenknubbel', 'Bultos de onda'], ['Tide fins', 'Flutflossen', 'Aletas de marea'], ['Wave tail', 'Wellenschweif', 'Cola de ola'], ['Flow frills', 'Strömungsrüschen', 'Volantes de corriente'], ['Pearl crown', 'Perlenkrone', 'Corona de perlas'], ['Coral mane', 'Korallenmähne', 'Melena de coral'], ['Twin wave tails', 'Doppelter Wellenschweif', 'Dos colas de ola'], ['Tidal spikes', 'Flutzacken', 'Picos de marea'], ['Pearl orbit', 'Perlenring', 'Anillo de perlas']],
-        air: [['Breath core', 'Atemkern', 'Núcleo de aliento'], ['Puff nubs', 'Hauchknubbel', 'Bultos de soplo'], ['Wisp ears', 'Wirbelohren', 'Orejas de brisa'], ['Feather tail', 'Federschweif', 'Cola de pluma'], ['Sky wings', 'Himmelsflügel', 'Alas de cielo'], ['Star crown', 'Sternenkrone', 'Corona de estrellas'], ['Feather mane', 'Federmähne', 'Melena de plumas'], ['Twin feather tails', 'Doppelter Federschweif', 'Dos colas de pluma'], ['Storm spikes', 'Sturmzacken', 'Picos de tormenta'], ['Star orbit', 'Sternenring', 'Anillo de estrellas']],
-        earth: [['Seed core', 'Samenkern', 'Núcleo de semilla'], ['Pebble nubs', 'Kieselknubbel', 'Bultos de guijarro'], ['Leaf sprouts', 'Blattsprossen', 'Brotes de hoja'], ['Root tail', 'Wurzelschweif', 'Cola de raíz'], ['Crystal shell', 'Kristallpanzer', 'Caparazón de cristal'], ['Bloom crown', 'Blütenkrone', 'Corona de flor'], ['Crystal mane', 'Kristallmähne', 'Melena de cristal'], ['Twin root tails', 'Doppelter Wurzelschweif', 'Dos colas de raíz'], ['Quartz spikes', 'Quarzzacken', 'Picos de cuarzo'], ['Gem orbit', 'Edelsteinring', 'Anillo de gemas']],
-        spirit: [['Glow core', 'Leuchtkern', 'Núcleo de luz'], ['Glow nubs', 'Leuchtknubbel', 'Bultos de luz'], ['Glow ears', 'Leuchtohren', 'Orejas de luz'], ['Glow tail', 'Leuchtschweif', 'Cola de luz'], ['Glow wings', 'Leuchtflügel', 'Alas de luz'], ['Glow crown', 'Leuchtkrone', 'Corona de luz'], ['Glow mane', 'Leuchtmähne', 'Melena de luz'], ['Twin glow tails', 'Doppelter Leuchtschweif', 'Dos colas de luz'], ['Light spikes', 'Lichtzacken', 'Picos de luz'], ['Light orbit', 'Lichtring', 'Anillo de luz']]
-    };
+    /* Oct 21 2026: what each form grows, named after the new body plan (shown in the Forms path) */
+    const TRAITS = [
+        ['glow core', 'Leuchtkern', 'núcleo de luz'], ['cilia and buds', 'Wimpern und Knospen', 'cilios y brotes'], ['whip tail', 'Geißelschweif', 'cola de látigo'],
+        ['filament tails', 'Fadenschweife', 'colas de filamento'], ['membrane sail', 'Membransegel', 'vela de membrana'], ['reef arms', 'Riffarme', 'brazos de arrecife'],
+        ['coral crown', 'Korallenkrone', 'corona de coral'], ['celestial bell', 'Himmelsglocke', 'campana celeste'], ['organelle orbits', 'Organellenbahnen', 'órbitas de orgánulos'],
+        ['star corona', 'Sternenkorona', 'corona estelar']
+    ];
     const LI = l => ({ de: 1, es: 2 }[String(l || 'en').slice(0, 2)] || 0);
     function formName(stage, el, lang) {
         const i = clampStage(stage), l = LI(lang), e = ADJ[ELS.includes(el) ? el : 'spirit'][l];
         const s = STAGE[['en', 'de', 'es'][l]][i];
         return l === 1 ? e + '-' + s : l === 2 ? s + ' ' + e : e + ' ' + s;
     }
-    function traitName(el, stage, lang) { return TRAITS[ELS.includes(el) ? el : 'spirit'][clampStage(stage)][LI(lang)]; }
+    function traitName(el, stage, lang) {
+        const l = LI(lang), e = ADJ[ELS.includes(el) ? el : 'spirit'][l], t = TRAITS[clampStage(stage)][l];
+        return l === 1 ? e + '-' + t : l === 2 ? t + ' ' + e : e + ' ' + t;
+    }
 
     /* ---------- genome: one coherent design from sign + type + stage + seed ---------- */
     function genome(profile, stage, seed) {
@@ -84,127 +87,195 @@
 
     /* ---------- drawing ---------- */
     function rnd(seed) { let s = (seed >>> 0) || 1; return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296; }
-    /* one appendage, base at (0,0), pointing up (-y), length L, half width w */
-    function shape(el, edge, L, w) {
-        const p = (x, y) => f1(x) + ' ' + f1(y);
-        if (el === 'fire') return edge
-            ? 'M' + p(-w, 0) + 'L' + p(-w * .55, -L * .5) + 'L' + p(-w * .15, -L * .38) + 'L' + p(0, -L) + 'L' + p(w * .3, -L * .55) + 'L' + p(w * .6, -L * .62) + 'L' + p(w, 0) + 'Z'
-            : 'M' + p(-w, 0) + 'C' + p(-w * 1.1, -L * .45) + ' ' + p(-w * .2, -L * .6) + ' ' + p(0, -L) + 'C' + p(w * .25, -L * .7) + ' ' + p(w * .9, -L * .62) + ' ' + p(w * .55, -L * .38) + 'C' + p(w * 1.05, -L * .25) + ' ' + p(w, -L * .1) + ' ' + p(w, 0) + 'Z';
-        if (el === 'water') return edge
-            ? 'M' + p(-w, 0) + 'L' + p(-w * .2, -L) + 'L' + p(w * .3, -L * .72) + 'L' + p(w, 0) + 'Z'
-            : 'M' + p(-w, 0) + 'Q' + p(-w * 1.25, -L * .8) + ' ' + p(0, -L) + 'Q' + p(w * .55, -L * .45) + ' ' + p(w, 0) + 'Z';
-        if (el === 'air') return edge
-            ? 'M' + p(-w * .6, 0) + 'L' + p(-w * .9, -L * .45) + 'L' + p(-w * .35, -L * .5) + 'L' + p(-w * .5, -L * .8) + 'L' + p(0, -L) + 'L' + p(w * .5, -L * .55) + 'L' + p(w * .6, 0) + 'Z'
-            : 'M' + p(-w * .6, 0) + 'C' + p(-w * 1.3, -L * .5) + ' ' + p(-w * .2, -L * .95) + ' ' + p(w * .35, -L) + 'C' + p(w * .1, -L * .8) + ' ' + p(w * .2, -L * .6) + ' ' + p(w * .55, -L * .45) + 'C' + p(w * .7, -L * .25) + ' ' + p(w * .6, -L * .1) + ' ' + p(w * .6, 0) + 'Z';
-        if (el === 'earth') return edge
-            ? 'M' + p(-w * .7, 0) + 'L' + p(-w, -L * .55) + 'L' + p(0, -L) + 'L' + p(w, -L * .55) + 'L' + p(w * .7, 0) + 'Z'
-            : 'M' + p(0, 0) + 'C' + p(-w * 1.4, -L * .3) + ' ' + p(-w * .8, -L * .85) + ' ' + p(0, -L) + 'C' + p(w * .8, -L * .85) + ' ' + p(w * 1.4, -L * .3) + ' ' + p(0, 0) + 'Z';
-        return edge
-            ? 'M' + p(-w * .7, 0) + 'L' + p(0, -L) + 'L' + p(w * .7, 0) + 'Z'
-            : 'M' + p(-w * .7, 0) + 'Q' + p(-w * .9, -L * .9) + ' ' + p(0, -L) + 'Q' + p(w * .9, -L * .9) + ' ' + p(w * .7, 0) + 'Z';
-    }
-    function vein(el, L) {
-        if (el === 'water') return 'M0 0L' + f1(-L * .05) + ' ' + f1(-L * .8) + 'M0 0L' + f1(L * .12) + ' ' + f1(-L * .6);
-        if (el === 'earth' || el === 'air') return 'M0 0L0 ' + f1(-L * .85);
-        return '';
-    }
     /* angle in degrees from straight up, clockwise; d = distance of the base from the centre */
     function put(ang, d, R) {
         const r = ang * Math.PI / 180;
         return { x: CX + Math.sin(r) * d, y: CY - Math.cos(r) * d * .96 };
     }
-    function piece(g, cls, ang, len, w, R, side, gid, extra) {
-        const free = g.sy === 'free' && side > 0;
-        const k = free ? .84 : 1, a = ang + (free ? 9 : 0), o = put(a, R * .86, R);
-        const L = len * R * k, W = w * R * k;
-        const d = shape(g.el, g.sh === 'edge', L, W), v = vein(g.el, L);
-        return '<g class="cf-part ' + cls + '" style="--side:' + side + '" transform="translate(' + f1(o.x) + ' ' + f1(o.y) + ') rotate(' + f1(a) + ')"><path d="' + d + '" fill="url(#' + gid + ')" stroke="#ffffff" stroke-opacity=".55" stroke-width="1.2" stroke-linejoin="round"/>' +
-            (v ? '<path d="' + v + '" fill="none" stroke="#ffffff" stroke-opacity=".45" stroke-width="1" stroke-linecap="round"/>' : '') +
-            (free && extra ? '<circle cx="' + f1(W * .5) + '" cy="' + f1(-L * 1.05) + '" r="' + f1(R * .03) + '" fill="' + g.b + '" fill-opacity=".8"/>' : '') + '</g>';
-    }
-    const pair = (g, cls, ang, len, w, R, gid) => piece(g, cls, -ang, len, w, R, -1, gid) + piece(g, cls, ang, len, w, R, 1, gid, true);
-    /* traits per stage and element: [angle, length (x R), half width (x R)] */
-    const EARS = { fire: [24, .5, .2], water: [92, .5, .24], air: [30, .62, .16], earth: [20, .46, .2], spirit: [28, .42, .16] };
-    const WINGS = { fire: [68, .62, .36], water: [110, .58, .34], air: [66, .66, .34], earth: [58, .5, .32], spirit: [70, .58, .3] };
-    const PAD = [0, 0, .04, .08, .14, .18, .18, .18, .18, .18]; /* kept for old callers; the frame now comes from FRAME below */
-    /* Oct 19 2026 (Eman: "aus diesen kleinen Flossen kriegt er richtig dicke Dinger, kriegt er noch mehr Stein ... es soll immer
-       heftiger werden"): every form is clearly more powerful than the last. POWER per form:
-       grow   length of ears/fins, tail and wings (x the base size), capped so nothing leaves the frame
-       thick  width of the same traits: the little fins turn into big, heavy ones
-       stones armour stones round the lower rim and the shoulders (count), stone = their size (x R)
-       horn   a pair of pointed shoulder horns from the fifth form (length x R)
-       frame  how much room the picture gives round the body (x the cell's own tight frame): young forms sit small in their
-              frame, later forms fill it with fins, wings, stones and horns. Pure SVG paths: no new filters or scene effects. */
-    const POWER = [
-        { grow: 1, thick: 1, stones: 0, stone: 0, horn: 0, frame: 1.22 },
-        { grow: 1, thick: 1, stones: 0, stone: 0, horn: 0, frame: 1.15 },
-        { grow: 1, thick: 1, stones: 2, stone: .07, horn: 0, frame: 1.08 },
-        { grow: 1.3, thick: 1.45, stones: 4, stone: .09, horn: 0, frame: 1.08 },
-        { grow: 1.5, thick: 1.8, stones: 6, stone: .11, horn: .3, frame: 1.15 },
-        { grow: 1.9, thick: 2.2, stones: 9, stone: .13, horn: .46, frame: 1.23 },
-        /* Oct 19 2026, 10 PM (Eman, after reaching Legendary: "we need to add more evolutions ... it should really, truly
-           evolve into something majestic looking"): four more forms. The body stays its form-6 size; each new form adds a
-           new silhouette piece on top of everything before it:
-           mane    blades round the upper body, behind it (count, maneLen = length x R)
-           diadem  gold crown spikes round the crest (count; 6 = the tall crown)
-           tails   2 = twin tails;  wing3 = a third, fanned pair of wings (scale);  wing/wingW = main wing length/width
-           horn2   a second, inner pair of horns (length x R);  flare = a burst of power spikes behind it all (radius x R)
-           orbit   a tilted ring of stars round the body, half behind and half in front (the last form, with gold edges) */
-        { grow: 2, thick: 2.3, stones: 11, stone: .14, horn: .54, mane: 11, maneLen: .3, diadem: 4, wing: 1.35, wingW: 1.45, frame: 1.27 },
-        { grow: 2.1, thick: 2.4, stones: 13, stone: .145, horn: .6, mane: 13, maneLen: .36, diadem: 4, tails: 2, wing3: 1, wing: 1.42, wingW: 1.5, frame: 1.32 },
-        { grow: 2.2, thick: 2.4, stones: 13, stone: .155, horn: .66, horn2: .36, mane: 13, maneLen: .4, diadem: 6, tails: 2, wing3: 1.1, flare: 1.5, wing: 1.48, wingW: 1.58, frame: 1.4 },
-        { grow: 2.3, thick: 2.4, stones: 13, stone: .165, horn: .72, horn2: .44, mane: 15, maneLen: .44, diadem: 6, tails: 2, wing3: 1.2, flare: 1.62, orbit: 1, wing: 1.52, wingW: 1.66, frame: 1.46 }
+    /* Oct 21 2026 (Eman, on the old forms: "That's boring ... not very Pokemon like ... you can really go big here ... like Digimon
+       ... in our own design with cellular metabolic"): the fins, armour stones and horns stuck on a bubble are replaced by an
+       organism that really changes its body plan. Approved path: a simple glowing cell -> a swimming filament creature -> a
+       many-limbed reef spirit -> a massive celestial organism with orbiting organelles. The luminous core (the user's own
+       generated cell with its face and colours) and the family palette stay; the anatomy round it changes every form.
+       ANATOMY per form (lengths x R, the body radius):
+       cilia [count, length]  hair-fine cilia round the membrane       bud   daughter vesicles budding off (count)
+       flag  [count, length]  long whip filaments trailing behind     fin   [length, width] membrane fins with rays; fin2 = a second pair
+       sail  dorsal membrane sail (height)                             hood  streamlined outer membrane round body and tails
+       limbs [count, length]  curling reef arms with glowing dots     coral branching coral crown (branches)
+       frill scalloped mantle behind the body                          bell  the celestial bell with rim lights
+       orbs  organelles on tilted orbits (count), rings 1 or 2         corona star filaments and a halo behind it all
+       gold  golden edges (the last form)
+       frame room round the body (x the cell's own frame). tests/evolution-anatomy.test.cjs measures every piece inside it.
+       Pure SVG paths: no filters, no blur, nothing in the 3D scene; transform/opacity animations only. */
+    const ANATOMY = [
+        { cilia: [14, .13], frame: 1.12 },
+        { cilia: [18, .16], bud: 2, frame: 1.12 },
+        { cilia: [16, .16], flag: [1, 1.05], fin: [.34, .2], frame: 1.2 },
+        { cilia: [9, .15], flag: [3, 1.2], fin: [.48, .3], hood: 1, frame: 1.26 },
+        { cilia: [7, .15], flag: [5, 1.3], fin: [.56, .34], fin2: 1, sail: .52, hood: 1.08, frame: 1.4 },
+        { limbs: [8, 1.12], coral: 3, frill: 1, fin: [.46, .3], frame: 1.4 },
+        { limbs: [10, 1.22], coral: 5, frill: 1.12, fin: [.54, .34], frame: 1.43 },
+        { limbs: [12, 1.05], flag: [2, 1.3], coral: 5, bell: 1, orbs: 3, rings: 1, frame: 1.45 },
+        { limbs: [12, 1.1], flag: [2, 1.36], coral: 7, bell: 1.08, orbs: 5, rings: 2, corona: 1, frame: 1.48 },
+        { limbs: [14, 1.14], flag: [4, 1.4], coral: 7, bell: 1.15, orbs: 7, rings: 2, corona: 1.12, gold: 1, frame: 1.52 }
     ];
-    const power = st => Object.assign({}, POWER[clampStage(st)]);
-    const EAR_MAX = .8; /* ear/fin length cap (x R) so the last form still fits its frame */
-    /* stone angles (deg from straight up): lower rim first, then the shoulders; the face (centre) stays clear */
-    const STONE_AT = [150, 210, 125, 235, 180, 100, 260, 75, 285, 165, 195, 112, 248];
-    function stone(x, y, s, rot, g, k) {
-        const p = [[0, -1], [.82, -.5], [.9, .45], [.2, 1], [-.7, .7], [-.92, -.2]].map(q => f1(q[0] * s) + ' ' + f1(q[1] * s)).join('L');
-        return '<g class="cf-stone" style="--k:' + k + '" transform="translate(' + f1(x) + ' ' + f1(y) + ') rotate(' + f1(rot) + ')"><path d="M' + p + 'Z" fill="' + g.b + '" fill-opacity=".92" stroke="#1b1035" stroke-opacity=".55" stroke-width="1.3" stroke-linejoin="round"/>' +
-            '<path d="M' + f1(-.5 * s) + ' ' + f1(-.45 * s) + 'L' + f1(.15 * s) + ' ' + f1(-.7 * s) + 'L' + f1(.5 * s) + ' ' + f1(-.2 * s) + '" fill="none" stroke="#ffffff" stroke-opacity=".8" stroke-width="1.2" stroke-linecap="round"/></g>';
+    const POWER = ANATOMY; /* old name, kept for callers that read POWER[st].frame */
+    const PAD = [0, 0, .04, .08, .14, .18, .18, .18, .18, .18]; /* kept for old callers; the frame comes from ANATOMY */
+    const power = st => Object.assign({}, ANATOMY[clampStage(st)]);
+    const STONE_AT = []; /* the armour stones are gone (Oct 21 2026); kept empty for old callers */
+    const pt = p => f1(p.x) + ' ' + f1(p.y);
+    /* a tapered filled ribbon along a centre line: the body of every tail, arm and filament */
+    function ribbon(pts, w0, w1) {
+        const a = [], b = [];
+        for (let i = 0; i < pts.length; i++) {
+            const p = pts[Math.max(0, i - 1)], q = pts[Math.min(pts.length - 1, i + 1)], dx = q.x - p.x, dy = q.y - p.y, m = Math.hypot(dx, dy) || 1;
+            const nx = -dy / m, ny = dx / m, w = w0 + (w1 - w0) * i / (pts.length - 1);
+            a.push(f1(pts[i].x + nx * w) + ' ' + f1(pts[i].y + ny * w)); b.push(f1(pts[i].x - nx * w) + ' ' + f1(pts[i].y - ny * w));
+        }
+        return 'M' + a.join('L') + 'L' + b.reverse().join('L') + 'Z';
     }
-    /* forms 7-10 (Oct 19 2026 night): new silhouette pieces. Pure SVG paths, no filters. */
-    function blade(L, w) { return 'M' + f1(-w) + ' 0Q' + f1(-w * .7) + ' ' + f1(-L * .55) + ' 0 ' + f1(-L) + 'Q' + f1(w * .7) + ' ' + f1(-L * .55) + ' ' + f1(w) + ' 0Z'; }
-    function mane(g, R, n, len, id) {
-        let m = '';
+    /* centre line leaving the rim at angle ang (deg from straight up, clockwise): len x R long, waving amp x R, curling at the end */
+    function wave(R, ang, len, amp, waves, ph, curl) {
+        const r = ang * Math.PI / 180, ux = Math.sin(r), uy = -Math.cos(r), o = put(ang, R * .82, R), pts = [];
+        for (let i = 0; i <= 18; i++) {
+            const t = i / 18, d = t * len * R, s = Math.sin(ph + t * waves * Math.PI * 2) * amp * R * t + (curl || 0) * R * t * t * t;
+            pts.push({ x: o.x + ux * d - uy * s, y: o.y + uy * d + ux * s });
+        }
+        return pts;
+    }
+    /* a fan of membrane centred on -y: L long, opening spread degrees, n scallops; edge personalities get pointed tips */
+    function fan(L, spread, n, edge) {
+        let d = 'M0 0', rays = '';
+        for (let k = 0; k <= n; k++) {
+            const a = (-spread / 2 + spread * k / n) * Math.PI / 180, x = Math.sin(a) * L, y = -Math.cos(a) * L;
+            if (!k) d += 'L' + f1(x) + ' ' + f1(y);
+            else {
+                const am = (-spread / 2 + spread * (k - .5) / n) * Math.PI / 180, cx = Math.sin(am) * L * (edge ? .8 : .88), cy = -Math.cos(am) * L * (edge ? .8 : .88);
+                d += edge ? 'L' + f1(cx) + ' ' + f1(cy) + 'L' + f1(x) + ' ' + f1(y) : 'Q' + f1(cx) + ' ' + f1(cy) + ' ' + f1(x) + ' ' + f1(y);
+            }
+            rays += 'M0 0L' + f1(x * .92) + ' ' + f1(y * .92);
+        }
+        return { d: d + 'Z', rays };
+    }
+    function cilia(g, R, n, len, a0, a1) {
+        let d = '';
         for (let k = 0; k < n; k++) {
-            const a = -112 + k * 224 / (n - 1), o = put(a, R * .8, R), L = R * len * (k % 2 ? .78 : 1) * (Math.abs(a) < 20 ? .7 : 1);
-            m += '<path style="--k:' + k + '" transform="translate(' + f1(o.x) + ' ' + f1(o.y) + ') rotate(' + f1(a) + ')" d="' + blade(L, R * .085) + '"/>';
+            const a = a0 + (a1 - a0) * (k + .5) / n, p = put(a, R * .97, R), c = put(a - 7, R * (1 + len * .55), R), q = put(a + 6, R * (1 + len), R);
+            d += 'M' + pt(p) + 'Q' + pt(c) + ' ' + pt(q);
         }
-        return '<g class="cf-mane" fill="url(#' + id + ')" stroke="#ffffff" stroke-opacity=".5" stroke-width="1.1" stroke-linejoin="round">' + m + '</g>';
+        return '<path class="cf-cilia" d="' + d + '" fill="none" stroke="' + g.b + '" stroke-opacity=".9" stroke-width="' + f1(Math.max(1.6, R * .026)) + '" stroke-linecap="round"/>';
     }
-    function diadem(g, R, n, st) {
-        const tall = n >= 6, at = tall ? [-54, -36, -18, 18, 36, 54] : [-36, -18, 18, 36];
+    function buds(g, R, n, id) {
         let s = '';
-        at.forEach((a, k) => {
-            const o = put(a, R * .9, R), L = R * (tall ? [.24, .34, .46, .46, .34, .24][k] : [.2, .3, .3, .2][k]);
-            s += '<g transform="translate(' + f1(o.x) + ' ' + f1(o.y) + ') rotate(' + f1(a) + ')"><path d="M' + f1(-R * .06) + ' 0L0 ' + f1(-L) + 'L' + f1(R * .06) + ' 0Z"/><circle cy="' + f1(-L * .3) + '" r="' + f1(R * .024) + '" fill="' + g.b + '" stroke="none"/></g>';
+        [[138, .2], [222, .14], [96, .1]].slice(0, n).forEach((b, k) => { const p = put(b[0], R * (1 + b[1] * .55), R); s += '<circle style="--k:' + k + '" cx="' + f1(p.x) + '" cy="' + f1(p.y) + '" r="' + f1(R * b[1]) + '"/>'; });
+        return '<g class="cf-bud" fill="url(#' + id + ')" fill-opacity=".8" stroke="#ffffff" stroke-opacity=".7" stroke-width="1.3">' + s + '</g>';
+    }
+    const spreadAt = (n, mid, step) => Array.from({ length: n }, (_, k) => mid + (k - (n - 1) / 2) * step);
+    function flags(g, R, n, len, id, gold) {
+        let s = '';
+        spreadAt(n, 180, n > 3 ? 17 : 20).forEach((a, k) => {
+            const pts = wave(R, a + (g.sy === 'free' ? 6 : 0), len * (k % 2 ? .9 : 1), .13, 1.3, k * 1.7, (a < 180 ? -1 : 1) * .12);
+            s += '<path style="--k:' + k + '" d="' + ribbon(pts, R * .075, R * .012) + '"/>';
         });
-        return '<g class="cf-diadem" fill="#ffd36e" stroke="#fff6d8" stroke-width="1" stroke-linejoin="round">' + s + '</g>';
+        return '<g class="cf-flag" fill="url(#' + id + ')" fill-opacity=".9" stroke="' + (gold ? '#ffe6a2' : '#ffffff') + '" stroke-opacity=".55" stroke-width="1" stroke-linejoin="round">' + s + '</g>';
     }
-    function flare(g, R, r, st, id) {
-        const star = (n, ro, ri, off) => { let d = ''; for (let k = 0; k < n * 2; k++) { const p = put(off + k * 180 / n, (k % 2 ? ri : ro) * R, R); d += (k ? 'L' : 'M') + f1(p.x) + ' ' + f1(p.y); } return d + 'Z'; };
-        return '<g class="cf-flare"><path d="' + star(14, r, 1.08, 0) + '" fill="' + g.b + '" fill-opacity=".2" stroke="' + g.b + '" stroke-opacity=".7" stroke-width="1.6" stroke-linejoin="round"/>' +
-            '<path d="' + star(14, r * .84, 1.02, 180 / 14) + '" fill="url(#' + id + ')" fill-opacity=".35" stroke="#ffffff" stroke-opacity=".35" stroke-width="1"/></g>';
+    function fins(g, R, f, ang, cls, id) {
+        const L = f[0] * R, sp = 60 + f[1] * 70, F = fan(L, sp, 5, g.sh === 'edge');
+        return [-1, 1].map(side => { const a = side * ang, o = put(a, R * .9, R);
+            return '<g class="' + cls + '" style="--side:' + side + '" transform="translate(' + pt(o) + ') rotate(' + f1(a) + ')"><path d="' + F.d + '" fill="url(#' + id + ')" fill-opacity=".55" stroke="#ffffff" stroke-opacity=".6" stroke-width="1.2" stroke-linejoin="round"/><path d="' + F.rays + '" fill="none" stroke="#ffffff" stroke-opacity=".4" stroke-width="1"/></g>';
+        }).join('');
     }
-    /* a tilted ring of stars: the far half is drawn behind the body, the near half in front */
-    function orbit(g, R, near) {
-        const cy = CY + R * .2, rx = R * 1.5, ry = R * .36, tilt = -12;
-        const arc = near ? 'M' + f1(CX + rx) + ' ' + f1(cy) + 'A' + f1(rx) + ' ' + f1(ry) + ' 0 0 1 ' + f1(CX - rx) + ' ' + f1(cy) : 'M' + f1(CX - rx) + ' ' + f1(cy) + 'A' + f1(rx) + ' ' + f1(ry) + ' 0 0 1 ' + f1(CX + rx) + ' ' + f1(cy);
-        let s = '';
-        for (let k = 0; k < 8; k++) {
-            const t = (k + .5) * Math.PI * 2 / 8, front = Math.sin(t) > 0;
-            if (front !== near) continue;
-            const x = CX + Math.cos(t) * rx, y = cy + Math.sin(t) * ry, z = (front ? 1.25 : .85) * R / 94;
-            s += '<path style="--k:' + k + '" transform="translate(' + f1(x) + ' ' + f1(y) + ') scale(' + f1(z) + ')" d="M0 -7L1.8 -1.8 7 0 1.8 1.8 0 7 -1.8 1.8 -7 0 -1.8 -1.8Z"/>';
+    function sail(g, R, h, id) {
+        const F = fan(h * R, 76, 7, g.sh === 'edge'), o = put(0, R * .92, R);
+        return '<g class="cf-sail" transform="translate(' + pt(o) + ')"><path d="' + F.d + '" fill="url(#' + id + ')" fill-opacity=".5" stroke="#ffffff" stroke-opacity=".6" stroke-width="1.2" stroke-linejoin="round"/><path d="' + F.rays + '" fill="none" stroke="#ffffff" stroke-opacity=".45" stroke-width="1"/></g>';
+    }
+    /* the swimmer's streamlined outer membrane: body and tails inside one teardrop */
+    function hood(g, R, h, id) {
+        const t = CY - R * 1.13, w = R * 1.42, b = CY + R * (1.05 + .55 * h);
+        const d = 'M' + CX + ' ' + f1(t) + 'C' + f1(CX + w) + ' ' + f1(t + R * .05) + ' ' + f1(CX + R * 1.12) + ' ' + f1(CY + R * .85) + ' ' + CX + ' ' + f1(b) +
+            'C' + f1(CX - R * 1.12) + ' ' + f1(CY + R * .85) + ' ' + f1(CX - w) + ' ' + f1(t + R * .05) + ' ' + CX + ' ' + f1(t) + 'Z';
+        return '<path class="cf-hood" d="' + d + '" fill="url(#' + id + ')" fill-opacity=".2" stroke="' + g.b + '" stroke-opacity=".75" stroke-width="1.8"/>';
+    }
+    function limbs(g, R, n, len, id, gold) {
+        let s = '', dots = '';
+        spreadAt(n, 180, Math.min(19, 150 / Math.max(1, n - 1))).forEach((a, k) => {
+            const side = a < 180 ? -1 : 1, L = len * (k % 2 ? .8 : 1) * (Math.abs(a - 180) > 55 ? .82 : 1);
+            const pts = wave(R, a + (g.sy === 'free' ? 5 : 0), L, .09, .8, k * 1.3, side * .38);
+            s += '<path style="--k:' + k + '" d="' + ribbon(pts, R * .1, R * .022) + '"/>';
+            [6, 11, 15].forEach(i => { dots += '<circle cx="' + f1(pts[i].x) + '" cy="' + f1(pts[i].y) + '" r="' + f1(R * (.032 - i * .0012)) + '"/>'; });
+        });
+        return '<g class="cf-limbs"><g fill="url(#' + id + ')" fill-opacity=".92" stroke="' + (gold ? '#ffe6a2' : '#ffffff') + '" stroke-opacity=".55" stroke-width="1.1" stroke-linejoin="round">' + s + '</g><g class="cf-glow" fill="#ffffff" fill-opacity=".85">' + dots + '</g></g>';
+    }
+    /* branching coral crown on top of the head: Y-branches with glowing tips */
+    function coral(g, R, n, gold) {
+        let d = '', tips = '';
+        spreadAt(n, 0, n > 5 ? 17 : 22).forEach((a, k) => {
+            const L = R * (.34 + (k % 2 ? 0 : .1)) * (1 - Math.abs(a) / 150), o = put(a, R * .9, R), m = put(a, R * .9 + L, R);
+            const r = a * Math.PI / 180, br = (s2) => ({ x: m.x + Math.sin(r + s2 * .55) * L * .55, y: m.y - Math.cos(r + s2 * .55) * L * .55 });
+            const l = br(-1), q = br(1), top = { x: m.x + Math.sin(r) * L * .35, y: m.y - Math.cos(r) * L * .35 };
+            d += 'M' + pt(o) + 'L' + pt(m) + 'M' + pt(m) + 'L' + pt(l) + 'M' + pt(m) + 'L' + pt(q) + 'M' + pt(m) + 'L' + pt(top);
+            [l, q, top].forEach(p => { tips += '<circle style="--k:' + k + '" cx="' + f1(p.x) + '" cy="' + f1(p.y) + '" r="' + f1(R * .035) + '"/>'; });
+        });
+        return '<g class="cf-coral"><path d="' + d + '" fill="none" stroke="' + (gold ? '#ffd36e' : g.b) + '" stroke-width="' + f1(R * .06) + '" stroke-linecap="round" stroke-linejoin="round"/><g class="cf-glow" fill="#fff6d8">' + tips + '</g></g>';
+    }
+    function frill(g, R, s, id) {
+        let d = '';
+        for (let k = 0; k <= 96; k++) { const a = k / 96 * 360, rr = R * s * (1.24 + .07 * Math.cos(a * 16 * Math.PI / 180)), p = put(a, rr, R); d += (k ? 'L' : 'M') + pt(p); }
+        return '<path class="cf-frill" d="' + d + 'Z" fill="url(#' + id + ')" fill-opacity=".32" stroke="' + g.b + '" stroke-opacity=".8" stroke-width="1.6" stroke-linejoin="round"/>';
+    }
+    /* the celestial bell: a wide dome over the body with a scalloped rim of lights */
+    function bell(g, R, s, id) {
+        const w = R * 1.5 * s, top = CY - R * 1.42 * s, rim = CY + R * .32;
+        let d = 'M' + f1(CX - w) + ' ' + f1(rim) + 'C' + f1(CX - w) + ' ' + f1(top + R * .1) + ' ' + f1(CX - w * .45) + ' ' + f1(top) + ' ' + CX + ' ' + f1(top) +
+            'C' + f1(CX + w * .45) + ' ' + f1(top) + ' ' + f1(CX + w) + ' ' + f1(top + R * .1) + ' ' + f1(CX + w) + ' ' + f1(rim);
+        let lights = '';
+        const n = 9;
+        for (let k = n; k >= 0; k--) {
+            const x = CX - w + 2 * w * k / n, xm = CX - w + 2 * w * (k + .5) / n;
+            if (k < n) d += 'Q' + f1(xm) + ' ' + f1(rim + R * .16) + ' ' + f1(x) + ' ' + f1(rim);
+            lights += '<circle style="--k:' + k + '" cx="' + f1(x) + '" cy="' + f1(rim + R * .02) + '" r="' + f1(R * .04) + '"/>';
         }
-        return '<g class="cf-orbit' + (near ? ' cf-orbit-near' : ' cf-orbit-far') + '" transform="rotate(' + tilt + ' ' + CX + ' ' + f1(cy) + ')"><path d="' + arc + '" fill="none" stroke="#ffe6a2" stroke-opacity="' + (near ? '.85' : '.5') + '" stroke-width="' + (near ? '2.4' : '1.6') + '"/><g fill="#fff6d8" stroke="#ffd36e" stroke-width=".8">' + s + '</g></g>';
+        return '<g class="cf-bell"><path d="' + d + 'Z" fill="url(#' + id + ')" fill-opacity=".26" stroke="' + g.b + '" stroke-opacity=".85" stroke-width="2" stroke-linejoin="round"/>' +
+            '<path d="M' + f1(CX - w * .62) + ' ' + f1(rim - R * .1) + 'C' + f1(CX - w * .6) + ' ' + f1(top + R * .45) + ' ' + f1(CX + w * .6) + ' ' + f1(top + R * .45) + ' ' + f1(CX + w * .62) + ' ' + f1(rim - R * .1) + '" fill="none" stroke="#ffffff" stroke-opacity=".3" stroke-width="1.4"/>' +
+            '<g class="cf-glow" fill="#fff6d8" stroke="' + g.b + '" stroke-width=".8">' + lights + '</g></g>';
+    }
+    function corona(g, R, s, id) {
+        let d = '';
+        for (let k = 0; k < 20; k++) { const a = k * 18 + 9, p = put(a, R * 1.32, R), q = put(a, R * (1.32 + (k % 2 ? .28 : .44) * s), R); d += 'M' + pt(p) + 'L' + pt(q); }
+        return '<g class="cf-corona"><ellipse cx="' + CX + '" cy="' + CY + '" rx="' + f1(R * 1.66 * s) + '" ry="' + f1(R * 1.6 * s) + '" fill="url(#' + id + 'h)"/><path d="' + d + '" fill="none" stroke="' + g.b + '" stroke-opacity=".6" stroke-width="1.6" stroke-linecap="round"/></g>';
+    }
+    /* organelles on tilted orbits: the far half behind the body, the near half in front */
+    const RINGS = [{ rx: 1.62, ry: .34, tilt: -13, dy: .18 }, { rx: 1.3, ry: .5, tilt: 21, dy: -.05 }];
+    function organelle(g, kind, x, y, s, k, id) {
+        const tr = ' style="--k:' + k + '" transform="translate(' + f1(x) + ' ' + f1(y) + ') scale(' + f1(s) + ')"';
+        if (kind === 0) return '<g class="cf-orb cf-mito"' + tr + '><rect x="-15" y="-7.5" width="30" height="15" rx="7.5" fill="' + g.a + '" stroke="#ffffff" stroke-width="1.4"/><path d="M-10 0l3-4 3 8 3-8 3 8 3-8 3 4" fill="none" stroke="' + g.b + '" stroke-width="1.6" stroke-linejoin="round"/></g>';
+        if (kind === 1) return '<g class="cf-orb cf-nucleus"' + tr + '><circle r="10" fill="url(#' + id + ')" stroke="#ffffff" stroke-width="1.4"/><circle r="4" cx="-2" cy="-2" fill="#ffffff" fill-opacity=".75"/><ellipse rx="16" ry="4" fill="none" stroke="#ffe6a2" stroke-width="1.2" transform="rotate(-18)"/></g>';
+        return '<g class="cf-orb cf-vesicle"' + tr + '><circle r="6.5" fill="' + g.b + '" fill-opacity=".85" stroke="#ffffff" stroke-width="1.3"/><circle r="2.2" cx="-1.6" cy="-1.6" fill="#ffffff"/></g>';
+    }
+    function orbits(g, R, n, rings, near, id, gold) {
+        let s = '';
+        for (let r = 0; r < rings; r++) {
+            const o = RINGS[r], cy = CY + R * o.dy, rx = R * o.rx, ry = R * o.ry;
+            const arc = near ? 'M' + f1(CX + rx) + ' ' + f1(cy) + 'A' + f1(rx) + ' ' + f1(ry) + ' 0 0 1 ' + f1(CX - rx) + ' ' + f1(cy) : 'M' + f1(CX - rx) + ' ' + f1(cy) + 'A' + f1(rx) + ' ' + f1(ry) + ' 0 0 1 ' + f1(CX + rx) + ' ' + f1(cy);
+            let parts = '';
+            const mine = [];
+            for (let k = 0; k < n; k++) if (k % rings === r) mine.push(k);
+            mine.forEach((k, j) => {
+                let t = (j + .5) * Math.PI * 2 / mine.length + r * .7 + .35;
+                const front = Math.sin(t) > 0;
+                /* the near half passes in front of the body: keep those organelles out at the sides, never over the face */
+                if (front && Math.abs(Math.cos(t)) < .64) t = Math.cos(t) >= 0 ? Math.acos(.64) : Math.PI - Math.acos(.64);
+                if (front !== near) return;
+                parts += organelle(g, k % 3, CX + Math.cos(t) * rx, cy + Math.sin(t) * ry, (front ? 1.12 : .82) * R / 94, k, id);
+            });
+            s += '<g class="cf-ring' + (near ? ' cf-ring-near' : ' cf-ring-far') + '" transform="rotate(' + o.tilt + ' ' + CX + ' ' + f1(cy) + ')"><path d="' + arc + '" fill="none" stroke="' + (gold ? '#ffe6a2' : g.b) + '" stroke-opacity="' + (near ? '.85' : '.5') + '" stroke-width="' + (near ? '2.2' : '1.5') + '"/>' + parts + '</g>';
+        }
+        return s;
     }
     function layers(g, R, opts) {
         opts = opts || {};
         if (!g) return { back: '', front: '', defs: '' };
-        const st = clampStage(g.st), id = (opts.id || 'cf') + 'g', rr = rnd(97 + g.sd), P = POWER[st];
+        const st = clampStage(g.st), id = (opts.id || 'cf') + 'g', rr = rnd(97 + g.sd), P = ANATOMY[st], gold = !!P.gold;
         const defs = '<linearGradient id="' + id + '" x1="0" y1="1" x2="0" y2="0"><stop stop-color="' + g.a + '" stop-opacity=".9"/><stop offset="1" stop-color="' + g.b + '" stop-opacity=".85"/></linearGradient>' +
             '<radialGradient id="' + id + 'h"><stop offset=".5" stop-color="' + g.b + '" stop-opacity=".28"/><stop offset="1" stop-color="' + g.b + '" stop-opacity="0"/></radialGradient>';
         let back = '', front = '';
@@ -218,21 +289,20 @@
         }
         /* calm glow while the body is between meals (driven by CSS var --cf-calm) */
         back += '<ellipse class="cf-calm" cx="' + CX + '" cy="' + CY + '" rx="' + f1(R * 1.3) + '" ry="' + f1(R * 1.26) + '" fill="none" stroke="#9ff7ff" stroke-width="3"/>';
-        /* creature traits, oldest behind; each form makes them longer and much thicker */
-        const W = WINGS[g.el], E = EARS[g.el], wg = P.wing || (st >= 5 ? 1.25 : 1), ww = P.wingW || (st >= 5 ? 1.35 : 1), w2 = st >= 6 ? 1.12 : 1;
-        if (P.flare) back += flare(g, R, P.flare, st, id);
-        if (st >= 5) back += pair(g, 'cf-wing2', (W[0] + 40), W[1] * .62 * 1.2 * w2, W[2] * .7 * 1.25 * w2, R, id);
-        if (P.wing3) back += pair(g, 'cf-wing3', (W[0] + 20), W[1] * .8 * P.wing3, W[2] * .8 * P.wing3, R, id);
-        if (st >= 4) back += pair(g, 'cf-wing', W[0], W[1] * wg, W[2] * ww, R, id);
-        if (P.mane) back += mane(g, R, P.mane, P.maneLen, id);
-        const tl = (g.el === 'water' ? .55 : .6) * Math.min(1.5, P.grow * .8 + .2), tw = (g.el === 'air' ? .2 : .24) * Math.min(1.6, P.thick * .7 + .3);
-        if (st >= 3 && P.tails === 2) back += pair(g, 'cf-tail', 160, tl, tw * .85, R, id);
-        else if (st >= 3) back += piece(g, 'cf-tail', g.sy === 'free' ? 158 : 180, tl, tw, R, 0, id);
-        if (P.horn2) back += pair(g, 'cf-horn2', 36, P.horn2, P.horn2 * .34, R, id);
-        if (st >= 4 && P.horn) back += pair(g, 'cf-horn', 58, P.horn, P.horn * .36, R, id);
-        if (P.orbit) back += orbit(g, R, false);
-        if (st >= 2) back += pair(g, 'cf-ear', E[0], Math.min(EAR_MAX, E[1] * P.grow), E[2] * P.thick, R, id);
-        else if (st === 1) back += pair(g, 'cf-nub', 34, .26, .15, R, id);
+        /* the body plan, furthest behind first */
+        if (P.corona) back += corona(g, R, P.corona, id);
+        if (P.bell) back += bell(g, R, P.bell, id);
+        if (P.frill) back += frill(g, R, P.frill, id);
+        if (P.hood) back += hood(g, R, P.hood, id);
+        if (P.orbs) back += orbits(g, R, P.orbs, P.rings || 1, false, id, gold);
+        if (P.flag) back += flags(g, R, P.flag[0], P.flag[1], id, gold);
+        if (P.limbs) back += limbs(g, R, P.limbs[0], P.limbs[1], id, gold);
+        if (P.fin2) back += fins(g, R, [P.fin[0] * .72, P.fin[1] * .8], 62, 'cf-fin cf-fin2', id);
+        if (P.fin) back += fins(g, R, P.fin, P.limbs ? 84 : 104, 'cf-fin', id);
+        if (P.sail && !opts.hat) back += sail(g, R, P.sail, id);
+        if (P.coral && !opts.hat) back += coral(g, R, P.coral, gold);
+        if (P.cilia) back += cilia(g, R, P.cilia[0], P.cilia[1], P.hood ? -70 : 0, P.hood ? 70 : 360);
+        if (P.bud) back += buds(g, R, P.bud, id);
         /* markings (S/N) on the membrane from the third form */
         if (st >= 2 && g.pt === 'band') {
             let b = '';
@@ -244,23 +314,7 @@
             for (let k = 0; k < 6; k++) { const a = rr() * Math.PI * 2, d = R * (.35 + rr() * .4), x = CX + Math.cos(a) * d, y = CY + Math.sin(a) * d * .9, z = 1.6 + rr() * 1.4; s += '<path transform="translate(' + f1(x) + ' ' + f1(y) + ') scale(' + f1(z) + ')" d="M0 -2L.5 -.5 2 0 .5 .5 0 2 -.5 .5 -2 0 -.5 -.5Z"/>'; }
             front += '<g class="cf-mark cf-star" fill="#ffffff" fill-opacity=".7">' + s + '</g>';
         }
-        /* crest from the fifth form; moves to the sides when a hat sits on top */
-        if (st >= 4) front += opts.hat ? pair(g, 'cf-crest', 46, .3, .1, R, id) : piece(g, 'cf-crest', 0, .42, .14, R, 0, id);
-        /* gold crown spikes from form 7 (replace the motes); none under a hat */
-        if (P.diadem && !opts.hat) front += diadem(g, R, P.diadem, st);
-        /* crown motes, form 6 only */
-        if (st === 5 || (st >= 6 && opts.hat)) {
-            let m = '';
-            for (let k = 0; k < 5; k++) { const p = put(-60 + k * 30, R * 1.32, R); m += '<circle style="--k:' + k + '" cx="' + f1(p.x) + '" cy="' + f1(p.y) + '" r="' + f1(R * .045) + '"/>'; }
-            front += '<g class="cf-crown" fill="#ffe6a2" stroke="#fff6d8" stroke-width=".8">' + m + '</g>';
-        }
-        /* armour stones from the third form: more and bigger each form, round the rim, never on the face */
-        if (P.stones) {
-            let sg = '';
-            for (let k = 0; k < P.stones; k++) { const p = put(STONE_AT[k], R * .9, R); sg += stone(p.x, p.y, R * P.stone * (1 + ((k * 37 + g.sd) % 5) * .06), STONE_AT[k] + (rr() * 30 - 15), g, k); }
-            front += '<g class="cf-stones">' + sg + '</g>';
-        }
-        if (P.orbit) front += orbit(g, R, true);
+        if (P.orbs) front += orbits(g, R, P.orbs, P.rings || 1, true, id, gold);
         /* reactions: hidden until html[data-cf-react] says so */
         const sx = CX + R * .66, sy = CY - R * .5;
         front += '<g class="cf-rx cf-rx-brace"><path d="M' + f1(sx) + ' ' + f1(sy - 9) + 'C' + f1(sx + 6) + ' ' + f1(sy) + ' ' + f1(sx + 5) + ' ' + f1(sy + 6) + ' ' + f1(sx) + ' ' + f1(sy + 6) + 'C' + f1(sx - 5) + ' ' + f1(sy + 6) + ' ' + f1(sx - 6) + ' ' + f1(sy) + ' ' + f1(sx) + ' ' + f1(sy - 9) + 'Z" fill="#9fe6ff" stroke="#ffffff" stroke-width="1"/>' +
@@ -293,7 +347,7 @@
     /* a small stand-alone companion for friends (their own shared look) */
     function miniSVG(g, id) {
         if (!g) return '';
-        const st = clampStage(g.st), R = CELL_R[st], pad = st >= 3 ? Math.round((R + 46) * Math.max(1.18, POWER[st].frame) - R) : 46, L = layers(g, R, { id: String(id || 'm').replace(/[^a-z0-9]/gi, '') + 'm' });
+        const st = clampStage(g.st), R = CELL_R[st], pad = Math.round(100 * POWER[st].frame - R), L = layers(g, R, { id: String(id || 'm').replace(/[^a-z0-9]/gi, '') + 'm' });
         const gid = String(id || 'm').replace(/[^a-z0-9]/gi, '') + 'mb';
         const vb = (CX - R - pad) + ' ' + (CY - R - pad) + ' ' + (2 * (R + pad)) + ' ' + (2 * (R + pad));
         const ey = CY + R * .08, ex = R * .26, er = R * .085;

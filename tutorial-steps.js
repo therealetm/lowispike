@@ -19,7 +19,7 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 5;
+    const VERSION = 6;
     const AREAS = ['you', 'home', 'food', 'play', 'companion', 'together', 'settings', 'extras', 'end'];
     const STEPS = [
         /* ---------- part: you (your companion) ---------- */
@@ -268,9 +268,9 @@
             id: 'forms', area: 'companion', target: ['[data-home-misty]', '#spBubble'], covers: ['forms', 'evolution'],
             title: { en: 'Forms', de: 'Formen', es: 'Formas' },
             text: {
-                en: 'Hold me, then tap Forms to see how I evolve the longer you keep going.',
-                de: 'Halt mich gedrückt und tipp auf Formen, um zu sehen, wie ich mich entwickle, je länger du dranbleibst.',
-                es: 'Mantenme pulsado y toca Formas para ver cómo evoluciono cuanto más constante seas.'
+                en: 'Hold me, then tap Forms: the longer you keep going, the more I change, from one glowing cell into something much bigger. Forms you have not reached stay a secret until you get there.',
+                de: 'Halt mich gedrückt und tipp auf Formen: Je länger du dranbleibst, desto mehr verwandle ich mich, von einer leuchtenden Zelle zu etwas viel Größerem. Formen, die du noch nicht erreicht hast, bleiben ein Geheimnis, bis du da bist.',
+                es: 'Mantenme pulsado y toca Formas: cuanto más constante seas, más me transformo, de una célula luminosa a algo mucho más grande. Las formas que aún no alcanzaste siguen en secreto hasta que llegues.'
             }
         },
         {

@@ -21,19 +21,19 @@
         en: { editHome: 'Edit', startAt: 'Start {t}', since: 'since {t}', bubAria: 'Edit when your fast started, now since {t}', holdAria: 'Long press to change when your fast started, now since {t}', edit: 'Edit start', set: 'Set start', title: 'When did your fast start?', sub: 'Your last meal. Fix it if the clock started at the wrong time.',
             saved: 'Saved now: {t}', date: 'Date', time: 'Time', makes: 'That makes {d} of fasting so far.', tz: 'Times in your phone\u2019s time zone ({z}).',
             future: 'That\u2019s in the future. Pick a time that has passed.', overlap: 'Your last fast ended at {t}. This one can\u2019t start earlier.',
-            old: 'You can go back up to 7 days.', invalid: 'Pick a date and a time.', same: 'That\u2019s already your start.',
+            old: 'You can go back up to 7 days.', invalid: 'Pick a date and a time.', same: 'That\u2019s already your start.', gap: 'The clocks jumped forward at that hour, so that time never happened. Pick a time just before or after.', twice: 'The clocks went back that night, so this time happened twice. We use the first one, still summer time.',
             keep: 'Your fast keeps running. Points come when you end it.', save: 'Save start', cancel: 'Cancel', done: 'Fast start set to {t}.',
             yesterday: 'yesterday', h: 'h', m: 'min', aria: 'Edit when your fast started' },
         de: { editHome: '\u00c4ndern', startAt: 'Start {t}', since: 'seit {t}', bubAria: '\u00c4ndern, wann dein Fasten begonnen hat, gerade seit {t}', holdAria: 'Lange dr\u00fccken, um den Fastenbeginn zu \u00e4ndern, gerade seit {t}', edit: 'Start \u00e4ndern', set: 'Start setzen', title: 'Wann hat dein Fasten begonnen?', sub: 'Deine letzte Mahlzeit. Korrigier sie, wenn die Uhr zur falschen Zeit gestartet ist.',
             saved: 'Gespeichert: {t}', date: 'Datum', time: 'Uhrzeit', makes: 'Damit fastest du schon {d}.', tz: 'Zeiten in der Zeitzone deines Handys ({z}).',
             future: 'Das liegt in der Zukunft. W\u00e4hl eine Zeit, die schon vorbei ist.', overlap: 'Dein letztes Fasten endete um {t}. Dieses kann nicht fr\u00fcher beginnen.',
-            old: 'Du kannst bis zu 7 Tage zur\u00fcckgehen.', invalid: 'W\u00e4hl Datum und Uhrzeit.', same: 'Das ist schon dein Start.',
+            old: 'Du kannst bis zu 7 Tage zur\u00fcckgehen.', invalid: 'W\u00e4hl Datum und Uhrzeit.', same: 'Das ist schon dein Start.', gap: 'Um diese Uhrzeit wurde die Uhr vorgestellt, die Zeit gab es also nicht. W\u00e4hl eine Zeit kurz davor oder danach.', twice: 'In dieser Nacht wurde die Uhr zur\u00fcckgestellt, diese Uhrzeit gab es zweimal. Wir nehmen die erste, noch Sommerzeit.',
             keep: 'Dein Fasten l\u00e4uft weiter. Punkte gibt es, wenn du es beendest.', save: 'Start speichern', cancel: 'Abbrechen', done: 'Fasten-Start auf {t} gesetzt.',
             yesterday: 'gestern', h: 'h', m: 'min', aria: '\u00c4ndern, wann dein Fasten begonnen hat' },
         es: { editHome: 'Editar', startAt: 'Inicio {t}', since: 'desde {t}', bubAria: 'Cambiar cu\u00e1ndo empez\u00f3 tu ayuno, ahora desde {t}', holdAria: 'Mant\u00e9n pulsado para cambiar cu\u00e1ndo empez\u00f3 tu ayuno, ahora desde {t}', edit: 'Cambiar inicio', set: 'Poner inicio', title: '\u00bfCu\u00e1ndo empez\u00f3 tu ayuno?', sub: 'Tu \u00faltima comida. C\u00e1mbiala si el reloj empez\u00f3 a la hora equivocada.',
             saved: 'Guardado: {t}', date: 'Fecha', time: 'Hora', makes: 'As\u00ed llevas {d} de ayuno.', tz: 'Horas en la zona horaria de tu m\u00f3vil ({z}).',
             future: 'Eso est\u00e1 en el futuro. Elige una hora que ya pas\u00f3.', overlap: 'Tu \u00faltimo ayuno termin\u00f3 a las {t}. Este no puede empezar antes.',
-            old: 'Puedes volver hasta 7 d\u00edas atr\u00e1s.', invalid: 'Elige fecha y hora.', same: 'Ese ya es tu inicio.',
+            old: 'Puedes volver hasta 7 d\u00edas atr\u00e1s.', invalid: 'Elige fecha y hora.', same: 'Ese ya es tu inicio.', gap: 'A esa hora se adelant\u00f3 el reloj, as\u00ed que esa hora no existi\u00f3. Elige una hora justo antes o despu\u00e9s.', twice: 'Esa noche se atras\u00f3 el reloj, as\u00ed que esta hora pas\u00f3 dos veces. Usamos la primera, a\u00fan en horario de verano.',
             keep: 'Tu ayuno sigue. Los puntos llegan cuando lo terminas.', save: 'Guardar inicio', cancel: 'Cancelar', done: 'Inicio del ayuno: {t}.',
             yesterday: 'ayer', h: 'h', m: 'min', aria: 'Cambiar cu\u00e1ndo empez\u00f3 tu ayuno' }
     };
@@ -53,7 +53,8 @@
     }
     const dur = ms => { const m = Math.max(0, Math.floor(ms / 60000)); return m >= 60 ? Math.floor(m / 60) + ' ' + w('h') + ' ' + p2(m % 60) + ' ' + w('m') : m + ' ' + w('m'); };
     const tz = () => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) { return ''; } };
-    const tzLabel = () => { const z = tz(); let o = ''; try { const off = -new Date().getTimezoneOffset(); o = 'UTC' + (off >= 0 ? '+' : '\u2212') + Math.floor(Math.abs(off) / 60) + (Math.abs(off) % 60 ? ':' + p2(Math.abs(off) % 60) : ''); } catch (e) {} return z ? z.replace(/_/g, ' ') + ', ' + o : o; };
+    /* Oct 21: the offset of the picked time, not of now: a start before the clock change reads UTC+2, after it UTC+1 */
+    const tzLabel = t => { const z = tz(); let o = ''; try { o = C() && C().offsetLabel ? C().offsetLabel(t) : ''; } catch (e) {} return z ? z.replace(/_/g, ' ') + (o ? ', ' + o : '') : o; };
     const sfx = n => { try { W.LowiSFX && LowiSFX.play(n); } catch (e) {} };
     function st() { let s; try { s = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { s = {}; } if (!s || typeof s !== 'object') s = {}; return s; }
     function curStart() { try { if (W.LowiFastStop && LowiFastStop.startOf) return +LowiFastStop.startOf() || 0; } catch (e) {} return C() ? C().startOf(st()) : (+st().last || 0); }
@@ -83,12 +84,17 @@
         if (!ov) return;
         const now = Date.now(), t = read(), s = st(), v = C().validate(t, s, now);
         const msg = ov.querySelector('.fe-msg'), pre = ov.querySelector('.fe-pre'), go = ov.querySelector('[data-fse="save"]');
+        const dEl = ov.querySelector('#feDate'), tEl = ov.querySelector('#feTime');
+        const rp = C().readParts ? C().readParts(dEl && dEl.value, tEl && tEl.value) : { err: '' };
         let m = '', bad = false;
         if (!v.ok) {
-            if (v.err === 'overlap') m = w('overlap', { t: at(C().prevEnd(s)) });
+            if (rp.err === 'gap') m = w('gap');
+            else if (v.err === 'overlap') m = w('overlap', { t: at(C().prevEnd(s)) });
             else if (v.err !== 'same') m = w(v.err);
             bad = v.err !== 'same';
         }
+        const tzEl = ov.querySelector('.fe-tz');
+        if (tzEl) tzEl.textContent = w('tz', { z: tzLabel(isFinite(t) ? t : now) }) + (!bad && C().twice && C().twice(t) ? ' ' + w('twice') : '');
         if (msg) { msg.textContent = m; msg.hidden = !m; }
         if (pre) { pre.textContent = isFinite(t) && t <= now ? w('makes', { d: dur(now - t) }) : ''; pre.classList.toggle('bad', bad); }
         if (go) { go.disabled = bad; go.setAttribute('aria-disabled', String(bad)); }
@@ -108,7 +114,7 @@
             '<label class="fe-f"><span>' + esc(w('time')) + '</span><input type="time" id="feTime" value="' + p.time + '" step="60" required></label></div>' +
             '<div class="fe-nudge" role="group">' + [[-60, '\u22121 h'], [-30, '\u221230 min'], [30, '+30 min'], [60, '+1 h']].map(x => '<button type="button" class="fe-n" data-fse="nudge" data-m="' + x[0] + '">' + x[1] + '</button>').join('') + '</div>' +
             '<p class="fe-pre num" aria-live="polite"></p><p class="fe-msg" role="alert" hidden></p>' +
-            '<p class="fe-tz">' + esc(w('tz', { z: tzLabel() })) + '</p><p class="fe-keep">' + esc(w('keep')) + '</p>' +
+            '<p class="fe-tz">' + esc(w('tz', { z: tzLabel(pre) })) + '</p><p class="fe-keep">' + esc(w('keep')) + '</p>' +
             '<div class="fe-acts"><button type="button" class="fe-cancel" data-fse="cancel">' + esc(w('cancel')) + '</button><button type="button" class="fe-save" data-fse="save">' + esc(w('save')) + '</button></div></div>';
     }
     function open() {

@@ -39,6 +39,8 @@ When changing a module, run the whole suite. The app's global ordering means an 
 | `tests/herb-visual-qa.html` | Six stages, zodiac appearance, effects, cosmetics, evolution, and room presentation. |
 | `tests/herb-iphone.html` | Companion at a realistic phone viewport. |
 | `tests/herb-fixture.js` | Deterministic time/state and care/reward fixture. |
+| `tools/design-audit/fast-live.cjs` | Live WebKit (iPhone SE, iPhone 13, iPad Pro 11, Berlin time, local fixture): fasting sheet end button on screen and uncovered, close X clear of the last row, Edit start tap area, Edit start around both clock changes. Exit 1 on a failure. |
+| `tools/design-audit/shots.cjs` | Screenshots plus measurements (off-screen primary action, small tap targets, tiny or faint text, sideways overflow) of the Gap bubble, fasting sheet and Community, running fast / no meal / offline. Reports, does not judge. |
 
 Minimum browser viewport matrix for a UI change:
 

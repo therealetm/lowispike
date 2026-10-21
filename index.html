@@ -1880,6 +1880,10 @@ addLang();
 .fst-earn small{display:block;font-weight:500;font-size:12px;opacity:.8;margin-top:3px}
 .fst-earn.none{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12);font-weight:500;font-size:13.5px}
 .fst-go{display:flex;align-items:center;justify-content:center;width:100%;min-height:50px;margin-top:14px;font-size:16px;font-weight:700;text-align:center;line-height:1.2}
+/* Oct 21 design audit: the sheet's one job is ending the fast. On iPhone SE the end button sat at 711 px of a 568 px screen,
+   under the chips, hint and points. It now rides the bottom of the sheet while you scroll, 72 px up so it clears the
+   bottom-centre close X (world-home.css .wh-x); its own fill keeps it readable. */
+.fst-sh .fst-go{position:sticky;bottom:72px;z-index:3}
 .fst-next{margin:8px 0 0;text-align:center}
 .fst-hist{margin-top:18px;padding-top:12px;border-top:1px solid rgba(255,255,255,.1)}
 .fst-hh{font-size:12px;opacity:.7;margin-bottom:6px}

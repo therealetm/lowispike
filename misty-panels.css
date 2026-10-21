@@ -85,7 +85,9 @@ html:root body .r2-ov:not(.full) .r2-sh.mb-on.mb-dock {
 html:root body #sheetwrap #sheet:has(> .fst-sh) {
   left: 10px !important; right: 10px !important; bottom: calc(var(--sab, env(safe-area-inset-bottom, 0px)) + 10px) !important;
   max-height: calc(88% - 10px) !important;
-  padding-bottom: calc(var(--sab, 0px) + 18px) !important;
+  /* Oct 21: room under the last row for the bottom-centre close X (58 px, 16 px up, see world-home.css .wh-x); it used to
+     sit on the last recent fast and, once the end button rode the bottom, on the end button itself */
+  padding-bottom: calc(var(--sab, 0px) + 84px) !important;
 }
 html:root.wh-home body #whToday.wh-today {
   width: min(calc(100% - 20px), 600px) !important;

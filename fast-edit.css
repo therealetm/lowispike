@@ -9,6 +9,9 @@
     -webkit-tap-highlight-color: transparent; transition: transform .12s ease, background .2s ease; }
 .fe-chip i { font-style: normal; font-size: 13px; opacity: .85; }
 .fe-chip:active { transform: scale(.96); }
+/* Oct 21: same look, a 44 px tall tap area (the pill itself is 32 px) */
+.fe-chip { position: relative; }
+.fe-chip::after { content: ''; position: absolute; inset: -6px -4px; }
 .fe-chip:focus-visible { outline: 2px solid var(--acc, #9fd8ff); outline-offset: 2px; }
 .fst-sum.fe-pop { animation: fe-pop .5s ease; }
 @keyframes fe-pop { 0% { transform: scale(1); } 40% { transform: scale(1.02); } 100% { transform: scale(1); } }

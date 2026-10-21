@@ -58,7 +58,7 @@ async function run(browser, engine, dev, lang, url, fails, shots) {
         const off = bs.filter(b => b.l < 0 || b.t < 0 || b.r > innerWidth || b.b > innerHeight).map(b => b.c);
         const small = bs.filter(b => b.w < 43.5 || b.h < 43.5).map(b => b.c + ' ' + Math.round(b.w) + 'x' + Math.round(b.h));
         const t = document.querySelector('#ltTitle'), x = document.querySelector('#ltText');
-        const clipped = [t, x].filter(e => e && e.scrollWidth > e.clientWidth + 1).map(e => e.id);
+        const clipped = [t, x].filter(e => e && e.scrollWidth > e.clientWidth + 1).map(e => e.id + ' ' + e.scrollWidth + '/' + e.clientWidth + ' "' + e.textContent + '" meta ' + Math.round(e.parentElement.getBoundingClientRect().width));
         return { sp: [Math.round(sp.w), Math.round(sp.h)], badge: [Math.round(badge.width)], over, off, small, clipped, vw: innerWidth };
     });
     if (lay.err) bad(lay.err); else {
@@ -114,7 +114,8 @@ async function run(browser, engine, dev, lang, url, fails, shots) {
     if (!url) { srv = await serve(); url = srv.url; }
     const fails = [];
     const engines = arg('engines', 'webkit,chromium').split(',');
-    const matrix = [['iPhone SE', 'en'], ['iPhone 13', 'en'], ['iPad (gen 7)', 'en'], ['iPhone SE', 'de'], ['iPhone SE', 'es']];
+    let matrix = [['iPhone SE', 'en'], ['iPhone 13', 'en'], ['iPad (gen 7)', 'en'], ['iPhone SE', 'de'], ['iPhone SE', 'es']];
+    if (arg('only', '')) matrix = matrix.filter(m => m.join(':') === arg('only'));
     for (const engine of engines) {
         const browser = await pw[engine].launch(engine === 'chromium' ? { args: ['--autoplay-policy=user-gesture-required'] } : {});
         for (const [dev, lang] of matrix) {

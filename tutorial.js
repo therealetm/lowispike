@@ -44,6 +44,8 @@
     }
 
     let on = false, list = [], i = 0, root = null, timer = 0, held = false, afterClaim = false, lastFocus = null, startedAt = 0;
+    let tried = -1, secUntil = 0, tryNext = 0;
+    const clearT = id => { try { if (id) (W.clearTimeout || clearTimeout)(id); } catch (e) { } };
     const step = () => list[i] || null;
     function emit(extra) { try { W.dispatchEvent(new CustomEvent('lowi:tutorial', { detail: Object.assign({ on, step: step() && step().id }, extra || {}) })); } catch (e) { } }
 
@@ -77,6 +79,7 @@
             '<span class="lt-right">' + (last ? '' : '<button type="button" class="lt-btn lt-ghost" data-lt="skip">' + esc(U.skip) + '</button>') +
             '<button type="button" class="lt-btn lt-go" data-lt="' + (s.action === 'claim' ? 'claim' : 'next') + '">' + esc(cta) + '</button></span></div>';
         root.setAttribute('data-step', s.id);
+        renderTry(s, U);
         place();
         /* tutorial-voice.js: the companion picture is the speaker; reads the card aloud when sound is on (Oct 21 2026) */
         try { if (W.LowiTutorialVoice) W.LowiTutorialVoice.render(card, s, { lang: l, name: vars.name, next: list.slice(i + 1, i + 3) }); } catch (e) { }
@@ -109,8 +112,86 @@
     function unhold() {
         if (!held || !root) return; held = false; root.classList.remove('lt-held'); root.removeAttribute('aria-hidden'); root.removeAttribute('data-held');
         if (afterClaim) { afterClaim = false; go(i + 1, 'claim-closed'); return; }
+        if (tried === i && i < list.length - 1) { go(i + 1, 'tried'); return; }
         render();
     }
+
+    /* ---------- sections and "try it" (Oct 21 2026, Emmanuel: "taking us to honestly every section ... Pinch, click, long
+       click, press, all this stuff, how are people supposed to know?") ----------
+       A step's `where` / `rm` say which screen it belongs on; the tour takes the user there for a moment after each step change
+       and then leaves them alone. A step's `tryIt` lets touches through the dimmed screen and watches for that one gesture.
+       When it happens the card says so; if the gesture opened a sheet, the tour waits behind it and moves on once it closes,
+       otherwise it moves on by itself. Listening is passive: it never blocks or changes what the app does with the touch. */
+    const TAB_OF = { home: 'home', community: 'foryou', scan: 'scan' };
+    function goSection(s) {
+        if (!s) return;
+        try {
+            const tab = TAB_OF[s.where || 'home'] || 'home', pane = D.getElementById('tab-' + tab);
+            if (pane && !pane.classList.contains('active')) {
+                if (tab === 'home') goHome();
+                else if (typeof W.goTab === 'function') W.goTab(tab);
+                else { const b = $('#tabbar .tb[data-tab="' + tab + '"]'); if (b) b.click(); }
+                return;
+            }
+            if (s.rm) { const b = $('.rm-tab[data-rm="' + s.rm + '"]'); if (b && b.getAttribute('aria-selected') !== 'true' && !b.classList.contains('on')) b.click(); }
+        } catch (e) { }
+    }
+    function renderTry(s, U) {
+        const card = root && root.querySelector('.lt-card'); if (!card) return;
+        const can = !!(s && s.tryIt), done = can && tried === i;
+        root.classList.toggle('lt-try', can && !done); root.classList.toggle('lt-tried', done);
+        if (!can) return;
+        const p = D.createElement('p'); p.className = 'lt-tryline'; p.setAttribute('role', 'status');
+        p.textContent = done ? U.nice : U.tryIt;
+        const txt = card.querySelector('.lt-text'); if (txt) txt.after(p);
+    }
+    function didGesture(kind) {
+        const s = step();
+        if (!on || held || !s || !s.tryIt || tried === i || !S.tryMatch(s.tryIt.how, kind)) return;
+        tried = i; render(); emit({ tried: s.id, gesture: kind });
+        const at = i; clearT(tryNext);
+        tryNext = setTimeout(() => { if (on && !held && tried === at && i === at && at < list.length - 1) go(at + 1, 'tried'); }, 1500);
+    }
+    const TRY = { HOLD: 480, TAP: 320, MULTI: 450, MOVE: 12, DRAG: 26, SWIPE: 60 };
+    const pts = new Map(); let down = null, holdT = 0, taps = [];
+    function onTarget(x, y) {
+        const s = step(); if (!s || !s.tryIt) return false; if (s.tryIt.anywhere) return true;
+        const el = target(s); if (!el) return true;
+        const r = el.getBoundingClientRect(), p = 16;
+        return x >= r.left - p && x <= r.right + p && y >= r.top - p && y <= r.bottom + p;
+    }
+    function watching() { const s = step(); return !!(on && !held && s && s.tryIt && tried !== i); }
+    function tDown(e) {
+        if (!watching() || (e.target && e.target.closest && e.target.closest('.lt-card'))) return;
+        pts.set(e.pointerId, 1); if (pts.size >= 2) { down = null; clearT(holdT); didGesture('pinch'); return; }
+        down = { x: e.clientX, y: e.clientY, t: Date.now(), on: onTarget(e.clientX, e.clientY), moved: false };
+        clearT(holdT); holdT = setTimeout(() => { if (down && down.on && !down.moved) didGesture('hold'); }, TRY.HOLD);
+    }
+    function tMove(e) {
+        if (!down || !watching()) return;
+        const dx = e.clientX - down.x, dy = e.clientY - down.y, d = Math.hypot(dx, dy);
+        if (d > TRY.MOVE) { down.moved = true; clearT(holdT); }
+        if (Math.abs(dx) > TRY.SWIPE && Math.abs(dx) > Math.abs(dy) * 1.5) didGesture('swipe');
+        if (d > TRY.DRAG && down && down.on) didGesture('drag');
+    }
+    function tUp(e) {
+        pts.delete(e.pointerId); clearT(holdT);
+        const d = down; down = null;
+        if (!d || !watching() || d.moved || !d.on || Date.now() - d.t > TRY.TAP) return;
+        const now = Date.now(); taps = taps.filter(t => now - t < TRY.MULTI * 2); taps.push(now);
+        didGesture('tap');
+        if (taps.length >= 3) { taps = []; didGesture('triple'); }
+        else if (taps.length === 2 && taps[1] - taps[0] < TRY.MULTI) didGesture('double');
+    }
+    function tCancel(e) { pts.delete(e.pointerId); clearT(holdT); down = null; }
+    try {
+        W.addEventListener('pointerdown', tDown, { capture: true, passive: true });
+        W.addEventListener('pointermove', tMove, { capture: true, passive: true });
+        W.addEventListener('pointerup', tUp, { capture: true, passive: true });
+        W.addEventListener('pointercancel', tCancel, { capture: true, passive: true });
+        W.addEventListener('gesturestart', () => { if (watching()) didGesture('pinch'); }, { capture: true, passive: true });
+        W.addEventListener('wheel', e => { if (e.ctrlKey && watching()) didGesture('pinch'); }, { capture: true, passive: true });
+    } catch (e) { }
     /* hide at once, but come back only after QUIET_TICKS quiet ticks in a row, so a sheet's closing animation can't blink it */
     const QUIET_TICKS = 2;
     let quiet = 0;
@@ -119,12 +200,13 @@
         const why = busyBy();
         if (why) { quiet = 0; hold(why); }
         else if (held) { if (++quiet >= QUIET_TICKS) { quiet = 0; unhold(); } }
-        else place();
+        else { if (Date.now() < secUntil && tried !== i) goSection(step()); place(); }
     }
     function go(n, how) {
         if (n >= list.length) { stop('finished'); return; }
         i = Math.max(0, n); held = false; if (root) { root.classList.remove('lt-held'); root.removeAttribute('aria-hidden'); }
         const st = store.get(); st.last = step().id; store.set(st);
+        tried = -1; clearT(tryNext); secUntil = Date.now() + 2500; goSection(step());
         emit({ how });
         if (busyBy()) { hold(busyBy()); return; }
         render();

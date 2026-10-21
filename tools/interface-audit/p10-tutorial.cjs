@@ -1,11 +1,15 @@
 'use strict';
-/* P10: the tutorial replayed from Settings. Walks every step with Next and records: the count line, whether the spotlight
+/* P10: the tutorial replayed from Settings. Since 21 Oct 2026 a tap on the Home bubble (data-orbit="settings", now called
+   Community) opens Community; Settings opens by HOLDING it, so this holds it (pointer down, 700 ms still, up). Walks every step with Next and records: the count line, whether the spotlight
    found its target (hole size), whether the card covers the spotlit target, and what Skip / Back do. (The progress dots were removed 21 Oct 2026; it now flags any that come back.) */
 const L = require('./lib.cjs');
 (async () => {
   const h = await L.launch({ device: process.argv[2] || 'iPhone 13' });
   const { page } = h; await L.openApp(h, { settle: 2500 });
-  await L.tap(page, '[data-orbit="settings"]'); await L.sleep(1300);
+  const b = await page.evaluate(() => { const e = document.querySelector('[data-orbit="settings"]'); if (!e) return null; const r = e.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; });
+  if (!b) { console.log('FAIL no Community bubble on Home'); process.exit(1); }
+  await page.mouse.move(b[0], b[1]); await page.mouse.down(); await L.sleep(700); await page.mouse.up(); await L.sleep(1300);
+  if (!(await page.locator('.ss2-page [data-ss2="tutorial"]').count())) { console.log('FAIL holding Community did not open Settings with a Tutorial row'); process.exit(1); }
   await page.locator('.ss2-page [data-ss2="tutorial"]').scrollIntoViewIfNeeded().catch(() => { });
   await L.tap(page, '.ss2-page [data-ss2="tutorial"]'); await L.sleep(2500);
   const read = () => page.evaluate(() => {

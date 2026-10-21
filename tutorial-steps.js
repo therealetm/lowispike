@@ -8,6 +8,11 @@
    - Every Home ring control (home-orbit-v2.js ORDER) and every Settings row (home-settings-sleep-v2.js pageGroups + MORE) is in
      some step's `covers` or in NO_TUTORIAL with a reason. tests/tutorial-steps.test.cjs fails otherwise.
    - When you change a step, bump VERSION.
+   - Every gesture the app answers to (tap, hold, drag, pinch, double or triple tap, swipe, push) is in GESTURES below, and every
+     GESTURES entry is in some step's `teaches`. tests/tutorial-gestures.test.cjs scans the app's code for gesture handlers and
+     fails when a file with one is neither in GESTURES nor in GESTURE_EXEMPT with a reason (Oct 21 2026, Emmanuel: "So many
+     gestures are not even explained in the tutorial ... Pinch, click, long click, press, all this stuff, how are people supposed
+     to know? Needs to be in the tutorial.").
 
    Step fields:
      id       unique, lower-case
@@ -16,10 +21,17 @@
      when     optional condition name, evaluated by tutorial.js (claimReady: no own companion AND LowiBirthCompanion.claim exists)
      action   optional: 'claim' opens the claim-your-own-companion step (built by the own-companion task, not here)
      covers   feature ids this step explains (ring controls, Settings rows, other features)
+     teaches  GESTURES ids this step teaches
+     where    the section the step is shown in: 'home' (default), 'community' or 'scan'. tutorial.js takes the user there.
+     rm       optional Community top tab for the step: 'room', 'chat', 'create' or 'aff'
+     tryIt    { how, anywhere? }: the user does the gesture instead of only reading about it. how is tap, hold, drag, pinch,
+              double, triple or swipe; anywhere: the gesture counts anywhere on screen, not only on the target. Touches go
+              through the dimmed screen on these steps. If the gesture opened something, the tour waits and moves on once it
+              is closed; otherwise it moves on by itself. Next still skips it.
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 8;
+    const VERSION = 10;
     const AREAS = ['you', 'home', 'food', 'play', 'companion', 'together', 'settings', 'extras', 'end'];
     const STEPS = [
         /* ---------- part: you (your companion) ---------- */
@@ -45,12 +57,30 @@
             }
         },
         {
-            id: 'touch', area: 'you', target: ['[data-home-misty]', '#spBubble'], covers: ['companion-card'],
-            title: { en: 'Tap or hold me', de: 'Tipp oder halt mich', es: 'Tócame o mantenme' },
+            id: 'touch', area: 'you', target: ['[data-home-misty]', '#spBubble'], covers: ['companion-card'], teaches: ['misty-tap'], tryIt: { how: 'tap' },
+            title: { en: 'Tap me', de: 'Tipp mich an', es: 'Tócame' },
             text: {
-                en: 'Tap me to play. Hold me to open my card: my energy, my forms and my home are all in there.',
-                de: 'Tipp mich an zum Spielen. Halt mich gedrückt für meine Karte: Da sind meine Energie, meine Formen und mein Zuhause.',
-                es: 'Tócame para jugar. Mantenme pulsado para abrir mi tarjeta: ahí están mi energía, mis formas y mi casa.'
+                en: 'Tap me once. That’s how we play.',
+                de: 'Tipp mich einmal an. So spielen wir.',
+                es: 'Tócame una vez. Así jugamos.'
+            }
+        },
+        {
+            id: 'misty-hold', area: 'you', target: ['[data-home-misty]', '#spBubble'], covers: ['companion-card'], teaches: ['misty-hold', 'misty-squish'], tryIt: { how: 'hold' },
+            title: { en: 'Hold me', de: 'Halt mich gedrückt', es: 'Mantenme pulsado' },
+            text: {
+                en: 'Now keep your finger on me for a second. My card opens: my energy, my forms and my home. Close it to come back here.',
+                de: 'Jetzt lass deinen Finger kurz auf mir. Meine Karte geht auf: Energie, Formen und mein Zuhause. Schließ sie, dann geht’s hier weiter.',
+                es: 'Ahora deja el dedo sobre mí un segundo. Se abre mi tarjeta: mi energía, mis formas y mi casa. Ciérrala para volver aquí.'
+            }
+        },
+        {
+            id: 'misty-turn', area: 'you', target: ['[data-home-misty]', '#spBubble'], covers: [], teaches: ['misty-turn'], tryIt: { how: 'drag' },
+            title: { en: 'Turn me', de: 'Dreh mich', es: 'Gírame' },
+            text: {
+                en: 'Put your finger on me and slide it sideways. I turn to where you pull.',
+                de: 'Leg deinen Finger auf mich und schieb ihn zur Seite. Ich drehe mich dorthin, wohin du ziehst.',
+                es: 'Pon el dedo sobre mí y deslízalo hacia un lado. Me giro hacia donde tiras.'
             }
         },
         {
@@ -82,7 +112,7 @@
         },
         /* ---------- part: home (the bubbles) ---------- */
         {
-            id: 'bubbles', area: 'home', target: null, covers: ['home-ring'],
+            id: 'bubbles', area: 'home', target: null, covers: ['home-ring'], teaches: [],
             title: { en: 'Your day, in bubbles', de: 'Dein Tag in Blasen', es: 'Tu día en burbujas' },
             text: {
                 en: 'The bubbles around me are your day. Each one opens with a single tap. Let’s go through them.',
@@ -100,7 +130,16 @@
             }
         },
         {
-            id: 'gap-tap', area: 'home', target: ['#spFast'], covers: ['fasting'],
+            id: 'ring-still', area: 'home', target: ['#whHud .wh-water', '#whHud .wh-meals'], covers: [], teaches: ['ring-still'],
+            title: { en: 'Stop the ring', de: 'Ring anhalten', es: 'Para el anillo' },
+            text: {
+                en: 'The bubbles slowly circle me. Touch any bubble and the ring stops, so it’s easy to hit.',
+                de: 'Die Blasen kreisen langsam um mich. Berühr eine Blase und der Ring bleibt stehen, dann triffst du sie leicht.',
+                es: 'Las burbujas giran despacio a mi alrededor. Toca cualquiera y el anillo se para, así es fácil acertar.'
+            }
+        },
+        {
+            id: 'gap-tap', area: 'home', target: ['#spFast'], covers: ['fasting'], teaches: ['gap-tap'], tryIt: { how: 'tap' },
             title: { en: 'Inside the Gap', de: 'In der Pause', es: 'Dentro de la pausa' },
             text: {
                 en: 'Tap Gap to see the time since your last meal on the six planets, with what typically happens along the way. Fix the time there if it is wrong. Logging a meal in Fuel restarts it, with its points.',
@@ -109,7 +148,7 @@
             }
         },
         {
-            id: 'fuel', area: 'home', target: ['#whHud .wh-meals'], covers: ['fuel', 'cook', 'shop'],
+            id: 'fuel', area: 'home', target: ['#whHud .wh-meals'], covers: ['fuel', 'cook', 'shop'], teaches: ['fuel-tap'],
             title: { en: 'Fuel', de: 'Essen', es: 'Comida' },
             text: {
                 en: 'Fuel is everything about food. "1/3 meals" means one of today\'s three meals is logged. Log meal is for what you ate, Shop checks products in the shop and keeps your list, Cook has meal ideas.',
@@ -118,7 +157,16 @@
             }
         },
         {
-            id: 'log-meal', area: 'home', target: ['#whHud .wh-meals'], covers: ['log-meal'],
+            id: 'fuel-hold', area: 'home', target: ['#whHud .wh-meals'], covers: [], teaches: ['fuel-hold'], tryIt: { how: 'hold' },
+            title: { en: 'Hold Fuel', de: 'Fuel gedrückt halten', es: 'Mantén Fuel' },
+            text: {
+                en: 'Shortcut: hold Fuel and Log meal opens right away. Try it, then close it to come back here.',
+                de: 'Abkürzung: Halt Fuel gedrückt, dann geht Mahlzeit eintragen sofort auf. Probier’s und schließ es wieder.',
+                es: 'Atajo: mantén pulsado Fuel y se abre Registrar comida al instante. Pruébalo y ciérralo para volver.'
+            }
+        },
+        {
+            id: 'log-meal', area: 'home', target: ['#whHud .wh-meals'], covers: ['log-meal'], teaches: [],
             title: { en: 'Log meal', de: 'Mahlzeit eintragen', es: 'Registrar comida' },
             text: {
                 en: 'Eating? Log meal is the one place for it: snap a photo, type what you ate, like “chicken stew”, or tap a recent meal. I fill in the numbers, and saving ends your fast with its points.',
@@ -127,7 +175,7 @@
             }
         },
         {
-            id: 'water', area: 'home', target: ['#whHud .wh-water'], covers: ['water', 'hydration'],
+            id: 'water', area: 'home', target: ['#whHud .wh-water'], covers: ['water', 'hydration'], teaches: ['water-tap'], tryIt: { how: 'tap' },
             title: { en: 'Water', de: 'Wasser', es: 'Agua' },
             text: {
                 en: 'Tap Water, then +1 cup each time you drink. Undo takes one back if you tapped by mistake.',
@@ -136,7 +184,16 @@
             }
         },
         {
-            id: 'move', area: 'home', target: ['#whHud .wh-move'], covers: ['move'],
+            id: 'water-hold', area: 'home', target: ['#whHud .wh-water'], covers: [], teaches: ['water-hold'],
+            title: { en: 'Start water over', de: 'Wasser neu starten', es: 'Empezar el agua de nuevo' },
+            text: {
+                en: 'Tapped too many cups? Hold Water for a moment and today’s water goes back to 0.',
+                de: 'Zu viele Becher getippt? Halt Wasser kurz gedrückt, dann steht das Wasser von heute wieder auf 0.',
+                es: '¿Demasiados vasos? Mantén pulsado Agua un momento y el agua de hoy vuelve a 0.'
+            }
+        },
+        {
+            id: 'move', area: 'home', target: ['#whHud .wh-move'], covers: ['move'], teaches: ['move-tap'],
             title: { en: 'Move', de: 'Bewegung', es: 'Movimiento' },
             text: {
                 en: 'Tap Move after anything active, a walk, stairs, dancing, and pick Quick, Medium, Long or Epic.',
@@ -145,7 +202,16 @@
             }
         },
         {
-            id: 'sleep', area: 'home', target: ['#whHud .o8-sleep'], covers: ['sleep'],
+            id: 'move-hold', area: 'home', target: ['#whHud .wh-move'], covers: [], teaches: ['move-hold'], tryIt: { how: 'hold' },
+            title: { en: 'Fix your moves', de: 'Bewegung korrigieren', es: 'Corrige tus movimientos' },
+            text: {
+                en: 'Picked the wrong one? Hold Move to change or remove today’s moves. Try it, then close it.',
+                de: 'Falsches gewählt? Halt Move gedrückt, um die Bewegung von heute zu ändern oder zu löschen. Probier’s und schließ es.',
+                es: '¿Elegiste mal? Mantén pulsado Move para cambiar o borrar lo de hoy. Pruébalo y ciérralo.'
+            }
+        },
+        {
+            id: 'sleep', area: 'home', target: ['#whHud .o8-sleep'], covers: ['sleep'], teaches: ['sleep-tap'],
             title: { en: 'Sleep', de: 'Schlaf', es: 'Sueño' },
             text: {
                 en: 'Once a day, tap Sleep and tell me how last night went: slept well, okay or a short night. It stays private on your account.',
@@ -155,7 +221,7 @@
         },
         /* ---------- part: food (scan and photos) ---------- */
         {
-            id: 'scan', area: 'food', target: ['#whHud .o8-scan'], covers: ['scan', 'barcode'],
+            id: 'scan', area: 'food', target: ['#whHud .o8-scan'], covers: ['scan', 'barcode'], teaches: ['scan-tap'], tryIt: { how: 'tap' },
             title: { en: 'Scan', de: 'Scannen', es: 'Escanear' },
             text: {
                 en: 'Tap Scan and point it at a product’s barcode. I read what’s inside and how it fits your day.',
@@ -164,7 +230,34 @@
             }
         },
         {
-            id: 'snap', area: 'food', target: ['#whHud .o8-scan'], covers: ['snap-food'],
+            id: 'scan-in', area: 'food', where: 'scan', target: ['#b3ScanBtn', '#b3TypeBtn'], covers: [], teaches: ['scan-buttons'],
+            title: { en: 'Inside Scan', de: 'In Scan', es: 'Dentro de Scan' },
+            text: {
+                en: 'This is Scan, for checking a product, like in the shop. Tap the big button and hold the barcode in front of the camera. No barcode? Tap the keyboard to type the name, or the camera to take a photo of the pack.',
+                de: 'Das ist Scan, zum Prüfen von Produkten, zum Beispiel im Laden. Tipp den großen Knopf und halt den Barcode vor die Kamera. Kein Barcode? Tipp die Tastatur und schreib den Namen, oder die Kamera für ein Foto der Packung.',
+                es: 'Esto es Scan, para revisar un producto en la tienda. Toca el botón grande y pon el código de barras delante de la cámara. ¿Sin código? Toca el teclado para escribir el nombre, o la cámara para una foto del paquete.'
+            }
+        },
+        {
+            id: 'deep', area: 'food', where: 'scan', target: ['#b3Deep', '#b3PhotoBtn'], covers: ['deep-analyze'], teaches: ['scan-deep'],
+            title: { en: 'Deep analyze', de: 'Deep analyze', es: 'Deep analyze' },
+            text: {
+                en: 'Product not found? Tap Deep analyze. One tap opens the LOWiSPIKE GPT in ChatGPT: send it a photo of the pack and it tells you if it will spike you.',
+                de: 'Produkt nicht gefunden? Tipp Deep analyze. Ein Tipp öffnet das LOWiSPIKE-GPT in ChatGPT: Schick ihm ein Foto der Packung und es sagt dir, ob sie dich spiket.',
+                es: '¿No aparece el producto? Toca Deep analyze. Un toque abre el GPT de LOWiSPIKE en ChatGPT: mándale una foto del paquete y te dice si te dispara el azúcar.'
+            }
+        },
+        {
+            id: 'fix-food', area: 'food', where: 'scan', target: null, covers: ['fix-food'], teaches: ['fix-field'],
+            title: { en: 'Fix a food', de: 'Essen korrigieren', es: 'Corregir una comida' },
+            text: {
+                en: 'Did I guess a food wrong? Tap its card. In “What is it really?” start typing and tap the right product from the list. Then set how many pieces, and the numbers update right away.',
+                de: 'Hab ich ein Essen falsch erkannt? Tipp seine Karte an. Bei „Was ist es wirklich?“ fang an zu tippen und wähl das richtige Produkt aus der Liste. Dann stell die Stückzahl ein, die Werte passen sich sofort an.',
+                es: '¿Adiviné mal una comida? Toca su tarjeta. En “¿Qué es en realidad?” empieza a escribir y toca el producto correcto de la lista. Luego elige cuántas piezas y los números se actualizan al instante.'
+            }
+        },
+        {
+            id: 'snap', area: 'food', where: 'scan', target: ['#b3ScanBtn'], covers: ['snap-food'], teaches: [],
             title: { en: 'Snap food', de: 'Essen fotografieren', es: 'Foto de comida' },
             text: {
                 en: 'Snap is inside Log meal (in Fuel, and in Scan next to Barcode): pick the meal, tap Snap. The spike answer comes first, then each food on its own card. Tap one to fix it, then log it.',
@@ -173,7 +266,7 @@
             }
         },
         {
-            id: 'photo-checks', area: 'food', target: ['#whHud .o8-scan'], covers: ['photo-checks'],
+            id: 'photo-checks', area: 'food', where: 'scan', target: null, covers: ['photo-checks'], teaches: [],
             title: { en: '3 photo checks a day', de: '3 Foto-Checks am Tag', es: '3 fotos al día' },
             text: {
                 en: 'Everyone gets 3 photo checks a day, and new ones come at midnight. Typing what you ate always works, as often as you like.',
@@ -183,7 +276,16 @@
         },
         /* ---------- part: play (flying and worlds) ---------- */
         {
-            id: 'joystick', area: 'play', target: ['#whPad'], covers: ['joy'],
+            id: 'look', area: 'play', target: null, covers: [], teaches: ['world-drag'], tryIt: { how: 'drag', anywhere: true },
+            title: { en: 'Look around', de: 'Umschauen', es: 'Mira alrededor' },
+            text: {
+                en: 'Slide one finger over an empty spot of my world. The view turns with your finger.',
+                de: 'Schieb einen Finger über eine freie Stelle meiner Welt. Die Ansicht dreht sich mit deinem Finger.',
+                es: 'Desliza un dedo por un hueco vacío de mi mundo. La vista gira con tu dedo.'
+            }
+        },
+        {
+            id: 'joystick', area: 'play', target: ['#whPad'], covers: ['joy'], teaches: ['pad-drag'], tryIt: { how: 'drag' },
             title: { en: 'Fly me', de: 'Lass mich fliegen', es: 'Hazme volar' },
             text: {
                 en: 'This is the joystick. Drag it and I fly where you point.',
@@ -192,7 +294,7 @@
             }
         },
         {
-            id: 'joystick-hold', area: 'play', target: ['#whPad'], covers: ['joy-hold'],
+            id: 'joystick-hold', area: 'play', target: ['#whPad'], covers: ['joy-hold'], teaches: ['pad-hold', 'pad-back'], tryIt: { how: 'hold' },
             title: { en: 'Forward and back', de: 'Vor und zurück', es: 'Adelante y atrás' },
             text: {
                 en: 'Hold the middle of the joystick to go forward. Tap, then hold, to go back.',
@@ -201,7 +303,16 @@
             }
         },
         {
-            id: 'autopilot', area: 'play', target: ['#whPad'], covers: ['autopilot'],
+            id: 'energy-shot', area: 'play', target: ['#whPad'], covers: [], teaches: ['energy-shot'],
+            title: { en: 'Shoot energy', de: 'Energie schießen', es: 'Dispara energía' },
+            text: {
+                en: 'Two fingers: keep one on the joystick, and tap the world twice quickly with the other. I shoot energy that heals a world.',
+                de: 'Zwei Finger: Einer bleibt auf dem Joystick, mit dem anderen tippst du zweimal schnell auf die Welt. Dann schieße ich Energie, die eine Welt heilt.',
+                es: 'Dos dedos: deja uno en el joystick y toca el mundo dos veces rápido con el otro. Disparo energía que cura un mundo.'
+            }
+        },
+        {
+            id: 'autopilot', area: 'play', target: ['#whPad'], covers: ['autopilot'], teaches: ['pad-triple'], tryIt: { how: 'triple' },
             title: { en: 'Autopilot', de: 'Autopilot', es: 'Piloto automático' },
             text: {
                 en: 'Tap the joystick three times quickly and autopilot turns on. Then I go exploring on my own.',
@@ -210,7 +321,16 @@
             }
         },
         {
-            id: 'zoom', area: 'play', target: ['#whHud .wh-zoom', '#whPad'], covers: ['zoom', 'map'],
+            id: 'clean-view', area: 'play', target: null, covers: [], teaches: ['clean-tap'],
+            title: { en: 'Buttons gone?', de: 'Knöpfe weg?', es: '¿Se fueron los botones?' },
+            text: {
+                en: 'While I fly, the buttons fade away so you can watch. Tap the screen once and they come back.',
+                de: 'Während ich fliege, blenden die Knöpfe aus, damit du zuschauen kannst. Tipp einmal auf den Bildschirm, dann sind sie wieder da.',
+                es: 'Mientras vuelo, los botones desaparecen para que puedas mirar. Toca la pantalla una vez y vuelven.'
+            }
+        },
+        {
+            id: 'zoom', area: 'play', target: ['#whHud .wh-zoom', '#whPad'], covers: ['zoom', 'map'], teaches: ['world-pinch', 'map-button'], tryIt: { how: 'pinch', anywhere: true },
             title: { en: 'Zoom and World map', de: 'Zoom und Weltkarte', es: 'Zoom y mapa' },
             text: {
                 en: 'Pinch to zoom in and out. The World map shows every world at once and takes you straight to the one you pick.',
@@ -219,7 +339,7 @@
             }
         },
         {
-            id: 'fly-out', area: 'play', target: ['[data-home-misty]', '#spBubble'], covers: ['fly-out'],
+            id: 'fly-out', area: 'play', target: ['[data-home-misty]', '#spBubble'], covers: ['fly-out'], teaches: [],
             title: { en: 'Out of my bubble', de: 'Raus aus meiner Blase', es: 'Fuera de mi burbuja' },
             text: {
                 en: 'Fly me out of my bubble and into space. Out there, every glowing bubble is a world you can visit.',
@@ -228,7 +348,7 @@
             }
         },
         {
-            id: 'worlds', area: 'play', target: ['#whHud .wh-zoom', '#whPad'], covers: ['worlds'],
+            id: 'worlds', area: 'play', target: ['#whHud .wh-zoom', '#whPad'], covers: ['worlds'], teaches: ['galaxy-bubble'],
             title: { en: 'Worlds', de: 'Welten', es: 'Mundos' },
             text: {
                 en: 'Fly into a glowing bubble to visit a body world: lungs, brain, gut, muscle and more.',
@@ -237,7 +357,25 @@
             }
         },
         {
-            id: 'world-energy', area: 'play', target: ['[data-home-misty]', '#spBubble'], covers: ['half-energy'],
+            id: 'in-world', area: 'play', target: null, covers: [], teaches: ['place-tap', 'world-inside'],
+            title: { en: 'Inside a world', de: 'In einer Welt', es: 'Dentro de un mundo' },
+            text: {
+                en: 'Inside a world, tap a glowing place to fly there. Pinch with two fingers, or tap twice quickly, to zoom into a spot.',
+                de: 'In einer Welt tippst du auf einen leuchtenden Ort, um hinzufliegen. Zieh zwei Finger auseinander oder tipp zweimal schnell, um näher ranzugehen.',
+                es: 'Dentro de un mundo, toca un lugar brillante para volar allí. Pellizca con dos dedos, o toca dos veces rápido, para acercarte a un punto.'
+            }
+        },
+        {
+            id: 'world-extras', area: 'play', target: null, covers: [], teaches: ['region-pal', 'arrival-x', 'tilt'],
+            title: { en: 'Facts and tilt', de: 'Fakten und Kippen', es: 'Datos e inclinar' },
+            text: {
+                en: 'Tap the little creature in a world for the next fact, and the X to close a gold card. With the tilt button on, move your phone to look around.',
+                de: 'Tipp das kleine Wesen in einer Welt für den nächsten Fakt an und das X, um eine goldene Karte zu schließen. Mit dem Kipp-Knopf an bewegst du dein Handy zum Umschauen.',
+                es: 'Toca la criaturita de un mundo para el siguiente dato y la X para cerrar una tarjeta dorada. Con el botón de inclinar activado, mueve el móvil para mirar alrededor.'
+            }
+        },
+        {
+            id: 'world-energy', area: 'play', target: ['[data-home-misty]', '#spBubble'], covers: ['half-energy'], teaches: [],
             title: { en: 'Too tired to fly in', de: 'Zu müde für Welten', es: 'Demasiado cansado' },
             text: {
                 en: 'Below half energy I’m too tired to get into worlds. A glass of water or a meal gets me going again.',
@@ -255,12 +393,21 @@
             }
         },
         {
-            id: 'world-sound', area: 'play', target: ['#whHud .o8-settings'], covers: ['worldSound'],
+            id: 'world-sound', area: 'play', target: ['#whHud .o8-settings'], covers: ['worldSound'], teaches: ['sound-strings'],
             title: { en: 'World sound', de: 'Weltklang', es: 'Sonido del mundo' },
             text: {
-                en: 'In Settings, World sound gives every world its own sound.',
-                de: 'In den Einstellungen gibt Weltklang jeder Welt ihren eigenen Klang.',
-                es: 'En Ajustes, Sonido del mundo da a cada mundo su propio sonido.'
+                en: 'In Settings, World sound gives every world its own sound. In its Sound panel, touch a string to play it, swipe across the strings to strum, and slide along one to bend the note.',
+                de: 'In den Einstellungen gibt Weltklang jeder Welt ihren eigenen Klang. Im Klang-Fenster berührst du eine Saite, um sie zu spielen, wischst quer darüber, um zu schrammeln, und gleitest an einer entlang, um den Ton zu ziehen.',
+                es: 'En Ajustes, Sonido del mundo da a cada mundo su propio sonido. En su panel de sonido, toca una cuerda para tocarla, desliza por encima de las cuerdas para rasguear y desliza a lo largo de una para doblar la nota.'
+            }
+        },
+        {
+            id: 'secret', area: 'play', target: null, covers: [], teaches: ['edge-push'],
+            title: { en: 'A secret', de: 'Ein Geheimnis', es: 'Un secreto' },
+            text: {
+                en: 'Steer me into the edge of my world and keep pushing for a few seconds. See what happens.',
+                de: 'Steuer mich an den Rand meiner Welt und drück ein paar Sekunden weiter. Schau, was passiert.',
+                es: 'Llévame hasta el borde de mi mundo y sigue empujando unos segundos. Mira lo que pasa.'
             }
         },
         /* ---------- part: companion (forms and home) ---------- */
@@ -294,16 +441,52 @@
         },
         /* ---------- part: together (community) ---------- */
         {
-            id: 'community', area: 'together', target: ['#whHud .o8-settings'], covers: ['community'],
+            id: 'community', area: 'together', target: ['#whHud .o8-settings'], covers: ['community'], teaches: ['community-tap'], tryIt: { how: 'tap' },
             title: { en: 'Community', de: 'Community', es: 'Comunidad' },
             text: {
-                en: 'Meet everyone else and their companions here. Tap the Community bubble at the top of Home. Tabs: Room, Chat, Creation, Affiliates. Tap the Community name for rooms, your profile and invite links.',
-                de: 'Hier triffst du alle anderen und ihre Begleiter. Tipp oben auf Home auf die Community-Blase. Tabs: Raum, Chat, Erstellen, Affiliates. Tipp auf den Community-Namen für Räume, Profil und Einladungslinks.',
-                es: 'Aquí conoces a los demás y a sus compañeros. Toca la burbuja Comunidad, arriba en Inicio. Pestañas: Sala, Chat, Crear, Afiliados. Toca el nombre de Comunidad para salas, tu perfil y enlaces de invitación.'
+                en: 'Meet everyone else and their companions. Tap the Community bubble at the top now and I take you there.',
+                de: 'Hier triffst du alle anderen und ihre Begleiter. Tipp jetzt oben auf die Community-Blase, dann nehme ich dich mit.',
+                es: 'Aquí conoces a los demás y a sus compañeros. Toca ahora la burbuja Comunidad, arriba, y te llevo allí.'
             }
         },
         {
-            id: 'post', area: 'together', target: ['#whHud .o8-settings'], covers: ['community-post'],
+            id: 'cm-tabs', area: 'together', where: 'community', rm: 'room', target: ['.rm-tabs', '.rm-tab[data-rm="room"]'], covers: ['community-tabs'], teaches: ['cm-tabs'],
+            title: { en: 'Community tabs', de: 'Community-Tabs', es: 'Pestañas de Comunidad' },
+            text: {
+                en: 'Tap these tabs to switch: Room is the galaxy with everyone’s companions, Chat is the messages, Creation is for making content and Affiliates is for earning with LOWiSPIKE.',
+                de: 'Tipp auf diese Tabs zum Wechseln: Raum ist die Galaxie mit allen Begleitern, Chat sind die Nachrichten, Erstellen ist für Content und Affiliates zum Verdienen mit LOWiSPIKE.',
+                es: 'Toca estas pestañas para cambiar: Sala es la galaxia con los compañeros de todos, Chat son los mensajes, Crear es para hacer contenido y Afiliados para ganar con LOWiSPIKE.'
+            }
+        },
+        {
+            id: 'cm-name', area: 'together', where: 'community', rm: 'room', target: ['.rm-menu-btn', '.rm-name'], covers: [], teaches: ['cm-name'],
+            title: { en: 'Rooms and profile', de: 'Räume und Profil', es: 'Salas y perfil' },
+            text: {
+                en: 'Tap the Community name up here for rooms and invite links. Tap your picture for your profile.',
+                de: 'Tipp oben auf den Community-Namen für Räume und Einladungslinks. Tipp auf dein Bild für dein Profil.',
+                es: 'Toca arriba el nombre de Comunidad para salas y enlaces de invitación. Toca tu foto para tu perfil.'
+            }
+        },
+        {
+            id: 'cm-galaxy', area: 'together', where: 'community', rm: 'room', target: null, covers: [], teaches: ['cm-pan', 'cm-zoom'], tryIt: { how: 'drag', anywhere: true },
+            title: { en: 'Move around', de: 'Bewegen', es: 'Muévete' },
+            text: {
+                en: 'Drag one finger to move around the galaxy. Pinch, or tap twice quickly, to zoom in.',
+                de: 'Zieh mit einem Finger, um dich in der Galaxie zu bewegen. Mit zwei Fingern oder zweimal schnell tippen zoomst du rein.',
+                es: 'Arrastra un dedo para moverte por la galaxia. Pellizca, o toca dos veces rápido, para acercarte.'
+            }
+        },
+        {
+            id: 'cm-people', area: 'together', where: 'community', rm: 'room', target: null, covers: ['person-card'], teaches: ['cm-hold'],
+            title: { en: 'Meet someone', de: 'Jemanden kennenlernen', es: 'Conoce a alguien' },
+            text: {
+                en: 'Hold your finger on someone’s companion, or on their name, to open their card. From there you can say hi.',
+                de: 'Halt deinen Finger auf den Begleiter von jemandem oder auf seinen Namen, dann geht seine Karte auf. Von dort kannst du Hallo sagen.',
+                es: 'Mantén el dedo sobre el compañero de alguien, o sobre su nombre, para abrir su tarjeta. Desde ahí puedes saludar.'
+            }
+        },
+        {
+            id: 'post', area: 'together', where: 'community', rm: 'chat', target: null, covers: ['community-post'], teaches: [],
             title: { en: 'Share a meal', de: 'Mahlzeit teilen', es: 'Comparte una comida' },
             text: {
                 en: 'Post a photo of your meal so everyone can see what you’re eating. Photo posts use the same 3 photo checks a day.',
@@ -312,7 +495,7 @@
             }
         },
         {
-            id: 'chat', area: 'together', target: ['#whHud .o8-settings'], covers: ['community-chat'],
+            id: 'chat', area: 'together', where: 'community', rm: 'chat', target: ['.rm-crumb', '.rm-tabs'], covers: ['community-chat'], teaches: ['cm-room'],
             title: { en: 'Community chat', de: 'Community-Chat', es: 'Chat de la comunidad' },
             text: {
                 en: 'Tap Chat in Community to open your room of up to 30 people. At the top, Room shows the galaxy game and Chat shows the messages; tap the room chip to find someone and join their room.',
@@ -321,7 +504,16 @@
             }
         },
         {
-            id: 'send-energy', area: 'together', target: ['#whHud .o8-settings'], covers: ['community-energy'],
+            id: 'voice', area: 'together', where: 'community', rm: 'chat', target: ['#cmMic', '#cmPhoto'], covers: ['voice-message', 'photo-message'], teaches: ['cm-mic', 'cm-photo'],
+            title: { en: 'Talk instead of typing', de: 'Sprechen statt tippen', es: 'Habla en vez de escribir' },
+            text: {
+                en: 'Hold the mic and talk. Let go to send it, or slide left to cancel. A quick tap keeps it recording until you tap send. The camera sends a photo.',
+                de: 'Halt das Mikro gedrückt und sprich. Loslassen schickt es ab, nach links wischen bricht ab. Kurz tippen nimmt weiter auf, bis du auf Senden tippst. Die Kamera schickt ein Foto.',
+                es: 'Mantén pulsado el micro y habla. Suelta para enviar o desliza a la izquierda para cancelar. Un toque rápido sigue grabando hasta que toques enviar. La cámara envía una foto.'
+            }
+        },
+        {
+            id: 'send-energy', area: 'together', where: 'community', rm: 'room', target: ['.ce-joy'], covers: ['community-energy'], teaches: ['cm-energy'],
             title: { en: 'Send energy', de: 'Energie schicken', es: 'Enviar energía' },
             text: {
                 en: 'In the Community galaxy, pull the small blue joystick to aim me, then let go. Whoever my energy burst hits gets energy, never damage. They roll like a billiard ball, knock into others and stay where they stop.',
@@ -331,12 +523,57 @@
         },
         /* ---------- part: settings ---------- */
         {
-            id: 'settings', area: 'settings', target: ['#whHud .o8-settings'], covers: ['settings', 'theme', 'language'],
+            id: 'creation', area: 'together', where: 'community', rm: 'create', target: ['.rm-tab[data-rm="create"]', '.rm-tabs'], covers: ['creation'], teaches: [],
+            title: { en: 'Creation', de: 'Erstellen', es: 'Crear' },
+            text: {
+                en: 'Creation is where you make content for your videos. Tap a tool to open it.',
+                de: 'Unter Erstellen machst du Content für deine Videos. Tipp ein Werkzeug an, um es zu öffnen.',
+                es: 'En Crear haces contenido para tus vídeos. Toca una herramienta para abrirla.'
+            }
+        },
+        {
+            id: 'affiliates', area: 'together', where: 'community', rm: 'aff', target: ['.rm-tab[data-rm="aff"]', '.rm-tabs'], covers: ['affiliates'], teaches: ['aff-card'],
+            title: { en: 'Affiliates', de: 'Affiliates', es: 'Afiliados' },
+            text: {
+                en: 'Earn by sharing LOWiSPIKE. Tap a product card to see its video script, then tap the copy button to copy it. Below it you see your level and what you earn.',
+                de: 'Verdien Geld, indem du LOWiSPIKE teilst. Tipp eine Produktkarte an, um ihr Video-Skript zu sehen, und tipp auf Kopieren, um es zu kopieren. Darunter siehst du dein Level und was du verdienst.',
+                es: 'Gana compartiendo LOWiSPIKE. Toca la tarjeta de un producto para ver su guion de vídeo y luego el botón de copiar para copiarlo. Debajo ves tu nivel y lo que ganas.'
+            }
+        },
+        {
+            id: 'swipe-pages', area: 'together', where: 'community', target: null, covers: [], teaches: ['page-swipe'], tryIt: { how: 'swipe', anywhere: true },
+            title: { en: 'Swipe back home', de: 'Zurück nach Home wischen', es: 'Desliza a Inicio' },
+            text: {
+                en: 'Swipe sideways from the edge of the screen to go between Community and Home. Try it now.',
+                de: 'Wisch vom Bildschirmrand zur Seite, um zwischen Community und Home zu wechseln. Probier’s jetzt.',
+                es: 'Desliza de lado desde el borde de la pantalla para pasar entre Comunidad e Inicio. Pruébalo ahora.'
+            }
+        },
+        {
+            id: 'pinch-galaxy', area: 'together', target: null, covers: [], teaches: ['pinch-galaxy'],
+            title: { en: 'Pinch into the galaxy', de: 'In die Galaxie zoomen', es: 'Pellizca hacia la galaxia' },
+            text: {
+                en: 'Another way: on Home, pinch two fingers together past the widest view and you land in the Community galaxy. Spread two fingers there to come back.',
+                de: 'Noch ein Weg: Schieb auf Home zwei Finger zusammen, über die weiteste Ansicht hinaus, dann landest du in der Community-Galaxie. Zieh dort zwei Finger auseinander, um zurückzukommen.',
+                es: 'Otra forma: en Inicio, junta dos dedos más allá de la vista más amplia y llegas a la galaxia de Comunidad. Separa dos dedos allí para volver.'
+            }
+        },
+        {
+            id: 'settings', area: 'settings', target: ['#whHud .o8-settings'], covers: ['settings', 'theme', 'language'], teaches: ['community-hold'], tryIt: { how: 'hold' },
             title: { en: 'Community and Settings', de: 'Community und Einstellungen', es: 'Comunidad y Ajustes' },
             text: {
-                en: 'The top bubble is Community: tap it to go there. Hold it for Settings: day or night, sounds, language and your account.',
-                de: 'Die oberste Blase ist Community: Tipp drauf, um hinzukommen. Halte sie für die Einstellungen: Tag oder Nacht, Töne, Sprache und dein Konto.',
-                es: 'La burbuja de arriba es Comunidad: tócala para ir. Mantenla pulsada para los Ajustes: día o noche, sonidos, idioma y tu cuenta.'
+                en: 'Now hold the Community bubble for a second. Settings opens: day or night, sounds, language and your account. Close it to come back here.',
+                de: 'Jetzt halt die Community-Blase kurz gedrückt. Die Einstellungen gehen auf: Tag oder Nacht, Töne, Sprache und dein Konto. Schließ sie, dann geht’s hier weiter.',
+                es: 'Ahora mantén pulsada la burbuja Comunidad un segundo. Se abren los Ajustes: día o noche, sonidos, idioma y tu cuenta. Ciérralos para volver aquí.'
+            }
+        },
+        {
+            id: 'theme', area: 'settings', target: ['#tbTheme'], covers: ['day-night'], teaches: ['theme-tap', 'theme-triple'],
+            title: { en: 'Day or night', de: 'Tag oder Nacht', es: 'Día o noche' },
+            text: {
+                en: 'Tap the moon or sun at the top to switch between day and night. Tap it three times quickly to fine-tune how bright it is.',
+                de: 'Tipp oben auf Mond oder Sonne, um zwischen Tag und Nacht zu wechseln. Tipp dreimal schnell, um die Helligkeit fein einzustellen.',
+                es: 'Toca la luna o el sol de arriba para cambiar entre día y noche. Tócalo tres veces rápido para ajustar el brillo.'
             }
         },
         {
@@ -352,9 +589,9 @@
             id: 'body', area: 'settings', target: ['#whHud .o8-settings'], covers: ['body', 'weight', 'bmi'],
             title: { en: 'Weight & BMI', de: 'Gewicht & BMI', es: 'Peso e IMC' },
             text: {
-                en: 'In Settings, Weight & BMI is where you weigh in. You get your BMI, an estimate of your body fat, and a Then and Now picture that levels up as you make progress.',
-                de: 'Unter Einstellungen, Gewicht & BMI trägst du dein Gewicht ein. Du bekommst deinen BMI, eine Schätzung deines Körperfetts und ein Damals-und-Jetzt-Bild, das mit deinem Fortschritt im Level steigt.',
-                es: 'En Ajustes, Peso e IMC es donde te pesas. Ves tu IMC, una estimación de tu grasa corporal y una imagen de Antes y Ahora que sube de nivel con tu progreso.'
+                en: 'In Community, your picture opens Weight & BMI, where you weigh in. You get your BMI, an estimate of your body fat, and a Then and Now picture that levels up as you make progress.',
+                de: 'In der Community öffnet dein Bild Gewicht & BMI, dort trägst du dein Gewicht ein. Du bekommst deinen BMI, eine Schätzung deines Körperfetts und ein Damals-und-Jetzt-Bild, das mit deinem Fortschritt im Level steigt.',
+                es: 'En Comunidad, tu foto abre Peso e IMC, donde te pesas. Ves tu IMC, una estimación de tu grasa corporal y una imagen de Antes y Ahora que sube de nivel con tu progreso.'
             }
         },
         {
@@ -386,7 +623,34 @@
         },
         /* ---------- part: extras (things that show up on their own) ---------- */
         {
-            id: 'day-card', area: 'extras', target: null, covers: ['day-card'],
+            id: 'sheets', area: 'extras', target: null, covers: [], teaches: ['sheet-drag', 'back-swipe'],
+            title: { en: 'Closing things', de: 'Dinge schließen', es: 'Cerrar cosas' },
+            text: {
+                en: 'To close a window that slid up, drag the little bar at its top down. Or swipe in from the left edge of the screen to go back.',
+                de: 'Um ein Fenster zu schließen, das hochgefahren ist, zieh den kleinen Balken oben nach unten. Oder wisch vom linken Bildschirmrand rein, um zurückzugehen.',
+                es: 'Para cerrar una ventana que subió, arrastra hacia abajo la barrita de arriba. O desliza desde el borde izquierdo de la pantalla para volver.'
+            }
+        },
+        {
+            id: 'cook-swipe', area: 'extras', target: null, covers: [], teaches: ['cook-swipe', 'foryou-swipe'],
+            title: { en: 'Meal ideas', de: 'Essensideen', es: 'Ideas de comida' },
+            text: {
+                en: 'In Fuel, Cook has meal ideas. In Swipe, swipe the cards sideways to go through them. For You is a feed: swipe up and down.',
+                de: 'In Fuel hat Kochen Essensideen. Bei Swipe wischst du die Karten zur Seite, um sie durchzugehen. Für dich ist ein Feed: wisch nach oben und unten.',
+                es: 'En Fuel, Cocinar tiene ideas de comida. En Swipe, desliza las tarjetas de lado para verlas. Para ti es un feed: desliza arriba y abajo.'
+            }
+        },
+        {
+            id: 'visits', area: 'extras', target: null, covers: ['home-visit'], teaches: ['visit-reply'],
+            title: { en: 'Visitors', de: 'Besuch', es: 'Visitas' },
+            text: {
+                en: 'Sometimes a friend’s companion visits your Home with a message. Tap Reply to answer them.',
+                de: 'Manchmal besucht dich der Begleiter von jemandem auf Home mit einer Nachricht. Tipp auf Antworten, um zurückzuschreiben.',
+                es: 'A veces el compañero de un amigo visita tu Inicio con un mensaje. Toca Responder para contestar.'
+            }
+        },
+        {
+            id: 'day-card', area: 'extras', target: null, covers: ['day-card'], teaches: [],
             title: { en: 'The Day card', de: 'Die Tageskarte', es: 'La tarjeta del día' },
             text: {
                 en: 'The first time you open me each day, a Day card shows which day you’re on and one goal for today. Tap Let’s go to close it.',
@@ -419,10 +683,87 @@
         gift: 'Gift of the day announces itself on Home when there is one; nothing to learn',
         weather: 'Weather is a read-only extra in Settings; self-explanatory'
     };
+
+    /* Every gesture the app answers to (Oct 21 2026 audit). src: the files whose handlers do it; the test checks they exist and
+       that every gesture handler the code scan finds sits in one of these files or in GESTURE_EXEMPT. how: tap, hold, drag,
+       pinch, double, triple, swipe, push or tilt. Each id must be in some step's teaches. */
+    const G = (id, where, how, src, what) => ({ id, where, how, src, what });
+    const GESTURES = [
+        G('misty-tap', 'home', 'tap', ['body-world-3d.js'], 'tap Misty: she plays'),
+        G('misty-hold', 'home', 'hold', ['body-world-3d.js', 'world-home.js'], 'hold Misty: her card (energy, forms, Evolution path, home)'),
+        G('misty-squish', 'home', 'hold', ['herb-touch.js', 'spirit.js', 'living-bubbles.js'], 'press Misty: her bubble squishes under your finger'),
+        G('misty-turn', 'home', 'drag', ['misty-turn.js'], 'drag starting on Misty: she turns'),
+        G('ring-still', 'home', 'hold', ['sym-home.js', 'home-orbit-v2.js'], 'touch an orbiting bubble: the ring stops'),
+        G('water-tap', 'home', 'tap', ['home-blooms-v2.js'], 'tap Water: +1 cup, Undo'),
+        G('water-hold', 'home', 'hold', ['world-home.js'], 'hold Water: today\'s water back to 0'),
+        G('fuel-tap', 'home', 'tap', ['home-blooms-v2.js'], 'tap Fuel: Log meal, Cook, Shop'),
+        G('fuel-hold', 'home', 'hold', ['home-blooms-v2.js'], 'hold Fuel: Log meal opens'),
+        G('move-tap', 'home', 'tap', ['home-blooms-v2.js', 'move-bubble.js'], 'tap Move: Quick, Medium, Long, Epic'),
+        G('move-hold', 'home', 'hold', ['home-blooms-v2.js', 'move-bubble.js'], 'hold Move: change today\'s moves'),
+        G('gap-tap', 'home', 'tap', ['home-blooms-v2.js', 'fast-bubble.js'], 'tap Gap: the Gap view'),
+        G('sleep-tap', 'home', 'tap', ['home-settings-sleep-v2.js'], 'tap Sleep: how long did you sleep'),
+        G('scan-tap', 'home', 'tap', ['home-orbit-v2.js'], 'tap Scan: the Scan screen'),
+        G('community-tap', 'home', 'tap', ['home-settings-sleep-v2.js'], 'tap Community: Community'),
+        G('community-hold', 'home', 'hold', ['home-settings-sleep-v2.js'], 'hold Community: slim Settings'),
+        G('theme-tap', 'home', 'tap', ['top-bar.js'], 'tap the moon/sun: day or night'),
+        G('theme-triple', 'home', 'triple', ['top-bar.js', 'atmosphere.js'], 'tap the moon/sun three times: Day & night adjuster'),
+        G('world-drag', 'home', 'drag', ['body-world-3d.js', 'world-home.js', 'body-world-3d-scene.js'], 'drag the world: look around'),
+        G('world-pinch', 'home', 'pinch', ['body-world-3d.js'], 'pinch: zoom in and out'),
+        G('map-button', 'home', 'tap', ['world-home.js'], 'tap the zoom button: World map and back'),
+        G('pad-drag', 'home', 'drag', ['misty-pad.js'], 'drag the joystick: steer'),
+        G('pad-hold', 'home', 'hold', ['misty-pad.js', 'misty-turn.js'], 'hold the joystick middle: forward'),
+        G('pad-back', 'home', 'hold', ['misty-pad.js'], 'tap, then hold the joystick: backwards'),
+        G('pad-triple', 'home', 'triple', ['misty-pad.js', 'misty-flight.js'], 'tap the joystick three times: autopilot'),
+        G('energy-shot', 'home', 'double', ['body-world-3d.js', 'misty-pad.js'], 'hold the joystick and double-tap the world: shoot energy'),
+        G('clean-tap', 'home', 'tap', ['clean-view.js'], 'tap the screen while flying: the buttons come back'),
+        G('edge-push', 'home', 'push', ['misty-galaxy.js', 'misty-flight.js'], 'push Misty into the edge of her world: out into the galaxy'),
+        G('galaxy-bubble', 'home', 'push', ['galaxy-bubbles.js'], 'fly into a glowing bubble: visit that world'),
+        G('place-tap', 'world', 'tap', ['body-world-3d.js', 'body-world-regions.js'], 'tap a glowing place: fly there'),
+        G('world-inside', 'world', 'double', ['body-world-3d.js', 'body-world-regions.js'], 'inside a world: pinch or double-tap to zoom into a spot'),
+        G('region-pal', 'world', 'tap', ['region-pals.js'], 'tap the little creature: next fact'),
+        G('arrival-x', 'world', 'tap', ['arrival-cards.js'], 'tap X: close the gold card'),
+        G('tilt', 'world', 'tilt', ['body-world-3d.js'], 'tilt button on: move the phone to look around'),
+        G('sound-strings', 'world', 'swipe', ['sound-strings.js', 'world-audio.js', 'calm-sound-core.js'], 'Sound panel: touch a string, swipe across to strum, slide to bend'),
+        G('scan-buttons', 'scan', 'tap', ['shop-scan.js', 'scan-glass.js'], 'Scan: barcode, type, photo'),
+        G('scan-deep', 'scan', 'tap', ['shop-scan.js'], 'Deep analyze: one tap opens the LOWiSPIKE GPT in ChatGPT'),
+        G('fix-field', 'scan', 'tap', ['meal-result.js'], 'What is it really?: tap a suggestion, set pieces'),
+        G('page-swipe', 'home', 'swipe', ['liquid-glass.js', 'community-spirit.js'], 'swipe sideways: between Home and Community'),
+        G('pinch-galaxy', 'home', 'pinch', ['galaxy-zoom.js'], 'pinch in past the widest view: Community galaxy; spread: back'),
+        G('back-swipe', 'any', 'swipe', ['back-swipe.js'], 'swipe in from the left edge: back'),
+        G('sheet-drag', 'any', 'drag', ['apple-ui.js'], 'drag a sheet\'s top bar down: close it'),
+        G('cm-tabs', 'community', 'tap', ['community-rooms-ui.js'], 'tap Room, Chat, Creation, Affiliates'),
+        G('cm-name', 'community', 'tap', ['community-rooms-ui.js', 'community-me.js'], 'tap the Community name / your picture: rooms, profile, invite'),
+        G('cm-pan', 'community', 'drag', ['community-chat.js'], 'drag the galaxy: move around'),
+        G('cm-zoom', 'community', 'pinch', ['community-chat.js'], 'pinch or double-tap the galaxy: zoom'),
+        G('cm-hold', 'community', 'hold', ['community-chat.js'], 'hold a companion or a name: their person card'),
+        G('cm-room', 'community', 'tap', ['community-rooms-ui.js'], 'tap the room chip: rooms'),
+        G('cm-mic', 'community', 'hold', ['community-chat.js'], 'hold the mic: record, let go to send, slide left to cancel'),
+        G('cm-photo', 'community', 'tap', ['community-chat.js'], 'tap the camera: send a photo'),
+        G('cm-energy', 'community', 'drag', ['community-energy.js'], 'drag the small joystick and let go: send energy'),
+        G('aff-card', 'community', 'tap', ['community-rooms-ui.js'], 'Affiliates: tap a card for its script, copy it'),
+        G('cook-swipe', 'home', 'swipe', ['nav-moves.js', 'swaflo.js'], 'Cook Swipe: swipe the cards'),
+        G('foryou-swipe', 'home', 'swipe', ['nav-moves.js', 'fy-embed.js'], 'For You: swipe up and down'),
+        G('visit-reply', 'home', 'tap', ['home-visit.js'], 'a visiting companion: tap Reply')
+    ];
+    /* files the gesture scan matches that teach nothing new, with the reason */
+    const GESTURE_EXEMPT = {
+        'mirror-move.js': 'camera workout: it tells you each move out loud while you do it',
+        'mirror-move-core.js': 'camera workout: it tells you each move out loud while you do it',
+        'community-energy-core.js': 'math for the energy joystick taught by cm-energy',
+        'finch-extras.js': 'only watches touches to retire a first-use hint; it adds no gesture of its own',
+        'misty-bloom.js': 'only remembers where a finger touched so a panel can grow out of that spot; no gesture of its own',
+        'tutorial.js': 'the tour itself: it watches try-it gestures passively and never adds one'
+    };
+    /* which detected gesture satisfies a tryIt.how (a swipe is also a drag) */
+    function tryMatch(how, kind) { return how === kind || (how === 'drag' && kind === 'swipe'); }
+
     const UI = {
-        en: { next: 'Next', back: 'Back', skip: 'Skip', skipAll: 'Skip all', of: '{i} of {n}', label: 'Tutorial', guide: 'Your companion' },
-        de: { next: 'Weiter', back: 'Zurück', skip: 'Überspringen', skipAll: 'Alles überspringen', of: '{i} von {n}', label: 'Tutorial', guide: 'Dein Begleiter' },
-        es: { next: 'Siguiente', back: 'Atrás', skip: 'Saltar', skipAll: 'Saltar todo', of: '{i} de {n}', label: 'Tutorial', guide: 'Tu compañero' }
+        en: { next: 'Next', back: 'Back', skip: 'Skip', skipAll: 'Skip all', of: '{i} of {n}', label: 'Tutorial', guide: 'Your companion', tryIt: 'Try it now', nice: 'Nice, that’s it.',
+            areas: { you: 'Me', home: 'Your day', food: 'Scan', play: 'Flying', companion: 'My card', together: 'Community', settings: 'Settings', extras: 'Good to know', end: 'Done' } },
+        de: { next: 'Weiter', back: 'Zurück', skip: 'Überspringen', skipAll: 'Alles überspringen', of: '{i} von {n}', label: 'Tutorial', guide: 'Dein Begleiter', tryIt: 'Probier’s jetzt', nice: 'Super, genau so.',
+            areas: { you: 'Ich', home: 'Dein Tag', food: 'Scan', play: 'Fliegen', companion: 'Meine Karte', together: 'Community', settings: 'Einstellungen', extras: 'Gut zu wissen', end: 'Fertig' } },
+        es: { next: 'Siguiente', back: 'Atrás', skip: 'Saltar', skipAll: 'Saltar todo', of: '{i} de {n}', label: 'Tutorial', guide: 'Tu compañero', tryIt: 'Pruébalo ahora', nice: 'Bien, así es.',
+            areas: { you: 'Yo', home: 'Tu día', food: 'Scan', play: 'Volar', companion: 'Mi tarjeta', together: 'Comunidad', settings: 'Ajustes', extras: 'Bueno saber', end: 'Listo' } }
     };
 
     /* pure helpers (tests + tutorial.js) */
@@ -440,7 +781,10 @@
         return !!(tut && typeof tut === 'object' && typeof tut.none === 'string' && tut.none.trim().length >= 8);
     }
 
-    const api = { VERSION, AREAS, STEPS, NO_TUTORIAL, UI, text, fill, plan, skipIndex, covered, newsOk };
+    /* GESTURES id -> the step id that teaches it */
+    function taught() { const m = {}; STEPS.forEach(s => (s.teaches || []).forEach(g => { if (!m[g]) m[g] = s.id; })); return m; }
+
+    const api = { VERSION, AREAS, STEPS, NO_TUTORIAL, GESTURES, GESTURE_EXEMPT, UI, text, fill, plan, skipIndex, covered, newsOk, tryMatch, taught };
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (root) root.LowiTutorialSteps = api;
 })(typeof window !== 'undefined' ? window : null);

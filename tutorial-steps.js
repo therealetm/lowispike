@@ -101,11 +101,11 @@
         },
         {
             id: 'gap-tap', area: 'home', target: ['#spFast'], covers: ['fasting'],
-            title: { en: 'Starting the clock', de: 'Die Uhr starten', es: 'Poner el reloj' },
+            title: { en: 'Inside the Gap', de: 'In der Pause', es: 'Dentro de la pausa' },
             text: {
-                en: 'Tap Gap and say when you last ate: I just ate, or Ate earlier. Logging a meal does the same: it starts the clock, or ends a running fast with its points.',
-                de: 'Tipp auf Gap und sag, wann du zuletzt gegessen hast: gerade eben oder früher. Eine eingetragene Mahlzeit macht dasselbe: Sie startet die Uhr oder beendet ein laufendes Fasten mit seinen Punkten.',
-                es: 'Toca Gap y di cuándo comiste por última vez: ahora mismo o antes. Registrar una comida hace lo mismo: pone el reloj en marcha o termina un ayuno en curso con sus puntos.'
+                en: 'Tap Gap to see the time since your last meal on the six planets, with what typically happens along the way. Fix the time there if it is wrong. Logging a meal in Fuel restarts it, with its points.',
+                de: 'Tipp auf Gap und sieh die Zeit seit deiner letzten Mahlzeit auf den sechs Planeten, mit dem, was typischerweise passiert. Ist die Zeit falsch, korrigier sie dort. Eine Mahlzeit in Fuel startet sie neu, mit ihren Punkten.',
+                es: 'Toca Gap para ver el tiempo desde tu última comida en los seis planetas, con lo que suele pasar. Si la hora está mal, corrígela ahí. Registrar una comida en Fuel la reinicia, con sus puntos.'
             }
         },
         {

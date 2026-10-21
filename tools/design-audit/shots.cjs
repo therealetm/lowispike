@@ -3,6 +3,8 @@
    Takes local WebKit screenshots (not a physical device) of the Gap (fasting) bubble and sheet, Scan and Community at
    phone and iPad sizes, in the states the audit cares about: running fast, no meal known, offline. Uses the interface-audit
    harness (local fixture user, every non-Pages request blocked, nothing written to production).
+   Known gap: the Community scenes call goTab('community'); on world-first Home the measurements still read the Home
+   layer (21 Oct run), so treat those two scenes as not yet working.
    Usage: node tools/design-audit/shots.cjs [--out DIR] [--device "iPhone 13"] [--only name,name] */
 const fs = require('fs'), path = require('path');
 const L = require('../interface-audit/lib.cjs');

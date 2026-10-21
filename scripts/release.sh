@@ -32,6 +32,12 @@ if [ "$BUMP" = 1 ]; then
 else
   NEW=$(node -e "console.log(require('./version.json').build)")
 fi
+# Oct 21: the guide reads the news in the app's human voice (app-voice.js); record this release's news sentences. Best effort:
+# without edge-tts or the network the release still goes out, and the guide reads the news with the device voice.
+if [ "$BUMP" = 1 ] && [ -n "$NEWS" ] && [ -f tools/app-voice/build.py ]; then
+  timeout 240 python3 tools/app-voice/build.py --news >/tmp/app-voice-news.log 2>&1 && tail -1 /tmp/app-voice-news.log \
+    || echo "warning: news voice not recorded (see /tmp/app-voice-news.log); the guide reads it with the device voice"
+fi
 node scripts/release-check.cjs
 LOG=$(mktemp /tmp/lowispike-tests.XXXX.log)
 if ! node --test tests/*.test.cjs >"$LOG" 2>&1; then
@@ -44,6 +50,7 @@ git diff --check "$BASE"
 
 if [ -n "$(git status --porcelain)" ]; then
   git add index.html sw.js apple-ui.js version.json
+  [ -f app-voice-data.js ] && git add app-voice-data.js app-voice
   if ! git diff --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then echo "BLOCKER: unexpected files changed:"; git status --short; exit 6; fi
   git commit -qm "Release $NEW: $SUMMARY (tests $PASS/$TOTAL)"
 fi

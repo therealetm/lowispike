@@ -41,9 +41,13 @@
     let stream = null, lmk = null, lmkP = null, delegate = 'GPU', triedGPU = false, nDet = 0, running = false, raf = 0, detT = 0, briT = 0, lastDraw = 0, lastVT = -1;
     let lms = null, sm = null, costAvg = 30, interval = 66, voiceOn = true, lastMoveSpoken = -1, lastHint = '', lastCount = 0, hiddenStop = false, dpr = 1, vw = 640, vh = 480;
     const say = (s, force) => {
-        if (!voiceOn || !s || !('speechSynthesis' in W)) return;
+        if (!voiceOn || !s) return;
+        /* app-voice.js: the tutorial's human voice (recorded clips); the device voice only for a sentence with no clip */
+        if (W.LowiVoice) { W.LowiVoice.speak(s, { lang: lang(), queue: !force }); return; }
+        if (!('speechSynthesis' in W)) return;
         try { const u = new SpeechSynthesisUtterance(s); u.lang = ({ de: 'de-DE', es: 'es-ES' })[lang()] || 'en-US'; u.rate = 1; if (force) speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (e) {}
     };
+    const hushVoice = () => { try { if (W.LowiVoice) W.LowiVoice.cancel(); else speechSynthesis.cancel(); } catch (e) {} };
 
     function build() {
         if (ov) return ov;
@@ -103,7 +107,7 @@
         if (ov) { ov.hidden = true; sheet().innerHTML = ''; }
         H.classList.remove('mm-open', 'mm-cam');
         D.removeEventListener('keydown', onKey);
-        try { speechSynthesis.cancel(); } catch (e) {}
+        hushVoice();
         const s = D.querySelector('.mm-strip'); if (s) try { s.focus({ preventScroll: true }); } catch (e) {}
     }
     function onKey(e) { if (e.key === 'Escape') close(); }
@@ -326,7 +330,7 @@
         if (!flow || !ov || ov.hidden) return;
         if (D.hidden) {
             flow.pause(true); if (flow.mode === 'camera' && stream) { hiddenStop = true; stopCamera(); }
-            try { speechSynthesis.cancel(); } catch (e) {}
+            hushVoice();
         } else if (hiddenStop) {
             hiddenStop = false; running = false; cancelAnimationFrame(raf); raf = 0;
             showSheet('<header class="mm-ph"><b>' + esc(T('Camera paused', 'Kamera pausiert', 'Cámara en pausa')) + '</b><button type="button" class="mm-ic" data-mm="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '">' + ICON.x + '</button></header><p class="mm-lead">' + esc(T('The camera turned off while the app was in the background.', 'Die Kamera war aus, während die App im Hintergrund war.', 'La cámara se apagó mientras la app estaba en segundo plano.')) + '</p>' +
@@ -356,9 +360,9 @@
         else if (k === 'nocam') goFree();
         else if (k === 'free') goFree();
         else if (k === 'here') { if (flow) flow.startHere(); }
-        else if (k === 'pause') { if (flow) { flow.pause(); uiKey = ''; if (flow.paused) try { speechSynthesis.cancel(); } catch (e2) {} } }
+        else if (k === 'pause') { if (flow) { flow.pause(); uiKey = ''; if (flow.paused) hushVoice(); } }
         else if (k === 'resumecam') resumeCam();
-        else if (k === 'voice') { voiceOn = !voiceOn; b.setAttribute('aria-pressed', String(voiceOn)); b.classList.toggle('off', !voiceOn); if (!voiceOn) try { speechSynthesis.cancel(); } catch (e2) {} }
+        else if (k === 'voice') { voiceOn = !voiceOn; b.setAttribute('aria-pressed', String(voiceOn)); b.classList.toggle('off', !voiceOn); if (!voiceOn) hushVoice(); }
     });
 
     W.LowiMirror = { stripHTML, open, close, _state: () => ({ flow, sm, running, stream: !!stream, delegate, interval, costAvg, lms: !!lms, phase: flow && flow.phase }) };

@@ -167,6 +167,8 @@
     }
     const speaking = () => !!(cur || queue.length);
     W.LowiVoice = Object.assign({}, api, { speak, cancel, speaking, unlock, supported: () => typeof Audio === 'function' || !!W.speechSynthesis, current: () => cur, prefetch: (text, lang) => { lang = L(lang || appLang()); data().then(d => pieces(text).forEach(p => clipFor(d, lang, p))); } });
+    /* the tutorial's own voice starting stops this one (one voice at a time) */
+    W.addEventListener('lowi:media', e => { const d = e.detail || {}; if (d.on && d.id && d.id !== 'app-voice' && /voice/.test(d.id) && speaking()) cancel(); });
     /* the app going to the background stops the voice, like the tutorial */
     D.addEventListener('visibilitychange', () => { if (D.hidden && speaking()) cancel(); });
 })(typeof window !== 'undefined' ? window : null);

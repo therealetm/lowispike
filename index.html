@@ -2381,7 +2381,7 @@ html[data-ui=light] #g1Ob{--ob-bg:rgba(255,255,255,.98);--ob-fg:#17202e;--ob-mu:
    - The scan orb visibly leaves the bottom bar as its guide copy flies to each thing it explains,
      spotlights it, talks in a speech bubble beside it, then returns to the same place in the bar.
    - First time on Today (Home): a step-by-step tour. One short line per step, Next / Back / Skip.
-   - "Tap to listen" reads each step out loud (speechSynthesis, app language). Once on, the next steps read themselves.
+   - "Tap to listen" reads each step out loud (app-voice.js: the tutorial's human voice, app language). Once on, the next steps read themselves.
    - Remembers where you are and that you finished. Replay: the small "?" next to the scan orb, or hold the orb down.
    - Updates: the Q1 version check stays the engine. When a newer build is live the orb flies up into the banner (#lcUpd,
      same tap, same refresh) and says what's new. After the refresh it pops out again and takes you to the new thing.
@@ -2491,14 +2491,21 @@ if (SS) { loadVoices(); try { speechSynthesis.addEventListener("voiceschanged", 
 function voiceFor(tag){ if (!voices.length) loadVoices(); const l = tag.slice(0, 2).toLowerCase(), norm = v => String(v.lang || "").replace("_", "-").toLowerCase();
   const same = voices.filter(v => norm(v).indexOf(l) === 0);
   return same.find(v => norm(v) === tag.toLowerCase() && /enhanced|premium|natural|siri/i.test(v.name)) || same.find(v => norm(v) === tag.toLowerCase()) || same[0] || null; }
-function say(text, onEnd){ if (!SS || !text) return false;
+function say(text, onEnd){ if (!text) return false;
+  /* app-voice.js (Oct 21): the tutorial's human voice. News keeps every release's notes; only the newest 3 paragraphs are read
+     (tools/app-voice/phrases.cjs NEWS_PARAS records the same). The device voice is only for a sentence with no clip. */
+  text = String(text).split(/\n\s*\n/).slice(0, 3).join("\n\n");
+  if (window.LowiVoice) { const fin = () => { speaking = false; H.classList.remove("g1-talking"); paintListen(); if (onEnd) onEnd(); };
+    LowiVoice.cancel(); speaking = true; H.classList.add("g1-talking"); LowiVoice.speak(text, {lang:LANG(), onend:fin, onerror:() => { speaking = false; H.classList.remove("g1-talking"); paintListen(); }});
+    window.__g1said = text; paintListen(); return true; }
+  if (!SS) return false;
   try { const s = window.speechSynthesis; if (s.speaking || s.pending) s.cancel();
     const u = new SpeechSynthesisUtterance(String(text).replace(/[\u201c\u201d\u201e]/g, '"')); const tag = {de:"de-DE", es:"es-ES"}[LANG()] || "en-US";
     u.lang = tag; const v = voiceFor(tag); if (v) u.voice = v; u.rate = 0.94; u.pitch = 1.08;
     const fin = () => { speaking = false; H.classList.remove("g1-talking"); paintListen(); if (onEnd) onEnd(); };
     u.onend = fin; u.onerror = fin; speaking = true; H.classList.add("g1-talking"); s.speak(u); try { if (s.paused) s.resume(); } catch(e){}
     window.__g1said = text; paintListen(); return true; } catch(e){ speaking = false; H.classList.remove("g1-talking"); return false; } }
-function hush(){ speaking = false; H.classList.remove("g1-talking"); if (SS) try { speechSynthesis.cancel(); } catch(e){} paintListen(); }
+function hush(){ speaking = false; H.classList.remove("g1-talking"); if (window.LowiVoice) LowiVoice.cancel(); else if (SS) try { speechSynthesis.cancel(); } catch(e){} paintListen(); }
 function paintListen(){ document.querySelectorAll(".g1-say").forEach(b => { b.classList.toggle("on", speaking); b.setAttribute("aria-pressed", speaking ? "true" : "false");
   const l = b.querySelector(".g1-sayl"); if (l) l.textContent = speaking ? T("Stop") : T("Listen"); const i = b.querySelector(".g1-sayi"); if (i) i.innerHTML = speaking ? STP : SPK; }); }
 
@@ -5398,7 +5405,10 @@ let ac = null, wake = null;
 function beep(f, d){ if (!M.sound || (window.LowiSFX && !LowiSFX.on())) return; try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (window.LowiCalmChime && LowiCalmChime(ac, f, d)) return; /* Oct 16: soft bowl chime, not the microwave beep */ const o = ac.createOscillator(), g = ac.createGain(), n = ac.currentTime; o.type = "sine"; o.frequency.value = f; g.gain.setValueAtTime(.0001, n); g.gain.exponentialRampToValueAtTime(.22, n + .015); g.gain.exponentialRampToValueAtTime(.0001, n + d); o.connect(g); g.connect(ac.destination); o.start(n); o.stop(n + d + .03); } catch(e){} }
 const AUD = () => !!(window.LowiAudio && LowiAudio.on());
 function say(txt){
-  if (window.R3W && R3W.session()) return; if (!(M.voice || AUD()) || !window.speechSynthesis) return; if (window.LowiAudio && LowiAudio.muted()) return; try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(txt); u.rate = 1.02; u.lang = "en-US"; speechSynthesis.speak(u); } catch(e){} }
+  if (window.R3W && R3W.session()) return; if (!(M.voice || AUD())) return; if (window.LowiAudio && LowiAudio.muted()) return;
+  if (window.LowiVoice) { LowiVoice.speak(txt, {lang:"en"}); return; } /* app-voice.js: the tutorial's human voice (Oct 21) */
+  if (!window.speechSynthesis) return; try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(txt); u.rate = 1.02; u.lang = "en-US"; speechSynthesis.speak(u); } catch(e){} }
+function mvHush(){ try { if (window.LowiVoice) LowiVoice.cancel(); else if (window.speechSynthesis) speechSynthesis.cancel(); } catch(e){} }
 async function lockScreen(on){ try { if (on && navigator.wakeLock) wake = await navigator.wakeLock.request("screen"); else if (!on && wake) { await wake.release(); wake = null; } } catch(e){} }
 
 function start(fmt, mins, opts){
@@ -5491,7 +5501,7 @@ function extendSession(){
   if (bar) bar.innerHTML = P.plan.blocks.map((b, i) => '<i class="' + b.type + '" style="flex:' + b.dur + '"><b id="mv-seg' + i + '"></b></i>').join("");
   if (H() && H().toast) H().toast("+5 minutes. " + P.mins + " minutes in total.");
 }
-function togglePause(){ if (!P) return; P.paused = !P.paused; $("#mv-pp").innerHTML = P.paused ? IC.play : IC.pause; if (P.paused && window.speechSynthesis) speechSynthesis.cancel(); }
+function togglePause(){ if (!P) return; P.paused = !P.paused; $("#mv-pp").innerHTML = P.paused ? IC.play : IC.pause; if (P.paused) mvHush(); }
 function skip(){ if (!P || P.elapsed < 0) { if (P) P.elapsed = 0; return; } const i = blockAt(P.elapsed), b = P.plan.blocks[i]; if (b) P.elapsed = b.start + b.dur + 0.001; }
 function endAsk(){ if (!P) return; P.confirm = true; { const pl = $("#mv-player"); if (pl) pl.classList.add("mv-asking"); } const m = Math.floor(P.moved / 60); $("#mv-confirm-t").textContent = m >= 3 ? "You've moved " + m + " min. That still counts." : "Under 3 minutes moved, so no XP yet. Even 3 minutes counts."; $("#mv-confirm").classList.remove("hidden"); }
 function endKeep(){ if (!P) return; P.confirm = false; P.last = performance.now(); $("#mv-confirm").classList.add("hidden"); const pl = $("#mv-player"); if (pl) pl.classList.remove("mv-asking"); }
@@ -5505,7 +5515,7 @@ document.addEventListener("keydown", e => { if (e.key !== "Escape" || !$("#mv-pl
 
 function finish(complete){
   if (window.R3W) R3W.stop();
-  if (!P || P.done) return; P.done = true; cancelAnimationFrame(P.raf); lockScreen(false); if (window.speechSynthesis) try { speechSynthesis.cancel(); } catch(e){}
+  if (!P || P.done) return; P.done = true; cancelAnimationFrame(P.raf); lockScreen(false); mvHush();
   const h = H(), moved = Math.round(P.moved), min = Math.floor(moved / 60);
   let xp = 0, lines = [];
   const sess = {id:uid(), ts:Date.now(), day:today(), fmt:P.fmt, name:P.name, mins:P.mins, moved, eq:M.eq.slice(), postMeal:P.postMeal && moved >= 180, xp:0};
@@ -5574,7 +5584,7 @@ document.addEventListener("click", e => {
     case "add5": extendSession(); break;
     case "recent": M.recentOpen = !M.recentOpen; save(); { const bx = b.parentNode.querySelector(".r3w-recb"); if (bx) bx.hidden = !M.recentOpen; b.setAttribute("aria-expanded", String(!!M.recentOpen)); } break;
     case "voice": if (window.R3W && R3W.voice()) break; if (AUD()) { LowiAudio.setMute(!LowiAudio.muted()); b.classList.toggle("on", !LowiAudio.muted()); if (!LowiAudio.muted()) say("Audio on"); break; }
-      M.voice = !M.voice; save(); b.classList.toggle("on", M.voice); if (M.voice) say("Voice cues on"); else if (window.speechSynthesis) speechSynthesis.cancel(); break;
+      M.voice = !M.voice; save(); b.classList.toggle("on", M.voice); if (M.voice) say("Voice cues on"); else mvHush(); break;
   }
 });
 document.addEventListener("change", e => { if (e.target.id === "mv-steps") { setSteps(e.target.value); renderScreen(); } });
@@ -8657,11 +8667,13 @@ const r5toast = m => { try { toast(m); } catch(e){} };
    AUDIO MODE: spoken workouts and notifications. Browser speech, sparse on purpose.
    ===================================================================== */
 const AU = {queue:[], playing:false, book:null};
-function auSupported(){ return typeof window.speechSynthesis !== "undefined" && typeof window.SpeechSynthesisUtterance !== "undefined"; }
+function auSupported(){ return !!window.LowiVoice || (typeof window.speechSynthesis !== "undefined" && typeof window.SpeechSynthesisUtterance !== "undefined"); }
 function auSpeak(text, o){ o = o || {}; if (!text || !auSupported()) return false;
+  /* app-voice.js (Oct 21): the tutorial's human voice; the device voice only for a sentence with no clip */
+  if (window.LowiVoice) { LowiVoice.speak(String(text), {lang:"en", queue:!!o.queue, rate:o.rate || 0.98, onend:o.onend, onerror:o.onend, onstart:o.onstart}); return true; }
   try { if (!o.queue) speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(String(text)); u.lang = "en-US"; u.rate = o.rate || 0.98; u.pitch = 1;
     if (o.onend) { u.onend = o.onend; u.onerror = o.onend; } if (o.onstart) u.onstart = o.onstart; speechSynthesis.speak(u); return true; } catch(e){ return false; } }
-function auStop(){ try { if (auSupported()) speechSynthesis.cancel(); } catch(e){} }
+function auStop(){ try { if (window.LowiVoice) LowiVoice.cancel(); else if (auSupported()) speechSynthesis.cancel(); } catch(e){} }
 function auSet(v){ R5.audio = !!v; if (v) R5.mute = false; r5save(); r5$$('[data-r5="audio"]').forEach(b => { b.classList.toggle("on", R5.audio); b.setAttribute("aria-pressed", R5.audio); });
   if (R5.audio) auSpeak("Audio mode on. I'll keep it short."); else auStop(); }
 function auMoveRow(){
@@ -16968,7 +16980,10 @@ const R3W_SOURCES = [
 (function(){
   if (window.R3W) return;
   const BOOK = R3W_BOOK, KEY = "lowi_r3w_v1";
-  const SUP = ("speechSynthesis" in window) && ("SpeechSynthesisUtterance" in window);
+  const SS3 = ("speechSynthesis" in window) && ("SpeechSynthesisUtterance" in window);
+  /* app-voice.js (Oct 21): the book and the coach speak in the tutorial's human voice (recorded clips); the device voice only for a sentence with no clip */
+  const SUP = SS3 || typeof Audio === "function";
+  const hushAll = () => { try { if (window.LowiVoice) LowiVoice.cancel(); else if (SS3) speechSynthesis.cancel(); } catch (e) {} };
   let st = {on:false, ch:0, s:-1, intro:false, laps:0};
   try { Object.assign(st, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) {}
   if (!(st.ch >= 0 && st.ch < BOOK.length)) { st.ch = 0; st.s = -1; }
@@ -16984,13 +16999,13 @@ const R3W_SOURCES = [
   /* ---------- voice ---------- */
   let VOICE = null;
   function pickVoice(){
-    if (!SUP) return null;
+    if (!SS3) return null;
     const vs = speechSynthesis.getVoices().filter(v => /^en(-|_|$)/i.test(v.lang));
     if (!vs.length) return null;
     const score = v => (/premium|enhanced|natural|neural/i.test(v.name) ? 8 : 0) + (/samantha|ava|allison|serena|daniel|karen|moira|google (us|uk) english|aria|jenny|guy/i.test(v.name) ? 4 : 0) + (/en[-_]US/i.test(v.lang) ? 2 : 0) + (v.localService ? 1 : 0) - (/compact|novelty|whisper|zarvox|bells|bad news|boing|bubbles|cellos|trinoids|albert|jester|organ|superstar|wobble/i.test(v.name) ? 20 : 0);
     return vs.sort((a, b) => score(b) - score(a))[0];
   }
-  if (SUP) { VOICE = pickVoice(); try { speechSynthesis.addEventListener("voiceschanged", () => { VOICE = pickVoice(); }); } catch (e) {} }
+  if (SS3) { VOICE = pickVoice(); try { speechSynthesis.addEventListener("voiceschanged", () => { VOICE = pickVoice(); }); } catch (e) {} }
 
   /* ---------- session ---------- */
   let S = null;
@@ -17050,6 +17065,12 @@ const R3W_SOURCES = [
   }
   function speak(item){
     if (!SUP || !S) return;
+    if (window.LowiVoice) {
+      let h = null; const fin = err => { if (h) done(h, err); };
+      h = LowiVoice.speak(item.text, {lang:"en", onend:() => fin(false), onerror:() => fin(true)});
+      S.utt = h; S.item = item; S.speaking = true; S.t0 = performance.now(); caption(item); return;
+    }
+    if (!SS3) return;
     const u = new SpeechSynthesisUtterance(item.text);
     u.lang = (VOICE && VOICE.lang) || "en-US"; if (VOICE) u.voice = VOICE; u.rate = 1; u.pitch = 1; u.volume = 1;
     S.utt = u; S.item = item; S.speaking = true; S.t0 = performance.now();
@@ -17065,7 +17086,7 @@ const R3W_SOURCES = [
     S.nextAt = S.P.elapsed + (GAP[item.kind] || 0.6) + (item.kind === "lesson" && item.s === BOOK[item.ch].s.length - 1 ? GAP.end : 0);
     persist();
   }
-  function hush(){ if (!S) return; if (S.speaking && S.item) { S.replay = S.item; } S.utt = null; S.speaking = false; try { speechSynthesis.cancel(); } catch (e) {} }
+  function hush(){ if (!S) return; if (S.speaking && S.item) { S.replay = S.item; } S.utt = null; S.speaking = false; hushAll(); }
   function start(P){
     stop();
     if (!st.on || !SUP || !P) return;
@@ -17076,7 +17097,7 @@ const R3W_SOURCES = [
     const nx = document.getElementById("mv-next");
     if (nx && !document.getElementById("r3w-cap")) nx.insertAdjacentHTML("afterend", '<div class="r3w-cap" id="r3w-cap" aria-live="off"><div class="r3w-capch"></div><div class="r3w-captx"></div></div>');
     voiceBtn();
-    try { speechSynthesis.cancel(); } catch (e) {}
+    hushAll();
     /* first words inside the tap, so iOS lets the voice speak */
     const it = nextItem(P.plan.total - P.elapsed); if (S.skipTo) { S.s = S.skipTo; S.skipTo = 0; }
     if (it) speak(it);
@@ -17085,7 +17106,7 @@ const R3W_SOURCES = [
     if (!S) return;
     persist();
     const s = S; S = null; s.utt = null;
-    try { speechSynthesis.cancel(); } catch (e) {}
+    hushAll();
     const c = document.getElementById("r3w-cap"); if (c) c.remove();
   }
   function tick(P){
@@ -17142,7 +17163,7 @@ const R3W_SOURCES = [
     const a = b.dataset.r3w;
     if (a === "book") {
       if (!SUP) return; st.on = !st.on; save(); refreshRow();
-      if (st.on) { try { const u = new SpeechSynthesisUtterance(""); u.volume = 0; speechSynthesis.speak(u); } catch (er) {} }
+      if (st.on) { if (window.LowiVoice) LowiVoice.unlock(); else try { const u = new SpeechSynthesisUtterance(""); u.volume = 0; speechSynthesis.speak(u); } catch (er) {} }
       const H = window.LowiHost; if (H && H.toast) H.toast(st.on ? "Learn while you move is on for your next session." : "Learn while you move is off.");
     } else if (a === "chapters") chaptersSheet();
     else if (a === "goto") { st.ch = +b.dataset.i; st.s = -1; save(); refreshRow(); const H = window.LowiHost; if (H && H.closeSheet) H.closeSheet(); if (H && H.toast) H.toast("Next session starts at " + BOOK[st.ch].t + "."); }
@@ -20299,6 +20320,7 @@ window.LowiCommunityHost = {
 <link rel="stylesheet" id="mvpCss" href="move-player.css?v=20261021-213040">
 <script src="move-player.js?v=20261021-213040"></script>
 <link rel="stylesheet" id="mmCss" href="mirror-move.css?v=20261021-213040">
+<script src="app-voice.js?v=20261021-213040"></script>
 <script src="mirror-move-core.js?v=20261021-213040"></script>
 <script src="mirror-move.js?v=20261021-213040"></script>
 <link rel="stylesheet" id="fyeCss" href="fy-embed.css?v=20261021-213040">

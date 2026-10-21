@@ -87,6 +87,8 @@ function paint(){const b=ensure();if(!b)return;const r=R(),chat=open();
  const ti=[...tabs].findIndex(t=>t.dataset.rm===sel),tl=b.querySelector('.rm-tabs');if(tl.__i!==ti){tl.__i=ti;tl.style.setProperty('--rm-i',String(Math.max(0,ti)));}
  if(view){pane.setAttribute('data-rm-view',view);D.documentElement.classList.add('rm-view');if(VIEWS[view])ensureView(pane);else{const bx=pane.querySelector(':scope>.rm-view');if(bx)ensureView(pane);}}
  else{pane.removeAttribute('data-rm-view');D.documentElement.classList.remove('rm-view');if(pane.querySelector(':scope>.rm-view'))ensureView(pane);}
+ /* a new section starts at the top: a pane left scrolled by the last one slid the tabs under the floating profile picture (iPhone SE) */
+ if(pane.__rmV!==(view||'')){pane.__rmV=view||'';if(pane.scrollTop)pane.scrollTop=0;}
  paintChans(pane);
  const cr=b.querySelector('.rm-crumb');cr.hidden=!(chat&&!view);if(!cr.hidden){const bk=cr.querySelector('.rm-back');if(bk.getAttribute('aria-label')!==tr('back')){bk.innerHTML='<i aria-hidden="true"></i>';bk.setAttribute('aria-label',tr('back'));}cr.querySelector('.rm-crumb-t').textContent=tr('chGalaxy');}
  const nm=b.querySelector('.rm-name');if(nm.textContent!==tr('community'))nm.textContent=tr('community');

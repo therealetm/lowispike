@@ -217,3 +217,6 @@
 #cmPaneChat[data-spirit-chat][data-rm-view=chans]{overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 #cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-bar{position:sticky;top:0;z-index:5}
 #cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-bar{padding-bottom:12px;margin-bottom:4px;background:linear-gradient(180deg,rgba(4,10,28,.97) 0%,rgba(4,10,28,.9) 78%,rgba(4,10,28,0) 100%)}
+/* Create and Affiliates: the frame fits the pane on short screens (it scrolls inside itself), and the bar stays pinned so the tabs never slide under the profile picture */
+#cmPaneChat[data-spirit-chat][data-rm-view]>.rm-bar{position:sticky;top:0}
+@media (max-height:600px){#cmPaneChat[data-spirit-chat][data-rm-view]>.rm-view{min-height:0}}

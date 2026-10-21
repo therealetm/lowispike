@@ -2,7 +2,7 @@
    lots of air, a segmented control top left, a small pill, a huge headline, one card of rows with icon tiles, one big button.
    Not white: LOWiSPIKE's dark blue galaxy with glowing rings, a faint dot grid, dark glass with glowing brand-colour edges.
    color-scheme dark matters: inside the app's frame a page whose scheme differs from the app gets an opaque WHITE canvas. */
-:root{color-scheme:dark;--cyan:#8fe7ff;--teal:#1cf7f9;--green:#16b88a;--ink:#f2f8ff;--muted:#b8cce4;--line:rgba(143,231,255,.34);--card:rgba(9,22,54,.86);--r:22px;
+:root{color-scheme:dark;--cyan:#8fe7ff;--teal:#1cf7f9;--green:#16b88a;--ink:#f2f8ff;--muted:#c8daee;--line:rgba(143,231,255,.34);--card:rgba(9,22,54,.86);--r:22px;
   --edge:linear-gradient(140deg,rgba(28,247,249,.9),rgba(143,231,255,.22) 38%,rgba(143,231,255,.1) 62%,rgba(22,184,138,.75));
   --glass:linear-gradient(180deg,rgba(14,32,74,.9),rgba(7,18,46,.9))}
 *{box-sizing:border-box}

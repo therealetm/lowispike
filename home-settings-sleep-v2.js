@@ -409,8 +409,8 @@
     function placePage(pn, b, still) {
         if (!pn) return;
         const q = b.getBoundingClientRect(), M = misty(), vw = H.clientWidth || root.innerWidth, vh = root.innerHeight, safe = safeArea();
-        /* opened away from Home (the gear in Community): no bubble to grow from, so a centred sheet */
-        if (q.width < 2 || !H.classList.contains('wh-home') || H.classList.contains('wh-away')) {
+        /* Oct 21 2026: the slim Settings is one short list, so it always pops up as a centred sheet (Home or not) */
+        if (true) {
             const w = Math.min(380, vw - 24), mh = vh - safe.t - safe.b - 40;
             pn.style.cssText = 'top:0;left:0;width:' + w + 'px;max-height:none;visibility:hidden;animation:none;--ss2-cols:1';
             const h = Math.min(Math.ceil(pn.getBoundingClientRect().height), mh), fit = pn.getBoundingClientRect().height <= mh;

@@ -175,7 +175,8 @@
     function tap(key, el, e) {
         if (el.dataset.o8Adapter) return;
         if (key === 'scan') { const t = $('#tabbar [data-tab="scan"]'); if (t) t.click(); return; }
-        if (key === 'settings') { openSettings(); return; }
+        /* the bubble is Community: without its adapter a tap still opens Community (the old sheet only if there is no Community tab) */
+        if (key === 'settings') { if (typeof root.goTab === 'function' && $('#tab-foryou')) root.goTab('foryou'); else openSettings(); return; }
         if (key === 'sleep') { openSleep(); return; }
     }
     function sheet(cls, title, rows) {

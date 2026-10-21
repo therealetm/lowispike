@@ -1,0 +1,37 @@
+/* community-me.css: your corner of Community (Oct 21 2026). Dark glass with a glowing cyan edge, the Community look. */
+.cme-back { position: fixed; inset: 0; z-index: 8970; background: rgba(2,8,28,.5); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); animation: cme-fade .2s ease both; }
+.cme { position: fixed; z-index: 8980; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 12px); transform: translateX(-50%); box-sizing: border-box; width: min(420px, calc(100vw - 20px));
+    max-height: calc(100% - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 24px); display: flex; flex-direction: column; padding: 14px 12px 12px; border-radius: 24px; color: #eaf6ff;
+    background: linear-gradient(180deg, rgba(14,30,70,.9), rgba(6,14,40,.94)); border: 1px solid rgba(110,225,255,.55);
+    box-shadow: 0 0 0 1px rgba(110,225,255,.12) inset, 0 0 22px rgba(80,210,255,.28), 0 18px 48px rgba(0,6,26,.6);
+    -webkit-backdrop-filter: blur(18px) saturate(1.2); backdrop-filter: blur(18px) saturate(1.2); animation: cme-in .26s cubic-bezier(.2,.9,.25,1.08) both; }
+@keyframes cme-in { from { opacity: 0; transform: translate(-50%, -10px) scale(.97); } to { opacity: 1; transform: translateX(-50%); } }
+@keyframes cme-fade { from { opacity: 0; } to { opacity: 1; } }
+.cme-head { flex: none; display: flex; align-items: center; gap: 10px; padding: 0 2px 12px; }
+.cme-av { flex: none; width: 48px; height: 48px; border-radius: 50%; overflow: hidden; display: grid; place-items: center; border: 1.5px solid rgba(110,225,255,.8); box-shadow: 0 0 12px rgba(110,225,255,.4); background: rgba(255,255,255,.06); font-weight: 700; }
+.cme-av > * { max-width: 100%; max-height: 100%; }
+.cme-av img { width: 100%; height: 100%; object-fit: cover; }
+.cme-who { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.cme-who b { font-size: 19px; line-height: 24px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cme-who small { font-size: 13px; line-height: 17px; opacity: .78; }
+.cme-ibtn { flex: none; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; padding: 0; color: inherit; background: rgba(255,255,255,.06); border: 1px solid rgba(110,225,255,.45); cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.cme-ibtn .cme-ico { width: 22px; height: 22px; }
+.cme-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.cme-sec + .cme-sec { margin-top: 14px; }
+.cme-sec h3 { margin: 0 6px 6px; font-size: 12px; line-height: 16px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: rgba(160,235,255,.85); }
+.cme-list { display: grid; gap: 6px; }
+@media (min-width: 700px) { .cme { width: 520px; } .cme-sec[aria-label] .cme-list { grid-template-columns: 1fr 1fr; } }
+.cme-row { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 12px; border-radius: 16px; text-align: left; color: inherit; font: inherit; cursor: pointer;
+    background: rgba(255,255,255,.05); border: 1px solid rgba(110,225,255,.28); -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.cme-row:active { transform: scale(.98); background: rgba(110,225,255,.12); }
+.cme-row .cme-ico { width: 24px; height: 24px; flex: none; color: #8fe7ff; }
+.cme-tx { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.cme-tx b { font-size: 15px; line-height: 20px; font-weight: 650; }
+.cme-tx small { font-size: 12.5px; line-height: 16px; opacity: .72; }
+.cme-chev { width: 16px; height: 16px; flex: none; opacity: .6; }
+.cme-row:focus-visible, .cme-ibtn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.cme-tip { margin: 14px 6px 2px; font-size: 12.5px; line-height: 17px; opacity: .7; }
+html[data-theme="light"] .cme { color: #0c2340; background: linear-gradient(180deg, rgba(240,250,255,.94), rgba(220,240,255,.96)); border-color: rgba(0,150,210,.55); }
+html[data-theme="light"] .cme-row .cme-ico { color: #0a7fb0; }
+html[data-theme="light"] .cme-sec h3 { color: #0a6a96; }
+@media (prefers-reduced-motion: reduce) { .cme, .cme-back { animation: none !important; } }

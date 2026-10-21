@@ -92,7 +92,8 @@ html.ss2-open #whHud [data-orbit][aria-expanded="true"] { box-shadow: 0 0 0 2px 
 
 /* Oct 21 2026: slim Settings (hold the Community bubble): the Day / night switch, the language row, Delete account and the one-time hint */
 .ss2-page .ss2-chip.ss2-row[data-ss2="theme"][aria-checked] { background: var(--mb-pill, rgba(255,255,255,.08)); border-color: var(--mb-pill-rim, rgba(143,231,255,.42)); }
-.ss2-page .ss2-langrow { cursor: default; }
+.ss2-page .ss2-langrow { cursor: default; grid-column: 1 / -1; }
+.ss2-page .ss2-langrow .ss2-lbl { min-width: 0; flex: 1 1 auto; }
 .ss2-page .ss2-langrow:active { transform: none; }
 .ss2-langs { display: flex; gap: 4px; flex: none; }
 .ss2-langs button { min-width: 40px; min-height: 32px; padding: 0 8px; border-radius: 16px; border: 1px solid var(--mb-pill-rim, rgba(143,231,255,.42)); background: transparent; color: inherit; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }

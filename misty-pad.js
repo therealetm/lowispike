@@ -298,7 +298,7 @@
         const s = send(null); if (s && s.mode !== st.mode && st.id == null) { st.mode = s.mode; paint(); if (!s.mode) chip(''); }
         if (!st.hinted && H.classList.contains('wh-world-live') && H.classList.contains('wh-home')) {
             st.hinted = true; let seen = false; try { seen = !!localStorage.getItem(HINT_KEY); } catch (e) { }
-            if (!seen) setTimeout(() => { if (!st.mode) chip(nm(T('New: drag to fly Misty \u00b7 hold: forward \u00b7 3 taps: autopilot', 'Neu: ziehen, um Misty zu fliegen \u00b7 halten: vorw\u00e4rts \u00b7 3\u00d7 tippen: Autopilot', 'Nuevo: arrastra para volar con Misty \u00b7 mant\u00e9n: adelante \u00b7 3 toques: autom\u00e1tico')), 5200); hintDone(); }, 2500);
+            if (!seen) setTimeout(() => { if (!st.mode) chip(nm(T('New: drag here to fly Misty', 'Neu: hier ziehen, um mit Misty zu fliegen', 'Nuevo: arrastra aqu\u00ed para volar con Misty')), 5200); hintDone(); }, 2500);
         }
     }
     setInterval(tick, 500);

@@ -15,7 +15,7 @@ const real = a => a.filter(x => !/Fetch API cannot load https:\/\/[a-z0-9]+\.sup
 const read = h => h.page.evaluate(() => {
   let f = {}; try { f = JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}'); } catch (e) { }
   const g = document.querySelector('#spFast .sp-fast-copy');
-  return { last: +f.last || 0, guess: +f.guess || 0, noGuess: f.noGuess || 0, gap: g ? g.textContent.replace(/\s+/g, ' ').trim() : null,
+  return { last: +f.last || 0, guess: +f.guess || 0, noGuess: f.noGuess || 0, gap: g && g.querySelector('b') ? g.querySelector('b').textContent.replace(/\s+/g, ' ').trim() : null,
     start: window.LowiFastStop ? LowiFastStop.startOf() : -1, cardHrs: window.LOWI_FAST ? LOWI_FAST.hours() : -1 };
 });
 (async () => {

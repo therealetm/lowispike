@@ -106,9 +106,16 @@
         if (b.style.getPropertyValue('--wh-fill') !== fill) b.style.setProperty('--wh-fill', fill);
         const sm = b.querySelector('small'), bb = b.querySelector('b');
         if (sm && sm.textContent !== label()) sm.textContent = label();
-        if (bb && bb.textContent !== v.text) bb.textContent = v.text;
+        /* Oct 21 grandma test: "1/3" alone says nothing, so the count says its unit the way Water does ("0/6 cups") */
+        if (bb) {
+            const unit = /^\d+\s*\/\s*\d+$/.test(v.text) ? T('meals', 'Mahlzeiten', 'comidas') : '';
+            let num = bb.querySelector('.wh-num'), u = bb.querySelector('.wh-unit');
+            if (!num || !u) { bb.innerHTML = '<span class="wh-num"></span> <u class="wh-unit"></u>'; num = bb.querySelector('.wh-num'); u = bb.querySelector('.wh-unit'); }
+            if (num.textContent !== v.text) num.textContent = v.text;
+            if (u.textContent !== unit) u.textContent = unit;
+        }
         b.classList.toggle('wme-full', v.full);
-        const aria = label() + ' ' + v.text + '. ' + T('Tap to log a meal, long press to see today.', 'Tippen, um Essen einzutragen, lange drücken für heute.', 'Toca para registrar una comida, mantén pulsado para ver hoy.');
+        const aria = label() + ' ' + v.text + (/^\d+\s*\/\s*\d+$/.test(v.text) ? ' ' + T('meals', 'Mahlzeiten', 'comidas') : '') + '. ' + T('Tap to log a meal, long press to see today.', 'Tippen, um Essen einzutragen, lange drücken für heute.', 'Toca para registrar una comida, mantén pulsado para ver hoy.');
         if (b.getAttribute('aria-label') !== aria) b.setAttribute('aria-label', aria);
     }
     /* Misty's HOME cell, never where she drifts to: while the camera follows her flight (autopilot, steering) misty-flight.js slides

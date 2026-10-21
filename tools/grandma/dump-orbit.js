@@ -1,0 +1,2 @@
+document.body.insertAdjacentHTML('beforeend', '<pre id=dumpo style="position:fixed;top:0;left:0;z-index:99999;font-size:5px;color:#fff;background:#000;width:390px;white-space:pre-wrap"></pre>');
+document.getElementById('dumpo').textContent = [...document.querySelectorAll('[data-orbit]')].map(e => e.dataset.orbit + ' | aria=' + e.getAttribute('aria-label') + ' | ' + e.innerHTML.replace(/<svg[\s\S]*?<\/svg>/g, '').replace(/<canvas[^>]*>(<\/canvas>)?/g, '').slice(0, 700)).join('\n\n');

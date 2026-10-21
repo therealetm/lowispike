@@ -159,6 +159,9 @@
         whenM: ['{n} min ago', 'vor {n} Min.', 'hace {n} min'],
         whenH: ['{n} h ago', 'vor {n} Std.', 'hace {n} h'],
         sinceMeal: ['Since last meal', 'Seit der letzten Mahlzeit', 'Desde la última comida'],
+        noMealYet: ['no meal yet', 'noch kein Essen', 'sin comida aún'],
+        gapAria: ['Meal gap: {h} h {m} min since your last meal at {t}. Tap to see more.', 'Essenspause: {h} Std. {m} Min. seit deiner letzten Mahlzeit um {t}. Tippen für mehr.', 'Pausa entre comidas: {h} h {m} min desde tu última comida a las {t}. Toca para ver más.'],
+        gapAria0: ['Meal gap: no meal logged yet. Log a meal in Fuel and the time since it shows here.', 'Essenspause: noch keine Mahlzeit eingetragen. Trag eine Mahlzeit bei Essen ein, dann steht hier die Zeit seitdem.', 'Pausa entre comidas: aún no hay comidas. Registra una en Comida y aquí verás el tiempo desde entonces.'],
         noMealYet: ['No meal yet', 'Noch keine Mahlzeit', 'Aún sin comida'],
         lastAt: ['last meal {t}', 'letzte Mahlzeit {t}', 'última comida {t}'],
         slotRecent: ['Your usual · one tap', 'Wie immer · ein Tipp', 'Lo de siempre · un toque'],
@@ -509,7 +512,10 @@
         /* Scan / Fuel / Gap (Oct 21, E-man: "let's not have it formatted like a fasting app"): the Gap bubble only reads the time
            since the last meal. No goal, no end time, no "Fasting" label; the fill still rises with the hours (capped like the points). */
         el.classList.remove('done');
-        const h = f.start ? '<small>' + esc(tr('sinceMeal')) + '</small><b>' + hours + '<i class="sp-u"> h </i>' + String(min).padStart(2, '0') + '<i class="sp-u"> min</i></b><small>' + esc(tr('lastAt').replace('{t}', new Date(f.start).toLocaleTimeString(lang(), { hour: '2-digit', minute: '2-digit' }))) + '</small>' : '<b>' + esc(tr('noFast')) + '</b>' + icon('clock');
+        const h = f.start ? '<small>' + esc(tr('sinceMeal')) + '</small><b>' + hours + '<i class="sp-u"> h </i>' + String(min).padStart(2, '0') + '<i class="sp-u"> min</i></b><small>' + esc(tr('lastAt').replace('{t}', new Date(f.start).toLocaleTimeString(lang(), { hour: '2-digit', minute: '2-digit' }))) + '</small>' : '<small>' + esc(tr('sinceMeal')) + '</small><b>' + esc(tr('noFast')) + '</b><small>' + esc(tr('noMealYet')) + '</small>';
+        /* Oct 21 grandma test: the Gap bubble says in words what its number is (it had no label for screen readers, and an empty Gap was a bare dash) */
+        const al = f.start ? tr('gapAria').replace('{h}', hours).replace('{m}', min).replace('{t}', new Date(f.start).toLocaleTimeString(lang(), { hour: '2-digit', minute: '2-digit' })) : tr('gapAria0');
+        if (el.getAttribute('aria-label') !== al) el.setAttribute('aria-label', al);
         const t = el.querySelector('.sp-fast-copy');
         if (t.innerHTML !== h) t.innerHTML = h;
     }

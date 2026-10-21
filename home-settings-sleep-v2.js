@@ -478,13 +478,20 @@
     function placeAsk(L, F, c, vw, M) {
         const p = L.querySelector('.ss2-ask'); if (!p) return;
         const xs = F.pts.map(q => q.x), ys = F.pts.map(q => q.y);
-        const cx = (Math.min(...xs) + Math.max(...xs)) / 2, below = (Math.min(...ys) + Math.max(...ys)) / 2 >= M.y;
-        const y = below ? Math.max(...ys) + c / 2 + 8 : Math.min(...ys) - c / 2 - 8;
-        const w = Math.min(220, vw - 24), x = Math.max(12, Math.min(vw - 12 - w, cx - w / 2));
-        p.style.cssText = 'left:' + x.toFixed(0) + 'px;width:' + w + 'px;top:' + y.toFixed(0) + 'px;' + (below ? '' : 'transform:translateY(-100%)');
-        const r = p.getBoundingClientRect(), mr = { l: M.x - M.r, r: M.x + M.r, t: M.y - M.r, b: M.y + M.r };
-        const hitsMisty = !(r.right < mr.l || r.left > mr.r || r.bottom < mr.t || r.top > mr.b);
-        if (hitsMisty || r.bottom > root.innerHeight - 4 || r.top < 4) p.remove();
+        const cx = (Math.min(...xs) + Math.max(...xs)) / 2, prefBelow = (Math.min(...ys) + Math.max(...ys)) / 2 >= M.y;
+        const w = Math.min(220, vw - 24), x = Math.max(12, Math.min(vw - 12 - w, cx - w / 2)), mr = { l: M.x - M.r, r: M.x + M.r, t: M.y - M.r, b: M.y + M.r };
+        /* Oct 21 grandma test: three bare chips ("<6 h", "6-7 h", "7 h+") mean nothing without the question, so when the question
+           does not fit on the side away from Misty it tries the other side, and it never lands on a bubble or a chip */
+        for (const below of [prefBelow, !prefBelow]) {
+            const y = below ? Math.max(...ys) + c / 2 + 8 : Math.min(...ys) - c / 2 - 8;
+            p.style.cssText = 'left:' + x.toFixed(0) + 'px;width:' + w + 'px;top:' + y.toFixed(0) + 'px;' + (below ? '' : 'transform:translateY(-100%)');
+            const r = p.getBoundingClientRect();
+            const hitsMisty = !(r.right < mr.l || r.left > mr.r || r.bottom < mr.t || r.top > mr.b);
+            const hitsChip = F.pts.some(q => !(r.right < q.x - c / 2 || r.left > q.x + c / 2 || r.bottom < q.y - c / 2 || r.top > q.y + c / 2));
+            const hitsBubble = [...D.querySelectorAll('[data-orbit]')].map(e => e.getBoundingClientRect()).some(q => q.width > 2 && !(r.right < q.left || r.left > q.right || r.bottom < q.top || r.top > q.bottom));
+            if (!hitsMisty && !hitsChip && !hitsBubble && r.bottom <= root.innerHeight - 4 && r.top >= 4) return;
+        }
+        p.remove();
     }
     function onChip(e) {
         const b = e.target && e.target.closest && e.target.closest('[data-ss2]'); if (!b) return;

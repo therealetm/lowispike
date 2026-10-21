@@ -194,7 +194,7 @@
     }
     function mealLog() { if (fn(W.LowiSpirit, 'meal')) { W.LowiSpirit.meal(); return true; } return false; }
 
-    const MOVE_NAMES = { quick: () => T('Quick', 'Kurz', 'Rápido'), medium: () => T('Medium', 'Mittel', 'Medio'), long: () => T('Long', 'Lang', 'Largo'), epic: () => T('Epic', 'Episch', 'Épico') };
+    const MOVE_NAMES = { quick: () => T('Quick', 'Kurz', 'Rápido'), medium: () => T('Medium', 'Mittel', 'Medio'), long: () => T('Long', 'Lang', 'Largo'), epic: () => T('Very long', 'Sehr lang', 'Muy largo') };
     const MOVE_HINTS = { quick: () => T('kitchen, loo', 'Küche, Bad', 'cocina, baño'), medium: () => T('shop, bus stop', 'Laden, Bus', 'tienda, bus'), long: () => T('to work, school', 'Arbeit, Schule', 'trabajo, cole'), epic: () => T('big walk, ride', 'große Tour', 'gran paseo') };
 
     /* the orbs for one bubble: [{id, label, sub, icon, run, keep, disabled, q}] (missing modules -> left out) */
@@ -268,7 +268,7 @@
     function moveNote(pts, orb, b, m, vw, vh) {
         const v = moveView();
         if (!v) return '';
-        const txt = v.q >= v.full ? T('Move is full for today. Nice!', 'Bewegung ist heute voll. Stark!', 'Movimiento completo hoy. ¡Genial!') : T('Estimate, not steps · ' + v.text + ' today', 'Schätzung, keine Schritte · heute ' + v.text, 'Estimación, no pasos · hoy ' + v.text);
+        const txt = v.q >= v.full ? T('Move is full for today. Nice!', 'Bewegung ist heute voll. Stark!', 'Movimiento completo hoy. ¡Genial!') : T('How far did you just walk? · ' + v.text + ' today', 'Wie weit bist du gerade gelaufen? · heute ' + v.text, '¿Cuánto has caminado? · hoy ' + v.text);
         /* the note sits on the far side of the orbs from Misty */
         let x = 0, y = 0; pts.forEach(p => { x += p.x; y += p.y; }); x /= pts.length; y /= pts.length;
         const a = Math.atan2(y - m.y, x - m.x); x += Math.cos(a) * (orb * 0.85); y += Math.sin(a) * (orb * 0.85);

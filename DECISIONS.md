@@ -968,3 +968,23 @@ Eman on the simplified page: "No, it looks shit. I wanted to be like this. It sh
 **Decision:** The start is three screens. 1: "Eat smarter and lose weight, as a game.", the five habits, and the founder proof "Made by Eman, who lost 45 kg in 7 months." (from the founder bio already in the app), button "Get started". 2: first name, "Continue". 3: first XP, "Create free account". The how-you-play controls are taught inside the app (hints, tutorial), not before the account. The Add to Home Screen guide, the first screen a phone visitor sees, opens with "Free app: eat smarter and lose weight, as a game." The account form doesn't ask the name again when the start already has it ("Two fields. That's it."). The shopping rhythm is read back in plain words (7 = "Once a week", 30 = "Once a month") and the summary uses them. The page title and link preview say what the app is and carry the proof. Starter-plan buttons say "Start" and "Done". EN, DE, ES. There is no paywall or Premium button in the app, so the "Premium" example has nothing to change.
 
 **Consequences:** `tests/onboarding-current.test.cjs` locks 3 screens, the proof in all three languages and the plain button words. `tools/conversion/shots.cjs` checks the screens in real browsers (fit, nothing covered, no errors) and takes screenshots. `ONBOARDING.md` lists the new flow. The Affiliates page is left to its own simplification task.
+## 2026-10-21 20:30 CEST: Community rebuilt in Eden's style, in LOWiSPIKE's galaxy (decided by the agent)
+
+Emmanuel: "Start to rebuild design for the whole community when clicked on it because I don't like how it looks at all. Nothing on there." References: Eden's community room and its Plan screen. Theme: LOWiSPIKE, not white.
+
+Decision criteria:
+1. One clear thing per view; spacious; big bold headline, small muted body text.
+2. Never white: dark-blue galaxy, dark glass with glowing cyan edges, the cyan-to-blue gradient only on the one primary action. Every text WCAG AA.
+3. Nothing that worked before stops working (rooms, galaxy chat, camera/mic, day/night, hold-for-settings, /affiliates/ and /create/ links, overlap fixes).
+4. Stay out of the parallel rebuilds: the room thread (chat-tg task) and the Affiliates page body (aff-eden task).
+
+What was decided:
+- The unreleased "phase D" flat look (text tabs, no boxes) is dropped: Eman's references are glass pills and one card, not bare text.
+- Sections: Eden's segmented pill. One glowing pill slides under the open section (`.rm-tabs::before`, index in `--rm-i`).
+- Chat section = the Community landing (Eden's Plan): live pill (people here, room), headline "Your galaxy", one muted line, ONE glass card with Galaxy chat, Replies and Room (icon tiles, thin dividers), one big "Open galaxy chat" button. Faint star dots and two glowing rings on a dark galaxy stage (dark in day mode too). Creation and Affiliates are not repeated in the card; they are in the pill control.
+- Galaxy chat: a round floating back button and a centred name pill (the room thread's own top bar belongs to the chat-tg task; if it brings a back button, hide `.rm-crumb`).
+- Members (Rooms & people): bottom sheet with a grabber, big title, people as avatar chips in their chat colour, rooms in one card with thin dividers.
+- Creation page (`create/index.html`): same Plan layout; the card lists what the studio will do, each marked Soon; the one button opens Affiliates, where ready-made scripts already exist (standalone: Open LOWiSPIKE).
+- The Room (galaxy) view stays the view Community opens on: the regression tools and the tutorial expect its composer.
+
+Checks: `tools/community-hub/probe.cjs` (contrast, overlaps with Day/Night and the picture, real centre taps, segment glow under the open tab, landing fit and order, members sheet, Open galaxy chat, Creation button) on iPhone SE, iPhone 13, iPad and iPhone 13 day.

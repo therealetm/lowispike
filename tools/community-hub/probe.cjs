@@ -37,7 +37,7 @@ async function run(engine, device, light) {
   try {
     await R.goto(); if (light) await p.evaluate(() => { document.documentElement.classList.add('light'); });
     await N.openCommunity(R); await sleep(1200);
-    if (!(await p.$('.rm-bar'))) throw new Error('no community bar');
+    if (!(await p.waitForSelector('.rm-bar', { timeout: 20000 }).catch(() => null))) throw new Error('no community bar');
     const tag = device.replace(/\W+/g, '-').toLowerCase() + (light ? '-day' : '');
     await R.shot(path.join(OUT, tag + '-1-galaxy.png'));
     const ov = await p.evaluate(overlaps); if (ov.length) fail(W, 'overlaps ' + ov.join(', '));

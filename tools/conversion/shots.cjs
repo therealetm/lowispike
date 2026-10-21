@@ -93,7 +93,7 @@ async function run(browser, base, device, lang) {
     for (const p of await fit(page, ['#r2gate .r2-start.form input[name=email]', '#r2gate .r2-start.form input[name=password]'])) fail(w, 'form ' + p);
     await shot('5-account-two-fields');
     /* shopping rhythm read-back (the same form setup and Profile use) */
-    
+
     await page.evaluate(() => { if (!window.LowiShopPlan) return; { const d = document.createElement('div'); d.className = 'spl-sheet r2-ob spl-probe'; d.style.cssText = 'position:fixed;inset:0;z-index:99999;padding:60px 22px;background:#0b1b33;overflow:auto'; d.innerHTML = LowiShopPlan.formHTML(LowiShopPlan.get(), { prefix: 'splT' }); const g = document.querySelector('#r2gate'); if (g) { g.innerHTML = ''; g.appendChild(d); } else document.body.appendChild(d); } }); await sleep(900);
     await page.fill('.spl-probe .spl-num', '7'); await sleep(200); row.w7 = await txt(page, '.spl-probe .spl-plain');
     await shot('6-shopping-once-a-week');

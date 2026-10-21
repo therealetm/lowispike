@@ -76,7 +76,7 @@ function discover(logs,products){
   const found=FOODS.filter(f=>first[f.id]).map(f=>({id:f.id,ts:first[f.id]}));
   return{first,found,n:found.length,total:FOODS.length};
 }
-/* Oct 19 (E-man let Maya decide): the Collection becomes a FOOD JOURNAL, a place to look back at the foods you logged or
+/* Oct 19 (design call): the Collection becomes a FOOD JOURNAL, a place to look back at the foods you logged or
    scanned and how those meals went. Nothing here gives XP or gates evolution (STEPS never read it).
    resultOf: the likely blood sugar response a meal log carries (lvl from the app's assessment, r = LOWiSPIKE yes/no). */
 function resultOf(l){

@@ -4,7 +4,7 @@
    Playwright from /tmp/pw (1.64.x). Not a physical iPhone: WebKit in a VM with a software renderer. */
 const fs = require('fs'), path = require('path');
 const pw = require('/tmp/pw/node_modules/playwright');
-const REPO = path.resolve(__dirname, '..', '..'), BASE = 'https://therealetm.github.io/lowispike/';
+const REPO = process.env.IA_ROOT ? path.resolve(process.env.IA_ROOT) : path.resolve(__dirname, '..', '..'), BASE = 'https://therealetm.github.io/lowispike/';
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.cjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.glb': 'model/gltf-binary', '.mp3': 'audio/mpeg', '.woff2': 'font/woff2', '.webmanifest': 'application/manifest+json', '.wasm': 'application/wasm' };
 

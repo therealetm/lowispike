@@ -31,8 +31,10 @@
 @keyframes mpBreathe { 50% { box-shadow: 0 0 0 3px rgba(46,248,182,.25), 0 0 26px rgba(46,248,182,.45), var(--wh-glass-sh, 0 8px 24px -14px rgba(0,0,0,.45)); } }
 @keyframes mpOrbit { to { transform: rotate(360deg); } }
 /* the mode line above the controller */
-.wh-hud .wh-pad-chip { position: absolute; left: 50%; bottom: calc(var(--wh-tb, 104px) + 144px); transform: translate(-50%, 4px); opacity: 0; pointer-events: none; white-space: nowrap; max-width: calc(100vw - 32px); overflow: hidden; text-overflow: ellipsis;
-    font-size: 12.5px; font-weight: 650; line-height: 1; padding: 7px 12px; border-radius: 999px; color: var(--wh-glass-ink, #fff);
+/* Oct 21 polish: long hints ("New: drag to fly Misty · hold: forward · 3 taps: autopilot") wrap to two centred lines instead of
+   ending in an ellipsis on phones. */
+.wh-hud .wh-pad-chip { position: absolute; left: 50%; bottom: calc(var(--wh-tb, 104px) + 144px); transform: translate(-50%, 4px); opacity: 0; pointer-events: none; width: max-content; max-width: min(300px, calc(100vw - 32px)); white-space: normal; text-align: center; text-wrap: balance;
+    font-size: 12.5px; font-weight: 650; line-height: 1.25; padding: 6px 14px; border-radius: 16px; color: var(--wh-glass-ink, #fff);
     border: 1.5px solid var(--wh-glass-rim, rgba(225,248,255,.42)); background: var(--wh-glass-bg, rgba(255,255,255,.08)); background-color: rgba(8,14,40,.32);
     backdrop-filter: blur(10px) saturate(1.4); -webkit-backdrop-filter: blur(10px) saturate(1.4); transition: opacity .25s ease, transform .25s ease; z-index: 4; }
 .wh-hud .wh-pad-chip.on { opacity: 1; transform: translate(-50%, 0); }

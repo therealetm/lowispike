@@ -12,7 +12,7 @@ html.lg .b3-cam .b3-shade { background: radial-gradient(ellipse 72% 32% at 50% 4
 /* top: the round glass X and torch, a white title in the system font */
 html.lg .b3-cam .b3-ctop { background: linear-gradient(180deg, rgba(0, 0, 0, .55), rgba(0, 0, 0, 0)) !important; }
 html.lg .b3-cam .b3-ctitle { font-family: var(--lg-font) !important; font-size: 17px !important; font-weight: 650 !important; letter-spacing: -.01em; color: #fff !important; }
-html.lg .b3-cam :is(.b3-cx, .b3-torch) { background: rgba(255, 255, 255, .12) !important; color: #fff !important; border: .5px solid rgba(255, 255, 255, .2) !important; -webkit-backdrop-filter: var(--lg-blur) !important; backdrop-filter: var(--lg-blur) !important; box-shadow: var(--lg-edge), 0 6px 18px -8px rgba(0, 0, 0, .6) !important; }
+html.lg .b3-cam :is(.b3-cx, .b3-torch) { background: rgba(255, 255, 255, .12) !important; color: #fff !important; border: .5px solid rgba(143, 231, 255, .26) !important; -webkit-backdrop-filter: var(--lg-blur) !important; backdrop-filter: var(--lg-blur) !important; box-shadow: var(--lg-edge), 0 6px 18px -8px rgba(0, 0, 0, .6) !important; }
 html.lg .b3-cam .b3-torch.on { background: var(--lg-blue) !important; color: #fff !important; border-color: rgba(255, 255, 255, .3) !important; }
 
 /* Oct 18 (Emmanuel: "Scanner: X bottom right"): the X sits at the bottom right of the capture panel, at the right end of the
@@ -37,36 +37,36 @@ html.lg .b3-cam .b3-laser { background: linear-gradient(90deg, transparent, var(
 html.lg .b3-cam.got .b3-frame i[class^=c] { border-color: #30d158 !important; filter: drop-shadow(0 0 6px rgba(48, 209, 88, .6)); }
 
 /* messages (looking up; the camera states below get Misty's blue glass): a dark glass card */
-html.lg .b3-cam .b3-cbox { background: rgba(28, 28, 32, .82) !important; color: #fff; border: .5px solid rgba(255, 255, 255, .14) !important; border-radius: var(--lg-r) !important; -webkit-backdrop-filter: var(--lg-blur) !important; backdrop-filter: var(--lg-blur) !important; box-shadow: var(--lg-edge), var(--lg-shadow) !important; }
+html.lg .b3-cam .b3-cbox { background: rgba(28, 28, 32, .82) !important; color: #fff; border: .5px solid rgba(143, 231, 255, .26) !important; border-radius: var(--lg-r) !important; -webkit-backdrop-filter: var(--lg-blur) !important; backdrop-filter: var(--lg-blur) !important; box-shadow: var(--lg-edge), var(--lg-shadow) !important; }
 html.lg .b3-cam .b3-cbox b { font-weight: 650; color: #fff; }
 html.lg .b3-cam .b3-cbox small { color: var(--lg-ink-2); opacity: 1; }
 html.lg .b3-cam .b3-cic { background: rgba(10, 132, 255, .18) !important; color: var(--lg-blue-2) !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .25); }
 html.lg .b3-cam .b3-spin { border-color: rgba(255, 255, 255, .22) !important; border-top-color: var(--lg-blue-2) !important; }
-html.lg .b3-cam .b3-cbox .r2-btn.ghost { background: rgba(118, 118, 128, .24) !important; color: #fff !important; border: .5px solid rgba(255, 255, 255, .18) !important; }
+html.lg .b3-cam .b3-cbox .r2-btn.ghost { background: rgba(118, 118, 128, .24) !important; color: #fff !important; border: .5px solid rgba(143, 231, 255, .26) !important; }
 
 /* bottom: hint, code field, the four actions and Deep analyze in one glass panel */
 html.lg .b3-cam .b3-chint { font-family: var(--lg-font); color: #fff; opacity: 1; font-weight: 600; text-shadow: 0 1px 3px rgba(0, 0, 0, .6); }
 html.lg .b3-cam .b3-chint.warn { color: #ff9f8f; }
-html.lg .b3-cam .b3-ctype .input, html.lg .b3-cam #b3Bc { background: rgba(118, 118, 128, .24) !important; color: #fff !important; border: .5px solid rgba(255, 255, 255, .14) !important; border-radius: 22px !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .12) !important; }
+html.lg .b3-cam .b3-ctype .input, html.lg .b3-cam #b3Bc { background: rgba(118, 118, 128, .24) !important; color: #fff !important; border: .5px solid rgba(143, 231, 255, .26) !important; border-radius: 22px !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .12) !important; }
 html.lg .b3-cam .b3-ctype .input::placeholder { color: var(--lg-ink-3) !important; }
 html.lg .b3-cam .b3-go { background: var(--lg-blue) !important; color: #fff !important; border: 0 !important; border-radius: 50% !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .45), 0 8px 22px -10px rgba(10, 132, 255, .8) !important; }
-html.lg .b3-cam .b3-cact { background: rgba(255, 255, 255, .08) !important; color: #fff !important; border: .5px solid rgba(255, 255, 255, .16) !important; border-radius: 18px !important; font-family: var(--lg-font) !important; font-weight: 600 !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .22) !important; }
+html.lg .b3-cam .b3-cact { background: rgba(255, 255, 255, .08) !important; color: #fff !important; border: .5px solid rgba(143, 231, 255, .26) !important; border-radius: 18px !important; font-family: var(--lg-font) !important; font-weight: 600 !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .22) !important; }
 html.lg .b3-cam .b3-cact svg { color: #fff !important; }
 html.lg .b3-cam .b3-cact[aria-pressed=true] { background: rgba(10, 132, 255, .30) !important; border-color: rgba(100, 210, 255, .55) !important; }
 html.lg .b3-cam .b3-cact[aria-pressed=true] svg { color: var(--lg-blue-2) !important; }
-html.lg .b3-cam .b3-deep { background: rgba(255, 255, 255, .08) !important; color: #fff !important; border: .5px solid rgba(255, 255, 255, .16) !important; border-radius: 18px !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .22) !important; }
+html.lg .b3-cam .b3-deep { background: rgba(255, 255, 255, .08) !important; color: #fff !important; border: .5px solid rgba(143, 231, 255, .26) !important; border-radius: 18px !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .22) !important; }
 html.lg .b3-cam .b3-deep b { font-weight: 650 !important; }
 html.lg .b3-cam .b3-deep small { color: var(--lg-ink-2); opacity: 1; }
 html.lg .b3-cam .b3-deep > svg { color: var(--lg-blue-2) !important; }
 html.lg .b3-cam .b3-deep > svg:last-child { color: var(--lg-ink-3) !important; opacity: 1; }
-html.lg .b3-cam .b3-pill { background: rgba(255, 255, 255, .08) !important; color: #fff !important; border: .5px solid rgba(255, 255, 255, .16) !important; }
+html.lg .b3-cam .b3-pill { background: rgba(255, 255, 255, .08) !important; color: #fff !important; border: .5px solid rgba(143, 231, 255, .26) !important; }
 html.lg .b3-cam .b3-pill svg { color: var(--lg-blue-2) !important; }
 
 /* the panel is one glass card in the dock's material; with the dock over the camera it ends just above the dock, and the
    messages sit above the panel */
 html.lg .b3-cam .b3-cbot {
     padding: 12px !important; gap: 8px;
-    background: rgba(28, 28, 34, .42) !important; border: .5px solid rgba(255, 255, 255, .18); border-radius: 30px;
+    background: rgba(28, 28, 34, .42) !important; border: .5px solid rgba(143, 231, 255, .26); border-radius: 30px;
     -webkit-backdrop-filter: blur(28px) saturate(190%); backdrop-filter: blur(28px) saturate(190%);
     box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .4), inset 0 -.5px 0 rgba(255, 255, 255, .08), inset 0 18px 30px -22px rgba(255, 255, 255, .25), 0 14px 40px -10px rgba(0, 0, 0, .7);
 }
@@ -117,7 +117,7 @@ html .b3-cam .b3-cbox.b3-cglass .b3-cic { width: 42px; height: 42px; background:
 html .b3-cam .b3-cbox.b3-cglass .b3-cic svg { width: 22px; height: 22px; }
 html .b3-cam .b3-cbtns { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 8px; width: 100%; }
 html .b3-cam .b3-cbtn { flex: 1 1 120px; min-height: 44px; padding: 0 16px; border-radius: 999px; font: 600 15px/1 var(--lg-font, -apple-system, system-ui, sans-serif); cursor: pointer; -webkit-tap-highlight-color: transparent; }
-html .b3-cam .b3-cbtn.pri { color: #fff; border: .5px solid rgba(255, 255, 255, .35); background: linear-gradient(180deg, #3d9bff, #0a84ff);
+html .b3-cam .b3-cbtn.pri { color: #fff; border: .5px solid rgba(143, 231, 255, .4); background: linear-gradient(180deg, #3d9bff, #0a84ff);
     box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .55), 0 8px 20px -10px rgba(10, 132, 255, .9); }
 html .b3-cam .b3-cbtn.ghost { color: var(--wh-glass-ink, #fff); border: 1px solid var(--wh-glass-rim); background: rgba(255, 255, 255, .08); }
 html .b3-cam .b3-cbtn:active { transform: scale(.97); }
@@ -138,7 +138,7 @@ html.lg .b3-card.v-spike .b3-glow { background: radial-gradient(circle at 50% 55
 html.lg .b3-stage.show .b3-card.anim { animation-name: sgflash !important; }
 @keyframes sgflash { 0% { box-shadow: 0 0 0 0 rgba(100, 210, 255, .9), 0 0 80px rgba(10, 132, 255, .7); } 100% { box-shadow: 0 0 0 0 transparent; } }
 html.lg .b3-bar i { background: linear-gradient(90deg, var(--lg-blue), var(--lg-blue-2)) !important; }
-html.lg .b3-ball { background: rgba(255, 255, 255, .12) !important; color: #fff !important; border: .5px solid rgba(255, 255, 255, .2) !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .3) !important; }
+html.lg .b3-ball { background: rgba(255, 255, 255, .12) !important; color: #fff !important; border: .5px solid rgba(143, 231, 255, .26) !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .3) !important; }
 html.lg .b3-go { background: var(--lg-blue) !important; color: #fff !important; border: 0 !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .45) !important; }
 html.lg #tab-scan .b3-capture { background: var(--lg-fill) !important; border: .5px solid var(--lg-rim) !important; border-radius: var(--lg-r) !important; box-shadow: var(--lg-edge), var(--lg-shadow) !important; -webkit-backdrop-filter: var(--lg-blur); backdrop-filter: var(--lg-blur); }
 html.lg #tab-scan .b3-capture-icon { background: var(--lg-blue) !important; color: #fff !important; border: 0 !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .45), 0 8px 22px -10px rgba(10, 132, 255, .8) !important; }
@@ -150,7 +150,7 @@ html.lg #tab-scan .b3-pill svg { color: var(--lg-blue-2) !important; }
    Cook's Shuffle ring was a rainbow (gold, cyan, purple, pink) and the "new version" banner a blue-to-purple gradient: both now
    Misty's blue. Per-person colours (planets, avatars), the spike meter and medal tiers stay as they are on purpose. */
 html.lg .r5-ring { background: conic-gradient(from 0deg, var(--lg-blue), var(--lg-blue-2), rgba(255, 255, 255, .85), var(--lg-blue-2), var(--lg-blue)) !important; }
-html.lg #lcUpd.lc-upd { background: rgba(28, 28, 34, .72) !important; color: #fff !important; border: .5px solid rgba(255, 255, 255, .18) !important; -webkit-backdrop-filter: blur(28px) saturate(190%); backdrop-filter: blur(28px) saturate(190%); box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .4), 0 14px 40px -10px rgba(0, 0, 0, .7) !important; }
+html.lg #lcUpd.lc-upd { background: rgba(28, 28, 34, .72) !important; color: #fff !important; border: .5px solid rgba(143, 231, 255, .26) !important; -webkit-backdrop-filter: blur(28px) saturate(190%); backdrop-filter: blur(28px) saturate(190%); box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .4), 0 14px 40px -10px rgba(0, 0, 0, .7) !important; }
 
 @media (prefers-reduced-transparency: reduce) {
     html.lg .b3-cam :is(.b3-cbox, .b3-cx, .b3-torch) { background: rgba(28, 28, 32, .96) !important; }

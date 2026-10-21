@@ -72,11 +72,13 @@ jobs:
         with:
           persist-credentials: false
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
-      # The site is the repository root, served as-is (the old branch deploy used .nojekyll).
-      # .git, .github and dotfiles are left out of the artifact.
+      # The site is the tracked files minus the notes, tests, tools and proposals a visitor's browser never
+      # loads (scripts/site-files.cjs; tests/site-files.test.cjs keeps every file the app references).
+      - name: Stage the public site
+        run: node scripts/site-files.cjs --out _site
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
-          path: .
+          path: _site
       - id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
 

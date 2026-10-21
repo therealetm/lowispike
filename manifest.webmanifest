@@ -1,6 +1,9 @@
 {
   "name": "LOWiSPIKE",
   "short_name": "LOWiSPIKE",
+  "description": "Fasting, meals, water, sleep and movement, played as a game with Misty, your companion.",
+  "lang": "en",
+  "categories": ["health", "fitness", "lifestyle"],
   "id": "./",
   "start_url": "./",
   "scope": "./",

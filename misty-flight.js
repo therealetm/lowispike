@@ -165,7 +165,7 @@
         (gaps || []).forEach(g => { const d = Math.abs(angWrap(ang - g.a)); if (d < bd) { bd = d; best = g.a; } });
         return best == null ? angWrap(ang) : best;
     }
-    /* dark zones (Oct 17, E-man, replacing the black holes of release 131627: "delete all the black holes"; what he and Maya were
+    /* dark zones (Oct 17, E-man, replacing the black holes of release 131627: "delete all the black holes"; what we were
        after is "the child feeling of going so far into the dark space that you feel like you just entered a zone that you weren't
        supposed to be in ... out of the game zone"; "it feels like you're able to fly in there, which you are supposed to ... so to
        give it an infinite type of feeling ... everything becomes so dark that Misty can't, and the human can't see anything ... and

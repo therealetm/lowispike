@@ -120,7 +120,7 @@
     }
 
     /* ---------- food collection ---------- */
-    /* Oct 19 (E-man: "I don't even understand what collection is for"; he let Maya decide): a FOOD JOURNAL. The foods you
+    /* Oct 19 (E-man: "I don't even understand what collection is for"): a FOOD JOURNAL. The foods you
        really logged or scanned, newest first, with how often and how those meals went (likely blood sugar response), plus a
        few ideas to try. No "???" tiles, no discovered n / total, no completion: nothing here is needed to evolve. Your scanned
        products follow underneath (spirit.js), tap one to see its result again. */

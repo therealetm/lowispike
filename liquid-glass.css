@@ -10,8 +10,9 @@ html.lg {
     --lg-fill-2: rgba(58, 60, 70, .42);
     --lg-fill-hi: rgba(120, 124, 140, .30);
     --lg-blur: blur(26px) saturate(185%);
-    --lg-rim: rgba(255, 255, 255, .16);
-    --lg-edge: inset 0 .5px 0 rgba(255, 255, 255, .38), inset 0 0 0 .5px rgba(255, 255, 255, .10), inset 0 -.5px 0 rgba(255, 255, 255, .06), inset 0 14px 24px -18px rgba(255, 255, 255, .22);
+    /* Oct 21 polish: rims in the brand cyan (#8fe7ff) instead of white, so the glass matches Home and Settings. */
+    --lg-rim: rgba(143, 231, 255, .26);
+    --lg-edge: inset 0 .5px 0 rgba(255, 255, 255, .38), inset 0 0 0 .5px rgba(143, 231, 255, .14), inset 0 -.5px 0 rgba(255, 255, 255, .06), inset 0 14px 24px -18px rgba(255, 255, 255, .22);
     --lg-shadow: 0 10px 30px -12px rgba(0, 0, 0, .55);
     --lg-ink: #fff;
     --lg-ink-2: rgba(235, 235, 245, .62);
@@ -28,7 +29,7 @@ html.lg {
         radial-gradient(1px 1px at 94% 88%, rgba(255, 255, 255, .4), transparent 60%),
         radial-gradient(1px 1px at 4% 52%, rgba(255, 255, 255, .45), transparent 60%);
     /* the app's own tokens, pointed at the glass system (one source of colour for every older component) */
-    --gold: #0a84ff !important; --gold2: #64d2ff !important; --line: rgba(255, 255, 255, .14) !important; --line2: rgba(255, 255, 255, .08) !important;
+    --gold: #0a84ff !important; --gold2: #64d2ff !important; --line: rgba(143, 231, 255, .24) !important; --line2: rgba(143, 231, 255, .13) !important;
     --text: #fff !important; --muted: rgba(235, 235, 245, .62) !important; --dim: rgba(235, 235, 245, .34) !important;
     --panel: rgba(30, 32, 40, .46) !important; --panel2: rgba(58, 60, 70, .5) !important;
     --acc: #5aa9ff !important; --acc2: #9fd0ff !important; --acc-rgb: 90, 169, 255 !important; --acc-ink: #5aa9ff !important;
@@ -37,7 +38,7 @@ html.lg {
     --r2-ink: #fff !important; --r2-mut: rgba(235, 235, 245, .62) !important;
     --p2-gold: #0a84ff !important; --fx-t: 90, 169, 255 !important;
     --au-surface: rgba(30, 32, 40, .46) !important; --au-raised: rgba(58, 60, 70, .5) !important; --au-chrome: rgba(28, 28, 34, .42) !important;
-    --au-sheet: rgba(28, 28, 32, .86) !important; --au-border: rgba(255, 255, 255, .14) !important; --au-label: #fff !important;
+    --au-sheet: rgba(28, 28, 32, .86) !important; --au-border: rgba(143, 231, 255, .24) !important; --au-label: #fff !important;
     --au-secondary: rgba(235, 235, 245, .62) !important; --au-focus: #0a84ff !important;
     color-scheme: dark;
 }
@@ -89,7 +90,7 @@ html.lg #cmSend:disabled { background: rgba(118, 118, 128, .3) !important; color
 /* 7. the tab bar is a glass dock: one style on every tab (no per-tab coral/green/purple tint) */
 html.lg #app #main #tabbar {
     background: rgba(28, 28, 34, .42) !important; -webkit-backdrop-filter: blur(28px) saturate(190%) !important; backdrop-filter: blur(28px) saturate(190%) !important;
-    border: .5px solid rgba(255, 255, 255, .18) !important; border-radius: 34px !important;
+    border: .5px solid rgba(143, 231, 255, .26) !important; border-radius: 34px !important;
     box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .4), inset 0 -.5px 0 rgba(255, 255, 255, .08), inset 0 18px 30px -22px rgba(255, 255, 255, .25), 0 14px 40px -10px rgba(0, 0, 0, .7) !important;
 }
 html.lg #app #main #tabbar .tb { color: rgba(235, 235, 245, .62) !important; background: transparent !important; box-shadow: none !important; }
@@ -110,13 +111,13 @@ html.lg :is(#sheet, #rsSheet, .r2-sheet) { background: rgba(28, 28, 32, .82) !im
 /* 9. page headers float on the space (no solid bars); the Scan button is the one blue glass circle; camera buttons are glass */
 html.lg #app #main .tab :is(.sh-top, .mv-top, .cm-top, .fy-top) { background: linear-gradient(180deg, rgba(0, 0, 0, .55), rgba(0, 0, 0, 0)) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; border: 0 !important; box-shadow: none !important; }
 html.lg #app #main #tabbar .tb.scan .ring { background: radial-gradient(120% 120% at 30% 20%, #5fb0ff, #0a7aff 60%, #0060df) !important; color: #fff !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .6), inset 0 -2px 6px rgba(0, 0, 0, .25), 0 8px 24px -6px rgba(10, 132, 255, .75) !important; }
-html.lg .camb { background: rgba(255, 255, 255, .12) !important; color: #fff !important; border: .5px solid rgba(255, 255, 255, .2) !important; -webkit-backdrop-filter: var(--lg-blur); backdrop-filter: var(--lg-blur); box-shadow: var(--lg-edge) !important; }
+html.lg .camb { background: rgba(255, 255, 255, .12) !important; color: #fff !important; border: .5px solid rgba(143, 231, 255, .26) !important; -webkit-backdrop-filter: var(--lg-blur); backdrop-filter: var(--lg-blur); box-shadow: var(--lg-edge) !important; }
 
 /* 10. Community = the spirit world seen from far out (Oct 16, round 3, E-man: "it's still the spirit world ... within the metabolic
    health style"): the same silvery dark-blue bloodstream as Home (drawn on the sky canvas, with drifting cells), every companion
    floating in its own glowing cell of its colour, names like iOS icon labels. No sun, no planets, no orbit rings. */
 html.lg #cmPaneChat[data-spirit-chat] { --cg-name: #fff; --cg-nameb: transparent; --cg-thread: rgba(10, 10, 14, .82); --chat-edge: rgba(255, 255, 255, .14); }
-html.lg #cmPaneChat[data-spirit-chat] .cp-room.cg-room { background: #060d1f !important; border: .5px solid rgba(255, 255, 255, .12) !important; border-radius: 28px !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .18) !important; }
+html.lg #cmPaneChat[data-spirit-chat] .cp-room.cg-room { background: #060d1f !important; border: .5px solid rgba(143, 231, 255, .2) !important; border-radius: 28px !important; box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .18) !important; }
 html.lg #cmPaneChat[data-spirit-chat] .cg-orb {
     background: radial-gradient(circle at 34% 28%, rgba(255, 255, 255, .42), rgba(255, 255, 255, 0) 30%),
         radial-gradient(circle, color-mix(in srgb, var(--c, #8fb4ff) 16%, transparent) 0 52%, color-mix(in srgb, var(--c, #8fb4ff) 46%, transparent) 70%, color-mix(in srgb, var(--c, #8fb4ff) 80%, #fff) 79%, color-mix(in srgb, var(--c, #8fb4ff) 30%, transparent) 84%, transparent 88%) !important;
@@ -144,11 +145,11 @@ html.lg #cmPaneChat[data-spirit-chat] :is(.cg-bub, .cg-bub.mine) :is(.cg-to, .cg
 html.lg #cmPaneChat[data-spirit-chat] .cg-bub .cg-st { color: rgba(21, 18, 42, .55) !important; }
 html.lg #cmPaneChat[data-spirit-chat] :is(.cg-to, .cg-t .cm-mention) { color: #9fd0ff !important; }
 html.lg #cmPaneChat[data-spirit-chat] .cg-st { color: rgba(235, 235, 245, .6) !important; }
-html.lg #cmPaneChat[data-spirit-chat] :is(.cg-hist, .cg-chip.on, .cg-chipx, .cg-x, .cg-empty) { background: rgba(118, 118, 128, .24) !important; color: #fff !important; border: .5px solid rgba(255, 255, 255, .14) !important; -webkit-backdrop-filter: var(--lg-blur); backdrop-filter: var(--lg-blur); box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .25) !important; }
+html.lg #cmPaneChat[data-spirit-chat] :is(.cg-hist, .cg-chip.on, .cg-chipx, .cg-x, .cg-empty) { background: rgba(118, 118, 128, .24) !important; color: #fff !important; border: .5px solid rgba(143, 231, 255, .2) !important; -webkit-backdrop-filter: var(--lg-blur); backdrop-filter: var(--lg-blur); box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .25) !important; }
 html.lg #cmPaneChat[data-spirit-chat] .cg-dotc.all { background: conic-gradient(#0a84ff, #64d2ff, #bf5af2, #0a84ff) !important; }
 html.lg #cmPaneChat[data-spirit-chat] .cg-thread { background: rgba(10, 10, 14, .82) !important; }
 html.lg #cmPaneChat[data-spirit-chat] .cm-msg.cg-focus .cm-bub { box-shadow: 0 0 0 2px #0a84ff !important; }
-html.lg :is(#cgToast .cg-toast) { background: rgba(30, 30, 36, .72) !important; color: #fff !important; border: .5px solid rgba(255, 255, 255, .18) !important; -webkit-backdrop-filter: var(--lg-blur); backdrop-filter: var(--lg-blur); box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .3), 0 12px 30px -10px rgba(0, 0, 0, .7) !important; border-radius: 22px !important; }
+html.lg :is(#cgToast .cg-toast) { background: rgba(30, 30, 36, .72) !important; color: #fff !important; border: .5px solid rgba(143, 231, 255, .26) !important; -webkit-backdrop-filter: var(--lg-blur); backdrop-filter: var(--lg-blur); box-shadow: inset 0 .5px 0 rgba(255, 255, 255, .3), 0 12px 30px -10px rgba(0, 0, 0, .7) !important; border-radius: 22px !important; }
 
 /* 11. paging like the iPhone home screen (liquid-glass.js): during a slide or a drag both pages are visible and move side by side */
 html.lg #app #main > .tab:is(.lg-out, .lg-peek) { opacity: 1 !important; visibility: visible !important; pointer-events: none !important; transition: none !important; z-index: 1; }

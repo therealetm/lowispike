@@ -41,7 +41,9 @@ test('natural neural voices, one per language, and no clips nobody uses', () => 
         assert.ok(used.has(l + '/' + f), `unused clip ${l}/${f}: ${FIX}`);
         bytes += fs.statSync(path.join(ROOT, V.DIR, l, f)).size;
     }
-    assert.ok(bytes < 14e6, 'clips over 14 MB: ' + bytes);
+    /* repo-size guard only: clips are fetched one at a time when played, never precached. Raised 14 -> 16 MB on Oct 21 2026 when the
+       71st card (Community tab order) pushed the set to 14.2 MB. */
+    assert.ok(bytes < 16e6, 'clips over 16 MB: ' + bytes);
 });
 
 test('what is said: title then text; a renamed companion is not called Misty', () => {

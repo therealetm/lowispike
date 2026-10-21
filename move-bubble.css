@@ -85,3 +85,8 @@ html.wh-home.wh-away #whHud .wh-move { opacity: 0 !important; pointer-events: no
     .wm-float { animation: wm-fade 2.6s linear forwards; }
     @keyframes wm-fade { 0%, 85% { opacity: 1; } 100% { opacity: 0; } }
 }
+/* Oct 21: hold Move opens the Move page; today's estimates are this row under the page header (move-bubble.js guessRow) */
+#tab-move .wm-guess-row{appearance:none;display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:44px;margin:2px 0 10px;padding:0 14px;border-radius:14px;border:1px solid rgba(143,231,255,.32);background:linear-gradient(180deg,rgba(28,247,249,.10),rgba(48,120,255,.07));color:#e6f6ff;font:600 14px/1.2 inherit;font-family:inherit;text-align:left;cursor:pointer}
+#tab-move .wm-guess-row span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#tab-move .wm-guess-row b{flex:none;color:#8fe7ff;font-weight:700}
+#tab-move .wm-guess-row:focus-visible{outline:2px solid #1cf7f9;outline-offset:2px}

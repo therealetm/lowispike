@@ -109,7 +109,7 @@ test('labels are the plain words E-man asked for, no Again / Photo, no emoji any
 });
 
 test('every action calls an existing app API (no invented routes, no placeholder buttons)', () => {
-  for (const call of ['LowiSpirit.meal()', 'LowiStorePicks.open(', "LowiHost.go('shelf')", 'LowiSpirit.water()', 'LowiVitalsBridge.unaward(', 'LowiMoveBubble.pick(', 'LowiMoveBubble.edit()', 'W.LowiGapView.open()'])
+  for (const call of ['LowiSpirit.meal()', 'LowiStorePicks.open(', "LowiHost.go('shelf')", 'LowiSpirit.water()', 'LowiVitalsBridge.unaward(', 'LowiMoveBubble.pick(', 'LowiMoveBubble.edit()', 'LowiMoveBubble.page()', 'W.LowiGapView.open()'])
     assert.ok(src.includes(call), call);
   assert.doesNotMatch(src, /fetch\(|XMLHttpRequest|supabase|sendBeacon/i, 'no backend calls from the bloom');
   /* a missing module leaves its orb out rather than showing a dead button */

@@ -3,6 +3,9 @@
    The pick pops into the bubble, its fill rises, Misty does her happy dance, and a small float says what it really added
    (XP and the Move energy change read back from LowiSun.energyNow, so the number always matches what was applied, caps included).
    Long press: today's estimates, each can be removed again (XP and energy go back with it). No separate edit button.
+   Oct 21 (Eman: "on the homepage, press long and you enter the fitness page, Move"): long press now opens the full Move page
+   (openPage), the one Community's bottom bar used to open. Today's estimates moved onto that page: a row under its header
+   ("Today on Home: n · Edit") opens the same sheet. The keyboard ContextMenu key opens the page too.
    Rules live in move-estimate-core.js. Only time on your feet or on a bike counts, never sitting on a bus or train. */
 /* Oct 18 (E-man, iPad: "Move keeps moving into the middle"): the four choices used to aim at the screen middle. On a
    phone that was beside Misty, but on iPad and desktop Misty IS the middle, so Quick / Medium / Long / Epic landed on her.
@@ -151,7 +154,7 @@
     let living = false, longAt = 0, downAt = 0;   /* a long press, however long it is held, never also opens the bloom */
     function attachLiving(b) {
         if (living || !b) return;
-        try { if (W.LowiLivingBubble && typeof W.LowiLivingBubble.attach === 'function') { W.LowiLivingBubble.attach(b, { kind: 'move', onLong: () => { longAt = performance.now(); editSheet(); return true; } }); living = true; } } catch (e) {}
+        try { if (W.LowiLivingBubble && typeof W.LowiLivingBubble.attach === 'function') { W.LowiLivingBubble.attach(b, { kind: 'move', onLong: () => { longAt = performance.now(); openPage(); return true; } }); living = true; } } catch (e) {}
     }
     const shared = () => !!(W.LowiBubbles && el && el.classList.contains('lb-bub'));
     function paint() {
@@ -250,7 +253,7 @@
             held = false; sx = e.clientX; sy = e.clientY;
             b.classList.add('wm-press');
             clear(); b.classList.add('wm-holding');
-            down = setTimeout(() => { down = 0; held = true; b.classList.remove('wm-holding', 'wm-press'); buzz(18); editSheet(); }, 560);
+            down = setTimeout(() => { down = 0; held = true; b.classList.remove('wm-holding', 'wm-press'); buzz(18); openPage(); }, 560);
         });
         b.addEventListener('pointermove', e => { if (down && Math.hypot(e.clientX - sx, e.clientY - sy) > 12) { clear(); b.classList.remove('wm-press'); } });
         ['pointerup', 'pointercancel', 'pointerleave'].forEach(n => b.addEventListener(n, () => { clear(); b.classList.remove('wm-press'); }));
@@ -261,7 +264,7 @@
             if (longAt && longAt >= downAt) { longAt = 0; return; }
             if (bloom) closeBloom(); else openBloom();
         });
-        b.addEventListener('keydown', e => { if (e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10')) { e.preventDefault(); editSheet(); } });
+        b.addEventListener('keydown', e => { if (e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10')) { e.preventDefault(); openPage(); } });
     }
     function buzz(ms) { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) {} }
 
@@ -381,6 +384,32 @@
     }
 
     /* ---------- long press: today's estimates ---------- */
+    /* Oct 21: hold Move = the Move page. guessRow() keeps today's estimates one tap away on that page. */
+    function openPage() {
+        closeBloom(false);
+        try { if (W.LowiHost && typeof W.LowiHost.go === 'function') W.LowiHost.go('move'); else if (typeof W.goTab === 'function') W.goTab('move'); } catch (e) {}
+        watchPage(); [60, 400, 1200].forEach(ms => setTimeout(guessRow, ms));
+    }
+    function guessRow() {
+        const sc = D.querySelector('#tab-move #mv-screen .mv-head'); if (!sc) return;
+        let r = sc.parentNode.querySelector(':scope > .wm-guess-row');
+        if (!r) {
+            r = D.createElement('button'); r.type = 'button'; r.className = 'wm-guess-row';
+            r.addEventListener('click', e => { e.preventDefault(); editSheet(); });
+            sc.insertAdjacentElement('afterend', r);
+        }
+        const n = C.estimates(ledger(), dayKey()).length;
+        const txt = T('Today on Home: ', 'Heute auf Home: ', 'Hoy en Home: ') + (n ? n + ' ' + (n === 1 ? T('guess', 'Schätzung', 'estimación') : T('guesses', 'Schätzungen', 'estimaciones')) : T('nothing yet', 'noch nichts', 'nada aún'));
+        const ed = T('Edit', 'Bearbeiten', 'Editar');
+        if (r.dataset.t !== txt + ed) { r.dataset.t = txt + ed; r.innerHTML = '<span>' + esc(txt) + '</span><b>' + esc(ed) + '</b>'; r.setAttribute('aria-label', txt + ', ' + ed); }
+    }
+    let pageObs = null;
+    function watchPage() {
+        const p = D.getElementById('tab-move'); if (!p || pageObs) return;
+        let q = 0;
+        pageObs = new MutationObserver(() => { if (q) return; q = setTimeout(() => { q = 0; guessRow(); }, 80); });
+        pageObs.observe(p, { childList: true, subtree: true });
+    }
     function editSheet() {
         closeBloom(false);
         const R = W.LowiR2; if (!R || !R.sheet) return;
@@ -416,6 +445,7 @@
     const placeSoon = () => requestAnimationFrame(() => { try { place(); } catch (e) {} });
     function boot() {
         paint();
+        setTimeout(watchPage, 0);
         let tries = 0; const wait = () => { if ((el && el.isConnected) || ++tries > 40) return; paint(); setTimeout(wait, 400); }; setTimeout(wait, 400);
         ['lowi:reward', 'lowi:state', 'lowi:lang', 'lowi:layout', 'storage', 'focus'].forEach(n => W.addEventListener(n, soon));
         D.addEventListener('visibilitychange', () => { if (!D.hidden) soon(); });
@@ -428,6 +458,6 @@
         W.addEventListener('lowi:clean-view', e => { if (!(e.detail && e.detail.on)) setTimeout(placeSoon, 520); });   /* back from the clean flight view: catch up on a turn or resize */
         [300, 1200, 3000].forEach(ms => setTimeout(placeSoon, ms));
     }
-    W.LowiMoveBubble = { paint, open: openBloom, close: closeBloom, edit: editSheet, pick: (id) => pick(id, null), el: () => ensure() };
+    W.LowiMoveBubble = { paint, open: openBloom, close: closeBloom, edit: editSheet, page: openPage, pick: (id) => pick(id, null), el: () => ensure() };
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', () => setTimeout(boot, 0), { once: true }); else setTimeout(boot, 0);
 })();

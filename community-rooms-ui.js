@@ -28,6 +28,8 @@ const R=()=>W.LowiRooms,C=()=>W.LowiRoomsCore,H=()=>W.LowiCommunityHost;
 function people(){try{return (H()&&H().people&&H().people())||[];}catch(e){return [];}}
 function nameOf(uid){const p=people().find(x=>x&&x.uid===uid);return p&&p.n?String(p.n):'';}
 function me(){try{return (H()&&H().uid&&H().uid())||'';}catch(e){return '';}}
+/* tab order is the user's (community-tab-order.js: hold a tab to move it) */
+function tabOrder(){const O=W.LowiCommunityTabs;try{return O&&O.order?O.order():['room','chat','create','aff'];}catch(e){return ['room','chat','create','aff'];}}
 function open(){const t=D.getElementById('cgThread');return !!(t&&t.hasAttribute('data-open'));}
 /* 21 Oct evening (Eden's Chat): the Chat tab opens the channel list; a channel opens its thread, "‹ Channels" comes back. */
 function setTab(chat){view='';const c=W.LowiCommunity;if(!c||!c.thread){if(chat)view='chans';paint();return;}if(open())c.thread(false);if(chat)view='chans';paint();}
@@ -58,7 +60,7 @@ function ensure(){const pane=D.getElementById('cmPaneChat');if(!pane||!pane.hasA
  if(bar&&bar.isConnected&&bar.parentNode===pane)return bar;
  bar=D.createElement('nav');bar.className='rm-bar';bar.setAttribute('data-noi18n','');
  bar.innerHTML='<div class="rm-head"><button type="button" class="rm-id rm-menu-btn" data-rm="menu" aria-haspopup="menu" aria-expanded="false"><span class="rm-logo" aria-hidden="true"><i></i></span><span class="rm-idt"><b class="rm-name"></b><span class="rm-live"></span></span><span class="rm-chev" aria-hidden="true"></span></button></div>'
-  +'<div class="rm-tabs" role="tablist"><button type="button" role="tab" class="rm-tab" data-rm="room"></button><button type="button" role="tab" class="rm-tab" data-rm="chat"></button><button type="button" role="tab" class="rm-tab" data-rm="create"></button><button type="button" role="tab" class="rm-tab" data-rm="aff"></button></div><div class="rm-crumb" hidden><button type="button" class="rm-back" data-rm="chat"></button><span class="rm-crumb-t"></span></div><div class="rm-banner" role="status" aria-live="polite"></div>';
+  +'<div class="rm-tabs" role="tablist">'+tabOrder().map(k=>'<button type="button" role="tab" class="rm-tab" data-rm="'+k+'"></button>').join('')+'</div><div class="rm-crumb" hidden><button type="button" class="rm-back" data-rm="chat"></button><span class="rm-crumb-t"></span></div><div class="rm-banner" role="status" aria-live="polite"></div>';
  pane.insertBefore(bar,pane.firstChild);banner=bar.querySelector('.rm-banner');
  for(const ms of [60,250,600,1100])setTimeout(()=>fit(bar),ms);
  bar.addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(!b)return;const a=b.dataset.rm;
@@ -77,7 +79,7 @@ function liveHTML(){const r=R(),c=C();if(!r||!c)return '<span class="rm-sub">'+e
 function paint(){const b=ensure();if(!b)return;const r=R(),chat=open();
  if(chat&&view)view='';/* the message room was opened by other code: Chat wins */
  const pane=b.parentNode,sel=view==='chans'?'chat':view||(chat?'chat':'room');
- const tabs=b.querySelectorAll('.rm-tab');tabs[0].textContent=tr('room');tabs[1].textContent=tr('chat');tabs[2].textContent=tr('create');tabs[3].textContent=tr('aff');b.querySelector('.rm-tabs').setAttribute('aria-label',tr('tabs'));
+ const tabs=b.querySelectorAll('.rm-tab');tabs.forEach(t=>{t.textContent=tr(t.dataset.rm);});b.querySelector('.rm-tabs').setAttribute('aria-label',tr('tabs'));
  tabs.forEach(t=>{const on=t.dataset.rm===sel;t.setAttribute('aria-selected',on?'true':'false');t.tabIndex=on?0:-1;});
  if(view){pane.setAttribute('data-rm-view',view);D.documentElement.classList.add('rm-view');if(VIEWS[view])ensureView(pane);else{const bx=pane.querySelector(':scope>.rm-view');if(bx)ensureView(pane);}}
  else{pane.removeAttribute('data-rm-view');D.documentElement.classList.remove('rm-view');if(pane.querySelector(':scope>.rm-view'))ensureView(pane);}

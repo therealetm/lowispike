@@ -31,7 +31,7 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 10;
+    const VERSION = 11;
     const AREAS = ['you', 'home', 'food', 'play', 'companion', 'together', 'settings', 'extras', 'end'];
     const STEPS = [
         /* ---------- part: you (your companion) ---------- */
@@ -202,12 +202,13 @@
             }
         },
         {
-            id: 'move-hold', area: 'home', target: ['#whHud .wh-move'], covers: [], teaches: ['move-hold'], tryIt: { how: 'hold' },
-            title: { en: 'Fix your moves', de: 'Bewegung korrigieren', es: 'Corrige tus movimientos' },
+            /* Oct 21 (Eman): hold Move = the full Move page (workouts, Care board, today's guesses). Cook and Move left Community's bar. */
+            id: 'move-hold', area: 'home', target: ['#whHud .wh-move'], covers: ['move-page', 'workouts-page'], teaches: ['move-hold'], tryIt: { how: 'hold' },
+            title: { en: 'Hold Move', de: 'Bewegung halten', es: 'Mantén Movimiento' },
             text: {
-                en: 'Picked the wrong one? Hold Move to change or remove today’s moves. Try it, then close it.',
-                de: 'Falsches gewählt? Halt Move gedrückt, um die Bewegung von heute zu ändern oder zu löschen. Probier’s und schließ es.',
-                es: '¿Elegiste mal? Mantén pulsado Move para cambiar o borrar lo de hoy. Pruébalo y ciérralo.'
+                en: 'Hold Move to open the Move page with your workouts and the Care board. Today\'s guesses are at the top, tap Edit to remove one. Try it, then close it.',
+                de: 'Halt Bewegung gedrückt für die Bewegungsseite mit Workouts und Care-Board. Oben stehen deine heutigen Schätzungen, Bearbeiten löscht eine. Probier’s und schließ es.',
+                es: 'Mantén Movimiento para abrir su página con tus entrenos y el Care board. Arriba están tus estimaciones de hoy, Editar quita una. Pruébalo y ciérralo.'
             }
         },
         {
@@ -513,6 +514,16 @@
             }
         },
         {
+            /* Oct 21 (Eman): hold a Community tab and drag it; Community always opens on the first one */
+            id: 'community-order', area: 'together', where: 'community', rm: 'room', target: ['.rm-tabs'], covers: ['community-tab-order'], teaches: ['cm-tab-order'], tryIt: { how: 'hold' },
+            title: { en: 'Your tab order', de: 'Deine Reihenfolge', es: 'Tu orden' },
+            text: {
+                en: 'Hold Room, Chat, Creation or Affiliates until the tabs wiggle, then slide it where you want it and let go. Community always opens on your first tab.',
+                de: 'Halt Raum, Chat, Erstellen oder Affiliates gedrückt, bis die Tabs wackeln, schieb ihn an seinen Platz und lass los. Die Community öffnet immer mit deinem ersten Tab.',
+                es: 'Mantén Sala, Chat, Crear o Afiliados hasta que las pestañas tiemblen, deslízala adonde quieras y suelta. Comunidad siempre abre en tu primera pestaña.'
+            }
+        },
+        {
             id: 'send-energy', area: 'together', where: 'community', rm: 'room', target: ['.ce-joy'], covers: ['community-energy'], teaches: ['cm-energy'],
             title: { en: 'Send energy', de: 'Energie schicken', es: 'Enviar energía' },
             text: {
@@ -699,7 +710,7 @@
         G('fuel-tap', 'home', 'tap', ['home-blooms-v2.js'], 'tap Fuel: Log meal, Cook, Shop'),
         G('fuel-hold', 'home', 'hold', ['home-blooms-v2.js'], 'hold Fuel: Log meal opens'),
         G('move-tap', 'home', 'tap', ['home-blooms-v2.js', 'move-bubble.js'], 'tap Move: Quick, Medium, Long, Epic'),
-        G('move-hold', 'home', 'hold', ['home-blooms-v2.js', 'move-bubble.js'], 'hold Move: change today\'s moves'),
+        G('move-hold', 'home', 'hold', ['home-blooms-v2.js', 'move-bubble.js'], 'hold Move: the Move page (workouts, Care board, edit today\'s moves)'),
         G('gap-tap', 'home', 'tap', ['home-blooms-v2.js', 'fast-bubble.js'], 'tap Gap: the Gap view'),
         G('sleep-tap', 'home', 'tap', ['home-settings-sleep-v2.js'], 'tap Sleep: how long did you sleep'),
         G('scan-tap', 'home', 'tap', ['home-orbit-v2.js'], 'tap Scan: the Scan screen'),
@@ -732,6 +743,7 @@
         G('back-swipe', 'any', 'swipe', ['back-swipe.js'], 'swipe in from the left edge: back'),
         G('sheet-drag', 'any', 'drag', ['apple-ui.js'], 'drag a sheet\'s top bar down: close it'),
         G('cm-tabs', 'community', 'tap', ['community-rooms-ui.js'], 'tap Room, Chat, Creation, Affiliates'),
+        G('cm-tab-order', 'community', 'hold', ['community-tab-order.js'], 'hold a Community tab until it wiggles, slide it: new tab order'),
         G('cm-name', 'community', 'tap', ['community-rooms-ui.js', 'community-me.js'], 'tap the Community name / your picture: rooms, profile, invite'),
         G('cm-pan', 'community', 'drag', ['community-chat.js'], 'drag the galaxy: move around'),
         G('cm-zoom', 'community', 'pinch', ['community-chat.js'], 'pinch or double-tap the galaxy: zoom'),

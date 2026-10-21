@@ -12,7 +12,7 @@
             Undo         -> takes ONE cup off today (never below 0, never another day) and, if today's water XP entries are now
                             more than today's cups, takes back the newest one (unaward), so add / undo loops net zero.
    - Move:  Quick / Medium / Long / Epic -> LowiMoveBubble.pick(id) (the existing estimate log with its own XP rules).
-            Hold Move    -> LowiMoveBubble.edit() (today's moves, remove one).
+            Hold Move    -> LowiMoveBubble.page(): the full Move page (Oct 21, Eman). Today's moves are a row on that page.
    - Gap:   no bloom since Oct 21 (Scan / Fuel / Gap): a tap opens the passive Gap view (gap-view.js). Meals are logged in Fuel,
             which restarts the gap; the old "I just ate" / "Ate earlier" pair is gone from Home.
             Shown as time since your last meal. No goal, no "you must fast" text in the bloom.
@@ -375,7 +375,7 @@
         clearTimeout(st.hold && st.hold.t);
         st.hold = { el, x: e.clientX, y: e.clientY, t: setTimeout(() => {
             st.hold = null; st.swallow = Date.now() + 900; buzz(20); close(true);
-            if (kind === 'fuel') mealLog(); else if (fn(W.LowiMoveBubble, 'edit')) W.LowiMoveBubble.edit();
+            if (kind === 'fuel') mealLog(); else if (fn(W.LowiMoveBubble, 'page')) W.LowiMoveBubble.page(); else if (fn(W.LowiMoveBubble, 'edit')) W.LowiMoveBubble.edit();
         }, HOLD_MS) };
     }
     function onMove(e) { if (st.hold && Math.hypot(e.clientX - st.hold.x, e.clientY - st.hold.y) > 12) { clearTimeout(st.hold.t); st.hold = null; } }

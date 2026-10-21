@@ -93,12 +93,12 @@ async function run(browser, base, device, lang) {
     for (const p of await fit(page, ['#r2gate .r2-start.form input[name=email]', '#r2gate .r2-start.form input[name=password]'])) fail(w, 'form ' + p);
     await shot('5-account-two-fields');
     /* shopping rhythm read-back (the same form setup and Profile use) */
-    await page.evaluate(() => { const g = document.querySelector('#r2gate'); if (g) g.style.display = 'none'; });
-    await page.evaluate(() => { if (!window.LowiShopPlan) return; if (!LowiShopPlan.openEditor()) { const d = document.createElement('div'); d.className = 'spl-sheet r2-ob'; d.style.cssText = 'position:fixed;inset:0;z-index:99999;padding:60px 22px;background:#0b1b33;overflow:auto'; d.innerHTML = LowiShopPlan.formHTML(LowiShopPlan.get(), { prefix: 'splT' }); document.body.appendChild(d); } }); await sleep(900);
-    await page.fill('.spl-sheet .spl-num', '7'); await sleep(200); row.w7 = await txt(page, '.spl-sheet .spl-plain');
+    
+    await page.evaluate(() => { if (!window.LowiShopPlan) return; { const d = document.createElement('div'); d.className = 'spl-sheet r2-ob spl-probe'; d.style.cssText = 'position:fixed;inset:0;z-index:99999;padding:60px 22px;background:#0b1b33;overflow:auto'; d.innerHTML = LowiShopPlan.formHTML(LowiShopPlan.get(), { prefix: 'splT' }); const g = document.querySelector('#r2gate'); if (g) { g.innerHTML = ''; g.appendChild(d); } else document.body.appendChild(d); } }); await sleep(900);
+    await page.fill('.spl-probe .spl-num', '7'); await sleep(200); row.w7 = await txt(page, '.spl-probe .spl-plain');
     await shot('6-shopping-once-a-week');
-    await page.fill('.spl-sheet .spl-num', '30'); await sleep(200); row.w30 = await txt(page, '.spl-sheet .spl-plain');
-    await page.fill('.spl-sheet .spl-num', '10'); await sleep(200); row.w10 = await txt(page, '.spl-sheet .spl-plain');
+    await page.fill('.spl-probe .spl-num', '30'); await sleep(200); row.w30 = await txt(page, '.spl-probe .spl-plain');
+    await page.fill('.spl-probe .spl-num', '10'); await sleep(200); row.w10 = await txt(page, '.spl-probe .spl-plain');
     if (row.w7 !== E.w7) fail(w, 'rhythm 7 "' + row.w7 + '"'); if (row.w30 !== E.w30) fail(w, 'rhythm 30 "' + row.w30 + '"'); if (row.w10 !== '') fail(w, 'rhythm 10 "' + row.w10 + '"');
   } catch (e) { fail(w, 'start error ' + e.message.split('\n')[0]); }
   if (errs.length) fail(w, 'page errors: ' + errs.slice(0, 3).join(' | '));

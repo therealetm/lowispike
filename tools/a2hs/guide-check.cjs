@@ -130,7 +130,7 @@ async function midOnboarding(browser, base, lang) {
     await clk('#r2gate [data-hs=plant]');
     await page.evaluate(() => sessionStorage.removeItem('lowi.a1.skip')); await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForSelector('#r2gate .r2-start', { timeout: 25000 }); await sleep(2000);
     if (await page.$('#r2gate .a1')) fail(w, 'guide pushed in front of an onboarding that is under way');
-    await clk('#r2gate [data-hs=name]'); await clk('#r2gate [data-hs=play]'); await page.fill('#hsYou', 'Lena'); await clk('#r2gate [data-hs=you]');
+    await page.fill('#hsYou', 'Lena'); await clk('#r2gate [data-hs=you]');
     await clk('#r2gate [data-r2a=signup]');
     const L = await layout(page);
     if (L.err) fail(w, '"Create account" went to ' + (await page.evaluate(() => document.querySelector('#r2gate').innerText.slice(0, 60).replace(/\s+/g, ' '))) + ' instead of the guide');

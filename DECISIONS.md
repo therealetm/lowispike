@@ -831,3 +831,20 @@ What was decided:
 - Scan's bar (Barcode + Log meal) and Log meal's slot picker are unchanged.
 
 Checks: `tests/meal-result.test.cjs` (9, one new for the fast line).
+
+## 2026-10-21 16:40 CEST: No launch screen, and the first paint is never white (decided by the agent)
+
+Emmanuel on his iPhone (home-screen app, dark mode): "I opened the app and there was still this for a split second. We don't need it. Remove it. And when I open the app it's white for 1 second. Fix that."
+
+Decision criteria, written before the change:
+1. No logo, Misty cell or wordmark may appear at launch, in any theme.
+2. Keep what the launch screen protected: the app is still assembled in layers, so it must still show finished in one step, never older half-built screens.
+3. Every pixel before Home is the dark brand background (#03050a, the theme-color and manifest colour), from the very first paint and before it on iOS.
+4. Tight scope: no change to the service worker, the update system or anything below `</head>`.
+
+What was decided:
+- The `#lwBoot` cover (Misty cell + LOWiSPIKE wordmark, its CSS, the fade-out) is removed. The boot gate stays (`html.lw-boot` keeps the page at opacity 0, `LowiBoot.loaded()`, window load, 8 s cap, `?noboot=1`), so by 2 the plain background shows until Home is finished.
+- White flash, cause: a home-screen web app on iOS shows its startup image until the page first paints, and plain white when it has none. LOWiSPIKE had none, and the first page paint waits for the network (up to 1.5 s, see sw.js) and for a 3.2 MB index.html, so the white lasted about a second. The page's own background was also only set after about 57 KB of inline icons.
+- Fix: plain dark `apple-touch-startup-image` PNGs for current iPhones and iPads (`startup/`, made by `tools/brand/make-startup-images.py`, no logo by 1), `<meta name="color-scheme" content="dark">` and `<style id="firstPaint">html,body{background:#03050a}</style>` as the first things in `<head>`. The startup images are not in sw.js STATIC: iOS reads them itself, the service worker never serves them. iOS may keep a home-screen app's old launch picture until the icon is removed and added again.
+
+Checks: `tests/launch-no-splash.test.cjs` (4), `tests/clean-start.test.cjs` and `tests/oct19-old-design-purge.test.cjs` updated. Browser: `node tools/startup/launch-paint-check.cjs` (fresh browser, dark mode, page download held after 1.5 KB, apple-ui.js held 2.5 s) passed 6/6 on WebKit and Chromium at iPhone SE, iPhone 13 and iPad sizes: no launch-screen element was ever added, the body stayed hidden during the gate, the background during the gate was only rgb(3,5,10) / rgb(0,0,0), and Chromium's screenshots during the gate were plain #03050a. Not tested on a physical iPhone; a desktop browser cannot show iOS's own startup image.

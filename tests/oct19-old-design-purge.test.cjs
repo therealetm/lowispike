@@ -27,12 +27,11 @@ test('app icons are the current Misty cell, not the old pulse-line logo', () => 
   assert.ok(fs.existsSync(path.join(root, 'tools/brand/make-icons.cjs')), 'the icon maker stays, so the icon can be redrawn from Misty');
 });
 
-test('launch screen: Misty-blue glass cell, no gold orb or gold i', () => {
+test('launch screen: none any more (Oct 21), so no gold orb, gold i or old logo can come back on it', () => {
   const css = html.slice(html.indexOf('<style id="lwBootCss">'), html.indexOf('</style>', html.indexOf('<style id="lwBootCss">')));
-  assert.ok(css.length > 200);
+  assert.ok(css.length > 20);
   assert.doesNotMatch(css, /#f4c95a|#c98b1f|#fff8dc|#e8b33f|244,\s*201,\s*90/i, 'gold is back on the launch screen');
-  assert.match(css, /\.lwb-orb::before\{[^}]*#0d1b3d/, 'the launch cell has Misty\'s eyes');
-  assert.match(css, /\.lwb-w i\{font-style:normal;color:#7fe3ff\}/);
+  assert.doesNotMatch(html, /lwb-orb|lwb-w|id = "lwBoot"/, 'the launch screen (Misty cell + wordmark) is back');
   assert.doesNotMatch(html, /\.r2-logo span\{font-style:italic;color:var\(--gold2/, 'the gold italic i in the wordmark is back');
 });
 

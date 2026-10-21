@@ -1,4 +1,4 @@
-// Clean start: opening the app shows one calm launch screen, then the finished app in one step (no older screens flashing by),
+// Clean start: opening the app shows the plain dark background (no launch screen since Oct 21), then the finished app in one step (no older screens flashing by),
 // the companion files download together, and this build's versioned files come straight from the service worker cache.
 const test = require('node:test'), assert = require('node:assert'), fs = require('node:fs'), path = require('node:path'), vm = require('node:vm');
 const root = path.join(__dirname, '..');
@@ -46,30 +46,28 @@ function fakeDom(opts) {
 }
 function boot(opts) { const d = fakeDom(opts); vm.runInNewContext(bootJs, d.win); return d; }
 
-test('launch screen code sits in <head>, before any app markup can paint', () => {
-    assert.ok(bootJs.length > 200 && bootCss.length > 200);
+test('the boot gate sits in <head>, before any app markup can paint', () => {
+    assert.ok(bootJs.length > 200 && bootCss.length > 60);
     const headEnd = html.indexOf('</head>'), body = html.search(/<body[\s>]/);
     const js = html.indexOf('<script id="lwBootJs">'), css = html.indexOf('<style id="lwBootCss">');
     assert.ok(css > 0 && js > css && js < headEnd && js < body, 'gate must be in head, before <body>');
-    assert.ok(html.indexOf('data-theme-mode') < js, 'runs after the theme is known, so the launch screen matches light/dark');
-    assert.strictEqual(html.split('id="lwBootJs"').length, 2, 'exactly one launch-screen script');
+    assert.ok(html.indexOf('data-theme-mode') < js, 'runs after the theme is known');
+    assert.strictEqual(html.split('id="lwBootJs"').length, 2, 'exactly one boot-gate script');
 });
 
-test('while starting, the app is hidden with opacity only (layout and measuring keep working) and the launch screen matches the theme', () => {
-    assert.match(bootCss, /html\.lw-boot body,html\.lw-boot>:not\(head\):not\(body\):not\(#lwBoot\)\{opacity:0!important;pointer-events:none!important\}/);
+test('while starting, the app is hidden with opacity only (layout and measuring keep working) and there is no launch screen', () => {
+    /* Oct 21 (Emmanuel: "there was still this for a split second. We don't need it. Remove it."): no #lwBoot cover, no Misty cell,
+       no wordmark. Only the page is held back; the plain background (dark first paint) shows meanwhile. */
+    assert.match(bootCss, /html\.lw-boot body,html\.lw-boot>:not\(head\):not\(body\)\{opacity:0!important;pointer-events:none!important\}/);
     assert.doesNotMatch(bootCss, /display:none|visibility:hidden/);
-    assert.match(bootCss, /#lwBoot\{position:fixed;inset:0;z-index:2147483646/);
-    assert.match(bootCss, /#lwBoot\{[^}]*background:#03050a/);
-    assert.match(bootCss, /html\[data-ui=light\] #lwBoot\{background:#f6f8fc/);
-    assert.match(bootCss, /#lwBoot>\*\{opacity:0;animation:lwbIn \.35s ease \.25s forwards\}/, 'fast starts show only the calm background, no logo flash');
-    assert.match(bootCss, /prefers-reduced-motion:reduce\)\{#lwBoot,#lwBoot>\*\{transition:none;animation:none;opacity:1\}/);
+    assert.doesNotMatch(html, /#lwBoot|lwb-orb|lwb-w|lwbIn|lwbBreath/, 'launch screen CSS is back');
+    assert.doesNotMatch(bootJs, /createElement|appendChild|innerHTML|LOW<i>i<\/i>SPIKE/, 'the boot gate draws something again');
 });
 
 test('the app shows once the page and every companion file are in, after two frames', () => {
     const d = boot();
     assert.ok(d.cls.has('lw-boot'));
-    const splash = d.H.children.find(c => c.id === 'lwBoot');
-    assert.ok(splash && /LOW<i>i<\/i>SPIKE/.test(splash.innerHTML));
+    assert.strictEqual(d.H.children.length, 0, 'no launch screen element is added');
     const B = d.win.LowiBoot;
     B.loaded(); d.flushRaf();
     assert.ok(d.cls.has('lw-boot'), 'files alone are not enough while the page is still parsing');
@@ -82,9 +80,7 @@ test('the app shows once the page and every companion file are in, after two fra
     assert.match(String(d.win.__LOWI_BOOT_Q), /still/);
     assert.strictEqual(d.win.__LOWI_BOOT_DONE, 'ready');
     assert.strictEqual(d.events[0].type, 'lowi:boot-ready');
-    assert.ok(splash._cls.has('out'), 'launch screen fades away over the finished app');
-    d.runTimers(t => t.ms === 260);
-    assert.ok(!d.H.children.includes(splash), 'launch screen is removed afterwards');
+    assert.strictEqual(d.H.children.length, 0, 'still nothing drawn: the finished app simply appears');
     B.reveal('again'); assert.strictEqual(d.win.__LOWI_BOOT_DONE, 'ready'); assert.strictEqual(d.events.length, 1);
 });
 
@@ -127,11 +123,11 @@ test('stylesheets still loading get a short moment, never more than 1.2 s', () =
     assert.ok(!d.cls.has('lw-boot'));
 });
 
-test('reduced motion: the launch screen leaves at once, without a fade', () => {
+test('reduced motion: the app appears at once, with nothing to fade', () => {
     const d = boot({ still: true, readyState: 'complete' });
     d.win.LowiBoot.loaded(); d.settle();
     assert.ok(!d.cls.has('lw-boot'));
-    assert.ok(!d.H.children.some(c => c.id === 'lwBoot'));
+    assert.strictEqual(d.H.children.length, 0);
 });
 
 /* Run the companion loader against a fake document. */

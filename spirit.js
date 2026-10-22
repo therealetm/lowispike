@@ -1033,6 +1033,15 @@
         const fs = pendingSlot();
         if (fs && !form.dataset.edit) seed.slot = fs;
         if (w.est) seed.est = w.est;
+        /* Oct 22 (Seven: "it should save the picture, and also the estimate they received"): a photo meal keeps the full estimate
+           (log.ai) and its photo: about 1024 px on this device (meal-journal.js, IndexedDB), a small thumbnail on the log. */
+        const J = window.LowiMealJournal, flyURL = photoURL;
+        let pic = null;
+        if (J && photoURL && !form.dataset.edit) {
+            try { const m = typeof form.__lowiMeal === 'function' ? form.__lowiMeal() : null; const ai = m && J.estimate(m, { lvl: seed.lvl, note: m.note, low: m.low }); if (ai) seed.ai = ai; } catch (e) {}
+            pic = await Promise.race([J.prepare(photoFile || photoURL), new Promise(r => setTimeout(() => r(null), 4000))]);
+            if (pic && pic.thumb) seed.photo = pic.thumb;
+        }
         const result = form.dataset.edit ? V.editMeal(seed) : V.logMeal(seed);
         if (!result) {
             R.toast(tr('storage'));
@@ -1052,11 +1061,21 @@
             R.close(ownedSheet);
             ownedSheet = null;
         }
-        await flight(seed.photo);
+        const log = result.log;
+        if (pic && log && J) J.keep(log.id, pic);
+        await flight(flyURL || seed.photo);
         feedback('eat', tr('saved') + whyNote(result), result.xp);
         checkBonuses(false);
-        const log = result.log;
-        showSheet('<h2>' + esc(tr('saved')) + '</h2><p>' + (log.slot ? '<span class="sp-slot-tag">' + esc(tr(log.slot)) + '</span> ' : '') + esc(log.t) + '</p>' + estHTML(log) + macroHTML(log) + '<p class="sp-earned">' + (result.xp ? '+' + result.xp + ' XP' : esc(result.reason || (form.dataset.edit ? '' : '0 XP'))) + '</p>' + gptHTML());
+        showSheet('<h2>' + esc(tr('saved')) + '</h2><p>' + (log.slot ? '<span class="sp-slot-tag">' + esc(tr(log.slot)) + '</span> ' : '') + esc(log.t) + '</p>' + estHTML(log) + macroHTML(log) + '<p class="sp-earned">' + (result.xp ? '+' + result.xp + ' XP' : esc(result.reason || (form.dataset.edit ? '' : '0 XP'))) + '</p>' + savedPhotoHTML(log) + gptHTML());
+    }
+
+    /* Oct 22: under a saved photo meal, its thumbnail (opens the photo with its estimate) and a small opt-in "Share to Community" */
+    function savedPhotoHTML(log) {
+        const J = window.LowiMealJournal;
+        if (!J || !log || !log.ai || !/^data:image\//.test(String(log.photo || ''))) return '';
+        const L = /^(de|es)$/.test(lang()) ? lang() : 'en';
+        return '<div class="mj-saved">' + J.thumbHTML(log, L) + '<span>' + esc(J.t('saved', L)) + '</span></div>' +
+            (J.shareOf(log) ? '<button type="button" class="r2-btn mj-share-btn" data-mj-share="' + esc(log.id) + '">' + esc(J.t('share', L)) + '</button>' : '');
     }
 
     function checkBonuses(closed) {

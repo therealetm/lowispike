@@ -266,13 +266,16 @@
                 if (MR && MR.mount) { try { ctl = MR.mount(box, form, { dishes, lang: l, low: res.confidence === 'low', note: res.note, photo: dataURL, db: opts.db, dbReady: opts.dbReady }); } catch (e) { console.warn(e); ctl = null; } }
                 if (!ctl) { setHidden(); paint(res); }
                 /* Oct 19: the read is remembered by photo (sharing never asks the AI again); under it: checks left today,
-                   "Also share to Community" (opt-in, after Log as meal) and the optional mealtime reminder offer. */
+                   (Oct 22: sharing moved to "Share to Community" after Log as meal, meal-journal.js) and the optional mealtime reminder offer. */
                 if (MS) {
                     try {
                         MS.remember(dataURL, { dishes: res.dishes, name: title(res.dishes, l) });
                         const host = document.createElement('div'); host.className = 'ms-host';
                         form.parentNode.insertBefore(host, form.nextSibling);
-                        MS.snapExtras(host, form, dataURL, () => { const all = ctl ? ctl.all() : dishes; return MS.meal({ dishes: all, name: (titleIn && titleIn.value.trim()) || title(all, l) }); });
+                        const getMeal = () => { const all = ctl ? ctl.all() : dishes; return MS.meal({ dishes: all, name: (titleIn && titleIn.value.trim()) || title(all, l) }); };
+                        /* Oct 22 (meal-journal.js): the estimate as the user leaves it (after edits) is saved with the meal by spirit.js finishMeal */
+                        form.__lowiMeal = () => { const m = getMeal(); return m ? Object.assign(m, { note: res.note || '', low: res.confidence === 'low' }) : null; };
+                        MS.snapExtras(host, form, dataURL, getMeal);
                     } catch (e) { console.warn(e); }
                 }
                 if (!ctl) box.addEventListener('click', ev => {

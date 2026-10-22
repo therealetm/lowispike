@@ -20130,12 +20130,16 @@ window.LowiVitalsBridge = {
     /* Oct 19 food paths: a meal logged right after Gap "I ate earlier" keeps the time picked there (same day, within 18 h), once */
     let mts=Date.now(),ateSet=0;try{const mc=window.LowiMealCtx;if(mc&&(mc.from==="gap"||mc.from==="when")&&Date.now()-mc.at<20*60000){const at=+mc.ateAt;if(at&&at<mts&&mts-at<18*3600000&&new Date(at).toDateString()===new Date(mts).toDateString()){mts=at;ateSet=1;}window.LowiMealCtx=null;}}catch(e){}/* Oct 21 Scan/Fuel/Gap: Log meal's "When did you eat?" chips (from "when") backdate like the Gap path did; ateSet = eating time known */
     const n=S.logs.filter(l=>l.day===today()).length,log={id:data.id,eventId:id,ts:mts,day:today(),t:data.t,macros:data.macros,photo:data.photo||"",via:data.via||"spirit",r:rr,e:"",lvl};if(data.est)log.est=data.est;
+    /* Oct 22 (Seven): the full estimate a photo meal received (dish, foods, nutrition, spike, note) stays with the meal; its photo lives on this device (meal-journal.js) */
+    if(data.ai&&typeof data.ai==="object")log.ai=data.ai;
     if(data.code)log.code=String(data.code);if(data.slot)log.slot=data.slot;if(ateSet)log.ateSet=1;
     S.logs.push(log);if(!save()){S.logs.pop();return false;}
     const spike=this.spiky(log),xp=!spike&&n<this.MEAL_CAP?award(15,"Meal logged",null,"meal:spirit",id):0,why=xp?"":spike?"spike":"cap";
     if(!xp)window.dispatchEvent(new CustomEvent("lowi:care",{detail:{kind:"water",reaction:"eat",id}}));
     if(!spike)questDone("eat",true);window.dispatchEvent(new CustomEvent("lowi:meal-logged",{detail:{id,title:log.t,macros:log.macros,xp,via:log.via,photo:!!log.photo,spike,slot:log.slot||"",ts:log.ts,ateSet:!!log.ateSet}}));return{log,xp,why,reason:this.mealReason(why),spike};
   },
+  /* Oct 22 (Seven): delete one meal from the journal. The entry and the XP it earned go together (no log/delete XP loops); meal-journal.js deletes its photo */
+  deleteMeal(id){const i=S.logs.findIndex(l=>l&&(l.id===id||l.eventId===id));if(i<0)return false;const log=S.logs[i];S.logs.splice(i,1);if(!save()){S.logs.splice(i,0,log);return false;}if(log.eventId)this.unaward(log.eventId);try{window.dispatchEvent(new CustomEvent("lowi:state",{detail:{mealDeleted:log.id}}));}catch(x){}return log;},
   editMeal(data){const log=S.logs.find(l=>l.id===data.id||l.eventId===data.id||String(l.ts)===data.id);if(!log)return false;const previous={t:log.t,macros:log.macros,est:log.est};log.t=data.t;log.macros=data.macros;if(data.est)log.est=data.est;else delete log.est;if(!save()){Object.assign(log,previous);return false;}return{log,xp:0};},
   bonus(id,amt,label){return award(amt,label,null,"macro-goal",id);},
   water(id){let f={};try{f=JSON.parse(localStorage.getItem("lowi_fast_v1")||"{}");}catch(e){}f.waterEvents=f.waterEvents||{};if(f.waterEvents[id])return 0;f.waterEvents[id]=Date.now();f.water=f.water||{};f.water[today()]=(+f.water[today()]||0)+1;try{localStorage.setItem("lowi_fast_v1",JSON.stringify(f));}catch(e){return 0;}return this.complete("water","water:"+id,{amt:2,perDay:6,src:"water",label:"Water logged"});},
@@ -20489,6 +20493,7 @@ window.LowiCommunityHost = {
 <script src="meal-photo.js?v=20261023-063141"></script>
 <script src="food-photo-ai.js?v=20261023-063141"></script>
 <script src="meal-result.js?v=20261023-063141"></script>
+<script src="meal-journal.js?v=20261023-063141"></script>
 <script src="string-pov.js?v=20261023-063141"></script>
 <script src="misty-hunt.js?v=20261023-063141"></script>
 <script src="hunt-count.js?v=20261023-063141"></script>
@@ -20535,6 +20540,7 @@ window.LowiCommunityHost = {
 <script src="living-bubbles.js?v=20261023-063141"></script>
 <link rel="stylesheet" id="scrCss" href="scan-screens.css?v=20261023-063141">
 <link rel="stylesheet" href="meal-photo.css?v=20261023-063141">
+<link rel="stylesheet" href="meal-journal.css?v=20261023-063141">
 <link rel="stylesheet" id="mpopCss" href="misty-pop.css?v=20261023-063141">
 <link rel="stylesheet" id="mpnCss" href="misty-panels.css?v=20261023-063141">
 <!-- Oct 18: owner tools (kick / delete members). Server-checked: supabase/proposals/owner_admin_20261018.sql -->

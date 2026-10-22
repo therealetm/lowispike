@@ -543,6 +543,8 @@
         try { root.localStorage.clear(); } catch (e) { }
         try { root.sessionStorage.clear(); } catch (e) { }
         try { if (root.caches && fn(root.caches, 'keys')) root.caches.keys().then(ks => ks.forEach(k => root.caches.delete(k))); } catch (e) { }
+        /* Oct 22: the meal photos saved on this device (meal-journal.js, IndexedDB) go with the account */
+        try { if (root.indexedDB && fn(root.indexedDB, 'deleteDatabase')) root.indexedDB.deleteDatabase('lowi-meal-photos'); } catch (e) { }
         setTimeout(() => { try { root.location.replace(root.location.pathname); } catch (e) { root.location.reload(); } }, 250);
     }
     async function doDelete(btn) {

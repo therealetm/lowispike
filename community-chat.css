@@ -202,3 +202,11 @@ html.cs-chat-map-typing #cmPaneChat[data-spirit-chat] .cm-compose{transform:tran
 /* item 31: the room shows the newest 60 messages; this button adds the next 60 above */
 .cm-more{display:flex;justify-content:center;padding:8px 0 6px}
 .cm-more .cm-morebtn{min-height:44px;padding:0 16px;font-size:14px}
+/* Oct 22: a meal shared from Log a meal (community-chat.js mealHtml): dish name + spike rating under its photo. Theme tokens only,
+   the text takes the bubble's own color (currentColor), so Day, Night and own/other bubbles all read; the dot uses the app's spike colors (--lo/--mid/--hi). */
+.cs-meal{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin:2px 0 2px;max-width:min(260px,70vw);min-width:0}
+.cs-meal-n{flex:1 1 auto;min-width:0;font-weight:650;font-size:15px;line-height:1.25;color:inherit;overflow-wrap:anywhere}
+.cs-meal-bs{display:inline-flex;align-items:center;gap:5px;flex:none;padding:2px 8px 2px 6px;border-radius:999px;font-size:12px;font-weight:600;line-height:1.4;color:inherit;background:color-mix(in srgb,currentColor 12%,transparent);border:1px solid color-mix(in srgb,currentColor 22%,transparent)}
+.cs-meal-bs i{width:8px;height:8px;border-radius:50%;flex:none;background:var(--lo,#a9dcb2)}
+.cs-meal-mid i{background:var(--mid,#e6c98a)}
+.cs-meal-high i{background:var(--hi,#f0a08a)}

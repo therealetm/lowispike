@@ -429,7 +429,8 @@
     }
     function onKey(e) {
         if (held) return;
-        if (e.key === 'Escape') { e.preventDefault(); stop('skipped'); }
+        /* Escape / back-swipe leaves the card, it does not end the tour: the "Continue tutorial" button (tutorial-resume.js) brings it back. Skip all ends it. */
+        if (e.key === 'Escape') { e.preventDefault(); stop('left'); }
         else if (e.key === 'ArrowRight' && !/^(INPUT|TEXTAREA)$/.test((e.target || {}).tagName)) { e.preventDefault(); if (step() && step().action === 'claim') claim(); else go(i + 1, 'key'); }
         else if (e.key === 'ArrowLeft' && i > 0) { e.preventDefault(); go(i - 1, 'key'); }
         else if (e.key === 'Tab') {
@@ -489,6 +490,8 @@
     if (!W.LowiTutorialVoice && !D.querySelector('script[src^="tutorial-voice.js"]')) { const m = $('meta[name="lowi-build"]'), sc = D.createElement('script'); sc.src = 'tutorial-voice.js?v=' + encodeURIComponent((m && m.content) || '1'); sc.defer = true; D.head.appendChild(sc); }
     /* tutorial-show.js (item 42: the finger on the real control, lit spots, the picture of what opens) loads the same way */
     if (!W.LowiTutorialShow && !D.querySelector('script[src^="tutorial-show.js"]')) { const m = $('meta[name="lowi-build"]'), sc = D.createElement('script'); sc.src = 'tutorial-show.js?v=' + encodeURIComponent((m && m.content) || '1'); sc.defer = true; D.head.appendChild(sc); }
-    W.LowiTutorial = { start, stop, isOn: () => on, step: () => (step() || {}).id || null, held: () => held, busyBy, core: S,
+    /* tutorial-resume.js (the floating "Continue tutorial" button until the tour is finished or skipped) loads the same way */
+    if (!W.LowiTutorialResume && !D.querySelector('script[src^="tutorial-resume.js"]')) { const m = $('meta[name="lowi-build"]'), sc = D.createElement('script'); sc.src = 'tutorial-resume.js?v=' + encodeURIComponent((m && m.content) || '1'); sc.defer = true; D.head.appendChild(sc); }
+    W.LowiTutorial = { start, stop, isOn: () => on, step: () => (step() || {}).id || null, held: () => held, busyBy, core: S, ids: () => list.map(x => x.id),
         paused: () => paused, pause: v => setPaused(v == null ? true : v), auto: () => !!autoT, tryNow, wiggles: () => (wig.at === i ? wig.n : 0) };
 })();

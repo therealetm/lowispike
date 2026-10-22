@@ -63,7 +63,8 @@
         let title = t ? t.textContent.trim() : '', sub = '';
         if (v) {
             const act = v.activity === 'journey' ? cellCopy('act_journey') : cellCopy('act_' + v.activity);
-            sub = [cellCopy(v.state), act].filter(Boolean).join(' \u00b7 ');
+            /* Oct 22: the state word ("Sugar rush") is explained in World glow right below; the status title names it too */
+            sub = W.LowiMistyPeak ? act : [cellCopy(v.state), act].filter(Boolean).join(' \u00b7 ');
         }
         if (!title) title = name();
         return { title, sub, state: v ? v.state : '' };
@@ -95,6 +96,9 @@
                     '<button type="button" class="mh-rn" data-mh="rename" aria-label="' + esc(T('Rename ' + name(), name() + ' umbenennen', 'Cambiar el nombre de ' + name())) + '">' + ICO.pen + '<span>' + esc(T('Rename', 'Umbenennen', 'Cambiar nombre')) + '</span></button>' +
                 '</div>' +
             '</header>' +
+            /* Oct 22 (E-man: "When I click on Misty it should say what's missing to get Misty to true 100%"): World glow, the bar to
+               her peak (Supernova) and what is missing, right under her name (misty-peak.js) */
+            peakHtml() +
             /* Oct 19 (E-man): Forms and Glow were at the very bottom: "that's hidden ... needs to be not hidden".
                Oct 22 (E-man: "I don't understand the food journal section ... I'd say remove it"): the Food journal door is gone;
                the meals you logged live in the Fuel sheet's meal list. Two equal doors now come first, right under the name and level, before the companion's words (fully in view when the card opens on an iPhone 13). */
@@ -117,6 +121,7 @@
     /* Oct 17: Misty's energy scale and her way back (misty-scale.js), right under her words */
     /* adventure tiers (adventure-tiers.js): what her timed adventure reaches at this level; autopilot is never gated */
     function advHtml() { try { return W.LowiAdventureTiers && W.LowiAdventureTiers.html ? W.LowiAdventureTiers.html() : ''; } catch (e) { return ''; } }
+    function peakHtml() { try { return W.LowiMistyPeak && W.LowiMistyPeak.html ? W.LowiMistyPeak.html() : ''; } catch (e) { return ''; } }
     function scaleHtml() { try { return W.LowiMistyScale && W.LowiMistyScale.html ? W.LowiMistyScale.html() : ''; } catch (e) { return ''; } }
     /* BH-017 (run 17): a card that is still sliding away (its overlay is .off) is not open; holding Misty again in that moment
        used to repaint the closing card and open nothing */

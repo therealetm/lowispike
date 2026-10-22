@@ -583,3 +583,11 @@ html[data-theme="light"] .wh-pv-need { color: #8a4b00; }
     .wh-fx-trail i { opacity: .8; }
     .wh-trail { display: none; }
 }
+/* Oct 22 Supernova (misty-peak.js sets html[data-peak="1"] only when every World glow row is done): the one place she smiles
+   (big smile, the Oct 16 "no smile in any tier" rule stays for every other state), the brightest world and a small glow. */
+html[data-peak="1"] #spHome #spBubble .lh-smile, html[data-peak="1"] #spBubble .lh-smile { display: inline !important; opacity: 1 !important; }
+html[data-peak="1"] #spHome #spBubble .lh-calm, html[data-peak="1"] #spHome #spBubble .lh-flat, html[data-peak="1"] #spHome #spBubble .lh-frown { display: none !important; }
+html[data-peak="1"] #spBubble { filter: drop-shadow(0 0 14px color-mix(in srgb, var(--one-acc, #8fe7ff) 70%, transparent)) brightness(1.08) saturate(1.12); }
+html[data-peak="1"] #spBubble .cw-env { filter: brightness(1.15) saturate(1.15); }
+html[data-peak="1"] .bw3-canvas { filter: brightness(1.1) saturate(1.15) !important; }
+html[data-peak="1"] .wm-veil { opacity: 0 !important; }

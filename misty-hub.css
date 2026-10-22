@@ -98,3 +98,37 @@ html.lg #cmSend:disabled, html #cmPaneChat #cmSend:disabled { opacity: 1 !import
 html #cmPaneChat .cs-compose-meta, html #cmPaneChat[data-spirit-chat] .cg-chip:not(.on), html #cmPaneChat :is(.cm-chip, .cm-mini) { color: rgba(235, 235, 245, .82) !important; opacity: 1; }
 .mh-mood-sub { font-size: 13px; line-height: 1.35; color: var(--mh-ink-2); margin: -4px 0 10px; }
 .mh-adv li[data-been="1"] span { color: var(--mh-ink); }
+
+/* Oct 22 (E-man: "it should say what's missing to get Misty to true 100%, Super Saiyan level"): World glow, her bar to peak
+   (Supernova) and the "What's missing" checklist, right under her name (misty-peak.js). Shared tokens only: the brand cyan
+   (--one-acc), the sheet's card/rim/ink; the sheet is dark glass in Day and Night, so one set of colours fits both. */
+.mp-card { --mp-acc: var(--one-acc, var(--b)); display: grid; gap: 6px; padding: 12px 14px; }
+.mp-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.mp-head h3 { display: inline-flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 800; letter-spacing: -.01em; min-width: 0; overflow-wrap: anywhere; }
+.mp-head h3 svg { width: 18px; height: 18px; fill: var(--mp-acc); stroke: none; }
+.mp-pct { font-size: 15px; font-weight: 800; color: var(--mp-acc); white-space: nowrap; }
+.mp-bar { position: relative; display: block; height: 10px; border-radius: 99px; background: var(--one-cell, rgba(255, 255, 255, .08)); border: .5px solid var(--mh-rim); overflow: hidden; }
+.mp-bar > i { position: absolute; inset: 0 auto 0 0; border-radius: 99px; background: linear-gradient(90deg, color-mix(in srgb, var(--mp-acc) 55%, transparent), var(--mp-acc)); box-shadow: 0 0 10px color-mix(in srgb, var(--mp-acc) 45%, transparent); transition: width .5s ease; }
+.mp-sub { font-size: 13px; line-height: 1.35; color: var(--mh-ink-2); }
+.mp-h { margin: 4px 0 0; font-size: 12px; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; color: var(--mh-ink-2); }
+.mp-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.mp-list button, .mp-list .mp-row { all: unset; box-sizing: border-box; width: 100%; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 12px; color: var(--mh-ink); font: inherit; }
+.mp-list button { cursor: pointer; background: var(--one-cell, rgba(255, 255, 255, .07)); border: .5px solid var(--one-cell-line, var(--mh-rim)); -webkit-tap-highlight-color: transparent; }
+.mp-list button:active { transform: scale(.985); }
+.mp-list button:focus-visible { outline: 2px solid var(--mp-acc); outline-offset: 1px; }
+.mp-list .mp-row { grid-template-columns: 22px minmax(0, 1fr); padding: 3px 8px; }
+.mp-ic { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; }
+.mp-list svg { width: 16px; height: 16px; stroke-width: 2.4; }
+.mp-list li[data-done="1"] .mp-ic { color: var(--mp-acc); }
+.mp-list li[data-done="1"] .mp-tx b { font-weight: 600; color: var(--mh-ink-2); }
+.mp-list li[data-done="0"] .mp-ic { color: var(--mh-ink-2); }
+.mp-tx { display: grid; gap: 1px; min-width: 0; }
+.mp-tx b { font-size: 13.5px; font-weight: 700; line-height: 1.3; overflow-wrap: anywhere; }
+.mp-tx small { font-size: 12px; line-height: 1.3; color: var(--mh-ink-2); overflow-wrap: anywhere; }
+.mp-go { color: var(--mh-ink-2); }
+/* the peak: a small glow round the card and its bar */
+.mp-card[data-peak="1"] { border-color: color-mix(in srgb, var(--mp-acc) 60%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--mp-acc) 30%, transparent), 0 0 22px color-mix(in srgb, var(--mp-acc) 30%, transparent); }
+.mp-card[data-peak="1"] .mp-bar > i { animation: mp-shine 2.4s ease-in-out infinite; }
+@keyframes mp-shine { 50% { filter: brightness(1.35); box-shadow: 0 0 16px var(--mp-acc); } }
+.ms-held { color: var(--mh-ink-2); }
+@media (prefers-reduced-motion: reduce) { .mp-card[data-peak="1"] .mp-bar > i { animation: none; } }

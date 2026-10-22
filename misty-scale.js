@@ -137,13 +137,15 @@
         const tName = tr(p.tier, l), boost = Math.min(v, p.boost || 0);
         const zone = (a, b, k, cls) => '<span class="ms-z ' + cls + '" style="left:' + (a * 100).toFixed(1) + '%;width:' + ((b - a) * 100).toFixed(1) + '%"><em>' + esc(tr(k, l)) + '</em></span>';
         let h = '<section class="mh-card ms-card" data-ms-tier="' + p.tier + '" aria-label="' + esc(tr('title', l, { n })) + '">' +
-            '<div class="ms-head"><h3>' + esc(tr('title', l, { n })) + '</h3><b class="ms-now num">' + esc(tName) + ' \u00b7 ' + pct(v) + '</b></div>' +
+            '<div class="ms-head"><h3>' + esc(tr('title', l, { n })) + '</h3><b class="ms-now num">' + esc(tName) + ' \u00b7 ' + pct(v) + (opts.held && opts.heldWord ? ' \u00b7 ' + esc(opts.heldWord) : '') + '</b></div>' +
             '<div class="ms-scale" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.round(v * 100) + '" aria-valuetext="' + esc(tName + ', ' + pct(v)) + '" aria-label="' + esc(tr('title', l, { n })) + '" style="--ms-v:' + v.toFixed(3) + ';--ms-b:' + boost.toFixed(3) + ';--ms-ok:' + E.travel + ';--ms-full:' + E.strong + '">' +
             '<span class="ms-track">' + zone(0, E.travel, 'zLow', 'low') + zone(E.travel, E.strong, 'zOk', 'ok') + zone(E.strong, 1, 'zFull', 'full') +
             '<i class="ms-fill"></i>' + (boost > 0.004 ? '<i class="ms-boost"></i>' : '') + '<i class="ms-dot"></i></span></div>';
         const wel = p.cur && p.cur.welcome > 0 && p.cur.welcomeEnd ? Math.max(1, Math.ceil((p.cur.welcomeEnd - Date.now()) / 36e5)) : 0;
         if (wel) h += '<p class="ms-line ms-welcome">' + esc(tr('welcome', l, { n, h: wel })) + '</p>';
-        if (p.full) h += '<p class="ms-line">' + esc(tr('top', l)) + '</p>';
+        /* Oct 22: full energy is not her peak while a sugar rush or a stormy world holds her back (misty-peak.js says so) */
+        if (p.full && opts.held) h += '<p class="ms-line ms-held">' + esc(opts.held) + '</p>';
+        else if (p.full) h += '<p class="ms-line">' + esc(tr('top', l)) + '</p>';
         else {
             h += '<p class="ms-togo num"><b>' + esc(tr('toGo', l, { p: pctUp(p.need), t: tr(p.next, l) })) + '</b></p>';
             const why = p.cur && p.cur.spikes ? tr('drag', l) : (p.cur && !wel && !p.cur.meals && !p.cur.water && !p.cur.moves ? tr('nothing', l) : '');
@@ -179,7 +181,13 @@
         p.power = pw;
         return p;
     }
-    function html() { const p = read(); return p ? cardHTML(p, p.power, { lang: lang(), name: name(), E: W.LowiSun.ENERGY }) : ''; }
+    function peakNow() { try { return W.LowiMistyPeak && W.LowiMistyPeak.now ? W.LowiMistyPeak.now() : null; } catch (e) { return null; } }
+    function html() {
+        const p = read(); if (!p) return '';
+        const pk = peakNow(), l = lang(), P = W.LowiMistyPeak;
+        const held = pk && pk.held.length && P ? P.heldText(pk, l) : '';
+        return cardHTML(p, p.power, { lang: l, name: name(), E: W.LowiSun.ENERGY, held, heldWord: held ? P.STR.held[{ en: 0, de: 1, es: 2 }[l] || 0] : '' });
+    }
 
     /* her tier word + % on the name tag (inside her bubble: nothing else moves).
        Oct 18 (E-man, iPad screenshot: "straight lines ... the old design is still inside of the new design"): the thin energy ring
@@ -191,9 +199,12 @@
         const bub = D.getElementById('spBubble');
         if (!bub) return;
         const p = read(true); if (!p) return;
-        const l = lang(), v = Math.max(0, Math.min(1, p.value)), b = Math.min(v, p.boost || 0);
+        /* Oct 22 (E-man: "Misty · 100%" while a sugar rush held her back): the name tag shows World glow, her true % to peak
+           (misty-peak.js), which never reads 100% while anything is missing. Her energy % stays in her sheet. */
+        const pk = peakNow();
+        const l = lang(), v = Math.max(0, Math.min(1, pk ? pk.score : p.value)), b = pk ? 0 : Math.min(v, p.boost || 0);
         if (bub !== lastBub) { lastBub = bub; lastSig = ''; }
-        const sig = [p.tier, v.toFixed(3), b.toFixed(3), l, name(), (p.power && [p.power.level, p.power.xp].join()) || ''].join('|');
+        const sig = [p.tier, v.toFixed(3), b.toFixed(3), l, name(), (p.power && [p.power.level, p.power.xp].join()) || '', pk ? (pk.peak ? 'peak' : pk.held.join()) : ''].join('|');
         if (sig === lastSig) return;
         lastSig = sig;
         /* her name tag gets the reading: "Clover Leaf · 20%" (non-breaking, so it never splits off her name) */
@@ -205,7 +216,7 @@
     }
     let soon = 0;
     const schedule = () => { if (soon) return; soon = setTimeout(() => { soon = 0; try { paint(); } catch (e) { } }, 120); };
-    ['lowi:reward', 'lowi:state', 'lowi:care', 'lowi:lang', 'lowi:fast', 'lowi:water', 'lowi:meal', 'lowi:meal-logged', 'lowi:world-mood', 'lowi:misty-power', 'storage', 'focus'].forEach(n => { W.addEventListener(n, schedule); if (n.indexOf('lowi:') === 0) D.addEventListener(n, schedule); });
+    ['lowi:reward', 'lowi:state', 'lowi:care', 'lowi:lang', 'lowi:fast', 'lowi:water', 'lowi:meal', 'lowi:meal-logged', 'lowi:world-mood', 'lowi:misty-power', 'lowi:peak', 'storage', 'focus'].forEach(n => { W.addEventListener(n, schedule); if (n.indexOf('lowi:') === 0) D.addEventListener(n, schedule); });
     D.addEventListener('visibilitychange', () => { if (!D.hidden) schedule(); });
     /* a rebuilt Home (after Community etc.) gets its name tag reading back: one cheap check per rebuild, no polling */
     function boot() {

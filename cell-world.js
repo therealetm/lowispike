@@ -485,7 +485,7 @@
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 
     W.LowiCell = Object.assign({}, core, {
-        live, render, setMood, copy,
+        live, render, setMood, copy, input: readInput,
         simulate(st) { sim = st || ''; lastSig = ''; said = ''; render(true); return live(); }
     });
     if (typeof module !== 'undefined' && module.exports) module.exports = W.LowiCell;

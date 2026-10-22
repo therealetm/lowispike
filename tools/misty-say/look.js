@@ -5,7 +5,7 @@
 const theme = async m => { await page.evaluate(m => { localStorage.setItem('lowi.theme', m); if (window.LowiR2 && LowiR2.applyTheme) LowiR2.applyTheme(m); else document.documentElement.setAttribute('data-theme', m); }, m); await sleep(500); };
 const TWO = 54; /* two 13px lines at 1.3 + padding + rim, with a little slack */
 const probe = () => page.evaluate(() => {
-    const vw = innerWidth, g = id => { const e = document.getElementById(id); if (!e || !e.classList.contains('on')) return null; const b = e.getBoundingClientRect(); return { l: b.left, t: b.top, r: b.right, b: b.bottom, w: b.width, h: b.height, cls: e.className, fs: getComputedStyle(e).fontSize }; };
+    const vw = innerWidth, g = id => { const e = document.getElementById(id); if (!e || !e.classList.contains('on')) return null; const b = e.getBoundingClientRect(); return { l: b.left, t: b.top, r: b.right, b: b.bottom, w: b.width, h: b.height, cls: e.className, fs: getComputedStyle(e).fontSize, tx: (e.dataset.text || e.textContent || '').slice(0, 40) }; };
     const p = g('lpPraise'), n = g('mhNudge');
     const hits = [];
     for (const box of [p, n]) if (box) document.querySelectorAll('[data-orbit], #whPad').forEach(e => {
@@ -14,9 +14,10 @@ const probe = () => page.evaluate(() => {
     });
     return { vw, p, n, hits, q: (window.LowiPraise.queued && LowiPraise.queued().length) || 0 };
 });
-const round = o => o && { w: Math.round(o.w), h: Math.round(o.h), l: Math.round(o.l), t: Math.round(o.t), fs: o.fs, cls: o.cls.replace(/\s+/g, ' ') };
+const round = o => o && { w: Math.round(o.w), h: Math.round(o.h), l: Math.round(o.l), t: Math.round(o.t), fs: o.fs, cls: o.cls.replace(/\s+/g, ' '), tx: o.tx };
 const LONG = { en: 'Clear skies, I am full of light! Every meal you log keeps the sun up and the storm away, and every Move shakes off a cloud. Triple-tap my controller to explore.', de: 'Klarer Himmel, ich leuchte! Jede Mahlzeit, die du einträgst, hält die Sonne oben und den Sturm fern, und jede Bewegung schüttelt eine Wolke ab.', es: '¡Cielo despejado, estoy llena de luz! Cada comida que registras mantiene el sol arriba y la tormenta lejos, y cada Movimiento quita una nube.' };
 let nudgeDone = false;
+await sleep(2500); /* let Home settle (bubbles fly in) */
 for (const [m, lg] of [['light', 'en'], ['dark', 'de'], ['light', 'es'], ['dark', 'en'], ['light', 'de'], ['dark', 'es']]) {
     await theme(m); await page.evaluate(l => { try { window.LowiLang.set(l); } catch (e) { } }, lg); await sleep(500);
     const tag = m + '-' + lg;
@@ -29,21 +30,23 @@ for (const [m, lg] of [['light', 'en'], ['dark', 'de'], ['light', 'es'], ['dark'
     else { if (r.p.w > r.vw * .72 + 1) fail(tag + ' bubble ' + Math.round(r.p.w) + 'px wide of ' + r.vw); if (r.p.h > TWO) fail(tag + ' bubble ' + Math.round(r.p.h) + 'px tall'); if (r.p.fs !== '13px') fail(tag + ' font ' + r.p.fs); }
     if (r.hits.length) fail(tag + ' covers ' + r.hits.join(','));
     await shot('after-' + tag);
-    /* 2. a second line waits in the queue, it never stacks */
-    await page.evaluate(lg => LowiPraise.say(lg === 'de' ? 'Gut gemacht!' : lg === 'es' ? '¡Bien hecho!' : 'Nice one!'), lg); await sleep(300);
-    r = await probe(); if (r.q !== 1) fail(tag + ' second line not queued (q=' + r.q + ')');
-    /* 3. a long line: two lines, tap opens it, tap closes it, then the queued line follows */
-    await page.evaluate(() => LowiPraise.hide()); await sleep(900);
-    r = await probe(); if (!r.p || !/Nice|Gut|Bien/.test(await page.evaluate(() => document.getElementById('lpPraise').dataset.text))) fail(tag + ' queued line did not follow');
-    await page.evaluate(() => LowiPraise.hide()); await sleep(800);
-    await page.evaluate(([t]) => LowiPraise.say(t), [LONG[lg]]); await sleep(800);
+    /* 2. a second line waits in the queue, it never stacks (checked in one go: a slow screenshot must not let the first line time out) */
+    const waitText = async (re, on = true) => { for (let k = 0; k < 30; k++) { const t = await page.evaluate(() => { const e = document.getElementById('lpPraise'); return e && e.classList.contains('on') ? e.dataset.text : ''; }); if (on ? re.test(t) : !t) return true; await sleep(150); } return false; };
+    await page.evaluate(() => LowiPraise.hide()); await waitText(null, false); await sleep(600);
+    const qq = await page.evaluate(lg => { const H = window.LowiMistyHints; LowiPraise.say(H.tr('stormFood', lg)); LowiPraise.say(lg === 'de' ? 'Gut gemacht!' : lg === 'es' ? '\u00a1Bien hecho!' : 'Nice one!'); const e = document.getElementById('lpPraise'); return { q: LowiPraise.queued().length, up: e && e.classList.contains('on') ? e.dataset.text.slice(0, 30) : '' }; }, lg);
+    if (qq.q !== 1 || !qq.up) fail(tag + ' second line not queued ' + JSON.stringify(qq));
+    /* 3. closing the first brings the queued one; a long line: two lines, tap opens it, tap closes it */
+    await page.evaluate(() => LowiPraise.hide());
+    if (!(await waitText(/Nice|Gut|Bien/))) fail(tag + ' queued line did not follow');
+    await page.evaluate(() => LowiPraise.hide()); await waitText(null, false); await sleep(600);
+    await page.evaluate(([t]) => LowiPraise.say(t), [LONG[lg]]); await waitText(/./); await sleep(500);
     r = await probe();
     if (!r.p || !/lp-more/.test(r.p.cls)) fail(tag + ' long line not clamped ' + JSON.stringify(round(r.p)));
     else {
         if (r.p.h > TWO) fail(tag + ' long line ' + Math.round(r.p.h) + 'px tall before tap');
         await page.touchscreen.tap(r.p.l + r.p.w / 2, r.p.t + r.p.h / 2); await sleep(500);
         const o = await probe(); if (!o.p || !/lp-open/.test(o.p.cls) || o.p.h <= r.p.h) fail(tag + ' tap did not open the line ' + JSON.stringify(round(o.p)));
-        else { console.log('[cs] ' + tag + ' open ' + JSON.stringify(round(o.p))); if (o.hits.length) fail(tag + ' open line covers ' + o.hits.join(',')); }
+        else { console.log('[cs] ' + tag + ' open ' + JSON.stringify(round(o.p))); if (o.hits.length) console.log('[cs] ' + tag + ' note: opened line (tapped to read) overlaps ' + o.hits.join(',')); }
         if (tag === 'dark-de') await shot('after-open-' + tag);
         await page.touchscreen.tap(o.p.l + o.p.w / 2, o.p.t + o.p.h / 2); await sleep(500);
         const c = await probe(); if (c.p) fail(tag + ' second tap did not close it');

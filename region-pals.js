@@ -66,16 +66,14 @@
         ['pointerdown', 'touchstart', 'mousedown'].forEach(t => el.addEventListener(t, e => e.stopPropagation(), { passive: true }));
         el.querySelector('.rp-body').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); next(true); });
         /* misty-say (Oct 22): the bubble shows two lines; a tap on a longer one opens it in full (with its reading time again), any other tap closes it */
-        el.querySelector('.rp-say').addEventListener('click', e => {
-            e.preventDefault(); e.stopPropagation();
+        const openLong = () => {
             const tx = el.querySelector('.rp-tx');
-            if (!st.asking && !el.classList.contains('rp-open') && tx && tx.scrollHeight > tx.clientHeight + 2) {
-                el.classList.add('rp-open'); st.size = null; placeSay(true);
-                clearTimeout(st.sayT); st.sayT = setTimeout(quiet, C.showMs(tx.textContent, 'fact') + 1500);
-                return;
-            }
-            quiet();
-        });
+            if (st.asking || el.classList.contains('rp-open') || !tx || tx.scrollHeight <= tx.clientHeight + 2) return false;
+            el.classList.add('rp-open'); st.size = null; placeSay(true);
+            clearTimeout(st.sayT); st.sayT = setTimeout(quiet, C.showMs(tx.textContent, 'fact') + 1500);
+            return true;
+        };
+        el.querySelector('.rp-say').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); if (openLong()) return; quiet(); });
         /* lesson recall check (Oct 18, 2026): Yes = remembered, on to the next lesson; No = that lesson again */
         el.querySelector('.rp-yes').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); reply(true); });
         el.querySelector('.rp-no').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); reply(false); });

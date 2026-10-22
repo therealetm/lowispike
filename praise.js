@@ -59,6 +59,18 @@
         const cost = t => all.reduce((c, o) => c + ov(dl, t, o), 0);
         let best = null;
         for (const t of [Math.max(56, (view.top || 8) + 8), view.h - b.h - 28]) { const c = cost(t); if (!best || c < best.c) best = { t, c }; }
+        if (best.c > 0) {
+            /* misty-say (Oct 22): both docks touch something (small phones): look for a free spot, every 12 px down the screen at
+               the left, centre and right, the one nearest Misty wins; nothing free keeps the dock that covers the least */
+            const costAt = (L, t) => all.reduce((c, o) => c + ov(L, t, o), 0), top = Math.max(56, (view.top || 8) + 8), bot = view.h - b.h - 28;
+            let free = null;
+            for (let t = top; t <= bot; t += 12) for (const L of [dl, m, view.w - m - b.w]) {
+                if (L < m - .5 || costAt(L, t) > 0) continue;
+                const d = Math.abs(t + b.h / 2 - (a.top + a.bottom) / 2) + Math.abs(L + b.w / 2 - a.x) * .5;
+                if (!free || d < free.d) free = { L, t, d };
+            }
+            if (free) return { l: free.L, t: free.t, up: false, tail, dock: true };
+        }
         return { l: dl, t: best.t, up: false, tail, dock: true };
     }
     const core = { POOL, FIRST, TYPES, SHOW_MS, showMs, pick, isFirst, place };

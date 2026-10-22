@@ -4,7 +4,7 @@
    with the slot chips fits the screen), a slot change moves it, Undo removes it, a second tap of the same food counts once. The
    cook-along DONE screen has I just ate this as the main button beside a small I'll eat this, both on screen, and it logs. A right swipe
    offers both. Local fixture session, every non-GET and off-site request blocked.
-     node tests/ate-this-live.cjs [--root DIR | --url https://therealetm.github.io/lowispike/] [--out DIR] [--views se,i13,i15,pixel7]
+     node tests/ate-this-live.cjs [--root DIR | --url https://therealetm.github.io/lowispike/] [--out DIR] [--views se,i13,i15,pixel7] [--theme light|dark]
    Exit 0 = pass. */
 const http = require('http'), fs = require('fs'), path = require('path');
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
@@ -31,6 +31,7 @@ const FIT = sel => { const bs = [...document.querySelectorAll(sel)].filter(b => 
     const [eng, dev, lang] = VIEWS[v], fails = [], log = {};
     const browser = await pw[eng].launch(eng === 'chromium' ? { args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] } : {});
     const ctx = await browser.newContext(Object.assign({}, pw.devices[dev], { serviceWorkers: 'block' }));
+    if (arg('theme', '')) await ctx.addInitScript(t => { try { localStorage.setItem('lowi.theme', t); } catch (e) {} }, arg('theme', '')); /* --theme light = Day, default dark = Night */
     await ctx.route('**/*', r => { const q = r.request(), u = new URL(q.url()); if (u.protocol === 'data:' || u.protocol === 'blob:' || (u.host === host && q.method() === 'GET')) return r.continue(); return r.abort(); });
     await ctx.addInitScript(INIT);
     const page = await ctx.newPage(), errs = [];
@@ -43,6 +44,7 @@ const FIT = sel => { const bs = [...document.querySelectorAll(sel)].filter(b => 
       await page.goto(url + (url.includes('?') ? '&' : '?') + 'tb=' + Date.now(), { waitUntil: 'load', timeout: 180000 });
       await page.waitForFunction(() => typeof window.goTab === 'function' && window.LowiAte && window.LowiVitalsBridge && window.LowiP2, null, { timeout: 150000 });
       await sleep(4000);
+      log.theme = await ev(() => document.documentElement.dataset.theme);
       log.build = await ev(() => fetch('version.json?tb=' + Date.now()).then(r => r.json()).then(j => j.build).catch(() => '?'));
       await ev(l => { try { LowiLang.set(l); } catch (e) { } }, lang); await sleep(600);
       await ev(() => { document.querySelectorAll('.tut-ov,.stp-ov,[class*="wn-ov"]').forEach(x => x.remove()); goTab('shelf'); }); await sleep(2200);

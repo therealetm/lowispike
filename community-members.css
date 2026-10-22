@@ -1,12 +1,13 @@
 /* 22 Oct 2026: the chat's Members page (community-chat.js memPaint). The members button (people icon + count) slides this page in
    over the room; the chat underneath keeps its scroll spot. Colours come only from the room's theme tokens (community-tg.css),
    so Day and Night follow the moon/sun button; the fallbacks are the Night values for a pane without the tokens. */
-html body #cmPaneChat#cmPaneChat .cr-mem[hidden]{display:none!important}
-html body #cmPaneChat#cmPaneChat .cr-mem{position:absolute;inset:0;z-index:40;display:flex;flex-direction:column;min-height:0;overflow:hidden;
+html body #cmPaneChat#cmPaneChat #crMem.cr-mem[hidden]{display:none!important}
+/* community-room.css gives every child of the room position:relative (ids 2, classes 3); the page's own id wins */
+html body #cmPaneChat#cmPaneChat #crMem.cr-mem{position:absolute!important;inset:0!important;z-index:40!important;display:flex;flex-direction:column;min-height:0;overflow:hidden;
   background:var(--cr-canvas,#060e26);background-color:var(--cr-canvas-c,#060e26);color:var(--cr-text,#eef3ff);
   font:inherit;animation:crMemIn .34s cubic-bezier(.2,.9,.25,1) both}
 @keyframes crMemIn{from{transform:translateX(100%);opacity:.6}to{transform:none;opacity:1}}
-@media (prefers-reduced-motion:reduce){html body #cmPaneChat#cmPaneChat .cr-mem{animation:none}}
+@media (prefers-reduced-motion:reduce){html body #cmPaneChat#cmPaneChat #crMem.cr-mem{animation:none}}
 html body #cmPaneChat#cmPaneChat .cr-memh{flex:0 0 auto;display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:6px;padding:6px 12px 6px}
 html body #cmPaneChat#cmPaneChat .cr-memback{width:44px;height:44px;margin:0;padding:0;border-radius:50%;display:grid;place-items:center;
   border:1px solid var(--cr-hair,rgba(255,255,255,.12));background:var(--cr-glass,rgba(16,26,52,.72));color:var(--cr-ic,#eef3ff);

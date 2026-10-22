@@ -37,14 +37,16 @@ test('reactions are small pills, actions are small pills', () => {
   assert.match(rule(P + ' .cr-room .cp-acts .cm-mini'), /height:30px!important/);
 });
 
-test('composer floats at the bottom edge above the home indicator, drops the inset while typing; the room reaches the bottom edge', () => {
-  const c = rule(P + ' .cm-compose');
-  assert.match(c, /position:absolute!important;left:0!important;right:0!important;bottom:0!important/);
-  assert.match(c, /padding:8px 0 max\(8px,calc\(var\(--cr-sab\) \+ 4px\)\)!important/);
-  assert.match(rule(P), /--cr-sab:var\(--sab,0px\)/);
-  assert.match(css, /html\.cs-chat-typing body #tab-foryou #cmPaneChat#cmPaneChat\[data-room\] \.cm-compose\{padding-bottom:8px!important\}/);
+test('item 38: the room is a rounded box under the tab bar and the composer is its bottom, in the flow; typing ends the box above the keyboard', () => {
+  const c = rule(P + ' .cm-compose'), box = rule(P + ' .cp-room.cg-room#cpRoom');
+  assert.match(c, /position:relative!important;inset:auto!important;flex:none!important/);
+  assert.match(c, /border-radius:0 0 28px 28px!important/);
+  assert.match(box, /border-radius:28px 28px 0 0!important/);
+  assert.match(box, /max-width:760px!important/, 'as wide as the tab bar');
+  assert.doesNotMatch(css, /#cmPaneChat#cmPaneChat\[data-room\]\{padding:0!important\}/, 'the pane keeps the padding of the other tabs');
+  assert.match(css, /html\.cs-chat-typing body #tab-foryou #cmPaneChat#cmPaneChat\[data-room\]\{padding-bottom:8px!important\}/);
   assert.match(rule(P + ' .cg-thread.cr-room[data-open]'), /inset:0!important/);
-  assert.match(rule(P + ' .cr-room #cmList.cm-list'), /calc\(var\(--cr-comp-h,/, 'the last message clears the composer');
+  assert.match(css, /\.cr-room #cmList\.cm-list\.cm-list\{padding-top:12px!important;padding-bottom:10px!important/, 'nothing floats over the end of the list');
 });
 
 test('the room stays light on the phone: two frosted strips, the room itself has no full-screen blur', () => {
@@ -54,11 +56,18 @@ test('the room stays light on the phone: two frosted strips, the room itself has
   assert.match(css, /@media\(prefers-reduced-transparency:reduce\)/);
 });
 
-test('community-chat.js measures the composer for the list and adds a round jump-to-latest button', () => {
+test('community-chat.js measures the composer, keeps the newest message in view as it grows, and adds a round jump-to-latest button', () => {
   assert.match(js, /function roomDress\(p,on\)\{/);
-  assert.match(js, /new ResizeObserver\(\(\)=>\{const h=Math\.round\(c\.getBoundingClientRect\(\)\.height\);if\(h\)p\.style\.setProperty\('--cr-comp-h',h\+'px'\);\}\)/);
+  assert.match(js, /new ResizeObserver\(\(\)=>\{const h=Math\.round\(c\.getBoundingClientRect\(\)\.height\),l=D\.getElementById\('cmList'\),d=h-\(compRO\.__h\|\|h\);/);
+  assert.match(js, /if\(l&&d>0&&l\.scrollHeight-l\.scrollTop-l\.clientHeight-d<90\)l\.scrollTop=l\.scrollHeight;/);
   assert.match(js, /b\.className='cr-down';b\.setAttribute\('data-chat','latest'\)/);
   assert.match(js, /COPY\.toLatest=\['Jump to the latest message','Zur neuesten Nachricht','Ir al último mensaje'\]/);
   assert.match(js, /th\.classList\.toggle\('cr-up',!nb\)/, 'scrolling up shows it, reaching the bottom hides it');
   assert.match(js, /roomDress\(p,on\);\}/, 'set and cleared with the room flag');
+});
+
+test('item 38: fit() keeps the field you type in above the keyboard and the newest message in view', () => {
+  assert.match(js, /stick=!!l&&\(!roomKbH\|\|l\.scrollHeight-l\.scrollTop-l\.clientHeight<140\)/);
+  assert.match(js, /over=Math\.ceil\(r\.bottom\+10-bottom\)/);
+  assert.match(js, /if\(!typing\)\{roomKbH=0;return;\}/);
 });

@@ -25,10 +25,10 @@ test('Escape in a chat room goes back like the room\'s back arrow (item 36; was 
   assert.match(c, /e\.key==='Escape'&&threadOpen&&active\(\)&&!D\.querySelector\('\.r2-ov\.on'\)\)\{[^{}]*?S\.back\(\);else thread\(false\)/);
 });
 
-test('the Home X steps aside in a chat room and clears the Community logo', () => {
+test('item 38: the Home back button stays in its place in the chat room; the room flag still clears with Community', () => {
   const u = R('community-rooms-ui.js'), css = R('community-rooms.css');
   assert.match(u, /classList\.toggle\('rm-room-open',!!\(chat&&pageActive\(\)\)\)/, 'set only while Community is on screen');
   assert.match(u, /dropFrames\(null\);D\.documentElement\.classList\.remove\('rm-room-open'\)/, 'cleared when Community closes, so other sections keep their X');
-  assert.match(css, /html\.rm-room-open \.sec-x\{display:none!important\}/);
+  assert.doesNotMatch(css, /html\.rm-room-open \.sec-x\{display:none!important\}/, 'the back button no longer steps aside on Chat');
   assert.match(css, /html\.sec-open #cmPaneChat\[data-spirit-chat\]>\.rm-bar \.rm-head\{padding-left:/);
 });

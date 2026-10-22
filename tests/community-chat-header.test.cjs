@@ -15,19 +15,12 @@ test('the strip behind the top bar and pinned bar is nearly opaque in Night and 
   assert.doesNotMatch(strip, /mask-image/);
 });
 
-test('the message list starts below the strip, which runs past the pinned bar', () => {
-  assert.match(rule(P + ' .cr-room #cmList.cm-list'), /padding:var\(--cr-top\)/);
-  const top = +rule(P).match(/--cr-top:(\d+)px/)[1], pin = rule(P + ' .cr-pin');
-  const pinBottom = +pin.match(/top:(\d+)px/)[1] + +pin.match(/min-height:(\d+)px/)[1];
-  assert(top >= pinBottom + 4, 'strip ' + top + ' vs pinned bar bottom ' + pinBottom);
+test('item 38: the room top bar, the pinned banner and the recent-voices strip are gone', () => {
+  assert.match(css, /html body #tab-foryou #cmPaneChat#cmPaneChat\[data-room\] :is\(\.cg-thead\.cr-head,#crPin,#crCrew\)\{display:none!important\}/);
+  assert.match(rule(P), /--cr-top:12px/);
 });
 
-test('item 36 tab-row rules stay, and Day gets a light tab row', () => {
-  const R = 'html.cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room]';
-  assert.match(css, /html\.cr-room\[data-lay=phone\] #cmPaneChat\[data-spirit-chat\]\[data-room\]>\.rm-bar\{display:flex!important/);
-  assert.match(css, /html\.cr-room\[data-lay=phone\] #cmPaneChat\[data-spirit-chat\]\[data-room\]>\.rm-bar>:not\(\.rm-tabs\)\{display:none!important\}/);
-  assert.match(rule(R + ' .rm-tabs'), /backdrop-filter:none!important;background:rgba\(8,16,40,\.94\)!important/);
-  const day = rule('html[data-theme=light].cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room] .rm-tabs');
-  assert.match(day, /background:rgba\(255,255,255,\.9\d\)!important/);
-  assert.match(css, /html\[data-theme=light\]\.cr-room\[data-lay=phone\] #cmPaneChat\[data-spirit-chat\]\[data-room\] \.rm-tabs \.rm-tab\{color:#3a465c!important/);
+test('item 38: the item 36/37b room-only tab row is gone, Chat uses the shared Community tab bar', () => {
+  assert.doesNotMatch(css, /html\.cr-room\[data-lay=phone\] #cmPaneChat\[data-spirit-chat\]\[data-room\]>\.rm-bar\{display:flex!important/);
+  assert.doesNotMatch(css, /html\[data-theme=light\]\.cr-room\[data-lay=phone\] #cmPaneChat\[data-spirit-chat\]\[data-room\] \.rm-tabs/);
 });

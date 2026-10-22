@@ -63,9 +63,10 @@ test('wiring: first tab, room back arrow, phone back, Escape, leaving Community'
   assert.match(u, /classList\.remove\('rm-room-open'\);from='';if\(open\(\)\)\{try\{W\.LowiCommunity\.thread\(false\);\}catch\(x\)\{\}\}/, 'leaving Community closes the chat, so html.cr-room never pauses Home');
 });
 
-test('phones: the tab row stays above the chat room, with no extra glass blur', () => {
+test('item 38: phones keep the whole Community header and tab bar above the chat room (no room-only header overrides)', () => {
   const css = R('community-tg.css');
-  assert.match(css, /html\.cr-room\[data-lay=phone\] #cmPaneChat\[data-spirit-chat\]\[data-room\]>\.rm-bar\{display:flex!important;/);
-  assert.match(css, /html\.cr-room\[data-lay=phone\] #cmPaneChat\[data-spirit-chat\]\[data-room\]>\.rm-bar>:not\(\.rm-tabs\)\{display:none!important\}/);
-  assert.match(css, /\[data-room\] \.rm-tabs\{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;/);
+  assert.doesNotMatch(css, /\[data-room\]>?\s*\.rm-bar\{display:none!important\}/);
+  assert.doesNotMatch(css, /\[data-room\]>\.rm-bar>:not\(\.rm-tabs\)\{display:none!important\}/);
+  assert.doesNotMatch(css, /html\.cr-room\[data-lay=phone\]:has\(#tab-foryou\.active\) #tbTheme/, 'day/night and profile buttons stay');
+  assert.match(css, /#cmPaneChat#cmPaneChat\[data-room\]>\.rm-bar>\.rm-crumb\{display:none!important\}/, 'no second back arrow under the tabs');
 });

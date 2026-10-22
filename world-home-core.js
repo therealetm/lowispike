@@ -14,6 +14,57 @@
         { id: 'sun', xp: 1500, a: '#fff2a8', b: '#ffc23d', n: ['Sun core', 'Sonnenkern', 'Núcleo solar'], d: ['Bright as noon.', 'Hell wie Mittag.', 'Brillante como el mediodía.'] },
         { id: 'nebula', xp: 3000, a: '#ffb3f0', b: '#5ad1ff', n: ['Nebula', 'Nebel', 'Nebulosa'], d: ['For legends only.', 'Nur für Legenden.', 'Solo para leyendas.'] }
     ];
+    /* Aura shop step 1 (Oct 22 2026, Emmanuel: "more impressive bubbles ... locked, then unlocked with XP points they can spend").
+       Spending must never lower the level or the leaderboard, so the shop uses Sparks, not XP: every XP gain is also a spark
+       (1:1, so the same fair-play caps), and a spark spent is gone while the XP stays. Sparks = total XP - sparks spent, so an
+       existing user starts with sparks equal to the XP they already have (the back-fill), and an XP gain that is taken back
+       (a deleted log) takes its spark back too. The 8 glows above stay level rewards (free at their XP, Nebula at 3000 XP =
+       Legend): nothing anyone already wears gets a price tag. These animated auras are the ones you buy. */
+    const SHOP = [
+        { id: 'ember', sp: 250, fx: 'ember', a: '#ffb36b', b: '#ff4d2e', n: ['Ember', 'Glut', 'Brasa'], d: ['Warm sparks rise from her membrane.', 'Warme Funken steigen von ihrer Membran auf.', 'Chispas cálidas suben de su membrana.'] },
+        { id: 'orbs', sp: 500, fx: 'orbs', a: '#9ef7ff', b: '#5a8cff', n: ['Orbiting orbs', 'Kreisende Kugeln', 'Orbes en órbita'], d: ['Three little orbs circle her.', 'Drei kleine Kugeln kreisen um sie.', 'Tres orbes pequeños giran a su alrededor.'] },
+        { id: 'trail', sp: 900, fx: 'trail', a: '#fff3b0', b: '#c39bff', n: ['Stardust trail', 'Sternenstaub-Spur', 'Estela de polvo estelar'], d: ['Glitter follows her when she swims.', 'Glitzer folgt ihr, wenn sie schwimmt.', 'Purpurina la sigue cuando nada.'] },
+        { id: 'electric', sp: 1400, fx: 'electric', a: '#b8f4ff', b: '#4f7bff', n: ['Electric', 'Elektrisch', 'Eléctrica'], d: ['Crackling arcs of light.', 'Knisternde Lichtbogen.', 'Arcos de luz que chisporrotean.'] },
+        { id: 'prism', sp: 2000, fx: 'prism', a: '#ffd1f2', b: '#8be9ff', n: ['Prism', 'Prisma', 'Prisma'], d: ['Light breaks into a rainbow around her.', 'Licht bricht sich als Regenbogen um sie.', 'La luz se rompe en un arcoíris a su alrededor.'] },
+        { id: 'galaxy', sp: 3000, fx: 'galaxy', a: '#c9a8ff', b: '#3b2a8f', n: ['Galaxy', 'Galaxie', 'Galaxia'], d: ['A swirling star field inside her.', 'Ein wirbelndes Sternenfeld in ihr.', 'Un campo de estrellas girando dentro de ella.'] }
+    ];
+    /* Step 2 hooks (not built yet, see MAYA-HANDOFF.md): bubble size and shape are their own unlockables, bought with the same
+       sparks and saved in the same wallet (wallet.size / wallet.shape = the one picked, wallet.own = every id bought). */
+    const SIZES = [
+        { id: 'size:m', kind: 'size', sp: 0, scale: 1, n: ['Normal', 'Normal', 'Normal'] },
+        { id: 'size:l', kind: 'size', sp: 600, scale: 1.12, n: ['Big', 'Groß', 'Grande'] },
+        { id: 'size:xl', kind: 'size', sp: 1500, scale: 1.24, n: ['Huge', 'Riesig', 'Enorme'] }
+    ];
+    const SHAPES = [
+        { id: 'shape:round', kind: 'shape', sp: 0, n: ['Round', 'Rund', 'Redonda'] },
+        { id: 'shape:square', kind: 'shape', sp: 800, n: ['Square', 'Quadrat', 'Cuadrada'] },
+        { id: 'shape:rect', kind: 'shape', sp: 800, n: ['Rectangle', 'Rechteck', 'Rectángulo'] },
+        { id: 'shape:triangle', kind: 'shape', sp: 1200, n: ['Triangle', 'Dreieck', 'Triángulo'] },
+        { id: 'shape:diamond', kind: 'shape', sp: 2500, n: ['Diamond', 'Diamant', 'Diamante'] },
+        { id: 'shape:gem', kind: 'shape', sp: 4000, n: ['Gem cut', 'Edelsteinschliff', 'Talla de gema'] }
+    ];
+    const PRICE = {};
+    SHOP.forEach(a => { PRICE[a.id] = a.sp; });
+    SIZES.concat(SHAPES).forEach(a => { if (a.sp) PRICE[a.id] = a.sp; });
+    /* the wallet: { spent, own: [ids bought], size, shape }; anything odd is cleaned, never trusted */
+    function wallet(w) {
+        w = w && typeof w === 'object' ? w : {};
+        const own = Array.isArray(w.own) ? w.own.filter((id, i, a) => typeof id === 'string' && PRICE[id] && a.indexOf(id) === i) : [];
+        const spent = own.reduce((s, id) => s + PRICE[id], 0);
+        return { v: 1, spent: Math.max(spent, Math.floor(+w.spent || 0)), own, size: typeof w.size === 'string' ? w.size : '', shape: typeof w.shape === 'string' ? w.shape : '' };
+    }
+    /* sparks you can spend: every XP ever earned minus what you spent (never below 0) */
+    function sparks(xp, w) { return Math.max(0, Math.floor(Math.max(0, +xp || 0)) - wallet(w).spent); }
+    /* buy: pure, returns a new wallet. XP is only read, never changed, so the level and the leaderboard stay where they are. */
+    function buy(w, id, xp) {
+        const cw = wallet(w), price = PRICE[id];
+        if (!price) return { ok: false, why: 'unknown', wallet: cw, need: 0 };
+        if (cw.own.indexOf(id) >= 0) return { ok: false, why: 'owned', wallet: cw, need: 0 };
+        const have = sparks(xp, cw);
+        if (have < price) return { ok: false, why: 'short', wallet: cw, need: price - have };
+        const out = wallet(Object.assign({}, cw, { own: cw.own.concat(id), spent: cw.spent + price }));
+        return { ok: true, why: '', wallet: out, need: 0, left: sparks(xp, out) };
+    }
     /* the same thresholds as LOWI_HERB_CONFIG.stages, named for a cell */
     const STAGES = [
         { xp: 0, n: ['Spark', 'Funke', 'Chispa'], d: ['Just born. Every log makes you glow.', 'Gerade entstanden. Jeder Eintrag lässt dich leuchten.', 'Recién nacida. Cada registro te hace brillar.'] },
@@ -30,13 +81,23 @@
     ];
     const ix = l => ({ de: 1, es: 2 })[l] || 0;
     const pick = (arr, l) => arr[ix(l)] || arr[0];
-    function aura(id) { return AURAS.find(a => a.id === id) || AURAS[0]; }
-    function owns(id, xp) { const a = AURAS.find(x => x.id === id); return !!a && (+xp || 0) >= a.xp; }
+    const ALL = AURAS.concat(SHOP);
+    function aura(id) { return ALL.find(a => a.id === id) || AURAS[0]; }
+    /* a level glow is yours at its XP; a shop aura is yours once bought (w = the sparks wallet) */
+    function owns(id, xp, w) {
+        const a = AURAS.find(x => x.id === id); if (a) return (+xp || 0) >= a.xp;
+        const s = SHOP.find(x => x.id === id); return !!s && wallet(w).own.indexOf(id) >= 0;
+    }
     /* a saved aura only counts while it is unlocked; anything else falls back to the starter light */
-    function cleanAura(id, xp) { return owns(id, xp) ? id : AURAS[0].id; }
-    function auraItems(xp, cur) {
-        xp = +xp || 0; cur = cleanAura(cur, xp);
+    function cleanAura(id, xp, w) { return owns(id, xp, w) ? id : AURAS[0].id; }
+    function auraItems(xp, cur, w) {
+        xp = +xp || 0; cur = cleanAura(cur, xp, w);
         return AURAS.map(a => ({ id: a.id, xp: a.xp, a: a.a, b: a.b, n: a.n, d: a.d, status: a.id === cur ? 'on' : xp >= a.xp ? 'ready' : 'locked', left: Math.max(0, a.xp - xp) }));
+    }
+    /* the shop cards: price, whether you can pay it now and how many sparks are still missing */
+    function shopItems(xp, cur, w) {
+        const cw = wallet(w), have = sparks(xp, cw); cur = cleanAura(cur, xp, cw);
+        return SHOP.map(a => { const own = cw.own.indexOf(a.id) >= 0; return { id: a.id, sp: a.sp, fx: a.fx, a: a.a, b: a.b, n: a.n, d: a.d, status: a.id === cur ? 'on' : own ? 'ready' : 'locked', afford: !own && have >= a.sp, need: own ? 0 : Math.max(0, a.sp - have) }; });
     }
     function stage(xp) {
         xp = Math.max(0, +xp || 0); let i = 0;
@@ -89,7 +150,7 @@
         const mid = (homeD + maxD) / 2;
         return dist > mid - 0.01 ? { to: homeD, out: false } : { to: maxD, out: true };
     }
-    const api = { AURAS, STAGES, pick, aura, owns, cleanAura, auraItems, stage, heroView, rigAngles, nearAngle, zoomTarget };
+    const api = { AURAS, SHOP, SIZES, SHAPES, PRICE, STAGES, pick, aura, owns, cleanAura, auraItems, shopItems, wallet, sparks, buy, stage, heroView, rigAngles, nearAngle, zoomTarget };
     if (typeof module === 'object' && module.exports) module.exports = api;
     root.LowiWorldHomeCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

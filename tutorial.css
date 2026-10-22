@@ -58,6 +58,55 @@
 @keyframes lt-glow { 0%, 100% { box-shadow: 0 0 14px rgba(127, 231, 255, .45); } 50% { box-shadow: 0 0 0 4px rgba(255, 255, 255, .85), 0 0 26px rgba(127, 231, 255, .9); } }
 @media (prefers-reduced-motion: reduce) { .lt-trybtn.lt-wiggle { animation: lt-glow 1.2s ease-in-out 1 !important; } }
 .lt-tour.lt-rm .lt-trybtn.lt-wiggle { animation: lt-glow 1.2s ease-in-out 1; }
+/* item 38: practice pad (try the gesture on a look-alike; nothing in the app changes) and the "after the tour" motion */
+.lt-pad { position: relative; display: flex; align-items: center; justify-content: center; height: 76px; margin: 0 0 6px; border-radius: 16px;
+    border: 1px dashed rgba(127,231,255,.5); background: rgba(127,231,255,.07); cursor: pointer; overflow: hidden;
+    touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+.lt-pad:focus-visible { outline: 2px solid var(--brand-cyan, #7fe7ff); outline-offset: 2px; }
+.lt-obj { display: flex; align-items: center; justify-content: center; min-width: 64px; height: 40px; padding: 0 14px; box-sizing: border-box; border-radius: 20px;
+    background: rgba(255,255,255,.13); border: 1px solid rgba(255,255,255,.28); font-size: 13px; transition: transform .15s ease, background .2s ease; pointer-events: none; }
+.lt-obj b { font-weight: 600; white-space: nowrap; }
+.lt-pad[data-look="water"] .lt-obj { background: rgba(90,180,255,.22); }
+.lt-pad[data-look="sun"] .lt-obj { background: rgba(255,214,90,.25); }
+.lt-pad[data-look="mic"] .lt-obj, .lt-pad[data-look="joystick"] .lt-obj, .lt-pad[data-look="ring"] .lt-obj { border-radius: 999px; min-width: 56px; height: 56px; }
+.lt-pad[data-look="galaxy"] .lt-obj { background: rgba(170,120,255,.25); }
+.lt-pad[data-look="sheet"] .lt-obj { position: relative; min-width: 120px; height: 46px; border-radius: 14px 14px 6px 6px; align-items: flex-end; padding-bottom: 6px; }
+.lt-pad[data-look="sheet"] .lt-obj::before { content: ''; position: absolute; top: 6px; left: 50%; width: 30px; height: 4px; margin-left: -15px; border-radius: 2px; background: rgba(255,255,255,.6); }
+.lt-pad[data-look="edge"] .lt-obj, .lt-pad[data-look="cards"] .lt-obj { min-width: 96px; height: 50px; border-radius: 10px; box-shadow: 6px 4px 0 -1px rgba(255,255,255,.12); }
+.lt-pad[data-look="fade"] .lt-obj { opacity: .45; }
+.lt-pad.lt-press .lt-obj { transform: scale(.94); background: rgba(127,231,255,.22); }
+.lt-pad.lt-done { border-style: solid; border-color: var(--brand-green, #8dffb5); background: rgba(141,255,181,.1); cursor: default; }
+.lt-pad.lt-done .lt-obj { opacity: 1; background: rgba(141,255,181,.2); border-color: rgba(141,255,181,.55); }
+.lt-padhow { position: absolute; right: 10px; bottom: 6px; font-size: 11px; line-height: 14px; font-weight: 600; color: var(--brand-cyan, #7fe7ff); pointer-events: none; }
+.lt-pad.lt-done .lt-padhow { color: var(--brand-green, #8dffb5); }
+.lt-padnote { margin: 0 2px 10px; font-size: 12px; line-height: 16px; opacity: .8; }
+.lt-hand { position: absolute; left: 50%; top: 50%; width: 26px; height: 26px; margin: -13px 0 0 -13px; pointer-events: none; }
+.lt-hand > span { position: absolute; inset: 0; border-radius: 50%; border: 2px solid rgba(255,255,255,.9); background: rgba(255,255,255,.28); box-sizing: border-box; animation: lt-h-tap 1.6s ease-in-out infinite; }
+.lt-hand .lt-hand2 { display: none; }
+[data-how="double"] .lt-hand > span { animation-name: lt-h-double; }
+[data-how="hold"] .lt-hand > span { animation-name: lt-h-hold; animation-duration: 2s; }
+[data-how="hold"] .lt-hand .lt-hand2 { display: block; background: none; animation-name: lt-h-ring; animation-duration: 2s; }
+[data-how="swipe"] .lt-hand > span, [data-how="drag"] .lt-hand > span { animation-name: lt-h-side; animation-duration: 1.8s; }
+.lt-pad[data-look="sheet"] .lt-hand > span { animation-name: lt-h-down; }
+[data-how="pinch"] .lt-hand > span { animation-name: lt-h-pinch-a; animation-duration: 1.8s; }
+[data-how="pinch"] .lt-hand .lt-hand2 { display: block; animation-name: lt-h-pinch-b; animation-duration: 1.8s; }
+@keyframes lt-h-tap { 0%, 100% { transform: scale(1); opacity: .35; } 40% { transform: scale(.7); opacity: 1; } 60% { transform: scale(1.1); opacity: .6; } }
+@keyframes lt-h-double { 0%, 100% { transform: scale(1); opacity: .35; } 15%, 45% { transform: scale(.7); opacity: 1; } 30%, 60% { transform: scale(1.05); opacity: .7; } }
+@keyframes lt-h-hold { 0%, 100% { transform: scale(1); opacity: .35; } 20%, 75% { transform: scale(.72); opacity: 1; } }
+@keyframes lt-h-ring { 0%, 20% { transform: scale(.7); opacity: 0; } 30% { opacity: .9; } 75% { transform: scale(2); opacity: 0; } 100% { opacity: 0; } }
+@keyframes lt-h-side { 0% { transform: translateX(-34px) scale(.8); opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { transform: translateX(34px) scale(.8); opacity: 0; } }
+@keyframes lt-h-down { 0% { transform: translateY(-20px) scale(.8); opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { transform: translateY(20px) scale(.8); opacity: 0; } }
+@keyframes lt-h-pinch-a { 0%, 100% { transform: translate(-6px, 4px); opacity: .5; } 50% { transform: translate(-26px, 14px); opacity: 1; } }
+@keyframes lt-h-pinch-b { 0%, 100% { transform: translate(6px, -4px); opacity: .5; } 50% { transform: translate(26px, -14px); opacity: 1; } }
+.lt-later { display: flex; align-items: center; gap: 10px; margin: -4px 2px 10px; }
+.lt-latertag { font-size: 12px; line-height: 16px; font-weight: 600; color: var(--brand-cyan, #7fe7ff); }
+.lt-laterbox { position: relative; flex: 0 0 auto; width: 92px; height: 30px; border-radius: 10px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14); overflow: hidden; }
+.lt-laterbox .lt-obj { position: absolute; left: 50%; top: 50%; min-width: 0; width: 16px; height: 16px; padding: 0; margin: -8px 0 0 -8px; border-radius: 50%; }
+.lt-laterbox .lt-hand { transform: scale(.62); }
+.lt-later[data-how="swipe"] .lt-laterbox .lt-obj, .lt-later[data-how="drag"] .lt-laterbox .lt-obj { opacity: .4; }
+@media (max-height: 760px) { .lt-pad { height: 62px; } .lt-pad[data-look="mic"] .lt-obj, .lt-pad[data-look="joystick"] .lt-obj, .lt-pad[data-look="ring"] .lt-obj { height: 46px; min-width: 46px; } .lt-padnote { margin-bottom: 8px; } }
+@media (max-height: 600px) { .lt-padnote { display: none; } .lt-pad { height: 54px; } }
+@media (prefers-reduced-motion: reduce) { .lt-hand > span { animation: none !important; opacity: .8; } .lt-hand .lt-hand2 { display: none; } }
 /* hands-free (Oct 22 2026): Pause / Play shows only while the speaker is on; a thin line fills during the pause before the next card */
 .lt-left { display: flex; gap: 8px; align-items: center; }
 .lt-tour.lt-voice .lt-btns { flex-wrap: wrap; row-gap: 8px; }   /* narrow phone in German/Spanish: Skip + Next drop to a second line instead of off screen */

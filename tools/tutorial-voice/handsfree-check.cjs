@@ -177,7 +177,8 @@ async function layout(browser, engine, dev, lang, url, fails, lines) {
     try {
         await boot(page, url);
         const bad = [];
-        for (const at of ['hello', 'touch', 'look', 'scan', 'scan-in', 'deep', 'snap', 'done']) {
+        const CARDS = ['hello', 'touch', 'look', 'scan', 'scan-in', 'deep', 'snap', 'done', 'water-hold', 'voice', 'sheets', 'cook-swipe', 'log-meal', 'world-sound', 'chat', 'settings-me', 'affiliates'];
+        for (const at of CARDS) {
             await page.evaluate(a => { window.__clipMs = 60000; window.LowiTutorial.start({ from: 'check', at: a }); }, at);
             await sleep(at === 'scan' ? 2800 : 1300);
             const r = await page.evaluate(() => {
@@ -203,7 +204,71 @@ async function layout(browser, engine, dev, lang, url, fails, lines) {
         const g = await state(page);
         if (g.gum || g.cam) bad.push('camera asked ' + g.gum + ', scanner ' + g.cam);
         bad.forEach(b => fails.push(tag + ': ' + b));
-        lines.push(`${tag}: ${bad.length ? bad.length + ' problem(s)' : 'ok'} on 8 cards`);
+        lines.push(`${tag}: ${bad.length ? bad.length + ' problem(s)' : 'ok'} on ${CARDS.length} cards`);
+    } finally { await ctx.close(); }
+}
+
+/* F (item 38): every practice card takes its gesture on the pad (synthetic pointer events, two pointers for pinch), shows Nice,
+   changes no app data, asks for no camera/mic, and moves on by itself; untouched, it still moves on in hands-free mode.
+   Every later card shows its "after the tour" motion. */
+async function practice(browser, engine, dev, url, fails, lines) {
+    const tag = `${engine}/${dev}/F practice + later`;
+    const { ctx, page } = await newPage(browser, dev, 'en');
+    try {
+        await boot(page, url);
+        const ids = await page.evaluate(() => window.LowiTutorialSteps.STEPS.filter(s => s.practice).map(s => s.id));
+        const later = await page.evaluate(() => window.LowiTutorialSteps.STEPS.filter(s => s.later && !s.peek).map(s => s.id));
+        const bad = []; let ok = 0;
+        const before = await page.evaluate(() => localStorage.getItem('lowispike.v2'));
+        for (const at of ids) {
+            await page.evaluate(a => { window.__clipMs = 300; window.LowiTutorial.start({ from: 'check', at: a }); }, at);
+            await sleep(900);
+            const r = await page.evaluate(async () => {
+                const pad = document.querySelector('#ltTour .lt-card .lt-pad'); if (!pad) return { err: 'no pad' };
+                const how = pad.dataset.how, b = pad.getBoundingClientRect(), cx = b.left + b.width / 2, cy = b.top + b.height / 2;
+                const ev = (t, id, x, y) => pad.dispatchEvent(new PointerEvent(t, { pointerId: id, clientX: x, clientY: y, bubbles: true, cancelable: true, pointerType: 'touch', isPrimary: id === 1 }));
+                const w = ms => new Promise(r => setTimeout(r, ms));
+                const lit = !!document.querySelector('#ltTour .lt-spot:not([hidden])') && getComputedStyle(document.querySelector('#ltTour .lt-spot')).display !== 'none';
+                if (how === 'tap' || how === 'touch') { ev('pointerdown', 1, cx, cy); await w(60); ev('pointerup', 1, cx, cy); }
+                else if (how === 'double') { for (let k = 0; k < 2; k++) { ev('pointerdown', 1, cx, cy); await w(50); ev('pointerup', 1, cx, cy); await w(90); } }
+                else if (how === 'hold') { ev('pointerdown', 1, cx, cy); await w(800); ev('pointerup', 1, cx, cy); }
+                else if (how === 'drag' || how === 'swipe') { ev('pointerdown', 1, cx - 50, cy); for (let k = 1; k <= 8; k++) { await w(16); ev('pointermove', 1, cx - 50 + k * 13, cy + (how === 'drag' ? k * 2 : 0)); } ev('pointerup', 1, cx + 54, cy); }
+                else if (how === 'pinch') { ev('pointerdown', 1, cx - 10, cy); ev('pointerdown', 2, cx + 10, cy); for (let k = 1; k <= 6; k++) { await w(16); ev('pointermove', 1, cx - 10 - k * 6, cy); ev('pointermove', 2, cx + 10 + k * 6, cy); } ev('pointerup', 1, cx - 46, cy); ev('pointerup', 2, cx + 46, cy); }
+                await w(150);
+                const p2 = document.querySelector('#ltTour .lt-card .lt-pad');
+                return { how, done: !!(p2 && p2.classList.contains('lt-done')), nice: p2 ? p2.textContent : '', through: document.documentElement.querySelector('#ltTour.lt-try') ? 1 : 0, lit };
+            });
+            if (r.err) { bad.push(at + ': ' + r.err); continue; }
+            if (!r.done) bad.push(at + ': ' + r.how + ' on the pad not counted');
+            if (r.through) bad.push(at + ': touches pass through the dim on a practice card');
+            await sleep(2200);
+            const st = await state(page);
+            if (st.step === at) bad.push(at + ': did not move on after the try'); else ok++;
+        }
+        /* untouched practice card still moves on by itself (hands-free) */
+        await page.evaluate(() => { window.__clipMs = 300; window.LowiTutorial.start({ from: 'check', at: 'water-hold' }); });
+        await sleep(400); await page.evaluate(() => { const o = document.querySelector('#ltTour'); o && o.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })); });
+        const t0 = Date.now(); let moved = false;
+        while (Date.now() - t0 < 9000) { await sleep(300); if ((await state(page)).step !== 'water-hold') { moved = true; break; } }
+        if (!moved) bad.push('water-hold: untouched, did not move on by itself');
+        let shown = 0;
+        for (const at of later) {
+            await page.evaluate(a => { window.__clipMs = 60000; window.LowiTutorial.start({ from: 'check', at: a }); }, at);
+            await sleep(500);
+            const v = await page.evaluate(() => { const l = document.querySelector('#ltTour .lt-card .lt-later'); return l ? (getComputedStyle(l).display !== 'none' && l.getBoundingClientRect().height > 10) : false; });
+            if (v) shown++; else bad.push(at + ': no after-the-tour motion');
+        }
+        const g = await state(page);
+        const after = await page.evaluate(() => localStorage.getItem('lowispike.v2'));
+        if (JSON.parse(after || '{}').logs + '' !== JSON.parse(before || '{}').logs + '') bad.push('app logs changed');
+        if (g.gum || g.cam) bad.push('camera/mic asked ' + g.gum + ', scanner ' + g.cam);
+        if (page.errs.length) bad.push('page errors: ' + page.errs.slice(0, 3).join(' | '));
+        bad.forEach(b => fails.push(tag + ': ' + b));
+        lines.push(`${tag}: ${ok}/${ids.length} practice cards took the gesture and moved on; untouched one moved on ${moved ? 'by itself' : 'NOT'}; ${shown}/${later.length} later cards show the motion`);
+        await page.evaluate(() => { window.__clipMs = 60000; window.LowiTutorial.start({ from: 'check', at: 'voice' }); }); await sleep(900);
+        await page.screenshot({ path: path.join(OUT, `${engine}-${dev.replace(/\W+/g, '_')}-practice-voice.png`) });
+        await page.evaluate(() => { window.LowiTutorial.start({ from: 'check', at: 'chat' }); }); await sleep(1500);
+        await page.screenshot({ path: path.join(OUT, `${engine}-${dev.replace(/\W+/g, '_')}-later-chat.png`) });
     } finally { await ctx.close(); }
 }
 
@@ -220,6 +285,7 @@ async function layout(browser, engine, dev, lang, url, fails, lines) {
             await pause(browser, engine, 'iPhone 13', url, fails, lines);
             await camera(browser, engine, 'iPhone 13', url, fails, lines);
             for (const lang of ['en', 'de', 'es']) await layout(browser, engine, 'iPhone SE', lang, url, fails, lines);
+            await practice(browser, engine, 'iPhone 13', url, fails, lines);
             if (arg('full', '1') !== '0') await full(browser, engine, 'iPhone 13', url, fails, lines);
         } finally { await browser.close(); }
         lines.forEach(l => console.log(l)); lines.length = 0;

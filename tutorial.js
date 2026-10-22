@@ -59,7 +59,11 @@
     const step = () => list[i] || null;
     function emit(extra) { try { W.dispatchEvent(new CustomEvent('lowi:tutorial', { detail: Object.assign({ on, step: step() && step().id }, extra || {}) })); } catch (e) { } }
 
+    /* item 38: a card the user can try on (the real control, or a practice pad on the card) */
+    const canTry = s => !!(s && (s.tryIt || s.practice));
+    const wants = s => (s && (s.tryIt || s.practice) || {}).how;
     function target(s) {
+        if (s && s.practice) return null;   /* the practice pad is the thing to touch: no spotlight on a real control that ignores touches */
         for (const sel of (s && s.target) || []) { let el = null; try { el = $(sel); } catch (e) { } if (el && vis(el)) { const r = el.getBoundingClientRect(); if (r.bottom > 0 && r.right > 0 && r.top < innerHeight && r.left < innerWidth) return el; } }
         return null;
     }
@@ -84,7 +88,7 @@
             '<span class="lt-meta"><small class="lt-count">' + esc(U.label + ' \u00b7 ' + S.fill(U.of, { i: i + 1, n: list.length })) + '</small>' +
             '<b class="lt-title" id="ltTitle">' + esc(S.text(s, 'title', l, vars)) + '</b></span>' +
             (last ? '' : '<button type="button" class="lt-skipall" data-lt="skipall">' + esc(U.skipAll) + '</button>') + '</div>' +
-            '<p class="lt-text" id="ltText">' + esc(S.text(s, 'text', l, vars)) + '</p>' + tryHtml(s, U) + peekHtml(s, U) +
+            '<p class="lt-text" id="ltText">' + esc(S.text(s, 'text', l, vars)) + '</p>' + tryHtml(s, U) + peekHtml(s, U) + padHtml(s, U) + laterHtml(s, U) +
             '<div class="lt-btns"><span class="lt-left">' +
             (i > 0 ? '<button type="button" class="lt-btn lt-ghost" data-lt="back">' + esc(U.back) + '</button>' : '') +
             '<button type="button" class="lt-btn lt-ghost lt-pause" data-lt="pause" aria-pressed="' + paused + '" aria-label="' + esc(paused ? (U.play || 'Play') : (U.pause || 'Pause')) + '">' + (paused ? PLAY_SVG : PAUSE_SVG) + '</button></span>' +
@@ -120,6 +124,65 @@
             '<div class="ltp-deep"><b>' + esc(P.deep) + '</b><small>' + esc(P.deepS) + '</small></div>' +
             '</div><p class="lt-peeknote">' + esc(P.note) + '</p>';
     }
+    /* item 38 (Oct 22 2026, Emmanuel: "In tutorial it tells the person to do stuff but then you can't actually do the stuff so either make
+       sure they understand they can play after tutorial or let them actually do the gesture"). practice: a small look-alike on the card
+       that takes the gesture (nothing in the app changes, no mic, no camera). later: a small looping hand showing the motion, tagged
+       "After the tour", on cards whose text says it is done after the tour. */
+    const HAND = '<span class="lt-hand" aria-hidden="true"><span class="lt-hand1"></span><span class="lt-hand2"></span></span>';
+    function padHtml(s, U) {
+        const k = s && s.practice; if (!k) return '';
+        const E = S.UI.en, done = tried === i, how = k.how, look = k.look;
+        const name = ((U.looks || E.looks)[look]) || look, after = ((U.done || E.done)[look]) || name;
+        const verb = ((U.how || E.how)[how]) || how;
+        return '<div class="lt-pad' + (done ? ' lt-done' : '') + '" data-how="' + esc(how) + '" data-look="' + esc(look) + '" role="button" tabindex="0" aria-label="' + esc(verb + ': ' + name) + '">' +
+            '<span class="lt-obj"><b>' + esc(done ? after : name) + '</b></span>' + (done ? '' : HAND) +
+            '<small class="lt-padhow">' + esc(done ? U.nice : verb) + '</small></div>' +
+            '<p class="lt-padnote">' + esc(U.practice || E.practice) + '</p>';
+    }
+    function laterHtml(s, U) {
+        const how = s && s.later; if (!how || s.peek) return '';
+        return '<div class="lt-later" data-how="' + esc(how) + '" aria-hidden="true"><span class="lt-latertag">' + esc(U.laterTag || S.UI.en.laterTag) + '</span>' +
+            '<span class="lt-laterbox"><span class="lt-obj"></span>' + HAND + '</span></div>';
+    }
+    /* the practice pad's own gesture detection (the window watchers ignore touches on the card) */
+    let pad = null, padTaps = [], padT = 0;
+    function padWire(card) {
+        const el = card && card.querySelector('.lt-pad'); pad = null; if (!el || tried === i) return;
+        const P = new Map(); let d = null, pinch0 = 0;
+        const fire = k => { clearT(padT); d = null; didGesture(k); };
+        el.addEventListener('pointerdown', e => {
+            try { el.setPointerCapture(e.pointerId); } catch (x) { }
+            P.set(e.pointerId, { x: e.clientX, y: e.clientY });
+            if (P.size >= 2) { const a = [...P.values()]; pinch0 = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y); d = null; clearT(padT); return; }
+            d = { x: e.clientX, y: e.clientY, t: Date.now(), moved: false };
+            el.classList.add('lt-press');
+            didGesture('touch');
+            clearT(padT); padT = setTimeout(() => { if (d && !d.moved) fire('hold'); }, TRY.HOLD);
+        });
+        el.addEventListener('pointermove', e => {
+            if (!P.has(e.pointerId)) return;
+            P.set(e.pointerId, { x: e.clientX, y: e.clientY });
+            if (P.size >= 2) { const a = [...P.values()]; if (Math.abs(Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y) - pinch0) > 18) fire('pinch'); return; }
+            if (!d) return;
+            const dx = e.clientX - d.x, dy = e.clientY - d.y, m = Math.hypot(dx, dy);
+            if (m > TRY.MOVE) { d.moved = true; clearT(padT); }
+            if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) fire('swipe');
+            else if (m > TRY.DRAG) fire('drag');
+        });
+        const up = e => {
+            P.delete(e.pointerId); el.classList.remove('lt-press'); clearT(padT);
+            const x = d; d = null;
+            if (!x || x.moved || Date.now() - x.t > TRY.TAP || e.type === 'pointercancel') return;
+            const now = Date.now(); padTaps = padTaps.filter(t => now - t < TRY.MULTI * 2); padTaps.push(now);
+            if (padTaps.length >= 2 && padTaps[padTaps.length - 1] - padTaps[padTaps.length - 2] < TRY.MULTI) { padTaps = []; didGesture('double'); }
+            didGesture('tap');
+        };
+        el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+        el.addEventListener('gesturestart', e => { try { e.preventDefault(); } catch (x) { } fire('pinch'); });
+        el.addEventListener('wheel', e => { if (e.ctrlKey) { try { e.preventDefault(); } catch (x) { } fire('pinch'); } }, { passive: false });
+        el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); didGesture(wants(step())); } });
+        pad = el;
+    }
     const PAUSE_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><rect x="6" y="5" width="4" height="14" rx="1.2" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1.2" fill="currentColor"/></svg>';
     const PLAY_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg>';
     let focusSel = '';
@@ -130,8 +193,9 @@
         /* a Try it now card read to the end without its cue words (or long after them): the button wiggles now, at most twice per card */
         if (on && !held && s && s.tryIt && tried !== at && (wig.at !== at || wig.n === 0 || (wig.n === 1 && Date.now() - wig.t > 2500))) wiggle('end');
         if (!on || held || paused || !s || !voiceOn() || at >= list.length - 1 || s.action === 'claim') return;
-        /* hands-free never moves past a Try it now card sooner than AUTO.TRY after its last wiggle */
-        const wait = s.tryIt && tried !== at ? Math.max(AUTO.GAP, AUTO.TRY - (wig.at === at && wig.t ? Date.now() - wig.t : 0)) : AUTO.GAP;
+        if (tried === at) return;   /* tried: didGesture already moves on (or waits behind the sheet it opened) */
+        /* hands-free never moves past a Try it now card sooner than AUTO.TRY after its last wiggle; a practice card gets AUTO.TRY too */
+        const wait = s.tryIt ? Math.max(AUTO.GAP, AUTO.TRY - (wig.at === at && wig.t ? Date.now() - wig.t : 0)) : canTry(s) ? AUTO.TRY : AUTO.GAP;
         const card = root && root.querySelector('.lt-card');
         if (card && !reduced()) { card.style.setProperty('--lt-auto', wait + 'ms'); card.classList.remove('lt-autogo'); void card.offsetWidth; card.classList.add('lt-autogo'); }
         autoT = setTimeout(() => { autoT = 0; if (on && !held && !paused && i === at && voiceOn()) go(at + 1, 'auto'); }, wait);
@@ -250,13 +314,16 @@
     }
     function renderTry(s, U) {
         const card = root && root.querySelector('.lt-card'); if (!card) return;
-        const can = !!(s && s.tryIt), done = can && tried === i;
-        root.classList.toggle('lt-try', can && !done); root.classList.toggle('lt-tried', done);
+        const real = !!(s && s.tryIt), can = canTry(s), done = can && tried === i;
+        root.classList.toggle('lt-try', real && !done); root.classList.toggle('lt-tried', real && done);
+        root.classList.toggle('lt-practice', !!(s && s.practice)); root.classList.toggle('lt-later-on', !!(s && s.later));
+        if (s && s.practice) padWire(card);
         if (!can) return;
     }
     function didGesture(kind) {
         const s = step();
-        if (!on || held || !s || !s.tryIt || tried === i || !S.tryMatch(s.tryIt.how, kind)) return;
+        if (!on || held || !canTry(s) || tried === i || !S.tryMatch(wants(s), kind)) return;
+        cancelAuto();
         tried = i; render(); emit({ tried: s.id, gesture: kind });
         const at = i; clearT(tryNext);
         tryNext = setTimeout(() => { if (on && !held && tried === at && i === at && at < list.length - 1) go(at + 1, 'tried'); }, 1500);

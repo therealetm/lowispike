@@ -147,8 +147,11 @@
     /* Workouts is the Move tab behind the Home Move bubble. The other five have no visible way in on Home or the tabs today (the
        iPhone run found the Home zoom and gift hidden, the For You and Care board pills hidden, and no Finds chip in the scanner), so
        they keep a light way in: one folded "More places" row under YOU (EXPLORE_LIGHT). */
-    const EXPLORE_LIGHT = ['foryou', 'care', 'map', 'gift', 'hunt'];
-    const EXPLORE_MOVED = { workouts: 'Home Move bubble', foryou: 'hub: More places', care: 'hub: More places', map: 'hub: More places', gift: 'hub: More places', hunt: 'hub: More places' };
+    /* Oct 22 2026, 5:40 PM (Emmanuel: "Remove the entire 'More places' section from the Community long-press menu, including all its
+       entries"): the folded row is gone. For You stays in Cook (Shuffle | For You | Swipe), the Care board stays in Move (card under the
+       Move title); World map, Gift of the day and Shopping hunt are simply not in the hub any more (their code and routes stay). */
+    const EXPLORE_LIGHT = [];
+    const EXPLORE_MOVED = { workouts: 'Home Move bubble', foryou: 'Cook > For You switch', care: 'Move > Care board card', map: 'out of the hub (Oct 22)', gift: 'out of the hub (Oct 22)', hunt: 'out of the hub (Oct 22)' };
     const MORE_GROUPS = { go: COMMUNITY_PLACES.you.concat(['foryou', 'care', 'workouts', 'map', 'gift', 'hunt']), set: [] };
     const MORE = MORE_GROUPS.go.concat(MORE_GROUPS.set);
     /* the slim Settings (a hold on the Community bubble): the switches, the language and the account, nothing else */

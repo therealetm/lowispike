@@ -21,9 +21,10 @@ test('hub groups: YOU, then Settings without World sound, then Delete account al
     assert.deepStrictEqual(M.groups(id => id === 'tutorial').map(x => x.key), ['settings'], 'empty groups drop');
 });
 
-test('every former Explore place says where it is reached now; the ones nothing else reaches sit folded under More places', () => {
+test('every former Explore place says where it is reached now; the More places row is gone (Emmanuel, Oct 22 5:40 PM)', () => {
     for (const id of ['foryou', 'care', 'workouts', 'map', 'gift', 'hunt']) assert.ok(typeof SS.EXPLORE_MOVED[id] === 'string' && SS.EXPLORE_MOVED[id].length > 3, id);
-    assert.deepStrictEqual(M.groups(() => true)[0].more, ['foryou', 'care', 'map', 'gift', 'hunt']);
+    assert.deepStrictEqual(M.groups(() => true)[0].more, [], 'no More places entries');
+    assert.deepStrictEqual(SS.EXPLORE_LIGHT, [], 'no folded More places row');
     assert.ok(!SS.EXPLORE_LIGHT.includes('workouts'), 'Workouts is the Move bubble');
     assert.match(SRC, /data-cme="more" aria-expanded="' \+ moreOpen/);
     assert.match(SRC, /lastFocus = D\.activeElement; asking = false; moreOpen = false;/, 'folded each time the hub opens');

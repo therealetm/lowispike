@@ -22,9 +22,9 @@ for (const ms of [700, 2500]) {
     const h = await hub(); console.log('[cs] hold ' + ms + ' ' + JSON.stringify(h));
     if (!h) { fail('hold ' + ms + ': hub not open'); continue; }
     if (h.old) fail('hold ' + ms + ': old Settings sheet opened too');
-    const want = ['close', 'me', 'body', 'weight', 'more', 'theme', 'look', 'en', 'de', 'es', 'tutorial', 'account', 'deleteAccount'];
+    const want = ['close', 'me', 'body', 'weight', 'theme', 'look', 'en', 'de', 'es', 'tutorial', 'account', 'deleteAccount'];
     for (const id of want) if (!h.rows.includes(id)) fail('hub missing ' + id);
-    for (const id of ['worldSound', 'workouts', 'settings']) if (h.rows.includes(id)) fail('hub still has ' + id);
+    for (const id of ['worldSound', 'workouts', 'settings', 'more', 'foryou', 'care', 'map', 'gift', 'hunt']) if (h.rows.includes(id)) fail('hub still has ' + id);
     if (h.rows[h.rows.length - 1] !== 'deleteAccount') fail('Delete account is not last: ' + h.rows.join(','));
     if (!/\d{8}-\d{6}/.test(h.ver)) fail('no version line');
     if (!h.fit) fail('hub runs off screen');
@@ -47,11 +47,8 @@ const de = await hub(); console.log('[cs] de ' + JSON.stringify(de && de.secs) +
 if (!de || !/Einstellungen/.test(de.secs.join(' '))) fail('language did not switch in the hub');
 await shot('hub-de');
 await tapEl('#cmeSheet [data-lang="en"]'); await sleep(900);
-await page.evaluate(() => document.querySelector('[data-cme="more"]').scrollIntoView({ block: 'center' })); await sleep(300);
-await tapEl('[data-cme="more"]'); await sleep(400);
-const chips = await page.evaluate(() => [...document.querySelectorAll('#cmeMore:not([hidden]) .cme-chip')].map(c => c.getAttribute('data-cme') + ':' + Math.round(c.getBoundingClientRect().width)));
-console.log('[cs] more places ' + JSON.stringify(chips)); if (chips.length !== 5) fail('More places did not unfold 5 chips');
-await shot('hub-more');
+const more = await page.evaluate(() => ({ row: !!document.querySelector('#cmeSheet [data-cme="more"]'), chips: document.querySelectorAll('#cmeSheet .cme-chip').length, txt: /More places|Weitere Orte|M\u00e1s lugares/.test((document.getElementById('cmeSheet') || {}).textContent || '') }));
+console.log('[cs] more places ' + JSON.stringify(more)); if (more.row || more.chips || more.txt) fail('More places still in the hub');
 await page.evaluate(() => document.querySelector('[data-cme="deleteAccount"]').scrollIntoView({ block: 'center' })); await sleep(400);
 await tapEl('[data-cme="deleteAccount"]'); await sleep(500);
 const ask = await page.evaluate(() => ({ go: !!document.querySelector('#cmeSheet [data-cme="delGo"]'), keep: !!document.querySelector('#cmeSheet [data-cme="delCancel"]'), tx: (document.querySelector('.cme-del-tx') || {}).textContent || '' }));
@@ -67,12 +64,13 @@ ways.gift = !!(await page.evaluate(() => !!document.querySelector('.hs-gift')));
 ways.giftVisible = !!(await vis('.hs-gift'));
 ways.workouts = !!(await vis('#whHud [data-orbit="move"]'));
 await page.evaluate(() => window.goTab('shelf')); await sleep(1500);
-ways.foryou = !!(await vis('.nm-pill-fy'));
+ways.foryou = !!(await vis('#tab-shelf .ck-fy'));
 await page.evaluate(() => window.goTab('move')); await sleep(1500);
-ways.care = !!(await vis('.nm-pill-lb'));
+ways.care = !!(await vis('#tab-move .nm-lbcard'));
 ways.hunt = await page.evaluate(() => !!document.querySelector('.ss-entry') && !!document.querySelector('.gh-entry') || !!document.getElementById('tdShop'));
 console.log('[cs] explore ways ' + JSON.stringify(ways));
 if (!ways.workouts) fail('no Move bubble for Workouts');
+if (!ways.foryou) fail('no For You in Cook'); if (!ways.care) fail('no Care board in Move');
 /* 4. Community profile picture opens the same hub */
 await page.evaluate(() => window.goTab('foryou')); await sleep(3000);
 if (await tapEl('#pfBtn')) { await sleep(700); const h = await hub(); console.log('[cs] pfBtn hub ' + !!h); if (!h) fail('profile picture in Community did not open the hub'); else await shot('hub-community'); }

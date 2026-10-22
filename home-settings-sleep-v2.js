@@ -140,8 +140,16 @@
        Go to = places, Settings = switches. env.has(id) says whether its real route exists right now. */
     /* Oct 21 2026 (Emmanuel: Community holds the profile and the places, Settings only the switches): the places that no bubble reaches
        now live in Community (community-me.js reads COMMUNITY_PLACES); World sound is a sound setting, so it moved into Settings */
-    const COMMUNITY_PLACES = { you: ['me', 'body', 'weight'], places: ['foryou', 'care', 'workouts', 'map', 'gift', 'hunt'] };
-    const MORE_GROUPS = { go: COMMUNITY_PLACES.you.concat(COMMUNITY_PLACES.places), set: [] };
+    /* Oct 22 2026 (Emmanuel: "remove the explore things and have the more important things in there"): the profile hub drops its
+       Explore list and carries the Settings instead (community-me.js). Each former Explore place keeps its own way in: EXPLORE_MOVED
+       says where (checked in tools/community-settings/hub-b.js). */
+    const COMMUNITY_PLACES = { you: ['me', 'body', 'weight'], places: [] };
+    /* Workouts is the Move tab behind the Home Move bubble. The other five have no visible way in on Home or the tabs today (the
+       iPhone run found the Home zoom and gift hidden, the For You and Care board pills hidden, and no Finds chip in the scanner), so
+       they keep a light way in: one folded "More places" row under YOU (EXPLORE_LIGHT). */
+    const EXPLORE_LIGHT = ['foryou', 'care', 'map', 'gift', 'hunt'];
+    const EXPLORE_MOVED = { workouts: 'Home Move bubble', foryou: 'hub: More places', care: 'hub: More places', map: 'hub: More places', gift: 'hub: More places', hunt: 'hub: More places' };
+    const MORE_GROUPS = { go: COMMUNITY_PLACES.you.concat(Object.keys(EXPLORE_MOVED)), set: [] };
     const MORE = MORE_GROUPS.go.concat(MORE_GROUPS.set);
     /* the slim Settings (a hold on the Community bubble): the switches, the language and the account, nothing else */
     const SETTINGS_IDS = ['theme', 'look', 'worldSound', 'language', 'tutorial'], ACCOUNT_IDS = ['account', 'deleteAccount'];
@@ -221,7 +229,7 @@
         return [{ key: 'main', ids: SETTINGS_IDS.filter(has) }, { key: 'account', ids: ACCOUNT_IDS.filter(has) }].filter(g => g.ids.length);
     }
 
-    const core = { BANDS, FILL, SHELL_TOKEN, KEEP_DAYS, MORE, MORE_GROUPS, MORE_REMOVED, COMMUNITY_PLACES, SETTINGS_IDS, ACCOUNT_IDS, HINT_KEY, HOLD_MS, moreGroups, placePanel, TX, dayKey, readSleep, writeSleep, clearSleep, sleepView, fan, entries, tapIntent, holdIntent, pageGroups, rowAction, versionLabel };
+    const core = { BANDS, FILL, SHELL_TOKEN, KEEP_DAYS, MORE, MORE_GROUPS, MORE_REMOVED, COMMUNITY_PLACES, EXPLORE_MOVED, EXPLORE_LIGHT, SETTINGS_IDS, ACCOUNT_IDS, HINT_KEY, HOLD_MS, moreGroups, placePanel, TX, dayKey, readSleep, writeSleep, clearSleep, sleepView, fan, entries, tapIntent, holdIntent, pageGroups, rowAction, versionLabel };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!root || !root.document) return;
 
@@ -423,6 +431,9 @@
     }
     function show(kind) {
         const bubbleKey = kind === 'more' || kind === 'page' ? 'settings' : kind;
+        /* Oct 22 2026: Settings live in the profile hub now (community-me.js), so every way to the old sheet opens the hub; the old
+           sheet stays only as the fallback when the hub is not loaded */
+        if (kind === 'page') { const M = root.LowiCommunityMe; if (M && fn(M, 'open')) { close(false); try { if (M.open()) return true; } catch (e) { console.warn('[settings-sleep] hub', e); } } }
         const b = findBubble(bubbleKey) || (kind === 'page' ? D.body : null); if (!b) return false;
         if (kind === 'page') return showPage(b);
         const ids = entries(kind, { has: env.has, logged: kind === 'sleep' && !!sleepToday() });
@@ -540,6 +551,13 @@
         if (btn.disabled) return;
         if (guest) { wipeDevice(); return; }
         btn.disabled = true; const lb = btn.querySelector('.ss2-lbl'); if (lb) lb.textContent = T.delBusy;
+        const ok = await serverDelete();
+        if (ok) return;
+        btn.disabled = false; if (lb) lb.textContent = T.delGo;
+        if (tx) { tx.textContent = T.delFail; tx.setAttribute('role', 'alert'); }
+    }
+    /* the one server call, shared by the old sheet and the profile hub: true only after the server said ok (then the phone is cleared) */
+    async function serverDelete() {
         let ok = false;
         try {
             const X = cloud(), c = X && fn(X, 'client') ? X.client() : null;
@@ -548,9 +566,8 @@
                 ok = !!(r && !r.error && r.data && r.data.ok);
             }
         } catch (e) { ok = false; }
-        if (ok) { try { const X = cloud(), c = X.client(); if (c && c.auth) await c.auth.signOut({ scope: 'local' }); } catch (e) { } wipeDevice(); return; }
-        btn.disabled = false; if (lb) lb.textContent = T.delGo;
-        if (tx) { tx.textContent = T.delFail; tx.setAttribute('role', 'alert'); }
+        if (ok) { try { const X = cloud(), c = X.client(); if (c && c.auth) await c.auth.signOut({ scope: 'local' }); } catch (e) { } wipeDevice(); return true; }
+        return false;
     }
     function pulse() { const b = findBubble('sleep'), tx = b && b.querySelector('.wh-cell-tx'); if (!tx) return; tx.classList.remove('ss2-pulse'); void tx.offsetWidth; tx.classList.add('ss2-pulse'); }
 
@@ -666,6 +683,10 @@
         openSettings: () => { detached = !H.classList.contains('wh-home') || H.classList.contains('wh-away'); return show('page'); },
         /* Community's profile panel (community-me.js) runs the places through the same routes */
         has: id => env.has(id), run: id => { const R = ROUTES[id]; if (!R) return false; try { R.run(); return true; } catch (e) { console.warn('[settings-sleep]', id, e); return false; } },
+        /* the profile hub (community-me.js) shows the Settings rows: their state, the version line and Delete account */
+        state: id => { const R = ROUTES[id]; try { return !!(R && R.toggle && R.toggle()); } catch (e) { return false; } },
+        version: () => { const bm = D.querySelector('meta[name="lowi-build"]'); return versionLabel(bm && bm.content, lang()); },
+        signedIn: () => signedIn(), wipeDevice: () => wipeDevice(), deleteAccount: () => serverDelete(),
         label: id => t()[id] || id, icon: id => (ICON[id] ? svg(id) : ''), hint: { shown: () => !!ls.get(HINT_KEY), show: () => { ls.set(HINT_KEY, ''); try { root.localStorage.removeItem(HINT_KEY); } catch (e) { } hintSince = 1; maybeHint(); } },
         sleep: { today: () => { const band = sleepToday(); return Object.assign({ day: dayKey() }, sleepView(band, lang())); }, set: band => setSleep(band), clear: () => setSleep(null) },
         available: () => ({ settings: entries('settings', env), more: entries('more', env) })

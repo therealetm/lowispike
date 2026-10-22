@@ -1,5 +1,5 @@
 /* Chat header + admin pinning probe (22 Oct 2026, Emmanuel's iPhone screenshot): opens Community > Chat > the room in simulated
-   phones and checks: no centre sparkle pill, back + members on one clean row, no pinned bar until something is pinned, then as the
+   phones and checks: no centre sparkle pill or room header (the shared Community bar is the only top bar), no pinned bar until something is pinned, then as the
    admin pins a message from its menu: the bar sits under the header (never over it), the first message starts below the bar,
    tapping the bar brings the message into view, Unpin hides the bar again. Day and Night.
    node tools/community-chat-pin/probe.cjs [outDir] [url] [devices]  -> screenshots + report.json, exit 1 on failure.
@@ -16,21 +16,22 @@ const until = async (p, fn, arg, ms = 8000) => { const t0 = Date.now(); let v; w
 const fail = (w, m) => { fails.push(w + ': ' + m); console.log('FAIL', w, m); };
 
 function head() {
+  /* item 38 shell (21:19 build): the room has no header of its own; the shared Community bar (.rm-bar with #secX, the name and
+     .rm-tabs) is the only top bar, so the pinned bar must start under the tab row and never cover the bar's buttons. */
   const q = s => document.querySelector(s), box = e => { if (!e) return null; const r = e.getBoundingClientRect(), s = getComputedStyle(e); return r.width > 1 && r.height > 1 && s.display !== 'none' && s.visibility !== 'hidden' ? { l: r.left, r: r.right, t: r.top, b: r.bottom, w: r.width, h: r.height } : null; };
   const hit = (a, b) => a && b && a.l < b.r - 1 && b.l < a.r - 1 && a.t < b.b - 1 && b.t < a.b - 1;
-  const back = box(q('#cgThread .cr-back')), mem = box(q('#cgThread .cr-members')), pill = box(q('#cgThread .cr-id')), title = box(q('#cgThread .cr-srt')), pin = box(q('#crPin'));
+  const pane = q('#cmPaneChat'), bar = box(pane && pane.querySelector('.rm-bar')), tabs = box(pane && pane.querySelector('.rm-tabs')) || box(q('.rm-tabs'));
+  const pill = box(q('#cgThread .cr-id')), rhead = box(q('#cgThread .cg-thead')), sparkle = [...document.querySelectorAll('#cgThread *')].some(e => /\u2728/.test(e.textContent || '') && e.children.length === 0 && box(e)), pin = box(q('#crPin'));
   const errs = [];
-  if (!back) errs.push('no back button'); if (!mem) errs.push('no members button');
-  if (pill) errs.push('centre pill still shows'); if (title && (title.w > 2 || title.h > 2)) errs.push('Community room title still visible ' + Math.round(title.w) + 'x' + Math.round(title.h));
-  if (back && mem && Math.abs((back.t + back.b) / 2 - (mem.t + mem.b) / 2) > 2) errs.push('back and members not on one row');
-  if (back && mem && hit(back, mem)) errs.push('back over members');
-  const headB = Math.max(back ? back.b : 0, mem ? mem.b : 0);
-  if (pin) { for (const [n, r] of [['back', back], ['members', mem]]) if (hit(pin, r)) errs.push('pinned bar covers ' + n); if (pin.t < headB) errs.push('pinned bar starts above the header bottom'); }
-  for (const f of ['tbTheme', 'pfBtn']) { const b = box(document.getElementById(f)); if (b) for (const [n, r] of [['back', back], ['members', mem], ['pin', pin]]) if (hit(b, r)) errs.push(f + ' covers ' + n); }
+  if (pill) errs.push('centre pill still shows'); if (rhead) errs.push('room header still shows'); if (sparkle) errs.push('sparkle still shows');
+  if (!tabs) errs.push('no shared tab row');
+  const headB = Math.max(tabs ? tabs.b : 0, bar ? bar.b : 0);
+  if (pin) { if (pin.t < headB - 1) errs.push('pinned bar starts above the shared bar bottom (' + Math.round(pin.t) + ' < ' + Math.round(headB) + ')'); }
+  for (const f of ['secX', 'pfBtn', 'tbTheme']) { const b = box(document.getElementById(f)); if (b && hit(b, pin)) errs.push('pinned bar covers ' + f); }
   const list = q('#cmList'); let first = null;
   if (list) { const lt = list.getBoundingClientRect().top; const top = parseFloat(getComputedStyle(list).paddingTop) || 0; first = lt + top; }
-  const below = pin ? pin.b : headB; if (first != null && first < below - 1) errs.push('first message starts under the ' + (pin ? 'pinned bar' : 'header') + ' (' + Math.round(first) + ' < ' + Math.round(below) + ')');
-  return { errs, pin: !!pin, headB: Math.round(headB), pinB: pin ? Math.round(pin.b) : 0, first: first == null ? null : Math.round(first), sw: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1 };
+  const below = pin ? pin.b : headB; if (first != null && first < below - 1) errs.push('first message starts under the ' + (pin ? 'pinned bar' : 'shared bar') + ' (' + Math.round(first) + ' < ' + Math.round(below) + ')');
+  return { errs, pin: !!pin, headB: Math.round(headB), pinB: pin ? Math.round(pin.b) : 0, pinT: pin ? Math.round(pin.t) : 0, first: first == null ? null : Math.round(first), sw: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1 };
 }
 async function run(device, light, lang) {
   const W = device + (light ? '/day' : '/night') + '/' + lang;

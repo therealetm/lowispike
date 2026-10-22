@@ -15,8 +15,9 @@ test('the strip behind the top bar and pinned bar is nearly opaque in Night and 
   assert.doesNotMatch(strip, /mask-image/);
 });
 
-test('item 38: the room top bar, the pinned banner and the recent-voices strip are gone', () => {
-  assert.match(css, /html body #tab-foryou #cmPaneChat#cmPaneChat\[data-room\] :is\(\.cg-thead\.cr-head,#crPin,#crCrew\)\{display:none!important\}/);
+test('item 38: the room top bar and the recent-voices strip are gone; the pinned banner only with an admin pin (chat-pin)', () => {
+  assert.match(css, /html body #tab-foryou #cmPaneChat#cmPaneChat\[data-room\] :is\(\.cg-thead\.cr-head,#crCrew\)\{display:none!important\}/);
+  assert.match(css, /html body #tab-foryou #cmPaneChat#cmPaneChat\[data-room\]:not\(\[data-pinned\]\) #crPin\{display:none!important\}/);
   assert.match(rule(P), /--cr-top:12px/);
 });
 

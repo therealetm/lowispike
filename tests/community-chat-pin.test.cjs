@@ -47,10 +47,12 @@ test('core: pin markers parse strictly, newest marker wins, unpin clears, marker
  assert.deepEqual(K.visible(ms.concat({id:'m1',uid:'b',t:'hi',ts:0}),[],[],'x').map(m=>m.id),['m1']);
 });
 
-test('nothing pinned: the bar stays hidden and the room starts right under back + members',async()=>{
+test('nothing pinned: the bar stays hidden and the room starts right under the shared Community bar',async()=>{
  const f=fixture({owner:true,rows:base});await f.scope('o');f.click({chat:'history'});await f.settle();
  assert.equal(f.nodes.crPin.hidden,true);assert.equal(f.nodes.crPin.innerHTML,'');assert.equal(f.el.dataset.pinned,undefined);
- assert.match(css,/\[data-room\]:not\(\[data-pinned\]\)\{--cr-top:60px\}/,'no empty gap for a bar that is not there');
+ assert.doesNotMatch(css,/\[data-room\]:not\(\[data-pinned\]\)\{--cr-top:60px\}/,'no empty gap for a bar that is not there');
+ assert.match(css,/\[data-room\]\[data-pinned\]\{--cr-top:66px\}/,'with a pin the list starts under the bar');
+ assert.match(css,/#cmList\.cm-list\.cm-list\{padding-top:var\(--cr-top,12px\)!important/,'the list padding follows the pin');
  assert.match(css,/\.cr-pin\[hidden\]\{display:none!important\}/);
 });
 

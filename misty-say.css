@@ -1,0 +1,73 @@
+/* misty-say (Oct 22, Emmanuel: "Misty's bubbles look bad. They don't fit the UI and they're so big.")
+   One look for everything Misty and the world guides say: Misty's speech bubble (praise.js #lpPraise), her nudge on Home
+   (misty-hub.js #mhNudge), her first-timer hint (world-home.js #whHint .wh-say) and a guide's line in a cell world
+   (region-pals.js .rp-say). The shared One UI glass (one-sheet.css, build 20261022-140038) as a compact card: smaller type,
+   at most ~70% of the screen wide, two lines (a tap opens a longer line in full), a small tail pointing at the speaker.
+   Day keeps the same dark glass as One UI, a little denser so it reads on the bright day sky. Loaded after one-sheet.css. */
+:root {
+    --ms-max: min(70vw, 300px);
+    --ms-top: rgba(26, 58, 128, .80);
+    --ms-bot: rgba(12, 30, 78, .86);
+    --ms-rim: rgba(143, 231, 255, .38);
+    --ms-ink: #f2f8ff;
+    --ms-glass: radial-gradient(130% 120% at 18% 0%, rgba(143, 231, 255, .14), rgba(143, 231, 255, 0) 55%), linear-gradient(180deg, var(--ms-top), var(--ms-bot));
+    --ms-sh: 0 6px 18px rgba(0, 8, 34, .32), inset 0 0 0 .5px rgba(255, 255, 255, .08);
+}
+html[data-ui=light], html[data-theme="light"] {
+    --ms-top: rgba(24, 54, 122, .90);
+    --ms-bot: rgba(10, 28, 74, .93);
+    --ms-rim: rgba(110, 200, 235, .55);
+    --ms-sh: 0 6px 16px rgba(10, 30, 70, .26), inset 0 0 0 .5px rgba(255, 255, 255, .1);
+}
+
+/* ---- Misty's speech bubble (#lpPraise) ---- */
+html:root body .lp-praise, html:root body .lp-praise.lp-said, html:root[data-ui=light] body .lp-praise, html:root[data-theme="light"] body .lp-praise {
+    max-width: var(--ms-max) !important; width: auto !important; min-width: 0 !important;
+    padding: 7px 12px 7px 10px !important; gap: 7px !important; border-radius: 16px !important;
+    font-size: 13px !important; font-weight: 600 !important; line-height: 1.3 !important; letter-spacing: 0 !important;
+    color: var(--ms-ink) !important; text-shadow: none !important;
+    background: var(--ms-glass) !important; border: 1px solid var(--ms-rim) !important; box-shadow: var(--ms-sh) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(1.3) !important; backdrop-filter: blur(14px) saturate(1.3) !important;
+    text-align: left !important;
+}
+html:root body .lp-praise .lp-dot { width: 7px !important; height: 7px !important; background: #8fe7ff !important; box-shadow: 0 0 6px #8fe7ff !important; align-self: flex-start; margin-top: 5px; }
+html:root body .lp-praise .lp-tx { min-width: 0; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; }
+html:root body .lp-praise.lp-open .lp-tx { -webkit-line-clamp: unset; line-clamp: none; display: block; }
+html:root body .lp-praise .lp-tag { font-size: 11px !important; padding: 1px 6px !important; }
+/* it takes taps while it is up: tap opens a longer line, the next tap closes it (it sits clear of the bubbles and the joystick) */
+html:root body .lp-praise.on { pointer-events: auto !important; cursor: pointer; }
+/* the tail: small, same glass, pointing at Misty */
+html:root body .lp-praise.lp-said::after { width: 10px !important; height: 10px !important; left: calc(var(--tail) - 5px) !important; border: 1px solid var(--ms-rim) !important; box-shadow: none !important; }
+html:root body .lp-praise.lp-up::after { bottom: -6px !important; top: auto !important; background: var(--ms-bot) !important; border-top: 0 !important; border-left: 0 !important; border-radius: 0 0 3px 0 !important; }
+html:root body .lp-praise.lp-down::after { top: -6px !important; bottom: auto !important; background: var(--ms-top) !important; border-bottom: 0 !important; border-right: 0 !important; border-radius: 3px 0 0 0 !important; }
+html:root body .lp-praise.lp-said.lp-dock::after { display: none !important; }
+
+/* ---- Misty's nudge (#mhNudge) and first-timer hint (#whHint) on Home ---- */
+html:root body .wh-hint.wh-say, html:root body .wh-hint.mh-nudge {
+    max-width: var(--ms-max) !important; padding: 7px 12px !important; border-radius: 16px !important;
+    font-size: 13px !important; font-weight: 600 !important; line-height: 1.3 !important; color: var(--ms-ink) !important; text-shadow: none !important;
+    background: var(--ms-glass) !important; background-color: transparent !important; border: 1px solid var(--ms-rim) !important; box-shadow: var(--ms-sh) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(1.3) !important; backdrop-filter: blur(14px) saturate(1.3) !important;
+    overflow-wrap: anywhere;
+}
+html:root body .wh-hint.wh-say::after, html:root body .wh-hint.mh-nudge::after {
+    width: 10px !important; height: 10px !important; bottom: -6px !important; background: var(--ms-bot) !important; background-color: var(--ms-bot) !important;
+    border: 0 !important; border-right: 1px solid var(--ms-rim) !important; border-bottom: 1px solid var(--ms-rim) !important; border-radius: 0 0 3px 0 !important;
+}
+html:root body .wh-hint.wh-say.wh-dock::after, html:root body .wh-hint.mh-nudge.mh-dock::after { display: none !important; }
+
+/* ---- a guide's line in a cell world (.rp-say) ---- */
+html:root body .rp-say {
+    max-width: var(--ms-max) !important; padding: 7px 12px !important; border-radius: 16px !important;
+    font-size: 13px !important; font-weight: 600 !important; line-height: 1.3 !important; color: var(--ms-ink) !important; text-shadow: none !important;
+    background: var(--ms-glass) !important; border: 1px solid var(--ms-rim) !important; box-shadow: var(--ms-sh) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(1.3) !important; backdrop-filter: blur(14px) saturate(1.3) !important;
+}
+html:root body .rp-say .rp-tx { display: -webkit-box !important; -webkit-box-orient: vertical; -webkit-line-clamp: 2 !important; line-clamp: 2; overflow: hidden !important; }
+html:root body .rp-pal.rp-open .rp-say .rp-tx, html:root body .rp-pal.rp-asking .rp-say .rp-tx { -webkit-line-clamp: unset !important; line-clamp: none; display: block !important; }
+html:root body .rp-say small { display: none !important; } /* "tap me" stays in the guide's first line; the bubble stays two lines */
+html:root body .rp-pal.rp-asking .rp-say small { display: block !important; }
+html:root body .rp-say::before { width: 10px !important; height: 10px !important; left: calc(var(--tail) - 5px) !important; bottom: -6px !important; background: var(--ms-bot) !important; border: 1px solid var(--ms-rim) !important; border-top: 0 !important; border-left: 0 !important; border-radius: 0 0 3px 0 !important; }
+html:root body .rp-s-br .rp-say::before, html:root body .rp-s-bl .rp-say::before { bottom: auto !important; top: -6px !important; background: var(--ms-top) !important; border: 1px solid var(--ms-rim) !important; border-bottom: 0 !important; border-right: 0 !important; border-radius: 3px 0 0 0 !important; }
+html:root body .rp-s-sr .rp-say::before { left: -6px !important; bottom: auto !important; top: calc(var(--tail) - 5px) !important; background: var(--ms-bot) !important; border: 1px solid var(--ms-rim) !important; border-top: 0 !important; border-right: 0 !important; border-radius: 0 0 0 3px !important; }
+html:root body .rp-s-sl .rp-say::before { left: auto !important; right: -6px !important; bottom: auto !important; top: calc(var(--tail) - 5px) !important; background: var(--ms-bot) !important; border: 1px solid var(--ms-rim) !important; border-bottom: 0 !important; border-left: 0 !important; border-radius: 0 3px 0 0 !important; }

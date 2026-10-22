@@ -1,7 +1,7 @@
 /* LOWiSPIKE praise pool (Oct 15, 2026): after every action the XP ledger counted, the herb says one short line in
    first person. 12 lines each in de/en/es, never the same line twice in a row. A "First time!" tag shows only on the
    first-ever action of each type (meal, scan, water, move, fasting, macro goal), read from the whole ledger and kept
-   in S.praise.first. The toast stays up its reading time (read-time-core.js; Oct 18: it was 1.7 s, too fast to read) and never takes taps (pointer-events:none). Pure parts are tested in
+   in S.praise.first. The toast stays up its reading time (read-time-core.js; Oct 18: it was 1.7 s, too fast to read) and (misty-say, Oct 22) takes taps only while it is up: open a long line, close it. One line at a time, the rest queue. Pure parts are tested in
    tests/praise.test.cjs. */
 (function () {
     'use strict';
@@ -89,7 +89,7 @@
        (it comes straight back under the thumb). Padded 4 px so the line never touches a rim. */
     function controls() {
         const out = [];
-        D.querySelectorAll('[data-orbit], #whPad').forEach(e => {
+        D.querySelectorAll('[data-orbit], #whPad, #whHint.on').forEach(e => {
             const r = e.getBoundingClientRect(); if (r.width < 4 || r.height < 4 || r.bottom <= 0 || r.top >= W.innerHeight) return;
             const cs = getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden') return;
             if (e.id !== 'whPad' && e.checkVisibility && !e.checkVisibility({ opacityProperty: true, visibilityProperty: true })) return;
@@ -97,18 +97,52 @@
         });
         return out;
     }
+    /* misty-say (Oct 22, Emmanuel: "Misty's bubbles look bad. They don't fit the UI and they're so big."): one line at a time.
+       A new line while one is showing (or while Misty's nudge, misty-hub.js #mhNudge, or a world guide, region-pals.js, is
+       talking) waits in a short queue instead of stacking on it: at most QUEUE_MAX lines, the same line never twice, a line that
+       waited longer than QUEUE_TTL is dropped (it is stale by then). The bubble shows two lines; a tap on a longer one opens it in
+       full, the next tap (or its reading time) closes it and the next line follows after a short gap. */
+    const QUEUE_MAX = 3, QUEUE_TTL = 25000, GAP_MS = 450;
+    let queue = [], waitT = 0;
+    const isOn = () => !!(el && el.isConnected && el.classList.contains('on'));
+    function othersTalking() {
+        const n = D.getElementById('mhNudge'); if (n && n.classList.contains('on')) return true;
+        const p = D.getElementById('rpPal'); return !!(p && p.classList.contains('rp-talk'));
+    }
+    function talking() { return isOn() || queue.length > 0; }
+    function fresh() { const now = Date.now(); queue = queue.filter(q => now - q.at < QUEUE_TTL); }
     function show(text, tag) {
-        if (!el || !el.isConnected) {
-            el = D.createElement('div');
-            el.id = 'lpPraise';
-            el.className = 'lp-praise';
-            el.setAttribute('role', 'status');
-            el.setAttribute('aria-live', 'polite');
-            D.body.appendChild(el);
+        text = String(text == null ? '' : text).trim(); if (!text) return;
+        fresh();
+        if (isOn() && el.dataset.text === text) return; /* the same line is already up */
+        queue = queue.filter(q => q.text !== text);
+        queue.push({ text, tag: tag || '', at: Date.now() });
+        while (queue.length > QUEUE_MAX) queue.shift();
+        pump();
+    }
+    function pump() {
+        clearTimeout(waitT); fresh();
+        if (!queue.length) return;
+        if (isOn() || othersTalking()) { waitT = setTimeout(pump, 500); return; }
+        const q = queue.shift(); render(q.text, q.tag);
+    }
+    function hide() {
+        clearTimeout(timer);
+        if (el) el.classList.remove('on', 'lp-open');
+        clearTimeout(waitT); waitT = setTimeout(pump, GAP_MS);
+    }
+    function onTap(e) {
+        if (!isOn()) return;
+        try { e.preventDefault(); e.stopPropagation(); } catch (x) { }
+        /* a clamped line opens in full on the first tap and gets its reading time again; any other tap closes it */
+        if (el.classList.contains('lp-more') && !el.classList.contains('lp-open')) {
+            el.classList.add('lp-open'); position();
+            clearTimeout(timer); timer = setTimeout(hide, showMs(el.dataset.text) + 1500);
+            return;
         }
-        el.innerHTML = '<i class="lp-dot" aria-hidden="true"></i><span class="lp-tx"></span>' + (tag ? '<b class="lp-tag"></b>' : '');
-        el.querySelector('.lp-tx').textContent = text;
-        if (tag) el.querySelector('.lp-tag').textContent = tag;
+        hide();
+    }
+    function position() {
         /* cell-guide (Oct 17, E-man: "that bubble is not even a speech bubble that comes out of her ... covering the Daily Quest"):
            it is Misty talking, so it is a speech bubble coming out of Misty: above her (below when that would cover the Daily Quest
            or leave the screen), with a tail pointing at her. Only when she is nowhere on screen does it fall back to top centre,
@@ -119,7 +153,7 @@
             const a = mistyAt(vw, vh);
             if (a) {
                 el.classList.add('lp-said');
-                const w = el.offsetWidth, h = el.offsetHeight, gap = 14;
+                const w = el.offsetWidth, h = el.offsetHeight, gap = 12;
                 const p = place(a, { w, h }, quest, { w: vw, h: vh, top: 8 + safeTop() }, gap, obs);
                 el.style.left = Math.round(p.l) + 'px'; el.style.top = Math.round(p.t) + 'px';
                 el.style.setProperty('--tail', Math.round(p.tail) + 'px'); el.classList.add(p.dock ? 'lp-dock' : (p.up ? 'lp-up' : 'lp-down'));
@@ -127,9 +161,27 @@
                 const t = el.getBoundingClientRect(); if (t.bottom > quest.top && t.top < quest.bottom) el.style.top = Math.round(quest.bottom + 8) + 'px';
             }
         } catch (e) { }
+    }
+    function render(text, tag) {
+        if (!el || !el.isConnected) {
+            el = D.createElement('div');
+            el.id = 'lpPraise';
+            el.className = 'lp-praise';
+            el.setAttribute('role', 'status');
+            el.setAttribute('aria-live', 'polite');
+            el.addEventListener('click', onTap);
+            D.body.appendChild(el);
+        }
+        el.innerHTML = '<i class="lp-dot" aria-hidden="true"></i><span class="lp-tx"></span>' + (tag ? '<b class="lp-tag"></b>' : '');
+        el.querySelector('.lp-tx').textContent = text;
+        el.dataset.text = text;
+        if (tag) el.querySelector('.lp-tag').textContent = tag;
+        el.classList.remove('lp-open', 'lp-more');
+        position();
+        try { const tx = el.querySelector('.lp-tx'); el.classList.toggle('lp-more', tx.scrollHeight > tx.clientHeight + 2); } catch (e) { }
         el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
         clearTimeout(timer);
-        timer = setTimeout(() => { if (el) el.classList.remove('on'); }, showMs(text));
+        timer = setTimeout(hide, showMs(text));
     }
     function praise(type, first) {
         const pool = POOL[lang()], i = pick(pool.length, lastIdx);
@@ -153,6 +205,6 @@
             setTimeout(() => praise(type, first), 250);
         } catch (x) {}
     });
-    W.LowiPraise = Object.assign({}, core, { praise, say: t => show(t, '') });
+    W.LowiPraise = Object.assign({}, core, { praise, say: t => show(t, ''), talking, hide, queued: () => (fresh(), queue.map(q => q.text)) });
     if (typeof module !== 'undefined' && module.exports) module.exports = W.LowiPraise;
 })();

@@ -56,7 +56,7 @@ test('the room stays light on the phone: two frosted strips, the room itself has
 
 test('community-chat.js measures the composer for the list and adds a round jump-to-latest button', () => {
   assert.match(js, /function roomDress\(p,on\)\{/);
-  assert.match(js, /new ResizeObserver\(\(\)=>\{const h=Math\.round\(c\.getBoundingClientRect\(\)\.height\);if\(h\)p\.style\.setProperty\('--cr-comp-h',h\+'px'\);\}\)/);
+  assert.match(js, /new ResizeObserver\(\(\)=>\{const h=Math\.round\(c\.getBoundingClientRect\(\)\.height\);if\(!h\)return;[^}]*p\.style\.setProperty\('--cr-comp-h',h\+'px'\);/, 'measures the composer (item 41: and keeps the list on the newest message)');
   assert.match(js, /b\.className='cr-down';b\.setAttribute\('data-chat','latest'\)/);
   assert.match(js, /COPY\.toLatest=\['Jump to the latest message','Zur neuesten Nachricht','Ir al último mensaje'\]/);
   assert.match(js, /th\.classList\.toggle\('cr-up',!nb\)/, 'scrolling up shows it, reaching the bottom hides it');

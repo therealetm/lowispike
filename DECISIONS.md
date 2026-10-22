@@ -1000,3 +1000,13 @@ Emmanuel (voice message, 21 Oct evening): "I would like the affiliate texts, the
 - Stops when the script changes (track, day, language, unlock), when leaving the script screen, when the page is hidden, and when the Community tab hides the Affiliates frame (checked every 0.7 s while playing). Inside the app it tells the parent (`lowi:media`, id `aff-voice`) so world sound pauses, and pauses itself when another voice in the app starts. Pause resumes at the start of the line it stopped in.
 - Shared code change, backwards compatible: `app-voice.js` finds `app-voice/` and `app-voice-data.js` next to its own script URL (`LowiVoice.BASE`), so it works from `affiliates/`. In the app that is the same folder as before. Inside the app the frame copies the app's `lowi-build` so the clip list comes from the phone's saved copy.
 - Checks: `tests/affiliates-voice.test.cjs`; `tools/blueprint/voice-check.cjs` (WebKit iPhone SE de, iPhone 13 en, Chromium Pixel 7 es, locked preview, in-app frame; audio output stubbed, so it shows which recorded clips are asked for, in order, and that the robot voice is never used).
+
+## 2026-10-22 Misty's sheet: the Food journal is removed
+
+Emmanuel (Seven): "I don't understand the food journal section. Either remove it or make it logical, but I'd say remove it."
+
+- Misty's sheet has two equal doors under the name: Forms ("How it evolves") and Glow ("Aura and finds"). The Food journal door and its screen (herb-quests.js dexHTML / collectionHTML, "Foods you have tried") are gone, with their strings in EN, DE and ES.
+- Meal history lives in the Fuel sheet's meal list (today's meals, with photo thumbnails from meal-journal.js). There is no second place for meals.
+- Kept for XP and fair play: herb-quests-core.js journal(), discover(), newFoods(), FOODS and the "same meal twice counts once" rules. They feed no screen now except a small toast the first time a food is logged ("First time logged: ...").
+- Other links: the Herb path's "Food journal" link is removed, its compact link says "Quests". `data-sp="collection"` (Misty's older Discovered panel "See all") now opens only your scanned products, titled "Your scans". The scan hint "Adds it to your food journal" says "Adds it to your scans". No tutorial card, achievement or deep link pointed at the Food journal.
+

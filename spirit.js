@@ -30,7 +30,7 @@
         meal: ['Log a meal', 'Mahlzeit eintragen', 'Registrar comida'],
         water: ['Log water', 'Wasser eintragen', 'Registrar agua'],
         wardrobe: ['Wardrobe', 'Kleiderschrank', 'Armario'],
-        collection: ['Food journal', 'Essens-Tagebuch', 'Diario de comidas'],
+        collection: ['Your scans', 'Deine Scans', 'Tus escaneos'],
         yourScans: ['Your scans', 'Deine Scans', 'Tus escaneos'],
         profile: ['Your companion', 'Dein Begleiter', 'Tu ser de luz'],
         evolution: ['Evolution', 'Entwicklung', 'Evolución'],
@@ -318,7 +318,7 @@
                 sub = L('A few minutes give energy', 'Ein paar Minuten geben Energie', 'Unos minutos dan energía');
                 next = pick('move', 'move', L('Move', 'Bewegen', 'Moverse'));
             } else if (!day.scanned) {
-                sub = L('Adds it to your food journal', 'Kommt in dein Essens-Tagebuch', 'Se a\u00f1ade a tu diario de comidas');
+                sub = L('Adds it to your scans', 'Kommt zu deinen Scans', 'Se a\u00f1ade a tus escaneos');
                 next = pick('scan', 'scan', L('Scan', 'Scannen', 'Escanear'));
             } else {
                 mood = 'glow';
@@ -1631,8 +1631,8 @@
 
     function collection() {
         const items = Object.values(LowiDex.state().mine || {});
-        const HQ = window.LowiHerbQuests;
-        showSheet('<h2>' + esc(tr('collection')) + '</h2>' + (HQ ? HQ.collectionHTML() + '<h3 class="hq-prodh">' + esc(tr('yourScans')) + ' \u00b7 ' + items.length + '</h3>' : '') + '<div class="sp-collection">' + (items.length ? items.map(p => '<button data-sp="product" data-key="' + esc(p.barcode || p.id || p.name) + '">' + (p.img ? '<img alt="" src="' + esc(p.img) + '">' : icon('leaf')) + '<b>' + esc(p.name || p.barcode) + '</b></button>').join('') : '<p>' + esc(tr('emptyCollection')) + '</p>' + button('scan', 'scan', 'scan')) + '</div>');
+        /* Oct 22: only your scanned products; the Food journal on top was removed (meals live in the Fuel sheet) */
+        showSheet('<h2>' + esc(tr('collection')) + (items.length ? ' <span class="num">' + items.length + '</span>' : '') + '</h2>' + '<div class="sp-collection">' + (items.length ? items.map(p => '<button data-sp="product" data-key="' + esc(p.barcode || p.id || p.name) + '">' + (p.img ? '<img alt="" src="' + esc(p.img) + '">' : icon('leaf')) + '<b>' + esc(p.name || p.barcode) + '</b></button>').join('') : '<p>' + esc(tr('emptyCollection')) + '</p>' + button('scan', 'scan', 'scan')) + '</div>');
         paginate(ownedSheet.querySelector('.r2-sh'));
     }
 

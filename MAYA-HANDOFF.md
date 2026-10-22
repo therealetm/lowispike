@@ -1048,6 +1048,12 @@ scripts/release.sh "what users get, in one line" --news news.json
   `tutorial-steps.js` but switched off until that feature exists.
 - Any old UI or old design (old logos, old companion art, the potted herb, the old blob with a smile) gets deleted.
 - He wanted a What's New note for photo recognition; it shipped with the photo cap.
+- **No Food journal (22 Oct).** Emmanuel: "I don't understand the food journal section ... I'd say remove it." Misty's
+  sheet has two doors, Forms and Glow. **Saved meals and meal photos live in the Fuel sheet's meal list (today's meals),
+  not in a Food journal.** Any task told to show meal thumbnails "in the food journal" puts them in that Fuel meal list
+  (task 'Meal log: save photo + estimate, share to Community' already does, via meal-journal.js and sym-home.js). The
+  tried-foods tally (herb-quests-core.js journal(), discover(), newFoods()) stays for XP and fair play, with no screen.
+  Don't bring a Food journal screen back. Details in DECISIONS.md.
 
 ---
 

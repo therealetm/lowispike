@@ -115,7 +115,7 @@ test('wired in: loader, offline cache, herb world and profile', () => {
   const ui = root('apple-ui.js'), sw = root('sw.js'), sp = root('spirit.js');
   assert.ok(ui.indexOf("'herb-quests-core.js','herb-quests.js'") > 0 && ui.indexOf("'herb-quests.js'") < ui.indexOf("'spirit.js'"));
   for (const f of ['herb-quests-core.js', 'herb-quests.js', 'herb-quests.css']) assert.ok(sw.includes('"' + f + '"'), f);
-  assert.ok(sp.includes('LowiHerbQuests.pathHTML()') && sp.includes('HQ.collectionHTML()') && sp.includes('LowiHerbQuests.evoHTML(true)'));
+  assert.ok(sp.includes('LowiHerbQuests.pathHTML()') && sp.includes('LowiHerbQuests.evoHTML(true)'));
   const ui2 = root('herb-quests.js');
   assert.ok(ui2.includes("'herb-quest'") && !/award\([^)]*'goal/.test(ui2), 'goals never pay');
 });

@@ -77,7 +77,6 @@
     /* ---------- the card ---------- */
     const ICO = {
         forms: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18c2-6 5-9 8-9s6 3 8 9"/><circle cx="6" cy="18" r="1.6"/><circle cx="12" cy="9" r="2.4"/><circle cx="18" cy="18" r="1.6"/></svg>',
-        col: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="7" height="9" rx="2"/><rect x="13" y="5" width="7" height="9" rx="2"/><path d="M4 18h16"/></svg>',
         glow: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/></svg>',
         moon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>',
         pen: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>'
@@ -98,11 +97,11 @@
                     '<button type="button" class="mh-rn" data-mh="rename" aria-label="' + esc(T('Rename ' + name(), name() + ' umbenennen', 'Cambiar el nombre de ' + name())) + '">' + ICO.pen + '<span>' + esc(T('Rename', 'Umbenennen', 'Cambiar nombre')) + '</span></button>' +
                 '</div>' +
             '</header>' +
-            /* Oct 19 (E-man): Forms and the Food journal were at the very bottom: "that's hidden ... needs to be not hidden".
-               The three doors now come first, right under the name and level, before the companion's words (fully in view when the card opens on an iPhone 13). */
+            /* Oct 19 (E-man): Forms and Glow were at the very bottom: "that's hidden ... needs to be not hidden".
+               Oct 22 (E-man: "I don't understand the food journal section ... I'd say remove it"): the Food journal door is gone;
+               the meals you logged live in the Fuel sheet's meal list. Two equal doors now come first, right under the name and level, before the companion's words (fully in view when the card opens on an iPhone 13). */
             '<nav class="mh-doors" aria-label="' + esc(name()) + '">' +
                 '<button type="button" data-mh="forms">' + ICO.forms + '<b>' + esc(T('Forms', 'Formen', 'Formas')) + '</b><small>' + esc(T('How it evolves', 'Wie es sich entwickelt', 'C\u00f3mo evoluciona')) + '</small></button>' +
-                '<button type="button" data-mh="collection">' + ICO.col + '<b>' + esc(T('Food journal', 'Essens-Tagebuch', 'Diario de comidas')) + '</b><small>' + esc(T('Foods you have tried', 'Was du probiert hast', 'Lo que has probado')) + '</small></button>' +
                 '<button type="button" data-mh="glow">' + ICO.glow + '<b>' + esc(T('Glow', 'Leuchten', 'Brillo')) + '</b><small>' + esc(T('Aura and finds', 'Aura und Funde', 'Aura y hallazgos')) + '</small></button>' +
             '</nav>' +
             (say ? '<p class="mh-say" role="status" aria-live="polite">' + esc(say) + '</p>' : '<p class="mh-say" role="status" aria-live="polite" hidden></p>') +
@@ -161,7 +160,6 @@
             repaint(v && v.mood ? cellCopy('thanks') : '');
         } else if (k === 'goodnight') goodnight();
         else if (k === 'forms') { try { if (W.LowiCompanion && W.LowiCompanion.open && W.LowiCompanion.open()) return; } catch (x) { } openDetails('grow'); }
-        else if (k === 'collection') { const t = D.createElement('button'); t.type = 'button'; t.dataset.sp = 'collection'; t.hidden = true; D.body.appendChild(t); t.click(); t.remove(); }
         else if (k === 'glow') openDetails('aura');
         else if (k === 'rename') renameOpen();
     });

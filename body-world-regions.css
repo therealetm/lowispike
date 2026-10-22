@@ -31,7 +31,21 @@
 .bwr-node i{width:16px;height:16px;border-radius:50%;background:var(--h);box-shadow:0 0 14px var(--h)}
 .bwr-node.cur i{outline:2px solid #fff;outline-offset:3px}
 .bwr-node span{white-space:nowrap;text-shadow:0 1px 4px #000}
-@media (prefers-reduced-motion:reduce){.bwr-label{transition:opacity .2s}.bwr-fade{animation:none}}
+.bwr-node span small{display:block;font-size:9.5px;font-weight:500;opacity:.7;margin-top:1px}
+/* Oct 22: named cell worlds. Entry banner (title card) + the small "where am I" pill while inside a world. Both never take taps. */
+.bwr-enter{position:absolute;left:50%;top:38%;z-index:7;transform:translate(-50%,8px) scale(.97);width:max-content;max-width:min(84%,380px);box-sizing:border-box;padding:12px 22px 13px;border-radius:22px;background:rgba(8,12,34,.66);border:1px solid color-mix(in srgb,var(--h,#7fd1ff) 45%,transparent);box-shadow:0 10px 40px rgba(0,0,0,.35),0 0 30px color-mix(in srgb,var(--h,#7fd1ff) 25%,transparent);color:#eef3ff;text-align:center;opacity:0;pointer-events:none;transition:opacity .45s ease,transform .45s ease;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.bwr-enter.on{opacity:1;transform:translate(-50%,0) scale(1)}
+.bwr-enter small{display:block;font:700 10.5px/1.2 var(--font,system-ui),sans-serif;letter-spacing:.14em;text-transform:uppercase;opacity:.75}
+.bwr-enter b{display:block;margin:3px 0 2px;font:800 clamp(22px,7vw,28px)/1.1 var(--font,system-ui),sans-serif;letter-spacing:-.01em;color:var(--h,#7fd1ff);text-shadow:0 0 16px color-mix(in srgb,var(--h,#7fd1ff) 55%,transparent);text-wrap:balance}
+.bwr-enter span{display:block;font:500 13px/1.35 var(--font,system-ui),sans-serif;opacity:.88;text-wrap:balance}
+.bwr-where{position:absolute;left:16px;top:calc(env(safe-area-inset-top,0px) + 114px);z-index:5;display:none;align-items:center;gap:6px;max-width:calc(100% - 32px);box-sizing:border-box;padding:5px 10px;border-radius:999px;background:rgba(10,16,44,.55);border:1px solid rgba(255,255,255,.14);color:#eef3ff;font:600 12px/1.2 var(--font,system-ui),sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.bwr-where.on{display:inline-flex}
+.bwr-where i{flex:none;width:8px;height:8px;border-radius:50%;background:var(--h,#7fd1ff);box-shadow:0 0 8px var(--h,#7fd1ff)}
+.bw3-full .bwr-where{display:none}
+:root[data-ui=light] .bwr-enter,html[data-theme="light"] .bwr-enter{background:rgba(255,255,255,.9);color:#12345a;box-shadow:0 10px 30px rgba(18,52,90,.18)}
+:root[data-ui=light] .bwr-enter b,html[data-theme="light"] .bwr-enter b{color:#12345a;text-shadow:none}
+:root[data-ui=light] .bwr-where,html[data-theme="light"] .bwr-where{background:rgba(255,255,255,.82);color:#12345a;border-color:rgba(18,52,90,.18)}
+@media (prefers-reduced-motion:reduce){.bwr-label{transition:opacity .2s}.bwr-fade{animation:none}.bwr-enter{transition:opacity .2s;transform:translate(-50%,0)}}
 /* Oct 17 (E-man on his iPhone: "can you just delete the in-between world? ... So it goes from inside to outside, seamlessly"):
    leaving a world draws nothing of its own: no streaks, no colour wash, no glow screen. .bwr-snap is a copy of the last real
    frame of the world she was in, laid over the outside world (already drawn under it) and faded away. */

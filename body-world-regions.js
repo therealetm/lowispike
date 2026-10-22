@@ -15,21 +15,31 @@
     /* ---------- data ---------- */
     const REGIONS = [
         { id: 'brain', hue: 0x1cf7f9, css: '#1cf7f9', bg: 0x050f1a, fog: 0x07182a, map: [50, 9],
+            w: ['Thought Forest', 'Gedankenwald', 'Bosque de Ideas'], t: ['Runs on the sugar in your blood.', 'Läuft mit dem Zucker aus deinem Blut.', 'Funciona con el azúcar de tu sangre.'],
             n: ['Brain', 'Gehirn', 'Cerebro'], line: ['A forest of neurons. Sparks run along every branch.', 'Ein Wald aus Nervenzellen. Funken laufen jeden Ast entlang.', 'Un bosque de neuronas. Las chispas recorren cada rama.'] },
         { id: 'lung', hue: 0xa8e0ff, css: '#a8e0ff', bg: 0x0a1a30, fog: 0x10243e, map: [36, 30],
+            w: ['Breeze Bay', 'Atembucht', 'Bahía Brisa'], t: ['Air in, so your cells can make energy.', 'Luft rein, damit deine Zellen Energie machen.', 'Entra aire para que tus células hagan energía.'],
             n: ['Lungs', 'Lunge', 'Pulmones'], line: ['Millions of tiny air bubbles, breathing slowly.', 'Millionen winziger Luftbläschen, die langsam atmen.', 'Millones de burbujas de aire que respiran despacio.'] },
         { id: 'heart', hue: 0xf14770, css: '#f14770', bg: 0x1a0612, fog: 0x240a18, map: [56, 34],
+            w: ['Pulse Hall', 'Pulshalle', 'Sala del Pulso'], t: ['Every beat carries sugar to your cells.', 'Jeder Schlag bringt Zucker zu deinen Zellen.', 'Cada latido lleva azúcar a tus células.'],
             n: ['Heart', 'Herz', 'Corazón'], line: ['Inside the pump. Feel the calm beat around you.', 'Mitten in der Pumpe. Spür den ruhigen Schlag um dich.', 'Dentro de la bomba. Siente el latido tranquilo.'] },
         { id: 'liver', hue: 0xe78631, css: '#e78631', bg: 0x180c05, fog: 0x22120a, map: [40, 48],
+            w: ['Sugar Vault', 'Zuckertresor', 'Bóveda Dulce'], t: ['Sugar gets stored here for later.', 'Hier wird Zucker für später gespeichert.', 'Aquí se guarda azúcar para después.'],
             n: ['Liver', 'Leber', 'Hígado'], line: ['Rows of busy cells that store sugar for later.', 'Reihen fleißiger Zellen, die Zucker für später speichern.', 'Filas de células que guardan azúcar para luego.'] },
         { id: 'pancreas', hue: 0xf8ea40, css: '#f8ea40', bg: 0x14120a, fog: 0x1c1a0c, map: [60, 52],
+            w: ['Insulin Island', 'Insulin-Insel', 'Isla Insulina'], t: ['Makes the key that lets sugar into cells.', 'Macht den Schlüssel, der Zucker in die Zellen lässt.', 'Fabrica la llave que deja entrar el azúcar.'],
             n: ['Pancreas', 'Bauchspeicheldrüse', 'Páncreas'], line: ['A little island of cells. This is where insulin is made.', 'Eine kleine Zellinsel. Hier entsteht Insulin.', 'Una islita de células. Aquí se fabrica la insulina.'] },
         { id: 'gut', hue: 0x2ef8b6, css: '#2ef8b6', bg: 0x041611, fog: 0x07201a, map: [50, 64],
+            w: ['Villi Jungle', 'Zottendschungel', 'Selva de Vellosidades'], t: ['Where your food turns into fuel.', 'Hier wird dein Essen zu Energie.', 'Aquí tu comida se vuelve energía.'],
             n: ['Gut', 'Darm', 'Intestino'], line: ['A forest of villi that takes in your food.', 'Ein Wald aus Zotten, der deine Nahrung aufnimmt.', 'Un bosque de vellosidades que absorbe tu comida.'] },
         { id: 'muscle', hue: 0x9feb25, css: '#9feb25', bg: 0x0b1405, fog: 0x101c08, map: [38, 84],
+            w: ['Fuel Forge', 'Kraftschmiede', 'Forja de Energía'], t: ['Moving burns sugar right here.', 'Bewegung verbrennt hier Zucker.', 'Al moverte, aquí se quema azúcar.'],
             n: ['Muscles', 'Muskeln', 'Músculos'], line: ['Long fibres full of tiny power plants.', 'Lange Fasern voller winziger Kraftwerke.', 'Fibras largas llenas de pequeñas centrales.'] }
     ];
-    const HUB = { id: 'hub', css: '#e0475a', map: [50, 42], n: ['Bloodstream', 'Blutbahn', 'Torrente sanguíneo'], line: ['Back in the bloodstream, home of your cell.', 'Zurück in der Blutbahn, dem Zuhause deiner Zelle.', 'De vuelta en el torrente, el hogar de tu célula.'] };
+    const HUB = { id: 'hub', css: '#e0475a', map: [50, 42], w: ['Ruby River', 'Rubinfluss', 'Río Rubí'], t: ['Home of your cell. Sugar travels here.', 'Zuhause deiner Zelle. Hier reist der Zucker.', 'El hogar de tu célula. Aquí viaja el azúcar.'], n: ['Bloodstream', 'Blutbahn', 'Torrente sanguíneo'], line: ['Back in the bloodstream, home of your cell.', 'Zurück in der Blutbahn, dem Zuhause deiner Zelle.', 'De vuelta en el torrente, el hogar de tu célula.'] };
+    /* Oct 22 2026 (Emmanuel: "every cell world should be named. When they enter they should know where they entered"):
+       w = the world's own name, t = its one-line tagline (both on the entry banner); n stays the body part (kicker, map). */
+    const ENTER_MS = 2600;
     const ROUTE = REGIONS.map(r => r.id);
     const norm = id => id === 'blood' ? 'hub' : id === 'muscles' ? 'muscle' : id;
     const byId = id => { id = norm(id); return id === 'hub' ? HUB : REGIONS.find(r => r.id === id) || null; };
@@ -322,7 +332,8 @@
             rise: 0
         };
     }
-    const API = { PULL, ESC, escapeAt, backAt, REGIONS, HUB, ROUTE, norm, byId, neighbours, regionForJourney, tier, counts, travelMs, WARP, warpPose, buildRegion, buildWarp, BUILD };
+    const worldName = (id, l) => { const R = byId(id); return R ? pick(R.w, l || 'en') : ''; };
+    const API = { worldName, ENTER_MS, PULL, ESC, escapeAt, backAt, REGIONS, HUB, ROUTE, norm, byId, neighbours, regionForJourney, tier, counts, travelMs, WARP, warpPose, buildRegion, buildWarp, BUILD };
     if (typeof module !== 'undefined' && module.exports) module.exports = API;
     W.LowiWorldRegions = API;
     if (!D || !D.addEventListener) return;
@@ -395,14 +406,18 @@
         ['pointerdown', 'touchstart'].forEach(n => mapBtn.addEventListener(n, e => e.stopPropagation(), { passive: true }));
         const lab = D.createElement('div'); lab.className = 'bwr-label'; lab.id = 'bwrLabel'; lab.setAttribute('aria-live', 'polite');
         const veil = D.createElement('div'); veil.className = 'bwr-veil'; veil.setAttribute('aria-hidden', 'true');
-        h.classList.add('bwr-on'); const lv = h.querySelector('.bw3-labels'); if (lv) h.insertBefore(veil, lv); else h.appendChild(veil); h.appendChild(lab); h.appendChild(mapBtn); st.label = lab; st.mapBtn = mapBtn; st.veil = veil; renderUi(); return mapBtn;
+        h.classList.add('bwr-on'); const lv = h.querySelector('.bw3-labels'); if (lv) h.insertBefore(veil, lv); else h.appendChild(veil); h.appendChild(lab); h.appendChild(mapBtn); const where = D.createElement('div'); where.className = 'bwr-where'; where.id = 'bwrWhere'; where.dataset.cleanKeep = '1'; h.appendChild(where); st.where = where;
+        st.label = lab; st.mapBtn = mapBtn; st.veil = veil; renderUi(); return mapBtn;
     }
     function renderUi() {
         if (!st.mapBtn) return;
         const l = lang(), cur = byId(st.cur);
         st.mapBtn.querySelector('span').textContent = T('World map', 'Weltkarte', 'Mapa');
         st.mapBtn.setAttribute('aria-label', T('World map', 'Weltkarte', 'Mapa') + ' · ' + pick(cur.n, l));
-        const h = st.host; if (h) { h.classList.toggle('bwr-in', st.cur !== 'hub'); h.style.setProperty('--bwr-h', cur.css); const t = h.querySelector('.bw3-top b'); if (t) { if (!t.dataset.hubTitle) t.dataset.hubTitle = t.textContent; t.textContent = st.cur === 'hub' ? t.dataset.hubTitle : pick(cur.n, l); } }
+        const h = st.host; if (h) { h.classList.toggle('bwr-in', st.cur !== 'hub'); h.style.setProperty('--bwr-h', cur.css); const t = h.querySelector('.bw3-top b'), sm = h.querySelector('.bw3-top small'); if (t) { if (!t.dataset.hubTitle) t.dataset.hubTitle = t.textContent; t.textContent = st.cur === 'hub' ? t.dataset.hubTitle : pick(cur.w, l); } if (sm) { if (sm.dataset.hubHint == null) sm.dataset.hubHint = sm.textContent; sm.textContent = st.cur === 'hub' ? sm.dataset.hubHint : pick(cur.n, l) + ' \u00b7 ' + pick(cur.t, l); } }
+        /* the world you are in stays named while you are inside it (small, never in the way of a tap); data-clean-keep: Home's
+           clean view hides the rest of #whHud inside a world (clean-view-core.js WORLD_HIDE) but not these two */
+        if (st.where) { const inside = st.cur !== 'hub'; st.where.classList.toggle('on', inside); st.where.style.setProperty('--h', cur.css); st.where.innerHTML = inside ? '<i aria-hidden="true"></i>' + esc(pick(cur.w, l)) : ''; }
     }
     /* the base card (name, journey, Back) exists for the six beacons; the lungs have no beacon, so give them the same card */
     function lungCard() {
@@ -411,8 +426,19 @@
         const l = lang(), R = byId('lung');
         const trip = W.LowiBodyTrips && W.LowiBodyTrips.open ? '<button type="button" data-bw3-trip="lung">' + esc(T('Open journey', 'Reise öffnen', 'Abrir viaje')) + '</button>' : '';
         card.style.setProperty('--h', R.css);
-        card.innerHTML = '<b data-bwr-lung>' + esc(pick(R.n, l)) + '</b><p>' + esc(pick(R.line, l)) + '</p><div>' + trip + '<button type="button" class="ghost" data-bw3-back>' + esc(T('Back to your cell', 'Zurück zu deiner Zelle', 'Volver a tu célula')) + '</button></div>';
+        card.innerHTML = '<b data-bwr-lung>' + esc(pick(R.w, l)) + '</b><p>' + esc(pick(R.n, l)) + ' \u00b7 ' + esc(pick(R.line, l)) + '</p><div>' + trip + '<button type="button" class="ghost" data-bw3-back>' + esc(T('Back to your cell', 'Zurück zu deiner Zelle', 'Volver a tu célula')) + '</button></div>';
         card.hidden = false;
+    }
+    /* entry banner: a short title card with the world's name each time you pass into a world (and back into the bloodstream
+       from one); fades by itself after ENTER_MS, never takes a tap (pointer-events: none), not hidden by the guides or info cards */
+    function banner(id) {
+        const h = st.host, R = byId(id); if (!h || !R || !R.w) return null; const l = lang();
+        let b = st.banner; if (!b || !b.isConnected) { b = D.createElement('div'); b.className = 'bwr-enter'; b.id = 'bwrEnter'; b.dataset.cleanKeep = '1'; b.setAttribute('role', 'status'); b.setAttribute('aria-live', 'polite'); h.appendChild(b); st.banner = b; }
+        b.style.setProperty('--h', R.css); b.dataset.world = id;
+        b.innerHTML = '<small>' + esc(pick(R.n, l)) + '</small><b>' + esc(pick(R.w, l)) + '</b><span>' + esc(pick(R.t, l)) + '</span>';
+        b.classList.remove('on'); void b.offsetWidth; b.classList.add('on');
+        clearTimeout(st.bt); st.bt = setTimeout(() => { if (st.banner) st.banner.classList.remove('on'); }, ENTER_MS);
+        return b;
     }
     function say(id) {
         if (!st.label) return; const R = byId(id), l = lang();
@@ -420,8 +446,8 @@
         let line = pick(R.line, l);
         try { const c = W.LowiBodyDepth && W.LowiBodyDepth.arrival && W.LowiBodyDepth.arrival(id === 'hub' ? 'blood' : id); if (c && (c.line || c.text)) line = c.line || c.text; } catch (e) { }
         /* Oct 16 (E-man): on Home this line no longer floats over the Daily Quest: it goes into the Daily Quest box */
-        if (!D.querySelector('.bw3-full') && W.LowiArrival && W.LowiArrival.note) { st.label.classList.remove('on'); try { if (W.LowiArrival.note(pick(R.n, l), line, R.css, 3600)) return; } catch (e) { } }
-        st.label.innerHTML = '<b style="--h:' + R.css + '">' + esc(pick(R.n, l)) + '</b><span>' + esc(line) + '</span>';
+        if (!D.querySelector('.bw3-full') && W.LowiArrival && W.LowiArrival.note) { st.label.classList.remove('on'); try { if (W.LowiArrival.note(pick(R.w, l), line, R.css, 3600)) return; } catch (e) { } }
+        st.label.innerHTML = '<b style="--h:' + R.css + '">' + esc(pick(R.w, l)) + '</b><span>' + esc(line) + '</span>';
         st.label.classList.remove('on'); void st.label.offsetWidth; st.label.classList.add('on');
         clearTimeout(st.lt); st.lt = setTimeout(() => st.label && st.label.classList.remove('on'), 3600);
     }
@@ -678,7 +704,8 @@
             const bg = new w.three.Color(reg.bg); if (lightMode()) bg.lerp(new w.three.Color(0xcfe4f7), 0.22);
             w.setLook({ bg, fog: 0.026 }); st.region = reg;
         }
-        st.cur = id; renderUi(); if (id === 'lung' && !st.warp) lungCard(); if (!quiet) say(id);
+        const prev = st.cur; st.cur = id; renderUi(); if (id === 'lung' && !st.warp) lungCard();
+        if (!quiet) { if (id !== prev) { banner(id); clearTimeout(st.st); st.st = setTimeout(() => { if (st.cur === id) say(id); }, ENTER_MS - 300); } else say(id); }
         try { W.dispatchEvent(new CustomEvent('lowi:world-region', { detail: { id, place: id === 'hub' ? 'blood' : id } })); } catch (e) { }
     }
     /* fromBase: the base world already started its glide (its labels, beacon taps or the card's Back) */
@@ -731,7 +758,7 @@
         let m = D.getElementById('bwrMap'); if (m) m.remove();
         const l = lang(), nodes = [HUB].concat(REGIONS);
         const lines = ROUTE.map(id => { const R = byId(id); return '<line x1="' + HUB.map[0] + '" y1="' + HUB.map[1] + '" x2="' + R.map[0] + '" y2="' + R.map[1] + '"/>'; }).join('') + ROUTE.slice(1).map((id, i) => { const a = byId(ROUTE[i]), b = byId(id); return '<line class="m" x1="' + a.map[0] + '" y1="' + a.map[1] + '" x2="' + b.map[0] + '" y2="' + b.map[1] + '"/>'; }).join('');
-        const dots = nodes.map(R => '<button type="button" class="bwr-node' + (R.id === st.cur ? ' cur' : '') + '" data-bwr="' + R.id + '" style="left:' + R.map[0] + '%;top:' + R.map[1] + '%;--h:' + R.css + '"><i></i><span>' + esc(pick(R.n, l)) + '</span></button>').join('');
+        const dots = nodes.map(R => '<button type="button" class="bwr-node' + (R.id === st.cur ? ' cur' : '') + '" data-bwr="' + R.id + '" style="left:' + R.map[0] + '%;top:' + R.map[1] + '%;--h:' + R.css + '"><i></i><span>' + esc(pick(R.w, l)) + '<small>' + esc(pick(R.n, l)) + '</small></span></button>').join('');
         m = D.createElement('div'); m.id = 'bwrMap'; m.className = 'bwr-map'; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true'); m.setAttribute('aria-label', T('Body world map', 'Karte der K\u00f6rperwelt', 'Mapa del mundo del cuerpo'));
         m.innerHTML = '<div class="bwr-map-card"><div class="bwr-map-hd"><b>' + esc(T('Your body world', 'Deine K\u00f6rperwelt', 'Tu mundo del cuerpo')) + '</b><button type="button" class="bwr-x" data-x aria-label="' + esc(T('Close', 'Schlie\u00dfen', 'Cerrar')) + '">\u00d7</button></div>' +
             '<p>' + esc(T('Tap a place and you zoom right into it.', 'Tipp auf einen Ort und du zoomst direkt hinein.', 'Toca un lugar y entras volando directamente.')) + '</p>' +
@@ -746,8 +773,8 @@
         if (st.region) { st.region.dispose(); st.region = null; }
         setLook(null); setHubVisible(true);
         if (st.host) st.host.classList.remove('bwr-on', 'bwr-in', 'bwr-warp');
-        [st.veil, st.label, st.mapBtn].forEach(e => { try { e && e.remove(); } catch (x) { } }); snapDrop(true); warpOn(false);
-        st.cur = 'hub'; st.busy = false; st.target = null; st.next = null; st.mapBtn = null; st.label = null; st.veil = null; st.host = null;
+        [st.veil, st.label, st.mapBtn, st.where, st.banner].forEach(e => { try { e && e.remove(); } catch (x) { } }); snapDrop(true); warpOn(false);
+        st.cur = 'hub'; st.busy = false; st.target = null; st.next = null; st.mapBtn = null; st.label = null; st.veil = null; st.where = null; st.banner = null; clearTimeout(st.bt); clearTimeout(st.st); st.host = null;
         const m = D.getElementById('bwrMap'); if (m) m.remove();
     }
     /* the base world's own chips, labels and beacon taps fly to a place: follow it into the region */
@@ -757,5 +784,5 @@
     W.addEventListener('lowi:world3d-ready', () => hook());
     W.addEventListener('lowi:lang', () => renderUi());
     hook();
-    Object.assign(API, { travel, openMap, current: () => st.cur, state: st, reset });
+    Object.assign(API, { banner, travel, openMap, current: () => st.cur, state: st, reset });
 })();

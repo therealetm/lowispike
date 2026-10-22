@@ -16,25 +16,10 @@
    Scope: only the open room (html.cr-room / [data-room] on the pane). Selectors carry #cmPaneChat twice so they outrank the
    older community sheets (community-room.css, community-composer.css, liquid-glass.css) without a load-order race. */
 
-/* ---- the room owns the whole screen on phones: Community header/tabs, day/night and profile buttons step aside ---- */
-html.cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room] .rm-bar{display:none!important}
-/* 22 Oct (item 36): the Chat tab opens straight into this room, so on phones the tab row stays above it (one row, no glass blur,
-   nothing else of the header) - the only way to reach Room, Creation and Affiliates when Chat is the first tab */
-html.cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room]>.rm-bar{display:flex!important;gap:0!important;margin:0!important;padding:6px 8px 8px!important}
-html.cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room]>.rm-bar>:not(.rm-tabs){display:none!important}
-html.cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room] .rm-tabs{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;background:rgba(8,16,40,.94)!important}
-/* 22 Oct (item 37b): Day for that tab row - a light pill on the room's own canvas, dark text, teal selection; Night stays as above.
-   The strip behind the row takes the room's canvas colour in both themes, so nothing of the Community page shows around it. */
-html.cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room]>.rm-bar{background:var(--cr-canvas-c,#060e26)!important}
-html[data-theme=light].cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room] .rm-tabs{background:rgba(255,255,255,.97)!important;border-color:rgba(15,23,42,.1)!important;box-shadow:0 4px 14px -6px rgba(15,23,42,.2)!important}
-html[data-theme=light].cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room] .rm-tabs .rm-tab{color:#3a465c!important;text-shadow:none!important}
-/* the tab text changes colour at once with the theme (a colour transition here was left half-way in WebKit when the theme flipped
-   with the room open, leaving light text on the light row) */
-html.cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room] .rm-tabs .rm-tab{transition:background .2s,box-shadow .2s,transform .24s cubic-bezier(.2,.8,.2,1)!important}
-html[data-theme=light].cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room] .rm-tabs .rm-tab[aria-selected=true]{color:#05515c!important}
-html[data-theme=light].cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room] .rm-tabs::before{background:rgba(7,121,138,.14)!important;box-shadow:inset 0 0 0 1px rgba(7,121,138,.55)!important}
-html.cr-room[data-lay=phone]:has(#tab-foryou.active) #tbTheme,
-html.cr-room[data-lay=phone]:has(#tab-foryou.active) #pfBtn{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+/* 22 Oct evening (item 38, Emmanuel): the room no longer owns the screen. Chat wears the same shell as Room, Affiliates and
+   Creation - the same Community header row (back, name pill, shield, moon, avatar) and the same tab bar in the same place, the page
+   background around it, and the conversation inside one rounded box. The phone-only overrides that hid the header, re-styled the
+   tab row and hid the day/night and profile buttons are gone; see "shell" below. */
 
 /* ---- theme tokens: night (default) ---- */
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room]{
@@ -52,7 +37,7 @@ html body #tab-foryou #cmPaneChat#cmPaneChat[data-room]{
   --cr-field:rgba(22,32,64,.78);--cr-ph:#93a2bf;--cr-ic:#e8f0ff;
   --cr-send-c:#18d2c9;--cr-send-g:linear-gradient(135deg,#1cf7f9,#2ef8b6);--cr-send-ic:#03222a;
   --cr-float-sh:0 6px 22px -8px rgba(0,0,0,.65);
-  --cr-top:118px}
+  --cr-top:12px}
 /* ---- day: a light room in the same brand colours ---- */
 html[data-theme=light] body #tab-foryou #cmPaneChat#cmPaneChat[data-room]{
   --cr-canvas:radial-gradient(120% 55% at 50% -12%,rgba(28,200,249,.18),transparent 60%),radial-gradient(80% 45% at 100% 105%,rgba(46,248,182,.16),transparent 70%),linear-gradient(180deg,#eaf5fb,#f4f7fb 55%,#f3f1fa);
@@ -69,10 +54,10 @@ html[data-theme=light] body #tab-foryou #cmPaneChat#cmPaneChat[data-room]{
   --cr-send-c:#087684;--cr-send-g:linear-gradient(135deg,#08808e,#08735d);--cr-send-ic:#ffffff;
   --cr-float-sh:0 4px 16px -6px rgba(15,23,42,.2)}
 
-/* ---- shell: the room fills the pane edge to edge, the composer floats over it ---- */
-html body #tab-foryou #cmPaneChat#cmPaneChat[data-room]{padding:0!important}
-html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cp-room.cg-room#cpRoom{flex:1 1 auto!important;min-height:0!important;margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:var(--cr-canvas-c)!important}
-html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cg-thread.cr-room[data-open]{inset:0!important;border:0!important;border-radius:0!important;background:var(--cr-canvas)!important;background-color:var(--cr-canvas-c)!important;
+/* ---- shell (item 38): the pane keeps the padding it has on the other tabs; the room is the rounded box under the tab bar and the
+   composer is the bottom of that same box (in the flow, so the keyboard only shortens the box) ---- */
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cp-room.cg-room#cpRoom{flex:1 1 auto!important;min-height:0!important;margin:0!important;border:1px solid rgba(143,231,255,.3)!important;border-bottom:0!important;border-radius:28px 28px 0 0!important;overflow:hidden!important;width:100%!important;max-width:760px!important;box-shadow:none!important;background:var(--cr-canvas-c)!important}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cg-thread.cr-room[data-open]{inset:0!important;border:0!important;border-radius:inherit!important;background:var(--cr-canvas)!important;background-color:var(--cr-canvas-c)!important;
   -webkit-backdrop-filter:none!important;backdrop-filter:none!important;color:var(--cr-text)}
 html[data-theme=light] body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-sky{display:none!important}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-sky{
@@ -85,6 +70,11 @@ html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-sky{
     radial-gradient(circle at 50% 42%,transparent 0 196px,rgba(46,248,182,.08) 197px,transparent 199px,transparent 0)!important}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cg-thread.cr-room[data-open] .cr-sky::after{display:none!important}
 
+/* item 38: the room's own top bar (back arrow, star "Community room" pill, members button with its count), the pinned banner and
+   the recent-voices strip are gone - the Community header above the tabs is the only top bar. */
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] :is(.cg-thead.cr-head,#crPin,#crCrew){display:none!important}
+/* and the room crumb under the tabs (its second back arrow and the room name) - the header back button above is the only one */
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room]>.rm-bar>.rm-crumb{display:none!important}
 /* ---- floating top bar: back | centred name pill | members, over one frosted strip ---- */
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cg-thead.cr-head{position:absolute!important;top:0;left:0;right:0;z-index:6!important;display:grid!important;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;gap:10px;
   min-height:0!important;height:auto!important;padding:6px 12px 0!important;margin:0!important;background:none!important;border:0!important;box-shadow:none!important}
@@ -237,10 +227,15 @@ html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] #csJump .cs-jump{positio
 html.cr-room #cmPaneChat[data-spirit-chat][data-room] #cgTo:not(:has(.cg-chip:not(:has(.cg-dotc.all)))){display:none!important}
 html.cr-room #cmPaneChat[data-spirit-chat][data-room] #cgTo .cg-chip:has(.cg-dotc.all){display:none!important}
 html.cr-room #cmPaneChat[data-spirit-chat][data-room] .cm-inrow.cs-empty~.cs-compose-meta{display:none!important}
-html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cm-compose{position:absolute!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;z-index:12!important;margin:0!important;padding:8px 0 max(8px,calc(var(--cr-sab) + 4px))!important;
-  background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;isolation:isolate;transform:none!important}
-html.cs-chat-typing body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cm-compose{padding-bottom:8px!important}
-html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cm-compose::before{content:''!important;display:block!important;position:absolute!important;z-index:-1!important;left:0!important;right:0!important;bottom:0!important;top:-14px!important;inset:-14px 0 0 0!important;pointer-events:none;border-radius:0!important;
+/* while typing the box runs down to just above the keyboard (the pane is the visible height, see fit() in community-chat.js) */
+html.cs-chat-typing body #tab-foryou #cmPaneChat#cmPaneChat[data-room]{padding-bottom:8px!important}
+/* the composer sits under the box now, so nothing floats over the end of the list any more */
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room #cmList.cm-list.cm-list{padding-top:12px!important;padding-bottom:10px!important;scroll-padding-top:12px!important;scroll-padding-bottom:10px!important}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-down.cr-down{bottom:10px!important}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] #csJump#csJump .cs-jump{bottom:14px!important}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cm-compose{position:relative!important;inset:auto!important;flex:none!important;width:100%!important;max-width:760px!important;z-index:12!important;margin:0!important;padding:8px 0 10px!important;
+  background:var(--cr-canvas-c)!important;border:1px solid rgba(143,231,255,.3)!important;border-top:0!important;border-radius:0 0 28px 28px!important;box-shadow:inset 0 .5px 0 var(--cr-hair)!important;isolation:isolate;transform:none!important}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cm-compose::before{content:''!important;display:none!important;position:absolute!important;z-index:-1!important;left:0!important;right:0!important;bottom:0!important;top:-14px!important;inset:-14px 0 0 0!important;pointer-events:none;border-radius:0!important;
   background:var(--cr-strip)!important;-webkit-backdrop-filter:blur(20px) saturate(170%);backdrop-filter:blur(20px) saturate(170%);-webkit-mask-image:linear-gradient(transparent,#000 18px);mask-image:linear-gradient(transparent,#000 18px);box-shadow:none!important;border:0!important}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cm-compose::after{display:none!important}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cm-inrow{position:relative;display:flex!important;align-items:flex-end!important;gap:8px!important;margin:0!important;padding:0 12px!important;background:none!important;border:0!important;box-shadow:none!important}

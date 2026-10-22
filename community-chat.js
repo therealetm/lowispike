@@ -172,7 +172,7 @@ const COPY={
 function lang(){try{return ['en','de','es'].indexOf((W.LowiLang&&W.LowiLang.get())||localStorage.getItem('lowispike.lang')||'en');}catch(e){return 0;}}
 const tr=k=>(COPY[k]||[k])[Math.max(0,lang())]||COPY[k][0];
 const button=(action,label,attrs='',cls='cs-action')=>'<button type="button" class="'+cls+'" data-sfx="none" data-chat="'+action+'" '+attrs+'>'+label+'</button>';
-let cacheJSON='',restHeight=0,restWidth=0;
+let cacheJSON='',restHeight=0,restWidth=0,roomKbH=0;
 let looks=new Map(),openId='',speak='',speakTimer=0,lastNewest='',mateTries=0;
 let scope=null,store=null,prefs={},identities=new Map(),cache=[],extrasAttempt='',extrasFlight=null,pick='',notice='',raf=0,lastCount=0,newCount=0,armed='',armTimer=0;
 const transport=W.LowiCommunityCloud.create(H,()=>refresh());
@@ -405,7 +405,9 @@ function roomFlag(){const p=D.getElementById('cmPaneChat'),on=threadOpen&&!!(p&&
 COPY.toLatest=['Jump to the latest message','Zur neuesten Nachricht','Ir al último mensaje'];
 let compRO=null;
 function roomDress(p,on){try{if(!on||!p){if(compRO){compRO.disconnect();compRO=null;}if(p)p.style.removeProperty('--cr-comp-h');return;}const c=p.querySelector('.cm-compose'),th=D.getElementById('cgThread');
- if(c&&W.ResizeObserver&&!(compRO&&compRO.__el===c)){if(compRO)compRO.disconnect();compRO=new ResizeObserver(()=>{const h=Math.round(c.getBoundingClientRect().height);if(h)p.style.setProperty('--cr-comp-h',h+'px');});compRO.__el=c;compRO.observe(c);}
+ if(c&&W.ResizeObserver&&!(compRO&&compRO.__el===c)){if(compRO)compRO.disconnect();compRO=new ResizeObserver(()=>{const h=Math.round(c.getBoundingClientRect().height),l=D.getElementById('cmList'),d=h-(compRO.__h||h);compRO.__h=h;if(h)p.style.setProperty('--cr-comp-h',h+'px');
+  /* item 38: the composer is the bottom of the room box, so when it grows (a second line, the note under it) the list keeps its newest message in view */
+  if(l&&d>0&&l.scrollHeight-l.scrollTop-l.clientHeight-d<90)l.scrollTop=l.scrollHeight;});compRO.__el=c;compRO.observe(c);}
  if(th&&!th.querySelector('.cr-down')){const b=D.createElement('button');b.type='button';b.className='cr-down';b.setAttribute('data-chat','latest');b.setAttribute('aria-label',tr('toLatest'));b.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg>';th.appendChild(b);}
  if(th)th.classList.toggle('cr-up',!nearBottom());}catch(e){}}
 function thread(open,focusId){const was=threadOpen;threadOpen=!!open;if(was!==threadOpen){if(threadOpen){if(sk)sk.stop();}else skyStart();refresh();}if(!threadOpen){roomRows=ROOM_ROWS;roomFocus='';}else if(focusId&&!D.getElementById('cm-'+focusId)){roomFocus=focusId;paint(D.getElementById('cmPaneChat'));}roomFlag();const t=D.getElementById('cgThread');if(!t||!t.setAttribute)return;if(threadOpen)t.setAttribute('data-open','1');else t.removeAttribute('data-open');
@@ -809,14 +811,19 @@ function fit(){
     Chat room shrinks above the keyboard. */
  const mapMode=typing&&!threadOpen;D.documentElement.classList.toggle('cs-chat-map-typing',mapMode);
  if(pane&&!mapMode){kbTop=0;kbLift=0;pane.style.setProperty('--cs-vv-top','0px');pane.style.setProperty('--cs-kb-lift','0px');}
- if(!typing)return;
+ if(!typing){roomKbH=0;return;}
  if(mapMode){const top=v?Math.max(0,Math.round(v.offsetTop)):0,comp=pane.querySelector('.cm-compose');
   for(const el of [D.scrollingElement,D.getElementById('main'),D.getElementById('tab-foryou')])if(el&&el.scrollTop)el.scrollTop=0;
   if(comp){const B=comp.getBoundingClientRect().bottom-kbTop+kbLift;kbTop=top;kbLift=Math.max(0,Math.round(B-(height-8)));}
   pane.style.setProperty('--cs-vv-top',kbTop+'px');pane.style.setProperty('--cs-kb-lift',kbLift+'px');}
  const rect=pane.getBoundingClientRect(),nav=D.getElementById('tabbar');let bottom=v?v.offsetTop+v.height:W.innerHeight;
  if(nav){const n=nav.getBoundingClientRect();if(n.height>20&&n.top>rect.top+100&&n.top<bottom)bottom=n.top-32;}
- pane.style.setProperty('--cs-keyboard-height',Math.max(0,bottom-rect.top-8)+'px');
+ /* item 38 (22 Oct evening): in the Chat room the box ends just above the keyboard; the field you type in is measured once the
+    layout settles and the box gives up any rest it still hides, and the newest message stays in view when the keyboard opens */
+ const l=threadOpen&&D.getElementById('cmList'),stick=!!l&&(!roomKbH||l.scrollHeight-l.scrollTop-l.clientHeight<140),h=Math.max(0,bottom-rect.top-8);
+ pane.style.setProperty('--cs-keyboard-height',h+'px');
+ if(threadOpen){roomKbH=h;W.requestAnimationFrame(()=>{const r=inp.getBoundingClientRect(),over=Math.ceil(r.bottom+10-bottom);
+  if(over>0&&D.activeElement===inp)pane.style.setProperty('--cs-keyboard-height',Math.max(0,h-over)+'px');if(stick&&l)l.scrollTop=l.scrollHeight;});}
 }
 D.addEventListener('change',e=>{if(e.target&&e.target.id==='cmPhotoFile'){const f=e.target.files&&e.target.files[0];takePhoto(f);}});
 D.addEventListener('input',e=>{if(e.target.id!=='cmInput')return;typeDraft(e.target.value);micSwap();if(!store){const sb=D.getElementById('cmSend');if(sb)sb.disabled=!(sel&&botOf(sel))||!e.target.value.trim();}mentions();});

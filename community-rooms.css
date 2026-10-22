@@ -225,4 +225,4 @@
    The name button now starts right of the X, and inside a chat room the X steps aside: the room's back arrow goes to the channel
    list, where the X is back. */
 html.sec-open #cmPaneChat[data-spirit-chat]>.rm-bar .rm-head{padding-left:calc(52px + env(safe-area-inset-left,0px))}
-html.rm-room-open .sec-x{display:none!important}
+/* item 38: the Home back button stays in its place on Chat too (it used to step aside in the room) */

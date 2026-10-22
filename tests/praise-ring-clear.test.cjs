@@ -46,7 +46,7 @@ test('with room beside Misty it is still a speech bubble coming out of her (no d
 
 test('wiring: the toast reads the ring bubbles and the joystick (even faded) and drops its tail when docked', () => {
     const js = read('praise.js'), css = read('sun-meter.css');
-    assert.ok(/querySelectorAll\('\[data-orbit\], #whPad'\)/.test(js), 'ring bubbles + joystick are the obstacles');
+    assert.ok(/querySelectorAll\('\[data-orbit\], #whPad(, #whHint\.on)?'\)/.test(js), 'ring bubbles + joystick (+ Misty\'s own hint, misty-say Oct 22) are the obstacles');
     assert.ok(/e\.id !== 'whPad' && e\.checkVisibility/.test(js), 'a faded joystick still counts');
     assert.ok(/place\(a, \{ w, h \}, quest, \{ w: vw, h: vh, top: 8 \+ safeTop\(\) \}, gap, obs\)/.test(js), 'show() passes the controls');
     assert.ok(/p\.dock \? 'lp-dock'/.test(js) && /'lp-dock'\)/.test(js), 'dock class set and cleared');

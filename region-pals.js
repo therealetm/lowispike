@@ -65,7 +65,17 @@
             '<span class="rp-ask" role="group"><button type="button" class="rp-yes">' + esc(C.tr('yes', lang())) + '</button><button type="button" class="rp-no">' + esc(C.tr('no', lang())) + '</button></span></div>';
         ['pointerdown', 'touchstart', 'mousedown'].forEach(t => el.addEventListener(t, e => e.stopPropagation(), { passive: true }));
         el.querySelector('.rp-body').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); next(true); });
-        el.querySelector('.rp-say').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); quiet(); });
+        /* misty-say (Oct 22): the bubble shows two lines; a tap on a longer one opens it in full (with its reading time again), any other tap closes it */
+        el.querySelector('.rp-say').addEventListener('click', e => {
+            e.preventDefault(); e.stopPropagation();
+            const tx = el.querySelector('.rp-tx');
+            if (!st.asking && !el.classList.contains('rp-open') && tx && tx.scrollHeight > tx.clientHeight + 2) {
+                el.classList.add('rp-open'); st.size = null; placeSay(true);
+                clearTimeout(st.sayT); st.sayT = setTimeout(quiet, C.showMs(tx.textContent, 'fact') + 1500);
+                return;
+            }
+            quiet();
+        });
         /* lesson recall check (Oct 18, 2026): Yes = remembered, on to the next lesson; No = that lesson again */
         el.querySelector('.rp-yes').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); reply(true); });
         el.querySelector('.rp-no').addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); reply(false); });
@@ -97,7 +107,7 @@
     function show1(line, user, again) {
         const b = st.el.querySelector('.rp-say'), tx = b.querySelector('.rp-tx');
         st.line = line; if (line.kind === 'fact') st.hadFact = true;
-        tx.textContent = line.text;
+        tx.textContent = line.text; st.el.classList.remove('rp-open');
         st.el.classList.toggle('rp-hunt', line.kind === 'hunt');
         st.asking = line.kind === 'ask' ? line.ask : null;
         st.el.classList.toggle('rp-asking', !!st.asking);
@@ -124,7 +134,7 @@
     function quiet() {
         clearTimeout(st.sayT); clearTimeout(st.nextT);
         if (st.asking && st.el && D.contains(st.el)) askLeft = null;   /* it had its time unanswered: no answer changes nothing */
-        if (st.el) st.el.classList.remove('rp-talk', 'rp-asking');
+        if (st.el) st.el.classList.remove('rp-talk', 'rp-asking', 'rp-open');
         st.cur = null; st.line = null; st.asking = null; st.endT = performance.now();
         if (st.pendAsk && st.el) {
             const L = st.pendAsk; st.pendAsk = null; clearTimeout(st.waitT);

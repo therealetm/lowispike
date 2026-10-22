@@ -63,7 +63,7 @@
     };
     /* the hunt, in the guide's own voice ({n} = Misty's name, {k} = a number, {d} = a direction) */
     const GUIDE = {
-        sense: ['I can feel {k} sugar crumbs hiding in this world\u2019s corners. Steer {n} right up to one and she gobbles it.', 'Ich sp\u00fcre {k} Zuckerkr\u00fcmel in den Ecken dieser Welt. Steuer {n} ganz nah ran, dann futtert sie ihn weg.', 'Siento {k} migas de az\u00facar en los rincones de este mundo. Lleva a {n} muy cerca y se la come.'],
+        sense: ['I sense {k} sugar crumbs here. Steer {n} close to gobble one.', 'Ich sp\u00fcre {k} Zuckerkr\u00fcmel. Steuer {n} hin, sie futtert sie.', 'Siento {k} migas de az\u00facar. Acerca a {n} y se las come.'],
         warm: ['Warmer! One is close, keep going.', 'W\u00e4rmer! Einer ist ganz nah, weiter so.', '\u00a1Caliente! Hay una cerca, sigue.'],
         found: ['{n} got one! {k} left in this world.', '{n} hat einen erwischt! Noch {k} in dieser Welt.', '\u00a1{n} atrap\u00f3 una! Quedan {k} en este mundo.'],
         found1: ['{n} got one! Just one left here.', '{n} hat einen erwischt! Nur noch einer hier.', '\u00a1{n} atrap\u00f3 una! Solo queda una aqu\u00ed.'],
@@ -71,7 +71,7 @@
         level: ['Level up! {n} is now level {k} and a little stronger.', 'Level up! {n} ist jetzt Level {k} und ein bisschen st\u00e4rker.', '\u00a1Sube de nivel! {n} ya es nivel {k} y un poco m\u00e1s fuerte.'],
         full: ['{n} is full of power for today. The crumbs still get cleared!', '{n} hat f\u00fcr heute volle Kraft. Die Kr\u00fcmel r\u00e4umt sie trotzdem weg!', '{n} ya tiene todo su poder por hoy. \u00a1Igual limpia las migas!'],
         entered: ['You steered {n} in yourself, so she got a little power-up.', 'Du hast {n} selbst reingesteuert, das gibt ihr einen kleinen Kraftschub.', 'T\u00fa llevaste a {n} adentro, as\u00ed que recibi\u00f3 un peque\u00f1o impulso.'],
-        auto: ['Crumbs only count when you steer {n} yourself. On autopilot she just looks around.', 'Kr\u00fcmel z\u00e4hlen nur, wenn du {n} selbst steuerst. Mit Autopilot schaut sie sich nur um.', 'Las migas solo cuentan si gu\u00edas t\u00fa a {n}. Con el piloto autom\u00e1tico solo mira.'],
+        auto: ['Crumbs only count when you steer {n}.', 'Kr\u00fcmel z\u00e4hlen nur, wenn du {n} steuerst.', 'Las migas solo cuentan si gu\u00edas t\u00fa a {n}.'],
         real: ['These crumbs only exist in the game. Catching them doesn\u2019t change anything in your real body.', 'Diese Kr\u00fcmel gibt es nur im Spiel. Wegfuttern \u00e4ndert nichts in deinem echten K\u00f6rper.', 'Estas migas solo existen en el juego. Atraparlas no cambia nada en tu cuerpo real.'],
         dir: ['Try {d}. The fog looks thicker over there.', 'Versuch\u2019s mal {d}. Dort ist der Nebel dichter.', 'Prueba {d}. All\u00ed la niebla se ve m\u00e1s espesa.'],
         behind: ['One is hiding behind us. Turn the world a little.', 'Einer versteckt sich hinter uns. Dreh die Welt ein bisschen.', 'Hay una escondida detr\u00e1s. Gira un poco el mundo.'],

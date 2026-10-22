@@ -313,6 +313,8 @@
         if (!homeSince) { homeSince = Date.now(); return; }
         if (nudge) { place(); return; }
         if (Date.now() - homeSince < SETTLE || Date.now() - lastShown < NUDGE_GAP || shownToday() >= NUDGE_DAY_MAX) return;
+        /* misty-say (Oct 22): one message at a time: no nudge while Misty's speech bubble (praise.js) is up or has lines waiting */
+        try { if (W.LowiPraise && W.LowiPraise.talking && W.LowiPraise.talking()) return; } catch (e) { }
         const now = Date.now(); while (shows.length && dayKey(shows[0]) !== dayKey(now)) shows.shift();
         if (shows.length >= NUDGE_SHOWS_MAX) return;
         const s = seen(), n = candidates().find(c => !s[c.key] && !(retry[c.key] && now - retry[c.key] < NUDGE_RETRY));

@@ -84,7 +84,7 @@
     }
     const STR = {
         label: ['Hunt power Lv ', 'Jagdkraft Lv ', 'Poder de caza Nv '],
-        sense: ['I can feel {n} sugar crumbs hiding in the corners here. Steer me close and I gobble them up!', 'Ich spüre {n} Zuckerkrümel, versteckt in den Ecken hier. Steuer mich nah ran und ich futtere sie weg!', 'Siento {n} migas de azúcar escondidas en los rincones. ¡Guíame cerca y me las zampo!'],
+        sense: ['I sense {n} sugar crumbs. Steer me close and I gobble them!', 'Ich spüre {n} Zuckerkrümel. Steuer mich hin, ich futtere sie!', 'Siento {n} migas de azúcar. ¡Acércame y me las como!'],
         found: ['Got one! {left} left in this world.', 'Erwischt! Noch {left} in dieser Welt.', '¡Atrapada! Quedan {left} en este mundo.'],
         clean: ['This world is sparkling clean again!', 'Diese Welt glänzt wieder!', '¡Este mundo vuelve a brillar!'],
         level: ['Level up! Misty is now level {L}. I feel stronger!', 'Level up! Misty ist jetzt Level {L}. Ich fühl mich stärker!', '¡Subes de nivel! Misty ya es nivel {L}. ¡Me siento más fuerte!'],

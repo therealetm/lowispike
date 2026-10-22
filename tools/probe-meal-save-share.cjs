@@ -5,12 +5,14 @@
    taps: Fuel's today list shows the thumbnail -> the meal sheet (photo + estimate) -> Share to Community (caption, Post) -> the meal
    card in the Chat room -> Delete meal removes the log and the device photo. Checks nothing is cut off or off screen. */
 const H = require('./sim/harness.cjs'), path = require('path'), fs = require('fs');
+const res = {};
 (async () => {
     const device = process.argv[2] || 'iPhone 13', where = process.argv[3] || path.join(__dirname, '..'), engine = process.argv[4] || 'webkit';
     const theme = process.argv[5] || 'light', lang = process.argv[6] || 'en', tag = (device + '-' + theme + '-' + lang).replace(/\s+/g, '');
     const OUT = '/home/sprite/ml/shots'; fs.mkdirSync(OUT, { recursive: true });
     const o = { device, engine, members: 10, messages: 20, probe: false, lang }; if (/^https?:/.test(where)) o.url = where; else o.root = where;
-    const R = await H.open(o), P = R.page, res = { device, theme, lang }, fails = [];
+    const R = await H.open(o), P = R.page, fails = []; res.device = device; res.theme = theme; res.lang = lang;
+    const tapLast = async sel => { await P.locator(sel).last().scrollIntoViewIfNeeded().catch(() => {}); await P.locator(sel).last().click({ timeout: 8000 }); };
     const errors = []; P.on('pageerror', e => errors.push(String(e.message || e).slice(0, 160)));
     await R.goto(); await H.sleep(4000);
     for (let i = 0; i < 3; i++) { await P.keyboard.press('Escape'); await H.sleep(200); }
@@ -29,17 +31,21 @@ const H = require('./sim/harness.cjs'), path = require('path'), fs = require('fs
         const c = document.createElement('canvas'); c.width = 1600; c.height = 1200; const g = c.getContext('2d');
         g.fillStyle = '#f3efe6'; g.fillRect(0, 0, 1600, 1200); g.fillStyle = '#e9e4da'; g.beginPath(); g.arc(800, 600, 500, 0, 7); g.fill();
         g.fillStyle = '#6aa84f'; g.beginPath(); g.arc(640, 520, 230, 0, 7); g.fill(); g.fillStyle = '#d9a35b'; g.beginPath(); g.arc(940, 700, 200, 0, 7); g.fill(); g.fillStyle = '#c0392b'; g.beginPath(); g.arc(900, 430, 90, 0, 7); g.fill();
-        const file = await new Promise(r => c.toBlob(b => r(new File([b], 'meal.jpg', { type: 'image/jpeg' })), 'image/jpeg', .9));
+        let at = 'blob'; try {
+        const file = await new Promise(r => c.toBlob(b => r(b), 'image/jpeg', .9));
         const J = window.LowiMealJournal, V = window.LowiVitalsBridge;
         const ai = J.estimate({ name: 'Chicken salad bowl', items: [{ name: 'Grilled chicken', portion: '120 g' }, { name: 'Mixed greens', portion: '1 bowl' }, { name: 'Roasted sweet potato', portion: '80 g' }, { name: 'Cherry tomatoes' }], total: { kcal: 486, carbs: 31, protein: 41, fiber: 8, sugar: 7, fat: 19 } }, { lvl: 'low', note: 'Protein and fiber first: a calm curve.' });
-        const pic = await J.prepare(file);
+        at = 'prepare'; const pic = await J.prepare(file); if (!pic) return { err: 'prepare null' };
+        at = 'log';
         const r = V.logMeal({ id: 'probe-' + Date.now(), t: 'Chicken salad bowl', lvl: 'low', via: 'photo', photo: pic.thumb, ai, macros: ai.total, ts: Date.now() - 30 * 60000 });
-        const kept = await J.keep(r.log.id, pic);
+        at = 'keep'; const kept = await J.keep(r.log.id, pic); at = 'get';
         const blob = await J.getPhoto(r.log.id);
         const s = V.state(), log = s.logs.find(l => l.id === r.log.id);
-        const im = await createImageBitmap(blob);
+        at = 'bitmap'; const im = await new Promise((ok, no) => { const i = new Image(); i.onload = () => ok({ width: i.naturalWidth, height: i.naturalHeight }); i.onerror = no; i.src = URL.createObjectURL(blob); });
         return { id: r.log.id, xp: r.xp, kept, blobKB: Math.round(blob.size / 1024), w: im.width, h: im.height, thumbKB: Math.round(log.photo.length / 1024), ai: !!log.ai && log.ai.items.length, lsKB: Math.round((localStorage.getItem('lowispike.v2') || '').length / 1024) };
+        } catch (e) { return { err: at + ': ' + String(e && e.message || e) }; }
     });
+    if (logged.err) { console.log(JSON.stringify({ crash: logged.err })); await R.close(); process.exit(2); }
     res.logged = logged;
     if (!logged.kept || Math.max(logged.w, logged.h) !== 1024) fails.push('photo not kept at 1024 px: ' + JSON.stringify(logged));
     if (logged.thumbKB > 16) fails.push('thumbnail too big: ' + logged.thumbKB + ' KB');
@@ -59,14 +65,21 @@ const H = require('./sim/harness.cjs'), path = require('path'), fs = require('fs
 
     /* 3. Share to Community: caption, Post */
     R.step = 'share';
-    await R.tap('.mj-sheet [data-mj=share]'); await H.sleep(1400);
+    await tapLast('.mj-sheet [data-mj=share]'); await H.sleep(1400);
     res.shareSheet = await P.evaluate(() => { const s = [...document.querySelectorAll('.mj-share')].pop(); return s ? { name: (s.querySelector('.mj-card b') || {}).textContent, bs: (s.querySelector('.mj-bs') || {}).textContent, foot: (s.querySelector('.mj-foot') || {}).textContent, input: !!s.querySelector('.mj-cap input') } : null; });
-    if (!res.shareSheet) fails.push('share sheet missing');
+    if (!res.shareSheet) {
+        res.shareDiag = await P.evaluate(async id => { const o = { ovs: [...document.querySelectorAll('.r2-ov')].map(x => x.className), toast: (document.querySelector('.r2-toast,.toast,#toast') || {}).textContent || '' };
+            try { const log = LowiVitalsBridge.state().logs.find(l => l.id === id); o.share = LowiMealJournal.shareOf(log); o.lvl = log && log.lvl; const r = await LowiMealJournal.share(id); o.ret = !!r; } catch (e) { o.err = String(e && e.message || e); }
+            o.after = document.querySelectorAll('.mj-share').length; return o; }, logged.id);
+        await H.sleep(800);
+        if (!res.shareDiag.after) { fails.push('share sheet missing ' + JSON.stringify(res.shareDiag)); console.log(JSON.stringify(res)); await R.close(); process.exit(1); }
+        fails.push('share sheet did not open from the meal sheet button ' + JSON.stringify(res.shareDiag));
+    }
     const before = R.sim ? R.sim.writes.length : 0;
     await P.locator('.mj-share .mj-cap input').last().fill(lang === 'de' ? 'Mittag nach dem Training' : lang === 'es' ? 'Comida después del gym' : 'Lunch after the gym');
     await fits('.r2-ov.mj-ov', 'shareFits');
     await R.shot(OUT + '/' + tag + '-3-share.png');
-    await R.tap('.mj-share [data-mj=post]'); await H.sleep(3500);
+    await tapLast('.mj-share [data-mj=post]'); await H.sleep(3500);
     const w = R.sim ? R.sim.writes.slice(before) : [];
     res.writes = w.map(x => x.m + ' ' + String(x.p).slice(0, 90));
     res.shareMsg = await P.evaluate(() => { const m = [...document.querySelectorAll('.mj-msg')].pop(); return m ? m.textContent : 'closed'; });
@@ -89,14 +102,14 @@ const H = require('./sim/harness.cjs'), path = require('path'), fs = require('fs
     R.step = 'delete';
     await P.evaluate(() => { try { goTab('home'); } catch (e) { } }); await H.sleep(900);
     await P.evaluate(id => LowiMealJournal.open(id), logged.id); await H.sleep(1100);
-    await R.tap('.mj-sheet [data-mj=del]'); await H.sleep(500);
+    await tapLast('.mj-sheet [data-mj=del]'); await H.sleep(500);
     await fits('.r2-ov.mj-ov', 'confirmFits');
     await R.shot(OUT + '/' + tag + '-5-delete.png');
-    await R.tap('.mj-sheet [data-mj=delgo]'); await H.sleep(1500);
+    await tapLast('.mj-sheet [data-mj=delgo]'); await H.sleep(1500);
     res.afterDelete = await P.evaluate(async id => ({ log: !!LowiVitalsBridge.state().logs.find(l => l.id === id), photo: !!(await LowiMealJournal.getPhoto(id)) }), logged.id);
     if (res.afterDelete.log || res.afterDelete.photo) fails.push('delete left ' + JSON.stringify(res.afterDelete));
     res.errors = errors.filter(e => !/ResizeObserver/.test(e)); if (res.errors.length) fails.push('page errors: ' + res.errors.join(' | '));
     res.fails = fails; res.ok = !fails.length;
     console.log(JSON.stringify(res));
     await R.close(); process.exit(fails.length ? 1 : 0);
-})().catch(e => { console.log(JSON.stringify({ crash: String(e && e.stack || e).slice(0, 600) })); process.exit(2); });
+})().catch(e => { res.crash = String(e && e.stack || e).slice(0, 600); console.log(JSON.stringify(res)); process.exit(2); });

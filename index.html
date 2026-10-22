@@ -14438,7 +14438,7 @@ function cardHTML(p, anim){
     '<div class="b3-name">' + esc(p.name) + '</div>' + (p.brand ? '<div class="small muted">' + esc(p.brand) + (p.facts && p.facts.q ? " · " + esc(p.facts.q) : "") + '</div>' : "") +
     '<div class="b3-verd"><span class="b3-vb v-' + v + '">' + esc(t("vl_" + v)) + '</span><span class="small">' + esc(t("vs_" + v)) + '</span></div>' + herbHTML(v) + eatHTML(p) +
     (v !== "unknown" ? meterHTML(p.score != null ? p.score : (p.facts && p.facts.score) || rate(p).score, p.est || (p.facts && p.facts.est)) : "") +
-    (why.length ? '<ul class="b3-why">' + why.map(w => '<li>' + esc(w) + '</li>').join("") + '</ul>' : "") + factsHTML(p.facts) + fillNoteHTML(p) + lpAskHTML(p) + storeCmp +
+    (why.length ? '<ul class="b3-why">' + why.map(w => '<li>' + esc(w) + '</li>').join("") + '</ul>' : "") + factsHTML(p.facts) + fillNoteHTML(p) + (typeof lpAskHTML === "function" ? lpAskHTML(p) : "") + storeCmp +
     '<div class="tiny dim b3-meta">' + [by, p.id ? (p.catches > 1 ? t("catches", p.catches) : t("catches1")) : "", p.barcode ? t("bcFound", p.barcode) : "", p.source === "off" ? t("r_off") : ""].filter(Boolean).map(esc).join(" · ") + '</div></div>'; }
 /* Oct 16 simple spike card: photo + name, one big spike verdict (an estimate), one action: Catch it.
    Oct 19 (owner's call): order is header > spike estimate > cheaper at other stores > Catch it > Details (OPEN by default)
@@ -14510,7 +14510,7 @@ function simpleCardHTML(p){
     '<section class="sc-sec sc-prices"><h4>' + esc(sct("cheaper")) + '</h4>' + (storeCmp || '<p class="sc-none">' + esc(sct("noPrices")) + '</p>') + '</section>' +
     scActsHTML(p, mine, m) +
     '<details class="sc-more" open><summary>' + esc(sct("details")) + '</summary>' +
-      (why.length ? '<ul class="b3-why">' + why.map(w => '<li>' + esc(w) + '</li>').join("") + '</ul>' : "") + factsHTML(p.facts) + fillNoteHTML(p) + lpAskHTML(p) +
+      (why.length ? '<ul class="b3-why">' + why.map(w => '<li>' + esc(w) + '</li>').join("") + '</ul>' : "") + factsHTML(p.facts) + fillNoteHTML(p) + (typeof lpAskHTML === "function" ? lpAskHTML(p) : "") +
       '<div class="tiny dim b3-meta">' + [p.id ? (p.catches > 1 ? t("catches", p.catches) : t("catches1")) : "", p.barcode ? t("bcFound", p.barcode) : "", p.source === "off" ? t("r_off") : ""].filter(Boolean).map(esc).join(" · ") + '</div>' +
       (window.LowiDiscovery ? '<button type="button" class="r2-link b3-label" data-b3="label">' + esc(["Label details & evidence", "Etikett-Details & Belege", "Detalles de la etiqueta"][LI()]) + '</button>' : "") +
       '<div class="tiny dim b3-legal">' + esc(t("legal")) + '</div></details>' + deals +
@@ -14526,7 +14526,7 @@ function manualHTML(p){
   return '<div class="b3-man"><div class="b3-name">' + esc(t(p.offline ? "noReach" : "notFound")) + '</div><div class="small muted">' + esc(p.offline ? t("noReachS") : t("notFoundS")) + '</div>' +
     (p.barcode ? '<div class="tiny dim" style="margin-top:6px">' + esc(t("bcFound", p.barcode)) + '</div>' : "") +
     (p.offline ? "" : deepLink("b3-nfdeep", 'id="b3NfDeep"', t("deepNf"), t("deepNfS")) +
-      lpAskHTML(p) + '<div class="tiny dim b3-fl b3-or">' + esc(t("orAdd")) + '</div>') +
+      (typeof lpAskHTML === "function" ? lpAskHTML(p) : "") + '<div class="tiny dim b3-fl b3-or">' + esc(t("orAdd")) + '</div>') +
     '<label class="tiny dim b3-fl">' + esc(t("nameQ")) + '</label><input class="input" id="b3MName" maxlength="80" placeholder="' + esc(t("namePh")) + '" value="' + esc(p.name || "") + '">' +
     '<input class="input" id="b3MBrand" maxlength="60" style="margin-top:8px" placeholder="' + esc(t("brandPh")) + '" value="' + esc(p.brand || "") + '">' +
     '<div class="small b3-mq">' + esc(t("manualQ")) + '</div><div class="b3-ticks">' + ["sugar", "sweet", "carb", "none"].map(k => '<button class="b3-tick" data-b3="tick" data-k="' + k + '" aria-pressed="false">' + esc(t("m_" + k)) + '</button>').join("") + '</div>' +

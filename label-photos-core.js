@@ -30,6 +30,11 @@
         if (typeof require === 'function') { try { return require('./food-engine-core.js'); } catch (e) { return null; } }
         return null;
     }
+    function ingLib() {
+        if (root && root.LowiIngredients) return root.LowiIngredients;
+        if (typeof require === 'function') { try { return require('./ingredient-core.js'); } catch (e) { return null; } }
+        return null;
+    }
     function num(v) { const x = typeof v === 'number' ? v : parseFloat(v); return isFinite(x) ? x : null; }
 
     // What is missing for this scanned product: which photos to ask for and which label values are unknown. Uses the engine's
@@ -45,7 +50,11 @@
         let needs = [];
         const E = engine();
         if (E && E.assessConfidence) {
-            try { needs = E.assessConfidence({name: p.name || 'x', barcode: p.barcode, unit, per100, ingredients: ing}).needs.slice(); } catch (e) { needs = []; }
+            const IL = ingLib();
+            let A = null, nutrition = null;
+            try { A = IL && ing ? IL.analyzeIngredients(ing, {name: p.name, brand: p.brand, claims: p.claims}) : null; } catch (e) { A = null; }
+            try { nutrition = E.validateNutrition ? E.validateNutrition(per100, unit) : null; } catch (e) { nutrition = null; }
+            try { needs = E.assessConfidence({name: p.name || 'x', barcode: p.barcode, unit, per100, ingredients: ing}, {nutrition, ingredients: A}).needs.slice(); } catch (e) { needs = []; }
         } else {
             if (missing.some(k => k !== 'fibre')) needs.push('label_photo');
             if (!ing) needs.push('ingredients_photo');

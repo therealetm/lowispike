@@ -261,11 +261,14 @@
         try { return T.plantHTML(Object.assign({}, m, { index: i, dim: false, mood: 'happy' }), 'node', hp, { cfStage: i, hidden: true }); } catch (e) { }
         return C.miniSVG(Object.assign({}, g, { st: i }), 'p' + i);
     }
+    /* BH-006 name chain (same helper as world-home.js / misty-hub.js): own companion > a typed name > Misty */
+    function companionName() { const w = typeof window !== 'undefined' ? window : globalThis; const pick = v => { v = v == null ? '' : String(v).trim(); return v ? v.slice(0, 24) : ''; }; let auto = ''; try { auto = pick(w.LowiHerbIdentity && w.LowiHerbIdentity.autoName && w.LowiHerbIdentity.autoName()); } catch (e) { } const typed = v => { v = pick(v); return v && v !== auto ? v : ''; }; let n = ''; try { const B = w.LowiBirthCompanion; if (B && B.has && B.has()) { const c = B.get(); n = pick(c && c.name); } } catch (e) { } if (!n) try { const t = w.LowiHerbTamagotchi, p = t && t.readPrefs && t.readPrefs(); n = typed(p && p.name); } catch (e) { } if (!n) try { const R = w.LowiR2, s = R && R.S && R.S(); n = typed(s && s.herb && s.herb.name); } catch (e) { } return n || 'Misty'; }
     function sheetHTML() {
         const m = model(), g = myGenome(m), p = prefs();
         const xBtn = '<button type="button" class="cf-x" data-cf="close" aria-label="' + esc(L('Close', 'Schließen', 'Cerrar')) + '">×</button>';
         if (!m || !g) return '<div class="cf-panel cf-misty" role="dialog" aria-modal="true" aria-label="Misty"><header class="cf-head"><h2>Misty</h2>' + xBtn + '</header><div class="cf-scroll"><p>' + esc(L('Your companion is still waking up.', 'Dein Begleiter wacht gerade auf.', 'Tu compañero se está despertando.')) + '</p></div></div>';
-        const nm = (() => { try { return W.LowiHerbIdentity.current().name; } catch (e) { } try { return HT().name(cur().p, m) || 'Misty'; } catch (e) { return 'Misty'; } })();
+        /* Bug hunt Oct 23: the title is the same name Misty's card shows (BH-006 chain), never the old herb auto name ("Sunny Leaf") */
+        const nm = companionName();
         const cc = cur(), hp = cc && cc.p ? cc.p : {}, pal = (m.profile && m.profile.palette) || {};
         const sign = m.profile && m.profile.sign, t = curType();
         const signTxt = sign ? (() => { try { return W.LowiHerbIdentity.signLabel(sign.name); } catch (e) { return sign.name; } })() : '';

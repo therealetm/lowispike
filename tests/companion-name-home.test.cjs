@@ -4,7 +4,7 @@
    companion's name, else a name the user typed, else "Misty". Never the herb auto name. */
 const test = require('node:test'), assert = require('node:assert'), fs = require('fs'), path = require('path'), vm = require('vm');
 const ROOT = path.join(__dirname, '..');
-const FILES = ['world-home.js', 'misty-hub.js', 'misty-scale.js', 'spirit.js', 'cell-room.js'];
+const FILES = ['world-home.js', 'misty-hub.js', 'misty-scale.js', 'spirit.js', 'cell-room.js', 'companion.js'];
 const src = f => fs.readFileSync(path.join(ROOT, f), 'utf8');
 
 function helper(f) {
@@ -48,3 +48,11 @@ for (const f of FILES) {
         assert.ok(!/LowiHerbTamagotchi\.name\(|\bt\.name\(c\.p|\bT\.name\(p, m\)/.test(s), f + ' still reads LowiHerbTamagotchi.name()');
     });
 }
+
+/* Bug hunt Oct 23 2026 (companion / XP / forms): the Forms panel (Misty's card > Forms, LowiCompanion) was titled with the old herb
+   identity name ("Sunny Leaf" for a Leo) while Misty's card above it said "Misty". Its title must use the same name chain. */
+test('companion.js: the Forms panel title uses companionName(), never LowiHerbIdentity.current().name', () => {
+    const s = src('companion.js');
+    assert.ok(!/LowiHerbIdentity\.current\(\)\.name/.test(s), 'companion.js still titles the Forms panel with the herb identity name');
+    assert.ok(/const nm = companionName\(\)/.test(s), 'the Forms panel title comes from companionName()');
+});

@@ -46,7 +46,7 @@ test('item 38: the room is a rounded box under the tab bar and the composer is i
   assert.doesNotMatch(css, /#cmPaneChat#cmPaneChat\[data-room\]\{padding:0!important\}/, 'the pane keeps the padding of the other tabs');
   assert.match(css, /html\.cs-chat-typing body #tab-foryou #cmPaneChat#cmPaneChat\[data-room\]\{padding-bottom:8px!important\}/);
   assert.match(rule(P + ' .cg-thread.cr-room[data-open]'), /inset:0!important/);
-  assert.match(css, /\.cr-room #cmList\.cm-list\.cm-list\{padding-top:12px!important;padding-bottom:10px!important/, 'nothing floats over the end of the list');
+  assert.match(css, /\.cr-room #cmList\.cm-list\.cm-list\{padding-top:var\(--cr-top,12px\)!important;padding-bottom:10px!important/, 'nothing floats over the end of the list');
 });
 
 test('the room stays light on the phone: two frosted strips, the room itself has no full-screen blur', () => {

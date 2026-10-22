@@ -46,10 +46,9 @@ test('Oct 20: with the galaxy alone the chat pane is never made inert (2nd visit
 
 test('Community declutter (Oct 21): small privacy icon, labelled friends tree, Milestones in Move', () => {
     const js = read('nav-moves.js'), css = read('nav-moves.css');
-    // privacy & quiet hours: a small shield icon next to the Community name that opens the same sheet as the Profile row
-    assert.match(js, /s\.className = 'nm-cpriv'; s\.dataset\.nm = 'privacy'/);
-    assert.match(js, /if \(id && s\.previousElementSibling !== id\) id\.after\(s\);/);
-    assert.match(css, /\.rm-head > \.nm-cpriv \{ flex: none; width: 38px; height: 38px;/);
+    // Oct 22: the privacy shield badge next to the Community name is gone (Your presence lives in the profile panel)
+    assert.doesNotMatch(js, /s\.className = 'nm-cpriv'/);
+    assert.match(js, /const old = pane\.querySelector\('\.rm-head > \.nm-cpriv'\); if \(old\) old\.remove\(\);/);
     // friends tree: a labelled button in the galaxy, opened by cell-room.js through data-cr="tree"
     assert.match(js, /t\.className = 'nm-ctree'; t\.dataset\.cr = 'tree'/);
     assert.match(js, /T\('Friends tree', 'Freundesbaum', '\\u00c1rbol de amigos'\)/);
@@ -60,7 +59,6 @@ test('Community declutter (Oct 21): small privacy icon, labelled friends tree, M
     assert.match(read('finch-extras.js'), /if \(a === 'miles'\) \{ e\.preventDefault\(\); e\.stopPropagation\(\); openMiles\(\); \}/);
     // labels are only written when they change (tick() runs on every DOM change: no endless loop)
     assert.match(js, /if \(sp\.textContent !== tl\)/);
-    assert.match(js, /if \(s\.getAttribute\('aria-label'\) !== pl\)/);
     assert.match(js, /raf = 0; hook\(\); align\(\); privacy\(\); communityTools\(\); moveCard\(\);/);
 });
 

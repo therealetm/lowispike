@@ -239,24 +239,13 @@
         e.preventDefault();
         try { if (W.LowiCommunity && W.LowiCommunity.settings) W.LowiCommunity.settings(); } catch (x) { console.error(x); }
     });
-    /* Oct 21 (E-man, Community clean-up): privacy & quiet hours as a small shield icon next to the Community name (opens the same
-       sheet as the Profile row), and the friends tree as a labelled button in the galaxy's lower left corner, mirroring the
+    /* Oct 21 (E-man, Community clean-up): the friends tree as a labelled button in the galaxy's lower left corner, mirroring the
        energy joystick on the right. Built only when missing; labels are written only when they differ (no DOM loop). */
     function communityTools() {
         const pane = D.getElementById('cmPaneChat'); if (!pane) return;
-        const head = pane.querySelector(':scope > .rm-bar > .rm-head');
-        if (head) {
-            let s = head.querySelector(':scope > .nm-cpriv');
-            if (!s) {
-                s = D.createElement('button'); s.type = 'button'; s.className = 'nm-cpriv'; s.dataset.nm = 'privacy'; s.setAttribute('data-noi18n', '');
-                s.innerHTML = ICO.shield;
-            }
-            /* row 1 of the Community header, right after the Community name button (clear of Day/Night and the profile picture) */
-            const id = head.querySelector(':scope > .rm-id');
-            if (id && s.previousElementSibling !== id) id.after(s); else if (!id && s.parentNode !== head) head.appendChild(s);
-            const pl = T('Chat privacy & quiet hours', 'Chat-Privatsph\u00e4re & Ruhezeiten', 'Privacidad del chat y horas de silencio');
-            if (s.getAttribute('aria-label') !== pl) { s.setAttribute('aria-label', pl); s.title = pl; }
-        }
+        /* Oct 22 (Emmanuel: "put that into where my profile is, so it's not a different badge"): no shield badge next to the
+           Community name any more; Your presence is a tile in your profile panel (community-me.js) and the Profile row below */
+        const old = pane.querySelector('.rm-head > .nm-cpriv'); if (old) old.remove();
         const room = pane.querySelector('#cpRoom');
         if (room) {
             let t = room.querySelector(':scope > .nm-ctree');

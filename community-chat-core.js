@@ -15,13 +15,25 @@ const VOICE_RE = /(^|\s)\u{1F3A4} (https:\/\/[a-z0-9-]{8,40}\.supabase\.co\/stor
 function voice(text, uid){ const s=String(text||''), m=VOICE_RE.exec(s); if(!m||(uid&&m[3]!==uid))return null; const rest=(s.slice(0,m.index)+m[1]+s.slice(m.index+m[0].length)).replace(/\s+/g,' ').trim(); return {src:m[2],dur:Math.min(600,+m[4]||0),rest}; }
 function voiceBody(src, dur){ const s=String(src||''); if(!voice('\u{1F3A4} '+s))return ''; const d=Math.max(1,Math.min(600,Math.round(+dur||0))); return '\u{1F3A4} '+s+'#d='+d; }
 function photoBody(src, caption){ const s=String(src||''); if(!photo('\u{1F4F7} '+s))return ''; const c=String(caption||'').replace(/\s+/g,' ').trim().slice(0,600-s.length-4); return '\u{1F4F7} '+s+(c?' '+c:''); }
+/* 22 Oct (Emmanuel: "As the admin, I should be able to pin things when I want to"): a pin is an ordinary message in the room whose
+   body is '📌⁠pin:<message id> <short text>' (U+2060 after the pin), unpin is '📌⁠unpin'. No schema change: everyone in the room loads and
+   gets it live like any message. The newest marker wins; markers never show as chat lines. Only the owner's app offers Pin
+   (LowiOwnerAdmin.isOwner(), server is_app_owner()); typed text can never become a marker. Server-side check for the owner to run:
+   supabase/proposals/chat_pin_20261022.sql. */
+const PIN_MARK='\u{1F4CC}\u2060';
+const PIN_RE=/^\u{1F4CC}\u2060(?:pin:([A-Za-z0-9_-]{1,80})(?: ([\s\S]*))?|(unpin))$/u;
+function pinOf(text){const m=PIN_RE.exec(String(text||''));if(!m)return null;return m[3]?{unpin:true,id:'',text:''}:{unpin:false,id:m[1],text:String(m[2]||'').replace(/\s+/g,' ').trim().slice(0,200)};}
+function pinBody(id,text){if(!/^[A-Za-z0-9_-]{1,80}$/.test(String(id||'')))return '';const t=String(text||'').replace(/\s+/g,' ').trim().slice(0,160);return PIN_MARK+'pin:'+id+(t?' '+t:'');}
+function unpinBody(){return PIN_MARK+'unpin';}
+/* the room's current pin from its loaded messages (newest marker wins), or null */
+function pinned(messages){let best=null;for(const m of (messages||[])){if(!m||m.status||typeof m.t!=='string')continue;const p=pinOf(m.t);if(!p)continue;const ts=+m.ts||0;if(!best||ts>=best.ts)best={...p,mark:m.id,uid:m.uid,ts};}return best&&!best.unpin?best:null;}
 function identity(row){ row=row||{}; return {t:row.share_personality === true ? type(row.personality) : '',s:row.share_sign === true && SIGNS.includes(row.sign) ? row.sign : ''}; }
 function quiet(p, now){ p=p||{}; if(p.quietEnabled === false)return false;const hour=(now||new Date()).getHours(),a=Number.isInteger(+p.quietStart)?Math.max(0,Math.min(23,+p.quietStart)):22,b=Number.isInteger(+p.quietEnd)?Math.max(0,Math.min(23,+p.quietEnd)):8; return a===b || (a<b ? hour>=a&&hour<b : hour>=a||hour<b); }
 function message(m){if(!m||typeof m.id!=='string'||!m.id||typeof m.uid!=='string'||!m.uid||typeof m.t!=='string')return null;return {...m,by:String(m.by||'Member').slice(0,40),t:m.t.slice(0,600),ts:Number.isFinite(+m.ts)&&+m.ts>0?+m.ts:Date.now(),re:typeof m.re==='string'?m.re:null};}
 function visible(messages, outbox, blocks, uid){
  const map=new Map();
- for(const m of (messages||[])){ if(!m || !m.id || !m.uid || m.demo || m.bot || (blocks[m.uid]&&blocks[m.uid].blocked))continue;const safe=message(m);if(safe)map.set(String(m.id),safe); }
- for(const m of (outbox||[])){const safe=message(m);if(safe&&m.uid===uid&&!map.has(String(m.id)))map.set(String(m.id),safe);}
+ for(const m of (messages||[])){ if(!m || !m.id || !m.uid || m.demo || m.bot || pinOf(m.t) || (blocks[m.uid]&&blocks[m.uid].blocked))continue;const safe=message(m);if(safe)map.set(String(m.id),safe); }
+ for(const m of (outbox||[])){const safe=message(m);if(safe&&!pinOf(safe.t)&&m.uid===uid&&!map.has(String(m.id)))map.set(String(m.id),safe);}
  return [...map.values()].sort((a,b)=>a.ts-b.ts || String(a.id).localeCompare(String(b.id)));
 }
 function read(storage,key,fallback){try{const v=JSON.parse(storage.getItem(key));return v&&typeof v==='object'?v:fallback;}catch(e){return fallback;}}
@@ -38,7 +50,7 @@ function session(options){
  async function submit(by,retryId){
   let m=photoIn&&!retryId?null:outbox.find(x=>x.id===(retryId||draft.retryId));
   if(!m&&photoIn){const pin=photoIn;photoIn=null;if(outbox.length>=20)throw new Error('outbox-full');m={id:pin.id||options.id(),uid:scope,by,t:pin.text,ts:Date.now(),rx:{},re:pin.reply||null,status:'sending'};if(pin.line)m.line=true;outbox.push(m);}
-  if(!m){const text=draft.text.trim();if(!text)return null;if(outbox.length>=20)throw new Error('outbox-full');m={id:options.id(),uid:scope,by,t:text,ts:Date.now(),rx:{},re:draft.reply||null,status:'sending'};outbox.push(m);}
+  if(!m){const text=draft.text.trim();if(!text)return null;if(pinOf(text))throw new Error('reserved');if(outbox.length>=20)throw new Error('outbox-full');m={id:options.id(),uid:scope,by,t:text,ts:Date.now(),rx:{},re:draft.reply||null,status:'sending'};outbox.push(m);}
   if(busy.has(m.id))return null;
   busy.add(m.id);m.status='sending';
   if(draft.text.trim()===m.t&&draft.reply===m.re)draft={text:'',reply:null};save();
@@ -62,6 +74,6 @@ function afterCaption(sent, cur){
  let text=ct;if(st.trim()){if(ct===st||ct.trim()===st.trim())text='';else if(ct.startsWith(st))text=ct.slice(st.length).replace(/^\s+/,'');}
  return {text,reply:cr&&cr!==sr?cr:null};
 }
-const api={EMOJI,SIGNS,type,esc,image,photo,photoBody,voice,voiceBody,identity,quiet,message,visible,read,write,session,afterCaption};
+const api={EMOJI,SIGNS,type,esc,image,photo,photoBody,voice,voiceBody,pinOf,pinBody,unpinBody,pinned,identity,quiet,message,visible,read,write,session,afterCaption};
 if(typeof module==='object'&&module.exports)module.exports=api;else root.LowiChatCore=api;
 })(typeof window==='object'?window:globalThis);

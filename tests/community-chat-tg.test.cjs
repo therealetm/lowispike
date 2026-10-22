@@ -7,18 +7,19 @@ const js=read('community-chat.js'),css=read('community-tg.css'),html=read('index
 const ui=read('tests/community-chat-ui.test.cjs');
 const fixture=new Function('require','assert','fs','vm','path','__dirname','K',ui.slice(ui.indexOf('function fixture(){'),ui.indexOf('\ntest('))+'\nreturn fixture;')(require,assert,fs,vm,path,path.join(__dirname),require('../community-chat-core.js'));
 
-test('room top bar: round back, centred pill with room icon + name + community name, round members button, pinned pill',()=>{
+test('room top bar: back and members on one row (22 Oct: no centre pill), no pinned bar until the admin pins',()=>{
  const f=fixture(),m=f.el.innerHTML;
- assert.match(m,/class="cg-thead cr-head"[\s\S]*class="cg-x cr-back"[\s\S]*class="cr-id"><span class="cr-ic"[\s\S]*id="cgThreadTitle"[\s\S]*id="crCname"[\s\S]*class="cr-members" id="crMembers" data-chat="members"[\s\S]*<\/header><button type="button" class="cr-pin" id="crPin" data-chat="pin"/);
- assert.match(m,/id="crLink"/,'connection state is kept (a dot in the pill)');
+ assert.match(m,/class="cg-thead cr-head"[\s\S]*class="cg-x cr-back"[\s\S]*class="cr-srt"><b id="cgThreadTitle"><\/b>[\s\S]*id="crCname"[\s\S]*class="cr-members" id="crMembers" data-chat="members"[\s\S]*<\/header><div class="cr-pin" id="crPin" hidden><\/div>/);
+ assert.doesNotMatch(m,/class="cr-id"|class="cr-ic"/,'the sparkle pill with the room title is gone');
+ assert.match(m,/id="crLink"/,'connection state is kept for screen readers');
  f.scope('a');
  assert.equal(f.nodes.crCname.textContent,'LOWiSPIKE Community');
- assert.match(f.nodes.crPin.innerHTML,/cr-pinl">Pinned Message<[\s\S]*cr-pint">Welcome to the galaxy/);
+ assert.equal(f.nodes.crPin.innerHTML,'','nothing pinned: no fake welcome pin');assert.equal(f.nodes.crPin.hidden,true);
+ assert.doesNotMatch(js,/Welcome to the galaxy/);
  assert.equal(f.nodes.crMembers.attrs['aria-expanded'],'false');
  f.click({chat:'members'});assert.equal(f.nodes.crMembers.attrs['aria-expanded'],'true');assert('open' in f.nodes.crCrew.dataset);
  assert.match(f.nodes.crCrew.innerHTML,/Recent voices/,'the members list never opens empty');
  f.click({chat:'members'});assert.equal(f.nodes.crMembers.attrs['aria-expanded'],'false');
- f.click({chat:'pin'});assert.equal(f.nodes.crPin.attrs['aria-expanded'],'true');
 });
 test('bubble: sender name on top, reply quote, time bottom-right inside the bubble in a footer with the actions button',()=>{
  const f=fixture(),out=f.win.LowiCommunity.messageHTML({id:'m',uid:'b',by:'Same name',t:'Hello https://example.com',ts:Date.now(),rx:{}},[]);
@@ -26,7 +27,7 @@ test('bubble: sender name on top, reply quote, time bottom-right inside the bubb
  assert.doesNotMatch(out,/class="cs-by"[^]*?<time[^]*?<\/div>[^]*?cm-foot/,'the time is no longer in the name row');
 });
 test('room strings exist in English, German and Spanish',()=>{
- for(const k of ['roomCommunity','roomMembers','roomPinned','roomPin','roomMsg','roomJoined','roomJoinedMany','roomWave','roomNoCrew']){const m=js.match(new RegExp('[ ,]'+k+":\\['([^']+)','([^']+)','([^']+)'\\]"));assert(m,k);}
+ for(const k of ['roomCommunity','roomMembers','roomPinned','pinMsg','unpinMsg','pinGo','pinFailed','pinGone','roomMsg','roomJoined','roomJoinedMany','roomWave','roomNoCrew']){const m=js.match(new RegExp('[ ,]'+k+":\\['([^']+)','([^']+)','([^']+)'\\]"));assert(m,k);}
  assert.match(js,/roomJoinedMany:\['\{n\} and \{c\} others joined'/);
 });
 test('join pills come only from real room presence and carry a Wave button that greets that person',()=>{

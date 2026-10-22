@@ -78,10 +78,15 @@ html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cg-thread.cr-room[data-
 
 /* item 38: the room's own top bar (back arrow, star "Community room" pill, members button with its count), the pinned banner and
    the recent-voices strip are gone - the Community header above the tabs is the only top bar. */
-html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] :is(.cg-thead.cr-head,#crPin,#crCrew){display:none!important}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] :is(.cg-thead.cr-head,#crCrew){display:none!important}
+/* chat-pin (23 Oct): the fake welcome pin is gone; the pinned bar comes back only while the admin has pinned a message */
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room]:not([data-pinned]) #crPin{display:none!important}
 /* and the room crumb under the tabs (its second back arrow and the room name) - the header back button above is the only one */
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room]>.rm-bar>.rm-crumb{display:none!important}
 /* ---- floating top bar: back | centred name pill | members, over one frosted strip ---- */
+/* ---- floating top bar: back | members on one clean row, over one frosted strip ----
+   22 Oct (Emmanuel's iPhone screenshot): the centre pill (sparkle icon + "Community room") did nothing and is gone; the room name and
+   connection state stay for screen readers only (.cr-srt). */
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cg-thead.cr-head{position:absolute!important;top:0;left:0;right:0;z-index:6!important;display:grid!important;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;gap:10px;
   min-height:0!important;height:auto!important;padding:6px 12px 0!important;margin:0!important;background:none!important;border:0!important;box-shadow:none!important}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-head::before{content:'';position:absolute;z-index:-1;left:0;right:0;top:0;height:var(--cr-top);pointer-events:none;background:var(--cr-strip);
@@ -103,6 +108,7 @@ html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-ic{flex:none;display
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-ic svg{width:20px;height:20px}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-idt{display:flex!important;flex-direction:column;justify-content:center;flex:0 1 auto;min-width:72px;line-height:1.15;visibility:visible!important;opacity:1!important}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-idt #cgThreadTitle{display:block!important;font-size:15.5px;font-weight:650;color:var(--cr-text)!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em;text-transform:none;text-shadow:none!important}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-srt{position:absolute!important;width:1px!important;height:1px!important;margin:-1px!important;padding:0!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;white-space:nowrap!important;border:0!important}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-sub{display:flex!important;align-items:center;gap:5px;min-width:0;font-size:12px;color:var(--cr-sub)!important;white-space:nowrap;opacity:1!important}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-sub .cr-cname{overflow:hidden;text-overflow:ellipsis;min-width:0;color:var(--cr-sub)!important;opacity:1!important}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-sub .cr-meta{display:none!important}
@@ -112,15 +118,19 @@ html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-sub .cr-link i{displ
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-sub .cr-link:not([data-state=live]) i{background:#ffc60a}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-sub .cr-link:is([data-state=offline],[data-state=error],[data-state=auth]) i{background:#ff5a52}
 
-/* ---- pinned bar ---- */
-html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-pin{position:absolute!important;top:60px;left:12px;right:12px;z-index:6!important;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;min-height:46px;margin:0!important;padding:5px 14px 5px 22px;border:0!important;border-radius:16px;text-align:left;cursor:pointer;font:inherit;
+/* ---- pinned bar: only when the admin pinned a message (community-chat.js sets data-pinned); tap = go to it, admin gets Unpin ---- */
+/* item 38 shell: the shared Community bar sits above the room, so the bar rides the top of the room and the list starts under it */
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room][data-pinned]{--cr-top:66px}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-pin[hidden]{display:none!important}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-pin{position:absolute!important;top:8px;left:12px;right:12px;z-index:6!important;display:flex;align-items:center;gap:8px;min-height:46px;margin:0!important;padding:0 6px 0 0;border:0!important;border-radius:16px;
   color:var(--cr-text);background:var(--cr-glass)!important;box-shadow:inset 0 0 0 .5px var(--cr-hair),var(--cr-float-sh)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
-html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-pin::before{content:'';position:absolute;left:11px;top:9px;bottom:9px;width:3px;border-radius:2px;background:var(--cr-acc-strong);box-shadow:none}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-pin::before{content:'';position:absolute;left:11px;top:9px;bottom:9px;width:3px;border-radius:2px;background:var(--cr-acc-strong);box-shadow:none;pointer-events:none}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-pin .cr-pingo{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;min-height:46px;margin:0;padding:5px 8px 5px 22px;border:0;border-radius:16px;background:none;color:inherit;text-align:left;font:inherit;cursor:pointer}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-pinl{font-size:12.5px;font-weight:650;color:var(--cr-acc)}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-pint{display:block;max-width:100%;font-size:13.5px;color:var(--cr-text);opacity:.86;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-pin[aria-expanded=true]{background:var(--cr-glass-solid)!important}
-html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-pin[aria-expanded=true] .cr-pint{white-space:normal}
-html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] :is(.cr-pin,.cr-head button,.cm-compose button,.cr-down):focus-visible{outline:2px solid var(--cr-acc);outline-offset:2px}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-pin .cr-unpin{flex:none;min-height:32px;padding:0 12px;border:0;border-radius:16px;font:inherit;font-size:12.5px;font-weight:650;color:var(--cr-acc);background:var(--cr-chip);cursor:pointer}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] :is(.cr-pin button,.cr-head button,.cm-compose button,.cr-down):focus-visible{outline:2px solid var(--cr-acc);outline-offset:2px}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cm-msg.cr-flash .cm-bub{box-shadow:0 0 0 2px var(--cr-acc-strong)!important;transition:box-shadow .2s}
 
 /* ---- members: a dropdown under the pin, only when the members button is tapped ---- */
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-crew{display:none!important}
@@ -130,6 +140,8 @@ html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-crew[data-open] .cr-
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-crew[data-open] .cr-crews{flex-wrap:wrap;overflow:visible}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-crew[data-open] .cr-crews::before{display:none}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-crewnone{margin:0;font-size:13px;color:var(--cr-text)}
+
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room]:not([data-pinned]) .cr-crew[data-open]{top:58px}
 
 /* ---- message list: scrolls under the top bar and the composer; the composer's real height comes from community-chat.js ---- */
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room #cmList.cm-list{flex:1 1 auto!important;min-height:0!important;padding:var(--cr-top) 10px calc(var(--cr-comp-h,calc(64px + var(--cr-sab))) + 10px)!important;scroll-padding-top:var(--cr-top);scroll-padding-bottom:calc(var(--cr-comp-h,64px) + 10px);gap:2px!important;background:none!important}
@@ -267,9 +279,11 @@ html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cm-compose #cmMention>*
 @media(prefers-reduced-transparency:reduce){
   html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-head::before,
   html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cm-compose::before{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;background:var(--cr-canvas-c)!important}
-  html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] :is(.cr-head .cr-id,.cr-head .cr-back,.cr-head .cr-members,.cr-pin,.cm-inrow textarea#cmInput,.cm-inrow #cmPhoto,.cm-inrow #cmMic){background:var(--cr-glass-solid)!important}}
+  html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] :is(.cr-head .cr-back,.cr-head .cr-members,.cr-pin,.cm-inrow textarea#cmInput,.cm-inrow #cmPhoto,.cm-inrow #cmMic){background:var(--cr-glass-solid)!important}}
 /* short screens (landscape phones): a slimmer pin */
 @media(max-height:560px){
   html body #tab-foryou #cmPaneChat#cmPaneChat[data-room]{--cr-top:104px}
   html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-pin{min-height:36px;padding-block:3px}
+  html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-pin .cr-pingo{min-height:36px;padding-block:3px}
+  html body #tab-foryou #cmPaneChat#cmPaneChat[data-room][data-pinned]{--cr-top:52px}
   html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-pin .cr-pinl{display:none}}

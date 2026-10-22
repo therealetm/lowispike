@@ -1,0 +1,170 @@
+/* LOWiSPIKE Food Intelligence Engine, core (queue step scanfe-b1, spec queue/FOOD-ENGINE-SPEC.md sections 4 and 5).
+   Pure, node-testable UMD module: window.LowiFoodEngine. Not wired into the app yet (scanfe-b2 does that through the
+   LowiSpikeCore adapter), so this file changes nothing users see.
+
+   What b1 holds:
+   - validateNutrition(per100, unit): numbers or null (never guessed), sugar <= carbs, macros <= 100 g per 100 g,
+     stated kcal vs 4/4/9/2 kcal from the macros, unit g or ml. Errors make the label unusable; warnings stay usable.
+   - calculateServing(nutrition, opts): serving = per100 x grams / 100. The user's grams win, then the manufacturer's
+     serving, then the food group's usual portion (same portions as store-picks-core), else 100 g / 100 ml.
+     Unknown stays unknown (null). Nothing is subtracted: EU carbohydrates already exclude fibre and include sugars.
+   - estimateGlucoseImpact({serving, category, evidence}): a conservative, qualitative carbohydrate-exposure estimate.
+     Inputs: available carbohydrate per serving (= EU label carbohydrate, never minus fibre, protein or fat), sugar per
+     serving, liquid vs solid. Protein, fat and fibre are reported as modifiers that may slow absorption; they never
+     lower the category. Glycemic load only when the evidence carries a credible GI with a named source (GL =
+     GI x available carbs / 100); a GI is never invented and never borrowed from one ingredient of a mixed food.
+     Output: Lower | Moderate | Higher | Insufficient evidence, always an estimate, never "no spike".
+   The exposure bands below are provisional LOWiSPIKE policy cut-offs (version carb-bands-v1), not validated against
+   measured glucose responses; they are versioned so tests and later policy work can audit them. */
+(function (root, factory) {
+    const api = factory();
+    if (typeof module === 'object' && module.exports) module.exports = api;
+    if (root) root.LowiFoodEngine = api;
+})(typeof window !== 'undefined' ? window : null, function () {
+    'use strict';
+
+    const VERSION = 'food-engine-core b1 2026-10-22';
+    const NUTRIENTS = ['carbs', 'sugar', 'fibre', 'protein', 'fat', 'kcal', 'salt'];
+    // Short keys used across the app (LowiSpikeCore facts, data/shop columns) map onto the engine's names.
+    const ALIAS = {c: 'carbs', s: 'sugar', f: 'fibre', fiber: 'fibre', p: 'protein', k: 'kcal', energy: 'kcal'};
+
+    // Usual portion per food group, in g (ml for drinks); same values as store-picks-core.js GROUPS.
+    const GROUP_SERVING = {snacks: 30, meat: 100, fish: 100, dairy: 150, cheese: 30, veg: 100, fruit: 100, bread: 40,
+        sweets: 25, drinks: 250, pantry: 50, meals: 300, other: 50};
+
+    // Carbohydrate-exposure bands per serving (grams). Provisional, versioned, conservative: never lowered by protein,
+    // fat or fibre. Liquids get stricter sugar bands because liquid sugar is absorbed fastest (spec section 5).
+    const BANDS = Object.freeze({
+        version: 'carb-bands-v1',
+        solid: {moderateCarbs: 10, higherCarbs: 30, higherSugar: 15},
+        liquid: {moderateSugar: 5, higherSugar: 10, moderateCarbs: 10, higherCarbs: 30},
+        gl: {moderate: 11, higher: 20}
+    });
+    const CATEGORY = {lower: 'Lower', moderate: 'Moderate', higher: 'Higher', insufficient: 'Insufficient evidence'};
+    const RANK = {lower: 0, moderate: 1, higher: 2};
+
+    const num = v => (typeof v === 'number' && isFinite(v) ? v : (typeof v === 'string' && v.trim() !== '' && isFinite(+v.replace(',', '.')) ? +v.replace(',', '.') : null));
+    const r1 = v => (v == null ? null : Math.round(v * 10) / 10);
+
+    function normalize(per100) {
+        const out = {};
+        for (const k of NUTRIENTS) out[k] = null;
+        const src = per100 || {};
+        for (const key of Object.keys(ALIAS)) { const v = num(src[key]); if (v != null) out[ALIAS[key]] = v; }
+        for (const key of NUTRIENTS) { const v = num(src[key]); if (v != null) out[key] = v; } // long names win
+        return out;
+    }
+
+    function validateNutrition(per100, unit) {
+        const issues = [];
+        const u = unit === 'ml' ? 'ml' : unit === 'g' || unit == null ? 'g' : null;
+        if (!u) issues.push({code: 'unit_unknown', level: 'error', unit: String(unit)});
+        const v = normalize(per100);
+        for (const k of NUTRIENTS) {
+            if (v[k] != null && v[k] < 0) { issues.push({code: 'negative', level: 'error', nutrient: k, value: v[k]}); v[k] = null; }
+        }
+        if (v.sugar != null && v.carbs != null && v.sugar > v.carbs + 0.05) issues.push({code: 'sugar_over_carbs', level: 'error', sugar: v.sugar, carbs: v.carbs});
+        const mass = ['carbs', 'fibre', 'protein', 'fat', 'salt'].reduce((a, k) => a + (v[k] || 0), 0);
+        if (mass > 102) issues.push({code: 'macros_over_100', level: 'error', total: r1(mass)});
+        if (v.kcal != null && (v.carbs != null || v.protein != null || v.fat != null)) {
+            const calc = 4 * (v.carbs || 0) + 4 * (v.protein || 0) + 9 * (v.fat || 0) + 2 * (v.fibre || 0);
+            const diff = Math.abs(calc - v.kcal);
+            if (diff > 30 && (v.kcal === 0 || calc === 0 || calc / v.kcal < 0.7 || calc / v.kcal > 1.3)) {
+                issues.push({code: 'kcal_mismatch', level: 'warn', stated: v.kcal, fromMacros: Math.round(calc)});
+            }
+        }
+        const known = NUTRIENTS.filter(k => v[k] != null);
+        const errors = issues.filter(i => i.level === 'error');
+        return {
+            valid: errors.length === 0,
+            usable: errors.length === 0 && (v.carbs != null || v.sugar != null),
+            unit: u || 'g',
+            per100: v,
+            missing: NUTRIENTS.filter(k => v[k] == null),
+            known,
+            issues
+        };
+    }
+
+    function pickServing(opts, unit) {
+        const o = opts || {};
+        const user = num(o.userG), maker = num(o.manufacturerG);
+        if (user != null && user > 0) return {g: user, source: 'user'};
+        if (maker != null && maker > 0) return {g: maker, source: 'manufacturer'};
+        const group = o.group || (unit === 'ml' ? 'drinks' : null);
+        if (group && GROUP_SERVING[group]) return {g: GROUP_SERVING[group], source: 'group', group};
+        return {g: 100, source: 'per100'};
+    }
+
+    // nutrition: a validateNutrition result, or a raw per-100 object (validated here). opts: number (grams) or
+    // {userG, manufacturerG, group}.
+    function calculateServing(nutrition, opts) {
+        const val = nutrition && nutrition.per100 && Array.isArray(nutrition.issues) ? nutrition : validateNutrition(nutrition, nutrition && nutrition.unit);
+        const pick = typeof opts === 'number' || typeof opts === 'string' ? pickServing({userG: opts}, val.unit) : pickServing(opts, val.unit);
+        const amounts = {};
+        for (const k of NUTRIENTS) amounts[k] = val.per100[k] == null ? null : val.per100[k] * pick.g / 100;
+        const shown = {};
+        for (const k of NUTRIENTS) shown[k] = k === 'kcal' ? (amounts[k] == null ? null : Math.round(amounts[k])) : r1(amounts[k]);
+        return {g: pick.g, unit: val.unit, source: pick.source, group: pick.group || null, amounts, shown, valid: val.valid, issues: val.issues};
+    }
+
+    function credibleGI(evidence) {
+        const e = evidence || {};
+        const gi = num(e.gi);
+        const src = typeof e.source === 'string' ? e.source.trim() : '';
+        if (gi == null || gi <= 0 || gi > 110 || src.length < 3) return null;
+        if (e.mixed === true) return null; // a mixed packaged food never takes the GI of one ingredient
+        return {gi, source: src};
+    }
+
+    // args: {serving (calculateServing result), category: {liquid?}, evidence: {gi, source}, withMeal?}
+    function estimateGlucoseImpact(args) {
+        const a = args || {};
+        const s = a.serving || {};
+        const amt = s.amounts || {};
+        const liquid = s.unit === 'ml' || !!(a.category && a.category.liquid);
+        const carbs = amt.carbs == null ? null : amt.carbs; // EU: available carbohydrate, fibre already excluded
+        const sugar = amt.sugar == null ? null : amt.sugar;
+        const reasons = [], modifiers = [];
+        const base = {estimate: true, bands: BANDS.version, liquid, servingG: s.g == null ? null : s.g, unit: s.unit || 'g',
+            availableCarbsG: r1(carbs), sugarG: r1(sugar), gl: null, basis: 'carb-exposure'};
+        if (s.valid === false) {
+            return Object.assign(base, {key: 'insufficient', category: CATEGORY.insufficient, reasons: ['label_inconsistent'], modifiers});
+        }
+        let key = null;
+        if (carbs == null && sugar == null) {
+            return Object.assign(base, {key: 'insufficient', category: CATEGORY.insufficient, reasons: ['no_carb_data'], modifiers});
+        }
+        const b = liquid ? BANDS.liquid : BANDS.solid;
+        const sug = sugar || 0;
+        if (carbs == null) {
+            // Sugar alone is a floor: enough sugar is Higher whatever the rest; less tells us too little.
+            if (sug >= b.higherSugar) { key = 'higher'; reasons.push('sugar_high'); }
+            else return Object.assign(base, {key: 'insufficient', category: CATEGORY.insufficient, reasons: ['carbs_unknown'], modifiers});
+        } else if (carbs >= b.higherCarbs) { key = 'higher'; reasons.push('carbs_high'); }
+        else if (sug >= b.higherSugar) { key = 'higher'; reasons.push(liquid ? 'liquid_sugar' : 'sugar_high'); }
+        else if (carbs >= b.moderateCarbs) { key = 'moderate'; reasons.push('carbs_moderate'); }
+        else if (liquid && sug >= b.moderateSugar) { key = 'moderate'; reasons.push('liquid_sugar'); }
+        else { key = 'lower'; reasons.push('carbs_low'); }
+        if (sug > 0 && carbs != null && carbs > 0 && sug / carbs >= 0.5 && key !== 'lower') reasons.push('mostly_sugar');
+
+        const gi = credibleGI(a.evidence);
+        if (gi && carbs != null) {
+            const gl = gi.gi * carbs / 100;
+            const glKey = gl >= BANDS.gl.higher ? 'higher' : gl >= BANDS.gl.moderate ? 'moderate' : 'lower';
+            base.gl = {value: r1(gl), gi: gi.gi, source: gi.source, key: glKey};
+            base.basis = 'carb-exposure+glycemic-load';
+            // Conservative: the GL can raise the estimate, it never lowers what the carbohydrate exposure says.
+            if (RANK[glKey] > RANK[key]) { key = glKey; reasons.push('gl_' + glKey); }
+        }
+        // Modifiers: may change timing and size, never a cancellation (spec section 5).
+        if ((amt.protein || 0) >= 5) modifiers.push('protein_may_slow');
+        if ((amt.fat || 0) >= 5) modifiers.push('fat_may_slow');
+        if ((amt.fibre || 0) >= 3) modifiers.push('fibre_may_slow');
+        if (liquid && sug > 0) modifiers.push('liquid_fast');
+        if (a.withMeal) modifiers.push('with_meal_may_slow');
+        return Object.assign(base, {key, category: CATEGORY[key], reasons, modifiers});
+    }
+
+    return {VERSION, NUTRIENTS, BANDS, GROUP_SERVING, CATEGORY, normalize, validateNutrition, calculateServing, estimateGlucoseImpact};
+});

@@ -49,7 +49,8 @@ function measure(a) {
   if (a.kb && inp && floor - inp.bottom > 70) E('composer floats ' + Math.round(floor - inp.bottom) + ' px above the keyboard');
   /* top bar, pinned bar, tabs stay on screen */
   const back = box(q('#cgThread .cr-back')), pill = box(q('#cgThread .cr-id')), pin = box(q('#cgThread .cr-pin')), tabs = box(q('#cmPaneChat .rm-tabs'));
-  for (const [n, r] of [['back button', back], ['room name', pill], ['pinned message', pin]]) { if (!r) E('no ' + n); else if (r.top < vt - 1 || r.bottom > vb + 1) E(n + ' off screen (' + Math.round(r.top) + ' vs visible top ' + Math.round(vt) + ')'); }
+  /* since item 38 the room's top bar is the shared Community bar (#secX back, .rm-id name); the pinned banner is gone */
+  for (const [n, r] of [['back button', box(q('#secX'))], ['Community name', box(q('.rm-id'))], ['tab row', box(q('.rm-tabs'))]]) { if (!r) E('no ' + n); else if (r.top < vt - 1 || r.bottom > vb + 1) E(n + ' off screen (' + Math.round(r.top) + ' vs visible top ' + Math.round(vt) + ')'); }
   if (tabs && (tabs.top < vt - 1)) E('tab row off screen');
   if (hit(pill, pin)) E('room name overlaps the pinned message ' + JSON.stringify([R(pill), R(pin)]));
   const title = box(q('#cgThreadTitle')); if (title && pin && hit(title, pin)) E('room title text over the pinned message');

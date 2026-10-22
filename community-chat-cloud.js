@@ -13,13 +13,16 @@ function create(host, changed){
  function map(r,reactions){const rx={};(reactions||[]).filter(x=>x.message_id===r.id).forEach(x=>(rx[x.emoji]=rx[x.emoji]||[]).push(x.who||'Member'));return {id:r.id,uid:r.user_id,by:r.who||'Member',t:r.body||'',ts:Date.parse(r.created_at)||Date.now(),re:r.reply_to||null,rx};}
  const fields='id,user_id,who,body,reply_to,created_at,room';
  function notify(event){if(flight&&event&&event.id){const m=host.messages().find(m=>m.id===event.id);edits.push({id:event.id,type:event.type,message:m||null});}changed();}
+ /* 22 Oct: the room's newest pin markers, also when they are older than the last 300 messages (a failed lookup just means no extra rows) */
+ async function pinRows(sb,rm){try{return await result(sb.from('messages').select(fields).eq('room',rm).like('body','\u{1F4CC}\u2060%').order('created_at',{ascending:false}).limit(3));}catch(e){return [];}}
  function reset(){epoch++;flight=null;edits=[];phase='idle';error='';reactionBusy.clear();}
  async function reload(){
   const id=uid();if(!id)return false;if(flight&&flightRoom===room())return flight;if(flight){epoch++;flight=null;}const rm=room();flightRoom=rm;
   const turn=epoch;phase='loading';error='';edits=[];changed();
   const task=(async()=>{try{
    const sb=await host.client();
-   const [rows,rx]=await Promise.all([result(sb.from('messages').select(fields).eq('room',rm).order('created_at',{ascending:false}).limit(300)),result(sb.from('reactions').select('message_id,user_id,who,emoji').limit(10000))]);
+   const [rows0,rx,pins]=await Promise.all([result(sb.from('messages').select(fields).eq('room',rm).order('created_at',{ascending:false}).limit(300)),result(sb.from('reactions').select('message_id,user_id,who,emoji').limit(10000)),pinRows(sb,rm)]);
+   const seen=new Set((rows0||[]).map(r=>r.id)),rows=(rows0||[]).concat((pins||[]).filter(r=>r&&!seen.has(r.id)).sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at))));
    if(!still(id)||turn!==epoch||rm!==room())return false;
    const merged=new Map((rows||[]).slice().reverse().map(r=>[r.id,map(r,rx)]));
    for(const e of edits){if(e.message)merged.set(e.id,e.message);else merged.delete(e.id);}

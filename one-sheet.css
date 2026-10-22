@@ -89,3 +89,17 @@ html body .r2-ov.one-sheet .cme.cme-in, html[data-theme="light"] body .r2-ov.one
 .one-sheet .cme-in .cme-langs button.on, .one-sheet .cme-in .cme-langs button[aria-pressed="true"] { background: rgba(143, 231, 255, .24); border-color: var(--one-acc); }
 .one-sheet .cme-in .cme-del h3 { color: #ff8a8a !important; }
 .one-sheet .cme-in .cme-sec-danger .cme-row.cme-danger { background: none; }
+
+/* 5. a sheet opened from a sheet (Oct 22 2026, Emmanuel's iPhone at 14:22: Glow / Forms from Misty's sheet drew over it and
+   "Misty", Food journal, Misty's energy and Star cell XP were readable through it, "Misty" twice). Only the top sheet shows:
+   a sheet that has another open sheet (or the Forms view .cf-ov) after it hides its panel; its scrim stays, so the world behind
+   is dimmed twice. Closing the top one (.off, then removed) shows it again, exactly as it was. Full pages stay visible under a
+   sheet (they are opaque and a sheet over a page reads fine). */
+html body .r2-ov:not(.full):not(.off):has(~ .r2-ov:not(.off), ~ .cf-ov) > .r2-sh { visibility: hidden !important; }
+/* and the sub-sheets of Misty's sheet get the shared glass on a solid base, so nothing behind them is readable either */
+:root { --one-solid: linear-gradient(180deg, rgba(58, 112, 205, .62), rgba(16, 42, 102, .74)), linear-gradient(180deg, #13295c, #0a1738); }
+html:root:root body .r2-ov.wh-ms-ov:not(.mh-ov):not(.full) .r2-sh {
+  background: var(--one-solid) !important; border: 1px solid var(--one-line) !important; border-radius: var(--one-r) !important; color: #fff !important;
+  width: calc(100% - 20px) !important; margin-left: auto !important; margin-right: auto !important; }
+html:root:root body .r2-ov.wh-ms-ov:not(.mh-ov) .r2-grab { background: rgba(143, 231, 255, .5) !important; opacity: 1 !important; }
+html:root:root body .cf-ov .cf-panel.cf-misty { background: radial-gradient(130% 55% at 50% 0%, rgba(60, 150, 255, .2), transparent 62%), var(--one-solid) !important; }

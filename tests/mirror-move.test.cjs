@@ -169,7 +169,7 @@ test('wiring: loaded on the Move screen, cached shell, world pauses behind it, m
     const html = read('index.html');
     assert.ok(/<script src="mirror-move-core\.js\?v=[^"]+"><\/script>\s*<script src="mirror-move\.js\?v=/.test(html));
     assert.ok(/id="mmCss" href="mirror-move\.css\?v=/.test(html));
-    assert.ok(html.includes('LowiMirror.stripHTML()'), 'strip on the Move screen');
+    assert.ok(html.includes('LowiMirror.heroHTML()'), 'hero card on the Move screen (Oct 22: moved up from the strip)');
     const sw = read('sw.js');
     for (const f of ['mirror-move.css', 'mirror-move-core.js', 'mirror-move.js']) assert.ok(sw.includes('"' + f + '"'), f + ' in sw STATIC');
     assert.ok(!/pose_landmarker|vision_wasm/.test(sw), 'the 24 MB model is not precached');

@@ -36,7 +36,7 @@ test('BH-012: halo, sparkles and the float stay for every form from Legendary on
 
 test('BH-013: an evolution that has not been seen survives a reload', () => {
     assert.match(herb, /if\(m\.index>prior\)\{p\.lastSeenStage=m\.index;p\.evoFrom=Math\.max\(0,prior\);savePrefs\(p\);evolve\(m,p\.evoFrom\);\}/);
-    assert.match(herb, /else if\(p\.evoFrom!=null&&!evolution&&!evoWait\)\{[^}]*if\(\+p\.evoFrom<m\.index\)evolve\(m,\+p\.evoFrom\);else\{delete p\.evoFrom;savePrefs\(p\);\}\}/);
+    assert.match(herb, /else if\(p\.evoFrom!=null&&!evolution&&!evoWait\)\{[^}]*if\(\+p\.evoFrom<m\.index&&m\.index>seen\)evolve\(m,\+p\.evoFrom\);else\{delete p\.evoFrom;savePrefs\(p\);\}\}/);
     const fin = /function finishEvolution\(\)\{if\(!evolution\)return;[^\n]*/.exec(herb)[0];
     assert.match(fin, /delete q\.evoFrom;savePrefs\(q\)/, 'closing the evolution clears the marker');
     assert.ok(herb.indexOf('let evoWait=0') < herb.indexOf('function refresh('), 'evoWait exists before refresh reads it');

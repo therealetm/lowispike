@@ -98,6 +98,7 @@ async function run(device, mode) {
     await p.locator('.rm-tab[data-rm="chat"]').click({ force: true }).catch(() => { }); await sleep(1200);
     if (!(await p.evaluate(() => !!document.querySelector('#cgThread[data-open]')))) { await p.locator('.rm-ch[data-ch="galaxy"]').click({ force: true, timeout: 3000 }).catch(() => { }); await sleep(1500); }
     if (!(await p.evaluate(() => !!document.querySelector('#cgThread[data-open]')))) throw new Error('room did not open');
+    for (let i = 0; i < 30 && !(await p.evaluate(() => document.querySelectorAll('#cmList .cp-msg').length > 3)); i++) await sleep(500);
     await p.evaluate(() => { const l = document.getElementById('cmList'); if (l) l.scrollTop = l.scrollHeight; }); await sleep(600);
     for (const theme of ['dark', 'light']) {
       const T = W + '/' + (theme === 'light' ? 'day' : 'night');
@@ -124,7 +125,9 @@ async function run(device, mode) {
       await p.keyboard.type(msg, { delay: 5 }); await sleep(300);
       const val = await p.evaluate(() => document.getElementById('cmInput').value); if (val !== msg) fail(T + '/keyboard', 'typed text not in the field: ' + JSON.stringify(val));
       const after = await p.evaluate(measure, { vt: await p.evaluate(() => visualViewport.offsetTop), vh, sab: 0, kb }); for (const e of after.errs) if (/field|photo|mic|send|scrolled/.test(e)) fail(T + '/typing', e);
-      await p.keyboard.press('Enter'); await sleep(1500);
+      await p.keyboard.press('Enter');
+      for (let i = 0; i < 20 && !(await p.evaluate(m => [...document.querySelectorAll('#cmList .cp-msg')].some(e => e.textContent.includes(m)), msg)); i++) await sleep(500);
+      await sleep(600);
       const sent = await p.evaluate(m => { const els = [...document.querySelectorAll('#cmList .cp-msg')].filter(e => e.textContent.includes(m)); if (!els.length) return 'not in list'; const r = els[els.length - 1].getBoundingClientRect(), c = document.querySelector('#cmPaneChat .cm-compose').getBoundingClientRect(); return r.bottom <= c.top + 14 && r.top >= visualViewport.offsetTop ? 'ok' : 'hidden ' + Math.round(r.top) + '-' + Math.round(r.bottom) + ' comp ' + Math.round(c.top); }, msg);
       if (sent !== 'ok') fail(T + '/send', 'sent message ' + sent);
       const st = await p.evaluate(measure, { vt: await p.evaluate(() => visualViewport.offsetTop), vh, sab: 0, kb }); for (const e of st.errs) fail(T + '/after-send', e);

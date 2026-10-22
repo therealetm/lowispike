@@ -1,6 +1,6 @@
 'use strict';
 /* Tutorial visuals check (item 42, Oct 22 2026): node tools/tutorial-show/check.cjs [--url URL] [--out DIR] [--runs engine:device:lang,...]
-   Simulated phones, audio stubbed (every clip ends after 1.6 s), camera counted. Server, setup and stubs copied from
+   Simulated phones, audio stubbed (every clip ends after 2.2 s), camera counted. Server, setup and stubs copied from
    tools/tutorial-voice/handsfree-check.cjs. Not a real iPhone. */
 const http = require('http'), fs = require('fs'), path = require('path'), os = require('os');
 let pw; for (const p of [process.env.PW, '/tmp/pw/node_modules/playwright', path.join(os.homedir(), '.pw/node_modules/playwright'), 'playwright']) { try { if (p) { pw = require(p); break; } } catch (e) { } }
@@ -64,14 +64,14 @@ async function section(browser, engine, dev, lang, url, fails, lines) {
     try {
         await boot(page, url);
         await page.waitForFunction(() => window.LowiTutorialShow, null, { timeout: 15000 }).catch(() => { });
-        await page.evaluate(() => { window.__clipMs = 1600; document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })); window.LowiTutorial.start({ from: 'check', at: 'hello' }); });
+        await page.evaluate(() => { window.__clipMs = 2200; document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })); window.LowiTutorial.start({ from: 'check', at: 'hello' }); window.__seen = []; setInterval(() => { const x = window.LowiTutorial.step(); if (x && window.__seen[window.__seen.length - 1] !== x) window.__seen.push(x); }, 80); });
         const ids = await page.evaluate(() => window.LowiTutorialShow ? window.LowiTutorialShow.ids() : []);
         if (!ids.length) { fails.push(tag + ': tutorial-show.js did not load'); return; }
         const seen = {}; let t0 = Date.now(), last = '';
         while (Date.now() - t0 < 150000) {
             const s = await state(page);
             if (s.step && s.step !== last && ids.includes(s.step)) {
-                last = s.step; await sleep(700);
+                last = s.step; await sleep(1300);
                 const r = await page.evaluate(id => {
                     const P = window.LowiTutorialShow.plan(id), root = document.querySelector('#ltTour'), card = root && root.querySelector('.lt-card');
                     const rc = card.getBoundingClientRect(), hole = root.querySelector('.lt-hole'), rh = hole.getBoundingClientRect();
@@ -79,31 +79,37 @@ async function section(browser, engine, dev, lang, url, fails, lines) {
                     const hr = hand && hand.getBoundingClientRect();
                     const spots = [...root.querySelectorAll('.lts-spot')].filter(x => getComputedStyle(x).display !== 'none').map(x => x.getBoundingClientRect());
                     const over = (a, b) => a.width > 2 && b.width > 2 && a.left < b.right - 4 && b.left < a.right - 4 && a.top < b.bottom - 4 && b.top < a.bottom - 4;
-                    const busy = !!card.querySelector('.lt-pad, .lt-later, .lt-peek');
-                    return { id, step: window.LowiTutorial.step(), wantVis: !!P.vis && !busy, hasVis: !!card.querySelector('.lts-vis[data-vis="' + P.vis + '"]'), wantHand: !!P.g, hand: !!hv,
+                    const busy = !!card.querySelector('.lt-pad, .lt-later, .lt-peek'), vEl = card.querySelector('.lts-vis'), chNo = rc.height - (vEl && getComputedStyle(vEl).display !== 'none' ? vEl.offsetHeight + 12 : 0);
+                    const fitsWithout = rh.width > 4 && (rh.top - 24 >= chNo || innerHeight - rh.bottom - 24 >= chNo);
+                    return { short: card.classList.contains('lts-short'), id, step: window.LowiTutorial.step(), wantVis: !!P.vis && !busy, hasVis: !!card.querySelector('.lts-vis[data-vis="' + P.vis + '"]'), wantHand: !!P.g, hand: !!hv,
                         handIn: !hv || (hr.left >= 0 && hr.top >= 0 && hr.left <= innerWidth && hr.top <= innerHeight), holeOn: rh.width > 4,
                         cardIn: rc.top >= 0 && rc.bottom <= innerHeight + 1 && rc.left >= 0 && rc.right <= innerWidth + 1,
-                        covers: over(rc, rh), visShown: !!card.querySelector('.lts-vis') && getComputedStyle(card.querySelector('.lts-vis')).display !== 'none', spots: spots.length, spotsCovered: spots.filter(x => over(rc, x)).length, ch: Math.round(rc.height), vh: innerHeight };
+                        fitsWithout, pos: [rc.left, rc.top, rc.right, rc.bottom].map(Math.round).join(','), covers: over(rc, rh), visShown: !!card.querySelector('.lts-vis') && getComputedStyle(card.querySelector('.lts-vis')).display !== 'none', spots: spots.length, spotsCovered: spots.filter(x => over(rc, x)).length, ch: Math.round(rc.height), vh: innerHeight };
                 }, s.step);
+                if (r.step !== s.step) { last = ''; continue; }
+                /* the card slides 0.32 s (longer on a busy test machine): judge where it settles */
+                if (!r.cardIn || (r.covers && r.visShown && r.fitsWithout)) { await sleep(1600); const again = await page.evaluate(() => { const c = document.querySelector('#ltTour .lt-card'), a = c.getBoundingClientRect(), h = document.querySelector('#ltTour .lt-hole').getBoundingClientRect(), v = c.querySelector('.lts-vis');
+                    return { cardIn: a.top >= 0 && a.bottom <= innerHeight + 1 && a.left >= 0 && a.right <= innerWidth + 1, covers: h.width > 4 && a.left < h.right - 4 && h.left < a.right - 4 && a.top < h.bottom - 4 && h.top < a.bottom - 4, visShown: !!v && getComputedStyle(v).display !== 'none', pos: [a.left, a.top, a.right, a.bottom].map(Math.round).join(',') }; });
+                    Object.assign(r, again); }
                 seen[s.step] = r;
                 await page.screenshot({ path: path.join(OUT, `${engine}-${dev.replace(/\W+/g, '_')}-${lang}-${s.step}.png`) });
                 if (r.wantVis && !r.hasVis) fails.push(tag + ' ' + r.id + ': no card picture');
                 if (r.wantHand && r.holeOn && !r.hand) fails.push(tag + ' ' + r.id + ': no finger on the spotlit control');
                 if (!r.handIn) fails.push(tag + ' ' + r.id + ': finger off screen');
-                if (!r.cardIn) fails.push(tag + ' ' + r.id + ': card not fully on screen (h ' + r.ch + ' of ' + r.vh + ')');
-                if (r.covers && r.visShown) fails.push(tag + ' ' + r.id + ': the card picture pushes the card over the spotlit control');
+                if (!r.cardIn) fails.push(tag + ' ' + r.id + ': card not fully on screen (' + r.pos + ' in ' + r.vh + ')');
+                if (r.covers && r.visShown && r.fitsWithout) fails.push(tag + ' ' + r.id + ': the card picture pushes the card over the spotlit control');
                 if (r.id === 'bubbles' && r.spots < 4) fails.push(tag + ' bubbles: only ' + r.spots + ' bubbles lit');
             }
             if (s.step === 'scan' || s.step === 'scan-in' || (!s.on && Date.now() - t0 > 5000)) break;
             await sleep(150);
         }
         const st = await state(page);
-        const missing = ids.filter(x => !seen[x]);
+        const log = await page.evaluate(() => window.__seen || []), missing = ids.filter(x => !log.includes(x));
         if (missing.length) fails.push(tag + ': cards not reached by themselves: ' + missing.join(', '));
         if (st.gum) fails.push(tag + ': the camera was asked for');
         if (page.errs.length) fails.push(tag + ': page errors: ' + page.errs.slice(0, 3).join(' | '));
         const sc = Object.values(seen);
-        lines.push(`${tag}: ${sc.length}/${ids.length} cards by themselves, pictures ${sc.filter(x => x.hasVis).length}, fingers ${sc.filter(x => x.hand).length}, bubbles lit ${seen.bubbles ? seen.bubbles.spots : '-'}, pictures folded away on a tight fit ${sc.filter(x => x.hasVis && !x.visShown).length}, cards over their control without a picture (as before) ${sc.filter(x => x.covers).length}, camera asks ${st.gum}, now on ${st.step}`);
+        lines.push(`${tag}: ${ids.filter(x => log.includes(x)).length}/${ids.length} cards by themselves (${sc.length} measured), pictures ${sc.filter(x => x.hasVis).length}, fingers ${sc.filter(x => x.hand).length}, bubbles lit ${seen.bubbles ? seen.bubbles.spots : '-'}, text shortened to 3 lines ${sc.filter(x => x.short).length}, pictures folded away on a tight fit ${sc.filter(x => x.hasVis && !x.visShown).length}, cards over their control without a picture (as before) ${sc.filter(x => x.covers).length}, camera asks ${st.gum}, now on ${st.step}`);
     } finally { await ctx.close(); }
 }
 (async () => {

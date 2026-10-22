@@ -42,9 +42,10 @@ test('every picture has its words in English, German and Spanish, and none is em
     assert.match(X.visHtml('water', 'de'), /\+1 Becher/);
     assert.match(X.visHtml('move', 'es'), /Épico/);
 });
-test('pictures only: tutorial-show never opens a tab, a sheet, the camera, the mic or notifications, and takes no touch', () => {
+test('pictures only: tutorial-show never opens a tab, a sheet, the camera, the mic or notifications, and takes no touch (only a tap on a text it shortened)', () => {
     const src = read('tutorial-show.js').replace(/\/\*[\s\S]*?\*\//g, '');
     for (const bad of ['getUserMedia', 'goTab', '.click(', 'Notification', 'addEventListener(\'pointer', 'localStorage', 'b3Open', 'openScan']) assert.ok(!src.includes(bad), 'tutorial-show.js uses ' + bad);
+    assert.equal((src.match(/addEventListener\(/g) || []).length, 1, 'one listener only'); assert.match(src, /tx\.addEventListener\('click'/);
     const css = read('tutorial-show.css');
     assert.match(css, /\.lts-layer \{[^}]*pointer-events: none/);
     assert.match(css, /\.lts-vis \{[^}]*pointer-events: none/);

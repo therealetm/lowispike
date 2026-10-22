@@ -105,6 +105,8 @@
 .lt-card.lts-tight .lts-cap:not(.lts-top) { display: none; }
 .lt-card.lts-tight .lts-ring, .lt-card.lts-tight .lts-orbit { height: 54px; }
 .lt-card.lts-novis .lts-vis { display: none; }
+.lt-card.lts-short .lt-text { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer; }
+.lt-card.lts-short .lt-text::after { content: ''; }
 /* Reduce Motion: still pictures, the finger stays put */
 @media (prefers-reduced-motion: reduce) { .lts-layer *, .lts-layer *::before, .lts-vis, .lts-vis * { animation: none !important; } .lts-tip { opacity: .85; } .lts-typed { max-width: 9em; } }
 .lt-tour.lts-rm .lts-layer *, .lt-tour.lts-rm .lts-layer *::before, .lt-tour.lts-rm .lts-vis * { animation: none !important; }

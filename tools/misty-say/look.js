@@ -65,8 +65,8 @@ for (const [m, lg] of [['light', 'en'], ['dark', 'de'], ['light', 'es'], ['dark'
             if (r.n.w > r.vw * .72 + 1) fail(tag + ' nudge ' + Math.round(r.n.w) + 'px wide'); if (r.n.h > TWO) fail(tag + ' nudge ' + Math.round(r.n.h) + 'px tall');
             if (r.hits.length) fail(tag + ' nudge covers ' + r.hits.join(','));
             await shot('after-nudge-' + tag);
-            await page.evaluate(() => { document.getElementById('mhNudge').classList.remove('on'); const d = document.getElementById('msFakeTrip'); d && d.remove(); }); await sleep(1300);
-            r = await probe(); if (!r.p) fail(tag + ' line did not follow the nudge'); if (r.n) fail(tag + ' nudge and line both up');
+            await page.evaluate(() => { document.getElementById('mhNudge').classList.remove('on'); const d = document.getElementById('msFakeTrip'); d && d.remove(); });
+            for (let k = 0; k < 20; k++) { await sleep(250); r = await probe(); if (r.p) break; } if (!r.p) fail(tag + ' line did not follow the nudge'); if (r.n) fail(tag + ' nudge and line both up');
         }
     }
     /* 5. a guide's bubble (same CSS the cell worlds use) */

@@ -8,7 +8,7 @@
    LOWiSPIKE rules from the ingredients can only make it stricter, never milder:
    - a sweetener anywhere -> spike (keeps the sweet habit; policy rule kept from LOWiSPIKE);
    - a drink with more than 5 g sugar per 100 ml -> spike (liquid sugar reaches the blood fastest);
-   - added sugar in the first three ingredients with 10 g+ sugar per 100 g -> one step up (Lower -> Moderate, Moderate -> Higher);
+   - added sugar in the first three ingredients with 10 g+ sugar per 100 g and 5 g+ in the serving -> one step up (Lower -> Moderate, Moderate -> Higher);
    - refined starch in the first three ingredients -> Moderate becomes Higher.
    Only ingredients and no numbers: refined starch or added sugar up front -> spike, else unknown (no estimate without numbers). */
 (function (root, factory) {
@@ -85,7 +85,7 @@
         if (key !== 'insufficient') {
             if (sweet) key = 'higher';
             if (drink && (s || 0) > 5) { if (!sweet) why.unshift(['s_liquid', s]); key = 'higher'; }
-            if (sugarTop && (s || 0) >= 10) { key = UP[key]; why.push(['s_sugar_top', sugarTop.w, s]); }
+            if (sugarTop && (s || 0) >= 10 && (sg || 0) >= 5) { key = UP[key]; why.push(['s_sugar_top', sugarTop.w, s]); }
             if (refined && key === 'moderate') { key = 'higher'; why.push(['s_refined_i', refinedTop.w]); }
         } else if (sweet) key = 'higher';
         const verdict = TO_VERDICT[key] || 'unknown';

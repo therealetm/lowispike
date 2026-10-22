@@ -20,9 +20,9 @@ test('Freshona Bio Gemüse Pfanne (5.4 g carbs, 4.6 g sugar) is not a spike and 
 test('OFF "plant-based-foods-and-beverages" tag no longer makes food a drink', () => {
     assert.match(html, /filter\(x => !\/foods-and-beverages\/\.test/);
 });
-test('wholegrain oats are not a spike, with or without ingredients', () => {
-    assert.equal(v({facts: {c: 58.7, s: 0.7, f: 10, p: 13.5, fat: 7}, ingredients: 'Vollkorn-Haferflocken'}), 'ok');
-    assert.equal(v({facts: {c: 58.7, s: 0.7, f: 10, p: 13.5, fat: 7}}), 'ok');
+test('wholegrain oats are not a spike, with or without ingredients (Moderate since scanfe-b2: whole grain no longer lowers the estimate)', () => {
+    assert.equal(v({facts: {c: 58.7, s: 0.7, f: 10, p: 13.5, fat: 7}, ingredients: 'Vollkorn-Haferflocken'}), 'better');
+    assert.equal(v({facts: {c: 58.7, s: 0.7, f: 10, p: 13.5, fat: 7}}), 'better');
 });
 test('clear spikes stay spikes', () => {
     assert.equal(v({cat: 'drink', facts: {c: 10.6, s: 10.6, drink: 1}, ingredients: 'Wasser, Zucker, Kohlensäure'}), 'spike', 'cola');
@@ -30,20 +30,20 @@ test('clear spikes stay spikes', () => {
     assert.equal(v({facts: {c: 49, s: 4, f: 2.5, p: 8, fat: 3}, ingredients: 'Weizenmehl, Wasser, Hefe, Salz, Zucker'}), 'spike', 'white bread');
     assert.equal(v({facts: {c: 80, s: 0.5, f: 3, p: 8, fat: 3}, ingredients: 'Puffreis 100%'}), 'spike', 'rice cakes look healthy but spike');
     assert.equal(v({facts: {c: 77, s: 46, p: 7}, ingredients: 'Glukosesirup, Zucker, Gelatine'}), 'spike', 'gummies');
-    assert.equal(v({facts: {c: 14, s: 13, p: 3.5, fat: 3}, ingredients: 'Joghurt, Zucker, Erdbeeren 8%'}), 'spike', 'fruit yoghurt, sugar up front');
+    assert.equal(v({cat: 'dairy', facts: {c: 14, s: 13, p: 3.5, fat: 3}, ingredients: 'Joghurt, Zucker, Erdbeeren 8%'}), 'spike', 'fruit yoghurt (150 g pot), sugar up front');
     assert.equal(v({facts: {c: 65, s: 22, f: 7, p: 9, fat: 8}, ingredients: 'Haferflocken, Zucker, Rosinen'}), 'spike', 'sugary muesli');
     assert.equal(v({facts: {c: 50, s: 0.5, f: 4, p: 6, fat: 33}, ingredients: 'Kartoffeln, Sonnenblumenöl, Salz'}), 'spike', 'crisps');
 });
-test('protein, fat, fibre and natural sugar keep low-carb foods calm', () => {
-    assert.equal(v({cat: 'drink', facts: {c: 4.8, s: 4.8, p: 3.4, fat: 3.5, drink: 1}, ingredients: 'Vollmilch'}), 'ok', 'milk');
+test('low-carb foods stay calm; a glass of milk is liquid sugar for the engine', () => {
+    assert.equal(v({cat: 'drink', facts: {c: 4.8, s: 4.8, p: 3.4, fat: 3.5, drink: 1}, ingredients: 'Vollmilch'}), 'spike', 'milk: 250 ml = 12 g liquid sugar, Higher under carb-bands-v1');
     assert.equal(v({facts: {c: 4, s: 4, p: 11, fat: 0.2}, ingredients: 'Magermilch, Milchsäurekulturen'}), 'ok', 'skyr');
-    assert.equal(v({facts: {c: 19, s: 14, f: 12, p: 10, fat: 46}, ingredients: 'Kakaomasse, Kakaobutter, Zucker'}), 'ok', '85% dark chocolate');
-    assert.equal(v({facts: {c: 40, s: 3, f: 7, p: 7, fat: 2}, ingredients: 'Roggenvollkornmehl, Wasser, Salz'}), 'ok', 'wholegrain rye bread');
+    assert.equal(v({cat: 'sweets', facts: {c: 19, s: 14, f: 12, p: 10, fat: 46}, ingredients: 'Kakaomasse, Kakaobutter, Zucker'}), 'ok', '85% dark chocolate, 25 g serving');
+    assert.equal(v({facts: {c: 40, s: 3, f: 7, p: 7, fat: 2}, ingredients: 'Roggenvollkornmehl, Wasser, Salz'}), 'better', 'wholegrain rye bread: 20 g carbs a serving, Moderate');
 });
 test('sweeteners, ingredients-only and no data', () => {
     assert.equal(v({cat: 'drink', facts: {c: 0, s: 0, drink: 1}, ingredients: 'Wasser, Süßstoffe (Aspartam, Acesulfam K)'}), 'spike');
     assert.equal(v({ingredients: 'Weizenmehl, Zucker, Palmöl'}), 'spike');
-    assert.equal(v({ingredients: 'Erdnüsse, Salz'}), 'ok');
+    assert.equal(v({ingredients: 'Erdnüsse, Salz'}), 'unknown', 'no numbers, no estimate');
     assert.equal(v({name: 'x'}), 'unknown');
     const r = S.assess({facts: {c: 5.4, s: 4.6}});
     assert.equal(r.est, true);
@@ -92,13 +92,13 @@ test('spike lists split, search and "looks healthy" filter', () => {
     const items = [
         {name: 'Bio Reiswaffeln', facts: {c: 80, s: 0.5, f: 3, p: 8}, ingredients: 'Puffreis'},
         {name: 'Gummibärchen', facts: {c: 77, s: 46}, ingredients: 'Glukosesirup, Zucker'},
-        {name: 'Haferflocken', facts: {c: 58.7, s: 0.7, f: 10, p: 13.5, fat: 7}, ingredients: 'Vollkorn-Haferflocken'}
+        {name: 'Skyr', facts: {c: 4, s: 4, p: 11, fat: 0.2}, ingredients: 'Magermilch'}
     ];
     const all = C.split(items, S.assess, '', false, S.looksHealthy);
     assert.equal(all.spike.length, 2); assert.equal(all.ok.length, 1);
     const healthy = C.split(items, S.assess, '', true, S.looksHealthy);
     assert.deepEqual(healthy.spike.map(p => p.name), ['Bio Reiswaffeln']);
-    assert.equal(C.split(items, S.assess, 'hafer', false).ok.length, 1);
+    assert.equal(C.split(items, S.assess, 'skyr', false).ok.length, 1);
 });
 test('herb world "How do you feel?" card is blue glass with readable text; files cached', () => {
     const css = fs.readFileSync(path.join(root, 'spike-catch.css'), 'utf8');

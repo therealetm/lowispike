@@ -1,7 +1,7 @@
 // Food Intelligence Engine benchmark (queue step scanfe-a, spec queue/FOOD-ENGINE-SPEC.md sections 4, 5, 13, 14).
 // data/food-bench/benchmark.v1.json holds verified label rows only (Open Food Facts, data/shop, Emmanuel's handoff).
 // Real checks now: dataset integrity, cited data/shop rows match, serving math (spec section 4).
-// Checks that need the engine (scanfe-b1/b2) are marked todo so the suite stays green; they run and report today.
+// Checks that still need later engine steps (scanfe-c, d, f1) are marked todo so the suite stays green; they run and report today.
 const test = require('node:test');
 const assert = require('assert');
 const fs = require('fs');
@@ -121,7 +121,7 @@ test('serving math: every row scales linearly from per 100 and keeps carbs whole
   assert.strictEqual(r1(serving(byId['cocacola-original'].per100, 250).sugar), 26.5);
 });
 
-// ---- Engine expectations: todo until scanfe-b1/b2 ship food-engine-core.js and the LowiSpikeCore adapter. ----
+// ---- Engine expectations: the LowiSpikeCore adapter (scanfe-b2) runs on food-engine-core.js; later steps stay todo. ----
 
 const spike = require(path.join(root, 'spike-core.js'));
 function today(r) {
@@ -130,18 +130,18 @@ function today(r) {
     ingredients: r.ingredients || '', cat: r.unit === 'ml' ? 'drink' : ''});
 }
 
-test('current estimator reproduces the shipped Ultje bug (documents what scanfe-b2 must fix)', () => {
-  // By spike-core.js arithmetic: (36 - 5.5) x 0.8 = 24.4 load, damp min(9.8, 6 + 3.8) = 9.8, score 15 -> ok.
+test('the shipped Ultje bug is gone: Ultje now reads Moderate through the engine (was ok, score 15, before scanfe-b2)', () => {
   const o = today(byId['ultje-suess-salzig']);
-  assert.strictEqual(o.verdict, 'ok');
-  assert.strictEqual(o.score, 15);
+  assert.strictEqual(o.verdict, 'better');
+  assert.strictEqual(o.engine.key, 'moderate');
+  assert.ok(o.score >= 30 && o.score < 60, 'score sits in the Moderate band: ' + o.score);
 });
 
-test('Ultje Suess & Salzig never gets an ok / "no blood sugar spike" verdict', {todo: 'scanfe-b2: LowiSpikeCore.assess -> engine adapter'}, () => {
+test('Ultje Suess & Salzig never gets an ok / "no blood sugar spike" verdict', () => {
   assert.notStrictEqual(today(byId['ultje-suess-salzig']).verdict, 'ok');
 });
 
-test('no row that expects NEIN for sugar or starch reads ok today', {todo: 'scanfe-b2 (sugar-coated nuts, honey-coated peanuts, regular pudding still read ok)'}, () => {
+test('no row that expects NEIN for sugar or starch reads ok today', () => {
   const bad = rows.filter(r => r.expect.neverVerdictText && today(r).verdict === 'ok').map(r => r.id);
   assert.deepStrictEqual(bad, []);
 });

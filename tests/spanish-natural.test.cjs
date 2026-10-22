@@ -28,15 +28,15 @@ test('Spanish never calls the companion "tu hierba" (it reads as slang for weed)
 });
 
 test('scanner verdicts in Spanish talk about blood sugar, not an insulin spike', () => {
-    for (const en of ['Likely blood sugar spike', 'Likely no blood sugar spike']) {
+    for (const en of ['Higher estimated blood sugar impact', 'Lower estimated blood sugar impact', 'Moderate estimated blood sugar impact']) {
         const t = es(en);
         assert.match(t, /azúcar/, en);
         assert.doesNotMatch(t, /insulina/, en);
     }
     assert.match(es('Blood sugar and insulin impact'), /azúcar y la insulina/, 'meter keeps both, kept apart');
     const scan = decode(read('shop-scan-core.js'));
-    assert.match(scan, /'Probablemente te sube el azúcar'/);
-    assert.match(scan, /'Es poco probable que te suba el azúcar'/);
+    assert.match(scan, /'Impacto estimado más alto en el azúcar en sangre'/);
+    assert.match(scan, /'Impacto estimado más bajo en el azúcar en sangre'/);
     assert.doesNotMatch(scan, /suba tu insulina|sube tu insulina/);
 });
 

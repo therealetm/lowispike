@@ -8,7 +8,7 @@ const vm = require('vm');
 const ROOT = path.join(__dirname, '..');
 const SRC = fs.readFileSync(path.join(ROOT, 'back-swipe.js'), 'utf8');
 
-function make({ tab = 'home', sheetOpen = false, mv = false } = {}) {
+function make({ tab = 'home', sheetOpen = false, mv = false, r2 = false } = {}) {
     const st = { stack: [null], i: 0, tab, sheetOpen, mv, homeClicks: 0, escapes: 0, backs: 0 };
     const listeners = {};
     const history = {
@@ -19,7 +19,8 @@ function make({ tab = 'home', sheetOpen = false, mv = false } = {}) {
     const tabEl = () => ({ id: 'tab-' + st.tab });
     const homeBtn = { click() { st.homeClicks++; st.tab = 'home'; } };
     const D = {
-        documentElement: { get className() { return st.sheetOpen ? 'x-open' : ''; } },
+        /* r2: a sheet that loses .on at once but stays in the page (slide-out) and drops its page classes later */
+        documentElement: { get className() { return st.sheetOpen && !r2 ? 'x-open' : ''; } },
         body: { className: '' },
         activeElement: null,
         querySelector(q) {
@@ -28,7 +29,7 @@ function make({ tab = 'home', sheetOpen = false, mv = false } = {}) {
             if (q.indexOf('data-tab="home"') >= 0) return homeBtn;
             return null;
         },
-        querySelectorAll() { return { length: st.sheetOpen ? 1 : 0 }; },
+        querySelectorAll(q) { if (r2) return { length: q === '.r2-ov.on' ? (st.sheetOpen ? 1 : 0) : 1 }; return { length: st.sheetOpen ? 1 : 0 }; },
         addEventListener(t, f) { (listeners['d:' + t] = listeners['d:' + t] || []).push(f); },
         dispatchEvent(e) { if (e.key === 'Escape') { st.escapes++; st.sheetOpen = false; } return true; },
     };
@@ -58,6 +59,15 @@ test('back with a sheet open closes the sheet and keeps you in the app', () => {
     assert.strictEqual(a.st.escapes, 1);
     assert.strictEqual(a.st.sheetOpen, false);
     assert.strictEqual(a.st.tab, 'foryou');
+    assert.strictEqual(JSON.stringify(a.history.state), '{"lowiBack":1}', 'guard is back');
+});
+
+test('back on Today with a sheet sliding out (scanned product) closes it and stays in the app', () => {
+    const a = make({ tab: 'home', sheetOpen: true, r2: true });
+    a.touch(); a.swipeBack();
+    assert.strictEqual(a.st.escapes, 1);
+    assert.strictEqual(a.st.sheetOpen, false);
+    assert.strictEqual(a.st.backs, 1, 'only the swipe itself went back, not out of the app');
     assert.strictEqual(JSON.stringify(a.history.state), '{"lowiBack":1}', 'guard is back');
 });
 

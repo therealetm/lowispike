@@ -207,7 +207,8 @@ async function pinSend(body){if(!isAdmin()||!store||!body)return false;const nam
  try{await store.submitLine(name,body);notice='';}catch(e){notice=tr('pinFailed');refresh();return false;}await dropOldMarks(body);refresh();return true;}
 function pinMessage(id){const m=messages().find(x=>x.id===id);if(!m||m.status||m.local)return Promise.resolve(false);return pinSend(K.pinBody(id,plain(m)));}
 function unpinRoom(){return roomPinned()?pinSend(K.unpinBody()):Promise.resolve(false);}
-function goPinned(id){if(!id)return;if(!D.getElementById('cm-'+id))thread(true,id);const t=D.getElementById('cm-'+id);
+let pinHoldAt=0;/* the jump to the pinned message must not be undone by fit()'s stick-to-bottom (the tap focuses the bar button) */
+function goPinned(id){if(!id)return;pinHoldAt=Date.now();if(!D.getElementById('cm-'+id))thread(true,id);const t=D.getElementById('cm-'+id);
  if(!t){notice=tr('pinGone');refresh();return;}const l=D.getElementById('cmList');if(l&&t.getBoundingClientRect&&l.getBoundingClientRect){const r=t.getBoundingClientRect(),lr=l.getBoundingClientRect();l.scrollTop+=Math.round(r.top-lr.top-(lr.height-r.height)/2);}else{try{t.scrollIntoView({block:'center'});}catch(e){}}
  if(t.classList){t.classList.remove('cr-flash');void t.offsetWidth;t.classList.add('cr-flash');setTimeout(()=>t.classList.remove('cr-flash'),1600);}}
 function profile(id,name){const m=own(),base=id===scope?m:H.people().find(p=>p.uid===id)||{};const shared=K.identity(identities.get(id));return {uid:id,n:name||base.n||'Member',avatar:K.image(base.avatar),s:shared.s,t:shared.t,lv:base.lv||1,xp:base.xp||0};}
@@ -861,7 +862,7 @@ function fit(){
  const l=threadOpen&&D.getElementById('cmList'),stick=!!l&&(!roomKbH||l.scrollHeight-l.scrollTop-l.clientHeight<140),h=Math.max(0,bottom-rect.top-8);
  pane.style.setProperty('--cs-keyboard-height',h+'px');
  if(threadOpen){roomKbH=h;W.requestAnimationFrame(()=>{const r=inp.getBoundingClientRect(),over=Math.ceil(r.bottom+10-bottom);
-  if(over>0&&D.activeElement===inp)pane.style.setProperty('--cs-keyboard-height',Math.max(0,h-over)+'px');if(stick&&l)l.scrollTop=l.scrollHeight;});}
+  if(over>0&&D.activeElement===inp)pane.style.setProperty('--cs-keyboard-height',Math.max(0,h-over)+'px');if(stick&&l&&Date.now()-pinHoldAt>900)l.scrollTop=l.scrollHeight;});}
 }
 D.addEventListener('change',e=>{if(e.target&&e.target.id==='cmPhotoFile'){const f=e.target.files&&e.target.files[0];takePhoto(f);}});
 D.addEventListener('input',e=>{if(e.target.id!=='cmInput')return;typeDraft(e.target.value);micSwap();if(!store){const sb=D.getElementById('cmSend');if(sb)sb.disabled=!(sel&&botOf(sel))||!e.target.value.trim();}mentions();/* item 41: typing can make iOS scroll a hidden ancestor to the caret; in a room put it back (after layout) */if(threadOpen)(W.requestAnimationFrame||setTimeout)(roomVV);});

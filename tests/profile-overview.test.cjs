@@ -18,8 +18,14 @@ test('entries: Settings > Account, Me and Look & sound open the Profile overview
 });
 
 test('entries: no file outside the overview opens a Profile part by itself', () => {
+    /* your-details.js is the one exception: a row for one field (gender, blood pressure, order) opens About you to edit that field */
+    const ALLOW = { 'your-details.js': true };
     const files = fs.readdirSync(path.join(__dirname, '..')).filter(f => /\.js$/.test(f));
-    for (const f of files) assert.doesNotMatch(read(f), /LowiG2E\.open\(/, f + ' must not open a Profile part');
+    for (const f of files) {
+        const src = read(f);
+        assert.doesNotMatch(src, /LowiG2E\.open\(\s*['"]acct/, f + ' must not open the Account part directly');
+        if (!ALLOW[f]) assert.doesNotMatch(src, /LowiG2E\.open\(/, f + ' must not open a Profile part');
+    }
     const rest = html.replace(g2e, '');
     assert.doesNotMatch(rest, /LowiG2E\.open\(/, 'index.html outside the overview module must not open a Profile part');
 });

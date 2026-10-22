@@ -8,6 +8,8 @@
    - It starts only when Home is up and NOTHING else is: setup / sign-in gate, the birthday reveal, the starter interview, the Day
      card, any sheet or dialog (LowiTutorial.busyBy() plus #drDay), and only after that has been quiet for QUIET_MS.
    - Quit partway (closed the app or reloaded mid-tour): next time, ONE offer to continue where you left off. No thanks ends it.
+     Since 22 Oct 2026 the floating "Continue tutorial" button (tutorial-resume.js) covers this, so the card only shows
+     for a tour left before that build.
      Skip all ends it for good. Skip and Skip all stay on every card (tutorial.js). Never touches tutorial.js's hold/flicker logic.
    State: { s: 'pending' | 'running' | 'offered' | 'done' | 'skipped' | 'declined', step, at, resumed } */
 (function (root) {
@@ -99,6 +101,8 @@
         const st = get(); if (!st.s || st.s === 'done' || st.s === 'skipped' || st.s === 'declined') { quietSince = 0; return; }
         const t = T(), live = !!(t && t.isOn && t.isOn());
         if (live) { quietSince = 0; return; }
+        /* tutorial-resume.js (22 Oct 2026): the floating "Continue tutorial" button already offers it, so no second card */
+        if ((st.s === 'running' || st.s === 'offered') && W.LowiTutorialResume && W.LowiTutorialResume.covers && W.LowiTutorialResume.covers()) { quietSince = 0; return; }
         if (st.s === 'offered') { set(Object.assign({}, st, { s: 'declined' })); return; } /* the offer was shown and the page went away: that was the one offer */
         const now = Date.now();
         if (quietNow()) { if (!quietSince) quietSince = now; } else quietSince = 0;

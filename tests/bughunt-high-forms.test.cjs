@@ -14,19 +14,17 @@ const read = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
 const herb = read('herb-tamagotchi.js'), css = read('herb-tamagotchi.css');
 
 test('BH-012: the standard art draws every one of the ten forms with real numbers', () => {
-    const line = herb.split('\n').find(l => /const g=Math\.max\(0,Math\.min\(5,i\|0\)\),top=/.test(l));
+    /* Oct 22 2026: the flowery herb (stem, leaf count, blossoms) is gone; only the face position and body radius tables remain */
+    const line = herb.split('\n').find(l => /const g=Math\.max\(0,Math\.min\(5,i\|0\)\),faceY=/.test(l));
     assert.ok(line, 'plant() clamps its table index');
     const tables = [...line.matchAll(/(\w+)=(\[[\d,]+\])\[(\w)\]/g)];
-    assert.equal(tables.length, 3);
+    assert.equal(tables.length, 2);
     for (const t of tables) assert.equal(t[3], 'g', t[1] + ' reads the clamped index');
-    const count = /const count=(\[[\d,]+\])\[(\w)\]/.exec(herb);
-    assert.ok(count && count[2] === 'g', 'leaf count reads the clamped index');
+    assert.ok(!/const count=\[/.test(herb), 'no leaf count table left');
     for (let i = 0; i < 10; i++) {
         const g = Math.max(0, Math.min(5, i | 0));
         for (const t of tables) assert.ok(Number.isFinite(JSON.parse(t[2])[g]), t[1] + ' at form ' + (i + 1));
-        assert.ok(Number.isFinite(JSON.parse(count[1])[g]), 'leaves at form ' + (i + 1));
     }
-    assert.doesNotMatch(herb, /\[\d+(,\d+){5}\]\[i\]/, 'no six-step table is read with the raw form index');
 });
 
 test('BH-012: halo, sparkles and the float stay for every form from Legendary on', () => {

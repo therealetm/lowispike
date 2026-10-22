@@ -18,21 +18,19 @@ html.herb-living #g1Z .g1-fb,html.herb-living #g1Z .g1-face,html.herb-living .g1
 .lh-card-bubble:after{content:"";position:absolute;left:47px;bottom:-6px;width:10px;height:10px;background:#f6f1ff;transform:rotate(45deg);border-right:1px solid #d2c6ec;border-bottom:1px solid #d2c6ec}
 .lh-sprite{width:100%;height:100%;display:block;overflow:visible;filter:drop-shadow(0 0 6px color-mix(in srgb,var(--tmg-a) 28%,transparent))}
 .lh-creature{transform-origin:130px 257px;animation:lh-breathe 4.4s ease-in-out infinite}
-.lh-leaf{animation:lh-sway 4.8s ease-in-out infinite;animation-delay:var(--delay)}
 .lh-eyes{transform-box:fill-box;transform-origin:center;animation:lh-blink 5.4s ease-in-out infinite}
 .lh-sleep-eyes,.lh-dizzy-eyes,.lh-ooh,.lh-flat,.lh-calm,.lh-frown{display:none}
 .lh-particle{animation:lh-drift 5.5s ease-in-out infinite;animation-delay:var(--delay);opacity:.6}
 .lh-constellation{opacity:.58}.lh-halo{animation:lh-halo 6s ease-in-out infinite;transform-origin:130px 48px}
 /* Oct 19 2026 (Emmanuel): the oval reflection under a companion cell reads as a ground shadow. Hidden on every bubble, every screen. */
 .lh-reflection{display:none!important}
-.lh-blossom{filter:drop-shadow(0 0 3px #ffffff55)}.lh-stage-5 .lh-foliage,.lh-stage-6 .lh-foliage,.lh-stage-7 .lh-foliage,.lh-stage-8 .lh-foliage,.lh-stage-9 .lh-foliage{animation:lh-float 5s ease-in-out infinite;transform-origin:130px 200px}
+.lh-stage-5 .lh-foliage,.lh-stage-6 .lh-foliage,.lh-stage-7 .lh-foliage,.lh-stage-8 .lh-foliage,.lh-stage-9 .lh-foliage{animation:lh-float 5s ease-in-out infinite;transform-origin:130px 200px}
 .lh-pot-glass .lh-pot>path{fill:#b4edf747;stroke:#c4fcff;stroke-width:2}
 .lh-pot-porcelain .lh-pot>path{fill:#f3e3ff;stroke:#cbb6e6}.lh-pot-porcelain .lh-pot>text{fill:#9880b3}
 .lh-droopy .lh-foliage{transform:rotate(9deg) translateY(8px);transform-origin:130px 248px;opacity:.76}.lh-droopy .lh-eyes{transform:scaleY(.38);animation:none}.lh-droopy .lh-smile{transform:translateY(4px)}
 .lh-sleepy .lh-eyes,.lh-night .lh-eyes{transform:scaleY(.38);animation:none}.lh-night .lh-creature{animation-duration:6s}.lh-night .lh-particle{opacity:.25}
 .lh-static *{animation:none!important}.lh-static{filter:none}
 [data-reaction] .lh-react .lh-creature{animation:lh-bounce .75s cubic-bezier(.25,.7,.2,1)}
-[data-reaction="wave"] .lh-react .lh-leaf:nth-child(2){animation:lh-wave .8s ease-in-out 3}
 [data-reaction="curious"] .lh-ooh,[data-reaction="vitamin"] .lh-ooh{display:block}
 [data-reaction="curious"] .lh-smile,[data-reaction="vitamin"] .lh-smile{display:none}
 [data-reaction="proud"] .lh-react .lh-foliage{transform:translateY(-8px) scale(1.06);transform-origin:center}
@@ -136,16 +134,14 @@ html.herb-room #g1Z,html.herb-evolving #g1Z{display:none!important}
 @keyframes lh-evo-shake{0%,100%{translate:0 0}20%{translate:calc(-2px * var(--t,1)) 0}40%{translate:calc(2px * var(--t,1)) 0}60%{translate:calc(-1px * var(--t,1)) 0}80%{translate:calc(1px * var(--t,1)) 0}}
 @media(prefers-reduced-motion:reduce){#lhEvolution .lh-evo-before,#lhEvolution .lh-evo-flash,#lhEvolution .lh-evo-rays{display:none!important}#lhEvolution .lh-evo-after{opacity:1!important;animation:none!important}}
 #tmgHomeCard button:focus-visible,#tmgScreen :focus-visible,#lhEvolution :focus-visible{outline:3px solid var(--tmg-a,#b6ebd2);outline-offset:4px}
-.tab:not(.active) .lh-creature,.tab:not(.active) .lh-leaf,.tab:not(.active) .lh-eyes,.tab:not(.active) .lh-particle{animation-play-state:paused}
+.tab:not(.active) .lh-creature,.tab:not(.active) .lh-eyes,.tab:not(.active) .lh-particle{animation-play-state:paused}
 @keyframes lh-breathe{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3px) scale(1.018)}}
-@keyframes lh-sway{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(3deg)}}
 @keyframes lh-blink{0%,42%,46%,91%,95%,100%{transform:scaleY(1)}44%,93%{transform:scaleY(.06)}}
 @keyframes lh-drift{0%{transform:translateY(9px);opacity:0}30%,70%{opacity:.6}100%{transform:translate(var(--drift),-20px);opacity:0}}
 @keyframes lh-halo{0%,100%{transform:translateY(0);opacity:.75}50%{transform:translateY(-5px);opacity:1}}
 @keyframes lh-reflect{0%,100%{opacity:.13;transform:scaleX(.92)}50%{opacity:.23;transform:scaleX(1.06)}}
 @keyframes lh-float{0%,100%{transform:translateY(-5px)}50%{transform:translateY(-12px)}}
 @keyframes lh-bounce{0%,100%{transform:translateY(0)}24%{transform:translateY(-17px) scale(1.04,.98)}55%{transform:translateY(0) scale(.98,1.02)}76%{transform:translateY(-7px)}}
-@keyframes lh-wave{0%,100%{transform:rotate(0deg)}30%{transform:rotate(18deg)}65%{transform:rotate(-14deg)}}
 @keyframes lh-dance{0%,100%{transform:rotate(-8deg) translateX(-4px)}50%{transform:rotate(8deg) translateX(4px)}}
 @keyframes lh-dizzy{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(10deg)}}
 @keyframes lh-bloom{0%{transform:scale(.85);opacity:.7}50%{transform:scale(1.13);opacity:1}100%{transform:scale(1)}}

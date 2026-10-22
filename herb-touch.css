@@ -57,10 +57,6 @@
 }
 
 /* Pokes by zone */
-#spWorld .sp-body[data-poke="leaves"] .lh-leaf {
-    animation: htRustle .2s ease-in-out 3 !important
-}
-
 #spWorld .sp-body[data-poke="leaves"] .lh-foliage {
     transform-origin: 130px 240px;
     animation: htSway .6s cubic-bezier(.3, 1.5, .5, 1) !important
@@ -159,7 +155,6 @@
 
     #spBubble[data-pop] .sp-home-herb,
     #spWorld .sp-body[data-poke] .lh-creature,
-    #spWorld .sp-body[data-poke] .lh-leaf,
     #spWorld .sp-body[data-poke] .lh-foliage {
         animation: none !important
     }

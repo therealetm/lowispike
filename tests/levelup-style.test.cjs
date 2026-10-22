@@ -10,7 +10,7 @@ test('level-up card shows the same Misty as Home, in blue glass, with her cell s
     const evo = js.slice(js.indexOf('function evolve('), js.indexOf('function finishEvolution('));
     assert.ok(evo.includes('evoArt(m,p)'), 'evolve paints Misty through evoArt');
     assert.ok(!/plant\(m,'hero',p\)/.test(evo), 'evolve never paints the raw herb in a pot');
-    assert.ok(js.includes('window.LowiHerbTamagotchi.plantHTML'), 'evoArt uses the wrapped plantHTML that paints Home');
+    assert.ok(/function evoArt\(m,p\)\{return curArt\(m,'hero',p\);\}/.test(js) && /function curArt\([^\n]*plantHTML\.cell/.test(js), 'evoArt uses the wrapped plantHTML that paints Home');
     assert.ok(evo.includes('evoStage(m)') && js.includes('LowiWorldHomeCore'), 'stage name comes from Misty cell stages');
     assert.ok(!evo.includes("lineFor('evolution'"), 'no old herb evolution lines (new leaves, pot)');
     assert.ok(!css.includes('#080d22f5'), 'old purple-space backdrop is gone');

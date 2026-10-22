@@ -1353,41 +1353,9 @@
             return id;
         }
 
+        /* Oct 22 2026: the old herb's falling leaves are gone with the flowery design; a hard stretch only marks the gesture */
         function leaves() {
-            if (gesture?.shed) return;
             if (gesture) gesture.shed = true;
-            [...creature.querySelectorAll('.lh-leaf')].slice(0, 3).forEach((leaf, i) => {
-                leaf.style.opacity = '0';
-                const fall = D.createElement('div');
-                fall.className = 'sp-fallen';
-                fall.innerHTML = '<svg viewBox="0 0 260 310">' + leaf.outerHTML.replace('opacity: 0;', '') + '</svg>';
-                area.append(fall);
-                if (!reduced()) fall.animate([{
-                    transform: 'translate(0,0) rotate(0)',
-                    opacity: 1
-                }, {
-                    transform: 'translate(' + (i - 1) * 45 + 'px,90px) rotate(' + (i - 1) * 70 + 'deg)',
-                    opacity: 0
-                }], {
-                    duration: 1600 + i * 130,
-                    fill: 'forwards'
-                });
-                later(() => fall.remove(), 2100);
-                later(() => {
-                    if (leaf.isConnected) {
-                        leaf.style.opacity = '1';
-                        if (!reduced()) leaf.animate([{
-                            opacity: 0,
-                            transform: 'scale(.4)'
-                        }, {
-                            opacity: 1,
-                            transform: 'scale(1)'
-                        }], {
-                            duration: 900
-                        });
-                    }
-                }, 6500 + i * 700);
-            });
         }
         el.addEventListener('pointerdown', e => {
             if (e.button !== 0 || capture) return;
@@ -1523,11 +1491,9 @@
                 controller.abort();
                 cancelAnimationFrame(raf);
                 timers.forEach(clearTimeout);
-                creature.querySelectorAll('.lh-leaf').forEach(n => n.style.opacity = '');
                 el.style.transform = '';
                 delete el.dataset.touchface;
                 delete el.dataset.poke;
-                world.querySelectorAll('.sp-fallen').forEach(n => n.remove());
             }
         };
     }

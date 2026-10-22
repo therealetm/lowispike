@@ -40,7 +40,7 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 13;
+    const VERSION = 14;  /* 14: Oct 22 2026, Mirror mode card right after the basic gestures */
     const AREAS = ['you', 'home', 'food', 'play', 'companion', 'together', 'settings', 'extras', 'end'];
     const STEPS = [
         /* ---------- part: you (your companion) ---------- */
@@ -90,6 +90,17 @@
                 en: 'Put your finger on me and slide it sideways. I turn to where you pull.',
                 de: 'Leg deinen Finger auf mich und schieb ihn zur Seite. Ich drehe mich dorthin, wohin du ziehst.',
                 es: 'Pon el dedo sobre mí y deslízalo hacia un lado. Me giro hacia donde tiras.'
+            }
+        },
+        {
+            /* Oct 22 2026 (Emmanuel: Mirror mode is "the most impressive part in the whole app"): right after the basic gestures.
+               A "later" card: opening the camera mid-tour would raise the camera prompt over the tour. */
+            id: 'mirror', area: 'you', target: ['#whHud .wh-move'], covers: ['mirror-mode'], teaches: [], later: 'tap',
+            title: { en: 'Mirror mode', de: 'Spiegel-Modus', es: 'Modo espejo' },
+            text: {
+                en: 'My favorite part. After the tour, tap Move, then Mirror. You copy the moves, I watch through the camera and coach you out loud. Nothing is recorded.',
+                de: 'Mein Lieblingsteil. Nach der Tour tippst du auf Bewegung, dann auf Spiegel. Du machst die Bewegungen nach, ich schaue durch die Kamera und coache dich laut. Nichts wird aufgenommen.',
+                es: 'Mi parte favorita. Después del recorrido, toca Movimiento y luego Espejo. Copias los movimientos, te miro por la cámara y te guío en voz alta. No se graba nada.'
             }
         },
         {

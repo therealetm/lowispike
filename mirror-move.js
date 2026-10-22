@@ -6,7 +6,8 @@
    - Light on heat: 640x480 front camera, tracking 6 to 15 times a second (slows itself down when a frame costs more),
      drawing capped at 30 fps, devicePixelRatio capped at 2, the 3D world pauses behind it (html.mm-open).
    - Without camera: the same routine with the outline, timer, cues and voice. In bed stays camera-free.
-   Logic and poses: mirror-move-core.js. Entry: one strip on the Move screen (renderScreen in index.html calls stripHTML). */
+   Logic and poses: mirror-move-core.js. Entry: the hero card at the top of the Move screen (renderScreen in index.html calls heroHTML; Oct 22 2026, it was a strip lower
+   down) and the first bubble of the Move bloom on Home (move-bubble.js), so Mirror mode is two taps from Home. */
 (function () {
     'use strict';
     const W = window, D = document, H = D.documentElement, C = W.LowiMirrorCore;
@@ -31,6 +32,23 @@
     function stripHTML() {
         return '<button type="button" class="mm-strip" data-mm="open">' + ICON.cam +
             '<span><b>' + esc(T('Mirror mode', 'Spiegel-Modus', 'Modo espejo')) + '</b><small>' + esc(T('Follow along with your camera', 'Mitmachen mit Kamera', 'Sigue con tu cámara')) + '</small></span><i aria-hidden="true">›</i></button>';
+    }
+    /* Oct 22 2026 (Emmanuel: "Move the mirror mode more up, because that's the most impressive part in the whole app, so that needs to
+       be highlighted"): the hero card at the very top of the Move page, in the One UI dark glass (one-sheet.css --one-*, the same in
+       Day and Night). A small looping preview: the guide outline moves, a second outline (you) follows it a beat later. Start opens
+       the routine chooser (open()). The whole card is a tap target too; Start is the keyboard / screen reader button. */
+    function heroHTML() {
+        const fig = cls => '<g class="' + cls + '"><circle cx="40" cy="15" r="6.5"/><path d="M40 23v22M40 45l-8 18M40 45l8 18"/>' +
+            '<path class="mm-hero-arm mm-hero-arml" d="M40 28l-15 8"/><path class="mm-hero-arm mm-hero-armr" d="M40 28l15 8"/></g>';
+        return '<section class="mm-hero" data-mm="open" aria-label="' + esc(T('Mirror mode', 'Spiegel-Modus', 'Modo espejo')) + '">' +
+            '<div class="mm-hero-row"><span class="mm-hero-art" aria-hidden="true"><i class="mm-hero-glow"></i><svg viewBox="0 0 80 72" fill="none" stroke-linecap="round" stroke-linejoin="round">' +
+            fig('mm-hero-guide') + fig('mm-hero-you') + '</svg><i class="mm-hero-scan"></i></span>' +
+            '<span class="mm-hero-tx"><small class="mm-hero-tag">' + ICON.cam + esc(T('Camera workout', 'Kamera-Workout', 'Entreno con cámara')) + '</small>' +
+            '<b>' + esc(T('Mirror mode', 'Spiegel-Modus', 'Modo espejo')) + '</b>' +
+            '<span class="mm-hero-line">' + esc(T('Copy the moves on screen. Your coach talks you through every rep. Nothing is recorded.',
+                'Mach die Bewegungen nach. Dein Coach sagt dir jede Wiederholung an. Nichts wird aufgenommen.',
+                'Copia los movimientos. Tu coach te guía en cada repetición. No se graba nada.')) + '</span></span></div>' +
+            '<button type="button" class="mm-hero-go" data-mm="open">' + ICON.play + '<span>' + esc(T('Start Mirror mode', 'Spiegel-Modus starten', 'Empezar modo espejo')) + '</span></button></section>';
     }
 
     /* ---------- state ---------- */
@@ -108,7 +126,7 @@
         H.classList.remove('mm-open', 'mm-cam');
         D.removeEventListener('keydown', onKey);
         hushVoice();
-        const s = D.querySelector('.mm-strip'); if (s) try { s.focus({ preventScroll: true }); } catch (e) {}
+        const s = D.querySelector('#mv-screen .mm-hero-go, .mm-strip'); if (s && s.offsetParent) try { s.focus({ preventScroll: true }); } catch (e) {}
     }
     function onKey(e) { if (e.key === 'Escape') close(); }
     function stopCamera() {
@@ -365,5 +383,5 @@
         else if (k === 'voice') { voiceOn = !voiceOn; b.setAttribute('aria-pressed', String(voiceOn)); b.classList.toggle('off', !voiceOn); if (!voiceOn) hushVoice(); }
     });
 
-    W.LowiMirror = { stripHTML, open, close, _state: () => ({ flow, sm, running, stream: !!stream, delegate, interval, costAvg, lms: !!lms, phase: flow && flow.phase }) };
+    W.LowiMirror = { stripHTML, heroHTML, open, close, _state: () => ({ flow, sm, running, stream: !!stream, delegate, interval, costAvg, lms: !!lms, phase: flow && flow.phase }) };
 })();

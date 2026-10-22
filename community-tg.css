@@ -84,9 +84,13 @@ html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .cp-msg .cp-av{flex:
 html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .cp-msg .cp-av .cp-form{width:34px;height:34px;border-radius:50%}
 html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .cp-msg .cm-bub{position:relative;max-width:min(78%,520px)!important;min-width:84px;padding:7px 11px 5px!important;border-radius:18px!important;
   background:rgba(16,30,64,.84)!important;color:#eef4ff!important;border:1px solid color-mix(in srgb,#64d2ff 40%,transparent)!important;
-  box-shadow:0 0 12px -4px rgba(100,210,255,.45),inset 0 .5px 0 rgba(255,255,255,.12)!important;-webkit-backdrop-filter:blur(14px) saturate(150%);backdrop-filter:blur(14px) saturate(150%)}
+  box-shadow:0 0 12px -4px rgba(100,210,255,.45),inset 0 .5px 0 rgba(255,255,255,.12)!important;-webkit-backdrop-filter:none;backdrop-filter:none}
+/* Oct 22 (item 29/33 memory): every message bubble had its own backdrop blur, 60 blurred layers covering about 5 screens in a full
+   room (measured in WebKit, iPhone 15 Pro Max size). On an iPhone each one is a separate compositing layer with its own copy of what
+   is behind it, a likely part of the Community -> chat crash. The bubbles are already 84% opaque, so the blur barely showed: it is off,
+   and your own bubbles are a little more opaque to make up for it. The room itself keeps its one blur. */
 html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .cp-msg.cp-end:not(.mine) .cm-bub{border-bottom-left-radius:6px!important}
-html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .mine.cp-msg .cm-bub{background:rgba(10,72,160,.7)!important;border-color:color-mix(in srgb,#64d2ff 62%,transparent)!important;box-shadow:0 0 14px -3px rgba(100,210,255,.6),inset 0 .5px 0 rgba(255,255,255,.16)!important}
+html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .mine.cp-msg .cm-bub{background:rgba(10,72,160,.8)!important;border-color:color-mix(in srgb,#64d2ff 62%,transparent)!important;box-shadow:0 0 14px -3px rgba(100,210,255,.6),inset 0 .5px 0 rgba(255,255,255,.16)!important}
 html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .mine.cp-msg.cp-end .cm-bub{border-bottom-right-radius:6px!important}
 html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .cp-msg .cs-by{display:block!important;margin:0 0 1px!important;padding:0!important;min-height:0!important}
 html body #cmPaneChat[data-spirit-chat][data-room] .cr-room .cp-msg .cs-by:not(:has(.cs-name)){display:contents!important}

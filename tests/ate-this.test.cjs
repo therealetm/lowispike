@@ -41,7 +41,7 @@ function boot(opts) {
         addEventListener: (t, f) => { (listeners[t] = listeners[t] || []).push(f); }, getElementById: id => byId[id] || null, querySelector: () => null, querySelectorAll: () => [],
         createElement: t => { const e = el(t); Object.defineProperty(e, 'id', { set(v) { byId[v] = e; this._id = v; }, get() { return this._id; } }); return e; } };
     D.body.appendChild = c => { D.body.children.push(c); };
-    const W = { document: D, LowiVitalsBridge: V, LowiP2: { rec: id => RECS[id] || null }, LowiSpiritCore: { slotFor: () => opts.slot || 'lunch', macros: r => ({ kcal: 300, r: r.id }) },
+    const W = { document: D, LowiVitalsBridge: V, LowiLang: opts.dict ? { t: s => opts.dict[s] || s, get: () => opts.lang || 'en' } : undefined, LowiP2: { rec: id => RECS[id] || null }, LowiSpiritCore: { slotFor: () => opts.slot || 'lunch', macros: r => ({ kcal: 300, r: r.id }) },
         toast: m => toasts.push(m), MutationObserver: function () { this.observe = () => { }; }, requestAnimationFrame: f => 0, addEventListener() { },
         dispatchEvent: e => events.push(e.type), CustomEvent: function (n, o) { this.type = n; this.detail = o && o.detail; },
         localStorage: { getItem: k => (k in storage ? storage[k] : null), setItem: (k, v) => { storage[k] = String(v); }, removeItem: k => { delete storage[k]; } } };
@@ -49,7 +49,7 @@ function boot(opts) {
     const ctx = Object.assign(W, { fById: id => POOL[id] || null, console, Date, Math, String, Number, Object, Array, JSON, Set, setTimeout: () => 0, clearTimeout() { }, CustomEvent: W.CustomEvent, localStorage: W.localStorage });
     vm.runInNewContext(SRC, ctx);
     fake.onClick = b => { if (b.dataset.td === 'addtoday') toasts.push('addtoday:' + b.dataset.id); };
-    return { A: W.LowiAte, S, storage, toasts, events, listeners };
+    return { A: W.LowiAte, S, storage, toasts, events, listeners, byId };
 }
 
 test('I just ate this: one tap logs an eaten meal through logMeal, slot from the clock, macros, XP, and the plan copy is ticked', () => {
@@ -62,6 +62,18 @@ test('I just ate this: one tap logs an eaten meal through logMeal, slot from the
     assert.deepStrictEqual(S.logs[0].macros, { kcal: 300, r: 'rb_meal' });
     assert.strictEqual(S.xp, 115);
     assert.strictEqual(S.td.ate[0], true, 'the planned copy is marked eaten, so it never logs twice');
+});
+
+test('bug hunt Oct 22: the bar and the plan show the recipe name in the app language (the log keeps the English key)', () => {
+    const dict = { 'Cinnamon Baked Yogurt Custard': 'Zimt-Joghurt-Pudding aus dem Ofen', 'Skyr Natur': 'Skyr Natur' };
+    const { A, S, byId } = boot({ lang: 'de', dict });
+    A.logNow('rb_custard');
+    assert.strictEqual(S.logs[0].t, 'Cinnamon Baked Yogurt Custard', 'stored name stays the canonical one, so one meal still counts once');
+    const bar = byId.ateBar;
+    assert.match(bar.innerHTML, /Zimt-Joghurt-Pudding aus dem Ofen/); assert.doesNotMatch(bar.innerHTML, /Cinnamon Baked/);
+    A.logNow('rb_custard'); assert.match(byId.ateBar.innerHTML, /Zimt-Joghurt-Pudding aus dem Ofen/, 'the already-logged bar too');
+    S.td.later = [{ key: 'x', t: 'Cinnamon Baked Yogurt Custard' }];
+    assert.match(A.planHTML(S.td), /Zimt-Joghurt-Pudding aus dem Ofen/);
 });
 
 test('the same meal twice counts once (fair play), products log with their barcode', () => {

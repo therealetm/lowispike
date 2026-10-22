@@ -32,6 +32,9 @@
   const SLOTS = ['breakfast', 'lunch', 'dinner', 'snack'];
   const lang = () => { let l = ''; try { l = (W.LowiLang && LowiLang.get && LowiLang.get()) || D.documentElement.lang || localStorage.getItem('lowispike.lang') || 'en'; } catch (e) { l = 'en'; } l = String(l).slice(0, 2); return TX[l] ? l : 'en'; };
   const t = (k, o) => String(TX[lang()][k] || TX.en[k] || k).replace(/\{(\w+)\}/g, (m, x) => (o && o[x] != null ? o[x] : ''));
+  /* bug hunt Oct 22: the bar and the plan rows are data-noi18n, so the page translator skips them and a German or Spanish user saw the
+     English recipe name. Show the name in the app language; the log keeps the canonical name, so one meal still counts once. */
+  const nm = s => { try { return W.LowiLang && LowiLang.t ? LowiLang.t(String(s || '')) || s : s; } catch (e) { return s; } };
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   const V = () => W.LowiVitalsBridge;
   const S = () => { try { return V() && V().state(); } catch (e) { return null; } };
@@ -66,7 +69,7 @@
   let LAST = null;
   function loggedBar() {
     const L = LAST; if (!L) return; const log = L.log;
-    bar('<div class="ate-bt"><span class="ate-ok" aria-hidden="true">✓</span><span class="ate-btx"><b>' + esc(log.t) + '</b><small>' + esc(t('logged', { s: t(log.slot || 'snack') })) +
+    bar('<div class="ate-bt"><span class="ate-ok" aria-hidden="true">✓</span><span class="ate-btx"><b>' + esc(nm(log.t)) + '</b><small>' + esc(t('logged', { s: t(log.slot || 'snack') })) +
       (L.xp ? ' · +' + L.xp + ' XP' : L.reason ? ' · ' + esc(L.reason) : '') + '</small></span><button type="button" class="ate-undo" data-ate="undo">' + esc(t('undo')) + '</button></div>' +
       '<div class="ate-slots" role="group" aria-label="' + esc(t('meal')) + '">' + SLOTS.map(s => '<button type="button" class="ate-slot' + (s === log.slot ? ' on' : '') + '" data-ate="slot" data-slot="' + s + '" aria-pressed="' + (s === log.slot) + '">' + esc(t(s)) + '</button>').join('') + '</div>');
   }
@@ -79,7 +82,7 @@
     const td = s.td && s.td.day ? s.td : null, ateBefore = td ? JSON.stringify(td.ate || {}) : '', had = ledgerIds(s);
     let res; try { res = v.logMeal({ id: 'ate:' + Date.now().toString(36) + ':' + it.key, t: it.t, macros: it.macros, r: it.r, lvl: it.lvl, code: it.code, slot, via: 'recipe' }); } catch (e) { console.error(e); res = false; }
     if (!res) { toast(t('fail')); return null; }
-    if (res.dup) { LAST = null; bar('<div class="ate-bt"><span class="ate-ok" aria-hidden="true">✓</span><span class="ate-btx"><b>' + esc(it.t) + '</b><small>' + esc(t('dup')) + '</small></span></div>', 3500); return res; }
+    if (res.dup) { LAST = null; bar('<div class="ate-bt"><span class="ate-ok" aria-hidden="true">✓</span><span class="ate-btx"><b>' + esc(nm(it.t)) + '</b><small>' + esc(t('dup')) + '</small></span></div>', 3500); return res; }
     /* a planned copy of this food is now eaten, so the plan never asks for it again */
     if (td) { td.ate = td.ate || {}; (td.plan || []).forEach((pid, i) => { if (pid === it.key && !td.ate[i]) td.ate[i] = true; });
       (td.later || []).forEach(x => { if (x.key === it.key) x.ate = res.log.eventId; }); try { v.save(); } catch (e) { } }
@@ -133,7 +136,7 @@
   function planHTML(d) {
     const L = d && Array.isArray(d.later) ? d.later : []; if (!L.length) return '';
     return L.map((x, j) => { const done = !!x.ate || eatenToday(x);
-      return '<div class="card td-extra ate-row' + (done ? ' ate' : '') + '" data-noi18n><div class="td-mtx"><div class="tiny ' + (done ? 'muted' : 'gold') + '">' + esc(done ? t('eaten') : t('plannedTag')) + '</div><div style="font-weight:650">' + esc(x.t) + '</div></div>' +
+      return '<div class="card td-extra ate-row' + (done ? ' ate' : '') + '" data-noi18n><div class="td-mtx"><div class="tiny ' + (done ? 'muted' : 'gold') + '">' + esc(done ? t('eaten') : t('plannedTag')) + '</div><div style="font-weight:650">' + esc(nm(x.t)) + '</div></div>' +
         '<button class="td-act ate-plan' + (done ? ' on' : '') + '" data-ate="' + (done ? 'none' : 'laterate') + '" data-j="' + j + '">' + esc(done ? t('eaten') : t('ateIt')) + '</button>' +
         (done ? '' : '<button class="td-x" data-ate="laterrm" data-j="' + j + '" aria-label="' + esc(t('rm')) + '">×</button>') + '</div>'; }).join('');
   }

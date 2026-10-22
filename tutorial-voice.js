@@ -86,7 +86,10 @@
     let saidKey = '';   /* the card that was already read to the end: a repaint of it (try-it done, Pause) does not read it again */
     let on = pref.get() === '1', unlocked = false, seq = 0, cur = null, words = [], raf = 0, blobUrl = '', blocked = false, card = null, lastKey = '';
     let audio = null;
-    const A = () => { if (!audio) { audio = new Audio(); audio.preload = 'auto'; audio.setAttribute('playsinline', ''); audio.addEventListener('ended', () => { if (cur && cur.how === 'file' && cur.playing) finished(seq); }); } return audio; };
+    const A = () => { if (!audio) { audio = new Audio(); audio.preload = 'auto'; audio.setAttribute('playsinline', ''); audio.addEventListener('ended', onEnded); } return audio; };
+    /* only the card's own clip ending counts. Oct 22 2026: the silent unlock sound (same element) ended while the card's clip was
+       still loading, the card counted as read, and hands-free cut the real clip off 1.2 s in to move on */
+    function onEnded() { if (cur && cur.how === 'file' && cur.playing && blobUrl && audio && audio.src === blobUrl) finished(seq); }
 
     /* the clip data (word timings) loads once, the first time the tour opens */
     let dataP = null;

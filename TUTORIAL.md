@@ -7,7 +7,9 @@ update, the tutorial also needs to be updated."
 ## Files
 - `tutorial-steps.js`: the ONE data file. Steps in order, each with `id`, `area`, `target` (CSS selectors of the real Home control to
   spotlight, first visible one wins; `null` = centred card), optional `when` / `action`, `covers` (feature ids) and `title` / `text` /
-  `cta` in `en`, `de`, `es` (`{name}` = the companion's name). `NO_TUTORIAL` lists features that need no step, with the reason.
+  `cta` in `en`, `de`, `es` (`{name}` = the companion's name). Optional `sayTitle: false` (or `{ de: false }`) = the voice never reads
+  this title (a repeat in other words), `peek: { kind: 'scan', mark: 'frame' | 'deep' }` = a picture of the inside of Scan under the
+  text. `NO_TUTORIAL` lists features that need no step, with the reason.
   `VERSION` goes up whenever steps change.
 - `tutorial.js`: the player (`window.LowiTutorial.start/stop/isOn/step`). `tutorial.css`: glass card + glow spotlight.
 - `home-settings-sleep-v2.js`: the Settings row `tutorial` (ROUTES, TX label, icon, main group).
@@ -20,8 +22,12 @@ update, the tutorial also needs to be updated."
   the tour calls `LowiBirthCompanion.claim({from:'tutorial'})` only once it exists (marked HOOK in tutorial-steps.js, off until the own-companion task ships it; there is no fallback), hides while it is open and goes
   on to the next step when it closes.
 - Every step: Back, Skip (skips the rest of this part, e.g. all Home bubbles), Next, and Skip all. Esc = Skip all, arrows move.
-- It never opens panels. It hides completely (`.lt-held`, invisible and untouchable) while setup / the sign-in gate, any other visible
-  `[aria-modal=true]` dialog, any sheet in the Day card's `BUSY` list, Settings or Misty's flight is up, and comes back where it
+- It never opens panels, and never Scan: `goTab('scan')` opens the scanner camera at once, so no step has `where: 'scan'` and
+  `TAB_OF` has no scan (Oct 22 2026: the tour kept calling it for 2.5 s, iOS asked "Allow camera" and the tour got stuck; a tour left on
+  a Scan card reopened it on the next start). The Scan cards show a picture of the inside instead (`peek`, compact on small iPhones),
+  the Scan bubble card has no try-it. It hides completely (`.lt-held`, invisible and untouchable) while setup / the sign-in gate, any other visible
+  `[aria-modal=true]` dialog, any sheet in the Day card's `BUSY` list, Settings, Misty's flight or the scanner camera (`html.b3-camon` / `#b3Cam`, opened by the user)
+  is up, and comes back where it
   was. The Day card lists `#ltTour:not(.lt-held)` in its `BUSY`, so it waits for the tour (bug hunt round 8).
 
 ## Keep it current (every release)
@@ -57,8 +63,22 @@ Emmanuel: "I just clicked on tutorial but I have to read through it, that's not 
   waves move while it talks, the badge breathes until it was tried once). One tap = sound on and the card is read; every next card
   (Next, Back, Skip) reads itself until the same button turns it off. Remembered in `localStorage['lowi.tutorial.voice.v1']`
   (`'1'` on, `'0'` off, unset = never tried). aria-pressed + label "Read aloud" / "Vorlesen" / "Leer en voz alta".
-- What is said: the card's title, then its text (`spoken()` in tutorial-voice.js, shared with the generator and the tests). A title
-  with `{name}` is left out when the companion is not called Misty (clip `<id>~`), so a renamed companion is never called Misty.
+- What is said (Oct 22 2026, Emmanuel: "It reads the title, so it sounds very repetitive ... If the title and the text aren't
+  repetitive, then I guess it can"): the text, with the title in front only when it adds something (`titleAdds()` / `spoken()` in
+  tutorial-voice.js, shared with the generator and the tests). The title is left out when any of its words, or a form of it (same
+  first four letters, one word the end of the other, simple endings off; small words ignored), is in the text, or when the step says
+  `sayTitle: false` for a repeat in other words ("Hold me" / "keep your finger on me"). Said today: hello, claim, a few more per
+  language (en 7, de 8, es 7 of 71: claim, hello, energy-peak, look, secret, affiliates, ...). A title with `{name}` that is said is left out when the companion is not called Misty (clip
+  `<id>~`), so a renamed companion is never called Misty. A card already read to the end is not read again when it repaints (try-it
+  done, Pause off); it is when it comes back from behind a sheet.
+- Hands-free (Oct 22 2026, Emmanuel: "If I did turn on the mic, I should be able to just place my phone somewhere and just listen as
+  it goes, by itself"): with the speaker on, a card read to the end moves on by itself after 1.2 s (4.5 s on a try-it card, to leave
+  time to try); a thin line fills along the card's bottom meanwhile. Next / Back / Skip work as before and cancel the wait. A round
+  Pause button (`[data-lt=pause]`, shown only with the speaker on, next to Back) stops the voice and the moving on until Play is tapped
+  (Play reads the card again, then goes on); Next / Back while paused stay paused. Turning the speaker off also stops it. Never moves on
+  by itself: the claim card, the last card, a card hidden behind a sheet, a card the browser would not play (no tap yet on iPhone, the
+  badge pulses), the app in the background. While it reads by itself the screen is asked to stay on (Screen Wake Lock, Safari 16.4+,
+  best effort). `LowiTutorial.paused() / pause(v) / auto()` for checks.
 - The voice: clips recorded ahead with Microsoft neural voices (en Ava, de Seraphina, es Ximena) in `tutorial-voice/<lang>/<key>.mp3`,
   word timings in `tutorial-voice-data.js` (loaded when the tour opens). The word being said lights up (`.lt-w.lt-say`, no layout
   change). A clip plays only when its words equal the card's words; otherwise, or offline with a clip never heard, the device's best
@@ -71,6 +91,12 @@ Emmanuel: "I just clicked on tutorial but I have to read through it, that's not 
 - Files: `tutorial-voice.js` + `tutorial-voice.css` (loaded by tutorial.js), `tutorial-voice-data.js` + `tutorial-voice/` (generated by
   `tools/tutorial-voice/build.py`), `tests/tutorial-voice.test.cjs`, browser check `node tools/tutorial-voice/check.cjs [--url LIVE]`
   (iPhone SE / 13 / iPad, EN/DE/ES: speaker on the card with no overlap, a clip really plays, the lit word moves, Next reads itself,
-  mute, Back, Skip all silences, remembered after reload).
+  mute, Back, Skip all silences, remembered after reload), hands-free check `node tools/tutorial-voice/handsfree-check.cjs [--url LIVE]
+  [--full 0]` (stubbed audio + camera: a whole tour by itself with no camera ask, continue on a Scan card, Pause / Play / speaker off,
+  a camera the user opens hides the tour, iPhone SE layout in en/de/es), `tests/tutorial-handsfree.test.cjs`.
+- Public interface, also used outside the tour (Affiliate scripts task, Oct 22 2026): `window.LowiTutorialVoice` = render(el, step,
+  { lang, name, next, onEnd, quiet }), stop, toggle, isOn, playing, how, paused, word, bestVoice, data, spoken, plan, titleAdds, VOICES,
+  BCP, NAME, KEY, CACHE, DIR, plus the window event `lowi:tutorial-voice` { on, state: 'on' | 'off' | 'end' }. Add to it; never rename
+  or remove.
 - First-visit screens (Add to Home Screen guide, companion setup) have no speaker: they are short, sound cannot start before the
   first tap there, and the plain-words funnel work owns them. Decision in DECISIONS.md.

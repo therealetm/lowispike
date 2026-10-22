@@ -152,6 +152,26 @@ test('the voice calls onEnd once a card was read to the end, and not again on a 
     assert.strictEqual(a.plays, plays, 'the same card is not read a second time');
 });
 
+test('the silent unlock sound ending is not the card ending; the next card\'s clip plays after one ends', async () => {
+    const p = voicePage(), a1 = S.STEPS[2], a2 = S.STEPS[3], got = [];
+    p.clip(a1); p.clip(a2);
+    p.api.render(p.card, a1, { lang: 'en', onEnd: k => got.push(k) });
+    const a = p.audios[0]; assert.strictEqual(a.src, 'silent', 'the first card unlocks sound with the silent clip');
+    a.end();   /* the silent clip ends while the card's clip is still loading */
+    await tick();
+    assert.deepStrictEqual(got, [], 'not counted as read');
+    await tick(); await tick();
+    assert.strictEqual(a.src, 'blob:x', 'the card\'s own clip plays'); assert.ok(!a.paused);
+    a.end(); await tick();
+    assert.deepStrictEqual(got, [a1.id], 'its own end moves on');
+    const plays = a.plays;
+    p.api.render(p.card, a2, { lang: 'en', onEnd: k => got.push(k) });   /* hands-free: the next card, with no tap */
+    await tick(); await tick();
+    assert.ok(a.plays > plays && !a.paused, 'the next card\'s clip plays by itself');
+    a.end(); await tick();
+    assert.deepStrictEqual(got, [a1.id, a2.id]);
+});
+
 test('stopped, blocked or paused cards never move on by themselves', async () => {
     const st = S.STEPS[3];
     let p = voicePage(), got = []; p.clip(st);

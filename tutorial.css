@@ -48,6 +48,7 @@
 .lt-tour.lt-tried .lt-tryline { color: var(--brand-green, #8dffb5); }
 /* hands-free (Oct 22 2026): Pause / Play shows only while the speaker is on; a thin line fills during the pause before the next card */
 .lt-left { display: flex; gap: 8px; align-items: center; }
+.lt-tour.lt-voice .lt-btns { flex-wrap: wrap; row-gap: 8px; }   /* narrow phone in German/Spanish: Skip + Next drop to a second line instead of off screen */
 .lt-btn.lt-pause { display: none; padding: 0; width: 44px; border-radius: 50%; place-items: center; }
 .lt-tour.lt-voice .lt-btn.lt-pause { display: grid; }
 .lt-tour.lt-paused .lt-btn.lt-pause { border-color: rgba(170, 255, 230, .85); box-shadow: 0 0 12px rgba(120, 240, 210, .4); }
@@ -83,6 +84,14 @@
 .lt-peek[data-mark="frame"] .ltp-frame, .lt-peek[data-mark="frame"] .ltp-field { filter: drop-shadow(0 0 6px rgba(127, 231, 255, .8)); }
 .lt-peek[data-mark="deep"] .ltp-deep { opacity: 1; outline: 2px solid var(--brand-cyan, #7fe7ff); outline-offset: 1px; box-shadow: 0 0 14px rgba(127, 231, 255, .55); }
 .lt-peeknote { margin: 0 2px 10px; font-size: 12px; line-height: 16px; opacity: .85; }
-@media (max-height: 600px) { .ltp-frame { height: 40px; } .ltp-bars { top: 9px; bottom: 9px; } }
+@media (max-height: 760px) {   /* small iPhones: the picture gets compact so the card never needs scrolling */
+    .lt-peek { padding: 6px 8px 7px; margin-bottom: 4px; }
+    .ltp-top { display: none; }
+    .ltp-frame { height: 34px; margin: 2px auto 3px; } .ltp-frame > .ltp-c { width: 10px; height: 10px; } .ltp-bars { top: 7px; bottom: 7px; }
+    @keyframes ltp-scan { from { transform: translateY(-9px); } to { transform: translateY(9px); } }
+    .ltp-field { margin: 4px 0 4px; padding: 3px 9px; } .ltp-pill { padding: 3px 12px; } .ltp-deep { margin-top: 3px; padding: 2px 6px; } .ltp-deep small { display: none; }
+    .lt-peeknote { display: none; }
+}
+@media (max-height: 600px) { .ltp-hint, .ltp-acts { display: none; } }
 @media (prefers-reduced-motion: reduce) { .ltp-laser { animation: none; } .lt-card.lt-autogo::after { animation: none; opacity: 0; } }
 .lt-tour.lt-rm .ltp-laser { animation: none; }

@@ -11,6 +11,16 @@ const tag = dev.replace(/\s+/g, '') + '-' + theme + '-' + lang;
     const R = await H.open({ device: dev, url, lang, probe: false });
     const P = R.page, res = { dev, theme, lang, ok: [], bad: [] };
     const ok = (c, m) => (c ? res.ok : res.bad).push(m);
+    /* like a finger: scroll the card into view first (the sheet scrolls), then tap it */
+    const tapIn = async sel => {
+        // scroll the sheet (instantly) until the element is fully on screen, then wait for it to hold still, then tap it
+        for (let k = 0; k < 15; k++) {
+            const st = await P.evaluate(s => { const e = document.querySelector(s); if (!e) return 'gone'; let p = e.parentElement; while (p && !(/(auto|scroll)/.test(getComputedStyle(p).overflowY) && p.scrollHeight > p.clientHeight)) p = p.parentElement; const r = e.getBoundingClientRect(); const top = p ? Math.max(0, p.getBoundingClientRect().top) : 0, bot = p ? Math.min(innerHeight, p.getBoundingClientRect().bottom) : innerHeight; if (r.top < top + 8 || r.bottom > bot - 70) { if (p) p.scrollTop += (r.top + r.height / 2) - (top + bot) / 2; return 'moved'; } return 'ok'; }, sel);
+            if (st === 'ok') break; await H.sleep(300);
+        }
+        await H.sleep(300); await R.tap(sel);
+    };
+    const waitFor = async (fn, ms = 4000) => { const t0 = Date.now(); let v; while (Date.now() - t0 < ms) { v = await P.evaluate(fn).catch(() => null); if (v) return v; await H.sleep(250); } return v; };
     try {
         await R.goto(); await H.sleep(2500);
         await P.evaluate(t => { try { LowiR2.applyTheme && LowiR2.applyTheme(t); } catch (e) { } document.documentElement.setAttribute('data-theme', t); }, theme);
@@ -23,21 +33,22 @@ const tag = dev.replace(/\s+/g, '') + '-' + theme + '-' + lang;
         await P.evaluate(() => document.querySelector('.wh-spk').scrollIntoView({ block: 'start' })); await H.sleep(500);
         await R.shot(out + '/' + tag + '-1-shop.png');
         // can't afford: Galaxy 3000
-        await R.tap('.wh-shop [data-id="galaxy"]'); await H.sleep(900);
+        await tapIn('.wh-shop [data-id="galaxy"]'); await waitFor(() => !!document.getElementById('whPv')); await H.sleep(600);
         const g = await P.evaluate(() => { const pv = document.getElementById('whPv'); return pv && { need: (pv.querySelector('.wh-pv-need') || {}).textContent || '', dis: (pv.querySelector('.wh-pv-buy') || {}).getAttribute && pv.querySelector('.wh-pv-buy').getAttribute('aria-disabled'), fx: !!pv.querySelector('.wh-fx-galaxy'), inView: (() => { const r = pv.getBoundingClientRect(); return r.top >= -2 && r.top < innerHeight - 60; })() }; });
+        if (!g) res.bad.push('debug: ' + JSON.stringify(await P.evaluate(() => ({ prev: LowiWorldHome.state.preview, ae: document.activeElement && document.activeElement.className, open: !!document.querySelector('#whMs') }))));
         ok(g && /600/.test(g.need) && g.dis === 'true' && g.fx, 'Galaxy preview: Misty wearing it, "600 more sparks", Unlock dimmed: ' + JSON.stringify(g));
         ok(g && g.inView, 'preview scrolled into view');
-        await R.tap('.wh-pv-buy'); await H.sleep(500);
+        await tapIn('.wh-pv-buy'); await H.sleep(500);
         const still = await P.evaluate(() => ({ own: JSON.parse(localStorage.getItem('lowispike.sparks.v1') || '{"own":[]}').own.length, xp: LowiR2.S().xp }));
         ok(still.own === 0 && still.xp === 2400, 'tapping Unlock without enough sparks buys nothing');
         await R.shot(out + '/' + tag + '-2-short.png');
         // can afford: Electric 1400
-        await R.tap('.wh-shop [data-id="electric"]'); await H.sleep(900);
+        await tapIn('.wh-shop [data-id="electric"]'); await waitFor(() => { const b = document.querySelector('#whPv .wh-pv-buy'); return b && b.dataset.id === 'electric'; }); await H.sleep(400);
         const e1 = await P.evaluate(() => { const pv = document.getElementById('whPv'); return pv && { btn: pv.querySelector('.wh-pv-buy').textContent, dis: pv.querySelector('.wh-pv-buy').getAttribute('aria-disabled') }; });
         ok(e1 && /1400/.test(e1.btn) && !e1.dis, 'Electric preview: ' + (e1 && e1.btn));
         f = await fit(); ok(!f.length, 'preview fits ' + f.join('; '));
         await R.shot(out + '/' + tag + '-3-preview.png');
-        await R.tap('.wh-pv-buy'); await H.sleep(1200);
+        await tapIn('.wh-pv-buy'); await H.sleep(1200);
         const s1 = await P.evaluate(() => ({ xp: LowiR2.S().xp, lvl: (document.querySelector('#whMs .wh-ms-id small') || {}).textContent, sparks: LowiWorldHome.sparks(), aura: LowiWorldHome.auraId(), fx: document.documentElement.dataset.whFx, bubble: !!document.querySelector('#spBubble > .wh-fx-electric'), card: (document.querySelector('.wh-shop [data-id="electric"]') || {}).getAttribute && document.querySelector('.wh-shop [data-id="electric"]').getAttribute('aria-checked'), spk: document.querySelector('.wh-spk b').textContent }));
         ok(s1.xp === 2400 && s1.lvl === s0.lvl, 'XP and level unchanged after buying: ' + s1.xp + ' / ' + s1.lvl);
         ok(s1.sparks === 1000 && /1000/.test(s1.spk), 'sparks 2400 -> 1000');

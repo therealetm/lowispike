@@ -14438,7 +14438,7 @@ function cardHTML(p, anim){
     '<div class="b3-name">' + esc(p.name) + '</div>' + (p.brand ? '<div class="small muted">' + esc(p.brand) + (p.facts && p.facts.q ? " · " + esc(p.facts.q) : "") + '</div>' : "") +
     '<div class="b3-verd"><span class="b3-vb v-' + v + '">' + esc(t("vl_" + v)) + '</span><span class="small">' + esc(t("vs_" + v)) + '</span></div>' + herbHTML(v) + eatHTML(p) +
     (v !== "unknown" ? meterHTML(p.score != null ? p.score : (p.facts && p.facts.score) || rate(p).score, p.est || (p.facts && p.facts.est)) : "") +
-    (why.length ? '<ul class="b3-why">' + why.map(w => '<li>' + esc(w) + '</li>').join("") + '</ul>' : "") + factsHTML(p.facts) + fillNoteHTML(p) + storeCmp +
+    (why.length ? '<ul class="b3-why">' + why.map(w => '<li>' + esc(w) + '</li>').join("") + '</ul>' : "") + factsHTML(p.facts) + fillNoteHTML(p) + lpAskHTML(p) + storeCmp +
     '<div class="tiny dim b3-meta">' + [by, p.id ? (p.catches > 1 ? t("catches", p.catches) : t("catches1")) : "", p.barcode ? t("bcFound", p.barcode) : "", p.source === "off" ? t("r_off") : ""].filter(Boolean).map(esc).join(" · ") + '</div></div>'; }
 /* Oct 16 simple spike card: photo + name, one big spike verdict (an estimate), one action: Catch it.
    Oct 19 (owner's call): order is header > spike estimate > cheaper at other stores > Catch it > Details (OPEN by default)
@@ -14510,7 +14510,7 @@ function simpleCardHTML(p){
     '<section class="sc-sec sc-prices"><h4>' + esc(sct("cheaper")) + '</h4>' + (storeCmp || '<p class="sc-none">' + esc(sct("noPrices")) + '</p>') + '</section>' +
     scActsHTML(p, mine, m) +
     '<details class="sc-more" open><summary>' + esc(sct("details")) + '</summary>' +
-      (why.length ? '<ul class="b3-why">' + why.map(w => '<li>' + esc(w) + '</li>').join("") + '</ul>' : "") + factsHTML(p.facts) + fillNoteHTML(p) +
+      (why.length ? '<ul class="b3-why">' + why.map(w => '<li>' + esc(w) + '</li>').join("") + '</ul>' : "") + factsHTML(p.facts) + fillNoteHTML(p) + lpAskHTML(p) +
       '<div class="tiny dim b3-meta">' + [p.id ? (p.catches > 1 ? t("catches", p.catches) : t("catches1")) : "", p.barcode ? t("bcFound", p.barcode) : "", p.source === "off" ? t("r_off") : ""].filter(Boolean).map(esc).join(" · ") + '</div>' +
       (window.LowiDiscovery ? '<button type="button" class="r2-link b3-label" data-b3="label">' + esc(["Label details & evidence", "Etikett-Details & Belege", "Detalles de la etiqueta"][LI()]) + '</button>' : "") +
       '<div class="tiny dim b3-legal">' + esc(t("legal")) + '</div></details>' + deals +
@@ -14526,7 +14526,7 @@ function manualHTML(p){
   return '<div class="b3-man"><div class="b3-name">' + esc(t(p.offline ? "noReach" : "notFound")) + '</div><div class="small muted">' + esc(p.offline ? t("noReachS") : t("notFoundS")) + '</div>' +
     (p.barcode ? '<div class="tiny dim" style="margin-top:6px">' + esc(t("bcFound", p.barcode)) + '</div>' : "") +
     (p.offline ? "" : deepLink("b3-nfdeep", 'id="b3NfDeep"', t("deepNf"), t("deepNfS")) +
-      '<div class="tiny dim b3-fl b3-or">' + esc(t("orAdd")) + '</div>') +
+      lpAskHTML(p) + '<div class="tiny dim b3-fl b3-or">' + esc(t("orAdd")) + '</div>') +
     '<label class="tiny dim b3-fl">' + esc(t("nameQ")) + '</label><input class="input" id="b3MName" maxlength="80" placeholder="' + esc(t("namePh")) + '" value="' + esc(p.name || "") + '">' +
     '<input class="input" id="b3MBrand" maxlength="60" style="margin-top:8px" placeholder="' + esc(t("brandPh")) + '" value="' + esc(p.brand || "") + '">' +
     '<div class="small b3-mq">' + esc(t("manualQ")) + '</div><div class="b3-ticks">' + ["sugar", "sweet", "carb", "none"].map(k => '<button class="b3-tick" data-b3="tick" data-k="' + k + '" aria-pressed="false">' + esc(t("m_" + k)) + '</button>').join("") + '</div>' +
@@ -14551,6 +14551,8 @@ function enrich(p){
     return q; }); }
 function showProduct(p, quiet){ return enrich(p).then(q => { reveal(q, quiet); return q; }, () => { reveal(p, quiet); return p; }); }
 const FILLN = {c:["carbs", "Kohlenhydrate", "carbohidratos"], s:["sugar", "Zucker", "azúcar"], f:["fiber", "Ballaststoffe", "fibra"], p:["protein", "Eiweiß", "proteína"], ing:["ingredients", "Zutaten", "ingredientes"], drink:["drink", "Getränk", "bebida"]};
+/* scanfe-f2: missing label / ingredients -> "Add label photos" (label-photos.js); only confirmed values count */
+function lpAskHTML(p){ try { return window.LowiLabelPhotos ? LowiLabelPhotos.askHTML(p) : ""; } catch(e){ return ""; } }
 function fillNoteHTML(p){ if (!p || !p.fillTried) return ""; const L = LI(), lab = k => (FILLN[k] || [k])[L] || FILLN[k][0], gaps = fillGaps(p), parts = [];
   if (p.filled && p.filled.length) parts.push(["Filled in from Open Food Facts: ", "Aus Open Food Facts ergänzt: ", "Completado con Open Food Facts: "][L] + p.filled.map(lab).join(", ") + ".");
   if (gaps.length) parts.push((p.fillTried === "offline" ? ["Open Food Facts can't be reached right now. Still unknown: ", "Open Food Facts gerade nicht erreichbar. Noch unbekannt: ", "Open Food Facts no responde ahora. Aún sin datos: "] : p.fillTried === "nocode" ? ["No barcode to look up. Unknown: ", "Kein Barcode zum Nachschlagen. Unbekannt: ", "Sin código de barras. Sin datos: "] : ["Not listed for this product, not even in Open Food Facts: ", "Für dieses Produkt nirgends angegeben, auch nicht in Open Food Facts: ", "No figura para este producto, ni en Open Food Facts: "])[L] + gaps.map(lab).join(", ") + ". " + ["The verdict uses what is known.", "Das Urteil nutzt, was bekannt ist.", "El veredicto usa lo que se sabe."][L]);
@@ -14683,6 +14685,7 @@ document.addEventListener("click", e => {
     case "show": { const p = findK(b.dataset.k); if (p) reveal(Object.assign({}, p), true); break; }
     case "catch": if (CUR) catchCur(b, CUR); break;
     case "label": if (CUR && window.LowiDiscovery) LowiDiscovery.openProduct(CUR); break;
+    case "lphoto": if (CUR && window.LowiLabelPhotos) { const base = CUR; LowiLabelPhotos.open(base, q => { if (REV) { try { R2.close(REV); } catch(x){} } reveal(q, true); }); } break;
     case "eat": eatCur(b); break;
     case "skip": if (REV) { try { R2.close(REV); } catch(e){} } if (window.LowiSpirit && LowiSpirit.afterScan) LowiSpirit.afterScan(0, "", ""); break;
     case "tick": { const k = b.dataset.k, on = b.getAttribute("aria-pressed") !== "true"; const all = $$(".b3-tick", REV);
@@ -20395,6 +20398,9 @@ window.LowiCommunityHost = {
 <script src="food-assess-core.js?v=20261022-234737"></script>
 <script src="food-engine-core.js?v=20261022-234737"></script>
 <script src="spike-core.js?v=20261022-234737"></script>
+<link rel="stylesheet" href="label-photos.css?v=20261022-234737">
+<script src="label-photos-core.js?v=20261022-234737"></script>
+<script src="label-photos.js?v=20261022-234737"></script>
 <script src="spike-catch.js?v=20261022-234737"></script>
 <script src="living-bubbles.js?v=20261022-234737"></script>
 <link rel="stylesheet" id="scrCss" href="scan-screens.css?v=20261022-234737">

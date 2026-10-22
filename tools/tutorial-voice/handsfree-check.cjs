@@ -228,26 +228,43 @@ async function practice(browser, engine, dev, url, fails, lines) {
         for (const at of ids) {
             await page.evaluate(a => { window.__clipMs = 300; window.LowiTutorial.start({ from: 'check', at: a }); }, at);
             await sleep(900);
-            const r = await page.evaluate(async () => {
-                const pad = document.querySelector('#ltTour .lt-card .lt-pad'); if (!pad) return { err: 'no pad' };
+            const r = await page.evaluate(async a => {
+                /* wait for this card's pad to settle: start() on a card in another tab switches tabs and redraws the card, and events sent to
+                   the pad of the old drawing are lost (the check's timing, not the user's: a person taps after the card is shown) */
+                const w0 = ms => new Promise(r => setTimeout(r, ms));
+                let pad = null, since = 0;
+                for (let t = 0; t < 40; t++) {
+                    const p = window.LowiTutorial.step() === a && !document.querySelector('#ltTour.lt-try') ? document.querySelector('#ltTour .lt-card .lt-pad') : null;
+                    if (p && p === pad) { if (++since >= 4) break; } else { pad = p; since = 0; }
+                    await w0(100);
+                }
+                if (!pad) return { err: 'no pad' };
+                if (!window.__tl) { window.__tl = []; addEventListener('lowi:tutorial', e => window.__tl.push((Date.now() % 100000) + ' ' + JSON.stringify(e.detail).slice(0, 90))); }
+                window.__tl.push('G ' + (Date.now() % 100000));
                 const how = pad.dataset.how, b = pad.getBoundingClientRect(), cx = b.left + b.width / 2, cy = b.top + b.height / 2;
                 const ev = (t, id, x, y) => pad.dispatchEvent(new PointerEvent(t, { pointerId: id, clientX: x, clientY: y, bubbles: true, cancelable: true, pointerType: 'touch', isPrimary: id === 1 }));
                 const w = ms => new Promise(r => setTimeout(r, ms));
                 const lit = !!document.querySelector('#ltTour .lt-spot:not([hidden])') && getComputedStyle(document.querySelector('#ltTour .lt-spot')).display !== 'none';
                 if (how === 'tap' || how === 'touch') { ev('pointerdown', 1, cx, cy); await w(60); ev('pointerup', 1, cx, cy); }
+                else if (how === 'double' && pad.querySelector('.lt-joy')) {   /* as the card says: one finger stays on the joystick, the other taps twice */
+                    const j = pad.querySelector('.lt-joy').getBoundingClientRect(), jx = j.left + j.width / 2, jy = j.top + j.height / 2;
+                    ev('pointerdown', 1, jx, jy); await w(600); ev('pointermove', 1, jx + 3, jy + 2);
+                    for (let k = 0; k < 2; k++) { ev('pointerdown', 2 + k, cx, cy); ev('pointerup', 2 + k, cx, cy); }   /* no timers between: a busy page stretches them past a tap */
+                    ev('pointerup', 1, jx + 3, jy + 2);
+                }
                 else if (how === 'double') { for (let k = 0; k < 2; k++) { ev('pointerdown', 1, cx, cy); await w(50); ev('pointerup', 1, cx, cy); await w(90); } }
                 else if (how === 'hold') { ev('pointerdown', 1, cx, cy); await w(800); ev('pointerup', 1, cx, cy); }
                 else if (how === 'drag' || how === 'swipe') { ev('pointerdown', 1, cx - 50, cy); for (let k = 1; k <= 8; k++) { await w(16); ev('pointermove', 1, cx - 50 + k * 13, cy + (how === 'drag' ? k * 2 : 0)); } ev('pointerup', 1, cx + 54, cy); }
                 else if (how === 'pinch') { ev('pointerdown', 1, cx - 10, cy); ev('pointerdown', 2, cx + 10, cy); for (let k = 1; k <= 6; k++) { await w(16); ev('pointermove', 1, cx - 10 - k * 6, cy); ev('pointermove', 2, cx + 10 + k * 6, cy); } ev('pointerup', 1, cx - 46, cy); ev('pointerup', 2, cx + 46, cy); }
-                await w(150);
+                for (let t = 0; t < 30 && !document.querySelector('#ltTour .lt-card .lt-pad.lt-done'); t++) await w(100);   /* the page can be busy (3D world) */
                 const p2 = document.querySelector('#ltTour .lt-card .lt-pad');
                 return { how, done: !!(p2 && p2.classList.contains('lt-done')), nice: p2 ? p2.textContent : '', through: document.documentElement.querySelector('#ltTour.lt-try') ? 1 : 0, lit };
-            });
+            }, at);
             if (r.err) { bad.push(at + ': ' + r.err); continue; }
-            if (!r.done) bad.push(at + ': ' + r.how + ' on the pad not counted');
+            if (!r.done) bad.push(at + ': ' + r.how + ' on the pad not counted' + (process.env.TDEBUG ? ' ' + JSON.stringify(await page.evaluate(() => window.__tl.slice(-14))) : ''));
             if (r.through) bad.push(at + ': touches pass through the dim on a practice card');
-            await sleep(2200);
-            const st = await state(page);
+            let st = await state(page);   /* moves on 1.5 s after the try; a loaded machine stretches that, so give it up to 6 s */
+            for (let t = 0; t < 20 && st.step === at; t++) { await sleep(300); st = await state(page); }
             if (st.step === at) bad.push(at + ': did not move on after the try'); else ok++;
         }
         /* untouched practice card still moves on by itself (hands-free) */

@@ -316,7 +316,7 @@
             }
         },
         {
-            id: 'energy-shot', area: 'play', target: ['#whPad'], covers: [], teaches: ['energy-shot'], practice: { how: 'double', look: 'world' },
+            id: 'energy-shot', area: 'play', target: ['#whPad'], covers: [], teaches: ['energy-shot'], practice: { how: 'double', look: 'world', joy: true },
             title: { en: 'Shoot energy', de: 'Energie schießen', es: 'Dispara energía' },
             text: {
                 en: 'Two fingers: keep one on the joystick, and tap the world twice quickly with the other. I shoot energy that heals a world.',

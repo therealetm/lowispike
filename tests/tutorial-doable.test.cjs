@@ -70,7 +70,7 @@ test('tutorial.js: practice pad and later motion are drawn, hands-free still mov
     assert.match(src, /padHtml\(s, U\) \+ laterHtml\(s, U\)/);
     assert.match(src, /function padWire\(card\)/);
     assert.match(src, /if \(s && s\.practice\) return null;/, 'practice cards have no spotlight on a control that ignores touches');
-    assert.match(src, /const wait = canTry\(s\) \? AUTO\.TRY : AUTO\.GAP;/, 'practice cards get the try-it time in hands-free mode, then move on by themselves');
+    assert.match(src, /const wait = s\.tryIt \? Math\.max\(AUTO\.GAP, AUTO\.TRY - [^;]*: canTry\(s\) \? AUTO\.TRY : AUTO\.GAP;/, 'practice cards get the try-it time in hands-free mode, then move on by themselves');
     assert.match(src, /root\.classList\.toggle\('lt-try', real && !done\)/, 'only real try-it cards let touches through the dim');
     assert.match(src, /!S\.tryMatch\(wants\(s\), kind\)/);
     assert.match(css, /\.lt-pad \{[^}]*touch-action: none/);
@@ -79,4 +79,17 @@ test('tutorial.js: practice pad and later motion are drawn, hands-free still mov
     /* the pad never asks for the mic or camera, and never touches app data */
     const pad = src.slice(src.indexOf('function padHtml'), src.indexOf('const PAUSE_SVG'));
     assert.doesNotMatch(pad, /getUserMedia|localStorage|goTab|\.click\(\)/);
+});
+
+/* Oct 22 2026: the energy-shot card says "keep one on the joystick, and tap the world twice quickly with the other". On the practice pad
+   the resting finger used to turn the second finger's taps into a pinch, so the card could not be done as written. */
+test('energy-shot pad: one finger resting on the joystick, two quick taps with the other finger count as the double tap', () => {
+    const st = S.STEPS.find(s => s.id === 'energy-shot');
+    assert.equal(st.practice.how, 'double'); assert.equal(st.practice.joy, true, 'the pad shows a joystick to keep a finger on');
+    const src = fs.readFileSync(path.join(__dirname, '..', 'tutorial.js'), 'utf8');
+    const pw = src.slice(src.indexOf('function padWire('), src.indexOf("el.addEventListener('pointerup', up);"));
+    assert.match(pw, /const P = new Map\(\); let D = new Map\(\)/, 'every finger tracked on its own');
+    assert.match(pw, /P\.size >= 2 && pinchPad\(\)/, 'two fingers are a pinch only on a pinch pad');
+    assert.doesNotMatch(pw, /if \(P\.size >= 2\) \{/, 'a second finger no longer always starts a pinch');
+    assert.match(src, /k\.joy \? '<span class="lt-joy"/);
 });

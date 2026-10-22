@@ -135,6 +135,7 @@
         const name = ((U.looks || E.looks)[look]) || look, after = ((U.done || E.done)[look]) || name;
         const verb = ((U.how || E.how)[how]) || how;
         return '<div class="lt-pad' + (done ? ' lt-done' : '') + '" data-how="' + esc(how) + '" data-look="' + esc(look) + '" role="button" tabindex="0" aria-label="' + esc(verb + ': ' + name) + '">' +
+            (k.joy ? '<span class="lt-joy" aria-hidden="true"><span></span></span>' : '') +   /* energy shot: a joystick to keep one finger on */
             '<span class="lt-obj"><b>' + esc(done ? after : name) + '</b></span>' + (done ? '' : HAND) +
             '<small class="lt-padhow">' + esc(done ? U.nice : verb) + '</small></div>' +
             '<p class="lt-padnote">' + esc(U.practice || E.practice) + '</p>';
@@ -148,32 +149,43 @@
     let pad = null, padTaps = [], padT = 0;
     function padWire(card) {
         const el = card && card.querySelector('.lt-pad'); pad = null; if (!el || tried === i) return;
-        const P = new Map(); let d = null, pinch0 = 0;
-        const fire = k => { clearT(padT); d = null; didGesture(k); };
+        /* every finger is tracked on its own: a finger resting on the pad (the joystick on the energy-shot pad: "keep one on the joystick,
+           and tap the world twice quickly with the other") never blocks the other finger's taps. Two fingers only count as a pinch on a
+           pinch pad, and only when they move apart or together. */
+        const P = new Map(); let D = new Map(), pinch0 = 0;
+        const fire = k => { clearT(padT); D = new Map(); didGesture(k); };
+        const pinchPad = () => wants(step()) === 'pinch';
+        /* the event's own time, not the time the handler runs: behind the card the 3D world can keep the page busy for a moment, and a quick
+           tap measured late looked like a slow press (energy-shot: two quick taps were not counted) */
+        const ts = e => (e && e.timeStamp > 0 ? e.timeStamp : (W.performance ? W.performance.now() : Date.now()));
         el.addEventListener('pointerdown', e => {
             try { el.setPointerCapture(e.pointerId); } catch (x) { }
             P.set(e.pointerId, { x: e.clientX, y: e.clientY });
-            if (P.size >= 2) { const a = [...P.values()]; pinch0 = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y); d = null; clearT(padT); return; }
-            d = { x: e.clientX, y: e.clientY, t: Date.now(), moved: false };
+            if (P.size >= 2 && pinchPad()) { const a = [...P.values()]; pinch0 = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y); D = new Map(); clearT(padT); return; }
+            const first = D.size === 0;
+            D.set(e.pointerId, { x: e.clientX, y: e.clientY, t: ts(e), moved: false });
             el.classList.add('lt-press');
             didGesture('touch');
-            clearT(padT); padT = setTimeout(() => { if (d && !d.moved) fire('hold'); }, TRY.HOLD);
+            if (first) { clearT(padT); const id = e.pointerId; padT = setTimeout(() => { const d = D.get(id); if (d && !d.moved && D.size === 1) didGesture('hold'); }, TRY.HOLD);   /* not fire(): a resting finger stays tracked */ }
+            else clearT(padT);   /* a second finger: the first one is resting, not holding */
         });
         el.addEventListener('pointermove', e => {
             if (!P.has(e.pointerId)) return;
             P.set(e.pointerId, { x: e.clientX, y: e.clientY });
-            if (P.size >= 2) { const a = [...P.values()]; if (Math.abs(Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y) - pinch0) > 18) fire('pinch'); return; }
-            if (!d) return;
+            if (P.size >= 2 && pinchPad()) { const a = [...P.values()]; if (Math.abs(Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y) - pinch0) > 18) fire('pinch'); return; }
+            const d = D.get(e.pointerId); if (!d) return;
             const dx = e.clientX - d.x, dy = e.clientY - d.y, m = Math.hypot(dx, dy);
-            if (m > TRY.MOVE) { d.moved = true; clearT(padT); }
+            if (m > TRY.MOVE) { d.moved = true; if (D.size === 1) clearT(padT); }
+            const w = wants(step()); if (w === 'double' || w === 'tap') return;   /* a tap pad: a resting finger that drifts is not a drag */
             if (Math.abs(dx) > 34 && Math.abs(dx) > Math.abs(dy) * 1.5) fire('swipe');
-            else if (m > TRY.DRAG && wants(step()) !== 'swipe') fire('drag');   /* a swipe pad waits for the sideways move */
+            else if (m > TRY.DRAG && w !== 'swipe') fire('drag');   /* a swipe pad waits for the sideways move */
         });
         const up = e => {
-            P.delete(e.pointerId); el.classList.remove('lt-press'); clearT(padT);
-            const x = d; d = null;
-            if (!x || x.moved || Date.now() - x.t > TRY.TAP || e.type === 'pointercancel') return;
-            const now = Date.now(); padTaps = padTaps.filter(t => now - t < TRY.MULTI * 2); padTaps.push(now);
+            P.delete(e.pointerId); const x = D.get(e.pointerId); D.delete(e.pointerId);
+            if (!P.size) el.classList.remove('lt-press');
+            if (!D.size) clearT(padT);
+            if (!x || x.moved || ts(e) - x.t > TRY.TAP || e.type === 'pointercancel') return;
+            const now = ts(e); padTaps = padTaps.filter(t => now - t < TRY.MULTI * 2); padTaps.push(now);
             if (padTaps.length >= 2 && padTaps[padTaps.length - 1] - padTaps[padTaps.length - 2] < TRY.MULTI) { padTaps = []; didGesture('double'); }
             didGesture('tap');
         };

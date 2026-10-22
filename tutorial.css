@@ -74,6 +74,10 @@
 .lt-pad[data-look="sheet"] .lt-obj::before { content: ''; position: absolute; top: 6px; left: 50%; width: 30px; height: 4px; margin-left: -15px; border-radius: 2px; background: rgba(255,255,255,.6); }
 .lt-pad[data-look="edge"] .lt-obj, .lt-pad[data-look="cards"] .lt-obj { min-width: 96px; height: 50px; border-radius: 10px; box-shadow: 6px 4px 0 -1px rgba(255,255,255,.12); }
 .lt-pad[data-look="fade"] .lt-obj { opacity: .45; }
+/* energy-shot pad: a joystick on the left to keep one finger on while the other taps the world twice (either works on its own too) */
+.lt-joy { position: absolute; left: 12px; top: 50%; width: 44px; height: 44px; margin-top: -22px; border-radius: 50%; border: 1px solid rgba(255,255,255,.3); background: rgba(255,255,255,.08); pointer-events: none; }
+.lt-joy > span { position: absolute; left: 50%; top: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: rgba(127,231,255,.55); }
+.lt-pad.lt-done .lt-joy { opacity: .4; }
 .lt-pad.lt-press .lt-obj { transform: scale(.94); background: rgba(127,231,255,.22); }
 .lt-pad.lt-done { border-style: solid; border-color: var(--brand-green, #8dffb5); background: rgba(141,255,181,.1); cursor: default; }
 .lt-pad.lt-done .lt-obj { opacity: 1; background: rgba(141,255,181,.2); border-color: rgba(141,255,181,.55); }

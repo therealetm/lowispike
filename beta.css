@@ -1020,10 +1020,7 @@ html[data-ckview="swipe"] #tab-shelf #r3kSwipe .r3k-btns { margin-top: 12px !imp
 #tab-shelf .ck-pempty b { display: block; font-size: 16px; margin-bottom: 4px; }
 #tab-shelf .ck-pempty .r5-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 @media (max-width: 360px) { #tab-shelf .ck-toss-v { display: none; } }
-html:is([data-theme="light"], [data-ui="light"]) #tab-shelf .ck-toss { background: rgba(20,34,58,.04); border-color: rgba(20,34,58,.10); }
-html:is([data-theme="light"], [data-ui="light"]) #tab-shelf .ck-toss-i { border-top-color: rgba(20,34,58,.08); }
-html:is([data-theme="light"], [data-ui="light"]) #tab-shelf .ck-toss-i img, html:is([data-theme="light"], [data-ui="light"]) #tab-shelf .ck-toss-ph { background: rgba(20,34,58,.06); }
-html:is([data-theme="light"], [data-ui="light"]) #tab-shelf .ck-toss-more { color: #1b7f5a; }
+/* Cook keeps its dark food screen in day mode too, so Throw out needs no day overrides */
 .b3-fill { margin-top: 10px; font-size: 12.5px; line-height: 1.4; opacity: .75; text-transform: none; letter-spacing: 0; }
 /* the swap sheet no longer carries its own Cook / Buy switch: the source on Cook decides */
 .b-body .sf-toolbar > .sf-toggle:first-of-type { display: none !important; }

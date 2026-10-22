@@ -35,6 +35,8 @@
     function nightKey() { return dayKey(Date.now() - 12 * 3600e3); }
     function isNight() { const p = H.dataset.spPeriod; if (p) return p === 'night'; const h = new Date().getHours(); return h >= 22 || h < 6; }
     function saidGoodnight() { try { return localStorage.getItem(GN_KEY) === nightKey(); } catch (e) { return false; } }
+    /* Aura shop (Oct 22): a bought animated aura moves on her card too */
+    function fx() { try { const H = W.LowiWorldHome; return H && H.auraLook && H.fxHTML ? H.fxHTML(H.auraLook().fx) : ''; } catch (e) { return ''; } }
     function aura() { try { const c = C(); const id = W.LowiWorldHome && W.LowiWorldHome.auraId ? W.LowiWorldHome.auraId() : ''; return c ? c.aura(id) : { a: '#6ee7c8', b: '#64d2ff' }; } catch (e) { return { a: '#6ee7c8', b: '#64d2ff' }; } }
     function stageOf(xp) {
         const c = C(); if (!c || !c.stage) return null;
@@ -88,7 +90,7 @@
         const night = isNight(), gn = saidGoodnight();
         return '<div class="mh" id="mistyHub" data-noi18n style="--a:' + esc(a.a) + ';--b:' + esc(a.b) + '">' +
             '<header class="mh-head">' +
-                '<div class="mh-art"><span class="mh-glow" aria-hidden="true"></span>' + art() + '</div>' +
+                '<div class="mh-art"><span class="mh-glow" aria-hidden="true"></span>' + art() + fx() + '</div>' +
                 '<div class="mh-id"><div class="mh-name"><h2>' + esc(name()) + '</h2></div>' +
                     (s ? '<p class="mh-lv">' + esc(T('Level ', 'Level ', 'Nivel ') + s.level + ' \u00b7 ' + s.name) + '</p>' : '') +
                     '<p class="mh-st"><b>' + esc(st.title) + '</b>' + (st.sub ? '<span>' + esc(st.sub) + '</span>' : '') + '</p>' +

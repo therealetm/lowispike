@@ -15,6 +15,8 @@
        user's other devices and a sign-in to another account on this phone restores that account's own aura (restore() swaps every
        lowispike.* key). The old device-wide 'lowi.aura' is moved over once. */
     const AKEY = 'lowispike.aura.v1', AKEY_OLD = 'lowi.aura';
+    /* Aura shop (Oct 22): the sparks wallet, a lowispike.* key too, so the account backup carries it with the XP */
+    const SKEY = 'lowispike.sparks.v1';
     const lang = () => { try { return ((W.LowiLang && W.LowiLang.get && W.LowiLang.get()) || H.lang || 'de').slice(0, 2); } catch (e) { return 'de'; } };
     const T = (en, de, es) => ({ de, es })[lang()] || en;
     const P = arr => C.pick(arr, lang());
@@ -56,9 +58,50 @@
         } catch (e) { }
         return v || '';
     }
-    function auraId() { return C.cleanAura(auraRaw(), xpNow()); }
+    /* ---------- sparks (Aura shop step 1): total XP - sparks spent; spending never touches XP, so level and leaderboard stay ---------- */
+    function xpTotal() { try { const s = W.LowiR2 && W.LowiR2.S && W.LowiR2.S(); if (s && s.xp != null) return Math.max(0, +s.xp || 0); } catch (e) { } return xpNow(); }
+    function walletNow() { let w = null; try { w = JSON.parse(localStorage.getItem(SKEY) || 'null'); } catch (e) { w = null; } return C.wallet(w); }
+    function saveWallet(w) { try { localStorage.setItem(SKEY, JSON.stringify(C.wallet(w))); return true; } catch (e) { return false; } }
+    function sparksNow() { return C.sparks(xpTotal(), walletNow()); }
+    function auraId() { return C.cleanAura(auraRaw(), xpNow(), walletNow()); }
     /* true once the user picked an aura (and still owns it): only then does Home Misty's glow switch from her star colour to it */
-    function auraChosen() { const v = auraRaw(); return !!v && C.cleanAura(v, xpNow()) === v; }
+    function auraChosen() { const v = auraRaw(); return !!v && C.cleanAura(v, xpNow(), walletNow()) === v; }
+    /* the moving part of a shop aura: a few spans the CSS animates (transform / opacity only, so the GPU does it; still under
+       reduced motion). Used on Home Misty, her card, her sheet and the preview, so she wears it everywhere she shows. */
+    const FX_N = { ember: 7, orbs: 3, trail: 8, electric: 3, prism: 1, galaxy: 2 };
+    function fxHTML(fx) {
+        if (!FX_N[fx]) return '';
+        let h = '<span class="wh-fx wh-fx-' + fx + '" aria-hidden="true" data-fx="' + fx + '">';
+        if (fx === 'electric') h += '<svg viewBox="0 0 100 100"><path d="M50 3l-4 9 7 3-5 10M93 38l-9 2 1 8-9 4M14 78l8-5 4 7 9-3M80 84l-6-7 6-5-4-8"/><path d="M8 30l9 2-1 8 9 3M60 96l2-9 8 1 2-9"/></svg>';
+        for (let i = 0; i < FX_N[fx]; i++) h += '<i style="--i:' + i + '"></i>';
+        return h + '</span>';
+    }
+    function fxOf(id) { return (C.aura(id) || {}).fx || ''; }
+    /* keeps one live .wh-fx in an element (Home's bubble gets rebuilt now and then); '' removes it */
+    function ensureFx(el, fx) {
+        if (!el) return;
+        const ex = el.querySelector(':scope > .wh-fx');
+        if (ex && ex.dataset.fx === fx) return;
+        if (ex) ex.remove();
+        if (!fx) return;
+        const t = D.createElement('div'); t.innerHTML = fxHTML(fx); if (t.firstChild) el.appendChild(t.firstChild);
+    }
+    /* Stardust trail: while Home Misty swims (moves), a few glitter specks stay behind where she was. Polls her spot 8x a second
+       only while that aura is on and Home is showing; at most 14 specks, each gone after 0.9 s. Nothing under reduced motion. */
+    function trailTick() {
+        const b = D.getElementById('spBubble');
+        if (H.dataset.whFx !== 'trail' || !b || !homeActive() || D.hidden || reduced()) { st.trailAt = null; return; }
+        const r = b.getBoundingClientRect(); if (!r.width) return;
+        const x = r.left + r.width / 2, y = r.top + r.height / 2, p = st.trailAt;
+        st.trailAt = { x, y, w: r.width };
+        if (!p || Math.hypot(x - p.x, y - p.y) < 6 || D.querySelectorAll('.wh-trail').length >= 14) return;
+        for (let k = 0; k < 2; k++) {
+            const s = D.createElement('span'); s.className = 'wh-trail'; s.setAttribute('aria-hidden', 'true');
+            const a = Math.random() * Math.PI * 2, rr = p.w * (0.18 + Math.random() * 0.22);
+            s.style.left = (p.x + Math.cos(a) * rr) + 'px'; s.style.top = (p.y + Math.sin(a) * rr) + 'px';
+            D.body.appendChild(s); setTimeout(() => s.remove(), 900);
+        }
+    }
     function applyAura() {
         const a = C.aura(auraId());
         /* Oct 18 game-perf: tick() calls this every 700 ms; a write with the same value still wakes every <html>/<body> observer,
@@ -66,6 +109,11 @@
         if (H.style.getPropertyValue('--wh-aura-a') !== a.a) H.style.setProperty('--wh-aura-a', a.a);
         if (H.style.getPropertyValue('--wh-aura-b') !== a.b) H.style.setProperty('--wh-aura-b', a.b);
         if (H.dataset.whAura !== a.id) H.dataset.whAura = a.id;
+        const fx = a.fx || '';
+        if ((H.dataset.whFx || '') !== fx) { if (fx) H.dataset.whFx = fx; else delete H.dataset.whFx; }
+        ensureFx(D.getElementById('spBubble'), fx);
+        if (fx === 'trail' && !st.trailT) st.trailT = setInterval(trailTick, 125);
+        else if (fx !== 'trail' && st.trailT) { clearInterval(st.trailT); st.trailT = 0; st.trailAt = null; }
         const set = auraChosen();
         if (set && H.dataset.whAuraSet !== '1') H.dataset.whAuraSet = '1';
         else if (!set && H.dataset.whAuraSet) delete H.dataset.whAuraSet;
@@ -564,6 +612,17 @@
         if (vb) txt = txt.split('var(--tmg-b)').join(vb.trim());
         return txt;
     }
+    /* a shop aura in the 3D world: the sprite is one still picture, so its specks are drawn into it once (no per-frame cost) */
+    function fx2D(x, au) {
+        const n = au.fx === 'orbs' ? 3 : au.fx === 'galaxy' ? 26 : 12;
+        for (let i = 0; i < n; i++) {
+            const t = i / n * Math.PI * 2 + (au.fx === 'galaxy' ? i * 0.7 : 0), rr = au.fx === 'galaxy' ? 18 + (i * 37 % 70) : au.fx === 'orbs' ? 118 : 96 + (i * 13 % 28);
+            const px = 130 + Math.cos(t) * rr, py = 150 + Math.sin(t) * rr * (au.fx === 'orbs' ? 0.42 : 1);
+            x.beginPath(); x.fillStyle = i % 2 ? au.b : au.a; x.globalAlpha = au.fx === 'galaxy' ? 0.85 : 0.9;
+            x.arc(px, py, au.fx === 'orbs' ? 9 : au.fx === 'galaxy' ? 1.6 + (i % 3) : 3, 0, Math.PI * 2); x.fill();
+        }
+        x.globalAlpha = 1;
+    }
     function ensureMisty3D() {
         const a = w3(); if (!a || !a.ready || !a.THREE || !a.hub) return;
         const txt = mistySvg(); if (!txt) return;
@@ -584,6 +643,7 @@
                 const au = C.aura(auraId()), g = x.createRadialGradient(130, 150, 10, 130, 150, 128);
                 g.addColorStop(0, au.a + '55'); g.addColorStop(1, au.a + '00'); x.fillStyle = g; x.fillRect(0, 0, 260, 310);
                 x.drawImage(img, 0, 0, 260, 310);
+                if (au.fx) fx2D(x, au);
                 const old = sp.material.map; sp.material.map = new THREE.CanvasTexture(cv); sp.material.needsUpdate = true; if (old) old.dispose();
             } catch (e) { }
         };
@@ -850,9 +910,29 @@
         const s = D.querySelector('#spBubble .tmg-plant'); return s ? s.outerHTML : '';
     }
     function dexItems() { try { return Object.values((W.LowiDex && W.LowiDex.state && W.LowiDex.state().mine) || {}); } catch (e) { return []; } }
+    const SPK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.3 6.2 6.2 2.3-6.2 2.3L12 19.5l-2.3-6.2L3.5 11l6.2-2.3z"/><path d="M19 16.5l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9z"/></svg>';
+    const spWord = n => n === 1 ? T('spark', 'Funke', 'chispa') : T('sparks', 'Funken', 'chispas');
+    /* the preview of a shop aura you don't have yet: Misty wearing it, the price, and Unlock (or how many sparks are missing) */
+    function previewBox(id, xp, w) {
+        const it = C.shopItems(xp, auraId(), w).find(x => x.id === id); if (!it || it.status !== 'locked') return '';
+        const nm = P(it.n), price = it.sp + ' ' + spWord(it.sp);
+        return '<div class="wh-pv" id="whPv" role="group" aria-label="' + esc(T('Preview: ' + nm, 'Vorschau: ' + nm, 'Vista previa: ' + nm)) + '">' +
+            '<div class="wh-pv-stage wh-ms-stage" style="--a:' + it.a + ';--b:' + it.b + '"><span class="wh-ms-glow" aria-hidden="true"></span><div class="wh-ms-art">' + mistyArt() + '</div>' + fxHTML(it.fx) + '</div>' +
+            '<div class="wh-pv-tx"><b>' + esc(nm) + '</b><small>' + esc(P(it.d)) + '</small>' +
+            (it.afford
+                ? '<button type="button" class="wh-ms-btn wh-ms-pri wh-pv-buy" data-wh="aurabuy" data-id="' + it.id + '">' + SPK + esc(T('Unlock for ' + price, 'F\u00fcr ' + price + ' freischalten', 'Desbloquear por ' + price)) + '</button>'
+                : '<p class="wh-pv-need">' + esc(T('You need ' + it.need + ' more ' + spWord(it.need) + '. Every XP you earn adds one.', 'Dir fehlen noch ' + it.need + ' ' + spWord(it.need) + '. Jeder XP, den du sammelst, bringt einen.', 'Te faltan ' + it.need + ' ' + spWord(it.need) + '. Cada XP que ganas suma una.')) + '</p>' +
+                  '<button type="button" class="wh-ms-btn wh-ms-pri wh-pv-buy" data-wh="aurabuy" data-id="' + it.id + '" aria-disabled="true">' + SPK + esc(T('Unlock for ' + price, 'F\u00fcr ' + price + ' freischalten', 'Desbloquear por ' + price)) + '</button>') +
+            '<button type="button" class="wh-ms-btn wh-pv-no" data-wh="pvclose">' + esc(T('Not now', 'Jetzt nicht', 'Ahora no')) + '</button></div></div>';
+    }
     function panelAura(xp) {
-        const items = C.auraItems(xp, auraId());
+        const items = C.auraItems(xp, auraId()), w = walletNow(), have = C.sparks(xpTotal(), w), shop = C.shopItems(xpTotal(), auraId(), w);
         return '<p class="wh-ms-lead">' + esc(T('A cell doesn\u2019t wear clothes. It wears light. Pick the glow of your membrane.', 'Eine Zelle tr\u00e4gt keine Kleidung. Sie tr\u00e4gt Licht. W\u00e4hl das Leuchten deiner Membran.', 'Una c\u00e9lula no lleva ropa. Lleva luz. Elige el brillo de tu membrana.')) + '</p>' +
+            '<div class="wh-spk" role="status"><span class="wh-spk-i">' + SPK + '</span><span><b>' + have + ' ' + esc(spWord(have)) + '</b><small>' + esc(T('You get 1 spark for every XP. Spending sparks never lowers your level.', 'F\u00fcr jeden XP bekommst du 1 Funken. Ausgeben senkt nie dein Level.', 'Ganas 1 chispa por cada XP. Gastarlas nunca baja tu nivel.')) + '</small></span></div>' +
+            (st.preview ? previewBox(st.preview, xpTotal(), w) : '') +
+            '<h3 class="wh-ms-h">' + esc(T('Animated auras', 'Animierte Auren', 'Auras animadas')) + '<small>' + esc(T('Unlock with sparks', 'Mit Funken freischalten', 'Desbloquea con chispas')) + '</small></h3>' +
+            '<div class="wh-auras wh-shop" role="radiogroup" aria-label="' + esc(T('Animated auras', 'Animierte Auren', 'Auras animadas')) + '">' + shop.map(a => '<button type="button" role="radio" class="wh-aura wh-aura-fx wh-aura-' + a.status + (st.preview === a.id ? ' wh-aura-pv' : '') + '" data-wh="aura" data-id="' + a.id + '" aria-checked="' + (a.status === 'on') + '" style="--a:' + a.a + ';--b:' + a.b + '" aria-label="' + esc(P(a.n) + ', ' + (a.status === 'locked' ? T(a.sp + ' sparks, tap to preview', a.sp + ' Funken, tippen f\u00fcr Vorschau', a.sp + ' chispas, toca para ver') : a.status === 'on' ? T('active', 'aktiv', 'activa') : T('ready', 'bereit', 'lista'))) + '"><span class="wh-aura-orb" aria-hidden="true">' + fxHTML(a.fx) + (a.status === 'locked' ? ICO.lock : a.status === 'on' ? ICO.check : '') + '</span><b>' + esc(P(a.n)) + '</b><small>' + (a.status === 'locked' ? SPK + esc(String(a.sp)) : esc(a.status === 'on' ? T('Active', 'Aktiv', 'Activa') : T('Ready', 'Bereit', 'Lista'))) + '</small></button>').join('') + '</div>' +
+            '<h3 class="wh-ms-h">' + esc(T('Level glows', 'Level-Leuchten', 'Brillos de nivel')) + '<small>' + esc(T('Free when your XP gets there', 'Gratis, sobald deine XP reichen', 'Gratis cuando tu XP llegue')) + '</small></h3>' +
             '<div class="wh-auras" role="radiogroup" aria-label="' + esc(T('Aura', 'Aura', 'Aura')) + '">' + items.map(a => '<button type="button" role="radio" class="wh-aura wh-aura-' + a.status + '" data-wh="aura" data-id="' + a.id + '" aria-checked="' + (a.status === 'on') + '"' + (a.status === 'locked' ? ' aria-disabled="true"' : '') + ' style="--a:' + a.a + ';--b:' + a.b + '" aria-label="' + esc(P(a.n) + ', ' + (a.status === 'locked' ? T('from ' + a.xp + ' XP', 'ab ' + a.xp + ' XP', 'desde ' + a.xp + ' XP') : a.status === 'on' ? T('active', 'aktiv', 'activa') : T('ready', 'bereit', 'lista'))) + '"><span class="wh-aura-orb" aria-hidden="true">' + (a.status === 'locked' ? ICO.lock : a.status === 'on' ? ICO.check : '') + '</span><b>' + esc(P(a.n)) + '</b><small>' + esc(a.status === 'locked' ? a.xp + ' XP' : a.status === 'on' ? T('Active', 'Aktiv', 'Activa') : T('Ready', 'Bereit', 'Lista')) + '</small></button>').join('') + '</div>' +
             (W.LowiCellRoom && W.LowiCellRoom.openRoom ? '<button type="button" class="wh-ms-room" data-wh="room">' + ICO.home + '<span><b>' + esc(T('Misty\u2019s home', 'Mistys Zuhause', 'La casa de Misty')) + '</b><small>' + esc(T('Decorate the room in your bloodstream', 'Das Zimmer in deinem Blutkreislauf einrichten', 'Decora su cuarto en tu sangre')) + '</small></span></button>' : '');
     }
@@ -872,7 +952,7 @@
         const xp = xpNow(), s = C.stage(xp), a = C.aura(preview || auraId());
         const tabs = [['aura', T('Aura', 'Aura', 'Aura')], ['grow', T('Growth', 'Wachstum', 'Crecimiento')], ['found', T('Discovered', 'Entdeckt', 'Descubierto')]];
         return '<div class="wh-ms" id="whMs">' +
-            '<div class="wh-ms-stage" style="--a:' + a.a + ';--b:' + a.b + '"><span class="wh-ms-glow" aria-hidden="true"></span><div class="wh-ms-art">' + mistyArt() + '</div></div>' +
+            '<div class="wh-ms-stage" style="--a:' + a.a + ';--b:' + a.b + '"><span class="wh-ms-glow" aria-hidden="true"></span><div class="wh-ms-art">' + mistyArt() + '</div>' + fxHTML(a.fx || '') + '</div>' +
             '<div class="wh-ms-id"><h2>' + esc(mistyName()) + '</h2><small>' + esc(P(s.cur.n) + ' \u00b7 ' + xp + ' XP') + '</small>' +
             '<i class="wh-ms-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.round(s.pct * 100) + '" aria-label="' + esc(T('Progress to the next stage', 'Fortschritt zur n\u00e4chsten Stufe', 'Progreso a la siguiente etapa')) + '"><i style="width:' + Math.round(s.pct * 100) + '%"></i></i>' +
             '<small class="wh-ms-next">' + esc(s.next ? T(s.left + ' XP to ' + P(s.next.n), 'Noch ' + s.left + ' XP bis ' + P(s.next.n), 'Faltan ' + s.left + ' XP para ' + P(s.next.n)) : T('Top stage reached', 'H\u00f6chste Stufe erreicht', 'Etapa m\u00e1xima alcanzada')) + '</small></div>' +
@@ -894,7 +974,7 @@
     function liveMs() { return Array.from(D.querySelectorAll('#whMs')).find(e => !(e.closest && e.closest('.r2-ov.off'))) || null; }
     /* the aura / growth / discoveries sheet, opened from the Glow door in Misty's card */
     function openDetails(tab) {
-        st.sheetTab = tab || 'aura';
+        st.sheetTab = tab || 'aura'; if (!liveMs()) st.preview = '';
         const R2 = W.LowiR2; if (!R2 || !R2.sheet) return false;
         const ex = liveMs(); if (ex) { repaintMisty(); return true; }
         R2.sheet(mistyHTML(st.sheetTab), { cls: 'wh-ms-ov' });
@@ -907,13 +987,22 @@
         /* BH-016: an aura pick repaints this sheet; focus stays on the aura you picked */
         if (W.LowiR2 && W.LowiR2.keepFocus) W.LowiR2.keepFocus(ex, t.firstChild); else ex.replaceWith(t.firstChild);
     }
+    /* a shop aura you don't have opens its preview (Misty wearing it + Unlock); one you bought is worn like any glow */
+    function focusPv() { setTimeout(() => { const pv = D.getElementById('whPv'); if (!pv) return; try { pv.scrollIntoView({ block: 'nearest', behavior: reduced() ? 'auto' : 'smooth' }); } catch (e) { } const b = pv.querySelector('.wh-pv-buy'); b && b.focus({ preventScroll: true }); }, 30); }
     function pickAura(id) {
+        const sh = C.SHOP.find(x => x.id === id);
+        if (sh && !C.owns(id, xpNow(), walletNow())) { st.preview = id; repaintMisty(id); focusPv(); return; }
+        if (sh) { st.preview = ''; return wear(sh); }
         const xp = xpNow(), a = C.AURAS.find(x => x.id === id); if (!a) return;
         if (xp < a.xp) {
             repaintMisty(id);
             try { W.LowiR2.toast(T(P(a.n) + ' unlocks at ' + a.xp + ' XP', P(a.n) + ' gibt es ab ' + a.xp + ' XP', P(a.n) + ' se desbloquea con ' + a.xp + ' XP')); } catch (e) { }
             return;
         }
+        st.preview = ''; wear(a);
+    }
+    function wear(a) {
+        const id = a.id;
         try { localStorage.setItem(AKEY, id); } catch (e) { }
         applyAura(); repaintMisty(); st.mistyKey = '';
         /* Oct 19 (Emmanuel: "I've changed the color of the aura ... click back to my Misty and nothing changed"): Misty's card under
@@ -923,6 +1012,22 @@
         try { W.LowiR2.toast(T(nm + ' glows in ' + P(a.n), nm + ' leuchtet jetzt in ' + P(a.n), nm + ' brilla en ' + P(a.n))); } catch (e) { }
     }
 
+    /* Unlock: sparks go, XP and level stay; the aura goes on right away */
+    function buyAura(id) {
+        const sh = C.SHOP.find(x => x.id === id); if (!sh) return;
+        const r = C.buy(walletNow(), id, xpTotal());
+        if (!r.ok) {
+            if (r.why === 'short') try { W.LowiR2.toast(T(r.need + ' more ' + spWord(r.need) + ' for ' + P(sh.n), 'Noch ' + r.need + ' ' + spWord(r.need) + ' f\u00fcr ' + P(sh.n), 'Faltan ' + r.need + ' ' + spWord(r.need) + ' para ' + P(sh.n))); } catch (e) { }
+            if (r.why === 'owned') { st.preview = ''; wear(sh); }
+            return;
+        }
+        if (!saveWallet(r.wallet)) return;
+        st.preview = '';
+        try { W.dispatchEvent(new CustomEvent('lowi:sparks', { detail: { id, left: r.left } })); } catch (e) { }
+        try { navigator.vibrate && navigator.vibrate([12, 40, 18]); } catch (e) { }
+        wear(sh);
+        setTimeout(() => { try { W.LowiR2.toast(T('Unlocked! ' + r.left + ' ' + spWord(r.left) + ' left', 'Freigeschaltet! Noch ' + r.left + ' ' + spWord(r.left), '\u00a1Desbloqueada! Te quedan ' + r.left + ' ' + spWord(r.left))); } catch (e) { } }, 1400);
+    }
     /* ---------- clicks ---------- */
     /* long press on Misty's bubble (~0.5 s, finger still) opens her sheet; the click that follows is swallowed */
     /* galaxy-audit G-1 (Oct 20): the hold opens Misty's card while the finger is still down. The click that follows the lift was
@@ -1011,8 +1116,10 @@
         else if (k === 'today') { e.preventDefault(); openToday(!st.today); }
         else if (k === 'scrim') { e.preventDefault(); openToday(false); }
         else if (k === 'zoom') { e.preventDefault(); if (Date.now() - (st.stickUsed || 0) < 450 || Date.now() - (st.stickTap || 0) < 700) return; zoomTap(); }
-        else if (k === 'mstab') { e.preventDefault(); st.sheetTab = b.dataset.tab; repaintMisty(); const lm = liveMs(), nb = lm && lm.querySelector('[data-tab="' + st.sheetTab + '"]'); nb && nb.focus({ preventScroll: true }); }
+        else if (k === 'mstab') { e.preventDefault(); st.sheetTab = b.dataset.tab; st.preview = ''; repaintMisty(); const lm = liveMs(), nb = lm && lm.querySelector('[data-tab="' + st.sheetTab + '"]'); nb && nb.focus({ preventScroll: true }); }
         else if (k === 'aura') { e.preventDefault(); pickAura(b.dataset.id); }
+        else if (k === 'aurabuy') { e.preventDefault(); buyAura(b.dataset.id); }
+        else if (k === 'pvclose') { e.preventDefault(); const id = st.preview; st.preview = ''; repaintMisty(); const c = liveMs() && liveMs().querySelector('[data-wh="aura"][data-id="' + id + '"]'); c && c.focus({ preventScroll: true }); }
         else if (k === 'room') { e.preventDefault(); try { W.LowiR2.close(W.LowiR2.top()); } catch (x) { } setTimeout(() => { try { W.LowiCellRoom.openRoom(); } catch (x) { } }, 200); }
         else if (k === 'scan') { e.preventDefault(); try { W.LowiR2.closeAll(); } catch (x) { } try { if (typeof W.lowiOpen === 'function') W.lowiOpen('scan'); else W.goTab('scan'); } catch (x) { } }
     }
@@ -1128,7 +1235,10 @@
     }
     /* misty-face.js: the art her 3D sprite is made from (svg text + aura colour), to split into body and face */
     function mistyFaceArt() { const txt = mistySvg(); if (!txt) return null; let aura = ''; try { aura = C.aura(auraId()).a; } catch (e) { aura = ''; } return { svg: txt, aura }; }
-    W.LowiWorldHome = { pullOut, diveIn, settle, waterReset, openToday, openMisty, toggleZoom, zoomOutWhole, closeTop, openDetails, heroTurn, state: st, auraId, syncX, rig };
+    /* auraLook(): what Misty wears now, for any other place that draws her (a Community / leaderboard avatar: put fxHTML(fx) inside
+       an element with position:relative and --a/--b set) */
+    function auraLook() { const a = C.aura(auraId()); return { id: a.id, a: a.a, b: a.b, fx: a.fx || '' }; }
+    W.LowiWorldHome = { pullOut, diveIn, settle, waterReset, openToday, openMisty, toggleZoom, zoomOutWhole, closeTop, openDetails, heroTurn, state: st, auraId, syncX, rig, sparks: sparksNow, wallet: walletNow, buyAura, fxHTML, ensureFx, auraLook };
     W.LowiWorldHome.mistyFaceArt = mistyFaceArt;
     W.LowiWorldHome.pad = pad;
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();

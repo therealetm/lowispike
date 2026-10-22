@@ -36,3 +36,8 @@ test('room name pill lays out in one row and clips, so its text cannot fall onto
 test('message field stays at 16 px or more so iOS does not zoom when it focuses', () => {
   assert.match(css, /textarea#cmInput[^{]*\{[^}]*font-size:16px!important/);
 });
+
+test('typing puts back any ancestor scroll iOS made, and the @mention list in a room is one sideways row', () => {
+  assert.match(js, /mentions\(\);\/\*[^*]*\*\/if\(threadOpen\)\(W\.requestAnimationFrame\|\|setTimeout\)\(roomVV\);\}\);/);
+  assert.match(css, /\.cm-compose #cmMention:not\(:empty\)\{flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important/);
+});

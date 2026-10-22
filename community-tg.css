@@ -258,6 +258,10 @@ html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cm-compose .cs-notice:n
 /* reply bar, @mention list, photo preview and voice card: solid sheets above the field, readable in both themes */
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cm-compose :is(#csReply,#cmMention,#csPhoto,#csMic,#cgTo):not(:empty){margin:0 12px 6px!important;border-radius:16px!important;color:var(--cr-text)!important;background:var(--cr-glass-solid)!important;box-shadow:inset 0 0 0 .5px var(--cr-hair),var(--cr-float-sh)!important;overflow:hidden}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cm-compose :is(#csReply,#cmMention,#csPhoto,#csMic) :is(p,span,b,small,strong,div){color:inherit}
+/* item 41: with the keyboard up on a small phone the room is only a few hundred pixels tall; the @mention list is one row of names
+   that scrolls sideways, so it never pushes the composer under the keyboard */
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cm-compose #cmMention:not(:empty){flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;max-height:none!important;padding:4px!important;scrollbar-width:none}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cm-compose #cmMention>*{flex:none}
 
 /* ---- reduced transparency: solid fills instead of the frosted strips ---- */
 @media(prefers-reduced-transparency:reduce){

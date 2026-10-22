@@ -56,6 +56,8 @@ test('the profile, level-up toast and growth map read the table, loaded before t
   const tag = html.indexOf('<script src="world-home-core.js?v=');
   const core = html.indexOf('const LEVEL_TABLE = window.LowiWorldHomeCore.STAGES;');
   assert.ok(tag > 0 && core > tag, 'world-home-core.js loads before the core script reads it');
+  const v = html.slice(tag).match(/\?v=([^"]+)"/)[1], build = (html.match(/apple-ui\.js\?v=([0-9-]+)/) || [])[1];
+  assert.strictEqual(v, build, 'the table\'s script tag carries the build id, so bump-build updates it');
   assert.ok(html.includes('const HERB_XP = LEVEL_TABLE.map(s => s.xp);'));
   assert.ok(html.includes('const HERB_TITLES = LEVEL_TABLE.map(s => s.n[0]);'));
   assert.ok(!/const HERB_XP = \[/.test(html) && !/const HERB_TITLES = \[/.test(html), 'no second XP or title list');

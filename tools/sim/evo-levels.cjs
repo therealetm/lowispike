@@ -24,6 +24,8 @@ async function run(xp, fn) {
 
 async function mapCheck(R, P, xp, want) {
     await P.evaluate(() => window.LowiLevels.open({ scrollToMe: true })); await H.sleep(1600);
+    /* the app translates the map a moment after it opens; on a busy machine wait for it (up to 6 s) */
+    if (lang !== 'en') for (let k = 0; k < 12; k++) { const t = await P.evaluate(() => { const r = document.querySelector('.r3m-mapov .r3m-row[data-n="15"]'); return r ? r.innerText : ''; }); if (!/Evolution \d/.test(t)) break; await H.sleep(500); }
     const m = await P.evaluate(() => {
         const rows = [...document.querySelectorAll('.r3m-mapov .r3m-row')];
         const evo = rows.filter(r => r.querySelector('.r3m-evo')).map(r => +r.dataset.n);

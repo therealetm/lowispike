@@ -134,6 +134,9 @@
         if (refocus && lastFocus && lastFocus.focus) { try { lastFocus.focus({ preventScroll: true }); } catch (e) { } }
     }
     function onClick(e) {
+        /* Oct 22 2026 (item 42): your picture or name at the top opens your profile, like the Profile row */
+        const who = e.target && e.target.closest && e.target.closest('.cme-av,.cme-who');
+        if (who) { e.preventDefault(); close(false); const s0 = S(); if (s0) s0.run('me'); return; }
         const b = e.target && e.target.closest && e.target.closest('[data-cme]'); if (!b) return;
         e.preventDefault();
         const id = b.getAttribute('data-cme'), s = S();

@@ -36,13 +36,13 @@
             vr: 'RV', worldSound: 'Sonido del mundo', theme: 'D\u00eda / noche', gift: 'Regalo del d\u00eda', weather: 'Tiempo', quest: 'Misi\u00f3n diaria', goTo: 'Ir a', settingsGroup: 'Ajustes', tutorial: 'Tutorial', body: 'Peso e IMC', weight: 'Tu camino de peso', version: 'Versi\u00f3n' }
     };
     /* Oct 21 2026 (Emmanuel: the Home bubble is Community now, a hold opens a slim Settings with only what is needed) */
-    Object.assign(TX.en, { language: 'Language', deleteAccount: 'Delete account', hint: 'Hold Community for settings', day: 'Day', night: 'Night', foryou: 'For You', hunt: 'Shopping hunt',
+    Object.assign(TX.en, { language: 'Language', deleteAccount: 'Delete account', hint: 'Hold Community for profile & settings', day: 'Day', night: 'Night', foryou: 'For You', hunt: 'Shopping hunt',
         delTitle: 'Delete your account?', delBody: 'This deletes your LOWiSPIKE account for good: your profile, posts, chats, photos and synced progress. It also clears this phone. It can\u2019t be undone.', delGo: 'Delete my account', delCancel: 'Keep my account',
         delBusy: 'Deleting\u2026', delFail: 'We couldn\u2019t delete your account right now. Nothing was deleted. Please try again later.', delGuest: 'You\u2019re not signed in, so there is no account in the cloud. Delete everything saved on this phone?', delGuestGo: 'Delete this phone\u2019s data', account2: 'Account' });
-    Object.assign(TX.de, { language: 'Sprache', deleteAccount: 'Konto l\u00f6schen', hint: 'Halte Community f\u00fcr Einstellungen', day: 'Tag', night: 'Nacht', foryou: 'F\u00fcr dich', hunt: 'Einkaufsjagd',
+    Object.assign(TX.de, { language: 'Sprache', deleteAccount: 'Konto l\u00f6schen', hint: 'Halte Community f\u00fcr Profil & Einstellungen', day: 'Tag', night: 'Nacht', foryou: 'F\u00fcr dich', hunt: 'Einkaufsjagd',
         delTitle: 'Konto l\u00f6schen?', delBody: 'Damit l\u00f6schst du dein LOWiSPIKE-Konto endg\u00fcltig: Profil, Beitr\u00e4ge, Chats, Fotos und deinen synchronisierten Fortschritt. Auch dieses Handy wird geleert. Das kann man nicht r\u00fcckg\u00e4ngig machen.', delGo: 'Mein Konto l\u00f6schen', delCancel: 'Konto behalten',
         delBusy: 'Wird gel\u00f6scht\u2026', delFail: 'Dein Konto konnte gerade nicht gel\u00f6scht werden. Es wurde nichts gel\u00f6scht. Bitte versuch es sp\u00e4ter noch einmal.', delGuest: 'Du bist nicht angemeldet, also gibt es kein Konto in der Cloud. Alles l\u00f6schen, was auf diesem Handy gespeichert ist?', delGuestGo: 'Daten auf diesem Handy l\u00f6schen', account2: 'Konto' });
-    Object.assign(TX.es, { language: 'Idioma', deleteAccount: 'Eliminar cuenta', hint: 'Mant\u00e9n Comunidad para los ajustes', day: 'D\u00eda', night: 'Noche', foryou: 'Para ti', hunt: 'Caza de compras',
+    Object.assign(TX.es, { language: 'Idioma', deleteAccount: 'Eliminar cuenta', hint: 'Mant\u00e9n Comunidad para perfil y ajustes', day: 'D\u00eda', night: 'Noche', foryou: 'Para ti', hunt: 'Caza de compras',
         delTitle: '\u00bfEliminar tu cuenta?', delBody: 'Esto elimina tu cuenta de LOWiSPIKE para siempre: tu perfil, publicaciones, chats, fotos y el progreso sincronizado. Tambi\u00e9n vac\u00eda este m\u00f3vil. No se puede deshacer.', delGo: 'Eliminar mi cuenta', delCancel: 'Conservar mi cuenta',
         delBusy: 'Eliminando\u2026', delFail: 'No pudimos eliminar tu cuenta ahora. No se ha borrado nada. Int\u00e9ntalo m\u00e1s tarde.', delGuest: 'No has iniciado sesi\u00f3n, as\u00ed que no hay cuenta en la nube. \u00bfBorrar todo lo guardado en este m\u00f3vil?', delGuestGo: 'Borrar los datos de este m\u00f3vil', account2: 'Cuenta' });
     const pick = l => TX[l] || TX.en;
@@ -219,7 +219,9 @@
     /* what a row on the Settings panel does (Oct 19 2026, Emmanuel: the sound panel opened BEHIND Settings):
        'toggle' flips in place and Settings stays; 'panel' opens another panel, so Settings steps aside first and that panel is in front;
        'go' closes Settings and runs its route */
-    function holdIntent(bubble) { return bubble === 'settings' ? 'page' : null; }
+    /* Oct 22 2026 (item 42, Emmanuel): a hold on the Community bubble opens the profile hub (community-me.js), not the slim Settings;
+       the hub's gear still reaches Settings. -> 'hub' | null */
+    function holdIntent(bubble) { return bubble === 'settings' ? 'hub' : null; }
     /* 'lang' = three language buttons in the row; 'confirm' = asks inside the panel first (Delete account) */
     const PANEL_ROWS = ['worldSound'], TOGGLE_ROWS = ['quest', 'theme'];
     function rowAction(id) { return id === 'language' ? 'lang' : id === 'deleteAccount' ? 'confirm' : PANEL_ROWS.includes(id) ? 'panel' : TOGGLE_ROWS.includes(id) ? 'toggle' : 'go'; }
@@ -593,26 +595,43 @@
         if (!el || el.dataset.o8Adapter !== 'settings-sleep') return;
         const k = el.getAttribute('data-orbit');
         e.preventDefault();
-        /* the click that ends a hold is not a tap (the hold already opened Settings) */
-        if (k === 'settings' && Date.now() < swallowUntil) { e.stopPropagation(); return; }
+        /* the click that ends a hold is not a tap (the hold already opened the hub) */
+        if (k === 'settings' && (holdFired || Date.now() < swallowUntil)) { e.stopPropagation(); return; }
         const i = tapIntent(k, open);
         if (i === 'close') close(true);
         else if (i === 'community') { close(false); try { ROUTES.community.run(); } catch (err) { console.warn('[settings-sleep] community', err); } }
         else show(i);
     }
-    /* ---- hold the Community bubble for Settings (Oct 21 2026): HOLD_MS still, under 12 px of drift; touch, pen and mouse ---- */
-    let holdT = 0, holdAt = null, swallowUntil = 0, detached = false;
-    function holdCancel() { if (holdT) { clearTimeout(holdT); holdT = 0; } holdAt = null; }
+    /* ---- hold the Community bubble (Oct 21 2026; Oct 22 item 42: opens the profile hub): HOLD_MS still, under 12 px of drift;
+       touch, pen and mouse. A light cue (.ss2-holding) while the finger is down; the click that ends the hold, wherever it lands
+       (the hub's backdrop is under the finger now), is swallowed, however long the finger stayed. ---- */
+    let holdT = 0, holdAt = null, holdEl = null, holdFired = false, swallowUntil = 0, detached = false;
+    function holdCue(on) { if (holdEl) holdEl.classList.toggle('ss2-holding', !!on); if (!on) holdEl = null; }
+    function holdCancel() { if (holdT) { clearTimeout(holdT); holdT = 0; } holdAt = null; holdCue(false); }
+    /* the finger lifted after a hold that fired: the click it makes comes right after; swallow only that one */
+    function holdLift() { if (holdFired) { holdFired = false; swallowUntil = Date.now() + 450; } holdCancel(); }
+    function openHub() {
+        const M = root.LowiCommunityMe;
+        try { if (M && fn(M, 'open') && M.open()) return 'hub'; } catch (err) { console.warn('[settings-sleep] hub', err); }
+        show('page'); return 'page';
+    }
     function onHoldDown(e) {
+        if (!holdFired) swallowUntil = 0;
         const el = e.target && e.target.closest && e.target.closest('[data-orbit="settings"]');
         if (!el || el.dataset.o8Adapter !== 'settings-sleep' || (e.button && e.button !== 0) || e.isPrimary === false) return;
-        holdCancel(); holdAt = { x: e.clientX, y: e.clientY };
+        holdCancel(); holdAt = { x: e.clientX, y: e.clientY }; holdEl = el; holdCue(true);
         holdT = setTimeout(() => {
-            holdT = 0; holdAt = null; swallowUntil = Date.now() + 1200;
+            holdT = 0; holdAt = null; holdCue(false); holdFired = true; swallowUntil = Date.now() + 60000;
             try { if (root.navigator && fn(root.navigator, 'vibrate')) root.navigator.vibrate(12); } catch (err) { }
             hintDone(); hideHint(); detached = false;
-            show('page');
+            if (open) close(false);
+            if (holdIntent('settings') === 'hub') openHub(); else show('page');
         }, HOLD_MS);
+    }
+    function onHoldClick(e) {
+        if (!holdFired && !(swallowUntil && Date.now() < swallowUntil)) return;
+        holdFired = false; swallowUntil = 0;
+        e.preventDefault(); e.stopPropagation(); if (e.stopImmediatePropagation) e.stopImmediatePropagation();
     }
     function onHoldMove(e) { if (holdAt && Math.hypot(e.clientX - holdAt.x, e.clientY - holdAt.y) > 12) holdCancel(); }
     /* ---- the one-time hint: "Hold Community for settings", once, the first time Home shows the bubble after this update ---- */
@@ -654,7 +673,12 @@
         D.addEventListener('pointerdown', onDown, true);
         D.addEventListener('pointerdown', onHoldDown, true);
         D.addEventListener('pointermove', onHoldMove, true);
-        ['pointerup', 'pointercancel', 'scroll'].forEach(n => D.addEventListener(n, holdCancel, true));
+        D.addEventListener('scroll', holdCancel, true);
+        ['pointerup', 'pointercancel'].forEach(n => D.addEventListener(n, holdLift, true));
+        /* before every other click handler (the window sees a click first): the click that ends a hold reaches nothing */
+        root.addEventListener('click', onHoldClick, true);
+        /* iOS: no synthetic click at all after a hold that fired */
+        D.addEventListener('touchend', e => { if (holdFired || (swallowUntil && Date.now() < swallowUntil)) { try { e.preventDefault(); } catch (err) { } } }, { capture: true, passive: false });
         /* no iOS callout, text selection or desktop menu on a hold */
         D.addEventListener('contextmenu', e => { if (e.target && e.target.closest && e.target.closest('[data-orbit="settings"][data-o8-adapter="settings-sleep"]')) e.preventDefault(); }, true);
         /* the language buttons switch the page language: an open Settings redraws in it */

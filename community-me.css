@@ -67,3 +67,6 @@ html[data-theme="light"] .cme-langs button { border-color: rgba(0,120,180,.4); b
 html[data-theme="light"] .cme-langs button.on { background: rgba(0,150,210,.18); border-color: rgba(0,120,180,.9); }
 @media (min-width: 700px) { .cme-sec-danger .cme-list, .cme-del .cme-list { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) { .cme, .cme-back { animation: none !important; } }
+
+/* Oct 22 2026 (item 42): the picture and name open your profile */
+.cme-av, .cme-who { cursor: pointer; }

@@ -106,6 +106,9 @@ html.ss2-open #whHud [data-orbit][aria-expanded="true"] { box-shadow: 0 0 0 2px 
 .ss2-del-acts { display: grid; gap: 8px; }
 .ss2-del-acts .ss2-chip.ss2-row { justify-content: center; }
 html.o8 #whHud [data-orbit="settings"][data-o8-adapter="settings-sleep"] { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+/* Oct 22 2026 (item 42): a light cue while the finger holds the Community bubble (no transform: the ring places the bubble) */
+html.o8 #whHud [data-orbit="settings"].ss2-holding { filter: brightness(1.18) drop-shadow(0 0 10px rgba(143,231,255,.75)); transition: filter .35s ease; }
+@media (prefers-reduced-motion: reduce) { html.o8 #whHud [data-orbit="settings"].ss2-holding { transition: none; } }
 .ss2-hint { position: fixed; z-index: 8995; max-width: min(280px, calc(100vw - 20px)); padding: 9px 14px; border-radius: 18px; pointer-events: none; color: #fff; font-size: 14px; line-height: 18px; font-weight: 600; text-align: center;
     background: rgba(10,22,58,.82); border: 1px solid rgba(143,231,255,.75); box-shadow: 0 0 16px rgba(143,231,255,.4), 0 8px 24px rgba(0,10,40,.45);
     -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); animation: ss2-fade .3s ease both; transition: opacity .3s ease; }

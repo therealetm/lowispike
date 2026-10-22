@@ -126,7 +126,9 @@ test('no menu bar switch any more (Oct 21): Settings neither stores nor announce
 
 test('real routes only: profile tiles, tabs and Home controls the app has today; no emoji in the module', () => {
     const src = read('home-settings-sleep-v2.js') + read('home-settings-sleep-v2.css');
-    assert.match(src, /profileTile\('look'\)/); assert.match(src, /profileTile\('acct'\)/);
+    /* Oct 22 2026: Account, Me and Look & sound open the Profile overview (LowiG2E.overview), never a sub-panel */
+    assert.match(src, /account: \{[^}]*run: profileHome/); assert.match(src, /look: \{[^}]*run: profileHome/); assert.match(src, /G\.overview\(\)/);
+    assert.doesNotMatch(src, /profileTile|G\.open\(/);
     assert.match(src, /goTab\('foryou'\)/); assert.match(src, /openBoardTab\(\)/); assert.match(src, /wh-todaybtn/);
     const html = read('index.html');
     for (const k of ['look', 'acct']) assert.match(html, new RegExp('"' + k + '"'), 'profile tile ' + k + ' exists');

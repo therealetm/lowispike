@@ -8864,7 +8864,7 @@ function fRevealHTML(f, anim){
 }
 let fSpinning = false;
 function fShuffle(instant){
-  if (fSpinning) return; if (fSrc() === "products" && ckCatPending() && !fSrcPool().length) { ckCatLoad().then(() => { if (fSrc() === "products" && !ckCatPending()) fShuffle(instant); }); return; }
+  if (fSpinning) return; if (fSrc() === "products" && typeof ckCatPending === "function" && ckCatPending() && !fSrcPool().length) { ckCatLoad().then(() => { if (fSrc() === "products" && !ckCatPending()) fShuffle(instant); }); return; }
   const f = fPick(); if (!f) { const eh = ckEmptyHTML(), pk0 = r5$("#r5Pick"); if (eh === null) LowiSwaflo.emptyPick(); else if (pk0) pk0.innerHTML = eh; return; } const strip = r5$("#r5Strip"), stage = r5$("#r5Stage"), pick = r5$("#r5Pick");
   fSaveLast(f); if (f.buy && window.LowiDex && LowiDex.enrich) LowiDex.enrich(f.product).catch(() => {}); /* prod-verdict: fetch while it spins */
   if (!strip || !stage) return;

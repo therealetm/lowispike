@@ -33,7 +33,7 @@ html:root body .lp-praise, html:root body .lp-praise.lp-said, html:root[data-ui=
 html:root body .lp-praise .lp-dot { width: 7px !important; height: 7px !important; background: #8fe7ff !important; box-shadow: 0 0 6px #8fe7ff !important; align-self: flex-start; margin-top: 5px; }
 html:root body .lp-praise .lp-tx { min-width: 0; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; }
 /* opened on a tap: a little wider so a long line takes fewer rows (it closes on the next tap or after its reading time) */
-html:root body .lp-praise.lp-open, html:root body .lp-praise.lp-open.lp-said { max-width: min(88vw, 340px) !important; }
+html:root body .lp-praise.lp-open, html:root body .lp-praise.lp-open.lp-said { max-width: min(88vw, 340px) !important; width: max-content !important; }
 html:root body .lp-praise.lp-open .lp-tx { -webkit-line-clamp: unset; line-clamp: none; display: block; }
 html:root body .lp-praise .lp-tag { font-size: 11px !important; padding: 1px 6px !important; }
 /* it takes taps while it is up: tap opens a longer line, the next tap closes it (it sits clear of the bubbles and the joystick) */

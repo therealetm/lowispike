@@ -105,7 +105,7 @@
         const sm = C.summary(s);
         /* keep what was typed (weight AND height) when the sheet redraws for a sex pick, 'change' height or a language switch */
         const typed = {}; if (keepFocus) ['#bsKg', '#bsCm'].forEach(q => { const e = ov.querySelector(q); if (e) typed[q] = e.value; });
-        ov.querySelector('.bs-body').innerHTML = statsHTML(sm) + progressHTML(sm) + formHTML(sm) + histHTML(sm) + '<p class="bs-priv">' + esc(tr('private')) + '</p>';
+        ov.querySelector('.bs-body').innerHTML = statsHTML(sm) + progressHTML(sm) + formHTML(sm) + (W.LowiWeightJourney ? '<div class="bs-wj">' + W.LowiWeightJourney.cardHTML() + '</div>' : '') + histHTML(sm) + '<p class="bs-priv">' + esc(tr('private')) + '</p>';
         Object.keys(typed).forEach(q => { const e = ov.querySelector(q); if (e && typed[q] !== '') e.value = typed[q]; });
         ov.querySelector('.bs-head h2').textContent = tr('title');
         ov.querySelector('.bs-close').setAttribute('aria-label', tr('close'));

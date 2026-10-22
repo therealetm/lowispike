@@ -42,7 +42,7 @@ test('Telegram sheet is scoped to the room, loads after the other community shee
  const i=html.indexOf('community-tg.css');assert(i>html.indexOf('community-room.css')&&i>html.indexOf('community-composer.css')&&i>html.indexOf('community-chat.css'));
  assert.match(sw,/"community-tg\.css"/);
  const body=css.replace(/\/\*[\s\S]*?\*\//g,'');
- for(const r of body.split('}')){const sel=r.split('{')[0].trim();if(!sel||sel.startsWith('@'))continue;for(const s of sel.split(/,(?![^(]*\))/))assert.match(s,/#cmPaneChat\[data-spirit-chat\]|html\.cr-room/,'unscoped: '+s);}
+ for(const r of body.split('}')){const sel=r.split('{').slice(-2)[0].trim();if(!sel||sel.startsWith('@')||/^--|:[^{]*;/.test(sel))continue;for(const s of sel.split(/,(?![^(]*\))/))assert.match(s,/#cmPaneChat\[data-spirit-chat\]|#cmPaneChat#cmPaneChat\[data-room\]|html\.cr-room/,'unscoped: '+s);}
  assert.doesNotMatch(body,/border[^;{}]*:(?:[^;{}]*)(#fff\b|#ffffff|white|rgba\(255,\s*255,\s*255,\s*\.[5-9])/i,'glowing brand edges, not white borders');
- assert.match(body,/\.cr-pin::before\{[^}]*background:linear-gradient\(180deg,#64d2ff,#0a84ff\)/,'pinned bar in brand colours');
+ assert.match(body,/\.cr-pin::before\{[^}]*background:var\(--cr-acc-strong\)/,'pinned bar in brand colours (item 37: Brain cyan by night, deep cyan by day)');
 });

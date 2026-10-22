@@ -72,9 +72,11 @@ test('no warp into the galaxy when the first tab is not Room', () => {
 
 test('chat room memory: message bubbles have no backdrop blur of their own (item 29/33)', () => {
   const s = R('community-tg.css');
-  const i = s.indexOf('.cr-room .cp-msg .cm-bub{position:relative;');
+  const i = s.indexOf('.cr-room .cp-msg .cm-bub{display:flow-root!important;');
+  assert(i > 0);
   const rule = s.slice(i, s.indexOf('}', i));
-  assert.match(rule, /-webkit-backdrop-filter:none;backdrop-filter:none/);
+  assert.match(rule, /-webkit-backdrop-filter:none!important;backdrop-filter:none!important/);
   assert.doesNotMatch(rule, /blur\(/);
-  assert.match(s, /\.mine\.cp-msg \.cm-bub\{background:rgba\(10,72,160,\.8\)!important;/);
+  /* item 37: own bubbles are a flat brand gradient (no blur either) */
+  assert.match(s, /\.cp-msg\.mine \.cm-bub\{background:var\(--cr-mine-c\)!important;background-image:var\(--cr-mine-g\)!important;/);
 });

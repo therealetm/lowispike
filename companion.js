@@ -273,7 +273,11 @@
         const steps = C.path(stages() || FALLBACK, m.xp, m.index, g.el, lang());
         const ci = C.clampStage(m.index), now = steps[ci] || steps[0], nx = steps[ci + 1] || null, xp = Math.max(0, Math.round(+m.xp || 0));
         const pct = nx ? Math.max(0, Math.min(100, Math.round((xp - now.xp) / Math.max(1, nx.xp - now.xp) * 100))) : 100;
-        const nextTxt = !nx ? L('Final form reached. It keeps glowing with you.', 'Letzte Form erreicht. Es leuchtet weiter mit dir.', 'Forma final alcanzada. Sigue brillando contigo.')
+        /* Oct 22, 2026 evolution step 1: 25 levels, evolutions at levels 5, 10, 15, 20 and 25 (world-home-core.js). Past form 10 the
+           next step is the next evolution level, not "final form". The new forms for 15, 20 and 25 come in a later step. */
+        const evo = (() => { try { const K = W.LowiWorldHomeCore, lv = K.stage(xp, true).index + 1, E = K.EVO_LEVELS.filter(n => n > 10 && n > lv); return { lv, E, left: E.length ? Math.max(0, K.STAGES[E[0] - 1].xp - xp) : 0 }; } catch (e) { return { lv: ci + 1, E: [], left: 0 }; } })();
+        const nextTxt = !nx && evo.E.length ? L('Level ' + evo.lv + ' · next evolution at level ' + evo.E[0] + ': ' + evo.left + ' XP to go', 'Level ' + evo.lv + ' · nächste Entwicklung bei Level ' + evo.E[0] + ': noch ' + evo.left + ' XP', 'Nivel ' + evo.lv + ' · próxima evolución en el nivel ' + evo.E[0] + ': faltan ' + evo.left + ' XP')
+            : !nx ? L('Final form reached. It keeps glowing with you.', 'Letzte Form erreicht. Es leuchtet weiter mit dir.', 'Forma final alcanzada. Sigue brillando contigo.')
             : nx.left > 0 ? L(nx.left + ' XP to ' + nx.name, 'Noch ' + nx.left + ' XP bis ' + nx.name, 'Faltan ' + nx.left + ' XP para ' + nx.name)
                 : L('Ready to evolve into ' + nx.name, 'Bereit für ' + nx.name, 'Lista para ' + nx.name);
         const dry = homeLook().dry;
@@ -297,6 +301,7 @@
             '<i class="cf-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '" aria-label="' + esc(L('XP to the next evolution', 'XP bis zur nächsten Entwicklung', 'XP hasta la próxima evolución')) + '"><i style="width:' + pct + '%"></i></i>' +
             '<small class="cf-next"><b>' + xp + ' XP</b> · ' + esc(nextTxt) + '</small></div>' +
             '<h3 class="cf-path-h"><span>' + esc(L('Evolution path', 'Entwicklungsweg', 'Camino de evolución')) + '</span><small>' + esc(L(found + ' of ' + steps.length + ' discovered', found + ' von ' + steps.length + ' entdeckt', found + ' de ' + steps.length + ' descubiertas')) + '</small></h3><ol class="cf-path">' + forms + '</ol>' +
+            (evo.E.length ? '<p class="cf-tiny cf-evo-more">' + esc(L('More evolutions at level ' + evo.E.join(', ') + '.', 'Weitere Entwicklungen bei Level ' + evo.E.join(', ') + '.', 'Más evoluciones en el nivel ' + evo.E.join(', ') + '.')) + '</p>' : '') +
             '<p class="cf-tiny">' + esc(L('It evolves with what you log: meals, water, moves, scans. Forms never shrink.', 'Es entwickelt sich mit dem, was du loggst: Essen, Wasser, Bewegung, Scans. Formen schrumpfen nie.', 'Evoluciona con lo que registras: comidas, agua, movimiento, escaneos. Las formas nunca encogen.')) + '</p>' +
             '<details class="cf-pick"' + (V.pickOpen ? ' open' : '') + '><summary>' + esc(L('Style (optional)', 'Stil (optional)', 'Estilo (opcional)')) + (t ? '<span class="cf-pick-t">' + esc(t) + '</span>' : '') + '</summary>' + typeBtns +
             '<p class="cf-tiny">' + esc(L('Only changes how your companion looks and talks. Not a test or a diagnosis.', 'Ändert nur, wie dein Begleiter aussieht und spricht. Kein Test, keine Diagnose.', 'Solo cambia cómo se ve y habla tu compañero. No es un test ni un diagnóstico.')) + '</p>' + (t ? '<button type="button" class="cf-link" data-cf="clear">' + esc(L('Remove style', 'Stil entfernen', 'Quitar estilo')) + '</button>' : '') +

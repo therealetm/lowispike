@@ -76,7 +76,7 @@ function awardSandbox(S) {
     const src = read('index.html');
     const a = src.indexOf('function award(amt, label, el, src, eventId){');
     const b = src.indexOf('\n}\n', a);
-    const lv = src.match(/function levelOf\(xp\)\{[^\n]*\}/)[0];
+    const lv = src.match(/function levelOf\(xp(?:, mine)?\)\{[^\n]*\}/)[0];
     const max = 'const MAX_LEVEL = ' + require('../world-home-core.js').STAGES.length + ';\n'; // Oct 22: levelOf reads the one level table
     const toasts = [], events = [];
     const ctx = { S, toasts, events, Number, Date, setTimeout: () => 0, titleOf: () => 'Little cell', window: { dispatchEvent: e => events.push(e) }, CustomEvent: function (n, o) { this.type = n; this.detail = o.detail; },

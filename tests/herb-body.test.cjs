@@ -3,8 +3,8 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('nod
 const K=require('../herb-core.js'),B=require('../body-core.js'),C=require('../herb-config.js');
 const now=new Date('2026-10-13T12:00:00Z').getTime(),H=3600000,DAY=24*H;
 const fresh=()=>({xp:95,ledger:[],logs:[],saved:[{n:'Keep my swap'}],health:{weight:'107'},user:{name:'Tester',bday:'1994-03-12'}});
-for(const [xp,index] of [[0,0],[99,0],[100,1],[299,1],[300,2],[699,2],[700,3],[1499,3],[1500,4],[2999,4],[3000,5],[4499,5],[4500,6],[7000,7],[10000,8],[14000,9],[100000,9]])assert.equal(K.stage(xp).index,index);
-assert.equal(K.stage(4000).next.id,'nova');assert.equal(K.stage(14000).next,null);assert.equal(K.stage(-1).xp,0);assert.equal(K.stage(120,4).index,4);assert.equal(K.stage(120,4).left,2880);
+for(const [xp,index] of [[0,0],[99,0],[100,1],[299,1],[300,2],[699,2],[700,3],[1499,3],[1500,4],[2999,4],[3000,5],[4999,5],[5000,6],[7500,7],[10500,8],[14000,9],[17500,10],[87500,24],[1000000,24]])assert.equal(K.stage(xp).index,index);
+assert.equal(K.stage(4000).next.id,'nova');assert.equal(K.stage(14000).next.xp,17500);assert.equal(K.stage(87500).next,null);assert.equal(K.stage(-1).xp,0);assert.equal(K.stage(120,4).index,4);assert.equal(K.stage(120,4).left,2880);
 let s=fresh();let g=K.sync(s,now);assert.equal(g.index,0);assert.equal(g.dim,false);assert.equal(s.xp,95);
 s.xp=3200;g=K.sync(s,now);assert.equal(g.index,5);assert(g.evolved);assert.equal(s.xp,3200);s.xp=500;assert.equal(K.sync(s,now).index,5);assert.equal(s.xp,500);
 s=fresh();s.ledger=[{amt:15,ts:now-4*DAY,label:'Meal checked'}];s.xp=700;assert(K.sync(s,now).dim);s.logs.push({id:'recent',ts:now-1000,t:'A meal'});assert(!K.sync(s,now).dim);assert.equal(s.xp,700);assert.equal(s.herb.stageIndex,3);

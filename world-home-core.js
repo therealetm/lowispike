@@ -65,20 +65,77 @@
         const out = wallet(Object.assign({}, cw, { own: cw.own.concat(id), spent: cw.spent + price }));
         return { ok: true, why: '', wallet: out, need: 0, left: sparks(xp, out) };
     }
-    /* the same thresholds as LOWI_HERB_CONFIG.stages, named for a cell */
+    /* THE level table (Misty's level, the growth map, herb-config stages, care board, Forms, toasts all read it).
+       Oct 22, 2026 evolution step 1 (Emmanuel: "I'm leveling up too fast. We need more levels. After level 10, it should go up to 25."):
+       25 levels. Levels 1-6 keep their XP (the first days stay quick), 7-9 take a little longer, 10 is unchanged, and every level
+       from 11 to 25 is 2-4 weeks of daily use (a regular day earns about 250 XP; math in MAYA-HANDOFF.md, "Evolution plan").
+       evo: the evolution stage reached at that level (1-5 at levels 5, 10, 15, 20, 25), 0 elsewhere.
+       Hooks for later steps, read through hooks(L) and left empty on purpose: stats (swim speed, shot strength, world-to-world
+       speed per level), powers (e.g. the spike magnet, full at 25) and the Home bubble's look per evolution stage. */
     const STAGES = [
         { xp: 0, n: ['Spark', 'Funke', 'Chispa'], d: ['Just born. Every log makes you glow.', 'Gerade entstanden. Jeder Eintrag lässt dich leuchten.', 'Recién nacida. Cada registro te hace brillar.'] },
         { xp: 100, n: ['Little cell', 'Kleine Zelle', 'Celulita'], d: ['Your membrane gets its first shimmer.', 'Deine Membran bekommt ihren ersten Schimmer.', 'Tu membrana recibe su primer brillo.'] },
         { xp: 300, n: ['Glow cell', 'Leuchtzelle', 'Célula brillante'], d: ['Stronger light, calmer flow.', 'Stärkeres Licht, ruhigerer Fluss.', 'Más luz, flujo más tranquilo.'] },
         { xp: 700, n: ['Bright cell', 'Strahlende Zelle', 'Célula radiante'], d: ['Your glow reaches further.', 'Dein Leuchten reicht weiter.', 'Tu brillo llega más lejos.'] },
-        { xp: 1500, n: ['Star cell', 'Sternzelle', 'Célula estelar'], d: ['A whole halo of light.', 'Ein ganzer Lichtkranz.', 'Todo un halo de luz.'] },
+        { xp: 1500, evo: 1, n: ['Star cell', 'Sternzelle', 'Célula estelar'], d: ['A whole halo of light.', 'Ein ganzer Lichtkranz.', 'Todo un halo de luz.'] },
         { xp: 3000, n: ['Legend', 'Legende', 'Leyenda'], d: ['The brightest cell in your body.', 'Die hellste Zelle in deinem Körper.', 'La célula más brillante de tu cuerpo.'] },
-        /* Oct 19 2026 night: four more levels after Legend, same XP as herb-config.js stages (XP only, never a food or the Collection) */
-        { xp: 4500, n: ['Nova', 'Nova', 'Nova'], d: ['Your light breaks out in a mane of blades and a gold crown.', 'Dein Licht bricht als Klingenmähne mit Goldkrone hervor.', 'Tu luz estalla en una melena de cuchillas y una corona dorada.'] },
-        { xp: 7000, n: ['Titan', 'Titan', 'Titán'], d: ['Twin tails and a third pair of wings.', 'Zwei Schwänze und ein drittes Flügelpaar.', 'Dos colas y un tercer par de alas.'] },
-        { xp: 10000, n: ['Monarch', 'Monarch', 'Monarca'], d: ['Power spikes all around you and a second pair of horns.', 'Kraftzacken rund um dich und ein zweites Hörnerpaar.', 'Picos de poder a tu alrededor y un segundo par de cuernos.'] },
-        { xp: 14000, n: ['Majesty', 'Majestät', 'Majestad'], d: ['The highest form: a tall gold crown and a ring of stars.', 'Die höchste Form: eine hohe Goldkrone und ein Sternenring.', 'La forma más alta: una gran corona dorada y un anillo de estrellas.'] }
+        { xp: 5000, n: ['Nova', 'Nova', 'Nova'], d: ['Your light breaks out in a mane of blades and a gold crown.', 'Dein Licht bricht als Klingenmähne mit Goldkrone hervor.', 'Tu luz estalla en una melena de cuchillas y una corona dorada.'] },
+        { xp: 7500, n: ['Titan', 'Titan', 'Titán'], d: ['Twin tails and a third pair of wings.', 'Zwei Schwänze und ein drittes Flügelpaar.', 'Dos colas y un tercer par de alas.'] },
+        { xp: 10500, n: ['Monarch', 'Monarch', 'Monarca'], d: ['Power spikes all around you and a second pair of horns.', 'Kraftzacken rund um dich und ein zweites Hörnerpaar.', 'Picos de poder a tu alrededor y un segundo par de cuernos.'] },
+        { xp: 14000, evo: 2, n: ['Majesty', 'Majestät', 'Majestad'], d: ['A tall gold crown and a ring of stars.', 'Eine hohe Goldkrone und ein Sternenring.', 'Una gran corona dorada y un anillo de estrellas.'] },
+        { xp: 17500, n: ['Pulsar cell', 'Pulsarzelle', 'Célula púlsar'], d: ['Your light beats in a steady pulse.', 'Dein Licht schlägt in einem ruhigen Puls.', 'Tu luz late con un pulso firme.'] },
+        { xp: 21200, n: ['Prism cell', 'Prismazelle', 'Célula prisma'], d: ['Your glow splits into every colour.', 'Dein Leuchten bricht sich in alle Farben.', 'Tu brillo se abre en todos los colores.'] },
+        { xp: 25100, n: ['Crystal cell', 'Kristallzelle', 'Célula de cristal'], d: ['Your membrane turns clear and hard as crystal.', 'Deine Membran wird klar und fest wie Kristall.', 'Tu membrana se vuelve clara y dura como el cristal.'] },
+        { xp: 29200, n: ['Thunder cell', 'Donnerzelle', 'Célula trueno'], d: ['Sparks crackle along your edges.', 'Funken knistern an deinen Rändern.', 'Chispas crepitan por tus bordes.'] },
+        { xp: 33500, evo: 3, n: ['Supernova', 'Supernova', 'Supernova'], d: ['Your light bursts out brighter than ever.', 'Dein Licht bricht heller hervor als je zuvor.', 'Tu luz estalla más brillante que nunca.'] },
+        { xp: 38000, n: ['Orbit cell', 'Orbitzelle', 'Célula órbita'], d: ['Small lights start to circle you.', 'Kleine Lichter beginnen, dich zu umkreisen.', 'Pequeñas luces empiezan a girar a tu alrededor.'] },
+        { xp: 42700, n: ['Quasar cell', 'Quasarzelle', 'Célula cuásar'], d: ['A beam of light runs right through you.', 'Ein Lichtstrahl geht mitten durch dich.', 'Un rayo de luz te atraviesa.'] },
+        { xp: 47600, n: ['Zenith cell', 'Zenitzelle', 'Célula cénit'], d: ['You shine from the highest point of the sky.', 'Du strahlst vom höchsten Punkt des Himmels.', 'Brillas desde lo más alto del cielo.'] },
+        { xp: 52700, n: ['Phoenix cell', 'Phönixzelle', 'Célula fénix'], d: ['Flames of light rise around you.', 'Flammen aus Licht steigen um dich auf.', 'Llamas de luz se alzan a tu alrededor.'] },
+        { xp: 58000, evo: 4, n: ['Galaxy', 'Galaxie', 'Galaxia'], d: ['A whole galaxy turns inside your glow.', 'Eine ganze Galaxie dreht sich in deinem Leuchten.', 'Una galaxia entera gira dentro de tu brillo.'] },
+        { xp: 63500, n: ['Celestial cell', 'Himmelszelle', 'Célula celestial'], d: ['The sky itself seems to follow you.', 'Der Himmel selbst scheint dir zu folgen.', 'El cielo mismo parece seguirte.'] },
+        { xp: 69200, n: ['Eternal cell', 'Ewige Zelle', 'Célula eterna'], d: ['Your light no longer fades.', 'Dein Licht verblasst nicht mehr.', 'Tu luz ya no se apaga.'] },
+        { xp: 75100, n: ['Cosmic cell', 'Kosmoszelle', 'Célula cósmica'], d: ['Stars gather in your wake.', 'Sterne sammeln sich hinter dir.', 'Las estrellas se reúnen a tu paso.'] },
+        { xp: 81200, n: ['Genesis cell', 'Genesiszelle', 'Célula génesis'], d: ['New light is born wherever you swim.', 'Wo du schwimmst, entsteht neues Licht.', 'Donde nadas nace luz nueva.'] },
+        { xp: 87500, evo: 5, n: ['Cosmos', 'Kosmos', 'Cosmos'], d: ['The final form: a whole universe of light.', 'Die letzte Form: ein ganzes Universum aus Licht.', 'La forma final: todo un universo de luz.'] }
     ];
+    STAGES.forEach(s => { s.evo = s.evo || 0; });
+    const MAX_LEVEL = STAGES.length;
+    const EVO_LEVELS = STAGES.map((s, i) => s.evo ? i + 1 : 0).filter(Boolean); /* [5, 10, 15, 20, 25] */
+    /* the level (1-based) where evolution stage k (1-5) arrives, and the evolution stage a level has reached (0 before level 5) */
+    function evoLevel(k) { return EVO_LEVELS[k - 1] || 0; }
+    function evoOf(L) { let e = 0; for (let i = 0; i < Math.min(MAX_LEVEL, L | 0); i++) if (STAGES[i].evo) e = STAGES[i].evo; return e; }
+    /* hooks for evolution steps 2-5 (see MAYA-HANDOFF.md "Evolution plan"): empty until those steps fill them */
+    const HOOKS = { stats: null, powers: [], bubble: null };
+    function hooks(L) { L = Math.max(1, Math.min(MAX_LEVEL, L | 0)); return { level: L, evo: evoOf(L), stats: HOOKS.stats ? HOOKS.stats(L) : null, powers: HOOKS.powers.filter(p => L >= p.lv), bubble: HOOKS.bubble ? HOOKS.bubble(evoOf(L)) : null }; }
+    /* ---------- the fair-play floor for the curve change (Oct 22, 2026) ----------
+       Before this, the XP for levels 1-10 was OLD_XP. Nobody loses XP; the level is worked out again from total XP. Someone whose
+       level would drop keeps the old level as a floor until the new curve passes it (only XP between 4,500-5,000, 7,000-7,500 and
+       10,000-10,500 is affected). Stored once per phone; only YOUR level reads it (mine = true), never another member's. */
+    const OLD_XP = [0, 100, 300, 700, 1500, 3000, 4500, 7000, 10000, 14000];
+    const CURVE = 2, CURVE_KEY = 'lowi.lvCurve', FLOOR_KEY = 'lowi.lvFloor';
+    function curveLevel(xp, table) { xp = Math.max(0, +xp || 0); const t = table || STAGES.map(s => s.xp); let i = 0; while (i < t.length - 1 && xp >= t[i + 1]) i++; return i + 1; }
+    function floorFor(xp) { const was = curveLevel(xp, OLD_XP), now = curveLevel(xp); return was > now ? was : 0; }
+    const LS = () => { try { return root.localStorage || null; } catch (e) { return null; } };
+    function migrate(xp, store) {
+        const ls = store || LS(); if (!ls) return 0;
+        try {
+            if (+ls.getItem(CURVE_KEY) >= CURVE) return +ls.getItem(FLOOR_KEY) || 0;
+            const f = floorFor(xp);
+            if (f) ls.setItem(FLOOR_KEY, String(f)); else ls.removeItem(FLOOR_KEY);
+            ls.setItem(CURVE_KEY, String(CURVE));
+            return f;
+        } catch (e) { return 0; }
+    }
+    /* your floor right now: gone for good once the curve level reaches it */
+    function myFloor(xp, store) {
+        const ls = store || LS(); if (!ls) return 0;
+        try {
+            const f = +ls.getItem(FLOOR_KEY) || 0; if (!f) return 0;
+            if (curveLevel(xp) >= f) { ls.removeItem(FLOOR_KEY); return 0; }
+            return Math.min(MAX_LEVEL, f);
+        } catch (e) { return 0; }
+    }
     const ix = l => ({ de: 1, es: 2 })[l] || 0;
     const pick = (arr, l) => arr[ix(l)] || arr[0];
     const ALL = AURAS.concat(SHOP);
@@ -99,12 +156,15 @@
         const cw = wallet(w), have = sparks(xp, cw); cur = cleanAura(cur, xp, cw);
         return SHOP.map(a => { const own = cw.own.indexOf(a.id) >= 0; return { id: a.id, sp: a.sp, fx: a.fx, a: a.a, b: a.b, n: a.n, d: a.d, status: a.id === cur ? 'on' : own ? 'ready' : 'locked', afford: !own && have >= a.sp, need: own ? 0 : Math.max(0, a.sp - have) }; });
     }
-    function stage(xp) {
+    /* stage(xp): the level for any XP. stage(xp, true): YOUR level (keeps the fair-play floor); a number is a floor level. */
+    function stage(xp, mine) {
         xp = Math.max(0, +xp || 0); let i = 0;
         STAGES.forEach((s, k) => { if (xp >= s.xp) i = k; });
-        const next = STAGES[i + 1] || null, cur = STAGES[i];
-        const pct = next ? Math.max(0, Math.min(1, (xp - cur.xp) / (next.xp - cur.xp))) : 1;
-        return { index: i, cur, next, pct, left: next ? Math.ceil(next.xp - xp) : 0 };
+        const base = i, f = mine === true ? myFloor(xp) : (+mine || 0);
+        if (f > i + 1) i = Math.min(MAX_LEVEL, f) - 1;
+        const next = STAGES[i + 1] || null, cur = STAGES[i], from = STAGES[base].xp;
+        const pct = next ? Math.max(0, Math.min(1, (xp - from) / (next.xp - from))) : 1;
+        return { index: i, cur, next, pct, left: next ? Math.ceil(next.xp - xp) : 0, evo: evoOf(i + 1), floored: i > base };
     }
     /* ---------- hero view: when you arrive in a region, face its prettiest part ----------
        samples: [[x,y,z,w], ...] relative to the region centre (w = how much that piece is worth looking at).
@@ -150,7 +210,7 @@
         const mid = (homeD + maxD) / 2;
         return dist > mid - 0.01 ? { to: homeD, out: false } : { to: maxD, out: true };
     }
-    const api = { AURAS, SHOP, SIZES, SHAPES, PRICE, STAGES, pick, aura, owns, cleanAura, auraItems, shopItems, wallet, sparks, buy, stage, heroView, rigAngles, nearAngle, zoomTarget };
+    const api = { AURAS, SHOP, SIZES, SHAPES, PRICE, STAGES, MAX_LEVEL, EVO_LEVELS, OLD_XP, HOOKS, evoLevel, evoOf, hooks, curveLevel, floorFor, migrate, myFloor, pick, aura, owns, cleanAura, auraItems, shopItems, wallet, sparks, buy, stage, heroView, rigAngles, nearAngle, zoomTarget };
     if (typeof module === 'object' && module.exports) module.exports = api;
     root.LowiWorldHomeCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -30,8 +30,8 @@ test('no old plant or comet level name is shown anywhere in the app', () => {
   assert.ok(!/herb reached level|Kraut hat Level/.test(R('finch-extras.js')));
 });
 
-test('world-home-core STAGES is the one table: 10 cell stages with rising XP and names in EN/DE/ES', () => {
-  assert.strictEqual(WHC.STAGES.length, 10);
+test('world-home-core STAGES is the one table: 25 cell stages (evolution step 1) with rising XP and names in EN/DE/ES', () => {
+  assert.strictEqual(WHC.STAGES.length, 25);
   assert.deepStrictEqual(WHC.STAGES.slice(0, 6).map(s => s.n[0]), ['Spark', 'Little cell', 'Glow cell', 'Bright cell', 'Star cell', 'Legend']);
   WHC.STAGES.forEach((s, i) => {
     assert.strictEqual(s.n.length, 3);
@@ -56,6 +56,8 @@ test('the profile, level-up toast and growth map read the table, loaded before t
   const tag = html.indexOf('<script src="world-home-core.js?v=');
   const core = html.indexOf('const LEVEL_TABLE = window.LowiWorldHomeCore.STAGES;');
   assert.ok(tag > 0 && core > tag, 'world-home-core.js loads before the core script reads it');
+  const v = html.slice(tag).match(/\?v=([^"]+)"/)[1], build = (html.match(/apple-ui\.js\?v=([0-9-]+)/) || [])[1];
+  assert.strictEqual(v, build, 'the table\'s script tag carries the build id, so bump-build updates it');
   assert.ok(html.includes('const HERB_XP = LEVEL_TABLE.map(s => s.xp);'));
   assert.ok(html.includes('const HERB_TITLES = LEVEL_TABLE.map(s => s.n[0]);'));
   assert.ok(!/const HERB_XP = \[/.test(html) && !/const HERB_TITLES = \[/.test(html), 'no second XP or title list');
@@ -74,9 +76,11 @@ test('levelOf on the table: XP, XP to next and the bar agree with the growth she
   assert.strictEqual(L.titleOf(5), 'Star cell');
   assert.strictEqual(L.levelOf(3000).L, 6);
   assert.strictEqual(L.levelOf(5000).L, 7);
-  assert.strictEqual(L.levelOf(99999).L, 10);
+  assert.strictEqual(L.levelOf(4999).L, 6);
+  assert.strictEqual(L.levelOf(14000).L, 10);
+  assert.strictEqual(L.levelOf(99999).L, 25);
   assert.strictEqual(L.levelOf(99999).pct, 1);
-  assert.strictEqual(L.MAX_LEVEL, 10);
+  assert.strictEqual(L.MAX_LEVEL, 25);
   assert.strictEqual(L.stepXP(4), 800);
 });
 

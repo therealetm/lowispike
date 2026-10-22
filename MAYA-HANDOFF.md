@@ -762,7 +762,7 @@ person per day** (Snap food and Community share them; typing a meal is unlimited
 **Worlds.** A spirit world galaxy of everyone's bubbles; Misty flies out of her cell, rides glowing strings on
 autopilot (Ant-Man camera), and dives into body-organ cell worlds (liver, lungs, ...) with cell "guides" who teach
 real body science, remember what they told you, quiz you ("Remember?") and gossip about each other. Leaving a world
-is an Interstellar-style rocket launch. Evolution: six levels (Spark to Legend) at XP 0, 100, 300, 700, 1500, 3000.
+is an Interstellar-style rocket launch. Evolution: 25 levels since 22 Oct 2026 (section 8, Evolution plan).
 
 **Community.** Profiles, friends tree, Care board (ranks sunbeams), meal-photo sharing with the AI analysis under the
 photo (user reviews it before posting), a shoot-out mini game, and since build 20261019-163105 the **Interstellar
@@ -1178,6 +1178,65 @@ in those clones). Never merge, rebase or release them; anything worth reusing go
    checkpoint often, and hand over to the next Maya the same way.
 
 ---
+
+## 8. Evolution plan (22 Oct 2026): 25 levels, stats, powers, evolving forms
+
+Emmanuel (voice note): "I'm leveling up too fast. We need more levels. After level 10, it should go up to 25." Plus: stats that grow
+with level (swim speed, shot strength, world-to-world speed), a magnet power that pulls insulin spikes onto the companion (full at 25,
+growing before that), the Home bubble evolves too, and big Digimon/Pokemon-style evolution forms at levels 5, 10, 15, 20 and 25.
+One small task per step, in this order:
+
+1. **25 levels, slower XP (DONE, branch evo-levels-20261022).** `world-home-core.js` STAGES is the one table (25 rows, `evo` 1-5 at
+   levels 5/10/15/20/25, `EVO_LEVELS`, `evoOf(L)`, `hooks(L)`). herb-config, the care board, levelOf in index.html, Misty's sheet, the
+   growth map (shows an "Evolution N" mark), Forms ("next evolution at level 15", "More evolutions at level 15, 20, 25"), the level-up
+   card and the profile hub all read it. Fair-play floor: `migrate(xp)` runs once per phone at start (`lowi.lvCurve` = 2); if the old
+   curve (`OLD_XP`) gave a higher level, `lowi.lvFloor` keeps it until the new curve passes it (`myFloor`). Only YOUR level reads it:
+   `levelOf(xp, true)` / `stage(xp, true)`; members' levels never do. herb-core's highestStage keeps forms as before.
+2. **Per-level stats.** Fill `HOOKS.stats = L => ({ swim, shot, travel })` in world-home-core.js; read it in the world swim speed, the
+   energy-shot strength and world-to-world travel time. Show them on Misty's sheet as small stat bars. Tests: monotonic, capped.
+3. **Powers.** Fill `HOOKS.powers` with `{ id: 'magnet', lv: N, ... }` entries: the spike magnet starts weak (e.g. level 12, small
+   radius) and grows to full pull at 25. Build the pull in the cell world (spikes drift onto the companion), with a power row on Misty's sheet.
+4. **Home bubble evolves.** Fill `HOOKS.bubble = evo => look` and give the Home bubble a new look per evolution stage (0-5).
+5. **Evolution forms at 5, 10, 15, 20, 25.** New, clearly bigger forms in companion-core (today forms follow levels 1-10 one per
+   level, and levels 11-25 keep form 10 Majesty). Map form by `evoOf(L)` + level, add an evolution moment for 15/20/25, and extend
+   Forms' path past 10. The names already exist: Supernova (15), Galaxy (20), Cosmos (25).
+
+**XP math.** A regular day earns about 248 XP from what award() pays: check-in with a 10-day streak 40, four daily quests 40, three
+meals 45, six cups 12, a 13 h overnight gap 36 (2/h + 8 h and 12 h milestones), one 10-minute Move 20, 6,000 steps 30, close the day
+15, a full sun 10. A light day (2 meals, 2 quests, 12 h gap) is about 120; a maxed day (all 6 quests + 50 bonus, 8 meals, 3 Moves,
+16 h fast with goal, scans, recipes) can pass 600. Levels 1-6 kept their XP; 7-9 take a little longer; 10 is unchanged; each level
+from 11 to 25 is 14-25 regular days (tests/evolution-levels.test.cjs pins this). Days = total XP / 248, rounded:
+
+| Level | Name (EN) | DE | ES | Total XP | Step | Days |
+|---|---|---|---|---|---|---|
+| 1 | Spark | Funke | Chispa | 0 | 0 | 0 |
+| 2 | Little cell | Kleine Zelle | Celulita | 100 | 100 | 0 |
+| 3 | Glow cell | Leuchtzelle | Célula brillante | 300 | 200 | 1 |
+| 4 | Bright cell | Strahlende Zelle | Célula radiante | 700 | 400 | 3 |
+| 5 | Star cell (evolution 1) | Sternzelle | Célula estelar | 1500 | 800 | 6 |
+| 6 | Legend | Legende | Leyenda | 3000 | 1500 | 12 |
+| 7 | Nova | Nova | Nova | 5000 | 2000 | 20 |
+| 8 | Titan | Titan | Titán | 7500 | 2500 | 30 |
+| 9 | Monarch | Monarch | Monarca | 10500 | 3000 | 42 |
+| 10 | Majesty (evolution 2) | Majestät | Majestad | 14000 | 3500 | 56 |
+| 11 | Pulsar cell | Pulsarzelle | Célula púlsar | 17500 | 3500 | 71 |
+| 12 | Prism cell | Prismazelle | Célula prisma | 21200 | 3700 | 85 |
+| 13 | Crystal cell | Kristallzelle | Célula de cristal | 25100 | 3900 | 101 |
+| 14 | Thunder cell | Donnerzelle | Célula trueno | 29200 | 4100 | 118 |
+| 15 | Supernova (evolution 3) | Supernova | Supernova | 33500 | 4300 | 135 |
+| 16 | Orbit cell | Orbitzelle | Célula órbita | 38000 | 4500 | 153 |
+| 17 | Quasar cell | Quasarzelle | Célula cuásar | 42700 | 4700 | 172 |
+| 18 | Zenith cell | Zenitzelle | Célula cénit | 47600 | 4900 | 192 |
+| 19 | Phoenix cell | Phönixzelle | Célula fénix | 52700 | 5100 | 213 |
+| 20 | Galaxy (evolution 4) | Galaxie | Galaxia | 58000 | 5300 | 234 |
+| 21 | Celestial cell | Himmelszelle | Célula celestial | 63500 | 5500 | 256 |
+| 22 | Eternal cell | Ewige Zelle | Célula eterna | 69200 | 5700 | 279 |
+| 23 | Cosmic cell | Kosmoszelle | Célula cósmica | 75100 | 5900 | 303 |
+| 24 | Genesis cell | Genesiszelle | Célula génesis | 81200 | 6100 | 327 |
+| 25 | Cosmos (evolution 5) | Kosmos | Cosmos | 87500 | 6300 | 353 |
+
+Floor windows (old -> new): 4,500-4,999 XP keeps 7, 7,000-7,499 keeps 8, 10,000-10,499 keeps 9. Above 14,000 XP people go UP (old cap was 10).
+Sim: `node tools/sim/evo-levels.cjs "<device>" <en|de|es> [url]` (floor at 4,600 XP, 20,000 XP = Level 11, 25 map rows, Evolution marks, Forms).
 
 ## Log
 

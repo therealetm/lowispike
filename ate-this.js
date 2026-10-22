@@ -59,7 +59,7 @@
   function bar(html, ms) {
     let b = D.getElementById('ateBar'); if (!b) { b = D.createElement('div'); b.id = 'ateBar'; b.className = 'ate-bar'; b.setAttribute('role', 'status'); b.setAttribute('aria-live', 'polite'); b.setAttribute('data-noi18n', ''); D.body.appendChild(b); }
     b.innerHTML = html; b.classList.add('on'); clearTimeout(barT);
-    const hide = () => { barT = setTimeout(() => { b.classList.remove('on'); }, ms || 6500); };
+    const hide = () => { barT = setTimeout(() => { b.classList.remove('on'); }, ms || 8000); };
     b.onpointerdown = () => clearTimeout(barT); b.onpointerup = hide; hide(); return b;
   }
   function hideBar() { const b = D.getElementById('ateBar'); if (b) b.classList.remove('on'); clearTimeout(barT); }

@@ -200,7 +200,7 @@
         const hud = D.getElementById('whHud'); if (!hud) return;
         /* Oct 21 (no-menubar, instant back): Home's HUD is not repainted while another page covers it, so coming back finds it exactly as it was */
         if (!homeActive()) return;
-        const xp = xpNow(), s = C.stage(xp), l = lang();
+        const xp = xpNow(), s = C.stage(xp, true), l = lang();
         void xp; void s;
         /* Misty's bubble itself is her name card: no second "Misty · stage · XP" pill on Home */
         const oldName = hud.querySelector('.wh-name'); if (oldName) oldName.remove();
@@ -937,7 +937,7 @@
             (W.LowiCellRoom && W.LowiCellRoom.openRoom ? '<button type="button" class="wh-ms-room" data-wh="room">' + ICO.home + '<span><b>' + esc(T('Misty\u2019s home', 'Mistys Zuhause', 'La casa de Misty')) + '</b><small>' + esc(T('Decorate the room in your bloodstream', 'Das Zimmer in deinem Blutkreislauf einrichten', 'Decora su cuarto en tu sangre')) + '</small></span></button>' : '');
     }
     function panelGrowth(xp) {
-        const s = C.stage(xp);
+        const s = C.stage(xp, true);
         return '<p class="wh-ms-lead">' + esc(T('Misty grows with what you do: log a meal, drink water, scan, move. Each one gives XP.', 'Misty w\u00e4chst mit dem, was du tust: Essen eintragen, Wasser trinken, scannen, bewegen. Jedes gibt XP.', 'Misty crece con lo que haces: registrar comida, beber agua, escanear, moverte. Todo da XP.')) + '</p>' +
             '<ol class="wh-steps">' + C.STAGES.map((g, i) => '<li class="' + (i < s.index ? 'done' : i === s.index ? 'now' : 'next') + '"><i aria-hidden="true"></i><span><b>' + esc(P(g.n)) + (i === s.index ? ' \u00b7 ' + esc(T('you are here', 'du bist hier', 'est\u00e1s aqu\u00ed')) : '') + '</b><small>' + esc(g.xp + ' XP \u00b7 ' + P(g.d)) + '</small></span></li>').join('') + '</ol>';
     }
@@ -949,7 +949,7 @@
             '<div class="wh-ms-acts">' + (n ? '<button type="button" class="wh-ms-btn" data-sp="collection">' + esc(T('See all', 'Alle ansehen', 'Ver todo')) + '</button>' : '') + '<button type="button" class="wh-ms-btn wh-ms-pri" data-wh="scan">' + esc(T('Scan something', 'Etwas scannen', 'Escanear algo')) + '</button></div>';
     }
     function mistyHTML(tab, preview) {
-        const xp = xpNow(), s = C.stage(xp), a = C.aura(preview || auraId());
+        const xp = xpNow(), s = C.stage(xp, true), a = C.aura(preview || auraId());
         const tabs = [['aura', T('Aura', 'Aura', 'Aura')], ['grow', T('Growth', 'Wachstum', 'Crecimiento')], ['found', T('Discovered', 'Entdeckt', 'Descubierto')]];
         return '<div class="wh-ms" id="whMs">' +
             '<div class="wh-ms-stage" style="--a:' + a.a + ';--b:' + a.b + '"><span class="wh-ms-glow" aria-hidden="true"></span><div class="wh-ms-art">' + mistyArt() + '</div>' + fxHTML(a.fx || '') + '</div>' +

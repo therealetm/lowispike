@@ -9,20 +9,22 @@ const WH = require('../world-home-core.js');
 
 const stages = (cfg.LOWI_HERB_CONFIG || cfg).stages || (global.LOWI_HERB_CONFIG || {}).stages;
 
-test('ten forms: the first six thresholds are unchanged, four longer steps follow', () => {
-  assert.deepStrictEqual(stages.map(s => s.xp), [0, 100, 300, 700, 1500, 3000, 4500, 7000, 10000, 14000]);
+test('ten forms (levels 1-10 of 25 since evolution step 1): the first six thresholds are unchanged, longer steps follow', () => {
+  assert.deepStrictEqual(stages.slice(0, 10).map(s => s.xp), [0, 100, 300, 700, 1500, 3000, 5000, 7500, 10500, 14000]);
+  assert.strictEqual(stages.length, 25);
   stages.forEach(s => assert.strictEqual(s.name.length, 3, s.id + ' has en/de/es names'));
-  for (let i = 6; i < 10; i++) assert.ok(stages[i].xp - stages[i - 1].xp >= 1500, 'each new step is a real step');
+  for (let i = 6; i < 25; i++) assert.ok(stages[i].xp - stages[i - 1].xp >= 1500, 'each new step is a real step');
 });
 
 test('level names (world-home-core) use the same thresholds, so level and form never disagree', () => {
-  const lv = [0, 100, 300, 700, 1500, 3000, 4500, 7000, 10000, 14000];
+  const lv = stages.map(s => s.xp);
   lv.forEach((xp, i) => {
     const s = WH.stage(xp);
     assert.strictEqual(s.index, i, 'level index at ' + xp);
     assert.strictEqual(WH.stage(xp - 1).index, Math.max(0, i - 1));
   });
-  assert.strictEqual(WH.stage(14000).next, null);
+  assert.strictEqual(WH.stage(87500).next, null);
+  assert.strictEqual(WH.stage(14000).next.n[0], 'Pulsar cell');
   assert.strictEqual(WH.stage(3000).next.n[0], 'Nova');
   assert.strictEqual(WH.stage(14000).cur.n[0], 'Majesty');
 });
@@ -78,7 +80,7 @@ test('the evolution path lists all ten forms with names in every language', () =
     const p = C.path(stages, 5200, 6, 'fire', lang);
     assert.strictEqual(p.length, 10);
     p.forEach(x => assert.ok(x.name && x.name.length > 2 && x.trait, lang + ' name'));
-    assert.ok(p[6].current && p[5].reached && !p[7].reached && p[7].left === 1800, lang + ': current form and XP left');
+    assert.ok(p[6].current && p[5].reached && !p[7].reached && p[7].left === 2300, lang + ': current form and XP left');
     assert.ok(new Set(p.map(x => x.name)).size === 10, lang + ': ten different names');
   }
   assert.match(C.formName(9, 'fire', 'en'), /Majesty/);

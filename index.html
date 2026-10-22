@@ -5735,7 +5735,7 @@ window.LOWI_COOK = {chips:() => CHIPS, match, min, minTxt};
 
 </script>
 <!-- Oct 22, 2026: the one level table (world-home-core.js STAGES: cell names + XP) loads before the core code reads it. -->
-<script src="world-home-core.js?v=20261022-112923"></script>
+<script src="world-home-core.js?v=20261022-140038"></script>
 <script>
 /* LOWiSPIKE v2: core state, XP curve, zodiac, streak, quests, cycle */
 const KEY = "lowispike.v2";
@@ -5790,17 +5790,17 @@ const HERB_TITLES = LEVEL_TABLE.map(s => s.n[0]);
 const MAX_LEVEL = HERB_XP.length;
 const levelStart = L => HERB_XP[Math.max(0,Math.min(MAX_LEVEL-1,L-1))];
 const stepXP = L => L >= 1 && L < MAX_LEVEL ? HERB_XP[L] - HERB_XP[L-1] : 0;
-function levelOf(xp){xp=Math.max(0,+xp||0);let i=0;while(i<MAX_LEVEL-1&&xp>=HERB_XP[i+1])i++;const a=HERB_XP[i],b=HERB_XP[i+1];return {L:i+1,into:xp-a,need:b?b-a:0,left:b?Math.max(0,b-xp):0,pct:b?Math.max(0,Math.min(1,(xp-a)/(b-a))):1};}
+function levelOf(xp, mine){/* evo step 1 (Oct 22): levelOf(xp, true) is YOUR level, keeping the fair-play floor (world-home-core myFloor); members never read it */xp=Math.max(0,+xp||0);let i=0;while(i<MAX_LEVEL-1&&xp>=HERB_XP[i+1])i++;const base=i;let f=0;if(mine===true){try{f=window.LowiWorldHomeCore.myFloor(xp)||0;}catch(e){f=0;}}if(f>i+1)i=Math.min(MAX_LEVEL,f)-1;const a=HERB_XP[i],b=HERB_XP[i+1],from=HERB_XP[base];return {L:i+1,into:Math.max(0,xp-a),need:b?b-a:0,left:b?Math.max(0,b-xp):0,pct:b?Math.max(0,Math.min(1,(xp-from)/(b-from))):1};}
 const TITLES = HERB_TITLES.map((name,i)=>[i+1,name]);
 const titleOf = L => HERB_TITLES[Math.max(0,Math.min(MAX_LEVEL-1,L-1))];
 
 function award(amt, label, el, src, eventId){
   if (!Number.isFinite(+amt) || +amt <= 0 || eventId && S.ledger.some(e => e.eventId === eventId)) return 0;
-  const beforeXP = S.xp, before = levelOf(S.xp).L; S.xp += +amt;
+  const beforeXP = S.xp, before = levelOf(S.xp, true).L; S.xp += +amt;
   const entry = {ts:Date.now(), day:today(), amt:+amt, label, src:src || ""}; if (eventId) entry.eventId = eventId; if (arguments[5] && arguments[5].extra) Object.assign(entry, arguments[5].extra, {ts:entry.ts, day:entry.day, amt:entry.amt, label, src:entry.src}); S.ledger.push(entry);
   if (window.LowiHerbCore) LowiHerbCore.sync(S); save();
   try { window.dispatchEvent(new CustomEvent("lowi:reward", {detail:{entry,beforeXP,afterXP:S.xp}})); } catch(e){}
-  const after = levelOf(S.xp).L;
+  const after = levelOf(S.xp, true).L;
   if (!(arguments[5] && arguments[5].quiet)) toast("+" + amt + " XP · " + label); /* xtp: quiet = xp-tap.js shows its own small pop */
   $$(".lvchip").forEach(c => { c.classList.remove("pulse"); void c.offsetWidth; c.classList.add("pulse"); });
   if (after > before) setTimeout(() => toast(window.LowiFastStop ? LowiFastStop.lvl(after, (typeof T === "function" ? T(titleOf(after)) : titleOf(after))) : "Level " + after + " · you're a " + titleOf(after) + " now", 3000) /* fst-lvl */, 1600);
@@ -6012,7 +6012,7 @@ const badge = r => '<span class="badge ' + r + '">' + RLAB[r] + '</span>';
 function avatar(size, u){ u = u || S.user; const z = zodiac(u.bday);
   return '<div class="av" style="width:' + size + 'px;height:' + size + 'px;font-size:' + Math.round(size * .4) + 'px">' + (u.avatar ? '<img src="' + u.avatar + '" alt="">' : esc((u.name || "?").charAt(0).toUpperCase())) + '</div>'; }
 const zodChip = bday => { const z = zodiac(bday); return z ? '<span class="zod" title="' + z.n + '">' + z.g + '</span>' : ""; };
-function topbar(){ const lv = levelOf(S.xp);
+function topbar(){ const lv = levelOf(S.xp, true);
   return '<div class="topbar">' + avatar(44) + '<div><div class="small muted">' + greet() + '</div><div class="h3">' + esc(S.user.name) + zodChip(S.user.bday) + '</div></div><div class="lvchip num">Lv ' + lv.L + ' · ' + titleOf(lv.L) + '</div></div>'; }
 function greet(){ const h = new Date().getHours(); return h < 11 ? "Good morning" : h < 17 ? "Hey" : "Good evening"; }
 
@@ -6215,7 +6215,7 @@ function brandsHTML(){ return '<div class="sec"><span class="h3">Check a brand</
     '<div class="small muted" style="margin:12px 0 4px;line-height:1.5"><span class="badge ver">✓ Verified</span> passed the community health check. <span class="badge spon">Sponsored</span> is a paid placement and says nothing about the check. Not listed means not recommended.</div>' + BRANDS.map(brandRow).join("") + '</div>'; }
 function savedHTML(){ return '<div class="sec"><span class="h3">Saved swaps</span></div><div class="card">' + (S.saved.length ? S.saved.slice().reverse().map(s => '<button class="row savedrow" data-act="opensaved" data-v="' + esc(s.from || "") + '"><span style="font-size:22px">' + s.e + '</span><span class="small" style="flex:1;text-align:left">' + esc(s.n) + '</span>' + badge(s.r) + '</button>').join("") : '<div class="small muted">Save a swap from any result and it lands here.</div>') + '</div>'; }
 let weightShown = false;
-function renderProfile(){ const lv = levelOf(S.xp), z = zodiac(S.user.bday), h = S.health, c = cycleInfo();
+function renderProfile(){ const lv = levelOf(S.xp, true), z = zodiac(S.user.bday), h = S.health, c = cycleInfo();
   $("#tab-profile").innerHTML = '<div style="text-align:center"><div style="display:flex;justify-content:center">' + avatar(88) + '</div><div class="h2" style="margin-top:10px">' + esc(S.user.name) + '</div>' + (z ? '<div class="small gold" style="margin-top:4px">' + z.g + " " + z.n + " · " + z.el + ' sign</div>' : "") + '<div style="margin-top:8px"><span class="ls-signpill"><i></i>' + (z ? "Glass accent from your sign" : "Add your birthday for your sign colour") + '</span></div></div>' +
     '<div class="card goldline" style="margin-top:16px" id="lvCard"><div class="row"><div><div class="tiny gold">Level ' + lv.L + ' · ' + titleOf(lv.L) + '</div><div class="h2 num" style="margin-top:4px">' + fmt(S.xp) + ' XP</div></div><div class="small muted num" style="margin-left:auto;text-align:right" id="xpToNext">' + (lv.L<MAX_LEVEL?fmt(lv.left) + ' XP · Level '+(lv.L+1):'Max level') + '</div></div><div class="mbar"><b style="width:' + Math.round(lv.pct * 100) + '%"></b></div></div>' +
     '<div class="row" style="margin-top:14px"><div class="stat"><b class="num">' + streakNow() + '</b><span>day streak</span></div><div class="stat"><b class="num">' + S.streak.shields + '</b><span>shields</span></div><div class="stat"><b class="num">' + S.logs.length + '</b><span>meals checked</span></div></div>' +
@@ -6685,7 +6685,7 @@ window.LowiHost = {
   openSheet:html => sheet(html), closeSheet, toast,
   icon:{x:ICO.x, tick:ICO.chk, heart:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.6-9.5-9.2C1.2 8.6 3.2 5 6.6 5c2 0 3.5 1.1 4.4 2.5h2C13.9 6.1 15.4 5 17.4 5c3.4 0 5.4 3.6 4.1 6.8C19.5 16.4 12 21 12 21z"/></svg>'},
   refresh(){ if (TAB === "home") renderHome(); },
-  user:() => S.user, level:() => levelOf(S.xp).L, tab:() => TAB, go:t => goTab(t === "swap" ? "scan" : t === "room" ? "foryou" : t === "moveScreen" ? "move" : t),
+  user:() => S.user, level:() => levelOf(S.xp, true).L, tab:() => TAB, go:t => goTab(t === "swap" ? "scan" : t === "room" ? "foryou" : t === "moveScreen" ? "move" : t),
   onboarded:() => !!S.onboarded,
   avatar(size, name, img){ return avatar(size, name === S.user.name ? S.user : {name, bday:"", avatar:img||""}); },
   resizeImage
@@ -6694,7 +6694,9 @@ window.LowiHost = {
 /* Oct 8: sign-up never blocks the app. It opens straight into Today, every time, even where the viewer forgets storage.
    The profile set-up is optional, from Profile. Oct 19: the old photo sign-up screen (#onboard) is deleted; openOnboarding opens Profile. */
 window.openOnboarding = () => goTab("profile");
-load(); if (!S.onboarded) { S.onboarded = true; S.autoSkipped = true; save(); } showMain();
+load(); if (!S.onboarded) { S.onboarded = true; S.autoSkipped = true; save(); }
+try { window.LowiWorldHomeCore.migrate(S.xp); } catch(e){} /* evo step 1: 25-level curve, keep a level that would drop as a floor */
+showMain();
 if (window.TRIBE) TRIBE.checkShareHash();
 
 </script>
@@ -6837,7 +6839,7 @@ function hostState(){ try { if (isV2()) return S; const h = host(); return h && 
 function me(){ const s = hostState(); return (s && s.user && s.user.name) || SH.name || "You"; }
 function hostXP(){ try { if (isV2()) return S.xp; const h = host(); if (h && h.totalXP) return h.totalXP(); } catch(e){} return 0; }
 /* 0 = new member (finds wait for two checks), 1+ = trusted */
-function myRank(){ try { if (isV2()) return levelOf(S.xp).L >= 3 ? 1 : 0; const h = host(); if (h && h.rankOf) return h.rankOf(hostXP()).i; } catch(e){} return SH.xp.reduce((a, e) => a + e.amt, 0) >= 150 ? 1 : 0; }
+function myRank(){ try { if (isV2()) return levelOf(S.xp, true).L >= 3 ? 1 : 0; const h = host(); if (h && h.rankOf) return h.rankOf(hostXP()).i; } catch(e){} return SH.xp.reduce((a, e) => a + e.amt, 0) >= 150 ? 1 : 0; }
 
 /* ---------- XP: one rules table for the shelf, inside the host's 500/day cap ---------- */
 const SH_RULES = {
@@ -9099,7 +9101,7 @@ function people(){
     L.push({n, s:SIGNS[Math.floor(r() * 12)].n, t:types[Math.floor(r() * 16)], lv:1 + Math.floor(Math.pow(r(), 1.8) * 22), streak:Math.floor(r() * 40), bio:""}); }
   return (PPL = L);
 }
-function meP(){ const z = typeof zodiac === "function" ? zodiac(S.user && S.user.bday) : null; let lv = 1; try { lv = levelOf(S.xp).L; } catch(e){}
+function meP(){ const z = typeof zodiac === "function" ? zodiac(S.user && S.user.bday) : null; let lv = 1; try { lv = levelOf(S.xp, true).L; } catch(e){}
   let st = 0; try { st = streakNow(); } catch(e){} return {n:(S.user && S.user.name) || "You", s:z ? z.n : "", t:R5.mbti || "", lv, streak:st, bio:"", me:true, avatar:S.user && S.user.avatar}; }
 function personBy(name, me){ { const _b = !me && (window.LOWI_BOTS || []).find(x => x.n === name); if (_b) return _b; } if (me || (S.user && S.user.name && name === S.user.name) || name === "You") return meP(); const k = people().find(p => p.n === name);
   if (k) return k; if (window.LOWI_CLOUD && LOWI_CLOUD.live()) return {n:name, s:"", t:"", lv:1, streak:0, bio:""}; let h = 0; for (const c of String(name)) h = (h * 31 + c.charCodeAt(0)) >>> 0; const r = rng(h);
@@ -9438,7 +9440,7 @@ async function publish(p, file){
         video_url = await upload(uid + "/" + p.id + "." + ext, file, file.type || "video/mp4");
       }
     }
-    let lv = 1; try { lv = levelOf(S.xp).L; } catch(e){}
+    let lv = 1; try { lv = levelOf(S.xp, true).L; } catch(e){}
     const row = {id:p.id, who:myName() || "Member", plat:p.plat || "", url:p.url || "", meta:p.meta || null, cap:p.cap || "", photo_url, video_url, poster:p.poster || "",
       w:p.w || 0, h:p.h || 0, dur:Math.round(p.dur || 0), rec:p.rec || "", mine:!!p.mine, art:p.art || null, lv};
     const r = await sb.from("posts").upsert(row); if (r.error) throw r.error;
@@ -12849,6 +12851,7 @@ html[data-ui=light] .r3m{--t-bronze:#9a5a26;--t-bronze2:#c98a52;--t-silver:#5f6a
 .r3m-rt b{font-size:15px;font-weight:700;display:flex;gap:5px;align-items:baseline;flex-wrap:wrap}
 .r3m-rt b em{font-style:normal}
 .r3m-rt small{font-size:13px;color:var(--r2-mut);font-weight:550;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.r3m-rt small .r3m-evo{color:#1ea896;font-weight:750}
 .r3m-row.lock .r3m-rt b{color:color-mix(in srgb,var(--r2-ink) 72%,transparent)}
 .r3m-rs{flex:0 0 auto;font-size:13px}
 .r3m-you{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:var(--r2-pri);color:var(--r2-pri-ink)}
@@ -12998,7 +13001,8 @@ const HC = () => window.LowiWorldHomeCore || null;
 const AT = () => (window.LowiAdventureTiers && LowiAdventureTiers.core) || null;
 
 function xpNow(){ try { return Math.max(0, +S.xp || 0); } catch(e){ return 0; } }
-function lvOf(xp){ try { return levelOf(xp); } catch(e){ return {L:1, into:0, need:100, left:100, pct:0}; } }
+/* your own XP reads your level with its fair-play floor (levelOf(xp, true)); a member's XP never does */
+function lvOf(xp){ try { return levelOf(xp, xp === xpNow() && !lvOf.other); } catch(e){ return {L:1, into:0, need:100, left:100, pct:0}; } }
 function startOf(L){ return HERB_XP[Math.max(0, Math.min(HERB_XP.length - 1, L - 1))]; }
 function maxL(){ return HERB_XP.length; }
 
@@ -13038,7 +13042,8 @@ function rwLI(x, xp){ return '<li class="k-' + x.k + '"><span class="r3m-ri" ari
 function rowHTML(n, xp){
   const lv = lvOf(xp), L = lv.L, at = startOf(n), got = L >= n, cur = L === n, f = formAt(n), r = rewardsAt(n), t = tripAt(n);
   const st = cur ? "cur" : got ? "got" : "lock";
-  const sub = t ? '<span>Adventure: ' + E(t.n) + '</span>' : r.find(x => x.k === "glow") ? '<span>New glow: ' + E(r.find(x => x.k === "glow").t) + '</span>' : '<span>' + E(f.d) + '</span>';
+  const ev = (LEVEL_TABLE[n - 1] || {}).evo || 0; /* evolution step 1 (Oct 22): levels 5, 10, 15, 20, 25 are evolution stages 1-5 */
+  const sub = (ev ? '<span class="r3m-evo">Evolution ' + ev + '</span>' : '') + (t ? '<span>Adventure: ' + E(t.n) + '</span>' : r.find(x => x.k === "glow") ? '<span>New glow: ' + E(r.find(x => x.k === "glow").t) + '</span>' : '<span>' + E(f.d) + '</span>');
   return '<li class="r3m-row ' + st + '" data-n="' + n + '">' +
     '<button class="r3m-rb" data-r3m="row" aria-expanded="' + (cur ? "true" : "false") + '" aria-controls="r3mD' + n + '">' +
       '<span class="r3m-node num" aria-hidden="true">' + n + '</span>' +
@@ -13069,7 +13074,8 @@ function earnHTML(){
     ['Daily check-in and daily quests', 'Log or check a meal', 'Water, Moves, a walk after a meal, steps (every 1,000)', 'Save a swap, scan a product, finish a recipe', 'Get through a craving with SOS', 'Add or check finds on the shop shelf', 'Close your day, weekly glow check-in', 'Share to For You', 'Meal gaps: 2 XP an hour, up to 16 hours']
       .map(t => '<li><span>' + t + '</span></li>').join("") + '</ul><small>A gap longer than 16 hours earns nothing extra, and eating less never earns XP.</small></div>';
 }
-function mapHTML(opts){
+function mapHTML(opts){ lvOf.other = !!(opts && opts.who); try { return mapHTML0(opts); } finally { lvOf.other = false; } }
+function mapHTML0(opts){
   opts = opts || {}; const xp = opts.xp != null ? opts.xp : xpNow(), who = opts.who || "", nu = nextUp(xp);
   let rows = ""; for (let n = 1; n <= maxL(); n++) rows += rowHTML(n, xp);
   return '<div class="r3m"' + (who ? ' data-who="' + E(who) + '"' : "") + '>' +
@@ -13226,6 +13232,7 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
     [/^Next: Level (\d+)$/, "Nächstes: Level $1", "Siguiente: nivel $1"],
     [/^at ([\d,.]+) XP$/, "bei $1 XP", "con $1 XP"],
     [/^Adventure: (.+)$/, "Abenteuer: $1", "Aventura: $1"],
+    [/^Evolution (\d)$/, "Entwicklung $1", "Evolución $1"],
     [/^New glow: (.+)$/, "Neues Leuchten: $1", "Nuevo brillo: $1"],
     [/^([\d,.]+) XP to go$/, "noch $1 XP", "faltan $1 XP"],
     [/^([\d,.]+) XP to Level (\d+)$/, "$1 XP bis Level $2", "$1 XP para el nivel $2"],
@@ -15190,7 +15197,7 @@ function myCare(){
 function myUid(){ try { const x = R2.X(); return (x && x.state().uid) || ""; } catch(e){ return ""; } }
 function me(){
   const S_ = R2.S() || {}, u = S_.user || {}; let lv = 1, st = 0, mb = "";
-  try { lv = levelOf(S_.xp || 0).L; } catch(e){} try { st = streakNow(); } catch(e){} try { mb = (LowiFood.state() || {}).mbti || ""; } catch(e){}
+  try { lv = levelOf(S_.xp || 0, true).L; } catch(e){} try { st = streakNow(); } catch(e){} try { mb = (LowiFood.state() || {}).mbti || ""; } catch(e){}
   const w = (u.showWeight && S_.health && S_.health.weight) ? String(S_.health.weight).slice(0, 8) : "";
   return {n:u.name || "You", s:signOf(u.bday), t:mb, lv, xp:S_.xp || 0, streak:st, bday:u.bday || "", avatar:safeImg(u.avatar) || safeImg(u.avatarUrl), w,
     me:true, uid:myUid(), care:myCare(), supporter:false};
@@ -19316,7 +19323,7 @@ function core(){ try { return typeof S !== "undefined" && S ? S : js("lowispike.
 function quests(){ try { return window.LowiF3 && LowiF3.state ? LowiF3.state() : []; } catch(e){ return []; } }
 function xpDay(now){ const c = core(), d = dk(now || nowD()), g = gday(now); let n = 0;
   (Array.isArray(c.ledger) ? c.ledger : []).forEach(e => { if (e && (e.day === g || (g !== d && e.day === d))) n += +e.amt || 0; }); return n; }
-function level(){ const c = core(), xp = +c.xp || 0; try { const o = levelOf(xp); let t = ""; try { t = titleOf(o.L); t = window.LowiLang && LowiLang.t ? LowiLang.t(t) : t; } catch(e){} return {L:o.L, pct:Math.max(0, Math.min(1, o.pct)), left:o.left, t}; } catch(e){ return {L:1, pct:0, left:0, t:""}; } }
+function level(){ const c = core(), xp = +c.xp || 0; try { const o = levelOf(xp, true); let t = ""; try { t = titleOf(o.L); t = window.LowiLang && LowiLang.t ? LowiLang.t(t) : t; } catch(e){} return {L:o.L, pct:Math.max(0, Math.min(1, o.pct)), left:o.left, t}; } catch(e){ return {L:1, pct:0, left:0, t:""}; } }
 function streak(){ try { if (window.LowiN1 && LowiN1.streakDays) { const d = LowiN1.streakDays(); if (d) return d; } } catch(e){} const c = core(); return c.streak ? +c.streak.days || 0 : 0; }
 function fstart(){ try { if (window.LowiFastStop && LowiFastStop.startOf) return +LowiFastStop.startOf() || 0; } catch(e){} return +js("lowi_fast_v1").last || 0; }
 function goalH(){ try { if (window.LowiFE && LowiFE.target) return +LowiFE.target() || 16; } catch(e){} return +js("lowi_fast_v1").target || 16; }

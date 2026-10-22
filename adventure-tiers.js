@@ -64,7 +64,7 @@
 
     /* ---------- browser ---------- */
     function xp() { try { const c = W.LowiHerbTamagotchi && W.LowiHerbTamagotchi.current && W.LowiHerbTamagotchi.current(); return c && c.m ? +c.m.xp || 0 : 0; } catch (e) { return 0; } }
-    function level() { try { const C = W.LowiWorldHomeCore; return C && C.stage ? C.stage(xp()).index + 1 : 1; } catch (e) { return 1; } }
+    function level() { try { const C = W.LowiWorldHomeCore; return C && C.stage ? C.stage(xp(), true).index + 1 : 1; } catch (e) { return 1; } }
     const lang = () => { let l = 'de'; try { l = ((W.LowiLang && W.LowiLang.get && W.LowiLang.get()) || D.documentElement.lang || 'de').slice(0, 2); } catch (e) { } return l === 'de' ? 1 : l === 'es' ? 2 : 0; };
     const T = (en, de, es) => [en, de, es][lang()] || en;
     /* the choice flying her right now */

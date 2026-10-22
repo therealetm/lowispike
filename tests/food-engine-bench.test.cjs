@@ -155,7 +155,24 @@ test('sweeteners inside brackets are seen (Coca-Cola Zero, high-protein pudding)
 let engine = null;
 try { engine = require(path.join(root, 'food-engine-core.js')); } catch (e) { engine = null; }
 
-test('engine verdicts match the benchmark policy, exposure and confidence', {todo: engine ? false : 'scanfe-b1/d/f1: food-engine-core.js not built yet'}, () => {
+test('engine (b1): every benchmark row gets an expected carbohydrate-exposure category at its serving', () => {
+  assert.ok(engine && typeof engine.estimateGlucoseImpact === 'function', 'food-engine-core.js exists');
+  const miss = [];
+  for (const r of rows) {
+    const v = engine.validateNutrition(r.per100, r.unit);
+    const s = engine.calculateServing(v, {manufacturerG: r.serving.g});
+    assert.strictEqual(s.g, r.serving.g, r.id + ' serving');
+    const g = engine.estimateGlucoseImpact({serving: s});
+    if (!r.expect.carbExposure.includes(g.category)) miss.push(r.id + ' ' + g.category);
+  }
+  assert.deepStrictEqual(miss, []);
+  // The shipped estimator reads Ultje as ok; the engine puts it at Moderate or Higher (spec section 14).
+  const u = byId['ultje-suess-salzig'];
+  const g = engine.estimateGlucoseImpact({serving: engine.calculateServing(u.per100, 30)});
+  assert.ok(['Moderate', 'Higher'].includes(g.category), 'Ultje at 30 g: ' + g.category);
+});
+
+test('engine verdicts match the benchmark policy, exposure and confidence', {todo: engine && typeof engine.scanFood === 'function' ? false : 'scanfe-d/f1: scanFood (policy + confidence) not built yet'}, () => {
   assert.ok(engine && typeof engine.scanFood === 'function', 'LowiFoodEngine.scanFood exists');
   const miss = [];
   for (const r of rows) {

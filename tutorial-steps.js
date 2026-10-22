@@ -31,7 +31,7 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 11;
+    const VERSION = 12;
     const AREAS = ['you', 'home', 'food', 'play', 'companion', 'together', 'settings', 'extras', 'end'];
     const STEPS = [
         /* ---------- part: you (your companion) ---------- */
@@ -66,7 +66,7 @@
             }
         },
         {
-            id: 'misty-hold', area: 'you', target: ['[data-home-misty]', '#spBubble'], covers: ['companion-card'], teaches: ['misty-hold', 'misty-squish'], tryIt: { how: 'hold' },
+            id: 'misty-hold', sayTitle: false, area: 'you', target: ['[data-home-misty]', '#spBubble'], covers: ['companion-card'], teaches: ['misty-hold', 'misty-squish'], tryIt: { how: 'hold' },
             title: { en: 'Hold me', de: 'Halt mich gedrückt', es: 'Mantenme pulsado' },
             text: {
                 en: 'Now keep your finger on me for a second. My card opens: my energy, my forms and my home. Close it to come back here.',
@@ -75,7 +75,7 @@
             }
         },
         {
-            id: 'misty-turn', area: 'you', target: ['[data-home-misty]', '#spBubble'], covers: [], teaches: ['misty-turn'], tryIt: { how: 'drag' },
+            id: 'misty-turn', sayTitle: { es: false }, area: 'you', target: ['[data-home-misty]', '#spBubble'], covers: [], teaches: ['misty-turn'], tryIt: { how: 'drag' },
             title: { en: 'Turn me', de: 'Dreh mich', es: 'Gírame' },
             text: {
                 en: 'Put your finger on me and slide it sideways. I turn to where you pull.',
@@ -139,7 +139,7 @@
             }
         },
         {
-            id: 'gap-tap', area: 'home', target: ['#spFast'], covers: ['fasting'], teaches: ['gap-tap'], tryIt: { how: 'tap' },
+            id: 'gap-tap', sayTitle: false, area: 'home', target: ['#spFast'], covers: ['fasting'], teaches: ['gap-tap'], tryIt: { how: 'tap' },
             title: { en: 'Inside the Gap', de: 'In der Pause', es: 'Dentro de la pausa' },
             text: {
                 en: 'Tap Gap to see the time since your last meal on the six planets, with what typically happens along the way. Fix the time there if it is wrong. Logging a meal in Fuel restarts it, with its points.',
@@ -222,34 +222,37 @@
         },
         /* ---------- part: food (scan and photos) ---------- */
         {
-            id: 'scan', area: 'food', target: ['#whHud .o8-scan'], covers: ['scan', 'barcode'], teaches: ['scan-tap'], tryIt: { how: 'tap' },
+            /* Oct 22 2026 (Emmanuel: "when it reaches the scanner, Apple shows 'Allow camera', which breaks the whole tutorial ... Or
+               maybe we just tell them what's inside the scanner instead of taking them inside the scanner"): the Scan cards never open
+               Scan (it opens the camera straight away) and have no try-it here. scan-in and deep show a picture of the inside (peek). */
+            id: 'scan', area: 'food', target: ['#whHud .o8-scan'], sayTitle: { es: false }, covers: ['scan', 'barcode'], teaches: ['scan-tap'],
             title: { en: 'Scan', de: 'Scannen', es: 'Escanear' },
             text: {
-                en: 'Tap Scan and point it at a product’s barcode. I read what’s inside and how it fits your day.',
-                de: 'Tipp auf Scannen und halt es auf den Barcode eines Produkts. Ich lese, was drin ist und wie es zu deinem Tag passt.',
-                es: 'Toca Escanear y apunta al código de barras de un producto. Leo lo que lleva y cómo encaja en tu día.'
+                en: 'This is Scan, for checking a product, like in the shop. Later, tap it and point your camera at a barcode. For now, I’ll just show you what’s inside.',
+                de: 'Das ist Scan, zum Prüfen von Produkten, zum Beispiel im Laden. Später tippst du darauf und hältst die Kamera auf einen Barcode. Jetzt zeig ich dir nur, was drin ist.',
+                es: 'Esto es Scan, para revisar un producto, por ejemplo en la tienda. Luego lo tocas y apuntas la cámara a un código de barras. Por ahora solo te enseño lo que hay dentro.'
             }
         },
         {
-            id: 'scan-in', area: 'food', where: 'scan', target: ['#b3ScanBtn', '#b3TypeBtn'], covers: [], teaches: ['scan-buttons'],
+            id: 'scan-in', area: 'food', target: null, peek: { kind: 'scan', mark: 'frame' }, sayTitle: false, covers: [], teaches: ['scan-buttons'],
             title: { en: 'Inside Scan', de: 'In Scan', es: 'Dentro de Scan' },
             text: {
-                en: 'This is Scan, for checking a product, like in the shop. Tap the big button and hold the barcode in front of the camera. No barcode? Tap the keyboard to type the name, or the camera to take a photo of the pack.',
-                de: 'Das ist Scan, zum Prüfen von Produkten, zum Beispiel im Laden. Tipp den großen Knopf und halt den Barcode vor die Kamera. Kein Barcode? Tipp die Tastatur und schreib den Namen, oder die Kamera für ein Foto der Packung.',
-                es: 'Esto es Scan, para revisar un producto en la tienda. Toca el botón grande y pon el código de barras delante de la cámara. ¿Sin código? Toca el teclado para escribir el nombre, o la cámara para una foto del paquete.'
+                en: 'This is what you’ll see inside: hold the barcode in the frame and I read it by myself. Camera won’t focus? Type the number printed under the barcode instead.',
+                de: 'Das siehst du drinnen: Halt den Barcode in den Rahmen, ich lese ihn von selbst. Die Kamera stellt nicht scharf? Tipp stattdessen die Nummer unter dem Barcode ein.',
+                es: 'Esto es lo que verás dentro: pon el código de barras en el marco y lo leo yo solo. ¿La cámara no enfoca? Escribe el número que hay debajo del código.'
             }
         },
         {
-            id: 'deep', area: 'food', where: 'scan', target: ['#b3Deep', '#b3PhotoBtn'], covers: ['deep-analyze'], teaches: ['scan-deep'],
+            id: 'deep', area: 'food', target: null, peek: { kind: 'scan', mark: 'deep' }, covers: ['deep-analyze'], teaches: ['scan-deep'],
             title: { en: 'Deep analyze', de: 'Deep analyze', es: 'Deep analyze' },
             text: {
-                en: 'Product not found? Tap Deep analyze. One tap opens the LOWiSPIKE GPT in ChatGPT: send it a photo of the pack and it tells you if it will spike you.',
-                de: 'Produkt nicht gefunden? Tipp Deep analyze. Ein Tipp öffnet das LOWiSPIKE-GPT in ChatGPT: Schick ihm ein Foto der Packung und es sagt dir, ob sie dich spiket.',
-                es: '¿No aparece el producto? Toca Deep analyze. Un toque abre el GPT de LOWiSPIKE en ChatGPT: mándale una foto del paquete y te dice si te dispara el azúcar.'
+                en: 'Product not found? Tap Deep analyze at the bottom of Scan. It opens the LOWiSPIKE GPT in ChatGPT: send it a photo of the pack and it tells you if it will spike you.',
+                de: 'Produkt nicht gefunden? Tipp unten in Scan auf Deep analyze. Das öffnet das LOWiSPIKE-GPT in ChatGPT: Schick ihm ein Foto der Packung und es sagt dir, ob sie dich spiket.',
+                es: '¿No aparece el producto? Toca Deep analyze abajo en Scan. Abre el GPT de LOWiSPIKE en ChatGPT: mándale una foto del paquete y te dice si te dispara el azúcar.'
             }
         },
         {
-            id: 'fix-food', area: 'food', where: 'scan', target: null, covers: ['fix-food'], teaches: ['fix-field'],
+            id: 'fix-food', area: 'food', target: null, covers: ['fix-food'], teaches: ['fix-field'],
             title: { en: 'Fix a food', de: 'Essen korrigieren', es: 'Corregir una comida' },
             text: {
                 en: 'Did I guess a food wrong? Tap its card. In “What is it really?” start typing and tap the right product from the list. Then set how many pieces, and the numbers update right away.',
@@ -258,16 +261,16 @@
             }
         },
         {
-            id: 'snap', area: 'food', where: 'scan', target: ['#b3ScanBtn'], covers: ['snap-food'], teaches: [],
+            id: 'snap', area: 'food', target: null, covers: ['snap-food'], teaches: [],
             title: { en: 'Snap food', de: 'Essen fotografieren', es: 'Foto de comida' },
             text: {
-                en: 'Snap is inside Log meal (in Fuel, and in Scan next to Barcode): pick the meal, tap Snap. The spike answer comes first, then each food on its own card. Tap one to fix it, then log it.',
-                de: 'Foto steckt in Mahlzeit eintragen (unter Essen und in Scannen): Mahlzeit wählen, Foto tippen. Zuerst kommt die Spike-Antwort, dann jedes Essen als Karte. Antippen zum Korrigieren, dann eintragen.',
-                es: 'La foto está en Registrar comida (en Comida y en Escanear): elige la comida y toca Foto. Primero va la respuesta del pico, luego cada alimento en su tarjeta. Toca uno para corregirlo y regístrala.'
+                en: 'Snap is inside Log meal, in Fuel: pick the meal, tap Snap. The spike answer comes first, then each food on its own card. Tap one to fix it, then log it.',
+                de: 'Foto steckt in Mahlzeit eintragen, unter Essen: Mahlzeit wählen, Foto tippen. Zuerst kommt die Spike-Antwort, dann jedes Essen als Karte. Antippen zum Korrigieren, dann eintragen.',
+                es: 'La foto está en Registrar comida, en Comida: elige la comida y toca Foto. Primero va la respuesta del pico, luego cada alimento en su tarjeta. Toca uno para corregirlo y regístrala.'
             }
         },
         {
-            id: 'photo-checks', area: 'food', where: 'scan', target: null, covers: ['photo-checks'], teaches: [],
+            id: 'photo-checks', area: 'food', target: null, covers: ['photo-checks'], teaches: [],
             title: { en: '3 photo checks a day', de: '3 Foto-Checks am Tag', es: '3 fotos al día' },
             text: {
                 en: 'Everyone gets 3 photo checks a day, and new ones come at midnight. Typing what you ate always works, as often as you like.',
@@ -286,7 +289,7 @@
             }
         },
         {
-            id: 'joystick', area: 'play', target: ['#whPad'], covers: ['joy'], teaches: ['pad-drag'], tryIt: { how: 'drag' },
+            id: 'joystick', sayTitle: { es: false }, area: 'play', target: ['#whPad'], covers: ['joy'], teaches: ['pad-drag'], tryIt: { how: 'drag' },
             title: { en: 'Fly me', de: 'Lass mich fliegen', es: 'Hazme volar' },
             text: {
                 en: 'This is the joystick. Drag it and I fly where you point.',
@@ -295,7 +298,7 @@
             }
         },
         {
-            id: 'joystick-hold', area: 'play', target: ['#whPad'], covers: ['joy-hold'], teaches: ['pad-hold', 'pad-back'], tryIt: { how: 'hold' },
+            id: 'joystick-hold', sayTitle: { de: false, es: false }, area: 'play', target: ['#whPad'], covers: ['joy-hold'], teaches: ['pad-hold', 'pad-back'], tryIt: { how: 'hold' },
             title: { en: 'Forward and back', de: 'Vor und zurück', es: 'Adelante y atrás' },
             text: {
                 en: 'Hold the middle of the joystick to go forward. Tap, then hold, to go back.',
@@ -469,7 +472,7 @@
             }
         },
         {
-            id: 'cm-galaxy', area: 'together', where: 'community', rm: 'room', target: null, covers: [], teaches: ['cm-pan', 'cm-zoom'], tryIt: { how: 'drag', anywhere: true },
+            id: 'cm-galaxy', sayTitle: { es: false }, area: 'together', where: 'community', rm: 'room', target: null, covers: [], teaches: ['cm-pan', 'cm-zoom'], tryIt: { how: 'drag', anywhere: true },
             title: { en: 'Move around', de: 'Bewegen', es: 'Muévete' },
             text: {
                 en: 'Drag one finger to move around the galaxy. Pinch, or tap twice quickly, to zoom in.',
@@ -771,11 +774,14 @@
     function tryMatch(how, kind) { return how === kind || (how === 'drag' && kind === 'swipe'); }
 
     const UI = {
-        en: { next: 'Next', back: 'Back', skip: 'Skip', skipAll: 'Skip all', of: '{i} of {n}', label: 'Tutorial', guide: 'Your companion', tryIt: 'Try it now', nice: 'Nice, that’s it.',
+        en: { next: 'Next', back: 'Back', skip: 'Skip', skipAll: 'Skip all', of: '{i} of {n}', label: 'Tutorial', guide: 'Your companion', tryIt: 'Try it now', nice: 'Nice, that’s it.', pause: 'Pause', play: 'Play',
+            peek: { title: 'Scan a barcode', aim: 'Hold the barcode inside the frame', field: 'Barcode number', barcode: 'Barcode', deep: 'Deep analyze', deepS: 'Opens the LOWiSPIKE GPT in ChatGPT', note: 'A look inside. The camera stays off.' },
             areas: { you: 'Me', home: 'Your day', food: 'Scan', play: 'Flying', companion: 'My card', together: 'Community', settings: 'Settings', extras: 'Good to know', end: 'Done' } },
-        de: { next: 'Weiter', back: 'Zurück', skip: 'Überspringen', skipAll: 'Alles überspringen', of: '{i} von {n}', label: 'Tutorial', guide: 'Dein Begleiter', tryIt: 'Probier’s jetzt', nice: 'Super, genau so.',
+        de: { next: 'Weiter', back: 'Zurück', skip: 'Überspringen', skipAll: 'Alles überspringen', of: '{i} von {n}', label: 'Tutorial', guide: 'Dein Begleiter', tryIt: 'Probier’s jetzt', nice: 'Super, genau so.', pause: 'Pause', play: 'Abspielen',
+            peek: { title: 'Barcode scannen', aim: 'Halte den Barcode in den Rahmen', field: 'Barcode-Nummer', barcode: 'Barcode', deep: 'Deep analyze', deepS: 'Öffnet den LOWiSPIKE GPT in ChatGPT', note: 'Ein Blick hinein. Die Kamera bleibt aus.' },
             areas: { you: 'Ich', home: 'Dein Tag', food: 'Scan', play: 'Fliegen', companion: 'Meine Karte', together: 'Community', settings: 'Einstellungen', extras: 'Gut zu wissen', end: 'Fertig' } },
-        es: { next: 'Siguiente', back: 'Atrás', skip: 'Saltar', skipAll: 'Saltar todo', of: '{i} de {n}', label: 'Tutorial', guide: 'Tu compañero', tryIt: 'Pruébalo ahora', nice: 'Bien, así es.',
+        es: { next: 'Siguiente', back: 'Atrás', skip: 'Saltar', skipAll: 'Saltar todo', of: '{i} de {n}', label: 'Tutorial', guide: 'Tu compañero', tryIt: 'Pruébalo ahora', nice: 'Bien, así es.', pause: 'Pausa', play: 'Reproducir',
+            peek: { title: 'Escanear código', aim: 'Pon el código dentro del marco', field: 'Número del código', barcode: 'Código', deep: 'Deep analyze', deepS: 'Abre el GPT de LOWiSPIKE en ChatGPT', note: 'Un vistazo dentro. La cámara sigue apagada.' },
             areas: { you: 'Yo', home: 'Tu día', food: 'Scan', play: 'Volar', companion: 'Mi tarjeta', together: 'Comunidad', settings: 'Ajustes', extras: 'Bueno saber', end: 'Listo' } }
     };
 

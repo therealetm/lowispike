@@ -54,7 +54,8 @@ test('what is said: title then text; a renamed companion is not called Misty', (
         assert.strictEqual(b.key, hello.id + '~'); assert.ok(!/Misty|Nova/.test(b.s.slice(0, 20)) || b.t === -1);
         assert.strictEqual(b.s, S.fill(hello.text.en, { name: 'Nova' }));
     }
-    const st = S.STEPS[1], sp = V.spoken(st, 'de', 'Misty');
+    /* Oct 22 2026: the title is only said when it adds something (tests/tutorial-handsfree.test.cjs); "hello" does in every language */
+    const st = S.STEPS.find(x => x.id === 'hello'), sp = V.spoken(st, 'de', 'Misty');
     assert.strictEqual(sp.s.slice(sp.b), S.fill(st.text.de, { name: 'Misty' }));
     assert.strictEqual(sp.s.slice(0, sp.t), S.fill(st.title.de, { name: 'Misty' }).trim());
 });

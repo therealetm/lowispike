@@ -66,10 +66,12 @@ test('every kind of gesture is in the tutorial', () => {
 test('every section of the app has a step and the tour visits it', () => {
     const S = T.STEPS, where = s => s.where || 'home';
     for (const a of T.AREAS) assert.ok(S.some(s => s.area === a), 'area ' + a + ' has a step');
-    for (const w of ['home', 'scan', 'community']) assert.ok(S.some(s => where(s) === w), 'a step is shown in ' + w);
+    for (const w of ['home', 'community']) assert.ok(S.some(s => where(s) === w), 'a step is shown in ' + w);
+    /* Oct 22 2026: Scan opens the camera at once, so no step is shown inside it; its cards show a picture of the inside instead */
+    assert.ok(S.some(s => s.peek && s.peek.kind === 'scan'), 'a step shows what is inside Scan');
     for (const rm of ['room', 'chat', 'create', 'aff']) assert.ok(S.some(s => where(s) === 'community' && s.rm === rm), 'Community tab ' + rm + ' has a step');
     for (const s of S) {
-        assert.ok(['home', 'scan', 'community'].includes(where(s)), s.id + ': where is home, scan or community');
+        assert.ok(['home', 'community'].includes(where(s)), s.id + ': where is home or community (never scan: it opens the camera)');
         if (s.rm) assert.strictEqual(where(s), 'community', s.id + ': a Community tab step is shown in Community');
     }
     const gw = new Set(T.GESTURES.map(g => g.where));
@@ -80,7 +82,7 @@ test('every section of the app has a step and the tour visits it', () => {
     /* tutorial.js takes the user to a step's section */
     const js = read('tutorial.js');
     assert.match(js, /function goSection\(/, 'tutorial.js moves to the step\'s section');
-    assert.match(js, /community: 'foryou', scan: 'scan'/, 'community and scan map to their tabs');
+    assert.match(js, /const TAB_OF = \{ home: 'home', community: 'foryou' \};/, 'community maps to its tab; scan is never a tour section');
 });
 
 test('Settings opens by HOLDING the Community bubble (old check expected a tap)', () => {

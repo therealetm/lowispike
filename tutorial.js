@@ -34,6 +34,8 @@
         if (H.classList.contains('gate-up') || H.classList.contains('gate-boot')) return 'setup';
         if (vis($('#r2ob')) || vis($('.hs-ivov.on'))) return 'setup';
         if (H.classList.contains('mf-on')) return 'flight';
+        /* the scanner camera (opened by the user, never by the tour): wait behind it, come back once it is closed (Oct 22 2026) */
+        if (H.classList.contains('b3-camon') || vis($('#b3Cam'))) return 'camera';
         const list = (W.LowiRitualCore && LowiRitualCore.BUSY) || [];
         /* the Day card's BUSY list names the tour itself ('#ltTour:not(.lt-held)', so the Day card waits for it): never count our own
            overlay, or the tour hides itself, finds nothing, shows again, and flickers every tick (Oct 19 2026, Emmanuel's iPhone) */
@@ -45,6 +47,14 @@
 
     let on = false, list = [], i = 0, root = null, timer = 0, held = false, afterClaim = false, lastFocus = null, startedAt = 0;
     let tried = -1, secUntil = 0, tryNext = 0;
+    /* hands-free (Oct 22 2026, Emmanuel: "would be nice if I don't have to press the next button every time. If I did turn on the
+       mic, I should be able to just place my phone somewhere and just listen as it goes, by itself"): with the speaker on, each card
+       moves on by itself a short pause after it was read to the end. Next / Back still work. Pause on the card stops the voice and
+       the moving on until Play (or the speaker) is tapped. Narration still only ever starts from a tap (iOS); a card the browser
+       would not play (no tap yet) never moves on by itself. The last card and the claim card wait for the user. */
+    const AUTO = { GAP: 1200, TRY: 4500 };
+    let paused = false, autoT = 0, wake = null;
+    const voiceOn = () => { try { return !!(W.LowiTutorialVoice && W.LowiTutorialVoice.isOn()); } catch (e) { return false; } };
     const clearT = id => { try { if (id) (W.clearTimeout || clearTimeout)(id); } catch (e) { } };
     const step = () => list[i] || null;
     function emit(extra) { try { W.dispatchEvent(new CustomEvent('lowi:tutorial', { detail: Object.assign({ on, step: step() && step().id }, extra || {}) })); } catch (e) { } }
@@ -58,6 +68,7 @@
         root = D.createElement('div'); root.id = 'ltTour'; root.className = 'lt-tour'; root.setAttribute('role', 'dialog'); root.setAttribute('aria-modal', 'true');
         root.setAttribute('aria-labelledby', 'ltTitle'); root.setAttribute('aria-describedby', 'ltText'); root.setAttribute('data-noi18n', '');
         root.innerHTML = '<div class="lt-hole" aria-hidden="true"></div><div class="lt-card" tabindex="-1"></div>';
+        root.classList.toggle('lt-voice', voiceOn());
         D.body.appendChild(root);
         root.addEventListener('click', onClick);
         root.addEventListener('keydown', onKey);
@@ -73,17 +84,66 @@
             '<span class="lt-meta"><small class="lt-count">' + esc(U.label + ' \u00b7 ' + S.fill(U.of, { i: i + 1, n: list.length })) + '</small>' +
             '<b class="lt-title" id="ltTitle">' + esc(S.text(s, 'title', l, vars)) + '</b></span>' +
             (last ? '' : '<button type="button" class="lt-skipall" data-lt="skipall">' + esc(U.skipAll) + '</button>') + '</div>' +
-            '<p class="lt-text" id="ltText">' + esc(S.text(s, 'text', l, vars)) + '</p>' +
-            '<div class="lt-btns">' +
-            (i > 0 ? '<button type="button" class="lt-btn lt-ghost" data-lt="back">' + esc(U.back) + '</button>' : '<span></span>') +
+            '<p class="lt-text" id="ltText">' + esc(S.text(s, 'text', l, vars)) + '</p>' + peekHtml(s, U) +
+            '<div class="lt-btns"><span class="lt-left">' +
+            (i > 0 ? '<button type="button" class="lt-btn lt-ghost" data-lt="back">' + esc(U.back) + '</button>' : '') +
+            '<button type="button" class="lt-btn lt-ghost lt-pause" data-lt="pause" aria-pressed="' + paused + '" aria-label="' + esc(paused ? (U.play || 'Play') : (U.pause || 'Pause')) + '">' + (paused ? PLAY_SVG : PAUSE_SVG) + '</button></span>' +
             '<span class="lt-right">' + (last ? '' : '<button type="button" class="lt-btn lt-ghost" data-lt="skip">' + esc(U.skip) + '</button>') +
             '<button type="button" class="lt-btn lt-go" data-lt="' + (s.action === 'claim' ? 'claim' : 'next') + '">' + esc(cta) + '</button></span></div>';
         root.setAttribute('data-step', s.id);
         renderTry(s, U);
+        root.classList.toggle('lt-voice', voiceOn()); root.classList.toggle('lt-paused', paused);
         place();
-        /* tutorial-voice.js: the companion picture is the speaker; reads the card aloud when sound is on (Oct 21 2026) */
-        try { if (W.LowiTutorialVoice) W.LowiTutorialVoice.render(card, s, { lang: l, name: vars.name, next: list.slice(i + 1, i + 3) }); } catch (e) { }
-        try { (card.querySelector('[data-lt="claim"],[data-lt="next"]') || card).focus({ preventScroll: true }); } catch (e) { }
+        /* tutorial-voice.js: the companion picture is the speaker; reads the card aloud when sound is on (Oct 21 2026); onEnd = hands-free */
+        try { if (W.LowiTutorialVoice) W.LowiTutorialVoice.render(card, s, { lang: l, name: vars.name, next: list.slice(i + 1, i + 3), onEnd: said, quiet: paused }); } catch (e) { }
+        try { (card.querySelector(focusSel || '[data-lt="claim"],[data-lt="next"]') || card).focus({ preventScroll: true }); } catch (e) { }
+        focusSel = '';
+        keepAwake();
+    }
+    /* a picture of a screen the tour does not open (Scan: opening it starts the camera and iOS asks for permission) */
+    function peekHtml(s, U) {
+        const k = s && s.peek; if (!k || k.kind !== 'scan') return '';
+        const P = U.peek || S.UI.en.peek, m = k.mark || '';
+        return '<div class="lt-peek" data-peek="scan" data-mark="' + esc(m) + '" aria-hidden="true">' +
+            '<div class="ltp-top"><span class="ltp-x"></span><b>' + esc(P.title) + '</b></div>' +
+            '<div class="ltp-frame"><span class="ltp-c c1"></span><span class="ltp-c c2"></span><span class="ltp-c c3"></span><span class="ltp-c c4"></span><span class="ltp-bars"></span><span class="ltp-laser"></span></div>' +
+            '<div class="ltp-hint">' + esc(P.aim) + '</div>' +
+            '<div class="ltp-field"><span>' + esc(P.field) + '</span><span class="ltp-dot"></span></div>' +
+            '<div class="ltp-acts"><span class="ltp-pill">' + esc(P.barcode) + '</span></div>' +
+            '<div class="ltp-deep"><b>' + esc(P.deep) + '</b><small>' + esc(P.deepS) + '</small></div>' +
+            '</div><p class="lt-peeknote">' + esc(P.note) + '</p>';
+    }
+    const PAUSE_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><rect x="6" y="5" width="4" height="14" rx="1.2" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1.2" fill="currentColor"/></svg>';
+    const PLAY_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/></svg>';
+    let focusSel = '';
+    /* hands-free: the card was read to the end; move on after a short pause unless something changed meanwhile */
+    function said() {
+        clearT(autoT); autoT = 0;
+        const s = step(), at = i;
+        if (!on || held || paused || !s || !voiceOn() || at >= list.length - 1 || s.action === 'claim') return;
+        const wait = s.tryIt && tried !== at ? AUTO.TRY : AUTO.GAP;
+        const card = root && root.querySelector('.lt-card');
+        if (card && !reduced()) { card.style.setProperty('--lt-auto', wait + 'ms'); card.classList.remove('lt-autogo'); void card.offsetWidth; card.classList.add('lt-autogo'); }
+        autoT = setTimeout(() => { autoT = 0; if (on && !held && !paused && i === at && voiceOn()) go(at + 1, 'auto'); }, wait);
+        emit({ auto: s.id, wait });
+    }
+    function cancelAuto() { clearT(autoT); autoT = 0; const c = root && root.querySelector('.lt-card'); if (c) c.classList.remove('lt-autogo'); }
+    function setPaused(v) {
+        paused = !!v; cancelAuto();
+        if (paused) { try { if (W.LowiTutorialVoice) W.LowiTutorialVoice.stop(); } catch (e) { } }
+        focusSel = '[data-lt="pause"]';
+        if (on && !held) render();
+        emit({ paused });
+    }
+    /* keep the screen on while it reads by itself (phone put down); best effort, Safari 16.4+ */
+    function keepAwake() {
+        const want = on && !held && !paused && voiceOn() && !D.hidden;
+        try {
+            if (want && !wake && navigator.wakeLock && navigator.wakeLock.request) {
+                wake = 'asking';
+                navigator.wakeLock.request('screen').then(w => { if (wake !== 'asking') { try { w.release(); } catch (e) { } return; } wake = w; w.addEventListener && w.addEventListener('release', () => { if (wake === w) wake = null; }); }, () => { wake = null; });
+            } else if (!want && wake) { const w = wake; wake = null; if (w !== 'asking' && w.release) w.release().catch(() => { }); }
+        } catch (e) { wake = null; }
     }
     /* spotlight on the target; the card below it, or above when there is no room, always fully on screen */
     function place() {
@@ -108,7 +168,7 @@
         const left = Math.round(Math.max(m, Math.min(vw - cw - m, cx - cw / 2)));
         card.style.left = left + 'px'; card.style.top = Math.round(top) + 'px';
     }
-    function hold(why) { if (held || !root) return; try { if (W.LowiTutorialVoice) W.LowiTutorialVoice.stop(); } catch (e) { } held = true; root.classList.add('lt-held'); root.setAttribute('aria-hidden', 'true'); root.setAttribute('data-held', why || ''); }
+    function hold(why) { if (held || !root) return; cancelAuto(); try { if (W.LowiTutorialVoice) W.LowiTutorialVoice.stop(); } catch (e) { } held = true; root.classList.add('lt-held'); root.setAttribute('aria-hidden', 'true'); root.setAttribute('data-held', why || ''); }
     function unhold() {
         if (!held || !root) return; held = false; root.classList.remove('lt-held'); root.removeAttribute('aria-hidden'); root.removeAttribute('data-held');
         if (afterClaim) { afterClaim = false; go(i + 1, 'claim-closed'); return; }
@@ -122,7 +182,10 @@
        and then leaves them alone. A step's `tryIt` lets touches through the dimmed screen and watches for that one gesture.
        When it happens the card says so; if the gesture opened a sheet, the tour waits behind it and moves on once it closes,
        otherwise it moves on by itself. Listening is passive: it never blocks or changes what the app does with the touch. */
-    const TAB_OF = { home: 'home', community: 'foryou', scan: 'scan' };
+    /* No 'scan' here on purpose: goTab('scan') opens the scanner camera at once, and the tour calls goSection on every tick for
+       2.5 s, so it kept opening the camera and iOS kept asking for permission; a tour left on a Scan card reopened it on the next
+       start (Emmanuel's iPhone, Oct 21 2026). The Scan cards show a picture of the inside instead (peek). */
+    const TAB_OF = { home: 'home', community: 'foryou' };
     function goSection(s) {
         if (!s) return;
         try {
@@ -204,6 +267,7 @@
     }
     function go(n, how) {
         if (n >= list.length) { stop('finished'); return; }
+        cancelAuto();
         i = Math.max(0, n); held = false; if (root) { root.classList.remove('lt-held'); root.removeAttribute('aria-hidden'); }
         const st = store.get(); st.last = step().id; store.set(st);
         tried = -1; clearT(tryNext); secUntil = Date.now() + 2500; goSection(step());
@@ -231,6 +295,7 @@
         else if (a === 'skip') go(S.skipIndex(list, i), 'skip');
         else if (a === 'skipall') stop('skipped');
         else if (a === 'claim') claim();
+        else if (a === 'pause') setPaused(!paused);
     }
     function onKey(e) {
         if (held) return;
@@ -254,7 +319,7 @@
         if (on) stop('restart');
         list = S.plan({ noOwnCompanion: !ownCompanion(), claimReady: !ownCompanion() && claimReady() });
         if (!list.length) return false;
-        on = true; i = 0; held = false; afterClaim = false; startedAt = Date.now();
+        on = true; i = 0; held = false; afterClaim = false; startedAt = Date.now(); paused = false;
         lastFocus = D.activeElement;
         goHome();
         ensureRoot();
@@ -268,7 +333,7 @@
     }
     function stop(reason) {
         if (!on) return;
-        on = false; clearInterval(timer); timer = 0; afterClaim = false;
+        on = false; clearInterval(timer); timer = 0; afterClaim = false; cancelAuto(); paused = false; keepAwake();
         const st = store.get(); st.done = reason === 'finished'; st.skipped = reason === 'skipped' ? (step() && step().id) || '' : ''; st.v = S.VERSION; st.end = new Date().toISOString(); store.set(st);
         emit({ reason });
         const r = root; root = null; H.classList.remove('lt-on');
@@ -278,10 +343,19 @@
     W.addEventListener('resize', () => { if (on) place(); });
     W.addEventListener('lowi:lang', () => { if (on && !held) render(); });
     W.addEventListener('lowi:companion', () => { if (on && !held) render(); });
+    /* the speaker turned on / off on the card: show or hide Pause; turning it on again also ends a pause */
+    W.addEventListener('lowi:tutorial-voice', e => {
+        const d = e.detail || {}; if (!on || !root) return;
+        if (d.state === 'off') { cancelAuto(); if (paused) { paused = false; focusSel = '.lt-speak'; if (!held) render(); } }
+        if (d.state === 'on' && paused) { paused = false; root.classList.remove('lt-paused'); const b = root.querySelector('[data-lt="pause"]'); if (b) { b.setAttribute('aria-pressed', 'false'); b.setAttribute('aria-label', ((S.UI[lang()] || S.UI.en).pause) || 'Pause'); b.innerHTML = PAUSE_SVG; } }
+        root.classList.toggle('lt-voice', voiceOn()); keepAwake();
+    });
+    try { D.addEventListener('visibilitychange', () => { if (D.hidden) cancelAuto(); keepAwake(); }); } catch (e) { }
     if (!D.getElementById('ltCss') && !D.querySelector('link[href^="tutorial.css"]')) { const m = $('meta[name="lowi-build"]'), l = D.createElement('link'); l.id = 'ltCss'; l.rel = 'stylesheet'; l.href = 'tutorial.css?v=' + encodeURIComponent(m ? m.content : '1'); D.head.appendChild(l); }
     /* tutorial-auto.js (new accounts get the tour once) loads from here, so index.html's versioned script list stays untouched */
     if (!W.LowiTutorialAuto && !D.querySelector('script[src^="tutorial-auto.js"]')) { const m = $('meta[name="lowi-build"]'), sc = D.createElement('script'); sc.src = 'tutorial-auto.js?v=' + encodeURIComponent((m && m.content) || '1'); sc.defer = true; D.head.appendChild(sc); }
     /* tutorial-voice.js (the speaker on every card) loads the same way */
     if (!W.LowiTutorialVoice && !D.querySelector('script[src^="tutorial-voice.js"]')) { const m = $('meta[name="lowi-build"]'), sc = D.createElement('script'); sc.src = 'tutorial-voice.js?v=' + encodeURIComponent((m && m.content) || '1'); sc.defer = true; D.head.appendChild(sc); }
-    W.LowiTutorial = { start, stop, isOn: () => on, step: () => (step() || {}).id || null, held: () => held, busyBy, core: S };
+    W.LowiTutorial = { start, stop, isOn: () => on, step: () => (step() || {}).id || null, held: () => held, busyBy, core: S,
+        paused: () => paused, pause: v => setPaused(v == null ? true : v), auto: () => !!autoT };
 })();

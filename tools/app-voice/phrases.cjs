@@ -100,6 +100,9 @@ function harvest(newsOnly) {
     const clean = s => s.replace(/[^\p{L}\p{N}\s.,!?€%:'’-]/gu, '');
     for (const m of html.matchAll(/\b(?:toast|r5toast)\(\s*"((?:[^"\\]|\\.){3,160})"\s*\)/g)) { const t = m[1]; if (!/\\u|<|\$\{/.test(t)) add('toast', 'en', clean(t.replace(/\\'/g, "'"))); }
     for (const m of html.matchAll(/\b(?:toast|r5toast)\(\s*'((?:[^'\\]|\\.){3,160})'\s*\)/g)) { const t = m[1]; if (!/\\u|<|\$\{/.test(t)) add('toast', 'en', clean(t.replace(/\\'/g, "'"))); }
+    /* ---- Affiliates page: every script line read aloud (22 Oct 2026, affiliates/script-voice.js) ---- */
+    const AB = require(path.join(ROOT, 'affiliates', 'blueprint-core.js')), AV = require(path.join(ROOT, 'affiliates', 'script-voice.js'));
+    for (const l of LANGS) AV.sayable(AB, l).forEach(x => add('affiliates', l, x));
     return { out, src };
 }
 

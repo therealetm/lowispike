@@ -195,3 +195,36 @@ footer{color:var(--muted);font-size:13px;margin:22px 4px 0;line-height:1.5}
 .day-now{font-size:20px;font-weight:750;letter-spacing:-.01em}
 .day-line{margin:0;font-size:16px;line-height:1.45}
 .day-card .label,.day-card .note{margin:0}
+
+/* ---------- Listen (22 Oct 2026): the script read aloud in the tutorial's voice (script-voice.js) ---------- */
+.listen-card{display:flex;flex-direction:column;gap:10px}
+.listen-row{display:flex;align-items:center;gap:12px}
+.listen-main{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:12px;min-height:60px;padding:0 18px 0 8px;border:0;border-radius:20px;font-size:17.5px;font-weight:750;letter-spacing:-.01em;text-align:left;
+  color:#021317;background:linear-gradient(180deg,#5ff7f8 0%,#1cf7f9 45%,#16b88a 100%);box-shadow:0 0 0 1px rgba(143,231,255,.55),0 0 26px rgba(28,247,249,.36),0 10px 24px rgba(0,0,0,.3)}
+.listen-main:active{transform:scale(.985)}
+.listen-main .vlabel{min-width:0;overflow-wrap:anywhere}
+.vbtn{flex:0 0 44px;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:rgba(2,19,23,.16)}
+.vglyph{width:22px;height:22px;fill:currentColor}
+.vglyph .gpause{display:none}
+[aria-pressed="true"] .vglyph .gplay{display:none}
+[aria-pressed="true"] .vglyph .gpause{display:inline}
+.listen-again{margin:0;display:grid;place-items:center;padding:0}
+.listen-again svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.listen-again[hidden]{display:none}
+.listen-hint{margin:0}
+.listen-where{margin:0;min-height:0;font-size:14.5px;font-weight:650;color:var(--cyan)}
+.listen-where:empty{display:none}
+/* the small play button on each scene and on the day's line */
+/* the button sits in the top corner, out of the row's flex layout (as a third flex item WebKit kept a stale scroll height after
+   switching tracks); the scene label shares its line, the spoken lines start below it at full width */
+.row.scene.voiced{position:relative}
+.row.scene .say-btn{position:absolute;top:12px;right:12px;margin:0;display:grid;place-items:center;padding:0}
+.row.scene.voiced .shot{display:block;min-height:44px;line-height:20px;padding:12px 54px 0 0;margin-top:-6px;margin-bottom:0}
+.say-btn .vglyph{width:18px;height:18px}
+.say-btn.playing{color:#021317;background:linear-gradient(180deg,#5ff7f8,#16b88a);box-shadow:0 0 22px rgba(28,247,249,.5)}
+.day-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.day-head .say-btn{margin:0;flex:0 0 44px;display:grid;place-items:center;padding:0}
+/* the line being read lights up, so the affiliate can follow along and repeat it */
+[data-say]{border-radius:10px;transition:background-color .2s ease,box-shadow .2s ease}
+.saying{background:rgba(28,247,249,.16);box-shadow:0 0 0 4px rgba(28,247,249,.16)}
+@media (max-width:360px){.listen-main{font-size:16px;padding-right:12px;gap:10px}}

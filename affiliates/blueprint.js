@@ -16,6 +16,7 @@
   let lang = B.pickLang({ param: qs.get('lang'), stored: appLang(), nav: navLangs() });
   let S = B.series(lang);
   const T = (k, v) => B.t(lang, k, v);
+  const VO = window.LowiAffVoice || null; /* script-voice.js: the scripts read aloud (absent = no Listen buttons) */
   /* Referral: ?aff=<id> (or the partner dashboard's affiliate link id) is the affiliate's own id and is kept; ?ref=<id> marks who sent this visitor. */
   const own = B.cleanId(qs.get('aff') || qs.get('affiliateLinkId'));
   if (own) store('lowispike.affId', own);
@@ -147,6 +148,7 @@
   }
   /* LOWiSPIKE 30-day challenge: pick the day you film; the copy fills it in and the day's follow line changes with it. */
   let day = 1;
+  let said = null; /* what the Listen buttons read on the current script screen (script-voice.js plan) */
   function dayCard(s) {
     const set = n => { day = Math.min(30, Math.max(1, n)); renderScript(); const b = $(n < day ? 'dayPrev' : 'dayNext'); if (b) b.focus(); };
     const vals = { day };
@@ -155,16 +157,20 @@
         h('button', { type: 'button', class: 'fab day-btn', id: 'dayPrev', 'aria-label': T('dayPrev'), disabled: day <= 1 ? '' : null, onclick: () => set(day - 1) }, h('span', { 'aria-hidden': 'true', text: '\u2212' })),
         h('b', { class: 'day-now', id: 'dayNow', 'aria-live': 'polite', text: T('dayOf', { n: day }) }),
         h('button', { type: 'button', class: 'fab day-btn', id: 'dayNext', 'aria-label': T('dayNext'), disabled: day >= 30 ? '' : null, onclick: () => set(day + 1) }, h('span', { 'aria-hidden': 'true', text: '+' }))),
-      h('div', { class: 'label', text: day === 30 ? T('outroHead') : T('followToday') }),
-      h('p', { class: 'day-line', id: 'dayLine' }, withPh(B.fill(day === 30 ? s.outro30 : B.followLine(pick, lang, day), s.vars, vals))),
+      h('div', { class: 'day-head' }, h('div', { class: 'label', text: day === 30 ? T('outroHead') : T('followToday') }), VO && said ? VO.dayButton(said, lang) : null),
+      h('p', { class: 'day-line', id: 'dayLine', 'data-say': 'day' }, withPh(B.fill(day === 30 ? s.outro30 : B.followLine(pick, lang, day), s.vars, vals))),
       h('p', { class: 'note', text: T('freeTrack') }));
   }
   function renderScript() {
+    if (VO) VO.stop(); /* the script on screen changes: whatever was being read stops */
     const v = $('scriptView'); v.textContent = '';
     const s = S[pick], open = isOpen(pick);
-    const scenes = s.scenes.map((x, i) => open || i === 0 ? h('div', { class: 'row scene' },
+    said = VO ? VO.plan(B, s, { open, pick, lang, day }) : null;
+    const sayBtn = i => VO && (open || i === 0) ? VO.sceneButton(said, i, lang) : null;
+    const scenes = s.scenes.map((x, i, _, sb = sayBtn(i)) => open || i === 0 ? h('div', { class: 'row scene' + (sb ? ' voiced' : '') },
       h('span', { class: 'tile num', text: String(i + 1) }),
-      h('span', { class: 'txt' }, h('b', { class: 'shot ' + x.shot, text: x.label }), x.lines.map(l => h('p', null, withPh(l))), x.note ? h('span', { class: 'note', text: x.note }) : null))
+      h('span', { class: 'txt' }, h('b', { class: 'shot ' + x.shot, text: x.label }), x.lines.map((l, j) => h('p', { 'data-say': 's' + i + '-' + j }, withPh(l))), x.note ? h('span', { class: 'note', text: x.note }) : null),
+      sb)
       : h('div', { class: 'row scene locked' }, h('span', { class: 'tile num', text: String(i + 1) }),
           h('span', { class: 'txt' }, h('b', { class: 'shot ' + x.shot, text: x.label }), h('span', { class: 'note', text: T('lockedScene') }))));
     v.appendChild(h('div', { class: 'bar' }, backBtn('start'), seg('sw-'), shareBtn('shareScript')));
@@ -172,6 +178,8 @@
       h('span', { class: 'pill', text: T('step1') }),
       h('h1', { tabindex: '-1', text: T('scriptTitle') }),
       h('p', { class: 'lead', text: T('scriptLead', { title: s.title, product: s.product, ph: B.placeholders(pick, lang).slice(0, 2).join(T('or')) }) })));
+    /* Listen (22 Oct, Emmanuel): the script read aloud in the tutorial's voice, so affiliates can listen and say it to the camera */
+    const lc = VO ? VO.listenCard(said, lang, open) : null; if (lc) v.appendChild(lc);
     if (open) v.appendChild(h('div', { class: 'card onscreen-card' }, h('div', { class: 'label', text: T('onScreen') }), h('div', { class: 'onscreen' }, withPh(s.onScreen))));
     else v.appendChild(h('span', { class: 'pill preview', text: T('preview') }));
     if (open && s.follow) v.appendChild(dayCard(s));
@@ -234,6 +242,7 @@
   function go(to) {
     if (!VIEWS[to]) to = 'start';
     if (to === 'earn' && view !== 'earn') from = view;
+    if (VO && to !== view) VO.stop();
     view = to; if (to === 'earn') renderEarnings(); show(); sync();
     try { window.scrollTo(0, 0); } catch (e) {}
     const t = $(VIEWS[to]).querySelector('h1'); if (t && t.focus) t.focus({ preventScroll: true });

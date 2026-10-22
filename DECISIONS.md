@@ -988,3 +988,15 @@ What was decided:
 - The Room (galaxy) view stays the view Community opens on: the regression tools and the tutorial expect its composer.
 
 Checks: `tools/community-hub/probe.cjs` (contrast, overlaps with Day/Night and the picture, real centre taps, segment glow under the open tab, landing fit and order, members sheet, Open galaxy chat, Creation button) on iPhone SE, iPhone 13, iPad and iPhone 13 day.
+
+## 2026-10-22 Affiliates: every script read aloud in the tutorial's voice (item 35)
+
+Emmanuel (voice message, 21 Oct evening): "I would like the affiliate texts, their scripts, to also have that voice. The same tutorial voice, so that they don't have to just read. They can just listen to what they can say in the camera."
+
+- Voice: the app's shared recorded voice, `app-voice.js` (LowiVoice), which uses the tutorial's three voices (en Ava, de Seraphina, es Ximena). No second engine: `affiliates/script-voice.js` only queues lines and draws buttons. `tools/app-voice/phrases.cjs` has an `affiliates` source (every scene line of every track in en/de/es, plus every LOWiSPIKE day line 1 to 30) and `build.py` records them like the rest of the app (210 new clips, about 4 MB; app-voice/ is now about 24.7 MB of its 30 MB cap). The robot device voice is only the fallback if a clip cannot load.
+- UI on the script screen: one big "Listen to the script" button (tap again = Pause, then "Continue listening", at the end "Listen again"), a round start-over arrow next to it while it is in use, "Scene 2 of 6" under it, a small play button in the corner of each scene and next to the LOWiSPIKE day line. The line being read lights up and scrolls into view.
+- Only what is unlocked is read: the free preview reads scene 1 ("Listen to scene 1").
+- Sound starts only from a tap. `window.LOWI_VOICE_TAP_ONLY` (set by script-voice.js) stops app-voice.js from its silent first-touch unlock on this page, so an affiliate's own music is not interrupted by a random tap; the app keeps its unlock.
+- Stops when the script changes (track, day, language, unlock), when leaving the script screen, when the page is hidden, and when the Community tab hides the Affiliates frame (checked every 0.7 s while playing). Inside the app it tells the parent (`lowi:media`, id `aff-voice`) so world sound pauses, and pauses itself when another voice in the app starts. Pause resumes at the start of the line it stopped in.
+- Shared code change, backwards compatible: `app-voice.js` finds `app-voice/` and `app-voice-data.js` next to its own script URL (`LowiVoice.BASE`), so it works from `affiliates/`. In the app that is the same folder as before. Inside the app the frame copies the app's `lowi-build` so the clip list comes from the phone's saved copy.
+- Checks: `tests/affiliates-voice.test.cjs`; `tools/blueprint/voice-check.cjs` (WebKit iPhone SE de, iPhone 13 en, Chromium Pixel 7 es, locked preview, in-app frame; audio output stubbed, so it shows which recorded clips are asked for, in order, and that the robot voice is never used).

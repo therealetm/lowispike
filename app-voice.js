@@ -44,6 +44,10 @@
 
     const W = root, D = W.document;
     const SILENT = 'data:audio/mpeg;base64,SUQzBAAAAAAAIlRTU0UAAAAOAAADTGF2ZjYyLjMuMTAwAAAAAAAAAAAAAAD/83DAAAAAAAAAAAAASW5mbwAAAA8AAAAIAAAD+gBHR0dHR0dHR0dHR0diYmJiYmJiYmJiYmJ8fHx8fHx8fHx8fHx8lpaWlpaWlpaWlpaWsbGxsbGxsbGxsbGxscvLy8vLy8vLy8vLy+Xl5eXl5eXl5eXl5eX///////////////8AAAAATGF2YzYyLjExAAAAAAAAAAAAAAAAJALUAAAAAAAAA/qOiXBeAAAAAAAAAAAAAAAAAP/zQMQAAAADSAAAAABMQU1FMy4xMDEgKGJldGEgMylVTEFNRTMuMTAxIChiZXRhIDMpVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NCxFsAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAxIChiZXRhIDMpVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NAxKQAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDEgKGJldGEgMylVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/80LEowAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDEgKGJldGEgMylVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/80DEpAAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMSAoYmV0YSAzKVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsSjAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMSAoYmV0YSAzKVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NCxKMAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
+    /* Where the clips live: next to this file. The Affiliates page (affiliates/) loads ../app-voice.js too (22 Oct 2026); in the
+       app this is the page's own folder, so nothing changes there. */
+    const BASE = (() => { try { const me = D.currentScript; return me && me.src ? new URL('./', me.src).href : ''; } catch (e) { return ''; } })();
+    api.BASE = BASE;
     const build = () => { const m = D.querySelector('meta[name="lowi-build"]'); return (m && m.content) || '1'; };
     const appLang = () => { let l = 'en'; try { l = (W.LowiLang && W.LowiLang.get && W.LowiLang.get()) || localStorage.getItem('lowispike.lang') || D.documentElement.lang || 'en'; } catch (e) { } return L(l); };
 
@@ -53,14 +57,16 @@
         if (unlocked) return;
         try { const a = A(); if (!a.src || a.src === SILENT || a.paused) { a.src = SILENT; const p = a.play(); if (p && p.catch) p.catch(() => { unlocked = false; }); } unlocked = true; } catch (e) { }
     }
-    D.addEventListener('touchend', unlock, true); D.addEventListener('click', unlock, true);
+    /* LOWI_VOICE_TAP_ONLY (Affiliates page, 22 Oct 2026): no silent unlock on every first touch, so a visitor's own music is not
+       interrupted; speak() still unlocks from the tap that starts it. The app itself keeps the first-touch unlock. */
+    if (!W.LOWI_VOICE_TAP_ONLY) { D.addEventListener('touchend', unlock, true); D.addEventListener('click', unlock, true); }
 
     /* the list of recorded clips loads once, the first time anything talks */
     let dataP = null;
     function data() {
         if (W.LowiAppVoiceData) return Promise.resolve(W.LowiAppVoiceData);
         if (!dataP) dataP = new Promise(res => {
-            const sc = D.createElement('script'); sc.src = 'app-voice-data.js?v=' + encodeURIComponent(build()); sc.async = true;
+            const sc = D.createElement('script'); sc.src = BASE + 'app-voice-data.js?v=' + encodeURIComponent(build()); sc.async = true;
             sc.onload = () => res(W.LowiAppVoiceData || null); sc.onerror = () => { dataP = null; res(null); };
             D.head.appendChild(sc);
         });
@@ -83,7 +89,7 @@
     /* one sentence's clip: a promise of a Blob, or null (then the device says it) */
     function clipFor(d, lang, p) {
         const id = idOf(lang, p), known = !!(d && d.clips && d.clips[lang] && d.clips[lang][id] != null);
-        return fetchClip(api.DIR + lang + '/' + id + '.mp3', known);
+        return fetchClip(BASE + api.DIR + lang + '/' + id + '.mp3', known);
     }
     function media(on) { try { W.dispatchEvent(new CustomEvent('lowi:media', { detail: { id: 'app-voice', on: !!on } })); } catch (e) { } }
 

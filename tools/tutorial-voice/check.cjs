@@ -51,7 +51,8 @@ async function run(browser, engine, dev, lang, url, fails, shots) {
     /* layout: the speaker and every card button on screen, at least 44 px, none on top of another */
     const lay = await page.evaluate(() => {
         const card = document.querySelector('#ltTour .lt-card'); if (!card) return { err: 'no card' };
-        const bs = [...card.querySelectorAll('button')].map(b => { const r = b.getBoundingClientRect(); return { c: b.className, l: r.left, t: r.top, r: r.right, b: r.bottom, w: r.width, h: r.height }; });
+        /* only buttons that are shown: Pause stays display:none until the voice is on (tutorial.css .lt-pause) and has no box */
+        const bs = [...card.querySelectorAll('button')].filter(b => b.getClientRects().length > 0).map(b => { const r = b.getBoundingClientRect(); return { c: b.className, l: r.left, t: r.top, r: r.right, b: r.bottom, w: r.width, h: r.height }; });
         const sp = bs.find(b => /lt-speak/.test(b.c)); if (!sp) return { err: 'no speaker button' };
         const badge = card.querySelector('.lt-spk').getBoundingClientRect();
         const over = []; for (let i = 0; i < bs.length; i++) for (let j = i + 1; j < bs.length; j++) { const a = bs[i], b = bs[j]; const x = Math.min(a.r, b.r) - Math.max(a.l, b.l), y = Math.min(a.b, b.b) - Math.max(a.t, b.t); if (x > 0.5 && y > 0.5) over.push(a.c + ' x ' + b.c); }

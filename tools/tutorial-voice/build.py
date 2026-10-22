@@ -73,8 +73,8 @@ def duration_ms(path):
     try:
         o = subprocess.check_output(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', path])
         return round(float(o.strip()) * 1000)
-    except Exception:
-        return 0
+    except Exception:  # no ffprobe: stop instead of writing d = 0 (the voice test fails on it; Oct 22 2026)
+        sys.exit('ffprobe is needed for clip lengths: sudo apt-get install -y ffmpeg')
 
 
 async def main():

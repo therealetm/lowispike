@@ -145,7 +145,11 @@
             'Pads suaves y cuencos sonoros mientras el mundo est\u00e1 abierto. Las cuerdas fijan su tono, brillo y afinaci\u00f3n, y as\u00ed se queda hasta que lo restableces. Si tus registros de hoy muestran picos, se suma una capa m\u00e1s grave. Solo empieza si lo activas o tocas las cuerdas.'],
         ambient: ['Background sound', 'Hintergrundklang', 'Sonido de fondo'],
         quiet: ['Nothing to hear? Check your device volume and silent switch.', 'Nichts zu h\u00f6ren? Pr\u00fcf die Lautst\u00e4rke und den Stumm-Schalter deines Ger\u00e4ts.', '\u00bfNo oyes nada? Revisa el volumen y el modo silencio de tu dispositivo.'],
-        close: ['Close', 'Schlie\u00dfen', 'Cerrar']
+        close: ['Close', 'Schlie\u00dfen', 'Cerrar'],
+        /* Oct 22 2026: the World sound card inside Profile > Look & sound (it was its own Settings row) */
+        look: ['World sound', 'Weltklang', 'Sonido del mundo'],
+        lookSub: ['Every world plays its own soft sound', 'Jede Welt spielt ihren eigenen sanften Klang', 'Cada mundo suena a su manera'],
+        lookPad: ['Open the sound pad', 'Klang-Fenster \u00f6ffnen', 'Abrir el panel de sonido']
     };
     function t(key, lang) { const a = STR[key]; if (!a) return ''; const i = { en: 0, de: 1, es: 2 }[String(lang || 'de').slice(0, 2)]; return a[i == null ? 1 : i]; }
     const api = { KEY, DEFAULTS, MAX_MASTER, MAX_HZ, FADE_IN, FADE_OUT, CLOSE_FADE, MIX, UNEASY, WARP, bowls, BOWL_RATIOS, TUNE_KEY, TUNE_DEFAULTS, TUNE, tuneFrom, loadTune, saveTune, isDefaultTune, tuneRoot, tuneRatio, padChord, padLp, padLevel, bowlNotes, uneasyNotes, lowBowlNotes, tuneLabel, tuneExtremes, lightHz, STR, clampVol, masterGain, loadPrefs, savePrefs, guard, audible, warpAudible, allHz, t };

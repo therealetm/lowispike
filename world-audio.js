@@ -423,10 +423,64 @@
     setInterval(() => { if (!D.hidden) sync(); }, 1500);
     sync();
 
+    /* ---------- Profile > Look & sound: the World sound card ----------
+       Oct 22 2026 (Emmanuel: "Look and sound should have world sound inside of it."): World sound is no longer its own Settings
+       row. Its switch and volume sit right here, on the same st.on and the same saved prefs (lowi.worldAudio: vol, warp), so
+       nothing an existing user chose changes. "Open the sound pad" goes Home and opens the same Body sound panel the row opened
+       (the panel only lives in the open world). index.html's G2E idOf() files .wa-look under the "look" part. */
+    const LOOK_ICON = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h2l2-5 3 10 3-12 3 9 2-2h3"/></svg>';
+    function lookHtml() {
+        const on = st.on, v = prefs.vol;
+        return '<div class="sfx-row"><span class="sfx-ic" aria-hidden="true">' + LOOK_ICON + '</span><div class="sfx-tx"><b>' + tr('look') + '</b><small>' + tr('lookSub') + '</small></div>' +
+            '<button type="button" class="sfx-sw' + (on ? ' on' : '') + '" data-wa-look="on" role="switch" aria-checked="' + on + '" aria-label="' + tr('look') + '" data-sfx="none"><i></i></button></div>' +
+            '<div class="sfx-vol' + (on ? '' : ' off') + '"><span class="small muted">' + tr('vol') + '</span><input type="range" data-wa-look="vol" min="0" max="100" step="1" value="' + v + '" aria-label="' + tr('look') + ': ' + tr('vol') + '"' + (on ? '' : ' disabled') + '><span class="small num" data-wa-look="n">' + v + '%</span></div>' +
+            '<button type="button" class="sfx-try" data-wa-look="pad" aria-haspopup="dialog">' + tr('lookPad') + '</button>';
+    }
+    function paintLook() {
+        const c = D.querySelector('#tab-profile .wa-look'); if (!c) return;
+        const r = c.querySelector('input'); if (r && D.activeElement === r && c.dataset.on === String(st.on)) return;   /* keep the slider under the finger */
+        const sig = (st.on ? 1 : 0) + '|' + lang() + '|' + prefs.vol;
+        if (c.dataset.sig !== sig) { c.innerHTML = lookHtml(); c.dataset.sig = sig; c.dataset.on = String(st.on); }
+    }
+    function placeLook() {
+        const tab = D.getElementById('tab-profile'); if (!tab) return;
+        const have = tab.querySelector(':scope > .wa-look');
+        const after = tab.querySelector(':scope > .sfx-card') || tab.querySelector(':scope > .r2-look'); if (!after) return;
+        if (have && have.previousElementSibling === after) { paintLook(); return; }
+        const c = have || D.createElement('div');
+        if (!have) { c.className = 'card wa-look'; c.setAttribute('data-wa-look-card', ''); }
+        after.insertAdjacentElement('afterend', c); paintLook();
+    }
+    /* the panel only exists in the open world: go Home, then open it as soon as the world is there */
+    function openPadFromLook() {
+        if (uiHost()) { togglePanel(true); return; }
+        try { if (typeof W.lowiOpen === 'function') W.lowiOpen('home'); else if (typeof W.goTab === 'function') W.goTab('home'); } catch (e) { }
+        let n = 0; const tryOpen = () => { if (uiHost()) { ensureUi(); togglePanel(true); return; } if (++n < 40) setTimeout(tryOpen, 100); };
+        setTimeout(tryOpen, 60);
+    }
+    D.addEventListener('click', e => {
+        const b = e.target && e.target.closest && e.target.closest('.wa-look [data-wa-look]'); if (!b || b.tagName === 'INPUT') return;
+        if (b.dataset.waLook === 'on') { st.userOff = st.on; setOn(!st.on); paintLook(); }
+        else if (b.dataset.waLook === 'pad') { e.preventDefault(); openPadFromLook(); }
+    });
+    D.addEventListener('input', e => {
+        const r = e.target; if (!r || !r.matches || !r.matches('.wa-look input[data-wa-look=vol]')) return;
+        prefs.vol = C.clampVol(r.value); if (st.on && st.master && running()) ramp(st.master.gain, C.masterGain(prefs.vol), 0.06);
+        const c = r.closest('.wa-look'); if (c) c.dataset.sig = (st.on ? 1 : 0) + '|' + lang() + '|' + prefs.vol;   /* no rebuild under the finger */
+        const n = r.parentNode.querySelector('[data-wa-look=n]'); if (n) n.textContent = prefs.vol + '%';
+        paint();
+    });
+    D.addEventListener('change', e => { const r = e.target; if (r && r.matches && r.matches('.wa-look input[data-wa-look=vol]')) save(); });
+    W.addEventListener('lowi:world-audio', paintLook);
+    W.addEventListener('lowi:lang', paintLook);
+    let lookRaf = 0;
+    new MutationObserver(() => { if (lookRaf) return; lookRaf = requestAnimationFrame(() => { lookRaf = 0; placeLook(); }); }).observe(D.body || H, { childList: true, subtree: true });
+    placeLook();
+
     W.LowiWorldAudio = {
         get on() { return st.on; }, get state() { return st.ctx ? st.ctx.state : 'none'; }, get ambient() { return !!st.amb; }, get uneasy() { return st.amb ? +st.amb.uneasyBus.gain.value.toFixed(4) : 0; }, get light() { return st.amb ? +st.amb.lightBus.gain.value.toFixed(4) : 0; }, get mood() { return st.amb ? st.amb.level : null; }, get warp() { return st.warp ? st.warp.phase : null; },
         get plays() { return Object.assign({}, st.plays); }, get gain() { return st.master ? st.master.gain.value : 0; }, prefs: () => Object.assign({}, prefs),
-        setOn, open: () => togglePanel(true), close: () => togglePanel(false), instrument, get bowls() { return st.bowlN; },
+        setOn, open: () => togglePanel(true), close: () => togglePanel(false), openFromLook: openPadFromLook, placeLook, instrument, get bowls() { return st.bowlN; },
         tune: () => Object.assign({}, tune), setTune, resetTune,
         /* what is really playing (for checks): pad frequencies, filter and level read back from the audio graph */
         get playing() { const a = st.amb; return a ? { chord: a.pad.map(v => +v[0].frequency.value.toFixed(2)), lp: Math.round(a.pad.lp.frequency.value), level: +a.padLvl.gain.value.toFixed(3) } : null; }

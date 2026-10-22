@@ -19008,7 +19008,7 @@ function idOf(e){
   if (c.contains("r3a-pf")) return "about";
   if (e.id === "health") return "health";
   if (e.id === "lcAcct") return "acct";
-  if (c.contains("r2-look") || c.contains("sfx-card") || c.contains("sfx-sec")) return "look";
+  if (c.contains("r2-look") || c.contains("sfx-card") || c.contains("sfx-sec") || c.contains("wa-look")) return "look"; /* wa-look: World sound (Oct 22 2026) */
   if (q(e, '[data-act="editname"]') || e.matches('[data-act="reset"]') || q(e, "[data-act=install]")) return "app";
   return null;
 }

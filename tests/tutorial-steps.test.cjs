@@ -112,7 +112,7 @@ test('the rule is written down for future tasks', () => {
 
 test('Settings has a Tutorial row in all three languages that starts the tour', () => {
     const SS = require('../home-settings-sleep-v2.js');
-    assert.deepStrictEqual(SS.pageGroups({ has: () => true })[0].ids, ['theme', 'look', 'worldSound', 'language', 'tutorial']);
+    assert.deepStrictEqual(SS.pageGroups({ has: () => true })[0].ids, ['theme', 'look', 'language', 'tutorial']);
     for (const l of LANGS) assert.ok(SS.TX[l].tutorial, 'label ' + l);
     assert.strictEqual(SS.rowAction('tutorial'), 'go', 'a place: Settings closes, then the tour starts');
     const src = read('home-settings-sleep-v2.js');

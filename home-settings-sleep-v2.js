@@ -152,14 +152,16 @@
     const MORE_GROUPS = { go: COMMUNITY_PLACES.you.concat(['foryou', 'care', 'workouts', 'map', 'gift', 'hunt']), set: [] };
     const MORE = MORE_GROUPS.go.concat(MORE_GROUPS.set);
     /* the slim Settings (a hold on the Community bubble): the switches, the language and the account, nothing else */
-    const SETTINGS_IDS = ['theme', 'look', 'worldSound', 'language', 'tutorial'], ACCOUNT_IDS = ['account', 'deleteAccount'];
+    /* Oct 22 2026 (Emmanuel: "Look and sound should have world sound inside of it."): no World sound row any more; its switch,
+       volume and sound pad are a card inside Look & sound (world-audio.js placeLook). ROUTES.worldSound stays for the API. */
+    const SETTINGS_IDS = ['theme', 'look', 'language', 'tutorial'], ACCOUNT_IDS = ['account', 'deleteAccount'];
     const HINT_KEY = 'lowi.hint.holdCommunity', HOLD_MS = 480;
     /* out of the panel, and where each one is still reached (their routes and features stay in the app):
        today: Emmanuel dropped Today from Home; cook: Fuel bubble > Cook; theme: Settings > Look & sound > Day & night;
        quest: Emmanuel dropped Daily quest */
     /* Oct 21 2026 cleanup (DECISIONS.md): vr and weather are out of every menu (their code and saved choices stay); community is the
        Home bubble itself; theme and worldSound are Settings rows now */
-    const MORE_REMOVED = { today: 'removed', cook: 'fuel', theme: 'settings', quest: 'removed', vr: 'removed', weather: 'removed', community: 'bubble', worldSound: 'settings' };
+    const MORE_REMOVED = { today: 'removed', cook: 'fuel', theme: 'settings', quest: 'removed', vr: 'removed', weather: 'removed', community: 'bubble', worldSound: 'look' };
     function moreGroups(env) {
         const has = id => !!(env && env.has && env.has(id));
         return { go: MORE_GROUPS.go.filter(has), set: MORE_GROUPS.set.filter(has) };

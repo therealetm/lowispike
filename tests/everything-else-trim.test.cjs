@@ -15,7 +15,7 @@ test('Oct 21 2026: what no bubble reaches lives in Community (profile first, the
     assert.deepStrictEqual(C.MORE, C.MORE_GROUPS.go.concat(C.MORE_GROUPS.set));
     assert.deepStrictEqual(C.moreGroups({ has: id => id === 'care' || id === 'worldSound' }), { go: ['care'], set: [] });
     assert.deepStrictEqual(C.entries('more', all), C.MORE);
-    assert.ok(C.entries('settings', all).includes('worldSound'));
+    assert.ok(!C.entries('settings', all).includes('worldSound'), 'World sound lives inside Look & sound since Oct 22 2026');
 });
 
 test('redundant entries are out of the panel, and each one says where it is still reached', () => {

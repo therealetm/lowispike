@@ -25,3 +25,5 @@ html[data-ui=light] .lbx-mode button.on{color:#0b4f5c;background:linear-gradient
 html[data-ui=light] .lbx-you{background:rgba(40,190,210,.1);border-color:rgba(20,150,170,.35);color:#14202e}
 html[data-ui=light] .lbx-demo{color:#8a5200;border-color:rgba(180,110,20,.5)}
 html[data-ui=light] .lbx-art{background:radial-gradient(circle at 40% 35%,rgba(255,255,255,.9),rgba(40,190,210,.12) 60%,transparent 72%)}
+/* Care view on a phone: the switch already says Care, so its own title gives the room back to the podium */
+html.g2d-on #cmPaneBoard .r3-cb > .lbx-mode + h2{display:none}

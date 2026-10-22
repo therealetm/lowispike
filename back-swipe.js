@@ -13,8 +13,12 @@
     function guard() { try { if (!ours(history.state)) history.pushState({ lowiBack: 1 }, ''); } catch (e) { } }
     function activeTab() { const t = D.querySelector('.tab.active'); return t ? t.id.replace(/^tab-/, '') : 'home'; }
     function sig() {
+        /* Oct 22: a closing sheet (.r2-ov) loses .on at once but stays in the page for its slide-out, so the union count alone
+           did not change within 80 ms and back on Home with a scanned product (or any sheet) open left the app. Count open
+           sheets on their own too. */
         return H.className + '|' + D.body.className + '|' + activeTab() + '|' +
-            D.querySelectorAll('.on, .open, [open], .r2-ov, [role="dialog"], [aria-modal="true"]').length;
+            D.querySelectorAll('.on, .open, [open], .r2-ov, [role="dialog"], [aria-modal="true"]').length + '|' +
+            D.querySelectorAll('.r2-ov.on').length;
     }
     function escape() {
         const t = D.activeElement && D.activeElement !== D.body ? D.activeElement : D;

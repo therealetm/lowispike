@@ -86,4 +86,3 @@ Batches: 1 = companion + bubbles (done, 19 cards); 2 = food / scan; 3 = play / w
 | 71 | done | end | home | n/a | companion waving / confetti picture | 6 |
 
 Left after batch 1: 52 cards (including the claim card, which the own-companion task owns).
-

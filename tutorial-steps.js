@@ -409,9 +409,9 @@
             id: 'world-sound', area: 'play', target: ['#whHud .o8-settings'], covers: ['worldSound'], teaches: ['sound-strings'], later: 'swipe',
             title: { en: 'World sound', de: 'Weltklang', es: 'Sonido del mundo' },
             text: {
-                en: 'In Settings, World sound gives every world its own sound. After the tour, open its Sound panel: touch a string to play it, swipe across the strings to strum, and slide along one to bend the note.',
-                de: 'In den Einstellungen gibt Weltklang jeder Welt ihren eigenen Klang. Nach der Tour, im Klang-Fenster: Berühr eine Saite, wisch quer darüber zum Schrammeln und gleite an einer entlang, um den Ton zu ziehen.',
-                es: 'En Ajustes, Sonido del mundo da a cada mundo su propio sonido. Después del recorrido, en su panel de sonido: toca una cuerda, desliza por encima para rasguear y a lo largo de una para doblar la nota.'
+                en: 'In Settings, under Look & sound, World sound gives every world its own sound. After the tour, open its Sound panel: touch a string to play it, swipe across the strings to strum, and slide along one to bend the note.',
+                de: 'In den Einstellungen unter Aussehen & Ton gibt Weltklang jeder Welt ihren Klang. Nach der Tour, im Klang-Fenster: Berühr eine Saite, wisch quer darüber zum Schrammeln und gleite an einer entlang, um den Ton zu ziehen.',
+                es: 'En Ajustes, dentro de Aspecto y sonido, Sonido del mundo da a cada mundo su propio sonido. Después del recorrido, en su panel: toca una cuerda, desliza por encima para rasguear y a lo largo de una para doblar la nota.'
             }
         },
         {

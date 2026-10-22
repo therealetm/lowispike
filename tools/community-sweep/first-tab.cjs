@@ -7,6 +7,8 @@
 
    node tools/community-sweep/first-tab.cjs [webkit|chromium] [root|url] */
 'use strict';
+/* pointerdown guard note: every programmatic goTab here first fires a pointerdown, like a real finger, because back-swipe.js
+   pushes its history guard on pointerdown; without it WebKit's history.back() from section-nav walked off to about:blank. */
 const H = require('../sim/harness.cjs');
 const [engine = 'webkit', where = ''] = process.argv.slice(2);
 const REC = () => {
@@ -35,7 +37,7 @@ const expectOf = id => id === 'room' ? 'room|room' : id === 'chat' ? 'chat|chat'
 (async () => {
     const o = { engine, members: 30, messages: 120 }; if (/^https?:/.test(where)) o.url = where; else if (where) o.root = where;
     const R = await H.open(o); const P = R.page; const results = [];
-    let loads = 0; P.on('load', () => { loads++; if (loads > 1) console.log('NOTE page reloaded (' + loads + ')'); });
+    let loads = 0; P.on('load', () => { loads++; if (loads > 1) console.log('NOTE page reloaded (' + loads + ') ' + P.url().slice(-60)); });
     P.on('crash', () => console.log('NOTE page crashed'));
     const ready = async () => { for (let i = 0; i < 40; i++) { if (await P.evaluate(() => typeof window.goTab === 'function' && !!window.LowiRoomsUI).catch(() => false)) return; await H.sleep(500); } };
     const openCommunity = async () => {
@@ -44,11 +46,11 @@ const expectOf = id => id === 'room' ? 'room|room' : id === 'chat' ? 'chat|chat'
         /* the bubble's tap handler calls goTab('foryou') (home-orbit-v2.js); call it the same way so a missed tap on a
            floating bubble can't hide the result. TAP=1 taps the real bubble instead. */
         const b = P.locator('#whHud .o8-settings').first();
-        if (process.env.TAP && await b.count()) await R.tapEl(b); else await P.evaluate(() => window.goTab('foryou'));
+        if (process.env.TAP && await b.count()) await R.tapEl(b); else await P.evaluate(() => (document.body.dispatchEvent(new Event('pointerdown',{bubbles:true})),window.goTab)('foryou'));
         await H.sleep(2500);
         return P.evaluate(() => { const o = window.__ft.stop(); const t0 = window.__ft.t0; return o.map(x => ({ t: x.t - Math.round(t0), s: x.s })); });
     };
-    const goHome = async () => { await P.evaluate(() => window.goTab('home')); await H.sleep(1200); };
+    const goHome = async () => { await P.evaluate(() => (document.body.dispatchEvent(new Event('pointerdown',{bubbles:true})),window.goTab)('home')); await H.sleep(1200); };
     try {
         R.step = 'boot'; await R.goto(); await H.sleep(5000);
         for (const ord of ORDERS) {
@@ -58,7 +60,7 @@ const expectOf = id => id === 'room' ? 'room|room' : id === 'chat' ? 'chat|chat'
                 await ready();
                 if (before !== 'fresh') {
                     /* get into that place first, then leave to Home */
-                    await P.evaluate(() => window.goTab('foryou')); await H.sleep(1500);
+                    await P.evaluate(() => (document.body.dispatchEvent(new Event('pointerdown',{bubbles:true})),window.goTab)('foryou')); await H.sleep(1500);
                     await P.evaluate(b => {
                         const U = window.LowiRoomsUI, C = window.LowiCommunity;
                         if (b === 'left-in-chat-room') { U.setTab(true); C.thread(true); }
@@ -82,7 +84,7 @@ const expectOf = id => id === 'room' ? 'room|room' : id === 'chat' ? 'chat|chat'
             await P.evaluate(o => localStorage.setItem('lowispike.community.tabs', JSON.stringify(o)), ord);
             R.step = ord[0] + '/home-reply';
             await P.evaluate(REC);
-            await P.evaluate(() => { const C = window.LowiCommunity, l = C.latest && C.latest(); C.openMessage(l ? l.uid : '', l ? l.id : ''); });
+            await P.evaluate(() => { const C = window.LowiCommunity, l = C.latest && C.latest(); document.body.dispatchEvent(new Event('pointerdown',{bubbles:true})); C.openMessage(l ? l.uid : '', l ? l.id : ''); });
             await H.sleep(2500);
             const seq = (await P.evaluate(() => window.__ft.stop())).filter(x => x.s !== 'closed');
             const ok = seq.length > 0 && seq.every(x => x.s === 'chat|chat-room');

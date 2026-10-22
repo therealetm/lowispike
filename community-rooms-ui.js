@@ -52,11 +52,12 @@ function inviteUrl(){try{return location.href.split('#')[0].split('?')[0]+'#comm
    so no new frame was made and Creation/Affiliates opened blank until the app was reloaded. A frame that is no longer in this box
    is dropped and made again. dropFrames() frees the hidden pages (each is a whole document in memory): when Community closes all
    of them go, when the chat room opens the ones not on screen go; they load again the next time their tab is opened. */
+function pageActive(){const p=D.getElementById('tab-foryou');return !p||p.classList.contains('active');}
 function dropFrames(keep){for(const k in frames){if(k===keep)continue;const f=frames[k];delete frames[k];try{f.src='about:blank';}catch(e){}if(f.parentNode)f.parentNode.removeChild(f);}}
 function ensureView(pane){let box=pane.querySelector(':scope>.rm-view');
  if(!box){box=D.createElement('section');box.className='rm-view';box.setAttribute('data-noi18n','');pane.appendChild(box);}
  for(const k in frames)if(frames[k].parentNode!==box){const f=frames[k];delete frames[k];if(f.parentNode)f.parentNode.removeChild(f);}
- if(VIEWS[view]&&!frames[view]){const f=D.createElement('iframe');f.className='rm-frame';f.src=VIEWS[view]+'?embed=1';/* not lazy: it is only made when its tab is opened, and lazy frames in WebKit can wait for a scroll */f.dataset.view=view;frames[view]=f;box.appendChild(f);}
+ if(VIEWS[view]&&!frames[view]&&pageActive()){/* never load a page while Community is closed (a repaint after leaving made it again) */const f=D.createElement('iframe');f.className='rm-frame';f.src=VIEWS[view]+'?embed=1';/* not lazy: it is only made when its tab is opened, and lazy frames in WebKit can wait for a scroll */f.dataset.view=view;frames[view]=f;box.appendChild(f);}
  for(const k in frames)frames[k].hidden=k!==view;
  for(const k in frames)frames[k].title=k==='aff'?tr('aff'):tr('create');
  return box;}

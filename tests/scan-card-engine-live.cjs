@@ -52,8 +52,10 @@ const BAD = /no blood sugar spike|kein Blutzucker-Spike|no te sube el azúcar|No
       log.reveal = await ev(() => window.LowiDex && typeof LowiDex.reveal);
       // scanfe-e: quality / cravings / reasons / alternative ride on scanFood in the real page (not shown until g1).
       log.assess = await ev(() => { try { const o = LowiFoodEngine.scanFood({name: 'Ültje Süß & Salzig', unit: 'g', per100: {kcal: 517, fat: 33, carbs: 36, sugar: 29, fibre: 5.6, protein: 16, salt: 1.1}}, 30);
-        return {loaded: !!window.LowiFoodAssess, verdict: o.verdict, quality: o.quality && o.quality.key, reasons: (o.reasons || []).map(r => r.key), alt: o.alternative && o.alternative.key}; } catch (e) { return {error: String(e)}; } });
+        return {loaded: !!window.LowiFoodAssess, verdict: o.verdict, quality: o.quality && o.quality.key, reasons: (o.reasons || []).map(r => r.key), alt: o.alternative && o.alternative.key, conf: o.confidence}; } catch (e) { return {error: String(e)}; } });
       if (!log.assess || !log.assess.loaded || log.assess.alt !== 'sweet_nut_snack' || !(log.assess.reasons || []).length) fails.push('food assess not wired: ' + JSON.stringify(log.assess));
+      // scanfe-f1: confidence (evidence completeness) rides on scanFood; no barcode + no ingredients = Low, never High.
+      if (!log.assess || log.assess.conf !== 'Low') fails.push('confidence not wired: ' + JSON.stringify(log.assess && log.assess.conf));
       if (log.reveal !== 'function') throw new Error('LowiDex.reveal is not reachable');
       for (const lang of langs) {
         await ev(l => { try { LowiLang.set(l); } catch (e) { } }, lang); await sleep(500);

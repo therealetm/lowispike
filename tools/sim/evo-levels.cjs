@@ -2,11 +2,14 @@
 // Oct 22, 2026, evolution step 1: 25 levels. Simulated phone check of the floor (4,600 XP keeps Level 7), a high-level user
 // (20,000 XP = Level 11 Pulsar cell), the growth map's 25 rows with Evolution marks at 5/10/15/20/25, Misty's sheet, and Forms.
 // Usage: node tools/sim/evo-levels.cjs [device] [lang] [url]   e.g. node tools/sim/evo-levels.cjs "iPhone SE" de
+// THEME=light (Day) or THEME=dark (Night) switches the app's own theme after load; default leaves the app's choice.
 const path = require('path');
 const H = require('./harness.cjs');
 const device = process.argv[2] || 'iPhone 13', lang = process.argv[3] || 'en', url = process.argv[4] || '';
-const tag = device.replace(/\s+/g, '') + '-' + lang;
+const theme = process.env.THEME || '';
+const tag = device.replace(/\s+/g, '') + '-' + lang + (theme ? '-' + (theme === 'light' ? 'day' : 'night') : '');
 let bad = 0;
+const P0 = R => R.page;
 const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + '[' + tag + '] ' + m); if (!c) bad++; };
 
 async function run(xp, fn) {
@@ -16,6 +19,7 @@ async function run(xp, fn) {
             try { const s = JSON.parse(localStorage.getItem('lowispike.v2') || '{}'); s.xp = x; localStorage.setItem('lowispike.v2', JSON.stringify(s)); localStorage.removeItem('lowi.lvCurve'); localStorage.removeItem('lowi.lvFloor'); if (l !== 'en') localStorage.setItem('lowispike.lang', l); } catch (e) { }
         }, [xp, lang]);
         await R.goto(); await H.sleep(2500);
+        if (theme) { await P0(R).evaluate(t => { try { window.LowiR2.applyTheme(t); } catch (e) { } }, theme); await H.sleep(600); }
         await fn(R, R.page);
         const errs = R.errs.filter(e => !/supabase|realtime|websocket/i.test(e.m));
         ok(errs.length === 0, xp + ' XP: no page errors (' + errs.length + ')'); if (errs.length) console.log(JSON.stringify(errs.slice(0, 4)).slice(0, 1200));

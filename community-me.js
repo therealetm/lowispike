@@ -94,7 +94,7 @@
         const sec = g => g.key === 'danger'
             ? '<section class="cme-sec cme-sec-danger" aria-label="' + T.account + '"><div class="cme-list">' + g.ids.map(row).join('') + '</div></section>'
             : (ov && g.key === 'you')
-                ? '<section class="cme-sec" aria-label="' + T[g.key] + '"><h3>' + T[g.key] + '</h3><div class="cme-tiles">' + g.ids.map(tile).join('') + '</div><div class="cme-list">' + moreRow(g.more) + '</div></section>'
+                ? '<section class="cme-sec" aria-label="' + T[g.key] + '"><h3>' + T[g.key] + '</h3><div class="cme-tiles">' + g.ids.map(tile).join('') + '</div>' + (g.more && g.more.length ? '<div class="cme-list">' + moreRow(g.more) + '</div>' : '') + '</section>'
                 : '<section class="cme-sec" aria-label="' + T[g.key] + '"><h3>' + T[g.key] + '</h3><div class="cme-list">' + g.ids.map(row).join('') + moreRow(g.more) + '</div></section>';
         el.innerHTML = '<div class="cme-head">' +
             '<span class="cme-av" aria-hidden="true">' + av + '</span>' +

@@ -134,7 +134,16 @@
         if (unlocked) return;
         try { const a = A(); a.src = SILENT; const p = a.play(); unlocked = true; if (p && p.catch) p.catch(() => { }); } catch (e) { }
     }
-    function onGesture() { if (on && H.classList.contains('lt-on')) unlock(); }
+    /* Oct 22 2026 (Emmanuel: "When user turns sound on it should stay on all the time even if they leave the app. And it should stay on
+       or turn on when they come back on the app."): voice on is stored ('1') and only the speaker turns it off. When the browser
+       blocked the card's clip (fresh open, back from the background on iOS), the speaker stays ON and the first tap anywhere in the
+       tour reads the card, silently, with no prompt. A tap on the speaker itself keeps its own meaning (toggle handles it). */
+    function onGesture(e) {
+        if (!on || !H.classList.contains('lt-on')) return;
+        const onSpeaker = !!(e && e.target && e.target.closest && e.target.closest('.lt-speak'));
+        if (blocked && ctxNow && !quietNow && !onSpeaker) { blocked = false; unlocked = false; unlock(); lastKey = ctxNow.key; saidKey = ''; say(ctxNow.sp); return; }
+        unlock();
+    }
     D.addEventListener('touchend', onGesture, true); D.addEventListener('click', onGesture, true);
 
     /* ---- highlight: the word being said lights up ---- */
@@ -261,7 +270,7 @@
         }
     }
 
-    let ctxNow = null;
+    let ctxNow = null, quietNow = false;
     function toggle(ev) {
         if (ev) { ev.preventDefault(); ev.stopPropagation(); }
         if (on && blocked) { blocked = false; unlocked = false; unlock(); if (ctxNow) say(ctxNow.sp); return; }
@@ -303,6 +312,7 @@
             onCue: typeof c.onCue === 'function' ? c.onCue : null, cueAt: c.cue ? cueIndex(sp.s, c.cue) : -1, cued: !!was };
         if (!cur || cur.lang !== lang) cur = Object.assign({ playing: false, how: '' }, sp);
         paintBtn();
+        quietNow = !!c.quiet;
         if (c.quiet) { lastKey = ''; saidKey = ''; stop(); return; }   /* paused: paint the card, say nothing */
         if (key === lastKey && cur && (cur.playing || (on && saidKey === key))) { return; }
         saidKey = '';
@@ -313,8 +323,15 @@
     function halt() { lastKey = ''; saidKey = ''; stop(); }
     if (!D.getElementById('ltvCss')) { const l = D.createElement('link'); l.id = 'ltvCss'; l.rel = 'stylesheet'; l.href = 'tutorial-voice.css?v=' + encodeURIComponent(build()); D.head.appendChild(l); }
     W.addEventListener('lowi:tutorial', e => { const d = e.detail || {}; if (!d.on) halt(); else if (!dataP) data(); });
-    D.addEventListener('visibilitychange', () => { if (D.hidden) halt(); });
+    /* Oct 22 2026: back in the app (switched apps, locked phone, back from the page cache) with the voice on and the tour open: the card
+       on screen is read again, so the hands-free tour goes on. Blocked by the browser: onGesture reads it on the first tap */
+    function comeBack() {
+        if (!on || D.hidden || !H.classList.contains('lt-on') || quietNow || !ctxNow || !card || !card.isConnected || (cur && cur.playing)) return;
+        lastKey = ctxNow.key; saidKey = ''; say(ctxNow.sp);
+    }
+    D.addEventListener('visibilitychange', () => { if (D.hidden) halt(); else comeBack(); });
     W.addEventListener('pagehide', halt);
+    W.addEventListener('pageshow', e => { if (e && e.persisted) comeBack(); });
     W.LowiTutorialVoice = Object.assign({}, api, {
         render, stop: halt, toggle: () => toggle(), isOn: () => on, playing: () => !!(cur && cur.playing), how: () => (cur && cur.how) || '',
         paused: () => !audio || audio.paused, word: () => { const w = card && card.querySelector('.lt-say'); return w ? w.textContent : ''; }, bestVoice, data

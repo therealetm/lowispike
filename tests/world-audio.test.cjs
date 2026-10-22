@@ -6,14 +6,13 @@ const read = f => fs.readFileSync(path.join(root, f), 'utf8');
 const js = read('world-audio.js'), css = read('world-audio.css'), core = read('world-audio-core.js'), loader = read('apple-ui.js'), sw = read('sw.js');
 const regions = read('body-world-regions.js'), season = read('season.js');
 
-test('prefs: only volume and the warp switch are stored, never "on"', () => {
-    assert.deepStrictEqual(C.loadPrefs(null), { vol: 40, warp: true });
-    assert.deepStrictEqual(C.loadPrefs('{"vol":250,"warp":false,"on":true}'), { vol: 100, warp: false });
-    assert.deepStrictEqual(C.loadPrefs('nonsense'), { vol: 40, warp: true });
+test('prefs: volume, warp switch and (Oct 22 2026) the on choice are stored', () => {
+    assert.deepStrictEqual(C.loadPrefs(null), { vol: 40, warp: true, on: false });
+    assert.deepStrictEqual(C.loadPrefs('{"vol":250,"warp":false,"on":true}'), { vol: 100, warp: false, on: true });
+    assert.deepStrictEqual(C.loadPrefs('nonsense'), { vol: 40, warp: true, on: false });
     const s = JSON.parse(C.savePrefs({ vol: 12.6, warp: true, on: true }));
-    assert.deepStrictEqual(s, { vol: 13, warp: true });
-    assert.ok(!('on' in s));
-    assert.ok(!/localStorage\.setItem\([^)]*\bon\b/.test(js));
+    assert.deepStrictEqual(s, { vol: 13, warp: true, on: true });
+    assert.deepStrictEqual(JSON.parse(C.savePrefs({ vol: 12 })), { vol: 12, warp: true, on: false });
 });
 
 test('volume curve: silent at 0, rising, capped and restrained', () => {
@@ -53,7 +52,7 @@ test('opt-in: the context is only made inside a tap, no autoplay on load', () =>
     /* Oct 16: the only automatic start is the string pad's touch (wake), and only if he did not switch it off himself */
     assert.strictEqual((js.match(/setOn\(true\)/g) || []).length, 1, 'nothing else turns it on');
     assert.ok(js.includes('function wake() { if (!st.on && !st.userOff && !sfxMuted() && isOpen()) setOn(true); }'), 'only wake() does, from a string touch');
-    assert.ok(bootTail.includes("if (!st.on || D.hidden || !st.ctx) return;"), 'resume only after the user turned it on');
+    assert.ok(bootTail.includes("if (!st.on || D.hidden) return;"), 'resume only after the user turned it on');
     assert.ok(js.includes('ctx.resume()'));
 });
 
@@ -63,7 +62,7 @@ test('lifecycle: world close, hidden app and page hide stop the sound', () => {
     assert.ok(js.includes("if (!want) { if (st.ctx && (st.amb || running())) pause(C.CLOSE_FADE); }"));
     assert.ok(/const busy = \(\) =>[^\n]*mp-on[^\n]*br-open/.test(js) && js.includes("D.querySelectorAll('video,audio')"));
     assert.ok(js.includes("addEventListener('lowi:media'"));
-    assert.ok(js.includes("if (D.hidden) { killWarp(0.05); stopAmbient(0)") && js.includes('st.ctx.suspend()'));
+    assert.ok(js.includes("if (D.hidden) { if (!st.ctx) return; killWarp(0.05); stopAmbient(0)") && js.includes('st.ctx.suspend()'));
     assert.ok(js.includes("'pagehide'") && js.includes('st.ctx.close()'));
     assert.ok(C.audible({ on: true, open: true, hidden: false }));
     assert.ok(!C.audible({ on: true, open: false, hidden: false }));

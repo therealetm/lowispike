@@ -1,7 +1,7 @@
 /* LOWiSPIKE world sound core (Oct 15, 2026). Pure helpers for world-audio.js: prefs, volume curve, the comfortable mix,
    warp sound plans and duplicate guard, strings. No DOM, no audio here (node tests load it).
    Comfort rules (user: calm background for an iPad, meditation, falling asleep, gym display; some listeners have tinnitus or
-   anxiety): opt-in only, never autoplay, nothing stored that turns sound on by itself (only the volume and the warp switch),
+   anxiety): opt-in only (it starts silent until the user turns it on), and Oct 22 2026 once they turn it on it stays on (stored as "on"),
    slow fades, everything low-passed at 3 kHz (light, but no piercing tones), no beeps, no noise hum, no pulse, a limiter on the output, and a capped master.
    No health, sleep, tinnitus or anxiety claims anywhere in the copy. */
 (function (root) {
@@ -17,10 +17,12 @@
     function loadPrefs(raw) {
         let o = null; try { o = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch (e) { o = null; }
         if (!o || typeof o !== 'object') o = {};
-        return { vol: o.vol == null ? DEFAULTS.vol : clampVol(o.vol), warp: o.warp !== false };
+        return { vol: o.vol == null ? DEFAULTS.vol : clampVol(o.vol), warp: o.warp !== false, on: o.on === true };
     }
-    /* the on/off state is never written: a reload always starts silent */
-    function savePrefs(p) { const q = loadPrefs(p || {}); return JSON.stringify({ vol: q.vol, warp: q.warp }); }
+    /* Oct 22 2026 (Emmanuel: "When user turns sound on it should stay on all the time even if they leave the app. And it should
+       stay on or turn on when they come back on the app."): the on/off choice is stored too. Only the user's own switch (or a
+       string touch) changes it; leaving the app, a reload or a fresh open keep it. Default stays off: nothing starts unasked */
+    function savePrefs(p) { const q = loadPrefs(p || {}); return JSON.stringify({ vol: q.vol, warp: q.warp, on: q.on }); }
 
     /* the ambient mix. Oct 16 (E-man, handoff task 9: "replace the harsh microwave tone with calm meditation pads and singing
        bowls"): the steady noise band (it hummed like a microwave fan) and the low 58 Hz pulse are gone. Nothing is noise any more.

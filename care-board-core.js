@@ -39,7 +39,8 @@
         return out;
     }
     const tag = (key, full) => TAG + ':' + key + ':' + Math.max(0, Math.round(+full || 0));
-    function untag(s) { const m = /^care1:(\d{4}-\d{2}(?:-\d{2})?):(\d{1,3})$/.exec(String(s || '')); return m ? { key: m[1], full: +m[2] } : null; }
+    function untag(s) { const m = /^care1:(\d{4}-\d{2}(?:-\d{2})?):(\d{1,3})(?::x\d{1,6})?(?::h)?$/.exec(String(s || '')); return m ? { key: m[1], full: +m[2] } : null; }
+    /* Oct 22 2026: the strength leaderboard (leaderboard-core.js) adds :x<week XP> and :h (hidden) after the care part */
     const hash = s => { let h = 0; for (const c of String(s || '')) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
     /* demo bots: a steady made-up habit (4-11 sunbeams a day), never more than the days so far allow */
     function demo(name, kind, now) {

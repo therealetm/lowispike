@@ -36,7 +36,8 @@
         weight: '<path d="M4 19h16M5 15l4-4 3 2 6-7" ' + P + '/><circle cx="18" cy="6" r="1.6" ' + P + '/>',
         gear: '<circle cx="12" cy="12" r="3" ' + P + '/><path d="M12 3.5v2.2M12 18.3v2.2M3.5 12h2.2M18.3 12h2.2M6 6l1.6 1.6M16.4 16.4 18 18M6 18l1.6-1.6M16.4 7.6 18 6" ' + P + '/>',
         x: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11" ' + P + ' stroke-width="2.2"/>',
-        chev: '<path d="M9.5 6l6 6-6 6" ' + P + '/>'
+        chev: '<path d="M9.5 6l6 6-6 6" ' + P + '/>',
+        trophy: '<path d="M8 4.5h8v4.5a4 4 0 0 1-8 0zM8 6H5.5a2.5 2.5 0 0 0 2.6 3.4M16 6h2.5a2.5 2.5 0 0 1-2.6 3.4M12 13v3.5M8.5 19.5h7M9.5 19.5l.6-3h3.8l.6 3" ' + P + '/>'
     };
     /* YOU, then SETTINGS (the switches, language, tutorial, account), then Delete account on its own at the bottom; World sound is left
        out (it lives inside Look & sound) and so are places, which now have their own way in */
@@ -44,6 +45,8 @@
     function groups(has) {
         const S = root && root.LowiHomeSettingsSleepV2, C = S && S.COMMUNITY_PLACES || { you: ['me', 'body'] };
         const set = (S && S.SETTINGS_IDS || ['theme', 'look', 'language', 'tutorial']).filter(id => !SKIP.includes(id));
+        /* Oct 22 2026: "Show me on the leaderboard" (leaderboard.js) sits right after Day/night when the leaderboard is loaded */
+        if (root && root.LowiLeaderboard && !set.includes('lbShow')) set.splice(Math.max(0, set.indexOf('theme') + 1), 0, 'lbShow');
         const acc = S && S.ACCOUNT_IDS || ['account', 'deleteAccount'];
         const light = (S && S.EXPLORE_LIGHT || []).filter(has);
         return [{ key: 'you', ids: C.you.filter(has), more: light }, { key: 'settings', ids: set.concat(acc.filter(id => id !== 'deleteAccount')).filter(has) }, { key: 'danger', ids: acc.filter(id => id === 'deleteAccount').filter(has) }].filter(g => g.ids.length);
@@ -70,6 +73,8 @@
         const ico = ICON[id] ? svg(id) : s.icon(id).replace('ss2-ico', 'cme-ico');
         if (id === 'language') { return '<div class="cme-row cme-langrow" role="group" aria-label="' + esc(lab) + '">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span><span class="cme-langs">' + ['en', 'de', 'es'].map(x => '<button type="button" data-lang="' + x + '" aria-pressed="' + (x === l) + '"' + (x === l ? ' class="on"' : '') + '>' + x.toUpperCase() + '</button>').join('') + '</span></div>'; }
         if (id === 'theme') { const dark = s.state ? s.state('theme') : true, st = dark ? ST.night : ST.day; return '<button type="button" class="cme-row" role="switch" data-cme="theme" aria-checked="' + dark + '" aria-label="' + esc(lab) + ': ' + esc(st) + '">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span><small class="cme-st">' + esc(st) + '</small></button>'; }
+        if (id === 'lbShow') { const L = root.LowiLeaderboard, LT = (root.LowiLeaderboardCore && (root.LowiLeaderboardCore.TX[l] || root.LowiLeaderboardCore.TX.en)) || {}, on = !!(L && L.shown()), st = on ? LT.on : LT.off;
+            return '<button type="button" class="cme-row cme-lbshow" role="switch" data-cme="lbShow" aria-checked="' + on + '" aria-label="' + esc(LT.show + ': ' + st) + '">' + svg('trophy') + '<span class="cme-tx"><b>' + esc(LT.show) + '</b></span><small class="cme-st">' + esc(st) + '</small></button>'; }
         if (id === 'deleteAccount') return '<button type="button" class="cme-row cme-danger" data-cme="deleteAccount" aria-haspopup="dialog">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span>' + svg('chev', 'cme-chev') + '</button>';
         return '<button type="button" class="cme-row" data-cme="' + id + '">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b>' + (sub && !ov ? '<small>' + esc(sub) + '</small>' : '') + '</span>' + svg('chev', 'cme-chev') + '</button>';
     }
@@ -90,7 +95,7 @@
     function render() {
         const s = S(), T = TX[lang()], m = me(), pf = D.getElementById('pfBtn');
         const av = pf ? pf.innerHTML : '';
-        const gs = groups(id => s.has(id)), ver = s.version ? s.version() : '';
+        const gs = groups(id => id === 'lbShow' || s.has(id)), ver = s.version ? s.version() : '';
         const sec = g => g.key === 'danger'
             ? '<section class="cme-sec cme-sec-danger" aria-label="' + T.account + '"><div class="cme-list">' + g.ids.map(row).join('') + '</div></section>'
             : (ov && g.key === 'you')
@@ -176,6 +181,7 @@
         if (id === 'delCancel') { asking = false; render(); const f = el && el.querySelector('[data-cme="deleteAccount"]'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } } return; }
         if (id === 'delGo') { delGo(b); return; }
         /* Day/night switches in place and the hub stays open */
+        if (id === 'lbShow') { const L = root.LowiLeaderboard; if (L) L.setShown(!L.shown()); if (el && !asking) { render(); const f = el.querySelector('[data-cme="lbShow"]'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } } } return; }
         if (id === 'theme') { s.run('theme'); setTimeout(() => { if (el && !asking) { render(); const f = el.querySelector('[data-cme="theme"]'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } } } }, 60); return; }
         close(false);
         if (HOME_FIRST.includes(id) && typeof root.goTab === 'function') { root.goTab('home'); setTimeout(() => s.run(id), 700); return; }

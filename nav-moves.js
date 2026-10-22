@@ -18,7 +18,7 @@
     };
     const SPOTS = {
         fy: { tab: 'shelf', root: '#tab-shelf', pane: 'cmPaneFeed', label: () => T('For You', 'F\u00fcr dich', 'Para ti'), back: () => T('Cook', 'Kochen', 'Cocina') },
-        lb: { tab: 'move', root: '#tab-move', pane: 'cmPaneBoard', label: () => T('Care board', 'F\u00fcrsorge-Board', 'Tabla de cuidado'), back: () => T('Move', 'Bewegen', 'Moverse') }
+        lb: { tab: 'move', root: '#tab-move', pane: 'cmPaneBoard', label: () => T('Leaderboard', 'Bestenliste', 'Clasificaci\u00f3n') /* Oct 22: This week, Strongest and Care (leaderboard.js) */, back: () => T('Move', 'Bewegen', 'Moverse') }
     };
     const activeTab = () => { const t = $('.tab.active'); return t ? t.id.replace(/^tab-/, '') : ''; };
     function go(t) { try { if (typeof W.goTab === 'function') W.goTab(t);  } catch (e) { console.error(e); } }

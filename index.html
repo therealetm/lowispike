@@ -9312,7 +9312,7 @@ function mapPost(r){
 }
 function mapMsg(r){ return {id:r.id, uid:r.user_id, by:r.who || "Member", t:r.body || "", ts:ts(r.created_at), re:r.reply_to || null, rx:rxOf(r.id)}; }
 function rxOf(mid){ const o = {}; (RX[mid] || []).forEach(x => { (o[x.emoji] = o[x.emoji] || []).push(x.who || "Member"); }); return o; }
-function mapPerson(r){ return {n:r.name, s:r.sign || "", t:r.mbti || "", lv:r.lv || 1, streak:r.streak || 0, bio:r.bio || "", avatar:r.avatar_url || r.avatar || "", uid:r.id, bday:r.bday || "", xp:r.xp || 0, xpw:r.xp_week || 0, wk:r.wk || "", xpm:r.xp_month || 0, mo:r.mo || "", w:r.weight || ""}; }
+function mapPerson(r){ return {n:r.name, s:r.sign || "", t:r.mbti || "", lv:r.lv || 1, streak:r.streak || 0, bio:r.bio || "", avatar:r.avatar_url || r.avatar || "", uid:r.id, bday:r.bday || "", xp:r.xp || 0, xpw:r.xp_week || 0, wk:r.wk || "", xpm:r.xp_month || 0, mo:r.mo || "", w:r.weight || "", look:r.look || ""}; }
 
 /* ---------- boot ---------- */
 function loadLib(){ return new Promise((ok, no) => { if (window.supabase && window.supabase.createClient) return ok();
@@ -9340,7 +9340,7 @@ async function start(){
     sb.from("post_likes").select("post_id,user_id").limit(10000),
     sb.from("messages").select("id,user_id,who,body,reply_to,created_at,room").eq("room", ROOM()).order("created_at", {ascending:false}).limit(300),
     sb.from("reactions").select("message_id,user_id,who,emoji").limit(10000),
-    sb.from("profiles").select("id,name,sign,mbti,lv,streak,bio,avatar,bday,xp,xp_week,wk,xp_month,mo,weight").neq("name", "").limit(2000)
+    sb.from("profiles").select("id,name,sign,mbti,lv,streak,bio,avatar,bday,xp,xp_week,wk,xp_month,mo,weight,look").neq("name", "").limit(2000)
   ]);
   if (uid !== chatOwner) return;
   const bad = q.find(r => r.error); if (bad) throw bad.error;
@@ -15387,7 +15387,7 @@ function aboutHTML(s){ const a = ABOUT[s]; if (!a) return ""; const n = sameSign
    as her sun on Today, at most 12 a day); ties go to more full-sun days, then the higher level. Your XP and level are untouched. */
 let LB = "w";
 const lbK = () => LB === "m" ? "m" : "w";
-function ranked(k){ const c = CB(); if (!c) return []; const all = everyone(); return c.rank(c.roster ? c.roster(all) : all, k === "m" ? "m" : "w", Date.now(), me().care); }
+function ranked(k){ const c = CB(); if (!c) return []; const all = everyone().filter(p => !(window.LowiLeaderboard && LowiLeaderboard.hidden && LowiLeaderboard.hidden(p))); return c.rank(c.roster ? c.roster(all) : all, k === "m" ? "m" : "w", Date.now(), me().care); }
 function rankOf(m, k){ const L = ranked(k); const i = L.findIndex(x => x.p.me); return i >= 0 ? i + 1 : 0; }
 function careCardHTML(care){
   const k = lbK(), c = care[k] || {pts:0, full:0, today:0}, w = care.w || c, G = (CB() && CB().GOAL) || 12, pct = Math.round(Math.max(0, Math.min(1, (w.today || 0) / G)) * 100);
@@ -15511,6 +15511,8 @@ const careTag = c => { const b = CB(); return b && c && c.key ? b.tag(c.key, c.f
 R3.profileExtra = function(){ const m = me(), o = {bday:m.bday || "", xp:Math.max(0, Math.round(m.xp || 0)), weight:m.w || ""};
   /* sunbeams only once the sun meter has loaded, so an early push never blanks a good row */
   if (m.care && m.care.w && m.care.w.key) Object.assign(o, {xp_week:Math.max(0, Math.round(m.care.w.pts || 0)), wk:careTag(m.care.w), xp_month:Math.max(0, Math.round(m.care.m.pts || 0)), mo:careTag(m.care.m)});
+  /* Oct 22 2026 strength leaderboard: the week's XP and the hide choice ride the wk text (leaderboard-core.js) */
+  if (o.wk && window.LowiLeaderboard && LowiLeaderboard.wkTag) { try { o.wk = LowiLeaderboard.wkTag(o.wk); } catch(e){} }
   return o; };
 function hookAward(){ if (typeof award !== "function" || award.__r3) return; const _a = award;
   const w = function(){ const r = _a.apply(this, arguments); pushSoon(); return r; }; w.__r3 = true; award = w; }
@@ -20420,6 +20422,10 @@ window.LowiCommunityHost = {
 <script src="nutri-stats-core.js?v=20261022-142600"></script>
 <script src="nutri-stats.js?v=20261022-142600"></script>
 <link rel="stylesheet" id="gnCss" href="glass-nav.css?v=20261022-142600">
+<!-- Oct 22 2026: Community strength leaderboard (This week XP + Strongest companions), see leaderboard-core.js -->
+<link rel="stylesheet" href="leaderboard.css?v=20261022-142600">
+<script src="leaderboard-core.js?v=20261022-142600"></script>
+<script src="leaderboard.js?v=20261022-142600"></script>
 <link rel="stylesheet" id="cshCss" href="cook-shop.css?v=20261022-142600">
 <link rel="stylesheet" id="symCss" href="sym-home.css?v=20261022-142600">
 <script src="sym-home.js?v=20261022-142600"></script>

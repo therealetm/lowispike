@@ -335,6 +335,17 @@
             mood = 'tired';
             title = en.tier === 'weak' ? L(n + ' is low on energy', n + ' hat wenig Energie', n + ' tiene poca energía') : L(n + ' is a bit sleepy', n + ' ist etwas müde', n + ' tiene algo de sueño');
         }
+        /* Oct 22 (E-man: "100%" and "bright and awake" while her face was flat and the world dull): a sugar rush (cell-world.js) or a
+           stormy world wins over the happy lines, and only the real peak (misty-peak.js, every World glow row done) says Supernova */
+        let pk = null;
+        try { const M = window.LowiMistyPeak; if (M && M.now && M.statusFor) pk = M.statusFor(M.now(), n, lang()); } catch (e) { pk = null; }
+        if (pk && pk.mood === 'peak') {
+            if (mood === 'fresh' || mood === 'glow') { mood = 'peak'; title = pk.title; sub = pk.sub; }
+        } else if (pk && pk.mood === 'spiked' && mood !== 'dry' && mood !== 'night') {
+            const thirsty = mood === 'thirsty';
+            mood = 'spiked'; title = pk.title; sub = pk.sub;
+            if (!thirsty && pk.action) next = pick(pk.action, pk.icon, pk.button);
+        }
         return {
             mood,
             title,
@@ -2143,6 +2154,7 @@
     window.addEventListener('lowi:lang', refresh); /* BH-004: the fasting bubble and Home lines follow a language switch without a reload */
     window.addEventListener('lowi:goodnight', refresh);
     window.addEventListener('lowi:misty-power', refresh); /* hunt power-ups move her energy: the status line follows */
+    window.addEventListener('lowi:peak', refresh); /* Oct 22: a sugar rush starting or fading, or the peak, rewrites the status line */
     window.addEventListener('resize', refresh);
     D.addEventListener('visibilitychange', () => {
         if (D.hidden) stopPhoto();

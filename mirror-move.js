@@ -42,12 +42,11 @@
     let lms = null, sm = null, costAvg = 30, interval = 66, voiceOn = true, lastMoveSpoken = -1, lastHint = '', lastCount = 0, hiddenStop = false, dpr = 1, vw = 640, vh = 480;
     const say = (s, force) => {
         if (!voiceOn || !s) return;
-        /* app-voice.js: the tutorial's human voice (recorded clips); the device voice only for a sentence with no clip */
-        if (W.LowiVoice) { W.LowiVoice.speak(s, { lang: lang(), queue: !force }); return; }
-        if (!('speechSynthesis' in W)) return;
-        try { const u = new SpeechSynthesisUtterance(s); u.lang = ({ de: 'de-DE', es: 'es-ES' })[lang()] || 'en-US'; u.rate = 1; if (force) speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (e) {}
+        /* app-voice.js: only the new voice, the tutorial's (Ava, Seraphina, Ximena). Every Mirror line is recorded, so clipsOnly: never
+           the device voice (22 Oct 2026). app-voice.js loads before this file. */
+        if (W.LowiVoice) W.LowiVoice.speak(s, { lang: lang(), queue: !force, clipsOnly: true });
     };
-    const hushVoice = () => { try { if (W.LowiVoice) W.LowiVoice.cancel(); else speechSynthesis.cancel(); } catch (e) {} };
+    const hushVoice = () => { try { if (W.LowiVoice) W.LowiVoice.cancel(); } catch (e) {} };
 
     function build() {
         if (ov) return ov;

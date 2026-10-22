@@ -50,7 +50,7 @@ test('app voice: no robot voice where a recording exists (every device-voice pat
         }
     }
     assert.ok(sites >= 5, 'found the old speaking spots (' + sites + ')');
-    assert.match(read('mirror-move.js'), /W\.LowiVoice\.speak\(s, \{ lang: lang\(\), queue: !force \}\)/);
+    assert.match(read('mirror-move.js'), /W\.LowiVoice\.speak\(s, \{ lang: lang\(\), queue: !force, clipsOnly: true \}\)/);
 });
 
 test('app voice: loaded by the page, kept offline, recorded news at release', () => {

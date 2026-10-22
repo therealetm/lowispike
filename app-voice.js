@@ -124,8 +124,10 @@
         return new Promise(res => {
             const a = A(); if (blobUrl) { try { URL.revokeObjectURL(blobUrl); } catch (e) { } }
             blobUrl = URL.createObjectURL(blob); a.src = blobUrl;
-            let fin = false; const end = v => { if (fin) return; fin = true; a.onended = a.onerror = null; res(v); };
+            let fin = false; const end = v => { if (fin) return; fin = true; a.onended = a.onerror = a.onpause = null; res(v); };
             a.onended = () => end('ok'); a.onerror = () => end('err');
+            /* paused by the system, not by us (iPhone: the camera starting in Mirror mode): count it as failed instead of waiting forever */
+            a.onpause = () => { if (!fin && !a.ended) setTimeout(() => { if (!fin && a.paused && !a.ended) end('err'); }, 300); };
             const p = a.play(); if (cur) cur.audio = end;
             if (p && p.catch) p.catch(e => end(e && e.name === 'NotAllowedError' ? 'blocked' : 'err'));
         });
@@ -153,6 +155,14 @@
             const b = await blobs[i]; if (cur !== h) return;
             if (first) { first = false; media(true); try { h.o.onstart && h.o.onstart({ type: 'start' }); } catch (e) { } }
             let r = b ? await playBlob(b) : 'none'; if (cur !== h) return;
+            /* opts.clipsOnly (Mirror mode, 22 Oct 2026, Emmanuel: "update the voice in the mirror workout to match the new one"): every
+               line is recorded, so a clip that fails is fetched and played once more and is otherwise left out. The old device voice
+               never cuts in halfway through a workout. */
+            if (h.o.clipsOnly && r !== 'ok') {
+                unlock(); const b2 = b || await clipFor(d, lang, ps[i]); if (cur !== h) return;
+                r = b2 ? await playBlob(b2) : 'none'; if (cur !== h) return;
+                if (r !== 'ok') { h.skipped = (h.skipped || 0) + 1; continue; }
+            }
             if (r === 'blocked' || r === 'err' || r === 'none') { h.device = (h.device || 0) + 1; await sayDevice(ps[i], lang, rate); if (cur !== h) return; }
             else h.clips = (h.clips || 0) + 1;
         }

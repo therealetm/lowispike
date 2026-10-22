@@ -54,7 +54,7 @@ const STUB = `(() => {
 
 async function newPage(browser, dev, lang) {
     const ctx = await browser.newContext(Object.assign({}, pw.devices[dev], { colorScheme: 'dark', serviceWorkers: 'block' }));
-    await ctx.addInitScript(PRE(lang)); await ctx.addInitScript(STUB); await ctx.addInitScript('(' + INIT_SRC + ')()');
+    await ctx.addInitScript('window.__LOWI_PROBE = true;'); await ctx.addInitScript(PRE(lang)); await ctx.addInitScript(STUB); await ctx.addInitScript('(' + INIT_SRC + ')()');
     const page = await ctx.newPage();
     page.errs = []; page.on('pageerror', e => page.errs.push(String(e.message || e)));
     return { ctx, page };

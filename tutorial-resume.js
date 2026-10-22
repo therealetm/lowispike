@@ -246,7 +246,7 @@
         watch(); setInterval(watch, 2000);
     }
     W.LowiTutorialResume = Object.assign({}, core, {
-        state: () => store.get(), visible: () => shown, spot: () => (btn && btn.getAttribute('data-spot')) || '', hits: () => (btn && shown ? hitsAt(box()) : 0), tick, resume,
+        state: () => store.get(), visible: () => shown, spot: () => (btn && btn.getAttribute('data-spot')) || '', hits: window.__LOWI_PROBE ? () => (btn && shown ? hitsAt(box()) : 0) : undefined, /* debug readout for tools/tutorial-resume/check.cjs only */ tick, resume,
         /* tutorial-auto.js asks this before its one-time "Pick up the tour?" card: the pill already offers it */
         covers: () => active(store.get())
     });

@@ -147,7 +147,9 @@
     }
     function hitsAt(r) {
         let n = 0;
-        const xs = [r.left + 3, r.left + r.width / 2, r.right - 3], ys = [r.top + 3, r.top + r.height / 2, r.bottom - 3];
+        /* a 12 px grid: small icon buttons (24 px and up) cannot slip between the samples */
+        const grid = (a, b) => { const out = [], k = Math.max(2, Math.ceil((b - a - 4) / 12)); for (let j = 0; j <= k; j++) out.push(a + 2 + (b - a - 4) * j / k); return out; };
+        const xs = grid(r.left, r.right), ys = grid(r.top, r.bottom);
         for (const x of xs) for (const y of ys) {
             if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) { n += 1; continue; }
             const stack = D.elementsFromPoint(x, y);
@@ -168,19 +170,28 @@
         btn.style.setProperty('--ltr-bar', barGap() + 'px');
         if (!force && spot && !hitsAt(box())) return;
         const tries = [];
-        outer: for (const c of [false, true]) for (const s of SPOTS) {
-            btn.className = cls(s, c);
-            const h = hitsAt(box());
-            tries.push({ id: s + (c ? ':c' : ''), hits: h });
-            if (!h) break outer;
+        const test = id => { apply(id); const h = hitsAt(box()); tries.push({ id, hits: h }); return !h; };
+        let done = false;
+        /* the full pill in the corners and at the sides, then the 44 pt round icon there */
+        for (const c of ['', ':c']) { for (const s of SPOTS) if (test(s + c)) { done = true; break; } if (done) break; }
+        /* busy screens (a chat room: tabs on top, the input at the bottom): slide the round icon down each edge to a gap */
+        if (!done) {
+            apply('tr:c'); const y0 = Math.round(box().top);
+            apply('br:c'); const y1 = Math.round(box().top);
+            for (const e of ['er', 'el']) { for (let y = y0; y <= y1; y += 22) if (test(e + '@' + y)) { done = true; break; } if (done) break; }
         }
         const best = pick(tries) || 'tr';
-        const [s, c] = best.split(':');
-        spot = s; compact = !!c;
-        btn.className = cls(s, compact);
+        apply(best);
+        spot = best;
         btn.setAttribute('data-spot', best);
     }
-    function cls(s, c) { return 'ltr-fab ltr-on ltr-' + s + (c ? ' ltr-compact' : '') + (lastFace ? ' ltr-hasface' : ''); }
+    function apply(id) {
+        const m = /^(\w\w)(?:@(\d+))?(:c)?$/.exec(id) || [];
+        const s = m[1] || 'tr', y = m[2], c = !!m[3] || !!y;
+        compact = c;
+        btn.className = 'ltr-fab ltr-on ltr-' + s + (c ? ' ltr-compact' : '') + (lastFace ? ' ltr-hasface' : '');
+        btn.style.top = y ? y + 'px' : '';
+    }
     function tick() {
         const t = T();
         if (!t || !D.body) return;
@@ -195,6 +206,10 @@
     setInterval(tick, 700);
     W.addEventListener('resize', () => { if (shown) place(true); });
     D.addEventListener('visibilitychange', tick);
+    /* screens change on a tap: look again right after it, so the pill never sits on a button that just slid in */
+    const soon = () => { if (!shown) return; setTimeout(() => { if (shown) place(false); }, 260); setTimeout(() => { if (shown) place(false); }, 900); };
+    D.addEventListener('click', soon, true);
+    W.addEventListener('hashchange', soon); W.addEventListener('popstate', soon);
     W.LowiTutorialResume = Object.assign({}, core, {
         state: () => store.get(), visible: () => shown, spot: () => (btn && btn.getAttribute('data-spot')) || '', tick, resume,
         /* tutorial-auto.js asks this before its one-time "Pick up the tour?" card: the pill already offers it */

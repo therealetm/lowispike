@@ -49,7 +49,7 @@ function homeState() {
   const fy = document.getElementById('tab-foryou');
   const leaks = [...document.querySelectorAll('#tab-foryou canvas, #tab-foryou video, #cgThread, #cgGalaxy')].filter(e => vis(e)).map(e => e.id || e.tagName);
   const sp = document.querySelector('.sp-world-veil,.cs-spirit-veil,#csVeil');
-  return { home: !!document.querySelector('#tab-home.active'), fyVisible: vis(fy) && !(fy && fy.contains(document.getElementById('tab-home'))), thread: !!document.querySelector('#cgThread[data-open]'), bad, leaks, veil: sp ? getComputedStyle(sp).opacity : null, ms: Math.round(performance.now() - window.__t0) };
+  return { home: !!document.querySelector('#tab-home.active'), fyVisible: vis(fy) && !(fy && fy.contains(document.getElementById('tab-home'))), thread: !!document.querySelector('#cgThread[data-open]'), bad, leaks, veil: sp ? getComputedStyle(sp).opacity : null, fy: fy ? fy.className + ' op=' + getComputedStyle(fy).opacity + ' tf=' + getComputedStyle(fy).transform + ' st=' + (fy.getAttribute('style') || '').slice(0, 80) : null, act: [...document.querySelectorAll('.tab.active')].map(e => e.id).join(','), ms: Math.round(performance.now() - window.__t0) };
 }
 async function waitHome(p) {
   const t0 = Date.now(); let s;
@@ -102,7 +102,7 @@ async function run(device, theme, lang, cycles) {
 }
 (async () => {
   const combos = [];
-  for (const d of DEVICES) for (const [t, l] of [['dark', 'de'], ['light', 'en']]) combos.push([d, t, l]);
+  for (const d of DEVICES) for (const [t, l] of (process.env.COMBOS || 'dark:de,light:en').split(',').map(x => x.split(':'))) combos.push([d, t, l]);
   for (const [d, t, l] of combos) await run(d, t, l, CYCLES);
   fs.writeFileSync(path.join(OUT, 'report.json'), JSON.stringify({ fails, notes }, null, 1));
   console.log(fails.length ? 'FAILS ' + fails.length : 'ALL PASS');

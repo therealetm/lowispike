@@ -91,14 +91,14 @@ const pill = page => page.evaluate(() => {
         b.style.visibility = '';
         if (live) covered.push((el.id ? '#' + el.id : el.tagName.toLowerCase() + '.' + String(el.className).split(' ')[0]) + ' ' + Math.round(x) + 'x' + Math.round(y));
     }
-    return { shown: true, spot: b.getAttribute('data-spot'), label: b.querySelector('.ltr-lbl').textContent, w: b.offsetWidth, h: b.offsetHeight, /* layout size: the 0.28 s fade-in scales it */
+    return { shown: true, hits: window.LowiTutorialResume && window.LowiTutorialResume.hits ? window.LowiTutorialResume.hits() : -1, spot: b.getAttribute('data-spot'), label: b.querySelector('.ltr-lbl').textContent, w: b.offsetWidth, h: b.offsetHeight, /* layout size: the 0.28 s fade-in scales it */
         l: Math.round(r.left), t: Math.round(r.top), off: r.left < 0 || r.top < 0 || r.right > innerWidth || r.bottom > innerHeight, z: cs.zIndex, covered };
 });
 const shot = (page, name) => page.screenshot({ path: path.join(OUT, name.replace(/[^\w.-]+/g, '_') + '.png') });
 const tapStart = (page, opts) => page.evaluate(o => { document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })); window.LowiTutorial.start(o); }, opts || { from: 'check' });
 function checkPill(p, tag, where, fails) {
     if (!p.shown) { fails.push(`${tag}: no pill on ${where}`); return; }
-    if (p.covered.length) fails.push(`${tag}: pill on ${where} covers ${p.covered.join(', ')}`);
+    if (p.covered.length) fails.push(`${tag}: pill on ${where} (${p.spot}, own hit test ${p.hits}) covers ${p.covered.join(', ')}`);
     if (p.off) fails.push(`${tag}: pill on ${where} is off screen`);
     if (p.h < 44 || p.w < 44) fails.push(`${tag}: pill on ${where} smaller than 44 px (${p.w}x${p.h})`);
 }

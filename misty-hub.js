@@ -38,7 +38,7 @@
     function aura() { try { const c = C(); const id = W.LowiWorldHome && W.LowiWorldHome.auraId ? W.LowiWorldHome.auraId() : ''; return c ? c.aura(id) : { a: '#6ee7c8', b: '#64d2ff' }; } catch (e) { return { a: '#6ee7c8', b: '#64d2ff' }; } }
     function stageOf(xp) {
         const c = C(); if (!c || !c.stage) return null;
-        const s = c.stage(xp), P = arr => c.pick(arr, lang());
+        const s = c.stage(xp, true), P = arr => c.pick(arr, lang());
         return { name: P(s.cur.n), next: s.next ? P(s.next.n) : '', pct: s.pct, left: s.left, level: s.index + 1, levels: (c.STAGES || []).length || 6 };
     }
     /* Misty's Home artwork, cloned so the card shows exactly the Misty you see on Home */

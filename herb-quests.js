@@ -51,7 +51,7 @@
     }
     function evoHTML(compact) {
         const s = S() || {}, ev = C.evolution(s.xp);
-        if (!ev.next) return '<section class="hq-evo hq-max"><span class="hq-over">' + esc(t('Final form', 'Endform', 'Forma final')) + '</span><b class="hq-evo-name">' + esc(sname(ev.current)) + '</b><p class="hq-evo-rule">' + esc(t('Your herb is fully grown. Every action still keeps it lively.', 'Dein Kraut ist ausgewachsen. Jede Aktion hält es weiter lebendig.', 'Tu ser de luz ya está en su forma final. Cada acción lo mantiene lleno de vida.')) + '</p></section>';
+        if (!ev.next) return '<section class="hq-evo hq-max"><span class="hq-over">' + esc(t('Final form', 'Endform', 'Forma final')) + '</span><b class="hq-evo-name">' + esc(sname(ev.current)) + '</b><p class="hq-evo-rule">' + esc(t('Level 25: Misty reached the final evolution. Every action still keeps it glowing.', 'Level 25: Misty hat die letzte Entwicklung erreicht. Jede Aktion lässt es weiter leuchten.', 'Nivel 25: Misty alcanzó la evolución final. Cada acción la mantiene brillando.')) + '</p></section>';
         const step = nextStep();
         let h = '<section class="hq-evo' + (compact ? ' hq-compact' : '') + '"><div class="hq-evo-top"><span class="hq-over">' + esc(t('Next form', 'Nächste Form', 'Siguiente forma')) + '</span><b class="hq-evo-name">' + esc(sname(ev.next)) + '</b></div>' +
             '<p class="hq-evo-rule">' + esc(t('Rule: reach ', 'Regel: ', 'Regla: llegar a ') + ev.next.xp + t(' XP', ' XP erreichen', ' XP') + ' · ' + t('you have ', 'du hast ', 'tienes ') + ev.xp) + '</p>' + bar(ev.progress) +

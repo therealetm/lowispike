@@ -83,9 +83,9 @@ test('bots show a Misty level 1-6 that matches their companion stage, and stay l
   assert.strictEqual(CB.shownLevel({ n: 'Mateo', lv: 1, bot: true }), 1);
   assert.strictEqual(CB.shownLevel({ n: 'Jonas', lv: 18, bot: true }), 4);
   assert.strictEqual(CB.shownLevel({ n: 'Samir', lv: 43, bot: true }), 6);
-  // Oct 22, 2026: real people go up to the one level table's top (world-home-core.js STAGES, 10), not a separate cap of 6
+  // Oct 22, 2026: real people go up to the one level table's top (world-home-core.js STAGES, 25 since evolution step 1), not a separate cap of 6
   assert.strictEqual(CB.shownLevel({ n: 'Real', lv: 9 }), 9);
-  assert.strictEqual(CB.shownLevel({ n: 'Real', lv: 43 }), 10);
+  assert.strictEqual(CB.shownLevel({ n: 'Real', lv: 43 }), 25);
   assert.strictEqual(CB.shownLevel({ n: 'Real', lv: 3 }), 3);
   const html = R('index.html');
   assert.match(html, /n:"Mateo"[^}]*lv:1, shownLv:1/);

@@ -3,7 +3,7 @@
   'use strict';
   const WHC = (typeof module === 'object' && module.exports) ? require('./world-home-core.js') : root.LowiWorldHomeCore;
   if (!WHC || !WHC.STAGES) throw new Error('herb-config.js needs world-home-core.js (the level table) loaded first');
-  const STAGE_IDS = ['seedling', 'sprout', 'young', 'flourishing', 'radiant', 'legendary', 'nova', 'titan', 'monarch', 'majesty'];
+  const STAGE_IDS = ['seedling', 'sprout', 'young', 'flourishing', 'radiant', 'legendary', 'nova', 'titan', 'monarch', 'majesty', 'pulsar', 'prism', 'crystal', 'thunder', 'supernova', 'orbit', 'quasar', 'zenith', 'phoenix', 'galaxy', 'celestial', 'eternal', 'cosmic', 'genesis', 'cosmos'];
   const config = {
     version: 'herb-living-20261014-0010',
     /* Oct 22, 2026: names and XP come from the ONE level table, world-home-core.js STAGES (the cell stages Misty's growth

@@ -4,7 +4,7 @@ const K=require('../herb-core.js');
 const T=require('../herb-tamagotchi-core.js');
 const now=Date.now();
 const base=(xp=0)=>({xp,ledger:[],logs:[],user:{}});
-assert.deepEqual(C.stages.map(x=>x.xp),[0,100,300,700,1500,3000,4500,7000,10000,14000]);
+assert.deepEqual(C.stages.map(x=>x.xp),[0,100,300,700,1500,3000,5000,7500,10500,14000,17500,21200,25100,29200,33500,38000,42700,47600,52700,58000,63500,69200,75100,81200,87500]);
 let m=T.model(base(0),{createdAt:now},now);assert.equal(m.index,0);assert.equal(m.current.id,'seedling');assert.equal(m.profile.sign,null);
 m=T.model(base(100),{createdAt:now},now);assert.equal(m.index,1);assert.equal(m.current.id,'sprout');
 m=T.model(base(3000),{createdAt:now},now);assert.equal(m.index,5);assert.equal(m.current.id,'legendary');

@@ -15,6 +15,8 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 function serve() { return new Promise(r => { const s = http.createServer((q, res) => { let u = decodeURIComponent(q.url.split('?')[0]); if (u === '/') u = '/index.html'; const f = path.join(ROOT, u); if (!f.startsWith(ROOT) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': TYPES[path.extname(f)] || 'application/octet-stream', 'Cache-Control': 'no-store' }); fs.createReadStream(f).pipe(res); }); s.listen(0, '127.0.0.1', () => r(s)); }); }
 const INIT = fs.readFileSync(path.join(__dirname, 'home-orbit-v2-live.cjs'), 'utf8').match(/const INIT = `([\s\S]*?)`;/)[1];
 const VIEWS = { se: ['webkit', 'iPhone SE'], i13: ['webkit', 'iPhone 13'], i15: ['webkit', 'iPhone 15'], pixel7: ['chromium', 'Pixel 7'] };
+// scanfe-g1: the Food check card (food-card-core.js) under the estimate: traffic-light verdict, 2-3 reasons, better choice for NEIN.
+const FC = { ultje: { verdict: 'NEIN', alt: true }, skyr: { verdict: 'JA', alt: false }, cola: { verdict: 'NEIN', alt: true } };
 const PRODUCTS = [
   { id: 'ultje', want: 'better', p: { barcode: '4004980506206', name: 'Ultje Süß & Salzig', brand: 'Ultje', cat: 'snack', facts: { c: 36, s: 29, f: 5.5, p: 15, fat: 38 }, ingredients: '' }, carbsFirst: true },
   { id: 'skyr', want: 'ok', p: { barcode: '4002468000001', name: 'Skyr Natur', brand: 'Test', cat: 'dairy', facts: { c: 4, s: 4, p: 11, fat: 0.2 }, ingredients: 'Magermilch, Milchsäurekulturen' }, carbsFirst: true },
@@ -69,10 +71,14 @@ const BAD = /no blood sugar spike|kein Blutzucker-Spike|no te sube el azúcar|No
             const out = []; const W = innerWidth, H = innerHeight;
             rev.querySelectorAll('button, .sc-verd').forEach(b => { const q = b.getBoundingClientRect(); if (q.width && (q.left < -1 || q.right > W + 1)) out.push('off x: ' + (b.textContent || '').trim().slice(0, 24)); if (b.scrollWidth > b.clientWidth + 2 && getComputedStyle(b).textOverflow !== 'ellipsis' && getComputedStyle(b).overflowX !== 'visible') out.push('clipped: ' + (b.textContent || '').trim().slice(0, 24)); });
             const vr = verd && verd.getBoundingClientRect();
-            return { cls: verd ? verd.className : '', head: strong ? strong.textContent.trim() : '', why: why ? why.textContent.trim() : '', manual: !!rev.querySelector('input, textarea'), all: rev.textContent.replace(/\s+/g, ' ').slice(0, 2000), out, vr: vr ? [Math.round(vr.left), Math.round(vr.top), Math.round(vr.right), Math.round(vr.bottom)] : null, sw: document.documentElement.scrollWidth > innerWidth + 1 };
+            const fc = rev.querySelector('.fc-card'), fq = fc && fc.getBoundingClientRect();
+            const fcard = fc ? { verdict: fc.getAttribute('data-fc-verdict'), word: (fc.querySelector('.fc-word') || {}).textContent || '', why: fc.querySelectorAll('.fc-why li').length, alt: !!fc.querySelector('.fc-alt'), srv: !!fc.querySelector('.fc-srv'),
+              q: !!fc.querySelector('.fc-q'), afterVerd: !!(verd && (verd.compareDocumentPosition(fc) & 4)), det: !!rev.querySelector('details.sc-more .fc-det'), off: fq.left < -1 || fq.right > W + 1,
+              clip: [...fc.querySelectorAll('*')].some(e => { const q = e.getBoundingClientRect(); return q.width && (q.left < fq.left - 1 || q.right > fq.right + 1); }) } : null;
+            return { fcard, cls: verd ? verd.className : '', head: strong ? strong.textContent.trim() : '', why: why ? why.textContent.trim() : '', manual: !!rev.querySelector('input, textarea'), all: rev.textContent.replace(/\s+/g, ' ').slice(0, 2000), out, vr: vr ? [Math.round(vr.left), Math.round(vr.top), Math.round(vr.right), Math.round(vr.bottom)] : null, sw: document.documentElement.scrollWidth > innerWidth + 1 };
           });
           const tag = `${v} ${theme} ${lang} ${it.id}`;
-          log.cards.push({ tag, head: r.head, why: r.why, cls: r.cls });
+          log.cards.push({ tag, head: r.head, why: r.why, cls: r.cls, fc: r.fcard && (r.fcard.verdict + '/' + r.fcard.word + '/' + r.fcard.why) });
           if (r.none) { fails.push(tag + ': no card'); continue; }
           if (BAD.test(r.all)) fails.push(tag + ': says no spike');
           if (it.want === 'unknown') { if (r.head) fails.push(tag + ': expected the not-enough-data entry, got ' + r.head); if (!r.manual) fails.push(tag + ': no label entry fields'); }
@@ -83,16 +89,30 @@ const BAD = /no blood sugar spike|kein Blutzucker-Spike|no te sube el azúcar|No
             if (r.vr && (r.vr[0] < 0 || r.vr[2] > (await ev(() => innerWidth)) + 1)) fails.push(tag + ': card off screen ' + JSON.stringify(r.vr));
           }
           if (it.id === 'ultje' && r.head === WANT[lang].ok) fails.push(tag + ': Ultje reads Lower');
+          const want = FC[it.id], fcx = r.fcard;
+          if (!want) { if (fcx) fails.push(tag + ': food card on a not-enough-data product'); }
+          else if (!fcx) fails.push(tag + ': no food card');
+          else {
+            if (fcx.verdict !== want.verdict) fails.push(tag + ': food card verdict ' + fcx.verdict);
+            if (!fcx.word.trim()) fails.push(tag + ': food card verdict word empty');
+            if (fcx.why < 2 || fcx.why > 3) fails.push(tag + ': food card reasons ' + fcx.why);
+            if (fcx.alt !== want.alt) fails.push(tag + ': food card better choice ' + fcx.alt);
+            if (!fcx.srv) fails.push(tag + ': food card serving nutrition missing');
+            if (!fcx.afterVerd) fails.push(tag + ': food card not under the estimate');
+            if (!fcx.det) fails.push(tag + ': food check details missing from Details');
+            if (fcx.off || fcx.clip) fails.push(tag + ': food card does not fit ' + JSON.stringify({ off: fcx.off, clip: fcx.clip }));
+          }
           r.out.forEach(o => fails.push(tag + ': ' + o));
           if (r.sw) fails.push(tag + ': sideways scroll');
           if (lang === langs[0] || it.id === 'ultje') await page.screenshot({ path: path.join(OUT, `${v}-${theme}-${lang}-${it.id}.png`) });
+          if (it.id === 'ultje' || (lang === langs[0] && it.id === 'skyr')) { await ev(() => { const f = document.querySelector('.b3-rev .fc-card'); if (f) f.scrollIntoView({ block: 'start' }); }); await sleep(300); await page.screenshot({ path: path.join(OUT, `${v}-${theme}-${lang}-${it.id}-fc.png`) }); }
           await ev(() => { document.querySelectorAll('.b3-ov').forEach(x => x.remove()); }); await sleep(400);
         }
       }
     } catch (e) { fails.push('run: ' + e.message.slice(0, 200)); }
     if (errs.length) fails.push('page errors: ' + errs.slice(0, 3).join(' | '));
     console.log((fails.length ? 'FAIL ' : 'PASS ') + v + ' ' + JSON.stringify({ theme: log.dataTheme, engine: log.engine, cards: log.cards.length, assess: log.assess }));
-    log.cards.filter(c => /ultje|skyr/.test(c.tag)).slice(0, 6).forEach(c => console.log('   ' + c.tag + ' | ' + c.head + ' | ' + c.why));
+    log.cards.filter(c => /ultje|skyr/.test(c.tag)).slice(0, 6).forEach(c => console.log('   ' + c.tag + ' | ' + c.head + ' | ' + c.why + ' | ' + c.fc));
     fails.forEach(f => console.log('   - ' + f)); if (fails.length) fail++;
     await browser.close();
   }

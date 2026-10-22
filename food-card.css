@@ -1,0 +1,40 @@
+/* food-card (scanfe-g1): Food Intelligence result card under the spike estimate. Same dark glass as .sc-sec in both themes. */
+.fc-card { gap: 10px; }
+.fc-head { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.fc-light { flex: 0 0 auto; display: flex; flex-direction: column; gap: 4px; padding: 6px 5px; border-radius: 14px; background: rgba(0, 0, 0, .35); border: 1px solid rgba(160, 220, 255, .25); }
+.fc-light i { display: block; width: 12px; height: 12px; border-radius: 50%; background: rgba(255, 255, 255, .14); }
+.fc-nein .fc-light i:nth-child(1) { background: #ff6b74; box-shadow: 0 0 10px rgba(255, 107, 116, .85); }
+.fc-selten .fc-light i:nth-child(2) { background: #ffc35a; box-shadow: 0 0 10px rgba(255, 195, 90, .85); }
+.fc-ja .fc-light i:nth-child(3) { background: #5fe3a1; box-shadow: 0 0 10px rgba(95, 227, 161, .85); }
+.fc-vt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.sc-sec .fc-word { font: 800 21px/1.1 var(--sc-font, inherit); letter-spacing: .04em; color: #fff; }
+.sc-sec.fc-nein .fc-word { color: #ff9aa0; }
+.sc-sec.fc-selten .fc-word { color: #ffd38a; }
+.sc-sec.fc-ja .fc-word { color: #8ff0bf; }
+.sc-sec .fc-sub { font-size: 14px; line-height: 1.3; color: #dce9ff; overflow-wrap: anywhere; }
+.sc-sec .fc-prov { margin: 0; font-size: 12.5px; line-height: 1.3; color: #b9d4ff; }
+.fc-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.sc-sec .fc-chip { display: inline-block; max-width: 100%; padding: 5px 10px; border-radius: 999px; font-size: 12.5px; line-height: 1.3; background: rgba(255, 255, 255, .07); border: 1px solid rgba(160, 220, 255, .25); overflow-wrap: anywhere; }
+.sc-sec .fc-chip em { font-style: normal; color: #b9d4ff; }
+.sc-sec .fc-i-higher { border-color: rgba(255, 120, 120, .55); }
+.sc-sec .fc-i-moderate { border-color: rgba(240, 190, 90, .55); }
+.sc-sec .fc-i-lower { border-color: rgba(110, 230, 170, .5); }
+.sc-sec .fc-why h5, .sc-sec .fc-det h5 { margin: 0 0 4px; font: 700 13.5px/1.2 var(--sc-font, inherit); color: #fff; }
+.sc-sec .fc-why ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; }
+.sc-sec .fc-why li { font-size: 14px; line-height: 1.35; }
+.fc-srv { display: flex; flex-direction: column; gap: 4px; }
+.sc-sec .fc-srv small, .sc-sec .fc-row small { font: 650 11px/1.2 var(--sc-font, inherit); letter-spacing: .05em; text-transform: uppercase; color: #b9d4ff; }
+.fc-srvn { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.sc-sec .fc-srvn span { font-size: 13.5px; line-height: 1.3; white-space: nowrap; }
+.fc-row { display: flex; flex-direction: column; gap: 2px; padding-top: 8px; border-top: 1px solid rgba(160, 220, 255, .16); }
+.sc-sec .fc-row span { font-size: 14px; line-height: 1.35; overflow-wrap: anywhere; }
+.sc-sec .fc-q-poor span { color: #ffb3b8; }
+.sc-sec .fc-q-good span { color: #a6f3cb; }
+.sc-sec .fc-alt span { color: #8fe7ff; font-weight: 600; }
+.fc-det { margin: 10px 0 6px; padding: 10px 12px; border-radius: 14px; background: rgba(255, 255, 255, .05); border: 1px solid rgba(160, 220, 255, .18); }
+.fc-det dl { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.fc-dr { display: flex; flex-direction: column; gap: 1px; }
+.sc-sec .fc-dr dt { font: 650 11px/1.2 var(--sc-font, inherit); letter-spacing: .05em; text-transform: uppercase; color: #b9d4ff; }
+.sc-sec .fc-dr dd { margin: 0; font-size: 13px; line-height: 1.35; overflow-wrap: anywhere; }
+.sc-sec .fc-lc, .sc-sec .fc-ver { margin: 6px 0 0; font-size: 11.5px; line-height: 1.3; color: #9fb8dc; overflow-wrap: anywhere; }
+.fc-det, .fc-det * { color: #e6f0ff; }

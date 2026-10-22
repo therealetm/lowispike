@@ -14508,11 +14508,12 @@ function simpleCardHTML(p){
     '<div class="sc-top"><div class="sc-img">' + (p.img ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(p.img) + '">' : '<i>' + (CAT_E[p.cat] || CAT_E.other) + '</i>') + '</div>' +
     '<div class="sc-nm"><div class="b3-name">' + esc(p.name) + '</div>' + (p.brand ? '<div class="sc-brand">' + esc(p.brand) + (p.facts && p.facts.q ? " · " + esc(p.facts.q) : "") + '</div>' : "") + '</div></div>' +
     '<div class="sc-verd v-' + v + '" role="status"><small>' + esc(sct("est")) + '</small><strong>' + esc(sct(v)) + '</strong>' + (why[0] ? '<span>' + esc(why[0]) + '</span>' : "") + '</div>' +
+    (window.LowiFoodCard ? LowiFoodCard.cardHTML(p, LI()) : "") + /* scanfe-g1: verdict, why, serving, quality, better choice */
     (window.LowiNutriStats ? LowiNutriStats.portionHTML(p) : "") +
     '<section class="sc-sec sc-prices"><h4>' + esc(sct("cheaper")) + '</h4>' + (storeCmp || '<p class="sc-none">' + esc(sct("noPrices")) + '</p>') + '</section>' +
     scActsHTML(p, mine, m) +
     '<details class="sc-more" open><summary>' + esc(sct("details")) + '</summary>' +
-      (why.length ? '<ul class="b3-why">' + why.map(w => '<li>' + esc(w) + '</li>').join("") + '</ul>' : "") + factsHTML(p.facts) + fillNoteHTML(p) + (typeof lpAskHTML === "function" ? lpAskHTML(p) : "") +
+      (why.length ? '<ul class="b3-why">' + why.map(w => '<li>' + esc(w) + '</li>').join("") + '</ul>' : "") + (window.LowiFoodCard ? LowiFoodCard.detailsHTML(p, LI()) : "") + factsHTML(p.facts) + fillNoteHTML(p) + (typeof lpAskHTML === "function" ? lpAskHTML(p) : "") +
       '<div class="tiny dim b3-meta">' + [p.id ? (p.catches > 1 ? t("catches", p.catches) : t("catches1")) : "", p.barcode ? t("bcFound", p.barcode) : "", p.source === "off" ? t("r_off") : ""].filter(Boolean).map(esc).join(" · ") + '</div>' +
       (window.LowiDiscovery ? '<button type="button" class="r2-link b3-label" data-b3="label">' + esc(["Label details & evidence", "Etikett-Details & Belege", "Detalles de la etiqueta"][LI()]) + '</button>' : "") +
       '<div class="tiny dim b3-legal">' + esc(t("legal")) + '</div></details>' + deals +
@@ -20403,6 +20404,8 @@ window.LowiCommunityHost = {
 <link rel="stylesheet" href="label-photos.css?v=20261023-004346">
 <script src="label-photos-core.js?v=20261023-004346"></script>
 <script src="label-photos.js?v=20261023-004346"></script>
+<link rel="stylesheet" href="food-card.css?v=20261023-004346">
+<script src="food-card-core.js?v=20261023-004346"></script>
 <script src="spike-catch.js?v=20261023-004346"></script>
 <script src="living-bubbles.js?v=20261023-004346"></script>
 <link rel="stylesheet" id="scrCss" href="scan-screens.css?v=20261023-004346">

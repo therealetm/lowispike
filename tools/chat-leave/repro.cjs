@@ -35,7 +35,7 @@ function cover() {
   try {
     await R.goto(); await sleep(2500);
     await R.shot(path.join(OUT, '0-home.png'));
-    await N.openCommunity(R); 
+    await N.openCommunity(R);
     const ok = await openRoom(p); console.log('room open', ok);
     await R.shot(path.join(OUT, '1-room.png'));
     if (process.env.THROTTLE && device === 'Pixel 7') { const c = await R.ctx.newCDPSession(p); await c.send('Emulation.setCPUThrottlingRate', { rate: +process.env.THROTTLE }); }

@@ -1,16 +1,19 @@
 /* community-me.js: your corner of Community (Oct 21 2026, Emmanuel: "Community holds the profile and everything we built; Settings
    is only the necessary stuff"). In Community, your picture (top right, #pfBtn) opens this panel instead of jumping to the Profile
-   tab: you at the top with a small gear for Settings, then Profile and Weight & BMI, then the places no Home bubble reaches (For You,
-   Care board, Workouts, World map, Gift of the day, Shopping hunt). Rooms, Chat, Creation and Affiliates are Community's own tabs, so
-   they are not repeated here. Rows run through the same routes as the old Settings > More (home-settings-sleep-v2.js), so a place
-   that is missing right now is simply not listed. Outside Community the picture still opens the Profile tab as before.
+   tab: you at the top, then Profile, Weight & BMI and Weight journey.
+   Oct 22 2026 (Emmanuel: "remove the explore things and have the more important things in there"): the Explore list is gone (each place
+   keeps its own way in, see EXPLORE_MOVED in home-settings-sleep-v2.js) and the Settings live here now: Day/night, Look & sound,
+   Language, Tutorial, Account, then Delete account in red at the bottom and the version line. Every way to the old Settings sheet
+   (the hold on the Community bubble, openSettings) opens this hub, so nothing lives in two places. World sound is not a row here: it
+   moves inside Look & sound. Rows run through the same routes as Settings (home-settings-sleep-v2.js), so a route that is missing
+   right now is simply not listed. Outside Community the picture still opens the Profile tab as before.
    Dark glass, glowing cyan edge, no emoji. Nothing here stores data. */
 (function (root) {
     'use strict';
     const TX = {
-        en: { title: 'You', you: 'You', places: 'Explore', settings: 'Settings', close: 'Close', level: 'Level', guest: 'You', hold: 'Tip: hold the Community bubble on Home for settings.' },
-        de: { title: 'Du', you: 'Du', places: 'Entdecken', settings: 'Einstellungen', close: 'Schlie\u00dfen', level: 'Level', guest: 'Du', hold: 'Tipp: Halte die Community-Blase auf Home f\u00fcr Einstellungen.' },
-        es: { title: 'T\u00fa', you: 'T\u00fa', places: 'Explorar', settings: 'Ajustes', close: 'Cerrar', level: 'Nivel', guest: 'T\u00fa', hold: 'Consejo: mant\u00e9n la burbuja Comunidad en Inicio para los ajustes.' }
+        en: { more: 'More places', title: 'You', you: 'You', settings: 'Settings', account: 'Account', close: 'Close', level: 'Level', guest: 'You', hold: 'Tip: hold the Community bubble on Home to open this from anywhere.' },
+        de: { more: 'Weitere Orte', title: 'Du', you: 'Du', settings: 'Einstellungen', account: 'Konto', close: 'Schlie\u00dfen', level: 'Level', guest: 'Du', hold: 'Tipp: Halte die Community-Blase auf Home, um das hier jederzeit zu \u00f6ffnen.' },
+        es: { more: 'M\u00e1s lugares', title: 'T\u00fa', you: 'T\u00fa', settings: 'Ajustes', account: 'Cuenta', close: 'Cerrar', level: 'Nivel', guest: 'T\u00fa', hold: 'Consejo: mant\u00e9n la burbuja Comunidad en Inicio para abrir esto desde cualquier sitio.' }
     };
     /* the places that only work on Home (they press a Home control): go Home first, then run */
     const HOME_FIRST = ['map', 'gift'];
@@ -35,8 +38,17 @@
         x: '<path d="M6.5 6.5l11 11M17.5 6.5l-11 11" ' + P + ' stroke-width="2.2"/>',
         chev: '<path d="M9.5 6l6 6-6 6" ' + P + '/>'
     };
-    function groups(has) { const S = root && root.LowiHomeSettingsSleepV2, C = S && S.COMMUNITY_PLACES || { you: ['me', 'body'], places: [] }; return [{ key: 'you', ids: C.you.filter(has) }, { key: 'places', ids: C.places.filter(has) }].filter(g => g.ids.length); }
-    const core = { TX, HOME_FIRST, groups };
+    /* YOU, then SETTINGS (the switches, language, tutorial, account), then Delete account on its own at the bottom; World sound is left
+       out (it lives inside Look & sound) and so are places, which now have their own way in */
+    const SKIP = ['worldSound'];
+    function groups(has) {
+        const S = root && root.LowiHomeSettingsSleepV2, C = S && S.COMMUNITY_PLACES || { you: ['me', 'body'] };
+        const set = (S && S.SETTINGS_IDS || ['theme', 'look', 'language', 'tutorial']).filter(id => !SKIP.includes(id));
+        const acc = S && S.ACCOUNT_IDS || ['account', 'deleteAccount'];
+        const light = (S && S.EXPLORE_LIGHT || []).filter(has);
+        return [{ key: 'you', ids: C.you.filter(has), more: light }, { key: 'settings', ids: set.concat(acc.filter(id => id !== 'deleteAccount')).filter(has) }, { key: 'danger', ids: acc.filter(id => id === 'deleteAccount').filter(has) }].filter(g => g.ids.length);
+    }
+    const core = { TX, HOME_FIRST, SKIP, groups };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!root || !root.document) return;
 
@@ -45,37 +57,72 @@
     const S = () => root.LowiHomeSettingsSleepV2 || null;
     const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
     const svg = (k, cls) => '<svg class="' + (cls || 'cme-ico') + '" viewBox="0 0 24 24" aria-hidden="true">' + (ICON[k] || '') + '</svg>';
-    let el = null, back = null, lastFocus = null;
+    let el = null, back = null, lastFocus = null, asking = false, armed = false, moreOpen = false;
     const inCommunity = () => { const t = D.getElementById('tab-foryou'); return !!(t && (t.classList.contains('active') || t.classList.contains('on') || t.getBoundingClientRect().width > 2 && getComputedStyle(t).display !== 'none')) && !H.classList.contains('wh-home'); };
     function me() {
         let name = '', xp = 0;
         try { const s = JSON.parse(root.localStorage.getItem('lowispike.v2') || '{}'); name = (s.user && s.user.name) || ''; xp = +s.xp || 0; } catch (e) { }
         return { name, xp };
     }
+    const sT = () => { const s = S(), l = lang(); return (s && s.TX && (s.TX[l] || s.TX.en)) || {}; };
     function row(id) {
-        const s = S(), l = lang(), lab = (LABELS[l] && LABELS[l][id]) || s.label(id), sub = SUB[l][id] || '';
+        const s = S(), l = lang(), ST = sT(), lab = (LABELS[l] && LABELS[l][id]) || s.label(id), sub = (SUB[l] && SUB[l][id]) || '';
         const ico = ICON[id] ? svg(id) : s.icon(id).replace('ss2-ico', 'cme-ico');
+        if (id === 'language') { return '<div class="cme-row cme-langrow" role="group" aria-label="' + esc(lab) + '">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span><span class="cme-langs">' + ['en', 'de', 'es'].map(x => '<button type="button" data-lang="' + x + '" aria-pressed="' + (x === l) + '"' + (x === l ? ' class="on"' : '') + '>' + x.toUpperCase() + '</button>').join('') + '</span></div>'; }
+        if (id === 'theme') { const dark = s.state ? s.state('theme') : true, st = dark ? ST.night : ST.day; return '<button type="button" class="cme-row" role="switch" data-cme="theme" aria-checked="' + dark + '" aria-label="' + esc(lab) + ': ' + esc(st) + '">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span><small class="cme-st">' + esc(st) + '</small></button>'; }
+        if (id === 'deleteAccount') return '<button type="button" class="cme-row cme-danger" data-cme="deleteAccount" aria-haspopup="dialog">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span>' + svg('chev', 'cme-chev') + '</button>';
         return '<button type="button" class="cme-row" data-cme="' + id + '">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b>' + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</span>' + svg('chev', 'cme-chev') + '</button>';
+    }
+    /* the light way in to the places nothing else reaches: one folded row, small chips when unfolded */
+    function moreRow(ids) {
+        if (!ids || !ids.length) return '';
+        const s = S(), l = lang(), T = TX[l];
+        return '<div class="cme-more' + (moreOpen ? ' on' : '') + '"><button type="button" class="cme-row cme-more-btn" data-cme="more" aria-expanded="' + moreOpen + '" aria-controls="cmeMore"><span class="cme-tx"><b>' + esc(T.more) + '</b></span>' + svg('chev', 'cme-chev') + '</button>' +
+            '<div class="cme-chips" id="cmeMore"' + (moreOpen ? '' : ' hidden') + '>' + ids.map(id => '<button type="button" class="cme-chip" data-cme="' + id + '">' + esc((LABELS[l] && LABELS[l][id]) || s.label(id)) + '</button>').join('') + '</div></div>';
     }
     function render() {
         const s = S(), T = TX[lang()], m = me(), pf = D.getElementById('pfBtn');
         const av = pf ? pf.innerHTML : '';
-        const gs = groups(id => s.has(id));
+        const gs = groups(id => s.has(id)), ver = s.version ? s.version() : '';
+        const sec = g => g.key === 'danger'
+            ? '<section class="cme-sec cme-sec-danger" aria-label="' + T.account + '"><div class="cme-list">' + g.ids.map(row).join('') + '</div></section>'
+            : '<section class="cme-sec" aria-label="' + T[g.key] + '"><h3>' + T[g.key] + '</h3><div class="cme-list">' + g.ids.map(row).join('') + moreRow(g.more) + '</div></section>';
         el.innerHTML = '<div class="cme-head">' +
             '<span class="cme-av" aria-hidden="true">' + av + '</span>' +
             '<span class="cme-who"><b id="cmeTitle">' + esc(m.name || T.guest) + '</b>' + (m.xp ? '<small>' + m.xp.toLocaleString() + ' XP</small>' : '') + '</span>' +
-            '<button type="button" class="cme-ibtn" data-cme="settings" aria-label="' + T.settings + '">' + svg('gear') + '</button>' +
             '<button type="button" class="cme-ibtn" data-cme="close" aria-label="' + T.close + '">' + svg('x') + '</button></div>' +
-            '<div class="cme-body">' + gs.map(g => '<section class="cme-sec" aria-label="' + T[g.key] + '"><h3>' + T[g.key] + '</h3><div class="cme-list">' + g.ids.map(row).join('') + '</div></section>').join('') +
-            '<p class="cme-tip">' + T.hold + '</p></div>';
+            '<div class="cme-body">' + gs.map(sec).join('') +
+            '<p class="cme-tip">' + T.hold + '</p>' + (ver ? '<p class="cme-ver">' + esc(ver) + '</p>' : '') + '</div>';
+    }
+    /* Delete account asks first, inside the hub; only the server's ok clears the phone (home-settings-sleep-v2.js serverDelete) */
+    function askDelete() {
+        const s = S(), ST = sT(), signed = !!(s.signedIn && s.signedIn()), body = el && el.querySelector('.cme-body'); if (!body) return;
+        asking = true;
+        body.innerHTML = '<section class="cme-sec cme-del" role="alertdialog" aria-labelledby="cmeDelT" aria-describedby="cmeDelTx"><h3 id="cmeDelT">' + esc(ST.delTitle) + '</h3>' +
+            '<p class="cme-del-tx" id="cmeDelTx">' + esc(signed ? ST.delBody : ST.delGuest) + '</p><div class="cme-list">' +
+            '<button type="button" class="cme-row cme-danger cme-del-go" data-cme="delGo" data-guest="' + !signed + '"><span class="cme-tx"><b>' + esc(signed ? ST.delGo : ST.delGuestGo) + '</b></span></button>' +
+            '<button type="button" class="cme-row" data-cme="delCancel"><span class="cme-tx"><b>' + esc(ST.delCancel) + '</b></span></button></div></section>';
+        const c = body.querySelector('[data-cme="delCancel"]'); if (c) { try { c.focus({ preventScroll: true }); } catch (e) { } }
+    }
+    async function delGo(b) {
+        const s = S(), ST = sT(); if (b.disabled) return;
+        if (b.getAttribute('data-guest') === 'true') { s.wipeDevice(); return; }
+        b.disabled = true; const lb = b.querySelector('b'); if (lb) lb.textContent = ST.delBusy;
+        const ok = await s.deleteAccount(); if (ok) return;
+        b.disabled = false; if (lb) lb.textContent = ST.delGo;
+        const tx = el && el.querySelector('.cme-del-tx'); if (tx) { tx.textContent = ST.delFail; tx.setAttribute('role', 'alert'); }
     }
     function open() {
         const s = S(); if (!s || typeof s.has !== 'function') return false;
         if (el) return true;
-        lastFocus = D.activeElement;
-        back = D.createElement('div'); back.className = 'cme-back'; back.addEventListener('click', () => close(true));
+        lastFocus = D.activeElement; asking = false; moreOpen = false;
+        /* opened by a hold, the finger is still down: the click that ends that hold must not close the hub or press a row, so only a
+           press that starts after it opened (or a keyboard click) counts */
+        armed = false;
+        const arm = () => { armed = true; };
+        back = D.createElement('div'); back.className = 'cme-back'; back.addEventListener('pointerdown', arm); back.addEventListener('click', e => { if (armed || e.detail === 0) close(true); });
         el = D.createElement('div'); el.className = 'cme'; el.id = 'cmeSheet'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-labelledby', 'cmeTitle');
-        el.addEventListener('click', onClick);
+        el.addEventListener('pointerdown', arm, true); el.addEventListener('click', e => { if (!armed && e.detail !== 0) { e.preventDefault(); e.stopPropagation(); return; } onClick(e); }, true);
         render();
         D.body.appendChild(back); D.body.appendChild(el); H.classList.add('cme-open');
         const f = el.querySelector('.cme-row') || el.querySelector('button'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } }
@@ -83,7 +130,7 @@
     }
     function close(refocus) {
         if (!el) return;
-        el.remove(); if (back) back.remove(); el = null; back = null; H.classList.remove('cme-open');
+        el.remove(); if (back) back.remove(); el = null; back = null; asking = false; H.classList.remove('cme-open');
         if (refocus && lastFocus && lastFocus.focus) { try { lastFocus.focus({ preventScroll: true }); } catch (e) { } }
     }
     function onClick(e) {
@@ -91,8 +138,13 @@
         e.preventDefault();
         const id = b.getAttribute('data-cme'), s = S();
         if (id === 'close') { close(true); return; }
+        if (id === 'more') { moreOpen = !moreOpen; const w = el.querySelector('.cme-more'), c = el.querySelector('#cmeMore'); if (w) w.classList.toggle('on', moreOpen); if (c) c.hidden = !moreOpen; b.setAttribute('aria-expanded', String(moreOpen)); return; }
+        if (id === 'deleteAccount') { askDelete(); return; }
+        if (id === 'delCancel') { asking = false; render(); const f = el && el.querySelector('[data-cme="deleteAccount"]'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } } return; }
+        if (id === 'delGo') { delGo(b); return; }
+        /* Day/night switches in place and the hub stays open */
+        if (id === 'theme') { s.run('theme'); setTimeout(() => { if (el && !asking) { render(); const f = el.querySelector('[data-cme="theme"]'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } } } }, 60); return; }
         close(false);
-        if (id === 'settings') { if (s && typeof s.openSettings === 'function') s.openSettings(); return; }
         if (HOME_FIRST.includes(id) && typeof root.goTab === 'function') { root.goTab('home'); setTimeout(() => s.run(id), 700); return; }
         s.run(id);
     }
@@ -107,6 +159,6 @@
         if (e.key === 'Tab') { const bs = [...el.querySelectorAll('button')]; const i = bs.indexOf(D.activeElement), last = bs.length - 1; if (e.shiftKey && i <= 0) { e.preventDefault(); bs[last].focus(); } else if (!e.shiftKey && (i === last || i < 0)) { e.preventDefault(); bs[0].focus(); } }
     });
     D.addEventListener('lowi:tab', () => close(false));
-    try { new MutationObserver(() => { if (el) render(); }).observe(H, { attributes: true, attributeFilter: ['lang'] }); } catch (e) { }
+    try { new MutationObserver(() => { if (el && !asking) render(); }).observe(H, { attributes: true, attributeFilter: ['lang'] }); } catch (e) { }
     root.LowiCommunityMe = Object.assign({}, core, { open, close: () => close(false), isOpen: () => !!el });
 })(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null));

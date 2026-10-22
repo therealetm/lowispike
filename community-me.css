@@ -34,4 +34,36 @@
 html[data-theme="light"] .cme { color: #0c2340; background: linear-gradient(180deg, rgba(240,250,255,.94), rgba(220,240,255,.96)); border-color: rgba(0,150,210,.55); }
 html[data-theme="light"] .cme-row .cme-ico { color: #0a7fb0; }
 html[data-theme="light"] .cme-sec h3 { color: #0a6a96; }
+/* Oct 22 2026: "More places", the light way in to the old Explore places nothing else reaches */
+.cme-more { display: contents; }
+.cme-more-btn { min-height: 44px; }
+.cme-more-btn .cme-chev { transform: rotate(90deg); transition: transform .2s; }
+.cme-more.on .cme-more-btn .cme-chev { transform: rotate(-90deg); }
+.cme-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 2px 4px 4px; grid-column: 1 / -1; }
+.cme-chips[hidden] { display: none; }
+.cme-chip { min-height: 36px; padding: 0 12px; border-radius: 18px; font: inherit; font-size: 13px; font-weight: 600; color: inherit; cursor: pointer;
+    background: rgba(255,255,255,.06); border: 1px solid rgba(110,225,255,.35); -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.cme-chip:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+html[data-theme="light"] .cme-chip { border-color: rgba(0,120,180,.4); background: rgba(255,255,255,.6); }
+/* Oct 22 2026: Settings inside the hub (Day/night, Look & sound, Language, Tutorial, Account, Delete account, version) */
+.cme-st { flex: none; font-size: 13px; line-height: 18px; opacity: .8; }
+.cme-langrow { cursor: default; }
+.cme-langrow:active { transform: none; background: rgba(255,255,255,.05); }
+.cme-langs { flex: none; display: flex; gap: 4px; }
+.cme-langs button { min-width: 44px; height: 36px; padding: 0 8px; border-radius: 12px; font: inherit; font-size: 13px; font-weight: 700; color: inherit; cursor: pointer;
+    background: rgba(255,255,255,.06); border: 1px solid rgba(110,225,255,.35); -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.cme-langs button.on { background: rgba(110,225,255,.28); border-color: rgba(110,225,255,.9); }
+.cme-langs button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.cme-sec-danger { margin-top: 18px; }
+.cme-danger { color: #ff8a8a; border-color: rgba(255,110,110,.45); background: rgba(255,80,80,.07); }
+.cme-danger .cme-ico { color: #ff8a8a; }
+.cme-del h3 { color: #ffb0b0; }
+.cme-del-tx { margin: 0 6px 12px; font-size: 14px; line-height: 20px; }
+.cme-del-go[disabled] { opacity: .6; }
+.cme-ver { margin: 6px 6px 2px; font-size: 12px; line-height: 16px; opacity: .6; }
+html[data-theme="light"] .cme-danger, html[data-theme="light"] .cme-danger .cme-ico { color: #b42318; border-color: rgba(180,35,24,.45); background: rgba(180,35,24,.06); }
+html[data-theme="light"] .cme-del h3 { color: #b42318; }
+html[data-theme="light"] .cme-langs button { border-color: rgba(0,120,180,.4); background: rgba(255,255,255,.6); }
+html[data-theme="light"] .cme-langs button.on { background: rgba(0,150,210,.18); border-color: rgba(0,120,180,.9); }
+@media (min-width: 700px) { .cme-sec-danger .cme-list, .cme-del .cme-list { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) { .cme, .cme-back { animation: none !important; } }

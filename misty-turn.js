@@ -225,12 +225,17 @@
     W.addEventListener('touchmove', e => { if (S.own) { e.stopPropagation(); if (e.cancelable) e.preventDefault(); } }, { capture: true, passive: false });
     D.addEventListener('visibilitychange', () => { if (D.hidden) { S.th = 0; release(null); } });
 
+    /* Oct 22: every dot is a soft round texture (world-home-core.js softDot); a Points with no map draws solid squares, which
+       turn into white boxes over a light sky. No texture = these stay hidden. */
+    let DOT = null;
+    function capped(m, a) { const C = W.LowiWorldHomeCore; if (C && C.capPoints) C.capPoints(m, C.SPARK.MAX_PX * 1.5 * (((a && a.renderer && a.renderer.getPixelRatio) && a.renderer.getPixelRatio()) || W.devicePixelRatio || 1)); return m; }
+    function dotMap(THREE) { if (!DOT) { const C = W.LowiWorldHomeCore; DOT = (C && C.softDot && C.softDot(THREE, D)) || null; } return DOT; }
     /* the facing dots: a short line of soft lights in front of her, fading out, drawn in the 3D world (no DOM) */
     function cueBuild(a) {
         const THREE = a.THREE, N = 5, geo = new THREE.BufferGeometry();
         geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(N * 3).fill(-999), 3));
-        const p = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.1, color: '#a8ffd8', transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, fog: false, sizeAttenuation: true }));
-        p.name = 'mt-facing'; p.userData.lwKeep = true; p.renderOrder = 60; p.frustumCulled = false; p.visible = false; a.scene.add(p);
+        const p = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.1, map: dotMap(THREE), alphaTest: 0.01, color: '#a8ffd8', transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, fog: false, sizeAttenuation: true }));
+        p.name = 'mt-facing'; capped(p.material, a); p.userData.lwKeep = true; p.renderOrder = 60; p.frustumCulled = false; p.visible = false; a.scene.add(p);
         return p;
     }
     /* the energy shot, drawn in the 3D world (one Points object for every ball, trail and burst; no DOM, nothing while none fly) */
@@ -239,8 +244,8 @@
         const THREE = a.THREE, n = PER * SLOTS, geo = new THREE.BufferGeometry();
         geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3).fill(-999), 3));
         geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
-        const p = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.12, vertexColors: true, transparent: true, opacity: 1, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, fog: false, sizeAttenuation: true }));
-        p.name = 'mt-shot'; p.userData.lwKeep = true; p.renderOrder = 61; p.frustumCulled = false; p.visible = false; a.scene.add(p);
+        const p = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.12, map: dotMap(THREE), alphaTest: 0.01, vertexColors: true, transparent: true, opacity: 1, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, fog: false, sizeAttenuation: true }));
+        p.name = 'mt-shot'; capped(p.material, a); p.userData.lwKeep = true; p.renderOrder = 61; p.frustumCulled = false; p.visible = false; a.scene.add(p);
         return p;
     }
     function shotFrame(i, dt) {
@@ -281,7 +286,7 @@
             }
         }
         pos.needsUpdate = true; col.needsUpdate = true;
-        SH.obj.material.size = hsMax * 0.22; SH.obj.visible = true;
+        SH.obj.material.size = hsMax * 0.22; SH.obj.visible = !!SH.obj.material.map;
     }
     /* the flight skin, drawn in the 3D world: a thin glass sphere round her, its tip tented out ahead (misty-flight's wall-skin look) */
     function skinBuild(a) {
@@ -359,7 +364,7 @@
             for (let j = 0; j < pos.count; j++) { const d = hs * (0.75 + (j + flow) * 0.42); pos.setXYZ(j, i.p.x + f[0] * d, i.p.y + f[1] * d, i.p.z + f[2] * d); }
             pos.needsUpdate = true;
             const m = S.pts.material; m.size = hs * 0.16; m.opacity = Math.min(1, (S.own && S.own.turned ? 1 : S.cueT / 0.6)) * 0.85;
-            S.pts.visible = true;
+            S.pts.visible = !!m.map;
             return out;
         },
         /* energy shot: body-world-3d.js (a double tap on the world while the controller is held) and probes */

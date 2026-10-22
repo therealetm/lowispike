@@ -89,7 +89,49 @@
         const mid = (homeD + maxD) / 2;
         return dist > mid - 0.01 ? { to: homeD, out: false } : { to: maxD, out: true };
     }
-    const api = { AURAS, STAGES, pick, aura, owns, cleanAura, auraItems, stage, heroView, rigAngles, nearAngle, zoomTarget };
+    /* Oct 22 (E-man, iPhone screenshot of Misty leaving a world: "these white boxes are annoying ... That doesn't look cool"):
+       a THREE.Points (or Sprite) with no texture draws every particle as a solid square. Her sparkle trail had none, so on the
+       way out, with the camera right behind her, each sparkle became a big square, and additive mint over the light galaxy or
+       a red planet adds up to solid white: a staircase of white boxes. Every particle is a soft round dot now (softDot), no
+       sparkle is ever drawn bigger on screen than SPARK.MAX_PX (sparkTooBig: it simply ends), and with no texture there are no
+       sparkles at all (never a square). On a light sky they blend normally, so they keep their colour instead of burning white. */
+    const SPARK = { MAX_PX: 18, TEX: 64 };
+    /* on-screen size (CSS px) of a size-attenuated point: three.js draws it size * (canvas height / 2) / depth */
+    function sparkPx(size, halfH, depth) { return depth > 1e-6 ? (+size || 0) * (+halfH || 0) / depth : Infinity; }
+    function sparkTooBig(size, halfH, depth, max) { return sparkPx(size, halfH, depth) > (max == null ? SPARK.MAX_PX : max); }
+    /* a soft round white dot (tinted by the material colour); null if the canvas cannot draw, and then the caller draws nothing */
+    function softDot(THREE, doc) {
+        try {
+            const d = doc || (typeof document !== 'undefined' ? document : null); if (!d || !THREE || !THREE.CanvasTexture) return null;
+            const n = SPARK.TEX, h = n / 2, cv = d.createElement('canvas'); cv.width = cv.height = n;
+            const x = cv.getContext && cv.getContext('2d'); if (!x || !x.createRadialGradient) return null;
+            const g = x.createRadialGradient(h, h, 0, h, h, h);
+            g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.22, 'rgba(255,255,255,.9)'); g.addColorStop(0.5, 'rgba(255,255,255,.32)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+            x.fillStyle = g; x.fillRect(0, 0, n, n);
+            const t = new THREE.CanvasTexture(cv); t.needsUpdate = true; return t;
+        } catch (e) { return null; }
+    }
+    /* never bigger than devPx device pixels on screen, however close it drifts to the camera: a min() on gl_PointSize in the points
+       shader (three r160 points vertex shader). m.userData.capped says it took; until then the caller drops too-big sparkles. */
+    function capPoints(m, devPx) {
+        if (!m) return m;
+        const ud = m.userData || (m.userData = {}), u = ud.maxPS || (ud.maxPS = { value: SPARK.MAX_PX * 2 });
+        if (devPx > 0) u.value = devPx;
+        if (ud.capHook) return m;
+        ud.capHook = true;
+        m.onBeforeCompile = sh => {
+            const k = '#include <logdepthbuf_vertex>';
+            if (!sh || typeof sh.vertexShader !== 'string' || sh.vertexShader.indexOf('gl_PointSize') < 0 || sh.vertexShader.indexOf(k) < 0) return;
+            sh.uniforms.maxPS = u;
+            sh.vertexShader = 'uniform float maxPS;\n' + sh.vertexShader.replace(k, 'gl_PointSize = min( gl_PointSize, maxPS );\n\t' + k);
+            ud.capped = true;
+        };
+        m.customProgramCacheKey = () => 'lw-cap-ps';
+        return m;
+    }
+    /* the blending a sparkle wants: glowing (additive) on a dark sky, plain alpha on a light one (additive light-on-light is white) */
+    function sparkBlend(THREE, light) { return light ? THREE.NormalBlending : THREE.AdditiveBlending; }
+    const api = { AURAS, STAGES, pick, aura, owns, cleanAura, auraItems, stage, heroView, rigAngles, nearAngle, zoomTarget, SPARK, sparkPx, sparkTooBig, softDot, sparkBlend, capPoints };
     if (typeof module === 'object' && module.exports) module.exports = api;
     root.LowiWorldHomeCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

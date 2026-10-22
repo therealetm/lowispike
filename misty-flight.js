@@ -757,7 +757,7 @@
         const pr = clamp(alpha, 0, 1), op = (0.55 + 0.43 * k) * pr;
         if (wand.userData.mfPresence !== pr) wand.userData.mfPresence = pr;
         if (wand.material.opacity !== op) wand.material.opacity = op;
-        wand.visible = wand.material.opacity > 0.01;
+        wand.visible = wand.material.opacity > 0.01 && !!wand.material.map; /* Oct 22: no picture yet = nothing, never a white box */
         /* misty-face (Oct 17, E-man: "Misty is basically just staring you down"): her round body turns in 3D, her face goes
            where she looks (along her path, her heading when you steer, glances when idle); you see her back when she flies away */
         const MFc = W.LowiMistyFace;

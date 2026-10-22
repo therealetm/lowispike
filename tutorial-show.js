@@ -7,7 +7,9 @@
      another (the bubbles card). The card moves out of the way of the spots.
    - ON THE CARD: when the thing it explains opens a sheet, needs data, the camera or Plus, the card carries a small brand-style
      look-alike of that screen (`vis`), like the Scan peek. Pictures only: nothing is opened, nothing is saved, no camera / mic /
-     notification prompt, no touch is taken (pointer-events: none everywhere), so hands-free auto-advance and try-it work as before.
+     notification prompt, no touch is taken (pointer-events: none on all of it; the one tap it listens to is on a card text it shortened, to open it again), so hands-free auto-advance and try-it work as before.
+   On a short phone, when a card would cover its spotlit control: the picture gets compact, then the card text shows three lines (tap
+   to read all; the voice always reads all of it), and only then does the picture leave the card.
    Steps with item 38's practice pad (.lt-pad), its after-the-tour hand (.lt-later) or a Scan peek get no card picture (one picture
    per card), and practice steps get no finger on the page (the pad is the thing to touch).
    Hooked from tutorial.js: LowiTutorialShow.render(card, step, root) after each render, LowiTutorialShow.place(root, el, step) after
@@ -106,6 +108,9 @@
         if (p.spots) p.spots.forEach((sel, k) => f.insertAdjacentHTML('beforeend', '<span class="lts-spot" data-k="' + k + '" style="--k:' + k + '"></span>'));
         rootEl.classList.toggle('lts-rm', reduced());
     }
+    /* where the spotlight is going (its style), not where its slide is right now */
+    const holeAt = h => { const l = parseFloat(h.style.left), t = parseFloat(h.style.top), w = parseFloat(h.style.width), ht = parseFloat(h.style.height);
+        if (!(w > 0)) return { left: 0, top: 0, right: 0, bottom: 0, width: 0, height: 0 }; return { left: l, top: t, right: l + w, bottom: t + ht, width: w, height: ht }; };
     let spotAt = 0, spotT = 0;
     function place(rootEl, el, s) {
         if (!rootEl || !s) return;
@@ -134,14 +139,25 @@
            (decided once per card, so the card can't flip back and forth between ticks), and the card is placed again right away */
         const v = card && card.querySelector('.lts-vis'), hole = rootEl.querySelector('.lt-hole');
         if (v && el && hole && !card.classList.contains('lts-novis')) {
-            const over = () => { const a = card.getBoundingClientRect(), h = hole.getBoundingClientRect(); return h.width > 4 && a.top < h.bottom - 4 && h.top < a.bottom - 4 && a.left < h.right - 4 && h.left < a.right - 4; };
+            /* where the card is going (style.top), not where its 0.32 s slide is right now */
+            const over = () => { const h = holeAt(hole), t = parseFloat(card.style.top) || 0, l = parseFloat(card.style.left) || 0, bt = t + card.offsetHeight, rr = l + card.offsetWidth; return h.width > 4 && t < h.bottom + 8 && h.top - 8 < bt && l < h.right + 8 && h.left - 8 < rr; };   /* + the ring's glow and pulse */
             const again = () => {
-                const h = hole.getBoundingClientRect(), vh = W.innerHeight, m = 12, ch = card.offsetHeight || 200, below = h.bottom + 12, above = h.top - 12 - ch;
+                const h = holeAt(hole), vh = W.innerHeight, m = 12, ch = card.offsetHeight || 200, below = h.bottom + 12, above = h.top - 12 - ch;
                 const top = below + ch <= vh - m ? below : above >= m ? above : Math.max(m, Math.min(vh - ch - m, below));
                 card.style.top = Math.round(Math.max(m, top)) + 'px';
             };
+            /* without the picture, would the card fit above or below the control? if not, it covers it anyway (a long card on a short
+               phone, as before this change), and the picture stays, compact */
+            const fitsWithout = () => { const h = holeAt(hole), vh = W.innerHeight, chNo = card.offsetHeight - v.offsetHeight - 12; return h.top - 24 >= chNo || vh - h.bottom - 24 >= chNo; };
             if (over() && !card.classList.contains('lts-tight')) { card.classList.add('lts-tight'); again(); }
-            if (over()) { card.classList.add('lts-novis'); again(); }
+            /* still in the way: the text shrinks to three lines (the voice still reads all of it; a tap on the text opens it) */
+            const tx = card.querySelector('.lt-text');
+            if (over() && tx && !card.classList.contains('lts-short') && !card.classList.contains('lts-open')) {
+                card.classList.add('lts-short'); tx.setAttribute('role', 'button'); tx.setAttribute('aria-expanded', 'false');
+                tx.addEventListener('click', () => { card.classList.remove('lts-short'); card.classList.add('lts-open'); tx.setAttribute('aria-expanded', 'true'); }, { once: true });
+                again();
+            }
+            if (over() && fitsWithout()) { card.classList.add('lts-novis'); again(); }
         }
         /* a centred card over the spots: move it to the side with more room, so the lit controls stay in view */
         if (box && card && !el) {

@@ -13717,10 +13717,10 @@ const B3_TX = {
   v_spike: ["High spike", "Hoher Spike", "Pico alto"],
   v_better: ["Better pick", "Bessere Wahl", "Mejor opción"],
   v_unknown: ["Not checked yet", "Noch nicht geprüft", "Aún sin comprobar"],
-  vs_ok: ["Fits the LOWiSPIKE rules.", "Passt zu den LOWiSPIKE-Regeln.", "Encaja con las reglas LOWiSPIKE."],
-  vs_spike: ["Likely a high blood sugar spike.", "Wahrscheinlich ein hoher Blutzucker-Spike.", "Probablemente un pico alto de azúcar en sangre."],
-  vs_better: ["Okay now and then. There's a better pick.", "Ab und zu okay. Es gibt eine bessere Wahl.", "Vale de vez en cuando. Hay una opción mejor."],
-  vs_unknown: ["Until it's checked, treat it as a no.", "Bis es geprüft ist, lieber nicht.", "Hasta comprobarlo, mejor no."],
+  vs_ok: ["Lower estimated blood sugar impact. An estimate, not a guarantee.", "Niedrigere geschätzte Wirkung auf den Blutzucker. Eine Schätzung, keine Garantie.", "Impacto estimado más bajo en el azúcar en sangre. Una estimación, no una garantía."],
+  vs_spike: ["Higher estimated blood sugar impact.", "Höhere geschätzte Wirkung auf den Blutzucker.", "Impacto estimado más alto en el azúcar en sangre."],
+  vs_better: ["Moderate estimated blood sugar impact. Okay now and then.", "Mittlere geschätzte Wirkung auf den Blutzucker. Ab und zu okay.", "Impacto estimado moderado en el azúcar en sangre. Vale de vez en cuando."],
+  vs_unknown: ["Not enough data to estimate. Until it's checked, treat it as a no.", "Zu wenig Daten für eine Schätzung. Bis es geprüft ist, lieber nicht.", "No hay datos suficientes para estimarlo. Hasta comprobarlo, mejor no."],
   /* reasons */
   w_sugar100: ["{0} g sugar per 100 g", "{0} g Zucker pro 100 g", "{0} g de azúcar por 100 g"],
   w_carbs100: ["{0} g carbs per 100 g, only {1} g fibre", "{0} g Kohlenhydrate pro 100 g, nur {1} g Ballaststoffe", "{0} g de hidratos por 100 g, solo {1} g de fibra"],
@@ -13913,10 +13913,10 @@ Object.assign(B3_TX, {
   m_mid: ["Medium", "Mittel", "Medio"],
   m_high: ["High", "Hoch", "Alto"],
   m_est: ["estimate", "Schätzung", "estimación"],
-  vl_ok: ["Low-spike", "Low-Spike", "Pico bajo"],
-  vl_better: ["Now and then", "Ab und zu", "De vez en cuando"],
-  vl_spike: ["Skip it", "Lieber nicht", "Mejor no"],
-  vl_unknown: ["Not checked yet", "Noch nicht geprüft", "Sin comprobar"],
+  vl_ok: ["Lower impact", "Niedrigere Wirkung", "Impacto bajo"],
+  vl_better: ["Moderate impact", "Mittlere Wirkung", "Impacto moderado"],
+  vl_spike: ["Higher impact", "Höhere Wirkung", "Impacto alto"],
+  vl_unknown: ["Not enough data", "Zu wenig Daten", "Faltan datos"],
   rar_leg: ["Legendary", "Legendär", "Legendario"],
   rar_rare: ["Rare", "Selten", "Raro"],
   rar_unc: ["Uncommon", "Ungewöhnlich", "Poco común"],
@@ -14019,7 +14019,8 @@ function spikeScore(f, drink){
 }
 /* returns {verdict:'ok'|'better'|'spike'|'unknown', why:[[key,...args]], score, est} */
 function rate(p){
-  /* Oct 16 spike estimator (spike-core.js): fully automatic from label data, one question: likely spike or not */
+  /* Oct 16 spike estimator (spike-core.js), since Oct 22 an adapter onto the Food Intelligence Engine (food-engine-core.js):
+     Higher -> spike, Moderate -> better, Lower -> ok, not enough data -> unknown; always an estimate, never "no spike" */
   if (window.LowiSpikeCore && p && !p.manual) return LowiSpikeCore.assess(p);
   const f = p.facts || {}, why = [], drink = p.cat === "drink" || !!f.drink; let v = "ok", lvl = 0;
   const up = (k, nv, args) => { why.push([k].concat(args || [])); const r = {ok:0, better:1, spike:2}[nv]; if (r > lvl) { lvl = r; v = nv; } };
@@ -14437,8 +14438,10 @@ function cardHTML(p, anim){
    > community deals > spike lists. Details and the store prices sit high so people see them at once; posting a deal is lower.
    tests/product-card-order.test.cjs holds this order. */
 const SC_TX = {
-  spike: ["Likely blood sugar spike", "Wahrscheinlich ein Blutzucker-Spike", "Probablemente te sube el azúcar"],
-  ok: ["Likely no blood sugar spike", "Wahrscheinlich kein Blutzucker-Spike", "Probablemente no te sube el azúcar"],
+  spike: ["Higher estimated blood sugar impact", "Höhere geschätzte Wirkung auf den Blutzucker", "Impacto estimado más alto en el azúcar en sangre"],
+  better: ["Moderate estimated blood sugar impact", "Mittlere geschätzte Wirkung auf den Blutzucker", "Impacto estimado moderado en el azúcar en sangre"],
+  ok: ["Lower estimated blood sugar impact", "Niedrigere geschätzte Wirkung auf den Blutzucker", "Impacto estimado más bajo en el azúcar en sangre"],
+  unknown: ["Not enough data to estimate", "Zu wenig Daten für eine Schätzung", "No hay datos suficientes para estimarlo"],
   est: ["Spike estimate", "Spike-Schätzung", "Estimación de pico"],
   catchXP: ["+10 XP", "+10 XP", "+10 XP"],
   ate: ["I ate this · log it", "Gegessen · eintragen", "Me lo comí · anotarlo"],
@@ -14488,7 +14491,7 @@ function scActsHTML(p, mine, m){
   else cat = '<div class="sc-known sc-new">' + esc(sct("pfNew")) + '<small>' + esc(sct("pfCheckNote")) + '</small></div><button class="r2-btn ghost b3-catch sc-catch" data-b3="catch" id="b3Catch">' + esc(sct("pfSave")) + '</button>';
   return '<div class="b3-acts sc-acts">' + (logging ? eat + cat : cat + eat) + '</div>'; }
 function simpleCardHTML(p){
-  const v = p.verdict === "spike" ? "spike" : "ok", mine = isMine(p), m = mine ? D.mine[pkey(p)] : null;
+  const v = {spike:1, better:1, ok:1}[p.verdict] ? p.verdict : "unknown", mine = isMine(p), m = mine ? D.mine[pkey(p)] : null;
   let storeCmp = ""; try { storeCmp = window.LOWI_SHELF && LOWI_SHELF.priceCompareHTML ? LOWI_SHELF.priceCompareHTML(p.name, p.barcode, true) : ""; } catch(e){}
   const why = (p.why || []).map(whyText).filter(Boolean);
   const deals = window.LowiDeals && LowiDeals.cardHTML ? LowiDeals.cardHTML(p) : "";
@@ -20378,6 +20381,7 @@ window.LowiCommunityHost = {
 <script src="grocery-hunt-core.js?v=20261022-214623"></script>
 <script src="grocery-hunt.js?v=20261022-214623"></script>
 <link rel="stylesheet" id="scCss" href="spike-catch.css?v=20261022-214623">
+<script src="food-engine-core.js?v=20261022-214623"></script>
 <script src="spike-core.js?v=20261022-214623"></script>
 <script src="spike-catch.js?v=20261022-214623"></script>
 <script src="living-bubbles.js?v=20261022-214623"></script>

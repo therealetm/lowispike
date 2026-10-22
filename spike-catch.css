@@ -19,10 +19,13 @@
 .sc-brand { font-size: 13.5px; color: #b9d4ff; margin-top: 3px; }
 .sc-verd { border-radius: 24px; padding: 16px 18px; display: flex; flex-direction: column; gap: 5px; border: 1.5px solid var(--sc-rim); background: var(--sc-wide), rgba(8, 20, 48, .5); box-shadow: var(--sc-sh); }
 .sc-verd small { font: 650 11.5px/1 var(--sc-font); letter-spacing: .06em; text-transform: uppercase; color: #b9d4ff; }
-.sc-verd strong { font: 800 26px/1.12 var(--sc-font); color: #fff; }
+.sc-verd strong { font: 800 23px/1.15 var(--sc-font); color: #fff; text-wrap: balance; }
 .sc-verd span { font-size: 14.5px; line-height: 1.35; color: #dce9ff; }
 .sc-verd.v-spike { border-color: rgba(255, 120, 120, .75); background: radial-gradient(120% 90% at 18% 0%, rgba(255, 255, 255, .14), rgba(255, 255, 255, 0) 52%), linear-gradient(160deg, rgba(255, 80, 90, .26), rgba(120, 20, 40, .42)); box-shadow: inset 0 0 18px rgba(255, 140, 140, .28), 0 8px 26px -12px rgba(255, 70, 90, .55); }
 .sc-verd.v-ok { border-color: rgba(110, 230, 170, .7); background: radial-gradient(120% 90% at 18% 0%, rgba(255, 255, 255, .14), rgba(255, 255, 255, 0) 52%), linear-gradient(160deg, rgba(60, 200, 140, .22), rgba(10, 80, 70, .4)); box-shadow: inset 0 0 18px rgba(130, 240, 190, .26), 0 8px 26px -12px rgba(40, 200, 140, .5); }
+/* scanfe-b2 (Oct 22): Moderate estimate (amber traffic light) and Not enough data (brand blue glass) */
+.sc-verd.v-better { border-color: rgba(240, 190, 90, .75); background: radial-gradient(120% 90% at 18% 0%, rgba(255, 255, 255, .14), rgba(255, 255, 255, 0) 52%), linear-gradient(160deg, rgba(240, 170, 60, .24), rgba(110, 60, 10, .42)); box-shadow: inset 0 0 18px rgba(255, 200, 120, .24), 0 8px 26px -12px rgba(230, 160, 50, .5); }
+.sc-verd.v-unknown { border-color: rgba(143, 231, 255, .55); background: radial-gradient(120% 90% at 18% 0%, rgba(255, 255, 255, .14), rgba(255, 255, 255, 0) 52%), linear-gradient(160deg, rgba(10, 132, 255, .22), rgba(8, 30, 70, .45)); }
 .sc-acts { display: flex; flex-direction: column; align-items: stretch; gap: 8px; margin: 0 !important; }
 .sc-card .sc-catch, .sc-catchlike {
     width: 100%; min-height: 56px; border-radius: 28px; border: 1.5px solid rgba(190, 230, 255, .8); color: #fff; cursor: pointer;

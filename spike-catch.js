@@ -64,13 +64,13 @@
         by: ['by {0}', 'von {0}', 'de {0}'],
         title: ['Spike lists', 'Spike-Listen', 'Listas de picos'],
         sub: ['Every product LOWiSPIKE members caught, sorted by the spike estimate.', 'Jedes Produkt, das LOWiSPIKE-Mitglieder gefangen haben, nach Spike-Schätzung sortiert.', 'Cada producto que atraparon los miembros de LOWiSPIKE, ordenado por la estimación de pico.'],
-        tSpike: ['Likely spikes', 'Spikt wahrscheinlich', 'Probable pico'], tOk: ["Won't spike", 'Spikt nicht', 'Sin pico'], tDeals: ['Deals', 'Angebote', 'Ofertas'],
+        tSpike: ['Higher impact', 'Höhere Wirkung', 'Impacto alto'], tOk: ['Lower impact', 'Niedrigere Wirkung', 'Impacto bajo'], tDeals: ['Deals', 'Angebote', 'Ofertas'],
         search: ['Search foods', 'Lebensmittel suchen', 'Buscar alimentos'],
         healthy: ['Looks healthy, but spikes', 'Sieht gesund aus, spikt aber', 'Parece sano, pero sube'],
         empty: ['Nothing here yet. Scan a product and catch it.', 'Noch nichts hier. Scanne ein Produkt und fang es.', 'Aún no hay nada. Escanea un producto y atrápalo.'],
         emptyDeals: ['No active deals right now. Post one when you see an offer.', 'Gerade keine Angebote. Poste eins, wenn du ein Angebot siehst.', 'No hay ofertas activas. Publica una cuando veas una.'],
         catches: ['{0}× caught', '{0}× gefangen', '{0}× atrapado'],
-        spikeW: ['Spike', 'Spike', 'Pico'], okW: ['No spike', 'Kein Spike', 'Sin pico'],
+        spikeW: ['Higher', 'Höher', 'Alto'], okW: ['Lower', 'Niedriger', 'Bajo'],
         bad: ['Add the store and a price.', 'Gib den Laden und einen Preis an.', 'Añade la tienda y un precio.']
     };
     const tx = (k, a) => { const r = TX[k] || [k]; let s = r[LI()] || r[0]; if (a != null) s = s.replace('{0}', a); return s; };

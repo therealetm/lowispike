@@ -1,21 +1,29 @@
-/* LOWiSPIKE insulin spike estimator (Oct 16, 2026).
-   One question: will this product likely spike insulin? Fully automatic from label data (Open Food Facts or the shared dex):
-   carbs, sugar, fibre, protein, fat per 100 g / 100 ml and the ingredient list. No manual entry.
-   Rules, in short:
-   - Liquid sugar (drinks with more than 5 g sugar per 100 ml, juice included) spikes: it hits fastest.
-   - Sweeteners are flagged (they keep the sweet habit and can raise insulin): spike, policy rule kept from LOWiSPIKE.
-   - Otherwise a load score: net carbs (carbs - fibre) x carb quality (refined starch first 1.0, whole grain / oats / legumes 0.55,
-     other 0.8) + sugar weighted by where added sugar sits in the ingredients (top 3: 0.6, later: 0.3, none: 0, natural sugar
-     from vegetables, fruit or milk is not counted twice) - protein x 0.4 - fat x 0.1 (dampening capped at 40% of the load).
-     Load 25 or more = likely spike. Added sugar in the top 3 with 10 g+ sugar and 10 g+ net carbs = likely spike.
-   - Only ingredients known: refined starch or added sugar in the top 3 = likely spike, else likely won't spike.
-   Returns the same shape the rest of the app uses: {verdict:'spike'|'ok'|'unknown', why:[[key, ...args]], score 0-100, est:true}. */
+/* LOWiSPIKE blood sugar impact estimate (Oct 16, 2026; adapter onto the Food Intelligence Engine since Oct 22, queue step scanfe-b2).
+   LowiSpikeCore.assess(p) keeps the shape every consumer reads: {verdict:'spike'|'better'|'ok'|'unknown', why:[[key, ...args]],
+   score 0-100, est:true}, plus the engine result as `engine`. The numbers come from window.LowiFoodEngine (food-engine-core.js,
+   loaded first): available carbohydrate and sugar for a real serving (manufacturer serving, else the food group's usual portion),
+   never carbs minus fibre, protein or fat (spec queue/FOOD-ENGINE-SPEC.md section 5). Engine category -> verdict:
+   Higher -> spike, Moderate -> better, Lower -> ok (shown as "Lower estimated blood sugar impact", never "no spike"),
+   Insufficient evidence -> unknown.
+   LOWiSPIKE rules from the ingredients can only make it stricter, never milder:
+   - a sweetener anywhere -> spike (keeps the sweet habit; policy rule kept from LOWiSPIKE);
+   - a drink with more than 5 g sugar per 100 ml -> spike (liquid sugar reaches the blood fastest);
+   - added sugar in the first three ingredients with 10 g+ sugar per 100 g -> one step up (Lower -> Moderate, Moderate -> Higher);
+   - refined starch in the first three ingredients -> Moderate becomes Higher.
+   Only ingredients and no numbers: refined starch or added sugar up front -> spike, else unknown (no estimate without numbers). */
 (function (root, factory) {
     const api = factory();
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (root) root.LowiSpikeCore = api;
 })(typeof window !== 'undefined' ? window : null, function () {
     'use strict';
+    let E0 = null;
+    function engine() {
+        if (E0) return E0;
+        if (typeof window !== 'undefined' && window.LowiFoodEngine) return (E0 = window.LowiFoodEngine);
+        if (typeof require === 'function') { try { E0 = require('./food-engine-core.js'); } catch (e) { E0 = null; } }
+        return E0;
+    }
     const RX = {
         sweet: /sucralos|aspartam|acesulfam|stevi|erythrit|xylit|sorbit|maltit|saccharin|cyclamat|süßstoff|suessstoff|sweetener|edulcorante|\be ?95[0-5]\b|\be ?96[0-9]\b/,
         addedSugar: /zucker|sugar|sirup|syrup|dextros|glukose|glucose|fruktose|fructose|honig|honey|maltodextrin|saccharose|azúcar|azucar|melasse|molasses|invert|agave|karamell|caramel/,
@@ -33,57 +41,74 @@
         return null;
     }
     const n = v => (typeof v === 'number' && isFinite(v) ? v : null);
+    const GROUP = {snack: 'snacks', dairy: 'dairy', cereal: 'pantry', bread: 'bread', drink: 'drinks', sweets: 'sweets', staple: 'pantry'};
+    const TO_VERDICT = {higher: 'spike', moderate: 'better', lower: 'ok', insufficient: 'unknown'};
+    const UP = {lower: 'moderate', moderate: 'higher', higher: 'higher'};
+    function scoreOf(key, carbs, sugar) {
+        const c = carbs || 0, s = sugar || 0;
+        if (key === 'higher') return Math.max(60, Math.min(100, Math.round(60 + Math.max(c - 30, 0) + Math.max(s - 15, 0))));
+        if (key === 'moderate') return Math.max(30, Math.min(59, Math.round(30 + (c - 10) * 1.4 + s * 0.3)));
+        return Math.max(2, Math.min(29, Math.round(2 + c * 2.2 + s * 0.4)));
+    }
     function assess(p) {
         p = p || {};
+        const E = engine();
         const f = p.facts || {}, L = list(p.ingredients), hasI = L.length > 0;
-        const c = n(f.c), s = n(f.s), fib = n(f.f) || 0, pro = n(f.p) || 0, fat = n(f.fat) || 0;
+        const c = n(f.c), s = n(f.s);
         const hasN = c != null || s != null;
-        const drink = (p.cat === 'drink' || !!f.drink) && !(hasI && find(L, RX.veg, 0, 2));
-        const why = [];
+        const veg = hasI && find(L, RX.veg, 0, 2);
+        const drink = (p.cat === 'drink' || !!f.drink) && !veg;
         if (!hasI && !hasN) return {verdict: 'unknown', why: [], score: null, est: true};
         const sweet = hasI ? find(L, RX.sweet, 0, 99) : null;
         const sugarTop = hasI ? find(L, RX.addedSugar, 0, 3, RX.noSugar) : null;
-        const sugarAny = sugarTop || (hasI ? find(L, RX.addedSugar, 3, 99, RX.noSugar) : null);
         const refinedTop = hasI ? find(L, RX.refined, 0, 3) : null;
         const wholeTop = hasI ? find(L, RX.whole, 0, 3) : null;
-        const fibreRich = !hasI && c != null && c > 0 && fib / c >= 0.15 && (s || 0) < 5;
-        const wholeOnly = fibreRich || (!!wholeTop && (!refinedTop || /vollkorn|whole|integral/.test(refinedTop.w)));
+        const refined = !!refinedTop && !(wholeTop && /vollkorn|whole|integral/.test(refinedTop.w));
+        const why = [];
         if (sweet) why.push(['s_sweet', sweet.w]);
-        let score, spike = !!sweet;
-        if (hasN) {
-            const net = Math.max(0, (c || 0) - fib), sug = s || 0;
-            const q = wholeOnly ? 0.55 : refinedTop ? 1 : 0.8;
-            const sw = sugarTop ? 0.6 : sugarAny ? 0.3 : 0;
-            const load = net * q + sug * sw;
-            const damp = Math.min(load * 0.4, pro * 0.4 + fat * 0.1);
-            score = Math.round(Math.max(0, load - damp));
-            if (drink && sug > 5) { spike = true; why.unshift(['s_liquid', sug]); score = Math.max(score, 70); }
-            else if (sugarTop && sug >= 10 && net >= 10) { spike = true; why.push(['s_sugar_top', sugarTop.w, sug]); score = Math.max(score, 40); }
-            else if (score >= 25) {
-                spike = true;
-                if (refinedTop) why.push(['s_refined', refinedTop.w, net]);
-                else if (sug >= 10) why.push(['s_sugar', sug]);
-                else why.push(['s_carbs', net]);
-            }
-            if (!spike) {
-                if (net < 10) why.push(['s_low', net, sug]);
-                else if (wholeOnly) why.push(wholeTop ? ['s_whole', wholeTop.w, fib] : ['s_fibrerich', fib]);
-                else why.push(['s_moderate', net]);
-                if (sug > 0 && !sugarAny && hasI) why.push(['s_natural', sug]);
-            }
-            if (fib >= 6) why.push(['s_fibre', fib]);
-            if (pro >= 10) why.push(['s_protein', pro]);
-        } else {
-            if (refinedTop) { spike = true; why.push(['s_refined_i', refinedTop.w]); }
-            if (sugarTop) { spike = true; why.push(['s_sugar_i', sugarTop.w]); }
-            if (!spike) why.push(wholeOnly ? ['s_whole_i', wholeTop.w] : ['s_clean_i']);
-            score = spike ? 60 : 15;
+        if (!hasN || !E) {
+            // No numbers (or the engine file is missing): no estimate, only the ingredient rules can say spike.
+            const bad = sweet || (refined && refinedTop) || sugarTop;
+            if (!sweet && refined) why.push(['s_refined_i', refinedTop.w]);
+            if (!sweet && sugarTop) why.push(['s_sugar_i', sugarTop.w]);
+            if (!bad) return {verdict: 'unknown', why: [['e_nodata']], score: null, est: true};
+            return {verdict: 'spike', why: why.slice(0, 4), score: sweet ? 60 : 65, est: true};
         }
-        if (sweet) score = Math.max(score, 50);
-        score = Math.max(2, Math.min(100, spike ? Math.max(score, 34) : Math.min(score, 30)));
-        return {verdict: spike ? 'spike' : 'ok', why: why.slice(0, 4), score, est: true};
+        const per100 = {carbs: c, sugar: s, fibre: n(f.f), protein: n(f.p), fat: n(f.fat), kcal: n(f.kcal)};
+        const unit = drink ? 'ml' : 'g';
+        const nutrition = E.validateNutrition(per100, unit);
+        const group = drink ? 'drinks' : (veg && p.cat === 'drink' ? 'other' : GROUP[p.cat] || 'other');
+        const serving = E.calculateServing(nutrition, {manufacturerG: n(f.sv), group});
+        const glucose = E.estimateGlucoseImpact({serving, category: {liquid: drink}});
+        let key = glucose.key;
+        const sg = serving.amounts.sugar, cg = serving.amounts.carbs;
+        if (key !== 'insufficient') {
+            if (sweet) key = 'higher';
+            if (drink && (s || 0) > 5) { if (!sweet) why.unshift(['s_liquid', s]); key = 'higher'; }
+            if (sugarTop && (s || 0) >= 10) { key = UP[key]; why.push(['s_sugar_top', sugarTop.w, s]); }
+            if (refined && key === 'moderate') { key = 'higher'; why.push(['s_refined_i', refinedTop.w]); }
+        } else if (sweet) key = 'higher';
+        const verdict = TO_VERDICT[key] || 'unknown';
+        if (glucose.key === 'insufficient') why.push([glucose.reasons[0] === 'label_inconsistent' ? 'e_bad' : 'e_nodata']);
+        else {
+            if (cg != null) why.push([unit === 'ml' ? 'e_carbs_ml' : 'e_carbs', cg, serving.g]);
+            if (sg != null && sg >= 5) why.push(['e_sugar', sg]);
+            if (glucose.modifiers.some(m => /protein|fat|fibre/.test(m))) why.push(['e_slow']);
+            why.push(['e_est']);
+        }
+        const score = verdict === 'unknown' ? null : scoreOf(key, cg, sg);
+        const out = {verdict, why: why.slice(0, 4), score, est: true};
+        Object.defineProperty(out, 'engine', {value: {version: E.VERSION, bands: E.BANDS.version, key, glucose, serving: {g: serving.g, unit: serving.unit, source: serving.source, shown: serving.shown}, valid: nutrition.valid, issues: nutrition.issues}, enumerable: false});
+        return out;
     }
     const TX = {
+        e_carbs: ['{0} g carbs in a {1} g serving', '{0} g Kohlenhydrate in einer Portion von {1} g', '{0} g de carbohidratos en una ración de {1} g'],
+        e_carbs_ml: ['{0} g carbs in a {1} ml serving', '{0} g Kohlenhydrate in einer Portion von {1} ml', '{0} g de carbohidratos en una ración de {1} ml'],
+        e_sugar: ['{0} g of that is sugar', 'Davon {0} g Zucker', 'De ellos, {0} g son azúcar'],
+        e_slow: ['Protein, fat or fibre may slow it down, but they don\'t cancel the carbs', 'Eiweiß, Fett oder Ballaststoffe können es bremsen, heben die Kohlenhydrate aber nicht auf', 'La proteína, la grasa o la fibra pueden frenarlo, pero no anulan los carbohidratos'],
+        e_est: ['An estimate from the label; your own response can differ', 'Eine Schätzung nach dem Etikett; deine Reaktion kann anders sein', 'Una estimación según la etiqueta; tu respuesta puede ser distinta'],
+        e_nodata: ['The label lacks the carb numbers needed for an estimate', 'Dem Etikett fehlen die Kohlenhydratangaben für eine Schätzung', 'A la etiqueta le faltan los carbohidratos para poder estimar'],
+        e_bad: ['The label numbers don\'t add up, so there\'s no estimate', 'Die Etikettwerte passen nicht zusammen, darum keine Schätzung', 'Los datos de la etiqueta no cuadran, así que no hay estimación'],
         s_sweet: ['Has a sweetener ({0}): keeps the sweet craving going and can still raise insulin', 'Enthält Süßstoff ({0}): hält die Lust auf Süßes wach und kann trotzdem Insulin anheben', 'Lleva edulcorante ({0}): mantiene las ganas de dulce y puede subir la insulina'],
         s_liquid: ['Liquid sugar, {0} g per 100 ml: it reaches the blood fastest', 'Flüssiger Zucker, {0} g pro 100 ml: geht am schnellsten ins Blut', 'Azúcar líquido, {0} g por 100 ml: llega a la sangre más rápido'],
         s_sugar_top: ['Added sugar is one of the first ingredients ({0}), {1} g sugar per 100 g', 'Zugesetzter Zucker steht weit vorne ({0}), {1} g Zucker pro 100 g', 'Azúcar añadido entre los primeros ingredientes ({0}), {1} g por 100 g'],

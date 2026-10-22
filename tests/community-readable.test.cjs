@@ -33,8 +33,8 @@ test('header and menu text keeps WCAG AA contrast even if the glass sat on white
       assert.ok(ratio(ink2, bg) >= 4.5, g + ' secondary ' + ratio(ink2, bg).toFixed(2));
     }
   }
-  /* active tab: white on the cyan tint over the glass over white (worst case) */
-  const { c, a } = rgba(varOf('rm-glass')); const track = over(c, a, WHITE); const pill = over([28, 247, 249], 0.26, track);
+  /* active tab: white on the brand-blue tint over the glass over white (worst case; item 43: no cyan) */
+  const { c, a } = rgba(varOf('rm-glass')); const track = over(c, a, WHITE); const pill = over([47, 149, 255], 0.34, track);
   assert.ok(ratio(WHITE, pill) >= 4.5, 'active tab ' + ratio(WHITE, pill).toFixed(2));
 });
 

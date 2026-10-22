@@ -619,11 +619,12 @@
         },
         {
             id: 'settings-more', area: 'settings', target: ['#whHud .o8-settings'], covers: ['care', 'workouts', 'foryou', 'hunt'],
-            title: { en: 'Explore', de: 'Entdecken', es: 'Explorar' },
+            info: 'says where For You and the Care board live now; Swipe here is the name of a Cook view, not a gesture to do',
+            title: { en: 'For You and the Care board', de: 'Für dich und das Care-Board', es: 'Para ti y el tablero Care' },
             text: {
-                en: 'Under Explore in your Community profile: For You, the Care board, Workouts for whole training sessions, the World map, Gift of the day and the Shopping hunt.',
-                de: 'Unter Entdecken in deinem Community-Profil: Für dich, das Care-Board, Workouts für ganze Trainings, die Weltkarte, das Tagesgeschenk und die Einkaufsjagd.',
-                es: 'En Explorar, dentro de tu perfil de Comunidad: Para ti, el tablero Care, Entrenos para sesiones completas, el mapa del mundo, el regalo del día y la Caza de compras.'
+                en: 'For You is in Cook, next to Shuffle and Swipe. The Care board is in Move, right under the Move title. Workouts are behind the Move bubble on Home.',
+                de: 'Für dich findest du in Kochen, neben Shuffle und Swipe. Das Care-Board ist in Bewegen, direkt unter dem Titel. Workouts liegen hinter der Bewegen-Blase auf Home.',
+                es: 'Para ti está en Cocina, junto a Shuffle y Swipe. El tablero Care está en Moverse, justo debajo del título. Los entrenos están tras la burbuja Moverse en Inicio.'
             }
         },
         {

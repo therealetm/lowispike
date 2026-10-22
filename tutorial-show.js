@@ -25,6 +25,7 @@
         touch: { g: 'tap' },
         'misty-hold': { g: 'hold' },
         'misty-turn': { g: 'drag' },
+        mirror: { g: 'tap', vis: 'mirror' },
         energy: { vis: 'energy' },
         mood: { vis: 'mood' },
         'energy-peak': { vis: 'peak' },
@@ -44,13 +45,13 @@
     /* the few words on the pictures, EN / DE / ES (the same words the cards and the app use) */
     const L = {
         en: { energy: 'Energy', mood: ['Calm', 'Happy', 'Tired'], full: 'Full!', gap: 'since your last meal', noMeal: 'no meal yet', meals: 'meals', log: 'Log meal', shop: 'Shop', cook: 'Cook',
-            photo: 'Photo', type: 'chicken stew', recent: 'Recent', cup: '+1 cup', undo: 'Undo', cups: 'cups', moves: ['Quick', 'Medium', 'Long', 'Epic'], workouts: 'Workouts', care: 'Care board', today: 'Today', edit: 'Edit',
+            photo: 'Photo', type: 'chicken stew', recent: 'Recent', cup: '+1 cup', undo: 'Undo', cups: 'cups', moves: ['Quick', 'Medium', 'Long', 'Epic'], mirror: 'Mirror', workouts: 'Workouts', care: 'Care board', today: 'Today', edit: 'Edit',
             sleep: ['Slept well', 'Okay', 'Short night'], still: 'stops', fuel: 'Fuel', water: 'Water', move: 'Move', sleepW: 'Sleep', gapW: 'Gap', scan: 'Scan', set: 'Settings', joy: 'Play', reset: 'back to 0' },
         de: { energy: 'Energie', mood: ['Ruhig', 'Froh', 'Müde'], full: 'Voll!', gap: 'seit der letzten Mahlzeit', noMeal: 'noch kein Essen', meals: 'Mahlzeiten', log: 'Mahlzeit eintragen', shop: 'Einkaufen', cook: 'Kochen',
-            photo: 'Foto', type: 'Hühnereintopf', recent: 'Letzte', cup: '+1 Becher', undo: 'Rückgängig', cups: 'Becher', moves: ['Kurz', 'Mittel', 'Lang', 'Episch'], workouts: 'Workouts', care: 'Care-Board', today: 'Heute', edit: 'Bearbeiten',
+            photo: 'Foto', type: 'Hühnereintopf', recent: 'Letzte', cup: '+1 Becher', undo: 'Rückgängig', cups: 'Becher', moves: ['Kurz', 'Mittel', 'Lang', 'Episch'], mirror: 'Spiegel', workouts: 'Workouts', care: 'Care-Board', today: 'Heute', edit: 'Bearbeiten',
             sleep: ['Gut', 'Okay', 'Kurz'], still: 'stoppt', fuel: 'Essen', water: 'Wasser', move: 'Bewegung', sleepW: 'Schlaf', gapW: 'Gap', scan: 'Scannen', set: 'Einstellungen', joy: 'Spielen', reset: 'wieder 0' },
         es: { energy: 'Energía', mood: ['Calma', 'Feliz', 'Cansada'], full: '¡Llena!', gap: 'desde tu última comida', noMeal: 'sin comida aún', meals: 'comidas', log: 'Registrar comida', shop: 'Comprar', cook: 'Cocinar',
-            photo: 'Foto', type: 'guiso de pollo', recent: 'Recientes', cup: '+1 vaso', undo: 'Deshacer', cups: 'vasos', moves: ['Corto', 'Medio', 'Largo', 'Épico'], workouts: 'Entrenos', care: 'Care board', today: 'Hoy', edit: 'Editar',
+            photo: 'Foto', type: 'guiso de pollo', recent: 'Recientes', cup: '+1 vaso', undo: 'Deshacer', cups: 'vasos', moves: ['Corto', 'Medio', 'Largo', 'Épico'], mirror: 'Espejo', workouts: 'Entrenos', care: 'Care board', today: 'Hoy', edit: 'Editar',
             sleep: ['Bien', 'Regular', 'Corta'], still: 'se para', fuel: 'Comida', water: 'Agua', move: 'Movimiento', sleepW: 'Sueño', gapW: 'Gap', scan: 'Escanear', set: 'Ajustes', joy: 'Jugar', reset: 'vuelve a 0' }
     };
     const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -73,6 +74,8 @@
             case 'water': return b('lts-row lts-cups', [0, 1, 2, 3, 4].map(k => b('lts-cup' + (k < 2 ? ' on' : '') + (k === 2 ? ' lts-fillin' : ''))).join('')) + b('lts-row', b('lts-pill on', esc(T.cup)) + b('lts-pill', esc(T.undo)));
             case 'water0': return b('lts-row lts-cups lts-drain', [0, 1, 2, 3, 4].map(k => b('lts-cup on')).join('')) + b('lts-cap', '\u21ba ' + esc(T.reset));
             case 'move': return b('lts-row', T.moves.map((m, k) => b('lts-pill' + (k === 1 ? ' on' : ''), esc(m))).join(''));
+            /* Oct 22 2026: Mirror is the first bubble of the Move bloom */
+            case 'mirror': return b('lts-cap lts-top', esc(T.move)) + b('lts-row', b('lts-pill on', '\ud83c\udfa5 ' + esc(T.mirror)) + T.moves.slice(0, 2).map(m => b('lts-pill', esc(m))).join(''));
             case 'movepage': return b('lts-cap lts-top', esc(T.today) + ' \u00b7 ' + esc(T.edit)) + b('lts-row', b('lts-pill on', esc(T.workouts)) + b('lts-pill', esc(T.care)));
             case 'sleep': return b('lts-row', T.sleep.map((m, k) => b('lts-pill' + (k === 0 ? ' on' : ''), (k === 0 ? '\ud83c\udf19 ' : k === 1 ? '\u2601\ufe0f ' : '\u23f0 ') + esc(m))).join(''));
         }

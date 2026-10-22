@@ -276,7 +276,10 @@
         const vw = W.innerWidth, vh = W.innerHeight;
         const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
         const orb = Math.round(Math.max(64, Math.min(84, Math.min(vw, vh) * 0.19)));
-        const pts = W.LowiMoveFan.fan(fanGeom(b, r, cx, cy, orb, vw, vh)).pts.map((p, i) => ({ L: C.LEVELS[i], x: p.x, y: p.y }));
+        /* Oct 22 2026 (Emmanuel: Mirror mode is "the most impressive part in the whole app"): the camera workout is the FIRST bubble of
+           the bloom, so it is two taps from Home (Move, then Mirror). The four feel picks follow it. */
+        const mir = hasMirror();
+        const pts = W.LowiMoveFan.fan(fanGeom(b, r, cx, cy, orb, vw, vh)).pts.map((p, i) => ({ L: mir ? (i ? C.LEVELS[i - 1] : null) : C.LEVELS[i], x: p.x, y: p.y }));
         const v = C.view(ledger(), dayKey());
         const ov = D.createElement('div');
         ov.className = 'wm-bloom';
@@ -284,7 +287,7 @@
         ov.setAttribute('aria-label', T('How did it feel?', 'Wie hat es sich angefühlt?', '¿Cómo se sintió?'));
         ov.style.setProperty('--wm-orb', orb + 'px');
         ov.innerHTML = '<button type="button" class="wm-scrim" data-wm="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '"></button>' +
-            pts.map((p, i) => '<button type="button" class="wm-orb wm-' + p.L.id + '" data-wm="pick" data-lvl="' + p.L.id + '" style="left:' + Math.round(p.x) + 'px;top:' + Math.round(p.y) + 'px;--wm-dx:' + Math.round(cx - p.x) + 'px;--wm-dy:' + Math.round(cy - p.y) + 'px;--wm-i:' + i + '" aria-label="' + esc(NAMES[p.L.id]() + ', ' + HINTS[p.L.id]() + ', +' + p.L.q + '/4') + '">' +
+            pts.map((p, i) => !p.L ? mirrorOrb(p, i, cx, cy) : '<button type="button" class="wm-orb wm-' + p.L.id + '" data-wm="pick" data-lvl="' + p.L.id + '" style="left:' + Math.round(p.x) + 'px;top:' + Math.round(p.y) + 'px;--wm-dx:' + Math.round(cx - p.x) + 'px;--wm-dy:' + Math.round(cy - p.y) + 'px;--wm-i:' + i + '" aria-label="' + esc(NAMES[p.L.id]() + ', ' + HINTS[p.L.id]() + ', +' + p.L.q + '/4') + '">' +
                 '<span class="wm-orb-fill" style="--wm-q:' + (p.L.q / 4) + '" aria-hidden="true"></span><span class="wm-orb-tx"><b>' + esc(NAMES[p.L.id]()) + '</b><small>' + esc(HINTS[p.L.id]()) + '</small></span></button>').join('') +
             '<p class="wm-note" style="' + noteSpot(pts, orb, vw, vh, b, r) + '">' + esc(v.q >= C.FULL
                 ? T('Move is full for today. Nice!', 'Bewegung ist heute voll. Stark!', 'Movimiento completo hoy. ¡Genial!')
@@ -305,7 +308,19 @@
             .concat(Array.from(D.querySelectorAll('#f3Board, #spHome .sp-top, #tabbar')).map(box).filter(Boolean).map(q => Object.assign(q, { w: 0.4 })));
         let top = 6;
         try { top = Math.max(6, parseFloat(getComputedStyle(D.documentElement).getPropertyValue('--sat')) || 0); } catch (e) { }
-        return { cx, cy, r: r.width / 2, orb, n: C.LEVELS.length, vw, vh, top, bottom: 6, misty, avoid };
+        return { cx, cy, r: r.width / 2, orb, n: C.LEVELS.length + (hasMirror() ? 1 : 0), vw, vh, top, bottom: 6, misty, avoid };
+    }
+    function hasMirror() { return !!(W.LowiMirror && typeof W.LowiMirror.open === 'function'); }
+    const CAM = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6.5" width="13" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 10.5l5-3v9l-5-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
+    function mirrorOrb(p, i, cx, cy) {
+        const n = T('Mirror', 'Spiegel', 'Espejo'), sub = T('camera workout', 'Kamera-Workout', 'entreno con cámara');
+        return '<button type="button" class="wm-orb wm-mirror" data-wm="mirror" style="left:' + Math.round(p.x) + 'px;top:' + Math.round(p.y) + 'px;--wm-dx:' + Math.round(cx - p.x) + 'px;--wm-dy:' + Math.round(cy - p.y) + 'px;--wm-i:' + i + '" aria-label="' + esc(T('Mirror mode: camera workout', 'Spiegel-Modus: Kamera-Workout', 'Modo espejo: entreno con cámara')) + '">' +
+            '<span class="wm-orb-tx"><span class="wm-orb-ic">' + CAM + '</span><b>' + esc(n) + '</b><small>' + esc(sub) + '</small></span></button>';
+    }
+    /* Mirror opens in place of the bloom, never on top of it (no stacked layers) */
+    function openMirror(orbEl) {
+        closeBloom(false, orbEl);
+        try { W.LowiMirror.open(); } catch (e) { }
     }
     function noteSpot(pts, orb, vw, vh, b, r) {
         const w = Math.min(260, vw - 24), g = fanGeom(b, r, 0, 0, orb, vw, vh);
@@ -317,6 +332,7 @@
         e.preventDefault(); e.stopPropagation();
         if (t.dataset.wm === 'close') closeBloom(true);
         else if (t.dataset.wm === 'pick') pick(t.dataset.lvl, t);
+        else if (t.dataset.wm === 'mirror') openMirror(t);
     }
     function closeBloom(focusBack, chosen) {
         const ov = bloom; if (!ov) return;

@@ -65,7 +65,14 @@
         }
         return out;
     }
-    const api = { VOICES, BCP, NAME, spoken, plan, titleAdds, KEY: 'lowi.tutorial.voice.v1', CACHE: 'lowi-voice-v1', DIR: 'tutorial-voice/' };
+    /* where in the spoken string one of the cue phrases starts (Try it now wiggle); -1 when none is said. ’ and ' count the same. */
+    function cueIndex(s, phrases) {
+        const n = x => String(x || '').toLowerCase().replace(/[\u2019`]/g, "'");
+        const t = n(s); let at = -1;
+        for (const p of phrases || []) { const k = t.lastIndexOf(n(p)); if (k >= 0 && (at < 0 || k < at)) at = k; }
+        return at;
+    }
+    const api = { VOICES, BCP, NAME, spoken, plan, titleAdds, cueIndex, KEY: 'lowi.tutorial.voice.v1', CACHE: 'lowi-voice-v1', DIR: 'tutorial-voice/' };
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (!root || !root.document || root.LowiTutorialVoice) return;
 
@@ -135,12 +142,20 @@
         for (const w of words) w.el.classList.toggle('lt-say', w === hit);
     }
     function clearMark() { for (const w of words) w.el.classList.remove('lt-say'); }
+    /* the voice reached the card's cue words ("Try it now"): tell the tour once, so its button wiggles */
+    function cueCheck(ch) {
+        const c = ctxNow;
+        if (!c || !c.onCue || c.cued || c.cueAt < 0 || ch < c.cueAt || !cur || cur.key !== c.sp.key) return;
+        c.cued = true;
+        emit({ state: 'cue', key: c.sp.key });
+        try { c.onCue(c.sp.key); } catch (e) { }
+    }
     function loop() {
         cancelAnimationFrame(raf);
         if (!cur || cur.how !== 'file' || !audio) return;
         const t = audio.currentTime * 1000 + 60, w = cur.clip.w; let k = -1;
         for (let j = 0; j < w.length; j++) { if (w[j][0] <= t) k = j; else break; }
-        if (k >= 0) mark(w[k][1]);
+        if (k >= 0) { mark(w[k][1]); cueCheck(w[k][1]); }
         raf = requestAnimationFrame(loop);
     }
     /* wrap the words of the title and the text in spans, numbered by their place in the spoken string */
@@ -215,7 +230,7 @@
             speechSynthesis.cancel();
             const u = new SpeechSynthesisUtterance(sp.s); u.lang = BCP[L(sp.lang)]; const v = bestVoice(sp.lang); if (v) u.voice = v;
             u.rate = 1; u.pitch = 1.05;
-            u.onboundary = e => { if (my === seq && typeof e.charIndex === 'number') mark(e.charIndex); };
+            u.onboundary = e => { if (my === seq && typeof e.charIndex === 'number') { mark(e.charIndex); cueCheck(e.charIndex); } };
             u.onend = () => finished(my);
             u.onerror = () => { if (my === seq) done(); };
             cur.how = 'device'; cur.playing = true; media(true); paintBtn();
@@ -272,8 +287,11 @@
         if (sp.t >= 0) wrap(el.querySelector('#ltTitle'), sp.s.slice(0, sp.t), 0);
         wrap(el.querySelector('#ltText'), sp.s.slice(sp.b), sp.b);
         const next = (c.next || []).map(s => spoken(s, lang, c.name).key);
-        ctxNow = { sp, next, onEnd: typeof c.onEnd === 'function' ? c.onEnd : null };
         const key = lang + '|' + sp.key + '|' + sp.s;
+        /* ctx.cue: phrases ("try it now"); ctx.onCue fires once when the voice reaches them. A repaint of the same card keeps it fired. */
+        const was = ctxNow && ctxNow.key === key && key === lastKey ? ctxNow.cued : false;
+        ctxNow = { sp, next, key, onEnd: typeof c.onEnd === 'function' ? c.onEnd : null,
+            onCue: typeof c.onCue === 'function' ? c.onCue : null, cueAt: c.cue ? cueIndex(sp.s, c.cue) : -1, cued: !!was };
         if (!cur || cur.lang !== lang) cur = Object.assign({ playing: false, how: '' }, sp);
         paintBtn();
         if (c.quiet) { lastKey = ''; saidKey = ''; stop(); return; }   /* paused: paint the card, say nothing */

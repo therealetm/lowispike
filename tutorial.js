@@ -84,7 +84,7 @@
             '<span class="lt-meta"><small class="lt-count">' + esc(U.label + ' \u00b7 ' + S.fill(U.of, { i: i + 1, n: list.length })) + '</small>' +
             '<b class="lt-title" id="ltTitle">' + esc(S.text(s, 'title', l, vars)) + '</b></span>' +
             (last ? '' : '<button type="button" class="lt-skipall" data-lt="skipall">' + esc(U.skipAll) + '</button>') + '</div>' +
-            '<p class="lt-text" id="ltText">' + esc(S.text(s, 'text', l, vars)) + '</p>' + peekHtml(s, U) +
+            '<p class="lt-text" id="ltText">' + esc(S.text(s, 'text', l, vars)) + '</p>' + tryHtml(s, U) + peekHtml(s, U) +
             '<div class="lt-btns"><span class="lt-left">' +
             (i > 0 ? '<button type="button" class="lt-btn lt-ghost" data-lt="back">' + esc(U.back) + '</button>' : '') +
             '<button type="button" class="lt-btn lt-ghost lt-pause" data-lt="pause" aria-pressed="' + paused + '" aria-label="' + esc(paused ? (U.play || 'Play') : (U.pause || 'Pause')) + '">' + (paused ? PLAY_SVG : PAUSE_SVG) + '</button></span>' +
@@ -93,9 +93,16 @@
         root.setAttribute('data-step', s.id);
         renderTry(s, U);
         root.classList.toggle('lt-voice', voiceOn()); root.classList.toggle('lt-paused', paused);
+        /* Try it now: the voice tells us when it says the cue words, so the button wiggles right then */
+        const cueing = !!(s.tryIt && tried !== i), cue = cueing ? (S.TRY_CUE && S.TRY_CUE[l]) || null : null, onCue = cueing ? () => wiggle('cue') : null;
         place();
         /* tutorial-voice.js: the companion picture is the speaker; reads the card aloud when sound is on (Oct 21 2026); onEnd = hands-free */
-        try { if (W.LowiTutorialVoice) W.LowiTutorialVoice.render(card, s, { lang: l, name: vars.name, next: list.slice(i + 1, i + 3), onEnd: said, quiet: paused }); } catch (e) { }
+        try { if (W.LowiTutorialVoice) W.LowiTutorialVoice.render(card, s, { lang: l, name: vars.name, next: list.slice(i + 1, i + 3), cue, onCue, onEnd: said, quiet: paused }); } catch (e) { }
+        /* no voice reading this card (speaker off or paused): the Try it now button wiggles once when the card appears */
+        if (cueing && (!voiceOn() || paused) && !(wig.at === i && wig.appear)) {
+            wig = wig.at === i ? Object.assign(wig, { appear: true }) : { at: i, n: 0, t: 0, appear: true };
+            const at = i; setTimeout(() => { if (on && i === at) wiggle('appear'); }, reduced() ? 300 : 700);
+        }
         try { (card.querySelector(focusSel || '[data-lt="claim"],[data-lt="next"]') || card).focus({ preventScroll: true }); } catch (e) { }
         focusSel = '';
         keepAwake();
@@ -120,12 +127,54 @@
     function said() {
         clearT(autoT); autoT = 0;
         const s = step(), at = i;
+        /* a Try it now card read to the end without its cue words (or long after them): the button wiggles now, at most twice per card */
+        if (on && !held && s && s.tryIt && tried !== at && (wig.at !== at || wig.n === 0 || (wig.n === 1 && Date.now() - wig.t > 2500))) wiggle('end');
         if (!on || held || paused || !s || !voiceOn() || at >= list.length - 1 || s.action === 'claim') return;
-        const wait = s.tryIt && tried !== at ? AUTO.TRY : AUTO.GAP;
+        /* hands-free never moves past a Try it now card sooner than AUTO.TRY after its last wiggle */
+        const wait = s.tryIt && tried !== at ? Math.max(AUTO.GAP, AUTO.TRY - (wig.at === at && wig.t ? Date.now() - wig.t : 0)) : AUTO.GAP;
         const card = root && root.querySelector('.lt-card');
         if (card && !reduced()) { card.style.setProperty('--lt-auto', wait + 'ms'); card.classList.remove('lt-autogo'); void card.offsetWidth; card.classList.add('lt-autogo'); }
         autoT = setTimeout(() => { autoT = 0; if (on && !held && !paused && i === at && voiceOn()) go(at + 1, 'auto'); }, wait);
         emit({ auto: s.id, wait });
+    }
+    /* ---------- Try it now (Oct 22 2026, Emmanuel: "There is a try it now button that does nothing. Wiggle when try it now is said so
+       they click on it which closes the tutorial for them to try it.") ----------
+       The line under a try-it card's text is a real button. It wiggles (reduced motion: glows) when the voice says "Try it now"
+       (S.TRY_CUE), when the card was read to the end without those words, or once on appearing when no voice reads it; never more
+       than twice per card. Tapping it: voice off, card closed, the user stays on the screen the card is about, and the place is
+       saved in lowi.tutorial.v1 .resume (tutorial-resume.js's shape: the "Continue tutorial" button brings them to the next card). */
+    let wig = { at: -1, n: 0, t: 0, appear: false };
+    function tryHtml(s, U) {
+        if (!s || !s.tryIt) return '';
+        if (tried === i) return '<p class="lt-tryline" role="status">' + esc(U.nice) + '</p>';
+        return '<button type="button" class="lt-trybtn" data-lt="tryit"><span class="lt-tryhand" aria-hidden="true">\u{1F446}</span>' + esc(U.tryIt) + '</button>';
+    }
+    function wiggle(why) {
+        const s = step(); if (!on || held || !s || !s.tryIt || tried === i) return false;
+        if (wig.at !== i) wig = { at: i, n: 0, t: 0, appear: false };
+        if (wig.n >= 2) return false;
+        wig.n++; wig.t = Date.now();
+        const b = root && root.querySelector('.lt-trybtn'), cls = reduced() ? 'lt-glow' : 'lt-wiggle';
+        if (b) { b.classList.remove('lt-wiggle', 'lt-glow'); void b.offsetWidth; b.classList.add(cls); }
+        emit({ wiggle: s.id, why, n: wig.n });
+        return true;
+    }
+    function tryNow() {
+        const s = step(); if (!on || !s || !s.tryIt) return;
+        const at = i, ids = list.map(x => x.id);
+        cancelAuto(); clearT(tryNext);
+        try { if (W.LowiTutorialVoice) W.LowiTutorialVoice.stop(); } catch (e) { }
+        emit({ tryNow: s.id });
+        const st = store.get(); st.resume = S.tryResume(ids, at, Date.now()); store.set(st);
+        stop('tryit');
+        /* the screen the card is about (Home, or Community on its Room tab), visible and free to touch */
+        goSection(s); setTimeout(() => goSection(s), 450);
+    }
+    /* the place saved by Try it now, when nothing else (tutorial-resume.js) has taken the user back yet: Settings > Tutorial picks it up */
+    function savedTry() {
+        const r = store.get().resume;
+        if (!r || r.via !== 'tryit' || !r.at || Date.now() - (r.t || 0) > 6 * 3600e3) return '';
+        return r.fin && r.next ? r.next : r.at;
     }
     function cancelAuto() { clearT(autoT); autoT = 0; const c = root && root.querySelector('.lt-card'); if (c) c.classList.remove('lt-autogo'); }
     function setPaused(v) {
@@ -204,9 +253,6 @@
         const can = !!(s && s.tryIt), done = can && tried === i;
         root.classList.toggle('lt-try', can && !done); root.classList.toggle('lt-tried', done);
         if (!can) return;
-        const p = D.createElement('p'); p.className = 'lt-tryline'; p.setAttribute('role', 'status');
-        p.textContent = done ? U.nice : U.tryIt;
-        const txt = card.querySelector('.lt-text'); if (txt) txt.after(p);
     }
     function didGesture(kind) {
         const s = step();
@@ -296,6 +342,7 @@
         else if (a === 'skipall') stop('skipped');
         else if (a === 'claim') claim();
         else if (a === 'pause') setPaused(!paused);
+        else if (a === 'tryit') tryNow();
     }
     function onKey(e) {
         if (held) return;
@@ -327,7 +374,8 @@
         store.set(Object.assign(store.get(), { v: S.VERSION, at: new Date().toISOString(), done: false, from: o.from || '' }));
         clearInterval(timer); timer = setInterval(tick, 350);
         /* opts.at: begin at that step id (tutorial-auto.js: continue a tour that was left halfway) */
-        let at = 0; if (o.at) { const k = list.findIndex(x => x.id === o.at); if (k > 0) at = k; }
+        let at = 0; const want = o.at || (o.fresh ? '' : savedTry()); if (want) { const k = list.findIndex(x => x.id === want); if (k > 0) at = k; }
+        { const st0 = store.get(); if (st0.resume && st0.resume.via === 'tryit') { delete st0.resume.via; store.set(st0); } }   /* picked up once */
         go(at, 'start');
         return true;
     }
@@ -357,5 +405,5 @@
     /* tutorial-voice.js (the speaker on every card) loads the same way */
     if (!W.LowiTutorialVoice && !D.querySelector('script[src^="tutorial-voice.js"]')) { const m = $('meta[name="lowi-build"]'), sc = D.createElement('script'); sc.src = 'tutorial-voice.js?v=' + encodeURIComponent((m && m.content) || '1'); sc.defer = true; D.head.appendChild(sc); }
     W.LowiTutorial = { start, stop, isOn: () => on, step: () => (step() || {}).id || null, held: () => held, busyBy, core: S,
-        paused: () => paused, pause: v => setPaused(v == null ? true : v), auto: () => !!autoT };
+        paused: () => paused, pause: v => setPaused(v == null ? true : v), auto: () => !!autoT, tryNow, wiggles: () => (wig.at === i ? wig.n : 0) };
 })();

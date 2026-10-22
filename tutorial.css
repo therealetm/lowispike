@@ -46,6 +46,18 @@
 .lt-tour.lt-try .lt-card, .lt-tour.lt-tried .lt-card { pointer-events: auto; }
 .lt-tryline { margin: -4px 2px 10px; font-size: 13px; line-height: 18px; font-weight: 600; color: var(--brand-cyan, #7fe7ff); }
 .lt-tour.lt-tried .lt-tryline { color: var(--brand-green, #8dffb5); }
+/* Try it now (Oct 22 2026): a real button; tapping it closes the card so the gesture can be tried for real. It wiggles when the voice
+   says "Try it now" (at most twice per card); with reduced motion it glows instead of moving. */
+.lt-trybtn { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; margin: -2px 0 10px; padding: 0 16px; border-radius: 22px; font: inherit; font-size: 14px; font-weight: 700; color: #04232b; cursor: pointer;
+  border: 1px solid rgba(170, 255, 240, .9); background: linear-gradient(160deg, #9ff4ff, #7fe7c8); box-shadow: 0 0 14px rgba(127, 231, 255, .45); transform-origin: 50% 60%; }
+.lt-trybtn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.lt-tryhand { font-size: 16px; line-height: 1; }
+.lt-trybtn.lt-wiggle { animation: lt-wiggle .9s cubic-bezier(.36, .07, .19, .97) 1; }
+.lt-trybtn.lt-glow { animation: lt-glow 1.2s ease-in-out 1; }
+@keyframes lt-wiggle { 0%, 100% { transform: none; } 12% { transform: rotate(-7deg) scale(1.06); } 26% { transform: rotate(6deg) scale(1.08); } 40% { transform: rotate(-5deg) scale(1.06); } 54% { transform: rotate(4deg) scale(1.04); } 68% { transform: rotate(-2deg); } 82% { transform: rotate(1deg); } }
+@keyframes lt-glow { 0%, 100% { box-shadow: 0 0 14px rgba(127, 231, 255, .45); } 50% { box-shadow: 0 0 0 4px rgba(255, 255, 255, .85), 0 0 26px rgba(127, 231, 255, .9); } }
+@media (prefers-reduced-motion: reduce) { .lt-trybtn.lt-wiggle { animation: lt-glow 1.2s ease-in-out 1 !important; } }
+.lt-tour.lt-rm .lt-trybtn.lt-wiggle { animation: lt-glow 1.2s ease-in-out 1; }
 /* hands-free (Oct 22 2026): Pause / Play shows only while the speaker is on; a thin line fills during the pause before the next card */
 .lt-left { display: flex; gap: 8px; align-items: center; }
 .lt-tour.lt-voice .lt-btns { flex-wrap: wrap; row-gap: 8px; }   /* narrow phone in German/Spanish: Skip + Next drop to a second line instead of off screen */

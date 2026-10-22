@@ -13,7 +13,7 @@
 (function (root) {
     'use strict';
     const KEY = 'lowispike.tutorial-auto.v1';
-    const QUIET_MS = 2500;
+    const QUIET_MS = 2500, TRY_MS = 25000;
 
     /* ---------- pure core (tests) ---------- */
     /* what to do right now. st = stored state, ctx = { live: tour already running in this page, quietMs, booted: first look in this page } */
@@ -22,6 +22,8 @@
         if (c.live) return 'none';
         if (s === 'pending') return c.quietMs >= QUIET_MS ? 'start' : 'wait';
         /* 'running' with no live tour = the app was closed or reloaded mid-tour */
+        /* left with Try it now (tutorial.js, 22 Oct 2026): let them try for TRY_MS before offering the rest, and never count it as quitting */
+        if (s === 'running' && st.tryAt) return (c.now || Date.now()) - st.tryAt >= TRY_MS && c.quietMs >= QUIET_MS ? 'offer' : 'wait';
         if (s === 'running') { if (st.resumed) return 'quit'; return c.quietMs >= QUIET_MS ? 'offer' : 'wait'; }
         return 'none';
     }
@@ -31,7 +33,8 @@
         if (s !== 'running' && s !== 'pending' && s !== 'offered') return st;
         if (d.reason === 'finished') return Object.assign({}, st, { s: 'done', end: Date.now() });
         if (d.reason === 'skipped') return Object.assign({}, st, { s: 'skipped', end: Date.now() });
-        if (d.on && d.step) return Object.assign({}, st, { s: 'running', step: d.step });
+        if (d.reason === 'tryit') return Object.assign({}, st, { s: 'running', tryAt: Date.now(), resumed: false });
+        if (d.on && d.step) { const n = Object.assign({}, st, { s: 'running', step: d.step }); delete n.tryAt; return n; }
         return st;
     }
     function markNew(st) { return st && st.s ? st : { s: 'pending', at: Date.now() }; }

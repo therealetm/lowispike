@@ -772,6 +772,15 @@
     };
     /* which detected gesture satisfies a tryIt.how (a swipe is also a drag) */
     function tryMatch(how, kind) { return how === kind || (how === 'drag' && kind === 'swipe'); }
+    /* "Try it now" button (Oct 22 2026, Emmanuel: "There is a try it now button that does nothing. Wiggle when try it now is said so
+       they click on it which closes the tutorial for them to try it."). TRY_CUE: the words in a card's voice-over that make the button
+       wiggle (longest first). tryResume: where the tour picks up after Try it now, in the shape tutorial-resume.js stores in
+       lowi.tutorial.v1 .resume (fin: true = the card was done, so the next card). */
+    const TRY_CUE = { en: ['try it now', 'try it'], de: ['probier’s jetzt', 'probiers jetzt', 'probier es jetzt', 'probier’s'], es: ['pruébalo ahora', 'pruébalo'] };
+    function tryResume(ids, i, now) {
+        const list = Array.isArray(ids) ? ids : [];
+        return { at: list[i] || '', i, n: list.length, next: list[i + 1] || '', fin: true, t: now || Date.now(), via: 'tryit' };
+    }
 
     const UI = {
         en: { next: 'Next', back: 'Back', skip: 'Skip', skipAll: 'Skip all', of: '{i} of {n}', label: 'Tutorial', guide: 'Your companion', tryIt: 'Try it now', nice: 'Nice, that’s it.', pause: 'Pause', play: 'Play',
@@ -803,7 +812,7 @@
     /* GESTURES id -> the step id that teaches it */
     function taught() { const m = {}; STEPS.forEach(s => (s.teaches || []).forEach(g => { if (!m[g]) m[g] = s.id; })); return m; }
 
-    const api = { VERSION, AREAS, STEPS, NO_TUTORIAL, GESTURES, GESTURE_EXEMPT, UI, text, fill, plan, skipIndex, covered, newsOk, tryMatch, taught };
+    const api = { VERSION, AREAS, STEPS, NO_TUTORIAL, GESTURES, GESTURE_EXEMPT, UI, text, fill, plan, skipIndex, covered, newsOk, tryMatch, taught, TRY_CUE, tryResume };
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (root) root.LowiTutorialSteps = api;
 })(typeof window !== 'undefined' ? window : null);

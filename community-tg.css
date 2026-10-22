@@ -23,6 +23,16 @@ html.cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room] .rm-bar{di
 html.cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room]>.rm-bar{display:flex!important;gap:0!important;margin:0!important;padding:6px 8px 8px!important}
 html.cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room]>.rm-bar>:not(.rm-tabs){display:none!important}
 html.cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room] .rm-tabs{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;background:rgba(8,16,40,.94)!important}
+/* 22 Oct (item 37b): Day for that tab row - a light pill on the room's own canvas, dark text, teal selection; Night stays as above.
+   The strip behind the row takes the room's canvas colour in both themes, so nothing of the Community page shows around it. */
+html.cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room]>.rm-bar{background:var(--cr-canvas-c,#060e26)!important}
+html[data-theme=light].cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room] .rm-tabs{background:rgba(255,255,255,.97)!important;border-color:rgba(15,23,42,.1)!important;box-shadow:0 4px 14px -6px rgba(15,23,42,.2)!important}
+html[data-theme=light].cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room] .rm-tabs .rm-tab{color:#3a465c!important;text-shadow:none!important}
+/* the tab text changes colour at once with the theme (a colour transition here was left half-way in WebKit when the theme flipped
+   with the room open, leaving light text on the light row) */
+html.cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room] .rm-tabs .rm-tab{transition:background .2s,box-shadow .2s,transform .24s cubic-bezier(.2,.8,.2,1)!important}
+html[data-theme=light].cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room] .rm-tabs .rm-tab[aria-selected=true]{color:#05515c!important}
+html[data-theme=light].cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room] .rm-tabs::before{background:rgba(7,121,138,.14)!important;box-shadow:inset 0 0 0 1px rgba(7,121,138,.55)!important}
 html.cr-room[data-lay=phone]:has(#tab-foryou.active) #tbTheme,
 html.cr-room[data-lay=phone]:has(#tab-foryou.active) #pfBtn{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
 
@@ -32,7 +42,7 @@ html body #tab-foryou #cmPaneChat#cmPaneChat[data-room]{
   --cr-canvas:radial-gradient(120% 55% at 50% -12%,rgba(28,190,249,.24),transparent 60%),radial-gradient(80% 45% at 100% 105%,rgba(46,248,182,.12),transparent 70%),linear-gradient(180deg,#071230,#050b20 55%,#08071c);
   --cr-canvas-c:#060e26;
   --cr-text:#eef3ff;--cr-sub:#a3b3cf;--cr-hair:rgba(255,255,255,.12);
-  --cr-glass:rgba(22,32,64,.7);--cr-glass-solid:#131d3a;--cr-strip:rgba(6,12,34,.55);
+  --cr-glass:rgba(22,32,64,.7);--cr-glass-solid:#131d3a;--cr-strip:rgba(6,13,36,.93);
   --cr-bub:#18233f;--cr-bub-sh:none;
   --cr-mine-c:#18d2c9;--cr-mine-g:linear-gradient(135deg,#1ad9e6,#22d39f);--cr-mine-text:#03222a;--cr-mine-time:rgba(3,34,42,.74);
   --cr-time:rgba(226,234,255,.6);--cr-acc:#3ef2f4;--cr-acc-strong:#1cf7f9;
@@ -48,7 +58,7 @@ html[data-theme=light] body #tab-foryou #cmPaneChat#cmPaneChat[data-room]{
   --cr-canvas:radial-gradient(120% 55% at 50% -12%,rgba(28,200,249,.18),transparent 60%),radial-gradient(80% 45% at 100% 105%,rgba(46,248,182,.16),transparent 70%),linear-gradient(180deg,#eaf5fb,#f4f7fb 55%,#f3f1fa);
   --cr-canvas-c:#f2f6fb;
   --cr-text:#0f1729;--cr-sub:#566178;--cr-hair:rgba(15,23,42,.09);
-  --cr-glass:rgba(255,255,255,.74);--cr-glass-solid:#ffffff;--cr-strip:rgba(238,245,251,.55);
+  --cr-glass:rgba(255,255,255,.74);--cr-glass-solid:#ffffff;--cr-strip:rgba(240,246,251,.93);
   --cr-bub:#ffffff;--cr-bub-sh:0 1px 1.5px rgba(15,23,42,.1);
   --cr-mine-c:#087684;--cr-mine-g:linear-gradient(135deg,#08808e,#08735d);--cr-mine-text:#ffffff;--cr-mine-time:rgba(255,255,255,.92);
   --cr-time:#677087;--cr-acc:#07798a;--cr-acc-strong:#07798a;
@@ -79,7 +89,10 @@ html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cg-thread.cr-room[data-
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cg-thead.cr-head{position:absolute!important;top:0;left:0;right:0;z-index:6!important;display:grid!important;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;gap:10px;
   min-height:0!important;height:auto!important;padding:6px 12px 0!important;margin:0!important;background:none!important;border:0!important;box-shadow:none!important}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-head::before{content:'';position:absolute;z-index:-1;left:0;right:0;top:0;height:var(--cr-top);pointer-events:none;background:var(--cr-strip);
-  -webkit-backdrop-filter:blur(20px) saturate(170%);backdrop-filter:blur(20px) saturate(170%);-webkit-mask-image:linear-gradient(#000 calc(100% - 16px),transparent);mask-image:linear-gradient(#000 calc(100% - 16px),transparent)}
+  -webkit-backdrop-filter:blur(20px) saturate(170%);backdrop-filter:blur(20px) saturate(170%);box-shadow:0 .5px 0 var(--cr-hair)}
+/* item 37b (Emmanuel's iPhone screenshot, 22 Oct): message text showed through behind the top bar and the pinned bar. The strip is
+   now nearly opaque (93 %) with no fade at its bottom edge (a mask can also switch the blur off in WebKit), it runs 8 px past the
+   pinned bar, and the list starts below it (padding-top var(--cr-top)), so older messages slide under one clean edge. */
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-head::after{display:none!important}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-head :is(.cg-x.cr-back,.cr-members){position:relative;display:grid!important;place-items:center;width:44px!important;height:44px!important;min-height:44px;padding:0!important;margin:0!important;border:0!important;border-radius:50%!important;
   color:var(--cr-ic)!important;background:var(--cr-glass)!important;box-shadow:inset 0 0 0 .5px var(--cr-hair),var(--cr-float-sh)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;cursor:pointer}

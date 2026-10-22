@@ -58,7 +58,9 @@ function measure(sab) {
     if (!t || !tm) continue;
     if (tm.right > bb.right + 1 || tm.bottom > bb.bottom + 1 || tm.left < bb.left - 1) timeOff++;
     const rg = document.createRange(); rg.selectNodeContents(t); const lines = [...rg.getClientRects()].filter(r => r.width > 0.5); if (!lines.length) continue;
-    const last = lines.reduce((a, r) => (r.bottom > a.bottom + 1 ? r : a), lines[0]);
+    /* the last line is every rect on the lowest line, joined: an inline child (an @mention) gives its own rect on that line (fixed 22 Oct, item 37b) */
+    const lowB = Math.max(...lines.map(r => r.bottom)), onLast = lines.filter(r => r.bottom > lowB - 2);
+    const last = { top: Math.min(...onLast.map(r => r.top)), bottom: lowB, left: Math.min(...onLast.map(r => r.left)), right: Math.max(...onLast.map(r => r.right)) };
     const padR = parseFloat(s.paddingRight), innerR = bb.right - padR, fb = ft.getBoundingClientRect();
     const fits = last.right + fb.width + 10 <= innerR + 3; /* the footer's margin box is its width + 10 - 5 px, so this leaves 2 px for rounding */
     if (fits && fb.top > last.bottom - 4) { timeOff++; if (det.length < 3) det.push('time below a line that has room: ' + t.textContent.slice(0, 24)); }
@@ -77,6 +79,15 @@ function measure(sab) {
   /* theme */
   const lum = c => { const m = String(c).match(/rgba?\(([^)]+)\)/); if (!m) return -1; const p = m[1].split(/[ ,/]+/).map(Number); const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(p[0]) + 0.7152 * f(p[1]) + 0.0722 * f(p[2]); };
   out.roomLum = +lum(getComputedStyle(q('#cgThread')).backgroundColor).toFixed(3);
+  /* item 37b: the top bar and the pinned bar sit on a nearly opaque strip with no fade, which covers the pin; the list starts below it */
+  const hd = q('#cgThread .cr-head');
+  if (hd) { const hs = getComputedStyle(hd, '::before'), m = String(hs.backgroundColor).match(/rgba?\(([^)]+)\)/), a = m ? (m[1].split(/[ ,/]+/)[3] === undefined ? 1 : +m[1].split(/[ ,/]+/)[3]) : 0;
+    if (a < 0.88) E('top strip lets messages show through (alpha ' + a + ')');
+    const mk = hs.webkitMaskImage || hs.maskImage; if (mk && mk !== 'none') E('top strip fades out at its edge');
+    const hb = hd.getBoundingClientRect().top + parseFloat(hs.height); if (pin && hb < pin.bottom + 4) E('top strip ends ' + Math.round(hb) + ' above the pinned bar bottom ' + Math.round(pin.bottom));
+    const L = q('#cmList'); if (L && pin) { const lt = L.getBoundingClientRect().top + parseFloat(getComputedStyle(L).paddingTop); if (lt < pin.bottom + 2) E('first message starts under the pinned bar (' + Math.round(lt) + ' < ' + Math.round(pin.bottom) + ')'); } }
+  /* item 37b: the Community tab row above the room on phones follows Day/Night */
+  const tabs = box(q('#cmPaneChat .rm-tabs')); out.tabsLum = tabs ? +lum(getComputedStyle(q('#cmPaneChat .rm-tabs')).backgroundColor).toFixed(3) : -1;
   const other = bubs.find(b => !b.closest('.mine')); out.bubLum = other ? +lum(getComputedStyle(other).backgroundColor).toFixed(3) : -1;
   out.sw = document.documentElement.scrollWidth; if (out.sw > document.documentElement.clientWidth + 1) E('sideways overflow');
   out.blur = [...document.querySelectorAll('#cmPaneChat *')].filter(e => { const s = getComputedStyle(e); return (s.backdropFilter && s.backdropFilter !== 'none' || s.webkitBackdropFilter && s.webkitBackdropFilter !== 'none') && box(e); }).length;
@@ -133,8 +144,11 @@ async function run(engine, device, home) {
       for (const e of m.errs) fail(T, e);
       if (theme === 'light' && !(m.roomLum > 0.6 && m.bubLum > 0.8)) fail(T, 'room is not light in Day (room ' + m.roomLum + ', bubble ' + m.bubLum + ')');
       if (theme === 'dark' && !(m.roomLum < 0.05 && m.bubLum < 0.06)) fail(T, 'room is not dark in Night (room ' + m.roomLum + ', bubble ' + m.bubLum + ')');
+      if (m.tabsLum >= 0 && theme === 'light' && m.tabsLum < 0.8) fail(T, 'tab row is not light in Day (' + m.tabsLum + ')');
+      if (m.tabsLum >= 0 && theme === 'dark' && m.tabsLum > 0.05) fail(T, 'tab row is not dark in Night (' + m.tabsLum + ')');
+      notes.push(T + ' tabsLum ' + m.tabsLum);
       if (m.blur > 3) fail(T, m.blur + ' blurred layers in the room (max 3)');
-      const c = await p.evaluate(contrastScan, '#cgThread,#cmPaneChat .cm-compose'); notes.push(T + ' texts ' + c.n); if (c.bad.length) fail(T, 'low contrast: ' + c.bad.slice(0, 8).join(' | '));
+      const c = await p.evaluate(contrastScan, '#cgThread,#cmPaneChat .cm-compose,#cmPaneChat .rm-tabs'); notes.push(T + ' texts ' + c.n); if (c.bad.length) fail(T, 'low contrast: ' + c.bad.slice(0, 8).join(' | '));
       await R.shot(path.join(OUT, tag + '-' + (theme === 'light' ? 'day' : 'night') + '.png'));
       /* scrolled up: the round jump button shows and brings you back down */
       await p.evaluate(() => { const l = document.getElementById('cmList'); l.scrollTop = 0; l.dispatchEvent(new Event('scroll')); }); await sleep(1200);

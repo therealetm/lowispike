@@ -12,15 +12,16 @@ const OUT = path.resolve(process.argv[2] || '/tmp/chat-pin-probe'); fs.mkdirSync
 const URL_ = process.argv[3] || '';
 const DEVICES = (process.argv[4] || 'iPhone SE,iPhone 13,iPhone 15,Pixel 7').split(',');
 const fails = [], notes = [];
+const until = async (p, fn, arg, ms = 8000) => { const t0 = Date.now(); let v; while (Date.now() - t0 < ms) { v = await p.evaluate(fn, arg); if (v) return v; await sleep(250); } return v; };
 const fail = (w, m) => { fails.push(w + ': ' + m); console.log('FAIL', w, m); };
 
 function head() {
   const q = s => document.querySelector(s), box = e => { if (!e) return null; const r = e.getBoundingClientRect(), s = getComputedStyle(e); return r.width > 1 && r.height > 1 && s.display !== 'none' && s.visibility !== 'hidden' ? { l: r.left, r: r.right, t: r.top, b: r.bottom, w: r.width, h: r.height } : null; };
   const hit = (a, b) => a && b && a.l < b.r - 1 && b.l < a.r - 1 && a.t < b.b - 1 && b.t < a.b - 1;
-  const back = box(q('#cgThread .cr-back')), mem = box(q('#cgThread .cr-members')), pill = box(q('#cgThread .cr-id')), title = box(q('#cgThreadTitle')), pin = box(q('#crPin'));
+  const back = box(q('#cgThread .cr-back')), mem = box(q('#cgThread .cr-members')), pill = box(q('#cgThread .cr-id')), title = box(q('#cgThread .cr-srt')), pin = box(q('#crPin'));
   const errs = [];
   if (!back) errs.push('no back button'); if (!mem) errs.push('no members button');
-  if (pill) errs.push('centre pill still shows'); if (title) errs.push('Community room title still visible ' + Math.round(title.w) + 'x' + Math.round(title.h));
+  if (pill) errs.push('centre pill still shows'); if (title && (title.w > 2 || title.h > 2)) errs.push('Community room title still visible ' + Math.round(title.w) + 'x' + Math.round(title.h));
   if (back && mem && Math.abs((back.t + back.b) / 2 - (mem.t + mem.b) / 2) > 2) errs.push('back and members not on one row');
   if (back && mem && hit(back, mem)) errs.push('back over members');
   const headB = Math.max(back ? back.b : 0, mem ? mem.b : 0);
@@ -51,10 +52,10 @@ async function run(device, light, lang) {
     const target = await p.evaluate(() => { window.LowiOwnerAdmin = Object.assign(window.LowiOwnerAdmin || {}, { isOwner: () => true }); const ms = [...document.querySelectorAll('#cmList .cp-msg[id^="cm-"]')].filter(e => !e.querySelector('.cr-bot')); const m = ms[Math.max(0, ms.length - 6)]; return m ? m.id.slice(3) : ''; });
     if (!target) throw new Error('no message to pin');
     await p.evaluate(id => { const b = document.querySelector('#cm-' + CSS.escape(id) + ' [data-chat="more"]'); if (b) b.click(); }, target); await sleep(500);
-    const menu = await p.evaluate(id => { const b = document.querySelector('#cm-' + CSS.escape(id) + ' [data-chat="pin-msg"]'); if (b) b.scrollIntoView({ block: 'center' }); return b ? b.textContent : ''; }, target);
+    const menu = await until(p, id => { const b = document.querySelector('#cm-' + CSS.escape(id) + ' [data-chat="pin-msg"]'); if (b) b.scrollIntoView({ block: 'center' }); return b ? b.textContent : ''; }, target);
     if (!menu) fail(W, 'admin menu has no Pin'); await sleep(300); await R.shot(path.join(OUT, tag + '-2-menu-pin.png'));
     /* the sim has no Supabase: the marker goes into the shared message list the way the server returns it */
-    await p.evaluate(id => { const H = window.LowiCommunityHost, K = window.LowiChatCore, m = H.messages().find(x => x.id === id), me = H.state().uid; H.upsert({ id: 'mpin' + Date.now(), uid: me, by: 'Admin', t: K.pinBody(id, m ? (m.t || '') : ''), ts: Date.now(), rx: {}, re: null }); window.LowiCommunity.refresh(); }, target); await sleep(700);
+    await p.evaluate(id => { const H = window.LowiCommunityHost, K = window.LowiChatCore, m = H.messages().find(x => x.id === id), me = H.state().uid; H.upsert({ id: 'mpin' + Date.now(), uid: me, by: 'Admin', t: K.pinBody(id, m ? (m.t || '') : ''), ts: Date.now(), rx: {}, re: null }); window.LowiCommunity.refresh(); }, target); await until(p, () => { const b = document.getElementById('crPin'); return b && !b.hidden && !!b.querySelector('[data-chat="pin-go"]'); });
     await p.evaluate(() => { const l = document.getElementById('cmList'); if (l) l.scrollTop = 0; }); await sleep(400);
     const B = await p.evaluate(head); notes.push(W + ' pinned ' + JSON.stringify(B)); for (const e of B.errs) fail(W, 'pinned: ' + e); if (!B.pin) fail(W, 'pinned bar missing after pin');
     const bar = await p.evaluate(() => { const b = document.getElementById('crPin'); return b ? { go: !!b.querySelector('[data-chat="pin-go"]'), unpin: !!b.querySelector('[data-chat="unpin"]'), text: (b.querySelector('.cr-pint') || {}).textContent || '', cut: [...b.querySelectorAll('.cr-pinl,.cr-unpin')].some(e => e.scrollWidth > e.clientWidth + 1) } : null; });
@@ -62,16 +63,16 @@ async function run(device, light, lang) {
     const leaks = await p.evaluate(() => [...document.querySelectorAll('#cmList .cm-bub')].filter(b => /\u2060pin:|\u2060unpin/.test(b.textContent)).length); if (leaks) fail(W, leaks + ' marker shown as a chat line');
     await R.shot(path.join(OUT, tag + '-3-pinned.png'));
     await p.evaluate(() => { const l = document.getElementById('cmList'); if (l) l.scrollTop = l.scrollHeight; }); await sleep(300);
-    await p.locator('#crPin [data-chat="pin-go"]').click({ force: true, timeout: 5000 }).catch(e => fail(W, 'bar tap: ' + e.message.split('\n')[0])); await sleep(900);
-    const seen = await p.evaluate(id => { const e = document.getElementById('cm-' + id), pin = document.getElementById('crPin').getBoundingClientRect(), c = document.querySelector('.cm-compose'); if (!e) return 'gone'; const r = e.getBoundingClientRect(), bot = c ? c.getBoundingClientRect().top : innerHeight; return r.bottom > pin.bottom && r.top < bot ? 'ok' : 'off ' + Math.round(r.top); }, target);
+    await p.locator('#crPin [data-chat="pin-go"]').click({ force: true, timeout: 5000 }).catch(e => fail(W, 'bar tap: ' + e.message.split('\n')[0])); await sleep(400);
+    const seen = await until(p, id => { const e = document.getElementById('cm-' + id), pin = document.getElementById('crPin').getBoundingClientRect(), c = document.querySelector('.cm-compose'); if (!e) return 'gone'; const r = e.getBoundingClientRect(), bot = c ? c.getBoundingClientRect().top : innerHeight; return r.bottom > pin.bottom && r.top < bot ? 'ok' : ''; }, target, 4000) || 'not in view';
     if (seen !== 'ok') fail(W, 'tapping the bar did not bring the message into view: ' + seen);
     await R.shot(path.join(OUT, tag + '-4-went-to-pin.png'));
     /* admin taps Unpin: the unpin marker is the newest, the bar goes away */
-    await p.evaluate(() => { const H = window.LowiCommunityHost, K = window.LowiChatCore; H.upsert({ id: 'munpin' + Date.now(), uid: H.state().uid, by: 'Admin', t: K.unpinBody(), ts: Date.now() + 5, rx: {}, re: null }); window.LowiCommunity.refresh(); }); await sleep(600);
+    await p.evaluate(() => { const H = window.LowiCommunityHost, K = window.LowiChatCore; H.upsert({ id: 'munpin' + Date.now(), uid: H.state().uid, by: 'Admin', t: K.unpinBody(), ts: Date.now() + 5, rx: {}, re: null }); window.LowiCommunity.refresh(); }); await until(p, () => { const b = document.getElementById('crPin'); return !b || b.hidden; });
     const C = await p.evaluate(head); if (C.pin) fail(W, 'bar still shows after unpin'); for (const e of C.errs) fail(W, 'unpinned again: ' + e);
     /* not the admin: no Pin in the menu, no Unpin on a bar */
-    await p.evaluate(() => { window.LowiOwnerAdmin.isOwner = () => false; window.LowiCommunity.refresh(); }); await sleep(300);
-    const other = await p.evaluate(() => { const b = [...document.querySelectorAll('#cmList [data-chat="more"]')].pop(); if (b) b.click(); return new Promise(r => setTimeout(() => r(!!document.querySelector('#cmList [data-chat="pin-msg"],#cmList [data-chat="unpin"]')), 300)); });
+    await p.evaluate(() => { window.LowiOwnerAdmin.isOwner = () => false; document.querySelectorAll('#cmList .cp-acts').forEach(a => { const m = a.closest('[id^="cm-"]'), b = m && m.querySelector('[data-chat="more"]'); if (b) b.click(); }); window.LowiCommunity.refresh(); }); await sleep(1500);
+    const other = await p.evaluate(() => { const b = [...document.querySelectorAll('#cmList [data-chat="more"]')].pop(); if (b) b.click(); return new Promise(r => setTimeout(() => r(!!document.querySelector('#cmList [data-chat="pin-msg"],#cmList [data-chat="unpin"]')), 2000)); });
     if (other) fail(W, 'a non-admin sees Pin/Unpin');
     if (R.errs.length) fail(W, 'page errors ' + JSON.stringify(R.errs.slice(0, 3)));
   } catch (e) { fail(W, 'run: ' + String(e.message).split('\n')[0]); }

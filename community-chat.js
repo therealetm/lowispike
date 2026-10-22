@@ -208,7 +208,7 @@ async function pinSend(body){if(!isAdmin()||!store||!body)return false;const nam
 function pinMessage(id){const m=messages().find(x=>x.id===id);if(!m||m.status||m.local)return Promise.resolve(false);return pinSend(K.pinBody(id,plain(m)));}
 function unpinRoom(){return roomPinned()?pinSend(K.unpinBody()):Promise.resolve(false);}
 function goPinned(id){if(!id)return;if(!D.getElementById('cm-'+id))thread(true,id);const t=D.getElementById('cm-'+id);
- if(!t){notice=tr('pinGone');refresh();return;}try{t.scrollIntoView({block:'center',behavior:'smooth'});}catch(e){try{t.scrollIntoView();}catch(x){}}
+ if(!t){notice=tr('pinGone');refresh();return;}const l=D.getElementById('cmList');if(l&&t.getBoundingClientRect&&l.getBoundingClientRect){const r=t.getBoundingClientRect(),lr=l.getBoundingClientRect();l.scrollTop+=Math.round(r.top-lr.top-(lr.height-r.height)/2);}else{try{t.scrollIntoView({block:'center'});}catch(e){}}
  if(t.classList){t.classList.remove('cr-flash');void t.offsetWidth;t.classList.add('cr-flash');setTimeout(()=>t.classList.remove('cr-flash'),1600);}}
 function profile(id,name){const m=own(),base=id===scope?m:H.people().find(p=>p.uid===id)||{};const shared=K.identity(identities.get(id));return {uid:id,n:name||base.n||'Member',avatar:K.image(base.avatar),s:shared.s,t:shared.t,lv:base.lv||1,xp:base.xp||0};}
 function bubble(p,size=34){return H.bubble({...p,bday:'',w:'',streak:0},size);}

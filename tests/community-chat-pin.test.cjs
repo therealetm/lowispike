@@ -9,7 +9,7 @@ const tick=()=>new Promise(r=>setTimeout(r,5));
 function fixture({owner=false,rows=[]}={}){
  const nodes={},events={},rafs=[],classes=new Set(),storage={};let actor='';
  const db=rows.map(r=>({room:'all',reply_to:null,...r}));const load=()=>db.map(r=>({id:r.id,uid:r.user_id,by:r.who,t:r.body,ts:Date.parse(r.created_at),rx:{},re:null}));let store=[],rx=[];
- function node(id){return nodes[id]||(nodes[id]={id,dataset:{},style:{setProperty(k,v){this[k]=v;}},classList:{add(){},remove(){}},value:'',innerHTML:'',textContent:'',scrollTop:0,scrollHeight:500,clientHeight:300,attrs:{},setAttribute(k,v){this.attrs[k]=v;},removeAttribute(k){delete this.attrs[k];},hasAttribute(k){return k in this.attrs;},addEventListener(){},querySelector:()=>null,querySelectorAll:()=>[],getBoundingClientRect:()=>({top:180,height:300}),scrollIntoView(){this.scrolled=(this.scrolled||0)+1;},focus(){doc.activeElement=this;}});}
+ function node(id){return nodes[id]||(nodes[id]={id,dataset:{},style:{setProperty(k,v){this[k]=v;}},classList:{add(){},remove(){}},value:'',innerHTML:'',textContent:'',scrollTop:0,scrollHeight:500,clientHeight:300,attrs:{},setAttribute(k,v){this.attrs[k]=v;},removeAttribute(k){delete this.attrs[k];},hasAttribute(k){return k in this.attrs;},addEventListener(){},querySelector:()=>null,querySelectorAll:()=>[],getBoundingClientRect:()=>(String(id).startsWith('cm-')?{top:600,height:40}:{top:180,height:300}),scrollIntoView(){this.scrolled=(this.scrolled||0)+1;},focus(){doc.activeElement=this;}});}
  const el=node('cmPaneChat');el.querySelector=s=>node(s.startsWith('#')?s.slice(1):s);const input=node('cmInput');input.closest=()=>null;
  const doc={hidden:false,activeElement:null,documentElement:{classList:{toggle(k,v){if(v)classes.add(k);else classes.delete(k);},contains:k=>classes.has(k)}},getElementById:id=>id==='cmPaneChat'?el:id==='tabbar'?null:(id.startsWith('cm-')&&!store.some(m=>'cm-'+m.id===id)?null:node(id)),querySelector:()=>null,createElement:()=>node('new'),addEventListener:(e,f)=>(events[e]=events[e]||[]).push(f)};
  function from(table){const q={op:'select',f:[],lk:null,one:false,row:null};
@@ -65,7 +65,7 @@ test('admin pins from the message menu, a new pin replaces the old, the bar goes
  assert.match(f.nodes.crPin.innerHTML,/data-chat="unpin"[^>]*>Unpin</,'the admin gets Unpin on the bar');
  assert.match(f.menu('m1'),/data-chat="unpin"[^>]*>Unpin</,'the pinned message offers Unpin in its menu');
  assert.doesNotMatch(f.nodes.cmList?f.nodes.cmList.innerHTML:'',/pin:m1/,'the marker never shows as a chat line');
- f.click({chat:'pin-go',id:'m1'});assert.ok(f.nodes['cm-m1'].scrolled>=1,'tapping the bar scrolls to the pinned message');
+ f.click({chat:'pin-go',id:'m1'});assert.notEqual(f.nodes.cmList.scrollTop,0,'tapping the bar scrolls the list to the pinned message');
  f.click({chat:'pin-msg',id:'m2'});await f.settle();
  assert.equal(marks().length,1,'one pin per room: the old marker is removed');assert.match(f.nodes.crPin.innerHTML,/data-id="m2"[\s\S]*Second one/);
  f.click({chat:'unpin'});await f.settle();

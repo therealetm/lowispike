@@ -212,6 +212,11 @@
                 if (act === 'room') R.setTab(false);
                 else if (act === 'chat') R.setTab(true);
                 else if (act) R.showView(act);
+                else if (R.paint) R.paint();   /* already on it: still repaint, Creation/Affiliates are loaded again (they are freed on leaving) */
+                /* the page is kept between visits now, so the first section also starts at its top, as a rebuilt one did */
+                const pane = D.getElementById('cmPaneChat'), ch = pane && pane.querySelector(':scope>.rm-chans');
+                if (pane && pane.scrollTop && !(th && th.hasAttribute('data-open'))) pane.scrollTop = 0;
+                if (ch && ch.scrollTop) ch.scrollTop = 0;
             } catch (e) { console.error(e); }
         })();
     }

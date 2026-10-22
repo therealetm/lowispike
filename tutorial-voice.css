@@ -1,30 +1,45 @@
-/* tutorial-voice.css: the speaker on every tutorial card (tutorial-voice.js). The companion picture is the button; a round badge on its
-   corner shows the state: speaker with an x = sound off (tap to listen), speaker with waves = on (the waves move while it talks).
+/* tutorial-voice.css: the speaker on every tutorial card (tutorial-voice.js).
+   Oct 22 2026 (Emmanuel, photos of cards 8 and 24 on his iPhone: "The microphone looks weird and to big fix it." "Move the speaker to
+   the right where it's empty. Looks better."): the speaker is its own small round glass button, like Pause, in the card's top row on the
+   right, under Skip all (.lt-side), lined up with the card's right padding. It used to be a badge on the companion picture; this file
+   loads in <head> before tutorial.css, so tutorial.css's `.lt-guide svg { 56px }` won and blew the glyph up to 56 px. The selectors
+   below are scoped to #ltTour so they win whatever the load order, and the svg carries width/height 18 itself.
+   Glyph: speaker with an x = sound off (tap to listen), speaker with waves = on (the waves move while it talks).
    The word being said lights up in the card's cyan. Highlighting never changes the layout (no padding, no font change). */
-.lt-speak { position: relative; margin: 0; padding: 0; border: 0; cursor: pointer; color: inherit; font: inherit; -webkit-appearance: none; appearance: none;
-    touch-action: manipulation; transition: box-shadow .2s ease; }
-.lt-speak:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
-.lt-spk { position: absolute; right: -3px; bottom: -3px; width: 26px; height: 26px; box-sizing: border-box; border-radius: 50%; display: grid; place-items: center;
-    color: #8fe7ff; background: rgba(8, 20, 58, .94); border: 1.5px solid rgba(143, 231, 255, .9); box-shadow: 0 0 10px rgba(143, 231, 255, .55); pointer-events: none; }
-.lt-spk svg { width: 16px; height: 16px; display: block; overflow: visible; }
-.lt-spk .lt-wave1, .lt-spk .lt-wave2 { display: none; }
-.lt-spk-on .lt-spk { color: #04243d; background: linear-gradient(160deg, #b8f6ff, #5fd8f0); border-color: #fff; box-shadow: 0 0 14px rgba(143, 231, 255, .85); }
-.lt-spk-on .lt-spk .lt-wave1, .lt-spk-on .lt-spk .lt-wave2 { display: inline; }
-.lt-spk-on .lt-spk .lt-slash { display: none; }
-/* never tried yet, or the browser wants one more tap: the badge breathes */
-.lt-spk-new .lt-spk, .lt-spk-tap .lt-spk { animation: ltv-breathe 1.6s ease-in-out infinite; }
-/* talking: a soft ring around the companion and moving waves */
-.lt-speaking .lt-speak { box-shadow: 0 0 0 2px rgba(143, 231, 255, .75), 0 0 18px 4px rgba(143, 231, 255, .45); }
-.lt-speaking .lt-spk .lt-wave1 { animation: ltv-wave 1s ease-in-out infinite; }
-.lt-speaking .lt-spk .lt-wave2 { animation: ltv-wave 1s ease-in-out .25s infinite; }
+/* right column of the top row: Skip all, then the speaker. Takes Skip all's old place and margins (tutorial.css .lt-skipall). */
+#ltTour .lt-side { flex: none; align-self: flex-start; display: flex; flex-direction: column; align-items: flex-end; margin: -10px -6px 0 0; }
+#ltTour .lt-side .lt-skipall { margin: 0; align-self: flex-end; }
+/* 44 px tap area, a 32 px glass circle inside it whose right edge sits on the card's padding (6 px + the column's -6 px margin) */
+#ltTour .lt-speak { position: relative; flex: none; display: grid; place-items: center; width: 44px; height: 44px; margin: 0 0 -8px; padding: 0;
+    border: 0; border-radius: 50%; background: none; color: #fff; font: inherit; cursor: pointer; -webkit-appearance: none; appearance: none;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+#ltTour .lt-speak:focus-visible { outline: 2px solid #fff; outline-offset: -4px; }
+#ltTour .lt-spk { position: static; width: 32px; height: 32px; box-sizing: border-box; border-radius: 50%; display: grid; place-items: center; pointer-events: none;
+    color: #fff; background: rgba(255, 255, 255, .12); border: 1px solid rgba(255, 255, 255, .38); box-shadow: none;
+    transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease; }
+#ltTour .lt-spk svg { width: 18px; height: 18px; display: block; overflow: visible; }
+#ltTour .lt-spk .lt-wave1, #ltTour .lt-spk .lt-wave2 { display: none; }
+#ltTour .lt-speak:active .lt-spk { background: rgba(255, 255, 255, .22); }
+/* off: a muted look (dimmer glyph with the x); on: the card's mint-cyan rim and glow, like the paused Pause button and Next */
+#ltTour .lt-speak:not(.lt-spk-on) .lt-spk svg { opacity: .82; }
+#ltTour .lt-spk-on .lt-spk { border-color: rgba(170, 255, 230, .85); background: linear-gradient(160deg, rgba(80, 220, 190, .45), rgba(30, 140, 200, .45));
+    box-shadow: 0 0 12px rgba(120, 240, 210, .4); }
+#ltTour .lt-spk-on .lt-spk .lt-wave1, #ltTour .lt-spk-on .lt-spk .lt-wave2 { display: inline; }
+#ltTour .lt-spk-on .lt-spk .lt-slash { display: none; }
+/* never tried yet, or the browser wants one more tap: a soft breathing glow (no growing, so nothing moves) */
+#ltTour .lt-spk-new .lt-spk, #ltTour .lt-spk-tap .lt-spk { animation: ltv-breathe 1.6s ease-in-out infinite; }
+/* talking: moving waves and a slightly stronger glow */
+#ltTour.lt-tour .lt-speaking .lt-spk { box-shadow: 0 0 14px rgba(120, 240, 210, .6); }
+#ltTour .lt-speaking .lt-spk .lt-wave1 { animation: ltv-wave 1s ease-in-out infinite; }
+#ltTour .lt-speaking .lt-spk .lt-wave2 { animation: ltv-wave 1s ease-in-out .25s infinite; }
 .lt-w { border-radius: 4px; transition: background-color .12s ease, box-shadow .12s ease; }
 .lt-w.lt-say { background-color: rgba(143, 231, 255, .3); box-shadow: 0 0 0 2px rgba(143, 231, 255, .3), 0 0 12px rgba(143, 231, 255, .45); color: #fff; }
-@keyframes ltv-breathe { 0%, 100% { transform: scale(1); box-shadow: 0 0 8px rgba(143, 231, 255, .5); } 50% { transform: scale(1.14); box-shadow: 0 0 16px 3px rgba(143, 231, 255, .85); } }
+@keyframes ltv-breathe { 0%, 100% { box-shadow: 0 0 0 rgba(143, 231, 255, 0); border-color: rgba(255, 255, 255, .38); } 50% { box-shadow: 0 0 12px 2px rgba(143, 231, 255, .7); border-color: rgba(143, 231, 255, .9); } }
 @keyframes ltv-wave { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .lt-spk, .lt-spk path, .lt-w { animation: none !important; transition: none !important; } }
+@media (prefers-reduced-motion: reduce) { #ltTour .lt-spk, #ltTour .lt-spk path, .lt-w { animation: none !important; transition: none !important; } }
 .lt-tour.lt-rm .lt-spk, .lt-tour.lt-rm .lt-spk path { animation: none; }
-/* narrow phones (iPhone SE): the speaker picture plus a long "Skip all" ("Alles überspringen") left the title about 46 px, so German
-   titles were cut. There Skip all may take two lines and long title words hyphenate (the page carries its language). */
+/* narrow phones (iPhone SE): a long "Skip all" ("Alles überspringen") left the title too little room, so German titles were cut.
+   There Skip all may take two lines and long title words hyphenate (the page carries its language). */
 @media (max-width: 380px) {
     .lt-top .lt-skipall { flex: 0 1 auto; max-width: 96px; white-space: normal; text-align: right; line-height: 1.15; }
     .lt-top .lt-meta { min-width: 0; }

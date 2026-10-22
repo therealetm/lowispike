@@ -1,6 +1,8 @@
 /* tutorial-voice.js: the tutorial reads itself aloud (Oct 21 2026, Emmanuel: "I just clicked on tutorial but I have to read through it,
    that's not what drunk grandma likes. Where is the speaker? So I can just listen to it.").
-   - Every tutorial card's companion picture is the speaker button (a speaker badge on it). One tap turns sound on and reads the card;
+   - Every tutorial card has a small round speaker button in its top row on the right, under Skip all (Oct 22 2026, Emmanuel: "The
+     microphone looks weird and to big fix it. Move the speaker to the right where it's empty."; it used to be a badge on the companion
+     picture, and tutorial.css's 56 px .lt-guide svg rule blew its glyph up). One tap turns sound on and reads the card;
      from then on every card reads itself as the tour moves, until the same button turns it off. The choice is remembered
      (localStorage 'lowi.tutorial.voice.v1' = '1' on, '0' off; unset = never tried, the badge breathes so it gets noticed).
    - The voice: natural neural voices recorded ahead of time, one clip per card and language (tutorial-voice/<lang>/<key>.mp3, made by
@@ -84,7 +86,7 @@
         es: { on: 'Leer en voz alta', off: 'Dejar de leer en voz alta' }
     };
     const SILENT = 'data:audio/mpeg;base64,SUQzBAAAAAAAIlRTU0UAAAAOAAADTGF2ZjYyLjMuMTAwAAAAAAAAAAAAAAD/83DAAAAAAAAAAAAASW5mbwAAAA8AAAAIAAAD+gBHR0dHR0dHR0dHR0diYmJiYmJiYmJiYmJ8fHx8fHx8fHx8fHx8lpaWlpaWlpaWlpaWsbGxsbGxsbGxsbGxscvLy8vLy8vLy8vLy+Xl5eXl5eXl5eXl5eX///////////////8AAAAATGF2YzYyLjExAAAAAAAAAAAAAAAAJALUAAAAAAAAA/qOiXBeAAAAAAAAAAAAAAAAAP/zQMQAAAADSAAAAABMQU1FMy4xMDEgKGJldGEgMylVTEFNRTMuMTAxIChiZXRhIDMpVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NCxFsAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAxIChiZXRhIDMpVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NAxKQAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDEgKGJldGEgMylVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/80LEowAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDEgKGJldGEgMylVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/80DEpAAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMSAoYmV0YSAzKVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsSjAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMSAoYmV0YSAzKVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NCxKMAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
-    const SPK = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z" fill="currentColor"/>' +
+    const SPK = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z" fill="currentColor"/>' +
         '<path class="lt-wave1" d="M15.2 9.2a4 4 0 0 1 0 5.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
         '<path class="lt-wave2" d="M17.8 6.6a7.6 7.6 0 0 1 0 10.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
         '<path class="lt-slash" d="M15 9.5l5 5M20 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
@@ -268,7 +270,20 @@
         else stop();
         paintBtn(); emit({ state: on ? 'on' : 'off' });
     }
-    /* after every render of a tutorial card: make the companion picture the speaker, wrap the words, read the card when sound is on.
+    /* the speaker: its own small glass button in the card's top row, right column under Skip all (.lt-side). The companion picture stays
+       a picture. Returns the button (made once per card render). */
+    function speaker(el) {
+        const top = el.querySelector('.lt-top'); if (!top) return null;
+        let b = top.querySelector('.lt-speak'); if (b) return b;
+        const side = D.createElement('span'); side.className = 'lt-side';
+        const sk = top.querySelector('.lt-skipall'); if (sk) side.appendChild(sk);
+        b = D.createElement('button'); b.type = 'button'; b.className = 'lt-speak';
+        b.innerHTML = '<span class="lt-spk" aria-hidden="true">' + SPK + '</span>';
+        b.addEventListener('click', toggle);
+        side.appendChild(b); top.appendChild(side);
+        return b;
+    }
+    /* after every render of a tutorial card: add the speaker button, wrap the words, read the card when sound is on.
        ctx: { lang, name, next: [steps to prefetch], onEnd(key): called once the card was read to the end by itself,
               quiet: true = paint only, say nothing (the hands-free tour is paused) }. Also fires window 'lowi:tutorial-voice'
        { on, state: 'on' | 'off' | 'end' }. Public interface (used beyond the tour): render, stop, toggle, isOn, playing, how, paused,
@@ -277,13 +292,7 @@
         if (!el || !step) return;
         const c = ctx || {}, lang = L(c.lang), sp = Object.assign({ lang }, spoken(step, lang, c.name));
         card = el; words = [];
-        const g = el.querySelector('.lt-guide');
-        if (g && g.tagName !== 'BUTTON') {
-            const b = D.createElement('button'); b.type = 'button'; b.className = 'lt-guide lt-speak';
-            b.innerHTML = g.innerHTML + '<span class="lt-spk" aria-hidden="true">' + SPK + '</span>';
-            b.addEventListener('click', toggle);
-            g.replaceWith(b);
-        }
+        speaker(el);
         if (sp.t >= 0) wrap(el.querySelector('#ltTitle'), sp.s.slice(0, sp.t), 0);
         wrap(el.querySelector('#ltText'), sp.s.slice(sp.b), sp.b);
         const next = (c.next || []).map(s => spoken(s, lang, c.name).key);

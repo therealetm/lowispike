@@ -1,5 +1,9 @@
 # LOWiSPIKE release guide
 
+## Launch gate (since 22 Oct 2026, Emmanuel)
+
+Before the first release that lets people pay real money for Plus (Stripe live keys, checkout or webhook turned on for real customers), or as soon as Emmanuel says the app is ready to launch: stop, tell Emmanuel it's time to run our own App Review-style check, and run `LAUNCH_REVIEW.md` in small tasks first. Details in `MAYA-HANDOFF.md` section 0.7. Test-mode Stripe work can release as usual.
+
 ## Production model
 
 - Repository: `therealetm/lowispike`

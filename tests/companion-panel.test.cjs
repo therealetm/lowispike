@@ -62,25 +62,22 @@ test('the card shows what each place still needs and whether you have been there
     assert.match(R('galaxy-bubbles.js'), /new CustomEvent\('lowi:galaxy-stream'/);
 });
 
-test('companion card: Forms and the Food journal come first, the mood check-in says what it does and comes last', () => {
+test('companion card: Forms and Glow come first, the mood check-in says what it does and comes last', () => {
     const js = R('misty-hub.js'), h = js.slice(js.indexOf('function html('), js.indexOf('function advHtml'));
     const doors = h.indexOf('mh-doors'), say = h.indexOf('mh-say');
     assert.ok(doors > 0 && doors < say, 'doors come before her words, right under the name');
     const scale = h.indexOf('scaleHtml()'), adv = h.indexOf('advHtml()'), mood = h.indexOf('mh-mood"');
     assert.ok(doors > 0 && doors < scale && scale < adv && adv < mood, 'doors, then energy, level, adventures, mood');
-    assert.match(h, /Food journal/); assert.doesNotMatch(h, /Your scanned cards/);
+    assert.match(h, /data-mh="forms"/); assert.match(h, /data-mh="glow"/); assert.doesNotMatch(h, /Your scanned cards/);
     assert.match(h, /mirrors it: tired or unwell brings a calm, resting look/); assert.doesNotMatch(h.match(/'Optional\. For the next 8 hours ' \+ name\(\) \+ '[^']*'/)[0], /\b(she|her)\b/i, 'gender-neutral'); assert.match(h, /No XP/);
 });
 
-test('the Food journal: foods you logged or scanned, newest first, with how those meals went', () => {
+test('the foods tally (kept for XP and fair play): foods you logged or scanned, newest first, with how those meals went', () => {
     const rows = HQ.journal([{ t: 'Broccoli and salmon', ts: 10, lvl: 'low' }, { t: 'Broccoli pasta', ts: 20, lvl: 'high' }, { t: 'Hello there', ts: 30 }], [{ name: 'Oat flakes', ts: 15 }]);
     assert.deepEqual(rows.map(r => r.id), ['broccoli', 'pasta', 'oats', 'salmon']);
     const b = rows[0]; assert.equal(b.times, 2); assert.equal(b.first, 10); assert.equal(b.last, 20); assert.deepEqual(b.res, { low: 1, mild: 0, spike: 1 });
     assert.equal(rows.find(r => r.id === 'oats').scans, 1);
     assert.equal(HQ.resultOf({ r: 'nein' }), 'spike'); assert.equal(HQ.resultOf({ r: 'ja' }), 'low'); assert.equal(HQ.resultOf({ lvl: 'mild' }), 'mild'); assert.equal(HQ.resultOf({}), '');
-    const ui = R('herb-quests.js'), dex = ui.slice(ui.indexOf('function dexHTML'), ui.indexOf('function pathHTML'));
-    assert.doesNotMatch(dex, /\?\?\?|discovered |No XP per find|about trying, not collecting/, 'no silhouettes, no n / total, no confusing line');
-    assert.match(dex, /likely blood sugar spike/); assert.match(dex, /look back at how those meals went/);
 });
 
 test('foods and the journal are never needed to evolve', () => {
@@ -88,4 +85,17 @@ test('foods and the journal are never needed to evolve', () => {
     assert.doesNotMatch(steps, /discover|journal|FOODS/);
     const sq = src.slice(src.indexOf('function specialQuests'), src.indexOf('function specialQuests') + 2500);
     assert.doesNotMatch(sq, /discover\(|journal\(/);
+});
+
+test('Oct 22: the Food journal is gone from the UI: Misty has two equal doors, nothing links to it, the tally stays', () => {
+    const js = R('misty-hub.js'), h = js.slice(js.indexOf('function html('), js.indexOf('function advHtml'));
+    const doors = h.slice(h.indexOf('mh-doors'), h.indexOf('</nav>'));
+    assert.equal((doors.match(/<button /g) || []).length, 2, 'two doors: Forms and Glow');
+    assert.doesNotMatch(js, /data-mh="collection"|k === 'collection'/);
+    assert.match(R('misty-hub.css'), /\.mh-doors \{[^}]*repeat\(2, minmax\(0, 1fr\)\)/);
+    for (const f of ['misty-hub.js', 'herb-quests.js', 'spirit.js', 'world-home.js', 'tutorial-steps.js', 'tutorial-voice-data.js'])
+        assert.doesNotMatch(R(f).replace(/\/\*[\s\S]*?\*\//g, ''), /Food journal|food journal|Essens-Tagebuch|diario de comidas/i, f);
+    const hq = R('herb-quests.js');
+    assert.doesNotMatch(hq, /function dexHTML|function collectionHTML|hq-dexlink/);
+    assert.equal(typeof HQ.journal, 'function'); assert.equal(typeof HQ.discover, 'function'); assert.equal(typeof HQ.newFoods, 'function');
 });

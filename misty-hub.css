@@ -64,11 +64,12 @@ html .r2-ov.mh-ov .r2-sh, html.wh-on .r2-ov.mh-ov:not(.full) .r2-sh { background
 .mh-pri { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 50px; padding: 10px 16px; border: 0; border-radius: 16px; background: linear-gradient(135deg, var(--a), var(--b)); color: #06201a; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; }
 .mh-pri[aria-pressed="true"] { background: var(--mh-card); border: .5px solid var(--mh-rim); color: var(--mh-ink); }
 
-.mh-doors { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.mh-doors button { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-height: 96px; padding: 12px; border-radius: 18px; border: .5px solid var(--mh-rim); background: var(--mh-card); box-shadow: var(--lg-edge, none); color: var(--mh-ink); font: inherit; text-align: left; cursor: pointer; }
+/* Oct 22: two equal doors (Forms, Glow); the Food journal door was removed */
+.mh-doors { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.mh-doors button { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-height: 88px; padding: 14px; border-radius: 18px; border: .5px solid var(--mh-rim); background: var(--mh-card); box-shadow: var(--lg-edge, none); color: var(--mh-ink); font: inherit; text-align: left; cursor: pointer; }
 .mh-doors svg { color: var(--a); margin-bottom: 4px; }
-.mh-doors b { font-size: 14.5px; font-weight: 600; line-height: 1.2; }
-.mh-doors small { font-size: 12px; line-height: 1.25; color: var(--mh-ink-2); overflow-wrap: anywhere; }
+.mh-doors b { font-size: 15.5px; font-weight: 600; line-height: 1.2; }
+.mh-doors small { font-size: 12.5px; line-height: 1.25; color: var(--mh-ink-2); overflow-wrap: anywhere; }
 .mh button:focus-visible { outline: 3px solid var(--b); outline-offset: 2px; }
 .mh button:active { transform: scale(.98); }
 

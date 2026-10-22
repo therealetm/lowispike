@@ -38,10 +38,10 @@
 @keyframes ltv-wave { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { #ltTour .lt-spk, #ltTour .lt-spk path, .lt-w { animation: none !important; transition: none !important; } }
 .lt-tour.lt-rm .lt-spk, .lt-tour.lt-rm .lt-spk path { animation: none; }
-/* narrow phones (iPhone SE): a long "Skip all" ("Alles überspringen") left the title too little room, so German titles were cut.
-   There Skip all may take two lines and long title words hyphenate (the page carries its language). */
-@media (max-width: 380px) {
-    .lt-top .lt-skipall { flex: 0 1 auto; max-width: 96px; white-space: normal; text-align: right; line-height: 1.15; }
-    .lt-top .lt-meta { min-width: 0; }
-    .lt-top .lt-title { -webkit-hyphens: auto; hyphens: auto; overflow-wrap: anywhere; }
-}
+/* Skip all and long titles. Narrow phones (iPhone SE) first: a long "Skip all" ("Alles überspringen") left the title too little room, so
+   German titles were cut. Since the speaker sits under Skip all in its own column, the same holds on every phone (Pixel 7 cut
+   "Essen fotografieren" and "Community-Chat"): Skip all may take two lines, right-aligned, and long title words hyphenate (the page
+   carries its language) or break, so a title always wraps before it reaches the right column. */
+#ltTour .lt-top .lt-side .lt-skipall { max-width: 96px; white-space: normal; text-align: right; line-height: 1.15; }
+#ltTour .lt-top .lt-meta { min-width: 0; }
+#ltTour .lt-top .lt-title { -webkit-hyphens: auto; hyphens: auto; overflow-wrap: anywhere; }

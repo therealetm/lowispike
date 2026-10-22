@@ -7,7 +7,7 @@
    - stays small (visible circle <= 34 px, glyph <= 20 px) with a tap area of at least 44 x 44,
    - overlaps nothing: companion picture, step count, title, body text, Skip all (its tap area included),
    - the title is never cut (long titles wrap before the button).
-   Then it turns the speaker on and checks the on state (waves shown, x hidden, aria-pressed). Screenshots of cards 8 and 24 (the cards in
+   First, on card 1, it turns the speaker on and off and checks both states (waves shown, x hidden, aria-pressed). Screenshots of cards 8 and 24 (the cards in
    his photos) and of the on state go to --out. --quick: cards 1 to 30 only. No real backend: the app's startup stub (tools/startup)
    answers every server call. Prints one line per run and ALL OK / FAIL. */
 const http = require('http'), fs = require('fs'), path = require('path'), os = require('os');
@@ -52,9 +52,9 @@ const MEASURE = () => {
     const btn = R(b), circ = R(c), glyph = R(g), cr = R(card), tr = R(top);
     const t = card.querySelector('#ltTitle');
     return {
-        step: window.LowiTutorial && window.LowiTutorial.step(), btn, circ, glyph,
+        step: window.LowiTutorial && window.LowiTutorial.step(), btn, circ, glyph, side: R(card.querySelector('.lt-side')), skip: parts.skipall, card: cr, padR, top: tr, meta: R(card.querySelector('.lt-meta')), sideCss: (e => e && [getComputedStyle(e).marginRight, getComputedStyle(e).width])(card.querySelector('.lt-side')),
         inTop: !!b.closest('.lt-top'), guideIsBtn: card.querySelector('.lt-guide') && card.querySelector('.lt-guide').tagName === 'BUTTON',
-        rightGap: cr.r - padR - circ.r - (parseFloat(cs.borderRightWidth) || 0), topGap: circ.t - cr.t, inTopRow: circ.b <= tr.b + 4, rightHalf: circ.l > cr.l + cr.w / 2,
+        rightGap: tr.r - circ.r,   /* the top row's right edge = the card's right padding (a headless scrollbar can narrow it; real iPhones overlay theirs) */ topGap: circ.t - cr.t, inTopRow: circ.b <= tr.b + 4, rightHalf: circ.l > cr.l + cr.w / 2,
         over: Object.keys(parts).filter(k => ov(circ, parts[k]) || (k !== 'skipall' ? ov(btn, parts[k]) : ov(btn, parts[k]))),
         cut: t && t.scrollWidth > t.clientWidth + 1 ? t.textContent : '', title: t ? t.textContent : '', titleH: parts.title && parts.title.h,
         on: b.classList.contains('lt-spk-on'), pressed: b.getAttribute('aria-pressed'),
@@ -78,6 +78,19 @@ async function run(browser, engine, dev, lang, theme, url, fails, log) {
     await page.waitForSelector('#ltTour:not(.lt-held) .lt-speak', { timeout: 8000 }).catch(() => { });
     await sleep(1200);
     const slug = `${engine}-${dev.replace(/\W+/g, '')}-${lang}-${theme}`;
+    /* on state */
+    {   /* on card 1, before the walk: on, then off again (on, it would read and move on by itself) */
+        await page.click('#ltTour .lt-speak').catch(() => { }); await sleep(500);
+        const m = await page.evaluate(MEASURE);
+        if (m.err) bad('on: ' + m.err); else {
+            if (!m.on || m.pressed !== 'true' || !m.waves || m.slash) bad('on state wrong ' + JSON.stringify({ on: m.on, pressed: m.pressed, waves: m.waves, slash: m.slash }));
+            if (m.circ.w > 34.5 || m.over.length) bad('on: size/overlap ' + Math.round(m.circ.w) + ' ' + m.over.join(','));
+        }
+        await page.screenshot({ path: path.join(OUT, `${slug}-on.png`) });
+        await page.click('#ltTour .lt-speak').catch(() => { }); await sleep(200);
+        const o = await page.evaluate(MEASURE);
+        if (!o.err && (o.on || !o.slash || o.waves)) bad('off state wrong');
+    }
     let seen = 0, maxCirc = 0, longest = '', stuck = 0, last = '';
     const limit = QUICK ? 30 : 80;
     for (let k = 0; k < limit; k++) {
@@ -93,7 +106,7 @@ async function run(browser, engine, dev, lang, theme, url, fails, log) {
         if (m.btn.w < 43.5 || m.btn.h < 43.5) bad(where + ': tap area ' + Math.round(m.btn.w) + 'x' + Math.round(m.btn.h));
         if (m.circ.w > 34.5 || m.circ.h > 34.5) bad(where + ': circle too big ' + Math.round(m.circ.w));
         if (m.glyph.w > 20.5 || m.glyph.h > 20.5) bad(where + ': glyph too big ' + Math.round(m.glyph.w));
-        if (Math.abs(m.rightGap) > 3) bad(where + ': not on the right padding (gap ' + m.rightGap.toFixed(1) + ')');
+        if (Math.abs(m.rightGap) > 3) bad(where + ': not on the right padding (gap ' + m.rightGap.toFixed(1) + ') ' + JSON.stringify({ card: [m.card.l, m.card.r], padR: m.padR, side: m.side && [m.side.l, m.side.r], skip: m.skip && [m.skip.l, m.skip.r], btn: [m.btn.l, m.btn.r], top: [m.top.l, m.top.r], meta: m.meta && [m.meta.l, m.meta.r], css: m.sideCss }));
         if (!m.rightHalf || !m.inTopRow || m.topGap > 110) bad(where + ': not in the top-right area (top ' + Math.round(m.topGap) + ')');
         if (m.over.length) bad(where + ': overlaps ' + m.over.join(', '));
         if (m.cut) bad(where + ': title cut "' + m.cut + '"');
@@ -107,19 +120,6 @@ async function run(browser, engine, dev, lang, theme, url, fails, log) {
         if (!(await page.evaluate(() => window.LowiTutorial.isOn()))) break;
     }
     if (seen < (QUICK ? 20 : 50)) bad('only ' + seen + ' cards walked');
-    /* on state */
-    if (await page.evaluate(() => window.LowiTutorial.isOn())) {
-        await page.click('#ltTour .lt-speak').catch(() => { }); await sleep(500);
-        const m = await page.evaluate(MEASURE);
-        if (m.err) bad('on: ' + m.err); else {
-            if (!m.on || m.pressed !== 'true' || !m.waves || m.slash) bad('on state wrong ' + JSON.stringify({ on: m.on, pressed: m.pressed, waves: m.waves, slash: m.slash }));
-            if (m.circ.w > 34.5 || m.over.length) bad('on: size/overlap ' + Math.round(m.circ.w) + ' ' + m.over.join(','));
-        }
-        await page.screenshot({ path: path.join(OUT, `${slug}-on.png`) });
-        await page.click('#ltTour .lt-speak').catch(() => { }); await sleep(200);
-        const o = await page.evaluate(MEASURE);
-        if (!o.err && (o.on || !o.slash || o.waves)) bad('off state wrong');
-    }
     if (errs.length) bad('page errors: ' + errs.slice(0, 3).join(' | '));
     log.push(`${tag}: ${seen} cards, circle ${Math.round(maxCirc)} px, longest title "${longest}"`);
     await ctx.close();

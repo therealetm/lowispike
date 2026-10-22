@@ -46,7 +46,10 @@
     }
     function stages() { const w = WHC(); return (w && w.STAGES) || [{ xp: 0 }]; }
     /* the level is worked out from the XP (the same table as the app, world-home-core STAGES / herb-config), never read from the row */
-    function levelFor(xp) { xp = Math.max(0, +xp || 0); const S = stages(); let i = 0; S.forEach((s, k) => { if (xp >= s.xp) i = k; }); return i + 1; }
+    function levelFor(xp) { xp = Math.max(0, +xp || 0);
+        /* in the app, the app's own level function wins (so the 25-level Evolution table counts the moment it lands) */
+        if (!isNode && typeof root.levelOf === 'function') { try { const L = +root.levelOf(xp).L; if (L >= 1) return L; } catch (e) { } }
+        const S = stages(); let i = 0; S.forEach((s, k) => { if (xp >= s.xp) i = k; }); return i + 1; }
     function stageName(lv, lang) { const S = stages(), s = S[Math.max(0, Math.min(S.length - 1, (lv | 0) - 1))]; if (!s || !s.n) return ''; const ix = ({ de: 1, es: 2 })[lang] || 0; return s.n[ix] || s.n[0]; }
 
     /* is this row allowed on the board? seen = {xp, t} the last time this phone saw the member (optional) */

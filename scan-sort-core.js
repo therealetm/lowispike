@@ -66,10 +66,12 @@
         const max = o.max || 240, src = String(o.range || data.chain || 'catalog');
         let built; try { built = core.build(data); } catch (e) { return []; }
         /* the range files have no ingredient lists, so the app's pork and sweetener exclusions are applied to the name */
-        const NOPE = /schwein|\bpork|bacon|\bspeck|fl\u00e6sk|svine|lonza|fedtegrever|prosciutto|serrano|chorizo|cerdo|leberk\u00e4se|\bzero\b|zuckerfrei|sugar.?free|sukkerfri|sin az[u\u00fa]car|\bdiet\b|s\u00fc\u00dfstoff|sweetener/i,
-            PORKISH = /salami|schinken|wurst|\bmett\b|cabanossi|tyrolini|landj[a\u00e4]ger|mortadella|pancetta|guanciale|wiener|\bham\b|skinke|p\u00f8lse/i,
+        const NOPE = /schwein|\bpork|bacon|\bspeck|fl\u00e6sk|svine|lonza|fedtegrever|prosciutto|serrano|chorizo|cerdo|leberk\u00e4se|\bzero\b|zuckerfrei|ohne zucker|ohne zuckerzusatz|no sugar|uden sukker|sugar.?free|\blight\b|\bmax\b|sukkerfri|sin az[u\u00fa]car|\bdiet\b|s\u00fc\u00dfstoff|sweetener|energy|energi|booster|\bbang\b|amper|awake|flying power|0 kalorie|kalorienfrei|ice ?tea|eistee|frugtdrik|lemonade|limonade|\bcola\b|\bfanta\b|\bsprite\b|faxe kondi/i,
+            /* cooking basics are low-spike but not a pick: oils, fats, salt, vinegar */
+            BASICS = /\S*\u00f6l(\s|$)|\boil\b|\S*fett\b|salz|\bsalt\b|\bolie\b|fritier|frittier|essig|vinegar/i,
+            PORKISH = /salami|salame|salchich|schinken|wurst|\bmett\b|cabanossi|tyrolini|landj[a\u00e4]ger|mortadella|pancetta|guanciale|wiener|\bham\b|skinke|p\u00f8lse/i,
             BIRD = /pute|h\u00e4hnchen|huhn|chicken|rinder|beef|gefl\u00fcgel|kalkun|kylling|lamm|turkey|vegan|vegetar/i;
-        const lanes = (built.groups || []).map(g => (g.pass || []).filter(it => it && it.p && typeof it.p.c === 'number' && !it.r.typical && !NOPE.test(String(it.p.n) + ' ' + String(it.p.k || '')) && !(PORKISH.test(String(it.p.n)) && !BIRD.test(String(it.p.n)))));
+        const lanes = (built.groups || []).map(g => (g.pass || []).filter(it => it && it.p && typeof it.p.c === 'number' && !it.r.typical && !NOPE.test(String(it.p.n) + ' ' + String(it.p.k || '')) && !BASICS.test(String(it.p.n)) && !(PORKISH.test(String(it.p.n)) && !BIRD.test(String(it.p.n)))));
         const out = [];
         for (let i = 0; out.length < max; i++) {
             let any = false;

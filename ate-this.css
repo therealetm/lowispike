@@ -8,11 +8,12 @@
 html[data-theme="light"] .ate-pair .ate-later, html[data-ui=light] .ate-pair .ate-later { background: rgba(10, 40, 90, .06); border-color: rgba(10, 40, 90, .2); }
 
 /* cook-along DONE: the big button is "I just ate this", the small ghost beside it plans it */
-.p2-cknav .ate-done { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.p2-cknav .ate-done2 { flex: 0 1 auto; min-width: 0; padding-left: 12px; padding-right: 12px; font-size: 14px; white-space: normal; line-height: 1.1; text-wrap: balance; max-width: 34%; }
+.p2-cknav:has(.ate-done) { flex-wrap: wrap; }
+.p2-cknav .ate-done { flex: 1 1 0; min-width: 0; white-space: normal; line-height: 1.15; text-wrap: balance; }
+.p2-cknav .ate-done2 { order: 3; flex: 1 1 100%; min-height: 40px; font-size: 14px; }
 
 /* the confirmation bar: above the bottom nav and above every sheet */
-.ate-bar { position: fixed; left: 50%; bottom: calc(var(--sab, env(safe-area-inset-bottom, 0px)) + 92px); transform: translate(-50%, 16px); z-index: 10050;
+.ate-bar { position: fixed; left: 50%; bottom: calc(var(--sab, env(safe-area-inset-bottom, 0px)) + 92px); transform: translate(-50%, 16px); z-index: 2147482500; /* above the gap-end reward card (.fst-rw), so Undo and the slot stay reachable */
   width: min(420px, calc(100vw - 20px)); box-sizing: border-box; padding: 10px 12px; border-radius: 22px; color: #fff; opacity: 0; pointer-events: none;
   background: var(--mb-surface, linear-gradient(180deg, rgba(58, 112, 205, .92), rgba(16, 42, 102, .96))); border: 1px solid var(--mb-rim, rgba(170, 214, 255, .42));
   box-shadow: 0 18px 44px -16px rgba(0, 0, 0, .65); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); text-shadow: 0 1px 6px rgba(0, 30, 80, .45);
@@ -35,3 +36,9 @@ html[data-theme="light"] .ate-pair .ate-later, html[data-ui=light] .ate-pair .at
 .td-extra .ate-plan { flex: none; padding: 0 12px; }
 .td-extra .ate-plan.on, .ate-row.ate { opacity: .75; }
 @media (prefers-reduced-motion: reduce) { .ate-bar { transition: none; } }
+
+/* the DONE screen on short phones (iPhone SE 320x568): the cook sheet clips (overflow hidden) and .p2-ck asked for 100vh inside a 90vh
+   sheet, which pushed the buttons below the edge. Fit the sheet, shrink the dish picture, and let it scroll if it still has to. */
+.p2-ckov .r2-shb:has(.ate-done) { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.p2-ckov .p2-ck:has(.ate-done) { min-height: 100%; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 10px); }
+@media (max-height: 740px) { .p2-ckov .p2-ck:has(.ate-done) .p2-scene { height: 150px; min-height: 0; margin-bottom: 6px; } .p2-ckov .p2-ck:has(.ate-done) .p2-cktx { font-size: 20px; } }

@@ -69,19 +69,23 @@ const FIT = sel => { const bs = [...document.querySelectorAll(sel)].filter(b => 
       await tap('#ateBar .ate-undo'); await sleep(500);
       if ((await meals()) !== m0) fails.push('Undo did not remove the meal');
       await ev(() => document.getElementById('ateBar').classList.remove('on'));
-      await tap('#r5Pick .ate-now'); await sleep(500); await ev(() => document.getElementById('ateBar').classList.remove('on')); await tap('#r5Pick .ate-now'); await sleep(500);
+      const clean = () => ev(() => { const b = document.getElementById('ateBar'); if (b) b.classList.remove('on'); const rw = document.getElementById('fstRw'); if (rw) rw.remove(); });
+      await clean(); await tap('#r5Pick .ate-now'); await sleep(1200); await clean(); await tap('#r5Pick .ate-now'); await sleep(800);
       if ((await meals()) !== m0 + 1) fails.push('the same food twice did not count once: ' + ((await meals()) - m0));
-      await ev(() => document.getElementById('ateBar').classList.remove('on'));
+      await clean();
       /* 2. cook-along DONE */
       await ev(() => LowiP2.cook('rb_cauliflower_nacho_smash_tray')); await sleep(1500);
       for (let i = 0; i < 40; i++) { if (await ev(() => !!document.querySelector('.p2-cknav .ate-done'))) break; const ok = await ev(() => { const b = [...document.querySelectorAll('.p2-cknav button')].pop(); if (b) b.click(); return !!b; }); if (!ok) break; await sleep(250); }
-      await sleep(700);
+      /* the cook sheet's open spring runs on requestAnimationFrame, which a busy headless machine slows down: wait until it has settled */
+      await page.waitForFunction(() => { const sh = document.querySelector('.p2-ckov .r2-sh'); if (!sh) return true; const m = /translate3d\(0px, ([-\d.]+)px/.exec(sh.style.transform || ''); return !m || Math.abs(+m[1]) < 1; }, null, { timeout: 120000, polling: 250 }).catch(() => fails.push('cook sheet never settled'));
+      await sleep(500);
+      log.nav = await ev(() => { const n = document.querySelector('.p2-cknav'); if (!n) return null; n.scrollIntoView({ block: 'end' }); const r = n.getBoundingClientRect(); const chain = []; for (let e = n.parentElement; e && chain.length < 7; e = e.parentElement) { const q = e.getBoundingClientRect(), c = getComputedStyle(e); chain.push((e.style.transform ? 'T(' + e.style.transform + ')' : '') + (e.id || e.className || e.tagName).toString().slice(0, 24) + ':' + Math.round(q.top) + '-' + Math.round(q.bottom) + ':' + c.overflowY + ':' + e.scrollHeight + '/' + e.clientHeight); } return [Math.round(r.top), Math.round(r.bottom), innerHeight, chain]; }); await sleep(300);
       const f3 = await ev(FIT, '.p2-cknav button'); if (!(await ev(() => !!document.querySelector('.p2-cknav .ate-done.pri')))) fails.push('DONE screen has no main I just ate this'); fails.push(...f3.out.map(x => 'done ' + x));
       log.done = await ev(() => [...document.querySelectorAll('.p2-cknav button')].map(b => b.textContent.trim()));
       await page.screenshot({ path: path.join(OUT, v + '-3-done.png') });
-      const m1 = await meals(); await tap('.p2-cknav .ate-done'); await sleep(900);
-      if ((await meals()) !== m1 + 1) fails.push('DONE I just ate this did not log'); if (await ev(() => !!document.querySelector('.p2-cknav .ate-done'))) fails.push('cook-along did not close');
-      await ev(() => document.getElementById('ateBar').classList.remove('on'));
+      const m1 = await meals(); await tap('.p2-cknav .ate-done'); await sleep(1200);
+      if ((await meals()) !== m1 + 1) fails.push('DONE I just ate this did not log'); await page.waitForFunction(() => !document.querySelector('.p2-cknav .ate-done'), null, { timeout: 30000, polling: 300 }).catch(() => fails.push('cook-along did not close'));
+      await clean();
       /* 3. right swipe offer -> I'll eat this plans, no log */
       await ev(() => LowiAte.offer('rb_cinnamon_baked_yogurt_custard')); await sleep(600);
       const f4 = await ev(FIT, '#ateBar.on button'); if (f4.n !== 2) fails.push('swipe offer buttons: ' + f4.n); fails.push(...f4.out.map(x => 'offer ' + x));

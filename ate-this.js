@@ -51,6 +51,7 @@
     return name ? { key: id || name, t: name } : null;
   }
   /* already eaten today (any log of the same food, the same rule Log meal blocks a second log with) */
+  const ledgerIds = s => new Set(((s && s.ledger) || []).map(e => e && e.eventId).filter(Boolean));
   function eatenToday(it) { try { return !!(it && V() && V().mealDup({ t: it.t, code: it.code })); } catch (e) { return false; } }
 
   /* ---------- the confirmation bar (shared one-sheet glass) ---------- */
@@ -75,14 +76,14 @@
     o = o || {}; const v = V(), s = S(), it = item(id, o.name); if (!v || !s || !it) { toast(t('fail')); return null; }
     const slot = SLOTS.indexOf(o.slot) >= 0 ? o.slot : slotNow();
     let fast = null; try { fast = localStorage.getItem('lowi_fast_v1'); } catch (e) { }
-    const td = s.td && s.td.day ? s.td : null, ateBefore = td ? JSON.stringify(td.ate || {}) : '';
+    const td = s.td && s.td.day ? s.td : null, ateBefore = td ? JSON.stringify(td.ate || {}) : '', had = ledgerIds(s);
     let res; try { res = v.logMeal({ id: 'ate:' + Date.now().toString(36) + ':' + it.key, t: it.t, macros: it.macros, r: it.r, lvl: it.lvl, code: it.code, slot, via: 'recipe' }); } catch (e) { console.error(e); res = false; }
     if (!res) { toast(t('fail')); return null; }
     if (res.dup) { LAST = null; bar('<div class="ate-bt"><span class="ate-ok" aria-hidden="true">✓</span><span class="ate-btx"><b>' + esc(it.t) + '</b><small>' + esc(t('dup')) + '</small></span></div>', 3500); return res; }
     /* a planned copy of this food is now eaten, so the plan never asks for it again */
     if (td) { td.ate = td.ate || {}; (td.plan || []).forEach((pid, i) => { if (pid === it.key && !td.ate[i]) td.ate[i] = true; });
       (td.later || []).forEach(x => { if (x.key === it.key) x.ate = res.log.eventId; }); try { v.save(); } catch (e) { } }
-    LAST = { log: res.log, xp: res.xp, reason: res.reason, fast, ateBefore };
+    LAST = { log: res.log, xp: res.xp, reason: res.reason, fast, ateBefore, had };
     loggedBar(); repaint(); return res;
   }
   function changeSlot(slot) {
@@ -93,7 +94,9 @@
   function undo() {
     const L = LAST, v = V(), s = S(); if (!L || !v || !s) return; LAST = null;
     const i = s.logs.indexOf(L.log); if (i >= 0) s.logs.splice(i, 1);
-    try { if (L.xp) v.unaward(L.log.eventId); } catch (e) { }
+    /* every XP the tap earned goes back: the meal's 15 and the gap-end reward it set off (ledger entries added since the tap) */
+    try { (s.ledger || []).filter(e => e && e.eventId && !(L.had && L.had.has(e.eventId))).map(e => e.eventId).forEach(id => v.unaward(id)); if (!L.had && L.xp) v.unaward(L.log.eventId); } catch (e) { }
+    try { const rw = D.getElementById('fstRw'); if (rw) rw.remove(); } catch (e) { }
     if (s.td) { try { s.td.ate = JSON.parse(L.ateBefore || '{}'); } catch (e) { } (s.td.later || []).forEach(x => { if (x.ate === L.log.eventId) delete x.ate; }); }
     try { if (L.fast == null) localStorage.removeItem('lowi_fast_v1'); else localStorage.setItem('lowi_fast_v1', L.fast); } catch (e) { }
     v.save(); emit('lowi:fast', { undo: true }); emit('lowi:state', { unlogged: L.log.eventId });
@@ -152,10 +155,10 @@
     else if (k === 'undo') undo();
     else if (k === 'laterate' || k === 'laterrm') { const s = S(), L = s && s.td && s.td.later, x = L && L[+b.dataset.j]; if (!x) return;
       if (k === 'laterrm') { L.splice(+b.dataset.j, 1); V().save(); repaint(); return; }
-      const v = V(); let fast = null; try { fast = localStorage.getItem('lowi_fast_v1'); } catch (er) { }
+      const v = V(), had = ledgerIds(s); let fast = null; try { fast = localStorage.getItem('lowi_fast_v1'); } catch (er) { }
       const res = v.logMeal({ id: 'ate:' + Date.now().toString(36) + ':' + x.key, t: x.t, macros: x.macros, r: x.r, lvl: x.lvl, code: x.code, slot: slotNow(), via: 'plan-later' });
       if (!res) { toast(t('fail')); return; } if (res.dup) { x.ate = 'dup'; v.save(); toast(t('dup')); repaint(); return; }
-      x.ate = res.log.eventId; v.save(); LAST = { log: res.log, xp: res.xp, reason: res.reason, fast, ateBefore: JSON.stringify(s.td.ate || {}) }; loggedBar(); repaint(); }
+      x.ate = res.log.eventId; v.save(); LAST = { log: res.log, xp: res.xp, reason: res.reason, fast, ateBefore: JSON.stringify(s.td.ate || {}), had }; loggedBar(); repaint(); }
   });
   /* the Shuffle "Your pick" card gets the pair; every old "Add to today" reads "I'll eat this" */
   function decorate() {

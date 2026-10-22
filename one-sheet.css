@@ -22,6 +22,18 @@ html:root:root.wh-x-on body .r2-ov:not(.full) .r2-sh {
 }
 html:root:root.wh-x-on body .r2-ov:not(.full) .r2-shb { padding-bottom: 18px !important; }
 
+/* 2b. one sheet at a time (Oct 22 2026): a sheet that opened another is parked whole (scrim too) until the new one closes, and
+   the new one carries a small back chevron at the top-left that brings the parent back (LowiR2.sheet / R2.adopt, index.html) */
+html body .r2-parked { display: none !important; }
+.r2-pback-row { display: flex; align-items: center; min-height: 36px; margin: 0 0 4px; padding: 0 2px; position: relative; z-index: 2; pointer-events: none; }
+.r2-pback { pointer-events: auto; width: 36px; height: 36px; flex: none; padding: 0; margin: 0; display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%; border: 1px solid rgba(170, 214, 255, .36); background: rgba(16, 42, 102, .55); color: #fff; cursor: pointer;
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.r2-pback svg { width: 18px; height: 18px; }
+.r2-pback:active { transform: scale(.94); }
+.r2-pback:focus-visible { outline: 2px solid var(--one-acc); outline-offset: 2px; }
+.r2-ov.full .r2-pback-row { display: none; }
+
 /* 3. the shared look */
 html:root:root body .r2-ov.one-sheet:not(.full) .r2-sh {
   background: var(--mb-surface, var(--one-glass)) !important; border: 1px solid var(--mb-rim, var(--one-line)) !important;

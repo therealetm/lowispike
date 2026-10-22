@@ -10198,7 +10198,44 @@ R2.ico = {
 };
 
 /* ---------- overlay sheets (own layer, spring in, swipe/tap out) ---------- */
+/* Oct 22 2026 (one sheet at a time, app-wide): a sheet that opens while another sheet is open REPLACES it. The old one is
+   parked (class r2-parked: hidden whole, scrim included, inert), so two sheets are never visible and nothing bleeds through.
+   Closing the new one (X, swipe down, backdrop, Escape, Android/browser back, or code) closes the parked ones too, so you
+   always land on the page underneath, never on a hidden sheet. The new sheet gets a small back chevron (top-left) that
+   closes it and brings the parked parent back. Full pages are pages: they stay under a sheet and are never parked, but a
+   full page opened from a sheet parks that sheet. Sheets drawn by their own modules (Forms, Gap, Last meal, shops, pages)
+   join the same stack through R2.adopt (watched below), and the legacy #sheetwrap closes when a sheet opens. */
 let ovStack = [];
+const PARK = "r2-parked";
+function ovPark(item){
+  const under = [];
+  ovStack.forEach(x => { if (x === item || x.parked || x.full) return;
+    x.parked = true; x.ov.classList.add(PARK); x.ov.setAttribute("aria-hidden", "true"); try { x.ov.inert = true; } catch(e){}
+    under.push(x); });
+  item.under = under;
+  try { const w = document.getElementById("sheetwrap"); if (w && w.classList.contains("open") && typeof closeSheet === "function") closeSheet(); } catch(e){}
+  return under;
+}
+function ovUnpark(x){
+  if (!ovStack.includes(x)) return;
+  x.parked = false; x.ov.classList.remove(PARK); x.ov.removeAttribute("aria-hidden"); try { x.ov.inert = false; } catch(e){}
+}
+function ovBackBtn(item){
+  if (item.full || item.noBack || !item.under || !item.under.length) return;
+  const host = item.foreign ? (item.ov.querySelector(item.panel || "[role=dialog]") || item.ov.firstElementChild || item.ov) : item.ov.querySelector(".r2-sh");
+  if (!host || host.querySelector(":scope > .r2-pback-row")) return;
+  const row = document.createElement("div"); row.className = "r2-pback-row";
+  const b = document.createElement("button"); b.type = "button"; b.className = "r2-pback"; b.setAttribute("data-r2", "parent"); row.appendChild(b);
+  const lg = (document.documentElement.lang || "en").slice(0, 2);
+  b.setAttribute("aria-label", lg === "de" ? "Zurück" : lg === "es" ? "Atrás" : "Back"); b.innerHTML = R2.ico.back;
+  b.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); R2.back(item.ov); });
+  const body = item.foreign ? null : host.querySelector(":scope > .r2-shb");
+  host.insertBefore(row, body || host.firstChild);
+}
+function ovDrop(it){
+  ovStack.forEach(x => { if (!x.under) return; const k = x.under.indexOf(it); if (k < 0) return; x.under.splice(k, 1);
+    if (!x.under.length) { const b = x.ov.querySelector(".r2-pback-row"); if (b) b.remove(); } });
+}
 R2.sheet = function(html, opts){
   opts = opts || {};
   const ov = document.createElement("div");
@@ -10206,21 +10243,73 @@ R2.sheet = function(html, opts){
   ov.innerHTML = '<div class="r2-scrim"></div><div class="r2-sh" role="dialog" aria-modal="true">' + (opts.full ? "" : '<div class="r2-grab"></div>') +
     (opts.noClose ? "" : '<button class="r2-x" data-r2="close" aria-label="Close">' + R2.ico.x + '</button>') + '<div class="r2-shb">' + html + '</div></div>';
   document.body.appendChild(ov);
-  ovStack.push({ov, onClose: opts.onClose});
+  const item = {ov, onClose: opts.onClose, full: !!opts.full, noBack: !!opts.noBack || !!opts.noClose};
+  ovStack.push(item);
+  ovPark(item); ovBackBtn(item);
   requestAnimationFrame(() => requestAnimationFrame(() => ov.classList.add("on")));
   if (!opts.noClose) ov.querySelector(".r2-scrim").addEventListener("click", () => R2.close(ov));
   return ov;
 };
-R2.close = function(ov){
-  const i = ov ? ovStack.findIndex(x => x.ov === ov) : ovStack.length - 1;
+function ovTopIndex(){ for (let i = ovStack.length - 1; i >= 0; i--) if (!ovStack[i].parked) return i; return ovStack.length - 1; }
+R2.close = function(ov, how){
+  const i = ov ? ovStack.findIndex(x => x.ov === ov) : ovTopIndex();
   if (i < 0) return;
   const it = ovStack.splice(i, 1)[0];
-  it.ov.classList.remove("on"); it.ov.classList.add("off");
-  if (!R2.motionClose || !R2.motionClose(it.ov, () => it.ov.remove())) setTimeout(() => it.ov.remove(), 320);
+  ovDrop(it);
+  const under = it.under || []; it.under = [];
+  if (how === "back") under.forEach(ovUnpark);
+  const hidden = !!it.parked; /* a parked sheet is display:none: no transition ends there, so it goes at once (else it lingers) */
+  if (it.parked) { it.parked = false; try { it.ov.inert = false; } catch(e){} }
+  if (it.foreign) { if (it.mo) try { it.mo.disconnect(); } catch(e){}
+    if (!it.gone) { it.gone = true; try { it.closeFn(it.ov); } catch(e){ try { it.ov.remove(); } catch(x){} } } }
+  else {
+    it.ov.classList.remove("on"); it.ov.classList.add("off");
+    if (hidden) it.ov.remove();
+    else if (!R2.motionClose || !R2.motionClose(it.ov, () => it.ov.remove())) setTimeout(() => it.ov.remove(), 320);
+  }
   try { it.onClose && it.onClose(); } catch(e){}
+  if (how !== "back") under.forEach(u => { if (ovStack.includes(u)) R2.close(u.ov); });
 };
+R2.back = ov => R2.close(ov || R2.top(), "back");
 R2.closeAll = () => { while (ovStack.length) R2.close(); };
-R2.top = () => ovStack.length ? ovStack[ovStack.length - 1].ov : null;
+R2.top = () => { const i = ovTopIndex(); return i >= 0 ? ovStack[i].ov : null; };
+R2.openCount = () => ovStack.filter(x => !x.parked).length;
+/* Sheets and pages drawn by their own modules. close(el) is their own close; when they close themselves (their X, their
+   swipe, their backdrop) the watcher sees it and finishes the stack step: parked parents close, or come back on Back. */
+const FOREIGN = [
+  {sel: ".cf-ov", panel: ".cf-panel", close: el => window.LowiCompanion && LowiCompanion.close ? LowiCompanion.close() : el.remove()},
+  {sel: ".gv-ov", panel: "[role=dialog]"},
+  {sel: ".fe-ov", panel: ".fe-card", close: el => window.LowiFastEdit && LowiFastEdit.close ? LowiFastEdit.close() : el.remove()},
+  {sel: ".hs-ov", panel: "[role=dialog]"},
+  {sel: ".cr-ov", panel: "[role=dialog]"},
+  {sel: ".stp-ov", panel: "[role=dialog]"},
+  {sel: ".gh-ov", panel: "[role=dialog]"},
+  {sel: ".wj-ov", full: true}, {sel: ".yd-ov", full: true}, {sel: ".bs-ov", full: true}
+];
+const FOREIGN_SEL = FOREIGN.map(f => f.sel).join(",");
+function foreignOpen(el){ return el.isConnected && !el.hidden && !el.classList.contains("off") && !el.classList.contains("out") && !el.classList.contains("yd-out"); }
+function foreignClose(el){
+  const c = el.querySelector("[data-r2='close'], [data-gv='close'], [data-shop='close'], [data-cr='close'], [data-stp='qv-close'], [data-stp='close'], [data-gh='close'], [data-cf='close']");
+  if (c) c.click();
+  setTimeout(() => { if (el.isConnected && foreignOpen(el)) el.remove(); }, 400);
+}
+R2.adopt = function(el, o){
+  o = o || {};
+  if (!el || ovStack.some(x => x.ov === el)) return el;
+  const item = {ov: el, foreign: true, full: !!o.full, panel: o.panel, noBack: !!o.noBack, closeFn: o.close || foreignClose};
+  ovStack.push(item); ovPark(item); ovBackBtn(item);
+  try { item.mo = new MutationObserver(foreignSoon); item.mo.observe(el, {attributes: true, attributeFilter: ["class", "hidden"]}); } catch(e){}
+  return el;
+};
+function foreignSweep(){
+  ovStack.slice().forEach(it => { if (it.foreign && !it.gone && !foreignOpen(it.ov)) { it.gone = true; R2.close(it.ov, it.backing ? "back" : undefined); } });
+  for (const el of document.body.children) { if (!el.matches(FOREIGN_SEL) || !foreignOpen(el) || ovStack.some(x => x.ov === el)) continue;
+    R2.adopt(el, FOREIGN.find(f => el.matches(f.sel))); }
+}
+function foreignSoon(){ foreignSweep(); }
+R2.adoptSweep = foreignSweep;
+function foreignWatch(){ try { new MutationObserver(foreignSoon).observe(document.body, {childList: true}); } catch(e){} }
+if (document.body) foreignWatch(); else document.addEventListener("DOMContentLoaded", foreignWatch);
 
 /* ---------- theme: Night (dark) / Cloud (light) / Sunrise (automatic) ---------- */
 const THEME_KEY = "lowi.theme";

@@ -166,8 +166,8 @@
             if (!d) return;
             const dx = e.clientX - d.x, dy = e.clientY - d.y, m = Math.hypot(dx, dy);
             if (m > TRY.MOVE) { d.moved = true; clearT(padT); }
-            if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) fire('swipe');
-            else if (m > TRY.DRAG) fire('drag');
+            if (Math.abs(dx) > 34 && Math.abs(dx) > Math.abs(dy) * 1.5) fire('swipe');
+            else if (m > TRY.DRAG && wants(step()) !== 'swipe') fire('drag');   /* a swipe pad waits for the sideways move */
         });
         const up = e => {
             P.delete(e.pointerId); el.classList.remove('lt-press'); clearT(padT);

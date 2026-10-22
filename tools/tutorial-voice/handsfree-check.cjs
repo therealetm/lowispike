@@ -62,7 +62,7 @@ async function boot(page, url) {
     await sleep(3500);
     await page.evaluate(() => document.querySelectorAll('[aria-modal="true"]').forEach(d => { if (!d.closest('#ltTour')) d.remove(); }));
 }
-const state = page => page.evaluate(() => ({ step: window.LowiTutorial.step(), held: window.LowiTutorial.held(), on: window.LowiTutorial.isOn(), paused: window.LowiTutorial.paused(), auto: window.LowiTutorial.auto(), gum: window.__gum, plays: window.__plays.length, cam: document.documentElement.classList.contains('b3-camon') || !!document.querySelector('#b3Cam') }));
+const state = page => page.evaluate(() => ({ step: window.LowiTutorial.step(), held: window.LowiTutorial.held(), on: window.LowiTutorial.isOn(), paused: window.LowiTutorial.paused(), auto: window.LowiTutorial.auto(), gum: window.__gum, plays: window.__plays.length, cam: document.documentElement.classList.contains('b3-camon') || !!document.querySelector('#b3Cam'), dlg: [...document.querySelectorAll('[aria-modal="true"], dialog[open]')].filter(d => !d.closest('#ltTour')).map(d => d.id || d.className || d.tagName).join(' ').slice(0, 80) }));
 
 async function full(browser, engine, dev, url, fails, lines) {
     const tag = `${engine}/${dev}/A full hands-free`;
@@ -79,7 +79,7 @@ async function full(browser, engine, dev, url, fails, lines) {
             const s = await state(page);
             if (s.step === 'claim') { await page.click('#ltTour [data-lt="next"]').catch(() => { }); }   /* the one card that waits for the user */
             if (s.step && s.step !== last) { seen.push(s.step); last = s.step; }
-            maxCam = Math.max(maxCam, s.cam ? 1 : 0); maxGum = Math.max(maxGum, s.gum); if (s.held) held++;
+            maxCam = Math.max(maxCam, s.cam ? 1 : 0); maxGum = Math.max(maxGum, s.gum); if (s.held) { held++; if (!full.why) full.why = s.step + ' held by ' + (s.dlg || '?'); }
             if (s.step === plan[plan.length - 1]) { await sleep(5000); const e = await state(page); if (e.step !== s.step || !e.on) fails.push(tag + ': the last card did not stay'); break; }
             await sleep(150);
         }
@@ -88,7 +88,7 @@ async function full(browser, engine, dev, url, fails, lines) {
         const missing = plan.filter(x => x !== 'claim' && !idsOnly.includes(x));
         const order = idsOnly.every((x, k) => k === 0 || plan.indexOf(x) > plan.indexOf(idsOnly[k - 1]));
         const secs = Math.round((Date.now() - t0) / 1000);
-        if (missing.length) fails.push(tag + ': cards not reached: ' + missing.slice(0, 8).join(', ') + (missing.length > 8 ? '…' : ''));
+        if (missing.length) fails.push(tag + ': cards not reached: ' + missing.slice(0, 8).join(', ') + (missing.length > 8 ? '…' : '') + (full.why ? ' (' + full.why + ')' : ''));
         if (!order) fails.push(tag + ': cards out of order: ' + idsOnly.join(' '));
         if (maxGum) fails.push(tag + ': the camera was asked for ' + maxGum + ' time(s)');
         if (maxCam) fails.push(tag + ': the scanner opened during the tour');
@@ -177,12 +177,17 @@ async function layout(browser, engine, dev, lang, url, fails, lines) {
     try {
         await boot(page, url);
         const bad = [];
-        const CARDS = ['hello', 'touch', 'look', 'scan', 'scan-in', 'deep', 'snap', 'done', 'water-hold', 'voice', 'sheets', 'cook-swipe', 'log-meal', 'world-sound', 'chat', 'settings-me', 'affiliates'];
+        /* Community cards in tour order: restarting the check's tour from inside Community (start() again) can pop the page's history, and
+           back-swipe.js turns that pop into Escape, which ends the tour. A real run walks the cards in order and never restarts. */
+        const CARDS = ['hello', 'touch', 'look', 'scan', 'scan-in', 'deep', 'snap', 'done', 'water-hold', 'sheets', 'cook-swipe', 'log-meal', 'world-sound', 'settings-me', 'chat', 'voice', 'affiliates'];
         for (const at of CARDS) {
-            await page.evaluate(a => { window.__clipMs = 60000; window.LowiTutorial.start({ from: 'check', at: a }); }, at);
-            await sleep(at === 'scan' ? 2800 : 1300);
+            for (let k = 0; k < 2; k++) {   /* a second start if the restart ended the tour (see above); a real card problem fails both */
+                await page.evaluate(a => { window.__clipMs = 60000; window.LowiTutorial.start({ from: 'check', at: a }); }, at);
+                await sleep(at === 'scan' ? 2800 : 1300);
+                if (await page.evaluate(() => !!document.querySelector('#ltTour:not(.lt-held) .lt-card'))) break;
+            }
             const r = await page.evaluate(() => {
-                const card = document.querySelector('#ltTour:not(.lt-held) .lt-card'); if (!card) return { err: 'no card' };
+                const card = document.querySelector('#ltTour:not(.lt-held) .lt-card'); if (!card) return { err: 'no card (' + (window.LowiTutorial.held() || '') + ' ' + [...document.querySelectorAll('[aria-modal="true"], dialog[open]')].filter(d => !d.closest('#ltTour')).map(d => d.id || d.className).join(' ').slice(0, 80) + ')' };
                 const bs = [...card.querySelectorAll('button')].filter(b => getComputedStyle(b).display !== 'none').map(b => { const r = b.getBoundingClientRect(); return { c: b.className, l: r.left, t: r.top, r: r.right, b: r.bottom, w: r.width, h: r.height }; });
                 const over = []; for (let i = 0; i < bs.length; i++) for (let j = i + 1; j < bs.length; j++) { const a = bs[i], b = bs[j]; const x = Math.min(a.r, b.r) - Math.max(a.l, b.l), y = Math.min(a.b, b.b) - Math.max(a.t, b.t); if (x > 0.5 && y > 0.5) over.push(a.c + ' x ' + b.c); }
                 const off = bs.filter(b => b.l < 0 || b.t < 0 || b.r > innerWidth || b.b > innerHeight).map(b => b.c);
@@ -281,12 +286,13 @@ async function practice(browser, engine, dev, url, fails, lines) {
     for (const engine of arg('engines', 'webkit').split(',')) {
         const browser = await pw[engine].launch();
         try {
-            await scanResume(browser, engine, 'iPhone SE', url, fails, lines);
-            await pause(browser, engine, 'iPhone 13', url, fails, lines);
-            await camera(browser, engine, 'iPhone 13', url, fails, lines);
-            for (const lang of ['en', 'de', 'es']) await layout(browser, engine, 'iPhone SE', lang, url, fails, lines);
-            await practice(browser, engine, 'iPhone 13', url, fails, lines);
-            if (arg('full', '1') !== '0') await full(browser, engine, 'iPhone 13', url, fails, lines);
+            const only = arg('only', 'ABCDEF');   /* --only EF runs parts E and F */
+            if (only.includes('B')) await scanResume(browser, engine, 'iPhone SE', url, fails, lines);
+            if (only.includes('C')) await pause(browser, engine, 'iPhone 13', url, fails, lines);
+            if (only.includes('D')) await camera(browser, engine, 'iPhone 13', url, fails, lines);
+            if (only.includes('E')) for (const lang of ['en', 'de', 'es']) await layout(browser, engine, 'iPhone SE', lang, url, fails, lines);
+            if (only.includes('F')) await practice(browser, engine, 'iPhone 13', url, fails, lines);
+            if (only.includes('A') && arg('full', '1') !== '0') await full(browser, engine, 'iPhone 13', url, fails, lines);
         } finally { await browser.close(); }
         lines.forEach(l => console.log(l)); lines.length = 0;
     }

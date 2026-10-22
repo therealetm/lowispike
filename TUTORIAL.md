@@ -22,6 +22,18 @@ update, the tutorial also needs to be updated."
   the tour calls `LowiBirthCompanion.claim({from:'tutorial'})` only once it exists (marked HOOK in tutorial-steps.js, off until the own-companion task ships it; there is no fallback), hides while it is open and goes
   on to the next step when it closes.
 - Every step: Back, Skip (skips the rest of this part, e.g. all Home bubbles), Next, and Skip all. Esc = Skip all, arrows move.
+- Every card that asks for a gesture can be done, or says it is for later (item 38, Oct 22 2026, Emmanuel: "In tutorial it tells the
+  person to do stuff but then you can't actually do the stuff so either make sure they understand they can play after tutorial or let
+  them actually do the gesture"). Each step is one of: `tryIt` (the real control takes it, touches go through the dim), `practice
+  {how, look}` (a practice pad on the card, a small look-alike that takes tap / hold / touch / double / drag / swipe / pinch with its own
+  pointer handling in `padWire()`, shows Nice and moves on; no spotlight, touches do NOT go through, nothing in the app changes, no mic
+  or camera; used where the real gesture would change data (Hold Water resets it, theme, sending energy), ask for the mic, or the control
+  isn't on screen), `later: '<motion>'` (done after the tour: the text says "After the tour" / "Nach der Tour" / "Después del
+  recorrido" in every language, clips regenerated, and the card shows a small looping hand doing that motion, `.lt-later`), or plain
+  info (a card whose words mention a gesture without asking for one carries an `info` reason). Hands-free gives practice cards the
+  try-it time (4.5 s) and moves on if they are not tried. `tests/tutorial-doable.test.cjs` lists every instruction card and fails a new
+  card that asks for a gesture without one of these; `tools/tutorial-voice/handsfree-check.cjs` part F does every practice gesture.
+  Only the chat card switches to the Chat tab (it opens the galaxy chat itself since item 36); voice and post cards stay on the Room tab.
 - It never opens panels, and never Scan: `goTab('scan')` opens the scanner camera at once, so no step has `where: 'scan'` and
   `TAB_OF` has no scan (Oct 22 2026: the tour kept calling it for 2.5 s, iOS asked "Allow camera" and the tour got stuck; a tour left on
   a Scan card reopened it on the next start). The Scan cards show a picture of the inside instead (`peek`, compact on small iPhones),

@@ -104,7 +104,7 @@
 .lt-laterbox .lt-obj { position: absolute; left: 50%; top: 50%; min-width: 0; width: 16px; height: 16px; padding: 0; margin: -8px 0 0 -8px; border-radius: 50%; }
 .lt-laterbox .lt-hand { transform: scale(.62); }
 .lt-later[data-how="swipe"] .lt-laterbox .lt-obj, .lt-later[data-how="drag"] .lt-laterbox .lt-obj { opacity: .4; }
-@media (max-height: 760px) { .lt-pad { height: 62px; } .lt-pad[data-look="mic"] .lt-obj, .lt-pad[data-look="joystick"] .lt-obj, .lt-pad[data-look="ring"] .lt-obj { height: 46px; min-width: 46px; } .lt-padnote { margin-bottom: 8px; } }
+@media (max-height: 760px) { .lt-later { margin: -6px 2px 6px; } .lt-laterbox { height: 24px; } .lt-pad { height: 62px; } .lt-pad[data-look="mic"] .lt-obj, .lt-pad[data-look="joystick"] .lt-obj, .lt-pad[data-look="ring"] .lt-obj { height: 46px; min-width: 46px; } .lt-padnote { margin-bottom: 8px; } }
 @media (max-height: 600px) { .lt-padnote { display: none; } .lt-pad { height: 54px; } }
 @media (prefers-reduced-motion: reduce) { .lt-hand > span { animation: none !important; opacity: .8; } .lt-hand .lt-hand2 { display: none; } }
 /* hands-free (Oct 22 2026): Pause / Play shows only while the speaker is on; a thin line fills during the pause before the next card */

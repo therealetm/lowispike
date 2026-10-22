@@ -604,7 +604,7 @@
             title: { en: 'You and your account', de: 'Du und dein Konto', es: 'Tú y tu cuenta' },
             text: {
                 en: 'After the tour, tap your picture in Community for your profile, Weight & BMI and the extras. Its gear opens Settings too. In Settings, Account signs you in or out, and Delete account removes it for good.',
-                de: 'Nach der Tour tippst du in der Community auf dein Bild für Profil, Gewicht & BMI und die Extras. Das Zahnrad dort öffnet auch die Einstellungen. Unter Konto meldest du dich an oder ab, Konto löschen entfernt es endgültig.',
+                de: 'Nach der Tour tippst du in der Community auf dein Bild: Profil, Gewicht & BMI und Extras. Das Zahnrad öffnet die Einstellungen. Dort meldest du dich unter Konto an oder ab, Konto löschen entfernt es endgültig.',
                 es: 'Después del recorrido, en Comunidad toca tu foto para tu perfil, Peso e IMC y los extras. Su engranaje también abre los Ajustes. En Ajustes, Cuenta inicia o cierra tu sesión, y Eliminar cuenta la borra para siempre.'
             }
         },

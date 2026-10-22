@@ -16,9 +16,9 @@ test('Home world: free orbit, two-finger zoom from Misty out to the whole world,
   assert(css.includes('html.wh-home #spHome .sp-heroes > .bw3-stage { touch-action: none; }'));
 });
 
-test('Weltkarte button works in place on Home and says what it is in de/en/es', () => {
-  assert(wh.includes("T('World map', 'Weltkarte', 'Mapa')"));
-  assert(wh.includes("if (homeWorld()) toggleZoom(); else zoomOutWhole();"));
+test('Oct 22 2026: the old Weltkarte / World map button is gone; the camera zoom (pinch, double-tap) stays', () => {
+  assert(!wh.includes("T('World map', 'Weltkarte', 'Mapa')"));
+  assert(!wh.includes('function zoomTap('));
   assert(wh.includes("(r.mode !== 'full' && r.mode !== 'home')"));
 });
 

@@ -103,5 +103,5 @@ test('her name reaches the fixed lines that said Misty on Home', () => {
     assert.match(read('misty-pad.js'), /addEventListener\('lowi:companion'/);
     assert.match(read('herb-shop.js'), /nmL\(L\('Misty\\'s gift of the day'/);
     assert.match(read('body-trips.js'), /tr\('nextTired'\); try \{ const B = window\.LowiBirthCompanion; if \(B && B\.withName\)/);
-    assert.match(wh, /hb\.setAttribute\('aria-label', withNm\(/);
+    assert.match(wh, /function withNm\(/, 'Home lines still get her name (the World map stick that used it was removed Oct 22 2026)');
 });

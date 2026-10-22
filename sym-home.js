@@ -177,7 +177,9 @@
         const R = W.LowiR2; if (!R || !R.sheet) { logMeal(); return; }
         const list = CORE.mealsToday(state()), v = CORE.view(state());
         const tm = l => { if (!l.ts) return ''; const d = new Date(+l.ts); return pad(d.getHours()) + ':' + pad(d.getMinutes()); };
-        const rows = list.length ? list.map(l => '<li class="wm-row"><span><b>' + esc(l.t || l.n || l.name || label()) + '</b><small>' + esc(tm(l)) + '</small></span></li>').join('')
+        /* Oct 22: each meal shows its thumbnail; tapping it opens the photo with its saved estimate, share and delete (meal-journal.js) */
+        const J = W.LowiMealJournal;
+        const rows = list.length ? list.map(l => '<li class="wm-row' + (J ? ' mj-row' : '') + '">' + (J ? J.thumbHTML(l) : '') + '<span><b>' + esc(l.t || l.n || l.name || label()) + '</b><small>' + esc(tm(l)) + '</small></span></li>').join('')
             : '<li class="wm-row wm-empty">' + esc(T('No meals logged today yet.', 'Heute noch kein Essen eingetragen.', 'Hoy aún no has registrado comidas.')) + '</li>';
         const html = '<div class="wm-sheet wme-sheet"><h3>' + esc(label() + ' · ' + v.text) + '</h3>' +
             '<p class="wm-why">' + esc(T('Every meal you log charges Misty. Three meals fill this bubble for today.', 'Jede eingetragene Mahlzeit lädt Misty auf. Drei Mahlzeiten füllen diese Blase für heute.', 'Cada comida que registras carga a Misty. Tres comidas llenan esta burbuja hoy.')) + '</p>' +

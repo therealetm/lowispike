@@ -1,0 +1,50 @@
+/* meal-journal.js (Oct 22): a saved meal's photo + estimate, its thumbnail in lists, and the opt-in Share to Community sheet.
+   Theme tokens only (--text/--muted/--line2 and the spike colors --lo/--mid/--hi), so Day and Night both read. */
+.mj-thumb{flex:none;width:44px;height:44px;padding:0;margin:0 10px 0 0;border-radius:12px;overflow:hidden;border:1px solid color-mix(in srgb,var(--text) 14%,transparent);background:color-mix(in srgb,var(--text) 7%,transparent);display:inline-grid;place-items:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.mj-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.mj-thumb-none span{font-size:20px;line-height:1;opacity:.75}
+.mj-thumb:focus-visible{outline:2px solid var(--text);outline-offset:2px}
+.wm-row.mj-row{display:flex;align-items:center;min-width:0}
+.wm-row.mj-row>span{min-width:0;flex:1 1 auto}
+
+.mj-sheet,.mj-share{display:flex;flex-direction:column;gap:10px;min-width:0;color:var(--text)}
+.mj-photo{margin:0;border-radius:18px;overflow:hidden;background:color-mix(in srgb,var(--text) 6%,transparent);position:relative}
+.mj-photo img{display:block;width:100%;max-height:min(46vh,420px);object-fit:cover}
+.mj-photo figcaption{position:absolute;left:8px;bottom:8px;max-width:calc(100% - 16px);padding:3px 9px;border-radius:999px;font-size:11.5px;line-height:1.35;color:#fff;background:rgba(0,0,0,.5);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.mj-name{margin:2px 0 0;font-size:20px;line-height:1.25;font-weight:700;overflow-wrap:anywhere}
+.mj-when{margin:-6px 0 0;font-size:13px;color:var(--muted)}
+.mj-bs{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;padding:3px 10px 3px 8px;border-radius:999px;font-size:13px;font-weight:600;color:var(--text);background:color-mix(in srgb,var(--text) 9%,transparent);border:1px solid color-mix(in srgb,var(--text) 16%,transparent)}
+.mj-bs i{width:9px;height:9px;border-radius:50%;background:var(--lo,#a9dcb2)}
+.mj-bs-mid i{background:var(--mid,#e6c98a)}
+.mj-bs-high i{background:var(--hi,#f0a08a)}
+.mj-ing{margin:0;font-size:14px;line-height:1.45;overflow-wrap:anywhere}
+.mj-ing span{color:var(--muted)}
+.mj-ing small{color:var(--muted)}
+.mj-nut{display:flex;flex-wrap:wrap;gap:6px}
+.mj-n{padding:5px 9px;border-radius:10px;font-size:12.5px;color:var(--muted);background:color-mix(in srgb,var(--text) 7%,transparent)}
+.mj-n b{color:var(--text);font-weight:700}
+.mj-note{margin:0;font-size:14px;line-height:1.45}
+.mj-est{margin:0;font-size:12px;color:var(--muted)}
+.mj-acts,.mj-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.mj-acts .r2-btn,.mj-row .r2-btn{flex:1 1 140px;min-height:46px}
+.mj-acts[hidden],.mj-confirm[hidden]{display:none}
+.mj-del,.mj-danger{color:var(--hi,#f0a08a)}
+.mj-confirm p{margin:4px 0 0;display:flex;flex-direction:column;gap:2px;font-size:15px}
+.mj-confirm small{font-size:13px;color:var(--muted)}
+
+.mj-share h3{margin:0;font-size:19px;font-weight:700}
+.mj-card{display:flex;gap:12px;align-items:center;padding:10px;border-radius:16px;background:color-mix(in srgb,var(--text) 7%,transparent);border:1px solid color-mix(in srgb,var(--text) 12%,transparent);min-width:0}
+.mj-card img{width:72px;height:72px;flex:none;border-radius:12px;object-fit:cover}
+.mj-card>div{display:flex;flex-direction:column;gap:6px;min-width:0}
+.mj-card b{font-size:16px;line-height:1.25;overflow-wrap:anywhere}
+.mj-cap{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--muted)}
+.mj-cap input{font:inherit;font-size:16px;color:var(--text);background:color-mix(in srgb,var(--text) 7%,transparent);border:1px solid color-mix(in srgb,var(--text) 16%,transparent);border-radius:12px;padding:11px 12px;min-width:0;width:100%;box-sizing:border-box}
+.mj-cap input::placeholder{color:var(--muted)}
+.mj-foot{margin:0;font-size:12.5px;line-height:1.4;color:var(--muted)}
+.mj-share .r2-btn{min-height:48px}
+.mj-msg{margin:0;min-height:1.2em;font-size:13px;color:var(--muted);text-align:center}
+
+/* the Saved sheet after Log as meal (spirit.js savedPhotoHTML) */
+.mj-saved{display:flex;align-items:center;gap:0;margin:8px 0 4px;font-size:13px;color:var(--muted);min-width:0}
+.mj-saved span{min-width:0}
+.mj-share-btn{width:100%;min-height:44px;margin:4px 0 2px}

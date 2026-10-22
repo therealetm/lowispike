@@ -222,16 +222,11 @@
         const wrap = document.createElement('div'); wrap.className = 'ms-extra'; wrap.setAttribute('data-noi18n', '');
         const lt = leftText(l);
         wrap.innerHTML = (lt ? '<p class="ms-left">' + esc(lt) + '</p>' : '') +
-            '<label class="ms-opt"><input type="checkbox" data-ms="share"><span><b>' + esc(t('shareT', l)) + '</b><small>' + esc(t('shareS', l)) + '</small></span></label>' +
+            /* Oct 22: no pre-log share box any more; "Share to Community" comes after Log as meal (meal-journal.js), opt-in every time */
             (s.on ? '' : '<label class="ms-opt"><input type="checkbox" data-ms="offer"><span><b>' + esc(t('remT', l)) + '</b><small>' + esc(t('remS', l, { times: timesText(s, l) })) + '</small></span></label>');
         box.appendChild(wrap);
         const offer = wrap.querySelector('[data-ms="offer"]');
         if (offer) offer.addEventListener('change', () => { setRem({ on: offer.checked }); });
-        form.addEventListener('submit', () => {
-            const sh = wrap.querySelector('[data-ms="share"]');
-            if (!sh || !sh.checked) return;
-            const m = getMeal(); if (m) shareAfter(photo, m, 1100);
-        });
     }
     // Opens the Community post sheet with the photo and its meal card attached: no caption needed, no new AI read.
     function share(photo, m) {
@@ -244,7 +239,6 @@
         if (root.TRIBE.setMeal) root.TRIBE.setMeal(m);
         return true;
     }
-    function shareAfter(photo, m, ms) { setTimeout(() => { try { share(photo, m); } catch (e) { console.warn(e); } }, ms || 0); }
 
     if (root.document && root.addEventListener) {
         const onMeal = () => mealLogged();

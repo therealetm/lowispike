@@ -1238,7 +1238,7 @@
     /* auraLook(): what Misty wears now, for any other place that draws her (a Community / leaderboard avatar: put fxHTML(fx) inside
        an element with position:relative and --a/--b set) */
     function auraLook() { const a = C.aura(auraId()); return { id: a.id, a: a.a, b: a.b, fx: a.fx || '' }; }
-    W.LowiWorldHome = { pullOut, diveIn, settle, waterReset, openToday, openMisty, toggleZoom, zoomOutWhole, closeTop, openDetails, heroTurn, state: st, auraId, syncX, rig, sparks: sparksNow, wallet: walletNow, buyAura, fxHTML, ensureFx, auraLook };
+    W.LowiWorldHome = { pullOut, diveIn, settle, waterReset, openToday, openMisty, toggleZoom, zoomOutWhole, closeTop, openDetails, heroTurn, state: st, auraId, sparks: sparksNow, wallet: walletNow, buyAura, fxHTML, ensureFx, auraLook, syncX, rig };
     W.LowiWorldHome.mistyFaceArt = mistyFaceArt;
     W.LowiWorldHome.pad = pad;
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();

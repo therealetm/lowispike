@@ -106,5 +106,6 @@ test('every result names the policy version and the rule that decided it', () =>
   assert.strictEqual(o.policy.decidedBy, 'policy.sugar_drink');
   assert.ok(o.policy.rules.length >= 2);
   assert.strictEqual(o.glucose.category, 'Higher');
-  assert.strictEqual(o.confidence, null, 'confidence comes with scanfe-f1');
+  assert.strictEqual(o.confidence, 'Low', 'no barcode: the exact product is not confirmed (scanfe-f1)');
+  assert.ok(o.confidenceInfo.reasons.includes('identity_unverified'));
 });

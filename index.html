@@ -5734,6 +5734,8 @@ window.LOWI_COOK = {chips:() => CHIPS, match, min, minTxt};
 })();
 
 </script>
+<!-- Oct 22, 2026: the one level table (world-home-core.js STAGES: cell names + XP) loads before the core code reads it. -->
+<script src="world-home-core.js?v=20261022-112923"></script>
 <script>
 /* LOWiSPIKE v2: core state, XP curve, zodiac, streak, quests, cycle */
 const KEY = "lowispike.v2";
@@ -5777,14 +5779,20 @@ function load(){ try { S = JSON.parse(localStorage.getItem(KEY)) || fresh(); } c
       if (S.health && S.health.pcos && S.user.gender === "f" && out.indexOf("PCOS") < 0) out.push("PCOS"); S.user.tags = out; } } catch(e){} }
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); window.LOWI_STORAGE_ERROR=false; return true; } catch(e){ window.LOWI_STORAGE_ERROR=true; console.warn("LOWiSPIKE could not save state; existing photos and records were retained."); return false; } }
 
-/* The profile and herb share the original six stages and exact XP thresholds. */
-const HERB_XP = [0,100,300,700,1500,3000];
-const HERB_TITLES = ["Seed","Sprout","Young Herb","Flourishing Herb","Radiant Herb","Legendary Bloom"];
-const levelStart = L => HERB_XP[Math.max(0,Math.min(5,L-1))];
-const stepXP = L => L < 6 ? HERB_XP[L] - HERB_XP[L-1] : 0;
-function levelOf(xp){xp=Math.max(0,+xp||0);let i=0;while(i<5&&xp>=HERB_XP[i+1])i++;const a=HERB_XP[i],b=HERB_XP[i+1];return {L:i+1,into:xp-a,need:b?b-a:0,left:b?Math.max(0,b-xp):0,pct:b?Math.max(0,Math.min(1,(xp-a)/(b-a))):1};}
+/* The profile and herb share ONE level table and exact XP thresholds.
+   Oct 22, 2026 (Emmanuel: "Is this aligned with the new design and the new level-up point system?"): the profile used to keep
+   its own six plant titles while Misty's growth sheet used the cell stages. There is now ONE level table: world-home-core.js
+   STAGES (name in EN/DE/ES + XP threshold). Profile, growth map, level-up toast, Community and the care board all read it;
+   titleOf gives the English name, which LowiLang and the "Level N · name" rule translate. */
+const LEVEL_TABLE = window.LowiWorldHomeCore.STAGES;
+const HERB_XP = LEVEL_TABLE.map(s => s.xp);
+const HERB_TITLES = LEVEL_TABLE.map(s => s.n[0]);
+const MAX_LEVEL = HERB_XP.length;
+const levelStart = L => HERB_XP[Math.max(0,Math.min(MAX_LEVEL-1,L-1))];
+const stepXP = L => L >= 1 && L < MAX_LEVEL ? HERB_XP[L] - HERB_XP[L-1] : 0;
+function levelOf(xp){xp=Math.max(0,+xp||0);let i=0;while(i<MAX_LEVEL-1&&xp>=HERB_XP[i+1])i++;const a=HERB_XP[i],b=HERB_XP[i+1];return {L:i+1,into:xp-a,need:b?b-a:0,left:b?Math.max(0,b-xp):0,pct:b?Math.max(0,Math.min(1,(xp-a)/(b-a))):1};}
 const TITLES = HERB_TITLES.map((name,i)=>[i+1,name]);
-const titleOf = L => HERB_TITLES[Math.max(0,Math.min(5,L-1))];
+const titleOf = L => HERB_TITLES[Math.max(0,Math.min(MAX_LEVEL-1,L-1))];
 
 function award(amt, label, el, src, eventId){
   if (!Number.isFinite(+amt) || +amt <= 0 || eventId && S.ledger.some(e => e.eventId === eventId)) return 0;
@@ -6209,7 +6217,7 @@ function savedHTML(){ return '<div class="sec"><span class="h3">Saved swaps</spa
 let weightShown = false;
 function renderProfile(){ const lv = levelOf(S.xp), z = zodiac(S.user.bday), h = S.health, c = cycleInfo();
   $("#tab-profile").innerHTML = '<div style="text-align:center"><div style="display:flex;justify-content:center">' + avatar(88) + '</div><div class="h2" style="margin-top:10px">' + esc(S.user.name) + '</div>' + (z ? '<div class="small gold" style="margin-top:4px">' + z.g + " " + z.n + " · " + z.el + ' sign</div>' : "") + '<div style="margin-top:8px"><span class="ls-signpill"><i></i>' + (z ? "Glass accent from your sign" : "Add your birthday for your sign colour") + '</span></div></div>' +
-    '<div class="card goldline" style="margin-top:16px" id="lvCard"><div class="row"><div><div class="tiny gold">Level ' + lv.L + ' · ' + titleOf(lv.L) + '</div><div class="h2 num" style="margin-top:4px">' + fmt(S.xp) + ' XP</div></div><div class="small muted num" style="margin-left:auto;text-align:right" id="xpToNext">' + (lv.L<6?fmt(lv.left):0) + ' XP · ' + (lv.L<6?'Level '+(lv.L+1):'Legendary Bloom') + '</div></div><div class="mbar"><b style="width:' + Math.round(lv.pct * 100) + '%"></b></div></div>' +
+    '<div class="card goldline" style="margin-top:16px" id="lvCard"><div class="row"><div><div class="tiny gold">Level ' + lv.L + ' · ' + titleOf(lv.L) + '</div><div class="h2 num" style="margin-top:4px">' + fmt(S.xp) + ' XP</div></div><div class="small muted num" style="margin-left:auto;text-align:right" id="xpToNext">' + (lv.L<MAX_LEVEL?fmt(lv.left) + ' XP · Level '+(lv.L+1):'Max level') + '</div></div><div class="mbar"><b style="width:' + Math.round(lv.pct * 100) + '%"></b></div></div>' +
     '<div class="row" style="margin-top:14px"><div class="stat"><b class="num">' + streakNow() + '</b><span>day streak</span></div><div class="stat"><b class="num">' + S.streak.shields + '</b><span>shields</span></div><div class="stat"><b class="num">' + S.logs.length + '</b><span>meals checked</span></div></div>' +
     savedHTML() + (window.TRIBE && TRIBE.profileHTML ? TRIBE.profileHTML() : "") +
     '<div class="sec"><span class="h3">Your glow</span><button class="small gold" data-act="glow">Check in</button></div><div class="card">' + glowSummary() + '</div>' +
@@ -11826,8 +11834,8 @@ const COL = {"coral red":["Korallenrot","rojo coral"], "sage green":["Salbeigrü
 const MBTI = {Architect:["Architekt","Arquitecto"], Logician:["Logiker","Lógico"], Commander:["Kommandeur","Comandante"], Debater:["Debattierer","Innovador"], Advocate:["Advokat","Abogado"],
   Mediator:["Mediator","Mediador"], Protagonist:["Protagonist","Protagonista"], Campaigner:["Aktivist","Activista"], Logistician:["Logistiker","Logístico"], Defender:["Verteidiger","Defensor"],
   Executive:["Geschäftsführer","Ejecutivo"], Consul:["Konsul","Cónsul"], Virtuoso:["Virtuose","Virtuoso"], Adventurer:["Abenteurer","Aventurero"], Entrepreneur:["Unternehmer","Emprendedor"], Entertainer:["Entertainer","Animador"]};
-const TITLE = {Seed:["Samen","Semilla"], Sprout:["Spross","Brote"], Sapling:["Setzling","Arbolito"], Grower:["Grünling","Cultivador"], Steady:["Stabil","Constante"], Balanced:["Ausgeglichen","Equilibrado"],
-  Glider:["Gleiter","Planeador"], Flowstate:["Im Flow","En flujo"], Mastery:["Meister","Maestría"], Legend:["Legende","Leyenda"], Icon:["Ikone","Icono"]};
+/* Oct 22, 2026: level names come from the one level table (world-home-core.js STAGES); the old plant titles are gone. */
+const TITLE = {}; (window.LowiWorldHomeCore ? LowiWorldHomeCore.STAGES : []).forEach(st => { TITLE[st.n[0]] = [st.n[1], st.n[2]]; });
 const ABOUT = {
   Aries:["Mutiger Starter, volle Energie. Widder gewinnt, wenn die Low-Spike-Wahl auch die schnelle ist: ein Protein-Frühstück, das fertig ist, bevor der Tag losgeht.", "Valiente y con toda la energía. Aries gana cuando la opción low-spike también es la rápida: un desayuno con proteína listo antes de que empiece el día."],
   Taurus:["Gutem Essen und Gemütlichkeit treu. Stier hält den Heißhunger mit echtem Geschmack bei Laune: reichhaltige, langsame, sättigende Swaps statt strenger Regeln.", "Fiel a la buena comida y a la comodidad. Tauro mantiene contentos los antojos con sabor de verdad: cambios ricos, lentos y saciantes en vez de reglas estrictas."],
@@ -11902,6 +11910,7 @@ const ROWS = [
   [/^(\d+)-day streak$/, "$1-Tage-Serie", "Racha de $1 días"],
   [/^(\d+) XP to Level (\d+)$/, "$1 XP bis Level $2", "$1 XP para nivel $2"],
   both(new RegExp("^Level (\\d+) · (" + TT + ")$"), (c, m, n, t) => (c === 1 ? "Level " : "Nivel ") + n + " · " + pick(TITLE, t, c)),
+  both(new RegExp("^Lv (\\d+) · (" + TT + ")$"), (c, m, n, t) => (c === 1 ? "Lv " : "Nv ") + n + " · " + pick(TITLE, t, c)),
   both(new RegExp("^(" + TT + ")$"), (c, m, t) => pick(TITLE, t, c)),
   both(new RegExp("^(\\S+) (" + SG + ")$"), (c, m, g, s) => g + " " + pick(SIGN, s, c)),
   both(new RegExp("^(" + SG + ") · (.+)$"), (c, m, s, rest) => pick(SIGN, s, c) + " · " + rest),
@@ -12900,7 +12909,7 @@ html.g2d-on #cmPaneBoard .r3-cbme{margin:0 0 10px}
 <script id="r3mjs">
 /* ===== LOWiSPIKE · Misty's growth (Oct 17, 2026; was "Levels & unlocks", Oct 10) =====
    E-man: the old Bronze / Silver / Gold unlocks (Level 7 VIP channel, Level 8 courses & video modules, Level 9 1:1
-   mentoring) are gone. Levels stop at 6 (levelOf / HERB_XP), so nobody could reach them anyway. Tapping a level (Today
+   mentoring) are gone. Oct 22: levels follow the one level table, world-home-core.js STAGES (10 cell stages, levelOf / HERB_XP). Tapping a level (Today
    chip, Profile level card, a member's level card, the care board tile) opens this map, and every row shows what that
    level really gives, read from the code that gates it:
      - Misty's form             LowiWorldHomeCore.STAGES (the Misty card's "Level n · name")
@@ -12923,8 +12932,8 @@ const AT = () => (window.LowiAdventureTiers && LowiAdventureTiers.core) || null;
 
 function xpNow(){ try { return Math.max(0, +S.xp || 0); } catch(e){ return 0; } }
 function lvOf(xp){ try { return levelOf(xp); } catch(e){ return {L:1, into:0, need:100, left:100, pct:0}; } }
-function startOf(L){ try { return HERB_XP[Math.max(0, Math.min(HERB_XP.length - 1, L - 1))]; } catch(e){ return [0,100,300,700,1500,3000][Math.max(0, Math.min(5, L - 1))]; } }
-function maxL(){ try { return HERB_XP.length; } catch(e){ return 6; } }
+function startOf(L){ return HERB_XP[Math.max(0, Math.min(HERB_XP.length - 1, L - 1))]; }
+function maxL(){ return HERB_XP.length; }
 
 /* ---------- what each level gives (real definitions only) ---------- */
 function formAt(n){ const h = HC(), s = h && h.STAGES && h.STAGES[n - 1]; if (s) return {n:pk(s.n), d:pk(s.d)}; try { return {n:titleOf(n), d:""}; } catch(e){ return {n:"", d:""}; } }
@@ -12953,9 +12962,12 @@ function progressHTML(xp, who){
     '<div class="r3m-psub"><span>' + (top ? "Top level reached" : N(lv.left) + ' XP to Level ' + (lv.L + 1)) + '</span></div></div>';
 }
 const ICO = {form:"\u2728", trip:"\ud83e\udded", glow:"\u25cf"};
-function rwLI(x){ return '<li class="k-' + x.k + '"><span class="r3m-ri" aria-hidden="true"' + (x.k === "glow" && x.c ? ' style="color:' + E(x.c) + '"' : "") + '>' + ICO[x.k] + '</span><span class="r3m-rtx"><b>' +
+/* Oct 22, 2026: glows unlock at a TOTAL XP number, so the line says whether you already have it ("Unlocked at 800 XP") or
+   how far it is ("Unlocks at 800 XP total · 173 to go"); it used to read "at 800 XP" next to "627 / 800 XP into this level". */
+function glowAt(x, xp){ return xp >= x.xp ? 'Unlocked at ' + N(x.xp) + ' XP' : 'Unlocks at ' + N(x.xp) + ' XP total \u00b7 ' + N(x.xp - xp) + ' to go'; }
+function rwLI(x, xp){ return '<li class="k-' + x.k + '"><span class="r3m-ri" aria-hidden="true"' + (x.k === "glow" && x.c ? ' style="color:' + E(x.c) + '"' : "") + '>' + ICO[x.k] + '</span><span class="r3m-rtx"><b>' +
   (x.k === "form" ? '<span>Misty becomes</span> ' : x.k === "trip" ? '<span>Adventure reaches</span> ' : '<span>New glow</span> ') + '<span>' + E(x.t) + '</span></b>' +
-  (x.k === "glow" ? '<small><span>at ' + N(x.xp) + ' XP</span></small>' : x.d ? '<small>' + E(x.d) + '</small>' : "") + '</span></li>'; }
+  (x.k === "glow" ? '<small><span>' + glowAt(x, +xp || 0) + '</span></small>' : x.d ? '<small>' + E(x.d) + '</small>' : "") + '</span></li>'; }
 function rowHTML(n, xp){
   const lv = lvOf(xp), L = lv.L, at = startOf(n), got = L >= n, cur = L === n, f = formAt(n), r = rewardsAt(n), t = tripAt(n);
   const st = cur ? "cur" : got ? "got" : "lock";
@@ -12972,9 +12984,9 @@ function detailHTML(n, xp){
   const lv = lvOf(xp), L = lv.L, at = startOf(n), r = rewardsAt(n), f = formAt(n);
   let h = '<div class="r3m-dl"><div><small>Reached at</small><b class="num">' + N(at) + ' XP</b></div>' +
     '<div><small>' + (L >= n ? "Status" : "Still to go") + '</small><b class="num">' + (L === n ? "You are here" : L > n ? "Reached" : N(at - xp) + " XP") + '</b></div></div>';
-  if (L === n && n < maxL()) h += '<div class="r3m-mini"><div class="r3m-bar"><i style="width:' + Math.round(Math.max(.03, lv.pct) * 100) + '%"></i></div><span>' + N(lv.into) + ' / ' + N(lv.need) + ' XP into this level</span></div>';
-  if (n === 1) h += '<ul class="r3m-rw"><li class="k-form"><span class="r3m-ri" aria-hidden="true">' + ICO.form + '</span><span class="r3m-rtx"><b><span>Misty starts as</span> <span>' + E(f.n) + '</span></b><small>' + E(f.d) + '</small></span></li>' + r.map(rwLI).join("") + '</ul>';
-  else if (r.length) h += '<ul class="r3m-rw">' + r.map(rwLI).join("") + '</ul>';
+  if (L === n && n < maxL()) h += '<div class="r3m-mini"><div class="r3m-bar"><i style="width:' + Math.round(Math.max(.03, lv.pct) * 100) + '%"></i></div><span>' + N(xp) + ' / ' + N(startOf(n + 1)) + ' XP \u00b7 ' + N(lv.left) + ' to Level ' + (n + 1) + '</span></div>';
+  if (n === 1) h += '<ul class="r3m-rw"><li class="k-form"><span class="r3m-ri" aria-hidden="true">' + ICO.form + '</span><span class="r3m-rtx"><b><span>Misty starts as</span> <span>' + E(f.n) + '</span></b><small>' + E(f.d) + '</small></span></li>' + r.map(x => rwLI(x, xp)).join("") + '</ul>';
+  else if (r.length) h += '<ul class="r3m-rw">' + r.map(x => rwLI(x, xp)).join("") + '</ul>';
   return h;
 }
 function careHTML(){
@@ -12984,8 +12996,11 @@ function careHTML(){
 }
 function earnHTML(){
   return '<div class="r3m-earn"><b>How you earn XP</b><ul>' +
-    ['Daily check-in', 'Check a meal', 'Save a swap', 'Get through a craving with SOS', 'Move session or a walk after a meal', 'Steps (every 1,000)', 'Weekly glow check-in', 'Share to For You']
-      .map(t => '<li><span>' + t + '</span></li>').join("") + '</ul><small>XP never comes from eating less or fasting longer.</small></div>';
+    /* Oct 22, 2026: the list now matches what award() really pays (water, scans, recipes, shelf finds, daily quests, closing
+       the day and meal gaps were missing). Meal-gap XP is 2 an hour and stops at 16 hours (CAP_H), so the old line "XP never
+       comes from fasting longer" was wrong for gaps under 16 hours; the copy was fixed, the XP rules were not changed. */
+    ['Daily check-in and daily quests', 'Log or check a meal', 'Water, Moves, a walk after a meal, steps (every 1,000)', 'Save a swap, scan a product, finish a recipe', 'Get through a craving with SOS', 'Add or check finds on the shop shelf', 'Close your day, weekly glow check-in', 'Share to For You', 'Meal gaps: 2 XP an hour, up to 16 hours']
+      .map(t => '<li><span>' + t + '</span></li>').join("") + '</ul><small>A gap longer than 16 hours earns nothing extra, and eating less never earns XP.</small></div>';
 }
 function mapHTML(opts){
   opts = opts || {}; const xp = opts.xp != null ? opts.xp : xpNow(), who = opts.who || "", nu = nextUp(xp);
@@ -13112,15 +13127,16 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
     ["Full of energy when she leaves: a second find.", "Voller Energie beim Losziehen: ein zweiter Fund.", "Con toda su energía al salir: un segundo hallazgo."],
     ["Your sunbeams put you on the care board in Community.", "Deine Sonnenstrahlen bringen dich aufs Fürsorge-Board in der Community.", "Tus rayos de sol te ponen en la tabla de cuidado de la Comunidad."],
     ["How you earn XP", "So sammelst du XP", "Cómo ganas XP"],
-    ["Daily check-in", "Täglicher Check-in", "Check-in diario"],
-    ["Check a meal", "Mahlzeit abhaken", "Marcar una comida"],
-    ["Save a swap", "Tausch speichern", "Guardar un cambio"],
+    ["Daily check-in and daily quests", "Täglicher Check-in und Tagesquests", "Check-in diario y misiones diarias"],
+    ["Log or check a meal", "Mahlzeit eintragen oder abhaken", "Registrar o marcar una comida"],
+    ["Water, Moves, a walk after a meal, steps (every 1,000)", "Wasser, Moves, ein Spaziergang nach dem Essen, Schritte (je 1.000)", "Agua, Moves, un paseo después de comer, pasos (cada 1.000)"],
+    ["Save a swap, scan a product, finish a recipe", "Tausch speichern, Produkt scannen, Rezept fertig kochen", "Guardar un cambio, escanear un producto, terminar una receta"],
     ["Get through a craving with SOS", "Heißhunger mit SOS überstehen", "Superar un antojo con SOS"],
-    ["Move session or a walk after a meal", "Move-Session oder Spaziergang nach dem Essen", "Sesión de Move o un paseo después de comer"],
-    ["Steps (every 1,000)", "Schritte (je 1.000)", "Pasos (cada 1.000)"],
-    ["Weekly glow check-in", "Wöchentlicher Glow-Check-in", "Check-in semanal de brillo"],
+    ["Add or check finds on the shop shelf", "Funde im Regal eintragen oder prüfen", "Añadir o comprobar hallazgos en el estante"],
+    ["Close your day, weekly glow check-in", "Tag abschließen, wöchentlicher Glow-Check-in", "Cerrar tu día, check-in semanal de brillo"],
     ["Share to For You", "In Für dich teilen", "Compartir en Para ti"],
-    ["XP never comes from eating less or fasting longer.", "XP gibt es nie fürs Wenigeressen oder längeres Fasten.", "Los XP nunca vienen de comer menos o ayunar más."],
+    ["Meal gaps: 2 XP an hour, up to 16 hours", "Essenspausen: 2 XP pro Stunde, bis 16 Stunden", "Pausas entre comidas: 2 XP por hora, hasta 16 horas"],
+    ["A gap longer than 16 hours earns nothing extra, and eating less never earns XP.", "Eine Pause über 16 Stunden bringt nichts extra, und Wenigeressen bringt nie XP.", "Una pausa de más de 16 horas no suma nada extra, y comer menos nunca da XP."],
     /* care board */
     ["Care board", "Fürsorge-Board", "Tabla de cuidado"],
     ["Who looks after their companion best. Meals, water, Moves and scans give Misty sunbeams, up to 12 a day.", "Wer sich am besten um seinen Begleiter kümmert. Mahlzeiten, Wasser, Moves und Scans geben Misty Sonnenstrahlen, bis zu 12 am Tag.", "Quién cuida mejor a su compañera. Comidas, agua, Moves y escaneos dan rayos de sol a Misty, hasta 12 al día."],
@@ -13146,7 +13162,9 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
     [/^New glow: (.+)$/, "Neues Leuchten: $1", "Nuevo brillo: $1"],
     [/^([\d,.]+) XP to go$/, "noch $1 XP", "faltan $1 XP"],
     [/^([\d,.]+) XP to Level (\d+)$/, "$1 XP bis Level $2", "$1 XP para el nivel $2"],
-    [/^([\d,.]+) \/ ([\d,.]+) XP into this level$/, "$1 / $2 XP in diesem Level", "$1 / $2 XP en este nivel"],
+    [/^([\d,.]+) \/ ([\d,.]+) XP \u00b7 ([\d,.]+) to Level (\d+)$/, "$1 / $2 XP \u00b7 noch $3 bis Level $4", "$1 / $2 XP \u00b7 faltan $3 para nivel $4"],
+    [/^Unlocked at ([\d,.]+) XP$/, "Freigeschaltet bei $1 XP", "Desbloqueado con $1 XP"],
+    [/^Unlocks at ([\d,.]+) XP total \u00b7 ([\d,.]+) to go$/, "Ab $1 XP gesamt \u00b7 noch $2", "Con $1 XP en total \u00b7 faltan $2"],
     [/^(.+)'s growth$/, "Wachstum von $1", "Crecimiento de $1"]
   ]);
 })();
@@ -15083,7 +15101,7 @@ function bdayLong(b){ const p = b.split("-").map(Number); const M = ["January","
 
 /* ---------- care by period (Oct 17, 2026): the care board ranks the sunbeams Misty got from you, care-board-core.js ---------- */
 const CB = () => window.LowiCareBoard || null;
-const lvShow = p => { const c = CB(); if (c && c.shownLevel) return c.shownLevel(p); return Math.max(1, Math.min(6, (p && (p.shownLv || p.lv)) || 1)); };
+const lvShow = p => { const c = CB(); if (c && c.shownLevel) return c.shownLevel(p); return Math.max(1, Math.min(MAX_LEVEL, (p && (p.shownLv || p.lv)) || 1)); };
 const botTag = p => (p && (p.bot || p.demo)) ? '<span class="cm-tag r3z-bot">demo bot</span>' : "";
 let careMemo = {k:"", v:null};
 function myCare(){

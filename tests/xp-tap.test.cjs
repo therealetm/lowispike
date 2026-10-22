@@ -77,11 +77,12 @@ function awardSandbox(S) {
     const a = src.indexOf('function award(amt, label, el, src, eventId){');
     const b = src.indexOf('\n}\n', a);
     const lv = src.match(/function levelOf\(xp\)\{[^\n]*\}/)[0];
+    const max = 'const MAX_LEVEL = ' + require('../world-home-core.js').STAGES.length + ';\n'; // Oct 22: levelOf reads the one level table
     const toasts = [], events = [];
-    const ctx = { S, toasts, events, Number, Date, setTimeout: () => 0, titleOf: () => 'Sprout', window: { dispatchEvent: e => events.push(e) }, CustomEvent: function (n, o) { this.type = n; this.detail = o.detail; },
+    const ctx = { S, toasts, events, Number, Date, setTimeout: () => 0, titleOf: () => 'Little cell', window: { dispatchEvent: e => events.push(e) }, CustomEvent: function (n, o) { this.type = n; this.detail = o.detail; },
         toast: m => toasts.push(m), save: () => {}, today: () => DAY, $$: () => [] };
     vm.createContext(ctx);
-    vm.runInContext('const HERB_XP = [0,100,300,700,1500,3000];\n' + lv + '\n' + src.slice(a, b + 2) + '\nthis.award = award;', ctx);
+    vm.runInContext('const HERB_XP = ' + JSON.stringify(require('../world-home-core.js').STAGES.map(s => s.xp)) + ';\n' + max + lv + '\n' + src.slice(a, b + 2) + '\nthis.award = award;', ctx);
     return ctx;
 }
 

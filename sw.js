@@ -73,7 +73,7 @@ self.addEventListener("fetch", e => {
 });
 const N1P_FN = "https://vnfwmifmsfecascwaody.supabase.co/functions/v1/n1-push";
 const N1P_PUB = "BLNmn2O2yRpMS7JukbXrgnYu157fNv317XnjgtVWzEyLuWMBupmX4Q1a0wid-4r6p0uGk8sVI0gMdl2uzlAREsA";
-if(typeof importScripts==="function")importScripts("herb-config.js","herb-core.js","herb-tamagotchi-core.js");
+if(typeof importScripts==="function")importScripts("world-home-core.js","herb-config.js","herb-core.js","herb-tamagotchi-core.js");
 function herbReminderClaim(now){
   return new Promise(resolve=>{
     if(typeof indexedDB==="undefined"){resolve(null);return;}

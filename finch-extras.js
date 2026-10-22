@@ -38,12 +38,14 @@
         return m;
     }
     /* people: LOWI_CLOUD.people() rows {n, uid, lv, streak}; me: {name, uid, lv, streak} */
+    /* Oct 22, 2026: the top level comes from the one level table (world-home-core.js STAGES) */
+    const maxLevel = () => { try { return root.LowiWorldHomeCore.STAGES.length; } catch (e) { return 10; } };
     function milestones(people, me, max) {
         const out = [];
         const add = (p, mine) => {
             if (!p || !p.n && !mine) return;
             const id = mine ? 'me' : String(p.uid || p.n);
-            const lv = Math.max(1, Math.min(6, Math.floor(+p.lv || 1))), st = streakMark(p.streak);
+            const lv = Math.max(1, Math.min(maxLevel(), Math.floor(+p.lv || 1))), st = streakMark(p.streak);
             if (st) out.push({ key: id + ':st' + st, who: p.n || '', uid: p.uid || '', kind: 'streak', n: st, mine: !!mine, w: st * 3 + (mine ? 1e4 : 0) });
             if (lv >= 2) out.push({ key: id + ':lv' + lv, who: p.n || '', uid: p.uid || '', kind: 'level', n: lv, mine: !!mine, w: lv * 10 + (mine ? 1e4 : 0) });
         };
@@ -83,7 +85,7 @@
     const C = {
         miles: ['Milestones', 'Meilensteine', 'Logros'],
         sub: ['From your companion and the people in the room. Tap to send good vibes.', 'Von deinem Begleiter und den Leuten im Raum. Tippe, um gute Vibes zu senden.', 'De tu ser de luz y de la gente de la sala. Toca para enviar buena energía.'],
-        lv: ['herb reached level', 'Kraut hat Level', 'ser de luz llegó al nivel'],
+        lv: ['companion reached level', 'Begleiter hat Level', 'ser de luz llegó al nivel'],
         lvEnd: ['', 'erreicht', ''],
         st: ['-day streak', '-Tage-Serie', ' días de racha'],
         you: ['You', 'Du', 'Tú'],

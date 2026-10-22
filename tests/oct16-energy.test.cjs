@@ -9,7 +9,7 @@ const html = read('index.html'), now = new Date(2026, 9, 16, 12).getTime(), day 
 function host(extra) {
   const S = {xp: 0, ledger: [], logs: [], user: {name: 'Fixture', bday: '1994-03-09', mbti: 'INFP'}, quests: {done: {}}}, events = [], store = new Map(), quests = [];
   const ctx = Object.assign({S, window: {dispatchEvent: e => events.push(e)}, localStorage: {setItem: (k, v) => store.set(k, v), getItem: k => store.get(k)}, CustomEvent: function (type, init) { this.type = type; this.detail = init.detail; }, today: () => day, save: () => true, questDone: q => quests.push(q), toast: () => {}, $$: () => [], setTimeout: () => 0, LowiP2: {cook: () => {}}, console}, extra || {});
-  vm.createContext(ctx);
+  ctx.window.LowiWorldHomeCore = require('../world-home-core.js'); vm.createContext(ctx);
   vm.runInContext(html.slice(html.indexOf('/* The profile and herb'), html.indexOf('/* Zodiac from birthday */')), ctx);
   ctx.LowiHost = {award(src, el, opt) { return ctx.award(opt.amt, opt.label, el, src, opt.eventId); }};
   vm.runInContext(html.slice(html.indexOf('window.LowiVitalsBridge ='), html.indexOf('</script>', html.indexOf('window.LowiVitalsBridge ='))), ctx);

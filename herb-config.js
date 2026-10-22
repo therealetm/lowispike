@@ -1,22 +1,14 @@
 /* Companion milestones and observation settings. Timers are diary estimates, not physiology. */
 (function(root){
   'use strict';
+  const WHC = (typeof module === 'object' && module.exports) ? require('./world-home-core.js') : root.LowiWorldHomeCore;
+  if (!WHC || !WHC.STAGES) throw new Error('herb-config.js needs world-home-core.js (the level table) loaded first');
+  const STAGE_IDS = ['seedling', 'sprout', 'young', 'flourishing', 'radiant', 'legendary', 'nova', 'titan', 'monarch', 'majesty'];
   const config = {
     version: 'herb-living-20261014-0010',
-    stages: [
-      {id:'seedling',xp:0,name:['Spark','Funke','Chispa']},
-      {id:'sprout',xp:100,name:['Glimmer','Schimmer','Destello']},
-      {id:'young',xp:300,name:['Young Comet','Junger Komet','Cometa joven']},
-      {id:'flourishing',xp:700,name:['Bright Comet','Heller Komet','Cometa brillante']},
-      {id:'radiant',xp:1500,name:['Radiant Comet','Strahlender Komet','Cometa radiante']},
-      {id:'legendary',xp:3000,name:['Legendary Comet','Legendärer Komet','Cometa legendario']},
-      /* Oct 19 2026 night (Eman reached Legendary: "we need to add more evolutions"): four longer steps after it. XP only:
-         no specific food and no Collection progress is ever needed to evolve. */
-      {id:'nova',xp:4500,name:['Nova Comet','Nova-Komet','Cometa nova']},
-      {id:'titan',xp:7000,name:['Titan Comet','Titanen-Komet','Cometa titán']},
-      {id:'monarch',xp:10000,name:['Monarch Comet','Monarchen-Komet','Cometa monarca']},
-      {id:'majesty',xp:14000,name:['Majestic Comet','Majestätischer Komet','Cometa majestuoso']}
-    ],
+    /* Oct 22, 2026: names and XP come from the ONE level table, world-home-core.js STAGES (the cell stages Misty's growth
+       sheet shows). The old Comet / plant names are gone. ids stay as internal state and art keys only; nobody sees them. */
+    stages: WHC.STAGES.map((s, i) => ({ id: STAGE_IDS[i] || ('stage' + (i + 1)), xp: s.xp, name: s.n.slice() })),
     gentleDimAfterHours:48,
     body: {
       minimumIndependentSamples:3,

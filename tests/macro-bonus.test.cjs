@@ -8,7 +8,7 @@ function host(dayRef) {
   const recs = {rb_eggs: {id: 'rb_eggs', n: 'Eggs bowl', r: 'low', macros: {protein: 30, fiber: 2, sugar: 1}}, rb_salad: {id: 'rb_salad', n: 'Lentil salad', r: 'low', macros: {protein: 20, fiber: 12, sugar: 3}}};
   const ctx = {S, window: {dispatchEvent: e => events.push(e)}, localStorage: {setItem() {}, getItem() { return null; }}, CustomEvent: function (type, init) { this.type = type; this.detail = init.detail; }, today: () => dayRef.d, save: () => true, questDone: () => {}, toast: () => {}, $$: () => [], setTimeout: () => 0, LowiP2: {cook: () => {}}, recById: id => recs[id], console};
   ctx.window.LowiSpiritCore = K; ctx.LowiSpiritCore = K;
-  vm.createContext(ctx);
+  ctx.window.LowiWorldHomeCore = require('../world-home-core.js'); vm.createContext(ctx);
   vm.runInContext(html.slice(html.indexOf('/* The profile and herb'), html.indexOf('/* Zodiac from birthday */')), ctx);
   ctx.LowiHost = {award(src, el, opt) { return ctx.award(opt.amt, opt.label, el, src, opt.eventId); }};
   vm.runInContext(html.slice(html.indexOf('window.LowiVitalsBridge ='), html.indexOf('</script>', html.indexOf('window.LowiVitalsBridge ='))), ctx);

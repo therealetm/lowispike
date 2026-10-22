@@ -5,7 +5,7 @@ const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8'), now
 function host() {
   const S = {xp: 0, ledger: [], logs: [], user: {name: 'Fixture', bday: '1994-03-09', mbti: 'INFP'}, quests: {done: {}}}, events = [], store = new Map();
   const ctx = {S, window: {dispatchEvent: e => events.push(e)}, localStorage: {setItem: (k, v) => store.set(k, v), getItem: k => store.get(k)}, CustomEvent: function (type, init) { this.type = type; this.detail = init.detail; }, today: () => day, save: () => true, questDone: () => {}, toast: () => {}, $$: () => [], setTimeout: () => 0, LowiP2: {cook: () => {}}, console};
-  vm.createContext(ctx);
+  ctx.window.LowiWorldHomeCore = require('../world-home-core.js'); vm.createContext(ctx);
   vm.runInContext(html.slice(html.indexOf('/* The profile and herb'), html.indexOf('/* Zodiac from birthday */')), ctx);
   ctx.LowiHost = {award(src, el, opt) { return ctx.award(opt.amt, opt.label, el, src, opt.eventId); }};
   vm.runInContext(html.slice(html.indexOf('window.LowiVitalsBridge ='), html.indexOf('</script>', html.indexOf('window.LowiVitalsBridge ='))), ctx);

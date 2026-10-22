@@ -62,9 +62,11 @@
             .filter(x => x.pts > 0)
             .sort((a, b) => b.pts - a.pts || b.full - a.full || shownLevel(b.p) - shownLevel(a.p) || String(a.p.n).localeCompare(String(b.p.n)));
     }
-    /* levels stop at 6. Demo bots carry the galaxy's companion scale (Mateo 1, Jonas 18, Samir 43); shown here as the
-       matching Misty level from their companion stage (community-galaxy.js stageForLevel: newborn 1 ... fully grown 6). */
-    const MAX_L = 6;
+    /* Oct 22, 2026: the top level comes from the one level table, world-home-core.js STAGES (10 cell stages); it used to stop
+       at 6 here while Misty kept growing. Demo bots carry the galaxy's companion scale (Mateo 1, Jonas 18, Samir 43); shown
+       here as the matching Misty level from their companion stage (community-galaxy.js stageForLevel: newborn 1 ... 6). */
+    const WHC = (typeof module === 'object' && module.exports) ? require('./world-home-core.js') : root.LowiWorldHomeCore;
+    const MAX_L = WHC && WHC.STAGES ? WHC.STAGES.length : 10;
     function botLevel(lv) { lv = +lv || 1; return 1 + (lv < 3 ? 0 : lv < 7 ? 1 : lv < 13 ? 2 : lv < 20 ? 3 : lv < 30 ? 4 : 5); }
     function shownLevel(p) {
         if (!p) return 1;

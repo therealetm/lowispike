@@ -45,7 +45,9 @@ test('turns take the short way and zoom toggles out and back', () => {
 
 test('wired in: loader, offline cache, css, no second WebGL context', () => {
     assert.ok(/'world-home-core\.js','world-home\.js'/.test(loader));
-    for (const f of ['world-home-core.js', 'world-home.js', 'world-home.css']) assert.strictEqual(sw.split('"' + f + '"').length - 1, 2, f + ' in both sw.js lists');
+    // Oct 22, 2026: sw.js also importScripts world-home-core.js (the level table herb-config.js reads), so that line is left out here
+    const swLists = sw.split('\n').filter(l => !/importScripts\(/.test(l)).join('\n');
+    for (const f of ['world-home-core.js', 'world-home.js', 'world-home.css']) assert.strictEqual(swLists.split('"' + f + '"').length - 1, 2, f + ' in both sw.js lists');
     assert.ok(js.includes("replace('world-home.js', 'world-home.css')"));
     assert.ok(!/getContext\(\s*['"]webgl/.test(js), 'reuses LowiWorld3D');
     assert.ok(/wh-on'\) \? '\.sp-world\.on, \.ht-world\.on'/.test(w3), 'world keeps rendering behind see-through sheets');

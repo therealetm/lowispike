@@ -94,7 +94,7 @@ async function scenario(dev, engine, key, mode, theme) {
         report.devices[key] = [];
         for (const theme of ['dark', 'light']) for (const mode of modes) {
             if (theme === 'light' && mode !== 'ok') continue; // the error paths are the same markup in both themes
-            report.devices[key].push(await scenario(dev, engine, key, mode, theme));
+            { const r = await scenario(dev, engine, key, mode, theme); report.devices[key].push(r); console.error('#', key, theme, mode, JSON.stringify(Object.assign({}, r, { shots: undefined }))); }
         }
     }
     fs.mkdirSync(OUT, { recursive: true });

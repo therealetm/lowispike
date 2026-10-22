@@ -62,4 +62,3 @@ test('community-chat.js measures the composer for the list and adds a round jump
   assert.match(js, /th\.classList\.toggle\('cr-up',!nb\)/, 'scrolling up shows it, reaching the bottom hides it');
   assert.match(js, /roomDress\(p,on\);\}/, 'set and cleared with the room flag');
 });
-

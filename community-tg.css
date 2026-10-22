@@ -8,7 +8,9 @@
    reactions as small emoji + count pills, an avatar only on the last message of a group and never on your own, a date pill,
    a round jump-to-latest button and a floating composer (round photo button, rounded field, round mic/send) that sits above
    the iPhone home indicator. Messages scroll under the top bar and the composer.
-   Colours: LOWiSPIKE's brand (Brain cyan #1CF7F9 and Gut mint #2EF8B6 from the planet palette, item 32). Night keeps the dark
+   Colours (item 43, 22 Oct: "Why do we have green in there? My branding color isn't green"): the app's own brand, the same as
+   Home, the sheets and Misty: Misty ice blue #8fe7ff, brand blue #0a84ff / #1668dc, violet #9b87d2 / #4458d0 on the deep-space
+   navy #03050a-#071230. No teal, no mint. Your own bubble, send, badges: #1668dc -> #4458d0 (white text, AA). Night keeps the dark
    space room; Day (html[data-theme=light], set by the moon/sun button, the Appearance hour or the local weather) is a light room.
    Everything is a token on the pane, so a theme change restyles the open room live.
    Light on the phone: no bubble has its own blur. The room has two blurred strips in total (behind the top bar and behind the
@@ -24,34 +26,34 @@
 /* ---- theme tokens: night (default) ---- */
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room]{
   --cr-sab:var(--sab,0px);
-  --cr-canvas:radial-gradient(120% 55% at 50% -12%,rgba(28,190,249,.24),transparent 60%),radial-gradient(80% 45% at 100% 105%,rgba(46,248,182,.12),transparent 70%),linear-gradient(180deg,#071230,#050b20 55%,#08071c);
+  --cr-canvas:radial-gradient(120% 55% at 50% -12%,rgba(47,149,255,.24),transparent 60%),radial-gradient(80% 45% at 100% 105%,rgba(155,135,210,.16),transparent 70%),linear-gradient(180deg,#071230,#050b20 55%,#08071c);
   --cr-canvas-c:#060e26;
   --cr-text:#eef3ff;--cr-sub:#a3b3cf;--cr-hair:rgba(255,255,255,.12);
   --cr-glass:rgba(22,32,64,.7);--cr-glass-solid:#131d3a;--cr-strip:rgba(6,13,36,.93);
   --cr-bub:#18233f;--cr-bub-sh:none;
-  --cr-mine-c:#18d2c9;--cr-mine-g:linear-gradient(135deg,#1ad9e6,#22d39f);--cr-mine-text:#03222a;--cr-mine-time:rgba(3,34,42,.74);
-  --cr-time:rgba(226,234,255,.6);--cr-acc:#3ef2f4;--cr-acc-strong:#1cf7f9;
-  --cr-quote-bg:rgba(28,247,249,.1);--cr-quote-text:#cbd7ee;
-  --cr-chip:rgba(255,255,255,.1);--cr-chip-on:rgba(28,247,249,.22);
+  --cr-mine-c:#1668dc;--cr-mine-g:linear-gradient(135deg,#1668dc,#4458d0);--cr-mine-text:#ffffff;--cr-mine-time:rgba(255,255,255,.94);
+  --cr-time:rgba(226,234,255,.6);--cr-acc:#8fe7ff;--cr-acc-strong:#64d2ff;
+  --cr-quote-bg:rgba(143,231,255,.1);--cr-quote-text:#cbd7ee;
+  --cr-chip:rgba(255,255,255,.1);--cr-chip-on:rgba(90,169,255,.28);
   --cr-pill:rgba(22,32,64,.82);--cr-pill-text:#dde7fa;
   --cr-field:rgba(22,32,64,.78);--cr-ph:#93a2bf;--cr-ic:#e8f0ff;
-  --cr-send-c:#18d2c9;--cr-send-g:linear-gradient(135deg,#1cf7f9,#2ef8b6);--cr-send-ic:#03222a;
+  --cr-send-c:#1668dc;--cr-send-g:linear-gradient(135deg,#1668dc,#4458d0);--cr-send-ic:#ffffff;
   --cr-float-sh:0 6px 22px -8px rgba(0,0,0,.65);
   --cr-top:12px}
 /* ---- day: a light room in the same brand colours ---- */
 html[data-theme=light] body #tab-foryou #cmPaneChat#cmPaneChat[data-room]{
-  --cr-canvas:radial-gradient(120% 55% at 50% -12%,rgba(28,200,249,.18),transparent 60%),radial-gradient(80% 45% at 100% 105%,rgba(46,248,182,.16),transparent 70%),linear-gradient(180deg,#eaf5fb,#f4f7fb 55%,#f3f1fa);
+  --cr-canvas:radial-gradient(120% 55% at 50% -12%,rgba(47,149,255,.16),transparent 60%),radial-gradient(80% 45% at 100% 105%,rgba(155,135,210,.16),transparent 70%),linear-gradient(180deg,#ecf3fd,#f4f7fb 55%,#f3f1fa);
   --cr-canvas-c:#f2f6fb;
   --cr-text:#0f1729;--cr-sub:#566178;--cr-hair:rgba(15,23,42,.09);
   --cr-glass:rgba(255,255,255,.74);--cr-glass-solid:#ffffff;--cr-strip:rgba(240,246,251,.93);
   --cr-bub:#ffffff;--cr-bub-sh:0 1px 1.5px rgba(15,23,42,.1);
-  --cr-mine-c:#087684;--cr-mine-g:linear-gradient(135deg,#08808e,#08735d);--cr-mine-text:#ffffff;--cr-mine-time:rgba(255,255,255,.92);
-  --cr-time:#677087;--cr-acc:#07798a;--cr-acc-strong:#07798a;
-  --cr-quote-bg:rgba(7,121,138,.09);--cr-quote-text:#3a465c;
-  --cr-chip:rgba(15,23,42,.07);--cr-chip-on:rgba(7,121,138,.16);
+  --cr-mine-c:#1668dc;--cr-mine-g:linear-gradient(135deg,#1668dc,#4458d0);--cr-mine-text:#ffffff;--cr-mine-time:rgba(255,255,255,.94);
+  --cr-time:#677087;--cr-acc:#0b5bbf;--cr-acc-strong:#0b5bbf;
+  --cr-quote-bg:rgba(22,104,220,.08);--cr-quote-text:#3a465c;
+  --cr-chip:rgba(15,23,42,.07);--cr-chip-on:rgba(22,104,220,.14);
   --cr-pill:rgba(255,255,255,.86);--cr-pill-text:#3a465c;
   --cr-field:rgba(255,255,255,.88);--cr-ph:#6f788d;--cr-ic:#1b2640;
-  --cr-send-c:#087684;--cr-send-g:linear-gradient(135deg,#08808e,#08735d);--cr-send-ic:#ffffff;
+  --cr-send-c:#1668dc;--cr-send-g:linear-gradient(135deg,#1668dc,#4458d0);--cr-send-ic:#ffffff;
   --cr-float-sh:0 4px 16px -6px rgba(15,23,42,.2)}
 
 /* ---- shell (item 38): the pane keeps the padding it has on the other tabs; the room is the rounded box under the tab bar and the
@@ -66,8 +68,8 @@ html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-sky{
     radial-gradient(1.4px 1.4px at 41% 27%,rgba(190,230,255,.65),transparent 70%),radial-gradient(1px 1px at 57% 83%,rgba(255,255,255,.45),transparent 70%),
     radial-gradient(1.2px 1.2px at 72% 9%,rgba(255,255,255,.6),transparent 70%),radial-gradient(1px 1px at 88% 47%,rgba(200,180,255,.55),transparent 70%),
     radial-gradient(1.3px 1.3px at 93% 76%,rgba(255,255,255,.5),transparent 70%),
-    radial-gradient(circle at 50% 42%,transparent 0 118px,rgba(28,247,249,.12) 119px,transparent 121px,transparent 0),
-    radial-gradient(circle at 50% 42%,transparent 0 196px,rgba(46,248,182,.08) 197px,transparent 199px,transparent 0)!important}
+    radial-gradient(circle at 50% 42%,transparent 0 118px,rgba(143,231,255,.12) 119px,transparent 121px,transparent 0),
+    radial-gradient(circle at 50% 42%,transparent 0 196px,rgba(155,135,210,.1) 197px,transparent 199px,transparent 0)!important}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cg-thread.cr-room[data-open] .cr-sky::after{display:none!important}
 
 /* item 38: the room's own top bar (back arrow, star "Community room" pill, members button with its count), the pinned banner and
@@ -93,7 +95,7 @@ html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-mcount{position:abso
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-mcount:empty{display:none}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-head .cr-id{grid-column:2;justify-self:center;display:flex!important;align-items:center;gap:8px;min-width:0;max-width:100%;height:48px;padding:4px 18px 4px 6px;border:0!important;border-radius:24px;
   background:var(--cr-glass)!important;box-shadow:inset 0 0 0 .5px var(--cr-hair),var(--cr-float-sh)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
-html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-ic{flex:none;display:grid!important;place-items:center;width:36px;height:36px;border-radius:50%;font-size:19px;line-height:1;color:#03222a;background:linear-gradient(135deg,#1cf7f9,#2ef8b6);box-shadow:none}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-ic{flex:none;display:grid!important;place-items:center;width:36px;height:36px;border-radius:50%;font-size:19px;line-height:1;color:#ffffff;background:linear-gradient(135deg,#1668dc,#4458d0);box-shadow:none}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-ic svg{width:20px;height:20px}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-idt{display:flex!important;flex-direction:column;justify-content:center;flex:0 1 auto;min-width:72px;line-height:1.15;visibility:visible!important;opacity:1!important}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-idt #cgThreadTitle{display:block!important;font-size:15.5px;font-weight:650;color:var(--cr-text)!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em;text-transform:none;text-shadow:none!important}
@@ -154,8 +156,8 @@ html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cp-msg.mine:no
 /* sender name in their colour */
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cp-msg .cs-by{display:block!important;margin:0 0 1px!important;padding:0!important;min-height:0!important}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cp-msg .cs-by:not(:has(.cs-name)){display:contents!important}
-html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cp-msg .cs-by .cs-name{display:inline;font-size:13.5px!important;font-weight:650;line-height:18px;color:color-mix(in srgb,var(--chat-color,#3ef2f4) 72%,#fff)!important;text-shadow:none!important}
-html[data-theme=light] body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cp-msg .cs-by .cs-name{color:color-mix(in srgb,var(--chat-color,#07798a) 50%,#000)!important}
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cp-msg .cs-by .cs-name{display:inline;font-size:13.5px!important;font-weight:650;line-height:18px;color:color-mix(in srgb,var(--chat-color,#8fe7ff) 72%,#fff)!important;text-shadow:none!important}
+html[data-theme=light] body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cp-msg .cs-by .cs-name{color:color-mix(in srgb,var(--chat-color,#0b5bbf) 50%,#000)!important}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-room .cp-msg .cr-bot{margin-left:6px;padding:1px 6px;border-radius:6px;font-size:10.5px;font-weight:700;color:var(--cr-sub);background:var(--cr-chip)}
 
 /* text, with the time inline at the end of the last line (it floats right and wraps under only when the line is full) */

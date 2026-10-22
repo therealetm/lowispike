@@ -11,7 +11,7 @@ test('night and day are token sets on the room; Day follows html[data-theme=ligh
   const night = rule(P), day = rule('html[data-theme=light] body #tab-foryou #cmPaneChat#cmPaneChat[data-room]');
   for (const t of ['--cr-canvas', '--cr-text', '--cr-bub', '--cr-mine-c', '--cr-mine-g', '--cr-time', '--cr-acc', '--cr-glass', '--cr-field', '--cr-strip']) { assert.match(night, new RegExp(t + ':'), 'night ' + t); assert.match(day, new RegExp(t + ':'), 'day ' + t); }
   assert.match(night, /--cr-bub:#18233f/); assert.match(day, /--cr-bub:#ffffff/);
-  assert.match(night, /#1ad9e6/, 'night own bubble in Brain cyan to Gut mint'); assert.match(day, /--cr-text:#0f1729/);
+  assert.match(night, /--cr-mine-g:linear-gradient\(135deg,#1668dc,#4458d0\)/, 'own bubble in the brand blue to violet (item 43, no mint)'); assert.match(day, /--cr-text:#0f1729/);
   assert.match(css, /html\[data-theme=light\] body #tab-foryou #cmPaneChat#cmPaneChat\[data-room\] \.cr-sky\{display:none!important\}/, 'no stars by day');
 });
 

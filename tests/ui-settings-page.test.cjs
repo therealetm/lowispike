@@ -37,7 +37,7 @@ test('the slim Settings holds only switches, language and the account; places an
     assert.strictEqual(C.rowAction('language'), 'lang'); assert.strictEqual(C.rowAction('deleteAccount'), 'confirm'); assert.strictEqual(C.rowAction('theme'), 'toggle');
     assert.deepStrictEqual(C.COMMUNITY_PLACES.you, ['me', 'body', 'weight'], 'Weight journey joined Profile and Weight & BMI (Oct 22 2026)');
     /* Oct 22 2026: the hub's Explore list is gone; each place keeps its own way in (community-hub-settings.test.cjs) */
-    for (const id of ['care', 'workouts', 'map', 'gift', 'foryou', 'hunt']) assert.ok(C.EXPLORE_MOVED[id], id + ' has a way in outside the hub');
+    for (const id of ['care', 'workouts', 'gift', 'foryou', 'hunt']) assert.ok(C.EXPLORE_MOVED[id], id + ' has a way in outside the hub');
     for (const id of ['vr', 'weather']) assert.strictEqual(C.MORE_REMOVED[id], 'removed', id + ' is out of every menu');
 });
 

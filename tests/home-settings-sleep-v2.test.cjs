@@ -114,7 +114,7 @@ test('entries: only routes that exist are offered, More appears only with someth
     assert.deepStrictEqual(C.entries('more', { has: id => id === 'care' || id === 'me' }), ['me', 'care']);
     assert.deepStrictEqual(C.entries('sleep', {}), ['under6', '6to7', '7plus']);
     assert.deepStrictEqual(C.entries('sleep', { logged: true }), ['under6', '6to7', '7plus', 'clear']);
-    assert.ok(C.MORE.includes('care') && C.MORE.includes('map'), 'Care board and World map stay reachable (from Community now)');
+    assert.ok(C.MORE.includes('care') && !C.MORE.includes('map'), 'Care board stays reachable (from Community now); the old World map is gone (Oct 22 2026)');
     assert.ok(!C.MORE.includes('today'), 'Today was dropped from Home (Emmanuel, Oct 18 2026): see everything-else-trim.test.cjs');
 });
 

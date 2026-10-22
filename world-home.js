@@ -103,13 +103,13 @@
         hud = D.createElement('div'); hud.id = 'whHud'; hud.className = 'wh-hud';
         const water = btn('wh-cell wh-water', T('Water, add a cup', 'Wasser, ein Glas dazu', 'Agua, un vaso más'), '<span class="wh-cell-fill" aria-hidden="true"></span><span class="wh-cell-tx"><small></small><b><span class="wh-num"></span> <u class="wh-unit"></u></b></span>', { 'data-sp': 'water' });
         const today = btn('wh-todaybtn', T('Open today', 'Heute öffnen', 'Abrir hoy'), ICO.today + '<span><b></b><small></small></span>', { 'data-wh': 'today', 'aria-expanded': 'false', 'aria-controls': 'whToday' });
-        const zoom = btn('wh-zoom', T('World map: show the whole world', 'Weltkarte: ganze Welt zeigen', 'Mapa del mundo: ver todo el mundo'), ICO.out + '<span class="wh-zoom-tx"></span>', { 'data-wh': 'zoom' });
-        wireStick(zoom);
+        /* Oct 22 2026 (Emmanuel: "There's a World map button, that's old. It's from before the cell world. We should just remove it
+           completely."): no World map / zoom stick any more. Inside a cell world the bottom-centre X (syncX) is the way back to Misty. */
         /* the gesture / world map hint has its own line above the thumb row, never under the Weltkarte button */
         const hint = D.createElement('p'); hint.className = 'wh-hint'; hint.id = 'whHint'; hint.setAttribute('aria-live', 'polite'); hint.setAttribute('data-noi18n', '');
         ['pointerdown', 'touchstart'].forEach(n => hint.addEventListener(n, e => e.stopPropagation(), { passive: true }));
         const scrim = D.createElement('div'); scrim.className = 'wh-scrim'; scrim.setAttribute('data-wh', 'scrim'); scrim.setAttribute('aria-hidden', 'true');
-        hud.append(scrim, water, today, zoom, hint);
+        hud.append(scrim, water, today, hint);
         tab.appendChild(hud);
         return hud;
     }
@@ -242,7 +242,10 @@
     }
     function syncX() {
         const x = ensureX(), r = topR2(), w = topWorld(), hs = topHost();
-        const on = !!(r || st.today || w || hs); /* a place on Home is no window: no X. World map flies you back (Esc / back gesture too) */
+        const away = H.classList.contains('wh-away');
+        /* Oct 22 2026: the World map stick is gone, so inside a cell world (html.wh-away) the same X shows; closeTop flies back to Misty */
+        const on = !!(r || st.today || w || hs || away);
+        H.classList.toggle('wh-x-away', away && !(r || st.today || w || hs));
         H.classList.toggle('wh-host-on', !!hs);
         H.classList.toggle('wh-x-on', on);
         H.classList.toggle('wh-r2-on', !!r);
@@ -295,58 +298,7 @@
     /* Oct 17 (handoff 6): Home's usual view is the zoomed-out rest view (scene rig.homeRest), not Misty's close-up */
     function baseDist(r) { return r && r.mode === 'home' ? (r.homeRest || r.homeDist || 3.2) : 6.5; }
     function outerD(r) { return r && r.outerD ? r.outerD : 300; }
-    /* Oct 16 (task 3): the zoom stick. A rate control like Google Earth's: the farther the knob is pushed, the faster the one camera
-       moves, evenly in scale (x per second), from Misty's close-up through the World map and out past our bubble; the far edge hands
-       over to Community (frame() above), exactly where a pinch hands over. Let go and the knob springs back and the camera stays.
-       Pinch, wheel and double-tap are untouched. */
-    const STICK = { MAX: 17, RATE: 1.45, DEAD: 5 };
-    function wireStick(b) {
-        if (!b || b._stick) return; b._stick = 1;
-        let id = null, y0 = 0, v = 0, on = false, raf = 0, last = 0;
-        const knob = () => b.querySelector('.wh-stk-knob');
-        const put = dy => { const k = knob(); if (k) k.style.transform = dy ? 'translateY(' + dy.toFixed(1) + 'px)' : ''; b.style.setProperty('--stk', (dy / STICK.MAX).toFixed(3)); };
-        function tick(ts) {
-            raf = 0; if (!on) return;
-            const dt = Math.min(0.05, last ? (ts - last) / 1000 : 0.016); last = ts;
-            const r = rig();
-            if (r && r.mode === 'home' && v) {
-                st.zoomAnim = null; r.vy = 0; r.idle = 0;
-                const hi = r.outer ? outerD(r) : (r.maxD || 13), lo = r.minD || 1;
-                r.dist = Math.max(lo, Math.min(hi, r.dist * Math.exp(v * STICK.RATE * dt * (r.dist > (r.maxD || 13) ? 1.6 : 1))));
-                try { paintZoom(); } catch (e) { }
-            }
-            raf = requestAnimationFrame(tick);
-        }
-        b.addEventListener('pointerdown', e => {
-            if (id != null || (e.button != null && e.button > 0)) return;
-            id = e.pointerId; y0 = e.clientY; v = 0; on = false; last = 0; st.stickDown = Date.now();
-            try { b.setPointerCapture(id); } catch (x) { }
-            e.stopPropagation();
-        });
-        b.addEventListener('pointermove', e => {
-            if (e.pointerId !== id) return;
-            const dy = Math.max(-STICK.MAX, Math.min(STICK.MAX, e.clientY - y0));
-            if (!on && Math.abs(e.clientY - y0) < STICK.DEAD) return;
-            if (!on) { on = true; b.classList.add('is-held'); if (st.today) openToday(false); hook(); }
-            e.preventDefault(); e.stopPropagation();
-            put(dy);
-            const n = -dy / STICK.MAX; v = Math.sign(n) * Math.pow(Math.abs(n), 1.4);
-            if (!raf) raf = requestAnimationFrame(tick);
-        });
-        const end = e => {
-            if (e.pointerId !== id) return; id = null;
-            if (on) { st.stickUsed = Date.now(); e.stopPropagation(); }
-            /* a plain tap (no drag) is handled right here on pointerup, so it works even where the browser drops the click after
-               pointer capture (iOS); the click that may follow is then ignored */
-            else if (e.type === 'pointerup' && Date.now() - st.stickDown < 700) { st.stickTap = Date.now(); e.stopPropagation(); try { zoomTap(); } catch (x) { } }
-            on = false; v = 0; b.classList.remove('is-held'); put(0);
-            if (raf) { cancelAnimationFrame(raf); raf = 0; }
-        };
-        b.addEventListener('pointerup', end); b.addEventListener('pointercancel', end); b.addEventListener('lostpointercapture', end);
-        ['touchstart', 'touchmove'].forEach(n => b.addEventListener(n, e => e.stopPropagation(), { passive: true }));
-    }
-    /* World map <-> Misty: the same toggle for a tap on the stick, a click or Enter */
-    function zoomTap() { if (st.today) openToday(false); if (homeWorld()) toggleZoom(); else zoomOutWhole(); }
+    /* Oct 22 2026: the zoom stick (World map button) was removed with the World map; pinch, wheel and double-tap still zoom. */
     function homeWorld() { const r = rig(); return !!(r && r.mode === 'home' && homeActive() && !D.querySelector('.bw3-full')); }
     function zoomState() {
         const r = rig(); if (!r || (r.mode !== 'full' && r.mode !== 'home')) return null;
@@ -390,17 +342,6 @@
             b.dataset.p = '1'; b.innerHTML = isOut ? ICO.inn : ICO.out;
             b.setAttribute('aria-label', isOut ? T('Zoom back in', 'Wieder reinzoomen', 'Volver a acercar') : T('Show the whole world', 'Ganze Welt zeigen', 'Ver todo el mundo'));
             b.classList.toggle('is-out', !!isOut);
-        }
-        const hb = D.querySelector('#whHud .wh-zoom'); if (!hb) return;
-        const out = homeWorld() && isOut, tx = out ? 'Misty' : T('World map', 'Weltkarte', 'Mapa');
-        const key = (out ? 'o' : 'i') + tx;
-        if (hb.dataset.k !== key + '|' + companionName()) {
-            /* Oct 16 (task 3): the World map button is a small glass zoom stick now (Google Earth style). Push the knob up to fly out
-               (Misty -> World map -> out through our bubble -> Community), down to come back to Misty; a plain tap still toggles. */
-            hb.dataset.k = key + '|' + companionName(); hb.innerHTML = '<span class="wh-stk-track" aria-hidden="true"><i class="wh-stk-up"></i><i class="wh-stk-dn"></i></span><span class="wh-stk-knob" aria-hidden="true">' + (out ? ICO.inn : ICO.out) + '</span><span class="wh-zoom-tx">' + tx + '</span>';
-            hb.classList.add('wh-stick', 'no-page-swipe');
-            hb.setAttribute('aria-label', withNm((out ? T('Back to Misty', 'Zurück zu Misty', 'Volver a Misty') : T('World map: show the whole world', 'Weltkarte: ganze Welt zeigen', 'Mapa del mundo: ver todo el mundo')) + '. ' + T('Zoom stick: push up to zoom out to Community, down to zoom in to Misty', 'Zoom-Stick: nach oben schieben zoomt bis zur Community, nach unten zurück zu Misty', 'Palanca de zoom: hacia arriba aleja hasta Comunidad, hacia abajo vuelve a Misty')));
-            hb.classList.toggle('is-out', out);
         }
     }
     const HINT_KEY = 'lowi.wh.hint.v1';
@@ -1010,7 +951,6 @@
         if (k === 'vr') { e.preventDefault(); e.stopPropagation(); const a = w3(); try { a && a.gyro && a.gyro.tap(b); } catch (x) { } return; }
         else if (k === 'today') { e.preventDefault(); openToday(!st.today); }
         else if (k === 'scrim') { e.preventDefault(); openToday(false); }
-        else if (k === 'zoom') { e.preventDefault(); if (Date.now() - (st.stickUsed || 0) < 450 || Date.now() - (st.stickTap || 0) < 700) return; zoomTap(); }
         else if (k === 'mstab') { e.preventDefault(); st.sheetTab = b.dataset.tab; repaintMisty(); const lm = liveMs(), nb = lm && lm.querySelector('[data-tab="' + st.sheetTab + '"]'); nb && nb.focus({ preventScroll: true }); }
         else if (k === 'aura') { e.preventDefault(); pickAura(b.dataset.id); }
         else if (k === 'room') { e.preventDefault(); try { W.LowiR2.close(W.LowiR2.top()); } catch (x) { } setTimeout(() => { try { W.LowiCellRoom.openRoom(); } catch (x) { } }, 200); }

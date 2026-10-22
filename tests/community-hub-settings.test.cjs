@@ -22,8 +22,8 @@ test('hub groups: YOU, then Settings without World sound, then Delete account al
 });
 
 test('every former Explore place says where it is reached now; the ones nothing else reaches sit folded under More places', () => {
-    for (const id of ['foryou', 'care', 'workouts', 'map', 'gift', 'hunt']) assert.ok(typeof SS.EXPLORE_MOVED[id] === 'string' && SS.EXPLORE_MOVED[id].length > 3, id);
-    assert.deepStrictEqual(M.groups(() => true)[0].more, ['foryou', 'care', 'map', 'gift', 'hunt']);
+    for (const id of ['foryou', 'care', 'workouts', 'gift', 'hunt']) assert.ok(typeof SS.EXPLORE_MOVED[id] === 'string' && SS.EXPLORE_MOVED[id].length > 3, id);
+    assert.deepStrictEqual(M.groups(() => true)[0].more, ['foryou', 'care', 'gift', 'hunt']); /* Oct 22 2026: World map removed */
     assert.ok(!SS.EXPLORE_LIGHT.includes('workouts'), 'Workouts is the Move bubble');
     assert.match(SRC, /data-cme="more" aria-expanded="' \+ moreOpen/);
     assert.match(SRC, /lastFocus = D\.activeElement; asking = false; moreOpen = false;/, 'folded each time the hub opens');

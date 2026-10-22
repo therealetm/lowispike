@@ -10,7 +10,7 @@ const read = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
 const all = { has: () => true };
 
 test('Oct 21 2026: what no bubble reaches lives in Community (profile first, then the places); World sound is a Settings row', () => {
-    assert.deepStrictEqual(C.MORE_GROUPS.go, ['me', 'body', 'weight', 'foryou', 'care', 'workouts', 'map', 'gift', 'hunt']);
+    assert.deepStrictEqual(C.MORE_GROUPS.go, ['me', 'body', 'weight', 'foryou', 'care', 'workouts', 'gift', 'hunt']);
     assert.deepStrictEqual(C.MORE_GROUPS.set, []);
     assert.deepStrictEqual(C.MORE, C.MORE_GROUPS.go.concat(C.MORE_GROUPS.set));
     assert.deepStrictEqual(C.moreGroups({ has: id => id === 'care' || id === 'worldSound' }), { go: ['care'], set: [] });
@@ -20,7 +20,7 @@ test('Oct 21 2026: what no bubble reaches lives in Community (profile first, the
 
 test('redundant entries are out of the panel, and each one says where it is still reached', () => {
     for (const id of ['today', 'cook', 'theme', 'quest', 'vr', 'weather', 'community']) assert.ok(!C.entries('more', all).includes(id), id + ' should be out of More');
-    assert.deepStrictEqual(Object.keys(C.MORE_REMOVED).sort(), ['community', 'cook', 'quest', 'theme', 'today', 'vr', 'weather', 'worldSound']);
+    assert.deepStrictEqual(Object.keys(C.MORE_REMOVED).sort(), ['community', 'cook', 'map', 'quest', 'theme', 'today', 'vr', 'weather', 'worldSound']);
     assert.strictEqual(C.MORE_REMOVED.cook, 'fuel');
     assert.strictEqual(C.MORE_REMOVED.theme, 'settings');
     /* no feature code deleted: the routes stay in the module */

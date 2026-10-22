@@ -211,7 +211,6 @@
             { id: 'community', tab: 'foryou', label: T('Community', 'Community', 'Comunidad') },
             { id: 'cook', tab: 'shelf', label: T('Cook', 'Kochen', 'Cocinar') },
             { id: 'move', tab: 'move', label: T('Move', 'Bewegen', 'Moverse') },
-            { id: 'map', sel: '#whHud .wh-zoom', label: T('World map', 'Weltkarte', 'Mapa del mundo') },
             { id: 'vr', sel: '#whHud .wh-vr', label: 'VR' },
             { id: 'sound', sel: '#whHud .wa-btn', label: T('Sound', 'Ton', 'Sonido') },
             { id: 'theme', sel: '#tbTheme', label: T('Day / night', 'Tag / Nacht', 'Día / noche') },

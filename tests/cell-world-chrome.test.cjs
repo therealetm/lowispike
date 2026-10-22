@@ -2,7 +2,7 @@
    that's not supposed to happen", "the menu, the menu bar and stuff like that ... it's a mistake that it pops up", and the Daily Quest
    with the HEART line in there was "still the old design ... not the water liquid design that we had going on in the homepage".
    Inside a cell world (html.wh-away) Home's menus and panels never show, not even after the reveal tap; Misty, her cell, the cell
-   guide, the controller and the World map stick stay; the living membrane is no longer switched off inside a world. */
+   guide, the controller and the bottom-centre X stay (the World map stick was removed on Oct 22 2026); the living membrane is no longer switched off inside a world. */
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
@@ -23,12 +23,12 @@ test('inside a cell world every Home menu and panel is hidden, whatever the clea
     }
     /* the HUD rule takes everything in #whHud (Today, VR, Sound, water...) except what must stay */
     const hud = rules.find(r => r.includes('#whHud >'));
-    for (const k of ['.wh-zoom', '#whPad', '#whPadChip', '#rpPal', '#mhNudge']) assert.ok(hud.includes(':not(' + k + ')'), 'stays in a world: ' + k);
+    for (const k of ['#whPad', '#whPadChip', '#rpPal', '#mhNudge']) assert.ok(hud.includes(':not(' + k + ')'), 'stays in a world: ' + k);
 });
 
 test('Misty, her cell, the guide and its speech bubble are never named by the world rule', () => {
     const bare = world.replace(/:not\([^)]*\)/g, '');
-    for (const k of ['#spBubble', '#bw3Stage', '.bw3-canvas', '#rpPal', '.rp-body', '.rp-say', '#mhNudge', '#whPad', '#whPadChip', '.wh-zoom'])
+    for (const k of ['#spBubble', '#bw3Stage', '.bw3-canvas', '#rpPal', '.rp-body', '.rp-say', '#mhNudge', '#whPad', '#whPadChip'])
         assert.ok(!bare.includes(k), 'not hidden: ' + k);
 });
 

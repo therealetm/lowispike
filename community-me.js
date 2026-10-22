@@ -16,21 +16,20 @@
         es: { more: 'M\u00e1s lugares', title: 'T\u00fa', you: 'T\u00fa', settings: 'Ajustes', account: 'Cuenta', close: 'Cerrar', level: 'Nivel', guest: 'T\u00fa', hold: 'Consejo: mant\u00e9n la burbuja Comunidad en Inicio para abrir esto desde cualquier sitio.' }
     };
     /* the places that only work on Home (they press a Home control): go Home first, then run */
-    const HOME_FIRST = ['map', 'gift'];
+    const HOME_FIRST = ['gift'];
     const LABELS = {
         en: { me: 'Profile', body: 'Weight & BMI', weight: 'Weight journey' }, de: { me: 'Profil', body: 'Gewicht & BMI', weight: 'Gewichtsreise' }, es: { me: 'Perfil', body: 'Peso e IMC', weight: 'Tu camino de peso' }
     };
     const SUB = {
-        en: { me: 'Name, photo, goals', body: 'Weigh in, BMI, Then & Now', weight: 'Start date, chart and goal', foryou: 'Shuffle of recipes and moves', care: 'Look after each other', workouts: 'Guided sessions', map: 'The whole world from above', gift: 'Misty\u2019s daily gift', hunt: 'Find it in the shop' },
-        de: { me: 'Name, Foto, Ziele', body: 'Wiegen, BMI, Vorher & Jetzt', weight: 'Startdatum, Verlauf und Ziel', foryou: 'Mix aus Rezepten und Moves', care: 'Aufeinander achten', workouts: 'Gef\u00fchrte Einheiten', map: 'Die ganze Welt von oben', gift: 'Mistys Tagesgeschenk', hunt: 'Im Laden finden' },
-        es: { me: 'Nombre, foto, metas', body: 'Pesarte, IMC, Antes y ahora', weight: 'Fecha de inicio, gr\u00e1fico y meta', foryou: 'Mezcla de recetas y movimientos', care: 'Cuidarnos entre todos', workouts: 'Sesiones guiadas', map: 'Todo el mundo desde arriba', gift: 'El regalo diario de Misty', hunt: 'Encu\u00e9ntralo en la tienda' }
+        en: { me: 'Name, photo, goals', body: 'Weigh in, BMI, Then & Now', weight: 'Start date, chart and goal', foryou: 'Shuffle of recipes and moves', care: 'Look after each other', workouts: 'Guided sessions', gift: 'Misty\u2019s daily gift', hunt: 'Find it in the shop' },
+        de: { me: 'Name, Foto, Ziele', body: 'Wiegen, BMI, Vorher & Jetzt', weight: 'Startdatum, Verlauf und Ziel', foryou: 'Mix aus Rezepten und Moves', care: 'Aufeinander achten', workouts: 'Gef\u00fchrte Einheiten', gift: 'Mistys Tagesgeschenk', hunt: 'Im Laden finden' },
+        es: { me: 'Nombre, foto, metas', body: 'Pesarte, IMC, Antes y ahora', weight: 'Fecha de inicio, gr\u00e1fico y meta', foryou: 'Mezcla de recetas y movimientos', care: 'Cuidarnos entre todos', workouts: 'Sesiones guiadas', gift: 'El regalo diario de Misty', hunt: 'Encu\u00e9ntralo en la tienda' }
     };
     const P = 'stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"';
     const ICON = {
         foryou: '<path d="M4 7h4l8 10h4M4 17h4l2.5-3.1M13.5 10.1 16 7h4M18 5l2 2-2 2M18 15l2 2-2 2" ' + P + '/>',
         care: '<path d="M12 19s-7-4.3-7-9.2A3.8 3.8 0 0 1 12 7.6a3.8 3.8 0 0 1 7 2.2C19 14.7 12 19 12 19z" ' + P + '/>',
         workouts: '<path d="M4 9v6M7 7v10M17 7v10M20 9v6M7 12h10" ' + P + '/>',
-        map: '<path d="M12 3.5 19.4 7.8v8.4L12 20.5l-7.4-4.3V7.8z" ' + P + '/><circle cx="12" cy="12" r="2.2" ' + P + '/>',
         gift: '<rect x="4.5" y="9" width="15" height="10.5" rx="2" ' + P + '/><path d="M3.5 9h17M12 9v10.5M12 9c-1.5-3.5-5.5-3.5-5-1 .3 1 2.5 1 5 1zm0 0c1.5-3.5 5.5-3.5 5-1-.3 1-2.5 1-5 1z" ' + P + '/>',
         hunt: '<path d="M4 5h2l2 10h10l2-7H7" ' + P + '/><circle cx="9.5" cy="19" r="1.3" ' + P + '/><circle cx="16.5" cy="19" r="1.3" ' + P + '/>',
         weight: '<path d="M4 19h16M5 15l4-4 3 2 6-7" ' + P + '/><circle cx="18" cy="6" r="1.6" ' + P + '/>',

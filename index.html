@@ -14590,7 +14590,9 @@ function reveal(p, quiet){
   if (REV) { try { R2.close(REV); } catch(e){} REV = null; }
   if (p && !p.notFound && !p.verdict) { p = Object.assign({}, p); }
   /* Oct 16: always re-rate with the current spike estimator, so older saved verdicts (e.g. a vegetable pan rated as a drink) are corrected */
-  if (p && !p.notFound && !p.manual && window.LowiSpikeCore) { const r = rate(p); if (r.verdict !== "unknown") { p = Object.assign({}, p, {verdict:r.verdict, why:r.why, score:r.score, est:true}); } }
+  if (p && !p.notFound && !p.manual && window.LowiSpikeCore) { const r = rate(p); if (r.verdict !== "unknown") { p = Object.assign({}, p, {verdict:r.verdict, why:r.why, score:r.score, est:true}); }
+    /* scanfe-b2: a label the engine can't estimate (numbers missing or not adding up) is never kept as an old saved ok */
+    else if (r.why && r.why.length) { p = Object.assign({}, p, {verdict:"unknown", why:r.why, score:null, est:true}); } }
   if (p && !p.notFound && (!p.verdict || p.verdict === "unknown" || !p.why)) { const r = rate(p); p.verdict = p.verdict && p.verdict !== "unknown" ? p.verdict : r.verdict; p.why = p.why && p.why.length ? p.why : r.why; if (p.score == null) p.score = r.score; if (p.est == null) p.est = r.est; }
   if (p && p.notFound) { if (p.partial) { p.name = ""; } }
   CUR = p; const anim = !quiet && !RM();

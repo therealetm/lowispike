@@ -68,3 +68,12 @@ test('no warp into the galaxy when the first tab is not Room', () => {
   assert.match(s, /if \(from === 'home' && t === 'foryou' && firstIsRoom\(\)\) dir = 'out';/);
   assert.match(s, /T\.order\(\)\[0\] === 'room'/);
 });
+
+test('chat room memory: message bubbles have no backdrop blur of their own (item 29/33)', () => {
+  const s = R('community-tg.css');
+  const i = s.indexOf('.cr-room .cp-msg .cm-bub{position:relative;');
+  const rule = s.slice(i, s.indexOf('}', i));
+  assert.match(rule, /-webkit-backdrop-filter:none;backdrop-filter:none/);
+  assert.doesNotMatch(rule, /blur\(/);
+  assert.match(s, /\.mine\.cp-msg \.cm-bub\{background:rgba\(10,72,160,\.8\)!important;/);
+});

@@ -6581,10 +6581,18 @@ function goTab(t){
      its DOM, open bubbles, orbit and scroll exactly as they were; coming back only shows it again. It re-renders (quietly, when
      the phone is idle) only when something it shows changed while you were away, e.g. a meal logged in Cook. */
   const keepHome = t === "home" && cached && TAB !== "home";
+  /* Oct 22 (item 33, E-man: "when I open Community ... it always opens the chat. And then after that it opens what I set my first
+     page to be"): reopening Community used to rebuild the whole page a moment after it appeared (refreshCachedTab -> renderCommunity).
+     The first frames showed the old page (often the chat you left), then the rebuilt galaxy with no tabs, and only then the first
+     tab of your order. Every rebuild also threw away and redrew the whole chat: the galaxy canvas, every companion and 60 message rows,
+     a lot of memory churn on an iPhone. The live Community keeps itself up to date, so coming back now only shows it again and
+     asks it to refresh; community-tab-order.js puts it on your first tab before the first frame is drawn. */
+  const keepCommunity = t === "foryou" && cached && TAB !== "foryou" && !!document.querySelector("#tab-foryou #cmPaneChat[data-spirit-chat]");
   if (TAB === "home" && t !== "home") homeSig = stateSig();
   TAB = t; closeSheet(); ["result", "sos"].forEach(id => { const o = $("#" + id); if (o) o.classList.remove("open"); }); if (window.MOVE && MOVE.close) MOVE.close();
   $$(".tab").forEach(x => x.classList.toggle("active", x.id === "tab-" + t));
   if (keepHome) { cancelTabRefresh(); if (stateSig() !== homeSig) refreshCachedTab("home"); return; }
+  if (keepCommunity) { cancelTabRefresh(); if (root) root.scrollTop = 0; try { if (window.LowiCommunity && LowiCommunity.refresh) LowiCommunity.refresh(); } catch(e){ console.error(e); } return; }
   if (root) root.scrollTop = 0;
   if (cached) refreshCachedTab(t); else { cancelTabRefresh(); RENDER[t](); markRendered(t); }
 }

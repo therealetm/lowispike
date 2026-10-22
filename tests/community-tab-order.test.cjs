@@ -61,7 +61,7 @@ test('wired in: tabs built in the saved order, labelled by id, hold-drag on wind
   assert.match(js, /addEventListener\('touchmove', onTouchMove|W\[f\]\('touchmove', onTouchMove/, 'the page does not scroll under a lifted tab');
   assert.match(js, /Date\.now\(\) < swallowUntil/, 'the drop does not also switch tabs');
   assert.match(js, /navigator\.vibrate/); assert.match(js, /setAttribute\('switch', ''\)/, 'iOS haptic tick');
-  assert.match(js, /R\.showView\(first\)/); assert.match(js, /\^#community\\\//, 'a deep link wins over the first tab');
+  assert.match(js, /else if \(act\) R\.showView\(act\)/); /* item 33: the rule itself is tested in community-first-tab.test.cjs */ assert.match(js, /\^#community\\\//, 'a deep link wins over the first tab');
   assert.match(css, /@keyframes rm-wiggle/); assert.match(css, /prefers-reduced-motion/);
 });
 

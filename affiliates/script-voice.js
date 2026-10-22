@@ -168,7 +168,15 @@
   }
   function replay(g, list) { if (status === 'playing') pause(); start(g, list, 0); }
 
-  D.addEventListener('visibilitychange', () => { if (D.hidden) pause(); });
+  /* Oct 22 2026 (Emmanuel: "When user turns sound on it should stay on ... even if they leave the app. And it should stay on or turn
+     on when they come back on the app."): a script that was playing when the app went to the background goes on from the same
+     line when the page is in front again (not if the user paused it, or the page is no longer on screen) */
+  let hidPaused = false;
+  D.addEventListener('visibilitychange', () => {
+    if (D.hidden) { hidPaused = status === 'playing'; pause(); return; }
+    if (hidPaused && status === 'paused' && group && items.length && frameShown()) start(group, items, Math.min(idx, items.length - 1));
+    hidPaused = false;
+  });
   W.addEventListener('pagehide', () => stop());
   /* another voice in the app (tutorial, Audio mode) starts: this one pauses, so two voices never talk at once */
   try {

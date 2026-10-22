@@ -15595,8 +15595,14 @@ function unlock(){
 }
 ["pointerdown", "keydown"].forEach(t => document.addEventListener(t, unlock, {capture:true, passive:true, once:true}));
 document.addEventListener("visibilitychange", () => { if (!ac) return; if (document.hidden) { try { ac.suspend(); } catch(e){} } else if (unlocked) { try { ac.resume(); } catch(e){} } });
+/* Oct 22 2026 (Emmanuel: "When user turns sound on it should stay on all the time even if they leave the app"): S.on is stored and only
+   the Sounds switch changes it. After the background, a call or Siri, iOS leaves the context 'suspended' or 'interrupted': any later
+   tap or key wakes it again, silently (the once-only unlock above only covered the very first tap), and so does the page cache return */
+const wakeSfx = () => { if (document.hidden || !S.on) return; if (!unlocked || (ac && ac.state !== "running" && ac.state !== "closed")) unlock(); };
+["touchend", "click", "keydown"].forEach(t => document.addEventListener(t, wakeSfx, {capture:true, passive:true}));
+window.addEventListener("pageshow", e => { if (e && e.persisted && ac && unlocked && !document.hidden) { try { ac.resume(); } catch(x){} } });
 
-function ready(){ if (!S.on || S.vol <= 0) return false; if (!ctx()) return false; if (ac.state === "suspended") { try { ac.resume(); } catch(e){} } return ac.state !== "closed"; }
+function ready(){ if (!S.on || S.vol <= 0) return false; if (!ctx()) return false; if (ac.state === "suspended" || ac.state === "interrupted") { try { ac.resume(); } catch(e){} } return ac.state !== "closed"; }
 
 /* ---------- building blocks ---------- */
 // one note: f Hz, at time t (s from now), d seconds, wave, peak gain, optional pitch slide, reverb send

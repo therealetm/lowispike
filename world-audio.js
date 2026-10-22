@@ -1,7 +1,11 @@
 /* LOWiSPIKE world sound (Oct 15, 2026). An optional, calm soundscape for the 3D body world plus warp sounds on the real fly-to.
    - A "Klang" pill sits in the world's top bar next to the X. It opens a small panel: on/off switch, volume, warp sounds.
-   - Sound is opt-in: the AudioContext is created and resumed only inside a tap (iOS rule). Nothing turns sound on by itself;
-     only the volume and the warp switch are stored (lowi.worldAudio), so a reload is always silent.
+   - Sound is opt-in: it starts off until the user turns it on. Oct 22 2026 (Emmanuel: "When user turns sound on it should stay on
+     all the time even if they leave the app. And it should stay on or turn on when they come back on the app."): the on choice is
+     stored with the volume and the warp switch (lowi.worldAudio {vol, warp, on}). Leaving the app, locking the phone, a reload or a
+     fresh open keep it on; it comes back by itself when the app is in front again. Where the browser blocks sound until a tap
+     (iOS Safari, home-screen app, a fresh open), the switch still shows ON and the first tap anywhere brings the sound back,
+     silently, with no prompt. An iOS 'interrupted' or 'suspended' context (call, Siri, background) is resumed the same way.
    - Ambient (Oct 16 rework, handoff task 9): calm meditation sound. LIGHT: a soft breathing pad gliding through open chords
      and a singing bowl now and then. No noise band (it hummed like a microwave) and no pulse. UNEASY: a deeper, darker pad
      and a slow low bowl, silent until the shared game-world mood (world-mood.js, LowiWorldMood.level) turns stormy, then it
@@ -41,6 +45,9 @@
 
     /* ---------- audio engine ---------- */
     const st = { on: false, idleT: 0, ctx: null, master: null, out: null, ambBus: null, fxBus: null, amb: null, warp: null, last: null, plays: { start: 0, dive: 0, arrive: 0, ride: 0 }, bowlT: 0, bowlN: 0, lowT: 0, lowN: 0, timer: 0, stopT: 0, playing: false };
+    /* Oct 22 2026: the user's on choice survives leaving the app and reloads (see the header). The sound itself waits for the
+       first moment the browser allows it (now, or the first tap) */
+    if (prefs.on) st.on = true;
     /* the world is "open" as the full window, or as the living Home background (Home is the world now) */
     const homeLive = () => H.classList.contains('wh-world-live') && H.classList.contains('wh-home') && !H.classList.contains('bw3-full-open') && !!D.getElementById('whHud');
     const isOpen = () => (H.classList.contains('bw3-full-open') && !!D.querySelector('.bw3-full')) || homeLive();
@@ -73,8 +80,13 @@
         const ambBus = ctx.createGain(); ambBus.gain.value = C.MIX.bus;
         const fxBus = ctx.createGain(); fxBus.gain.value = C.WARP.gain;
         ambBus.connect(master); fxBus.connect(master); master.connect(tone); tone.connect(lim); lim.connect(ctx.destination);
-        Object.assign(st, { ctx, master, ambBus, fxBus, out: tone });
-        ctx.onstatechange = () => paint();
+        Object.assign(st, { ctx, master, ambBus, fxBus, out: tone, unlocked: false });
+        /* Oct 22 2026: iOS puts a running context in 'interrupted' (call, Siri, another app's audio) or 'suspended'. While sound is on
+           and the app is in front, ask it back at once; if iOS wants a tap for that, tapResume does it on the next one */
+        ctx.onstatechange = () => {
+            if (ctx === st.ctx && (ctx.state === 'interrupted' || ctx.state === 'suspended') && audible()) { try { const p = ctx.resume(); if (p && p.catch) p.catch(() => { }); } catch (e) { } }
+            paint();
+        };
         return ctx;
     }
     function ramp(param, v, tc) { const ctx = st.ctx; if (!ctx) return; const n = ctx.currentTime; try { param.cancelScheduledValues(n); param.setValueAtTime(param.value, n); param.setTargetAtTime(v, n, tc); } catch (e) { param.value = v; } }
@@ -218,6 +230,7 @@
     function setOn(on) {
         st.on = !!on;
         if (st.on) { if (!begin()) st.on = false; } else pause(C.FADE_OUT);
+        prefs.on = st.on; save();   /* Oct 22 2026: only this (the user's switch or a string touch) changes the stored choice */
         wasPlay = st.on && audible();
         paint();
         try { W.dispatchEvent(new CustomEvent('lowi:world-audio', { detail: { on: st.on, vol: prefs.vol } })); } catch (e) { }
@@ -395,27 +408,31 @@
         if (want !== wasPlay) {
             wasPlay = want;
             if (!want) { if (st.ctx && (st.amb || running())) pause(C.CLOSE_FADE); }
-            else if (st.ctx) begin();   /* iOS may want a tap to resume: tapResume wakes it on the next one */
+            else begin();   /* also right after a reload with sound on. iOS may want a tap to resume: tapResume wakes it on the next one */
         }
     }
     new MutationObserver(sync).observe(H, { attributes: true, attributeFilter: ['class'] });
     /* reopening the world with a tap while sound was on in this visit: resume inside that same tap (iOS) */
     function tapResume(e) {
-        if (!st.on || D.hidden || !st.ctx) return;
-        /* sound is on: any tap on any tab brings it back if iOS put it to sleep (unless a video, voice note or the game is playing) */
-        if (audible()) { if (!running() || !st.amb) begin(); return; }
+        if (!st.on || D.hidden) return;
+        /* sound is on: any tap on any tab brings it back if iOS put it to sleep (unless a video, voice note or the game is playing).
+           Oct 22 2026: also the first tap after a reload or a fresh open with sound on (no context yet): made and unlocked here */
+        if (audible()) { if (!running() || !st.amb) { begin(); unlock(st.ctx); } return; }
+        if (!st.ctx) return;
         try { const p = st.ctx.resume(); if (p && p.catch) p.catch(() => { }); } catch (x) { }
         clearTimeout(st.idleT); st.idleT = setTimeout(() => { if (!audible() && running()) st.ctx.suspend().catch(() => { }); }, 3000);
     }
     D.addEventListener('click', tapResume, true);              /* capture: open buttons may stop the click from bubbling */
     D.addEventListener('touchend', tapResume, { passive: true, capture: true });
+    D.addEventListener('keydown', tapResume, true);
     D.addEventListener('visibilitychange', () => {
-        if (!st.ctx) return;
-        if (D.hidden) { killWarp(0.05); stopAmbient(0); try { st.master.gain.cancelScheduledValues(0); st.master.gain.value = 0; } catch (e) { } st.ctx.suspend().catch(() => { }); }
-        else if (audible()) begin();   /* may need the next tap on iOS: tapResume handles that */
+        if (D.hidden) { if (!st.ctx) return; killWarp(0.05); stopAmbient(0); try { st.master.gain.cancelScheduledValues(0); st.master.gain.value = 0; } catch (e) { } st.ctx.suspend().catch(() => { }); }
+        else if (audible()) begin();   /* back in the app with sound on: it comes back (a closed context is made again). May need the next tap on iOS: tapResume */
         wasPlay = audible() && !!st.amb;
         paint();
     });
+    /* Oct 22 2026: back from the page cache (Safari back/forward, home-screen app reopened): pagehide closed the context, so start again */
+    W.addEventListener('pageshow', e => { if (e && e.persisted) { wasPlay = false; sync(); paint(); } });
     W.addEventListener('pagehide', () => { if (tuneSaveT) saveTune(); if (st.ctx) { stopAmbient(0); try { st.ctx.close(); } catch (e) { } st.ctx = null; st.master = st.ambBus = st.fxBus = null; } });
     W.addEventListener('lowi:lang', () => { const p = D.getElementById('waPanel'); if (p) { removePanel(p); togglePanel(true); } paint(); });
     ['play', 'playing', 'pause', 'ended', 'volumechange'].forEach(k => D.addEventListener(k, () => setTimeout(sync, 30), true));

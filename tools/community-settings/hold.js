@@ -35,7 +35,7 @@ for (const ms of [700, 2000, 3500]) {
     if (s.settings) fail('hold ' + ms + ' ms: Settings opened (' + s.settings + ')');
     if (!s.home) fail('hold ' + ms + ' ms: also left Home (the tap fired)');
     if (s.sel) fail('hold ' + ms + ' ms: text got selected: ' + s.sel);
-    for (const id of ['settings', 'close', 'me']) if (!s.rows.includes(id)) fail('hold ' + ms + ' ms: hub missing ' + id);
+    for (const id of ['theme', 'close', 'me']) if (!s.rows.includes(id)) fail('hold ' + ms + ' ms: hub missing ' + id);
     if (ms === 700) await shot('hold-hub');
     await sleep(800); const s2 = await state(); if (!s2.hub) fail('hold ' + ms + ' ms: hub closed by itself after the finger lifted');
     await closeAll(); await sleep(500);

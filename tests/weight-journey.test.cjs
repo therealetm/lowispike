@@ -145,19 +145,27 @@ test('UI: three languages, encouraging (no "Over" label), device-only, no tutori
     assert.ok(!/'Over'|Above avg|Übergewicht/.test(ui), 'no shaming labels');
     assert.ok(!/fetch\(|XMLHttpRequest|supabase|sendBeacon/i.test(ui + read('weight-journey-core.js')), 'nothing is sent anywhere');
     assert.ok(/LowiR2/.test(ui) && /save\(\)/.test(ui), 'saved like the rest of the state');
-    assert.ok(/data-theme="light"/.test(read('weight-journey.css')), 'day mode');
+    assert.ok(/\.bs-wjhost/.test(read('weight-journey.css')) && !/#fff[^\w]*;\s*}\s*$/.test(read('weight-journey.css')), 'styled inside the dark glass Weight & BMI sheet');
     assert.ok(/prefers-reduced-motion/.test(read('weight-journey.css')));
 });
 
-test('wiring: included after Weight & BMI, cached offline, reachable from Weight & BMI, Stats and the Community places', () => {
+test('wiring: merged into the one Weight & BMI sheet (Oct 22 2026): no second sheet, old links open it, no own Community row', () => {
     const html = read('index.html'), sw = read('sw.js');
     for (const f of ['weight-journey.css', 'weight-journey-core.js', 'weight-journey.js']) {
         assert.ok(html.includes(f + '?v='), 'index.html loads ' + f);
         assert.ok(sw.includes('"' + f + '"'), 'sw.js caches ' + f);
     }
     assert.ok(html.indexOf('weight-journey.js') > html.indexOf('body-stats.js'));
-    assert.ok(/LowiWeightJourney.cardHTML\(\)/.test(read('body-stats.js')) && /data-wj-open/.test(read('weight-journey.js')), 'Weight & BMI links to the journey');
+    const wj = read('weight-journey.js'), bs = read('body-stats.js');
+    assert.ok(!/wjOv|createElement\('div'\)/.test(wj), 'no own overlay any more');
+    assert.ok(!/'\+ ' \+ tr\('add'\)|data-wj="add"/.test(wj), 'no second Add weight button: the one weight field + Update today does it');
+    assert.ok(!/heroHTML|cardsHTML/.test(wj), 'no second big current-weight number, no extra cards');
+    assert.match(bs, /bs-wjhost/); assert.match(bs, /LowiWeightJourney\.mount\(/); assert.match(bs, /data-bs-u/);
+    assert.ok(!/LowiWeightJourney\.cardHTML\(\)/.test(bs) && !/histHTML|progressHTML/.test(bs), 'no Weight journey card, no second list, no second bar');
+    assert.match(wj, /LowiBodyStats\.open\(opts && opts\.add \? \{ weigh: true \} : \{ journey: true \}\)/, 'old ways in open the merged sheet');
+    assert.match(wj, /data-wj-open/);
     const hs = read('home-settings-sleep-v2.js');
-    assert.ok(/you: \[[^\]]*'weight'/.test(hs) && /weight: \{ has:/.test(hs), 'a Community place with a real route');
-    assert.ok(/LowiStatsPlugins/.test(read('weight-journey.js')));
+    assert.ok(!/you: \[[^\]]*'weight'/.test(hs) && /weight: \{ has:/.test(hs), 'no own Community row, old route still lands');
+    assert.ok(!/LowiStatsPlugins/.test(wj), 'Stats shows the one Weight & BMI section');
+    assert.ok(!/#[0-9a-f]{6}/i.test(read('weight-journey.css').replace(/#(0a84ff|5aa9ff|8fe7ff|bff3ff|bfe9ff|0b2350|04122c|fff)\b/gi, '')), 'brand blues only');
 });

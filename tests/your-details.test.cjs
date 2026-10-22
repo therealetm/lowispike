@@ -51,11 +51,9 @@ test('weight: one tap from the header weight, two from the Your details tile, an
     assert.strictEqual(body[0].val, '107.6 kg');
     r.Y.go('weight');
     assert.deepStrictEqual(J(r.calls.pop()), ['wj', { add: true }], 'second tap: Add weight');
-    /* Add weight is pre-filled with the newest weight and focused */
-    const WJ = read('weight-journey.js');
-    assert.match(WJ, /opts && opts\.add\) form = \{ prefill: true \}/);
-    assert.match(WJ, /form\.prefill \? prefillVal\(s, st\)/);
-    assert.match(WJ, /function prefillVal\(s, st\) \{\s*if \(st && st\.latest\)[^\n]*\n[^\n]*s\.health\.weight/);
+    /* the merged sheet: Add weight is the one weight field of Weight & BMI, filled with today's value and focused */
+    assert.match(read('weight-journey.js'), /opts && opts\.add \? \{ weigh: true \}/);
+    assert.match(read('body-stats.js'), /opts\.weigh\) \{ const k = ov\.querySelector\('#bsKg'\)/);
 });
 
 test('every piece of personal data has one row, grouped Body / About you / Goals / Health / Account, each opening its owner', () => {

@@ -21,9 +21,9 @@
         en: { me: 'Profile', body: 'Weight & BMI', weight: 'Weight journey' }, de: { me: 'Profil', body: 'Gewicht & BMI', weight: 'Gewichtsreise' }, es: { me: 'Perfil', body: 'Peso e IMC', weight: 'Tu camino de peso' }
     };
     const SUB = {
-        en: { me: 'Name, photo, goals', body: 'Weigh in, BMI, Then & Now', weight: 'Start date, chart and goal', foryou: 'Shuffle of recipes and moves', care: 'Look after each other', workouts: 'Guided sessions', map: 'The whole world from above', gift: 'Misty\u2019s daily gift', hunt: 'Find it in the shop' },
-        de: { me: 'Name, Foto, Ziele', body: 'Wiegen, BMI, Vorher & Jetzt', weight: 'Startdatum, Verlauf und Ziel', foryou: 'Mix aus Rezepten und Moves', care: 'Aufeinander achten', workouts: 'Gef\u00fchrte Einheiten', map: 'Die ganze Welt von oben', gift: 'Mistys Tagesgeschenk', hunt: 'Im Laden finden' },
-        es: { me: 'Nombre, foto, metas', body: 'Pesarte, IMC, Antes y ahora', weight: 'Fecha de inicio, gr\u00e1fico y meta', foryou: 'Mezcla de recetas y movimientos', care: 'Cuidarnos entre todos', workouts: 'Sesiones guiadas', map: 'Todo el mundo desde arriba', gift: 'El regalo diario de Misty', hunt: 'Encu\u00e9ntralo en la tienda' }
+        en: { me: 'Name, photo, goals', body: 'Weigh in, BMI, goal and chart', weight: 'Start date, chart and goal', foryou: 'Shuffle of recipes and moves', care: 'Look after each other', workouts: 'Guided sessions', map: 'The whole world from above', gift: 'Misty\u2019s daily gift', hunt: 'Find it in the shop' },
+        de: { me: 'Name, Foto, Ziele', body: 'Wiegen, BMI, Ziel und Verlauf', weight: 'Startdatum, Verlauf und Ziel', foryou: 'Mix aus Rezepten und Moves', care: 'Aufeinander achten', workouts: 'Gef\u00fchrte Einheiten', map: 'Die ganze Welt von oben', gift: 'Mistys Tagesgeschenk', hunt: 'Im Laden finden' },
+        es: { me: 'Nombre, foto, metas', body: 'Pesarte, IMC, meta y gr\u00e1fico', weight: 'Fecha de inicio, gr\u00e1fico y meta', foryou: 'Mezcla de recetas y movimientos', care: 'Cuidarnos entre todos', workouts: 'Sesiones guiadas', map: 'Todo el mundo desde arriba', gift: 'El regalo diario de Misty', hunt: 'Encu\u00e9ntralo en la tienda' }
     };
     const P = 'stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"';
     const ICON = {

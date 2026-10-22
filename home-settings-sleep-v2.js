@@ -143,7 +143,7 @@
     /* Oct 22 2026 (Emmanuel: "remove the explore things and have the more important things in there"): the profile hub drops its
        Explore list and carries the Settings instead (community-me.js). Each former Explore place keeps its own way in: EXPLORE_MOVED
        says where (checked in tools/community-settings/hub-b.js). */
-    const COMMUNITY_PLACES = { you: ['me', 'body', 'weight'], places: [] };
+    const COMMUNITY_PLACES = { you: ['me', 'body'], places: [] };  /* Oct 22 2026: Weight journey lives inside Weight & BMI now, so no own row */
     /* Workouts is the Move tab behind the Home Move bubble. The other five have no visible way in on Home or the tabs today (the
        iPhone run found the Home zoom and gift hidden, the For You and Care board pills hidden, and no Finds chip in the scanner), so
        they keep a light way in: one folded "More places" row under YOU (EXPLORE_LIGHT). */

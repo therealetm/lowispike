@@ -23,7 +23,7 @@
 })(typeof window !== 'undefined' ? window : null, function () {
     'use strict';
 
-    const VERSION = 'food-engine-core e 2026-10-22';
+    const VERSION = 'food-engine-core f1 2026-10-22';
     const NUTRIENTS = ['carbs', 'sugar', 'fibre', 'protein', 'fat', 'kcal', 'salt'];
     // Short keys used across the app (LowiSpikeCore facts, data/shop columns) map onto the engine's names.
     const ALIAS = {c: 'carbs', s: 'sugar', f: 'fibre', fiber: 'fibre', p: 'protein', k: 'kcal', energy: 'kcal'};
@@ -166,9 +166,110 @@
         return Object.assign(base, {key, category: CATEGORY[key], reasons, modifiers});
     }
 
+    // assessConfidence (scanfe-f1, spec section 10): how complete and consistent the EVIDENCE is, never how sure we are about
+    // the person's glucose response. High = exact product (valid barcode + name), current ingredients read in full, nutrition
+    // label complete and consistent. Medium = identified and nutrition usable, but some details are missing (ingredients
+    // missing / unreadable / cut off / garbled, a nutrient missing, a label warning, a variant or source conflict, old data).
+    // Low = identity uncertain, label numbers inconsistent, or the carbohydrates are unknown. Each lowering names a stable
+    // reason key; `needs` lists the photos the missing-data flow (scanfe-f2) should ask for. Nothing here is ever guessed.
+    // product: {name, barcode, unit, per100, ingredients, identity, variantConfirmed, conflicts, evidence: {updated}}
+    // parts (optional, scanFood passes them): {nutrition: validateNutrition result, ingredients: analyzeIngredients result}
+    const CONF = Object.freeze({version: 'confidence-v1', maxAgeDays: 1095});
+    const CONF_LEVEL = {high: 'High', medium: 'Medium', low: 'Low'};
+    const CONF_RANK = {high: 2, medium: 1, low: 0};
+    const CONF_TEXT = {
+        high: {en: 'Data confidence: High', de: 'Datenlage: Hoch', es: 'Fiabilidad de los datos: Alta'},
+        medium: {en: 'Data confidence: Medium', de: 'Datenlage: Mittel', es: 'Fiabilidad de los datos: Media'},
+        low: {en: 'Data confidence: Low', de: 'Datenlage: Niedrig', es: 'Fiabilidad de los datos: Baja'}
+    };
+    const CONF_REASON = {
+        identity_unverified: {en: 'No barcode, so the exact product is not confirmed', de: 'Kein Barcode, das genaue Produkt ist nicht bestätigt', es: 'Sin código de barras, el producto exacto no está confirmado'},
+        barcode_invalid: {en: 'The barcode does not check out, it may be misread', de: 'Der Barcode stimmt nicht, vielleicht falsch gelesen', es: 'El código de barras no cuadra, puede estar mal leído'},
+        name_missing: {en: 'Product name missing', de: 'Produktname fehlt', es: 'Falta el nombre del producto'},
+        identity_uncertain: {en: 'Not sure this is the exact product', de: 'Unsicher, ob es genau dieses Produkt ist', es: 'No es seguro que sea este producto exacto'},
+        variant_unconfirmed: {en: 'Exact variant or pack not confirmed', de: 'Genaue Sorte oder Packung nicht bestätigt', es: 'Variante o envase exacto sin confirmar'},
+        sources_conflict: {en: 'Sources disagree about this product', de: 'Quellen widersprechen sich bei diesem Produkt', es: 'Las fuentes no coinciden sobre este producto'},
+        label_inconsistent: {en: 'Label numbers do not add up', de: 'Die Nährwerte passen nicht zusammen', es: 'Los valores de la etiqueta no cuadran'},
+        carbs_missing: {en: 'Carbohydrates unknown', de: 'Kohlenhydrate unbekannt', es: 'Carbohidratos desconocidos'},
+        nutrition_partial: {en: 'Some nutrition values missing', de: 'Einige Nährwerte fehlen', es: 'Faltan algunos valores nutricionales'},
+        label_warning: {en: 'Calories and macros do not quite match', de: 'Kalorien und Makros passen nicht ganz', es: 'Calorías y macros no cuadran del todo'},
+        ingredients_unchecked: {en: 'Ingredients not checked', de: 'Zutaten nicht geprüft', es: 'Ingredientes sin revisar'},
+        ingredients_missing: {en: 'Ingredient list missing', de: 'Zutatenliste fehlt', es: 'Falta la lista de ingredientes'},
+        ingredients_unreadable: {en: 'Ingredient list unreadable', de: 'Zutatenliste nicht lesbar', es: 'Lista de ingredientes ilegible'},
+        ingredients_cut_off: {en: 'Ingredient list cut off', de: 'Zutatenliste abgeschnitten', es: 'Lista de ingredientes cortada'},
+        ingredients_garbled: {en: 'Ingredient list looks garbled', de: 'Zutatenliste wirkt fehlerhaft', es: 'La lista de ingredientes parece errónea'},
+        data_old: {en: 'Product data may be outdated', de: 'Produktdaten evtl. veraltet', es: 'Los datos pueden estar desactualizados'}
+    };
+    function gtinOk(code) {
+        const d = code.split('').map(Number), check = d.pop();
+        let t = 0;
+        d.reverse().forEach((x, i) => { t += x * (i % 2 ? 1 : 3); });
+        return (10 - t % 10) % 10 === check;
+    }
+    function bracketsGarbled(text) {
+        // More closing than opening brackets at any point = broken OCR / copy text (unclosed ones are 'cut off' instead).
+        let round = 0, square = 0;
+        for (const ch of String(text || '')) {
+            if (ch === '(') round++; else if (ch === ')') { round--; if (round < 0) return true; }
+            else if (ch === '[') square++; else if (ch === ']') { square--; if (square < 0) return true; }
+        }
+        return false;
+    }
+    function assessConfidence(product, parts, opts) {
+        const p = product || {};
+        const pt = parts || {};
+        let key = 'high';
+        const reasons = [], needs = [];
+        const lower = (to, why) => { if (CONF_RANK[to] < CONF_RANK[key]) key = to; if (!reasons.includes(why)) reasons.push(why); };
+        const need = n => { if (!needs.includes(n)) needs.push(n); };
+        // 1. Identity: exact product.
+        const code = String(p.barcode == null ? '' : p.barcode).replace(/\s+/g, '');
+        if (!/^\d{8,14}$/.test(code)) lower('low', 'identity_unverified');
+        else if (!gtinOk(code)) lower('low', 'barcode_invalid');
+        if (!(typeof p.name === 'string' && p.name.trim())) lower('low', 'name_missing');
+        if (p.identity === 'uncertain') lower('low', 'identity_uncertain');
+        if (p.variantConfirmed === false) lower('medium', 'variant_unconfirmed');
+        if (Array.isArray(p.conflicts) && p.conflicts.length) lower('medium', 'sources_conflict');
+        // 2. Nutrition label: complete and consistent.
+        const val = pt.nutrition && pt.nutrition.per100 && Array.isArray(pt.nutrition.issues) ? pt.nutrition : validateNutrition(p.per100, p.unit);
+        if (!val.valid) { lower('low', 'label_inconsistent'); need('label_photo'); }
+        else if (val.per100.carbs == null) { lower('low', 'carbs_missing'); need('label_photo'); }
+        else {
+            if (['sugar', 'protein', 'fat', 'kcal'].some(k => val.per100[k] == null)) { lower('medium', 'nutrition_partial'); need('label_photo'); }
+            if (val.issues.some(i => i.level === 'warn')) lower('medium', 'label_warning');
+        }
+        // 3. Ingredients: current list, read in full.
+        const ing = pt.ingredients === undefined ? null : pt.ingredients;
+        if (!ing) {
+            const raw = typeof p.ingredients === 'string' ? p.ingredients.trim() : '';
+            lower('medium', raw ? 'ingredients_unchecked' : 'ingredients_missing'); need('ingredients_photo');
+        } else if (ing.status === 'missing') { lower('medium', 'ingredients_missing'); need('ingredients_photo'); }
+        else if (ing.status === 'unusable') { lower('medium', 'ingredients_unreadable'); need('ingredients_photo'); }
+        else {
+            if (ing.truncated) { lower('medium', 'ingredients_cut_off'); need('ingredients_photo'); }
+            if (bracketsGarbled(p.ingredients)) { lower('medium', 'ingredients_garbled'); need('ingredients_photo'); }
+        }
+        // 4. Current data: a record older than about three years may describe an old recipe.
+        const upd = p.evidence && p.evidence.updated ? Date.parse(p.evidence.updated) : NaN;
+        const now = opts && typeof opts.now === 'number' ? opts.now : Date.now();
+        if (isFinite(upd) && now - upd > CONF.maxAgeDays * 864e5) lower('medium', 'data_old');
+        const lang = l => (CONF_REASON[l] ? CONF_REASON[l] : null);
+        return {
+            version: CONF.version,
+            basis: 'evidence-completeness',
+            key,
+            level: CONF_LEVEL[key],
+            text: CONF_TEXT[key],
+            reasons,
+            reasonText: reasons.map(r => Object.assign({key: r}, lang(r))),
+            needs
+        };
+    }
+
     // scanFood (scanfe-c/d): one call for a product. Ingredient flags come from ingredient-core.js (window.LowiIngredients),
     // the JA / SELTEN / NEIN verdict from food-policy-core.js (window.LowiFoodPolicy, rules in
-    // data/food-policy/lowispike-policy.v1.json). confidence stays null until the confidence step (scanfe-f1).
+    // data/food-policy/lowispike-policy.v1.json). confidence (scanfe-f1): 'High' | 'Medium' | 'Low' from assessConfidence, details in
+    // confidenceInfo (reasons, needs).
     // quality / cravings / satiety / reasons / alternative come from food-assess-core.js (window.LowiFoodAssess, scanfe-e).
     // product: {name, brand, barcode, unit, per100, ingredients, categories, claims, evidence}; serving: grams or
     // {userG, manufacturerG, group}; ctx: {profile: {allergies: [EU-14 keys], avoid: [policy category keys]}}.
@@ -193,6 +294,7 @@
         // rules-only verdict for the audit trail.
         const assess = ASS && policy ? ASS.assess({product: p, per100: val.per100, unit: val.unit, serving: srv, glucose, ingredients, policy, profile: ctx && ctx.profile}) : null;
         const verdict = policy ? (assess && assess.personal.changed ? assess.personal.verdict : policy.verdict) : null;
+        const conf = assessConfidence(p, {nutrition: val, ingredients}, ctx && typeof ctx.now === 'number' ? {now: ctx.now} : null);
         return {
             engine: VERSION,
             policyVersion: policy ? policy.policyVersion : null,
@@ -210,9 +312,10 @@
             reasonKeys: assess ? assess.reasonKeys : [],
             reasons: assess ? assess.reasons : [],
             alternative: assess ? assess.alternative : null,
-            confidence: null
+            confidence: conf.level,
+            confidenceInfo: conf
         };
     }
 
-    return {VERSION, NUTRIENTS, BANDS, GROUP_SERVING, CATEGORY, normalize, validateNutrition, calculateServing, estimateGlucoseImpact, scanFood};
+    return {VERSION, NUTRIENTS, BANDS, GROUP_SERVING, CATEGORY, CONFIDENCE: CONF, normalize, validateNutrition, calculateServing, estimateGlucoseImpact, assessConfidence, scanFood};
 });

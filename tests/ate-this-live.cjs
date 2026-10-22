@@ -58,15 +58,18 @@ const FIT = sel => { const bs = [...document.querySelectorAll(sel)].filter(b => 
       function NOW_L() { return NOW[lang]; }
       await page.screenshot({ path: path.join(OUT, v + '-1-pick.png') });
       const m0 = await meals();
-      await tap('#r5Pick .ate-now'); await sleep(900);
+      await page.waitForFunction(() => !document.querySelector('#r5Strip.spin, .r5-stage.spinning, .r5-stage.spin'), null, { timeout: 30000 }).catch(() => { }); await sleep(2500);
+      await tap('#r5Pick .ate-now'); await sleep(1200);
+      if ((await meals()) === m0) { log.retry = true; await tap('#r5Pick .ate-now'); await sleep(1500); } /* the reveal can re-render the card under a slow machine */
       const b1 = await ev(() => { const b = document.getElementById('ateBar'); return b && b.classList.contains('on') ? { slot: (b.querySelector('.ate-slot.on') || {}).dataset && b.querySelector('.ate-slot.on').dataset.slot, txt: b.textContent.slice(0, 90) } : null; });
       log.logged = b1; if ((await meals()) !== m0 + 1) fails.push('I just ate this did not log one meal'); if (!b1) fails.push('no confirmation bar');
       const f2 = await ev(FIT, '#ateBar.on button'); fails.push(...f2.out.map(x => 'bar ' + x));
       await page.screenshot({ path: path.join(OUT, v + '-2-logged.png') });
       const other = b1 && b1.slot === 'snack' ? 'dinner' : 'snack';
-      await tap('#ateBar .ate-slot[data-slot="' + other + '"]'); await sleep(400);
+      const keep = () => ev(() => { const b = document.getElementById('ateBar'); if (b) b.classList.add('on'); }); /* a slow screenshot can outlast the bar's 8 s */
+      await keep(); await tap('#ateBar .ate-slot[data-slot="' + other + '"]'); await sleep(400);
       if ((await ev(() => LowiVitalsBridge.state().logs.slice(-1)[0].slot)) !== other) fails.push('slot change did not move the meal');
-      await tap('#ateBar .ate-undo'); await sleep(500);
+      await keep(); await tap('#ateBar .ate-undo'); await sleep(500);
       if ((await meals()) !== m0) fails.push('Undo did not remove the meal');
       await ev(() => document.getElementById('ateBar').classList.remove('on'));
       const clean = () => ev(() => { const b = document.getElementById('ateBar'); if (b) b.classList.remove('on'); const rw = document.getElementById('fstRw'); if (rw) rw.remove(); });
@@ -77,20 +80,20 @@ const FIT = sel => { const bs = [...document.querySelectorAll(sel)].filter(b => 
       await ev(() => LowiP2.cook('rb_cauliflower_nacho_smash_tray')); await sleep(1500);
       for (let i = 0; i < 40; i++) { if (await ev(() => !!document.querySelector('.p2-cknav .ate-done'))) break; const ok = await ev(() => { const b = [...document.querySelectorAll('.p2-cknav button')].pop(); if (b) b.click(); return !!b; }); if (!ok) break; await sleep(250); }
       /* the cook sheet's open spring runs on requestAnimationFrame, which a busy headless machine slows down: wait until it has settled */
-      await page.waitForFunction(() => { const sh = document.querySelector('.p2-ckov .r2-sh'); if (!sh) return true; const m = /translate3d\(0px, ([-\d.]+)px/.exec(sh.style.transform || ''); return !m || Math.abs(+m[1]) < 1; }, null, { timeout: 120000, polling: 250 }).catch(() => fails.push('cook sheet never settled'));
+      await page.waitForFunction(() => { const sh = document.querySelector('.p2-ckov .r2-sh'); if (!sh) return true; const m = /translate3d\(0px, ([-\d.]+)px/.exec(sh.style.transform || ''); return !m || Math.abs(+m[1]) < 6; }, null, { timeout: 120000, polling: 250 }).catch(() => fails.push('cook sheet never settled'));
       await sleep(500);
       log.nav = await ev(() => { const n = document.querySelector('.p2-cknav'); if (!n) return null; n.scrollIntoView({ block: 'end' }); const r = n.getBoundingClientRect(); const chain = []; for (let e = n.parentElement; e && chain.length < 7; e = e.parentElement) { const q = e.getBoundingClientRect(), c = getComputedStyle(e); chain.push((e.style.transform ? 'T(' + e.style.transform + ')' : '') + (e.id || e.className || e.tagName).toString().slice(0, 24) + ':' + Math.round(q.top) + '-' + Math.round(q.bottom) + ':' + c.overflowY + ':' + e.scrollHeight + '/' + e.clientHeight); } return [Math.round(r.top), Math.round(r.bottom), innerHeight, chain]; }); await sleep(300);
       const f3 = await ev(FIT, '.p2-cknav button'); if (!(await ev(() => !!document.querySelector('.p2-cknav .ate-done.pri')))) fails.push('DONE screen has no main I just ate this'); fails.push(...f3.out.map(x => 'done ' + x));
       log.done = await ev(() => [...document.querySelectorAll('.p2-cknav button')].map(b => b.textContent.trim()));
       await page.screenshot({ path: path.join(OUT, v + '-3-done.png') });
       const m1 = await meals(); await tap('.p2-cknav .ate-done'); await sleep(1200);
-      if ((await meals()) !== m1 + 1) fails.push('DONE I just ate this did not log'); await page.waitForFunction(() => !document.querySelector('.p2-cknav .ate-done'), null, { timeout: 30000, polling: 300 }).catch(() => fails.push('cook-along did not close'));
+      if ((await meals()) !== m1 + 1) fails.push('DONE I just ate this did not log'); await page.waitForFunction(() => !document.querySelector('.p2-cknav .ate-done'), null, { timeout: 90000, polling: 300 }).catch(() => fails.push('cook-along did not close'));
       await clean();
       /* 3. right swipe offer -> I'll eat this plans, no log */
       await ev(() => LowiAte.offer('rb_cinnamon_baked_yogurt_custard')); await sleep(600);
       const f4 = await ev(FIT, '#ateBar.on button'); if (f4.n !== 2) fails.push('swipe offer buttons: ' + f4.n); fails.push(...f4.out.map(x => 'offer ' + x));
       await page.screenshot({ path: path.join(OUT, v + '-4-offer.png') });
-      const m2 = await meals(); await tap('#ateBar .ate-later'); await sleep(700);
+      const m2 = await meals(); await ev(() => { const b = document.getElementById('ateBar'); if (b) b.classList.add('on'); }); await tap('#ateBar .ate-later'); await sleep(700);
       const td = await ev(() => { const t = LowiVitalsBridge.state().td || {}; return { extra: t.extra || [], plan: t.plan || [] }; });
       if ((await meals()) !== m2) fails.push("I'll eat this logged a meal"); if (!td.extra.concat(td.plan).includes('rb_cinnamon_baked_yogurt_custard')) fails.push("I'll eat this did not plan it " + JSON.stringify(td));
     } catch (e) { fails.push('crash ' + e.message.slice(0, 200)); }

@@ -8695,6 +8695,29 @@ function ckSyncSwaflo(){ /* the swap tool follows the chosen source: Products = 
    scanner's own scale). Anything rated Skip it ("likely spike") never feeds Shuffle: it is listed under Throw out instead. */
 const CK_TOSS_HIDDEN = "lowi.cook.tossHidden";
 function fTossHidden(){ try { const a = JSON.parse(localStorage.getItem(CK_TOSS_HIDDEN) || "[]"); return Array.isArray(a) ? a : []; } catch(e){ return []; } }
+/* ck-cat (Oct 22, 2026, bug "Your pick: No low-spike products to shuffle yet"): Products also shuffles the built-in shop range
+   (the chain picked in the Emergency Shop, else REWE), low-spike items only (LowiScanSort.catalog + the scanner's estimator),
+   and asks the shared dex for community catches. The empty card only shows when all of that is truly empty. */
+const CKCAT = {range:"", list:null, p:null, failed:false};
+function ckCatRange(){ let r = ""; try { r = (window.LowiStorePicks && LowiStorePicks.state().range) || ""; } catch(e){} return /^[a-z]+$/.test(r) && r !== "general" ? r : "rewe"; }
+function ckCatPending(){ return !CKCAT.failed && (!CKCAT.list || CKCAT.range !== ckCatRange()); }
+function ckCatLoad(){
+  const r = ckCatRange(); if (CKCAT.list && CKCAT.range === r) return Promise.resolve(CKCAT.list); if (CKCAT.p && CKCAT.range === r) return CKCAT.p;
+  try { if (window.LowiDex && LowiDex.load) Promise.resolve(LowiDex.load(false)).then(ch => { if (ch) ckCatRepaint(); }, () => {}); } catch(e){}
+  const build = ((document.querySelector('meta[name="lowi-build"]') || {}).content) || "";
+  CKCAT.range = r; CKCAT.failed = false;
+  CKCAT.p = fetch("data/shop/" + r + ".json?v=" + encodeURIComponent(build)).then(x => { if (!x.ok) throw new Error("http " + x.status); return x.json(); })
+    .then(d => { if (CKCAT.range !== r) return CKCAT.list || []; const S = window.LowiScanSort; CKCAT.list = S && S.catalog && window.LowiStorePicksCore ? S.catalog(d, LowiStorePicksCore, {range:r}) : []; CKCAT.p = null; ckCatRepaint(); return CKCAT.list; })
+    .catch(e => { console.info("[LOWiSPIKE] product range offline:", e && (e.message || e)); CKCAT.p = null; CKCAT.failed = true; ckCatRepaint(); return []; });
+  return CKCAT.p;
+}
+function ckCatRepaint(){ if (fSrc() !== "products") return; const pk = r5$("#r5Pick"); if (!pk) return;
+  if (fSrcPool().length) { if (pk.querySelector(".ck-pempty")) pk.innerHTML = ""; } else if (!ckCatPending() && !pk.children.length) pk.innerHTML = fProductsEmptyHTML(); }
+function fCatKeep(){
+  if (!CKCAT.list || CKCAT.range !== ckCatRange() || !CKCAT.list.length) return [];
+  const S = window.LowiScanSort, X = window.LowiDex || {}, idf = p => window.LowiDiscoveryCore ? LowiDiscoveryCore.identity(p) : String(p.barcode || p.name);
+  return S ? S.split(CKCAT.list, {rate:X.rate, rateName:X.rateName, identity:idf}).keep : [];
+}
 function fSort(){
   let all = []; try { all = window.LowiDiscovery ? LowiDiscovery.all() : []; } catch(e){}
   const S = window.LowiScanSort, X = window.LowiDex || {}, idf = p => window.LowiDiscoveryCore ? LowiDiscoveryCore.identity(p) : String(p.barcode || p.name);
@@ -8704,11 +8727,11 @@ function fSort(){
   const seen = new Set(); return {keep:withPV.filter(p => (p.verdict === "ok" || p.verdict === "better") && !seen.has(idf(p)) && seen.add(idf(p))).map(p => ({key:idf(p), product:p, verdict:p.verdict})), toss:[], unsure:[]};
 }
 function fProducts(){
-  const out = [];
-  fSort().keep.forEach(it => { try {
+  const out = [], own = fSort(), have = new Set(own.keep.concat(own.toss, own.unsure).map(it => it.key));
+  own.keep.concat(fCatKeep().filter(it => !have.has(it.key))).forEach(it => { try {
     const p = it.product; if (window.LowiDiscovery) { const a = LowiDiscovery.assess(p).category; if (a === "outside" || a === "caution") return; }
     const q = Object.assign({}, p, {assessmentCategory:window.LowiDiscovery ? LowiDiscovery.assess(p).category : "", spikeVerdict:it.verdict});
-    out.push(Object.assign({}, q, {id:"sf-buy:" + it.key, product:q, n:p.name, img:p.img || "", sub:p.brand || "", r:"ja", ing:[], buy:true, book:false}));
+    out.push(Object.assign({}, q, {id:"sf-buy:" + it.key, product:q, n:p.name, img:p.img || "", sub:p.brand || "", r:"ja", ing:[], buy:true, book:false, catalog:!!p.catalog}));
   } catch(e){} });
   return out;
 }
@@ -8729,10 +8752,11 @@ function fTossHTML(){
 }
 function fProductsEmptyHTML(){
   const S = window.LowiScanSort, L = ckLang(), tx = k => S ? S.text(k, L) : k;
-  return '<div class="r5-card in ck-pempty" role="status" data-noi18n><b>' + esc(tx("emptyT")) + '</b><div class="small muted">' + esc(tx("emptyS")) + '</div><div class="r5-btns"><button type="button" class="btn primary" data-cktoss="scan">' + esc(tx("scan")) + '</button><button type="button" class="btn ghost" data-cktoss="book">' + esc(tx("book")) + '</button></div></div>';
+  /* no "in": on phones that class pops the result up as the "Your pick" sheet, and an empty state is not a pick */
+  return '<div class="r5-card ck-pempty" role="status" data-noi18n><b>' + esc(tx("emptyT")) + '</b><div class="small muted">' + esc(tx("emptyS")) + '</div><div class="r5-btns"><button type="button" class="btn primary" data-cktoss="scan">' + esc(tx("scan")) + '</button><button type="button" class="btn ghost" data-cktoss="book">' + esc(tx("book")) + '</button></div></div>';
 }
 function fTossRepaint(){ const n = r5$("#ckToss"), h = fTossHTML(); if (n) { if (h) n.outerHTML = h; else n.remove(); } else if (h) { const sh = r5$("#r5Shuf"); if (sh) sh.insertAdjacentHTML("beforeend", h); }
-  const pk = r5$("#r5Pick"); if (pk && fSrc() === "products" && !fSrcPool().length) pk.innerHTML = fProductsEmptyHTML(); }
+  const pk = r5$("#r5Pick"); if (pk && fSrc() === "products" && !fSrcPool().length && !ckCatPending()) pk.innerHTML = fProductsEmptyHTML(); }
 if (typeof document !== "undefined") document.addEventListener("click", e => { const b = e.target && e.target.closest && e.target.closest("[data-cktoss]"); if (!b) return; e.preventDefault();
   const k = b.dataset.cktoss;
   if (k === "hide") { const h = fTossHidden(); if (h.indexOf(b.dataset.key) < 0) h.push(b.dataset.key); ckSet(CK_TOSS_HIDDEN, JSON.stringify(h.slice(-500))); fTossRepaint(); }
@@ -8782,11 +8806,14 @@ function fMeta(f){ const m = window.LOWI_COOK && f.book ? LOWI_COOK.minTxt(f.id)
 function fBadge(f){ return '<span class="sh-pk ' + (f.r === "selten" ? "warn" : "gold") + '">' + (f.r === "selten" ? "SELTEN" : "JA") + "</span>"; }
 function fPick(){
   dkNorm(); /* r3k-pick, ck-src: from the chosen source only */ const lf = fLast(), A = fSrcPool().filter(f => R5.never.indexOf(f.id) < 0), P = A.length > 1 && lf ? A.filter(f => f.id !== lf.id) : A; if (!P.length) return null;
-  const w = P.map(f => R5.liked.indexOf(f.id) >= 0 ? 3 : R5.skipped.indexOf(f.id) >= 0 ? 0.3 : f.com ? 1.5 : 1), sum = w.reduce((a, b) => a + b, 0);
+  /* ck-cat: caught products together weigh as much as the whole shop range, so your own and community catches still come up */
+  const nCat = P.filter(f => f.catalog).length, nOwn = P.length - nCat, own = nCat && nOwn ? Math.max(1, nCat / nOwn) : 1;
+  const w = P.map(f => (R5.liked.indexOf(f.id) >= 0 ? 3 : R5.skipped.indexOf(f.id) >= 0 ? 0.3 : f.com ? 1.5 : 1) * (f.buy && !f.catalog ? own : 1)), sum = w.reduce((a, b) => a + b, 0);
   let x = Math.random() * sum; for (let i = 0; i < P.length; i++) { x -= w[i]; if (x <= 0) return P[i]; } return P[P.length - 1];
 }
 function fHomeHTML(){
   ckSyncSwaflo(); try { document.documentElement.setAttribute("data-ckview", fView()); } catch(e){}
+  if (fSrc() === "products" && ckCatPending()) ckCatLoad(); /* ck-cat */
   const last = fLast();
   return ckBarHTML() + '<div class="r5-shuf" id="r5Shuf">' +
     (window.LowiSwaflo ? LowiSwaflo.toolbarHTML() : '') +
@@ -8796,7 +8823,7 @@ function fHomeHTML(){
     '<button class="btn primary r5-go" data-r5="shuffle" id="r5Go">' + R5IC.shuffle.replace("<svg", '<svg width="20" height="20"') + '<span>' + (last ? "Shuffle again" : "Shuffle my food") + '</span></button>' +
     (window.LowiCS ? '<div class="cs-pair cs-hub" id="csHub"><button type="button" class="cs-btn cs-cook" data-lc="hubcook">' + LowiCS.ic.pot + '<span>Cook it</span></button><button type="button" class="cs-btn cs-shop" data-lc="hubshop">' + LowiCS.ic.cart + '<span>Shop it</span></button></div>' : "") +
     '<div class="small muted r5-hint" data-noi18n>' + /* r3k-hint */ fHintTxt() + '</div>' +
-    '<div id="r5Pick">' + (last ? fRevealHTML(last, false) : (fSrc() === "products" && !fSrcPool().length ? fProductsEmptyHTML() : "")) + '</div>' + fTossHTML() + '</div>' +
+    '<div id="r5Pick">' + (last ? fRevealHTML(last, false) : (fSrc() === "products" && !fSrcPool().length && !ckCatPending() ? fProductsEmptyHTML() : "")) + '</div>' + fTossHTML() + '</div>' +
     /* r3k-home */ dkSectionHTML() +
     '<div id="r3kYes">' + fYesHTML() + '</div>';
 }
@@ -8837,7 +8864,8 @@ function fRevealHTML(f, anim){
 }
 let fSpinning = false;
 function fShuffle(instant){
-  if (fSpinning) return; const f = fPick(); if (!f) { const eh = ckEmptyHTML(), pk0 = r5$("#r5Pick"); if (eh === null) LowiSwaflo.emptyPick(); else if (pk0) pk0.innerHTML = eh; return; } const strip = r5$("#r5Strip"), stage = r5$("#r5Stage"), pick = r5$("#r5Pick");
+  if (fSpinning) return; if (fSrc() === "products" && ckCatPending() && !fSrcPool().length) { ckCatLoad().then(() => { if (fSrc() === "products" && !ckCatPending()) fShuffle(instant); }); return; }
+  const f = fPick(); if (!f) { const eh = ckEmptyHTML(), pk0 = r5$("#r5Pick"); if (eh === null) LowiSwaflo.emptyPick(); else if (pk0) pk0.innerHTML = eh; return; } const strip = r5$("#r5Strip"), stage = r5$("#r5Stage"), pick = r5$("#r5Pick");
   fSaveLast(f); if (f.buy && window.LowiDex && LowiDex.enrich) LowiDex.enrich(f.product).catch(() => {}); /* prod-verdict: fetch while it spins */
   if (!strip || !stage) return;
   const selectionAtPick = fSrc() + "|" + fCatSel();

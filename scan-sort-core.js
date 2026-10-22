@@ -55,7 +55,35 @@
         scan: ['Scan a product', 'Produkt scannen', 'Escanear un producto'],
         book: ['Shuffle the eBook', 'E-Book mischen', 'Mezclar el eBook']
     };
+    /* catalog (Oct 22, 2026, bug: Cook > Products > Shuffle showed "No low-spike products to shuffle yet"): the Products pool was only
+       the person's own and community catches, so with few or unrated catches it came out empty. The built-in shop ranges
+       (data/shop/<range>.json, rated by LowiStorePicksCore) now feed it too: only products with a real label that pass the store
+       formula (GL and sugar per serving). The caller still runs them through split() so the scanner's estimator has the last word.
+       data: a range file; core: LowiStorePicksCore; o.max: cap (default 240), spread over the food groups. */
+    function catalog(data, core, o) {
+        o = o || {};
+        if (!data || !core || typeof core.build !== 'function') return [];
+        const max = o.max || 240, src = String(o.range || data.chain || 'catalog');
+        let built; try { built = core.build(data); } catch (e) { return []; }
+        /* the range files have no ingredient lists, so the app's pork and sweetener exclusions are applied to the name */
+        const NOPE = /schwein|\bpork|bacon|\bspeck|fl\u00e6sk|svine|lonza|fedtegrever|prosciutto|serrano|chorizo|cerdo|leberk\u00e4se|\bzero\b|zuckerfrei|sugar.?free|sukkerfri|sin az[u\u00fa]car|\bdiet\b|s\u00fc\u00dfstoff|sweetener/i,
+            PORKISH = /salami|schinken|wurst|\bmett\b|cabanossi|tyrolini|landj[a\u00e4]ger|mortadella|pancetta|guanciale|wiener|\bham\b|skinke|p\u00f8lse/i,
+            BIRD = /pute|h\u00e4hnchen|huhn|chicken|rinder|beef|gefl\u00fcgel|kalkun|kylling|lamm|turkey|vegan|vegetar/i;
+        const lanes = (built.groups || []).map(g => (g.pass || []).filter(it => it && it.p && typeof it.p.c === 'number' && !it.r.typical && !NOPE.test(String(it.p.n) + ' ' + String(it.p.k || '')) && !(PORKISH.test(String(it.p.n)) && !BIRD.test(String(it.p.n)))));
+        const out = [];
+        for (let i = 0; out.length < max; i++) {
+            let any = false;
+            lanes.forEach(l => { const it = l[i]; if (!it || out.length >= max) return; any = true;
+                const p = it.p, img = typeof core.photo === 'function' ? core.photo(p) : null;
+                out.push({ name: String(p.n), brand: p.b || '', barcode: /^[0-9]{8,14}$/.test(String(p.g || '')) ? String(p.g) : '', img: img || '', quantity: p.q || '',
+                    cat: it.r.group === 'drinks' ? 'drink' : 'food', facts: { c: p.c, s: p.s == null ? 0 : p.s, f: p.f == null ? 0 : p.f, p: p.p == null ? 0 : p.p, fat: p.fat, drink: it.r.group === 'drinks' },
+                    ingredients: '', verdict: 'ok', catalog: true, source: 'catalog:' + src, gl: it.r.gl });
+            });
+            if (!any) break;
+        }
+        return out;
+    }
     const LI = { en: 0, de: 1, es: 2 };
     function text(k, lang) { const a = TX[k]; if (!a) return k; const i = LI[String(lang || 'en').slice(0, 2)]; return a[i == null ? 0 : i]; }
-    return { verdictOf, fits, split, TX, text };
+    return { verdictOf, fits, split, catalog, TX, text };
 });

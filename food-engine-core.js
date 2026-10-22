@@ -23,7 +23,7 @@
 })(typeof window !== 'undefined' ? window : null, function () {
     'use strict';
 
-    const VERSION = 'food-engine-core b1 2026-10-22';
+    const VERSION = 'food-engine-core d 2026-10-22';
     const NUTRIENTS = ['carbs', 'sugar', 'fibre', 'protein', 'fat', 'kcal', 'salt'];
     // Short keys used across the app (LowiSpikeCore facts, data/shop columns) map onto the engine's names.
     const ALIAS = {c: 'carbs', s: 'sugar', f: 'fibre', fiber: 'fibre', p: 'protein', k: 'kcal', energy: 'kcal'};
@@ -166,5 +166,39 @@
         return Object.assign(base, {key, category: CATEGORY[key], reasons, modifiers});
     }
 
-    return {VERSION, NUTRIENTS, BANDS, GROUP_SERVING, CATEGORY, normalize, validateNutrition, calculateServing, estimateGlucoseImpact};
+    // scanFood (scanfe-c/d): one call for a product. Ingredient flags come from ingredient-core.js (window.LowiIngredients),
+    // the JA / SELTEN / NEIN verdict from food-policy-core.js (window.LowiFoodPolicy, rules in
+    // data/food-policy/lowispike-policy.v1.json). confidence stays null until the confidence step (scanfe-f1).
+    // product: {name, brand, barcode, unit, per100, ingredients, categories, claims, evidence}; serving: grams or
+    // {userG, manufacturerG, group}; ctx: {profile: {allergies: [EU-14 keys], avoid: [policy category keys]}}.
+    let ING = null, POL = null;
+    function lib(name, file) {
+        if (typeof window !== 'undefined' && window[name]) return window[name];
+        if (typeof require === 'function') { try { return require(file); } catch (e) { return null; } }
+        return null;
+    }
+    function scanFood(product, serving, ctx) {
+        const p = product || {};
+        ING = ING || lib('LowiIngredients', './ingredient-core.js');
+        POL = POL || lib('LowiFoodPolicy', './food-policy-core.js');
+        const val = validateNutrition(p.per100, p.unit);
+        const srv = calculateServing(val, serving == null ? {manufacturerG: p.servingG, group: p.group} : serving);
+        const glucose = estimateGlucoseImpact({serving: srv, category: {liquid: p.unit === 'ml'}, evidence: p.evidence, withMeal: !!(ctx && ctx.withMeal)});
+        const ingredients = ING ? ING.analyzeIngredients(p.ingredients, {name: p.name, brand: p.brand, claims: p.claims}) : null;
+        const policy = POL ? POL.applyPolicy({product: p, ingredients, glucose, serving: srv, profile: ctx && ctx.profile}) : null;
+        return {
+            engine: VERSION,
+            policyVersion: policy ? policy.policyVersion : null,
+            verdict: policy ? policy.verdict : null,
+            policy,
+            glucose,
+            serving: srv,
+            ingredients,
+            allergens: ingredients ? ingredients.allergens : [],
+            claims: ingredients ? ingredients.claims : [],
+            confidence: null
+        };
+    }
+
+    return {VERSION, NUTRIENTS, BANDS, GROUP_SERVING, CATEGORY, normalize, validateNutrition, calculateServing, estimateGlucoseImpact, scanFood};
 });

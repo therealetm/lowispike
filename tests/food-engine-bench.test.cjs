@@ -146,7 +146,7 @@ test('no row that expects NEIN for sugar or starch reads ok today', () => {
   assert.deepStrictEqual(bad, []);
 });
 
-test('sweeteners inside brackets are seen (Coca-Cola Zero, high-protein pudding)', {todo: 'scanfe-c: spike-core list() drops parenthesised text, so "Suessungsmittel (Aspartam ...)" is missed'}, () => {
+test('sweeteners inside brackets are seen (Coca-Cola Zero, high-protein pudding)', () => {
   for (const id of ['cocacola-zero', 'ehrmann-high-protein-pudding']) {
     assert.ok(today(byId[id]).why.some(w => w[0] === 's_sweet'), id + ' flags its sweetener');
   }
@@ -172,7 +172,19 @@ test('engine (b1): every benchmark row gets an expected carbohydrate-exposure ca
   assert.ok(['Moderate', 'Higher'].includes(g.category), 'Ultje at 30 g: ' + g.category);
 });
 
-test('engine verdicts match the benchmark policy, exposure and confidence', {todo: engine && typeof engine.scanFood === 'function' ? false : 'scanfe-d/f1: scanFood (policy + confidence) not built yet'}, () => {
+test('engine (d): scanFood verdicts match the benchmark policy (JA / SELTEN / NEIN) and exposure', () => {
+  assert.ok(engine && typeof engine.scanFood === 'function', 'LowiFoodEngine.scanFood exists');
+  const miss = [];
+  for (const r of rows) {
+    const out = engine.scanFood({name: r.name, barcode: r.barcode, unit: r.unit, per100: r.per100, ingredients: r.ingredients, categories: r.categories || []}, r.serving.g);
+    if (!r.expect.policy.includes(out.verdict)) miss.push(r.id + ' policy ' + out.verdict + ' (' + (out.policy && out.policy.decidedBy) + ')');
+    if (!r.expect.carbExposure.includes(out.glucose && out.glucose.category)) miss.push(r.id + ' exposure ' + (out.glucose && out.glucose.category));
+    if (out.policyVersion !== 'lowispike-policy.v1') miss.push(r.id + ' policy version');
+  }
+  assert.deepStrictEqual(miss, []);
+});
+
+test('engine verdicts match the benchmark policy, exposure and confidence', {todo: engine && typeof engine.assessConfidence === 'function' ? false : 'scanfe-f1: confidence (High / Medium / Low) not built yet'}, () => {
   assert.ok(engine && typeof engine.scanFood === 'function', 'LowiFoodEngine.scanFood exists');
   const miss = [];
   for (const r of rows) {

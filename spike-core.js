@@ -24,6 +24,14 @@
         if (typeof require === 'function') { try { E0 = require('./food-engine-core.js'); } catch (e) { E0 = null; } }
         return E0;
     }
+    // Ingredient parser (scanfe-c): reads bracketed text too. Its hits are added to the list rules below, never replace them,
+    // so a verdict can only get stricter. Policy (scanfe-d) rides along in `engine.policy` for the details; it never changes the card.
+    let I0 = null, P0 = null;
+    function lib(name, file) {
+        if (typeof window !== 'undefined' && window[name]) return window[name];
+        if (typeof require === 'function') { try { return require(file); } catch (e) { return null; } }
+        return null;
+    }
     const RX = {
         sweet: /sucralos|aspartam|acesulfam|stevi|erythrit|xylit|sorbit|maltit|saccharin|cyclamat|süßstoff|suessstoff|sweetener|edulcorante|\be ?95[0-5]\b|\be ?96[0-9]\b/,
         addedSugar: /zucker|sugar|sirup|syrup|dextros|glukose|glucose|fruktose|fructose|honig|honey|maltodextrin|saccharose|azúcar|azucar|melasse|molasses|invert|agave|karamell|caramel/,
@@ -59,9 +67,12 @@
         const veg = hasI && find(L, RX.veg, 0, 2);
         const drink = (p.cat === 'drink' || !!f.drink) && !veg;
         if (!hasI && !hasN) return {verdict: 'unknown', why: [], score: null, est: true};
-        const sweet = hasI ? find(L, RX.sweet, 0, 99) : null;
-        const sugarTop = hasI ? find(L, RX.addedSugar, 0, 3, RX.noSugar) : null;
-        const refinedTop = hasI ? find(L, RX.refined, 0, 3) : null;
+        I0 = I0 || lib('LowiIngredients', './ingredient-core.js');
+        const A = I0 && hasI ? I0.analyzeIngredients(p.ingredients, {name: p.name}) : null;
+        const AS = A && A.summary ? A.summary : {};
+        const sweet = hasI ? (find(L, RX.sweet, 0, 99) || AS.sweetenerHit || null) : null;
+        const sugarTop = hasI ? (find(L, RX.addedSugar, 0, 3, RX.noSugar) || AS.addedSugarTop || null) : null;
+        const refinedTop = hasI ? (find(L, RX.refined, 0, 3) || AS.refinedTop || null) : null;
         const wholeTop = hasI ? find(L, RX.whole, 0, 3) : null;
         const refined = !!refinedTop && !(wholeTop && /vollkorn|whole|integral/.test(refinedTop.w));
         const why = [];
@@ -98,7 +109,13 @@
         }
         const score = verdict === 'unknown' ? null : scoreOf(key, cg, sg);
         const out = {verdict, why: why.slice(0, 4), score, est: true};
-        Object.defineProperty(out, 'engine', {value: {version: E.VERSION, bands: E.BANDS.version, key, glucose, serving: {g: serving.g, unit: serving.unit, source: serving.source, shown: serving.shown}, valid: nutrition.valid, issues: nutrition.issues}, enumerable: false});
+        P0 = P0 || lib('LowiFoodPolicy', './food-policy-core.js');
+        let policy = null;
+        if (P0) {
+            try { policy = P0.applyPolicy({product: {name: p.name, unit, per100, categories: p.categories || []}, ingredients: A || undefined, glucose, serving}); } catch (e) { policy = null; }
+        }
+        const ingredients = A ? {status: A.status, allergens: A.allergens, claims: A.claims, summary: AS} : {status: hasI ? 'complete' : 'missing', allergens: [], claims: []};
+        Object.defineProperty(out, 'engine', {value: {version: E.VERSION, bands: E.BANDS.version, key, glucose, serving: {g: serving.g, unit: serving.unit, source: serving.source, shown: serving.shown}, valid: nutrition.valid, issues: nutrition.issues, ingredients, policy: policy && {verdict: policy.verdict, version: policy.policyVersion, decidedBy: policy.decidedBy, why: policy.why, provisional: policy.provisional}}, enumerable: false});
         return out;
     }
     const TX = {

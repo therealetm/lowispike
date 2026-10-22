@@ -41,6 +41,8 @@ test('back: one back control in a part; the round Home arrow hides there; system
     assert.match(sn, /tabOf\(\) === 'profile' && H\.classList\.contains\('g2e-open'\)\) \{ try \{ W\.LowiG2E\.close\(\); return true;/);
     /* the header Back pill keeps a 44px tap target and goes to the overview */
     assert.match(html, /\.g2e-back\{[^}]*min-height:44px/);
+    /* the title stops before the theme switch and the X on the right (iPhone SE: "Look & sound" ran under them) */
+    assert.match(read('top-bar.css'), /html\.g2e-on\.g2e-open #tab-profile > #g2eHead\{padding-right:124px!important\}/);
     assert.match(g2e, /data-g2e-back[\s\S]{0,200}closePanel\(\)|closest\("\[data-g2e-back\]"\)[\s\S]{0,120}closePanel/);
 });
 

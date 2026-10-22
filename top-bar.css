@@ -135,3 +135,6 @@ html #tbTheme#tbTheme::after{inset:-2px}
 /* Oct 17 (Eman): a long press anywhere in the app no longer starts iOS copy/select or the callout menu. Real text fields stay selectable. */
 html,body,button,[role="button"],canvas,svg,img,label,nav,#main,.lb-bub,.lb-ctl,.r2-ov,.r2-sh{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 input,textarea,select,[contenteditable]:not([contenteditable="false"]),[contenteditable]:not([contenteditable="false"]) *{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+/* Oct 22 2026 (profile overview first, one Back): inside a Profile part the title stops before the theme switch and the round X
+   (X 16px from the right, the switch 10px left of it, both 44px), so on an iPhone SE "Look & sound" never runs under them */
+html.g2e-on.g2e-open #tab-profile > #g2eHead{padding-right:124px!important}

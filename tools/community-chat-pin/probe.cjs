@@ -73,7 +73,7 @@ async function run(device, light, lang) {
     /* not the admin: no Pin in the menu, no Unpin on a bar */
     await p.evaluate(() => { window.LowiOwnerAdmin.isOwner = () => false; document.querySelectorAll('#cmList .cp-acts').forEach(a => { const m = a.closest('[id^="cm-"]'), b = m && m.querySelector('[data-chat="more"]'); if (b) b.click(); }); window.LowiCommunity.refresh(); }); await sleep(1500);
     const other = await p.evaluate(() => { const b = [...document.querySelectorAll('#cmList [data-chat="more"]')].pop(); if (b) b.click(); return new Promise(r => setTimeout(() => r(!!document.querySelector('#cmList [data-chat="pin-msg"],#cmList [data-chat="unpin"]')), 2000)); });
-    if (other) fail(W, 'a non-admin sees Pin/Unpin');
+    if (other) { const d = await p.evaluate(() => ({ owner: window.LowiOwnerAdmin.isOwner(), frozen: Object.isFrozen(window.LowiOwnerAdmin), open: [...document.querySelectorAll('#cmList [data-chat="pin-msg"],#cmList [data-chat="unpin"]')].map(b => (b.closest('[id^="cm-"]') || {}).id + ':' + b.dataset.chat) })); fail(W, 'a non-admin sees Pin/Unpin ' + JSON.stringify(d)); }
     if (R.errs.length) fail(W, 'page errors ' + JSON.stringify(R.errs.slice(0, 3)));
   } catch (e) { fail(W, 'run: ' + String(e.message).split('\n')[0]); }
   finally { await R.close(); }

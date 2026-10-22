@@ -62,6 +62,18 @@ function afterCaption(sent, cur){
  let text=ct;if(st.trim()){if(ct===st||ct.trim()===st.trim())text='';else if(ct.startsWith(st))text=ct.slice(st.length).replace(/^\s+/,'');}
  return {text,reply:cr&&cr!==sr?cr:null};
 }
-const api={EMOJI,SIGNS,type,esc,image,photo,photoBody,voice,voiceBody,identity,quiet,message,visible,read,write,session,afterCaption};
+/* 22 Oct 2026 (Emmanuel, iPhone: "when clicking on how many users are in there ... a different window"): the Members page list.
+   rows = [{uid,n,xp,lv,admin,online,last,me,lvHidden}]. Only public fields come out (nickname, level, admin, online, last seen,
+   you): weight, health, birthday or anything else on a profile row is dropped here. Order: admins, then online, then the rest;
+   inside a group you first, then the most recent, then by name. q filters by nickname (case and accents ignored).
+   Returns {count: everyone listed before the filter, rows: the filtered list}. */
+function fold(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();}
+function memberGroup(r){return r.admin?0:r.online?1:2;}
+function members(rows,q){const seen=new Set(),all=[];
+ for(const r of rows||[]){if(!r||!r.uid)continue;const uid=String(r.uid),n=String(r.n||'').replace(/\s+/g,' ').trim().slice(0,40);if(!n||seen.has(uid))continue;seen.add(uid);
+  all.push({uid,n,xp:Math.max(0,+r.xp||0),lv:Math.max(1,Math.round(+r.lv||1)),admin:!!r.admin,online:!!r.online,last:+r.last||0,me:!!r.me,lvHidden:!!r.lvHidden});}
+ all.sort((a,b)=>memberGroup(a)-memberGroup(b)||(b.me-a.me)||(b.last-a.last)||a.n.localeCompare(b.n));
+ const f=fold(q);return {count:all.length,rows:f?all.filter(r=>fold(r.n).includes(f)):all};}
+const api={EMOJI,SIGNS,type,esc,image,photo,photoBody,voice,voiceBody,identity,quiet,message,visible,read,write,session,afterCaption,members,memberGroup};
 if(typeof module==='object'&&module.exports)module.exports=api;else root.LowiChatCore=api;
 })(typeof window==='object'?window:globalThis);

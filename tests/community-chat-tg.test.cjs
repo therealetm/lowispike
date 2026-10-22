@@ -15,7 +15,7 @@ test('room top bar: round back, centred pill with room icon + name + community n
  assert.equal(f.nodes.crCname.textContent,'LOWiSPIKE Community');
  assert.match(f.nodes.crPin.innerHTML,/cr-pinl">Pinned Message<[\s\S]*cr-pint">Welcome to the galaxy/);
  assert.equal(f.nodes.crMembers.attrs['aria-expanded'],'false');
- f.click({chat:'members'});assert.equal(f.nodes.crMembers.attrs['aria-expanded'],'true');assert('open' in f.nodes.crCrew.dataset);
+ f.click({chat:'members'});assert.equal(f.nodes.crMembers.attrs['aria-expanded'],'true');assert(!('open' in f.nodes.crCrew.dataset),'22 Oct: the Recent voices card never lies over the chat; the button opens the Members page');
  assert.match(f.nodes.crCrew.innerHTML,/Recent voices/,'the members list never opens empty');
  f.click({chat:'members'});assert.equal(f.nodes.crMembers.attrs['aria-expanded'],'false');
  f.click({chat:'pin'});assert.equal(f.nodes.crPin.attrs['aria-expanded'],'true');

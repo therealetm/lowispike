@@ -145,17 +145,34 @@
         const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
         return { left: cx - w / 2, top: cy - h / 2, right: cx + w / 2, bottom: cy + h / 2, width: w, height: h };
     }
+    /* a scroll area or panel that is focusable as a whole (the chat's message list has a tabindex) is not a button:
+       what counts is the tappable things inside it. Anything bigger than a quarter of the screen is such an area. */
+    const bigCache = new WeakMap();
+    function big(el) {
+        if (el.id === 'tabbar') return false;
+        let v = bigCache.get(el);
+        if (v && v.t > Date.now() - 300) return v.big;
+        const q = el.getBoundingClientRect();
+        v = { t: Date.now(), big: q.width * q.height > innerWidth * innerHeight / 4 };
+        bigCache.set(el, v);
+        return v.big;
+    }
     function hitsAt(r) {
         let n = 0;
-        /* a 12 px grid: small icon buttons (24 px and up) cannot slip between the samples */
-        const grid = (a, b) => { const out = [], k = Math.max(2, Math.ceil((b - a - 4) / 12)); for (let j = 0; j <= k; j++) out.push(a + 2 + (b - a - 4) * j / k); return out; };
-        const xs = grid(r.left, r.right), ys = grid(r.top, r.bottom);
-        for (const x of xs) for (const y of ys) {
-            if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) { n += 1; continue; }
-            const stack = D.elementsFromPoint(x, y);
-            const top = stack.find(el => el !== btn && !btn.contains(el));
-            if (top && top !== D.body && top !== D.documentElement && top.closest(TAPPABLE)) n += 1;
-        }
+        /* an 8 px grid over the pill plus a 3 px margin: a button that only grazes its edge, or a small icon (10 px and up),
+           still counts, so the pill keeps a little air around every tappable thing */
+        const M = 3, grid = (a, b) => { const out = [], k = Math.max(2, Math.ceil((b - a) / 8)); for (let j = 0; j <= k; j++) out.push(a + (b - a) * j / k); return out; };
+        const xs = grid(r.left - M, r.right + M), ys = grid(r.top - M, r.bottom + M);
+        const pe = btn.style.pointerEvents; btn.style.pointerEvents = 'none';   /* hit-test what is under the pill (cheaper than elementsFromPoint) */
+        try {
+            for (const x of xs) for (const y of ys) {
+                if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) { if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) n += 1; continue; }   /* the pill itself off screen */
+                const top = D.elementFromPoint(x, y);
+                if (!top || top === btn || btn.contains(top) || top === D.body || top === D.documentElement) continue;
+                const hit = top.closest(TAPPABLE);
+                if (hit && !big(hit)) n += 1;
+            }
+        } finally { btn.style.pointerEvents = pe; }
         return n;
     }
     function barGap() {
@@ -178,7 +195,7 @@
         if (!done) {
             apply('tr:c'); const y0 = Math.round(box().top);
             apply('br:c'); const y1 = Math.round(box().top);
-            for (const e of ['er', 'el']) { for (let y = y0; y <= y1; y += 22) if (test(e + '@' + y)) { done = true; break; } if (done) break; }
+            for (const e of ['er', 'el']) { for (let y = y0; y <= y1; y += 11) if (test(e + '@' + y)) { done = true; break; } if (done) break; }
         }
         const best = pick(tries) || 'tr';
         apply(best);
@@ -210,8 +227,26 @@
     const soon = () => { if (!shown) return; setTimeout(() => { if (shown) place(false); }, 260); setTimeout(() => { if (shown) place(false); }, 900); };
     D.addEventListener('click', soon, true);
     W.addEventListener('hashchange', soon); W.addEventListener('popstate', soon);
+    /* screens that slide or fade in, and content scrolled under the pill: look again once it settles (one look per frame) */
+    let raf = 0;
+    const settle = () => { if (!shown || raf) return; raf = (W.requestAnimationFrame || setTimeout)(() => { raf = 0; if (shown) place(false); }); };
+    D.addEventListener('transitionend', settle, true); D.addEventListener('animationend', settle, true);
+    D.addEventListener('scroll', settle, { capture: true, passive: true });
+    /* the card hidden by a sheet, or a sheet added / removed: show, hide or move the pill right away, not on the next 700 ms tick */
+    if (W.MutationObserver) {
+        let queued = 0;
+        const now = () => { if (queued) return; queued = setTimeout(() => { queued = 0; tick(); if (shown) soon(); }, 60); };
+        const mo = new MutationObserver(muts => { for (const m of muts) { if (m.target === btn || (btn && [].some.call(m.addedNodes, n => n === btn))) continue; now(); return; } });
+        const watch = () => {
+            if (!D.body) return;
+            mo.observe(D.body, { childList: true });
+            const tour = D.getElementById('ltTour');
+            if (tour && !tour.__ltrWatched) { tour.__ltrWatched = 1; mo.observe(tour, { attributes: true, attributeFilter: ['class', 'data-held', 'hidden'] }); }
+        };
+        watch(); setInterval(watch, 2000);
+    }
     W.LowiTutorialResume = Object.assign({}, core, {
-        state: () => store.get(), visible: () => shown, spot: () => (btn && btn.getAttribute('data-spot')) || '', tick, resume,
+        state: () => store.get(), visible: () => shown, spot: () => (btn && btn.getAttribute('data-spot')) || '', hits: () => (btn && shown ? hitsAt(box()) : 0), tick, resume,
         /* tutorial-auto.js asks this before its one-time "Pick up the tour?" card: the pill already offers it */
         covers: () => active(store.get())
     });

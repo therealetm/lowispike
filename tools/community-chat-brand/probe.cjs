@@ -62,6 +62,11 @@ async function openRoom(p) {
   await p.locator('.rm-tab[data-rm="chat"]').click({ force: true }).catch(() => { }); await sleep(1200);
   if (!(await p.evaluate(() => !!document.querySelector('#cgThread[data-open]')))) { await p.locator('.rm-ch[data-ch="galaxy"]').click({ force: true, timeout: 3000 }).catch(() => { }); await sleep(1500); }
   if (!(await p.evaluate(() => !!document.querySelector('#cgThread[data-open]')))) { await p.evaluate(() => { const b = document.querySelector('[data-chat="open-thread"]'); if (b) b.click(); }); await sleep(1200); }
+  /* a loaded machine can be slow: try again for up to ~20 s before giving up */
+  for (let i = 0; i < 10 && !(await p.evaluate(() => !!document.querySelector('#cgThread[data-open]'))); i++) {
+    await p.locator('.rm-tab[data-rm="chat"]').click({ force: true, timeout: 3000 }).catch(() => { }); await sleep(800);
+    await p.locator('.rm-ch[data-ch="galaxy"]').click({ force: true, timeout: 3000 }).catch(() => { }); await sleep(1200);
+  }
   return p.evaluate(() => !!document.querySelector('#cgThread[data-open]'));
 }
 async function run(device) {

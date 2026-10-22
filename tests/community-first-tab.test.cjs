@@ -19,10 +19,11 @@ test('firstAction: every opening lands on the first tab of the order', () => {
   assert.strictEqual(A('room', 'chans', false, false, false), 'room');
   assert.strictEqual(A('room', '', true, false, false), 'room', 'the old chat room closes: Room shows');
   assert.strictEqual(A('room', 'create', false, false, false), 'room');
-  /* first = Chat (the channel list) */
+  /* first = Chat: the galaxy chat room itself since item 36 (there is no channel list any more) */
   assert.strictEqual(A('chat', '', false, false, false), 'chat');
-  assert.strictEqual(A('chat', 'chans', false, false, false), null);
-  assert.strictEqual(A('chat', '', true, false, false), 'chat');
+  assert.strictEqual(A('chat', 'chans', false, false, false), 'chat');
+  assert.strictEqual(A('chat', 'aff', false, false, false), 'chat');
+  assert.strictEqual(A('chat', '', true, false, false), null, 'already in the chat room: leave it');
   /* first = Creation */
   assert.strictEqual(A('create', 'aff', false, false, false), 'create');
   /* only a chat room opened for this visit (a reply from a Home visit) or a deep link is left alone */

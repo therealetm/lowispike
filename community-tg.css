@@ -9,6 +9,11 @@
 
 /* ---- the room owns the whole screen on phones: Community header/tabs, day/night and profile buttons step aside ---- */
 html.cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room] .rm-bar{display:none!important}
+/* 22 Oct (item 36): the Chat tab opens straight into this room, so on phones the tab row stays above it (one row, no glass blur,
+   nothing else of the header) - the only way to reach Room, Creation and Affiliates when Chat is the first tab */
+html.cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room]>.rm-bar{display:flex!important;gap:0!important;margin:0!important;padding:6px 8px 8px!important}
+html.cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room]>.rm-bar>:not(.rm-tabs){display:none!important}
+html.cr-room[data-lay=phone] #cmPaneChat[data-spirit-chat][data-room] .rm-tabs{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;background:rgba(8,16,40,.94)!important}
 html.cr-room[data-lay=phone]:has(#tab-foryou.active) #tbTheme,
 html.cr-room[data-lay=phone]:has(#tab-foryou.active) #pfBtn{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
 

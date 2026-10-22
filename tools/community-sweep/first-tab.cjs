@@ -33,7 +33,7 @@ const REC = () => {
     requestAnimationFrame(tick);
 };
 const ORDERS = [['aff', 'room', 'chat', 'create'], ['room', 'chat', 'create', 'aff'], ['create', 'aff', 'room', 'chat'], ['chat', 'room', 'create', 'aff']];
-const expectOf = id => id === 'room' ? 'room|room' : id === 'chat' ? 'chat|chat' : id + '|' + id;
+const expectOf = id => id === 'room' ? 'room|room' : id === 'chat' ? 'chat|chat-room' : id + '|' + id;   /* item 36: Chat opens the chat room itself */
 (async () => {
     const o = { engine, members: 30, messages: 120 }; if (/^https?:/.test(where)) o.url = where; else if (where) o.root = where;
     const R = await H.open(o); const P = R.page; const results = [];

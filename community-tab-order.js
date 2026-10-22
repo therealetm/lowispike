@@ -34,7 +34,8 @@
     /* slot of a dragged tab: how many of the OTHER tabs' centres lie left of x */
     function slotAt(centers, x) { return centers.filter(c => c < x).length; }
     /* Oct 22 (item 33): what opening Community does, as a pure function so the rule is tested.
-       first: the first tab of the order; view: LowiRoomsUI.view() ('' = Room or the chat room, 'chans' = Chat, 'aff', 'create');
+       first: the first tab of the order; view: LowiRoomsUI.view() ('' = Room or the chat room, 'aff', 'create'; 'chans' was the old
+       Chat landing, gone since item 36: Chat IS the galaxy chat room now);
        room: the chat room (thread) is open; fresh: something opened that chat room for this very visit (a reply from a Home
        visit, a comment link), not a chat room left open on the last visit; deep: a #community/... link.
        Returns null (leave it) or the call to make: 'room' | 'chat' | a view id. */
@@ -44,7 +45,7 @@
         if (room && fresh) return null;
         first = IDS.includes(first) ? first : IDS[0];
         if (first === 'room') return room || view !== '' ? 'room' : null;
-        if (first === 'chat') return room || view !== 'chans' ? 'chat' : null;
+        if (first === 'chat') return room ? null : 'chat';   /* item 36: Chat opens the galaxy chat itself, no channel list first */
         return room || view !== first ? first : null;
     }
     const core = { IDS, KEY, HOLD_MS, SLOP, FRESH_MS, normalize, parse, moveTo, slotAt, firstAction };
@@ -210,7 +211,7 @@
             const act = firstAction(order()[0], R.view ? R.view() : null, room, Date.now() - roomStamp < FRESH_MS, deep);
             try {
                 if (act === 'room') R.setTab(false);
-                else if (act === 'chat') R.setTab(true);
+                else if (act === 'chat') R.setTab(true, true);   /* opened as the first tab: back from it leaves Community */
                 else if (act) R.showView(act);
                 else if (R.paint) R.paint();   /* already on it: still repaint, Creation/Affiliates are loaded again (they are freed on leaving) */
                 /* the page is kept between visits now, so the first section also starts at its top, as a rebuilt one did */

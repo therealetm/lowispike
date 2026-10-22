@@ -34,7 +34,20 @@ function me(){try{return (H()&&H().uid&&H().uid())||'';}catch(e){return '';}}
 function tabOrder(){const O=W.LowiCommunityTabs;try{return O&&O.order?O.order():['room','chat','create','aff'];}catch(e){return ['room','chat','create','aff'];}}
 function open(){const t=D.getElementById('cgThread');return !!(t&&t.hasAttribute('data-open'));}
 /* 21 Oct evening (Eden's Chat): the Chat tab opens the channel list; a channel opens its thread, "‹ Channels" comes back. */
-function setTab(chat){view='';const c=W.LowiCommunity;if(!c||!c.thread){if(chat)view='chans';paint();return;}if(open())c.thread(false);if(chat)view='chans';paint();}
+/* 22 Oct (item 36, Emmanuel: "I don't understand what all these rooms are. Remove it so they get straight to the chat group."):
+   the Chat tab opens the galaxy group chat itself. The channel landing ("Your galaxy" with Galaxy chat / Replies & mentions / Room
+   rows) is no longer shown. Replies & mentions are messages in this same chat, and the newest one is one tap away in the Community
+   menu; the people in your room are in the menu too (Rooms & people). Back from the chat (its arrow, an edge swipe, the phone's back
+   button, Escape) goes to the Community tab you came from (`from`), else leaves Community. `entry` = opened as Community's first
+   tab, so there is nothing to go back to. */
+let from='';
+function cur(){return open()?'chat':view==='chans'?'chat':view||'room';}
+function setTab(chat,entry){const c=W.LowiCommunity;
+ if(chat){const was=cur();from=entry?'':(was!=='chat'?was:from);view='';if(c&&c.thread&&!open())c.thread(true);paint();return;}
+ from='';view='';if(c&&c.thread&&open())c.thread(false);paint();}
+/* back from the chat: true when it went to the tab you came from; false = nothing to go back to (the caller leaves Community) */
+function back(){if(!open())return false;const f=from;from='';if(f==='create'||f==='aff'){showView(f);return true;}if(f==='room'){setTab(false);return true;}return false;}
+function goBack(){const S=W.LowiSections;if(S&&typeof S.back==='function'&&D.documentElement.classList.contains('rm-room-open')){S.back();return;}if(!back())setTab(false);}
 function openThread(){view='';const c=W.LowiCommunity;if(c&&c.thread&&!open())c.thread(true);paint();}
 /* Oct 21: two more tabs, Creation (LOWiSPIKE Create, being built) and Affiliates (the Master Blueprint). Each is its own page with its
    own shareable address (create/, affiliates/); the tab shows that page in a frame, so the app and the shared link are one thing.
@@ -45,7 +58,7 @@ function openThread(){view='';const c=W.LowiCommunity;if(c&&c.thread&&!open())c.
    one glass segmented control. The old separate "Copy link" button now lives in the menu. The Day/Night switch and the profile
    picture keep floating top right; row 1 reserves their width (--rm-tr), so nothing ever sits under them. */
 const VIEWS={create:'create/',aff:'affiliates/'},PANES={chans:1};let view='';const frames={};
-function showView(v){if(!VIEWS[v]&&!PANES[v])return;const c=W.LowiCommunity;if(open()&&c&&c.thread)c.thread(false);view=v;paint();}
+function showView(v){if(v==='chans'){setTab(true);return;}if(!VIEWS[v]&&!PANES[v])return;const c=W.LowiCommunity;if(open()&&c&&c.thread)c.thread(false);view=v;paint();}
 function viewUrl(v){try{return new URL(VIEWS[v],location.href.split('#')[0]).href;}catch(e){return VIEWS[v];}}
 function inviteUrl(){try{return location.href.split('#')[0].split('?')[0]+'#community';}catch(e){return '#community';}}
 /* Oct 22 (item 33 sweep): a rebuilt Community page (renderCommunity) left the cached frames detached: frames[view] still existed,
@@ -69,11 +82,11 @@ function ensure(){const pane=D.getElementById('cmPaneChat');if(!pane||!pane.hasA
  if(bar&&bar.isConnected&&bar.parentNode===pane)return bar;
  bar=D.createElement('nav');bar.className='rm-bar';bar.setAttribute('data-noi18n','');
  bar.innerHTML='<div class="rm-head"><button type="button" class="rm-id rm-menu-btn" data-rm="menu" aria-haspopup="menu" aria-expanded="false"><span class="rm-logo" aria-hidden="true"><i></i></span><span class="rm-idt"><b class="rm-name"></b><span class="rm-live"></span></span><span class="rm-chev" aria-hidden="true"></span></button></div>'
-  +'<div class="rm-tabs" role="tablist">'+tabOrder().map(k=>'<button type="button" role="tab" class="rm-tab" data-rm="'+k+'"></button>').join('')+'</div><div class="rm-crumb" hidden><button type="button" class="rm-back" data-rm="chat"></button><span class="rm-crumb-t"></span></div><div class="rm-banner" role="status" aria-live="polite"></div>';
+  +'<div class="rm-tabs" role="tablist">'+tabOrder().map(k=>'<button type="button" role="tab" class="rm-tab" data-rm="'+k+'"></button>').join('')+'</div><div class="rm-crumb" hidden><button type="button" class="rm-back" data-rm="back"></button><span class="rm-crumb-t"></span></div><div class="rm-banner" role="status" aria-live="polite"></div>';
  pane.insertBefore(bar,pane.firstChild);banner=bar.querySelector('.rm-banner');
  for(const ms of [60,250,600,1100])setTimeout(()=>fit(bar),ms);setTimeout(maybeWelcome,1200);
  bar.addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(!b)return;const a=b.dataset.rm;
-  if(a==='room')setTab(false);else if(a==='chat')setTab(true);else if(a==='create'||a==='aff')showView(a);else if(a==='copy')copyView();else if(a==='sheet')openSheet();else if(a==='menu')toggleMenu();
+  if(a==='back')goBack();else if(a==='room')setTab(false);else if(a==='chat')setTab(true);else if(a==='create'||a==='aff')showView(a);else if(a==='copy')copyView();else if(a==='sheet')openSheet();else if(a==='menu')toggleMenu();
   else if(a==='letin'){R()&&R().letIn(b.dataset.uid).then(paint);}else if(a==='notnow'){R()&&R().dismiss(b.dataset.uid);paint();}});
  bar.querySelector('.rm-tabs').addEventListener('keydown',e=>{if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft')return;const ts=[...bar.querySelectorAll('.rm-tab')],i=ts.indexOf(D.activeElement);if(i<0)return;e.preventDefault();const n=ts[(i+(e.key==='ArrowRight'?1:ts.length-1))%ts.length];n.focus();n.click();});
  return bar;}
@@ -141,7 +154,10 @@ function paintChans(pane){let box=pane.querySelector(':scope>.rm-chans');if(view
   +'<button type="button" class="rm-l-go" data-ch="galaxy">'+esc(tr('lGo'))+'</button>';
  if(box.__h!==h){box.innerHTML=h;box.__h=h;}}
 /* Community menu (Eden's dropdown): only things that really work here. */
+/* item 36: the newest reply or mention addressed to you, now that the channel list that showed it is gone */
+function lastDirected(){try{const c=W.LowiCommunity,d=c&&c.directed&&c.directed(),l=(d&&d.list)||[];return l.length?{m:l[l.length-1],n:l.filter(x=>!x.seen).length}:null;}catch(e){return null;}}
 function menuItems(){const it=[['people','👥',tr('mPeople')],['find','🔎',tr('find')]];
+ const dl=lastDirected();if(dl)it.unshift(['replies','💬',tr('chReplies')+(dl.n?' ('+dl.n+')':'')]);
  if(D.getElementById('pfBtn'))it.push(['profile','👤',tr('mProfile')]);
  it.push(['invite','🔗',tr('mInvite')]);if(view)it.push(['copyview','📋',tr(view==='aff'?'mCopyAff':'mCopyCreate')]);
  if(W.LowiCommunity&&W.LowiCommunity.settings)it.push(['settings','⚙️',tr('mSettings')]);
@@ -153,7 +169,7 @@ function paintMenu(){const h='<div class="rm-menu-card" role="menu" aria-label="
 function toggleMenu(force){const on=force==null?!(menu&&!menu.hidden):!!force;
  if(!menu){menu=D.createElement('div');menu.className='rm-menu';menu.hidden=true;menu.setAttribute('data-noi18n','');D.body.appendChild(menu);
   menu.addEventListener('click',e=>{if(e.target===menu){toggleMenu(false);return;}const b=e.target.closest('[data-rmm]');if(!b)return;const k=b.dataset.rmm;toggleMenu(false);
-   if(k==='people')openSheet();else if(k==='find'){openSheet();setTimeout(()=>{const f=sheet&&sheet.querySelector('.rm-find');if(f)f.focus({preventScroll:true});},60);}
+   if(k==='replies'){const dl=lastDirected(),c=W.LowiCommunity;if(dl&&c&&c.thread){const f=cur();view='';c.thread(true,dl.m.id);if(f!=='chat')from=f;paint();}}/* thread(), not openMessage(): its goTab('foryou') from inside Community rebuilds the page and drops the open chat */else if(k==='people')openSheet();else if(k==='find'){openSheet();setTimeout(()=>{const f=sheet&&sheet.querySelector('.rm-find');if(f)f.focus({preventScroll:true});},60);}
    else if(k==='profile'){const p=D.getElementById('pfBtn');if(p)p.click();}else if(k==='invite')copyText(inviteUrl(),tr('copied'));else if(k==='copyview')copyView();
    else if(k==='settings'){try{W.LowiCommunity.settings();}catch(x){}}else if(k==='welcome'){try{W.LowiCommunityWelcome.open();}catch(x){}}});
   menu.addEventListener('keydown',e=>{const bs=[...menu.querySelectorAll('[data-rmm]')],i=bs.indexOf(D.activeElement);
@@ -209,7 +225,7 @@ setInterval(watch,1500);if(D.readyState!=='loading')watch();else D.addEventListe
 let pageWatch=null,pageOn=false;
 function watchPage(){const p=D.getElementById('tab-foryou');if(!p||typeof MutationObserver!=='function'||p.__rmPage)return;p.__rmPage=1;pageOn=p.classList.contains('active');
  pageWatch=new MutationObserver(recs=>{let kids=false,cls=false;for(const r of recs){if(r.type==='childList')kids=true;else cls=true;}
-  const on=p.classList.contains('active');if(cls&&on&&!pageOn)paint();if(cls&&pageOn&&!on){dropFrames(null);D.documentElement.classList.remove('rm-room-open');if(sheet)closeSheet();if(menu&&!menu.hidden)toggleMenu(false);}pageOn=on;
+  const on=p.classList.contains('active');if(cls&&on&&!pageOn)paint();if(cls&&pageOn&&!on){dropFrames(null);D.documentElement.classList.remove('rm-room-open');from='';if(open()){try{W.LowiCommunity.thread(false);}catch(x){}}/* item 36: leaving Community closes the chat, so html.cr-room never stays on behind Home */if(sheet)closeSheet();if(menu&&!menu.hidden)toggleMenu(false);}pageOn=on;
   if(kids&&on&&!(bar&&bar.isConnected))paint();});
  pageWatch.observe(p,{attributes:true,attributeFilter:['class'],childList:true});}
 setInterval(watchPage,1500);if(D.readyState!=='loading')watchPage();else D.addEventListener('DOMContentLoaded',watchPage);
@@ -301,5 +317,5 @@ W.LowiCommunityWelcome={open:openWelcome,close:()=>obClose(false),seen:()=>!!lsG
   try{W.goTab('foryou');}catch(e){}const v=m[1]==='affiliates'?'aff':m[1]==='create'?'create':'';
   let k=0;const t2=()=>{k++;if(!ensure()){if(k<30)setTimeout(t2,300);return;}if(v)showView(v);try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}};setTimeout(t2,400);};
  setTimeout(tick,600);})();
-W.LowiRoomsUI={paint,openSheet,closeSheet,setTab,fit,showView,view:()=>view,frames:()=>Object.keys(frames),menu:toggleMenu,copyView,inviteUrl,_chanRows:chanRows};
+W.LowiRoomsUI={paint,openSheet,closeSheet,setTab,back,from:()=>from,fit,showView,view:()=>view,frames:()=>Object.keys(frames),menu:toggleMenu,copyView,inviteUrl,_chanRows:chanRows};
 })(window,document);

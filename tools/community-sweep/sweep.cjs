@@ -9,7 +9,7 @@
 'use strict';
 const H = require('../sim/harness.cjs');
 const [engine = 'webkit', dev = 'se', where = ''] = process.argv.slice(2);
-const DEV = { se: 'iPhone SE', '15': 'iPhone 15', max: 'iPhone 15 Pro Max', ipad: 'iPad (gen 7)' };
+const DEV = { se: 'iPhone SE', '13': 'iPhone 13', '15': 'iPhone 15', max: 'iPhone 15 Pro Max', ipad: 'iPad (gen 7)' };
 (async () => {
     const o = { engine, members: 40, messages: 300, keyboard: true, device: DEV[dev] || 'iPhone SE' };
     if (/^https?:/.test(where)) o.url = where; else if (where) o.root = where;
@@ -68,8 +68,8 @@ const DEV = { se: 'iPhone SE', '15': 'iPhone 15', max: 'iPhone 15 Pro Max', ipad
         for (const id of ['chat', 'create', 'aff', 'room']) { await tapTab(id); await step('tab-' + id, { open: true, sel: id }); await shot('02-tab-' + id); }
         /* 3. Chat -> a room, type, send, back button */
         await tapTab('chat');
-        const ch = P.locator('#cmPaneChat .rm-chans .rm-ch:not([disabled])').first();
-        if (await ch.count()) { await R.tapEl(ch); await H.sleep(1500); } else issues.push('no channel row in Chat');
+        /* item 36 (22 Oct): no channel list any more, the Chat tab IS the galaxy chat room */
+        await H.sleep(600); if (await P.locator('#cmPaneChat > .rm-chans:not([hidden])').count()) issues.push('the old channel list is still shown');
         await step('chat-room', { open: true, room: true }); await shot('03-room');
         const inp = P.locator('#cmInput');
         if (await inp.count()) {
@@ -87,18 +87,18 @@ const DEV = { se: 'iPhone SE', '15': 'iPhone 15', max: 'iPhone 15 Pro Max', ipad
         } else issues.push('no message field in the room');
         const back = P.locator('#cmPaneChat [data-chat="close-thread"]').first();
         if (await back.count() && await back.isVisible()) { await R.tapEl(back); await H.sleep(1000); } else issues.push('no back button in the room');
-        await step('room-back', { open: true, room: false, sel: 'chat' });
+        await step('room-back', { open: true, room: false, sel: 'room' });   /* item 36: back to the tab you came from */
         /* 4. the phone's back from a room: room closes, Community stays */
-        await R.tapEl(P.locator('#cmPaneChat .rm-chans .rm-ch:not([disabled])').first()); await H.sleep(1200);
+        await tapTab('chat'); await H.sleep(300);   /* item 36: Chat opens the chat room itself */
         await P.evaluate(() => history.back()); await H.sleep(1500);
-        await step('history-back-from-room', { open: true, room: false, sel: 'chat' });
+        await step('history-back-from-room', { open: true, room: false, sel: 'room' });
         /* 4b. Escape and the edge swipe from a room: channel list, Community stays */
-        await R.tapEl(P.locator('#cmPaneChat .rm-chans .rm-ch:not([disabled])').first()); await H.sleep(1200);
+        await tapTab('chat'); await H.sleep(300);   /* item 36: Chat opens the chat room itself */
         await P.keyboard.press('Escape'); await H.sleep(1000);
-        await step('escape-from-room', { open: true, room: false, sel: 'chat' });
-        await R.tapEl(P.locator('#cmPaneChat .rm-chans .rm-ch:not([disabled])').first()); await H.sleep(1200);
+        await step('escape-from-room', { open: true, room: false, sel: 'room' });
+        await tapTab('chat'); await H.sleep(300);   /* item 36: Chat opens the chat room itself */
         await P.evaluate(() => window.LowiSections && window.LowiSections.back()); await H.sleep(1200);
-        await step('swipe-back-from-room', { open: true, room: false, sel: 'chat' });
+        await step('swipe-back-from-room', { open: true, room: false, sel: 'room' });
         /* 5. back from Community: Home */
         await P.evaluate(() => history.back()); await H.sleep(1500);
         const h = await look(); if (h.open) issues.push('history back from Community did not go Home');
@@ -122,7 +122,7 @@ const DEV = { se: 'iPhone SE', '15': 'iPhone 15', max: 'iPhone 15 Pro Max', ipad
         const s9 = await step('after-20-switches', { open: true, sel: 'room' });
         log.push('nodes before/after 20 switches ' + n0 + ' / ' + s9.nodes);
         /* 10. long session: the room open 60 s with traffic */
-        await tapTab('chat'); await R.tapEl(P.locator('#cmPaneChat .rm-chans .rm-ch:not([disabled])').first()); await H.sleep(1000);
+        await tapTab('chat'); await H.sleep(1000);
         const m0 = await R.snap();
         const room = await P.evaluate(() => window.LowiRooms ? LowiRooms.room() : 'all').catch(() => 'all');
         for (let i = 0; i < 60; i++) { try { if (i % 10 === 3) R.sim.photoSay(); else R.sim.say(undefined, undefined, room); } catch (e) { } await H.sleep(1000); }

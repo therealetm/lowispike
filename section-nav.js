@@ -91,12 +91,14 @@
         try { const WH = W.LowiWorldHome; if (WH && WH.state && WH.state.pull && WH.settle) WH.settle(); } catch (e) { }
         try { const a = W.LowiWorld3D; if (a && a.inBack && a.inBack() && a.backdrop) a.backdrop(false); } catch (e) { }
     }
-    /* Oct 22 (item 33): inside a Community chat room, back (edge swipe, phone back) goes to the channel list first, like the room's
-       own back arrow; the next back leaves Community. Before, it left Community with the room still open behind it. */
+    /* Oct 22 (item 33): inside a Community chat room, back (edge swipe, phone back) went to the channel list first.
+       Oct 22 (item 36): the channel list is gone; see below. */
     function innerBack() {
         if (tabOf() !== 'foryou' || !H.classList.contains('rm-room-open')) return false;
-        const U = W.LowiRoomsUI; if (!U || typeof U.setTab !== 'function') return false;
-        try { U.setTab(true); return true; } catch (e) { return false; }
+        /* item 36: the chat has no channel list behind it any more. Back goes to the Community tab you came from (LowiRoomsUI.back),
+           else this returns false and Community closes. */
+        const U = W.LowiRoomsUI; if (!U || typeof U.back !== 'function') return false;
+        try { return !!U.back(); } catch (e) { return false; }
     }
     function back() { if (innerBack()) return; if (isSec(history.state)) { try { history.back(); return; } catch (e) { } } close(); }
 

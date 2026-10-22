@@ -14,9 +14,9 @@
     const KEYS = ['kcal', 'protein', 'carbs', 'sugar', 'fiber', 'fat'];
     const LIMIT = { kcal: 3000, protein: 200, carbs: 400, sugar: 300, fiber: 100, fat: 250, grams: 3000 };
     const STR = {
-        en: { net: 'I can’t reach the photo check right now (no connection?). Type what it is, or close this and try again.', slow: 'The photo check took too long. Type what it is, or close this and try again.', sign_in: 'Your sign-in ran out, so I can’t check the photo. Type what it is: that always works.', limit: 'You’ve used today’s 3 photo checks. New ones at midnight. Type what it is: typed meals are unlimited.', look: 'Looking at your plate…', found: 'Here’s what I see', est: 'Estimates from your photo. Change the name if I got it wrong.', total: 'Total', remove: 'Remove', off: 'Photo recognition isn’t switched on yet, so type what it is.', fail: 'I couldn’t read this photo, so type what it is.', busy: 'Too many photos right now. Type what it is, or try again in a few minutes.', none: 'I don’t see food in this photo. Type what it is if I’m wrong.', low: 'Not sure about this one, so check the name.', kcal: 'kcal', protein: 'Protein', carbs: 'Carbs', sugar: 'Sugar', fiber: 'Fiber', fat: 'Fat', and: 'and' },
-        de: { net: 'Ich erreiche die Foto-Prüfung gerade nicht (keine Verbindung?). Schreib, was es ist, oder schließ das hier und versuch es nochmal.', slow: 'Die Foto-Prüfung hat zu lange gedauert. Schreib, was es ist, oder schließ das hier und versuch es nochmal.', sign_in: 'Deine Anmeldung ist abgelaufen, deshalb kann ich das Foto nicht prüfen. Schreib, was es ist: Das klappt immer.', limit: 'Du hast heute deine 3 Foto-Checks genutzt. Neue gibt es um Mitternacht. Schreib, was es ist: Getippte Mahlzeiten sind unbegrenzt.', look: 'Ich schaue mir deinen Teller an…', found: 'Das sehe ich', est: 'Schätzungen aus deinem Foto. Ändere den Namen, wenn ich falsch liege.', total: 'Gesamt', remove: 'Entfernen', off: 'Die Fotoerkennung ist noch nicht eingeschaltet. Schreib bitte, was es ist.', fail: 'Ich konnte das Foto nicht lesen. Schreib bitte, was es ist.', busy: 'Gerade zu viele Fotos. Schreib, was es ist, oder versuch es in ein paar Minuten nochmal.', none: 'Ich sehe kein Essen auf dem Foto. Schreib, was es ist, falls ich falsch liege.', low: 'Da bin ich unsicher, prüf den Namen.', kcal: 'kcal', protein: 'Eiweiß', carbs: 'Kohlenhydrate', sugar: 'Zucker', fiber: 'Ballaststoffe', fat: 'Fett', and: 'und' },
-        es: { net: 'No puedo conectar con el análisis de fotos ahora (¿sin conexión?). Escribe qué es, o cierra esto y vuelve a intentarlo.', slow: 'El análisis de la foto tardó demasiado. Escribe qué es, o cierra esto y vuelve a intentarlo.', sign_in: 'Tu sesión caducó, así que no puedo analizar la foto. Escribe qué es: eso siempre funciona.', limit: 'Ya usaste tus 3 análisis de foto de hoy. Vuelven a medianoche. Escribe qué es: las comidas escritas no tienen límite.', look: 'Mirando tu plato…', found: 'Esto es lo que veo', est: 'Estimaciones de tu foto. Cambia el nombre si me equivoqué.', total: 'Total', remove: 'Quitar', off: 'El reconocimiento de fotos aún no está activado, así que escribe qué es.', fail: 'No pude leer esta foto, así que escribe qué es.', busy: 'Demasiadas fotos ahora mismo. Escribe qué es o inténtalo en unos minutos.', none: 'No veo comida en esta foto. Escribe qué es si me equivoco.', low: 'No estoy seguro, revisa el nombre.', kcal: 'kcal', protein: 'Proteína', carbs: 'Carbohidratos', sugar: 'Azúcar', fiber: 'Fibra', fat: 'Grasa', and: 'y' }
+        en: { net: 'I can’t reach the photo check right now (no connection?). Tap Try again, or type what it is.', slow: 'The photo check took too long. Tap Try again, or type what it is.', sign_in: 'Your sign-in ran out, so I can’t check the photo. Type what it is: that always works.', limit: 'You’ve used today’s 3 photo checks. New ones at midnight. Type what it is: typed meals are unlimited.', look: 'Misty is looking…', look2: 'Still looking. Busy plates take a few seconds more…', again: 'Misty is taking another look…', retry: 'Try again', found: 'Here’s what I see', est: 'Estimates from your photo. Change the name if I got it wrong.', total: 'Total', remove: 'Remove', off: 'Photo recognition isn’t switched on yet, so type what it is.', fail: 'I couldn’t read this photo. Tap Try again, or type what it is.', busy: 'Too many photos right now. Type what it is, or try again in a few minutes.', none: 'I don’t see food in this photo. Type what it is if I’m wrong.', low: 'Not sure about this one, so check the name.', kcal: 'kcal', protein: 'Protein', carbs: 'Carbs', sugar: 'Sugar', fiber: 'Fiber', fat: 'Fat', and: 'and' },
+        de: { net: 'Ich erreiche die Foto-Prüfung gerade nicht (keine Verbindung?). Tipp auf Nochmal versuchen oder schreib, was es ist.', slow: 'Die Foto-Prüfung hat zu lange gedauert. Tipp auf Nochmal versuchen oder schreib, was es ist.', sign_in: 'Deine Anmeldung ist abgelaufen, deshalb kann ich das Foto nicht prüfen. Schreib, was es ist: Das klappt immer.', limit: 'Du hast heute deine 3 Foto-Checks genutzt. Neue gibt es um Mitternacht. Schreib, was es ist: Getippte Mahlzeiten sind unbegrenzt.', look: 'Misty schaut sich das an…', look2: 'Ich schaue noch. Volle Teller dauern ein paar Sekunden länger…', again: 'Misty schaut noch einmal hin…', retry: 'Nochmal versuchen', found: 'Das sehe ich', est: 'Schätzungen aus deinem Foto. Ändere den Namen, wenn ich falsch liege.', total: 'Gesamt', remove: 'Entfernen', off: 'Die Fotoerkennung ist noch nicht eingeschaltet. Schreib bitte, was es ist.', fail: 'Ich konnte das Foto nicht lesen. Tipp auf Nochmal versuchen oder schreib, was es ist.', busy: 'Gerade zu viele Fotos. Schreib, was es ist, oder versuch es in ein paar Minuten nochmal.', none: 'Ich sehe kein Essen auf dem Foto. Schreib, was es ist, falls ich falsch liege.', low: 'Da bin ich unsicher, prüf den Namen.', kcal: 'kcal', protein: 'Eiweiß', carbs: 'Kohlenhydrate', sugar: 'Zucker', fiber: 'Ballaststoffe', fat: 'Fett', and: 'und' },
+        es: { net: 'No puedo conectar con el análisis de fotos ahora (¿sin conexión?). Toca Reintentar o escribe qué es.', slow: 'El análisis de la foto tardó demasiado. Toca Reintentar o escribe qué es.', sign_in: 'Tu sesión caducó, así que no puedo analizar la foto. Escribe qué es: eso siempre funciona.', limit: 'Ya usaste tus 3 análisis de foto de hoy. Vuelven a medianoche. Escribe qué es: las comidas escritas no tienen límite.', look: 'Misty está mirando…', look2: 'Sigo mirando. Los platos llenos tardan unos segundos más…', again: 'Misty mira otra vez…', retry: 'Reintentar', found: 'Esto es lo que veo', est: 'Estimaciones de tu foto. Cambia el nombre si me equivoqué.', total: 'Total', remove: 'Quitar', off: 'El reconocimiento de fotos aún no está activado, así que escribe qué es.', fail: 'No pude leer esta foto. Toca Reintentar o escribe qué es.', busy: 'Demasiadas fotos ahora mismo. Escribe qué es o inténtalo en unos minutos.', none: 'No veo comida en esta foto. Escribe qué es si me equivoco.', low: 'No estoy seguro, revisa el nombre.', kcal: 'kcal', protein: 'Proteína', carbs: 'Carbohidratos', sugar: 'Azúcar', fiber: 'Fibra', fat: 'Grasa', and: 'y' }
     };
     const lang = () => { try { const l = root.LowiLang && root.LowiLang.get ? root.LowiLang.get() : (root.document && document.documentElement.lang) || 'en'; return STR[l] ? l : 'en'; } catch (e) { return 'en'; } };
     const t = (k, l) => (STR[l || lang()] || STR.en)[k] || STR.en[k] || k;
@@ -78,6 +78,34 @@
         const id = c ? setTimeout(() => c.abort(), ms) : 0;
         return { signal: c ? c.signal : undefined, done: () => clearTimeout(id) };
     }
+    /* Oct 22: one try may take TRY_MS (server budget 26 s + sign-in check + upload); a slow, failed or unreachable try is
+       repeated once on its own (failed reads are handed back by the server). The photo sent is the original, downscaled to
+       AI_PX on the long side as JPEG (iPhone HEIC is decoded by Safari first); if that can't be made, the sheet photo is sent. */
+    const TRY_MS = 35000, AI_PX = 1024, AUTO_RETRY = ['slow', 'net', 'failed'];
+    function prep(dataURL, file) {
+        if (!file || typeof document === 'undefined' || typeof Image !== 'function' || !root.URL || !URL.createObjectURL) return Promise.resolve(dataURL);
+        return new Promise(ok => {
+            let u = '';
+            try { u = URL.createObjectURL(file); } catch (e) { ok(dataURL); return; }
+            const im = new Image();
+            const done = v => { clearTimeout(to); try { URL.revokeObjectURL(u); } catch (e) {} ok(v || dataURL); };
+            const to = setTimeout(() => done(''), 5000);
+            im.onload = () => {
+                try {
+                    const w = im.naturalWidth, h = im.naturalHeight;
+                    if (!w || !h) return done('');
+                    const k = Math.min(1, AI_PX / Math.max(w, h)), c = document.createElement('canvas');
+                    c.width = Math.round(w * k); c.height = Math.round(h * k);
+                    c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+                    const out = c.toDataURL('image/jpeg', 0.8);
+                    c.width = 0; c.height = 0;
+                    done(/^data:image\/jpeg;base64,/.test(out) && out.length < 1400000 ? out : '');
+                } catch (e) { done(''); }
+            };
+            im.onerror = () => done('');
+            im.src = u;
+        });
+    }
     const zone = () => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) { return ''; } };
     const snap = () => root.LowiMealSnap || null;
     let probe = null, probeAt = 0, probeWhy = '';
@@ -132,17 +160,21 @@
         if (!url) { const e = new Error('off'); e.code = 'off'; throw e; }
         const m = /^data:(image\/[a-z]+);base64,(.+)$/.exec(String(dataURL || ''));
         if (!m) { const e = new Error('failed'); e.code = 'failed'; throw e; }
-        const tm = timed(opts.timeout || 30000);
+        /* Oct 22 (photo check "took too long" on a normal iPhone photo): the sign-in wait (up to 8 s) used to run inside the
+           30 s clock, and the server itself may take up to 26 s (Gemini 6-21 s measured), so the phone gave up just before
+           the answer came. Now the token comes first and the request alone gets TRY_MS. */
+        const tok = opts.token != null ? opts.token : await token();
+        const tm = timed(opts.timeout || +root.LOWI_FOOD_AI_TRY_MS || TRY_MS); // the knob is for the simulator check only
         let r;
         try {
-            r = await fetch(url, { method: 'POST', headers: headers(opts.token != null ? opts.token : await token()), signal: tm.signal, body: JSON.stringify({ image: m[2], mime: m[1], lang: opts.lang || lang(), tz: zone() }) });
+            r = await fetch(url, { method: 'POST', headers: headers(tok), signal: tm.signal, body: JSON.stringify({ image: m[2], mime: m[1], lang: opts.lang || lang(), tz: zone() }) });
         } catch (err) { tm.done(); const code = tm.signal && tm.signal.aborted ? 'slow' : 'net'; const e = new Error(code); e.code = code; throw e; }
         tm.done();
         let j = null;
         try { j = await r.json(); } catch (err) { j = null; }
         if (j && typeof j.left === 'number' && snap()) snap().setLeft(j.left, j.limit);
         if (!r.ok) {
-            const code = r.status === 503 || r.status === 404 ? 'off' : r.status === 401 ? 'sign_in' : r.status === 429 ? (j && j.error === 'limit' ? 'limit' : 'busy') : 'failed';
+            const code = r.status === 504 ? 'slow' : r.status === 503 || r.status === 404 ? 'off' : r.status === 401 ? 'sign_in' : r.status === 429 ? (j && j.error === 'limit' ? 'limit' : 'busy') : 'failed';
             if (code === 'limit' && snap()) snap().setLeft(0, j && j.limit);
             if (code === 'off') { probe = Promise.resolve(false); probeAt = Date.now(); }
             const e = new Error(code); e.code = code; throw e;
@@ -185,14 +217,44 @@
             box.innerHTML = '<p class="fai-h">' + esc(t('found', l)) + '</p><ul class="fai-list">' + rowsHTML(dishes, l) + '</ul>' +
                 '<p class="fai-msg">' + esc(res.confidence === 'low' ? t('low', l) : t('est', l)) + (res.note ? ' ' + esc(res.note) : '') + '</p>';
         };
-        box.className = 'sp-ai fai fai-wait';
-        box.innerHTML = '<p class="fai-msg" role="status"><i class="fai-spin" aria-hidden="true"></i>' + esc(t('look', l)) + '</p>';
+        /* Oct 22: "Misty is looking…" while it runs (after 9 s: "Still looking…"), one automatic retry, and on a miss a
+           Try again button that uses the same photo, so nobody has to retake it. */
+        let slowT = 0, aiURL = null, busy = false;
+        const wait = (k) => {
+            clearTimeout(slowT);
+            box.className = 'sp-ai fai fai-wait';
+            box.innerHTML = '<p class="fai-msg" role="status" aria-live="polite"><i class="fai-spin" aria-hidden="true"></i><span class="fai-wt">' + esc(t(k, l)) + '</span></p>';
+            slowT = setTimeout(() => { const w = box.querySelector('.fai-wt'); if (w && box.classList.contains('fai-wait')) w.textContent = t('look2', l); }, 9000);
+        };
+        const sayRetry = (msg) => {
+            clearTimeout(slowT);
+            box.className = 'sp-ai fai fai-err fai-can-retry';
+            box.innerHTML = '<p class="fai-msg" role="status">' + esc(msg) + '</p><button type="button" class="fai-retry" data-fai-retry>' + esc(t('retry', l)) + '</button>';
+        };
+        box.addEventListener('click', ev => {
+            const b = ev.target.closest && ev.target.closest('[data-fai-retry]');
+            if (!b || busy) return;
+            ev.preventDefault();
+            run();
+        });
         const MS = snap();
         const q = MS && MS.left ? MS.left() : null;
         if (q && q.left === 0) { say('fai-err fai-limit', t('limit', l)); return Promise.resolve(null); }
-        return available().then(on => {
-            if (!on) { if (why() === 'net') say('fai-err fai-net', t('net', l)); else say('fai-off', t('off', l)); return null; }
-            return analyse(dataURL, { lang: l }).then(res => {
+        const once = (n) => (aiURL ? Promise.resolve(aiURL) : prep(dataURL, opts.file).then(u => (aiURL = u)))
+            .then(u => analyse(u, { lang: l }))
+            .catch(err => {
+                const c = err && err.code;
+                if (n < 1 && AUTO_RETRY.includes(c) && box.isConnected) { wait('again'); return new Promise(ok => setTimeout(ok, 800)).then(() => once(n + 1)); }
+                throw err;
+            });
+        const run = () => {
+            busy = true;
+            wait('look');
+            return go().then(v => { busy = false; clearTimeout(slowT); return v; }, () => { busy = false; clearTimeout(slowT); sayRetry(t('fail', l)); return null; });
+        };
+        const go = () => available().then(on => {
+            if (!on) { if (why() === 'net') sayRetry(t('net', l)); else say('fai-off', t('off', l)); return null; }
+            return once(0).then(res => {
                 if (!box.isConnected) return res;
                 if (!res.isFood) { say('fai-none', t('none', l)); return res; }
                 dishes = res.dishes.slice();
@@ -224,10 +286,13 @@
                 return res;
             }, err => {
                 const c = err && err.code;
-                say('fai-err', ['limit', 'busy', 'off', 'net', 'slow', 'sign_in'].includes(c) ? t(c, l) : t('fail', l));
+                if (!box.isConnected) return null;
+                if (['limit', 'off', 'sign_in'].includes(c)) say('fai-err', t(c, l));
+                else sayRetry(['busy', 'net', 'slow'].includes(c) ? t(c, l) : t('fail', l));
                 return null;
             });
-        }).catch(() => { say('fai-err', t('fail', l)); return null; });
+        });
+        return run();
     }
-    return { KEYS, normalize, totals, title, endpoint, available, allowance, analyse, mount, strings: STR, _reset() { probe = null; probeAt = 0; probeWhy = ''; }, _why: why };
+    return { KEYS, normalize, totals, title, endpoint, available, allowance, analyse, mount, prep, TRY_MS, AI_PX, strings: STR, _reset() { probe = null; probeAt = 0; probeWhy = ''; }, _why: why };
 });

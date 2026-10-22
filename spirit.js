@@ -1166,7 +1166,7 @@
         /* Oct 19 2026 food photo AI: the photo goes to LowiFoodAI (Supabase function food-photo, Gemini). It fills the
            dishes, the name and hidden macro inputs; when it is off or fails, the plain "What is it?" form above still works. */
         const aiForm = document.querySelector('form#spMeal.sp-photo-form[data-id="' + lastMealId + '"]');
-        if (aiForm && window.LowiFoodAI && window.LowiFoodAI.mount) window.LowiFoodAI.mount(aiForm.previousElementSibling, aiForm, photoURL, { db: MDB, dbReady: mealDb });
+        if (aiForm && window.LowiFoodAI && window.LowiFoodAI.mount) window.LowiFoodAI.mount(aiForm.previousElementSibling, aiForm, photoURL, { db: MDB, dbReady: mealDb, file: photoFile });
     }
     function photoAsFile() {
         if (photoFile) return photoFile;

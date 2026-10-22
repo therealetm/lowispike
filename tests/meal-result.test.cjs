@@ -155,7 +155,7 @@ test('wiring: photo result mounts it, the log keeps its verdict, edits never sen
     const fai = read('food-photo-ai.js'), sp = read('spirit.js'), html = read('index.html'), sw = read('sw.js'), mr = read('meal-result.js');
     assert.match(fai, /root\.LowiMealResult/);
     assert.match(fai, /MR\.mount\(box, form, \{ dishes/);
-    assert.match(sp, /LowiFoodAI\.mount\(aiForm\.previousElementSibling, aiForm, photoURL, \{ db: MDB, dbReady: mealDb \}\)/);
+    assert.match(sp, /LowiFoodAI\.mount\(aiForm\.previousElementSibling, aiForm, photoURL, \{ db: MDB, dbReady: mealDb(, file: photoFile)? \}\)/); // Oct 22: + the original photo for the 1024 px copy
     assert.match(sp, /if \(\/\^\(low\|medium\|high\)\$\/\.test\(lvl\)\) seed\.lvl = lvl;/);
     assert.match(html, /<script src="meal-result\.js\?v=/);
     assert.match(sw, /"meal-result\.js"/);

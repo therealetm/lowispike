@@ -64,6 +64,14 @@ async function layout(page, W, tag) {
   const s = await smallTargets(page); if (s.length) fail(W, tag + ' small tap targets ' + s.join(' | '));
 }
 
+/* 22 Oct 2026: after a screen change the page must still scroll to its bottom. WebKit on iPhone-sized screens got stuck at an older,
+   shorter height when the views swapped while scrolled far down (tap on #toShots timed out on iPhone 13). */
+async function reach(page, W, tag) {
+  const r = await page.evaluate(async () => { const w = t => new Promise(f => setTimeout(f, t)); window.scrollTo(0, 1e6); await w(150);
+    const out = { y: Math.round(scrollY), max: Math.round(document.documentElement.scrollHeight - innerHeight) }; window.scrollTo(0, 0); await w(60); return out; });
+  if (r.max > 0 && r.y < r.max - 2) fail(W, tag + ' cannot scroll to its bottom: stops at ' + r.y + ' of ' + r.max + ' px');
+}
+
 async function standalone(base, sz) {
   const browser = await pw[sz.engine].launch();
   const ctx = await browser.newContext(sz.device ? Object.assign({}, pw.devices[sz.device]) : { viewport: sz.vp });
@@ -102,15 +110,18 @@ async function standalone(base, sz) {
         if (!(await page.textContent('#dayLine')).includes(fl)) fail(W, 'follow line of day 2');
         if ((await page.evaluate(() => document.activeElement && document.activeElement.id)) !== 'dayNext') fail(W, 'day focus lost');
       }
+      await reach(page, W, id + ' script');
       await layout(page, W, id + ' script');
       await page.screenshot({ path: path.join(OUT, sz.name + '-2-' + id + '.png'), fullPage: true });
       await page.click('#toShots');
       if (!(await page.isVisible('#shotView')) || !(await page.isVisible('#copyCaption')) || !(await page.isVisible('#tipLine'))) fail(W, id + ' recording screen');
       if (!(await page.textContent('#shotView')).includes(B.SERIES[id].caption.slice(0, 20))) fail(W, id + ' caption');
+      await reach(page, W, id + ' shots');
       await layout(page, W, id + ' shots');
       await page.screenshot({ path: path.join(OUT, sz.name + '-3-' + id + '-shots.png'), fullPage: true });
       await page.click('#shotView .back');
       if (!(await page.isVisible('#scriptCard'))) fail(W, id + ' back to script');
+      await reach(page, W, id + ' back to script');
     }
     await page.click('#scriptView .back');
     if (!(await page.isVisible('#startBtn'))) fail(W, 'back to start');
@@ -120,6 +131,7 @@ async function standalone(base, sz) {
     if (rows.join(' / ') !== 'Level 1|1–10|10 %|9,90 € / Level 2|11–50|15 %|14,85 € / Level 3|51–150|25 %|24,75 € / Level 4|ab 151|45 %|44,55 €') fail(W, 'levels ' + rows.join(' / '));
     const ex = (await page.textContent('#exampleList')).replace(/[\s\u00a0]+/g, ' ');
     for (const k of ['10 Verkäufe99,00 €', '50 Verkäufe693,00 €', '150 Verkäufe3.168,00 €']) if (!ex.replace(/ /g, '').includes(k.replace(/ /g, ''))) fail(W, 'example ' + k + ' in ' + ex);
+    await reach(page, W, 'earn');
     await layout(page, W, 'earn');
     await page.screenshot({ path: path.join(OUT, sz.name + '-4-earn.png'), fullPage: true });
     await page.click('#earnView .back');

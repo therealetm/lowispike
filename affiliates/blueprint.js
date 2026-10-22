@@ -243,6 +243,11 @@
     if (!VIEWS[to]) to = 'start';
     if (to === 'earn' && view !== 'earn') from = view;
     if (VO && to !== view) VO.stop();
+    /* Scroll to the top BEFORE the views swap (22 Oct 2026). Swapping first and scrolling after left WebKit on iPhone-sized
+       screens stuck when the page got shorter while scrolled far down (a long script -> the shorter recording screen): it
+       could no longer scroll to the bottom of the next screen, so the buttons there (e.g. 'Zu den Aufnahmen') were out of
+       reach. The taller Listen card made the scripts long enough to hit it on iPhone 13. tests/affiliates-scroll.test.cjs */
+    try { window.scrollTo(0, 0); } catch (e) {}
     view = to; if (to === 'earn') renderEarnings(); show(); sync();
     try { window.scrollTo(0, 0); } catch (e) {}
     const t = $(VIEWS[to]).querySelector('h1'); if (t && t.focus) t.focus({ preventScroll: true });

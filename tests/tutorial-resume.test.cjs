@@ -58,6 +58,16 @@ test('a card that was tried, or read to the end hands-free, resumes on the next 
     assert.strictEqual(R.resumeAt(pad), at(8));
 });
 
+test('Try it now (item 41) saves the place in this shape; the button then opens the next card', () => {
+    const k = 3;
+    let st = replay([{ on: true, step: at(k), how: 'next' }, { on: true, step: at(k), tryNow: at(k) }]);
+    st.resume = S.tryResume(IDS, k, 7);   /* tutorial.js tryNow() writes this, then stop('tryit') */
+    st = R.onEvent(st, { on: false, step: at(k), reason: 'tryit' }, IDS, 8);
+    assert.ok(R.active(st));
+    assert.strictEqual(R.resumeAt(st), at(k + 1));
+    assert.ok(R.shouldShow({ active: R.active(st), on: false }));
+});
+
 test('the last card finished, or Skip all: never shown again, even after a reload', () => {
     const done = replay([{ on: true, step: at(IDS.length - 1), how: 'next' }, { on: false, step: at(IDS.length - 1), reason: 'finished' }]);
     assert.strictEqual(R.active(done), false);

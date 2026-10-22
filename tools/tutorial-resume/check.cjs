@@ -130,8 +130,8 @@ async function handsfree(browser, dev, url, fails, lines) {
         const want = st.resume && (st.resume.fin && st.resume.next ? st.resume.next : st.resume.at);
         const where = [];
         let p = await pill(page); checkPill(p, tag, 'Home', fails); where.push('Home ' + (p.spot || '-')); await shot(page, `${dev}-A2-left-home`);
-        for (const t of ['foryou', 'scan', 'shelf', 'profile', 'move']) {
-            await page.evaluate(x => { try { window.goTab(x); } catch (e) { } }, t); await sleep(1600);
+        for (const t of ['foryou', 'shelf', 'profile', 'move', 'scan']) {   /* scan last: it opens the camera on top of everything */
+            await page.evaluate(x => { try { window.goTab(x); } catch (e) { } }, t); await sleep(2600);
             p = await pill(page); checkPill(p, tag, t, fails); where.push(t + ' ' + (p.spot || '-'));
             if (t === 'foryou' || t === 'scan') await shot(page, `${dev}-A3-left-${t}`);
             if (t === 'foryou') {   /* Community > Chat > a chat room: the message input must stay free */
@@ -145,6 +145,7 @@ async function handsfree(browser, dev, url, fails, lines) {
                 }
             }
         }
+        await page.keyboard.press('Escape').catch(() => { }); await sleep(500);   /* close the camera */
         await page.evaluate(() => { try { window.goTab('home'); } catch (e) { } }); await sleep(800);
         /* reload */
         await page.reload({ waitUntil: 'load' });
@@ -201,6 +202,25 @@ async function sheet(browser, dev, url, fails, lines) {
         if (!c.on || c.held || c.step !== a.step) fails.push(`${tag}: card not back on ${a.step} (${c.step}, held ${c.held})`);
         if (page.errs.length) fails.push(`${tag}: page errors: ${page.errs.slice(0, 3).join(' | ')}`);
         lines.push(`${tag}: card hid (${b.held}), pill at ${p.spot}, tap closed the sheet (${gone}) and brought back ${c.step}`);
+        /* Try it now (item 41): closes the card for the user to try; the pill then opens the NEXT card */
+        const ids = await page.evaluate(() => window.LowiTutorial.ids());
+        const tryId = await page.evaluate(() => { const S = window.LowiTutorialSteps, ids = window.LowiTutorial.ids(); return ids.find((id, k) => k > 0 && k < ids.length - 1 && (S.STEPS.find(x => x.id === id) || {}).tryIt) || ''; });
+        if (tryId) {
+            await tapStart(page, { from: 'check', at: tryId }); await sleep(1200);
+            const hasBtn = await page.evaluate(() => !!document.querySelector('#ltTour [data-lt="tryit"]'));
+            if (hasBtn) {
+                await page.click('#ltTour [data-lt="tryit"]'); await sleep(1500);
+                const off = await state(page), q = await pill(page);
+                if (off.on && !off.held) fails.push(`${tag}: Try it now did not close the card`);
+                checkPill(q, tag, 'after Try it now', fails);
+                await shot(page, `${dev}-B2-after-try-it-now`);
+                await page.evaluate(() => { try { window.goTab('home'); } catch (e) { } }); await sleep(1500);
+                await page.click('#ltResume'); await sleep(1500);
+                const back = await state(page), want = ids[ids.indexOf(tryId) + 1];
+                if (!back.on || back.step !== want) fails.push(`${tag}: after Try it now the pill opened ${back.step}, expected the next card ${want}`);
+                lines.push(`${tag}: Try it now on ${tryId} closed the card, pill at ${q.spot}, tap opened ${back.step} (next card ${want})`);
+            } else lines.push(`${tag}: no Try it now button on ${tryId} (skipped)`);
+        }
     } finally { await ctx.close(); }
 }
 
@@ -263,7 +283,7 @@ async function looks(browser, dev, url, fails, lines) {
             const want = { en: 'Continue tutorial', de: 'Tutorial fortsetzen', es: 'Continuar tutorial' }[lang];
             if (p.shown && p.label !== want) fails.push(`${tag}: label "${p.label}" for ${lang}`);
             await shot(page, `${dev}-E-${lang}-${theme}`);
-            await page.evaluate(() => { try { window.goTab('foryou'); } catch (e) { } }); await sleep(1600);
+            await page.evaluate(() => { try { window.goTab('foryou'); } catch (e) { } }); await sleep(2600);
             const q = await pill(page); checkPill(q, tag, `${lang}/${theme} Community`, fails);
             await shot(page, `${dev}-E-${lang}-${theme}-community`);
             got.push(`${lang}/${theme} "${p.label}" ${p.w}x${p.h} at ${p.spot}`);

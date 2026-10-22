@@ -19,6 +19,9 @@
 .ltr-bl { bottom: calc(max(env(safe-area-inset-bottom, 0px), var(--ltr-bar, 0px)) + 10px); left: calc(env(safe-area-inset-left, 0px) + 10px); }
 .ltr-mr { top: 40%; right: calc(env(safe-area-inset-right, 0px) + 6px); }
 .ltr-ml { top: 40%; left: calc(env(safe-area-inset-left, 0px) + 6px); }
+/* round icon slid down an edge to a free gap (busy screens); top is set inline */
+.ltr-er { right: calc(env(safe-area-inset-right, 0px) + 6px); }
+.ltr-el { left: calc(env(safe-area-inset-left, 0px) + 6px); }
 .ltr-ic { position: relative; flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; overflow: visible;
     background: linear-gradient(160deg, rgba(80, 220, 190, .75), rgba(30, 140, 200, .75)); box-shadow: 0 0 10px rgba(120, 240, 210, .45); }
 .ltr-face { display: none; width: 30px; height: 30px; border-radius: 50%; overflow: hidden; }

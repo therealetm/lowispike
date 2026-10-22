@@ -149,7 +149,7 @@
        they keep a light way in: one folded "More places" row under YOU (EXPLORE_LIGHT). */
     const EXPLORE_LIGHT = ['foryou', 'care', 'map', 'gift', 'hunt'];
     const EXPLORE_MOVED = { workouts: 'Home Move bubble', foryou: 'hub: More places', care: 'hub: More places', map: 'hub: More places', gift: 'hub: More places', hunt: 'hub: More places' };
-    const MORE_GROUPS = { go: COMMUNITY_PLACES.you.concat(Object.keys(EXPLORE_MOVED)), set: [] };
+    const MORE_GROUPS = { go: COMMUNITY_PLACES.you.concat(['foryou', 'care', 'workouts', 'map', 'gift', 'hunt']), set: [] };
     const MORE = MORE_GROUPS.go.concat(MORE_GROUPS.set);
     /* the slim Settings (a hold on the Community bubble): the switches, the language and the account, nothing else */
     const SETTINGS_IDS = ['theme', 'look', 'worldSound', 'language', 'tutorial'], ACCOUNT_IDS = ['account', 'deleteAccount'];

@@ -220,3 +220,9 @@
 /* Create and Affiliates: the frame fits the pane on short screens (it scrolls inside itself), and the bar stays pinned so the tabs never slide under the profile picture */
 #cmPaneChat[data-spirit-chat][data-rm-view]>.rm-bar{position:sticky;top:0}
 @media (max-height:600px){#cmPaneChat[data-spirit-chat][data-rm-view]>.rm-view{min-height:0}}
+/* Oct 22 (item 33 sweep): the "Back to Home" X (section-nav.css, fixed top-left since the no-menu-bar release) sat on top of the
+   Community name button's logo, and in a chat room on top of the room's own back button, so tapping back there left Community.
+   The name button now starts right of the X, and inside a chat room the X steps aside: the room's back arrow goes to the channel
+   list, where the X is back. */
+html.sec-open #cmPaneChat[data-spirit-chat]>.rm-bar .rm-head{padding-left:calc(52px + env(safe-area-inset-left,0px))}
+html.rm-room-open .sec-x{display:none!important}

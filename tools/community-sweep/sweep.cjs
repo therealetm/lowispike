@@ -33,7 +33,10 @@ const DEV = { se: 'iPhone SE', '15': 'iPhone 15', max: 'iPhone 15 Pro Max', ipad
         const kb = window.__kb ? window.__kb.h || 0 : 0;
         const inpR = inp && vis(inp) ? inp.getBoundingClientRect() : null;
         const vv = window.visualViewport ? window.visualViewport.height : innerHeight;
-        return { open, bar: !!(bar && vis(bar)), sel: sel ? sel.dataset.rm : null, room, view, covered, wide, wideEl, x: !!(x && vis(x)), inpBottom: inpR ? Math.round(inpR.bottom) : null, vv: Math.round(vv), kb, nodes: document.getElementsByTagName('*').length };
+        /* the X must never sit on the Community name/logo or on the room's back arrow (taps there went Home) */
+        let xOver = '';
+        if (x && vis(x)) { const a = x.getBoundingClientRect(); for (const sel2 of ['#cmPaneChat .rm-logo', '#cmPaneChat .rm-menu-btn', '#cmPaneChat [data-chat="close-thread"]', '#cmPaneChat .rm-back']) { const e = document.querySelector(sel2); if (!e || !vis(e)) continue; const b = e.getBoundingClientRect(); if (a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1) { xOver = sel2; break; } } }
+        return { open, xOver, bar: !!(bar && vis(bar)), sel: sel ? sel.dataset.rm : null, room, view, covered, wide, wideEl, x: !!(x && vis(x)), inpBottom: inpR ? Math.round(inpR.bottom) : null, vv: Math.round(vv), kb, nodes: document.getElementsByTagName('*').length };
     }).catch(e => ({ err: e.message.slice(0, 100) }));
     const step = async (name, want) => {
         const s = await look(); log.push(name + ' ' + JSON.stringify(s));
@@ -46,6 +49,7 @@ const DEV = { se: 'iPhone SE', '15': 'iPhone 15', max: 'iPhone 15 Pro Max', ipad
         if (s.covered) bad.push('tab bar covered by ' + s.covered);
         if (s.wide) bad.push('page ' + s.wide + 'px wide (' + s.wideEl + ')');
         if (s.open && !s.x && !s.room) bad.push('no X back to Home on screen');
+        if (s.open && s.xOver) bad.push('the X sits on ' + s.xOver);
         if (want.kb && s.inpBottom && s.inpBottom > s.vv + 2) bad.push('input below the keyboard (' + s.inpBottom + ' > ' + s.vv + ')');
         if (bad.length) { issues.push(name + ': ' + bad.join('; ')); await shot(name.replace(/\W+/g, '_')); }
         return s;
@@ -87,7 +91,14 @@ const DEV = { se: 'iPhone SE', '15': 'iPhone 15', max: 'iPhone 15 Pro Max', ipad
         /* 4. the phone's back from a room: room closes, Community stays */
         await R.tapEl(P.locator('#cmPaneChat .rm-chans .rm-ch:not([disabled])').first()); await H.sleep(1200);
         await P.evaluate(() => history.back()); await H.sleep(1500);
-        await step('history-back-from-room', { open: true, room: false });
+        await step('history-back-from-room', { open: true, room: false, sel: 'chat' });
+        /* 4b. Escape and the edge swipe from a room: channel list, Community stays */
+        await R.tapEl(P.locator('#cmPaneChat .rm-chans .rm-ch:not([disabled])').first()); await H.sleep(1200);
+        await P.keyboard.press('Escape'); await H.sleep(1000);
+        await step('escape-from-room', { open: true, room: false, sel: 'chat' });
+        await R.tapEl(P.locator('#cmPaneChat .rm-chans .rm-ch:not([disabled])').first()); await H.sleep(1200);
+        await P.evaluate(() => window.LowiSections && window.LowiSections.back()); await H.sleep(1200);
+        await step('swipe-back-from-room', { open: true, room: false, sel: 'chat' });
         /* 5. back from Community: Home */
         await P.evaluate(() => history.back()); await H.sleep(1500);
         const h = await look(); if (h.open) issues.push('history back from Community did not go Home');

@@ -88,6 +88,7 @@ function liveHTML(){const r=R(),c=C();if(!r||!c)return '<span class="rm-sub">'+e
 function paint(){const b=ensure();if(!b)return;const r=R(),chat=open();
  if(chat&&view)view='';/* the message room was opened by other code: Chat wins */
  if(chat)dropFrames('');
+ D.documentElement.classList.toggle('rm-room-open',!!(chat&&pageActive()));/* item 33: the Home X steps aside in a chat room (see community-rooms.css) */
  const pane=b.parentNode,sel=view==='chans'?'chat':view||(chat?'chat':'room');
  const tabs=b.querySelectorAll('.rm-tab');tabs.forEach(t=>{t.textContent=tr(t.dataset.rm);});b.querySelector('.rm-tabs').setAttribute('aria-label',tr('tabs'));
  tabs.forEach(t=>{const on=t.dataset.rm===sel;t.setAttribute('aria-selected',on?'true':'false');t.tabIndex=on?0:-1;});
@@ -208,7 +209,7 @@ setInterval(watch,1500);if(D.readyState!=='loading')watch();else D.addEventListe
 let pageWatch=null,pageOn=false;
 function watchPage(){const p=D.getElementById('tab-foryou');if(!p||typeof MutationObserver!=='function'||p.__rmPage)return;p.__rmPage=1;pageOn=p.classList.contains('active');
  pageWatch=new MutationObserver(recs=>{let kids=false,cls=false;for(const r of recs){if(r.type==='childList')kids=true;else cls=true;}
-  const on=p.classList.contains('active');if(cls&&pageOn&&!on){dropFrames(null);if(sheet)closeSheet();if(menu&&!menu.hidden)toggleMenu(false);}pageOn=on;
+  const on=p.classList.contains('active');if(cls&&on&&!pageOn)paint();if(cls&&pageOn&&!on){dropFrames(null);D.documentElement.classList.remove('rm-room-open');if(sheet)closeSheet();if(menu&&!menu.hidden)toggleMenu(false);}pageOn=on;
   if(kids&&on&&!(bar&&bar.isConnected))paint();});
  pageWatch.observe(p,{attributes:true,attributeFilter:['class'],childList:true});}
 setInterval(watchPage,1500);if(D.readyState!=='loading')watchPage();else D.addEventListener('DOMContentLoaded',watchPage);

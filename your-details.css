@@ -1,0 +1,46 @@
+/* your-details.css: the Your details screen (your-details.js). Same underwater glass as the Weight journey / Weight & BMI sheets
+   (--mb-* tokens with their fallbacks). Full screen above Profile and the tab bar, below the app's own sheets (.r2-ov 250) and
+   the Weight sheets, so an editor opened from a row lands on top and Back returns here. One fixed header, one Back. Day mode via
+   html[data-theme="light"]. 44 px targets, safe areas, Reduce Motion. */
+.yd-ov { --yd-ink: var(--mb-ink, #fff); --yd-sub: rgba(255, 255, 255, .72); --yd-acc: #8fe7ff; --yd-card: rgba(255, 255, 255, .08); --yd-rim: rgba(143, 231, 255, .34); --yd-sep: rgba(255, 255, 255, .1);
+    position: fixed; inset: 0; z-index: 240; display: flex; flex-direction: column; box-sizing: border-box; color: var(--yd-ink); font-family: inherit;
+    background: radial-gradient(120% 60% at 50% 0%, rgba(60, 150, 235, .5), transparent 62%), linear-gradient(180deg, #0b2a66 0%, #061636 100%);
+    -webkit-tap-highlight-color: transparent; animation: yd-in .22s cubic-bezier(.2, .9, .25, 1) both; }
+.yd-ov.yd-out { opacity: 0; transform: translateX(14px); transition: opacity .16s ease, transform .16s ease; pointer-events: none; }
+.yd-head { flex: none; position: relative; z-index: 2; display: flex; align-items: center; gap: 6px; min-height: 52px; box-sizing: border-box;
+    padding: calc(env(safe-area-inset-top, 0px) + 6px) max(12px, env(safe-area-inset-right, 0px)) 6px max(8px, env(safe-area-inset-left, 0px));
+    background: rgba(8, 28, 70, .93); border-bottom: 1px solid var(--yd-sep); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.yd-back { display: inline-flex; align-items: center; gap: 2px; min-width: 44px; min-height: 44px; padding: 0 12px 0 6px; border-radius: 999px; border: 1px solid var(--yd-rim);
+    background: var(--yd-card); color: inherit; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; flex: none; }
+.yd-back svg { width: 22px; height: 22px; }
+.yd-ht { flex: 1; min-width: 0; margin: 0 0 0 6px; font-size: 19px; font-weight: 800; letter-spacing: .01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.yd-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+    padding: 6px max(16px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 28px) max(16px, env(safe-area-inset-left, 0px)); }
+.yd-body > * { max-width: 560px; margin-left: auto; margin-right: auto; }
+.yd-hint { margin: 8px auto 4px; font-size: 13px; color: var(--yd-sub); }
+.yd-sec h3 { margin: 16px auto 6px; padding: 0 4px; font-size: 13px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--yd-acc); }
+.yd-card { border-radius: 20px; background: var(--yd-card); border: 1px solid var(--yd-rim); overflow: hidden; box-shadow: inset 0 0 18px rgba(255, 255, 255, .06); }
+.yd-row { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px; box-sizing: border-box; padding: 10px 12px 10px 16px; border: 0; background: transparent;
+    color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.yd-row + .yd-row { border-top: 1px solid var(--yd-sep); }
+.yd-row:active { background: rgba(143, 231, 255, .12); }
+.yd-l { flex: 1 1 auto; min-width: 0; font-size: 15.5px; font-weight: 700; line-height: 1.25; overflow-wrap: break-word; -webkit-hyphens: auto; hyphens: auto; }
+.yd-s { display: block; margin-top: 2px; font-size: 12.5px; font-weight: 500; color: var(--yd-sub); }
+.yd-v { flex: 0 1 auto; min-width: 0; max-width: 52%; display: inline-flex; flex-wrap: wrap; line-height: 1.25; overflow-wrap: anywhere; align-items: center; gap: 8px; justify-content: flex-end; font-size: 15px; color: var(--yd-sub); text-align: right;
+    overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+.yd-row > svg { width: 18px; height: 18px; flex: none; opacity: .6; }
+.yd-empty .yd-v { color: var(--yd-acc); font-weight: 700; }
+.yd-big .yd-v { font-size: 20px; font-weight: 800; color: var(--yd-ink); }
+.yd-big.yd-empty .yd-v { font-size: 15px; color: var(--yd-acc); }
+.yd-pic { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; flex: none; }
+/* the header chips on the profile overview that open this screen */
+.r3-det button.yd-chip { all: unset; cursor: pointer; border-radius: 999px; padding: 2px 6px; margin: -2px -2px; text-decoration: underline; text-decoration-color: rgba(143, 231, 255, .5); text-underline-offset: 3px; }
+.r3-det button.yd-chip.yd-w { padding: 2px 9px; text-decoration: none; background: rgba(143, 231, 255, .16); border: 1px solid rgba(143, 231, 255, .45); font-weight: 800; }
+.r3-det button.yd-chip:focus-visible { outline: 2px solid #8fe7ff; outline-offset: 2px; }
+html[data-theme="light"] .yd-ov { --yd-ink: #10264a; --yd-sub: rgba(16, 38, 74, .66); --yd-acc: #1f7fc4; --yd-card: rgba(255, 255, 255, .78); --yd-rim: rgba(31, 143, 214, .26); --yd-sep: rgba(16, 38, 74, .09);
+    background: radial-gradient(120% 60% at 50% 0%, rgba(140, 205, 255, .55), transparent 62%), linear-gradient(180deg, #eaf6ff 0%, #d9ecff 100%); text-shadow: none; }
+html[data-theme="light"] .yd-head { background: rgba(240, 249, 255, .94); }
+html[data-theme="light"] .yd-row:active { background: rgba(31, 143, 214, .1); }
+html[data-theme="light"] .r3-det button.yd-chip.yd-w { background: rgba(31, 143, 214, .12); border-color: rgba(31, 143, 214, .4); }
+@keyframes yd-in { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .yd-ov { animation: none; } .yd-ov.yd-out { transition: none; transform: none; } }

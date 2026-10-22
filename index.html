@@ -10701,7 +10701,7 @@ document.addEventListener("click", e => {
     if (v === "rmphoto") { const s = R2.S(); delete s.user.avatar; delete s.user.avatarUrl; R2.save(); const x = R2.X(); if (x) { x.pushProfile(); x.backupNow(); } R2.close(); R2.refreshMe(); R2.sheet(editHTML()); return; }
     if (v === "edit") { R2.sheet(editHTML()); const b = $("#r2eB"); if (b) b.addEventListener("input", () => { const z = signOf(b.value); $("#r2eSign").innerHTML = z ? '<span class="pop">' + z.g + "</span> " + esc(z.n) : "Add your birthday to see your star sign"; }); return; }
     if (v === "saveedit") return saveEdit();
-    if (v === "mbti") { R2.close(); setTimeout(() => { const t = document.createElement("button"); t.setAttribute("data-r5", "mbti"); t.style.display = "none"; document.body.appendChild(t); t.click(); t.remove(); }, 200); return; }
+    if (v === "mbti") { R2.close(); setTimeout(() => { const t = document.createElement("button"); t.setAttribute("data-r5", "mbti-pick"); t.style.display = "none"; document.body.appendChild(t); t.click(); t.remove(); }, 200); return; }
     if (v === "password") return void R2.sheet(pwHTML(false));
     if (v === "pwforgot") return void R2.sheet(pwHTML(true));
     if (v === "signout") return void R2.sheet(confirmHTML("signout"));
@@ -15204,16 +15204,18 @@ function heroHTML(){
   return '<button class="r3-hav" data-r2p="photo" aria-label="' + (hasPic ? "Change profile photo" : "Add a profile photo") + '">' + bubble(m, 140) + '</button>' +
     '<button class="r3-plink" data-r2p="photo">' + (hasPic ? "Change photo" : "Add a profile photo") + '</button>' +
     '<div class="r2-hn">' + esc(u.name || "Add your name") + '</div>' +
-    (bits.length ? '<div class="r3-det">' + bits.map((b, i) => (m.s && b.indexOf(m.s) >= 0) ? '<button class="r3-signchip" data-r3="sign" data-sign="' + esc(m.s) + '">' + esc(window.LowiHerbIdentity ? LowiHerbIdentity.signLabel(m.s) : b) + '</button>' : '<span>' + esc(b) + '</span>').join('<i>·</i>') + '</div>' : "") +
+    (bits.length ? '<div class="r3-det">' + bits.map((b, i) => (m.s && b.indexOf(m.s) >= 0) ? '<button class="r3-signchip" data-r3="sign" data-sign="' + esc(m.s) + '">' + esc(window.LowiHerbIdentity ? LowiHerbIdentity.signLabel(m.s) : b) + '</button>' :
+      /* Oct 22 account UI step 1: weight opens Add weight, age / type open Your details (your-details.js) */
+      (m.w && b === m.w + " kg") ? '<button type="button" class="yd-chip yd-w" data-yd="weight" aria-label="' + esc(b) + ' · ' + esc(window.LowiYourDetails ? LowiYourDetails.tr("addW") : "Add weight") + '">' + esc(b) + '</button>' : '<button type="button" class="yd-chip" data-yd="open">' + esc(b) + '</button>').join('<i>·</i>') + '</div>' : "") +
     '<div class="r2-hs">' + (R2.email ? esc(R2.email() || "Not saved to an account yet") : "") + '</div>' +
-    '<div class="r3-hacts"><button class="r2-btn ghost" data-r2p="edit">Edit profile</button><button class="r2-btn ghost"' + who(m) + '>How others see you</button></div>';
+    '<div class="r3-hacts"><button class="r2-btn ghost" data-yd="open">Your details</button><button class="r2-btn ghost"' + who(m) + '>How others see you</button></div>';
 }
 function todoHTML(){
   const m = me(), S_ = R2.S(), u = S_.user || {}, rows = [];
   if (!m.avatar) rows.push('<button class="r3-todo-r" data-r2p="photo"><span class="r3-ti">' + R2.ico.cam + '</span><div><b>Add a profile photo</b><small>It floats inside your bubble</small></div><span class="r3-go">Add</span></button>');
   if (!u.bday) rows.push('<div class="r3-todo-r r3-bdrow"><span class="r3-ti">🎂</span><div><b>Add your birthday</b><small>Gives you your star sign, its colour and your age</small></div><span class="r3-go">Add</span>' +
     '<input type="date" id="r3Bday" class="r3-bdin" min="1920-01-01" max="' + new Date().toISOString().slice(0, 10) + '" aria-label="Add your birthday"></div>');
-  if (!m.t) rows.push('<button class="r3-todo-r" data-r5="mbti"><span class="r3-ti">🧩</span><div><b>Add your personality type</b><small>Optional · MBTI, like INTJ or ENFP</small></div><span class="r3-go">Add</span></button>');
+  if (!m.t) rows.push('<button class="r3-todo-r" data-r5="mbti-pick"><span class="r3-ti">🧩</span><div><b>Add your personality type</b><small>Optional · MBTI, like INTJ or ENFP</small></div><span class="r3-go">Add</span></button>');
   if (!rows.length) return "";
   return '<div class="card r3-todo"><div class="r3-todo-h"><b>Finish your profile</b><small>' + rows.length + (rows.length === 1 ? " step" : " steps") + ' left · a few seconds each</small></div>' + rows.join("") + '</div>';
 }
@@ -18923,6 +18925,9 @@ const L = [
   ["Theme, sounds", "Design, Töne", "Tema, sonidos"],
   ["Name, language", "Name, Sprache", "Nombre, idioma"],
   ["Reminders", "Erinnerungen", "Avisos"],
+  ["Your details", "Deine Daten", "Tus datos"],
+  ["Weight, name, health", "Gewicht, Name, Gesundheit", "Peso, nombre, salud"],
+  ["Add weight", "Gewicht eintragen", "Añadir peso"],
   ["Back", "Zurück", "Atrás"]
 ];
 let lAdded = false;
@@ -18939,11 +18944,15 @@ const IC = {
   acct: sv('<rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 018 0v3"/>'),
   look: sv('<path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/>'),
   app: sv('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-1.8-.3 1.6 1.6 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.6 1.6 0 00-1-1.5 1.6 1.6 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.6 1.6 0 00.3-1.8 1.6 1.6 0 00-1.5-1H3a2 2 0 110-4h.1a1.6 1.6 0 001.5-1 1.6 1.6 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.6 1.6 0 001.8.3H9a1.6 1.6 0 001-1.5V3a2 2 0 114 0v.1a1.6 1.6 0 001 1.5 1.6 1.6 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 00-.3 1.8V9a1.6 1.6 0 001.5 1H21a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z"/>'),
-  back: sv('<path d="M15 5l-7 7 7 7"/>')
+  back: sv('<path d="M15 5l-7 7 7 7"/>'),
+  details: sv('<circle cx="10" cy="8" r="3.6"/><path d="M3.5 20a6.5 6.5 0 0111.2-4.5"/><path d="M18.6 12.6l2.3 2.3-5.4 5.4-2.9.6.6-2.9z"/>')
 };
 const ORDER = ["app", "todo", "comm", "swaps", "glow", "about", "health", "acct", "look"];
-const NAME = {todo:"Finish profile", comm:"Community", swaps:"My swaps", glow:"Your glow", about:"About you", health:"Health", acct:"Account", look:"Look & sound", app:"Settings"};
-const SUB = {comm:"Posts, ranking", swaps:"Your favourites", glow:"Daily check-in", about:"Blood pressure", health:"Only on this phone", acct:"Email, password", look:"Theme, sounds", app:"Reminders"};
+/* Oct 22 account UI step 1: the grid shows Your details first; About you, Health and Account are reached from there
+   (their panels and LowiG2E.open() stay exactly as they were), so every piece of personal data has one home */
+const GRID = ["details", "app", "todo", "comm", "swaps", "glow", "look"];
+const NAME = {details:"Your details", todo:"Finish profile", comm:"Community", swaps:"My swaps", glow:"Your glow", about:"About you", health:"Health", acct:"Account", look:"Look & sound", app:"Settings"};
+const SUB = {details:"Weight, name, health", comm:"Posts, ranking", swaps:"Your favourites", glow:"Daily check-in", about:"Blood pressure", health:"Only on this phone", acct:"Email, password", look:"Theme, sounds", app:"Reminders"};
 const q = (r, s) => r ? r.querySelector(s) : null;
 const tab = () => D.getElementById("tab-profile");
 const phone = () => true; /* Oct 14, 2026: the game screens run on every size (iPad, laptop too); wide-layout.css arranges them, LowiFit never squeezes them there */
@@ -18980,7 +18989,7 @@ function subOf(k, t){
   return SUB[k] || "";
 }
 function tilesHTML(have, t){
-  return ORDER.filter(k => have[k]).map(k => '<button type="button" class="g2h-tile g2e-tile g2e-' + k + '" data-g2e-open="' + k + '" data-sfx="open"><span class="g2h-ic">' + IC[k] + '</span><b>' + esc(NAME[k]) + '</b><small' + (k === "todo" ? " data-noi18n" : "") + '>' + esc(subOf(k, t)) + '</small></button>').join("");
+  return GRID.filter(k => k === "details" || have[k]).map(k => '<button type="button" class="g2h-tile g2e-tile g2e-' + k + '" ' + (k === "details" ? 'data-yd="open"' : 'data-g2e-open="' + k + '"') + ' data-sfx="open"><span class="g2h-ic">' + IC[k] + '</span><b>' + esc(NAME[k]) + '</b><small' + (k === "todo" ? " data-noi18n" : "") + '>' + esc(subOf(k, t)) + '</small></button>').join("");
 }
 
 /* ---- open a part as its own screen ---- */
@@ -19849,6 +19858,11 @@ html.q4b-off #lcA2hs{display:none!important}
   document.addEventListener("click", () => setTimeout(sync, 0), true);
   window.LowiQ4b = {sync};
 })();
+/* Oct 22 account UI step 1: Your details (your-details.js / .css), one place for weight, height, name, photo, birthday, type,
+   goals, health and account. Loaded from here, stamped with the live build, so the include lines stay untouched. */
+(function () { var v = ((document.querySelector('meta[name="lowi-build"]') || {}).content || ''), q = v ? '?v=' + v : '';
+  var l = document.createElement('link'); l.rel = 'stylesheet'; l.id = 'ydCss'; l.href = 'your-details.css' + q; document.head.appendChild(l);
+  var sc = document.createElement('script'); sc.src = 'your-details.js' + q; sc.async = false; document.head.appendChild(sc); })();
 </script>
 <script src="recipe-book.js?v=20261022-123033"></script>
 <script src="appearance.js?v=20261022-123033"></script>

@@ -118,13 +118,19 @@
             card('lowest', st.lowest ? v(st.lowest.kg, s) + ' <i>' + U + '</i>' : '–', st.lowest ? esc(dOf(st.lowest.ts)) : '') +
             '</section>' + (st.trend ? '<p class="wj-cheer">' + esc(st.trend === 'up' && st.goalDir !== 'up' ? tr('cheerUp') : tr('cheerDown')) + '</p>' : '');
     }
+    /* Add weight opened from Your details / the profile header: today's value filled in (newest weigh-in, else the profile weight) */
+    function prefillVal(s, st) {
+        if (st && st.latest) return String(C.show(st.latest.kg, unit(s)));
+        const w = parseFloat(String((s && s.health && s.health.weight) || '').replace(',', '.'));
+        return Number.isFinite(w) && w > 0 ? String(C.show(w, unit(s))) : '';
+    }
     function addHTML(s, st) {
         const today = C.dayKey(Date.now());
         if (!form) return '<button type="button" class="wj-btn wj-add" data-wj="add">＋ ' + esc(tr('add')) + '</button>';
         const e = form.ts ? st.all.find(x => x.ts === form.ts) : null;
         return '<form class="wj-card wj-entry" data-wj-form="entry" novalidate><h3>' + esc(e ? tr('editEntry') : tr('add')) + '</h3><div class="wj-fields wj-two">' +
             '<label><span>' + esc(tr('date')) + '</span><input type="date" id="wjDate" max="' + today + '" value="' + esc(e ? e.day : today) + '" required></label>' +
-            '<label><span>' + esc(tr('weight')) + ' (' + u(s) + ')</span><input id="wjVal" inputmode="decimal" autocomplete="off" value="' + esc(e ? String(C.show(e.kg, unit(s))) : '') + '" placeholder="' + esc(st.latest ? String(C.show(st.latest.kg, unit(s))) : u(s) === 'lb' ? '236.5' : '107.6') + '" required></label></div>' +
+            '<label><span>' + esc(tr('weight')) + ' (' + u(s) + ')</span><input id="wjVal" inputmode="decimal" autocomplete="off" value="' + esc(e ? String(C.show(e.kg, unit(s))) : form.prefill ? prefillVal(s, st) : '') + '" placeholder="' + esc(st.latest ? String(C.show(st.latest.kg, unit(s))) : u(s) === 'lb' ? '236.5' : '107.6') + '" required></label></div>' +
             '<p class="wj-err" id="wjErr" role="alert"></p><div class="wj-row"><button type="submit" class="wj-btn">' + esc(tr('save')) + '</button><button type="button" class="wj-btn wj-ghost" data-wj="cancel">' + esc(tr('cancel')) + '</button>' +
             (e ? '<button type="button" class="wj-btn wj-ghost wj-del" data-wj="del">' + esc(tr('del')) + '</button>' : '') + '</div></form>';
     }
@@ -176,13 +182,16 @@
     }
     function open(opts) {
         if (!state()) return false;
-        if (ov) { render(); return true; }
+        /* opts.add (Oct 22, Your details / the profile header weight): open straight on Add weight, today's value filled in */
+        if (ov) { if (opts && opts.add && !form) { form = { prefill: true }; render(); focusIn('#wjVal'); } else render(); return true; }
         lastFocus = D.activeElement; period = (opts && opts.period) || null; offset = 0; form = null; setupOpen = false; showAll = false;
         ov = D.createElement('div'); ov.id = 'wjOv'; ov.className = 'wj-ov';
         ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-labelledby', 'wjTitle');
         ov.innerHTML = '<div class="wj-sheet"><div class="wj-head"><h2 id="wjTitle"></h2><div class="wj-units" role="group"></div><button type="button" class="wj-close" data-wj="close">×</button></div><div class="wj-body"></div></div>';
+        if (opts && opts.add) form = { prefill: true };
         D.body.appendChild(ov);
         render();
+        if (form) setTimeout(() => focusIn('#wjVal'), 60);
         ov.addEventListener('click', e => {
             const t = e.target, s = state(); if (!s) return;
             const act = t.closest('[data-wj]'), a = act && act.getAttribute('data-wj');

@@ -36,11 +36,11 @@ async function run(device, mode) {
                 if (legacy) Object.assign(p, { herbSkin: 'flowery', potStyle: 'terracotta', design: 'herb-v1', equipment: { pot: 'terracotta-old', hat: 'flower-crown', petals: 'pink' } });
                 localStorage.setItem(k, JSON.stringify(p));
             }, mode === 'legacy');
-            await page.reload({ waitUntil: 'load' });
+            await page.reload({ waitUntil: 'commit' }); /* not 'load': on a slow Pixel run the card can open and finish (7 s) before load fires */
         }
         let r = { open: false };
-        for (let t = 0; t < 40 && !r.open; t++) { await L.sleep(500); r = await page.evaluate(inspect); }
-        await L.sleep(1800); r = await page.evaluate(inspect);
+        for (let t = 0; t < 120 && !r.open; t++) { await L.sleep(250); r = await page.evaluate(inspect).catch(() => ({ open: false })); }
+        if (r.open) { await L.sleep(1500); const r2 = await page.evaluate(inspect); if (r2.open) r = r2; }
         const shot = path.join(OUT, device.replace(/\s+/g, '') + '-' + mode + '.png'); await page.screenshot({ path: shot });
         if (mode === 'legacy') r.prefs = await page.evaluate(() => { const k = Object.keys(localStorage).find(x => x.startsWith('lowi.herb.tamagotchi.v2:')); const p = JSON.parse(localStorage.getItem(k) || '{}'); return { skinV: p.skinV, lastSeenStage: p.lastSeenStage, herbSkin: p.herbSkin, pot: p.equipment && p.equipment.pot }; });
         const ok = r.open && r.after && r.after.cell && !r.after.orb && !r.after.herb && (!r.before || (r.before.cell && !r.before.herb && !r.before.orb)) && !r.herbAnywhere && !h.errors.length;

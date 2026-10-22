@@ -672,7 +672,7 @@
         adventure(dt, r);
         { const wd = st.adv.wand, pf = !!(st.pad.mode && wd && wd.visible && wd.material.opacity > 0.3); if (H.classList.contains('wh-padfly') !== pf) H.classList.toggle('wh-padfly', pf); }
         if (st.misty) {
-            const show = r.mode === 'full' && !inRegion() && !st.adv.away;
+            const show = r.mode === 'full' && !inRegion() && !st.adv.away && !!st.misty.material.map; /* Oct 22: never a blank white sprite */
             if (st.misty.visible !== show) st.misty.visible = show;
             if (show && !reduced()) { const t = performance.now() / 1000; st.misty.position.set(0, Math.sin(t * 1.3) * 0.06, 0); }
         }
@@ -711,13 +711,20 @@
         A.wand = new THREE.Sprite(mat); A.wand.name = 'wh-misty-out'; A.wand.userData.lwKeep = true; A.wand.renderOrder = 61; A.wand.visible = false; a.scene.add(A.wand);
         const N = 48, pos = new Float32Array(N * 3).fill(-999), geo = new THREE.BufferGeometry();
         geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-        A.pts = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.11, color: '#a8ffd8', transparent: true, opacity: 0.95, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, fog: false }));
+        /* Oct 22: soft round dots, never bare squares (world-home-core.js SPARK); no texture = no sparkles (burst() makes none) */
+        const dot = C && C.softDot ? C.softDot(THREE, D) : null;
+        A.pts = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.11, map: dot, alphaTest: 0.01, color: '#a8ffd8', transparent: true, opacity: 0.95, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, fog: false }));
+        A.pts.userData.noTex = !dot;
+        if (C && C.capPoints) C.capPoints(A.pts.material, C.SPARK.MAX_PX * Math.max(1, (a.renderer && a.renderer.getPixelRatio && a.renderer.getPixelRatio()) || W.devicePixelRatio || 1));
         A.pts.name = 'wh-misty-sparkles'; A.pts.userData.lwKeep = true; A.pts.renderOrder = 59; A.pts.frustumCulled = false; A.pts.visible = false; A.pts.userData.v = new Float32Array(N * 3); A.pts.userData.life = new Float32Array(N); a.scene.add(A.pts);
         A.ring = new THREE.Sprite(new THREE.SpriteMaterial({ map: ringTex(THREE), transparent: true, depthWrite: false, depthTest: false, fog: false, opacity: 0, blending: THREE.AdditiveBlending }));
         A.ring.name = 'wh-misty-ring'; A.ring.userData.lwKeep = true; A.ring.renderOrder = 58; A.ring.visible = false; a.scene.add(A.ring);
         A.c = new THREE.Vector3(); A.rt = new THREE.Vector3(); A.up = new THREE.Vector3(); A.fw = new THREE.Vector3(); A.tmp = new THREE.Vector3();
     }
     function burst(A, p, n, spread) {
+        if (!A.pts || A.pts.userData.noTex || !A.pts.material.map) return; /* Oct 22: never a sparkle without its soft dot */
+        { const pm = A.pts.material, bl = C && C.sparkBlend ? C.sparkBlend(w3().THREE, H.getAttribute('data-theme') === 'light') : pm.blending;
+            if (pm.blending !== bl) { pm.blending = bl; pm.needsUpdate = true; } }
         const pos = A.pts.geometry.attributes.position, v = A.pts.userData.v, life = A.pts.userData.life;
         for (let i = 0, made = 0; i < life.length && made < n; i++) {
             if (life[i] > 0) continue; made++;
@@ -766,14 +773,24 @@
         wand.material.opacity += ((fade ? 0.55 + 0.43 * k : 0) - wand.material.opacity) * Math.min(1, dt * 2.5);
         /* Oct 18 evening: her body keeps its energy look; her face (misty-face) follows only her fade in / out, solid once she is there */
         { const pr = Math.min(1, wand.material.opacity / (0.55 + 0.43 * k)), p2 = fade && pr > 0.99 ? 1 : +pr.toFixed(3); if (wand.userData.mfPresence !== p2) wand.userData.mfPresence = p2; }
-        wand.visible = wand.material.opacity > 0.01;
+        wand.visible = wand.material.opacity > 0.01 && !!wand.material.map; /* Oct 22: no picture yet = nothing, never a white box */
         /* sparkles keep falling even while she fades out */
         const pos = A.pts.geometry.attributes.position, v = A.pts.userData.v, life = A.pts.userData.life; let alive = 0;
+        /* Oct 22: a sparkle that drifts up to the camera (leaving a world, the camera flies right behind her) would grow into a big
+           blot; past SPARK.MAX_PX on screen it simply ends */
+        { const u = A.pts.material.userData.maxPS, pr = (a.renderer && a.renderer.getPixelRatio && a.renderer.getPixelRatio()) || 1; if (u && C) u.value = C.SPARK.MAX_PX * pr; }
+        const sCam = a.camera, sCv = a.renderer && a.renderer.domElement, halfH = ((sCv && sCv.clientHeight) || W.innerHeight) / 2, sz = A.pts.material.size;
+        if (sCam && sCam.matrixWorld) { sCam.updateMatrixWorld(); A.camInv = A.camInv || new a.THREE.Matrix4(); A.camInv.copy(sCam.matrixWorld).invert(); A.sv = A.sv || new a.THREE.Vector3(); }
         for (let i = 0; i < life.length; i++) {
             if (life[i] <= 0) continue;
             life[i] -= dt; if (life[i] <= 0) { pos.setXYZ(i, -999, -999, -999); continue; }
-            alive++; v[i * 3 + 1] -= dt * 0.25;
+            v[i * 3 + 1] -= dt * 0.25;
             pos.setXYZ(i, pos.getX(i) + v[i * 3] * dt, pos.getY(i) + v[i * 3 + 1] * dt, pos.getZ(i) + v[i * 3 + 2] * dt);
+            if (A.camInv && C && C.sparkTooBig && !A.pts.material.userData.capped) {
+                const z = -A.sv.set(pos.getX(i), pos.getY(i), pos.getZ(i)).applyMatrix4(A.camInv).z;
+                if (z <= 0.01 || C.sparkTooBig(sz, halfH, z)) { life[i] = 0; pos.setXYZ(i, -999, -999, -999); pos.needsUpdate = true; continue; }
+            }
+            alive++;
         }
         if (alive) pos.needsUpdate = true;
         A.pts.visible = alive > 0;

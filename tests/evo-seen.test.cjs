@@ -102,5 +102,6 @@ test('evo-popup: a cloud restore that brings back an older herb record does not 
     ls.removeItem('lowi.herb.tamagotchi.v2:u:Emmanuel');
     s = session(ls, env); s.refresh(true);
     assert.equal(s.shown.length, 0);
+    assert.equal(JSON.parse(ls.getItem('lowi.herb.tamagotchi.v2:' + UID)).lastSeenStage, 4, 'the restored record is healed up to the seen form');
     assert.ok(js.includes("SEEN_KEY='lowispike.evo.seen.v1'"), 'the seen key starts with lowispike. so the account backup keeps it');
 });

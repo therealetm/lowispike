@@ -300,7 +300,8 @@
         if (!stores) h += '<p class="stp-msg">' + esc(T('Loading shops…', 'Läden werden geladen…', 'Cargando tiendas…')) + '</p>';
         h += mapHTML(list, center);
         h += list.length ? '<div class="stp-rows">' + list.map(s => { const n = Object.keys(S.finds[s.id] || {}).length; return '<button type="button" class="stp-row" data-gh="store" data-id="' + esc(s.id) + '"><b>' + esc(s.name && s.brand && s.name.toLowerCase().indexOf(s.brand.toLowerCase()) >= 0 ? s.name : (s.brand || '') + (s.name && s.name !== s.brand ? ' ' + s.name : '')) + '</b><small>' + esc((s.addr || (P ? P.town(s) : '')) + (n ? ' · ' + T(n + ' finds', n + ' Funde', n + ' hallazgos') : '')) + '</small><i>' + (s.km != null ? esc(String(Math.round(s.km * 10) / 10).replace('.', li() ? ',' : '.')) + ' km' : '') + '</i></button>'; }).join('') + '</div>' :
-            (stores ? '<p class="stp-none">' + esc(T('Search for your shop, or tap Near me. The shop list covers Flensburg and southern Denmark.', 'Such deinen Laden oder tipp auf In der Nähe. Die Liste deckt Flensburg und Süddänemark ab.', 'Busca tu tienda o toca Cerca. La lista cubre Flensburg y el sur de Dinamarca.')) + '</p>' : '');
+            (stores ? '<p class="stp-none">' + esc(T('Tap Near me to see the shops around you, or type a town or postcode.', 'Tipp auf In der Nähe, um die Läden um dich herum zu sehen, oder gib einen Ort oder eine Postleitzahl ein.', 'Toca Cerca para ver las tiendas a tu alrededor, o escribe una ciudad o un código postal.')) + '</p>' : '');
+        if (q.trim().length >= 2) h += '<button type="button" class="stp-more" data-gh="place">' + esc(T('Find shops in "', 'Läden in "', 'Buscar tiendas en "') + q.trim() + T('"', '" suchen', '"')) + '</button>';
         if (q.trim().length >= 2) h += '<button type="button" class="stp-more" data-gh="store-own">' + esc(T('Use "', '"', 'Usar "') + q.trim() + T('" as my shop', '" als meinen Laden nehmen', '" como mi tienda')) + '</button>';
         h += '</div>';
         return shell(h, '<button type="button" class="stp-pill" data-gh="home">' + esc(T('Back', 'Zurück', 'Atrás')) + '</button>');
@@ -330,7 +331,18 @@
         const sc = ov.querySelector('.stp-scroll'); if (sc && y) sc.scrollTop = y;
     }
     function refresh() { if (ov && view === 'home' && S.plan.store) pull(S.plan.store).then(() => { if (ov && view === 'home') paint(); }); }
-    function loadStores() { if (stores) return Promise.resolve(stores); return fetch('data/shop/stores.json').then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(d => { stores = d; return d; }); }
+    /* Oct 22, 2026 (Emmanuel: "Don't make this based on my location, the creator"): no bundled shop list for one region any more.
+       Shops come live from OpenStreetMap around your own position (Near me) or a town / postcode you type (store-picks-core.js
+       lookup). The list lives in memory while the panel is open; no position is stored or shared. */
+    let finder = null;
+    const look = () => { const P = SP(); return finder || (P && P.lookup ? (finder = P.lookup((u, o) => fetch(u, o))) : null); };
+    const lang = () => ['en', 'de', 'es'][li()];
+    function loadStores() { if (!stores) stores = { stores: [] }; return Promise.resolve(stores); }
+    function shopsAround(at, cc) {
+        const L = look(); if (!L) return Promise.reject(new Error('no lookup'));
+        return L.shops(at, cc).then(list => { stores = { stores: list }; return stores; });
+    }
+    const MAPFAIL = () => T('Couldn\'t load shops from the map right now. Try again, or type your shop\'s name and use it as your shop.', 'Die Läden ließen sich gerade nicht von der Karte laden. Versuch es nochmal oder tipp den Namen deines Ladens und nimm ihn als deinen Laden.', 'No se pudieron cargar las tiendas del mapa. Inténtalo de nuevo o escribe el nombre de tu tienda y úsala.');
 
     function setStore(s) {
         const P = SP();
@@ -356,11 +368,21 @@
         if (a === 'near') {
             if (!navigator.geolocation) { msg = T('Location isn\'t available here. Search for your shop instead.', 'Standort ist hier nicht verfügbar. Such deinen Laden stattdessen.', 'La ubicación no está disponible. Busca tu tienda.'); return paint(); }
             msg = T('Finding shops near you…', 'Suche Läden in deiner Nähe…', 'Buscando tiendas cerca…'); paint();
-            navigator.geolocation.getCurrentPosition(p => { where = { lat: p.coords.latitude, lon: p.coords.longitude }; q = ''; msg = ''; loadStores().then(paint).catch(paint); },
+            navigator.geolocation.getCurrentPosition(p => { const at = { lat: p.coords.latitude, lon: p.coords.longitude }; where = at; q = ''; shopsAround(at).then(() => { if (where === at) msg = ''; paint(); }).catch(() => { msg = MAPFAIL(); paint(); }); },
                 () => { msg = T('Location is off. Search for your shop instead.', 'Standort ist aus. Such deinen Laden stattdessen.', 'La ubicación está desactivada. Busca tu tienda.'); paint(); }, { enableHighAccuracy: false, timeout: 12000, maximumAge: 300000 });
             return;
         }
         if (a === 'store') { const s = (stores && stores.stores || []).find(x => x.id === b.dataset.id); if (s) setStore(s); return; }
+        if (a === 'place') {
+            const t = q.trim(), L = look(); if (t.length < 2 || !L) return;
+            msg = T('Looking up ', 'Suche ', 'Buscando ') + t + '…'; paint();
+            L.search(t, lang()).then(pl => {
+                if (!pl) { msg = T('Couldn\'t find that place. Check the spelling or try a postcode.', 'Den Ort gibt es so nicht. Prüf die Schreibweise oder versuch eine Postleitzahl.', 'No se encontró ese lugar. Revisa la ortografía o prueba un código postal.'); return paint(); }
+                const at = { lat: pl.lat, lon: pl.lon }; where = at;
+                return shopsAround(at, pl.cc).then(() => { if (where === at) { q = ''; msg = T('Shops around ', 'Läden rund um ', 'Tiendas en torno a ') + (pl.line || t); } paint(); });
+            }).catch(() => { msg = MAPFAIL(); paint(); });
+            return;
+        }
         if (a === 'store-own') { const n = q.trim().slice(0, 40); if (n.length >= 2) setStore({ id: 'own:' + C.nameKey(n).replace(/ /g, '-'), name: n, brand: '', town: '' }); return; }
         if (a === 'plan-edit') { const sp = SPL(); if (sp && sp.openEditor) { close(); try { sp.openEditor(); } catch (e) {} } return; }
         if (a === 'every') { C.setPlan(S, { every: +b.dataset.n }); save(); return paint(); }
@@ -409,7 +431,7 @@
         refresh();
     }
     function close() {
-        if (!ov) return; const o = ov; ov = null; D.removeEventListener('keydown', onKey);
+        if (!ov) return; const o = ov; ov = null; where = null; stores = null; D.removeEventListener('keydown', onKey);
         o.classList.remove('in'); o.classList.add('out'); setTimeout(() => { try { o.remove(); } catch (e) {} }, 240);
         decorate();
     }

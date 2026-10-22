@@ -10,7 +10,7 @@ Sources
            Needs SALLING_SEARCH_KEY (the public search-only key the website ships) in the environment.
   off:<x>  Open Food Facts (open database, ODbL): products shoppers tagged as sold at chain <x> in Germany.
 
-Usage: python3 tools/shop-data/build.py salling | off edeka | off-all | stores
+Usage: python3 tools/shop-data/build.py salling | off edeka | off-all
        then python3 tools/shop-data/add-images.py   (adds the Open Food Facts front photo per barcode, column im)
 """
 import json, os, re, sys, time, urllib.request, urllib.parse, datetime
@@ -217,35 +217,8 @@ BRANDS = [
 ]
 
 
-def build_stores(lat=54.79, lon=9.44, radius=60000):
-    q = '[out:json][timeout:90];(nwr["shop"="supermarket"](around:%d,%f,%f););out center tags;' % (radius, lat, lon)
-    d = req('https://overpass-api.de/api/interpreter', urllib.parse.urlencode({'data': q}).encode())
-    out = []
-    for e in d.get('elements', []):
-        t = e.get('tags') or {}
-        b = (t.get('brand') or t.get('name') or '').strip()
-        hit = next((x for x in BRANDS if b in x[0]), None)
-        if not hit:
-            continue
-        la = e.get('lat') or (e.get('center') or {}).get('lat')
-        lo = e.get('lon') or (e.get('center') or {}).get('lon')
-        # Danish Netto vs German Netto: the Salling one sits in Denmark (north of the border, about 54.81 N here)
-        ds = hit[1]
-        if hit[2] == 'Netto (DK)' and la < 54.805:
-            ds, lbl = 'netto', 'Netto'
-        else:
-            lbl = hit[2]
-        city = t.get('addr:city') or ''
-        street = ((t.get('addr:street') or '') + ' ' + (t.get('addr:housenumber') or '')).strip()
-        out.append({'id': '%s%d' % (e['type'][0], e['id']), 'chain': ds, 'brand': lbl, 'name': t.get('name') or lbl,
-                    'addr': ', '.join(x for x in (street, city) if x), 'lat': round(la, 5), 'lon': round(lo, 5),
-                    'dk': la >= 54.805 and ds == 'salling'})
-    out.sort(key=lambda s: (s['chain'], s['lat']))
-    with open(os.path.join(OUT, 'stores.json'), 'w') as f:
-        json.dump({'source': 'OpenStreetMap contributors (ODbL), supermarkets within %d km of Flensburg' % (radius // 1000),
-                   'built': datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d'), 'stores': out}, f,
-                  ensure_ascii=False, separators=(',', ':'))
-    print('stores', len(out), file=sys.stderr)
+# Oct 22, 2026: no bundled shop map any more. The app finds the shops around each person live from OpenStreetMap
+# (store-picks-core.js lookup), so there is no fixed region and no stores.json to build.
 
 
 def write(chain, meta, prods):
@@ -265,8 +238,6 @@ if __name__ == '__main__':
         sys.exit(__doc__)
     if a[0] == 'salling':
         build_salling()
-    elif a[0] == 'stores':
-        build_stores()
     elif a[0] == 'off':
         build_off(a[1])
     elif a[0] == 'off-all':

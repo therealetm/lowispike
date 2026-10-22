@@ -1,7 +1,7 @@
 /* Oct 17, 2026 (E-man, in the shop: "a little emergency button ... see all the snacks that I can buy in the shop, all the meat ...
    all the bread" and "even before entering the shop, be able to see every product that I can buy if I only eat insulin-friendly food").
    The "What can I buy here?" button and its Move-style panel. Logic and the formula live in store-picks-core.js; product ranges in
-   data/shop/<range>.json; shop locations in data/shop/stores.json (both built by tools/shop-data/build.py, no keys on the phone).
+   data/shop/<range>.json; built by tools/shop-data/build.py. Shops near the person come live from OpenStreetMap (store-picks-core.js lookup), no keys on the phone.
    Oct 21, 2026 (Eman: "Does it make sense to also have it in there again? If not, remove it."): one entry point only, the Shop orb
    in Home's Fuel bubble (home-blooms-v2.js). The old card under Cook it / Shop it, in the shopping list, cart and Meals sheets is gone. */
 (function (W, D) {
@@ -27,10 +27,20 @@
     ];
     const RANGE = {}; RANGES.forEach(r => { RANGE[r.id] = r; });
 
+    const label = id => id === 'general' ? T('All supermarkets', 'Alle Supermärkte', 'Todos los supermercados') : (RANGE[id] ? RANGE[id].label : id);
     let S = {};
     try { S = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { S = {}; }
     const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+    /* Oct 22, 2026: a shop saved from the old bundled list (one region only) is dropped; the chain choice stays. Only shops found
+       around the person themselves (ids "osm:...") are remembered, by name and address, never by position. */
+    if (S && S.store && !/^osm:/.test(String(S.store.id || ''))) { delete S.store; save(); }
+    if (S && S.range && S.range !== 'general' && !RANGE[S.range]) { S = {}; save(); }
     const cache = {};
+    /* the product list for a range; 'general' = REWE and EDEKA together (C.merge) */
+    function loadRange(id) {
+        if (id === 'general') return Promise.all(C.GENERAL.map(load)).then(C.merge);
+        return load(id);
+    }
     function load(file) {
         if (cache[file]) return cache[file];
         cache[file] = fetch('data/shop/' + file + '.json?v=' + encodeURIComponent(BUILD)).then(r => { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
@@ -38,7 +48,10 @@
         return cache[file];
     }
 
-    let ov = null, view = 'list', where = null, stores = null, data = null, built = null, q = '', showFail = false, open = {};
+    /* where / place / near live in memory only while the panel is open: never saved, never sent to our server */
+    let where = null, place = null, placeMine = false, near = null, busy = false, finder = null;
+    const look = () => finder || (finder = C.lookup((u, o) => fetch(u, o)));
+    let ov = null, view = 'list', data = null, built = null, q = '', showFail = false, open = {};
     const ic = {
         x: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
         pin: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="9.5" r="2.5" fill="currentColor"/></svg>',
@@ -47,9 +60,8 @@
 
     function storeLine() {
         if (!S.range) return '';
-        const r = RANGE[S.range];
-        if (S.store) return S.store.brand + ' · ' + (S.store.town || '') + (S.store.km != null ? ' · ' + dec(S.store.km) + ' km' : '');
-        return r ? r.label : S.range;
+        if (S.store) return [S.store.name || S.store.brand, S.store.addr || S.store.town || '', S.store.km != null ? dec(S.store.km) + ' km' : ''].filter(Boolean).join(' · ');
+        return label(S.range);
     }
 
     /* ---------------- Snacks to buy (Oct 19, own key; logged Snacks from Log meal are offered under "Again?") ---------------- */
@@ -78,6 +90,12 @@
     }
     function onSubmit(e) {
         const f = e.target;
+        if (f && f.getAttribute && f.getAttribute('data-stp-where')) {
+            e.preventDefault();
+            const i = f.querySelector('input[name="where"]'); if (i) try { i.blur(); } catch (x) {}
+            findPlace(i ? i.value : '');
+            return;
+        }
         if (!f || !f.getAttribute || !f.getAttribute('data-stp-snack-form')) return;
         e.preventDefault();
         const inp = f.querySelector('input[name="snack"]'), v = inp ? inp.value : '';
@@ -114,22 +132,41 @@
     }
 
     /* ---------------- choose a shop ---------------- */
+    /* Oct 22, 2026 (Emmanuel: "when they click on share my location, they should see their address and the nearest grocery
+       shopping options, and then they can click on that. And then based on that, it shows them the products that are in the
+       store"). Share my location -> your own address -> the supermarkets nearest to you, from OpenStreetMap -> tap one -> its
+       products. Location off or not wanted: type a town or postcode, or skip to the general lists. There is no fixed place. */
+    const dist = k => k == null ? '' : k < 1 ? (Math.max(10, Math.round(k * 100) * 10)) + ' m' : dec(k) + ' km';
+    function whereForm() {
+        return '<form class="stp-where" data-stp-where="1" role="search"><input type="search" name="where" class="stp-wq" maxlength="80" autocomplete="off" enterkeyhint="search" placeholder="' +
+            esc(T('Town or postcode', 'Ort oder Postleitzahl', 'Ciudad o código postal')) + '" aria-label="' + esc(T('Find shops in a town or postcode', 'Läden in einem Ort oder einer Postleitzahl suchen', 'Buscar tiendas en una ciudad o código postal')) + '">' +
+            '<button type="submit" class="stp-pill"' + (busy ? ' disabled' : '') + '>' + esc(T('Search', 'Suchen', 'Buscar')) + '</button></form>';
+    }
+    function hereHTML() {
+        if (!place || !place.line) return '';
+        return '<p class="stp-here">' + ic.pin + '<span><small>' + esc(placeMine ? T('Your location', 'Dein Standort', 'Tu ubicación') : T('Shops around', 'Läden rund um', 'Tiendas en torno a')) + '</small><b>' + esc(place.line) + '</b></span></p>';
+    }
+    function shopRowsHTML() {
+        if (!near) return '';
+        if (!near.length) return '<p class="stp-msg">' + esc(T('No supermarkets on the map near here. Try a town or postcode, or see the general lists.', 'Keine Supermärkte auf der Karte in der Nähe. Versuch einen Ort oder eine Postleitzahl oder sieh dir die allgemeinen Listen an.', 'No hay supermercados en el mapa cerca. Prueba una ciudad o código postal, o mira las listas generales.')) + '</p>';
+        return '<h4 class="stp-h4">' + esc(T('Supermarkets near you', 'Supermärkte in deiner Nähe', 'Supermercados cerca de ti')) + '</h4><div class="stp-rows">' +
+            near.map(s => '<button type="button" class="stp-row stp-store" data-stp-store="' + esc(s.id) + '"><b>' + esc(s.name) + '</b><small>' +
+                esc([s.brand && s.brand.toLowerCase() !== s.name.toLowerCase() ? s.brand : '', s.addr || s.town || ''].filter(Boolean).join(' · ') || T('No address on the map', 'Keine Adresse auf der Karte', 'Sin dirección en el mapa')) +
+                '</small><i>' + esc(dist(s.km)) + '</i></button>').join('') + '</div>';
+    }
     function pickHTML(msg) {
-        let list = '';
-        if (stores && where) {
-            list = C.nearest(stores.stores, where, 14).map(s => '<button type="button" class="stp-row stp-store" data-stp-store="' + esc(s.id) + '"><b>' + esc(s.brand) + '</b><small>' +
-                esc([C.town(s), s.addr && s.addr.indexOf(',') > 0 ? s.addr.split(',')[0] : ''].filter(Boolean).join(' · ')) + '</small><i>' + esc(dec(s.km)) + ' km</i></button>').join('');
-            list = '<h4 class="stp-h4">' + esc(T('Shops near you', 'Läden in deiner Nähe', 'Tiendas cerca de ti')) + '</h4><div class="stp-rows">' + list + '</div>';
-        }
-        const chains = RANGES.map(r => '<button type="button" class="stp-chip' + (S.range === r.id && !S.store ? ' on' : '') + '" data-stp-range="' + r.id + '">' + esc(r.label) + '</button>').join('');
+        const chains = '<button type="button" class="stp-chip' + (S.range === 'general' && !S.store ? ' on' : '') + '" data-stp="general">' + esc(label('general')) + '</button>' +
+            RANGES.map(r => '<button type="button" class="stp-chip' + (S.range === r.id && !S.store ? ' on' : '') + '" data-stp-range="' + r.id + '">' + esc(r.label) + '</button>').join('');
         return shell('<div class="stp-head"><h3>' + esc(T('Which shop?', 'Welcher Laden?', '¿Qué tienda?')) + '</h3><p>' +
-            esc(T('Pick a shop near you, or a chain to look before you go.', 'Wähl einen Laden in deiner Nähe oder eine Kette, um vorher zu schauen.', 'Elige una tienda cercana o una cadena para mirar antes de ir.')) + '</p></div>' +
-            '<div class="stp-scroll">' + shopActs() + snackHTML() + '<button type="button" class="stp-go" data-stp="locate">' + ic.pin + '<span>' + esc(T('Use my location', 'Meinen Standort nutzen', 'Usar mi ubicación')) + '</span></button>' +
-            (msg ? '<p class="stp-msg">' + esc(msg) + '</p>' : '') + list +
+            esc(T('Share your location to see the supermarkets nearest to you, or type a town or postcode.', 'Teil deinen Standort, um die Supermärkte in deiner Nähe zu sehen, oder gib einen Ort oder eine Postleitzahl ein.', 'Comparte tu ubicación para ver los supermercados más cercanos, o escribe una ciudad o un código postal.')) + '</p></div>' +
+            '<div class="stp-scroll">' + shopActs() + snackHTML() + '<button type="button" class="stp-go" data-stp="locate"' + (busy ? ' disabled aria-busy="true"' : '') + '>' + ic.pin + '<span>' + esc(T('Share my location', 'Meinen Standort teilen', 'Compartir mi ubicación')) + '</span></button>' +
+            whereForm() + (msg ? '<p class="stp-msg" role="status">' + esc(msg) + '</p>' : '') + hereHTML() + shopRowsHTML() +
+            '<button type="button" class="stp-more stp-skip" data-stp="general">' + esc(T('Skip: show the general lists', 'Überspringen: allgemeine Listen zeigen', 'Omitir: ver las listas generales')) + '</button>' +
             '<h4 class="stp-h4">' + esc(T('Or pick a chain', 'Oder eine Kette wählen', 'O elige una cadena')) + '</h4><div class="stp-chips stp-wrap">' + chains + '</div>' +
-            '<p class="stp-fine">' + esc(T('There is no Føtex in Germany. The nearest to Flensburg are in Aabenraa and Sønderborg. Føtex, Bilka and Danish Netto share one Salling Group range here.',
-                'In Deutschland gibt es keinen Føtex. Die nächsten zu Flensburg sind in Aabenraa und Sønderborg. Føtex, Bilka und dänischer Netto teilen sich hier ein Salling-Group-Sortiment.',
-                'No hay Føtex en Alemania. Los más cercanos a Flensburg están en Aabenraa y Sønderborg. Føtex, Bilka y Netto de Dinamarca comparten aquí una gama de Salling Group.')) + '</p></div>' +
+            '<p class="stp-fine">' + esc(T('Your location is only used on this phone to look up your address and the shops near you on OpenStreetMap. It isn’t sent to us or saved. Map data © OpenStreetMap contributors. ',
+                'Dein Standort wird nur auf diesem Handy genutzt, um deine Adresse und die Läden in der Nähe bei OpenStreetMap nachzuschlagen. Er wird nicht an uns geschickt und nicht gespeichert. Kartendaten © OpenStreetMap-Mitwirkende. ',
+                'Tu ubicación solo se usa en este teléfono para buscar tu dirección y las tiendas cercanas en OpenStreetMap. No se nos envía ni se guarda. Datos del mapa © colaboradores de OpenStreetMap. ')) +
+            '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">openstreetmap.org/copyright</a></p></div>' +
             footBtns(S.range ? '<button type="button" class="stp-pill" data-stp="list">' + esc(T('Back to list', 'Zurück zur Liste', 'Volver a la lista')) + '</button>' : ''));
     }
 
@@ -142,7 +179,7 @@
         if (r.fibre >= 2) parts.push(dec(r.fibre) + ' g ' + T('fibre', 'Ballaststoffe', 'fibra'));
         return parts.join(' · ');
     }
-    /* Oct 18, 2026 (E-man in Lidl Flensburg, could not tap "Bio Linsen": "It should be linked in there ... a little window next to
+    /* Oct 18, 2026 (E-man in Lidl, could not tap "Bio Linsen": "It should be linked in there ... a little window next to
        best. Just like Amazon, so we can actually see ... an image of the product."). Each row is a button with a small photo; the
        photo waits in data-src until the row scrolls near (IntersectionObserver), so a long list never asks for thousands at once. */
     let shown = [], qv = null, qvFrom = -1, io = null;
@@ -200,7 +237,7 @@
         return '<dl class="stp-qv-dl">' + rowsL.map(x => '<div><dt>' + esc(x[0]) + '</dt><dd>' + esc(x[1]) + '</dd></div>').join('') + '</dl>';
     }
     function whereText() {
-        const name = (data && data.name) || (RANGE[S.range] && RANGE[S.range].label) || '';
+        const name = (data && data.name) || label(S.range) || '';
         if (S.range === 'salling') return T('From Salling Group’s online range (Bilka ToGo). Føtex and Bilka share most of it, but it is not checked against the shelf of your shop, so it may not be there today.',
             'Aus dem Online-Sortiment der Salling Group (Bilka ToGo). Føtex und Bilka teilen das meiste davon, aber es ist nicht mit dem Regal deines Ladens abgeglichen, es kann also heute fehlen.',
             'De la gama en línea de Salling Group (Bilka ToGo). Føtex y Bilka comparten la mayor parte, pero no está comprobado con la estantería de tu tienda, así que puede que hoy no esté.');
@@ -316,12 +353,12 @@
                 '<p>' + esc(T('Real: product names and label values. Estimated: the GI and so the load. ', 'Echt: Produktnamen und Etikettwerte. Geschätzt: der GI und damit die Last. ', 'Real: nombres y valores de la etiqueta. Estimado: el IG y por tanto la carga. ') + (data && data.note ? data.note : '')) + '</p>' +
                 '<p>' + esc(T('Source: ', 'Quelle: ', 'Fuente: ') + (data && data.source || '') + ' · ' + (data && data.built || '')) + '</p></details>';
         }
-        const r = RANGE[S.range];
+        const gen = S.range === 'general' && S.store ? '<p class="stp-fine stp-gen">' + esc(T('We have no product list for this shop’s chain, so this is the general list. Supermarkets mostly carry the same items.', 'Für die Kette dieses Ladens haben wir keine eigene Liste, deshalb siehst du die allgemeine Liste. Supermärkte führen meist dieselben Produkte.', 'No tenemos una lista de esta cadena, así que ves la lista general. Los supermercados suelen tener los mismos productos.')) + '</p>' : '';
         return shell('<div class="stp-head"><h3>' + esc(T('What can I buy here?', 'Was kann ich hier kaufen?', '¿Qué puedo comprar aquí?')) + '</h3>' +
-            '<button type="button" class="stp-shop" data-stp="pick">' + ic.cart + '<span>' + esc(storeLine() || (r && r.label) || '') + '</span><i>' + esc(T('Change', 'Ändern', 'Cambiar')) + '</i></button>' +
+            '<button type="button" class="stp-shop" data-stp="pick">' + ic.cart + '<span>' + esc(storeLine() || label(S.range) || '') + '</span><i>' + esc(T('Change', 'Ändern', 'Cambiar')) + '</i></button>' +
             '<div class="stp-tools"><input type="search" class="stp-q" enterkeyhint="search" autocomplete="off" placeholder="' + esc(T('Search this shop', 'In diesem Laden suchen', 'Buscar en esta tienda')) + '" value="' + esc(q) + '">' +
             '<label class="stp-tog"><input type="checkbox" data-stp="fails"' + (showFail ? ' checked' : '') + '><span>' + esc(T('Show left out', 'Aussortierte zeigen', 'Ver excluidos')) + '</span></label></div></div>' +
-            '<div class="stp-scroll">' + shopActs() + snackHTML() + inner + '</div>' +
+            '<div class="stp-scroll">' + shopActs() + snackHTML() + gen + inner + '</div>' +
             '<p class="stp-note">' + esc(T('General food guidance, not medical advice.', 'Allgemeine Ernährungshilfe, keine medizinische Beratung.', 'Orientación general sobre alimentos, no consejo médico.')) + '</p>' +
             footBtns(''));
     }
@@ -340,21 +377,50 @@
         view = 'list';
         if (!S.range) { view = 'pick'; paint(); return; }
         data = null; paint('loading');
-        load(S.range).then(d => { data = d; if (ov && view === 'list') paint(); }).catch(() => { if (ov && view === 'list') paint('error'); });
+        loadRange(S.range).then(d => { data = d; if (ov && view === 'list') paint(); }).catch(() => { if (ov && view === 'list') paint('error'); });
+    }
+    function focusWhere() { const i = ov && ov.querySelector('.stp-wq'); if (i) try { i.focus(); } catch (e) {} }
+    const lang = () => ['en', 'de', 'es'][li()];
+    const LOOKING = () => T('Finding supermarkets near you…', 'Suche Supermärkte in deiner Nähe…', 'Buscando supermercados cerca…');
+    const MAPFAIL = () => T('Couldn’t load shops from the map right now. Try again, type a town or postcode, or see the general lists.', 'Die Läden ließen sich gerade nicht von der Karte laden. Versuch es nochmal, gib einen Ort oder eine Postleitzahl ein oder sieh dir die allgemeinen Listen an.', 'No se pudieron cargar las tiendas del mapa. Inténtalo de nuevo, escribe una ciudad o código postal, o mira las listas generales.');
+    /* look around a point: the address and the shops are fetched side by side; the country code from the address only decides
+       Danish Netto (Salling range) against German Netto */
+    function lookAround(at, known) {
+        where = at; near = null; busy = true; place = known || null;
+        if (ov && view === 'pick') paint(LOOKING());
+        const L = look(), addr = known ? Promise.resolve(known) : L.address(at, lang()).catch(() => null);
+        const shops = L.shops(at);
+        addr.then(p => { if (p && where === at) { place = p; if (ov && view === 'pick' && busy) paint(LOOKING()); } });
+        Promise.all([addr, shops]).then(r => L.shops(at, r[0] && r[0].cc)).then(list => {
+            if (where !== at) return;
+            near = list; busy = false;
+            if (ov && view === 'pick') paint('');
+        }).catch(() => { if (where !== at) return; busy = false; near = null; if (ov && view === 'pick') paint(MAPFAIL()); });
     }
     function locate() {
-        const msg = T('Finding shops near you…', 'Suche Läden in deiner Nähe…', 'Buscando tiendas cerca…');
-        paint(msg);
-        const go = () => {
-            if (!navigator.geolocation) { paint(T('Location isn’t available here. Pick a chain below.', 'Standort ist hier nicht verfügbar. Wähl unten eine Kette.', 'La ubicación no está disponible. Elige una cadena abajo.')); return; }
-            navigator.geolocation.getCurrentPosition(pos => {
-                where = { lat: pos.coords.latitude, lon: pos.coords.longitude };
-                const near = C.nearest(stores.stores, where, 1)[0];
-                paint(near && near.km > 80 ? T('The shop lists cover Flensburg and southern Denmark. These are the closest.', 'Die Ladenlisten decken Flensburg und Südänemark ab. Das sind die nächsten.', 'Las listas cubren Flensburg y el sur de Dinamarca. Estas son las más cercanas.') : '');
-            }, () => { paint(T('Location is off. Pick a chain below, or allow location for this site in Settings.', 'Standort ist aus. Wähl unten eine Kette oder erlaube den Standort in den Einstellungen.', 'La ubicación está desactivada. Elige una cadena abajo o permítela en Ajustes.')); },
-            { enableHighAccuracy: false, timeout: 12000, maximumAge: 300000 });
-        };
-        if (stores) go(); else load('stores').then(d => { stores = d; go(); }).catch(() => paint(T('Couldn’t load the shop map. Pick a chain below.', 'Die Ladenkarte ließ sich nicht laden. Wähl unten eine Kette.', 'No se pudo cargar el mapa. Elige una cadena abajo.')));
+        if (busy) return;
+        if (!navigator.geolocation) { paint(T('Location isn’t available here. Type a town or postcode instead.', 'Standort ist hier nicht verfügbar. Gib stattdessen einen Ort oder eine Postleitzahl ein.', 'La ubicación no está disponible. Escribe una ciudad o un código postal.')); focusWhere(); return; }
+        busy = true; paint(T('Finding where you are…', 'Suche deinen Standort…', 'Buscando dónde estás…'));
+        navigator.geolocation.getCurrentPosition(pos => {
+            placeMine = true;
+            lookAround({ lat: pos.coords.latitude, lon: pos.coords.longitude }, null);
+        }, err => {
+            busy = false;
+            if (!ov || view !== 'pick') return;
+            paint(err && err.code === 1 ? T('Location is off for this site. Type a town or postcode, or allow location in your settings.', 'Standort ist für diese Seite aus. Gib einen Ort oder eine Postleitzahl ein oder erlaube den Standort in den Einstellungen.', 'La ubicación está desactivada para este sitio. Escribe una ciudad o código postal, o permítela en los ajustes.')
+                : T('Couldn’t get your location. Type a town or postcode instead.', 'Dein Standort ließ sich nicht ermitteln. Gib stattdessen einen Ort oder eine Postleitzahl ein.', 'No se pudo obtener tu ubicación. Escribe una ciudad o un código postal.'));
+            focusWhere();
+        }, { enableHighAccuracy: false, timeout: 15000, maximumAge: 120000 });
+    }
+    function findPlace(text) {
+        const t = String(text || '').trim();
+        if (t.length < 2 || busy) return;
+        busy = true; near = null; place = null; paint(T('Looking up ', 'Suche ', 'Buscando ') + t + '…');
+        look().search(t, lang()).then(p => {
+            if (!p) { busy = false; if (ov && view === 'pick') { paint(T('Couldn’t find that place. Check the spelling or try a postcode.', 'Den Ort gibt es so nicht. Prüf die Schreibweise oder versuch eine Postleitzahl.', 'No se encontró ese lugar. Revisa la ortografía o prueba un código postal.')); focusWhere(); } return; }
+            placeMine = false; busy = false;
+            lookAround({ lat: p.lat, lon: p.lon }, p);
+        }).catch(() => { busy = false; if (ov && view === 'pick') paint(MAPFAIL()); });
     }
 
     function onClick(e) {
@@ -376,10 +442,11 @@
         if (a === 'locate') return locate();
         if (a === 'retry') return showList();
         if (b.hasAttribute('data-stp-range')) { S = { range: b.getAttribute('data-stp-range') }; save(); q = ''; open = {}; return showList(); }
+        if (a === 'general') { S = { range: 'general' }; save(); q = ''; open = {}; return showList(); }
         if (b.hasAttribute('data-stp-store')) {
-            const s = (stores && stores.stores || []).find(x => x.id === b.getAttribute('data-stp-store')); if (!s) return;
-            if (!RANGE[s.chain]) return;
-            S = { range: s.chain, store: { id: s.id, brand: s.brand, town: C.town(s), km: where ? Math.round(C.km(where, s) * 10) / 10 : null } }; save(); q = ''; open = {};
+            const s = (near || []).find(x => x.id === b.getAttribute('data-stp-store')); if (!s) return;
+            S = { range: RANGE[s.chain] ? s.chain : 'general', store: { id: s.id, name: s.name, brand: s.brand, chain: s.chain || '', addr: s.addr || '', town: s.town || '', km: s.km != null ? Math.round(s.km * 10) / 10 : null } };
+            save(); q = ''; open = {};
             return showList();
         }
         if (b.hasAttribute('data-stp-more')) { open[b.getAttribute('data-stp-more')] = +b.getAttribute('data-stp-ask') || 0; return paint('keep'); }
@@ -423,6 +490,7 @@
         const o = ov; ov = null; qv = null;
         if (io) { io.disconnect(); io = null; }
         D.documentElement.classList.remove('stp-open');
+        where = null; place = null; near = null; busy = false; /* the position is forgotten with the panel */
         data = null; built = null; shown = []; /* the rows are gone with the panel: keep nothing of them while it is closed */
         D.removeEventListener('keydown', onKey);
         o.classList.remove('in'); o.classList.add('out');

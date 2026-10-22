@@ -109,7 +109,7 @@ test('build: only passing products by default, every category, best first, dupli
     assert.equal(C.build(data, { q: 'mandler' }).counts.total, 1);
 });
 
-test('real data: the Salling range (Føtex, Bilka, Netto DK) and the Flensburg chains are bundled, with sources and labels', () => {
+test('real data: the Salling range (Føtex, Bilka, Netto DK) and the German chains are bundled, with sources and labels', () => {
     const s = J('salling');
     assert.ok(s.count > 5000, 'salling range has thousands of products');
     assert.match(s.source, /Salling/);
@@ -125,30 +125,23 @@ test('real data: the Salling range (Føtex, Bilka, Netto DK) and the Flensburg c
         assert.match(d.source, /Open Food Facts/);
         assert.deepEqual(d.cols, s.cols);
     }
-    const st = J('stores');
-    assert.match(st.source, /OpenStreetMap/);
-    const foetex = st.stores.filter(x => x.brand === 'Føtex');
-    assert.ok(foetex.length >= 1, 'nearest Føtex shops are on the map');
-    foetex.forEach(x => assert.equal(x.chain, 'salling'));
-    const ranges = new Set(fs.readdirSync(path.join(root, 'data/shop')).map(f => f.replace('.json', '')));
-    st.stores.forEach(x => assert.ok(ranges.has(x.chain), 'every shop has a range file: ' + x.chain));
+    assert.ok(!fs.existsSync(path.join(root, 'data/shop/stores.json')), 'no bundled shop map for one region');
     // no keys ship to the phone
     for (const f of ['store-picks.js', 'store-picks-core.js']) assert.doesNotMatch(read(f), /algolia|api[-_]?key|bearer/i);
     assert.doesNotMatch(read('tools/shop-data/build.py'), /[0-9a-f]{32}/, 'no key committed in the builder');
 });
 
-test('stores: nearest sorts by distance, Flensborg Føtex finds the Danish Føtex shops', () => {
-    const st = J('stores').stores;
-    const flensburg = { lat: 54.7836, lon: 9.4321 };
-    const near = C.nearest(st, flensburg, 5);
-    assert.equal(near.length, 5);
+test('stores: nearest sorts by distance, Føtex finds the Danish Føtex shops', () => {
+    const st = [
+        { id: 'a', brand: 'Føtex', name: 'Føtex', addr: 'Jernbanegade 1, 6400 Sønderborg', lat: 54.91, lon: 9.79 },
+        { id: 'b', brand: 'REWE', name: 'REWE', addr: 'Leopoldstraße 82, 80802 München', lat: 48.16, lon: 11.586 },
+        { id: 'c', brand: 'Lidl', name: 'Lidl', addr: 'Ungererstraße 40, 80805 München', lat: 48.1655, lon: 11.59 }
+    ];
+    const near = C.nearest(st, { lat: 48.1597, lon: 11.5848 }, 3);
     for (let i = 1; i < near.length; i++) assert.ok(near[i].km >= near[i - 1].km);
-    assert.ok(near[0].km < 5);
-    const f = C.findStore(st, 'Føtex');
-    assert.ok(f.length >= 1);
-    assert.ok(f.every(x => x.brand === 'Føtex'));
-    assert.ok(C.findStore(st, 'Flensborg').length > 3, 'Flensborg is read as Flensburg');
-    assert.ok(['Sønderborg', 'Aabenraa'].includes(C.town(st.find(x => x.brand === 'Føtex'))));
+    assert.equal(near[0].id, 'b');
+    assert.deepEqual(C.findStore(st, 'Foetex').map(x => x.id), ['a']);
+    assert.equal(C.town(st[0]), 'Sønderborg');
 });
 
 test('wiring: the emergency button, Move-style panel, medical note, cache list and What’s New', () => {
@@ -165,7 +158,7 @@ test('wiring: the emergency button, Move-style panel, medical note, cache list a
     assert.match(js, /no consejo médico/);
     assert.match(js, /Show left out/);
     assert.match(js, /None of the/);
-    assert.match(js, /Use my location/);
+    assert.match(js, /Share my location/);
     const css = read('store-picks.css');
     assert.match(css, /--mb-rim/);
     assert.match(css, /--mb-orb/);

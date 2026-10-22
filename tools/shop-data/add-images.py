@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Add real product photos to data/shop/<chain>.json (Oct 18, 2026).
 
-E-man in Lidl Flensburg: "a little window next to best. Just like Amazon, so we can actually see ... an image of the product.
+E-man in Lidl: "a little window next to best. Just like Amazon, so we can actually see ... an image of the product.
 So when we're grocery shopping, we know exactly what to go for."
 
 For every product barcode already in a range file this asks Open Food Facts (the source of the German lists, ODbL) for the

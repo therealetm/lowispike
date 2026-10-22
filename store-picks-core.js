@@ -1,4 +1,4 @@
-/* Oct 17, 2026 (E-man, grocery shopping in Flensburg: "I would love a little emergency button ... based on the products that
+/* Oct 17, 2026 (E-man, grocery shopping: "I would love a little emergency button ... based on the products that
    are actually out there within my location or within the store that I'm buying right now ... see all the snacks that I can
    buy in the shop, all the meat ... all the bread" and "even before entering the shop, be able to see every product that I can
    buy if I only eat insulin-friendly food, every product. In all categories ... sweets, if there is any").
@@ -299,23 +299,180 @@
     function nearest(stores, at, n) {
         return (stores || []).map(s => Object.assign({}, s, { km: km(at, s) })).sort((a, b) => a.km - b.km).slice(0, n || 12);
     }
-    /* a few town names for shops whose map entry has no address (most Danish ones) */
-    const TOWNS = [['Flensburg', 54.7836, 9.4321], ['Harrislee', 54.80, 9.39], ['Padborg', 54.826, 9.364], ['Kruså', 54.85, 9.40],
-        ['Sønderborg', 54.909, 9.789], ['Aabenraa', 55.044, 9.418], ['Haderslev', 55.249, 9.488], ['Gråsten', 54.919, 9.595],
-        ['Tønder', 54.933, 8.867], ['Schleswig', 54.52, 9.56], ['Husum', 54.48, 9.05], ['Glücksburg', 54.83, 9.55],
-        ['Handewitt', 54.77, 9.33], ['Tarp', 54.665, 9.40], ['Niebüll', 54.79, 8.83], ['Leck', 54.77, 8.98], ['Kappeln', 54.66, 9.93],
-        ['Eckernförde', 54.47, 9.84], ['Satrup', 54.69, 9.60], ['Nordborg', 55.06, 9.75], ['Augustenborg', 54.95, 9.87], ['Rinkenis', 54.89, 9.59],
-        ['Bov', 54.84, 9.39], ['Rødekro', 55.07, 9.33], ['Vojens', 55.25, 9.30]];
+    /* Oct 22, 2026 (Emmanuel: "it's showing only [my town]. That's mine, the maker's location ... when they click on share my
+       location, they should see their address and the nearest grocery shopping options ... Don't make this based on my location,
+       the creator"). No shop list, town list or fixed place ships with the app any more. Shops come live from OpenStreetMap around
+       the person's own position (or the town or postcode they type), sorted by distance on the phone. Nothing here knows a city. */
     function town(s) {
-        if (s.addr && /,/.test(s.addr)) return s.addr.split(',').pop().trim();
-        let best = null, d = 1e9;
-        TOWNS.forEach(t => { const k = km(s, { lat: t[1], lon: t[2] }); if (k < d) { d = k; best = t[0]; } });
-        return best || '';
+        if (!s) return '';
+        if (s.town) return s.town;
+        if (s.addr && /,/.test(s.addr)) return s.addr.split(',').pop().trim().replace(/^\d{4,5}\s+/, '');
+        return '';
     }
-    /* Flensburg's Danish name is Flensborg; there is no Føtex in Germany, the nearest are in Aabenraa and Sønderborg */
+    /* there is no Føtex in Germany; Føtex, Bilka and Danish Netto share the Salling range */
     function findStore(stores, text) {
-        const t = String(text || '').toLowerCase().replace(/flensborg/g, 'flensburg').replace(/foetex|fötex|fotex/g, 'føtex');
-        return (stores || []).filter(s => (s.brand + ' ' + s.name + ' ' + (s.addr || '') + ' ' + town(s)).toLowerCase().indexOf(t) >= 0);
+        const t = String(text || '').toLowerCase().replace(/foetex|fötex|fotex/g, 'føtex').trim();
+        if (!t) return [];
+        return (stores || []).filter(s => ((s.brand || '') + ' ' + (s.name || '') + ' ' + (s.addr || '') + ' ' + town(s)).toLowerCase().indexOf(t) >= 0);
+    }
+
+    /* which product range a shop from the map belongs to (data/shop/<range>.json); null = no chain data, show the general list */
+    const CHAINS = [
+        ['salling', /f(?:ø|o|oe)tex|\bbilka\b|salling/],
+        ['netto', /\bnetto\b/],
+        ['edeka', /\bedeka\b|marktkauf|nah ?(?:&|und) ?gut|\bnp[- ]?markt\b|\bdiska\b|\bspar express\b/],
+        ['rewe', /\brewe\b|\bnahkauf\b|\btemma\b/],
+        ['lidl', /\blidl\b/], ['aldi', /\baldi\b/], ['kaufland', /\bkaufland\b/], ['penny', /\bpenny\b/], ['famila', /\bfamila\b/]
+    ];
+    function chainOf(tags, cc) {
+        tags = tags || {};
+        const txt = [tags.brand, tags.name, tags.operator].filter(Boolean).join(' ').toLowerCase();
+        if (!txt) return null;
+        const dk = String(tags['addr:country'] || cc || '').toUpperCase() === 'DK';
+        for (const c of CHAINS) {
+            if (!c[1].test(txt)) continue;
+            if (c[0] === 'netto') return dk && !/marken/.test(txt) ? 'salling' : 'netto';
+            return c[0];
+        }
+        return null;
+    }
+    function addrOf(tags) {
+        tags = tags || {};
+        const street = [tags['addr:street'] || tags['addr:place'] || '', tags['addr:housenumber'] || ''].join(' ').trim();
+        const place = tags['addr:city'] || tags['addr:town'] || tags['addr:village'] || tags['addr:suburb'] || '';
+        const pl = [tags['addr:postcode'] || '', place].join(' ').trim();
+        return { addr: [street, pl].filter(Boolean).join(', '), town: place };
+    }
+    /* coordinates leave the phone only rounded to about 100 m (3 decimals); distances are worked out here with the exact ones */
+    const round3 = x => Math.round(Number(x) * 1000) / 1000;
+    const SHOP_KINDS = '^(supermarket|convenience|discount|discounter|grocery|wholesale)$';
+    function overpassQuery(at, radius) {
+        const r = Math.max(300, Math.min(30000, Math.round(+radius || 2500)));
+        return '[out:json][timeout:25];nwr["shop"~"' + SHOP_KINDS + '"](around:' + r + ',' + round3(at.lat) + ',' + round3(at.lon) + ');out center tags 300;';
+    }
+    function parseShops(json, at, opts) {
+        opts = opts || {};
+        const out = [];
+        ((json && json.elements) || []).forEach(e => {
+            const t = e && e.tags || {};
+            const lat = typeof e.lat === 'number' ? e.lat : e.center && e.center.lat, lon = typeof e.lon === 'number' ? e.lon : e.center && e.center.lon;
+            if (typeof lat !== 'number' || typeof lon !== 'number') return;
+            const name = String(t.name || t.brand || '').trim();
+            if (!name) return;
+            const a = addrOf(t), chain = chainOf(t, opts.cc);
+            out.push({ id: 'osm:' + String(e.type || 'n').charAt(0) + e.id, chain, brand: String(t.brand || name).trim(), name, kind: t.shop || '',
+                addr: a.addr, town: a.town, lat, lon, km: at ? km(at, { lat, lon }) : null });
+        });
+        out.sort((a, b) => (a.km || 0) - (b.km || 0) || a.name.localeCompare(b.name));
+        /* one shop is often both a point and a building outline on the map: keep the nearer one */
+        const kept = [];
+        out.forEach(s => { if (!kept.some(k => k.name.toLowerCase() === s.name.toLowerCase() && km(k, s) < 0.06)) kept.push(s); });
+        return kept.slice(0, opts.n || 25);
+    }
+    /* Nominatim's supermarket search (inside a box round the person) -> the same shape as an Overpass answer */
+    function nomToElements(arr) {
+        return { elements: (Array.isArray(arr) ? arr : []).map(j => {
+            const a = j.address || {}, x = j.extratags || {};
+            return { type: String(j.osm_type || 'node'), id: j.osm_id, lat: +j.lat, lon: +j.lon, tags: {
+                shop: j.type || 'supermarket', name: j.name || x.brand || '', brand: x.brand || '', operator: x.operator || '',
+                'addr:street': a.road || a.pedestrian || '', 'addr:housenumber': a.house_number || '', 'addr:postcode': a.postcode || '',
+                'addr:city': a.city || a.town || a.village || a.municipality || a.suburb || '', 'addr:country': String(a.country_code || '').toUpperCase() } };
+        }).filter(e => isFinite(e.lat) && isFinite(e.lon)) };
+    }
+    function viewbox(at, d) {
+        const k = Math.max(0.2, Math.cos(at.lat * Math.PI / 180));
+        const r = v => Math.round(v * 1000) / 1000;
+        return [r(at.lon - d / k), r(at.lat + d), r(at.lon + d / k), r(at.lat - d)].join(',');
+    }
+    /* Nominatim reverse lookup -> the person's own address, shown as one line */
+    function placeOf(j) {
+        if (!j || j.error) return null;
+        const a = j.address || {};
+        const street = [a.road || a.pedestrian || a.footway || a.square || '', a.house_number || ''].join(' ').trim();
+        const city = a.city || a.town || a.village || a.municipality || a.suburb || a.county || '';
+        const pl = [a.postcode || '', city].join(' ').trim();
+        const line = [street, pl].filter(Boolean).join(', ') || String(j.display_name || '').split(',').slice(0, 3).join(',').trim();
+        const lat = +j.lat, lon = +j.lon;
+        return { line, city, cc: String(a.country_code || '').toUpperCase(), lat: isFinite(lat) ? lat : null, lon: isFinite(lon) ? lon : null };
+    }
+    /* Nominatim search for a typed town or postcode -> a place to look around */
+    function placeFromSearch(arr) {
+        const j = Array.isArray(arr) ? arr[0] : null;
+        if (!j || !isFinite(+j.lat) || !isFinite(+j.lon)) return null;
+        const p = placeOf(j) || {};
+        return { lat: +j.lat, lon: +j.lon, line: p.line || String(j.display_name || ''), city: p.city || '', cc: p.cc || '' };
+    }
+    /* The live lookups. Free, keyless OpenStreetMap services called from the phone: Nominatim (address, at most one request a
+       second, answers kept in memory for this session) and Overpass (shops). Nothing is sent to our server or stored. */
+    const NOMINATIM = 'https://nominatim.openstreetmap.org/';
+    const OVERPASS = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter', 'https://maps.mail.ru/osm/tools/overpass/api/interpreter'];
+    const RADII = [3000, 12000];
+    const BOXES = [0.012, 0.04, 0.12, 0.4]; /* half-widths in degrees of latitude: about 1.3, 4.5, 13 and 45 km */
+    function lookup(fetchImpl, opt) {
+        opt = opt || {};
+        const f = fetchImpl, memo = {}, gap = opt.gap == null ? 1100 : opt.gap, ms = opt.timeout || 15000;
+        let nextNom = 0;
+        const wait = () => { const now = Date.now(), w = Math.max(0, nextNom - now); nextNom = Math.max(now, nextNom) + gap; return w ? new Promise(r => setTimeout(r, w)) : Promise.resolve(); };
+        function get(url, init, wait) {
+            const ac = typeof AbortController === 'function' ? new AbortController() : null;
+            const tm = ac ? setTimeout(() => ac.abort(), wait || ms) : 0;
+            return Promise.resolve(f(url, Object.assign({ headers: { Accept: 'application/json' } }, init || {}, ac ? { signal: ac.signal } : {})))
+                .then(r => { if (!r || !r.ok) throw new Error('http ' + (r && r.status)); return r.json(); })
+                .finally(() => { if (tm) clearTimeout(tm); });
+        }
+        function once(key, make) { if (!memo[key]) memo[key] = make().catch(e => { delete memo[key]; throw e; }); return memo[key]; }
+        function nom(path, lang) { return wait().then(() => get(NOMINATIM + path + '&accept-language=' + encodeURIComponent(lang || 'en'))); }
+        return {
+            address(at, lang) {
+                const lat = Math.round(at.lat * 1e4) / 1e4, lon = Math.round(at.lon * 1e4) / 1e4;
+                return once('r' + lat + ',' + lon + lang, () => nom('reverse?format=jsonv2&addressdetails=1&zoom=18&lat=' + lat + '&lon=' + lon, lang).then(placeOf));
+            },
+            search(text, lang) {
+                const q = String(text || '').trim().slice(0, 80);
+                if (q.length < 2) return Promise.resolve(null);
+                return once('s' + q.toLowerCase() + lang, () => nom('search?format=jsonv2&addressdetails=1&limit=1&q=' + encodeURIComponent(q), lang).then(placeFromSearch));
+            },
+            /* Nearest supermarkets. Nominatim first (fast; a small box round the person, wider until at least six shops), the
+               Overpass servers only when Nominatim fails (they can take half a minute when busy). Sorted by distance here. */
+            shops(at, cc) {
+                const key = 'o' + round3(at.lat) + ',' + round3(at.lon);
+                const viaNom = () => {
+                    let k = 0;
+                    const step = () => nom('search?format=jsonv2&addressdetails=1&extratags=1&bounded=1&limit=40&q=supermarket&viewbox=' + viewbox(at, BOXES[k]), opt.lang || 'en')
+                        .then(arr => { const n = Array.isArray(arr) ? arr.length : 0; if (n >= 6 || k >= BOXES.length - 1) return nomToElements(arr); k++; return step(); });
+                    return step();
+                };
+                const one = radius => {
+                    let i = 0;
+                    const tryNext = () => get(OVERPASS[i], { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', Accept: 'application/json' }, body: 'data=' + encodeURIComponent(overpassQuery(at, radius)) }, opt.overpassTimeout || 35000)
+                        .catch(e => { if (++i < OVERPASS.length) return tryNext(); throw e; });
+                    return tryNext();
+                };
+                const viaOverpass = () => {
+                    let k = 0;
+                    const step = () => one(RADII[k]).then(j => { const n = ((j && j.elements) || []).length; if (n >= 6 || k >= RADII.length - 1) return j; k++; return step(); });
+                    return step();
+                };
+                const raw = once(key, () => viaNom().catch(() => viaOverpass()));
+                return raw.then(j => parseShops(j, at, { cc }));
+            }
+        };
+    }
+
+    /* the general list: REWE and EDEKA together, for a shop with no chain data (supermarkets mostly carry the same items) */
+    const GENERAL = ['rewe', 'edeka'];
+    function merge(list) {
+        list = (list || []).filter(d => d && Array.isArray(d.rows));
+        if (!list.length) return null;
+        const cols = list[0].cols || [];
+        const rows = [];
+        list.forEach(d => {
+            const idx = cols.map(c => (d.cols || []).indexOf(c));
+            d.rows.forEach(r => rows.push(idx.map(i => (i < 0 ? null : r[i]))));
+        });
+        return { chain: 'general', general: true, name: list.map(d => d.name).filter(Boolean).join(' · '), country: list[0].country || '',
+            source: 'Open Food Facts: products shoppers tagged as sold at ' + list.map(d => d.name).filter(Boolean).join(' and ') + ' in Germany',
+            note: list[0].note || '', built: list.map(d => d.built).filter(Boolean).sort().pop() || '', cols, rows, count: rows.length };
     }
 
     /* Oct 18, 2026 (E-man: "I clicked on cook, and then what can I buy? And the app crashed and sent me back to the beginning").
@@ -355,5 +512,5 @@
         return { buy, again };
     }
 
-    return { LIMIT, GROUPS, G, groupOf, typical, rate, rows, build, km, nearest, town, findStore, photo, link, explain, PAGE, page, SNACK_MAX, snackAdd, snackGot, snackDrop, snackView };
+    return { LIMIT, GROUPS, G, groupOf, typical, rate, rows, build, km, nearest, town, findStore, chainOf, addrOf, overpassQuery, parseShops, nomToElements, viewbox, placeOf, placeFromSearch, lookup, GENERAL, merge, photo, link, explain, PAGE, page, SNACK_MAX, snackAdd, snackGot, snackDrop, snackView };
 });

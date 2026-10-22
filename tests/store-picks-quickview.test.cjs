@@ -1,5 +1,5 @@
 'use strict';
-/* Oct 18, 2026 (E-man in Lidl Flensburg, looking at "Bio Linsen" in What can I buy here?, could not tap it: "It should be
+/* Oct 18, 2026 (E-man in Lidl, looking at "Bio Linsen" in What can I buy here?, could not tap it: "It should be
    linked in there ... ideally ... a little window next to best. Just like Amazon, so we can actually see ... an image of the
    product. So when we're grocery shopping, we know exactly what to go for." and "what are we basing this off?", "Why are we
    saying it's best?"). Rows are tappable, show a lazy thumbnail, and open a quick view with the real photo, the label, why it

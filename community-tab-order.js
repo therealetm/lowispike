@@ -33,7 +33,21 @@
     }
     /* slot of a dragged tab: how many of the OTHER tabs' centres lie left of x */
     function slotAt(centers, x) { return centers.filter(c => c < x).length; }
-    const core = { IDS, KEY, HOLD_MS, SLOP, normalize, parse, moveTo, slotAt };
+    /* Oct 22 (item 33): what opening Community does, as a pure function so the rule is tested.
+       first: the first tab of the order; view: LowiRoomsUI.view() ('' = Room or the chat room, 'chans' = Chat, 'aff', 'create');
+       room: the chat room (thread) is open; fresh: something opened that chat room for this very visit (a reply from a Home
+       visit, a comment link), not a chat room left open on the last visit; deep: a #community/... link.
+       Returns null (leave it) or the call to make: 'room' | 'chat' | a view id. */
+    const FRESH_MS = 1500;
+    function firstAction(first, view, room, fresh, deep) {
+        if (deep) return null;
+        if (room && fresh) return null;
+        first = IDS.includes(first) ? first : IDS[0];
+        if (first === 'room') return room || view !== '' ? 'room' : null;
+        if (first === 'chat') return room || view !== 'chans' ? 'chat' : null;
+        return room || view !== first ? first : null;
+    }
+    const core = { IDS, KEY, HOLD_MS, SLOP, FRESH_MS, normalize, parse, moveTo, slotAt, firstAction };
     if (typeof module === 'object' && module.exports) module.exports = core;
     if (!root || !root.document) return;
 
@@ -168,27 +182,41 @@
     W.addEventListener('scroll', () => { if (g && !g.lifted && Math.abs(W.scrollY - g.sy) > 2) end(false); }, { passive: true, capture: true });
 
     /* ---- opening Community: .cm-open + the first tab of the order ---- */
-    let wasOpen = false;
+    /* Oct 22 (item 33, E-man: "it always opens the chat. And then after that it opens what I set my first page to be"). Root causes:
+       (1) index.html rebuilt the whole Community page a moment after it opened (fixed there: it is kept now); (2) a chat room left
+       open on the last visit counted as "something opened a chat", so the first tab was skipped and the old chat showed; (3) on the
+       first visit of a session the tabs were not built yet, so the first tab waited for a 100 ms retry while the default showed.
+       Now the first tab is set inside the class change itself (a MutationObserver runs before the browser draws the next frame),
+       the tab bar is built on the spot if it is missing, and only a chat room opened for this visit (stamped below) is kept. */
+    let wasOpen = false, roomStamp = 0;
     function isOpen() { const p = D.getElementById('tab-foryou'); return !!(p && p.classList.contains('active')); }
+    function stampWrap() {
+        const C = W.LowiCommunity; if (!C || C.__tabStamp) return;
+        const th0 = C.thread, om0 = C.openMessage;
+        if (typeof th0 === 'function') C.thread = function (o) { if (o && !isOpen()) roomStamp = Date.now(); return th0.apply(this, arguments); };
+        if (typeof om0 === 'function') C.openMessage = function () { roomStamp = Date.now(); return om0.apply(this, arguments); };
+        try { Object.defineProperty(C, '__tabStamp', { value: 1 }); } catch (e) { C.__tabStamp = 1; }
+    }
     function openFirst(deep) {
         let tries = 0;
         (function tryIt() {
-            const R = W.LowiRoomsUI, t = tabsEl();
+            const R = W.LowiRoomsUI;
             if (!isOpen()) return;
+            let t = tabsEl();
+            if (R && !t && R.paint) { try { R.paint(); } catch (e) { } t = tabsEl(); }
             if (!R || !t) { if (++tries < 40) setTimeout(tryIt, 100); return; }
             wire(t); apply();
-            if (deep) return;
-            const th = D.getElementById('cgThread');
-            if (th && th.hasAttribute('data-open')) return;
-            const first = order()[0], v = R.view ? R.view() : null;
+            const th = D.getElementById('cgThread'), room = !!(th && th.hasAttribute('data-open'));
+            const act = firstAction(order()[0], R.view ? R.view() : null, room, Date.now() - roomStamp < FRESH_MS, deep);
             try {
-                if (first === 'room') { if (v !== '') R.setTab(false); }
-                else if (first === 'chat') { if (v !== 'chans') R.setTab(true); }
-                else R.showView(first);
-            } catch (e) { }
+                if (act === 'room') R.setTab(false);
+                else if (act === 'chat') R.setTab(true);
+                else if (act) R.showView(act);
+            } catch (e) { console.error(e); }
         })();
     }
     function check() {
+        stampWrap();
         const open = isOpen();
         D.documentElement.classList.toggle('cm-open', open);
         if (open && !wasOpen) openFirst(/^#community\//i.test(W.location.hash || ''));
@@ -200,7 +228,7 @@
         if (!p) { setTimeout(boot, 300); return; }
         new MutationObserver(check).observe(p, { attributes: true, attributeFilter: ['class'] });
         check();
-        setInterval(() => { const t = tabsEl(); if (t && t.dataset.order !== '1') { wire(t); apply(); } }, 1500);
+        setInterval(() => { stampWrap(); const t = tabsEl(); if (t && t.dataset.order !== '1') { wire(t); apply(); } }, 1500);
     }
     W.addEventListener('storage', e => { if (e.key === KEY) apply(); });
     W.LowiCommunityTabs = Object.assign({ order, save, apply, haptic, _drag: () => g && { id: g.id, lifted: g.lifted, rm: g.b.dataset.rm } }, core);

@@ -193,13 +193,16 @@
     function wrap() {
         const orig = W.goTab;
         if (typeof orig !== 'function' || orig.__gx) return !!(orig && orig.__gx);
+        const firstIsRoom = () => { try { const T = W.LowiCommunityTabs; return !T || !T.order || T.order()[0] === 'room' || /^#community\//i.test(W.location.hash || ''); } catch (e) { return true; } };
         const g = function (t) {
             if (inCall) return orig.apply(this, arguments);
             const from = activeTab();
             let dir = '';
             /* Oct 21: closing Community with the X / back is instant and puts Home back exactly as it was: no zoom in */
             if (!reduced() && worldHome() && !D.hidden && !(W.LowiSections && W.LowiSections.instant)) {
-                if (from === 'home' && t === 'foryou') dir = 'out';
+                /* Oct 22 (item 33): the warp lands in the galaxy (Room). When the first Community tab is something else, Community
+                   opens straight on that tab with no warp into a galaxy you are not going to see. */
+                if (from === 'home' && t === 'foryou' && firstIsRoom()) dir = 'out';
                 else if (from === 'foryou' && t === 'home' && D.querySelector('#cgField .cg-body.me')) dir = 'in';
             }
             if (dir) start(dir); else if (busy) finish();

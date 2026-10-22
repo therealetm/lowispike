@@ -48,8 +48,14 @@ const VIEWS={create:'create/',aff:'affiliates/'},PANES={chans:1};let view='';con
 function showView(v){if(!VIEWS[v]&&!PANES[v])return;const c=W.LowiCommunity;if(open()&&c&&c.thread)c.thread(false);view=v;paint();}
 function viewUrl(v){try{return new URL(VIEWS[v],location.href.split('#')[0]).href;}catch(e){return VIEWS[v];}}
 function inviteUrl(){try{return location.href.split('#')[0].split('?')[0]+'#community';}catch(e){return '#community';}}
+/* Oct 22 (item 33 sweep): a rebuilt Community page (renderCommunity) left the cached frames detached: frames[view] still existed,
+   so no new frame was made and Creation/Affiliates opened blank until the app was reloaded. A frame that is no longer in this box
+   is dropped and made again. dropFrames() frees the hidden pages (each is a whole document in memory): when Community closes all
+   of them go, when the chat room opens the ones not on screen go; they load again the next time their tab is opened. */
+function dropFrames(keep){for(const k in frames){if(k===keep)continue;const f=frames[k];delete frames[k];try{f.src='about:blank';}catch(e){}if(f.parentNode)f.parentNode.removeChild(f);}}
 function ensureView(pane){let box=pane.querySelector(':scope>.rm-view');
  if(!box){box=D.createElement('section');box.className='rm-view';box.setAttribute('data-noi18n','');pane.appendChild(box);}
+ for(const k in frames)if(frames[k].parentNode!==box){const f=frames[k];delete frames[k];if(f.parentNode)f.parentNode.removeChild(f);}
  if(VIEWS[view]&&!frames[view]){const f=D.createElement('iframe');f.className='rm-frame';f.src=VIEWS[view]+'?embed=1';/* not lazy: it is only made when its tab is opened, and lazy frames in WebKit can wait for a scroll */f.dataset.view=view;frames[view]=f;box.appendChild(f);}
  for(const k in frames)frames[k].hidden=k!==view;
  for(const k in frames)frames[k].title=k==='aff'?tr('aff'):tr('create');
@@ -80,6 +86,7 @@ function liveHTML(){const r=R(),c=C();if(!r||!c)return '<span class="rm-sub">'+e
   +(ms.length?'<span class="rm-dot" aria-hidden="true"></span><span class="rm-sub">'+esc(tr('hereNow',{c:ms.length}))+'<span class="rm-sep"> · </span>'+esc(tr('roomN',{n:r.num()}))+'</span>':'<span class="rm-sub">'+esc(tr('roomN',{n:r.num()}))+'</span>');}
 function paint(){const b=ensure();if(!b)return;const r=R(),chat=open();
  if(chat&&view)view='';/* the message room was opened by other code: Chat wins */
+ if(chat)dropFrames('');
  const pane=b.parentNode,sel=view==='chans'?'chat':view||(chat?'chat':'room');
  const tabs=b.querySelectorAll('.rm-tab');tabs.forEach(t=>{t.textContent=tr(t.dataset.rm);});b.querySelector('.rm-tabs').setAttribute('aria-label',tr('tabs'));
  tabs.forEach(t=>{const on=t.dataset.rm===sel;t.setAttribute('aria-selected',on?'true':'false');t.tabIndex=on?0:-1;});
@@ -195,6 +202,15 @@ D.addEventListener('lowi:chat',()=>paint());
 const mo=typeof MutationObserver==='function'?new MutationObserver(()=>paint()):null;
 function watch(){const t=D.getElementById('cgThread');if(t&&mo&&!t.__rmWatch){t.__rmWatch=1;mo.observe(t,{attributes:true,attributeFilter:['data-open']});}paint();}
 setInterval(watch,1500);if(D.readyState!=='loading')watch();else D.addEventListener('DOMContentLoaded',watch);
+/* Oct 22 (item 33): when the Community page is rebuilt, the tab bar comes back in the same frame (it used to wait up to 1.5 s for
+   watch(), showing the galaxy with no tabs), and leaving Community frees the Creation/Affiliates pages. */
+let pageWatch=null,pageOn=false;
+function watchPage(){const p=D.getElementById('tab-foryou');if(!p||typeof MutationObserver!=='function'||p.__rmPage)return;p.__rmPage=1;pageOn=p.classList.contains('active');
+ pageWatch=new MutationObserver(recs=>{let kids=false,cls=false;for(const r of recs){if(r.type==='childList')kids=true;else cls=true;}
+  const on=p.classList.contains('active');if(cls&&pageOn&&!on){dropFrames(null);if(sheet)closeSheet();if(menu&&!menu.hidden)toggleMenu(false);}pageOn=on;
+  if(kids&&on&&!(bar&&bar.isConnected))paint();});
+ pageWatch.observe(p,{attributes:true,attributeFilter:['class'],childList:true});}
+setInterval(watchPage,1500);if(D.readyState!=='loading')watchPage();else D.addEventListener('DOMContentLoaded',watchPage);
 W.addEventListener('resize',()=>{if(bar&&bar.isConnected)fit(bar);});
 /* the profile picture and the switch appear, move and hide on their own (top-bar.js): re-fit the moment they do */
 let fitRaf=0;const refit=()=>{if(fitRaf||!bar||!bar.isConnected)return;fitRaf=(W.requestAnimationFrame||setTimeout)(()=>{fitRaf=0;fit(bar);});};
@@ -283,5 +299,5 @@ W.LowiCommunityWelcome={open:openWelcome,close:()=>obClose(false),seen:()=>!!lsG
   try{W.goTab('foryou');}catch(e){}const v=m[1]==='affiliates'?'aff':m[1]==='create'?'create':'';
   let k=0;const t2=()=>{k++;if(!ensure()){if(k<30)setTimeout(t2,300);return;}if(v)showView(v);try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}};setTimeout(t2,400);};
  setTimeout(tick,600);})();
-W.LowiRoomsUI={paint,openSheet,closeSheet,setTab,fit,showView,view:()=>view,menu:toggleMenu,copyView,inviteUrl,_chanRows:chanRows};
+W.LowiRoomsUI={paint,openSheet,closeSheet,setTab,fit,showView,view:()=>view,frames:()=>Object.keys(frames),menu:toggleMenu,copyView,inviteUrl,_chanRows:chanRows};
 })(window,document);

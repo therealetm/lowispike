@@ -1,0 +1,91 @@
+/* one-sheet.css: the one sheet shell (Oct 22 2026, One UI step 1). Emmanuel: "Long press changes the UI too much. Every UI should look
+   the same ... efficient and the Japanese convenient logic." Konbini rules: every control in the same place, compact but tidy, one
+   tap to anything, short labels with icons, grids over long lists, all in thumb reach, nothing surprising.
+   The shell is LowiR2.sheet (index.html): a bottom sheet with the grab handle on top, drag down to close, and the round X at the
+   bottom centre (world-home.css .wh-x). Add class "one-sheet" to a sheet to give it the shared dark glass (the membrane of Log a meal
+   and the Move / Meals lists, misty-panels.css --mb-*), the same radius, title, row, tile and spacing. Day keeps the same dark glass (as Log a meal already does), so a
+   sheet looks the same in both themes. Two fixes cover every sheet, not only one-sheet ones:
+   - no dark band behind the grab handle (the sticky .pf-hd painted var(--r2-sheet), #1c1c1e, over the glass);
+   - the sheet ends above the round X, so the X never sits on a row, a bar or a label.
+   Loaded after the per-screen sheet styles; the selectors are strong on purpose (liquid-glass.css stays last). */
+:root { --one-x-gap: calc(var(--sab, env(safe-area-inset-bottom)) + 72px); --one-r: 30px; --one-pad: 14px; --one-gap: 8px;
+  --one-glass: linear-gradient(180deg, rgba(58, 112, 205, .62), rgba(16, 42, 102, .74)); --one-line: rgba(170, 214, 255, .42);
+  --one-cell: rgba(255, 255, 255, .08); --one-cell-line: rgba(170, 214, 255, .26); --one-acc: #8fe7ff; }
+
+/* 1. no band behind the grab handle, on every sheet (scan-screens.css painted it on Log a meal too) */
+html:root:root body .r2-ov:not(.full) .r2-sh > .pf-hd { background: none !important; }
+
+/* 2. the round X sits under the sheet, never on it: the sheet stops above it while the X is shown */
+html:root:root.wh-x-on body .r2-ov:not(.full) .r2-sh {
+  margin-bottom: var(--one-x-gap) !important;
+  max-height: calc(100% - var(--one-x-gap) - var(--sat, env(safe-area-inset-top)) - 24px) !important;
+}
+html:root:root.wh-x-on body .r2-ov:not(.full) .r2-shb { padding-bottom: 18px !important; }
+
+/* 3. the shared look */
+html:root:root body .r2-ov.one-sheet:not(.full) .r2-sh {
+  background: var(--mb-surface, var(--one-glass)) !important; border: 1px solid var(--mb-rim, var(--one-line)) !important;
+  border-radius: var(--mb-r, var(--one-r)) !important; box-shadow: var(--mb-glow, 0 24px 60px -20px rgba(0, 0, 0, .6)) !important; color: #fff !important;
+  -webkit-backdrop-filter: var(--mb-blur, blur(18px)) !important; backdrop-filter: var(--mb-blur, blur(18px)) !important;
+  text-shadow: 0 1px 6px rgba(0, 30, 80, .45) !important; width: calc(100% - 20px) !important; margin-left: auto !important; margin-right: auto !important;
+}
+html:root:root body .r2-ov.one-sheet:not(.full) .r2-grab { background: rgba(143, 231, 255, .5) !important; opacity: 1 !important; }
+html:root:root body .r2-ov.one-sheet:not(.full) .r2-scrim { background: rgba(4, 10, 30, .32) !important; }
+html:root:root body .r2-ov.one-sheet:not(.full) .r2-sh { padding-left: var(--one-pad) !important; padding-right: var(--one-pad) !important; }
+html:root:root body .r2-ov.one-sheet:not(.full) .r2-shb { padding-left: 0 !important; padding-right: 0 !important; padding-top: 2px !important; }
+
+/* 4. the profile hub inside the shell: the old floating card's own frame, X and backdrop are gone */
+html body .r2-ov.one-sheet .cme.cme-in, html[data-theme="light"] body .r2-ov.one-sheet .cme.cme-in {
+  position: static !important; inset: auto !important; transform: none !important; width: auto !important; max-width: none !important; max-height: none !important;
+  margin: 0 !important; padding: 0 !important; border: 0 !important; border-radius: 0 !important; background: none !important; box-shadow: none !important;
+  -webkit-backdrop-filter: none !important; backdrop-filter: none !important; color: #fff !important; overflow: visible !important; animation: none !important; }
+.one-sheet .cme-in .cme-head { display: flex; align-items: center; gap: 10px; padding: 0 0 10px; margin: 0; border: 0; }
+.one-sheet .cme-in .cme-av { width: 44px; height: 44px; flex: none; }
+.one-sheet .cme-in .cme-who b { font-size: 18px; font-weight: 700; line-height: 1.2; }
+.one-sheet .cme-in .cme-who small { font-size: 12px; opacity: .78; }
+.one-sheet .cme-in .cme-body { padding: 0; overflow: visible; max-height: none; }
+.one-sheet .cme-in .cme-sec { margin: 0 0 12px; }
+.one-sheet .cme-in .cme-sec h3 { margin: 0 2px 6px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--one-acc) !important; opacity: .9; }
+/* You: tiles, three across, icon over a short label */
+.one-sheet .cme-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--one-gap); }
+.one-sheet .cme-tile { min-height: 68px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 10px 4px;
+  border-radius: 16px; border: 1px solid var(--one-cell-line); background: var(--one-cell); color: #fff; font: inherit; cursor: pointer;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.one-sheet .cme-tile .cme-ico { width: 24px; height: 24px; color: var(--one-acc); flex: none; }
+.one-sheet .cme-tile b { font-size: 12.5px; font-weight: 600; line-height: 1.2; text-align: center; overflow-wrap: anywhere; hyphens: auto; }
+.one-sheet .cme-tile:active, .one-sheet .cme-in .cme-row:active { transform: scale(.97); }
+.one-sheet .cme-tile:focus-visible, .one-sheet .cme-in .cme-row:focus-visible, .one-sheet .cme-in .cme-chip:focus-visible { outline: 2px solid var(--one-acc); outline-offset: 2px; }
+/* Settings: tight rows in one rounded group, hairlines between */
+.one-sheet .cme-in .cme-list { display: flex; flex-direction: column; gap: 0; border-radius: 16px; overflow: hidden; border: 1px solid var(--one-cell-line); background: var(--one-cell); }
+.one-sheet .cme-tiles + .cme-list { margin-top: var(--one-gap); }
+.one-sheet .cme-tiles + .cme-list:empty { display: none; }
+.one-sheet .cme-in .cme-row { min-height: 44px; margin: 0; padding: 6px 12px; gap: 10px; border: 0; border-radius: 0; background: none; color: #fff; box-shadow: none; }
+.one-sheet .cme-in .cme-list > * + * { border-top: 1px solid rgba(170, 214, 255, .16); }
+.one-sheet .cme-in .cme-row .cme-ico { width: 22px; height: 22px; color: var(--one-acc); }
+.one-sheet .cme-in .cme-row b { font-size: 15px; font-weight: 600; }
+.one-sheet .cme-in .cme-row small { font-size: 12.5px; color: rgba(255, 255, 255, .72); }
+.one-sheet .cme-in .cme-chev { width: 16px; height: 16px; opacity: .55; }
+.one-sheet .cme-in .cme-langrow { flex-wrap: wrap; row-gap: 4px; }
+.one-sheet .cme-in .cme-langrow .cme-tx { min-width: 72px; }
+.one-sheet .cme-in .cme-langs { margin-left: auto; gap: 4px; }
+.one-sheet .cme-in .cme-langs button { min-width: 44px; min-height: 36px; padding: 0 6px; border-radius: 10px; }
+.one-sheet .cme-in .cme-more { border: 0; }
+.one-sheet .cme-in .cme-chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; padding: 4px 10px 10px; }
+.one-sheet .cme-in .cme-chip { min-height: 40px; border-radius: 12px; padding: 4px 8px; font-size: 13px; }
+/* Delete account: small, red, alone at the bottom */
+.one-sheet .cme-in .cme-sec-danger { margin: 4px 0 6px; display: flex; justify-content: center; }
+.one-sheet .cme-in .cme-sec-danger .cme-list { border: 0; background: none; overflow: visible; }
+.one-sheet .cme-in .cme-sec-danger .cme-row { min-height: 44px; padding: 4px 14px; justify-content: center; }
+.one-sheet .cme-in .cme-sec-danger .cme-row b { font-size: 13.5px; font-weight: 600; color: #ff8a8a; }
+.one-sheet .cme-in .cme-sec-danger .cme-ico { width: 16px; height: 16px; color: #ff8a8a; }
+.one-sheet .cme-in .cme-sec-danger .cme-chev { display: none; }
+.one-sheet .cme-in .cme-del .cme-list { border: 1px solid var(--one-cell-line); background: var(--one-cell); }
+.one-sheet .cme-in .cme-del-tx { font-size: 13.5px; line-height: 1.4; margin: 0 2px 8px; color: rgba(255, 255, 255, .86); }
+.one-sheet .cme-in .cme-tip, .one-sheet .cme-in .cme-ver { margin: 2px 4px 0; font-size: 11.5px; line-height: 1.35; text-align: center; color: rgba(255, 255, 255, .6) !important; }
+@media (max-width: 360px) { .one-sheet .cme-tile b { font-size: 11.5px; } .one-sheet .cme-tile { min-height: 70px; } }
+@media (prefers-reduced-motion: reduce) { .one-sheet .cme-tile:active, .one-sheet .cme-in .cme-row:active { transform: none; } }
+/* Day: the same dark glass, so the light-card colours from community-me.css step aside inside the shell */
+.one-sheet .cme-in .cme-chip, .one-sheet .cme-in .cme-langs button { color: #fff; border: 1px solid var(--one-cell-line); background: rgba(255, 255, 255, .1); }
+.one-sheet .cme-in .cme-langs button.on, .one-sheet .cme-in .cme-langs button[aria-pressed="true"] { background: rgba(143, 231, 255, .24); border-color: var(--one-acc); }
+.one-sheet .cme-in .cme-del h3 { color: #ff8a8a !important; }
+.one-sheet .cme-in .cme-sec-danger .cme-row.cme-danger { background: none; }

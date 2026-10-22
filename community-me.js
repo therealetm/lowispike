@@ -57,7 +57,7 @@
     const S = () => root.LowiHomeSettingsSleepV2 || null;
     const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
     const svg = (k, cls) => '<svg class="' + (cls || 'cme-ico') + '" viewBox="0 0 24 24" aria-hidden="true">' + (ICON[k] || '') + '</svg>';
-    let el = null, back = null, lastFocus = null, asking = false, armed = false, moreOpen = false;
+    let ov = null, el = null, back = null, lastFocus = null, asking = false, armed = false, moreOpen = false;
     const inCommunity = () => { const t = D.getElementById('tab-foryou'); return !!(t && (t.classList.contains('active') || t.classList.contains('on') || t.getBoundingClientRect().width > 2 && getComputedStyle(t).display !== 'none')) && !H.classList.contains('wh-home'); };
     function me() {
         let name = '', xp = 0;
@@ -71,7 +71,14 @@
         if (id === 'language') { return '<div class="cme-row cme-langrow" role="group" aria-label="' + esc(lab) + '">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span><span class="cme-langs">' + ['en', 'de', 'es'].map(x => '<button type="button" data-lang="' + x + '" aria-pressed="' + (x === l) + '"' + (x === l ? ' class="on"' : '') + '>' + x.toUpperCase() + '</button>').join('') + '</span></div>'; }
         if (id === 'theme') { const dark = s.state ? s.state('theme') : true, st = dark ? ST.night : ST.day; return '<button type="button" class="cme-row" role="switch" data-cme="theme" aria-checked="' + dark + '" aria-label="' + esc(lab) + ': ' + esc(st) + '">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span><small class="cme-st">' + esc(st) + '</small></button>'; }
         if (id === 'deleteAccount') return '<button type="button" class="cme-row cme-danger" data-cme="deleteAccount" aria-haspopup="dialog">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b></span>' + svg('chev', 'cme-chev') + '</button>';
-        return '<button type="button" class="cme-row" data-cme="' + id + '">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b>' + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</span>' + svg('chev', 'cme-chev') + '</button>';
+        return '<button type="button" class="cme-row" data-cme="' + id + '">' + ico + '<span class="cme-tx"><b>' + esc(lab) + '</b>' + (sub && !ov ? '<small>' + esc(sub) + '</small>' : '') + '</span>' + svg('chev', 'cme-chev') + '</button>';
+    }
+    /* Oct 22 One UI (Emmanuel: "every UI should look the same ... the Japanese convenient logic"): You is a small grid of tiles, icon
+       over a short label, one tap each; the line under the label stays as the button's description for screen readers */
+    function tile(id) {
+        const s = S(), l = lang(), lab = (LABELS[l] && LABELS[l][id]) || s.label(id), sub = (SUB[l] && SUB[l][id]) || '';
+        const ico = ICON[id] ? svg(id) : s.icon(id).replace('ss2-ico', 'cme-ico');
+        return '<button type="button" class="cme-tile" data-cme="' + id + '"' + (sub ? ' title="' + esc(sub) + '"' : '') + '>' + ico + '<b>' + esc(lab) + '</b></button>';
     }
     /* the light way in to the places nothing else reaches: one folded row, small chips when unfolded */
     function moreRow(ids) {
@@ -86,11 +93,13 @@
         const gs = groups(id => s.has(id)), ver = s.version ? s.version() : '';
         const sec = g => g.key === 'danger'
             ? '<section class="cme-sec cme-sec-danger" aria-label="' + T.account + '"><div class="cme-list">' + g.ids.map(row).join('') + '</div></section>'
-            : '<section class="cme-sec" aria-label="' + T[g.key] + '"><h3>' + T[g.key] + '</h3><div class="cme-list">' + g.ids.map(row).join('') + moreRow(g.more) + '</div></section>';
+            : (ov && g.key === 'you')
+                ? '<section class="cme-sec" aria-label="' + T[g.key] + '"><h3>' + T[g.key] + '</h3><div class="cme-tiles">' + g.ids.map(tile).join('') + '</div><div class="cme-list">' + moreRow(g.more) + '</div></section>'
+                : '<section class="cme-sec" aria-label="' + T[g.key] + '"><h3>' + T[g.key] + '</h3><div class="cme-list">' + g.ids.map(row).join('') + moreRow(g.more) + '</div></section>';
         el.innerHTML = '<div class="cme-head">' +
             '<span class="cme-av" aria-hidden="true">' + av + '</span>' +
             '<span class="cme-who"><b id="cmeTitle">' + esc(m.name || T.guest) + '</b>' + (m.xp ? '<small>' + m.xp.toLocaleString() + ' XP</small>' : '') + '</span>' +
-            '<button type="button" class="cme-ibtn" data-cme="close" aria-label="' + T.close + '">' + svg('x') + '</button></div>' +
+            (ov ? '' : '<button type="button" class="cme-ibtn" data-cme="close" aria-label="' + T.close + '">' + svg('x') + '</button>') + '</div>' +
             '<div class="cme-body">' + gs.map(sec).join('') +
             '<p class="cme-tip">' + T.hold + '</p>' + (ver ? '<p class="cme-ver">' + esc(ver) + '</p>' : '') + '</div>';
     }
@@ -120,6 +129,21 @@
            press that starts after it opened (or a keyboard click) counts */
         armed = false;
         const arm = () => { armed = true; };
+        const R2 = root.LowiR2;
+        /* Oct 22 One UI: the hub lives in the one shared sheet shell (LowiR2.sheet + one-sheet.css): the same dark glass, grab handle,
+           drag to close and round X at the bottom centre as Fuel, Log a meal and Misty's sheet. The old free-standing card stays only as a
+           fallback if the shell is missing. */
+        if (R2 && typeof R2.sheet === 'function') {
+            try { ov = R2.sheet('<div class="cme cme-in" id="cmeSheet"></div>', { cls: 'cme-ov one-sheet', onClose: () => done(false) }); } catch (e) { ov = null; }
+        }
+        if (ov) {
+            el = ov.querySelector('#cmeSheet');
+            const sh = ov.querySelector('.r2-sh'); if (sh) sh.setAttribute('aria-labelledby', 'cmeTitle');
+            ov.addEventListener('pointerdown', arm, true);
+            ov.addEventListener('click', e => { if (!armed && e.detail !== 0) { e.preventDefault(); e.stopPropagation(); return; } if (el && el.contains(e.target)) onClick(e); }, true);
+            render(); H.classList.add('cme-open');
+            return true;
+        }
         back = D.createElement('div'); back.className = 'cme-back'; back.addEventListener('pointerdown', arm); back.addEventListener('click', e => { if (armed || e.detail === 0) close(true); });
         el = D.createElement('div'); el.className = 'cme'; el.id = 'cmeSheet'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-labelledby', 'cmeTitle');
         el.addEventListener('pointerdown', arm, true); el.addEventListener('click', e => { if (!armed && e.detail !== 0) { e.preventDefault(); e.stopPropagation(); return; } onClick(e); }, true);
@@ -128,8 +152,14 @@
         const f = el.querySelector('.cme-row') || el.querySelector('button'); if (f) { try { f.focus({ preventScroll: true }); } catch (e) { } }
         return true;
     }
+    function done(refocus) {
+        if (!ov) return;
+        ov = null; el = null; asking = false; H.classList.remove('cme-open');
+        if (refocus && lastFocus && lastFocus.focus) { try { lastFocus.focus({ preventScroll: true }); } catch (e) { } }
+    }
     function close(refocus) {
         if (!el) return;
+        if (ov) { const o = ov; done(refocus); try { root.LowiR2.close(o); } catch (e) { o.remove(); } return; }
         el.remove(); if (back) back.remove(); el = null; back = null; asking = false; H.classList.remove('cme-open');
         if (refocus && lastFocus && lastFocus.focus) { try { lastFocus.focus({ preventScroll: true }); } catch (e) { } }
     }
@@ -159,7 +189,7 @@
     D.addEventListener('keydown', e => {
         if (!el) return;
         if (e.key === 'Escape') { close(true); return; }
-        if (e.key === 'Tab') { const bs = [...el.querySelectorAll('button')]; const i = bs.indexOf(D.activeElement), last = bs.length - 1; if (e.shiftKey && i <= 0) { e.preventDefault(); bs[last].focus(); } else if (!e.shiftKey && (i === last || i < 0)) { e.preventDefault(); bs[0].focus(); } }
+        if (e.key === 'Tab' && !ov) { const bs = [...el.querySelectorAll('button')]; const i = bs.indexOf(D.activeElement), last = bs.length - 1; if (e.shiftKey && i <= 0) { e.preventDefault(); bs[last].focus(); } else if (!e.shiftKey && (i === last || i < 0)) { e.preventDefault(); bs[0].focus(); } }
     });
     D.addEventListener('lowi:tab', () => close(false));
     try { new MutationObserver(() => { if (el && !asking) render(); }).observe(H, { attributes: true, attributeFilter: ['lang'] }); } catch (e) { }

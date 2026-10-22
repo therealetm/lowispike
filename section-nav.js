@@ -18,7 +18,7 @@
     /* true for a moment around an X / back close: the slide (liquid-glass), the galaxy dive (galaxy-zoom) and the camera
        (body-world-3d) watch the tab change from observers and frames that run after goTab returns */
     Object.defineProperty(api, 'instant', { get: () => performance.now() < instantUntil, set: v => { instantUntil = v ? performance.now() + 700 : 0; }, enumerable: true });
-    let swallow = 0, depth = 0, popping = false, homeScroll = null, xBtn = null, swipe = null;
+    let swallow = 0, depth = 0, popping = false, homeScroll = null, xBtn = null, swipe = null, swallowedEvt = null;
 
     /* ---------- Home's scroll, kept while a section is open ---------- */
     function scrollers() { return [D.getElementById('tab-home'), D.getElementById('main'), D.scrollingElement].filter(Boolean); }
@@ -106,7 +106,7 @@
 
     /* ---------- system / browser back ---------- */
     function onPop(e) {
-        if (swallow > 0) { swallow--; return; }
+        if (swallow > 0) { swallow--; swallowedEvt = e; return; }
         if (isSec(e.state)) return;                         /* forward into a section entry: leave it */
         if (tabOf() === 'home') return;
         if (D.querySelector('#mv-player.on')) return;      /* the Move player handles its own back */
@@ -185,6 +185,10 @@
         try { new MutationObserver(label).observe(H, { attributes: true, attributeFilter: ['lang'] }); } catch (e) { }
     }
     api.close = close; api.back = back; api.tab = tabOf; api.wrap = wrap;
+    /* Oct 22 (code error sweep 20:02): our own quiet history.back() (Home came back without the X) is not a user's back.
+       back-swipe.js asks before it acts on a pop: it took this pop for a swipe back on Home and went back again, out of
+       LOWiSPIKE (Safari then left or reloaded the app). True while the quiet pop is pending, and for the event we swallowed. */
+    api.swallowed = e => swallow > 0 || (!!e && e === swallowedEvt);
     W.LowiSections = api;
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 })(window, document);

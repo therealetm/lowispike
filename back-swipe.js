@@ -24,8 +24,10 @@
         /* Oct 21: no menu bar any more; section-nav.js brings Home back exactly as it was */
         if (W.LowiSections && typeof W.LowiSections.close === 'function') W.LowiSections.close(); else if (typeof W.goTab === 'function') W.goTab('home');
     }
-    function onPop() {
-        if (ours(history.state)) return;                 /* the Move player's own entry popped down to ours: not for us */
+    function onPop(e) {
+        if (ours(history.state)) return;
+        /* Oct 22: section-nav.js dropping a section's entry quietly is not a back; acting on it left the app */
+        try { if (W.LowiSections && W.LowiSections.swallowed && W.LowiSections.swallowed(e)) return; } catch (x) { }                 /* the Move player's own entry popped down to ours: not for us */
         if (D.querySelector('#mv-player.on')) return;      /* the Move player handles its own back */
         const before = sig();
         escape();

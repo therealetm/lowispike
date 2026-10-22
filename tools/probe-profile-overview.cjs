@@ -15,6 +15,9 @@ const H = require('./sim/harness.cjs'), path = require('path');
     /* the simulated sign-in can reload the page now and then on a busy machine: retry a step once the app is back */
     const ev = async (fn, a) => { for (let i = 0; i < 3; i++) { try { return await P.evaluate(fn, a); } catch (e) { if (i === 2 || !/context|undefined|navigation/i.test(e.message)) throw e; res.retries = (res.retries || 0) + 1; await H.sleep(4000); await ready(); } } };
     await R.goto(); await H.sleep(20000); await ready();
+    /* leaving Profile steps the history back; in the simulator the entry before the app is about:blank (on a phone there is none),
+       so give the app a few entries of its own first, like the guard entry a first touch makes */
+    await P.evaluate(() => { for (let i = 0; i < 4; i++) history.pushState(history.state, '', location.href); });
     /* the app may reload itself once after the first sign-in sync; wait it out so every step below runs on one page */
     { let n = res.navs; await H.sleep(8000); if (res.navs !== n) { await H.sleep(6000); await ready(); } }
     for (let i = 0; i < 3; i++) { await P.keyboard.press('Escape'); await H.sleep(200); }
@@ -36,12 +39,13 @@ const H = require('./sim/harness.cjs'), path = require('path');
         const title = document.querySelector('#g2eHead .g2e-ht'), tr = title && title.getBoundingClientRect();
         /* the title text (its real width) must not run under the top-right buttons (theme, close, picture) */
         let titleCovered = [];
-        if (title && tr) { const rg = document.createRange(); rg.selectNodeContents(title); const tx = rg.getBoundingClientRect();
-            titleCovered = [...document.querySelectorAll('button, [role=button], a')].filter(e => !title.contains(e) && e !== back && !(back && back.contains(e)) && vis(e)).map(e => [e, e.getBoundingClientRect()])
+        if (title && tr) { const rg = document.createRange(); rg.selectNodeContents(title); const tr0 = rg.getBoundingClientRect(); /* the text as drawn: an ellipsis clips it to the title box */
+            const tx = { left: Math.max(tr0.left, tr.left), right: Math.min(tr0.right, tr.right), top: tr0.top, bottom: tr0.bottom };
+            titleCovered = tx.right <= tx.left ? [] : [...document.querySelectorAll('button, [role=button], a')].filter(e => !title.contains(e) && e !== back && !(back && back.contains(e)) && vis(e)).map(e => [e, e.getBoundingClientRect()])
                 .filter(([e, b]) => b.left < tx.right - 1 && tx.left < b.right - 1 && b.top < tx.bottom - 1 && tx.top < b.bottom - 1)
                 .filter(([e, b]) => { const x = (Math.max(b.left, tx.left) + Math.min(b.right, tx.right)) / 2, y = (Math.max(b.top, tx.top) + Math.min(b.bottom, tx.bottom)) / 2, h = document.elementFromPoint(x, y); return !!(h && (e === h || e.contains(h))); })
                 .map(([e]) => e.id || String(e.className)); }
-        return { back: r ? [r.left, r.top, r.width, r.height].map(Math.round) : null, sat, overlap: others, titleCovered, hit, backs, title: title ? title.textContent : null,
+        return { back: r ? [r.left, r.top, r.width, r.height].map(Math.round) : null, sat, overlap: others, titleCovered, titleBox: tr ? [tr.left, tr.right].map(Math.round) : null, hit, backs, title: title ? title.textContent : null,
             titleOverlap: !!(r && tr && tr.left < r.right - 1 && tr.width > 0) };
     });
     const checkOverview = (label, s) => { if (!s.g || !s.g.on || s.g.open || s.tab !== 'profile') fail(label + ': not the overview ' + JSON.stringify(s)); };

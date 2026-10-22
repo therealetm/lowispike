@@ -776,6 +776,7 @@
         'mirror-move.js': 'camera workout: it tells you each move out loud while you do it',
         'mirror-move-core.js': 'camera workout: it tells you each move out loud while you do it',
         'community-energy-core.js': 'math for the energy joystick taught by cm-energy',
+        'ate-this.js': 'only pauses the I just ate this bar from hiding while a finger rests on it; its buttons are plain taps',
         'finch-extras.js': 'only watches touches to retire a first-use hint; it adds no gesture of its own',
         'misty-bloom.js': 'only remembers where a finger touched so a panel can grow out of that spot; no gesture of its own',
         'tutorial.js': 'the tour itself: it watches try-it gestures passively and never adds one'

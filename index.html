@@ -8691,17 +8691,54 @@ const CKPLATE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 function ckSyncSwaflo(){ /* the swap tool follows the chosen source: Products = buy, eBook / Community = cook */
   try { const p = JSON.parse(localStorage.getItem("lowi.swaflo.prefs") || "{}"), mode = fSrc() === "products" ? "buy" : "cook", snack = fSrc() === "book" && fCatSel() === "sweet";
     if (p.mode !== mode || !!p.snack !== snack) localStorage.setItem("lowi.swaflo.prefs", JSON.stringify(Object.assign({}, p, {mode, snack}))); } catch(e){} }
-function fProducts(){
+/* scan-sort (Oct 22, 2026): Products shuffles only caught products rated Low-spike or Now and then (LowiScanSort, the
+   scanner's own scale). Anything rated Skip it ("likely spike") never feeds Shuffle: it is listed under Throw out instead. */
+const CK_TOSS_HIDDEN = "lowi.cook.tossHidden";
+function fTossHidden(){ try { const a = JSON.parse(localStorage.getItem(CK_TOSS_HIDDEN) || "[]"); return Array.isArray(a) ? a : []; } catch(e){ return []; } }
+function fSort(){
   let all = []; try { all = window.LowiDiscovery ? LowiDiscovery.all() : []; } catch(e){}
-  const seen = new Set(), out = [];
-  all.forEach(p => { try {
-    if (!p || !p.name || p.verdict === "spike") return; const a = LowiDiscovery.assess(p).category; if (a === "outside" || a === "caution") return;
-    const key = window.LowiDiscoveryCore ? LowiDiscoveryCore.identity(p) : String(p.barcode || p.name); if (seen.has(key)) return; seen.add(key);
-    const q = Object.assign({}, p, {assessmentCategory:a});
-    out.push(Object.assign({}, q, {id:"sf-buy:" + key, product:q, n:p.name, img:p.img || "", sub:p.brand || "", r:"ja", ing:[], buy:true, book:false}));
+  const S = window.LowiScanSort, X = window.LowiDex || {}, idf = p => window.LowiDiscoveryCore ? LowiDiscoveryCore.identity(p) : String(p.barcode || p.name);
+  let mine = []; try { mine = Object.values((X.state && X.state().mine) || {}).map(idf); } catch(e){}
+  const withPV = all.filter(p => p && p.name).map(p => { try { const q = PV["sf-buy:" + idf(p)]; return q && q.verdict ? Object.assign({}, p, {verdict:q.verdict, facts:q.facts || p.facts, ingredients:q.ingredients || p.ingredients}) : p; } catch(e){ return p; } });
+  if (S) return S.split(withPV, {rate:X.rate, rateName:X.rateName, identity:idf, hidden:fTossHidden(), mine});
+  const seen = new Set(); return {keep:withPV.filter(p => (p.verdict === "ok" || p.verdict === "better") && !seen.has(idf(p)) && seen.add(idf(p))).map(p => ({key:idf(p), product:p, verdict:p.verdict})), toss:[], unsure:[]};
+}
+function fProducts(){
+  const out = [];
+  fSort().keep.forEach(it => { try {
+    const p = it.product; if (window.LowiDiscovery) { const a = LowiDiscovery.assess(p).category; if (a === "outside" || a === "caution") return; }
+    const q = Object.assign({}, p, {assessmentCategory:window.LowiDiscovery ? LowiDiscovery.assess(p).category : "", spikeVerdict:it.verdict});
+    out.push(Object.assign({}, q, {id:"sf-buy:" + it.key, product:q, n:p.name, img:p.img || "", sub:p.brand || "", r:"ja", ing:[], buy:true, book:false}));
   } catch(e){} });
   return out;
 }
+let fTossAll = false;
+function fTossHTML(){
+  if (fSrc() !== "products") return "";
+  const S = window.LowiScanSort; if (!S) return "";
+  const L = ckLang(), tx = k => S.text(k, L), items = fSort().toss; if (!items.length) return "";
+  const vt = v => { try { return LowiDex.vtext(v)[0]; } catch(e){ return ckT("Skip it", "Lieber nicht", "Mejor no"); } };
+  const show = fTossAll ? items : items.slice(0, 6);
+  return '<section class="ck-toss" id="ckToss" aria-labelledby="ckTossH" data-noi18n><header class="ck-toss-h"><span class="ck-toss-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4.8h6V7M6.5 7l1 12.2h9l1-12.2M10 11v5M14 11v5"/></svg></span><div><h3 id="ckTossH">' + esc(tx("title")) + ' <small>' + items.length + '</small></h3><p class="small muted">' + esc(tx("sub")) + '</p></div></header>' +
+    '<ul class="ck-toss-l">' + show.map(it => { const p = it.product;
+      return '<li class="ck-toss-i" data-key="' + esc(it.key) + '">' + (p.img ? '<img alt="" loading="lazy" referrerpolicy="no-referrer" src="' + esc(p.img) + '">' : '<span class="ck-toss-ph">' + CKPLATE + '</span>') +
+        '<span class="ck-toss-t"><b>' + esc(p.name) + '</b><small>' + esc([p.brand, it.mine ? tx("yours") : ""].filter(Boolean).join(" \u00b7 ")) + '</small><span class="ck-toss-why">' + esc(tx("line")) + '</span></span>' +
+        '<span class="b3-vb v-spike ck-toss-v">' + esc(vt("spike")) + '</span>' +
+        '<button type="button" class="ck-toss-x" data-cktoss="hide" data-key="' + esc(it.key) + '" aria-label="' + esc(tx("remove") + ": " + p.name) + '"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></li>'; }).join("") + '</ul>' +
+    (items.length > 6 ? '<button type="button" class="ck-toss-more" data-cktoss="more">' + esc(fTossAll ? tx("less") : tx("more") + " (" + items.length + ")") + '</button>' : "") + '</section>';
+}
+function fProductsEmptyHTML(){
+  const S = window.LowiScanSort, L = ckLang(), tx = k => S ? S.text(k, L) : k;
+  return '<div class="r5-card in ck-pempty" role="status" data-noi18n><b>' + esc(tx("emptyT")) + '</b><div class="small muted">' + esc(tx("emptyS")) + '</div><div class="r5-btns"><button type="button" class="btn primary" data-cktoss="scan">' + esc(tx("scan")) + '</button><button type="button" class="btn ghost" data-cktoss="book">' + esc(tx("book")) + '</button></div></div>';
+}
+function fTossRepaint(){ const n = r5$("#ckToss"), h = fTossHTML(); if (n) { if (h) n.outerHTML = h; else n.remove(); } else if (h) { const sh = r5$("#r5Shuf"); if (sh) sh.insertAdjacentHTML("beforeend", h); }
+  const pk = r5$("#r5Pick"); if (pk && fSrc() === "products" && !fSrcPool().length) pk.innerHTML = fProductsEmptyHTML(); }
+if (typeof document !== "undefined") document.addEventListener("click", e => { const b = e.target && e.target.closest && e.target.closest("[data-cktoss]"); if (!b) return; e.preventDefault();
+  const k = b.dataset.cktoss;
+  if (k === "hide") { const h = fTossHidden(); if (h.indexOf(b.dataset.key) < 0) h.push(b.dataset.key); ckSet(CK_TOSS_HIDDEN, JSON.stringify(h.slice(-500))); fTossRepaint(); }
+  else if (k === "more") { fTossAll = !fTossAll; fTossRepaint(); }
+  else if (k === "scan") { try { LowiDex.scan("cam"); } catch(x){} }
+  else if (k === "book") { ckSource("book"); } });
 function fSrcPool(src){
   src = src || fSrc();
   if (src === "products") return fProducts();
@@ -8728,7 +8765,7 @@ function ckBarHTML(){
 }
 function ckEmptyHTML(){
   const s = fSrc();
-  if (s === "products" && window.LowiSwaflo) return null;
+  if (s === "products") return fProductsEmptyHTML(); /* scan-sort: never falls back to spiking products */
   return '<div class="r5-card in" role="status" data-noi18n><div class="small">' + (s === "community" ? ckT("No community meals with a photo yet. Share one with + Swipe in the community.", "Noch keine Community-Gerichte mit Foto. Teile eins mit + Swipe in der Community.", "Aún no hay platos con foto.") : ckT("Nothing here yet. Try All.", "Hier ist noch nichts. Probier Alle.", "Nada aquí. Prueba Todo.")) + '</div></div>';
 }
 function fPool(){
@@ -8759,7 +8796,7 @@ function fHomeHTML(){
     '<button class="btn primary r5-go" data-r5="shuffle" id="r5Go">' + R5IC.shuffle.replace("<svg", '<svg width="20" height="20"') + '<span>' + (last ? "Shuffle again" : "Shuffle my food") + '</span></button>' +
     (window.LowiCS ? '<div class="cs-pair cs-hub" id="csHub"><button type="button" class="cs-btn cs-cook" data-lc="hubcook">' + LowiCS.ic.pot + '<span>Cook it</span></button><button type="button" class="cs-btn cs-shop" data-lc="hubshop">' + LowiCS.ic.cart + '<span>Shop it</span></button></div>' : "") +
     '<div class="small muted r5-hint" data-noi18n>' + /* r3k-hint */ fHintTxt() + '</div>' +
-    '<div id="r5Pick">' + (last ? fRevealHTML(last, false) : "") + '</div></div>' +
+    '<div id="r5Pick">' + (last ? fRevealHTML(last, false) : (fSrc() === "products" && !fSrcPool().length ? fProductsEmptyHTML() : "")) + '</div>' + fTossHTML() + '</div>' +
     /* r3k-home */ dkSectionHTML() +
     '<div id="r3kYes">' + fYesHTML() + '</div>';
 }
@@ -19957,6 +19994,7 @@ window.LowiSwafloBridge = {
 </script>
 <link rel="stylesheet" href="swaflo.css?v=20261022-123232">
 <script src="swaflo-config.js?v=20261022-123232"></script>
+<script src="scan-sort-core.js?v=20261022-123232"></script>
 <script src="swaflo-core.js?v=20261022-123232"></script>
 <script src="swaflo.js?v=20261022-123232"></script>
 <style id="hofcss">

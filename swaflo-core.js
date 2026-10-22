@@ -6,7 +6,9 @@ function preferences(x){return {mode:x&&x.mode==='buy'?'buy':C.defaultMode,snack
 function snackRequest(q){return /\b(sweet|sweets|snack|chocolate|suess|suss|susses|susses|schokolade|dulce|chocolate)\b/.test(norm(q));}
 function readyProduct(p){return ['snack','dairy','drink','sweets'].includes(p.cat)&&!/(raw|roh|flour|mehl|powder|pulver)/.test(norm(p.name));}
 function sweetProduct(p){return /\b(bar|bars|riegel|yogurt|yoghurt|joghurt|skyr|pudding|dessert|chocolate|cocoa|kakao|yogur|chocolat)\b/.test(norm(p.name));}
-function productPool(products,opts){const o=preferences(opts);return (products||[]).filter(p=>readyProduct(p)&&(!o.snack||sweetProduct(p))&&p.assessmentCategory!=='outside'&&p.assessmentCategory!=='caution');}
+/* scan-sort (Oct 22, 2026): a product rated likely spike never feeds Buy picks or shopping matches. spikeVerdict comes from LowiScanSort (ok|better|spike|unknown); without it the stored verdict decides. */
+function lowSpike(p){if(!p)return false;if(p.spikeVerdict)return p.spikeVerdict==='ok'||p.spikeVerdict==='better';return p.verdict!=='spike';}
+function productPool(products,opts){const o=preferences(opts);return (products||[]).filter(p=>lowSpike(p)&&readyProduct(p)&&(!o.snack||sweetProduct(p))&&p.assessmentCategory!=='outside'&&p.assessmentCategory!=='caution');}
 function shufflePool(recipes,products,opts){const o=preferences(opts);if(o.mode==='buy')return productPool(products,o);return (recipes||[]).filter(r=>!r.com&&r.book&&r.r!=='nein'&&(!o.snack||['snack','dessert'].includes(r.c)&&r.mins>0&&r.mins<=C.quickMinutes&&!r.extra));}
 function resolve(query,catalog,products,opts){const requested=String(query||'').trim().slice(0,180),q=norm(requested),o=preferences(opts),snack=o.snack||snackRequest(q);const result={requested,mode:o.mode,snack,status:'ready',swaps:[],recipe:null,products:[]};if(!q){result.status='empty';return result;}
   if(o.mode==='buy'){result.products=productPool(products,{mode:'buy',snack}).filter(p=>snack||norm(p.name+' '+p.brand).includes(q.replace(/^(i want |ich mochte |quiero )/,'')));if(!result.products.length)result.status='no-products';return result;}
@@ -21,6 +23,6 @@ function resolve(query,catalog,products,opts){const requested=String(query||'').
   if(/\b(without|ohne|sin|allergy|allergic|allergie)\b/.test(q)){result.status='unsupported';return result;}
   result.recipe=clone(r);result.recipe.servings=r.servings||C.defaultServings;result.recipe.provisionalServings=!r.servings;return result;
 }
-function shopping(recipe,products){return (recipe&&recipe.ing||[]).map(i=>{const q=norm(i.n),words=q.split(' ').filter(s=>s.length>2);const matches=(products||[]).filter(p=>{if(['outside','caution'].includes(p.assessmentCategory))return false;const n=norm(p.name);if(/konjac|konjak/.test(q))return /konjac|konjak|shirataki/.test(n)&&(/rice|reis/.test(q)?/rice|reis|arroz/.test(n):/noodle|nudel|pasta|fideos/.test(n));return words.length&&words.every(w=>n.includes(w));});return {term:i.n,quantity:i.q||'',matches:matches.slice(0,3)};});}
-return {config:C,norm,preferences,snackRequest,readyProduct,productPool,shufflePool,resolve,shopping};
+function shopping(recipe,products){return (recipe&&recipe.ing||[]).map(i=>{const q=norm(i.n),words=q.split(' ').filter(s=>s.length>2);const matches=(products||[]).filter(p=>{if(!lowSpike(p)||['outside','caution'].includes(p.assessmentCategory))return false;const n=norm(p.name);if(/konjac|konjak/.test(q))return /konjac|konjak|shirataki/.test(n)&&(/rice|reis/.test(q)?/rice|reis|arroz/.test(n):/noodle|nudel|pasta|fideos/.test(n));return words.length&&words.every(w=>n.includes(w));});return {term:i.n,quantity:i.q||'',matches:matches.slice(0,3)};});}
+return {config:C,norm,lowSpike,preferences,snackRequest,readyProduct,productPool,shufflePool,resolve,shopping};
 });

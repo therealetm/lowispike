@@ -60,5 +60,7 @@ test('the photo sheet says the honest line for each failure', () => {
     const s = require('fs').readFileSync(path.join(ROOT, 'food-photo-ai.js'), 'utf8');
     const m = s.slice(s.indexOf('function mount('));
     assert.match(m, /why\(\) === 'net'/, 'the probe reason picks the line');
-    assert.match(m, /\['limit', 'busy', 'off', 'net', 'slow', 'sign_in'\]/, 'each error code has its own line');
+    // Oct 22: limit/off/sign_in keep their own line; busy/net/slow keep theirs plus a Try again button (same photo)
+    assert.match(m, /\['limit', 'off', 'sign_in'\]\.includes\(c\)\) say\('fai-err', t\(c, l\)\)/, 'each error code has its own line');
+    assert.match(m, /sayRetry\(\['busy', 'net', 'slow'\]\.includes\(c\) \? t\(c, l\) : t\('fail', l\)\)/, 'the retryable ones too');
 });

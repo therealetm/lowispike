@@ -155,6 +155,16 @@ html:root body .r2-ov.ss-sheet:not(.full) .fai-m small { font-size: 10px; opacit
 html:root body .r2-ov.ss-sheet:not(.full) .fai-spin { width: 14px; height: 14px; flex: none; border-radius: 50%; border: 2px solid rgba(143, 216, 255, .35); border-top-color: #8fd8ff; animation: fai-spin .9s linear infinite; }
 @keyframes fai-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { html:root body .r2-ov.ss-sheet:not(.full) .fai-spin { animation: none; } }
+/* Oct 22 2026: the photo check can miss (slow AI, no signal). Try again re-sends the same photo, no retake. */
+html:root body .r2-ov.ss-sheet:not(.full) .fai-retry { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; margin-top: 10px; padding: 0 22px; border-radius: 999px; border: 1px solid rgba(143, 216, 255, .5); background: rgba(10, 132, 255, .22); color: #fff; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+html:root body .r2-ov.ss-sheet:not(.full) .fai-retry:active { transform: scale(.97); }
+/* Oct 22 2026: "my brand colour is not green". misty-panels.css (loaded later) painted Log as meal in Move's mint; on the
+   photo sheet it is the brand blue (the liquid-glass --lg-blue, same as Scan's own main button), Day and Night. */
+html:root body .r2-ov.ss-sheet:not(.full) #spMeal .sp-primary {
+  background: linear-gradient(180deg, #3d9bff, var(--lg-blue, #0a84ff)) !important; color: #fff !important;
+  border: .5px solid rgba(255, 255, 255, .38) !important; text-shadow: none !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .4), 0 10px 26px -10px rgba(10, 132, 255, .9) !important;
+}
 
 /* Oct 21 2026 meal result (meal-result.js): the spike verdict first and biggest, then each food (tap to fix), drinks, XP.
    Level colours are the barcode card's (v-ok / v-better / v-spike), glow in the level colour, never white. */

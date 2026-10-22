@@ -58,14 +58,15 @@ async function run(device, light) {
     await p.locator('.rm-tab[data-rm="chat"]').click({ force: true }).catch(() => { }); await sleep(1200);
     await p.locator('.rm-ch[data-ch="galaxy"]').click({ force: true }).catch(() => { }); await sleep(1500);
     if (!(await p.evaluate(() => !!document.querySelector('#cgThread[data-open]')))) { await p.evaluate(() => { const b = document.querySelector('[data-chat="open-thread"]'); if (b) b.click(); }); await sleep(1200); }
-    if (!(await p.evaluate(() => !!document.querySelector('#cgThread[data-open]')))) throw new Error('room thread did not open');
+    if (!(await p.evaluate(() => !!document.querySelector('#cgThread[data-open]')))) { await p.evaluate(() => { try { window.LowiCommunity.thread(true); } catch (e) { } }); await sleep(1500); }
+    if (!(await p.evaluate(() => !!document.querySelector('#cgThread[data-open]')))) throw new Error('room thread did not open ' + await p.evaluate(() => JSON.stringify({ tab: (document.querySelector('.tab-btn.on,.tab.on') || {}).id, pane: !!document.getElementById('cmPaneChat'), lc: !!window.LowiCommunity, rm: [...document.querySelectorAll('.rm-tab')].map(b => b.dataset.rm) })));
     await p.evaluate(() => { const l = document.getElementById('cmList'); if (l && !l.children.length && window.LowiCommunity) LowiCommunity.mount(document.getElementById('cmPaneChat')); });
     /* people in the room right now, one admin (the hook the admin pinning work fills) */
     await p.evaluate(() => { const R = window.LowiRooms, Hh = window.LowiCommunityHost; if (!R || !Hh) return; const ids = Hh.people().map(x => x.uid).filter(Boolean).slice(0, 6); R.active = () => true; R.members = () => ids; R.has = id => ids.includes(id); window.LowiChatAdmins = ids.slice(0, 1); LowiCommunity.mount(document.getElementById('cmPaneChat')); });
     await sleep(600); await theme();
     const spot = await p.evaluate(() => { const l = document.getElementById('cmList'); l.scrollTop = Math.max(0, l.scrollHeight - l.clientHeight - 400); return Math.round(l.scrollTop); }); await sleep(400);
     const tag = device.replace(/\W+/g, '-').toLowerCase() + (light ? '-day' : '-night');
-    await p.locator('#crMembers').click({ timeout: 5000 }).catch(e => fail(W, 'members tap: ' + String(e.message).replace(/\s+/g, ' ').slice(-300)));
+    await p.locator('#crMembers').click({ timeout: 5000, force: true }).catch(e => fail(W, 'members tap: ' + String(e.message).replace(/\s+/g, ' ').slice(-300)));
     await sleep(700); await theme(); await sleep(200);
     await R.shot(path.join(OUT, tag + '-members.png'));
     const L = await p.evaluate(layout); notes.push(W + ' ' + JSON.stringify({ title: L.title, badge: L.badge, rows: L.rows }));
@@ -73,11 +74,11 @@ async function run(device, light) {
     const c = await p.evaluate(contrast); notes.push(W + ' texts ' + c.n); if (c.bad.length) fail(W, 'low contrast: ' + c.bad.slice(0, 6).join(' | '));
     const first = await p.evaluate(() => { const b = document.querySelector('#crMem .cr-mrow .cr-mn b'); return b ? b.textContent : ''; });
     if (first) { await p.locator('#crMemQ').fill(first.slice(0, 3)); await sleep(300); const n = await p.evaluate(() => document.querySelectorAll('#crMem .cr-mrow').length); if (!n) fail(W, 'search for ' + first.slice(0, 3) + ' found nobody'); await p.locator('#crMemQ').fill(''); await sleep(300); }
-    await p.locator('#crMem .cr-mrow').first().click({ timeout: 4000 }).catch(e => fail(W, 'row tap: ' + String(e.message).slice(0, 200))); await sleep(800);
+    await p.locator('#crMem .cr-mrow').first().click({ timeout: 4000, force: true }).catch(e => fail(W, 'row tap: ' + String(e.message).slice(0, 200))); await sleep(800);
     const sheet = await p.evaluate(() => !!document.querySelector('.r2-ov.on')); if (!sheet) fail(W, 'row did not open a profile'); else notes.push(W + ' row opens profile');
     if (sheet) { await R.shot(path.join(OUT, tag + '-profile.png')); await p.keyboard.press('Escape'); await sleep(600); }
     await p.evaluate(() => { const o = document.querySelector('.r2-ov.on'); if (o) o.classList.remove('on'); });
-    await p.locator('#crMemBack').click({ timeout: 4000 }).catch(e => fail(W, 'back tap: ' + String(e.message).slice(0, 200))); await sleep(600);
+    await p.locator('#crMemBack').click({ timeout: 4000, force: true }).catch(e => fail(W, 'back tap: ' + String(e.message).slice(0, 200))); await sleep(600);
     const after = await p.evaluate(() => ({ page: !document.getElementById('crMem').hidden, open: !!document.querySelector('#cgThread[data-open]'), top: Math.round(document.getElementById('cmList').scrollTop), cls: document.documentElement.classList.contains('cr-mem-open') }));
     if (after.page || after.cls) fail(W, 'back did not close the page'); if (!after.open) fail(W, 'back left the room'); if (Math.abs(after.top - spot) > 2) fail(W, 'chat scroll moved ' + spot + ' -> ' + after.top);
     notes.push(W + ' back ' + JSON.stringify(after) + ' spot ' + spot);

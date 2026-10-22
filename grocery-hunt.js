@@ -466,7 +466,13 @@
     }
     let pend = 0;
     function soon() { if (pend) return; pend = requestAnimationFrame(() => { pend = 0; try { decorate(); } catch (e) {} }); }
-    D.addEventListener('click', e => { const b = e.target && e.target.closest && e.target.closest('[data-gh="open"]'); if (!b || (ov && ov.contains(b))) return; e.preventDefault(); e.stopPropagation(); open(); }, true);
+    /* Oct 22 bug hunt: the Finds chip lives inside the shopping scanner, which sits on top of everything (z-index 2147483000), so the
+       panel (z-index 410) opened underneath it and the tap looked dead. From the scanner, close the camera first, the same way its
+       shopping-list chip does (shop-scan.js goCart), then open the panel. */
+    function fromScanner(b) { return !!(b.closest && b.closest('.b3-cam')); }
+    D.addEventListener('click', e => { const b = e.target && e.target.closest && e.target.closest('[data-gh="open"]'); if (!b || (ov && ov.contains(b))) return; e.preventDefault(); e.stopPropagation();
+        if (fromScanner(b)) { try { if (W.LowiDex && typeof W.LowiDex.stop === 'function') W.LowiDex.stop(); } catch (er) {} }
+        open(); }, true);
     function boot() {
         load(); syncPlan(); hookWorld();
         W.addEventListener('lowi:shopplan', () => { syncPlan(); if (ov) { try { paint(); } catch (e) {} } });

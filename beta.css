@@ -1098,7 +1098,6 @@ html[data-ckview="swipe"] #tab-shelf #r3kSwipe .r3k-btns { margin-top: 12px !imp
 @keyframes bWorldXp { 0% { opacity: 0; transform: translateY(12px) scale(.7); } 20% { opacity: 1; transform: none; } 80% { opacity: 1; } 100% { opacity: 0; transform: translateY(-22px); } }
 @media (prefers-reduced-motion: reduce) { #spWorld[data-reaction] .sp-body > *, #spWorld[data-reaction] .sp-xp-pop { animation: none !important; } }
 /* thirsty herb: leaves curl in and brown a little; one healthy action brings it back */
-.lh-droopy .lh-leaf { transform-box: fill-box; transform-origin: 50% 100%; transform: scaleX(.62) skewY(-10deg); transition: transform .8s ease; }
 .lh-droopy .lh-foliage { filter: sepia(.35) saturate(.7); }
 /* the next form stays a secret: a sealed, softly glowing seed — no outline of what comes next */
 .sp-path .sealed .sp-symbol { color: var(--tmg-a, #9de6b8); filter: drop-shadow(0 0 6px var(--tmg-a, #9de6b8)); animation: bSealGlow 2.6s ease-in-out infinite; }

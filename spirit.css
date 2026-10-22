@@ -883,20 +883,6 @@ html.spirit-app body {
     height: 45px
 }
 
-.sp-fallen {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 8;
-    display: grid;
-    place-items: center
-}
-
-.sp-fallen svg {
-    width: min(64vw, 260px);
-    height: 90%
-}
-
 .sp-sheet .r2-sh {
     box-sizing: border-box;
     max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 32px) !important;
@@ -1459,9 +1445,6 @@ html.spirit-app body {
         will-change: auto
     }
 
-    .sp-fallen {
-        display: none
-    }
 }
 
 @media(prefers-reduced-transparency:reduce) {

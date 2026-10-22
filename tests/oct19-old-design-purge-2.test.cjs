@@ -29,10 +29,11 @@ test('the old herb room hero and dock draw the current cell, never the bare pott
   assert.doesNotMatch(src, /[^a-zA-Z.]plant\(m,'(dock|hero)',p\)/, 'room/dock still call the bare plant drawing');
   assert.equal((src.match(/curArt\(m,'(dock|hero)',p\)/g) || []).length, 3);
   const a = src.indexOf('function curArt('); const fn = src.slice(a, src.indexOf('\n', a));
-  const ctx = { window: {}, plant: () => 'HERB' }; vm.createContext(ctx);
-  vm.runInContext('var window=this.window,plant=this.plant;' + fn + ';this.f=curArt;', ctx);
-  assert.equal(ctx.f({}, 'hero', 1), 'HERB', 'before cell-world loads it may only use the base drawing');
-  ctx.window.LowiHerbTamagotchi = { plantHTML: () => 'CELL' };
+  /* Oct 22 2026: before cell-world loads it draws a neutral orb, never the base (old herb) drawing */
+  const ctx = { window: {}, plant: () => 'HERB', orb: () => 'ORB' }; vm.createContext(ctx);
+  vm.runInContext('var window=this.window,plant=this.plant,orb=this.orb;' + fn + ';this.f=curArt;', ctx);
+  assert.equal(ctx.f({}, 'hero', 1), 'ORB', 'before cell-world loads it shows the placeholder orb');
+  const cell = () => 'CELL'; cell.cell = true; ctx.window.LowiHerbTamagotchi = { plantHTML: cell };
   assert.equal(ctx.f({}, 'hero', 1), 'CELL');
 });
 

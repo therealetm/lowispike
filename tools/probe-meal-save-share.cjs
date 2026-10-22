@@ -12,7 +12,7 @@ const res = {};
     const OUT = '/home/sprite/ml/shots'; fs.mkdirSync(OUT, { recursive: true });
     const o = { device, engine, members: 10, messages: 20, probe: false, lang }; if (/^https?:/.test(where)) o.url = where; else o.root = where;
     const R = await H.open(o), P = R.page, fails = []; res.device = device; res.theme = theme; res.lang = lang;
-    const tapLast = async sel => { await P.locator(sel).last().scrollIntoViewIfNeeded().catch(() => {}); await P.locator(sel).last().click({ timeout: 8000 }); };
+    const tapLast = async sel => { let box = null; for (let k = 0; k < 20 && !box; k++) { box = await P.evaluate(sel => { const els = [...document.querySelectorAll(sel)].filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; }); const e = els.pop(); if (!e) return null; e.scrollIntoView({ block: 'center' }); const r = e.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }, sel); if (!box) await H.sleep(300); } if (!box) throw new Error('no visible ' + sel); await H.sleep(350); try { await P.touchscreen.tap(box.x, box.y); } catch (e) { await P.mouse.click(box.x, box.y); } };
     const errors = []; P.on('pageerror', e => errors.push(String(e.message || e).slice(0, 160)));
     await R.goto(); await H.sleep(4000);
     for (let i = 0; i < 3; i++) { await P.keyboard.press('Escape'); await H.sleep(200); }

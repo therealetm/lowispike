@@ -324,17 +324,32 @@
         const r = rig(); if (!r || r.mode !== 'home') return;
         if (reduced()) { settle(); return; }
         /* Oct 16: the camera now stays pulled out while Community (or any other page) shows the world, so aim for the view saved by pullOut() */
-        const home = st.pull ? { dist: st.pull.dist, pitch: st.pull.pitch } : { dist: r.dist, pitch: r.pitch };
+        /* Oct 22: called a second time (st.pull already used) while still out past the World Map, it aimed at where the camera was and
+           kept Home in the spirit world; it now aims at Misty's usual view */
+        const home = st.pull ? { dist: st.pull.dist, pitch: st.pull.pitch } : r.dist > (r.maxD || 13) * 1.01 ? { dist: baseDist(r), pitch: 0.42 } : { dist: r.dist, pitch: r.pitch };
         st.pull = null;
         r.dist = Math.max(r.dist, Math.min(r.maxD || 13, baseDist(r) * 2.4)); if (r.dist < (r.maxD || 13) * 1.01) r.pitch = 0.34; r.vy = 0; r.idle = 0;
         /* the target is kept as a share of Misty's framing distance: Home re-measures that framing while its layer settles.
            From the spirit world it is one log-even glide back through our membrane and down to Misty (task 3) */
-        hook(); st.zoomAnim = { to: home.dist, rel: home.dist / baseDist(r), pitch: home.pitch, t: 0, rate: 4.2, log: true };
+        hook(); const z = st.zoomAnim = { to: home.dist, rel: home.dist / baseDist(r), pitch: home.pitch, t: 0, rate: 4.2, log: true, dive: true, w0: now() };
         try { frame(1 / 60); } catch (e) { }
+        /* Oct 22 (Emmanuel's screen recording: back on Home from the Community chat, Home stayed covered by the spirit world, his
+           bubbles faded, Misty barely there): the glide only moves on world frames and counts at most 0.05 s per frame, so on a busy
+           iPhone it took 10-15 s, and with no frames at all (page hidden, world paused) it never landed. It now lands by the clock. */
+        setTimeout(() => { if (st.zoomAnim === z) landZoom(); }, DIVE_MAX + 60);
+    }
+    const DIVE_MAX = 900;   /* ms on the wall clock: the dive from Community back to Home always ends by then */
+    function now() { return W.performance && performance.now ? performance.now() : Date.now(); }
+    function landZoom() {
+        const r = rig(), z = st.zoomAnim; if (!z) return; st.zoomAnim = null;
+        if (r) { if (z.rel) z.to = z.rel * baseDist(r); r.dist = z.to; if (z.pitch != null) r.pitch = z.pitch; r.vy = 0; }
+        try { paintZoom(); } catch (e) { }
+        try { if (r && r.mode === 'home') frame(0); } catch (e) { }
     }
     function settle() {
         const r = rig();
         if (st.pull) { if (r) { r.dist = st.pull.dist; r.pitch = st.pull.pitch; } st.zoomAnim = null; st.pull = null; }
+        else if (st.zoomAnim && st.zoomAnim.dive) landZoom();   /* Oct 22: settle() during the dive home lands it (it did nothing once diveIn had used st.pull) */
         try { tick(); } catch (e) {}
         /* Oct 21 (instant back): write Misty's size, the map view and the far classes now, not on the next world frame (seconds on a busy phone),
            so the ring never lays out for the spirit world's distance after coming back */
@@ -663,7 +678,7 @@
         if (st.zoomAnim) {
             const z = st.zoomAnim; z.t += dt; if (z.rel) z.to = z.rel * baseDist(r);
             if ((r.mode !== 'full' && r.mode !== 'home') || Math.abs(r.vy) > 0.02) st.zoomAnim = null;
-            else if (z.t > 2.5) { r.dist = z.to; if (z.pitch != null) r.pitch = z.pitch; st.zoomAnim = null; paintZoom(); }
+            else if (z.t > 2.5 || (z.dive && now() - z.w0 > DIVE_MAX)) { r.dist = z.to; if (z.pitch != null) r.pitch = z.pitch; st.zoomAnim = null; paintZoom(); }
             else {
                 const k = Math.min(1, dt * (z.rate || 3.2));
                 /* log: even in scale, so a pull from Misty to the spirit world (x30) never jumps in its first frames */

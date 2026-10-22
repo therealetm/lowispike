@@ -23,10 +23,10 @@
     const SHOP = [
         { id: 'ember', sp: 250, fx: 'ember', a: '#ffb36b', b: '#ff4d2e', n: ['Ember', 'Glut', 'Brasa'], d: ['Warm sparks rise from her membrane.', 'Warme Funken steigen von ihrer Membran auf.', 'Chispas cálidas suben de su membrana.'] },
         { id: 'orbs', sp: 500, fx: 'orbs', a: '#9ef7ff', b: '#5a8cff', n: ['Orbiting orbs', 'Kreisende Kugeln', 'Orbes en órbita'], d: ['Three little orbs circle her.', 'Drei kleine Kugeln kreisen um sie.', 'Tres orbes pequeños giran a su alrededor.'] },
-        { id: 'trail', sp: 900, fx: 'trail', a: '#fff3b0', b: '#c39bff', n: ['Stardust trail', 'Sternenstaub-Spur', 'Estela de polvo estelar'], d: ['Glitter follows her when she swims.', 'Glitzer folgt ihr, wenn sie schwimmt.', 'Purpurina la sigue cuando nada.'] },
+        { id: 'trail', sp: 900, fx: 'trail', a: '#fff3b0', b: '#5AA9FF', n: ['Stardust trail', 'Sternenstaub-Spur', 'Estela de polvo estelar'], d: ['Glitter follows her when she swims.', 'Glitzer folgt ihr, wenn sie schwimmt.', 'Purpurina la sigue cuando nada.'] },
         { id: 'electric', sp: 1400, fx: 'electric', a: '#b8f4ff', b: '#4f7bff', n: ['Electric', 'Elektrisch', 'Eléctrica'], d: ['Crackling arcs of light.', 'Knisternde Lichtbogen.', 'Arcos de luz que chisporrotean.'] },
         { id: 'prism', sp: 2000, fx: 'prism', a: '#ffd1f2', b: '#8be9ff', n: ['Prism', 'Prisma', 'Prisma'], d: ['Light breaks into a rainbow around her.', 'Licht bricht sich als Regenbogen um sie.', 'La luz se rompe en un arcoíris a su alrededor.'] },
-        { id: 'galaxy', sp: 3000, fx: 'galaxy', a: '#c9a8ff', b: '#3b2a8f', n: ['Galaxy', 'Galaxie', 'Galaxia'], d: ['A swirling star field inside her.', 'Ein wirbelndes Sternenfeld in ihr.', 'Un campo de estrellas girando dentro de ella.'] }
+        { id: 'galaxy', sp: 3000, fx: 'galaxy', a: '#8FE7FF', b: '#0A3A8F', n: ['Galaxy', 'Galaxie', 'Galaxia'], d: ['A swirling star field inside her.', 'Ein wirbelndes Sternenfeld in ihr.', 'Un campo de estrellas girando dentro de ella.'] }
     ];
     /* Step 2 hooks (not built yet, see MAYA-HANDOFF.md): bubble size and shape are their own unlockables, bought with the same
        sparks and saved in the same wallet (wallet.size / wallet.shape = the one picked, wallet.own = every id bought). */

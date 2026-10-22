@@ -165,16 +165,6 @@ html.cw-away .cw-env .cw-rbc { animation-duration: calc(var(--cw-speed) * .6); }
     pointer-events: none;
 }
 html.cw-on .sp-home[data-sun-away] .cw-pill, #spBubble:has(.ls-away) .cw-pill { display: none; }
-.cw-panel {
-    display: grid;
-    gap: 6px;
-    padding: 8px 10px;
-    border-radius: 16px;
-    background: color-mix(in srgb, var(--cw-plasma1) 38%, var(--panel, #10282c));
-    border: 1px solid color-mix(in srgb, var(--cw-glow) 30%, transparent);
-    font-size: 12px;
-    min-width: 0;
-}
 .cw-tag {
     position: absolute;
     z-index: 3;
@@ -197,42 +187,9 @@ html.cw-on .sp-home[data-sun-away] .cw-pill, #spBubble:has(.ls-away) .cw-pill { 
 .cw-why-spike { background: #ffb34a24; border-color: #ffcf6e55; }
 .cw-why-move { background: #ff6e7e22; border-color: #ff8a8a55; }
 .cw-why-night { background: #6c78b833; }
-.cw-feel { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.cw-feel small { font-size: 10.5px; color: var(--muted, #a5b4c9); flex: none; max-width: 34%; line-height: 1.15; }
-.cw-feel div { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; flex: 1; min-width: 0; }
-.cw-mood {
-    min-height: 36px;
-    min-width: 0;
-    padding: 3px 2px;
-    border-radius: 12px;
-    border: 1px solid #ffffff22;
-    background: #ffffff0d;
-    color: inherit;
-    font: 650 11px/1.1 system-ui, -apple-system, sans-serif;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    cursor: pointer;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-.cw-mood i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
-.cw-mood-good i { background: #8ff3c1; }
-.cw-mood-okay i { background: #b7c8ff; }
-.cw-mood-tired i { background: #9aa6c8; }
-.cw-mood-unwell i { background: #d9a3b0; }
-.cw-mood[aria-pressed=true] { background: color-mix(in srgb, var(--cw-glow) 26%, transparent); border-color: var(--cw-glow); }
-.cw-mood:focus-visible { outline: 2px solid var(--cw-glow); outline-offset: 2px; }
-.cw-hint { margin: 0; font-size: 9.5px; color: var(--muted, #a5b4c9); opacity: .8; }
 @media (max-height: 760px) {
-    .cw-panel { padding: 5px 8px; gap: 3px; }
-    .cw-hint { display: none; }
     .cw-whys { display: none; }
-    .cw-mood { min-height: 34px; }
 }
-html[data-theme=light] .cw-panel { background: color-mix(in srgb, var(--cw-glow) 14%, #fff); }
 
 @keyframes cwFlow { from { transform: translateX(0) scale(var(--s, 1)); } to { transform: translateX(var(--cw-run, 900%)) scale(var(--s, 1)); } }
 .cw-env-home .cw-rbc { --cw-run: 1150%; }

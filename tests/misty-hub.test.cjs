@@ -28,13 +28,11 @@ test('the card is the same Misty over the same world: cloned Home artwork, glass
     assert.ok(js.includes("#spBubble .sp-home-herb svg.tmg-plant"), 'clones the Home Misty');
     assert.ok(!/constellation|starfield|sp-stage|sp-portal/i.test(css) && !/sp-stage|sp-constellation|sp-portal/.test(js), 'no starfield or portal');
     assert.ok(/R2\.sheet\(html\(sayOverride\), \{ cls: 'wh-ms-ov mh-ov' \}\)/.test(js), 'a normal sheet over the live world');
-    for (const k of ['data-mh="mood"', 'data-mh="goodnight"', 'data-mh="forms"', 'data-mh="collection"', 'data-mh="glow"', 'mh-xp', 'role="progressbar"'])
+    for (const k of ['data-mh="goodnight"', 'data-mh="forms"', 'data-mh="collection"', 'data-mh="glow"', 'mh-xp', 'role="progressbar"'])
         assert.ok(js.includes(k), k);
 });
 
 test('readable text: dark ink on light fills, light ink on dark glass, nothing forced onto one line', () => {
-    assert.ok(/\.mh-moods button \{[^}]*background: rgba\(255, 255, 255, \.08\)[^}]*color: var\(--mh-ink\)/.test(css), 'mood chips: light text on glass');
-    assert.ok(/\.mh-moods button\[aria-pressed="true"\] \{ background: var\(--a\);[^}]*color: #06201a/.test(css), 'picked mood: dark text on mint');
     assert.ok(/\.mh-pri \{[^}]*color: #06201a/.test(css), 'Goodnight: dark text on mint');
     assert.ok(/html\.spirit-app #spHome \.sp-next, html\.spirit-app #spHome \.sp-next span \{ color: #06201a; \}/.test(css), 'Say goodnight in Today');
     assert.ok(!/white-space:\s*nowrap|text-overflow:\s*ellipsis/.test(css), 'no clipped lines');

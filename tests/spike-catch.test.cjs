@@ -100,10 +100,9 @@ test('spike lists split, search and "looks healthy" filter', () => {
     assert.deepEqual(healthy.spike.map(p => p.name), ['Bio Reiswaffeln']);
     assert.equal(C.split(items, S.assess, 'hafer', false).ok.length, 1);
 });
-test('herb world "How do you feel?" card is blue glass with readable text; files cached', () => {
+test('Oct 22: the herb world "How do you feel?" card is gone (no leftover styles); files cached', () => {
     const css = fs.readFileSync(path.join(root, 'spike-catch.css'), 'utf8');
-    assert.match(css, /\.cw-panel, html\[data-theme=light\] \.cw-panel \{/);
-    assert.match(css, /\.cw-panel \.cw-feel small[^{]*\{ color: #d6e7ff/);
+    assert.doesNotMatch(css, /cw-panel|cw-feel|cw-mood/);
     const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
     assert.ok(sw.includes('"spike-core.js", "spike-catch.js", "spike-catch.css"'));
 });

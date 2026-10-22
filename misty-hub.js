@@ -2,7 +2,7 @@
    Misty ... Nuke that and redesign it so it fits our whole design more." One clear Misty card in the app's own language:
    - the SAME Misty as on Home (her live Home artwork is cloned, not a second drawing), over the same live blue world
      (a normal glass sheet; no cosmic oval, no constellations)
-   - what she is up to, her level and XP, a readable mood check-in, Goodnight at night, and three doors:
+   - what she is up to, her level and XP, Goodnight at night, and three doors:
      Forms (evolution), Collection, Glow (aura / growth / discoveries)
    It opens on a LONG PRESS on Misty (tap stays pet/play) and wherever the old herb world used to open.
 
@@ -82,8 +82,6 @@
     };
     function html(sayOverride) {
         const xp = xpNow(), s = stageOf(xp), a = aura(), v = cell(), st = status();
-        const mood = v ? v.mood : '';
-        const moods = (W.LowiCell && W.LowiCell.MOODS) || ['good', 'okay', 'tired', 'unwell'];
         const say = sayOverride || line(v);
         const night = isNight(), gn = saidGoodnight();
         return '<div class="mh" id="mistyHub" data-noi18n style="--a:' + esc(a.a) + ';--b:' + esc(a.b) + '">' +
@@ -112,13 +110,8 @@
                 '<small>' + esc(s.next ? T(s.left + ' XP to ' + s.next, 'Noch ' + s.left + ' XP bis ' + s.next, 'Faltan ' + s.left + ' XP para ' + s.next) : T('Top level reached', 'H\u00f6chstes Level erreicht', 'Nivel m\u00e1ximo alcanzado')) + '</small>' +
             '</section>' : '') +
             advHtml() +
-            /* Oct 19 (E-man): "How do you feel? Why is that there? ... what is that supposed to do?" It is an optional check-in:
-               she mirrors your mood for MOOD_H (8) hours, nothing else reads it. So it says that, and sits last. */
-            '<section class="mh-card mh-mood" aria-label="' + esc(T('Tell ' + name() + ' how you feel', 'Sag ' + name() + ', wie du dich f\u00fchlst', 'Dile a ' + name() + ' c\u00f3mo te sientes')) + '">' +
-                '<h3>' + esc(T('Tell ' + name() + ' how you feel', 'Sag ' + name() + ', wie du dich f\u00fchlst', 'Dile a ' + name() + ' c\u00f3mo te sientes')) + '</h3>' +
-                '<p class="mh-mood-sub">' + esc(T('Optional. For the next 8 hours ' + name() + ' mirrors it: tired or unwell brings a calm, resting look, feeling good a brighter glow. Tap it again to clear it. No XP, it only changes the look and mood.', 'Freiwillig. Die n\u00e4chsten 8 Stunden spiegelt ' + name() + ' das: m\u00fcde oder unwohl bringt ein ruhiges, ausruhendes Aussehen, gut ein helleres Leuchten. Nochmal tippen hebt es auf. Keine XP, es \u00e4ndert nur Aussehen und Stimmung.', 'Opcional. Durante las pr\u00f3ximas 8 horas ' + name() + ' lo refleja: con sue\u00f1o o malestar, un aspecto tranquilo y de descanso; si te sientes bien, un brillo m\u00e1s intenso. Toca otra vez para quitarlo. Sin XP, solo cambia el aspecto y el \u00e1nimo.')) + '</p>' +
-                '<div class="mh-moods">' + moods.map(m => '<button type="button" data-mh="mood" data-mood="' + m + '" aria-pressed="' + (mood === m) + '">' + esc(cellCopy('m_' + m) || m) + '</button>').join('') + '</div>' +
-            '</section>' +
+            /* Oct 22 (E-man): the "Tell Misty how you feel" card that sat last is gone: "It's unnecessary because it's so hidden
+               nobody uses it." Nothing in the sheet overrides her look any more (cell-world.js clears an old saved mood). */
         '</div>';
     }
     /* Oct 17: Misty's energy scale and her way back (misty-scale.js), right under her words */
@@ -140,7 +133,7 @@
     function repaint(sayOverride) {
         const ex = sheet(); if (!ex) return;
         const t = D.createElement('div'); t.innerHTML = html(sayOverride);
-        /* BH-016: keep focus on the same button (mood, Glow, ...) instead of dropping it to the page */
+        /* BH-016: keep focus on the same button (Goodnight, Glow, ...) instead of dropping it to the page */
         if (W.LowiR2 && W.LowiR2.keepFocus) W.LowiR2.keepFocus(ex, t.firstChild); else ex.replaceWith(t.firstChild);
     }
     function close() { const ex = sheet(); const ov = ex && ex.closest('.r2-ov'); try { if (ov && W.LowiR2 && W.LowiR2.close) W.LowiR2.close(ov); else if (ov) ov.remove(); } catch (e) { ov && ov.remove(); } }
@@ -153,11 +146,7 @@
     D.addEventListener('click', e => {
         const b = e.target.closest && e.target.closest('#mistyHub [data-mh]'); if (!b) return;
         const k = b.dataset.mh;
-        if (k === 'mood') {
-            try { W.LowiCell && W.LowiCell.setMood(b.dataset.mood); } catch (x) { }
-            const v = cell();
-            repaint(v && v.mood ? cellCopy('thanks') : '');
-        } else if (k === 'goodnight') goodnight();
+        if (k === 'goodnight') goodnight();
         else if (k === 'forms') { try { if (W.LowiCompanion && W.LowiCompanion.open && W.LowiCompanion.open()) return; } catch (x) { } openDetails('grow'); }
         else if (k === 'collection') { const t = D.createElement('button'); t.type = 'button'; t.dataset.sp = 'collection'; t.hidden = true; D.body.appendChild(t); t.click(); t.remove(); }
         else if (k === 'glow') openDetails('aura');

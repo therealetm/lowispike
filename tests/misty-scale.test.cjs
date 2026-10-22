@@ -93,6 +93,16 @@ test('hunt power-ups (window.LowiMistyPower) count in the one formula, capped, a
     const p = X.plan(Object.assign({}, inp, { boost: pw.boost }), deps());
     const h = X.cardHTML(p, pw, { lang: 'en', name: 'Misty', E: S.ENERGY });
     assert.ok(h.includes('Hunt power') && h.includes('30/100') && h.includes('ms-boost'));
+    /* Oct 22: the hunt's own label ("Hunt power Lv 2") was appended after "Hunt power · Lv 2": the name read twice */
+    assert.ok(h.includes('Hunt power \u00b7 Lv 2</span>'), 'reads once: Hunt power · Lv 2 · 30/100');
+    assert.strictEqual(h.split('Hunt power').length - 1, 1, 'Hunt power appears once');
+    assert.ok(!h.includes('Glow shield'), 'the hunt label is not appended');
+    const L = { de: ['Jagd-Kraft', 'Lv', 'Jagdkraft'], es: ['Poder de caza', 'Nv', 'Poder de caza Nv'] };
+    for (const lg of ['de', 'es']) {
+        const hp = X.cardHTML(p, Object.assign({}, pw, { label: L[lg][2] + ' 2' }), { lang: lg, name: 'Misty', E: S.ENERGY });
+        assert.ok(hp.includes(L[lg][0] + ' \u00b7 ' + L[lg][1] + ' 2</span>'), lg);
+        assert.strictEqual(hp.split(L[lg][2] + ' 2').length - 1, 0, lg + ': the label is not appended');
+    }
 });
 
 test('kind copy in EN/DE/ES: every line filled, no banned words, no health claims', () => {

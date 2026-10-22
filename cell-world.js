@@ -1,8 +1,10 @@
 /* LOWiSPIKE living cell (Oct 15, 2026): the herb companion is drawn as a see-through, glowing cell, and its home is a
    bloodstream-like world that mirrors what the user logs. Only data the app already has is read: meal logs with the
    app's own spike verdict (lvl/r), the XP ledger (Move, fasting, water), today's water glasses, the sun meter (full +
-   garden trip, shown here as a journey through the body) and the local clock. Plus one optional mood tap (good / okay /
-   tired / unwell), saved in S.cell.mood with the account data. No XP for the mood tap, no medical claims.
+   garden trip, shown here as a journey through the body) and the local clock. No medical claims.
+   Oct 22 (E-man): the optional mood tap ("How do you feel?" here and "Tell Misty how you feel" in her sheet) is gone:
+   "it's so hidden nobody uses it". Nothing you tap overrides her look any more; an old saved S.cell.mood /
+   lowi.cell.mood is cleared once on load (dropOldMood).
    Stages, wardrobe pieces, XP and saved herb data stay as they are: the original plant SVG is still built and its face,
    hat, neck, glasses, halo, comet and pot effects are moved onto the cell. Pure model at the top: tests/cell-world.test.cjs. */
 (function () {
@@ -12,7 +14,6 @@
     const MIN = 60000, HOUR = 60 * MIN;
     const SPIKE_H = 4, MOVE_H = 2, LOWMEAL_H = 4, FAST_H = 8, MOOD_H = 8, WATER_GOAL = 6;
     const STATES = ['clear', 'calm', 'active', 'spiked', 'night', 'tired', 'unwell'];
-    const MOODS = ['good', 'okay', 'tired', 'unwell'];
     const pad = n => String(n).padStart(2, '0');
     const dayKey = t => { const d = new Date(t); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
     const clamp = x => Math.max(0, Math.min(1, x));
@@ -65,18 +66,16 @@
         if (input.sun && input.sun.full) sunFull = true;
         if (input.fasting) fast = Math.max(fast, 0.6);
         const water = Math.max(0, +input.water || 0);
-        const mood = input.mood && MOODS.indexOf(input.mood.v) >= 0 && now - (+input.mood.ts || 0) < MOOD_H * HOUR ? input.mood.v : '';
         const night = hour >= 23 || hour < 5;
         /* low energy from the existing body diary (1-5), if anything was ever logged there */
         const lowEnergy = input.energy != null && +input.energy > 0 && +input.energy <= 2;
-        let clear = clamp(Math.min(water / WATER_GOAL, 1) * 0.35 + low * 0.3 + fast * 0.2 + (sunFull ? 0.35 : 0) + (mood === 'good' ? 0.3 : 0) - spike * 0.6);
+        let clear = clamp(Math.min(water / WATER_GOAL, 1) * 0.35 + low * 0.3 + fast * 0.2 + (sunFull ? 0.35 : 0) - spike * 0.6);
         let state = 'calm';
-        if (mood === 'unwell') state = 'unwell';
-        else if (spike >= 0.35 && spike >= energy) state = 'spiked';
+        if (spike >= 0.35 && spike >= energy) state = 'spiked';
         else if (energy >= 0.35) state = 'active';
         else if (night) state = 'night';
-        else if (mood === 'tired' || lowEnergy) state = 'tired';
-        else if (clear >= 0.45 || mood === 'good') state = 'clear';
+        else if (lowEnergy) state = 'tired';
+        else if (clear >= 0.45) state = 'clear';
         const tired = state === 'night' ? 1 : state === 'tired' ? 0.7 : state === 'unwell' ? 0.6 : night ? 0.5 : 0;
         if (lastSpike) reasons.push({ k: 'spike', t: lastSpike.t || '', ago: Math.round((now - lastSpike.ts) / MIN) });
         if (lastMove) reasons.push({ k: 'move', ago: Math.round((now - lastMove.ts) / MIN) });
@@ -85,12 +84,11 @@
         if (low > 0) reasons.push({ k: 'low' });
         if (fast) reasons.push({ k: 'fast' });
         if (sunFull) reasons.push({ k: 'sun' });
-        if (mood) reasons.push({ k: 'mood', v: mood });
         const away = !!(input.sun && input.sun.away);
         const activity = away ? 'journey' : { active: 'pump', spiked: 'clean', night: 'yawn', tired: 'rest', unwell: 'repair', clear: 'glow', calm: 'drift' }[state];
         /* how fast the world flows, in seconds per pass (lower = faster) */
         const speed = { active: 1.8, calm: 9, clear: 10, spiked: 17, night: 22, tired: 16, unwell: 20 }[state];
-        return { state, spike: +spike.toFixed(3), energy: +energy.toFixed(3), clear: +clear.toFixed(3), tired, night, mood, water, fast: !!fast, sunFull, away, left: away ? +input.sun.left || 0 : 0, activity, speed, reasons };
+        return { state, spike: +spike.toFixed(3), energy: +energy.toFixed(3), clear: +clear.toFixed(3), tired, night, water, fast: !!fast, sunFull, away, left: away ? +input.sun.left || 0 : 0, activity, speed, reasons };
     }
 
     /* ---------- the cell, drawn as an SVG string (viewBox 0 0 260 310, same as the herb) ---------- */
@@ -220,7 +218,7 @@
             '<g class="lh-creature"><g class="lh-foliage cw-float">' + c.body + '<g class="cw-face" transform="' + c.faceT + '">' + faceAndPieces + '</g></g>' + dock + '</g>' + tail + '</svg>';
     }
 
-    const core = { STATES, MOODS, SPIKE_H, MOVE_H, MOOD_H, WATER_GOAL, verdict, kindOf, model, cellParts, ownParts, compose, dayKey };
+    const core = { STATES, SPIKE_H, MOVE_H, MOOD_H, WATER_GOAL, verdict, kindOf, model, cellParts, ownParts, compose, dayKey };
     if (!D) { if (typeof module !== 'undefined' && module.exports) module.exports = core; return; }
 
     /* ---------- copy ---------- */
@@ -258,11 +256,7 @@
         why_low: ['Low-spike meal', 'Low-Spike-Essen', 'Comida sin pico'],
         why_fast: ['Fasting step', 'Fasten-Etappe', 'Etapa de ayuno'],
         why_sun: ['Sun full', 'Sonne voll', 'Sol lleno'],
-        ago: ['ago', 'vor', 'hace'],
-        feel: ['How do you feel?', 'Wie fühlst du dich?', '¿Cómo te sientes?'],
-        m_good: ['Good', 'Gut', 'Bien'], m_okay: ['Okay', 'Okay', 'Normal'], m_tired: ['Tired', 'Müde', 'Con sueño'], m_unwell: ['Unwell', 'Unwohl', 'Mal'],
-        thanks: ['Got it, I’ll feel it with you.', 'Verstanden, ich fühl mit dir.', 'Entendido, lo siento contigo.'],
-        hint: ['Mirrors what you log. A picture, not a measurement.', 'Spiegelt, was du einträgst. Ein Bild, keine Messung.', 'Refleja lo que registras. Una imagen, no una medición.']
+        ago: ['ago', 'vor', 'hace']
     };
     const tr = k => (copy[k] || [k])[L()] || (copy[k] || [k])[0];
     const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -282,7 +276,7 @@
         let energy = null;
         try { const o = s.health && s.health.body && s.health.body.observations; if (Array.isArray(o)) { const x = o.filter(z => z && z.energy != null && now - z.ts < MOOD_H * HOUR).sort((p, q) => q.ts - p.ts)[0]; if (x) energy = +x.energy; } } catch (e) {}
         const fasting = !!(f && (f.start || f.startedAt || f.on) && !f.end);
-        return { now, logs: s.logs || [], ledger: s.ledger || s.xpLog || [], water: +(f.water && f.water[key]) || 0, fasting, sun, mood: s.cell && s.cell.mood, energy };
+        return { now, logs: s.logs || [], ledger: s.ledger || s.xpLog || [], water: +(f.water && f.water[key]) || 0, fasting, sun, energy };
     }
     function live(now) {
         now = now || Date.now();
@@ -345,44 +339,23 @@
     }
     function fmtLeft(ms) { const m = Math.max(0, Math.ceil(ms / MIN)); return Math.floor(m / 60) + ':' + pad(m % 60); }
     function reasonsHTML(v) {
-        return v.reasons.filter(r => r.k !== 'mood').slice(0, 4).map(r => {
+        return v.reasons.slice(0, 4).map(r => {
             let t = tr('why_' + r.k);
             if (r.k === 'water') t = r.n + ' ' + t;
             if ((r.k === 'spike' || r.k === 'move') && r.ago != null) t += ' · ' + (L() === 0 ? (r.ago < 60 ? r.ago + ' min' : Math.round(r.ago / 60) + ' h') + ' ' + tr('ago') : tr('ago') + ' ' + (r.ago < 60 ? r.ago + ' min' : Math.round(r.ago / 60) + ' h'));
             return '<span class="cw-why cw-why-' + r.k + '">' + esc(t) + '</span>';
         }).join('');
     }
-    let panel = null, pill = null, lastSig = '', said = '';
-    function ensurePanel(world) {
-        const stage = world && world.querySelector('.sp-stage');
-        if (!stage) return null;
-        if (!panel) {
-            panel = D.createElement('section');
-            panel.className = 'cw-panel';
-            panel.setAttribute('aria-label', tr('world'));
-            panel.addEventListener('click', e => {
-                const b = e.target.closest && e.target.closest('[data-cw-mood]');
-                if (!b) return;
-                e.preventDefault();
-                e.stopPropagation();
-                setMood(b.dataset.cwMood);
-            });
-        }
-        if (panel.previousElementSibling !== stage) { stage.insertAdjacentElement('afterend', panel); lastSig = ''; }
-        return panel;
-    }
-    function setMood(v) {
-        if (MOODS.indexOf(v) < 0) return;
-        const s = S();
-        if (!s.cell || typeof s.cell !== 'object') s.cell = {};
-        const cur = s.cell.mood;
-        /* tap the same chip again to clear it */
-        if (cur && cur.v === v && Date.now() - cur.ts < MOOD_H * HOUR) delete s.cell.mood;
-        else s.cell.mood = { v, ts: Date.now() };
-        save();
-        try { localStorage.setItem('lowi.cell.mood', JSON.stringify(s.cell.mood || null)); } catch (e) {}
-        render(true);
-        if (s.cell.mood) speak(tr('thanks'));
+    let pill = null, lastSig = '', said = '', moodDropped = false;
+    /* Oct 22: the mood tap was removed; clear an old saved choice once so nothing stale lingers in the account data */
+    function dropOldMood() {
+        if (moodDropped) return;
+        try { localStorage.removeItem('lowi.cell.mood'); } catch (e) {}
+        try {
+            const s = S(); if (!s || !Object.keys(s).length) return; /* account data not loaded yet: try again on the next render */
+            moodDropped = true;
+            if (s.cell && typeof s.cell === 'object' && 'mood' in s.cell) { delete s.cell.mood; save(); }
+        } catch (e) {}
     }
     function speak(text) {
         const sp = D.querySelector('#spWorld .sp-speech');
@@ -393,6 +366,7 @@
         speak.t = setTimeout(() => sp.classList.remove('cw-say'), W.LowiReadTime ? W.LowiReadTime.atLeast(text, 4200) : 4200); /* reading time */
     }
     function render(force) {
+        dropOldMood();
         if (!wrap()) return;
         const v = live(), root = D.documentElement;
         const home = D.getElementById('spHome'), world = D.getElementById('spWorld');
@@ -416,17 +390,6 @@
             const base = bubble.getAttribute('aria-label') || '', clean = base.split(' · ')[0];
             const al = clean + ' · ' + label;
             if (base !== al) bubble.setAttribute('aria-label', al);
-        }
-        const p = ensurePanel(world);
-        if (p) {
-            const mood = v.mood;
-            const sig = [mood, lang()].join('|');
-            if (force || sig !== lastSig) {
-                lastSig = sig;
-                p.dataset.state = v.state;
-                p.innerHTML = '<div class="cw-feel" role="group" aria-label="' + esc(tr('feel')) + '"><small>' + esc(tr('feel')) + '</small><div>' + MOODS.map(m => '<button type="button" data-cw-mood="' + m + '" aria-pressed="' + (mood === m) + '" class="cw-mood cw-mood-' + m + '"><i aria-hidden="true"></i>' + esc(tr('m_' + m)) + '</button>').join('') + '</div></div>' +
-                    '<p class="cw-hint">' + esc(tr('hint')) + '</p>';
-            }
         }
         if (stage) {
             let tag = stage.querySelector(':scope > .cw-tag');
@@ -485,7 +448,7 @@
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 
     W.LowiCell = Object.assign({}, core, {
-        live, render, setMood, copy,
+        live, render, copy,
         simulate(st) { sim = st || ''; lastSig = ''; said = ''; render(true); return live(); }
     });
     if (typeof module !== 'undefined' && module.exports) module.exports = W.LowiCell;

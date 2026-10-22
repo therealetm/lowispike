@@ -67,12 +67,12 @@ test('water, low-spike meals, fasting and a full sun clear the world', () => {
     assert.equal(plain.reasons.length, 0);
 });
 
-test('the optional mood tap is mirrored and expires', () => {
-    assert.equal(C.model({ now: NOON, mood: { v: 'unwell', ts: NOON - H } }).state, 'unwell');
-    assert.equal(C.model({ now: NOON, mood: { v: 'tired', ts: NOON - H } }).state, 'tired');
-    assert.equal(C.model({ now: NOON, mood: { v: 'good', ts: NOON - H } }).state, 'clear');
-    assert.equal(C.model({ now: NOON, mood: { v: 'tired', ts: NOON - 9 * H } }).state, 'calm', 'old moods drop off');
-    assert.equal(C.model({ now: NOON, mood: { v: 'grumpy', ts: NOON } }).mood, '');
+test('Oct 22: the mood tap is gone; an old saved mood no longer changes her look', () => {
+    assert.equal(C.model({ now: NOON, mood: { v: 'unwell', ts: NOON - H } }).state, 'calm');
+    assert.equal(C.model({ now: NOON, mood: { v: 'tired', ts: NOON - H } }).state, 'calm');
+    assert.equal(C.model({ now: NOON, mood: { v: 'good', ts: NOON - H } }).state, 'calm');
+    assert.ok(!('mood' in C.model({ now: NOON })), 'no mood in the model');
+    assert.ok(!('MOODS' in C) && !('setMood' in C), 'no mood API');
     assert.equal(C.model({ now: NOON, energy: 2 }).state, 'tired', 'existing body diary energy is used when present');
 });
 
@@ -123,13 +123,12 @@ test('copy in English, German and Spanish, with no health claims', () => {
     const m = js.match(/const copy = \{([\s\S]*?)\n    \};/);
     assert.ok(m);
     const copy = Function('return {' + m[1] + '}')();
-    for (const k of ['clear', 'calm', 'active', 'spiked', 'night', 'tired', 'unwell', 'feel', 'm_good', 'm_okay', 'm_tired', 'm_unwell', 'hint', 'act_journey', 'act_pump', 'act_clean', 'act_yawn', 'act_glow', 'act_drift', 'act_repair', 'act_rest']) {
+    for (const k of ['clear', 'calm', 'active', 'spiked', 'night', 'tired', 'unwell', 'act_journey', 'act_pump', 'act_clean', 'act_yawn', 'act_glow', 'act_drift', 'act_repair', 'act_rest']) {
         assert.equal(copy[k].length, 3, k);
         copy[k].forEach(t => assert.ok(t && t.length > 1, k));
     }
     const all = Object.values(copy).flat().join(' ').toLowerCase();
     for (const bad of ['insulin level', 'blood sugar level', 'heal', 'cure', 'diagnos', 'disease', 'krankheit', 'heilt', 'blutzuckerwert', 'enfermedad', 'cura ']) assert.ok(!all.includes(bad), bad);
-    assert.match(copy.hint[1], /keine Messung/);
 });
 
 test('reduced motion stops every animation, and nothing heavy is loaded', () => {
@@ -139,13 +138,15 @@ test('reduced motion stops every animation, and nothing heavy is loaded', () => 
     assert.doesNotMatch(css, /animation[^;]*(width|height|left|top)\b/, 'only transform and opacity animate');
 });
 
-test('loaded before spirit.js, cached by the service worker, mood saved without XP', () => {
+test('loaded before spirit.js, cached by the service worker; an old saved mood is cleared once', () => {
     const ui = fs.readFileSync(path.join(root, 'apple-ui.js'), 'utf8');
     assert.match(ui, /'herb-tamagotchi-mount-fix\.js','cell-world\.js','herb-touch\.js','spirit\.js'/);
     const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
     assert.ok((sw.match(/"cell-world\.js", "cell-world\.css"/g) || []).length >= 2);
-    const setMood = js.slice(js.indexOf('function setMood'), js.indexOf('function speak'));
-    assert.match(setMood, /s\.cell\.mood = \{ v, ts: Date\.now\(\) \}/);
-    assert.doesNotMatch(setMood, /award|xp/i);
+    assert.ok(!/function setMood|data-cw-mood|cw-feel|cw-panel/.test(js), 'no mood chips under the world');
+    const drop = js.slice(js.indexOf('function dropOldMood'), js.indexOf('function speak'));
+    assert.match(drop, /localStorage\.removeItem\('lowi\.cell\.mood'\)/);
+    assert.match(drop, /delete s\.cell\.mood; save\(\);/);
+    assert.match(js, /function render\(force\) \{\n        dropOldMood\(\);/);
     assert.match(js, /opts && opts\.crop\) return out/, 'wardrobe thumbnails stay cropped pieces');
 });

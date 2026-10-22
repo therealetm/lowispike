@@ -55,10 +55,6 @@ html .r2-ov.mh-ov .r2-sh, html.wh-on .r2-ov.mh-ov:not(.full) .r2-sh { background
 .mh-bar > i { display: block; height: 100%; min-width: 4px; border-radius: inherit; background: linear-gradient(90deg, var(--a), var(--b)); }
 .mh-xp small { display: block; font-size: 13px; color: var(--mh-ink-2); }
 
-.mh-mood h3 { font-size: 15.5px; font-weight: 600; margin-bottom: 10px; }
-.mh-moods { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
-.mh-moods button { min-height: 44px; padding: 6px 4px; border-radius: 14px; border: .5px solid var(--mh-rim); background: rgba(255, 255, 255, .08); color: var(--mh-ink); font: inherit; font-size: 14px; font-weight: 600; line-height: 1.15; cursor: pointer; overflow-wrap: anywhere; }
-.mh-moods button[aria-pressed="true"] { background: var(--a); border-color: transparent; color: #06201a; }
 
 /* the one filled button: mint fill, dark ink (like See my fast and Scan) */
 .mh-pri { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 50px; padding: 10px 16px; border: 0; border-radius: 16px; background: linear-gradient(135deg, var(--a), var(--b)); color: #06201a; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; }
@@ -95,5 +91,4 @@ html[data-theme="light"].wh-home .wh-tiles .g2h-tile small, html[data-theme="lig
 /* Community chat (dark glass): the send arrow while the box is empty was grey on grey (still disabled, now readable); small meta line and chips at full secondary ink */
 html.lg #cmSend:disabled, html #cmPaneChat #cmSend:disabled { opacity: 1 !important; color: rgba(235, 235, 245, .80) !important; background: rgba(118, 118, 128, .36) !important; }
 html #cmPaneChat .cs-compose-meta, html #cmPaneChat[data-spirit-chat] .cg-chip:not(.on), html #cmPaneChat :is(.cm-chip, .cm-mini) { color: rgba(235, 235, 245, .82) !important; opacity: 1; }
-.mh-mood-sub { font-size: 13px; line-height: 1.35; color: var(--mh-ink-2); margin: -4px 0 10px; }
 .mh-adv li[data-been="1"] span { color: var(--mh-ink); }

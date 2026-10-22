@@ -811,6 +811,7 @@ function roomVV(){
  if((R.style.getPropertyValue&&R.style.getPropertyValue('--cr-vv-top'))!==top+'px')R.style.setProperty('--cr-vv-top',top+'px');
  if((R.style.getPropertyValue&&R.style.getPropertyValue('--cr-vv-h'))!==h+'px')R.style.setProperty('--cr-vv-h',h+'px');
  const pane=D.getElementById('cmPaneChat');if(!(pane&&pane.hasAttribute('data-room')&&active()))return;
+ const cmp=pane.querySelector('.cm-compose'),ch=cmp&&Math.round(cmp.getBoundingClientRect().height);if(ch&&pane.style.getPropertyValue('--cr-comp-h')!==ch+'px')pane.style.setProperty('--cr-comp-h',ch+'px');
  for(const el of [D.scrollingElement,D.getElementById('app'),D.getElementById('main'),D.getElementById('tab-foryou'),pane.closest('.ls-pager'),D.getElementById('cmTrack'),pane,D.getElementById('cgThread')])if(el&&(el.scrollTop||el.scrollLeft)){el.scrollTop=0;el.scrollLeft=0;}
  if(list&&atEnd){list.scrollTop=list.scrollHeight;(W.requestAnimationFrame||setTimeout)(()=>{list.scrollTop=list.scrollHeight;});}
  }catch(e){}

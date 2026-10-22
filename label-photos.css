@@ -1,0 +1,20 @@
+/* label-photos (scanfe-f2): missing-data ask on the scan card + the label photo sheet. Brand blues only, liquid glass. */
+.lp-ask{margin:12px 0 4px;padding:12px;border-radius:16px;background:rgba(10,132,255,.08);border:1px solid rgba(90,169,255,.28);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.lp-askb{width:100%;min-height:44px;background:rgba(10,132,255,.16);color:var(--text,inherit);border:1px solid rgba(90,169,255,.45)}
+.lp-asks{margin-top:6px;line-height:1.35}
+.lp-sheet h2{margin:0 0 6px}
+.lp-slots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+.lp-slot{display:flex;flex-direction:column;gap:6px;min-width:0;padding:10px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid rgba(143,231,255,.18)}
+.lp-slot.need{border-color:rgba(10,132,255,.6)}
+.lp-slot.got{border-color:rgba(143,231,255,.55)}
+.lp-shot{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:76px;text-align:center;font-size:13px;line-height:1.25;cursor:pointer;border-radius:12px;background:rgba(10,132,255,.1)}
+.lp-shot em{display:block;font-style:normal;font-size:11px;color:#5AA9FF}
+.lp-shot input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+.lp-cam{width:26px;height:20px;border-radius:6px;border:2px solid #5AA9FF;position:relative}
+.lp-cam::after{content:"";position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;border:2px solid #8FE7FF}
+.lp-prev{width:100%;max-height:120px;object-fit:cover;border-radius:10px}
+.lp-st{min-height:1em;line-height:1.3;overflow-wrap:anywhere}
+.lp-form .input.lp-read{border-color:#8FE7FF;box-shadow:0 0 0 2px rgba(143,231,255,.25)}
+.lp-warn:not(:empty){padding:10px 12px;border-radius:12px;background:rgba(90,169,255,.14);border:1px solid rgba(90,169,255,.45);margin:8px 0}
+.lp-save{width:100%;margin-top:6px}
+@media (max-width:360px){.lp-slots{grid-template-columns:1fr}}

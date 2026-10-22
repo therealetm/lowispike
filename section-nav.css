@@ -14,5 +14,8 @@ html.lt .sec-x{color:#0d2440;background:rgba(255,255,255,.72);border-color:rgba(
 /* a bloom left open on Home waits, hidden, under the page */
 html.sec-open .hb2-bloom{visibility:hidden!important}
 html.sec-open.b3-camon .sec-x, html.sec-open.mf-on .sec-x, html.sec-open.sp-open .sec-x{display:none}
+/* Oct 22 2026 (Emmanuel's screenshot: the round arrow sat on the Account "Back" pill): inside a Profile part the header's Back pill is
+   the one back control; the round arrow shows again on the overview, where it goes Home */
+html.g2e-on.g2e-open .sec-x{display:none!important}
 /* the page being swiped away casts a soft edge shadow, like iOS */
 html.sec-swiping #main > .tab.active{box-shadow:-12px 0 24px rgba(0,0,0,.35)}

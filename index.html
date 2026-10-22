@@ -18986,7 +18986,7 @@ function tilesHTML(have, t){
 /* ---- open a part as its own screen ---- */
 function openPanel(k){
   const t = tab(); if (!on() || !t || !ORDER.includes(k)) return;
-  addL(); H.setAttribute("data-g2e-k", k); H.classList.add("g2e-open");
+  addL(); wasShown = shown(t); H.setAttribute("data-g2e-k", k); H.classList.add("g2e-open");
   pass(); t.scrollTop = 0;
 }
 function closePanel(){
@@ -19023,13 +19023,16 @@ function fit(t){
 }
 
 /* ---- the pass ---- */
-let raf = 0, busy = false, moT = null, moR = null, hooked = null;
+let raf = 0, busy = false, moT = null, moR = null, hooked = null, wasShown = false;
 function schedule(){ if (raf || busy) return; raf = requestAnimationFrame(() => { raf = 0; pass(); }); }
 function pass(){
   const t = tab();
   busy = true;
   try {
     addL();
+    const vis = !!t && shown(t);
+    if (vis && !wasShown && H.classList.contains("g2e-open")) { H.classList.remove("g2e-open"); H.removeAttribute("data-g2e-k"); } /* Oct 22: no last-panel memory */
+    wasShown = vis;
     const want = !!t && phone() && shown(t) && !H.classList.contains("g2e-full") && !!q(t, ":scope > .r2-hero");
     if (want !== on()) H.classList.toggle("g2e-on", want);
     if (!want) { LV.forEach(c => H.classList.remove(c)); eFitKey = ""; if (H.classList.contains("g2e-open") && !(t && shown(t))) { H.classList.remove("g2e-open"); H.removeAttribute("data-g2e-k"); } return; }
@@ -19067,7 +19070,16 @@ function boot(){
   D.addEventListener("click", () => setTimeout(() => { hook(); schedule(); }, 60), true);
   setInterval(() => { hook(); schedule(); }, 2000);
 }
-window.LowiG2E = {open:openPanel, close:closePanel, fit:() => fit(tab()), state:() => ({on:on(), open:H.getAttribute("data-g2e-k") || null, level:LV.filter(c => H.classList.contains(c)).length, tiles:Array.from(D.querySelectorAll("#g2eTiles [data-g2e-open]")).map(b => b.dataset.g2eOpen)})};
+/* Oct 22 2026 (Emmanuel: "one click on account and then you see this overview ... so it's more übersichtlich"): every way into
+   Profile (Settings > Account / Me, the profile button, a deep link) lands on the overview, never on a sub-panel. A sub-panel only
+   opens from its tile here, and Profile never remembers which one was open last. */
+function overview(){
+  if (H.classList.contains("g2e-open")) { H.classList.remove("g2e-open"); H.removeAttribute("data-g2e-k"); }
+  try { const cur = window.LowiHost && LowiHost.tab ? LowiHost.tab() : (typeof TAB !== "undefined" ? TAB : ""); if (cur !== "profile") { if (typeof window.lowiOpen === "function") window.lowiOpen("profile"); else if (typeof window.goTab === "function") window.goTab("profile"); } } catch(e){}
+  if (H.classList.contains("g2e-open")) { H.classList.remove("g2e-open"); H.removeAttribute("data-g2e-k"); }
+  const t = tab(); if (t) t.scrollTop = 0; schedule();
+}
+window.LowiG2E = {open:openPanel, close:closePanel, overview, fit:() => fit(tab()), state:() => ({on:on(), open:H.getAttribute("data-g2e-k") || null, level:LV.filter(c => H.classList.contains(c)).length, tiles:Array.from(D.querySelectorAll("#g2eTiles [data-g2e-open]")).map(b => b.dataset.g2eOpen)})};
 if (D.readyState === "loading") D.addEventListener("DOMContentLoaded", boot); else boot();
 })();
 </script>

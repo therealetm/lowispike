@@ -94,6 +94,8 @@
     /* Oct 22 (item 33): inside a Community chat room, back (edge swipe, phone back) went to the channel list first.
        Oct 22 (item 36): the channel list is gone; see below. */
     function innerBack() {
+        /* Oct 22 2026: a Profile part (Account, Health, ...) goes back to the Profile overview first, like its Back button */
+        if (tabOf() === 'profile' && H.classList.contains('g2e-open')) { try { W.LowiG2E.close(); return true; } catch (e) { return false; } }
         if (tabOf() !== 'foryou' || !H.classList.contains('rm-room-open')) return false;
         /* item 36: the chat has no channel list behind it any more. Back goes to the Community tab you came from (LowiRoomsUI.back),
            else this returns false and Community closes. */

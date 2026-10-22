@@ -270,20 +270,14 @@
     const fn = (o, k) => o && typeof o[k] === 'function';
     const clickSel = sel => () => { const el = $(sel); if (el) el.click(); };
     const goTab = tab => () => { if (fn(root, 'lowiOpen')) root.lowiOpen(tab); else if (fn(root, 'goTab')) root.goTab(tab); };
-    const profileTile = k => () => {
-        goTab('profile')();
-        let n = 0; const tryOpen = () => {
-            const G = root.LowiG2E, st = G && fn(G, 'state') ? G.state() : null;
-            if (st && st.on && (st.tiles || []).includes(k)) { G.open(k); return; }
-            if (++n < 50) setTimeout(tryOpen, 80);
-        };
-        setTimeout(tryOpen, 30);
-    };
     const tabExists = tab => fn(root, 'goTab') && !!D.getElementById('tab-' + tab);
+    /* Oct 22 2026 (Emmanuel: "one click on account and then you see this overview"): Account, Me and Look & sound open the Profile
+       overview (picture, level, the tiles), never a sub-panel straight away; the tile there opens the part. */
+    const profileHome = () => { const G = root.LowiG2E; if (G && fn(G, 'overview')) { G.overview(); return; } goTab('profile')(); };
     const ROUTES = {
-        me: { has: () => tabExists('profile'), run: goTab('profile') },
-        look: { has: () => tabExists('profile') && !!root.LowiG2E, run: profileTile('look') },
-        account: { has: () => tabExists('profile') && !!root.LowiG2E, run: profileTile('acct') },
+        me: { has: () => tabExists('profile'), run: profileHome },
+        look: { has: () => tabExists('profile') && !!root.LowiG2E, run: profileHome },
+        account: { has: () => tabExists('profile') && !!root.LowiG2E, run: profileHome },
         today: { has: () => !!$('#whHud .wh-todaybtn'), run: clickSel('#whHud .wh-todaybtn') },
         community: { has: () => tabExists('foryou'), run: goTab('foryou') },
         care: { has: () => !!(root.LowiR3F && fn(root.LowiR3F, 'openBoardTab')), run: () => root.LowiR3F.openBoardTab() },

@@ -57,6 +57,9 @@ html[data-theme=light] body #tab-foryou #cmPaneChat#cmPaneChat[data-room]{
   --cr-send-c:#1668dc;--cr-send-g:linear-gradient(135deg,#1668dc,#0b5bbf);--cr-send-ic:#ffffff;
   --cr-float-sh:0 4px 16px -6px rgba(15,23,42,.2)}
 
+/* 22 Oct (item 41): in a room the app is exactly as tall as what you can see (visual viewport, set by community-chat.js roomVV):
+   above Safari's toolbar at rest, and right on top of the keyboard while typing, so the composer is never cut off or hidden. */
+html.cr-room:has(#tab-foryou.active) #app{top:var(--cr-vv-top,0px)!important;bottom:auto!important;height:var(--cr-vv-h,100%)!important}
 /* ---- shell (item 38): the pane keeps the padding it has on the other tabs; the room is the rounded box under the tab bar and the
    composer is the bottom of that same box (in the flow, so the keyboard only shortens the box) ---- */
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cp-room.cg-room#cpRoom{flex:1 1 auto!important;min-height:0!important;margin:0!important;border:1px solid rgba(143,231,255,.3)!important;border-bottom:0!important;border-radius:28px 28px 0 0!important;overflow:hidden!important;width:100%!important;max-width:760px!important;box-shadow:none!important;background:var(--cr-canvas-c)!important}
@@ -94,7 +97,7 @@ html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-head .cr-members{gri
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-head .cr-members[aria-expanded=true]{box-shadow:inset 0 0 0 1.5px var(--cr-acc),var(--cr-float-sh)!important}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-mcount{position:absolute;top:-4px;right:-5px;min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:var(--cr-send-c);background-image:var(--cr-send-g);color:var(--cr-send-ic);font-size:10.5px;font-weight:700;line-height:19px;text-align:center;box-shadow:none}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-mcount:empty{display:none}
-html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-head .cr-id{grid-column:2;justify-self:center;display:flex!important;align-items:center;gap:8px;min-width:0;max-width:100%;height:48px;padding:4px 18px 4px 6px;border:0!important;border-radius:24px;
+html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-head .cr-id{grid-column:2;justify-self:center;display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;overflow:hidden;align-items:center;gap:8px;min-width:0;max-width:100%;height:48px;padding:4px 18px 4px 6px;border:0!important;border-radius:24px;
   background:var(--cr-glass)!important;box-shadow:inset 0 0 0 .5px var(--cr-hair),var(--cr-float-sh)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-ic{flex:none;display:grid!important;place-items:center;width:36px;height:36px;border-radius:50%;font-size:19px;line-height:1;color:#ffffff;background:linear-gradient(135deg,#1668dc,#0b5bbf);box-shadow:none}
 html body #tab-foryou #cmPaneChat#cmPaneChat[data-room] .cr-ic svg{width:20px;height:20px}

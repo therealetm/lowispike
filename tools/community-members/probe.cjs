@@ -31,6 +31,7 @@ function layout() {
   const hit = (a, b) => a && b && a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1;
   const out = { errs: [] }, page = box(q('#crMem')), thread = box(q('#cgThread'));
   if (!page) { out.errs.push('members page not shown'); return out; }
+  { const e = q('#crMem'), cs = getComputedStyle(e), pe = e.offsetParent; out.dbg = { pos: cs.position, top: cs.top, z: cs.zIndex, anim: cs.animationName, parent: e.parentElement.id, op: pe && (pe.id || pe.className), sheet: [...document.styleSheets].some(x => /community-members\.css/.test(x.href || '')) }; }
   if (thread && (Math.abs(page.top - thread.top) > 1 || Math.abs(page.height - thread.height) > 1 || Math.abs(page.width - thread.width) > 1)) out.errs.push('page does not cover the room ' + JSON.stringify([page.top, page.height, thread.top, thread.height]));
   if (q('#crCrew') && q('#crCrew').hasAttribute('data-open')) out.errs.push('old Recent voices card is open');
   for (const s of ['.cm-compose', '#crMembers', '.cr-pin']) { const b = box(q(s)); if (b) { const top = document.elementFromPoint((b.left + b.right) / 2, (b.top + b.bottom) / 2); if (top && !top.closest('#crMem')) out.errs.push(s + ' still on top of the page'); } }
@@ -69,7 +70,7 @@ async function run(device, light) {
     await p.locator('#crMembers').click({ timeout: 5000, force: true }).catch(e => fail(W, 'members tap: ' + String(e.message).replace(/\s+/g, ' ').slice(-300)));
     await sleep(700); await theme(); await sleep(200);
     await R.shot(path.join(OUT, tag + '-members.png'));
-    const L = await p.evaluate(layout); notes.push(W + ' ' + JSON.stringify({ title: L.title, badge: L.badge, rows: L.rows }));
+    const L = await p.evaluate(layout); notes.push(W + ' ' + JSON.stringify({ title: L.title, badge: L.badge, rows: L.rows, dbg: L.dbg })); console.log(W, JSON.stringify(L.dbg));
     for (const e of L.errs) fail(W, e);
     const c = await p.evaluate(contrast); notes.push(W + ' texts ' + c.n); if (c.bad.length) fail(W, 'low contrast: ' + c.bad.slice(0, 6).join(' | '));
     const first = await p.evaluate(() => { const b = document.querySelector('#crMem .cr-mrow .cr-mn b'); return b ? b.textContent : ''; });

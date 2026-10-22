@@ -5,7 +5,7 @@ html body #cmPaneChat#cmPaneChat #crMem.cr-mem[hidden]{display:none!important}
 /* community-room.css gives every child of the room position:relative (ids 2, classes 3); the page's own id wins */
 html body #cmPaneChat#cmPaneChat #crMem.cr-mem{position:absolute!important;inset:0!important;z-index:40!important;display:flex;flex-direction:column;min-height:0;overflow:hidden;
   background:var(--cr-canvas,#060e26);background-color:var(--cr-canvas-c,#060e26);color:var(--cr-text,#eef3ff);
-  font:inherit;animation:crMemIn .34s cubic-bezier(.2,.9,.25,1) both}
+  font:inherit;animation:crMemIn .34s cubic-bezier(.2,.9,.25,1)}
 @keyframes crMemIn{from{transform:translateX(100%);opacity:.6}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){html body #cmPaneChat#cmPaneChat #crMem.cr-mem{animation:none}}
 html body #cmPaneChat#cmPaneChat .cr-memh{flex:0 0 auto;display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:6px;padding:6px 12px 6px}

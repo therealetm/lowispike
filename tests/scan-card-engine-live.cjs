@@ -50,6 +50,10 @@ const BAD = /no blood sugar spike|kein Blutzucker-Spike|no te sube el azúcar|No
       log.dataTheme = await ev(() => document.documentElement.dataset.theme);
       log.engine = await ev(() => window.LowiFoodEngine && LowiFoodEngine.VERSION);
       log.reveal = await ev(() => window.LowiDex && typeof LowiDex.reveal);
+      // scanfe-e: quality / cravings / reasons / alternative ride on scanFood in the real page (not shown until g1).
+      log.assess = await ev(() => { try { const o = LowiFoodEngine.scanFood({name: 'Ültje Süß & Salzig', unit: 'g', per100: {kcal: 517, fat: 33, carbs: 36, sugar: 29, fibre: 5.6, protein: 16, salt: 1.1}}, 30);
+        return {loaded: !!window.LowiFoodAssess, verdict: o.verdict, quality: o.quality && o.quality.key, reasons: (o.reasons || []).map(r => r.key), alt: o.alternative && o.alternative.key}; } catch (e) { return {error: String(e)}; } });
+      if (!log.assess || !log.assess.loaded || log.assess.alt !== 'sweet_nut_snack' || !(log.assess.reasons || []).length) fails.push('food assess not wired: ' + JSON.stringify(log.assess));
       if (log.reveal !== 'function') throw new Error('LowiDex.reveal is not reachable');
       for (const lang of langs) {
         await ev(l => { try { LowiLang.set(l); } catch (e) { } }, lang); await sleep(500);
@@ -85,7 +89,7 @@ const BAD = /no blood sugar spike|kein Blutzucker-Spike|no te sube el azúcar|No
       }
     } catch (e) { fails.push('run: ' + e.message.slice(0, 200)); }
     if (errs.length) fails.push('page errors: ' + errs.slice(0, 3).join(' | '));
-    console.log((fails.length ? 'FAIL ' : 'PASS ') + v + ' ' + JSON.stringify({ theme: log.dataTheme, engine: log.engine, cards: log.cards.length }));
+    console.log((fails.length ? 'FAIL ' : 'PASS ') + v + ' ' + JSON.stringify({ theme: log.dataTheme, engine: log.engine, cards: log.cards.length, assess: log.assess }));
     log.cards.filter(c => /ultje|skyr/.test(c.tag)).slice(0, 6).forEach(c => console.log('   ' + c.tag + ' | ' + c.head + ' | ' + c.why));
     fails.forEach(f => console.log('   - ' + f)); if (fails.length) fail++;
     await browser.close();

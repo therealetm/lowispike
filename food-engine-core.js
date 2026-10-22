@@ -23,7 +23,7 @@
 })(typeof window !== 'undefined' ? window : null, function () {
     'use strict';
 
-    const VERSION = 'food-engine-core d 2026-10-22';
+    const VERSION = 'food-engine-core e 2026-10-22';
     const NUTRIENTS = ['carbs', 'sugar', 'fibre', 'protein', 'fat', 'kcal', 'salt'];
     // Short keys used across the app (LowiSpikeCore facts, data/shop columns) map onto the engine's names.
     const ALIAS = {c: 'carbs', s: 'sugar', f: 'fibre', fiber: 'fibre', p: 'protein', k: 'kcal', energy: 'kcal'};
@@ -169,9 +169,10 @@
     // scanFood (scanfe-c/d): one call for a product. Ingredient flags come from ingredient-core.js (window.LowiIngredients),
     // the JA / SELTEN / NEIN verdict from food-policy-core.js (window.LowiFoodPolicy, rules in
     // data/food-policy/lowispike-policy.v1.json). confidence stays null until the confidence step (scanfe-f1).
+    // quality / cravings / satiety / reasons / alternative come from food-assess-core.js (window.LowiFoodAssess, scanfe-e).
     // product: {name, brand, barcode, unit, per100, ingredients, categories, claims, evidence}; serving: grams or
     // {userG, manufacturerG, group}; ctx: {profile: {allergies: [EU-14 keys], avoid: [policy category keys]}}.
-    let ING = null, POL = null;
+    let ING = null, POL = null, ASS = null;
     function lib(name, file) {
         if (typeof window !== 'undefined' && window[name]) return window[name];
         if (typeof require === 'function') { try { return require(file); } catch (e) { return null; } }
@@ -181,21 +182,34 @@
         const p = product || {};
         ING = ING || lib('LowiIngredients', './ingredient-core.js');
         POL = POL || lib('LowiFoodPolicy', './food-policy-core.js');
+        ASS = ASS || lib('LowiFoodAssess', './food-assess-core.js');
         const val = validateNutrition(p.per100, p.unit);
         const srv = calculateServing(val, serving == null ? {manufacturerG: p.servingG, group: p.group} : serving);
         const glucose = estimateGlucoseImpact({serving: srv, category: {liquid: p.unit === 'ml'}, evidence: p.evidence, withMeal: !!(ctx && ctx.withMeal)});
         const ingredients = ING ? ING.analyzeIngredients(p.ingredients, {name: p.name, brand: p.brand, claims: p.claims}) : null;
         const policy = POL ? POL.applyPolicy({product: p, ingredients, glucose, serving: srv, profile: ctx && ctx.profile}) : null;
+        // Quality, cravings + satiety, reasons and the better alternative (scanfe-e, food-assess-core.js). A craving
+        // trigger the user reported (ctx.profile.triggers) makes the verdict one step stricter; policy.verdict keeps the
+        // rules-only verdict for the audit trail.
+        const assess = ASS && policy ? ASS.assess({product: p, per100: val.per100, unit: val.unit, serving: srv, glucose, ingredients, policy, profile: ctx && ctx.profile}) : null;
+        const verdict = policy ? (assess && assess.personal.changed ? assess.personal.verdict : policy.verdict) : null;
         return {
             engine: VERSION,
             policyVersion: policy ? policy.policyVersion : null,
-            verdict: policy ? policy.verdict : null,
+            verdict,
             policy,
             glucose,
             serving: srv,
             ingredients,
             allergens: ingredients ? ingredients.allergens : [],
             claims: ingredients ? ingredients.claims : [],
+            quality: assess ? assess.quality : null,
+            cravings: assess ? assess.cravings : null,
+            satiety: assess ? assess.satiety : null,
+            personal: assess ? assess.personal : null,
+            reasonKeys: assess ? assess.reasonKeys : [],
+            reasons: assess ? assess.reasons : [],
+            alternative: assess ? assess.alternative : null,
             confidence: null
         };
     }

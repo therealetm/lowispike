@@ -90,6 +90,8 @@ P.remove=function(){for(let i=0;i<arguments.length;i++)if(this.contains(argument
    (2) Pages you are not on are invisible already; their animations (Community alone runs ~350) now wait until you come back. */
 html:not(.bw3-off) :is(#atmSky,#wxSky,#ssnSky){display:none!important}
 #main>.tab:not(.active),#main>.tab:not(.active) *{animation-play-state:paused!important}
+/* chat-crash: an inactive tab is opacity 0, so its glass blurs only cost memory (each backdrop-filter is its own GPU layer on iOS, 20 of them sat under Community and the chat room) */
+#main>.tab:not(.active),#main>.tab:not(.active) *{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 </style>
 <style>
 :root{--bg:#03050a;--panel:rgba(20,23,32,.72);--panel2:rgba(30,33,45,.85);--line:rgba(202,161,90,.22);--line2:rgba(255,255,255,.07);--gold:#caa15a;--gold2:#ecd08f;--text:#f8f5ed;--muted:#a19c90;--dim:#6d695f;--hi:#f0a08a;--mid:#e6c98a;--lo:#a9dcb2;--sat:env(safe-area-inset-top);--sab:env(safe-area-inset-bottom)}

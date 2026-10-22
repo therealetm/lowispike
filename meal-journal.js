@@ -94,8 +94,9 @@
         return dbp;
     }
     function tx(mode, fn) { return idb().then(d => new Promise((res, rej) => { const x = d.transaction(ST, mode), s = x.objectStore(ST); let out; try { out = fn(s); } catch (e) { return rej(e); } x.oncomplete = () => res(out && 'result' in out ? out.result : undefined); x.onerror = x.onabort = () => rej(x.error || new Error('tx')); })); }
-    const putPhoto = (id, blob) => tx('readwrite', s => s.put({ blob, ts: Date.now() }, String(id)));
-    const getPhoto = id => tx('readonly', s => s.get(String(id))).then(v => v && v.blob || null).catch(() => null);
+    /* bytes, not a Blob: Blobs inside IndexedDB are unreliable on some WebKit builds; an ArrayBuffer always stores */
+    const putPhoto = (id, blob) => blob.arrayBuffer().then(buf => tx('readwrite', s => s.put({ buf, type: blob.type || 'image/jpeg', ts: Date.now() }, String(id))));
+    const getPhoto = id => tx('readonly', s => s.get(String(id))).then(v => v && v.buf ? new Blob([v.buf], { type: v.type || 'image/jpeg' }) : null).catch(() => null);
     const delPhoto = id => tx('readwrite', s => s.delete(String(id))).catch(() => {});
 
     /* ---------- pictures: one JPEG at most `max` px on its longest side ---------- */

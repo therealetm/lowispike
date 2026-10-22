@@ -92,6 +92,7 @@
             '<button type="button" class="lt-btn lt-go" data-lt="' + (s.action === 'claim' ? 'claim' : 'next') + '">' + esc(cta) + '</button></span></div>';
         root.setAttribute('data-step', s.id);
         renderTry(s, U);
+        try { if (W.LowiTutorialShow) W.LowiTutorialShow.render(card, s, root); } catch (e) { }   /* item 42: finger, lit spots, card picture */
         root.classList.toggle('lt-voice', voiceOn()); root.classList.toggle('lt-paused', paused);
         /* Try it now: the voice tells us when it says the cue words, so the button wiggles right then */
         const cueing = !!(s.tryIt && tried !== i), cue = cueing ? (S.TRY_CUE && S.TRY_CUE[l]) || null : null, onCue = cueing ? () => wiggle('cue') : null;
@@ -204,6 +205,7 @@
         if (!el) {
             root.classList.add('lt-center'); hole.style.cssText = '';
             card.style.left = Math.round((vw - cw) / 2) + 'px'; card.style.top = Math.round(Math.max(m, (vh - ch) / 2)) + 'px';
+            show(null, s);
             return;
         }
         root.classList.remove('lt-center');
@@ -216,7 +218,9 @@
         if (top < m) top = m;
         const left = Math.round(Math.max(m, Math.min(vw - cw - m, cx - cw / 2)));
         card.style.left = left + 'px'; card.style.top = Math.round(top) + 'px';
+        show(el, s);
     }
+    function show(el, s) { try { if (W.LowiTutorialShow) W.LowiTutorialShow.place(root, el, s); } catch (e) { } }
     function hold(why) { if (held || !root) return; cancelAuto(); try { if (W.LowiTutorialVoice) W.LowiTutorialVoice.stop(); } catch (e) { } held = true; root.classList.add('lt-held'); root.setAttribute('aria-hidden', 'true'); root.setAttribute('data-held', why || ''); }
     function unhold() {
         if (!held || !root) return; held = false; root.classList.remove('lt-held'); root.removeAttribute('aria-hidden'); root.removeAttribute('data-held');
@@ -404,6 +408,8 @@
     if (!W.LowiTutorialAuto && !D.querySelector('script[src^="tutorial-auto.js"]')) { const m = $('meta[name="lowi-build"]'), sc = D.createElement('script'); sc.src = 'tutorial-auto.js?v=' + encodeURIComponent((m && m.content) || '1'); sc.defer = true; D.head.appendChild(sc); }
     /* tutorial-voice.js (the speaker on every card) loads the same way */
     if (!W.LowiTutorialVoice && !D.querySelector('script[src^="tutorial-voice.js"]')) { const m = $('meta[name="lowi-build"]'), sc = D.createElement('script'); sc.src = 'tutorial-voice.js?v=' + encodeURIComponent((m && m.content) || '1'); sc.defer = true; D.head.appendChild(sc); }
+    /* tutorial-show.js (item 42: the finger on the real control, lit spots, the picture of what opens) loads the same way */
+    if (!W.LowiTutorialShow && !D.querySelector('script[src^="tutorial-show.js"]')) { const m = $('meta[name="lowi-build"]'), sc = D.createElement('script'); sc.src = 'tutorial-show.js?v=' + encodeURIComponent((m && m.content) || '1'); sc.defer = true; D.head.appendChild(sc); }
     W.LowiTutorial = { start, stop, isOn: () => on, step: () => (step() || {}).id || null, held: () => held, busyBy, core: S,
         paused: () => paused, pause: v => setPaused(v == null ? true : v), auto: () => !!autoT, tryNow, wiggles: () => (wig.at === i ? wig.n : 0) };
 })();

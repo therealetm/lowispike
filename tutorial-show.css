@@ -1,0 +1,112 @@
+/* tutorial-show.css: the tutorial's finger, lit spots and on-card look-alikes (tutorial-show.js, item 42). Pictures only: nothing here
+   takes a touch (pointer-events: none), so the tour's buttons, try-it and the app under it work exactly as before. Brand glass, cyan glow. */
+.lts-layer { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+.lt-tour .lt-card { z-index: 2; }
+
+/* ---------- on the page: the finger ---------- */
+.lts-hand { position: absolute; width: 0; height: 0; pointer-events: none; }
+.lts-hand::before { content: ''; position: absolute; left: -2px; top: 4px; width: 30px; height: 40px;
+    background: no-repeat center / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 40'%3E%3Cpath d='M11 2.5c1.7 0 3 1.3 3 3V17l1-.2V14c0-1.5 1.2-2.6 2.6-2.6S20 12.5 20 14v3.2l.8-.1v-1.6c0-1.4 1.1-2.5 2.5-2.5s2.5 1.1 2.5 2.5v2.4l.4.1c1.3.2 2.3 1.4 2.3 2.7v7.6c0 6-4.5 10.7-10.4 10.7h-1.5c-3.4 0-6.3-1.7-8.1-4.6L2.7 25.3c-.8-1.3-.4-3 .9-3.8 1.2-.7 2.7-.4 3.6.6L8 23.4V5.5c0-1.7 1.3-3 3-3z' fill='%23ffffff' stroke='%23123a6b' stroke-width='1.4' stroke-linejoin='round'/%3E%3C/svg%3E");
+    filter: drop-shadow(0 2px 6px rgba(0, 20, 60, .55)) drop-shadow(0 0 8px rgba(143, 231, 255, .6)); transform-origin: 11px 4px; }
+/* the touch point: a ripple where the fingertip lands */
+.lts-tip { position: absolute; left: -14px; top: -14px; width: 28px; height: 28px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, .9);
+    box-shadow: 0 0 12px rgba(143, 231, 255, .9); opacity: 0; }
+.lts-layer[data-g="tap"] .lts-hand::before, .lts-layer[data-g="triple"] .lts-hand::before { animation: lts-tap 1.6s ease-in-out infinite; }
+.lts-layer[data-g="tap"] .lts-tip { animation: lts-ripple 1.6s ease-out infinite; }
+.lts-layer[data-g="triple"] .lts-hand::before { animation-duration: .5s; }
+.lts-layer[data-g="triple"] .lts-tip { animation: lts-ripple .5s ease-out infinite; }
+.lts-layer[data-g="hold"] .lts-hand::before { animation: lts-hold 2.2s ease-in-out infinite; }
+.lts-layer[data-g="hold"] .lts-tip { animation: lts-holdring 2.2s ease-in-out infinite; }
+.lts-layer[data-g="drag"] .lts-hand, .lts-layer[data-g="swipe"] .lts-hand { animation: lts-drag 2s ease-in-out infinite; }
+.lts-layer[data-g="drag"] .lts-tip, .lts-layer[data-g="swipe"] .lts-tip { opacity: .85; }
+.lts-layer[data-g="pinch"] .lts-hand::before { animation: lts-tap 1.6s ease-in-out infinite; }
+@keyframes lts-tap { 0%, 100% { transform: translate(6px, 10px) scale(1); } 40% { transform: translate(0, 0) scale(.92); } 55% { transform: translate(0, 0) scale(.92); } }
+@keyframes lts-ripple { 0%, 38% { opacity: 0; transform: scale(.4); } 45% { opacity: 1; } 100% { opacity: 0; transform: scale(1.6); } }
+@keyframes lts-hold { 0%, 100% { transform: translate(6px, 10px) scale(1); } 20%, 80% { transform: translate(0, 0) scale(.9); } }
+@keyframes lts-holdring { 0%, 20% { opacity: 0; transform: scale(.4); } 30% { opacity: 1; transform: scale(.6); } 78% { opacity: 1; transform: scale(1.5); } 100% { opacity: 0; transform: scale(1.6); } }
+@keyframes lts-drag { 0%, 100% { transform: translateX(-26px); } 50% { transform: translateX(26px); } }
+
+/* ---------- on the page: lit spots (several real controls, one after another) ---------- */
+.lts-spot { position: absolute; display: none; border-radius: 50%; box-sizing: border-box; pointer-events: none;
+    border: 2px solid rgba(143, 231, 255, .35); background: radial-gradient(circle, rgba(143, 231, 255, .10), transparent 70%);
+    transition: border-color .3s ease, box-shadow .3s ease, background .3s ease; }
+.lts-spot.on { border-color: rgba(143, 231, 255, .95); background: radial-gradient(circle, rgba(255, 255, 255, .22), rgba(143, 231, 255, .12) 60%, transparent 72%);
+    box-shadow: 0 0 22px 5px rgba(143, 231, 255, .55), inset 0 0 14px rgba(143, 231, 255, .4); }
+
+/* ---------- on the card: the look-alike of what opens ---------- */
+.lts-vis { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; margin: -2px 0 12px; padding: 9px 10px;
+    border-radius: 18px; background: linear-gradient(180deg, rgba(2, 8, 24, .78), rgba(6, 18, 46, .88)); border: 1px solid rgba(143, 231, 255, .35);
+    box-shadow: inset 0 0 14px rgba(143, 231, 255, .12); font-size: 12px; line-height: 15px; text-shadow: none; pointer-events: none; overflow: hidden; }
+.lts-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.lts-cap { font-size: 12px; opacity: .9; text-align: center; }
+.lts-top { font-weight: 700; opacity: 1; }
+.lts-big { font-size: 24px; line-height: 28px; font-weight: 800; letter-spacing: .02em; color: var(--brand-cyan, #7fe7ff); text-shadow: 0 0 12px rgba(127, 231, 255, .55); }
+.lts-pill, .lts-chip { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 14px; font-weight: 700; white-space: nowrap;
+    border: 1px solid rgba(255, 255, 255, .3); background: rgba(255, 255, 255, .07); }
+.lts-pill.on, .lts-chip.on { border-color: rgba(170, 255, 230, .85); background: linear-gradient(160deg, rgba(80, 220, 190, .55), rgba(30, 140, 200, .55));
+    box-shadow: 0 0 10px rgba(120, 240, 210, .4); animation: lts-press 2.4s ease-in-out infinite; }
+@keyframes lts-press { 0%, 70%, 100% { transform: scale(1); } 80% { transform: scale(.93); } }
+.lts-field { display: inline-flex; align-items: center; min-width: 96px; padding: 5px 10px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, .3); background: rgba(255, 255, 255, .06); }
+.lts-typed { display: inline-block; overflow: hidden; white-space: nowrap; border-right: 2px solid rgba(143, 231, 255, .9); max-width: 0; animation: lts-type 3.2s steps(14, end) infinite; }
+@keyframes lts-type { 0% { max-width: 0; } 55%, 100% { max-width: 9em; } }
+/* energy meter */
+.lts-meter { width: 82%; height: 12px; border-radius: 6px; background: rgba(255, 255, 255, .12); border: 1px solid rgba(255, 255, 255, .25); overflow: hidden; }
+.lts-fill { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, #4fd8c2, #7fe7ff, #ffe27a); box-shadow: 0 0 10px rgba(127, 231, 255, .7); }
+.lts-fill.f62 { width: 62%; }
+.lts-fill.lts-grow { width: 100%; animation: lts-grow 3s ease-in-out infinite; }
+@keyframes lts-grow { 0% { width: 20%; } 70%, 100% { width: 100%; } }
+.lts-pop { font-weight: 800; color: #ffe27a; animation: lts-popin 3s ease-in-out infinite; }
+@keyframes lts-popin { 0%, 65% { opacity: 0; transform: scale(.7); } 75%, 100% { opacity: 1; transform: scale(1); } }
+/* mood faces */
+.lts-face { width: 14px; height: 14px; border-radius: 50%; background: #ffe27a; position: relative; flex: none; }
+.lts-face.m0 { background: #9fd8ff; } .lts-face.m2 { background: #c6b8ff; }
+/* the ring of bubbles around the companion */
+.lts-ring { position: relative; width: 150px; height: 74px; }
+.lts-core { position: absolute; left: 50%; top: 50%; width: 26px; height: 26px; margin: -13px 0 0 -13px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fff, #9fe9ff 45%, #3a8fd8); box-shadow: 0 0 12px rgba(143, 231, 255, .8); }
+.lts-rb { position: absolute; left: 50%; top: 50%; min-width: 22px; height: 22px; padding: 0 6px; margin: -11px 0 0 -11px; box-sizing: border-box; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center; font-size: 9.5px; font-weight: 700; white-space: nowrap;
+    border: 1px solid rgba(143, 231, 255, .6); background: rgba(40, 110, 210, .55); animation: lts-lit 6s linear infinite; }
+.lts-rb.r0 { transform: translate(-48px, -26px); animation-delay: 0s; } .lts-rb.r1 { transform: translate(14px, -28px); animation-delay: 1s; }
+.lts-rb.r2 { transform: translate(56px, 0); animation-delay: 2s; } .lts-rb.r3 { transform: translate(14px, 28px); animation-delay: 3s; }
+.lts-rb.r4 { transform: translate(-48px, 26px); animation-delay: 4s; } .lts-rb.r5 { transform: translate(-64px, 0); animation-delay: 5s; }
+@keyframes lts-lit { 0%, 14% { box-shadow: 0 0 12px 3px rgba(143, 231, 255, .85); background: rgba(80, 220, 190, .7); } 18%, 100% { box-shadow: none; } }
+.lts-orbit { width: 96px; height: 74px; animation: lts-spin 6s linear infinite; }
+.lts-orbit .lts-rb { min-width: 16px; height: 16px; margin: -8px 0 0 -8px; padding: 0; animation: none; }
+.lts-orbit .r0 { transform: translate(0, -30px); } .lts-orbit .r1 { transform: translate(26px, -15px); } .lts-orbit .r2 { transform: translate(26px, 15px); }
+.lts-orbit .r3 { transform: translate(0, 30px); } .lts-orbit .r4 { transform: translate(-26px, 15px); } .lts-orbit .r5 { transform: translate(-26px, -15px); }
+@keyframes lts-spin { 0%, 45% { transform: rotate(0); } 55%, 100% { transform: rotate(80deg); } }
+/* the six planets of Gap */
+.lts-planets { gap: 9px; }
+.lts-pl { width: 16px; height: 16px; border-radius: 50%; background: rgba(255, 255, 255, .16); border: 1px solid rgba(255, 255, 255, .3); }
+.lts-pl.on { background: radial-gradient(circle at 35% 30%, #fff, #7fe7ff 50%, #2b7ad0); box-shadow: 0 0 8px rgba(127, 231, 255, .7); }
+.lts-pl.p2 { animation: lts-blink 1.6s ease-in-out infinite; }
+@keyframes lts-blink { 50% { box-shadow: 0 0 16px 4px rgba(127, 231, 255, .9); } }
+/* water cups */
+.lts-cups { gap: 7px; }
+.lts-cup { width: 15px; height: 20px; border-radius: 3px 3px 6px 6px; border: 1.5px solid rgba(143, 231, 255, .7); box-sizing: border-box;
+    background: linear-gradient(0deg, rgba(90, 190, 255, .85) var(--w, 0%), transparent var(--w, 0%)); }
+.lts-cup.on { --w: 100%; }
+.lts-cup.lts-fillin { animation: lts-cupfill 2.4s ease-in-out infinite; }
+@keyframes lts-cupfill { 0%, 70% { --w: 0%; background: transparent; } 80%, 100% { background: rgba(90, 190, 255, .85); } }
+.lts-drain .lts-cup { animation: lts-drain 3s ease-in-out infinite; }
+@keyframes lts-drain { 0%, 50% { background: rgba(90, 190, 255, .85); } 65%, 100% { background: transparent; } }
+
+/* small screens: compact pictures so the card stays clear of the spotlight and never scrolls */
+@media (max-height: 700px) {
+    .lts-vis { padding: 5px 8px; gap: 4px; margin-bottom: 8px; }
+    .lts-ring { height: 62px; } .lts-orbit { height: 62px; }
+    .lts-big { font-size: 19px; line-height: 22px; }
+    .lts-pill, .lts-chip { padding: 3px 9px; }
+}
+@media (max-height: 560px) { .lts-vis { display: none; } }
+/* set by tutorial-show.js when the card would cover the spotlit control: compact picture, then none */
+.lt-card.lts-tight .lts-vis { padding: 4px 8px; gap: 3px; margin-bottom: 8px; }
+.lt-card.lts-tight .lts-cap:not(.lts-top) { display: none; }
+.lt-card.lts-tight .lts-ring, .lt-card.lts-tight .lts-orbit { height: 54px; }
+.lt-card.lts-novis .lts-vis { display: none; }
+/* Reduce Motion: still pictures, the finger stays put */
+@media (prefers-reduced-motion: reduce) { .lts-layer *, .lts-layer *::before, .lts-vis, .lts-vis * { animation: none !important; } .lts-tip { opacity: .85; } .lts-typed { max-width: 9em; } }
+.lt-tour.lts-rm .lts-layer *, .lt-tour.lts-rm .lts-layer *::before, .lt-tour.lts-rm .lts-vis * { animation: none !important; }
+.lt-tour.lts-rm .lts-tip { opacity: .85; } .lt-tour.lts-rm .lts-typed { max-width: 9em; }
+/* day theme: the card picture keeps its dark glass so the white words stay readable */

@@ -343,12 +343,12 @@
             }
         },
         {
-            id: 'zoom', area: 'play', target: ['#whHud .wh-zoom', '#whPad'], covers: ['zoom', 'map'], teaches: ['world-pinch', 'map-button'], tryIt: { how: 'pinch', anywhere: true },
-            title: { en: 'Zoom and World map', de: 'Zoom und Weltkarte', es: 'Zoom y mapa' },
+            id: 'zoom', area: 'play', target: ['#whPad'], covers: ['zoom'], teaches: ['world-pinch'], tryIt: { how: 'pinch', anywhere: true },
+            title: { en: 'Zoom', de: 'Zoom', es: 'Zoom' },
             text: {
-                en: 'Pinch to zoom in and out. The World map shows every world at once and takes you straight to the one you pick.',
-                de: 'Zieh mit zwei Fingern, um zu zoomen. Die Weltkarte zeigt alle Welten auf einmal und bringt dich direkt in die, die du wählst.',
-                es: 'Pellizca para acercar y alejar. El mapa del mundo muestra todos los mundos a la vez y te lleva directo al que elijas.'
+                en: 'Pinch to zoom in and out. Inside a world, the X at the bottom takes you back home.',
+                de: 'Zieh mit zwei Fingern, um zu zoomen. In einer Welt bringt dich das X unten zurück nach Hause.',
+                es: 'Pellizca para acercar y alejar. Dentro de un mundo, la X de abajo te lleva de vuelta a casa.'
             }
         },
         {
@@ -361,7 +361,7 @@
             }
         },
         {
-            id: 'worlds', area: 'play', target: ['#whHud .wh-zoom', '#whPad'], covers: ['worlds'], teaches: ['galaxy-bubble'], later: 'drag',
+            id: 'worlds', area: 'play', target: ['#whPad'], covers: ['worlds'], teaches: ['galaxy-bubble'], later: 'drag',
             title: { en: 'Worlds', de: 'Welten', es: 'Mundos' },
             text: {
                 en: 'After the tour, fly into a glowing bubble to visit a body world: lungs, brain, gut, muscle and more.',
@@ -734,7 +734,6 @@
         G('theme-triple', 'home', 'triple', ['top-bar.js', 'atmosphere.js'], 'tap the moon/sun three times: Day & night adjuster'),
         G('world-drag', 'home', 'drag', ['body-world-3d.js', 'world-home.js', 'body-world-3d-scene.js'], 'drag the world: look around'),
         G('world-pinch', 'home', 'pinch', ['body-world-3d.js'], 'pinch: zoom in and out'),
-        G('map-button', 'home', 'tap', ['world-home.js'], 'tap the zoom button: World map and back'),
         G('pad-drag', 'home', 'drag', ['misty-pad.js'], 'drag the joystick: steer'),
         G('pad-hold', 'home', 'hold', ['misty-pad.js', 'misty-turn.js'], 'hold the joystick middle: forward'),
         G('pad-back', 'home', 'hold', ['misty-pad.js'], 'tap, then hold the joystick: backwards'),

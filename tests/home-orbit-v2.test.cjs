@@ -109,10 +109,10 @@ test('shell: tags every ring control for the sibling adapters, real Scan and the
 
 test('shell: the old Home clutter is hidden on the ring Home but stays reachable from Settings', () => {
     const s = read('home-orbit-v2.js'), c = read('home-orbit-v2.css');
-    for (const sel of ['#f3Board', '.sp-top', '.wh-todaybtn', '.wh-vr', '.wh-zoom', '.wa-btn', '#tbTheme', '.hs-gift', '#pfBtn']) {
+    for (const sel of ['#f3Board', '.sp-top', '.wh-todaybtn', '.wh-vr', '.wa-btn', '#tbTheme', '.hs-gift', '#pfBtn']) {
         assert.ok(c.includes(sel), 'hidden in css: ' + sel);
     }
-    for (const sel of ['#pfBtn', '.wh-todaybtn', '.wh-zoom', '.wh-vr', '.wa-btn', '#tbTheme', '.hs-gift', 'community', 'cook', 'move']) assert.ok(s.includes(sel), 'reachable: ' + sel);
+    for (const sel of ['#pfBtn', '.wh-todaybtn', '.wh-vr', '.wa-btn', '#tbTheme', '.hs-gift', 'community', 'cook', 'move']) assert.ok(s.includes(sel), 'reachable: ' + sel);
     assert.match(s, /function dropMenuBar\(\)/, 'the old bottom menu bar switch is dropped (Oct 21)');
 });
 

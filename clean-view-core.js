@@ -29,8 +29,9 @@
        Misty is in a place of Home's own world) Home's menus and panels are never shown, not even after the reveal tap. The side rail /
        tab bar, greeting row, weather, Daily Quest with its world line, arrival card, XP cards, Today, VR, Sound, Day/Night and the
        hints stay away. Left: Misty, her cell, the cell guide and its speech bubble, the controller (misty-pad.css rules) and the
-       World map stick, the one way back out besides the cloud walls (it still fades with the clean flight view). */
-    const WORLD_HIDE = HIDE.map(s => s.indexOf('#whHud > ') === 0 ? s.replace('#whHud > ', '#whHud > :not(.wh-zoom)') : s)
+       bottom-centre X back to Misty (the old World map stick was removed on Oct 22 2026). */
+    /* Oct 22 2026: the World map stick is removed; the way out of a world is the bottom-centre X (#whX, outside #whHud) */
+    const WORLD_HIDE = HIDE.slice()
         .concat(['.hq-pop', '.r3m-pop']);
     function worldCss() { return WORLD_HIDE.map(s => 'html.wh-home.wh-away ' + s).join(',\n'); }
     /* never faded: Misty, her cell, the world, the speech bubbles (cell guide .rp-*, Misty's nudge).

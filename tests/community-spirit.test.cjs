@@ -38,12 +38,10 @@ test('the world goes on past the World Map: other bubbles linked by light thread
     assert.ok(sc.includes("if (rig.mode === 'home' && rig.outer && (rig.dist >= rig.maxD * 0.999 && f > 1 || rig.dist > rig.maxD))"), 'pinch keeps going out');
 });
 
-test('zoom stick: drag flies the one camera, a plain tap toggles World map / Misty even when the click is dropped', () => {
+test('Oct 22 2026: the old zoom stick / World map button is gone; double-tap and pinch still zoom', () => {
     const wh = read('world-home.js');
-    assert.ok(wh.includes('function wireStick(b)') && wh.includes('wireStick(zoom);'));
-    assert.ok(wh.includes("else if (e.type === 'pointerup' && Date.now() - st.stickDown < 700) { st.stickTap = Date.now(); e.stopPropagation(); try { zoomTap(); } catch (x) { } }"));
-    assert.ok(wh.includes("Date.now() - (st.stickTap || 0) < 700) return; zoomTap(); }"), 'the click after a handled tap does not toggle twice');
-    assert.ok(wh.includes('function zoomTap() { if (st.today) openToday(false); if (homeWorld()) toggleZoom(); else zoomOutWhole(); }'));
+    assert.ok(!wh.includes('function wireStick(') && !wh.includes("btn('wh-zoom'") && !wh.includes('function zoomTap('));
+    assert.ok(wh.includes('toggleZoom, zoomOutWhole'), 'the camera zoom used by double-tap stays exported');
 });
 
 test('the zoom out of our world brings it in from far away, and the way back reverses it', () => {

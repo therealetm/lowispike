@@ -6364,7 +6364,8 @@ function renderHome(){ const d = tdEnsure(), sl = tdSlots(), needs = tdNeeds(), 
     (d.meals ? '<div class="td-plan" id="tdPlan">' + sl.map((s, i) => { const r = recById(d.plan[i]); if (!r) return ""; const ate = d.ate[i];
         return '<div class="card td-meal' + (ate ? " ate" : "") + '"><div class="td-mrow">' + foodPic(r.id) + '<div class="td-mtx"><div class="tiny gold">' + esc(s.l) + " · " + s.t + '</div><div class="td-mname">' + esc(r.n) + '</div><div class="small muted td-msub">' + esc(r.sub) + "</div>" + badge(r.r) + "</div></div>" +
           '<div class="td-acts"><button class="td-act" data-sh="open-shelf" data-t="kochen" data-sub="recipe" data-r="' + r.id + '">Recipe</button><button class="td-act" data-td="swap" data-i="' + i + '">Swap</button><button class="td-act" data-td="pick" data-i="' + i + '">Pick</button><button class="td-act' + (ate ? " on" : "") + '" data-td="ate" data-i="' + i + '">' + (ate ? ICO.chk + " Eaten" : "Ate it") + "</button></div></div>"; }).join("") +
-      d.extra.map((id, j) => { const r = recById(id); return r ? '<div class="card td-extra">' + foodPic(r.id, "td-pic sm") + '<div class="td-mtx"><div class="tiny muted">Extra</div><div style="font-weight:650">' + esc(r.n) + '</div></div><button class="td-act" data-sh="open-shelf" data-t="kochen" data-sub="recipe" data-r="' + r.id + '">Recipe</button><button class="td-x" data-td="rmextra" data-j="' + j + '" aria-label="Remove">' + ICO.x + "</button></div>" : ""; }).join("") +
+      d.extra.map((id, j) => { const r = recById(id); return r ? '<div class="card td-extra">' + foodPic(r.id, "td-pic sm") + '<div class="td-mtx"><div class="tiny muted">Extra</div><div style="font-weight:650">' + esc(r.n) + '</div></div><button class="td-act" data-sh="open-shelf" data-t="kochen" data-sub="recipe" data-r="' + r.id + '">Recipe</button>' + (window.LowiAte ? LowiAte.extraBtn(r.id) : "") + '<button class="td-x" data-td="rmextra" data-j="' + j + '" aria-label="Remove">' + ICO.x + "</button></div>" : ""; }).join("") +
+      (window.LowiAte ? LowiAte.planHTML(d) : "") +
       '<div class="td-addrow"><span class="small muted">Add</span>' + [["snack", "Snack"], ["dessert", "Dessert"], ["drink", "Drink"]].map(c => '<button class="chip" data-td="addcat" data-c="' + c[0] + '">+ ' + c[1] + "</button>").join("") + "</div></div>"
     : '<div class="card td-hero">' + (FOOD_IMG.h_fast ? '<img alt="" src="' + FOOD_IMG.h_fast + '">' : "") + '<div class="td-herotx"><div class="h3">No meals planned. That\'s fine.</div><div class="small td-herol">Water, black coffee or plain tea.</div><div class="small td-herol">Hard moment? A warm bone broth helps.</div></div></div>' +
       '<div class="td-plan">' + ["rb_hot_ginger_bone_broth", "rb_bitter_green_tea_lime"].map(id => { const r = recById(id); return '<button class="card td-extra" data-sh="open-shelf" data-t="kochen" data-sub="recipe" data-r="' + id + '">' + foodPic(id, "td-pic sm") + '<div class="td-mtx"><div style="font-weight:650">' + esc(r.n) + '</div><div class="small muted">' + esc(r.sub) + '</div></div><span class="go">›</span></button>'; }).join("") +
@@ -9000,6 +9001,7 @@ function dkDecide(dir){
   r5save(); DK.hist.push({id, dir}); DK.i++;
   dkSfx(dir); dkFx(dir); try { if (navigator.vibrate) navigator.vibrate(D.vib); } catch(e){}
   if (dir === "up") dkCookToday(id);
+  if (dir === "right" && window.LowiAte) LowiAte.offer(id); /* ate-this: liked = offer I just ate this / I'll eat this */
   const T = {up:"translate(0,-150%) rotate(-4deg) scale(.9)", right:"translate(150%,0) rotate(22deg)", left:"translate(-150%,0) rotate(-22deg)", down:"translate(0,140%) rotate(8deg) scale(.55)"};
   if (c) { c.classList.add("r3k-go", "go-" + dir); c.style.transition = "transform .38s ease-in, opacity .38s, filter .38s"; c.style.transform = T[dir]; c.style.opacity = "0"; setTimeout(dkPaint, 300); } else dkPaint();
   dkYesRefresh();
@@ -11450,7 +11452,7 @@ function ckPaint(dir){ if (!CK) return; const r = CK.r, n = r.steps.length, i = 
     body = sceneHTML(kind, itemOf(t, r)) + '<div class="tiny gold">Step ' + (i + 1) + ' of ' + n + '</div><div class="h2 p2-cktx">' + esc(t) + '</div>' +
       (mm && mm <= 90 ? '<button class="p2-timer" data-p2="timer" data-m="' + mm + '" id="p2Timer">' + IC.clock + '<span>Start a ' + mm + ' min timer</span></button>' : ""); }
   const nav = '<div class="p2-cknav">' + (i >= 0 ? '<button class="r2-btn ghost p2-ckb" data-p2="prev" aria-label="Back">' + IC.back + '</button>' : "") +
-    (i >= n ? (r.book ? '<button class="r2-btn pri big" data-td="addtoday" data-id="' + esc(r.id) + '" data-p2close="all">Add to today</button>' : '<button class="r2-btn pri big" data-p2="closeall">Close</button>')
+    (i >= n ? (window.LowiAte ? LowiAte.doneNav(r) : r.book ? '<button class="r2-btn pri big" data-td="addtoday" data-id="' + esc(r.id) + '" data-p2close="all">Add to today</button>' : '<button class="r2-btn pri big" data-p2="closeall">Close</button>')
       : '<button class="r2-btn pri big" data-p2="next" id="p2Next"><span>' + (i < 0 ? "Let's go" : i === n - 1 ? "Finish" : "Next") + '</span>' + IC.go + '</button>') + '</div>';
   box.innerHTML = '<div class="p2-cktop"><span class="small muted p2-ckname">' + esc(r.swapName || r.n) + '</span></div>' + bar + '<div class="p2-ckbody ' + (dir > 0 ? "from-r" : dir < 0 ? "from-l" : "") + '">' + body + '</div>' + nav;
   if (i >= n) { try { navigator.vibrate && navigator.vibrate([12, 60, 20]); } catch(e){} }
@@ -20398,6 +20400,9 @@ window.LowiCommunityHost = {
 <script src="community-me.js?v=20261022-180142"></script>
 <!-- Oct 22 One UI step 1: the one sheet shell (dark glass, grab, X under the sheet), the profile hub uses it -->
 <link rel="stylesheet" id="oneSheetCss" href="one-sheet.css?v=20261022-180142">
+<!-- Oct 22: "I just ate this" / "I'll eat this" on the Shuffle pick, a right swipe and the cook-along end (ate-this.js) -->
+<link rel="stylesheet" id="ateCss" href="ate-this.css?v=20261022-180142">
+<script src="ate-this.js?v=20261022-180142"></script>
 <!-- Oct 18: Fuel / Water / Move / Gap blooms on the ring Home (home-blooms-v2.js, COORD-hb2-integrate.md); the shell mounts it with root = document -->
 <link rel="stylesheet" id="hb2Css" href="home-blooms-v2.css?v=20261022-180142">
 <script src="home-blooms-v2.js?v=20261022-180142"></script>

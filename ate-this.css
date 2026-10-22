@@ -1,0 +1,37 @@
+/* ate-this.css (Oct 22 2026): "I just ate this" / "I'll eat this" on the Shuffle pick, after a right swipe and at the end of the
+   cook-along, plus the confirmation bar. Same dark glass, rim and radius as the one sheet shell (one-sheet.css). */
+.ate-pair { display: flex; gap: 8px; margin-top: 10px; width: 100%; }
+.ate-pair button { flex: 1 1 0; min-width: 0; min-height: 44px; padding: 8px 10px; border-radius: 14px; font: inherit; font-size: 14px; font-weight: 700;
+  line-height: 1.15; white-space: normal; text-wrap: balance; cursor: pointer; }
+.ate-pair .ate-now { flex-grow: 1.25; background: var(--one-acc, #8fe7ff); color: #06213b; border: 0; box-shadow: 0 6px 18px -8px rgba(143, 231, 255, .8); }
+.ate-pair .ate-later { background: var(--one-cell, rgba(255, 255, 255, .08)); color: inherit; border: 1px solid var(--one-cell-line, rgba(170, 214, 255, .26)); }
+html[data-theme="light"] .ate-pair .ate-later, html[data-ui=light] .ate-pair .ate-later { background: rgba(10, 40, 90, .06); border-color: rgba(10, 40, 90, .2); }
+
+/* cook-along DONE: the big button is "I just ate this", the small ghost beside it plans it */
+.p2-cknav .ate-done { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.p2-cknav .ate-done2 { flex: 0 1 auto; min-width: 0; padding-left: 12px; padding-right: 12px; font-size: 14px; white-space: normal; line-height: 1.1; text-wrap: balance; max-width: 34%; }
+
+/* the confirmation bar: above the bottom nav and above every sheet */
+.ate-bar { position: fixed; left: 50%; bottom: calc(var(--sab, env(safe-area-inset-bottom, 0px)) + 92px); transform: translate(-50%, 16px); z-index: 10050;
+  width: min(420px, calc(100vw - 20px)); box-sizing: border-box; padding: 10px 12px; border-radius: 22px; color: #fff; opacity: 0; pointer-events: none;
+  background: var(--mb-surface, linear-gradient(180deg, rgba(58, 112, 205, .92), rgba(16, 42, 102, .96))); border: 1px solid var(--mb-rim, rgba(170, 214, 255, .42));
+  box-shadow: 0 18px 44px -16px rgba(0, 0, 0, .65); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); text-shadow: 0 1px 6px rgba(0, 30, 80, .45);
+  transition: opacity .2s ease, transform .25s cubic-bezier(.2, .8, .2, 1); }
+.ate-bar.on { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
+.ate-bt { display: flex; align-items: center; gap: 10px; }
+.ate-ok { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: rgba(143, 231, 255, .22); color: #8fe7ff; font-weight: 800; }
+.ate-btx { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ate-btx b { font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ate-btx small { font-size: 12.5px; opacity: .88; line-height: 1.3; }
+.ate-undo { flex: none; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(255, 211, 110, .55); background: none; color: #ffd36e; font: inherit; font-weight: 700; font-size: 14px; }
+.ate-slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; }
+.ate-slot { min-height: 36px; padding: 4px 2px; border-radius: 12px; border: 1px solid rgba(170, 214, 255, .26); background: rgba(255, 255, 255, .08); color: #fff; font: inherit; font-size: 12.5px; font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ate-slot.on { background: #8fe7ff; color: #06213b; border-color: transparent; text-shadow: none; }
+.ate-bar .ate-inbar { margin-top: 8px; }
+.ate-bar .ate-inbar .ate-later { color: #fff; }
+
+/* the plan: planned-for-later rows and the Ate it on extras */
+.td-extra .ate-plan { flex: none; padding: 0 12px; }
+.td-extra .ate-plan.on, .ate-row.ate { opacity: .75; }
+@media (prefers-reduced-motion: reduce) { .ate-bar { transition: none; } }

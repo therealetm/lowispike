@@ -53,7 +53,7 @@ test('the camera backs out continuously as she leaves, and stays clear of the ha
     assert.ok(Math.abs(G.camDist(reach, d0, reach) - d0) < 1e-9, 'no jump at the edge');
     let prev = d0;
     for (let L = reach; L <= 300; L += 2) { const d = G.camDist(L, d0, reach); assert.ok(d >= prev - 1e-9); assert.ok(d - prev < 6, 'no jump at L=' + L); prev = d; }
-    /* world-home.js hands over to Community at fk > 0.9 (log scale from maxD 13 to outerD 300): about 219 */
+    /* the breakout camera stays well inside the far zoom-out (fk 0.9, log scale from maxD 13 to outerD 300: about 219); since Oct 23 that edge no longer opens Community */
     assert.ok(G.camDist(1000, d0, reach) < 13 * Math.pow(300 / 13, 0.9) * 0.6);
 });
 
@@ -82,7 +82,8 @@ test('wired in: flight uses it instead of the hard edge, ends reset it, Home doe
     assert.match(mf, /GX\.cam\(/);
     assert.match(mf, /LowiMistyGalaxy\.reset\(ctx, S\)/);
     assert.match(wh, /mf-galaxy/);
-    assert.match(wh, /fk > 0\.9 && !gx/);
+    /* Oct 23, 2026: Home's far edge no longer hands over to Community at all (E-man: "Nuke that connection") */
+    assert.ok(!wh.includes('farGo') && !/goTab\('foryou'\)/.test(wh), 'zooming out never opens Community');
     assert.match(read('index.html'), /<script src="misty-galaxy\.js\?v=/);
     assert.match(read('sw.js'), /"misty-galaxy\.js"/);
 });

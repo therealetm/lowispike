@@ -647,7 +647,7 @@
                so the first taps missed. Home now opens straight at the zoomed-out rest view; the flag stays so nothing else replays it. */
             if (!st.restIntro && r.homeRest && homeActive() && H.classList.contains('wh-world-live')) st.restIntro = true;
             /* Oct 16 (task 3): past the World Map the world opens into the spirit world (pinch, wheel or the zoom stick). Misty's
-               cell, the place names and the hints step aside out there; at its far edge the camera hands over to Community. */
+               cell, the place names and the hints step aside out there. (Oct 23: the far edge no longer hands over to Community.) */
             r.outer = !reduced();
             const gx = H.classList.contains('mf-galaxy'); /* galaxy breakout (misty-galaxy.js): Misty flies out there herself, Home stays Home */
             const far = r.dist > (r.maxD || 13) * 1.06 && !gx && !inRegion(); /* Oct 17: inside a world the camera's distance is the world's own, not past Home's World Map */ if (H.classList.contains('wh-cosmos') !== far) H.classList.toggle('wh-cosmos', far);
@@ -655,9 +655,8 @@
             /* Oct 18 game-perf: this runs every frame; an inherited variable written on <html> restyles the whole page and wakes the
                <html> observers, so write it only when the value moves */
             { const fv = fk.toFixed(3); if (H.style.getPropertyValue('--wh-far') !== fv) H.style.setProperty('--wh-far', fv); }
-            if (fk > 0.9 && !gx && !st.zoomAnim && !st.pull && homeActive() && !H.classList.contains('gx-out') && !H.classList.contains('gx-in') && Date.now() - (st.farGo || 0) > 2500) {
-                st.farGo = Date.now(); try { if (W.goTab) W.goTab('foryou'); } catch (e) { }
-            }
+            /* Oct 23, 2026 (E-man: "Nuke that connection"): the far edge no longer hands over to Community. Zooming out stays in the
+               universe; Community opens only from its bubble, the tabs or the sideways swipe. */
             /* One world: while Home travels to a place (and stays there), Misty's cell, water and fasting step aside */
             const aw = awayHome(); if (H.classList.contains('wh-away') !== aw) {
                 H.classList.toggle('wh-away', aw);

@@ -276,7 +276,16 @@
         /* Misty still flying back in: keep the last good ring and look again shortly, instead of flashing the old Home */
         if (!(L.ok === false && L.transit)) transitAt = 0;
         else if (wasOn && last && last.ok) { if (!transitAt) transitAt = Date.now(); if (Date.now() - transitAt < 6000) { soon(); return last; } }
-        if (!L.ok) { if (wasOn) { H.classList.remove('o8', 'o8-wide'); soon(); } last = L; return L; }
+        if (!L.ok) {
+            /* Oct 23 (E-man saw the old Home after an update): with the same screen size a failed measure is a moment
+               (styles or Misty still settling), so the last good ring stays; only a real resize that cannot hold
+               the ring falls back to the old layout */
+            if (wasOn && last && last.ok && last.vw === root.innerWidth && last.vh === root.innerHeight) { place(last); soon(); return last; }
+            if (wasOn) { H.classList.remove('o8', 'o8-wide'); soon(); }
+            last = L; bootFallback(); return L;
+        }
+        failN = 0;
+        L.vw = root.innerWidth; L.vh = root.innerHeight;
         if (!wasOn) H.classList.add('o8');
         const wide = L.d >= 104;
         if (H.classList.contains('o8-wide') !== wide) H.classList.toggle('o8-wide', wide);
@@ -291,7 +300,21 @@
             place(last);
         }
         mountSiblings();
+        reveal();
         return last;
+    }
+    /* Oct 23, 2026 (E-man: "this looks like the old version" for minutes right after "Update loaded"): index.html hides
+       #tab-home while <html> has o8-boot. The page builds the old Home first and the ring only takes over once this file
+       has run, which on a slow update (every file fetched fresh) took minutes. Home is shown only when the ring is on and
+       the page has finished parsing (every stylesheet and script above has loaded). */
+    let failN = 0;
+    function reveal() {
+        if (H.classList.contains('o8-boot') && H.classList.contains('o8') && D.readyState !== 'loading') H.classList.remove('o8-boot');
+    }
+    /* last resort: a screen that really cannot hold the ring (after everything loaded, four looks in a row, about 6 s) */
+    function bootFallback() {
+        if (!H.classList.contains('o8-boot') || D.readyState !== 'complete') return;
+        if (++failN >= 4) H.classList.remove('o8-boot'); else soon();
     }
     function mountSiblings() {
         const B = root.LowiHomeBloomsV2, S = root.LowiHomeSettingsSleepV2;

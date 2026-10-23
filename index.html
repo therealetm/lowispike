@@ -7,6 +7,12 @@
      WebKit to start from a dark canvas, and the iOS startup images below (plain dark, no logo) cover the moment before the page paints. -->
 <meta name="color-scheme" content="dark">
 <style id="firstPaint">html,body{background:#03050a}</style>
+<!-- Oct 23, 2026 (E-man, 08:39: "this looks like the old version" for minutes right after "Update loaded"): the page builds the
+     old Home markup first and home-orbit-v2.js turns it into the ring (html.o8) near the end of the page. On a slow update every
+     file is fetched fresh, so the old Home was on screen until then. Home stays hidden while <html> has o8-boot; home-orbit-v2.js
+     removes it once the ring is on and the page has finished parsing. If that file never runs, Home shows after load + 8 s. -->
+<style id="o8BootCss">html.o8-boot:not(.o8) #tab-home,html.o8-boot:not(.o8) #tab-home *{visibility:hidden!important}</style>
+<script>(function(W,H){H.classList.add('o8-boot');W.addEventListener('load',function(){setTimeout(function(){if(!W.LowiHomeOrbitV2)H.classList.remove('o8-boot')},8000)})})(window,document.documentElement)</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#03050a">
 <meta name="lowi-build" content="20261023-080016">

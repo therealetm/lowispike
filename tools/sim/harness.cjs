@@ -51,7 +51,7 @@ async function open(o) {
     const host = new URL(url).host;
     const browser = await pw[o.engine].launch({ args: o.engine === 'chromium' ? ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info', '--js-flags=--expose-gc'] : [] });
     const dev = o.engine === 'webkit' ? Object.assign({}, pw.devices[o.device]) : { viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, hasTouch: true, isMobile: true };
-    const ctx = await browser.newContext(Object.assign(dev, { serviceWorkers: 'block' }));
+    const ctx = await browser.newContext(Object.assign(dev, o.ctx || {}, { serviceWorkers: o.sw ? 'allow' : 'block' })); /* o.ctx: viewport/colorScheme overrides, o.sw: real service worker (update-path sims) */
     await ctx.route(u => { try { const x = new URL(u); return !(x.protocol === 'data:' || x.protocol === 'blob:' || x.host === host || x.host.endsWith('.supabase.co')); } catch (e) { return true; } }, r => r.abort());
     await ctx.route(u => { try { return new URL(u).host === host; } catch (e) { return false; } }, r => r.request().method() === 'GET' ? r.continue() : r.abort());
     const sim = o.cloud === false ? null : await cloud.install(ctx, o);

@@ -13,7 +13,7 @@
    tests/community-tab-order.test.cjs. */
 (function (root) {
     'use strict';
-    const IDS = ['room', 'chat', 'create', 'aff'];
+    const IDS = ['room', 'chat', 'create', 'aff', 'rank'];   /* 23 Oct: + Ranking (ranking.js); a saved order without it gets it at the end */
     const KEY = 'lowispike.community.tabs';
     const HOLD_MS = 450, SLOP = 10;
     function normalize(list) {

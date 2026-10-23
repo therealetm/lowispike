@@ -15,10 +15,13 @@
     function sig() {
         /* Oct 22: a closing sheet (.r2-ov) loses .on at once but stays in the page for its slide-out, so the union count alone
            did not change within 80 ms and back on Home with a scanned product (or any sheet) open left the app. Count open
-           sheets on their own too. */
+           sheets on their own too.
+           Oct 23 (bug hunt): the same for every other sheet that keeps role="dialog" / aria-modal while it slides out (the Gap
+           view from the meal-gap bubble on Home): back left the app. Count the open markers (.on / .open / [open]) on their own. */
         return H.className + '|' + D.body.className + '|' + activeTab() + '|' +
             D.querySelectorAll('.on, .open, [open], .r2-ov, [role="dialog"], [aria-modal="true"]').length + '|' +
-            D.querySelectorAll('.r2-ov.on').length;
+            D.querySelectorAll('.r2-ov.on').length + '|' +
+            D.querySelectorAll('.on, .open, [open]').length;
     }
     function escape() {
         const t = D.activeElement && D.activeElement !== D.body ? D.activeElement : D;

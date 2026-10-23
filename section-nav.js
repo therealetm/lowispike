@@ -96,6 +96,13 @@
     function innerBack() {
         /* Oct 22 2026: a Profile part (Account, Health, ...) goes back to the Profile overview first, like its Back button */
         if (tabOf() === 'profile' && H.classList.contains('g2e-open')) { try { W.LowiG2E.close(); return true; } catch (e) { return false; } }
+        /* Oct 23 2026 (bug hunt): the Care board on Move (and For You when it is the full-screen layer, not the window inside Cook)
+           goes back to Move / Cook first, like its own "< Move" button. Back went straight to Home and left the board open
+           (html.nm-open-lb on Home, and the board still open the next time you opened Move). */
+        if (tabOf() === 'move' || tabOf() === 'shelf') {
+            const k = tabOf() === 'move' ? 'lb' : 'fy', M = W.LowiNavMoves, L = D.querySelector('#tab-' + tabOf() + ' .nm-layer-' + k);
+            if (M && typeof M.isOpen === 'function' && M.isOpen(k) && !(L && L.classList && L.classList.contains('fyw'))) { try { M.show(k, false); return true; } catch (e) { return false; } }
+        }
         if (tabOf() !== 'foryou' || !H.classList.contains('rm-room-open')) return false;
         /* item 36: the chat has no channel list behind it any more. Back goes to the Community tab you came from (LowiRoomsUI.back),
            else this returns false and Community closes. */

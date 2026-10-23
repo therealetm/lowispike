@@ -8,7 +8,7 @@
             Cook         -> the Cook tab (LowiHost.go('shelf')). The right-side Cook panel is a separate, later change.
             Log meal     -> the meal log sheet (LowiSpirit.meal: photo, barcode, recent meals), now a visible orb.
             Hold Fuel    -> still the meal log sheet, as a shortcut only.
-   - Water: Sips / Cup / Bottle -> LowiSpirit.water(kind) (wsip, Oct 23: estimates; XP 2 per whole cup through the existing per-day cap). Long press Water = undo the last one.
+   - Water: Sips / Cup / Bottle -> LowiSpirit.water(kind) (wsip, Oct 23: estimates; XP 2 per whole cup, at most 6 cups = 12 XP a day). Long press Water = undo the last one.
             Undo         -> takes ONE cup off today (never below 0, never another day) and, if today's water XP entries are now
                             more than today's cups, takes back the newest one (unaward), so add / undo loops net zero.
    - Move:  Mirror       -> LowiMirror.open(): Mirror mode, the camera workout (Oct 23, Emmanuel), the first orb.

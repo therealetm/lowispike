@@ -1,7 +1,7 @@
 'use strict';
 /* Oct 23, 2026 (Eman: "based on how many sips, an estimate of sips you took from your bottle or from your cup ... x amount of sip,
    or one cup, or one whole bottle"). Water is logged by estimate: Sips (1/4 cup, ~60 ml), Cup (~250 ml), Bottle (3 cups, ~750 ml).
-   The store stays in cups (quarters allowed), XP stays 2 per whole cup up to 6 a day, long press on Water = undo the last one. */
+   The store stays in cups (quarters allowed), XP stays 2 per whole cup for up to 6 cups a day (at most 12 XP), long press on Water = undo the last one. */
 const test = require('node:test'), assert = require('node:assert'), fs = require('node:fs'), path = require('node:path');
 const K = require('../spirit-core.js');
 const B = require('../home-blooms-v2.js');

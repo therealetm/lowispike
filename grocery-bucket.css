@@ -20,3 +20,17 @@
 .gb-rm{width:44px;height:44px;flex:none;border:0;background:transparent;color:inherit;font-size:22px;opacity:.6}
 .gb-empty{margin:6px 0 0;opacity:.7;font-size:13px}
 html.light .gb-row,[data-theme=light] .gb-row{background:rgba(10,132,255,.06)}
+/* grocery-2: shop picker, price + spike points per item, shop total + total points (16px fields so iOS does not zoom) */
+.gb-shop{display:flex;flex-direction:column;gap:4px;margin:8px 0 4px;font-size:12px;opacity:.95}
+.gb-shop select{min-height:44px;font:inherit;font-size:16px;padding:0 12px;border-radius:14px;border:1px solid rgba(90,169,255,.45);background:rgba(10,132,255,.08);color:inherit}
+.gb-pin{flex:none;display:block}
+.gb-pin input{width:96px;min-height:44px;font:inherit;font-size:16px;padding:0 10px;border-radius:12px;border:1px solid rgba(90,169,255,.45);background:transparent;color:inherit;text-align:right}
+.gb-pin input[aria-invalid=true]{border-color:var(--hi,#ff6b6b)}
+.gb-pr{flex:none;display:flex;flex-direction:column;align-items:flex-end;text-align:right}
+.gb-pr small{opacity:.65;font-size:11px}
+.gb-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.gb-tot{margin-top:10px;padding:10px 12px;border-radius:14px;background:rgba(10,132,255,.12);border:1px solid rgba(90,169,255,.3);display:flex;flex-direction:column;gap:4px}
+.gb-tot>div{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.gb-tot b{font-size:17px;color:#0A84FF}
+.gb-tot small{opacity:.7;font-size:12px}
+html.light .gb-tot b,[data-theme=light] .gb-tot b{color:#0b5bbf}

@@ -40,7 +40,17 @@
         points: ['Spike points', 'Spike-Punkte', 'Puntos de pico'],
         ptsNote: ['From each card\'s blood sugar meter, lower is gentler', 'Vom Blutzucker-Balken jeder Karte, weniger ist sanfter', 'Del medidor de azúcar de cada tarjeta, menos es más suave'],
         typed: ['typed', 'eingetippt', 'escrito'],
-        reported: ['reported {d}', 'gemeldet {d}', 'reportado {d}']
+        reported: ['reported {d}', 'gemeldet {d}', 'reportado {d}'],
+        todayG: ['Today\'s groceries', 'Heutige Einkäufe', 'La compra de hoy'],
+        todayOpen: ['Today\'s groceries + what to cook', 'Heutige Einkäufe + was kochen', 'La compra de hoy + qué cocinar'],
+        bought: ['What you bought', 'Was du gekauft hast', 'Lo que compraste'],
+        cook: ['Cook from it', 'Daraus kochen', 'Cocina con ello'],
+        cookNote: ['Recipes from your Cook book that use what you bought.', 'Rezepte aus deinem Kochbuch mit deinen Einkäufen.', 'Recetas de tu recetario con lo que compraste.'],
+        uses: ['Uses: {s}', 'Nutzt: {s}', 'Usa: {s}'],
+        alsoNeed: ['Also needs: {s}', 'Brauchst noch: {s}', 'También necesitas: {s}'],
+        noCook: ['No recipe in the app matches these yet. Add more groceries or browse Cook.', 'Noch kein Rezept in der App passt dazu. Kauf mehr ein oder stöbere in Kochen.', 'Aún no hay recetas en la app que encajen. Añade más compras o explora Cocinar.'],
+        noneToday: ['Nothing in today\'s bucket yet. Scan a product and tap Add to bucket.', 'Noch nichts im heutigen Korb. Scanne ein Produkt und tippe In den Korb.', 'Nada en la cesta de hoy. Escanea un producto y toca Añadir a la cesta.'],
+        openRecipe: ['Open recipe', 'Rezept öffnen', 'Abrir receta']
     };
     function langIndex(l) { l = String(l || '').toLowerCase(); return l.indexOf('de') === 0 ? 1 : l.indexOf('es') === 0 ? 2 : 0; }
     function tx(k, i, n, s) { const r = TX[k] || [k]; let o = r[i] || r[0]; if (n != null) o = o.replace('{n}', String(n)); if (s != null) o = o.replace('{s}', String(s)).replace('{d}', String(s)); return o; }
@@ -99,10 +109,52 @@
         (items || []).forEach(it => { const p = priceFor(it, (reportsByKey || {})[it.k], shop, now); if (p) { price += p.amount; priced++; } if (typeof it.pts === 'number') { points += it.pts; scored++; } });
         return { price: Math.round(price * 100) / 100, priced, missing: (items || []).length - priced, points, scored, n: (items || []).length };
     }
+    /* grocery-3: cook suggestions from today's bucket, drawn ONLY from recipes the app already has (Cook's LowiAllRecipes:
+       {id, n, e, book, ing: [{g, n}]}) and Cook's own group words (GROUP_WORDS: {g: [words]}). An ingredient counts as bought
+       when a bucket item's name/brand contains a word of the ingredient's name (4+ letters) or one of its group's words.
+       Ranked by how many ingredients the groceries cover, then fewer still needed, then Cook book recipes first. */
+    const WSPLIT = /[^a-z0-9äöüßàáâãçèéêëìíîïñòóôõùúûý]+/;
+    const STOP = { with: 1, from: 1, sugar: 1, free: 1, light: 1, lean: 1, fresh: 1, sheets: 1, mixed: 1, other: 1, plain: 1 };
+    function wordsOf(t) { return String(t || '').toLowerCase().split(WSPLIT).filter(w => w.length >= 4 && !STOP[w]); }
+    function ingName(i) { return typeof i === 'string' ? (i.split('|')[1] || i) : (i && i.n) || ''; }
+    function ingGroup(i) { return typeof i === 'string' ? (i.indexOf('|') > 0 ? i.split('|')[0] : '') : (i && i.g) || ''; }
+    /* German/Spanish shelf names for Cook's groups (Cook's GROUP_WORDS is mostly English): vocabulary only, never recipes */
+    const LOCAL_WORDS = {
+        hack: ['hackfleisch', 'rinderhack', 'frikadelle', 'carne picada', 'hamburguesa'],
+        huhn: ['hähnchen', 'haehnchen', 'pute', 'lachs', 'thunfisch', 'garnelen', 'fisch', 'pollo', 'pavo', 'salmón', 'salmon', 'atún', 'gambas', 'pescado'],
+        paprika: ['pimiento'],
+        salat: ['spinat', 'rucola', 'blattsalat', 'lechuga', 'espinacas', 'rúcula'],
+        gemuese: ['gurke', 'tomate', 'brokkoli', 'zucchini', 'pilze', 'champignon', 'kohl', 'blumenkohl', 'aubergine', 'pepino', 'brócoli', 'calabacín', 'champiñón', 'coliflor'],
+        kaese: ['käse', 'kaese', 'gouda', 'emmentaler', 'schafskäse', 'queso'],
+        milch: ['joghurt', 'quark', 'skyr', 'sahne', 'yogur', 'nata'],
+        eier: ['eier', 'huevo', 'huevos'],
+        fett: ['nüsse', 'nuesse', 'mandeln', 'walnüsse', 'walnuss', 'olivenöl', 'aguacate', 'nueces', 'almendras', 'aceite'],
+        wuerze: ['senf', 'gewürz', 'mostaza', 'especias'],
+        snack: ['schokolade', 'beeren', 'chocolate', 'bayas', 'frutos rojos']
+    };
+    function covers(itemText, ing, groupWords) {
+        const t = itemText; if (!t) return false;
+        if (wordsOf(ingName(ing)).some(w => t.indexOf(w) >= 0)) return true;
+        const g = ingGroup(ing), gw = [].concat(Array.isArray((groupWords || {})[g]) ? groupWords[g] : [], LOCAL_WORDS[g] || []);
+        return gw.length > 0 && gw.some(w => String(w).length >= 3 && (String(w).indexOf(' ') > 0 ? t.indexOf(String(w).toLowerCase()) >= 0 : t.split(WSPLIT).some(x => x.indexOf(String(w).toLowerCase()) >= 0)));
+    }
+    function suggest(items, recipes, groupWords, max) {
+        const texts = (items || []).map(it => ({ it, t: (String(it.name || '') + ' ' + String(it.brand || '')).toLowerCase() })).filter(x => x.t.trim());
+        if (!texts.length) return [];
+        const out = [];
+        (Array.isArray(recipes) ? recipes : []).forEach(r => {
+            if (!r || !r.id || !r.n || !Array.isArray(r.ing) || !r.ing.length) return;
+            const have = [], need = [], used = new Set();
+            r.ing.forEach(i => { const hit = texts.filter(x => covers(x.t, i, groupWords)); if (hit.length) { have.push(ingName(i)); hit.forEach(x => used.add(x.it.name || x.it.code)); } else need.push(ingName(i)); });
+            if (have.length) out.push({ id: String(r.id), n: String(r.n), e: r.e || '', book: !!r.book, have, need, used: [...used] });
+        });
+        out.sort((a, b) => b.have.length - a.have.length || a.need.length - b.need.length || (b.book ? 1 : 0) - (a.book ? 1 : 0) || a.n.localeCompare(b.n));
+        return out.slice(0, max == null ? 3 : max);
+    }
     function fmtPrice(a, li) { const v = Number(a).toFixed(2); return li ? v.replace('.', ',') + ' €' : '€' + v; }
     function load(store) { try { return clean(JSON.parse((store || root.localStorage).getItem(KEY) || '{}')); } catch (e) { return { days: {}, shops: {} }; } }
     function save(s, store) { try { (store || root.localStorage).setItem(KEY, JSON.stringify(clean(s))); return true; } catch (e) { return false; } }
-    const api = { KEY, KEEP_DAYS, TX, langIndex, tx, dayKey, keyOf, add, remove, today, has, load, save, item, parsePrice, setPrice, setShop, shopOf, shopsFrom, priceFor, totals, fmtPrice, validReports };
+    const api = { KEY, KEEP_DAYS, TX, langIndex, tx, dayKey, keyOf, add, remove, today, has, load, save, item, parsePrice, setPrice, setShop, shopOf, shopsFrom, priceFor, totals, fmtPrice, validReports, suggest };
     root.LowiBucketCore = api;
     if (typeof module === 'object' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

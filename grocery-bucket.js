@@ -41,7 +41,8 @@
             (tot.missing ? '<small class="gb-miss">' + esc(tot.missing === 1 ? T('missing1') : T('missingN', tot.missing)) + '</small>' : '') +
             '<div><span>' + esc(T('points')) + '</span><b class="gb-tpts">' + tot.points + '</b></div><small>' + esc(T('ptsNote')) + '</small></div>' : '';
         return '<details class="gb-list"' + (open ? ' open' : '') + '><summary>' + esc(T('list')) + ' <b>' + items.length + '</b></summary>' + (items.length ?
-            '<label class="gb-shop"><span>' + esc(T('shop')) + '</span><select data-gb-shop="1">' + opts + '</select></label><ul>' + items.slice().reverse().map(row).join('') + '</ul>' + total :
+            '<label class="gb-shop"><span>' + esc(T('shop')) + '</span><select data-gb-shop="1">' + opts + '</select></label><ul>' + items.slice().reverse().map(row).join('') + '</ul>' + total +
+            '<button type="button" class="gb-today" data-gbt="open">' + esc(T('todayOpen')) + ' <span aria-hidden="true">›</span></button>' :
             '<p class="gb-empty">' + esc(T('empty')) + '</p>') + '</details>';
     }
     function doneHTML(id) {
@@ -76,5 +77,33 @@
         else if (t.matches('[data-gb-price]')) { const v = t.value.trim(); if (v && C.parsePrice(v) == null) { t.setAttribute('aria-invalid', 'true'); return; } C.save(C.setPrice(C.load(), t.dataset.gbPrice, v)); relist(row); fire('price', {}); }
     }, true);
     D.addEventListener('keydown', e => { const t = e.target; if (e.key === 'Enter' && t && t.matches && t.matches('[data-gb-price]')) { e.preventDefault(); t.blur(); } }, true);
-    W.LowiBucket = { rowHTML, today: () => C.today(C.load()) };
+    /* grocery-3 (Seven, Maya 7 handover): "Today's groceries: at the end of the day, show what was bought, with suggestions for
+       what to cook from it." A sheet with today's bucket (items, price + points totals from the core) and up to 3 recipes from
+       Cook's own recipe list (LowiAllRecipes) that use them. In-app entry only (the bucket list, LowiBucket.openToday): the repo
+       has no evening hour for a reminder, so none is invented. */
+    function recipes() { try { return typeof W.LowiAllRecipes === 'function' ? W.LowiAllRecipes() : []; } catch (e) { return []; } }
+    function groupWords() { try { return typeof GROUP_WORDS !== 'undefined' ? GROUP_WORDS : null; } catch (e) { return null; } } /* Cook's own words (index.html) */
+    function todayHTML() {
+        const s = C.load(), items = C.today(s), L = li();
+        if (!items.length) return '<div class="gt-sheet"><div class="h2">' + esc(T('todayG')) + '</div><p class="gb-empty">' + esc(T('noneToday')) + '</p></div>';
+        const byKey = {}; items.forEach(x => { byKey[x.k] = reportsFor(x); });
+        const picked = C.shopOf(s), shop = picked === OTHER ? '' : picked, tot = C.totals(items, byKey, shop);
+        const list = items.map(x => { const pr = C.priceFor(x, byKey[x.k], shop);
+            return '<li><span class="gb-dot v-' + esc(x.verdict) + '" aria-hidden="true"></span><span class="gb-nm">' + esc(x.name || x.code) + (x.brand ? '<small>' + esc(x.brand) + '</small>' : '') + '</span>' +
+                '<span class="gb-pr"><b>' + esc(pr ? C.fmtPrice(pr.amount, L) : '–') + '</b><small>' + esc(typeof x.pts === 'number' ? T('pts', x.pts) : T('noPts')) + '</small></span></li>'; }).join('');
+        const sug = C.suggest(items, recipes(), groupWords(), 3);
+        const cook = sug.length ? '<ul class="gt-cook">' + sug.map(r => '<li><button type="button" class="gt-rec" data-sh="recipe" data-r="' + esc(r.id) + '" aria-label="' + esc(T('openRecipe') + ': ' + r.n) + '">' +
+                '<span class="gt-e" aria-hidden="true">' + esc(r.e || '🍽️') + '</span><span class="gb-nm"><b>' + esc(r.n) + '</b><small>' + esc(C.tx('uses', L, null, r.have.join(', '))) + '</small>' +
+                (r.need.length ? '<small class="gt-need">' + esc(C.tx('alsoNeed', L, null, r.need.slice(0, 4).join(', ') + (r.need.length > 4 ? ' …' : ''))) + '</small>' : '') + '</span><span class="gt-go" aria-hidden="true">›</span></button></li>').join('') + '</ul>' :
+            '<p class="gb-empty gt-nocook">' + esc(T('noCook')) + '</p>';
+        return '<div class="gt-sheet"><div class="h2">' + esc(T('todayG')) + '</div>' +
+            '<div class="gt-lab">' + esc(T('bought')) + ' <b>' + items.length + '</b></div><ul class="gt-items">' + list + '</ul>' +
+            '<div class="gb-tot" role="status"><div><span>' + esc(shop ? C.tx('totalAt', L, null, shop) : T('total')) + '</span><b class="gb-tp">' + esc(C.fmtPrice(tot.price, L)) + '</b></div>' +
+            (tot.missing ? '<small class="gb-miss">' + esc(tot.missing === 1 ? T('missing1') : T('missingN', tot.missing)) + '</small>' : '') +
+            '<div><span>' + esc(T('points')) + '</span><b class="gb-tpts">' + tot.points + '</b></div></div>' +
+            '<div class="gt-lab">' + esc(T('cook')) + '</div><p class="gt-note">' + esc(T('cookNote')) + '</p>' + cook + '</div>';
+    }
+    function openToday() { if (!W.LowiR2 || !LowiR2.sheet) return null; const ov = LowiR2.sheet(todayHTML(), { cls: 'gt-ov' }); fire('today', {}); return ov; }
+    D.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-gbt="open"]'); if (!b) return; e.preventDefault(); e.stopPropagation(); openToday(); }, true);
+    W.LowiBucket = { rowHTML, today: () => C.today(C.load()), openToday, todayHTML };
 })();

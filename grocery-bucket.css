@@ -34,3 +34,18 @@ html.light .gb-row,[data-theme=light] .gb-row{background:rgba(10,132,255,.06)}
 .gb-tot b{font-size:17px;color:#0A84FF}
 .gb-tot small{opacity:.7;font-size:12px}
 html.light .gb-tot b,[data-theme=light] .gb-tot b{color:#0b5bbf}
+/* grocery-3: Today's groceries sheet + cook suggestions (brand blues, 44px+ targets) */
+.gb-today{width:100%;min-height:48px;margin-top:10px;border-radius:14px;border:1px solid rgba(90,169,255,.45);background:rgba(10,132,255,.12);color:#0A84FF;font:inherit;font-weight:650;display:flex;align-items:center;justify-content:center;gap:6px}
+html.light .gb-today,[data-theme=light] .gb-today{color:#0b5bbf}
+.gt-sheet .h2{margin-bottom:6px}
+.gt-lab{margin:14px 0 4px;font-weight:650;display:flex;align-items:center;gap:6px}
+.gt-lab b{min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:rgba(10,132,255,.16);display:inline-grid;place-items:center;font-size:12px}
+.gt-items,.gt-cook{list-style:none;margin:0;padding:0}
+.gt-items li{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid rgba(90,169,255,.18)}
+.gt-note{margin:0 0 6px;opacity:.7;font-size:13px}
+.gt-cook li{margin:8px 0}
+.gt-rec{width:100%;min-height:56px;display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:16px;border:1px solid rgba(90,169,255,.3);background:rgba(10,132,255,.08);color:inherit;font:inherit;text-align:left;-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3)}
+.gt-e{font-size:26px;flex:none}
+.gt-rec .gb-nm small{opacity:.75;font-size:12px}
+.gt-need{opacity:.6!important}
+.gt-go{color:#0A84FF;font-size:22px;flex:none}

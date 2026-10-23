@@ -120,3 +120,46 @@ test('grocery-2: the card list reads prices only from real data (shelf reports, 
     assert.match(js, /data-gb-shop/); assert.match(js, /data-gb-price/); assert.match(js, /gb-tot/);
     assert.match(read('grocery-bucket.css'), /\.gb-pin input\{[^}]*font-size:16px/);
 });
+
+/* grocery-3 (Seven): "Today's groceries: at the end of the day, show what was bought, with suggestions for what to cook from it." */
+const RECS = [
+    { id: 'b_burger', n: 'Nori Smash Burger Stack', e: '🍔', book: true, ing: [{ g: 'salat', n: 'Nori sheets' }, { g: 'hack', n: 'Lean beef mince' }, { g: 'kaese', n: 'Cheddar' }, { g: 'gemuese', n: 'Cucumber' }] },
+    { id: 'b_omelette', n: 'Feta Omelette', e: '🍳', book: true, ing: [{ g: 'eier', n: 'Eggs' }, { g: 'kaese', n: 'Feta' }] },
+    { id: 'b_salmon', n: 'Salmon Bowl', book: true, ing: ['huhn|Salmon fillet', 'salat|Spinach'] },
+    { id: 'm_x', n: 'Rebuild', ing: [{ g: 'snack', n: 'Snacks' }] }
+];
+const GW = { hack: ['mince', 'hack', 'beef'], huhn: ['chicken', 'salmon', 'lachs', 'hähnchen'], kaese: ['cheese', 'feta', 'cheddar'], eier: ['egg', 'eggs'], salat: ['spinach', 'salat'], gemuese: ['cucumber', 'gurke'], snack: ['chocolate'] };
+
+test('grocery-3 suggest: only recipes the app has, ranked by how much the groceries cover; nothing bought = nothing suggested', () => {
+    const items = [{ name: 'Bio Eier 10 Stück' }, { name: 'Feta Classic', brand: 'Salakis' }, { name: 'Rinder Hackfleisch' }, { name: 'Lachsfilet' }];
+    const s = C.suggest(items, RECS, GW, 3);
+    assert.ok(s.length >= 2 && s.length <= 3);
+    assert.equal(s[0].id, 'b_omelette');               /* eggs + feta: every ingredient covered */
+    assert.deepEqual(s[0].have, ['Eggs', 'Feta']);
+    assert.deepEqual(s[0].need, []);
+    const ids = s.map(x => x.id); assert.ok(ids.includes('b_burger') && ids.includes('b_salmon'));
+    s.forEach(x => assert.ok(RECS.some(r => r.id === x.id), 'never an invented recipe'));
+    const burger = s.find(x => x.id === 'b_burger'); assert.ok(burger.have.includes('Lean beef mince') && burger.need.includes('Cucumber'));
+    assert.ok(!ids.includes('m_x'), 'a recipe with nothing bought is not suggested');
+    assert.deepEqual(C.suggest([], RECS, GW), []);
+    assert.deepEqual(C.suggest(items, null, GW), []);
+    assert.deepEqual(C.suggest([{ name: 'Toilet paper' }], RECS, GW), []);
+});
+
+test('grocery-3 suggest works without group words (ingredient-name words only) and caps at max', () => {
+    const s = C.suggest([{ name: 'Cheddar slices' }, { name: 'Baby spinach' }], RECS, null, 1);
+    assert.equal(s.length, 1);
+    assert.ok(['b_burger', 'b_salmon'].includes(s[0].id));
+});
+
+test('grocery-3 view: Today\'s groceries sheet from the bucket list, recipes from Cook (LowiAllRecipes + GROUP_WORDS), no invented reminder hour', () => {
+    const js = read('grocery-bucket.js'), html = read('index.html');
+    assert.match(js, /data-gbt="open"/);
+    assert.match(js, /openToday/);
+    assert.match(js, /LowiAllRecipes/);
+    assert.match(js, /data-sh="recipe" data-r=/);
+    assert.match(html, /window\.LowiAllRecipes = allRecipes/);
+    assert.match(html, /const GROUP_WORDS = \{/);
+    assert.doesNotMatch(js, /Notification|setHours|getHours/, 'no reminder hour invented');
+    ['todayG', 'bought', 'cook', 'noCook', 'noneToday', 'uses', 'alsoNeed'].forEach(k => assert.equal(C.TX[k].length, 3, k));
+});

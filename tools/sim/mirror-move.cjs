@@ -32,6 +32,8 @@ const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + '[' + tag + '] ' + 
         await H.sleep(700);
         /* wait until the orbs have finished flying out (two reads 200 ms apart agree), so a mid-animation frame is not read as overlap */
         const orbSig = () => P.evaluate(() => [...document.querySelectorAll('.hb2-bloom.hb2-move .hb2-orb')].map(o => { const r = o.getBoundingClientRect(); return Math.round(r.left) + ',' + Math.round(r.top) + ',' + Math.round(r.width); }).join(';'));
+        const orbsMoving = () => P.evaluate(() => [...document.querySelectorAll('.hb2-bloom.hb2-move .hb2-orb')].some(o => o.getAnimations({ subtree: true }).some(a => a.playState !== 'finished' && a.playState !== 'idle' && (a.effect && a.effect.getTiming().iterations) !== Infinity)));
+        for (let i = 0; i < 25 && await orbsMoving(); i++) await H.sleep(150);
         for (let i = 0, prev = await orbSig(); i < 20; i++) { await H.sleep(200); const cur = await orbSig(); if (cur && cur === prev) break; prev = cur; }
         let bl = await P.evaluate(() => {
             const ov = document.querySelector('.hb2-bloom.hb2-move'); if (!ov) return null;

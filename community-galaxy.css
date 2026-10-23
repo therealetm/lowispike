@@ -112,6 +112,7 @@ html[data-ui=light] #tab-foryou.nm-solo{background:radial-gradient(70% 40% at 80
 #cmPaneChat[data-spirit-chat] .cg-mid .cg-st{display:block;font-size:10px;color:#7b7896}
 @keyframes cgMidIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.85)}100%{opacity:1;transform:translate(-50%,-50%)}}
 .cs-sheet .cg-bottag{display:inline-block;vertical-align:middle;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;background:#8f7cff2e;color:#8f7cff;margin-left:6px}
+.cs-sheet h2 .cs-botd{white-space:nowrap;font-weight:600;opacity:.62}
 .cs-sheet .cg-pbot .cp-form{width:72px;height:72px}
 .cs-sheet .cg-prows{display:grid;gap:6px;margin:12px 0}
 .cs-sheet .cg-prow{display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:8px 12px;border-radius:12px;background:var(--r2-field,#ffffff10)}

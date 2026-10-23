@@ -108,7 +108,10 @@ test('Community galaxy leaves out the test accounts, also when they posted in th
   const g = galaxy(TEST.concat(REAL), msgs);
   for (const n of HIDDEN_NAMES) assert.ok(!g.names.includes(n), n + ' has no bubble');
   for (const id of HA.IDS.slice(0, 3).concat(['bb1788fa-a11e-4ee9-ac28-4beef63248ae', 'e3cce12d-b025-4385-89f7-704595a8c06c'])) assert.ok(!g.html.includes('data-uid="' + id + '"'));
-  for (const n of KEPT_NAMES) assert.equal(g.names.filter(x => x === n).length, 1, n + ' has one bubble');
+  /* Oct 24: the galaxy bots (Mateo, Jonas, Samir) keep their bubble and read "Name - bot" (bot-label, community-chat.js) */
+  for (const n of KEPT_NAMES) assert.equal(g.names.filter(x => x === n || x === n + ' - bot').length, 1, n + ' has one bubble');
+  for (const n of ['Mateo', 'Jonas', 'Samir']) assert.ok(g.names.includes(n + ' - bot'), n + ' is marked as a bot');
+  for (const n of ['Joseph Castellar', 'Q', 'Emmanuel']) assert.ok(g.names.includes(n), n + ' is not marked');
   assert.ok(g.names.includes('You'));
 });
 

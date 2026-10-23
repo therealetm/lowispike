@@ -93,6 +93,8 @@ html #cmPaneChat[data-spirit-chat] .cr-room .cm-chip.on{border-color:#64d2ff!imp
 html #cmPaneChat[data-spirit-chat] .cr-room .cm-msg.cg-focus .cm-bub{box-shadow:0 0 0 2px #64d2ff,0 0 26px -6px #64d2ff!important}
 #cmPaneChat[data-spirit-chat] .cr-bot{display:inline-block;margin-left:4px;padding:1px 6px;border-radius:8px;font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(235,235,245,.72);border:.5px solid rgba(255,255,255,.22);white-space:nowrap}
 #cmPaneChat[data-spirit-chat] .cs-by:has(.cr-bot) .cs-name{flex:0 1 auto}
+#cmPaneChat[data-spirit-chat] .cs-botd{flex:none;white-space:nowrap;font-size:12px;font-weight:600;color:rgba(220,232,245,.62)}
+#cmPaneChat[data-spirit-chat] .cs-by:has(.cs-botd) .cs-name{flex:0 1 auto}
 
 /* ---- day markers ---- */
 #cmPaneChat[data-spirit-chat] .cr-day{display:flex;align-items:center;gap:10px;flex:none;margin:4px 6px 0;color:rgba(140,215,255,.85);font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;line-height:1}

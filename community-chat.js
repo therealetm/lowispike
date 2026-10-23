@@ -236,6 +236,18 @@ function hueColor(id,me){return me?'#9cdac7':'hsl('+hue(id)+' 78% 74%)';}
 let BOTS=null,botChat=null,botTyping='',botTimer=0;
 function botList(){if(!BOTS)BOTS=G&&G.bots?G.bots():[];return BOTS;}
 function botOf(id){return typeof id==='string'&&id.startsWith('bot:')?botList().find(b=>b.uid===id)||null:null;}
+/* Oct 23, 11:40 PM (Emmanuel, call: bots in the chat rooms clearly marked, "a dash and then bot" next to the name).
+   Only accounts the app KNOWS are bots get the mark, never a guess from a name: the made-up galaxy companions (uid 'bot:...' that
+   LowiGalaxy.bots() lists) and accounts the server flags (profiles.bot, read by bot-accounts.js as LowiBotAccounts). You are never
+   marked; a name that already ends in "- bot" is not marked twice. Shared with the Rooms sheet as LowiBotLabel. */
+const BOT_DASH=[' - bot',' - Bot',' - bot'],BOT_DASHED=/\s?[-\u2013\u2014]\s?bot\s*$/i;
+/* Oct 23, 11:55 PM: the anonymous test accounts our own Circles check scripts make ("Lena", "Jonas", "Mia Test ####") are NOT bots:
+   they are hidden everywhere through their own test flag (leaderboard task). If the app knows an id is a test account, it never gets "- bot". */
+function isTestId(u){for(const A of [W.LowiBotAccounts,W.LowiTestAccounts]){if(!A)continue;for(const f of ['isTest','isTestAccount']){try{if(typeof A[f]==='function'&&A[f](u))return true;}catch(e){}}}return false;}
+function isBotId(id,self){const u=String(id==null?'':id);if(!u||u==='me'||u===String(self===undefined?scope:self||''))return false;if(botOf(u))return true;if(isTestId(u))return false;const B=W.LowiBotAccounts;try{return !!(B&&typeof B.isBot==='function'&&B.isBot(u));}catch(e){return false;}}
+function botName(n,id,l,self){const s=String(n==null?'':n);return isBotId(id,self)&&!BOT_DASHED.test(s)?s+(BOT_DASH[l==null?Math.max(0,lang()):l]||BOT_DASH[0]):s;}
+function botDash(id,n){return isBotId(id)&&!BOT_DASHED.test(String(n||''))?'<span class="cs-botd" data-bot="1">'+esc(BOT_DASH[Math.max(0,lang())]||BOT_DASH[0])+'</span>':'';}
+W.LowiBotLabel={isBot:isBotId,name:botName,DASH:BOT_DASH.slice()};
 function botStore(){if(!botChat){try{botChat=JSON.parse(localStorage.getItem('lowi.galaxy.botchat.v1')||'{}')||{};}catch(e){botChat={};}}return botChat;}
 function botSave(){try{localStorage.setItem('lowi.galaxy.botchat.v1',JSON.stringify(botStore()));}catch(e){}}
 function botSay(uid,from,t){const st=botStore(),arr=st[uid]=st[uid]||[];arr.push({id:'b'+Date.now().toString(36)+arr.length,from,t:String(t).slice(0,500),ts:Date.now()});if(arr.length>30)arr.splice(0,arr.length-30);botSave();}
@@ -281,9 +293,9 @@ function galaxy(ms,w,h,quiet){
   const parts=[];
   /* drawing order only (real people before bots); the spots themselves never depend on it */
   const drawOrder=L.spots.slice().sort((a,b)=>(b.me?1:0)-(a.me?1:0)||((r.get(a.uid)||{}).bot?1:0)-((r.get(b.uid)||{}).bot?1:0));
-  drawOrder.forEach((x,i)=>{const me=x.me,p=me?{uid:scope,n:own().n||tr('you')}:r.get(x.uid);if(!p)return;const label=me?tr('you'):p.n;names.push(label);
+  drawOrder.forEach((x,i)=>{const me=x.me,p=me?{uid:scope,n:own().n||tr('you')}:r.get(x.uid);if(!p)return;const label=me?tr('you'):botName(p.n,x.uid);names.push(label);
    const picked=!me&&sel===x.uid,talking=speak&&speak===x.uid,size=me?meS:bodyS;
-   const aria=me?(sel?tr('toEveryone'):tr('youAll')):(picked?fill('talking',p.n):fill('talkTo',p.n));
+   const aria=me?(sel?tr('toEveryone'):tr('youAll')):(picked?fill('talking',label):fill('talkTo',label));
    const attrs='data-uid="'+esc(x.uid)+'" data-name="'+esc(me?own().n||'':p.n)+'" aria-label="'+esc(aria)+'"'+(me?'':' aria-pressed="'+picked+'"')+' style="--s:'+size+'px;--i:'+(i%24)+';--c:'+hueColor(x.uid,me)+'"';
    const inner='<span class="cg-orb">'+mate(me?(scope||'me'):x.uid,'g'+i)+'</span><span class="cg-name">'+esc(label)+'</span>';
    parts.push(button(me?'to-all':'person',inner,attrs,'cg-body'+(me?' me':'')+(picked?' sel':'')+(talking?' speaking':'')+(p.bot?' bot':'')+(me&&!scope?' cg-off':'')));
@@ -499,10 +511,10 @@ function roomHead(q,ms,state,el){const rp=roomPeople(ms),meta=q('#crMeta'),link=
   if(el&&el.dataset&&(el.dataset.pinned==='1')!==!!p){if(p)el.dataset.pinned='1';else delete el.dataset.pinned;}}
  if(meta){const t=rp.voices===1?tr('roomVoice'):rp.voices>1?fill('roomVoices',rp.voices):tr('roomOpen');if(meta.textContent!==t)meta.textContent=t;}
  if(link){const k={live:'linkLive',connecting:'linkSync',loading:'linkSync',offline:'linkOff',error:'linkErr',auth:'linkAuth'}[state]||'linkLive',h='<i aria-hidden="true"></i>'+esc(tr(k));if(link.dataset)link.dataset.state=state;if(link.innerHTML!==h)link.innerHTML=h;}
- if(crew){const h=rp.crew.length?'<span class="cr-crewl">'+esc(tr('roomCrew'))+'</span><div class="cr-crews">'+rp.crew.map(p=>button('profile',mate(p.uid,'cr'+sid(p.uid)),'data-uid="'+esc(p.uid)+'" data-name="'+esc(p.n)+'" aria-label="'+esc(p.n)+' · '+tr('profile')+'" style="--chat-color:'+hueColor(p.uid,false)+'"','cr-mate')).join('')+'</div>':'<span class="cr-crewl">'+esc(tr('roomCrew'))+'</span><p class="cr-crewnone">'+esc(tr('roomNoCrew'))+'</p>';if(crew.__html!==h){crew.innerHTML=h;crew.__html=h;}}}
+ if(crew){const h=rp.crew.length?'<span class="cr-crewl">'+esc(tr('roomCrew'))+'</span><div class="cr-crews">'+rp.crew.map(p=>button('profile',mate(p.uid,'cr'+sid(p.uid)),'data-uid="'+esc(p.uid)+'" data-name="'+esc(p.n)+'" aria-label="'+esc(botName(p.n,p.uid))+' · '+tr('profile')+'" style="--chat-color:'+hueColor(p.uid,false)+'"','cr-mate')).join('')+'</div>':'<span class="cr-crewl">'+esc(tr('roomCrew'))+'</span><p class="cr-crewnone">'+esc(tr('roomNoCrew'))+'</p>';if(crew.__html!==h){crew.innerHTML=h;crew.__html=h;}}}
 function renderLocal(m,prev,next){const mine=m.uid===scope,start=!prev||prev.uid!==m.uid||m.ts-prev.ts>300000,end=!next||next.uid!==m.uid||next.ts-m.ts>300000;
  const who=end?'<span class="cs-avatar cp-av" aria-hidden="true">'+mate(mine?(scope||'me'):m.uid,'l'+sid(m.id))+'</span>':'<span class="cp-av cp-gap" aria-hidden="true"></span>';
- const head='<div class="cs-by">'+(start&&!mine?'<b class="cs-name">'+esc(m.by)+'</b><span class="cr-bot">'+tr('botTag')+'</span>':'<span class="cp-sr">'+esc(mine?tr('you'):m.by)+' '+tr('says')+'</span>')+'</div>';
+ const head='<div class="cs-by">'+(start&&!mine?'<b class="cs-name">'+esc(m.by)+'</b>'+botDash(m.uid,m.by):'<span class="cp-sr">'+esc(mine?tr('you'):botName(m.by,m.uid))+' '+tr('says')+'</span>')+'</div>';
  const foot='<div class="cm-foot"><time datetime="'+new Date(m.ts).toISOString()+'">'+esc(time(m.ts))+'</time></div>';
  return '<article class="cm-msg cp-msg cp-local'+(mine?' mine':'')+(start?' cp-start':'')+(end?' cp-end':'')+'" id="cm-'+esc(m.id)+'" data-who="'+esc(m.by)+'" style="--chat-color:'+(mine?'#9cdac7':hueColor(m.uid,false))+'">'+who+'<div class="cm-bub">'+head+msgBody(m)+foot+'</div></article>';}
 function renderMessage(m,all,prev,next){
@@ -512,10 +524,10 @@ function renderMessage(m,all,prev,next){
  const color=H.color?H.color(p.s):'#9fd8ff';
  const start=!prev||prev.uid!==m.uid||m.ts-prev.ts>300000,end=!next||next.uid!==m.uid||next.ts-m.ts>300000;
  const rx=H.reactions().filter(x=>x.message_id===m.id&&!blocked(x.user_id));
- const quote=m.re?'<div class="cm-quote">'+(re?'<b>'+esc(re.by)+'</b> '+esc(plain(re).slice(0,90)):tr('gone'))+'</div>':'';
+ const quote=m.re?'<div class="cm-quote">'+(re?'<b>'+esc(botName(re.by,re.uid))+'</b> '+esc(plain(re).slice(0,90)):tr('gone'))+'</div>':'';
  const reacts=K.EMOJI.map(em=>{const rows=rx.filter(x=>x.emoji===em);return rows.length?button('react',esc(em)+' '+rows.length,'data-id="'+esc(m.id)+'" data-emoji="'+esc(em)+'" aria-pressed="'+rows.some(x=>x.user_id===scope)+'"'+(transport.reactionBusy(m.id,em)?' disabled':''),'cm-chip'+(rows.some(x=>x.user_id===scope)?' on':'')):'';}).join('');
- const who=end?button('profile',mate(m.uid,'m'+sid(m.id)),'data-uid="'+esc(m.uid)+'" data-name="'+esc(m.by)+'" aria-label="'+esc(mine?tr('you'):m.by)+' · '+tr('profile')+'"','cs-avatar cp-av'):'<span class="cp-av cp-gap" aria-hidden="true"></span>';
- const head='<div class="cs-by">'+(start&&!mine?'<b class="cs-name" data-chat="profile" data-uid="'+esc(m.uid)+'" data-name="'+esc(m.by)+'">'+esc(m.by)+'</b>':'<span class="cp-sr">'+esc(mine?tr('you'):m.by)+' '+tr('says')+'</span>')+'</div>';
+ const who=end?button('profile',mate(m.uid,'m'+sid(m.id)),'data-uid="'+esc(m.uid)+'" data-name="'+esc(m.by)+'" aria-label="'+esc(mine?tr('you'):botName(m.by,m.uid))+' · '+tr('profile')+'"','cs-avatar cp-av'):'<span class="cp-av cp-gap" aria-hidden="true"></span>';
+ const head='<div class="cs-by">'+(start&&!mine?'<b class="cs-name" data-chat="profile" data-uid="'+esc(m.uid)+'" data-name="'+esc(m.by)+'">'+esc(m.by)+'</b>'+botDash(m.uid,m.by):'<span class="cp-sr">'+esc(mine?tr('you'):botName(m.by,m.uid))+' '+tr('says')+'</span>')+'</div>';
  /* time sits bottom-right inside the bubble, Telegram-style; the ··· actions button rides next to it */
  const foot='<div class="cm-foot">'+(pending?'':button('more','<span aria-hidden="true">···</span>','data-id="'+esc(m.id)+'" aria-label="'+tr('more')+'" aria-expanded="'+open+'"','cp-more'))+'<time datetime="'+new Date(m.ts).toISOString()+'">'+esc(time(m.ts))+'</time></div>';
  const pinNow=open&&!pending&&isAdmin()?roomPinned():null,pinB=open&&!pending&&isAdmin()?(pinNow&&pinNow.id===m.id?button('unpin',tr('unpinMsg'),'data-id="'+esc(m.id)+'"','cm-mini cm-pinb'):button('pin-msg',tr('pinMsg'),'data-id="'+esc(m.id)+'"','cm-mini cm-pinb')):'';
@@ -805,7 +817,7 @@ function openPerson(id,name){if(!id)return;const bt=botOf(id),mine=id===scope;co
   button('select-close','<i aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" focusable="false"><path d="M5 6.5A2.5 2.5 0 0 1 7.5 4h9A2.5 2.5 0 0 1 19 6.5v6a2.5 2.5 0 0 1-2.5 2.5H11l-4 4v-4h0A2 2 0 0 1 5 13z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></i><span>'+tr('pcChat')+'</span>','data-uid="'+esc(id)+'" aria-label="'+esc(fill('talkBtn',n))+'"','cp-act cp-act-pri')+
   button('energy','<i aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" focusable="false"><path d="M13 3 6 13.5h5L10 21l7-10.5h-5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></i><span>'+tr('pcEnergy')+'</span>','data-uid="'+esc(id)+'" data-name="'+esc(n)+'"'+(care?'':' disabled aria-disabled="true" title="'+esc(tr('pcEnergyNo'))+'"'),'cp-act');
  const foot=bt?(bt.line&&bt.line[Math.max(0,lang())]?'<p class="cg-pline">“'+esc(bt.line[Math.max(0,lang())])+'”</p>':'')+'<p class="cp-note">'+tr('botNote')+'</p>':(!mine&&!md?'<p class="cp-note">'+tr('pcSoon')+'</p>':'')+'<p class="cp-note">'+tr('pcSharedNote')+(mine?'':' '+tr('pcLiveNote'))+'</p>'+(!mine?'<p>'+tr('blockNote')+'</p>'+button('block',tr('block'),'data-uid="'+esc(id)+'" data-name="'+esc(n)+'"')+'<p class="cs-result" id="csBlockResult" role="status"></p>':'');
- return sheet('<div class="cp-card" data-person="'+esc(id)+'"><div class="cp-hero"><div class="cp-photo'+(!bt&&p.avatar?' has-pic':'')+'">'+art+'</div><h2>'+esc(n)+(bt?' <span class="cg-bottag">'+tr('botTag')+'</span>':'')+'</h2><p class="cp-live cp-'+cls+'"><i aria-hidden="true"></i><span>'+esc(st)+'</span></p></div><div class="cp-acts">'+acts+'</div><div class="cp-rows">'+rows+'</div>'+foot+'</div>');}
+ return sheet('<div class="cp-card" data-person="'+esc(id)+'"><div class="cp-hero"><div class="cp-photo'+(!bt&&p.avatar?' has-pic':'')+'">'+art+'</div><h2>'+esc(n)+(bt?' <span class="cg-bottag">'+tr('botTag')+'</span>':botDash(id,n))+'</h2><p class="cp-live cp-'+cls+'"><i aria-hidden="true"></i><span>'+esc(st)+'</span></p></div><div class="cp-acts">'+acts+'</div><div class="cp-rows">'+rows+'</div>'+foot+'</div>');}
 /* 24 Oct 2026 08:30 (Emmanuel: birthday and star sign always on the Community card, no consent ask, no hide toggle). Only an account
    with no birthday saved gets this sheet, from "Add my birthday" on its own card; it says what shows and saves the date (setBday). */
 function askBday(){if(!H.setBday)return;sheet('<div class="cp-ask" data-ps-bday><h2>'+tr('psTitle')+'</h2><p>'+esc(tr('psWhy'))+'</p><form data-chat-form="bday"><label>'+esc(tr('psBdayLabel'))+' <input type="date" name="bday" required min="1920-01-01" max="'+new Date().toISOString().slice(0,10)+'"></label><button class="cs-submit cp-act-pri" data-sfx="none">'+tr('save')+'</button><div class="cs-result" role="status"></div></form></div>');}
@@ -902,5 +914,6 @@ try{if(navigator.serviceWorker&&navigator.serviceWorker.addEventListener)navigat
    one person's companion and cells, and gathers everyone's companions in the far Community realm). Same companions as the map here. */
 function people(){try{ensureScope();const r=[...roster().values()];const me={uid:scope||'me',n:'You',lv:(W.LowiCompanion&&W.LowiCompanion.level&&+W.LowiCompanion.level())||1,me:true};return [me].concat(r).map((p,i)=>({uid:p.uid,name:p.n,lv:+p.lv||1,me:!!p.me,color:hueColor(p.uid,p.me),form:mate(p.me?scope:p.uid,'cw'+i)}));}catch(e){return [];}}
 /* 23 Oct 2026 (Emmanuel: tapping a name in Community did nothing): openProfile(uid,name) opens that person's profile card by user id, the same card as a tap on a chat avatar; it returns the card's sheet so the caller can come back when it closes. The name above a message opens it too. */
+try{W.addEventListener('lowi-bots',()=>refresh());}catch(e){}
 W.LowiCommunity={mount,refresh,send,comment,isQuiet,unread,messageHTML:renderMessage,mentions,fit,settings,openProfile:(uid,name)=>uid?openProfile(String(uid),name||''):null,blocked:id=>!!id&&blocked(String(id)),bots:()=>botList().slice(),people,select:uid=>{sel=uid||'';refresh();},thread:(o,id)=>{thread(o,id);refresh();},directed,latest:()=>{const ms=messages().filter(m=>m&&m.uid&&!m.demo&&!m.status&&!blocked(m.uid));const m=ms[ms.length-1];return m?{id:m.id,uid:m.uid,by:m.by||'',ts:+m.ts||0,text:plain(m),mine:m.uid===scope}:null;},face:(uid,key)=>mate(uid,key),colorOf:uid=>hueColor(uid,false),openMessage:(uid,id)=>{openGalaxy(uid);thread(true,id);refresh();},shareMeal};H.install(W.LowiCommunity);ensureScope();refresh();setInterval(()=>{if(active()){refresh();loadExtras(true);}},60000);
 })(window,document);

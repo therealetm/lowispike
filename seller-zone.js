@@ -18,7 +18,7 @@
     function myRegion() {
         if (region) return region;
         try { region = localStorage.getItem(RKEY) || ''; } catch (x) { region = ''; }
-        if (!region) region = C.regionOf((navigator.languages && navigator.languages[0]) || navigator.language || D.documentElement.lang);
+        if (!region) { let tz = ''; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (x) { } region = C.regionOf((navigator.languages && navigator.languages[0]) || navigator.language || D.documentElement.lang, tz); }
         return region;
     }
     const REGIONS = [['eu', '\u{1F1EA}\u{1F1FA}', () => T('Germany & EU', 'Deutschland & EU', 'Alemania y UE')], ['uk', '\u{1F1EC}\u{1F1E7}', () => 'UK'], ['us', '\u{1F1FA}\u{1F1F8}', () => T('USA', 'USA', 'EE. UU.')], ['ww', '\u{1F30D}', () => T('All', 'Alle', 'Todos')]];

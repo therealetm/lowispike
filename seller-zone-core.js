@@ -23,7 +23,22 @@
     }
     /* the region the shops below deliver to: from the phone's locale (de-DE, en-GB, en-US ...) */
     const EU = /^(de|at|ch|fr|es|it|nl|be|lu|dk|se|fi|ie|pt|pl|cz|sk|si|hr|hu|ro|bg|gr|ee|lv|lt|mt|cy|no|li)$/;
-    function regionOf(locale) {
+    /* Oct 23 live check: a phone set to English (en-US) in Flensburg got the USA shelf first. Where the phone is (its time zone)
+       decides first, the locale only when the time zone says nothing clear. */
+    const TZ_UK = /^Europe\/(London|Belfast|Guernsey|Jersey|Isle_of_Man)$/;
+    const TZ_NOT_EU = /^Europe\/(Moscow|Minsk|Istanbul|Kyiv|Kiev|Kaliningrad|Samara|Volgograd|Ulyanovsk|Kirov|Saratov|Astrakhan|Simferopol|Chisinau|Belgrade|Sarajevo|Skopje|Tirane|Podgorica)$/;
+    const TZ_US = /^(America\/(New_York|Chicago|Denver|Phoenix|Los_Angeles|Anchorage|Adak|Boise|Detroit|Juneau|Sitka|Metlakatla|Nome|Yakutat|Menominee|Indiana\/.+|Kentucky\/.+|North_Dakota\/.+)|Pacific\/Honolulu|US\/.+)$/;
+    function regionOfTz(tz) {
+        const z = String(tz || '');
+        if (TZ_UK.test(z)) return 'uk';
+        if (TZ_US.test(z)) return 'us';
+        if (/^Europe\//.test(z) && !TZ_NOT_EU.test(z)) return 'eu';
+        if (/^Atlantic\/(Canary|Madeira|Azores)$/.test(z)) return 'eu';
+        return '';
+    }
+    function regionOf(locale, tz) {
+        const byTz = regionOfTz(tz);
+        if (byTz) return byTz;
         const s = String(locale || '').replace('_', '-');
         const m = s.match(/-([a-z]{2})\b/i), c = m ? m[1].toLowerCase() : '';
         if (c === 'gb' || c === 'uk') return 'uk';
@@ -50,5 +65,5 @@
         return mine.concat(rest).slice(0, n || 3);
     }
     function tx(o, lang) { if (o == null) return ''; if (typeof o === 'string') return o; return o[lang] || o.en || ''; }
-    W.LowiSellerZoneCore = { kindOf, regionOf, amazonUrl, list, swapsFor, tx, SHELVES };
+    W.LowiSellerZoneCore = { kindOf, regionOf, regionOfTz, amazonUrl, list, swapsFor, tx, SHELVES };
 })(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null));

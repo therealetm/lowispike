@@ -23,7 +23,7 @@ test('"I want" holds only goals phrased as goals; conditions are their own optio
 
 test('old saved picks are migrated, nothing is dropped', () => {
   assert(html.includes('"Less sugar cravings":"Cravings"') && html.includes('"Steady energy":"Energy"') && html.includes('"Eat healthier":"Just eat better"'));
-  assert(/S\.health\.pcos && S\.user\.gender === "f" && out\.indexOf\("PCOS"\) < 0\) out\.push\("PCOS"\)/.test(html));
+  assert(/S\.health\.pcos && S\.user\.gender !== "m" && out\.indexOf\("PCOS"\) < 0\) out\.push\("PCOS"\)/.test(html));
 });
 
 test('picked chips light up and say so (aria-pressed), also in light mode and with reduced motion', () => {

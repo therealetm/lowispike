@@ -6,7 +6,7 @@
      S.health.weight       kg as before (string or number); a weigh-in keeps it current
      S.health.heightCm     cm, asked once (body-core.js bmi() already reads it)
      S.health.body.weights [{ts, kg, source}] (the existing array; 'weigh-in' from here, 'profile-save' from body-core.trackWeight)
-     S.user.bday, S.user.gender ('f' | 'm' | 'x') from setup / Profile
+     S.user.bday, S.user.gender ('f' | 'm' | 'n' non-binary | 'x') from setup / Profile; only 'f'/'m' narrow the body fat range
    Medical boundary: BMI category is the WHO adult band, body fat is an ESTIMATE from BMI, age and sex (Deurenberg 1991), shown
    as a rounded range, never a measurement. Under 18 there is no adult category and no estimate. */
 (function (root) {
@@ -76,7 +76,7 @@
         s.health.weight = String(kg);
         b.lastWeight = kg;
         if (cm !== null) s.health.heightCm = cm;
-        if (input && (input.gender === 'f' || input.gender === 'm' || input.gender === 'x')) { if (!s.user || typeof s.user !== 'object') s.user = {}; s.user.gender = input.gender; }
+        if (input && (input.gender === 'f' || input.gender === 'm' || input.gender === 'n' || input.gender === 'x')) { if (!s.user || typeof s.user !== 'object') s.user = {}; s.user.gender = input.gender; }
         return { ts: now, kg };
     }
     function remove(s, ts) {

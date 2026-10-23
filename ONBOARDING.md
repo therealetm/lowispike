@@ -48,6 +48,17 @@ Profile > About you > Grocery shopping (`shop-plan.js` card), never forced.
 - **Controls:** drag the controller to fly, hold = forward, 2 taps = back, 3 taps = autopilot, double tap with a second
   finger while flying = her shot. Exploring trips can be called back by tapping the timer.
 - **Before the birthday step the companion is not called Misty** (`tests/onboarding-misty.test.cjs`).
+- **Gender (since 23 Oct 2026, Emmanuel):** four choices in setup (About you) and in Profile > About you, in this order:
+  Frau / Mann / Nichtbinär / Keine Angabe (Woman / Man / Non-binary / Prefer not to say; Mujer / Hombre / No binario /
+  Prefiero no decirlo). Stored as `S.user.gender` `f` / `m` / `n` / `x`; old `f` / `m` / `x` values stay as they are. They/them
+  are pronouns, not a fifth choice. Nothing about the body is guessed from `n` or `x`: PCOS follows the person's own pick for
+  everyone except `m`, the cycle is switched on by itself only for `f` (`isFem`) and stays a free opt-in in Profile for
+  everyone else, and the body fat estimate treats `n` / `x` as unknown (wider range). List: `LowiR2.GENDERS`.
+- **Own condition (since 23 Oct 2026):** under the condition chips, one optional line "Something else? Type it here" (e.g.
+  sickle cell disease), max 120 characters, also in Edit profile and listed in Your details. Stored in `S.health.condNote`,
+  so it stays on this phone like all health data (`PRIVATE_KEYS`): no account backup, no Community, no server. It changes no
+  tips; the hint says it is a note, not medical advice. Tests: `tests/onboarding-gender-condnote.test.cjs`; browser check:
+  `tools/check-onboarding-gender-note.cjs [url] [lang] [device] [prefix] [light]`.
 
 ## Look
 

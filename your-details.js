@@ -18,21 +18,21 @@
             conds: 'Anything we should look out for?', bp: 'Blood pressure log', priv: 'Private health details', privSub: 'Cycle tips. Only on this phone',
             email: 'Email', pw: 'Password', pwSub: 'Change or reset it', order: 'Community order', orderSub: 'Which section opens first',
             notSet: 'Not set', add: 'Add', on: 'On', off: 'Off', none: 'None of these', noAcct: 'Not saved to an account yet', set: 'Set',
-            f: 'Woman', m: 'Man', x: 'Prefer not to say', hint: 'Tap a line to change it.', addW: 'Add weight', tile: 'Your details', tileSub: 'Weight, name, health', yrs: '{n} years' },
+            f: 'Woman', m: 'Man', n: 'Non-binary', x: 'Prefer not to say', hint: 'Tap a line to change it.', addW: 'Add weight', tile: 'Your details', tileSub: 'Weight, name, health', yrs: '{n} years' },
         de: { title: 'Deine Daten', back: 'Zurück', body: 'Körper', about: 'Über dich', goals: 'Ziele', health: 'Gesundheit', account: 'Konto',
             weight: 'Gewicht', height: 'Größe', bmi: 'BMI', journey: 'Gewichtsreise', journeySub: 'Startdatum, Ziel und deine Linie',
             photo: 'Foto', name: 'Name', bday: 'Geburtstag', mbti: 'Persönlichkeitstyp', gender: 'Geschlecht', goalsRow: 'Deine Ziele',
             conds: 'Sollen wir auf etwas achten?', bp: 'Blutdruck-Log', priv: 'Private Gesundheitsdaten', privSub: 'Zyklus-Tipps. Nur auf diesem Handy',
             email: 'E-Mail', pw: 'Passwort', pwSub: 'Ändern oder zurücksetzen', order: 'Community-Reihenfolge', orderSub: 'Welcher Bereich zuerst öffnet',
             notSet: 'Nicht angegeben', add: 'Hinzufügen', on: 'An', off: 'Aus', none: 'Nichts davon', noAcct: 'Noch nicht in einem Konto gespeichert', set: 'Gesetzt',
-            f: 'Frau', m: 'Mann', x: 'Keine Angabe', hint: 'Tippe auf eine Zeile, um sie zu ändern.', addW: 'Gewicht eintragen', tile: 'Deine Daten', tileSub: 'Gewicht, Name, Gesundheit', yrs: '{n} Jahre' },
+            f: 'Frau', m: 'Mann', n: 'Nichtbinär', x: 'Keine Angabe', hint: 'Tippe auf eine Zeile, um sie zu ändern.', addW: 'Gewicht eintragen', tile: 'Deine Daten', tileSub: 'Gewicht, Name, Gesundheit', yrs: '{n} Jahre' },
         es: { title: 'Tus datos', back: 'Atrás', body: 'Cuerpo', about: 'Sobre ti', goals: 'Objetivos', health: 'Salud', account: 'Cuenta',
             weight: 'Peso', height: 'Altura', bmi: 'IMC', journey: 'Tu camino de peso', journeySub: 'Fecha de inicio, meta y tu línea',
             photo: 'Foto', name: 'Nombre', bday: 'Cumpleaños', mbti: 'Tipo de personalidad', gender: 'Género', goalsRow: 'Tus objetivos',
             conds: '¿Algo que debamos tener en cuenta?', bp: 'Registro de presión', priv: 'Datos de salud privados', privSub: 'Consejos del ciclo. Solo en este móvil',
             email: 'Correo', pw: 'Contraseña', pwSub: 'Cámbiala o restablécela', order: 'Orden de Comunidad', orderSub: 'Qué sección se abre primero',
             notSet: 'Sin indicar', add: 'Añadir', on: 'Sí', off: 'No', none: 'Nada de esto', noAcct: 'Aún no guardado en una cuenta', set: 'Indicado',
-            f: 'Mujer', m: 'Hombre', x: 'Prefiero no decirlo', hint: 'Toca una línea para cambiarla.', addW: 'Añadir peso', tile: 'Tus datos', tileSub: 'Peso, nombre, salud', yrs: '{n} años' }
+            f: 'Mujer', m: 'Hombre', n: 'No binario', x: 'Prefiero no decirlo', hint: 'Toca una línea para cambiarla.', addW: 'Añadir peso', tile: 'Tus datos', tileSub: 'Peso, nombre, salud', yrs: '{n} años' }
     };
     const lang = () => { let l = 'en'; try { l = (W.LowiLang && LowiLang.get && LowiLang.get()) || H.lang || 'en'; } catch (e) { } l = String(l).slice(0, 2); return l === 'de' || l === 'es' ? l : 'en'; };
     const tr = (k, v) => { let s = (T[lang()] || T.en)[k]; if (s === undefined) s = T.en[k] !== undefined ? T.en[k] : k; if (v) Object.keys(v).forEach(n => { s = s.split('{' + n + '}').join(v[n]); }); return s; };
@@ -69,10 +69,10 @@
                 { id: 'name', label: tr('name'), val: u.name || '' },
                 { id: 'bday', label: tr('bday'), val: bd },
                 { id: 'mbti', label: tr('mbti'), val: mbti() },
-                { id: 'gender', label: tr('gender'), val: u.gender ? tr(u.gender) : '' }]],
+                { id: 'gender', label: tr('gender'), val: /^[fmnx]$/.test(u.gender || '') ? tr(u.gender) : '' }]],
             ['goals', [{ id: 'goals', label: tr('goalsRow'), val: goals.map(tagLabel).join(', ') }]],
             ['health', [
-                { id: 'conds', label: tr('conds'), val: conds.length ? conds.map(tagLabel).join(', ') : u.noCond ? tr('none') : '' },
+                { id: 'conds', label: tr('conds'), val: (() => { const note = typeof h.condNote === 'string' ? h.condNote.trim() : ''; const list = conds.map(tagLabel); if (note) list.push(note); return list.length ? list.join(', ') : u.noCond ? tr('none') : ''; })() },  /* Oct 23: own typed note (on this phone only) */
                 { id: 'bp', label: tr('bp'), val: h.bpOff ? tr('off') : tr('on') },
                 { id: 'private', label: tr('priv'), val: tr('privSub'), sub: true }]],
             ['account', [

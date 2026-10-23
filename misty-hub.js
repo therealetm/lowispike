@@ -387,8 +387,8 @@
                 const C = CC();
                 r.data.forEach(row => { if (row && row.look && (!C || C.decode(row.look))) looks[row.id] = row.look; });
                 fetchedAt = Date.now();
-                const el = D.querySelector('#mistyHub .mh-rk');
-                if (el) { const t = D.createElement('div'); t.innerHTML = html(); if (t.firstChild) el.replaceWith(t.firstChild); }
+                const fresh = html();
+                D.querySelectorAll('.mh-rk').forEach(el => { const t = D.createElement('div'); t.innerHTML = fresh; if (t.firstChild) el.replaceWith(t.firstChild); });
             }
         } catch (e) { } finally { fetching = false; }
     }

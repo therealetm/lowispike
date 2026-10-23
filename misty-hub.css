@@ -140,7 +140,7 @@ html #cmPaneChat .cs-compose-meta, html #cmPaneChat[data-spirit-chat] .cg-chip:n
 .mh-rk:active { transform: scale(.97); }
 .mh-rk:focus-visible { outline: 2px solid #8fe7ff; outline-offset: 2px; }
 .mh-rk-t { display: inline-flex; align-items: baseline; gap: 6px; min-width: 0; font-size: 13px; line-height: 1.2; }
-.mh-rk-l { color: var(--mh-ink-2); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.mh-rk-l { color: var(--mh-ink-2); font-weight: 500; min-width: 0; }
 .mh-rk-v { color: #8fe7ff; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .mh-rk-fs { display: inline-flex; align-items: center; flex: none; }
 .mh-rk-f { position: relative; display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; overflow: hidden; background: radial-gradient(circle at 34% 30%, rgba(255, 255, 255, .30), rgba(90, 169, 255, .14) 60%, rgba(10, 30, 60, .5)); border: .5px solid rgba(255, 255, 255, .26); opacity: .78; }

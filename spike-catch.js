@@ -29,12 +29,28 @@
     }
     function parsePrice(v) { const n = parseFloat(String(v || '').replace(/[^\d.,]/g, '').replace(',', '.')); return isFinite(n) && n > 0 && n < 1000 ? Math.round(n * 100) / 100 : null; }
     function valid(d) { return !!(d && d.name && String(d.name).trim().length >= 2 && d.store && String(d.store).trim().length >= 2 && parsePrice(d.price) != null && +d.until > Date.now()); }
-    /* spike lists: re-rate every item with the current estimator, split, search, "looks healthy" */
+    /* spike lists: re-rate every item with the current estimator, split, search, "looks healthy".
+       scanfe-h3 (Oct 23, 2026): when rate returns an engine result, the verdict is made stricter by the Food check card
+       (LowiSpikeCore.tighten: NEIN -> spike, SELTEN -> at least better), the same as Shuffle and the shopping scan, so a
+       product the card says NO to can't sit under "Likely won't spike". Manual entries keep their own rating. */
+    let SC = null;
+    function spikeCore() {
+        if (W && W.LowiSpikeCore) return W.LowiSpikeCore;
+        if (SC) return SC;
+        if (typeof require === 'function') { try { SC = require('./spike-core.js'); } catch (e) { SC = null; } }
+        return SC;
+    }
     function split(items, rate, q, healthyOnly, looksHealthy) {
         const seen = {}, out = {spike: [], ok: []}, k = nkey(q);
         (items || []).forEach(p => {
             if (!p || !p.name) return; const id = pkey(p); if (seen[id]) return; seen[id] = 1;
-            let v = p.verdict; try { const r = rate && rate(p); if (r && r.verdict && r.verdict !== 'unknown') v = r.verdict; } catch (e) {}
+            let v = p.verdict;
+            try {
+                const r = rate && rate(p);
+                if (r && r.verdict && r.verdict !== 'unknown') v = r.verdict;
+                const S = r && r.engine && !p.manual ? spikeCore() : null;
+                if (S && typeof S.tighten === 'function') { const t = S.tighten(p, r); if (t && t !== 'unknown') v = t; }
+            } catch (e) {}
             if (v !== 'spike' && v !== 'ok') return;
             if (k && nkey(p.name + ' ' + (p.brand || '')).indexOf(k) < 0) return;
             if (healthyOnly && v === 'spike' && looksHealthy && !looksHealthy(p)) return;

@@ -84,3 +84,28 @@ test('poultry or beef salami is processed meat (RARELY), not a pork NO; pork sal
     assert.notEqual(v('Geflügelsalami').verdict, 'JA', 'never a whole-food poultry YES');
     assert.equal(S.foodVerdict({ name: 'Geflügelsalami', facts: { c: 1, s: 0.5, p: 22, fat: 14 }, ingredients: 'Putenfleisch, Salz' }), 'better');
 });
+
+/* scanfe-h3 (Oct 23, 2026): 'Putenspeck' slipped past \bspeck\b and read as a whole-food poultry YES; and the spike lists
+   (Spike catch) used the blood sugar estimate alone, so a product the card says NO to could sit under "Likely won't spike". */
+const SCL = require('../spike-catch.js').lists.core;
+
+test('Putenspeck and other compound speck names: processed meat or pork, never a poultry YES', () => {
+    const per100 = { carbs: 1, sugar: 0.5, protein: 20, fat: 18 };
+    const v = (name, extra) => E.scanFood(Object.assign({ name, per100 }, extra || {}), 30);
+    for (const name of ['Putenspeck', 'Geflügel Bauchspeck', 'Hähnchenspeck gewürfelt']) {
+        const r = v(name, { ingredients: 'Putenfleisch, Salz, Rauch' });
+        assert.equal(r.verdict, 'SELTEN', name + ' ' + r.policy.decidedBy);
+        assert.equal(r.policy.decidedBy, 'policy.processed_meat', name);
+    }
+    assert.equal(v('Frühstücksspeck').verdict, 'NEIN', 'plain bacon: pork by name');
+    assert.equal(v('Putenspeck', { ingredients: 'Putenfleisch, Schweinespeck, Salz' }).verdict, 'NEIN', 'pork in the ingredients still NO');
+    assert.equal(v('Putenbrust').verdict, 'JA', 'plain turkey breast stays a poultry YES');
+});
+
+test('spike lists follow the Food check card when rate() carries the engine (fails on the old split)', () => {
+    const out = SCL.split([ULTJE, HAM, PEANUTS, YOG], rate, '', false, null);
+    assert.deepEqual(out.spike.map(p => p.name).sort(), ['Schinken gekocht', 'Ültje Süß & Salzig']);
+    assert.deepEqual(out.ok.map(p => p.name), ['Naturjoghurt']);
+    const manual = SCL.split([{ ...HAM, manual: true }], () => ({ verdict: 'ok', engine: {} }), '', false, null);
+    assert.deepEqual(manual.ok.map(p => p.name), ['Schinken gekocht'], 'manual entry keeps its own rating');
+});

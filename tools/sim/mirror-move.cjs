@@ -45,7 +45,7 @@ const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + '[' + tag + '] ' + 
             ok(bl.orbs[0] && bl.orbs[0].mir && bl.orbs[0].tx.includes(ORB[lang]), 'first bubble is Mirror in the app language (' + (bl.orbs[0] && bl.orbs[0].tx) + ')');
             ok(bl.orbs.every(o => o.l >= -1 && o.t >= -1 && o.r <= bl.vw + 1 && o.b <= bl.vh + 1), 'every bubble on screen');
             let apart = true; for (let i = 0; i < bl.orbs.length; i++) for (let j = i + 1; j < bl.orbs.length; j++) if (Math.hypot(bl.orbs[i].x - bl.orbs[j].x, bl.orbs[i].y - bl.orbs[j].y) < bl.orbs[i].w * 0.9) apart = false;
-            ok(apart, 'bubbles do not overlap');
+            ok(apart, 'bubbles do not overlap' + (apart ? '' : ' ' + JSON.stringify(bl.orbs.map(o => [Math.round(o.x), Math.round(o.y), Math.round(o.w)]))));
             /* tap 2: Mirror */
             const m = bl.orbs.find(o => o.mir);
             if (m) { try { await P.touchscreen.tap(m.x, m.y); } catch (e) { await P.mouse.click(m.x, m.y); } }

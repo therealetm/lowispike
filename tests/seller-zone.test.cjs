@@ -68,6 +68,14 @@ test('region from the phone and swaps in that region first', () => {
     assert.equal(C.regionOf('en-US'), 'us');
     assert.equal(C.regionOf('en-AU'), 'ww');
     assert.equal(C.regionOf('de'), 'eu');
+    /* the time zone (where the phone is) wins over the language */
+    assert.equal(C.regionOf('en-US', 'Europe/Berlin'), 'eu');
+    assert.equal(C.regionOf('de-DE', 'Europe/London'), 'uk');
+    assert.equal(C.regionOf('de-DE', 'America/New_York'), 'us');
+    assert.equal(C.regionOf('en-US', 'Atlantic/Canary'), 'eu');
+    assert.equal(C.regionOf('en-GB', 'Asia/Tokyo'), 'uk');
+    assert.equal(C.regionOf('en-US', 'Europe/Moscow'), 'us');
+    assert.equal(C.regionOf('en-US', ''), 'us');
     for (const kind of ['chips', 'choc', 'gummy', 'biscuit']) for (const r of ['eu', 'uk', 'us', 'ww']) {
         const s = C.swapsFor(D, kind, r, 3);
         assert.ok(s.length >= 1 && s.length <= 3, kind + ' ' + r);

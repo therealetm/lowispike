@@ -29,7 +29,10 @@ const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + '[' + tag + '] ' + 
         const mv = await P.evaluate(() => { const b = document.querySelector('#whHud .wh-move'); if (!b) return null; const r = b.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width }; });
         ok(!!mv && mv.w > 0, 'Move bubble on Home');
         if (mv) { try { await P.touchscreen.tap(mv.x, mv.y); } catch (e) { await P.mouse.click(mv.x, mv.y); } }
-        await H.sleep(1200);
+        await H.sleep(700);
+        /* wait until the orbs have finished flying out (two reads 200 ms apart agree), so a mid-animation frame is not read as overlap */
+        const orbSig = () => P.evaluate(() => [...document.querySelectorAll('.hb2-bloom.hb2-move .hb2-orb')].map(o => { const r = o.getBoundingClientRect(); return Math.round(r.left) + ',' + Math.round(r.top) + ',' + Math.round(r.width); }).join(';'));
+        for (let i = 0, prev = await orbSig(); i < 20; i++) { await H.sleep(200); const cur = await orbSig(); if (cur && cur === prev) break; prev = cur; }
         let bl = await P.evaluate(() => {
             const ov = document.querySelector('.hb2-bloom.hb2-move'); if (!ov) return null;
             const orbs = [...ov.querySelectorAll('.hb2-orb')].map(o => { const r = o.getBoundingClientRect(); return { mir: o.classList.contains('hb2-mirror'), x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, l: r.left, t: r.top, r: r.right, b: r.bottom, tx: o.textContent.trim() }; });
@@ -55,17 +58,20 @@ const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + '[' + tag + '] ' + 
 
         /* the Move page: Mirror hero first */
         await P.evaluate(() => { try { window.LowiMoveBubble.page(); } catch (e) { } }); await H.sleep(1800);
+        /* wait until the Move page has finished sliding in, so a mid-animation frame is not read as overflow */
+        for (let i = 0; i < 20; i++) { const settled = await P.evaluate(() => { const s = document.querySelector('#mv-screen'); if (!s) return true; const r = s.getBoundingClientRect(); return Math.abs(r.left) < 1 && r.right <= innerWidth + 1; }); if (settled) break; await H.sleep(150); }
+        await H.sleep(300);
         const pg = await P.evaluate(() => {
             const s = document.querySelector('#mv-screen'); if (!s) return null;
             const hero = s.querySelector('.mm-hero'), quick = s.querySelector('.mv-hero'), head = s.querySelector('.mv-head');
             if (!hero) return { hero: false };
             const r = hero.getBoundingClientRect(), go = hero.querySelector('.mm-hero-go').getBoundingClientRect(), vw = innerWidth;
-            const wide = [...s.querySelectorAll('*')].filter(e => { const q = e.getBoundingClientRect(); return q.width && q.right > vw + 1; }).length;
+            const wideEls = [...s.querySelectorAll('*')].filter(e => { const q = e.getBoundingClientRect(); return q.width && q.right > vw + 1; }), wide = wideEls.length, wideWho = wideEls.slice(0, 3).map(e => e.className + '@' + Math.round(e.getBoundingClientRect().right)).join(' ') + ' screen@' + Math.round(s.getBoundingClientRect().left);
             return {
                 hero: true, before: !!(quick && hero.compareDocumentPosition(quick) & 4), afterHead: !!(head && head.compareDocumentPosition(hero) & 4),
                 strip: !!s.querySelector('.mm-strip'), name: hero.querySelector('.mm-hero-tx b').textContent.trim(), goIn: go.bottom <= innerHeight && go.top >= 0,
                 goH: Math.round(go.height), clipped: [...hero.querySelectorAll('b, .mm-hero-line, .mm-hero-go span')].some(e => e.scrollWidth > e.clientWidth + 1),
-                wide, sw: document.documentElement.scrollWidth > vw + 1, top: Math.round(r.top)
+                wide, wideWho, sw: document.documentElement.scrollWidth > vw + 1, top: Math.round(r.top)
             };
         });
         ok(!!pg && pg.hero, 'Mirror hero on the Move page');
@@ -75,7 +81,7 @@ const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + '[' + tag + '] ' + 
             ok(pg.name === NAME[lang], 'name in the app language (' + pg.name + ')');
             ok(pg.goIn && pg.goH >= 44, 'Start is on screen without scrolling and big enough to tap (' + pg.goH + ' px, top ' + pg.top + ')');
             ok(!pg.clipped, 'no clipped words');
-            ok(pg.wide === 0 && !pg.sw, 'nothing wider than the screen (' + pg.wide + ')');
+            ok(pg.wide === 0 && !pg.sw, 'nothing wider than the screen (' + pg.wide + (pg.wide ? ' ' + pg.wideWho : '') + ')');
             await P.evaluate(() => { const b = document.querySelector('#mv-screen .mm-hero-go'); b && b.click(); }); await H.sleep(1500);
             ok(await mirrorOpen(), 'Start opens Mirror mode');
             await closeMirror();

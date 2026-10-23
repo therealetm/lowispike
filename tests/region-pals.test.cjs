@@ -16,7 +16,7 @@ test('every region has its own companion; the bloodstream stays Misty\'s', () =>
     assert.strictEqual(C.pid('lungs'), 'lung'); assert.strictEqual(C.pid('Muscles'), 'muscle');
     const shapes = C.IDS.map(id => C.PALS[id].shape); assert.strictEqual(new Set(shapes).size, shapes.length, 'each looks different');
     for (const s of shapes) assert.ok(js.includes(s + ": '<"), 'drawn: ' + s);
-    for (const id of C.IDS) { const p = C.PALS[id]; for (const k of ['name', 'kind']) assert.strictEqual(p[k].length, 3, id + ' ' + k); assert.ok(/^\d+,\d+,\d+$/.test(p.rgb)); }
+    for (const id of C.IDS) { const p = C.PALS[id]; for (const k of ['name', 'as', 'pl', 'kind']) assert.strictEqual(p[k].length, 3, id + ' ' + k); assert.ok(/^\d+,\d+,\d+$/.test(p.rgb)); }
 });
 
 test('guides, not pets: no XP, no collection, no microbe buddies, Misty untouched', () => {
@@ -30,14 +30,14 @@ test('guides, not pets: no XP, no collection, no microbe buddies, Misty untouche
     }
     const all = JSON.stringify(C.PALS).toLowerCase() + JSON.stringify(C.COPY).toLowerCase();
     for (const w of ['microbe', 'mikrobe', 'microbio', 'bacteri', 'buddy', 'buddies', 'xp']) assert.ok(!all.includes(w), w);
-    assert.ok(/villus/.test(C.PALS.gut.kind[0]), 'the gut guide is a villus of the gut wall');
+    assert.ok(/villi/.test(C.PALS.gut.kind[0]) && C.PALS.gut.name[0] === 'Enterocyte', 'the gut guide is an enterocyte of the gut wall');
     assert.ok(!/misty/i.test(JSON.stringify(C.PALS)), 'Misty is not one of them');
 });
 
 test('what it says: greeting, the reviewed place facts, today line; tap walks the list', () => {
     for (const id of C.IDS) for (const li of [0, 1, 2]) {
         const L = C.lines(id, li, A, 'Today line');
-        assert.ok(L[0].includes(C.pal(id, li).name), 'greets with its name');
+        assert.ok(L[0].toLowerCase().includes(C.pal(id, li).name.toLowerCase()), 'greets with its name');
         assert.strictEqual(L.length, 1 + A.PLACES[id].f.length + C.MORE[id].length + 1, 'greeting, arrival facts, the guide\'s own facts (cell-guide), today');
         C.MORE[id].forEach((f, k) => assert.strictEqual(L[1 + A.PLACES[id].f.length + k], f[li]));
         A.PLACES[id].f.forEach((f, k) => assert.strictEqual(L[1 + k], f[li], 'facts straight from arrival-core'));

@@ -94,6 +94,9 @@
         const pts = new THREE.Points(g, m); pts.frustumCulled = false; return pts;
     }
     function lambert(THREE, color, emissive, ei, extra) { return new THREE.MeshLambertMaterial(Object.assign({ color, emissive, emissiveIntensity: ei }, extra || {})); }
+    /* Oct 23, 2026 (real science labels): the key objects of each world carry a name 'sci:<kind>' so world-sci.js can label them
+       (world-sci-core.js TAGS) when you fly close. Names only; nothing about how they look or move changes. */
+    const sciTag = (g, k) => { const o = g.children[g.children.length - 1]; if (o) o.name = 'sci:' + k; };
     function inst(THREE, geo, mat, n, each) {
         const m = new THREE.InstancedMesh(geo, mat, n), o = new THREE.Object3D();
         for (let i = 0; i < n; i++) { each(o, i); o.updateMatrix(); m.setMatrixAt(i, o.matrix); }
@@ -131,9 +134,11 @@
             }
             g.add(new THREE.Mesh(mergeGeoms(THREE, tubes), lambert(THREE, 0x1a6f86, 0x1cf7f9, 0.55)));
             g.add(inst(THREE, new THREE.SphereGeometry(1, 16, 12), lambert(THREE, 0x2a8fa8, 0x1cf7f9, 0.7), somas.length, (o, i) => { o.position.copy(somas[i]); o.scale.setScalar(0.6 + r() * 0.45); }));
+            sciTag(g, 'neuron');
             const halo = points(THREE, somas.length, 0x8ff8ff, 4.5, i => somas[i].toArray(), tex); halo.material.opacity = 0.55; g.add(halo);
             const sp = c.sparks, st = []; for (let i = 0; i < sp; i++) st.push({ c: i % links.length, t: r(), v: 0.08 + r() * 0.16 });
             const sparks = points(THREE, sp, 0xdffcff, 0.55, () => [0, 0, 0], tex); g.add(sparks);
+            sparks.name = 'sci:signal';
             g.add(points(THREE, c.dust, 0x3fb8c8, 0.18, () => onShell(r, 3, 26), tex));
             const tmp = new THREE.Vector3();
             return { group: g, tick(t, dt) { const a = sparks.geometry.attributes.position; st.forEach((s, i) => { s.t = (s.t + s.v * dt) % 1; links[s.c].getPointAt(s.t, tmp); a.setXYZ(i, tmp.x, tmp.y, tmp.z); }); a.needsUpdate = true; } };
@@ -146,9 +151,12 @@
                 const k = ctr[Math.floor(i / c.per)], s = 1.2 + r() * 1.1; o.position.set(k[0] + (r() - 0.5) * 4.2, k[1] + (r() - 0.5) * 4.2, k[2] + (r() - 0.5) * 4.2); o.scale.setScalar(s);
             });
             g.add(sacs);
+            sacs.name = 'sci:alveolus';
             const caps = ctr.map(k => new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(...k), new THREE.Vector3(k[0] * 0.5 + (r() - 0.5) * 6, k[1] * 0.5 + (r() - 0.5) * 6, k[2] * 0.5), new THREE.Vector3(k[0] * 0.15, k[1] * 0.15 - 6, k[2] * 0.15)]), 16, 0.14, 5, false));
             g.add(new THREE.Mesh(mergeGeoms(THREE, caps), lambert(THREE, 0x8a2a3a, 0xe0475a, 0.35)));
+            sciTag(g, 'capillary');
             const air = points(THREE, c.sparks, 0xe6f6ff, 0.35, () => onShell(r, 3, 20), tex); g.add(air);
+            air.name = 'sci:oxygen';
             return { group: g, tick(t) { const b = 1 + 0.045 * Math.sin(t * Math.PI * 2 / 4.5); sacs.scale.setScalar(b); air.rotation.y = t * 0.02; } };
         },
         heart(THREE, c, r, tex) {
@@ -157,10 +165,12 @@
             const wall = new THREE.Mesh(new THREE.SphereGeometry(22, 40, 28), lambert(THREE, 0xffffff, 0x4a0f20, 0.6, { map: wtex, side: THREE.BackSide })); g.add(wall);
             g.add(inst(THREE, new THREE.CylinderGeometry(0.5, 0.8, 1, 8), lambert(THREE, 0xc23a55, 0xf14770, 0.28), c.beams, (o, i) => {
                 const a = new THREE.Vector3(...onShell(r, 18, 21)), b = new THREE.Vector3(...onShell(r, 18, 21)); const mid = a.clone().add(b).multiplyScalar(0.5), len = a.distanceTo(b);
+            sciTag(g, 'trabecula');
                 if (mid.length() < 8) mid.setLength(9); o.position.copy(mid); o.scale.set(1, len * 0.55, 1); o.lookAt(b); o.rotateX(Math.PI / 2);
             }));
             const rc = redCells(THREE, c.cells, r, () => onShell(r, 4, 16));
             g.add(rc.mesh);
+            rc.mesh.name = 'sci:rbc';
             const tmp = new THREE.Object3D(), beat = t => { const p = (t % 1.05) / 1.05; return Math.exp(-Math.pow((p - 0.1) / 0.06, 2)) + 0.5 * Math.exp(-Math.pow((p - 0.32) / 0.07, 2)); };
             return { group: g, tick(t, dt, calm) {
                 const b = calm ? 0 : beat(t); wall.scale.setScalar(1 - 0.03 * b);
@@ -173,11 +183,14 @@
             const g = new THREE.Group(), n = c.spokes * c.per * 3;
             g.add(inst(THREE, new THREE.CylinderGeometry(0.85, 0.85, 1.1, 6), lambert(THREE, 0xc06a28, 0xe78631, 0.32), n, (o, i) => {
                 const sp = i % c.spokes, k = Math.floor(i / c.spokes) % c.per, layer = Math.floor(i / (c.spokes * c.per)) - 1;
+            sciTag(g, 'hepatocyte');
                 const a = sp / c.spokes * Math.PI * 2 + Math.sin(k * 0.6) * 0.08, rad = 5.5 + k * 1.75;
                 o.position.set(Math.cos(a) * rad, layer * 5 + (r() - 0.5) * 0.6, Math.sin(a) * rad); o.rotation.set(Math.PI / 2, 0, a + Math.PI / 2); o.scale.set(1, 1 + r() * 0.3, 1);
             }));
             const vein = new THREE.Mesh(new THREE.TorusGeometry(3.6, 0.35, 8, 40), lambert(THREE, 0x5a1a2a, 0xe0475a, 0.35)); vein.rotation.x = Math.PI / 2; vein.position.y = -7.5; g.add(vein);
+            vein.name = 'sci:vein';
             g.add(points(THREE, c.granules, 0xffd27a, 0.32, () => { const a = r() * 6.28, rad = 5 + r() * 16; return [Math.cos(a) * rad, (Math.floor(r() * 3) - 1) * 5 + (r() - 0.5) * 2, Math.sin(a) * rad]; }, tex));
+            sciTag(g, 'glycogen');
             const rc = redCells(THREE, c.cells, r, () => { const a = (Math.floor(r() * 12) + 0.5) / 12 * 6.28, rad = 6 + r() * 14; return [Math.cos(a) * rad, (r() - 0.5) * 12, Math.sin(a) * rad]; }); g.add(rc.mesh);
             const tmp = new THREE.Object3D();
             return { group: g, tick(t, dt) { rc.st.forEach((s, i) => { const p = s.p, L = Math.hypot(p[0], p[2]), k = Math.max(0, L - dt * s.s * 1.2) / L; p[0] *= k; p[2] *= k; if (L < 4.5) { const a = Math.atan2(p[2], p[0]); p[0] = Math.cos(a) * 20; p[2] = Math.sin(a) * 20; }
@@ -187,10 +200,13 @@
             const g = new THREE.Group(), core = new THREE.Vector3(0, 0.5, -11);
             const islet = inst(THREE, new THREE.SphereGeometry(0.62, 14, 10), lambert(THREE, 0xe8c63a, 0xf8ea40, 0.45), c.islet, (o, i) => { const v = onShell(r, 0, 4); o.position.set(core.x + v[0], core.y + v[1], core.z + v[2]); o.scale.setScalar(0.8 + r() * 0.5); });
             g.add(islet);
+            islet.name = 'sci:islet';
             g.add(inst(THREE, new THREE.SphereGeometry(1, 10, 7), lambert(THREE, 0x6a5420, 0x8a6a1a, 0.25), c.acini, (o, i) => { const v = onShell(r, 15, 24); o.position.set(v[0], v[1], v[2]); o.scale.set(1.3 + r(), 1 + r() * 0.8, 1.3 + r()); }));
+            sciTag(g, 'acinar');
             const halo = points(THREE, 1, 0xfff3a0, 14, () => core.toArray(), tex); halo.material.opacity = 0.5; g.add(halo);
             const st = []; for (let i = 0; i < c.sparks; i++) st.push({ d: new THREE.Vector3(r() - 0.5, r() - 0.5, r() - 0.5).normalize(), t: r(), v: 0.05 + r() * 0.08 });
             const sparks = points(THREE, c.sparks, 0xfff6b0, 0.4, () => core.toArray(), tex); g.add(sparks);
+            sparks.name = 'sci:insulin';
             return { group: g, tick(t, dt) { const a = sparks.geometry.attributes.position; st.forEach((s, i) => { s.t = (s.t + s.v * dt) % 1; const d = 3.5 + s.t * 14; a.setXYZ(i, core.x + s.d.x * d, core.y + s.d.y * d, core.z + s.d.z * d); }); a.needsUpdate = true; islet.rotation.y = t * 0.05; } };
         },
         gut(THREE, c, r, tex) {
@@ -199,15 +215,17 @@
             const tips = [];
             g.add(inst(THREE, new THREE.CapsuleGeometry(0.6, 3.6, 4, 10), lambert(THREE, 0x2a9e7c, 0x2ef8b6, 0.32), c.villi, (o, i) => {
                 const a = r() * 6.28, z = (r() - 0.5) * 70, len = 0.7 + r() * 0.6; o.position.set(Math.cos(a) * (R - 2.1 * len), Math.sin(a) * (R - 2.1 * len), z); o.scale.set(1, len, 1);
+            sciTag(g, 'villus');
                 o.rotation.set(0, 0, a + Math.PI / 2); tips.push([Math.cos(a) * (R - 4.3 * len), Math.sin(a) * (R - 4.3 * len), z]);
             }));
             g.add(points(THREE, c.tips, 0xb8ffe6, 0.3, i => { const p = tips[i % tips.length]; return [p[0] + (r() - 0.5) * 1.2, p[1] + (r() - 0.5) * 1.2, p[2] + (r() - 0.5) * 1.2]; }, tex));
             const food = points(THREE, c.food, 0xfff2c8, 0.5, () => { const a = r() * 6.28, rad = r() * 8; return [Math.cos(a) * rad, Math.sin(a) * rad, (r() - 0.5) * 60]; }, tex); g.add(food);
+            food.name = 'sci:nutrient';
             const hues = ['#2ef8b6', '#9feb25', '#a8e0ff', '#f8ea40', '#f14770', '#9b87d2', '#1cf7f9', '#e78631'], bugs = [];
             for (let i = 0; i < c.microbes; i++) {
                 const col = hues[i % hues.length], t = texCanvas(THREE, 96, (x, s) => { const gr = x.createRadialGradient(s / 2, s / 2, s * 0.18, s / 2, s / 2, s / 2); gr.addColorStop(0, col); gr.addColorStop(0.62, col); gr.addColorStop(0.64, 'rgba(255,255,255,.55)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = gr; x.beginPath(); x.ellipse(s / 2, s / 2, s * 0.44, s * 0.36, 0, 0, 7); x.fill(); x.fillStyle = '#0b102a'; x.beginPath(); x.arc(s * 0.4, s * 0.46, s * 0.05, 0, 7); x.arc(s * 0.6, s * 0.46, s * 0.05, 0, 7); x.fill(); });
                 const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, depthWrite: false })); const a = r() * 6.28, rad = 3.5 + r() * 6;
-                sp.position.set(Math.cos(a) * rad, Math.sin(a) * rad, -3 - r() * 12); sp.scale.setScalar(1.3 + r() * 0.6); sp.userData = { y: sp.position.y, p: r() * 6 }; bugs.push(sp); g.add(sp);
+                sp.position.set(Math.cos(a) * rad, Math.sin(a) * rad, -3 - r() * 12); sp.scale.setScalar(1.3 + r() * 0.6); sp.userData = { y: sp.position.y, p: r() * 6 }; sp.name = 'sci:microbe'; bugs.push(sp); g.add(sp);
             }
             return { group: g, bugs, tick(t, dt) { const a = food.geometry.attributes.position; for (let i = 0; i < a.count; i++) { let z = a.getZ(i) + dt * 1.4; if (z > 30) z = -30; a.setZ(i, z); } a.needsUpdate = true; bugs.forEach(b => { b.position.y = b.userData.y + Math.sin(t * 1.3 + b.userData.p) * 0.35; }); } };
         },
@@ -215,8 +233,11 @@
             const g = new THREE.Group(), st = stripes(THREE, '#4f7a12', '#b9f24a', 24); st.wrapS = st.wrapT = THREE.RepeatWrapping; st.repeat.set(1, 10);
             const spots = []; for (let ring = 1; spots.length < c.fibres && ring < 8; ring++) { const k = ring * 6; for (let j = 0; j < k && spots.length < c.fibres; j++) { const a = j / k * 6.28 + ring * 0.3, rad = 2.2 + ring * 2.6; spots.push([Math.cos(a) * rad, Math.sin(a) * rad]); } }
             g.add(inst(THREE, new THREE.CylinderGeometry(1.05, 1.05, 70, 14, 1, true), lambert(THREE, 0xffffff, 0x2f4a08, 0.55, { map: st }), spots.length, (o, i) => { const s = spots[i]; if (Math.hypot(s[0], s[1]) < 4.6) { s[0] *= 1.9; s[1] *= 1.9; } o.position.set(0, s[1], s[0]); o.rotation.z = Math.PI / 2; o.scale.set(1 + r() * 0.25, 1, 1 + r() * 0.25); }));
+            sciTag(g, 'fibre');
             g.add(inst(THREE, new THREE.CapsuleGeometry(0.28, 0.9, 3, 8), lambert(THREE, 0xe78631, 0xf8a040, 0.6), c.mito, (o, i) => { const s = spots[i % spots.length], a = r() * 6.28; o.position.set((r() - 0.5) * 50, s[1] + Math.sin(a) * 1.35, s[0] + Math.cos(a) * 1.35); o.rotation.z = Math.PI / 2; }));
+            sciTag(g, 'mito');
             const sp = points(THREE, c.sparks, 0xeaffb0, 0.35, () => onShell(r, 3, 20), tex); g.add(sp);
+            sp.name = 'sci:glucose';
             return { group: g, tick(t, dt) { const a = sp.geometry.attributes.position; for (let i = 0; i < a.count; i++) { let x = a.getX(i) + dt * 2.2; if (x > 22) x = -22; a.setX(i, x); } a.needsUpdate = true; } };
         }
     };

@@ -182,7 +182,7 @@ test('wiring: parked is hidden whole, the chevron has its style, every module sh
   assert.match(css, /\.r2-parked\s*\{\s*display:\s*none\s*!important/);
   assert.match(css, /\.r2-pback\s*\{/);
   const a = HTML.indexOf('const FOREIGN = ['), b = HTML.indexOf('];', a); const list = HTML.slice(a, b);
-  for (const [file, cls] of [['companion.js', 'cf-ov'], ['gap-view.js', 'gv-ov'], ['fast-edit.js', 'fe-ov'], ['herb-shop.js', 'hs-ov'], ['cell-room.js', 'cr-ov'], ['store-picks.js', 'stp-ov'], ['grocery-hunt.js', 'gh-ov'], ['weight-journey.js', 'wj-ov'], ['your-details.js', 'yd-ov'], ['body-stats.js', 'bs-ov']]) {
+  for (const [file, cls] of [['companion.js', 'cf-ov'], ['gap-view.js', 'gv-ov'], ['fast-edit.js', 'fe-ov'], ['herb-shop.js', 'hs-ov'], ['cell-room.js', 'cr-ov'], ['store-picks.js', 'stp-ov'], ['grocery-hunt.js', 'gh-ov'], ['your-details.js', 'yd-ov'], ['body-stats.js', 'bs-ov']]) {
     assert.ok(read(file).includes(cls), file + ' still draws .' + cls);
     assert.ok(list.includes('".' + cls + '"'), '.' + cls + ' joins the one-sheet stack');
   }

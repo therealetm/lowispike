@@ -10219,6 +10219,10 @@ function ovPark(item){
     x.parked = true; x.ov.classList.add(PARK); x.ov.setAttribute("aria-hidden", "true"); try { x.ov.inert = true; } catch(e){}
     under.push(x); });
   item.under = under;
+  /* focus left inside a parked (hidden, inert) sheet gets no keys: Escape / Tab / back did nothing (Gap > Log a meal). Move it to the new sheet. */
+  try { const a = document.activeElement; if (a && a !== document.body && under.some(x => x.ov.contains(a))) {
+    const t = item.ov.querySelector(item.panel || ".r2-sh") || item.ov.querySelector("[role=dialog]");
+    if (t) { if (!t.hasAttribute("tabindex")) t.setAttribute("tabindex", "-1"); t.focus({preventScroll: true}); } else a.blur(); } } catch(e){}
   try { const w = document.getElementById("sheetwrap"); if (w && w.classList.contains("open") && typeof closeSheet === "function") closeSheet(); } catch(e){}
   return under;
 }

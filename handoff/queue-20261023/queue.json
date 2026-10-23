@@ -1,0 +1,2003 @@
+{
+ "items": [
+  {
+   "id": "evo-popup",
+   "title": "Bug: MISTY COMET GREW (Star cell L5/10) popup replays on every reopen/update; persist acknowledged evolution milestones across restarts/updates/cloud restore without suppressing new ones. Leads: herb-tamagotchi.js refresh() lastSeenStage/evoFrom; prefs key pkey()=scope() switches u:<name> -> uid after cloud auth; check cloud backup/restore of lowi.herb.tamagotchi.v2 prefs and line 26 defaults. Coordinate with evo-levels branch (touches herb-tamagotchi.js); rebase on main.",
+   "kind": "work",
+   "branch": "evo-seen-20261022",
+   "deps": [],
+   "prio": 1,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:22+00:00 added",
+    "2026-10-22T15:33:27+00:00 coordinator 49a3cfeb: no bughunt/codecheck schedules exist on this agent (list_schedules empty) - nothing to bound; around-clock runs not found here",
+    "2026-10-22T15:33:53+00:00 queued by coordinator 49a3cfeb; worker chain A dispatched via schedule",
+    "2026-10-22T15:36:01+00:00 coordinator: worker-A task 9bfb6e2b dispatched (schedule 01a1643f-ddc6); worker-B schedule 01a1643f-dde4 fires 18:14 for nav-shared. verify-live --compare 2026-10-22T15:35:59+00:00 by 49a3cfeb: live serves 20261022-172756 (index.html/sw.js/version.json/apple-ui.js same as main 5190187); main contains 1c274c0 (Release 20261022-142600 Products shuffle) and 909056c (Release 20261022-141920 Continue tutorial) so both are in the live build",
+    "2026-10-22T16:06:37+00:00 claimed by worker-A",
+    "2026-10-22T16:13:20+00:00 root cause: herb prefs key switches u:<name> -> uid after auth; evoFrom written under u:name, cleared under uid on close -> replay every reopen (reproduced in tests/evo-seen on old code). Fix: lowispike.evo.seen.v1 (backed up) + clear covered evoFrom under every scope; 5 regression tests pass. Overlap: evo-levels-20261022 only edits evoStage() line in herb-tamagotchi.js, no conflict expected",
+    "2026-10-22T16:56:35+00:00 ready: root cause scope switch u:<name>->uid left evoFrom under u:name; fix lowispike.evo.seen.v1 + clear pending in all scopes + heal; suite 2240/2240; WebKit reload sim 9/9 on iPhone SE (en/de), 13 (en/es), 15, Pixel 7; branch evo-seen-20261022 e077e60; overlap evo-levels-20261022 only evoStage() line",
+    "2026-10-22T18:07:10+00:00 live: live in 20261022-195226"
+   ],
+   "claimed_at": "2026-10-22T16:13:20+00:00",
+   "prev_status": "queued",
+   "commit": "476592c"
+  },
+  {
+   "id": "evo-popup-rel",
+   "title": "Release evo-popup fix (queue/release-pipeline.sh)",
+   "kind": "release",
+   "branch": null,
+   "deps": [
+    "evo-popup"
+   ],
+   "prio": 1,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:22+00:00 added",
+    "2026-10-22T16:56:35+00:00 claimed by worker-A",
+    "2026-10-22T17:20:22+00:00 release.sh pushed main d030d3a as 20261022-185900 (CI on ci branch green); Pages not live after 900s because GitHub main CI runs are queued (runner backlog, the 16:55 handoff run also still queued). Waiting, then verify-live --compare --at-least",
+    "2026-10-22T17:47:26+00:00 fix is ON MAIN: d030d3a (release 20261022-185900, CI green), also inside 79b91f0 (release 20261022-191919). Not live yet: GitHub Actions degraded (githubstatus), main deploy job of run 39818223406 stuck 'queued' since 16:56 UTC, which blocks the main concurrency group; live still 20261022-184555. Do NOT run release.sh again.",
+    "2026-10-22T17:47:26+00:00 unclaim: fix on main d030d3a; waiting for GitHub Pages deploy (Actions degraded); only verify-live left",
+    "2026-10-22T18:02:02+00:00 claimed by worker-A",
+    "2026-10-22T18:02:44+00:00 verified LIVE in 20261022-195226 (verify-live --compare --at-least all same; live herb-tamagotchi.js has lowispike.evo.seen.v1); handoff log commit db78f90 landing via push-main.sh",
+    "2026-10-22T18:07:10+00:00 live: LIVE build 20261022-195226 commit bc5376e (fix d030d3a; handoff log db78f90)"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T18:02:44+00:00",
+   "commit": "d030d3a"
+  },
+  {
+   "id": "nav-shared",
+   "title": "Community TOP MENU BAR (Chat/Room/Affiliates/Creation) identical position/alignment/layout on every tab; switching to Chat must not replace/shift it. Keep liked chat content design. Small change; coordinate with declutter (released 20261022-172756) and chat-brand/chat-members/chat-pin branches + Emmanuel 18:18: remove star 'Community room' pill, pinned banner, members/recent-voices button+badge, room crumb; back button in header spot; composer visible while typing (visualViewport)",
+   "kind": "work",
+   "branch": "nav-shared-20261022",
+   "deps": [
+    "presence-profile"
+   ],
+   "prio": 2,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:22+00:00 added",
+    "2026-10-22T15:33:53+00:00 queued by coordinator 49a3cfeb; worker chain B dispatched via schedule",
+    "2026-10-22T15:34:06+00:00 coordinator: waits for presence-profile (a1b855dc) - both touch the Community header",
+    {
+     "ts": "2026-10-22T16:54:40+0000",
+     "by": "task: LOWiSPIKE: Chat tab matches Room/Affiliates/Creation",
+     "note": "built in /home/sprite/lowispike/wt-nav-shared commit eba633a on origin/main 20261022-180142; chatshell/chk.py passes at 390x844 375x667 430x932 1180x820 820x1180",
+     "next": "full suite, rebase on main after presence-profile, release"
+    },
+    "2026-10-22T17:06:27+00:00 watchdog split 19:06 CEST: task e59fb0ec (Chat tab matches Room/Affiliates/Creation) cancelled after 41 min. Branch nav-shared-20261022 in /home/sprite/lowispike/wt-nav-shared: eba633a (Chat shell) + 23bcd79 (tests item 38), local, worktree clean. Last full suite (/tmp/navshared-suite.log) had 6 failing CSS-assertion tests: Home X steps aside in chat room; phones tab row above chat room; composer bottom edge/typing inset; composer measure + jump-to-latest; message list below strip/pinned bar; item 36 tab-row rules + Day light tab row. 23bcd79 updated 4 other test files; rerun not finished. chatshell/chk.py passed at 390x844 375x667 430x932 1180x820 820x1180 before",
+    "2026-10-22T17:07:40+00:00 watchdog: resume owned by queue worker B schedule 01a1648d (19:29 CEST); resume from wt-nav-shared 23bcd79, do not rebuild",
+    "2026-10-22T18:53:49+00:00 claimed by worker-A",
+    "2026-10-22T18:53:58+00:00 unclaim: worker-A run 20:53 CEST: claim returned nav-shared, which chain B (worker-B) owns; unclaimed untouched, resume stays with worker-B from wt-nav-shared 23bcd79. Worker-A stopped as NO_SLOT, successor in 30 min.",
+    "2026-10-22T19:03:08+00:00 claimed by worker-B",
+    "2026-10-22T19:06:55+00:00 rebased on origin/main 4af8265 (incl presence-profile, aura-shop) cleanly",
+    "2026-10-22T19:19:16+00:00 full suite 2255/2255 green after rebase on 4af8265; chatshell/chk.py tab bar bounding box identical on Room/Chat/Creation/Affiliates at 375x667 390x844 393x852 412x915 Day+Night EN/DE/ES + 820x1180, 0 fails, keyboard composer visible",
+    "2026-10-22T19:19:17+00:00 ready: verified: suite 2255/2255, chk.py 9 configs 0 fails",
+    "2026-10-22T19:27:07+00:00 live: LIVE build 20261022-211924"
+   ],
+   "claimed_at": "2026-10-22T19:19:16+00:00",
+   "commit": "1956afa",
+   "prev_status": "queued"
+  },
+  {
+   "id": "nav-shared-rel",
+   "title": "Release nav-shared",
+   "kind": "release",
+   "branch": null,
+   "deps": [
+    "nav-shared"
+   ],
+   "prio": 2,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:23+00:00 added",
+    "2026-10-22T19:19:17+00:00 claimed by worker-B",
+    "2026-10-22T19:27:07+00:00 live: LIVE build 20261022-211924 commit 586548b (handoff log 6e8ae6d)"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T19:19:17+00:00"
+  },
+  {
+   "id": "evo-levels",
+   "title": "Verify evo-levels-20261022 (3 ahead, 2 behind): rebase, full tests, missing German iPhone SE check; then release",
+   "kind": "work",
+   "branch": "evo-levels-20261022",
+   "deps": [
+    "evo-popup-rel"
+   ],
+   "prio": 3,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:23+00:00 added",
+    "2026-10-22T19:47:33+00:00 claimed by worker-A",
+    "2026-10-22T19:47:40+00:00 unclaim: worker-A picked scanfe-b2-rel first; untouched",
+    "2026-10-22T19:55:58+00:00 claimed by worker-B",
+    "2026-10-22T19:57:38+00:00 rebased onto 430ce7f (conflict in world-home-core.js resolved: aura shop SHOP/wallet/buy + 25-level STAGES/floor both kept, api merged); evo.seen.v1 key intact",
+    "2026-10-22T20:07:09+00:00 full suite 2269/2269 after fixing level-table script tag to current build",
+    "2026-10-22T20:20:21+00:00 ready: rebased on 430ce7f (aura shop + 25 levels merged in world-home-core.js), tests 2269/2269; sims SE(de night, en day, es night), 13 (es night, en day), 15 (de day, en night), Pixel 7 (es day, de night) 21/21 each; aura-shop-sim SE + evo-seen 13 de pass. Branch evo-levels-20261022-r2",
+    "2026-10-22T20:32:10+00:00 live: released as evo-levels-rel: LIVE 20261022-222617"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T20:07:09+00:00",
+   "commit": "6cf9f2e"
+  },
+  {
+   "id": "evo-levels-rel",
+   "title": "Release evo-levels",
+   "kind": "release",
+   "branch": null,
+   "deps": [
+    "evo-levels"
+   ],
+   "prio": 3,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:23+00:00 added",
+    "2026-10-22T20:20:24+00:00 claimed by worker-B",
+    "2026-10-22T20:20:43+00:00 release starting via release-pipeline.sh (main moved to scanfe-b2 20261022-220117; release.sh rebases)",
+    "2026-10-22T20:32:05+00:00 live: LIVE build 20261022-222617 commit c1e3dbf; handoff log ce60f95"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T20:20:43+00:00"
+  },
+  {
+   "id": "chat-brand",
+   "title": "Verify chat-brand-20261022 (2 ahead): rebase onto nav-shared result, re-run SE/13/15/Pixel7 Day/Night; then release",
+   "kind": "work",
+   "branch": "chat-brand-20261022",
+   "deps": [
+    "nav-shared-rel"
+   ],
+   "prio": 4,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:23+00:00 added",
+    "2026-10-22T19:29:38+00:00 claimed by worker-B",
+    "2026-10-22T19:32:26+00:00 rebased onto 6e8ae6d (nav-shared shell kept, conflict = dropped old phone overrides); violet removed, charcoal Night/creamy Day tokens; brand tests 22/22",
+    "2026-10-22T19:45:51+00:00 ready: rebased on 6e8ae6d; brand blues only, charcoal Night, creamy Day; suite 2261/2261; chk.py 8 configs 0 fails (2 keyboard-timing flakes passed on retry); probe SE/13/15/Pixel7 Day+Night ALL PASS (no green, no violet); browser sims only",
+    "2026-10-22T19:53:20+00:00 live: LIVE 20261022-214623 commit e998f33"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T19:32:26+00:00",
+   "commit": "8081fa7"
+  },
+  {
+   "id": "chat-brand-rel",
+   "title": "Release chat-brand",
+   "kind": "release",
+   "branch": null,
+   "deps": [
+    "chat-brand"
+   ],
+   "prio": 4,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:23+00:00 added",
+    "2026-10-22T19:45:51+00:00 claimed by worker-B",
+    "2026-10-22T19:53:20+00:00 live: LIVE 20261022-214623 commit e998f33; handoff 430ce7f"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T19:45:51+00:00"
+  },
+  {
+   "id": "chat-leave",
+   "title": "Verify chat-leave-20261022 (4 ahead): background stuck on Home, glide <=0.9s; add iPhone SE/15/Pixel7 checks (only 13 done)",
+   "kind": "work",
+   "branch": "chat-leave-20261022",
+   "deps": [
+    "chat-brand-rel"
+   ],
+   "prio": 5,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:23+00:00 added",
+    "2026-10-22T20:34:50+00:00 claimed by worker-B",
+    "2026-10-22T20:35:37+00:00 worktree wt-chat-leave rebased clean onto ce60f95",
+    "2026-10-22T20:42:21+00:00 suite 2299/2302 after fixing galaxy-zoom string test (35295a9); first probe hit a stale server on 8731 (declutter dir), now serving worktree on 8793",
+    "2026-10-22T20:50:25+00:00 chat-leave probe iPhone SE dark/de + light/en 20 cycles ALL PASS, far 0ms",
+    "2026-10-22T20:59:26+00:00 chat-leave probe iPhone 15 + Pixel 7 dark/de light/en 20 cycles ALL PASS far 0ms",
+    "2026-10-22T21:02:44+00:00 WATCHDOG SPLIT (worker-B task 02549f58 cancelled at ~28 min, no work lost). Worktree /home/sprite/lowispike/wt-chat-leave, branch chat-leave-20261022, local HEAD 642c2df (diag.cjs committed; 35295a9 + 642c2df NOT yet pushed, origin at feb9164 pre-rebase -> push needs --force-with-lease on the feature branch only). Done: suite 2299/2302, SE/15/Pixel7 chat-leave probes ALL PASS, brand probe (SE/13/15/Pixel7) ALL PASS (/tmp/cl-brand.log). iPhone 13 probe dark/es+light/en was still running detached -> read /tmp/cl-probe-13.log. Left: confirm 13 probe, chk.py, push branch, done --status ready, then chat-leave-rel. No build number claimed.",
+    "2026-10-22T21:02:44+00:00 unclaim: watchdog split: successor resumes from checkpoint",
+    "2026-10-22T21:05:35+00:00 claimed by worker-B",
+    "2026-10-22T21:05:41+00:00 iPhone 13 probe dark/es + light/en ALL PASS (/tmp/cl-probe-13.log)",
+    "2026-10-22T21:07:45+00:00 rebased onto origin/main acd2555 clean",
+    "2026-10-22T21:23:24+00:00 suite 2318 pass 0 fail 1 todo (/tmp/cl-suite2.full); chatshell/chk.py SE/13/15/Pixel7 EN/DE/ES Day/Night 0 fails (/tmp/cl-chk.log); branch pushed",
+    "2026-10-22T21:23:24+00:00 ready: Verified on d30479b (rebased on acd2555): suite 2318/2319 (+1 todo), chat-leave probe SE/13/15/Pixel7 Day+Night EN/DE/ES 20 cycles ALL PASS, brand probe ALL PASS, chatshell chk 0 fails. Browser sims only.",
+    "2026-10-22T21:45:33+00:00 live: LIVE build 20261022-233931 commit 02f3f93; handoff log e7f5047 on main"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T21:23:24+00:00",
+   "commit": "d30479b"
+  },
+  {
+   "id": "chat-leave-rel",
+   "title": "Release chat-leave",
+   "kind": "release",
+   "branch": null,
+   "deps": [
+    "chat-leave"
+   ],
+   "prio": 5,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:23+00:00 added",
+    "2026-10-22T21:23:30+00:00 claimed by worker-B",
+    "2026-10-22T21:25:17+00:00 starting release-pipeline on d30479b",
+    "2026-10-22T21:38:47+00:00 first pipeline runs stopped before push (news tutorial field, trailing whitespace in repro.cjs); fixed in 468e586-ish, rerunning",
+    "2026-10-22T21:43:51+00:00 live: LIVE build 20261022-233931 commit 02f3f93"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T21:38:47+00:00"
+  },
+  {
+   "id": "ate-this",
+   "title": "Verify ate-this-20261022 (3 ahead): I just ate this / I'll eat this in Shuffle/Swipe/end cookalong; missing iPhone 13/15 checks",
+   "kind": "work",
+   "branch": "ate-this-20261022",
+   "deps": [],
+   "prio": 6,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:24+00:00 added",
+    "2026-10-22T16:15:16+00:00 claimed by worker-B",
+    "2026-10-22T16:17:36+00:00 worktree wt-ate-this, rebase onto d55c6fc attempted",
+    "2026-10-22T16:18:14+00:00 rebased onto d55c6fc (version-string conflicts in index.html/sw.js resolved by re-applying hooks)",
+    "2026-10-22T16:19:33+00:00 suite 2235/2235 after GESTURE_EXEMPT entry",
+    "2026-10-22T16:45:29+00:00 ready: verified: rebased on d55c6fc, suite 2235/2235 (+GESTURE_EXEMPT reason for ate-this.js), ate-this-live PASS iPhone SE EN, 13 DE, 15 ES (WebKit), Pixel 7 EN (Chromium) in Night and Day (browser sims); pushed 0d84ce6",
+    "2026-10-22T16:56:04+00:00 live: LIVE in 20261022-184555"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T16:19:33+00:00",
+   "commit": "981c845"
+  },
+  {
+   "id": "ate-this-rel",
+   "title": "Release ate-this",
+   "kind": "release",
+   "branch": null,
+   "deps": [
+    "ate-this"
+   ],
+   "prio": 6,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:24+00:00 added",
+    "2026-10-22T16:45:29+00:00 claimed by worker-B",
+    "2026-10-22T16:45:45+00:00 starting release-pipeline from wt-ate-this",
+    "2026-10-22T16:56:04+00:00 live: LIVE build 20261022-184555 commit 4de5c52 (live sim i13 DE PASS); handoff log ad62dbe"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T16:45:45+00:00",
+   "commit": "0d84ce6"
+  },
+  {
+   "id": "chat-members",
+   "title": "Verify chat-members-20261022 (5 ahead): 2 fixes unchecked, prior Night failed; fix+check Day/Night",
+   "kind": "work",
+   "branch": "chat-members-20261022",
+   "deps": [
+    "chat-leave-rel"
+   ],
+   "prio": 7,
+   "next": "",
+   "status": "done",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:24+00:00 added",
+    "2026-10-22T21:48:14+00:00 claimed by worker-B",
+    "2026-10-22T21:49:37+00:00 Verified: superseded, not released. Branch chat-members-20261022 (a23ccfa, 5 ahead / 88 behind main e7f5047) adds a Members page opened from the room's members button #crMembers (Emmanuel 14:29). Emmanuel 18:18 then asked to remove the members/recent-voices button+badge; nav-shared (57ecf72, LIVE 20261022-211924) hides .cg-thead.cr-head/#crPin/#crCrew in the room, so the page has no entry point. Releasing it would mean reviving the removed button against his later request. Branch kept on origin as an archive; nothing merged. If Emmanuel later wants members reachable elsewhere (e.g. Community name sheet), reuse memPaint/memberRows/community-members.css from a23ccfa.",
+    "2026-10-22T21:49:38+00:00 done: Verified: superseded, not released. Branch chat-members-20261022 (a23ccfa, 5 ahead / 88 behind main e7f5047) adds a Members page opened from the room's members button #crMembers (Emmanuel 14:29). Emmanuel 18:18 then asked to remove the members/recent-voices button+badge; nav-shared (57ecf72, LIVE 20261022-211924) hides .cg-thead.cr-head/#crPin/#crCrew in the room, so the page has no entry point. Releasing it would mean reviving the removed button against his later request. Branch kept on origin as an archive; nothing merged. If Emmanuel later wants members reachable elsewhere (e.g. Community name sheet), reuse memPaint/memberRows/community-members.css from a23ccfa."
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T21:49:37+00:00",
+   "commit": "a23ccfa"
+  },
+  {
+   "id": "chat-members-rel",
+   "title": "Release chat-members",
+   "kind": "release",
+   "branch": null,
+   "deps": [
+    "chat-members"
+   ],
+   "prio": 7,
+   "next": "",
+   "status": "done",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:24+00:00 added",
+    "2026-10-22T21:49:38+00:00 done: Nothing to release: chat-members superseded by Emmanuel 18:18 removal of the members button (nav-shared LIVE 20261022-211924). No build."
+   ]
+  },
+  {
+   "id": "aura-shop",
+   "title": "Verify aura-shop-rb (2 ahead; aura-shop-20261022 is older WIP): iPhone 15 Day sim hung under load, re-run",
+   "kind": "work",
+   "branch": "aura-shop-rb",
+   "deps": [],
+   "prio": 8,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:24+00:00 added",
+    "2026-10-22T18:03:02+00:00 claimed by worker-B",
+    "2026-10-22T18:06:31+00:00 worktree wt-aura-shop, aura-shop-rb rebased clean on origin/main db78f90",
+    "2026-10-22T18:08:55+00:00 rebased; fixed export order (galaxy-zoom test); suite was 2249/2250 before fix; sims running -> queue/aura-sims.log",
+    "2026-10-22T18:19:44+00:00 sims PASS 14/14 at iPhone SE/13/15/Pixel 7 Day+Night EN, plus SE Night DE, Pixel 7 Day ES; brand palette fix 677e6a3; news queue/aura-news.json",
+    "2026-10-22T18:23:05+00:00 ready: verified on main db78f90: full suite 2250/2250; aura-shop-sim 14/14 at iPhone SE, 13, 15, Pixel 7 Day+Night EN + SE Night DE + Pixel 7 Day ES (browser sims); fixes: export order (galaxy-zoom test), brand palette; pushed aura-shop-rb 677e6a3",
+    "2026-10-22T18:33:01+00:00 rebased onto e574987 (quiet-back 201714), targeted tests 25/25, pushed a0a3339",
+    "2026-10-22T18:58:22+00:00 live: live in 20261022-205351"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T18:19:44+00:00",
+   "commit": "a0a3339"
+  },
+  {
+   "id": "aura-shop-rel",
+   "title": "Release aura-shop",
+   "kind": "release",
+   "branch": null,
+   "deps": [
+    "aura-shop"
+   ],
+   "prio": 8,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:24+00:00 added",
+    "2026-10-22T18:50:49+00:00 claimed by worker-B",
+    "2026-10-22T18:51:03+00:00 release-pipeline started 18:50Z, log queue/aura-release.log",
+    "2026-10-22T18:56:52+00:00 pushed 602125f as 20261022-205351, waiting for live",
+    "2026-10-22T18:58:22+00:00 live: LIVE build 20261022-205351 commit 602125f"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T18:56:52+00:00",
+   "commit": "602125f"
+  },
+  {
+   "id": "fairplay-sql",
+   "title": "Leaderboard fair-play: DB still accepts forged scores; write SQL migration/policy in supabase/; applying needs owner Supabase access -> block honestly if unavailable",
+   "kind": "work",
+   "branch": null,
+   "deps": [],
+   "prio": 9,
+   "next": "after main lands: block (owner applies in Supabase SQL editor)",
+   "status": "blocked",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:24+00:00 added",
+    "2026-10-23T04:07:40+00:00 claimed by worker-A",
+    "2026-10-23T04:10:06+00:00 SQL trigger supabase/proposals/leaderboard_fairplay_20261023.sql + tests/fairplay-sql.test.cjs on branch fairplay-sql-20261023; matches current Care board model (sunbeams 12/day, care1 tags, 25 levels), server-set updated_at",
+    "2026-10-23T04:12:10+00:00 suite 2457/2457; landing SQL + handoff log on main via push-main (log logs/fairplay-sql-handoff.log)",
+    "2026-10-23T04:13:36+00:00 block: SQL ready on main ade488c (supabase/proposals/leaderboard_fairplay_20261023.sql, tests/fairplay-sql.test.cjs, suite 2457/2457). Applying needs owner Supabase access: Emmanuel runs it in the Supabase SQL editor. No app code, no release."
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T04:12:10+00:00",
+   "commit": "ade488c"
+  },
+  {
+   "id": "chat-crash",
+   "title": "Community->chat real iPhone crash (unknown cause, distinct from stuck background): diagnose with WebKit sims, fix",
+   "kind": "work",
+   "branch": null,
+   "deps": [
+    "chat-members-rel"
+   ],
+   "prio": 10,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:25+00:00 added",
+    "2026-10-22T21:52:16+00:00 claimed by worker-B",
+    "2026-10-22T21:58:50+00:00 worktree wt-chat-crash on chat-crash-20261022 from a94b0f4; new tools/probe-chat-behind.cjs: WebKit iPhone 15 local: chat room open = 0 rAF/s, no GL/2D draws, 14 backdrop-filter layers (1.43 screens), 4.4 MB canvas; Home 13 rAF/s, 93 GL draws/s; no crash",
+    "2026-10-22T22:03:38+00:00 Finding: inactive tabs are opacity 0 but keep backdrop-filter layers: 20 hidden glass blurs (tab-profile 7-20, tab-foryou 11, home header) composited under Community/chat (WebKit iPhone 15). Fix: #main>.tab:not(.active) * backdrop-filter:none. After: inactive tabs 0 blur layers. Not proven as his crash cause (sims don't hit iOS memory limits).",
+    "2026-10-22T22:11:36+00:00 ready: Inactive tabs drop backdrop-filter (20 hidden glass layers under Community/chat -> 0); chat-open blur layers 14->6, transition peak 24->16 (WebKit SE/13/15). Suite 2342/2342. chk.py local = same 9 env fails as main locally; live check after release. Cause of his real-iPhone crash not proven; rAF ~15-22/s with no draws while chat open on SE/13 noted for follow-up.",
+    "2026-10-22T22:21:23+00:00 live: LIVE build 20261023-001217 commit a9448d8 (handoff log 3beac64). Inactive tabs drop hidden backdrop-filter layers; chk.py on live 4 configs 0 fails. Not proven as his real-iPhone crash cause; item 29 stays open until he retests."
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T22:03:38+00:00",
+   "commit": "bdfe1bc"
+  },
+  {
+   "id": "chat-input",
+   "title": "iPhone chat input bar too low / typing broken; check chat-composer-20261022 (3 ahead, 7 behind) first",
+   "kind": "work",
+   "branch": null,
+   "deps": [
+    "chat-crash"
+   ],
+   "prio": 11,
+   "next": "chat-pin next for chain B",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:25+00:00 added",
+    "2026-10-22T22:24:21+00:00 claimed by worker-B",
+    "2026-10-22T22:27:16+00:00 chat-composer-20261022 (3 commits) cherry-picked onto origin/main 3beac64 as branch chat-input-20261023; conflicts resolved keeping main item 38 shell/fit, added roomVV + #app visual-viewport rule + pill one-row",
+    "2026-10-22T22:29:30+00:00 suite passed on branch; chat-kb probe running main vs branch (back button/room name/pinned checks are obsolete since nav-shared removed room top bar)",
+    "2026-10-22T22:37:24+00:00 branch probe: all devices pass except iPhone SE home-screen @mention list (room only ~264px tall with keyboard; 124px shared bar); main fails composer visibility at rest on all iPhones in Safari + tab row off screen with keyboard (= E-man's bug)",
+    "2026-10-22T22:42:22+00:00 ready: branch chat-input-20261023 (chat-composer-20261022 rebased on main + fixes): room #app follows visual viewport, composer above Safari toolbar/home indicator at rest and on keyboard; suite 2348/2348; chat-kb probe passes all devices except iPhone SE home-screen @mention row (follow-up); chk.py 4 cfgs 0 fails local",
+    "2026-10-22T22:42:59+00:00 rebased on origin/main d50bc1e (scanfe-f2 live); rerunning suite before release",
+    "2026-10-22T22:52:52+00:00 live: LIVE build 20261023-004346 commit 06eb755",
+    "2026-10-22T22:52:52+00:00 handoff log e144410 on main; follow-up: iPhone SE home-screen @mention row ~2px under keyboard (probe), not reported to E-man"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T22:37:24+00:00",
+   "commit": "06eb755"
+  },
+  {
+   "id": "chat-pin",
+   "title": "Remove sparkle bar/fake pin, real admin-only pin; check chat-pin-20261022 WIP (Maya 8 handoff)",
+   "kind": "work",
+   "branch": "chat-pin-20261022",
+   "deps": [
+    "chat-input"
+   ],
+   "prio": 12,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:25+00:00 added",
+    "2026-10-22T22:55:48+00:00 claimed by worker-B",
+    "2026-10-22T22:59:54+00:00 WIP 93a4446/22947f9/d135abf cherry-picked onto e144410 (branch chat-pin-20261022b); css conflict resolved: shell keeps .cr-head/#crCrew hidden, #crPin only when data-pinned, top 8px, --cr-top 66px pinned",
+    "2026-10-22T23:07:41+00:00 rebased WIP + shell fit committed; targeted tests 14/14",
+    "2026-10-22T23:12:10+00:00 branch chat-pin-20261022b pushed at 1cf2589 (WIP 93a4446/22947f9/d135abf on e144410 + shell fit: #crPin only with data-pinned, top 8px, --cr-top 66px pinned / 12px none, list padding-top var(--cr-top,12px); probe head() checks shared .rm-bar/.rm-tabs; tests updated). Suite 2363/2364 before last test fix (eden padding regex fixed after, targeted 8/8). chk.py 4 configs local TOTAL fails 0. pin probe: iPhone 13 head fit OK; iPhone SE night de FAIL 'tapping the bar did not bring the message into view' (goPinned centers via l.scrollTop; maybe chat-input roomVV/stick-to-bottom scroll restore fights it) - log /tmp/chatpin-probe2.log, /tmp/chatpin-p2/report.json. kb probe ran in parallel with suite+pin probe (heavy load): 18 FAILs 'back button off screen' with keyboard on SE/13 - rerun alone and compare with wt-chat-input (06eb755) before blaming the branch; log /tmp/chatpin-kb.log. SQL ready: supabase/proposals/chat_pin_20261022.sql (owner applies; client works without it).",
+    "2026-10-22T23:12:10+00:00 unclaim: resume from branch chat-pin-20261022b 1cf2589, see checkpoint",
+    "2026-10-22T23:14:45+00:00 claimed by worker-B",
+    "2026-10-22T23:17:15+00:00 rebased on 4df9c1b; goPinned hold vs fit stick-to-bottom; suite 2371/2371",
+    "2026-10-22T23:34:53+00:00 roomVV atEnd rAF also fought goPinned; gated by pinHoldAt; iPhone 13 dbg ok",
+    "2026-10-22T23:44:13+00:00 pin probe 4 devices Day+Night 0 FAIL (/tmp/chatpin-probe4.log)",
+    "2026-10-22T23:50:38+00:00 unclaim: branch chat-pin-20261022b pushed at 8e83eb2 (rebased on 4df9c1b = live 20261023-010913). Fix: goPinned sets pinHoldAt; fit() stick-to-bottom and roomVV() atEnd keep-at-bottom (+its rAF) skip for 900ms after it (both were snapping the list back to the bottom after the jump). Suite 2371/2371 (before the roomVV gate; rerun). Pin probe 4 devices Day+Night 0 FAIL (/tmp/chatpin-probe4.log). kb probe run ALONE on branch: still 'back button off screen' FAILs (~28, SE/13/15 safari+home with keyboard, log /tmp/chatpin-kb2.log) - baseline not yet compared: worktree /home/sprite/lowispike/wt-chat-pin-base (detached origin/main 4b3b191, checkout may still be finishing) -> run node tools/community-chat-kb/probe.cjs /tmp/kb-base there ALONE and compare; branch does not touch #app vv fit. News json ready: queue/chat-pin-news.json. chk.py not yet rerun after change.",
+    "2026-10-22T23:53:19+00:00 claimed by worker-B",
+    "2026-10-22T23:54:18+00:00 rebased on origin/main 0bfbd9e (live 20261023-012021) -> 6ce8a6d; baseline worktree wt-chat-pin-base recreated at 0bfbd9e; starting kb probe baseline alone",
+    "2026-10-23T00:02:38+00:00 kb probe baseline (main 0bfbd9e, alone): 26 FAIL = 24 'back button off screen' with keyboard SE/13/15 safari+home + 2 SE home mention row (known 2px). Branch run had same + 2 iPhone 13 safari day extras (mention close, send in list); rerun on rebased branch iPhone 13 alone: only the 8 back-button FAILs = baseline -> extras flaky, back-button FAILs pre-exist on main (probe expects back button inside panned vv; not from this branch). base worktree removed",
+    "2026-10-23T00:15:51+00:00 suite 2377/2377 (/tmp/chatpin-suite5.log); chk.py 4 cfgs TOTAL fails 0 on branch served from free port 18731 (/tmp/chatpin-chk6.log; earlier 39-fail run hit an old foreign server on busy port 8731, invalid); rebased on origin/main and pushed",
+    "2026-10-23T00:15:52+00:00 ready: ready: branch chat-pin-20261022b f95693c; suite 2377/2377; pin probe 4 devices Day+Night 0 FAIL; kb probe = baseline main (24 back-button-with-keyboard FAILs + 2 SE home mention row pre-exist on main, not from branch); chk.py 4 cfgs 0 fails",
+    "2026-10-23T00:23:57+00:00 live: LIVE build 20261023-021607 commit 0cf6200 (handoff log 7f1062b; owner: run supabase/proposals/chat_pin_20261022.sql)"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T00:15:51+00:00",
+   "commit": "f95693c"
+  },
+  {
+   "id": "sheets-linger",
+   "title": "Sheets linger after close; Forms leaks Misty sheet",
+   "kind": "work",
+   "branch": null,
+   "deps": [],
+   "prio": 13,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:25+00:00 added",
+    "2026-10-23T00:26:33+00:00 claimed by worker-B",
+    "2026-10-23T00:28:59+00:00 found finished branch origin/sheet-replace-20261022 (130edc3, one sheet at a time, closes land on page) 121 commits behind main; cherry-picking onto main in wt-sheets-linger",
+    "2026-10-23T00:36:54+00:00 cherry-picked 130edc3 + focus fix + test update; suite pending; sheet-replace-live PASS i13 night en",
+    "2026-10-23T00:47:07+00:00 branch sheets-linger-20261023 (c9978c6) = origin/sheet-replace-20261022 130edc3 cherry-picked on main + focus fix in ovPark + wiring test updated for weight merge; rebased on main 5b9caf8 (g2 live 20261023-022809). Suite 2398/2398. tests/sheet-replace-live.cjs PASS i13 night en, SE day de, 15 night es, Pixel7 day en (before rebase); after rebase i13 day de FAIL once: 'Gap sheet > Log a meal (escape): left open' (Log a meal r2 sheet stays after Escape). Gap close() calls back.focus() then opens LowiSpirit.meal 60ms later; suspect focus not inside the meal sheet when Escape is pressed (apple-ui rAF focus needs R2.top()===ov; gv-ov stays in ovStack ~260ms while fading)",
+    "2026-10-23T00:47:07+00:00 unclaim: resume from branch sheets-linger-20261023 c9978c6, see checkpoint",
+    "2026-10-23T00:49:50+00:00 claimed by worker-B",
+    "2026-10-23T01:02:33+00:00 focus safety net in apple-ui.js (strayFocus: bodyKey + 320ms recheck), unit test added; suite running",
+    "2026-10-23T01:29:24+00:00 suite 2399/2399; sheet-replace-live PASS i13 day de x5, i13 night en/es, SE day de/night es, 15 night es/day en, Pixel7 day en/night de",
+    "2026-10-23T01:46:35+00:00 live: LIVE build 20261023-033529 commit 44a6ed9 (handoff log eb7edbb)"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T01:29:24+00:00",
+   "commit": "1ea4c76"
+  },
+  {
+   "id": "misty-sheet-a",
+   "title": "Misty sheet: remove 'Tell Misty how you feel', Hunt power label, remove Food journal tile",
+   "kind": "work",
+   "branch": null,
+   "deps": [
+    "sheets-linger"
+   ],
+   "prio": 14,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:25+00:00 added",
+    "2026-10-23T01:52:46+00:00 claimed by worker-B",
+    "2026-10-23T01:58:18+00:00 cherry-picked c2f4efd (Food journal door) onto main + removed mood check-in and Hunt power row; 467d77a skipped (superseded by sheets-linger one-sheet-at-a-time); suite 2410/2413 before test updates, 3 expected tests updated",
+    "2026-10-23T02:05:57+00:00 suite 2413/2413; sim misty-sheet-a PASS SE de night, SE es day, 13 en night, 13 es day, 15 en night, Pixel7 de day, Pixel7 en night; sheet-replace-live PASS 13 day de",
+    "2026-10-23T02:05:57+00:00 ready: verified, branch misty-sheet-a-20261023 020ee12",
+    "2026-10-23T02:16:40+00:00 live: LIVE build 20261023-041057 commit 6f7f807 (handoff log 37c327e)"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T02:05:57+00:00",
+   "commit": "020ee12"
+  },
+  {
+   "id": "misty-sheet-b",
+   "title": "Misty sheet: peak bar shows missing requirements; small fitting speech bubbles",
+   "kind": "work",
+   "branch": null,
+   "deps": [
+    "misty-sheet-a"
+   ],
+   "prio": 15,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:25+00:00 added",
+    "2026-10-23T02:19:40+00:00 claimed by worker-B",
+    "2026-10-23T02:24:10+00:00 worktree wt-misty-sheet-b on origin/main 26aec99",
+    "2026-10-23T02:25:22+00:00 speech bubbles: ready branch origin/misty-bubbles-20261022 (583f0e4, not on main) -> rebase onto main",
+    "2026-10-23T02:26:01+00:00 misty-bubbles 3 commits cherry-picked onto main (cd50db0), index/sw conflicts resolved, diff --check ok",
+    "2026-10-23T02:33:17+00:00 suite 2419 (1 wiring fail fixed: css link moved), misty-say look PASS se+i13",
+    "2026-10-23T02:39:47+00:00 speech-bubble half verified: suite 2419 green after fix, misty-say look PASS se/i13/i15(rerun)/px7 day+night EN/DE/ES, misty-sheet-a sim PASS SE night DE + Pixel7 day ES. Peak bar half split into new step misty-peak (WIP branch exists).",
+    "2026-10-23T02:39:47+00:00 ready: speech bubbles verified, branch misty-sheet-b-20261023",
+    "2026-10-23T02:49:42+00:00 live: LIVE build 20261023-044056 commit 00e0044 (speech bubbles; peak bar -> misty-peak); handoff log 2136c3a"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T02:39:47+00:00",
+   "commit": "9810e57"
+  },
+  {
+   "id": "meal-photo-a",
+   "title": "Meal-photo timeout diagnosis + fix",
+   "kind": "work",
+   "branch": null,
+   "deps": [],
+   "prio": 16,
+   "next": "meal-photo-b",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:25+00:00 added",
+    "2026-10-23T03:17:21+00:00 claimed by worker-B",
+    "2026-10-23T03:18:14+00:00 cherry-picked photo-check-20261022 (afa80b2,82de5da,a7c6f75) onto main 780035f cleanly",
+    "2026-10-23T03:20:42+00:00 suite green, branch pushed",
+    "2026-10-23T03:28:34+00:00 ready: verified: suite 2437/2437, photo-check sim ok/retry/button SE/13/15/Px7 day+night; branch meal-photo-a-20261023 91f5f14",
+    "2026-10-23T03:33:19+00:00 live: LIVE build 20261023-052843 commit b14fdbd",
+    "2026-10-23T03:38:03+00:00 LIVE 20261023-052843 commit b14fdbd; handoff log on main 7b880d8; successor scheduled for meal-photo-b"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T03:20:42+00:00",
+   "commit": "7b880d8"
+  },
+  {
+   "id": "meal-photo-b",
+   "title": "Save meal photo + estimate; share to Community",
+   "kind": "work",
+   "branch": null,
+   "deps": [
+    "meal-photo-a"
+   ],
+   "prio": 17,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:26+00:00 added",
+    "2026-10-23T03:38:17+00:00 claimed by worker-B",
+    "2026-10-23T03:42:24+00:00 cherry-picked origin/meal-save-share (981a1ca, ce76eeb, 802211f) onto main 7b880d8, conflicts index.html/sw.js/community-chat-core/handoff resolved",
+    "2026-10-23T03:42:25+00:00 cherry-picked origin/meal-save-share onto main 7b880d8; conflicts resolved",
+    "2026-10-23T03:54:49+00:00 unclaim: branch meal-photo-b-20261023 (9000084) = origin/meal-save-share 3 commits cherry-picked onto main 7b880d8, conflicts resolved (index.html script/css tags, sw.js STATIC meal-journal.js/.css, community-chat-core keeps pin + meal API, handoff). Full suite 2454/2454. tools/probe-meal-save-share.cjs: log/list/meal sheet/delete pass on SE+13 once waits are longer (sheet au-physics opening anim > 1100 ms; Delete needs r2-sh scrolled); FAILS: 'share sheet did not open from the meal sheet button' -> no upload, no chat card. Debug copy queue/logs/mpb-probe-dbg.cjs. Not released.",
+    "2026-10-23T03:57:48+00:00 claimed by worker-B",
+    "2026-10-23T04:10:00+00:00 share-from-meal-sheet: opens on top (no close+80ms reopen); probe settle waits; iPhone13 dark en: log/list/sheet/share sheet/upload/delete pass; remaining: post stays 'Posting…' after upload + POST messages, no .cs-meal card in chat",
+    "2026-10-23T04:11:54+00:00 unclaim: branch meal-photo-b-20261023 at 4a33ce8: meal-journal.js Share now opens on top of the meal sheet (no close + 80 ms reopen; Saved-sheet path likewise opens directly, one-sheet stack parks the parent). Probe: settle() waits for top sheet to stop moving, scrolls sheet before Delete, retries share tap. iPhone 13 dark en: log/list/meal sheet/delete PASS; share tap is flaky in WebKit sim: pointerdown/touchend target <html> though elementFromPoint gives the button (logs/mpb-p3..p5.log); in run mpb-p6 share opened + photo upload + POST messages happened but the sheet stayed 'Posting…' after 3.5 s and no .cs-meal card in chat (logs/mpb-p6.log); run mpb-p7 the meal sheet closed after 3 retries (a retry tap probably hit the scrim). Debug probes logs/mpb-hit.cjs, logs/mpb-dbg2.cjs (adds writes t+text and chatDiag). Not released.",
+    "2026-10-23T04:15:09+00:00 claimed by worker-B",
+    "2026-10-23T04:15:56+00:00 rebased onto origin/main ade488c (conflicts index.html script/css tags, sw.js STATIC, handoff log resolved)",
+    "2026-10-23T04:26:18+00:00 app share works in sim (shareMeal resolves, sheet closes, .cs-meal card in chat). Fails were the probe: raw touch on <html>, stale goTab('community'). Probe fixed; iPhone 13 dark en PASS",
+    "2026-10-23T04:37:42+00:00 sw.js order fix (room styles test); probe PASS on SE light de/dark es/dark en, 13 dark en/light es, 15 light en/dark de, Pixel 7 light en/dark es",
+    "2026-10-23T04:47:16+00:00 rebased onto origin/main bcaf9c9 (world-exit live 20261023-063141); suite 2473/2473; probe iPhone13 dark de pass (intermittent sim race: meal sheet sometimes gone before Share tap right after the first-time-logged toast; 9/11 configs pass first run, reruns pass)",
+    "2026-10-23T04:51:35+00:00 live: LIVE build 20261023-064718 commit c9f3f08"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T04:47:16+00:00",
+   "commit": "57d4255"
+  },
+  {
+   "id": "worldmap-btn",
+   "title": "Remove old World map button",
+   "kind": "work",
+   "branch": null,
+   "deps": [
+    "trim-places"
+   ],
+   "prio": 18,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:26+00:00 added",
+    "2026-10-22T15:34:40+00:00 coordinator: long-press World map entry handled by 386d0112 (longpress-menu); afterwards only remove any remaining old World map button elsewhere, no duplicate",
+    "2026-10-22T15:34:56+00:00 coordinator: dep switched to trim-places (386d0112 self-registered); duplicate longpress-menu entry removed",
+    "2026-10-23T03:37:38+00:00 claimed by worker-A",
+    "2026-10-23T03:41:59+00:00 found origin/rm-worldmap-20261022 (7059a5c,a5c334b): Emmanuel voice note 'There's a World map button, that's old... remove it completely'; never released. Rebasing onto main 3f39ad3",
+    "2026-10-23T03:45:47+00:00 rebased branch onto main as 1dd6708,7b95b9e + 069503a fixes; targeted tests pass",
+    "2026-10-23T03:55:59+00:00 probes PASS SE/13/15/Pixel7 day+night EN/DE/ES; guide-bubble-joystick-live PASS; pushed origin/worldmap-btn-20261023",
+    "2026-10-23T03:57:51+00:00 ready: old World map removed on main base 7b880d8: stick gone in cell world/Home, map out of More/hub/tutorial, X exits, guide bubble keeps X clear; suite all pass; probes PASS 4 devices day/night EN/DE/ES; branch origin/worldmap-btn-20261023 43d5cff",
+    "2026-10-23T04:04:38+00:00 live: live in 20261023-055817"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T03:55:59+00:00",
+   "commit": "43d5cff"
+  },
+  {
+   "id": "world-exit",
+   "title": "White boxes during world-exit animation",
+   "kind": "work",
+   "branch": null,
+   "deps": [],
+   "prio": 19,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:26+00:00 added",
+    "2026-10-23T04:16:39+00:00 claimed by worker-A",
+    "2026-10-23T04:17:12+00:00 cherry-picked 7c9a9b6 onto main ade488c as 8b88e9e; one conflict (world-home-core.js api list) resolved keeping 25 levels/aura shop exports + spark helpers",
+    "2026-10-23T04:17:12+00:00 cherry-picked 7c9a9b6 onto main ade488c as 8b88e9e; world-home-core.js api conflict resolved keeping 25 levels/aura shop + spark helpers",
+    "2026-10-23T04:22:28+00:00 8b88e9e + a9239e2 (source-pinned regex lines kept; exit-sparkles test 7/7 new, 7/7 fail on old main code)",
+    "2026-10-23T04:29:44+00:00 ready: branch world-exit-20261023 (8b88e9e cherry-pick of 7c9a9b6 + a9239e2); suite 2464/2464; exit-sparkles-live SE/13/15 day+night pass; world-map probe SE/13/15/Pixel7 pass",
+    "2026-10-23T04:38:44+00:00 live: LIVE build 20261023-063141 commit b1d817b"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T04:22:28+00:00",
+   "commit": "a9239e2"
+  },
+  {
+   "id": "mirror-move",
+   "title": "Mirror mode at top of Move, two taps from Home",
+   "kind": "work",
+   "branch": null,
+   "deps": [],
+   "prio": 20,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:26+00:00 added",
+    "2026-10-23T04:43:28+00:00 claimed by worker-A",
+    "2026-10-23T04:46:13+00:00 cherry-picked origin/mirror-hero dc5c3e3 onto main (tutorial-voice-data: main's data + branch mirror clip only), recoloured violet to brand blues + tests/mirror-hero-brand.test.cjs",
+    "2026-10-23T04:51:05+00:00 Home Move bloom is home-blooms-v2 (hb2), not move-bubble.js: Mirror added as first hb2 orb; sim tools/sim/mirror-move.cjs passes iPhone 13 night EN full suite + sim matrix, push, done ready, release",
+    "2026-10-23T04:51:09+00:00 Home Move bloom is home-blooms-v2 (hb2): Mirror added as first hb2 orb; sim passes iPhone 13 night EN",
+    "2026-10-23T05:05:26+00:00 Watchdog split at ~20 min (task 4240af9f cancelled). Done: cherry-pick of origin/mirror-hero, brand-blue recolour + brand test, Mirror as first hb2 orb of Home Move bloom, sim tools/sim/mirror-move.cjs passing iPhone 13 night EN; sim settle fix 876b8c6; overlap-debug output 92cf523. Branch mirror-move-20261023 pushed (92cf523), worktree /home/sprite/lowispike/wt-mirror-move. No build number claimed, nothing released. Left: full node --test suite (worker was updating test assertions), sim matrix SE/13/15/Pixel 7 day+night EN/DE/ES (check bubbles-do-not-overlap), done --status ready, mirror-move-rel via release-pipeline.sh.",
+    "2026-10-23T05:05:26+00:00 unclaim: watchdog split; successor resumes from branch mirror-move-20261023 @ 92cf523",
+    "2026-10-23T05:06:15+00:00 watchdog: one successor scheduled (schedule 01a16726, fires 05:08 UTC) to resume from 92cf523",
+    "2026-10-23T05:06:16+00:00 unclaim: keep queued for successor",
+    "2026-10-23T05:08:26+00:00 claimed by worker-A",
+    "2026-10-23T05:26:11+00:00 rebased on 572218c; full suite tests/*.test.cjs 2485 pass 0 fail; sim tools/sim/mirror-move.cjs passes iPhone SE/13/15/Pixel 7 x day/night x EN/DE/ES (24/24, two load-only tap flakes passed on rerun)",
+    "2026-10-23T05:26:11+00:00 ready: branch mirror-move-20261023 @ 5daacb1: suite 2485/2485, sim matrix 24/24",
+    "2026-10-23T06:00:14+00:00 live: LIVE build 20261023-074744"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T05:26:11+00:00",
+   "commit": "5daacb1"
+  },
+  {
+   "id": "grocery-1",
+   "title": "Grocery: after scan, Add to bucket / Skip",
+   "kind": "work",
+   "branch": null,
+   "deps": [],
+   "prio": 21,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:26+00:00 added",
+    "2026-10-23T04:56:08+00:00 claimed by worker-B",
+    "2026-10-23T05:01:24+00:00 bucket row on product check card built + unit tests",
+    "2026-10-23T05:08:33+00:00 suite 2478/2479 (onboarding map) fixed; probe i13 dark EN/DE/ES ok except probe scoping, fixed",
+    "2026-10-23T05:13:01+00:00 suite 2479/2479; probe PASS i13 dark EN/DE/ES (+fix), SE light DE/EN, i15 light ES, Pixel 7 dark EN/ES; branch pushed",
+    "2026-10-23T05:18:15+00:00 live: LIVE build 20261023-071308 commit 517dddc"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T05:13:01+00:00",
+   "commit": "eb5980c"
+  },
+  {
+   "id": "grocery-2",
+   "title": "Grocery: per-day saved bucket with price+points; pick shop or manual price if unknown; shop total price+points (no invented prices)",
+   "kind": "work",
+   "branch": null,
+   "deps": [
+    "grocery-1"
+   ],
+   "prio": 22,
+   "next": "successor: grocery-3, then supabase-perms, stripe",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:26+00:00 added",
+    "2026-10-23T05:24:44+00:00 claimed by worker-B",
+    "2026-10-23T05:29:10+00:00 core+UI+tests committed (points = card spike score; prices only typed or real reports)",
+    "2026-10-23T05:36:36+00:00 rebased on 7d38424, suite 2485/2485, probe PASS i13 dark en/de/es, se light en/de, i15 light es, pixel7 dark en/es",
+    "2026-10-23T05:40:46+00:00 live: LIVE build 20261023-073638 commit 9ad432f",
+    "2026-10-23T05:44:40+00:00 LIVE 20261023-073638 (9ad432f); handoff log on main 32df6b3; live probe i13 dark en PASS; points interpreted as card spike score (flag to Emmanuel in voice note)"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T05:36:36+00:00",
+   "commit": "32df6b3"
+  },
+  {
+   "id": "grocery-3",
+   "title": "Grocery: today's purchased groceries end-of-day view + cook suggestions (no invented notification hour)",
+   "kind": "work",
+   "branch": null,
+   "deps": [
+    "grocery-2"
+   ],
+   "prio": 23,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:26+00:00 added",
+    "2026-10-23T05:47:12+00:00 claimed by worker-B",
+    "2026-10-23T05:50:43+00:00 core suggest + Today's groceries sheet + 3 tests (13/13)",
+    "2026-10-23T05:54:28+00:00 suite 2488/2488 (before probe commit), today-probe i13 dark en/de/es pass",
+    "2026-10-23T06:00:12+00:00 rebased on ae391ac; suite 2500/2500; today-probe pass i13 dark en/de/es, se light en/de, i15 light es, pixel7 dark en/es; bucket probe i13 dark en/de pass",
+    "2026-10-23T06:00:12+00:00 ready: verified, branch grocery-3-20261023 5e475fd",
+    "2026-10-23T06:05:22+00:00 live: LIVE build 20261023-080016 commit 06b788f"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T06:00:12+00:00",
+   "commit": "5e475fd"
+  },
+  {
+   "id": "grocery-4",
+   "title": "Grocery: log cooked groceries by text/photo",
+   "kind": "work",
+   "branch": null,
+   "deps": [
+    "grocery-3"
+   ],
+   "prio": 24,
+   "next": "full suite, probe, release",
+   "status": "queued",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:27+00:00 added",
+    "2026-10-23T06:09:40+00:00 claimed by worker-B",
+    "2026-10-23T06:14:56+00:00 UI+core+tests done (26/26 bucket+onboarding)",
+    "2026-10-23T06:38:25+00:00 probe i13 dark en/de/es pass; running se/i15/pixel7",
+    "2026-10-23T06:44:01+00:00 HOLD from urgent home-restore (53a9ab78): do NOT release until queue/HOLD is removed; pipeline exits 75 meanwhile",
+    "2026-10-23T06:44:06+00:00 HOLD: E-man reported live Home shows OLD layout; urgent Home-restore task running. No release/push-main until Home fix is LIVE and queue.json no longer marks Home blocking. Branch grocery-4-20261023 (f47914a code, cb56e4c probe) pushed to origin; wt-grocery-4 was switched to detached origin/main by another process (branch intact; re-checkout grocery-4-20261023). Suite 2504/2504; cooked-probe pass i13 dark en/de/es, i15 light es, pixel7 dark en/es, se light en; se light de 'meal journal did not open' after thumb tap needs a rerun/debug; today-probe i13 pass. News: queue/grocery-4-news.json. Next: rebase on main after Home fix, rerun se de, release.",
+    "2026-10-23T06:44:07+00:00 unclaim: "
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T06:44:06+00:00",
+   "commit": "cb56e4c"
+  },
+  {
+   "id": "supabase-perms",
+   "title": "Supabase: from 30 Oct new tables need explicit grants; inspect supabase/ migrations, prepare grants; owner-only apply -> block honestly",
+   "kind": "work",
+   "branch": null,
+   "deps": [],
+   "prio": 25,
+   "next": "",
+   "status": "queued",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:27+00:00 added"
+   ]
+  },
+  {
+   "id": "stripe",
+   "title": "Stripe outstanding: inspect repo for what is missing; owner-only account steps -> block honestly, no invented details",
+   "kind": "work",
+   "branch": null,
+   "deps": [],
+   "prio": 26,
+   "next": "",
+   "status": "queued",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:33:27+00:00 added"
+   ]
+  },
+  {
+   "id": "presence-profile",
+   "title": "Move all 'Your presence' settings (Show my companion's form in the galaxy, etc.) into main Profile; remove separate presence badge/entry; preserve saved settings and semantics",
+   "kind": "build",
+   "branch": "presence-profile-20261022",
+   "deps": [],
+   "prio": 2,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:34:05+00:00 added",
+    "2026-10-22T15:34:06+00:00 claimed by a1b855dc-presence",
+    "2026-10-22T15:35:56+00:00 implemented in wt-presence-profile; targeted tests 22/22",
+    "2026-10-22T16:04:22+00:00 ready: verified: targeted tests 22/22, release-check OK, presprobe PASS at iPhone SE 375 dark EN, 13 390 dark DE, 15 393 light ES, Pixel 7 412 light EN, iPad 820 dark EN (browser sims): tile after Profile, sheet opens with all controls, toggle persists after save/reopen/reload, no shield badge, Profile tab row kept",
+    "2026-10-22T16:37:03+00:00 rebased on 20261022-180142 (trim-places), targeted tests 22/22, presprobe PASS; handoff note committed on branch",
+    "2026-10-22T17:06:26+00:00 watchdog split 19:06 CEST: task a1b855dc cancelled (ran 89 min, only waiting for release slot; its claimloop killed). Verified branch presence-profile-20261022 d8d4cdc (pushed, == origin) in /home/sprite/lowispike/wt-presence-profile, based on 180142 so main is now ahead (ate-this 184555, evo-popup ~185900). news at presprobe/news.json. No build number claimed",
+    "2026-10-22T17:07:40+00:00 watchdog: release owned by existing schedule 01a1647e (presence-profile-rel, fires 19:12 CEST); no duplicate started",
+    "2026-10-22T18:50:23+00:00 live: live in 20261022-204116"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T15:35:56+00:00",
+   "commit": "d8d4cdc"
+  },
+  {
+   "id": "presence-profile-rel",
+   "title": "Release presence-profile",
+   "kind": "release",
+   "branch": null,
+   "deps": [
+    "presence-profile"
+   ],
+   "prio": 50,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:34:06+00:00 added",
+    "2026-10-22T16:15:02+00:00 claimed by worker-B",
+    "2026-10-22T16:15:09+00:00 unclaim: worker-B: task a1b855dc owns presence-profile and its release; not duplicating",
+    "2026-10-22T16:42:39+00:00 NO_SLOT (evo-popup, ate-this active); successor schedule 01a1647e fires 7:12 PM",
+    "2026-10-22T17:12:55+00:00 NO_SLOT at 19:13 (evo-popup-rel, weight-merge active); successor scheduled 19:43",
+    "2026-10-22T17:43:33+00:00 19:44 CEST 22 Oct: claim-id got NO_SLOT (evo-popup-rel release running, worker-A). Successor scheduled +30 min.",
+    "2026-10-22T18:09:54+00:00 claimed by worker-A",
+    "2026-10-22T18:11:29+00:00 unclaim: worker-A (task a9148c8d) got it from claim; schedule 01a164b6 owns this release (fires 20:13 CEST), slot left free for it",
+    "2026-10-22T18:13:54+00:00 claimed by LOWiSPIKE: release Your presence into Profile (queue step presence-profile-rel)",
+    "2026-10-22T18:14:58+00:00 rebased on origin/main db78f90; resolved community-me.js SUB + hub test (weight merged into body) + handoff log; targeted tests 22/22",
+    "2026-10-22T18:28:58+00:00 pp.py PASS en:dark:375x667 + de:dark:390x844 on rebased tree (order me,presence,body)",
+    "2026-10-22T18:36:11+00:00 pipeline try 1: release.sh rebase conflict (handoff log only, main moved to e574987); rebased manually, targeted 22/22, retrying",
+    "2026-10-22T18:41:15+00:00 pipeline try 2: misty-galaxy news test (no 'galaxy' in news first line); reworded news.json EN/DE/ES",
+    "2026-10-22T18:50:22+00:00 live: LIVE build 20261022-204116 commit d10483d"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T18:41:15+00:00",
+   "commit": "68d931d"
+  },
+  {
+   "id": "trim-places",
+   "title": "Community long-press hub: remove the ENTIRE 'More places' section (For You, Care board, World map, Gift of the day, Shopping hunt); For You stays in Cook, Care board in Move  [revised by user 22 Oct]",
+   "kind": "build",
+   "branch": "trim-places-20261022",
+   "deps": [],
+   "prio": 1,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:34:41+00:00 added",
+    "2026-10-22T15:34:41+00:00 claimed by 386d0112-trim",
+    "2026-10-22T15:35:26+00:00 Emmanuel update 17:4x: remove the ENTIRE More places section (all chips incl. Gift of the day, Shopping hunt) from the long-press hub",
+    "2026-10-22T15:36:01+00:00 coordinator 49a3cfeb: user revision - remove the ENTIRE 'More places' section from the Community long-press menu incl. Gift of the day and Shopping hunt (supersedes keeping them). 386d0112 has the revision; no duplicate here.",
+    "2026-10-22T15:36:48+00:00 EXPLORE_LIGHT=[] in home-settings-sleep-v2.js, tests 2229/2229, hub-b probe updated",
+    "2026-10-22T15:53:13+00:00 ready: tests 2229/2229; trim-places probe pass SE/13/15 WebKit, Pixel7 Chromium, iPad (Day+Night, DE); branch pushed ea43f70",
+    "2026-10-22T17:06:51+00:00 live: watchdog housekeeping: already LIVE in 20261022-180142 (trim-places-rel live)"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T15:36:48+00:00",
+   "commit": "7b8523a"
+  },
+  {
+   "id": "trim-places-rel",
+   "title": "Release trim-places",
+   "kind": "release",
+   "branch": null,
+   "deps": [
+    "trim-places"
+   ],
+   "prio": 50,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:34:41+00:00 added",
+    "2026-10-22T15:53:13+00:00 claimed by 386d0112-trim",
+    "2026-10-22T16:01:36+00:00 tutorial step settings-more updated + clips; tests 2229/2229; release-check OK; releasing",
+    "2026-10-22T16:08:10+00:00 live: LIVE build 20261022-180142 commit 08a645e; live sim i13 pass"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T16:01:36+00:00",
+   "commit": "cfb40e1"
+  },
+  {
+   "id": "coord-6ef92a87",
+   "title": "Record: cancelled coordinator 6ef92a87 (queue control and small-task dispatch)",
+   "kind": "record",
+   "branch": null,
+   "deps": [],
+   "prio": 99,
+   "next": "",
+   "status": "done",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:35:59+00:00 added",
+    "2026-10-22T15:35:59+00:00 cancelled as duplicate while 'Enqueueing handover work'; get_task_results: cancelled, no summary. Child task IDs: none (list_tasks shows no task created between its start and cancel). Left behind: queue/q.py, queue/release-pipeline.sh (now used), .coordinator.lock/ dir (owner file overwritten by 49a3cfeb at takeover). queue.json did not exist - it had enqueued nothing. verify-live --compare 2026-10-22T15:35:59+00:00 by 49a3cfeb: live serves 20261022-172756 (index.html/sw.js/version.json/apple-ui.js same as main 5190187); main contains 1c274c0 (Release 20261022-142600 Products shuffle) and 909056c (Release 20261022-141920 Continue tutorial) so both are in the live build",
+    "2026-10-22T15:35:59+00:00 done: checkpointed; successor owner 49a3cfeb",
+    "2026-10-22T15:36:08+00:00 record closed by coordinator 49a3cfeb (records take no worker slot)"
+   ],
+   "claimed_at": null
+  },
+  {
+   "id": "coord-37596345",
+   "title": "Record: cancelled coordinator 37596345 (small-task queue and handover execution)",
+   "kind": "record",
+   "branch": null,
+   "deps": [],
+   "prio": 99,
+   "next": "",
+   "status": "done",
+   "owner": null,
+   "log": [
+    "2026-10-22T15:36:00+00:00 added",
+    "2026-10-22T15:36:00+00:00 cancelled as duplicate while 'Auditing coordinator state'; get_task_results: cancelled, no summary. Child task IDs: none. No files of its own found (artifact_operations empty). verify-live --compare 2026-10-22T15:35:59+00:00 by 49a3cfeb: live serves 20261022-172756 (index.html/sw.js/version.json/apple-ui.js same as main 5190187); main contains 1c274c0 (Release 20261022-142600 Products shuffle) and 909056c (Release 20261022-141920 Continue tutorial) so both are in the live build",
+    "2026-10-22T15:36:00+00:00 done: checkpointed; successor owner 49a3cfeb",
+    "2026-10-22T15:36:08+00:00 record closed by coordinator 49a3cfeb (records take no worker slot)"
+   ],
+   "claimed_at": null
+  },
+  {
+   "id": "weight-merge",
+   "title": "Merge Weight journey into Weight & BMI sheet (one dark glass sheet, no duplicates; remove Weight journey from long-press You row; old links open merged sheet; keep weigh-ins/goal/start/unit)",
+   "kind": "build",
+   "branch": "weight-merge-20261022",
+   "deps": [],
+   "prio": 1,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T16:15:55+00:00 added",
+    "2026-10-22T16:37:11+00:00 code done in wt-weight-merge b9be877, full suite green (2229); waiting for slot to run wmprobe/wm.py browser checks",
+    "2026-10-22T16:56:05+00:00 claimed by weight-merge-task",
+    "2026-10-22T17:06:26+00:00 watchdog split 19:06 CEST: task 46c5d5e6 cancelled (ran 47 min). Code committed e36a01c on weight-merge-20261022 in /home/sprite/lowispike/wt-weight-merge (local only, not pushed, worktree clean; 3 ahead/1 behind origin/main). Full suite was green earlier (2229). wmprobe/wm.py --full run was interrupted mid-way; no build number claimed",
+    "2026-10-22T17:06:26+00:00 unclaim: watchdog split: successor resumes from checkpoint",
+    "2026-10-22T17:07:40+00:00 watchdog: successor schedule 01a16494-af0b (weight-merge part 1, 19:09 CEST) then part 2 release",
+    "2026-10-22T17:10:40+00:00 claimed by weight-merge-part1",
+    "2026-10-22T17:19:24+00:00 rebased on origin/main d030d3a; node --test 2240 pass 0 fail (test-floor.cjs only waits on stdin under bare node --test)",
+    "2026-10-22T17:33:15+00:00 pushed branch weight-merge-20261022 e85307b (rebased on d030d3a)",
+    "2026-10-22T17:33:15+00:00 ready: verified: rebased on origin/main d030d3a, node --test 2240/2240 (floor OK), wmprobe/wm.py --full browser sims PASS at 320x640 375x667 390x844 393x852 412x915 820x1180 1180x820, EN/DE/ES, Day/Night (tablet 44px check flaky only under 3 parallel runs, passes sequentially); branch pushed e85307b, not on main",
+    "2026-10-22T17:57:06+00:00 live: live in 20261022-195226"
+   ],
+   "commit": "e85307b",
+   "claimed_at": "2026-10-22T17:33:15+00:00",
+   "prev_status": "queued"
+  },
+  {
+   "id": "weight-merge-rel",
+   "title": "Release weight-merge",
+   "kind": "release",
+   "branch": null,
+   "deps": [
+    "weight-merge"
+   ],
+   "prio": 50,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T16:15:55+00:00 added",
+    "2026-10-22T17:36:04+00:00 NO_SLOT at 19:36 CEST (evo-popup-rel release running, waiting on main CI 20261022-185900); part 2 rescheduled 19:46",
+    "2026-10-22T17:47:51+00:00 claimed by weight-merge-part2",
+    "2026-10-22T17:47:55+00:00 rebased on origin/main 79b91f0 -> d77684c, suite 2241/2241, branch pushed; releasing",
+    "2026-10-22T17:52:20+00:00 release attempt 1 stopped by app-voice size test (30.0 MB with news clips); pruned 315 orphan clips via build.py, suite 2241/2241; retrying pipeline",
+    "2026-10-22T17:54:09+00:00 pipeline running build 20261022-195226, CI on ci branch",
+    "2026-10-22T17:57:06+00:00 live: LIVE build 20261022-195226 commit bc5376e"
+   ],
+   "claimed_at": "2026-10-22T17:54:09+00:00",
+   "prev_status": "queued",
+   "commit": "a16f0e9"
+  },
+  {
+   "id": "scanfe-a",
+   "title": "Food engine (a): benchmark dataset (verified labels only, Ültje, plain vs coated nuts...) + regression tests (todo until engine)",
+   "kind": "work",
+   "branch": "food-engine-a-20261022",
+   "deps": [],
+   "prio": 2,
+   "next": "",
+   "status": "done",
+   "owner": null,
+   "log": [
+    "2026-10-22T16:31:33+00:00 added",
+    "2026-10-22T17:50:19+00:00 claimed by worker-A",
+    "2026-10-22T17:51:10+00:00 worktree wt-scanfe-a on branch food-engine-a-20261022 from origin/main 79b91f0",
+    "2026-10-22T17:55:23+00:00 benchmark.v1.json 18 rows committed",
+    "2026-10-22T17:56:20+00:00 bench test added (6 pass, 4 todo)",
+    "2026-10-22T17:57:20+00:00 ready: branch food-engine-a-20261022 @66cc5f5 (rebased on main bc5376e): data/food-bench/benchmark.v1.json 18 verified rows (OFF/data-shop/handoff, 5 pairs, gaps listed) + tests/food-engine-bench.test.cjs (6 real checks pass, 4 todo for b2/c/engine). Full suite 2251: 2247 pass, 0 fail, 4 todo. Findings: current assess gives Ultje ok/15 and Pinats honey peanuts ok; spike-core list() drops bracketed sweeteners (Coke Zero, Ehrmann). scanfe-b1 must branch from food-engine-a-20261022 (no own release; ships with b2-rel).",
+    "2026-10-22T17:57:36+00:00 done: done (no own -rel; ships with scanfe-b2-rel). b1 builds on branch food-engine-a-20261022 @66cc5f5"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T17:56:20+00:00",
+   "commit": "ce4bc15"
+  },
+  {
+   "id": "scanfe-b1",
+   "title": "Food engine (b1): food-engine-core.js validation + serving math + glucose categories, no carb cancelling, no fibre subtraction",
+   "kind": "work",
+   "branch": "food-engine-b-20261022",
+   "deps": [
+    "scanfe-a"
+   ],
+   "prio": 2,
+   "next": "",
+   "status": "done",
+   "owner": null,
+   "log": [
+    "2026-10-22T16:31:34+00:00 added",
+    "2026-10-22T18:46:17+00:00 claimed by worker-A",
+    "2026-10-22T18:49:55+00:00 food-engine-core.js + tests/food-engine-core.test.cjs (10 pass), bench exposure test real (all 18 rows match), targeted 17 pass + 4 todo",
+    "2026-10-22T18:50:37+00:00 ready: food-engine-core.js (validateNutrition, calculateServing, estimateGlucoseImpact; carb-bands-v1 provisional; GL only with sourced GI) + tests; full suite 2262 pass / 0 fail / 4 todo (log queue/scanfe-b1-suite.log); release-check OK; pushed food-engine-b-20261022 @8378034. Not user-visible: ships with scanfe-b2. Note: desira-pudding-vanille label flags kcal_mismatch (warn, 148 vs 100 kcal) -> lower confidence in f1.",
+    "2026-10-22T18:50:48+00:00 done: no own -rel step (ships with scanfe-b2 release), so done; branch food-engine-b-20261022 @8378034 verified"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T18:49:55+00:00",
+   "commit": "8378034"
+  },
+  {
+   "id": "scanfe-b2",
+   "title": "Food engine (b2): LowiSpikeCore.assess -> engine adapter; never 'no blood sugar spike' (EN/DE/ES); Ültje test real",
+   "kind": "work",
+   "branch": "food-engine-b-20261022",
+   "deps": [
+    "scanfe-b1"
+   ],
+   "prio": 2,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T16:31:34+00:00 added",
+    "2026-10-22T19:24:40+00:00 claimed by worker-A",
+    "2026-10-22T19:29:01+00:00 claimed; worktree wt-scanfe-b2 detached on food-engine-b rebased onto 586548b; design: assess adapter raise-only policy floors",
+    "2026-10-22T19:47:33+00:00 ready: branch food-engine-b-20261022 @88567ae on main 350fb11; tests 2284/2284 (2 todo for later steps); scan-card-engine-live PASS se/i13/i15/pixel7 dark+light EN/DE/ES (96+ cards)",
+    "2026-10-22T20:15:11+00:00 live: shipped in LIVE 20261022-220117"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T19:29:01+00:00"
+  },
+  {
+   "id": "scanfe-b2-rel",
+   "title": "Release food engine b2 (glucose categories)",
+   "kind": "release",
+   "branch": "food-engine-b-20261022",
+   "deps": [
+    "scanfe-b2"
+   ],
+   "prio": 2,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T16:31:34+00:00 added",
+    "2026-10-22T19:53:33+00:00 claimed by worker-A",
+    "2026-10-22T19:56:48+00:00 rebased on main e998f33-ish (214623), tests 2290/2290, sims re-pass; starting release-pipeline",
+    "2026-10-22T20:15:11+00:00 live: LIVE build 20261022-220117 commit 8773364; live scan-card check PASS on Pages URL"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T19:56:48+00:00",
+   "commit": "c59c2de"
+  },
+  {
+   "id": "scanfe-c",
+   "title": "Food engine (c): ingredient parser + flags (added sugar, refined starch, sweeteners, allergens, claims never approve)",
+   "kind": "work",
+   "branch": "food-engine-cd-20261022",
+   "deps": [
+    "scanfe-b2-rel"
+   ],
+   "prio": 2,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T16:31:34+00:00 added",
+    "2026-10-22T20:20:38+00:00 claimed by worker-A",
+    "2026-10-22T20:23:23+00:00 worktree wt-scanfe-cd on food-engine-cd-20261022 from 9b6b572; plan: ingredient-core.js (LowiIngredients) + food-policy-core.js mirroring data/food-policy/lowispike-policy.v1.json, scanFood in food-engine-core, adapter only stricter",
+    "2026-10-22T20:29:28+00:00 ingredient-core.js, food-policy-core.js + data/food-policy/lowispike-policy.v1.json + scripts/sync-policy.cjs, scanFood in food-engine-core (d), adapter ORs parser hits; all 18 bench rows match policy+exposure",
+    "2026-10-22T20:37:17+00:00 rebased on ce60f95 (evo-levels live); dark+light scanner sims PASS pre-rebase; suite rerun after rebase",
+    "2026-10-22T20:40:52+00:00 ready: ingredient-core.js parser+flags on food-engine-cd-20261022 346441f; suite 2315/2316 (1 todo f1); scanner sims dark+light PASS",
+    "2026-10-22T20:52:58+00:00 live: LIVE in 20261022-224115"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T20:37:17+00:00",
+   "commit": "346441f"
+  },
+  {
+   "id": "scanfe-d",
+   "title": "Food engine (d): versioned policy config lowispike-policy.v1.json JA/SELTEN/NEIN + priority order",
+   "kind": "work",
+   "branch": "food-engine-cd-20261022",
+   "deps": [
+    "scanfe-c"
+   ],
+   "prio": 2,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T16:31:34+00:00 added",
+    "2026-10-22T20:40:52+00:00 ready: lowispike-policy.v1.json + food-policy-core.js + scanFood; bench 18/18 policy+exposure; commit 346441f",
+    "2026-10-22T20:52:58+00:00 live: LIVE in 20261022-224115"
+   ]
+  },
+  {
+   "id": "scanfe-d-rel",
+   "title": "Release food engine c+d (ingredients + policy)",
+   "kind": "release",
+   "branch": "food-engine-cd-20261022",
+   "deps": [
+    "scanfe-d"
+   ],
+   "prio": 2,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T16:31:34+00:00 added",
+    "2026-10-22T20:40:52+00:00 claimed by worker-A",
+    "2026-10-22T20:52:58+00:00 live: LIVE build 20261022-224115 commit 3ee769a; handoff acd2555 on main; live scanner sim se/i13/i15/pixel7 dark PASS"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T20:40:52+00:00"
+  },
+  {
+   "id": "scanfe-e",
+   "title": "Food engine (e): food quality + craving/satiety + 2-3 reasons + better alternative",
+   "kind": "work",
+   "branch": "food-engine-e-20261022",
+   "deps": [
+    "scanfe-d-rel"
+   ],
+   "prio": 2,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T16:31:35+00:00 added",
+    "2026-10-22T20:55:59+00:00 claimed by worker-A",
+    "2026-10-22T20:58:32+00:00 worktree wt-scanfe-e on acd2555, branch food-engine-e-20261022; plan: new food-assess-core.js (LowiFoodAssess: assessQuality, assessCravings/satiety, composeReasons EN/DE/ES, betterAlternative) wired into scanFood, no card change (g1)",
+    "2026-10-22T21:05:31+00:00 food-assess-core.js + tests/food-assess.test.cjs written, wired into scanFood/index/sw; suite 2323 pass + 1 todo (f1)",
+    "2026-10-22T21:18:49+00:00 committed on branch, suite 2323/2324(+todo f1), sims dark+light pass",
+    "2026-10-22T21:25:31+00:00 live: food-assess-core.js live in 20261022-231856 (1a4aad0)"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T21:18:49+00:00"
+  },
+  {
+   "id": "scanfe-e-rel",
+   "title": "Release food engine e",
+   "kind": "release",
+   "branch": "food-engine-e-20261022",
+   "deps": [
+    "scanfe-e"
+   ],
+   "prio": 2,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T16:31:35+00:00 added",
+    "2026-10-22T21:28:08+00:00 live: LIVE 20261022-231856 commit 1a4aad0, handoff 243dea5, live sim dark PASS"
+   ]
+  },
+  {
+   "id": "scanfe-f1",
+   "title": "Food engine (f1): confidence High/Medium/Low (evidence completeness)",
+   "kind": "work",
+   "branch": "food-engine-f1-20261022",
+   "deps": [
+    "scanfe-d-rel"
+   ],
+   "prio": 2,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T16:31:35+00:00 added",
+    "2026-10-22T21:30:59+00:00 claimed by worker-A",
+    "2026-10-22T21:34:39+00:00 assessConfidence built + tests, bench confidence test active; full suite running",
+    "2026-10-22T21:41:30+00:00 ready: confidence-v1 on branch food-engine-f1-20261022 (commit d93b9db); suite 2333/2333, scan-card sims SE/13/15/Pixel7 dark+light EN/DE/ES pass",
+    "2026-10-22T21:54:35+00:00 live: LIVE build 20261022-234737 commit a94b0f4"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T21:34:39+00:00"
+  },
+  {
+   "id": "scanfe-f1-rel",
+   "title": "Release food engine f1",
+   "kind": "release",
+   "branch": "food-engine-f1-20261022",
+   "deps": [
+    "scanfe-f1"
+   ],
+   "prio": 2,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T16:31:35+00:00 added",
+    "2026-10-22T21:41:37+00:00 f1 ready, rebased on main 02f3f93; release slot held by chat-leave-rel (worker-B)",
+    "2026-10-22T21:44:56+00:00 claimed by worker-A",
+    "2026-10-22T21:45:05+00:00 release-pipeline started",
+    "2026-10-22T21:54:36+00:00 live: LIVE build 20261022-234737 commit a94b0f4, handoff 6ded97c"
+   ],
+   "claimed_at": "2026-10-22T21:45:05+00:00",
+   "prev_status": "queued"
+  },
+  {
+   "id": "scanfe-f2",
+   "title": "Food engine (f2): missing data -> label + ingredient photos, OCR, validate, confirm; never fill gaps",
+   "kind": "work",
+   "branch": "food-engine-f2-20261022",
+   "deps": [
+    "scanfe-f1-rel"
+   ],
+   "prio": 2,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T16:31:35+00:00 added",
+    "2026-10-22T21:59:23+00:00 claimed by worker-A",
+    "2026-10-22T22:01:36+00:00 worktree wt-scanfe-f2 on branch food-engine-f2-20261022 from 6ded97c. Plan: label-photos-core.js (pure: gaps via assessConfidence needs, parseLabel OCR text EN/DE/ES, parseIngredients, check via validateNutrition, apply only confirmed fields) + label-photos.js (sheet: 2 photo slots, TextDetector OCR when device has it else type, prefill marked 'check', confirm) + index.html hooks (card + manualHTML button data-b3=lphoto, case lphoto). No server deploy (no supabase CLI).",
+    "2026-10-22T22:10:20+00:00 impl committed on food-engine-f2-20261022 (label-photos-core.js, label-photos.js, .css, index hooks, sw lists, tests/label-photos-core.test.cjs, tests/label-photos-live.cjs). Fixed: guarded lpAskHTML call, sw order, gaps uses ingredient analysis.",
+    "2026-10-22T22:18:25+00:00 suite 2350/2350 pass at 2nd commit; label-photos-live sims dark+light running (logs scanfe-f2-sim-dark/light.log); news json queue/scanfe-f2-news.json ready",
+    "2026-10-22T22:30:17+00:00 rebased as 6f5cf99 on 3beac64; suite 2353/2353; sims pass (label-photos-live dark+light all 4 views pre-rebase, se+pixel7 es after; scan-card-engine-live i13 pass)",
+    "2026-10-22T22:36:08+00:00 release-pipeline running build 20261023-003459 (sha 09e09b1), news slug scanner-label-photos",
+    "2026-10-22T22:42:45+00:00 live: LIVE build 20261023-003459 (commit 09e09b1, handoff d50bc1e). label-photos-core.js + label-photos.js/.css: Add label photos ask on cards with missing label/ingredients, 2 photo slots, TextDetector OCR pre-fill where available (iOS: type fallback), engine validation, confirm tick, only confirmed values merged, blanks stay unknown. Suite 2353/2353, label-photos-live sims pass all views dark+light + live."
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T22:36:08+00:00"
+  },
+  {
+   "id": "scanfe-f2-rel",
+   "title": "Release food engine f2",
+   "kind": "release",
+   "branch": "food-engine-f2-20261022",
+   "deps": [
+    "scanfe-f2"
+   ],
+   "prio": 2,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T16:31:35+00:00 added",
+    "2026-10-22T22:42:50+00:00 claimed by worker-A",
+    "2026-10-22T22:42:50+00:00 live: Released with scanfe-f2: LIVE build 20261023-003459 (commit 09e09b1), verify-live --compare all same, live sim pass"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T22:42:50+00:00"
+  },
+  {
+   "id": "scanfe-g1",
+   "title": "Food engine (g1): result card UI (verdict, impact, why, serving nutrition, quality, alternative, details) EN/DE/ES",
+   "kind": "work",
+   "branch": "food-engine-g1-20261022",
+   "deps": [
+    "scanfe-e-rel",
+    "scanfe-f1-rel"
+   ],
+   "prio": 2,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T16:31:36+00:00 added",
+    "2026-10-22T22:47:49+00:00 claimed by worker-A",
+    "2026-10-22T22:55:03+00:00 food-card-core.js + food-card.css + hooks in simpleCardHTML; tests/food-card.test.cjs; sim extended",
+    "2026-10-22T23:09:06+00:00 ready: food-card-core.js/.css + simpleCardHTML hooks; suite 2366 pass; scan-card-engine-live PASS SE/13/15/Pixel7 dark+light EN/DE/ES; label-photos-live PASS i13/pixel7; branch food-engine-g1-20261022 e762472",
+    "2026-10-22T23:17:04+00:00 live: released as 20261023-010913"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T22:55:03+00:00"
+  },
+  {
+   "id": "scanfe-g1-rel",
+   "title": "Release food engine g1",
+   "kind": "release",
+   "branch": "food-engine-g1-20261022",
+   "deps": [
+    "scanfe-g1"
+   ],
+   "prio": 2,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T16:31:36+00:00 added",
+    "2026-10-22T23:09:06+00:00 claimed by worker-A",
+    "2026-10-22T23:17:04+00:00 live: LIVE build 20261023-010913 commit 4df9c1b; handoff 4b3b191; live sim PASS i13/pixel7 dark"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-22T23:09:06+00:00"
+  },
+  {
+   "id": "scanfe-g2",
+   "title": "Food engine (g2): serving selector (manufacturer default, user grams/ml, live recompute)",
+   "kind": "work",
+   "branch": "food-engine-g2-20261022",
+   "deps": [
+    "scanfe-g1-rel"
+   ],
+   "prio": 2,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T16:31:36+00:00 added",
+    "2026-10-22T23:20:35+00:00 claimed by worker-A",
+    "2026-10-22T23:30:58+00:00 spike-core assess(p,{servingG}); food-card model/cardHTML/detailsHTML take g; nutri-stats portion block defaults to engine serving (maker->group), chips (serving/usual, whole pack, 100, last), ml for drinks, emits lowi:portion; index simpleCardHTML rated via scServing/scView, live redraw scRedrawServing; tests/serving-pick.test.cjs",
+    "2026-10-22T23:51:56+00:00 suite 2373 pass; serving-pick-live passes se,i13 dark EN/DE/ES",
+    "2026-10-23T00:03:13+00:00 WATCHDOG SPLIT at ~42 min (task a497547c cancelled). WIP committed on branch food-engine-g2-20261022 in /home/sprite/lowispike/wt-scanfe-g2 as a455d08 (not pushed, on top of main 4b3b191). Done: serving selector code + tests/serving-pick.test.cjs + tests/serving-pick-live.cjs; suite 2373 pass (g2-suite1); serving-pick-live passes se,i13 dark + pixel7 light EN/DE/ES (logs g2-sim-a/b/i13); scan-card-engine check passed i13 light + pixel7 dark DE/ES (g2-scan-light/dark). Left: confirm suite on a455d08 (g2-suite2.log ended exit 1 - check), label-photos-live i13,pixel7 (was interrupted by cancel), i15 light sim, rebase on origin/main, push, done --status ready, then scanfe-g2-rel. No build number claimed yet.",
+    "2026-10-23T00:03:13+00:00 unclaim: watchdog split: successor resumes from a455d08",
+    "2026-10-23T00:07:18+00:00 claimed by worker-A",
+    "2026-10-23T00:21:57+00:00 rebased on main 4768608 -> b6c2753; suite 2379/2379 pass (logs/scanfe-g2-suite3.log); i15 light serving-pick already passed (g2-sim-b)",
+    "2026-10-23T00:27:24+00:00 label-photos-live i13+pixel7 dark EN/DE/ES pass (logs/g2-lp3.log); branch pushed",
+    "2026-10-23T00:27:24+00:00 ready: suite 2379 pass; serving-pick-live se/i13 dark, i15/pixel7 light; label-photos-live i13/pixel7; scan-card-engine i13 light, pixel7 dark",
+    "2026-10-23T00:36:50+00:00 live: released in scanfe-g2-rel: LIVE 20261023-022809"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T00:27:24+00:00",
+   "commit": "b6c2753"
+  },
+  {
+   "id": "scanfe-g2-rel",
+   "title": "Release food engine g2",
+   "kind": "release",
+   "branch": "food-engine-g2-20261022",
+   "deps": [
+    "scanfe-g2"
+   ],
+   "prio": 2,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T16:31:36+00:00 added",
+    "2026-10-23T00:27:24+00:00 claimed by worker-A",
+    "2026-10-23T00:28:03+00:00 rebased on main 7f1062b (chat-pin live 021607) as a7ffeeb; suite 2384/2384 pass; starting release pipeline",
+    "2026-10-23T00:36:46+00:00 live: LIVE build 20261023-022809 commit 929b9e6; handoff log main 5b9caf8; live-site serving-pick i13 dark EN/DE pass"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T00:28:03+00:00",
+   "commit": "a7ffeeb"
+  },
+  {
+   "id": "scanfe-h",
+   "title": "Food engine (h): all consumers on engine verdict (scan-sort, store-picks no est. GI, swaflo, shop-scan, spike-catch, spirit, stored dex)",
+   "kind": "work",
+   "branch": "food-engine-h-20261022",
+   "deps": [
+    "scanfe-d-rel"
+   ],
+   "prio": 2,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T16:31:36+00:00 added",
+    "2026-10-23T00:26:28+00:00 claimed by worker-B",
+    "2026-10-23T00:26:33+00:00 unclaim: claimed by worker-B by mistake (scanfe-* belongs to chain A); returned to queue untouched",
+    "2026-10-23T00:39:44+00:00 claimed by worker-A",
+    "2026-10-23T00:42:43+00:00 scan-sort verdictOf now tightened by Food check (spike-core foodVerdict/tighten); 4 new tests fail on old code",
+    "2026-10-23T00:46:22+00:00 ready: scan-sort (Shuffle/Throw out/Buy pool via swaflo verdictOf/shopping) on Food check verdict; suite 2389/2389; shuffle-catalog sim SE/13/15/Pixel7 day+night EN/DE/ES pass (one 13 de flake, passed 2x on rerun). Follow-ups: store-picks est. GI formula, shop-scan live-first, dex stored re-rate, Tyrolini Gefluegel poultry salami hits policy.pork",
+    "2026-10-23T01:09:14+00:00 live: released slice 1 (scan-sort consumers on Food check verdict); rest split into scanfe-h2"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T00:42:43+00:00",
+   "commit": "2fa17ad"
+  },
+  {
+   "id": "scanfe-h-rel",
+   "title": "Release food engine h",
+   "kind": "release",
+   "branch": "food-engine-h-20261022",
+   "deps": [
+    "scanfe-h"
+   ],
+   "prio": 2,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-22T16:31:36+00:00 added",
+    "2026-10-23T00:46:22+00:00 claimed by worker-A",
+    "2026-10-23T00:50:01+00:00 release pipeline running, build 20261023-024754, ci commit b165cd6",
+    "2026-10-23T01:09:14+00:00 live: LIVE build 20261023-024754 commit b165cd6 (handoff aba3c09)"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T00:50:01+00:00"
+  },
+  {
+   "id": "scanfe-i",
+   "title": "Food engine (i): benchmark metrics + spec section 14 acceptance run, results in MAYA-HANDOFF",
+   "kind": "work",
+   "branch": "food-engine-i-20261022",
+   "deps": [
+    "scanfe-g2-rel",
+    "scanfe-h-rel",
+    "scanfe-h6-rel"
+   ],
+   "prio": 2,
+   "next": "",
+   "status": "done",
+   "owner": null,
+   "log": [
+    "2026-10-22T16:31:37+00:00 added",
+    "2026-10-23T01:20:09+00:00 deps + scanfe-h3-rel: benchmark after every consumer is on the engine verdict (h2 split into h2 + h3)",
+    "2026-10-23T01:45:00+00:00 deps: scanfe-h3-rel -> scanfe-h4-rel (worker-A, h3 slice 1)",
+    "2026-10-23 dep scanfe-h4-rel -> scanfe-h5-rel (worker-A)",
+    "2026-10-23T03:21:16+00:00 claimed by worker-A",
+    "2026-10-23T03:26:47+00:00 metrics script + test + MAYA-HANDOFF section 9 and Log line committed; suite 2436/2436; all 11 acceptance PASS, 0 false approvals/rejections/math/missed flags/overconfident",
+    "2026-10-23T03:34:28+00:00 done: benchmark metrics + section 14 acceptance landed on main 3f39ad3 (no app change, no release): 18/18 policy/exposure/confidence, 0 false approvals/rejections/math/missed flags/overconfident; 11/11 acceptance PASS; MAYA-HANDOFF section 9 + Log; tests/food-bench-metrics.test.cjs"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T03:26:47+00:00",
+   "commit": "e0f7d54"
+  },
+  {
+   "id": "scanfe-policy-doc",
+   "title": "Master Knowledge document not in repo: Emmanuel supplies it, then policy config v2",
+   "kind": "work",
+   "branch": null,
+   "deps": [],
+   "prio": 2,
+   "next": "policy v1 built from spec section 8 meanwhile",
+   "status": "blocked",
+   "owner": null,
+   "log": [
+    "2026-10-22T16:31:37+00:00 added"
+   ]
+  },
+  {
+   "id": "scanfe-h2",
+   "title": "Food engine (h2): remaining consumers on engine verdict (store-picks no est. GI, shop-scan live-first, spike-catch, spirit, stored dex re-rate on load, poultry salami pork false positive)",
+   "kind": "build",
+   "branch": "food-engine-h2-20261023",
+   "deps": [
+    "scanfe-h-rel"
+   ],
+   "prio": 50,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-23T01:09:15+00:00 added",
+    "2026-10-23T01:09:37+00:00 queued after scanfe-h slice 1 live; successor worker A scheduled",
+    "2026-10-23T01:12:15+00:00 claimed by worker-A",
+    "2026-10-23T01:15:06+00:00 slice 1: shop-scan live-first + poultry/beef salami not pork by name; unit tests pass; full suite + scan-card + shuffle sims running",
+    "2026-10-23T01:19:44+00:00 ready: slice 1 verified: shop-scan live-first, poultry/beef salami not pork; suite 2391/2391; scan-card sim SE/13 dark + 15/Pixel7 light EN/DE/ES pass; shuffle sim SE night EN (1 second-shuffle flake, passed 2x on rerun), 13 day DE, 15 night ES, Pixel7 day EN pass",
+    "2026-10-23T01:31:13+00:00 live: released (slice 1); rest in scanfe-h3"
+   ],
+   "claimed_at": "2026-10-23T01:15:06+00:00",
+   "prev_status": "queued",
+   "commit": "8e79d71"
+  },
+  {
+   "id": "scanfe-h2-rel",
+   "title": "Release food engine h2",
+   "kind": "release",
+   "branch": null,
+   "deps": [
+    "scanfe-h2"
+   ],
+   "prio": 50,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-23T01:09:15+00:00 added",
+    "2026-10-23T01:20:09+00:00 claimed by worker-A",
+    "2026-10-23T01:31:13+00:00 live: LIVE build 20261023-032122 commit 346b53b; handoff log d6cc77a"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T01:20:09+00:00"
+  },
+  {
+   "id": "scanfe-h3",
+   "title": "Food engine (h3): store-picks without est. GI formula, spike-catch + spirit on engine verdict, stored dex re-rate on load, Putenspeck classification",
+   "kind": "build",
+   "branch": "food-engine-h3-20261023",
+   "deps": [
+    "scanfe-h2-rel"
+   ],
+   "prio": 50,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-23T01:19:54+00:00 added",
+    "2026-10-23T01:34:11+00:00 claimed by worker-A",
+    "2026-10-23T01:36:21+00:00 slice 1: Putenspeck speck\\b + spike-catch split tighten; suite 2393/2393; 2 new tests fail on old code",
+    "2026-10-23T01:39:57+00:00 sims scan-card-engine-live PASS se/i13 dark + i15/pixel7 light EN/DE/ES; added scanfe-h4(+rel) for store-picks GI, spirit, dex re-rate; scanfe-i deps -> scanfe-h4-rel",
+    "2026-10-23T01:39:57+00:00 ready: slice 1 verified: spike lists tighten + Putenspeck; suite 2393/2393; sims pass",
+    "2026-10-23T01:55:28+00:00 live: released slice 1 (spike lists + Putenspeck) as 20261023-034130; rest in scanfe-h4"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T01:39:57+00:00",
+   "commit": "34e1b36"
+  },
+  {
+   "id": "scanfe-h3-rel",
+   "title": "Release food engine h3",
+   "kind": "release",
+   "branch": null,
+   "deps": [
+    "scanfe-h3"
+   ],
+   "prio": 50,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-23T01:19:54+00:00 added",
+    "2026-10-23T01:39:57+00:00 claimed by worker-A",
+    "2026-10-23T01:55:28+00:00 live: LIVE build 20261023-034130 commit 1fdc988 (handoff 0ff9f88)"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T01:39:57+00:00"
+  },
+  {
+   "id": "scanfe-h4",
+   "title": "Food engine (h4): store-picks without est. GI formula, spirit on engine verdict, stored dex re-rate on load",
+   "kind": "build",
+   "branch": "food-engine-h4-20261023",
+   "deps": [
+    "scanfe-h3-rel"
+   ],
+   "prio": 50,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-23T01:38:02+00:00 added",
+    "2026-10-23T01:58:17+00:00 claimed by worker-A",
+    "2026-10-23T02:00:37+00:00 store-picks-core rate() on engine impact + Food check (no est. GI), memo; UI+tests next",
+    "2026-10-23T02:04:09+00:00 store-picks-core on engine impact + Food check, UI texts, tests (food-verdict +2 fail on old)",
+    "2026-10-23T02:11:56+00:00 ready: store picks on engine impact + Food check; suite 2414/2414; sims qv/principles/shuffle x4 pass",
+    "2026-10-23T02:23:42+00:00 live: released"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T02:04:09+00:00",
+   "commit": "182e42f"
+  },
+  {
+   "id": "scanfe-h4-rel",
+   "title": "Release food engine h4",
+   "kind": "release",
+   "branch": null,
+   "deps": [
+    "scanfe-h4"
+   ],
+   "prio": 50,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-23T01:38:02+00:00 added",
+    "2026-10-23T02:11:57+00:00 claimed by worker-A",
+    "2026-10-23T02:23:42+00:00 live: LIVE build 20261023-041640 commit 45d94ab"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T02:11:57+00:00"
+  },
+  {
+   "id": "scanfe-h5",
+   "title": "Food engine (h5): spirit on engine verdict, stored dex re-rate on load, policy pork name check for Salame (Leichte Salame Bella Festa passes store picks)",
+   "kind": "work",
+   "branch": "food-engine-h5-20261023",
+   "deps": [
+    "scanfe-h4-rel"
+   ],
+   "prio": 50,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-23T02:12:06+00:00 added",
+    "2026-10-23T02:26:42+00:00 claimed by worker-A",
+    "2026-10-23T02:28:35+00:00 salame policy + spirit scanVerdict, 2 new tests fail on old code",
+    "2026-10-23T02:38:08+00:00 suite 2417 ok after scan-verdict regex update (a38416f); scan-card-engine sims se/i13 dark + i15/pixel7 light EN/DE/ES pass; spirit probe pass SE/Pixel7/WebKit i13; quickview webkit search flaked once, rerunning",
+    "2026-10-23T02:44:34+00:00 ready: verified: suite 2417, scan-card-engine se/i13 dark + i15/pixel7 light EN/DE/ES, store-picks quickview + principles (Chromium + WebKit i13; WebKit search flaked once each under load, rerun pass), shuffle-catalog SE/13/15/Pixel7, spirit probe; branch pushed a38416f",
+    "2026-10-23T02:53:03+00:00 live: released (slice 1); dex re-rate on load -> scanfe-h6"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T02:38:08+00:00",
+   "commit": "a38416f"
+  },
+  {
+   "id": "scanfe-h5-rel",
+   "title": "Release food engine h5",
+   "kind": "release",
+   "branch": null,
+   "deps": [
+    "scanfe-h5"
+   ],
+   "prio": 50,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-23T02:12:06+00:00 added",
+    "2026-10-23T02:44:34+00:00 claimed by worker-A",
+    "2026-10-23T02:46:37+00:00 rebased on 00e0044 (misty-sheet-b live 20261023-044056), suite 2421/2421, pipeline started build 20261023-044553 commit ff6403e",
+    "2026-10-23T02:53:02+00:00 live: LIVE build 20261023-044553 commit ff6403e; handoff log 1fb624e on main"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T02:46:37+00:00",
+   "commit": "ff6403e"
+  },
+  {
+   "id": "scanfe-h6",
+   "title": "Food engine (h6): re-rate stored dex rows on load with LowiSpikeCore.foodVerdict/tighten (index.html D.mine / dex grid)",
+   "kind": "work",
+   "branch": "food-engine-h6-20261023",
+   "deps": [
+    "scanfe-h5-rel"
+   ],
+   "prio": 50,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-23T02:29:00+00:00 added",
+    "2026-10-23T02:56:08+00:00 claimed by worker-A",
+    "2026-10-23T02:59:16+00:00 rerate/rerateRows in spike-core + index wiring, suite 2423/2423, 2 new tests fail on old code",
+    "2026-10-23T03:08:40+00:00 sims: scan-card-engine-live se/i13 dark + i15/pixel7 light EN/DE/ES pass; h6-dex-probe pass SE/15/Pixel7/WebKit13; suite 2423",
+    "2026-10-23T03:08:40+00:00 ready: rerate stored dex rows, branch pushed 5aee54b",
+    "2026-10-23T03:18:22+00:00 live: released"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T03:08:40+00:00",
+   "commit": "5aee54b"
+  },
+  {
+   "id": "scanfe-h6-rel",
+   "title": "Release food engine h6",
+   "kind": "release",
+   "branch": null,
+   "deps": [
+    "scanfe-h6"
+   ],
+   "prio": 50,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-23T02:29:00+00:00 added",
+    "2026-10-23T03:08:40+00:00 claimed by worker-A",
+    "2026-10-23T03:18:22+00:00 live: LIVE build 20261023-051036 commit a597133, handoff 7b21d55"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T03:08:40+00:00"
+  },
+  {
+   "id": "misty-peak",
+   "title": "Misty sheet: World glow peak bar shows what's missing to Supernova",
+   "kind": "work",
+   "branch": "misty-peak-20261022",
+   "deps": [
+    "misty-sheet-b"
+   ],
+   "prio": 15,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-23T02:39:47+00:00 added",
+    "2026-10-23T02:52:36+00:00 claimed by worker-B",
+    "2026-10-23T02:55:00+00:00 rebased WIP onto 2136c3a, conflicts resolved (journal door stays gone, no power row), misty-peak test 8/8",
+    "2026-10-23T03:03:42+00:00 suite 2429/2429, misty-peak sim 8/8 combos PASS, misty-sheet-a 3 PASS, sheet-replace-live PASS; releasing",
+    "2026-10-23T03:06:15+00:00 release.sh blocked by app-voice size test (30.4MB with new news clips); pruned unused clips via tools/app-voice/build.py",
+    "2026-10-23T03:14:36+00:00 live: LIVE build 20261023-050617 commit f28efb1 (handoff log 780035f)"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T03:06:15+00:00",
+   "commit": "d8ecd89"
+  },
+  {
+   "id": "worldmap-btn-rel",
+   "title": "Release worldmap-btn",
+   "kind": "release",
+   "branch": "worldmap-btn-20261023",
+   "deps": [
+    "worldmap-btn"
+   ],
+   "prio": 18,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-23T03:57:51+00:00 added",
+    "2026-10-23T03:57:51+00:00 claimed by worker-A",
+    "2026-10-23T04:04:38+00:00 LIVE 20261023-055817 dfbe3ed; handoff log 339f49e (note: log line says 1ba0ba9, the real commit is 4deb219)",
+    "2026-10-23T04:04:38+00:00 live: LIVE build 20261023-055817 commit dfbe3ed; handoff 339f49e"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T04:04:38+00:00"
+  },
+  {
+   "id": "world-exit-rel",
+   "title": "Release world-exit",
+   "kind": "release",
+   "branch": "world-exit-20261023",
+   "deps": [
+    "world-exit"
+   ],
+   "prio": 19,
+   "next": "none",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-23T04:29:44+00:00 added",
+    "2026-10-23T04:29:45+00:00 claimed by worker-A",
+    "2026-10-23T04:31:47+00:00 release-pipeline started",
+    "2026-10-23T04:38:44+00:00 live: LIVE build 20261023-063141 commit b1d817b",
+    "2026-10-23T04:43:08+00:00 handoff log on main bcaf9c9; successor scheduled 9:43 PM (mirror-move)"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T04:31:47+00:00",
+   "commit": "bcaf9c9"
+  },
+  {
+   "id": "mirror-move-rel",
+   "title": "Release mirror-move",
+   "kind": "release",
+   "branch": "mirror-move-20261023",
+   "deps": [
+    "mirror-move"
+   ],
+   "prio": 20,
+   "next": "",
+   "status": "live",
+   "owner": null,
+   "log": [
+    "2026-10-23T05:26:15+00:00 added",
+    "2026-10-23T05:26:16+00:00 claimed by worker-A",
+    "2026-10-23T05:47:42+00:00 first pipeline run stopped after CI push (build 20261023-072626 never reached main); grocery-2 went live 073638 meanwhile; rebased onto 32df6b3, re-running pipeline",
+    "2026-10-23T06:00:12+00:00 live: LIVE build 20261023-074744 commit ae391ac (handoff log 564e292)"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T05:47:42+00:00",
+   "commit": "1599a7d"
+  },
+  {
+   "id": "home-restore",
+   "title": "URGENT BLOCKER: live Home shows old layout (Daily quest/VR/Since last meal); restore ring Home, regression test. All other releases held (queue/HOLD) until LIVE",
+   "kind": "work",
+   "branch": null,
+   "deps": [],
+   "prio": 0,
+   "next": "bisect, fix, release",
+   "status": "claimed",
+   "owner": "urgent-53a9ab78",
+   "log": [
+    "2026-10-23T06:43:55+00:00 added",
+    "2026-10-23T06:43:55+00:00 claimed by urgent-53a9ab78",
+    "2026-10-23T06:43:56+00:00 release hold set: queue/HOLD makes release-pipeline.sh exit 75 for every other worker"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T06:43:56+00:00"
+  },
+  {
+   "id": "ranking-1",
+   "title": "Community Ranking tab: companion leaderboard (period switch, your place, podium, list), shared top bar, privacy, EN/DE/ES",
+   "kind": "work",
+   "branch": "ranking-20261023",
+   "deps": [],
+   "prio": 2,
+   "next": "core+tests, tab, page, sims",
+   "status": "claimed",
+   "owner": "ranking-53a-task",
+   "log": [
+    "2026-10-23T06:57:43+00:00 added",
+    "2026-10-23T06:57:45+00:00 claimed by ranking-53a-task"
+   ],
+   "prev_status": "queued",
+   "claimed_at": "2026-10-23T06:57:45+00:00"
+  },
+  {
+   "id": "ranking-rel",
+   "title": "Release Ranking tab after Home freeze lifts",
+   "kind": "release",
+   "branch": "ranking-20261023",
+   "deps": [
+    "ranking-1",
+    "home-restore"
+   ],
+   "prio": 2,
+   "next": "wait for HOLD gone, then release-pipeline",
+   "status": "queued",
+   "owner": null,
+   "log": [
+    "2026-10-23T06:57:44+00:00 added"
+   ]
+  },
+  {
+   "id": "comm-menu",
+   "title": "Community header menu: remove 'Replies & mentions' entry (code kept harmless); nothing else changes  [E-man 23 Oct]",
+   "kind": "work",
+   "branch": "comm-menu-20261023",
+   "deps": [],
+   "prio": 3,
+   "next": "worktree, hide entry, test, sims",
+   "status": "queued",
+   "owner": null,
+   "log": [
+    "2026-10-23T06:58:21+00:00 added"
+   ]
+  },
+  {
+   "id": "comm-menu-rel",
+   "title": "Release Community menu cleanup after Home freeze lifts",
+   "kind": "release",
+   "branch": "comm-menu-20261023",
+   "deps": [
+    "comm-menu",
+    "home-restore"
+   ],
+   "prio": 3,
+   "next": "wait for HOLD gone, rebase, release-pipeline",
+   "status": "queued",
+   "owner": null,
+   "log": [
+    "2026-10-23T06:58:21+00:00 added"
+   ]
+  },
+  {
+   "id": "rooms-sql",
+   "title": "User rooms (a): Supabase proposal SQL supabase/proposals/community_rooms_*.sql (rooms, members, join requests; RLS creator-only approve; 30 cap server-side; explicit grants) + tests",
+   "kind": "work",
+   "branch": "rooms-20261023",
+   "deps": [],
+   "prio": 4,
+   "next": "read existing community schema, write SQL + test",
+   "status": "queued",
+   "owner": null,
+   "log": [
+    "2026-10-23T06:58:21+00:00 added"
+   ]
+  },
+  {
+   "id": "rooms-ui",
+   "title": "User rooms (b): Rooms & people -> public room list, create room (name/topic/emoji), read-only open, request to join, creator approves, Full 30/30; graceful 'coming soon' until SQL is run; EN/DE/ES, What's New",
+   "kind": "work",
+   "branch": "rooms-20261023",
+   "deps": [
+    "rooms-sql"
+   ],
+   "prio": 4,
+   "next": "core+tests, UI, sims",
+   "status": "queued",
+   "owner": null,
+   "log": [
+    "2026-10-23T06:58:21+00:00 added"
+   ]
+  },
+  {
+   "id": "rooms-rel",
+   "title": "Release user rooms after Home freeze lifts",
+   "kind": "release",
+   "branch": "rooms-20261023",
+   "deps": [
+    "rooms-ui",
+    "comm-menu-rel"
+   ],
+   "prio": 4,
+   "next": "",
+   "status": "queued",
+   "owner": null,
+   "log": [
+    "2026-10-23T06:58:21+00:00 added"
+   ]
+  },
+  {
+   "id": "rooms-sql-apply",
+   "title": "OWNER: Emmanuel runs supabase/proposals community rooms SQL in Supabase SQL editor",
+   "kind": "owner",
+   "branch": null,
+   "deps": [
+    "rooms-sql"
+   ],
+   "prio": 90,
+   "next": "",
+   "status": "blocked",
+   "owner": null,
+   "log": [
+    "2026-10-23T06:58:23+00:00 added",
+    "2026-10-23T06:58:29+00:00 block: Owner-only: Emmanuel runs the rooms SQL in the Supabase SQL editor once rooms-sql is on main"
+   ]
+  },
+  {
+   "id": "sync-a",
+   "title": "Account sync (a): inventory local vs cloud keys, merge core account-sync-core.js (3-way field merge, day counters, ledger/meal unions, last meal = newest) + tests",
+   "kind": "work",
+   "branch": "sync-20261023",
+   "deps": [],
+   "prio": 50,
+   "next": "claim when slot frees",
+   "status": "queued",
+   "owner": null,
+   "log": [
+    "2026-10-23T07:02:07+00:00 added",
+    "2026-10-23T07:02:12+00:00 NO_SLOT at claim (home-restore, ranking-1). Task 7511f410 writes core+unit tests on branch sync-20261023 (wt-sync) meanwhile: node tests only, no sims/builds until a slot frees"
+   ],
+   "claimed_at": null
+  },
+  {
+   "id": "sync-b",
+   "title": "Account sync (b): account-sync.js glue: pull on open/sign-in/foreground, debounced push with optimistic lock on user_state, safe apply+reload guard, offline, first-sync merge; sign-in merges instead of wiping",
+   "kind": "work",
+   "branch": "sync-20261023",
+   "deps": [
+    "sync-a"
+   ],
+   "prio": 50,
+   "next": "",
+   "status": "queued",
+   "owner": null,
+   "log": [
+    "2026-10-23T07:02:07+00:00 added"
+   ]
+  },
+  {
+   "id": "sync-c",
+   "title": "Account sync (c): two-context same-account sim + device sims SE/13/15/Pixel7 day/night EN/DE/ES",
+   "kind": "work",
+   "branch": "sync-20261023",
+   "deps": [
+    "sync-b"
+   ],
+   "prio": 50,
+   "next": "",
+   "status": "queued",
+   "owner": null,
+   "log": [
+    "2026-10-23T07:02:07+00:00 added"
+   ]
+  },
+  {
+   "id": "sync-rel",
+   "title": "Release account sync after Home freeze lifts",
+   "kind": "release",
+   "branch": "sync-20261023",
+   "deps": [
+    "sync-c",
+    "home-restore"
+   ],
+   "prio": 50,
+   "next": "",
+   "status": "queued",
+   "owner": null,
+   "log": [
+    "2026-10-23T07:02:07+00:00 added"
+   ]
+  }
+ ]
+}

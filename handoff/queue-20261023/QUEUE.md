@@ -1,0 +1,182 @@
+# LOWiSPIKE work queue
+
+Generated from the queue tool (queue/q.py on the agent computer) at 2026-10-23T06:43:56+00:00. Edit through the tool, not by hand.
+Limits: at most 2 steps active at once, at most one release (release-pipeline.sh holds an exclusive lock).
+A claim older than 2.5 hours is treated as abandoned and goes back to the queue with its checkpoint.
+Icons: ✅ live/done, 🔄 in progress, ⏸️ queued, waiting or blocked.
+
+## Active
+
+- 🔄 home-restore [claimed] URGENT BLOCKER: live Home shows old layout (Daily quest/VR/Since last meal); restore ring Home, regression test. All other releases held (queue/HOLD) until LIVE  owner urgent-53a9ab78
+  - next: bisect, fix, release
+  - last: 2026-10-23T06:43:56+00:00 release hold set: queue/HOLD makes release-pipeline.sh exit 75 for every other worker
+- 🔄 grocery-4 [claimed] Grocery: log cooked groceries by text/photo  after grocery-3  owner worker-B
+  - next: full suite, probe, release
+  - last: 2026-10-23T06:38:25+00:00 probe i13 dark en/de/es pass; running se/i15/pixel7
+
+## Queued
+
+- ⏸️ supabase-perms [queued] Supabase: from 30 Oct new tables need explicit grants; inspect supabase/ migrations, prepare grants; owner-only apply -> block honestly
+  - last: 2026-10-22T15:33:27+00:00 added
+- ⏸️ stripe [queued] Stripe outstanding: inspect repo for what is missing; owner-only account steps -> block honestly, no invented details
+  - last: 2026-10-22T15:33:27+00:00 added
+
+## Blocked
+
+- ⏸️ scanfe-policy-doc [blocked] Master Knowledge document not in repo: Emmanuel supplies it, then policy config v2
+  - next: policy v1 built from spec section 8 meanwhile
+  - last: 2026-10-22T16:31:37+00:00 added
+- ⏸️ fairplay-sql [blocked] Leaderboard fair-play: DB still accepts forged scores; write SQL migration/policy in supabase/; applying needs owner Supabase access -> block honestly if unavailable
+  - next: after main lands: block (owner applies in Supabase SQL editor)
+  - last: 2026-10-23T04:13:36+00:00 block: SQL ready on main ade488c (supabase/proposals/leaderboard_fairplay_20261023.sql, tests/fairplay-sql.test.cjs, suite 2457/2457). Applying needs owner Supabase access: Emmanuel runs it in the Supabase SQL editor. No app code, no release.
+
+## Finished
+
+- ✅ evo-popup [live] Bug: MISTY COMET GREW (Star cell L5/10) popup replays on every reopen/update; persist acknowledged evolution milestones across restarts/updates/cloud restore without suppressing new ones. Leads: herb-tamagotchi.js refresh() lastSeenStage/evoFrom; prefs key pkey()=scope() switches u:<name> -> uid after cloud auth; check cloud backup/restore of lowi.herb.tamagotchi.v2 prefs and line 26 defaults. Coordinate with evo-levels branch (touches herb-tamagotchi.js); rebase on main.  (branch evo-seen-20261022)
+  - last: 2026-10-22T18:07:10+00:00 live: live in 20261022-195226
+- ✅ evo-popup-rel [live] Release evo-popup fix (queue/release-pipeline.sh)  after evo-popup
+  - last: 2026-10-22T18:07:10+00:00 live: LIVE build 20261022-195226 commit bc5376e (fix d030d3a; handoff log db78f90)
+- ✅ trim-places [live] Community long-press hub: remove the ENTIRE 'More places' section (For You, Care board, World map, Gift of the day, Shopping hunt); For You stays in Cook, Care board in Move  [revised by user 22 Oct]  (branch trim-places-20261022)
+  - last: 2026-10-22T17:06:51+00:00 live: watchdog housekeeping: already LIVE in 20261022-180142 (trim-places-rel live)
+- ✅ weight-merge [live] Merge Weight journey into Weight & BMI sheet (one dark glass sheet, no duplicates; remove Weight journey from long-press You row; old links open merged sheet; keep weigh-ins/goal/start/unit)  (branch weight-merge-20261022)
+  - last: 2026-10-22T17:57:06+00:00 live: live in 20261022-195226
+- ✅ nav-shared [live] Community TOP MENU BAR (Chat/Room/Affiliates/Creation) identical position/alignment/layout on every tab; switching to Chat must not replace/shift it. Keep liked chat content design. Small change; coordinate with declutter (released 20261022-172756) and chat-brand/chat-members/chat-pin branches + Emmanuel 18:18: remove star 'Community room' pill, pinned banner, members/recent-voices button+badge, room crumb; back button in header spot; composer visible while typing (visualViewport)  (branch nav-shared-20261022)  after presence-profile
+  - last: 2026-10-22T19:27:07+00:00 live: LIVE build 20261022-211924
+- ✅ nav-shared-rel [live] Release nav-shared  after nav-shared
+  - last: 2026-10-22T19:27:07+00:00 live: LIVE build 20261022-211924 commit 586548b (handoff log 6e8ae6d)
+- ✅ presence-profile [live] Move all 'Your presence' settings (Show my companion's form in the galaxy, etc.) into main Profile; remove separate presence badge/entry; preserve saved settings and semantics  (branch presence-profile-20261022)
+  - last: 2026-10-22T18:50:23+00:00 live: live in 20261022-204116
+- ✅ scanfe-a [done] Food engine (a): benchmark dataset (verified labels only, Ültje, plain vs coated nuts...) + regression tests (todo until engine)  (branch food-engine-a-20261022)
+  - last: 2026-10-22T17:57:36+00:00 done: done (no own -rel; ships with scanfe-b2-rel). b1 builds on branch food-engine-a-20261022 @66cc5f5
+- ✅ scanfe-b1 [done] Food engine (b1): food-engine-core.js validation + serving math + glucose categories, no carb cancelling, no fibre subtraction  (branch food-engine-b-20261022)  after scanfe-a
+  - last: 2026-10-22T18:50:48+00:00 done: no own -rel step (ships with scanfe-b2 release), so done; branch food-engine-b-20261022 @8378034 verified
+- ✅ scanfe-b2 [live] Food engine (b2): LowiSpikeCore.assess -> engine adapter; never 'no blood sugar spike' (EN/DE/ES); Ültje test real  (branch food-engine-b-20261022)  after scanfe-b1
+  - last: 2026-10-22T20:15:11+00:00 live: shipped in LIVE 20261022-220117
+- ✅ scanfe-b2-rel [live] Release food engine b2 (glucose categories)  (branch food-engine-b-20261022)  after scanfe-b2
+  - last: 2026-10-22T20:15:11+00:00 live: LIVE build 20261022-220117 commit 8773364; live scan-card check PASS on Pages URL
+- ✅ scanfe-c [live] Food engine (c): ingredient parser + flags (added sugar, refined starch, sweeteners, allergens, claims never approve)  (branch food-engine-cd-20261022)  after scanfe-b2-rel
+  - last: 2026-10-22T20:52:58+00:00 live: LIVE in 20261022-224115
+- ✅ scanfe-d [live] Food engine (d): versioned policy config lowispike-policy.v1.json JA/SELTEN/NEIN + priority order  (branch food-engine-cd-20261022)  after scanfe-c
+  - last: 2026-10-22T20:52:58+00:00 live: LIVE in 20261022-224115
+- ✅ scanfe-d-rel [live] Release food engine c+d (ingredients + policy)  (branch food-engine-cd-20261022)  after scanfe-d
+  - last: 2026-10-22T20:52:58+00:00 live: LIVE build 20261022-224115 commit 3ee769a; handoff acd2555 on main; live scanner sim se/i13/i15/pixel7 dark PASS
+- ✅ scanfe-e [live] Food engine (e): food quality + craving/satiety + 2-3 reasons + better alternative  (branch food-engine-e-20261022)  after scanfe-d-rel
+  - last: 2026-10-22T21:25:31+00:00 live: food-assess-core.js live in 20261022-231856 (1a4aad0)
+- ✅ scanfe-e-rel [live] Release food engine e  (branch food-engine-e-20261022)  after scanfe-e
+  - last: 2026-10-22T21:28:08+00:00 live: LIVE 20261022-231856 commit 1a4aad0, handoff 243dea5, live sim dark PASS
+- ✅ scanfe-f1 [live] Food engine (f1): confidence High/Medium/Low (evidence completeness)  (branch food-engine-f1-20261022)  after scanfe-d-rel
+  - last: 2026-10-22T21:54:35+00:00 live: LIVE build 20261022-234737 commit a94b0f4
+- ✅ scanfe-f1-rel [live] Release food engine f1  (branch food-engine-f1-20261022)  after scanfe-f1
+  - last: 2026-10-22T21:54:36+00:00 live: LIVE build 20261022-234737 commit a94b0f4, handoff 6ded97c
+- ✅ scanfe-f2 [live] Food engine (f2): missing data -> label + ingredient photos, OCR, validate, confirm; never fill gaps  (branch food-engine-f2-20261022)  after scanfe-f1-rel
+  - last: 2026-10-22T22:42:45+00:00 live: LIVE build 20261023-003459 (commit 09e09b1, handoff d50bc1e). label-photos-core.js + label-photos.js/.css: Add label photos ask on cards with missing label/ingredients, 2 photo slots, TextDetector OCR pre-fill where available (iOS: type fallback), engine validation, confirm tick, only confirmed values merged, blanks stay unknown. Suite 2353/2353, label-photos-live sims pass all views dark+light + live.
+- ✅ scanfe-f2-rel [live] Release food engine f2  (branch food-engine-f2-20261022)  after scanfe-f2
+  - last: 2026-10-22T22:42:50+00:00 live: Released with scanfe-f2: LIVE build 20261023-003459 (commit 09e09b1), verify-live --compare all same, live sim pass
+- ✅ scanfe-g1 [live] Food engine (g1): result card UI (verdict, impact, why, serving nutrition, quality, alternative, details) EN/DE/ES  (branch food-engine-g1-20261022)  after scanfe-e-rel,scanfe-f1-rel
+  - last: 2026-10-22T23:17:04+00:00 live: released as 20261023-010913
+- ✅ scanfe-g1-rel [live] Release food engine g1  (branch food-engine-g1-20261022)  after scanfe-g1
+  - last: 2026-10-22T23:17:04+00:00 live: LIVE build 20261023-010913 commit 4df9c1b; handoff 4b3b191; live sim PASS i13/pixel7 dark
+- ✅ scanfe-g2 [live] Food engine (g2): serving selector (manufacturer default, user grams/ml, live recompute)  (branch food-engine-g2-20261022)  after scanfe-g1-rel
+  - last: 2026-10-23T00:36:50+00:00 live: released in scanfe-g2-rel: LIVE 20261023-022809
+- ✅ scanfe-g2-rel [live] Release food engine g2  (branch food-engine-g2-20261022)  after scanfe-g2
+  - last: 2026-10-23T00:36:46+00:00 live: LIVE build 20261023-022809 commit 929b9e6; handoff log main 5b9caf8; live-site serving-pick i13 dark EN/DE pass
+- ✅ scanfe-h [live] Food engine (h): all consumers on engine verdict (scan-sort, store-picks no est. GI, swaflo, shop-scan, spike-catch, spirit, stored dex)  (branch food-engine-h-20261022)  after scanfe-d-rel
+  - last: 2026-10-23T01:09:14+00:00 live: released slice 1 (scan-sort consumers on Food check verdict); rest split into scanfe-h2
+- ✅ scanfe-h-rel [live] Release food engine h  (branch food-engine-h-20261022)  after scanfe-h
+  - last: 2026-10-23T01:09:14+00:00 live: LIVE build 20261023-024754 commit b165cd6 (handoff aba3c09)
+- ✅ scanfe-i [done] Food engine (i): benchmark metrics + spec section 14 acceptance run, results in MAYA-HANDOFF  (branch food-engine-i-20261022)  after scanfe-g2-rel,scanfe-h-rel,scanfe-h6-rel
+  - last: 2026-10-23T03:34:28+00:00 done: benchmark metrics + section 14 acceptance landed on main 3f39ad3 (no app change, no release): 18/18 policy/exposure/confidence, 0 false approvals/rejections/math/missed flags/overconfident; 11/11 acceptance PASS; MAYA-HANDOFF section 9 + Log; tests/food-bench-metrics.test.cjs
+- ✅ evo-levels [live] Verify evo-levels-20261022 (3 ahead, 2 behind): rebase, full tests, missing German iPhone SE check; then release  (branch evo-levels-20261022)  after evo-popup-rel
+  - last: 2026-10-22T20:32:10+00:00 live: released as evo-levels-rel: LIVE 20261022-222617
+- ✅ evo-levels-rel [live] Release evo-levels  after evo-levels
+  - last: 2026-10-22T20:32:05+00:00 live: LIVE build 20261022-222617 commit c1e3dbf; handoff log ce60f95
+- ✅ chat-brand [live] Verify chat-brand-20261022 (2 ahead): rebase onto nav-shared result, re-run SE/13/15/Pixel7 Day/Night; then release  (branch chat-brand-20261022)  after nav-shared-rel
+  - last: 2026-10-22T19:53:20+00:00 live: LIVE 20261022-214623 commit e998f33
+- ✅ chat-brand-rel [live] Release chat-brand  after chat-brand
+  - last: 2026-10-22T19:53:20+00:00 live: LIVE 20261022-214623 commit e998f33; handoff 430ce7f
+- ✅ chat-leave [live] Verify chat-leave-20261022 (4 ahead): background stuck on Home, glide <=0.9s; add iPhone SE/15/Pixel7 checks (only 13 done)  (branch chat-leave-20261022)  after chat-brand-rel
+  - last: 2026-10-22T21:45:33+00:00 live: LIVE build 20261022-233931 commit 02f3f93; handoff log e7f5047 on main
+- ✅ chat-leave-rel [live] Release chat-leave  after chat-leave
+  - last: 2026-10-22T21:43:51+00:00 live: LIVE build 20261022-233931 commit 02f3f93
+- ✅ ate-this [live] Verify ate-this-20261022 (3 ahead): I just ate this / I'll eat this in Shuffle/Swipe/end cookalong; missing iPhone 13/15 checks  (branch ate-this-20261022)
+  - last: 2026-10-22T16:56:04+00:00 live: LIVE in 20261022-184555
+- ✅ ate-this-rel [live] Release ate-this  after ate-this
+  - last: 2026-10-22T16:56:04+00:00 live: LIVE build 20261022-184555 commit 4de5c52 (live sim i13 DE PASS); handoff log ad62dbe
+- ✅ chat-members [done] Verify chat-members-20261022 (5 ahead): 2 fixes unchecked, prior Night failed; fix+check Day/Night  (branch chat-members-20261022)  after chat-leave-rel
+  - last: 2026-10-22T21:49:38+00:00 done: Verified: superseded, not released. Branch chat-members-20261022 (a23ccfa, 5 ahead / 88 behind main e7f5047) adds a Members page opened from the room's members button #crMembers (Emmanuel 14:29). Emmanuel 18:18 then asked to remove the members/recent-voices button+badge; nav-shared (57ecf72, LIVE 20261022-211924) hides .cg-thead.cr-head/#crPin/#crCrew in the room, so the page has no entry point. Releasing it would mean reviving the removed button against his later request. Branch kept on origin as an archive; nothing merged. If Emmanuel later wants members reachable elsewhere (e.g. Community name sheet), reuse memPaint/memberRows/community-members.css from a23ccfa.
+- ✅ chat-members-rel [done] Release chat-members  after chat-members
+  - last: 2026-10-22T21:49:38+00:00 done: Nothing to release: chat-members superseded by Emmanuel 18:18 removal of the members button (nav-shared LIVE 20261022-211924). No build.
+- ✅ aura-shop [live] Verify aura-shop-rb (2 ahead; aura-shop-20261022 is older WIP): iPhone 15 Day sim hung under load, re-run  (branch aura-shop-rb)
+  - last: 2026-10-22T18:58:22+00:00 live: live in 20261022-205351
+- ✅ aura-shop-rel [live] Release aura-shop  after aura-shop
+  - last: 2026-10-22T18:58:22+00:00 live: LIVE build 20261022-205351 commit 602125f
+- ✅ chat-crash [live] Community->chat real iPhone crash (unknown cause, distinct from stuck background): diagnose with WebKit sims, fix  after chat-members-rel
+  - last: 2026-10-22T22:21:23+00:00 live: LIVE build 20261023-001217 commit a9448d8 (handoff log 3beac64). Inactive tabs drop hidden backdrop-filter layers; chk.py on live 4 configs 0 fails. Not proven as his real-iPhone crash cause; item 29 stays open until he retests.
+- ✅ chat-input [live] iPhone chat input bar too low / typing broken; check chat-composer-20261022 (3 ahead, 7 behind) first  after chat-crash
+  - next: chat-pin next for chain B
+  - last: 2026-10-22T22:52:52+00:00 handoff log e144410 on main; follow-up: iPhone SE home-screen @mention row ~2px under keyboard (probe), not reported to E-man
+- ✅ chat-pin [live] Remove sparkle bar/fake pin, real admin-only pin; check chat-pin-20261022 WIP (Maya 8 handoff)  (branch chat-pin-20261022)  after chat-input
+  - last: 2026-10-23T00:23:57+00:00 live: LIVE build 20261023-021607 commit 0cf6200 (handoff log 7f1062b; owner: run supabase/proposals/chat_pin_20261022.sql)
+- ✅ sheets-linger [live] Sheets linger after close; Forms leaks Misty sheet
+  - last: 2026-10-23T01:46:35+00:00 live: LIVE build 20261023-033529 commit 44a6ed9 (handoff log eb7edbb)
+- ✅ misty-sheet-a [live] Misty sheet: remove 'Tell Misty how you feel', Hunt power label, remove Food journal tile  after sheets-linger
+  - last: 2026-10-23T02:16:40+00:00 live: LIVE build 20261023-041057 commit 6f7f807 (handoff log 37c327e)
+- ✅ misty-peak [live] Misty sheet: World glow peak bar shows what's missing to Supernova  (branch misty-peak-20261022)  after misty-sheet-b
+  - last: 2026-10-23T03:14:36+00:00 live: LIVE build 20261023-050617 commit f28efb1 (handoff log 780035f)
+- ✅ misty-sheet-b [live] Misty sheet: peak bar shows missing requirements; small fitting speech bubbles  after misty-sheet-a
+  - last: 2026-10-23T02:49:42+00:00 live: LIVE build 20261023-044056 commit 00e0044 (speech bubbles; peak bar -> misty-peak); handoff log 2136c3a
+- ✅ meal-photo-a [live] Meal-photo timeout diagnosis + fix
+  - next: meal-photo-b
+  - last: 2026-10-23T03:38:03+00:00 LIVE 20261023-052843 commit b14fdbd; handoff log on main 7b880d8; successor scheduled for meal-photo-b
+- ✅ meal-photo-b [live] Save meal photo + estimate; share to Community  after meal-photo-a
+  - last: 2026-10-23T04:51:35+00:00 live: LIVE build 20261023-064718 commit c9f3f08
+- ✅ worldmap-btn [live] Remove old World map button  after trim-places
+  - last: 2026-10-23T04:04:38+00:00 live: live in 20261023-055817
+- ✅ worldmap-btn-rel [live] Release worldmap-btn  (branch worldmap-btn-20261023)  after worldmap-btn
+  - last: 2026-10-23T04:04:38+00:00 live: LIVE build 20261023-055817 commit dfbe3ed; handoff 339f49e
+- ✅ world-exit [live] White boxes during world-exit animation
+  - last: 2026-10-23T04:38:44+00:00 live: LIVE build 20261023-063141 commit b1d817b
+- ✅ world-exit-rel [live] Release world-exit  (branch world-exit-20261023)  after world-exit
+  - next: none
+  - last: 2026-10-23T04:43:08+00:00 handoff log on main bcaf9c9; successor scheduled 9:43 PM (mirror-move)
+- ✅ mirror-move [live] Mirror mode at top of Move, two taps from Home
+  - last: 2026-10-23T06:00:14+00:00 live: LIVE build 20261023-074744
+- ✅ mirror-move-rel [live] Release mirror-move  (branch mirror-move-20261023)  after mirror-move
+  - last: 2026-10-23T06:00:12+00:00 live: LIVE build 20261023-074744 commit ae391ac (handoff log 564e292)
+- ✅ grocery-1 [live] Grocery: after scan, Add to bucket / Skip
+  - last: 2026-10-23T05:18:15+00:00 live: LIVE build 20261023-071308 commit 517dddc
+- ✅ grocery-2 [live] Grocery: per-day saved bucket with price+points; pick shop or manual price if unknown; shop total price+points (no invented prices)  after grocery-1
+  - next: successor: grocery-3, then supabase-perms, stripe
+  - last: 2026-10-23T05:44:40+00:00 LIVE 20261023-073638 (9ad432f); handoff log on main 32df6b3; live probe i13 dark en PASS; points interpreted as card spike score (flag to Emmanuel in voice note)
+- ✅ grocery-3 [live] Grocery: today's purchased groceries end-of-day view + cook suggestions (no invented notification hour)  after grocery-2
+  - last: 2026-10-23T06:05:22+00:00 live: LIVE build 20261023-080016 commit 06b788f
+- ✅ presence-profile-rel [live] Release presence-profile  after presence-profile
+  - last: 2026-10-22T18:50:22+00:00 live: LIVE build 20261022-204116 commit d10483d
+- ✅ scanfe-h2 [live] Food engine (h2): remaining consumers on engine verdict (store-picks no est. GI, shop-scan live-first, spike-catch, spirit, stored dex re-rate on load, poultry salami pork false positive)  (branch food-engine-h2-20261023)  after scanfe-h-rel
+  - last: 2026-10-23T01:31:13+00:00 live: released (slice 1); rest in scanfe-h3
+- ✅ scanfe-h2-rel [live] Release food engine h2  after scanfe-h2
+  - last: 2026-10-23T01:31:13+00:00 live: LIVE build 20261023-032122 commit 346b53b; handoff log d6cc77a
+- ✅ scanfe-h3 [live] Food engine (h3): store-picks without est. GI formula, spike-catch + spirit on engine verdict, stored dex re-rate on load, Putenspeck classification  (branch food-engine-h3-20261023)  after scanfe-h2-rel
+  - last: 2026-10-23T01:55:28+00:00 live: released slice 1 (spike lists + Putenspeck) as 20261023-034130; rest in scanfe-h4
+- ✅ scanfe-h3-rel [live] Release food engine h3  after scanfe-h3
+  - last: 2026-10-23T01:55:28+00:00 live: LIVE build 20261023-034130 commit 1fdc988 (handoff 0ff9f88)
+- ✅ scanfe-h4 [live] Food engine (h4): store-picks without est. GI formula, spirit on engine verdict, stored dex re-rate on load  (branch food-engine-h4-20261023)  after scanfe-h3-rel
+  - last: 2026-10-23T02:23:42+00:00 live: released
+- ✅ scanfe-h4-rel [live] Release food engine h4  after scanfe-h4
+  - last: 2026-10-23T02:23:42+00:00 live: LIVE build 20261023-041640 commit 45d94ab
+- ✅ scanfe-h5 [live] Food engine (h5): spirit on engine verdict, stored dex re-rate on load, policy pork name check for Salame (Leichte Salame Bella Festa passes store picks)  (branch food-engine-h5-20261023)  after scanfe-h4-rel
+  - last: 2026-10-23T02:53:03+00:00 live: released (slice 1); dex re-rate on load -> scanfe-h6
+- ✅ scanfe-h5-rel [live] Release food engine h5  after scanfe-h5
+  - last: 2026-10-23T02:53:02+00:00 live: LIVE build 20261023-044553 commit ff6403e; handoff log 1fb624e on main
+- ✅ scanfe-h6 [live] Food engine (h6): re-rate stored dex rows on load with LowiSpikeCore.foodVerdict/tighten (index.html D.mine / dex grid)  (branch food-engine-h6-20261023)  after scanfe-h5-rel
+  - last: 2026-10-23T03:18:22+00:00 live: released
+- ✅ scanfe-h6-rel [live] Release food engine h6  after scanfe-h6
+  - last: 2026-10-23T03:18:22+00:00 live: LIVE build 20261023-051036 commit a597133, handoff 7b21d55
+- ✅ trim-places-rel [live] Release trim-places  after trim-places
+  - last: 2026-10-22T16:08:10+00:00 live: LIVE build 20261022-180142 commit 08a645e; live sim i13 pass
+- ✅ weight-merge-rel [live] Release weight-merge  after weight-merge
+  - last: 2026-10-22T17:57:06+00:00 live: LIVE build 20261022-195226 commit bc5376e
+- ✅ coord-37596345 [done] Record: cancelled coordinator 37596345 (small-task queue and handover execution)
+  - last: 2026-10-22T15:36:08+00:00 record closed by coordinator 49a3cfeb (records take no worker slot)
+- ✅ coord-6ef92a87 [done] Record: cancelled coordinator 6ef92a87 (queue control and small-task dispatch)
+  - last: 2026-10-22T15:36:08+00:00 record closed by coordinator 49a3cfeb (records take no worker slot)

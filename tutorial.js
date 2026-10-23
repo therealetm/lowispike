@@ -308,8 +308,12 @@
         root.classList.remove('lt-center');
         const r = el.getBoundingClientRect(), pad = 8, d = Math.max(r.width, r.height) + pad * 2;
         const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-        hole.style.cssText = 'left:' + Math.round(cx - d / 2) + 'px;top:' + Math.round(cy - d / 2) + 'px;width:' + Math.round(d) + 'px;height:' + Math.round(d) + 'px';
-        const below = cy + d / 2 + 12, above = cy - d / 2 - 12 - ch;
+        /* a wide, flat target (a row button like Move's Kreuzheben) gets a pill, not a circle as tall as it is wide that the card
+           can never clear (live check Oct 23 2026: the card sat on the button) */
+        const pill = r.width > r.height * 2.2, hw = pill ? r.width + pad * 2 : d, hh = pill ? r.height + pad * 2 : d;
+        hole.classList.toggle('lt-pill', pill);
+        hole.style.cssText = 'left:' + Math.round(cx - hw / 2) + 'px;top:' + Math.round(cy - hh / 2) + 'px;width:' + Math.round(hw) + 'px;height:' + Math.round(hh) + 'px';
+        const below = cy + hh / 2 + 12, above = cy - hh / 2 - 12 - ch;
         let top = below + ch <= vh - m ? below : above >= m ? above : Math.max(m, Math.min(vh - ch - m, below));
         /* a big target (Misty) with no room on either side: the card sits at the bottom edge, clear of the safe area */
         if (top < m) top = m;

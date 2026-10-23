@@ -163,3 +163,4 @@
 
 /* What's New mini tour (Oct 23 2026): a card whose step opened a place sits above that place's sheet (Rooms is z 2147483000) */
 .lt-tour.lt-staged { z-index: 2147483400; }
+.lt-hole.lt-pill, .lt-hole.lt-pill::after { border-radius: 999px; }

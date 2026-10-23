@@ -5,7 +5,8 @@
    grocery-2: the list has "Shop you're in" (shops that real price reports name for today's items, or "Other shop"), each item's
    spike points and price (the newest real report at that shop, else a Type price field), and the shop total + total points.
    Prices only come from the person or from real reports (LOWI_SHELF.priceReports, the person's own LowiDiscovery price
-   contributions), never invented. index.html's scActsHTML asks LowiBucket.rowHTML(p). */
+   contributions), never invented. index.html's scActsHTML asks LowiBucket.rowHTML(p).
+   grocery-4: the Today's groceries sheet also logs what was cooked from them (text or Snap photo) into the one meal journal. */
 (() => {
     'use strict';
     const W = window, D = document, C = W.LowiBucketCore;
@@ -94,16 +95,78 @@
         const sug = C.suggest(items, recipes(), groupWords(), 3);
         const cook = sug.length ? '<ul class="gt-cook">' + sug.map(r => '<li><button type="button" class="gt-rec" data-sh="recipe" data-r="' + esc(r.id) + '" aria-label="' + esc(T('openRecipe') + ': ' + r.n) + '">' +
                 '<span class="gt-e" aria-hidden="true">' + esc(r.e || '🍽️') + '</span><span class="gb-nm"><b>' + esc(r.n) + '</b><small>' + esc(C.tx('uses', L, null, r.have.join(', '))) + '</small>' +
-                (r.need.length ? '<small class="gt-need">' + esc(C.tx('alsoNeed', L, null, r.need.slice(0, 4).join(', ') + (r.need.length > 4 ? ' …' : ''))) + '</small>' : '') + '</span><span class="gt-go" aria-hidden="true">›</span></button></li>').join('') + '</ul>' :
+                (r.need.length ? '<small class="gt-need">' + esc(C.tx('alsoNeed', L, null, r.need.slice(0, 4).join(', ') + (r.need.length > 4 ? ' …' : ''))) + '</small>' : '') + '</span><span class="gt-go" aria-hidden="true">›</span></button>' +
+                '<button type="button" class="gt-did" data-gtc="fill" data-n="' + esc(r.n) + '" data-used="' + esc(C.keysFor(items, r.used).join('\n')) + '">' + esc(T('cookedThis')) + '</button></li>').join('') + '</ul>' :
             '<p class="gb-empty gt-nocook">' + esc(T('noCook')) + '</p>';
         return '<div class="gt-sheet"><div class="h2">' + esc(T('todayG')) + '</div>' +
             '<div class="gt-lab">' + esc(T('bought')) + ' <b>' + items.length + '</b></div><ul class="gt-items">' + list + '</ul>' +
             '<div class="gb-tot" role="status"><div><span>' + esc(shop ? C.tx('totalAt', L, null, shop) : T('total')) + '</span><b class="gb-tp">' + esc(C.fmtPrice(tot.price, L)) + '</b></div>' +
             (tot.missing ? '<small class="gb-miss">' + esc(tot.missing === 1 ? T('missing1') : T('missingN', tot.missing)) + '</small>' : '') +
             '<div><span>' + esc(T('points')) + '</span><b class="gb-tpts">' + tot.points + '</b></div></div>' +
-            '<div class="gt-lab">' + esc(T('cook')) + '</div><p class="gt-note">' + esc(T('cookNote')) + '</p>' + cook + '</div>';
+            '<div class="gt-lab">' + esc(T('cook')) + '</div><p class="gt-note">' + esc(T('cookNote')) + '</p>' + cook + cookedHTML(items) + '</div>';
     }
+    /* grocery-4 (Seven, Maya 7 handover): "Log what was cooked from those groceries, as text or a photo." Under the cook ideas:
+       what you cooked today, and a small form: type it (Log it) or Snap a photo, with chips for the groceries that went in.
+       Text logs through LowiVitalsBridge.logMeal, the one meal path (meal count, XP cap, meal gap, the same-food-once rule);
+       the photo opens the app's own Snap (LowiSpirit.photo), which saves the photo and its estimate in meal-journal.js. No new
+       meal store: the bucket only keeps the link (LowiBucketCore.addCooked) from that meal to the items used. */
+    const VB = () => W.LowiVitalsBridge || null;
+    function logById(id) { try { const v = VB(), st = v && v.state && v.state(), logs = st && Array.isArray(st.logs) ? st.logs : []; return logs.find(l => l && (l.eventId === id || l.id === id || 'meal:' + l.id === id)) || null; } catch (e) { return null; } }
+    function slotNow() { try { if (W.LowiSpiritCore && LowiSpiritCore.slotFor) return LowiSpiritCore.slotFor(); } catch (e) {} return ''; } /* Log meal's own slot from the clock */
+    function cookedHTML(items) {
+        const L = li(), names = {}; items.forEach(x => { names[x.k] = x.name || x.code; });
+        const done = C.cookedToday(C.load()).map(c => ({ c, log: logById(c.id) })).filter(x => x.log).reverse();
+        const thumb = log => { try { return W.LowiMealJournal && LowiMealJournal.thumbHTML ? LowiMealJournal.thumbHTML(log) : ''; } catch (e) { return ''; } };
+        const list = done.length ? '<ul class="gt-done">' + done.map(({ c, log }) => { const used = c.used.map(k => names[k]).filter(Boolean);
+            return '<li data-gtc-id="' + esc(c.id) + '">' + thumb(log) + '<span class="gb-nm"><b>' + esc(log.t || c.t) + '</b><small>' + esc(T(c.via === 'photo' ? 'viaPhoto' : 'viaText')) + (used.length ? ' · ' + esc(C.tx('usedS', L, null, used.join(', '))) : '') + '</small></span></li>'; }).join('') + '</ul>' : '';
+        const chips = items.map(x => '<label class="gt-chip"><input type="checkbox" value="' + esc(x.k) + '"><span>' + esc(x.name || x.code) + '</span></label>').join('');
+        return '<div class="gt-lab">' + esc(T('cooked')) + (done.length ? ' <b>' + done.length + '</b>' : '') + '</div><p class="gt-note">' + esc(T('cookedNote')) + '</p>' + list +
+            '<form class="gt-form" data-gtc-form="1" novalidate><label class="gt-what"><span>' + esc(T('cookedAsk')) + '</span><input type="text" name="gtc" maxlength="100" autocomplete="off" enterkeyhint="done" placeholder="' + esc(T('cookedPh')) + '"></label>' +
+            '<fieldset class="gt-used"><legend>' + esc(T('usedQ')) + '</legend><div class="gt-chips">' + chips + '</div></fieldset>' +
+            '<div class="gt-acts"><button type="submit" class="r2-btn pri gt-logt" data-gtc="text">' + esc(T('logText')) + '</button><button type="button" class="r2-btn ghost gt-logp" data-gtc="photo">' + esc(T('logPhoto')) + '</button></div>' +
+            '<p class="gt-msg" role="status" aria-live="polite"></p></form>';
+    }
+    function toast(m) { try { if (W.LowiR2 && LowiR2.toast) LowiR2.toast(m); } catch (e) {} }
+    function usedOf(form) { return [...form.querySelectorAll('.gt-chip input:checked')].map(i => i.value); }
+    function repaint(ov) { const sh = ov && ov.querySelector('.gt-sheet'); if (sh) sh.outerHTML = todayHTML(); }
+    function logText(form) {
+        const ov = form.closest('.gt-ov'), inp = form.querySelector('[name="gtc"]'), msg = form.querySelector('.gt-msg'), t = String(inp.value || '').trim();
+        if (!t) { inp.setAttribute('aria-invalid', 'true'); msg.textContent = T('needName'); return null; }
+        const v = VB(); let res = false;
+        try { res = v && v.logMeal ? v.logMeal(Object.assign({ id: 'gc:' + Date.now().toString(36), t, via: 'groceries' }, slotNow() ? { slot: slotNow() } : {})) : false; } catch (e) { console.error(e); res = false; }
+        if (res && res.log) {
+            C.save(C.addCooked(C.load(), { id: res.log.eventId || res.log.id, t, via: 'text', used: usedOf(form) }));
+            fire('cooked', {}); repaint(ov); toast(T('loggedC')); return res;
+        }
+        msg.textContent = T(res && res.dup ? 'dupC' : 'failC'); return res;
+    }
+    let pending = null; /* a Snap started from this sheet: the next photo meal within 10 minutes is the cooked one */
+    function logPhoto(form) {
+        pending = { at: Date.now(), used: usedOf(form), t: String((form.querySelector('[name="gtc"]') || {}).value || '').trim() };
+        const ov = form.closest('.gt-ov');
+        try { if (ov && W.LowiR2 && LowiR2.close) LowiR2.close(ov); } catch (e) {}
+        try { if (W.LowiSpirit && LowiSpirit.photo) { LowiSpirit.photo(); return true; } } catch (e) { console.error(e); }
+        pending = null; return false;
+    }
+    W.addEventListener('lowi:meal-logged', e => {
+        const d = e && e.detail || {}; if (!pending || Date.now() - pending.at > 10 * 60000) { pending = null; return; }
+        if (d.via === 'groceries' || !(d.photo || d.via === 'photo')) return;
+        C.save(C.addCooked(C.load(), { id: d.id, t: d.title || pending.t, via: 'photo', used: pending.used })); pending = null; fire('cooked', {});
+    });
+    W.addEventListener('lowi:meal-deleted', e => { const id = e && e.detail && e.detail.id; if (id) C.save(C.removeCooked(C.load(), id)); });
+    D.addEventListener('click', e => {
+        const b = e.target.closest && e.target.closest('[data-gtc]'); if (!b || !b.closest('.gt-ov')) return;
+        const a = b.dataset.gtc, ov = b.closest('.gt-ov'), form = ov.querySelector('[data-gtc-form]'); if (!form) return;
+        if (a === 'fill') {
+            e.preventDefault(); e.stopPropagation();
+            const inp = form.querySelector('[name="gtc"]'); inp.value = b.dataset.n || ''; inp.removeAttribute('aria-invalid'); form.querySelector('.gt-msg').textContent = '';
+            const keys = String(b.dataset.used || '').split('\n'); form.querySelectorAll('.gt-chip input').forEach(i => { i.checked = keys.indexOf(i.value) >= 0; });
+            try { form.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (x) {}
+        } else if (a === 'photo') { e.preventDefault(); e.stopPropagation(); logPhoto(form); }
+    }, true);
+    D.addEventListener('submit', e => { const f = e.target; if (!f || !f.matches || !f.matches('[data-gtc-form]')) return; e.preventDefault(); logText(f); }, true);
+    D.addEventListener('keydown', e => { const t = e.target; if (e.key === 'Enter' && t && t.matches && t.matches('[name="gtc"]')) { e.preventDefault(); t.blur(); } }, true);
     function openToday() { if (!W.LowiR2 || !LowiR2.sheet) return null; const ov = LowiR2.sheet(todayHTML(), { cls: 'gt-ov' }); fire('today', {}); return ov; }
     D.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-gbt="open"]'); if (!b) return; e.preventDefault(); e.stopPropagation(); openToday(); }, true);
-    W.LowiBucket = { rowHTML, today: () => C.today(C.load()), openToday, todayHTML };
+    W.LowiBucket = { rowHTML, today: () => C.today(C.load()), openToday, todayHTML, logText, logPhoto };
 })();

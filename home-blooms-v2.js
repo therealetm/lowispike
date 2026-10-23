@@ -151,7 +151,15 @@
         return best.c;
     }
 
-    const core = { KINDS, WATER_GOAL, dayKey, gapText, waterUndo, layout, noteSpot };
+    /* Oct 24 (Lisa via Emmanuel: "Flasch" on one line, "e" on the next): labels wrap only between words. A single word wider
+       than its orb shrinks in proportion instead, in half-pixel steps, never below `min` (10px). Pure: widths in, font size out. */
+    function labelSize(wordPx, maxPx, base, min) {
+        base = base || 12.5; min = min || 10;
+        if (!(wordPx > 0) || !(maxPx > 0) || wordPx <= maxPx) return base;
+        return Math.max(min, Math.floor(base * maxPx / wordPx * 2) / 2);
+    }
+
+    const core = { KINDS, WATER_GOAL, dayKey, gapText, waterUndo, layout, noteSpot, labelSize };
     if (typeof module === 'object' && module.exports) { module.exports = core; return; }
     if (!root || !root.document) return;
 
@@ -301,6 +309,28 @@
         return { x: vw / 2, y: vh / 2, r: Math.min(vw, vh) * 0.16 };
     }
 
+    /* measure each orb label's widest single word once, when the bloom is in the page (no frame loop), and shrink only that label */
+    function fitLabels(ov) {
+        if (!ov || !ov.isConnected) return;
+        let meter = null;
+        ov.querySelectorAll('.hb2-tx b').forEach(b => {
+            b.style.fontSize = '';
+            const cs = getComputedStyle(b);
+            const max = parseFloat(cs.maxWidth) || b.clientWidth;
+            const words = (b.textContent || '').split(/\s+/).filter(Boolean);
+            if (!max || !words.length) return;
+            if (!meter) { meter = D.createElement('span'); meter.setAttribute('aria-hidden', 'true'); meter.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;left:-9999px;top:0;font:inherit;letter-spacing:inherit'; }
+            b.appendChild(meter);
+            /* offsetWidth is the layout width: the orbs are still scaled down while they bloom, a transform must not count */
+            let widest = 0;
+            words.forEach(w => { meter.textContent = w; widest = Math.max(widest, meter.offsetWidth); });
+            meter.remove();
+            const base = parseFloat(cs.fontSize) || 12.5;
+            const size = labelSize(widest + 1, max, base, 10);
+            if (size < base) b.style.fontSize = size + 'px';
+        });
+    }
+
     function render(kind, src) {
         const acts = actionsFor(kind);
         const r = src.getBoundingClientRect();
@@ -392,6 +422,7 @@
         const ov = renderAll();
         if (!ov) return false;
         D.body.appendChild(ov);
+        try { fitLabels(ov); } catch (e) { }
         st.ov = ov; st.open = 'all'; st.all = true; st.src = null;
         D.documentElement.classList.add('hb2-open');
         buzz(8);
@@ -458,6 +489,7 @@
         st.ov = null;
         const ov = render(kind, src);
         D.body.appendChild(ov);
+        try { fitLabels(ov); } catch (e) { }
         try { placeNote(ov); } catch (e) { }
         st.ov = ov; st.open = kind; st.src = src;
         src.classList.add('hb2-src'); src.setAttribute('aria-expanded', 'true');
@@ -472,10 +504,11 @@
         return true;
     }
     function refreshOpen() {
-        if (st.open === 'all' && st.ov) { const fid = (D.activeElement && D.activeElement.dataset && D.activeElement.dataset.id) || ''; renderAll(); const f = fid && st.ov.querySelector('[data-id="' + fid + '"]'); if (f && !f.disabled) try { f.focus({ preventScroll: true }); } catch (e) { } return; }
+        if (st.open === 'all' && st.ov) { const fid = (D.activeElement && D.activeElement.dataset && D.activeElement.dataset.id) || ''; renderAll(); try { fitLabels(st.ov); } catch (e) { } const f = fid && st.ov.querySelector('[data-id="' + fid + '"]'); if (f && !f.disabled) try { f.focus({ preventScroll: true }); } catch (e) { } return; }
         if (!st.open || !st.ov || !st.src) return;
         const kind = st.open, focusId = (D.activeElement && D.activeElement.dataset && D.activeElement.dataset.id) || '';
         render(kind, st.src);
+        try { fitLabels(st.ov); } catch (e) { }
         try { placeNote(st.ov); } catch (e) { }
         const f = focusId && st.ov.querySelector('[data-id="' + focusId + '"]');
         if (f && !f.disabled) try { f.focus({ preventScroll: true }); } catch (e) { }
@@ -600,7 +633,7 @@
         mount, unmount, open: k => open(k), close: () => close(), isOpen: () => st.open, openAll, isAll: () => st.open === 'all',
         actions: k => actionsFor(k).map(a => ({ id: a.id, label: a.label, sub: a.sub, disabled: !!a.disabled })),
         layout: () => (st.ov && st.ov.__layout) || null,
-        undoWater: waterUndoNow, core
+        undoWater: waterUndoNow, fitLabels: ov => fitLabels(ov || st.ov), core
     };
     W.LowiHomeBloomsV2 = api;
 })(typeof window !== 'undefined' ? window : null);

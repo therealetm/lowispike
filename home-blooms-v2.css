@@ -42,8 +42,9 @@
 .hb2-sleep .hb2-fill, .hb2-orb[data-group="sleep"] .hb2-fill { background: linear-gradient(180deg, rgba(190, 170, 255, .45), rgba(120, 100, 230, .7)); }
 .hb2-tx { display: flex; flex-direction: column; align-items: center; line-height: 1.1; text-shadow: 0 1px 3px rgba(0, 8, 30, .6); padding: 0 6px; text-align: center; }
 .hb2-ic { width: 18px; height: 18px; margin-bottom: 1px; flex: none; filter: drop-shadow(0 1px 3px rgba(0, 30, 80, .6)); }
-/* long labels ("Mahlzeit eintragen", "Gerade gegessen") wrap to two short lines instead of being cut by the round edge */
-.hb2-tx b { font-size: 12.5px; line-height: 1.05; font-weight: 700; max-width: calc(var(--hb2-orb, 72px) - 16px); overflow-wrap: anywhere; text-wrap: balance; }
+/* long labels ("Mahlzeit eintragen", "Gerade gegessen") wrap to two short lines instead of being cut by the round edge.
+   Oct 24 (Lisa: "Flasch" / "e"): wrap only between words, never inside one; a single word too wide shrinks (fitLabels, min 10px) */
+.hb2-tx b { font-size: 12.5px; line-height: 1.05; font-weight: 700; max-width: calc(var(--hb2-orb, 72px) - 16px); overflow-wrap: normal; word-break: normal; hyphens: manual; text-wrap: balance; }
 .hb2-tx small { font-size: 9px; opacity: .92; margin-top: 2px; max-width: calc(var(--hb2-orb, 72px) - 12px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hb2-note { position: absolute; margin: 0; padding: 7px 12px; border-radius: 14px; font-size: 12px; line-height: 1.3; text-align: center; color: #eaf6ff; max-width: 220px;
     width: max-content; /* BH-005: never squeezed into a thin column near the screen edge */

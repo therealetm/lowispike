@@ -1244,6 +1244,59 @@ from 11 to 25 is 14-25 regular days (tests/evolution-levels.test.cjs pins this).
 Floor windows (old -> new): 4,500-4,999 XP keeps 7, 7,000-7,499 keeps 8, 10,000-10,499 keeps 9. Above 14,000 XP people go UP (old cap was 10).
 Sim: `node tools/sim/evo-levels.cjs "<device>" <en|de|es> [url]` (floor at 4,600 XP, 20,000 XP = Level 11, 25 map rows, Evolution marks, Forms).
 
+## 9. Food engine benchmark + spec section 14 acceptance (23 Oct 2026, queue step scanfe-i)
+
+Run on main 7b21d55 (live 20261023-051036, every scanfe step through h6 shipped). Engine `food-engine-core f1 2026-10-22`,
+policy `lowispike-policy.v1`, benchmark `data/food-bench/benchmark.v1.json` v1 (18 verified label rows: Open Food Facts,
+data/shop, Emmanuel's handoff). **The benchmark expectations are NOT expert-reviewed** (expertReviewed false) and are not
+measured glucose outcomes: a match means "agrees with spec section 8", nothing more. Nothing was added to the data.
+
+Re-run any time: `node tools/food-bench/metrics.cjs` (text, exit 1 if an acceptance item fails) or `--json`. The suite
+holds it at zero in `tests/food-bench-metrics.test.cjs` (5 tests) next to `tests/food-engine-bench.test.cjs`. The script
+runs each row through `LowiFoodEngine.scanFood` at the benchmark serving, through the app adapter + Food check
+(`LowiSpikeCore.foodVerdict`, what Products / Store picks / Misty use) and through `LowiSpikeCore.rerate` on a stale
+stored "ok" dex row.
+
+**Metrics (spec section 13), 18 rows:**
+- Policy verdict inside the expected set 18/18, carbohydrate exposure 18/18, confidence 18/18.
+- False approvals 0, false rejections 0.
+- Nutrition math errors 0 (every nutrient = per100 x g / 100, unknown stays unknown, available carbs = whole label carbs).
+- Missed ingredient detections 0 (added sugar, refined starch, coating, sweeteners, liquid, claims, allergens).
+- Overconfident claims 0 (no confidence above the expected level, no High without ingredients, no glycaemic load without
+  a supplied GI, no "no spike" wording in reasons or alternatives).
+- Protein/fat removed from the label changes nothing in 0 rows (they never cancel carbs).
+- App path more lenient than the engine: 0. NEIN rows reading ok in the app: 0. Stale stored ok rows of NEIN products
+  that stay ok after re-rate: 0.
+
+**Acceptance (spec section 14): all 11 PASS on the benchmark.**
+- Variants: every sourced row is pinned to its barcode; Ültje Süß & Salzig has none, so the engine marks
+  identity_unverified and gives Low confidence. The live barcode lookup itself is not part of this offline run.
+- Serving math, added sugar / refined starch, protein + fat never cancel carbs, glucose vs quality independent (Coca-Cola
+  Zero and salami sticks are Lower exposure with mixed / poor quality), exclusions (pork, sweet zero drink, juice,
+  sugar-coated nuts all NEIN), uncertainty, 1-3 reasons in EN/DE/ES on every row, an alternative on every SELTEN/NEIN row.
+- Ültje Süß & Salzig: engine NEIN (policy.sugar_heavy), Moderate, Low confidence; app verdict spike; a stale stored ok
+  row becomes spike.
+- Regression: the two benchmark test files run in the suite.
+
+**Per row (engine verdict, decided by, exposure, confidence, app verdict):** Ültje Süß & Salzig NEIN sugar_heavy Moderate
+Low spike; Erdnüsse ohne Salz JA nuts_moderate Lower High ok; Pinats Honig NEIN sugar_heavy Moderate Medium spike;
+Mandeln geröstet JA nuts_moderate Lower High ok; Feuergebrannte Mandeln NEIN sugar_heavy Higher High spike; Naturjoghurt
+JA plain_yoghurt_quark Lower High ok; Bio-Fruchtjoghurt Erdbeere SELTEN incomplete Higher Medium spike; Coca-Cola NEIN
+sugar_drink Higher High spike; Coca-Cola Zero NEIN zero_drink Lower High spike; Orangensaft NEIN juice Higher Medium spike;
+Basmati NEIN starch_staple Higher High spike; Spaghetti NEIN starch_staple Higher High spike; Vollkorntoast NEIN
+starch_staple Moderate High spike; Pudding Vanille NEIN candy_dessert Moderate Medium spike; High-Protein-Pudding NEIN
+candy_dessert Moderate High spike; Hähnchenbrust JA poultry Lower High ok; Salami Sticks NEIN pork Lower Medium spike;
+Genuss mix NEIN sugar_heavy Moderate Medium spike.
+
+**Notes for the next Maya (no bug, nothing to queue):**
+- Bio-Fruchtjoghurt Erdbeere is SELTEN by `policy.incomplete`: its Open Food Facts ingredient list is cut off mid-bracket,
+  and the engine rightly sees it as truncated (confidence Medium, reason ingredients_cut_off). Expected SELTEN or NEIN.
+- The app adapter judges at the manufacturer serving, else the group portion. A plain-nut product with no printed serving
+  and no snack category falls to group `other` (50 g), which is above the policy's 30 g moderate nut portion, so the app
+  shows it as "better" (SELTEN), never as ok. With the printed 30 g serving it reads ok, like the engine.
+- Gaps still open in the benchmark (from scanfe-a): no whole-fruit label, no plain potatoes, no keto substitute, Desira
+  pudding without ingredients, and the Master Knowledge document (scanfe-policy-doc, blocked on Emmanuel).
+
 ## Log
 
 Append one line per event, newest at the bottom: date and time (CEST), what shipped / broke / was cancelled, build or
@@ -1385,3 +1438,4 @@ branch. Keep both lines if a rebase conflicts here. Never rewrite earlier lines.
 - 2026-10-23 04:50 scanfe-h5 (slice 1) LIVE build 20261023-044553 (commit ff6403e, branch food-engine-h5-20261023, queue steps scanfe-h5 + scanfe-h5-rel, queue worker A). Policy pork name rule salami -> salam[ei] (data/food-policy/lowispike-policy.v1.json synced into food-policy-core.js; same in ingredient-core RX.pork and the store-picks-core meat group): Italian Salame (Leichte Salame Bella Festa, Dulano/Lidl) is a pork NEIN and out of Store picks; poultry/beef salame keeps the notPork exception (processed meat, SELTEN). Misty's scan reaction (spirit.js captureProduct) now reads spirit-core scanVerdict(p, LowiDex.rate, LowiSpikeCore): the rate() result made stricter by LowiSpikeCore.tighten (NEIN -> spike, SELTEN -> at least better), manual entries keep their own rating, notFound keeps its stored verdict (cooked ham: estimate ok, now spike). tests/food-verdict.test.cjs +2 (both fail on the old code); tests/scan-verdict.test.cjs regex updated; suite 2421/2421 after rebase on misty-sheet-b; scan-card-engine-live SE/13 dark + 15/Pixel 7 light EN/DE/ES, store-picks-quickview-live + store-picks-principles-live (Chromium + WebKit iPhone 13; the WebKit search step flaked once each while other sims ran, reruns pass), shuffle-catalog-live SE night EN, 13 day DE, 15 night ES, Pixel 7 day EN, spirit probe (queue/tmp/h5-spirit-probe.cjs) SE dark, Pixel 7 light, WebKit 13 dark pass (browser simulations, not his phone). Remaining follow-up moved to new queue step scanfe-h6 (+ scanfe-h6-rel): stored dex rows are not re-rated on load (index.html D.mine / dexItems). scanfe-i now depends on scanfe-h6-rel.
 - 2026-10-23 05:10 misty-peak LIVE build 20261023-050617 (commit f28efb1, branch misty-peak-20261023, queue step misty-peak, queue worker B). WIP origin/misty-peak-20261022 61e223b rebased onto main: misty-peak.js 'World glow' card at the top of Misty's sheet (right under the header, above Forms/Glow) with a bar to Supernova and the missing rows (sugar rush, stormy world, meals, water, move, spark, protein, fiber, sugar), each tapping through; never 100% while anything is missing; name tag shows World glow %; html[data-peak=1] smile/glow on Home (world-home.css after the aura shop block). Journal door, mood card and Hunt power row stay gone. .mp-pct has no nowrap (misty-hub test 'no clipped lines'). New sim tools/sim/misty-peak.cjs (THEME=light|dark node tools/sim/misty-peak.cjs "<device>" <lang> [url]) PASS on SE/13/15/Pixel 7 day+night EN/DE/ES; misty-sheet-a.cjs and sheet-replace-live PASS; suite 2429/2429. Release gotcha fixed: app-voice/ hit the 30 MB size test (release.sh --news adds clips, never removes); ran python3 tools/app-voice/build.py (full mode) to remove 264 clips nothing says any more, 30 MB -> 24 MB. Run it again when tests/app-voice.test.cjs size check nears 30 MB.
 - 2026-10-23 05:15 scanfe-h6 LIVE build 20261023-051036 (commit a597133, branch food-engine-h6-20261023, queue steps scanfe-h6 + scanfe-h6-rel, queue worker A). spike-core.js LowiSpikeCore.rerate(p) / rerateRows(rows): a stored verdict made stricter by foodVerdict (ok -> better -> spike; unknown only -> spike; manual (p.manual or source 'manual') and notFound keep theirs; no label data = unchanged), rerateRows mutates in place, prepends why c_no / c_rare (new TX keys EN/DE/ES) only when the Food check is what raised it, sets rerated:true, returns count; idempotent. index.html: rerateDex() runs once per load on first mineList()/dexItems() (spike-core loads after the dex script) plus window load, saves when rows changed; loadComm re-rates fresh D.comm rows. The open card (reveal / scView) deliberately keeps the engine blood sugar line, Food check card below it (tightening it broke scan-card-engine-live: Ultje must read Moderate). Tests 2431/2431, 2 new in tests/food-verdict.test.cjs fail on old code; scan-card-engine-live SE/13 dark + 15/Pixel 7 light EN/DE/ES pass; probe queue/tmp/h6-dex-probe.cjs (seeded lowi.dex.v1) pass on SE, 15, Pixel 7, WebKit 13. Next chain A: scanfe-i (benchmark + spec section 14 acceptance).
+- 2026-10-23 05:40 scanfe-i done, no release (docs + tool + test only, landed on main through scripts/push-main.sh; branch food-engine-i-20261023, queue step scanfe-i, queue worker A). New tools/food-bench/metrics.cjs runs the 18 verified benchmark rows through LowiFoodEngine.scanFood, the LowiSpikeCore adapter + Food check and rerate of a stale ok row: policy 18/18, exposure 18/18, confidence 18/18; false approvals 0, false rejections 0, math errors 0, missed ingredient flags 0, overconfident claims 0, protein/fat cancel 0, app more lenient than engine 0. Spec section 14: 11/11 PASS (expectations provisional, not expert-reviewed). Results in section 9. tests/food-bench-metrics.test.cjs (5) holds it at zero; full suite 2439/2439 on main 5e84ba1 (live 20261023-052050).

@@ -15661,6 +15661,11 @@ function openPost(id){ try { goTab("foryou"); } catch(e){}
 /* ---------- boot ---------- */
 /* the care board rides the old xp_week / xp_month columns with a tagged period key (see care-board-core.js) */
 const careTag = c => { const b = CB(); return b && c && c.key ? b.tag(c.key, c.full) : ""; };
+/* 23 Oct 2026: the Community Ranking (ranking.js) reads the same people as the old Care board and opens the same member card */
+R3.everyone = everyone; R3.me = me;
+R3.open = function(q){ q = q || {}; const all = (typeof R3.everyone === "function" ? R3.everyone : everyone)() || [];
+  const p = q.me ? all.find(x => x.me) : all.find(x => (q.uid && x.uid === q.uid) || (!q.uid && q.name && x.n === q.name));
+  if (p) openMember(p); };
 R3.profileExtra = function(){ const m = me(), o = {bday:m.bday || "", xp:Math.max(0, Math.round(m.xp || 0)), weight:m.w || ""};
   /* sunbeams only once the sun meter has loaded, so an early push never blanks a good row */
   if (m.care && m.care.w && m.care.w.key) Object.assign(o, {xp_week:Math.max(0, Math.round(m.care.w.pts || 0)), wk:careTag(m.care.w), xp_month:Math.max(0, Math.round(m.care.m.pts || 0)), mo:careTag(m.care.m)});

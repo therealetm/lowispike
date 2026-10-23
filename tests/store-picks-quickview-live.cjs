@@ -88,17 +88,17 @@ async function run(name, launcher, ctxOpts, base) {
     ok(Math.abs(after - before) < 2, 'list scroll kept (' + before + ' -> ' + after + ')');
     ok(await page.evaluate(() => document.activeElement && document.activeElement.matches('button.stp-item')), 'focus returns to the row');
 
-    // search "Linsen", open Bio-Linsen rot: real photo, label, why, source link, honest limits
-    await page.fill('.stp-q', 'Bio-Linsen rot');
+    // search "Linsen", open Linsen rot im glas extra: real photo, label, why, source link, honest limits
+    await page.fill('.stp-q', 'Linsen rot im glas extra');
     await page.waitForTimeout(700);
-    const lent = page.locator('.stp-ov button.stp-item', { hasText: 'Bio-Linsen rot' }).first();
-    ok(await lent.count(), 'Bio-Linsen rot found by search (left-out list included if needed)');
+    const lent = page.locator('.stp-ov button.stp-item', { hasText: 'Linsen rot im glas extra' }).first();
+    ok(await lent.count(), 'Linsen rot im glas extra found by search (a pass since scanfe-h4: dry Bio-Linsen are Moderate per 30 g)');
     if (ctxOpts.hasTouch) await lent.tap(); else await lent.click();
     await page.waitForSelector('.stp-qv.in .stp-qv-ph img', { timeout: 60000 });
     await page.waitForFunction(() => { const i = document.querySelector('.stp-qv-ph img'); return i && i.complete; }, null, { timeout: 20000 });
     const qi = await page.evaluate(() => { const i = document.querySelector('.stp-qv-ph img'); return { src: i.src, w: i.naturalWidth, alt: i.alt }; });
     ok(/^https:\/\/images\.openfoodfacts\.org\/images\/products\/.+\.400\.jpg$/.test(qi.src) && qi.w > 0, 'large photo loaded ' + qi.src + ' (' + qi.w + 'px)');
-    ok(/Bio-Linsen rot/.test(qi.alt), 'photo has alt text');
+    ok(/Linsen rot im glas extra/.test(qi.alt), 'photo has alt text');
     const href = await page.locator('.stp-qv-link').getAttribute('href');
     ok(/^https:\/\/world\.openfoodfacts\.org\/product\/[0-9]+$/.test(href), 'product page link ' + href);
     const txt = await page.locator('.stp-qv').innerText();
@@ -112,7 +112,7 @@ async function run(name, launcher, ctxOpts, base) {
     await page.keyboard.press('Escape');
     await page.waitForTimeout(300);
     ok(!(await page.locator('.stp-qv').count()) && (await page.locator('.stp-ov .stp-card').count()), 'Escape closes only the quick view');
-    ok((await page.inputValue('.stp-q')) === 'Bio-Linsen rot', 'search kept');
+    ok((await page.inputValue('.stp-q')) === 'Linsen rot im glas extra', 'search kept');
 
     // a product without a photo says so
     await page.fill('.stp-q', '');

@@ -1009,3 +1009,11 @@ Emmanuel (Seven): "I don't understand the food journal section. Either remove it
 - Meal history lives in the Fuel sheet's meal list (today's meals, with photo thumbnails from meal-journal.js). There is no second place for meals.
 - Kept for XP and fair play: herb-quests-core.js journal(), discover(), newFoods(), FOODS and the "same meal twice counts once" rules. They feed no screen now except a small toast the first time a food is logged ("First time logged: ...").
 - Other links: the Herb path's "Food journal" link is removed, its compact link says "Quests". `data-sp="collection"` (Misty's older Discovered panel "See all") now opens only your scanned products, titled "Your scans". The scan hint "Adds it to your food journal" says "Adds it to your scans". No tutorial card, achievement or deep link pointed at the Food journal.
+
+## 2026-10-23 Move bubble: three daily step ranges, like Sleep (decided by Eman on a call)
+
+- Eman: "People already have step counting apps. We don't have to be a step counting app ... at the end of the day someone can look at the phone and see how many steps they took, and then just tap a button ... just like with sleep." Then: three bubbles like Sleep, "casual, steady and epic", under 5k, 5k-10k and 10k+.
+- The Quick / Medium / Long / Epic minute guesses are replaced in the Home Move bloom (and the older Move bloom) by Casual (under 5,000 steps), Steady (5,000 to 9,999) and Epic (10,000 or more). Epic keeps Emmanuel's name. Mirror stays first in the bloom (its removal is the separate symmetry request).
+- One range a day, today's total: another pick replaces it (XP and energy go down too), the same pick again does nothing (no XP, no dance). Casual fills 1/3, Steady 2/3 and Epic all of today's Move part; XP 5 / 11 / 16 (16 was already the daily cap).
+- The ranges are draft defaults the agent suggested and Eman accepted; they are not health advice. Steps are the user's word: the app does not count or check them, and the copy says so. No native step sync is part of this.
+- Data contract: DATA_CONTRACTS.md (Home Move step range). Onboarding Move card and its voice clip updated in EN / DE / ES.

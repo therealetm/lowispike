@@ -1,4 +1,4 @@
-/* Oct 17: Home movement bubble — Quick / Medium / Long / Epic estimates (move-estimate-core.js + hooks in sun-meter, world-health, world-mood). */
+/* Oct 17: Home movement bubble — Quick / Medium / Long / Epic estimates (Oct 23 2026: three daily step ranges, Casual / Steady / Epic) (move-estimate-core.js + hooks in sun-meter, world-health, world-mood). */
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
@@ -16,47 +16,54 @@ const NOW = new Date(2026, 9, 17, 15, 0, 0).getTime();
 const est = (lvl, mq, ts, slot) => ({ ts, day: DAY, amt: mq * 4, label: 'Move · ' + lvl, src: 'move:est', eventId: 'move:est:' + DAY + ':' + slot, mq, lvl });
 const session = ts => ({ ts, day: DAY, amt: 20, label: 'Walk session', src: 'move:session', eventId: 'move:s1' });
 
-test('four levels, quarters 1-4, XP 4 per applied quarter', () => {
-    assert.deepStrictEqual(C.LEVELS.map(l => [l.id, l.q]), [['quick', 1], ['medium', 2], ['long', 3], ['epic', 4]]);
-    const p = C.plan([], DAY, 'medium', NOW);
-    assert.strictEqual(p.action, 'add'); assert.strictEqual(p.applied, 2); assert.strictEqual(p.xp, 8); assert.strictEqual(p.after, 2);
-    assert.strictEqual(p.eventId, 'move:est:' + DAY + ':1');
+/* Oct 23 2026 (Eman): the Quick / Medium / Long / Epic minute guesses became three daily step ranges, Casual / Steady / Epic
+   (under 5k / 5k-10k / 10k+), read off the phone's own step counter. The six rule tests below were rewritten for that; the
+   older guess entries (est() above) stay as legacy data. More cases in tests/move-steps.test.cjs. */
+const range = (lvl, mq, xp, ts, day) => ({ ts, day: day || DAY, amt: xp, label: 'Move · ' + lvl, src: 'move:est', eventId: 'move:est:' + (day || DAY) + ':steps', mq, lvl, steps: C.level(lvl).band, est: 1 });
+
+test('three ranges like Sleep: thirds of the Move part (in quarters), XP 5 / 11 / 16, one entry id a day', () => {
+    assert.deepStrictEqual(C.LEVELS.map(l => [l.id, l.band, l.min, l.max]), [['casual', 'lt5k', 0, 4999], ['steady', '5to10k', 5000, 9999], ['epic', '10kplus', 10000, null]]);
+    assert.deepStrictEqual(C.LEVELS.map(l => l.xp), [5, 11, 16]);
+    const p = C.plan([], DAY, 'steady', NOW);
+    assert.strictEqual(p.action, 'set'); assert.ok(Math.abs(p.applied - 8 / 3) < 0.01); assert.strictEqual(p.xp, 11);
+    assert.strictEqual(p.eventId, 'move:est:' + DAY + ':steps'); assert.deepStrictEqual(p.removeIds, []);
+    assert.strictEqual(C.plan([], DAY, 'quick', NOW).action, 'bad', 'the old guesses cannot be picked any more');
     assert.strictEqual(C.plan([], DAY, 'nope', NOW).action, 'bad');
 });
 
-test('the day caps at 4/4: an Epic after a Long only adds the one quarter left, and only its XP', () => {
-    const L = [est('long', 3, NOW - 5 * 60e3, 1)];
+test('Epic fills the day; a higher range replaces the lower one and only adds the difference in XP', () => {
+    const L = [range('steady', 8 / 3, 11, NOW - 5 * 60e3)];
     const p = C.plan(L, DAY, 'epic', NOW);
-    assert.strictEqual(p.applied, 1); assert.strictEqual(p.xp, 4); assert.strictEqual(p.after, 4);
-    const full = C.plan(L.concat(est('quick', 1, NOW - 2 * 60e3, 2)), DAY, 'quick', NOW);
-    assert.strictEqual(full.action, 'full'); assert.strictEqual(full.xp, 0);
+    assert.strictEqual(p.action, 'set'); assert.strictEqual(p.applied, 4); assert.strictEqual(p.xp, 16); assert.strictEqual(p.net, 5);
+    assert.deepStrictEqual(p.removeIds, ['move:est:' + DAY + ':steps']); assert.strictEqual(p.after, 4); assert.strictEqual(p.down, false);
 });
 
-test('no double counting: a Move-page log already fills the day, an estimate adds nothing', () => {
+test('no double counting: a Move-page log already fills the day, a range adds nothing', () => {
     const p = C.plan([session(NOW - 3600e3)], DAY, 'epic', NOW);
     assert.strictEqual(p.action, 'full'); assert.strictEqual(p.fromMovePage, true); assert.strictEqual(p.xp, 0);
     assert.strictEqual(C.view([session(NOW - 3600e3)], DAY).text, '4/4');
 });
 
-test('picking again within 60 s replaces the last estimate (change of mind), same slot id', () => {
-    const L = [est('quick', 1, NOW - 20e3, 1)];
-    const p = C.plan(L, DAY, 'long', NOW);
-    assert.strictEqual(p.action, 'replace'); assert.strictEqual(p.replaceId, 'move:est:' + DAY + ':1');
-    assert.strictEqual(p.before, 0); assert.strictEqual(p.applied, 3); assert.strictEqual(p.eventId, p.replaceId);
-    const later = C.plan(L.map(e => Object.assign({}, e, { ts: NOW - 61e3 })), DAY, 'long', NOW);
-    assert.strictEqual(later.action, 'add'); assert.strictEqual(later.applied, 3); assert.strictEqual(later.eventId, 'move:est:' + DAY + ':2');
+test('picking another range at any time (not only within 60 s) changes today\'s range; it never adds a second walk', () => {
+    const L = [range('casual', 4 / 3, 5, NOW - 5 * 3600e3)];
+    const p = C.plan(L, DAY, 'steady', NOW);
+    assert.strictEqual(p.action, 'set'); assert.strictEqual(p.replaced, true); assert.strictEqual(p.from, 'casual');
+    assert.deepStrictEqual(p.removeIds, ['move:est:' + DAY + ':steps']); assert.strictEqual(p.eventId, 'move:est:' + DAY + ':steps');
+    assert.strictEqual(p.net, 6);
 });
 
-test('at most 6 estimate entries a day; removed slots are reused (log / remove loops reuse the same id)', () => {
-    const six = [1, 2, 3, 4, 5, 6].map(i => Object.assign(est('quick', 0, NOW - (20 - i) * 60e3, i), { amt: 1 }));
-    assert.strictEqual(C.plan(six, DAY, 'quick', NOW).action, 'limit');
-    assert.strictEqual(C.nextSlot([est('q', 1, 0, 1), est('q', 1, 0, 3)]), 2);
+test('the same range again does nothing; there is only ever one range slot a day', () => {
+    const L = [range('steady', 8 / 3, 11, NOW - 20e3)];
+    const p = C.plan(L, DAY, 'steady', NOW + 3 * 3600e3);
+    assert.strictEqual(p.action, 'same'); assert.strictEqual(p.xp, 0); assert.deepStrictEqual(p.removeIds, []);
+    assert.strictEqual(C.nextSlot(), 'steps');
 });
 
 test('yesterday does not count today (day boundary)', () => {
-    const y = Object.assign(est('epic', 4, NOW - 86400e3, 1), { day: '2026-10-16' });
-    assert.strictEqual(C.view([y], DAY).q, 0);
-    assert.strictEqual(C.plan([y], DAY, 'quick', NOW).action, 'add');
+    const y = range('epic', 4, 16, NOW - 86400e3, '2026-10-16');
+    assert.strictEqual(C.view([y], DAY).q, 0); assert.strictEqual(C.view([y], DAY).level, null);
+    const p = C.plan([y], DAY, 'casual', NOW);
+    assert.strictEqual(p.action, 'set'); assert.deepStrictEqual(p.removeIds, [], 'yesterday\'s range is never taken off');
 });
 
 test('energy uses quarters: Quick < Medium < Long < Epic, Epic = old full Move, a Move-page log unchanged', () => {

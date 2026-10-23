@@ -45,13 +45,13 @@
     /* the few words on the pictures, EN / DE / ES (the same words the cards and the app use) */
     const L = {
         en: { energy: 'Energy', mood: ['Calm', 'Happy', 'Tired'], full: 'Full!', gap: 'since your last meal', noMeal: 'no meal yet', meals: 'meals', log: 'Log meal', shop: 'Shop', cook: 'Cook',
-            photo: 'Photo', type: 'chicken stew', recent: 'Recent', cup: '+1 cup', undo: 'Undo', cups: 'cups', moves: ['Quick', 'Medium', 'Long', 'Epic'], mirror: 'Mirror', workouts: 'Workouts', care: 'Care board', today: 'Today', edit: 'Edit',
+            photo: 'Photo', type: 'chicken stew', recent: 'Recent', cup: '+1 cup', undo: 'Undo', cups: 'cups', moves: ['Casual', 'Steady', 'Epic'], mirror: 'Mirror', workouts: 'Workouts', care: 'Care board', today: 'Today', edit: 'Edit',
             sleep: ['Slept well', 'Okay', 'Short night'], still: 'stops', fuel: 'Fuel', water: 'Water', move: 'Move', sleepW: 'Sleep', gapW: 'Gap', scan: 'Scan', set: 'Settings', joy: 'Play', reset: 'back to 0' },
         de: { energy: 'Energie', mood: ['Ruhig', 'Froh', 'Müde'], full: 'Voll!', gap: 'seit der letzten Mahlzeit', noMeal: 'noch kein Essen', meals: 'Mahlzeiten', log: 'Mahlzeit eintragen', shop: 'Einkaufen', cook: 'Kochen',
-            photo: 'Foto', type: 'Hühnereintopf', recent: 'Letzte', cup: '+1 Becher', undo: 'Rückgängig', cups: 'Becher', moves: ['Kurz', 'Mittel', 'Lang', 'Episch'], mirror: 'Spiegel', workouts: 'Workouts', care: 'Care-Board', today: 'Heute', edit: 'Bearbeiten',
+            photo: 'Foto', type: 'Hühnereintopf', recent: 'Letzte', cup: '+1 Becher', undo: 'Rückgängig', cups: 'Becher', moves: ['Locker', 'Stetig', 'Episch'], mirror: 'Spiegel', workouts: 'Workouts', care: 'Care-Board', today: 'Heute', edit: 'Bearbeiten',
             sleep: ['Gut', 'Okay', 'Kurz'], still: 'stoppt', fuel: 'Essen', water: 'Wasser', move: 'Bewegung', sleepW: 'Schlaf', gapW: 'Gap', scan: 'Scannen', set: 'Einstellungen', joy: 'Spielen', reset: 'wieder 0' },
         es: { energy: 'Energía', mood: ['Calma', 'Feliz', 'Cansada'], full: '¡Llena!', gap: 'desde tu última comida', noMeal: 'sin comida aún', meals: 'comidas', log: 'Registrar comida', shop: 'Comprar', cook: 'Cocinar',
-            photo: 'Foto', type: 'guiso de pollo', recent: 'Recientes', cup: '+1 vaso', undo: 'Deshacer', cups: 'vasos', moves: ['Corto', 'Medio', 'Largo', 'Épico'], mirror: 'Espejo', workouts: 'Entrenos', care: 'Care board', today: 'Hoy', edit: 'Editar',
+            photo: 'Foto', type: 'guiso de pollo', recent: 'Recientes', cup: '+1 vaso', undo: 'Deshacer', cups: 'vasos', moves: ['Tranquilo', 'Constante', 'Épico'], mirror: 'Espejo', workouts: 'Entrenos', care: 'Care board', today: 'Hoy', edit: 'Editar',
             sleep: ['Bien', 'Regular', 'Corta'], still: 'se para', fuel: 'Comida', water: 'Agua', move: 'Movimiento', sleepW: 'Sueño', gapW: 'Gap', scan: 'Escanear', set: 'Ajustes', joy: 'Jugar', reset: 'vuelve a 0' }
     };
     const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));

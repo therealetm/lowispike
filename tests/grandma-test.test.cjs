@@ -39,11 +39,12 @@ test('Today\'s stats strip: "1/6" says "on track" and reads the full sentence al
     assert.ok(/class="ns-strip" data-ns="open" aria-label="/.test(s));
 });
 
-test('Move bloom: the note asks the question first and keeps the honest "not steps"; Emmanuel\'s Epic stays', () => {
+test('Move bloom: the note asks the question first (now: today\'s steps from the phone\'s own counter, Oct 23); Emmanuel\'s Epic stays', () => {
     const s = R('home-blooms-v2.js');
-    assert.ok(s.includes("T('How far did you walk? Your guess, not steps · '"));
-    assert.ok(s.includes("'Wie weit bist du gelaufen? Geschätzt, keine Schritte · heute '"));
-    assert.ok(s.includes("'¿Cuánto has caminado? Tu cálculo, no pasos · hoy '"));
+    assert.ok(s.includes("T('How many steps today? Check your step counter, then tap one.'"));
+    assert.ok(s.includes("'Wie viele Schritte heute? Schau auf deinen Schrittzähler und tippe eins an.'"));
+    assert.ok(s.includes("'¿Cuántos pasos hoy? Mira tu contador de pasos y toca uno.'"));
+    assert.ok(!s.includes('Your guess, not steps'), 'the old minutes-guess note is gone');
     assert.ok(s.includes("epic: () => T('Epic', 'Episch', 'Épico')"), 'the name Emmanuel chose is kept');
 });
 

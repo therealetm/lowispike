@@ -21,6 +21,8 @@
 .hb2-bloom.off .hb2-orb { transform: translate(var(--hb2-dx, 0), var(--hb2-dy, 0)) scale(.2); opacity: 0; transition-duration: .3s, .25s; transition-delay: 0s; }
 .hb2-bloom.off .hb2-orb.hb2-chosen { transform: translate(var(--hb2-dx, 0), var(--hb2-dy, 0)) scale(.55); transition: transform .32s cubic-bezier(.5, 0, .8, .4), opacity .32s ease-in; }
 .hb2-orb:active { scale: .9; transition: scale .1s; }
+/* Oct 23 2026: today's picked step range (Casual / Steady / Epic) glows, like the picked language chip (aria-pressed=true) */
+.hb2-orb.hb2-on { border-color: rgba(143,231,255,.95); box-shadow: 0 0 0 2px rgba(143,231,255,.95), 0 0 14px rgba(143,231,255,.5); }
 .hb2-orb:focus-visible { outline: 2px solid #9fffe0; outline-offset: 3px; }
 .hb2-orb[disabled] { cursor: default; filter: saturate(.4); }
 .hb2-bloom.on .hb2-orb[disabled] { opacity: .55; }

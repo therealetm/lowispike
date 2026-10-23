@@ -102,7 +102,9 @@ test('iPad ring: every bubble around Misty gets a clean outward fan', () => {
 test('labels are the plain words E-man asked for, no Again / Photo, no emoji anywhere', () => {
   /* Fuel words changed Oct 18 evening (E-man: "only Shop and Cook, plus a meal log button you can actually see", Swap removed
      for good): Today's step / Snack / Swap became Shop / Log meal. Behaviour is checked in tests/ui-fuel-navigation.test.cjs. */
-  for (const w of ["'Shop'", "'Log meal'", "'Cook'", "'+1 cup'", "'Undo'", "'Quick'", "'Medium'", "'Long'", "'Epic'"]) assert.ok(src.includes(w), w);
+  /* Move words changed Oct 23 2026 (Eman: three step ranges like Sleep, "casual, steady and epic"): tests/move-steps.test.cjs */
+  for (const w of ["'Shop'", "'Log meal'", "'Cook'", "'+1 cup'", "'Undo'", "'Casual'", "'Steady'", "'Epic'", "'under 5k'", "'10k+'"]) assert.ok(src.includes(w), w);
+  assert.doesNotMatch(src, /T\('Quick'|T\('Medium'|T\('Long'/, 'the Oct 17 minute guesses are gone from the Move bloom');
   assert.doesNotMatch(src, /T\('Again'|T\('Photo'|label: *'Again'|label: *'Photo'/);
   assert.doesNotMatch(src, /T\('Swap'|T\("Today's step"|T\('Snack'/, 'Swap, Today\'s step and Snack are gone from Fuel');
   assert.doesNotMatch(src + css, /\p{Extended_Pictographic}/u, 'no emoji: icons are drawn SVG');

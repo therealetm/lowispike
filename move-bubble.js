@@ -6,7 +6,10 @@
    Oct 21 (Eman: "on the homepage, press long and you enter the fitness page, Move"): long press now opens the full Move page
    (openPage), the one Community's bottom bar used to open. Today's estimates moved onto that page: a row under its header
    ("Today on Home: n · Edit") opens the same sheet. The keyboard ContextMenu key opens the page too.
-   Rules live in move-estimate-core.js. Only time on your feet or on a bike counts, never sitting on a bus or train. */
+   Rules live in move-estimate-core.js. Only time on your feet or on a bike counts, never sitting on a bus or train.
+   Oct 23 2026 (Eman: "people already have step counting apps ... look at the phone, see how many steps, then just tap a button,
+   just like with sleep"): the choices are now three daily step ranges, Casual (under 5k), Steady (5k-10k) and Epic (10k+).
+   One range a day: picking another changes today's, the same one again does nothing. LOWiSPIKE never counts or checks steps. */
 /* Oct 18 (E-man, iPad: "Move keeps moving into the middle"): the four choices used to aim at the screen middle. On a
    phone that was beside Misty, but on iPad and desktop Misty IS the middle, so Quick / Medium / Long / Epic landed on her.
    fan() aims them away from Misty instead: the direction from her centre through the bubble, turned only as far as needed
@@ -114,18 +117,27 @@
     const reduced = () => { try { return W.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
     const energy = () => { try { return W.LowiSun && W.LowiSun.energyNow ? +W.LowiSun.energyNow().value || 0 : null; } catch (e) { return null; } };
 
+    /* Oct 23: the three daily step ranges (move-estimate-core.js LEVELS); the Oct 17 names stay only to label older saved guesses */
     const NAMES = {
+        casual: () => T('Casual', 'Locker', 'Tranquilo'),
+        steady: () => T('Steady', 'Stetig', 'Constante'),
+        epic: () => T('Epic', 'Episch', 'Épico'),
         quick: () => T('Quick', 'Kurz', 'Rápido'),
         medium: () => T('Medium', 'Mittel', 'Medio'),
-        long: () => T('Long', 'Lang', 'Largo'),
-        epic: () => T('Epic', 'Episch', 'Épico')
+        long: () => T('Long', 'Lang', 'Largo')
     };
     const HINTS = {
-        quick: () => T('kitchen, loo', 'Küche, Bad', 'cocina, baño'),
-        medium: () => T('shop, bus stop', 'Laden, Bus', 'tienda, bus'),
-        long: () => T('to work, school', 'Arbeit, Schule', 'trabajo, cole'),
-        epic: () => T('big walk, ride', 'große Tour', 'gran paseo')
+        casual: () => T('under 5k', 'unter 5k', 'menos de 5k'),
+        steady: () => T('5k\u201310k', '5k\u201310k', '5k\u201310k'),
+        epic: () => T('10k+', '10k+', '10k+')
     };
+    /* the full range, for screen readers and the sheet: "under 5,000 steps" */
+    const RANGES = {
+        casual: () => T('under 5,000 steps', 'unter 5.000 Schritte', 'menos de 5.000 pasos'),
+        steady: () => T('5,000 to 9,999 steps', '5.000 bis 9.999 Schritte', 'de 5.000 a 9.999 pasos'),
+        epic: () => T('10,000 steps or more', '10.000 Schritte oder mehr', '10.000 pasos o más')
+    };
+    const ASK = () => T('How many steps today? Check your step counter, then tap one.', 'Wie viele Schritte heute? Schau auf deinen Schrittzähler und tippe eins an.', '¿Cuántos pasos hoy? Mira tu contador de pasos y toca uno.');
     const label = () => T('Move', 'Bewegung', 'Movimiento');
 
     let el = null, bloom = null, timer = 0, lastDay = '', busy = false;
@@ -167,9 +179,11 @@
         if (b.style.getPropertyValue('--wh-fill') !== fill) b.style.setProperty('--wh-fill', fill);
         const sm = b.querySelector('small'), bb = b.querySelector('b');
         if (sm && sm.textContent !== label()) sm.textContent = label();
-        if (bb && bb.textContent !== v.text) bb.textContent = v.text;
+        const vt = v.text || T('Log', 'Eintragen', 'Anotar');   /* like Sleep: no range today yet = "Log" */
+        if (bb && bb.textContent !== vt) bb.textContent = vt;
         b.classList.toggle('wm-full', v.q >= C.FULL);
-        const aria = label() + ' ' + v.q + ' / ' + C.FULL + '. ' + T('Tap to add a walk or ride, long press to edit today.', 'Tippen, um einen Weg einzutragen, lange drücken zum Bearbeiten.', 'Toca para añadir un paseo, mantén pulsado para editar hoy.');
+        const aria = label() + ', ' + (v.level ? NAMES[v.level]() + ', ' + RANGES[v.level]() : (v.q >= C.FULL ? T('full today', 'heute voll', 'lleno hoy') : T('no steps logged today', 'heute keine Schritte eingetragen', 'hoy sin pasos anotados'))) + '. ' +
+            T('Tap to pick today\'s step range, long press for the Move page.', 'Tippen, um den Schrittbereich von heute zu wählen, lange drücken für die Bewegungsseite.', 'Toca para elegir el rango de pasos de hoy, mantén pulsado para la página Movimiento.');
         if (b.getAttribute('aria-label') !== aria) b.setAttribute('aria-label', aria);
     }
 
@@ -284,14 +298,14 @@
         const ov = D.createElement('div');
         ov.className = 'wm-bloom';
         ov.setAttribute('role', 'dialog');
-        ov.setAttribute('aria-label', T('How did it feel?', 'Wie hat es sich angefühlt?', '¿Cómo se sintió?'));
+        ov.setAttribute('aria-label', ASK());
         ov.style.setProperty('--wm-orb', orb + 'px');
         ov.innerHTML = '<button type="button" class="wm-scrim" data-wm="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '"></button>' +
-            pts.map((p, i) => !p.L ? mirrorOrb(p, i, cx, cy) : '<button type="button" class="wm-orb wm-' + p.L.id + '" data-wm="pick" data-lvl="' + p.L.id + '" style="left:' + Math.round(p.x) + 'px;top:' + Math.round(p.y) + 'px;--wm-dx:' + Math.round(cx - p.x) + 'px;--wm-dy:' + Math.round(cy - p.y) + 'px;--wm-i:' + i + '" aria-label="' + esc(NAMES[p.L.id]() + ', ' + HINTS[p.L.id]() + ', +' + p.L.q + '/4') + '">' +
+            pts.map((p, i) => !p.L ? mirrorOrb(p, i, cx, cy) : '<button type="button" class="wm-orb wm-' + p.L.id + (v.level === p.L.id ? ' on' : '') + '" data-wm="pick" data-lvl="' + p.L.id + '" aria-pressed="' + (v.level === p.L.id) + '" style="left:' + Math.round(p.x) + 'px;top:' + Math.round(p.y) + 'px;--wm-dx:' + Math.round(cx - p.x) + 'px;--wm-dy:' + Math.round(cy - p.y) + 'px;--wm-i:' + i + '" aria-label="' + esc(NAMES[p.L.id]() + ', ' + RANGES[p.L.id]()) + '">' +
                 '<span class="wm-orb-fill" style="--wm-q:' + (p.L.q / 4) + '" aria-hidden="true"></span><span class="wm-orb-tx"><b>' + esc(NAMES[p.L.id]()) + '</b><small>' + esc(HINTS[p.L.id]()) + '</small></span></button>').join('') +
             '<p class="wm-note" style="' + noteSpot(pts, orb, vw, vh, b, r) + '">' + esc(v.q >= C.FULL
                 ? T('Move is full for today. Nice!', 'Bewegung ist heute voll. Stark!', 'Movimiento completo hoy. ¡Genial!')
-                : T('Estimate, not steps · only walking or cycling counts, not sitting on a bus', 'Schätzung, keine Schritte · nur Gehen oder Radfahren zählt, nicht Sitzen im Bus', 'Estimación, no pasos · solo cuenta caminar o pedalear, no ir sentado en el bus')) + '</p>';
+                : ASK()) + '</p>';
         D.body.appendChild(ov);
         bloom = ov;
         b.classList.add('wm-open'); b.setAttribute('aria-expanded', 'true');
@@ -353,32 +367,39 @@
             const day = dayKey(), now = Date.now();
             const p = C.plan(ledger(), day, id, now);
             if (p.action === 'bad') { closeBloom(true); return; }
-            if (p.action === 'full' || p.action === 'limit') {
+            if (p.action === 'same') {
+                /* the same range again: today's total did not change, so nothing is added and Misty does not dance again */
+                closeBloom(true, orbEl); buzz(8);
+                float(T('Already ', 'Schon ', 'Ya ') + NAMES[id]() + ' · ' + HINTS[id]() + T(' today', ' heute', ' hoy'), true);
+                return;
+            }
+            if (p.action === 'full') {
                 closeBloom(true, orbEl); buzz(10);
-                float(p.action === 'limit'
-                    ? T('That\'s plenty for today', 'Für heute ist das genug', 'Suficiente por hoy')
-                    : (p.fromMovePage ? T('Already counted on Move · full', 'Schon unter Bewegung gezählt · voll', 'Ya contado en Movimiento · lleno') : T('Move is full today', 'Bewegung ist heute voll', 'Movimiento lleno hoy')), true);
+                float(p.fromMovePage ? T('Already counted on Move · full', 'Schon unter Bewegung gezählt · voll', 'Ya contado en Movimiento · lleno') : T('Move is full today', 'Bewegung ist heute voll', 'Movimiento lleno hoy'), true);
                 wobble();
                 try { W.dispatchEvent(new CustomEvent('lowi:care', { detail: { kind: 'dance', id: 'move:full:' + day } })); } catch (e) {}
                 return;
             }
             const before = energy();
-            const back = (p.action === 'replace' && p.replaceId) ? (+br.unaward(p.replaceId) || 0) : 0;
-            const name = NAMES[id](), lab = label() + ' · ' + name;
-            const xp = br.awardWith(p.xp, lab, C.SRC, p.eventId, { mq: p.applied, lvl: id, est: 1 }, true);
+            /* one range a day: today's earlier pick and any older Quick / Medium / Long / Epic guesses go first (their XP comes back off) */
+            let back = 0;
+            for (const rid of p.removeIds) back += (+br.unaward(rid) || 0);
+            const name = NAMES[id](), lab = label() + ' · ' + name + ' (' + HINTS[id]() + ')';
+            const xp = br.awardWith(p.xp, lab, C.SRC, p.eventId, { mq: p.applied, lvl: id, steps: p.band, est: 1 }, true);
             const after = energy();
             closeBloom(false, orbEl);
             paint();
-            pop(); buzz([12, 40, 18]);
+            if (p.down) wobble(); else pop();
+            buzz(p.down ? 10 : [12, 40, 18]);
             const dE = before == null || after == null ? null : Math.round((after - before) * 100);
             const bits = [];
-            if (p.action === 'replace') bits.push(T('changed to ', 'geändert: ', 'cambiado: ') + name);
-            const net = (+xp || 0) - back;   /* a change of mind shows the net change, not the new total */
+            if (p.replaced) bits.push(T('today: ', 'heute: ', 'hoy: ') + name);
+            const net = (+xp || 0) - back;   /* a change shows the net change, not the new total */
             bits.push((net >= 0 ? '+' : '') + net + ' XP');
             if (dE != null) bits.push(dE > 0 ? '+' + dE + '% ' + T('energy', 'Energie', 'energía') : (dE < 0 ? dE + '% ' + T('energy', 'Energie', 'energía') : T('energy already full', 'Energie schon voll', 'energía ya llena')));
             float(bits.join(' · '));
             if (el) try { el.focus({ preventScroll: true }); } catch (e) {}
-            try { W.dispatchEvent(new CustomEvent('lowi:move-estimate', { detail: { level: id, applied: p.applied, xp, energyBefore: before, energyAfter: after, replaced: p.action === 'replace' } })); } catch (e) {}
+            try { W.dispatchEvent(new CustomEvent('lowi:move-estimate', { detail: { level: id, band: p.band, applied: p.applied, xp, back, energyBefore: before, energyAfter: after, replaced: p.replaced, down: p.down } })); } catch (e) {}
         } finally { busy = false; }
     }
     function restart(node, cls) { if (!node) return; node.classList.remove(cls); void node.offsetWidth; node.classList.add(cls); }
@@ -414,8 +435,8 @@
             r.addEventListener('click', e => { e.preventDefault(); editSheet(); });
             sc.insertAdjacentElement('afterend', r);
         }
-        const n = C.estimates(ledger(), dayKey()).length;
-        const txt = T('Today on Home: ', 'Heute auf Home: ', 'Hoy en Home: ') + (n ? n + ' ' + (n === 1 ? T('guess', 'Schätzung', 'estimación') : T('guesses', 'Schätzungen', 'estimaciones')) : T('nothing yet', 'noch nichts', 'nada aún'));
+        const v = C.view(ledger(), dayKey()), n = v.estimates;
+        const txt = T('Today\'s steps on Home: ', 'Schritte heute auf Home: ', 'Pasos de hoy en Home: ') + (v.level ? NAMES[v.level]() + ' · ' + HINTS[v.level]() : (n ? n + ' ' + (n === 1 ? T('older guess', 'ältere Schätzung', 'estimación antigua') : T('older guesses', 'ältere Schätzungen', 'estimaciones antiguas')) : T('nothing yet', 'noch nichts', 'nada aún')));
         const ed = T('Edit', 'Bearbeiten', 'Editar');
         if (r.dataset.t !== txt + ed) { r.dataset.t = txt + ed; r.innerHTML = '<span>' + esc(txt) + '</span><b>' + esc(ed) + '</b>'; r.setAttribute('aria-label', txt + ', ' + ed); }
     }
@@ -431,12 +452,12 @@
         const R = W.LowiR2; if (!R || !R.sheet) return;
         const day = dayKey(), mine = C.estimates(ledger(), day), v = C.view(ledger(), day);
         const tm = ts => { const d = new Date(+ts || 0); return pad(d.getHours()) + ':' + pad(d.getMinutes()); };
-        const rows = mine.length ? mine.map(e => '<li class="wm-row"><span><b>' + esc(NAMES[e.lvl] ? NAMES[e.lvl]() : label()) + '</b><small>' + esc(tm(e.ts) + ' · +' + (+e.mq || 0) + '/4 · ' + (+e.amt || 0) + ' XP') + '</small></span><button type="button" class="wm-rm" data-wm-rm="' + esc(e.eventId) + '">' + esc(T('Remove', 'Entfernen', 'Quitar')) + '</button></li>').join('')
-            : '<li class="wm-row wm-empty">' + esc(T('No walks or rides added here today.', 'Heute hier noch nichts eingetragen.', 'Hoy aún no has añadido nada aquí.')) + '</li>';
-        const html = '<div class="wm-sheet"><h3>' + esc(label() + ' · ' + v.text) + '</h3>' +
-            '<p class="wm-why">' + esc(T('Quick, Medium, Long or Epic is your own estimate of time on your feet or on a bike. It is not a step count or a health measurement, and sitting on a bus or train does not count. Four quarters fill today\'s Move share of Misty\'s energy.',
-                'Kurz, Mittel, Lang oder Episch ist deine eigene Schätzung der Zeit zu Fuß oder auf dem Rad. Das ist keine Schrittzahl und keine Gesundheitsmessung, und Sitzen im Bus oder Zug zählt nicht. Vier Viertel füllen den Bewegungsanteil von Mistys Energie für heute.',
-                'Rápido, Medio, Largo o Épico es tu propia estimación del tiempo a pie o en bici. No es un conteo de pasos ni una medida de salud, e ir sentado en el bus o el tren no cuenta. Cuatro cuartos llenan la parte de Movimiento de la energía de Misty hoy.')) + '</p>' +
+        const rows = mine.length ? mine.map(e => '<li class="wm-row"><span><b>' + esc((NAMES[e.lvl] ? NAMES[e.lvl]() : label()) + (HINTS[e.lvl] ? ' · ' + HINTS[e.lvl]() : '')) + '</b><small>' + esc(tm(e.ts) + ' · ' + (+e.amt || 0) + ' XP') + '</small></span><button type="button" class="wm-rm" data-wm-rm="' + esc(e.eventId) + '">' + esc(T('Remove', 'Entfernen', 'Quitar')) + '</button></li>').join('')
+            : '<li class="wm-row wm-empty">' + esc(T('No step range picked today.', 'Heute noch kein Schrittbereich gewählt.', 'Hoy aún no has elegido un rango de pasos.')) + '</li>';
+        const html = '<div class="wm-sheet"><h3>' + esc(label() + (v.text ? ' · ' + v.text : '')) + '</h3>' +
+            '<p class="wm-why">' + esc(T('Casual (under 5,000), Steady (5,000 to 9,999) or Epic (10,000 or more) is today\'s step total from your own phone\'s step counter. LOWiSPIKE does not count or check steps, so it is your word, not a measurement. One range a day: tapping another changes today\'s, it never adds a second walk. Epic fills today\'s Move share of Misty\'s energy.',
+                'Locker (unter 5.000), Stetig (5.000 bis 9.999) oder Episch (10.000 oder mehr) ist deine Schrittzahl von heute aus dem Schrittzähler deines Handys. LOWiSPIKE zählt und prüft keine Schritte, es ist also dein Wort, keine Messung. Ein Bereich pro Tag: Tippst du einen anderen, ändert sich der von heute, es kommt nie ein zweiter Weg dazu. Episch füllt den Bewegungsanteil von Mistys Energie für heute.',
+                'Tranquilo (menos de 5.000), Constante (de 5.000 a 9.999) o Épico (10.000 o más) es tu total de pasos de hoy según el contador de tu móvil. LOWiSPIKE no cuenta ni comprueba pasos, así que es tu palabra, no una medida. Un rango al día: si tocas otro, cambia el de hoy, nunca suma otro paseo. Épico llena la parte de Movimiento de la energía de Misty hoy.')) + '</p>' +
             (v.fromMovePage ? '<p class="wm-why">' + esc(T('A workout or steps from the Move page already fill today.', 'Ein Training oder Schritte von der Bewegungsseite füllen heute schon alles.', 'Un entrenamiento o pasos de la página Movimiento ya llenan hoy.')) + '</p>' : '') +
             '<ul class="wm-list">' + rows + '</ul></div>';
         const ov = R.sheet(html, { cls: 'wm-sheet-ov' });
@@ -450,8 +471,8 @@
             paint();
             const dE = before == null || after == null ? null : Math.round((after - before) * 100);
             float(T('Removed', 'Entfernt', 'Quitado') + ' · -' + (amt || 0) + ' XP' + (dE ? ' · ' + dE + '% ' + T('energy', 'Energie', 'energía') : ''), true);
-            const h = ov.querySelector('.wm-sheet h3'); if (h) h.textContent = label() + ' · ' + C.view(ledger(), dayKey()).text;
-            if (!ov.querySelector('[data-wm-rm]')) { const ul = ov.querySelector('.wm-list'); if (ul) ul.innerHTML = '<li class="wm-row wm-empty">' + esc(T('No walks or rides added here today.', 'Heute hier noch nichts eingetragen.', 'Hoy aún no has añadido nada aquí.')) + '</li>'; }
+            const h = ov.querySelector('.wm-sheet h3'); if (h) { const t2 = C.view(ledger(), dayKey()).text; h.textContent = label() + (t2 ? ' · ' + t2 : ''); }
+            if (!ov.querySelector('[data-wm-rm]')) { const ul = ov.querySelector('.wm-list'); if (ul) ul.innerHTML = '<li class="wm-row wm-empty">' + esc(T('No step range picked today.', 'Heute noch kein Schrittbereich gewählt.', 'Hoy aún no has elegido un rango de pasos.')) + '</li>'; }
         });
     }
 

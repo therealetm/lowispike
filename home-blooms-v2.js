@@ -12,7 +12,8 @@
             Undo         -> takes ONE cup off today (never below 0, never another day) and, if today's water XP entries are now
                             more than today's cups, takes back the newest one (unaward), so add / undo loops net zero.
    - Move:  Mirror       -> LowiMirror.open(): Mirror mode, the camera workout (Oct 23, Emmanuel), the first orb.
-            Quick / Medium / Long / Epic -> LowiMoveBubble.pick(id) (the existing estimate log with its own XP rules).
+            Casual / Steady / Epic -> LowiMoveBubble.pick(id): today's step range read off the phone's own step counter
+            (under 5k / 5k-10k / 10k+, Oct 23 2026, Eman: "just like with sleep"). One range a day; the picked one shows as selected.
             Hold Move    -> LowiMoveBubble.page(): the full Move page (Oct 21, Eman). Today's moves are a row on that page.
    - Gap:   no bloom since Oct 21 (Scan / Fuel / Gap): a tap opens the passive Gap view (gap-view.js). Meals are logged in Fuel,
             which restarts the gap; the old "I just ate" / "Ate earlier" pair is gone from Home.
@@ -196,8 +197,10 @@
     }
     function mealLog() { if (fn(W.LowiSpirit, 'meal')) { W.LowiSpirit.meal(); return true; } return false; }
 
-    const MOVE_NAMES = { quick: () => T('Quick', 'Kurz', 'Rápido'), medium: () => T('Medium', 'Mittel', 'Medio'), long: () => T('Long', 'Lang', 'Largo'), epic: () => T('Epic', 'Episch', 'Épico') };
-    const MOVE_HINTS = { quick: () => T('kitchen, loo', 'Küche, Bad', 'cocina, baño'), medium: () => T('shop, bus stop', 'Laden, Bus', 'tienda, bus'), long: () => T('to work, school', 'Arbeit, Schule', 'trabajo, cole'), epic: () => T('big walk, ride', 'große Tour', 'gran paseo') };
+    /* Oct 23 2026 (Eman): three step ranges like Sleep's three, "casual, steady and epic", under 5k, 5k-10k and 10k+ */
+    const MOVE_NAMES = { casual: () => T('Casual', 'Locker', 'Tranquilo'), steady: () => T('Steady', 'Stetig', 'Constante'), epic: () => T('Epic', 'Episch', 'Épico') };
+    const MOVE_HINTS = { casual: () => T('under 5k', 'unter 5k', 'menos de 5k'), steady: () => '5k\u201310k', epic: () => '10k+' };
+    const MOVE_RANGES = { casual: () => T('under 5,000 steps', 'unter 5.000 Schritte', 'menos de 5.000 pasos'), steady: () => T('5,000 to 9,999 steps', '5.000 bis 9.999 Schritte', 'de 5.000 a 9.999 pasos'), epic: () => T('10,000 steps or more', '10.000 Schritte oder mehr', '10.000 pasos o más') };
 
     /* the orbs for one bubble: [{id, label, sub, icon, run, keep, disabled, q}] (missing modules -> left out) */
     function actionsFor(kind) {
@@ -218,9 +221,10 @@
             /* Oct 23 2026 (Emmanuel: "Move the mirror mode more up, because that's the most impressive part in the whole app"): Mirror mode
                is the FIRST orb of the Move bloom, so it is two taps from Home (Move, then Mirror). It opens over the page; the bloom folds. */
             if (fn(W.LowiMirror, 'open')) A.push({ id: 'mirror', label: T('Mirror', 'Spiegel', 'Espejo'), sub: T('camera workout', 'Kamera-Workout', 'entreno con cámara'), icon: 'cam', run: () => W.LowiMirror.open() });
+            const v = moveView(), cur = v && v.level;
             if (fn(W.LowiMoveBubble, 'pick') && C && Array.isArray(C.LEVELS)) C.LEVELS.forEach(L => {
                 if (!MOVE_NAMES[L.id]) return;
-                A.push({ id: L.id, label: MOVE_NAMES[L.id](), sub: MOVE_HINTS[L.id](), icon: 'walk', q: L.q / 4, run: () => W.LowiMoveBubble.pick(L.id) });
+                A.push({ id: L.id, label: MOVE_NAMES[L.id](), sub: MOVE_HINTS[L.id](), aria: MOVE_NAMES[L.id]() + ', ' + MOVE_RANGES[L.id](), icon: 'walk', q: L.q / 4, on: cur === L.id, run: () => W.LowiMoveBubble.pick(L.id) });
             });
         }
         return A;
@@ -261,9 +265,9 @@
         ov.dataset.kind = kind;
         ov.style.setProperty('--hb2-orb', orb + 'px');
         ov.innerHTML = '<button type="button" class="hb2-scrim" data-hb2="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '"></button>' +
-            acts.map((a, i) => { const p = L.pts[i]; return '<button type="button" class="hb2-orb hb2-' + a.id + '" data-hb2="act" data-id="' + a.id + '"' + (a.disabled ? ' disabled aria-disabled="true"' : '') +
+            acts.map((a, i) => { const p = L.pts[i]; return '<button type="button" class="hb2-orb hb2-' + a.id + (a.on ? ' hb2-on' : '') + '" data-hb2="act" data-id="' + a.id + '"' + (a.disabled ? ' disabled aria-disabled="true"' : '') + (a.on != null ? ' aria-pressed="' + !!a.on + '"' : '') +
                 ' style="left:' + Math.round(p.x) + 'px;top:' + Math.round(p.y) + 'px;--hb2-dx:' + Math.round(b.x - p.x) + 'px;--hb2-dy:' + Math.round(b.y - p.y) + 'px;--hb2-i:' + i + (a.q != null ? ';--hb2-q:' + a.q : '') + '"' +
-                ' aria-label="' + esc(a.label + (a.sub ? ', ' + a.sub : '')) + '">' + (a.q != null ? '<span class="hb2-fill" aria-hidden="true"></span>' : '') +
+                ' aria-label="' + esc(a.aria || (a.label + (a.sub ? ', ' + a.sub : ''))) + '">' + (a.q != null ? '<span class="hb2-fill" aria-hidden="true"></span>' : '') +
                 '<span class="hb2-tx">' + svg(a.icon) + '<b>' + esc(a.label) + '</b>' + (a.sub ? '<small>' + esc(a.sub) + '</small>' : '') + '</span></button>'; }).join('') +
             (kind === 'move' ? moveNote(L.pts, orb, b, m, vw, vh) : '');
         ov.__acts = acts;
@@ -273,7 +277,10 @@
     function moveNote(pts, orb, b, m, vw, vh) {
         const v = moveView();
         if (!v) return '';
-        const txt = v.q >= v.full ? T('Move is full for today. Nice!', 'Bewegung ist heute voll. Stark!', 'Movimiento completo hoy. ¡Genial!') : T('How far did you walk? Your guess, not steps · ' + v.text + ' today', 'Wie weit bist du gelaufen? Geschätzt, keine Schritte · heute ' + v.text, '¿Cuánto has caminado? Tu cálculo, no pasos · hoy ' + v.text) /* Oct 21 grandma test: the note asks the question first */;
+        /* Oct 21 grandma test: the note asks the question first. Oct 23: the question is today's steps from the phone's own counter */
+        const txt = v.level && MOVE_NAMES[v.level] ? T('Today: ', 'Heute: ', 'Hoy: ') + MOVE_NAMES[v.level]() + ' · ' + MOVE_HINTS[v.level]() + T(' steps. Tap another to change it.', ' Schritte. Tipp einen anderen zum Ändern.', ' pasos. Toca otro para cambiarlo.')
+            : v.q >= v.full ? T('Move is full for today. Nice!', 'Bewegung ist heute voll. Stark!', 'Movimiento completo hoy. ¡Genial!')
+            : T('How many steps today? Check your step counter, then tap one.', 'Wie viele Schritte heute? Schau auf deinen Schrittzähler und tippe eins an.', '¿Cuántos pasos hoy? Mira tu contador de pasos y toca uno.');
         /* the note sits on the far side of the orbs from Misty */
         let x = 0, y = 0; pts.forEach(p => { x += p.x; y += p.y; }); x /= pts.length; y /= pts.length;
         const a = Math.atan2(y - m.y, x - m.x); x += Math.cos(a) * (orb * 0.85); y += Math.sin(a) * (orb * 0.85);

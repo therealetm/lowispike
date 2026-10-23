@@ -15,6 +15,8 @@ const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ?
     const r = await H.open(o);
     const page = r.page; await r.goto();
     await page.waitForFunction(() => window.LowiWorld3D && window.LowiWorld3D.ready && window.LowiMistyFlight && window.LowiPad, null, { timeout: 90000 });
+    /* the harness has no account, so the sign-in gate hides Home (gate-boot: visibility hidden); a signed-in user sees the bubbles */
+    await page.evaluate(() => { const g = () => document.documentElement.classList.remove('gate-boot', 'gate-up'); g(); setInterval(g, 500); const r2 = document.getElementById('r2gate'); if (r2) r2.hidden = true; });
     await H.sleep(4000);
     const idle = await page.evaluate(() => ({ circles: (LowiWorld3D.veilCircles ? LowiWorld3D.veilCircles() : []).length, look: LowiWorld3D.veilLook ? LowiWorld3D.veilLook() : null }));
     console.log('IDLE circles', idle.circles, JSON.stringify((idle.look || []).map(b => b.id + ':' + b.veil)));

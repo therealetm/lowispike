@@ -51,7 +51,7 @@
             const t = angleOf(k) * Math.PI / 180;
             spots[k] = { x: v.cx + R * Math.cos(t), y: v.cy + R * Math.sin(t), d, angle: angleOf(k) };
         });
-        return { ok: true, cx: v.cx, cy: v.cy, R, d, gap, spots };
+        return { ok: true, cx: v.cx, cy: v.cy, R, d, gap, spots, mistyR };
     }
     function moved(a, b) {
         if (!a || !b) return true;
@@ -271,6 +271,9 @@
         dropMenuBar();
         if (!H.classList.contains('wh-home')) return last;
         if (busy() && last && last.ok && !force) return last;
+        /* Oct 23 bloom ring: while a bloom has the view pulled back, Misty's box is scaled; the ring holds still (never re-measured
+           from the zoomed screen) and is laid out again once the zoom is gone */
+        if (H.classList.contains('br-zoom') && last && last.ok) return last;
         const L = measure(); if (!L) return last;
         const wasOn = H.classList.contains('o8');
         /* Misty still flying back in: keep the last good ring and look again shortly, instead of flashing the old Home */

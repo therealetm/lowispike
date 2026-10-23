@@ -9,17 +9,14 @@ const src = fs.readFileSync(path.join(ROOT, 'home-blooms-v2.js'), 'utf8');
 const css = fs.readFileSync(path.join(ROOT, 'home-blooms-v2.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
 const core = require('../home-blooms-v2.js');
 
-test('the Move bloom on Home lists Mirror first, before the Quick / Medium / Long / Epic sessions', () => {
+test('Oct 23, 09:11 (Emmanuel: "remove mirror from the bubble"): the Move bloom has no Mirror orb, only the step ranges', () => {
     const at = src.indexOf("} else if (kind === 'move') {");
     assert.ok(at > 0, 'move branch');
-    const end = src.indexOf('} else if', at + 10);
+    const end = src.indexOf('return A;', at);
     const body = src.slice(at, end);
-    const mi = body.indexOf("id: 'mirror'"), lv = body.indexOf('LEVELS');
-    assert.ok(mi > 0, 'Mirror orb in the Move bloom');
-    assert.ok(lv < 0 || mi < lv, 'Mirror comes before the session sizes');
-    assert.match(body, /fn\(W\.LowiMirror, 'open'\)/, 'only when Mirror mode is loaded');
-    assert.match(body, /run: \(\) => W\.LowiMirror\.open\(\)/, 'the orb opens Mirror mode');
-    assert.match(body, /T\('Mirror', 'Spiegel', 'Espejo'\)/, 'label in English, German and Spanish');
+    assert.equal(body.indexOf("id: 'mirror'"), -1, 'no Mirror orb in the Move bloom');
+    assert.doesNotMatch(body, /LowiMirror\.open/, 'the Move bloom does not open Mirror');
+    assert.match(body, /LEVELS/, 'step ranges stay');
 });
 
 test('the Mirror orb has a camera icon and its own highlight', () => {

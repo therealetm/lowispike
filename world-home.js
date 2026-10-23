@@ -1013,6 +1013,8 @@
         const unEat = () => { clearTimeout(eatT); eatT = 0; if (eat) { D.removeEventListener('click', eat, true); eat = null; } st.lpOpened = false; };
         D.addEventListener('pointerdown', e => {
             const b = e.target && e.target.closest && e.target.closest('#spBubble'); if (!b || !H.classList.contains('wh-on')) return;
+            /* Oct 23 bloom ring: a second finger on Misty is the two-finger tap (bloom-ring.js opens every bloom), never her hold */
+            if (t && pid != null && e.pointerId !== pid) { stop(); pid = null; return; }
             sx = e.clientX; sy = e.clientY; stop(); unEat(); pid = e.pointerId;
             t = setTimeout(() => { t = 0; st.lpOpened = true; try { navigator.vibrate && navigator.vibrate(14); } catch (err) { } openMisty('aura'); }, 520);
         }, true);

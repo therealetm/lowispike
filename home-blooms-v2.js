@@ -11,7 +11,7 @@
    - Water: Sips / Cup / Bottle -> LowiSpirit.water(kind) (wsip, Oct 23: estimates; XP 2 per whole cup, at most 6 cups = 12 XP a day). Long press Water = undo the last one.
             Undo         -> takes ONE cup off today (never below 0, never another day) and, if today's water XP entries are now
                             more than today's cups, takes back the newest one (unaward), so add / undo loops net zero.
-   - Move:  Mirror       -> LowiMirror.open(): Mirror mode, the camera workout (Oct 23, Emmanuel), the first orb.
+   - Move:  (Mirror orb removed Oct 23, Emmanuel: "remove mirror from the bubble")
             Casual / Steady / Epic -> LowiMoveBubble.pick(id): today's step range read off the phone's own step counter
             (under 5k / 5k-10k / 10k+, Oct 23 2026, Eman: "just like with sleep"). One range a day; the picked one shows as selected.
             Hold Move    -> LowiMoveBubble.page(): the full Move page (Oct 21, Eman). Today's moves are a row on that page.
@@ -21,7 +21,8 @@
    An action whose module is missing is left out of the bloom (never a dead button).
    Geometry: the orbs fan out along the line Misty -> bubble. If that side has no room (a bubble at the screen edge) the fan
    turns until every orb fits on screen and none touches Misty's circle. Only one bloom is open at a time.
-   API: window.LowiHomeBloomsV2 = { mount(root, opts), unmount(), open(kind), close(), isOpen(), core }.
+   API: window.LowiHomeBloomsV2 = { mount(root, opts), unmount(), open(kind), openAll(), isAll(), close(), isOpen(), core }.
+   Oct 23: one round, symmetrical layout + zoom-out from bloom-ring.js (LowiBloomRing.place / zoom / unzoom); two-finger tap on Misty -> openAll().
    Contract with the shell (COORD-eight-home.md): bubbles carry data-orbit="fuel|water|move|gap", root is #spHome. */
 (function (root) {
     'use strict';
@@ -233,9 +234,8 @@
             }
         } else if (kind === 'move') {
             const C = W.LowiMoveEstimateCore;
-            /* Oct 23 2026 (Emmanuel: "Move the mirror mode more up, because that's the most impressive part in the whole app"): Mirror mode
-               is the FIRST orb of the Move bloom, so it is two taps from Home (Move, then Mirror). It opens over the page; the bloom folds. */
-            if (fn(W.LowiMirror, 'open')) A.push({ id: 'mirror', label: T('Mirror', 'Spiegel', 'Espejo'), sub: T('camera workout', 'Kamera-Workout', 'entreno con cámara'), icon: 'cam', run: () => W.LowiMirror.open() });
+            /* Oct 23 2026, 09:11 (Emmanuel: "remove mirror from the bubble"): the Mirror orb left the Move bloom; the bloom is the
+               step ranges only, symmetrical. Mirror mode itself stays (Move page). */
             const v = moveView(), cur = v && v.level;
             if (fn(W.LowiMoveBubble, 'pick') && C && Array.isArray(C.LEVELS)) C.LEVELS.forEach(L => {
                 if (!MOVE_NAMES[L.id]) return;
@@ -268,10 +268,18 @@
         const acts = actionsFor(kind);
         const r = src.getBoundingClientRect();
         const vw = W.innerWidth || 390, vh = W.innerHeight || 844;
-        const orb = Math.round(Math.max(64, Math.min(84, Math.min(vw, vh) * 0.19)));
+        let orb = Math.round(Math.max(64, Math.min(84, Math.min(vw, vh) * 0.19)));
         const b = { x: r.left + r.width / 2, y: r.top + r.height / 2, r: Math.max(r.width, r.height) / 2 };
         const m = mistyCircle();
-        const L = layout(b, m, Math.max(1, acts.length), orb, vw, vh);
+        let L = null, ring = null;
+        /* Oct 23 (Emmanuel: "the Rundung symmetry"): the orbs sit on ONE circle round Misty, centred on their bubble's direction,
+           one fixed spacing, and the view pulls back to make room (bloom-ring.js). The old fan is the fallback only. */
+        try { const R = W.LowiBloomRing; ring = R && R.place && st.ring !== false ? R.place([{ key: kind, n: Math.max(1, acts.length) }]) : null; } catch (e) { ring = null; }
+        if (ring && ring.orbs && ring.orbs.length === Math.max(1, acts.length)) {
+            L = { pts: ring.orbs.map(p => ({ x: p.x, y: p.y, from: p.from })), rot: 0, ring };
+            orb = ring.d;
+            try { W.LowiBloomRing.zoom(ring.s, ring.c, 'blooms'); } catch (e) { }
+        } else L = layout(b, m, Math.max(1, acts.length), orb, vw, vh);
         const ov = st.ov || D.createElement('div');
         ov.id = 'hb2Bloom';
         ov.className = 'hb2-bloom hb2-' + kind + (st.ov ? ' on' : '');
@@ -281,13 +289,74 @@
         ov.style.setProperty('--hb2-orb', orb + 'px');
         ov.innerHTML = '<button type="button" class="hb2-scrim" data-hb2="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '"></button>' +
             acts.map((a, i) => { const p = L.pts[i]; return '<button type="button" class="hb2-orb hb2-' + a.id + (a.on ? ' hb2-on' : '') + '" data-hb2="act" data-id="' + a.id + '"' + (a.disabled ? ' disabled aria-disabled="true"' : '') + (a.on != null ? ' aria-pressed="' + !!a.on + '"' : '') +
-                ' style="left:' + Math.round(p.x) + 'px;top:' + Math.round(p.y) + 'px;--hb2-dx:' + Math.round(b.x - p.x) + 'px;--hb2-dy:' + Math.round(b.y - p.y) + 'px;--hb2-i:' + i + (a.q != null ? ';--hb2-q:' + a.q : '') + '"' +
+                ' style="left:' + Math.round(p.x) + 'px;top:' + Math.round(p.y) + 'px;--hb2-dx:' + Math.round((p.from || b).x - p.x) + 'px;--hb2-dy:' + Math.round((p.from || b).y - p.y) + 'px;--hb2-i:' + i + (a.q != null ? ';--hb2-q:' + a.q : '') + '"' +
                 ' aria-label="' + esc(a.aria || (a.label + (a.sub ? ', ' + a.sub : ''))) + '">' + (a.q != null ? '<span class="hb2-fill" aria-hidden="true"></span>' : '') +
                 '<span class="hb2-tx">' + svg(a.icon) + '<b>' + esc(a.label) + '</b>' + (a.sub ? '<small>' + esc(a.sub) + '</small>' : '') + '</span></button>'; }).join('') +
             (kind === 'move' ? moveNote(L.pts, orb, b, m, vw, vh) : '');
         ov.__acts = acts;
-        ov.__layout = { pts: L.pts, bubble: b, misty: m, orb, rot: L.rot };
+        ov.__layout = { pts: L.pts, bubble: b, misty: m, orb, rot: L.rot, ring: L.ring ? { s: L.ring.s, rho: L.ring.rho, step: L.ring.step, c: L.ring.c } : null };
         return ov;
+    }
+    /* Oct 23 (Emmanuel: "when I tap my companion's bubble with two fingers, it should be a shortcut that opens all of them"):
+       every bloom at once, one round of orbs on one circle round Misty, each group centred on its own bubble, same spacing everywhere,
+       the view pulled back so nothing is cramped (bloom-ring.js solve). Gap has no orbs (a tap opens its view). */
+    const ALL = ['fuel', 'water', 'move'];
+    function renderAll() {
+        const R = W.LowiBloomRing;
+        if (!R || !R.place) return null;
+        const scope = st.root && st.root !== D ? st.root : D;
+        const groups = [], acts = [];
+        ALL.forEach(k => {
+            const el = scope.querySelector('[data-orbit="' + k + '"]');
+            if (!el || !el.getBoundingClientRect().width) return;
+            const a = actionsFor(k);
+            if (!a.length) return;
+            groups.push({ key: k, n: a.length });
+            a.forEach(x => acts.push(Object.assign({ group: k }, x)));
+        });
+        if (!groups.length) return null;
+        let ring = null;
+        try { ring = R.place(groups); } catch (e) { ring = null; }
+        if (!ring || !ring.orbs || ring.orbs.length !== acts.length) return null;
+        /* solve() lists the orbs group by group in its own packed order: pair each with its action by group key + index */
+        const byKey = {}; acts.forEach(a => { (byKey[a.group] = byKey[a.group] || []).push(a); });
+        const pairs = ring.orbs.map(p => ({ p, a: byKey[p.key][p.i] }));
+        const ov = st.ov || D.createElement('div');
+        ov.id = 'hb2Bloom';
+        ov.className = 'hb2-bloom hb2-all' + (st.ov ? ' on' : '');
+        ov.setAttribute('role', 'dialog');
+        ov.setAttribute('aria-label', T('All bubbles', 'Alle Bubbles', 'Todas las burbujas'));
+        ov.dataset.kind = 'all';
+        ov.style.setProperty('--hb2-orb', ring.d + 'px');
+        ov.innerHTML = '<button type="button" class="hb2-scrim" data-hb2="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '"></button>' +
+            pairs.map(({ p, a }, i) => '<button type="button" class="hb2-orb hb2-' + a.id + (a.on ? ' hb2-on' : '') + '" data-hb2="act" data-id="' + a.id + '" data-group="' + a.group + '"' + (a.disabled ? ' disabled aria-disabled="true"' : '') + (a.on != null ? ' aria-pressed="' + !!a.on + '"' : '') +
+                ' style="left:' + Math.round(p.x) + 'px;top:' + Math.round(p.y) + 'px;--hb2-dx:' + Math.round(p.from.x - p.x) + 'px;--hb2-dy:' + Math.round(p.from.y - p.y) + 'px;--hb2-i:' + i + (a.q != null ? ';--hb2-q:' + a.q : '') + '"' +
+                ' aria-label="' + esc(TITLES[a.group]() + ': ' + (a.aria || (a.label + (a.sub ? ', ' + a.sub : '')))) + '">' + (a.q != null ? '<span class="hb2-fill" aria-hidden="true"></span>' : '') +
+                '<span class="hb2-tx">' + svg(a.icon) + '<b>' + esc(a.label) + '</b>' + (a.sub ? '<small>' + esc(a.sub) + '</small>' : '') + '</span></button>').join('');
+        ov.__acts = pairs.map(x => x.a);
+        ov.__layout = { pts: pairs.map(x => ({ x: x.p.x, y: x.p.y, key: x.p.key })), misty: mistyCircle(), orb: ring.d, rot: 0, all: true,
+            ring: { s: ring.s, rho: ring.rho, step: ring.step, c: ring.c, groups: ring.groups.map(g => ({ key: g.key, n: g.n, a: g.a, c: g.c })) } };
+        try { R.zoom(ring.s, ring.c, 'blooms'); } catch (e) { }
+        return ov;
+    }
+    function openAll() {
+        if (!st.mounted) return false;
+        if (st.open) close(true);
+        try { if (fn(W.LowiMoveBubble, 'close')) W.LowiMoveBubble.close(false); } catch (e) { }
+        try { const S = W.LowiHomeSettingsSleepV2; if (S && typeof S.close === 'function') S.close(); } catch (e) { }
+        st.ov = null;
+        const ov = renderAll();
+        if (!ov) return false;
+        D.body.appendChild(ov);
+        st.ov = ov; st.open = 'all'; st.all = true; st.src = null;
+        D.documentElement.classList.add('hb2-open');
+        buzz(8);
+        void ov.offsetWidth; ov.classList.add('on');
+        const f = ov.querySelector('.hb2-orb:not([disabled])'); if (f) try { f.focus({ preventScroll: true }); } catch (e) { }
+        ov.addEventListener('click', onBloomClick);
+        ov.addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); close(); } });
+        try { D.dispatchEvent(new CustomEvent('lowi:bloom-v2', { detail: { kind: 'all', open: true, owner: 'blooms' } })); } catch (e) { }
+        return true;
     }
     function moveNote(pts, orb, b, m, vw, vh) {
         const v = moveView();
@@ -358,6 +427,7 @@
         return true;
     }
     function refreshOpen() {
+        if (st.open === 'all' && st.ov) { const fid = (D.activeElement && D.activeElement.dataset && D.activeElement.dataset.id) || ''; renderAll(); const f = fid && st.ov.querySelector('[data-id="' + fid + '"]'); if (f && !f.disabled) try { f.focus({ preventScroll: true }); } catch (e) { } return; }
         if (!st.open || !st.ov || !st.src) return;
         const kind = st.open, focusId = (D.activeElement && D.activeElement.dataset && D.activeElement.dataset.id) || '';
         render(kind, st.src);
@@ -370,8 +440,9 @@
         if (!ov) return false;
         st.ov = null; st.open = null;
         if (st.src) { st.src.classList.remove('hb2-src'); st.src.setAttribute('aria-expanded', 'false'); }
-        st.src = null;
+        st.src = null; st.all = false;
         D.documentElement.classList.remove('hb2-open');
+        try { if (W.LowiBloomRing && W.LowiBloomRing.unzoom) W.LowiBloomRing.unzoom('blooms'); } catch (e) { }
         if (chosen) { const c = ov.querySelector('[data-id="' + chosen + '"]'); if (c) c.classList.add('hb2-chosen'); }
         if (now || reduced()) ov.remove();
         else { ov.classList.remove('on'); ov.classList.add('off'); setTimeout(() => ov.remove(), 340); }
@@ -428,7 +499,7 @@
     /* a real resize re-lays Home out; while a page is open on top, or as Home comes back unchanged, the bloom stays */
     function onRelayout() { if (st.open && homeTab() && !(W.LowiSections && W.LowiSections.instant)) close(true); }
     function homeTab() { const h = D.getElementById('tab-home'); return !h || h.classList.contains('active'); }
-    function onData() { if (st.open === 'water' || st.open === 'move') refreshOpen(); }
+    function onData() { if (st.open === 'water' || st.open === 'move' || st.open === 'all') refreshOpen(); }
     /* one bloom on Home at a time: the Sleep / Settings blooms (home-settings-sleep-v2) announce with owner 'settings-sleep' */
     function onOther(e) { const d = e && e.detail; if (d && d.open && d.owner && d.owner !== 'blooms' && st.open) close(true); }
     /* claim the four ring controls so the ring shell's fallback taps step aside (COORD-eight-home.md tap ownership) */
@@ -479,7 +550,7 @@
     }
 
     const api = {
-        mount, unmount, open: k => open(k), close: () => close(), isOpen: () => st.open,
+        mount, unmount, open: k => open(k), close: () => close(), isOpen: () => st.open, openAll, isAll: () => st.open === 'all',
         actions: k => actionsFor(k).map(a => ({ id: a.id, label: a.label, sub: a.sub, disabled: !!a.disabled })),
         layout: () => (st.ov && st.ov.__layout) || null,
         undoWater: waterUndoNow, core

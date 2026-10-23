@@ -122,3 +122,26 @@
     if (isNode) module.exports = api;
     root.LowiRankingCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);
+/* 23 Oct 2026 (Eman: "when we check our own Misty stats, that's where we see where Misty's ranked, worldwide basically ... a very
+   tiny preview, to others"): the rank peek in Misty's card (misty-hub.js). The same rows as the Ranking tab (real accounts only,
+   Eman's accounts once, no bots); it picks the board where your place is best, a tie goes to All time, then Month, then Week,
+   and gives the companion just above and just below you. null when you aren't on any board or you're alone on it. */
+(function (root) {
+    'use strict';
+    const K = root.LowiRankingCore; if (!K) return;
+    const PREF = ['all', 'm', 'w'];
+    function peek(people, now, mine) {
+        now = +now || Date.now();
+        const per = {};
+        let best = null;
+        PREF.forEach(k => {
+            const list = K.rows(people, k, now, mine), i = list.findIndex(x => x && x.p && x.p.me);
+            if (i < 0 || list.length < 2) { per[k] = 0; return; }
+            per[k] = list[i].rank;
+            if (!best || list[i].rank < best.rank) best = { k, rank: list[i].rank, total: list.length, me: list[i], up: list[i - 1] || null, down: list[i + 1] || null };
+        });
+        if (best) best.per = per;
+        return best;
+    }
+    K.peek = peek;
+})(typeof window !== 'undefined' ? window : globalThis);

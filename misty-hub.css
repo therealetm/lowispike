@@ -132,3 +132,24 @@ html #cmPaneChat .cs-compose-meta, html #cmPaneChat[data-spirit-chat] .cg-chip:n
 @keyframes mp-shine { 50% { filter: brightness(1.35); box-shadow: 0 0 16px var(--mp-acc); } }
 .ms-held { color: var(--mh-ink-2); }
 @media (prefers-reduced-motion: reduce) { .mp-card[data-peak="1"] .mp-bar > i { animation: none; } }
+
+/* Oct 23 (Eman: "where Misty's ranked, worldwide ... a very tiny preview, to others"): the rank peek under her level (misty-hub.js
+   LowiMistyRank). A small living glass pill: small label and short value at the same size, three tiny companions (above, Misty,
+   below), a gentle pulse. The whole pill is the tap target (44px tall, thumb-sized). */
+.mh-rk { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; max-width: 100%; min-height: 44px; margin: 2px 0 0 -2px; padding: 0 10px 0 12px; border-radius: 22px; border: .5px solid rgba(143, 231, 255, .34); background: radial-gradient(120% 140% at 22% 18%, rgba(143, 231, 255, .20), rgba(10, 132, 255, .10) 55%, rgba(255, 255, 255, .04)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18), 0 0 14px rgba(90, 169, 255, .16); color: var(--mh-ink); font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; box-sizing: border-box; }
+.mh-rk:active { transform: scale(.97); }
+.mh-rk:focus-visible { outline: 2px solid #8fe7ff; outline-offset: 2px; }
+.mh-rk-t { display: inline-flex; align-items: baseline; gap: 6px; min-width: 0; font-size: 13px; line-height: 1.2; }
+.mh-rk-l { color: var(--mh-ink-2); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.mh-rk-v { color: #8fe7ff; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.mh-rk-fs { display: inline-flex; align-items: center; flex: none; }
+.mh-rk-f { position: relative; display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; overflow: hidden; background: radial-gradient(circle at 34% 30%, rgba(255, 255, 255, .30), rgba(90, 169, 255, .14) 60%, rgba(10, 30, 60, .5)); border: .5px solid rgba(255, 255, 255, .26); opacity: .78; }
+.mh-rk-f + .mh-rk-f { margin-left: -5px; }
+.mh-rk-f svg { width: 100%; height: 100%; display: block; }
+.mh-rk-f.hid i { width: 9px; height: 9px; border-radius: 50%; background: rgba(225, 248, 255, .45); }
+.mh-rk-f.me { z-index: 1; width: 26px; height: 26px; opacity: 1; border: 1.5px solid #8fe7ff; box-shadow: 0 0 8px rgba(143, 231, 255, .55); }
+.mh-rk-go { color: var(--mh-ink-2); font-size: 16px; line-height: 1; margin-left: -2px; }
+@media (prefers-reduced-motion: no-preference) { .mh-rk { animation: mh-rk-pulse 3.6s ease-in-out infinite; } }
+@keyframes mh-rk-pulse { 50% { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18), 0 0 20px rgba(90, 169, 255, .30); } }
+/* the Ranking's Your place card glows for a moment when you come from the peek */
+.rk-me.mh-rk-hi { box-shadow: 0 0 0 2px #8fe7ff, 0 0 22px rgba(143, 231, 255, .55) !important; transition: box-shadow .3s; }

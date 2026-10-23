@@ -91,6 +91,8 @@
                 '<div class="mh-art"><span class="mh-glow" aria-hidden="true"></span>' + art() + fx() + '</div>' +
                 '<div class="mh-id"><div class="mh-name"><h2>' + esc(name()) + '</h2></div>' +
                     (s ? '<p class="mh-lv">' + esc(T('Level ', 'Level ', 'Nivel ') + s.level + ' \u00b7 ' + s.name) + '</p>' : '') +
+                    /* Oct 23 (Eman: "where Misty's ranked, worldwide ... a very tiny preview"): the rank peek, right under the level */
+                    rankHtml() +
                     '<p class="mh-st"><b>' + esc(st.title) + '</b>' + (st.sub ? '<span>' + esc(st.sub) + '</span>' : '') + '</p>' +
                     /* Oct 19: below the name, not beside it: the sheet's grab handle owns the top strip when the card is pulled up */
                     '<button type="button" class="mh-rn" data-mh="rename" aria-label="' + esc(T('Rename ' + name(), name() + ' umbenennen', 'Cambiar el nombre de ' + name())) + '">' + ICO.pen + '<span>' + esc(T('Rename', 'Umbenennen', 'Cambiar nombre')) + '</span></button>' +
@@ -121,6 +123,7 @@
     /* Oct 17: Misty's energy scale and her way back (misty-scale.js), right under her words */
     /* adventure tiers (adventure-tiers.js): what her timed adventure reaches at this level; autopilot is never gated */
     function advHtml() { try { return W.LowiAdventureTiers && W.LowiAdventureTiers.html ? W.LowiAdventureTiers.html() : ''; } catch (e) { return ''; } }
+    function rankHtml() { try { return W.LowiMistyRank && W.LowiMistyRank.html ? W.LowiMistyRank.html() : ''; } catch (e) { return ''; } }
     function peakHtml() { try { return W.LowiMistyPeak && W.LowiMistyPeak.html ? W.LowiMistyPeak.html() : ''; } catch (e) { return ''; } }
     function scaleHtml() { try { return W.LowiMistyScale && W.LowiMistyScale.html ? W.LowiMistyScale.html() : ''; } catch (e) { return ''; } }
     /* BH-017 (run 17): a card that is still sliding away (its overlay is .off) is not open; holding Misty again in that moment
@@ -329,4 +332,98 @@
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 
     W.LowiMistyHub = { open, close, repaint, goodnight, saidGoodnight, nightKey, candidates, tick, quiet, nudgeSpot, _html: html };
+})();
+
+/* Oct 23 2026 (Eman: "when we check our own Misty stats, that's where we see where Misty's ranked, worldwide basically. So people get
+   kind of motivated to see where they're ranked. Like a little preview, a very tiny preview, to others."): the rank peek in Misty's
+   card. One small glass pill under her level: a small label (Worldwide \u00b7 board), the short value (#3) at the same size, and three
+   tiny companions: the one just above, Misty, the one just below. Rules from ranking-core.js peek (the live Ranking's rows: real
+   accounts only, Eman's accounts once, no bots); the board is the one where her place is best, a tie goes to All time. Hidden when
+   she isn't on any board or is alone on it. A tap opens Community > Ranking on that board, at Your place. */
+(() => {
+    'use strict';
+    const W = window, D = document;
+    if (W.LowiMistyRank) return;
+    const K = () => W.LowiRankingCore, CC = () => W.LowiCompanionCore, LC = () => W.LowiCompanion, R3 = () => W.LowiR3;
+    const LI = () => { try { return Math.max(0, ['en', 'de', 'es'].indexOf(((W.LowiLang && W.LowiLang.get && W.LowiLang.get()) || D.documentElement.lang || 'en').slice(0, 2))); } catch (e) { return 0; } };
+    const TX = {
+        world: ['Worldwide', 'Weltweit', 'Mundial'],
+        w: ['Week', 'Woche', 'Semana'], m: ['Month', 'Monat', 'Mes'], all: ['All time', 'Gesamt', 'Total'],
+        aria: ['{name} is number {n} worldwide, {per}. Open the Ranking', '{name} ist weltweit auf Platz {n}, {per}. Rangliste \u00f6ffnen', '{name} est\u00e1 en el puesto {n} mundial, {per}. Abrir la clasificaci\u00f3n']
+    };
+    const tr = (k, v) => { let s = (TX[k] || [k])[LI()] || TX[k][0]; for (const x in v || {}) s = s.split('{' + x + '}').join(String(v[x])); return s; };
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+    let looks = {}, fetchedAt = 0, fetching = false, last = null;
+    function data() {
+        const k = K(), r = R3(); if (!k || !k.peek || !r || !r.everyone) return null;
+        let ppl = [], care = null;
+        try { ppl = r.everyone() || []; const m = r.me && r.me(); care = m && m.care; } catch (e) { return null; }
+        try { return k.peek(ppl, Date.now(), care); } catch (e) { return null; }
+    }
+    function myName() { try { const H = W.LowiHerbTamagotchi, c = H && H.current && H.current(); if (H && H.name && c) return H.name(c.p, c.m) || 'Misty'; } catch (e) { } return 'Misty'; }
+    function genomeOf(p) {
+        const C = CC(); if (!C || !p) return null;
+        if (p.me) { try { return LC() && LC().genome ? LC().genome() : null; } catch (e) { return null; } }
+        let f = {}; try { f = (LC() && LC().friendLooks && LC().friendLooks()) || {}; } catch (e) { }
+        const code = K().lookFor(p, Object.assign({}, f, looks));
+        try { return code ? C.decode(code) : null; } catch (e) { return null; }
+    }
+    function face(x, slot) {
+        if (!x) return '';
+        const g = genomeOf(x.p); let s = '';
+        if (g) { try { s = CC().miniSVG(g, 'mhrk' + slot); } catch (e) { s = ''; } }
+        return '<span class="mh-rk-f ' + slot + (s ? '' : ' hid') + '" aria-hidden="true">' + (s || '<i></i>') + '</span>';
+    }
+    async function fetchLooks(uids) {
+        uids = uids.filter(u => u && !/^(bot|demo|sample)[:_-]/i.test(u) && !looks[u]);
+        if (fetching || !uids.length || Date.now() - fetchedAt < 120000) return;
+        const X = W.LOWI_CLOUD_X; if (!X || !X.client) return;
+        try { const st = X.state(); if (!st || !st.live) return; } catch (e) { return; }
+        fetching = true;
+        try {
+            const sb = await X.client();
+            const r = await sb.from('profiles').select('id,look').in('id', uids.slice(0, 4));
+            if (!r.error && Array.isArray(r.data)) {
+                const C = CC();
+                r.data.forEach(row => { if (row && row.look && (!C || C.decode(row.look))) looks[row.id] = row.look; });
+                fetchedAt = Date.now();
+                const el = D.querySelector('#mistyHub .mh-rk');
+                if (el) { const t = D.createElement('div'); t.innerHTML = html(); if (t.firstChild) el.replaceWith(t.firstChild); }
+            }
+        } catch (e) { } finally { fetching = false; }
+    }
+    function html() {
+        const d = data(); last = d;
+        if (!d) return '';
+        const per = tr(d.k);
+        setTimeout(() => fetchLooks([d.up, d.down].filter(Boolean).map(x => String(x.p.uid || ''))), 0);
+        return '<button type="button" class="mh-rk" data-mhrk="' + esc(d.k) + '" aria-label="' + esc(tr('aria', { name: myName(), n: d.rank, per })) + '">' +
+            '<span class="mh-rk-t"><span class="mh-rk-l">' + esc(tr('world')) + ' \u00b7 ' + esc(per) + '</span><b class="mh-rk-v num">#' + d.rank + '</b></span>' +
+            '<span class="mh-rk-fs" aria-hidden="true">' + face(d.up, 'up') + face(d.me, 'me') + face(d.down, 'dn') + '</span>' +
+            '<span class="mh-rk-go" aria-hidden="true">\u203a</span></button>';
+    }
+    /* Community > Ranking on that board, then Your place glows for a moment */
+    function open(k) {
+        const R = W.LowiRanking; if (!R || !R.open) return false;
+        try { navigator.vibrate && navigator.vibrate(8); } catch (e) { }
+        try { if (k && R.setPeriod) R.setPeriod(k); } catch (e) { }
+        R.open();
+        let n = 0;
+        const find = () => {
+            const me = D.querySelector('.rk .rk-me');
+            if (me && me.getClientRects().length) {
+                try { me.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) { }
+                me.classList.add('mh-rk-hi'); setTimeout(() => me.classList.remove('mh-rk-hi'), 1800);
+                return;
+            }
+            if (++n < 30) setTimeout(find, 120);
+        };
+        setTimeout(find, 200);
+        return true;
+    }
+    D.addEventListener('click', e => {
+        const b = e.target.closest && e.target.closest('#mistyHub [data-mhrk]'); if (!b) return;
+        e.preventDefault(); open(b.dataset.mhrk);
+    });
+    W.LowiMistyRank = { html, open, data, last: () => last };
 })();

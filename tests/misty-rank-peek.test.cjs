@@ -51,9 +51,10 @@ test('peek: nothing when Misty is on no board or alone on it', () => {
   assert.strictEqual(K.peek([P('eman', MAIN, 500, 3, 0, 0, { me: true }), P('Mateo', 'bot:m', 900, 5, 9, 9, { bot: true })], NOW, { w: { pts: 5 }, m: { pts: 5 } }), null, 'alone with a bot');
 });
 
-test('Misty card: the peek sits under her level, small label + short value, opens the Ranking at Your place, EN/DE/ES', () => {
+test('Misty card: the peek sits under her picture and name, small label + short value, opens the Ranking at Your place, EN/DE/ES', () => {
   const js = R('misty-hub.js'), css = R('misty-hub.css');
-  assert.ok(/class="mh-lv"[\s\S]{0,400}rankHtml\(\) \+/.test(js), 'right under the level line');
+  assert.ok(/class="mh-lv"[\s\S]{0,1500}rankHtml\(\) \+\s*'<\/header>'/.test(js), 'in the header, right under her picture, name and level');
+  assert.ok(/\.mh-head > \.mh-rk \{ grid-column: 1 \/ -1;/.test(css), 'a full-width row of the header');
   assert.ok(js.includes('k.peek(ppl, Date.now(), care)'), 'the Ranking rules (ranking-core peek)');
   assert.ok(js.includes("['Worldwide', 'Weltweit', 'Mundial']") && js.includes("['All time', 'Gesamt', 'Total']"), 'EN/DE/ES');
   assert.ok(/R\.setPeriod\(k\)[\s\S]{0,80}R\.open\(\)/.test(js) && js.includes('.rk .rk-me'), 'opens that board, at Your place');

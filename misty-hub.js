@@ -91,12 +91,13 @@
                 '<div class="mh-art"><span class="mh-glow" aria-hidden="true"></span>' + art() + fx() + '</div>' +
                 '<div class="mh-id"><div class="mh-name"><h2>' + esc(name()) + '</h2></div>' +
                     (s ? '<p class="mh-lv">' + esc(T('Level ', 'Level ', 'Nivel ') + s.level + ' \u00b7 ' + s.name) + '</p>' : '') +
-                    /* Oct 23 (Eman: "where Misty's ranked, worldwide ... a very tiny preview"): the rank peek, right under the level */
-                    rankHtml() +
                     '<p class="mh-st"><b>' + esc(st.title) + '</b>' + (st.sub ? '<span>' + esc(st.sub) + '</span>' : '') + '</p>' +
                     /* Oct 19: below the name, not beside it: the sheet's grab handle owns the top strip when the card is pulled up */
                     '<button type="button" class="mh-rn" data-mh="rename" aria-label="' + esc(T('Rename ' + name(), name() + ' umbenennen', 'Cambiar el nombre de ' + name())) + '">' + ICO.pen + '<span>' + esc(T('Rename', 'Umbenennen', 'Cambiar nombre')) + '</span></button>' +
                 '</div>' +
+                /* Oct 23 (Eman: "where Misty's ranked, worldwide ... a very tiny preview"): the rank peek, a full-width row of the
+                   header right under her picture and name, so it fits beside nothing on the smallest phone */
+                rankHtml() +
             '</header>' +
             /* Oct 22 (E-man: "When I click on Misty it should say what's missing to get Misty to true 100%"): World glow, the bar to
                her peak (Supernova) and what is missing, right under her name (misty-peak.js) */
@@ -336,7 +337,7 @@
 
 /* Oct 23 2026 (Eman: "when we check our own Misty stats, that's where we see where Misty's ranked, worldwide basically. So people get
    kind of motivated to see where they're ranked. Like a little preview, a very tiny preview, to others."): the rank peek in Misty's
-   card. One small glass pill under her level: a small label (Worldwide \u00b7 board), the short value (#3) at the same size, and three
+   card. One small glass pill right under her picture and name: a small label (Worldwide \u00b7 board), the short value (#3) at the same size, and three
    tiny companions: the one just above, Misty, the one just below. Rules from ranking-core.js peek (the live Ranking's rows: real
    accounts only, Eman's accounts once, no bots); the board is the one where her place is best, a tie goes to All time. Hidden when
    she isn't on any board or is alone on it. A tap opens Community > Ranking on that board, at Your place. */

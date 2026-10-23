@@ -45,15 +45,15 @@ srv.listen(0, async () => {
       const br = b.getBoundingClientRect(), cr = card.getBoundingClientRect(), lr = lv.getBoundingClientRect();
       const l = b.querySelector('.mh-rk-l'), v = b.querySelector('.mh-rk-v'), d = LowiMistyRank.last();
       return { label: l.textContent, value: v.textContent, ls: getComputedStyle(l).fontSize, vs: getComputedStyle(v).fontSize, h: br.height, w: br.width, inCard: br.left >= cr.left - 1 && br.right <= cr.right + 1,
-        under: br.top >= lr.bottom - 1 && br.top - lr.bottom < 40, faces: b.querySelectorAll('.mh-rk-f').length, svgs: b.querySelectorAll('.mh-rk-f svg').length, meFace: !!b.querySelector('.mh-rk-f.me svg'),
-        k: d && d.k, rank: d && d.rank, up: d && d.up && d.up.p.n, down: d && d.down && d.down.p.n, aria: b.getAttribute('aria-label'), wide: document.documentElement.scrollWidth > innerWidth + 1, onScreen: br.bottom <= innerHeight && br.top >= 0, box: [Math.round(br.left), Math.round(br.top), Math.round(br.right), Math.round(br.bottom), innerWidth, innerHeight, Math.round(cr.top), Math.round(cr.bottom)].join(',') };
+        under: !!b.closest('.mh-head') && br.top >= document.querySelector('#mistyHub .mh-art').getBoundingClientRect().bottom - 6, faces: b.querySelectorAll('.mh-rk-f').length, svgs: b.querySelectorAll('.mh-rk-f svg').length, meFace: !!b.querySelector('.mh-rk-f.me svg'),
+        whole: b.scrollWidth <= b.clientWidth + 1 && b.querySelector('.mh-rk-go').getBoundingClientRect().right <= br.right + 1, k: d && d.k, rank: d && d.rank, up: d && d.up && d.up.p.n, down: d && d.down && d.down.p.n, aria: b.getAttribute('aria-label'), wide: document.documentElement.scrollWidth > innerWidth + 1, onScreen: br.bottom <= innerHeight && br.top >= 0, box: [Math.round(br.left), Math.round(br.top), Math.round(br.right), Math.round(br.bottom), innerWidth, innerHeight, Math.round(cr.top), Math.round(cr.bottom)].join(',') };
     });
     ok(!!r, name + ': the peek is in Misty\'s card');
     if (r) {
       ok(LABEL[lang].test(r.label) && /^#\d+$/.test(r.value), name + ': label "' + r.label + '" value "' + r.value + '"');
       ok(r.ls === r.vs, name + ': label and value the same size (' + r.ls + ' / ' + r.vs + ')');
       ok(r.h >= 44 && r.h <= 48 && r.inCard && !r.wide, name + ': tiny and fits (' + Math.round(r.w) + 'x' + Math.round(r.h) + (r.inCard ? '' : ' outside the card') + (r.wide ? ' page wider than screen' : '') + ')');
-      ok(r.under, name + ': right under the level line');
+      ok(r.under, name + ': in the header, right under the picture and name');
       ok(r.faces >= 2 && r.faces <= 3 && r.meFace, name + ': ' + r.faces + ' tiny companions (' + r.svgs + ' drawn), Misty in the middle');
       ok(r.up !== 'Mateo' && r.down !== 'Mateo' && !/Emmanuel|Manuuii/.test(String(r.up) + String(r.down)), name + ': neighbours ' + r.up + ' / ' + r.down + ' (no bot, Eman once), board ' + r.k + ' #' + r.rank);
       ok(r.onScreen, name + ': visible when the card opens (' + r.box + ')');

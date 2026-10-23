@@ -34,7 +34,8 @@ srv.listen(0, async () => {
     const stub = await page.evaluate(() => {
       if (!window.LowiR3 || !window.LowiCareBoard || !window.LowiRanking) return 'missing';
       const wk = LowiCareBoard.tag(LowiCareBoard.periodKey('w', Date.now()), 1), mo = LowiCareBoard.tag(LowiCareBoard.periodKey('m', Date.now()), 1);
-      const names = ['Joseph Castellar', 'Manuuii', 'Emmy', 'Christabel', 'Eleonora', 'Fernando', 'Koji', 'Q', 'Ana', 'Ben', 'Cem', 'Dia', 'Eli', 'Fay'];
+      /* 23 Oct: no Manuuii or Emmy here any more, since build 20261023-114410 those count as Eman himself */
+      const names = ['Joseph Castellar', 'Gus', 'Hana', 'Christabel', 'Eleonora', 'Fernando', 'Koji', 'Q', 'Ana', 'Ben', 'Cem', 'Dia', 'Eli', 'Fay'];
       const P = names.map((n, i) => ({ n, uid: '0000000' + i.toString(16) + '-aaaa-4aaa-8aaa-00000000000' + i.toString(16), xpw: 60 - i, wk, xpm: 200 - i, mo, xp: 90000 - i * 1000, lv: 20 }));
       const bots = [{ n: 'Samir', bot: true, lv: 43, xp: 999999 }, { n: 'Mateo', bot: true, lv: 1 }, { n: 'Jonas', bot: true, lv: 18 }, { n: 'Zed', demo: true, lv: 9, xp: 999999, xpw: 60, wk }, { n: 'Robo', uid: 'bot:robo', xp: 999999, xpw: 60, wk }];
       const orig = LowiR3.everyone.bind(LowiR3); LowiR3.everyone = () => P.concat(bots, (orig() || []).filter(p => p && p.me));
@@ -44,7 +45,7 @@ srv.listen(0, async () => {
     for (const per of ['w', 'm', 'all']) {
       await page.evaluate(k => { LowiRanking.setPeriod(k); LowiRanking.open(); }, per);
       await page.waitForTimeout(1300);
-      const b = await page.evaluate(() => { const box = document.querySelector('#cmPaneChat > .rm-rank'); if (!box) return null;
+      const b = await page.evaluate(() => { const box = document.querySelector('#cmPaneChat .rm-view > .rm-rank'); if (!box) return null;
         const txt = box.textContent; return { pod: box.querySelectorAll('.rk-pod-i').length, rows: box.querySelectorAll('.rk-row').length,
           nums: [...box.querySelectorAll('.rk-row .rk-n')].map(e => e.textContent.trim()), demo: /\bdemo\b/i.test(txt) || /Samir|Mateo|Jonas|Zed|Robo/.test(txt),
           me: (box.querySelector('.rk-me') || {}).textContent || '' }; });

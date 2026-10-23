@@ -39,7 +39,7 @@ srv.listen(0, async () => {
     await page.evaluate(() => { try { window.LowiR3F && LowiR3F.openBoardTab ? LowiR3F.openBoardTab() : LowiRanking.open(); } catch (e) { LowiRanking.open(); } });
     await page.waitForTimeout(+process.env.WAIT || 1500);
     const r = await page.evaluate(() => {
-      const pane = document.getElementById('cmPaneChat'), tabs = [...document.querySelectorAll('#cmPaneChat .rm-tabs .rm-tab')], box = document.querySelector('#cmPaneChat > .rm-rank');
+      const pane = document.getElementById('cmPaneChat'), tabs = [...document.querySelectorAll('#cmPaneChat .rm-tabs .rm-tab')], box = document.querySelector('#cmPaneChat .rm-view > .rm-rank');
       const vis = el => { if (!el) return false; const b = el.getBoundingClientRect(); return b.width > 0 && b.height > 0 && getComputedStyle(el).visibility !== 'hidden'; };
       return {
         view: pane && pane.getAttribute('data-rm-view'), tabs: tabs.map(t => t.dataset.rm), sel: (tabs.find(t => t.getAttribute('aria-selected') === 'true') || {}).dataset,

@@ -125,9 +125,12 @@ function paint(){const b=ensure();if(!b)return;const r=R(),chat=open();
  if(sheet&&sheet.isConnected)paintSheet();}
 /* 23 Oct (E-man: "we need to highlight ranking way more ... like a Pokemon game"): the Ranking tab, a companion leaderboard drawn by
    ranking.js into its own box under the same shared top bar. Like the channel box it is a pane of this page, not a frame. */
-function paintRank(pane){let box=pane.querySelector(':scope>.rm-rank');if(view!=='rank'){if(box)box.hidden=true;return;}
- if(!box){box=D.createElement('section');box.className='rm-rank';box.setAttribute('data-noi18n','');pane.appendChild(box);}
- box.hidden=false;try{if(W.LowiRanking)W.LowiRanking.render(box);}catch(e){console.error(e);}}
+function paintRank(pane){let box=pane.querySelector(':scope>.rm-view>.rm-rank');if(view!=='rank'){if(box)box.hidden=true;return;}
+ /* 23 Oct, second pass (Eman: "ich moechte, dass das immer gleich aussieht"): the board sits in the shared .rm-view box as an .rm-frame
+    panel, the same panel Creation and Affiliates use, and scrolls inside it (community-rooms.css) */
+ const vw=ensureView(pane);
+ if(!box){box=D.createElement('section');box.className='rm-frame rm-rank';box.setAttribute('data-noi18n','');box.hidden=true;vw.appendChild(box);}
+ if(box.hidden){box.hidden=false;box.scrollTop=0;}try{if(W.LowiRanking)W.LowiRanking.render(box);}catch(e){console.error(e);}}
 /* Channel list (Eden's channels), only from data the app has: the galaxy chat's newest message and unread count, replies and
    mentions addressed to you (LowiCommunity.directed), the people in your room, and the two pages. Empty means an honest line. */
 function ago(ts){const s=Math.max(0,(Date.now()-(+ts||0))/1000);if(!ts)return '';if(s<60)return tr('now');if(s<3600)return Math.floor(s/60)+tr('min');if(s<86400)return Math.floor(s/3600)+tr('hr');

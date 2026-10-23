@@ -41,7 +41,7 @@ srv.listen(0, async () => {
     await page.evaluate(() => { const b = document.querySelector('#cmPaneChat [data-rk="per"][data-k="w"]'); if (b) b.click(); }); await page.waitForTimeout(500);
     /* 1. every board says what it counts; form and level never cut */
     const r = await page.evaluate(() => {
-      const box = document.querySelector('#cmPaneChat > .rm-rank'); if (!box) return null;
+      const box = document.querySelector('#cmPaneChat .rm-view > .rm-rank'); if (!box) return null;
       const per = box.querySelector('.rk-per'), pr = per && per.getBoundingClientRect();
       const cut = [...box.querySelectorAll('.rk-of, .rk-ol')].filter(e => e.offsetParent && e.scrollWidth > e.clientWidth + 1).map(e => e.textContent);
       const btn = box.querySelector('.rk-cmpb'), br = btn && btn.getBoundingClientRect();

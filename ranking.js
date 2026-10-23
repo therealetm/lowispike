@@ -1,36 +1,40 @@
 /* ranking.js (23 Oct 2026): the Community Ranking tab, a companion leaderboard. Layout from the reference E-man sent (Spazier Club
-   "Rangliste"): title + one line, a period switch, a highlighted Your place card, a podium of the top 3 (2nd left, 1st centre and
-   raised, 3rd right) with medals 1/2/3, then a numbered list. In LOWiSPIKE's own look (brand blues and cyan on glass) and with
-   companions instead of people: each entry shows the owner's companion in its evolution form and the owner's name small under it.
+   "Rangliste"): a period switch, a highlighted Your place card, a podium of the top 3 (2nd left, 1st centre and raised, 3rd
+   right), then a numbered list. In LOWiSPIKE's own look (brand blues and cyan on glass) and with companions instead of people:
+   each entry shows the owner's companion in its evolution form and the owner's name small under it.
+   23 Oct 2026, 15:00 (Eman: "too much text ... it should be very easy to understand. Use more symbols and animations, a gaming
+   type of ranking ... only if I click on someone do I see the comparison of the stats"): no title, question or explainer
+   sentences on the board any more. Symbols say it: a sun or XP chip for what counts, an hourglass for the days left, an ⓘ that
+   opens the short rules, ▲▼ for places won or lost since your last day here. Game animations: the podium rises, rows slide in,
+   switching Week / Month / All time sorts every companion into its new place and counts the numbers up, your own entry glows.
+   Tapping a companion opens a compact versus view (mirrored bars, one "what it takes" line); your own entry opens the levels.
    Rules (periods, scores, privacy) live in ranking-core.js. community-rooms-ui.js shows this page when the Ranking tab is open
-   (LowiRanking.render(box)); the Community top bar above it is the same shared bar as on every other tab.
-   Tapping an entry opens that person's profile (LowiR3.open). */
+   (LowiRanking.render(box)); the Community top bar above it is the same shared bar as on every other tab. */
 (function () {
     'use strict';
     const W = window, D = document, K = W.LowiRankingCore;
     if (!K) return;
     const T = {
         title: ['Ranking', 'Rangliste', 'Clasificación'],
-        subW: ['Whose companion got the most care this week?', 'Wessen Begleiter wurde diese Woche am besten versorgt?', '¿Qué compañero recibió más cuidados esta semana?'],
-        subM: ['Whose companion got the most care this month?', 'Wessen Begleiter wurde diesen Monat am besten versorgt?', '¿Qué compañero recibió más cuidados este mes?'],
-        subA: ['Whose companion is the strongest?', 'Wessen Begleiter ist am stärksten?', '¿Qué compañero es el más fuerte?'],
         w: ['Week', 'Woche', 'Semana'], m: ['Month', 'Monat', 'Mes'], all: ['All time', 'Gesamt', 'Total'],
         periods: ['Period', 'Zeitraum', 'Periodo'],
         yourPlace: ['Your place', 'Dein Platz', 'Tu puesto'],
         notYet: ['Not ranked yet', 'Noch nicht dabei', 'Aún sin puesto'],
-        notYetW: ['Meals, water, Moves and scans give your companion sunbeams.', 'Mahlzeiten, Wasser, Moves und Scans geben deinem Begleiter Sonnenstrahlen.', 'Comidas, agua, Moves y escaneos dan rayos de sol a tu compañero.'],
-        notYetA: ['Every log makes your companion stronger.', 'Jeder Eintrag macht deinen Begleiter stärker.', 'Cada registro hace más fuerte a tu compañero.'],
+        notYetW: ['Log anything for ☀', 'Trag etwas ein für ☀', 'Registra algo para ☀'],
+        notYetA: ['Log anything for XP', 'Trag etwas ein für XP', 'Registra algo para XP'],
         you: ['you', 'du', 'tú'],
         hidden: ['Hidden companion', 'Versteckter Begleiter', 'Compañero oculto'],
-        hiddenMe: ['Only you see your companion here', 'Nur du siehst hier deinen Begleiter', 'Solo tú ves aquí a tu compañero'],
+        hiddenMe: ['Only you see it', 'Nur du siehst ihn', 'Solo tú lo ves'],
         lv: ['Lv {n}', 'Lv {n}', 'Nv {n}'],
         sun: ['sunbeams', 'Sonnenstrahlen', 'rayos de sol'], xp: ['XP', 'XP', 'XP'],
         place: ['Place {n}', 'Platz {n}', 'Puesto {n}'],
-        empty: ['No one on the board yet. Care for your companion and be the first.', 'Noch niemand auf der Rangliste. Kümmere dich um deinen Begleiter und sei der Erste.', 'Aún no hay nadie. Cuida a tu compañero y sé el primero.'],
-        howW: ['Score: sunbeams your companion got from you, up to 12 a day. Companions whose owners hide them show as a hidden orb.', 'Punkte: Sonnenstrahlen, die dein Begleiter von dir bekommt, bis zu 12 am Tag. Versteckte Begleiter erscheinen als verdeckte Kugel.', 'Puntos: rayos de sol que tu compañero recibe de ti, hasta 12 al día. Los compañeros ocultos aparecen como una esfera tapada.'],
-        howA: ['Score: your companion\'s strength, all the XP it ever earned. Companions whose owners hide them show as a hidden orb.', 'Punkte: die Stärke deines Begleiters, alle XP, die er je gesammelt hat. Versteckte Begleiter erscheinen als verdeckte Kugel.', 'Puntos: la fuerza de tu compañero, toda la XP que ha ganado. Los compañeros ocultos aparecen como una esfera tapada.'],
+        up: ['up {n}', '{n} hoch', 'sube {n}'], down: ['down {n}', '{n} runter', 'baja {n}'],
+        empty: ['No one here yet. Be the first.', 'Noch niemand da. Sei der Erste.', 'Aún no hay nadie. Sé el primero.'],
         open: ['Open {name}', '{name} öffnen', 'Abrir {name}'],
         levels: ['Levels', 'Level', 'Niveles'],
+        left1: ['Last day', 'Letzter Tag', 'Último día'],
+        leftN: ['{n} days left', 'Noch {n} Tage', 'Quedan {n} días'],
+        forever: ['Forever', 'Für immer', 'Para siempre'],
         ladT: ['Levels', 'Level', 'Niveles'],
         ladLv: ['Level {n}', 'Level {n}', 'Nivel {n}'],
         ladNext: ['{x} XP to level {n}', 'Noch {x} XP bis Level {n}', '{x} XP para el nivel {n}'],
@@ -42,53 +46,47 @@
         ladLock: ['Locked', 'Gesperrt', 'Bloqueado'],
         ladFoot: ['Out of {n} players, real accounts only. Each person counts once.', 'Von {n} Spielern, nur echte Konten. Jede Person zählt einmal.', 'De {n} jugadores, solo cuentas reales. Cada persona cuenta una vez.'],
         close: ['Close', 'Schließen', 'Cerrar'],
-        /* 23 Oct 2026 (Eman: "it has to be clear WHY"): what each board counts, the comparison and what it takes */
-        perW: ['Week counts the sunbeams since Monday, {d}. Up to 12 a day, so {max} at most so far. It starts again on Monday.', 'Woche zählt die Sonnenstrahlen seit Montag, {d}. Bis zu 12 am Tag, bisher also höchstens {max}. Sie beginnt am Montag neu.', 'Semana cuenta los rayos de sol desde el lunes {d}. Hasta 12 al día, así que {max} como máximo hasta ahora. Empieza de nuevo el lunes.'],
-        perM: ['Month counts the sunbeams since {d}. Up to 12 a day, so {max} at most so far. It starts again on the 1st.', 'Monat zählt die Sonnenstrahlen seit dem {d}. Bis zu 12 am Tag, bisher also höchstens {max}. Er beginnt am 1. neu.', 'Mes cuenta los rayos de sol desde el {d}. Hasta 12 al día, así que {max} como máximo hasta ahora. Empieza de nuevo el día 1.'],
-        perA: ['All time counts all the XP a companion ever earned. It never starts again.', 'Gesamt zählt alle XP, die ein Begleiter je gesammelt hat. Es beginnt nie neu.', 'Total cuenta toda la XP que un compañero ha ganado. Nunca empieza de nuevo.'],
-        cmp3: ['Compare the top 3', 'Top 3 vergleichen', 'Comparar el top 3'],
-        cmpT3: ['Top 3 side by side', 'Top 3 im Vergleich', 'El top 3, lado a lado'],
-        vs: ['You vs {n}', 'Du vs. {n}', 'Tú vs. {n}'],
-        back3: ['Top 3', 'Top 3', 'Top 3'],
-        profile: ['Open {n}\'s profile', 'Profil von {n} öffnen', 'Abrir el perfil de {n}'],
-        boards: ['Every board', 'Alle Ranglisten', 'Todas las clasificaciones'],
-        perDay: ['Per day', 'Pro Tag', 'Por día'],
+        /* the rules, behind the ⓘ: one short line each */
+        info: ['How it works', 'So funktioniert es', 'Cómo funciona'],
+        iW: ['Sunbeams since Monday, {d}', 'Sonnenstrahlen seit Montag, {d}', 'Rayos de sol desde el lunes {d}'],
+        iM: ['Sunbeams since {d}', 'Sonnenstrahlen seit dem {d}', 'Rayos de sol desde el {d}'],
+        iA: ['All XP ever earned', 'Alle XP, die je gesammelt wurden', 'Toda la XP ganada'],
+        iWs: ['Up to 12 a day · new board on Monday', 'Bis zu 12 am Tag · neu ab Montag', 'Hasta 12 al día · nueva el lunes'],
+        iMs: ['Up to 12 a day · new board on the 1st', 'Bis zu 12 am Tag · neu ab dem 1.', 'Hasta 12 al día · nueva el día 1'],
+        iAs: ['Never resets', 'Beginnt nie neu', 'Nunca se reinicia'],
+        iMove: ['Places won or lost since your last day here', 'Plätze gewonnen oder verloren seit deinem letzten Tag hier', 'Puestos ganados o perdidos desde tu último día aquí'],
+        iTie: ['Same score: more full-sun days wins, then level', 'Gleichstand: mehr volle Sonnentage gewinnen, dann das Level', 'Empate: gana quien tenga más días de sol lleno, luego el nivel'],
+        iHid: ['Hidden orb: the owner keeps the companion private', 'Verdeckte Kugel: der Besitzer zeigt den Begleiter nicht', 'Esfera oculta: su dueño mantiene al compañero en privado'],
+        iTap: ['Tap a companion to compare', 'Tipp auf einen Begleiter zum Vergleichen', 'Toca un compañero para comparar'],
+        iDiff: ['A strong week wins Week, a long history wins All time', 'Eine starke Woche gewinnt die Woche, eine lange Geschichte Gesamt', 'Una gran semana gana Semana, una larga historia gana Total'],
+        /* the versus view: a companion tapped */
+        vsT: ['You vs {n}', 'Du vs. {n}', 'Tú vs. {n}'],
+        vs: ['VS', 'VS', 'VS'],
+        profile: ['Profile', 'Profil', 'Perfil'],
+        profileL: ['Open {n}\'s profile', 'Profil von {n} öffnen', 'Abrir el perfil de {n}'],
         fullDays: ['Full-sun days', 'Volle Sonnentage', 'Días de sol lleno'],
         lvRow: ['Level', 'Level', 'Nivel'],
-        before: ['Before Monday this month: you {a} \u2600, {n} {b} \u2600.', 'Vor Montag in diesem Monat: du {a} \u2600, {n} {b} \u2600.', 'Antes del lunes, este mes: tú {a} \u2600, {n} {b} \u2600.'],
-        whyGen: ['Why the boards differ: Week only counts since Monday and Month since the 1st, both up to 12 sunbeams a day. All time adds up every XP since the start. So a long history can win All time while a strong week wins the Week.', 'Warum die Ranglisten verschieden sind: Woche zählt nur seit Montag und Monat seit dem 1., beide bis zu 12 Sonnenstrahlen am Tag. Gesamt zählt alle XP seit dem Start. So kann eine lange Geschichte Gesamt gewinnen, während eine starke Woche die Woche gewinnt.', 'Por qué cambian las clasificaciones: Semana solo cuenta desde el lunes y Mes desde el día 1, ambas hasta 12 rayos de sol al día. Total suma toda la XP desde el principio. Así, una larga historia puede ganar Total mientras una semana fuerte gana la Semana.'],
-        srcT: ['Where the sunbeams came from', 'Woher die Sonnenstrahlen kommen', 'De dónde vienen los rayos de sol'],
-        srcA: ['All time is XP. The sunbeam breakdown is on Week and Month.', 'Gesamt sind XP. Die Aufteilung der Sonnenstrahlen steht bei Woche und Monat.', 'Total es XP. El desglose de rayos de sol está en Semana y Mes.'],
-        srcNone: ['{n}\'s app shares only the total and the full-sun days, not where each sunbeam came from.', 'Die App von {n} teilt nur die Summe und die vollen Sonnentage, nicht woher jeder Sonnenstrahl kommt.', 'La app de {n} solo comparte el total y los días de sol lleno, no de dónde viene cada rayo.'],
-        srcHid: ['{n} hides their companion, so only the total shows.', '{n} versteckt den Begleiter, darum zeigt sich nur die Summe.', '{n} oculta a su compañero, así que solo se ve el total.'],
-        srcEmpty: ['No sunbeams yet in this period.', 'Noch keine Sonnenstrahlen in diesem Zeitraum.', 'Aún no hay rayos de sol en este periodo.'],
+        goal: ['What it takes', 'Was es braucht', 'Lo que hace falta'],
+        totals: ['{n} shares totals only', '{n} teilt nur die Summen', '{n} solo comparte totales'],
         s_meal: ['Meals', 'Mahlzeiten', 'Comidas'], s_scan: ['Scans', 'Scans', 'Escaneos'], s_move: ['Moves', 'Moves', 'Moves'], s_fast: ['Fasting', 'Fasten', 'Ayuno'],
         s_macro: ['Macro goals', 'Makroziele', 'Metas de macros'], s_water: ['Water', 'Wasser', 'Agua'], s_other: ['Other', 'Sonstiges', 'Otros'],
-        needT: ['What it takes', 'Was es braucht', 'Lo que hace falta'],
-        needYou: ['What it takes for you', 'Was du brauchst', 'Lo que te hace falta'],
-        pass: ['You need {x} \u2600 more by {d} to pass {n}, if {n} adds none.', 'Du brauchst bis {d} noch {x} \u2600, um an {n} vorbeizuziehen, falls {n} nichts mehr dazubekommt.', 'Necesitas {x} \u2600 más para el {d} para superar a {n}, si {n} no suma más.'],
-        today: ['Today this does it: {acts} (+{p}).', 'Heute reicht das: {acts} (+{p}).', 'Hoy basta con: {acts} (+{p}).'],
-        todayPart: ['Today you can still get {p}: {acts}.', 'Heute gehen noch {p}: {acts}.', 'Hoy aún puedes conseguir {p}: {acts}.'],
-        todayFull: ['Today\'s sun is already full.', 'Die Sonne ist heute schon voll.', 'Hoy el sol ya está lleno.'],
-        rest1: ['The other {r} need one more day.', 'Die restlichen {r} brauchen noch einen Tag.', 'Los otros {r} necesitan un día más.'],
-        restN: ['The other {r} need at least {n} more days.', 'Die restlichen {r} brauchen noch mindestens {n} Tage.', 'Los otros {r} necesitan al menos {n} días más.'],
-        noWay: ['Even a full sun every day until {d} would leave you {x} \u2600 short of {n} this time.', 'Selbst volle Sonne jeden Tag bis {d} lässt dich diesmal {x} \u2600 hinter {n}.', 'Ni con el sol lleno cada día hasta el {d} alcanzarías a {n} esta vez: te faltarían {x} \u2600.'],
-        lead: ['You lead {n} by {x} \u2600. {n} needs {y} more by {d} to pass you.', 'Du liegst {x} \u2600 vor {n}. {n} braucht bis {d} noch {y}, um dich zu überholen.', 'Vas {x} \u2600 por delante de {n}. {n} necesita {y} más para el {d} para superarte.'],
-        leadSafe: ['You lead {n} by {x} \u2600. {n} can\'t catch you before {d}.', 'Du liegst {x} \u2600 vor {n}. {n} kann dich bis {d} nicht mehr einholen.', 'Vas {x} \u2600 por delante de {n}. {n} ya no puede alcanzarte antes del {d}.'],
-        passA: ['You need {x} XP more to pass {n}.', 'Du brauchst noch {x} XP, um an {n} vorbeizuziehen.', 'Necesitas {x} XP más para superar a {n}.'],
-        pace1: ['At your pace this week, about {p} XP a day, that is about one day.', 'In deinem Tempo dieser Woche, etwa {p} XP am Tag, ist das ungefähr ein Tag.', 'A tu ritmo de esta semana, unos {p} XP al día, es más o menos un día.'],
-        paceN: ['At your pace this week, about {p} XP a day, that is about {n} days.', 'In deinem Tempo dieser Woche, etwa {p} XP am Tag, sind das ungefähr {n} Tage.', 'A tu ritmo de esta semana, unos {p} XP al día, son unos {n} días.'],
-        leadA: ['You lead {n} by {x} XP.', 'Du liegst {x} XP vor {n}.', 'Vas {x} XP por delante de {n}.'],
-        /* 23 Oct: a tie is not "lead by 0": say who wins the tie-break and why (ranking-core.js gap: why) */
-        tie: ['You and {n} both have {x} \u2600. You win the tie-break {why}. {n} needs 1 \u2600 more by {d} to pass you.', 'Du und {n} habt beide {x} \u2600. Bei Gleichstand liegst du vorne, {why}. {n} braucht bis {d} noch 1 \u2600, um dich zu überholen.', 'Tú y {n} tenéis {x} \u2600. Ganas el desempate {why}. {n} necesita 1 \u2600 más para el {d} para superarte.'],
-        tieSafe: ['You and {n} both have {x} \u2600. You win the tie-break {why}.', 'Du und {n} habt beide {x} \u2600. Bei Gleichstand liegst du vorne, {why}.', 'Tú y {n} tenéis {x} \u2600. Ganas el desempate {why}.'],
-        tieA: ['You and {n} both have {x} XP. You win the tie-break {why}.', 'Du und {n} habt beide {x} XP. Bei Gleichstand liegst du vorne, {why}.', 'Tú y {n} tenéis {x} XP. Ganas el desempate {why}.'],
-        tb_full: ['with more full-sun days', 'mit mehr vollen Sonnentagen', 'con más días de sol lleno'],
-        tb_lv: ['with the higher level', 'mit dem höheren Level', 'con el nivel más alto'],
-        tb_name: ['by name, A to Z', 'nach dem Namen, A bis Z', 'por nombre, de la A a la Z'],
-        inW: ['1 \u2600 by {d} puts you on the board.', '1 \u2600 bis {d} bringt dich auf die Rangliste.', '1 \u2600 para el {d} te pone en la clasificación.'],
-        inA: ['Any XP puts you on the board.', 'Jede XP bringt dich auf die Rangliste.', 'Cualquier XP te pone en la clasificación.'],
-        alone: ['You are the only one on this board so far.', 'Du bist bisher die einzige Person auf dieser Rangliste.', 'Por ahora eres la única persona en esta clasificación.'],
+        /* what it takes, one short line (K.gap does the math) */
+        gPass: ['+{x} ☀ by {d}', '+{x} ☀ bis {d}', '+{x} ☀ para el {d}'],
+        gToday: ['{acts} today does it', 'Heute reicht {acts}', 'Hoy basta {acts}'],
+        gDay1: ['≈ 1 day', '≈ 1 Tag', '≈ 1 día'], gDays: ['≈ {n} days', '≈ {n} Tage', '≈ {n} días'],
+        gNo: ['Out of reach until {d}', 'Bis {d} nicht mehr drin', 'Fuera de alcance hasta el {d}'],
+        gLead: ['Ahead by {x} ☀', '{x} ☀ vorne', '{x} ☀ por delante'],
+        gCatch: ['{n} needs +{y} by {d}', '{n} braucht +{y} bis {d}', '{n} necesita +{y} para el {d}'],
+        gSafe: ['safe until {d}', 'sicher bis {d}', 'a salvo hasta el {d}'],
+        gPassA: ['+{x} XP', '+{x} XP', '+{x} XP'],
+        gLeadA: ['Ahead by {x} XP', '{x} XP vorne', '{x} XP por delante'],
+        gTie: ['Tie · you win on {why}', 'Gleichstand · du gewinnst durch {why}', 'Empate · ganas por {why}'],
+        tb_full: ['full-sun days', 'volle Sonnentage', 'días de sol lleno'],
+        tb_lv: ['level', 'das Level', 'nivel'],
+        tb_name: ['name', 'den Namen', 'nombre'],
+        gIn: ['+1 ☀ by {d} puts you on', '+1 ☀ bis {d} bringt dich rein', '+1 ☀ para el {d} te mete'],
+        gInA: ['Any XP puts you on', 'Jede XP bringt dich rein', 'Cualquier XP te mete'],
+        gAlone: ['Only you so far', 'Bisher nur du', 'Por ahora solo tú'],
         a_move: ['a Move', 'ein Move', 'un Move'], a_meal: ['a meal', 'eine Mahlzeit', 'una comida'], a_scan: ['a scan', 'ein Scan', 'un escaneo'],
         a_water: ['a glass of water', 'ein Glas Wasser', 'un vaso de agua'], a_fast: ['a fasting milestone', 'ein Fasten-Meilenstein', 'un hito de ayuno'], a_macro: ['a macro goal', 'ein Makroziel', 'una meta de macros'],
         n_move: ['{n} Moves', '{n} Moves', '{n} Moves'], n_meal: ['{n} meals', '{n} Mahlzeiten', '{n} comidas'], n_scan: ['{n} scans', '{n} Scans', '{n} escaneos'],
@@ -154,58 +152,84 @@
         return '<span class="rk-orb" aria-hidden="true">' + s + '</span>';
     }
     function score(x) { return K.fmt(x.pts, lang()); }
-    function unit() { return per === 'all' ? tr('xp') : '\u2600'; }
     function unitLong() { return per === 'all' ? tr('xp') : tr('sun'); }
-    /* under the companion's name: its rank (evolution form and level), then the owner small */
+    /* the app's own icons (lowi-icons.js), labelled when they carry meaning; without them (offline tests) a plain character */
+    function ico(name, label, cls, fb) {
+        const I = W.LowiIcons;
+        if (I && typeof I.svg === 'function') { try { const s = I.svg(name, { label: label || '', cls: cls || '' }); if (s) return s; } catch (e) { } }
+        return '<i class="rk-fb ' + (cls || '') + '"' + (label ? ' role="img" aria-label="' + esc(label) + '"' : ' aria-hidden="true"') + '>' + (fb || '') + '</i>';
+    }
+    /* what a number counts: a golden sun (Week, Month) or a small XP tag (All time) */
+    function uIco(k) { return k === 'all' ? '<i class="rk-xp" role="img" aria-label="XP">XP</i>' : ico('sun', tr('sun'), 'rk-sun', '\u2600'); }
+    function pIco(k) { return k === 'all' ? ico('star', '', 'rk-star', '\u2605') : k === 'm' ? ico('calendar', '', 'rk-cal', '\u25a6') : ico('sun', '', 'rk-sun', '\u2600'); }
+    /* under the companion's name: a small level chip and the owner (the evolution form is in the versus view and the levels) */
     function ownerLine(p, lv, c) {
-        /* 23 Oct: form and level are two unbreakable pieces, so a narrow card wraps between them instead of cutting "Tide Guardian · Lv…" */
-        return '<small class="rk-own">' + (c && c.named && c.form ? '<span class="rk-of">' + esc(c.form) + '</span><span class="rk-sep"> \u00b7 </span>' : '') + '<span class="rk-ol">' + esc(tr('lv', { n: lv })) + '</span></small>' +
-            '<small class="rk-ownr">' + esc(p.me ? tr('you') : (p.n || '')) + '</small>';
+        return '<small class="rk-own"><span class="rk-lv num">' + esc(tr('lv', { n: lv })) + '</span><span class="rk-ownr">' + esc(p.me ? tr('you') : (p.n || '')) + '</span></small>';
     }
-    function attrs(x, c) {
+    /* ▲▼: places won or lost since your last day on this board (kept on this phone, per board and period) */
+    const MV = 'lowispike.ranking.moves';
+    const idOf = p => p && p.me ? 'me' : p && p.uid ? 'u:' + p.uid : 'n:' + String((p && p.n) || '').toLowerCase();
+    function dayKey(t) { const d = new Date(t); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+    function moves(k, list, now) {
+        const sp = K.span(k, now), pk = k + ':' + (sp ? +sp.start : 'all'), today = dayKey(now);
+        let all = {}; try { all = JSON.parse(localStorage.getItem(MV) || '{}') || {}; } catch (e) { all = {}; }
+        let s = all[k]; if (!s || s.pk !== pk || typeof s.cur !== 'object') s = { pk, day: today, cur: {}, prev: null };
+        if (s.day !== today) { s.prev = s.cur; s.day = today; }
+        const cur = {}; list.forEach(x => { cur[idOf(x.p)] = x.rank; });
+        s.cur = cur; all[k] = s;
+        try { localStorage.setItem(MV, JSON.stringify(all)); } catch (e) { }
+        const out = {}; if (s.prev) list.forEach(x => { const was = +s.prev[idOf(x.p)]; if (was && was !== x.rank) out[idOf(x.p)] = was - x.rank; });
+        return out;
+    }
+    function mvHTML(d) { return d > 0 ? '<span class="rk-mv up" aria-hidden="true">\u25b2' + d + '</span>' : d < 0 ? '<span class="rk-mv dn" aria-hidden="true">\u25bc' + (-d) + '</span>' : ''; }
+    function attrs(x, c, d) {
         const p = x.p, nm = c ? c.name : tr('hidden');
-        return ' data-rk="open" data-who="' + esc(p.n || '') + '"' + (p.uid ? ' data-uid="' + esc(p.uid) + '"' : '') + (p.me ? ' data-me="1"' : '') +
-            ' aria-label="' + esc(tr('place', { n: x.rank }) + ', ' + nm + ', ' + (p.me ? tr('you') : p.n) + ', ' + score(x) + ' ' + unitLong()) + '"';
+        return ' data-rk="open" data-key="' + esc(idOf(p)) + '" data-who="' + esc(p.n || '') + '"' + (p.uid ? ' data-uid="' + esc(p.uid) + '"' : '') + (p.me ? ' data-me="1"' : '') +
+            ' aria-label="' + esc(tr('place', { n: x.rank }) + ', ' + nm + (c && c.named && c.form ? ', ' + c.form : '') + ', ' + tr('lv', { n: x.lv }) + ', ' + (p.me ? tr('you') : p.n) + ', ' + score(x) + ' ' + unitLong() + (d ? ', ' + tr(d > 0 ? 'up' : 'down', { n: Math.abs(d) }) : '')) + '"';
     }
-    function podHTML(x, slot) {
-        const c = companion(x.p, x.lv);
-        return '<button type="button" class="rk-pod-i rk-p' + x.rank + (x.p.me ? ' me' : '') + '"' + attrs(x, c) + '>' +
-            '<span class="rk-pod-art">' + art(c, 'rkp' + slot, true) + '<b class="rk-medal m' + x.rank + '" aria-hidden="true">' + x.rank + '</b></span>' +
-            '<b class="rk-cn">' + esc(c ? c.name : tr('hidden')) + '</b>' + ownerLine(x.p, x.lv, c) +
-            '<span class="rk-pts num">' + score(x) + '<small>' + esc(unit()) + '</small></span>' +
-            '<span class="rk-step" aria-hidden="true"></span></button>';
+    function ptsHTML(x) { return '<span class="rk-pts"><b class="num" data-v="' + x.pts + '">' + score(x) + '</b>' + uIco(per) + '</span>'; }
+    function podHTML(x, slot, mv) {
+        const c = companion(x.p, x.lv), d = mv[idOf(x.p)];
+        return '<button type="button" class="rk-pod-i rk-p' + x.rank + (x.p.me ? ' me' : '') + '"' + attrs(x, c, d) + '>' +
+            (x.rank === 1 ? '<span class="rk-crown" aria-hidden="true">' + ico('crown', '', 'rk-crown-i', '\u265b') + '</span>' : '') +
+            '<span class="rk-pod-art">' + art(c, 'rkp' + slot, true) + mvHTML(d) + '</span>' +
+            '<b class="rk-cn">' + esc(c ? c.name : tr('hidden')) + '</b>' + ownerLine(x.p, x.lv, c) + ptsHTML(x) +
+            '<span class="rk-step" aria-hidden="true"><b class="rk-medal m' + x.rank + '">' + x.rank + '</b></span></button>';
     }
-    function rowHTML(x, i) {
-        const c = companion(x.p, x.lv);
-        return '<li><button type="button" class="rk-row' + (x.p.me ? ' me' : '') + '"' + attrs(x, c) + '><span class="rk-n num">' + x.rank + '</span>' + art(c, 'rkl' + i, false) +
-            '<span class="rk-who"><b class="rk-cn">' + esc(c ? c.name : tr('hidden')) + '</b>' + ownerLine(x.p, x.lv, c) + '</span>' +
-            '<span class="rk-pts num">' + score(x) + '<small>' + esc(unit()) + '</small></span></button></li>';
+    function rowHTML(x, i, mv) {
+        const c = companion(x.p, x.lv), d = mv[idOf(x.p)];
+        return '<li><button type="button" class="rk-row' + (x.p.me ? ' me' : '') + '"' + attrs(x, c, d) + '><span class="rk-n"><b class="num">' + x.rank + '</b>' + mvHTML(d) + '</span>' + art(c, 'rkl' + i, false) +
+            '<span class="rk-who"><b class="rk-cn">' + esc(c ? c.name : tr('hidden')) + '</b>' + ownerLine(x.p, x.lv, c) + '</span>' + ptsHTML(x) + '</button></li>';
     }
-    function meHTML(list) {
-        const x = K.mine(list), self = people().find(p => p && p.me) || { me: true, n: '' }, lv = x ? x.lv : K.level(self), c = companion(self, lv);
-        let shared = true; try { const pr = LC() && LC().prefs && LC().prefs(); if (pr && pr.share === false) shared = false; } catch (e) { }
-        const sub = shared ? ownerLine(self, lv, c) : '<small class="rk-own">' + esc(tr('hiddenMe')) + '</small>';
-        return '<button type="button" class="rk-me" data-rk="ladder" data-me="1" aria-haspopup="dialog" aria-label="' + esc(tr('yourPlace') + ', ' + (x ? '#' + x.rank : '') + ', ' + (c ? c.name : 'Misty') + ', ' + tr('levels')) + '" data-who="' + esc(self.n || '') + '">' +
-            '<span class="rk-me-l"><small>' + esc(tr('yourPlace')) + '</small><b class="num">' + (x ? '#' + x.rank : '\u2013') + '</b></span>' + art(c, 'rkme', false) +
-            '<span class="rk-who"><b class="rk-cn">' + esc(c ? c.name : 'Misty') + '</b>' + (x ? sub : '<small class="rk-own">' + esc(tr('notYet')) + ' \u00b7 ' + esc(per === 'all' ? tr('notYetA') : tr('notYetW')) + '</small>') + '</span>' +
-            (x ? '<span class="rk-pts num">' + score(x) + '<small>' + esc(unit()) + '</small></span>' : '') +
-            '<span class="rk-me-go" aria-hidden="true"><i>' + esc(tr('levels')) + '</i><b>\u203a</b></span></button>';
+    /* your level and how far to the next one, for the ring around the level number */
+    function myLevel() {
+        try { const d = K.ladder(people()), lo = d.my > 1 ? d.steps[d.my - 1].xp : 0; return { lv: d.my, prog: d.next == null ? 1 : Math.max(0, Math.min(1, (d.xp - lo) / Math.max(1, d.next - lo))) }; } catch (e) { return null; }
+    }
+    function meHTML(list, mv) {
+        const x = K.mine(list), self = people().find(p => p && p.me) || { me: true, n: '' }, L = myLevel(), lv = x ? x.lv : (L ? L.lv : K.level(self)), c = companion(self, lv), d = x ? mv.me : 0;
+        const ring = '<span class="rk-lvr" style="--p:' + (L ? L.prog : 0).toFixed(3) + '" aria-hidden="true"><b class="num">' + lv + '</b></span>';
+        const sub = !x ? '<small class="rk-own"><span class="rk-ownr">' + sunHTML(esc(per === 'all' ? tr('notYetA') : tr('notYetW'))) + '</span></small>' :
+            '<small class="rk-own"><span class="rk-lv num">' + esc(tr('lv', { n: lv })) + '</span>' + (shared() ? '' : '<span class="rk-ownr">' + ico('eye', '', 'rk-eye', '') + esc(tr('hiddenMe')) + '</span>') + '</small>';
+        return '<button type="button" class="rk-me' + (x ? '' : ' off') + '" data-rk="ladder" data-me="1" data-key="_me" aria-haspopup="dialog" aria-label="' + esc(tr('yourPlace') + ', ' + (x ? '#' + x.rank + ', ' + score(x) + ' ' + unitLong() : tr('notYet')) + ', ' + (c ? c.name : 'Misty') + ', ' + tr('lv', { n: lv }) + (d ? ', ' + tr(d > 0 ? 'up' : 'down', { n: Math.abs(d) }) : '') + ', ' + tr('levels')) + '" data-who="' + esc(self.n || '') + '">' +
+            '<span class="rk-me-rk"><b class="num">' + (x ? '#' + x.rank : '\u2013') + '</b>' + mvHTML(d) + '</span>' +
+            '<span class="rk-me-art">' + art(c, 'rkme', false) + ring + '</span>' +
+            '<span class="rk-who"><b class="rk-cn">' + esc(c ? c.name : 'Misty') + '</b>' + sub + '</span>' +
+            (x ? ptsHTML(x) : '') + '<span class="rk-me-go" aria-hidden="true">' + ico('chevron', '', 'rk-chev', '\u203a') + '</span></button>';
     }
     function html() {
-        const list = K.rows(people(), per, Date.now(), myCare()), top = list.slice(0, 3), rest = K.board(list).slice(3);
-        const sub = per === 'all' ? tr('subA') : per === 'm' ? tr('subM') : tr('subW');
-        let h = '<header class="rk-h"><h2 class="rk-t">' + esc(tr('title')) + '</h2><p class="rk-sub">' + esc(sub) + '</p></header>' +
-            '<div class="rk-seg" role="tablist" aria-label="' + esc(tr('periods')) + '" style="--rk-i:' + K.PERIODS.indexOf(per) + '">' +
+        const now = Date.now(), list = K.rows(people(), per, now, myCare()), top = list.slice(0, 3), rest = K.board(list).slice(3), mv = moves(per, list, now), sp = K.span(per, now);
+        const left = sp ? sp.left + 1 : 0;
+        let h = '<div class="rk-top"><div class="rk-seg" role="tablist" aria-label="' + esc(tr('title') + ', ' + tr('periods')) + '" style="--rk-i:' + K.PERIODS.indexOf(per) + '">' +
             K.PERIODS.map(k => '<button type="button" role="tab" class="rk-segb" data-rk="per" data-k="' + k + '" aria-selected="' + (k === per) + '" tabindex="' + (k === per ? 0 : -1) + '">' + esc(tr(k)) + '</button>').join('') + '</div>' +
-            '<p class="rk-per">' + esc(perLine(per)) + '</p>' +
-            meHTML(list);
-        if (!list.length) h += '<p class="rk-empty">' + esc(tr('empty')) + '</p>';
+            '<button type="button" class="rk-info" data-rk="info" aria-haspopup="dialog" aria-label="' + esc(tr('info')) + '">' + ico('info', '', 'rk-info-i', 'i') + '</button></div>' +
+            '<div class="rk-chips"><span class="rk-chip">' + pIco(per) + '<span>' + esc(per === 'all' ? tr('xp') : tr('sun')) + '</span></span>' +
+            '<span class="rk-chip">' + (sp ? ico('hourglass', '', 'rk-hg', '\u231b') : '<b class="rk-inf8" aria-hidden="true">\u221e</b>') + '<span>' + esc(sp ? (left <= 1 ? tr('left1') : tr('leftN', { n: left })) : tr('forever')) + '</span></span></div>' +
+            meHTML(list, mv);
+        if (!list.length) h += '<p class="rk-empty">' + ico('trophy', '', 'rk-empty-i', '') + '<span>' + esc(tr('empty')) + '</span></p>';
         else {
-            h += '<div class="rk-pod n' + top.length + '">' + K.podium(list).map((x, i) => podHTML(x, i)).join('') + '</div>';
-            if (list.length > 1) h += '<button type="button" class="rk-cmpb" data-rk="cmp3" aria-haspopup="dialog"><span>' + esc(tr('cmp3')) + '</span><b aria-hidden="true">\u203a</b></button>';
-            if (rest.length) h += '<ol class="rk-list">' + rest.map(rowHTML).join('') + '</ol>';
+            h += '<div class="rk-pod n' + top.length + '">' + K.podium(list).map((x, i) => podHTML(x, i, mv)).join('') + '</div>';
+            if (rest.length) h += '<ol class="rk-list">' + rest.map((x, i) => rowHTML(x, i, mv)).join('') + '</ol>';
         }
-        h += '<p class="rk-how">' + esc(per === 'all' ? tr('howA') : tr('howW')) + '</p>';
         return { h, uids: list.map(x => x.p && x.p.uid).filter(Boolean) };
     }
     function wire(b) {
@@ -213,10 +237,11 @@
         b.addEventListener('click', e => {
             const t = e.target.closest('[data-rk]'); if (!t || !b.contains(t)) return;
             if (t.dataset.rk === 'per') { per = K.period(t.dataset.k); try { localStorage.setItem(KEY, per); } catch (er) { } render(b); const n = b.querySelector('.rk-segb[aria-selected="true"]'); if (n) n.focus({ preventScroll: true }); return; }
+            if (t.dataset.rk === 'info') { openInfo(t); return; }
             if (t.dataset.rk === 'ladder') { openLadder(t); return; }
-            if (t.dataset.rk === 'cmp3') { openCmp(null, t); return; }
-            /* 23 Oct (Eman: compare the stats): a companion opens You vs them (your own entry: the top 3), the profile is one tap on */
-            if (t.dataset.rk === 'open') { openCmp(t.dataset.me === '1' ? null : { uid: t.dataset.uid || '', n: t.dataset.who || '' }, t); }
+            /* 23 Oct, 15:00 (Eman: "only if I click on someone do I see the comparison of the stats"): a companion opens You vs them,
+               your own entry opens your levels */
+            if (t.dataset.rk === 'open') { if (t.dataset.me === '1') openLadder(t); else openCmp({ uid: t.dataset.uid || '', n: t.dataset.who || '' }, t); }
         });
         b.addEventListener('keydown', e => {
             if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return; const s = e.target.closest('.rk-segb'); if (!s) return;
@@ -224,8 +249,6 @@
             e.preventDefault(); const nb = b.querySelector('.rk-segb[data-k="' + n + '"]'); if (nb) nb.click();
         });
     }
-    /* ---------- the level ladder (23 Oct 2026, Eman's Skool idea): your level, the XP to the next one, then every level with the
-       share of players who reached it. Reached levels glow, locked ones are dimmed with a lock. ---------- */
     let ladEl = null, ladBack = null;
     function stepName(st) { const n = st.n; return Array.isArray(n) ? (n[lang()] || n[0]) : ''; }
     function ladderHTML() {
@@ -272,7 +295,6 @@
     function dDay(d) { try { return d.toLocaleDateString(LOC[lang()], { weekday: 'long', day: 'numeric', month: 'short' }); } catch (e) { return dShort(d); } }
     function listOf(a) { try { return new Intl.ListFormat(LOC[lang()], { style: 'long', type: 'conjunction' }).format(a); } catch (e) { return a.join(', '); } }
     const fmt = n => K.fmt(n, lang());
-    function perLine(k) { const sp = K.span(k, Date.now()); return sp ? tr(k === 'm' ? 'perM' : 'perW', { d: dShort(sp.start), max: fmt(sp.max) }) : tr('perA'); }
     function ledger() { try { const S = W.LowiR2 && W.LowiR2.S && W.LowiR2.S(); return S && Array.isArray(S.ledger) ? S.ledger : []; } catch (e) { return []; } }
     const mixMemo = {};
     function myMix(k) {
@@ -306,113 +328,123 @@
     }
     if (typeof setTimeout === 'function' && typeof setInterval === 'function') { setTimeout(pushMix, 9000); setInterval(pushMix, 90000); }
 
-    let cmpEl = null, cmpBack = null, cmpWho = null, cmpK = 'w', cmpFrom3 = false;
+    /* ---------- the rules, behind the ⓘ (23 Oct, 15:00: off the board, one short line each) ---------- */
+    let infEl = null, infBack = null;
+    function infoHTML() {
+        const now = Date.now(), ws = K.span('w', now), ms = K.span('m', now);
+        const row = (icon, a, b, cur) => '<li' + (cur ? ' class="cur"' : '') + '><span class="rk-inf-i" aria-hidden="true">' + icon + '</span><span class="rk-inf-w"><b>' + esc(a) + '</b>' + (b ? '<small>' + esc(b) + '</small>' : '') + '</span></li>';
+        return '<div class="rk-lad-h rk-inf-h"><span class="rk-inf-hi" aria-hidden="true">' + ico('info', '', '', 'i') + '</span><h3 class="rk-cmp-t">' + esc(tr('info')) + '</h3>' +
+            '<button type="button" class="rk-lad-x" data-inf="close" aria-label="' + esc(tr('close')) + '">\u00d7</button></div><ul class="rk-inf">' +
+            row(pIco('w'), tr('w') + ' \u00b7 ' + (ws ? tr('iW', { d: dShort(ws.start) }) : ''), tr('iWs'), per === 'w') +
+            row(pIco('m'), tr('m') + ' \u00b7 ' + (ms ? tr('iM', { d: dShort(ms.start) }) : ''), tr('iMs'), per === 'm') +
+            row(pIco('all'), tr('all') + ' \u00b7 ' + tr('iA'), tr('iAs'), per === 'all') +
+            row('<span class="rk-mv up">\u25b2</span><span class="rk-mv dn">\u25bc</span>', tr('iMove'), '') +
+            row(ico('medal', '', '', '\u2605'), tr('iTie'), '') +
+            row('<span class="rk-orb rk-hid"><i></i></span>', tr('iHid'), '') +
+            row(ico('hand', '', '', '\u261d'), tr('iTap'), tr('iDiff')) + '</ul>';
+    }
+    function closeInfo() {
+        if (!infEl) return;
+        const el = infEl, back = infBack; infEl = null; infBack = null;
+        el.classList.remove('in'); D.removeEventListener('keydown', infKey, true);
+        setTimeout(() => { try { el.remove(); } catch (e) { } }, 220);
+        try { if (back && back.focus && back.isConnected) back.focus({ preventScroll: true }); } catch (e) { }
+    }
+    function infKey(e) { if (e.key === 'Escape') { e.preventDefault(); closeInfo(); } }
+    function openInfo(from) {
+        if (infEl) closeInfo();
+        const el = D.createElement('div');
+        el.className = 'rk-lad-wrap rk-inf-wrap'; el.setAttribute('data-noi18n', '');
+        el.innerHTML = '<div class="rk-lad rk-infs" role="dialog" aria-modal="true" aria-label="' + esc(tr('info')) + '">' + infoHTML() + '</div>';
+        el.addEventListener('click', e => { if (e.target === el || e.target.closest('[data-inf="close"]')) closeInfo(); });
+        D.body.appendChild(el); infEl = el; infBack = from || null;
+        D.addEventListener('keydown', infKey, true);
+        requestAnimationFrame(() => { el.classList.add('in'); const x = el.querySelector('.rk-lad-x'); if (x) x.focus({ preventScroll: true }); });
+    }
+
+    /* ---------- You vs them: only when a companion is tapped (23 Oct, 15:00: a versus screen, mirrored bars, one line) ---------- */
+    let cmpEl = null, cmpBack = null, cmpWho = null, cmpK = 'w';
     const nameOf = p => p && p.me ? tr('you') : String((p && p.n) || tr('hidden'));
     function actsText(acts) { const a = []; ['move', 'meal', 'scan', 'water', 'fast', 'macro'].forEach(s => { const n = acts && acts[s]; if (n) a.push(n === 1 ? tr('a_' + s) : tr('n_' + s, { n })); }); return listOf(a); }
-    /* the "what it takes" sentence for me vs them on board k (K.gap does the math) */
-    /* 23 Oct: the sun in "what it takes" (and the before-Monday note). The app's emoji pass (spirit.js symbols) swaps a bare \u2600
-       for an unlabelled icon, so "You need 7 \u2600 more" read "You need 7 more" to a screen reader and lost its unit. Put the app's
-       own sun in, golden and labelled "sunbeams". Without the icon set (offline tests) it stays the plain \u2600. */
+    /* the sun in a line of text: the app's emoji pass (spirit.js symbols) swaps a bare \u2600 for an unlabelled icon, so put the
+       app's own sun in, golden and labelled "sunbeams". Without the icon set (offline tests) it stays the plain \u2600. */
     function sunHTML(h) {
         const I = W.LowiIcons; if (!I || typeof I.svg !== 'function') return h;
-        let ico = ''; try { ico = I.svg('sun', { label: tr('sun'), cls: 'rk-sun' }); } catch (e) { return h; }
-        return ico ? String(h).split('\u2600').join(ico) : h;
+        let s = ''; try { s = I.svg('sun', { label: tr('sun'), cls: 'rk-sun' }); } catch (e) { return h; }
+        return s ? String(h).split('\u2600').join(s) : h;
     }
-    function gapText(me, them, k) {
+    function dWk(d) { try { return d.toLocaleDateString(LOC[lang()], { weekday: 'short' }).replace(/\.$/, ''); } catch (e) { return dShort(d); } }
+    const endTxt = (k, d) => k === 'w' ? dWk(d) : dShort(d);
+    /* "what it takes", one short line: "+4 \u2600 by Sun \u00b7 a Move today does it", "+358 XP \u00b7 \u2248 4 days" (K.gap does the math) */
+    function goalText(me, them, k) {
         const now = Date.now(), mx = k === 'all' ? null : myMix(k);
-        if (!them) { if (me) return tr('alone'); const sp = K.span(k, now); return k === 'all' ? tr('inA') : tr('inW', { d: dDay(sp.end) }); }
+        if (!them) { if (me) return tr('gAlone'); const sp = K.span(k, now); return k === 'all' ? tr('gInA') : tr('gIn', { d: endTxt(k, sp.end) }); }
         const g = K.gap(me, them, k, now, { mix: mx, pace: K.pace(ledger(), now), PTS: W.LowiSun && W.LowiSun.PTS }), nm = nameOf(them.p);
         if (!g || g.self) return '';
-        if (g.ahead && g.tie) { const why = tr('tb_' + g.why); return k === 'all' ? tr('tieA', { n: nm, x: fmt(me.pts), why }) : g.theyCan ? tr('tie', { n: nm, x: fmt(me.pts), why, d: dDay(g.end) }) : tr('tieSafe', { n: nm, x: fmt(me.pts), why }); }
-        if (g.ahead) return k === 'all' ? tr('leadA', { n: nm, x: fmt(g.lead) }) : g.theyCan ? tr('lead', { n: nm, x: fmt(g.lead), y: fmt(g.theyNeed), d: dDay(g.end) }) : tr('leadSafe', { n: nm, x: fmt(g.lead), d: dDay(g.end) });
-        if (g.unit === 'xp') return tr('passA', { n: nm, x: fmt(g.need) }) + (g.days ? ' ' + (g.days <= 1 ? tr('pace1', { p: fmt(g.pace) }) : tr('paceN', { p: fmt(g.pace), n: g.days })) : '');
-        if (!g.possible) return tr('noWay', { n: nm, x: fmt(g.short), d: dDay(g.end) });
-        let s = tr('pass', { n: nm, x: fmt(g.need), d: dDay(g.end) });
-        if (!g.rest) s += ' ' + tr('today', { acts: actsText(g.today.acts), p: g.today.pts });
-        else {
-            s += ' ' + (g.today.pts ? tr('todayPart', { acts: actsText(g.today.acts), p: g.today.pts }) : tr('todayFull'));
-            s += ' ' + (g.restDays === 1 ? tr('rest1', { r: g.rest }) : tr('restN', { r: g.rest, n: g.restDays }));
-        }
+        const days = n => n <= 1 ? tr('gDay1') : tr('gDays', { n });
+        if (g.ahead && g.tie) return tr('gTie', { why: tr('tb_' + g.why) });
+        if (g.ahead) return k === 'all' ? tr('gLeadA', { x: fmt(g.lead) }) : tr('gLead', { x: fmt(g.lead) }) + ' \u00b7 ' + (g.theyCan ? tr('gCatch', { n: nm, y: fmt(g.theyNeed), d: endTxt(k, g.end) }) : tr('gSafe', { d: endTxt(k, g.end) }));
+        if (g.unit === 'xp') return tr('gPassA', { x: fmt(g.need) }) + (g.days ? ' \u00b7 ' + days(g.days) : '');
+        if (!g.possible) return tr('gNo', { d: endTxt(k, g.end) });
+        let s = tr('gPass', { x: fmt(g.need), d: endTxt(k, g.end) });
+        if (!g.rest && g.today && g.today.pts) s += ' \u00b7 ' + tr('gToday', { acts: actsText(g.today.acts) });
+        else if (g.rest) s += ' \u00b7 ' + days((g.restDays || 0) + (g.today && g.today.pts ? 1 : 0));
         return s;
     }
     function segHTML() {
-        return '<div class="rk-cmp-seg" role="tablist" aria-label="' + esc(tr('periods')) + '" style="--rk-i:' + K.PERIODS.indexOf(cmpK) + '">' +
+        return '<div class="rk-seg rk-cmp-seg" role="tablist" aria-label="' + esc(tr('periods')) + '" style="--rk-i:' + K.PERIODS.indexOf(cmpK) + '">' +
             K.PERIODS.map(k => '<button type="button" role="tab" class="rk-segb" data-cmp="per" data-k="' + k + '" aria-selected="' + (k === cmpK) + '" tabindex="' + (k === cmpK ? 0 : -1) + '">' + esc(tr(k)) + '</button>').join('') + '</div>';
     }
-    const cell = (v, r, unitK) => v > 0 || r ? '<b class="num">' + fmt(v) + '</b><small>' + (r ? '#' + r : '\u2013') + '</small>' : '<b class="num">0</b><small>\u2013</small>';
-    function headHTML(title, arts) {
-        return '<div class="rk-lad-h rk-cmp-h">' + (cmpFrom3 && cmpWho ? '<button type="button" class="rk-cmp-bk" data-cmp="top">\u2039 ' + esc(tr('back3')) + '</button>' : '') + (arts || '') +
-            '<h3 class="rk-cmp-t">' + esc(title) + '</h3><button type="button" class="rk-lad-x" data-cmp="close" aria-label="' + esc(tr('close')) + '">\u00d7</button></div>';
+    /* one mirrored row: your bar grows left, theirs right, the longer one glows */
+    function mirRow(r) {
+        const max = r.max || Math.max(1, r.a || 0, r.b == null ? 0 : r.b), w = v => Math.round((v || 0) / max * 100);
+        const side = (v, cls, win) => '<span class="rk-mir-v ' + cls + (win ? ' win' : '') + '">' + (v == null ? '<b class="num off">\u2013</b>' : '<b class="num">' + fmt(v) + '</b><span class="rk-mb"><i style="--w:' + w(v) + '%"></i></span>') + '</span>';
+        return '<li class="rk-mir-r' + (r.cur ? ' cur' : '') + '" aria-label="' + esc(r.l + ': ' + tr('you') + ' ' + fmt(r.a || 0) + ', ' + r.nm + ' ' + (r.b == null ? '\u2013' : fmt(r.b))) + '">' +
+            side(r.a || 0, 'me', r.b != null && (r.a || 0) > r.b) + '<span class="rk-mir-l" aria-hidden="true">' + r.i + '<small>' + esc(r.l) + '</small></span>' + side(r.b, 'them', r.b != null && r.b > (r.a || 0)) + '</li>';
     }
-    /* You vs one person: every board, the stats of the chosen one, the breakdown and what it takes */
+    const SRC_I = { meal: ['plate', '\u25cf'], scan: ['scan', '\u25a3'], move: ['move', '\u27a4'], fast: ['hourglass', '\u231b'], macro: ['target', '\u25ce'], water: ['drop', '\u25cf'], other: ['sparkle', '\u2726'] };
+    function srcHTML(k, them, tp, cT, nm) {
+        if (k === 'all') return '';
+        const mm = myMix(k), ts = them && cT && tp && tp.uid ? K.mixOf(mixes[tp.uid], k, Date.now(), them.pts) : null;
+        const mine = mm ? mm.src : {}, rowsS = K.SRC.filter(s => (mine[s] || 0) || (ts && ts[s]));
+        if (!rowsS.length) return '';
+        const max = Math.max(1, ...rowsS.map(s => Math.max(mine[s] || 0, ts ? ts[s] || 0 : 0)));
+        let h = '<ul class="rk-mir rk-src">' + rowsS.map(s => {
+            const ic = SRC_I[s] || SRC_I.other;
+            return mirRow({ i: ico(ic[0], '', 'rk-src-i', ic[1]), l: tr('s_' + s), a: mine[s] || 0, b: ts ? ts[s] || 0 : null, nm, max });
+        }).join('') + '</ul>';
+        if (!ts && them && !tp.me) h += '<p class="rk-tot">' + ico('lock', '', 'rk-lock-i', '') + '<span>' + esc(tr('totals', { n: nm })) + '</span></p>';
+        return h;
+    }
     function pairHTML(who) {
         const k = cmpK, now = Date.now(), mc = myCare(), ppl = people(), list = K.rows(ppl, k, now, mc), me = K.mine(list);
         const them = list.find(x => K.same(x.p, who)) || null, tp = them ? them.p : (ppl.find(p => K.same(p, who)) || Object.assign({ n: '' }, who));
-        const self = ppl.find(p => p && p.me) || { me: true, n: '' }, cM = companion(self, me ? me.lv : K.level(self)), cT = companion(tp, them ? them.lv : K.level(tp));
+        const self = ppl.find(p => p && p.me) || { me: true, n: '' }, lvM = me ? me.lv : K.level(self), lvT = them ? them.lv : K.level(tp), cM = companion(self, lvM), cT = companion(tp, lvT);
         const nm = nameOf(tp), aM = K.across(ppl, now, mc, self), aT = K.across(ppl, now, mc, tp), sp = K.span(k, now);
-        let h = headHTML(tr('vs', { n: nm }), '<span class="rk-cmp-arts">' + art(cM, 'rkcm', false) + art(cT, 'rkct', false) + '</span>');
-        h += '<div class="rk-cmp-b">' + segHTML() + '<p class="rk-cmp-per">' + esc(perLine(k)) + '</p>';
-        const win = (a, b) => a > b ? ' win' : '';
-        h += '<table class="rk-cmp-tb"><caption>' + esc(tr('boards')) + '</caption><thead><tr><th></th><th scope="col"><span class="rk-cmp-cn">' + esc(cM ? cM.name : 'Misty') + '</span><small>' + esc(tr('you')) + '</small></th>' +
-            '<th scope="col"><span class="rk-cmp-cn">' + esc(cT ? cT.name : tr('hidden')) + '</span><small>' + esc(nm) + '</small></th></tr></thead><tbody>';
-        K.PERIODS.forEach(kk => {
-            const a = aM[kk], b = aT[kk];
-            h += '<tr class="' + (kk === k ? 'cur' : '') + '"><th scope="row">' + esc(tr(kk)) + '<small>' + esc(kk === 'all' ? tr('xp') : '\u2600') + '</small></th><td class="' + win(a.pts, b.pts) + '">' + cell(a.pts, a.rank) + '</td><td class="' + win(b.pts, a.pts) + '">' + cell(b.pts, b.rank) + '</td></tr>';
-        });
-        if (sp) {
-            const a = aM[k], b = aT[k], av = x => (Math.round(x / Math.max(1, sp.soFar) * 10) / 10).toLocaleString(LOC[lang()]);
-            h += '<tr class="sub"><th scope="row">' + esc(tr('perDay')) + '<small>' + esc(tr(k)) + '</small></th><td class="' + win(a.pts, b.pts) + '"><b class="num">' + av(a.pts) + '</b></td><td class="' + win(b.pts, a.pts) + '"><b class="num">' + av(b.pts) + '</b></td></tr>' +
-                '<tr class="sub"><th scope="row">' + esc(tr('fullDays')) + '<small>' + esc(tr(k)) + '</small></th><td class="' + win(a.full, b.full) + '"><b class="num">' + a.full + '</b></td><td class="' + win(b.full, a.full) + '"><b class="num">' + b.full + '</b></td></tr>';
-        }
-        const lvM = me ? me.lv : K.level(self), lvT = them ? them.lv : K.level(tp);
-        h += '<tr class="sub"><th scope="row">' + esc(tr('lvRow')) + '</th><td class="' + win(lvM, lvT) + '"><b class="num">' + lvM + '</b></td><td class="' + win(lvT, lvM) + '"><b class="num">' + lvT + '</b></td></tr></tbody></table>';
-        /* the week inside this month: what each had before Monday makes Week and Month disagree */
-        const ws = K.span('w', now), ms = K.span('m', now);
-        if (k !== 'all' && ws && ms && ws.start >= ms.start && (aM.m.pts || aT.m.pts)) h += '<p class="rk-cmp-note">' + sunHTML(esc(tr('before', { a: fmt(Math.max(0, aM.m.pts - aM.w.pts)), n: nm, b: fmt(Math.max(0, aT.m.pts - aT.w.pts)) }))) + '</p>';
-        h += '<section class="rk-cmp-s"><h4>' + esc(tr('srcT')) + '</h4>' + srcHTML(k, them, tp, cT, nm) + '</section>';
-        h += '<section class="rk-cmp-s rk-cmp-need"><h4>' + esc(tr('needT')) + '</h4><p>' + sunHTML(esc(gapText(me, them, k))) + '</p></section>';
-        h += '<p class="rk-cmp-why">' + esc(tr('whyGen')) + '</p>';
-        if (tp && (tp.uid || tp.n)) h += '<button type="button" class="rk-cmpb rk-cmp-pf" data-cmp="profile" data-uid="' + esc(tp.uid || '') + '" data-who="' + esc(tp.n || '') + '"><span>' + esc(tr('profile', { n: nm })) + '</span><b aria-hidden="true">\u203a</b></button>';
+        const side = (c, key, owner, lv, cls) => '<div class="rk-vs-s ' + cls + '">' + art(c, key, true) + '<b class="rk-cn">' + esc(c ? c.name : tr('hidden')) + '</b>' +
+            '<small class="rk-own"><span class="rk-lv num">' + esc(tr('lv', { n: lv })) + '</span><span class="rk-ownr">' + esc(owner) + '</span></small>' + (c && c.named && c.form ? '<small class="rk-form">' + esc(c.form) + '</small>' : '') + '</div>';
+        let h = '<div class="rk-vs-h">' + side(cM, 'rkcm', tr('you'), lvM, 'me') + '<b class="rk-vs-b" aria-hidden="true">' + esc(tr('vs')) + '</b>' + side(cT, 'rkct', nm, lvT, 'them') +
+            '<button type="button" class="rk-lad-x" data-cmp="close" aria-label="' + esc(tr('close')) + '">\u00d7</button></div>';
+        const a = aM[k] || { pts: 0 }, b = aT[k] || { pts: 0 }, sum = a.pts + b.pts, share = sum ? a.pts / sum : .5;
+        const duelV = (x, cls, win) => '<span class="rk-duel-v ' + cls + (win ? ' win' : '') + '"><small class="rk-rk num">' + (x.rank ? '#' + x.rank : '\u2013') + '</small><span class="rk-duel-n"><b class="num" data-v="' + x.pts + '">' + fmt(x.pts) + '</b>' + uIco(k) + '</span></span>';
+        h += '<div class="rk-cmp-b">' + segHTML() +
+            '<div class="rk-duel" style="--a:' + share.toFixed(3) + '" aria-label="' + esc(tr(k) + ': ' + tr('you') + ' ' + fmt(a.pts) + (a.rank ? ' #' + a.rank : '') + ', ' + nm + ' ' + fmt(b.pts) + (b.rank ? ' #' + b.rank : '') + ' ' + (k === 'all' ? tr('xp') : tr('sun'))) + '">' +
+            duelV(a, 'me', a.pts > b.pts) + '<span class="rk-duel-bar" aria-hidden="true"><i class="me"></i><i class="them"></i></span>' + duelV(b, 'them', b.pts > a.pts) + '</div>';
+        const goal = goalText(me, them, k);
+        if (goal) h += '<p class="rk-goal">' + ico('target', tr('goal'), 'rk-goal-i', '\u25ce') + '<span>' + sunHTML(esc(goal)) + '</span></p>';
+        const rows = K.PERIODS.map(kk => ({ i: pIco(kk), l: tr(kk), a: (aM[kk] || {}).pts || 0, b: (aT[kk] || {}).pts || 0, cur: kk === k, nm }));
+        rows.push({ i: ico('medal', '', 'rk-medal-i', '\u2605'), l: tr('lvRow'), a: lvM, b: lvT, nm });
+        if (sp) rows.push({ i: ico('sun', '', 'rk-sun full', '\u2600'), l: tr('fullDays'), a: a.full || 0, b: b.full || 0, nm });
+        h += '<ul class="rk-mir">' + rows.map(mirRow).join('') + '</ul>' + srcHTML(k, them, tp, cT, nm);
+        if (tp && (tp.uid || tp.n)) h += '<button type="button" class="rk-pf" data-cmp="profile" data-uid="' + esc(tp.uid || '') + '" data-who="' + esc(tp.n || '') + '" aria-label="' + esc(tr('profileL', { n: nm })) + '">' + ico('user', '', 'rk-pf-i', '') + '<span>' + esc(tr('profile')) + '</span><b aria-hidden="true">\u203a</b></button>';
         return h + '</div>';
     }
-    function srcHTML(k, them, tp, cT, nm) {
-        if (k === 'all') return '<p class="rk-cmp-note">' + esc(tr('srcA')) + '</p>';
-        const mm = myMix(k), ts = them && cT && tp && tp.uid ? K.mixOf(mixes[tp.uid], k, Date.now(), them.pts) : null;
-        const mine = mm ? mm.src : {}, rowsS = K.SRC.filter(s => (mine[s] || 0) || (ts && ts[s]));
-        let h = '';
-        if (rowsS.length) {
-            const max = Math.max(1, ...rowsS.map(s => Math.max(mine[s] || 0, ts ? ts[s] || 0 : 0)));
-            const bar = (v, cls) => '<span class="rk-bar ' + cls + '"><i style="width:' + Math.round((v || 0) / max * 100) + '%"></i></span><b class="num">' + fmt(v || 0) + '</b>';
-            h += '<ul class="rk-src' + (ts ? ' two' : '') + '">' + rowsS.map(s => '<li><span class="rk-src-n">' + esc(tr('s_' + s)) + '</span><span class="rk-src-v">' + bar(mine[s], 'me') + '</span>' + (ts ? '<span class="rk-src-v">' + bar(ts[s], 'them') + '</span>' : '') + '</li>').join('') + '</ul>';
-            h += '<p class="rk-src-k"><i class="me"></i>' + esc(tr('you')) + (ts ? ' <i class="them"></i>' + esc(nm) : '') + '</p>';
-        } else h += '<p class="rk-cmp-note">' + esc(tr('srcEmpty')) + '</p>';
-        if (!ts && them && !tp.me) h += '<p class="rk-cmp-note">' + esc(cT ? tr('srcNone', { n: nm }) : tr('srcHid', { n: nm })) + '</p>';
-        return h;
-    }
-    /* the top 3 of the chosen board (and you), with every board's number and place side by side */
-    function top3HTML() {
-        const k = cmpK, now = Date.now(), mc = myCare(), ppl = people(), list = K.rows(ppl, k, now, mc), me = K.mine(list);
-        const pick = list.slice(0, 3).concat(me && me.rank > 3 ? [me] : []);
-        let h = headHTML(tr('cmpT3')) + '<div class="rk-cmp-b">' + segHTML() + '<p class="rk-cmp-per">' + esc(perLine(k)) + '</p>';
-        h += '<table class="rk-cmp-tb rk-cmp-t3"><thead><tr><th></th>' + K.PERIODS.map(kk => '<th scope="col" class="' + (kk === k ? 'cur' : '') + '">' + esc(tr(kk)) + '<small>' + esc(kk === 'all' ? tr('xp') : '\u2600') + '</small></th>').join('') + '</tr></thead><tbody>';
-        pick.forEach(x => {
-            const c = companion(x.p, x.lv), a = K.across(ppl, now, mc, x.p);
-            h += '<tr class="' + (x.p.me ? 'me' : '') + '"' + (x.p.me ? '' : ' data-cmp="pair" data-uid="' + esc(x.p.uid || '') + '" data-who="' + esc(x.p.n || '') + '" tabindex="0" role="button" aria-label="' + esc(tr('vs', { n: nameOf(x.p) })) + '"') + '>' +
-                '<th scope="row"><span class="rk-cmp-rk num">' + x.rank + '</span>' + art(c, 'rk3' + x.rank, false) + '<span class="rk-cmp-who"><span class="rk-cmp-cn">' + esc(c ? c.name : tr('hidden')) + '</span><small>' + esc(nameOf(x.p)) + '</small></span></th>' +
-                K.PERIODS.map(kk => '<td class="' + (kk === k ? 'cur' : '') + '">' + cell(a[kk].pts, a[kk].rank) + '</td>').join('') + '</tr>';
-        });
-        h += '</tbody></table><p class="rk-cmp-why">' + esc(tr('whyGen')) + '</p>';
-        h += '<section class="rk-cmp-s rk-cmp-need"><h4>' + esc(tr('needYou')) + '</h4><ul>' + K.PERIODS.map(kk => {
-            const rv = K.rival(K.rows(ppl, kk, now, mc), kk);
-            return '<li class="' + (kk === k ? 'cur' : '') + '"><b>' + esc(tr(kk)) + '</b> ' + sunHTML(esc(gapText(rv.me, rv.them, kk))) + '</li>';
-        }).join('') + '</ul></section>';
-        return h + '</div>';
-    }
-    function cmpHTML() { return cmpWho ? pairHTML(cmpWho) : top3HTML(); }
     function drawCmp(focusSel) {
-        if (!cmpEl) return; const d = cmpEl.querySelector('.rk-cmp'); if (!d) return;
-        d.setAttribute('aria-label', cmpWho ? tr('vs', { n: cmpWho.n || tr('hidden') }) : tr('cmpT3'));
-        d.innerHTML = cmpHTML();
+        if (!cmpEl || !cmpWho) return; const d = cmpEl.querySelector('.rk-cmp'); if (!d) return;
+        const old = {}; d.querySelectorAll('.rk-duel-v [data-v]').forEach((e, i) => { old[i] = +e.dataset.v; });
+        d.setAttribute('aria-label', tr('vsT', { n: cmpWho.n || tr('hidden') }));
+        d.innerHTML = pairHTML(cmpWho);
+        if (!calm()) d.querySelectorAll('.rk-duel-v [data-v]').forEach((e, i) => countUp(e, old[i] != null ? old[i] : 0, +e.dataset.v));
         if (focusSel) { const f = d.querySelector(focusSel); if (f) f.focus({ preventScroll: true }); }
     }
     function closeCmp() {
@@ -422,25 +454,22 @@
         setTimeout(() => { try { el.remove(); } catch (e) { } }, 220);
         try { if (back && back.focus && back.isConnected) back.focus({ preventScroll: true }); } catch (e) { }
     }
-    function cmpKey(e) {
-        if (e.key === 'Escape') { e.preventDefault(); closeCmp(); return; }
-        if ((e.key === 'Enter' || e.key === ' ') && e.target && e.target.matches && e.target.matches('tr[data-cmp="pair"]')) { e.preventDefault(); e.target.click(); }
-    }
+    function cmpKey(e) { if (e.key === 'Escape') { e.preventDefault(); closeCmp(); } }
     function openCmp(who, from) {
+        if (!who || !(who.uid || who.n)) return;
         if (ladEl) closeLadder();
+        if (infEl) closeInfo();
         if (cmpEl) closeCmp();
-        cmpWho = who && (who.uid || who.n) ? { uid: who.uid || '', n: who.n || '' } : null; cmpFrom3 = false; cmpK = per;
+        cmpWho = { uid: who.uid || '', n: who.n || '' }; cmpK = per;
         const el = D.createElement('div');
         el.className = 'rk-lad-wrap rk-cmp-wrap'; el.setAttribute('data-noi18n', '');
-        el.innerHTML = '<div class="rk-lad rk-cmp" role="dialog" aria-modal="true"></div>';
+        el.innerHTML = '<div class="rk-lad rk-cmp fresh" role="dialog" aria-modal="true"></div>';
         el.addEventListener('click', e => {
             if (e.target === el) { closeCmp(); return; }
             const t = e.target.closest('[data-cmp]'); if (!t) return;
             const a = t.dataset.cmp;
             if (a === 'close') closeCmp();
-            else if (a === 'per') { cmpK = K.period(t.dataset.k); drawCmp('.rk-segb[aria-selected="true"]'); }
-            else if (a === 'pair') { cmpWho = { uid: t.dataset.uid || '', n: t.dataset.who || '' }; cmpFrom3 = true; drawCmp('.rk-lad-x'); const b = el.querySelector('.rk-cmp-b'); if (b) b.scrollTop = 0; }
-            else if (a === 'top') { cmpWho = null; cmpFrom3 = false; drawCmp('.rk-lad-x'); }
+            else if (a === 'per') { const c = el.querySelector('.rk-cmp'); if (c) c.classList.remove('fresh'); cmpK = K.period(t.dataset.k); drawCmp('.rk-segb[aria-selected="true"]'); }
             else if (a === 'profile') { const q = { uid: t.dataset.uid || '', name: t.dataset.who || '' }; closeCmp(); try { const r = R3(); if (r && r.open) r.open(q); } catch (er) { console.error(er); } }
         });
         el.addEventListener('keydown', e => {
@@ -453,10 +482,53 @@
         D.addEventListener('keydown', cmpKey, true);
         requestAnimationFrame(() => { el.classList.add('in'); const x = el.querySelector('.rk-lad-x'); if (x) x.focus({ preventScroll: true }); });
     }
-    function render(b) {
+
+    /* ---------- game motion: the board sorts itself, numbers count up (23 Oct, 15:00) ---------- */
+    function calm() { try { return !!(W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; } }
+    const raf = f => (typeof requestAnimationFrame === 'function' ? requestAnimationFrame(f) : setTimeout(() => f(Date.now()), 16));
+    const nowMs = () => (typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now());
+    function countUp(el, from, to) {
+        if (!el || from === to || !isFinite(from) || !isFinite(to)) return;
+        const t0 = nowMs(), dur = 700, L = lang();
+        el.textContent = K.fmt(from, L);
+        const step = () => { if (!el.isConnected) return; const k = Math.min(1, (nowMs() - t0) / dur), e = 1 - Math.pow(1 - k, 3); el.textContent = K.fmt(Math.round(from + (to - from) * e), L); if (k < 1) raf(step); };
+        raf(step);
+    }
+    function snap(b) {
+        const m = {};
+        b.querySelectorAll('[data-key]').forEach(e => { const r = e.getBoundingClientRect(); if (!r.width) return; const v = e.querySelector('[data-v]'); m[e.dataset.key] = { x: r.left, y: r.top, v: v ? +v.dataset.v : null }; });
+        return m;
+    }
+    /* first: the boxes before the change (null for the first look: the CSS intro runs and the numbers count up from 0) */
+    function play(b, first) {
+        if (calm()) return;
+        b.querySelectorAll('[data-key]').forEach(el => {
+            const f = first && first[el.dataset.key], v = el.querySelector('[data-v]');
+            if (v) { const to = +v.dataset.v; countUp(v, f && f.v != null ? f.v : (first && !f ? to : 0), to); }
+            if (!first) return;
+            if (!f) { el.classList.add('rk-in'); return; }
+            const r = el.getBoundingClientRect(), dx = f.x - r.left, dy = f.y - r.top;
+            if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
+            el.style.transition = 'none'; el.style.transform = 'translate(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px)';
+            void el.offsetWidth;
+            raf(() => {
+                el.style.transition = 'transform .6s cubic-bezier(.2,.9,.25,1.06)'; el.style.transform = '';
+                setTimeout(() => { el.style.transition = ''; }, 650);
+            });
+        });
+    }
+    /* fresh: the tab was just shown (community-rooms-ui.js), so the podium rises again even when nothing changed */
+    function render(b, fresh) {
         if (!b) return; box = b; wire(b);
-        const r = html(), key = per + '|' + lang() + '|' + r.h.length + '|' + r.h;
-        if (b.__rkH !== key) { b.__rkH = key; b.innerHTML = '<div class="rk" data-noi18n>' + r.h + '</div>'; }
+        const r = html(), key = per + '|' + lang() + '|' + r.h.length + '|' + r.h, vis = !!(b.isConnected && b.getClientRects && b.getClientRects().length);
+        if (b.__rkH !== key) {
+            const intro = !b.__rkH || !b.querySelector('.rk') || !!fresh, first = !intro && vis ? snap(b) : null;
+            b.__rkH = key; b.innerHTML = '<div class="rk' + (intro ? ' rk-intro' : '') + '" data-noi18n>' + r.h + '</div>';
+            if (vis) play(b, intro ? null : first || {});
+        } else if (fresh && vis) {
+            const el = b.querySelector('.rk');
+            if (el) { el.classList.remove('rk-intro'); void el.offsetWidth; el.classList.add('rk-intro'); play(b, null); }
+        }
         fetchLooks(r.uids);
     }
     /* 23 Oct (E-man: "we have a care board and some XP board ... nuke them"): Ranking is the one board. Every old way in (Profile's
@@ -474,5 +546,6 @@
         setTimeout(go, 60);
     }
     W.LowiRanking = { render, open, period: () => per, setPeriod: k => { per = K.period(k); if (box && box.isConnected) render(box); }, _html: () => html().h, openLadder, closeLadder, _ladder: () => ladderHTML(),
-        openCompare: openCmp, closeCompare: closeCmp, _compare: (who, k) => { const a = cmpWho, b = cmpK, c = cmpFrom3; cmpWho = who || null; cmpK = K.period(k || per); cmpFrom3 = false; try { return cmpHTML(); } finally { cmpWho = a; cmpK = b; cmpFrom3 = c; } }, _mixes: m => { if (m) mixes = m; return mixes; } };
+        openInfo, closeInfo, _info: () => infoHTML(),
+        openCompare: openCmp, closeCompare: closeCmp, _compare: (who, k) => { if (!who) return ''; const a = cmpWho, b = cmpK; cmpWho = who; cmpK = K.period(k || per); try { return pairHTML(who); } finally { cmpWho = a; cmpK = b; } }, _mixes: m => { if (m) mixes = m; return mixes; } };
 })();

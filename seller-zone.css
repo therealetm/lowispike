@@ -29,10 +29,10 @@
 .sz-orb-h { width: 50px; height: 50px; font-size: 26px; }
 .sz-orb-l { width: 46px; height: 46px; font-size: 24px; }
 @keyframes szPulse { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 1px rgba(143, 231, 255, .35) inset, 0 0 12px rgba(143, 231, 255, .18); } 50% { transform: scale(1.06); box-shadow: 0 0 0 1px rgba(143, 231, 255, .5) inset, 0 0 20px rgba(143, 231, 255, .34); } }
-.sz-chips { display: flex; gap: 8px; overflow-x: auto; padding: 6px 2px 8px; scrollbar-width: none; }
+.sz-chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 6px 2px 8px; }
 .sz-chips::-webkit-scrollbar { display: none; }
 .sz-chip {
-  flex: 0 0 auto; min-height: 40px; padding: 8px 14px; border-radius: 999px; font: inherit; font-size: 13px; font-weight: 800; color: inherit; cursor: pointer;
+  flex: 0 0 auto; min-height: 40px; padding: 8px 12px; border-radius: 999px; font: inherit; font-size: 13px; font-weight: 800; color: inherit; cursor: pointer;
   background: rgba(143, 231, 255, .08); border: 1px solid rgba(143, 231, 255, .25);
 }
 .sz-chip.on { background: radial-gradient(circle at 35% 30%, #c9f5ff, #6fd6ff); color: #062033; border-color: transparent; box-shadow: 0 0 16px rgba(143, 231, 255, .45); }
@@ -91,7 +91,7 @@
   display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px; border-radius: 22px; text-align: center; text-decoration: none; color: inherit; min-width: 0;
   background: radial-gradient(120% 90% at 50% 0%, rgba(143, 231, 255, .14), rgba(255, 255, 255, .03)); border: 1px solid rgba(143, 231, 255, .25);
 }
-.sz-mini b { font-size: 13px; font-weight: 800; line-height: 1.2; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.sz-mini b { font-size: 13px; font-weight: 800; line-height: 1.2; overflow-wrap: anywhere; hyphens: auto; }
 .sz-mini small { font-size: 11px; opacity: .7; overflow-wrap: anywhere; }
 .sz-mini .sz-v { font-size: 11px; padding: 2px 8px; }
 .sz-all {

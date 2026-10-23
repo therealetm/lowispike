@@ -1,22 +1,35 @@
 {
   "slug": "bloom-ring",
+  "text": {
+    "en": "Bubbles open in one round circle. Tap Fuel, Water or Move: the small bubbles now sit evenly on one circle round Misty, and the view zooms out to make room. Mirror left the Move bubbles: hold Move, it is the first card on the Move page. Tap Misty with two fingers at once to open every bubble together. Tap the empty space to close them.",
+    "de": "Bubbles gehen in einem runden Kreis auf. Tippe auf Fuel, Wasser oder Move: Die kleinen Bubbles sitzen jetzt gleichmäßig auf einem Kreis um Misty, und die Ansicht zoomt raus, damit alles Platz hat. Mirror ist nicht mehr bei den Move-Bubbles: Halt Move gedrückt, es ist die erste Karte auf der Bewegungsseite. Tippe Misty mit zwei Fingern gleichzeitig an, dann gehen alle Bubbles zusammen auf. Tipp daneben, um sie zu schließen.",
+    "es": "Las burbujas se abren en un círculo. Toca Combustible, Agua o Movimiento: las burbujas pequeñas se colocan en un círculo alrededor de Misty y la vista se aleja para hacer sitio. Espejo ya no está en las burbujas de Movimiento: mantén Movimiento, es la primera tarjeta de su página. Toca a Misty con dos dedos a la vez para abrir todas las burbujas juntas. Toca fuera para cerrarlas."
+  },
   "tutorial": "misty-two",
-  "go": {"tab": "home"},
+  "go": {
+    "tab": "home"
+  },
   "lead": {
     "en": "Bubbles open in one round circle",
     "de": "Bubbles gehen in einem runden Kreis auf",
     "es": "Las burbujas se abren en un círculo"
   },
   "steps": [
-    {"tab": "home", "text": {
-      "en": "Tap Fuel, Water or Move: the small bubbles now sit evenly on one circle round Misty, and the view zooms out to make room. Mirror is no longer in the Move bubbles.",
-      "de": "Tippe auf Fuel, Wasser oder Move: Die kleinen Bubbles sitzen jetzt gleichmäßig auf einem Kreis um Misty, und die Ansicht zoomt raus, damit alles Platz hat. Mirror ist nicht mehr bei den Move-Bubbles.",
-      "es": "Toca Combustible, Agua o Movimiento: las burbujas pequeñas se colocan en un círculo alrededor de Misty y la vista se aleja para hacer sitio. Espejo ya no está en las burbujas de Movimiento."
-    }},
-    {"tab": "home", "text": {
-      "en": "Tap Misty with two fingers at once to open every bubble together. Tap the empty space to close them.",
-      "de": "Tippe Misty mit zwei Fingern gleichzeitig an, dann gehen alle Bubbles zusammen auf. Tipp daneben, um sie zu schließen.",
-      "es": "Toca a Misty con dos dedos a la vez para abrir todas las burbujas juntas. Toca fuera para cerrarlas."
-    }}
+    {
+      "tab": "home",
+      "text": {
+        "en": "Tap Fuel, Water or Move: the small bubbles now sit evenly on one circle round Misty, and the view zooms out to make room. Mirror left the Move bubbles: hold Move, it is the first card on the Move page.",
+        "de": "Tippe auf Fuel, Wasser oder Move: Die kleinen Bubbles sitzen jetzt gleichmäßig auf einem Kreis um Misty, und die Ansicht zoomt raus, damit alles Platz hat. Mirror ist nicht mehr bei den Move-Bubbles: Halt Move gedrückt, es ist die erste Karte auf der Bewegungsseite.",
+        "es": "Toca Combustible, Agua o Movimiento: las burbujas pequeñas se colocan en un círculo alrededor de Misty y la vista se aleja para hacer sitio. Espejo ya no está en las burbujas de Movimiento: mantén Movimiento, es la primera tarjeta de su página."
+      }
+    },
+    {
+      "tab": "home",
+      "text": {
+        "en": "Tap Misty with two fingers at once to open every bubble together. Tap the empty space to close them.",
+        "de": "Tippe Misty mit zwei Fingern gleichzeitig an, dann gehen alle Bubbles zusammen auf. Tipp daneben, um sie zu schließen.",
+        "es": "Toca a Misty con dos dedos a la vez para abrir todas las burbujas juntas. Toca fuera para cerrarlas."
+      }
+    }
   ]
 }

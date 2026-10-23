@@ -1,6 +1,7 @@
 /* home-settings-sleep-v2.js: the Sleep and Settings bubbles of the one-page Home (Oct 18 2026, Emmanuel).
    Tapping either bubble blooms a few glass chips outward, away from Misty, so she always stays in view.
-   Sleep: one daily log for last night (Under 6 h / 6-7 h / 7 h or more), change or clear it any time today.
+   Sleep: one daily log for last night (Under 6 h / 6-7 h / 7 h or more); tapping another choice replaces today's, it never stacks.
+     Since 23 Oct 2026 (E-man: "I guess we don't need a reset") there is no separate Clear chip: the bloom always shows the three choices.
      Stored with the private health data (S.health.sleepDays via LowiVitalsBridge, account-scoped, never in the cloud backup).
      It gives no XP and no sun energy: progression is not touched until the plan aligns it.
    Settings: Me, Look & sound, Account, the bottom menu bar switch, and More (every Home entry point the ring hid).
@@ -20,17 +21,17 @@
     const KEEP_DAYS = 120;
     const TX = {
         en: { sleep: 'Sleep', log: 'Log', ask: 'How long did you sleep last night?', under6: 'Under 6 h', '6to7': '6\u20137 h', '7plus': '7 h or more',
-            short: { under6: '<6 h', '6to7': '6\u20137 h', '7plus': '7 h+' }, notLogged: 'not logged', clear: 'Clear', clearLong: 'Clear today\u2019s sleep',
+            short: { under6: '<6 h', '6to7': '6\u20137 h', '7plus': '7 h+' }, notLogged: 'not logged',
             settings: 'Settings', me: 'Me', look: 'Look & sound', account: 'Account', on: 'on', off: 'off', more: 'More', back: 'Back', close: 'Close',
             moreTitle: 'Everything else', today: 'Today & history', community: 'Community', care: 'Ranking', cook: 'Cook', workouts: 'Workouts',
             vr: 'VR', worldSound: 'World sound', theme: 'Day / night', gift: 'Gift of the day', weather: 'Weather', quest: 'Daily quest', goTo: 'Go to', settingsGroup: 'Settings', tutorial: 'Tutorial', body: 'Weight & BMI', weight: 'Weight journey', version: 'Version' },
         de: { sleep: 'Schlaf', log: 'Eintragen', ask: 'Wie lange hast du letzte Nacht geschlafen?', under6: 'Unter 6 Std.', '6to7': '6\u20137 Std.', '7plus': '7 Std. oder mehr',
-            short: { under6: '<6 Std.', '6to7': '6\u20137 Std.', '7plus': '7 Std.+' }, notLogged: 'nicht eingetragen', clear: 'L\u00f6schen', clearLong: 'Heutigen Schlaf l\u00f6schen',
+            short: { under6: '<6 Std.', '6to7': '6\u20137 Std.', '7plus': '7 Std.+' }, notLogged: 'nicht eingetragen',
             settings: 'Einstellungen', me: 'Ich', look: 'Aussehen & Ton', account: 'Konto', on: 'an', off: 'aus', more: 'Mehr', back: 'Zur\u00fcck', close: 'Schlie\u00dfen',
             moreTitle: 'Alles andere', today: 'Heute & Verlauf', community: 'Community', care: 'Rangliste', cook: 'Kochen', workouts: 'Workouts',
             vr: 'VR', worldSound: 'Weltklang', theme: 'Tag / Nacht', gift: 'Geschenk des Tages', weather: 'Wetter', quest: 'Tagesquest', goTo: 'Gehe zu', settingsGroup: 'Einstellungen', tutorial: 'Tutorial', body: 'Gewicht & BMI', weight: 'Gewichtsreise', version: 'Version' },
         es: { sleep: 'Sue\u00f1o', log: 'Anotar', ask: '\u00bfCu\u00e1nto dormiste anoche?', under6: 'Menos de 6 h', '6to7': '6\u20137 h', '7plus': '7 h o m\u00e1s',
-            short: { under6: '<6 h', '6to7': '6\u20137 h', '7plus': '7 h+' }, notLogged: 'sin anotar', clear: 'Borrar', clearLong: 'Borrar el sue\u00f1o de hoy',
+            short: { under6: '<6 h', '6to7': '6\u20137 h', '7plus': '7 h+' }, notLogged: 'sin anotar',
             settings: 'Ajustes', me: 'Yo', look: 'Aspecto y sonido', account: 'Cuenta', on: 's\u00ed', off: 'no', more: 'M\u00e1s', back: 'Atr\u00e1s', close: 'Cerrar',
             moreTitle: 'Todo lo dem\u00e1s', today: 'Hoy e historial', community: 'Comunidad', care: 'Ranking', cook: 'Cocinar', workouts: 'Entrenos',
             vr: 'RV', worldSound: 'Sonido del mundo', theme: 'D\u00eda / noche', gift: 'Regalo del d\u00eda', weather: 'Tiempo', quest: 'Misi\u00f3n diaria', goTo: 'Ir a', settingsGroup: 'Ajustes', tutorial: 'Tutorial', body: 'Peso e IMC', weight: 'Tu camino de peso', version: 'Versi\u00f3n' }
@@ -208,7 +209,8 @@
         const has = id => !!(env && env.has && env.has(id));
         if (kind === 'settings') return SETTINGS_IDS.concat(ACCOUNT_IDS).filter(has);
         if (kind === 'more') return MORE.filter(has);
-        if (kind === 'sleep') return env && env.logged ? BANDS.concat('clear') : BANDS.slice();
+        /* 23 Oct 2026: always the three choices, logged or not (the separate Clear chip is gone; another choice replaces today's) */
+        if (kind === 'sleep') return BANDS.slice();
         return [];
     }
 
@@ -250,7 +252,6 @@
         under6: '<path d="M5 18v-3" ' + P + '/><path d="M12 18v-7M19 18V7" ' + P + ' opacity=".35"/>',
         '6to7': '<path d="M5 18v-3M12 18v-7" ' + P + '/><path d="M19 18V7" ' + P + ' opacity=".35"/>',
         '7plus': '<path d="M5 18v-3M12 18v-7M19 18V7" ' + P + '/>',
-        clear: '<path d="M9 7 5 11l4 4M5 11h9a5 5 0 0 1 0 10h-2" ' + P + '/>',
         me: '<circle cx="12" cy="8.5" r="3.5" ' + P + '/><path d="M5 20a7 7 0 0 1 14 0" ' + P + '/>',
         look: '<path d="M4 10v4h3l4 3.5v-11L7 10H4z" ' + P + '/><path d="M15 9.5a3.5 3.5 0 0 1 0 5M17.5 7a7 7 0 0 1 0 10" ' + P + '/>',
         account: '<rect x="5" y="10.5" width="14" height="9.5" rx="2" ' + P + '/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" ' + P + '/>',
@@ -340,7 +341,6 @@
         const T = t();
         if (kind === 'sleep') {
             const cur = sleepToday();
-            if (id === 'clear') return '<button type="button" class="ss2-chip ss2-clear" data-ss2="clear" aria-label="' + T.clearLong + '"><span class="ss2-face">' + svg('clear') + '<span>' + T.clear + '</span></span></button>';
             return '<button type="button" class="ss2-chip" role="radio" data-ss2="' + id + '" aria-checked="' + (cur === id) + '" aria-label="' + T[id] + '"><span class="ss2-face">' + svg(id) + '<span>' + T.short[id] + '</span></span></button>';
         }
         const R = ROUTES[id], tog = R && R.toggle, label = T[id] || id;
@@ -498,7 +498,7 @@
         if (id === 'close') { close(true); return; }
         if (id === 'back') { show('settings'); return; }
         if (kind === 'sleep') {
-            if (id === 'clear') setSleep(null); else if (BANDS.includes(id)) setSleep(id);
+            if (BANDS.includes(id)) setSleep(id);
             pulse(); setTimeout(() => close(true), 380);
             return;
         }

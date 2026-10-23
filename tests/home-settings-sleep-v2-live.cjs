@@ -152,19 +152,21 @@ async function boot(page, url) {
         f = await page.evaluate(FACE); s = await page.evaluate(STORE);
         ok(f.val === '6\u20137 h' && s.band === '6to7', 'after reload: ' + JSON.stringify({ f, s }));
         await page.evaluate(() => { window.__mb = []; window.addEventListener('lowi:home-menubar', e => window.__mb.push(e.detail && e.detail.on)); window.__bl = []; document.addEventListener('lowi:bloom-v2', e => window.__bl.push(e.detail)); });
-        /* correct to 7 h or more, then clear */
+        /* correct to 7 h or more; no Clear chip since 23 Oct 2026 (E-man: "I guess we don't need a reset") */
         await tap(page, '[data-orbit="sleep"]');
         g = await page.evaluate(GEO);
         { const em = await page.evaluate(EMOJI); ok(!em, 'no emoji on Sleep/Settings or their blooms: ' + em); }
-        ok(g.chips.map(c => c.id).join() === 'under6,6to7,7plus,clear', 'logged sleep bloom should offer Clear: ' + g.chips.map(c => c.id));
+        ok(g.chips.map(c => c.id).join() === 'under6,6to7,7plus', 'logged sleep bloom should offer exactly the three choices, no Clear: ' + g.chips.map(c => c.id));
         ok((g.chips.find(c => c.id === '6to7') || {}).checked === 'true', 'today\'s choice should show as checked');
         geoOK(g, 'sleep logged');
         await tap(page, '#ss2Bloom [data-ss2="7plus"]'); await sleep(300);
         s = await page.evaluate(STORE); f = await page.evaluate(FACE);
         ok(s.band === '7plus' && s.count === 1 && f.val === '7 h+' && parseFloat(f.fill) === 1, 'correction: ' + JSON.stringify({ s, f }));
-        await tap(page, '[data-orbit="sleep"]'); await tap(page, '#ss2Bloom [data-ss2="clear"]'); await sleep(300);
+        /* tapping today's choice again keeps it (no tap-again reset) */
+        await tap(page, '[data-orbit="sleep"]'); await tap(page, '#ss2Bloom [data-ss2="7plus"]'); await sleep(300);
         s = await page.evaluate(STORE); f = await page.evaluate(FACE);
-        ok(s.band === null && f.val === 'Log' && !f.done, 'clear: ' + JSON.stringify({ s, f }));
+        ok(s.band === '7plus' && s.count === 1 && f.val === '7 h+', 'same choice again keeps it: ' + JSON.stringify({ s, f }));
+        ok(!(await page.$('#ss2Bloom [data-ss2="clear"]')), 'no Clear chip anywhere');
         const xp = await page.evaluate(() => window.LowiVitalsBridge.state().xp);
         ok(xp === 900, 'sleep must not change XP (got ' + xp + ')');
         /* Settings: one tap opens the full Settings page (Emmanuel, 18 Oct 2026), not the chip bloom */

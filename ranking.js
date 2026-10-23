@@ -545,6 +545,8 @@
         };
         setTimeout(go, 60);
     }
+    /* the server bot list arrived or changed (bot-accounts.js): repaint an open board so bots drop out at once */
+    try { W.addEventListener('lowi-bots', () => { if (box && box.isConnected) render(box); }); } catch (e) { }
     W.LowiRanking = { render, open, period: () => per, setPeriod: k => { per = K.period(k); if (box && box.isConnected) render(box); }, _html: () => html().h, openLadder, closeLadder, _ladder: () => ladderHTML(),
         openInfo, closeInfo, _info: () => infoHTML(),
         openCompare: openCmp, closeCompare: closeCmp, _compare: (who, k) => { if (!who) return ''; const a = cmpWho, b = cmpK; cmpWho = who; cmpK = K.period(k || per); try { return pairHTML(who); } finally { cmpWho = a; cmpK = b; } }, _mixes: m => { if (m) mixes = m; return mixes; } };

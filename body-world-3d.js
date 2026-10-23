@@ -179,6 +179,7 @@
         if (D.hidden) return false;
         if (H.classList.contains('mm-open')) return false;   /* Mirror mode covers the screen: no world frames behind it */
         if (H.classList.contains('stp-open')) return false;
+        if (H.classList.contains('sz-open')) return false;
         if ((H.classList.contains("cr-room") || H.classList.contains("rm-view")) && communityOn()) return false;   /* Oct 23 2026: only while Community is the open page. A flag left on behind Home froze Home on the last Community frame (Emmanuel: "stuck on like a frozen page") */   /* 21 Oct: Creation/Affiliates tabs cover it too */   /* 20 Oct (support rooms): the Chat tab covers the screen, so no world frames behind it */  /* "What can I buy here?" covers it too (Oct 18 Cook -> shop crash): no frames re-blurred under its list */
         if (mode === 'full') return !!full;
         if (mode === 'back') return !!(back && back.isConnected);

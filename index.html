@@ -15011,6 +15011,8 @@ function scRedrawServing(){
   if (v) card.className = card.className.replace(/\bv-(spike|better|ok|unknown)\b/, "v-" + v);
 }
 if (typeof window.addEventListener === "function") window.addEventListener("lowi:portion", () => { clearTimeout(scPortT); scPortT = setTimeout(scRedrawServing, 120); });
+/* Oct 23 (Seller Zone): chips, chocolate, gummies or biscuits that are not ok get real snacks you can order (seller-zone.js) */
+function szSwapHTML(p){ try { return window.LowiSellerZone && LowiSellerZone.swapHTML ? LowiSellerZone.swapHTML(p) : ""; } catch(e){ return ""; } }
 function simpleCardHTML(p){
   const sv = scServing(p), g = scUserG(sv); p = scView(p, sv); /* scanfe-g2: from here p = the product rated for the amount on the card */
   const v = {spike:1, better:1, ok:1}[p.verdict] ? p.verdict : "unknown", mine = isMine(p), m = mine ? D.mine[pkey(p)] : null;
@@ -15021,7 +15023,7 @@ function simpleCardHTML(p){
     '<div class="sc-top"><div class="sc-img">' + (p.img ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(p.img) + '">' : '<i>' + (CAT_E[p.cat] || CAT_E.other) + '</i>') + '</div>' +
     '<div class="sc-nm"><div class="b3-name">' + esc(p.name) + '</div>' + (p.brand ? '<div class="sc-brand">' + esc(p.brand) + (p.facts && p.facts.q ? " · " + esc(p.facts.q) : "") + '</div>' : "") + '</div></div>' +
     '<div class="sc-verd v-' + v + (p.nameEst ? " ne-v" : "") + '" role="status"><small>' + esc(p.nameEst ? net(p.nameEst.how === "ai" ? "ai" : "est") : sct("est")) + '</small><strong>' + esc(sct(v)) + '</strong>' + (why[0] ? '<span>' + esc(why[0]) + '</span>' : "") + '</div>' +
-    (p.nameEst ? nameEstHTML(p) + nameSwapHTML(p) + noDataHTML(p) : "") + /* Oct 23: name verdict, best swap, then the scan's own data or "no detailed data" */
+    (p.nameEst ? nameEstHTML(p) + nameSwapHTML(p) + szSwapHTML(p) + noDataHTML(p) : szSwapHTML(p)) + /* Oct 23: name verdict, best swap, Seller Zone buys, then the scan's own data or "no detailed data" */
     (p.nameEst && !scanHasData(p) ? "" : (window.LowiFoodCard ? LowiFoodCard.cardHTML(p, LI(), g) : "")) + /* scanfe-g1: verdict, why, serving, quality, better choice */
     (p.nameEst && !scanHasData(p) ? "" : (window.LowiNutriStats ? LowiNutriStats.portionHTML(p) : "")) +
     '<section class="sc-sec sc-prices"><h4>' + esc(sct("cheaper")) + '</h4>' + (storeCmp || '<p class="sc-none">' + esc(sct("noPrices")) + '</p>') + '</section>' +
@@ -21001,6 +21003,10 @@ window.LowiCommunityHost = {
 <link rel="stylesheet" id="stpCss" href="store-picks.css?v=20261023-180432">
 <script src="store-picks-core.js?v=20261023-180432"></script>
 <script src="store-picks.js?v=20261023-180432"></script>
+<link rel="stylesheet" id="szCss" href="seller-zone.css?v=20261023-180432">
+<script src="seller-zone-data.js?v=20261023-180432"></script>
+<script src="seller-zone-core.js?v=20261023-180432"></script>
+<script src="seller-zone.js?v=20261023-180432"></script>
 <!-- Oct 17: the person's own grocery shopping rhythm (setup step 4 + Profile > About you). ONE source of truth: shop-plan-core.js -->
 <link rel="stylesheet" id="splCss" href="shop-plan.css?v=20261023-180432">
 <script src="shop-plan-core.js?v=20261023-180432"></script>

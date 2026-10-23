@@ -122,8 +122,9 @@
        here: scan products in the shop (the shopping camera: check and add to your list, it never logs a meal) and your shopping list. */
     function shopActs() {
         const scan = W.LowiShopScan && W.LowiShopScan.open, list = typeof W.tdShopOpen === 'function';
-        if (!scan && !list) return '';
-        return '<div class="stp-foot-acts">' +
+        const sz = W.LowiSellerZone && W.LowiSellerZone.entryHTML ? W.LowiSellerZone.entryHTML() : '';
+        if (!scan && !list) return sz;
+        return sz + '<div class="stp-foot-acts">' +
             (scan ? '<button type="button" class="stp-go stp-scanshop" data-stp="scanshop">' + ic.cart + '<span>' + esc(T('Scan in the shop', 'Im Laden scannen', 'Escanear en la tienda')) + '</span></button>' : '') +
             (list ? '<button type="button" class="stp-pill stp-mylist" data-stp="mylist"><span>' + esc(T('Shopping list', 'Einkaufsliste', 'Lista de compra')) + '</span></button>' : '') + '</div>';
     }
@@ -452,6 +453,7 @@
         const a = b.getAttribute('data-stp');
         if (a === 'close') return close();
         if (a === 'scanshop') { close(); setTimeout(() => { try { W.LowiShopScan.open(); } catch (x) {} }, 200); return; }
+        if (a === 'sellerzone') { try { W.LowiSellerZone.open(); } catch (x) {} return; }
         if (a === 'mylist') { close(); setTimeout(() => { try { W.tdShopOpen(); } catch (x) {} }, 200); return; }
         if (a === 'pick') { view = 'pick'; return paint(); }
         if (a === 'list') return showList();

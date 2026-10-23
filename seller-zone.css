@@ -1,0 +1,105 @@
+/* Seller Zone (Oct 23, 2026): living bubble style, same glass as the Shop panel. Type sizes 11 / 13 / 15 / 22 px. */
+.sz-ov {
+  position: fixed; inset: 0; z-index: 99990; display: flex; align-items: center; justify-content: center;
+  padding: max(10px, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom));
+  background: radial-gradient(120% 90% at 50% 0%, rgba(40, 90, 140, .45), rgba(2, 8, 20, .82));
+  opacity: 0; transition: opacity .24s ease;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+.sz-ov.show { opacity: 1; }
+.sz-box {
+  position: relative; width: min(560px, 100%); max-height: 100%; display: flex; flex-direction: column; overflow: hidden;
+  border-radius: 30px; color: var(--mb-ink, #eaf6ff);
+  background: radial-gradient(130% 70% at 30% 0%, rgba(143, 231, 255, .16), rgba(8, 22, 40, .94) 60%);
+  border: 1px solid rgba(143, 231, 255, .28);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .04) inset, 0 18px 60px rgba(0, 0, 0, .5), 0 0 40px rgba(110, 210, 255, .14);
+  transform: scale(.96); transition: transform .28s cubic-bezier(.2, .9, .3, 1.2);
+}
+.sz-ov.show .sz-box { transform: none; }
+.sz-head { display: flex; gap: 12px; align-items: center; padding: 18px 18px 8px; }
+.sz-head h3 { margin: 0; font-size: 22px; font-weight: 900; letter-spacing: .2px; }
+.sz-head p { margin: 2px 0 0; font-size: 13px; opacity: .8; line-height: 1.35; }
+.sz-scroll { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 4px 14px 12px; }
+.sz-orb {
+  flex: 0 0 auto; display: inline-grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; font-size: 20px; line-height: 1;
+  background: radial-gradient(circle at 34% 30%, rgba(255, 255, 255, .34), rgba(143, 231, 255, .18) 42%, rgba(30, 90, 140, .30) 100%);
+  box-shadow: 0 0 0 1px rgba(143, 231, 255, .35) inset, 0 0 14px rgba(143, 231, 255, .22);
+  animation: szPulse 3.6s ease-in-out infinite;
+}
+.sz-orb-h { width: 50px; height: 50px; font-size: 26px; }
+.sz-orb-l { width: 46px; height: 46px; font-size: 24px; }
+@keyframes szPulse { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 1px rgba(143, 231, 255, .35) inset, 0 0 12px rgba(143, 231, 255, .18); } 50% { transform: scale(1.06); box-shadow: 0 0 0 1px rgba(143, 231, 255, .5) inset, 0 0 20px rgba(143, 231, 255, .34); } }
+.sz-chips { display: flex; gap: 8px; overflow-x: auto; padding: 6px 2px 8px; scrollbar-width: none; }
+.sz-chips::-webkit-scrollbar { display: none; }
+.sz-chip {
+  flex: 0 0 auto; min-height: 40px; padding: 8px 14px; border-radius: 999px; font: inherit; font-size: 13px; font-weight: 800; color: inherit; cursor: pointer;
+  background: rgba(143, 231, 255, .08); border: 1px solid rgba(143, 231, 255, .25);
+}
+.sz-chip.on { background: radial-gradient(circle at 35% 30%, #c9f5ff, #6fd6ff); color: #062033; border-color: transparent; box-shadow: 0 0 16px rgba(143, 231, 255, .45); }
+.sz-regs .sz-chip { min-height: 36px; font-size: 13px; font-weight: 700; }
+.sz-note { margin: 6px 2px 10px; font-size: 13px; line-height: 1.4; opacity: .88; }
+.sz-note-l { padding: 10px 14px; border-radius: 18px; background: rgba(255, 210, 120, .08); border: 1px solid rgba(255, 210, 120, .25); }
+.sz-grid { display: grid; gap: 12px; }
+.sz-card {
+  padding: 14px; border-radius: 26px; background: radial-gradient(120% 90% at 20% 0%, rgba(143, 231, 255, .12), rgba(255, 255, 255, .03));
+  border: 1px solid rgba(143, 231, 255, .22); box-shadow: 0 0 0 1px rgba(255, 255, 255, .03) inset;
+}
+.sz-card.sz-away { opacity: .62; }
+.sz-top { display: flex; align-items: center; gap: 10px; }
+.sz-tt { flex: 1 1 auto; min-width: 0; }
+.sz-tt b { display: block; font-size: 15px; font-weight: 900; line-height: 1.25; overflow-wrap: anywhere; }
+.sz-tt small { display: block; font-size: 13px; opacity: .72; overflow-wrap: anywhere; }
+.sz-v { flex: 0 0 auto; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: .4px; }
+.sz-ja { background: rgba(80, 230, 150, .18); color: #7dffb8; border: 1px solid rgba(80, 230, 150, .45); }
+.sz-sel { background: rgba(255, 210, 90, .16); color: #ffd877; border: 1px solid rgba(255, 210, 90, .45); }
+.sz-why { margin: 10px 0 6px; font-size: 13px; line-height: 1.45; }
+.sz-meta { display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 0 0 6px; font-size: 13px; opacity: .85; }
+.sz-ing { margin: 0 0 10px; font-size: 11px; line-height: 1.4; opacity: .65; }
+.sz-acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.sz-buy, .sz-amz {
+  display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 8px 12px; border-radius: 999px;
+  font-size: 13px; font-weight: 900; text-decoration: none; text-align: center;
+}
+.sz-buy { background: radial-gradient(circle at 35% 30%, #c9f5ff, #6fd6ff); color: #062033; box-shadow: 0 0 14px rgba(143, 231, 255, .35); }
+.sz-amz { color: inherit; background: rgba(143, 231, 255, .08); border: 1px solid rgba(143, 231, 255, .28); }
+.sz-buy svg, .sz-amz svg { width: 14px; height: 14px; flex: 0 0 auto; }
+.sz-failed { margin: 14px 2px 4px; padding: 10px 14px; border-radius: 20px; background: rgba(255, 110, 110, .06); border: 1px solid rgba(255, 110, 110, .22); font-size: 13px; }
+.sz-failed summary { cursor: pointer; font-weight: 800; min-height: 28px; }
+.sz-failed ul { margin: 8px 0 2px; padding-left: 18px; }
+.sz-failed li { margin: 0 0 6px; line-height: 1.4; }
+.sz-fine { margin: 10px 2px 4px; font-size: 11px; opacity: .6; line-height: 1.4; }
+.sz-foot { display: flex; justify-content: center; padding: 8px 0 14px; }
+.sz-close {
+  display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; color: inherit; cursor: pointer;
+  background: radial-gradient(circle at 34% 30%, rgba(255, 255, 255, .3), rgba(143, 231, 255, .14) 45%, rgba(20, 60, 100, .4));
+  border: 1px solid rgba(143, 231, 255, .4); box-shadow: 0 0 16px rgba(143, 231, 255, .25);
+}
+.sz-close svg { width: 22px; height: 22px; }
+/* Shop panel entry */
+.sz-entry {
+  display: flex; align-items: center; gap: 12px; width: 100%; margin: 0 0 14px; padding: 10px 14px; border-radius: 999px; font: inherit; color: inherit; text-align: left; cursor: pointer;
+  background: radial-gradient(120% 140% at 10% 0%, rgba(143, 231, 255, .2), rgba(143, 231, 255, .05)); border: 1px solid rgba(143, 231, 255, .35);
+  box-shadow: 0 0 18px rgba(143, 231, 255, .14);
+}
+.sz-entry-t { flex: 1 1 auto; min-width: 0; }
+.sz-entry-t b { display: block; font-size: 15px; font-weight: 900; }
+.sz-entry-t small { display: block; font-size: 13px; opacity: .78; line-height: 1.3; }
+.sz-chev { font-size: 22px; opacity: .7; }
+/* scanner card swap row */
+.sz-swap .sz-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.sz-mini {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 6px; border-radius: 22px; text-align: center; text-decoration: none; color: inherit; min-width: 0;
+  background: radial-gradient(120% 90% at 50% 0%, rgba(143, 231, 255, .14), rgba(255, 255, 255, .03)); border: 1px solid rgba(143, 231, 255, .25);
+}
+.sz-mini b { font-size: 13px; font-weight: 800; line-height: 1.2; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.sz-mini small { font-size: 11px; opacity: .7; overflow-wrap: anywhere; }
+.sz-mini .sz-v { font-size: 11px; padding: 2px 8px; }
+.sz-all {
+  display: block; width: 100%; margin: 6px 0 0; min-height: 44px; padding: 10px 14px; border-radius: 999px; font: inherit; font-size: 13px; font-weight: 900; cursor: pointer; color: inherit;
+  background: rgba(143, 231, 255, .1); border: 1px solid rgba(143, 231, 255, .32);
+}
+html[data-theme="light"] .sz-box { color: #0b2236; background: radial-gradient(130% 70% at 30% 0%, rgba(143, 231, 255, .35), rgba(245, 251, 255, .97) 60%); }
+html[data-theme="light"] .sz-ja { color: #0b7a44; }
+html[data-theme="light"] .sz-sel { color: #8a5a00; }
+@media (max-width: 360px) { .sz-swap .sz-row { grid-template-columns: 1fr 1fr; } .sz-swap .sz-row > :nth-child(3) { display: none; } .sz-acts { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { .sz-orb { animation: none; } .sz-ov, .sz-box { transition: none; } }

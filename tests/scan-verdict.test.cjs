@@ -53,7 +53,7 @@ assert.ok(/cur:\(\) => CUR \|\| \(window\.LowiDiscovery/.test(html), 'LowiDex.cu
 // Herb reaction follows the same estimate the card shows
 const cap = fnBody(spirit, 'async function captureProduct(p) {');
 assert.ok(!/LowiDiscovery\.assess/.test(cap), 'herb reaction must not depend on the discovery category');
-assert.ok(/LowiDex\.rate\(p\)\.verdict/.test(cap) && /scanSpike/.test(cap), 'herb reacts to the likely-spike estimate');
+assert.ok(/scanVerdict\(p, LowiDex\.rate, window\.LowiSpikeCore\)/.test(cap) && /scanSpike/.test(cap), 'herb reacts to the likely-spike estimate made stricter by the Food check (scanfe-h5)');
 
 // Snap and upload
 assert.ok(/flight\(photoURL\)\.then\(\(\) => photoSheet\(\)\)/.test(spirit), 'Snap opens the photo sheet');

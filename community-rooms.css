@@ -66,8 +66,11 @@
 .rm-list em{font-style:normal;color:var(--rm-ink2);font-size:13px}
 /* Creation + Affiliates tabs. The pane shows only the bar and that page (in a frame); the galaxy and chat are hidden, so they pause. */
 #cmPaneChat[data-spirit-chat]>.rm-view{display:none}
-#cmPaneChat[data-spirit-chat][data-rm-view]>*:not(.rm-bar):not(.rm-view):not(.rm-chans){display:none!important}
-#cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-view{display:none!important}
+#cmPaneChat[data-spirit-chat][data-rm-view]>*:not(.rm-bar):not(.rm-view):not(.rm-chans):not(.rm-rank){display:none!important}
+#cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-view,#cmPaneChat[data-spirit-chat][data-rm-view=rank]>.rm-view{display:none!important}
+/* 23 Oct: the Ranking tab's box (ranking.js), drawn under the same bar; scrolls with the pane like the channel list */
+#cmPaneChat[data-spirit-chat]>.rm-rank{display:none}
+#cmPaneChat[data-spirit-chat][data-rm-view=rank]>.rm-rank:not([hidden]){display:block;position:relative;z-index:20;margin:0 2px;padding:0 4px calc(var(--sab,0px) + 120px)}
 #cmPaneChat[data-spirit-chat][data-rm-view]>.rm-view{display:flex;flex-direction:column;position:relative;z-index:20;height:calc(100vh - 196px);height:calc(100dvh - 196px);min-height:380px;margin:0 2px}
 .rm-frame{flex:1;width:100%;min-height:0;border:1px solid rgba(143,231,255,.4);border-radius:22px;background:#050b1e;color-scheme:dark;box-shadow:0 0 18px rgba(28,247,249,.16)}
 .rm-frame[hidden]{display:none}
@@ -214,9 +217,9 @@
 @media (max-height:600px){#app #main #cmPaneChat h2.rm-l-h{font-size:clamp(36px,11vw,44px)}.rm-l-hero{padding-top:10px}}
 @media (min-width:700px){.rm-l-hero{padding-top:56px}}
 /* the landing is taller than a short screen: it scrolls inside the pane (the pane clips everything else), the top bar floats */
-#cmPaneChat[data-spirit-chat][data-rm-view=chans]{overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-#cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-bar{position:sticky;top:0;z-index:5}
-#cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-bar{padding-bottom:12px;margin-bottom:4px;background:linear-gradient(180deg,rgba(4,10,28,.97) 0%,rgba(4,10,28,.9) 78%,rgba(4,10,28,0) 100%)}
+#cmPaneChat[data-spirit-chat][data-rm-view=chans],#cmPaneChat[data-spirit-chat][data-rm-view=rank]{overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+#cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-bar,#cmPaneChat[data-spirit-chat][data-rm-view=rank]>.rm-bar{position:sticky;top:0;z-index:5}
+#cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-bar,#cmPaneChat[data-spirit-chat][data-rm-view=rank]>.rm-bar{padding-bottom:12px;margin-bottom:4px;background:linear-gradient(180deg,rgba(4,10,28,.97) 0%,rgba(4,10,28,.9) 78%,rgba(4,10,28,0) 100%)}
 /* Create and Affiliates: the frame fits the pane on short screens (it scrolls inside itself), and the bar stays pinned so the tabs never slide under the profile picture */
 #cmPaneChat[data-spirit-chat][data-rm-view]>.rm-bar{position:sticky;top:0}
 @media (max-height:600px){#cmPaneChat[data-spirit-chat][data-rm-view]>.rm-view{min-height:0}}

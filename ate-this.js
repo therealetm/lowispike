@@ -29,7 +29,7 @@
       plannedTag: 'Planeado · aún sin comer', liked: 'Guardado', fail: 'No se pudo registrar. Inténtalo de nuevo.', meal: 'Comida',
       breakfast: 'Desayuno', lunch: 'Almuerzo', dinner: 'Cena', snack: 'Snack', rm: 'Quitar' }
   };
-  const SLOTS = ['breakfast', 'lunch', 'dinner', 'snack'];
+  const SLOTS = ['meal', 'snack']; /* Oct 23: Meal or Snack, the time does the rest (older logs keep their old slot) */
   const lang = () => { let l = ''; try { l = (W.LowiLang && LowiLang.get && LowiLang.get()) || D.documentElement.lang || localStorage.getItem('lowispike.lang') || 'en'; } catch (e) { l = 'en'; } l = String(l).slice(0, 2); return TX[l] ? l : 'en'; };
   const t = (k, o) => String(TX[lang()][k] || TX.en[k] || k).replace(/\{(\w+)\}/g, (m, x) => (o && o[x] != null ? o[x] : ''));
   /* bug hunt Oct 22: the bar and the plan rows are data-noi18n, so the page translator skips them and a German or Spanish user saw the
@@ -39,7 +39,7 @@
   const V = () => W.LowiVitalsBridge;
   const S = () => { try { return V() && V().state(); } catch (e) { return null; } };
   const slotNow = now => { try { if (W.LowiSpiritCore && LowiSpiritCore.slotFor) return LowiSpiritCore.slotFor(now); } catch (e) { }
-    const h = new Date(now == null ? Date.now() : now).getHours(); return h >= 4 && h < 11 ? 'breakfast' : h >= 11 && h < 16 ? 'lunch' : h >= 16 && h < 22 ? 'dinner' : 'snack'; };
+    return 'meal'; };
 
   /* what was picked: a recipe (LowiP2), a caught product or a community pick (the Shuffle pool, fById) */
   function item(id, name) {

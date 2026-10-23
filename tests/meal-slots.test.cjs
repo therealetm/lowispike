@@ -9,19 +9,17 @@ const K = require('../spirit-core.js');
 const read = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
 const js = read('spirit.js'), html = read('index.html'), css = read('scan-screens.css');
 
-test('four slots, and the one that fits the clock is offered first', () => {
-    assert.deepStrictEqual(K.SLOTS, ['breakfast', 'lunch', 'dinner', 'snack']);
-    const at = h => K.slotFor(new Date(2026, 9, 19, h, 30).getTime());
-    assert.strictEqual(at(7), 'breakfast');
-    assert.strictEqual(at(10), 'breakfast');
-    assert.strictEqual(at(12), 'lunch');
-    assert.strictEqual(at(15), 'lunch');
-    assert.strictEqual(at(18), 'dinner');
-    assert.strictEqual(at(23), 'snack', 'late night is snack time');
-    assert.strictEqual(at(2), 'snack');
-    assert.strictEqual(K.slotOk('lunch'), 'lunch');
-    assert.strictEqual(K.slotOk('brunch'), '');
+test('Oct 23: Meal or Snack only, the time does the rest; older breakfast / lunch / dinner read as Meal', () => {
+    assert.deepStrictEqual(K.SLOTS, ['meal', 'snack']);
+    assert.strictEqual(K.slotFor(new Date(2026, 9, 23, 7, 30).getTime()), 'meal');
+    assert.strictEqual(K.slotFor(new Date(2026, 9, 23, 23, 30).getTime()), 'meal');
+    assert.strictEqual(K.slotOk('meal'), 'meal');
+    assert.strictEqual(K.slotOk('snack'), 'snack');
+    assert.strictEqual(K.slotOk('lunch'), '', 'old slots are not offered any more');
     assert.strictEqual(K.slotOk(undefined), '');
+    for (const o of ['breakfast', 'lunch', 'dinner', 'meal']) assert.strictEqual(K.kind(o), 'meal', o + ' reads as Meal');
+    assert.strictEqual(K.kind('snack'), 'snack');
+    assert.strictEqual(K.kind(''), '');
 });
 
 test('one-tap re-log: this slot\'s own meals first, no duplicates, then the rest', () => {
@@ -29,10 +27,11 @@ test('one-tap re-log: this slot\'s own meals first, no duplicates, then the rest
         { t: 'Paprika', slot: 'snack' }, { t: 'Oats', slot: 'breakfast' }, { t: 'Pasta', slot: 'dinner' },
         { t: 'Apple' }, { t: 'oats', slot: 'breakfast' }, { t: 'Salad', slot: 'lunch' }
     ];
-    const b = K.slotRecent(logs, 'breakfast').map(l => l.t);
-    assert.strictEqual(b[0], 'oats', 'newest breakfast first');
+    const b = K.slotRecent(logs, 'meal').map(l => l.t);
+    assert.strictEqual(b[0], 'Salad', 'newest meal first (old lunch reads as Meal)');
+    assert.deepStrictEqual(b.slice(0, 3), ['Salad', 'oats', 'Pasta'], 'old breakfast / lunch / dinner are all meals');
     assert.strictEqual(b.filter(x => x.toLowerCase() === 'oats').length, 1, 'same food once');
-    assert.ok(b.includes('Salad'), 'other meals still follow');
+    assert.ok(b.includes('Paprika'), 'snacks still follow');
     const s = K.slotRecent(logs, 'snack').map(l => l.t);
     assert.strictEqual(s[0], 'Paprika', 'snacks: own snacks first');
     assert.ok(s.includes('Pasta'), 'then the rest, so the Snacks slot is never empty on day one');
@@ -85,11 +84,16 @@ test('the same food in another slot today is a new meal, not a duplicate', () =>
     const m = html.match(/  mealDup\(data\)\{([^\n]*)\n    \/\*[^\n]*\*\/\n    (return[^\n]*)\},/);
     assert.ok(m, 'mealDup found');
     const day = '2026-10-19';
-    const mk = logs => new Function('S', 'today', 'data', m[1] + m[2]).bind({ mealKey: t => String(t || '').trim().toLowerCase() });
-    const S = { logs: [{ day, t: 'Paprika', slot: 'snack' }, { day, t: 'Toast' }] };
+    const kind = s => s === 'snack' ? 'snack' : /^(meal|breakfast|lunch|dinner)$/.test(String(s || '')) ? 'meal' : '';
+    const mk = logs => new Function('S', 'today', 'data', m[1] + m[2]).bind({ mealKey: t => String(t || '').trim().toLowerCase(), kind });
+    const now = Date.now(), H = 3600000;
+    const S = { logs: [{ day, t: 'Paprika', slot: 'snack', ts: now - H }, { day, t: 'Toast' }, { day, t: 'Oats', slot: 'breakfast', ts: now - 5 * H }, { day, t: 'Rice', slot: 'meal', ts: now - H }] };
     const dup = d => mk()(S, () => day, d);
     assert.ok(dup({ t: 'Paprika', slot: 'snack' }), 'twice as a snack = duplicate');
-    assert.strictEqual(dup({ t: 'Paprika', slot: 'dinner' }), null, 'snack, then at dinner = fine');
+    assert.strictEqual(dup({ t: 'Paprika', slot: 'meal' }), null, 'snack, then as a meal = fine');
+    assert.strictEqual(dup({ t: 'Paprika', slot: 'dinner' }), null, 'old dinner slot reads as Meal');
+    assert.strictEqual(dup({ t: 'Oats', slot: 'meal' }), null, 'the same food as a meal 5 h later = a new meal');
+    assert.ok(dup({ t: 'Rice', slot: 'meal' }), 'the same food as a meal 1 h later = the same meal');
     assert.ok(dup({ t: 'Paprika' }), 'no slot = any slot');
     assert.ok(dup({ t: 'Toast', slot: 'breakfast' }), 'an old log without a slot still blocks');
 });

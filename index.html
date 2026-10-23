@@ -2013,7 +2013,17 @@ try { const s0 = st(); if (unguess(s0)) put(s0); } catch(e){}
 function msName(h){ try { const L = window.LowiFast && LowiFast.stages ? LowiFast.stages() : null; const m = MS.find(x => x.h === h); if (L && m && L[m.i]) return L[m.i].n; } catch(e){} return MS_EN[h] || h + " h"; }
 function goalH(){ try { if (window.LowiFast && LowiFast.goal) { const g = +LowiFast.goal(); if (g > 0) return g; } } catch(e){} const t = +st().target; return t > 0 ? t : 16; }
 // the fast being ended: from the last meal, but never overlapping a fast already logged
-function startOf(s){ s = s || st(); const h = s.hist, pe = h.length ? +h[h.length - 1].e || 0 : 0; return Math.max(+s.last || 0, pe); }
+/* gapfix (Oct 23, E-man: "after I ate something ... the gap didn't reset automatically. That mechanism needs to be in there."):
+   the Gap also reads the meals themselves. The newest logged meal (any path: Log meal, Scan, Snap, a recipe, cooked groceries,
+   a planned meal; it is in S.logs, which the account backup carries to every device) is a gap start, even when no
+   "lowi:meal-logged" reached this device (another device, an old direct log). Deleting or undoing it falls back by itself.
+   A meal's own time is fixed in Log meal (tap it under Today). SKIP = the meal being applied right now. */
+let SKIP = "";
+function lastMeal(s){ try { const L = (typeof S !== "undefined" && S && Array.isArray(S.logs)) ? S.logs : [], now = Date.now() + 60000; let b = 0, bl = null;
+  for (let i = L.length - 1; i >= 0; i--) { const l = L[i], ts = l ? +l.ts || 0 : 0; if (!ts || ts > now || ts <= b) continue; if (SKIP && (l.eventId === SKIP || l.id === SKIP)) continue; b = ts; bl = l; }
+  return bl ? {ts:b, log:bl} : null; } catch(e){ return null; } }
+function ownStart(s){ const h = s.hist, pe = h.length ? +h[h.length - 1].e || 0 : 0; return Math.max(+s.last || 0, pe); }
+function startOf(s){ s = s || st(); if (!Array.isArray(s.hist)) s.hist = []; const m = lastMeal(s); return Math.max(ownStart(s), m ? m.ts : 0); }
 function points(hours, g){
   if (!(hours >= MIN_H)) return {x:0, base:0, ms:[], msx:0, ok:false, full:Math.floor(Math.max(0, hours))};
   const full = Math.min(CAP_H, Math.floor(hours)), base = full * PER_H, ms = MS.filter(m => hours >= m.h), msx = ms.reduce((a, m) => a + m.x, 0), ok = !!g && hours >= g - 1 / 60;
@@ -2063,7 +2073,7 @@ function end(ateAt, o){ o = o || {}; const s = st(), now = Date.now(); ateAt = M
   const ml = !rec && o.chain ? mealJustLogged(ateAt) : null;
   if (ml) { if (!o.keep) { try { if (typeof closeSheet === "function") closeSheet(); } catch(e){} } try { if (typeof toast === "function") toast(w("already", {m:ml.t || "", t:hm(+ml.ts)})); } catch(e){} return {rec:null, x:0, ok:false, hours, already:ml}; }
   s.last = ateAt; put(s);
-  if (rec && p.x > 0) { try { if (typeof award === "function") award(p.x, w("label", {h:Math.floor(hours)}), null, "r3a_fast"); } catch(e){ console.error(e); } }
+  if (rec && p.x > 0) { try { if (typeof award === "function") award(p.x, w("label", {h:Math.floor(hours)}), null, "r3a_fast", "fast:" + start); } catch(e){ console.error(e); } }
   if (!o.keep) { try { if (typeof closeSheet === "function") closeSheet(); } catch(e){}
     try { if (window.LowiR2 && LowiR2.closeAll) LowiR2.closeAll(); } catch(e){} }
   repaintAll();
@@ -2087,19 +2097,27 @@ function firstMeal(at){ const s = st(); if (startOf(s)) return false; s.last = M
    - a fast is running: the meal ends it at the meal's own time through end(), the same record, points, once-per-fast guard
      (s.awarded) and reward as Gap "I just ate", plus the +10 break-fast bonus once per fast (LowiF2.bonusFor, the same memory
      the I-just-ate chain uses, so the two can never both pay);
-   - left alone: a meal within 30 min of the clock's start (the same sitting, e.g. logged right after "I just ate"), a catch-up
-     log for an earlier slot (breakfast logged in the afternoon), and a meal time before the clock's start.
+   - left alone: a meal within 30 min of the clock's start (the same sitting, e.g. logged right after "I just ate"; the Gap still
+     shows the newer meal time, startOf reads the meals) and a meal time before the clock's start.
+   gapfix (Oct 23): the catch-up rule (a breakfast logged after 11:00 left the gap running) is gone. E-man logged Breakfast at
+   12:58 and the gap kept running, while Log meal still said "Saving this closes your 14 h 58 min meal gap". Log meal now has
+   Meal / Snack only and the meal's time decides. Each meal that moved the clock is remembered (s.mt) so removing it or moving
+   its time puts the gap, the fast record and its points back exactly (unmeal / remeal).
    Gap "I just ate" stays the shortcut for "end it now, details later": it ends the fast and opens this same Log meal. */
 const SITTING = 30 * 60000, SLOT_ORDER = {breakfast:0, lunch:1, dinner:2};
 function slotNow(t){ const h = new Date(t).getHours(); return h >= 4 && h < 11 ? 0 : h >= 11 && h < 16 ? 1 : 2; }
-function catchUp(slot, t){ return Object.prototype.hasOwnProperty.call(SLOT_ORDER, slot) && SLOT_ORDER[slot] < slotNow(t); }
+function catchUp(slot, t){ return false; } /* gapfix: kept for old callers; no meal is a catch-up any more */
 function mealJustLogged(t){ try { const L = (typeof S !== "undefined" && S && Array.isArray(S.logs)) ? S.logs : []; for (let i = L.length - 1; i >= 0 && i >= L.length - 6; i--) { const l = L[i], ts = +l.ts || 0; if (ts && ts <= t && t - ts < SITTING) return l; } } catch(e){} return null; }
-function mealLogged(d){ d = d || {}; const s = st(), now = Date.now(), t = Math.min(now, +d.ts || now), start = startOf(s);
-  if (!start) return firstMeal(t) ? {first:true} : null;
+function mealLogged(d){ d = d || {}; const id = String(d.id || ""); SKIP = id; try { return mealLogged0(d, id); } finally { SKIP = ""; } }
+function trail(s, m){ s.mt = (Array.isArray(s.mt) ? s.mt : []).filter(x => x && x.id !== m.id); s.mt.push(m); while (s.mt.length > 40) s.mt.shift(); }
+function mealLogged0(d, id){ const s = st(), now = Date.now(), t = Math.min(now, +d.ts || now), start = startOf(s);
+  if (!start) { const ok = firstMeal(t); if (ok && id) { const s1 = st(); trail(s1, {id, t, p:0}); put(s1); } return ok ? {first:true} : null; }
   if (t <= start + SITTING) return null;
-  if (!d.ateSet && catchUp(d.slot, t)) return null; /* Oct 21: a slot logged late with a picked eating time is not a guess, so it counts */
-  const o = {keep:true, quiet:true, byMeal:true, rewardDelay:d.via === "plan" ? 60 : 700}, r = end(t, o);
-  if (r && r.rec && !d.spike) { try { if (window.LowiF2 && LowiF2.bonusFor) o.bonus = r.bonus = LowiF2.bonusFor(r.rec); } catch(e){ console.error(e); } }
+  const aw = s.awarded || 0;
+  const o = {keep:true, quiet:true, byMeal:true, rewardDelay:d.via === "plan" ? 60 : 700}; if (d.edit) o.reward = false;
+  const r = end(t, o);
+  if (r && r.rec && !d.spike && !d.edit) { try { if (window.LowiF2 && LowiF2.bonusFor) o.bonus = r.bonus = LowiF2.bonusFor(r.rec); } catch(e){ console.error(e); } }
+  if (id && r && !r.err && !r.already) { const s2 = st(); if (+s2.last === t) { trail(s2, {id, t, p:start, aw, rs:r.rec ? r.rec.s : 0, x:r.rec ? r.x : 0, b:+r.bonus || 0}); put(s2); } }
   try { window.dispatchEvent(new CustomEvent("lowi:fast", {detail:{byMeal:true, last:t, rec:r && r.rec || null}})); } catch(e){}
   try { if (window.LowiSpirit && LowiSpirit.refresh) LowiSpirit.refresh(); } catch(e){}
   return r; }
@@ -2108,6 +2126,32 @@ function mealNote(t){ const s = st(), now = Date.now(); t = +t || now; const sta
   const hours = (t - start) / 36e5, fresh = !s.awarded || +s.awarded !== start, p = points(fresh ? hours : 0, goalH());
   return hours >= MIN_H && fresh ? w("ends", {d:dur(t - start), x:p.x}) : w("endsNo"); }
 window.addEventListener("lowi:meal-logged", ev => { try { mealLogged(ev && ev.detail); } catch(e){ console.error(e); } });
+/* gapfix: a meal removed (Log meal list, long-press undo, the meal journal) or moved to another time. If that meal is what
+   started the current gap, the gap goes back to where it was before it (or to the newest meal left), its fast record goes,
+   and the fast points it paid (eventId "fast:<start>") and its break-fast bonus are taken back, so a meal can never pay twice.
+   Then the newest meal left is applied again (it may end that same fast honestly). Meals that did not move the clock change nothing. */
+function unaward(ev){ try { const V = window.LowiVitalsBridge; return V && V.unaward ? V.unaward(ev) : 0; } catch(e){ return 0; } }
+function unmeal(id, ts, o){ o = o || {}; id = String(id || ""); const s = st(), tr = Array.isArray(s.mt) ? s.mt : [], i = tr.findIndex(m => m && m.id === id);
+  let m = i >= 0 ? tr[i] : null; ts = +ts || (m ? m.t : 0); let changed = false;
+  if (m && +s.last === m.t) {
+    if (m.rs) { s.hist = s.hist.filter(r => !(+r.s === m.rs && +r.e === m.t)); unaward("fast:" + m.rs);
+      if (m.b) { unaward("f2_break:" + m.rs); try { const k = "lowi.f2.v1", f = JSON.parse(localStorage.getItem(k) || "{}") || {}; if (Array.isArray(f.b)) { f.b = f.b.filter(x => +x !== m.rs); localStorage.setItem(k, JSON.stringify(f)); } } catch(e){} } }
+    if (m.aw) s.awarded = m.aw; else delete s.awarded;
+    if (m.p) s.last = m.p; else delete s.last; changed = true; }
+  else if (!m && ts && Math.abs((+s.last || 0) - ts) < 1000) { /* older meals (before gapfix): no trail, so no points move; the fast record goes, and it can't pay again */
+    const r = s.hist.find(x => Math.abs(+x.e - ts) < 1000); if (r) { s.hist = s.hist.filter(x => x !== r); s.awarded = +r.s; s.last = +r.s; } else delete s.last; changed = true; }
+  if (i >= 0) tr.splice(i, 1); s.mt = tr; put(s);
+  if (changed && !o.noRedo) { const lm = lastMeal(s); if (lm && lm.ts > ownStart(s) + SITTING) mealLogged({id:String(lm.log.eventId || lm.log.id || ""), ts:lm.ts, edit:true}); }
+  repaintAll(); try { window.dispatchEvent(new CustomEvent("lowi:fast", {detail:{unmeal:id}})); } catch(e){} try { if (window.LowiSpirit && LowiSpirit.refresh) LowiSpirit.refresh(); } catch(e){}
+  return changed; }
+function remeal(id, ts, oldTs){ id = String(id || ""); ts = Math.min(Date.now(), +ts || 0); if (!ts) return null;
+  unmeal(id, oldTs, {noRedo:true});
+  const r = mealLogged({id, ts, edit:true});
+  const lm = lastMeal(st()); if (lm && lm.ts > ownStart(st()) + SITTING) mealLogged({id:String(lm.log.eventId || lm.log.id || ""), ts:lm.ts, edit:true});
+  repaintAll(); try { window.dispatchEvent(new CustomEvent("lowi:fast", {detail:{remeal:id}})); } catch(e){}
+  return r; }
+window.addEventListener("lowi:meal-removed", ev => { const d = ev && ev.detail || {}; try { unmeal(d.id, d.ts); } catch(e){ console.error(e); } });
+window.addEventListener("lowi:meal-moved", ev => { const d = ev && ev.detail || {}; try { remeal(d.id, d.ts, d.oldTs); } catch(e){ console.error(e); } });
 
 /* ---------- reward moment ---------- */
 function reward(rec, p, o){ o = o || {}; const bx = +o.bonus || 0, tx = p.x + bx; const old = document.getElementById("fstRw"); if (old) old.remove();
@@ -2154,7 +2198,7 @@ const bigBtn = cls => '<button type="button" class="btn primary fst-btn' + (cls 
 const LV = {en:"Level {n} \u00b7 {t}", de:"Level {n} \u00b7 {t}", es:"Nivel {n} \u00b7 {t}"};
 /* Oct 16: the level toast names Misty's cell stage (Little cell, Glow cell ...), not the old herb titles */
 const lvl = (n, t) => { try { const c = window.LowiWorldHomeCore, s = c && c.STAGES && c.STAGES[n - 1]; if (s) t = c.pick(s.n, lang()); } catch (e) {} return (LV[lang()] || LV.en).replace("{n}", n).replace("{t}", t); };
-window.LowiFastStop = {lvl, open, end, mealTicked, mealLogged, mealNote, catchUp, SITTING, firstMeal, guessed, unguess, points, startOf, stopPill, bigBtn, histHTML, reward, paint, _st:st, w};
+window.LowiFastStop = {lvl, open, end, mealTicked, mealLogged, mealNote, catchUp, unmeal, remeal, lastMeal, SITTING, firstMeal, guessed, unguess, points, startOf, stopPill, bigBtn, histHTML, reward, paint, _st:st, w};
 })();
 </script>
 <style id="g1css">
@@ -18260,7 +18304,7 @@ function stepDone(o){ F.step = "done"; F.mode = ""; const lv = o.lvl in {low:1, 
   if (!RM()) { const el = q("#f2Xp"), t0 = performance.now(), D = 800; const st = now => { if (!el.isConnected) return; const k = Math.min(1, (now - t0) / D); el.textContent = Math.round(x * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(st); }; setTimeout(() => requestAnimationFrame(st), 250); }
   try { document.dispatchEvent(new CustomEvent("lowi:meal-logged", {detail:{lvl:lv, via:o.via, photo:!!o.photo, xp:x, title:o.title}})); } catch(e){} }
 function giveBonus(){ if (!bonusOpen()) return 0; const b = mem().b || []; b.push(F.fast.s); while (b.length > 30) b.shift(); remember({b});
-  try { award(BONUS, w("xpBreak"), null, "f2_break"); } catch(e){ console.error(e); } return BONUS; }
+  try { award(BONUS, w("xpBreak"), null, "f2_break", "f2_break:" + F.fast.s); } catch(e){ console.error(e); } return BONUS; } /* gapfix: eventId, so a removed meal can take its bonus back */
 /* one meal path (Oct 21): the +10 for logging the meal that broke a fast, for a given fast record; once per fast start, the same memory
    as the I-just-ate chain, so a meal that ends the fast by itself and the chain can never both pay it */
 function bonusFor(rec){ if (!rec || !rec.s || bonusDone(rec.s)) return 0; const keep = F; F = Object.assign({}, F, {fast:rec}); let x = 0; try { x = giveBonus(); } catch(e){ console.error(e); } F = keep; return x; }
@@ -20522,11 +20566,14 @@ window.LowiVitalsBridge = {
   /* meal points: 15 XP for each of the first MEAL_CAP different meals a day; the same product (barcode) or the same meal title twice a day is blocked (no second log, no XP) */
   MEAL_CAP:8,
   mealKey:t=>String(t||"").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g,"").split(/\s+[\u00b7|-]\s+/)[0].replace(/[^a-z0-9\u00df]+/g,""),
-  mealDup(data){data=data||{};const day=today(),code=String(data.code||"").trim(),k=this.mealKey(data.t),sl=data.slot||"";
-    /* meal slots (Oct 19): the same food in another slot today (Paprika as a snack, then at dinner) is a new meal, not a duplicate; a log without a slot still blocks */
-    return S.logs.find(l=>l.day===day&&(!sl||!l.slot||l.slot===sl)&&((code&&String(l.code||"")===code)||(k&&this.mealKey(l.t)===k)))||null;},
+  /* Oct 23 (E-man: "I don't care about a breakfast or a dinner, I care about food or snack"): Log meal has Meal / Snack. Older
+     breakfast / lunch / dinner logs read as Meal everywhere (kind). */
+  kind(sl){sl=String(sl||"");return sl==="snack"?"snack":/^(meal|breakfast|lunch|dinner)$/.test(sl)?"meal":"";},
+  mealDup(data){data=data||{};const day=today(),code=String(data.code||"").trim(),k=this.mealKey(data.t),sl=this.kind(data.slot),at=+data.ts||Date.now();
+    /* meal slots (Oct 19): the same food as a snack and as a meal today is not a duplicate; a log without a slot still blocks. Oct 23, Meal / Snack only: the same food as a meal again 3 h or more later (Paprika at noon, again in the evening) is a new meal; within 3 h it is the same one (edit it to add more). */
+    return S.logs.find(l=>l.day===day&&(!sl||!l.slot||this.kind(l.slot)===sl)&&!(sl&&l.slot&&+l.ts&&Math.abs(at-+l.ts)>=108e5)&&((code&&String(l.code||"")===code)||(k&&this.mealKey(l.t)===k)))||null;},
   /* the Log meal slot: breakfast | lunch | dinner | snack, from the log itself or the slot picked in Log meal in the last 10 minutes (Scan and Snap log through here) */
-  mealSlot(data){const ok=s=>/^(breakfast|lunch|dinner|snack)$/.test(String(s||""))?String(s):"",p=window.LowiMealSlot;return ok(data&&data.slot)||(p&&Date.now()-(+p.at||0)<6e5?ok(p.slot):"");},
+  mealSlot(data){const ok=s=>/^(meal|snack|breakfast|lunch|dinner)$/.test(String(s||""))?String(s):"",p=window.LowiMealSlot;return ok(data&&data.slot)||(p&&Date.now()-(+p.at||0)<6e5?ok(p.slot):"");},
   /* Oct 16 (E-man): a meal the app already rates as a spike (same rule as LowiWorldHealth.verdict <= .15) is logged and kept,
      but earns no XP and completes no quest. Never minus points. */
   spiky(l){const r=String(l&&l.r!=null?l.r:"").toLowerCase(),v=String(l&&l.lvl||"").toLowerCase();if(r==="ja"||v==="low"||r==="low"||r==="yes")return false;return r==="nein"||v==="high"||r==="high"||r==="no";},
@@ -20556,8 +20603,17 @@ window.LowiVitalsBridge = {
     if(!spike)questDone("eat",true);window.dispatchEvent(new CustomEvent("lowi:meal-logged",{detail:{id,title:log.t,macros:log.macros,xp,via:log.via,photo:!!log.photo,spike,slot:log.slot||"",ts:log.ts,ateSet:!!log.ateSet}}));return{log,xp,why,reason:this.mealReason(why),spike};
   },
   /* Oct 22 (Seven): delete one meal from the journal. The entry and the XP it earned go together (no log/delete XP loops); meal-journal.js deletes its photo */
-  deleteMeal(id){const i=S.logs.findIndex(l=>l&&(l.id===id||l.eventId===id));if(i<0)return false;const log=S.logs[i];S.logs.splice(i,1);if(!save()){S.logs.splice(i,0,log);return false;}if(log.eventId)this.unaward(log.eventId);try{window.dispatchEvent(new CustomEvent("lowi:state",{detail:{mealDeleted:log.id}}));}catch(x){}return log;},
-  editMeal(data){const log=S.logs.find(l=>l.id===data.id||l.eventId===data.id||String(l.ts)===data.id);if(!log)return false;const previous={t:log.t,macros:log.macros,est:log.est};log.t=data.t;log.macros=data.macros;if(data.est)log.est=data.est;else delete log.est;if(!save()){Object.assign(log,previous);return false;}return{log,xp:0};},
+  deleteMeal(id){const i=S.logs.findIndex(l=>l&&(l.id===id||l.eventId===id));if(i<0)return false;const log=S.logs[i];S.logs.splice(i,1);if(!save()){S.logs.splice(i,0,log);return false;}if(log.eventId)this.unaward(log.eventId);try{window.dispatchEvent(new CustomEvent("lowi:meal-removed",{detail:{id:log.eventId||log.id,ts:+log.ts||0}}));}catch(x){}/* gapfix: the Gap goes back if this meal started it */try{window.dispatchEvent(new CustomEvent("lowi:state",{detail:{mealDeleted:log.id}}));}catch(x){}return log;},
+  /* edit a meal in place (Oct 23, E-man: "5 minutes after, I add another chicken piece"): the same meal, so no new XP, no second
+     gap close. data.ts moves its time (same day, never in the future) and the Gap follows it (lowi:meal-moved); data.slot = meal | snack. */
+  editMeal(data){const log=S.logs.find(l=>l.id===data.id||l.eventId===data.id||String(l.ts)===data.id);if(!log)return false;const previous={t:log.t,macros:log.macros,est:log.est,ts:log.ts,slot:log.slot,lvl:log.lvl,r:log.r};
+    if(data.t!=null&&String(data.t).trim())log.t=String(data.t).trim();if(data.macros)log.macros=data.macros;if(data.est)log.est=data.est;else if(data.macros)delete log.est;
+    if(data.slot&&/^(meal|snack)$/.test(data.slot))log.slot=data.slot;
+    if(log.t!==previous.t&&log.via!=="barcode"&&!log.ai&&typeof analyseMeal==="function")try{const a=analyseMeal(String(log.t),{trig:S.trig||[]});if(a&&a.ok){log.lvl=a.lvl||log.lvl;log.r=a.r||log.r;}}catch(e){}
+    let moved=0;const nts=+data.ts||0;if(nts&&Math.abs(nts-(+log.ts||0))>=60000){const d0=new Date(+log.ts||Date.now()),d1=new Date(nts);if(d1.toDateString()===d0.toDateString()&&nts<=Date.now()+60000){log.ts=Math.min(Date.now(),nts);log.ateSet=1;moved=1;}}
+    if(!save()){Object.assign(log,previous);return false;}
+    if(moved)try{window.dispatchEvent(new CustomEvent("lowi:meal-moved",{detail:{id:log.eventId||log.id,ts:log.ts,oldTs:+previous.ts||0}}));}catch(x){}
+    try{window.dispatchEvent(new CustomEvent("lowi:state",{detail:{mealEdited:log.id}}));}catch(x){}return{log,xp:0,moved:!!moved};},
   bonus(id,amt,label){return award(amt,label,null,"macro-goal",id);},
   /* wsip (Oct 23, Eman): water by estimate. kind = "sips" | "cup" | "bottle" (default one cup). The day's count stays in cups (quarters allowed);
      XP = 2 per whole cup reached, at most 6 a day (LowiSpiritCore.waterXpDue), so tapping sips can't earn more than the same water in cups. */

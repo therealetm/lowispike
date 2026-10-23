@@ -52,7 +52,8 @@ test('the shell turns clear like Misty\'s, text inside, Edit button gone, same s
     assert.ok(css.includes('#spHome #feBub { display: none !important; }'));
     assert.ok(css.includes('html.wh-home .lb-bub[data-pressed] { scale: .92;'));
     assert.ok(css.includes('inset: 9%;') && css.includes('white-space: nowrap;'), 'fasting text fits inside the circle');
-    assert.ok(spirit.includes('<i class="sp-u"> h </i>') && spirit.includes('<i class="sp-u"> min</i>'), 'small units so the time fits');
+    /* Oct 23 one text rule (Emmanuel): Gap shows h:mm (15:09), no units, so it fits like every other value */
+    assert.ok(spirit.includes("hours + ':' + String(min).padStart(2, '0')") && !spirit.includes('<i class="sp-u"> min</i>'), 'Gap value is h:mm');
     assert.ok(css.includes('@media (prefers-reduced-motion: reduce)'));
 });
 

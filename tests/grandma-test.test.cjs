@@ -16,13 +16,16 @@ test('Fuel bubble: the count says its unit in EN, DE and ES, like Water does', (
     assert.doesNotMatch(s, /bb\.textContent = v\.text/, 'the bare "1/3" write is gone');
 });
 
-test('Gap bubble: an empty Gap says "no meal yet" in words and the bubble has a spoken label', () => {
+test('Gap bubble: an empty Gap is the label alone on Home, says "no meal yet" in its spoken label', () => {
     const s = R('spirit.js');
     for (const k of ['noMealYet', 'gapAria', 'gapAria0']) {
         const m = s.match(new RegExp('\\b' + k + ": \\[('[^']*'), ('[^']*'), ('[^']*')\\]"));
         assert.ok(m, k + ' has EN, DE and ES');
     }
-    assert.ok(/<b>' \+ esc\(tr\('noFast'\)\) \+ '<\/b><small>' \+ esc\(tr\('noMealYet'\)\) \+ '<\/small>'/.test(s), 'the dash is followed by words');
+    /* Oct 23 one text rule for every Home bubble (Emmanuel: "Gap has too much text ... keep it minimal"): an empty Gap shows its label
+       alone, no dash and no second line; the words "no meal yet" stay in the spoken label (gapAria0) and on the Gap page */
+    assert.ok(s.includes("(f.start ? hours + ':' + String(min).padStart(2, '0') : '')"), 'empty Gap: the label alone, no dash');
+    assert.ok(/f\.start \? tr\('gapAria'\)[\s\S]{0,200}tr\('gapAria0'\)|tr\('gapAria0'\)/.test(s), 'the spoken label still says no meal yet');
     assert.ok(/el\.setAttribute\('aria-label', al\)/.test(s), 'the Gap bubble gets an aria-label');
     const m = s.match(/noMealYet: \[([^\]]+)\]/);
     for (const w of m[1].split(',').map(x => x.trim().replace(/^'|'$/g, ''))) assert.ok(w.length <= 18, 'fits the 70 px ring bubble like "last meal 12:38": ' + w);

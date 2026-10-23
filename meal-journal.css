@@ -48,3 +48,36 @@
 .mj-saved{display:flex;align-items:center;gap:0;margin:8px 0 4px;font-size:13px;color:var(--muted);min-width:0}
 .mj-saved span{min-width:0}
 .mj-share-btn{width:100%;min-height:44px;margin:4px 0 2px}
+
+/* Oct 23 Log meal > Today list (spirit.js todayList / editToday). Lives here, right after the meal journal styles, so it needs no
+   extra <link> or precache line (those lines change on every release and kept clashing with other tasks' releases). */
+/* Log meal, Oct 23 (E-man: "I would like to see exactly what I logged and what time I logged it ... But minimalistic.")
+   Meal / Snack tiles, today's entries (photo or icon, name, time) and the edit sheet, in the living bubble style. */
+html:root body .r2-ov.ss-sheet .sp-slots.sp-slots-2 .sp-slot { min-height: 96px; }
+html:root body .r2-ov.ss-sheet .sp-today { margin-top: 16px; }
+html:root body .r2-ov.ss-sheet .sp-today .sp-quick-h { display: block; margin: 0 0 8px 4px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: rgba(225, 235, 255, .72); }
+html:root body .r2-ov.ss-sheet .sp-td-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+html:root body .r2-ov.ss-sheet .sp-td-list li { animation: spSlotIn .38s cubic-bezier(.2, .9, .3, 1.15) both; animation-delay: calc(var(--i, 0) * 45ms); }
+html:root body .r2-ov.ss-sheet .sp-td { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 6px 14px 6px 6px; border-radius: 999px; border: 1px solid var(--ms-line-soft, rgba(170, 214, 255, .26)); background: rgba(255, 255, 255, .07); color: #fff; font: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 0 18px rgba(143, 216, 255, .08); }
+html:root body .r2-ov.ss-sheet .sp-td:active { transform: scale(.97); }
+html:root body .r2-ov.ss-sheet .sp-td:focus-visible { outline: 2px solid var(--ms-accent, #8fd8ff); outline-offset: 2px; }
+html:root body .r2-ov.ss-sheet .sp-td-ph, html:root body .r2-ov.ss-sheet .sp-td-ic { flex: 0 0 auto; width: 44px; height: 44px; border-radius: 50%; object-fit: cover; display: grid; place-items: center; background: rgba(143, 216, 255, .14); color: var(--ms-accent, #8fd8ff); box-shadow: 0 0 0 1px rgba(143, 216, 255, .3); }
+html:root body .r2-ov.ss-sheet .sp-td-ic svg { width: 22px; height: 22px; }
+html:root body .r2-ov.ss-sheet .sp-td-t { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+html:root body .r2-ov.ss-sheet .sp-td-t b { font-size: 15px; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+html:root body .r2-ov.ss-sheet .sp-td-t small { font-size: 12px; color: rgba(225, 235, 255, .66); }
+html:root body .r2-ov.ss-sheet .sp-td time { flex: 0 0 auto; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ms-accent, #8fd8ff); }
+html:root body .r2-ov.ss-sheet .sp-edit { display: grid; gap: 12px; }
+html:root body .r2-ov.ss-sheet .sp-edit label { display: grid; gap: 6px; font-size: 13px; color: rgba(225, 235, 255, .78); }
+html:root body .r2-ov.ss-sheet .sp-edit input { min-height: 48px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--ms-line-soft, rgba(170, 214, 255, .26)); background: rgba(255, 255, 255, .08); color: #fff; font: inherit; font-size: 16px; }
+html:root body .r2-ov.ss-sheet .sp-edit input:focus { outline: none; border-color: var(--ms-accent, #8fd8ff); box-shadow: 0 0 0 3px rgba(143, 216, 255, .2); }
+html:root body .r2-ov.ss-sheet .sp-edit-top { display: flex; align-items: center; gap: 14px; }
+html:root body .r2-ov.ss-sheet .sp-edit-top .sp-edit-time { flex: 1; }
+html:root body .r2-ov.ss-sheet .sp-edit-ph { padding: 0; border: 0; background: none; border-radius: 50%; cursor: pointer; }
+html:root body .r2-ov.ss-sheet :is(.sp-td-ph, .sp-td-ic).big { width: 72px; height: 72px; }
+html:root body .r2-ov.ss-sheet .sp-td-ic.big svg { width: 32px; height: 32px; }
+html:root body .r2-ov.ss-sheet .sp-edit-kind { display: flex; gap: 8px; }
+html:root body .r2-ov.ss-sheet .sp-edit-kind .sp-when-c { flex: 1; }
+html:root body .r2-ov.ss-sheet .sp-edit-del { min-height: 44px; border-radius: 999px; border: 1px solid rgba(255, 150, 150, .3); background: transparent; color: rgba(255, 190, 190, .9); font: inherit; font-size: 14px; }
+html:root body .r2-ov.ss-sheet .sp-edit-del.sure { background: rgba(255, 110, 110, .18); border-color: rgba(255, 140, 140, .7); color: #fff; font-weight: 650; }
+@media (prefers-reduced-motion: reduce) { html:root body .r2-ov.ss-sheet .sp-td-list li { animation: none; } }

@@ -147,7 +147,7 @@ test('Gap "I just ate" / "I ate earlier" open the one shared meal logger, option
 
 test('a meal log with no clock starts it; with a clock running it ends the fast through the one rule (shopping scans do not log at all)', () => {
     assert.match(html, /function firstMeal\(at\)\{ const s = st\(\); if \(startOf\(s\)\) return false;/);
-    assert.match(html, /if \(!start\) return firstMeal\(t\) \? \{first:true\} : null;/);
+    assert.match(html, /if \(!start\) \{ const ok = firstMeal\(t\);[^\n]*return ok \? \{first:true\} : null; \}/);
 });
 
 test('the Pathfinder badge counts every product you found first, in three languages', () => {

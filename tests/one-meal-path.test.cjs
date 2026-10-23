@@ -93,15 +93,14 @@ test('"I just ate" first, then Log meal: the meal belongs to that sitting, the f
     assert.strictEqual(h.bonuses.length, 0, 'the bonus here is the chain\'s own (LowiF2.start), keyed on the same fast start');
 });
 
-test('a catch-up log for an earlier slot (breakfast logged in the afternoon) leaves the running fast alone', () => {
-    const d = new Date(); d.setDate(d.getDate() - 1); d.setHours(15, 0, 0, 0);
-    const at = d.getTime(), start = at - 10 * H, h = host(running(start));
-    h.emit('lowi:meal-logged', { id: 'b', title: 'Oats', slot: 'breakfast', ts: at });
-    assert.strictEqual(h.fast().last, start, 'breakfast at 3 PM is a catch-up');
-    assert.strictEqual(h.fast().hist.length, 0);
-    h.emit('lowi:meal-logged', { id: 'l', title: 'Wrap', slot: 'lunch', ts: at });
-    assert.strictEqual(h.fast().hist.length, 1, 'lunch at 3 PM is a meal now and ends it');
-    assert.ok(h.win.LowiFastStop.catchUp('dinner', new Date(2026, 9, 21, 23, 30).getTime()) === false, 'a late dinner is not a catch-up');
+test('gapfix (Oct 23): breakfast logged at 12:58 closes the gap like any meal (no catch-up rule any more)', () => {
+    const d = new Date(); d.setDate(d.getDate() - 1); d.setHours(12, 58, 0, 0);
+    const at = d.getTime(), start = at - (14 * H + 58 * MIN), h = host(running(start));
+    h.emit('lowi:meal-logged', { id: 'meal:b', title: 'Oats', slot: 'breakfast', ts: at });
+    assert.strictEqual(h.fast().last, at, 'the gap restarts from the breakfast');
+    assert.strictEqual(h.fast().hist.length, 1, 'the 14 h 58 min fast is recorded');
+    assert.strictEqual(fastAwards(h).length, 1);
+    assert.ok(h.win.LowiFastStop.catchUp('breakfast', at) === false);
 });
 
 test('a high-spike meal still ends the fast (you ate) and pays the fast points, but no break-fast bonus', () => {

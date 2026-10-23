@@ -108,6 +108,23 @@ test('focus on <body> under an uncovered sheet: Escape closes it, Tab steps back
   assert.strictEqual(T.R2.top(), null, 'Escape from <body> closes the sheet on top');
 });
 
+// Oct 23 (sheets-linger): Gap > Log a meal. Gap fades out for 260 ms and puts focus back on the page button that opened it; Log a
+// meal opens 60 ms later. Focus could stay on that page button (or in the parked, inert Gap), so Escape closed nothing.
+test('focus left on a page button or in a parked sheet under an uncovered sheet: Escape still closes the top sheet', () => {
+  const T = rig();
+  const pageBtn = new T.El('button', 'gap-bubble'); T.D.body.add(pageBtn);
+  const meal = T.open(T.sheet([new T.El('button', '', { 'data-sp': 'log' })]));
+  pageBtn.focus();
+  T.key('Escape');
+  assert.strictEqual(T.R2.top(), null, 'Escape with focus on a page button closes the sheet on top');
+  const parked = T.open(T.sheet([new T.El('button', 'in-parked')])); parked.classList.add('r2-parked');
+  const top = T.open(T.sheet([new T.El('button', '')]));
+  parked.querySelector('.in-parked').focus();
+  T.key('Escape');
+  assert.ok(top.classList.contains('off'), 'Escape with focus stuck in a parked sheet closes the visible one');
+  assert.ok(meal.classList.contains('off'));
+});
+
 test('keepFocus: a sheet that repaints itself keeps focus on the same control', () => {
   const T = rig();
   const mk = () => new T.El('div', '', { id: 'mistyHub' }).add(new T.El('button', '', { 'data-mh': 'mood', 'data-mood': 'tired' }), new T.El('button', '', { 'data-mh': 'mood', 'data-mood': 'good' }));

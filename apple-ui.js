@@ -45,6 +45,9 @@ R2.sheet=function(html,opts){
   const heading=sh.querySelector('h1,h2,.h1,.h2');if(heading){if(!heading.id)heading.id='au-sheet-title-'+(++sequence);sh.setAttribute('aria-labelledby',heading.id);}
   sh.tabIndex=-1;render(s);if(bloom)LowiBloom.open(sh);else settle(s,0,0);
   requestAnimationFrame(()=>{if(R2.top()===ov&&!sh.contains(D.activeElement))sh.focus({preventScroll:true});});
+  /* Oct 23 (sheets-linger): a sheet opened right after another one closed (Gap > Log a meal: Gap fades for 260 ms, its close puts
+     focus back on the page) could end up with focus outside it, so Escape closed nothing. Check again once the open has settled. */
+  setTimeout(()=>{if(R2.top()===ov&&ov.isConnected&&strayFocus(D.activeElement))try{sh.focus({preventScroll:true});}catch(e){}},320);
   const grab=sh.querySelector('.r2-grab');
   if(grab&&!opts.full){
     let drag=null;
@@ -120,10 +123,18 @@ R2.keepFocus=function(oldEl,newEl){
 };
 /* BH-016 safety net: focus fell to <body> while a closable sheet is the top layer and nothing covers it (another app layer,
    the tutorial card, the scanner): Escape closes that sheet and Tab steps back into it, like it does from inside. */
+/* Oct 23 (sheets-linger): focus that no sheet can hear: on <body>, gone from the page, inside a parked / inert / closing layer,
+   or on a page button underneath while a sheet covers it. A text field (or any real control with its own keys) keeps them. */
+const LAYER='.r2-ov,[role=dialog],[aria-modal=true],.tut-ov,#ltTour,.cf-ov,.gv-ov,.fe-ov,.hs-ov,.cr-ov,.stp-ov,.gh-ov,.wj-ov,.yd-ov,.bs-ov,#sheetwrap';
+function strayFocus(a){
+  if(!a||a===D.body||a===H||!a.isConnected)return true;
+  try{if(a.closest('[inert],.r2-parked,.r2-ov.off'))return true;const l=a.closest(LAYER);if(!l)return !(/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName||'')||a.isContentEditable);if(l.matches('.gv-ov')&&!l.classList.contains('on'))return true;}catch(e){}
+  return false;
+}
 function bodyKey(e){
   if(e.key!=='Escape'&&e.key!=='Tab')return;
   if(e.defaultPrevented)return;
-  const a=D.activeElement;if(a&&a!==D.body&&a!==H)return;
+  const a=D.activeElement;if(!strayFocus(a))return;
   const top=R2.top();if(!top||!states.has(top))return;
   const sh=top.querySelector('.r2-sh');if(!sh)return;
   const r=sh.getBoundingClientRect();if(!r.width||!r.height)return;

@@ -49,13 +49,6 @@ export function createWorld(THREE, canvas, opts) {
         for (let i = 0; i < 9; i++) { g.beginPath(); const y = rnd() * s; g.moveTo(0, y); for (let x = 0; x <= s; x += 16) g.lineTo(x, y + Math.sin(x / 30 + i) * 6); g.stroke(); }
         const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(10, 3); t.colorSpace = THREE.SRGBColorSpace; return t;
     }
-    function shaftTex() {
-        const c = document.createElement('canvas'); c.width = 4; c.height = 128;
-        const g = c.getContext('2d'), gr = g.createLinearGradient(0, 0, 0, 128);
-        gr.addColorStop(0, 'rgba(255,255,255,.9)'); gr.addColorStop(0.5, 'rgba(255,255,255,.25)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
-        g.fillStyle = gr; g.fillRect(0, 0, 4, 128);
-        const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
-    }
 
     /* ---------- lights ---------- */
     const hemi = new THREE.HemisphereLight(PAL.dark.hemiSky, PAL.dark.hemiGround, 0.85); scene.add(hemi);
@@ -68,34 +61,11 @@ export function createWorld(THREE, canvas, opts) {
     const wall = new THREE.Mesh(new THREE.CylinderGeometry(VR, VR, LEN * 2, small ? 28 : 40, 1, true), wallMat);
     wall.rotation.z = Math.PI / 2; scene.add(wall);
 
-    /* red blood cells: biconcave discs, instanced, flowing along +x */
-    const prof = [];
-    for (let i = 0; i <= 12; i++) { const r = i / 12 * 0.42; const h = 0.07 + 0.11 * Math.pow(Math.sin(Math.PI * Math.min(1, r / 0.42) * 0.92), 1.4) * (r / 0.42); prof.push(new THREE.Vector2(r, h)); }
-    for (let i = 12; i >= 0; i--) { const p = prof[i]; prof.push(new THREE.Vector2(p.x, -p.y)); }
-    const rbcGeo = new THREE.LatheGeometry(prof.map(p => new THREE.Vector2(Math.max(0.0001, p.x), p.y)), small ? 14 : 20);
-    rbcGeo.computeVertexNormals();
-    const rbcMat = new THREE.MeshStandardMaterial({ color: '#9fb2d2', roughness: 0.32, metalness: 0.35, emissive: '#2c4675', emissiveIntensity: 0.35 }); /* Oct 16: silvery blue, the brand colour (no red world) */
-    const RBC = small ? 150 : 230;
-    const rbc = new THREE.InstancedMesh(rbcGeo, rbcMat, RBC);
-    rbc.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-    const rb = [];
+    /* Oct 23 (Eman: "somewhere in the code the old UI is still there ... nuke it"): the old bloodstream dressing that drew over and
+       behind the living-bubble Home - the silvery red-cell discs, white cells, platelets, light shafts and the body-place beacons
+       (glowing orb + ring) - is deleted. Only the plasma motes stay, and the beacons keep just their invisible positions so the
+       worlds and fly-to still know where each place is. */
     let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-    for (let i = 0; i < RBC; i++) {
-        let y, z, rr;
-        do { const a = rnd() * Math.PI * 2, d = Math.sqrt(rnd()) * (VR - 1.2); y = Math.cos(a) * d; z = Math.sin(a) * d; rr = Math.hypot(y, z); } while (rr < 2.6 && rnd() < 0.85);
-        rb.push({ x: (rnd() * 2 - 1) * 40, y, z, s: 0.75 + rnd() * 0.5, v: 0.55 + rnd() * 0.5 + (1 - rr / VR) * 0.6, ax: rnd() * 6, ay: rnd() * 6, w: (rnd() - 0.5) * 0.8 });
-    }
-    scene.add(rbc);
-    rbc.name = 'lowi-rbc'; rbc.userData.cells = rb; /* misty-bump.js reads the cells' flow (true 3D contact with Misty) and knocks a bumped cell into a new lane */
-    /* a few white cells and platelets */
-    const wbcMat = new THREE.MeshStandardMaterial({ color: '#e8eef8', roughness: 0.7, emissive: '#7d8fb8', emissiveIntensity: 0.25 });
-    const wbcs = [];
-    for (let i = 0; i < (small ? 3 : 5); i++) { const m = new THREE.Mesh(new THREE.IcosahedronGeometry(0.55, 2), wbcMat); const a = rnd() * 6.28, d = 4 + rnd() * 8; m.position.set((rnd() * 2 - 1) * 40, Math.cos(a) * d, Math.sin(a) * d); m.userData.v = 0.35 + rnd() * 0.2; scene.add(m); wbcs.push(m); }
-    const platMat = new THREE.MeshStandardMaterial({ color: '#d9e3f1', roughness: 0.6, emissive: '#7f97bf', emissiveIntensity: 0.3 });
-    const PLT = small ? 30 : 50, plat = new THREE.InstancedMesh(new THREE.SphereGeometry(0.09, 6, 4), platMat, PLT), pl = [];
-    plat.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-    for (let i = 0; i < PLT; i++) { const a = rnd() * 6.28, d = 2 + rnd() * (VR - 3); pl.push({ x: (rnd() * 2 - 1) * 40, y: Math.cos(a) * d, z: Math.sin(a) * d * 0.6 + Math.sin(a) * d * 0.4, v: 0.7 + rnd() * 0.6 }); }
-    scene.add(plat);
 
     /* plasma particles: one Points draw call */
     const PN = small ? 380 : 650, pPos = new Float32Array(PN * 3), pVel = new Float32Array(PN);
@@ -104,15 +74,6 @@ export function createWorld(THREE, canvas, opts) {
     const pMat = new THREE.PointsMaterial({ color: '#bfe9ff', map: dotTex, size: 0.16, sizeAttenuation: true, transparent: true, opacity: PAL.dark.part, depthWrite: false, blending: THREE.AdditiveBlending });
     const points = new THREE.Points(pGeo, pMat); points.frustumCulled = false; scene.add(points);
 
-    /* light shafts from above */
-    const shafts = new THREE.Group(), sTex = shaftTex();
-    const shaftMat = new THREE.MeshBasicMaterial({ map: sTex, color: '#cfe0ff', transparent: true, opacity: PAL.dark.shaft, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: true });
-    for (let i = 0; i < 5; i++) {
-        const m = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 1.6 + rnd(), 22, 16, 1, true), shaftMat);
-        m.position.set(-12 + i * 6 + rnd() * 2, 4, -3 + rnd() * 6); m.rotation.z = 0.25 - rnd() * 0.5; m.rotation.x = 0.2 - rnd() * 0.4; m.userData.p = rnd() * 6;
-        shafts.add(m);
-    }
-    scene.add(shafts);
 
     /* ---------- the user's cell ---------- */
     const cell = new THREE.Group(); scene.add(cell);
@@ -142,21 +103,14 @@ export function createWorld(THREE, canvas, opts) {
     for (let i = 0; i < 8; i++) { const m = new THREE.Mesh(new THREE.SphereGeometry(0.055 + (i % 3) * 0.02, 10, 8), vesMat); m.userData = { r: 0.6 + (i % 4) * 0.14, a: i * 0.8, y: -0.5 + (i % 5) * 0.25, s: 0.5 + (i % 3) * 0.2 }; inner.add(m); vesicles.push(m); }
 
     /* ---------- body places: beacons out in the fog ---------- */
-    const beacons = {}, hitMeshes = [];
+    const beacons = {};
     places.forEach((p, i) => {
         const g = new THREE.Group(), col = new THREE.Color(p.hue);
         const a = (i / places.length) * Math.PI * 2 + 0.4, el = (i % 2 ? 0.35 : -0.25), r = 7.2;
         g.position.set(Math.sin(a) * Math.cos(el) * r, Math.sin(el) * r * 0.8, Math.cos(a) * Math.cos(el) * r);
-        const core = new THREE.Mesh(new THREE.SphereGeometry(0.32, 20, 14), new THREE.MeshBasicMaterial({ color: col, fog: true }));
-        const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: col, transparent: true, opacity: 0.85, depthWrite: false, blending: THREE.AdditiveBlending }));
-        glow.scale.set(2.4, 2.4, 1);
-        const ring = new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.025, 8, 48), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.7, fog: true }));
-        const hit = new THREE.Mesh(new THREE.SphereGeometry(1.0, 8, 6), new THREE.MeshBasicMaterial({ visible: false }));
-        hit.userData.place = p.id;
-        g.add(glow, core, ring, hit); scene.add(g); hitMeshes.push(hit);
-        beacons[p.id] = { g, ring, glow, core, hue: col, pos: g.position.clone() };
+        scene.add(g); /* nothing drawn: the old beacon orb, glow and ring are gone (Oct 23) */
+        beacons[p.id] = { g, hue: col, pos: g.position.clone() };
     });
-    /* hub for other builds (regions, cell ride, living cell) to add their meshes */
     const hub = new THREE.Group(); hub.name = 'lowi-hub'; scene.add(hub);
     const regions = places.map(p => ({ id: p.id, pos: beacons[p.id].pos.clone(), hue: p.hue }));
     const frameFns = new Set();
@@ -229,11 +183,11 @@ export function createWorld(THREE, canvas, opts) {
     function setGyro(y, p) { rig.gyT = y; rig.gpT = p; }
     function setGlow(g) { glowT = Math.max(0, Math.min(1, g)); }
     function setTend(k) { tendT = Math.max(0, Math.min(1, +k || 0)); }
-    function beaconLook() { const b = Object.values(beacons)[0]; return b ? { tend: +tend.toFixed(3), glowScale: +b.glow.scale.x.toFixed(3), glowOpacity: +b.glow.material.opacity.toFixed(3), ringOpacity: +b.ring.material.opacity.toFixed(3), ringScale: +b.ring.scale.x.toFixed(3), core: '#' + b.core.material.color.getHexString() } : null; }
+    function beaconLook() { return null; } /* the beacons are no longer drawn (Oct 23) */
     function setTheme(t) {
         theme = t === 'light' ? 'light' : 'dark'; const P = PAL[theme];
         baseBg.set(P.bg); scene.fog.density = P.fog; baseFog = P.fog; hemi.color.set(P.hemiSky); hemi.groundColor.set(P.hemiGround); key.color.set(P.key);
-        wallMat.color.set(P.wall); wallMat.emissive.set(P.wallHi); shaftMat.opacity = P.shaft; pMat.opacity = P.part;
+        wallMat.color.set(P.wall); wallMat.emissive.set(P.wallHi); pMat.opacity = P.part;
         pMat.blending = theme === 'light' ? THREE.NormalBlending : THREE.AdditiveBlending; pMat.color.set(theme === 'light' ? '#ffffff' : '#bfe9ff'); pMat.needsUpdate = true;
         memU.uIn.value.set(theme === 'light' ? '#2e8fd6' : '#3a9fe0'); memU.uBase.value = theme === 'light' ? 0.16 : 0.1;
         halo.material.opacity = theme === 'light' ? 0.22 : 0.32;
@@ -251,8 +205,6 @@ export function createWorld(THREE, canvas, opts) {
     const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
     function pick(x, y) {
         ndc.set((x / W) * 2 - 1, -(y / H) * 2 + 1); ray.setFromCamera(ndc, camera);
-        const hit = ray.intersectObjects(hitMeshes, false)[0];
-        if (hit) return hit.object.userData.place;
         const cHit = ray.intersectObject(membrane, false)[0];
         return cHit ? 'cell' : null;
     }
@@ -279,7 +231,7 @@ export function createWorld(THREE, canvas, opts) {
         return { pace, peak };
     }
     const pSize0 = pMat.size; let peakNow = 0, clockT = 0; /* clockT: unscaled seconds stepped, so a check can read world time per real second */
-    function feelLook() { return { pace: energyFeel().pace, peak: +peakNow.toFixed(3), glow: +glow.toFixed(3), shaft: +shaftMat.opacity.toFixed(3), mote: +pMat.size.toFixed(3), t: +t.toFixed(3), clock: +clockT.toFixed(3) }; }
+    function feelLook() { return { pace: energyFeel().pace, peak: +peakNow.toFixed(3), glow: +glow.toFixed(3), mote: +pMat.size.toFixed(3), t: +t.toFixed(3), clock: +clockT.toFixed(3) }; }
     /* Oct 16, 2026 (handoff task 3, E-man: "pinch out like Google Maps / Google Earth ... we're not just inside our one, we now see
        all the other ones around us"; "the bubbles are membranes: inside each is the sanctuary where the cells and companions live,
        the space outside is the connective tissue of the spirit world"). The world goes on past the World Map: keep pulling out and
@@ -560,7 +512,6 @@ export function createWorld(THREE, canvas, opts) {
                stuck out of our bubble and, still writing depth, cut a straight-edged slice out of the bubbles behind it); while it fades
                it no longer writes depth, so it can never punch a hole in a membrane */
             const wo = 1 - walls; if (wallMat.transparent !== (wo < 0.999)) { wallMat.transparent = wo < 0.999; wallMat.depthWrite = !wallMat.transparent; wallMat.needsUpdate = true; } wallMat.opacity = wo; wall.visible = wo > 0.02;
-            shafts.visible = walls < 0.9;
         }
         C.near.visible = C.g.visible && nearK > 0.01;
         if (!C.g.visible) C.deep.visible = false; /* limitless: the made-up worlds go with the cosmos */
@@ -650,33 +601,17 @@ export function createWorld(THREE, canvas, opts) {
         camera.position.set(rig.target.x + rig.dist * Math.cos(pitch) * Math.sin(yaw), rig.target.y + rig.dist * Math.sin(pitch), rig.target.z + rig.dist * Math.cos(pitch) * Math.cos(yaw));
         camera.lookAt(rig.target);
         /* flow */
-        for (let i = 0; i < RBC; i++) {
-            const c = rb[i]; c.x += c.v * wdt; if (c.x > 40) c.x -= 80;
-            tmpE.set(c.ax + t * 0.35 * c.w, c.ay + t * 0.22, 0); tmpQ.setFromEuler(tmpE); tmpS.setScalar(c.s); tmpP.set(c.x, c.y + Math.sin(t * 0.5 + c.ax) * 0.15, c.z);
-            tmpM.compose(tmpP, tmpQ, tmpS); rbc.setMatrixAt(i, tmpM);
-        }
-        rbc.instanceMatrix.needsUpdate = true;
-        for (let i = 0; i < PLT; i++) { const c = pl[i]; c.x += c.v * wdt; if (c.x > 40) c.x -= 80; tmpM.makeTranslation(c.x, c.y, c.z); plat.setMatrixAt(i, tmpM); }
-        plat.instanceMatrix.needsUpdate = true;
         for (let i = 0; i < PN; i++) { let x = pPos[i * 3] + pVel[i] * wdt; if (x > 40) x -= 80; pPos[i * 3] = x; }
         pGeo.attributes.position.needsUpdate = true;
-        wbcs.forEach(m => { m.position.x += m.userData.v * wdt; if (m.position.x > 40) m.position.x -= 80; m.rotation.y += wdt * 0.2; });
-        shafts.children.forEach(m => { m.material.opacity = m.material.opacity; m.rotation.y = Math.sin(t * 0.1 + m.userData.p) * 0.3; });
-        shafts.position.x = Math.sin(t * 0.05) * 2;
         /* cell */
         const pk = peakNow;
         glow += (Math.min(1, glowT + 0.3 * pk) - glow) * Math.min(1, dt * 2); memU.uGlow.value = glow; memU.uT.value = t;
         const br = 1 + (0.015 + 0.012 * pk) * Math.sin(t * 1.55); cell.scale.setScalar(br); cell.rotation.y += wdt * 0.12; cell.position.y = Math.sin(t * 0.7) * 0.06;
         halo.material.opacity = (theme === 'light' ? 0.16 : 0.24) + glow * 0.18 + 0.14 * pk;
-        { const P = PAL[theme]; shaftMat.opacity = Math.min(1, P.shaft * (1 + 0.8 * pk)); pMat.opacity = Math.min(1, P.part * (1 + 0.3 * pk)); pMat.size = pSize0 * (1 + 0.35 * pk); }
+        { const P = PAL[theme]; pMat.opacity = Math.min(1, P.part * (1 + 0.3 * pk)); pMat.size = pSize0 * (1 + 0.35 * pk); }
         mitos.forEach(m => { const u = m.userData; const a = u.a + t * u.s; m.position.set(Math.cos(a) * u.r, u.y + Math.sin(t * 0.9 + u.a) * 0.06, Math.sin(a) * u.r); m.rotation.set(a, a * 0.7, 0.4); });
         vesicles.forEach(m => { const u = m.userData; const a = u.a - t * u.s; m.position.set(Math.cos(a) * u.r, u.y + Math.sin(t + u.a) * 0.05, Math.sin(a) * u.r); });
         tend += (tendT - tend) * Math.min(1, dt * 1.2);
-        Object.values(beacons).forEach((b, i) => {
-            b.ring.rotation.x = t * 0.6 + i; b.ring.rotation.y = t * 0.4; const s = (2.2 + Math.sin(t * 1.6 + i) * 0.25) * (1 + 0.45 * tend) * (1 + 0.15 * pk); b.glow.scale.set(s, s, 1);
-            b.glow.material.opacity = Math.min(1, 0.85 + 0.15 * tend + 0.1 * pk); b.ring.material.opacity = 0.7 + 0.3 * tend; const rs = 1 + 0.3 * tend; b.ring.scale.set(rs, rs, rs);
-            b.core.material.color.copy(b.hue).lerp(tendWhite, 0.4 * tend);
-        });
         /* place tint */
         tintAmt += (tintT - tintAmt) * Math.min(1, dt * 2.5);
         curBg.copy(baseBg); if (tint && tintAmt > 0.001) curBg.lerp(tint, tintAmt * (theme === 'light' ? 0.5 : 0.35));

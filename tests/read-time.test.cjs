@@ -62,7 +62,6 @@ test('Misty\'s praise and hint bubble stays up its reading time', () => {
 
 test('every other text bubble uses the shared reading time', () => {
     assert.ok(/LowiReadTime/.test(read('misty-hub.js')), 'Misty hub nudges');
-    assert.ok(/LowiReadTime/.test(read('arrival-cards.js')), 'arrival lines');
     assert.ok(/LowiReadTime/.test(read('cell-world.js')), 'cell world speech');
     assert.ok(/LowiReadTime/.test(read('micro-book.js')), 'micro book toasts');
     const html = read('index.html');

@@ -107,7 +107,7 @@ test('Daily Quest board: rewards only on Claim, countdown shown, same eventIds',
   assert.ok(/function claim\(id\)/.test(f3));
   assert.ok(!/function pay\(/.test(f3), 'no automatic payout');
   assert.ok(f3.includes('"f3:" + p.day + ":" + q.id') && f3.includes('"f3all:" + p.day'));
-  assert.ok(f3.includes('data-f3="claim"') && f3.includes('f3-reset'));
+  assert.ok(f3.includes('data-f3="claim"') && !f3.includes('<span class="f3-reset'));
   assert.ok(/claim:"Abholen"/.test(f3) && /claim:"Reclamar"/.test(f3));
 });
 

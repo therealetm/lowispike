@@ -75,7 +75,7 @@ test('replaces the leftover info surfaces in regions; the cell ride keeps its ca
     assert.ok(cards.includes('const palTakes = id =>'));
     assert.ok(cards.includes('if (!opts.force && !rideOpen() && palTakes(id)) return null;'), 'no gold card in a region with a companion');
     assert.ok(cards.includes("if (palTakes(id)) { if (cur && cur.where !== 'ride') close(); return; }"), 'region arrival closes any open card');
-    assert.ok(/function note\([\s\S]*?rid !== 'hub' && palTakes\(rid\)\) return true;/.test(cards), 'no Daily Quest line on Home either');
+    assert.ok(!/function note\(/.test(cards), 'Oct 23: no Daily Quest line on Home at all (the old banner is deleted)');
     assert.ok(cards.includes('core: C, data }'), 'today line shared with the companion');
     assert.ok(/\.rp-on \.bwr-label \{ display: none !important; \}/.test(css), 'region label line hidden while the companion talks');
     assert.ok(/html\.gx-out \.rp-pal/.test(css) && js.includes('offView()'), 'never over the Community galaxy');

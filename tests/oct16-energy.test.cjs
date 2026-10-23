@@ -160,7 +160,7 @@ test('an energised trip visibly energises the world cells: grows over the hour a
   assert.equal(SUN.tended({start, vigor: 'thriving', got: true}, now), 1);
   assert.equal(SUN.tended({start, vigor: 'ok', got: true}, now), 0.5, 'an okay trip helps half as much');
   const sc = read('body-world-3d-scene.js'), bw = read('body-world-3d.js');
-  assert.match(sc, /const s = \(2\.2 \+ Math\.sin\(t \* 1\.6 \+ i\) \* 0\.25\) \* \(1 \+ 0\.45 \* tend\)/);
-  assert.match(sc, /b\.core\.material\.color\.copy\(b\.hue\)\.lerp\(tendWhite, 0\.4 \* tend\)/);
+  /* Oct 23: the beacon orbs that used to glow with it are deleted (old Home layers); the tend value still reaches the world */
+  assert.ok(!/b\.core\.material/.test(sc), 'no beacon orb left to tint');
   assert.match(bw, /world\.setTend\(W\.LowiSun && W\.LowiSun\.tendedNow \? W\.LowiSun\.tendedNow\(\) : 0\)/);
 });

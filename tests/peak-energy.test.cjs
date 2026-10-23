@@ -114,7 +114,7 @@ test('wiring: Home publishes one eased feel; the world and Misty\'s bumps move a
     assert.ok(/const ef = energyFeel\(\), wdt = dt \* worldSpeed\(\) \* ef\.pace;/.test(sc), 'world time runs at the energy pace');
     assert.ok(/Math\.min\(1\.8, Math\.max\(0\.6/.test(sc) && /Math\.min\(1\.8, Math\.max\(0\.6/.test(bp), 'same clamp in both');
     assert.ok(/\* energyPace\(\)/.test(bp), 'bump prediction uses the same pace');
-    assert.ok(/shaftMat\.opacity = Math\.min\(1, P\.shaft \* \(1 \+ 0\.8 \* pk\)\)/.test(sc), 'peak look: brighter light shafts');
+    assert.ok(!/shaftMat/.test(sc), 'Oct 23: the light shafts are deleted with the old Home layers');
     assert.ok(!/new T\.(Mesh|Points|PointLight|SpotLight)\b[^;]*pk/.test(sc), 'peak look adds no new objects');
     assert.ok(/const pk = ctx\.reduced \? 0 : peakOf\(k\)/.test(fl), 'no extra sparkle with Reduce Motion');
 });

@@ -169,7 +169,7 @@ test('bounded work: far cells are rejected before any matrix read', async () => 
 
 test('wired in: the scene hands over its cells, misty-flight calls step and draw in free flight, loaded and cached', () => {
     const scene = read('body-world-3d-scene.js'), mf = read('misty-flight.js'), idx = read('index.html'), sw = read('sw.js');
-    assert.match(scene, /rbc\.name = 'lowi-rbc'; rbc\.userData\.cells = rb;/);
+    assert.ok(!/lowi-rbc/.test(scene), 'Oct 23: the red-cell discs are deleted with the old Home layers; the bump finds none and stays quiet');
     assert.match(mf, /if \(W\.LowiMistyBump && !S\.gx && !S\.gxBack\) \{ try \{ W\.LowiMistyBump\.step\(ctx, S, mode, K\); \} catch \(e\) \{ \} \}/);
     assert.match(mf, /if \(S\.st === 'free' && W\.LowiMistyBump\) \{ try \{ W\.LowiMistyBump\.draw\(ctx, S, still\); \} catch \(e\) \{ \} \}/);
     assert.ok(idx.indexOf('<script src="misty-bump.js?v=') > idx.indexOf('<script src="misty-flight.js?v='));

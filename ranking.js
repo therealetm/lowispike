@@ -20,7 +20,7 @@
         notYet: ['Not ranked yet', 'Noch nicht dabei', 'Aún sin puesto'],
         notYetW: ['Meals, water, Moves and scans give your companion sunbeams.', 'Mahlzeiten, Wasser, Moves und Scans geben deinem Begleiter Sonnenstrahlen.', 'Comidas, agua, Moves y escaneos dan rayos de sol a tu compañero.'],
         notYetA: ['Every log makes your companion stronger.', 'Jeder Eintrag macht deinen Begleiter stärker.', 'Cada registro hace más fuerte a tu compañero.'],
-        you: ['you', 'du', 'tú'], demo: ['demo', 'Demo', 'demo'],
+        you: ['you', 'du', 'tú'],
         hidden: ['Hidden companion', 'Versteckter Begleiter', 'Compañero oculto'],
         hiddenMe: ['Only you see your companion here', 'Nur du siehst hier deinen Begleiter', 'Solo tú ves aquí a tu compañero'],
         lv: ['Lv {n}', 'Lv {n}', 'Nv {n}'],
@@ -67,11 +67,6 @@
             try { const H = W.LowiHerbTamagotchi, c = H && H.current && H.current(); if (H && H.name && c) name = H.name(c.p, c.m); } catch (e) { }
             return { g, name: name || 'Misty', me: true };
         }
-        if (p.bot || p.demo) {
-            const st = Math.max(0, Math.min(C.MAX_ST || 9, Math.floor((lv - 1) * (C.MAX_ST || 9) / 24)));
-            const g = C.genome({ palette: { a: '#5AA9FF', b: '#8FE7FF' }, personality: p.t || '' }, st, 'bot:' + (p.n || ''));
-            return { g, name: C.formName(g.st, g.el, L) };
-        }
         const code = K.lookFor(p, allLooks()), g = code ? C.decode(code) : null;
         if (!g) return null;
         return { g, name: C.formName(g.st, g.el, L) };
@@ -87,7 +82,7 @@
     function unit() { return per === 'all' ? tr('xp') : '\u2600'; }
     function unitLong() { return per === 'all' ? tr('xp') : tr('sun'); }
     function ownerLine(p, lv) {
-        return '<small class="rk-own">' + esc(p.me ? tr('you') : (p.n || '')) + ((p.bot || p.demo) ? ' <em class="rk-demo">' + esc(tr('demo')) + '</em>' : '') + '<span class="rk-sep"> \u00b7 </span>' + esc(tr('lv', { n: lv })) + '</small>';
+        return '<small class="rk-own">' + esc(p.me ? tr('you') : (p.n || '')) + '<span class="rk-sep"> \u00b7 </span>' + esc(tr('lv', { n: lv })) + '</small>';
     }
     function attrs(x, c) {
         const p = x.p, nm = c ? c.name : tr('hidden');
@@ -118,7 +113,7 @@
             (x ? '<span class="rk-pts num">' + score(x) + '<small>' + esc(unit()) + '</small></span>' : '') + '</button>';
     }
     function html() {
-        const list = K.rows(people(), per, Date.now(), myCare()), top = list.slice(0, 3), rest = list.slice(3, 50);
+        const list = K.rows(people(), per, Date.now(), myCare()), top = list.slice(0, 3), rest = K.board(list).slice(3);
         const sub = per === 'all' ? tr('subA') : per === 'm' ? tr('subM') : tr('subW');
         let h = '<header class="rk-h"><h2 class="rk-t">' + esc(tr('title')) + '</h2><p class="rk-sub">' + esc(sub) + '</p></header>' +
             '<div class="rk-seg" role="tablist" aria-label="' + esc(tr('periods')) + '" style="--rk-i:' + K.PERIODS.indexOf(per) + '">' +

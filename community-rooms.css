@@ -233,3 +233,13 @@
    list, where the X is back. */
 html.sec-open #cmPaneChat[data-spirit-chat]>.rm-bar .rm-head{padding-left:calc(52px + env(safe-area-inset-left,0px))}
 /* item 38: the Home back button stays in its place on Chat too (it used to step aside in the room) */
+/* 23 Oct (E-man on the live Ranking: "when scrolling down we can still see ... 'Chat Room Affiliate Creation Ranking Community' in the
+   background. That's weird."): on the scrolling pages (Ranking and the Room list) the pinned top bar sat at z-index 5 while the page
+   under it sits at 20, so the podium and the Your place card slid over the Community pill and the tabs. The bar now stays above what
+   scrolls (30, as on Chat, Creation and Affiliates) and is one frosted glass sheet in the app's dark blue, solid down to its lower
+   edge, with a soft shadow instead of a see-through fade. Nothing reads through it. */
+#cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-bar,#cmPaneChat[data-spirit-chat][data-rm-view=rank]>.rm-bar{z-index:30;isolation:isolate;
+ background:rgba(4,10,28,.95);-webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%);
+ box-shadow:0 1px 0 rgba(143,231,255,.16),0 12px 18px -10px rgba(0,0,0,.6);border-radius:0 0 22px 22px}
+/* the strip above the bar (the pane's own top padding) is covered too, so nothing peeks out over the Community pill */
+#cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-bar::before,#cmPaneChat[data-spirit-chat][data-rm-view=rank]>.rm-bar::before{content:'';position:absolute;z-index:-1;left:0;right:0;top:-40px;height:40px;background:rgba(4,10,28,.95)}

@@ -15540,7 +15540,8 @@ function aboutHTML(s){ const a = ABOUT[s]; if (!a) return ""; const n = sameSign
    as her sun on Today, at most 12 a day); ties go to more full-sun days, then the higher level. Your XP and level are untouched. */
 let LB = "w";
 const lbK = () => LB === "m" ? "m" : "w";
-function ranked(k){ const c = CB(); if (!c) return []; const all = everyone(); return c.rank(c.roster ? c.roster(all) : all, k === "m" ? "m" : "w", Date.now(), me().care); }
+/* 23 Oct: real accounts only, the same rule as the Ranking tab (ranking-core.js real): no demo bots or sample-chat people */
+function ranked(k){ const c = CB(); if (!c) return []; const RK = window.LowiRankingCore, all = everyone().filter(p => RK && RK.real ? RK.real(p) : !(p && (p.bot || p.demo))); return c.rank(c.roster ? c.roster(all) : all, k === "m" ? "m" : "w", Date.now(), me().care); }
 function rankOf(m, k){ const L = ranked(k); const i = L.findIndex(x => x.p.me); return i >= 0 ? i + 1 : 0; }
 function careCardHTML(care){
   const k = lbK(), c = care[k] || {pts:0, full:0, today:0}, w = care.w || c, G = (CB() && CB().GOAL) || 12, pct = Math.round(Math.max(0, Math.min(1, (w.today || 0) / G)) * 100);
@@ -15551,7 +15552,7 @@ function careCardHTML(care){
     '<span class="r3-cbtd"><span>Today</span> <span class="num">' + (w.today || 0) + ' / ' + G + '</span></span></span><span class="r3-cbch" aria-hidden="true">\u203a</span></button>';
 }
 function boardHTML(){
-  const k = lbK(), m = me(), L = ranked(k), mi = L.findIndex(x => x.p.me), top = L.slice(0, 50);
+  const k = lbK(), m = me(), L = ranked(k), mi = L.findIndex(x => x.p.me), top = L.slice(0, 10);
   const row = (x, i) => { const p = x.p, bits = detailsBits(p);
     return '<button class="r3-lbrow' + (p.me ? " me" : "") + (i < 3 ? " t" + (i + 1) : "") + '"' + who(p) + '><span class="r3-rk num">' + (i + 1) + '</span>' + bubble(p, 42) +
       '<div class="r3-lbm"><b>' + esc(p.n) + (p.me ? ' <em>you</em>' : "") + (p.supporter ? '<span class="r3-sup">Supporter</span>' : "") + botTag(p) + '</b><small>' + esc(bits.join(" \u00b7 ")) + (bits.length ? " \u00b7 " : "") + 'Lv ' + lvShow(p) +

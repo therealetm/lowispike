@@ -119,3 +119,69 @@ test('one board: every old Care board / leaderboard way in opens the Ranking; Mo
   /* ranking.js reads LowiR3.everyone / me / open: they must exist on the real R3 */
   assert.match(html, /R3\.everyone = everyone; R3\.me = me;\nR3\.open = function\(q\)\{ q = q \|\| \{\}; const all = \(typeof R3\.everyone === "function" \? R3\.everyone : everyone\)\(\)/);
 });
+
+/* 23 Oct, second pass (E-man: "the ranking should only go to 10, not 50 ... remove all the bots from the ranking, so that it's only
+   real human friends in the ranking, based on their real stats"; "when scrolling down we can still see ... the tabs in the background") */
+const crowd = n => Array.from({ length: n }, (_, i) => person('P' + String(i).padStart(2, '0'), 60 - i, 300 - i, 90000 - i * 100));
+const BOTS = [
+  { n: 'Samir', s: 'Taurus', lv: 43, shownLv: 6, xp: 0, streak: 180, bot: true },
+  { n: 'Mateo', lv: 1, shownLv: 1, bot: true }, { n: 'Jonas', lv: 18, shownLv: 4, bot: true },
+  { n: 'Lina', lv: 7, demo: true, xpw: 60, wk, xpm: 300, mo, xp: 999999 },          /* a sample-chat person (cmLoad demo message) */
+  { n: 'Robo', uid: 'bot:robo', xpw: 60, wk, xpm: 300, mo, xp: 999999 },             /* a galaxy bot id */
+  { n: 'Nobody', xpw: 60, wk, xpm: 300, mo, xp: 999999 }                              /* no account id: not a signed-up person */
+];
+
+test('top 10: every period shows at most 10 places; Your place still counts the full list', () => {
+  assert.strictEqual(K.TOP, 10);
+  const me = Object.assign(person('Me', 1, 1, 1), { me: true });
+  for (const k of K.PERIODS) {
+    const all = K.rows(crowd(25).concat([me]), k, NOW, { w: { pts: 1, full: 0 }, m: { pts: 1, full: 0 } });
+    assert.strictEqual(all.length, 26, k + ': the full order is kept for Your place');
+    const b = K.board(all);
+    assert.strictEqual(b.length, 10, k + ': the board stops at 10');
+    assert.deepStrictEqual(b.map(x => x.rank), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    assert.strictEqual(K.mine(all).rank, 26, k + ': Your place is the real place below 10');
+  }
+  assert.strictEqual(K.board(K.rows(crowd(4), 'w', NOW)).length, 4, 'fewer than 10 real people: only them');
+});
+
+test('no bots: demo bots, sample-chat people, bot ids and rows without an account id never reach the board, in any period', () => {
+  const me = Object.assign(person('Me', 3, 3, 3), { me: true });
+  for (const k of K.PERIODS) {
+    const L = K.rows(BOTS.concat(crowd(2), [me]), k, NOW, { w: { pts: 3, full: 0 }, m: { pts: 3, full: 0 } });
+    assert.deepStrictEqual(L.map(x => x.p.n).sort(), ['Me', 'P00', 'P01'], k + ': real people and you only');
+  }
+  assert.deepStrictEqual(K.rows(BOTS, 'w', NOW), [], 'only bots: an empty board, nothing padded in');
+  assert.strictEqual(K.real({ n: 'Joseph Castellar', uid: '3b0c2f1e-1111-4222-8333-444455556666' }), true, 'a real account stays');
+  assert.strictEqual(K.real({ n: 'Q', uid: 'b2f0a8c4-1111-4222-8333-444455556666', xp: 10 }), true);
+  for (const b of BOTS) assert.strictEqual(K.real(b), false, b.n + ' is not a real account');
+});
+
+test('page: 25 real people and the bots give a podium of three plus places 4 to 10, no "demo" label, no bot names', () => {
+  const people = crowd(25).concat(BOTS, [Object.assign(person('Me', 1, 0, 0), { me: true })]);
+  const h = page(people, { myW: 1 }).LowiRanking._html();
+  assert.strictEqual((h.match(/class="rk-pod-i/g) || []).length, 3);
+  assert.deepStrictEqual([...h.matchAll(/rk-n num">(\d+)</g)].map(m => +m[1]), [4, 5, 6, 7, 8, 9, 10]);
+  assert.doesNotMatch(h, /data-who="P1[0-9]"|data-who="P2/, 'nobody beyond place 10');
+  assert.doesNotMatch(h, /rk-demo|>demo<|Samir|Mateo|Jonas|Lina|Robo|Nobody/);
+  assert.match(h, /class="rk-me"[\s\S]*?#26/, 'Your place: #26');
+});
+
+test('no code path pads the board: ranking.js has no bot or demo companion, ranked() (profile place, old board) uses the same rule', () => {
+  const js = R('ranking.js');
+  assert.doesNotMatch(js, /p\.bot|p\.demo|rk-demo/);
+  assert.doesNotMatch(js, /slice\(3, 50\)/);
+  assert.match(js, /K\.board\(list\)/);
+  const html = R('index.html');
+  assert.match(html, /function ranked\(k\)\{[^\n]*RK\.real/);
+  assert.match(html, /top = L\.slice\(0, 10\)/);
+});
+
+test('scroll: on Ranking and the Room list the pinned Community bar sits above what scrolls and is a solid glass sheet', () => {
+  const css = R('community-rooms.css'), tail = css.slice(css.lastIndexOf('23 Oct (E-man on the live Ranking'));
+  assert.match(tail, /\[data-rm-view=rank\]>\.rm-bar\{z-index:30;/);
+  assert.match(tail, /background:rgba\(4,10,28,\.95\)/);
+  assert.match(tail, /backdrop-filter:blur\(18px\)/);
+  assert.match(tail, /\.rm-bar::before\{content:'';position:absolute;z-index:-1;[^}]*top:-40px/);
+  assert.match(css, /\[data-rm-view=rank\]>\.rm-rank:not\(\[hidden\]\)\{display:block;position:relative;z-index:20;/, 'the page stays below the bar (20 < 30)');
+});

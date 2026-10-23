@@ -10683,7 +10683,7 @@ R2.onboard = function(opts){
   const s = R2.S(); s.user = s.user || {};
   /* BH-011 (Oct 19): the companion is saved only when Continue is tapped on the reveal. A reload during the reveal left setupMid set but no companion, so resuming at step 1 skipped the reveal for good and the account stayed on the standard Misty. Resume at the birthday step (filled in) until the companion exists. */
   const bc = window.LowiBirthCompanion, needReveal = !!(bc && bc.has && bc.reveal && !bc.has());
-  ob = { step: (s.setupMid && !s.setupDone && s.user.bday && !needReveal) ? 1 : 0, bday: s.user.bday || "", avatar: s.user.avatar || "", tags: (s.user.tags || []).slice(), noCond: !!s.user.noCond, name: s.user.name || "", gender: s.user.gender || "", pcos: !!(s.health && s.health.pcos), askName: !s.user.name || opts.askName };
+  ob = { step: (s.setupMid && !s.setupDone && s.user.bday && !needReveal) ? 1 : 0, bday: s.user.bday || "", btime: s.user.btime || "", avatar: s.user.avatar || "", tags: (s.user.tags || []).slice(), noCond: !!s.user.noCond, name: s.user.name || "", gender: s.user.gender || "", pcos: !!(s.health && s.health.pcos), askName: !s.user.name || opts.askName };
   if (ob.pcos && ob.gender === "f" && !ob.tags.includes("PCOS")) ob.tags.push("PCOS");   /* old PCOS checkbox -> PCOS condition */
   const ov = R2.sheet('<div class="r2-ob" id="r2ob"></div>', { full: true, noClose: true, cls: "r2-obov" });
   paintOb();
@@ -10736,6 +10736,8 @@ function saveOb(final){
   const s = R2.S(); s.user = s.user || {};
   if (ob.name) s.user.name = ob.name.slice(0, 40);
   s.user.bday = ob.bday || s.user.bday || "";
+  /* BQ-2 (sweep Oct 23): keep the optional birth time with the birthday, so a reload during the sign reveal (BH-011 resumes at the birthday step) still has it */
+  if (typeof ob.btime === "string") { if (ob.btime) s.user.btime = ob.btime.slice(0, 5); else delete s.user.btime; }
   if (ob.avatar && ob.avatar !== s.user.avatar) { s.user.avatar = ob.avatar; delete s.user.avatarUrl; }
   s.user.tags = ob.tags.slice();
   s.user.noCond = !!ob.noCond && !ob.tags.some(isCond);

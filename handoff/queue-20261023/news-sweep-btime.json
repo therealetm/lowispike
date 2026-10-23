@@ -1,0 +1,10 @@
+{
+  "slug": "setup-birth-time-kept",
+  "tutorial": {"none": "No new control: setup now remembers the birth time you typed if the app reloads while your sign is revealed."},
+  "go": {"tab": "home"},
+  "text": {
+    "en": "In setup, if the app reloaded while your sign was being revealed, your birthday came back but the birth time you typed was gone. Now both come back.",
+    "de": "Wenn die App bei der Einrichtung neu geladen hat, während dein Sternzeichen erschien, war dein Geburtstag noch da, aber die eingegebene Geburtszeit weg. Jetzt bleibt beides.",
+    "es": "En la configuración, si la app se recargaba mientras aparecía tu signo, tu cumpleaños volvía, pero la hora de nacimiento que escribiste se perdía. Ahora vuelven las dos."
+  }
+}

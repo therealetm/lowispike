@@ -33,8 +33,10 @@ const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + '[' + tag + '] ' + 
         /* wait until the orbs have finished flying out (two reads 200 ms apart agree), so a mid-animation frame is not read as overlap */
         const orbSig = () => P.evaluate(() => [...document.querySelectorAll('.hb2-bloom.hb2-move .hb2-orb')].map(o => { const r = o.getBoundingClientRect(); return Math.round(r.left) + ',' + Math.round(r.top) + ',' + Math.round(r.width); }).join(';'));
         const orbsMoving = () => P.evaluate(() => [...document.querySelectorAll('.hb2-bloom.hb2-move .hb2-orb')].some(o => o.getAnimations({ subtree: true }).some(a => a.playState !== 'finished' && a.playState !== 'idle' && (a.effect && a.effect.getTiming().iterations) !== Infinity)));
-        for (let i = 0; i < 25 && await orbsMoving(); i++) await H.sleep(150);
-        for (let i = 0, prev = await orbSig(); i < 20; i++) { await H.sleep(200); const cur = await orbSig(); if (cur && cur === prev) break; prev = cur; }
+        for (let i = 0; i < 60 && await orbsMoving(); i++) await H.sleep(150);
+        /* settled = every orb at its one final size and three reads in a row agree (a busy machine can stall frames, so two equal reads alone are not enough) */
+        const sameSize = sig => { const ws = (sig || '').split(';').map(t => +t.split(',')[2]).filter(n => n > 0); return ws.length > 0 && Math.max(...ws) - Math.min(...ws) <= 1; };
+        for (let i = 0, prev = await orbSig(), same = 0; i < 60; i++) { await H.sleep(200); const cur = await orbSig(); same = (cur && cur === prev && sameSize(cur)) ? same + 1 : 0; if (same >= 2) break; prev = cur; }
         let bl = await P.evaluate(() => {
             const ov = document.querySelector('.hb2-bloom.hb2-move'); if (!ov) return null;
             const orbs = [...ov.querySelectorAll('.hb2-orb')].map(o => { const r = o.getBoundingClientRect(); return { mir: o.classList.contains('hb2-mirror'), x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, l: r.left, t: r.top, r: r.right, b: r.bottom, tx: o.textContent.trim() }; });
@@ -48,6 +50,7 @@ const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + '[' + tag + '] ' + 
             ok(bl.orbs.every(o => o.l >= -1 && o.t >= -1 && o.r <= bl.vw + 1 && o.b <= bl.vh + 1), 'every bubble on screen');
             let apart = true; for (let i = 0; i < bl.orbs.length; i++) for (let j = i + 1; j < bl.orbs.length; j++) if (Math.hypot(bl.orbs[i].x - bl.orbs[j].x, bl.orbs[i].y - bl.orbs[j].y) < bl.orbs[i].w * 0.9) apart = false;
             ok(apart, 'bubbles do not overlap' + (apart ? '' : ' ' + JSON.stringify(bl.orbs.map(o => [Math.round(o.x), Math.round(o.y), Math.round(o.w)]))));
+            if (process.env.MM_DEBUG) console.log('ORBS', JSON.stringify(bl.orbs.map(o => [Math.round(o.x), Math.round(o.y), Math.round(o.w)])));
             /* tap 2: Mirror */
             const m = bl.orbs.find(o => o.mir);
             if (m) { try { await P.touchscreen.tap(m.x, m.y); } catch (e) { await P.mouse.click(m.x, m.y); } }
@@ -61,7 +64,7 @@ const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + '[' + tag + '] ' + 
         /* the Move page: Mirror hero first */
         await P.evaluate(() => { try { window.LowiMoveBubble.page(); } catch (e) { } }); await H.sleep(1800);
         /* wait until the Move page has finished sliding in, so a mid-animation frame is not read as overflow */
-        for (let i = 0; i < 20; i++) { const settled = await P.evaluate(() => { const s = document.querySelector('#mv-screen'); if (!s) return true; const r = s.getBoundingClientRect(); return Math.abs(r.left) < 1 && r.right <= innerWidth + 1; }); if (settled) break; await H.sleep(150); }
+        for (let i = 0; i < 60; i++) { const settled = await P.evaluate(() => { const s = document.querySelector('#mv-screen'); if (!s) return true; const r = s.getBoundingClientRect(); return Math.abs(r.left) < 1 && r.right <= innerWidth + 1; }); if (settled) break; await H.sleep(150); }
         await H.sleep(300);
         const pg = await P.evaluate(() => {
             const s = document.querySelector('#mv-screen'); if (!s) return null;

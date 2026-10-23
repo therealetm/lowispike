@@ -50,11 +50,11 @@ test('opening the biggest real ranges shows at most 15 rows a group, and every t
         assert.ok(opened <= 15 * b.groups.length, r + ' opens with ' + opened + ' rows');
         assert.ok(passes > opened || passes <= 15 * b.groups.length, r);
     }
-    /* the measured worst case before: Lidl opened with 420 rows */
+    /* the measured worst case before: Lidl opened with 420 rows (388 with the engine rating since scanfe-h4) */
     const lidl = C.build(shop('lidl'), { q: '' });
     const before = lidl.groups.reduce((s, g) => s + Math.min(40, g.pass.length), 0);
     const now = lidl.groups.reduce((s, g) => s + C.page(g.pass.length, 0).show, 0);
-    assert.ok(before >= 400 && now < before / 2, 'Lidl: ' + before + ' rows before, ' + now + ' now');
+    assert.ok(before >= 350 && now < before / 2, 'Lidl: ' + before + ' rows before, ' + now + ' now');
 });
 
 test('store-picks.js renders passes and left-outs through C.page, with no "show everything" path left', () => {

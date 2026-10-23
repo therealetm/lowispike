@@ -109,3 +109,28 @@ test('spike lists follow the Food check card when rate() carries the engine (fai
     const manual = SCL.split([{ ...HAM, manual: true }], () => ({ verdict: 'ok', engine: {} }), '', false, null);
     assert.deepEqual(manual.ok.map(p => p.name), ['Schinken gekocht'], 'manual entry keeps its own rating');
 });
+
+/* scanfe-h4 (Oct 23, 2026): Store picks / grocery hunt / Emergency shop (store-picks-core.js) rated with an estimated GI per
+   food group lowered by fibre, protein and fat; the spec forbids invented GI values, and a product the card says NO to
+   (pork salami, Ültje sweet & salty) could still be listed as Good or Best. Now: engine impact + Food check. */
+const SP = require('../store-picks-core.js');
+
+test('store picks: no estimated GI, impact is the engine category at the group serving (fails on the old formula)', () => {
+    const r = SP.rate({ n: 'Test', k: 'Kolonial > Pasta > Pasta', c: 10, s: 0, f: 0, p: 0, fat: 0 });
+    assert.strictEqual(r.gi, undefined);
+    assert.strictEqual(r.gl, undefined);
+    const chk = E.scanFood({ name: 'Test', unit: 'g', per100: { carbs: 10, sugar: 0, fibre: 0, protein: 0, fat: 0 }, ingredients: '' }, r.serve);
+    assert.strictEqual(r.impact, chk.glucose.key);
+    assert.strictEqual(SP.explain(r).estimatedGI, false);
+});
+
+test('store picks: a Food check NO is never Good or Best, even with a Lower impact (fails on the old formula)', () => {
+    const salami = SP.rate({ n: 'Salami', k: 'Fleisch & Wurst > Wurst > Salami', c: 1, s: 0.5, f: 0, p: 22, fat: 30, kcal: 360 });
+    assert.strictEqual(salami.impact, 'lower');
+    assert.strictEqual(salami.verdict, 'NEIN');
+    assert.strictEqual(salami.pass, false);
+    assert.strictEqual(salami.fail, 'policy');
+    assert.strictEqual(SP.explain(salami).verdict, 'policy');
+    const water = SP.rate({ n: 'Mineralwasser', k: 'Drikkevarer > Vand > Kildevand', c: 0, s: 0, p: 0, fat: 0, kcal: 0, u: 'ml' });
+    assert.ok(water.pass && water.best, 'plain water stays Best');
+});

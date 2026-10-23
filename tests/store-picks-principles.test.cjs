@@ -27,18 +27,20 @@ test('principles: starchy staples (potato, fries, crisps, rice, muesli, sweetcor
         ['Chips Paprika', 'Snackday'], ['Bens Microwave Mexican Style Rice'], ['Traube-Nuss Müsli 68% Vollkorn'], ['Mais, Sweetcorn']]) {
         const r = C.rate(row(n, b));
         assert.ok(r.rated, n + ' is rated');
-        assert.equal(r.pass, false, n + ' should be left out (GL ' + r.gl + ' in ' + r.serve + ' g)');
+        assert.equal(r.pass, false, n + ' should be left out (' + r.impact + ' impact, ' + r.carbs + ' g carbs in ' + r.serve + ' g)');
     }
     const fries = C.rate(row('Backofen Super Feine Pommes'));
     assert.ok(fries.serve >= 150, 'fries are rated by a plate, not a 30 g handful');
     const salad = C.rate(row('Klassischer Kartoffelsalat'));
-    assert.ok(salad.gi >= 55, 'potato is not a low-GI vegetable');
+    assert.notEqual(salad.impact, 'lower', 'potato salad by the plate is not a Lower-impact vegetable');
 });
 
 test('principles: low-starch whole foods keep their rating (seeds, legumes, green beans, pickles, protein bread)', () => {
-    for (const [n, b, best] of [['Bio Leinsamen', 'Crownfield', true], ['Sesam geröstet', 'Vitasia', true], ['Prinzessbohnen', 'Freshona', true],
-        ['Cornichons  Gurken', 'Freshona', true], ['Linsen rot im glas extra', 'Campo Largo', true], ['Kichererbsen', 'Freshona', true],
-        ['Eiweißreiches Weizenvollkornbrot', 'Grafschafter', true], ['Edelbitter Mild 90%', 'J.D. Gross', true]]) {
+    /* scanfe-h4: Best follows the Food check (YES apart from the missing-ingredients cap); legumes are a policy SELTEN,
+       so they pass but are not Best; the wheat protein bread is a Food check NO now (same as the scanner card) */
+    for (const [n, b, best] of [['Bio Leinsamen', 'Crownfield', true], ['Sesam geröstet', 'Vitasia', true], ['Prinzessbohnen', 'Freshona', false],
+        ['Cornichons  Gurken', 'Freshona', true], ['Linsen rot im glas extra', 'Campo Largo', false], ['Kichererbsen', 'Freshona', false],
+        ['Edelbitter Mild 90%', 'J.D. Gross', true]]) {
         const r = C.rate(row(n, b));
         assert.ok(r.pass, n + ' still passes');
         if (best) assert.ok(r.best, n + ' still Best');

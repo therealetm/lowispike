@@ -171,9 +171,21 @@
     }
 
     /* ---------------- the list ---------------- */
+    /* scanfe-h4: the engine's blood sugar impact category for the serving, never an estimated GI or GL */
+    function impactWord(k) {
+        return k === 'lower' ? T('Lower', 'Niedrigere', 'Menor') : k === 'moderate' ? T('Moderate', 'Mittlere', 'Moderada') : T('Higher', 'Höhere', 'Mayor');
+    }
+    function impactLine(k) {
+        return k === 'lower' ? T('Lower blood sugar impact (estimate)', 'Niedrigere Blutzuckerwirkung (Schätzung)', 'Menor impacto en el azúcar en sangre (estimación)')
+            : k === 'moderate' ? T('Moderate blood sugar impact (estimate)', 'Mittlere Blutzuckerwirkung (Schätzung)', 'Impacto moderado en el azúcar en sangre (estimación)')
+                : T('Higher blood sugar impact (estimate)', 'Höhere Blutzuckerwirkung (Schätzung)', 'Mayor impacto en el azúcar en sangre (estimación)');
+    }
+    function checkWord(v) {
+        return v === 'JA' ? T('Food check: YES', 'Food-Check: JA', 'Food check: SÍ') : v === 'SELTEN' ? T('Food check: RARELY', 'Food-Check: SELTEN', 'Food check: RARA VEZ') : v === 'NEIN' ? T('Food check: NO', 'Food-Check: NEIN', 'Food check: NO') : '';
+    }
     function reason(it) {
         const r = it.r, u = r.unit;
-        const parts = [T('GL', 'GL', 'CG') + ' ' + dec(r.gl) + ' ' + T('per', 'pro', 'por') + ' ' + r.serve + ' ' + u, dec(r.carbs) + ' g ' + T('carbs', 'KH', 'carbohidratos')];
+        const parts = [impactWord(r.impact) + ' ' + T('impact', 'Wirkung', 'impacto') + ' ' + T('per', 'pro', 'por') + ' ' + r.serve + ' ' + u, dec(r.carbs) + ' g ' + T('carbs', 'KH', 'carbohidratos')];
         if (r.sugar >= 1) parts.push(dec(r.sugar) + ' g ' + T('sugar', 'Zucker', 'azúcar'));
         if (r.protein >= 3) parts.push(dec(r.protein) + ' g ' + T('protein', 'Eiweiß', 'proteína'));
         if (r.fibre >= 2) parts.push(dec(r.fibre) + ' g ' + T('fibre', 'Ballaststoffe', 'fibra'));
@@ -185,7 +197,7 @@
     let shown = [], qv = null, qvFrom = -1, io = null;
     const camera = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-2.5h6L17 8h3v11H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="13.2" r="3.4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>';
     function tagHTML(r, failed) {
-        return failed ? '<em class="stp-tag no">' + esc(r.fail === 'sugar' ? T('Too much sugar', 'Zu viel Zucker', 'Demasiado azúcar') : T('Spikes', 'Lässt steigen', 'Sube')) + '</em>'
+        return failed ? '<em class="stp-tag no">' + esc(r.fail === 'policy' ? T('Food check: NO', 'Food-Check: NEIN', 'Food check: NO') : r.fail === 'sugar' ? T('Too much sugar', 'Zu viel Zucker', 'Demasiado azúcar') : T('Spikes', 'Lässt steigen', 'Sube')) + '</em>'
             : '<em class="stp-tag ' + (r.best ? 'best' : 'ok') + '">' + esc(r.best ? T('Best', 'Top', 'Mejor') : T('Good', 'Gut', 'Bien')) + '</em>';
     }
     function thumbHTML(p) {
@@ -202,32 +214,36 @@
 
     /* ---------------- quick view: photo, label, why, where it comes from ---------------- */
     function whyText(e) {
-        const g = dec(e.gl), sv = e.serve + ' ' + e.unit, su = dec(e.sugar);
-        if (e.verdict === 'best') return T('Best: about ' + g + ' glycemic load in a ' + sv + ' portion. 2 or less is Best.',
-            'Top: etwa ' + g + ' glykämische Last in einer Portion von ' + sv + '. Bis 2 heißt Top.',
-            'Mejor: unos ' + g + ' de carga glucémica en una porción de ' + sv + '. 2 o menos es Mejor.');
+        const sv = e.serve + ' ' + e.unit, su = dec(e.sugar), il = impactLine(e.impact), ck = checkWord(e.check);
+        const tail = ck ? ' ' + ck + '.' : '';
+        if (e.verdict === 'best') return T('Best: ' + il + ' in a ' + sv + ' portion, ' + su + ' g sugar.' + tail,
+            'Top: ' + il + ' in einer Portion von ' + sv + ', ' + su + ' g Zucker.' + tail,
+            'Mejor: ' + il + ' en una porción de ' + sv + ', ' + su + ' g de azúcar.' + tail);
         /* Oct 18, 2026 (lowiSPIKE principles audit): a zero-sugar cola or energy drink has no sugar load, but it is not minimally
            processed, so it is Good, never Best */
-        if (e.verdict === 'good' && e.sweetened) return T('Good, not Best: about ' + g + ' glycemic load in a ' + sv + ' portion, so no real sugar load, but it is a sweetened, processed drink. Water and plain tea are Best.',
-            'Gut, nicht Top: etwa ' + g + ' glykämische Last in einer Portion von ' + sv + ', also kaum Zuckerlast, aber ein gesüßtes, verarbeitetes Getränk. Wasser und purer Tee sind Top.',
-            'Bien, no Mejor: unos ' + g + ' de carga glucémica en una porción de ' + sv + ', casi sin carga de azúcar, pero es una bebida endulzada y procesada. El agua y el té solo son Mejor.');
-        if (e.verdict === 'good') return T('Good: about ' + g + ' glycemic load in a ' + sv + ' portion and ' + su + ' g sugar. It passes at 5 or less with at most 6 g sugar; Best needs 2 or less.',
-            'Gut: etwa ' + g + ' glykämische Last in einer Portion von ' + sv + ' und ' + su + ' g Zucker. Bestanden bis 5 mit höchstens 6 g Zucker; Top braucht bis 2.',
-            'Bien: unos ' + g + ' de carga glucémica en una porción de ' + sv + ' y ' + su + ' g de azúcar. Pasa con 5 o menos y como mucho 6 g de azúcar; Mejor necesita 2 o menos.');
+        if (e.verdict === 'good' && e.sweetened) return T('Good, not Best: ' + il + ' in a ' + sv + ' portion, so no real sugar load, but it is a sweetened, processed drink. Water and plain tea are Best.',
+            'Gut, nicht Top: ' + il + ' in einer Portion von ' + sv + ', also kaum Zuckerlast, aber ein gesüßtes, verarbeitetes Getränk. Wasser und purer Tee sind Top.',
+            'Bien, no Mejor: ' + il + ' en una porción de ' + sv + ', casi sin carga de azúcar, pero es una bebida endulzada y procesada. El agua y el té solo son Mejor.');
+        if (e.verdict === 'good') return T('Good: ' + il + ' in a ' + sv + ' portion and ' + su + ' g sugar.' + tail + ' Best needs Food check YES.',
+            'Gut: ' + il + ' in einer Portion von ' + sv + ' und ' + su + ' g Zucker.' + tail + ' Top braucht Food-Check JA.',
+            'Bien: ' + il + ' en una porción de ' + sv + ' y ' + su + ' g de azúcar.' + tail + ' Mejor necesita Food check SÍ.');
+        if (e.verdict === 'policy') return T('Left out: the Food check says NO for this product, the same as the scanner card.',
+            'Aussortiert: Der Food-Check sagt NEIN zu diesem Produkt, genau wie die Scanner-Karte.',
+            'Excluido: el Food check dice NO a este producto, igual que la tarjeta del escáner.');
         if (e.verdict === 'sugar') return T('Left out: ' + su + ' g sugar in a ' + sv + ' portion. The limit is 6 g.',
             'Aussortiert: ' + su + ' g Zucker in einer Portion von ' + sv + '. Die Grenze ist 6 g.',
             'Excluido: ' + su + ' g de azúcar en una porción de ' + sv + '. El límite es 6 g.');
-        return T('Left out: about ' + g + ' glycemic load in a ' + sv + ' portion. The limit is 5.',
-            'Aussortiert: etwa ' + g + ' glykämische Last in einer Portion von ' + sv + '. Die Grenze ist 5.',
-            'Excluido: unos ' + g + ' de carga glucémica en una porción de ' + sv + '. El límite es 5.');
+        return T('Left out: ' + il + ' in a ' + sv + ' portion. Only Lower passes.',
+            'Aussortiert: ' + il + ' in einer Portion von ' + sv + '. Nur Niedrigere besteht.',
+            'Excluido: ' + il + ' en una porción de ' + sv + '. Solo Menor pasa.');
     }
     function mathText(e) {
-        const s = dec(e.carbs) + ' g ' + T('carbs', 'KH', 'carbohidratos') + ' × GI ' + e.gi + ' ÷ 100 = ' + dec(e.gl) + '. ';
+        const s = dec(e.carbs) + ' g ' + T('carbs', 'KH', 'carbohidratos') + ' ' + T('in', 'in', 'en') + ' ' + e.serve + ' ' + e.unit + ' → ' + impactWord(e.impact) + '. ';
         return s + (e.typical ? T('This product has no label online, so typical values for this food were used. ', 'Dieses Produkt hat online kein Etikett, deshalb wurden typische Werte für dieses Lebensmittel genommen. ', 'Este producto no tiene etiqueta en línea, así que se usaron valores típicos de este alimento. ')
             : T('The carbs and sugar come from the label. ', 'KH und Zucker stammen vom Etikett. ', 'Los carbohidratos y el azúcar vienen de la etiqueta. ')) +
-            T('The GI is an estimate from the food type, lowered by fibre, protein and fat, so the load is an estimate too.',
-                'Der GI ist eine Schätzung aus der Lebensmittelart, gesenkt durch Ballaststoffe, Eiweiß und Fett, also ist auch die Last geschätzt.',
-                'El IG es una estimación según el tipo de alimento, reducida por la fibra, la proteína y la grasa, así que la carga también es estimada.');
+            T('The impact is an estimate from the carbs and sugar in the portion; no glycemic index is guessed.',
+                'Die Wirkung ist eine Schätzung aus KH und Zucker in der Portion; es wird kein glykämischer Index geraten.',
+                'El impacto es una estimación a partir de los carbohidratos y el azúcar de la porción; no se adivina ningún índice glucémico.');
     }
     function labelHTML(p) {
         const v = x => (typeof x === 'number' ? dec(x) : '–');
@@ -347,10 +363,10 @@
                 built.groups.map(groupHTML).join('') +
                 (c.total ? '' : '<p class="stp-none">' + esc(T('Nothing matches that search.', 'Nichts passt zu der Suche.', 'Nada coincide con la búsqueda.')) + '</p>') +
                 '<details class="stp-how"><summary>' + esc(T('How the rating works', 'So wird bewertet', 'Cómo se valora')) + '</summary><p>' +
-                esc(T('For each product: carbs per typical portion from its label (100 g meat or fish, 30 g cheese, 40 g bread, 25 g sweets, 30 g snacks, 250 ml drink, 150 g yoghurt). The GI is estimated from the food type and lowered by fibre, protein and fat. Glycemic load = carbs × GI ÷ 100. A product passes with a load of 5 or less and no more than 6 g sugar per portion; 2 or less is marked Best.',
-                    'Für jedes Produkt: Kohlenhydrate pro typischer Portion laut Etikett (100 g Fleisch oder Fisch, 30 g Käse, 40 g Brot, 25 g Süßes, 30 g Snacks, 250 ml Getränk, 150 g Joghurt). Der GI wird aus der Lebensmittelart geschätzt und durch Ballaststoffe, Eiweiß und Fett gesenkt. Glykämische Last = KH × GI ÷ 100. Ein Produkt besteht mit einer Last bis 5 und höchstens 6 g Zucker pro Portion; bis 2 heißt Top.',
-                    'Para cada producto: carbohidratos por porción típica según su etiqueta (100 g de carne o pescado, 30 g de queso, 40 g de pan, 25 g de dulces, 30 g de snacks, 250 ml de bebida, 150 g de yogur). El IG se estima según el tipo de alimento y baja con la fibra, la proteína y la grasa. Carga glucémica = carbohidratos × IG ÷ 100. Un producto pasa con una carga de 5 o menos y no más de 6 g de azúcar por porción; 2 o menos es Mejor.')) + '</p>' +
-                '<p>' + esc(T('Real: product names and label values. Estimated: the GI and so the load. ', 'Echt: Produktnamen und Etikettwerte. Geschätzt: der GI und damit die Last. ', 'Real: nombres y valores de la etiqueta. Estimado: el IG y por tanto la carga. ') + (data && data.note ? data.note : '')) + '</p>' +
+                esc(T('For each product: carbs and sugar per typical portion from its label (100 g meat or fish, 30 g cheese, 40 g bread, 25 g sweets, 30 g snacks, 250 ml drink, 150 g yoghurt). The same Food check as the scanner card gives the blood sugar impact (Lower, Moderate or Higher) and YES, RARELY or NO. A product passes with Lower impact, no more than 6 g sugar per portion and no Food check NO; Best also needs Food check YES.',
+                    'Für jedes Produkt: Kohlenhydrate und Zucker pro typischer Portion laut Etikett (100 g Fleisch oder Fisch, 30 g Käse, 40 g Brot, 25 g Süßes, 30 g Snacks, 250 ml Getränk, 150 g Joghurt). Derselbe Food-Check wie auf der Scanner-Karte gibt die Blutzuckerwirkung (Niedrigere, Mittlere oder Höhere) und JA, SELTEN oder NEIN. Ein Produkt besteht mit niedrigerer Wirkung, höchstens 6 g Zucker pro Portion und ohne Food-Check NEIN; Top braucht zusätzlich Food-Check JA.',
+                    'Para cada producto: carbohidratos y azúcar por porción típica según su etiqueta (100 g de carne o pescado, 30 g de queso, 40 g de pan, 25 g de dulces, 30 g de snacks, 250 ml de bebida, 150 g de yogur). El mismo Food check que la tarjeta del escáner da el impacto en el azúcar en sangre (Menor, Moderado o Mayor) y SÍ, RARA VEZ o NO. Un producto pasa con impacto Menor, no más de 6 g de azúcar por porción y sin Food check NO; Mejor necesita además Food check SÍ.')) + '</p>' +
+                '<p>' + esc(T('Real: product names and label values. Estimated: the blood sugar impact; no glycemic index is guessed. The range lists have no ingredients, so the Food check sees the name and the label only. ', 'Echt: Produktnamen und Etikettwerte. Geschätzt: die Blutzuckerwirkung; es wird kein glykämischer Index geraten. Die Listen haben keine Zutaten, deshalb sieht der Food-Check nur Name und Etikett. ', 'Real: nombres y valores de la etiqueta. Estimado: el impacto en el azúcar en sangre; no se adivina ningún índice glucémico. Las listas no tienen ingredientes, así que el Food check solo ve el nombre y la etiqueta. ') + (data && data.note ? data.note : '')) + '</p>' +
                 '<p>' + esc(T('Source: ', 'Quelle: ', 'Fuente: ') + (data && data.source || '') + ' · ' + (data && data.built || '')) + '</p></details>';
         }
         const gen = S.range === 'general' && S.store ? '<p class="stp-fine stp-gen">' + esc(T('We have no product list for this shop’s chain, so this is the general list. Supermarkets mostly carry the same items.', 'Für die Kette dieses Ladens haben wir keine eigene Liste, deshalb siehst du die allgemeine Liste. Supermärkte führen meist dieselben Produkte.', 'No tenemos una lista de esta cadena, así que ves la lista general. Los supermercados suelen tener los mismos productos.')) + '</p>' : '';

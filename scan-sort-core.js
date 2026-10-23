@@ -76,7 +76,7 @@
     /* catalog (Oct 22, 2026, bug: Cook > Products > Shuffle showed "No low-spike products to shuffle yet"): the Products pool was only
        the person's own and community catches, so with few or unrated catches it came out empty. The built-in shop ranges
        (data/shop/<range>.json, rated by LowiStorePicksCore) now feed it too: only products with a real label that pass the store
-       formula (GL and sugar per serving). The caller still runs them through split() so the scanner's estimator has the last word.
+       rating (engine blood sugar impact Lower, sugar per serving, Food check not NO). The caller still runs them through split() so the scanner's estimator has the last word.
        data: a range file; core: LowiStorePicksCore; o.max: cap (default 240), spread over the food groups. */
     function catalog(data, core, o) {
         o = o || {};
@@ -97,7 +97,7 @@
                 const p = it.p, img = typeof core.photo === 'function' ? core.photo(p) : null;
                 out.push({ name: String(p.n), brand: p.b || '', barcode: /^[0-9]{8,14}$/.test(String(p.g || '')) ? String(p.g) : '', img: img || '', quantity: p.q || '',
                     cat: it.r.group === 'drinks' ? 'drink' : 'food', facts: { c: p.c, s: p.s == null ? 0 : p.s, f: p.f == null ? 0 : p.f, p: p.p == null ? 0 : p.p, fat: p.fat, drink: it.r.group === 'drinks' },
-                    ingredients: '', verdict: 'ok', catalog: true, source: 'catalog:' + src, gl: it.r.gl });
+                    ingredients: '', verdict: 'ok', catalog: true, source: 'catalog:' + src, impact: it.r.impact });
             });
             if (!any) break;
         }

@@ -270,3 +270,13 @@ test('page: their breakdown shows only when they share their companion; hidden s
   assert.match(hid, /<p class="rk-tot">/, 'hidden: a lock line says only totals are shared');
   assert.ok(them(shown) >= 0);
 });
+
+test('page: the small i holds the rules, one short line each, the open board marked, in English, German and Spanish', () => {
+  const now = Date.now();
+  for (const [lg, re] of [['en', /Sunbeams since Monday/], ['de', /Sonnenstrahlen seit Montag/], ['es', /Rayos de sol desde el lunes/]]) {
+    const h = page(screenshot(now), { lang: lg }).LowiRanking._info();
+    assert.match(h, re, lg);
+    assert.equal((h.match(/<li class="cur"/g) || []).length, 1, lg + ': the open board is marked');
+    for (const b of h.match(/<b>[^<]*<\/b>/g) || []) assert.ok(b.length < 110, lg + ': short line: ' + b);
+  }
+});

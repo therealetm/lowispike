@@ -160,6 +160,8 @@ test('grocery-3 view: Today\'s groceries sheet from the bucket list, recipes fro
     assert.match(js, /data-sh="recipe" data-r=/);
     assert.match(html, /window\.LowiAllRecipes = allRecipes/);
     assert.match(html, /const GROUP_WORDS = \{/);
+    assert.match(html, /window\.LOWI_GROUP_WORDS = GROUP_WORDS/);
+    assert.match(js, /LOWI_GROUP_WORDS/);
     assert.doesNotMatch(js, /Notification|setHours|getHours/, 'no reminder hour invented');
     ['todayG', 'bought', 'cook', 'noCook', 'noneToday', 'uses', 'alsoNeed'].forEach(k => assert.equal(C.TX[k].length, 3, k));
 });

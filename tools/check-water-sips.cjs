@@ -12,7 +12,7 @@ const SIZES = [['iphone-up', 390, 844], ['iphone-side', 844, 390], ['ipad-up', 8
 const SHOT = process.env.SHOT || '/tmp/water-sips-shots';
 fs.mkdirSync(SHOT, { recursive: true });
 
-const SIZES2 = (process.env.ONE ? [['iphone-up', 390, 844, 'en']] : [['iphone-up', 390, 844, 'en'], ['iphone-side', 844, 390, 'en'], ['ipad-up', 820, 1180, 'de'], ['ipad-side', 1180, 820, 'de'], ['small', 360, 740, 'en']]);
+const SIZES2 = (process.env.ONE ? [['iphone-up', 390, 844, 'en']] : process.env.SIZE ? [['iphone-up', 390, 844, 'en'], ['iphone-side', 844, 390, 'en'], ['ipad-up', 820, 1180, 'de'], ['ipad-side', 1180, 820, 'de'], ['small', 360, 740, 'en']].filter(s => s[0] === process.env.SIZE) : [['iphone-up', 390, 844, 'en'], ['iphone-side', 844, 390, 'en'], ['ipad-up', 820, 1180, 'de'], ['ipad-side', 1180, 820, 'de'], ['small', 360, 740, 'en']]);
 srv.listen(0, async () => {
   const port = srv.address().port; let fail = 0; const ok = (c, m) => { console.log((c ? 'ok   ' : 'FAIL ') + m); if (!c) fail++; };
   const browser = await pw.chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });

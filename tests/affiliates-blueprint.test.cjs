@@ -98,9 +98,9 @@ test('pages: shareable, private, branded, and the app tabs point at them', () =>
   const ui = read('community-rooms-ui.js');
   assert.match(ui, /create:'create\/',aff:'affiliates\/'/);
   // tabs are built from the user's saved order (community-tab-order.js), so check the default order and the generated button
-  assert.match(ui, /\['room','chat','create','aff'\]/);
+  assert.match(ui, /\['room','chat','create','aff','rank'\]/);   /* 23 Oct: Ranking joined the bar */
   assert.match(ui, /tabOrder\(\)\.map\(k=>'<button type="button" role="tab" class="rm-tab" data-rm="'\+k\+'"><\/button>'\)/);
-  assert.match(ui, /a==='create'\|\|a==='aff'\)showView\(a\)/);
+  assert.match(ui, /a==='create'\|\|a==='aff'\|\|a==='rank'\)showView\(a\)/);
   const S = require('../scripts/site-files.cjs'), pub = new Set(S.list(root));
   for (const f of ['affiliates/index.html', 'affiliates/blueprint.js', 'affiliates/blueprint-core.js', 'affiliates/blueprint.css', 'create/index.html']) assert.ok(pub.has(f), f + ' is published');
 });

@@ -15443,7 +15443,7 @@ function commHTML(){
     '<div class="r3-prev"><small>Next to your messages</small><div class="r3-prevrow">' + bubble(m, 36) + '<div><b>' + esc(m.n) + '</b><span>' + (bits.length ? esc(bits.join(" · ")) : "Add birthday and type to show more") + '</span></div></div></div>' +
     '<div class="r3-set"><div><b>Show my weight</b><small>' + (hw ? (u.showWeight ? "On · others see " + esc(String(S_.health.weight)) + " kg next to your name" : "Off · only you see it") : "Off · add your weight first") + '</small></div>' +
       '<button class="toggle' + (u.showWeight && hw ? " on" : "") + '" data-r3="showweight" role="switch" aria-checked="' + (u.showWeight && hw ? "true" : "false") + '" aria-label="Show my weight"></button></div>' +
-    '<button class="r3-boardrow" data-r3="board"><span class="r3-ti">🏆</span><div><b>Care board</b><small>' + (rk ? "You're #" + rk + " on the care board this week" : "Look after Misty this week to get on it") + '</small></div>' + R2.ico.chev + '</button></div>';
+    '<button class="r3-boardrow" data-r3="board"><span class="r3-ti">🏆</span><div><b>Ranking</b><small>' + (rk ? "You're #" + rk + " in the Ranking this week" : "Look after Misty this week to get in the Ranking") + '</small></div>' + R2.ico.chev + '</button></div>';
 }
 function decorate(){
   const tab = document.getElementById("tab-profile"); if (!tab) return;
@@ -15502,7 +15502,7 @@ function levelBlock(p){
   return '<div class="r3-lvcard"><div class="r3-lvtop"><span class="r3-lvb num">Lv ' + L + '</span><b>' + esc(title) + '</b><span class="r3-xp num">' + fmtN(xp) + ' XP</span></div>' +
     '<div class="r3-bar"><i style="width:' + Math.round(Math.max(.03, Math.min(1, pct)) * 100) + '%"></i></div>' +
     '<div class="r3-lvsub"><span>' + fmtN(left) + ' XP to Level ' + (L + 1) + '</span><span>🔥 ' + (p.streak || 0) + '-day streak</span></div>' +
-    '<button class="r3-link" data-r3="board">See leaderboard ' + R2.ico.chev + '</button></div>';
+    '<button class="r3-link" data-r3="board">See Ranking ' + R2.ico.chev + '</button></div>';
 }
 function sameSign(s){ return everyone().filter(x => x.s === s); }
 function memberHTML(p){
@@ -16115,6 +16115,9 @@ function paintBoard(){
 R3F.paintBoard = paintBoard;
 /* "Leaderboard" links in Profile and on member profiles open the tab */
 function openBoardTab(){
+  /* 23 Oct 2026 (E-man: one board, the companion Ranking in Community; the Care board and the other boards go): every old
+     "Care board" / "Leaderboard" link opens Community > Ranking (ranking.js). The board below is only a fallback. */
+  try { if (window.LowiRanking && LowiRanking.open) { LowiRanking.open(); return; } } catch(e){ console.error(e); }
   let wait = 0;
   try { const R2 = window.LowiR2; if (R2 && R2.top && R2.top()) { R2.closeAll(); wait = 220; } } catch(e){}
   try { const w = $("#sheetwrap"); if (w && w.classList.contains("open")) { closeSheet(); wait = 220; } } catch(e){}
@@ -20488,6 +20491,8 @@ window.LowiCommunityHost = {
 <script src="galaxy-zoom.js?v=20261023-092220"></script>
 <link rel="stylesheet" id="mhCss" href="misty-hub.css?v=20261023-092220">
 <script src="care-board-core.js?v=20261023-092220"></script>
+<script src="ranking-core.js?v=20261023-092220"></script>
+<script src="ranking.js?v=20261023-092220"></script>
 <script src="adventure-tiers.js?v=20261023-092220"></script>
 <script src="misty-hub.js?v=20261023-092220"></script>
 <link rel="stylesheet" id="mpCss" href="misty-pad.css?v=20261023-092220">
@@ -20521,6 +20526,7 @@ window.LowiCommunityHost = {
 <link rel="stylesheet" id="ccCss" href="community-composer.css?v=20261023-092220">
 <link rel="stylesheet" id="crCss" href="community-room.css?v=20261023-092220">
 <link rel="stylesheet" href="community-rooms.css?v=20261023-092220">
+<link rel="stylesheet" href="ranking.css?v=20261023-092220">
 <link rel="stylesheet" href="community-tab-order.css?v=20261023-092220">
 <script src="community-composer.js?v=20261023-092220"></script>
 <link rel="stylesheet" id="ssCss" href="shop-scan.css?v=20261023-092220">

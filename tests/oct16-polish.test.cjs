@@ -18,10 +18,10 @@ test('the old top-right For You / Leaderboard pills are gone', () => {
     assert.match(read('nav-moves.css'), /html\.nm-on \.nm-pill \{ display: none !important; \}/);
 });
 
-test('Move: Leaderboard card under the title, Safety shield gone, notes under Start', () => {
+test('Move: no board card under the title any more (23 Oct: the companion Ranking in Community replaced it), Safety shield gone, notes under Start', () => {
     const js = read('nav-moves.js'), css = read('nav-moves.css');
-    assert.match(js, /c\.className = 'card goldline nm-lbcard'; c\.dataset\.nm = 'lb'/);
-    assert.match(js, /if \(c\.previousElementSibling !== head\) head\.after\(c\);/);
+    assert.doesNotMatch(js, /nm-lbcard'; c\.dataset\.nm = 'lb'/);
+    assert.match(js, /querySelectorAll\(':scope > \.nm-lbcard, :scope > \.nm-milescard'\)\.forEach\(o => o\.remove\(\)\)/);
     assert.match(js, /class="nm-safe" data-mv="safety"/);
     assert.match(js, /tl\.insertAdjacentHTML\('afterend', '<p class="nm-safeline"/);
     assert.match(css, /html\.nm-on \.g2-safe \{ display: none !important; \}/);

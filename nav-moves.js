@@ -118,6 +118,7 @@
         if (L.style.height !== h + 'px') { L.style.height = h + 'px'; try { if (W.LowiFyEmbed) D.querySelectorAll('.nm-layer-fy .fy-slide.fye-on').forEach(W.LowiFyEmbed.place); } catch (e) { } }
     }
     function open(k) {
+        if (k === 'lb' && W.LowiRanking && W.LowiRanking.open) { W.LowiRanking.open(); return; }
         const s = SPOTS[k];
         if (activeTab() !== s.tab) go(s.tab);
         setTimeout(() => { show(k, true); align(); }, 30);
@@ -200,6 +201,7 @@
     D.addEventListener('click', e => {
         const b = e.target.closest && e.target.closest('[data-nm]'); if (!b) return;
         const k = b.dataset.nm;
+        if (k === 'lb' && W.LowiRanking && W.LowiRanking.open) { e.preventDefault(); if (isOpen('lb')) show('lb', false); W.LowiRanking.open(); return; }
         if (k === 'fy' || k === 'lb') { e.preventDefault(); show(k, !isOpen(k)); align(); return; }
         if (k === 'back') { e.preventDefault(); const L = b.closest('.nm-layer'); if (L) show(L.classList.contains('nm-layer-fy') ? 'fy' : 'lb', false); }
     }, true);
@@ -259,39 +261,12 @@
     }
     /* Move (Oct 16): the Leaderboard is a card right under the Move title, above the Start card, in the same card style.
        The odd Safety shield in the header is gone; its notes now sit as a quiet "Safety notes" line under the tiles. */
-    /* Oct 17: the board ranks the care Misty got (care-board-core.js), so the card reads "Care board" and shows your
-       sunbeams this week. Read at most every 4 s: tick() runs on every DOM change. */
-    let careTxt = '', careAt = 0;
-    function careLine() {
-        const n = Date.now(); if (n - careAt < 4000) return careTxt; careAt = n;
-        try { const m = W.LowiR3 && W.LowiR3.me && W.LowiR3.me(), w = m && m.care && m.care.w; careTxt = w && w.key ? ' \u00b7 \u2600 ' + w.pts : ''; } catch (e) { careTxt = ''; }
-        return careTxt;
-    }
+    /* 23 Oct 2026 (E-man: "we have a care board and some XP human board ... nuke them"): one board now, the companion
+       Ranking in Community (ranking.js). Move no longer shows the Care board card or the Milestones row (people's levels &
+       streaks); old copies are removed. The care and XP numbers stay: the Ranking reads them. */
     function moveCard() {
         const head = $('#mv-screen .mv-head'); if (!head) return;
-        let c = head.parentElement.querySelector(':scope > .nm-lbcard');
-        if (!c) {
-            c = D.createElement('button'); c.type = 'button'; c.className = 'card goldline nm-lbcard'; c.dataset.nm = 'lb'; c.setAttribute('data-noi18n', '');
-            c.innerHTML = '<span class="mv-ic nm-lbic">' + ICO.lb + '</span><span class="nm-lbtx"><span class="tiny gold"></span><b class="h3"></b></span><svg class="nm-lbgo" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
-        }
-        if (c.previousElementSibling !== head) head.after(c);
-        const tg = T('This week', 'Diese Woche', 'Esta semana') + careLine(), nm = SPOTS.lb.label();
-        /* Oct 17 crash fix: compare with what we last wrote, never with what the page shows. spirit.js swaps the sun emoji for
-           its icon, so the shown text never matched again and this line rewrote itself on every frame (an endless DOM loop that
-           woke every observer, heated the phone and crashed Safari). */
-        const tiny = c.querySelector('.tiny');
-        if (tiny.__tg !== tg) { tiny.__tg = tg; tiny.textContent = tg; }
-        if (c.querySelector('b').textContent !== nm) { c.querySelector('b').textContent = nm; c.setAttribute('aria-label', nm); }
-        /* Oct 21: Milestones (levels & streaks, good vibes) live in Move, a slim row right under the Care board */
-        let m = head.parentElement.querySelector(':scope > .nm-milescard');
-        if (!m) {
-            m = D.createElement('button'); m.type = 'button'; m.className = 'card nm-milescard'; m.dataset.fx = 'miles'; m.setAttribute('data-noi18n', '');
-            m.innerHTML = '<span class="nm-msic">' + ICO.miles + '</span><b></b><small></small><svg class="nm-lbgo" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
-        }
-        if (m.previousElementSibling !== c) c.after(m);
-        const mt = T('Milestones', 'Meilensteine', 'Logros'), ms = T('Levels & streaks', 'Level & Serien', 'Niveles y rachas');
-        if (m.querySelector('b').textContent !== mt) { m.querySelector('b').textContent = mt; m.setAttribute('aria-label', mt + ', ' + ms); }
-        if (m.querySelector('small').textContent !== ms) m.querySelector('small').textContent = ms;
+        head.parentElement.querySelectorAll(':scope > .nm-lbcard, :scope > .nm-milescard').forEach(o => o.remove());
         const tl = head.parentElement.querySelector(':scope > .g2-tiles');
         if (tl && !(tl.nextElementSibling && tl.nextElementSibling.classList.contains('nm-safeline'))) {
             head.parentElement.querySelectorAll(':scope > .nm-safeline').forEach(o => o.remove());

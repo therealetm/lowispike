@@ -14599,7 +14599,9 @@ function scActsHTML(p, mine, m){
   else if (p.id) cat = '<div class="sc-known">' + esc(sct("known")) + (p.byName ? ' <span class="sc-pf">' + esc(sct("pfBy").replace("{n}", p.byName)) + '</span>' : "") + '</div>';
   else if (pfVerifiable(p)) cat = '<button class="r2-btn' + (logging ? "" : " pri") + ' big b3-catch sc-catch" data-b3="catch" id="b3Catch"><span class="b3-pb" aria-hidden="true"></span>' + esc(sct("pfFirst")) + ' <small>' + esc(pfToday() < PF_DAY ? sct("pfXP").replace("{x}", PF_XP) : sct("pfBadge")) + '</small></button>';
   else cat = '<div class="sc-known sc-new">' + esc(sct("pfNew")) + '<small>' + esc(sct("pfCheckNote")) + '</small></div><button class="r2-btn ghost b3-catch sc-catch" data-b3="catch" id="b3Catch">' + esc(sct("pfSave")) + '</button>';
-  return '<div class="b3-acts sc-acts">' + (logging ? eat + cat : cat + eat) + '</div>'; }
+  /* grocery-1 (Oct 23): a product check (not the Log meal scan) offers Add to bucket / Skip (grocery-bucket.js) */
+  const gb = !logging && window.LowiBucket ? LowiBucket.rowHTML(p) : "";
+  return '<div class="b3-acts sc-acts">' + (logging ? eat + cat : cat + eat) + gb + '</div>'; }
 /* scanfe-g2 (Oct 23 2026): the card is rated for the amount on its portion block. By default that is the engine's serving
    (manufacturer serving, else the group's usual portion), so nothing changes; the amount you had last time or one you pick
    there re-rates the estimate line, the Food check card and Details live. The product itself (dex, lists) keeps its default. */
@@ -20494,6 +20496,8 @@ window.LowiCommunityHost = {
 <script src="food-photo-ai.js?v=20261023-064718"></script>
 <script src="meal-result.js?v=20261023-064718"></script>
 <script src="meal-journal.js?v=20261023-064718"></script>
+<script src="grocery-bucket-core.js?v=20261023-064718"></script>
+<script src="grocery-bucket.js?v=20261023-064718"></script>
 <script src="string-pov.js?v=20261023-064718"></script>
 <script src="misty-hunt.js?v=20261023-064718"></script>
 <script src="hunt-count.js?v=20261023-064718"></script>
@@ -20541,6 +20545,7 @@ window.LowiCommunityHost = {
 <link rel="stylesheet" id="scrCss" href="scan-screens.css?v=20261023-064718">
 <link rel="stylesheet" href="meal-photo.css?v=20261023-064718">
 <link rel="stylesheet" href="meal-journal.css?v=20261023-064718">
+<link rel="stylesheet" href="grocery-bucket.css?v=20261023-064718">
 <link rel="stylesheet" id="mpopCss" href="misty-pop.css?v=20261023-064718">
 <link rel="stylesheet" id="mpnCss" href="misty-panels.css?v=20261023-064718">
 <!-- Oct 18: owner tools (kick / delete members). Server-checked: supabase/proposals/owner_admin_20261018.sql -->

@@ -33,6 +33,8 @@
         if (!p || typeof p !== 'object') return false;
         if (p.me) return true;
         if (p.bot || p.demo || p.sample) return false;
+        /* server-flagged bot accounts (profiles.bot: crowd + gate-test sign-ups, bot-accounts.js) stay in the Community, never on the board */
+        const B = root.LowiBotAccounts; if (B && B.isBot(p)) return false;
         const u = String(p.uid || '');
         return !!u.trim() && !/^(bot|demo|sample)[:_-]/i.test(u);
     }

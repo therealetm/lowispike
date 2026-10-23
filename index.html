@@ -9574,6 +9574,7 @@ async function start(){
   PEOPLE = q[4].data.filter(r => r.id !== uid).map(mapPerson);
   live = true;
   applyChat(); applyMembers(); syncMyLikes(); chatNotify("ready");
+  if (window.LowiBotAccounts) window.LowiBotAccounts.load(sb); /* server bot flag: keeps bots off the Ranking and the add-friend list */
   subscribe(); startRooms(); pushProfile(); clearTimeout(backT); setTimeout(() => syncNow("open"), 600); syncNote();
   refreshUI();
   /* a photo picked before the cloud existed never left the phone: upload it once so others see it */

@@ -85,7 +85,8 @@
     }
     function roster(list) {
         const H = hiddenList();
-        list = (list || []).filter(p => p && !(H && H.isHidden(p)));
+        const B = root.LowiBotAccounts;
+        list = (list || []).filter(p => p && !(H && H.isHidden(p)) && !(B && !p.me && B.isBot(p)));
         const self = list.find(p => p.me) || null, own = self ? nameKey(self) : '', best = new Map(), bots = [];
         for (const p of list) {
             if (p === self) continue;

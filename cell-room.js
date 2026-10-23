@@ -21,7 +21,15 @@ function cellName(){return companionName();}
 function myUid(){try{return root.LOWI_CLOUD&&LOWI_CLOUD.uid?String(LOWI_CLOUD.uid()||''):'';}catch(e){return'';}}
 function myName(){try{return String((root.LowiHost&&LowiHost.user()||{}).name||'');}catch(e){return'';}}
 function live(){try{return!!(root.LOWI_CLOUD&&LOWI_CLOUD.live&&LOWI_CLOUD.live());}catch(e){return false;}}
-function roomPeople(){if(!live())return[];try{const bots=new Set((root.LOWI_BOTS||[]).map(b=>b.n));return(LOWI_CLOUD.people()||[]).filter(p=>p&&p.uid&&p.n&&!bots.has(p.n)&&p.uid!==myUid());}catch(e){return[];}}
+/* people you can add (Oct 23, Emmanuel: "da sehe ich mein Name so echt oft ... und so verschiedene Botsnamen"): real accounts
+   only. Server-flagged bot accounts (bot-accounts.js) and hidden test accounts are left out, and Emmanuel's own extra
+   accounts never show: for him none of them, for everyone else one entry (ranking-core.js isOwner / OWNER.main). */
+function roomPeople(){if(!live())return[];try{const bots=new Set((root.LOWI_BOTS||[]).map(b=>b.n)),B=root.LowiBotAccounts,H=root.LowiHiddenAccounts,R=root.LowiRankingCore,me=myUid();
+ const own=p=>!!(R&&R.isOwner&&R.isOwner(p)),iAmOwner=!!(R&&R.OWNER&&R.OWNER.ids&&R.OWNER.ids.includes(me));
+ const list=(LOWI_CLOUD.people()||[]).filter(p=>p&&p.uid&&p.n&&!bots.has(p.n)&&p.uid!==me&&!(B&&B.isBot(p))&&!(H&&H.isHidden(p)));
+ const out=[],seenOwner=[];for(const p of list){if(own(p)){if(iAmOwner)continue;seenOwner.push(p);continue;}out.push(p);}
+ if(seenOwner.length){const keep=seenOwner.find(p=>R.OWNER&&p.uid===R.OWNER.main)||seenOwner[0];out.push(keep);}
+ return out;}catch(e){return[];}}
 function myHue(){const h=herb();let x=200;try{const s=h&&h.m&&h.m.profile&&h.m.profile.sign&&h.m.profile.sign.name;if(s)x=(K.hue(s)%140)+160;}catch(e){}return x;}
 const ICO={
  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5"/><path d="M6.5 10v9h11v-9"/><circle cx="12" cy="14.5" r="2.2"/></svg>',

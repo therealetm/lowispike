@@ -27,6 +27,10 @@
     const CAT_RX = {};
     for (const k of Object.keys(POLICY.categories)) CAT_RX[k] = new RegExp(POLICY.categories[k].name, 'i');
     const T = POLICY.thresholds;
+    const PORK_SPECIES_RX = /schwein|pork|cerdo|porc/;
+    const NOT_PORK_RX = /pute|truthahn|turkey|geflügel|gefluegel|poultry|hähnchen|haehnchen|chicken|\brind|beef|vegan|vegetar|veggie|pflanzlich|plant[- ]based/;
+    const PLANT_RX = /vegan|vegetar|veggie|pflanzlich|plant[- ]based/;
+    const PORK_TAGS = ['en:pork', 'en:pork-and-its-products', 'en:pork-meat', 'pork', 'pork-and-its-products', 'pork-meat'];
 
     const num = v => (typeof v === 'number' && isFinite(v) ? v : null);
     const low = s => String(s == null ? '' : s).toLowerCase().normalize('NFC');
@@ -43,6 +47,13 @@
             if ((text && CAT_RX[k].test(text)) || (def.off || []).some(t => tags.includes(t))) cats[k] = true;
         }
         if (cats.sweet_potato) delete cats.starch_potato;
+        // Salami, chorizo, speck, bacon or leberwurst named after another animal (Geflügelsalami, Rindfleisch-Salami,
+        // Putenspeck) or plant-based is not pork by name; the same notPork rule ingredient-core uses. Pork in the
+        // ingredients (summary.pork) and explicit pork tags still give NEIN. Meat versions count as processed meat.
+        if (cats.pork && !PORK_SPECIES_RX.test(text) && NOT_PORK_RX.test(text) && !PORK_TAGS.some(t => tags.includes(t))) {
+            delete cats.pork;
+            if (!PLANT_RX.test(text)) cats.processed_meat = true;
+        }
         return cats;
     }
 

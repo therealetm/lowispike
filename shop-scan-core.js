@@ -12,10 +12,32 @@
     const LEVELS = ['spike', 'mild', 'none', 'unknown'];
     function level(v) { return MAP[v] || (LEVELS.indexOf(v) >= 0 ? v : 'unknown'); }
     /* p: a product as the scanner looks it up ({verdict, facts, ingredients, ...}); rate: the scanner's rate(p) */
+    /* scanfe-h2 (Oct 23, 2026): live first, like scan-sort. The live rating is rate(p) made stricter by the Food check verdict
+       (LowiSpikeCore.tighten: NEIN -> spike, SELTEN -> at least better) when rate returns an engine result. A stored verdict
+       only fills in when there is no live one, except a stored spike, which still wins, so an old "ok" row can't hide a spike. */
+    let SC = null;
+    function spikeCore() {
+        if (SC) return SC;
+        if (typeof window !== 'undefined' && window.LowiSpikeCore) return window.LowiSpikeCore;
+        if (typeof require === 'function') { try { SC = require('./spike-core.js'); } catch (e) { SC = null; } }
+        return SC;
+    }
+    const RATED = { ok: 1, better: 1, spike: 1 };
     function verdictOf(p, rate) {
         if (!p || p.notFound) return 'unknown';
-        if (p.verdict && p.verdict !== 'unknown' && MAP[p.verdict]) return MAP[p.verdict];
-        if (typeof rate === 'function') { try { const r = rate(p); if (r && MAP[r.verdict]) return MAP[r.verdict]; } catch (e) {} }
+        const stored = RATED[p.verdict] ? p.verdict : 'unknown';
+        let live = 'unknown';
+        if (typeof rate === 'function') {
+            try {
+                const r = rate(p);
+                if (r && RATED[r.verdict]) live = r.verdict;
+                const S = r && r.engine && !p.manual ? spikeCore() : null;
+                if (S && typeof S.tighten === 'function') { const v = S.tighten(p, r); if (RATED[v]) live = v; }
+            } catch (e) {}
+        }
+        if (stored === 'spike' || live === 'spike') return 'spike';
+        if (live !== 'unknown') return MAP[live];
+        if (stored !== 'unknown') return MAP[stored];
         return 'unknown';
     }
 

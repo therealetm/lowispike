@@ -55,3 +55,32 @@ test('scan-sort: a manual entry or a rate() without the engine keeps its own rat
     assert.equal(SS.verdictOf({ ...HAM, manual: true }, () => ({ verdict: 'ok', engine: {} })), 'ok');
     assert.equal(SS.verdictOf(HAM, () => ({ verdict: 'ok' })), 'ok');
 });
+
+/* scanfe-h2 (Oct 23, 2026): the shop scan reads the live Food check verdict first (it used to trust a stored verdict before
+   the live one), and salami named after another animal is not pork by name (Gefluegelsalami was a pork NEIN). */
+const SH = require('../shop-scan-core.js');
+const E = require('../food-engine-core.js');
+
+test('shop scan: live Food check verdict first, a stored ok cannot hide a NO', () => {
+    assert.equal(SH.verdictOf(Object.assign({ verdict: 'ok' }, ULTJE), rate), 'spike', 'Ultje: stored ok, card says NO');
+    assert.equal(SH.verdictOf(Object.assign({ verdict: 'ok' }, HAM), rate), 'spike', 'ham: stored ok, card says NO');
+    assert.equal(SH.verdictOf(Object.assign({ verdict: 'ok' }, PEANUTS), rate), 'mild', 'nuts: card says RARELY');
+    assert.equal(SH.verdictOf(Object.assign({ verdict: 'spike' }, YOG), rate), 'spike', 'a stored spike still wins');
+    assert.equal(SH.verdictOf(YOG, rate), 'none', 'plain yoghurt stays Lower');
+});
+
+test('poultry or beef salami is processed meat (RARELY), not a pork NO; pork salami stays NO', () => {
+    const per100 = { carbs: 1, sugar: 0.5, protein: 22, fat: 14 };
+    const v = (name, extra) => E.scanFood(Object.assign({ name, per100 }, extra || {}), 30);
+    for (const name of ['Geflügelsalami', 'Delikatess Geflügel Edelsalami', 'Wilhelm Brandenburg Rindfleisch salami', 'Puten-Chorizo']) {
+        const r = v(name, { ingredients: 'Putenfleisch, Hähnchenfleisch, Salz, Gewürze' });
+        assert.equal(r.verdict, 'SELTEN', name + ' ' + r.policy.decidedBy);
+        assert.equal(r.policy.decidedBy, 'policy.processed_meat', name);
+    }
+    assert.equal(v('Salami Milano').verdict, 'NEIN', 'plain salami: pork by name');
+    assert.equal(v('Schweinesalami').verdict, 'NEIN');
+    assert.equal(v('Geflügelsalami', { ingredients: 'Putenfleisch, Schweinespeck, Salz' }).verdict, 'NEIN', 'pork in the ingredients still NO');
+    assert.equal(v('Geflügelsalami', { categories: 'en:pork-and-its-products' }).verdict, 'NEIN', 'explicit pork tag still NO');
+    assert.notEqual(v('Geflügelsalami').verdict, 'JA', 'never a whole-food poultry YES');
+    assert.equal(S.foodVerdict({ name: 'Geflügelsalami', facts: { c: 1, s: 0.5, p: 22, fat: 14 }, ingredients: 'Putenfleisch, Salz' }), 'better');
+});

@@ -17,9 +17,12 @@ test('verdict: the scanner rating maps to one big spike / mild / no spike / not 
     assert.equal(C.level('unknown'), 'unknown');
     assert.equal(C.level('weird'), 'unknown');
     assert.equal(C.level(), 'unknown');
-    // a stored verdict (shared dex) wins, else the scanner's own rate(p)
+    // scanfe-h2: the live rating wins; a stored verdict only fills in, except a stored spike, which always wins
     assert.equal(C.verdictOf({ verdict: 'spike' }), 'spike');
-    assert.equal(C.verdictOf({ verdict: 'ok' }, () => ({ verdict: 'spike' })), 'none');
+    assert.equal(C.verdictOf({ verdict: 'ok' }, () => ({ verdict: 'spike' })), 'spike', 'an old ok row cannot hide a live spike');
+    assert.equal(C.verdictOf({ verdict: 'ok' }, () => ({ verdict: 'better' })), 'mild', 'live first');
+    assert.equal(C.verdictOf({ verdict: 'spike' }, () => ({ verdict: 'ok' })), 'spike', 'a stored spike still wins');
+    assert.equal(C.verdictOf({ verdict: 'better' }, () => ({ verdict: 'unknown' })), 'mild', 'stored fills in when there is no live rating');
     assert.equal(C.verdictOf({ verdict: 'unknown', facts: { s: 30 } }, () => ({ verdict: 'spike' })), 'spike');
     assert.equal(C.verdictOf({ facts: { s: 4 } }, () => ({ verdict: 'better' })), 'mild');
     assert.equal(C.verdictOf({ facts: {} }, () => ({ verdict: 'unknown' })), 'unknown');

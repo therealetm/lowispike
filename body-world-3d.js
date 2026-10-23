@@ -149,12 +149,19 @@
        bubbles and the bloom orbs are on screen, five times a second, so a body place behind one fades out (scene setVeil). */
     const VEIL_SEL = '.lb-bub, .lb-ctl, .hb2-orb, .ss2-chip';
     let veilTimer = 0;
+    /* Oct 23, 23:40 (Eman: "every time I try to fly into a world it disappears, it pops away"): while Misty is out flying (mf-on:
+       steering, autopilot, the warp into a world, inside one) the places are where she is going, so no bubble veils them; and a
+       bubble that is faded out (the clean flight view) never veils anything. Probe tools/veil-entry-probe.cjs: before this, the
+       place she was flying to sat at veil 0 in 26 of 73 samples on an iPhone-size screen. */
+    const veilVisible = el => { try { if (typeof el.checkVisibility === 'function') return el.checkVisibility({ opacityProperty: true, visibilityProperty: true }); } catch (e) { } let n = el; while (n && n.nodeType === 1) { const s = getComputedStyle(n); if (s.visibility === 'hidden' || +s.opacity < 0.05 || s.display === 'none') return false; n = n.parentElement; } return true; };
     function veilCircles() {
         if (!world || !canvas || !canvas.isConnected || mode !== 'home') return [];
+        if (H.classList.contains('mf-on') || H.classList.contains('mf-galaxy')) return [];
         const cr = canvas.getBoundingClientRect(); if (!cr.width || !cr.height) return [];
         const out = [];
         D.querySelectorAll(VEIL_SEL).forEach(el => {
             if (!el.isConnected || el.offsetParent === null && getComputedStyle(el).position !== 'fixed') return;
+            if (!veilVisible(el)) return;
             const r = el.getBoundingClientRect(); if (r.width < 4 || r.height < 4) return;
             out.push({ x: r.left + r.width / 2 - cr.left, y: r.top + r.height / 2 - cr.top, r: Math.max(r.width, r.height) / 2 + 4 });
         });
@@ -167,6 +174,7 @@
     }
     api.veilCircles = veilCircles;
     api.veilLook = () => (world && world.veilLook ? world.veilLook() : null);
+    api.cosmosLook = () => (world && world.cosmosLook ? world.cosmosLook() : null);
     /* graphics taken away: keep everything (Misty, the camera, the flight) frozen in place, and pick up again when they come back */
     let lostTimes = [], lostWait = 0, lostSeen = 0;
     function ctxLost() {

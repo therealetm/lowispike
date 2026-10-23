@@ -171,6 +171,8 @@ export function createWorld(THREE, canvas, opts) {
     function setVeil(list) { veilCircles = Array.isArray(list) ? list.filter(c => c && isFinite(c.x) && isFinite(c.y) && c.r > 0) : []; }
     function beaconVeiled(b) {
         if (!veilCircles.length) return false;
+        /* Oct 23, 23:40: never while the camera flies to a place, nor while Misty is out flying (she may be heading into it) */
+        if (rig.fly || document.documentElement.classList.contains('mf-on')) return false;
         vTmp.copy(b.pos).project(camera);
         if (vTmp.z > 1 || vTmp.z < -1) return false;
         const x = (vTmp.x + 1) / 2 * W, y = (1 - vTmp.y) / 2 * H;
@@ -315,7 +317,7 @@ export function createWorld(THREE, canvas, opts) {
     const COSMOS = { R: 46, OUT: 300, N: small ? 30 : 40, DEEP0: 1000, DEEP1: 1130 };
     const skyTmp = new THREE.Vector3(), skyUp = new THREE.Vector3(0, 1, 0);
     rig.outerD = COSMOS.OUT;
-    let cosmos = null, cosmosK = -1, farNow = 120, cosmosGx = 0;
+    let cosmos = null, cosmosK = -1, farNow = 120, cosmosGx = 0, cosmosRv = 0, cosmosWo = -1;
     const smoothC = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
     /* Oct 16, 2026 (E-man, after build 181510: "Why are there companions in the background? It's distracting ... We don't see the
        companions. We see that metabolic cellular galaxy outer world that I showed you"). The far realm is cells, not faces: NO companion,
@@ -568,17 +570,29 @@ export function createWorld(THREE, canvas, opts) {
            (no bloodstream tube, no blue fog): rig.cosmosMin holds these looks at least at the galaxy's own camera distance */
         const d = Math.max(rig.dist, rig.cosmosMin || 0), homeish = rig.mode === 'home';
         const k = homeish ? smoothC((rig.maxD || 14) * 1.05, 120, d) : 0;
-        if (k <= 0 && !cosmos) return;
+        /* Oct 23, 23:40 (Eman, flying Misty out of the bubble: "the universe isn't translucent, it just pops in, boop, and everything
+           else is there"): the spirit world used to switch on in one frame when the camera passed the World Map distance, already at
+           the galaxy's 72 % (cosmosGx was 1 since the breakout seconds before). Now everything out there is multiplied by one reveal
+           (cosmosRv) that rises with the camera's way out over ~36 units AND is eased in time (~0.7 s), and the breakout itself starts
+           a faint glow of it, so it shows through the thinning bubble and the fading tube and comes up gradually. Going back in it
+           fades out quicker. At Home (camera close, no breakout) it stays 0: Home looks exactly as before. */
+        const gxOn = document.documentElement.classList.contains('mf-galaxy'), m0 = (rig.maxD || 14) * 1.05;
+        const rvT = homeish ? Math.max(smoothC(m0, m0 + 36, d), gxOn ? 0.16 : 0) : 0;
+        cosmosRv += (rvT - cosmosRv) * Math.min(1, dt * (rvT > cosmosRv ? 1.4 : 4)); if (cosmosRv < 0.002 && rvT === 0) cosmosRv = 0;
+        const rv = cosmosRv;
+        if (k <= 0 && rv <= 0 && !cosmos) return;
         if (!cosmos) cosmos = buildCosmos();
         const C = cosmos, walls = smoothC((rig.maxD || 14) * 1.05, 44, d), mem = smoothC(30, 75, d), nearK = smoothC(120, 285, d);
-        C.g.visible = k > 0.001;
+        const show = Math.max(k, rv) > 0.001;
+        C.g.visible = show;
         /* Oct 17: while Misty flies out in the galaxy (misty-galaxy.js) the other worlds and the currents between them stay clearly visible:
            at the galaxy's camera distance they used to be nearly invisible glass, so you could not see where to fly */
-        cosmosGx += ((document.documentElement.classList.contains('mf-galaxy') ? 1 : 0) - cosmosGx) * Math.min(1, dt * 1.5);
-        const far = Math.max(smoothC(55, 190, d), 0.72 * cosmosGx);
-        if (k !== cosmosK) {
-            cosmosK = k;
-            const want = k > 0.001 ? 1600 : 120; if (want !== farNow) { farNow = want; camera.far = want; camera.updateProjectionMatrix(); }
+        cosmosGx += ((gxOn ? 1 : 0) - cosmosGx) * Math.min(1, dt * 1.5);
+        const far = Math.max(smoothC(55, 190, d), 0.72 * cosmosGx) * rv;
+        const wo0 = 1 - walls;
+        if ((show ? 1 : 0) !== cosmosK || Math.abs(wo0 - cosmosWo) > 0.0005) {
+            cosmosK = show ? 1 : 0; cosmosWo = wo0;
+            const want = show ? 1600 : 120; if (want !== farNow) { farNow = want; camera.far = want; camera.updateProjectionMatrix(); }
             /* the tube of the bloodstream fades out completely past the World Map (it used to stay at 3%, a faint glass cylinder that
                stuck out of our bubble and, still writing depth, cut a straight-edged slice out of the bubbles behind it); while it fades
                it no longer writes depth, so it can never punch a hole in a membrane */
@@ -597,7 +611,7 @@ export function createWorld(THREE, canvas, opts) {
            camera like the sky (skyW), so where her flight loops round to the far side nothing in view jumps. At Home and behind
            Community, Cook, Move and Scan the camera stays within COSMOS.OUT: deep = 1, skyW = 0, everything exactly as before. */
         const camL = camera.position.length(), deep = 1 - smoothC(COSMOS.DEEP0, COSMOS.DEEP1, camL), skyW = smoothC(COSMOS.OUT + 20, COSMOS.DEEP0 - 100, camL);
-        const dv = deep > 0.002, farW = far * deep, memW = mem * deep;
+        const dv = deep > 0.002, farW = far * deep, memW = mem * deep * rv;
         if (C.deepOn !== dv) { C.deepOn = dv; [C.mine, C.mineGlow, C.cells, C.nodes, C.web, C.threads, C.beads, C.sparkPts, C.motes].concat(C.others, C.haze).forEach(o => { o.visible = dv; }); }
         skyTmp.copy(camera.position).applyAxisAngle(skyUp, -C.g.rotation.y).multiplyScalar(skyW); C.stars.position.copy(skyTmp); C.farCells.position.copy(skyTmp);
         deepStep(C, camL, dt, tt, calm);
@@ -704,7 +718,7 @@ export function createWorld(THREE, canvas, opts) {
             b.ring.rotation.x = t * 0.6 + i; b.ring.rotation.y = t * 0.4; const s = (2.2 + Math.sin(t * 1.6 + i) * 0.25) * (1 + 0.45 * tend) * (1 + 0.15 * pk); b.glow.scale.set(s, s, 1);
             b.glow.material.opacity = Math.min(1, 0.85 + 0.15 * tend + 0.1 * pk); b.ring.material.opacity = 0.7 + 0.3 * tend; const rs = 1 + 0.3 * tend; b.ring.scale.set(rs, rs, rs);
             b.core.material.color.copy(b.hue).lerp(tendWhite, 0.4 * tend);
-            const vT = beaconVeiled(b) ? 0 : 1; b.veil += (vT - b.veil) * Math.min(1, dt * 7);
+            const vT = beaconVeiled(b) ? 0 : 1; b.veil += (vT - b.veil) * Math.min(1, dt * (vT > b.veil ? 9 : 4));
             if (b.veil < 0.999) { b.glow.material.opacity *= b.veil; b.ring.material.opacity *= b.veil; }
             b.core.material.opacity = b.veil; b.g.visible = b.veil > 0.02;
         });
@@ -797,5 +811,5 @@ export function createWorld(THREE, canvas, opts) {
     }
     function dispose() { stop(); renderer.dispose(); }
     setTheme(opts.theme || 'dark');
-    return { scene, camera, hub, regions, onFrame, memU, resize, setVeil, veilLook, setFocus, setMode, drag, release, zoom, setPull, setGyro, setGlow, setTend, beaconLook, feelLook, setTheme, flyTo, pick, project, start, stop, fps, renderOnce, warm, get warmed() { return warmed; }, dispose, get running() { return running; }, get dpr() { return dpr; }, rig, renderer };
+    return { scene, camera, hub, regions, onFrame, memU, resize, setVeil, veilLook, setFocus, setMode, drag, release, zoom, setPull, setGyro, setGlow, setTend, beaconLook, feelLook, setTheme, flyTo, pick, project, start, stop, fps, renderOnce, warm, get warmed() { return warmed; }, dispose, get running() { return running; }, get dpr() { return dpr; }, cosmosLook: () => ({ vis: !!(cosmos && cosmos.g.visible), rv: typeof cosmosRv === 'number' ? +cosmosRv.toFixed(3) : -1, gx: +cosmosGx.toFixed(3), d: +rig.dist.toFixed(2), m: +((rig.maxD || 14) * 1.05).toFixed(2), stars: cosmos ? +cosmos.stars.material.uniforms.uO.value.toFixed(3) : 0, oth: cosmos && cosmos.others[0] ? +cosmos.others[0].material.uniforms.uO.value.toFixed(3) : 0 }), rig, renderer };
 }

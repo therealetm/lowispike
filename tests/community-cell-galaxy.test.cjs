@@ -32,6 +32,6 @@ test('the realm is a procedural cellular galaxy, not a picture', () => {
 });
 
 test('Today and the World Map are untouched: the realm only exists past the World Map', () => {
-    assert.ok(realm.includes('const k = homeish ? smoothC((rig.maxD || 14) * 1.05, 120, d) : 0;') && realm.includes('if (k <= 0 && !cosmos) return;'));
+    assert.ok(realm.includes('const k = homeish ? smoothC((rig.maxD || 14) * 1.05, 120, d) : 0;') && realm.includes('if (k <= 0 && rv <= 0 && !cosmos) return;') && realm.includes("const rvT = homeish ? Math.max(smoothC(m0, m0 + 36, d), gxOn ? 0.16 : 0) : 0;"));
     assert.ok(realm.includes('C.near.visible = C.g.visible && nearK > 0.01;') && realm.includes('if (!C.g.visible) { return; }'));
 });

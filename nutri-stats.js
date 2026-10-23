@@ -64,30 +64,73 @@
         return ['protein', 'fiber', 'sugar', 'carbs', 'fat', 'kcal'].map(k => '<span class="ns-t k-' + k + '" data-ns-t="' + k + '"><b>' + esc(fmt(v[k], k)) + (v[k] === null ? '' : k === 'kcal' ? '' : '<small>g</small>') + '</b><small>' + esc((k === 'kcal' && v.estKcal ? '≈ ' : '') + SHORT[k][lang()]) + '</small></span>').join('');
     }
     function portionLabel(from, grams) {
-        return from === 'last' ? T('Last time', 'Zuletzt', 'La última vez') : from === 'mine' ? T('Your portion', 'Deine Portion', 'Tu porción') : T('Usual portion', 'Übliche Portion', 'Porción habitual');
+        return from === 'last' ? T('Last time', 'Zuletzt', 'La última vez') : from === 'mine' ? T('Your portion', 'Deine Portion', 'Tu porción') : from === 'maker' ? T('Pack serving', 'Portion laut Packung', 'Ración del envase') : T('Usual portion', 'Übliche Portion', 'Porción habitual');
+    }
+    /* scanfe-g2 (Oct 23 2026): one amount drives the whole card. Default = the food engine's serving (the manufacturer's
+       serving, else the food group's usual portion), so the estimate and the Food check card match these tiles. The amount
+       you had last time still wins, and any amount you pick here re-rates the card live (event 'lowi:portion'). */
+    const ES = typeof WeakMap === 'function' ? new WeakMap() : null;
+    function engineServing(p) {
+        try {
+            const S = W.LowiSpikeCore; if (!S || typeof S.assess !== 'function') return null;
+            const sig = JSON.stringify([p.facts || null, p.ingredients || '', p.cat || '', p.name || '']);
+            if (ES && ES.has(p) && ES.get(p).sig === sig) return ES.get(p).v;
+            const a = S.assess(p), sv = a && a.engine && a.engine.serving, v = sv && sv.g > 0 ? { g: sv.g, unit: sv.unit, source: sv.source } : null;
+            if (ES) ES.set(p, { sig, v });
+            return v;
+        } catch (e) { return null; }
+    }
+    function pick(p) {
+        const f = p.facts || {}, m = mem.get(), pr = C.portion(p, m), es = engineServing(p);
+        if (pr.from === 'default' && es) { pr.grams = C.clampGrams(es.g) || pr.grams; pr.from = es.source === 'manufacturer' ? 'maker' : 'default'; }
+        /* the card re-draws while prices load: an amount you just set stays */
+        if (cur && cur.key === pr.key && cur.from === 'mine' && D.querySelector && D.querySelector('.ns-portion[data-ns-key]')) { pr.grams = cur.grams; pr.from = 'mine'; }
+        pr.unit = (es && es.unit === 'ml') || (!es && (f.drink || p.cat === 'drink')) ? 'ml' : 'g';
+        /* quick picks: pack serving or usual portion, whole pack, 100, last time (same amount only once) */
+        const opts = [], seen = {}, add = (k, g) => { g = C.clampGrams(g); if (!g || seen[g]) return; seen[g] = 1; opts.push({ k, g }); };
+        if (es) add(es.source === 'manufacturer' ? 'maker' : 'usual', es.g);
+        const pack = C.packGrams(f.q); if (pack && pack >= 10 && pack <= 1000) add('pack', pack);
+        add('100', 100);
+        if (pr.key && m[pr.key]) add('last', m[pr.key]);
+        pr.opts = opts;
+        return pr;
+    }
+    /* the amount the card is rated for: {key, grams, from, unit} (what portionHTML(p) is about to show) */
+    function servingFor(p) {
+        if (!p || p.notFound || !hasFacts(p.facts)) return null;
+        const pr = pick(p);
+        return { key: pr.key, grams: pr.grams, from: pr.from, unit: pr.unit };
+    }
+    const OPT = { maker: ['Serving', 'Portion', 'Ración'], usual: ['Usual', 'Üblich', 'Habitual'], pack: ['Whole pack', 'Ganze Packung', 'Envase entero'], last: ['Last time', 'Zuletzt', 'La última vez'] };
+    function chipsHTML(pr) {
+        if (!pr.opts || pr.opts.length < 2) return '';
+        return '<div class="ns-chips" role="group" aria-label="' + esc(T('Serving size', 'Portionsgröße', 'Tamaño de la ración')) + '">' + pr.opts.map(o =>
+            '<button type="button" class="ns-chip" data-ns="g" data-g="' + o.g + '" aria-pressed="' + (o.g === pr.grams ? 'true' : 'false') + '">' +
+            (OPT[o.k] ? esc(OPT[o.k][lang()]) + ' · ' : '') + '<b>' + esc(fmt(o.g, 'kcal')) + ' ' + esc(pr.unit) + '</b></button>').join('') + '</div>';
     }
     function portionHTML(p) {
         if (!p || p.notFound) return '';
-        const f = p.facts || {}, pr = C.portion(p, mem.get());
-        /* the card re-draws while prices load: an amount you just set stays */
-        if (cur && cur.key === pr.key && cur.from === 'mine' && D.querySelector && D.querySelector('.ns-portion[data-ns-key]')) { pr.grams = cur.grams; pr.from = 'mine'; }
+        const f = p.facts || {}, pr = hasFacts(f) ? pick(p) : C.portion(p, mem.get());
         cur = { key: pr.key, grams: pr.grams, from: pr.from }; FACTS[pr.key] = f;
         const link = '<button type="button" class="ns-plink" data-ns="open">' + esc(T('Today\'s stats', 'Heutige Stats', 'Stats de hoy')) + ' <span aria-hidden="true">›</span></button>';
         if (!hasFacts(f)) return '<section class="sc-sec ns-portion ns-nofacts"><p class="sc-none">' + esc(T('No nutrition facts for this product yet.', 'Für dieses Produkt gibt es noch keine Nährwerte.', 'Aún no hay valores nutricionales para este producto.')) + '</p>' + link + '</section>';
         return '<section class="sc-sec ns-portion" data-ns-key="' + esc(pr.key) + '">' +
             '<div class="ns-ph"><span class="ns-plab" aria-live="polite">' + esc(portionLabel(pr.from)) + '</span>' +
             '<div class="ns-step"><button type="button" class="ns-sb" data-ns="minus" aria-label="' + esc(T('Less', 'Weniger', 'Menos')) + '">−</button>' +
-            '<label class="ns-gw"><input class="ns-g" type="number" inputmode="numeric" min="1" max="2000" step="1" value="' + pr.grams + '" aria-label="' + esc(T('Amount in grams', 'Menge in Gramm', 'Cantidad en gramos')) + '"><span>g</span></label>' +
-            '<button type="button" class="ns-sb" data-ns="plus" aria-label="' + esc(T('More', 'Mehr', 'Más')) + '">+</button></div></div>' +
+            '<label class="ns-gw"><input class="ns-g" type="number" inputmode="numeric" min="1" max="2000" step="1" value="' + pr.grams + '" aria-label="' + esc(pr.unit === 'ml' ? T('Amount in ml', 'Menge in ml', 'Cantidad en ml') : T('Amount in grams', 'Menge in Gramm', 'Cantidad en gramos')) + '"><span>' + esc(pr.unit) + '</span></label>' +
+            '<button type="button" class="ns-sb" data-ns="plus" aria-label="' + esc(T('More', 'Mehr', 'Más')) + '">+</button></div></div>' + chipsHTML(pr) +
             '<div class="ns-tiles">' + tilesHTML(f, pr.grams) + '</div>' + link + '</section>';
     }
     function setGrams(box, g, typed) {
         const key = box.getAttribute('data-ns-key'), f = FACTS[key]; g = C.clampGrams(g); if (!g || !f) return;
         const inp = box.querySelector('.ns-g'); if (!typed && inp) inp.value = g;
         const tiles = box.querySelector('.ns-tiles'); if (tiles) tiles.innerHTML = tilesHTML(f, g);
-        if (cur && cur.key === key) { if (cur.grams !== g) { cur.grams = g; cur.from = 'mine'; } }
+        let changed = true;
+        if (cur && cur.key === key) { if (cur.grams !== g) { cur.grams = g; cur.from = 'mine'; } else changed = false; }
         else cur = { key, grams: g, from: 'mine' };
         const lab = box.querySelector('.ns-plab'); if (lab) lab.textContent = portionLabel(cur.from);
+        box.querySelectorAll('.ns-chip').forEach(c => c.setAttribute('aria-pressed', +c.getAttribute('data-g') === g ? 'true' : 'false'));
+        if (changed) try { if (typeof W.dispatchEvent === 'function') W.dispatchEvent(new CustomEvent('lowi:portion', { detail: { key, grams: g } })); } catch (e) { }
     }
     /* what a meal log of product p keeps: the amount on the card (or last time / usual), remembered for next time */
     function logMacros(p) {
@@ -167,6 +210,7 @@
         const b = e.target && e.target.closest ? e.target.closest('[data-ns]') : null; if (!b) return;
         const a = b.getAttribute('data-ns');
         if (a === 'open') { e.preventDefault(); e.stopPropagation(); open(b); }
+        else if (a === 'g') { e.preventDefault(); e.stopPropagation(); const box = b.closest('.ns-portion'); if (box) setGrams(box, b.getAttribute('data-g')); }
         else if (a === 'minus' || a === 'plus') {
             e.preventDefault(); e.stopPropagation();
             const box = b.closest('.ns-portion'), inp = box && box.querySelector('.ns-g'); if (!inp) return;
@@ -214,5 +258,5 @@
     }
     try { new MutationObserver(() => { if (!queued) queued = requestAnimationFrame(inject); }).observe(D.body || D.documentElement, { childList: true, subtree: true }); } catch (e) { }
 
-    W.LowiNutriStats = { open, refresh: paint, isOpen: () => !!(ov && ov.isConnected), portionHTML, logMacros, statRowHTML, stripHTML, _cur: () => cur };
+    W.LowiNutriStats = { open, refresh: paint, isOpen: () => !!(ov && ov.isConnected), portionHTML, servingFor, logMacros, statRowHTML, stripHTML, _cur: () => cur };
 })(window);

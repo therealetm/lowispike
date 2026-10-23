@@ -20,6 +20,12 @@
 .ns-gw input:focus { outline: none; }
 .ns-gw:focus-within { box-shadow: 0 0 0 2px var(--ns-goal); }
 .ns-gw span { color: #b9d8ef; font-weight: 700; }
+.ns-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.ns-chip { min-height: 44px; padding: 0 12px; border-radius: 22px; border: 1px solid rgba(160, 220, 255, .3); background: rgba(0, 20, 50, .38); color: #cfe9fb; font: 600 13.5px/1.2 inherit; font-family: inherit; cursor: pointer; max-width: 100%; overflow-wrap: anywhere; }
+.ns-chip b { color: #fff; font-weight: 800; font-variant-numeric: tabular-nums; }
+.ns-chip[aria-pressed="true"] { border-color: var(--ns-goal); background: rgba(111, 227, 255, .2); box-shadow: 0 0 12px rgba(111, 227, 255, .35); color: #fff; }
+.ns-chip:active { transform: scale(.96); }
+.ns-chip:focus-visible { outline: 2px solid var(--ns-goal); outline-offset: 2px; }
 .ns-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .ns-t { display: grid; gap: 2px; padding: 8px 6px; border-radius: 12px; text-align: center; background: rgba(0, 18, 46, .42); border: 1px solid rgba(160, 220, 255, .16); min-width: 0; }
 .ns-t b { font-size: 18px; font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; }

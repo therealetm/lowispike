@@ -5,7 +5,8 @@
    Pure: no DOM. Reads the same numbers as the spike estimate above it (LowiSpikeCore.assess: same serving, same impact key) and
    runs LowiFoodEngine.scanFood for verdict, reasons, quality, cravings, alternative and confidence. Nothing is guessed: no
    estimate (not enough data) = no card. Never says there is no blood sugar spike.
-   window.LowiFoodCard = {model(p, li), cardHTML(p, li), detailsHTML(p, li), TX} - li: 0 en, 1 de, 2 es. */
+   window.LowiFoodCard = {model(p, g), cardHTML(p, li, g), detailsHTML(p, li, g), TX} - li: 0 en, 1 de, 2 es;
+   g (scanfe-g2) = the amount picked on the card's portion block (g or ml), else the default serving. */
 (function (root, factory) {
     const api = factory();
     if (typeof module === 'object' && module.exports) module.exports = api;
@@ -85,22 +86,23 @@
 
     // One model per product object and language-free; the card and the Details block share it.
     const memo = typeof WeakMap === 'function' ? new WeakMap() : null;
-    function model(p) {
+    function model(p, g) {
         if (!p || typeof p !== 'object' || p.notFound) return null;
+        g = num(g) > 0 ? num(g) : null;
         if (memo && memo.has(p)) {
             const m = memo.get(p);
-            if (m.sig === sig(p)) return m.out;
+            if (m.sig === sig(p, g)) return m.out;
         }
-        const out = build(p);
-        if (memo) memo.set(p, {sig: sig(p), out});
+        const out = build(p, g);
+        if (memo) memo.set(p, {sig: sig(p, g), out});
         return out;
     }
-    function sig(p) { try { return JSON.stringify([p.facts || null, p.ingredients || '', p.name || '', p.barcode || '', p.cat || '', p.labelCheck ? 1 : 0]); } catch (e) { return String(Math.random()); } }
-    function build(p) {
+    function sig(p, g) { try { return JSON.stringify([p.facts || null, p.ingredients || '', p.name || '', p.barcode || '', p.cat || '', p.labelCheck ? 1 : 0, g || 0]); } catch (e) { return String(Math.random()); } }
+    function build(p, g) {
         const S = lib('LowiSpikeCore', './spike-core.js'), E = lib('LowiFoodEngine', './food-engine-core.js');
         if (!S || !E || typeof E.scanFood !== 'function') return null;
         let a;
-        try { a = S.assess(p); } catch (e) { return null; }
+        try { a = g ? S.assess(p, {servingG: g}) : S.assess(p); } catch (e) { return null; }
         const eng = a && a.engine;
         if (!a || !TO_KEY[a.verdict] || !eng || !eng.serving || eng.serving.g == null) return null; // no estimate = no card
         const f = p.facts || {};
@@ -140,9 +142,9 @@
         return '<div class="fc-srv"><small>' + esc(fmt(T(TX.serving, li), [dec(m.serving.g, li) + ' ' + u])) + '</small><div class="fc-srvn">' + parts.join('') + '</div></div>';
     }
 
-    function cardHTML(p, li) {
+    function cardHTML(p, li, g) {
         li = li === 1 || li === 2 ? li : 0;
-        const m = model(p);
+        const m = model(p, g);
         if (!m) return '';
         const v = TX.verdict[m.verdict] ? m.verdict : 'SELTEN', vt = TX.verdict[v][li];
         const cls = {JA: 'fc-ja', SELTEN: 'fc-selten', NEIN: 'fc-nein'}[v];
@@ -162,9 +164,9 @@
             '</section>';
     }
 
-    function detailsHTML(p, li) {
+    function detailsHTML(p, li, g) {
         li = li === 1 || li === 2 ? li : 0;
-        const m = model(p);
+        const m = model(p, g);
         if (!m) return '';
         const rows = [];
         rows.push(['dGlucose', esc(T(TX.impactKey[m.impact], li)) + ' · ' + esc(fmt(T(TX.dGlucoseBody, li), [dec(m.glucose.carbs, li), dec(m.glucose.sugar, li)]))]);

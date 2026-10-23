@@ -58,8 +58,11 @@
         if (key === 'moderate') return Math.max(30, Math.min(59, Math.round(30 + (c - 10) * 1.4 + s * 0.3)));
         return Math.max(2, Math.min(29, Math.round(2 + c * 2.2 + s * 0.4)));
     }
-    function assess(p) {
+    // opts.servingG (scanfe-g2): the amount the user picked on the card (g or ml). It wins over the manufacturer serving
+    // and the group portion; without it the default stays manufacturer serving, else the group's usual portion.
+    function assess(p, opts) {
         p = p || {};
+        const userG = opts && n(opts.servingG) > 0 ? n(opts.servingG) : null;
         const E = engine();
         const f = p.facts || {}, L = list(p.ingredients), hasI = L.length > 0;
         const c = n(f.c), s = n(f.s);
@@ -89,7 +92,7 @@
         const unit = drink ? 'ml' : 'g';
         const nutrition = E.validateNutrition(per100, unit);
         const group = drink ? 'drinks' : (veg && p.cat === 'drink' ? 'other' : GROUP[p.cat] || 'other');
-        const serving = E.calculateServing(nutrition, {manufacturerG: n(f.sv), group});
+        const serving = E.calculateServing(nutrition, {manufacturerG: n(f.sv), userG, group});
         const glucose = E.estimateGlucoseImpact({serving, category: {liquid: drink}});
         let key = glucose.key;
         const sg = serving.amounts.sugar, cg = serving.amounts.carbs;

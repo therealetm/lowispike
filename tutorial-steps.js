@@ -257,9 +257,9 @@
             id: 'scan-in', area: 'food', target: null, peek: { kind: 'scan', mark: 'frame' }, sayTitle: false, covers: [], teaches: ['scan-buttons'], later: 'hold',
             title: { en: 'Inside Scan', de: 'In Scan', es: 'Dentro de Scan' },
             text: {
-                en: 'After the tour, this is what you’ll see inside: hold the barcode in the frame and I read it by myself. Camera won’t focus? Type the number printed under the barcode instead. No barcode at all? Type the food’s name next to it, like grapes, and I rate it from the name.',
-                de: 'Nach der Tour siehst du drinnen das hier: Halt den Barcode in den Rahmen, ich lese ihn von selbst. Die Kamera stellt nicht scharf? Tipp stattdessen die Nummer unter dem Barcode ein. Gar kein Barcode? Tipp daneben den Namen ein, zum Beispiel Trauben, und ich bewerte es nach dem Namen.',
-                es: 'Después del recorrido, esto es lo que verás dentro: pon el código de barras en el marco y lo leo yo solo. ¿La cámara no enfoca? Escribe el número que hay debajo del código. ¿No tiene código? Escribe al lado el nombre, por ejemplo uvas, y lo valoro por el nombre.'
+                en: 'After the tour, this is what you’ll see inside: hold the barcode in the frame and I read it. Camera won’t focus? Type the number under it. No barcode? Type the food’s name, like grapes.',
+                de: 'Nach der Tour siehst du drinnen das hier: Halt den Barcode in den Rahmen, ich lese ihn selbst. Unscharf? Tipp die Nummer darunter ein. Kein Barcode? Tipp den Namen ein, zum Beispiel Trauben.',
+                es: 'Después del recorrido verás esto dentro: pon el código de barras en el marco y lo leo yo. ¿No enfoca? Escribe el número de debajo. ¿Sin código? Escribe el nombre, por ejemplo uvas.'
             }
         },
         {

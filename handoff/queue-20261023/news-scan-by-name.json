@@ -1,0 +1,22 @@
+{
+  "slug": "scan-by-name",
+  "tutorial": "scan-in",
+  "go": {"tab": "home"},
+  "lead": {
+    "en": "Scan by name: type a food and get the verdict",
+    "de": "Scannen nach Namen: Lebensmittel eintippen, Ergebnis sehen",
+    "es": "Escanear por nombre: escribe un alimento y ve el resultado"
+  },
+  "steps": [
+    {"tab": "home", "text": {
+      "en": "Open Scan and type a name like grapes or strawberries in the field next to the barcode. Tap Go on the keyboard for the full result.",
+      "de": "Öffne Scan und tipp neben dem Barcode-Feld einen Namen ein, zum Beispiel Trauben oder Erdbeeren. Tippe auf der Tastatur auf Los für das ganze Ergebnis.",
+      "es": "Abre Escanear y escribe un nombre como uvas o fresas en el campo junto al código. Toca Ir en el teclado para ver el resultado completo."
+    }}
+  ],
+  "text": {
+    "en": "Scan by name. In the camera, a field next to the barcode lets you type a food or product name. You see the verdict while you type, and Go shows the full result like a scan: Misty's spike animation, the verdict, the best swap (often a Recipe Book recipe) and the scan's own data when there is any. A product the database doesn't know yet now has an Analyze button right next to its name. Plantain chips, Maduritos, Chifles and Tostones now count as Spike, and ticking None of these can't turn them green any more. A name check is always an estimate: add label photos to make it exact.",
+    "de": "Scannen nach Namen. In der Kamera gibt es neben dem Barcode-Feld ein Feld für einen Lebensmittel- oder Produktnamen. Schon beim Tippen siehst du das Urteil, und Los zeigt das ganze Ergebnis wie bei einem Scan: Mistys Spike-Animation, das Urteil, die beste Alternative (oft ein Rezept aus dem Rezeptbuch) und die Daten vom Scan, falls es welche gibt. Bei einem Produkt, das noch in keiner Datenbank ist, sitzt jetzt direkt neben dem Namen ein Analysieren-Knopf. Plantain Chips, Maduritos, Chifles und Tostones zählen jetzt als Spike, und „Nichts davon“ macht sie nicht mehr grün. Eine Prüfung nach dem Namen ist immer eine Schätzung: Mit Etikettenfotos wird sie genau.",
+    "es": "Escanear por nombre. En la cámara, junto al código de barras, hay un campo para escribir el nombre de un alimento o producto. Ves el resultado mientras escribes, e Ir muestra el resultado completo como un escaneo: la animación de pico de Misty, el veredicto, la mejor alternativa (a menudo una receta del Recetario) y los datos del escaneo si los hay. Un producto que aún no está en ninguna base de datos tiene ahora un botón Analizar justo al lado de su nombre. Los chips de plátano, Maduritos, Chifles y Tostones cuentan ahora como pico, y marcar Nada de esto ya no los vuelve verdes. Una revisión por nombre siempre es una estimación: añade fotos de la etiqueta para que sea exacta."
+  }
+}

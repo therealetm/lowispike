@@ -39,7 +39,7 @@ test('every picture has its words in English, German and Spanish, and none is em
         assert.ok(!/undefined/.test(h), k + '/' + l + ' has a missing word');
     }
     for (const l of ['de', 'es']) for (const k of Object.keys(X.L.en)) assert.ok(X.L[l][k] != null, l + ' misses ' + k);
-    assert.match(X.visHtml('water', 'de'), /\+1 Becher/);
+    assert.match(X.visHtml('water', 'de'), /Schlucke[\s\S]*Glas[\s\S]*Flasche/); /* Oct 23: water by sips */
     assert.match(X.visHtml('move', 'es'), /Épico/);
 });
 test('pictures only: tutorial-show never opens a tab, a sheet, the camera, the mic or notifications, and takes no touch (only a tap on a text it shortened)', () => {

@@ -7,6 +7,7 @@
    Screenshots go to $SHOT (default /tmp/user-rooms-shots). Prints JSON with the result and the two test account ids (for cleanup). */
 const pw = require(process.env.PW || '/tmp/pw/node_modules/playwright');
 const http = require('http'), fs = require('fs'), path = require('path');
+const TA = require('./test-account.cjs'); /* marks every account this script makes as a test account (hidden from real people) */
 const ROOT = process.env.ROOT || path.join(__dirname, '..', '..');
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
 const LANG = arg('lang', 'de'), KEEP = process.argv.includes('--keep');
@@ -39,6 +40,7 @@ const seed = ({ lang, name, day }) => { try {
     await page.evaluate(() => { const off = () => { const H = document.documentElement; H.classList.remove('gate-boot', 'gate-up'); const g = document.getElementById('r2gate'); if (g) g.style.display = 'none';
       for (const el of document.body.children) { if (el.id !== 'r2gate' && el.inert) el.inert = false; } }; off(); setInterval(off, 150); });
     for (let i = 0; i < 80; i++) { const u = await page.evaluate(() => { try { return LOWI_CLOUD_X.state().uid || ''; } catch (e) { return ''; } }); if (u) { out.uids[name] = u; break; } await page.waitForTimeout(500); }
+    out.marked = out.marked || {}; out.marked[name] = await TA.markTest(page);
     return { name, ctx, page };
   };
   const viaMenu = async d => { await d.page.evaluate(() => { try { goTab('foryou'); } catch (e) { } }); await d.page.waitForTimeout(2500);
@@ -93,6 +95,8 @@ const seed = ({ lang, name, day }) => { try {
   if (!KEEP) { await phone.page.locator('.ur-room', { hasText: roomName }).click().catch(() => { }); await phone.page.waitForTimeout(900); await phone.page.click('[data-ur="del"]').catch(() => { });
     ok(await waitFor(phone, n => ![...document.querySelectorAll('.ur-room b')].some(b => b.textContent === n), roomName, 15000), 'iPhone: creator deleted the test room'); }
   for (const d of [phone, ipad]) { const e = out.errs[d.name].filter(x => !/ResizeObserver/.test(x)); ok(!e.length, d.name + ': no page errors' + (e.length ? ' ' + e.join(' | ') : '')); }
+  out.cleanup = {}; if (!KEEP) for (const d of [phone, ipad]) out.cleanup[d.name] = await TA.cleanup(d.page);
+  ok(Object.values(out.marked || {}).every(v => v === 'ok'), 'test accounts marked lowi_test');
   out.room = roomName; out.pass = !out.fails.length;
   console.log(JSON.stringify(out, null, 1));
   await browser.close(); if (srv) srv.close(); process.exit(out.pass ? 0 : 1);

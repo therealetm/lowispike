@@ -27,7 +27,8 @@ function lang(){try{return Math.max(0,['en','de','es'].indexOf((W.LowiLang&&W.Lo
 function tr(k,v){let s=(T[k]||[k])[lang()]||T[k][0];for(const x in v||{})s=s.split('{'+x+'}').join(String(v[x]));return s;}
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const R=()=>W.LowiRooms,C=()=>W.LowiRoomsCore,H=()=>W.LowiCommunityHost;
-function people(){try{return (H()&&H().people&&H().people())||[];}catch(e){return [];}}
+/* real people only: server-flagged bots and test accounts never show in a Circle list (bot-accounts.js) */
+function people(){try{const B=W.LowiBotAccounts;return ((H()&&H().people&&H().people())||[]).filter(p=>!(B&&p&&!p.me&&B.isBot(p)));}catch(e){return [];}}
 function nameOf(uid){const p=people().find(x=>x&&x.uid===uid);return p&&p.n?String(p.n):'';}
 function me(){try{return (H()&&H().uid&&H().uid())||'';}catch(e){return '';}}
 /* tab order is the user's (community-tab-order.js: hold a tab to move it) */

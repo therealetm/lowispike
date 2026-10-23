@@ -37,8 +37,11 @@ Profile > About you > Grocery shopping (`shop-plan.js` card), never forced.
   tables and the person's consent, so the copy must not promise other people's finds yet.
 - **Grocery bucket** (`grocery-bucket-core.js`, `grocery-bucket.js`, since 23 Oct 2026): after a product check the card offers
   Add to bucket or Skip. Today's bucket is kept per day on this phone (`lowi.bucket.v1`, 14 days), with Undo and a small list
-  to remove items. No prices or points yet (those come with the shop pick, never invented). The Log meal scan and the
-  shopping camera's own cart don't show it.
+  to remove items. The list has a shop pick, each item's spike points and price (typed or real reports, never invented) and
+  totals. "Today's groceries + what to cook" opens a sheet with what was bought, up to 3 Cook recipes that use it, and
+  "What you cooked": type it (Log it) or Snap a photo, with chips for the groceries that went in. That meal goes into the
+  normal meal journal (same XP cap and same-food-once rule); the bucket only links it to the items used. The Log meal scan
+  and the shopping camera's own cart don't show the bucket row.
 - **Scanner:** live barcode, typed barcode, barcode from a photo. Results are *estimates* from the label, not medical
   advice and never a promise of "no spike". The Deep analyze link opens the LOWiSPIKE GPT; the photo upload there is manual
   and nothing comes back into the app automatically.

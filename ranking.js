@@ -95,7 +95,10 @@
         n_water: ['{n} glasses of water', '{n} Gläser Wasser', '{n} vasos de agua'], n_fast: ['{n} fasting milestones', '{n} Fasten-Meilensteine', '{n} hitos de ayuno'], n_macro: ['{n} macro goals', '{n} Makroziele', '{n} metas de macros']
     };
     function lang() { try { return Math.max(0, ['en', 'de', 'es'].indexOf((W.LowiLang && W.LowiLang.get()) || localStorage.getItem('lowispike.lang') || 'en')); } catch (e) { return 0; } }
-    function tr(k, v) { let s = (T[k] || [k])[lang()] || T[k][0]; for (const x in v || {}) s = s.split('{' + x + '}').join(String(v[x])); return s; }
+    /* a short date that ends in a dot ("19. Okt.") followed by the sentence's own dot gave "19. Okt.." in German: one dot */
+    function tr(k, v) { let s = (T[k] || [k])[lang()] || T[k][0]; for (const x in v || {}) s = s.split('{' + x + '}').join(String(v[x])); return v ? s.replace(/(^|[^.])\.\.(?!\.)/g, '$1.') : s; }
+    /* BH-006 name chain (same helper as companion.js / misty-hub.js): own companion > a typed name > Misty */
+    function companionName() { const pick = v => { v = v == null ? '' : String(v).trim(); return v ? v.slice(0, 24) : ''; }; let auto = ''; try { auto = pick(W.LowiHerbIdentity && W.LowiHerbIdentity.autoName && W.LowiHerbIdentity.autoName()); } catch (e) { } const typed = v => { v = pick(v); return v && v !== auto ? v : ''; }; let n = ''; try { const B = W.LowiBirthCompanion; if (B && B.has && B.has()) { const c = B.get(); n = pick(c && c.name); } } catch (e) { } if (!n) try { const t = W.LowiHerbTamagotchi, p = t && t.readPrefs && t.readPrefs(); n = typed(p && p.name); } catch (e) { } if (!n) try { const R = W.LowiR2, s = R && R.S && R.S(); n = typed(s && s.herb && s.herb.name); } catch (e) { } return n || 'Misty'; }
     const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const KEY = 'lowispike.ranking.period';
     let per = (function () { try { return K.period(localStorage.getItem(KEY) || 'w'); } catch (e) { return 'w'; } })();
@@ -130,7 +133,10 @@
         if (p.me) {
             let g = null, name = '';
             try { g = LC() && LC().genome ? LC().genome() : null; } catch (e) { }
-            try { const H = W.LowiHerbTamagotchi, c = H && H.current && H.current(); if (H && H.name && c) name = H.name(c.p, c.m); } catch (e) { }
+            /* Bug hunt Oct 23: your own row shows the name Misty's card shows (BH-006 chain: own companion > a typed name > Misty),
+               never the old herb auto name ("Sunny Leaf" for a Leo) */
+            try { const B = W.LowiBirthCompanion; if (B && B.displayName) name = B.displayName(); } catch (e) { }
+            if (!name) name = companionName();
             return { g, name: name || 'Misty', form: g ? C.formName(g.st, g.el, L) : '', named: true, me: true };
         }
         const code = K.lookFor(p, allLooks()), g = code ? C.decode(code) : null;

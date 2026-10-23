@@ -137,7 +137,9 @@
     /* ---------- my look, shared with friends only as a visual code ---------- */
     let lookNow = '';
     /* 23 Oct 2026: the look you share carries your companion's chosen name too (companion-core withName), so the Ranking can show it */
-    function myName() { try { const H = W.LowiHerbTamagotchi, c = H && H.current && H.current(); return H && H.name && c ? H.name(c.p, c.m) : ''; } catch (e) { return ''; } }
+    /* Bug hunt Oct 23: the shared name is the one Misty's card shows (BH-006 chain), never the old herb auto name ("Sunny Leaf");
+       nothing is shared while it is still the default "Misty", so other phones show the evolution form instead */
+    function myName() { const n = companionName(); return n === 'Misty' ? '' : n; }
     function myLook() { const g = myGenome(); return g ? (C.withName ? C.withName(C.encode(g), myName()) : C.encode(g)) : ''; }
     function hookProfile() {
         const R3 = W.LowiR3;

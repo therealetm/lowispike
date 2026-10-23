@@ -32,7 +32,11 @@
   let opened = gated ? A.saved(localStorage, LIST) : {};
   const isOpen = id => !gated || !!(B.SERIES[id].free || opened[id]);
   const buyRef = () => A && A.idFrom ? A.idFrom(arrived || store('lowispike.referredBy') || '') : '';
-  let gateMsg = '';
+  /* The unlock form's last message, kept as a key (not text) so a language switch translates it. It belongs to the series it was
+     typed on: switching series clears it (bug hunt 23 Oct 2026: a wrong code on Webdesign left "That code doesn't work" under
+     UGC and LOWiSPIKE too, where nothing had been typed). tests/affiliates-gate-msg.test.cjs */
+  let gateMsg = null;
+  const gateText = () => gateMsg ? T(gateMsg.k, gateMsg.tracks ? { title: gateMsg.tracks.map(id => S[id] ? S[id].title : id).join(', ') } : null) : '';
 
   function h(tag, attrs) {
     const el = document.createElement(tag);
@@ -98,7 +102,7 @@
   /* Segmented control (Webdesign | UGC | LOWiSPIKE). The one on the start screen keeps the ids pick-<series>. */
   function seg(prefix, label) {
     return h('div', { class: 'seg', role: 'group', 'aria-label': label || T('pickSeries') }, B.ORDER.map(id => h('button', {
-      type: 'button', id: prefix + id, 'aria-pressed': String(pick === id), onclick: () => { if (pick !== id) { pick = id; render(); sync(); } }
+      type: 'button', id: prefix + id, 'aria-pressed': String(pick === id), onclick: () => { if (pick !== id) { pick = id; gateMsg = null; render(); sync(); } }
     }, S[id].title)));
   }
   function backBtn(to) { return h('button', { type: 'button', class: 'back', 'aria-label': T('back'), onclick: () => go(typeof to === 'function' ? to() : to) }, h('span', { 'aria-hidden': 'true', text: '‹' })); }
@@ -124,7 +128,7 @@
   function gate(sfx) {
     const s = S[pick], url = A.buyUrl(pick, buyRef(), LIST), field = 'unlockCode' + sfx, msgId = 'gateMsg' + sfx;
     const input = h('input', { id: field, class: 'code', type: 'text', inputmode: 'text', autocomplete: 'one-time-code', autocapitalize: 'characters', spellcheck: 'false', placeholder: 'XXXX-XXXX-XXXX', 'aria-describedby': msgId });
-    const msg = h('p', { class: 'note gate-msg', id: msgId, role: 'status', 'aria-live': 'polite', text: gateMsg });
+    const msg = h('p', { class: 'note gate-msg', id: msgId, role: 'status', 'aria-live': 'polite', text: gateText() });
     const btn = h('button', { type: 'submit', class: 'primary', id: 'unlockBtn' + sfx }, T('unlockBtn'));
     const form = h('form', { class: 'gate-form', novalidate: '', onsubmit: e => { e.preventDefault(); tryCode(input, btn, msg); } },
       h('label', { for: field, class: 'label', text: T('codeLabel') }), input, btn, msg);
@@ -140,17 +144,23 @@
     btn.disabled = true; msg.textContent = T('checking');
     let r; try { r = await A.check(code, LIST); } catch (e) { btn.disabled = false; msg.textContent = T('checkFail'); return; }
     btn.disabled = false;
-    if (!r.ok) { gateMsg = T('codeWrong'); msg.textContent = gateMsg; input.select(); return; }
+    if (!r.ok) { gateMsg = { k: 'codeWrong' }; msg.textContent = gateText(); input.select(); return; }
     A.remember(localStorage, r.h); opened = A.saved(localStorage, LIST);
-    if (r.tracks.indexOf(pick) < 0) { gateMsg = T('codeOther', { title: r.tracks.map(id => S[id] ? S[id].title : id).join(', ') }); render(); return; }
-    gateMsg = ''; render(); toast(T('unlocked'));
+    if (r.tracks.indexOf(pick) < 0) { gateMsg = { k: 'codeOther', tracks: r.tracks.slice() }; render(); return; }
+    gateMsg = null; render(); toast(T('unlocked'));
     const t = $(VIEWS[view]).querySelector('h1'); if (t && t.focus) t.focus({ preventScroll: true });
   }
   /* LOWiSPIKE 30-day challenge: pick the day you film; the copy fills it in and the day's follow line changes with it. */
   let day = 1;
   let said = null; /* what the Listen buttons read on the current script screen (script-voice.js plan) */
   function dayCard(s) {
-    const set = n => { day = Math.min(30, Math.max(1, n)); renderScript(); const b = $(n < day ? 'dayPrev' : 'dayNext'); if (b) b.focus(); };
+    /* focus stays on the button that was tapped (bug hunt 23 Oct 2026: it compared after day had changed, so tapping minus moved
+       focus to plus); at day 1 or 30 that button is disabled, so focus goes to the other one instead of being lost */
+    const set = n => {
+      const back = n < day; day = Math.min(30, Math.max(1, n)); renderScript();
+      const b = $(back ? 'dayPrev' : 'dayNext'), o = $(back ? 'dayNext' : 'dayPrev');
+      if (b && !b.disabled) b.focus(); else if (o) o.focus();
+    };
     const vals = { day };
     return h('div', { class: 'card day-card', id: 'dayCard' },
       h('div', { class: 'day-row' },

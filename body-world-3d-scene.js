@@ -118,7 +118,7 @@ export function createWorld(THREE, canvas, opts) {
     /* (the little microbe buddies that bobbed next to the gut were removed Oct 16, user decision) */
 
     /* ---------- camera rig ---------- */
-    const rig = { yaw: 0.35, pitch: 0.12, dist: 6.5, vy: 0, vp: 0, gy: 0, gp: 0, gyT: 0, gpT: 0, target: new THREE.Vector3(), mode: 'full', minD: 2.4, maxD: 13, pMax: 1.2, homeDist: 3.2, idle: 0, drift: 0, fly: null };
+    const rig = { pull: 1, pullT: 1, yaw: 0.35, pitch: 0.12, dist: 6.5, vy: 0, vp: 0, gy: 0, gp: 0, gyT: 0, gpT: 0, target: new THREE.Vector3(), mode: 'full', minD: 2.4, maxD: 13, pMax: 1.2, homeDist: 3.2, idle: 0, drift: 0, fly: null };
     let focus = null, W = 1, H = 1, glow = 0.55, glowT = 0.55, tint = null, tintAmt = 0, tintT = 0;
     /* Oct 16: tend 0..1 = how much Misty's trip today has energised the cells (LowiSun.tended): their glow grows, rings and cores brighten */
     let tend = 0, tendT = 0; const tendWhite = new THREE.Color('#ffffff');
@@ -151,7 +151,7 @@ export function createWorld(THREE, canvas, opts) {
             rig.dist = Math.min(hiD, Math.max(rig.minD, was > 0 && rig.dist > rig.maxD && rig.outer ? rig.dist : rig.homeDist * was)); rig.fly = null; rig.target.set(0, 0, 0);
             rig.mode = m; inner.visible = false; halo.visible = false; /* one bubble: Misty's own cell, no extra glow shell */
         }
-        else { rig.mode = m; rig.lastHome = false; rig.minD = 2.4; rig.maxD = 13; rig.pMax = 1.2; if (rig.dist < 4) rig.dist = 6.5; inner.visible = true; halo.visible = true; }
+        else { rig.mode = m; rig.lastHome = false; rig.pullT = 1; rig.minD = 2.4; rig.maxD = 13; rig.pMax = 1.2; if (rig.dist < 4) rig.dist = 6.5; inner.visible = true; halo.visible = true; }
         Object.values(beacons).forEach(b => { b.g.visible = true; });
         applyView();
     }
@@ -181,6 +181,8 @@ export function createWorld(THREE, canvas, opts) {
         }
     }
     function setGyro(y, p) { rig.gyT = y; rig.gpT = p; }
+    /* the bloom ring's camera pull-back on Home: k = 1 / the bubbles' scale (1 = no pull), clamped to a sane range */
+    function setPull(k) { k = +k; rig.pullT = isFinite(k) && k > 0 ? Math.max(1, Math.min(2.5, k)) : 1; }
     function setGlow(g) { glowT = Math.max(0, Math.min(1, g)); }
     function setTend(k) { tendT = Math.max(0, Math.min(1, +k || 0)); }
     function beaconLook() { return null; } /* the beacons are no longer drawn (Oct 23) */
@@ -598,7 +600,12 @@ export function createWorld(THREE, canvas, opts) {
         rig.pitch = Math.max(-rig.pMax, Math.min(rig.pMax, rig.pitch));
         rig.gy += (rig.gyT - rig.gy) * Math.min(1, dt * 8); rig.gp += (rig.gpT - rig.gp) * Math.min(1, dt * 8);
         const yaw = rig.yaw + rig.gy, pitch = Math.max(-1.35, Math.min(1.35, rig.pitch + rig.gp));
-        camera.position.set(rig.target.x + rig.dist * Math.cos(pitch) * Math.sin(yaw), rig.target.y + rig.dist * Math.sin(pitch), rig.target.z + rig.dist * Math.cos(pitch) * Math.cos(yaw));
+        /* Oct 23 (Eman: the bloom ring's zoom-out shrank the world into a flat box): the bloom ring's pull-back is the camera itself moving
+           back (rig.pull, set by setPull), eased like the bubbles' own 0.5 s zoom. rig.dist stays the Home distance, so nothing that keys
+           off it (the World Map limit, the spirit world, pinch) changes while the ring is open. */
+        if (rig.pull !== rig.pullT) { rig.pull += (rig.pullT - rig.pull) * ((reduceMq && reduceMq.matches) ? 1 : Math.min(1, dt * 7)); if (Math.abs(rig.pullT - rig.pull) < 0.0005) rig.pull = rig.pullT; }
+        const camD = rig.dist * rig.pull;
+        camera.position.set(rig.target.x + camD * Math.cos(pitch) * Math.sin(yaw), rig.target.y + camD * Math.sin(pitch), rig.target.z + camD * Math.cos(pitch) * Math.cos(yaw));
         camera.lookAt(rig.target);
         /* flow */
         for (let i = 0; i < PN; i++) { let x = pPos[i * 3] + pVel[i] * wdt; if (x > 40) x -= 80; pPos[i * 3] = x; }
@@ -701,5 +708,5 @@ export function createWorld(THREE, canvas, opts) {
     }
     function dispose() { stop(); renderer.dispose(); }
     setTheme(opts.theme || 'dark');
-    return { scene, camera, hub, regions, onFrame, memU, resize, setFocus, setMode, drag, release, zoom, setGyro, setGlow, setTend, beaconLook, feelLook, setTheme, flyTo, pick, project, start, stop, fps, renderOnce, warm, get warmed() { return warmed; }, dispose, get running() { return running; }, get dpr() { return dpr; }, rig, renderer };
+    return { scene, camera, hub, regions, onFrame, memU, resize, setFocus, setMode, drag, release, zoom, setPull, setGyro, setGlow, setTend, beaconLook, feelLook, setTheme, flyTo, pick, project, start, stop, fps, renderOnce, warm, get warmed() { return warmed; }, dispose, get running() { return running; }, get dpr() { return dpr; }, rig, renderer };
 }

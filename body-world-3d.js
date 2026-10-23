@@ -117,6 +117,7 @@
         /* One world (Oct 15): Home's own VR / motion button drives the same gyro as the full window */
         gyro: { kind: () => gyroKind(gyroEnv()), on: () => gyroOn, tap: b => gyroTap(b), paint: (b, s) => paintGyro(b, s || (gyroOn ? 'on' : 'off')) },
         homeAway: () => homeAway(),
+        setPull: k => { api.pull = k > 0 ? k : 1; if (world && world.setPull) world.setPull(mode === 'home' ? api.pull : 1); }, pull: 1,
         hold: false, /* spirit-world.js sets this while it zooms past Home's widest view */
         projectPlace: id => (world && world.project ? world.project(id) : null),
         onFrame: fn => { if (typeof fn !== 'function') return () => {}; if (world) return world.onFrame(fn); pendingFrames.add(fn); let off = null; const t = { off: () => { pendingFrames.delete(fn); if (off) off(); } }; t.bind = o => { off = o; }; pendingBind.set(fn, t); return t.off; } });
@@ -569,6 +570,9 @@
         D.addEventListener('visibilitychange', () => { if (D.hidden && world) world.stop(); else if (world && !api.lost) world.start(); });
         if (mqReduce.addEventListener) mqReduce.addEventListener('change', () => { if (mqReduce.matches) fail('reduced-motion'); });
         ['lowi:award', 'lowi:meal-logged'].forEach(n => W.addEventListener(n, () => setTimeout(syncGlow, 300)));
+        /* Oct 23 (Eman's screenshot, "There's nothing in my universe"): the bloom ring's zoom-out is the camera pulling back through the
+           whole world (1 / the bubbles' scale), never the canvas shrinking into a box (bloom-ring.js no longer scales the 3D stage) */
+        W.addEventListener('lowi:bloom-zoom', e => { const d = (e && e.detail) || {}; api.setPull(d.on && d.s > 0 ? 1 / d.s : 1); });
     }
     if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', boot); else boot();
 })();

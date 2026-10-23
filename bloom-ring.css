@@ -3,7 +3,9 @@
    open, so the view expands rather than cramping the elements on the screen".
    While a bloom is open the ring and Misty pull back towards Misty's centre (scale set in bloom-ring.js); the orbs keep one size
    and sit on one circle. Every orb wears the same membrane glass as the Home bubbles (home-blooms-v2.css .hb2-orb). */
-html.br-zoom #whHud, html.br-zoom #spHome .sp-heroes { will-change: scale; }
+html.br-zoom #whHud, html.br-zoom #spHome .sp-heroes > :not(.bw3-stage) { will-change: scale; }
+/* Oct 23 (Eman, "nothing in my universe"): the 3D world is never scaled as a box; the camera pulls back instead (bloom-ring.js) */
+html.br-zoom #spHome .sp-heroes, html.br-zoom #bw3Stage, html.br-zoom #bw3Stage canvas { scale: none !important; }
 /* all blooms at once (two-finger tap on Misty): one round of orbs, each group tinted only by a thin rim so they read as one family */
 .hb2-bloom.hb2-all .hb2-note { display: none; }
 .hb2-bloom.hb2-all .hb2-orb { --hb2-i2: var(--hb2-i, 0); transition-delay: calc(var(--hb2-i2) * 22ms); }
@@ -12,4 +14,4 @@ html.br-zoom #whHud, html.br-zoom #spHome .sp-heroes { will-change: scale; }
 .hb2-bloom.hb2-all .hb2-orb[data-group="water"]::after { border-color: rgba(120, 200, 255, .5); }
 .hb2-bloom.hb2-all .hb2-orb[data-group="move"]::after { border-color: rgba(150, 255, 210, .45); }
 .hb2-bloom.hb2-all .hb2-orb[data-group="fuel"]::after { border-color: rgba(255, 220, 150, .42); }
-@media (prefers-reduced-motion: reduce) { html.br-zoom #whHud, html.br-zoom #spHome .sp-heroes { transition: none !important; } }
+@media (prefers-reduced-motion: reduce) { html.br-zoom #whHud, html.br-zoom #spHome .sp-heroes > :not(.bw3-stage) { transition: none !important; } }

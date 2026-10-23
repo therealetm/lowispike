@@ -112,7 +112,38 @@
     let W = null, D = null, H = null;
     const z = { on: false, s: 1, saved: null, t: 0, owner: null, gest: null, swallowUntil: 0 };
     const reduced = () => { try { return W.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
-    const layers = () => [D.getElementById('whHud'), D.querySelector('#spHome .sp-heroes')].filter(Boolean);
+    /* Oct 23, 14:57 (Eman's iPhone screenshot: a flat dark box in the middle, a pale gradient round it, "everything has disappeared.
+       There's nothing in my universe"): #spHome .sp-heroes also holds the 3D stage (#bw3Stage and its canvas), so scaling it shrank the
+       whole universe into a hard-edged phone-shaped box, and Home's layout then read the shrunken stage and moved the camera IN.
+       Now only the DOM bubbles shrink (the HUD and Misty's own button, never the 3D stage) and the 3D camera itself pulls back by 1/s
+       (the 'lowi:bloom-zoom' event, LowiWorld3D.setPull), so the full living world stays edge to edge and simply opens up. */
+    const layers = () => {
+        const out = [D.getElementById('whHud')], heroes = D.querySelector('#spHome .sp-heroes');
+        if (heroes) [...heroes.children].forEach(el => { if (!isWorld(el)) out.push(el); });
+        return out.filter(Boolean);
+    };
+    /* where an element's own layout box starts on screen. The CSS scale property scales round transform-origin in that untransformed box
+       (it is applied outside the element's own transform), so the origin must come from it: Misty's button carries
+       translate(-50%, -50%) scale(--wh-mz), and an origin read off her transformed rect sent her off the ring's centre while zoomed. */
+    function layoutBox(el) {
+        const r = el.getBoundingClientRect(); let x = r.left, y = r.top;
+        try {
+            const cs = getComputedStyle(el), t = cs.transform;
+            if (t && t !== 'none') {
+                const m = new DOMMatrixReadOnly(t), o = (cs.transformOrigin || '0 0').split(' ').map(parseFloat);
+                if (Math.abs(m.b) < 1e-6 && Math.abs(m.c) < 1e-6 && m.a > 0 && m.d > 0) { x = r.left - m.e - (o[0] || 0) * (1 - m.a); y = r.top - m.f - (o[1] || 0) * (1 - m.d); }
+            }
+        } catch (e) { }
+        return { x, y };
+    }
+    /* the 3D world's own stage (body-world-3d.js puts #bw3Stage and the WebGL canvas first in .sp-heroes). Only that: the Gap bubble
+       (#spFast) holds a little canvas of its own and must shrink with the ring. */
+    function isWorld(el) {
+        if (!el) return false;
+        if (el.id === 'bw3Stage' || (el.classList && (el.classList.contains('bw3-stage') || el.classList.contains('bw3-canvas')))) return true;
+        const st = D.getElementById('bw3Stage');
+        return !!(st && el !== st && el.contains && el.contains(st)) || (el.tagName === 'CANVAS' && !el.closest('#spFast, #spBubble'));
+    }
     function safe() {
         const cs = getComputedStyle(H), px = k => parseFloat(cs.getPropertyValue(k)) || 0;
         return { t: px('--sat'), r: px('--sar'), b: px('--sab'), l: px('--sal') };
@@ -143,23 +174,38 @@
         if (!H || !c) return;
         const els = layers();
         if (!z.on) {
-            /* the transform origin is Misty's centre in each layer's own box, measured once while nothing is scaled */
-            z.saved = els.map(el => { const r = el.getBoundingClientRect(); return { el, o: (c.x - r.left) + 'px ' + (c.y - r.top) + 'px', tr: el.style.transition }; });
+            /* measured once while nothing is scaled. A layer with no transform of its own (the HUD) scales round Misty's centre in its own
+               box. A layer that has one (Misty's button: translate(-50%, -50%) scale(--wh-mz)) keeps its transform-origin, because moving
+               the origin would also move her own transform; the CSS translate property then holds her centre still: (1 - s) * (c - P0),
+               P0 being the origin's point on screen. */
+            z.saved = els.map(el => {
+                let t = 'none', org = [0, 0];
+                try { const cs = getComputedStyle(el); t = cs.transform || 'none'; org = (cs.transformOrigin || '0 0').split(' ').map(parseFloat); } catch (e) { }
+                if (t === 'none') { const r = el.getBoundingClientRect(); return { el, o: (c.x - r.left) + 'px ' + (c.y - r.top) + 'px', tr: el.style.transition }; }
+                const b = layoutBox(el);
+                return { el, o: null, p0: { x: b.x + (org[0] || 0), y: b.y + (org[1] || 0) }, tr: el.style.transition };
+            });
         }
         z.on = true; z.s = s; z.owner = owner || null; z.t++;
-        const ease = reduced() ? 'none' : 'scale .5s cubic-bezier(.22,.9,.28,1.06)';
+        const curve = '.5s cubic-bezier(.22,.9,.28,1.06)', k = Math.round(s * 1000) / 1000;
         H.classList.add('br-zoom');
-        (z.saved || []).forEach(x => { x.el.style.transformOrigin = x.o; x.el.style.transition = ease; x.el.style.scale = String(Math.round(s * 1000) / 1000); });
+        (z.saved || []).forEach(x => {
+            if (x.o) { x.el.style.transformOrigin = x.o; x.el.style.transition = reduced() ? 'none' : 'scale ' + curve; }
+            else { x.el.style.transition = reduced() ? 'none' : 'scale ' + curve + ', translate ' + curve; x.el.style.setProperty('translate', Math.round((1 - k) * (c.x - x.p0.x) * 10) / 10 + 'px ' + Math.round((1 - k) * (c.y - x.p0.y) * 10) / 10 + 'px', 'important'); } /* important: home-orbit-v2.css pins translate: none !important on the Gap bubble (#spFast) */
+            x.el.style.scale = String(k);
+        });
         try { W.dispatchEvent(new CustomEvent('lowi:bloom-zoom', { detail: { s, on: true } })); } catch (e) { }
     }
     function unzoom(owner) {
         if (!z.on || (owner && z.owner && owner !== z.owner)) return;
         const tick = ++z.t, saved = z.saved || [];
         z.on = false; z.s = 1; z.owner = null;
-        saved.forEach(x => { x.el.style.scale = '1'; });
+        saved.forEach(x => { x.el.style.scale = '1'; if (!x.o) x.el.style.setProperty('translate', '0px 0px', 'important'); });
+        /* the camera comes forward again together with the bubbles (not 0.5 s later) */
+        try { W.dispatchEvent(new CustomEvent('lowi:bloom-zoom', { detail: { s: 1, on: false, start: true } })); } catch (e) { }
         const done = () => {
             if (tick !== z.t) return;
-            saved.forEach(x => { x.el.style.removeProperty('scale'); x.el.style.removeProperty('transform-origin'); x.el.style.transition = x.tr || ''; });
+            saved.forEach(x => { x.el.style.removeProperty('scale'); x.el.style.removeProperty('translate'); x.el.style.removeProperty('transform-origin'); x.el.style.transition = x.tr || ''; });
             z.saved = null; H.classList.remove('br-zoom');
             try { W.dispatchEvent(new CustomEvent('lowi:bloom-zoom', { detail: { s: 1, on: false } })); } catch (e) { }
         };
@@ -237,5 +283,5 @@
         W.addEventListener('resize', () => { if (z.on) { const B = W.LowiHomeBloomsV2; try { if (B && B.close) B.close(); } catch (e) { } try { const S = W.LowiHomeSettingsSleepV2; if (S && S.close) S.close(); } catch (e) { } unzoom(); } });
     }
     const state = () => ({ on: z.on, s: z.s, owner: z.owner });
-    return { solve, pack, layoutAt, isTwoFingerTap, TAP, stepFor, place, zoom, unzoom, state, toggleAll, mount: typeof window !== 'undefined' ? mount : null, _ring: ring };
+    return { solve, pack, layoutAt, isTwoFingerTap, TAP, stepFor, place, zoom, unzoom, state, toggleAll, mount: typeof window !== 'undefined' ? mount : null, _ring: ring, _layers: typeof window !== 'undefined' ? layers : null, _layoutBox: typeof window !== 'undefined' ? layoutBox : null };
 });

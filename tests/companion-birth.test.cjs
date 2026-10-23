@@ -89,7 +89,7 @@ test('companion copy is gender-neutral in en/de/es (an entity, not she or he)', 
 
 test('wiring: shared API, onboarding reveal after the birthday, optional birth time, Profile, offline cache', () => {
   const page = read('companion-birth.js');
-  assert.ok(/window\.LowiBirthCompanion=\{KEY,get:getCompanion,getCompanion,has,save,personality,svg/.test(page));
+  assert.ok(/window\.LowiBirthCompanion=\{KEY,(SALT_KEY,)?get:getCompanion,getCompanion,has,save,personality,svg/.test(page));
   assert.ok(page.includes('window.getCompanion=getCompanion;'));
   assert.ok(page.includes("KEY='lowispike.companion.v1'") && page.includes("'lowi:companion'"));
   assert.ok(/Object\.assign\(\{\},C\.MISTY\)/.test(page), 'Misty stays the fallback for existing users');

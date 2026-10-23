@@ -10,13 +10,17 @@
      LowiBirthCompanion.reveal(host, {bday, btime}, onDone)  -> the "comes alive" moment inside any element
      LowiBirthCompanion.openCreator()    -> full-screen creator (Profile, for existing users)
      window event 'lowi:companion'  -> fired after a companion is saved or renamed
-   Storage: localStorage 'lowispike.companion.v1' = {v,bday,btime,n,name,created}. Every lowispike.* key is in the
-   Supabase user_state backup, so the companion follows the account to other devices. The look is recomputed from
-   bday/btime (deterministic), so only the inputs and the chosen name are stored. */
+   Storage: localStorage 'lowispike.companion.v1' = {v,bday,btime,n,name,created,salt?}. Every lowispike.* key is in the
+   Supabase user_state backup (and the account sync), so the companion follows the account to other devices. The look is
+   recomputed from bday/btime(/salt) (deterministic), so only the inputs and the chosen name are stored.
+   Oct 24, 2026 (Eman: "nobody will ever get the same companion, right?"): a companion brought to life from now on also stores
+   `salt`, the account's own random id ('lowispike.companion.salt.v1', made once, synced, wiped on sign-out with the rest), so
+   two people with the same birthday get different companions. A record WITHOUT salt is an older companion: it is drawn with
+   the old formula and never gets a salt added, so nobody's existing companion or name changes. */
 (function(){
 'use strict';
 const C=window.LowiBirthCompanionCore;if(!C||window.LowiBirthCompanion)return;
-const D=document,KEY='lowispike.companion.v1';
+const D=document,KEY='lowispike.companion.v1',SALT_KEY='lowispike.companion.salt.v1';
 if(!D.getElementById('lcCss')){const m=D.querySelector('meta[name="lowi-build"]');const l=D.createElement('link');l.id='lcCss';l.rel='stylesheet';l.href='companion-birth.css?v='+encodeURIComponent(m?m.content:'1');D.head.appendChild(l);}
 const lang=()=>{let l='';try{l=(window.LowiLang&&LowiLang.get&&LowiLang.get())||localStorage.getItem('lowispike.lang')||D.documentElement.lang||'en';}catch(e){l='en';}l=String(l).slice(0,2).toLowerCase();return C.LANGS.includes(l)?l:'en';};
 const TX={
@@ -34,12 +38,19 @@ const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;'
 const RM=()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(e){return false;}};
 
 function stored(){try{const v=JSON.parse(localStorage.getItem(KEY)||'null');return v&&C.validDate(v.bday)?v:null;}catch(e){return null;}}
+/* the account's salt: the one in the saved companion, else the account key, else a new one (saved at once, so a reload in the
+   middle of the reveal shows the same companion again). Only ever used for a NEW companion. */
+function accountSalt(){const s=stored(),own=s&&C.validSalt(s.salt);if(own)return own;
+ let k='';try{k=C.validSalt(localStorage.getItem(SALT_KEY));}catch(e){}if(k)return k;
+ k=C.newSalt();try{localStorage.setItem(SALT_KEY,k);}catch(e){}return k;}
 let cache=null,cacheSig='';
 function getCompanion(){const s=stored();if(!s)return Object.assign({},C.MISTY);const sig=JSON.stringify(s);if(cache&&sig===cacheSig)return cache;
- cache=C.generate({bday:s.bday,btime:s.btime,n:s.n,name:s.name});cacheSig=sig;return cache||Object.assign({},C.MISTY);}
+ cache=C.generate({bday:s.bday,btime:s.btime,n:s.n,name:s.name,salt:s.salt});cacheSig=sig;return cache||Object.assign({},C.MISTY);}
 function has(){return !!stored();}
 function save(c){if(!c||!c.bday)return;const rec={v:1,bday:c.bday,btime:c.btime||'',n:c.n|0,name:C.cleanName(c.name)||c.autoName,created:(stored()||{}).created||Date.now()};
+ const salt=C.validSalt(c.salt);if(salt)rec.salt=salt;
  try{localStorage.setItem(KEY,JSON.stringify(rec));}catch(e){}
+ if(salt)try{if(localStorage.getItem(SALT_KEY)!==salt)localStorage.setItem(SALT_KEY,salt);}catch(e){}
  try{if(window.LowiHerbIdentity&&LowiHerbIdentity.setCustomName)LowiHerbIdentity.setCustomName(rec.name);}catch(e){}
  cache=null;try{window.dispatchEvent(new CustomEvent('lowi:companion',{detail:getCompanion()}));}catch(e){}
  setTimeout(mountProfile,0);return rec;}
@@ -49,7 +60,7 @@ function save(c){if(!c||!c.bday)return;const rec={v:1,bday:c.bday,btime:c.btime|
    which the account backup syncs; fires 'lowi:companion' so Home, Misty's card, Community and the tutorial redraw. */
 function rename(v){const chk=C.renameCheck(v);if(!chk.ok)return{ok:false,why:chk.why};
  const s=stored();
- if(s){const g=C.generate({bday:s.bday,btime:s.btime,n:s.n});const nm=chk.name||(g&&g.autoName)||s.name;
+ if(s){const g=C.generate({bday:s.bday,btime:s.btime,n:s.n,salt:s.salt});const nm=chk.name||(g&&g.autoName)||s.name;
   const rec=Object.assign({},s,{name:C.cleanName(nm)});try{localStorage.setItem(KEY,JSON.stringify(rec));}catch(e){return{ok:false,why:'save'};}
   try{if(window.LowiHerbIdentity&&LowiHerbIdentity.setCustomName)LowiHerbIdentity.setCustomName(rec.name);}catch(e){}}
  else{try{if(!(window.LowiHerbIdentity&&LowiHerbIdentity.setCustomName))return{ok:false,why:'save'};LowiHerbIdentity.setCustomName(chk.name);}catch(e){return{ok:false,why:'save'};}}
@@ -67,8 +78,12 @@ function personality(c,l){return C.personality(c||getCompanion(),l||lang());}
 function svg(c,o){return C.svg(c||getCompanion(),o);}
 
 /* ---------- the reveal: mystery spark -> burst -> the companion comes alive ---------- */
-function reveal(host,o,onDone){o=o||{};if(!host)return;let c=C.generate({bday:o.bday,btime:o.btime,n:0});if(!c){if(onDone)onDone(null);return;}
- const prev=stored();if(prev&&prev.bday===c.bday&&(prev.btime||'')===c.btime){c=C.generate({bday:c.bday,btime:c.btime,n:prev.n,name:prev.name});}
+function reveal(host,o,onDone){o=o||{};if(!host)return;if(!C.validDate(o.bday)){if(onDone)onDone(null);return;}
+ /* same birthday + time as the saved companion: that very companion again (an older one keeps its old, salt-free look);
+    anything else is a new companion and gets the account's salt */
+ const prev=stored(),same=prev&&prev.bday===C.validDate(o.bday)&&(prev.btime||'')===C.validTime(o.btime);
+ let c=same?C.generate({bday:prev.bday,btime:prev.btime,n:prev.n,name:prev.name,salt:prev.salt}):C.generate({bday:o.bday,btime:o.btime,n:0,salt:accountSalt()});
+ if(!c){if(onDone)onDone(null);return;}
  host.innerHTML='<div class="lc-rev" data-noi18n><div class="lc-stage"><i class="lc-flash" aria-hidden="true"></i><div class="lc-art">'+C.mysterySVG({size:200})+'</div></div>'+
   '<p class="lc-over" aria-live="polite">'+esc(t('waking'))+'</p><h2 class="lc-name"></h2><p class="lc-sign"></p><p class="lc-pers"></p><p class="lc-myth"></p>'+
   '<div class="lc-btns lc-namebtns"><button type="button" class="lc-glass" data-lc="shuffle" disabled>'+esc(t('shuffle'))+'</button><button type="button" class="lc-glass" data-lc="own" aria-expanded="false" disabled>'+esc(t('own'))+'</button></div>'+
@@ -83,14 +98,14 @@ function reveal(host,o,onDone){o=o||{};if(!host)return;let c=C.generate({bday:o.
   q('.lc-over').textContent=t('over');paintText();R.classList.add('lc-alive');R.querySelectorAll('button').forEach(b=>b.disabled=false);};
  if(RM()||o.instant){alive();}else{R.classList.add('lc-waking');setTimeout(()=>{R.classList.add('lc-burst');},1100);setTimeout(alive,1500);}
  R.addEventListener('click',e=>{const b=e.target.closest('[data-lc]');if(!b||b.disabled)return;
-  if(b.dataset.lc==='shuffle'){c=C.generate({bday:c.bday,btime:c.btime,n:c.n+1});if(inp){inp.value='';err('');}const nm=q('.lc-name');nm.textContent=c.name;nm.classList.remove('lc-pop');void nm.offsetWidth;nm.classList.add('lc-pop');
+  if(b.dataset.lc==='shuffle'){c=C.generate({bday:c.bday,btime:c.btime,n:c.n+1,salt:c.salt});if(inp){inp.value='';err('');}const nm=q('.lc-name');nm.textContent=c.name;nm.classList.remove('lc-pop');void nm.offsetWidth;nm.classList.add('lc-pop');
    const s=q('.lc-art svg');if(s)s.setAttribute('aria-label',t('ally',{name:c.name}));try{navigator.vibrate&&navigator.vibrate(8);}catch(_){}}
   else if(b.dataset.lc==='own'){const box=q('.lc-own');box.hidden=false;b.setAttribute('aria-expanded','true');R.classList.add('lc-owning');try{inp.focus();}catch(_){}}
   else if(b.dataset.lc==='go'){if(inp&&inp.value.trim()){const chk=C.renameCheck(inp.value);if(!chk.ok){err(t('ownBad'));try{inp.focus();}catch(_){}return;}
-    c=C.generate({bday:c.bday,btime:c.btime,n:c.n,name:chk.name});}
+    c=C.generate({bday:c.bday,btime:c.btime,n:c.n,name:chk.name,salt:c.salt});}
    save(c);if(onDone)onDone(c);}});
  const inp=q('.lc-in'),err=m=>{const e=q('.lc-ownerr');if(e)e.textContent=m;};
- if(inp){inp.addEventListener('input',()=>{err('');const v=C.cleanName(inp.value);const nm=q('.lc-name');nm.textContent=v||C.generate({bday:c.bday,btime:c.btime,n:c.n}).name;
+ if(inp){inp.addEventListener('input',()=>{err('');const v=C.cleanName(inp.value);const nm=q('.lc-name');nm.textContent=v||C.generate({bday:c.bday,btime:c.btime,n:c.n,salt:c.salt}).name;
    const s=q('.lc-art svg');if(s)s.setAttribute('aria-label',t('ally',{name:nm.textContent}));});
   inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();inp.blur();}});}
  return c;}
@@ -126,7 +141,7 @@ try{new MutationObserver(ms=>{for(const m of ms){const tg=m.target;if(!tg||!tg.c
 window.addEventListener('lowi:lang',soon);
 if(D.readyState!=='loading')soon();else D.addEventListener('DOMContentLoaded',soon);
 
-window.LowiBirthCompanion={KEY,get:getCompanion,getCompanion,has,save,personality,svg,mysterySVG:C.mysterySVG,reveal,openCreator,core:C,rename,displayName,withName,
+window.LowiBirthCompanion={KEY,SALT_KEY,get:getCompanion,getCompanion,has,save,personality,svg,mysterySVG:C.mysterySVG,reveal,openCreator,core:C,rename,displayName,withName,
  clear(){try{localStorage.removeItem(KEY);}catch(e){}cache=null;soon();}};
 /* the one-call way for any feature: window.getCompanion() (LowiCompanion is the older Misty forms/evolution module in companion.js) */
 window.getCompanion=getCompanion;

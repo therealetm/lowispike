@@ -55,7 +55,7 @@ test('companion reveal: New name + Type my own; a typed name is checked and save
   assert.match(js, /data-lc="own"/);
   assert.match(js, /class="lc-in" type="text" maxlength="24"/);
   assert.match(js, /C\.renameCheck\(inp\.value\)/);
-  assert.match(js, /c=C\.generate\(\{bday:c\.bday,btime:c\.btime,n:c\.n,name:chk\.name\}\)/);
+  assert.match(js, /c=C\.generate\(\{bday:c\.bday,btime:c\.btime,n:c\.n,name:chk\.name(,salt:c\.salt)?\}\)/); /* Oct 24: + the account salt (companion-unique) */
   const css = read('companion-birth.css');
   assert.match(css, /\.lc-own:not\(\[hidden\]\)/);
 });

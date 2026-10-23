@@ -2,10 +2,11 @@
    so that everyone who uses our stuff always gets a different-looking companion. It's not a she nor a him. It's an entity.")
    Pure rules, no DOM: runs in the page (window.LowiBirthCompanionCore) and in node tests (module.exports).
 
-   THE FORMULA (deterministic: the same birthday + time gives the same companion on every device)
+   THE FORMULA (deterministic: the same inputs give the same companion on every device)
    1. sign        western star sign from the birth date (same edges as herb-identity-core.js and index.html zodiac()).
    2. colour      the sign's colour pair (the same colours as LowiGlass / LS_PAL in index.html), hue nudged by up to
-                  +-14 degrees from the seed, so two Pisces never share the exact shade.
+                  +-14 degrees from the seed. v1 has only 29 whole-degree steps, so two Pisces CAN share a shade;
+                  v2 (below) uses 281 steps plus a small lightness nudge.
    3. motif       the sign's mythology feature, drawn on every companion of that sign (ram curls, bull horns, twin orbs,
                   moon claws, sun mane, star wheat, balance halo, scorpion tail, archer's arrow tail, sea-goat fin,
                   water crest, fish fins).
@@ -13,10 +14,19 @@
                   x rhythm (birth hour: dawn 5-10, day 11-16, dusk 17-22, night 23-4; no time given -> weekday of birth)
                   x modality of the sign (cardinal leads the way / fixed never gives up / mutable goes with the flow)
                   = 4 x 4 x 3 = 48 personality types, e.g. "Dusk Tide · goes with the flow".
-   5. look        seed = FNV-1a 32-bit hash of "YYYY-MM-DD|HH:MM" (time empty when not given) -> mulberry32 PRNG, which picks
-                  body (8) x eyes (7) x mouth (4) x markings (7) x aura (5) x accessory (8) x particles (5) x hue (29)
-                  plus size and squish: about 4.5 million looks before the sign colour and motif are added.
+   5. look        v1 (every companion made before Oct 24, 2026, and any record without a salt): seed = FNV-1a 32-bit hash of
+                  "YYYY-MM-DD|HH:MM" (time empty when not given). Same birthday + same time = the SAME companion for everyone.
+                  v2 (Oct 24, 2026, Eman: "nobody will ever get the same companion, right?"): the stored record also holds a
+                  per-account salt (random, made once, synced with the account: companion-birth.js). seed = FNV-1a of
+                  "YYYY-MM-DD|HH:MM|salt", so two people with the same birthday get different looks; the sign, element,
+                  rhythm, motif and colour family still come from the birthday alone.
+                  The seed -> mulberry32 PRNG picks body (8) x eyes (7) x mouth (4) x markings (7) x aura (5) x accessory (8)
+                  x particles (5) x hue (v1 29 steps, v2 281) (+ v2 lightness, 17 steps) plus size and squish: about 4.5
+                  million (v1) / 740 million (v2) combinations per sign. Not a guarantee: nothing on a server checks for
+                  duplicates, so very rarely two companions can still look alike. Old v1 looks are never recomputed.
    6. name        (Oct 23) a friendly pet-style name from the element's pool + a shared pool, in a seed-fixed order.
+                  v2 adds MORE_NAMES to the pool and its seed includes the salt, so people with the same birthday start on
+                  different names. Names are never promised unique (a few dozen per pool).
                   Shuffle n picks the next one; the look never changes on a shuffle. The person can also type their own.
    The companion is an entity: copy uses its name or "it" (de "es", es neutral phrasing), never she/he. */
 (function(root){
@@ -75,6 +85,10 @@ const NAMES={
  water:['Coral','Ripple','Pearl','Nami','Kai','Marina','Lagoon','Splash','Bubbles','Wave','Isla','Delta','Nixie','Lotus']};
 const FRIENDLY=['Luna','Mika','Kiwi','Juno','Pixel','Yuki','Tiko','Kimi','Bijou','Momo','Milo','Nico','Lumo','Bean',
  'Suki','Twinkle','Peanut','Sprout','Pom','Tofu','Cosmo','Lulu','Benny','Gizmo','Pico','Remy','Pepper','Zola','Teddy','Cleo'];
+/* Oct 24: extra names for NEW (v2, salted) companions only, same rules (short, said the same in en/de/es, no food, nothing
+   medical, no bot names). v1 keeps the old pool so an existing companion's "New name" order and default name never change. */
+const MORE_NAMES=['Ollie','Sora','Rumi','Elio','Mina','Tilly','Wren','Koa','Noa','Pia','Romy','Toto','Vivi','Zeno','Indi',
+ 'Lio','Ayla','Fizz','Puck','Bibi','Ozzy','Kito','Nell','Otto','Rocco','Mabel','Ivo','Tavi','Bodo','Yara'];
 /* kept as empty lists for old callers; nothing builds names from syllables any more */
 const META=[],TAILS=[],ENDS=[];
 
@@ -90,7 +104,13 @@ function validTime(t){t=String(t||'').trim();const m=/^(\d{1,2}):(\d{2})/.exec(t
 function signOf(b){b=validDate(b);if(!b)return '';const [,m,d]=b.split('-').map(Number);return d<=EDGES[m-1][2]?EDGES[m-1][0]:EDGES[m][0];}
 function rhythmOf(b,t){t=validTime(t);if(t){const h=+t.slice(0,2);return h>=5&&h<=10?'dawn':h>=11&&h<=16?'day':h>=17&&h<=22?'dusk':'night';}
  const [y,m,d]=validDate(b).split('-').map(Number);const dow=new Date(y,m-1,d).getDay();return ['night','dawn','day','dusk'][dow%4];}
-function seedOf(b,t){return fnv(validDate(b)+'|'+validTime(t));}
+/* v1: birthday + time only. v2: + the account salt (a short [a-z0-9] id). An empty or invalid salt means v1. */
+function validSalt(x){x=String(x==null?'':x).toLowerCase();return /^[a-z0-9]{6,32}$/.test(x)?x:'';}
+function seedOf(b,t,salt){const s=validSalt(salt);return fnv(validDate(b)+'|'+validTime(t)+(s?'|'+s:''));}
+/* a fresh salt: 64 random bits as base36 (crypto when there is one; Math.random only as a last resort) */
+function newSalt(){let a=new Uint32Array(2);try{const c=(typeof crypto!=='undefined'&&crypto)||(typeof globalThis!=='undefined'&&globalThis.crypto);if(c&&c.getRandomValues)c.getRandomValues(a);else throw 0;}
+ catch(e){a=[Math.floor(Math.random()*4294967296)>>>0,Math.floor(Math.random()*4294967296)>>>0];}
+ return ('c'+(a[0]>>>0).toString(36)+(a[1]>>>0).toString(36)).slice(0,16).padEnd(8,'0');}
 
 /* ---------- colour ---------- */
 function hexToHsl(h){const r=parseInt(h.substr(1,2),16)/255,g=parseInt(h.substr(3,2),16)/255,b=parseInt(h.substr(5,2),16)/255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b);let H=0,S=0;const Lg=(mx+mn)/2;
@@ -103,19 +123,23 @@ function shift(hex,dh,dl){const [h,s,l]=hexToHsl(hex);return hslToHex(h+dh,Math.
 /* ---------- names ---------- */
 /* the seed shuffles this sign's element pool + FRIENDLY into one fixed order; shuffle n walks it, so every tap on
    "New name" gives a different name (no repeat until the whole list has been seen). Same birthday = same order on every device. */
-function namePool(sign){const el=(SIGNS[sign]||SIGNS.pisces)[0];return (NAMES[el]||[]).concat(FRIENDLY);}
-function nameFor(seed,sign,n){const list=namePool(sign).slice(),r=rng((seed^0x5bd1e995)>>>0);
+function namePool(sign,v){const el=(SIGNS[sign]||SIGNS.pisces)[0];const p=(NAMES[el]||[]).concat(FRIENDLY);return v===2?p.concat(MORE_NAMES):p;}
+function nameFor(seed,sign,n,v){const list=namePool(sign,v).slice(),r=rng((seed^0x5bd1e995)>>>0);
  for(let i=list.length-1;i>0;i--){const j=pickI(r,i+1);const x=list[i];list[i]=list[j];list[j]=x;}
  return list[((n|0)%list.length+list.length)%list.length];}
 
 /* ---------- the companion ---------- */
 function generate(o){o=o||{};const bday=validDate(o.bday);if(!bday)return null;const btime=validTime(o.btime),sign=signOf(bday),S=SIGNS[sign];
- const seed=seedOf(bday,btime),r=rng(seed);
+ const salt=validSalt(o.salt),v=salt?2:1,seed=seedOf(bday,btime,salt),r=rng(seed);
  const look={body:pickI(r,8),eyes:pickI(r,7),mouth:pickI(r,4),marks:pickI(r,7),aura:pickI(r,5),acc:pickI(r,8),parts:pickI(r,5),hue:pickI(r,29)-14,size:+(0.88+r()*0.2).toFixed(3),squish:+(0.9+r()*0.2).toFixed(3),wob:+(r()*6.283).toFixed(3)};
- const a=shift(S[3],look.hue,0),b=shift(S[4],look.hue*.6,0),deep=shift(S[3],look.hue,-.18);
+ /* v2 only: a finer hue (0.1 degree steps instead of whole degrees, 281 shades) and a small lightness nudge (17 steps);
+    drawn AFTER every v1 draw, so the v1 branch above stays byte for byte what it always was */
+ if(v===2){look.hue=Math.round((r()*28-14)*10)/10;look.lt=Math.round((r()*0.08-0.04)*200)/200;}
+ const lt=look.lt||0,a=shift(S[3],look.hue,lt),b=shift(S[4],look.hue*.6,lt),deep=shift(S[3],look.hue,lt-.18);
  const n=Math.max(0,o.n|0),rh=rhythmOf(bday,btime);
- return {v:1,bday,btime,seed,n,sign,element:S[0],modality:S[1],glyph:S[2],rhythm:rh,type:S[0]+'-'+rh+'-'+S[1],palette:{a,b,deep,base:[S[3],S[4]]},look,
-  name:o.name?cleanName(o.name):nameFor(seed,sign,n),autoName:nameFor(seed,sign,n)};}
+ const c={v,bday,btime,seed,n,sign,element:S[0],modality:S[1],glyph:S[2],rhythm:rh,type:S[0]+'-'+rh+'-'+S[1],palette:{a,b,deep,base:[S[3],S[4]]},look,
+  name:o.name?cleanName(o.name):nameFor(seed,sign,n,v),autoName:nameFor(seed,sign,n,v)};
+ if(salt)c.salt=salt;return c;}
 function cleanName(v){return String(v||'').replace(/[<>"'`\\]/g,'').replace(/\s+/g,' ').trim().slice(0,24);}
 /* Oct 19 (Emmanuel's friend: "change the name manually ... when their companion gets a name"): a typed rename.
    '' = go back to the generated name; otherwise 1..24 characters with at least one letter or number. Pure. */
@@ -239,7 +263,7 @@ function mysterySVG(o){o=o||{};return '<svg class="lc-svg lc-mystery'+(o.cls?' '
  '<g class="lc-seedling"><circle cx="60" cy="62" r="26" fill="url(#lcmS)"/><path d="M60 46l2.6 13.4L76 62l-13.4 2.6L60 78l-2.6-13.4L44 62l13.4-2.6z" fill="#fff" opacity=".9"/></g>'+
  [[38,40],[84,44],[80,84],[40,82],[60,30]].map((q,i)=>'<circle class="lc-tw" style="animation-delay:-'+(i*.6)+'s" cx="'+q[0]+'" cy="'+q[1]+'" r="1.1" fill="#fff"/>').join('')+'</svg>';}
 
-const api={SIGNS,SIGN_KEYS,LANGS,NAMES,FRIENDLY,namePool,META,TAILS,ENDS,MISTY,fnv,rng,validDate,validTime,signOf,rhythmOf,seedOf,generate,nameFor,cleanName,renameCheck,personality,signLabel,myth,colourName,svg,parts,mysterySVG,shift};
+const api={SIGNS,SIGN_KEYS,LANGS,NAMES,FRIENDLY,MORE_NAMES,namePool,validSalt,newSalt,META,TAILS,ENDS,MISTY,fnv,rng,validDate,validTime,signOf,rhythmOf,seedOf,generate,nameFor,cleanName,renameCheck,personality,signLabel,myth,colourName,svg,parts,mysterySVG,shift};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 if(root)root.LowiBirthCompanionCore=api;
 })(typeof window!=='undefined'?window:(typeof self!=='undefined'?self:null));

@@ -22,7 +22,7 @@ test('the not-found sheet: compact one-screen layout, bubble catch and Don\'t sa
   const src = cut('function nfTick(k){', '/* prod-verdict');
   const T = { notFound: 'Not in any database yet', nfSub: 'Friendly foods get a bubble.', deepNf: 'Deep analyze', nfDeepS: 'LOWiSPIKE GPT', nfPh: 'Label photos', nfPhS: 'Nutrition + ingredients', orAdd: 'Or add it yourself', brandPh: 'Brand (optional)', nfQ: 'Tick what the label lists:', dontSave: "Don't save", catch: 'Bubble catch', noReach: 'No connection', noReachS: 'offline',
     m_sugar: 'Sugar or syrup (Zucker, Sirup, Dextrose, Honig)', m_sweet: 'Sweetener (Sucralose, Aspartam)', m_carb: 'Flour, rice, corn or potato near the top', m_none: 'None of these' };
-  const ctx = { esc: s => String(s), t: k => T[k] || k, net: k => k, nameBoxHTML: () => '<div class="ne-box"><input id="b3MName"><button class="ne-by">Analyze</button></div>',
+  const ctx = { esc: s => String(s), t: k => T[k] || k, net: k => k, nameBoxHTML: () => '<div class="ne-box"><div class="ne-row-in"><input id="b3MName"><button class="ne-by ne-inl">Analyze</button></div></div>',
     deepLink: (c, a, ti, su) => '<a class="' + c + '" ' + a + '><b>' + ti + '</b><small>' + su + '</small></a>', lpAskHTML: () => '<div class="lp-ask"></div>' };
   vm.createContext(ctx); vm.runInContext(src + ';this.manualHTML=manualHTML;', ctx);
   const out = ctx.manualHTML({ barcode: '7862112310162' });

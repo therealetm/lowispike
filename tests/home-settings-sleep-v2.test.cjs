@@ -106,14 +106,14 @@ test('fan: a window too small for an arc still returns n on-screen spots', () =>
     F.pts.forEach(p => { assert.ok(p.x >= 0 && p.x <= o.vw && p.y >= 0 && p.y <= o.vh); });
 });
 
-test('entries: only routes that exist are offered, More appears only with something in it, sleep adds Clear once logged', () => {
+test('entries: only routes that exist are offered, More appears only with something in it, sleep is always the three choices', () => {
     const all = { has: () => true }, none = { has: () => false };
     assert.deepStrictEqual(C.entries('settings', all), ['theme', 'look', 'worldSound', 'language', 'tutorial', 'account', 'deleteAccount']);
     assert.deepStrictEqual(C.entries('settings', none), []);
     assert.deepStrictEqual(C.entries('settings', { has: id => id === 'tutorial' || id === 'care' }), ['tutorial']);
     assert.deepStrictEqual(C.entries('more', { has: id => id === 'care' || id === 'me' }), ['me', 'care']);
     assert.deepStrictEqual(C.entries('sleep', {}), ['under6', '6to7', '7plus']);
-    assert.deepStrictEqual(C.entries('sleep', { logged: true }), ['under6', '6to7', '7plus', 'clear']);
+    assert.deepStrictEqual(C.entries('sleep', { logged: true }), ['under6', '6to7', '7plus'], 'no Clear chip once logged (E-man, 23 Oct 2026)');
     assert.ok(C.MORE.includes('care') && !C.MORE.includes('map'), 'Care board stays reachable (from Community now); the old World map is gone (Oct 22 2026)');
     assert.ok(!C.MORE.includes('today'), 'Today was dropped from Home (Emmanuel, Oct 18 2026): see everything-else-trim.test.cjs');
 });
@@ -147,4 +147,47 @@ test('settings panel: names the running build beside the x, in each language; a 
     assert.ok(/meta\[name="lowi-build"\]/.test(src), 'reads the page build tag');
     assert.ok(/ss2-page-foot">' \+ \(ver \? '<small class="ss2-ver">'/.test(src), 'plain text in the panel foot, before the x');
     assert.ok(/\.ss2-ver \{[^}]*margin-right: auto/.test(css), 'sits at the left of the foot, the x stays at the bottom right');
+});
+
+/* 23 Oct 2026 (E-man on a call: "I guess we don't need a reset"): the separate Clear/reset chip leaves the Sleep bloom.
+   Tapping another choice already replaces today's entry, so nothing stacks. No long press and no tap-again reset replace it. */
+test('sleep bloom: exactly three choices, logged or not, in every language; no Clear chip, words or icon', () => {
+    for (const env of [{}, { logged: false }, { logged: true }, { logged: true, has: () => true }]) {
+        assert.deepStrictEqual(C.entries('sleep', env), ['under6', '6to7', '7plus']);
+    }
+    for (const l of ['en', 'de', 'es']) {
+        assert.ok(!('clear' in C.TX[l]) && !('clearLong' in C.TX[l]), l + ': Clear words removed');
+        for (const b of C.BANDS) assert.ok(C.TX[l][b] && C.TX[l].short[b], l + ': ' + b + ' still labelled');
+    }
+    const src = read('home-settings-sleep-v2.js');
+    assert.doesNotMatch(src, /data-ss2="clear"/, 'no Clear chip markup');
+    assert.doesNotMatch(src, /ss2-clear/, 'no Clear chip class');
+    assert.doesNotMatch(src, /id === 'clear'/, 'no Clear branch in chipHTML or onChip');
+});
+
+test('sleep: picking a different choice replaces today (never stacks); picking the same one again keeps it; past days untouched', () => {
+    const h = {}, D0 = '2026-10-22', D1 = '2026-10-23';
+    assert.ok(C.writeSleep(h, D0, '7plus', 1));
+    assert.ok(C.writeSleep(h, D1, 'under6', 2));
+    assert.ok(C.writeSleep(h, D1, '6to7', 3));
+    assert.deepStrictEqual(h.sleepDays[D1], { band: '6to7', ts: 3 });
+    assert.ok(C.writeSleep(h, D1, '6to7', 4), 'same choice again is a normal write');
+    assert.strictEqual(C.readSleep(h, D1), '6to7', 'tapping the selected choice again does not clear it');
+    assert.strictEqual(Object.keys(h.sleepDays).length, 2, 'one entry per day');
+    assert.strictEqual(C.readSleep(h, D0), '7plus', 'yesterday untouched');
+    assert.strictEqual(C.writeSleep(h, D1, 'clear', 5), false, "'clear' is not a choice");
+    assert.strictEqual(C.readSleep(h, D1), '6to7');
+});
+
+test('sleep chips: a tap only ever logs a band; no long press, double tap or tap-again reset on Sleep', () => {
+    const src = read('home-settings-sleep-v2.js');
+    const on = src.slice(src.indexOf('function onChip('), src.indexOf("if (id === 'more') { show('more'); return; }"));
+    assert.match(on, /if \(BANDS\.includes\(id\)\) setSleep\(id\);/, 'a band chip logs that band');
+    assert.doesNotMatch(on, /setSleep\(null\)/, 'no chip clears today');
+    assert.strictEqual(C.holdIntent('sleep'), null, 'no hold gesture on Sleep');
+    assert.strictEqual(C.tapIntent('sleep', null), 'sleep');
+    assert.strictEqual(C.tapIntent('sleep', 'sleep'), 'close');
+    assert.doesNotMatch(src, /dblclick/, 'no double-tap handler');
+    assert.match(src, /closest\('\[data-orbit="settings"\]'\)/, 'the only hold stays on the Community/Settings bubble');
+    assert.doesNotMatch(src, /closest\('\[data-ss2[^']*'\)[^\n]*holdT/, 'no hold timer on chips');
 });

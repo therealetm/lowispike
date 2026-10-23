@@ -70,7 +70,7 @@ const W = { en: ['Add to bucket', 'Skip', "In today's bucket", '1 item today'], 
         if (k.open !== 0 || k.n !== 1) fails.push(tag + ': skip ' + JSON.stringify(k));
         // the first product again: already in the bucket, list opens with it
         await ev(p => { LowiDex.reveal(JSON.parse(JSON.stringify(p))); }, SKYR); await sleep(1000);
-        const again = await ev(() => ({ done: !!document.querySelector('.b3-ov .gb-done'), add: !!document.querySelector('.b3-ov .gb-add') }));
+        const again = await ev(() => { const ov = [...document.querySelectorAll('.b3-ov')].filter(x => !x.classList.contains('off')).pop(); return { done: !!(ov && ov.querySelector('.gb-done')), add: !!(ov && ov.querySelector('.gb-add')) }; });
         if (!again.done || again.add) fails.push(tag + ': reopen ' + JSON.stringify(again));
         const sum = page.locator('.b3-ov .gb-list summary').last(); await sum.scrollIntoViewIfNeeded(); await sum.tap(); await sleep(300);
         const li = await ev(() => [...document.querySelectorAll('.b3-ov .gb-list li .gb-nm')].map(x => x.firstChild.textContent));

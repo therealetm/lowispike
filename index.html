@@ -6148,7 +6148,9 @@ function closeSheet(){ $("#sheetwrap").classList.remove("open"); }
    #sheetwrap when it is the top layer. Whether another layer sits above it is read before any Escape handler runs (capture),
    so one Escape never closes two layers. */
 (function(){
-  const ABOVE = '.r2-ov.on:not(.off), .gv-ov.on, dialog[open], #mv-player.on, body > .b3-cam, #ltTour:not(.lt-held), #g1Ob:not(.out), #lcUpd, [aria-modal="true"]:not([hidden]):not(#sheetwrap):not(#sheetwrap *)';
+  const ABOVE = '.r2-ov.on:not(.off), .gv-ov.on, dialog[open], #mv-player.on, body > .b3-cam, #ltTour:not(.lt-held), #g1Ob:not(.out), #lcUpd, [aria-modal="true"]:not([hidden]):not(#sheetwrap):not(#sheetwrap *):not(#lcShop)';
+  /* Oct 23 (bug hunt): not #lcShop. The Shop it in-store list keeps aria-modal while closed and always sits below #sheetwrap,
+     so after one visit to it back never closed a sheet over Shop it (add a meal), and Cook closed for Home under it. */
   let above = false;
   addEventListener("keydown", e => { if (e.key === "Escape") { try { above = !!document.querySelector(ABOVE); } catch(x){ above = true; } } }, true);
   addEventListener("keydown", e => {
@@ -7751,6 +7753,27 @@ document.addEventListener("click", e => { const b = e.target.closest("[data-lc]"
       const all = document.querySelector(".g2c-all, [data-g2c-open=all]"); if (all) all.click(); else if (window.LowiG2C) try { LowiG2C.open("all"); } catch(e){} break; }
   }
 });
+/* cart-escape: Oct 23 (bug hunt). Back (Safari swipe / phone back) closes the top layer by sending Escape, but nothing closed
+   the Shop it screen (#lsCart) or the in-store list (#lcShop) on Escape. So swiping back on Shop it left it open and switched
+   the tab under it to Home, and the next swipe back left the app. Escape now closes the in-store list first, then the cart,
+   but only when that screen is the top layer (a sheet or the scanner above it is hit first and closes on its own). It is
+   handled before any other Escape handler runs (capture) and stops there, so the Shuffle pick sheet waiting under Shop it
+   stays for the next back: one Escape never closes two layers. */
+(function(){
+  const isOpen = id => { const el = document.getElementById(id); return el && el.classList.contains("open") ? el : null; };
+  /* top layer: what the middle of the screen hits is this screen, or a layer drawn below it (z-index) while it still slides
+     in. A sheet (45) or the scanner (400) over it is hit first and is above, so it closes on its own. */
+  const layerZ = t => { const app = document.getElementById("app"); let n = t; while (n && n.parentElement && n.parentElement !== app && n.parentElement !== document.body) n = n.parentElement; return n ? (parseInt(getComputedStyle(n).zIndex, 10) || 0) : 0; };
+  const onTop = el => { const z = parseInt(getComputedStyle(el).zIndex, 10) || 0;
+    return [[.5, .5], [.5, .3], [.5, .7]].every(([fx, fy]) => { const t = document.elementFromPoint(innerWidth * fx, innerHeight * fy); return !t || el.contains(t) || layerZ(t) < z; }); };
+  addEventListener("keydown", e => { if (e.key !== "Escape" || e.defaultPrevented) return; let w = null;
+    try { const sh = isOpen("lcShop"), c = isOpen("lsCart"); if (sh && onTop(sh)) w = "shop"; else if (c && !sh && onTop(c)) w = "cart"; } catch(x){ w = null; }
+    if (!w) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    if (w === "shop") lcShopClose(); else closeCart();
+  }, true);
+})();
+/* /cart-escape */
 /* ===== One store per recipe list (Oct 8, late). Eman: "Nobody goes from shop to shop to shop."
    The recipe shows ONE store: the one you picked (same choice as the cart), or the cheapest basket, marked Recommended.
    Store chips re-price the whole list. Tap an item: a booking.com-style sheet with that item at every store, cheapest first. ===== */

@@ -117,6 +117,10 @@
         if (isSec(e.state)) return;                         /* forward into a section entry: leave it */
         if (tabOf() === 'home') return;
         if (D.querySelector('#mv-player.on')) return;      /* the Move player handles its own back */
+        /* Oct 23 (bug hunt): back-swipe.js's popstate runs first and its Escape may already have closed the layer on top
+           (Shop it, its in-store list, a sheet over Shop it). That was this back: the section stays. Before, Cook closed for
+           Home under the still open Shop it, and the next back left the app. */
+        try { const B0 = W.LowiBackSwipe; if (B0 && B0.closed && B0.closed(e)) { history.pushState({ lowiSec: tabOf() }, ''); return; } } catch (x) { }
         /* a sheet open on top of the section closes first, and the section stays */
         const BS = W.LowiBackSwipe, before = BS && BS.sig ? BS.sig() : '';
         if (openSheet()) {
@@ -131,7 +135,8 @@
         popping = true; try { close(); } finally { popping = false; }
     }
     function openSheet() {
-        return !!D.querySelector('#sheetwrap.open, #sheetwrap.show, .r2-ov, [aria-modal="true"]:not([hidden]), dialog[open]');
+        /* Oct 23 (bug hunt): the Shop it screen (#lsCart) and its in-store list (#lcShop) count too. */
+        return !!D.querySelector('#sheetwrap.open, #sheetwrap.show, .r2-ov, [aria-modal="true"]:not([hidden]), dialog[open], #lsCart.open, #lcShop.open');
     }
 
     /* ---------- swipe back from the left edge ---------- */

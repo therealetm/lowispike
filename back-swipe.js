@@ -31,6 +31,8 @@
         /* Oct 21: no menu bar any more; section-nav.js brings Home back exactly as it was */
         if (W.LowiSections && typeof W.LowiSections.close === 'function') W.LowiSections.close(); else if (typeof W.goTab === 'function') W.goTab('home');
     }
+    let closedEvt = null;
+    const layers = g => g.split('|').slice(2).join('|');
     function onPop(e) {
         if (ours(history.state)) return;
         /* Oct 22: section-nav.js dropping a section's entry quietly is not a back; acting on it left the app */
@@ -38,6 +40,11 @@
         if (D.querySelector('#mv-player.on')) return;      /* the Move player handles its own back */
         const before = sig();
         escape();
+        /* Oct 23 (bug hunt): tell section-nav.js (its popstate runs after this one) that this back already closed a layer,
+           so it keeps the section open. It reads the page after this Escape, saw nothing open any more, and closed Cook for
+           Home under a sheet just closed (the add-a-meal sheet over Shop it). */
+        /* only the open layers count here, not the page's classes: any key press adds a class (nm-f) to the page */
+        try { if (layers(sig()) !== layers(before)) closedEvt = e; } catch (x) { }
         setTimeout(() => {
             if (sig() !== before) { guard(); return; }
             if (activeTab() !== 'home') { home(); guard(); return; }
@@ -46,5 +53,5 @@
     }
     W.addEventListener('popstate', onPop);
     D.addEventListener('pointerdown', guard, true);
-    W.LowiBackSwipe = { guard, onPop, sig };
+    W.LowiBackSwipe = { guard, onPop, sig, closed: e => !!e && e === closedEvt };
 })(window, document);

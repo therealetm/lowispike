@@ -44,7 +44,7 @@ const GONE = { en: /replies|mentions/i, de: /antworten|erwähnung/i, es: /respue
         if (r.keys.includes('replies')) fails.push(tag + ': Replies & mentions still in the menu');
         if (r.texts.some(t => GONE[lang].test(t))) fails.push(tag + ': a replies/mentions label is still shown ' + JSON.stringify(r.texts));
         for (const k of ['people', 'find', 'invite']) if (!r.keys.includes(k)) fails.push(tag + ': ' + k + ' missing from the menu');
-        if (r.keys[0] !== 'people') fails.push(tag + ': Rooms & people is not first (' + r.keys.join(',') + ')');
+        if (r.keys[0] !== 'urooms' || r.keys[1] !== 'people') fails.push(tag + ': Rooms, then Chat rooms & people are not first (' + r.keys.join(',') + ')');
         if (r.small.length) fails.push(tag + ': rows under 44 px ' + r.small.join(','));
         if (r.sw > r.w + 1) fails.push(tag + ': sideways scroll ' + r.sw + '>' + r.w);
         if (lang === langs[0]) await page.screenshot({ path: path.join(OUT, `${v}-${theme}-${lang}-menu.png`) });

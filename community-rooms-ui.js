@@ -15,7 +15,7 @@ const T={room:['Room','Raum','Sala'],chat:['Chat','Chat','Chat'],rooms:['Rooms',
  nobody:['Not in a room right now','Gerade in keinem Raum','Ahora no está en ninguna sala'],close:['Close','Schließen','Cerrar'],joining:['Finding your room…','Suche deinen Raum…','Buscando tu sala…'],
  create:['Creation','Erstellen','Crear'],rank:['Ranking','Rangliste','Ranking'],aff:['Affiliates','Affiliates','Afiliados'],copyLink:['Copy link','Link kopieren','Copiar enlace'],copied:['Link copied','Link kopiert','Enlace copiado'],
  tabs:['Community sections','Community-Bereiche','Secciones de la comunidad'],community:['Community','Community','Comunidad'],hereNow:['{c} here now','{c} gerade da','{c} aquí ahora'],
- menu:['Community menu','Community-Menü','Menú de la comunidad'],mPeople:['Rooms & people','Räume & Leute','Salas y gente'],mProfile:['Edit profile','Profil bearbeiten','Editar perfil'],mInvite:['Copy invite link','Einladungslink kopieren','Copiar enlace de invitación'],
+ menu:['Community menu','Community-Menü','Menú de la comunidad'],mRooms:['Rooms','Räume','Salas'],mPeople:['Chat rooms & people','Chat-Räume & Leute','Salas de chat y gente'],mProfile:['Edit profile','Profil bearbeiten','Editar perfil'],mInvite:['Copy invite link','Einladungslink kopieren','Copiar enlace de invitación'],
  mCopyAff:['Copy Affiliates link','Affiliates-Link kopieren','Copiar enlace de Afiliados'],mCopyCreate:['Copy Creation link','Erstellen-Link kopieren','Copiar enlace de Crear'],mSettings:['Chat settings','Chat-Einstellungen','Ajustes del chat'],mWelcome:['Welcome & rules','Willkommen & Regeln','Bienvenida y normas'],
  channels:['Channels','Kanäle','Canales'],chGalaxy:['Galaxy chat','Galaxie-Chat','Chat de la galaxia'],chGalaxyEmpty:['No messages yet. Say hi to everyone.','Noch keine Nachrichten. Sag allen Hallo.','Aún no hay mensajes. Saluda a todos.'],
  chReplies:['Replies & mentions','Antworten & Erwähnungen','Respuestas y menciones'],chRepliesEmpty:['Nothing for you yet.','Noch nichts für dich.','Todavía nada para ti.'],chRoomOut:['Find your room and the people in it.','Finde deinen Raum und die Leute darin.','Encuentra tu sala y a la gente que hay.'],
@@ -164,7 +164,7 @@ function paintChans(pane){let box=pane.querySelector(':scope>.rm-chans');if(view
 /* Community menu (Eden's dropdown): only things that really work here. */
 /* item 36: the newest reply or mention addressed to you, now that the channel list that showed it is gone */
 function lastDirected(){try{const c=W.LowiCommunity,d=c&&c.directed&&c.directed(),l=(d&&d.list)||[];return l.length?{m:l[l.length-1],n:l.filter(x=>!x.seen).length}:null;}catch(e){return null;}}
-function menuItems(){const it=[['people','👥',tr('mPeople')],['find','🔎',tr('find')]];
+function menuItems(){const it=[['people','👥',tr('mPeople')],['find','🔎',tr('find')]];if(W.LowiUserRooms)it.unshift(['urooms','🫧',tr('mRooms')]);/* Rooms people create (OWNER-REQUESTS 6), user-rooms.js */
  /* 23 Oct (Emmanuel: "Replies & mentions doesn't work and doesn't make sense, so you can mute it"): no Replies & mentions entry.
     lastDirected() and the 'replies' click branch stay as harmless dead paths (nothing renders that key any more). */
  if(D.getElementById('pfBtn'))it.push(['profile','👤',tr('mProfile')]);
@@ -178,7 +178,7 @@ function paintMenu(){const h='<div class="rm-menu-card" role="menu" aria-label="
 function toggleMenu(force){const on=force==null?!(menu&&!menu.hidden):!!force;
  if(!menu){menu=D.createElement('div');menu.className='rm-menu';menu.hidden=true;menu.setAttribute('data-noi18n','');D.body.appendChild(menu);
   menu.addEventListener('click',e=>{if(e.target===menu){toggleMenu(false);return;}const b=e.target.closest('[data-rmm]');if(!b)return;const k=b.dataset.rmm;toggleMenu(false);
-   if(k==='replies'){const dl=lastDirected(),c=W.LowiCommunity;if(dl&&c&&c.thread){const f=cur();view='';c.thread(true,dl.m.id);if(f!=='chat')from=f;paint();}}/* thread(), not openMessage(): its goTab('foryou') from inside Community rebuilds the page and drops the open chat */else if(k==='people')openSheet();else if(k==='find'){openSheet();setTimeout(()=>{const f=sheet&&sheet.querySelector('.rm-find');if(f)f.focus({preventScroll:true});},60);}
+   if(k==='replies'){const dl=lastDirected(),c=W.LowiCommunity;if(dl&&c&&c.thread){const f=cur();view='';c.thread(true,dl.m.id);if(f!=='chat')from=f;paint();}}/* thread(), not openMessage(): its goTab('foryou') from inside Community rebuilds the page and drops the open chat */else if(k==='urooms'){try{W.LowiUserRooms.open();}catch(x){}}else if(k==='people')openSheet();else if(k==='find'){openSheet();setTimeout(()=>{const f=sheet&&sheet.querySelector('.rm-find');if(f)f.focus({preventScroll:true});},60);}
    else if(k==='profile'){const p=D.getElementById('pfBtn');if(p)p.click();}else if(k==='invite')copyText(inviteUrl(),tr('copied'));else if(k==='copyview')copyView();
    else if(k==='settings'){try{W.LowiCommunity.settings();}catch(x){}}else if(k==='welcome'){try{W.LowiCommunityWelcome.open();}catch(x){}}});
   menu.addEventListener('keydown',e=>{const bs=[...menu.querySelectorAll('[data-rmm]')],i=bs.indexOf(D.activeElement);

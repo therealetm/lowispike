@@ -6966,6 +6966,7 @@ function allRecipes(){
   return out;
 }
 window.LowiAllRecipes = allRecipes; /* k9-all */
+window.LOWI_GROUP_WORDS = GROUP_WORDS; /* grocery-3: Today's groceries matches bucket items to Cook's ingredient groups */
 const TMP_RECS = {};
 const recipeById = id => TMP_RECS[id] || allRecipes().find(r => r.id === id);
 function recipeForMeal(mealId){ return allRecipes().find(r => r.meal === mealId); }

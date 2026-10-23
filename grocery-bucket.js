@@ -82,7 +82,7 @@
        Cook's own recipe list (LowiAllRecipes) that use them. In-app entry only (the bucket list, LowiBucket.openToday): the repo
        has no evening hour for a reminder, so none is invented. */
     function recipes() { try { return typeof W.LowiAllRecipes === 'function' ? W.LowiAllRecipes() : []; } catch (e) { return []; } }
-    function groupWords() { try { return typeof GROUP_WORDS !== 'undefined' ? GROUP_WORDS : null; } catch (e) { return null; } } /* Cook's own words (index.html) */
+    function groupWords() { return W.LOWI_GROUP_WORDS || null; } /* Cook's own group words (index.html GROUP_WORDS) */
     function todayHTML() {
         const s = C.load(), items = C.today(s), L = li();
         if (!items.length) return '<div class="gt-sheet"><div class="h2">' + esc(T('todayG')) + '</div><p class="gb-empty">' + esc(T('noneToday')) + '</p></div>';

@@ -233,12 +233,12 @@
     const rc = $('recruitCard'); rc.textContent = '';
     const R = A && A.RECRUIT ? A.RECRUIT : { salesPerRecruit: 5, recruitsPerLevel: 3 };
     rc.appendChild(h('h2', { class: 'label', text: T('recruitTitle') }));
-    rc.appendChild(h('p', { class: 'note', text: T('recruitRule', { n: R.salesPerRecruit }) }));
+    rc.appendChild(h('p', { class: 'note', text: T('recruitRule', { n: R.salesPerRecruit, k: R.recruitsPerLevel }) }));
     if (A && A.progress) {
       const me = myId(), n = me && REC ? A.recruitsFor(me, REC) : 0;
       const ex = A.progress(0, 3, B.TIERS), pr = A.progress(0, n, B.TIERS);
       if (n > 0) rc.appendChild(h('p', { class: 'recruit-you', id: 'recruitYou', text: T('recruitYou', { n, level: pr.level, rate: Math.round(pr.rate * 100) + '%' }) }));
-      rc.appendChild(h('p', { class: 'note', id: 'recruitEx', text: T('recruitEx', { n: ex.credit, level: ex.level, rate: Math.round(ex.rate * 100) + '%' }) }));
+      rc.appendChild(h('p', { class: 'note', id: 'recruitEx', text: T('recruitEx', { n: ex.credit, base: ex.base, level: ex.level, rate: Math.round(ex.rate * 100) + '%' }) }));
     }
     rc.appendChild(h('p', { class: 'note', text: T('recruitHow') }));
   }

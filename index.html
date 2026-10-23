@@ -10830,7 +10830,8 @@ function paintOb(){
       '<button class="r2-bigav" data-r2o="photo" aria-label="Add photo">' + (ob.avatar ? '<img src="' + ob.avatar + '" alt="">' : '<span>' + esc((ob.name || "?").charAt(0).toUpperCase()) + '</span>') + '<b>' + R2.ico.cam + '</b></button>' +
       '<div class="r2-obacts"><button class="r2-btn pri big" data-r2o="' + (ob.avatar ? "next" : "photo") + '">' + (ob.avatar ? "Looks good" : "Choose a photo") + '</button><button class="r2-btn ghost big" data-r2o="' + (ob.avatar ? "photo" : "initial") + '">' + (ob.avatar ? "Choose another" : "Use my initial") + '</button></div>';
   } else if (ob.step === 2 || !obShop()) {
-    h = dots() + '<div class="r2-obt">What do you want most?</div><div class="r2-obs">Pick any. You can change it in Profile.</div>' +
+    /* Oct 23 (Emmanuel): this step is about the person, not "what do you want most": title About you, subtitle says why we ask */
+    h = dots() + '<div class="r2-obt">About you</div><div class="r2-obs">So your tips fit you. Change it any time in Profile.</div>' +
       /* round 3A: gender, and PCOS for women (tailors tips; stays on this phone) */
       '<div class="r2-obsub">I am</div><div class="r2-chips r2-gender">' + [["f", "A woman"], ["m", "A man"], ["x", "Prefer not to say"]].map(g => '<button type="button" class="r2-chip' + (ob.gender === g[0] ? " on" : "") + '" aria-pressed="' + (ob.gender === g[0]) + '" data-r2g="' + g[0] + '">' + g[1] + '</button>').join("") + '</div>' +
       '<div class="r2-obsub">I want</div>' +
@@ -10839,7 +10840,7 @@ function paintOb(){
       '<div class="r2-obacts"><button class="r2-btn pri big" data-r2o="' + (obShop() ? "next" : "finish") + '">' + (obShop() ? "Next" : "Let\'s go") + '</button></div>';
   } else {
     /* step 3 (Oct 17): grocery shopping rhythm. The person types their own number; weekdays and shop are optional; Later skips */
-    h = dots() + LowiShopPlan.formHTML(null, { prefix: "r2obSp" }) +
+    h = dots() + LowiShopPlan.formHTML(null, { prefix: "r2obSp", first: true }) +
       '<div class="r2-obacts"><button class="r2-btn pri big" data-r2o="shopdone">Let\'s go</button><button class="r2-btn ghost big spl-later" data-r2o="shoplater">Later</button></div>';
   }
   el.innerHTML = '<div class="r2-obpane">' + h + '</div>';
@@ -12146,6 +12147,7 @@ const ROWS = [
   ["Change later", "Später ändern", "La cambio luego"],
   ["People in Community see it next to your messages.", "Leute in der Community sehen es neben deinen Nachrichten.", "En la Comunidad aparece junto a tus mensajes."],
   ["What do you want most?", "Was willst du am meisten?", "¿Qué es lo que más quieres?"],
+  ["So your tips fit you. Change it any time in Profile.", "Damit deine Tipps zu dir passen. Ändern kannst du alles im Profil.", "Así tus consejos se adaptan a ti. Puedes cambiarlo en Perfil."],
   ["Pick any. You can change it in Profile.", "Wähl beliebig aus. Du kannst es im Profil ändern.", "Elige las que quieras. Puedes cambiarlas en Perfil."],
   ["Lose weight", "Gewicht verlieren", "Perder peso"],
   ["Steady energy", "Gleichmäßige Energie", "Energía estable"],

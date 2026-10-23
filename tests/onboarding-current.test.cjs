@@ -59,7 +59,7 @@ test('shopping rhythm: summary in English, German and Spanish', () => {
 test('setup has a 4th step where the person types their shopping rhythm, with Later to skip', () => {
     const h = read('index.html');
     assert.match(h, /obShop\(\) \? \[0,1,2,3\]/);
-    assert.match(h, /LowiShopPlan\.formHTML\(null, \{ prefix: "r2obSp" \}\)/);
+    assert.match(h, /LowiShopPlan\.formHTML\(null, \{ prefix: "r2obSp", first: true \}\)/);
     assert.match(h, /data-r2o="shopdone"/);
     assert.match(h, /data-r2o="shoplater"/);
     assert.match(h, /v === "shopdone"\) \{[^\n]*if \(!r\.ok\) return LowiShopPlan\.showErr/);

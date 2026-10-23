@@ -16,8 +16,8 @@
    5. look        seed = FNV-1a 32-bit hash of "YYYY-MM-DD|HH:MM" (time empty when not given) -> mulberry32 PRNG, which picks
                   body (8) x eyes (7) x mouth (4) x markings (7) x aura (5) x accessory (8) x particles (5) x hue (29)
                   plus size and squish: about 4.5 million looks before the sign colour and motif are added.
-   6. name        metabolic/cellular syllable + the sign's mythic root + an ending, or mythic root + a cellular tail,
-                  or two words. Shuffle n picks another name from the same seed; the look never changes on a shuffle.
+   6. name        (Oct 23) a friendly pet-style name from the element's pool + a shared pool, in a seed-fixed order.
+                  Shuffle n picks the next one; the look never changes on a shuffle. The person can also type their own.
    The companion is an entity: copy uses its name or "it" (de "es", es neutral phrasing), never she/he. */
 (function(root){
 'use strict';
@@ -65,10 +65,18 @@ const MODAL={
  de:{cardinal:'Geht voran.',fixed:'Gibt nie auf.',mutable:'Passt sich jedem Tag an.'},
  es:{cardinal:'Abre el camino.',fixed:'Nunca se rinde.',mutable:'Se adapta a cada d\u00eda.'}};
 
-/* name parts: metabolic / cellular words + the sign's mythic roots */
-const META=['Mito','Glyco','Cyto','Ribo','Insu','Lepti','Kreb','Keto','Endo','Lyso','Myo','Axo','Vesi','Lipo','Enzy','Hemo','Gluca','Nucle'];
-const TAILS=['cyte','some','zyme','plast','lin','gen','mer','dria','lix','tin'];
-const ENDS=['ix','el','yn','is','i','ae','eon','ux','en','ie'];
+/* name pools (Oct 23, 2026, Emmanuel after testing setup: the old metabolic/cellular names "sound like diseases or medications").
+   Short, friendly pet-style names that read and sound fine in English, German and Spanish alike (no translation needed, no
+   medical-sounding syllables). A small pool per element gives a hint of the sign; FRIENDLY is shared by everyone. */
+const NAMES={
+ fire:['Ember','Blaze','Sunny','Flare','Nova','Rio','Sol','Zuri','Fuego','Comet','Sparky','Phoenix','Amber','Ziggy'],
+ earth:['Pebble','Clover','Maple','Hazel','Willow','Olive','Juniper','Bramble','Acorn','Fern','Bodhi','Moss','Coco','Aspen'],
+ air:['Skye','Zephyr','Echo','Pip','Wisp','Luma','Kite','Nimbus','Breezy','Orbit','Piper','Feather','Cloudy','Jet'],
+ water:['Coral','Ripple','Pearl','Nami','Kai','Marina','Lagoon','Splash','Bubbles','Wave','Isla','Delta','Nixie','Lotus']};
+const FRIENDLY=['Luna','Mika','Kiwi','Juno','Pixel','Yuki','Tiko','Kimi','Bijou','Momo','Milo','Nico','Lumo','Bean',
+ 'Suki','Twinkle','Peanut','Sprout','Pom','Tofu','Cosmo','Lulu','Benny','Gizmo','Pico','Remy','Pepper','Zola','Teddy','Cleo'];
+/* kept as empty lists for old callers; nothing builds names from syllables any more */
+const META=[],TAILS=[],ENDS=[];
 
 /* ---------- hashing + PRNG ---------- */
 function fnv(str){let h=0x811c9dc5;str=String(str);for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}return h>>>0;}
@@ -93,16 +101,12 @@ function hslToHex(H,S,Lg){H=((H%360)+360)%360;const c=(1-Math.abs(2*Lg-1))*S,x=c
 function shift(hex,dh,dl){const [h,s,l]=hexToHsl(hex);return hslToHex(h+dh,Math.min(1,s),Math.max(.25,Math.min(.88,l+(dl||0))));}
 
 /* ---------- names ---------- */
-const cap=s=>s.charAt(0).toUpperCase()+s.slice(1).toLowerCase();
-const trimRoot=s=>{s=s.toLowerCase().replace(/[aeiouy]+$/,'');return s.slice(0,5);};
-function tidy(n){return n.replace(/([a-z])\1\1+/gi,'$1$1').replace(/([aeiouy])([aeiouy])([aeiouy])/gi,'$1$2');}
-function nameFor(seed,sign,n){const r=rng((seed^Math.imul((n|0)+1,0x9E3779B1))>>>0),roots=(SIGNS[sign]||SIGNS.pisces)[6];
- for(let tries=0;tries<6;tries++){const p=pickI(r,3),meta=META[pickI(r,META.length)],rt=roots[pickI(r,roots.length)];let out='';
-  if(p===0)out=cap(meta+trimRoot(rt)+ENDS[pickI(r,ENDS.length)]);
-  else if(p===1)out=cap(rt+TAILS[pickI(r,TAILS.length)]);
-  else out=cap(meta)+' '+cap(rt);
-  out=tidy(out);if(out.replace(/\s/g,'').length<=13)return out;}
- return cap(roots[0]);}
+/* the seed shuffles this sign's element pool + FRIENDLY into one fixed order; shuffle n walks it, so every tap on
+   "New name" gives a different name (no repeat until the whole list has been seen). Same birthday = same order on every device. */
+function namePool(sign){const el=(SIGNS[sign]||SIGNS.pisces)[0];return (NAMES[el]||[]).concat(FRIENDLY);}
+function nameFor(seed,sign,n){const list=namePool(sign).slice(),r=rng((seed^0x5bd1e995)>>>0);
+ for(let i=list.length-1;i>0;i--){const j=pickI(r,i+1);const x=list[i];list[i]=list[j];list[j]=x;}
+ return list[((n|0)%list.length+list.length)%list.length];}
 
 /* ---------- the companion ---------- */
 function generate(o){o=o||{};const bday=validDate(o.bday);if(!bday)return null;const btime=validTime(o.btime),sign=signOf(bday),S=SIGNS[sign];
@@ -235,7 +239,7 @@ function mysterySVG(o){o=o||{};return '<svg class="lc-svg lc-mystery'+(o.cls?' '
  '<g class="lc-seedling"><circle cx="60" cy="62" r="26" fill="url(#lcmS)"/><path d="M60 46l2.6 13.4L76 62l-13.4 2.6L60 78l-2.6-13.4L44 62l13.4-2.6z" fill="#fff" opacity=".9"/></g>'+
  [[38,40],[84,44],[80,84],[40,82],[60,30]].map((q,i)=>'<circle class="lc-tw" style="animation-delay:-'+(i*.6)+'s" cx="'+q[0]+'" cy="'+q[1]+'" r="1.1" fill="#fff"/>').join('')+'</svg>';}
 
-const api={SIGNS,SIGN_KEYS,LANGS,META,TAILS,ENDS,MISTY,fnv,rng,validDate,validTime,signOf,rhythmOf,seedOf,generate,nameFor,cleanName,renameCheck,personality,signLabel,myth,colourName,svg,parts,mysterySVG,shift};
+const api={SIGNS,SIGN_KEYS,LANGS,NAMES,FRIENDLY,namePool,META,TAILS,ENDS,MISTY,fnv,rng,validDate,validTime,signOf,rhythmOf,seedOf,generate,nameFor,cleanName,renameCheck,personality,signLabel,myth,colourName,svg,parts,mysterySVG,shift};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 if(root)root.LowiBirthCompanionCore=api;
 })(typeof window!=='undefined'?window:(typeof self!=='undefined'?self:null));

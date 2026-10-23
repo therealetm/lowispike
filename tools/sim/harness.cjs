@@ -50,7 +50,7 @@ async function open(o) {
     if (!url) { srv = await serve(path.resolve(o.root)); url = `http://127.0.0.1:${srv.address().port}/index.html`; }
     const host = new URL(url).host;
     const browser = await pw[o.engine].launch({ args: o.engine === 'chromium' ? ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info', '--js-flags=--expose-gc'] : [] });
-    const dev = o.engine === 'webkit' ? Object.assign({}, pw.devices[o.device]) : { viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, hasTouch: true, isMobile: true };
+    const dev = o.engine === 'webkit' ? Object.assign({}, pw.devices[o.device]) : { viewport: o.viewport || { width: 390, height: 844 }, deviceScaleFactor: o.dpr || 3, hasTouch: true, isMobile: true };
     const ctx = await browser.newContext(Object.assign(dev, { serviceWorkers: 'block' }));
     await ctx.route(u => { try { const x = new URL(u); return !(x.protocol === 'data:' || x.protocol === 'blob:' || x.host === host || x.host.endsWith('.supabase.co')); } catch (e) { return true; } }, r => r.abort());
     await ctx.route(u => { try { return new URL(u).host === host; } catch (e) { return false; } }, r => r.request().method() === 'GET' ? r.continue() : r.abort());

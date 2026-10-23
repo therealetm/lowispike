@@ -48,5 +48,5 @@ test('a fresh setup with no birthday still starts at the birthday step', () => {
 
 test('the companion is still saved only from the reveal Continue button (so the resume check above is needed)', () => {
     const js = fs.readFileSync(path.join(__dirname, '..', 'companion-birth.js'), 'utf8');
-    assert.match(js, /dataset\.lc==='go'\)\{save\(c\)/);
+    assert.match(js, /dataset\.lc==='go'\)\{[\s\S]{0,400}?save\(c\);if\(onDone\)onDone\(c\)/);
 });

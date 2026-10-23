@@ -45,6 +45,19 @@
 .lc-cta{background:linear-gradient(165deg,color-mix(in srgb,var(--lc-a,#8fdcff) 55%,#3d8bff),#1f5fd6 70%);border-color:rgba(200,235,255,.75)}
 .lc-glass:disabled,.lc-cta:disabled{opacity:.45}
 .lc-glass:active,.lc-cta:active{transform:scale(.97)}
+.lc-namebtns{margin-top:12px}
+.lc-namebtns+.lc-btns{margin-top:10px}
+.lc-namebtns .lc-glass{font-size:15px;padding:0 14px}
+/* own name field (Oct 23): one rounded glass field, types straight into the big name above */
+.lc-own:not([hidden]){display:flex;flex-direction:column;gap:6px;width:100%;max-width:360px;margin-top:10px;text-align:left;animation:lcPop .3s ease-out}
+.lc-ownl{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#bfe6ff;padding-left:6px}
+.lc-in{min-height:50px;border-radius:999px;padding:0 18px;font:inherit;font-size:18px;font-weight:700;color:#fff;text-align:center;background:rgba(10,20,44,.7);
+ border:1px solid color-mix(in srgb,var(--lc-a) 70%,#fff);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 0 18px -6px var(--lc-a);color-scheme:dark;outline:none}
+.lc-in:focus{border-color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 0 22px -4px var(--lc-a)}
+.lc-in::placeholder{color:rgba(200,220,245,.55);font-weight:600}
+.lc-ownerr{min-height:0;color:#ffb3c1;font-size:13.5px;text-align:center}
+.lc-ownerr:empty{display:none}
+.lc-owning .lc-myth{display:none}
 @keyframes lcWake{from{transform:scale(.96) rotate(-2deg)}to{transform:scale(1.04) rotate(2deg)}}
 @keyframes lcFlash{0%{opacity:0;transform:scale(.3)}35%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.5)}}
 @keyframes lcBorn{0%{opacity:0;transform:scale(.35)}100%{opacity:1;transform:scale(1)}}

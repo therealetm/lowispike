@@ -1,6 +1,7 @@
 /* LOWiSPIKE shopping rhythm, page layer (Oct 17, 2026). Rules live in shop-plan-core.js (LowiShopPlanCore).
    - formHTML(): the "Your grocery shopping" form. The setup (onboarding) shows it as its last step; Profile > About you
      opens the same form in a sheet, so it can be changed any time.
+   - Setup (opts.first): one plain line on what it's for. The editor in Profile also explains the shopping glow.
    - The person types their own number of days. Weekdays and a shop name are optional. Nothing is guessed or pre-filled.
    - Saved to localStorage 'lowispike.shopplan.v1' (in the account backup). Fires window event 'lowi:shopplan'.
    ONE shared API: window.LowiShopPlan = {get, set, isSet, summary, formHTML, readForm, bind, openEditor, refresh}. */
@@ -17,6 +18,7 @@
             over: 'GROCERY SHOPPING', h: 'Healthy days start in the shop', p: 'How often do you usually go grocery shopping? Type your own number.',
             every: 'I shop every', days: 'days', daysQ: 'Usual days', opt: '(optional)', store: 'Usual shop', storePh: 'e.g. Edeka on Main Street',
             does: 'Scan two different products on a shopping day and your worlds glow brighter until about a day after your next shop is due, then slowly fade back to normal.',
+            first: 'So the app knows when to reward your shopping trip. No pressure: change it any time in Profile \u203a About you.',
             note: 'Missing a shop never means you ate badly. Change it any time in Profile \u203a About you.',
             need: 'Type a number from 1 to 60, or tap Later.', save: 'Save', later: 'Later', saved: 'Shopping rhythm saved.', profT: 'Grocery shopping', profSet: 'Set my rhythm', profEdit: 'Change', close: 'Close'
         },
@@ -24,6 +26,7 @@
             over: 'EINKAUFEN', h: 'Gesunde Tage beginnen im Laden', p: 'Wie oft gehst du normalerweise einkaufen? Trag deine eigene Zahl ein.',
             every: 'Ich kaufe ein alle', days: 'Tage', daysQ: 'Meist an diesen Tagen', opt: '(freiwillig)', store: 'Dein Laden', storePh: 'z. B. Edeka in der Hauptstra\u00dfe',
             does: 'Scannst du an einem Einkaufstag zwei verschiedene Produkte, leuchten deine Welten heller, bis etwa einen Tag nach deinem n\u00e4chsten Einkauf, und werden dann langsam wieder normal.',
+            first: 'So wei\u00df die App, wann sie dich f\u00fcr deinen Einkauf belohnt. Kein Druck: \u00c4ndern kannst du es jederzeit unter Profil \u203a \u00dcber dich.',
             note: 'Ein verpasster Einkauf hei\u00dft nie, dass du schlecht gegessen hast. \u00c4ndern kannst du es jederzeit unter Profil \u203a \u00dcber dich.',
             need: 'Trag eine Zahl von 1 bis 60 ein oder tippe auf Sp\u00e4ter.', save: 'Speichern', later: 'Sp\u00e4ter', saved: 'Einkaufsrhythmus gespeichert.', profT: 'Einkaufen', profSet: 'Rhythmus eintragen', profEdit: '\u00c4ndern', close: 'Schlie\u00dfen'
         },
@@ -31,6 +34,7 @@
             over: 'LA COMPRA', h: 'Los d\u00edas sanos empiezan en la tienda', p: '\u00bfCada cu\u00e1ntos d\u00edas sueles hacer la compra? Escribe el n\u00famero.',
             every: 'Compro cada', days: 'd\u00edas', daysQ: 'D\u00edas habituales', opt: '(opcional)', store: 'Tu tienda', storePh: 'p. ej. Edeka de la calle Mayor',
             does: 'Si escaneas dos productos distintos el d\u00eda de la compra, tus mundos brillar\u00e1n m\u00e1s hasta un d\u00eda despu\u00e9s de tu siguiente compra. Luego vuelven poco a poco a la normalidad.',
+            first: 'As\u00ed la app sabe cu\u00e1ndo premiarte por tu compra. Sin presi\u00f3n: puedes cambiarlo cuando quieras en Perfil \u203a Sobre ti.',
             note: 'Saltarte una compra no significa que hayas comido mal. Puedes cambiarlo cuando quieras en Perfil \u203a Sobre ti.',
             need: 'Escribe un n\u00famero del 1 al 60, o toca M\u00e1s tarde.', save: 'Guardar', later: 'M\u00e1s tarde', saved: 'Ritmo de compra guardado.', profT: 'La compra', profSet: 'Definir mi ritmo', profEdit: 'Cambiar', close: 'Cerrar'
         }
@@ -62,8 +66,11 @@
             '<div class="r2-obsub spl-sub">' + esc(t('daysQ')) + ' <span>' + esc(t('opt')) + '</span></div>' +
             '<div class="r2-chips spl-days" role="group" aria-label="' + esc(t('daysQ')) + '">' + order.map(i => '<button type="button" class="r2-chip spl-day' + (p.days.indexOf(i) >= 0 ? ' on' : '') + '" aria-pressed="' + (p.days.indexOf(i) >= 0) + '" data-spl-day="' + i + '">' + esc(names[i]) + '</button>').join('') + '</div>' +
             '<label class="r2-fl spl-store"><span>' + esc(t('store')) + ' ' + esc(t('opt')) + '</span><input id="' + id + 'Store" maxlength="60" autocomplete="off" placeholder="' + esc(t('storePh')) + '" value="' + esc(p.store) + '"></label>' +
-            (window.LowiGroceryCore ? '<p class="spl-note spl-does">' + esc(t('does')) + '</p>' : '') +
-            '<p class="spl-note">' + esc(t('note')) + '</p>' +
+            /* Oct 23 (Emmanuel): in the setup a new user doesn't know worlds or scanning yet, so the setup says only what it's for,
+               in one line. The glow rule ('does') and the no-guilt note stay in the Profile editor, where they make sense. */
+            (opts.first ? '<p class="spl-note spl-first">' + esc(t('first')) + '</p>' :
+                (window.LowiGroceryCore ? '<p class="spl-note spl-does">' + esc(t('does')) + '</p>' : '') +
+                '<p class="spl-note">' + esc(t('note')) + '</p>') +
             '<div class="r2-err spl-err" id="' + id + 'Err" role="alert"></div></div>';
     }
     /* reads a form; returns {ok, plan, empty}. Empty number = not set (fine for "Later"), a bad number = not ok */

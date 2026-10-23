@@ -45,14 +45,20 @@ test('personality = element x rhythm x modality, defined for every combination i
   assert.strictEqual(C.rhythmOf('1990-01-01', '23:30'), 'night');
 });
 
-test('names mix metabolic/cellular words with sign mythology; shuffle changes the name, never the look', () => {
+test('names: friendly pet-style names (no medical-sounding syllables); shuffle walks a seed-fixed order, never changes the look', () => {
+  /* Oct 23 (Emmanuel): the old metabolic/cellular names sounded like diseases or medications */
   const c = C.generate({ bday: '1988-08-03', btime: '23:10' });
-  const names = new Set();
-  for (let n = 0; n < 12; n++) { const s = C.generate({ bday: c.bday, btime: c.btime, n }); names.add(s.name); assert.deepStrictEqual(s.look, c.look); assert.deepStrictEqual(s.palette, c.palette); assert.ok(/^[A-Z][a-z]+( [A-Z][a-z]+)?$/.test(s.name), s.name); assert.ok(s.name.replace(' ', '').length <= 13); }
-  assert.ok(names.size >= 8, 'shuffle gives new names: ' + [...names].join(', '));
-  const parts = [...C.META, ...C.SIGNS.leo[6]].map(x => x.toLowerCase().slice(0, 3));
-  for (const nm of names) assert.ok(parts.some(p => nm.toLowerCase().includes(p)), nm + ' uses a metabolic or Leo root');
+  const names = [];
+  for (let n = 0; n < 12; n++) { const s = C.generate({ bday: c.bday, btime: c.btime, n }); names.push(s.name); assert.deepStrictEqual(s.look, c.look); assert.deepStrictEqual(s.palette, c.palette); assert.ok(/^[A-Z][a-z]+$/.test(s.name), s.name); assert.ok(s.name.length <= 10); }
+  assert.strictEqual(new Set(names).size, 12, 'no repeat while shuffling: ' + names.join(', '));
+  const pool = C.namePool('leo');
+  for (const nm of names) assert.ok(pool.includes(nm), nm + ' comes from the fire + friendly pool');
+  const bad = /^(mito|glyco|cyto|ribo|insu|lepti|kreb|keto|endo|lyso|myo|axo|vesi|lipo|enzy|hemo|gluca|nucle)|(cyte|zyme|dria|plast)$/i;
+  for (const el of Object.keys(C.NAMES)) for (const nm of C.NAMES[el].concat(C.FRIENDLY)) assert.ok(!bad.test(nm), nm + ' sounds medical');
+  assert.strictEqual(new Set(C.FRIENDLY.concat(...Object.values(C.NAMES))).size, C.FRIENDLY.length + Object.values(C.NAMES).reduce((a, x) => a + x.length, 0), 'no duplicate names');
+  assert.ok(!C.FRIENDLY.concat(...Object.values(C.NAMES)).includes('Misty'), 'Misty stays the fallback');
   assert.strictEqual(C.nameFor(c.seed, c.sign, 3), C.nameFor(c.seed, c.sign, 3));
+  assert.notStrictEqual(C.generate({ bday: '1994-03-10' }).name, undefined);
 });
 
 test('art: one well-formed glass-bubble SVG, different for different birthdays, plus the unrevealed mystery spark', () => {

@@ -20,13 +20,13 @@ const D=document,KEY='lowispike.companion.v1';
 if(!D.getElementById('lcCss')){const m=D.querySelector('meta[name="lowi-build"]');const l=D.createElement('link');l.id='lcCss';l.rel='stylesheet';l.href='companion-birth.css?v='+encodeURIComponent(m?m.content:'1');D.head.appendChild(l);}
 const lang=()=>{let l='';try{l=(window.LowiLang&&LowiLang.get&&LowiLang.get())||localStorage.getItem('lowispike.lang')||D.documentElement.lang||'en';}catch(e){l='en';}l=String(l).slice(0,2).toLowerCase();return C.LANGS.includes(l)?l:'en';};
 const TX={
- en:{waking:'Something is waking up\u2026',over:'Your companion is here',sign:'{sign} \u00b7 {colour}',myth:'Born from {myth}, your star colour and the energy of your cells.',shuffle:'Shuffle name',go:'Continue',keep:'Keep {name}',
+ en:{waking:'Something is waking up\u2026',over:'Your companion is here',sign:'{sign} \u00b7 {colour}',myth:'Born from {myth}, your star colour and the energy of your cells.',shuffle:'New name',own:'Type my own',ownL:'Your own name',ownPh:'Type a name',ownBad:'Use at least one letter or number.',go:'Continue',keep:'Keep {name}',
   profT:'Your companion',profNone:'Bring your own companion to life from your birthday.',profHas:'{sign} \u00b7 {type}',profBtn:'Bring it to life',profSee:'Open',bdayL:'Your birthday',timeL:'Birth time (optional)',timeHint:'Makes your companion even more yours.',
   create:'Bring it to life',close:'Close',need:'Add your birthday first.',ally:'{name}, your companion'},
- de:{waking:'Etwas erwacht\u2026',over:'Dein Begleiter ist da',sign:'{sign} \u00b7 {colour}',myth:'Geboren aus {myth}, deiner Sternfarbe und der Energie deiner Zellen.',shuffle:'Neuer Name',go:'Weiter',keep:'{name} behalten',
+ de:{waking:'Etwas erwacht\u2026',over:'Dein Begleiter ist da',sign:'{sign} \u00b7 {colour}',myth:'Geboren aus {myth}, deiner Sternfarbe und der Energie deiner Zellen.',shuffle:'Neuer Name',own:'Selbst benennen',ownL:'Eigener Name',ownPh:'Namen eintippen',ownBad:'Bitte mindestens einen Buchstaben oder eine Zahl.',go:'Weiter',keep:'{name} behalten',
   profT:'Dein Begleiter',profNone:'Erwecke deinen eigenen Begleiter mit deinem Geburtstag zum Leben.',profHas:'{sign} \u00b7 {type}',profBtn:'Zum Leben erwecken',profSee:'\u00d6ffnen',bdayL:'Dein Geburtstag',timeL:'Geburtszeit (optional)',timeHint:'Macht deinen Begleiter noch pers\u00f6nlicher.',
   create:'Zum Leben erwecken',close:'Schlie\u00dfen',need:'Trag zuerst deinen Geburtstag ein.',ally:'{name}, dein Begleiter'},
- es:{waking:'Algo est\u00e1 despertando\u2026',over:'Tu compa\u00f1ero ya est\u00e1 aqu\u00ed',sign:'{sign} \u00b7 {colour}',myth:'Nace de {myth}, de tu color estelar y de la energ\u00eda de tus c\u00e9lulas.',shuffle:'Otro nombre',go:'Continuar',keep:'Quedarme con {name}',
+ es:{waking:'Algo est\u00e1 despertando\u2026',over:'Tu compa\u00f1ero ya est\u00e1 aqu\u00ed',sign:'{sign} \u00b7 {colour}',myth:'Nace de {myth}, de tu color estelar y de la energ\u00eda de tus c\u00e9lulas.',shuffle:'Otro nombre',own:'Ponerle nombre',ownL:'Tu propio nombre',ownPh:'Escribe un nombre',ownBad:'Usa al menos una letra o un n\u00famero.',go:'Continuar',keep:'Quedarme con {name}',
   profT:'Tu compa\u00f1\u00eda',profNone:'Da vida a tu propia compa\u00f1\u00eda con tu fecha de nacimiento.',profHas:'{sign} \u00b7 {type}',profBtn:'Darle vida',profSee:'Abrir',bdayL:'Tu cumplea\u00f1os',timeL:'Hora de nacimiento (opcional)',timeHint:'Hace tu compa\u00f1\u00eda a\u00fan m\u00e1s tuya.',
   create:'Darle vida',close:'Cerrar',need:'A\u00f1ade primero tu cumplea\u00f1os.',ally:'{name}, tu compa\u00f1\u00eda'}};
 const t=(k,o)=>String((TX[lang()]||TX.en)[k]||TX.en[k]||k).replace(/\{(\w+)\}/g,(_,x)=>o&&o[x]!=null?o[x]:'');
@@ -71,7 +71,10 @@ function reveal(host,o,onDone){o=o||{};if(!host)return;let c=C.generate({bday:o.
  const prev=stored();if(prev&&prev.bday===c.bday&&(prev.btime||'')===c.btime){c=C.generate({bday:c.bday,btime:c.btime,n:prev.n,name:prev.name});}
  host.innerHTML='<div class="lc-rev" data-noi18n><div class="lc-stage"><i class="lc-flash" aria-hidden="true"></i><div class="lc-art">'+C.mysterySVG({size:200})+'</div></div>'+
   '<p class="lc-over" aria-live="polite">'+esc(t('waking'))+'</p><h2 class="lc-name"></h2><p class="lc-sign"></p><p class="lc-pers"></p><p class="lc-myth"></p>'+
-  '<div class="lc-btns"><button type="button" class="lc-glass" data-lc="shuffle" disabled>'+esc(t('shuffle'))+'</button><button type="button" class="lc-cta" data-lc="go" disabled>'+esc(o.goLabel||t('go'))+'</button></div></div>';
+  '<div class="lc-btns lc-namebtns"><button type="button" class="lc-glass" data-lc="shuffle" disabled>'+esc(t('shuffle'))+'</button><button type="button" class="lc-glass" data-lc="own" aria-expanded="false" disabled>'+esc(t('own'))+'</button></div>'+
+  /* Oct 23 (Emmanuel): many people will want to name it themselves. The field types straight into the big name; New name clears it. */
+  '<label class="lc-own" hidden><span class="lc-ownl">'+esc(t('ownL'))+'</span><input class="lc-in" type="text" maxlength="24" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="done" placeholder="'+esc(t('ownPh'))+'"><small class="lc-ownerr" role="alert"></small></label>'+
+  '<div class="lc-btns"><button type="button" class="lc-cta" data-lc="go" disabled>'+esc(o.goLabel||t('go'))+'</button></div></div>';
  const R=host.querySelector('.lc-rev'),q=s=>R.querySelector(s),L=lang();
  const paintText=()=>{const p=C.personality(c,L);q('.lc-name').textContent=c.name;q('.lc-sign').innerHTML='<span class="lc-glyph" style="color:'+c.palette.a+'">'+c.glyph+'</span> '+esc(t('sign',{sign:C.signLabel(c.sign,L),colour:C.colourName(c.sign,L)}));
   q('.lc-pers').innerHTML='<b>'+esc(p.title)+'</b> '+esc(p.line);q('.lc-myth').textContent=t('myth',{myth:C.myth(c.sign,L)}).replace(/\bde el /g,'del ');
@@ -80,9 +83,16 @@ function reveal(host,o,onDone){o=o||{};if(!host)return;let c=C.generate({bday:o.
   q('.lc-over').textContent=t('over');paintText();R.classList.add('lc-alive');R.querySelectorAll('button').forEach(b=>b.disabled=false);};
  if(RM()||o.instant){alive();}else{R.classList.add('lc-waking');setTimeout(()=>{R.classList.add('lc-burst');},1100);setTimeout(alive,1500);}
  R.addEventListener('click',e=>{const b=e.target.closest('[data-lc]');if(!b||b.disabled)return;
-  if(b.dataset.lc==='shuffle'){c=C.generate({bday:c.bday,btime:c.btime,n:c.n+1});const nm=q('.lc-name');nm.textContent=c.name;nm.classList.remove('lc-pop');void nm.offsetWidth;nm.classList.add('lc-pop');
+  if(b.dataset.lc==='shuffle'){c=C.generate({bday:c.bday,btime:c.btime,n:c.n+1});if(inp){inp.value='';err('');}const nm=q('.lc-name');nm.textContent=c.name;nm.classList.remove('lc-pop');void nm.offsetWidth;nm.classList.add('lc-pop');
    const s=q('.lc-art svg');if(s)s.setAttribute('aria-label',t('ally',{name:c.name}));try{navigator.vibrate&&navigator.vibrate(8);}catch(_){}}
-  else if(b.dataset.lc==='go'){save(c);if(onDone)onDone(c);}});
+  else if(b.dataset.lc==='own'){const box=q('.lc-own');box.hidden=false;b.setAttribute('aria-expanded','true');R.classList.add('lc-owning');try{inp.focus();}catch(_){}}
+  else if(b.dataset.lc==='go'){if(inp&&inp.value.trim()){const chk=C.renameCheck(inp.value);if(!chk.ok){err(t('ownBad'));try{inp.focus();}catch(_){}return;}
+    c=C.generate({bday:c.bday,btime:c.btime,n:c.n,name:chk.name});}
+   save(c);if(onDone)onDone(c);}});
+ const inp=q('.lc-in'),err=m=>{const e=q('.lc-ownerr');if(e)e.textContent=m;};
+ if(inp){inp.addEventListener('input',()=>{err('');const v=C.cleanName(inp.value);const nm=q('.lc-name');nm.textContent=v||C.generate({bday:c.bday,btime:c.btime,n:c.n}).name;
+   const s=q('.lc-art svg');if(s)s.setAttribute('aria-label',t('ally',{name:nm.textContent}));});
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();inp.blur();}});}
  return c;}
 
 /* ---------- creator overlay (Profile, existing users) ---------- */

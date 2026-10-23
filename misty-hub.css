@@ -106,7 +106,7 @@ html #cmPaneChat .cs-compose-meta, html #cmPaneChat[data-spirit-chat] .cg-chip:n
 .mp-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .mp-head h3 { display: inline-flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 800; letter-spacing: -.01em; min-width: 0; overflow-wrap: anywhere; }
 .mp-head h3 svg { width: 18px; height: 18px; fill: var(--mp-acc); stroke: none; }
-.mp-pct { font-size: 15px; font-weight: 800; color: var(--mp-acc); white-space: nowrap; }
+.mp-pct { flex: none; font-size: 15px; font-weight: 800; color: var(--mp-acc); }
 .mp-bar { position: relative; display: block; height: 10px; border-radius: 99px; background: var(--one-cell, rgba(255, 255, 255, .08)); border: .5px solid var(--mh-rim); overflow: hidden; }
 .mp-bar > i { position: absolute; inset: 0 auto 0 0; border-radius: 99px; background: linear-gradient(90deg, color-mix(in srgb, var(--mp-acc) 55%, transparent), var(--mp-acc)); box-shadow: 0 0 10px color-mix(in srgb, var(--mp-acc) 45%, transparent); transition: width .5s ease; }
 .mp-sub { font-size: 13px; line-height: 1.35; color: var(--mh-ink-2); }

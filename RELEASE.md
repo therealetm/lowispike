@@ -27,6 +27,8 @@ Parts on their own: `node scripts/release-check.cjs` (gate, exit 1 on errors), `
 
 `main` is live. Build on a branch/worktree, then release it with `scripts/release.sh`. **Standing approval from Emmanuel (21 Oct 2026): agents release and deploy live autonomously, without asking for his go-ahead, once the full test suite and `node scripts/release-check.cjs` pass.** The CI gate and the `main` ruleset still apply.
 
+**Finished = live (Emmanuel, 23 Oct 2026):** "Ich möchte nicht immer dir sagen müssen, dass du es pushen musst. Immediately push." Every finished change is released in the same task that built it (`scripts/release.sh`, then `verify-live --compare`), without waiting for a reminder. A change counts as done, and gets a ✅ in his checklists, only once its build is verified live. Built, committed or pushed to a branch is "not live yet", never done. Details: `MAYA-HANDOFF.md` top.
+
 ## Build identifiers
 
 A behavioral/assets release uses one sortable build identifier, currently formatted like `YYYYMMDD-HHMMSS`. Keep these locations synchronized:

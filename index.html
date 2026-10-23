@@ -2446,8 +2446,17 @@ function mem(){ try { return JSON.parse(localStorage.getItem(KEY) || "{}") || {}
 function remember(p){ const m = Object.assign(mem(), p); try { localStorage.setItem(KEY, JSON.stringify(m)); } catch(e){} return m; }
 /* news seen-state: an id is shown once, in the banner OR in one bubble, never again (relaunch, tabs, Later) */
 function seenList(){ try { const a = JSON.parse(localStorage.getItem(SEEN) || "[]"); return Array.isArray(a) ? a : []; } catch(e){ return []; } }
-function newsSeen(id){ if (!id) return true; if (seenList().indexOf(id) >= 0) return true; try { if (localStorage.getItem("lowi.g1.bn") === id) return true; } catch(e){} return mem().n === id; }
-function markSeen(id){ if (!id) return; const a = seenList().filter(x => x !== id); a.push(id); try { localStorage.setItem(SEEN, JSON.stringify(a.slice(-40))); } catch(e){} if (mem().n !== id) remember({n:id}); }
+function newsSeen(id){ if (!id) return true; if (seenList().indexOf(id) >= 0) return true; if (NEWS && NEWS.id === id && buildSeen()) return true; try { if (localStorage.getItem("lowi.g1.bn") === id) return true; } catch(e){} return mem().n === id; }
+function markSeen(id, build){ if (!id) return; const a = seenList().filter(x => x !== id); a.push(id); try { localStorage.setItem(SEEN, JSON.stringify(a.slice(-40))); } catch(e){} if (mem().n !== id) remember({n:id});
+  markBuild(build || (NEWS && NEWS.id === id ? BUILD_NOW : "")); }
+/* Oct 23 hotfix (Eman: "New in this update keeps appearing ... I click Got it, it appears again"): What's New is ONE announcement per
+   build. Besides the id list, the newest build whose news was shown is kept (lowi.news.build on this phone, lowispike.news.seenbuild
+   in the account backup, so the other device of the same account does not announce it again). Any news of that build or older counts
+   as seen, whatever its id, also after sign-out/in, a cleared id list or several releases on one day. */
+const SEENB = "lowi.news.build", SEENB2 = "lowispike.news.seenbuild";
+function seenBuild(){ let a = "", b = ""; try { a = localStorage.getItem(SEENB) || ""; b = localStorage.getItem(SEENB2) || ""; } catch(e){} return a > b ? a : b; }
+function markBuild(b){ if (!b || seenBuild() >= b) return; try { localStorage.setItem(SEENB, b); localStorage.setItem(SEENB2, b); } catch(e){} }
+function buildSeen(){ const b = seenBuild(); return !!(BUILD_NOW && b && b >= BUILD_NOW); }
 let newsLoaded = false, fromBanner = false;
 /* Oct 21 (open instantly): version.json carries every What's New text (about 290 KB, 100 KB gzipped) and this ran on every launch
    with no-store, so each open downloaded it in full while the app was still starting. Now it waits until the launch screen is gone
@@ -2583,6 +2592,9 @@ function startNews(){ if (!NEWS) return; hush(); markSeen(NEWS.id); const go = N
      every new thing, one, two, three or four, like the tutorial at the start"): news.steps in version.json = one step per new
      thing {tab, sel, text}. "Show me" walks through them like the first tour: it goes to the tab, lights up the new thing and
      says what changed; Next, Back, Skip, Done. A thing that is not on screen gets the bubble alone, never a dead end. */
+  if (Array.isArray(NEWS.steps) && NEWS.steps.length === 1 && !NT(NEWS.lead)) { const x = NEWS.steps[0]; if (TOUR) close("restart", true); /* Oct 23: the card already said it; Show me only goes there */
+    if (x.tab && x.tab !== tabNow()) b2Tab(x.tab); if (!x.sel) return;
+    setTimeout(() => { const el = String(x.sel).split("||").map(q => $(q.trim())).find(e => e && vis(e)); if (!el) return; begin({steps:[{k:"news", text:NT({en:"Here it is.", de:"Hier ist es.", es:"Aquí está."}), el:() => el}], i:0, kind:"show"}); }, 450); return; }
   if (Array.isArray(NEWS.steps) && NEWS.steps.length) { const steps = NEWS.steps.map((x, j) => ({k:"news" + j, tab:x.tab || "", text:NT(x.text), fixed:!!x.fixed, round:!!x.round,
       el:x.sel ? () => { const list = String(x.sel).split("||"); for (const q of list) { const e = $(q.trim()); if (e && vis(e)) return e; } return null; } : null}));
     if (TOUR) close("restart", true); setTimeout(() => begin({steps, i:0, kind:"news"}), 60); return; }
@@ -2591,9 +2603,9 @@ function startNews(){ if (!NEWS) return; hush(); markSeen(NEWS.id); const go = N
 /* Oct 16: right after an update (even when the update bubble already showed the text) one short bubble offers the walkthrough
    of everything new: "N new things. Want me to show you?" with Show me. Once per news id (lowi.news.toured). */
 const TOURED = "lowi.news.toured";
-function toured(id){ try { return localStorage.getItem(TOURED) === id; } catch(e){ return true; } }
+function toured(id){ if (buildSeen()) return true; try { return localStorage.getItem(TOURED) === id; } catch(e){ return true; } }
 function offerTour(){ if (!NEWS || TOUR) return; hush(); try { localStorage.setItem(TOURED, NEWS.id); } catch(e){} markSeen(NEWS.id);
-  const n = NEWS.steps.length, lead = NT(NEWS.lead) || NT(n === 1 ? {en:"One new thing in this update. Want me to show you where?", de:"Eine neue Sache in diesem Update. Soll ich dir zeigen, wo?", es:"Una novedad en esta versión. ¿Te enseño dónde?"}
+  const n = NEWS.steps.length, lead = NT(NEWS.lead) || (n === 1 && NT(NEWS.steps[0].text)) || NT(n === 1 ? {en:"One new thing in this update. Want me to show you where?", de:"Eine neue Sache in diesem Update. Soll ich dir zeigen, wo?", es:"Una novedad en esta versión. ¿Te enseño dónde?"}
     : {en:n + " new things in this update. Want me to show you each one?", de:n + " neue Sachen in diesem Update. Soll ich dir jede zeigen?", es:n + " novedades en esta versión. ¿Te enseño cada una?"});
   begin({steps:[{k:"offer", text:lead}], i:0, kind:"offer"}); }
 function bnSeen(){ return !!(NEWS && NEWS.id && newsSeen(NEWS.id)); } /* b2-once */
@@ -2612,7 +2624,7 @@ function show(){ if (!TOUR) return; const r = root(), s = TOUR.steps[TOUR.i], n 
   const listen = SS ? '<button type="button" class="g1-btn g1-say" data-g1="say" aria-pressed="false"><span class="g1-sayi">' + SPK + '</span><span class="g1-sayl">' + esc(T("Listen")) + '</span></button>' : "";
   let head = "", btns = "";
   if (TOUR.kind === "tour" || TOUR.kind === "news") {
-    head = (TOUR.kind === "news" ? '<div class="g1-tag">' + esc(T("newin")) + '</div>' : "") + '<div class="g1-count" aria-label="' + (TOUR.i + 1) + " " + esc(T("of")) + " " + n + '">' + TOUR.steps.map((_, j) => '<i class="' + (j === TOUR.i ? "on" : j < TOUR.i ? "was" : "") + '"></i>').join("") + '</div>';
+    head = '<div class="g1-count" aria-label="' + (TOUR.i + 1) + " " + esc(T("of")) + " " + n + '">' + TOUR.steps.map((_, j) => '<i class="' + (j === TOUR.i ? "on" : j < TOUR.i ? "was" : "") + '"></i>').join("") + '</div>';
     btns = (last ? "" : '<button type="button" class="g1-btn g1-skip" data-g1="skip">' + esc(T("Skip")) + '</button>') + '<span class="g1-sp"></span>' +
       (TOUR.i > 0 && !last ? '<button type="button" class="g1-btn g1-back" data-g1="back" aria-label="' + esc(T("Back")) + '">‹</button>' : "") +
       '<button type="button" class="g1-btn g1-next" data-g1="next">' + esc(last ? T("Done") : T("Next")) + (last ? "" : " ›") + '</button>';
@@ -2731,7 +2743,7 @@ function obLoop(){ clearInterval(obLoop.t); obLoop.t = 0; }
 function obClose(quick){ const r = $("#g1Ob"); OB = null; clearInterval(obLoop.t); obLoop.t = 0; hush(); const sp = $("#spBubble"); if (sp) sp.classList.remove("g1ob-talk");
   if (!r) return; const had = r.contains(document.activeElement); r.classList.remove("in"); r.classList.add("out"); clearTimeout(obT);
   obT = setTimeout(() => { if (!OB && r.parentNode) r.remove(); }, quick || reduce ? 0 : 240); if (had) try { document.activeElement.blur(); } catch(e){} }
-function obLater(){ if (!OB) return; if (OB.kind === "update") { try { localStorage.setItem(LATER, OB.build || ""); } catch(e){} if (upNews && upNews.id) markSeen(upNews.id); const d = $("#lcUpd"); if (d) d.remove(); } obClose(); }
+function obLater(){ if (!OB) return; if (OB.kind === "update") { try { localStorage.setItem(LATER, OB.build || ""); localStorage.setItem("lowi.upd.snooze", String(Date.now())); } catch(e){} if (upNews && upNews.id) markSeen(upNews.id); const d = $("#lcUpd"); if (d) d.remove(); } obClose(); }
 /* Oct 15: the bubble shows what the update is doing: busy (button says "Updating…"), stalled (slow or offline:
    the text says why, the button says "Try again" and works again), idle (back to normal). */
 function obUpd(s, why){ const r = $("#g1Ob"); if (!r || !OB || OB.kind !== "update") return; const btn = r.querySelector('[data-ob="update"]'), p = r.querySelector(".g1ob-p");
@@ -2781,8 +2793,8 @@ function decorate(){ const d = $("#lcUpd"); if (!d) { updHeld = false; if (OB &&
   updHeld = false;
   const n = upNews && typeof upNews === "object" && upBuild === b ? NT(upNews.text) : "";
   obShow({kind:"update", build:b, head:T("news"), text:n || T("newsfb")});
-  if (n && upNews && upNews.id) { try { if (localStorage.getItem("lowi.g1.bn") !== upNews.id) localStorage.setItem("lowi.g1.bn", upNews.id); } catch(e){} markSeen(upNews.id); } /* b2-bn */
-  if (upBuild !== b || upNews === null) fetchNews(b).then(() => { if (upNews && typeof upNews === "object" && upNews.id) { try { localStorage.setItem("lowi.g1.bn", upNews.id); } catch(e){} markSeen(upNews.id); } redeco(); }); /* late text: seen too */
+  if (n && upNews && upNews.id) { try { if (localStorage.getItem("lowi.g1.bn") !== upNews.id) localStorage.setItem("lowi.g1.bn", upNews.id); } catch(e){} markSeen(upNews.id, b); } /* b2-bn */
+  if (upBuild !== b || upNews === null) fetchNews(b).then(() => { if (upNews && typeof upNews === "object" && upNews.id) { try { localStorage.setItem("lowi.g1.bn", upNews.id); } catch(e){} markSeen(upNews.id, b); } redeco(); }); /* late text: seen too */
 }
 /* a tap on the banner refreshes (Q1, unchanged); remember it so the fairy shows the new thing right after */
 addEventListener("click", e => { if (e.target.closest && e.target.closest("#lcUpd") && !e.target.closest(".g1-usay")) { hush(); try { sessionStorage.setItem(GO, "1"); } catch(x){} } }, true);
@@ -2801,8 +2813,9 @@ function tick(){ if (document.hidden) return; if (TOUR) { helpPlace(); return; }
       A brand-new phone (no news ever seen) gets no What's New either: the current news counts as seen */
     if (!seenList().length && NEWS && NEWS.id && !newsSeen(NEWS.id)) { markSeen(NEWS.id); try { localStorage.setItem(TOURED, NEWS.id); } catch(e){} remember({t:"skip"}); return; } }
   else if (!m.t) { start(typeof m.s === "number" ? m.s : 0); return; }
-  if (NEWS && NEWS.id && newsGo() === "steps" && !toured(NEWS.id)) { offerTour(); return; } /* Oct 16: after an update, "Show me what's new" */
-  if (NEWS && NEWS.id && !newsSeen(NEWS.id)) { offerNews(); return; } } /* b2-offer: once per news id */
+  /* Oct 23 hotfix: ONE gate. News already seen (the update bubble showed it before the refresh, Got it, Show me, another device)
+     means nothing at all; unseen news gets exactly one card: with steps the Show me card, else the text with Got it. */
+  if (NEWS && NEWS.id && !newsSeen(NEWS.id) && !toured(NEWS.id)) { if (newsGo() === "steps") offerTour(); else offerNews(); return; } } /* b2-offer: once per news id */
 
 function init(){ H.classList.add("g1"); helpBtn(); helpPlace(); decorate(); loadNewsLater();
   const watch = () => { const d = $("#lcUpd"); if (d) { redeco(); if (!d.__g1) { d.__g1 = 1; new MutationObserver(redeco).observe(d, {childList:true}); } } else if (OB && OB.kind === "update") redeco(); };
@@ -9821,6 +9834,7 @@ async function checkUpdate(force){ if (!validBuild(BUILD) || location.protocol =
     if (!validBuild(v.build)) return;
     if (v.build <= BUILD || failedRecently(v.build)) { clearUpd(); return; }
     try { if (localStorage.getItem("lowi.upd.later") === v.build) { clearUpd(); return; } } catch(e){} /* "Later" on the orb's bubble: not again for this build */
+    try { const z = +localStorage.getItem("lowi.upd.snooze") || 0; if (z && Date.now() - z < 3 * 3600 * 1000) { clearUpd(); return; } } catch(e){} /* Oct 23: and no other build asks for 3 hours */
     newBuild = v.build; showUpd(); } catch(e){} finally { checking = false; } }
 /* tap: everything is already saved on the phone, so load the new build past every cache right away.
    Oct 15 (frozen update fix): the tap no longer waits on the service worker. On some iPhones its promises never settle,
@@ -10628,7 +10642,7 @@ R2.boot = function(){
 "use strict";
 const R2 = window.LowiR2, $ = R2.$, $$ = R2.$$, esc = R2.esc;
 const GATE = "lowi.gate";            // "done" (has account) | "skip" (chose to try without) — per device
-const KEEP = k => k === "lowi.theme" || k === "lowi.atmos" || k === "lowi.atmos.css" || k === "lowi.a2hs" || k === "lowi.news.seen" || k === "lowispike.lang" || k.indexOf("lowi.health.") === 0 || k === "lowi.t";
+const KEEP = k => k === "lowi.theme" || k === "lowi.atmos" || k === "lowi.atmos.css" || k === "lowi.a2hs" || k === "lowi.news.seen" || k === "lowi.news.build" || k === "lowi.news.toured" || k === "lowi.g1" || k === "lowi.g1.bn" || k === "lowi.upd.later" || k === "lowi.upd.snooze" || k === "lowispike.lang" || k.indexOf("lowi.health.") === 0 || k === "lowi.t";
 
 function session(){ try { const j = JSON.parse(localStorage.getItem("lowi.auth") || "null"); return j && j.user ? j : null; } catch(e){ return null; } }
 function isAccount(){ const s = session(); return !!(s && s.user && !s.user.is_anonymous && s.user.email); }

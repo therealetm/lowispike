@@ -98,9 +98,9 @@ test('news written for another build (stale HTML) is never shown as this build\'
 
 test('the banner marks its news as seen both when it opens and when the text arrives late', () => {
   const b = cut('function decorate(){', '/* b2-bn */');
-  assert(b.includes('markSeen(upNews.id)'));
+  assert(b.includes('markSeen(upNews.id, b)'));
   const late = cut('/* b2-bn */', '/* late text: seen too */');
-  assert(late.includes('markSeen(upNews.id)'));
+  assert(late.includes('markSeen(upNews.id, b)'));
 });
 
 test('a news bubble with nowhere to go has a single "Got it" and no Next-style button', () => {

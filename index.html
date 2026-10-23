@@ -83,6 +83,7 @@
 (()=>{try{const P=DOMTokenList.prototype,A=P.add,R=P.remove;
 P.add=function(){for(let i=0;i<arguments.length;i++)if(!this.contains(arguments[i]))return A.apply(this,arguments);};
 P.remove=function(){for(let i=0;i<arguments.length;i++)if(this.contains(arguments[i]))return R.apply(this,arguments);};}catch(e){}})();</script>
+<script id="igFresh">/* install-guide.js: was storage empty before anything ran? (a first start from the iPhone Home Screen = just added) */try{window.__lowiFresh=localStorage.length===0}catch(e){}</script>
 <style id="spdCss">
 /* Oct 16 speed pass. (1) The old sky layers (weather rain, falling leaves, the star mist) sit under the 3D world, which covers them
    completely once it is up. They only ever showed in the split second before the world appeared - the rain / leaves flash on opening -
@@ -6423,7 +6424,8 @@ const A2T = {
     android:["Toca el menú <b>⋮</b> de Chrome.", "Toca <b>Añadir a pantalla de inicio</b> o <b>Instalar app</b>.", "Abre LOWiSPIKE desde tu pantalla de inicio."],
     inapp:["Toca <b>⋯</b> y elige <b>Abrir en el navegador</b> (Safari o Chrome).", "Allí toca <b>Compartir</b> (iPhone) o <b>⋮</b> (Android).", "Toca <b>Añadir a pantalla de inicio</b> y ábrela desde allí."],
     desktop:["Abre esta página en tu móvil.", "iPhone: Compartir y luego <b>Añadir a pantalla de inicio</b>.", "Android: menú ⋮ y luego <b>Añadir a pantalla de inicio</b>."]}};
-function installSheet(){ const t = A2T[a2Lang()], steps = t[a2Kind()] || t.ios;
+function installSheet(){ if (window.LowiIG && LowiIG.open && LowiIG.open()) return;   /* ig-hook */
+  const t = A2T[a2Lang()], steps = t[a2Kind()] || t.ios;
   sheet('<div data-noi18n><div class="h2">' + t.h + '</div><p class="small muted" style="margin:6px 0 10px;line-height:1.45">' + t.why + '</p><ol class="steps">' + steps.map(x => '<li>' + x + '</li>').join("") + '</ol><button class="btn primary" style="margin-top:16px" data-act="closesheet">' + t.ok + '</button></div>'); }
 
 /* ===== Today (Oct 8, 2026): Home rebuilt as the morning flow.
@@ -8535,6 +8537,8 @@ html[data-ui=light] .a1-toast{background:#161c2e}
 @media (min-width:700px){ .r2-start.a1{max-width:460px} .a1-stage{max-height:340px} .a1-phone{max-height:330px} }
 @media (prefers-reduced-motion:reduce){ .a1-hit::after,.a1-mine .a1-icon,.a1-glow .a1-icon{animation:none} .a1-f{transition:none} }
 </style>
+<link rel="stylesheet" href="install-guide.css?v=20261023-231115">
+<script src="install-guide.js?v=20261023-231115"></script>
 <script id="a1js">
 /* ===== LOWiSPIKE A1 (Oct 11, 2026): Add to Home Screen before sign-up =====
    - Why: on iPhone, Safari and the Home Screen app keep separate storage, so people who sign up in Safari and add the app
@@ -8636,11 +8640,11 @@ function guideHTML(k){
   else pri = '<button type="button" class="r2-btn pri big" data-a1="added">' + T("I added it") + '</button>';
   return '<div class="r2-start a1 a1-' + k + ' a1-s' + step + (mode === "start" ? ' a1-first' : '') + '" data-k="' + k + '">' +
     '<div class="r2-orbs" aria-hidden="true"><i></i><i></i><i></i></div>' + top() +
-    '<div class="a1-stage">' + phone(k) + '</div>' +
+    (window.LowiIG ? LowiIG.player() : '<div class="a1-stage">' + phone(k) + '</div>') +   /* ig-hook: animated iPhone / Android walkthrough (install-guide.js) */
     /* Oct 21 (TikTok advice: say what it is and why it helps): a first-time visitor sees this before anything else */
     (mode === "start" ? '<p class="a1-what">' + T("Free app: eat smarter and lose weight, as a game.") + '</p>' : '') +
     '<h1 class="a1-h">' + T(hd[0]) + '</h1><p class="a1-why">' + T(hd[1]) + '</p>' +
-    '<ol class="a1-steps">' + st.map((s, i) => '<li><button type="button" class="a1-step' + (i === step ? " on" : "") + '" data-a1="step" data-i="' + i + '"><span class="a1-n">' + (i + 1) + '</span><span class="a1-si">' + s[0] + '</span><span class="a1-st"><b>' + T(s[1]) + '</b><small>' + T(s[2]) + '</small></span></button></li>').join("") + '</ol>' +
+    (window.LowiIG ? '' : '<ol class="a1-steps">' + st.map((s, i) => '<li><button type="button" class="a1-step' + (i === step ? " on" : "") + '" data-a1="step" data-i="' + i + '"><span class="a1-n">' + (i + 1) + '</span><span class="a1-si">' + s[0] + '</span><span class="a1-st"><b>' + T(s[1]) + '</b><small>' + T(s[2]) + '</small></span></button></li>').join("") + '</ol>') +
     '<div class="a1-acts">' + pri + '<button type="button" class="a1-cont" data-a1="continue">' + T("Continue in the browser") + '</button></div>' +
     '<div class="a1-toast" role="status" aria-live="polite"></div>' +
     '</div>';

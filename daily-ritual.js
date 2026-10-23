@@ -130,7 +130,7 @@
             : L(lang, 'Open LOWiSPIKE from your Home Screen. Your companion can now remind you.', '\u00d6ffne LOWiSPIKE vom Home-Bildschirm. Jetzt kann dein Begleiter dich erinnern.', 'Abre LOWiSPIKE desde la pantalla de inicio. Ahora tu ser de luz puede recordarte cosas.');
         return [s1, s2, s3];
     }
-    const BUSY = ['#brOv', '#g1Ob:not(.out)', '#lcUpd', '.g1-ov', '.r3g1-ov', '.r2-ov.on:not(.off)', '#sheetwrap.open', '#rsSheet.open', '#mv-player.on', '#hofSheet', '#drA2', '#drPick', 'body > .b3-cam', '#spWorld:not([hidden])', '#ltTour:not(.lt-held)', '#bsOv'];
+    const BUSY = ['#brOv', '#g1Ob:not(.out)', '#lcUpd', '.g1-ov', '.r3g1-ov', '.r2-ov.on:not(.off)', '#sheetwrap.open', '#rsSheet.open', '#mv-player.on', '#hofSheet', '#drA2', '#igOv', '#drPick', 'body > .b3-cam', '#spWorld:not([hidden])', '#ltTour:not(.lt-held)', '#bsOv'];
     const Core = { dayKey, addDays, diffDays, weekStart, monthStart, monthEnd, WEEKDAY, WEEKDAY_PLAIN, LINES, weekdayName, weekdayLine, firstDay, dayNumber, shouldShowDaily, GOALS, goalById, goalText, period, progress, previous, pickGoal, a2Steps, BUSY, A2HS_X: 'lowi.a2hs.x', SEEN: 'lowi.daily.seen' };
     if (typeof module !== 'undefined' && module.exports) module.exports = Core;
     if (!root || !root.document) return;
@@ -211,6 +211,7 @@
     }
     function a2Open() {
         if (standalone()) return false;
+        if (W.LowiIG && LowiIG.open && LowiIG.open({ signed: signedHandoff() })) return true;   /* ig-hook: the animated iPhone / Android guide (install-guide.js) */
         a2Close();
         A2 = { i: 0, kind: a2Kind(), signed: signedHandoff(), focus: true };
         const o = D.createElement('div'); o.id = 'drA2'; o.className = 'dr-ov'; o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true'); o.setAttribute('aria-labelledby', 'drA2H'); o.setAttribute('data-noi18n', '');

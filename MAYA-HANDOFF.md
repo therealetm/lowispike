@@ -272,6 +272,20 @@ request survived, it says "(his request, as the task summed it up)". All times a
     - The companion from the reveal is the one on Home, in Forms and in flight: live 20261019-155424.
     - Food photo recognition on the server (Gemini key set by him at 3:32 PM, food-photo deployed): live.
     - Bug hunt rounds 1 to 10 (section 6 and BUGHUNT/LEDGER.md).
+    - Animated Add to Home Screen guide (23 Oct, "adding it to the home screen on iPhone is too complicated", 6 screenshots of
+      the real iOS 26 flow): install-guide.js + install-guide.css, live as BUILD_IG (see 0.4 if not). Choose iPhone | Android
+      (preselected), a looping mock phone recreated in HTML/CSS: iPhone Safari ••• > Share > View More > Add to Home Screen >
+      Open as Web App on > Add > open; in-app browsers (Instagram, TikTok, WhatsApp...) first ••• > Open in browser; iPad: Share
+      top right; Chrome on iPhone: Share top right; Android Chrome / Samsung Internet / Edge / Firefox each their own menu path.
+      Shortcuts: beforeinstallprompt = one-tap Install app (system dialog); in-app: intent:// to Chrome on Android,
+      x-safari-https:// on iPhone (some apps block it since 2025, so the video's path and Copy link stay as fallback). iOS has
+      no API that opens Add to Home Screen: the closest is a pulsing arrow at Safari's real ••• button (bottom right iPhone,
+      top right iPad) while the A1 guide is up, "Show me where" in the overlay, and a Misty success bubble on the first start
+      from the Home Screen (fresh storage, probed by #igFresh at the top of <head>, or lowi.ig.seen on Android). Mounted in A1
+      (replaces the old 3-frame phone + step list when window.LowiIG exists), the Today hint (daily-ritual a2Open) and Profile
+      installSheet. Tests: tests/install-guide.test.cjs; live check: node tools/check-install-guide.cjs --url <live> (--frames
+      writes the storyboard frames). The older tools/a2hs/guide-check.cjs still expects the old step list: retire it.
+      Not testable here: real iPhone/Android, real Instagram in-app browser, the real system install dialog.
 
 **(d) Mentioned, never started**
 

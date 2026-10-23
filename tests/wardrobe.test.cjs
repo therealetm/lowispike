@@ -39,7 +39,7 @@ test('renderer draws every item and the selection is saved to the backed-up key'
  assert.ok(h.includes('T.cleanEquipment(p.equipment,m.xp)'),'normal render cleans equipment');
  assert.ok(h.includes("WKEY='lowispike.wardrobe.v1'"),'lowispike.* keys are part of the account backup');
  assert.ok(h.includes('window.LOWI_CLOUD_X')&&h.includes('X.backupNow()'),'equip triggers a backup');
- const idx=src('index.html');assert.ok(idx.includes('if (k.indexOf("lowispike.") !== 0 || k === "lowispike.chat.v1") return;'),'cloud snapshot still takes lowispike.* keys');
+ const idx=src('index.html');assert.ok(idx.includes('Object.keys(localStorage).forEach(k => { if (!syncedKey(k)) return;'),'cloud snapshot still takes lowispike.* keys');
  const sp=src('spirit.js');
  assert.ok(sp.includes('T.setEquipment(p, eq)'));assert.ok(sp.includes("role=\"tablist\"")&&sp.includes('aria-pressed'));
  assert.ok(!/buy|checkout|stripe|price/i.test(sp.slice(sp.indexOf('Wardrobe (Oct 14)'),sp.indexOf('function wdEquip'))),'no purchase flow is implied');

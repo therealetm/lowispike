@@ -36,7 +36,7 @@ function boot(store) {
 
 test('the order is saved per user and read back on the next open (lowispike.* keys go to the account backup)', () => {
   assert.match(C.KEY, /^lowispike\./, 'cloud backup copies every lowispike.* key');
-  assert.ok(R('index.html').includes('if (k.indexOf("lowispike.") !== 0 || k === "lowispike.chat.v1") return;'), 'the account backup still takes lowispike.* keys');
+  assert.ok(R('index.html').includes('Object.keys(localStorage).forEach(k => { if (!syncedKey(k)) return;'), 'the account backup still takes lowispike.* keys');
   const store = {};
   let T = boot(store);
   assert.deepStrictEqual(Array.from(T.order()), C.IDS, 'first visit: the default order');

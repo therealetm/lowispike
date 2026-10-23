@@ -30,7 +30,8 @@ test('every water counter shows 6 and says cups', () => {
     assert.match(read('living-home.js'), /lv-unit/);
     assert.match(read('spirit.js'), /const WATER_GOAL = 6;/);
     assert.match(read('spirit.js'), /glasses: \['cups', /);
-    assert.match(read('world-home.js'), /T\('cups', 'Gl\u00e4ser', 'vasos'\)/);
+    /* Oct 23 one text rule for every Home bubble (Emmanuel): the Home Water bubble shows 1/6 alone, the label says Water; no "cups" */
+    assert.match(read('world-home.js'), /uv = ''; \/\* Oct 23 one text rule/);
     assert.match(read('world-home.css'), /\.wh-unit/);
 });
 

@@ -210,12 +210,12 @@
         if (tile && wc) {
             const f = parseFloat(tile.style.getPropertyValue('--lv-fill')) || 0;
             { const fv = String(Math.max(0, Math.min(1, f))); if (wc.style.getPropertyValue('--wh-fill') !== fv) wc.style.setProperty('--wh-fill', fv); }
-            const lab = tile.getAttribute('aria-label') || '', m = lab.match(/(\d+)\s*\/\s*(\d+)/);
+            const lab = tile.getAttribute('aria-label') || '', m = lab.match(/([\d\u00bc\u00bd\u00be]+)\s*\/\s*(\d+)/); /* wsip Oct 23: quarter cups come as 1\u00bd from the tile */
             /* Oct 17 (Emmanuel): the count says its unit, "0/6 cups", in the same n/goal form as Meals and Move */
             const small = wc.querySelector('small'), b = wc.querySelector('b');
             let num = b.querySelector('.wh-num'), unit = b.querySelector('.wh-unit');
             if (!num || !unit) { b.innerHTML = '<span class="wh-num"></span> <u class="wh-unit"></u>'; num = b.querySelector('.wh-num'); unit = b.querySelector('.wh-unit'); }
-            const sm = T('Water', 'Wasser', 'Agua'), bv = m ? m[1] + '/' + m[2] : '+1', uv = m ? T('cups', 'Gläser', 'vasos') : '';
+            const sm = T('Water', 'Wasser', 'Agua'), bv = m ? m[1] + '/' + m[2] : '+1', uv = ''; /* Oct 23 one text rule: the label says Water, the value is 1/6 alone (no "cups"); aria keeps the words */
             if (small.textContent !== sm) small.textContent = sm;
             if (num.textContent !== bv) num.textContent = bv;
             if (unit.textContent !== uv) unit.textContent = uv;
@@ -1143,8 +1143,24 @@
         if (D.querySelector('.bw3-full')) { ensureFullZoom(); hook(); ensureMisty3D(); }
     }
     /* ---------- water: press and hold the water cell to set today back to 0 (Oct 16, E-man: it showed 12/8 with no way back) ----------
-       A normal tap still adds a glass. Holding ~0.6 s resets today's count, buzzes once and says so; the tap that ends the hold adds nothing. */
+       A normal tap still adds a glass. Holding ~0.6 s resets today's count, buzzes once and says so; the tap that ends the hold adds nothing.
+       wsip (Oct 23, Eman: long press = undo, as in Sleep): holding takes off the LAST entry only (a few sips, a cup or a bottle) through
+       LowiHomeBloomsV2.undoWater, which also takes back XP above the cups. Reset to 0 stays as the fallback when that module is missing. */
     const lp = { t: 0, el: null, x: 0, y: 0, fired: false, until: 0 };
+    function waterUndoLast() {
+        const B = W.LowiHomeBloomsV2;
+        if (!B || typeof B.undoWater !== 'function') return waterReset();
+        let plan = null;
+        try { plan = B.undoWater(); } catch (e) { plan = null; }
+        const a = plan && +plan.amt, K = W.LowiSpiritCore;
+        const what = !plan ? '' : a === 0.25 ? T('a few sips', 'ein paar Schlucke', 'unos sorbos') : a === 3 ? T('a bottle', 'eine Flasche', 'una botella') : a === 1 ? T('a cup', 'ein Glas', 'un vaso') : (K && K.waterFmt ? K.waterFmt(a) : String(a));
+        const msg = plan ? T('Taken off: ', 'Zurückgenommen: ', 'Quitado: ') + what : T('No water logged today', 'Heute noch kein Wasser', 'Hoy no hay agua');
+        try { if (navigator.vibrate) navigator.vibrate(plan ? 30 : [10, 40, 10]); } catch (e) { }
+        try { if (W.LowiR2 && W.LowiR2.toast) W.LowiR2.toast(msg); else if (W.toast) W.toast(msg); } catch (e) { }
+        const wc = D.querySelector('#whHud .wh-water');
+        if (wc && plan) { wc.classList.remove('wh-reset'); void wc.offsetWidth; wc.classList.add('wh-reset'); setTimeout(() => wc.classList.remove('wh-reset'), 700); }
+        setTimeout(() => { try { paintHud(); } catch (e) { } }, 120);
+    }
     function waterReset() {
         try {
             const f = JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}') || {};
@@ -1166,7 +1182,7 @@
         D.addEventListener('pointerdown', e => {
             const el = e.target.closest && e.target.closest(sel); if (!el || (e.button && e.button !== 0)) return;
             lpCancel(); lp.el = el; lp.x = e.clientX; lp.y = e.clientY; lp.fired = false; el.classList.add('wh-holding');
-            lp.t = setTimeout(() => { lp.t = 0; lp.fired = true; lp.until = Date.now() + 1500; el.classList.remove('wh-holding'); waterReset(); }, 600);
+            lp.t = setTimeout(() => { lp.t = 0; lp.fired = true; lp.until = Date.now() + 1500; el.classList.remove('wh-holding'); waterUndoLast(); }, 600);
         }, true);
         D.addEventListener('pointermove', e => { if (lp.t && Math.hypot(e.clientX - lp.x, e.clientY - lp.y) > 12) lpCancel(); }, true);
         ['pointerup', 'pointercancel', 'pointerleave'].forEach(n => D.addEventListener(n, () => { if (lp.t) lpCancel(); }, true));

@@ -847,8 +847,8 @@
         if (opened) close(true);
         cancelCapture();
         await flight(p.img || p.photo);
-        let verdict = p && p.verdict && p.verdict !== 'unknown' ? p.verdict : 'unknown';
-        try { if (!p.notFound && LowiDex.rate) verdict = LowiDex.rate(p).verdict || verdict; } catch (e) {}
+        /* scanfe-h5: Misty reacts with the Food check verdict too (spirit-core scanVerdict), not the blood sugar estimate alone */
+        const verdict = K.scanVerdict ? K.scanVerdict(p, LowiDex.rate, window.LowiSpikeCore) : (p && p.verdict) || 'unknown';
         feedback(verdict === 'spike' ? 'wilt' : verdict === 'ok' ? 'bloom' : 'curious', tr(verdict === 'spike' ? 'scanSpike' : verdict === 'ok' ? 'scanOk' : 'unknown'), 0);
         LowiDex.reveal(p);
         const ov = R.top && R.top();

@@ -41,7 +41,7 @@
     "sweet_sauce":     {"name": "ketchup|bbq|barbecue|chilisauce süß|sweet chili|teriyaki|honig-senf|sirup|syrup|marmelade|konfitüre|jam\\b|aufstrich|nutella", "off": ["en:ketchup", "en:barbecue-sauces", "en:sweet-spreads", "en:jams", "en:syrups"]},
     "coated_nuts":     {"name": "honig[- ]?mantel|gebrannt|kandiert|candied|glasiert|glazed|karamell|caramel|schoko[- ]?(mandeln|nüsse|erdnüsse)|dragee|honey roasted|garrapiñad", "off": ["en:coated-nuts", "en:candied-nuts"]},
     "sweet_salty":     {"name": "süß\\s*(&|und|-)\\s*salzig|suess\\s*(&|und)\\s*salzig|sweet\\s*(&|and|n)\\s*salty|dulce y salado|studentenfutter|trail mix|nussmix|genuss[- ]?mix", "off": ["en:trail-mixes"]},
-    "pork":            {"name": "schwein|pork|cerdo|speck\\b|bacon|salami|chorizo|mortadella|leberwurst", "off": ["en:pork", "en:pork-and-its-products", "en:pork-meat", "en:salamis", "en:hams"]},
+    "pork":            {"name": "schwein|pork|cerdo|speck\\b|bacon|salam[ei]|chorizo|mortadella|leberwurst", "off": ["en:pork", "en:pork-and-its-products", "en:pork-meat", "en:salamis", "en:hams"]},
     "alcohol":         {"name": "\\bbier\\b|\\bbeer\\b|\\bwein\\b|\\bwine\\b|wodka|vodka|whisk(e)?y|\\brum\\b|likör|liqueur|gin\\b|sekt|prosecco|champagner|cerveza|\\bvino\\b", "off": ["en:alcoholic-beverages", "en:beers", "en:wines", "en:spirits"]}
   },
   "thresholds": {

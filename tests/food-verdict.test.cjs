@@ -134,3 +134,30 @@ test('store picks: a Food check NO is never Good or Best, even with a Lower impa
     const water = SP.rate({ n: 'Mineralwasser', k: 'Drikkevarer > Vand > Kildevand', c: 0, s: 0, p: 0, fat: 0, kcal: 0, u: 'ml' });
     assert.ok(water.pass && water.best, 'plain water stays Best');
 });
+
+/* scanfe-h5 (Oct 23, 2026): the policy pork name rule knew 'salami' but not the Italian 'Salame', so Leichte Salame Bella
+   Festa (Dulano, Lidl) passed Store picks as a Lower-impact Good pick; and Misty's scan reaction (spirit.js) used the blood
+   sugar estimate alone, so she could say "Yes, I like this one!" to a product the Food check card says NO to. */
+const K = require('../spirit-core.js');
+
+test('Salame is pork by name like salami; poultry or beef salame stays processed meat (fails on the old rule)', () => {
+    const per100 = { carbs: 0.5, sugar: 0.5, protein: 32, fat: 16 };
+    const v = (name, extra) => E.scanFood(Object.assign({ name, per100 }, extra || {}), 30);
+    assert.equal(v('Leichte Salame Bella Festa').verdict, 'NEIN', 'Italian salame: pork by name');
+    assert.equal(v('Salame Napoli').verdict, 'NEIN');
+    for (const name of ['Salame di tacchino Geflügel', 'Rind Salame']) assert.equal(v(name).verdict, 'SELTEN', name + ' is processed meat, not pork');
+    const sp = SP.rate({ n: 'Leichte Salame Bella Festa', k: 'meats-and-their-products|meats|prepared-meats|cured-sausages|salami', c: 0.5, s: 0.5, p: 32, fat: 16, kcal: 274 });
+    assert.strictEqual(sp.verdict, 'NEIN');
+    assert.strictEqual(sp.pass, false, 'no longer a Store pick');
+});
+
+test('Misty scan reaction follows the Food check card (fails on the old estimate-only verdict)', () => {
+    assert.strictEqual(typeof K.scanVerdict, 'function');
+    assert.strictEqual(K.scanVerdict(HAM, rate, S), 'spike', 'ham: card says NO');
+    assert.strictEqual(K.scanVerdict(ULTJE, rate, S), 'spike', 'Ultje: card says NO');
+    assert.strictEqual(K.scanVerdict(PEANUTS, rate, S), S.tighten(PEANUTS, rate(PEANUTS)), 'same verdict as the spike lists');
+    assert.notStrictEqual(K.scanVerdict(PEANUTS, rate, S), 'ok', 'nuts are RARELY, never a plain YES');
+    assert.strictEqual(K.scanVerdict({ ...HAM, manual: true }, () => ({ verdict: 'ok', engine: {} }), S), 'ok', 'manual entry keeps its own rating');
+    assert.strictEqual(K.scanVerdict({ notFound: true, verdict: 'spike' }, rate, S), 'spike', 'not found keeps its stored verdict');
+    assert.strictEqual(K.scanVerdict({ notFound: true }, rate, S), 'unknown');
+});

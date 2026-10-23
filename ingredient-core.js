@@ -36,7 +36,7 @@
         veg: /gemüse|gemuese|vegetable|verdura|zucchini|paprika|tomate|tomato|aubergine|brokkoli|broccoli|spinat|spinach|zwiebel|onion|karotte|möhre|carrot|blumenkohl|cauliflower|gurke|cucumber|salat|lettuce|pilz|mushroom|champignon|\bkohl\b|rotkohl|weißkohl|grünkohl|rosenkohl|kohlrabi|cabbage|lauch|leek|sellerie|celery|bohne|espinaca|cebolla|zanahoria/,
         fruit: /frucht|früchte|fruit|fruta|erdbeer|strawberr|banane|banana|apfel|apple|manzana|cranberr|papaya|orange|naranja|zitrone|lemon|beere|berry|berries|traube|grape|mango|ananas|pineapple|kirsch|cherr|pfirsich|peach|aprikose|apricot|dattel|\bdates?\b|feige|\bfigs?\b|rosine|raisin/,
         coating: /überzug|ueberzug|überzugsmittel|glasur|glaze|glasiert|mantel|coating|coated|kuvertüre|couverture|schokolade|chocolate|chocolat|karamellisiert|caramelised|caramelized|gebrannt|kandiert|candied|dragee|füllung|fuellung|filling|creme(?!fraiche)|cream filling|relleno/,
-        pork: /schwein|pork|cerdo|porc|\bspeck|bacon|schinkenspeck|schmalz|\blard|salami|chorizo|mortadella|leberwurst|mett\b/,
+        pork: /schwein|pork|cerdo|porc|\bspeck|bacon|schinkenspeck|schmalz|\blard|salam[ei]|chorizo|mortadella|leberwurst|mett\b/,
         notPork: /pute|truthahn|turkey|geflügel|gefluegel|poultry|hähnchen|chicken|rind|beef|vegan|vegetar|veggie|pflanzlich|plant[- ]based/,
         alcohol: /alkohol|alcohol|\bwein\b|\bwine\b|rotwein|weißwein|weisswein|\brum\b|likör|liqueur|\bbier\b|\bbeer\b|wodka|vodka|whisk(e)?y|brandy|cognac|sekt|prosecco|champagner|ethanol|spirituose|spirits\b|\bvino\b|cerveza|licor/,
         notAlcohol: /essig|vinegar|weinsäure|weinsaeure|weinstein|alkoholfrei|alcohol[- ]free|sin alcohol|bierhefe|zuckeralkohol|sugar alcohol|polyol/

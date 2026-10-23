@@ -97,7 +97,7 @@
         const t = '|' + String(tags || '').toLowerCase() + '|', n = String(name || '').toLowerCase();
         const any = re => re.test(t);
         /* shopper-made tags are sometimes wrong; a clear product name wins */
-        if (/\b(salami|schinken|bresaola|prosciutto|speck|leberwurst|fleischwurst|mettwurst|bratwurst|wiener würstchen|aufschnitt)\b/.test(n) && !/vegan|vegetar/.test(n)) return 'meat';
+        if (/\b(salami|salame|schinken|bresaola|prosciutto|speck|leberwurst|fleischwurst|mettwurst|bratwurst|wiener würstchen|aufschnitt)\b/.test(n) && !/vegan|vegetar/.test(n)) return 'meat';
         if (/(käse|gouda|emmentaler|parmesan|grana padano|mozzarella|camembert|feta|harzer|maasdamer|cheddar)/.test(n) && !/kuchen|torte|cracker|brot|chips/.test(n)) return 'cheese';
         if (/\b(eier|eggs|œufs)\b/.test(n) && !/nudel|likör|salat|schoko/.test(n)) return 'dairy';
         if (any(/alcoholic|\|wines|\|beers|spirits|liqueurs/)) return null;

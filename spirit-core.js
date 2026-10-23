@@ -33,5 +33,10 @@ const SLOTS=['breakfast','lunch','dinner','snack'];
 function slotOk(s){return SLOTS.indexOf(s)>=0?s:'';}
 function slotFor(now){const h=new Date(now==null?Date.now():now).getHours();return h>=4&&h<11?'breakfast':h>=11&&h<16?'lunch':h>=16&&h<22?'dinner':'snack';}
 function slotRecent(logs,slot,max){max=max||6;const seen=new Set(),own=[],other=[];for(const l of (logs||[]).slice().reverse()){const t=String(l&&(l.t||l.n)||'').trim(),k=t.toLowerCase();if(!t||seen.has(k))continue;seen.add(k);(slot&&l.slot===slot?own:other).push(l);}return own.concat(other).slice(0,max);}
-const api={SLOTS,slotOk,slotFor,slotRecent,estimate,pickFor,day,macros,totals,bonuses,vitality,personalityName,mergeFeed,bound,step,release,icon,paths};if(typeof module==='object'&&module.exports)module.exports=api;else root.LowiSpiritCore=api;
+/* scanfe-h5 (Oct 23, 2026): the verdict Misty reacts with after a scan. It used the blood sugar estimate alone (LowiDex.rate), so
+   she could say "Yes, I like this one!" to a product the Food check card says NO to. Now the same rule as the spike lists:
+   the rate() result is made stricter by LowiSpikeCore.tighten (NEIN -> spike, SELTEN -> at least better), manual entries keep
+   their own rating, a product that was not found keeps its stored verdict. Returns 'ok' | 'better' | 'spike' | 'unknown'. */
+function scanVerdict(p,rate,SC){let v=p&&p.verdict&&p.verdict!=='unknown'?p.verdict:'unknown';if(!p||p.notFound)return v;try{const r=rate&&rate(p);if(r&&r.verdict&&r.verdict!=='unknown')v=r.verdict;if(r&&r.engine&&!p.manual&&SC&&typeof SC.tighten==='function'){const t=SC.tighten(p,r);if(t&&t!=='unknown')v=t;}}catch(e){}return v;}
+const api={SLOTS,slotOk,slotFor,slotRecent,scanVerdict,estimate,pickFor,day,macros,totals,bonuses,vitality,personalityName,mergeFeed,bound,step,release,icon,paths};if(typeof module==='object'&&module.exports)module.exports=api;else root.LowiSpiritCore=api;
 })(typeof window!=='undefined'?window:globalThis);

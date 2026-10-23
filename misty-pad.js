@@ -48,7 +48,11 @@
             return { x: c.x, y: c.y, key, held: false };
         },
         /* the screen point, written as left / bottom inside the HUD box (the HUD fills the screen; if it ever shifts, the point stays) */
-        css(p, hud) { if (!p || !hud) return null; return { left: Math.round(p.x - (+hud.left || 0)), bottom: Math.round((+hud.bottom || 0) - p.y) }; }
+        css(p, hud) { if (!p || !hud) return null; return { left: Math.round(p.x - (+hud.left || 0)), bottom: Math.round((+hud.bottom || 0) - p.y) }; },
+        /* bug hunt Oct 23 2026: the one-time "New: drag here to fly" hint showed 2.5 s after Home came up, even while a new user's
+           setup sheet (or any sheet, dialog or the tour) covered Home, and was then marked seen, so nobody ever saw it. It waits
+           now until Home is up and nothing covers it: c = { live, home, seen, busy, tour, mode }. 'show', 'wait' or 'never'. */
+        hint(c) { c = c || {}; if (c.seen) return 'never'; if (!c.live || !c.home || c.busy || c.tour || c.mode) return 'wait'; return 'show'; }
     };
     if (typeof module === 'object' && module.exports) module.exports = A;
     if (root) root.LowiPadAnchor = A;
@@ -188,6 +192,20 @@
         st.backT = setTimeout(() => { if (st.id == null && st.thr < 0) thrust(0); }, ms);
     }
     function hintDone() { try { localStorage.setItem(HINT_KEY, '1'); } catch (e) { } }
+    /* is Home clear for the one-time hint? (setup, sign-in gate, starter questions, any sheet or dialog, the tour: not yet) */
+    function hintNow() {
+        let seen = false, busy = false, tour = false;
+        try { seen = !!localStorage.getItem(HINT_KEY); } catch (e) { }
+        try {
+            const LT = W.LowiTutorial;
+            if (LT && LT.busyBy) busy = !!LT.busyBy();
+            else busy = H.classList.contains('gate-up') || H.classList.contains('gate-boot') || !!D.querySelector('#r2ob, .hs-ivov.on, .r2-ov.on');
+            tour = !!(LT && LT.isOn && LT.isOn()) || !!D.querySelector('#ltTour:not(.lt-held)');
+        } catch (e) { }
+        const A = W.LowiPadAnchor;
+        const c = { live: H.classList.contains('wh-world-live'), home: H.classList.contains('wh-home'), seen, busy, tour, mode: st.mode };
+        return A && A.hint ? A.hint(c) : (seen ? 'never' : (c.live && c.home && !busy && !tour && !st.mode ? 'show' : 'wait'));
+    }
     function wire(b) {
         /* the world (look-around drag, pinch, taps on places) and the tab pager never see a touch that starts here */
         ['touchstart', 'mousedown'].forEach(n => b.addEventListener(n, e => e.stopPropagation(), { passive: true }));
@@ -296,9 +314,14 @@
         const now = Date.now(); if (now - st.enT > 2000) { st.enT = now; energy(); }
         /* the world can end a flight itself (she floated home): keep the controller in step */
         const s = send(null); if (s && s.mode !== st.mode && st.id == null) { st.mode = s.mode; paint(); if (!s.mode) chip(''); }
-        if (!st.hinted && H.classList.contains('wh-world-live') && H.classList.contains('wh-home')) {
-            st.hinted = true; let seen = false; try { seen = !!localStorage.getItem(HINT_KEY); } catch (e) { }
-            if (!seen) setTimeout(() => { if (!st.mode) chip(nm(T('New: drag here to fly Misty', 'Neu: hier ziehen, um mit Misty zu fliegen', 'Nuevo: arrastra aqu\u00ed para volar con Misty')), 5200); hintDone(); }, 2500);
+        if (!st.hinted) {
+            const h = hintNow();
+            if (h === 'never') st.hinted = true;
+            else if (h === 'show') {
+                st.hinted = true;
+                /* still clear 2.5 s later? then show it and mark it seen; covered again (setup, a sheet, the tour)? try again later */
+                setTimeout(() => { if (hintNow() !== 'show') { st.hinted = false; return; } chip(nm(T('New: drag here to fly Misty', 'Neu: hier ziehen, um mit Misty zu fliegen', 'Nuevo: arrastra aqu\u00ed para volar con Misty')), 5200); hintDone(); }, 2500);
+            }
         }
     }
     setInterval(tick, 500);

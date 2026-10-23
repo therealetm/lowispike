@@ -10648,8 +10648,9 @@ function finishOb(){
   saveOb(true);
   const el = $("#r2ob"), s = R2.S(), z = signOf(s.user.bday);
   el.innerHTML = '<div class="r2-obpane done"><div class="r2-burst" aria-hidden="true">' + Array.from({length: 14}, (_, i) => '<i style="--i:' + i + '"></i>').join("") + '</div>' +
-    '<div class="r2-donecheck">' + R2.ico.check + '</div><div class="r2-obt">You\'re all set' + (s.user.name ? ", " + esc(s.user.name) : "") + '</div>' +
-    '<div class="r2-obs">' + (z ? z.g + " " + esc(z.n) + " · " : "") + 'Saved to your account.</div></div>';
+    /* bug hunt Oct 23 2026: each phrase in its own text node, so German and Spanish get translated (it was one English line) */
+    '<div class="r2-donecheck">' + R2.ico.check + '</div><div class="r2-obt"><span>You\'re all set</span>' + (s.user.name ? '<span data-noi18n>, ' + esc(s.user.name) + '</span>' : "") + '</div>' +
+    '<div class="r2-obs">' + (z ? '<span>' + z.g + " " + esc(z.n) + '</span> · ' : "") + '<span>Saved to your account.</span></div></div>';
   try { window.dispatchEvent(new CustomEvent("lowi:setup-done")); } catch(e){}   /* tutorial-auto.js: a NEW account gets the tour once */
   setTimeout(() => { const ov = el.closest(".r2-ov"); R2.close(ov); try { goTab("home"); } catch(e){} try { window.LowiHerbStart && LowiHerbStart.afterSetup(); } catch(e){} }, 1500);   /* hs-hook: starter plan */
 }
@@ -11935,6 +11936,7 @@ const ROWS = [
   ["Saved and synced", "Gesichert und synchronisiert", "Guardado y sincronizado"],
   ["Saved · syncs when you're online", "Gesichert · synchronisiert, wenn du online bist", "Guardado · se sincronizará cuando tengas conexión"],
   ["Saved to your account.", "In deinem Konto gesichert.", "Guardado en tu cuenta."],
+  ["You're all set", "Alles bereit", "Todo listo"],
   ["Not saved yet", "Noch nicht gesichert", "Aún sin guardar"],
   ["Not saved to an account yet", "Noch nicht in einem Konto gesichert", "Aún no guardado en una cuenta"],
   ["Create an account so nothing gets lost and you can sign in on any phone.", "Erstelle ein Konto, damit nichts verloren geht und du dich auf jedem Handy anmelden kannst.", "Crea una cuenta para no perder nada y entrar desde cualquier móvil."],

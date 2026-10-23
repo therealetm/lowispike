@@ -9,7 +9,7 @@ Brand line: Smarter essen. Gleicher Genuss. Stabilere Energie.
 ## 0. Authority and sources
 
 1. This manual is the primary source for behavior, ratings, output format, photo rules, exclusions and safety boundaries.
-2. The LOWiSPIKE Recipe Book ("Stabil Insulin Meals", 25 recipes, 110 mapped ingredients) is the secondary source for recipes, rebuild ideas, snacks, desserts and drinks. See section 35.
+2. The LOWiSPIKE Recipe Book ("Stabil Insulin Meals", 25 recipes, 110 mapped ingredients, plus 13 LOWiSPIKE rebuilds added in the app in October 2026, 38 recipes in total) is the secondary source for recipes, rebuild ideas, snacks, desserts and drinks. See section 35.
 3. The everyday food list (data/food-policy/everyday-foods.v1.json) and the policy rules (data/food-policy/lowispike-policy.v1.json) are the app's database. They use the same verdicts as section 39 of this manual.
 4. If the Recipe Book and this manual seem to conflict, this manual wins for rating and behavior. Use the Recipe Book for inspiration and recipe details.
 5. Do not quietly relax a LOWiSPIKE rule because general nutrition knowledge offers an exception. Explain nuance only when the user asks, and keep the LOWiSPIKE decision simple.
@@ -484,9 +484,20 @@ Use the LOWiSPIKE Recipe Book ("Stabil Insulin Meals") actively for recipes and 
 - **Desserts:** Frozen Yogurt Berry Bark, Frischkäse Cheesecake Jars, Cocoa Cottage Cheese Pudding, Cottage Cheese Pancake Bites, Chia Cocoa Crunch Cups, Cinnamon Baked Yogurt Custard.
 - **Drinks:** Iced Matcha Lime Water, Cucumber Mint Sparkling Water, Bitter Green Tea Lime, Cold Coffee Cream Float, Hot Ginger Bone Broth.
 
+**Added in the app (October 2026).** These follow the same strict filter and are in the app's Recipe Book, but not in the original PDF. Every ingredient has the same verdict as in section 39.
+
+- **Meals:** Garlic Yogurt Chicken Box, Zucchini Ribbon Beef Ragout, Cauliflower Egg Wok Fry, Shirataki Broth Bowl, Spiced Beef Lettuce Shells.
+- **Snacks:** Smoky Kale Crunch, Chicken Caesar Lettuce Boats, Smoked Salmon Cucumber Bites.
+- **Desserts:** Espresso Cottage Cream Cups, Lemon Ricotta Berry Cups, Strawberry Skyr Freeze Pops.
+- **Drinks:** Ginger Lemon Fizz, Iced Cardamom Spice Tea.
+
+Which craving each one rebuilds: Döner = Garlic Yogurt Chicken Box; Spaghetti bolognese = Zucchini Ribbon Beef Ragout; Fried rice = Cauliflower Egg Wok Fry; Ramen = Shirataki Broth Bowl; Taco night = Spiced Beef Lettuce Shells; Chips = Smoky Kale Crunch; Caesar salad = Chicken Caesar Lettuce Boats; Bagel and lox = Smoked Salmon Cucumber Bites; Tiramisu = Espresso Cottage Cream Cups; Lemon cheesecake = Lemon Ricotta Berry Cups; Ice lolly = Strawberry Skyr Freeze Pops; Lemonade = Ginger Lemon Fizz; Chai latte = Iced Cardamom Spice Tea.
+
+Amounts in these recipes keep them JA: cheddar and parmesan about 30 g, berries and strawberries a small handful (about 80 g), almonds a small handful (about 30 g), milk only as a splash, tamari only a little, tomato sauce and salsa only without added sugar. A bigger portion moves the dish to SELTEN, exactly as in section 39.
+
 A recipe that uses a SELTEN ingredient (Halloumi Fry Box) is still a good rebuild; say it is a now-and-then choice.
 
-Never claim a newly invented recipe comes from the Recipe Book if it does not.
+Never claim a newly invented recipe comes from the Recipe Book if it does not. The October 2026 additions are in the app's Recipe Book; say "from the app's Recipe Book", not "from the PDF".
 
 ## 36. When the user does not know what to eat
 

@@ -97,11 +97,11 @@ test('strings: waiting and Try again in EN, DE and ES; the misses point at Try a
     }
 });
 
-test('the photo sheet hands the original file (for the 1024 px copy) and Log as meal is the brand accent (blue to violet), not mint', () => {
+test('the photo sheet hands the original file (for the 1024 px copy) and Log as meal is the brand accent (brand blues), not mint', () => {
     assert.match(src('spirit.js'), /LowiFoodAI\.mount\([^;]*file: photoFile/);
     const css = src('scan-screens.css');
     const rule = css.slice(css.indexOf('#spMeal .sp-primary'), css.indexOf('}', css.indexOf('#spMeal .sp-primary')));
-    assert.match(rule, /#1668dc, #4458d0/, 'the chat brand accent (item 43)');
+    assert.match(rule, /#1668dc, #0b5bbf/, 'the chat brand accent (item 43)');
     assert.doesNotMatch(rule, /mb-go|mint|52, 196, 158/);
     assert.match(css, /\.fai-retry \{[^}]*min-height: 44px/, 'Try again is a real tap target');
 });

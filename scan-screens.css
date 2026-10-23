@@ -160,9 +160,9 @@ html:root body .r2-ov.ss-sheet:not(.full) .fai-retry { display: inline-flex; ali
 html:root body .r2-ov.ss-sheet:not(.full) .fai-retry:active { transform: scale(.97); }
 /* Oct 22 2026: "my brand colour is not green". misty-panels.css (loaded later) painted Log as meal in Move's mint; on the
    photo sheet it now takes the brand accent the chat uses for send and your own bubble (item 43, community-tg.css
-   --cr-send-g: brand blue #1668dc -> violet #4458d0, white text, AA), the same in Day and Night. */
+   --cr-send-g: brand blue #1668dc -> #0b5bbf, white text, AA), the same in Day and Night. */
 html:root body .r2-ov.ss-sheet:not(.full) #spMeal .sp-primary {
-  --brand-accent-g: linear-gradient(135deg, #1668dc, #4458d0);
+  --brand-accent-g: linear-gradient(135deg, #1668dc, #0b5bbf);
   background: var(--brand-accent-g) !important; color: #fff !important;
   border: .5px solid rgba(255, 255, 255, .34) !important; text-shadow: none !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .32), 0 10px 26px -10px rgba(22, 104, 220, .9) !important;

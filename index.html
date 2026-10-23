@@ -6084,6 +6084,22 @@ let toastT;
 function toast(msg, ms){ const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), window.LowiReadTime ? LowiReadTime.atLeast(msg, ms || 2200, {kind:"toast"}) : (ms || 2200)); }
 function sheet(html){ $("#sheet").innerHTML = '<div class="grab"></div>' + html; try{ window.LowiBloom && LowiBloom.prep($("#sheet")); }catch(e){} $("#sheetwrap").classList.add("open"); }
 function closeSheet(){ $("#sheetwrap").classList.remove("open"); }
+/* sheetwrap-escape: Oct 23 (code error sweep). Nothing closed the legacy #sheetwrap sheet (Milestones on Move and the other
+   LowiHost.openSheet sheets) on Escape, and back (Safari swipe / phone back) closes the top sheet by sending Escape. So back on
+   Move with Milestones open closed the sheet AND left Move for Home; on Home it would have left the app. Escape now closes
+   #sheetwrap when it is the top layer. Whether another layer sits above it is read before any Escape handler runs (capture),
+   so one Escape never closes two layers. */
+(function(){
+  const ABOVE = '.r2-ov.on:not(.off), .gv-ov.on, dialog[open], #mv-player.on, body > .b3-cam, #ltTour:not(.lt-held), #g1Ob:not(.out), #lcUpd, [aria-modal="true"]:not([hidden]):not(#sheetwrap):not(#sheetwrap *)';
+  let above = false;
+  addEventListener("keydown", e => { if (e.key === "Escape") { try { above = !!document.querySelector(ABOVE); } catch(x){ above = true; } } }, true);
+  addEventListener("keydown", e => {
+    if (e.key !== "Escape" || above || e.defaultPrevented) return;
+    const w = document.getElementById("sheetwrap"); if (!w || !w.classList.contains("open")) return;
+    e.preventDefault(); closeSheet();
+  });
+})();
+/* /sheetwrap-escape */
 const ICO = {x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
   cam:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M4 8h3l2-2.5h6L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.6"/></svg>',
   lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',

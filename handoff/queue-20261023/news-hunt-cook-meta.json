@@ -1,0 +1,10 @@
+{
+  "slug": "cook-kind-time-translated",
+  "tutorial": {"none": "No new control: the kind and cooking time on the Shuffle pick, the Swipe card and the recipe are now in your language."},
+  "go": {"tab": "shelf"},
+  "text": {
+    "en": "In German and Spanish, the food you shuffled in Cook showed its kind and time in English, like \"Sweet · 5 min + chill\". Now it shows them in your language.",
+    "de": "Auf Deutsch und Spanisch hat das gemischte Essen unter Kochen Art und Zeit auf Englisch gezeigt, etwa \"Sweet · 5 min + chill\". Jetzt steht dort \"Süß · 5 min + kalt stellen\".",
+    "es": "En alemán y español, la comida que mezclabas en Cocina mostraba el tipo y el tiempo en inglés, como \"Sweet · 5 min + chill\". Ahora sale \"Dulce · 5 min + enfriar\"."
+  }
+}

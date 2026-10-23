@@ -8029,6 +8029,7 @@ const T = [
   // round 5 (Oct 8): food shuffle, swipe, kit list, audio mode, profiles
   ["Don't know what to eat?", "Keine Ahnung, was du essen sollst?", "¿No sabes qué comer?"], ["Shuffle my food", "Essen mischen", "Mezclar comida"], ["Shuffle again", "Nochmal mischen", "Mezclar otra vez"],
   ["Swipe foods", "Essen swipen", "Desliza comidas"], ["All recipes", "Alle Rezepte", "Todas las recetas"], ["The full book", "Das ganze Buch", "El libro completo"], ["Seen them all", "Alle gesehen", "Las viste todas"],
+  ["Meal", "Mahlzeit", "Comida"], ["Snack", "Snack", "Tentempié"], ["Sweet", "Süß", "Dulce"], ["Drink", "Getränk", "Bebida"],
   ["Your yes pile", "Deine Ja-Liste", "Tu lista de sí"], ["Your pick", "Dein Treffer", "Tu elección"], ["Community pick", "Aus der Community", "De la comunidad"], ["You need", "Du brauchst", "Necesitas"],
   ["Recipe + shopping list", "Rezept + Einkaufsliste", "Receta + lista de compras"], ["Fill my cart", "Wagen füllen", "Llenar mi carrito"], ["Add to today", "Zu heute", "Añadir a hoy"],
   ["Right: want it · Left: skip", "Rechts: will ich · Links: weiter", "Derecha: lo quiero · Izquierda: paso"], ["Shuffle my yes pile", "Ja-Liste mischen", "Mezclar mi lista de sí"], ["Start over", "Von vorn", "Empezar de nuevo"],
@@ -8062,6 +8063,14 @@ const P = [
   [/^🛡 (\d+) shields?$/, "🛡 $1 Schild", "🛡 $1 escudo"],
   [/^(\d+) XP to Level (\d+)$/, "$1 XP bis Level $2", "$1 XP para el nivel $2"],
   [/^(\d+) meals$/, "$1 Gerichte", "$1 platos"],
+  [/^(\d+) min \+ chill$/, "$1 min + kalt stellen", "$1 min + enfriar"],
+  [/^(\d+) min \+ freeze$/, "$1 min + einfrieren", "$1 min + congelar"],
+  [/^(\d+) min \+ (\d+) min chill$/, "$1 min + $2 min kalt stellen", "$1 min + $2 min de frío"],
+  [/^about (\d+) min$/, "ca. $1 min", "unos $1 min"],
+  [/^about (\d+) min \+ chill$/, "ca. $1 min + kalt stellen", "unos $1 min + enfriar"],
+  [/^about (\d+) min \+ freeze$/, "ca. $1 min + einfrieren", "unos $1 min + congelar"],
+  [/^about (\d+) min \+ (\d+) min chill$/, "ca. $1 min + $2 min kalt stellen", "unos $1 min + $2 min de frío"],
+  [/^From ([A-ZÀ-Ý][\w.'’-]*(?: [A-ZÀ-Ý][\w.'’-]*)?)$/, "Von $1", "De $1"],
   [/^Seen today(.*)$/, "Heute gesehen$1", "Visto hoy$1"],
   [/^Seen yesterday(.*)$/, "Gestern gesehen$1", "Visto ayer$1"],
   [/^Seen (\d+) days ago(.*)$/, "Vor $1 Tagen gesehen$2", "Visto hace $1 días$2"],
@@ -8906,6 +8915,9 @@ const fById = id => fPool().find(x => x.id === id) || (String(id).indexOf("sf-bu
 const FCAT = {meal:"Meal", snack:"Snack", dessert:"Sweet", drink:"Drink"};
 function fMeta(f){ const m = window.LOWI_COOK && f.book ? LOWI_COOK.minTxt(f.id) : "";
   return [f.com ? "From " + f.who : FCAT[f.c] || "", m].filter(Boolean).join(" · "); }
+/* each part in its own span so the German/Spanish page translator can match "Sweet" and "5 min + chill" on their own (bug hunt 23 Oct) */
+function fMetaHTML(f){ const m = window.LOWI_COOK && f.book ? LOWI_COOK.minTxt(f.id) : "";
+  return [f.com ? "From " + f.who : FCAT[f.c] || "", m].filter(Boolean).map(x => "<span>" + esc(x) + "</span>").join(" · "); }
 function fBadge(f){ return '<span class="sh-pk ' + (f.r === "selten" ? "warn" : "gold") + '">' + (f.r === "selten" ? "SELTEN" : "JA") + "</span>"; }
 function fPick(){
   dkNorm(); /* r3k-pick, ck-src: from the chosen source only */ const lf = fLast(), A = fSrcPool().filter(f => R5.never.indexOf(f.id) < 0), P = A.length > 1 && lf ? A.filter(f => f.id !== lf.id) : A; if (!P.length) return null;
@@ -8959,7 +8971,7 @@ function fRevealHTML(f, anim){
     if (f.buy) h = h.replace(/<div class="tiny gold">[^<]*<\/div>/, '<div class="tiny gold">' + esc(ckT("Caught product", "Gefangenes Produkt", "Producto atrapado") + (f.byName ? " · " + ckT("caught by ", "gefangen von ", "atrapado por ") + f.byName : "")) + '</div>');
     if (anim) h = h.replace('class="r5-card"', 'class="r5-card in"'); return h; } }
   const ing = f.ing.slice(0, 8), more = f.ing.length - ing.length;
-  return '<div class="r5-card' + (anim ? " in" : "") + '" data-id="' + esc(f.id) + '"><div class="r5-ct"><div style="flex:1;min-width:0"><div class="tiny gold">' + (f.com ? "Community pick" : "Your pick") + '</div><div class="h2 r5-cn">' + esc(f.n) + '</div><div class="small muted">' + esc(fMeta(f)) + '</div></div>' + fBadge(f) + '</div>' +
+  return '<div class="r5-card' + (anim ? " in" : "") + '" data-id="' + esc(f.id) + '"><div class="r5-ct"><div style="flex:1;min-width:0"><div class="tiny gold">' + (f.com ? "Community pick" : "Your pick") + '</div><div class="h2 r5-cn">' + esc(f.n) + '</div><div class="small muted">' + fMetaHTML(f) + '</div></div>' + fBadge(f) + '</div>' +
     (f.book ? '<div class="r5-lab">You need</div><div class="r5-ingl">' + ing.map(n => '<span>' + esc(n) + '</span>').join("") + (more > 0 ? '<span class="dim">+' + more + '</span>' : "") + '</div>' +
       (window.LowiCS ? LowiCS.pair(f.id, {cls:"r5-btns", cook:'data-sh="recipe" data-r="' + esc(f.id) + '"', cookId:"r5Cook", shopId:"r5Shop"}) : '<div class="r5-btns"><button class="btn primary" data-sh="recipe" data-r="' + esc(f.id) + '" id="r5Cook">Recipe + shopping list</button></div>') +
       '<div class="r5-mini">' + (window.LowiCS ? "" : '<button data-lc="open" data-id="' + esc(f.id) + '">Fill my cart</button>') + '<button data-td="addtoday" data-id="' + esc(f.id) + '">Add to today</button></div>'
@@ -9063,7 +9075,7 @@ function dkOpen(){
 }
 function dkClose(){ const el = r5$("#r5Deck"); if (el) el.classList.remove("on"); }
 function dkCard(f, k){ return '<div class="r5-dc' + (k === 0 ? " top" : "") + '" data-id="' + esc(f.id) + '" style="--k:' + k + '">' + (f.img ? '<img alt="" src="' + f.img + '" draggable="false">' : '<div class="r5-dcph ck-ph">' + CKPLATE + '<b>' + esc(String(f.n || "?").charAt(0).toUpperCase()) + '</b></div>') +
-  '<i class="r3k-st up">TODAY</i><i class="r3k-st right">SOON</i><i class="r3k-st left">NOT TODAY</i><i class="r3k-st down">NEVER</i><div class="r5-dci">' + fBadge(f) + '<div class="h2">' + esc(f.n) + '</div><div class="small">' + esc(fMeta(f)) + '</div>' + (f.com ? '<div class="small r5-dcc">' + esc(f.sub) + '</div>' : "") + '</div></div>'; }
+  '<i class="r3k-st up">TODAY</i><i class="r3k-st right">SOON</i><i class="r3k-st left">NOT TODAY</i><i class="r3k-st down">NEVER</i><div class="r5-dci">' + fBadge(f) + '<div class="h2">' + esc(f.n) + '</div><div class="small">' + fMetaHTML(f) + '</div>' + (f.com ? '<div class="small r5-dcc">' + esc(f.sub) + '</div>' : "") + '</div></div>'; }
 function dkPaint(){
   const st = r5$("#r5Stack"); if (!st) return; const ids = DK.order.slice(DK.i, DK.i + 3).filter(id => fById(id)), n = r5$("#r5DkN"), sec = r5$("#r3kSwipe");
   if (n) n.textContent = ids.length ? Math.min(DK.i + 1, DK.order.length) + " / " + DK.order.length : "";

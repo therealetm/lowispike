@@ -35,6 +35,10 @@ Profile > About you > Grocery shopping (`shop-plan.js` card), never forced.
   rhythm from `LowiShopPlan`; without a typed rhythm it uses a quiet weekly timing and shows no number. Shop finds and power
   combos (e.g. Speisequark + kiwi + almonds) work on this phone; sharing with other shoppers needs the proposed Supabase
   tables and the person's consent, so the copy must not promise other people's finds yet.
+- **Grocery bucket** (`grocery-bucket-core.js`, `grocery-bucket.js`, since 23 Oct 2026): after a product check the card offers
+  Add to bucket or Skip. Today's bucket is kept per day on this phone (`lowi.bucket.v1`, 14 days), with Undo and a small list
+  to remove items. No prices or points yet (those come with the shop pick, never invented). The Log meal scan and the
+  shopping camera's own cart don't show it.
 - **Scanner:** live barcode, typed barcode, barcode from a photo. Results are *estimates* from the label, not medical
   advice and never a promise of "no spike". The Deep analyze link opens the LOWiSPIKE GPT; the photo upload there is manual
   and nothing comes back into the app automatically.

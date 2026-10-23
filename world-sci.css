@@ -1,0 +1,37 @@
+/* world-sci.css — real science names in the cell worlds (world-sci.js). Living bubble glass, universal text rule:
+   a small label, one short value, the same sizes as the other bubbles. */
+.bwr-wn {
+    position: absolute; left: 50%; top: 27%; z-index: 7; pointer-events: none;
+    min-width: 132px; max-width: min(78vw, 300px); padding: 12px 22px 13px; border-radius: 999px; box-sizing: border-box;
+    display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center;
+    color: #fff; background: radial-gradient(120% 140% at 30% 20%, rgba(255,255,255,.22), rgba(120,190,255,.10) 55%, rgba(20,40,80,.28));
+    border: 1px solid rgba(255,255,255,.34);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 0 24px rgba(120,200,255,.18);
+    -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3);
+    opacity: 0; transform: translate(-50%, 6px) scale(.92); transition: opacity .5s ease, transform .6s cubic-bezier(.2,.9,.3,1.2);
+}
+.bwr-wn.on { opacity: 1; transform: translate(-50%, 0) scale(1); animation: bwrWnPulse 2.6s ease-in-out .6s infinite; }
+.bwr-wn small { font: 600 11px/1.2 -apple-system, system-ui, sans-serif; letter-spacing: .06em; text-transform: uppercase; opacity: .78; }
+.bwr-wn b { font: 700 17px/1.2 -apple-system, system-ui, sans-serif; letter-spacing: .01em; }
+@keyframes bwrWnPulse { 0%, 100% { box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 0 22px rgba(120,200,255,.16); } 50% { box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 0 30px rgba(120,200,255,.3); } }
+
+.bwr-sci {
+    position: absolute; left: 0; top: 0; z-index: 6; margin: 0; padding: 5px 11px 6px; border-radius: 999px; box-sizing: border-box;
+    max-width: 200px; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; cursor: pointer;
+    color: #fff; font: inherit; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.3);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 0 14px rgba(150,210,255,.14);
+    -webkit-backdrop-filter: blur(10px) saturate(1.25); backdrop-filter: blur(10px) saturate(1.25);
+    opacity: 0; pointer-events: none; translate: -50% -140%; will-change: transform;
+    transition: opacity .45s ease, border-radius .3s ease, max-width .3s ease;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+.bwr-sci::after { content: ''; position: absolute; left: 50%; bottom: -9px; width: 5px; height: 5px; margin-left: -2.5px; border-radius: 50%; background: rgba(255,255,255,.7); box-shadow: 0 0 6px rgba(255,255,255,.6); }
+.bwr-sci.on { opacity: .92; pointer-events: auto; }
+.bwr-sci b { font: 600 12px/1.25 -apple-system, system-ui, sans-serif; letter-spacing: .02em; white-space: nowrap; }
+.bwr-sci span { display: none; font: 400 12px/1.3 -apple-system, system-ui, sans-serif; opacity: .9; }
+.bwr-sci.open { max-width: min(62vw, 230px); border-radius: 16px; opacity: 1; }
+.bwr-sci.open span { display: block; }
+@media (prefers-reduced-motion: reduce) {
+    .bwr-wn, .bwr-sci { transition: opacity .2s linear; }
+    .bwr-wn.on { animation: none; }
+}

@@ -86,17 +86,19 @@ test('the guide calls her by the companion name (Misty), never the herb identity
    things, they're also being funny"). */
 test('every guide gossips about another guide, in English, German and Spanish, short enough to read', () => {
     assert.ok(C.GOSSIP && typeof C.gossipPick === 'function' && typeof C.gossip === 'function', 'gossip lines exist');
-    const names = IDS.map(id => C.pal(id, 'en').name);
+    /* Oct 23, 2026: the guides are named after their real cell type, so the gossip names the other cells (singular or plural,
+       any case) in each language, and never the guide's own cell */
+    const says = (t, p) => [p.name, p.pl].some(n => t.toLowerCase().indexOf(n.toLowerCase()) >= 0);
     for (const id of IDS) {
-        const own = C.pal(id, 'en').name, a = C.GOSSIP[id];
+        const a = C.GOSSIP[id];
         assert.ok(Array.isArray(a) && a.length >= 2, id + ' has at least two');
         for (const row of a) {
             assert.strictEqual(row.length, 3, 'en, de, es');
-            for (const t of row) {
+            row.forEach((t, li) => {
                 assert.ok(t && t.length <= 130, 'short: ' + t);
-                assert.ok(names.some(n => n !== own && t.indexOf(n) >= 0), 'about another guide by name: ' + t);
-                assert.ok(t.indexOf(own) < 0, 'not about itself: ' + t);
-            }
+                assert.ok(IDS.some(o => o !== id && says(t, C.pal(o, li))), 'about another guide by name: ' + t);
+                assert.ok(!says(t, C.pal(id, li)), 'not about itself: ' + t);
+            });
         }
     }
 });

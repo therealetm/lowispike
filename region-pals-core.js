@@ -1,20 +1,24 @@
 /* LOWiSPIKE region companions core (Oct 16, 2026; handoff task 10). Pure data and maths, no DOM (node tests load it).
    E-man: inside Gut, Pancreas, Brain and the other regions, each place gets its own small glass companion creature. It swims
    along with you and tells you about the place in a Misty-style speech bubble, instead of the leftover gold info cards.
-   Rules: these are guides, not pets. No collection, no XP, no microbe buddies (the gut guide is a villus, a fold of the gut
+   Rules: these are guides, not pets. No collection, no XP, no microbe buddies (the gut guide is an enterocyte, a cell of the gut
    wall, not a microbe). Misty stays the blue comet and the only companion with an XP ledger. Facts come from arrival-core.js
    (the reviewed place facts); this file adds only names, shapes and the greeting. */
 (function (root) {
     'use strict';
     /* shape: drawn by region-pals.js as a small inline SVG inside a glass orb; rgb: the region's light (body-world-regions.js) */
+    /* Oct 23, 2026 (E-man's tester, a human-body science student: "Why does he even have a name? He could have been named whatever
+       the cell that they just entered is."): each guide is named after the real cell type it stands for, no invented pet name.
+       name: shown in the bubble title; as: the name with its article, for the hello; pl: the plural, for the gossip;
+       kind: what that cell is, in plain words. Sources: world-sci-core.js (SOURCES). */
     const PALS = {
-        brain: { shape: 'spark', rgb: '28,247,249', name: ['Spark', 'Funke', 'Chispa'], kind: ['a little nerve-spark', 'ein kleiner Nervenfunke', 'una chispa nerviosa'] },
-        lung: { shape: 'puff', rgb: '168,224,255', name: ['Puff', 'Hauch', 'Soplo'], kind: ['a little air sac', 'ein kleines Lungenbl\u00e4schen', 'un alv\u00e9olo peque\u00f1o'] },
-        heart: { shape: 'beat', rgb: '241,71,112', name: ['Pulse', 'Puls', 'Pulso'], kind: ['a little heartbeat', 'ein kleiner Herzschlag', 'un latido peque\u00f1o'] },
-        liver: { shape: 'hex', rgb: '231,134,49', name: ['Hexa', 'Hexa', 'Hexa'], kind: ['a little liver cell', 'eine kleine Leberzelle', 'una celulita del h\u00edgado'] },
-        pancreas: { shape: 'islet', rgb: '248,234,64', name: ['Isla', 'Isla', 'Isla'], kind: ['a little islet', 'eine kleine Zellinsel', 'un islote peque\u00f1o'] },
-        gut: { shape: 'villus', rgb: '46,248,182', name: ['Villo', 'Zotti', 'Velli'], kind: ['a little villus from your gut wall', 'eine kleine Zotte deiner Darmwand', 'una vellosidad de tu pared intestinal'] },
-        muscle: { shape: 'fibre', rgb: '159,235,37', name: ['Flex', 'Flex', 'Flex'], kind: ['a little muscle fibre', 'eine kleine Muskelfaser', 'una fibra muscular'] }
+        brain: { shape: 'spark', rgb: '28,247,249', name: ['Neuron', 'Neuron', 'Neurona'], as: ['a neuron', 'ein Neuron', 'una neurona'], pl: ['neurons', 'Neuronen', 'neuronas'], kind: ['a nerve cell', 'eine Nervenzelle', 'una c\u00e9lula nerviosa'] },
+        lung: { shape: 'puff', rgb: '168,224,255', name: ['Alveolar cell', 'Alveolarzelle', 'C\u00e9lula alveolar'], as: ['an alveolar cell', 'eine Alveolarzelle', 'una c\u00e9lula alveolar'], pl: ['alveolar cells', 'Alveolarzellen', 'c\u00e9lulas alveolares'], kind: ['a thin cell in the wall of an air sac', 'eine d\u00fcnne Zelle in der Wand eines Lungenbl\u00e4schens', 'una c\u00e9lula fina de la pared de un alv\u00e9olo'] },
+        heart: { shape: 'beat', rgb: '241,71,112', name: ['Cardiomyocyte', 'Kardiomyozyt', 'Cardiomiocito'], as: ['a cardiomyocyte', 'ein Kardiomyozyt', 'un cardiomiocito'], pl: ['cardiomyocytes', 'Kardiomyozyten', 'cardiomiocitos'], kind: ['a heart muscle cell', 'eine Herzmuskelzelle', 'una c\u00e9lula del m\u00fasculo card\u00edaco'] },
+        liver: { shape: 'hex', rgb: '231,134,49', name: ['Hepatocyte', 'Hepatozyt', 'Hepatocito'], as: ['a hepatocyte', 'ein Hepatozyt', 'un hepatocito'], pl: ['hepatocytes', 'Hepatozyten', 'hepatocitos'], kind: ['a liver cell', 'eine Leberzelle', 'una c\u00e9lula del h\u00edgado'] },
+        pancreas: { shape: 'islet', rgb: '248,234,64', name: ['Beta cell', 'Betazelle', 'C\u00e9lula beta'], as: ['a beta cell', 'eine Betazelle', 'una c\u00e9lula beta'], pl: ['beta cells', 'Betazellen', 'c\u00e9lulas beta'], kind: ['the islet cell that makes insulin', 'die Inselzelle, die Insulin macht', 'la c\u00e9lula del islote que fabrica insulina'] },
+        gut: { shape: 'villus', rgb: '46,248,182', name: ['Enterocyte', 'Enterozyt', 'Enterocito'], as: ['an enterocyte', 'ein Enterozyt', 'un enterocito'], pl: ['enterocytes', 'Enterozyten', 'enterocitos'], kind: ['a cell on your gut\u2019s villi that takes in food', 'eine Zelle auf deinen Darmzotten, die Nahrung aufnimmt', 'una c\u00e9lula de tus vellosidades que absorbe la comida'] },
+        muscle: { shape: 'fibre', rgb: '159,235,37', name: ['Muscle fibre', 'Muskelfaser', 'Fibra muscular'], as: ['a muscle fibre', 'eine Muskelfaser', 'una fibra muscular'], pl: ['muscle fibres', 'Muskelfasern', 'fibras musculares'], kind: ['one long skeletal muscle cell', 'eine einzige lange Skelettmuskelzelle', 'una sola c\u00e9lula larga de m\u00fasculo esquel\u00e9tico'] }
     };
     const IDS = Object.keys(PALS);
     const ALIAS = { lungs: 'lung', muscles: 'muscle', intestine: 'gut', darm: 'gut' };
@@ -207,38 +211,38 @@
     }
     /* ---------- gossip (Oct 19, 2026; E-man, Oct 19: "I want them to gossip about each other sometimes, that would be funny ...
        as they're trying to teach things, they're also being funny") ----------
-       Each guide has a few lines about another guide, each one a real piece of body science told as a little jab (Hexa about
-       Isla: glucagon makes the liver release sugar). At most one per visit, only after a lesson, never the same line twice in a row
+       Each guide has a few lines about another guide, each one a real piece of body science told as a little jab (the hepatocyte
+       about the alpha cells next to the beta cells: glucagon makes the liver release sugar). At most one per visit, only after a lesson, never the same line twice in a row
        on this device: picked at random from the ones not said yet (m.gos[id]), and when all have been said the round starts over
        without the one said last. [en, de, es] */
     const GOSSIP = {
         brain: [
-            ['Don’t tell Hexa, but I’m her biggest customer. She keeps sugar coming all night, mostly for me.', 'Verrat’s Hexa nicht, aber ich bin ihr bester Kunde. Sie liefert die ganze Nacht Zucker, vor allem für mich.', 'No se lo digas a Hexa, pero soy su mejor cliente. Manda azúcar toda la noche, sobre todo para mí.'],
-            ['Flex loves to brag about lifting things. Who do you think tells every muscle when to move? Me.', 'Flex prahlt gern damit, was er alles hebt. Wer sagt wohl jedem Muskel, wann er sich bewegen soll? Ich.', 'A Flex le encanta presumir de lo que levanta. ¿Quién crees que le dice a cada músculo cuándo moverse? Yo.']
+            ['Don\u2019t tell the hepatocytes, but I\u2019m their biggest customer. They keep sugar coming all night, much of it for me.', 'Verrat\u2019s den Hepatozyten nicht, aber ich bin ihr bester Kunde. Sie liefern die ganze Nacht Zucker, viel davon f\u00fcr mich.', 'No se lo digas a los hepatocitos, pero soy su mejor cliente. Mandan az\u00facar toda la noche, mucho para m\u00ed.'],
+            ['Muscle fibres love to brag about lifting things. Who sends the signal to contract? Me.', 'Muskelfasern prahlen gern damit, was sie heben. Wer schickt das Signal zum Zusammenziehen? Ich.', 'A las fibras musculares les encanta presumir de lo que levantan. \u00bfQui\u00e9n manda la se\u00f1al para contraerse? Yo.']
         ],
         lung: [
-            ['Pulse thinks he’s the star. Who fills his blood with oxygen on every breath? Me.', 'Pulse hält sich für den Star. Wer füllt sein Blut bei jedem Atemzug mit Sauerstoff? Ich.', 'Pulse se cree la estrella. ¿Quién le llena la sangre de oxígeno en cada respiración? Yo.'],
-            ['When Flex starts showing off on a run, guess who has to pant to keep up. Me.', 'Wenn Flex beim Laufen angibt, rate mal, wer hecheln muss, um mitzuhalten. Ich.', 'Cuando Flex se pone a presumir corriendo, adivina quién tiene que jadear para seguirle. Yo.']
+            ['Cardiomyocytes think they\u2019re the stars. Who loads oxygen into the blood they pump? Me.', 'Kardiomyozyten halten sich f\u00fcr die Stars. Wer l\u00e4dt Sauerstoff ins Blut, das sie pumpen? Ich.', 'Los cardiomiocitos se creen las estrellas. \u00bfQui\u00e9n carga de ox\u00edgeno la sangre que bombean? Yo.'],
+            ['When muscle fibres show off on a run, you breathe faster so I can keep up. Thanks a lot.', 'Wenn Muskelfasern beim Laufen angeben, atmest du schneller, damit ich mithalte. Danke auch.', 'Cuando las fibras musculares presumen corriendo, respiras m\u00e1s r\u00e1pido para que yo aguante. Gracias, eh.']
         ],
         heart: [
-            ['Puff still brings it up: her left lung is smaller, to make room for me. I say it suits her.', 'Puff erwähnt es ständig: Ihr linker Lungenflügel ist kleiner, damit ich Platz habe. Ich finde, es steht ihr.', 'Puff siempre lo saca: su pulmón izquierdo es más pequeño para dejarme sitio. Yo digo que le queda bien.'],
-            ['Villo eats like there’s no tomorrow. After every big meal I have to send extra blood down to the gut.', 'Villo isst, als gäb’s kein Morgen. Nach jeder großen Mahlzeit muss ich extra Blut in den Darm schicken.', 'Villo come como si no hubiera mañana. Después de cada comida grande tengo que mandar sangre extra al intestino.']
+            ['The alveolar cells still bring it up: your left lung is smaller, to make room for me. I say it suits you.', 'Die Alveolarzellen erw\u00e4hnen es st\u00e4ndig: Deine linke Lunge ist kleiner, damit ich Platz habe. Ich finde, es steht dir.', 'Las c\u00e9lulas alveolares siempre lo sacan: tu pulm\u00f3n izquierdo es m\u00e1s peque\u00f1o para dejarme sitio. Yo digo que te queda bien.'],
+            ['Enterocytes eat like there\u2019s no tomorrow. After every big meal, more of my blood goes to the gut.', 'Enterozyten essen, als g\u00e4b\u2019s kein Morgen. Nach jeder gro\u00dfen Mahlzeit flie\u00dft mehr von meinem Blut in den Darm.', 'Los enterocitos comen como si no hubiera ma\u00f1ana. Despu\u00e9s de cada comida grande, m\u00e1s de mi sangre va al intestino.']
         ],
         liver: [
-            ['Isla is so bossy. Your sugar dips, she sends glucagon, and I have to open my sugar store. Every time.', 'Isla ist so herrisch. Dein Zucker sinkt, sie schickt Glukagon, und ich muss meinen Zuckervorrat öffnen. Jedes Mal.', 'Isla es una mandona. Te baja el azúcar, ella manda glucagón y yo tengo que abrir mi reserva de azúcar. Siempre.'],
-            ['Villo sends me everything from your meals first. Every. Single. Thing. And I have to check it all.', 'Villo schickt mir alles aus deinen Mahlzeiten zuerst. Wirklich. Alles. Und ich muss alles prüfen.', 'Villo me manda primero todo lo que comes. Todo. Absolutamente. Todo. Y yo tengo que revisarlo.']
+            ['The beta cells\u2019 neighbours, the alpha cells, are so bossy. Your sugar dips, they send glucagon, and I open my sugar store.', 'Die Alphazellen neben den Betazellen sind so herrisch. Dein Zucker sinkt, sie schicken Glukagon, ich \u00f6ffne meinen Vorrat.', 'Las vecinas de las c\u00e9lulas beta, las c\u00e9lulas alfa, son unas mandonas. Te baja el az\u00facar, mandan glucag\u00f3n y yo abro mi reserva.'],
+            ['Enterocytes send me almost everything from your meals first. And I have to check it all.', 'Enterozyten schicken mir fast alles aus deinen Mahlzeiten zuerst. Und ich muss alles pr\u00fcfen.', 'Los enterocitos me mandan primero casi todo lo que comes. Y yo tengo que revisarlo todo.']
         ],
         pancreas: [
-            ['Flex is my favourite. Take a walk after a meal and his muscles soak up sugar, so my insulin has an easy day.', 'Flex ist mein Liebling. Ein Spaziergang nach dem Essen, und seine Muskeln saugen Zucker auf. Mein Insulin hat frei.', 'Flex es mi favorito. Un paseo después de comer y sus músculos absorben azúcar, así mi insulina tiene un día tranquilo.'],
-            ['Hexa calls me bossy. I only send glucagon when your sugar drops. She’s the one hoarding it.', 'Hexa nennt mich herrisch. Ich schicke nur Glukagon, wenn dein Zucker fällt. Sie ist doch die, die ihn hortet.', 'Hexa dice que soy mandona. Yo solo mando glucagón cuando te baja el azúcar. La que lo acapara es ella.']
+            ['Muscle fibres are my favourites. Take a walk after a meal and they soak up sugar, so I need less insulin.', 'Muskelfasern sind meine Lieblinge. Ein Spaziergang nach dem Essen, und sie saugen Zucker auf. So brauche ich weniger Insulin.', 'Las fibras musculares son mis favoritas. Un paseo despu\u00e9s de comer y absorben az\u00facar, as\u00ed necesito menos insulina.'],
+            ['Hepatocytes call us bossy. I only make insulin. Glucagon comes from my neighbours, the alpha cells.', 'Hepatozyten nennen uns herrisch. Ich mache nur Insulin. Glukagon kommt von meinen Nachbarn, den Alphazellen.', 'Los hepatocitos dicen que somos mandones. Yo solo fabrico insulina. El glucag\u00f3n viene de mis vecinas, las c\u00e9lulas alfa.']
         ],
         gut: [
-            ['Hexa complains I send her too much. She gets the first look at everything you eat. A thank-you would be nice.', 'Hexa beschwert sich, dass ich ihr zu viel schicke. Sie sieht alles, was du isst, als Erste. Ein Danke wäre nett.', 'Hexa se queja de que le mando demasiado. Ella ve primero todo lo que comes. Un gracias no estaría mal.'],
-            ['Spark calls me the second brain like it’s a joke. I have millions of nerve cells of my own, thank you.', 'Spark nennt mich das zweite Gehirn, als wär’s ein Witz. Ich habe Millionen eigene Nervenzellen, danke auch.', 'Spark me llama el segundo cerebro como si fuera una broma. Tengo millones de neuronas propias, gracias.']
+            ['Hepatocytes complain I send them too much. They get the first look at what you absorb. A thank-you would be nice.', 'Hepatozyten beschweren sich, dass ich ihnen zu viel schicke. Sie sehen als Erste, was du aufnimmst. Ein Danke w\u00e4re nett.', 'Los hepatocitos se quejan de que les mando demasiado. Ven primero lo que absorbes. Un gracias no estar\u00eda mal.'],
+            ['Neurons call the gut the second brain like it\u2019s a joke. Its wall has millions of nerve cells of its own.', 'Neuronen nennen den Darm das zweite Gehirn, als w\u00e4r\u2019s ein Witz. Seine Wand hat Millionen eigene Nervenzellen.', 'Las neuronas llaman al intestino el segundo cerebro como si fuera broma. Su pared tiene millones de c\u00e9lulas nerviosas.']
         ],
         muscle: [
-            ['Isla loves it when I move. One short walk after a meal and I pull sugar out of your blood for her.', 'Isla liebt es, wenn ich mich bewege. Ein kurzer Spaziergang nach dem Essen, und ich hole für sie Zucker aus deinem Blut.', 'A Isla le encanta que me mueva. Un paseo corto después de comer y le saco azúcar de la sangre.'],
-            ['Puff gets out of breath every time I do anything. Lightweight.', 'Puff kommt jedes Mal außer Atem, wenn ich irgendwas mache. Leichtgewicht.', 'Puff se queda sin aliento cada vez que hago algo. Qué floja.']
+            ['Beta cells love it when I move. One short walk after a meal and I pull sugar out of your blood for them.', 'Betazellen lieben es, wenn ich mich bewege. Ein kurzer Spaziergang nach dem Essen, und ich hole f\u00fcr sie Zucker aus deinem Blut.', 'A las c\u00e9lulas beta les encanta que me mueva. Un paseo corto despu\u00e9s de comer y les saco az\u00facar de la sangre.'],
+            ['When I really get going, you breathe harder so the alveolar cells can bring in more oxygen for me.', 'Wenn ich richtig loslege, atmest du schneller, damit die Alveolarzellen mehr Sauerstoff f\u00fcr mich holen.', 'Cuando me pongo en marcha de verdad, respiras m\u00e1s r\u00e1pido para que las c\u00e9lulas alveolares me traigan m\u00e1s ox\u00edgeno.']
         ]
     };
     /* the next gossip line for this guide (index), or null when it has none; rnd() in [0, 1). Records it in m.gos. */
@@ -378,11 +382,11 @@
         return keep && keep.score < 400 && keep.score <= best.score + 500 ? keep : best;
     }
     function tr(key, li, n, k) { const a = COPY[key]; return a ? a[li3(li)].replace('{n}', n || '').replace('{k}', k || '') : ''; }
-    function pal(id, li) { const p = PALS[pid(id)]; if (!p) return null; li = li3(li); return { id: pid(id), shape: p.shape, rgb: p.rgb, name: p.name[li], kind: p.kind[li] }; }
+    function pal(id, li) { const p = PALS[pid(id)]; if (!p) return null; li = li3(li); return { id: pid(id), shape: p.shape, rgb: p.rgb, name: p.name[li], as: p.as[li], pl: p.pl[li], kind: p.kind[li] }; }
     /* what the companion says, in order: greeting, the place's facts (arrival-core), today's line; tapping walks the list */
     function lines(id, li, A, todayText) {
         id = pid(id); if (!id) return [];
-        li = li3(li); const p = pal(id, li), out = [tr('hi', li, p.name, p.kind)];
+        li = li3(li); const p = pal(id, li), out = [tr('hi', li, p.as, p.kind)];
         const P = A && A.PLACES && A.PLACES[id];
         if (P && P.f) P.f.forEach(f => { if (f && f[li]) out.push(f[li]); });
         (MORE[id] || []).forEach(f => { if (f && f[li]) out.push(f[li]); });

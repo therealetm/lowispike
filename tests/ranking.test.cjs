@@ -116,4 +116,6 @@ test('one board: every old Care board / leaderboard way in opens the Ranking; Mo
   assert.match(hs, /care: 'Ranking',/);
   assert.match(hs, /run: \(\) => \(root\.LowiRanking && fn\(root\.LowiRanking, 'open'\)\) \? root\.LowiRanking\.open\(\)/);
   assert.doesNotMatch(R('tutorial-steps.js'), /Care board is in Move/);
+  /* ranking.js reads LowiR3.everyone / me / open: they must exist on the real R3 */
+  assert.match(html, /R3\.everyone = everyone; R3\.me = me;\nR3\.open = function\(q\)\{ q = q \|\| \{\}; const all = \(typeof R3\.everyone === "function" \? R3\.everyone : everyone\)\(\)/);
 });

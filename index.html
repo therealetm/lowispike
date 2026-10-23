@@ -13885,12 +13885,12 @@ html[data-ui=light] .b3-q{background:radial-gradient(circle,#59607a,#2a2f40)}
 .nf2 .nf-sub{font-size:12.5px;line-height:1.3;color:var(--r2-muted,rgba(255,255,255,.7));margin:3px 0 0}
 .nf2 .nf-bc{font-variant-numeric:tabular-nums;letter-spacing:.02em;opacity:.7;margin-right:6px;white-space:nowrap}
 .nf2 .nf-bc::after{content:" ·"}
-.nf2 .ne-box{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 8px;align-items:center;margin:10px 0 0}
-.nf2 .ne-box>*{grid-column:1/-1}
+.nf2 .ne-box{display:flex;flex-direction:column;gap:6px;margin:10px 0 0}
 .nf2 .ne-box>label{margin:0}
-.nf2 .ne-box>.input,.nf2 .ne-box>input{grid-column:1;grid-row:2;height:46px;min-height:46px;margin:0}
-.nf2 .ne-box>.ne-by{grid-column:2;grid-row:2;width:auto;min-height:46px;height:46px;margin:0;padding:0 14px;font-size:14.5px;border-radius:23px;white-space:nowrap}
-.nf2 .ne-box>.ne-live{grid-row:3}
+.nf2 .ne-row-in{gap:8px}
+.nf2 .ne-row-in .input{height:46px;min-height:46px;margin:0;min-width:0}
+.nf2 .ne-row-in .ne-inl{min-height:46px;height:46px;padding:0 14px;font-size:14.5px;white-space:nowrap}
+.nf2 .ne-live:empty{display:none}
 .nf2 .ne-chip{min-height:40px;padding:6px 12px}.nf2 .ne-chip small{display:none}.nf2 .ne-chip span{flex:0 1 auto;max-width:46%}.nf2 .ne-chip b{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px;text-align:right}
 .nf2 .b3-fl{margin:10px 0 5px}
 .nf2 .ne-exl{margin-top:12px}

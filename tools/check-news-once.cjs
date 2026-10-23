@@ -20,7 +20,11 @@ const click = (P, keys) => P.evaluate(ks => { const vis = e => e && e.getBoundin
   const R = await H.open({ device, engine: process.env.ENGINE || 'chromium', url, probe: false, lang, members: 5, messages: 5 });
   await R.ctx.addInitScript(l => { try { localStorage.setItem('lowi.g1.auto', '1'); localStorage.setItem('lowispike.lang', l);
     if (sessionStorage.getItem('np') !== localStorage.getItem('np.round')) { sessionStorage.setItem('np', localStorage.getItem('np.round') || '');
-      localStorage.setItem('lowi.news.seen', JSON.stringify(['older-news-1', 'older-news-2'])); localStorage.removeItem('lowi.g1.bn'); localStorage.removeItem('lowi.news.toured'); localStorage.setItem('lowi.g1', JSON.stringify({ t: 'done', n: 'older-news-2' })); } } catch (e) { } }, lang);
+      localStorage.setItem('lowi.news.seen', JSON.stringify(['older-news-1', 'older-news-2'])); localStorage.removeItem('lowi.g1.bn'); localStorage.removeItem('lowi.news.toured'); localStorage.removeItem('lowi.news.build'); localStorage.removeItem('lowispike.news.seenbuild'); localStorage.setItem('lowi.g1', JSON.stringify({ t: 'done', n: 'older-news-2' })); } } catch (e) { } }, lang);
+  if (process.env.STEPS) await R.ctx.route('**/version.json*', async route => { /* STEPS=1|3: the live news with 1 or 3 steps, to walk the Show me tour too */
+    const r = await route.fetch(); let j; try { j = JSON.parse(await r.text()); } catch (e) { return route.fulfill({ response: r }); } if (!j || !j.news) return route.fulfill({ response: r, json: j }); const t = j.news && j.news.text; const n = +process.env.STEPS;
+    if (j.news) j.news.steps = [{ tab: 'home', text: t }, { tab: 'move', text: { en: 'Move', de: 'Move', es: 'Move' } }, { tab: 'eat', text: { en: 'Eat', de: 'Essen', es: 'Comer' } }].slice(0, n);
+    await route.fulfill({ response: r, json: j }); });
   const P = R.page, res = { device, url, lang }, fails = [];
   const waitCard = async (n) => { for (let i = 0; i < n; i++) { await H.sleep(1000); const s = await look(P); if (s.ob || s.tour) return s; } return look(P); };
   const watch = async (secs, tag) => { const seen = []; for (let i = 0; i < secs; i++) { await H.sleep(1000); const s = await look(P); if (s.ob || s.tour) seen.push(s.text); } if (seen.length) fails.push(tag + ': reappeared: ' + seen[0]); return seen.length; };

@@ -220,7 +220,8 @@
         let must = null;
         if (!st.asking) {
             const m0 = el.classList.contains('rp-dock') ? 16 : 0;
-            must = hard.filter(o => C.PAD_IDS.indexOf(o.k) >= 0).map(o => ({ l: o.l - m0, t: o.t - m0, r: o.r + m0, b: o.b + m0 }));
+            /* the X that takes you out of a cell world is kept clear like the joystick (Oct 23, worldmap-btn) */
+            must = hard.filter(o => C.PAD_IDS.indexOf(o.k) >= 0 || o.k === 'whX').map(o => ({ l: o.l - m0, t: o.t - m0, r: o.r + m0, b: o.b + m0 }));
         }
         if (st.asking || must.length) {
             const d = C.dockSpot(r, st.size, hard, { w: W.innerWidth, h: W.innerHeight }, pal, must);

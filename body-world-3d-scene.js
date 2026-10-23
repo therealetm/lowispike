@@ -151,18 +151,35 @@ export function createWorld(THREE, canvas, opts) {
         const g = new THREE.Group(), col = new THREE.Color(p.hue);
         const a = (i / places.length) * Math.PI * 2 + 0.4, el = (i % 2 ? 0.35 : -0.25), r = 7.2;
         g.position.set(Math.sin(a) * Math.cos(el) * r, Math.sin(el) * r * 0.8, Math.cos(a) * Math.cos(el) * r);
-        const core = new THREE.Mesh(new THREE.SphereGeometry(0.32, 20, 14), new THREE.MeshBasicMaterial({ color: col, fog: true }));
+        const core = new THREE.Mesh(new THREE.SphereGeometry(0.32, 20, 14), new THREE.MeshBasicMaterial({ color: col, fog: true, transparent: true, opacity: 1 }));
         const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: col, transparent: true, opacity: 0.85, depthWrite: false, blending: THREE.AdditiveBlending }));
         glow.scale.set(2.4, 2.4, 1);
         const ring = new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.025, 8, 48), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.7, fog: true }));
         const hit = new THREE.Mesh(new THREE.SphereGeometry(1.0, 8, 6), new THREE.MeshBasicMaterial({ visible: false }));
         hit.userData.place = p.id;
         g.add(glow, core, ring, hit); scene.add(g); hitMeshes.push(hit);
-        beacons[p.id] = { g, ring, glow, core, hue: col, pos: g.position.clone() };
+        beacons[p.id] = { g, ring, glow, core, hue: col, pos: g.position.clone(), veil: 1 };
     });
     /* hub for other builds (regions, cell ride, living cell) to add their meshes */
     const hub = new THREE.Group(); hub.name = 'lowi-hub'; scene.add(hub);
     const regions = places.map(p => ({ id: p.id, pos: beacons[p.id].pos.clone(), hue: p.hue }));
+    /* Oct 23, 18:03 (Eman's iPhone: a red dot with a pink ring sat right on the edge of the Sleep bubble): a body place that drifts in
+       behind a Home bubble or a bloom orb fades out until it is clear again. The bubbles come from body-world-3d.js as screen circles
+       (canvas px, {x, y, r}); the world itself stays exactly as full. */
+    let veilCircles = [];
+    const vTmp = new THREE.Vector3();
+    function setVeil(list) { veilCircles = Array.isArray(list) ? list.filter(c => c && isFinite(c.x) && isFinite(c.y) && c.r > 0) : []; }
+    function beaconVeiled(b) {
+        if (!veilCircles.length) return false;
+        vTmp.copy(b.pos).project(camera);
+        if (vTmp.z > 1 || vTmp.z < -1) return false;
+        const x = (vTmp.x + 1) / 2 * W, y = (1 - vTmp.y) / 2 * H;
+        const dist = camera.position.distanceTo(b.pos) || 1;
+        const rad = (b.glow.scale.x * 0.3) / dist * (H / 2) / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+        for (let i = 0; i < veilCircles.length; i++) { const c = veilCircles[i]; if (Math.hypot(x - c.x, y - c.y) < c.r + rad) return true; }
+        return false;
+    }
+    function veilLook() { return Object.keys(beacons).map(id => { const b = beacons[id]; vTmp.copy(b.pos).project(camera); return { id, x: +((vTmp.x + 1) / 2 * W).toFixed(1), y: +((1 - vTmp.y) / 2 * H).toFixed(1), z: +vTmp.z.toFixed(3), veil: +b.veil.toFixed(3), under: beaconVeiled(b) }; }); }
     const frameFns = new Set();
     function onFrame(fn) { if (typeof fn !== 'function') return () => {}; frameFns.add(fn); return () => frameFns.delete(fn); }
     /* (the little microbe buddies that bobbed next to the gut were removed Oct 16, user decision) */
@@ -687,6 +704,9 @@ export function createWorld(THREE, canvas, opts) {
             b.ring.rotation.x = t * 0.6 + i; b.ring.rotation.y = t * 0.4; const s = (2.2 + Math.sin(t * 1.6 + i) * 0.25) * (1 + 0.45 * tend) * (1 + 0.15 * pk); b.glow.scale.set(s, s, 1);
             b.glow.material.opacity = Math.min(1, 0.85 + 0.15 * tend + 0.1 * pk); b.ring.material.opacity = 0.7 + 0.3 * tend; const rs = 1 + 0.3 * tend; b.ring.scale.set(rs, rs, rs);
             b.core.material.color.copy(b.hue).lerp(tendWhite, 0.4 * tend);
+            const vT = beaconVeiled(b) ? 0 : 1; b.veil += (vT - b.veil) * Math.min(1, dt * 7);
+            if (b.veil < 0.999) { b.glow.material.opacity *= b.veil; b.ring.material.opacity *= b.veil; }
+            b.core.material.opacity = b.veil; b.g.visible = b.veil > 0.02;
         });
         /* place tint */
         tintAmt += (tintT - tintAmt) * Math.min(1, dt * 2.5);
@@ -777,5 +797,5 @@ export function createWorld(THREE, canvas, opts) {
     }
     function dispose() { stop(); renderer.dispose(); }
     setTheme(opts.theme || 'dark');
-    return { scene, camera, hub, regions, onFrame, memU, resize, setFocus, setMode, drag, release, zoom, setPull, setGyro, setGlow, setTend, beaconLook, feelLook, setTheme, flyTo, pick, project, start, stop, fps, renderOnce, warm, get warmed() { return warmed; }, dispose, get running() { return running; }, get dpr() { return dpr; }, rig, renderer };
+    return { scene, camera, hub, regions, onFrame, memU, resize, setVeil, veilLook, setFocus, setMode, drag, release, zoom, setPull, setGyro, setGlow, setTend, beaconLook, feelLook, setTheme, flyTo, pick, project, start, stop, fps, renderOnce, warm, get warmed() { return warmed; }, dispose, get running() { return running; }, get dpr() { return dpr; }, rig, renderer };
 }

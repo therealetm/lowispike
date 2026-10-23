@@ -220,7 +220,7 @@
             setCol(s, CORE.liquidColors('fast', H.getAttribute('data-theme') === 'light', !!st.done));
             return;
         }
-        if (!s.fillEl || !s.fillEl.isConnected || !el.contains(s.fillEl)) s.fillEl = el.querySelector('.wh-cell-fill');
+        if (!s.fillEl || !s.fillEl.isConnected || !el.contains(s.fillEl)) s.fillEl = el.querySelector('.wh-cell-fill, .hb2-fill');
         const f = s.fillEl, hh = el.clientHeight; /* the fill sits inside the border: 122 of 122 px is full */
         if (!f || !hh) { s.lvT = null; return; }
         s.lvT = CORE.liquidLevel(f.offsetHeight / hh);
@@ -407,6 +407,23 @@
         el.classList.remove('lb-bub', 'lb-ctl', 'lb-live'); el.classList.remove('lb-liq'); el.removeAttribute('data-lb'); el.removeAttribute('data-lb-shape');
         list.delete(el); return true;
     }
+    /* Oct 23, 18:03 (Eman: "every bubble needs to look like the bubble of our bubble style"): the bloom orbs (home-blooms-v2.js) wear
+       this same membrane. A bloom re-draws its orbs after a tap (Sips, Cup ...); adopt hands the drawn membrane, its fade and its liquid
+       over to the new element, so nothing flickers or fades in again. */
+    function adopt(from, to, opts) {
+        const s = list.get(from);
+        if (!to || !to.nodeType) return false;
+        if (!s || list.has(to)) return add(to, opts);
+        list.delete(from);
+        from.classList.remove('lb-bub', 'lb-ctl', 'lb-live', 'lb-liq'); from.removeAttribute('data-lb');
+        if (opts) s.opts = Object.assign(s.opts, opts);
+        s.fillEl = null; s.liqOn = null; s.bg = null;
+        list.set(to, s);
+        to.classList.add(s.opts.ctl ? 'lb-ctl' : 'lb-bub');
+        if (s.opts.kind) to.setAttribute('data-lb', s.opts.kind);
+        lastVis = 0;
+        return true;
+    }
     /* Home is rebuilt now and then: drop bubbles that left the page, pick up new ones */
     function fastLong() {
         const FE = W.LowiFastEdit;
@@ -435,7 +452,7 @@
     css();
     setTimeout(scan, 400);
 
-    const API = { add, remove, attach: add, scan, list: () => [...list.keys()], active: () => !!api, core: CORE,
+    const API = { add, remove, adopt, attach: add, scan, list: () => [...list.keys()], active: () => !!api, core: CORE,
         look: () => [...list.entries()].map(([el, s]) => ({ kind: s.opts.kind || '', visible: !!(s.mesh && s.mesh.visible), opacity: +s.o.toFixed(2), sameUniforms: !!(s.mat && api && s.mat.uniforms.uT === api.memU.uT && s.mat.uniforms.uGlow === api.memU.uGlow && s.mat.uniforms.uIn === api.memU.uIn), sameShader: !!(s.mat && mem && s.mat.vertexShader === mem.material.vertexShader), ctl: !!s.opts.ctl, shape: s.opts.shape || 'round', live: !!(s.opts.ctl && el.classList.contains('lb-live')), drop: !!(s.mesh && s.mesh.geometry !== geo), scale: s.mesh ? +s.mesh.scale.x.toFixed(4) : 0,
             liquid: s.liq ? { on: !!(s.liq.visible && s.mesh.visible), cls: el.classList.contains('lb-liq'), level: s.lv == null ? null : +s.lv.toFixed(3), target: s.lvT == null ? null : +s.lvT.toFixed(3),
                 tilt: +s.sl.tilt.toFixed(3), wave: +s.sl.wave.toFixed(3), child: s.liq.parent === s.mesh,

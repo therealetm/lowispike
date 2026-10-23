@@ -2,7 +2,7 @@
    Same membrane glass as the Move bloom (move-bubble.css .wm-orb), so every bubble opens the same way.
    The scrim stays light so Misty is always visible; the orbs never sit on her (layout in home-blooms-v2.js). */
 .hb2-bloom { position: fixed; inset: 0; z-index: 9000; pointer-events: none; }
-.hb2-bloom .hb2-scrim { position: absolute; inset: 0; border: 0; padding: 0; margin: 0; background: rgba(4, 10, 30, .28); opacity: 0; transition: opacity .25s ease;
+.hb2-bloom .hb2-scrim { position: absolute; inset: 0; border: 0; padding: 0; margin: 0; background: rgba(4, 10, 30, .1); opacity: 0; transition: opacity .25s ease;
     pointer-events: auto; cursor: default; -webkit-tap-highlight-color: transparent; }
 .hb2-bloom.on .hb2-scrim { opacity: 1; }
 /* while it folds away, taps already belong to whatever the chosen orb opened */
@@ -10,11 +10,11 @@
 .hb2-orb { position: absolute; width: var(--hb2-orb, 72px); height: var(--hb2-orb, 72px); margin: calc(var(--hb2-orb, 72px) / -2) 0 0 calc(var(--hb2-orb, 72px) / -2);
     border-radius: 50%; padding: 0; color: #fff; pointer-events: auto; overflow: hidden; isolation: isolate; display: flex; align-items: center; justify-content: center;
     font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent;
-    border: 1px solid rgba(143, 231, 255, .55);
-    background: radial-gradient(circle at 34% 26%, rgba(255, 255, 255, .34), rgba(255, 255, 255, 0) 22%),
-                radial-gradient(circle at 50% 50%, rgba(20, 60, 120, .5) 0%, rgba(30, 70, 140, .5) 54%, rgba(155, 135, 210, .45) 80%, rgba(143, 231, 255, .6) 97%);
-    box-shadow: 0 0 22px 2px rgba(143, 231, 255, .3), inset 0 0 12px rgba(155, 135, 210, .45);
-    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    /* Oct 23, 18:03: light, see-through, soft glow, like the Home bubbles' own glass (no navy disc, no hard outline) */
+    border: 1px solid rgba(220, 240, 255, .16);
+    background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, .02) 0%, rgba(170, 220, 255, .07) 58%, rgba(200, 235, 255, .2) 88%, rgba(230, 245, 255, .32) 100%);
+    box-shadow: 0 0 18px rgba(150, 220, 255, .22), inset 0 0 14px rgba(190, 230, 255, .16);
+    -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
     transform: translate(var(--hb2-dx, 0), var(--hb2-dy, 0)) scale(.2); opacity: 0;
     transition: transform .42s cubic-bezier(.3, 1.6, .5, 1) calc(var(--hb2-i, 0) * 40ms), opacity .2s ease calc(var(--hb2-i, 0) * 40ms); }
 .hb2-bloom.on .hb2-orb { transform: none; opacity: 1; }
@@ -22,7 +22,7 @@
 .hb2-bloom.off .hb2-orb.hb2-chosen { transform: translate(var(--hb2-dx, 0), var(--hb2-dy, 0)) scale(.55); transition: transform .32s cubic-bezier(.5, 0, .8, .4), opacity .32s ease-in; }
 .hb2-orb:active { scale: .9; transition: scale .1s; }
 /* Oct 23 2026: today's picked step range (Casual / Steady / Epic) glows, like the picked language chip (aria-pressed=true) */
-.hb2-orb.hb2-on { border-color: rgba(143,231,255,.95); box-shadow: 0 0 0 2px rgba(143,231,255,.95), 0 0 14px rgba(143,231,255,.5); }
+.hb2-orb.hb2-on { box-shadow: 0 0 22px 2px rgba(190, 240, 255, .5), inset 0 0 18px rgba(210, 245, 255, .45); }
 .hb2-orb:focus-visible { outline: 2px solid #9fffe0; outline-offset: 3px; }
 .hb2-orb[disabled] { cursor: default; filter: saturate(.4); }
 .hb2-bloom.on .hb2-orb[disabled] { opacity: .55; }
@@ -37,8 +37,10 @@
 .hb2-bloom.on .hb2-orb.hb2-mirror { animation: hb2MirrorPulse 2.2s ease-out .6s infinite; }
 @keyframes hb2MirrorPulse { 0% { box-shadow: 0 0 0 0 rgba(90, 169, 255, .55), 0 0 22px 2px rgba(10, 132, 255, .45), inset 0 0 12px rgba(143, 231, 255, .4); } 70%, 100% { box-shadow: 0 0 0 14px rgba(90, 169, 255, 0), 0 0 22px 2px rgba(10, 132, 255, .45), inset 0 0 12px rgba(143, 231, 255, .4); } }
 @media (prefers-reduced-motion: reduce) { .hb2-bloom.on .hb2-orb.hb2-mirror { animation: none; } }
-.hb2-water .hb2-fill { background: linear-gradient(180deg, rgba(150, 220, 255, .5), rgba(40, 130, 230, .75)); }
-.hb2-tx { display: flex; flex-direction: column; align-items: center; line-height: 1.1; text-shadow: 0 1px 6px rgba(0, 30, 80, .7); padding: 0 6px; text-align: center; }
+.hb2-water .hb2-fill, .hb2-orb[data-group="water"] .hb2-fill { background: linear-gradient(180deg, rgba(110, 200, 255, .55), rgba(40, 120, 240, .8)); }
+/* Oct 23, 18:03: Sleep's answers carry Sleep's own violet liquid, as on the Sleep bubble (home-orbit-v2.css .o8-sleep) */
+.hb2-sleep .hb2-fill, .hb2-orb[data-group="sleep"] .hb2-fill { background: linear-gradient(180deg, rgba(190, 170, 255, .45), rgba(120, 100, 230, .7)); }
+.hb2-tx { display: flex; flex-direction: column; align-items: center; line-height: 1.1; text-shadow: 0 1px 3px rgba(0, 8, 30, .6); padding: 0 6px; text-align: center; }
 .hb2-ic { width: 18px; height: 18px; margin-bottom: 1px; flex: none; filter: drop-shadow(0 1px 3px rgba(0, 30, 80, .6)); }
 /* long labels ("Mahlzeit eintragen", "Gerade gegessen") wrap to two short lines instead of being cut by the round edge */
 .hb2-tx b { font-size: 12.5px; line-height: 1.05; font-weight: 700; max-width: calc(var(--hb2-orb, 72px) - 16px); overflow-wrap: anywhere; text-wrap: balance; }
@@ -56,3 +58,31 @@
     .hb2-orb, .hb2-bloom .hb2-scrim, .hb2-note, .hb2-fill { transition: none !important; }
     .hb2-orb { transform: none; }
 }
+
+/* ---------- bubble style (Oct 23, 18:03, Eman: "every bubble needs to look like the bubble of our bubble style") ----------
+   Every orb (Log meal, Cook, Shop, Sips, Cup, Bottle, Casual, Steady, Epic, and Sleep's three answers) is registered with
+   living-bubbles.js, so Misty's own 3D membrane, its fresnel rim, its breathing and its liquid are drawn round it exactly as round
+   Fuel, Water, Gap, Sleep, Move, Scan and Community. The DOM shell turns clear, only the white icon and words stay inside. */
+html.lb3d.wh-home .hb2-bloom .hb2-orb.lb-bub {
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+html.lb3d.wh-home .hb2-bloom .hb2-orb.lb-bub.lb-liq .hb2-fill { opacity: 0 !important; }
+/* living-bubbles.css gives every .lb-bub its own press transition (scale, filter); the orb keeps its fly-in on top of it */
+.hb2-bloom .hb2-orb.lb-bub {
+    transition-property: transform, opacity, scale, filter;
+    transition-duration: .42s, .2s, .5s, .25s;
+    transition-timing-function: cubic-bezier(.3, 1.6, .5, 1), ease, cubic-bezier(.34, 1.9, .5, 1), ease;
+    transition-delay: calc(var(--hb2-i, 0) * 40ms), calc(var(--hb2-i, 0) * 40ms), 0s, 0s;
+}
+.hb2-bloom.hb2-all .hb2-orb.lb-bub { transition-delay: calc(var(--hb2-i, 0) * 22ms), calc(var(--hb2-i, 0) * 22ms), 0s, 0s; }
+.hb2-bloom.off .hb2-orb.lb-bub { transition-duration: .3s, .25s, .5s, .25s; transition-delay: 0s; }
+.hb2-bloom.off .hb2-orb.lb-bub.hb2-chosen { transition-duration: .32s, .32s, .5s, .25s; transition-timing-function: cubic-bezier(.5, 0, .8, .4), ease-in, ease, ease; }
+/* the picked one (today's steps, last night's sleep): a soft light inside the membrane and a small check, no hard ring */
+.hb2-orb.hb2-on::before { content: ''; position: absolute; inset: 0; border-radius: 50%; pointer-events: none; z-index: -1;
+    background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0) 45%, rgba(200, 240, 255, .22) 80%, rgba(225, 248, 255, .42) 100%); }
+.hb2-orb.hb2-on .hb2-tx b::after { content: ' \2713'; font-weight: 800; }
+@media (prefers-reduced-motion: reduce) { .hb2-bloom .hb2-orb.lb-bub { transition: none !important; } }

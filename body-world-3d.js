@@ -140,10 +140,33 @@
             api.ready = true; api.state = 'ready'; H.classList.add('bw3-ready');
             try { W.dispatchEvent(new CustomEvent('lowi:world3d-ready', { detail: api })); } catch (e) {}
             syncGlow();
+            startVeil();
             return world;
         }).catch(err => { console.warn('3D world unavailable', err && err.message); fail('load'); return null; });
         return loading;
     }
+    /* Oct 23, 18:03 (Eman's iPhone: a glowing body place sat right on the edge of the Sleep bubble): tell the scene where the Home
+       bubbles and the bloom orbs are on screen, five times a second, so a body place behind one fades out (scene setVeil). */
+    const VEIL_SEL = '.lb-bub, .lb-ctl, .hb2-orb, .ss2-chip';
+    let veilTimer = 0;
+    function veilCircles() {
+        if (!world || !canvas || !canvas.isConnected || mode !== 'home') return [];
+        const cr = canvas.getBoundingClientRect(); if (!cr.width || !cr.height) return [];
+        const out = [];
+        D.querySelectorAll(VEIL_SEL).forEach(el => {
+            if (!el.isConnected || el.offsetParent === null && getComputedStyle(el).position !== 'fixed') return;
+            const r = el.getBoundingClientRect(); if (r.width < 4 || r.height < 4) return;
+            out.push({ x: r.left + r.width / 2 - cr.left, y: r.top + r.height / 2 - cr.top, r: Math.max(r.width, r.height) / 2 + 4 });
+        });
+        return out;
+    }
+    function startVeil() {
+        clearInterval(veilTimer);
+        if (!world || !world.setVeil) return;
+        veilTimer = setInterval(() => { if (!world || !world.setVeil) { clearInterval(veilTimer); return; } if (D.hidden) return; try { world.setVeil(veilCircles()); } catch (e) { } }, 200);
+    }
+    api.veilCircles = veilCircles;
+    api.veilLook = () => (world && world.veilLook ? world.veilLook() : null);
     /* graphics taken away: keep everything (Misty, the camera, the flight) frozen in place, and pick up again when they come back */
     let lostTimes = [], lostWait = 0, lostSeen = 0;
     function ctxLost() {

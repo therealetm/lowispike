@@ -6,12 +6,9 @@
 html.br-zoom #whHud, html.br-zoom #spHome .sp-heroes > :not(.bw3-stage) { will-change: scale; }
 /* Oct 23 (Eman, "nothing in my universe"): the 3D world is never scaled as a box; the camera pulls back instead (bloom-ring.js) */
 html.br-zoom #spHome .sp-heroes, html.br-zoom #bw3Stage, html.br-zoom #bw3Stage canvas { scale: none !important; }
-/* all blooms at once (two-finger tap on Misty): one round of orbs, each group tinted only by a thin rim so they read as one family */
+/* all blooms at once (two-finger tap on Misty): one round of orbs, one family, one look */
 .hb2-bloom.hb2-all .hb2-note { display: none; }
 .hb2-bloom.hb2-all .hb2-orb { --hb2-i2: var(--hb2-i, 0); transition-delay: calc(var(--hb2-i2) * 22ms); }
-.hb2-bloom .hb2-orb[data-group]::after { content: ''; position: absolute; inset: 2px; border-radius: 50%; pointer-events: none; z-index: -1;
-    border: 1px solid rgba(143, 231, 255, .25); }
-.hb2-bloom.hb2-all .hb2-orb[data-group="water"]::after { border-color: rgba(120, 200, 255, .5); }
-.hb2-bloom.hb2-all .hb2-orb[data-group="move"]::after { border-color: rgba(150, 255, 210, .45); }
-.hb2-bloom.hb2-all .hb2-orb[data-group="fuel"]::after { border-color: rgba(255, 220, 150, .42); }
+/* Oct 23, 18:03 (Eman: "every bubble needs to look like the bubble of our bubble style"): no hard tinted rim per group any more.
+   Every orb is the same living Home bubble (home-blooms-v2.css, section "bubble style"); a group shows only in its liquid colour. */
 @media (prefers-reduced-motion: reduce) { html.br-zoom #whHud, html.br-zoom #spHome .sp-heroes > :not(.bw3-stage) { transition: none !important; } }

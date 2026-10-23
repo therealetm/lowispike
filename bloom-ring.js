@@ -60,7 +60,26 @@
         let guard = 0;
         while (total * step > TAU * 0.995 && guard++ < 60) { rho *= 1.04; step = stepFor(rho, d + between); }
         const ringBy = {}; o.ring.forEach(b => { ringBy[b.key] = b; });
-        const groups = pack(o.groups.filter(g => ringBy[g.key]).map(g => ({ key: g.key, n: g.n, a: Math.atan2(ringBy[g.key].y - c.y, ringBy[g.key].x - c.x) })), step);
+        const raw = o.groups.filter(g => ringBy[g.key]).map(g => ({ key: g.key, n: g.n, a: Math.atan2(ringBy[g.key].y - c.y, ringBy[g.key].x - c.x) }));
+        if (o.even && raw.length > 1) {
+            /* Oct 23, 18:03 (Eman, two fingers on Misty: Sleep's options were missing, "da fehlt doch was", the ring was a lopsided arc):
+               the two-finger ring is ONE full, even circle. Every orb sits exactly 360/n degrees from the next, each group stays together in
+               the order of its bubble round Misty, and the whole circle turns so every group sits as close to its own bubble as it can. */
+            const n = raw.reduce((t, g) => t + Math.max(1, g.n | 0), 0), est = TAU / n;
+            rho = Math.max(rho, (d + between) / (2 * Math.sin(Math.PI / n)));
+            const ord = raw.map(g => Object.assign({}, g, { n: Math.max(1, g.n | 0) })).sort((p, q) => norm(p.a) - norm(q.a));
+            let u = 0; ord.forEach(g => { g.u = (u + (g.n - 1) / 2) * est; u += g.n; });
+            let sx = 0, sy = 0; ord.forEach(g => { sx += g.n * Math.cos(g.a - g.u); sy += g.n * Math.sin(g.a - g.u); });
+            const t0 = Math.atan2(sy, sx);
+            const eg = ord.map(g => ({ key: g.key, a: g.a, n: g.n, c: norm(t0 + g.u + Math.PI) - Math.PI, h: (g.n - 1) / 2 * est }));
+            const eorbs = [];
+            eg.forEach(g => {
+                const b = ringBy[g.key], from = { x: c.x + (b.x - c.x) * s, y: c.y + (b.y - c.y) * s };
+                for (let i = 0; i < g.n; i++) { const a = g.c + (i - (g.n - 1) / 2) * est; eorbs.push({ key: g.key, i, a, x: c.x + Math.cos(a) * rho, y: c.y + Math.sin(a) * rho, from }); }
+            });
+            return { s, rho, step: est, groups: eg, orbs: eorbs, d, even: true };
+        }
+        const groups = pack(raw, step);
         const orbs = [];
         groups.forEach(g => {
             const b = ringBy[g.key], from = { x: c.x + (b.x - c.x) * s, y: c.y + (b.y - c.y) * s };
@@ -163,7 +182,7 @@
         const g = ring(); if (!g) return null;
         const vw = W.innerWidth || 390, vh = W.innerHeight || 844, sf = safe();
         const d = opts.d || Math.round(Math.max(60, Math.min(78, Math.min(vw, vh) * 0.17)));
-        const out = solve({ c: g.c, mistyR: g.mistyR, ring: g.ring, groups, d, gap: opts.gap == null ? 10 : opts.gap, between: 8,
+        const out = solve({ c: g.c, mistyR: g.mistyR, ring: g.ring, groups, d, gap: opts.gap == null ? 10 : opts.gap, between: 8, even: !!opts.even,
             view: { w: vw, h: vh, t: sf.t + 6, r: sf.r, b: sf.b, l: sf.l }, margin: 8,
             /* a little pull-back always (it reads as the view opening up), more only when the orbs need the room */
             maxS: opts.maxS || (groups.length > 1 ? 0.9 : 0.96), minS: 0.5, minD: 54 });

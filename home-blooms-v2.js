@@ -184,7 +184,8 @@
         walk: '<circle cx="13" cy="4.5" r="1.8"/><path d="M11 21l2-6-2.5-2.5L12 8l3 3h3"/><path d="M10.5 12.5L8 15H5"/>',
         ate: '<path d="M7 3v8a2 2 0 0 0 2 2v8M7 3v5M11 3v8a2 2 0 0 1-2 2"/><path d="M17 3c-2 2-2.5 5-2.5 7.5H17V21"/>',
         clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M4.5 4.5l2 2"/>',
-        cam: '<rect x="3" y="6.5" width="13" height="11" rx="3"/><path d="M16 10.5l5-3v9l-5-3"/>'
+        cam: '<rect x="3" y="6.5" width="13" height="11" rx="3"/><path d="M16 10.5l5-3v9l-5-3"/>',
+        moon: '<path d="M19.5 14.6A7.8 7.8 0 0 1 9.4 4.5a7.8 7.8 0 1 0 10.1 10.1z"/><path d="M15.5 4.5h3l-3 3.4h3"/>'
     };
     const svg = k => '<svg class="hb2-ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' + (P[k] || '') + '</svg>';
 
@@ -241,10 +242,27 @@
                 if (!MOVE_NAMES[L.id]) return;
                 A.push({ id: L.id, label: MOVE_NAMES[L.id](), sub: MOVE_HINTS[L.id](), aria: MOVE_NAMES[L.id]() + ', ' + MOVE_RANGES[L.id](), icon: 'walk', q: L.q / 4, on: cur === L.id, run: () => W.LowiMoveBubble.pick(L.id) });
             });
+        } else if (kind === 'sleep') {
+            /* Oct 23, 18:03 (Eman's iPhone: Sleep's three options sat as a loose row bottom left with a question line under them, "Sleeping
+               isn't aligned"): Sleep blooms exactly like Fuel, Water and Move. Its three answers are bubbles on the same circle round
+               Misty, short to long like Sips / Cup / Bottle, the question lives inside each bubble ("last night"), last night's answer is
+               marked. Writing stays in home-settings-sleep-v2.js (LowiHomeSettingsSleepV2.sleep.set: same store, same XP, same event). */
+            const S = W.LowiHomeSettingsSleepV2, SL = S && S.sleep;
+            if (SL && fn(SL, 'set') && Array.isArray(S.BANDS)) {
+                let cur = null; try { const t = fn(SL, 'today') ? SL.today() : null; cur = t && t.band; } catch (e) { }
+                const TXl = S.TX && (S.TX[['en', 'de', 'es'][li()]] || S.TX.en);
+                const short = { under6: '<6 h', '6to7': '6\u20137 h', '7plus': '7 h+' };
+                S.BANDS.forEach(b => {
+                    const lab = (TXl && TXl.short && TXl.short[b]) || short[b] || b;
+                    const long = (TXl && TXl[b]) || lab;
+                    const q = S.FILL && S.FILL[b] != null ? S.FILL[b] : ({ under6: 1 / 3, '6to7': 2 / 3, '7plus': 1 })[b];
+                    A.push({ id: 's-' + b, band: b, label: lab, sub: T('last night', 'letzte Nacht', 'anoche'), aria: T('Sleep last night', 'Schlaf letzte Nacht', 'Sueño anoche') + ': ' + long, icon: 'moon', q, on: cur === b, run: () => SL.set(b) });
+                });
+            }
         }
         return A;
     }
-    const TITLES = { fuel: () => T('Fuel', 'Essen', 'Comida'), water: () => T('Water', 'Wasser', 'Agua'), move: () => T('Move', 'Bewegung', 'Movimiento'), gap: () => T('Meal gap', 'Essenspause', 'Pausa') };
+    const TITLES = { fuel: () => T('Fuel', 'Essen', 'Comida'), water: () => T('Water', 'Wasser', 'Agua'), move: () => T('Move', 'Bewegung', 'Movimiento'), gap: () => T('Meal gap', 'Essenspause', 'Pausa'), sleep: () => T('Sleep', 'Schlaf', 'Sueño') };
 
     /* ---------- DOM ---------- */
     const st = { root: null, mounted: false, bind: true, open: null, ov: null, src: null, hold: null, swallow: 0 };
@@ -256,6 +274,25 @@
         if (st.ov && st.ov.contains(el)) return null;
         return el;
     };
+    /* Oct 23, 18:03 (Eman: "every bubble needs to look like the bubble of our bubble style"): each orb gets Misty's own living membrane
+       from LowiBubbles, the same one the Home bubbles wear. A re-draw (a tap on Sips) hands the membrane over (adopt), a fold
+       lets it fade with the orb and then drops it. */
+    const orbKey = el => (el.dataset.group || '') + '|' + (el.dataset.id || '');
+    function orbMap(ov) { const m = {}; if (ov) ov.querySelectorAll('.hb2-orb[data-id]').forEach(el => { m[orbKey(el)] = el; }); return m; }
+    function skin(ov, prev) {
+        const LB = W.LowiBubbles;
+        if (!LB || !fn(LB, 'add') || !ov) return;
+        ov.querySelectorAll('.hb2-orb[data-id]').forEach(el => {
+            const old = prev && prev[orbKey(el)];
+            try { if (old && old !== el && fn(LB, 'adopt')) LB.adopt(old, el, { kind: 'orb' }); else LB.add(el, { kind: 'orb' }); } catch (e) { }
+        });
+        if (prev) Object.keys(prev).forEach(k => { const o = prev[k]; if (o && !o.isConnected && fn(LB, 'remove')) try { LB.remove(o); } catch (e) { } });
+    }
+    function unskin(ov) {
+        const LB = W.LowiBubbles;
+        if (!LB || !fn(LB, 'remove') || !ov) return;
+        ov.querySelectorAll('.hb2-orb').forEach(el => { try { LB.remove(el); } catch (e) { } });
+    }
     function mistyCircle() {
         const scope = st.root && st.root !== D ? st.root : D;
         const el = scope.querySelector('[data-orbit="misty"]') || D.querySelector('[data-orbit="misty"]') || D.getElementById('spBubble');
@@ -287,20 +324,25 @@
         ov.setAttribute('aria-label', TITLES[kind]());
         ov.dataset.kind = kind;
         ov.style.setProperty('--hb2-orb', orb + 'px');
+        const prevOrbs = orbMap(st.ov === ov ? ov : null);
         ov.innerHTML = '<button type="button" class="hb2-scrim" data-hb2="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '"></button>' +
             acts.map((a, i) => { const p = L.pts[i]; return '<button type="button" class="hb2-orb hb2-' + a.id + (a.on ? ' hb2-on' : '') + '" data-hb2="act" data-id="' + a.id + '"' + (a.disabled ? ' disabled aria-disabled="true"' : '') + (a.on != null ? ' aria-pressed="' + !!a.on + '"' : '') +
                 ' style="left:' + Math.round(p.x) + 'px;top:' + Math.round(p.y) + 'px;--hb2-dx:' + Math.round((p.from || b).x - p.x) + 'px;--hb2-dy:' + Math.round((p.from || b).y - p.y) + 'px;--hb2-i:' + i + (a.q != null ? ';--hb2-q:' + a.q : '') + '"' +
                 ' aria-label="' + esc(a.aria || (a.label + (a.sub ? ', ' + a.sub : ''))) + '">' + (a.q != null ? '<span class="hb2-fill" aria-hidden="true"></span>' : '') +
                 '<span class="hb2-tx">' + svg(a.icon) + '<b>' + esc(a.label) + '</b>' + (a.sub ? '<small>' + esc(a.sub) + '</small>' : '') + '</span></button>'; }).join('') +
             (kind === 'move' ? moveNote(L.pts, orb, b, m, vw, vh) : '');
+        skin(ov, prevOrbs);
         ov.__acts = acts;
         ov.__layout = { pts: L.pts, bubble: b, misty: m, orb, rot: L.rot, ring: L.ring ? { s: L.ring.s, rho: L.ring.rho, step: L.ring.step, c: L.ring.c } : null };
         return ov;
     }
     /* Oct 23 (Emmanuel: "when I tap my companion's bubble with two fingers, it should be a shortcut that opens all of them"):
        every bloom at once, one round of orbs on one circle round Misty, each group centred on its own bubble, same spacing everywhere,
-       the view pulled back so nothing is cramped (bloom-ring.js solve). Gap has no orbs (a tap opens its view). */
-    const ALL = ['fuel', 'water', 'move'];
+       the view pulled back so nothing is cramped (bloom-ring.js solve). Gap has no orbs (a tap opens its view).
+       Oct 23, 18:03 (Eman: "da fehlt doch was"): Sleep's three answers were missing, so the lower left stayed empty and the ring was a
+       lopsided arc. Now all four groups (3 + 3 + 3 + 3) share ONE full circle, every orb the same angle from the next (solve even).
+       Gap and Scan have no options (a tap opens the Gap view / the camera), Joy and Community open pages, so they bring no orbs. */
+    const ALL = ['fuel', 'water', 'move', 'sleep'];
     function renderAll() {
         const R = W.LowiBloomRing;
         if (!R || !R.place) return null;
@@ -316,7 +358,7 @@
         });
         if (!groups.length) return null;
         let ring = null;
-        try { ring = R.place(groups); } catch (e) { ring = null; }
+        try { ring = R.place(groups, { even: true }); } catch (e) { ring = null; }
         if (!ring || !ring.orbs || ring.orbs.length !== acts.length) return null;
         /* solve() lists the orbs group by group in its own packed order: pair each with its action by group key + index */
         const byKey = {}; acts.forEach(a => { (byKey[a.group] = byKey[a.group] || []).push(a); });
@@ -328,11 +370,13 @@
         ov.setAttribute('aria-label', T('All bubbles', 'Alle Bubbles', 'Todas las burbujas'));
         ov.dataset.kind = 'all';
         ov.style.setProperty('--hb2-orb', ring.d + 'px');
+        const prevOrbs = orbMap(st.ov === ov ? ov : null);
         ov.innerHTML = '<button type="button" class="hb2-scrim" data-hb2="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '"></button>' +
             pairs.map(({ p, a }, i) => '<button type="button" class="hb2-orb hb2-' + a.id + (a.on ? ' hb2-on' : '') + '" data-hb2="act" data-id="' + a.id + '" data-group="' + a.group + '"' + (a.disabled ? ' disabled aria-disabled="true"' : '') + (a.on != null ? ' aria-pressed="' + !!a.on + '"' : '') +
                 ' style="left:' + Math.round(p.x) + 'px;top:' + Math.round(p.y) + 'px;--hb2-dx:' + Math.round(p.from.x - p.x) + 'px;--hb2-dy:' + Math.round(p.from.y - p.y) + 'px;--hb2-i:' + i + (a.q != null ? ';--hb2-q:' + a.q : '') + '"' +
                 ' aria-label="' + esc(TITLES[a.group]() + ': ' + (a.aria || (a.label + (a.sub ? ', ' + a.sub : '')))) + '">' + (a.q != null ? '<span class="hb2-fill" aria-hidden="true"></span>' : '') +
                 '<span class="hb2-tx">' + svg(a.icon) + '<b>' + esc(a.label) + '</b>' + (a.sub ? '<small>' + esc(a.sub) + '</small>' : '') + '</span></button>').join('');
+        skin(ov, prevOrbs);
         ov.__acts = pairs.map(x => x.a);
         ov.__layout = { pts: pairs.map(x => ({ x: x.p.x, y: x.p.y, key: x.p.key })), misty: mistyCircle(), orb: ring.d, rot: 0, all: true,
             ring: { s: ring.s, rho: ring.rho, step: ring.step, c: ring.c, groups: ring.groups.map(g => ({ key: g.key, n: g.n, a: g.a, c: g.c })) } };
@@ -405,7 +449,8 @@
     }
 
     function open(kind, src) {
-        if (KINDS.indexOf(kind) < 0) return false;
+        if (KINDS.indexOf(kind) < 0 && kind !== 'sleep') return false;
+        if (kind === 'sleep' && !actionsFor('sleep').length) return false;
         if (!src) { const scope = st.root && st.root !== D ? st.root : D; src = scope.querySelector('[data-orbit="' + kind + '"]'); }
         if (!src || !src.getBoundingClientRect().width) return false;
         if (st.open) close(true);
@@ -444,8 +489,8 @@
         D.documentElement.classList.remove('hb2-open');
         try { if (W.LowiBloomRing && W.LowiBloomRing.unzoom) W.LowiBloomRing.unzoom('blooms'); } catch (e) { }
         if (chosen) { const c = ov.querySelector('[data-id="' + chosen + '"]'); if (c) c.classList.add('hb2-chosen'); }
-        if (now || reduced()) ov.remove();
-        else { ov.classList.remove('on'); ov.classList.add('off'); setTimeout(() => ov.remove(), 340); }
+        if (now || reduced()) { ov.remove(); unskin(ov); }
+        else { ov.classList.remove('on'); ov.classList.add('off'); setTimeout(() => { ov.remove(); unskin(ov); }, 340); }
         try { D.dispatchEvent(new CustomEvent('lowi:bloom-v2', { detail: { kind, open: false, owner: 'blooms' } })); } catch (e) { }
         return true;
     }
@@ -499,7 +544,7 @@
     /* a real resize re-lays Home out; while a page is open on top, or as Home comes back unchanged, the bloom stays */
     function onRelayout() { if (st.open && homeTab() && !(W.LowiSections && W.LowiSections.instant)) close(true); }
     function homeTab() { const h = D.getElementById('tab-home'); return !h || h.classList.contains('active'); }
-    function onData() { if (st.open === 'water' || st.open === 'move' || st.open === 'all') refreshOpen(); }
+    function onData() { if (st.open === 'water' || st.open === 'move' || st.open === 'sleep' || st.open === 'all') refreshOpen(); }
     /* one bloom on Home at a time: the Sleep / Settings blooms (home-settings-sleep-v2) announce with owner 'settings-sleep' */
     function onOther(e) { const d = e && e.detail; if (d && d.open && d.owner && d.owner !== 'blooms' && st.open) close(true); }
     /* claim the four ring controls so the ring shell's fallback taps step aside (COORD-eight-home.md tap ownership) */
@@ -525,6 +570,7 @@
         D.addEventListener('keydown', onKey);
         D.addEventListener('lowi:home-orbit', onOrbit);
         D.addEventListener('lowi:bloom-v2', onOther);
+        D.addEventListener('lowi:sleep', onData);
         W.addEventListener('resize', onRelayout);
         ['lowi:water', 'lowi:reward', 'lowi:state'].forEach(n => W.addEventListener(n, onData));
         D.documentElement.classList.add('hb2-on');
@@ -542,6 +588,7 @@
         D.removeEventListener('keydown', onKey);
         D.removeEventListener('lowi:home-orbit', onOrbit);
         D.removeEventListener('lowi:bloom-v2', onOther);
+        D.removeEventListener('lowi:sleep', onData);
         W.removeEventListener('resize', onRelayout);
         ['lowi:water', 'lowi:reward', 'lowi:state'].forEach(n => W.removeEventListener(n, onData));
         D.documentElement.classList.remove('hb2-on');

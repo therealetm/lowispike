@@ -428,7 +428,14 @@
         const i = bs.indexOf(D.activeElement), last = bs.length - 1;
         if (e.shiftKey && i <= 0) { e.preventDefault(); bs[last].focus(); } else if (!e.shiftKey && (i === last || i < 0)) { e.preventDefault(); bs[0].focus(); }
     }
+    /* the shared bloom ring, when it can take Sleep (LowiHomeBloomsV2 + LowiBloomRing loaded, Sleep's options there) */
+    function ringBlooms() {
+        const B = root.LowiHomeBloomsV2;
+        if (!B || !fn(B, 'open') || !fn(B, 'isOpen') || !fn(B, 'close') || !root.LowiBloomRing) return null;
+        try { return (B.actions('sleep') || []).length ? B : null; } catch (e) { return null; }
+    }
     function show(kind) {
+        if (kind === 'sleep') { const B = ringBlooms(); if (B) { close(false); if (B.open('sleep')) return true; } }
         const bubbleKey = kind === 'more' || kind === 'page' ? 'settings' : kind;
         /* Oct 22 2026: Settings live in the profile hub now (community-me.js), so every way to the old sheet opens the hub; the old
            sheet stays only as the fallback when the hub is not loaded */
@@ -596,6 +603,9 @@
         e.preventDefault();
         /* the click that ends a hold is not a tap (the hold already opened the hub) */
         if (k === 'settings' && (holdFired || Date.now() < swallowUntil)) { e.stopPropagation(); return; }
+        /* Oct 23, 18:03 (Eman: "Sleeping isn't aligned"): Sleep blooms on the same circle as Fuel, Water and Move (LowiHomeBloomsV2);
+           a second tap on Sleep folds it again. The old fan below stays only as the fallback. */
+        if (k === 'sleep') { const B = ringBlooms(); if (B) { if (B.isOpen() === 'sleep') B.close(); else { close(false); if (!B.open('sleep')) show('sleep'); } return; } }
         const i = tapIntent(k, open);
         if (i === 'close') close(true);
         else if (i === 'community') { close(false); try { ROUTES.community.run(); } catch (err) { console.warn('[settings-sleep] community', err); } }

@@ -94,3 +94,30 @@ html[data-ui=light] .mb-cell .g2{fill:hsla(var(--h),90%,88%,.9)}
 .r2-ov.mb-ov-top.off{pointer-events:none}
 .mb-toast.mb-top{z-index:99996}
 .mb-heart.mb-sent{background:radial-gradient(circle at 35% 30%,#ffe3ec,#ff8fb1 65%);box-shadow:0 0 8px rgba(255,143,177,.55)}
+
+/* Oct 23 2026 Send energy sheet as living glass bubbles (Emmanuel: "was ist denn das"). One clear step: who gets it (header +
+   their cell), what you send (round glass bubbles, the chosen one glows and breathes), one Send button that names it.
+   No flat white glint oval on the cells (Oct 23 rule, oct23-no-glint-disc). tests/send-energy-sheet.test.cjs */
+.mb-cell .hl{display:none}
+.mb-care h2{margin-bottom:10px}
+.mb-care .mb-duo{grid-template-columns:68px 1fr 68px;margin:2px 0 14px}
+.mb-care .mb-me .mb-cell,.mb-care .mb-them .mb-cell{width:62px;height:62px}
+.mb-care .mb-them small{color:var(--r2-ink,#f8f5ed);font-weight:700}
+.mb-care .mb-say{border-radius:22px;background:radial-gradient(120% 140% at 30% 0%,rgba(255,255,255,.10),rgba(255,255,255,.03) 60%),var(--r2-sheet2,#151926);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.mb-care .mb-kinds{gap:10px;justify-items:center}
+.mb-care .mb-kind{width:100%;max-width:112px;aspect-ratio:1/1;min-height:0;height:auto;justify-content:center;gap:4px;padding:6px;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:radial-gradient(circle at 35% 28%,rgba(255,255,255,.16),rgba(255,255,255,.04) 58%,rgba(255,255,255,.02));box-shadow:inset 0 0 18px rgba(255,255,255,.05);transition:transform .2s ease,box-shadow .25s ease,border-color .25s ease;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.mb-care .mb-kind:active{transform:scale(.94)}
+.mb-care .mb-kind .mb-ke{font-size:28px;height:30px}
+.mb-care .mb-kind b{font-size:12px;max-width:92%;overflow:hidden;text-overflow:ellipsis}
+.mb-care .mb-kind small{font-size:10.5px}
+.mb-care .mb-kind.act{border-color:rgba(233,203,136,.85);background:radial-gradient(circle at 35% 28%,rgba(255,236,190,.30),rgba(201,165,96,.12) 60%,rgba(201,165,96,.05));box-shadow:0 0 0 1px rgba(233,203,136,.55) inset,0 0 22px rgba(233,203,136,.35)}
+.mb-care .mb-kind.off{opacity:.5}
+.mb-care .mb-cta{border-radius:999px;min-height:54px;margin-top:16px}
+@media (prefers-reduced-motion: no-preference){
+.mb-care .mb-kind.act{animation:mbBreath 2.8s ease-in-out infinite}
+@keyframes mbBreath{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+}
+html[data-ui=light]:not(.lg) .mb-care .mb-kind{color:#13303a;border-color:rgba(20,50,70,.14);background:radial-gradient(circle at 35% 28%,rgba(255,255,255,.95),rgba(235,242,248,.85) 60%,rgba(220,232,242,.8));box-shadow:inset 0 0 14px rgba(255,255,255,.6),0 2px 10px rgba(40,60,90,.08)}
+html[data-ui=light]:not(.lg) .mb-care .mb-kind.act{color:#3a2a08;border-color:rgba(185,141,69,.8);background:radial-gradient(circle at 35% 28%,#fff8e6,#f6e2b6 62%,#efd398);box-shadow:0 0 0 1px rgba(185,141,69,.5) inset,0 0 18px rgba(201,165,96,.35)}
+html[data-ui=light]:not(.lg) .mb-care .mb-say{color:#13303a;background:rgba(255,255,255,.85);box-shadow:none}
+/* the liquid-glass shell (html.lg) keeps every sheet dark with white ink in both modes, so the bubbles stay dark glass there */

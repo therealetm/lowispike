@@ -36,7 +36,10 @@
         wait: T('You’re offline or not signed in: it waits on this phone and goes out as soon as you are.', 'Du bist offline oder nicht angemeldet: Es wartet auf diesem Handy und geht raus, sobald du es bist.', 'Estás sin conexión o sin sesión: espera en este móvil y se envía en cuanto la tengas.'),
         sentTo: T('{k} sent to {n}', '{k} an {n} gesendet', '{k} enviado a {n}'), queued: T('{k} for {n} is waiting to go out', '{k} für {n} wartet aufs Senden', '{k} para {n} espera para enviarse'),
         gotToday: T('sent you something today', 'hat dir heute etwas geschickt', 'te envió algo hoy'),
-        you: T('You', 'Du', 'Tú')
+        you: T('You', 'Du', 'Tú'),
+        energyOver: T('SEND ENERGY', 'ENERGIE SENDEN', 'ENVIAR ENERGÍA'),
+        energyTo: T('to {n}', 'an {n}', 'a {n}'),
+        sendK: T('Send · {k}', 'Senden · {k}', 'Enviar · {k}')
     };
     const tr = (k, vars) => { let s = P(copy[k] || [k]); for (const v in (vars || {})) s = s.split('{' + v + '}').join(vars[v]); return s; };
 
@@ -140,8 +143,10 @@
         if (!ck || !states.some(s => s.k.id === ck)) { const first = states.find(s => s.r.ok) || states.find(s => s.r.why !== 'locked' && s.r.why !== 'time') || states[0]; ck = first.k.id; }
         const cur = states.find(s => s.k.id === ck), live = cloudLive();
         const why = s => s.r.why === 'sent' ? '✓ ' + tr('sent') : s.r.why === 'locked' ? tr('lockLv', { n: s.k.lv }) : s.r.why === 'time' ? (s.k.id === 'night' ? tr('from', { h: s.k.from }) : tr('until', { h: s.k.to })) : '';
-        const btn = cur.r.ok ? '<button type="button" class="mb-cta" data-mb="send">' + esc(tr('send')) + '</button>' : '<button type="button" class="mb-cta" disabled>' + esc(cur.r.why === 'sent' ? tr('sent') : tr('send')) + '</button>';
-        return '<div class="mb-sheet mb-care" data-noi18n><div class="mb-over">' + esc(tr('tFr').toUpperCase()) + '</div><h2>' + esc(f.n) + '</h2>' +
+        /* the button names what goes out ("Senden · Umarmung"), so the choice above and the send are one clear step */
+        const btn = cur.r.ok ? '<button type="button" class="mb-cta" data-mb="send">' + esc(tr('sendK').replace('{k}', P(cur.k.n))) + '</button>' : '<button type="button" class="mb-cta" disabled>' + esc(cur.r.why === 'sent' ? '✓ ' + tr('sent') : tr('send')) + '</button>';
+        /* header says what this is and who gets it: "ENERGIE SENDEN" / "an Antje" (was "FRIENDS" / "Antje") */
+        return '<div class="mb-sheet mb-care" data-noi18n><div class="mb-over">' + esc(tr('energyOver')) + '</div><h2>' + esc(tr('energyTo').replace('{n}', f.n)) + '</h2>' +
             '<div class="mb-duo"><div class="mb-me">' + cellSvg('blob', 160, false, reduced() ? '' : 'live') + '<small>' + esc(tr('you')) + '</small></div><p class="mb-say" role="status" aria-live="polite">' + esc(P(cur.k.say).replace('{n}', f.n)) + '</p><div class="mb-them">' + cellSvg('blob', hueOf(f.uid), false) + '<small>' + esc(f.n) + '</small></div></div>' +
             '<div class="mb-kinds" role="radiogroup">' + states.map(s => '<button type="button" role="radio" aria-checked="' + (s.k.id === ck) + '" class="mb-kind' + (s.k.id === ck ? ' act' : '') + (s.r.ok ? '' : ' off ' + s.r.why) + '" data-mb="kind" data-k="' + s.k.id + '"><span class="mb-ke">' + (s.r.why === 'locked' ? lock : s.k.e) + '</span><b>' + esc(P(s.k.n)) + '</b>' + (s.r.ok ? '' : '<small class="num">' + esc(why(s)) + '</small>') + '</button>').join('') + '</div>' +
             btn + '<p class="mb-note">' + esc(live ? tr('live', { n: f.n }) : tr('wait')) + '</p></div>';
@@ -311,8 +316,10 @@
 
     function boot() {
         if (!D.body) { setTimeout(boot, 50); return; }
-        if (!D.getElementById('mbCss')) {
-            const l = D.createElement('link'); l.id = 'mbCss'; l.rel = 'stylesheet';
+        /* Oct 23 2026: own id "mbookCss". index.html's move-bubble.css link is id="mbCss", so the old check found that one and
+           micro-book.css never loaded: the Send energy sheet showed giant black cells and an unstyled list (tests/send-energy-sheet.test.cjs) */
+        if (!D.getElementById('mbookCss') && !D.querySelector('link[href*="micro-book.css"]')) {
+            const l = D.createElement('link'); l.id = 'mbookCss'; l.rel = 'stylesheet';
             const me = D.querySelector('script[src*="micro-book.js"]');
             l.href = me ? me.getAttribute('src').replace('micro-book.js', 'micro-book.css') : 'micro-book.css';
             D.head.appendChild(l);

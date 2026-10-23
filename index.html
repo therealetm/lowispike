@@ -13128,11 +13128,12 @@ html[data-ui=light] .r3m{--t-bronze:#9a5a26;--t-bronze2:#c98a52;--t-silver:#5f6a
 .lvchip[data-r3m-t]{cursor:pointer;-webkit-tap-highlight-color:transparent}
 .r3m-tap{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .12s}
 .r3m-tap:active{transform:scale(.985)}
-.r3m-hint{display:flex;align-items:center;gap:8px;margin:10px 0 4px;padding-top:10px;border-top:1px solid var(--r2-line,rgba(127,127,127,.18));font-size:13px;font-weight:650;color:var(--gold,#caa15a)}
+.r3m-hint{display:flex;flex-wrap:wrap;row-gap:8px;align-items:center;gap:8px;margin:10px 0 4px;padding-top:10px;border-top:1px solid var(--r2-line,rgba(127,127,127,.18));font-size:13px;font-weight:650;color:var(--gold,#caa15a)}
 html[data-ui=light] .r3m-hint{color:#8a6420}
-.r3m-hint>span:nth-child(2){flex:1;min-width:0}
-.r3m-hb{display:flex;gap:4px}
-.r3m-hb i{width:10px;height:10px;border-radius:50%;border:1.5px solid;opacity:.7}
+.r3m-hint>span:nth-child(2){flex:1 1 0;min-width:0;overflow-wrap:normal;word-break:normal}
+/* 23 Oct 2026: the 25 level dots get their own row, so "Next: Level 6 · Legend" no longer runs down the edge one letter per line */
+.r3m-hb{display:flex;flex-wrap:wrap;gap:4px;flex:1 1 100%;min-width:0}
+.r3m-hb i{flex:none;width:10px;height:10px;border-radius:50%;border:1.5px solid;opacity:.7}
 
 
 .r3m-ch{font-size:18px;line-height:1;opacity:.8}

@@ -231,7 +231,8 @@ test('room: while Home takes the visit, the "is talking to you" toast stays away
     /* ship sweep Oct 20: +5 ms, or on a fast runner it lands in the same millisecond as the first-look mark (dmSeen) and isn't new (CI flake on main) */
     ms = ms.concat([{ id: '2', uid: 'b', by: 'Bea', t: '@Fixture A look at Home', ts: Date.now() + 5 }]);
     f.win.LowiCommunity.refresh(); f.flush();
-    assert.equal(asked.join(), '2'); assert.equal(made.length, 0, 'no toast: the companion visits instead');
+    /* 23 Oct: dmAlert returns before it asks Home (muted), so asked stays empty; home-visit.js reads directed() on its own (tested above) */
+    assert.equal(asked.length, 0); assert.equal(made.length, 0, 'no toast: the companion visits instead');
     f.win.LowiHomeVisit = { has: () => false };
     ms = ms.concat([{ id: '3', uid: 'b', by: 'Bea', t: '@Fixture A and again', ts: Date.now() + 10 }]);
     f.win.LowiCommunity.refresh(); f.flush();

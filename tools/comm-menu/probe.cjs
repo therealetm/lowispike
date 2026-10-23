@@ -10,7 +10,8 @@ const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/cs
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 function serve() { return new Promise(r => { const s = http.createServer((q, res) => { let u = decodeURIComponent(q.url.split('?')[0]); if (u === '/') u = '/index.html'; const f = path.join(ROOT, u); if (!f.startsWith(ROOT) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': TYPES[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }); s.listen(0, '127.0.0.1', () => r(s)); }); }
 const INIT = fs.readFileSync(path.join(ROOT, 'tests', 'home-orbit-v2-live.cjs'), 'utf8').match(/const INIT = `([\s\S]*?)`;/)[1];
-const VIEWS = { se: ['webkit', 'iPhone SE'], i13: ['webkit', 'iPhone 13'], i15: ['webkit', 'iPhone 15'], pixel7: ['chromium', 'Pixel 7'] };
+const WK = process.env.ENGINE || 'webkit'; // ENGINE=chromium where WebKit's libraries are missing (Maya's VM)
+const VIEWS = { se: [WK, 'iPhone SE'], i13: [WK, 'iPhone 13'], i15: [WK, 'iPhone 15'], ipad: [WK, 'iPad (gen 7)'], pixel7: ['chromium', 'Pixel 7'] };
 const GONE = { en: /replies|mentions/i, de: /antworten|erwähnung/i, es: /respuestas|menciones/i };
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });

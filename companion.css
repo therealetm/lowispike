@@ -106,7 +106,6 @@ svg.cf-form { overflow: visible; }
     border: 1.5px solid color-mix(in srgb, var(--wh-aura-a, var(--tmg-a, #92ddd7)) 55%, rgba(255, 255, 255, .4));
     background: radial-gradient(circle at 28% 20%, #ffffff65, transparent 40%), linear-gradient(155deg, #e2fff728, #b3d0ff16 50%, #65cfd824);
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--wh-aura-a, var(--tmg-a, #92ddd7)) 30%, transparent), 0 0 46px -8px var(--wh-aura-a, var(--tmg-a, #92ddd7)), inset 0 0 34px -10px var(--wh-aura-b, var(--tmg-b, #b8b0ff)); }
-.cf-bub::before { content: ''; position: absolute; top: 12%; left: 16%; width: 31%; height: 9%; background: #ffffff60; border-radius: 50%; transform: rotate(-28deg); pointer-events: none; z-index: 1; }
 .cf-bub-water { position: absolute; inset: 48% -10% -15%; background: linear-gradient(175deg, #7ce7dd19, #bcb0fa35); border-radius: 43%; animation: cfTide 7s ease-in-out infinite; pointer-events: none; }
 .cf-bub-herb { position: absolute; inset: 3px 12px 23px; pointer-events: none; }
 .cf-bub-c { display: block; width: 100%; height: 100%; position: relative; filter: saturate(calc(1 - var(--sp-dry, 0) * .6)); opacity: calc(1 - var(--sp-dry, 0) * .28); }

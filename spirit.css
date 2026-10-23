@@ -150,20 +150,8 @@ html.spirit-app body {
     height: clamp(145px, 45vw, 186px)
 }
 
-.sp-bubble:before,
-.sp-fast:before {
-    content: '';
-    position: absolute;
-    top: 12%;
-    left: 16%;
-    width: 31%;
-    height: 9%;
-    background: #ffffff60;
-    border-radius: 50%;
-    transform: rotate(-28deg);
-    pointer-events: none;
-    z-index: 1
-}
+/* Oct 23 2026 (Emmanuel): no flat glint oval (the old white #ffffff60 disc tilted -28deg) on Misty's bubble or the fast bubble.
+   It stayed behind in empty space when Misty flew out and read as a shadow. See tests/oct23-no-glint-disc.test.cjs. */
 
 .sp-bubble-water {
     position: absolute;

@@ -31,13 +31,19 @@ const VIEWS = {
 /* Oct 19 2026 (Emmanuel, iPad screenshot): no bubble shows a shadow, on Home and inside a world.
    Checks, in the real app: every .lh-reflection oval is not drawn; Misty's sprite has no drop shadow below her, also with
    the ring layout off (the old Home); the art used for the 3D Misty sprite, flight body and face has no reflection oval;
-   no 3D material uses the old upper-left glint (the crescent) or a shadow map. Run: node tests/no-bubble-shadow-live.cjs [--views a,b] [--world liver] [--url ...] */
+   no 3D material uses the old upper-left glint (the crescent) or a shadow map, and no element draws the flat white glint oval (Oct 23). Run: node tests/no-bubble-shadow-live.cjs [--views a,b] [--world liver] [--url ...] */
 const PROBE = () => {
     const P = [];
     const vis = e => { let n = e; while (n && n.nodeType === 1) { const c = getComputedStyle(n); if (c.display === 'none' || c.visibility === 'hidden') return false; n = n.parentElement; } return true; };
     document.querySelectorAll('.lh-reflection').forEach(e => { if (vis(e)) { const r = e.getBoundingClientRect(); P.push('reflection oval drawn ' + Math.round(r.width) + 'x' + Math.round(r.height) + ' in ' + ((e.closest('[id]') || {}).id || '?')); } });
     const below = f => { const out = []; const re = /drop-shadow\(([^()]*(\([^()]*\)[^()]*)*)\)/g; let m; while ((m = re.exec(String(f)))) { const n = (m[1].replace(/rgba?\([^)]*\)|color-mix\([^)]*\)\)?/g, '').match(/-?\d*\.?\d+px/g) || []).map(parseFloat); if ((n[1] || 0) > 1) out.push(m[0]); } return out; };
     document.querySelectorAll('#spBubble .tmg-plant, .cg-orb .cp-form').forEach(e => { const d = below(getComputedStyle(e).filter); if (d.length) P.push('drop shadow below ' + e.className.baseVal + ': ' + d.join(' ')); });
+    /* Oct 23 2026: the flat white glint oval (a ::before / ::after with a plain white fill, a flat oval, rotated; a round switch knob is not one) is the "shadow" Emmanuel
+       circled next to Misty in flight - it stayed where her bubble was. None may be drawn, on any bubble, in any state. */
+    document.querySelectorAll('body *').forEach(e => { for (const pe of ['::before', '::after']) { const c = getComputedStyle(e, pe);
+        if (c.content === 'none' || c.content === 'normal' || c.display === 'none' || !vis(e)) continue;
+        if (/^rgba?\(255, 255, 255(, (0?\.[0-9]*[1-9][0-9]*|1))?\)$/.test(c.backgroundColor) && c.backgroundImage === 'none' && /50%/.test(c.borderRadius) && c.transform !== 'none' && parseFloat(c.height) < 0.6 * parseFloat(c.width)) {
+            const r = e.getBoundingClientRect(); if (r.width > 0 && r.bottom > 0 && r.top < innerHeight) P.push('flat glint oval ' + pe + ' on ' + (e.id || String(e.className.baseVal != null ? e.className.baseVal : e.className).split(' ')[0] || e.tagName)); } } });
     let art = null; try { art = window.LowiWorldHome.mistyFaceArt(); } catch (e) { }
     if (art && /lh-reflection/.test(art.svg)) P.push('3D Misty art still carries the reflection oval');
     const a = window.LowiWorld3D; let mats = 0, sprites = 0;
@@ -80,6 +86,11 @@ const PROBE = () => {
         await page.evaluate(() => document.documentElement.classList.remove('o8')); await sleep(500);
         (await page.evaluate(PROBE)).P.forEach(p => P.push('old home: ' + p));
         await page.evaluate(() => document.documentElement.classList.add('o8'));
+        /* Oct 23: Misty out flying on autopilot - his screenshot. Her empty bubble spot must not leave a glint oval behind. */
+        await page.evaluate(() => { try { window.LowiPad.mode('auto'); } catch (e) { } }); await sleep(5000);
+        (await page.evaluate(PROBE)).P.forEach(p => P.push('flying: ' + p));
+        await page.screenshot({ path: `${OUT}/${TAG}-${v}-flying.png` });
+        await page.evaluate(() => { try { window.LowiPad.mode('off'); } catch (e) { } }); await sleep(1500);
         await page.evaluate(w => window.LowiWorldRegions.travel(w), world);
         const inside = await page.waitForFunction(w => { try { return window.LowiWorldRegions.current() === w && window.LowiMistyFlight.state().st === 'inside'; } catch (e) { return false; } }, world, { timeout: 150000, polling: 500 }).then(() => true).catch(() => false);
         if (!inside) P.push('did not get inside ' + world);

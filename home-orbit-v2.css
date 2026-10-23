@@ -101,9 +101,6 @@ html.o8.wh-home #whHud #whPad {
     border: 1px solid rgba(255,255,255,.42) !important; box-shadow: inset 0 0 18px rgba(255,255,255,.18) !important;
     -webkit-backdrop-filter: none !important; backdrop-filter: none !important; border-radius: 50% !important; animation: none !important; }
 html.o8.wh-home.lb3d #whHud #whPad.lb-live { background: transparent !important; border-color: transparent !important; box-shadow: none !important; }
-html.o8.wh-home.lb3d #whHud #whPad.lb-live::before { content: ""; position: absolute; left: 15.6%; top: 11.7%; width: 30.2%; height: 8.8%; border-radius: 50%;
-    background: rgba(255, 255, 255, .376); transform: rotate(-28deg); pointer-events: none; z-index: 3; }
-html.o8.wh-home.lb3d[data-ui=light] #whHud #whPad.lb-live::before { background: rgba(255, 255, 255, .55); }
 html.o8.wh-home #whHud #whPad .mp-ring, html.o8.wh-home #whHud #whPad .mp-well { display: none !important; }
 /* Oct 19 2026 (Emmanuel: "I can still see that the joystick is the old design"; his Home spec: "the same simple white-icon bubble,
    with no silver inner ring"): the knob is no longer a small glass bubble with a white rim inside the big one. Only the white icon

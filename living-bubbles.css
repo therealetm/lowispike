@@ -22,21 +22,8 @@ html.lb3d.wh-home #whHud .lb-bub {
 html.lb3d.wh-home #spHome #spFast.lb-bub::after,
 html.lb3d.wh-home #whHud .lb-bub::after { display: none !important; }
 
-/* Misty's glass glint (her #spBubble::before: a soft white oval, 30% x 9% of the bubble, tilted -28deg) on every bubble that lacks it */
-html.lb3d.wh-home #whHud .lb-bub::before {
-    content: "";
-    position: absolute;
-    left: 15.6%;
-    top: 11.7%;
-    width: 30.2%;
-    height: 8.8%;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, .376);
-    transform: rotate(-28deg);
-    pointer-events: none;
-    z-index: 3;
-}
-html.lb3d.wh-home[data-ui=light] #whHud .lb-bub::before { background: rgba(255, 255, 255, .55); }
+/* Oct 23 2026 (Emmanuel: "remove the shadow from every bubble ... that round thing"): no flat white glint oval on any bubble.
+   The 3D membrane's symmetric fresnel rim is the glass look. tests/oct23-no-glint-disc.test.cjs */
 
 /* the float stays (the membrane follows the box every frame, so text and membrane drift together); the CSS swell/morph/shimmer go -
    the breathing and the wobble are Misty's, drawn by the 3D membrane */

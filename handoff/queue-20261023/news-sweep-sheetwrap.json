@@ -1,0 +1,10 @@
+{
+  "slug": "back-closes-milestones",
+  "tutorial": {"none": "No new control: back (Safari swipe, phone back button) now closes the Milestones sheet on Move first."},
+  "go": {"tab": "move"},
+  "text": {
+    "en": "On Move, swiping back with Milestones open closed the sheet and also jumped you to Home. Now back just closes Milestones and you stay on Move.",
+    "de": "Auf Move hat Zurückwischen bei offenen Meilensteinen das Fenster geschlossen und dich gleich zu Home gebracht. Jetzt schließt Zurück nur die Meilensteine und du bleibst auf Move.",
+    "es": "En Move, deslizar atrás con Hitos abierto cerraba la hoja y además te llevaba a Home. Ahora atrás solo cierra Hitos y sigues en Move."
+  }
+}

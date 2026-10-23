@@ -210,3 +210,5 @@ html.cs-chat-map-typing #cmPaneChat[data-spirit-chat] .cm-compose{transform:tran
 .cs-meal-bs i{width:8px;height:8px;border-radius:50%;flex:none;background:var(--lo,#a9dcb2)}
 .cs-meal-mid i{background:var(--mid,#e6c98a)}
 .cs-meal-high i{background:var(--hi,#f0a08a)}
+/* 23 Oct 2026: the name above a message opens that person's profile, like the avatar */
+#cmPaneChat .cp-msg .cs-by .cs-name[data-chat=profile]{cursor:pointer}

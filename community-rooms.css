@@ -247,3 +247,10 @@ html.sec-open #cmPaneChat[data-spirit-chat]>.rm-bar .rm-head{padding-left:calc(5
  box-shadow:0 1px 0 rgba(143,231,255,.16),0 12px 18px -10px rgba(0,0,0,.6);border-radius:0 0 22px 22px}
 /* the strip above the bar (the pane's own top padding) is covered too, so nothing peeks out over the Community pill */
 #cmPaneChat[data-spirit-chat][data-rm-view=chans]>.rm-bar::before{content:'';position:absolute;z-index:-1;left:0;right:0;top:-40px;height:40px;background:rgba(4,10,28,.95)}
+/* 23 Oct 2026: names in the Rooms & people sheet open that person's profile (community-rooms-ui.js openCard) */
+.rm-sheet button.rm-p{appearance:none;font-family:inherit;line-height:1.2;min-height:36px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .12s ease,background .12s ease}
+.rm-sheet button.rm-p:active{transform:scale(.95);background:rgba(143,231,255,.2)}
+.rm-sheet .rm-list .rm-who button.rm-nm{appearance:none;border:0;border-radius:6px;background:none;box-shadow:none;min-height:0;padding:0;margin:0;color:var(--rm-ink);font:700 15px/1.3 inherit;font-family:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rm-sheet .rm-list .rm-who small button.rm-nm-s{display:inline;padding:6px 0;color:inherit;font:inherit;font-weight:500;text-decoration:underline;text-decoration-color:rgba(143,231,255,.35);text-underline-offset:3px}
+.rm-sheet .rm-list .rm-who button.rm-nm:active{color:#8fe7ff}
+.rm-sheet button.rm-p:focus-visible,.rm-sheet button.rm-nm:focus-visible{outline:2px solid #8fe7ff;outline-offset:2px}

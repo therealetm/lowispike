@@ -22,7 +22,7 @@ const T={room:['Room','Raum','Sala'],chat:['Chat','Chat','Chat'],rooms:['Rooms',
  chAff:['Video template (Webdesign or UGC) and what you earn per level.','Video-Template (Webdesign oder UGC) und was du pro Level verdienst.','Plantilla de vídeo (Webdesign o UGC) y lo que ganas por nivel.'],chCreate:['AI studio for creators, being built.','KI-Studio für Creator, im Aufbau.','Estudio de IA para creadores, en construcción.'],
  lHead:['Your galaxy','Deine Galaxie','Tu galaxia'],lSub:['Talk with everyone, see who’s in your room and pick up where you left off.','Schreib mit allen, sieh, wer in deinem Raum ist, und mach da weiter, wo du warst.','Habla con todos, mira quién está en tu sala y sigue donde lo dejaste.'],
  lGo:['Open galaxy chat','Galaxie-Chat öffnen','Abrir el chat de la galaxia'],back:['Back to channels','Zurück zu den Kanälen','Volver a los canales'],members:['Members','Mitglieder','Miembros'],
- you:['You','Du','Tú'],now:['now','jetzt','ahora'],min:[' min',' Min.',' min'],hr:[' h',' Std.',' h'],unreadN:['{c} unread','{c} ungelesen','{c} sin leer'],people:['People in your room','Leute in deinem Raum','Gente en tu sala']};
+ you:['You','Du','Tú'],now:['now','jetzt','ahora'],min:[' min',' Min.',' min'],hr:[' h',' Std.',' h'],unreadN:['{c} unread','{c} ungelesen','{c} sin leer'],people:['People in your room','Leute in deinem Raum','Gente en tu sala'],seeProfile:['{name}: see profile','{name}: Profil ansehen','{name}: ver perfil']};
 function lang(){try{return Math.max(0,['en','de','es'].indexOf((W.LowiLang&&W.LowiLang.get())||localStorage.getItem('lowispike.lang')||'en'));}catch(e){return 0;}}
 function tr(k,v){let s=(T[k]||[k])[lang()]||T[k][0];for(const x in v||{})s=s.split('{'+x+'}').join(String(v[x]));return s;}
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -203,25 +203,39 @@ function fit(b){if(!b||!b.getBoundingClientRect)return;const head=b.querySelecto
 function openSheet(){if(!R())return;if(!sheet){sheet=D.createElement('div');sheet.className='rm-sheet';sheet.setAttribute('role','dialog');sheet.setAttribute('aria-modal','true');sheet.setAttribute('data-noi18n','');
   sheet.innerHTML='<div class="rm-card"><i class="rm-grab" aria-hidden="true"></i><header><h2 class="rm-h"></h2><button type="button" class="rm-x" data-rs="close">×</button></header><p class="rm-you"></p><div class="rm-crew"></div><input class="rm-find" type="search" autocomplete="off" enterkeyhint="search"><ul class="rm-list"></ul></div>';
   sheet.addEventListener('click',e=>{if(e.target===sheet){closeSheet();return;}const b=e.target.closest('[data-rs]');if(!b)return;const a=b.dataset.rs;
-   if(a==='close')closeSheet();else if(a==='join'){b.disabled=true;R().joinRoom(+b.dataset.n).then(res=>{if(res.ok){closeSheet();note(tr('moved',{n:R().num()}));}else{note(tr('full'));refreshDir();}});}
+   if(a==='close')closeSheet();else if(a==='profile')openCard(b.dataset.uid,b.dataset.name);else if(a==='join'){b.disabled=true;R().joinRoom(+b.dataset.n).then(res=>{if(res.ok){closeSheet();note(tr('moved',{n:R().num()}));}else{note(tr('full'));refreshDir();}});}
    else if(a==='person'){b.disabled=true;const uid=b.dataset.uid,nm=b.dataset.name;if(b.dataset.mode==='knock')note(tr('knocking',{name:nm}));closeSheet();
     R().joinPerson(uid).then(res=>{if(res.ok){note(res.why==='here'?'':tr('moved',{n:R().num()}));}else note(res.why==='no-answer'?tr('noAnswer',{name:nm}):res.why==='full'?tr('full'):tr('nobody'));});}});
   sheet.querySelector('.rm-find').addEventListener('input',e=>{q=e.target.value.trim().toLowerCase();paintSheet();});
   sheet.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();closeSheet();}});}
  D.body.appendChild(sheet);sheet.querySelector('.rm-h').textContent=tr('mPeople');sheet.querySelector('.rm-x').setAttribute('aria-label',tr('close'));const f=sheet.querySelector('.rm-find');f.placeholder=tr('find');f.setAttribute('aria-label',tr('find'));
  paintSheet();refreshDir();setTimeout(()=>{const x=sheet.querySelector('.rm-x');if(x)x.focus({preventScroll:true});},30);}
+/* 23 Oct 2026 (Emmanuel: "when I click on the names, it doesn't ... take us to the actual profile, so we see who they are"):
+   every name in this sheet (the people in your room, the names under each room, the search results) opens that person's
+   profile card, LowiCommunity.openProfile(uid), the same card a tap on a chat avatar opens. Always by user id, never by name.
+   The card would sit under this sheet, so the sheet steps aside while it is open and comes back as soon as the card closes
+   (LowiR2 marks it .off, then removes it; its X, the scrim, back); Chat or Send energy on the card go on to where they lead and this sheet stays closed. */
+function pAttr(u,n){return 'data-rs="profile" data-uid="'+esc(u)+'" data-name="'+esc(n)+'" aria-label="'+esc(tr('seeProfile',{name:n}))+'"';}
+function openCard(uid,name){const c=W.LowiCommunity,s=sheet;if(!uid||!c||typeof c.openProfile!=='function')return false;let ov=null;
+ try{ov=c.openProfile(uid,name||'');}catch(x){ov=null;}
+ if(!ov||!ov.isConnected||!s||!s.isConnected)return !!ov;s.style.display='none';let away=false;
+ ov.addEventListener('click',e=>{const t=e.target&&e.target.closest&&e.target.closest('[data-chat]');if(t&&/^(select-close|energy|settings)$/.test(t.dataset.chat||''))away=true;},true);
+ const back=()=>{if(ov.isConnected&&!ov.classList.contains('off'))return;if(pw)pw.disconnect();if(!s.isConnected)return;if(away){closeSheet();return;}s.style.display='';
+  const b=[...s.querySelectorAll('[data-rs="profile"]')].find(x=>x.dataset.uid===uid);if(b)b.focus({preventScroll:true});};
+ const pw=typeof MutationObserver==='function'?new MutationObserver(back):null;if(pw){pw.observe(ov.parentNode||D.body,{childList:true});pw.observe(ov,{attributes:true,attributeFilter:['class']});}
+ return true;}
 function closeSheet(){if(sheet&&sheet.parentNode)sheet.parentNode.removeChild(sheet);q='';const b=bar&&bar.querySelector('.rm-menu-btn');if(b)b.focus({preventScroll:true});}
 let dirBusy=false;function refreshDir(){if(dirBusy||!R())return;dirBusy=true;R().readDirectory().catch(()=>{}).then(()=>{dirBusy=false;paintSheet();});}
 function paintSheet(){if(!sheet||!sheet.isConnected)return;const r=R(),cap=r.cap(),mine=r.num(),id=me();
  sheet.querySelector('.rm-you').textContent=r.status()==='in'?tr('youIn',{n:mine,c:r.members().length,cap}):tr(r.status()==='joining'?'joining':'offline');
  const crew=r.members().filter(u=>u!==id).map(u=>({u,n:nameOf(u)})).filter(x=>x.n).slice(0,24);
  /* Phase E: the people in your room as avatar chips (initials in their chat colour), Eden's members row */
- sheet.querySelector('.rm-crew').innerHTML=crew.length?'<span class="rm-lab">'+esc(tr('people'))+'</span> '+crew.map(x=>'<span class="rm-p"><i aria-hidden="true" style="'+(colorOf(x.u)?'--fc:'+esc(colorOf(x.u)):'')+'">'+esc(initials(x.n))+'</i>'+esc(x.n)+'</span>').join(''):'';
+ sheet.querySelector('.rm-crew').innerHTML=crew.length?'<span class="rm-lab">'+esc(tr('people'))+'</span> '+crew.map(x=>'<button type="button" class="rm-p" '+pAttr(x.u,x.n)+'><i aria-hidden="true" style="'+(colorOf(x.u)?'--fc:'+esc(colorOf(x.u)):'')+'">'+esc(initials(x.n))+'</i>'+esc(x.n)+'</button>').join(''):'';
  let rows=[];const list=r.rooms();
  if(q){for(const room of list)for(const u of room.u){if(u===id)continue;const n=nameOf(u);if(!n||n.toLowerCase().indexOf(q)<0)continue;const mode=room.n===mine?'here':C().joinMode(room,cap,room.g);
-   rows.push('<li><span class="rm-who"><b>'+esc(n)+'</b><small>'+esc(tr('roomN',{n:room.n}))+'</small></span>'+(mode==='here'?'<em>'+esc(tr('yours'))+'</em>':mode==='full'?'<em>'+esc(tr('full'))+'</em>':'<button type="button" data-rs="person" data-mode="'+mode+'" data-uid="'+esc(u)+'" data-name="'+esc(n)+'">'+esc(tr(mode==='knock'?'knock':'join'))+'</button>')+'</li>');if(rows.length>=30)break;}}
- else for(const room of list){const names=room.u.map(nameOf).filter(Boolean),more=Math.max(0,room.c-names.slice(0,3).length);
-   rows.push('<li'+(room.n===mine?' class="rm-mine"':'')+'><span class="rm-who"><b>'+esc(tr('roomN',{n:room.n}))+' · '+room.c+'/'+cap+'</b><small>'+esc(names.slice(0,3).join(', '))+(more?' +'+more:'')+'</small></span>'+(room.n===mine?'<em>'+esc(tr('yours'))+'</em>':room.c<cap?'<button type="button" data-rs="join" data-n="'+room.n+'">'+esc(tr('join'))+'</button>':'<em>'+esc(tr('full'))+'</em>')+'</li>');}
+   rows.push('<li><span class="rm-who"><button type="button" class="rm-nm" '+pAttr(u,n)+'>'+esc(n)+'</button><small>'+esc(tr('roomN',{n:room.n}))+'</small></span>'+(mode==='here'?'<em>'+esc(tr('yours'))+'</em>':mode==='full'?'<em>'+esc(tr('full'))+'</em>':'<button type="button" data-rs="person" data-mode="'+mode+'" data-uid="'+esc(u)+'" data-name="'+esc(n)+'">'+esc(tr(mode==='knock'?'knock':'join'))+'</button>')+'</li>');if(rows.length>=30)break;}}
+ else for(const room of list){const ppl=room.u.map(u=>({u,n:nameOf(u)})).filter(x=>x.n),names=ppl.map(x=>x.n),more=Math.max(0,room.c-names.slice(0,3).length);
+   rows.push('<li'+(room.n===mine?' class="rm-mine"':'')+'><span class="rm-who"><b>'+esc(tr('roomN',{n:room.n}))+' · '+room.c+'/'+cap+'</b><small>'+ppl.slice(0,3).map(x=>'<button type="button" class="rm-nm rm-nm-s" '+pAttr(x.u,x.n)+'>'+esc(x.n)+'</button>').join(', ')+(more?' +'+more:'')+'</small></span>'+(room.n===mine?'<em>'+esc(tr('yours'))+'</em>':room.c<cap?'<button type="button" data-rs="join" data-n="'+room.n+'">'+esc(tr('join'))+'</button>':'<em>'+esc(tr('full'))+'</em>')+'</li>');}
  const ul=sheet.querySelector('.rm-list'),h=rows.join('');if(ul.__h!==h){ul.innerHTML=h;ul.__h=h;}}
 D.addEventListener('lowi:room',e=>{const t=e.detail&&e.detail.type;if(t==='knock'&&W.LowiSfx&&W.LowiSfx.play)try{W.LowiSfx.play('ping');}catch(x){}paint();try{W.LowiCommunity&&W.LowiCommunity.refresh();}catch(x){}});
 D.addEventListener('lowi:chat',()=>paint());

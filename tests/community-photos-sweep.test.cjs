@@ -52,7 +52,7 @@ test('thread shows the picture and caption, never the raw link; previews and ale
 });
 test('long-pressing a person opens the glass person card with only shared details and real actions (a tap connects)',()=>{
  assert.match(js,/function openPerson\(id,name\)/);
- assert.match(js,/function openProfile\(id,name\)\{if\(!blocked\(id\)\)\{openPerson\(id,name\);return;\}/);
+ assert.match(js,/function openProfile\(id,name\)\{if\(!blocked\(id\)\)return openPerson\(id,name\);/); /* 23 Oct 2026: returns the card (tests/community-names-open-profile.test.cjs) */
  assert.match(js,/a==='person'\)\{connect\(/);
  assert.match(js,/const lpOpen=body=>\{[^\n]*openProfile\(/);
  assert.match(js,/pcNotShared/);

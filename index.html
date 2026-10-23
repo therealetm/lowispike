@@ -2462,10 +2462,11 @@ function paintListen(){ document.querySelectorAll(".g1-say").forEach(b => { b.cl
 
 /* ---------- where things are ---------- */
 const vis = el => { if (!el || !el.isConnected) return false; const r = el.getBoundingClientRect(); if (r.width < 4 || r.height < 4) return false; const cs = getComputedStyle(el); return cs.display !== "none" && cs.visibility !== "hidden"; };
-function appFree(){ /* the main app is showing, nothing on top of it */
+function appFree(home){ /* the main app is showing, nothing on top of it */
   if (H.classList.contains("gate-up") || H.classList.contains("gate-boot")) return false;
-  /* Oct 21: this used to wait for the bottom bar, which never showed on Home; with the bar gone it is the same rule: an app page, not Home */
-  const mn = $("#main"); if (!mn || mn.classList.contains("hidden") || $("#tab-home.active")) return false; const act = $(".tab.active"); if (!act) return false;
+  /* Oct 21: this used to wait for the bottom bar, which never showed on Home; with the bar gone it is the same rule: an app page, not Home.
+     Oct 23 bug hunt: tick() offers What's New only ON Home, so with this rule it never ran; tick passes home=true (Home counts when nothing is on top) */
+  const mn = $("#main"); if (!mn || mn.classList.contains("hidden") || (!home && $("#tab-home.active"))) return false; const act = $(".tab.active"); if (!act) return false;
   const ob = $("#r2ob"); if (ob && vis(ob)) return false;
   const x = innerWidth / 2, ys = [innerHeight * 0.3, innerHeight * 0.55];
   for (const y of ys) { const e = document.elementFromPoint(x, y); if (!e) return false; if (e.closest("#g1Z,#lcUpd,#lcUpdOk,#g1Tour,#g1Help")) continue; if (!e.closest(".tab.active")) return false; }
@@ -2747,12 +2748,15 @@ let decoQ = 0; const redeco = () => { if (decoQ) return; decoQ = requestAnimatio
 const AUTO = () => { try { if (localStorage.getItem("lowi.g1.auto") === "1") return true; } catch(e){} return !navigator.webdriver; };
 let freeSince = 0;
 function tick(){ if (document.hidden) return; if (TOUR) { helpPlace(); return; } if (OB) return; if (!AUTO()) return;
-  if (!appFree()) { freeSince = 0; return; } if (!freeSince) { freeSince = Date.now(); return; } if (Date.now() - freeSince < 1200) return;
+  if (!appFree(true)) { freeSince = 0; return; } if (!freeSince) { freeSince = Date.now(); return; } if (Date.now() - freeSince < 1200) return;
   let go = ""; try { go = sessionStorage.getItem(GO) || ""; } catch(e){}
   if (go) { try { sessionStorage.removeItem(GO); } catch(e){} fromBanner = true; } /* b2-go: the banner already said what's new; after the refresh nothing repeats it */
   if (!newsLoaded) return; if (fromBanner) { fromBanner = false; if (NEWS) markSeen(NEWS.id); }
   if (!onHome()) return; const m = mem();
-  if (!m.t) { start(typeof m.s === "number" ? m.s : 0); return; }
+  if (!m.t && window.LowiTutorial) { /* Oct 23: the Settings tutorial (tutorial.js) replaced this first-run tour, which had not auto-started since Oct 21; keep it off.
+      A brand-new phone (no news ever seen) gets no What's New either: the current news counts as seen */
+    if (!seenList().length && NEWS && NEWS.id && !newsSeen(NEWS.id)) { markSeen(NEWS.id); try { localStorage.setItem(TOURED, NEWS.id); } catch(e){} remember({t:"skip"}); return; } }
+  else if (!m.t) { start(typeof m.s === "number" ? m.s : 0); return; }
   if (NEWS && NEWS.id && newsGo() === "steps" && !toured(NEWS.id)) { offerTour(); return; } /* Oct 16: after an update, "Show me what's new" */
   if (NEWS && NEWS.id && !newsSeen(NEWS.id)) { offerNews(); return; } } /* b2-offer: once per news id */
 

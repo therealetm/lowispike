@@ -9,7 +9,7 @@ const http = require('http'), fs = require('fs'), path = require('path');
 const ROOT = process.env.ROOT || path.join(__dirname, '..');
 const T = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.json': 'application/json', '.svg': 'image/svg+xml', '.webmanifest': 'application/json', '.webp': 'image/webp', '.mp3': 'audio/mpeg', '.jpg': 'image/jpeg' };
 const srv = http.createServer((q, r) => { let u = decodeURIComponent(q.url.split('?')[0]); if (u === '/') u = '/index.html'; fs.readFile(path.join(ROOT, u), (e, b) => { if (e) { r.writeHead(404); r.end(); return; } r.writeHead(200, { 'Content-Type': T[path.extname(u)] || 'application/octet-stream' }); r.end(b); }); });
-const RUNS = ([['iphone13-en', 390, 844, 'en'], ['iphoneSE-de', 375, 667, 'de'], ['iphone-side-es', 844, 390, 'es'], ['ipad-up-de', 820, 1180, 'de'], ['ipad-side-en', 1180, 820, 'en']]).filter(r => !process.env.ONLY || r[0].includes(process.env.ONLY));
+const RUNS = ([['iphone13-en', 390, 844, 'en'], ['iphoneSE-de', 375, 667, 'de'], ['iphoneSE-es', 375, 667, 'es'], ['iphone-side-es', 844, 390, 'es'], ['ipad-up-de', 820, 1180, 'de'], ['ipad-side-en', 1180, 820, 'en']]).filter(r => !process.env.ONLY || r[0].includes(process.env.ONLY));
 const LABEL = { en: /Worldwide · (All time|Month|Week)/, de: /Weltweit · (Gesamt|Monat|Woche)/, es: /Mundial · (Total|Mes|Semana)/ };
 srv.listen(0, async () => {
   const port = srv.address().port; let fail = 0; const ok = (c, m) => { console.log((c ? 'ok   ' : 'FAIL ') + m); if (!c) fail++; };

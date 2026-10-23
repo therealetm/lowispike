@@ -54,6 +54,19 @@ test('Freund hinzufügen: no bots, no hidden test accounts, Emmanuel never sees 
   assert.ok(fn.includes('R.OWNER.main'), 'everyone else sees one Emmanuel');
 });
 
+test('Freund hinzufügen: one entry per name (Sim, Fixture, T showed up to six times), nobody removed', () => {
+  const s = R('cell-room.js');
+  const src = s.slice(s.indexOf('function onePerName(list){'), s.indexOf('function myHue('));
+  const onePerName = new Function(src + '; return onePerName;')();
+  const L = [{ uid: 'a', n: 'Sim', lv: 5, xp: 2400 }, { uid: 'b', n: 'Sim ', lv: 5, xp: 2400 }, { uid: 'c', n: 'sim', lv: 6, xp: 10 },
+    { uid: 'd', n: 'Joseph Castellar', lv: 4 }, { uid: 'e', n: 'Fixture', lv: 4, xp: 900 }, { uid: 'f', n: 'Fixture', lv: 4, xp: 950 }, { uid: 'g', n: '' }];
+  const out = onePerName(L);
+  assert.deepEqual(out.map(p => p.uid), ['c', 'd', 'f'], 'higher level, then more XP stays; first-seen order kept');
+  assert.equal(L.length, 7, 'the input list is not changed');
+  assert.ok(s.includes('const ppl=onePerName(roomPeople());'), 'the add-friend list uses it');
+  assert.ok(/function personOf\(uid\)\{return roomPeople\(\)\.find/.test(s), 'friends you already have are still found by id');
+});
+
 test('server: flag from our own tools\' sign-up e-mails, trigger-owned, Circles refuse bots', () => {
   const q = R('supabase/proposals/bot_flag_20261023.sql');
   assert.ok(q.includes("u.email like 'crowd%@crowd.lowispike.invalid'"));

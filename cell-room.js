@@ -30,6 +30,12 @@ function roomPeople(){if(!live())return[];try{const bots=new Set((root.LOWI_BOTS
  const out=[],seenOwner=[];for(const p of list){if(own(p)){if(iAmOwner)continue;seenOwner.push(p);continue;}out.push(p);}
  if(seenOwner.length){const keep=seenOwner.find(p=>R.OWNER&&p.uid===R.OWNER.main)||seenOwner[0];out.push(keep);}
  return out;}catch(e){return[];}}
+/* 23 Oct 2026 (Emmanuel: the add-friend list showed the same names again and again): one entry per name in the list you pick from,
+   the same rule as the Ranking (care-board-core roster): the account with the higher level, then more XP, stays. Only the list is
+   shorter; nobody is removed and every account stays findable by its id (personOf still sees all of them). */
+function onePerName(list){const best=new Map(),order=[];for(const p of list||[]){const k=String((p&&p.n)||'').trim().toLocaleLowerCase();if(!k)continue;const cur=best.get(k);
+ if(!cur){best.set(k,p);order.push(k);continue;}const lv=+p.lv||0,cl=+cur.lv||0;if(lv>cl||(lv===cl&&(+p.xp||0)>(+cur.xp||0)))best.set(k,p);}
+ return order.map(k=>best.get(k));}
 function myHue(){const h=herb();let x=200;try{const s=h&&h.m&&h.m.profile&&h.m.profile.sign&&h.m.profile.sign.name;if(s)x=(K.hue(s)%140)+160;}catch(e){}return x;}
 const ICO={
  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5"/><path d="M6.5 10v9h11v-9"/><circle cx="12" cy="14.5" r="2.2"/></svg>',
@@ -132,7 +138,7 @@ function addHTML(fl){const m=me(),url=K.inviteURL(root.location.origin+root.loca
  if(url)h+='<p class="cr-sub">'+esc(L('Whoever opens it can put your cell in their tree. Add them back so you see each other.','Wer ihn öffnet, kann deine Zelle in den eigenen Baum holen. Füg die Person auch hinzu, dann seht ihr euch gegenseitig.','Quien lo abra puede poner tu célula en su árbol. Añádela tú también para veros mutuamente.'))+'</p><div class="cr-inv"><input readonly value="'+esc(url)+'" aria-label="'+esc(L('Invite link','Einladungslink','Enlace de invitación'))+'"><button type="button" class="cr-btn" data-cr="share">'+esc(root.navigator&&navigator.share?L('Share','Teilen','Compartir'):L('Copy','Kopieren','Copiar'))+'</button></div>';
  else h+='<p class="cr-sub">'+esc(L('Sign in first so your link can find you. Your tree is saved with your account.','Melde dich zuerst an, damit dein Link dich findet. Dein Baum wird mit deinem Konto gespeichert.','Inicia sesión primero para que tu enlace te encuentre. Tu árbol se guarda con tu cuenta.'))+'</p>';
  h+='<h3 class="cr-h3">'+esc(L('From the Community','Aus der Community','De la Comunidad'))+'</h3>';
- const ppl=roomPeople();
+ const ppl=onePerName(roomPeople());
  if(!live())h+='<p class="cr-sub">'+esc(L('Signed in, you can add people from the Community room here.','Angemeldet kannst du hier Leute aus dem Community-Raum hinzufügen.','Con sesión iniciada puedes añadir aquí a gente de la sala de la Comunidad.'))+'</p>';
  else if(!ppl.length)h+='<p class="cr-sub">'+esc(L('Nobody else is in the room yet.','Noch niemand sonst ist im Raum.','Aún no hay nadie más en la sala.'))+'</p>';
  else{const q=T.q.toLowerCase(),list=ppl.filter(p=>!q||p.n.toLowerCase().includes(q)).sort((a,b)=>(b.lv||0)-(a.lv||0)).slice(0,20);
@@ -196,5 +202,5 @@ if(!D.getElementById('crCss')){const l=D.createElement('link');l.id='crCss';l.re
 function boot(){if(!D.body){setTimeout(boot,50);return;}new MutationObserver(queue).observe(D.body,{childList:true,subtree:true});queue();checkInvite();}
 boot();
 /* openRoom is no longer exported: Misty's room is retired (Oct 15), so no screen offers a door to it. */
-root.LowiCellRoom={closeRoom,openTree,closeTree,isOpen:()=>!!(R.ov||T.ov),friends:()=>friends().list.slice(),room:()=>read(K.RKEY,K.cleanRoom)};
+root.LowiCellRoom={onePerName,closeRoom,openTree,closeTree,isOpen:()=>!!(R.ov||T.ov),friends:()=>friends().list.slice(),room:()=>read(K.RKEY,K.cleanRoom)};
 })(window);

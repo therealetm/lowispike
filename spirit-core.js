@@ -38,5 +38,14 @@ function slotRecent(logs,slot,max){max=max||6;const seen=new Set(),own=[],other=
    the rate() result is made stricter by LowiSpikeCore.tighten (NEIN -> spike, SELTEN -> at least better), manual entries keep
    their own rating, a product that was not found keeps its stored verdict. Returns 'ok' | 'better' | 'spike' | 'unknown'. */
 function scanVerdict(p,rate,SC){let v=p&&p.verdict&&p.verdict!=='unknown'?p.verdict:'unknown';if(!p||p.notFound)return v;try{const r=rate&&rate(p);if(r&&r.verdict&&r.verdict!=='unknown')v=r.verdict;if(r&&r.engine&&!p.manual&&SC&&typeof SC.tighten==='function'){const t=SC.tighten(p,r);if(t&&t!=='unknown')v=t;}}catch(e){}return v;}
-const api={SLOTS,slotOk,slotFor,slotRecent,scanVerdict,estimate,pickFor,day,macros,totals,bonuses,vitality,personalityName,mergeFeed,bound,step,release,icon,paths};if(typeof module==='object'&&module.exports)module.exports=api;else root.LowiSpiritCore=api;
+/* Oct 23, 2026 (Eman: "an estimate of sips you took from your bottle or from your cup ... x amount of sip, or one cup, or one whole bottle"):
+   water is logged by estimate. The store stays in cups (lowi_fast_v1.water[day]) so every reader keeps working; amounts are quarter cups.
+   1 cup = about 250 ml, a few sips = 1/4 cup (about 60 ml), one whole bottle = 3 cups (about 750 ml). Goal 6 cups (about 1.5 l).
+   XP stays honest: 2 XP per whole cup reached, at most 6 a day, so sip taps can never earn more than the same water in cups. */
+const WATER={goal:6,ml:250,xpCap:6,amounts:{sips:0.25,cup:1,bottle:3}};
+function waterAmount(k){if(typeof k==='number'&&isFinite(k)&&k>0)return Math.max(0.25,Math.round(k*4)/4);return WATER.amounts[k]||1;}
+function waterSum(a,b){return Math.max(0,Math.round(((+a||0)+(+b||0))*4)/4);}
+function waterFmt(n){n=Math.max(0,Math.round((+n||0)*4)/4);const w=Math.floor(n),fr=['','\u00bc','\u00bd','\u00be'][Math.round((n-w)*4)]||'';return(w||!fr?String(w):'')+fr;}
+function waterXpDue(cups,have,cap){cap=cap==null?WATER.xpCap:cap;return Math.max(0,Math.min(cap,Math.floor((+cups||0)+1e-9))-Math.max(0,+have||0));}
+const api={WATER,waterAmount,waterSum,waterFmt,waterXpDue,SLOTS,slotOk,slotFor,slotRecent,scanVerdict,estimate,pickFor,day,macros,totals,bonuses,vitality,personalityName,mergeFeed,bound,step,release,icon,paths};if(typeof module==='object'&&module.exports)module.exports=api;else root.LowiSpiritCore=api;
 })(typeof window!=='undefined'?window:globalThis);

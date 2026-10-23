@@ -103,7 +103,8 @@ test('labels are the plain words E-man asked for, no Again / Photo, no emoji any
   /* Fuel words changed Oct 18 evening (E-man: "only Shop and Cook, plus a meal log button you can actually see", Swap removed
      for good): Today's step / Snack / Swap became Shop / Log meal. Behaviour is checked in tests/ui-fuel-navigation.test.cjs. */
   /* Move words changed Oct 23 2026 (Eman: three step ranges like Sleep, "casual, steady and epic"): tests/move-steps.test.cjs */
-  for (const w of ["'Shop'", "'Log meal'", "'Cook'", "'+1 cup'", "'Undo'", "'Casual'", "'Steady'", "'Epic'", "'under 5k'", "'10k+'"]) assert.ok(src.includes(w), w);
+  for (const w of ["'Shop'", "'Log meal'", "'Cook'", /* Water words changed Oct 23 2026 (Eman: sips, a cup or a whole bottle; undo = long press): tests/water-sips.test.cjs */
+  "'Sips'", "'Cup'", "'Bottle'", "'Casual'", "'Steady'", "'Epic'", "'under 5k'", "'10k+'"]) assert.ok(src.includes(w), w);
   assert.doesNotMatch(src, /T\('Quick'|T\('Medium'|T\('Long'/, 'the Oct 17 minute guesses are gone from the Move bloom');
   assert.doesNotMatch(src, /T\('Again'|T\('Photo'|label: *'Again'|label: *'Photo'/);
   assert.doesNotMatch(src, /T\('Swap'|T\("Today's step"|T\('Snack'/, 'Swap, Today\'s step and Snack are gone from Fuel');
@@ -111,7 +112,7 @@ test('labels are the plain words E-man asked for, no Again / Photo, no emoji any
 });
 
 test('every action calls an existing app API (no invented routes, no placeholder buttons)', () => {
-  for (const call of ['LowiSpirit.meal()', 'LowiStorePicks.open(', "LowiHost.go('shelf')", 'LowiSpirit.water()', 'LowiVitalsBridge.unaward(', 'LowiMoveBubble.pick(', 'LowiMoveBubble.edit()', 'LowiMoveBubble.page()', 'W.LowiGapView.open()'])
+  for (const call of ['LowiSpirit.meal()', 'LowiStorePicks.open(', "LowiHost.go('shelf')", 'LowiSpirit.water(k)', 'LowiVitalsBridge.unaward(', 'LowiMoveBubble.pick(', 'LowiMoveBubble.edit()', 'LowiMoveBubble.page()', 'W.LowiGapView.open()'])
     assert.ok(src.includes(call), call);
   assert.doesNotMatch(src, /fetch\(|XMLHttpRequest|supabase|sendBeacon/i, 'no backend calls from the bloom');
   /* a missing module leaves its orb out rather than showing a dead button */

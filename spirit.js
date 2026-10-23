@@ -49,6 +49,8 @@
         meals: ['meals logged', 'Mahlzeiten eingetragen', 'comidas registradas'],
         meal1: ['meal logged', 'Mahlzeit eingetragen', 'comida registrada'],
         drink: ['Cup logged. I drink with you!', 'Glas eingetragen. Ich trinke mit!', 'Vaso registrado. ¡Bebo contigo!'],
+        drinkSips: ['A few sips. Every sip fills me up!', 'Ein paar Schlucke. Jeder Schluck füllt mich auf!', 'Unos sorbos. ¡Cada sorbo me llena!'],
+        drinkBottle: ['A whole bottle! I am glowing.', 'Eine ganze Flasche! Ich leuchte.', '¡Una botella entera! Estoy brillando.'],
         waterSaved: ['Water logged', 'Wasser eingetragen', 'Agua registrada'],
         captured: ['Caught for Misty', 'Für Misty eingefangen', 'Capturado para Misty'],
         glow: ['Caught! My leaves are glowing.', 'Eingefangen! Meine Blätter leuchten.', '¡Capturado! Mis hojas brillan.'],
@@ -238,6 +240,7 @@
     function companionName() { const w = typeof window !== 'undefined' ? window : globalThis; const pick = v => { v = v == null ? '' : String(v).trim(); return v ? v.slice(0, 24) : ''; }; let auto = ''; try { auto = pick(w.LowiHerbIdentity && w.LowiHerbIdentity.autoName && w.LowiHerbIdentity.autoName()); } catch (e) { } const typed = v => { v = pick(v); return v && v !== auto ? v : ''; }; let n = ''; try { const B = w.LowiBirthCompanion; if (B && B.has && B.has()) { const c = B.get(); n = pick(c && c.name); } } catch (e) { } if (!n) try { const t = w.LowiHerbTamagotchi, p = t && t.readPrefs && t.readPrefs(); n = typed(p && p.name); } catch (e) { } if (!n) try { const R = w.LowiR2, s = R && R.S && R.S(); n = typed(s && s.herb && s.herb.name); } catch (e) { } return n || 'Misty'; }
     function name() { return companionName(); }
 
+    const waterTxt = n => (K.waterFmt ? K.waterFmt(n) : String(n)); /* wsip: 1½, ¾ */
     const WATER_GOAL = 6; /* Oct 17: 6 cups a day, the same goal as the Home water bubble */
     const locale = () => ({
         de: 'de-DE',
@@ -451,7 +454,7 @@
             month: '2-digit'
         }).format(now));
         const row = (key, ic, label, value, done, action) => '<button type="button" class="sp-log-row' + (done ? ' done' : '') + '" data-sp="' + action + '" data-log="' + key + '"><i class="sp-bullet" aria-hidden="true"></i>' + icon(ic) + '<span><b>' + esc(label) + '</b><small>' + esc(value) + '</small></span></button>';
-        const rows = row('water', 'water', tr('waterLabel'), day.water + ' / ' + WATER_GOAL + ' ' + tr('glasses'), day.water >= WATER_GOAL, 'water') + row('meal', 'plate', tr('mealLabel'), day.meals ? day.meals + ' ' + tr(day.meals === 1 ? 'mealOne' : 'mealMany') : tr('mealNone'), day.meals > 0, 'meal') + row('move', 'move', tr('moveLabel'), day.moved ? tr('moveDone') : tr('moveOpen'), day.moved, 'move') + row('checkin', 'check', tr('checkLabel'), day.checkin || tr('checkOpen'), /^(\d+)\/(\d+)/.test(day.checkin) && RegExp.$1 === RegExp.$2, 'checkin');
+        const rows = row('water', 'water', tr('waterLabel'), waterTxt(day.water) + ' / ' + WATER_GOAL + ' ' + tr('glasses'), day.water >= WATER_GOAL, 'water') + row('meal', 'plate', tr('mealLabel'), day.meals ? day.meals + ' ' + tr(day.meals === 1 ? 'mealOne' : 'mealMany') : tr('mealNone'), day.meals > 0, 'meal') + row('move', 'move', tr('moveLabel'), day.moved ? tr('moveDone') : tr('moveOpen'), day.moved, 'move') + row('checkin', 'check', tr('checkLabel'), day.checkin || tr('checkOpen'), /^(\d+)\/(\d+)/.test(day.checkin) && RegExp.$1 === RegExp.$2, 'checkin');
         const lr = home.querySelector('.sp-log-rows');
         if (lr.__spH !== rows || !lr.firstChild) { lr.innerHTML = rows; lr.__spH = rows; }
         const days = Array.from({
@@ -1088,9 +1091,12 @@
         }
     }
 
-    function water() {
-        const gained = V.water(uid());
-        feedback('water', tr('drink'), gained);
+    /* wsip (Oct 23, Eman): kind = 'sips' | 'cup' | 'bottle'; no kind = one cup, as before */
+    function water(kind) {
+        kind = kind === 'sips' || kind === 'bottle' ? kind : 'cup';
+        const gained = V.water(uid(), kind);
+        feedback('water', tr(kind === 'sips' ? 'drinkSips' : kind === 'bottle' ? 'drinkBottle' : 'drink'), gained);
+        return gained;
     }
     /* Oct 16 (E-man: Scan's photo screen like the rest: black space, iOS blue glass, clear flow, camera permission that makes sense):
        the food camera is its own full-screen layer over the living world (no herb-world card, no herb moods), the same look as the

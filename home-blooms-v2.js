@@ -8,7 +8,7 @@
             Cook         -> the Cook tab (LowiHost.go('shelf')). The right-side Cook panel is a separate, later change.
             Log meal     -> the meal log sheet (LowiSpirit.meal: photo, barcode, recent meals), now a visible orb.
             Hold Fuel    -> still the meal log sheet, as a shortcut only.
-   - Water: +1 cup       -> LowiSpirit.water() (same as the old Water cell: one cup, XP through the existing per-day cap).
+   - Water: Sips / Cup / Bottle -> LowiSpirit.water(kind) (wsip, Oct 23: estimates; XP 2 per whole cup through the existing per-day cap). Long press Water = undo the last one.
             Undo         -> takes ONE cup off today (never below 0, never another day) and, if today's water XP entries are now
                             more than today's cups, takes back the newest one (unaward), so add / undo loops net zero.
    - Move:  Mirror       -> LowiMirror.open(): Mirror mode, the camera workout (Oct 23, Emmanuel), the first orb.
@@ -45,23 +45,31 @@
        Returns null when there is nothing to undo, else {f (new object), unaward: [eventId, ...]} */
     function waterUndo(f, ledger, day) {
         f = f && typeof f === 'object' ? f : {};
-        const cups = Math.max(0, Math.floor(+((f.water || {})[day]) || 0));
+        const q4 = n => Math.max(0, Math.round((+n || 0) * 4) / 4);
+        const cups = q4((f.water || {})[day]);
         if (cups <= 0) return null;
         const out = JSON.parse(JSON.stringify(f));
         out.water = out.water || {};
-        out.water[day] = cups - 1;
-        /* the newest water event of today goes with it (keeps waterEvents and the count telling the same story) */
+        /* the newest water event of today goes with it (keeps waterEvents and the count telling the same story).
+           wsip (Oct 23): it takes off its own amount (out.waterAmt[id]: sips 0.25, bottle 3; no entry = one cup, as before) */
+        let amt = 1;
         const ev = out.waterEvents && typeof out.waterEvents === 'object' ? out.waterEvents : null;
         if (ev) {
             let best = null;
             Object.keys(ev).forEach(k => { const ts = +ev[k] || 0; if (ts && dayKey(ts) === day && (!best || ts > best.ts)) best = { k, ts }; });
-            if (best) delete ev[best.k];
+            if (best) {
+                delete ev[best.k];
+                const am = out.waterAmt && typeof out.waterAmt === 'object' ? out.waterAmt : null;
+                if (am && +am[best.k] > 0) { amt = q4(am[best.k]) || 1; delete am[best.k]; }
+            }
         }
+        const left = q4(cups - Math.min(cups, amt));
+        out.water[day] = left;
         const pre = 'herb-care:' + day + ':water:';
         const xp = (Array.isArray(ledger) ? ledger : []).filter(e => e && e.day === day && e.src === 'water' && e.eventId && String(e.eventId).indexOf(pre) === 0)
             .sort((a, b) => (+b.ts || 0) - (+a.ts || 0));
-        const extra = Math.max(0, xp.length - (cups - 1));
-        return { f: out, cups: cups - 1, unaward: xp.slice(0, extra).map(e => e.eventId) };
+        const extra = Math.max(0, xp.length - Math.floor(left + 1e-9));
+        return { f: out, cups: left, amt: Math.min(cups, amt), unaward: xp.slice(0, extra).map(e => e.eventId) };
     }
 
     /* Fan layout. b = bubble {x,y,r}, m = Misty {x,y,r}, n orbs of size orb, viewport vw x vh.
@@ -170,6 +178,8 @@
         cook: '<path d="M4 11h16v2a6 6 0 0 1-6 6h-4a6 6 0 0 1-6-6z"/><path d="M2 11h2M20 11h2"/><path d="M9 7c0-1 1-1.5 1-2.5M13 7c0-1 1-1.5 1-2.5"/>',
         cup: '<path d="M6 4h12l-1.6 15a2 2 0 0 1-2 1.8H9.6a2 2 0 0 1-2-1.8z"/><path d="M6.6 9.5h10.8"/><path d="M12 12.5v4M10 14.5h4"/>',
         undo: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',
+        sips: '<path d="M12 4c-2.2 3-4 5.4-4 7.6a4 4 0 0 0 8 0C16 9.4 14.2 7 12 4z"/><path d="M7 17.5h.01M12 19.5h.01M17 17.5h.01"/>',
+        bottle: '<path d="M10 2.5h4v3l1.6 2.2a3 3 0 0 1 .6 1.8V20a1.5 1.5 0 0 1-1.5 1.5h-5.4A1.5 1.5 0 0 1 7.8 20V9.5a3 3 0 0 1 .6-1.8L10 5.5z"/><path d="M8 12h8"/>',
         walk: '<circle cx="13" cy="4.5" r="1.8"/><path d="M11 21l2-6-2.5-2.5L12 8l3 3h3"/><path d="M10.5 12.5L8 15H5"/>',
         ate: '<path d="M7 3v8a2 2 0 0 0 2 2v8M7 3v5M11 3v8a2 2 0 0 1-2 2"/><path d="M17 3c-2 2-2.5 5-2.5 7.5H17V21"/>',
         clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M4.5 4.5l2 2"/>',
@@ -179,7 +189,6 @@
 
     /* ---------- readers (no writes) ---------- */
     const fastStore = () => { try { return JSON.parse(localStorage.getItem('lowi_fast_v1') || '{}') || {}; } catch (e) { return {}; } };
-    const cupsToday = () => Math.max(0, Math.floor(+((fastStore().water || {})[dayKey()]) || 0));
     const appState = () => { try { return W.LowiVitalsBridge && W.LowiVitalsBridge.state ? W.LowiVitalsBridge.state() : null; } catch (e) { return null; } };
     const moveView = () => { try { const C = W.LowiMoveEstimateCore, s = appState(); return C && fn(C, 'view') && s ? C.view(s.ledger || [], dayKey()) : null; } catch (e) { return null; } };
 
@@ -193,7 +202,7 @@
         try { if (fn(W.LowiFast, 'refresh')) W.LowiFast.refresh(); } catch (e) { }
         try { if (fn(W.LowiSpirit, 'refresh')) W.LowiSpirit.refresh(); } catch (e) { }
         try { W.dispatchEvent(new CustomEvent('lowi:water', { detail: { undo: true, cups: plan.cups } })); } catch (e) { }
-        return true;
+        return plan;
     }
     function mealLog() { if (fn(W.LowiSpirit, 'meal')) { W.LowiSpirit.meal(); return true; } return false; }
 
@@ -211,11 +220,17 @@
             if (fn(W.LowiHost, 'go')) A.push({ id: 'cook', label: T('Cook', 'Kochen', 'Cocinar'), sub: T('recipes', 'Rezepte', 'recetas'), icon: 'cook', run: () => W.LowiHost.go('shelf') });
             if (fn(W.LowiSpirit, 'meal')) A.push({ id: 'log', label: T('Log meal', 'Mahlzeit eintragen', 'Anotar comida'), icon: 'log', run: mealLog });
         } else if (kind === 'water') {
-            const n = cupsToday();
-            if (fn(W.LowiSpirit, 'water') || fn(W.LowiVitalsBridge, 'water')) A.push({ id: 'add', label: T('+1 cup', '+1 Glas', '+1 vaso'), sub: n + ' / ' + WATER_GOAL, icon: 'cup', keep: true, q: Math.min(1, n / WATER_GOAL),
-                run: () => { if (fn(W.LowiSpirit, 'water')) W.LowiSpirit.water(); else W.LowiVitalsBridge.water('hb2-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7)); } });
-            A.push({ id: 'undo', label: T('Undo', 'Zurück', 'Deshacer'), sub: n ? T('take 1 cup off', '1 Glas weg', 'quitar 1 vaso') : T('nothing yet', 'noch nichts', 'nada aún'), icon: 'undo', keep: true, disabled: !n,
-                run: () => { if (!waterUndoNow()) toast(T('No water logged today', 'Heute noch kein Wasser', 'Hoy no hay agua')); } });
+            /* wsip (Oct 23, Eman: "x amount of sip, or one cup, or one whole bottle"): three estimates, each tap fills the bubble by that much.
+               Amounts live in LowiSpiritCore.WATER (sips 1/4 cup, cup, bottle 3 cups; 1 cup ~250 ml). Undo = long press on the Water bubble. */
+            const can = fn(W.LowiSpirit, 'water') || fn(W.LowiVitalsBridge, 'water');
+            const K = W.LowiSpiritCore, amt = k => (K && K.waterAmount ? K.waterAmount(k) : ({ sips: 0.25, cup: 1, bottle: 3 })[k]);
+            const ml = k => '\u2248 ' + Math.round(amt(k) * ((K && K.WATER && K.WATER.ml) || 250) / 10) * 10 + ' ml';
+            const add = k => () => { if (fn(W.LowiSpirit, 'water')) W.LowiSpirit.water(k); else W.LowiVitalsBridge.water('hb2-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7), k); };
+            if (can) {
+                A.push({ id: 'sips', label: T('Sips', 'Schlucke', 'Sorbos'), sub: ml('sips'), aria: T('A few sips', 'Ein paar Schlucke', 'Unos sorbos') + ', ' + ml('sips'), icon: 'sips', keep: true, q: 0.2, run: add('sips') });
+                A.push({ id: 'cup', label: T('Cup', 'Glas', 'Vaso'), sub: ml('cup'), aria: T('One cup', 'Ein Glas', 'Un vaso') + ', ' + ml('cup'), icon: 'cup', keep: true, q: 0.5, run: add('cup') });
+                A.push({ id: 'bottle', label: T('Bottle', 'Flasche', 'Botella'), sub: ml('bottle'), aria: T('One whole bottle', 'Eine ganze Flasche', 'Una botella entera') + ', ' + ml('bottle'), icon: 'bottle', keep: true, q: 0.9, run: add('bottle') });
+            }
         } else if (kind === 'move') {
             const C = W.LowiMoveEstimateCore;
             /* Oct 23 2026 (Emmanuel: "Move the mirror mode more up, because that's the most impressive part in the whole app"): Mirror mode

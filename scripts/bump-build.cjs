@@ -65,8 +65,13 @@ function applyBump(root, oldId, newId, news) {
     n.id = (news.slug || 'release') + '-' + newId;
     n.go = news.go || { tab: 'home' };
     n.date = newId.slice(0, 4) + '-' + newId.slice(4, 6) + '-' + newId.slice(6, 8);
-    if (news.lead) n.lead = news.lead;
-    if (news.steps) n.steps = news.steps;
+    /* Oct 23 sweep: lead and steps belong to one release. Keeping the last release's (as before) made every release without
+       its own tour offer the older change's tour ("Bubbles open in one round circle", "The Seller Zone now shows real product
+       photos"), and that offer marks the news seen, so the new release's own text never showed. */
+    /* "Show me" stays (Oct 16): a release without its own steps gets one step with its own news text, on its go tab. */
+    if (news.lead) n.lead = news.lead; else delete n.lead;
+    if (Array.isArray(news.steps) && news.steps.length) n.steps = news.steps;
+    else n.steps = [{ tab: (news.go && news.go.tab) || 'home', text: { en: news.text.en, de: news.text.de, es: news.text.es } }];
     if (news.tutorial) n.tutorial = news.tutorial; else delete n.tutorial;
   }
   fs.writeFileSync(vp, JSON.stringify(d) + (raw.endsWith('\n') ? '\n' : ''));

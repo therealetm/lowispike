@@ -248,6 +248,7 @@
         const vw = H.clientWidth || root.innerWidth, vh = root.innerHeight;
         const s = safeArea();
         const L = fit({ vw, vh, cx: r.left + r.width / 2, cy: r.top + r.height / 2, mistyR: r.width / 2, safe: s });
+        L.mz = parseFloat(m.style.getPropertyValue('--wh-mz')) || 1; /* the camera zoom Misty's bubble is scaled by (world-home.js) */
         if (!L.ok && offscreen(r, vw, vh)) L.transit = true;
         return L;
     }
@@ -279,6 +280,11 @@
         /* Misty still flying back in: keep the last good ring and look again shortly, instead of flashing the old Home */
         if (!(L.ok === false && L.transit)) transitAt = 0;
         else if (wasOn && last && last.ok) { if (!transitAt) transitAt = Date.now(); if (Date.now() - transitAt < 6000) { soon(); return last; } }
+        /* Oct 23 (Eman's screenshot: "somewhere in the code the old UI is still there ... nuke it"): zooming in on Home grows Misty's
+           bubble with the camera (--wh-mz, up to 1.4x). Once she no longer fitted inside the ring, o8 dropped and the OLD Home came back:
+           the Daily Quest box at the top, the Today pill at the bottom, Fast and Water on the sides round a giant Misty. Zooming in
+           never drops the ring now: it keeps its last good layout until the camera is back at rest. */
+        if (!L.ok && wasOn && last && last.ok && L.mz > (last.mz || 0) + 0.01) return last;
         if (!L.ok) { if (wasOn) { H.classList.remove('o8', 'o8-wide'); soon(); } last = L; return L; }
         if (!wasOn) H.classList.add('o8');
         const wide = L.d >= 104;

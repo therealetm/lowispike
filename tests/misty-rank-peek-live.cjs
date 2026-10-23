@@ -52,7 +52,7 @@ srv.listen(0, async () => {
     if (r) {
       ok(LABEL[lang].test(r.label) && /^#\d+$/.test(r.value), name + ': label "' + r.label + '" value "' + r.value + '"');
       ok(r.ls === r.vs, name + ': label and value the same size (' + r.ls + ' / ' + r.vs + ')');
-      ok(r.h >= 44 && r.h <= 48 && r.inCard && !r.wide, name + ': tiny and fits (' + Math.round(r.w) + 'x' + Math.round(r.h) + ')');
+      ok(r.h >= 44 && r.h <= 48 && r.inCard && !r.wide, name + ': tiny and fits (' + Math.round(r.w) + 'x' + Math.round(r.h) + (r.inCard ? '' : ' outside the card') + (r.wide ? ' page wider than screen' : '') + ')');
       ok(r.under, name + ': right under the level line');
       ok(r.faces >= 2 && r.faces <= 3 && r.meFace, name + ': ' + r.faces + ' tiny companions (' + r.svgs + ' drawn), Misty in the middle');
       ok(r.up !== 'Mateo' && r.down !== 'Mateo' && !/Emmanuel|Manuuii/.test(String(r.up) + String(r.down)), name + ': neighbours ' + r.up + ' / ' + r.down + ' (no bot, Eman once), board ' + r.k + ' #' + r.rank);

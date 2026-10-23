@@ -178,7 +178,7 @@
         ov.addEventListener('click', e => {
             const b = e.target.closest && e.target.closest('[data-mj]'); if (!b) return;
             const k = b.getAttribute('data-mj'), acts = ov.querySelector('.mj-acts'), cf = ov.querySelector('.mj-confirm');
-            if (k === 'share') { try { r.close(ov); } catch (x) {} setTimeout(() => share(log.id), 80); }
+            if (k === 'share') share(log.id); /* one sheet at a time: the share sheet replaces this one (back chevron returns), closing it lands on the page */
             else if (k === 'del') { acts.hidden = true; cf.hidden = false; }
             else if (k === 'keep') { cf.hidden = true; acts.hidden = false; }
             else if (k === 'delgo') { remove(log.id).then(ok => { try { r.close(ov); } catch (x) {} if (ok) toast(t('deleted', l)); }); }
@@ -238,9 +238,9 @@
             e.preventDefault(); e.stopPropagation();
             const id = b.getAttribute('data-mj-open') || b.getAttribute('data-mj-share');
             const go = () => b.hasAttribute('data-mj-share') ? share(id) : open(id);
-            /* from the Log a meal "Saved" sheet: close it first so the new sheet sits on top */
-            const sp = b.closest('.r2-ov.sp-sheet'), r = R();
-            if (sp && r && r.close) { try { r.close(sp); } catch (x) {} setTimeout(go, 120); } else go();
+            /* from the Log a meal "Saved" sheet too: the new sheet replaces it (R2 one sheet at a time). Closing it first and
+               opening 80-120 ms later raced the closing sheet's stack step, so the new sheet never showed. */
+            go();
         }, true);
     }
 

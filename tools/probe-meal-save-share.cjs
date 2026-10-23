@@ -12,6 +12,8 @@ const res = {};
     const OUT = '/home/sprite/ml/shots'; fs.mkdirSync(OUT, { recursive: true });
     const o = { device, engine, members: 10, messages: 20, probe: false, lang }; if (/^https?:/.test(where)) o.url = where; else o.root = where;
     const R = await H.open(o), P = R.page, fails = []; res.device = device; res.theme = theme; res.lang = lang;
+    /* the sheets spring in (apple-ui au-physics, ~1.5 s to settle on a slow sim): wait until the top sheet stops moving */
+    const settle = async () => { await H.sleep(400); let last = null; for (let k = 0; k < 30; k++) { const y = await P.evaluate(() => { const s = [...document.querySelectorAll('.r2-ov.on:not(.r2-parked) .r2-sh')].pop(); return s ? Math.round(s.getBoundingClientRect().top) : -1; }); if (y === last) return; last = y; await H.sleep(150); } };
     const tapLast = async sel => { let box = null; for (let k = 0; k < 20 && !box; k++) { box = await P.evaluate(sel => { const els = [...document.querySelectorAll(sel)].filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; }); const e = els.pop(); if (!e) return null; e.scrollIntoView({ block: 'center' }); const r = e.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }, sel); if (!box) await H.sleep(300); } if (!box) throw new Error('no visible ' + sel); await H.sleep(350); try { await P.touchscreen.tap(box.x, box.y); } catch (e) { await P.mouse.click(box.x, box.y); } };
     const errors = []; P.on('pageerror', e => errors.push(String(e.message || e).slice(0, 160)));
     await R.goto(); await H.sleep(4000);
@@ -57,7 +59,7 @@ const res = {};
     res.thumbInList = await P.evaluate(id => { const b = document.querySelector('.mj-thumb[data-mj-open="' + id + '"] img'); return !!b && b.complete && b.naturalWidth > 0; }, logged.id);
     if (!res.thumbInList) fails.push('no thumbnail in the today list');
     await R.shot(OUT + '/' + tag + '-1-list.png');
-    await R.tap('.mj-thumb[data-mj-open="' + logged.id + '"]'); await H.sleep(1200);
+    await R.tap('.mj-thumb[data-mj-open="' + logged.id + '"]'); await settle();
     res.sheet = await P.evaluate(() => { const s = [...document.querySelectorAll('.mj-sheet')].pop(); if (!s) return null; const img = s.querySelector('.mj-photo img'); return { photo: !!img && /^blob:/.test(img.src) && img.naturalWidth, name: (s.querySelector('.mj-name') || {}).textContent, bs: (s.querySelector('.mj-bs') || {}).textContent, foods: !!s.querySelector('.mj-ing'), nut: s.querySelectorAll('.mj-n').length, share: !!s.querySelector('[data-mj=share]'), del: !!s.querySelector('[data-mj=del]') }; });
     if (!res.sheet || !res.sheet.photo || !res.sheet.share || !res.sheet.foods || res.sheet.nut < 5) fails.push('meal sheet incomplete: ' + JSON.stringify(res.sheet));
     await fits('.r2-ov.mj-ov', 'sheetFits');
@@ -65,7 +67,8 @@ const res = {};
 
     /* 3. Share to Community: caption, Post */
     R.step = 'share';
-    await tapLast('.mj-sheet [data-mj=share]'); await H.sleep(1400);
+    /* a WebKit sim tap right after a sheet settles sometimes lands on <html> (no click at all): tap again until the share sheet shows */
+    for (let k = 0; k < 3; k++) { await tapLast('.mj-sheet [data-mj=share]'); await settle(); if (await P.evaluate(() => !!document.querySelector('.mj-share'))) break; res.shareRetries = k + 1; }
     res.shareSheet = await P.evaluate(() => { const s = [...document.querySelectorAll('.mj-share')].pop(); return s ? { name: (s.querySelector('.mj-card b') || {}).textContent, bs: (s.querySelector('.mj-bs') || {}).textContent, foot: (s.querySelector('.mj-foot') || {}).textContent, input: !!s.querySelector('.mj-cap input') } : null; });
     if (!res.shareSheet) {
         res.shareDiag = await P.evaluate(async id => { const o = { ovs: [...document.querySelectorAll('.r2-ov')].map(x => x.className), toast: (document.querySelector('.r2-toast,.toast,#toast') || {}).textContent || '' };
@@ -101,7 +104,8 @@ const res = {};
     /* 5. delete the meal and its photo */
     R.step = 'delete';
     await P.evaluate(() => { try { goTab('home'); } catch (e) { } }); await H.sleep(900);
-    await P.evaluate(id => LowiMealJournal.open(id), logged.id); await H.sleep(1100);
+    await P.evaluate(id => LowiMealJournal.open(id), logged.id); await settle();
+    await P.evaluate(() => { const sh = [...document.querySelectorAll('.mj-ov .r2-sh')].pop(); if (sh) sh.scrollTop = 99999; }); await H.sleep(300);
     await tapLast('.mj-sheet [data-mj=del]'); await H.sleep(500);
     await fits('.r2-ov.mj-ov', 'confirmFits');
     await R.shot(OUT + '/' + tag + '-5-delete.png');

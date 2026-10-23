@@ -11,7 +11,8 @@
    - Water: +1 cup       -> LowiSpirit.water() (same as the old Water cell: one cup, XP through the existing per-day cap).
             Undo         -> takes ONE cup off today (never below 0, never another day) and, if today's water XP entries are now
                             more than today's cups, takes back the newest one (unaward), so add / undo loops net zero.
-   - Move:  Quick / Medium / Long / Epic -> LowiMoveBubble.pick(id) (the existing estimate log with its own XP rules).
+   - Move:  Mirror       -> LowiMirror.open(): Mirror mode, the camera workout (Oct 23, Emmanuel), the first orb.
+            Quick / Medium / Long / Epic -> LowiMoveBubble.pick(id) (the existing estimate log with its own XP rules).
             Hold Move    -> LowiMoveBubble.page(): the full Move page (Oct 21, Eman). Today's moves are a row on that page.
    - Gap:   no bloom since Oct 21 (Scan / Fuel / Gap): a tap opens the passive Gap view (gap-view.js). Meals are logged in Fuel,
             which restarts the gap; the old "I just ate" / "Ate earlier" pair is gone from Home.
@@ -170,7 +171,8 @@
         undo: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',
         walk: '<circle cx="13" cy="4.5" r="1.8"/><path d="M11 21l2-6-2.5-2.5L12 8l3 3h3"/><path d="M10.5 12.5L8 15H5"/>',
         ate: '<path d="M7 3v8a2 2 0 0 0 2 2v8M7 3v5M11 3v8a2 2 0 0 1-2 2"/><path d="M17 3c-2 2-2.5 5-2.5 7.5H17V21"/>',
-        clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M4.5 4.5l2 2"/>'
+        clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/><path d="M4.5 4.5l2 2"/>',
+        cam: '<rect x="3" y="6.5" width="13" height="11" rx="3"/><path d="M16 10.5l5-3v9l-5-3"/>'
     };
     const svg = k => '<svg class="hb2-ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' + (P[k] || '') + '</svg>';
 
@@ -213,6 +215,9 @@
                 run: () => { if (!waterUndoNow()) toast(T('No water logged today', 'Heute noch kein Wasser', 'Hoy no hay agua')); } });
         } else if (kind === 'move') {
             const C = W.LowiMoveEstimateCore;
+            /* Oct 23 2026 (Emmanuel: "Move the mirror mode more up, because that's the most impressive part in the whole app"): Mirror mode
+               is the FIRST orb of the Move bloom, so it is two taps from Home (Move, then Mirror). It opens over the page; the bloom folds. */
+            if (fn(W.LowiMirror, 'open')) A.push({ id: 'mirror', label: T('Mirror', 'Spiegel', 'Espejo'), sub: T('camera workout', 'Kamera-Workout', 'entreno con cámara'), icon: 'cam', run: () => W.LowiMirror.open() });
             if (fn(W.LowiMoveBubble, 'pick') && C && Array.isArray(C.LEVELS)) C.LEVELS.forEach(L => {
                 if (!MOVE_NAMES[L.id]) return;
                 A.push({ id: L.id, label: MOVE_NAMES[L.id](), sub: MOVE_HINTS[L.id](), icon: 'walk', q: L.q / 4, run: () => W.LowiMoveBubble.pick(L.id) });

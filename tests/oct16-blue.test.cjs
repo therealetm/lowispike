@@ -29,7 +29,7 @@ test('the world is silvery dark blue, not red; light mode is a lighter blue, not
     assert.match(sc, /dark: \{ bg: '#121c33', wall: '#2a3a5a'/);
     assert.match(sc, /light: \{ bg: '#7f94b4', wall: '#9aacc8'/);
     assert.doesNotMatch(sc, /#5a1a33|#c8324a|#b95b9f'\, 6/);
-    assert.ok(!/rbcMat/.test(sc), 'Oct 23: the silvery red-cell discs are deleted with the old Home layers');
+    assert.match(sc, /rbcMat = new THREE\.MeshStandardMaterial\(\{ color: '#9fb2d2'/); /* Oct 23 17:20: the silvery red cells are back */
     assert.match(ss, /lerp\(new a\.THREE\.Color\(th === 'light' \? '#8ea3c2' : '#1a2846'\), 0\.85\)/);
 });
 

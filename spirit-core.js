@@ -42,7 +42,7 @@ function scanVerdict(p,rate,SC){let v=p&&p.verdict&&p.verdict!=='unknown'?p.verd
    water is logged by estimate. The store stays in cups (lowi_fast_v1.water[day]) so every reader keeps working; amounts are quarter cups.
    1 cup = about 250 ml, a few sips = 1/4 cup (about 60 ml), one whole bottle = 3 cups (about 750 ml). Goal 6 cups (about 1.5 l).
    XP stays honest: 2 XP per whole cup reached, at most 6 a day, so sip taps can never earn more than the same water in cups. */
-const WATER={goal:6,ml:250,xpCap:6,amounts:{sips:0.25,cup:1,bottle:3}};
+const WATER={goal:6,ml:250,xpCap:6/* whole cups that earn XP a day; 2 XP each = 12 XP max */,amounts:{sips:0.25,cup:1,bottle:3}};
 function waterAmount(k){if(typeof k==='number'&&isFinite(k)&&k>0)return Math.max(0.25,Math.round(k*4)/4);return WATER.amounts[k]||1;}
 function waterSum(a,b){return Math.max(0,Math.round(((+a||0)+(+b||0))*4)/4);}
 function waterFmt(n){n=Math.max(0,Math.round((+n||0)*4)/4);const w=Math.floor(n),fr=['','\u00bc','\u00bd','\u00be'][Math.round((n-w)*4)]||'';return(w||!fr?String(w):'')+fr;}

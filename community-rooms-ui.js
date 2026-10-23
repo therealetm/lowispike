@@ -107,7 +107,7 @@ function paint(){const b=ensure();if(!b)return;const r=R(),chat=open();
  tabs.forEach(t=>{const on=t.dataset.rm===sel;t.setAttribute('aria-selected',on?'true':'false');t.tabIndex=on?0:-1;});
  /* Phase E: one glowing pill slides under the open section (CSS .rm-tabs::before reads --rm-i) */
  const ti=[...tabs].findIndex(t=>t.dataset.rm===sel),tl=b.querySelector('.rm-tabs');if(tl.__n!==tabs.length){tl.__n=tabs.length;tl.style.setProperty('--rm-n',String(tabs.length));}if(tl.__i!==ti){tl.__i=ti;tl.style.setProperty('--rm-i',String(Math.max(0,ti)));}
- if(view){pane.setAttribute('data-rm-view',view);D.documentElement.classList.add('rm-view');if(VIEWS[view])ensureView(pane);else{const bx=pane.querySelector(':scope>.rm-view');if(bx)ensureView(pane);}}
+ if(view){pane.setAttribute('data-rm-view',view);D.documentElement.classList.toggle('rm-view',pageActive());/* Oct 23 2026: only while Community is open (watch() repaints every 1.5 s, also behind Home) */if(VIEWS[view])ensureView(pane);else{const bx=pane.querySelector(':scope>.rm-view');if(bx)ensureView(pane);}}
  else{pane.removeAttribute('data-rm-view');D.documentElement.classList.remove('rm-view');if(pane.querySelector(':scope>.rm-view'))ensureView(pane);}
  /* a new section starts at the top: a pane left scrolled by the last one slid the tabs under the floating profile picture (iPhone SE) */
  if(pane.__rmV!==(view||'')){pane.__rmV=view||'';if(pane.scrollTop)pane.scrollTop=0;}
@@ -230,7 +230,7 @@ setInterval(watch,1500);if(D.readyState!=='loading')watch();else D.addEventListe
 let pageWatch=null,pageOn=false;
 function watchPage(){const p=D.getElementById('tab-foryou');if(!p||typeof MutationObserver!=='function'||p.__rmPage)return;p.__rmPage=1;pageOn=p.classList.contains('active');
  pageWatch=new MutationObserver(recs=>{let kids=false,cls=false;for(const r of recs){if(r.type==='childList')kids=true;else cls=true;}
-  const on=p.classList.contains('active');if(cls&&on&&!pageOn)paint();if(cls&&pageOn&&!on){dropFrames(null);D.documentElement.classList.remove('rm-room-open');from='';if(open()){try{W.LowiCommunity.thread(false);}catch(x){}}/* item 36: leaving Community closes the chat, so html.cr-room never stays on behind Home */if(sheet)closeSheet();if(menu&&!menu.hidden)toggleMenu(false);}pageOn=on;
+  const on=p.classList.contains('active');if(cls&&on&&!pageOn)paint();if(cls&&pageOn&&!on){dropFrames(null);D.documentElement.classList.remove('rm-room-open');/* Oct 23 2026 (Emmanuel: back from Community froze the app): html.rm-view stopped every world frame (body-world-3d.js) and stayed on behind Home after Ranking, Creation or Affiliates, so Home froze on the last zoomed-out Community frame. The tab is kept in view and comes back with paint() on the way in. */D.documentElement.classList.remove('rm-view');from='';if(open()){try{W.LowiCommunity.thread(false);}catch(x){}}/* item 36: leaving Community closes the chat, so html.cr-room never stays on behind Home */if(sheet)closeSheet();if(menu&&!menu.hidden)toggleMenu(false);}pageOn=on;
   if(kids&&on&&!(bar&&bar.isConnected))paint();});
  pageWatch.observe(p,{attributes:true,attributeFilter:['class'],childList:true});}
 setInterval(watchPage,1500);if(D.readyState!=='loading')watchPage();else D.addEventListener('DOMContentLoaded',watchPage);

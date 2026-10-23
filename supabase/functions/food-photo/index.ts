@@ -4,7 +4,7 @@
 // kcal, protein, carbs, sugar, fiber and fat per dish. The Gemini key lives ONLY here, as the Supabase secret
 // GEMINI_API_KEY; the browser never sees it.
 //   GET [?tz=Europe/Berlin]               -> { ok, configured, limit, used?, left? }  (used/left only with a user token)
-//   POST { image: <base64 jpeg>, lang, tz } -> { dishes:[...], confidence, note, is_food, model, limit, left }
+//   POST { image: <base64 jpeg>, lang, tz } -> { dishes:[...], confidence, note, is_food, lowispike, model, limit, left }
 // Rules: only callers with a LOWiSPIKE sign-in (any Supabase session, guests included) and only from the app's origin.
 // Oct 19 (Emmanuel: "people only get to unlock three meals and pictures a day, so that we don't reach that limit"):
 // every signed-in user gets DAY_MAX = 3 photo reads per day, Snap food and Community together. The day is the user's own
@@ -100,17 +100,56 @@ function burst(uid: string, durable: boolean): boolean {
 function unburst(uid: string) { const l = hits.get(uid) || []; l.pop(); hits.set(uid, l); }
 
 const LANGS: Record<string, string> = { en: "English", de: "German", es: "Spanish" };
+// Oct 23 (Emmanuel: "when someone takes a photo of their food, it's important that it gives them the right estimate"):
+// the photo read now follows the LOWiSPIKE Master Knowledge v3 (data/food-policy/master-knowledge.v3.md, scanner part):
+// count first, list each part of the plate on its own line, rate each part JA / SELTEN / NEIN and end with the verdict
+// block "lowispike". The app re-rates the same dish names with its own engine and keeps the stricter verdict, so this
+// block can tighten a verdict but never loosen it (anti-cheat).
+const MASTER = [
+  "You are the LOWiSPIKE food scanner inside the LOWiSPIKE app. LOWiSPIKE means eating without big blood sugar spikes:",
+  "protein first, vegetables without starch, natural fats, no rice, bread, pasta, potatoes, added sugar, pork or alcohol.",
+  "COUNT FIRST, THEN ESTIMATE. Before any number, count every visible piece (eggs, nuggets, slices, meatballs, sushi, cookies).",
+  "Put that number in count and in the portion words ('3 eggs', '6 pieces'). Never guess a total you did not count.",
+  "If pieces are hidden or stacked, count what you can see, say so in note and lower confidence.",
+  "LIST EACH PART SEPARATELY: the rice apart from the curry, the bun apart from the patty, fries apart from the burger,",
+  "a visible sauce or dressing as its own line. Each part gets its own verdict.",
+  "VERDICT PER PART (verdict field):",
+  "JA = fits LOWiSPIKE: eggs; chicken, turkey, duck; beef, lamb, veal; fish and seafood; tofu, tempeh; vegetables without",
+  "starch (leafy greens, broccoli, cauliflower, zucchini, peppers, cucumber, tomatoes, onions, carrots, mushrooms, cabbage,",
+  "green beans, asparagus, eggplant, okra, olives); avocado, olive oil, butter in normal amounts; plain Greek yoghurt,",
+  "quark, skyr, cottage cheese, cream cheese; cheese up to about 30 g; plain nuts and seeds up to about 30 g; berries up",
+  "to a small handful (about 80 g); water, unsweetened tea, black coffee.",
+  "SELTEN = only now and then or in a controlled portion: legumes, lentils, chickpeas, beans, hummus, edamame; sweet",
+  "potato; whole fruit like apple, pear, orange, kiwi, peach, melon; berries above a handful; milk by the glass;",
+  "halloumi; more than about 30 g of cheese or nuts; nut butter; non-pork sausages and processed meat; protein bars",
+  "and shakes; whole-grain or legume pasta; anything with unclear sauces, coatings or marinades.",
+  "NEIN = not LOWiSPIKE: rice, sushi rice, bread of any kind, wraps, tortillas, pizza, burger buns, regular pasta,",
+  "noodles, potatoes, fries, oats, quinoa, couscous, bulgur, corn, rice cakes, cereals, granola; banana, mango, dates,",
+  "grapes, pineapple, dried fruit; sugar, honey, syrup, sweets, cake, ice cream, desserts with sugar; juice, soft",
+  "drinks, sweet coffee drinks, zero drinks; ketchup and sweet sauces; chips and crackers; breaded or deep-fried",
+  "food; pork, ham, bacon, salami; beer, wine and all alcohol.",
+  "Vegetable swaps are not the starch they replace: cauliflower rice, konjac or zucchini noodles are JA.",
+  "HONESTY: never invent hidden ingredients and never call a dish clean when a sauce, coating or glaze could hold sugar",
+  "or starch; say what is uncertain in note and use confidence low. Do not make plain pork sound like a sugar spike:",
+  "it is NEIN because LOWiSPIKE excludes pork, not because of sugar. No medical claims, no diagnosis, no shame.",
+  "THE VERDICT BLOCK (lowispike): verdict is the strictest verdict of all parts, light is green for JA, yellow for",
+  "SELTEN, red for NEIN; score is the blood sugar spike risk of the whole plate from 0 (none) to 100 (very high) based",
+  "on its net carbohydrates; spike is low (under about 25 g net carbs), mid (25 to 50 g) or high (more); counted lists",
+  "each counted item with its count; confidence is low, medium or high. Never make the verdict friendlier than the parts.",
+].join(" ");
 function prompt(lang: string): string {
-  return "You are a careful nutrition assistant for a healthy-eating game. Look at this photo. " +
-    "If it shows no food or drink, set is_food to false and return an empty dishes list. " +
-    "Otherwise list each separate dish, food or drink you can see (at most 8), with a short everyday name in " +
+  return MASTER + " " +
+    "Look at this photo. If it shows no food or drink, set is_food to false, return an empty dishes list and a lowispike " +
+    "block with verdict SELTEN, light yellow, score 0, spike low, no counted items and confidence low. " +
+    "Otherwise list each separate part you can see (at most 8), with a short everyday name in " +
     (LANGS[lang] || "English") + ", the visible portion in plain words (for example '1 bowl', '2 slices', 'about 150 g'), " +
-    "its estimated weight in grams, and your best estimate for that portion of kcal, protein, carbohydrates, sugar, " +
-    "fiber and fat in grams. Use typical recipes and plate sizes. Do not give medical advice. " +
-    "confidence is low, medium or high for the whole photo. note is one short sentence in the same language, " +
-    "for example what was hard to see, or an empty string.";
+    "the counted number of pieces (1 when it is one portion), its estimated weight in grams, its verdict, and your best " +
+    "estimate for that portion of kcal, protein, carbohydrates, sugar, fiber and fat in grams. Use typical recipes and " +
+    "plate sizes. confidence is low, medium or high for the whole photo. note is one short sentence in the same language, " +
+    "for example what was hard to see or count, or an empty string.";
 }
 const NUM = { type: "NUMBER" };
+const VERDICT = { type: "STRING", enum: ["JA", "SELTEN", "NEIN"] };
 const SCHEMA = {
   type: "OBJECT",
   properties: {
@@ -119,14 +158,26 @@ const SCHEMA = {
       type: "ARRAY",
       items: {
         type: "OBJECT",
-        properties: { name: { type: "STRING" }, portion: { type: "STRING" }, grams: NUM, kcal: NUM, protein_g: NUM, carbs_g: NUM, sugar_g: NUM, fiber_g: NUM, fat_g: NUM },
-        required: ["name", "portion", "grams", "kcal", "protein_g", "carbs_g", "sugar_g", "fiber_g", "fat_g"],
+        properties: { name: { type: "STRING" }, portion: { type: "STRING" }, count: { type: "INTEGER" }, grams: NUM, kcal: NUM, protein_g: NUM, carbs_g: NUM, sugar_g: NUM, fiber_g: NUM, fat_g: NUM, verdict: VERDICT },
+        required: ["name", "portion", "count", "grams", "kcal", "protein_g", "carbs_g", "sugar_g", "fiber_g", "fat_g", "verdict"],
       },
     },
     confidence: { type: "STRING", enum: ["low", "medium", "high"] },
     note: { type: "STRING" },
+    lowispike: {
+      type: "OBJECT",
+      properties: {
+        verdict: VERDICT,
+        light: { type: "STRING", enum: ["green", "yellow", "red"] },
+        score: { type: "INTEGER" },
+        spike: { type: "STRING", enum: ["low", "mid", "high"] },
+        counted: { type: "ARRAY", items: { type: "OBJECT", properties: { item: { type: "STRING" }, count: { type: "INTEGER" } }, required: ["item", "count"] } },
+        confidence: { type: "STRING", enum: ["low", "medium", "high"] },
+      },
+      required: ["verdict", "light", "score", "spike", "counted", "confidence"],
+    },
   },
-  required: ["is_food", "dishes", "confidence", "note"],
+  required: ["is_food", "dishes", "confidence", "note", "lowispike"],
 };
 
 async function gemini(key: string, image: string, mime: string, lang: string) {

@@ -14244,9 +14244,15 @@ const NAMES = [
   ["n_ok", "ok", /skyr|quark|\beier?\b|\beggs?\b|käse|kase|cheese|nüsse|nuss|nuts|avocado|wasser|water|butter|oliven|olive|lachs|salmon|thunfisch|tuna|hähnchen|chicken|gemüse|brokkoli|broccoli|spinat|salat|frischkäse|joghurt natur|griechisch|kaffee|coffee|tee\b|tea\b|huevo|queso/]
 ];
 function rateName(name){ const k = nkey(name) + " " + String(name || "").toLowerCase();
-  for (const [why, v, rx] of NAMES) if (rx.test(k)) return {verdict:v, why:[[why], ["w_name"]], score:{ok:14, better:45, spike:74}[v], est:true};
-  return null; }
-function whyText(w){ const k = w[0]; if (!B3_TX[k]) return window.LowiSpikeCore ? LowiSpikeCore.text(w, LI()) : ""; return t.apply(null, [k].concat(w.slice(1).map(x => typeof x === "number" ? String(x).replace(".", LI() ? "," : ".") : String(x).charAt(0).toUpperCase() + String(x).slice(1)))); }
+  let hit = null;
+  for (const [why, v, rx] of NAMES) if (rx.test(k)) { hit = {verdict:v, why:[[why], ["w_name"]], score:{ok:14, better:45, spike:74}[v], est:true}; break; }
+  /* Master Knowledge v3: a typed name, a database meal and a grocery line get the same verdict as the photo scan and the
+     barcode engine (LowiFoodPolicy.rateName). The stricter of the two wins, so nothing here can loosen a NEIN. */
+  const K = window.LowiFoodKnowledge, f = K ? K.rateFood(name) : null;
+  if (f && f.verdict) { const v = K.SCALE[f.verdict], rk = {ok:0, better:1, spike:2};
+    if (!hit || rk[v] > rk[hit.verdict]) return {verdict:v, why:[["fk", f.rules[0]], ["w_name"]], score:{ok:14, better:45, spike:74}[v], est:true}; }
+  return hit; }
+function whyText(w){ const k = w[0]; if (k === "fk") return window.LowiFoodKnowledge ? LowiFoodKnowledge.reasonText(w[1], (window.LowiLang && LowiLang.get && LowiLang.get()) || "en") : ""; if (!B3_TX[k]) return window.LowiSpikeCore ? LowiSpikeCore.text(w, LI()) : ""; return t.apply(null, [k].concat(w.slice(1).map(x => typeof x === "number" ? String(x).replace(".", LI() ? "," : ".") : String(x).charAt(0).toUpperCase() + String(x).slice(1)))); }
 function packWhy(why){ let s = JSON.stringify(why || []); while (s.length > 400 && why.length) { why = why.slice(0, -1); s = JSON.stringify(why); } return s; }
 function unpackWhy(s){ try { const a = JSON.parse(s || "[]"); return Array.isArray(a) ? a.filter(x => Array.isArray(x) && typeof x[0] === "string") : []; } catch(e){ return []; } }
 
@@ -20598,6 +20604,7 @@ window.LowiCommunityHost = {
 <link rel="stylesheet" id="scCss" href="spike-catch.css?v=20261023-092220">
 <script src="ingredient-core.js?v=20261023-092220"></script>
 <script src="food-policy-core.js?v=20261023-092220"></script>
+<script src="food-knowledge-core.js?v=20261023-092220"></script>
 <script src="food-assess-core.js?v=20261023-092220"></script>
 <script src="food-engine-core.js?v=20261023-092220"></script>
 <script src="spike-core.js?v=20261023-092220"></script>

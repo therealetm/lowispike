@@ -43,11 +43,15 @@
                 carbs: num(d.carbs_g != null ? d.carbs_g : d.carbs, LIMIT.carbs),
                 sugar: num(d.sugar_g != null ? d.sugar_g : d.sugar, LIMIT.sugar),
                 fiber: num(d.fiber_g != null ? d.fiber_g : d.fiber, LIMIT.fiber),
-                fat: num(d.fat_g != null ? d.fat_g : d.fat, LIMIT.fat)
+                fat: num(d.fat_g != null ? d.fat_g : d.fat, LIMIT.fat),
+                count: Math.max(1, Math.min(50, Math.round(+d.count || 1)))
             };
         }).filter(Boolean).slice(0, 8);
         const conf = ['low', 'medium', 'high'].includes(raw.confidence) ? raw.confidence : 'medium';
-        return { isFood: raw.is_food !== false && dishes.length > 0, dishes, confidence: conf, note: String(raw.note || '').trim().slice(0, 160) };
+        return { isFood: raw.is_food !== false && dishes.length > 0, dishes, confidence: conf, note: String(raw.note || '').trim().slice(0, 160),
+            // Master Knowledge v3 verdict block. Kept raw here; meal-result validates it (LowiFoodKnowledge.parse) and it can
+            // only make the app's own verdict stricter, never looser.
+            verdictBlock: raw.lowispike && typeof raw.lowispike === 'object' && !Array.isArray(raw.lowispike) ? raw.lowispike : null };
     }
     function totals(dishes) {
         const out = {};
@@ -263,7 +267,7 @@
                    Without it (old cache), the plain list below still works. */
                 const MR = root.LowiMealResult;
                 let ctl = null;
-                if (MR && MR.mount) { try { ctl = MR.mount(box, form, { dishes, lang: l, low: res.confidence === 'low', note: res.note, photo: dataURL, db: opts.db, dbReady: opts.dbReady }); } catch (e) { console.warn(e); ctl = null; } }
+                if (MR && MR.mount) { try { ctl = MR.mount(box, form, { dishes, lang: l, low: res.confidence === 'low', note: res.note, verdictBlock: res.verdictBlock, photo: dataURL, db: opts.db, dbReady: opts.dbReady }); } catch (e) { console.warn(e); ctl = null; } }
                 if (!ctl) { setHidden(); paint(res); }
                 /* Oct 19: the read is remembered by photo (sharing never asks the AI again); under it: checks left today,
                    (Oct 22: sharing moved to "Share to Community" after Log as meal, meal-journal.js) and the optional mealtime reminder offer. */

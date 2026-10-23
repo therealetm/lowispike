@@ -67,6 +67,18 @@
         whole_food_fat: {en: 'Whole-food fat', de: 'Natürliches Fett', es: 'Grasa de alimento natural'},
         nonstarchy_veg: {en: 'Non-starchy vegetables', de: 'Stärkearmes Gemüse', es: 'Verduras sin almidón'},
         unsweetened_drink: {en: 'Unsweetened drink', de: 'Ungesüßtes Getränk', es: 'Bebida sin azúcar'},
+        grain_staple: {en: 'Grain or starchy base: lots of carbohydrate', de: 'Getreide oder Stärkebasis: viele Kohlenhydrate', es: 'Cereal o base de almidón: muchos carbohidratos'},
+        sugar_itself: {en: 'Sugar or syrup: added sugar', de: 'Zucker oder Sirup: zugesetzter Zucker', es: 'Azúcar o sirope: azúcar añadido'},
+        sweet_fruit: {en: 'Very sweet fruit: a lot of sugar at once', de: 'Sehr süßes Obst: viel Zucker auf einmal', es: 'Fruta muy dulce: mucho azúcar de golpe'},
+        breaded_fried: {en: 'Breaded or fried: a crust of fast starch', de: 'Paniert oder frittiert: eine Hülle aus schneller Stärke', es: 'Rebozado o frito: una capa de almidón rápido'},
+        whole_fruit_small: {en: 'Whole fruit: a small portion now and then', de: 'Ganzes Obst: ab und zu eine kleine Portion', es: 'Fruta entera: una porción pequeña de vez en cuando'},
+        milk_plain: {en: 'Milk without added sugar', de: 'Milch ohne Zuckerzusatz', es: 'Leche sin azúcar añadido'},
+        halloumi_occasional: {en: 'Halloumi: salty and rich, keep it occasional', de: 'Halloumi: salzig und reichhaltig, lieber selten', es: 'Halloumi: salado y contundente, mejor de vez en cuando'},
+        nut_butter_spoon: {en: 'Nut butter: one spoon fits, the jar goes fast', de: 'Nussmus: ein Löffel passt, das Glas ist schnell leer', es: 'Crema de frutos secos: una cucharada vale, el bote vuela'},
+        berries_small: {en: 'Berries in a small handful', de: 'Beeren, eine kleine Handvoll', es: 'Frutos rojos, un puñado pequeño'},
+        berries_bowl: {en: 'Berries: a bowlful is more sugar than a handful', de: 'Beeren: eine Schüssel ist mehr Zucker als eine Handvoll', es: 'Frutos rojos: un bol es más azúcar que un puñado'},
+        plant_protein: {en: 'Tofu or tempeh: plant protein', de: 'Tofu oder Tempeh: pflanzliches Eiweiß', es: 'Tofu o tempeh: proteína vegetal'},
+        fresh_cheese: {en: 'Fresh cheese without sugar', de: 'Frischkäse ohne Zucker', es: 'Queso fresco sin azúcar'},
         legumes_still_carbs: {en: 'Legumes: fibre and protein, but still carbs', de: 'Hülsenfrüchte: Ballaststoffe und Eiweiß, aber trotzdem Kohlenhydrate', es: 'Legumbres: fibra y proteína, pero aún carbohidratos'},
         sweet_potato_portion: {en: 'Sweet potato: only in controlled portions', de: 'Süßkartoffel: nur in kleinen Portionen', es: 'Boniato: solo en porciones controladas'},
         large_portion: {en: 'Large portion ({0} g)', de: 'Große Portion ({0} g)', es: 'Porción grande ({0} g)'},
@@ -83,10 +95,10 @@
     // then the "does not cancel" corrections, then behaviour and positives (spec sections 9 and 12).
     const ORDER = ['allergen', 'avoid_list', 'craving_trigger', 'pork_policy', 'alcohol_policy', 'coated_nuts_sugar', 'sugar_first_ingredient',
         'liquid_sugar', 'juice_is_not_whole_fruit', 'sweet_substitute_keeps_habit', 'sweet_dessert', 'refined_starch_staple', 'bread_staple',
-        'processed_starchy_snack', 'sweet_sauce', 'sugar_per_100', 'processed_protein_product', 'processed_meat_snack', 'added_sugar_and_honey',
+        'grain_staple', 'sugar_itself', 'sweet_fruit', 'breaded_fried', 'processed_starchy_snack', 'sweet_sauce', 'sugar_per_100', 'processed_protein_product', 'processed_meat_snack', 'added_sugar_and_honey',
         'added_sugar', 'dried_fruit_sugar', 'sweetener', 'refined_starch_top', 'fat_protein_do_not_cancel_carbs', 'fibre_does_not_cancel_carbs',
         'sweet_salty_repeat_snacking', 'repeat_snacking', 'protein_does_not_make_it_green', 'large_portion', 'legumes_still_carbs',
-        'sweet_potato_portion', 'whole_food_protein', 'plain_dairy_natural_milk_sugar', 'nonstarchy_veg', 'whole_food_fat', 'unsweetened_drink',
+        'sweet_potato_portion', 'whole_fruit_small', 'berries_bowl', 'halloumi_occasional', 'nut_butter_spoon', 'whole_food_protein', 'plant_protein', 'fresh_cheese', 'berries_small', 'milk_plain', 'plain_dairy_natural_milk_sugar', 'nonstarchy_veg', 'whole_food_fat', 'unsweetened_drink',
         'plain_nuts_no_added_sugar', 'portion_matters', 'allergen_unknown', 'ingredients_incomplete', 'not_enough_data', 'claim_never_approves',
         'carbs_serving', 'carbs_low_serving'];
     const ORANK = Object.fromEntries(ORDER.map((k, i) => [k, i]));
@@ -253,6 +265,10 @@
         if (H('policy.zero_drink')) add('sweet_substitute_keeps_habit');
         if (H('policy.candy_dessert')) add('sweet_dessert');
         if (H('policy.starch_staple')) add(f.cats.starch_bread && !f.cats.starch_rice && !f.cats.starch_pasta && !f.cats.starch_potato ? 'bread_staple' : 'refined_starch_staple');
+        if (H('policy.starch_grain')) add('grain_staple');
+        if (H('policy.sugar')) add('sugar_itself');
+        if (H('policy.sweet_fruit')) add('sweet_fruit');
+        if (H('policy.breaded')) add('breaded_fried');
         if (H('policy.chips_snack')) add('processed_starchy_snack');
         if (H('policy.sweet_sauce')) add('sweet_sauce');
         if (!f.liquid && f.sugar != null && f.sugar >= 10 && !f.cats.plain_yoghurt_quark) add('sugar_per_100', [r0(f.sugar)], 'sugar_' + r0(f.sugar) + '_per_100');
@@ -277,6 +293,14 @@
         if ((H('policy.nuts_large') || H('policy.cheese_large')) && f.servingG != null) add('large_portion', [r0(f.servingG)]);
         if (H('policy.legumes')) add('legumes_still_carbs');
         if (H('policy.sweet_potato')) add('sweet_potato_portion');
+        if (H('policy.fruit_whole')) add('whole_fruit_small');
+        if (H('ja.milk')) add('milk_plain');
+        if (H('policy.halloumi')) add('halloumi_occasional');
+        if (H('policy.nut_butter')) add('nut_butter_spoon');
+        if (H('policy.berries_large')) add('berries_bowl');
+        if (H('ja.berries_small')) add('berries_small');
+        if (H('ja.plant_protein')) add('plant_protein');
+        if (H('ja.fresh_cheese')) add('fresh_cheese');
         if (H('ja.eggs') || H('ja.poultry') || H('ja.lean_beef') || H('ja.fish')) add('whole_food_protein');
         if (H('ja.plain_yoghurt_quark')) add('plain_dairy_natural_milk_sugar');
         if (H('ja.nonstarchy_veg')) add('nonstarchy_veg');

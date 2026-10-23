@@ -13988,7 +13988,7 @@ const B3_TX = {
   manualQ: ["Couldn't read everything. Check the label and tick what you see:", "Nicht alles lesbar. Schau aufs Etikett und tippe an, was du siehst:", "No se pudo leer todo. Mira la etiqueta y marca lo que veas:"],
   m_sugar: ["Sugar or syrup (Zucker, Sirup, Dextrose, Honig)", "Zucker oder Sirup (Zucker, Sirup, Dextrose, Honig)", "Azúcar o jarabe (Zucker, Sirup, Dextrose, Honig)"],
   m_sweet: ["Sweetener (Sucralose, Aspartam, Stevia, Erythrit)", "Süßstoff (Sucralose, Aspartam, Stevia, Erythrit)", "Edulcorante (Sucralose, Aspartam, Stevia, Erythrit)"],
-  m_carb: ["Flour, rice, corn or potato near the top", "Mehl, Reis, Mais oder Kartoffel weit oben", "Harina, arroz, maíz o patata entre los primeros"],
+  m_carb: ["Flour, rice, corn, potato, plantain or banana near the top", "Mehl, Reis, Mais, Kartoffel, Kochbanane oder Banane weit oben", "Harina, arroz, maíz, patata, plátano o banana entre los primeros"],
   m_none: ["None of these", "Nichts davon", "Nada de esto"],
   better: ["Better picks", "Bessere Wahl", "Mejores opciones"],
   betterComm: ["Caught by the community, rated OK", "Von der Community gefangen, mit OK bewertet", "Atrapado por la comunidad, valorado OK"],
@@ -14346,9 +14346,12 @@ function noDataHTML(p){
     '<button type="button" class="r2-btn ghost ne-tick" data-b3="netick">' + esc(net("tick")) + '</button></div></section>'; }
 /* the name box in the "not found / no data" sheet: type a name, see the verdict live, Analyze by name */
 function nameBoxHTML(p){
-  return '<div class="ne-box"><label class="tiny dim b3-fl" for="b3MName">' + esc(t("nameQ")) + '</label><input class="input" id="b3MName" maxlength="80" autocomplete="off" placeholder="' + esc(net("typeHint")) + '" value="' + esc(p.name || "") + '">' +
+  /* Oct 23 (Emmanuel, plantain chips: "Where's the search bar? I typed in plantain chips. And why did I type it in if there's no search
+     button?"): the Analyze button sits right next to the field, and return on the keyboard runs it too */
+  return '<div class="ne-box"><label class="tiny dim b3-fl" for="b3MName">' + esc(t("nameQ")) + '</label><div class="ne-row-in"><input class="input" id="b3MName" maxlength="80" autocomplete="off" enterkeyhint="search" placeholder="' + esc(net("typeHint")) + '" value="' + esc(p.name || "") + '">' +
+    '<button type="button" class="ne-by ne-inl" data-b3="nebyname" aria-label="' + esc(net("analyse")) + '">' + IC.go + '<span>' + esc(net("analyseShort")) + '</span></button></div>' +
     '<div class="ne-live" id="b3NeLive" aria-live="polite">' + (p.neNone ? '<div class="ne-none">' + esc(net("none")) + (p.neFb ? '<small>' + esc(net("fallback")) + '</small>' : "") + '</div>' : liveHTML(p.name || "", p.brand || "")) + '</div>' +
-    '<button type="button" class="r2-btn pri big ne-by" data-b3="nebyname">' + esc(net("analyse")) + '</button></div>'; }
+'</div>'; }
 function liveHTML(q, brand){
   q = String(q || "").trim(); if (q.length < 2 || !NE()) return "";
   const e = NE().estimate(q, {brand, rate:nameRate}); if (!e) return "";
@@ -14364,7 +14367,7 @@ async function nameResult(q, base){
   let p = withNameEst(base), fb = false;
   if (p.nameEst) return {p, fb};
   let e = null;
-  try { const ai = window.LowiFoodAI && LowiFoodAI.analyseName ? await LowiFoodAI.analyseName(q, {lang:NEL()}) : null; e = ai ? NE().fromAI(ai, {rate:nameRate, name:q}) : null; } catch(err){ fb = true; }
+  try { const ai = window.LowiFoodAI && LowiFoodAI.analyseName ? await LowiFoodAI.analyseName(q, {lang:NEL(), timeout:8000}) : null; e = ai ? NE().fromAI(ai, {rate:nameRate, name:q}) : null; } catch(err){ fb = true; }
   return {p:e ? Object.assign({}, base, e) : null, fb};
 }
 async function analyseTyped(q, btn){
@@ -14619,7 +14622,7 @@ function openScanner(mode){
   $("#b3BcF", el).addEventListener("submit", e => { e.preventDefault(); const v = $("#b3Bc", el).value, c = validCode(v); if (!c) { msg(t("bcBad"), "warn"); sfx("error"); return; } found(c); });
   camNameWire(el); /* Oct 23 name check */
   requestAnimationFrame(() => el.classList.add("on"));
-  if (mode === "type") { el.classList.add("typing"); setTimeout(() => { const i = $("#b3Bc", el); if (i) i.focus(); }, 120); msgState("type"); return; }
+  if (mode === "type") { el.classList.add("typing"); setTimeout(() => { const i = $("#b3Bc", el), a = document.activeElement; if (i && !(a && a.id === "b3Nm")) i.focus(); }, 120); msgState("type"); return; }
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { msgState("nocam"); return; }
   /* Oct 16 (E-man: "iOS asks for camera access itself ... let's not have it double"): no in-app "Allow camera" card. Tapping Scan
      asks for the camera straight away, so the only prompt is iOS's own; already allowed, it just starts. realm-backdrop.js puts the
@@ -14629,7 +14632,7 @@ function openScanner(mode){
 }
 /* Oct 16 (E-man: "I try to type the number and I can't, the keyboard blocks it"): while the barcode field has focus the panel
    rides just above the iOS keyboard (visualViewport), the camera card and action row step aside, so the field and its Go button stay in view */
-function kbFit(){ if (!CAM) return; const el = CAM.el, i = $("#b3Bc", el), vv = window.visualViewport, on = !!i && document.activeElement === i;
+function kbFit(){ if (!CAM) return; const el = CAM.el, i = $("#b3Bc", el), vv = window.visualViewport, ae = document.activeElement, on = !!ae && (ae === i || ae.id === "b3Nm") && el.contains(ae);
   const kb = on && vv ? Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)) : 0;
   el.classList.toggle("kb", on); el.style.setProperty("--b3kb", kb + "px"); if (on) el.classList.add("typing"); }
 function kbWire(el){ const i = $("#b3Bc", el); if (!i) return; const f = () => requestAnimationFrame(kbFit);
@@ -14647,7 +14650,8 @@ function shopResume(){ if (!CAM) return; CAM.hold = false; CAM.done = false; CAM
 let CNT = 0;
 function camNameWire(el){ const f = $("#b3NmF", el), i = $("#b3Nm", el), live = $("#b3NmLive", el); if (!f || !i) return;
   i.addEventListener("input", () => { clearTimeout(CNT); CNT = setTimeout(() => { if (live) live.innerHTML = liveHTML(i.value, "").replace('data-b3="nebyname"', 'data-b3="camname"'); }, 220); });
-  f.addEventListener("submit", e => { e.preventDefault(); camName(i.value); }); }
+  f.addEventListener("submit", e => { e.preventDefault(); camName(i.value); });
+  i.addEventListener("keydown", e => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); camName(i.value); } }); }
 async function camName(q){
   q = String(q || "").trim(); if (!CAM) return; if (q.length < 2) { const i = $("#b3Nm", CAM.el); if (i) i.focus(); return; } if (NE_BUSY) return;
   const base = {name:q, brand:"", typed:true, notFound:false, verdict:"unknown", why:[], score:null};
@@ -14746,7 +14750,8 @@ async function decodeFile(f){
   } catch(e){}
   const c = validCode(code);
   if (c) { if (!CAM) openScanner("type"); found(c); return; }
-  if (CAM) { msgState("type"); CAM.el.classList.add("typing"); msg(t("bcNone"), "warn"); sfx("error"); const i = $("#b3Bc", CAM.el); if (i) i.focus(); } }
+  /* Oct 23: never pull the keyboard away from someone already typing a food name */
+  if (CAM) { msgState("type"); CAM.el.classList.add("typing"); msg(t("bcNone"), "warn"); sfx("error"); const i = $("#b3Bc", CAM.el), a = document.activeElement; if (i && !(a && a.id === "b3Nm")) i.focus(); } }
 
 /* =====================================================================
    Reveal: silhouette, then the card. Catch, swaps, report.
@@ -14979,7 +14984,8 @@ function reveal(p, quiet){
   fillHerb(REV); if (!anim) { const h = $(".b3-herb", REV); h && h.classList.add("go"); }
   if (anim && !p.notFound && p.verdict !== "unknown") { sfx(p.verdict === "ok" ? "preview" : "soft"); buzz(15); }
   if (p.notFound) { const n = $("#b3MName", REV); n && n.addEventListener("input", manualReady); }
-  if (p.notFound || p.verdict === "unknown") { const n = $("#b3MName", REV), b = $("#b3MBrand", REV); n && n.addEventListener("input", neLive); b && b.addEventListener("input", neLive); }
+  if (p.notFound || p.verdict === "unknown") { const n = $("#b3MName", REV), b = $("#b3MBrand", REV); n && n.addEventListener("input", neLive); b && b.addEventListener("input", neLive);
+    n && n.addEventListener("keydown", e => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); analyseByName($(".ne-inl", REV)); } }); }
 }
 function manualReady(){ if (!REV) return; const n = ($("#b3MName", REV) || {}).value || "", any = $$(".b3-tick[aria-pressed=true]", REV).length; const b = $("#b3MCatch", REV); if (b) b.disabled = !(n.trim().length >= 2 && any); }
 async function catchCur(btn, p){
@@ -15071,8 +15077,9 @@ document.addEventListener("click", e => {
     case "mcatch": { if (!CUR || !REV) break; const name = $("#b3MName", REV).value.trim(); if (name.length < 2) { toast(t("needName")); break; }
       const man = {}; $$(".b3-tick[aria-pressed=true]", REV).forEach(x => { if (x.dataset.k !== "none") man[x.dataset.k] = 1; });
       const base = Object.assign({}, CUR, {name, brand:$("#b3MBrand", REV).value.trim(), manual:man, notFound:false, source:"manual"}); base.cat = base.cat || catOf([], name);
-      const r = rate(base); if (r.verdict === "unknown") r.verdict = "ok"; const est = rateName(name);
-      const p = Object.assign(base, {verdict:r.verdict, why:r.why, score:r.score, est:true}); if (r.verdict === "ok" && est && est.verdict !== "ok" && !Object.keys(man).length) { p.verdict = est.verdict; p.why = est.why; p.score = est.score; }
+      const r = rate(base); if (r.verdict === "unknown") r.verdict = "ok"; const est = (NE() ? NE().estimate(name, {brand:base.brand, rate:nameRate}) : null) || rateName(name);
+      /* Oct 23 (plantain chips + "None of these" came out green): the name check is a floor, the stricter of the two wins */
+      const p = Object.assign(base, {verdict:r.verdict, why:r.why, score:r.score, est:true}); if (est && NRK[est.verdict] > (NRK[r.verdict] || 0)) { p.verdict = est.verdict; p.why = est.why; p.score = est.score != null ? est.score : NSC[est.verdict]; }
       delete p.manual; CUR = p; catchCur(b, p); break; }
     case "close": if (REV) R2.close(REV); break;
     case "report": if (CUR && CUR.id) reportSheet(CUR); break;

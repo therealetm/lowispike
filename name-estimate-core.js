@@ -39,7 +39,9 @@
         pringles: 'chips', lays: 'chips', funnyfrisch: 'chips', chio: 'chips', nutella: 'nutella', fanta: 'limonade', sprite: 'limonade',
         capri: 'saft', redbull: 'energy drink', monster: 'energy drink', barilla: 'nudeln', oetker: 'pudding', ehrmann: 'pudding',
         weintrauben: 'trauben', tafeltrauben: 'trauben', uvas: 'trauben', uva: 'trauben', fresa: 'erdbeeren', fresas: 'erdbeeren',
-        erdbeere: 'erdbeeren', strawberry: 'strawberries', grape: 'grapes'
+        erdbeere: 'erdbeeren', strawberry: 'strawberries', grape: 'grapes', traube: 'trauben', weintraube: 'trauben', tafeltraube: 'trauben',
+        /* plantain chips (Emmanuel's Maduritos): fried plantain is starch and sugar plus oil */
+        maduritos: 'plantain chips', chifles: 'plantain chips', tostones: 'plantain chips', platanitos: 'plantain chips', mariquitas: 'plantain chips', patacones: 'plantain chips', plantains: 'plantain', platano: 'plantain', plátano: 'plantain', platanos: 'plantain', plátanos: 'plantain', kochbananen: 'kochbanane', kochbananenchips: 'plantain chips', bananenchips: 'chips'
     };
     const low = s => String(s == null ? '' : s).toLowerCase();
     // phrases the word rules would misread: cherry tomatoes are tomatoes, not cherries
@@ -89,6 +91,8 @@
         for (const w of cw) {
             let h = w.length >= 3 ? call(rate, w) : null, hw = w;
             if (!h && ALIAS[w]) { h = call(rate, ALIAS[w]); hw = ALIAS[w]; }
+            /* singular typed, the food rules know the plural (Traube -> trauben, Erdbeere -> erdbeeren, grape -> grapes) */
+            if (!h && w.length >= 4) for (const suf of ['n', 'en', 's', 'es']) { h = call(rate, w + suf); if (h) { hw = w + suf; break; } }
             if (!h) for (const t of tails(w)) { h = call(rate, t); if (h) { hw = t; break; } }
             if (h) { if (hits.indexOf(hw) < 0) hits.push(hw); best = stricter(best, Object.assign({ hit: hw }, h)); }
         }
@@ -128,21 +132,21 @@
             ai: 'AI estimate from the name', nodata: 'No detailed data from the scan', nodataS: 'This product has no nutrition table or ingredients in the database yet, so the verdict above comes from its name only.',
             exact: 'Make it exact (optional)', exactS: 'Add label photos, or tick what the label says. Then the scan rates the real numbers.', tick: 'Tick what the label says',
             scanData: 'From the scan', swap: 'Best swap', swapOk: 'Good pick, no swap needed', recipe: 'Recipe Book', open: 'See the recipe', show: 'Show it',
-            analyse: 'Analyze by name', analysing: 'Checking the name…', none: 'I can’t tell from this name yet. Add label photos or tick what the label says.',
+            analyse: 'Analyze by name', analyseShort: 'Analyze', analysing: 'Checking the name…', none: 'I can’t tell from this name yet. Add label photos or tick what the label says.',
             typeName: 'Or type a food name', typeHint: 'e.g. grapes, strawberries or a product name', noCatch: 'Estimated from the name, so it isn’t saved to the community. Add label photos to save it.',
             fallback: 'The AI name check isn’t switched on yet, so this uses the app’s own food rules.', portion: 'Typical portion' },
         de: { est: 'Schätzung nach dem Namen', read: 'Erkannt als', how: 'Wie sicher', medium: 'mittel, nur nach dem Namen', low: 'gering, geraten nach dem Namen',
             ai: 'KI-Schätzung nach dem Namen', nodata: 'Keine genauen Daten vom Scan', nodataS: 'Für dieses Produkt gibt es noch keine Nährwerttabelle und keine Zutaten in der Datenbank. Das Ergebnis oben kommt nur vom Namen.',
             exact: 'Genauer machen (optional)', exactS: 'Füg Etikettenfotos hinzu oder tipp an, was auf dem Etikett steht. Dann bewertet der Scan die echten Werte.', tick: 'Antippen, was auf dem Etikett steht',
             scanData: 'Vom Scan', swap: 'Beste Alternative', swapOk: 'Gute Wahl, keine Alternative nötig', recipe: 'Rezeptbuch', open: 'Zum Rezept', show: 'Anzeigen',
-            analyse: 'Nach Namen analysieren', analysing: 'Name wird geprüft…', none: 'An diesem Namen erkenne ich es noch nicht. Füg Etikettenfotos hinzu oder tipp an, was auf dem Etikett steht.',
+            analyse: 'Nach Namen analysieren', analyseShort: 'Analysieren', analysing: 'Name wird geprüft…', none: 'An diesem Namen erkenne ich es noch nicht. Füg Etikettenfotos hinzu oder tipp an, was auf dem Etikett steht.',
             typeName: 'Oder Lebensmittel eintippen', typeHint: 'z. B. Trauben, Erdbeeren oder ein Produktname', noCatch: 'Nach dem Namen geschätzt, darum wird es nicht in der Community gespeichert. Mit Etikettenfotos kannst du es speichern.',
             fallback: 'Die KI-Namensprüfung ist noch nicht eingeschaltet, darum gelten die eigenen Lebensmittel-Regeln der App.', portion: 'Übliche Portion' },
         es: { est: 'Estimación por el nombre', read: 'Leído como', how: 'Seguridad', medium: 'media, solo por el nombre', low: 'baja, deducido del nombre',
             ai: 'Estimación con IA por el nombre', nodata: 'Sin datos detallados del escaneo', nodataS: 'Este producto aún no tiene tabla nutricional ni ingredientes en la base de datos, así que el resultado de arriba viene solo de su nombre.',
             exact: 'Hacerlo exacto (opcional)', exactS: 'Añade fotos de la etiqueta o marca lo que dice. Así el escaneo valora los datos reales.', tick: 'Marcar lo que dice la etiqueta',
             scanData: 'Del escaneo', swap: 'Mejor alternativa', swapOk: 'Buena elección, no hace falta cambiar', recipe: 'Libro de recetas', open: 'Ver la receta', show: 'Ver',
-            analyse: 'Analizar por nombre', analysing: 'Revisando el nombre…', none: 'Con este nombre aún no lo sé. Añade fotos de la etiqueta o marca lo que dice.',
+            analyse: 'Analizar por nombre', analyseShort: 'Analizar', analysing: 'Revisando el nombre…', none: 'Con este nombre aún no lo sé. Añade fotos de la etiqueta o marca lo que dice.',
             typeName: 'O escribe un alimento', typeHint: 'p. ej. uvas, fresas o un producto', noCatch: 'Estimado por el nombre, así que no se guarda en la comunidad. Añade fotos de la etiqueta para guardarlo.',
             fallback: 'El análisis de nombres con IA aún no está activado, así que se usan las reglas de la app.', portion: 'Porción típica' }
     };

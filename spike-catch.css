@@ -157,7 +157,14 @@
 .ne-chip small { font-size: 11px; opacity: .7; flex: none; }
 .ne-wait, .ne-none { font-size: 13.5px; line-height: 1.35; padding: 10px 12px; border-radius: 16px; background: rgba(10, 30, 70, .25); display: flex; flex-direction: column; gap: 4px; }
 .ne-none small { opacity: .75; }
-.ne-by { width: 100%; }
+.ne-by.r2-btn { width: 100%; }
+/* the Analyze button right next to the name field (Emmanuel: "why did I type it in if there's no search button?") */
+.ne-row-in { display: flex; gap: 8px; align-items: stretch; }
+.ne-row-in .input { flex: 1; min-width: 0; }
+.ne-inl { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 48px; padding: 0 16px; border-radius: 24px; border: 1.5px solid rgba(190, 255, 225, .75); color: #04261a; font: 750 15px/1 var(--sc-font, inherit); cursor: pointer; -webkit-tap-highlight-color: transparent;
+    background: radial-gradient(120% 90% at 20% 0%, rgba(255, 255, 255, .55), rgba(255, 255, 255, 0) 55%), linear-gradient(160deg, #7ff0bf, #2fc489); box-shadow: 0 6px 18px -8px rgba(40, 200, 140, .8), inset 0 0 10px rgba(255, 255, 255, .35); }
+.ne-inl svg { width: 18px; height: 18px; }
+.ne-inl:disabled { opacity: .6; }
 .ne-sgo { margin: 8px 0 4px; }
 .ne-exl { margin-top: 10px; text-transform: uppercase; letter-spacing: .06em; }
 @keyframes neBreathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.012); } }

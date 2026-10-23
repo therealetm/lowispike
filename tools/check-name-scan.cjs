@@ -3,7 +3,7 @@
    1) type the grapes barcode 8033803727241 (Open Food Facts answers with the name only, no nutrition): the result must be a
       verdict from the name on top, with the same reaction as a normal scan (lowi:scan-verdict + Misty's bloom/wilt), the best
       swap, and a "No detailed data" note with label photos as the optional extra;
-   2) type "Trauben" and "Erdbeere" in the name field and tap Show the analysis;
+   2) type "Trauben" and "Erdbeere" in the camera's food-name field (live chip), then Go;
    3) an unknown store code (no name) -> the sheet with the name box: type "Erdbeeren", the live chip shows, Analyze by name.
    Records errors, overflow, cut-off text and English in de/es, with screenshots.
    node tools/check-name-scan.cjs <device> [url|root] [outdir] [lang en|de|es] */
@@ -64,28 +64,44 @@ const H = require('./sim/harness.cjs'), fs = require('fs'), path = require('path
   const e0 = R.errs.length;
   if (await openScan()) { await P.evaluate(() => { window.__nv = []; }); await typeCode('8033803727241'); await check('grapes barcode', { verd: 'spike', est: true, nodata: true, swap: true, anim: true }); }
   else await find('cannot open scan', {});
-  // 2) typed names in the Scan sheet's name field
+  // 2) typed names in the camera's food-name field (next to the barcode field): live chip, then Go = the full result
   for (const [q, v] of [['Trauben', 'spike'], ['Erdbeere', 'ok']]) {
-    await reset(); await P.evaluate(() => { try { goTab('scan'); } catch (e) { } }); await H.sleep(1500);
+    if (!await openScan()) { await find('cannot open scan', { q }); continue; }
     await P.evaluate(() => { window.__nv = []; });
-    const f = P.locator('#b3Name').first();
-    if (!await f.count()) { await find('no name field', { q }); continue; }
-    await f.tap().catch(() => { }); await f.fill(''); await P.keyboard.type(q, { delay: 30 }); await P.keyboard.press('Enter'); await H.sleep(2500);
-    const go = P.locator('[data-b3="nesearch"]').first();
-    if (!await go.count()) { await find('no Show the analysis button', { q }); continue; }
-    await R.tapEl(go).catch(() => { }); await H.sleep(5500);
+    const f = P.locator('#b3Cam #b3Nm').first();
+    if (!await f.count() || !await f.isVisible().catch(() => false)) { await find('no name field in the camera', { q }); continue; }
+    if (process.env.DBG) await P.evaluate(() => { window.__fl = []; const o = HTMLElement.prototype.focus; HTMLElement.prototype.focus = function () { window.__fl.push((this.id || this.className) + ' @ ' + (new Error().stack.split('\n').slice(2, 5).join(' < ').replace(/\s+/g, ' ').slice(0, 300))); return o.apply(this, arguments); }; });
+    await f.tap().catch(() => { }); await f.fill(''); await P.keyboard.type(q, { delay: 30 }); await H.sleep(900);
+    if (process.env.DBG) console.log('DBG focus', q, JSON.stringify(await P.evaluate(() => ({ act: document.activeElement && (document.activeElement.id || document.activeElement.className), fl: window.__fl }))));
+    const chip = await P.evaluate(() => { const c = document.querySelector('#b3NmLive .ne-chip'); return c ? c.className : ''; });
+    if (process.env.DBG) console.log('DBG', q, JSON.stringify(await P.evaluate(() => ({ cam: !!document.querySelector('#b3Cam'), val: (document.querySelector('#b3Nm') || {}).value, live: (document.querySelector('#b3NmLive') || {}).innerHTML, ov: document.querySelectorAll('.r2-ov:not(.off)').length }))));
+    if (!chip.includes('v-' + v)) await find('no live chip in the camera', { q, chip });
+    await P.keyboard.press('Enter');
+    if (process.env.DBG) for (let i = 0; i < 8; i++) { await H.sleep(1000); console.log('DBG after', q, i, JSON.stringify(await P.evaluate(() => ({ cam: !!document.querySelector('#b3Cam'), hint: (document.querySelector('#b3Hint') || {}).textContent, ov: [...document.querySelectorAll('.r2-ov:not(.off)')].map(o => o.innerText.slice(0, 60)), fl: !!document.querySelector('.sp-flight, .sc-stage') }))), R.errs.slice(-2).join(' | ').slice(0, 200)); }
+    await H.sleep(process.env.DBG ? 0 : 6500);
     await check('typed ' + q, { verd: v, est: true, nodata: true, swap: true, anim: true });
   }
+  const STORE = '2123456789010'; /* valid check digit: a Penny-style in-store code with no name */
   // 3) an unknown store code (no name): the name box, live chip, Analyze by name
   if (await openScan()) {
-    await typeCode('2123456789012'); await H.sleep(1000);
+    await typeCode(STORE); await H.sleep(1000);
+    if (process.env.DBG) console.log('DBG store', JSON.stringify(await P.evaluate(() => ({ cam: !!document.querySelector('#b3Cam'), hint: (document.querySelector('#b3Hint') || {}).textContent, bc: (document.querySelector('#b3Bc') || {}).value, ov: [...document.querySelectorAll('.r2-ov:not(.off)')].map(o => o.innerText.slice(0, 120)) }))));
     const n = P.locator('#b3MName').first();
     if (await n.count()) {
       await n.tap().catch(() => { }); await n.fill(''); await P.keyboard.type('Erdbeeren', { delay: 30 }); await H.sleep(900);
       await check('store code + typed Erdbeeren (live)', { chip: true });
       await P.evaluate(() => { window.__nv = []; });
-      const b = P.locator('.ne-by[data-b3="nebyname"]').first(); await R.tapEl(b).catch(() => { }); await H.sleep(5500);
+      const b = P.locator('.ne-inl[data-b3="nebyname"]').first(); await R.tapEl(b).catch(() => { }); await H.sleep(5500);
       await check('store code -> Analyze by name', { verd: 'ok', est: true, nodata: true, anim: true });
+      // Emmanuel's real test: plantain chips (Maduritos) not found by barcode, name typed, keyboard return runs the check
+      if (await openScan()) { await typeCode(STORE); await H.sleep(9000);
+        const n2 = P.locator('#b3MName').first();
+        if (await n2.count()) { await n2.tap().catch(() => { }); await n2.fill(''); await P.keyboard.type('Plantain chips', { delay: 30 }); await H.sleep(900);
+          await P.evaluate(() => { window.__nv = []; }); await P.keyboard.press('Enter'); await H.sleep(5500);
+          const st = await state(); if (/\bok\b/.test(String(st.verd || ''))) await find('plantain chips came out green', { verd: st.verd });
+          await check('store code + Plantain chips + return', { verd: 'spike', est: true, nodata: true, anim: true });
+        } else await find('no name box (plantain run)', {});
+      }
     } else await find('no name box for an unknown store code', { text: (await state()).text.slice(0, 300) });
   }
   if (R.errs.length > e0) await find('page errors', { errs: R.errs.slice(e0, e0 + 6) });

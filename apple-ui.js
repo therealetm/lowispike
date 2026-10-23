@@ -98,7 +98,7 @@ function refocusTop(closing,trigger){
 R2.motionClose=function(ov,remove){
   const s=states.get(ov);if(!s)return false;s.closing=true;
   const a=D.activeElement;if(!a||a===D.body||a===H||ov.contains(a))refocusTop(ov,s.trigger);
-  const gone=()=>{remove();states.delete(ov);if(!R2.top()){if(s.trigger&&s.trigger.isConnected)s.trigger.focus({preventScroll:true});}else refocusTop(ov,s.trigger);};
+  const gone=()=>{remove();states.delete(ov);const b=D.activeElement,free=!b||b===D.body||b===H;/* Oct 23: never pull focus out of a field the user is already typing in (camera food-name field) */if(!R2.top()){if(free&&s.trigger&&s.trigger.isConnected)s.trigger.focus({preventScroll:true});}else if(free)refocusTop(ov,s.trigger);};
   if(s.bloom&&s.y<12&&LowiBloom.close(s.sh,gone))return true;
   settle(s,s.sh.getBoundingClientRect().height+40,s.v,gone);return true;
 };

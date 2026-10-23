@@ -11006,7 +11006,7 @@ document.addEventListener("click", e => {
     if (v === "shoplater") { try { const r = LowiShopPlan.readForm($("#r2ob")); if (r.ok) LowiShopPlan.saveForm($("#r2ob")); else if (!LowiShopPlan.isSet()) LowiShopPlan.set({ skipped: true }); } catch(x){} return finishOb(); }
   }
   const gg = e.target.closest("[data-r2g]");
-  if (gg && ob) { ob.gender = gg.getAttribute("data-r2g"); if (ob.gender !== "f") ob.pcos = false; const sc = ($("#r2ob .r2-obpane") || {}).scrollTop || 0; paintOb(); const pn = $("#r2ob .r2-obpane"); if (pn) pn.scrollTop = sc; return; }
+  if (gg && ob) { ob.gender = gg.getAttribute("data-r2g"); if (ob.gender !== "f") ob.pcos = false; const sc = ($("#r2ob .r2-obpane") || {}).scrollTop || 0; paintOb(); const pn = $("#r2ob .r2-obpane"); if (pn) { pn.style.animation = "none"; pn.scrollTop = sc; } return; } /* hunt Oct 23: same step, no fade-in again */
   const pc = e.target.closest("[data-r2pcos]");
   if (pc && ob) { ob.pcos = !ob.pcos; pc.classList.toggle("on", ob.pcos); return; }
   /* Oct 15: every chip toggle keeps .on and aria-pressed in step */

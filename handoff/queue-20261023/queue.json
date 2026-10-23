@@ -2009,10 +2009,11 @@
    ],
    "prio": 50,
    "next": "after HOLD is gone: rebase sweep-fix-20261023-1001, scripts/release.sh --news handoff/queue-20261023/news-sweep-sheetwrap.json",
-   "status": "queued",
+   "status": "live",
    "owner": null,
    "log": [
-    "2026-10-23T08:11:33+00:00 added"
+    "2026-10-23T08:11:33+00:00 added",
+    "2026-10-23T10:12:00+00:00 live 20261023-120404 (main 21c9d2b), released by the 12:02 sweep after the HOLD was lifted; live check iPhone 13: back closes Milestones, stays on Move"
    ]
   }
  ]

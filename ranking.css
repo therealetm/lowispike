@@ -1,3 +1,215 @@
+/* ranking.css (23 Oct 2026): the Community Ranking tab (ranking.js), in LOWiSPIKE's living-bubble look: glass bubbles on the galaxy,
+   cyan edges, companions that breathe. 23 Oct, 15:00 (Eman: "too much text ... use more symbols and animations, a gaming type of
+   ranking"): no title or explainer lines, one type scale (11 / 13 / 15 / 22 px), symbols instead of sentences, the podium rises,
+   rows slide in and sort themselves, your own entry glows. Everything on the board sits inside .rm-rank; the sheets (levels, ⓘ,
+   You vs them) sit on the body and use their own rk- classes. */
+.rm-rank .rk{color:var(--rm-ink,#f2f8ff);max-width:560px;margin:0 auto;padding-top:8px}
+.rk .num,.rk-lad .num{font-variant-numeric:tabular-nums}
+
+/* top: the period switch and a tiny ⓘ */
+.rm-rank .rk-top{display:flex;align-items:center;gap:8px;max-width:400px;margin:0 auto 8px}
+.rk-seg{position:relative;isolation:isolate;flex:1;min-width:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px;border-radius:999px;
+ background:var(--rm-glass,rgba(9,18,48,.8));border:1px solid var(--rm-edge,rgba(143,231,255,.34));-webkit-backdrop-filter:blur(16px) saturate(140%);backdrop-filter:blur(16px) saturate(140%)}
+.rk-seg::before{content:'';position:absolute;z-index:-1;top:4px;bottom:4px;left:4px;width:calc((100% - 16px)/3);border-radius:999px;
+ background:linear-gradient(180deg,rgba(47,149,255,.34),rgba(10,132,255,.26));box-shadow:inset 0 0 0 1px rgba(143,231,255,.8),0 0 14px rgba(47,149,255,.34);
+ transform:translateX(calc(var(--rk-i,0) * (100% + 4px)));transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+.rk-segb{appearance:none;border:0;background:transparent;min-height:36px;border-radius:999px;color:var(--rm-ink2,#c3d5ec);font:600 13px/1 inherit;font-family:inherit;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 6px}
+.rk-segb[aria-selected=true]{color:#fff}
+.rm-rank .rk-info{appearance:none;flex:none;display:grid;place-items:center;width:30px;height:30px;padding:0;border-radius:50%;cursor:pointer;color:var(--rm-cyan,#8fe7ff);
+ border:1px solid var(--rm-edge,rgba(143,231,255,.34));background:rgba(9,18,48,.6);font:italic 700 13px/1 Georgia,serif}
+.rm-rank .rk-info svg{width:16px;height:16px}
+.rk-segb:focus-visible,.rm-rank .rk-info:focus-visible,.rm-rank .rk-me:focus-visible,.rm-rank .rk-row:focus-visible,.rm-rank .rk-pod-i:focus-visible,.rk-pf:focus-visible{outline:2px solid var(--rm-cyan,#8fe7ff);outline-offset:2px}
+
+/* two symbol chips: what counts (☀ or XP) and the time left (⌛ or ∞) */
+.rm-rank .rk-chips{display:flex;justify-content:center;gap:6px;margin:0 0 10px}
+.rm-rank .rk-chip{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 10px;border-radius:999px;font:600 11px/1 inherit;font-family:inherit;color:var(--rm-ink2,#c3d5ec);white-space:nowrap;
+ background:rgba(143,231,255,.08);box-shadow:inset 0 0 0 1px rgba(143,231,255,.22)}
+.rk-chip svg,.rk-fb{width:14px;height:14px;flex:none;font-style:normal;line-height:14px;text-align:center}
+.rk-sun,.rk-sun svg{color:#ffd666;fill:currentColor}
+.rk-fb.rk-sun{color:#ffd666}
+.rk-star,.rk-medal-i{color:#ffd666}
+.rk-inf8{font:800 14px/1 inherit;font-family:inherit;color:var(--rm-cyan,#8fe7ff)}
+.rk-xp{display:inline-grid;place-items:center;height:15px;padding:0 4px;border-radius:5px;font:800 9px/1 inherit;font-family:inherit;font-style:normal;letter-spacing:.03em;color:#0b1838;
+ background:linear-gradient(180deg,#bff3ff,#8fe7ff)}
+
+/* shared bubble surface */
+.rm-rank .rk-me,.rm-rank .rk-row{appearance:none;display:flex;align-items:center;gap:10px;width:100%;text-align:left;color:inherit;font-family:inherit;cursor:pointer;
+ border-radius:22px;border:1px solid var(--rm-edge,rgba(143,231,255,.34));background:radial-gradient(120% 140% at 20% 0%,rgba(143,231,255,.14),rgba(9,18,48,.82) 60%);
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 6px 18px rgba(0,0,0,.28);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);transition:transform .15s}
+.rm-rank .rk-me:active,.rm-rank .rk-row:active,.rm-rank .rk-pod-i:active{transform:scale(.97)}
+
+/* companion orb: a living bubble that breathes */
+.rk-orb{position:relative;flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;
+ background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.22),rgba(143,231,255,.12) 45%,rgba(10,30,80,.6) 75%);box-shadow:inset 0 0 0 1px rgba(143,231,255,.4),0 0 12px rgba(28,247,249,.2);
+ animation:rk-breathe 3.6s ease-in-out infinite}
+.rk-orb svg{width:84%;height:84%;display:block;overflow:visible}
+.rk-orb.rk-hid i{width:42%;height:42%;border-radius:50%;background:radial-gradient(circle at 40% 35%,rgba(195,213,236,.55),rgba(195,213,236,.12));filter:blur(.5px)}
+@keyframes rk-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+
+/* name, level chip, owner: one line each, never cut mid-name on a phone */
+.rk .rk-who{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.rk .rk-cn{font:700 15px/1.2 inherit;font-family:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rk .rk-own{display:flex;align-items:center;gap:6px;min-width:0;font:500 11px/1.2 inherit;font-family:inherit;color:var(--rm-ink2,#c3d5ec)}
+.rk-lv{flex:none;padding:2px 6px;border-radius:999px;font:700 11px/1 inherit;font-family:inherit;color:var(--rm-cyan,#8fe7ff);box-shadow:inset 0 0 0 1px rgba(143,231,255,.4)}
+.rk-ownr{display:inline-flex;align-items:center;gap:4px;min-width:0;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rk-ownr svg{width:12px;height:12px;flex:none}
+.rk .rk-pts{flex:none;display:inline-flex;align-items:center;gap:4px;font:800 15px/1 inherit;font-family:inherit;color:#fff;white-space:nowrap}
+.rk .rk-pts svg,.rk .rk-pts .rk-fb{width:15px;height:15px}
+
+/* ▲▼ places won or lost */
+.rk-mv{display:inline-block;font:800 10px/1 inherit;font-family:inherit;white-space:nowrap}
+.rk-mv.up{color:#5ff2a2;text-shadow:0 0 8px rgba(95,242,162,.5)}
+.rk-mv.dn{color:#ff8a8a}
+.rk-intro .rk-mv,.rk-in .rk-mv{animation:rk-bob .9s .5s ease-out both}
+@keyframes rk-bob{0%{opacity:0;transform:translateY(6px)}60%{opacity:1;transform:translateY(-2px)}100%{opacity:1;transform:none}}
+
+/* Your place: one compact glowing row, rank · Misty with her level ring · name · score · › */
+.rm-rank .rk-me{padding:8px 12px 8px 10px;margin:0 0 12px;border-color:rgba(143,231,255,.75);box-shadow:0 0 0 1px rgba(143,231,255,.25),0 0 22px rgba(47,149,255,.35),inset 0 1px 0 rgba(255,255,255,.1);
+ animation:rk-glow 2.8s ease-in-out infinite}
+.rm-rank .rk-me.off{animation:none;border-color:var(--rm-edge,rgba(143,231,255,.34))}
+.rm-rank .rk-me-rk{flex:none;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:38px}
+.rm-rank .rk-me-rk b{font:800 22px/1 inherit;font-family:inherit;color:#fff;text-shadow:0 0 12px rgba(143,231,255,.55)}
+.rm-rank .rk-me-art{position:relative;flex:none}
+.rm-rank .rk-me-art .rk-orb{width:44px;height:44px}
+.rm-rank .rk-lvr{position:absolute;right:-6px;bottom:-5px;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;
+ background:conic-gradient(#8fe7ff calc(var(--p,0)*360deg),rgba(143,231,255,.18) 0);box-shadow:0 2px 6px rgba(0,0,0,.4)}
+.rm-rank .rk-lvr::before{content:'';position:absolute;inset:3px;border-radius:50%;background:#0b1838}
+.rm-rank .rk-lvr b{position:relative;font:800 10px/1 inherit;font-family:inherit;color:#fff}
+.rm-rank .rk-me-go{flex:none;display:grid;place-items:center;color:var(--rm-cyan,#8fe7ff);font:700 20px/1 inherit;font-family:inherit}
+.rm-rank .rk-me-go svg,.rm-rank .rk-me-go .rk-fb{width:16px;height:16px}
+@keyframes rk-glow{0%,100%{box-shadow:0 0 0 1px rgba(143,231,255,.25),0 0 16px rgba(47,149,255,.28),inset 0 1px 0 rgba(255,255,255,.1)}50%{box-shadow:0 0 0 1px rgba(143,231,255,.45),0 0 28px rgba(47,149,255,.5),inset 0 1px 0 rgba(255,255,255,.1)}}
+
+/* podium: 2nd left, 1st centre and raised with a crown, 3rd right; the steps rise when the board opens */
+.rm-rank .rk-pod{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:end;gap:8px;margin:4px 0 12px}
+.rm-rank .rk-pod.n1{grid-template-columns:minmax(0,1fr);max-width:200px;margin-left:auto;margin-right:auto}
+.rm-rank .rk-pod.n2{grid-template-columns:repeat(2,minmax(0,1fr));max-width:380px;margin-left:auto;margin-right:auto}
+.rm-rank .rk-pod-i{position:relative;appearance:none;border:0;background:transparent;color:inherit;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;padding:0;transition:transform .15s}
+.rm-rank .rk-crown{display:grid;place-items:center;height:20px;color:#ffd666;font-size:18px;line-height:1;filter:drop-shadow(0 0 6px rgba(255,214,102,.6));animation:rk-float 2.6s ease-in-out infinite}
+.rm-rank .rk-crown svg{width:22px;height:22px}
+@keyframes rk-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.rm-rank .rk-pod-art{position:relative;display:block}
+.rm-rank .rk-pod-art .rk-mv{position:absolute;left:-4px;top:0}
+.rm-rank .rk-pod-i .rk-orb{width:68px;height:68px}
+.rm-rank .rk-pod-i.rk-p1 .rk-orb{width:86px;height:86px;box-shadow:inset 0 0 0 2px rgba(255,214,102,.75),0 0 26px rgba(255,200,80,.35)}
+.rm-rank .rk-pod-i.rk-p2 .rk-orb{box-shadow:inset 0 0 0 2px rgba(214,226,240,.7),0 0 18px rgba(200,220,255,.28)}
+.rm-rank .rk-pod-i.rk-p3 .rk-orb{box-shadow:inset 0 0 0 2px rgba(222,160,110,.7),0 0 18px rgba(222,160,110,.26)}
+.rm-rank .rk-pod-i.me .rk-orb{outline:2px solid var(--rm-cyan,#8fe7ff);outline-offset:3px}
+.rm-rank .rk-pod-i .rk-cn{max-width:100%;font-size:13px;text-align:center}
+.rm-rank .rk-pod-i .rk-own{justify-content:center;max-width:100%}
+.rm-rank .rk-pod-i .rk-pts{font-size:15px}
+.rm-rank .rk-step{position:relative;display:grid;place-items:start center;width:100%;margin-top:2px;padding-top:6px;border-radius:16px 16px 6px 6px;border:1px solid var(--rm-edge,rgba(143,231,255,.34));border-bottom:0;
+ background:linear-gradient(180deg,rgba(47,149,255,.28),rgba(9,18,48,.5));height:40px;transform-origin:bottom}
+.rm-rank .rk-p1 .rk-step{height:62px;background:linear-gradient(180deg,rgba(255,214,102,.3),rgba(9,18,48,.5))}
+.rm-rank .rk-p2 .rk-step{height:48px}
+.rm-rank .rk-p3 .rk-step{height:34px}
+.rm-rank .rk-medal{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;font:800 13px/1 inherit;font-family:inherit;color:#1b1d2e;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.rm-rank .rk-medal.m1{background:linear-gradient(180deg,#ffe28a,#f2b632)}
+.rm-rank .rk-medal.m2{background:linear-gradient(180deg,#f1f5fb,#b9c6d8)}
+.rm-rank .rk-medal.m3{background:linear-gradient(180deg,#f3c39a,#c9814f)}
+
+/* numbered list */
+.rm-rank .rk-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.rm-rank .rk-row{padding:8px 12px 8px 8px}
+.rm-rank .rk-row.me{border-color:rgba(143,231,255,.75);animation:rk-glow 2.8s ease-in-out infinite}
+.rm-rank .rk-n{flex:none;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:26px;font:700 15px/1 inherit;font-family:inherit;color:var(--rm-ink2,#c3d5ec)}
+.rm-rank .rk-empty{display:flex;flex-direction:column;align-items:center;gap:8px;margin:18px 10px 0;text-align:center;font:500 13px/1.4 inherit;font-family:inherit;color:var(--rm-ink2,#c3d5ec)}
+.rm-rank .rk-empty svg{width:34px;height:34px;color:#ffd666}
+
+/* game motion: the podium rises (2nd, then 1st, then 3rd), the rest slides in one after another */
+.rm-rank .rk-intro .rk-step{animation:rk-rise .55s cubic-bezier(.2,.9,.25,1.15) both}
+.rm-rank .rk-intro .rk-pod-i{animation:rk-pop .5s cubic-bezier(.2,.9,.25,1.2) both}
+.rm-rank .rk-intro .rk-p2,.rm-rank .rk-intro .rk-p2 .rk-step{animation-delay:.08s}
+.rm-rank .rk-intro .rk-p1,.rm-rank .rk-intro .rk-p1 .rk-step{animation-delay:.2s}
+.rm-rank .rk-intro .rk-p3,.rm-rank .rk-intro .rk-p3 .rk-step{animation-delay:.32s}
+.rm-rank .rk-intro .rk-me{animation:rk-slide .45s ease-out both,rk-glow 2.8s .45s ease-in-out infinite}
+.rm-rank .rk-intro .rk-me.off{animation:rk-slide .45s ease-out both}
+.rm-rank .rk-intro .rk-list li{animation:rk-slide .4s ease-out both;animation-delay:calc(.35s + var(--rk-d,0s))}
+.rm-rank .rk-intro .rk-list li:nth-child(1){--rk-d:0s}.rm-rank .rk-intro .rk-list li:nth-child(2){--rk-d:.05s}.rm-rank .rk-intro .rk-list li:nth-child(3){--rk-d:.1s}
+.rm-rank .rk-intro .rk-list li:nth-child(4){--rk-d:.15s}.rm-rank .rk-intro .rk-list li:nth-child(5){--rk-d:.2s}.rm-rank .rk-intro .rk-list li:nth-child(6){--rk-d:.25s}
+.rm-rank .rk-intro .rk-list li:nth-child(n+7){--rk-d:.3s}
+.rm-rank .rk-in{animation:rk-slide .4s ease-out both}
+@keyframes rk-rise{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes rk-pop{0%{opacity:0;transform:translateY(18px) scale(.85)}100%{opacity:1;transform:none}}
+@keyframes rk-slide{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
+
+@media (max-width:359px){.rm-rank .rk-pod-i .rk-orb{width:56px;height:56px}.rm-rank .rk-pod-i.rk-p1 .rk-orb{width:70px;height:70px}.rm-rank .rk-me-rk{min-width:30px}.rm-rank .rk-me{gap:8px}}
+@media (min-width:700px){.rm-rank .rk-pod-i .rk-orb{width:84px;height:84px}.rm-rank .rk-pod-i.rk-p1 .rk-orb{width:106px;height:106px}}
+
+/* the ⓘ sheet: one short line per rule, the open board marked */
+.rk-inf-h .rk-inf-hi{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;color:var(--rm-cyan,#8fe7ff);box-shadow:inset 0 0 0 1px rgba(143,231,255,.5);font:italic 700 15px/1 Georgia,serif}
+.rk-inf-h .rk-inf-hi svg{width:18px;height:18px}
+.rk-cmp-t{flex:1;min-width:0;margin:0;font:800 18px/1.25 inherit;font-family:inherit}
+.rk-inf{list-style:none;margin:0;padding:8px 12px 14px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.rk-inf li{display:flex;align-items:center;gap:12px;padding:8px;border-radius:18px}
+.rk-inf li.cur{background:rgba(143,231,255,.1);box-shadow:inset 0 0 0 1px rgba(143,231,255,.45)}
+.rk-inf-i{flex:none;display:grid;grid-auto-flow:column;place-items:center;gap:2px;min-width:32px;color:#ffd666}
+.rk-inf-i svg,.rk-inf-i .rk-fb{width:18px;height:18px}
+.rk-inf-i .rk-orb{width:26px;height:26px;animation:none}
+.rk-inf-w{display:flex;flex-direction:column;gap:2px;min-width:0}
+.rk-inf-w b{font:600 13px/1.3 inherit;font-family:inherit}
+.rk-inf-w small{font:500 11px/1.3 inherit;font-family:inherit;color:var(--rm-ink2,#c3d5ec)}
+
+/* You vs them: two companions face off, one tug-of-war bar, mirrored bars, one "what it takes" line */
+.rk-cmp{max-height:min(88vh,820px)}
+.rk-vs-h{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:6px;padding:18px 14px 10px;border-bottom:1px solid rgba(143,231,255,.16)}
+.rk-vs-h .rk-lad-x{position:absolute;top:8px;right:8px;width:32px;height:32px;font-size:20px}
+.rk-vs-s{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;text-align:center}
+.rk-vs-s .rk-orb{width:64px;height:64px}
+.rk-vs-s.me .rk-orb{box-shadow:inset 0 0 0 2px rgba(143,231,255,.8),0 0 18px rgba(28,247,249,.35)}
+.rk-vs-s.them .rk-orb{box-shadow:inset 0 0 0 2px rgba(255,170,120,.7),0 0 18px rgba(255,150,100,.3)}
+.rk-vs-s .rk-cn{max-width:100%;font:700 15px/1.2 inherit;font-family:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rk-vs-s .rk-own{display:flex;align-items:center;justify-content:center;gap:6px;max-width:100%;font:500 11px/1.2 inherit;font-family:inherit;color:var(--rm-ink2,#c3d5ec)}
+.rk-form{font:500 11px/1.2 inherit;font-family:inherit;color:var(--rm-ink2,#c3d5ec);opacity:.7;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rk-vs-b{font:900 22px/1 inherit;font-family:inherit;font-style:italic;color:#ffd666;text-shadow:0 0 14px rgba(255,214,102,.6)}
+.rk-cmp.fresh .rk-vs-s.me{animation:rk-in-l .45s cubic-bezier(.2,.9,.25,1.15) both}
+.rk-cmp.fresh .rk-vs-s.them{animation:rk-in-r .45s cubic-bezier(.2,.9,.25,1.15) both}
+.rk-cmp.fresh .rk-vs-b{animation:rk-slam .5s .25s cubic-bezier(.2,.9,.25,1.4) both}
+@keyframes rk-in-l{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}
+@keyframes rk-in-r{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+@keyframes rk-slam{0%{opacity:0;transform:scale(2.4)}100%{opacity:1;transform:none}}
+.rk-cmp-b{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:12px 14px 16px}
+.rk-cmp-seg{flex:none;max-width:360px;margin:0 auto 12px}
+.rk-duel{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;margin:0 0 10px}
+.rk-duel-v{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:58px}
+.rk-duel-v .rk-rk{font:700 11px/1 inherit;font-family:inherit;color:var(--rm-ink2,#c3d5ec)}
+.rk-duel-n{display:inline-flex;align-items:center;gap:4px;font:800 22px/1 inherit;font-family:inherit;color:#fff}
+.rk-duel-n svg,.rk-duel-n .rk-fb{width:16px;height:16px}
+.rk-duel-v.win .rk-duel-n b{text-shadow:0 0 12px rgba(255,214,102,.7);color:#ffe9a8}
+.rk-duel-bar{display:flex;height:12px;border-radius:999px;overflow:hidden;background:rgba(143,231,255,.1);box-shadow:inset 0 0 0 1px rgba(143,231,255,.25)}
+.rk-duel-bar i{display:block;height:100%;transition:width .6s cubic-bezier(.2,.9,.25,1)}
+.rk-duel-bar i.me{width:calc(var(--a,.5)*100%);background:linear-gradient(90deg,#2f95ff,#8fe7ff);box-shadow:0 0 10px rgba(143,231,255,.6)}
+.rk-duel-bar i.them{flex:1;background:linear-gradient(90deg,#ffb48a,#ff7a59)}
+.rk-cmp.fresh .rk-duel-bar i.me{animation:rk-grow .8s .2s cubic-bezier(.2,.9,.25,1) both}
+.rk-goal{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 12px;padding:8px 12px;border-radius:999px;font:700 13px/1.3 inherit;font-family:inherit;color:#fff;text-align:center;
+ background:rgba(255,214,102,.1);box-shadow:inset 0 0 0 1px rgba(255,214,102,.4)}
+.rk-goal svg,.rk-goal .rk-fb{width:16px;height:16px;flex:none;color:#ffd666}
+.rk-goal .rk-sun{width:14px;height:14px;vertical-align:-2px}
+.rk-mir{list-style:none;margin:0 0 10px;padding:0;display:flex;flex-direction:column;gap:6px}
+.rk-mir-r{display:grid;grid-template-columns:minmax(0,1fr) 64px minmax(0,1fr);align-items:center;gap:8px;padding:5px 6px;border-radius:14px}
+.rk-mir-r.cur{background:rgba(143,231,255,.08);box-shadow:inset 0 0 0 1px rgba(143,231,255,.3)}
+.rk-mir-l{display:flex;flex-direction:column;align-items:center;gap:2px;color:#ffd666;text-align:center}
+.rk-mir-l svg,.rk-mir-l .rk-fb{width:16px;height:16px}
+.rk-mir-l small{font:600 10px/1.15 inherit;font-family:inherit;color:var(--rm-ink2,#c3d5ec);max-width:64px;overflow-wrap:anywhere}
+.rk-mir-v{display:flex;align-items:center;gap:6px;min-width:0}
+.rk-mir-v.me{flex-direction:row-reverse}
+.rk-mir-v b{flex:none;min-width:26px;font:700 13px/1 inherit;font-family:inherit;color:#fff;text-align:center}
+.rk-mir-v b.off{color:rgba(195,213,236,.5)}
+.rk-mb{flex:1;display:flex;height:8px;border-radius:999px;background:rgba(143,231,255,.08);overflow:hidden}
+.rk-mir-v.me .rk-mb{justify-content:flex-end}
+.rk-mb i{display:block;height:100%;width:var(--w,0%);border-radius:inherit;animation:rk-grow .7s cubic-bezier(.2,.9,.25,1) both}
+.rk-mir-v.me .rk-mb i{background:linear-gradient(270deg,#2f95ff,#8fe7ff)}
+.rk-mir-v.them .rk-mb i{background:linear-gradient(90deg,#ffb48a,#ff7a59)}
+.rk-mir-v.win .rk-mb i{box-shadow:0 0 10px rgba(255,255,255,.45)}
+@keyframes rk-grow{from{width:0}}
+.rk-tot{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 0 10px;font:500 11px/1.3 inherit;font-family:inherit;color:var(--rm-ink2,#c3d5ec)}
+.rk-tot svg{width:12px;height:12px}
+.rk-pf{appearance:none;display:flex;align-items:center;justify-content:center;gap:8px;width:min(260px,100%);min-height:40px;margin:4px auto 0;padding:0 16px;border-radius:999px;color:#fff;cursor:pointer;
+ font:700 13px/1 inherit;font-family:inherit;border:1px solid rgba(143,231,255,.5);background:radial-gradient(120% 160% at 30% 0%,rgba(143,231,255,.2),rgba(9,18,48,.85) 62%)}
+.rk-pf svg{width:16px;height:16px}
+.rk-pf b{font-size:18px;line-height:0;color:var(--rm-cyan,#8fe7ff)}
+@media (max-width:359px){.rk-vs-s .rk-orb{width:52px;height:52px}.rk-duel-n{font-size:18px}.rk-duel-v{min-width:48px}.rk-mir-r{grid-template-columns:minmax(0,1fr) 54px minmax(0,1fr)}}
+@media (prefers-reduced-motion:reduce){.rk-orb,.rm-rank .rk-me,.rm-rank .rk-row.me,.rm-rank .rk-crown,.rk-mb i,.rk-duel-bar i,.rm-rank .rk-intro *,.rm-rank .rk-in,.rk-cmp.fresh *{animation:none!important}.rk-seg::before{transition:none}}
+
 /* the level ladder: one living bubble sheet over the Ranking (Skool's "% of members per level", in the bubble style) */
 .rk-lad-wrap{position:fixed;inset:0;z-index:9000;display:flex;align-items:flex-end;justify-content:center;padding:0 10px max(10px,env(safe-area-inset-bottom));
  background:rgba(2,8,24,0);transition:background .22s ease}

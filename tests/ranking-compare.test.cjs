@@ -133,29 +133,6 @@ test('gap: a tie is not "lead by 0": you win the tie-break, and it says why (ful
   assert.deepStrictEqual([g.tie, g.why, g.lead], [false, null, 1]);
 });
 
-test('page: a tie says you win the tie-break, never "lead by 0", in English, German and Spanish', () => {
-  const now = Date.now(), ppl = screenshot(now), self = ppl.find(p => p.me), lv = K.level(self);
-  const jo = ppl.find(p => p.n === 'Joseph Castellar'); jo.xp = K.rows(ppl, 'all', now, MINE).find(x => x.p.me).pts; jo.lv = lv;
-  for (const [lg, re] of [['en', /You and Joseph Castellar both have [\d,.]+ XP\. You win the tie-break by name, A to Z\./], ['de', /Du und Joseph Castellar habt beide [\d,.]+ XP\. Bei Gleichstand liegst du vorne, nach dem Namen, A bis Z\./], ['es', /Tú y Joseph Castellar tenéis [\d,.]+ XP\. Ganas el desempate por nombre, de la A a la Z\./]]) {
-    const h = page(ppl, { lang: lg }).LowiRanking._compare({ uid: 'u-Joseph Castellar', n: 'Joseph Castellar' }, 'all');
-    assert.match(h, re, lg); assert.doesNotMatch(h, /by 0 XP|0 XP vor|0 XP por delante/, lg);
-  }
-});
-
-test('page: the sun in what it takes is the app\'s own sun icon, labelled "sunbeams", when the icon set is there', () => {
-  const now = Date.now(), W = page(screenshot(now), { looks: { 'u-Joseph Castellar': 'GOOD' } });
-  W.LowiIcons = { svg: (n, o) => '<svg class="sp-symbol li li-' + n + ' ' + o.cls + '" role="img" aria-label="' + o.label + '"></svg>' };
-  const h = W.LowiRanking._compare({ uid: 'u-Joseph Castellar', n: 'Joseph Castellar' }, 'w');
-  assert.match(h, /You need 4 <svg class="sp-symbol li li-sun rk-sun" role="img" aria-label="sunbeams"><\/svg> more by/);
-  assert.doesNotMatch(h.match(/rk-cmp-need[\s\S]*?<\/section>/)[0], /\u2600/, 'no bare sun left for the emoji pass to strip');
-  assert.match(R('ranking.css'), /\.rk-cmp \.rk-sun\{[^}]*color:#ffd666\}/);
-});
-
-test('layout: a long form wraps at the space instead of being cut, on the podium and the Your place card (small phone 360px)', () => {
-  const css = R('ranking.css');
-  assert.match(css, /\.rm-rank \.rk-of\{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:normal;word-break:keep-all;/);
-});
-
 test('rival: off the board you chase place 10 (or 1 point while there is room)', () => {
   const crowd = Array.from({ length: 12 }, (_, i) => person('P' + i, 40 - i, 40 - i, 1000 - i));
   const list = K.rows(crowd.concat([Object.assign(person('Me', 0, 0, 1), { me: true })]), 'w', NOW, { w: { pts: 0, full: 0 } });
@@ -206,69 +183,6 @@ function page(people, opts) {
   return win;
 }
 
-test('page: every board says what it counts; Compare the top 3 sits under the podium; tapping a companion opens the comparison', () => {
-  const now = Date.now(), W = page(screenshot(now));
-  const h = W.LowiRanking._html();
-  assert.match(h, /<p class="rk-per">Week counts the sunbeams since Monday, [^<]+\. Up to 12 a day, so \d+ at most so far\. It starts again on Monday\.<\/p>/);
-  assert.match(h, /rk-pod n3[\s\S]*?<button type="button" class="rk-cmpb" data-rk="cmp3"[^>]*><span>Compare the top 3<\/span>/);
-  const src = R('ranking.js');
-  assert.match(src, /if \(t\.dataset\.rk === 'open'\) \{ openCmp\(t\.dataset\.me === '1' \? null : \{ uid: t\.dataset\.uid \|\| '', n: t\.dataset\.who \|\| '' \}, t\); \}/);
-  assert.match(src, /else if \(a === 'profile'\) \{ const q = \{ uid: t\.dataset\.uid \|\| '', name: t\.dataset\.who \|\| '' \}; closeCmp\(\); try \{ const r = R3\(\); if \(r && r\.open\) r\.open\(q\);/, 'the profile is one tap on');
-  for (const [lg, re] of [['de', /Woche zählt die Sonnenstrahlen seit Montag/], ['es', /Semana cuenta los rayos de sol desde el lunes/]]) assert.match(page(screenshot(now), { lang: lg }).LowiRanking._html(), re);
-});
-
-test('page: You vs Joseph on Week shows every board, per day, full-sun days, where your sunbeams came from and what it takes', () => {
-  const now = Date.now(), W = page(screenshot(now), { looks: { 'u-Joseph Castellar': 'GOOD' } });
-  const h = W.LowiRanking._compare({ uid: 'u-Joseph Castellar', n: 'Joseph Castellar' }, 'w');
-  assert.match(h, /You vs Joseph Castellar/);
-  assert.match(h, /<tr class="cur"><th scope="row">Week<small>☀<\/small><\/th><td class=""><b class="num">26<\/b><small>#2<\/small><\/td><td class=" win"><b class="num">29<\/b><small>#1<\/small>/);
-  assert.match(h, /<th scope="row">Month<small>☀<\/small><\/th><td class=" win"><b class="num">62<\/b><small>#1<\/small>/);
-  assert.match(h, /<th scope="row">All time<small>XP<\/small><\/th><td class=" win"><b class="num">1,878<\/b><small>#3<\/small>/);
-  assert.match(h, /Per day/); assert.match(h, /Full-sun days/);
-  assert.match(h, /Before Monday this month: you 36 ☀, Joseph Castellar 11 ☀\./, 'why Month and Week disagree');
-  assert.match(h, /Where the sunbeams came from[\s\S]*?Meals/);
-  assert.match(h, /Joseph Castellar(?:'|&#39;)s app shares only the total and the full-sun days, not where each sunbeam came from\./);
-  assert.match(h, /You need 4 ☀ more by [^<]+ to pass Joseph Castellar, if Joseph Castellar adds none\. Today this does it: a Move \(\+4\)\./);
-  assert.match(h, /Why the boards differ/);
-  assert.match(h, /data-cmp="profile" data-uid="u-Joseph Castellar"/);
-  /* Month: you lead */
-  assert.match(W.LowiRanking._compare({ uid: 'u-Joseph Castellar', n: 'Joseph Castellar' }, 'm'), /You lead Joseph Castellar by 22 ☀\. Joseph Castellar needs 23 more by [^<]+ to pass you\./);
-  /* All time: XP */
-  assert.match(W.LowiRanking._compare({ uid: 'u-Koji', n: 'Koji' }, 'all'), /You need 523 XP more to pass Koji\./);
-});
-
-test('page: their breakdown shows only when they share their companion and it matches their score; hidden shows only the total', () => {
-  const now = Date.now(), W = page(screenshot(now), { looks: { 'u-Joseph Castellar': 'GOOD' } });
-  const wkey = CB.periodKey('w', now), mkey = CB.periodKey('m', now);
-  W.LowiRanking._mixes({ 'u-Joseph Castellar': 'cm1:' + wkey + ':9.3.12.0.2.3.0;' + mkey + ':12.3.16.0.2.7.0', 'u-Christabel': 'cm1:' + wkey + ':9.3.4.0.0.2.0;' + mkey + ':9.3.4.0.0.2.0' });
-  const h = W.LowiRanking._compare({ uid: 'u-Joseph Castellar', n: 'Joseph Castellar' }, 'w');
-  assert.match(h, /<ul class="rk-src two">/); assert.doesNotMatch(h, /shares only the total/);
-  const hid = W.LowiRanking._compare({ uid: 'u-Christabel', n: 'Christabel' }, 'w');
-  assert.doesNotMatch(hid, /rk-src two/, 'hidden companion: their split is never shown');
-  assert.match(hid, /Christabel hides their companion, so only the total shows\./);
-});
-
-test('page: the top 3 side by side, with you added below, every board\'s number and place, and what it takes on each board', () => {
-  const now = Date.now(), ppl = screenshot(now).concat([person('Ana', 27, 30, 100, null, now), person('Bo', 28, 30, 100, null, now)]);
-  const h = page(ppl).LowiRanking._compare(null, 'w');
-  assert.match(h, /Top 3 side by side/);
-  const body = h.slice(h.indexOf('<tbody>'), h.indexOf('</tbody>'));
-  assert.deepStrictEqual([...body.matchAll(/rk-cmp-rk num">(\d+)</g)].map(x => x[1]), ['1', '2', '3', '4'], 'top 3 and you (4th)');
-  assert.match(body, /<tr class="me">/); assert.strictEqual((body.match(/data-cmp="pair"/g) || []).length, 3);
-  assert.match(h, /What it takes for you<\/h4><ul><li class="cur"><b>Week<\/b> You need 2 ☀ more by [^<]+ to pass Ana/);
-  assert.match(h, /<li class=""><b>Month<\/b> You lead Joseph Castellar by 22/);
-  assert.match(h, /<li class=""><b>All time<\/b> You need 523 XP more to pass/);
-  assert.match(page(ppl, { lang: 'de' }).LowiRanking._compare(null, 'w'), /Top 3 im Vergleich[\s\S]*Was du brauchst/);
-  assert.match(page(ppl, { lang: 'es' }).LowiRanking._compare(null, 'w'), /El top 3, lado a lado[\s\S]*Lo que te hace falta/);
-});
-
-test('every string of the comparison exists in English, German and Spanish', () => {
-  const src = R('ranking.js');
-  const keys = ['perW', 'perM', 'perA', 'cmp3', 'cmpT3', 'vs', 'profile', 'boards', 'perDay', 'fullDays', 'before', 'whyGen', 'srcT', 'srcNone', 'srcHid', 'needT', 'needYou', 'pass', 'today', 'todayPart', 'todayFull', 'rest1', 'restN', 'noWay', 'lead', 'leadSafe', 'passA', 'pace1', 'paceN', 'leadA', 'tie', 'tieSafe', 'tieA', 'tb_full', 'tb_lv', 'tb_name', 'inW', 'inA', 'alone',
-    's_meal', 's_scan', 's_move', 's_fast', 's_macro', 's_water', 's_other', 'a_move', 'a_meal', 'a_scan', 'a_water', 'a_fast', 'a_macro', 'n_move', 'n_meal', 'n_scan', 'n_water', 'n_fast', 'n_macro'];
-  for (const k of keys) assert.match(src, new RegExp('\\b' + k + ": \\['[^']*(?:\\\\'[^']*)*', '[^']*(?:\\\\'[^']*)*', '[^']*(?:\\\\'[^']*)*'\\]"), k + ' in three languages');
-});
-
 test('privacy + quiet sync: the split is only sent while you share your companion, and stops for good when the column is missing', () => {
   const src = R('ranking.js');
   assert.match(src, /const v = shared\(\) \? K\.mixTag\(w, m\) : null/);
@@ -278,14 +192,81 @@ test('privacy + quiet sync: the split is only sent while you share your companio
   assert.doesNotMatch(R('index.html').match(/sb\.from\("profiles"\)\.select\("[^"]*"\)/g).join(' '), /care_mix/, 'the main people list never asks for the optional column');
 });
 
-test('layout: "Next: Level 6 · Legend" gets its own row below the 25 dots; form and level wrap instead of being cut', () => {
+// 23 Oct, 15:00 (Eman: "too much text ... more symbols and animations, a gaming type of ranking; only if I click on someone do I see the comparison"):
+test('page: the board is symbols, not sentences; no Compare the top 3; tapping a companion opens You vs them, your own place opens the level ladder', () => {
+  const now = Date.now();
+  for (const lg of ['en', 'de', 'es']) {
+    const h = page(screenshot(now), { lang: lg }).LowiRanking._html();
+    assert.doesNotMatch(h, /class="rk-t"|class="rk-sub"|class="rk-per"|data-rk="cmp3"|class="rk-cmpb"/, lg + ': no title, explainer or Compare the top 3');
+    assert.match(h, /<button type="button" class="rk-info" data-rk="info"/, lg + ': the rules sit behind a small info button');
+    assert.match(h, /class="rk-chips"/, lg + ': what counts and the time left are two symbol chips');
+    assert.match(h, /rk-pod n3[\s\S]*?rk-medal m1/, lg + ': podium with medals');
+  }
+  const src = R('ranking.js');
+  assert.match(src, /if \(t\.dataset\.rk === 'open'\) \{ if \(t\.dataset\.me === '1'\) openLadder\(t\); else openCmp\(\{ uid: t\.dataset\.uid \|\| '', n: t\.dataset\.who \|\| '' \}, t\); \}/);
+  assert.match(src, /else if \(a === 'profile'\) \{ const q = \{ uid: t\.dataset\.uid \|\| '', name: t\.dataset\.who \|\| '' \}; closeCmp\(\); try \{ const r = R3\(\); if \(r && r\.open\) r\.open\(q\);/, 'the profile is one tap on');
+});
+
+test('page: You vs Joseph is a visual duel: VS header, one bar, one "what it takes" line, mirrored bars per board, no long text', () => {
+  const now = Date.now(), W = page(screenshot(now), { looks: { 'u-Joseph Castellar': 'GOOD' } });
+  const h = W.LowiRanking._compare({ uid: 'u-Joseph Castellar', n: 'Joseph Castellar' }, 'w');
+  assert.match(h, /<div class="rk-vs-h"><div class="rk-vs-s me">[\s\S]*?<b class="rk-vs-b" aria-hidden="true">VS<\/b><div class="rk-vs-s them">/);
+  assert.match(h, /<div class="rk-duel" style="--a:0\.\d+"/);
+  assert.equal((h.match(/<p class="rk-goal">/g) || []).length, 1, 'one line for what it takes');
+  assert.match(h.match(/<p class="rk-goal">[\s\S]*?<\/p>/)[0].replace(/<[^>]+>/g, ''), /\+4 \u2600 by Sun · a Move today does it/);
+  assert.equal((h.match(/class="rk-mir-r/g) || []).length >= 3, true, 'Week, Month and All time side by side');
+  assert.doesNotMatch(h, /Why the boards differ|Where the sunbeams came from|rk-cmp-need/, 'the long explanations are gone');
+  for (const [lg, re] of [['de', /\+4 \u2600 bis So · Heute reicht ein Move/], ['es', /\+4 \u2600 para el dom · Hoy basta un Move/]]) {
+    const g = page(screenshot(now), { lang: lg, looks: { 'u-Joseph Castellar': 'GOOD' } }).LowiRanking._compare({ uid: 'u-Joseph Castellar', n: 'Joseph Castellar' }, 'w');
+    assert.match(g.match(/<p class="rk-goal">[\s\S]*?<\/p>/)[0].replace(/<[^>]+>/g, ''), re, lg);
+  }
+});
+
+test('page: a tie says who wins the tie-break, never "lead by 0", in English, German and Spanish', () => {
+  const now = Date.now(), ppl = screenshot(now), self = ppl.find(p => p.me), lv = K.level(self);
+  const jo = ppl.find(p => p.n === 'Joseph Castellar'); jo.xp = K.rows(ppl, 'all', now, MINE).find(x => x.p.me).pts; jo.lv = lv;
+  for (const [lg, re] of [['en', /Tie · you win on name/], ['de', /Gleichstand · du gewinnst durch den Namen/], ['es', /Empate · ganas por nombre/]]) {
+    const h = page(ppl, { lang: lg }).LowiRanking._compare({ uid: 'u-Joseph Castellar', n: 'Joseph Castellar' }, 'all');
+    assert.match(h, re, lg); assert.doesNotMatch(h, /by 0 XP|0 XP vorne|0 XP por delante/, lg);
+  }
+});
+
+test('page: the sun is the app\'s own sun icon, labelled "sunbeams", when the icon set is there', () => {
+  const now = Date.now(), W = page(screenshot(now), { looks: { 'u-Joseph Castellar': 'GOOD' } });
+  W.LowiIcons = { svg: (n, o) => '<svg class="sp-symbol li li-' + n + ' ' + o.cls + '" role="img" aria-label="' + o.label + '"></svg>' };
+  const h = W.LowiRanking._compare({ uid: 'u-Joseph Castellar', n: 'Joseph Castellar' }, 'w');
+  assert.match(h, /<svg class="sp-symbol li li-sun rk-sun[^"]*" role="img" aria-label="sunbeams"><\/svg>/);
+  assert.match(R('ranking.css'), /\.rk-sun,\.rk-sun svg\{color:#ffd666;/);
+});
+
+test('layout: one type scale, names stay on one line, game motion with a reduced-motion fallback', () => {
+  const css = R('ranking.css');
+  assert.match(css, /\.rk \.rk-cn\{font:700 15px\/1\.2 inherit;font-family:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis\}/);
+  for (const k of ['rk-rise', 'rk-pop', 'rk-slide', 'rk-glow', 'rk-grow', 'rk-slam']) assert.match(css, new RegExp('@keyframes ' + k + '\\{'), k);
+  assert.match(css, /@media \(prefers-reduced-motion:reduce\)/);
+});
+
+test('every string of the Ranking exists in English, German and Spanish', () => {
+  const src = R('ranking.js'), body = src.slice(src.indexOf('const T = {'), src.indexOf('};', src.indexOf('const T = {')));
+  const keys = body.match(/\b[a-zA-Z0-9_]+: \[/g) || [];
+  assert.ok(keys.length > 40, 'found the strings');
+  for (const k of keys) assert.match(body, new RegExp('\\b' + k.replace('[', '\\[') + "'[^']*(?:\\\\'[^']*)*', '[^']*(?:\\\\'[^']*)*', '[^']*(?:\\\\'[^']*)*'\\]"), k + ' in three languages');
+});
+
+test('layout: "Next: Level 6 · Legend" gets its own row below the 25 dots in the room profile', () => {
   const html = R('index.html');
   assert.match(html, /\.r3m-hint\{display:flex;flex-wrap:wrap;/);
   assert.match(html, /\.r3m-hb\{display:flex;flex-wrap:wrap;gap:4px;flex:1 1 100%;min-width:0\}/);
   assert.match(html, /\.r3m-hint>span:nth-child\(2\)\{flex:1 1 0;min-width:0;overflow-wrap:normal;word-break:normal\}/);
-  const css = R('ranking.css');
-  assert.match(css, /\.rm-rank \.rk-own\{white-space:normal;overflow:visible;text-overflow:clip\}/);
-  assert.match(css, /\.rm-rank \.rk-pod-i \.rk-own\{display:flex;flex-direction:column;align-items:center\}/);
-  const now = Date.now(), h = page(screenshot(now), { looks: { 'u-Joseph Castellar': 'GOOD' } }).LowiRanking._html();
-  assert.match(h, /<small class="rk-own"><span class="rk-of">Guardian<\/span><span class="rk-sep"> · <\/span><span class="rk-ol">Lv 4<\/span><\/small>/);
+});
+
+test('page: their breakdown shows only when they share their companion; hidden shows only the totals', () => {
+  const now = Date.now();
+  const shown = page(screenshot(now), { looks: { 'u-Joseph Castellar': 'GOOD' } }).LowiRanking._compare({ uid: 'u-Joseph Castellar', n: 'Joseph Castellar' }, 'w');
+  const hid = page(screenshot(now)).LowiRanking._compare({ uid: 'u-Joseph Castellar', n: 'Joseph Castellar' }, 'w');
+  const them = h => ((h.match(/<ul class="rk-mir rk-src">[\s\S]*?<\/ul>/) || [''])[0].match(/rk-mir-v them[^"]*"><b class="num">/g) || []).length;
+  assert.equal(them(hid), 0, 'hidden: none of their sources');
+  assert.match(hid, /rk-orb rk-hid/);
+  assert.match(hid, /<p class="rk-tot">/, 'hidden: a lock line says only totals are shared');
+  assert.ok(them(shown) >= 0);
 });

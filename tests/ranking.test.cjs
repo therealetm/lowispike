@@ -75,14 +75,15 @@ test('page: Your place, a podium of three, the rest numbered, companions instead
   const people = [person('Ana', 40, 0, 0), person('Ben', 70, 0, 0), person('Cem', 10, 0, 0), person('Dia', 5, 0, 0), Object.assign(person('Me', 20, 0, 0), { me: true })];
   const W = page(people, { looks: { 'u-Ben': 'GOOD' }, myW: 20 });
   const h = W.LowiRanking._html();
-  assert.match(h, /class="rk-t">Ranking</);
+  assert.doesNotMatch(h, /class="rk-t"|class="rk-sub"|class="rk-per"/, '23 Oct, 15:00: no title, question or explainer sentence on the board');
+  assert.match(h, /data-rk="info"/, 'the rules sit behind a small info button');
   assert.match(h, /data-rk="per" data-k="w" aria-selected="true"/);
   assert.match(h, /class="rk-me"[\s\S]*?#3/, 'Your place shows #3');
   const pod = h.slice(h.indexOf('rk-pod n3'), h.indexOf('rk-list'));
   assert.deepStrictEqual([...pod.matchAll(/rk-pod-i rk-p(\d)/g)].map(m => m[1]), ['2', '1', '3']);
   assert.match(pod, /rk-p1"[^>]*data-who="Ben"[\s\S]*?<svg data-k="rkp1"><\/svg>[\s\S]*?Form3/, 'Ben\'s published companion is drawn on top');
   assert.match(pod, /rk-p2"[^>]*data-who="Ana"[\s\S]*?rk-orb rk-hid[\s\S]*?Hidden companion/, 'no look: hidden orb, score still counts');
-  assert.match(h, /<ol class="rk-list"><li><button type="button" class="rk-row"[^>]*data-who="Cem"[\s\S]*?rk-n num">4</);
+  assert.match(h, /<ol class="rk-list"><li><button type="button" class="rk-row"[^>]*data-who="Cem"[\s\S]*?rk-n"><b class="num">4</);
   assert.doesNotMatch(h, /<img/, 'no human profile pictures');
 });
 
@@ -99,7 +100,7 @@ test('wiring: Ranking is the fifth Community tab, scripts load after the Care bo
   assert.ok(html.includes('<link rel="stylesheet" href="ranking.css'), 'ranking.css linked');
   assert.match(R('sw.js'), /"ranking-core\.js", "ranking\.js", "ranking\.css"/);
   assert.deepStrictEqual(require('../community-tab-order.js').IDS.slice(-1), ['rank']);
-  assert.match(R('community-rooms-ui.js'), /W\.LowiRanking\.render\(box\)/);
+  assert.match(R('community-rooms-ui.js'), /W\.LowiRanking\.render\(box,fresh\)/);
   assert.match(R('community-rooms.css'), /grid-template-columns:repeat\(var\(--rm-n,4\),minmax\(0,1fr\)\)/);
 });
 
@@ -161,7 +162,7 @@ test('page: 25 real people and the bots give a podium of three plus places 4 to 
   const people = crowd(25).concat(BOTS, [Object.assign(person('Me', 1, 0, 0), { me: true })]);
   const h = page(people, { myW: 1 }).LowiRanking._html();
   assert.strictEqual((h.match(/class="rk-pod-i/g) || []).length, 3);
-  assert.deepStrictEqual([...h.matchAll(/rk-n num">(\d+)</g)].map(m => +m[1]), [4, 5, 6, 7, 8, 9, 10]);
+  assert.deepStrictEqual([...h.matchAll(/rk-n"><b class="num">(\d+)</g)].map(m => +m[1]), [4, 5, 6, 7, 8, 9, 10]);
   assert.doesNotMatch(h, /data-who="P1[0-9]"|data-who="P2/, 'nobody beyond place 10');
   assert.doesNotMatch(h, /rk-demo|>demo<|Samir|Mateo|Jonas|Lina|Robo|Nobody/);
   assert.match(h, /class="rk-me"[\s\S]*?#26/, 'Your place: #26');

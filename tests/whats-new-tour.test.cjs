@@ -54,14 +54,16 @@ test('a fix without a step still gets one short card in the same style', () => {
 
 test('reload regression: index.html marks every unseen id seen (localStorage) BEFORE the tour shows, and offers nothing else after', () => {
   const html = read('index.html');
-  const at = html.indexOf('LowiTutorialSteps.unseenNews(NEWS, newsSeen)');
+  const at = html.indexOf('LowiTutorialSteps.unseenNews(NEWS, tourSeen)');
   assert.ok(at > 0, 'the tick folds unseen news into one');
   const block = html.slice(at, html.indexOf('return; }', at) + 9);
-  assert.ok(block.indexOf('u.ids.forEach(markSeen)') >= 0 && block.indexOf('u.ids.forEach(markSeen)') < block.indexOf('LowiTutorial.news(u)'), 'seen is saved before the tour shows');
+  assert.ok(block.indexOf('markTour(u.ids)') >= 0 && block.indexOf('markTour(u.ids)') < block.indexOf('LowiTutorial.news(u)'), 'toured is saved before the tour shows');
   assert.match(block, /return; \}$/, 'the tick ends there: no second offer (offerTour / offerNews) in the same launch');
-  assert.ok(html.indexOf('LowiTutorialSteps.unseenNews') < html.indexOf('offerTour(); return; }'), 'the mini tour runs before the old offers');
+  assert.ok(html.indexOf('LowiTutorialSteps.unseenNews') < html.indexOf('offerTour(); else offerNews(); return; }'), 'the mini tour runs before the old offers');
+  assert.match(html, /function markTour\(ids\)\{[^\n]*\n[^\n]*localStorage\.setItem\(TSEEN[^\n]*localStorage\.setItem\(TSB2/, 'toured ids and build saved, also in the account backup key');
+  assert.match(html, /k === "lowi\.news\.tourseen" \|\| k === "lowi\.news\.tourbuild"/, 'sign-out keeps the toured state');
   /* the seen list is persistent */
-  assert.match(html, /function markSeen\(id\)\{[^}]*localStorage\.setItem\(SEEN/);
+  assert.match(html, /function markSeen\(id(, build)?\)\{[^\n]*localStorage\.setItem\(SEEN/);
   /* simulate launches: a fresh launch with the same news finds nothing to show */
   const store = {}; const seen = id => (store.seen || []).includes(id); const mark = id => { store.seen = (store.seen || []).concat(id); };
   const NEWS = { id: 'x-2', tour: ['new-rooms'], history: [{ id: 'x-2', tour: ['new-rooms'] }, { id: 'x-1', tour: ['new-sleep'] }] };

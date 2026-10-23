@@ -419,8 +419,9 @@
         const card = st.host && st.host.querySelector('.bw3-card'); if (card && !card.hidden && id !== 'hub') { st.label.classList.remove('on'); return; }
         let line = pick(R.line, l);
         try { const c = W.LowiBodyDepth && W.LowiBodyDepth.arrival && W.LowiBodyDepth.arrival(id === 'hub' ? 'blood' : id); if (c && (c.line || c.text)) line = c.line || c.text; } catch (e) { }
-        /* Oct 16 (E-man): on Home this line no longer floats over the Daily Quest: it goes into the Daily Quest box */
-        if (!D.querySelector('.bw3-full') && W.LowiArrival && W.LowiArrival.note) { st.label.classList.remove('on'); try { if (W.LowiArrival.note(pick(R.n, l), line, R.css, 3600)) return; } catch (e) { } }
+        /* Oct 23 (Eman: "the old UI is still there ... nuke it"): on Home nothing is announced any more - no "Bloodstream - Back in the
+           bloodstream, home of your cell." banner, no floating label, no note in the Daily Quest box. Only the full-screen world speaks. */
+        if (!D.querySelector('.bw3-full')) { st.label.classList.remove('on'); return; }
         st.label.innerHTML = '<b style="--h:' + R.css + '">' + esc(pick(R.n, l)) + '</b><span>' + esc(line) + '</span>';
         st.label.classList.remove('on'); void st.label.offsetWidth; st.label.classList.add('on');
         clearTimeout(st.lt); st.lt = setTimeout(() => st.label && st.label.classList.remove('on'), 3600);

@@ -18421,7 +18421,7 @@ const isOpen = () => { try { return localStorage.getItem(OPEN) === "1"; } catch(
 function prog(q){ return q.p ? '<span class="f3-pr num">' + q.p[0] + "/" + q.p[1] + (q.p[2] ? " " + q.p[2] : "") + "</span>" : ""; }
 function html(){ const L = state(), n = L.filter(q => q.done).length, cur = next(L), o = isOpen();
   const cx = claimXP(L), cl = claimable(L);
-  let h = '<div class="f3-hd"><span class="f3-tag">' + esc(w("tag")) + '</span><span class="f3-cnt num">' + n + "/" + L.length + '</span><span class="f3-reset num" title="' + esc(w("reset", {t:resetIn()})) + '">' + esc(w("reset", {t:resetIn()})) + "</span></div>" +
+  let h = '<div class="f3-hd"><span class="f3-tag">' + esc(w("tag")) + '</span><span class="f3-cnt num">' + n + "/" + L.length + '</span></div>' +
     '<div class="f3-bar" aria-hidden="true">' + L.map(q => '<i class="' + (q.done ? "on" : cur && q.id === cur.id ? "cur" : q.skip ? "skip" : "") + '"></i>').join("") + "</div>";
   const cbtn = '<button type="button" class="f3-go f3-claim" data-f3="claim" data-q="all">' + esc(w("claim")) + ' <b class="num">+' + cx + "</b></button>";
   if (cx && (!cur || cl.length)) { const q = cl[0] || L[L.length - 1]; h += '<div class="f3-sub">' + esc(w("sub", {b:BONUS})) + "</div>" +
@@ -18448,10 +18448,8 @@ function paint(){ let r; try { r = html(); } catch(e){ console.warn(e); return; 
   /* Oct 18 game-perf: compare with what this board last wrote, never with its innerHTML: spirit.js swaps the emoji for icons,
      so the page never matched again and every paint rewrote the board, which woke every body observer about twice a second */
   const b = mount(); if (!b) return; const h = r.h;
-  /* Oct 21 (instant back): when only the "New in 2:39" countdown moved, write that one line, not the whole board every minute */
-  const RS = /<span class="f3-reset num" title="([^"]*)">([^<]*)<\/span>/, rs = b.__f3H && b.firstChild && b.__f3H !== h ? h.match(RS) : null, rsEl = rs && b.querySelector(".f3-reset");
-  if (rs && rsEl && b.__f3H.replace(RS, "") === h.replace(RS, "")) { const tmp = document.createElement("span"); tmp.innerHTML = rs[2]; rsEl.textContent = tmp.textContent; tmp.innerHTML = rs[1]; rsEl.title = tmp.textContent; b.__f3H = h; lastH = h; }
-  else if (b.__f3H !== h || !b.firstChild) { b.innerHTML = h; b.__f3H = h; lastH = h; }
+  /* Oct 23: the "New in 10:10" countdown under the Daily Quest is deleted (old Home clutter), so the board is only rewritten when it really changes */
+  if (b.__f3H !== h || !b.firstChild) { b.innerHTML = h; b.__f3H = h; lastH = h; }
   b.classList.toggle("f3-all", r.n === r.L.length); const al = w("tag"); if (b.getAttribute("aria-label") !== al) b.setAttribute("aria-label", al); }
 
 /* ---------- where each quest takes you ---------- */

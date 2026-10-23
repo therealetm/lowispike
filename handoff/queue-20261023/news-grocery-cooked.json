@@ -1,0 +1,29 @@
+{
+  "slug": "grocery-cooked",
+  "tutorial": {
+    "none": "lives inside the Today's groceries sheet, which has no tutorial card of its own; the Fuel card already covers Shop and Cook"
+  },
+  "go": {
+    "tab": "home"
+  },
+  "lead": {
+    "en": "Log what you cooked from today's groceries",
+    "de": "Eintragen, was du aus dem heutigen Einkauf gekocht hast",
+    "es": "Registra lo que cocinaste con la compra de hoy"
+  },
+  "steps": [
+    {
+      "tab": "home",
+      "text": {
+        "en": "Open Fuel, then Shop, and tap Today's groceries + what to cook. Under What you cooked, type it and tap Log it, or tap Snap a photo.",
+        "de": "Öffne Essen, dann Einkaufen, und tippe auf Heutige Einkäufe + was kochen. Unter Was du gekocht hast tippst du es ein und tippst auf Eintragen, oder auf Foto machen.",
+        "es": "Abre Comida, luego Comprar, y toca La compra de hoy + qué cocinar. En Lo que cocinaste, escríbelo y toca Registrar, o toca Hacer foto."
+      }
+    }
+  ],
+  "text": {
+    "en": "Log what you cooked. The Today's groceries sheet now has a What you cooked part: type the meal and tap Log it, or Snap a photo, and tap the chips for the groceries that went in. Cooked this on a recipe fills it in for you. It goes into your normal meal journal with the same rules, and your groceries link to it.",
+    "de": "Eintragen, was du gekocht hast. Im Blatt Heutige Einkäufe gibt es jetzt den Teil Was du gekocht hast: Tipp die Mahlzeit ein und tippe auf Eintragen, oder auf Foto machen, und tippe die Chips für die Einkäufe an, die drin sind. Das gekocht bei einem Rezept füllt alles für dich aus. Die Mahlzeit landet ganz normal in deinem Mahlzeiten-Tagebuch, mit den gleichen Regeln, und deine Einkäufe werden damit verknüpft.",
+    "es": "Registra lo que cocinaste. La hoja La compra de hoy tiene ahora la parte Lo que cocinaste: escribe la comida y toca Registrar, o Hacer foto, y toca las fichas de las compras que usaste. Cociné esto en una receta lo rellena por ti. Va a tu diario de comidas normal con las mismas reglas, y tus compras quedan enlazadas."
+  }
+}

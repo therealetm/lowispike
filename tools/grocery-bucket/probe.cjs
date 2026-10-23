@@ -1,5 +1,5 @@
 'use strict';
-/* Browser simulation (not a real phone) for grocery-1: Add to bucket / Skip on the product check card.
+/* Browser simulation (not a real phone) for grocery-1 + grocery-2: Add to bucket / Skip on the product check card, shop picker, prices, points, totals.
    node tools/grocery-bucket/probe.cjs [--views se,i13,i15,pixel7] [--theme light|dark] [--langs en,de,es] [--url LIVE] */
 const http = require('http'), fs = require('fs'), path = require('path');
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
@@ -76,6 +76,28 @@ const W = { en: ['Add to bucket', 'Skip', "In today's bucket", '1 item today'], 
         const li = await ev(() => [...document.querySelectorAll('.b3-ov .gb-list li .gb-nm')].map(x => x.firstChild.textContent));
         if (li.length !== 1 || li[0] !== 'Skyr Natur') fails.push(tag + ': list ' + JSON.stringify(li));
         if (lang === langs[0]) await page.screenshot({ path: path.join(OUT, `${v}-${theme}-${lang}-list.png`) });
+        // grocery-2: shop picker, typed price, a real-shaped report at a picked shop (probe stub of LOWI_SHELF.priceReports), totals + points
+        {
+          const g = await ev(() => { const ov = [...document.querySelectorAll('.b3-ov')].filter(x => !x.classList.contains('off')).pop(); const sel = ov && ov.querySelector('.gb-list select[data-gb-shop]'), inp = ov && ov.querySelector('.gb-list input[data-gb-price]'), tot = ov && ov.querySelector('.gb-tot');
+            const r = inp && inp.getBoundingClientRect(); return { sel: !!sel, inp: !!inp, fs: inp ? getComputedStyle(inp).fontSize : '', h: r ? r.height : 0, tot: tot ? tot.innerText.replace(/\s+/g, ' ') : '', v: (ov && ov.querySelector('.gb-list .gb-v') || {}).textContent || '' }; });
+          if (!g.sel || !g.inp || g.fs !== '16px' || g.h < 44 || !g.tot) fails.push(tag + ': price/shop UI ' + JSON.stringify(g));
+          if (!/\d/.test(g.v)) fails.push(tag + ': no spike points on item ' + JSON.stringify(g.v));
+          const inp = page.locator('.b3-ov .gb-list input[data-gb-price]').last(); await inp.scrollIntoViewIfNeeded(); await inp.tap(); await sleep(200);
+          await inp.fill(lang === 'en' ? '1.29' : '1,29'); await inp.press('Enter'); await sleep(500);
+          const t1 = await ev(() => { const s = JSON.parse(localStorage.getItem('lowi.bucket.v1') || '{}'); const it = Object.values(s.days || {}).flat()[0] || {}; return { typed: it.typed, pts: it.pts, tp: (document.querySelector('.b3-ov .gb-tp') || {}).textContent || '', open: !!(document.querySelector('.b3-ov .gb-list') || {}).open }; });
+          if (t1.typed !== 1.29 || !/1[.,]29/.test(t1.tp) || !t1.open || typeof t1.pts !== 'number') fails.push(tag + ': typed price ' + JSON.stringify(t1));
+          await ev(() => { window.__gbOld = window.LOWI_SHELF && LOWI_SHELF.priceReports; if (window.LOWI_SHELF) LOWI_SHELF.priceReports = (n, e) => /4002468000001/.test(String(e)) ? [{ amount: 1.49, currency: 'EUR', store: 'Probe Markt', date: new Date().toISOString(), expires: 0 }] : []; });
+          await ev(() => { const s = JSON.parse(localStorage.getItem('lowi.bucket.v1')); Object.values(s.days).flat().forEach(x => delete x.typed); localStorage.setItem('lowi.bucket.v1', JSON.stringify(s)); });
+          // reopen the card so the list reads the reports
+          await ev(p => { document.querySelectorAll('.b3-ov').forEach(x => x.remove()); LowiDex.reveal(JSON.parse(JSON.stringify(p))); }, SKYR); await sleep(900);
+          const sm = page.locator('.b3-ov .gb-list summary').last(); await sm.scrollIntoViewIfNeeded(); await sm.tap(); await sleep(300);
+          await page.locator('.b3-ov .gb-list select[data-gb-shop]').last().selectOption('Probe Markt'); await sleep(500);
+          const t2 = await ev(() => ({ pr: (document.querySelector('.b3-ov .gb-pr b') || {}).textContent || '', tp: (document.querySelector('.b3-ov .gb-tp') || {}).textContent || '', shop: JSON.parse(localStorage.getItem('lowi.bucket.v1')).shops, lab: (document.querySelector('.b3-ov .gb-tot span') || {}).textContent || '' }));
+          if (!/1[.,]49/.test(t2.pr) || !/1[.,]49/.test(t2.tp) || !Object.values(t2.shop || {}).includes('Probe Markt') || !/Probe Markt/.test(t2.lab)) fails.push(tag + ': shop report price ' + JSON.stringify(t2));
+          if (lang === langs[0]) { await page.locator('.b3-ov .gb-tot').last().scrollIntoViewIfNeeded(); await page.screenshot({ path: path.join(OUT, `${v}-${theme}-${lang}-prices.png`) }); }
+          const ox = await ev(() => document.documentElement.scrollWidth > innerWidth + 1); if (ox) fails.push(tag + ': sideways scroll');
+          await ev(() => { if (window.LOWI_SHELF && window.__gbOld) LOWI_SHELF.priceReports = window.__gbOld; });
+        }
         // Log meal scan: no bucket row
         const meal = await ev(p => { window.LowiScanMeal = window.LowiScanMeal || { __probe: 1 }; document.querySelectorAll('.b3-ov').forEach(x => x.remove()); LowiDex.reveal(JSON.parse(JSON.stringify(p))); const n = document.querySelectorAll('.b3-ov .gb-row').length; if (window.LowiScanMeal.__probe) delete window.LowiScanMeal; return n; }, COLA);
         if (meal !== 0) fails.push(tag + ': bucket row on the Log meal scan');

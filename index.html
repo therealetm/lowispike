@@ -8141,6 +8141,8 @@ const T = [
   ["Listen and learn", "Hören und lernen", "Escucha y aprende"], ["Today's moves and the body science, read like an audiobook", "Die Übungen und die Körper-Wissenschaft, wie ein Hörbuch", "Los ejercicios y la ciencia del cuerpo, como un audiolibro"],
   ["Read notifications aloud", "Mitteilungen vorlesen", "Leer avisos en voz alta"], ["Only when audio mode is on.", "Nur wenn der Audio-Modus an ist.", "Solo con el modo audio activado."],
   ["Personality type", "Persönlichkeitstyp", "Tipo de personalidad"], ["Your community profile", "Dein Community-Profil", "Tu perfil en la comunidad"], ["What others see when they tap you", "Was andere sehen, wenn sie dich antippen", "Lo que ven los demás al tocarte"], ["View", "Ansehen", "Ver"],
+  /* Oct 24 bug hunt: the swap foods and food names that build the "Best swap" line ("A small handful of berries & a palm of protein") */
+  ["halloumi, one palm-sized portion", "Halloumi, eine handtellergroße Portion", "halloumi, una porción del tamaño de la palma"], ["a splash of milk in coffee or tea", "ein Schuss Milch in Kaffee oder Tee", "un chorrito de leche en el café o el té"], ["a small handful of berries", "eine kleine Handvoll Beeren", "un puñado pequeño de frutos rojos"], ["sparkling water with lime and mint", "Sprudelwasser mit Limette und Minze", "agua con gas con lima y menta"], ["lettuce or nori wraps", "Salat- oder Nori-Wraps", "wraps de lechuga o nori"], ["zucchini noodles or shirataki", "Zucchininudeln oder Shirataki", "fideos de calabacín o shirataki"], ["roasted cauliflower", "gerösteter Blumenkohl", "coliflor asada"], ["oven zucchini fries", "Zucchini-Pommes aus dem Ofen", "bastones de calabacín al horno"], ["Greek yogurt with chia and almonds", "Griechischer Joghurt mit Chia und Mandeln", "yogur griego con chía y almendras"], ["cucumber rounds", "Gurkenscheiben", "rodajas de pepino"], ["egg and cottage cheese pancakes", "Pfannkuchen aus Ei und Hüttenkäse", "tortitas de huevo y requesón"], ["cucumber and pepper sticks", "Gurken- und Paprikasticks", "bastones de pepino y pimiento"], ["sweet potato, one fist", "Süßkartoffel, eine Faust voll", "boniato, un puño"], ["lentils or hummus, a small portion", "Linsen oder Hummus, eine kleine Portion", "lentejas o hummus, una porción pequeña"], ["cinnamon, vanilla and a few berries", "Zimt, Vanille und ein paar Beeren", "canela, vainilla y unos frutos rojos"], ["parmesan crisps or olives", "Parmesan-Chips oder Oliven", "crujientes de parmesano o aceitunas"], ["jammy eggs or a handful of almonds", "wachsweiche Eier oder eine Handvoll Mandeln", "huevos a medio cocer o un puñado de almendras"], ["chicken, turkey or beef", "Hähnchen, Pute oder Rind", "pollo, pavo o ternera"], ["grilled or pan-fried, no breading", "gegrillt oder angebraten, ohne Panade", "a la plancha o a la sartén, sin rebozar"], ["yogurt dip, mustard or hot sauce", "Joghurt-Dip, Senf oder scharfe Soße", "salsa de yogur, mostaza o salsa picante"], ["a palm of protein", "eine Handfläche Eiweiß", "una palma de proteína"], ["veg first", "Gemüse zuerst", "verdura primero"], ["eggs", "Eier", "huevos"], ["plain Greek yogurt", "Griechischer Naturjoghurt", "yogur griego natural"], ["milk, a splash", "Milch, ein Schuss", "leche, un chorrito"], ["milk, a glass", "Milch, ein Glas", "leche, un vaso"], ["coffee with milk", "Kaffee mit Milch", "café con leche"], ["vegetables", "Gemüse", "verduras"], ["nut butter", "Nussmus", "crema de frutos secos"], ["fruit", "Obst", "fruta"], ["sweet fruit", "süßes Obst", "fruta dulce"], ["zero or diet drink", "Zero- oder Light-Getränk", "bebida zero o light"], ["sugary drink", "zuckerhaltiges Getränk", "bebida azucarada"], ["beer or cocktail", "Bier oder Cocktail", "cerveza o cóctel"], ["alcohol", "Alkohol", "alcohol"], ["potatoes", "Kartoffeln", "patatas"], ["oats or cereal", "Haferflocken oder Müsli", "avena o cereales"], ["lentils or chickpeas", "Linsen oder Kichererbsen", "lentejas o garbanzos"], ["added sugar", "zugesetzter Zucker", "azúcar añadido"], ["sweets", "Süßigkeiten", "dulces"], ["breaded or deep-fried", "paniert oder frittiert", "rebozado o frito"], ["sweet sauce", "süße Soße", "salsa dulce"], ["cucumber-mint sparkling water", "Gurken-Minz-Sprudelwasser", "agua con gas de pepino y menta"], ["iced matcha lime water", "eisgekühltes Matcha-Limettenwasser", "agua helada de matcha y lima"], ["tofu", "Tofu", "tofu"], ["sauce", "Soße", "salsa"],
 ];
 /* Lines with a number in them. */
 const P = [
@@ -8186,10 +8188,31 @@ const DICT = {de:{}, es:{}};
 T.forEach(r => { DICT.de[r[0]] = r[1]; DICT.es[r[0]] = r[2]; });
 let LANG = (function(){ try { const l = localStorage.getItem(LANG_KEY); return l === "de" || l === "es" ? l : "en"; } catch (e) { return "en"; } })();
 
+/* Oct 24 bug hunt: a line built from known parts, like the scan's "Best swap" line "A small handful of berries & a palm of protein" or
+   "Greek yogurt with chia and almonds + a splash of milk in coffee or tea", stayed English in German and Spanish because only whole lines
+   were looked up. Split at " & ", " + " and ", ", translate every part (a part may hold its own comma), and only use it when every part is known. */
+function trList(key){
+  if (!/ & | \+ |, /.test(key) || key.length > 300) return null;
+  const tok = key.split(/( & | \+ |, )/), segs = tok.filter((x, i) => !(i % 2)), seps = tok.filter((x, i) => i % 2);
+  if (segs.length < 2 || segs.length > 12) return null;
+  const D = DICT[LANG], up = x => x.charAt(0).toUpperCase() + x.slice(1);
+  const one = (pc, first) => { if (D[pc] !== undefined) return D[pc]; if (first) { const lo = pc.charAt(0).toLowerCase() + pc.slice(1); if (lo !== pc && D[lo] !== undefined) return up(D[lo]); } return null; };
+  const sep = x => x === " & " ? (LANG === "es" ? " y " : " & ") : x;
+  const memo = {};
+  const go = i => { if (i === segs.length) return ""; if (memo[i] !== undefined) return memo[i];
+    let res = null;
+    for (let j = segs.length; j > i && res === null; j--) { let pc = segs[i]; for (let k = i + 1; k < j; k++) pc += seps[k - 1] + segs[k];
+      const tp = one(pc, i === 0); if (tp === null) continue;
+      if (j === segs.length) res = tp; else { const rest = go(j); if (rest !== null) res = tp + sep(seps[j - 1]) + rest; } }
+    return (memo[i] = res); };
+  const out = go(0); return out !== null && /^[A-Z]/.test(key) ? up(out) : out;
+}
 function trText(en){
   const key = en.trim(); if (!key) return null;
   let out = DICT[LANG][key];
   if (out === undefined) { const col = LANG === "de" ? 1 : 2; for (const p of P) { if (p[0].test(key)) { out = key.replace(p[0], p[col]); break; } } }
+  if (out === undefined) { const l = trList(key); if (l !== null) out = l; }
+  if (out === undefined) { const lo = key.charAt(0).toLowerCase() + key.slice(1), d = lo !== key ? DICT[LANG][lo] : undefined; if (typeof d === "string" && d) out = d.charAt(0).toUpperCase() + d.slice(1); } /* "A splash of milk…": the same line with a capital first letter */
   return out === undefined ? null : en.replace(key, out);
 }
 function doNode(n){
@@ -8263,7 +8286,7 @@ function bootLang(){
   paintPickers();
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bootLang); else bootLang();
-window.LowiLang = {t:s => (LANG !== "en" && DICT[LANG] && DICT[LANG][s]) || s, /* k9-t */ set:setLang, get:() => LANG, add(rows){ (rows || []).forEach(r => { if (r[0] instanceof RegExp) P.push(r); else { DICT.de[r[0]] = r[1]; DICT.es[r[0]] = r[2]; } }); if (LANG !== "en" && document.body) doNode(document.body); }};
+window.LowiLang = {t:s => (LANG !== "en" && DICT[LANG] && DICT[LANG][s]) || s, /* k9-t */ line:s => { const o = LANG === "en" ? null : trText(String(s)); return o === null ? s : o; }, /* whole line, patterns and lines built from parts */ set:setLang, get:() => LANG, add(rows){ (rows || []).forEach(r => { if (r[0] instanceof RegExp) P.push(r); else { DICT.de[r[0]] = r[1]; DICT.es[r[0]] = r[2]; } }); if (LANG !== "en" && document.body) doNode(document.body); }};
 
 })();
 </script>

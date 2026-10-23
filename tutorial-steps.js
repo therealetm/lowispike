@@ -40,7 +40,7 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 15;  /* 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
+    const VERSION = 16;  /* 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
     const AREAS = ['you', 'home', 'food', 'play', 'companion', 'together', 'settings', 'extras', 'end'];
     const STEPS = [
         /* ---------- part: you (your companion) ---------- */
@@ -584,15 +584,6 @@
             }
         },
         {
-            id: 'pinch-galaxy', area: 'together', target: null, covers: [], teaches: ['pinch-galaxy'], practice: { how: 'pinch', look: 'galaxy' },
-            title: { en: 'Pinch into the galaxy', de: 'In die Galaxie zoomen', es: 'Pellizca hacia la galaxia' },
-            text: {
-                en: 'Another way: on Home, pinch two fingers together past the widest view and you land in the Community galaxy. Spread two fingers there to come back.',
-                de: 'Noch ein Weg: Schieb auf Home zwei Finger zusammen, über die weiteste Ansicht hinaus, dann landest du in der Community-Galaxie. Zieh dort zwei Finger auseinander, um zurückzukommen.',
-                es: 'Otra forma: en Inicio, junta dos dedos más allá de la vista más amplia y llegas a la galaxia de Comunidad. Separa dos dedos allí para volver.'
-            }
-        },
-        {
             id: 'settings', area: 'settings', target: ['#whHud .o8-settings'], covers: ['settings', 'theme', 'language'], teaches: ['community-hold'], tryIt: { how: 'hold' },
             title: { en: 'Community and Settings', de: 'Community und Einstellungen', es: 'Comunidad y Ajustes' },
             text: {
@@ -763,7 +754,6 @@
         G('scan-deep', 'scan', 'tap', ['shop-scan.js'], 'Deep analyze: one tap opens the LOWiSPIKE GPT in ChatGPT'),
         G('fix-field', 'scan', 'tap', ['meal-result.js'], 'What is it really?: tap a suggestion, set pieces'),
         G('page-swipe', 'home', 'swipe', ['liquid-glass.js', 'community-spirit.js'], 'swipe sideways: between Home and Community'),
-        G('pinch-galaxy', 'home', 'pinch', ['galaxy-zoom.js'], 'pinch in past the widest view: Community galaxy; spread: back'),
         G('back-swipe', 'any', 'swipe', ['back-swipe.js', 'section-nav.js'], 'swipe in from the left edge: back'),
         G('sheet-drag', 'any', 'drag', ['apple-ui.js'], 'drag a sheet\'s top bar down: close it'),
         G('cm-tabs', 'community', 'tap', ['community-rooms-ui.js'], 'tap Room, Chat, Creation, Affiliates'),

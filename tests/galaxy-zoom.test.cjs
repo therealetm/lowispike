@@ -34,12 +34,15 @@ test('Home -> Community never scales a flat box: Home only fades over the 3D cam
     assert.ok(css.includes('html.gx-in #tab-home{opacity:0}') && css.includes('transform:none!important;will-change:opacity}'));
 });
 
-test('pinch: past Home\'s widest view you land in the galaxy, spreading on the galaxy dives back home', () => {
-    assert.equal(Z.overPull(200, 100), 2);
-    assert.ok(Z.overPull(200, 150) < Z.PINCH_GO && Z.overPull(200, 130) >= Z.PINCH_GO);
+test('no finger shortcut between Home and Community: pinching only zooms, the Community bubble still warps out', () => {
+    /* Oct 23, 2026, E-man: "Didn't I say we should deactivate the shortcut when it comes to zooming out of the world in the galaxy
+       and getting into the community section? Remove it. Nuke that connection." */
+    assert.ok(!('PINCH_GO' in Z) && !('overPull' in Z), 'the pinch-over threshold is gone');
     const src = read('galaxy-zoom.js'), wh = read('world-home.js'), ac = read('arrival-cards.js');
-    assert.ok(src.includes("if (r.dist < r.maxD * 0.995) { gest.ref = 0; return; }") && src.includes("if (over >= PINCH_GO) cross('foryou');"));
-    assert.ok(src.includes("cross('home');") && src.includes("t.closest('#cgGalaxy')"));
+    assert.ok(!/addEventListener\(\s*['"](touchstart|touchmove|wheel|gesturestart)['"]/.test(src), 'galaxy-zoom.js listens to no pinch, spread or wheel');
+    assert.ok(!src.includes("cross('foryou')") && !src.includes("cross('home')") && !src.includes("goTab)('foryou')"), 'no finger route into Community or back');
+    assert.ok(!wh.includes('farGo') && !/goTab\('foryou'\)/.test(wh), 'the far edge of the zoomed-out universe never opens Community');
+    assert.ok(src.includes("if (from === 'home' && t === 'foryou' && firstIsRoom()) dir = 'out';"), 'tapping Community still pulls out into the galaxy');
     assert.ok(wh.includes('syncX, rig };'), 'Home exposes the camera rig');
     assert.ok(ac.includes('if (!opts.force && !rideOpen() && offHome()) return null;'), 'no arrival card over the galaxy');
 });

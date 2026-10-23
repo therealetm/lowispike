@@ -10714,8 +10714,10 @@ function paintOb(){
       '<div class="r2-obacts"><button class="r2-btn pri big" data-r2o="shopdone">Let\'s go</button><button class="r2-btn ghost big spl-later" data-r2o="shoplater">Later</button></div>';
   }
   el.innerHTML = '<div class="r2-obpane">' + h + '</div>';
-  const b = $("#r2obB"); if (b) b.addEventListener("input", () => { ob.bday = b.value; $("#r2obSign").innerHTML = signReveal(); });
-  const n = $("#r2obName"); if (n) n.addEventListener("input", () => { ob.name = n.value.trim(); });
+  /* sweep Oct 23 (BQ-1): an old error under the form ('Check your birthday.') goes as soon as the person edits the name or birthday */
+  const obErrClear = () => { const er = $("#r2obErr"); if (er && er.textContent) { er.textContent = ""; er.classList.remove("shake"); } };
+  const b = $("#r2obB"); if (b) { const onB = () => { ob.bday = b.value; $("#r2obSign").innerHTML = signReveal(); obErrClear(); }; b.addEventListener("input", onB); b.addEventListener("change", onB); }
+  const n = $("#r2obName"); if (n) n.addEventListener("input", () => { ob.name = n.value.trim(); obErrClear(); });
   const bt = $("#r2obT"); if (bt) bt.addEventListener("input", () => { ob.btime = bt.value; });
 }
 function saveOb(final){

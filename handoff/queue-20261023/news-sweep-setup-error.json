@@ -1,0 +1,10 @@
+{
+  "slug": "setup-error-clears",
+  "tutorial": {"none": "No new control: the error line in setup now goes away as soon as you fix your name or birthday."},
+  "go": {"tab": "home"},
+  "text": {
+    "en": "In setup, \"Check your birthday\" stayed on screen after you had already fixed the date. Now the message goes away as soon as you change your birthday or name.",
+    "de": "Bei der Einrichtung blieb \"Prüfe deinen Geburtstag\" stehen, obwohl du das Datum schon korrigiert hattest. Jetzt verschwindet der Hinweis, sobald du Geburtstag oder Namen änderst.",
+    "es": "En la configuración, \"Revisa tu cumpleaños\" seguía en pantalla aunque ya habías corregido la fecha. Ahora el aviso desaparece en cuanto cambias tu cumpleaños o tu nombre."
+  }
+}

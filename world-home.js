@@ -672,9 +672,10 @@
         adventure(dt, r);
         { const wd = st.adv.wand, pf = !!(st.pad.mode && wd && wd.visible && wd.material.opacity > 0.3); if (H.classList.contains('wh-padfly') !== pf) H.classList.toggle('wh-padfly', pf); }
         if (st.misty) {
-            const show = r.mode === 'full' && !inRegion() && !st.adv.away && !!st.misty.material.map; /* Oct 22: never a blank white sprite */
-            if (st.misty.visible !== show) st.misty.visible = show;
-            if (show && !reduced()) { const t = performance.now() / 1000; st.misty.position.set(0, Math.sin(t * 1.3) * 0.06, 0); }
+            const show = r.mode === 'full' && !inRegion() && !st.adv.away;
+            const vis = show && !!st.misty.material.map; /* Oct 22: never a blank white sprite */
+            if (st.misty.visible !== vis) st.misty.visible = vis;
+            if (vis && !reduced()) { const t = performance.now() / 1000; st.misty.position.set(0, Math.sin(t * 1.3) * 0.06, 0); }
         }
     }
 

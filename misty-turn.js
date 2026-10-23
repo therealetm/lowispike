@@ -235,7 +235,7 @@
         const THREE = a.THREE, N = 5, geo = new THREE.BufferGeometry();
         geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(N * 3).fill(-999), 3));
         const p = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.1, map: dotMap(THREE), alphaTest: 0.01, color: '#a8ffd8', transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, fog: false, sizeAttenuation: true }));
-        p.name = 'mt-facing'; capped(p.material, a); p.userData.lwKeep = true; p.renderOrder = 60; p.frustumCulled = false; p.visible = false; a.scene.add(p);
+        p.name = 'mt-facing'; p.userData.lwKeep = true; capped(p.material, a); p.renderOrder = 60; p.frustumCulled = false; p.visible = false; a.scene.add(p);
         return p;
     }
     /* the energy shot, drawn in the 3D world (one Points object for every ball, trail and burst; no DOM, nothing while none fly) */
@@ -245,7 +245,7 @@
         geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3).fill(-999), 3));
         geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
         const p = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.12, map: dotMap(THREE), alphaTest: 0.01, vertexColors: true, transparent: true, opacity: 1, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, fog: false, sizeAttenuation: true }));
-        p.name = 'mt-shot'; capped(p.material, a); p.userData.lwKeep = true; p.renderOrder = 61; p.frustumCulled = false; p.visible = false; a.scene.add(p);
+        p.name = 'mt-shot'; p.userData.lwKeep = true; capped(p.material, a); p.renderOrder = 61; p.frustumCulled = false; p.visible = false; a.scene.add(p);
         return p;
     }
     function shotFrame(i, dt) {

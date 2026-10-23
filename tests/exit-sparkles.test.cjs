@@ -56,7 +56,7 @@ test('Misty sprites never show before their picture is there (a Sprite with no m
     const wh = read('world-home.js'), mf = read('misty-flight.js');
     assert.match(wh, /wand\.visible = wand\.material\.opacity > 0\.01 && !!wand\.material\.map/);
     assert.match(mf, /wand\.visible = wand\.material\.opacity > 0\.01 && !!wand\.material\.map/);
-    assert.match(wh, /!st\.adv\.away && !!st\.misty\.material\.map/);
+    assert.match(wh, /const vis = show && !!st\.misty\.material\.map;[^\n]*\n\s*if \(st\.misty\.visible !== vis\) st\.misty\.visible = vis;/);
     for (const f of appJs) for (const c of calls(read(f), 'SpriteMaterial')) {
         if (/\bmap\s*:/.test(c.body)) continue;
         assert.ok(['world-home.js'].includes(f), `${f}:${c.at} SpriteMaterial without map must be guarded`);

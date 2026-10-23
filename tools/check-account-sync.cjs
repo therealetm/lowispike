@@ -74,7 +74,7 @@ srv.listen(0, async () => {
   ok(reloaded || i1.reloads === 1, 'iPad: pulled the account and reloaded once to show it (reloads ' + i1.reloads + ')');
   ok(i1.xp === 900, 'iPad: higher XP kept on the first merge (' + i1.xp + ')');
   ok(i1.meals.includes('meal-phone') && i1.meals.includes('meal-ipad'), 'iPad: both meals, none lost (' + i1.meals.join(',') + ')');
-  const note = await ipad.page.evaluate(() => window.__lowiSyncNote || '');
+  let note = ''; for (let i = 0; i < 20 && !note; i++) { note = await ipad.page.evaluate(() => window.__lowiSyncNote || '').catch(() => ''); if (!note) await ipad.page.waitForTimeout(500); }
   ok(note === 'Auf dem Stand deines anderen Geräts', 'iPad: a short German note says why it reloaded (' + note + ')');
   await ipad.page.screenshot({ path: SHOT + '/ipad-after-first-sync.png' });
 
@@ -87,8 +87,10 @@ srv.listen(0, async () => {
   await phone.page.waitForTimeout(7000);
   const p2 = await state(phone);
   await ipad.page.waitForTimeout(9000);
+  console.log('     before: phone log ' + JSON.stringify(await phone.page.evaluate(() => window.__lowiSyncLog)) + ' | iPad log ' + JSON.stringify(await ipad.page.evaluate(() => window.__lowiSyncLog)));
   const back2 = await comeBack(ipad);
   const i2 = await state(ipad);
+  console.log('     phone log ' + JSON.stringify(await phone.page.evaluate(() => window.__lowiSyncLog)) + '\n     iPad log ' + JSON.stringify(await ipad.page.evaluate(() => window.__lowiSyncLog)));
   ok(back2, 'iPad: came back to the app and reloaded with the new data');
   ok(!!p2.water && i2.water === p2.water, 'iPad water bubble = phone water bubble (' + i2.water + ' / ' + p2.water + ')');
   ok(i2.xp === p2.xp, 'iPad XP = phone XP (' + i2.xp + ' / ' + p2.xp + ')');

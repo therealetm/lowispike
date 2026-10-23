@@ -9690,7 +9690,7 @@ function syncNow(why){
       return !!at;
     } catch(e){ return false; }
   })();
-  const p = syncing; p.then(() => { if (syncing === p) syncing = null; }, () => { if (syncing === p) syncing = null; });
+  const t0 = Date.now(), p = syncing; p.then(ok => { (window.__lowiSyncLog = window.__lowiSyncLog || []).push(why + ":" + (ok ? "ok" : "no") + ":" + (Date.now() - t0) + "ms@" + new Date(t0).toISOString().slice(11, 19)); if (window.__lowiSyncLog.length > 30) window.__lowiSyncLog.shift(); if (syncing === p) syncing = null; }, () => { if (syncing === p) syncing = null; });
   return p;
 }
 function syncNote(){ let n = ""; try { n = sessionStorage.getItem("lowi.sync.note") || ""; sessionStorage.removeItem("lowi.sync.note"); } catch(e){} if (!n) return;

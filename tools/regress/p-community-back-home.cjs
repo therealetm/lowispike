@@ -47,7 +47,9 @@ async function tapSettings(R) {
             const before = await state(R);
             if (route === 'x') await p.evaluate(() => { const b = document.getElementById('secX'); if (b) b.click(); });
             else await p.evaluate(() => history.back());
-            await sleep(400); const s1 = await state(R);
+            await sleep(400); let s1 = await state(R);
+            /* on a phone the first system back can close the open chat room first (it has its own history step); the second leaves Community */
+            if (route === 'back' && s1.tab === 'tab-foryou') { await sleep(1200); s1 = await state(R); if (s1.tab === 'tab-foryou') { s1.backs = 2; await p.evaluate(() => history.back()); await sleep(400); } }
             await sleep(2600); const s2 = await state(R);
             s2.frames = await frames(R);
             const tap = await tapSettings(R);

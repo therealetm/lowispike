@@ -22,17 +22,17 @@
         en: { sleep: 'Sleep', log: 'Log', ask: 'How long did you sleep last night?', under6: 'Under 6 h', '6to7': '6\u20137 h', '7plus': '7 h or more',
             short: { under6: '<6 h', '6to7': '6\u20137 h', '7plus': '7 h+' }, notLogged: 'not logged', clear: 'Clear', clearLong: 'Clear today\u2019s sleep',
             settings: 'Settings', me: 'Me', look: 'Look & sound', account: 'Account', on: 'on', off: 'off', more: 'More', back: 'Back', close: 'Close',
-            moreTitle: 'Everything else', today: 'Today & history', community: 'Community', care: 'Care board', cook: 'Cook', workouts: 'Workouts', map: 'World map',
+            moreTitle: 'Everything else', today: 'Today & history', community: 'Community', care: 'Care board', cook: 'Cook', workouts: 'Workouts',
             vr: 'VR', worldSound: 'World sound', theme: 'Day / night', gift: 'Gift of the day', weather: 'Weather', quest: 'Daily quest', goTo: 'Go to', settingsGroup: 'Settings', tutorial: 'Tutorial', body: 'Weight & BMI', weight: 'Weight journey', version: 'Version' },
         de: { sleep: 'Schlaf', log: 'Eintragen', ask: 'Wie lange hast du letzte Nacht geschlafen?', under6: 'Unter 6 Std.', '6to7': '6\u20137 Std.', '7plus': '7 Std. oder mehr',
             short: { under6: '<6 Std.', '6to7': '6\u20137 Std.', '7plus': '7 Std.+' }, notLogged: 'nicht eingetragen', clear: 'L\u00f6schen', clearLong: 'Heutigen Schlaf l\u00f6schen',
             settings: 'Einstellungen', me: 'Ich', look: 'Aussehen & Ton', account: 'Konto', on: 'an', off: 'aus', more: 'Mehr', back: 'Zur\u00fcck', close: 'Schlie\u00dfen',
-            moreTitle: 'Alles andere', today: 'Heute & Verlauf', community: 'Community', care: 'Care-Board', cook: 'Kochen', workouts: 'Workouts', map: 'Weltkarte',
+            moreTitle: 'Alles andere', today: 'Heute & Verlauf', community: 'Community', care: 'Care-Board', cook: 'Kochen', workouts: 'Workouts',
             vr: 'VR', worldSound: 'Weltklang', theme: 'Tag / Nacht', gift: 'Geschenk des Tages', weather: 'Wetter', quest: 'Tagesquest', goTo: 'Gehe zu', settingsGroup: 'Einstellungen', tutorial: 'Tutorial', body: 'Gewicht & BMI', weight: 'Gewichtsreise', version: 'Version' },
         es: { sleep: 'Sue\u00f1o', log: 'Anotar', ask: '\u00bfCu\u00e1nto dormiste anoche?', under6: 'Menos de 6 h', '6to7': '6\u20137 h', '7plus': '7 h o m\u00e1s',
             short: { under6: '<6 h', '6to7': '6\u20137 h', '7plus': '7 h+' }, notLogged: 'sin anotar', clear: 'Borrar', clearLong: 'Borrar el sue\u00f1o de hoy',
             settings: 'Ajustes', me: 'Yo', look: 'Aspecto y sonido', account: 'Cuenta', on: 's\u00ed', off: 'no', more: 'M\u00e1s', back: 'Atr\u00e1s', close: 'Cerrar',
-            moreTitle: 'Todo lo dem\u00e1s', today: 'Hoy e historial', community: 'Comunidad', care: 'Tablero Care', cook: 'Cocinar', workouts: 'Entrenos', map: 'Mapa del mundo',
+            moreTitle: 'Todo lo dem\u00e1s', today: 'Hoy e historial', community: 'Comunidad', care: 'Tablero Care', cook: 'Cocinar', workouts: 'Entrenos',
             vr: 'RV', worldSound: 'Sonido del mundo', theme: 'D\u00eda / noche', gift: 'Regalo del d\u00eda', weather: 'Tiempo', quest: 'Misi\u00f3n diaria', goTo: 'Ir a', settingsGroup: 'Ajustes', tutorial: 'Tutorial', body: 'Peso e IMC', weight: 'Tu camino de peso', version: 'Versi\u00f3n' }
     };
     /* Oct 21 2026 (Emmanuel: the Home bubble is Community now, a hold opens a slim Settings with only what is needed) */
@@ -149,10 +149,10 @@
        they keep a light way in: one folded "More places" row under YOU (EXPLORE_LIGHT). */
     /* Oct 22 2026, 5:40 PM (Emmanuel: "Remove the entire 'More places' section from the Community long-press menu, including all its
        entries"): the folded row is gone. For You stays in Cook (Shuffle | For You | Swipe), the Care board stays in Move (card under the
-       Move title); World map, Gift of the day and Shopping hunt are simply not in the hub any more (their code and routes stay). */
+       Move title); the map, Gift of the day and Shopping hunt are simply not in the hub any more (their code and routes stay). */
     const EXPLORE_LIGHT = [];
-    const EXPLORE_MOVED = { workouts: 'Home Move bubble', foryou: 'Cook > For You switch', care: 'Move > Care board card', map: 'out of the hub (Oct 22)', gift: 'out of the hub (Oct 22)', hunt: 'out of the hub (Oct 22)' };
-    const MORE_GROUPS = { go: COMMUNITY_PLACES.you.concat(['foryou', 'care', 'workouts', 'map', 'gift', 'hunt']), set: [] };
+    const EXPLORE_MOVED = { workouts: 'Home Move bubble', foryou: 'Cook > For You switch', care: 'Move > Care board card', gift: 'out of the hub (Oct 22)', hunt: 'out of the hub (Oct 22)' };
+    const MORE_GROUPS = { go: COMMUNITY_PLACES.you.concat(['foryou', 'care', 'workouts', 'gift', 'hunt']), set: [] };
     const MORE = MORE_GROUPS.go.concat(MORE_GROUPS.set);
     /* the slim Settings (a hold on the Community bubble): the switches, the language and the account, nothing else */
     const SETTINGS_IDS = ['theme', 'look', 'worldSound', 'language', 'tutorial'], ACCOUNT_IDS = ['account', 'deleteAccount'];
@@ -162,7 +162,8 @@
        quest: Emmanuel dropped Daily quest */
     /* Oct 21 2026 cleanup (DECISIONS.md): vr and weather are out of every menu (their code and saved choices stay); community is the
        Home bubble itself; theme and worldSound are Settings rows now */
-    const MORE_REMOVED = { today: 'removed', cook: 'fuel', theme: 'settings', quest: 'removed', vr: 'removed', weather: 'removed', community: 'bubble', worldSound: 'settings' };
+    const MORE_REMOVED = { today: 'removed', cook: 'fuel', theme: 'settings', quest: 'removed', vr: 'removed', weather: 'removed', community: 'bubble', worldSound: 'settings', map: 'removed' };
+    /* Oct 23 2026 (queue worldmap-btn; Emmanuel: "that old map button ... remove it completely"): map is out of every menu and route */
     function moreGroups(env) {
         const has = id => !!(env && env.has && env.has(id));
         return { go: MORE_GROUPS.go.filter(has), set: MORE_GROUPS.set.filter(has) };
@@ -296,7 +297,6 @@
         care: { has: () => !!(root.LowiR3F && fn(root.LowiR3F, 'openBoardTab')), run: () => root.LowiR3F.openBoardTab() },
         cook: { has: () => tabExists('shelf'), run: goTab('shelf') },
         workouts: { has: () => tabExists('move'), run: goTab('move') },
-        map: { has: () => !!$('#whHud .wh-zoom'), run: clickSel('#whHud .wh-zoom') },
         vr: { has: () => !!$('#whHud .wh-vr'), run: clickSel('#whHud .wh-vr') },
         worldSound: { has: () => !!$('#whHud .wa-btn'), run: () => { if (fn(root.LowiWorldAudio, 'open')) root.LowiWorldAudio.open(); else clickSel('#whHud .wa-btn')(); }, toggle: () => !!(root.LowiWorldAudio && fn(root.LowiWorldAudio, 'on') && root.LowiWorldAudio.on()) },
         theme: { has: () => !!(root.LowiTopBar && fn(root.LowiTopBar, 'toggleTheme')), run: () => root.LowiTopBar.toggleTheme(), toggle: () => !(root.LowiTopBar && fn(root.LowiTopBar, 'state') && root.LowiTopBar.state().theme === 'light') },

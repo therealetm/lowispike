@@ -23,7 +23,7 @@ test('hub groups: YOU, then Settings without World sound, then Delete account al
 });
 
 test('every former Explore place says where it is reached now; the More places row is gone (Emmanuel, Oct 22 5:40 PM)', () => {
-    for (const id of ['foryou', 'care', 'workouts', 'map', 'gift', 'hunt']) assert.ok(typeof SS.EXPLORE_MOVED[id] === 'string' && SS.EXPLORE_MOVED[id].length > 3, id);
+    for (const id of ['foryou', 'care', 'workouts', 'gift', 'hunt']) assert.ok(typeof SS.EXPLORE_MOVED[id] === 'string' && SS.EXPLORE_MOVED[id].length > 3, id);
     assert.deepStrictEqual(M.groups(() => true)[0].more, [], 'no More places entries');
     assert.deepStrictEqual(SS.EXPLORE_LIGHT, [], 'no folded More places row');
     assert.ok(!SS.EXPLORE_LIGHT.includes('workouts'), 'Workouts is the Move bubble');

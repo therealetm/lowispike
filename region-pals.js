@@ -170,7 +170,8 @@
     function nextUnseen() { const k = C.nextFact(st.lines.length, seen[st.id], 1); return k == null ? (st.i + 1) % st.lines.length : k; }
 
     /* ---------- the bubble never sits on the Daily Quest, the top row, the controls, the tab bar or Misty ---------- */
-    const AVOID = '#f3Board, #hcLine.on, #hqSlot.arr-on, #tab-home .sp-top, #whHud button, #whHud .wh-water, #spFast, #whPad, #tabbar, .wh-hint.wh-say, #lpPraise.on, .bw3-full button, [data-guide-avoid]';
+    /* #whX (Oct 23, worldmap-btn): with the World map stick gone the X is the way out of a cell world, so a guide's bubble keeps clear of it */
+    const AVOID = '#f3Board, #hcLine.on, #hqSlot.arr-on, #tab-home .sp-top, #whHud button, #whX, #whHud .wh-water, #spFast, #whPad, #tabbar, .wh-hint.wh-say, #lpPraise.on, .bw3-full button, [data-guide-avoid]';
     /* clean flight view (Oct 17, handoff item 7): while Misty flies, the Daily Quest band and the controller only fade (layout
        stays) and one tap brings them back. So the bubble keeps clear of where they are even while they are faded: a reveal tap
        never finds the bubble sitting on the Daily Quest. */

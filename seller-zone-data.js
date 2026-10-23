@@ -39,7 +39,7 @@
     const P = [
         /* chips & crisps */
         { id: 'cheesies-cheddar', cat: 'chips', e: '\u{1F9C0}', n: 'Cheddar Cheesies', b: 'Cheesies', shop: 'cheesies.co.uk', url: 'https://cheesies.co.uk/products/cheddar-cheesies', r: ['uk'], ships: UK, price: '£16.99', v: 'ja', ing: '100% Cheddar', why: CHEESE, por: P30, amz: 'Cheesies cheddar crunchy cheese' },
-        { id: 'mixit-knusperkaese', cat: 'chips', e: '\u{1F9C0}', n: 'Irischer Knusperkäse', b: 'mymuesli / mixit', shop: 'mixit.de', url: 'https://www.mixit.de/produkt/probierset-knusperkase-im-taschenformat-2836', r: ['eu'], ships: DE, v: 'ja', ing: '100 % irischer Cheddar (Milch, Salz, Kulturen, Lab)', why: CHEESE, por: P30, amz: 'Knusperkäse 100% Käse' },
+        { id: 'mixit-knusperkaese', cat: 'chips', e: '\u{1F9C0}', n: 'Irischer Knusperkäse', b: 'mymuesli / mixit', shop: 'mixit.de', url: 'https://www.mixit.de/produkt/probierset-knusperkase-im-taschenformat-2836', r: ['eu'], ships: DE, price: '6,49 € / 80 g', v: 'ja', ing: '100 % irischer Cheddar (Milch, Salz, Kulturen, Lab)', why: CHEESE, por: P30, amz: 'Knusperkäse 100% Käse' },
         { id: 'mooncheese-cheddar', cat: 'chips', e: '\u{1F9C0}', n: 'Cheddar Believe It', b: 'Moon Cheese', shop: 'mooncheese.com', url: 'https://mooncheese.com/products/cheddar-believe-it-medium', r: ['us'], ships: US, price: '$14.99', v: 'ja', ing: '100% cheddar', why: CHEESE, por: P30, amz: 'Moon Cheese Cheddar' },
         { id: 'kulau-nori', cat: 'chips', e: '\u{1F33F}', n: 'Bio Nori Snack Sea Salt', b: 'KULAU', shop: 'kulau.de', url: 'https://www.kulau.de/KULAU-Bio-Nori-Snack-Sea-Salt-4-g', r: ['eu'], ships: DE, v: 'ja', ing: 'Geröstete Nori-Algen (47 %), Sonnenblumenöl, Meersalz (3 %), Bio', why: NORI, por: L('One 4 g pack', 'Eine 4-g-Packung', 'Un paquete de 4 g'), amz: 'Nori Snack Meersalz Bio' },
         { id: 'gimme-seasalt', cat: 'chips', e: '\u{1F33F}', n: 'Sea Salt Roasted Seaweed Snacks', b: 'gimMe', shop: 'gimmesnacks.com', url: 'https://gimmesnacks.com/products/grab-go-sea-salt-seaweed-snacks', r: ['us'], ships: US, price: '$5.49', v: 'ja', ing: 'Seaweed, sunflower oil, sea salt (organic)', why: NORI, por: L('One pack', 'Eine Packung', 'Un paquete'), amz: 'gimMe seaweed snacks sea salt' },
@@ -76,5 +76,29 @@
         choc: L('Only 100% cacao passes: no sugar, no sweetener.', 'Nur 100 % Kakao besteht: kein Zucker, kein Süßstoff.', 'Solo pasa el cacao 100 %: sin azúcar ni edulcorante.'),
         chips: L('Sweet potato chips did not pass (72 g carbs per 100 g). Cheese crisps and seaweed did.', 'Süßkartoffelchips haben nicht bestanden (72 g Kohlenhydrate pro 100 g). Käse-Chips und Algen schon.', 'Las chips de boniato no pasaron (72 g de hidratos por 100 g). Las de queso y alga sí.')
     };
-    W.LowiSellerZoneData = { NAME, CHECKED, CATS, P, FAILED, NOTE };
+    /* product photos: one per product, from the image on its own shop page (the page the card links to), 23 Oct 2026.
+       Stored in the repo as small square webp files (seller-zone-img/<id>.webp, 400 px, about 15 KB), never hotlinked.
+       PIC_FROM keeps where each photo came from. A product without a photo shows its emoji bubble instead. */
+    const PIC_DIR = 'seller-zone-img/';
+    const PIC_FROM = {
+        'cheesies-cheddar': 'https://www.cheesies.co.uk/cdn/shop/products/4.jpg',
+        'mixit-knusperkaese': 'https://img.mix.it/product/da0f7407-fadd-4c86-8f5d-b08f1bffcf24/jpeg_llg-854834bc627024835dfdfe07ba613d33.jpeg',
+        'mooncheese-cheddar': 'https://mooncheese.com/cdn/shop/files/mediumcheddar3packcopy.jpg',
+        'kulau-nori': 'https://www.kulau.de/media/image/product/620/lg/kulau-bio-nori-snack-sea-salt-4-g.jpg',
+        'gimme-seasalt': 'https://gimmeseaweed.com/cdn/shop/files/gimme2026-product-gg-sea-salt.webp',
+        'gimme-avocado': 'https://gimmeseaweed.com/cdn/shop/files/gimme2026-product-gg-avocado-oil.webp',
+        'koro-nibs': 'https://koro.imgix.net/media/a5/98/72/1761144655/KAKAO_017_MAIN.jpg',
+        'pacari-raw100': 'https://paccari.com/es/wp-content/uploads/2025/10/7862109270080-BARRA-RAW-100_-TIRO-scaled-e1766004449129-485x1024.webp',
+        'lindt-100': 'https://www.lindtusa.com/media/catalog/product/f/4/f4b8bfcf0ad27e610877c2c1f5fe3c41e6e8a93a68e6be2428da330c8ed9e267.jpeg',
+        'northern-biltong': 'https://www.northernbiltong.de/cdn/shop/files/Nothern-Biltong_Produktshooting_Original_100g_Packshot.jpg',
+        'grizzly-biltong': 'https://grizzlyfoods.de/cdn/shop/files/single-bcl-30.jpg',
+        'koro-coco': 'https://koro.imgix.net/media/5c/3a/65/1646342562/KOKOS_039_01hjqcwnRgElQUJ.jpg',
+        'flackers-cheeze': 'https://flackers.com/cdn/shop/files/flackers_mutliseed_cheezepleazefront_1024x1024.png',
+        'koro-almonds': 'https://koro.imgix.net/media/06/50/9a/1747072197/MAND_014_MAIN.jpg',
+        'koro-tamari': 'https://koro.imgix.net/media/ce/10/7a/1646340734/MAND_022_01.jpg',
+        'koro-pistachio': 'https://koro.imgix.net/media/c2/ea/34/1646338978/PIS_002_011.jpg',
+        'koro-macadamia': 'https://koro.imgix.net/media/ae/da/7c/1649250231/MACA_010-01.jpg'
+    };
+    P.forEach(function (x) { if (PIC_FROM[x.id]) x.pic = PIC_DIR + x.id + '.webp'; });
+    W.LowiSellerZoneData = { NAME, CHECKED, CATS, P, FAILED, NOTE, PIC_DIR, PIC_FROM };
 })(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null));

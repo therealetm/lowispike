@@ -103,3 +103,52 @@ html[data-theme="light"] .sz-ja { color: #0b7a44; }
 html[data-theme="light"] .sz-sel { color: #8a5a00; }
 @media (max-width: 360px) { .sz-swap .sz-row { grid-template-columns: 1fr 1fr; } .sz-swap .sz-row > :nth-child(3) { display: none; } .sz-acts { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) { .sz-orb { animation: none; } .sz-ov, .sz-box { transition: none; } }
+/* Oct 23 (Eman: "Pls add images. Nobody likes just reading it."): real product photos, image first.
+   The photo sits in a bubble window: rounded, a soft cyan rim and a light sheen on top, like the living bubbles. The emoji bubble
+   underneath shows when there is no photo or it fails to load. Photos never pulse (battery). */
+.sz-ph { position: relative; display: block; overflow: hidden; background: #fff; isolation: isolate; }
+.sz-ph .sz-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; z-index: 1; -webkit-user-drag: none; user-select: none; }
+.sz-ph::after {
+  content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; border-radius: inherit;
+  background: radial-gradient(70% 45% at 30% 8%, rgba(255, 255, 255, .28), rgba(255, 255, 255, 0) 70%);
+  box-shadow: 0 0 0 1px rgba(143, 231, 255, .55) inset, 0 0 16px rgba(143, 231, 255, .30) inset;
+}
+.sz-ph-e { position: absolute; inset: 0; display: grid; place-items: center; z-index: 0; font-size: 34px; line-height: 1; }
+.sz-ph.sz-noimg { background: radial-gradient(circle at 34% 30%, rgba(255, 255, 255, .34), rgba(143, 231, 255, .18) 42%, rgba(30, 90, 140, .30) 100%); }
+.sz-ph-l { width: 100%; aspect-ratio: 1 / 1; border-radius: 22px; box-shadow: 0 0 18px rgba(143, 231, 255, .18); }
+.sz-ph-l .sz-ph-e { font-size: 54px; }
+.sz-ph-m { width: 64px; height: 64px; flex: 0 0 auto; border-radius: 22px; box-shadow: 0 0 12px rgba(143, 231, 255, .22); }
+.sz-ph-m .sz-ph-e { font-size: 28px; }
+@supports not (aspect-ratio: 1 / 1) { .sz-ph-l { height: 0; padding-bottom: 100%; } }
+/* the grid: a shop shelf, 2 across on a phone, 3 or more on an iPad */
+.sz-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.sz-card { display: flex; flex-direction: column; gap: 8px; padding: 8px 8px 10px; border-radius: 28px; min-width: 0; }
+.sz-pic { position: relative; display: block; border-radius: 22px; text-decoration: none; color: inherit; -webkit-tap-highlight-color: transparent; }
+.sz-pic:active .sz-ph-l { transform: scale(.98); }
+.sz-pic .sz-v, .sz-price {
+  position: absolute; z-index: 3; border-radius: 999px; background: rgba(6, 24, 40, .74); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+}
+.sz-pic .sz-v { top: 8px; left: 8px; font-size: 10px; padding: 3px 8px; }
+.sz-price { right: 8px; bottom: 8px; padding: 4px 9px; font-size: 12px; font-weight: 900; color: #fff; border: 1px solid rgba(143, 231, 255, .4); white-space: nowrap; max-width: calc(100% - 16px); overflow: hidden; text-overflow: ellipsis; }
+.sz-card .sz-tt { padding: 0 4px; }
+.sz-card .sz-tt b { font-size: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.sz-card .sz-tt small { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sz-card .sz-meta { flex-direction: column; gap: 2px; margin: 0; padding: 0 4px; font-size: 12px; line-height: 1.3; }
+.sz-more { padding: 0 4px; font-size: 12px; }
+.sz-more summary { min-height: 32px; display: flex; align-items: center; gap: 4px; cursor: pointer; font-weight: 800; opacity: .82; list-style: none; }
+.sz-more summary::-webkit-details-marker { display: none; }
+.sz-more summary::after { content: "\203A"; transition: transform .2s; font-size: 15px; }
+.sz-more[open] summary::after { transform: rotate(90deg); }
+.sz-more .sz-why { margin: 2px 0 6px; font-size: 12px; }
+.sz-more .sz-ing { margin: 0 0 4px; }
+.sz-card .sz-acts { grid-template-columns: 1fr; gap: 6px; margin-top: auto; }
+.sz-card .sz-buy, .sz-card .sz-amz { padding: 8px 10px; font-size: 13px; }
+.sz-card .sz-amz { min-height: 40px; font-weight: 800; }
+/* the scanner card's swaps and the Shop shelf: a photo bubble instead of the emoji */
+.sz-mini .sz-ph-m { margin-bottom: 2px; }
+.sz-strip-it .sz-ph-m { width: 72px; height: 72px; }
+html[data-theme="light"] .sz-pic .sz-ja { color: #7dffb8; }
+html[data-theme="light"] .sz-pic .sz-sel { color: #ffd877; }
+@media (min-width: 700px) { .sz-grid { grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); } }
+@media (max-width: 330px) { .sz-grid { grid-template-columns: 1fr 1fr; gap: 8px; } .sz-pic .sz-v { font-size: 9px; padding: 2px 6px; } }
+@media (prefers-reduced-motion: reduce) { .sz-more summary::after { transition: none; } }

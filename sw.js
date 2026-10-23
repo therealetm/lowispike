@@ -42,6 +42,12 @@ self.addEventListener("fetch", e => {
     e.respondWith(fetch(req, {cache:"no-cache"}).then(res => { if (res.ok) { const cp = res.clone(); caches.open(CACHE).then(c => c.put(req, cp)); } return res; }).catch(() => caches.match(req).then(r => r || Response.error())));
     return;
   }
+  /* Oct 23 (Seller Zone photos): a product photo never changes under its name, so once loaded it comes from the phone, also
+     offline and after updates (the cache name starts with lowispike-steps, which activate keeps). No repeat downloads. */
+  if (url.pathname.indexOf("/seller-zone-img/") >= 0) {
+    e.respondWith(caches.open("lowispike-steps-seller-img").then(c => c.match(req).then(hit => hit || fetch(req).then(res => { if (res && res.ok) c.put(req, res.clone()); return res; }))).catch(() => fetch(req)));
+    return;
+  }
   if (req.mode === "navigate" && !isShell(url)) return;
   if (isPage(req, url)) {
     /* Oct 21 (open instantly): still network first, but a launch no longer waits on a slow or half-dead connection. If the network

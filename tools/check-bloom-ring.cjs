@@ -57,12 +57,14 @@ const H = require('./sim/harness.cjs'), fs = require('fs'), path = require('path
   const closeIt = async () => { await P.keyboard.press('Escape').catch(() => { }); await H.sleep(200); await P.evaluate(() => { try { LowiHomeBloomsV2.close(); } catch (e) { } }); await H.sleep(700); await settleRing(); };
   const ring0 = await ring();
   console.log('RING', ring0.map(b => b.k).join(','), 'build', res.build);
+  const singles = {};
   for (const k of ['fuel', 'water', 'move']) {
     R.step = 'bloom ' + k;
     const b = ring0.find(x => x.k === k); if (!b) { await find('no ' + k + ' bubble on Home', {}); continue; }
     await P.touchscreen.tap(b.x, b.y); await H.sleep(600); await settle();
     const s = await state(); const rn = await ring();
     if (s.open !== k) { await find(k + ' bloom did not open', { open: s.open }); await closeIt(); continue; }
+    singles[k] = s.orbs.length;  /* Oct 23: two fingers must open exactly the sum of the single blooms (Water by sips made Water 3) */
     await judge(k + ' bloom', s, rn, 0);
     await closeIt();
     const s2 = await state(), r2 = await ring();
@@ -101,7 +103,7 @@ const H = require('./sim/harness.cjs'), fs = require('fs'), path = require('path
     }
     if (s.open !== 'all') console.log('BRSTATE', JSON.stringify(await P.evaluate(() => { try { return LowiBloomRing.state(); } catch (e) { return String(e); } })));
     if (s.open !== 'all') await find('two-finger tap on Misty did not open every bloom', { open: s.open, zoom: s.zoom });
-    else await judge('two-finger: all blooms', s, rn, 8);
+    else await judge('two-finger: all blooms', s, rn, Object.values(singles).reduce((x, y) => x + y, 0) || 8);
     if (s.stats) await find('two-finger tap opened Misty stats (hold)', {});
     /* tap the empty space: closes and the view comes back */
     const sc = await P.evaluate(() => { const v = innerWidth, h = innerHeight; for (const [x, y] of [[8, h * 0.5], [v - 8, h * 0.5], [v * 0.5, h - 14], [8, h - 14]]) { const e = document.elementFromPoint(x, y); if (e && e.classList.contains('hb2-scrim')) return { x, y }; } return null; });

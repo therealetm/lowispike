@@ -104,7 +104,17 @@
     t_noopen: ['Didn\'t open? Use the three dots, like in the video.', 'Nicht geöffnet? Nimm die drei Punkte, wie im Video.', '¿No se abrió? Usa los tres puntos, como en el vídeo.'],
     c_ios: ['Tap ••• down here', 'Tippe hier unten auf •••', 'Toca ••• aquí abajo'], c_ipad: ['Tap Share up here', 'Tippe hier oben auf Teilen', 'Toca Compartir aquí arriba'],
     c_path: ['then Share → View More → Add to Home Screen → Add', 'dann Teilen → Mehr anzeigen → Zum Home-Bildschirm → Hinzufügen', 'luego Compartir → Ver más → Añadir a pantalla de inicio → Añadir'],
-    c_pathpad: ['then Add to Home Screen → Add', 'dann Zum Home-Bildschirm → Hinzufügen', 'luego Añadir a pantalla de inicio → Añadir'],
+    c_pathpad: ['then View More → Add to Home Screen → Add', 'dann Mehr anzeigen → Zum Home-Bildschirm → Hinzufügen', 'luego Ver más → Añadir a pantalla de inicio → Añadir'],
+    /* which device + browser the walkthrough shows right now (line under the chooser) */
+    s_safari: ['Shown: Safari on iPhone', 'Gezeigt: Safari auf dem iPhone', 'Se muestra: Safari en iPhone'],
+    s_ipad: ['Shown: Safari on iPad', 'Gezeigt: Safari auf dem iPad', 'Se muestra: Safari en iPad'],
+    s_crios: ['Shown: Chrome on iPhone', 'Gezeigt: Chrome auf dem iPhone', 'Se muestra: Chrome en iPhone'],
+    s_iab_ios: ['Shown: app browser, then Safari', 'Gezeigt: App-Browser, dann Safari', 'Se muestra: navegador de la app, luego Safari'],
+    s_chrome: ['Shown: Chrome on Android', 'Gezeigt: Chrome auf Android', 'Se muestra: Chrome en Android'],
+    s_samsung: ['Shown: Samsung Internet on Android', 'Gezeigt: Samsung Internet auf Android', 'Se muestra: Samsung Internet en Android'],
+    s_edge: ['Shown: Edge on Android', 'Gezeigt: Edge auf Android', 'Se muestra: Edge en Android'],
+    s_firefox: ['Shown: Firefox on Android', 'Gezeigt: Firefox auf Android', 'Se muestra: Firefox en Android'],
+    s_iab_and: ['Shown: app browser, then Chrome', 'Gezeigt: App-Browser, dann Chrome', 'Se muestra: navegador de la app, luego Chrome'],
     w_h: ['You did it!', 'Geschafft!', '¡Lo lograste!'],
     w_t: ['LOWiSPIKE is on your Home Screen now. One tap and Misty is there.', 'LOWiSPIKE ist jetzt auf deinem Home-Bildschirm. Ein Tipp und Misty ist da.', 'LOWiSPIKE ya está en tu pantalla de inicio. Un toque y Misty está ahí.']
   };
@@ -150,10 +160,10 @@
       case 'iab': return '<div class="ig-iab"><span class="ig-x">×</span><span class="ig-url">' + URLT + '</span><span class="ig-btn ig-hit">' + (sc.os === 'android' ? I.kebab : I.dots) + '</span></div>' + page();
       case 'iabmenu': return '<div class="ig-iab"><span class="ig-x">×</span><span class="ig-url">' + URLT + '</span><span class="ig-btn">' + (sc.os === 'android' ? I.kebab : I.dots) + '</span></div>' + page(true) +
         '<div class="ig-sheet">' + row(tx('l_openb', L), true, I.compass) + row(tx('l_copylink', L), false, I.link) + row(tx('l_report', L)) + '</div>';
-      case 'sbar': return page() + '<div class="ig-sfbar"><span class="ig-circ">' + I.back + '</span><span class="ig-pill">' + URLT + '</span><span class="ig-circ ig-hit">' + I.dots + '</span></div>';
+      case 'sbar': return page() + '<div class="ig-sfbar"><span class="ig-circ">' + I.back + '</span><span class="ig-pill"><span class="ig-u">' + URLT + '</span></span><span class="ig-circ ig-hit">' + I.dots + '</span></div>';
       case 'smenu': return page(true) + '<div class="ig-pop">' + row(tx('l_share', L), true, I.share) + row(tx('l_addbm', L)) + row(tx('l_addbmto', L)) + row(tx('l_newtab', L)) + row(tx('l_private', L)) + row(tx('l_bms', L)) + row(tx('l_alltabs', L)) + '</div>' +
-        '<div class="ig-sfbar"><span class="ig-circ">' + I.back + '</span><span class="ig-pill">' + URLT + '</span><span class="ig-circ on">' + I.dots + '</span></div>';
-      case 'crbar': return '<div class="ig-crbar"><span class="ig-pill">' + URLT + '</span><span class="ig-btn ig-hit">' + I.share + '</span></div>' + page();
+        '<div class="ig-sfbar"><span class="ig-circ">' + I.back + '</span><span class="ig-pill"><span class="ig-u">' + URLT + '</span></span><span class="ig-circ on">' + I.dots + '</span></div>';
+      case 'crbar': return '<div class="ig-crbar"><span class="ig-pill"><span class="ig-u">' + URLT + '</span></span><span class="ig-btn ig-hit">' + I.share + '</span></div>' + page();
       case 'share': return page(true) + '<div class="ig-sheet ig-share"><div class="ig-shh">' + ICON + '<span><b>LOWiSPIKE</b><small>' + URLT + '</small></span></div>' +
         '<div class="ig-ppl"><i></i><i></i><i></i><i></i></div><div class="ig-apps"><i class="a1"></i><i class="a2"></i><i class="a3"></i><i class="a4"></i></div>' +
         (sc.direct ? row(tx('l_copy', L)) + row(tx('l_reading', L)) + row(tx('l_a2hs', L), true, I.plus) : row(tx('l_copy', L)) + row(tx('l_pdf', L)) + row(tx('l_more', L), true, I.dots)) + '</div>';
@@ -166,12 +176,12 @@
       case 'abar': {
         if (sc.b === 'samsung') return page() + '<div class="ig-abot"><span>‹</span><span>›</span><span>' + I.home + '</span><span>☆</span><span class="ig-tabs">2</span><span class="ig-btn ig-hit">' + I.burger + '</span></div>';
         if (sc.b === 'edge') return page() + '<div class="ig-abot"><span>‹</span><span>›</span><span class="ig-btn ig-hit">' + I.dots + '</span><span class="ig-tabs">2</span><span>' + I.home + '</span></div>';
-        return '<div class="ig-atop">' + I.home + '<span class="ig-pill">' + URLT + '</span><span class="ig-tabs">2</span><span class="ig-btn ig-hit">' + I.kebab + '</span></div>' + page();
+        return '<div class="ig-atop">' + I.home + '<span class="ig-pill"><span class="ig-u">' + URLT + '</span></span><span class="ig-tabs">2</span><span class="ig-btn ig-hit">' + I.kebab + '</span></div>' + page();
       }
       case 'amenu': {
         if (sc.b === 'samsung') return page(true) + '<div class="ig-sheet ig-grid">' + ['l_bmA', 'l_history', 'l_dl', 'l_addto', 'l_sharew', 'l_settings'].map(k => '<div class="ig-gi' + (k === 'l_addto' ? ' ig-hit' : '') + '"><i></i><span>' + t(k) + '</span></div>').join('') + '</div>';
         if (sc.b === 'edge') return page(true) + '<div class="ig-sheet ig-grid">' + ['l_bmA', 'l_history', 'l_dl', 'l_phone', 'l_sharew', 'l_settings'].map(k => '<div class="ig-gi' + (k === 'l_phone' ? ' ig-hit' : '') + '"><i></i><span>' + t(k) + '</span></div>').join('') + '</div>';
-        return '<div class="ig-atop">' + I.home + '<span class="ig-pill">' + URLT + '</span><span class="ig-tabs">2</span><span class="ig-btn">' + I.kebab + '</span></div>' + page(true) +
+        return '<div class="ig-atop">' + I.home + '<span class="ig-pill"><span class="ig-u">' + URLT + '</span></span><span class="ig-tabs">2</span><span class="ig-btn">' + I.kebab + '</span></div>' + page(true) +
           '<div class="ig-drop"><div class="ig-icons"><i></i><i></i><i></i><i></i></div>' + row(tx('l_newtab', L)) + row(tx('l_history', L)) + row(tx('l_dl', L)) + row(tx('l_bmA', L)) + row(tx('l_sharew', L)) + row(tx('l_a2hsA', L), true, I.home) + row(tx('l_settings', L)) + '</div>';
       }
       case 'asub': return page(true) + '<div class="ig-sheet"><div class="ig-sht">' + t('l_addto') + '</div>' + row(tx('l_bmA', L)) + row(tx('l_homescr', L), true, I.home) + '</div>';
@@ -187,11 +197,18 @@
     const br = dev === ENV.device ? ENV.browser : (dev === 'ios' ? 'safari' : 'chrome');
     return flow(dev, br, ENV.inapp, dev === 'ios' && ENV.ipad);
   }
+  /* the line under the chooser: which device + browser the walkthrough shows */
+  function selKey(dev) {
+    const br = dev === ENV.device ? ENV.browser : (dev === 'ios' ? 'safari' : 'chrome');
+    if (dev === 'ios') return ENV.inapp ? 's_iab_ios' : br === 'crios' ? 's_crios' : ENV.ipad ? 's_ipad' : 's_safari';
+    return ENV.inapp ? 's_iab_and' : ['samsung', 'edge', 'firefox'].indexOf(br) >= 0 ? 's_' + br : 's_chrome';
+  }
   function inner(dev, L) {
-    const sc = scenesFor(dev);
+    const sc = scenesFor(dev), tab = dev === 'ios' && ENV.ipad && !ENV.inapp && ENV.browser !== 'crios';
     return '<div class="ig-pick" role="group" aria-label="' + esc(tx('pick', L)) + '">' +
-      ['ios', 'android'].map(d => '<button type="button" class="ig-pb' + (d === dev ? ' on' : '') + '" data-ig="dev" data-v="' + d + '" aria-pressed="' + (d === dev) + '">' + (d === 'ios' ? 'iPhone' : 'Android') + '</button>').join('') + '</div>' +
-      '<div class="ig-stage" aria-hidden="true"><div class="ig-phone ig-' + dev + '"><div class="ig-scr">' + sc.map((s, i) => '<div class="ig-f ig-f-' + s.f + (i === 0 ? ' on' : '') + '">' + frame(s, L) + '</div>').join('') + '</div></div></div>' +
+      ['ios', 'android'].map(d => '<button type="button" class="ig-pb' + (d === dev ? ' on' : '') + '" data-ig="dev" data-v="' + d + '" aria-pressed="' + (d === dev) + '">' + (d === 'ios' ? (ENV.ipad ? 'iPad' : 'iPhone') : 'Android') + '</button>').join('') + '</div>' +
+      '<div class="ig-sel">' + esc(tx(selKey(dev), L)) + '</div>' +
+      '<div class="ig-stage" aria-hidden="true"><div class="ig-phone ig-' + dev + (tab ? ' ig-tab' : '') + '"><div class="ig-scr">' + sc.map((s, i) => '<div class="ig-f ig-f-' + s.f + (i === 0 ? ' on' : '') + '">' + frame(s, L) + '</div>').join('') + '</div></div></div>' +
       '<div class="ig-cap" aria-live="polite"><span class="ig-n">1</span><span class="ig-ct">' + esc(tx(sc[0].cap, L)) + '</span></div>' +
       '<div class="ig-dots">' + sc.map((s, i) => '<button type="button" class="ig-dot' + (i === 0 ? ' on' : '') + '" data-ig="go" data-i="' + i + '" aria-label="' + esc(tx('step', L) + ' ' + (i + 1) + ': ' + tx(s.cap, L)) + '"></button>').join('') + '</div>';
   }
@@ -205,7 +222,7 @@
   }
   const live = new Set();
   let timer = 0;
-  const STEP_MS = 2600, TAP_AT = 1250;
+  const STEP_MS = 3000, TAP_AT = 1400;
   function boot() {
     D.querySelectorAll('.ig[data-ig-new]').forEach(el => { el.removeAttribute('data-ig-new'); el.__i = 0; el.__t0 = Date.now(); el.__hold = 0; live.add(el); show(el, 0); });
     if (live.size && !timer) timer = setInterval(tick, 200);

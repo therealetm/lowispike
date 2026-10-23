@@ -109,3 +109,20 @@ test('battery and motion: one timer, stops when nothing is on screen, honours re
   assert.match(js, /x-safari-/);
   assert.match(js, /package=com\.android\.chrome/);
 });
+
+test('the mock text scales with the phone, not with the viewport (the cut-off OWiSPIK bug)', () => {
+  // cqw on the container element itself resolves against the viewport: 25 px text in a 130 px phone
+  assert.match(css, /\.ig-phone\{[^}]*container-type:inline-size/, 'the phone is the size container');
+  assert.doesNotMatch(css, /\.ig-scr\{[^}]*container-type/, '.ig-scr must not be its own container');
+  assert.match(css, /\.ig-scr\{[^}]*font-size:[0-9.]+cqw/);
+  assert.match(css, /\.ig-u\{[^}]*text-overflow:ellipsis/, 'the address is ellipsized, not cut on both sides');
+});
+
+test('the chooser says which device and browser it shows; iPad gets a tablet and View More', () => {
+  for (const k of ['s_safari', 's_ipad', 's_crios', 's_iab_ios', 's_chrome', 's_samsung', 's_edge', 's_firefox', 's_iab_and']) {
+    assert.ok(IG.TX[k] && IG.TX[k].length === 3 && IG.TX[k].every(Boolean), k + ' in EN/DE/ES');
+  }
+  assert.equal(IG.tx('s_ipad', 'de'), 'Gezeigt: Safari auf dem iPad');
+  assert.match(IG.tx('c_pathpad', 'en'), /View More/);
+  assert.match(css, /\.ig-phone\.ig-tab\{[^}]*aspect-ratio:3\/4/);
+});

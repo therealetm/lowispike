@@ -286,6 +286,20 @@ request survived, it says "(his request, as the task summed it up)". All times a
       installSheet. Tests: tests/install-guide.test.cjs; live check: node tools/check-install-guide.cjs --url <live> (--frames
       writes the storyboard frames). The older tools/a2hs/guide-check.cjs still expects the old step list: retire it.
       Not testable here: real iPhone/Android, real Instagram in-app browser, the real system install dialog.
+      2026-10-23 repair (Eman on his real iPhone: "completely bullshit", tiny phone, cut-off "OWiSPIK", "m." address bar):
+      ROOT CAUSE: .ig-scr had container-type:size AND font-size:6.4cqw on itself. cqw on the container element resolves
+      against the viewport, so the mock text was 25 px (iPhone) / 52 px (iPad) inside a ~130 px phone. Fixed: the phone
+      (.ig-phone) is the container (inline-size), text 7cqw = ~10-11 px in a 155-165 px phone; the address is ellipsized in
+      a span (.ig-u) instead of being cut on both sides of a flex pill; the page logo sits between the bars (padding).
+      Bigger: phone min ~300 px on iPhone, A1 scrolls on very short screens instead of shrinking the guide; "Warum" line
+      hidden below 820 px height. iPad: chooser says "iPad", a tablet frame (.ig-tab, 3:4), Share at the top right
+      (Apple iPad User Guide: "Tap the Share button at the top right of the window", then View More, Add to Home Screen),
+      share sheet + list as popovers, add dialog as a centered form sheet. A line under the chooser says what is shown
+      ("Gezeigt: Safari auf dem iPhone / Chrome auf Android / App-Browser, dann Safari"). Steps 3 s each.
+      Checked with a probe that screenshots every frame (iPhone 393x760, SE 375x553, iPad 820x1106 + landscape, Pixel,
+      EN/DE/ES) plus OCR of the crops: "LOWiSPIKE" and the menu rows read in full. Chromium/WebKit emulation only.
+      OPEN (Eman's remark, not this fix): after Add to Home Screen the icon is the static app icon (his companion Misty);
+      he wants each user's OWN companion as the icon. Needs a per-user apple-touch-icon/manifest icon set at install time.
 
 **(d) Mentioned, never started**
 
@@ -1029,6 +1043,8 @@ scripts/release.sh "what users get, in one line" --news news.json
 ---
 
 ## 4. Lessons and difficulties (so you don't go through them again)
+
+- Container query units (cqw/cqh) on the container element itself resolve against the ancestor container or the viewport, not itself. Put container-type on the parent. Measuring spacing missed this for a whole release; look at the frames (screenshot + OCR) before calling a visual done.
 
 1. **Tasks running out of budget.** Many tasks on 19 Oct stopped before releasing: "three food photos" (three runs,
    started already over budget; it had in fact released, and round 2 only verified it), "meal names" and the

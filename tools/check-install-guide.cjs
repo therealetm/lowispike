@@ -61,7 +61,7 @@ async function layout(page) { return page.evaluate(() => {
   }
   const ph = g.querySelector('.ig-phone'), pr = ph ? ph.getBoundingClientRect() : { width: 0, height: 0 };
   return { problems: out, dev: (g.querySelector('.ig') || {}).getAttribute && g.querySelector('.ig').getAttribute('data-ig-dev'), pressed: (g.querySelector('.ig-pb[aria-pressed="true"]') || {}).textContent,
-    frames: [...g.querySelectorAll('.ig-f')].map(f => f.className.replace(/ig-f ig-f-| on| tap/g, '')), cap: (g.querySelector('.ig-ct') || {}).textContent, phone: [Math.round(pr.width), Math.round(pr.height)],
+    frames: [...g.querySelectorAll('.ig-f')].map(f => f.className.replace(/ig-f ig-f-| on| tap/g, '')), cap: (g.querySelector('.ig-ct') || {}).textContent, phone: [Math.round(pr.width), Math.round(pr.height)], scrFont: parseFloat(getComputedStyle(g.querySelector('.ig-scr')).fontSize),
     main: (g.querySelector('.a1-acts .r2-btn.pri') || {}).innerText, coach: !!document.querySelector('#igCoach .ig-arrow'), scroll: document.scrollingElement.scrollHeight > vh + 2 };
 }); }
 async function runCase(browser, base, c) {
@@ -82,6 +82,9 @@ async function runCase(browser, base, c) {
     if (c.lang === 'de' && /^Tap /.test(L.cap)) fail(w, 'caption not German: ' + L.cap);
     for (const p of L.problems) fail(w, p);
     if (L.phone[1] < 110) fail(w, 'phone animation too small ' + L.phone);
+    /* the mock text scales with the phone: 25 px text in a 130 px phone was the cut-off OWiSPIK bug (cqw resolved against the viewport) */
+    if (L.phone[1] < 240) fail(w, 'phone animation too small to read ' + L.phone);
+    if (!(L.scrFont >= 9.5 && L.scrFont <= L.phone[0] * 0.09)) fail(w, 'mock text ' + L.scrFont + 'px does not fit a ' + L.phone[0] + 'px phone');
     const wantCoach = c.coach; if (!!L.coach !== !!wantCoach) fail(w, 'coach arrow ' + L.coach + ', want ' + !!wantCoach);
     await page.screenshot({ path: path.join(OUT, w + '.png') });
     const cap0 = L.cap; await sleep(3200); let cap1 = await page.$eval('.ig-ct', e => e.textContent);

@@ -1009,4 +1009,3 @@ Emmanuel (Seven): "I don't understand the food journal section. Either remove it
 - Meal history lives in the Fuel sheet's meal list (today's meals, with photo thumbnails from meal-journal.js). There is no second place for meals.
 - Kept for XP and fair play: herb-quests-core.js journal(), discover(), newFoods(), FOODS and the "same meal twice counts once" rules. They feed no screen now except a small toast the first time a food is logged ("First time logged: ...").
 - Other links: the Herb path's "Food journal" link is removed, its compact link says "Quests". `data-sp="collection"` (Misty's older Discovered panel "See all") now opens only your scanned products, titled "Your scans". The scan hint "Adds it to your food journal" says "Adds it to your scans". No tutorial card, achievement or deep link pointed at the Food journal.
-

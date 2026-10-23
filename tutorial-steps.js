@@ -40,7 +40,7 @@
      title / text / cta   { en, de, es }; {name} is the companion's name */
 (function (root) {
     'use strict';
-    const VERSION = 17;  /* 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
+    const VERSION = 18;  /* 18: Oct 23 2026, Gap reads h:mm and Log meal is Meal or Snack with a Today list; 17: Oct 23 2026, Water by sips / cup / bottle, hold = take the last one back; 16: Oct 23 2026, the pinch-into-the-galaxy card is gone (no pinch shortcut between Home and Community); 15: Oct 23 2026, Inside Scan says you can type a food name; 14: Oct 22 2026, Mirror mode card right after the basic gestures */
     const AREAS = ['you', 'home', 'food', 'play', 'companion', 'together', 'settings', 'extras', 'end'];
     const STEPS = [
         /* ---------- part: you (your companion) ---------- */
@@ -144,9 +144,9 @@
             id: 'gap', area: 'home', target: ['#spFast'], covers: ['gap'],
             title: { en: 'Gap', de: 'Gap', es: 'Gap' },
             text: {
-                en: 'Gap counts the hours since your last real meal. Until your first meal it says "no meal yet".',
-                de: 'Gap zählt die Stunden seit deiner letzten echten Mahlzeit. Bis zur ersten Mahlzeit steht dort „noch kein Essen“.',
-                es: 'Gap cuenta las horas desde tu última comida de verdad. Hasta tu primera comida dice «sin comida aún».'
+                en: 'Gap counts the hours since your last real meal, shown as hours:minutes (4:12). Until your first meal it shows just its name.',
+                de: 'Gap zählt die Stunden seit deiner letzten echten Mahlzeit, als Stunden:Minuten (4:12). Bis zur ersten Mahlzeit steht dort nur der Name.',
+                es: 'Gap cuenta las horas desde tu última comida de verdad, en horas:minutos (4:12). Hasta tu primera comida solo muestra su nombre.'
             }
         },
         {
@@ -189,9 +189,9 @@
             id: 'log-meal', area: 'home', target: ['#whHud .wh-meals'], covers: ['log-meal'], teaches: [], later: 'tap',
             title: { en: 'Log meal', de: 'Mahlzeit eintragen', es: 'Registrar comida' },
             text: {
-                en: 'After the tour, whenever you eat, open Log meal: snap a photo, type what you ate, like “chicken stew”, or tap a recent meal. I fill in the numbers, and saving ends your fast with its points.',
-                de: 'Nach der Tour öffnest du Mahlzeit eintragen, wann immer du isst: Foto machen, eintippen, etwa „Hühnereintopf“, oder eine letzte Mahlzeit wählen. Die Werte trage ich ein, und Speichern beendet dein Fasten mit Punkten.',
-                es: 'Después del recorrido, cada vez que comas, abre Registrar comida: haz una foto, escribe lo que comiste, como “guiso de pollo”, o toca una comida reciente. Yo pongo los números y guardar termina tu ayuno con puntos.'
+                en: 'After the tour, whenever you eat, open Log meal and pick Meal or Snack: snap a photo, type it or tap a recent meal. Today shows your entries, tap one to change it. Every meal restarts the Gap.',
+                de: 'Nach der Tour: Wenn du isst, öffne Mahlzeit eintragen und wähl Mahlzeit oder Snack: Foto, eintippen oder letzte Mahlzeit. Unter Heute stehen deine Einträge, tipp drauf zum Ändern. Jede Mahlzeit startet den Gap neu.',
+                es: 'Después del recorrido, cuando comas, abre Registrar comida y elige Comida o Snack: foto, escríbelo o toca una comida reciente. Hoy muestra lo que anotaste, toca una entrada para cambiarla. Cada comida reinicia el Gap.'
             }
         },
         {

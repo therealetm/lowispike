@@ -29,10 +29,14 @@ function estimate(ing){const t=[0,0,0,0,0,0];let hit=0;(ing||[]).forEach(i=>{con
 function pickFor(list,now,seen){const d=new Date(now||Date.now()),h=d.getHours(),slot=h<11?0:h<16?1:2;const scored=(list||[]).filter(r=>r&&r.id).map(r=>{const m=estimate(r.ing)||{};const score=(m.protein||0)*2+(m.fiber||0)*3-(m.sugar||0)*2-Math.abs((m.kcal||450)-(slot===0?380:520))/40;return{r,m,score};}).filter(x=>!(seen||[]).includes(x.r.id)).sort((a,b)=>b.score-a.score);if(!scored.length)return null;const top=scored.slice(0,Math.min(6,scored.length));const day=Math.floor((d.getTime()-d.getTimezoneOffset()*6e4)/864e5);const x=top[(day*3+slot)%top.length];const why=[];if((x.m.protein||0)>=25)why.push('protein');if((x.m.sugar||0)<=6)why.push('lowSugar');if((x.m.fiber||0)>=4)why.push('fiber');if((x.r.mins||99)<=15)why.push('quick');return{recipe:x.r,macros:x.m,why,slot};}
 /* Oct 19, 2026 (E-man: "Frühstück, Mittag, Abendessen. Und vielleicht packst du Snacks. Everybody needs snacks."): the four Log meal slots.
    slotFor = the slot that fits the clock right now (offered first); slotRecent = one-tap re-logs, this slot's own meals first ("du isst jedes Mal die gleiche Paprika"). */
-const SLOTS=['breakfast','lunch','dinner','snack'];
+/* Oct 23 (E-man: "I just eat whenever I want to eat. I don't care about a breakfast or a dinner, I care about food or snack.
+   And since the time is already in there ... make it minimal."): Meal or Snack, the time stamp does the rest. Older
+   breakfast / lunch / dinner logs read as Meal (kind). */
+const SLOTS=['meal','snack'];
+function kind(s){s=String(s||'');return s==='snack'?'snack':/^(meal|breakfast|lunch|dinner)$/.test(s)?'meal':'';}
 function slotOk(s){return SLOTS.indexOf(s)>=0?s:'';}
-function slotFor(now){const h=new Date(now==null?Date.now():now).getHours();return h>=4&&h<11?'breakfast':h>=11&&h<16?'lunch':h>=16&&h<22?'dinner':'snack';}
-function slotRecent(logs,slot,max){max=max||6;const seen=new Set(),own=[],other=[];for(const l of (logs||[]).slice().reverse()){const t=String(l&&(l.t||l.n)||'').trim(),k=t.toLowerCase();if(!t||seen.has(k))continue;seen.add(k);(slot&&l.slot===slot?own:other).push(l);}return own.concat(other).slice(0,max);}
+function slotFor(now){return 'meal';}
+function slotRecent(logs,slot,max){max=max||6;const seen=new Set(),own=[],other=[];for(const l of (logs||[]).slice().reverse()){const t=String(l&&(l.t||l.n)||'').trim(),k=t.toLowerCase();if(!t||seen.has(k))continue;seen.add(k);(slot&&kind(l.slot)===kind(slot)?own:other).push(l);}return own.concat(other).slice(0,max);}
 /* scanfe-h5 (Oct 23, 2026): the verdict Misty reacts with after a scan. It used the blood sugar estimate alone (LowiDex.rate), so
    she could say "Yes, I like this one!" to a product the Food check card says NO to. Now the same rule as the spike lists:
    the rate() result is made stricter by LowiSpikeCore.tighten (NEIN -> spike, SELTEN -> at least better), manual entries keep
@@ -47,5 +51,5 @@ function waterAmount(k){if(typeof k==='number'&&isFinite(k)&&k>0)return Math.max
 function waterSum(a,b){return Math.max(0,Math.round(((+a||0)+(+b||0))*4)/4);}
 function waterFmt(n){n=Math.max(0,Math.round((+n||0)*4)/4);const w=Math.floor(n),fr=['','\u00bc','\u00bd','\u00be'][Math.round((n-w)*4)]||'';return(w||!fr?String(w):'')+fr;}
 function waterXpDue(cups,have,cap){cap=cap==null?WATER.xpCap:cap;return Math.max(0,Math.min(cap,Math.floor((+cups||0)+1e-9))-Math.max(0,+have||0));}
-const api={WATER,waterAmount,waterSum,waterFmt,waterXpDue,SLOTS,slotOk,slotFor,slotRecent,scanVerdict,estimate,pickFor,day,macros,totals,bonuses,vitality,personalityName,mergeFeed,bound,step,release,icon,paths};if(typeof module==='object'&&module.exports)module.exports=api;else root.LowiSpiritCore=api;
+const api={WATER,waterAmount,waterSum,waterFmt,waterXpDue,SLOTS,kind,slotOk,slotFor,slotRecent,scanVerdict,estimate,pickFor,day,macros,totals,bonuses,vitality,personalityName,mergeFeed,bound,step,release,icon,paths};if(typeof module==='object'&&module.exports)module.exports=api;else root.LowiSpiritCore=api;
 })(typeof window!=='undefined'?window:globalThis);

@@ -8287,7 +8287,7 @@ const SPIKE = (lvl, label) => '<span class="a2-sp a2-sp' + lvl + '"><i></i><i></
 function cards(){
   const meal = 20;   /* last meal 20:00 -> milestones */
   return [
-    {id:"scan", h:"Catch every food.", p:"Scan a barcode or snap your plate. Every new find goes into your Pokédex.",
+    {id:"scan", h:"Catch the friendly foods.", p:"Scan a barcode or snap your plate. Every insulin-friendly find goes into a bubble in your Bubble Dex.",
      v:'<div class="a2-scan"><div class="a2-orb" aria-hidden="true"><span></span></div>' +
        '<div class="a2-pc"><div class="a2-pc-ic" aria-hidden="true">🥛</div><div class="a2-pc-t"><b>Greek yogurt</b><div>' + SPIKE(1, "Low spike") + '</div></div><span class="a2-new">New</span></div>' +
        '<div class="a2-xp"><span>Caught</span><b>+15 XP</b></div></div>'},
@@ -8349,8 +8349,8 @@ window.LowiA2 = { use: () => !standalone(), html, picker, go, idx: () => last };
 function addLang(){ if (!window.LowiLang || !LowiLang.add) return setTimeout(addLang, 200); LowiLang.add([
   ["Skip", "Überspringen", "Saltar"],
   ["Free. No card.", "Kostenlos. Keine Karte.", "Gratis. Sin tarjeta."],
-  ["Catch every food.", "Fang jedes Essen.", "Atrapa cada comida."],
-  ["Scan a barcode or snap your plate. Every new find goes into your Pokédex.", "Scanne einen Barcode oder fotografiere deinen Teller. Jeder neue Fund kommt in deinen Pokédex.", "Escanea un código o haz foto a tu plato. Cada hallazgo nuevo va a tu Pokédex."],
+  ["Catch the friendly foods.", "Fang die freundlichen Lebensmittel.", "Atrapa la comida amigable."],
+  ["Scan a barcode or snap your plate. Every insulin-friendly find goes into a bubble in your Bubble Dex.", "Scanne einen Barcode oder fotografiere deinen Teller. Jeder insulinfreundliche Fund kommt als Bubble in deinen Bubble-Dex.", "Escanea un código o haz foto a tu plato. Cada hallazgo apto para la insulina entra en una burbuja de tu Bubble Dex."],
   ["Greek yogurt", "Griechischer Joghurt", "Yogur griego"],
   ["Low spike", "Niedriger Spike", "Pico bajo"],
   ["High spike", "Hoher Spike", "Pico alto"],
@@ -13612,21 +13612,21 @@ if (document.readyState === "loading") document.addEventListener("DOMContentLoad
   window.lowiBotsToggle = () => "";
 })();
 </script><style id="r3bcss">
-/* LOWiSPIKE round 3 part B: Scan as supermarket Pokédex (b3-*) */
+/* LOWiSPIKE round 3 part B: Scan as supermarket Bubble Dex (b3-*) */
 html{--b3-ok:#5fc27e;--b3-mid:#e8b44f;--b3-no:#ff7a6b;--b3-leg:#c79bff;--b3-rare:#5fb6ff}
 html[data-ui=light]{--b3-ok:#2f8f4e;--b3-mid:#b07a14;--b3-no:#d6453a;--b3-leg:#7d4fd0;--b3-rare:#1f74c4}
 .b3-scan{display:flex;flex-direction:column;align-items:stretch;margin-top:16px}
 .b3-prog{display:flex;align-items:center;gap:12px;width:100%;padding:14px;border-radius:20px;border:1px solid var(--line2,rgba(255,255,255,.12));background:var(--p2-card,rgba(255,255,255,.055));color:inherit;font:inherit;text-align:left;cursor:pointer;transition:transform .15s}
 .b3-prog:active{transform:scale(.98)}
 .b3-prog>svg{opacity:.45;flex:none}
-.b3-ball{width:44px;height:44px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;color:#14100a;background:linear-gradient(180deg,#e9cb88 0 48%,#1b1b1f 48% 52%,#f4f1ea 52%);box-shadow:0 6px 18px rgba(202,161,90,.25)}
+.b3-ball{width:44px;height:44px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;color:#14100a;background:radial-gradient(circle at 32% 27%,rgba(255,255,255,.95) 0 9%,rgba(255,255,255,.35) 15%,transparent 32%),radial-gradient(circle at 50% 50%,rgba(143,231,255,.14) 0 56%,rgba(143,231,255,.5) 74%,rgba(233,203,136,.7) 88%,rgba(255,255,255,.9) 100%);box-shadow:0 6px 18px rgba(143,231,255,.22),inset 0 0 8px rgba(255,255,255,.35)} /* Oct 23: a bubble, not a ball */
 .b3-ball svg{width:26px;height:26px;opacity:.85}
 .b3-pt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
 .b3-pt b{font-size:15px;font-weight:650;line-height:1.25}
 .b3-pt small{font-size:12px;opacity:.6}
 .b3-bar{display:block;height:6px;border-radius:3px;background:var(--r2-field,rgba(255,255,255,.08));overflow:hidden}
 .b3-bar i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,#b98d45,#e9cb88);transition:width .6s cubic-bezier(.2,.9,.3,1)}
-.b3-orb{position:relative;align-self:center;width:150px;height:150px;border-radius:50%;margin-top:24px;cursor:pointer;color:#14100a;border:0;background:radial-gradient(circle at 50% 50%,#f4f1ea 0 15%,#1b1b1f 15% 19%,transparent 19%),linear-gradient(180deg,#e9cb88 0 47%,#1b1b1f 47% 53%,#f4f1ea 53%);box-shadow:0 18px 50px rgba(202,161,90,.22),inset 0 -6px 14px rgba(0,0,0,.12),inset 0 4px 10px rgba(255,255,255,.35);transition:transform .2s;animation:b3pop .6s cubic-bezier(.2,.9,.3,1.2) both}
+.b3-orb{position:relative;align-self:center;width:150px;height:150px;border-radius:50%;margin-top:24px;cursor:pointer;color:#14100a;border:0;background:radial-gradient(circle at 32% 27%,rgba(255,255,255,.95) 0 9%,rgba(255,255,255,.35) 15%,transparent 32%),radial-gradient(circle at 50% 50%,rgba(143,231,255,.14) 0 56%,rgba(143,231,255,.5) 74%,rgba(233,203,136,.7) 88%,rgba(255,255,255,.9) 100%);box-shadow:0 18px 50px rgba(202,161,90,.22),inset 0 -6px 14px rgba(0,0,0,.12),inset 0 4px 10px rgba(255,255,255,.35);transition:transform .2s;animation:b3pop .6s cubic-bezier(.2,.9,.3,1.2) both}
 .b3-orb:active{transform:scale(.94)}
 .b3-orbin{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:1}
 .b3-orbin svg{width:26px;height:26px}
@@ -13851,9 +13851,11 @@ html[data-ui=light] .b3-q{background:radial-gradient(circle,#59607a,#2a2f40)}
 .b3-acts{display:flex;flex-direction:column;align-items:center;margin-top:16px}
 .b3-skip,.b3-rep{margin-top:4px}
 .b3-catch{position:relative;overflow:hidden}
-.b3-pb{width:20px;height:20px;border-radius:50%;flex:none;background:linear-gradient(180deg,#d8463a 0 46%,#1b1b1f 46% 54%,#fff 54%);box-shadow:0 0 0 1.5px #1b1b1f}
-.b3-catch.throw .b3-pb{animation:b3throw .7s cubic-bezier(.3,.6,.4,1) both}
-@keyframes b3throw{0%{transform:none}40%{transform:translateY(-26px) rotate(-200deg)}70%{transform:translateY(0) rotate(-340deg)}85%{transform:rotate(-320deg)}100%{transform:rotate(-360deg)}}
+/* Oct 23 (Eman: "it's not a Pokémon ... a metabolic bubble catch"): the catch icon is a living glass bubble */
+.b3-bub{width:22px;height:22px;border-radius:50%;flex:none;display:inline-block;vertical-align:-5px;margin-right:8px;background:radial-gradient(circle at 32% 27%,rgba(255,255,255,.95) 0 9%,rgba(255,255,255,.35) 15%,transparent 32%),radial-gradient(circle at 50% 50%,rgba(143,231,255,.14) 0 56%,rgba(143,231,255,.5) 74%,rgba(233,203,136,.7) 88%,rgba(255,255,255,.9) 100%);box-shadow:0 0 10px rgba(143,231,255,.55),inset 0 0 4px rgba(255,255,255,.6);animation:bcBreath 2.6s ease-in-out infinite}
+.b3-catch.throw .b3-bub{animation:b3throw .6s cubic-bezier(.3,.7,.3,1) both}
+@keyframes bcBreath{0%,100%{transform:scale(1)}50%{transform:scale(1.09)}}
+@keyframes b3throw{0%{transform:scale(1)}35%{transform:translateY(-18px) scale(1.5)}70%{transform:translateY(-30px) scale(.4);opacity:.4}100%{transform:scale(1);opacity:1}}
 .b3-catch:disabled{opacity:.6}
 .sc-pfn{margin-top:6px;font-size:13px;font-weight:600;letter-spacing:.01em;opacity:.9}
 .b3-have{width:100%;text-align:center;padding:12px;border-radius:16px;background:var(--r2-field);font-weight:650}
@@ -13875,6 +13877,71 @@ html[data-ui=light] .b3-q{background:radial-gradient(circle,#59607a,#2a2f40)}
 .b3-tick{min-height:48px;padding:8px 10px;border-radius:14px;border:1px solid var(--r2-line);background:var(--r2-field);color:inherit;font:inherit;font-size:13.5px;font-weight:600;line-height:1.25;cursor:pointer}
 .b3-tick[aria-pressed=true]{border-color:var(--p2-gold,#caa15a);background:rgba(202,161,90,.18)}
 .b3-man .b3-skip{display:block;margin:6px auto 0}
+/* Oct 23 (Eman: "I would like it so that they don't have to scroll down"): the not-found sheet on one screen, 360px phones included */
+.nf2{padding-top:0}
+.nf2 .b3-name{font-size:19px;line-height:1.2}
+.nf2 .nf-sub{font-size:12.5px;line-height:1.3;color:var(--r2-muted,rgba(255,255,255,.7));margin:3px 0 0}
+.nf2 .nf-bc{font-variant-numeric:tabular-nums;letter-spacing:.02em;opacity:.7;margin-right:6px;white-space:nowrap}
+.nf2 .nf-bc::after{content:" ·"}
+.nf2 .ne-box{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 8px;align-items:center;margin:10px 0 0}
+.nf2 .ne-box>*{grid-column:1/-1}
+.nf2 .ne-box>label{margin:0}
+.nf2 .ne-box>.input,.nf2 .ne-box>input{grid-column:1;grid-row:2;height:46px;min-height:46px;margin:0}
+.nf2 .ne-box>.ne-by{grid-column:2;grid-row:2;width:auto;min-height:46px;height:46px;margin:0;padding:0 14px;font-size:14.5px;border-radius:23px;white-space:nowrap}
+.nf2 .ne-box>.ne-live{grid-row:3}
+.nf2 .ne-chip{min-height:40px;padding:6px 12px}.nf2 .ne-chip small{display:none}.nf2 .ne-chip span{flex:0 1 auto;max-width:46%}.nf2 .ne-chip b{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px;text-align:right}
+.nf2 .b3-fl{margin:10px 0 5px}
+.nf2 .ne-exl{margin-top:12px}
+.nf2 .nf-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:8px}
+.nf2 .b3-nftile{width:100%;min-height:52px;margin:0;padding:6px 10px;gap:8px;border-radius:18px;min-width:0}
+.nf2 .b3-nftile>svg:last-child:not(:first-child){display:none}
+.nf2 .b3-nftile>svg{width:20px;height:20px}
+.nf2 .b3-nftile b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nf2 .b3-nftile small{font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nf2 .nf-ph{border:1px solid rgba(233,203,136,.6);background:rgba(233,203,136,.12);color:#fff;font:inherit;display:flex;align-items:center;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.nf2 .nf-ph span:last-child{flex:1;display:flex;flex-direction:column;line-height:1.25;min-width:0}
+.nf2 .nf-ph:active{transform:scale(.97)}
+.nf2 .nf-cam{width:22px;height:22px;flex:none;border-radius:50%;background:radial-gradient(circle at 32% 27%,rgba(255,255,255,.95) 0 9%,rgba(255,255,255,.35) 15%,transparent 32%),radial-gradient(circle at 50% 50%,rgba(143,231,255,.14) 0 56%,rgba(143,231,255,.5) 74%,rgba(233,203,136,.7) 88%,rgba(255,255,255,.9) 100%);box-shadow:0 0 8px rgba(233,203,136,.45)}
+.nf2 .nf-brand{height:44px;min-height:44px;margin:0}
+.nf2 .b3-mq{margin:10px 0 6px;font-size:13px;line-height:1.3}
+.nf2 .b3-ticks{gap:6px;margin:0}
+.nf2 .b3-tick{min-height:46px;padding:6px 10px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;text-align:left;min-width:0;border-radius:16px;transition:transform .15s,border-color .2s,background .2s}
+.nf2 .b3-tick b{font-size:13.5px;font-weight:650;line-height:1.2}
+.nf2 .b3-tick small{font-size:11px;font-weight:500;opacity:.65;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.nf2 .b3-tick:active{transform:scale(.96)}
+.nf2 .nf-act{position:sticky;bottom:0;z-index:2;display:flex;align-items:center;gap:10px;margin:12px -6px 0;padding:8px 6px 2px;background:linear-gradient(180deg,transparent,var(--r2-sheet,rgba(14,20,40,.96)) 22%)}
+.nf2 .nf-act .b3-catch{flex:1;margin:0;min-height:50px;display:flex;align-items:center;justify-content:center}
+.nf2 .nf-act .b3-skip{flex:none;margin:0;min-height:44px;padding:0 8px;white-space:nowrap}
+.nf2 .b3-tick>b,.nf2 .b3-tick>small{display:block}
+@media (max-height:720px){.nf2 .ne-exl,.nf2 .b3-or{display:none}.nf2 .nf-row{margin-top:6px}.nf2 .nf-brand{margin-top:6px}.nf2 .b3-mq{margin:6px 0 4px}.nf2 .nf-sub{margin-top:1px}.nf2 .b3-tick{min-height:44px;height:44px}.nf2 .nf-act{margin-top:4px;padding-top:6px}.nf2 .ne-box{margin-top:6px;row-gap:5px}.nf2 .ne-box>label{display:none}.nf2 .b3-nftile{min-height:48px}.nf2 .nf-brand{height:42px;min-height:42px}.nf2 .nf-act .b3-catch{min-height:48px}}
+/* the keyboard is open: the sheet sits on top of it and scrolls, the footer stays */
+.b3-ov.nfkb .r2-sh{max-height:calc(100% - 8px)}
+/* a yellow or spike result: no bubble, why, and Skip */
+.b3-nocatch{display:flex;gap:12px;align-items:center;margin:12px 0 8px;padding:12px 14px;border-radius:20px;text-align:left;border:1px solid color-mix(in srgb,var(--b3-spike,#ff6b6b) 45%,transparent);background:color-mix(in srgb,var(--b3-spike,#ff6b6b) 12%,transparent)}
+.b3-nocatch.v-better{border-color:color-mix(in srgb,var(--b3-better,#f3c04f) 45%,transparent);background:color-mix(in srgb,var(--b3-better,#f3c04f) 12%,transparent)}
+.b3-nocatch>div{display:flex;flex-direction:column;gap:2px;line-height:1.3;min-width:0}
+.b3-nocatch b{font-size:15px}
+.b3-nocatch small{font-size:12.5px;opacity:.8}
+.b3-nocatch .nc-ic{position:relative;width:30px;height:30px;flex:none;border-radius:50%;background:radial-gradient(circle at 32% 27%,rgba(255,255,255,.95) 0 9%,rgba(255,255,255,.35) 15%,transparent 32%),radial-gradient(circle at 50% 50%,rgba(143,231,255,.14) 0 56%,rgba(143,231,255,.5) 74%,rgba(233,203,136,.7) 88%,rgba(255,255,255,.9) 100%);opacity:.75;filter:grayscale(.5)}
+.b3-nocatch .nc-ic::after{content:"";position:absolute;left:-3px;right:-3px;top:50%;height:2.5px;margin-top:-1px;border-radius:2px;background:currentColor;opacity:.8;transform:rotate(-40deg)}
+.b3-ncskip{margin-top:4px}
+/* the bubble catch */
+.bc-fx{position:fixed;inset:0;pointer-events:none;z-index:2147483000;overflow:hidden}
+.bc-fx>*{position:absolute;left:0;top:0;will-change:transform,opacity}
+.bc-bubble{width:136px;height:136px;margin:-68px 0 0 -68px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.95) 0 6%,rgba(255,255,255,.3) 11%,transparent 26%),radial-gradient(circle at 72% 80%,rgba(233,203,136,.35),transparent 38%),radial-gradient(circle,rgba(143,231,255,.08) 0 58%,rgba(143,231,255,.4) 74%,rgba(190,160,255,.45) 87%,rgba(255,255,255,.85) 99%);box-shadow:0 0 46px rgba(143,231,255,.55),0 0 90px rgba(233,203,136,.22),inset 0 0 24px rgba(255,255,255,.35)}
+.bc-bubble::before{content:"";position:absolute;inset:-1px;border-radius:50%;background:conic-gradient(from 0deg,rgba(143,231,255,0),rgba(143,231,255,.75),rgba(233,203,136,.85),rgba(199,155,255,.75),rgba(143,231,255,0));-webkit-mask:radial-gradient(circle,transparent 63%,#000 66%,#000 69%,transparent 71%);mask:radial-gradient(circle,transparent 63%,#000 66%,#000 69%,transparent 71%);animation:bcSpin 1.3s linear infinite}
+.bc-in{width:70px;height:70px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;opacity:0}
+.bc-in img{width:100%;height:100%;object-fit:cover}
+.bc-in i{font-style:normal;font-size:44px;line-height:1;filter:drop-shadow(0 4px 10px rgba(0,0,0,.3))}
+.bc-ring{width:136px;height:136px;margin:-68px 0 0 -68px;border-radius:50%;border:2px solid rgba(143,231,255,.85);box-shadow:0 0 18px rgba(143,231,255,.6);opacity:0}
+.bc-ring.r2{border-color:rgba(233,203,136,.8);box-shadow:0 0 18px rgba(233,203,136,.5)}
+.bc-dot{width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border-radius:50%;background:radial-gradient(circle,#fff 0 30%,rgba(143,231,255,.9) 60%,transparent 72%);opacity:0}
+.bc-dot:nth-child(3n){background:radial-gradient(circle,#fff 0 30%,rgba(233,203,136,.95) 60%,transparent 72%)}
+@keyframes bcSpin{to{transform:rotate(360deg)}}
+.b3-caught.bc{position:relative}
+.b3-caught .bc-pop{display:block;width:46px;height:46px;margin:0 auto 6px;border-radius:50%;background:radial-gradient(circle at 32% 27%,rgba(255,255,255,.95) 0 9%,rgba(255,255,255,.35) 15%,transparent 32%),radial-gradient(circle at 50% 50%,rgba(143,231,255,.14) 0 56%,rgba(143,231,255,.5) 74%,rgba(233,203,136,.7) 88%,rgba(255,255,255,.9) 100%);box-shadow:0 0 24px rgba(143,231,255,.55),inset 0 0 8px rgba(255,255,255,.4);animation:bcPop .7s cubic-bezier(.2,.9,.3,1.4) both,bcBreath 2.6s ease-in-out .7s infinite}
+@keyframes bcPop{0%{transform:scale(.2);opacity:0}60%{transform:scale(1.15);opacity:1}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.b3-bub,.bc-bubble::before,.b3-caught .bc-pop{animation:none!important}}
 /* dex */
 .b3-dex .input{background:var(--r2-field);border-color:var(--r2-line);color:var(--r2-ink);font-size:16px}
 .b3-lvl{display:flex;flex-direction:column;gap:5px;margin:12px 0}
@@ -13899,14 +13966,14 @@ html[data-ui=light] .b3-q{background:radial-gradient(circle,#59607a,#2a2f40)}
 .b3-cell.seen .b3-cimg i,.b3-mini.seen .b3-mimg i{filter:grayscale(1) brightness(.4)}
 .b3-cell.seen b{opacity:.65}
 .b3-cell.mine{border-color:color-mix(in srgb,var(--p2-gold,#caa15a) 45%,transparent)}
-@media (prefers-reduced-motion:reduce){.b3-orb,.b3-ring,.b3-laser,.b3-q,.b3-caught,.b3-card.caught,.b3-catch.throw .b3-pb,.b3-stage.show .b3-mfill,.b3-stage.show .b3-mdot,.b3-spin{animation:none!important}}
+@media (prefers-reduced-motion:reduce){.b3-orb,.b3-ring,.b3-laser,.b3-q,.b3-caught,.b3-card.caught,.b3-catch.throw .b3-bub,.b3-stage.show .b3-mfill,.b3-stage.show .b3-mdot,.b3-spin{animation:none!important}}
 </style>
 <script id="r3bjs">
-/* LOWiSPIKE round 3 part B: words for Scan + Pokédex in English, German, Spanish. [en, de, es]; {0} {1} are filled in. */
+/* LOWiSPIKE round 3 part B: words for Scan + Bubble Dex in English, German, Spanish. [en, de, es]; {0} {1} are filled in. */
 const B3_TX = {
   title: ["Scan", "Scan", "Escanear"],
   sub: ["Can I eat this? Front, then back. Done.", "Kann ich das essen? Vorne, dann hinten. Fertig.", "¿Puedo comer esto? Delante, luego detrás. Listo."],
-  dex: ["Pokédex", "Pokédex", "Pokédex"],
+  dex: ["Bubble Dex", "Bubble-Dex", "Bubble Dex"],
   step1: ["Front", "Vorne", "Delante"],
   step2: ["Back + ingredients", "Hinten + Zutaten", "Detrás + ingredientes"],
   hint1: ["Point at the front of the pack", "Halte die Vorderseite in den Rahmen", "Apunta a la parte delantera del paquete"],
@@ -13925,8 +13992,8 @@ const B3_TX = {
   dealsNone: ["No deals yet. Spot one in the shop? Scan it and mark it as a deal.", "Noch keine Angebote. Eins im Laden gesehen? Scannen und als Angebot markieren.", "Aún no hay ofertas. ¿Viste una en la tienda? Escanéala y márcala como oferta."],
   until: ["until {0}", "bis {0}", "hasta {0}"],
   recent: ["Just caught by the community", "Gerade von der Community gefangen", "Recién atrapados por la comunidad"],
-  recentNone: ["Nothing caught yet. Be the first: every product you scan joins the Pokédex.", "Noch nichts gefangen. Sei die Erste oder der Erste: Jedes gescannte Produkt kommt in den Pokédex.", "Aún no hay nada. Sé el primero: cada producto que escaneas entra en el Pokédex."],
-  openDex: ["Open the Pokédex", "Pokédex öffnen", "Abrir el Pokédex"],
+  recentNone: ["Nothing caught yet. Be the first: every insulin-friendly product you catch joins the Bubble Dex.", "Noch nichts gefangen. Sei die Erste oder der Erste: Jedes insulinfreundliche Produkt, das du fängst, kommt in den Bubble-Dex.", "Aún no hay nada. Sé el primero: cada producto apto para la insulina que atrapes entra en el Bubble Dex."],
+  openDex: ["Open the Bubble Dex", "Bubble-Dex öffnen", "Abrir el Bubble Dex"],
   plate: ["A plate, not a product? Snap your plate", "Ein Teller statt Produkt? Teller fotografieren", "¿Un plato y no un producto? Fotografía tu plato"],
   classics: ["All classics", "Alle Klassiker", "Todos los clásicos"],
   privacy: ["Photos stay in the app, not in your camera roll.", "Fotos bleiben in der App, nicht in deiner Galerie.", "Las fotos se quedan en la app, no en tu carrete."],
@@ -13993,7 +14060,7 @@ const B3_TX = {
   price: ["Price €", "Preis €", "Precio €"],
   pricePh: ["1,29", "1,29", "1,29"],
   endQ: ["Until", "Bis", "Hasta"],
-  catch: ["Catch it", "Fangen", "Atrapar"],
+  catch: ["Bubble catch", "Bubble-Fang", "Atrapar en burbuja"],
   catchHave: ["I have it too: catch it", "Hab ich auch: fangen", "Yo también lo tengo: atrapar"],
   dontSave: ["Don't save", "Nicht speichern", "No guardar"],
   needName: ["Give it a name first", "Gib ihm zuerst einen Namen", "Ponle un nombre primero"],
@@ -14007,26 +14074,35 @@ const B3_TX = {
   betterRule: ["LOWiSPIKE suggestion", "LOWiSPIKE-Vorschlag", "Sugerencia LOWiSPIKE"],
   legal: ["Based on the label: ingredients and nutrition per 100 g. It says nothing bad about the brand, only how this product fits the LOWiSPIKE rules. Not medical advice.", "Basierend auf dem Etikett: Zutaten und Nährwerte pro 100 g. Keine Aussage gegen die Marke, nur wie dieses Produkt zu den LOWiSPIKE-Regeln passt. Keine medizinische Beratung.", "Basado en la etiqueta: ingredientes y nutrientes por 100 g. No dice nada malo de la marca, solo cómo encaja este producto con las reglas LOWiSPIKE. No es consejo médico."],
   /* catching */
-  caught: ["Caught!", "Gefangen!", "¡Atrapado!"],
+  caught: ["In the bubble!", "In der Bubble!", "¡En la burbuja!"],
+  /* Oct 23 (Eman: "they can only do this with insulin-friendly products"): the sheet and cards say why a spike gets no bubble */
+  ncT: ["No bubble for this one", "Keine Bubble für dieses", "Sin burbuja para este"],
+  ncS: ["Only insulin-friendly foods go into a bubble. Skip it, or try a swap.", "Nur insulinfreundliche Lebensmittel kommen in eine Bubble. Lass es liegen oder nimm einen Tausch.", "Solo los alimentos aptos para la insulina entran en una burbuja. Sáltalo o prueba un cambio."],
+  ncSkip: ["Skip it", "Liegen lassen", "Saltarlo"],
+  nfSub: ["Friendly foods get a bubble.", "Freundliches kommt in eine Bubble.", "Lo amigable entra en una burbuja."],
+  nfQ: ["Tick what the label lists:", "Tippe an, was auf dem Etikett steht:", "Marca lo que pone la etiqueta:"],
+  nfPh: ["Label photos", "Etikett-Fotos", "Fotos de etiqueta"],
+  nfPhS: ["Nutrition + ingredients", "Nährwerte + Zutaten", "Nutrición + ingredientes"],
+  nfDeepS: ["LOWiSPIKE GPT", "LOWiSPIKE GPT", "GPT de LOWiSPIKE"],
   firstCatch: ["First catch!", "Erster Fang!", "¡Primera captura!"],
-  firstCatchSub: ["Nobody had this one yet. It's in the Pokédex with your name.", "Das hatte noch niemand. Es steht jetzt mit deinem Namen im Pokédex.", "Nadie lo tenía aún. Está en el Pokédex con tu nombre."],
+  firstCatchSub: ["Nobody had this one yet. It's in the Bubble Dex with your name.", "Das hatte noch niemand. Es steht jetzt mit deinem Namen im Bubble-Dex.", "Nadie lo tenía aún. Está en el Bubble Dex con tu nombre."],
   addedSub: ["Added to your collection. First caught by {0}.", "Zu deiner Sammlung hinzugefügt. Zuerst gefangen von {0}.", "Añadido a tu colección. Primero lo atrapó {0}."],
-  already: ["Already in your Pokédex", "Schon in deinem Pokédex", "Ya está en tu Pokédex"],
+  already: ["Already in your Bubble Dex", "Schon in deinem Bubble-Dex", "Ya está en tu Bubble Dex"],
   dealSaved: ["Deal shared with everyone", "Angebot mit allen geteilt", "Oferta compartida con todos"],
   xpFirst: ["First catch", "Erster Fang", "Primera captura"],
   xpCatch: ["Product caught", "Produkt gefangen", "Producto atrapado"],
   xpDeal: ["Deal shared", "Angebot geteilt", "Oferta compartida"],
-  offline: ["You're offline. Connect to add it to the Pokédex.", "Du bist offline. Verbinde dich, um es in den Pokédex zu legen.", "Estás sin conexión. Conéctate para añadirlo al Pokédex."],
+  offline: ["You're offline. Connect to add it to the Bubble Dex.", "Du bist offline. Verbinde dich, um es in den Bubble-Dex zu legen.", "Estás sin conexión. Conéctate para añadirlo al Bubble Dex."],
   failed: ["Couldn't save. Try again.", "Speichern ging nicht. Versuch es nochmal.", "No se pudo guardar. Inténtalo de nuevo."],
   hiddenDup: ["This product is under review after reports.", "Dieses Produkt wird nach Meldungen geprüft.", "Este producto está en revisión tras varios avisos."],
   /* pokédex */
-  dexTitle: ["Supermarket Pokédex", "Supermarkt-Pokédex", "Pokédex del súper"],
+  dexTitle: ["Insulin-friendly Bubble Dex", "Insulinfreundlicher Bubble-Dex", "Bubble Dex apto para la insulina"],
   dexStats: ["You caught {0} · {1} first catches · community {2}", "Du hast {0} gefangen · {1} Erstfänge · Community {2}", "Has atrapado {0} · {1} primeras · comunidad {2}"],
   all: ["All", "Alle", "Todos"],
   mine: ["Mine", "Meine", "Míos"],
-  dexSearch: ["Search the Pokédex", "Pokédex durchsuchen", "Buscar en el Pokédex"],
+  dexSearch: ["Search the Bubble Dex", "Bubble-Dex durchsuchen", "Buscar en el Bubble Dex"],
   dexEmpty: ["Nothing here yet. Scan a product in the shop to catch it.", "Hier ist noch nichts. Scanne ein Produkt im Laden, um es zu fangen.", "Aún no hay nada. Escanea un producto en la tienda para atraparlo."],
-  dexLoading: ["Loading the Pokédex…", "Pokédex wird geladen…", "Cargando el Pokédex…"],
+  dexLoading: ["Loading the Bubble Dex…", "Bubble-Dex wird geladen…", "Cargando el Bubble Dex…"],
   first: ["1st", "1.", "1.º"],
   firstBy: ["First caught by {0}", "Zuerst gefangen von {0}", "Primero lo atrapó {0}"],
   firstByYou: ["First caught by you", "Zuerst von dir gefangen", "Lo atrapaste tú primero"],
@@ -14048,7 +14124,7 @@ const B3_TX = {
   ingr: ["Ingredients", "Zutaten", "Ingredientes"],
   photos: ["Photos", "Fotos", "Fotos"],
   /* typed search */
-  t_comm: ["In the Pokédex", "Im Pokédex", "En el Pokédex"],
+  t_comm: ["In the Bubble Dex", "Im Bubble-Dex", "En el Bubble Dex"],
   t_est: ["Quick estimate", "Schnelle Einschätzung", "Estimación rápida"],
   t_rule: ["LOWiSPIKE rule", "LOWiSPIKE-Regel", "Regla LOWiSPIKE"],
   t_meal: ["Classic meal", "Klassisches Gericht", "Plato clásico"],
@@ -14056,7 +14132,7 @@ const B3_TX = {
   t_offHead: ["From Open Food Facts", "Aus Open Food Facts", "De Open Food Facts"],
   t_offNone: ["Nothing found there either. Scan the pack to add it.", "Dort auch nichts gefunden. Scanne die Packung, um es hinzuzufügen.", "Tampoco hay nada allí. Escanea el paquete para añadirlo."],
   t_offErr: ["Open Food Facts didn't answer. Try again in a moment.", "Open Food Facts antwortet gerade nicht. Gleich nochmal versuchen.", "Open Food Facts no responde. Inténtalo en un momento."],
-  t_none: ["Not in the Pokédex yet. Scan it to be the first.", "Noch nicht im Pokédex. Scanne es und sei die oder der Erste.", "Aún no está en el Pokédex. Escanéalo y sé el primero."],
+  t_none: ["Not in the Bubble Dex yet. Scan it to be the first.", "Noch nicht im Bubble-Dex. Scanne es und sei die oder der Erste.", "Aún no está en el Bubble Dex. Escanéalo y sé el primero."],
   t_meal_go: ["Check it as a meal", "Als Mahlzeit prüfen", "Comprobarlo como comida"],
   scanIt: ["Scan the pack", "Packung scannen", "Escanear el paquete"],
   by: ["by {0}", "von {0}", "de {0}"],
@@ -14079,7 +14155,7 @@ const B3_PICKS = {
 
 /* LOWiSPIKE round 3 part B, extra words (Oct 10, 2026): scanner, camera permission, reveal, rarity, dex levels. [en, de, es] */
 Object.assign(B3_TX, {
-  sub2: ["Your supermarket Pokédex. Scan a barcode, see the spike, catch it.", "Dein Supermarkt-Pokédex. Barcode scannen, Spike sehen, fangen.", "Tu Pokédex del súper. Escanea un código, mira el pico, atrápalo."],
+  sub2: ["Your insulin-friendly Bubble Dex. Scan a barcode, see the spike, catch the friendly ones.", "Dein insulinfreundlicher Bubble-Dex. Barcode scannen, Spike sehen, die freundlichen fangen.", "Tu Bubble Dex apto para la insulina. Escanea un código, mira el pico, atrapa los amigables."],
   scanBig: ["Scan a barcode", "Barcode scannen", "Escanear código"],
   scanBigS: ["Packaged food", "Verpacktes Essen", "Comida envasada"],
   plateBig: ["Snap your plate", "Teller fotografieren", "Foto del plato"],
@@ -14160,12 +14236,12 @@ Object.assign(B3_TX, {
   brandsT: ["Is this brand OK?", "Ist diese Marke OK?", "¿Esta marca está bien?"],
   brandsS: ["Product types checked so far", "Bisher geprüfte Produktarten", "Tipos de producto comprobados"],
   searching: ["Searching…", "Suche…", "Buscando…"],
-  xpDex: ["Pokédex", "Pokédex", "Pokédex"],
-  catchIt2: ["Throw the ball", "Ball werfen", "Lanzar la bola"],
+  xpDex: ["Bubble Dex", "Bubble-Dex", "Bubble Dex"],
+  catchIt2: ["Catch it in a bubble", "In eine Bubble fangen", "Atrápalo en una burbuja"],
   dexNo: ["No.", "Nr.", "N.º"]
 });
 
-/* ===== LOWiSPIKE round 3, part B (Oct 10, 2026): Scan as a supermarket Pokédex =====
+/* ===== LOWiSPIKE round 3, part B (Oct 10, 2026): Scan as a supermarket Bubble Dex =====
    Scan a barcode (live camera, a photo of it, or type the number) or type a product name. The product is looked up
    (shared dex in Supabase, then Open Food Facts). The discovery add-on distinguishes missing evidence,
    provisional label categories and independent review; it makes no individual glucose/insulin predictions.
@@ -14197,7 +14273,7 @@ const IC = {
   go:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
   x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
   chev:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>',
-  dex:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M3 12h6M15 12h6"/><circle cx="12" cy="12" r="3"/></svg>',
+  dex:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12.5" r="8.5"/><path d="M8 9.6a4.6 4.6 0 0 1 3.4-2.3"/><circle cx="17.6" cy="4.6" r="1.6"/><circle cx="20.4" cy="8.4" r=".9"/></svg>', /* Oct 23: a metabolic bubble (was a ball with a band) */
   plate:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/></svg>',
   book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M5 4h10a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h10"/></svg>',
   tag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5"/></svg>',
@@ -14441,6 +14517,7 @@ async function loadComm(force){
   if (commBusy || (!force && Date.now() - (D.commTs || 0) < 45000)) return false; const c = await sb(); if (!c) return false; commBusy = true;
   try { const r = await c.from("products").select(COLS).order("dex", {ascending:false}).limit(400); if (r.error) throw r.error;
     D.comm = (r.data || []).map(fromRow); D.commTs = Date.now(); try { if (window.LowiSpikeCore && LowiSpikeCore.rerateRows) LowiSpikeCore.rerateRows(D.comm); } catch(e){}
+    D.comm = D.comm.filter(x => x.verdict === "ok"); /* Oct 23: the shared Bubble Dex shows insulin-friendly products only (old spike rows wait for the cleanup) */
     const uid = X().state().uid, me = await c.from("product_catches").select("product_id,first,created_at").eq("user_id", uid).limit(2000);
     if (!me.error) (me.data || []).forEach(m => { const p = D.comm.find(x => x.id === m.product_id); if (p && !isMine(p)) D.mine[pkey(p)] = Object.assign(slim(p), {first:!!m.first, ts:Date.parse(m.created_at) || Date.now()}); });
     D.comm.forEach(p => { const m = D.mine[pkey(p)]; if (m) { m.id = p.id; m.dex = p.dex; m.catches = p.catches; } });
@@ -14485,6 +14562,7 @@ function pfAward(p){ const bc = String(p.barcode || "").replace(/\D/g, ""); if (
   D.pf[bc] = {ts:Date.now(), name:String(p.name || "").slice(0, 80), xp}; save(); return xp; }
 async function doCatch(p){
   const k = pkey(p); const was = D.mine[k];
+  if (!p || p.verdict !== "ok") return {pending:false, first:false, nocatch:true}; /* Oct 23: no bubble for anything under Spike */
   if (!p.id && !pfVerifiable(p)) { D.mine[k] = Object.assign(slim(p), {ts:Date.now(), pending:false, localDraft:true, first:false}); save(); return {pending:true, first:false, draft:true}; }
   D.mine[k] = Object.assign(slim(p), {ts:Date.now(), pending:true, first:false}); save();
   const c = await sb(); if (!c) return {pending:true, first:false};
@@ -14501,6 +14579,9 @@ async function pushOne(c, p){
   // Anything else stays a local draft: never publish unreviewed manual claims directly.
   if (!row) {
     if (!pfVerifiable(p)) throw new Error("Unverified product; saved as a local draft.");
+    /* Oct 23 (Eman: "we should focus more on just having a database of insulin-friendly snack products"): only a green verdict
+       is ever published; anything under Spike is found again by search, it doesn't need a row of its own */
+    if (p.verdict !== "ok") throw new Error("Only insulin-friendly products join the shared database.");
     const ins = {barcode:String(p.barcode).replace(/\D/g, ""), name:String(p.name).trim().slice(0, 80), name_key:nkey(p.name) || "product", brand:(p.brand || "").slice(0, 60), cat:p.cat || "other", verdict:p.verdict,
       reason:packWhy(p.why), facts:Object.assign({}, p.facts || {}, {score:p.score || null, est:p.est ? 1 : 0}), ingredients:(p.ingredients || "").slice(0, 3000), front_url:p.img || "", source:"off", caught_by_name:myName().slice(0, 40)};
     const r = await c.from("products").insert(ins).select(COLS).single();
@@ -14512,7 +14593,8 @@ async function pushOne(c, p){
   const full = await c.from("products").select(COLS).eq("id", row.id).limit(1);
   const fp = full.data && full.data[0] ? fromRow(full.data[0]) : null; if (fp) { const i = D.comm.findIndex(x => x.id === fp.id); if (i >= 0) D.comm[i] = fp; else D.comm.unshift(fp); }
   return {first, p:fp}; }
-async function syncPending(c){ const list = Object.values(D.mine).filter(m => m.pending && m.id); for (const m of list) { try { const r = await pushOne(c, m); Object.assign(m, r.p ? slim(r.p) : {}, {pending:false, first:false}); } catch(e){ break; } } if (list.length) save(); }
+async function syncPending(c){ Object.values(D.mine).forEach(m => { if (m.pending && m.verdict !== "ok") m.pending = false; }); /* Oct 23: a non-friendly product stays on this phone only */
+  const list = Object.values(D.mine).filter(m => m.pending && m.id && m.verdict === "ok"); for (const m of list) { try { const r = await pushOne(c, m); Object.assign(m, r.p ? slim(r.p) : {}, {pending:false, first:false}); } catch(e){ break; } } if (list.length) save(); }
 
 /* =====================================================================
    Scan tab
@@ -14845,10 +14927,11 @@ function scActsHTML(p, mine, m){
   const logging = scanForMeal(); /* Oct 21: only a scan opened from Log meal offers "I ate this" (was: every non-shopping scan, ghost) */
   const eat = logging ? '<button type="button" class="r2-btn big sc-eat pri" data-b3="eat">' + esc(sct("ate")) + '</button>' : "";
   let cat = "";
-  if (mine) cat = '<div class="b3-have sc-have">' + esc(sct("caughtHave")) + ' ✓' + (m && (m.pending || m.localDraft) ? '<small>' + esc(m.localDraft ? sct("pfDraft") : t("pending")) + '</small>' : "") + '</div>';
+  if (!mine && p.verdict !== "ok" && p.verdict !== "unknown") cat = noCatchHTML(p, !logging && !!window.LowiBucket); /* Oct 23: no bubble for a non-friendly product (the bucket row already has Skip) */
+  else if (mine) cat = '<div class="b3-have sc-have">' + esc(sct("caughtHave")) + ' ✓' + (m && (m.pending || m.localDraft) ? '<small>' + esc(m.localDraft ? sct("pfDraft") : t("pending")) + '</small>' : "") + '</div>';
   else if (p.id) cat = '<div class="sc-known">' + esc(sct("known")) + (p.byName ? ' <span class="sc-pf">' + esc(sct("pfBy").replace("{n}", p.byName)) + '</span>' : "") + '</div>';
   else if (p.nameEst) cat = '<div class="sc-known sc-new ne-nocatch">' + esc(net("noCatch")) + '</div>'; /* Oct 23: a name guess never goes into the community */
-  else if (pfVerifiable(p)) cat = '<button class="r2-btn' + (logging ? "" : " pri") + ' big b3-catch sc-catch" data-b3="catch" id="b3Catch"><span class="b3-pb" aria-hidden="true"></span>' + esc(sct("pfFirst")) + ' <small>' + esc(pfToday() < PF_DAY ? sct("pfXP").replace("{x}", PF_XP) : sct("pfBadge")) + '</small></button>';
+  else if (pfVerifiable(p)) cat = '<button class="r2-btn' + (logging ? "" : " pri") + ' big b3-catch sc-catch" data-b3="catch" id="b3Catch"><span class="b3-bub" aria-hidden="true"></span>' + esc(sct("pfFirst")) + ' <small>' + esc(pfToday() < PF_DAY ? sct("pfXP").replace("{x}", PF_XP) : sct("pfBadge")) + '</small></button>';
   else cat = '<div class="sc-known sc-new">' + esc(sct("pfNew")) + '<small>' + esc(sct("pfCheckNote")) + '</small></div><button class="r2-btn ghost b3-catch sc-catch" data-b3="catch" id="b3Catch">' + esc(sct("pfSave")) + '</button>';
   /* grocery-1 (Oct 23): a product check (not the Log meal scan) offers Add to bucket / Skip (grocery-bucket.js) */
   const gb = !logging && window.LowiBucket ? LowiBucket.rowHTML(p) : "";
@@ -14898,20 +14981,35 @@ function simpleCardHTML(p){
     '<button type="button" class="sc-lists" data-sc="lists">' + esc(sct("lists")) + '</button></div>'; }
 function actsHTML(p){ const mine = isMine(p);
   if (p.verdict === "unknown") return "";
+  if (!mine && p.verdict !== "ok") return '<div class="b3-acts">' + noCatchHTML(p) + '</div>'; /* Oct 23: catching is for insulin-friendly products only */
   return '<div class="b3-acts">' + (mine ? '<div class="b3-have">' + esc(t("already")) + (D.mine[pkey(p)] && D.mine[pkey(p)].pending ? '<small>' + esc(t("pending")) + '</small>' : "") + '</div>' :
     p.id ? '<div class="sc-known">' + esc(sct("known")) + (p.byName ? ' <span class="sc-pf">' + esc(sct("pfBy").replace("{n}", p.byName)) + '</span>' : "") + '</div>' : /* Oct 19: Catch only for products the community doesn't have yet */
-    '<button class="r2-btn pri big b3-catch" data-b3="catch" id="b3Catch"><span class="b3-pb" aria-hidden="true"></span>' + esc(pfVerifiable(p) ? sct("pfFirst") : t("catch")) + '</button>' +
+    '<button class="r2-btn pri big b3-catch" data-b3="catch" id="b3Catch"><span class="b3-bub" aria-hidden="true"></span>' + esc(pfVerifiable(p) ? sct("pfFirst") : t("catch")) + '</button>' +
     '<button class="r2-link b3-skip" data-b3="close">' + esc(t("dontSave")) + '</button>') +
     (p.id ? '<button class="r2-link b3-rep" data-b3="report">' + esc(t("report")) + '</button>' : "") + '</div>'; }
-function manualHTML(p){
-  return '<div class="b3-man"><div class="b3-name">' + esc(t(p.offline ? "noReach" : "notFound")) + '</div><div class="small muted">' + esc(p.offline ? t("noReachS") : t("notFoundS")) + '</div>' +
-    (p.barcode ? '<div class="tiny dim" style="margin-top:6px">' + esc(t("bcFound", p.barcode)) + '</div>' : "") + nameBoxHTML(p) +
-    (p.offline ? "" : '<div class="tiny dim b3-fl ne-exl">' + esc(net("exact")) + '</div>') +
-    (p.offline ? "" : deepLink("b3-nfdeep", 'id="b3NfDeep"', t("deepNf"), t("deepNfS")) +
-      (typeof lpAskHTML === "function" ? lpAskHTML(p) : "") + '<div class="tiny dim b3-fl b3-or">' + esc(t("orAdd")) + '</div>') +
-    '<input class="input" id="b3MBrand" maxlength="60" style="margin-top:8px" placeholder="' + esc(t("brandPh")) + '" value="' + esc(p.brand || "") + '">' +
-    '<div class="small b3-mq">' + esc(t("manualQ")) + '</div><div class="b3-ticks">' + ["sugar", "sweet", "carb", "none"].map(k => '<button class="b3-tick" data-b3="tick" data-k="' + k + '" aria-pressed="false">' + esc(t("m_" + k)) + '</button>').join("") + '</div>' +
-    '<button class="r2-btn pri big b3-catch" data-b3="mcatch" id="b3MCatch" disabled><span class="b3-pb" aria-hidden="true"></span>' + esc(t("catch")) + '</button><button class="r2-link b3-skip" data-b3="close">' + esc(t("dontSave")) + '</button></div>'; }
+/* Oct 23 (Eman: "they can only do this with insulin-friendly products"): a yellow or spike result gets no bubble. It shows why,
+   a Skip button and, when there is one, the best swap; nothing goes into the shared database or the Bubble Dex. */
+function noCatchHTML(p, noSkip){
+  let sw = ""; try { if (!p.nameEst && !p.noSwap) sw = nameSwapHTML(p); } catch(e){ sw = ""; } /* a name verdict card already shows its swap */
+  return '<div class="b3-nocatch v-' + esc(p.verdict || "spike") + '" role="status"><span class="nc-ic" aria-hidden="true"></span><div><b>' + esc(t("ncT")) + '</b><small>' + esc(t("ncS")) + '</small></div></div>' + sw +
+    (noSkip ? "" : '<button type="button" class="r2-btn ghost big b3-ncskip" data-b3="skip">' + esc(t("ncSkip")) + '</button>'); }
+/* Oct 23 (Eman: "I would like it so that they don't have to scroll down"): the not-found sheet fits one screen. Barcode in the
+   sub line, name + Analyze in one row, Deep analyze and Label photos as two tiles in one row, ticks as two-line chips, and
+   Don't save + Bubble catch side by side in a footer that stays above the keyboard. */
+function nfTick(k){ const s = t("m_" + k), i = s.indexOf(" ("); const a = i > 0 ? s.slice(0, i) : s, b = i > 0 ? s.slice(i + 2).replace(/\)$/, "") : "";
+  return '<button class="b3-tick" data-b3="tick" data-k="' + k + '" aria-pressed="false" aria-label="' + esc(s) + '"><b>' + esc(a) + '</b>' + (b ? '<small>' + esc(b) + '</small>' : "") + '</button>'; }
+function nfPhotoHTML(p){ const has = typeof lpAskHTML === "function" && lpAskHTML(p); if (!has) return "";
+  return '<button type="button" class="b3-nftile nf-ph" data-b3="lphoto"><span class="nf-cam" aria-hidden="true"></span><span><b>' + esc(t("nfPh")) + '</b><small>' + esc(t("nfPhS")) + '</small></span></button>'; }
+function manualHTML(p){ const off = !!p.offline;
+  return '<div class="b3-man nf2">' +
+    '<div class="b3-name">' + esc(t(off ? "noReach" : "notFound")) + '</div><div class="nf-sub">' + (p.barcode ? '<span class="nf-bc">' + esc(p.barcode) + '</span>' : "") + esc(off ? t("noReachS") : t("nfSub")) + '</div>' +
+    nameBoxHTML(p) +
+    (off ? "" : '<div class="tiny dim b3-fl ne-exl">' + esc(net("exact")) + '</div>' +
+      '<div class="nf-row">' + deepLink("b3-nfdeep b3-nftile", 'id="b3NfDeep"', t("deepNf"), t("nfDeepS")) + nfPhotoHTML(p) + '</div>' +
+      '<div class="tiny dim b3-fl b3-or">' + esc(t("orAdd")) + '</div>') +
+    '<input class="input nf-brand" id="b3MBrand" maxlength="60" placeholder="' + esc(t("brandPh")) + '" value="' + esc(p.brand || "") + '"' + (off ? ' style="margin-top:10px"' : "") + '>' +
+    '<div class="small b3-mq">' + esc(t("nfQ")) + '</div><div class="b3-ticks">' + ["sugar", "sweet", "carb", "none"].map(nfTick).join("") + '</div>' +
+    '<div class="nf-act"><button class="r2-link b3-skip" data-b3="close">' + esc(t("dontSave")) + '</button><button class="r2-btn pri big b3-catch" data-b3="mcatch" id="b3MCatch" disabled><span class="b3-bub" aria-hidden="true"></span>' + esc(t("catch")) + '</button></div></div>'; }
 /* prod-verdict (Oct 14, 2026): a product picked anywhere (Cook > Products shuffle) opens this same verdict card.
    Label facts it is missing are filled from Open Food Facts by exact barcode only, never guessed; what stays missing is said plainly. */
 const ENR = {}, FILLK = ["c", "s", "f", "p"];
@@ -15003,7 +15101,8 @@ function manualReady(){ if (!REV) return; const n = ($("#b3MName", REV) || {}).v
 async function catchCur(btn, p){
   if (!p || btn.disabled) return; btn.disabled = true; btn.classList.add("throw"); sfx("tap");
   const rev = REV;
-  const res = await doCatch(p);
+  const fx = bubbleFX(btn, p); /* Oct 23: the metabolic bubble catch */
+  const res = await doCatch(p); await fx;
   /* BH-018 sibling: the catch waits on the server. If you closed this product's card, or scanned the next product meanwhile, REV is
      another product's card: the old code stamped "caught" on it, and a manual add even painted the old product over the new card
      (while "I ate this" still logged the new one). The reward is still paid; the burst only goes into the card that asked for it. */
@@ -15014,12 +15113,49 @@ async function catchCur(btn, p){
   try { window.dispatchEvent(new CustomEvent("lowi:product-caught", {detail:{product:slim(Object.assign({}, p, m)), verdict:p.verdict, xp:cxp}})); } catch(e){}
   sfx(first ? "catchFirst" : "catch"); buzz(first ? [30, 60, 30, 60, 80] : [30, 50, 40]);
   const acts = here && btn.closest(".b3-acts, .b3-man"); const card = here && $("#b3Card", here);
-  const burst = '<div class="b3-caught' + (first ? " first" : "") + '"><div class="b3-cbig">' + esc(first ? sct("pfWin") : t("caught")) + '</div><div class="small">' + esc(first ? sct("pfWinSub") : res.draft ? sct("pfDraft") : res.pending ? t("pending") : m.byName && m.byName !== myName() ? t("addedSub", m.byName) : t("inYours")) + '</div>' + (cxp ? '<div class="sc-xp">+' + cxp + ' XP</div>' : "") + (first ? '<div class="sc-pfn">' + esc(pfCountText()) + '</div>' : "") +
+  const burst = '<div class="b3-caught bc' + (first ? " first" : "") + '"><span class="bc-pop" aria-hidden="true"></span><div class="b3-cbig">' + esc(first ? sct("pfWin") : t("caught")) + '</div><div class="small">' + esc(first ? sct("pfWinSub") : res.draft ? sct("pfDraft") : res.pending ? t("pending") : m.byName && m.byName !== myName() ? t("addedSub", m.byName) : t("inYours")) + '</div>' + (cxp ? '<div class="sc-xp">+' + cxp + ' XP</div>' : "") + (first ? '<div class="sc-pfn">' + esc(pfCountText()) + '</div>' : "") +
     '<button class="r2-btn ghost" data-b3="dex" style="margin-top:12px">' + esc(t("openDex")) + '</button></div>';
   if (acts && acts.classList.contains("b3-man")) { const q = Object.assign({}, p, m); const st = here && $(".b3-rev", here); if (st) st.innerHTML = '<div class="b3-stage show">' + cardHTML(q, false) + burst + swapsHTML(q) + '</div>'; }
   else if (acts) { acts.outerHTML = burst; if (card && m.dex) { const no = $(".b3-no", card); if (no) no.textContent = t("dexNo") + " " + String(m.dex).padStart(3, "0"); } }
   if (card) card.classList.add("caught");
   if (curTab() === "scan") renderTab(); }
+/* Oct 23 (Eman: "it's not a Pokémon ... a metabolic bubble catch ... with a really nice animation"): a glass bubble rises out of
+   the button, the product drops inside, the bubble seals with a wobble and a ring of light, then floats up into the Bubble Dex.
+   About 1.2 s; the save runs underneath it. Reduced motion: no animation. */
+function bubbleFX(btn, p){
+  if (RM() || !btn || !document.body.animate) return Promise.resolve();
+  try {
+    const r = btn.getBoundingClientRect(), W = innerWidth, Hh = innerHeight;
+    const sx = r.left + r.width / 2, sy = r.top + r.height / 2, cx = W / 2, cy = Math.max(110, Math.min(Hh * .42, sy - 150));
+    const fx = document.createElement("div"); fx.className = "bc-fx"; fx.setAttribute("aria-hidden", "true");
+    const inner = p && p.img ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(p.img) + '">' : '<i>' + esc((p && CAT_E[p.cat]) || CAT_E.other || "🌿") + '</i>';
+    fx.innerHTML = '<div class="bc-ring"></div><div class="bc-ring r2"></div><div class="bc-bubble"><div class="bc-in">' + inner + '</div></div>' + Array.from({length:12}, () => '<b class="bc-dot"></b>').join("");
+    document.body.appendChild(fx);
+    const at = (x, y, sc) => "translate(" + x + "px," + y + "px) scale(" + sc + ")";
+    const bub = fx.querySelector(".bc-bubble"), inn = fx.querySelector(".bc-in"), D = 1500, E = "cubic-bezier(.3,.7,.3,1)";
+    bub.animate([{transform:at(sx, sy, .12), opacity:0}, {transform:at(cx, cy, 1.12), opacity:1, offset:.3}, {transform:at(cx, cy, "0.92,1.08"), offset:.42},
+      {transform:at(cx, cy, "1.06,0.95"), offset:.52}, {transform:at(cx, cy, 1), offset:.62}, {transform:at(cx, cy - 34, 1), opacity:1, offset:.8},
+      {transform:at(cx, cy - 150, .22), opacity:0}], {duration:D, easing:E, fill:"forwards"});
+    inn.animate([{transform:"scale(1.9) translateY(60px)", opacity:0}, {transform:"scale(1.9) translateY(60px)", opacity:0, offset:.18}, {transform:"scale(.9)", opacity:1, offset:.42}, {transform:"scale(1)", opacity:1}], {duration:D * .62, easing:E, fill:"forwards"});
+    fx.querySelectorAll(".bc-ring").forEach((g, i) => g.animate([{transform:at(cx, cy, 1), opacity:0}, {transform:at(cx, cy, 1), opacity:.95, offset:.05}, {transform:at(cx, cy, 2.1 + i * .5), opacity:0}], {duration:700 + i * 180, delay:620 + i * 120, easing:"cubic-bezier(.2,.8,.3,1)", fill:"both"}));
+    fx.querySelectorAll(".bc-dot").forEach((d, i) => { const a = i / 12 * Math.PI * 2 + .3, L = 74 + (i % 3) * 22;
+      d.animate([{transform:at(cx, cy, .4), opacity:0}, {transform:at(cx, cy, 1), opacity:1, offset:.15}, {transform:at(cx + Math.cos(a) * L, cy + Math.sin(a) * L, .2), opacity:0}], {duration:720, delay:640 + (i % 4) * 30, easing:"cubic-bezier(.15,.8,.3,1)", fill:"both"}); });
+    try { buzz([12, 40, 18]); } catch(e){}
+    setTimeout(() => { try { fx.remove(); } catch(e){} }, D + 200);
+    return new Promise(res => setTimeout(res, 1150));
+  } catch(e){ return Promise.resolve(); } }
+/* Oct 23: a yellow or spike result from the not-found sheet: show its card (verdict, why, swap) with "No bubble for this one" and
+   Skip. Nothing is saved: not to the shared database, not to the Bubble Dex on this phone. */
+function nfNoCatch(p){ sfx("soft"); try { buzz(20); } catch(e){} reveal(p, true); }
+/* Oct 23: with the keyboard open the not-found sheet sits on top of it (visualViewport), so Bubble catch and the field stay in view */
+function nfKb(){
+  const ov = REV, vv = window.visualViewport; if (!ov || !vv) return;
+  const nf = $(".nf2", ov), a = document.activeElement, on = !!nf && !!a && nf.contains(a) && /^(INPUT|TEXTAREA)$/.test(a.tagName) && innerHeight - vv.height > 120;
+  if (on) { ov.classList.add("nfkb"); ov.style.top = Math.round(vv.offsetTop) + "px"; ov.style.height = Math.round(vv.height) + "px";
+    clearTimeout(nfKb.t); nfKb.t = setTimeout(() => { try { a.scrollIntoView({block:"nearest"}); } catch(e){} }, 60); }
+  else if (ov.classList.contains("nfkb")) { ov.classList.remove("nfkb"); ov.style.top = ""; ov.style.height = ""; } }
+if (window.visualViewport) { visualViewport.addEventListener("resize", nfKb); visualViewport.addEventListener("scroll", nfKb); }
+document.addEventListener("focusin", () => setTimeout(nfKb, 30)); document.addEventListener("focusout", () => setTimeout(nfKb, 120));
 
 /* =====================================================================
    The dex: everything the community caught, yours in colour, the rest as silhouettes
@@ -15092,7 +15228,9 @@ document.addEventListener("click", e => {
       const r = rate(base); if (r.verdict === "unknown") r.verdict = "ok"; const est = (NE() ? NE().estimate(name, {brand:base.brand, rate:nameRate}) : null) || rateName(name);
       /* Oct 23 (plantain chips + "None of these" came out green): the name check is a floor, the stricter of the two wins */
       const p = Object.assign(base, {verdict:r.verdict, why:r.why, score:r.score, est:true}); if (est && NRK[est.verdict] > (NRK[r.verdict] || 0)) { p.verdict = est.verdict; p.why = est.why; p.score = est.score != null ? est.score : NSC[est.verdict]; }
-      delete p.manual; CUR = p; catchCur(b, p); break; }
+      delete p.manual; CUR = p;
+      if (p.verdict !== "ok") { nfNoCatch(Object.assign({}, p, {manual:man})); break; } /* Oct 23: no bubble for anything under Spike, and nothing saved */
+      catchCur(b, p); break; }
     case "close": if (REV) R2.close(REV); break;
     case "report": if (CUR && CUR.id) reportSheet(CUR); break;
     case "plate": { try { const ci = document.getElementById("camInput"); if (ci) { ci.click(); break; } } catch(x){} break; }
@@ -17668,7 +17806,7 @@ html[data-ui=light] .pf-hd .pf-x{background:#eef1f7!important;color:#161c2e;box-
 </style>
 <script id="pfjs">
 /* ===== LOWiSPIKE popups (Oct 10, 2026): close button always reachable, swipe down to close =====
-   Shared by every bottom sheet: R2 sheets (.r2-ov, e.g. "Is this brand OK?", member profiles, edit profile, Pokédex),
+   Shared by every bottom sheet: R2 sheets (.r2-ov, e.g. "Is this brand OK?", member profiles, edit profile, Bubble Dex),
    the classic #sheet (post menu, check-in, reminders) and the cart #rsSheet.
    - The drag handle and the close button sit in a sticky header, so they never scroll away and never sit under the notch.
    - Drag the handle/header down, or drag the content down while it is scrolled to the top, to close.

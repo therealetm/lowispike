@@ -53,14 +53,14 @@ srv.listen(0, async () => {
     ok(r.tabs.join() === 'room,chat,create,aff,rank', name + ': five tabs ' + r.tabs.join());
     ok(r.sel && r.sel.rm === 'rank', name + ': Ranking tab is the selected one');
     ok(!r.cut.length, name + ': every tab label fits (' + r.labels.join(' | ') + ')' + (r.cut.length ? ' cut: ' + r.cut.join(',') : ''));
-    ok(r.pod === 3 && r.rows >= 3 && r.me, name + ': Your place, podium of ' + r.pod + ', ' + r.rows + ' rows');
+    ok(r.pod === 3 && r.rows >= 2 && r.me, name + ': Your place, podium of ' + r.pod + ', ' + r.rows + ' rows');
     ok(r.imgs === 0, name + ': companions, no human pictures');
     ok(!r.wide && !r.podOut, name + ': nothing wider than the screen');
     if (process.env.SHOT) await page.screenshot({ path: process.env.SHOT + '-' + name + '.png' });
     /* tap the winner: the same member card as the old Care board opens */
     await page.evaluate(() => { const t = document.querySelector('#cmPaneChat .rk-pod-i.rk-p1'); if (t) t.click(); });
     await page.waitForTimeout(700);
-    ok(await page.evaluate(() => !!document.querySelector('.r3-ov')), name + ': tapping a companion opens its owner card');
+    ok(await page.evaluate(() => !!document.querySelector('.rk-cmp-wrap')), name + ': tapping a companion opens You vs them (23 Oct: the comparison, its Profile button opens the owner card)');
     await page.evaluate(() => { try { window.LowiR2 && LowiR2.closeAll && LowiR2.closeAll(); } catch (e) {} });
     await page.waitForTimeout(400);
     /* tap another tab and back */

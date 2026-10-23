@@ -241,7 +241,7 @@ test('page: the sun is the app\'s own sun icon, labelled "sunbeams", when the ic
 
 test('layout: one type scale, names stay on one line, game motion with a reduced-motion fallback', () => {
   const css = R('ranking.css');
-  assert.match(css, /\.rk \.rk-cn\{font:700 15px\/1\.2 inherit;font-family:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis\}/);
+  assert.match(css, /\.rk \.rk-cn\{font-weight:700;font-size:15px;line-height:1\.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis\}/);
   for (const k of ['rk-rise', 'rk-pop', 'rk-slide', 'rk-glow', 'rk-grow', 'rk-slam']) assert.match(css, new RegExp('@keyframes ' + k + '\\{'), k);
   assert.match(css, /@media \(prefers-reduced-motion:reduce\)/);
 });

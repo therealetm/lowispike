@@ -855,6 +855,8 @@
        not inside the old herb-world card. Oct 16 simple spike card: scanning no longer catches on its own; the user chooses
        Catch it (saved to the spike lists, XP for spiky and non-spiky alike). No GPT card stacked on the result. */
     async function captureProduct(p) {
+        /* Oct 23: a product the label can't rate gets the verdict from its name first, so Misty blooms or wilts like any scan */
+        try { if (p && window.LowiDex && LowiDex.nameEst) p = LowiDex.nameEst(p) || p; } catch (e) { /* keep p */ }
         if (opened) close(true);
         cancelCapture();
         await flight(p.img || p.photo);

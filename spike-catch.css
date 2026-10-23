@@ -122,3 +122,43 @@
 .sc-known small { flex-basis: 100%; font-weight: 500; font-size: 13px; color: #b9d4ff; }
 .sc-pf { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 13px; font-weight: 700; color: #1b1300; background: linear-gradient(135deg, #ffe08a, #f7b733); box-shadow: 0 0 12px rgba(247, 183, 51, .45); }
 .sc-pf::before { content: ""; width: 12px; height: 12px; border-radius: 50%; border: 2px solid currentColor; box-sizing: border-box; background: radial-gradient(circle, currentColor 0 2px, transparent 2.5px); }
+
+/* Oct 23 name check: the name verdict on top, how sure, the best swap, then the scan's own data or "no detailed data".
+   Same living glass as the verdict bubble; the swap breathes slowly like the other living bubbles. */
+.ne-est { display: flex; flex-direction: column; gap: 6px; margin-top: -6px; padding: 10px 14px; border-radius: 18px; border: 1px solid rgba(160, 220, 255, .28); background: rgba(10, 22, 50, .5); }
+.ne-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font: 500 13.5px/1.3 var(--sc-font); color: #b9d4ff; }
+.ne-row b { color: #fff; font-weight: 700; text-align: right; overflow-wrap: anywhere; }
+.ne-dish { list-style: none; margin: 2px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.ne-dish li { display: flex; flex-direction: column; font-size: 13px; color: #dce9ff; }
+.ne-dish li b { color: #fff; }
+.ne-fb { font-size: 12px; color: #a9c2e8; }
+.ne-swap { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 22px; border: 1.5px solid rgba(110, 230, 170, .6); color: #fff;
+    background: radial-gradient(120% 90% at 18% 0%, rgba(255, 255, 255, .16), rgba(255, 255, 255, 0) 52%), linear-gradient(160deg, rgba(60, 200, 140, .22), rgba(12, 80, 70, .4));
+    box-shadow: inset 0 0 16px rgba(140, 255, 200, .22), 0 8px 22px -12px rgba(40, 200, 140, .6); animation: neBreathe 4.8s ease-in-out infinite; }
+.ne-swap > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.ne-swap small { font: 650 11.5px/1 var(--sc-font); letter-spacing: .06em; text-transform: uppercase; color: #bff5da; }
+.ne-swap b { font: 750 16px/1.25 var(--sc-font); color: #fff; overflow-wrap: anywhere; }
+.ne-sn { font-size: 12.5px; color: #dcf7ea; }
+.ne-se { font-size: 30px; line-height: 1; flex: none; }
+.ne-go { flex: none; min-height: 40px; padding: 0 14px; border-radius: 20px; border: 1px solid rgba(190, 255, 225, .7); background: rgba(255, 255, 255, .14); color: #fff; font: 700 13.5px/1 var(--sc-font); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.ne-nodata .ne-ndh { margin: 0; display: flex; flex-direction: column; gap: 4px; font-size: 13.5px; line-height: 1.35; color: #c9dcf7 !important; }
+.ne-nodata .ne-ndh b { color: #fff !important; font-size: 14.5px; }
+.ne-exact { display: flex; flex-direction: column; gap: 6px; padding-top: 8px; border-top: 1px solid rgba(160, 220, 255, .18); }
+.ne-exact small { font: 650 11.5px/1 var(--sc-font); letter-spacing: .06em; text-transform: uppercase; color: #b9d4ff !important; }
+.ne-exact p { margin: 0; }
+.ne-tick { align-self: flex-start; }
+.ne-nocatch { font-size: 13px; line-height: 1.35; text-align: center; }
+.ne-box { display: flex; flex-direction: column; gap: 8px; margin: 12px 0 6px; text-align: left; }
+.ne-live:empty { display: none; }
+.ne-chip { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 48px; padding: 8px 14px; border-radius: 24px; border: 1.5px solid rgba(160, 220, 255, .5); background: rgba(10, 30, 70, .35); color: inherit; font: 600 14px/1.2 var(--sc-font, inherit); text-align: left; cursor: pointer; animation: neBreathe 4.8s ease-in-out infinite; }
+.ne-chip i { width: 12px; height: 12px; border-radius: 50%; flex: none; background: #8fe7ff; box-shadow: 0 0 10px currentColor; }
+.ne-chip.v-ok i { background: #4fe39a; color: #4fe39a; } .ne-chip.v-better i { background: #f3c04f; color: #f3c04f; } .ne-chip.v-spike i { background: #ff6b6b; color: #ff6b6b; }
+.ne-chip span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ne-chip small { font-size: 11px; opacity: .7; flex: none; }
+.ne-wait, .ne-none { font-size: 13.5px; line-height: 1.35; padding: 10px 12px; border-radius: 16px; background: rgba(10, 30, 70, .25); display: flex; flex-direction: column; gap: 4px; }
+.ne-none small { opacity: .75; }
+.ne-by { width: 100%; }
+.ne-sgo { margin: 8px 0 4px; }
+.ne-exl { margin-top: 10px; text-transform: uppercase; letter-spacing: .06em; }
+@keyframes neBreathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.012); } }
+@media (prefers-reduced-motion: reduce) { .ne-swap, .ne-chip { animation: none; } }

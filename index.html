@@ -3990,8 +3990,8 @@ const FOODS = [
   {id:"oil", n:"olive oil", g:"fat", r:"ja", k:["olive oil","olivenol","butter","oil","ol","ghee","pesto"]},
   // fruit
   {id:"berries", n:"berries", g:"berry", r:"ja", k:["berries","beeren","strawberries","erdbeeren","blueberries","heidelbeeren","blaubeeren","raspberries","himbeeren","blackberries","brombeeren","lemon","zitrone","lime","limette"]},
-  {id:"fruit", n:"fruit", g:"slow", r:"selten", k:["apple","apfel","pear","birne","orange","orangen","grapes","trauben","kiwi","peach","pfirsich","melon","melone","pineapple","ananas","fruit","obst"], sub:{n:"a small handful of berries", line:"A small handful of berries instead of a big portion of sweet fruit"}},
-  {id:"sugarfruit", n:"sweet fruit", g:"sugarfruit", r:"nein", k:["banana","bananen","banane","mango","dates","datteln","dried fruit","trockenobst","raisins","rosinen","plantain","kochbanane"], m:"banana", sub:{n:"a small handful of berries", line:"A small handful of berries instead of banana, mango or dates"}},
+  {id:"fruit", n:"fruit", g:"slow", r:"selten", k:["apple","apfel","pear","birne","orange","orangen","kiwi","peach","pfirsich","melon","melone","fruit","obst"], sub:{n:"a small handful of berries", line:"A small handful of berries instead of a big portion of sweet fruit"}},
+  {id:"sugarfruit", n:"sweet fruit", g:"sugarfruit", r:"nein", k:["banana","bananen","banane","mango","dates","datteln","dried fruit","trockenobst","raisins","rosinen","plantain","kochbanane","grapes","grape","trauben","weintrauben","tafeltrauben","uvas","pineapple","ananas","piña"], m:"banana", sub:{n:"a small handful of berries", line:"A small handful of berries instead of banana, mango, grapes or dates"}}, /* Oct 23: grapes and pineapple are NEIN in Master Knowledge v3 */
   // drinks
   {id:"water", n:"water", g:"drink", r:"ja", k:["water","wasser","sparkling water","sprudel","mineralwasser","tea","tee","coffee","kaffee","espresso","black coffee","matcha","americano"]},
   {id:"zero", n:"zero or diet drink", g:"zero", r:"nein", k:["cola zero","coke zero","pepsi max","diet coke","diet cola","cola light","zero","diet soda","sweetener","sussstoff","sugar free","zuckerfrei","keto cookie","keto cookies","zero syrup"], sub:{n:"cucumber-mint sparkling water", line:"Cucumber-mint sparkling water instead of the zero or diet version"}},
@@ -13709,6 +13709,7 @@ html.b3-camon,html.b3-camon body{overflow:hidden}
 .b3-chint.warn{color:#ffb4a8}
 .b3-ctype .input{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2);color:#fff;font-variant-numeric:tabular-nums;letter-spacing:.03em}
 .b3-ctype .input::placeholder{color:rgba(255,255,255,.55);letter-spacing:0}
+.b3-nmtype .input{font-variant-numeric:normal;letter-spacing:0}.b3-nmlive:empty{display:none}.b3-nmlive .ne-chip{color:#fff;background:rgba(10,30,70,.55);min-height:44px}
 .b3-cam .b3-pill{color:#fff;background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2)}
 .b3-cam .b3-pill svg{color:#e9cb88}
 /* Oct 15: scanner bottom bar: actions, then Deep analyze. Closing is only the round X at the top (no Back bar) */
@@ -14289,7 +14290,110 @@ function rateName(name){ const k = nkey(name) + " " + String(name || "").toLower
   if (f && f.verdict) { const v = K.SCALE[f.verdict], rk = {ok:0, better:1, spike:2};
     if (!hit || rk[v] > rk[hit.verdict]) return {verdict:v, why:[["fk", f.rules[0]], ["w_name"]], score:{ok:14, better:45, spike:74}[v], est:true}; }
   return hit; }
-function whyText(w){ const k = w[0]; if (k === "fk") return window.LowiFoodKnowledge ? LowiFoodKnowledge.reasonText(w[1], (window.LowiLang && LowiLang.get && LowiLang.get()) || "en") : ""; if (!B3_TX[k]) return window.LowiSpikeCore ? LowiSpikeCore.text(w, LI()) : ""; return t.apply(null, [k].concat(w.slice(1).map(x => typeof x === "number" ? String(x).replace(".", LI() ? "," : ".") : String(x).charAt(0).toUpperCase() + String(x).slice(1)))); }
+function whyText(w){ const k = w[0]; if (k === "nx") return String(w[1] || ""); if (k === "ai_name") return String(w[1] || ""); if (k === "fk") return window.LowiFoodKnowledge ? LowiFoodKnowledge.reasonText(w[1], (window.LowiLang && LowiLang.get && LowiLang.get()) || "en") : ""; if (!B3_TX[k]) return window.LowiSpikeCore ? LowiSpikeCore.text(w, LI()) : ""; return t.apply(null, [k].concat(w.slice(1).map(x => typeof x === "number" ? String(x).replace(".", LI() ? "," : ".") : String(x).charAt(0).toUpperCase() + String(x).slice(1)))); }
+/* Oct 23 name check (Emmanuel scanned "Tafel-Trauben kernlos, Klasse I": the scanner knew the name but showed only "Add label
+   photos / tick sugar..."): "If the app knows the name, it should still give an analysis. Typing Trauben or Erdbeere too."
+   Name verdict first (same animation as a normal scan), the best swap under it, then what the scan itself found, or a
+   "No detailed data" note with label photos as the optional way to make it exact. name-estimate-core.js does the matching.
+   Honest: only when the label has nothing to rate, never friendlier than a matched word, medium confidence at best. */
+const NE = () => window.LowiNameEstimate;
+const NEL = () => ["en", "de", "es"][LI()] || "en";
+const net = k => NE() ? NE().text(k, NEL()) : k;
+const NRK = {ok:0, better:1, spike:2}, NSC = {ok:14, better:45, spike:74};
+function scanHasData(p){ const f = p && p.facts; return !!(f && ["c", "s", "p", "f", "k", "fi"].some(k => f[k] != null && f[k] !== "")) || !!(p && p.ingredients && String(p.ingredients).trim().length > 2); }
+function mealRead(q){ try { const m = typeof analyseMeal === "function" ? analyseMeal(String(q), {}) : null; return m && m.ok ? m : null; } catch(e){ return null; } }
+/* the app's own rules for one name: LowiDex.rateName (food list + Master Knowledge v3) and the typed-meal engine; stricter wins */
+function nameRate(q){
+  let a = rateName(q);
+  const m = mealRead(q), v = m && ({ja:"ok", selten:"better", nein:"spike"})[m.r];
+  if (v && (!a || NRK[v] > NRK[a.verdict])) a = {verdict:v, why:(m.why && m.why[0] ? [["nx", m.why[0]]] : []).concat(a ? a.why || [] : []).slice(0, 3), score:NSC[v], est:true};
+  return a;
+}
+function withNameEst(p){
+  if (!p || p.noNameEst || !NE() || (p.verdict && p.verdict !== "unknown") || scanHasData(p) && p.verdict !== "unknown") return p;
+  const nm = String(p.name || "").trim(); if (nm.length < 2) return p;
+  const e = NE().estimate(nm, {brand:p.brand, rate:nameRate});
+  return e ? Object.assign({}, p, e, {notFound:false, partial:false}) : p;
+}
+const capw = s => String(s || "").charAt(0).toUpperCase() + String(s || "").slice(1);
+function nameEstHTML(p){ const e = p.nameEst; if (!e) return "";
+  const rows = [];
+  if (e.how !== "name" && e.hit) rows.push([net("read"), capw(e.hit)]);
+  rows.push([net("how"), e.conf === "medium" ? net("medium") : net("low")]);
+  const ai = e.how === "ai" && e.dishes && e.dishes.length ? '<ul class="ne-dish">' + e.dishes.map(d => '<li><b>' + esc(capw(d.name)) + '</b><span>' + esc([d.portion || (d.grams ? d.grams + " g" : ""), d.kcal ? Math.round(d.kcal) + " kcal" : "", d.carbs != null ? Math.round(d.carbs) + " g " + ["carbs", "KH", "HC"][LI()] : "", d.sugar != null ? Math.round(d.sugar) + " g " + ["sugar", "Zucker", "azúcar"][LI()] : ""].filter(Boolean).join(" · ")) + '</span></li>').join("") + '</ul>' : "";
+  return '<div class="ne-est" data-ne="' + esc(e.how) + '">' + rows.map(r => '<div class="ne-row"><span>' + esc(r[0]) + '</span><b>' + esc(r[1]) + '</b></div>').join("") + ai + (e.fb ? '<div class="ne-fb tiny dim">' + esc(net("fallback")) + '</div>' : "") + '</div>'; }
+/* the best swap for what you're about to buy: the typed-meal swap (often a Recipe Book recipe), else a better community product */
+function nameSwap(p){
+  if (p.verdict === "ok") return {ok:true};
+  const q = (p.nameEst && p.nameEst.how !== "ai" ? p.nameEst.hit : "") || p.name || "";
+  const m = mealRead(String(q).split(", ")[0]) || mealRead(p.name || "");
+  const sw = m && m.swap;
+  if (sw && sw.n) { let rb = null; try { rb = sw.rb && typeof RECIPE_BOOK !== "undefined" && typeof norm === "function" ? RECIPE_BOOK.find(b => norm(b.n) === norm(sw.rb)) : null; } catch(e){ rb = null; }
+    /* no recipe named: a Recipe Book recipe built on the swap's main food (berries -> Lemon Ricotta Berry Cups) */
+    try { if (!rb && typeof RECIPE_BOOK !== "undefined") { const st = String(sw.n).toLowerCase().split(/[^a-z]+/).filter(w => w.length >= 5).map(w => w.replace(/ies$/, "y").replace(/s$/, "")); rb = st.length ? RECIPE_BOOK.find(b => st.some(w => String(b.n).toLowerCase().indexOf(w) >= 0)) || null : null; } } catch(e){ rb = null; }
+    return {e:sw.e || "🌿", n:sw.n, r:sw.r || "ja", rb}; }
+  try { const alt = Object.values(D.comm || {}).find(x => x && x.verdict === "ok" && x.cat && x.cat === p.cat && pkey(x) !== pkey(p)); if (alt) return {e:CAT_E[alt.cat] || "🌿", n:alt.name, prod:alt}; } catch(e){}
+  return null;
+}
+function nameSwapHTML(p){ const s = nameSwap(p); if (!s) return "";
+  if (s.ok) return '<div class="ne-swap ok"><span class="ne-se">🌿</span><div><small>' + esc(net("swap")) + '</small><b>' + esc(net("swapOk")) + '</b></div></div>';
+  const go = s.rb ? '<button type="button" class="ne-go" data-b3="nercp" data-r="' + esc(s.rb.id) + '">' + esc(net("open")) + ' ›</button>' : s.prod ? '<button type="button" class="ne-go" data-b3="neprod" data-k="' + esc(pkey(s.prod)) + '">' + esc(net("show")) + ' ›</button>' : "";
+  return '<div class="ne-swap"><span class="ne-se">' + esc(s.e) + '</span><div><small>' + esc(net("swap")) + (s.rb ? " · " + esc(net("recipe")) : "") + '</small><b>' + esc(s.rb ? s.rb.n : s.n) + '</b>' + (s.rb && s.n && s.n !== s.rb.n ? '<span class="ne-sn">' + esc(s.n) + '</span>' : "") + '</div>' + go + '</div>'; }
+function noDataHTML(p){
+  if (scanHasData(p)) return "";
+  return '<section class="sc-sec ne-nodata"><h4>' + esc(net("scanData")) + '</h4><p class="ne-ndh"><b>' + esc(net("nodata")) + '</b>' + esc(net("nodataS")) + '</p>' +
+    '<div class="ne-exact"><small>' + esc(net("exact")) + '</small><p class="tiny dim">' + esc(net("exactS")) + '</p>' + (p.offline ? "" : lpAskHTML(Object.assign({}, p, {verdict:"unknown"}))) +
+    '<button type="button" class="r2-btn ghost ne-tick" data-b3="netick">' + esc(net("tick")) + '</button></div></section>'; }
+/* the name box in the "not found / no data" sheet: type a name, see the verdict live, Analyze by name */
+function nameBoxHTML(p){
+  return '<div class="ne-box"><label class="tiny dim b3-fl" for="b3MName">' + esc(t("nameQ")) + '</label><input class="input" id="b3MName" maxlength="80" autocomplete="off" placeholder="' + esc(net("typeHint")) + '" value="' + esc(p.name || "") + '">' +
+    '<div class="ne-live" id="b3NeLive" aria-live="polite">' + (p.neNone ? '<div class="ne-none">' + esc(net("none")) + (p.neFb ? '<small>' + esc(net("fallback")) + '</small>' : "") + '</div>' : liveHTML(p.name || "", p.brand || "")) + '</div>' +
+    '<button type="button" class="r2-btn pri big ne-by" data-b3="nebyname">' + esc(net("analyse")) + '</button></div>'; }
+function liveHTML(q, brand){
+  q = String(q || "").trim(); if (q.length < 2 || !NE()) return "";
+  const e = NE().estimate(q, {brand, rate:nameRate}); if (!e) return "";
+  return '<button type="button" class="ne-chip v-' + e.verdict + '" data-b3="nebyname"><i></i><span>' + esc(capw(e.nameEst.how === "name" ? q : e.nameEst.hit)) + '</span><b>' + esc(sct(e.verdict)) + '</b><small>' + esc(net("est")) + '</small></button>'; }
+let neT = 0;
+function neLive(){ clearTimeout(neT); neT = setTimeout(() => { if (!REV) return; const box = $("#b3NeLive", REV), n = $("#b3MName", REV), b = $("#b3MBrand", REV); if (box && n) box.innerHTML = liveHTML(n.value, b ? b.value : ""); }, 220); }
+/* show a name result exactly like a normal scan: Misty's flight and bloom/wilt (LowiSpirit), the companion's reaction, sound, card */
+async function showNameResult(p){
+  if (window.LowiSpirit && LowiSpirit.captureProduct && !p.noFlight) { try { await LowiSpirit.captureProduct(p); return; } catch(e){} }
+  reveal(p);
+}
+async function nameResult(q, base){
+  let p = withNameEst(base), fb = false;
+  if (p.nameEst) return {p, fb};
+  let e = null;
+  try { const ai = window.LowiFoodAI && LowiFoodAI.analyseName ? await LowiFoodAI.analyseName(q, {lang:NEL()}) : null; e = ai ? NE().fromAI(ai, {rate:nameRate, name:q}) : null; } catch(err){ fb = true; }
+  return {p:e ? Object.assign({}, base, e) : null, fb};
+}
+async function analyseTyped(q, btn){
+  q = String(q || "").trim(); if (q.length < 2 || NE_BUSY) return;
+  NE_BUSY = true; if (btn) { btn.disabled = true; btn.textContent = net("analysing"); }
+  const base = {name:q, brand:"", typed:true, notFound:false, verdict:"unknown", why:[], score:null};
+  const r = await nameResult(q, base);
+  NE_BUSY = false; if (btn) btn.disabled = false;
+  if (NS_OV) { try { R2.close(NS_OV); } catch(e){} NS_OV = null; }
+  if (r.p) { sfx("tap"); await showNameResult(r.p); return; }
+  reveal({notFound:true, name:q, typed:true, neNone:true, neFb:r.fb}, true);
+}
+let NE_BUSY = false;
+async function analyseByName(btn){
+  if (NE_BUSY || !REV) return;
+  const n = $("#b3MName", REV), q = n ? n.value.trim() : ""; if (q.length < 2) { n && n.focus(); return; }
+  const br = ($("#b3MBrand", REV) || {}).value || "";
+  const base = Object.assign({}, CUR || {}, {name:q, brand:br.trim() || (CUR && CUR.brand) || "", notFound:false, partial:false, offline:false, manual:false, verdict:"unknown", why:[], score:null, nameEst:null});
+  let p = withNameEst(base);
+  if (!p.nameEst) {
+    const live = $("#b3NeLive", REV); NE_BUSY = true; if (btn) btn.disabled = true; if (live) live.innerHTML = '<div class="ne-wait">' + esc(net("analysing")) + '</div>';
+    const r = await nameResult(q, base), e = r.p, fb = r.fb;
+    NE_BUSY = false; if (btn) btn.disabled = false;
+    if (!REV) return;
+    if (!e) { const l2 = $("#b3NeLive", REV); if (l2) l2.innerHTML = '<div class="ne-none">' + esc(net("none")) + (fb ? '<small>' + esc(net("fallback")) + '</small>' : "") + '</div>'; return; }
+    p = e;
+  }
+  sfx("tap"); await showNameResult(p);
+}
 function packWhy(why){ let s = JSON.stringify(why || []); while (s.length > 400 && why.length) { why = why.slice(0, -1); s = JSON.stringify(why); } return s; }
 function unpackWhy(s){ try { const a = JSON.parse(s || "[]"); return Array.isArray(a) ? a.filter(x => Array.isArray(x) && typeof x[0] === "string") : []; } catch(e){ return []; } }
 
@@ -14418,7 +14522,7 @@ function renderTab(){
     '<button type="button" data-b3="mode" data-mode="meal" aria-pressed="'+meal+'">'+esc(modeLabel('Meal photo','Essensfoto','Foto de comida'))+'</button></div>'+
     '<button class="b3-capture-go" data-b3="'+(meal?'plate':'scan')+'" id="b3ScanBtn"><span class="b3-capture-icon">'+(meal?IC.plate:IC.bc)+'</span><b>'+esc(t(meal?'plateBig':'scanBig'))+'</b><small>'+esc(t(meal?'plateBigS':'scanBigS'))+'</small></button>'+
     (!meal?'<div class="b3-two"><button class="b3-pill" data-b3="photo" id="b3PhotoBtn">'+IC.cam+'<span>'+esc(t('photoBc'))+'</span></button><button class="b3-pill" data-b3="typebc" id="b3TypeBtn">'+IC.key+'<span>'+esc(t('typeBc'))+'</span></button></div>':'<p class="b3-meal-hint small">'+esc(modeLabel('Use your camera or choose a photo.','Kamera öffnen oder Foto auswählen.','Usa la cámara o elige una foto.'))+'</p>')+'</section>'+
-    '<form class="b3-type" id="b3NameF" autocomplete="off"><input class="input" id="b3Name" aria-label="'+esc(modeLabel('Find a product','Produkt suchen','Buscar producto'))+'" placeholder="'+esc(modeLabel('Or find a product…','Oder Produkt suchen…','O busca un producto…'))+'" enterkeyhint="search" maxlength="80"><button class="b3-go" aria-label="'+esc(t('check'))+'">'+IC.go+'</button></form><div id="b3NameOut" role="status"></div>'+
+    '<form class="b3-type" id="b3NameF" autocomplete="off"><input class="input" id="b3Name" aria-label="'+esc(modeLabel('Find a product','Produkt suchen','Buscar producto'))+'" placeholder="'+esc(modeLabel('Or type a food or product name…','Oder Lebensmittel oder Produkt eintippen…','O escribe un alimento o producto…'))+'" enterkeyhint="search" maxlength="80"><button class="b3-go" aria-label="'+esc(t('check'))+'">'+IC.go+'</button></form><div id="b3NameOut" role="status"></div>'+
     '<button class="b3-prog" data-b3="dex" id="b3Prog"><span class="b3-ball" aria-hidden="true">'+IC.dex+'</span><span class="b3-pt"><span class="tiny gold">'+esc(t('dexTitle'))+'</span><b>'+esc(modeLabel('Open field guide','Feldführer öffnen','Abrir guía'))+'</b><small>'+st.mine+' '+esc(modeLabel('caught','entdeckt','descubiertos'))+' · '+st.comm+' '+esc(modeLabel('in the community','in der Community','en la comunidad'))+'</small></span>'+IC.chev+'</button>'+
     '<div class="b3-library"><button class="b3-pill" data-b3="classics">'+IC.book+'<span>'+esc(t('classics'))+'</span></button><button class="b3-pill" data-b3="brands">'+IC.tag+'<span>'+esc(t('brandsT'))+'</span></button></div></div>';
   $("#b3NameF").addEventListener("submit", e => { e.preventDefault(); nameSearch($("#b3Name").value); });
@@ -14435,11 +14539,13 @@ const curTab = () => { try { return typeof TAB !== "undefined" ? TAB : ""; } cat
 let NS_SEQ = 0, NS_OV = null;
 async function nameSearch(q){ q = String(q || "").trim(); const out = $("#b3NameOut"); if (!out) return; const my = ++NS_SEQ; if (q.length < 2) { out.innerHTML = ""; return; }
   out.innerHTML = '<div class="small muted b3-sr">' + esc(t("searching")) + '</div>';
-  const found = await searchName(q), est = rateName(q);
+  const found = await searchName(q), ne = window.LowiNameEstimate ? window.LowiNameEstimate.estimate(q, {rate:nameRate}) : null, est = ne || rateName(q); /* Oct 23: the same name check as the scanner */
   if (my !== NS_SEQ) return;
   let h = "";
   if (found.length) h += '<div class="tiny dim b3-sh">' + esc(t("t_comm")) + '</div><div class="b3-strip">' + found.map(cardMini).join("") + '</div>';
-  if (est) h += '<div class="b3-est v-' + est.verdict + '"><span class="b3-vb v-' + est.verdict + '">' + esc(t("vl_" + est.verdict)) + '</span><div><div class="tiny dim">' + esc(t("t_est")) + '</div><b>' + esc(q) + '</b><div class="small">' + esc(whyText(est.why[0])) + '</div><div class="tiny dim">' + esc(t("w_name")) + '</div></div></div>';
+  if (est) h += '<div class="b3-est v-' + est.verdict + '"><span class="b3-vb v-' + est.verdict + '">' + esc(t("vl_" + est.verdict)) + '</span><div><div class="tiny dim">' + esc(t("t_est")) + '</div><b>' + esc(q) + '</b><div class="small">' + esc(est.why && est.why[0] ? whyText(est.why[0]) : "") + '</div><div class="tiny dim">' + esc(t("w_name")) + '</div></div></div>';
+  /* Oct 23: the full result (verdict, animation, best swap) from a typed name; no match -> Analyze by name */
+  h += '<button type="button" class="r2-btn pri big ne-by ne-sgo" data-b3="nesearch" data-q="' + esc(q) + '">' + esc((est ? ["Show the analysis", "Analyse anzeigen", "Ver el análisis"] : ["Analyze by name", "Nach Namen analysieren", "Analizar por nombre"])[LI()]) + '</button>';
   if (!found.length && !est) h += '<div class="small muted b3-sr">' + esc(t("t_none")) + '</div>';
   if (window.LowiDiscovery) h += '<button class="r2-btn ghost" data-dg="new">' + esc(["Document a product label", "Produktetikett dokumentieren", "Documentar etiqueta"][LI()]) + '</button>';
   h += '<div class="b3-two"><button class="b3-pill" data-b3="scan">' + IC.bc + '<span>' + esc(t("scanIt")) + '</span></button><button class="b3-pill" data-b3="asmeal" data-q="' + esc(q) + '">' + IC.plate + '<span>' + esc(t("t_meal_go")) + '</span></button></div>';
@@ -14500,6 +14606,8 @@ function openScanner(mode){
     '<div class="b3-cmsg" id="b3CMsg"></div>' +
     '<div class="b3-cbot"><div class="b3-chint" id="b3Hint">' + esc(t("aim")) + '</div>' +
       '<form class="b3-type b3-ctype" id="b3BcF" autocomplete="off"><input class="input" id="b3Bc" inputmode="numeric" pattern="[0-9]*" maxlength="14" placeholder="' + esc(t("bcPh")) + '" enterkeyhint="go"><button class="b3-go" aria-label="' + esc(t("check")) + '">' + IC.go + '</button></form>' +
+      /* Oct 23 name check: the food-name field next to the barcode field. A typed food or product name gets its verdict straight away */
+      '<form class="b3-type b3-ctype b3-nmtype" id="b3NmF" autocomplete="off"><input class="input" id="b3Nm" maxlength="80" autocomplete="off" aria-label="' + esc(net("typeName")) + '" placeholder="' + esc(net("typeName")) + '…" enterkeyhint="go"><button class="b3-go" aria-label="' + esc(net("analyse")) + '">' + IC.go + '</button></form><div class="b3-nmlive" id="b3NmLive" aria-live="polite"></div>' +
       camBar() + '</div>';
   /* Oct 16 in-store scan: shopping mode (from Shop / the cart) opens as its own full-screen layer, not inside Misty's world */
   if(window.LowiSpirit && mode !== "shop"){LowiSpirit.scannerHost().appendChild(el);el.removeAttribute("aria-modal");}else { document.body.appendChild(el); if (mode === "shop") el.classList.add("lv-solo"); } document.documentElement.classList.add("b3-camon");
@@ -14509,6 +14617,7 @@ function openScanner(mode){
   if (window.LowiShopScan) shopMode(mode === "shop" ? LowiShopScan.want(mode) : false);
   kbWire(el);
   $("#b3BcF", el).addEventListener("submit", e => { e.preventDefault(); const v = $("#b3Bc", el).value, c = validCode(v); if (!c) { msg(t("bcBad"), "warn"); sfx("error"); return; } found(c); });
+  camNameWire(el); /* Oct 23 name check */
   requestAnimationFrame(() => el.classList.add("on"));
   if (mode === "type") { el.classList.add("typing"); setTimeout(() => { const i = $("#b3Bc", el); if (i) i.focus(); }, 120); msgState("type"); return; }
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { msgState("nocam"); return; }
@@ -14524,7 +14633,7 @@ function kbFit(){ if (!CAM) return; const el = CAM.el, i = $("#b3Bc", el), vv = 
   const kb = on && vv ? Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)) : 0;
   el.classList.toggle("kb", on); el.style.setProperty("--b3kb", kb + "px"); if (on) el.classList.add("typing"); }
 function kbWire(el){ const i = $("#b3Bc", el); if (!i) return; const f = () => requestAnimationFrame(kbFit);
-  i.addEventListener("focus", () => { f(); setTimeout(kbFit, 320); setTimeout(kbFit, 650); }); i.addEventListener("blur", () => setTimeout(kbFit, 60));
+  [i, $("#b3Nm", el)].filter(Boolean).forEach(x => { x.addEventListener("focus", () => { f(); setTimeout(kbFit, 320); setTimeout(kbFit, 650); }); x.addEventListener("blur", () => setTimeout(kbFit, 60)); });
   if (!window.__b3kbVV && window.visualViewport) { window.__b3kbVV = 1; visualViewport.addEventListener("resize", f); visualViewport.addEventListener("scroll", f); } }
 /* Oct 16 (E-man: "I scan it and I just quickly want to see if it's estimated to spike my insulin or not. Then I put it into my cart"):
    shopping mode. The same camera and barcode reading; a hit holds the scan (the stream stays on) and shop-scan.js shows one big
@@ -14533,6 +14642,21 @@ function shopMode(on){ if (!CAM) return false; CAM.shop = !!on; CAM.el.classList
   const tt = $(".b3-ctitle", CAM.el); if (tt) tt.textContent = CAM.shop && window.LowiShopScan ? LowiShopScan.title() : t("scanBig"); return CAM.shop; }
 function shopResume(){ if (!CAM) return; CAM.hold = false; CAM.done = false; CAM.el.classList.remove("got"); if (CAM.lastHit) CAM.lastHit.at = performance.now();
   if (CAM.stream) { msgState("live"); msg(t("aim")); cancelAnimationFrame(CAM.raf); loop(); } }
+/* Oct 23 name check in the camera: type a name (grapes, Erdbeeren, a product name), see the verdict live under the field, then
+   Go gives the full result like a scan: Misty's spike animation, the verdict on top, the best swap, then "no detailed data". */
+let CNT = 0;
+function camNameWire(el){ const f = $("#b3NmF", el), i = $("#b3Nm", el), live = $("#b3NmLive", el); if (!f || !i) return;
+  i.addEventListener("input", () => { clearTimeout(CNT); CNT = setTimeout(() => { if (live) live.innerHTML = liveHTML(i.value, "").replace('data-b3="nebyname"', 'data-b3="camname"'); }, 220); });
+  f.addEventListener("submit", e => { e.preventDefault(); camName(i.value); }); }
+async function camName(q){
+  q = String(q || "").trim(); if (!CAM) return; if (q.length < 2) { const i = $("#b3Nm", CAM.el); if (i) i.focus(); return; } if (NE_BUSY) return;
+  const base = {name:q, brand:"", typed:true, notFound:false, verdict:"unknown", why:[], score:null};
+  let p = withNameEst(base), fb = false;
+  if (!p.nameEst) { NE_BUSY = true; msg(net("analysing")); const r = await nameResult(q, base); NE_BUSY = false; p = r.p; fb = r.fb; }
+  if (!CAM) return;
+  CAM.done = true; stopStream(); buzz(30); closeScanner(true);
+  if (p) { sfx("check"); await showNameResult(p); return; }
+  reveal({notFound:true, name:q, typed:true, neNone:true, neFb:fb}, true); }
 function msg(text, kind){ const m = CAM && $("#b3Hint", CAM.el); if (m) { m.textContent = text; m.className = "b3-chint" + (kind ? " " + kind : ""); } }
 function msgState(s){ if (!CAM) return; const m = $("#b3CMsg", CAM.el); CAM.el.dataset.st = s;
   /* no camera (blocked, none, didn't start): Misty-blue glass card, a blue Try again and typing the number as the clear way round;
@@ -14598,7 +14722,7 @@ async function found(code){ if (!CAM) return;
   CAM.done = true; stopStream(); buzz(30); sfx("check");
   CAM.el.classList.add("got"); msgState("lookup"); msg(t("bcFound", code));
   let p = null; try { p = await byBarcode(code); } catch(e){}
-  if (p && !p.notFound && window.LowiSpirit) { closeScanner(true); await LowiSpirit.captureProduct(p); return; }
+  if (p && !p.notFound && window.LowiSpirit) { closeScanner(true); await LowiSpirit.captureProduct(withNameEst(p)); return; }
   if (p && !p.notFound && window.LowiVitalsBridge) LowiVitalsBridge.complete("vitamin","scan:"+code,{amt:5,perDay:5,label:"Product scanned"});
   /* Oct 20 food audit: no answer at all (p null: weak signal, time out) is "couldn't check", not "not in any database" */
   closeScanner(); reveal(p || {barcode:code, notFound:true, offline:true}); }
@@ -14706,6 +14830,7 @@ function scActsHTML(p, mine, m){
   let cat = "";
   if (mine) cat = '<div class="b3-have sc-have">' + esc(sct("caughtHave")) + ' ✓' + (m && (m.pending || m.localDraft) ? '<small>' + esc(m.localDraft ? sct("pfDraft") : t("pending")) + '</small>' : "") + '</div>';
   else if (p.id) cat = '<div class="sc-known">' + esc(sct("known")) + (p.byName ? ' <span class="sc-pf">' + esc(sct("pfBy").replace("{n}", p.byName)) + '</span>' : "") + '</div>';
+  else if (p.nameEst) cat = '<div class="sc-known sc-new ne-nocatch">' + esc(net("noCatch")) + '</div>'; /* Oct 23: a name guess never goes into the community */
   else if (pfVerifiable(p)) cat = '<button class="r2-btn' + (logging ? "" : " pri") + ' big b3-catch sc-catch" data-b3="catch" id="b3Catch"><span class="b3-pb" aria-hidden="true"></span>' + esc(sct("pfFirst")) + ' <small>' + esc(pfToday() < PF_DAY ? sct("pfXP").replace("{x}", PF_XP) : sct("pfBadge")) + '</small></button>';
   else cat = '<div class="sc-known sc-new">' + esc(sct("pfNew")) + '<small>' + esc(sct("pfCheckNote")) + '</small></div><button class="r2-btn ghost b3-catch sc-catch" data-b3="catch" id="b3Catch">' + esc(sct("pfSave")) + '</button>';
   /* grocery-1 (Oct 23): a product check (not the Log meal scan) offers Add to bucket / Skip (grocery-bucket.js) */
@@ -14742,13 +14867,14 @@ function simpleCardHTML(p){
   return '<div class="b3-card sc-card v-' + v + '" id="b3Card">' +
     '<div class="sc-top"><div class="sc-img">' + (p.img ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(p.img) + '">' : '<i>' + (CAT_E[p.cat] || CAT_E.other) + '</i>') + '</div>' +
     '<div class="sc-nm"><div class="b3-name">' + esc(p.name) + '</div>' + (p.brand ? '<div class="sc-brand">' + esc(p.brand) + (p.facts && p.facts.q ? " · " + esc(p.facts.q) : "") + '</div>' : "") + '</div></div>' +
-    '<div class="sc-verd v-' + v + '" role="status"><small>' + esc(sct("est")) + '</small><strong>' + esc(sct(v)) + '</strong>' + (why[0] ? '<span>' + esc(why[0]) + '</span>' : "") + '</div>' +
-    (window.LowiFoodCard ? LowiFoodCard.cardHTML(p, LI(), g) : "") + /* scanfe-g1: verdict, why, serving, quality, better choice */
-    (window.LowiNutriStats ? LowiNutriStats.portionHTML(p) : "") +
+    '<div class="sc-verd v-' + v + (p.nameEst ? " ne-v" : "") + '" role="status"><small>' + esc(p.nameEst ? net(p.nameEst.how === "ai" ? "ai" : "est") : sct("est")) + '</small><strong>' + esc(sct(v)) + '</strong>' + (why[0] ? '<span>' + esc(why[0]) + '</span>' : "") + '</div>' +
+    (p.nameEst ? nameEstHTML(p) + nameSwapHTML(p) + noDataHTML(p) : "") + /* Oct 23: name verdict, best swap, then the scan's own data or "no detailed data" */
+    (p.nameEst && !scanHasData(p) ? "" : (window.LowiFoodCard ? LowiFoodCard.cardHTML(p, LI(), g) : "")) + /* scanfe-g1: verdict, why, serving, quality, better choice */
+    (p.nameEst && !scanHasData(p) ? "" : (window.LowiNutriStats ? LowiNutriStats.portionHTML(p) : "")) +
     '<section class="sc-sec sc-prices"><h4>' + esc(sct("cheaper")) + '</h4>' + (storeCmp || '<p class="sc-none">' + esc(sct("noPrices")) + '</p>') + '</section>' +
     scActsHTML(p, mine, m) +
     '<details class="sc-more" open><summary>' + esc(sct("details")) + '</summary>' +
-      (why.length ? '<ul class="b3-why">' + why.map(w => '<li>' + esc(w) + '</li>').join("") + '</ul>' : "") + (window.LowiFoodCard ? LowiFoodCard.detailsHTML(p, LI(), g) : "") + factsHTML(p.facts) + fillNoteHTML(p) + (typeof lpAskHTML === "function" ? lpAskHTML(p) : "") +
+      (why.length ? '<ul class="b3-why">' + why.map(w => '<li>' + esc(w) + '</li>').join("") + '</ul>' : "") + (window.LowiFoodCard ? LowiFoodCard.detailsHTML(p, LI(), g) : "") + factsHTML(p.facts) + fillNoteHTML(p) + (p.nameEst ? "" : typeof lpAskHTML === "function" ? lpAskHTML(p) : "") +
       '<div class="tiny dim b3-meta">' + [p.id ? (p.catches > 1 ? t("catches", p.catches) : t("catches1")) : "", p.barcode ? t("bcFound", p.barcode) : "", p.source === "off" ? t("r_off") : ""].filter(Boolean).map(esc).join(" · ") + '</div>' +
       (window.LowiDiscovery ? '<button type="button" class="r2-link b3-label" data-b3="label">' + esc(["Label details & evidence", "Etikett-Details & Belege", "Detalles de la etiqueta"][LI()]) + '</button>' : "") +
       '<div class="tiny dim b3-legal">' + esc(t("legal")) + '</div></details>' + deals +
@@ -14762,10 +14888,10 @@ function actsHTML(p){ const mine = isMine(p);
     (p.id ? '<button class="r2-link b3-rep" data-b3="report">' + esc(t("report")) + '</button>' : "") + '</div>'; }
 function manualHTML(p){
   return '<div class="b3-man"><div class="b3-name">' + esc(t(p.offline ? "noReach" : "notFound")) + '</div><div class="small muted">' + esc(p.offline ? t("noReachS") : t("notFoundS")) + '</div>' +
-    (p.barcode ? '<div class="tiny dim" style="margin-top:6px">' + esc(t("bcFound", p.barcode)) + '</div>' : "") +
+    (p.barcode ? '<div class="tiny dim" style="margin-top:6px">' + esc(t("bcFound", p.barcode)) + '</div>' : "") + nameBoxHTML(p) +
+    (p.offline ? "" : '<div class="tiny dim b3-fl ne-exl">' + esc(net("exact")) + '</div>') +
     (p.offline ? "" : deepLink("b3-nfdeep", 'id="b3NfDeep"', t("deepNf"), t("deepNfS")) +
       (typeof lpAskHTML === "function" ? lpAskHTML(p) : "") + '<div class="tiny dim b3-fl b3-or">' + esc(t("orAdd")) + '</div>') +
-    '<label class="tiny dim b3-fl">' + esc(t("nameQ")) + '</label><input class="input" id="b3MName" maxlength="80" placeholder="' + esc(t("namePh")) + '" value="' + esc(p.name || "") + '">' +
     '<input class="input" id="b3MBrand" maxlength="60" style="margin-top:8px" placeholder="' + esc(t("brandPh")) + '" value="' + esc(p.brand || "") + '">' +
     '<div class="small b3-mq">' + esc(t("manualQ")) + '</div><div class="b3-ticks">' + ["sugar", "sweet", "carb", "none"].map(k => '<button class="b3-tick" data-b3="tick" data-k="' + k + '" aria-pressed="false">' + esc(t("m_" + k)) + '</button>').join("") + '</div>' +
     '<button class="r2-btn pri big b3-catch" data-b3="mcatch" id="b3MCatch" disabled><span class="b3-pb" aria-hidden="true"></span>' + esc(t("catch")) + '</button><button class="r2-link b3-skip" data-b3="close">' + esc(t("dontSave")) + '</button></div>'; }
@@ -14823,9 +14949,11 @@ function fillHerb(root){
 function eatCur(btn){
   const p = CUR; if (!p || !window.LowiVitalsBridge || btn.disabled) return; btn.disabled = true;
   const meta = LV_B3[scView(p, scServing(p)).verdict] || LV_B3[p.verdict] || ["", 0]; /* scanfe-g2: the level for the amount you ate */
-  const code = String(p.code || p.barcode || "");
-  const res = LowiVitalsBridge.logMeal({id:"bc:" + (code || "x") + ":" + Date.now(), t:p.name || p.brand || "Produkt", macros:(window.LowiNutriStats ? LowiNutriStats.logMacros(p) : null), via:"barcode", code, lvl:meta[0]});
-  if (res && res.log && !res.dup) { res.log.lvl = meta[0]; res.log.r = meta[1]; res.log.code = code; try { LowiVitalsBridge.save(); } catch(e){} }
+  const code = String(p.code || p.barcode || (p.nameEst ? "name:" + String(p.name || "").toLowerCase().replace(/\s+/g, " ").trim().slice(0, 60) : ""));
+  const ne = p.nameEst && !scanHasData(p); /* Oct 23: a name estimate counts like a typed meal, marked as an estimate with its confidence */
+  const neLog = ne ? {id:"bc:" + (code || "x") + ":" + Date.now(), t:p.name || p.brand || "Produkt", macros:null, via:"name", code, lvl:meta[0], est:"name"} : null;
+  const res = LowiVitalsBridge.logMeal(neLog ? neLog : {id:"bc:" + (code || "x") + ":" + Date.now(), t:p.name || p.brand || "Produkt", macros:(window.LowiNutriStats ? LowiNutriStats.logMacros(p) : null), via:"barcode", code, lvl:meta[0]});
+  if (res && res.log && !res.dup) { res.log.lvl = meta[0]; res.log.r = meta[1]; res.log.code = code; if (ne) { res.log.est = "name"; res.log.conf = p.nameEst.conf || "low"; } try { LowiVitalsBridge.save(); } catch(e){} }
   buzz(12); sfx(res && res.dup ? "tap" : "soft");
   const text = res && res.dup ? res.reason : ["Logged", "Eingetragen", "Registrado"][LI()] + (res && !res.xp && res.reason ? " · " + res.reason.split(" · ").slice(1).join(" · ") : "");
   if (REV) { try { R2.close(REV); } catch(e){} }
@@ -14836,10 +14964,12 @@ function eatCur(btn){
 function reveal(p, quiet){
   if (REV) { try { R2.close(REV); } catch(e){} REV = null; }
   if (p && !p.notFound && !p.verdict) { p = Object.assign({}, p); }
+  if (p && p.nameEst && scanHasData(p)) { p = Object.assign({}, p, {nameEst:null, verdict:"unknown", why:[], score:null}); } /* Oct 23: label data arrived, the name guess goes */
   /* Oct 16: always re-rate with the current spike estimator, so older saved verdicts (e.g. a vegetable pan rated as a drink) are corrected */
-  if (p && !p.notFound && !p.manual && window.LowiSpikeCore) { const r = rate(p); if (r.verdict !== "unknown") { p = Object.assign({}, p, {verdict:r.verdict, why:r.why, score:r.score, est:true}); }
+  if (p && !p.notFound && !p.manual && !p.nameEst && window.LowiSpikeCore) { const r = rate(p); if (r.verdict !== "unknown") { p = Object.assign({}, p, {verdict:r.verdict, why:r.why, score:r.score, est:true}); }
     /* scanfe-b2: a label the engine can't estimate (numbers missing or not adding up) is never kept as an old saved ok */
     else if (r.why && r.why.length) { p = Object.assign({}, p, {verdict:"unknown", why:r.why, score:null, est:true}); } }
+  if (p && !p.notFound && !p.manual && (!p.verdict || p.verdict === "unknown")) p = withNameEst(p); /* Oct 23: the name gives the verdict when the label can't */
   if (p && !p.notFound && (!p.verdict || p.verdict === "unknown" || !p.why)) { const r = rate(p); p.verdict = p.verdict && p.verdict !== "unknown" ? p.verdict : r.verdict; p.why = p.why && p.why.length ? p.why : r.why; if (p.score == null) p.score = r.score; if (p.est == null) p.est = r.est; }
   if (p && p.notFound) { if (p.partial) { p.name = ""; } }
   CUR = p; const anim = !quiet && !RM();
@@ -14849,6 +14979,7 @@ function reveal(p, quiet){
   fillHerb(REV); if (!anim) { const h = $(".b3-herb", REV); h && h.classList.add("go"); }
   if (anim && !p.notFound && p.verdict !== "unknown") { sfx(p.verdict === "ok" ? "preview" : "soft"); buzz(15); }
   if (p.notFound) { const n = $("#b3MName", REV); n && n.addEventListener("input", manualReady); }
+  if (p.notFound || p.verdict === "unknown") { const n = $("#b3MName", REV), b = $("#b3MBrand", REV); n && n.addEventListener("input", neLive); b && b.addEventListener("input", neLive); }
 }
 function manualReady(){ if (!REV) return; const n = ($("#b3MName", REV) || {}).value || "", any = $$(".b3-tick[aria-pressed=true]", REV).length; const b = $("#b3MCatch", REV); if (b) b.disabled = !(n.trim().length >= 2 && any); }
 async function catchCur(btn, p){
@@ -14925,6 +15056,14 @@ document.addEventListener("click", e => {
     case "label": if (CUR && window.LowiDiscovery) LowiDiscovery.openProduct(CUR); break;
     case "lphoto": if (CUR && window.LowiLabelPhotos) { const base = CUR; LowiLabelPhotos.open(base, q => { if (REV) { try { R2.close(REV); } catch(x){} } reveal(q, true); }); } break;
     case "eat": eatCur(b); break;
+    case "nebyname": analyseByName(b); break; /* Oct 23 name check */
+    case "nesearch": analyseTyped(b.dataset.q, b); break;
+    case "camname": { const i = CAM && $("#b3Nm", CAM.el); camName(i ? i.value : ""); break; }
+    case "netick": if (CUR) reveal(Object.assign({}, CUR, {verdict:"unknown", why:[], score:null, nameEst:null, noNameEst:true, notFound:!CUR.barcode && !CUR.code}), true); break;
+    case "neprod": { const p = findK(b.dataset.k); if (p) reveal(Object.assign({}, p), true); break; }
+    case "nercp": { const id = b.dataset.r; if (REV) { try { R2.close(REV); } catch(e){} } closeScanner(true);
+      setTimeout(() => { try { if (typeof openRecipe === "function" && openRecipe(id) !== false) return; } catch(e){}
+        const x = document.createElement("button"); x.hidden = true; x.dataset.sh = "open-shelf"; x.dataset.t = "kochen"; x.dataset.sub = "recipe"; x.dataset.r = id; document.body.appendChild(x); x.click(); x.remove(); }, 180); break; }
     case "skip": if (REV) { try { R2.close(REV); } catch(e){} } if (window.LowiSpirit && LowiSpirit.afterScan) LowiSpirit.afterScan(0, "", ""); break;
     case "tick": { const k = b.dataset.k, on = b.getAttribute("aria-pressed") !== "true"; const all = $$(".b3-tick", REV);
       if (k === "none" && on) all.forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false")); else { b.setAttribute("aria-pressed", on ? "true" : "false"); if (on) all.filter(x => x.dataset.k === "none").forEach(x => x.setAttribute("aria-pressed", "false")); }
@@ -14964,7 +15103,7 @@ function boot(){
   try { if (curTab() === "scan") renderTab(); } catch(e){}
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => setTimeout(boot, 0)); else setTimeout(boot, 0);
-window.LowiDex = {open:openDex, scan:openScanner, reveal, rate, rateName, validCode, enrich, showProduct, vtext:v => [t("vl_" + v), t("vs_" + v)], whyText, /* prod-verdict */ render:renderTab, state:() => D, stop:() => closeScanner(true), load:loadComm, lookup:byBarcode, search:searchName, shopMode, shopResume, shopOn:() => !!(CAM && CAM.shop), collect:doCatch, pfCount:() => Object.keys(D.pf || {}).length, items:() => D.comm.concat(mineList()), cur:() => CUR || (window.LowiDiscovery ? LowiDiscovery.cur() : null)} /* f2-cur */;
+window.LowiDex = {open:openDex, scan:openScanner, reveal, rate, rateName, nameEst:withNameEst, nameRate, byName:analyseTyped, /* Oct 23 name check */ validCode, enrich, showProduct, vtext:v => [t("vl_" + v), t("vs_" + v)], whyText, /* prod-verdict */ render:renderTab, state:() => D, stop:() => closeScanner(true), load:loadComm, lookup:byBarcode, search:searchName, shopMode, shopResume, shopOn:() => !!(CAM && CAM.shop), collect:doCatch, pfCount:() => Object.keys(D.pf || {}).length, items:() => D.comm.concat(mineList()), cur:() => CUR || (window.LowiDiscovery ? LowiDiscovery.cur() : null)} /* f2-cur */;
 })();
 </script>
 <style id="r3kcss">
@@ -20654,6 +20793,7 @@ window.LowiCommunityHost = {
 <script src="ingredient-core.js?v=20261023-120911"></script>
 <script src="food-policy-core.js?v=20261023-120911"></script>
 <script src="food-knowledge-core.js?v=20261023-120911"></script>
+<script src="name-estimate-core.js?v=20261023-120911"></script>
 <script src="food-assess-core.js?v=20261023-120911"></script>
 <script src="food-engine-core.js?v=20261023-120911"></script>
 <script src="spike-core.js?v=20261023-120911"></script>

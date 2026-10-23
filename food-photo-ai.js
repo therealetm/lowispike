@@ -114,6 +114,7 @@
     const snap = () => root.LowiMealSnap || null;
     let probe = null, probeAt = 0, probeWhy = '';
     const why = () => probeWhy;
+    let nameOn = false; // Oct 23: the deployed function answers name reads (GET says name:true); the old one only reads photos
     // One cheap GET per session: is the function deployed and does it have its key? A miss is re-checked after 10 min.
     function available() {
         const url = endpoint();
@@ -125,7 +126,7 @@
            switched on yet" and kept that answer for 10 minutes. Now the reason is kept (probeWhy: 'net' | 'off') and a
            network miss is asked again on the next photo. */
         probe = fetch(url, { method: 'GET', headers: headers(), signal: tm.signal, cache: 'no-store' })
-            .then(r => r.ok ? r.json() : null).then(j => { probeWhy = 'off'; return !!(j && j.ok && j.configured); }).catch(() => { probeWhy = 'net'; return false; })
+            .then(r => r.ok ? r.json() : null).then(j => { probeWhy = 'off'; nameOn = !!(j && j.ok && j.configured && j.name === true); return !!(j && j.ok && j.configured); }).catch(() => { probeWhy = 'net'; return false; })
             .then(v => { tm.done(); if (v) { probeAt = Infinity; probeWhy = ''; } else if (probeWhy === 'net') probeAt = 0; return v; });
         return probe;
     }
@@ -186,6 +187,33 @@
         const out = normalize(j);
         out.total = totals(out.dishes);
         out.model = j && j.model ? String(j.model) : '';
+        return out;
+    }
+
+    /* Oct 23 (Emmanuel: "if the app knows the name, it should still give an analysis"): a product or food name -> the same
+       normalized answer as a photo read ({isFood, dishes, confidence, note, lowispike}). It never uses a photo read. Only when
+       the deployed function says it can (GET name:true); else it throws 'off' and the scanner keeps its own name rules.
+       The app re-rates the dish names with its own engine and keeps the stricter verdict, like the photo read. */
+    async function analyseName(name, opts) {
+        opts = opts || {};
+        const q = String(name || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+        if (q.length < 2) { const e = new Error('failed'); e.code = 'failed'; throw e; }
+        const url = endpoint();
+        if (!url || !(await available()) || !nameOn) { const e = new Error('off'); e.code = 'off'; throw e; }
+        const tok = opts.token != null ? opts.token : await token();
+        const tm = timed(opts.timeout || 15000);
+        let r;
+        try {
+            r = await fetch(url, { method: 'POST', headers: headers(tok), signal: tm.signal, body: JSON.stringify({ text: q, lang: opts.lang || lang(), tz: zone() }) });
+        } catch (err) { tm.done(); const code = tm.signal && tm.signal.aborted ? 'slow' : 'net'; const e = new Error(code); e.code = code; throw e; }
+        tm.done();
+        let j = null;
+        try { j = await r.json(); } catch (err) { j = null; }
+        if (!r.ok) { const code = r.status === 401 ? 'sign_in' : r.status === 429 ? 'busy' : r.status === 503 || r.status === 404 ? 'off' : 'failed'; const e = new Error(code); e.code = code; throw e; }
+        const out = normalize(j);
+        if (out.confidence === 'high') out.confidence = 'medium'; // a name alone is never high
+        out.total = totals(out.dishes);
+        out.mode = 'name';
         return out;
     }
 
@@ -301,5 +329,5 @@
         });
         return run();
     }
-    return { KEYS, normalize, totals, title, endpoint, available, allowance, analyse, mount, prep, TRY_MS, AI_PX, strings: STR, _reset() { probe = null; probeAt = 0; probeWhy = ''; }, _why: why };
+    return { KEYS, normalize, totals, title, endpoint, available, allowance, analyse, analyseName, nameReady: () => nameOn, mount, prep, TRY_MS, AI_PX, strings: STR, _reset() { probe = null; probeAt = 0; probeWhy = ''; nameOn = false; }, _why: why };
 });

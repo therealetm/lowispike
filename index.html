@@ -9378,6 +9378,7 @@ window.LowiFood = {fitDeck:ckFitDeck, source:fSrc, setSource:ckSource, category:
 </style>
 <script src="read-time-core.js?v=20261023-192717"></script>
 <script src="community-chat-core.js?v=20261023-192717"></script>
+<script src="account-sync-core.js?v=20261023-192717"></script>
 <script>
 window.LOWI_CFG = {"url": "https://vnfwmifmsfecascwaody.supabase.co", "key": "sb_publishable_iVA3wCYxzfWu2q8SSgieWw_adXbx4Qd"};
 </script>
@@ -9513,7 +9514,7 @@ async function start(){
   PEOPLE = q[4].data.filter(r => r.id !== uid).map(mapPerson);
   live = true;
   applyChat(); applyMembers(); syncMyLikes(); chatNotify("ready");
-  subscribe(); startRooms(); pushProfile(); backupSoon(800);
+  subscribe(); startRooms(); pushProfile(); clearTimeout(backT); setTimeout(() => syncNow("open"), 600); syncNote();
   refreshUI();
   /* a photo picked before the cloud existed never left the phone: upload it once so others see it */
   setTimeout(() => { try { if (S.user && /^data:image\//.test(S.user.avatar || "") && !S.user.avatarUrl && window.LowiR2 && LowiR2.syncAvatar) LowiR2.syncAvatar(); } catch(e){} }, 2500);
@@ -9621,20 +9622,92 @@ function pushProfile(){ clearTimeout(profT); profT = setTimeout(async () => { if
   row.bday = ""; row.mbti = ""; row.sign = "";
   const j = JSON.stringify(row); if (j === lastProf) return; lastProf = j;
   const r = await sb.from("profiles").upsert(Object.assign({updated_at:new Date().toISOString()}, row)); if (r.error) lastProf = ""; }, 1500); }
+const SYNC = () => window.LowiSyncCore || null;
+const syncedKey = k => { const c = SYNC(); return c ? c.synced(k) : (typeof k === "string" && k.indexOf("lowispike.") === 0 && k !== "lowispike.chat.v1"); };
 function snapshot(){ const o = {};
-  Object.keys(localStorage).forEach(k => { if (k.indexOf("lowispike.") !== 0 || k === "lowispike.chat.v1") return; let v = localStorage.getItem(k);
+  Object.keys(localStorage).forEach(k => { if (!syncedKey(k)) return; let v = localStorage.getItem(k);
     if (k === "lowispike.v2") { try { const s = JSON.parse(v); PRIVATE_KEYS.forEach(x => delete s[x]); v = JSON.stringify(s); } catch(e){} }
     o[k] = v; });
+  o["lowispike.sync.v"] = "1";   /* written by a build that merges; an older build's blind push lacks it */
   return o; }
-function backupSoon(ms){ clearTimeout(backT); backT = setTimeout(async () => { if (!live) return; const o = snapshot(), j = JSON.stringify(o); if (j === lastBack || j.length > 4e6) return; lastBack = j;
-  const r = await sb.from("user_state").upsert({id:uid, data:o, updated_at:new Date().toISOString()}); if (r.error) lastBack = ""; }, ms || 5000); }
-async function restore(){ const r = await sb.from("user_state").select("data").eq("id", uid).maybeSingle(); if (r.error || !r.data || !r.data.data) return false;
+/* 23 Oct 2026 (Eman: the same data on every device). Every device used to push its backup blindly and read it back only at
+   sign-in, so iPhone and iPad drifted apart on one account. Now a backup is a sync: pull, merge (account-sync-core.js,
+   three-way per field, no clocks), apply here, push. On open and on coming back to the app it pulls first; when the other
+   device changed something this one reloads once, so the screen shows the merged data (a short note says why). */
+const SYNC_META = "lowi.sync.v1";
+let syncing = null, syncFrozen = false, lastSyncAt = 0;
+function syncMeta(){ try { const m = JSON.parse(localStorage.getItem(SYNC_META) || "null"); if (m && m.uid === uid) return m; } catch(e){} return {uid, base:{}, at:""}; }
+function saveSyncMeta(m){ try { _set.call(localStorage, SYNC_META, JSON.stringify({uid, base:m.base || {}, at:m.at || ""})); } catch(e){} }
+function syncLang(){ const l = (localStorage.getItem("lowi.lang") || document.documentElement.lang || "en").slice(0, 2); return l === "de" || l === "es" ? l : "en"; }
+function canReload(){ try { const now = Date.now(), a = JSON.parse(sessionStorage.getItem("lowi.sync.reloads") || "[]").filter(t => now - t < 90000); if (a.length >= 3) return false; a.push(now); sessionStorage.setItem("lowi.sync.reloads", JSON.stringify(a)); return true; } catch(e){ return false; } }
+function applyMerged(res){
+  let priv = {}; try { const cur = JSON.parse(localStorage.getItem("lowispike.v2") || "{}"); PRIVATE_KEYS.forEach(x => { if (cur && cur[x] !== undefined) priv[x] = cur[x]; }); } catch(e){}
+  syncFrozen = true;
+  res.changedKeys.forEach(k => { let v = res.merged[k]; if (k === "lowispike.v2") { try { const o = JSON.parse(v); Object.assign(o, priv); v = JSON.stringify(o); } catch(e){} } try { _set.call(localStorage, k, v); } catch(e){} });
+  res.removedKeys.forEach(k => { try { localStorage.removeItem(k); } catch(e){} });
+}
+async function pushState(o){ const at = new Date().toISOString(); const r = await sb.from("user_state").upsert({id:uid, data:o, updated_at:at}); if (r.error) return null; lastBack = JSON.stringify(o); return at; }
+/* why: "open" | "resume" | "backup" | "now". Resolves true when the cloud copy matches this device afterwards. */
+function syncNow(why){
+  if (!live || !uid || syncFrozen) return Promise.resolve(false);
+  if (syncing) return syncing.then(() => syncNow(why));
+  const C = SYNC(), me = uid;
+  syncing = (async () => {
+    try {
+      const meta = syncMeta();
+      if (!C) { const o = snapshot(), j = JSON.stringify(o); if (j.length > 4e6) return false; return !!(await pushState(o)); }
+      /* the cheap path: nobody else wrote since we last agreed, so this device's copy simply goes up */
+      if (why === "backup" && meta.at) {
+        const h = await sb.from("user_state").select("updated_at").eq("id", me).maybeSingle();
+        if (uid !== me) return false;
+        if (!h.error && h.data && h.data.updated_at && Date.parse(h.data.updated_at) === Date.parse(meta.at)) {
+          const o = snapshot(), j = JSON.stringify(o); if (j === lastBack) return true; if (j.length > 4e6) return false;
+          const at = await pushState(o); if (!at) return false; saveSyncMeta({base:C.hashes(C.units(o)), at}); return true;
+        }
+      }
+      const r = await sb.from("user_state").select("data,updated_at").eq("id", me).maybeSingle();
+      if (uid !== me || r.error) return false;
+      const local = snapshot();
+      if (!r.data || !r.data.data) { if (JSON.stringify(local).length > 4e6) return false; const at = await pushState(local); if (!at) return false; saveSyncMeta({base:C.hashes(C.units(local)), at}); return true; }
+      const remote = {}; Object.keys(r.data.data).forEach(k => { const v = r.data.data[k]; if (typeof v === "string" && syncedKey(k)) remote[k] = v; });
+      /* pushed by an older build (no marker): it knew nothing of lowi.* keys and may be stale, so nothing it lacks is a delete
+         and nothing it holds simply wins: combine like a first sync (lists joined, higher numbers kept, this device's text) */
+      const legacy = remote["lowispike.sync.v"] !== "1";
+      if (legacy) Object.keys(local).forEach(k => { if (remote[k] === undefined && k.indexOf("lowispike.") !== 0) remote[k] = local[k]; });
+      const res = C.merge(local, remote, legacy ? {} : meta.base);
+      const here = res.changedKeys.length + res.removedKeys.length > 0;
+      try { window.__lowiSync = {why, units:res.changedUnits.slice(0, 40), push:res.pushNeeded, legacy, conflicts:res.conflicts}; sessionStorage.setItem("lowi.sync.last", JSON.stringify(window.__lowiSync)); } catch(e){}
+      if (here && !canReload()) return false;          /* never a reload loop: try again on the next open */
+      let at = r.data.updated_at || "";
+      if (res.pushNeeded) { if (JSON.stringify(res.merged).length > 4e6) return false; at = await pushState(res.merged); }
+      if (at) saveSyncMeta({base:res.base, at}); else saveSyncMeta({base:meta.base, at:meta.at});
+      lastSyncAt = Date.now();
+      if (here) {
+        applyMerged(res);
+        try { sessionStorage.setItem("lowi.sync.note", String(res.changedKeys.length + res.removedKeys.length)); } catch(e){}
+        setTimeout(() => location.reload(), 60);
+      }
+      return !!at;
+    } catch(e){ return false; }
+  })();
+  const p = syncing; p.then(() => { if (syncing === p) syncing = null; }, () => { if (syncing === p) syncing = null; });
+  return p;
+}
+function syncNote(){ let n = ""; try { n = sessionStorage.getItem("lowi.sync.note") || ""; sessionStorage.removeItem("lowi.sync.note"); } catch(e){} if (!n) return;
+  const t = {en:"Up to date with your other device", de:"Auf dem Stand deines anderen Geräts", es:"Al día con tu otro dispositivo"}[syncLang()];
+  window.__lowiSyncNote = t; setTimeout(() => toast(t, 2600), 900); }
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && live && Date.now() - lastSyncAt > 15000) syncNow("resume"); });
+function backupSoon(ms){ clearTimeout(backT); backT = setTimeout(() => { if (!live) return; const o = snapshot(), j = JSON.stringify(o); if (j === lastBack) return; syncNow("backup"); }, ms || 5000); }
+async function restore(){ const r = await sb.from("user_state").select("data,updated_at").eq("id", uid).maybeSingle(); if (r.error || !r.data || !r.data.data) return false;
   const o = r.data.data; let keepHealth = null; try { keepHealth = JSON.parse(localStorage.getItem("lowispike.v2") || "{}").health || null; } catch(e){}
   Object.keys(localStorage).filter(k => k.indexOf("lowispike.") === 0).forEach(k => localStorage.removeItem(k));
-  Object.keys(o).forEach(k => { let v = o[k]; if (k === "lowispike.v2" && keepHealth) { try { const s = JSON.parse(v); s.health = keepHealth; v = JSON.stringify(s); } catch(e){} } localStorage.setItem(k, v); });
+  Object.keys(o).forEach(k => { let v = o[k]; if (typeof v !== "string" || !syncedKey(k)) return; if (k === "lowispike.v2" && keepHealth) { try { const s = JSON.parse(v); s.health = keepHealth; v = JSON.stringify(s); } catch(e){} } localStorage.setItem(k, v); });
+  /* what came down is what both sides agree on now */
+  try { const C = SYNC(); if (C) { const got = {}; Object.keys(o).forEach(k => { if (typeof o[k] === "string" && syncedKey(k)) got[k] = o[k]; }); saveSyncMeta({base:C.hashes(C.units(got)), at:r.data.updated_at || ""}); } } catch(e){}
   return true; }
 const _set = Storage.prototype.setItem;
-Storage.prototype.setItem = function(k, v){ _set.call(this, k, v); if (this === window.localStorage && typeof k === "string" && k.indexOf("lowispike.") === 0 && k !== "lowispike.chat.v1" && live) { backupSoon(); pushProfile(); } };
+Storage.prototype.setItem = function(k, v){ if (syncFrozen && this === window.localStorage && syncedKey(k)) return; /* merged data is down, the reload is coming: old in-memory state must not write over it */
+  _set.call(this, k, v); if (this === window.localStorage && typeof k === "string" && syncedKey(k) && live) { backupSoon(); if (k.indexOf("lowispike.") === 0) pushProfile(); } };
 
 /* ---------- account card (Profile) ---------- */
 function cardHTML(){
@@ -9816,8 +9889,8 @@ window.LOWI_CLOUD_X = {
   pushProfile(){ try { pushProfile(); } catch(e){} },
   room:() => ROOM(),
   energyShot(p){ if (window.LowiRooms) return LowiRooms.sendEnergy(p); if (!chan || chatRealtime !== "SUBSCRIBED" || !p) return false; try { Promise.resolve(chan.send({type:"broadcast", event:"energy", payload:p})).catch(() => {}); return true; } catch(e){ return false; } },
-  async backupNow(){ if (!live || !uid) return false; const o = snapshot(), j = JSON.stringify(o); if (j.length > 4e6) return false;
-    const r = await sb.from("user_state").upsert({id:uid, data:o, updated_at:new Date().toISOString()}); if (r.error) return false; lastBack = j; return true; },
+  async backupNow(){ if (!live || !uid) return false; clearTimeout(backT); return syncNow("now"); },
+  syncNow(why){ return syncNow(why || "now"); },
   paint(){ try { paintCard(); } catch(e){} try { refreshUI(); } catch(e){} },
   async delMsg(id){ if (!live) throw new Error("offline"); const r = await sb.from("messages").delete().eq("id", id).eq("user_id", uid); if (r.error) throw r.error;
     const i = MSGS.findIndex(m => String(m.id) === String(id)); if (i >= 0) MSGS.splice(i, 1); saveChat(); return true; },

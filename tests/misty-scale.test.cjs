@@ -81,7 +81,7 @@ test('full energy: no steps, top line; tiers follow LowiSun.ENERGY thresholds', 
     assert.strictEqual(X.tierOf(0.75, 0, S.ENERGY), 'thriving');
 });
 
-test('hunt power-ups (window.LowiMistyPower) count in the one formula, capped, and show on the scale', () => {
+test('hunt power-ups (window.LowiMistyPower) count in the one formula, capped; no Hunt power row on the card (Oct 23)', () => {
     const inp = { now: NOW, logs: [pudding], ledger: [], water: 0 };
     const base = S.energy(inp).value;
     assert.ok(Math.abs(S.energy(Object.assign({}, inp, { boost: 0.1 })).value - (base + 0.1)) < 1e-9);
@@ -92,7 +92,8 @@ test('hunt power-ups (window.LowiMistyPower) count in the one formula, capped, a
     assert.deepStrictEqual(pw, { level: 2, xp: 30, next: 100, boost: 0.2, label: 'Glow shield' });
     const p = X.plan(Object.assign({}, inp, { boost: pw.boost }), deps());
     const h = X.cardHTML(p, pw, { lang: 'en', name: 'Misty', E: S.ENERGY });
-    assert.ok(h.includes('Hunt power') && h.includes('30/100') && h.includes('ms-boost'));
+    assert.ok(!h.includes('Hunt power') && !h.includes('ms-power') && !h.includes('30/100'), 'no Hunt power label, level or bar');
+    for (const l of ['de', 'es']) { const t = X.cardHTML(p, pw, { lang: l, name: 'Misty', E: S.ENERGY }); assert.ok(!/Jagd-Kraft|Poder de caza/.test(t), l); }
 });
 
 test('kind copy in EN/DE/ES: every line filled, no banned words, no health claims', () => {

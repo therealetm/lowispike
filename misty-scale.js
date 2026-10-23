@@ -154,12 +154,7 @@
             }
             if (p.next === 'ok') h += '<p class="ms-note">' + esc(tr('travel', l)) + '</p>';
         }
-        if (pw && (pw.level || pw.xp || pw.boost)) {
-            const r = pw.next ? Math.max(0, Math.min(1, pw.xp / pw.next)) : 1;
-            h += '<div class="ms-power"><div class="ms-prow"><span>' + esc(tr('power', l)) + ' \u00b7 ' + esc(tr('lv', l)) + ' ' + pw.level + (pw.label ? ' \u00b7 ' + esc(pw.label) : '') + '</span><b class="num">' + (pw.next ? Math.round(pw.xp) + '/' + Math.round(pw.next) : esc(tr('maxLv', l))) + '</b></div>' +
-                '<i class="ms-pbar" aria-hidden="true"><i style="width:' + Math.round(r * 100) + '%"></i></i>' +
-                (pw.boost ? '<small class="num">' + esc(tr('boost', l, { p: pctR(pw.boost) })) + '</small>' : '') + '</div>';
-        }
+        /* Oct 23 (E-man): the Hunt power row (label, level, bar) is gone from her card; power-ups still lift her energy value above. */
         h += '<p class="ms-note">' + esc(tr('fair', l)) + '</p></section>';
         return h;
     }

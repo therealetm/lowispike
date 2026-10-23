@@ -28,7 +28,8 @@ test('the card is the same Misty over the same world: cloned Home artwork, glass
     assert.ok(js.includes("#spBubble .sp-home-herb svg.tmg-plant"), 'clones the Home Misty');
     assert.ok(!/constellation|starfield|sp-stage|sp-portal/i.test(css) && !/sp-stage|sp-constellation|sp-portal/.test(js), 'no starfield or portal');
     assert.ok(/R2\.sheet\(html\(sayOverride\), \{ cls: 'wh-ms-ov mh-ov' \}\)/.test(js), 'a normal sheet over the live world');
-    for (const k of ['data-mh="mood"', 'data-mh="goodnight"', 'data-mh="forms"', 'data-mh="glow"', 'mh-xp', 'role="progressbar"'])
+    assert.ok(!js.includes('data-mh="mood"'), 'no mood check-in on the card (Oct 23)');
+    for (const k of ['data-mh="goodnight"', 'data-mh="forms"', 'data-mh="glow"', 'mh-xp', 'role="progressbar"'])
         assert.ok(js.includes(k), k);
 });
 

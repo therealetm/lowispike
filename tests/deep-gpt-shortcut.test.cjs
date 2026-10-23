@@ -38,7 +38,7 @@ test('Scan bar and not-found card both use the link; the in-app sheet and its ca
     assert.ok(bar.includes('deepLink("b3-deep", \'id="b3Deep"\', t("deep"), t("deepS"))'));
     assert.ok(!/<button[^>]*b3-deep/.test(bar));
     const man = cut('function manualHTML(p){', '/* prod-verdict');
-    assert.ok(man.includes('deepLink("b3-nfdeep", \'id="b3NfDeep"\', t("deepNf"), t("deepNfS"))'));
+    assert.ok(/deepLink\("b3-nfdeep[^"]*", 'id="b3NfDeep"', t\("deepNf"\), t\("(deepNfS|nfDeepS)"\)\)/.test(man), 'Oct 23: the one-screen sheet shows it as a tile');
     assert.ok(!/act === "deep"/.test(html), 'camAct has no Deep analyze branch any more');
     assert.ok(!fs.existsSync(path.join(root, 'deep-analyze.js')));
 });

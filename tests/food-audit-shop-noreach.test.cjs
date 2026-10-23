@@ -17,7 +17,7 @@ test('Log meal > Scan: no answer is "couldn\'t check", not "Not in any database 
     const h = src('index.html');
     assert.ok(h.includes('closeScanner(); reveal(p || {barcode:code, notFound:true, offline:true}); }'), 'a lookup with no answer is marked offline');
     assert.ok(!h.includes('offline:!navigator.onLine}'), 'navigator.onLine stays true on a weak signal');
-    assert.match(h, /esc\(t\(p\.offline \? "noReach" : "notFound"\)\)/);
+    assert.match(h, /esc\(t\((p\.offline|off) \? "noReach" : "notFound"\)\)/);
     assert.match(h, /noReach: \["I couldn't check this product right now", "[^"]+", "[^"]+"\]/);
     assert.match(h, /noReachS: \["[^"]+", "[^"]+", "[^"]+"\]/);
 });

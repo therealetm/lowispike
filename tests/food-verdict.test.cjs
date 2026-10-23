@@ -161,3 +161,37 @@ test('Misty scan reaction follows the Food check card (fails on the old estimate
     assert.strictEqual(K.scanVerdict({ notFound: true, verdict: 'spike' }, rate, S), 'spike', 'not found keeps its stored verdict');
     assert.strictEqual(K.scanVerdict({ notFound: true }, rate, S), 'unknown');
 });
+
+/* scanfe-h6 (Oct 23, 2026): stored dex rows keep the verdict from the day they were caught. Bug: cooked ham caught before the
+   Food check still showed "ok" in the Dex grid and My catches although the card says NO. */
+test('rerate / rerateRows make stored dex rows stricter with the Food check, never milder, never guessing', () => {
+    const row = (p, v, extra) => Object.assign({}, p, { verdict: v, why: [['s_low', 1, 1]] }, extra || {});
+    const ham = row(HAM, 'ok'), ultje = row(ULTJE, 'better'), nuts = row(PEANUTS, 'ok'), yog = row(YOG, 'spike');
+    const manual = row(HAM, 'ok', { source: 'manual' }), lost = row(HAM, 'ok', { notFound: true });
+    const bare = { name: 'Mystery bar', verdict: 'ok', facts: {}, ingredients: '' }, unk = row(HAM, 'unknown'), unkYog = row(YOG, 'unknown');
+    assert.equal(S.rerate(ham), 'spike', 'pork: card says NO');
+    assert.equal(S.rerate(ultje), 'spike');
+    assert.equal(S.rerate(nuts), 'better', 'nuts: card says RARELY');
+    assert.equal(S.rerate(yog), 'spike', 'never milder than the stored verdict');
+    assert.equal(S.rerate(manual), 'ok', 'manual entries keep their own rating');
+    assert.equal(S.rerate(lost), 'ok', 'not found keeps the stored verdict');
+    assert.equal(S.rerate(bare), 'ok', 'no label data: nothing guessed');
+    assert.equal(S.rerate(unk), 'spike', 'unknown only ever becomes spike');
+    assert.equal(S.rerate(unkYog), 'unknown', 'unknown never becomes ok');
+    const rows = [ham, ultje, nuts, yog, manual, lost, bare, unk, unkYog];
+    assert.equal(S.rerateRows(rows), 4);
+    assert.deepEqual(rows.map(r => r.verdict), ['spike', 'spike', 'better', 'spike', 'ok', 'ok', 'ok', 'spike', 'unknown']);
+    assert.deepEqual(ham.why[0], ['c_no']);
+    assert.deepEqual(nuts.why[0], ['c_rare']);
+    assert.equal(manual.why[0][0], 's_low', 'untouched rows keep their reasons');
+    assert.equal(S.rerateRows(rows), 0, 'running it again changes nothing');
+    assert.ok(S.text(['c_no'], 1).startsWith('Food-Check: NEIN'));
+});
+
+test('index.html re-rates stored dex rows on load and when a stored card opens', () => {
+    const html = require('fs').readFileSync(require('path').join(__dirname, '..', 'index.html'), 'utf8');
+    assert.match(html, /const mineList = \(\) => \{ rerateDex\(\);/, 'My catches / stats read re-rated rows');
+    assert.match(html, /function dexItems\(\)\{ rerateDex\(\);/, 'the Dex grid reads re-rated rows');
+    assert.match(html, /D\.comm = \(r\.data \|\| \[\]\)\.map\(fromRow\);[^\n]*LowiSpikeCore\.rerateRows\(D\.comm\)/, 'fresh Community rows too');
+    assert.match(html, /p = rerateOne\(Object\.assign\(\{\}, p, \{verdict:r\.verdict/, 'opening a stored card');
+});

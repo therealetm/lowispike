@@ -150,7 +150,9 @@
         s_refined_i: ['Fast starch up front ({0})', 'Schnelle Stärke weit vorne ({0})', 'Almidón rápido al principio ({0})'],
         s_sugar_i: ['Added sugar up front ({0})', 'Zugesetzter Zucker weit vorne ({0})', 'Azúcar añadido al principio ({0})'],
         s_whole_i: ['Whole grain up front ({0})', 'Vollkorn weit vorne ({0})', 'Integral al principio ({0})'],
-        s_clean_i: ['No added sugar or refined starch up front', 'Kein zugesetzter Zucker, keine raffinierte Stärke vorne', 'Sin azúcar añadido ni almidón refinado al principio']
+        s_clean_i: ['No added sugar or refined starch up front', 'Kein zugesetzter Zucker, keine raffinierte Stärke vorne', 'Sin azúcar añadido ni almidón refinado al principio'],
+        c_no: ['Food check: NO, not a standard choice', 'Food-Check: NEIN, keine Standardwahl', 'Food check: NO, no es una opción habitual'],
+        c_rare: ['Food check: RARELY, fine now and then', 'Food-Check: SELTEN, ab und zu okay', 'Food check: A VECES, bien de vez en cuando']
     };
     function text(w, li) {
         const k = w && w[0], row = TX[k]; if (!row) return '';
@@ -192,8 +194,39 @@
         let a; try { a = assess(p, opts); } catch (e) { return 'unknown'; }
         return tighten(p, a);
     }
+    /* rerate (scanfe-h6, Oct 23, 2026): stored dex rows (Dex grid, My catches, Community products) carry the verdict they got
+       when they were caught, often before the Food check existed. Bug it fixes: cooked ham caught last week still showed "ok"
+       in the Dex although the card says NO. rerate(p) returns the stored verdict made stricter by foodVerdict: only ever
+       stricter (ok -> better -> spike, unknown -> spike only), manual entries keep their own rating, not-found rows keep the
+       stored verdict, nothing is guessed (no label data = stays as stored). rerateRows(rows) applies it in place and adds one
+       Food check reason to `why`; returns how many rows changed. */
+    const isManual = p => !!(p.manual || p.source === 'manual');
+    function judge(p, opts) {
+        const v = RANK[p.verdict] != null ? p.verdict : 'unknown', keep = {verdict: v, why: null};
+        if (p.notFound || isManual(p)) return keep;
+        let a; try { a = assess(p, opts); } catch (e) { return keep; }
+        const f = tighten(p, a);
+        if (RANK[f] == null || f === v) return keep;
+        if (v === 'unknown' ? f !== 'spike' : RANK[f] <= RANK[v]) return keep;
+        const c = checkOf(p, a), byCheck = c && FROM_CHECK[c] === f && RANK[f] > (RANK[a.verdict] != null ? RANK[a.verdict] : -1);
+        return {verdict: f, why: byCheck ? [[c === 'NEIN' ? 'c_no' : 'c_rare']].concat(a.why || []) : (a.why || [])};
+    }
+    function rerate(p, opts) {
+        if (!p || typeof p !== 'object') return 'unknown';
+        return judge(p, opts).verdict;
+    }
+    function rerateRows(rows, opts) {
+        let n = 0;
+        (Array.isArray(rows) ? rows : []).forEach(p => {
+            if (!p || typeof p !== 'object') return;
+            let j; try { j = judge(p, opts); } catch (e) { return; }
+            if (j.verdict === 'unknown' || j.verdict === p.verdict || !j.why) return;
+            p.verdict = j.verdict; p.why = j.why; p.rerated = true; n++;
+        });
+        return n;
+    }
     /* "looks healthy" words: spiky foods with these in the name are the ones worth warning about */
     const HEALTHY = /\bbio\b|organic|vollkorn|whole|protein|fit\b|fitness|light|natur|vegan|smoothie|granola|müsli|muesli|hafer|oat|reiswaffel|rice cake|dinkel|spelt|superfood|chia|frucht|fruit|joghurt|yogurt|zero|diet|balance|vital|integral|ecológico/i;
     const looksHealthy = p => HEALTHY.test(String((p && p.name) || '') + ' ' + String((p && p.brand) || ''));
-    return {assess, foodVerdict, tighten, text, TX, looksHealthy, list};
+    return {assess, foodVerdict, tighten, rerate, rerateRows, text, TX, looksHealthy, list};
 });

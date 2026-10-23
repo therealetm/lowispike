@@ -14096,7 +14096,15 @@ let D = {mine:{}, comm:[], commTs:0};
 try { const j = JSON.parse(localStorage.getItem(KEY) || "null"); if (j && typeof j === "object") D = Object.assign(D, j); } catch(e){}
 function save(){ try { D.comm = D.comm.slice(0, 400); localStorage.setItem(KEY, JSON.stringify(D)); } catch(e){} }
 const pkey = p => p.barcode ? "b" + p.barcode : "n" + nkey(p.name);
-const mineList = () => Object.values(D.mine).sort((a, b) => (b.ts || 0) - (a.ts || 0));
+/* scanfe-h6 (Oct 23, 2026): stored rows keep the verdict from the day they were caught; re-rate them once per load with the
+   Food check (LowiSpikeCore.rerateRows: only ever stricter, manual and not-found rows keep theirs, nothing guessed). spike-core.js
+   loads after this script, so it runs on first use (mineList / dexItems) and again for each fresh Community list. */
+let DEX_RERATED = false;
+function rerateDex(){ if (DEX_RERATED || !window.LowiSpikeCore || typeof LowiSpikeCore.rerateRows !== "function") return; DEX_RERATED = true;
+  let n = 0; try { n = LowiSpikeCore.rerateRows(Object.values(D.mine)) + LowiSpikeCore.rerateRows(D.comm); } catch(e){} if (n) save(); }
+function rerateOne(p, opts){ if (!p || !window.LowiSpikeCore || typeof LowiSpikeCore.rerateRows !== "function") return p; const q = Object.assign({}, p); try { return LowiSpikeCore.rerateRows([q], opts) ? q : p; } catch(e){ return p; } }
+window.addEventListener("load", () => rerateDex());
+const mineList = () => { rerateDex(); return Object.values(D.mine).sort((a, b) => (b.ts || 0) - (a.ts || 0)); };
 const isMine = p => !!D.mine[pkey(p)] || (p.id && Object.values(D.mine).some(m => m.id === p.id));
 
 /* ---------- rating: LOWiSPIKE rules on label data ---------- */
@@ -14204,7 +14212,7 @@ let commBusy = false;
 async function loadComm(force){
   if (commBusy || (!force && Date.now() - (D.commTs || 0) < 45000)) return false; const c = await sb(); if (!c) return false; commBusy = true;
   try { const r = await c.from("products").select(COLS).order("dex", {ascending:false}).limit(400); if (r.error) throw r.error;
-    D.comm = (r.data || []).map(fromRow); D.commTs = Date.now();
+    D.comm = (r.data || []).map(fromRow); D.commTs = Date.now(); try { if (window.LowiSpikeCore && LowiSpikeCore.rerateRows) LowiSpikeCore.rerateRows(D.comm); } catch(e){}
     const uid = X().state().uid, me = await c.from("product_catches").select("product_id,first,created_at").eq("user_id", uid).limit(2000);
     if (!me.error) (me.data || []).forEach(m => { const p = D.comm.find(x => x.id === m.product_id); if (p && !isMine(p)) D.mine[pkey(p)] = Object.assign(slim(p), {first:!!m.first, ts:Date.parse(m.created_at) || Date.now()}); });
     D.comm.forEach(p => { const m = D.mine[pkey(p)]; if (m) { m.id = p.id; m.dex = p.dex; m.catches = p.catches; } });
@@ -14601,7 +14609,7 @@ function scView(p, sv){
   const g = scUserG(sv); if (!g || !p || p.manual || !window.LowiSpikeCore || !LowiSpikeCore.assess) return p;
   let a = null; try { a = LowiSpikeCore.assess(p, {servingG:g}); } catch(e){ a = null; }
   if (!a || !{spike:1, better:1, ok:1}[a.verdict]) return p;
-  return Object.assign({}, p, {verdict:a.verdict, why:a.why, score:a.score});
+  return rerateOne(Object.assign({}, p, {verdict:a.verdict, why:a.why, score:a.score}), {servingG:g});
 }
 let scPortT = 0;
 function scRedrawServing(){
@@ -14718,7 +14726,7 @@ function reveal(p, quiet){
   if (REV) { try { R2.close(REV); } catch(e){} REV = null; }
   if (p && !p.notFound && !p.verdict) { p = Object.assign({}, p); }
   /* Oct 16: always re-rate with the current spike estimator, so older saved verdicts (e.g. a vegetable pan rated as a drink) are corrected */
-  if (p && !p.notFound && !p.manual && window.LowiSpikeCore) { const r = rate(p); if (r.verdict !== "unknown") { p = Object.assign({}, p, {verdict:r.verdict, why:r.why, score:r.score, est:true}); }
+  if (p && !p.notFound && !p.manual && window.LowiSpikeCore) { const r = rate(p); if (r.verdict !== "unknown") { p = rerateOne(Object.assign({}, p, {verdict:r.verdict, why:r.why, score:r.score, est:true})); }
     /* scanfe-b2: a label the engine can't estimate (numbers missing or not adding up) is never kept as an old saved ok */
     else if (r.why && r.why.length) { p = Object.assign({}, p, {verdict:"unknown", why:r.why, score:null, est:true}); } }
   if (p && !p.notFound && (!p.verdict || p.verdict === "unknown" || !p.why)) { const r = rate(p); p.verdict = p.verdict && p.verdict !== "unknown" ? p.verdict : r.verdict; p.why = p.why && p.why.length ? p.why : r.why; if (p.score == null) p.score = r.score; if (p.est == null) p.est = r.est; }
@@ -14757,7 +14765,7 @@ async function catchCur(btn, p){
    The dex: everything the community caught, yours in colour, the rest as silhouettes
    ===================================================================== */
 let DEXF = {f:"all", q:""}, DEXOV = null;
-function dexItems(){ const all = D.comm.slice(); mineList().forEach(m => { if (!all.some(p => pkey(p) === pkey(m))) all.push(m); });
+function dexItems(){ rerateDex(); const all = D.comm.slice(); mineList().forEach(m => { if (!all.some(p => pkey(p) === pkey(m))) all.push(m); });
   all.sort((a, b) => (a.dex || 1e9) - (b.dex || 1e9));
   const q = nkey(DEXF.q);
   return all.filter(p => (DEXF.f === "all" || (DEXF.f === "mine" && isMine(p)) || (DEXF.f === "ok" && p.verdict === "ok") || (DEXF.f === "spike" && p.verdict === "spike")) && (!q || nkey(p.name + " " + p.brand).indexOf(q) >= 0)); }

@@ -12,6 +12,9 @@
     'use strict';
     const W = window, D = document, H = D.documentElement, C = W.LowiMirrorCore;
     if (!C) return;
+    /* Oct 23 2026: deadlift / hip hinge lives in mirror-hinge-core.js + mirror-hinge.js (side view, rep counting, form cues) */
+    const HG = () => W.LowiMirrorHinge || null;
+    const isHinge = () => routine === 'hinge' && !!HG();
     const MP_BASE = 'vendor/mediapipe-0.10.14/';
     const lang = () => { try { return ((W.LowiLang && W.LowiLang.get && W.LowiLang.get()) || H.lang || 'en').slice(0, 2); } catch (e) { return 'en'; } };
     const T = (en, de, es) => ({ de, es })[lang()] || en;
@@ -25,6 +28,7 @@
         voice: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z" fill="currentColor"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
         chair: '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="9" r="4.5" fill="currentColor"/><path d="M24 15v13M24 19l-8 6M24 19l8 6M24 28h-7v11M24 28h7v11" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M12 28h24" stroke="currentColor" stroke-width="2" opacity=".55"/></svg>',
         stand: '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="8" r="4.5" fill="currentColor"/><path d="M24 14v15M24 18l-9-5M24 18l9-5M24 29l-5 12M24 29l5 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/></svg>',
+        hinge: '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="35" cy="11" r="4.5" fill="currentColor"/><path d="M31 14L17 21l2 9-3 11M17 21l-3 9 3 11M29 16l-1 13" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M20 30h15" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="28" cy="30" r="4" fill="none" stroke="currentColor" stroke-width="2" opacity=".6"/></svg>',
         floor: '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="10" r="4.5" fill="currentColor"/><path d="M24 16v14M24 20l-9 6M24 20l9 6M10 36c5-5 10-6 14-6s9 1 14 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/></svg>'
     };
 
@@ -48,7 +52,8 @@
             '<span class="mm-hero-line">' + esc(T('Copy the moves on screen. Your coach talks you through every rep. Nothing is recorded.',
                 'Mach die Bewegungen nach. Dein Coach sagt dir jede Wiederholung an. Nichts wird aufgenommen.',
                 'Copia los movimientos. Tu coach te guía en cada repetición. No se graba nada.')) + '</span></span></div>' +
-            '<button type="button" class="mm-hero-go" data-mm="open">' + ICON.play + '<span>' + esc(T('Start Mirror mode', 'Spiegel-Modus starten', 'Empezar modo espejo')) + '</span></button></section>';
+            '<button type="button" class="mm-hero-go" data-mm="open">' + ICON.play + '<span>' + esc(T('Start Mirror mode', 'Spiegel-Modus starten', 'Empezar modo espejo')) + '</span></button>' +
+            (HG() ? '<button type="button" class="mm-hero-dl" data-mm="hinge">' + ICON.hinge + '<span>' + esc(T('Deadlift', 'Kreuzheben', 'Peso muerto')) + '</span><em>' + esc(T('New', 'Neu', 'Nuevo')) + '</em></button>' : '') + '</section>';
     }
 
     /* ---------- state ---------- */
@@ -67,6 +72,13 @@
     };
     const hushVoice = () => { try { if (W.LowiVoice) W.LowiVoice.cancel(); else speechSynthesis.cancel(); } catch (e) {} };
 
+    const FINE = () => T('The outline helps you follow along. It cannot tell if your form is safe. Stop if anything hurts.', 'Der Umriss hilft dir mitzumachen. Er kann nicht prüfen, ob deine Haltung sicher ist. Hör auf, wenn etwas weh tut.', 'La silueta te ayuda a seguir el ritmo. No puede saber si tu postura es segura. Para si algo duele.');
+    /* what mirror-hinge.js needs from here */
+    const hd = () => ({ T, esc, lang: lang(), ICON, say, live: t => { if (live) live.textContent = t; } });
+    function newFlow(mode) {
+        const G = HG(); if (G) G.reset();
+        return isHinge() ? G.makeFlow(mode, lang()) : new C.Flow({ routine, mode, lang: lang() });
+    }
     function build() {
         if (ov) return ov;
         ov = D.createElement('div'); ov.id = 'mmOv'; ov.className = 'mm-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true');
@@ -78,9 +90,10 @@
             '<div class="mm-card"><div class="mm-move"><b></b><span class="mm-left"></span></div><p class="mm-cue"></p>' +
             '<div class="mm-bar"><i></i></div><div class="mm-meter" hidden><span></span><i><em></em></i></div>' +
             '<div class="mm-row"><button type="button" class="mm-btn mm-ghostbtn" data-mm="here" hidden>' + esc(T('Start where I am', 'Hier starten', 'Empezar aquí')) + '</button>' +
+            '<button type="button" class="mm-btn mm-ghostbtn" data-mm="skiprest" hidden>' + esc(T('Skip rest', 'Pause überspringen', 'Saltar descanso')) + '</button>' +
             '<button type="button" class="mm-btn mm-ghostbtn" data-mm="free">' + esc(T('Without camera', 'Ohne Kamera', 'Sin cámara')) + '</button>' +
             '<button type="button" class="mm-btn mm-pri" data-mm="pause">' + ICON.pause + '<span>' + esc(T('Pause', 'Pause', 'Pausa')) + '</span></button></div>' +
-            '<p class="mm-fine">' + esc(T('The outline helps you follow along. It cannot tell if your form is safe. Stop if anything hurts.', 'Der Umriss hilft dir mitzumachen. Er kann nicht prüfen, ob deine Haltung sicher ist. Hör auf, wenn etwas weh tut.', 'La silueta te ayuda a seguir el ritmo. No puede saber si tu postura es segura. Para si algo duele.')) + '</p></div>' +
+            '<p class="mm-fine">' + esc(FINE()) + '</p></div>' +
             '<div class="mm-live" role="status" aria-live="polite"></div></div>' +
             '<div class="mm-sheet"></div>';
         D.body.appendChild(ov);
@@ -89,21 +102,27 @@
     }
     const sheet = () => ov.querySelector('.mm-sheet');
     function showSheet(html) { const s = sheet(); s.innerHTML = '<div class="mm-panel">' + html + '</div>'; s.hidden = false; const f = s.querySelector('button'); if (f) try { f.focus({ preventScroll: true }); } catch (e) {} }
-    const privacy = () => '<p class="mm-priv">' + esc(T('Your camera picture stays on this device. Nothing is recorded, saved or sent, and nobody is recognised. The app only looks for where your head, shoulders and arms are, so the outline can sit over you.', 'Dein Kamerabild bleibt auf diesem Gerät. Nichts wird aufgenommen, gespeichert oder gesendet, niemand wird erkannt. Die App sucht nur, wo Kopf, Schultern und Arme sind, damit der Umriss über dir liegt.', 'La imagen de tu cámara se queda en este dispositivo. No se graba, guarda ni envía nada, y no se reconoce a nadie. La app solo busca dónde están tu cabeza, hombros y brazos para colocar la silueta sobre ti.')) + '</p>';
+    const privacy = id => id === 'hinge' ? '<p class="mm-priv">' + esc(T('Your camera picture stays on this device. Nothing is recorded, saved or sent, and nobody is recognised. From the side, the app only looks for where your head, shoulders, hips, knees and feet are, to count your reps.', 'Dein Kamerabild bleibt auf diesem Gerät. Nichts wird aufgenommen, gespeichert oder gesendet, niemand wird erkannt. Die App sucht von der Seite nur, wo Kopf, Schultern, Hüfte, Knie und Füße sind, um deine Wiederholungen zu zählen.', 'La imagen de tu cámara se queda en este dispositivo. No se graba, guarda ni envía nada, y no se reconoce a nadie. De lado, la app solo busca dónde están tu cabeza, hombros, cadera, rodillas y pies, para contar tus repeticiones.')) + '</p>' : '<p class="mm-priv">' + esc(T('Your camera picture stays on this device. Nothing is recorded, saved or sent, and nobody is recognised. The app only looks for where your head, shoulders and arms are, so the outline can sit over you.', 'Dein Kamerabild bleibt auf diesem Gerät. Nichts wird aufgenommen, gespeichert oder gesendet, niemand wird erkannt. Die App sucht nur, wo Kopf, Schultern und Arme sind, damit der Umriss über dir liegt.', 'La imagen de tu cámara se queda en este dispositivo. No se graba, guarda ni envía nada, y no se reconoce a nadie. La app solo busca dónde están tu cabeza, hombros y brazos para colocar la silueta sobre ti.')) + '</p>';
 
     function chooser() {
         const R = C.ROUTINES, l = lang();
         showSheet('<header class="mm-ph"><b>' + esc(T('Mirror mode', 'Spiegel-Modus', 'Modo espejo')) + '</b><button type="button" class="mm-ic" data-mm="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '">' + ICON.x + '</button></header>' +
             '<p class="mm-lead">' + esc(T('See yourself with a glowing outline over you, step into it, then move with it.', 'Du siehst dich mit einem leuchtenden Umriss über dir, stellst dich hinein und bewegst dich mit ihm.', 'Te ves con una silueta brillante encima, te colocas dentro y te mueves con ella.')) + '</p>' +
-            '<div class="mm-routines">' + Object.keys(R).map(k => '<button type="button" class="mm-rt" data-mm="pick" data-r="' + k + '">' + ICON[R[k].icon] + '<span><b>' + esc(C.txt(R[k].n, l)) + '</b><small>' + esc(C.txt(R[k].sub, l)) + '</small></span></button>').join('') + '</div>' +
+            '<div class="mm-routines">' + Object.keys(R).map(k => '<button type="button" class="mm-rt" data-mm="pick" data-r="' + k + '">' + ICON[R[k].icon] + '<span><b>' + esc(C.txt(R[k].n, l)) + '</b><small>' + esc(C.txt(R[k].sub, l)) + '</small></span></button>').join('') + hingeCard() + '</div>' +
             '<p class="mm-note">' + esc(C.txt(C.BED, l)) + '</p>');
     }
+    function hingeCard() {
+        const G = HG(); if (!G) return '';
+        const l = lang();
+        return '<button type="button" class="mm-rt mm-rt-hinge" data-mm="pick" data-r="hinge">' + ICON.hinge + '<span><b>' + esc(C.txt(G.ROUTINE.n, l)) + '</b><small>' + esc(C.txt(G.ROUTINE.sub, l)) + '</small></span><em class="mm-new">' + esc(T('New', 'Neu', 'Nuevo')) + '</em></button>';
+    }
     function setup(id) {
-        routine = C.ROUTINES[id] ? id : 'chair';
-        const R = C.ROUTINES[routine], l = lang();
+        routine = id === 'hinge' && HG() ? 'hinge' : C.ROUTINES[id] ? id : 'chair';
+        const R = isHinge() ? HG().ROUTINE : C.ROUTINES[routine], l = lang();
+        const fine = ov && ov.querySelector('.mm-fine'); if (fine) fine.textContent = isHinge() ? C.txt(R.fine, l) : FINE();
         showSheet('<header class="mm-ph"><button type="button" class="mm-ic" data-mm="back" aria-label="' + esc(T('Back', 'Zurück', 'Atrás')) + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><b>' + esc(C.txt(R.n, l)) + '</b><button type="button" class="mm-ic" data-mm="close" aria-label="' + esc(T('Close', 'Schließen', 'Cerrar')) + '">' + ICON.x + '</button></header>' +
-            placeArt(routine) +
-            '<ol class="mm-steps">' + R.place.map(p => '<li>' + esc(C.txt(p, l)) + '</li>').join('') + '</ol>' + privacy() +
+            (isHinge() ? HG().placeArt(T, esc) : placeArt(routine)) +
+            '<ol class="mm-steps">' + R.place.map(p => '<li>' + esc(C.txt(p, l)) + '</li>').join('') + '</ol>' + privacy(routine) +
             '<div class="mm-acts"><button type="button" class="mm-btn mm-pri" data-mm="cam">' + ICON.cam + '<span>' + esc(T('Turn on camera', 'Kamera einschalten', 'Activar cámara')) + '</span></button>' +
             '<button type="button" class="mm-btn mm-ghostbtn" data-mm="nocam">' + esc(T('Follow without camera', 'Ohne Kamera mitmachen', 'Seguir sin cámara')) + '</button></div>');
     }
@@ -171,8 +190,8 @@
     }
     async function goCamera() {
         build(); stage.hidden = false; H.classList.add('mm-cam');
-        flow = new C.Flow({ routine, mode: 'camera', lang: lang() });
-        say(T('Get into the outline', 'Stell dich in den Umriss', 'Ponte dentro de la silueta'), true);    /* speaks inside the tap, which unlocks voice on iPhone */
+        flow = newFlow('camera');
+        say(isHinge() ? T('Stand side-on, head to feet in view', 'Stell dich seitlich hin, Kopf bis Füße im Bild', 'Ponte de lado, de la cabeza a los pies') : T('Get into the outline', 'Stell dich in den Umriss', 'Ponte dentro de la silueta'), true);    /* speaks inside the tap, which unlocks voice on iPhone */
         showSheet('<div class="mm-wait"><span class="mm-spin" aria-hidden="true"></span><b>' + esc(T('Starting the camera…', 'Kamera startet…', 'Iniciando la cámara…')) + '</b><small>' + esc(T('The first time loads the tracker (about 9 MB), then it is quick.', 'Beim ersten Mal lädt der Tracker (etwa 9 MB), danach geht es schnell.', 'La primera vez se carga el detector (unos 9 MB), luego es rápido.')) + '</small></div>');
         const gen = ++camGen;
         try {
@@ -187,7 +206,7 @@
     }
     function goFree() {
         build(); stopCamera(); stage.hidden = false; sheet().hidden = true; sheet().innerHTML = '';
-        if (flow) { flow.toFree(); flow.pause(false); } else flow = new C.Flow({ routine, mode: 'free', lang: lang() });
+        if (flow) { flow.toFree(); flow.pause(false); } else flow = newFlow('free');
         say(T('Follow the outline', 'Folge dem Umriss', 'Sigue la silueta'), true);
         running = true; lastMoveSpoken = -1; if (!raf) raf = requestAnimationFrame(draw);
     }
@@ -254,12 +273,12 @@
             if (lms) {
                 const pts = lms.map(p => C.toView(p, vw, vh, view.W, view.H, true));
                 if (!sm || sm.length !== pts.length) sm = pts; else sm = sm.map((q, i) => ({ x: q.x + (pts[i].x - q.x) * 0.55, y: q.y + (pts[i].y - q.y) * 0.55, v: pts[i].v }));
-                m = C.measure(sm, view.W, view.H);
+                m = isHinge() ? HG().measure(sm, view.W, view.H) : C.measure(sm, view.W, view.H);
             } else { sm = null; m = { seen: false }; }
         }
         const s = flow.update(now, m, view);
-        paint(s, view, now);
-        ui(s);
+        if (s.kind === 'hinge' && HG()) { ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, view.W, view.H); HG().paint(ctx, s, view, now, { sm }); HG().ui(ov, s, flow, hd()); }
+        else { paint(s, view, now); ui(s); }
         if (s.phase === 'done') finish(s);
     }
     function paint(s, view, now) {
@@ -307,7 +326,7 @@
     }
     let uiKey = '';
     function ui(s) {
-        const R = C.ROUTINES[routine], l = lang();
+        const R = C.ROUTINES[routine] || C.ROUTINES.chair, l = lang();
         const key = [s.phase, s.i, s.left, s.hint, s.count, s.canHere, s.paused, s.mode, Math.round(s.score * 20)].join('|');
         if (key === uiKey) return; uiKey = key;
         ov.querySelector('.mm-title b').textContent = C.txt(R.n, l);
@@ -324,6 +343,7 @@
         meter.hidden = !showM; if (showM) { meter.querySelector('span').textContent = T('Match with outline', 'Nähe zum Umriss', 'Cercanía a la silueta'); meter.querySelector('em').style.transform = 'scaleX(' + s.score.toFixed(2) + ')'; }
         ov.querySelector('[data-mm="here"]').hidden = !s.canHere;
         ov.querySelector('[data-mm="free"]').hidden = s.mode !== 'camera';
+        const skr = ov.querySelector('[data-mm="skiprest"]'); if (skr) skr.hidden = true;
         const pb = ov.querySelector('[data-mm="pause"]'); pb.innerHTML = (s.paused ? ICON.play : ICON.pause) + '<span>' + esc(s.paused ? T('Resume', 'Weiter', 'Seguir') : T('Pause', 'Pause', 'Pausa')) + '</span>'; pb.hidden = aligning;
         /* voice + screen reader: say what changed, not every frame */
         if (s.phase === 'count' && s.count !== lastCount) { lastCount = s.count; say(String(s.count), true); }
@@ -335,6 +355,10 @@
     }
     function finish(s) {
         running = false; cancelAnimationFrame(raf); raf = 0; stopCamera();
+        if (s.kind === 'hinge' && HG()) {
+            try { W.dispatchEvent(new CustomEvent('lowi:mirror-done', { detail: { routine: 'hinge', reps: s.done, clean: s.clean, sets: s.sets, camera: s.mode === 'camera' } })); } catch (e) {}
+            return showSheet(HG().finishHTML(s, hd()));
+        }
         const mins = Math.max(1, Math.round(s.total / 60));
         say(T('Done. Nice moving.', 'Geschafft. Gut bewegt.', 'Hecho. Bien movido.'), true);
         try { W.dispatchEvent(new CustomEvent('lowi:mirror-done', { detail: { routine, minutes: mins, camera: s.mode === 'camera' } })); } catch (e) {}
@@ -373,6 +397,8 @@
         if (k === 'open') { if (flow || stream) stopAll(); open(); }
         else if (k === 'close') close();
         else if (k === 'pick') setup(b.getAttribute('data-r'));
+        else if (k === 'hinge') { if (flow || stream) stopAll(); open(); setup('hinge'); }
+        else if (k === 'skiprest') { if (flow && flow.skipRest) flow.skipRest(); }
         else if (k === 'back') chooser();
         else if (k === 'cam') goCamera();
         else if (k === 'nocam') goFree();

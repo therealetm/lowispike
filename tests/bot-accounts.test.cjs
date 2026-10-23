@@ -41,7 +41,7 @@ test('the app loads the server flag, caches it and repaints the board', () => {
   assert.ok(h.indexOf('<script src="bot-accounts.js') < h.indexOf('<script src="ranking-core.js'), 'loaded before the ranking');
   assert.ok(h.includes('window.LowiBotAccounts.load(sb)'));
   assert.ok(sw.includes('"bot-accounts.js"'), 'offline cache');
-  assert.ok(b.includes(".select('id').eq('bot', true)"));
+  assert.ok(b.includes(".select('id,bot,test').or('bot.eq.true,test.eq.true')"));
   assert.ok(b.includes('localStorage'));
   assert.ok(rk.includes("addEventListener('lowi-bots'"));
 });
@@ -63,4 +63,28 @@ test('server: flag from our own tools\' sign-up e-mails, trigger-owned, Circles 
   assert.ok(!/delete from public\.profiles|delete from auth\.users|delete from public\.community/i.test(q), 'no account or message is deleted');
   const crowd = R('tools/community-crowd/crowd.cjs');
   assert.ok(crowd.includes('@crowd.lowispike.invalid'), 'the crowd tool signs up with that domain');
+});
+
+const TEST = '00000000-0000-4000-8000-0000000000c1', TEST2 = '00000000-0000-4000-8000-0000000000c2';
+test('test accounts (Lena / Jonas / Mia Test from the check scripts): hidden by the server marker, never by name', () => {
+  const H = require('../hidden-accounts.js');
+  B.setSelf(HUMAN); B.set([BOT], [TEST]);
+  assert.equal(B.isTest({ uid: TEST, n: 'Lena' }), true);
+  assert.equal(B.isBot({ uid: TEST, n: 'Lena' }), true, 'off the Ranking and the friend / Circle lists');
+  assert.equal(H.isHidden({ uid: TEST, n: 'Lena' }), true, 'hidden everywhere, like the known test accounts');
+  assert.equal(H.isHidden({ uid: BOT, n: 'Crowd' }), false, 'bots stay in the Community');
+  assert.equal(B.isBot({ uid: TEST2, n: 'Lena' }), false, 'a real Lena without the marker stays');
+  assert.equal(RK.real({ uid: TEST, n: 'Jonas', xp: 10 }), false);
+  B.setSelf(TEST2); B.set([BOT], [TEST, TEST2]);
+  assert.equal(B.isBot({ uid: TEST, n: 'Mia Test 4013' }), false, 'test accounts still see each other, so the checks run');
+  B.setSelf(''); B.set([], []);
+});
+
+test('check scripts mark their accounts and clean up', () => {
+  const ta = R('tools/user-rooms/test-account.cjs'), ck = R('tools/user-rooms/check.cjs'), q = R('supabase/proposals/bot_flag_20261023.sql');
+  assert.ok(ta.includes("updateUser({ data: { lowi_test: true } })"));
+  assert.ok(ta.includes(".from('profiles').delete().eq('id', uid)"));
+  assert.ok(ck.includes('await TA.markTest(page)') && ck.includes('TA.cleanup(d.page)'));
+  assert.ok(q.includes("(u.raw_user_meta_data->>'lowi_test')='true'"));
+  assert.ok(q.includes('create trigger auth_users_lowiflags after update of raw_user_meta_data on auth.users'));
 });

@@ -49,7 +49,8 @@
     const SET = new Set(IDS);
     const idOf = p => typeof p === 'string' ? p : (p && (p.uid || p.id || p.user_id)) || '';
     /* your own row is never hidden, even if its id were listed */
-    function isHidden(p) { if (p && typeof p === 'object' && p.me) return false; const id = String(idOf(p)).trim().toLowerCase(); return !!id && SET.has(id); }
+    /* + accounts the server marks as test accounts (profiles.test, bot-accounts.js), hidden everywhere like these */
+    function isHidden(p) { if (p && typeof p === 'object' && p.me) return false; const id = String(idOf(p)).trim().toLowerCase(); if (!id) return false; if (SET.has(id)) return true; const B = root.LowiBotAccounts; return !!(B && B.testHidden && B.testHidden(String(idOf(p)).trim())); }
     function visible(list) { return (list || []).filter(p => !isHidden(p)); }
     const api = { IDS, isHidden, visible };
     if (typeof module === 'object' && module.exports) module.exports = api;

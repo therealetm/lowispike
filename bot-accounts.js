@@ -1,42 +1,57 @@
-/* LOWiSPIKE bot accounts (Oct 23, 2026). Emmanuel, call, 11:18 PM: "Können wir bitte die ganzen Bots in der Leaderboard
-   rausschmeißen und nur noch die Menschen da drin haben?" and "ich möchte auch die Bots aus mein Circle haben" (the
-   Freund hinzufügen list showed bot names and his own name many times).
+/* LOWiSPIKE bot and test accounts (Oct 23, 2026). Emmanuel, call, 11:18 PM: "Können wir bitte die ganzen Bots in der
+   Leaderboard rausschmeißen und nur noch die Menschen da drin haben?" and "ich möchte auch die Bots aus mein Circle haben"
+   (the Freund hinzufügen list showed bot names and his own name many times). Later: Lena, Jonas and "Mia Test ####" are
+   anonymous accounts our own Circles check scripts create on the live app; hide them completely too, by a reliable
+   marker, never by name, so a real Lena, Jonas or Mia stays.
 
-   Which accounts are bots is decided by the SERVER, never by a name: profiles.bot is set by the trigger
-   profiles_zz_botflag (supabase/proposals/bot_flag_20261023.sql) from the account's sign-up e-mail, which only our own
-   tools use: crowdNNN@crowd.lowispike.invalid (tools/community-crowd/crowd.cjs, the 100 community crowd members) and
-   lowispike.gatetest+N@gmail.com (the Gatey / Guesty gate-test accounts). A user cannot set or clear the flag.
-
-   The bots stay in the Community (galaxy, chat, the daily insulin-friendly photos); this list only keeps them out of
-   the Ranking (week, month, all time) and out of the people you can add as a friend or to a Circle.
-   API: set(ids), isBot(personOrId), humans(list), size(), load(sb). The ids are cached in localStorage so the very
-   first paint after a restart already leaves the bots out. */
+   The SERVER decides, from data a name cannot fake (supabase/proposals/bot_flag_20261023.sql):
+   - profiles.bot  = the sign-up e-mail is one only our tools use: crowdNNN@crowd.lowispike.invalid
+                     (tools/community-crowd/crowd.cjs) or lowispike.gatetest+N@gmail.com (Gatey / Guesty).
+                     Bots stay in the Community (galaxy, chat, daily photos); they only leave the Ranking and the
+                     add-friend / Circle lists, and the database refuses them as Circle members.
+   - profiles.test = the account carries lowi_test:true in its auth metadata, set by our check scripts
+                     (tools/user-rooms/check*.cjs). Test accounts are hidden everywhere (hidden-accounts.js asks here),
+                     except to another test account, so the check scripts can still find each other.
+   Both columns are written by triggers; no client can set or clear them.
+   API: set(botIds, testIds), setSelf(uid), isBot(p) (bot, or test seen by a real person), isTest(p), humans(list),
+   size(), load(sb). The ids are cached in localStorage so the first paint after a restart already leaves them out. */
 (function (root) {
     'use strict';
-    const KEY = 'lowi.botIds.v1';
-    let ids = new Set();
-    try { const v = JSON.parse(root.localStorage && root.localStorage.getItem(KEY) || 'null'); if (v && Array.isArray(v.ids)) ids = new Set(v.ids.map(String)); } catch (e) { /* no cache */ }
+    const KEY = 'lowi.botIds.v2';
+    let bots = new Set(), tests = new Set(), self = '';
+    try {
+        const v = JSON.parse(root.localStorage && root.localStorage.getItem(KEY) || 'null');
+        if (v && Array.isArray(v.ids)) bots = new Set(v.ids.map(String));
+        if (v && Array.isArray(v.tests)) tests = new Set(v.tests.map(String));
+        if (v && v.self) self = String(v.self);
+    } catch (e) { /* no cache */ }
     const uidOf = p => String(p && typeof p === 'object' ? (p.uid || p.id || p.user_id || '') : (p || ''));
-    function isBot(p) { const u = uidOf(p); return !!u && ids.has(u); }
+    const selfIsTest = () => !!self && tests.has(self);
+    function isTest(p) { const u = uidOf(p); return !!u && tests.has(u); }
+    function testHidden(p) { if (p && typeof p === 'object' && p.me) return false; return isTest(p) && !selfIsTest() && uidOf(p) !== self; }
+    function isBot(p) { const u = uidOf(p); if (!u) return false; return bots.has(u) || testHidden(p); }
     function humans(list) { return (list || []).filter(p => !isBot(p)); }
-    function set(list) {
-        const next = new Set((list || []).map(String).filter(Boolean));
-        const changed = next.size !== ids.size || [...next].some(u => !ids.has(u));
-        ids = next;
-        try { root.localStorage && root.localStorage.setItem(KEY, JSON.stringify({ ids: [...ids], at: Date.now() })); } catch (e) { /* full */ }
+    function save() { try { root.localStorage && root.localStorage.setItem(KEY, JSON.stringify({ ids: [...bots], tests: [...tests], self, at: Date.now() })); } catch (e) { /* full */ } }
+    function set(botIds, testIds) {
+        const nb = new Set((botIds || []).map(String).filter(Boolean)), nt = new Set((testIds || []).map(String).filter(Boolean));
+        const diff = (a, b) => a.size !== b.size || [...a].some(u => !b.has(u));
+        const changed = diff(nb, bots) || diff(nt, tests);
+        bots = nb; tests = nt; save();
         if (changed) { try { root.dispatchEvent && root.dispatchEvent(new root.CustomEvent('lowi-bots')); } catch (e) { /* old browser */ } }
         return changed;
     }
-    /* reads the server flag; a database without the column (or offline) leaves the cached list as it is */
+    function setSelf(uid) { self = String(uid || ''); save(); }
+    /* reads the server flags; a database without the columns (or offline) leaves the cached lists as they are */
     async function load(sb) {
         try {
             if (!sb || !sb.from) return false;
-            const r = await sb.from('profiles').select('id').eq('bot', true).limit(5000);
+            try { const s = sb.auth && sb.auth.getSession && await sb.auth.getSession(); const u = s && s.data && s.data.session && s.data.session.user; if (u && u.id) setSelf(u.id); } catch (e) { /* no session */ }
+            const r = await sb.from('profiles').select('id,bot,test').or('bot.eq.true,test.eq.true').limit(5000);
             if (!r || r.error || !Array.isArray(r.data)) return false;
-            return set(r.data.map(x => x.id));
+            return set(r.data.filter(x => x.bot).map(x => x.id), r.data.filter(x => x.test).map(x => x.id));
         } catch (e) { return false; }
     }
-    const api = { KEY, set, isBot, humans, load, size: () => ids.size };
+    const api = { KEY, set, setSelf, isBot, isTest, testHidden, humans, load, size: () => bots.size + tests.size };
     root.LowiBotAccounts = api;
     if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

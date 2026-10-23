@@ -165,7 +165,8 @@ function paintChans(pane){let box=pane.querySelector(':scope>.rm-chans');if(view
 /* item 36: the newest reply or mention addressed to you, now that the channel list that showed it is gone */
 function lastDirected(){try{const c=W.LowiCommunity,d=c&&c.directed&&c.directed(),l=(d&&d.list)||[];return l.length?{m:l[l.length-1],n:l.filter(x=>!x.seen).length}:null;}catch(e){return null;}}
 function menuItems(){const it=[['people','👥',tr('mPeople')],['find','🔎',tr('find')]];
- const dl=lastDirected();if(dl)it.unshift(['replies','💬',tr('chReplies')+(dl.n?' ('+dl.n+')':'')]);
+ /* 23 Oct (Emmanuel: "Replies & mentions doesn't work and doesn't make sense, so you can mute it"): no Replies & mentions entry.
+    lastDirected() and the 'replies' click branch stay as harmless dead paths (nothing renders that key any more). */
  if(D.getElementById('pfBtn'))it.push(['profile','👤',tr('mProfile')]);
  it.push(['invite','🔗',tr('mInvite')]);if(view)it.push(['copyview','📋',tr(view==='aff'?'mCopyAff':'mCopyCreate')]);
  if(W.LowiCommunity&&W.LowiCommunity.settings)it.push(['settings','⚙️',tr('mSettings')]);

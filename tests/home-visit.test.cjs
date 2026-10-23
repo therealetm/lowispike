@@ -216,7 +216,7 @@ test('room: directed() lists only unseen messages to you (a mention or a reply),
     assert.equal(f.win.LowiCommunity.directed().list.filter(m => !m.seen).map(m => m.id).join(), '3,4', 'reading does not mark seen');
     f.scope('z'); assert.equal(f.win.LowiCommunity.directed().list.filter(m => !m.seen).length, 0, 'another account sees none of it');
 });
-test('room: while Home takes the visit, the "is talking to you" toast stays away; otherwise it shows as before', () => {
+test('room: while Home takes the visit, the "is talking to you" toast stays away; since 23 Oct it stays away everywhere (Replies & mentions muted)', () => {
     const f = room(); const now = Date.now(); const made = [];
     const toast = { attrs: {}, setAttribute(k, v) { this.attrs[k] = v; if (k === 'data-on') made.push(this.innerHTML); }, removeAttribute(k) { delete this.attrs[k]; } };
     const get = f.doc.getElementById; f.doc.getElementById = id => id === 'cgToast' ? toast : get(id);
@@ -235,5 +235,5 @@ test('room: while Home takes the visit, the "is talking to you" toast stays away
     f.win.LowiHomeVisit = { has: () => false };
     ms = ms.concat([{ id: '3', uid: 'b', by: 'Bea', t: '@Fixture A and again', ts: Date.now() + 10 }]);
     f.win.LowiCommunity.refresh(); f.flush();
-    assert.equal(made.length, 1, 'not on Home: the toast shows'); assert.match(made[0], /and again/);
+    assert.equal(made.length, 0, '23 Oct: Replies & mentions muted, no toast anywhere');
 });

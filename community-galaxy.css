@@ -80,8 +80,9 @@ html[data-ui=light] #cmPaneChat{--cg-s1:#f5f2ff;--cg-s2:#e8eaff;--cg-s3:#fdebf3;
 html.cs-chat-typing:not(.cs-chat-map-typing) #cmPaneChat[data-spirit-chat] .cg-empty p{display:none}
 
 /* in-app "talking to you" banner and the tab badge */
-.cg-toast-wrap{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translate(-50%,-160%);z-index:9999;width:min(420px,calc(100vw - 24px));pointer-events:none;transition:transform .35s cubic-bezier(.2,.9,.3,1.15)}
-.cg-toast-wrap[data-on]{transform:translate(-50%,0);pointer-events:auto}
+/* 23 Oct: parked fully out of sight (was -160% of its own height, which left the card half visible under the notch/iPad status bar) */
+.cg-toast-wrap{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);transform:translate(-50%,calc(-100% - env(safe-area-inset-top,0px) - 40px));visibility:hidden;opacity:0;z-index:9999;width:min(420px,calc(100vw - 24px));pointer-events:none;transition:transform .35s cubic-bezier(.2,.9,.3,1.15),opacity .25s,visibility 0s linear .35s}
+.cg-toast-wrap[data-on]{transform:translate(-50%,0);visibility:visible;opacity:1;pointer-events:auto;transition:transform .35s cubic-bezier(.2,.9,.3,1.15),opacity .25s,visibility 0s}
 .cg-toast{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 14px;border-radius:20px;border:1px solid #ffffff22;background:#17122ff0;color:#f3f0ff;font:inherit;box-shadow:0 10px 30px #00000066;cursor:pointer}
 html[data-ui=light] .cg-toast{background:#fffffff4;color:#221d38;border-color:#2a235022}
 .cg-torb{width:40px;height:40px;flex:none;border-radius:50%;display:grid;place-items:center;background:#9cdac733}

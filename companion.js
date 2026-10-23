@@ -136,7 +136,9 @@
 
     /* ---------- my look, shared with friends only as a visual code ---------- */
     let lookNow = '';
-    function myLook() { const g = myGenome(); return g ? C.encode(g) : ''; }
+    /* 23 Oct 2026: the look you share carries your companion's chosen name too (companion-core withName), so the Ranking can show it */
+    function myName() { try { const H = W.LowiHerbTamagotchi, c = H && H.current && H.current(); return H && H.name && c ? H.name(c.p, c.m) : ''; } catch (e) { return ''; } }
+    function myLook() { const g = myGenome(); return g ? (C.withName ? C.withName(C.encode(g), myName()) : C.encode(g)) : ''; }
     function hookProfile() {
         const R3 = W.LowiR3;
         if (!R3 || R3.profileExtra && R3.profileExtra.cf) return !!R3;

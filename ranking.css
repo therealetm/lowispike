@@ -80,3 +80,52 @@
 @media (max-width:359px){.rm-rank .rk-pod-i .rk-orb{width:60px;height:60px}.rm-rank .rk-pod-i.rk-p1 .rk-orb{width:76px;height:76px}.rm-rank .rk-me-l{min-width:48px}}
 @media (min-width:700px){.rm-rank .rk-pod-i .rk-orb{width:86px;height:86px}.rm-rank .rk-pod-i.rk-p1 .rk-orb{width:110px;height:110px}}
 @media (prefers-reduced-motion:reduce){.rm-rank .rk-orb{animation:none}.rm-rank .rk-seg::before{transition:none}.rm-rank .rk-me,.rm-rank .rk-row,.rm-rank .rk-pod-i{transition:none}}
+
+/* 23 Oct 2026: the owner's name sits small under the companion's rank line */
+.rm-rank .rk-ownr{font:500 11px/1.25 inherit;font-family:inherit;color:var(--rm-ink2,#c3d5ec);opacity:.72;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.rm-rank .rk-pod-i .rk-own,.rm-rank .rk-pod-i .rk-ownr{text-align:center;max-width:100%}
+/* Your place opens the level ladder: a small "Levels ›" hint on the right */
+.rm-rank .rk-me-go{flex:none;display:flex;flex-direction:column;align-items:center;gap:1px;margin-left:2px;color:var(--rm-cyan,#8fe7ff)}
+.rm-rank .rk-me-go i{font:600 10px/1 inherit;font-family:inherit;font-style:normal;opacity:.85}
+.rm-rank .rk-me-go b{font:700 20px/1 inherit;font-family:inherit}
+
+/* the level ladder: one living bubble sheet over the Ranking (Skool's "% of members per level", in the bubble style) */
+.rk-lad-wrap{position:fixed;inset:0;z-index:9000;display:flex;align-items:flex-end;justify-content:center;padding:0 10px max(10px,env(safe-area-inset-bottom));
+ background:rgba(2,8,24,0);transition:background .22s ease}
+.rk-lad-wrap.in{background:rgba(2,8,24,.55)}
+.rk-lad{position:relative;width:min(520px,100%);max-height:min(82vh,760px);display:flex;flex-direction:column;overflow:hidden;color:#fff;font-family:inherit;
+ border-radius:30px;border:1px solid rgba(143,231,255,.5);background:radial-gradient(130% 90% at 25% 0%,rgba(143,231,255,.2),rgba(9,18,48,.94) 58%);
+ box-shadow:0 0 0 1px rgba(143,231,255,.18),0 0 34px rgba(47,149,255,.35),inset 0 1px 0 rgba(255,255,255,.12);-webkit-backdrop-filter:blur(20px) saturate(150%);backdrop-filter:blur(20px) saturate(150%);
+ transform:translateY(24px) scale(.96);opacity:0;transition:transform .26s cubic-bezier(.2,.8,.2,1),opacity .2s}
+.rk-lad-wrap.in .rk-lad{transform:none;opacity:1}
+.rk-lad-h{display:flex;align-items:center;gap:12px;padding:16px 14px 12px 16px;border-bottom:1px solid rgba(143,231,255,.16)}
+.rk-lad .rk-orb{position:relative;flex:none;display:grid;place-items:center;width:64px;height:64px;border-radius:50%;
+ background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.22),rgba(143,231,255,.12) 45%,rgba(10,30,80,.6) 75%);box-shadow:inset 0 0 0 2px rgba(143,231,255,.6),0 0 18px rgba(28,247,249,.3);animation:rk-breathe 3.6s ease-in-out infinite}
+.rk-lad .rk-orb svg{width:84%;height:84%;display:block;overflow:visible}
+.rk-lad-hw{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.rk-lad-cn{font:800 18px/1.2 inherit;font-family:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rk-lad-lv{font:600 13px/1.3 inherit;font-family:inherit;color:var(--rm-cyan,#8fe7ff)}
+.rk-lad-next{margin:0;font:500 12px/1.3 inherit;font-family:inherit;color:var(--rm-ink2,#c3d5ec)}
+.rk-lad-bar{display:block;height:6px;margin-top:4px;border-radius:999px;background:rgba(143,231,255,.14);overflow:hidden}
+.rk-lad-bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#2f95ff,#8fe7ff);box-shadow:0 0 10px rgba(143,231,255,.6)}
+.rk-lad-x{appearance:none;flex:none;align-self:flex-start;width:36px;height:36px;border-radius:50%;border:1px solid rgba(143,231,255,.4);background:rgba(9,18,48,.6);color:#fff;font:400 22px/1 inherit;font-family:inherit;cursor:pointer}
+.rk-lad-x:focus-visible{outline:2px solid var(--rm-cyan,#8fe7ff);outline-offset:2px}
+.rk-lad-l{list-style:none;margin:0;padding:8px 12px 4px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.rk-lad-i{display:flex;align-items:center;gap:12px;padding:7px 8px;border-radius:20px}
+.rk-lad-i.now{background:rgba(143,231,255,.1);box-shadow:inset 0 0 0 1px rgba(143,231,255,.45)}
+.rk-lad-b{position:relative;flex:none;display:grid;place-items:center;width:42px;height:42px;border-radius:50%}
+.rk-lad-i.on .rk-lad-b{background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.4),rgba(143,231,255,.35) 45%,rgba(47,149,255,.5) 80%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.4),0 0 14px rgba(143,231,255,.55);animation:rk-breathe 3.6s ease-in-out infinite}
+.rk-lad-i.on.evo .rk-lad-b{background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.5),rgba(255,214,102,.5) 45%,rgba(255,170,60,.55) 80%);box-shadow:inset 0 0 0 1px rgba(255,240,200,.6),0 0 16px rgba(255,200,80,.55)}
+.rk-lad-i.off .rk-lad-b{background:radial-gradient(circle at 40% 35%,rgba(195,213,236,.18),rgba(40,52,80,.55));box-shadow:inset 0 0 0 1px rgba(195,213,236,.22)}
+.rk-lad-b b{font:800 15px/1 inherit;font-family:inherit;color:#fff}
+.rk-lad-i.off .rk-lad-b b{color:rgba(195,213,236,.55)}
+.rk-lock{position:absolute;right:-2px;bottom:-2px;width:16px;height:16px;border-radius:50%;background:rgba(9,18,48,.95);box-shadow:inset 0 0 0 1px rgba(195,213,236,.4)}
+.rk-lock::before{content:'';position:absolute;left:5px;top:7px;width:6px;height:5px;border-radius:1px;background:rgba(195,213,236,.85)}
+.rk-lock::after{content:'';position:absolute;left:5.5px;top:3.5px;width:3px;height:4px;border:1.5px solid rgba(195,213,236,.85);border-bottom:0;border-radius:3px 3px 0 0}
+.rk-lad-w{display:flex;flex-direction:column;min-width:0;flex:1}
+.rk-lad-w b{font:700 14px/1.25 inherit;font-family:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rk-lad-i.off .rk-lad-w b{color:rgba(255,255,255,.6)}
+.rk-lad-w small{font:500 12px/1.3 inherit;font-family:inherit;color:var(--rm-ink2,#c3d5ec)}
+.rk-lad-evo{font:700 10px/1 inherit;font-family:inherit;font-style:normal;padding:2px 6px;border-radius:999px;color:#ffd666;box-shadow:inset 0 0 0 1px rgba(255,214,102,.5);vertical-align:2px}
+.rk-lad-foot{margin:0;padding:8px 16px 14px;font:500 11px/1.35 inherit;font-family:inherit;color:var(--rm-ink2,#c3d5ec);opacity:.8;text-align:center}
+@media (prefers-reduced-motion:reduce){.rk-lad,.rk-lad-wrap{transition:none}.rk-lad .rk-orb,.rk-lad-i.on .rk-lad-b{animation:none}}

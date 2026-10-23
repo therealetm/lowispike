@@ -22,7 +22,7 @@ test('normalize keeps named dishes, clamps wild numbers, maps the *_g fields to 
         { name: 'Cola', portion: '1 can', grams: 330, kcal: 99999, protein_g: -5, carbs_g: 'x', sugar_g: '35', fiber_g: null, fat_g: 0 }
     ] });
     assert.strictEqual(r.dishes.length, 2);
-    assert.deepStrictEqual(r.dishes[0], { name: 'Spaghetti bolognese', portion: '1 plate', grams: 350, kcal: 612, protein: 28.3, carbs: 80, sugar: 9, fiber: 7, fat: 18 });
+    assert.deepStrictEqual(r.dishes[0], { name: 'Spaghetti bolognese', portion: '1 plate', grams: 350, kcal: 612, protein: 28.3, carbs: 80, sugar: 9, fiber: 7, fat: 18, count: 1 });
     assert.strictEqual(r.dishes[1].kcal, 3000, 'kcal capped');
     assert.strictEqual(r.dishes[1].protein, 0, 'negative -> 0');
     assert.strictEqual(r.dishes[1].carbs, 0, 'text -> 0');

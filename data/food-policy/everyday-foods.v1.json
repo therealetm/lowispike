@@ -1,0 +1,1285 @@
+{
+ "version": "everyday-foods.v1",
+ "date": "2026-10-23",
+ "about": "Everyday foods and their LOWiSPIKE verdict. source owner = from the Master Knowledge, source maya = added on Oct 23 with the same logic, for owner review. tests/food-knowledge.test.cjs checks that the engine gives every name, in all three languages, exactly this verdict.",
+ "foods": [
+  {
+   "en": "Eggs",
+   "de": "Eier",
+   "es": "Huevos",
+   "verdict": "JA",
+   "group": "protein",
+   "note": "Boiled, fried or scrambled without breading",
+   "source": "owner"
+  },
+  {
+   "en": "Chicken breast",
+   "de": "Hähnchenbrust",
+   "es": "Pechuga de pollo",
+   "verdict": "JA",
+   "group": "protein",
+   "note": "Unbreaded, no sweet glaze",
+   "source": "owner"
+  },
+  {
+   "en": "Turkey",
+   "de": "Pute",
+   "es": "Pavo",
+   "verdict": "JA",
+   "group": "protein",
+   "note": "Unbreaded",
+   "source": "owner"
+  },
+  {
+   "en": "Duck",
+   "de": "Ente",
+   "es": "Pato",
+   "verdict": "JA",
+   "group": "protein",
+   "note": "Without sweet sauce",
+   "source": "maya"
+  },
+  {
+   "en": "Lean beef",
+   "de": "Mageres Rindfleisch",
+   "es": "Ternera magra",
+   "verdict": "JA",
+   "group": "protein",
+   "note": "Unprocessed",
+   "source": "owner"
+  },
+  {
+   "en": "Lamb",
+   "de": "Lammfleisch",
+   "es": "Cordero",
+   "verdict": "JA",
+   "group": "protein",
+   "note": "Unprocessed, like beef",
+   "source": "maya"
+  },
+  {
+   "en": "Veal",
+   "de": "Kalbfleisch",
+   "es": "Ternera lechal (veal)",
+   "verdict": "JA",
+   "group": "protein",
+   "note": "Unprocessed, like beef",
+   "source": "maya"
+  },
+  {
+   "en": "Salmon",
+   "de": "Lachs",
+   "es": "Salmón",
+   "verdict": "JA",
+   "group": "protein",
+   "note": "Fish",
+   "source": "owner"
+  },
+  {
+   "en": "Tuna",
+   "de": "Thunfisch",
+   "es": "Atún",
+   "verdict": "JA",
+   "group": "protein",
+   "note": "In water or oil, not in sweet sauce",
+   "source": "owner"
+  },
+  {
+   "en": "Shrimp",
+   "de": "Garnelen",
+   "es": "Gambas",
+   "verdict": "JA",
+   "group": "protein",
+   "note": "Not breaded",
+   "source": "owner"
+  },
+  {
+   "en": "Mussels",
+   "de": "Muscheln",
+   "es": "Mejillones",
+   "verdict": "JA",
+   "group": "protein",
+   "note": "Seafood",
+   "source": "maya"
+  },
+  {
+   "en": "Sardines",
+   "de": "Sardinen",
+   "es": "Sardinas",
+   "verdict": "JA",
+   "group": "protein",
+   "note": "Fish",
+   "source": "maya"
+  },
+  {
+   "en": "Tofu",
+   "de": "Tofu",
+   "es": "Tofu",
+   "verdict": "JA",
+   "group": "protein",
+   "note": "Plain, not breaded",
+   "source": "maya"
+  },
+  {
+   "en": "Tempeh",
+   "de": "Tempeh",
+   "es": "Tempeh",
+   "verdict": "JA",
+   "group": "protein",
+   "note": "Plain",
+   "source": "maya"
+  },
+  {
+   "en": "Broccoli",
+   "de": "Brokkoli",
+   "es": "Brócoli",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Non-starchy",
+   "source": "owner"
+  },
+  {
+   "en": "Spinach",
+   "de": "Spinat",
+   "es": "Espinacas",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Non-starchy",
+   "source": "owner"
+  },
+  {
+   "en": "Zucchini",
+   "de": "Zucchini",
+   "es": "Calabacín",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Non-starchy",
+   "source": "owner"
+  },
+  {
+   "en": "Bell pepper",
+   "de": "Paprika",
+   "es": "Pimiento",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Non-starchy",
+   "source": "owner"
+  },
+  {
+   "en": "Cucumber",
+   "de": "Gurke",
+   "es": "Pepino",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Non-starchy",
+   "source": "owner"
+  },
+  {
+   "en": "Lettuce",
+   "de": "Salat",
+   "es": "Lechuga",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Non-starchy",
+   "source": "owner"
+  },
+  {
+   "en": "Cauliflower",
+   "de": "Blumenkohl",
+   "es": "Coliflor",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Non-starchy, also as cauliflower rice",
+   "source": "owner"
+  },
+  {
+   "en": "Green beans",
+   "de": "Grüne Bohnen",
+   "es": "Judías verdes",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Non-starchy",
+   "source": "owner"
+  },
+  {
+   "en": "Mushrooms",
+   "de": "Pilze",
+   "es": "Champiñones",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Non-starchy",
+   "source": "owner"
+  },
+  {
+   "en": "Cabbage",
+   "de": "Kohl",
+   "es": "Repollo",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Non-starchy",
+   "source": "owner"
+  },
+  {
+   "en": "Eggplant",
+   "de": "Aubergine",
+   "es": "Berenjena",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Non-starchy",
+   "source": "owner"
+  },
+  {
+   "en": "Okra",
+   "de": "Okra",
+   "es": "Okra",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Non-starchy",
+   "source": "owner"
+  },
+  {
+   "en": "Tomatoes",
+   "de": "Tomaten",
+   "es": "Tomates",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Normal portion, no sugar added",
+   "source": "maya"
+  },
+  {
+   "en": "Onions",
+   "de": "Zwiebeln",
+   "es": "Cebolla",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Normal cooking amounts",
+   "source": "maya"
+  },
+  {
+   "en": "Garlic",
+   "de": "Knoblauch",
+   "es": "Ajo",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Flavour",
+   "source": "maya"
+  },
+  {
+   "en": "Carrots",
+   "de": "Karotten",
+   "es": "Zanahorias",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Raw or cooked, a normal side portion",
+   "source": "maya"
+  },
+  {
+   "en": "Celery",
+   "de": "Sellerie",
+   "es": "Apio",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Non-starchy",
+   "source": "maya"
+  },
+  {
+   "en": "Radishes",
+   "de": "Radieschen",
+   "es": "Rábanos",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Non-starchy",
+   "source": "maya"
+  },
+  {
+   "en": "Kale",
+   "de": "Grünkohl",
+   "es": "Kale",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Non-starchy",
+   "source": "maya"
+  },
+  {
+   "en": "Leek",
+   "de": "Lauch",
+   "es": "Puerro",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Non-starchy",
+   "source": "maya"
+  },
+  {
+   "en": "Brussels sprouts",
+   "de": "Rosenkohl",
+   "es": "Coles de Bruselas",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Non-starchy",
+   "source": "maya"
+  },
+  {
+   "en": "Asparagus",
+   "de": "Spargel",
+   "es": "Espárragos",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Non-starchy",
+   "source": "maya"
+  },
+  {
+   "en": "Fennel",
+   "de": "Fenchel",
+   "es": "Hinojo",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Non-starchy",
+   "source": "maya"
+  },
+  {
+   "en": "Rocket",
+   "de": "Rucola",
+   "es": "Rúcula",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Non-starchy",
+   "source": "maya"
+  },
+  {
+   "en": "Kohlrabi",
+   "de": "Kohlrabi",
+   "es": "Colinabo",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Non-starchy",
+   "source": "maya"
+  },
+  {
+   "en": "Sauerkraut",
+   "de": "Sauerkraut",
+   "es": "Chucrut (sauerkraut)",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Fermented, no sugar added",
+   "source": "maya"
+  },
+  {
+   "en": "Olives",
+   "de": "Oliven",
+   "es": "Aceitunas",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Natural fat",
+   "source": "maya"
+  },
+  {
+   "en": "Pickles",
+   "de": "Gewürzgurken",
+   "es": "Pepinillos",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Check the jar for added sugar",
+   "source": "maya"
+  },
+  {
+   "en": "Lemon",
+   "de": "Zitrone",
+   "es": "Limón",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "As flavour",
+   "source": "maya"
+  },
+  {
+   "en": "Fresh herbs",
+   "de": "Frische Kräuter",
+   "es": "Hierbas frescas",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Flavour",
+   "source": "maya"
+  },
+  {
+   "en": "Ginger",
+   "de": "Ingwer",
+   "es": "Jengibre",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Flavour",
+   "source": "maya"
+  },
+  {
+   "en": "Konjac noodles",
+   "de": "Konjak-Nudeln",
+   "es": "Fideos de konjac",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Not real pasta",
+   "source": "maya"
+  },
+  {
+   "en": "Nori",
+   "de": "Nori",
+   "es": "Nori",
+   "verdict": "JA",
+   "group": "vegetables",
+   "note": "Seaweed",
+   "source": "maya"
+  },
+  {
+   "en": "Avocado",
+   "de": "Avocado",
+   "es": "Aguacate",
+   "verdict": "JA",
+   "group": "fats",
+   "note": "Natural fat",
+   "source": "owner"
+  },
+  {
+   "en": "Olive oil",
+   "de": "Olivenöl",
+   "es": "Aceite de oliva",
+   "verdict": "JA",
+   "group": "fats",
+   "note": "Moderate amounts",
+   "source": "owner"
+  },
+  {
+   "en": "Butter",
+   "de": "Butter",
+   "es": "Mantequilla",
+   "verdict": "JA",
+   "group": "fats",
+   "note": "Normal cooking amounts",
+   "source": "maya"
+  },
+  {
+   "en": "Ghee",
+   "de": "Ghee",
+   "es": "Ghee",
+   "verdict": "JA",
+   "group": "fats",
+   "note": "Normal cooking amounts",
+   "source": "maya"
+  },
+  {
+   "en": "Cream",
+   "de": "Sahne",
+   "es": "Nata",
+   "verdict": "JA",
+   "group": "fats",
+   "note": "A splash or a spoon",
+   "source": "maya"
+  },
+  {
+   "en": "Coconut milk",
+   "de": "Kokosmilch",
+   "es": "Leche de coco",
+   "verdict": "JA",
+   "group": "fats",
+   "note": "For cooking, unsweetened",
+   "source": "maya"
+  },
+  {
+   "en": "Plain Greek yoghurt",
+   "de": "Griechischer Naturjoghurt",
+   "es": "Yogur griego natural",
+   "verdict": "JA",
+   "group": "dairy",
+   "note": "No added sugar",
+   "source": "owner"
+  },
+  {
+   "en": "Quark",
+   "de": "Magerquark",
+   "es": "Quark",
+   "verdict": "JA",
+   "group": "dairy",
+   "note": "Plain",
+   "source": "owner"
+  },
+  {
+   "en": "Skyr",
+   "de": "Skyr",
+   "es": "Skyr",
+   "verdict": "JA",
+   "group": "dairy",
+   "note": "Plain",
+   "source": "owner"
+  },
+  {
+   "en": "Cottage cheese",
+   "de": "Hüttenkäse",
+   "es": "Requesón",
+   "verdict": "JA",
+   "group": "dairy",
+   "note": "Plain",
+   "source": "owner"
+  },
+  {
+   "en": "Cream cheese",
+   "de": "Frischkäse",
+   "es": "Queso crema",
+   "verdict": "JA",
+   "group": "dairy",
+   "note": "Sensible amounts",
+   "source": "owner"
+  },
+  {
+   "en": "Ricotta",
+   "de": "Ricotta",
+   "es": "Ricotta",
+   "verdict": "JA",
+   "group": "dairy",
+   "note": "Plain",
+   "source": "maya"
+  },
+  {
+   "en": "Cheddar",
+   "de": "Cheddar",
+   "es": "Queso cheddar",
+   "verdict": "JA",
+   "group": "dairy",
+   "note": "Up to about 30 g; more is SELTEN",
+   "source": "owner"
+  },
+  {
+   "en": "Mozzarella",
+   "de": "Mozzarella",
+   "es": "Mozzarella",
+   "verdict": "JA",
+   "group": "dairy",
+   "note": "Up to about 30 g; more is SELTEN",
+   "source": "owner"
+  },
+  {
+   "en": "Parmesan",
+   "de": "Parmesan",
+   "es": "Parmesano",
+   "verdict": "JA",
+   "group": "dairy",
+   "note": "Up to about 30 g",
+   "source": "owner"
+  },
+  {
+   "en": "Feta",
+   "de": "Feta",
+   "es": "Queso feta",
+   "verdict": "JA",
+   "group": "dairy",
+   "note": "Up to about 30 g",
+   "source": "maya"
+  },
+  {
+   "en": "Almonds",
+   "de": "Mandeln",
+   "es": "Almendras",
+   "verdict": "JA",
+   "group": "nuts",
+   "note": "Plain, a small handful (30 g)",
+   "source": "owner"
+  },
+  {
+   "en": "Walnuts",
+   "de": "Walnüsse",
+   "es": "Nueces",
+   "verdict": "JA",
+   "group": "nuts",
+   "note": "Plain, a small handful (30 g)",
+   "source": "maya"
+  },
+  {
+   "en": "Hazelnuts",
+   "de": "Haselnüsse",
+   "es": "Avellanas",
+   "verdict": "JA",
+   "group": "nuts",
+   "note": "Plain, a small handful (30 g)",
+   "source": "maya"
+  },
+  {
+   "en": "Pecans",
+   "de": "Pekannüsse",
+   "es": "Nueces pecanas",
+   "verdict": "JA",
+   "group": "nuts",
+   "note": "Plain, a small handful (30 g)",
+   "source": "maya"
+  },
+  {
+   "en": "Macadamia nuts",
+   "de": "Macadamianüsse",
+   "es": "Nueces de macadamia",
+   "verdict": "JA",
+   "group": "nuts",
+   "note": "Plain, a small handful (30 g)",
+   "source": "maya"
+  },
+  {
+   "en": "Pistachios",
+   "de": "Pistazien",
+   "es": "Pistachos",
+   "verdict": "JA",
+   "group": "nuts",
+   "note": "Plain, a small handful (30 g)",
+   "source": "maya"
+  },
+  {
+   "en": "Cashews",
+   "de": "Cashewkerne",
+   "es": "Anacardos",
+   "verdict": "JA",
+   "group": "nuts",
+   "note": "Plain, a small handful (30 g); the carbiest nut, keep it small",
+   "source": "maya"
+  },
+  {
+   "en": "Peanuts",
+   "de": "Erdnüsse",
+   "es": "Cacahuetes",
+   "verdict": "JA",
+   "group": "nuts",
+   "note": "Plain, a small handful (30 g)",
+   "source": "maya"
+  },
+  {
+   "en": "Chia seeds",
+   "de": "Chiasamen",
+   "es": "Semillas de chía",
+   "verdict": "JA",
+   "group": "nuts",
+   "note": "A spoon or two",
+   "source": "maya"
+  },
+  {
+   "en": "Flaxseed",
+   "de": "Leinsamen",
+   "es": "Linaza",
+   "verdict": "JA",
+   "group": "nuts",
+   "note": "A spoon or two",
+   "source": "maya"
+  },
+  {
+   "en": "Pumpkin seeds",
+   "de": "Kürbiskerne",
+   "es": "Pipas de calabaza",
+   "verdict": "JA",
+   "group": "nuts",
+   "note": "A small handful",
+   "source": "maya"
+  },
+  {
+   "en": "Sunflower seeds",
+   "de": "Sonnenblumenkerne",
+   "es": "Pipas de girasol",
+   "verdict": "JA",
+   "group": "nuts",
+   "note": "A small handful",
+   "source": "maya"
+  },
+  {
+   "en": "Blueberries",
+   "de": "Heidelbeeren",
+   "es": "Arándanos",
+   "verdict": "JA",
+   "group": "fruit",
+   "note": "A small handful (80 g); a bowlful is SELTEN",
+   "source": "maya"
+  },
+  {
+   "en": "Raspberries",
+   "de": "Himbeeren",
+   "es": "Frambuesas",
+   "verdict": "JA",
+   "group": "fruit",
+   "note": "A small handful (80 g)",
+   "source": "maya"
+  },
+  {
+   "en": "Strawberries",
+   "de": "Erdbeeren",
+   "es": "Fresas",
+   "verdict": "JA",
+   "group": "fruit",
+   "note": "A small handful (80 g)",
+   "source": "maya"
+  },
+  {
+   "en": "Water",
+   "de": "Wasser",
+   "es": "Agua",
+   "verdict": "JA",
+   "group": "drinks",
+   "note": "Still or sparkling",
+   "source": "owner"
+  },
+  {
+   "en": "Unsweetened tea",
+   "de": "Tee ohne Zucker",
+   "es": "Té sin azúcar",
+   "verdict": "JA",
+   "group": "drinks",
+   "note": "No sugar, no syrup",
+   "source": "owner"
+  },
+  {
+   "en": "Black coffee",
+   "de": "Schwarzer Kaffee",
+   "es": "Café solo",
+   "verdict": "JA",
+   "group": "drinks",
+   "note": "No sugar, no syrup",
+   "source": "owner"
+  },
+  {
+   "en": "Lentils",
+   "de": "Linsen",
+   "es": "Lentejas",
+   "verdict": "SELTEN",
+   "group": "legumes",
+   "note": "Good, but still carbohydrate",
+   "source": "owner"
+  },
+  {
+   "en": "Chickpeas",
+   "de": "Kichererbsen",
+   "es": "Garbanzos",
+   "verdict": "SELTEN",
+   "group": "legumes",
+   "note": "Good, but still carbohydrate",
+   "source": "owner"
+  },
+  {
+   "en": "Beans",
+   "de": "Bohnen",
+   "es": "Alubias",
+   "verdict": "SELTEN",
+   "group": "legumes",
+   "note": "Good, but still carbohydrate",
+   "source": "owner"
+  },
+  {
+   "en": "Hummus",
+   "de": "Hummus",
+   "es": "Hummus",
+   "verdict": "SELTEN",
+   "group": "legumes",
+   "note": "A spoon as a dip",
+   "source": "owner"
+  },
+  {
+   "en": "Edamame",
+   "de": "Edamame",
+   "es": "Edamame",
+   "verdict": "SELTEN",
+   "group": "legumes",
+   "note": "Legume",
+   "source": "maya"
+  },
+  {
+   "en": "Sweet potato",
+   "de": "Süßkartoffel",
+   "es": "Boniato",
+   "verdict": "SELTEN",
+   "group": "starch",
+   "note": "A controlled portion",
+   "source": "owner"
+  },
+  {
+   "en": "Apple",
+   "de": "Apfel",
+   "es": "Manzana",
+   "verdict": "SELTEN",
+   "group": "fruit",
+   "note": "One piece now and then",
+   "source": "maya"
+  },
+  {
+   "en": "Pear",
+   "de": "Birne",
+   "es": "Pera",
+   "verdict": "SELTEN",
+   "group": "fruit",
+   "note": "One piece now and then",
+   "source": "maya"
+  },
+  {
+   "en": "Orange",
+   "de": "Orange",
+   "es": "Naranja",
+   "verdict": "SELTEN",
+   "group": "fruit",
+   "note": "One piece now and then",
+   "source": "maya"
+  },
+  {
+   "en": "Kiwi",
+   "de": "Kiwi",
+   "es": "Kiwi",
+   "verdict": "SELTEN",
+   "group": "fruit",
+   "note": "One piece now and then",
+   "source": "maya"
+  },
+  {
+   "en": "Peach",
+   "de": "Pfirsich",
+   "es": "Melocotón",
+   "verdict": "SELTEN",
+   "group": "fruit",
+   "note": "One piece now and then",
+   "source": "maya"
+  },
+  {
+   "en": "Watermelon",
+   "de": "Wassermelone",
+   "es": "Sandía",
+   "verdict": "SELTEN",
+   "group": "fruit",
+   "note": "A small slice",
+   "source": "maya"
+  },
+  {
+   "en": "Cherries",
+   "de": "Kirschen",
+   "es": "Cerezas",
+   "verdict": "SELTEN",
+   "group": "fruit",
+   "note": "A small handful",
+   "source": "maya"
+  },
+  {
+   "en": "Splash of milk",
+   "de": "Schuss Milch",
+   "es": "Chorrito de leche",
+   "verdict": "JA",
+   "group": "dairy",
+   "note": "Milk portion rule: up to about 50 ml in coffee or tea, no sugar added",
+   "source": "maya"
+  },
+  {
+   "en": "Glass of milk",
+   "de": "Glas Milch",
+   "es": "Vaso de leche",
+   "verdict": "SELTEN",
+   "group": "dairy",
+   "note": "Milk portion rule: a glass to drink is a lot of milk sugar; a splash in coffee or tea is JA",
+   "source": "maya"
+  },
+  {
+   "en": "Halloumi",
+   "de": "Halloumi",
+   "es": "Halloumi",
+   "verdict": "SELTEN",
+   "group": "dairy",
+   "note": "Salty and rich",
+   "source": "owner"
+  },
+  {
+   "en": "Peanut butter",
+   "de": "Erdnussbutter",
+   "es": "Crema de cacahuete",
+   "verdict": "SELTEN",
+   "group": "nuts",
+   "note": "One spoon",
+   "source": "owner"
+  },
+  {
+   "en": "Tahini",
+   "de": "Tahini",
+   "es": "Tahini",
+   "verdict": "SELTEN",
+   "group": "nuts",
+   "note": "One spoon",
+   "source": "maya"
+  },
+  {
+   "en": "Chicken sausages",
+   "de": "Geflügelwürstchen",
+   "es": "Salchichas de pollo",
+   "verdict": "SELTEN",
+   "group": "processed",
+   "note": "Processed, check the label",
+   "source": "owner"
+  },
+  {
+   "en": "Protein bar",
+   "de": "Proteinriegel",
+   "es": "Barrita de proteínas",
+   "verdict": "SELTEN",
+   "group": "processed",
+   "note": "Processed, check the label",
+   "source": "owner"
+  },
+  {
+   "en": "Whole-grain pasta",
+   "de": "Vollkornnudeln",
+   "es": "Pasta integral",
+   "verdict": "SELTEN",
+   "group": "starch",
+   "note": "Still a lot of carbs",
+   "source": "owner"
+  },
+  {
+   "en": "Rice",
+   "de": "Reis",
+   "es": "Arroz",
+   "verdict": "NEIN",
+   "group": "starch",
+   "note": "Starch staple",
+   "source": "owner"
+  },
+  {
+   "en": "Bread",
+   "de": "Brot",
+   "es": "Pan",
+   "verdict": "NEIN",
+   "group": "starch",
+   "note": "Whole-grain too",
+   "source": "owner"
+  },
+  {
+   "en": "Pasta",
+   "de": "Nudeln",
+   "es": "Pasta",
+   "verdict": "NEIN",
+   "group": "starch",
+   "note": "Starch staple",
+   "source": "owner"
+  },
+  {
+   "en": "Potatoes",
+   "de": "Kartoffeln",
+   "es": "Patatas",
+   "verdict": "NEIN",
+   "group": "starch",
+   "note": "Starch staple",
+   "source": "owner"
+  },
+  {
+   "en": "Fries",
+   "de": "Pommes",
+   "es": "Patatas fritas",
+   "verdict": "NEIN",
+   "group": "starch",
+   "note": "Starch and frying",
+   "source": "owner"
+  },
+  {
+   "en": "Oats",
+   "de": "Haferflocken",
+   "es": "Avena",
+   "verdict": "NEIN",
+   "group": "starch",
+   "note": "Grain",
+   "source": "owner"
+  },
+  {
+   "en": "Quinoa",
+   "de": "Quinoa",
+   "es": "Quinoa",
+   "verdict": "NEIN",
+   "group": "starch",
+   "note": "Grain",
+   "source": "owner"
+  },
+  {
+   "en": "Couscous",
+   "de": "Couscous",
+   "es": "Cuscús",
+   "verdict": "NEIN",
+   "group": "starch",
+   "note": "Grain",
+   "source": "maya"
+  },
+  {
+   "en": "Bulgur",
+   "de": "Bulgur",
+   "es": "Bulgur",
+   "verdict": "NEIN",
+   "group": "starch",
+   "note": "Grain",
+   "source": "maya"
+  },
+  {
+   "en": "Corn",
+   "de": "Mais",
+   "es": "Maíz",
+   "verdict": "NEIN",
+   "group": "starch",
+   "note": "Starchy",
+   "source": "maya"
+  },
+  {
+   "en": "Rice cakes",
+   "de": "Reiswaffeln",
+   "es": "Tortitas de arroz",
+   "verdict": "NEIN",
+   "group": "starch",
+   "note": "Puffed starch",
+   "source": "owner"
+  },
+  {
+   "en": "Pizza",
+   "de": "Pizza",
+   "es": "Pizza",
+   "verdict": "NEIN",
+   "group": "starch",
+   "note": "Bread base",
+   "source": "maya"
+  },
+  {
+   "en": "Tortilla wrap",
+   "de": "Tortilla-Wrap",
+   "es": "Tortilla de trigo (wrap)",
+   "verdict": "NEIN",
+   "group": "starch",
+   "note": "Bread",
+   "source": "owner"
+  },
+  {
+   "en": "Granola",
+   "de": "Granola",
+   "es": "Granola",
+   "verdict": "NEIN",
+   "group": "starch",
+   "note": "Cereal with sugar",
+   "source": "owner"
+  },
+  {
+   "en": "Banana",
+   "de": "Banane",
+   "es": "Plátano",
+   "verdict": "NEIN",
+   "group": "fruit",
+   "note": "Very sweet",
+   "source": "owner"
+  },
+  {
+   "en": "Mango",
+   "de": "Mango",
+   "es": "Mango",
+   "verdict": "NEIN",
+   "group": "fruit",
+   "note": "Very sweet",
+   "source": "owner"
+  },
+  {
+   "en": "Dates",
+   "de": "Datteln",
+   "es": "Dátiles",
+   "verdict": "NEIN",
+   "group": "fruit",
+   "note": "Very sweet",
+   "source": "owner"
+  },
+  {
+   "en": "Grapes",
+   "de": "Weintrauben",
+   "es": "Uvas",
+   "verdict": "NEIN",
+   "group": "fruit",
+   "note": "Very sweet, easy to overeat",
+   "source": "maya"
+  },
+  {
+   "en": "Pineapple",
+   "de": "Ananas",
+   "es": "Piña",
+   "verdict": "NEIN",
+   "group": "fruit",
+   "note": "Very sweet",
+   "source": "maya"
+  },
+  {
+   "en": "Dried fruit",
+   "de": "Trockenobst",
+   "es": "Fruta seca",
+   "verdict": "NEIN",
+   "group": "fruit",
+   "note": "Concentrated sugar",
+   "source": "maya"
+  },
+  {
+   "en": "Plantain",
+   "de": "Kochbanane",
+   "es": "Plátano macho",
+   "verdict": "NEIN",
+   "group": "fruit",
+   "note": "Starchy",
+   "source": "owner"
+  },
+  {
+   "en": "Sugar",
+   "de": "Zucker",
+   "es": "Azúcar",
+   "verdict": "NEIN",
+   "group": "sweet",
+   "note": "Added sugar",
+   "source": "owner"
+  },
+  {
+   "en": "Honey",
+   "de": "Honig",
+   "es": "Miel",
+   "verdict": "NEIN",
+   "group": "sweet",
+   "note": "Added sugar",
+   "source": "owner"
+  },
+  {
+   "en": "Maple syrup",
+   "de": "Ahornsirup",
+   "es": "Jarabe de arce",
+   "verdict": "NEIN",
+   "group": "sweet",
+   "note": "Added sugar",
+   "source": "owner"
+  },
+  {
+   "en": "Chocolate",
+   "de": "Schokolade",
+   "es": "Chocolate",
+   "verdict": "NEIN",
+   "group": "sweet",
+   "note": "Sugar",
+   "source": "owner"
+  },
+  {
+   "en": "Ice cream",
+   "de": "Eis",
+   "es": "Helado",
+   "verdict": "NEIN",
+   "group": "sweet",
+   "note": "Sugar",
+   "source": "owner"
+  },
+  {
+   "en": "Cake",
+   "de": "Kuchen",
+   "es": "Pastel",
+   "verdict": "NEIN",
+   "group": "sweet",
+   "note": "Sugar and flour",
+   "source": "owner"
+  },
+  {
+   "en": "Juice",
+   "de": "Saft",
+   "es": "Zumo",
+   "verdict": "NEIN",
+   "group": "drinks",
+   "note": "Fruit sugar without the fibre",
+   "source": "owner"
+  },
+  {
+   "en": "Cola",
+   "de": "Cola",
+   "es": "Refresco de cola",
+   "verdict": "NEIN",
+   "group": "drinks",
+   "note": "Liquid sugar",
+   "source": "owner"
+  },
+  {
+   "en": "Zero soda",
+   "de": "Cola Zero",
+   "es": "Refresco zero",
+   "verdict": "NEIN",
+   "group": "drinks",
+   "note": "Not a standard LOWiSPIKE drink",
+   "source": "owner"
+  },
+  {
+   "en": "Oat milk",
+   "de": "Haferdrink",
+   "es": "Bebida de avena",
+   "verdict": "NEIN",
+   "group": "drinks",
+   "note": "Oats",
+   "source": "maya"
+  },
+  {
+   "en": "Ketchup",
+   "de": "Ketchup",
+   "es": "Kétchup",
+   "verdict": "NEIN",
+   "group": "sweet",
+   "note": "Sweet sauce",
+   "source": "owner"
+  },
+  {
+   "en": "Chips",
+   "de": "Chips",
+   "es": "Patatas fritas de bolsa",
+   "verdict": "NEIN",
+   "group": "snack",
+   "note": "Processed starch",
+   "source": "owner"
+  },
+  {
+   "en": "Chicken nuggets",
+   "de": "Chicken Nuggets",
+   "es": "Nuggets de pollo",
+   "verdict": "NEIN",
+   "group": "processed",
+   "note": "Breaded",
+   "source": "owner"
+  },
+  {
+   "en": "Fish fingers",
+   "de": "Fischstäbchen",
+   "es": "Palitos de pescado",
+   "verdict": "NEIN",
+   "group": "processed",
+   "note": "Breaded",
+   "source": "owner"
+  },
+  {
+   "en": "Pork",
+   "de": "Schweinefleisch",
+   "es": "Cerdo",
+   "verdict": "NEIN",
+   "group": "protein",
+   "note": "Not part of LOWiSPIKE",
+   "source": "owner"
+  },
+  {
+   "en": "Ham",
+   "de": "Schinken",
+   "es": "Jamón",
+   "verdict": "NEIN",
+   "group": "protein",
+   "note": "Pork",
+   "source": "owner"
+  },
+  {
+   "en": "Bacon",
+   "de": "Speck",
+   "es": "Bacon",
+   "verdict": "NEIN",
+   "group": "protein",
+   "note": "Pork",
+   "source": "owner"
+  },
+  {
+   "en": "Beer",
+   "de": "Bier",
+   "es": "Cerveza",
+   "verdict": "NEIN",
+   "group": "drinks",
+   "note": "Alcohol",
+   "source": "owner"
+  },
+  {
+   "en": "Wine",
+   "de": "Wein",
+   "es": "Vino",
+   "verdict": "NEIN",
+   "group": "drinks",
+   "note": "Alcohol",
+   "source": "owner"
+  }
+ ]
+}

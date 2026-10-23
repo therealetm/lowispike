@@ -77,12 +77,26 @@
             SH[g.sh] || 's', SY[g.sy] || 'v', PT[g.pt] || 'n', AU[g.au] || 'm', (g.sd | 0).toString(36)].join('.');
     }
     const LOOK_RX = /^1\.([0-9])\.([0-4])\.([0-9a-f]{6})\.([0-9a-f]{6})\.([se])\.([vf])\.([nbs])\.([mwc])\.([0-9a-z]{1,4})$/;
+    /* 23 Oct 2026 (Eman: "show their name, the names they chose for their companions"): the chosen companion name rides on the
+       shared look code after a "~", URI-encoded, at most 24 characters. A look without it still decodes (the name is then ''). */
+    function cleanName(s) {
+        return String(s == null ? '' : s).normalize('NFC').replace(/[\u0000-\u001f\u007f<>"'`~\\{}]/g, '').replace(/\s+/g, ' ').trim().slice(0, 24).trim();
+    }
+    function withName(code, name) { const n = cleanName(name); code = String(code || ''); return code && n ? code + '~' + encodeURIComponent(n) : code; }
+    function nameOf(s) {
+        s = String(s || ''); const i = s.indexOf('~'); if (i < 0) return '';
+        try { return cleanName(decodeURIComponent(s.slice(i + 1))); } catch (e) { return ''; }
+    }
     function decode(s) {
-        const m = LOOK_RX.exec(String(s || '').trim().toLowerCase());
+        s = String(s || '').trim();
+        const nm = nameOf(s), cut = s.indexOf('~');
+        const m = LOOK_RX.exec((cut < 0 ? s : s.slice(0, cut)).toLowerCase());
         if (!m) return null;
         const sd = parseInt(m[9], 36);
         if (!(sd >= 0 && sd < 65536)) return null;
-        return { v: 1, st: +m[1], el: ELS[+m[2]], a: '#' + m[3], b: '#' + m[4], sh: SHi[m[5]], sy: SYi[m[6]], pt: PTi[m[7]], au: AUi[m[8]], sd, shared: true };
+        const g = { v: 1, st: +m[1], el: ELS[+m[2]], a: '#' + m[3], b: '#' + m[4], sh: SHi[m[5]], sy: SYi[m[6]], pt: PTi[m[7]], au: AUi[m[8]], sd, shared: true };
+        if (nm) g.nm = nm;
+        return g;
     }
 
     /* ---------- drawing ---------- */
@@ -398,7 +412,7 @@
         }));
     }
 
-    const api = { MAX_ST, ELS, CELL_R, PAD, POWER, power, STONE_AT, HAT_IDS, normType, genome, encode, decode, layers, apply, miniSVG, reaction, merge, calm, fastHours, formName, traitName, path, clampStage };
+    const api = { MAX_ST, ELS, CELL_R, PAD, POWER, power, STONE_AT, HAT_IDS, normType, genome, encode, decode, withName, nameOf, cleanName, layers, apply, miniSVG, reaction, merge, calm, fastHours, formName, traitName, path, clampStage };
     if (typeof module !== 'undefined' && module.exports) module.exports = api;
     root.LowiCompanionCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

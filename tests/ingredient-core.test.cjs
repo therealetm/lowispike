@@ -97,5 +97,5 @@ test('ingredient-core.js and food-policy-core.js load before food-engine-core.js
   const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
   const a = html.indexOf('<script src="ingredient-core.js'), b = html.indexOf('<script src="food-policy-core.js'), c = html.indexOf('<script src="food-engine-core.js');
   assert.ok(a > 0 && b > a && c > b);
-  assert.strictEqual(sw.split('"ingredient-core.js", "food-policy-core.js", "food-assess-core.js", "food-engine-core.js"').length - 1, 2, 'both sw.js lists');
+  assert.strictEqual(sw.split('"ingredient-core.js", "food-policy-core.js", "food-knowledge-core.js", "food-assess-core.js", "food-engine-core.js"').length - 1, 2, 'both sw.js lists');
 });

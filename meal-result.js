@@ -34,7 +34,7 @@
             save: 'Update', cancel: 'Cancel', remove: 'Remove', kept: 'I don’t know “{name}” yet, so I kept the photo’s amounts.',
             drinks: 'Drinking anything?', addDrink: 'Add a drink', drinkWhat: 'What are you drinking?', drinkPh: 'e.g. cola, 0.5 l beer', add: 'Add',
             chips: ['Water', 'Coffee', 'Cola', 'Juice', 'Beer', 'Wine'],
-            xpOk: 'for logging this meal', xpQuest: '{base} for the meal + {quest} for today\u2019s eat quest', xpSpike: 'Spiky meals earn nothing, and never cost points.', xpDup: 'You already logged this today.', xpCap: 'Daily limit of {cap} meals reached.', xpCapQuest: '{quest} for today\u2019s eat quest. Past {cap} meals a day, the meal itself earns nothing.',
+            xpOk: 'for logging this meal', xpQuest: '{base} for the meal + {quest} for today\u2019s eat quest', xpSpike: 'Spiky meals earn nothing, and never cost points.', xpNein: 'Not a LOWiSPIKE meal, so no XP. It never costs points.', fk: 'LOWiSPIKE', xpDup: 'You already logged this today.', xpCap: 'Daily limit of {cap} meals reached.', xpCapQuest: '{quest} for today\u2019s eat quest. Past {cap} meals a day, the meal itself earns nothing.',
             total: 'Total', pcs: 'pcs', pc: 'pc', none: 'Nothing left to check. Type what it is below.', protein: 'protein', carbs: 'carbs', fat: 'fat', kcal: 'kcal'
         },
         de: {
@@ -49,7 +49,7 @@
             save: 'Übernehmen', cancel: 'Abbrechen', remove: 'Entfernen', kept: 'Ich kenne „{name}“ noch nicht, also habe ich die Mengen aus dem Foto behalten.',
             drinks: 'Trinkst du etwas dazu?', addDrink: 'Getränk hinzufügen', drinkWhat: 'Was trinkst du?', drinkPh: 'z. B. Cola, 0,5 l Bier', add: 'Hinzufügen',
             chips: ['Wasser', 'Kaffee', 'Cola', 'Saft', 'Bier', 'Wein'],
-            xpOk: 'für diese Mahlzeit', xpQuest: '{base} für die Mahlzeit + {quest} für die heutige Ess-Quest', xpSpike: 'Spike-Mahlzeiten geben nichts, ziehen aber auch nichts ab.', xpDup: 'Heute schon eingetragen.', xpCap: 'Tageslimit von {cap} Mahlzeiten erreicht.', xpCapQuest: '{quest} für die heutige Ess-Quest. Ab {cap} Mahlzeiten am Tag gibt die Mahlzeit selbst nichts.',
+            xpOk: 'für diese Mahlzeit', xpQuest: '{base} für die Mahlzeit + {quest} für die heutige Ess-Quest', xpSpike: 'Spike-Mahlzeiten geben nichts, ziehen aber auch nichts ab.', xpNein: 'Keine LOWiSPIKE-Mahlzeit, daher keine XP. Es zieht aber nichts ab.', fk: 'LOWiSPIKE', xpDup: 'Heute schon eingetragen.', xpCap: 'Tageslimit von {cap} Mahlzeiten erreicht.', xpCapQuest: '{quest} für die heutige Ess-Quest. Ab {cap} Mahlzeiten am Tag gibt die Mahlzeit selbst nichts.',
             total: 'Gesamt', pcs: 'Stk.', pc: 'Stk.', none: 'Nichts mehr zu prüfen. Schreib unten, was es ist.', protein: 'Eiweiß', carbs: 'KH', fat: 'Fett', kcal: 'kcal'
         },
         es: {
@@ -64,7 +64,7 @@
             save: 'Actualizar', cancel: 'Cancelar', remove: 'Quitar', kept: 'Aún no conozco «{name}», así que mantuve las cantidades de la foto.',
             drinks: '¿Bebes algo?', addDrink: 'Añadir bebida', drinkWhat: '¿Qué bebes?', drinkPh: 'p. ej. cola, 0,5 l de cerveza', add: 'Añadir',
             chips: ['Agua', 'Café', 'Cola', 'Zumo', 'Cerveza', 'Vino'],
-            xpOk: 'por esta comida', xpQuest: '{base} por la comida + {quest} por la misión de hoy', xpSpike: 'Las comidas con pico no dan nada, pero tampoco restan.', xpDup: 'Ya registrado hoy.', xpCap: 'Límite diario de {cap} comidas.', xpCapQuest: '{quest} por la misión de hoy. Pasadas {cap} comidas al día, la comida en sí no da nada.',
+            xpOk: 'por esta comida', xpQuest: '{base} por la comida + {quest} por la misión de hoy', xpSpike: 'Las comidas con pico no dan nada, pero tampoco restan.', xpNein: 'No es una comida LOWiSPIKE, así que no da XP. Nunca resta.', fk: 'LOWiSPIKE', xpDup: 'Ya registrado hoy.', xpCap: 'Límite diario de {cap} comidas.', xpCapQuest: '{quest} por la misión de hoy. Pasadas {cap} comidas al día, la comida en sí no da nada.',
             total: 'Total', pcs: 'uds.', pc: 'ud.', none: 'No queda nada que revisar. Escribe abajo qué es.', protein: 'proteína', carbs: 'carbs', fat: 'grasa', kcal: 'kcal'
         }
     };
@@ -382,7 +382,7 @@
 
     /* The one verdict. Same estimate as the shared meal card (LowiMealSnap.bloodSugar); a drink list holding 20 g of
        sugar or more is a likely spike on its own (the same rule bloodSugar uses for sugary drinks). */
-    function verdict(items, drinks) {
+    function verdict(items, drinks, aiBlock) {
         const all = (items || []).concat(drinks || []);
         const tot = totals(all);
         const MS = snap();
@@ -391,8 +391,17 @@
         const drinkSugar = (drinks || []).reduce((s, d) => s + num(d && d.sugar, CAP.sugar), 0);
         const byDrink = drinkSugar >= 20;
         const level = byDrink ? 'high' : bs.level;
-        return { level, lvl: LVL[level], spike: level === 'high', score: bs.score, net: bs.net, drink: byDrink, total: tot, empty: !all.length };
+        /* Master Knowledge v3: the LOWiSPIKE verdict for the same foods (JA / SELTEN / NEIN), from the same engine as the
+           barcode card, the database and the grocery list. A NEIN meal (rice, pork, fries, beer...) is logged like a spike:
+           no meal XP and no eat quest, the rule Misty already follows on the scanner. The spike line stays honest, so plain
+           pork still reads "No spike" while its LOWiSPIKE verdict says NO. The model's verdict block can only tighten it. */
+        const K = fk();
+        let food = K ? K.rateMeal(all, { level, score: bs.score }) : null;
+        if (K && food && aiBlock) food = K.merge(K.parse(aiBlock), food);
+        const nein = !!(food && food.verdict === 'NEIN');
+        return { level, lvl: LVL[nein ? 'high' : level], spike: level === 'high', nein, food, score: bs.score, net: bs.net, drink: byDrink, total: tot, empty: !all.length };
     }
+    function fk() { try { return (typeof window !== 'undefined' && window.LowiFoodKnowledge) || (typeof require === 'function' ? require('./food-knowledge-core.js') : null); } catch (e) { return null; } }
 
     /* XP for logging it, from the app's own rules (index.html LowiVitalsBridge), never a second point system:
        15 XP for the meal (0 for a spike, a duplicate, or past the daily cap) plus the daily "eat" quest's XP when this is
@@ -406,6 +415,7 @@
             try { base = typeof bridge.mealXp === 'function' ? +bridge.mealXp(data) || 0 : (why ? 0 : 15); } catch (e) { base = why ? 0 : 15; }
             if (why) base = 0;
             try { quest = why === 'spike' || why === 'dup' ? 0 : typeof bridge.mealQuestXp === 'function' ? +bridge.mealQuestXp(data) || 0 : 0; } catch (e) { quest = 0; }
+            if (why === 'spike' && v && v.nein && !v.spike) why = 'nein';
             return { xp: base + quest, base, quest, why, cap };
         }
         const base = v && v.spike ? 0 : 15;
@@ -417,6 +427,7 @@
         let small;
         if (!x.why) small = x.quest ? t('xpQuest', l, { base: x.base, quest: x.quest }) : t('xpOk', l);
         else if (x.why === 'spike') small = t('xpSpike', l);
+        else if (x.why === 'nein') small = t('xpNein', l);
         else if (x.why === 'dup') small = t('xpDup', l);
         else small = x.quest ? t('xpCapQuest', l, { cap: x.cap, quest: x.quest }) : t('xpCap', l, { cap: x.cap });
         return { big, small };
@@ -430,9 +441,9 @@
         return n ? '<p class="sp-fast-note mr-fast" data-noi18n>' + esc(n) + '</p>' : '';
     }
     // What Log as meal saves: totals, the verdict level (the log's lvl, so XP matches) and the name.
-    function formValues(items, drinks, l) {
+    function formValues(items, drinks, l, aiBlock) {
         const all = (items || []).concat(drinks || []);
-        const v = verdict(items, drinks);
+        const v = verdict(items, drinks, aiBlock);
         return { title: title(all, l), lvl: all.length ? v.lvl : '', macros: all.length ? totals(all) : null, verdict: v };
     }
 
@@ -492,7 +503,7 @@
         };
 
         const render = (focusSel, keepSel) => {
-            const fv = formValues(st.items, st.drinks, l), v = fv.verdict;
+            const fv = formValues(st.items, st.drinks, l, opts.verdictBlock), v = fv.verdict;
             writeForm(fv);
             if (sheet) sheet.classList.toggle('mr-on', !v.empty);
             const mealTitle = (titleIn && titleIn.value.trim()) || fv.title;
@@ -500,7 +511,10 @@
             const head = v.empty ? '' :
                 '<section class="mr-verdict mr-' + v.level + '" aria-live="polite" aria-atomic="true">' +
                 '<div class="mr-vt"><small class="mr-q">' + esc(t('q', l)) + '</small><b class="mr-ans"><i aria-hidden="true"></i>' + esc(t(v.level, l)) + '</b>' +
-                '<span class="mr-why">' + esc(v.drink ? t('whyDrink', l) : t(v.level === 'low' ? 'whyLow' : v.level === 'mid' ? 'whyMid' : 'whyHigh', l, { net: v.net })) + '</span></div>' +
+                '<span class="mr-why">' + esc(v.drink ? t('whyDrink', l) : t(v.level === 'low' ? 'whyLow' : v.level === 'mid' ? 'whyMid' : 'whyHigh', l, { net: v.net })) + '</span>' +
+                (v.food && fk() ? '<span class="mr-fk mr-fk-' + v.food.light + '"><i aria-hidden="true"></i><b>' + esc(t('fk', l) + ': ' + fk().label(v.food.verdict, l)) + '</b> ' +
+                    esc(v.food.reason || fk().reasonText(v.food.rule, l)) + '</span>' : '') +
+                '</div>' +
                 (opts.photo ? '<img class="mr-thumb" alt="" src="' + esc(opts.photo) + '">' : '') + '</section>';
             const foods = st.items.length ? '<div class="mr-sec"><p class="mr-h"><b>' + esc(t('see', l)) + '</b><small>' + esc(t('tapFix', l)) + '</small></p><ul class="mr-list">' +
                 st.items.map((d, i) => cardHTML(d, i, 'f', st.edit === 'f' + i, l, st.pick && st.pick.id === 'f' + i ? st.pick.p : null)).join('') + '</ul></div>' : '';
@@ -730,7 +744,7 @@
         render();
         return {
             items: () => st.items.slice(), drinks: () => st.drinks.slice(), all: () => st.items.concat(st.drinks),
-            values: () => formValues(st.items, st.drinks, l), refresh: () => render(),
+            values: () => formValues(st.items, st.drinks, l, opts.verdictBlock), refresh: () => render(),
             _edit(i, text, count) { st.items[i] = clean(estimateItem(text, count, st.items[i], db(), l)); return render(); },
             _pick(q, k) { const li = box.querySelector('.mr-editing'); const inp = li && li.querySelector('[data-mr-name]'); if (!inp) return null; inp.value = q; sugFor(li, li.dataset.mr); const list = st.sugs.slice(); if (k != null) pick(k, li); return list; },
             _drink(text, count) { const d = estimateDrink(text, count, db(), l); if (d) st.drinks.push(clean(d)); return render(); }

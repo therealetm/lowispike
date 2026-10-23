@@ -110,5 +110,5 @@ test('assess: text tables are complete and keep the card wording rules', () => {
   const at = f => html.search(new RegExp('<script src="' + f.replace('.', '\\.') + '\\?'));
   assert.ok(at('food-policy-core.js') > 0 && at('food-policy-core.js') < at('food-assess-core.js') && at('food-assess-core.js') < at('food-engine-core.js'), 'index.html loads food-assess-core.js between policy and engine');
   const sw = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
-  assert.strictEqual((sw.match(/"food-policy-core\.js", "food-assess-core\.js", "food-engine-core\.js"/g) || []).length, 2, 'both sw.js lists cache it');
+  assert.strictEqual((sw.match(/"food-policy-core\.js", "food-knowledge-core\.js", "food-assess-core\.js", "food-engine-core\.js"/g) || []).length, 2, 'both sw.js lists cache it');
 });

@@ -78,6 +78,36 @@ test('bump moves every id and prepends What\'s New in three languages', () => {
   assert.ok(fs.readFileSync(path.join(d, 'index.html'), 'utf8').includes('a.js?v=20261018-010001'));
 });
 
+test('a release without its own tour drops the previous release\'s lead and steps', () => {
+  const d = fixture('20261018-010000');
+  applyBump(d, '20261018-010000', '20261018-010001', { slug: 'tour', text: { en: 'A', de: 'A', es: 'A' }, lead: { en: 'Old lead', de: 'L', es: 'L' }, steps: [{ tab: 'home', text: { en: 'Old step', de: 'S', es: 'S' } }] });
+  let v = JSON.parse(fs.readFileSync(path.join(d, 'version.json'), 'utf8'));
+  assert.strictEqual(v.news.lead.en, 'Old lead');
+  assert.strictEqual(v.news.steps.length, 1);
+  applyBump(d, '20261018-010001', '20261018-010002', { slug: 'plain', text: { en: 'B', de: 'B', es: 'B' } });
+  v = JSON.parse(fs.readFileSync(path.join(d, 'version.json'), 'utf8'));
+  assert.strictEqual(v.news.id, 'plain-20261018-010002');
+  assert.strictEqual(v.news.lead, undefined, 'the older release\'s lead must not stay');
+  assert.strictEqual(v.news.steps.length, 1, 'one step of its own, not the older release\'s tour');
+  assert.strictEqual(v.news.steps[0].tab, 'home');
+  assert.deepStrictEqual(v.news.steps[0].text, { en: 'B', de: 'B', es: 'B' });
+  assert.ok(v.news.text.en.startsWith('B\n\nA'));
+  assert.deepStrictEqual(check(d).errors, []);
+});
+
+test('the live What\'s New tour belongs to the current news', () => {
+  /* every tour lead in version.json must be about the release whose id it carries: its words show up in that release's own
+     (first) paragraph. Catches a lead or steps left over from an older release. */
+  const v = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'version.json'), 'utf8'));
+  const n = v.news || {};
+  const first = String((n.text && n.text.en) || '').split('\n\n')[0].toLowerCase();
+  if (!n.lead) return; /* no lead: the tour offer says "One new thing in this update" */
+  const words = String(n.lead.en).toLowerCase().match(/[a-z]{5,}/g) || [];
+  assert.ok(words.length, 'a tour lead needs words');
+  const hits = words.filter(w => first.includes(w)).length;
+  assert.ok(hits * 2 >= words.length, 'lead "' + n.lead.en + '" does not match this release\'s news "' + first.slice(0, 80) + '"');
+});
+
 test('test floor reads the pass count and the newest recorded count', () => {
   const { parsePass, floorFromSubjects } = require('../scripts/test-floor.cjs');
   assert.strictEqual(parsePass('ℹ tests 1213\nℹ pass 1212\nℹ fail 1\n'), 1212);
